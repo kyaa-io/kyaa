@@ -1,16 +1,16 @@
 .panel {
   margin-top: 32px;
   padding: clamp(20px, 4vw, 28px);
-  border: 1px solid var(--color-line);
+  border: 1px solid oklch(87% 0.015 330);
   border-radius: 18px;
-  background: linear-gradient(145deg, #fff 52%, var(--color-accent-soft));
+  background: linear-gradient(145deg, #fff 52%, oklch(98% 0.018 330));
 }
 .eyebrow { color: oklch(43% 0 0); font-size: 12px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
 .status { display: flex; gap: 14px; margin-top: 14px; }
-.status > span { width: 40px; height: 40px; display: grid; flex: 0 0 auto; place-items: center; border-radius: 50%; background: var(--color-accent-soft); color: var(--color-accent-ink); }
+.status > span { width: 40px; height: 40px; display: grid; flex: 0 0 auto; place-items: center; border-radius: 50%; background: oklch(95% 0.035 330); color: oklch(48% 0.18 345); }
 .status > span svg { width: 21px; height: 21px; }
 .status h2 { margin: 0; font-size: var(--fan-heading-size); font-weight: var(--fan-heading-weight); line-height: var(--fan-heading-leading); letter-spacing: -.03em; }
-@media (min-width: 768px) { .status h2 { font-size: var(--fan-heading-size); } }
+@media (min-width: 768px) { .status h2 { font-size: var(--fan-heading-size-wide); } }
 .status p { margin: 7px 0 0; color: oklch(42% 0 0); line-height: 1.55; }
 .revealPanel { padding: 0; overflow: hidden; container-type: inline-size; background: #fff; }
 .revealPanel .actions { margin: 20px 0 24px; }

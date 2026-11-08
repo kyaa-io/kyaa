@@ -12,7 +12,7 @@
 .empty p { max-width: 52ch; margin: 0 0 16px; font-size: 15px; line-height: 1.65; text-wrap: pretty; }
 
 .panel { width:100%; min-width:0; margin:0; }
-.heading { --fan-heading-size:var(--fan-section-size); --fan-heading-weight:var(--fan-section-weight); margin-bottom:20px; }
+.heading { --fan-heading-size:20px; --fan-heading-size-wide:24px; --fan-description-size:16px; margin-bottom:20px; }
 .heading [data-fan-section-header] { margin-bottom:0; }
 .channels { display:flex; flex-wrap:wrap; align-items:center; gap:0 16px; margin-bottom:16px; border-bottom:1px solid var(--color-line); }
 .channels > span { display:flex; align-items:center; min-height:44px; color:var(--color-muted); font-size:13px; font-weight:650; }
@@ -63,8 +63,8 @@
 .play { display:block; position:relative; width:100%; padding:0; border:0; background:var(--color-soft); cursor:pointer; }
 .play img { display:block; }
 .playIcon { position:absolute; inset:0; display:grid; place-items:center; color:white; background:linear-gradient(transparent 60%,#0003); }
-.playIcon svg { width:48px; height:48px; padding:12px; border-radius:50%; background:color-mix(in srgb, var(--color-ink) 85%, transparent); }
-.player { display:block; width:100%; aspect-ratio:16/9; border:0; background:var(--color-ink); }
+.playIcon svg { width:48px; height:48px; padding:12px; border-radius:50%; background:#17161bd9; }
+.player { display:block; width:100%; aspect-ratio:16/9; border:0; background:#17161b; }
 .preview :is(a,button,iframe):focus-visible { outline:3px solid var(--color-ink); outline-offset:3px; }
 .previewGrid > li { overflow:visible; }
 .preview .previewGrid img,.play,.player { border-radius:16px 16px 0 0; }
@@ -81,13 +81,13 @@
 @media(max-width:767px){.compactPreview>section[data-media-preview-kind=photos]{display:none}}
 
 /* The artist-home preview follows the borderless Pencil media strip. */
-.compactPreview .previewGrid>li{border:0;border-radius:0}.compactPreview .previewGrid img,.compactPreview .play{border-radius:16px}.compactPreview .cardBody{padding:8px 0 0;gap:0}.compactPreview .grid>li strong{min-height:0;line-height:22px}.compactPreview .liveBadge{top:auto;bottom:12px}.compactPreview .playIcon svg{background:color-mix(in srgb, var(--color-ink) 40%, transparent);fill:none}.compactPreview .previewHeading [data-fan-section-header]{margin-bottom:0}
+.compactPreview .previewGrid>li{border:0;border-radius:0}.compactPreview .previewGrid img,.compactPreview .play{border-radius:16px}.compactPreview .cardBody{padding:8px 0 0;gap:0}.compactPreview .grid>li strong{min-height:0;line-height:22px}.compactPreview .liveBadge{top:auto;bottom:12px}.compactPreview .playIcon svg{background:#17161b66;fill:none}.compactPreview .previewHeading [data-fan-section-header]{margin-bottom:0}
 
 :is(.compactPreview,.compactOverview) .previewGrid>li>a.play{height:auto;display:block}:is(.compactPreview,.compactOverview) [data-media-live=true] .play{aspect-ratio:16/9;overflow:hidden}:is(.compactPreview,.compactOverview) [data-media-live=true] .play img{height:100%;aspect-ratio:16/9!important;object-fit:cover;object-position:center}:is(.compactPreview,.compactOverview) .play{overflow:hidden}
 
-.heading [data-fan-heading]{font-weight:800;font-synthesis:none;line-height:var(--fan-heading-leading)}
+.heading [data-fan-heading]{font-family:"Pretendard UI 850",system-ui,sans-serif;font-weight:400;font-synthesis:none;line-height:var(--fan-heading-leading)}
 
-.previewHeading [data-fan-heading]{font-weight:800;font-synthesis:none;line-height:var(--fan-heading-leading)}
+.previewHeading [data-fan-heading]{font-family:"Pretendard UI 850",system-ui,sans-serif;font-weight:400;font-synthesis:none;line-height:var(--fan-heading-leading)}
 
 
 /* Reuse the approved home strip in the full creator media overview. */
@@ -95,14 +95,14 @@
 .compactOverview .play,.compactOverview .grid>li img{border-radius:16px}
 .compactOverview .cardBody{padding:8px 0 0}
 .compactOverview .grid>li strong{min-height:0;line-height:22px}
-.compactOverview .playIcon svg{background:color-mix(in srgb, var(--color-ink) 40%, transparent);fill:none}
+.compactOverview .playIcon svg{background:#17161b66;fill:none}
 .compactOverview .liveBadge{top:auto;bottom:12px}
 .compactOverview :is(a,button):focus-visible{outline:3px solid var(--color-ink);outline-offset:3px}
 .compactPreview .previewGrid>li>a:not(.play),.compactOverview .previewGrid>li>a:not(.play){display:block;box-sizing:border-box;min-height:44px}
 
 
 .compactOverview .grid>li[data-video-mark]{position:relative}
-.videoMark{position:absolute;top:12px;left:12px;display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:999px;background:color-mix(in srgb, var(--color-ink) 85%, transparent);color:#fff;font-size:12px;font-weight:700;line-height:1.5;pointer-events:none}
+.videoMark{position:absolute;top:12px;left:12px;display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:999px;background:#17161bd9;color:#fff;font-size:12px;font-weight:700;line-height:1.5;pointer-events:none}
 
 /* 홈 갤러리 한 줄 [19]: 사진과 영상이 한 구역이고 정사각 칸이다. 1024+ 4칸, 그 아래 2칸 + 가로 넘김. 전체 보기는 원본 비율 격자다. */
 .gallery { display:grid; gap:0; min-width:0; }

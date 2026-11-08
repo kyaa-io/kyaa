@@ -1,5 +1,5 @@
 /* One column below 1024px: a short identity strip, then the mission book right under it. Nothing sits behind a horizontal scroll. */
-.book { display: grid; grid-template-columns: minmax(0, 1fr); overflow: hidden; border-radius: var(--radius-card); background: var(--passport-paper); box-shadow: var(--passport-shadow); color: var(--passport-ink); }
+.book { display: grid; grid-template-columns: minmax(0, 1fr); overflow: hidden; border-radius: var(--radius-collection); background: var(--passport-paper); box-shadow: var(--passport-shadow); color: var(--passport-ink); }
 .identityLeaf { display: grid; grid-template-columns: minmax(0, 1fr); min-width: 0; }
 .stampLeaf { min-width: 0; padding: var(--space-4) var(--space-3); border-top: 1px dashed var(--passport-line); }
 .cover { display: flex; align-items: center; gap: var(--space-2); min-height: 40px; padding: var(--space-1) var(--space-4); background: var(--passport-cover); color: var(--passport-cover-ink); }

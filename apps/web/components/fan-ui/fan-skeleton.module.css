@@ -3,8 +3,8 @@
 .bar {
   display: block;
   max-width: 100%;
-  background-color: var(--color-soft);
-  background-image: linear-gradient(90deg, var(--color-soft) 0%, var(--color-soft) 50%, var(--color-soft) 100%);
+  background-color: #f2f0f3;
+  background-image: linear-gradient(90deg, #f2f0f3 0%, #f9f8fa 50%, #f2f0f3 100%);
   background-size: 200% 100%;
   opacity: 0;
   /* 150ms 안에 값이 오면 그리지 않는다(L3). 자리는 먼저 차지해서 밀리지 않는다. */

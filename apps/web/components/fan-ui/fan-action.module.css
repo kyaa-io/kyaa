@@ -17,9 +17,11 @@
   text-decoration: none;
   cursor: pointer;
   transition:
-    background-color var(--motion-fast) var(--motion-easing),
-    border-color var(--motion-fast) var(--motion-easing),
-    color var(--motion-fast) var(--motion-easing);
+    background-color var(--motion-control) var(--motion-easing),
+    border-color var(--motion-control) var(--motion-easing),
+    color var(--motion-control) var(--motion-easing),
+    filter var(--motion-control) var(--motion-easing),
+    transform var(--motion-control) var(--motion-easing);
 }
 
 .label {
@@ -60,15 +62,17 @@
   width: min(100%, var(--fan-action-max-width));
   min-height: var(--fan-action-primary-height);
   border-color: transparent;
-  /* primary: 강조 1색 단색 채움 + 흰 글자, 반경 8, 그림자 0(8장 ④⑤⑦). 화면당 1개. */
-  background: var(--color-page-accent);
+  border-radius: var(--radius-pill);
+  /* Preserve brand hues while giving 15px white labels sufficient contrast. */
+  background: linear-gradient(rgb(0 0 0 / 18%), rgb(0 0 0 / 18%)), var(--color-primary-action);
   color: #fff;
+  font-size: var(--fan-action-emphasis-size);
+  box-shadow: 0 5px 8px rgb(58 18 55 / 22%);
 }
 
-/* secondary: 1px 잉크 선, 반경 8. 옛 service·passport 변형도 이 모양이다(그라데이션 테두리 폐기). */
 .neutral {
-  border-color: var(--color-ink);
-  background: var(--color-surface);
+  border-color: var(--color-line);
+  background: #fff;
   color: var(--color-ink);
 }
 
@@ -98,6 +102,45 @@
   color: var(--color-ink);
 }
 
+.service {
+  min-height: var(--fan-action-service-height);
+  border-color: transparent;
+  border-radius: var(--radius-pill);
+  background:
+    linear-gradient(#fff, #fff) padding-box,
+    var(--color-primary-action) border-box;
+  color: var(--color-service-ink);
+  font-family: "Google Sans", Roboto, Arial, sans-serif;
+  font-size: var(--fan-action-emphasis-size);
+  font-weight: 600;
+}
+
+.service > .label {
+  flex: 1;
+  text-align: center;
+}
+
+.passport {
+  position: relative;
+  min-height: var(--fan-action-service-height);
+  padding-inline: 18px;
+  border-color: transparent;
+  border-radius: var(--radius-pill);
+  background:
+    linear-gradient(#fff, #fff) padding-box,
+    var(--color-primary-action) border-box;
+  color: var(--color-service-ink);
+  font-family: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  font-size: var(--fan-action-emphasis-size);
+  font-weight: var(--fan-action-weight);
+}
+
+.passport > .label {
+  flex: 1;
+  min-width: 0;
+  text-align: center;
+}
+
 .fullWidth {
   width: 100%;
 }
@@ -120,8 +163,8 @@
 .helper {
   margin: 8px 0 0;
   color: var(--color-muted);
-  font-size: var(--fan-metadata-size);
-  font-weight: 400;
+  font-size: 13px;
+  font-weight: 550;
   line-height: 1.5;
   text-align: center;
   text-wrap: pretty;
@@ -136,7 +179,9 @@
   background: var(--fan-action-disabled-bg);
   color: var(--fan-action-disabled-ink);
   box-shadow: none;
+  filter: none;
   opacity: 1;
+  transform: none;
   cursor: not-allowed;
 }
 
@@ -173,13 +218,31 @@
 
 @media (hover: hover) and (pointer: fine) {
   .primary:hover:not(:disabled) {
-    background: var(--color-accent-ink);
+    filter: brightness(0.92);
+    transform: translateY(-1px);
   }
 
   .neutral:hover:not(:disabled),
   .text:hover:not(:disabled) {
-    background: var(--color-soft);
+    background: oklch(97.5% 0 0);
   }
+
+  .service:hover:not(:disabled) {
+    background:
+      linear-gradient(oklch(97.5% 0 0), oklch(97.5% 0 0)) padding-box,
+      linear-gradient(125deg, oklch(62% 0.23 18), oklch(56% 0.26 340), oklch(50% 0.23 285)) border-box;
+  }
+
+  .passport:hover:not(:disabled) {
+    background:
+      linear-gradient(oklch(97.5% 0 0), oklch(97.5% 0 0)) padding-box,
+      linear-gradient(125deg, oklch(62% 0.23 18), oklch(56% 0.26 340), oklch(50% 0.23 285)) border-box;
+  }
+}
+
+.primary:active:not(:disabled),
+.passport:active:not(:disabled) {
+  transform: translateY(1px);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -192,6 +255,8 @@
   }
 }
 
+/* Current Pencil source applies only to the groups release. */
+.groups.primary:not(:disabled){background:linear-gradient(91.463deg,#d9194c -7.804%,#b91a93 50%,#6042d5 107.804%);box-shadow:none}
 
 /* Icon-only action: a square 44px target, the icon is the only flex child. */
 .action.iconOnly{min-width:44px;width:44px;padding:0;gap:0}

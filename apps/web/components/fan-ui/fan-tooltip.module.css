@@ -14,7 +14,7 @@
   overflow-wrap: anywhere;
   word-break: keep-all;
   transform-origin: var(--transform-origin);
-  transition: opacity var(--motion-fast) var(--motion-easing), transform var(--motion-fast) var(--motion-easing);
+  transition: opacity var(--motion-control) var(--motion-easing), transform var(--motion-control) var(--motion-easing);
 }
 .popup[data-starting-style], .popup[data-ending-style] { opacity: 0; transform: translateY(4px); }
 @media (prefers-reduced-motion: reduce) {

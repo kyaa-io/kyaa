@@ -6,7 +6,7 @@
 .balance { display:grid; align-content:start; gap:var(--space-1); min-width:0; padding:var(--space-4) var(--space-5); }
 .balance + .balance { border-inline-start:1px solid var(--color-line); }
 .label { display:flex; align-items:center; gap:var(--space-1); min-width:0; color:var(--color-muted); font-size:var(--fan-metadata-size); line-height:20px; }
-.value { display:flex; min-height:32px; align-items:center; gap:var(--space-1); margin:0; font-size:var(--fan-heading-size); line-height:32px; font-weight:var(--fan-heading-weight); font-variant-numeric:tabular-nums; white-space:nowrap; }
+.value { display:flex; min-height:32px; align-items:center; gap:var(--space-1); margin:0; font-size:var(--fan-heading-size-wide); line-height:32px; font-weight:var(--fan-heading-weight); font-variant-numeric:tabular-nums; white-space:nowrap; }
 .value img { display:block; flex:none; }
 .unit { align-self:flex-end; font-size:var(--fan-metadata-size); line-height:24px; font-weight:var(--fan-item-title-weight); }
 .exchange { display:grid; gap:var(--space-3); padding:var(--space-4) var(--space-5); border-top:1px solid var(--color-line); }

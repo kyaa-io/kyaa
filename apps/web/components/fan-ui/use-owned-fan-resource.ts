@@ -30,12 +30,11 @@ const reusable = (entry: SharedEntry) => !entry.settled || (entry.settledAt !== 
  * request is aborted only when every caller has left. `fresh` never joins, so reads that must observe a newer server
  * state (activity updates, retries) cannot be answered by a request that began earlier.
  */
-/** `"join"` (a return visit) joins a read still running but never reuses an answer that already came back: what changed while away must show. */
-function readShared(scope: string, url: string, token: string, signal: AbortSignal, fresh: boolean | "join"): Promise<SharedRead> {
+function readShared(scope: string, url: string, token: string, signal: AbortSignal, fresh: boolean): Promise<SharedRead> {
   const key = `${scope}\n${token}\n${url}`;
   const existing = inFlightReads.get(key);
   if (existing && !reusable(existing)) inFlightReads.delete(key);
-  let entry = fresh === true || !existing || !reusable(existing) || (fresh === "join" && existing.settled) ? undefined : existing;
+  let entry = fresh || !existing || !reusable(existing) ? undefined : existing;
   if (!entry) {
     const controller = new AbortController();
     const created: SharedEntry = { controller, refs: 0, settled: false, epoch: resourceEpoch(), promise: undefined as unknown as Promise<SharedRead> };
@@ -117,7 +116,7 @@ export function useOwnedFanResource<T>(
     const publish = (state: ResourceState<T>, refreshFailed = false) => {
       if (active) setSnapshot({ key, state, refreshFailed });
     };
-    const load = async (fresh: boolean | "join" = false, poll = false) => {
+    const load = async (fresh = false, poll = false) => {
       if (!active) return;
       polls = poll ? polls + 1 : 0;
       if (inFlight) { requestedAgain = true; return; }
@@ -171,12 +170,7 @@ export function useOwnedFanResource<T>(
       failures = 0;
       publish({ status: "ready", data: next });
     };
-    // A return visit fires focus and visibilitychange together (and every mounted reader of the same address hears both). It joins the read
-    // already running instead of queueing a fresh one behind it, so coming back reads /api/me/summary once (perf round 5, 중간 9).
-    // It never reuses an answer that already came back: a pending state (First Reaction, mint) must be read again on return.
-    // Mutations still read fresh: they must see the newer server state.
-    const onUpdate = (reason?: "return" | "mutation") => { if (reason === "return") { if (!inFlight) void load("join"); return; } refresh(); };
-    const unsubscribe = subscribeFanActivityUpdates(ownerId, onUpdate);
+    const unsubscribe = subscribeFanActivityUpdates(ownerId, refresh);
     void load();
     return () => {
       active = false;

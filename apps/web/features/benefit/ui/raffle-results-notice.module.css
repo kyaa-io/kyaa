@@ -1,6 +1,6 @@
 .notice { display:flex; align-items:center; flex-wrap:wrap; gap:16px; box-sizing:border-box; }
 .notice * { box-sizing:border-box; }
-.icon { display:grid; place-items:center; flex:none; width:48px; height:48px; border-radius:16px; color:var(--color-page-accent); background:var(--color-surface); }
+.icon { display:grid; place-items:center; flex:none; width:48px; height:48px; border-radius:16px; color:var(--color-service-ink); background:var(--color-surface); }
 .icon svg { width:24px; height:24px; }
 .copy { flex:1 1 220px; min-width:0; }
 .copy h2 { margin:0; color:var(--color-ink); font-size:20px; font-weight:750; line-height:1.35; text-wrap:pretty; overflow-wrap:anywhere; }

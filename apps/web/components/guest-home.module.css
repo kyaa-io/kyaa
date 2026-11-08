@@ -1,55 +1,438 @@
-/* 5차 홈(B4, plan-ux-r5 4-F): 바탕 --color-soft, 컨테이너 1,100, 본문 733 + 간격 24 + 보조 343. 카드 12 반경·1px 선·그림자 0.
- * 390은 한 열: 히어로 → 당신의 최애 → 내 최애 소식 → 랭킹 → 챌린지. */
-.page { background: var(--color-soft); padding-block: var(--space-4) var(--space-12); }
-.main { outline: none; }
-.layout { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-4); }
-.primary, .aside { display: contents; }
-.slotHero { order: 1; } .slotFavorite { order: 2; } .slotNews { order: 3; } .slotBanner { order: 3; } .slotRanking { order: 4; } .slotChallenge { order: 5; }
-.slotHero, .slotFavorite, .slotNews, .slotBanner, .slotRanking, .slotChallenge { min-width: 0; }
-
-@media (min-width: 64rem) {
-  .page { padding-block: var(--space-8) var(--space-12); }
-  .layout { grid-template-columns: minmax(0, 733fr) minmax(0, 343fr); column-gap: var(--space-6); align-items: start; }
-  .primary { display: grid; gap: var(--space-6); min-width: 0; }
-  .aside { display: grid; gap: var(--space-4); min-width: 0; }
-  .slotHero, .slotFavorite, .slotNews, .slotBanner, .slotRanking, .slotChallenge { order: 0; }
+.page {
+  --canvas: var(--color-canvas);
+  --surface-soft: var(--color-soft);
+  --ink: var(--color-ink);
+  --muted: var(--color-muted);
+  --line: var(--color-line);
+  --card-line: var(--color-line-subtle);
+  --spectrum: var(--color-primary-action);
+  --spectrum-hover: linear-gradient(125deg, oklch(62% .22 18), oklch(56% .24 340), oklch(50% .21 285));
+  --service-ink: var(--color-service-ink);
+  --card-shadow: 0 1px 2px oklch(18% 0 0 / .05), 0 4px 12px oklch(18% 0 0 / .03);
+  --header-height: 4rem;
+  --bottom-nav-height: 4rem;
+  overflow-x: clip;
+  background: var(--canvas);
+  color: var(--ink);
+  font-family: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
 }
 
-/* ① 히어로 */
-.hero { overflow: hidden; border: 1px solid var(--color-line); border-radius: var(--radius-card, 12px); background: var(--color-surface); }
-.heroLink { display: block; color: var(--color-ink); text-decoration: none; }
-.heroLink:focus-visible { outline: 2px solid var(--color-focus); outline-offset: -2px; }
-.heroMedia { display: block; aspect-ratio: 16 / 9; overflow: hidden; background: var(--color-line-subtle); }
-.heroMedia img { display: block; width: 100%; height: 100%; object-fit: cover; }
-.heroBody { display: grid; gap: var(--space-2); padding: var(--space-4) var(--space-5) var(--space-5); }
-.heroBody h1 { margin: 0; overflow: hidden; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; font-size: var(--fan-heading-size); font-weight: var(--fan-heading-weight); letter-spacing: var(--fan-heading-tracking); line-height: var(--fan-heading-leading); }
-.heroMeta { display: flex; flex-wrap: wrap; align-items: center; gap: 0 calc(var(--space-1) / 2); color: var(--color-muted); font-size: var(--fan-metadata-size); line-height: 1.4; font-variant-numeric: tabular-nums; }
-.liveDot { display: inline-block; width: 8px; height: 8px; margin-inline-end: var(--space-1); border-radius: 50%; background: var(--color-error); }
-.hero[data-hero-kind="live"] .heroMeta { color: var(--color-error); font-weight: 700; }
+.page *, .page *::before, .page *::after { box-sizing: border-box; }
+.page a { color: inherit; text-decoration: none; }
+.page :is(a, button):focus-visible { outline: 3px solid var(--ink); outline-offset: 3px; }
+.page svg { flex: none; width: 20px; height: 20px; stroke-width: 1.8; }
 
-/* ② 내 최애 소식 — 카드 없이 머리 + 72 행(시안). */
-.news { display: grid; min-width: 0; }
-.sectionHead { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); min-height: var(--min-target); border-bottom: 1px solid var(--color-line); }
-.sectionHead h2 { margin: 0; }
-.more { display: inline-flex; align-items: center; gap: calc(var(--space-1) / 2); min-height: var(--min-target); color: var(--color-muted); font-size: var(--fan-metadata-size); text-decoration: none; }
-.newsRows { margin: 0; padding: 0; list-style: none; }
-.newsRows > li + li { border-top: 1px solid var(--color-line); }
-.newsRow { display: grid; grid-template-columns: 32px minmax(0, 1fr); align-items: center; column-gap: var(--space-3); box-sizing: border-box; height: 78px; color: var(--color-ink); text-decoration: none; }
-.newsText { display: grid; gap: calc(var(--space-1) / 2); min-width: 0; }
-.newsHead { display: flex; align-items: baseline; gap: var(--space-2); min-width: 0; color: var(--color-muted); font-size: var(--fan-metadata-size); font-variant-numeric: tabular-nums; }
-.newsHead strong { color: var(--color-ink); font-size: var(--fan-item-title-size, 15px); font-weight: 700; }
-.newsLine { overflow: hidden; min-width: 0; font-size: var(--fan-body-size, 15px); line-height: 1.5; text-overflow: ellipsis; white-space: nowrap; }
-.empty { display: flex; align-items: center; box-sizing: border-box; height: 78px; margin: 0; color: var(--color-muted); font-size: 14px; }
-.chooseRow { display: grid; grid-template-columns: 20px minmax(0, 1fr) 16px; align-items: center; column-gap: var(--space-3); height: 48px; color: var(--color-ink); font-size: var(--fan-item-title-size, 15px); font-weight: 700; text-decoration: none; }
-.newsRow:focus-visible, .chooseRow:focus-visible, .more:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
-@media (hover: hover) and (pointer: fine) { .newsRow:hover .newsLine, .chooseRow:hover span { text-decoration: underline; } .more:hover { color: var(--color-ink); } }
-@media (min-width: 48rem) { .newsLine { font-size: var(--fan-body-size-wide, 14px); } }
+.header { position: sticky; z-index: 40; top: 0; height: var(--header-height); padding-block: 12px; background: var(--canvas); }
+.headerInner { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; width: min(100%, 1440px); height: 100%; margin-inline: auto; padding-inline: 16px; }
+.brand { display: inline-flex; width: 88px; min-height: 44px; align-items: center; }
+.brand img { display: block; width: 80px; height: auto; }
+.desktopNav { display: none; }
+.headerActions { display: flex; align-items: center; gap: 0; }
+.languageButton { display: inline-grid; width: 44px; height: 44px; padding: 0; place-items: center; border: 0; border-radius: 12px; background: transparent; color: var(--ink); cursor: pointer; }
 
-/* 보조 당신의 최애 */
-.favorite { display: grid; gap: var(--space-4); padding: var(--space-5); border: 1px solid var(--color-line); border-radius: var(--radius-card, 12px); background: var(--color-surface); }
-.favorite h2 { margin: 0; }
-.favoriteIdentity { display: grid; grid-template-columns: 48px minmax(0, 1fr); align-items: center; column-gap: var(--space-3); }
-.favoriteText { display: grid; gap: calc(var(--space-1) / 2); min-width: 0; }
-.favoriteText strong { overflow: hidden; font-size: var(--fan-item-title-size, 15px); font-weight: 700; text-overflow: ellipsis; white-space: nowrap; }
-.favoriteMeta { min-height: 17px; color: var(--color-muted); font-size: var(--fan-metadata-size); font-variant-numeric: tabular-nums; }
-.metaHold { display: inline-block; width: 48px; height: 12px; }
+.shell { display: grid; width: min(100%, 1440px); margin-inline: auto; padding: 24px 16px var(--fan-section-gap); }
+.main { min-width: 0; }
+.heroSection, .contentSection { scroll-margin-top: calc(var(--header-height) + 16px); }
+.contentSection { margin-top: var(--fan-section-gap); }
+.brandTitle { display:flex; flex-wrap:wrap; align-items:baseline; gap:4px 8px; }
+.brandSlogan { color:var(--muted); font-size:13px; font-weight:500; line-height:1.4; letter-spacing:normal; text-wrap:pretty; }
+.heroCarousel { position: relative; color: #fff; }
+.heroCarousel[data-has-controls="true"] { margin-bottom: 44px; }
+.heroViewport { position: relative; width: 100%; overflow: hidden; aspect-ratio: 4 / 5; border-radius: 20px; background: var(--ink); touch-action: pan-y pinch-zoom; }
+.heroShine { position: absolute; inset: 0; z-index: 2; overflow: hidden; padding: 1.5px; border-radius: inherit; background: var(--spectrum); pointer-events: none; -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0); -webkit-mask-composite: xor; mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0); mask-composite: exclude; }
+.heroShine::before { content: ""; position: absolute; inset: -100%; background: conic-gradient(transparent 0deg 335deg, #ffc5e5 345deg, #fff 350deg, #decaff 355deg, transparent 360deg); animation: heroShineSpin 8s linear infinite paused; }
+.heroCarousel[data-motion-visible="true"][data-shine-paused="false"] .heroShine::before { animation-play-state: running; }
+@keyframes heroShineSpin { to { transform: rotate(1turn); } }
+@media (prefers-reduced-motion: reduce) { .heroShine::before { animation: none; display: none; } }
+.heroTrack { display: flex; width: 100%; height: 100%; }
+.heroCarousel .heroCard { flex: 0 0 100%; width: 100%; height: 100%; aspect-ratio: auto; border-radius: 0; }
+.heroCard { position: relative; display: flex; aspect-ratio: 4 / 5; overflow: hidden; align-items: flex-end; border-radius: 20px; background: var(--ink); color: #fff; }
+.heroCard > img { object-fit: cover; object-position: 51% center; }
+.heroCreatorPicture { position:absolute; inset:0; }
+.heroCreatorPicture img { object-fit:cover; object-position:var(--creator-hero-mobile-position); }
+@media (min-width:48rem) { .heroCreatorPicture img { object-position:var(--creator-hero-desktop-position); } }
+.heroCarousel .campaignHeroCard { display:block; background:#f8f2f6; }
+.heroOverlay { position: absolute; inset: 0; background: linear-gradient(to top, rgb(10 10 12 / 52%) 0%, rgb(10 10 12 / 24%) 28%, rgb(10 10 12 / 6%) 54%, transparent 76%), linear-gradient(to right, rgb(10 10 12 / 24%) 0%, rgb(10 10 12 / 6%) 38%, transparent 64%); }
+.heroContent { position: relative; z-index: 1; width: 100%; padding: 24px; text-shadow: 0 1px 3px rgb(10 10 12 / 62%); }
+.statusRail { display: flex; max-width: 320px; align-items: center; gap: 12px; margin-bottom: 12px; }
+.statusRail p, .heroCountdown { margin: 0; }
+.liveStatus { display: inline-flex; flex: none; min-height: 28px; align-items: center; gap: 8px; padding-inline: 12px; border: 1px solid rgb(255 95 191 / 92%); border-radius: 999rem; font-size: 12px; font-weight: 800; letter-spacing: .04em; }
+/* Perimeter shimmer adapted from Magic UI Shimmer Button (MIT), default 3s rhythm. */
+.liveStatus[data-hero-status] { position: relative; isolation: isolate; overflow: hidden; background: #17131a; border-color: rgb(255 95 191 / 55%); }
+.liveStatus[data-hero-status]::before { content: ""; position: absolute; inset: .8px; z-index: 1; border-radius: inherit; background: #17131a; }
+.liveStatus[data-hero-status] svg, .statusText { position: relative; z-index: 2; }
+.statusShimmer { position: absolute; inset: -1px; z-index: 0; container-type: size; filter: blur(2px); pointer-events: none; }
+.statusShimmerSlide { position: absolute; inset: 0; height: 100cqh; aspect-ratio: 1; animation: statusShimmerSlide 3s ease-in-out infinite alternate; animation-play-state: paused; }
+.statusShimmerLight { position: absolute; inset: -100%; background: conic-gradient(from 225deg, transparent 0, #fff1fa 90deg, transparent 90deg); animation: statusShimmerSpin 6s linear infinite; animation-play-state: paused; }
+.heroCarousel[data-motion-visible="true"] .heroCard[data-active="true"] .statusShimmerSlide,
+.heroCarousel[data-motion-visible="true"] .heroCard[data-active="true"] .statusShimmerLight { animation-play-state: running; }
+@keyframes statusShimmerSlide { to { transform: translate(calc(100cqw - 100%), 0); } }
+@keyframes statusShimmerSpin { 0% { transform: translateZ(0) rotate(0); } 15%, 35% { transform: translateZ(0) rotate(90deg); } 65%, 85% { transform: translateZ(0) rotate(270deg); } 100% { transform: translateZ(0) rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .statusShimmer { display: none; } .statusShimmerSlide, .statusShimmerLight { animation: none; } }
+.liveStatus svg, .heroCountdown svg { width: 16px; height: 16px; }
+.heroDate { overflow: hidden; color: rgb(255 255 255 / 84%); font-size: 14px; font-weight: 550; text-overflow: ellipsis; white-space: nowrap; }
+.heroContent h2 { max-width: 15ch; margin: 0; font-size: 32px; font-weight: 850; letter-spacing: -.04em; line-height: 1.02; text-wrap: balance; }
+.heroCountdown { display: flex; align-items: center; gap: 8px; margin-top: 12px; font: 750 14px ui-monospace, SFMono-Regular, Menlo, monospace; font-variant-numeric: tabular-nums; letter-spacing: -.02em; }
+.primaryButton { display: flex; width: min(320px, 100%); min-height: 48px; align-items: center; justify-content: space-between; margin-top: 20px; padding-inline: 20px; border-radius: 999rem; background: linear-gradient(rgb(0 0 0 / 18%), rgb(0 0 0 / 18%)), var(--spectrum); box-shadow: 0 5px 8px rgb(58 18 55 / 22%); color: #fff !important; font-size: 15px; font-weight: 800; text-shadow: none; transition: background 160ms cubic-bezier(.2, 0, 0, 1); }
+.primaryButton span { display: inline-flex; align-items: center; gap: 8px; }
+.primaryButton svg { width: 16px; height: 16px; }
+.carouselControls { position: absolute; z-index: 3; inset: 0; pointer-events: none; }
+.carouselControls > button { position: absolute; top: calc(50% - 22px); display: grid; width: 44px; min-width: 44px; height: 44px; padding: 0; place-items: center; border: 0; background: transparent; color: #fff; cursor: pointer; pointer-events: auto; }
+.carouselControls > button::before { position: absolute; width: 32px; height: 32px; border: 1px solid rgb(255 255 255 / 24%); border-radius: 50%; background: rgb(10 10 12 / 44%); content: ""; transition: background-color 160ms cubic-bezier(.2,0,0,1); }
+.carouselControls > button svg { position: relative; z-index: 1; width: 16px; height: 16px; }
+.carouselPrevious { left: 8px; }
+.carouselNext { right: 8px; }
+/* 1440 N11: 화살표는 사진·글자 위가 아니라 점 줄 양끝에 둔다. 모바일은 사진 위 그대로. */
+@media (min-width: 48rem) {
+  .carouselControls > .carouselPrevious, .carouselControls > .carouselNext { top: auto; bottom: -42px; color: var(--ink); }
+  .carouselControls > .carouselPrevious { left: 0; }
+  .carouselControls > .carouselNext { right: 0; }
+  .carouselControls > .carouselPrevious::before, .carouselControls > .carouselNext::before { border-color: var(--line); background: var(--color-soft); }
+  .carouselControls > .carouselPrevious:hover::before, .carouselControls > .carouselNext:hover::before { background: var(--line); }
+}
+.carouselDots { position: absolute; bottom: -42px; left: 50%; display: flex; width: min(var(--carousel-width), 100%); height: 44px; overflow-x: auto; overflow-y: hidden; align-items: center; justify-content: safe center; scrollbar-width: none; transform: translateX(-50%); pointer-events: auto; }
+.carouselControls .carouselDot { position: relative; display: grid; width: 44px; min-width: 44px; height: 44px; flex: 0 0 44px; padding: 0; place-items: center; border: 0; background: transparent; cursor: pointer; }
+.carouselDot span { position: relative; width: 6px; height: 6px; border-radius: 999rem; background: var(--line); transition: width 160ms cubic-bezier(.2,0,0,1), background-color 160ms cubic-bezier(.2,0,0,1); }
+.carouselDot[aria-current="true"] span { width: 22px; background: var(--ink); }
+.carouselAnnouncement { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap; }
+
+
+.mobileContextActions { display: grid; margin-top: 16px; }
+.mobileContextActions a, .signInButton { display: flex; min-height: 48px; align-items: center; justify-content: center; gap: 12px; padding-inline: 16px; border: 1px solid transparent; border-radius: 999rem; background: linear-gradient(#fff, #fff) padding-box, var(--spectrum) border-box; color: var(--service-ink) !important; font-size: 14px; font-weight: 800; }
+.mobileContextActions a > svg:first-child, .signInButton svg { width: 16px; height: 16px; }
+.passportAction span { flex: 1; text-align: center; }
+
+.favoriteSection { padding: 20px; border: 1px solid var(--card-line); border-radius: 16px; background: var(--canvas); box-shadow: var(--card-shadow); }
+.favoriteFilterState { display: grid; min-height: 220px; place-content: center; justify-items: center; gap: 10px; padding: 28px 16px; color: var(--muted); text-align: center; }
+.favoriteFilterState :is(strong,p) { margin: 0; }
+.favoriteFilterState strong { color: var(--ink); font-size: 18px; }
+.favoriteFilterState p { max-width: 34ch; font-size: 14px; line-height: 1.6; }
+.favoriteFilterState :is(a,button) { display: inline-flex; min-height: 44px; align-items: center; padding: 0 12px; border: 0; background: transparent; color: var(--ink); font: inherit; font-size: 14px; font-weight: 750; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+.celebrityRail { display: grid; grid-auto-columns: var(--creator-card-size, min(82vw, 288px, 100%)); grid-auto-flow: column; gap: 16px; overflow-x: auto; padding-bottom: 0; scroll-snap-type: inline mandatory; scrollbar-width: none; }
+.celebrityRail::-webkit-scrollbar { display: none; }
+.celebrityCard { min-width: 0; scroll-snap-align: start; container-type: inline-size; }
+.celebrityMediaBox { position: relative; display: grid; aspect-ratio: 1; overflow: hidden; place-items: center; border: 1px solid var(--card-line); border-radius: 12px; background: #f6f6f5; transition: transform 160ms cubic-bezier(.2,0,0,1), border-color 160ms cubic-bezier(.2,0,0,1); }
+.celebrityMediaBox > [data-preview-mode="card"] { inset: 8%; border-radius: 4px; }
+/* N7: 최애가 하나나 둘이면 큰 정사각 카드 옆이 비지 않게 가로 카드로 그린다. */
+.celebrityRail[data-count="1"] { grid-auto-columns: 100%; }
+.celebrityRail[data-count="2"] { grid-auto-columns: calc((100% - var(--space-4)) / 2); }
+.celebrityRail[data-count="1"] .celebrityCard { display: grid; grid-template-columns: calc(var(--space-12) * 2) minmax(0, 1fr); align-items: center; column-gap: var(--space-4); padding: var(--space-3); border: 1px solid var(--card-line); border-radius: var(--radius-collection); }
+.celebrityRail[data-count="1"] .celebrityInfo { padding: 0; }
+.celebrityRail[data-count="1"] .celebrityIdentity { min-height: 0; }
+@media (min-width: 48rem) {
+  .celebrityRail[data-count="1"] .celebrityCard { grid-template-columns: calc(var(--space-8) * 5) minmax(0, 1fr); column-gap: var(--space-6); padding: var(--space-4); }
+}
+.celebrityInfo { display: grid; min-width: 0; gap: 4px; padding: 16px 0 0; align-content: start; }
+.celebrityIdentity { display: grid; min-width: 0; min-height: 100px; align-content: start; gap: 8px; }
+.celebrityInfo h3, .celebrityInfo p { min-width: 0; margin: 0; line-height: 1.5; }
+.celebrityInfo h3 { color: var(--ink); font-size: var(--fan-item-title-size); font-weight: var(--fan-item-title-weight); overflow-wrap: anywhere; }
+.celebrityInfo p { font-size: var(--fan-metadata-size); font-weight: 400; }
+.celebrityActions { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 4px 8px; margin-top: 8px; }
+.celebrityFanLink { display: inline-flex; max-width: 100%; min-width: 44px; min-height: 44px; align-items: center; gap: 4px; border-radius: var(--radius-control); color: var(--ink); font-size: var(--fan-metadata-size); font-weight: 550; line-height: 1.5; text-decoration: none; overflow-wrap: anywhere; }
+.celebrityFanLink svg { width: 16px; height: 16px; flex: none; }
+.celebrityFanLink:hover { color: var(--muted); }
+.celebrityFanLink:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
+.socialLinks { display: flex; min-width:0; flex-wrap: wrap; min-height: 44px; align-items: center; justify-content: flex-end; gap: 0; }
+.socialLink { display: inline-flex; flex:0 0 44px; width: 44px; min-width: 44px; height: 44px; min-height: 44px; align-items: center; justify-content: center; border-radius: 999rem; color: var(--muted) !important; transition: background 160ms cubic-bezier(.2,0,0,1); }
+.socialLink img { display: block; width: 20px; height: 20px; object-fit: contain; }
+
+
+.liveList { display: grid; gap: 12px; }
+.liveList[data-paginated="true"] { min-height: calc(104px * 3 + 24px); align-content: start; }
+.liveRow { display: grid; grid-template-columns: 56px minmax(0,1fr) 44px; grid-template-areas:"portrait details action" "portrait time action"; gap: 8px 12px; align-items: center; min-height: 104px; padding: 16px; border: 1px solid var(--card-line); border-radius: 12px; background: var(--canvas); box-shadow: var(--card-shadow); }
+.liveRow > :first-child { grid-area:portrait; }
+.liveRow > .rowAction { grid-area:action; }
+
+.liveDetails { grid-area:details; min-width: 0; }
+.liveDetails span { color: var(--muted); font-size: var(--fan-metadata-size); font-weight: 550; }
+.liveDetails h3 { margin: 4px 0; font-size: var(--fan-item-title-size); font-weight: var(--fan-item-title-weight); line-height: 1.5; overflow-wrap: anywhere; }
+.liveDetails p, .liveMeta p { margin: 0; color: var(--muted); font-size: var(--fan-metadata-size); }
+.liveMeta { grid-area:time; display:block; text-align:left; }
+.rowAction { display: grid; width: 44px; height: 44px; place-items: center; border-radius: 12px; }
+.livePagination { display: grid; width: fit-content; grid-template-columns: 44px minmax(64px, auto) 44px; align-items: center; margin: 16px auto 0; border: 1px solid var(--card-line); border-radius: 12px; background: var(--canvas); }
+.livePagination button { display: grid; width: 44px; height: 44px; padding: 0; place-items: center; border: 0; border-radius: 11px; background: transparent; color: var(--ink); cursor: pointer; }
+.livePagination button svg { width: 18px; height: 18px; }
+.livePagination button:disabled { color: var(--muted); cursor: default; opacity: .35; }
+.livePagination span { min-width: 64px; color: var(--muted); font-size: 13px; font-weight: 750; font-variant-numeric: tabular-nums; text-align: center; }
+
+.contextPanel { display: none; min-width: 0; }
+.guestCard { border: 1px solid var(--card-line); border-radius: 12px; background: var(--canvas); box-shadow: var(--card-shadow); }
+.guestCard + .guestCard { margin-top: 16px; }
+.guestPassport { margin-top: var(--space-4); }
+.favoriteReferenceCard { aspect-ratio: 523 / 440; overflow: hidden; }
+.favoriteReferenceContent { display: grid; height: 100%; padding: 24px; grid-template-rows: auto minmax(0, 1fr) auto; gap: 24px; }
+.favoriteReferenceContent :is(h2,p) { margin: 0; }
+.favoriteReferenceContent h2 { font-size: 20px; font-weight: 850; letter-spacing: -.03em; }
+.loginHint { color: var(--muted); font-size: 14px; font-weight: 550; line-height: 1.5; }
+.loginPrompt { display: grid; align-content: end; justify-items: center; gap: 12px; }
+.emptyIcon { width: 64px !important; height: 64px !important; align-self: center; justify-self: center; color: var(--muted); stroke-width: 1.35 !important; }
+.favoriteReferenceContent .loginHint { max-width: 240px; justify-self: center; text-align: center; }
+.signInButton { width: min(280px, 100%); min-height: 44px; justify-self: center; font-weight: 650; }
+
+.mobilePersonalization { margin-top: var(--fan-section-gap); }
+.mobileGuides { margin-top: var(--fan-section-gap); }
+.mobilePersonalization > .mobileContextActions { margin-top: 0; }
+.signedInSummary {
+  overflow: hidden;
+  border: 1px solid var(--card-line);
+  border-radius: 16px;
+  background: var(--canvas);
+  box-shadow: var(--card-shadow);
+}
+.signedInGreeting { padding: 20px; border-bottom: 1px solid var(--card-line); }
+.signedInGreeting p { margin: 8px 0 0; color: var(--muted); font-size: var(--fan-body-size); line-height: 1.5; overflow-wrap: anywhere; }
+.signedInGreeting h2 { overflow-wrap: anywhere; margin: 0; font-size: var(--fan-heading-size); font-weight: var(--fan-heading-weight); letter-spacing: var(--fan-heading-tracking); line-height: var(--fan-heading-leading); text-wrap: balance; }
+@media (min-width: 48rem) { .signedInGreeting h2 { font-size: var(--fan-heading-size-wide); } }
+.summarySection { padding: 20px; }
+.summarySection + .summarySection { border-top: 1px solid var(--card-line); }
+.summarySectionHeader { display: flex; min-height: 28px; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
+.summarySectionHeader > span { font-size: 14px; font-weight: 650; }
+.summarySectionHeader > small { display: grid; min-width: 30px; height: 24px; padding-inline: 8px; place-items: center; border-radius: 999rem; background: var(--surface-soft); color: var(--muted); font-size: 11px; font-weight: 750; }
+.passportCarousel { display: grid; min-width: 0; }
+.ownedPassportPreview { position: relative; width: min(100%, 320px); margin: 14px auto 0; }
+.ownedPassportLink { display: block; width: 100%; border-radius: 12px; transition: transform 240ms cubic-bezier(.2,0,0,1); }
+.passportGrade { position: absolute; top: 7.5%; right: 4.4%; z-index: 2; transform: translate(35%, -50%); }
+.passportUtilityRow { display: flex; flex-wrap: wrap; min-width: 0; align-items: center; justify-content: space-between; gap: 8px; margin-top: 8px; }
+.passportUtilityRowSingle { justify-content: flex-end; }
+.passportControls { display: grid; width: min(176px, 100%); min-width: 0; grid-template-columns: 44px minmax(0,1fr) 44px; align-items: center; }
+.passportControls > button, .passportDots button { display: grid; width: 44px; height: 44px; padding: 0; place-items: center; border: 0; border-radius: 12px; background: transparent; color: var(--muted); cursor: pointer; transition: background-color 160ms cubic-bezier(.2,0,0,1), color 160ms cubic-bezier(.2,0,0,1); }
+.passportControls > button svg { width: 18px; height: 18px; }
+.passportDots { display: flex; min-width: 0; align-items: center; justify-content: center; overflow-x: auto; scrollbar-width: none; }
+.passportDots::-webkit-scrollbar { display: none; }
+.passportDots button { flex: 0 0 44px; width: 44px; }
+.passportDots button span { width: 22px; height: 7px; border-radius: 999rem; background: var(--line); transform: scaleX(.32); transition: transform 160ms cubic-bezier(.2,0,0,1), background-color 160ms cubic-bezier(.2,0,0,1); }
+.passportDots button[aria-current="true"] span { background: var(--ink); transform: scaleX(1); }
+.passportCollectionLink {
+  display: flex;
+  min-height: 44px;
+  max-width: 100%;
+  align-items: center;
+  gap: 4px;
+  color: var(--muted) !important;
+  font-size: var(--fan-metadata-size);
+  font-weight: 550;
+  overflow-wrap: anywhere;
+}
+.passportCollectionLink svg { width: 15px; height: 15px; }
+.summaryTextLink {
+  display: flex;
+  width: max-content;
+  min-height: 44px;
+  align-items: center;
+  gap: 6px;
+  margin: 8px auto 0;
+  color: var(--muted) !important;
+  font-size: 14px;
+  font-weight: 650;
+}
+.summaryTextLink svg { width: 16px; height: 16px; }
+.reservationSummary {
+  display: grid;
+  grid-template-columns: 56px minmax(0, 1fr) 20px;
+  min-height: 72px;
+  align-items: center;
+  gap: 12px;
+  margin: -4px -8px;
+  padding: 8px;
+  border-radius: 12px;
+  color: var(--ink);
+  transition: background-color 160ms ease-out;
+}
+.reservationSummary[data-has-avatar="false"] { grid-template-columns: minmax(0, 1fr) 20px; }
+.reservationSummary:focus-visible { outline: 3px solid var(--ink); outline-offset: 3px; }
+.reservationContent { min-width: 0; }
+.reservationContent h3 {
+  display: -webkit-box;
+  overflow: hidden;
+  margin: 0;
+  font-size: 15px;
+  font-weight: 750;
+  line-height: 1.4;
+  text-wrap: pretty;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+.reservationMeta { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; margin-top: 6px; }
+.reservationMeta time { color: var(--muted); font-size: 12px; line-height: 1.5; }
+.reservationMeta [data-live-time] { flex: none; }
+.reservationArrow { width: 20px; height: 20px; color: var(--muted); }
+@media (hover: hover) { .reservationSummary:hover { background: var(--surface-soft); } }
+@media (prefers-reduced-motion: reduce) { .reservationSummary { transition: none; } }
+.summaryOutlineAction {
+  display: flex;
+  grid-column: 1 / -1;
+  width: 100%;
+  min-height: 44px;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 4px;
+  padding-inline: 16px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 750;
+  transition: background-color 160ms cubic-bezier(.2,0,0,1);
+}
+.summaryOutlineAction svg { width: 16px; height: 16px; }
+.summaryEmpty { display: grid; justify-items: center; gap: 12px; padding-block: 8px; text-align: center; }
+.summaryEmpty > svg { width: 40px; height: 40px; color: var(--muted); stroke-width: 1.4; }
+.emptyPassportPreview {
+  display: block;
+  width: min(80%, 280px);
+  height: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 8px 14px rgb(23 25 28 / 7%));
+}
+.summaryEmpty p { margin: 0; color: var(--muted); font-size: 14px; line-height: 1.5; }
+.emptyPassportHint { color: var(--muted); font-size: 13px; font-weight: 550; line-height: 1.5; }
+.summaryEmpty .summaryTextLink, .summaryEmpty .summaryOutlineAction { margin-top: 0; }
+.personalizationState {
+  display: grid;
+  min-height: 180px;
+  align-content: center;
+  justify-items: center;
+  gap: 10px;
+  padding: 24px;
+  border: 1px solid var(--card-line);
+  border-radius: 16px;
+  background: var(--canvas);
+  box-shadow: var(--card-shadow);
+  text-align: center;
+}
+.personalizationState :is(strong,span) { max-width: 34ch; }
+.personalizationState strong { font-size: 16px; font-weight: 800; }
+.personalizationState span { color: var(--muted); font-size: 13px; line-height: 1.5; }
+.personalizationState button {
+  min-height: 44px;
+  padding-inline: 16px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--canvas);
+  color: var(--ink);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 750;
+  cursor: pointer;
+}
+.stateSkeleton { width: 72%; height: 12px; border-radius: 999rem; background: var(--surface-soft); }
+
+.bottomNav { position: fixed; z-index: 50; right: 0; bottom: 0; left: 0; display: grid; grid-template-columns: repeat(4, 1fr); min-height: calc(var(--bottom-nav-height) + env(safe-area-inset-bottom)); padding-bottom: env(safe-area-inset-bottom); border-top: 1px solid var(--line); background: var(--canvas); }
+.bottomNav a { display: flex; min-width: 0; min-height: var(--bottom-nav-height); align-items: center; justify-content: center; flex-direction: column; gap: 4px; color: var(--muted); font-size: 11px; font-weight: 650; }
+.bottomNav .bottomNavActive { position: relative; color: var(--ink); font-weight: 800; }
+.bottomNav .bottomNavActive::before { position: absolute; top: 0; right: 28%; left: 28%; height: 2px; background: var(--ink); content: ""; }
+
+@media (min-width: 48rem) {
+  .headerInner, .shell { padding-inline: 32px; }
+  .headerInner { grid-template-columns: auto minmax(0,1fr) auto; column-gap: 8px; }
+  .desktopNav { display: flex; justify-self: start; height: 44px; padding-inline: 4px; border: 1px solid var(--line); border-radius: 999rem; transform: translateY(-1px); }
+  .desktopNav a { position: relative; display: inline-flex; align-items: center; height: 100%; padding-inline: 16px; color: var(--muted); font-size: 15px; font-weight: 600; }
+  .desktopNav .activeNav { color: var(--ink); font-weight: 800; }
+  .headerActions { min-height: 44px; padding-inline: 4px; border: 1px solid var(--line); border-radius: 999rem; }
+  .shell { padding-top: 32px; }
+  .heroViewport, .heroCard { aspect-ratio: 16 / 8; }
+  .heroViewport { min-height: 440px; }
+  .heroCarousel .heroCard { aspect-ratio: auto; }
+  .heroContent { padding: 40px; }
+  .heroContent h2 { font-size: 48px; }
+  .mobileContextActions { max-width: 400px; }
+  .favoriteSection { padding: 24px; }
+  .celebrityRail { grid-auto-columns: var(--creator-card-size, max(240px, calc((100% - 32px) / 3))); padding-bottom: 0; }
+  .liveList[data-paginated="true"] { min-height: calc(112px * 3 + 24px); }
+  .liveRow { grid-template-columns: 64px minmax(0,1fr) 128px 44px; grid-template-areas:"portrait details time action"; min-height: 112px; padding: 20px; }
+
+  .liveMeta { text-align:right; }
+}
+
+@media (min-width: 64rem) {
+  .shell { grid-template-columns: minmax(0,1fr) 360px; gap: 24px; }
+  .contextPanel { position: sticky; top: calc(var(--header-height) + 32px); display: block; align-self: start; margin-top: 76px; }
+  .mobileContextActions, .mobilePersonalization, .mobileGuides, .bottomNav { display: none; }
+}
+
+@media (min-width: 80rem) {
+  .headerInner, .shell { padding-inline: 40px; }
+  .shell { grid-template-columns: minmax(0,1fr) 384px; gap: 32px; }
+  .heroContent { padding: 48px 48px 48px 64px; }
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .desktopNav a:hover, .languageButton:hover, .rowAction:hover, .socialLink:hover { background: var(--surface-soft); color: var(--ink) !important; }
+  .carouselControls > button:hover::before { background: rgb(10 10 12 / 68%); }
+  .primaryButton:hover { background: linear-gradient(rgb(0 0 0 / 18%), rgb(0 0 0 / 18%)), var(--spectrum-hover); }
+  .celebrityMediaBox:hover { transform: translateY(-2px); border-color: color-mix(in srgb, var(--ink) 18%, transparent); }
+  .mobileContextActions a:hover, .signInButton:hover { background: linear-gradient(var(--surface-soft), var(--surface-soft)) padding-box, var(--spectrum-hover) border-box; }
+  .ownedPassportLink:hover { transform: translateY(-3px); }
+  .summaryOutlineAction:hover, .personalizationState button:hover, .passportControls > button:hover, .passportDots button:hover { background: var(--surface-soft); color: var(--ink); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .page *, .page *::before, .page *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; }
+  .heroCarousel[data-reduced-motion="true"] .heroTrack { display: grid; transform: none !important; will-change: auto; }
+  .heroCarousel[data-reduced-motion="true"] .heroCard { grid-area: 1 / 1; opacity: 0; visibility: hidden; transition: opacity 150ms ease !important; }
+  .heroCarousel[data-reduced-motion="true"] .heroCard[data-active="true"] { z-index: 1; opacity: 1; visibility: visible; }
+}
+
+.fanCount { color: var(--muted); white-space: nowrap; }
+
+.celebrityCarousel { position: relative; container-type: inline-size; --creator-card-size: min(82vw, 288px, 100cqw); }
+@media (min-width: 48rem) { .celebrityCarousel { --creator-card-size: max(240px, calc((100cqw - 32px) / 3)); } }
+.creatorControls { position: absolute; inset: 0 0 auto; height: var(--creator-card-size); pointer-events: none; }
+.creatorControls button { position: absolute; top: 50%; display: grid; width: 44px; height: 44px; padding: 6px; place-items: center; transform: translateY(-50%); border: none; border-radius: 50%; background: transparent; color: #fff; cursor: pointer; pointer-events: auto; }
+.creatorControls button::before { content: ""; position: absolute; inset: 6px; border: 1px solid rgb(255 255 255 / 40%); border-radius: 50%; background: rgb(17 17 17 / 72%); }
+.creatorControls button:first-child { left: 0; }
+.creatorControls button:last-child { right: 0; }
+.creatorControls button svg { position: relative; width: 18px; height: 18px; }
+.creatorControls button:disabled { opacity: .3; cursor: default; }
+.creatorControls button:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+
+.celebrityFanLink[data-verified="true"] { color: #dc2626; }
+.celebrityFanLink[data-verified="true"] svg { fill: currentColor; }
+
+/* Stable owner-state slots; the two responsive views share their data. */
+.celebrityFanLink { min-inline-size: 6.25rem; }
+.personalizationLoading > span { max-width: none; }
+.personalizationLoading { min-height: 440px; grid-template-rows: 220px 80px; gap: 20px; align-content: start; justify-items: stretch; }
+.carouselDots .carouselPause { display: grid; place-items: center; flex: 0 0 44px; width: 44px; height: 44px; padding: 0; border: 0; border-radius: var(--radius-control); background: transparent; color: var(--color-ink); cursor: pointer; }
+.carouselPause svg { width: 16px; height: 16px; }
+.carouselPause:disabled { opacity: .5; cursor: default; }
+@media (min-width: 64rem) { .personalizationLoading { min-height: 480px; grid-template-rows: 250px 90px; } }
+
+
+.srOnly { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip-path:inset(50%); white-space:nowrap; border:0; }
+.favoriteSkeletonFilters { display:flex; gap:8px; margin-bottom:16px; }
+.favoriteSkeletonChip { flex:0 1 80px; min-width:0; height:44px; border-radius:var(--radius-control); }
+.favoriteSkeletonMedia { width:100%; height:auto; border-radius:12px; }
+.favoriteSkeletonName { width:72%; height:18px; }
+.favoriteSkeletonCount { width:55%; height:18px; }
+
+/* Mobile slides share one portrait canvas with information over the photo. */
+.heroCarousel .heroCard { display:block; }
+@media (max-width:767px) {
+  .heroViewport { aspect-ratio:4 / 5; min-height:400px; }
+  .heroCarousel .heroCard { height:100%; aspect-ratio:auto; }
+  .carouselControls > button { top:calc(28% - 22px); }
+  /* Share the tallest slide's height so natural artwork and translated copy remain visible. */
+  .heroCarousel:has([data-kind="welcome"], [data-kind="campaign"]) .heroViewport { aspect-ratio:auto; }
+  .heroCarousel:has([data-kind="welcome"], [data-kind="campaign"]) .heroTrack { height:auto; }
+  .heroCarousel:has([data-kind="welcome"], [data-kind="campaign"]) .heroCard { height:auto; min-height:400px; }
+}
+
+@media (max-width: 767px) {
+  .celebrityMediaBox [data-portrait] { width: 100%; border-radius: 0; }
+  .celebrityMediaBox > [data-preview-mode="card"] { inset: 0; border-radius: inherit; }
+}
+
+.reservationEmpty { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:4px 12px; }
+.reservationEmpty p { margin:0; color:var(--muted); font-size:13px; line-height:1.5; }
+.reservationEmpty .summaryTextLink { margin-top:0; }
+/* 261107-2 D14: one favorite card = photo · name · true fans and hearts · one row with `팬페이지 보기` and the SNS icons. 390: photo 80 so the row fits. */
+/* One row when it fits; with three SNS icons at 390 the icons move under the link instead of running past the card edge. */
+.celebrityRail[data-count="1"] .celebrityActions { gap: 0 var(--space-2); margin-top: var(--space-1); }
+.celebrityRail[data-count="1"] .celebrityActions .socialLinks { flex-wrap: nowrap; margin-inline-start: auto; margin-inline-end: calc(var(--space-3) * -1); }
+@media (max-width: 47.99rem) {
+  .celebrityRail[data-count="1"] .celebrityCard { grid-template-columns: calc(var(--space-10) * 2) minmax(0, 1fr); }
+}
+/* D14: the title and both text links share one line at 390; the shared header keeps its 10rem title basis elsewhere. */
+.favoriteSection [data-fan-section-header] > div > div:first-child { flex-basis: auto; }
+/* 찐팬 100 챌린지 진행 중인 크리에이터 카드(C7): 사진 왼쪽 위 태그 하나. */
+.challengeTag { position: absolute; z-index: 1; top: var(--space-2); left: var(--space-2); }

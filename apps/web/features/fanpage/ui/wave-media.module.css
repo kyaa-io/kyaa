@@ -23,7 +23,7 @@
 .preview { font-size: 13px; margin: 8px 0 0; overflow-wrap: anywhere; }
 .composerAction { display: flex; justify-content: flex-end; }
 .backdrop { position: fixed; inset: 0; z-index: 1000; padding: 16px; background: #10182880; display: grid; place-items: center; }
-.dialog { position: relative; width: min(100%, 1040px); max-height: calc(100dvh - 32px); overflow: auto; background: white; color: #101828; border-radius: 20px; padding: 24px; }
+.dialog { font-family: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif; position: relative; width: min(100%, 1040px); max-height: calc(100dvh - 32px); overflow: auto; background: white; color: #101828; border-radius: 20px; padding: 24px; }
 .dialog h2 { min-width: 0; margin: 0; font-size: 20px; line-height: 1.5; overflow-wrap: anywhere; }
 .close { flex-shrink: 0; }
 .dialogHeader { display: flex; gap: 16px; align-items: center; justify-content: space-between; margin-bottom: 16px; }

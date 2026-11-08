@@ -2,7 +2,8 @@
   min-height: 100dvh;
   background: #fff;
   color: #171719;
-  }
+  font-family: "Pretendard Variable", Pretendard, system-ui, sans-serif;
+}
 
 .page :where(a, button):focus-visible {
   outline: 3px solid #171719;
@@ -64,7 +65,7 @@
   align-items: center;
   gap: 10px;
   --fan-heading-size: 24px;
-  --fan-heading-size: 24px;
+  --fan-heading-size-wide: 24px;
   --fan-heading-weight: 800;
   --fan-heading-tracking: -0.03em;
   --fan-heading-leading: 1.2;
@@ -77,8 +78,8 @@
   place-items: center;
   padding-inline: 7px;
   border-radius: var(--radius-pill);
-  background: var(--color-soft);
-  color: var(--color-page-accent);
+  background: var(--color-surface-focus);
+  color: var(--color-service-ink);
   font-size: 12px;
   font-variant-numeric: tabular-nums;
   font-weight: 800;
@@ -134,7 +135,7 @@
   margin-bottom: 28px;
   padding: 14px 16px;
   border: 1px solid #e8e8ea;
-  border-radius: var(--radius-card);
+  border-radius: var(--radius-collection);
   background: var(--color-canvas);
 }
 
@@ -144,8 +145,8 @@
   height: 36px;
   place-items: center;
   border-radius: 50%;
-  background: var(--color-soft);
-  color: var(--color-page-accent);
+  background: var(--color-surface-focus);
+  color: var(--color-service-ink);
 }
 
 .permissionIcon svg {
@@ -229,18 +230,18 @@
 }
 
 .row[data-unread="true"] {
-  background: color-mix(in oklch, var(--color-soft) 55%, var(--color-canvas));
+  background: color-mix(in oklch, var(--color-surface-focus) 55%, var(--color-canvas));
 }
 
 .row[data-unread="true"]:hover {
-  background: var(--color-soft);
+  background: var(--color-surface-focus);
 }
 
 .dot {
   width: 7px;
   height: 7px;
   border-radius: 50%;
-  background: var(--color-page-accent);
+  background: var(--color-service-ink);
 }
 
 .copy {
@@ -399,7 +400,7 @@
 
   .titleRow {
     --fan-heading-size: 20px;
-    --fan-heading-size: 20px;
+    --fan-heading-size-wide: 20px;
   }
 
   .pageHeading button {

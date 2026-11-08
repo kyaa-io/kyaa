@@ -22,7 +22,7 @@
 .sourceHeading h3 span { color: #65656d; font-size: 13px; font-weight: 400; }
 .badge { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 700; line-height: 1.5; }
 .badge svg { flex-shrink: 0; width: 16px; height: 16px; }
-.badge[data-state=confirmed] { color: var(--color-accent-ink); }
+.badge[data-state=confirmed] { color: #941d75; }
 .badge[data-state=pending] { color: #65656d; }
 .badge[data-state=error] { color: #b42318; }
 .timestamp, .sourceMessage, .unknown { margin: 0; color: #65656d; font-size: 13px; line-height: 1.65; overflow-wrap: anywhere; }

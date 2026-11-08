@@ -9,7 +9,7 @@
 /* Keep feature page heading/paragraph margins from changing source state geometry. */
 .panel .title{margin:0;font-size:24px;font-weight:850;line-height:31px;letter-spacing:0;}
 .panel .description{margin:0;font-size:16px;line-height:1.5;}.panel .description p{margin:0;}.panel .description p+p{margin-top:16px;}
-:is(.panel[data-source-state="VMiFI"],.panel[data-source-state="uNHy1"]) .action>span{font-weight:650;font-size:14px;line-height:20px;}
+:is(.panel[data-source-state="VMiFI"],.panel[data-source-state="uNHy1"]) .action>span{font-family:"Pretendard Variable",sans-serif;font-weight:650;font-size:14px;line-height:20px;}
 /* Empty state with illustration: centered stack (DESIGN: center alignment is reserved for empty states). Compact fits sidebars. */
 .panel[data-empty-art]{align-items:center;text-align:center;}.panel[data-empty-art] .heading{justify-content:center;}.panel[data-empty-art] .actions{justify-content:center;}.panel[data-empty-art] .actions[data-layout=column]{align-items:stretch;max-width:320px;}
 .panel[data-empty-art=compact]{padding:20px 16px;gap:12px;}.panel[data-empty-art=compact] .title{font-size:18px;line-height:25px;}.panel[data-empty-art=compact] .description{font-size:14px;}

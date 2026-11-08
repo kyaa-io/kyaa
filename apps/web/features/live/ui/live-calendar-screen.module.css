@@ -7,7 +7,7 @@
 .filterHeading h2,.filterHeading p { margin:0; }
 .filterHeading h2 { font-size:14px; font-weight:800; letter-spacing:-.02em; }
 .filterHeading p { margin-top:3px; color:oklch(50% 0 0); font-size:12px; font-weight:550; line-height:1.4; }
-.filterCount { min-width:64px; justify-self:end; color:var(--color-accent-ink); font-size:12px; font-weight:800; text-align:right; white-space:nowrap; }
+.filterCount { min-width:64px; justify-self:end; color:oklch(42% .16 315); font-size:12px; font-weight:800; text-align:right; white-space:nowrap; }
 .filterScroller { display:flex; min-width:0; grid-column:1 / -1; gap:8px; overflow-x:auto; padding:0 2px 6px; scrollbar-width:thin; }
 .filterChip { display:inline-flex; min-width:max-content; min-height:44px; align-items:center; justify-content:center; gap:8px; padding:0 14px; border:1px solid oklch(87% 0 0); border-radius:999rem; background:#fff; color:oklch(28% 0 0); font:inherit; font-size:13px; font-weight:750; cursor:pointer; transition:color 160ms cubic-bezier(.2,0,0,1),border-color 160ms cubic-bezier(.2,0,0,1),background 160ms cubic-bezier(.2,0,0,1),transform 160ms cubic-bezier(.2,0,0,1); }
 
@@ -38,7 +38,7 @@
 .dayHeading { display:flex; align-items:baseline; gap:10px; margin-bottom:12px; }
 .dayHeading span { color:oklch(48% 0 0); font-size:13px; font-weight:650; }
 .eventList { display:grid; gap:8px; }
-.event { display:block; min-width:0; overflow:hidden; border:1px solid var(--color-line); border-radius:10px; background:var(--color-accent-soft); box-shadow:none; }
+.event { display:block; min-width:0; overflow:hidden; border:1px solid oklch(89% .018 305); border-radius:10px; background:oklch(97.5% .025 305); box-shadow:none; }
 .event[data-calendar-event-tone="1"] { border-color:oklch(89% .025 20); background:oklch(97.5% .027 20); }
 .event[data-calendar-event-tone="2"] { border-color:oklch(89% .026 75); background:oklch(97.5% .03 75); }
 .event[data-calendar-event-tone="3"] { border-color:oklch(88.5% .025 235); background:oklch(97.2% .026 235); }
@@ -60,7 +60,7 @@
 .calendarTimeIndicator { flex:none; }
 .eventMeta > * + *::before { margin-right:6px; color:oklch(72% 0 0); content:"·"; }
 .eventMeta .benefit::before { content:none; }
-.benefit { background:var(--color-accent-soft); color:var(--color-accent-ink); }
+.benefit { background:oklch(96% .025 315); color:oklch(42% .19 315); }
 .empty { display:none; margin:0; color:oklch(58% 0 0); font-size:12px; }
 .catalogLink:focus-visible,.eventLink:focus-visible,.filterChip:focus-visible { outline:3px solid oklch(18% 0 0); outline-offset:3px; }
 @media (min-width:48rem) {
@@ -269,7 +269,7 @@
   .carouselControls button:focus-visible,.viewAll:focus-visible { outline:3px solid var(--color-ink); outline-offset:-3px; border-radius:8px; }
 }
 .modalBackdrop { display:grid; place-items:center; padding:24px; background:rgb(0 0 0 / .38); }
-.modal { width:min(100%,640px); max-height:calc(100dvh - 48px); display:flex; flex-direction:column; border-radius:16px; background:#fff; color:var(--color-ink); box-shadow:0 16px 48px rgb(0 0 0 / .18); overflow:hidden; }
+.modal { font-family:"Pretendard Variable",Pretendard,-apple-system,BlinkMacSystemFont,system-ui,sans-serif; width:min(100%,640px); max-height:calc(100dvh - 48px); display:flex; flex-direction:column; border-radius:16px; background:#fff; color:var(--color-ink); box-shadow:0 16px 48px rgb(0 0 0 / .18); overflow:hidden; }
 .modalHeader { display:flex; align-items:center; justify-content:space-between; gap:16px; padding:16px 20px; border-bottom:1px solid var(--color-line); }
 .modalHeader h2 { margin:0; font-size:20px; line-height:1.4; }
 .modalHeader button { display:grid; flex:none; place-items:center; width:44px; height:44px; border:0; border-radius:8px; background:transparent; color:inherit; cursor:pointer; }
@@ -329,7 +329,7 @@
 }
 @media (min-width:64rem) {
   .listHead { display:flex; align-items:center; gap:var(--space-3); margin-bottom:var(--space-3); }
-  .listHead h1,.listHead h2 { margin:0; font-size:var(--fan-heading-size); }
+  .listHead h1,.listHead h2 { margin:0; font-size:var(--fan-heading-size-wide); }
   .listCount { flex:none; }
   .monthEmpty { margin:var(--space-4) 0 0; font-size:var(--fan-description-size); font-weight:600; color:var(--color-muted); text-align:left; }
 }

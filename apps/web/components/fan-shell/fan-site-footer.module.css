@@ -7,7 +7,8 @@
   border-top: 1px solid var(--footer-line);
   background: #fff;
   color: var(--footer-ink);
-  }
+  font-family: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+}
 
 .inner {
   display: grid;

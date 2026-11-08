@@ -15,10 +15,10 @@
   width: 96px;
   height: 96px;
   overflow: hidden;
-  border-radius: var(--radius-card);
+  border-radius: var(--radius-collection);
   object-fit: cover;
 }
-.image [data-creator-avatar] { border-radius: var(--radius-card); }
+.image [data-creator-avatar] { border-radius: var(--radius-collection); }
 .headline { grid-area: headline; display: grid; gap: var(--space-2); min-width: 0; position: relative; }
 .titleRow { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); min-width: 0; padding-right: var(--menu-space, 0); }
 .name {

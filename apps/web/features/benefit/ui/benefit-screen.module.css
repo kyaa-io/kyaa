@@ -396,10 +396,10 @@
   min-height: 48px;
   box-sizing: border-box;
   padding: 0 14px;
-  border: 1px solid var(--color-line-subtle);
+  border: 1px solid #e8e7ec;
   border-radius: 12px;
   background: #fff;
-  color: var(--color-ink);
+  color: #17161b;
   font: inherit;
   font-size: 16px;
 }
@@ -408,9 +408,9 @@
   gap: 10px;
   margin-top: 18px;
   padding: 18px;
-  border: 1px solid var(--color-line-subtle);
+  border: 1px solid #e8e7ec;
   border-radius: 14px;
-  background: var(--color-soft);
+  background: #faf9fb;
 }
 .entryEmpty strong {
   font-size: 15px;
@@ -479,7 +479,7 @@
   padding: 24px;
   border-radius: 20px;
   background: #fff;
-  color: var(--color-ink);
+  color: #17161b;
 }
 @media (max-width: 47.999rem) {
   .entryConfirmBackdrop {
@@ -526,14 +526,14 @@
 }
 .entryConfirmSummary {
   margin: 24px 0;
-  border-top: 1px solid var(--color-line-subtle);
+  border-top: 1px solid #e8e7ec;
 }
 .entryConfirmSummary div {
   min-height: 52px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  border-bottom: 1px solid var(--color-line-subtle);
+  border-bottom: 1px solid #e8e7ec;
 }
 .entryConfirmSummary dt {
   color: #66636c;
@@ -576,7 +576,7 @@
   accent-color: #d91268;
 }
 .entryPolicyConfirmation input:focus-visible {
-  outline: 3px solid color-mix(in srgb, var(--color-accent) 35%, transparent);
+  outline: 3px solid oklch(62% 0.18 330 / 35%);
   outline-offset: 2px;
 }
 .entryConfirmActions {

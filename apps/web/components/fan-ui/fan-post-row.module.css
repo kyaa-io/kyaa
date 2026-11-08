@@ -11,7 +11,7 @@
   padding: var(--space-2) 0;
   border-bottom: 1px solid var(--color-line);
 }
-.row:hover { background: var(--color-soft); }
+.row:hover { background: #faf9fb; }
 .thumb {
   grid-area: thumb;
   display: flex;

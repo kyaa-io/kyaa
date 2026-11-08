@@ -70,7 +70,7 @@ const FanPanelTabs = dynamic(() => import("./fan-tabs-panels").then((module) => 
 
 /** 페이지 탭(`underline`), 필터(`chip`), 한 틀 안 2~3칸(`segment`). 누른 탭은 응답을 기다리지 않고 바로 선택 모양이 되고, 링크 탭은 스크롤을 건드리지 않는다.
  * `panels`를 켜면 링크가 아닌 상태 탭이 된다: role=tablist/tab/tabpanel, ←→ 키로 이동(Base UI Tabs), 선택 탭의 `panel`을 그린다. */
-export function FanTabs({ variant = "underline", label, current, items, id, className, panels = false, sticky }: Readonly<{
+export function FanTabs({ variant = "underline", label, current, items, id, className, panels = false }: Readonly<{
   variant?: "underline" | "chip" | "segment";
   label: string;
   current: string;
@@ -78,13 +78,9 @@ export function FanTabs({ variant = "underline", label, current, items, id, clas
   id?: string;
   className?: string;
   panels?: boolean;
-  /** 페이지 탭(underline)은 기본으로 헤더 아래에 붙는다(5차 R3). 카드 안 탭은 false. */
-  sticky?: boolean;
 }>) {
-  const stuck = sticky ?? (variant === "underline" && !panels);
-  const cls = [stuck ? styles.sticky : "", className ?? ""].filter(Boolean).join(" ") || undefined;
-  if (panels) return <FanPanelTabs variant={variant} label={label} current={current} items={items} id={id} className={cls} />;
-  return <FanNavTabs variant={variant} label={label} current={current} items={items} id={id} className={cls} />;
+  if (panels) return <FanPanelTabs variant={variant} label={label} current={current} items={items} id={id} className={className} />;
+  return <FanNavTabs variant={variant} label={label} current={current} items={items} id={id} className={className} />;
 }
 
 function FanNavTabs({ variant, label, current, items, id, className }: Readonly<{

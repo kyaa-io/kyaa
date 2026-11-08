@@ -12,7 +12,7 @@
 .surface input[type="checkbox"] { flex:none; width:20px; height:20px; min-height:20px; margin:0; accent-color:#d11b62; }
 .surface :is(select,input,textarea):focus-visible { outline:2px solid #d11b62; outline-offset:3px; }
 .surface button[type="submit"] { justify-self:start; min-width:120px; width:auto; }
-.surface button[type="submit"]:not(:disabled) { background:var(--color-accent); color:#fff; border-color:transparent; }
+.surface button[type="submit"]:not(:disabled) { background:linear-gradient(110deg,#d9194c,#b91a93,#6042d5); color:#fff; border-color:transparent; }
 @media(max-width:767px) { .surface{padding:16px;border-radius:12px}.surface > header{margin:-16px -16px 16px;padding:20px 16px;border-radius:12px 12px 0 0}.surface li{padding:16px}.surface form{max-width:100%} }
 
 .stats { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:16px; padding:16px; border-radius:8px; background:#fff0f6; }
@@ -23,7 +23,7 @@
 .surface .reviewList>li{padding:0;border:0;background:transparent;border-radius:0}.surface .reviewList>li>button{margin:0}
 
 /* Pencil jzqEs: application review has its own full-width admin workspace. */
-.platformShell{min-height:100dvh;background:#fff;color:#29242a}
+.platformShell{font-family:"Pretendard Variable",system-ui,sans-serif;min-height:100dvh;background:#fff;color:#29242a}
 .platformHeader{display:flex;align-items:center;justify-content:space-between;gap:16px;min-height:104px;padding:32px;box-sizing:border-box;background:#302c33;color:#fff}
 .platformHeader a{display:flex;align-items:center;gap:16px;color:inherit;text-decoration:none;font-size:28px;line-height:39px;font-weight:700}
 .platformHeader>span{color:#e4e1e6;font-size:14px;line-height:20px;font-weight:700}
@@ -59,7 +59,7 @@
 .applicationFacts dd{margin:0;font-size:16px;line-height:22px;font-weight:700;white-space:pre-wrap;overflow-wrap:anywhere}
 .applicationActions{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:12px;align-items:start}
 .applicationActions button{width:100%;min-height:44px}
-.applicationActions button[value=approve]{height:48px;border-radius:999px;background:var(--color-accent);color:#fff;font-size:15px;font-weight:800;gap:10px;box-shadow:none}
+.applicationActions button[value=approve]{height:48px;border-radius:999px;background:linear-gradient(90.903deg,#d9194c -4.533%,#b91a93 50%,#6042d5 104.533%);color:#fff;font-size:15px;font-weight:800;gap:10px;box-shadow:none}
 .additionalActions{font-size:13px;color:#68616b}
 .additionalActions summary{cursor:pointer;padding-block:12px}
 .additionalActions>div{display:flex;flex-wrap:wrap;gap:12px;margin-top:8px}
@@ -84,7 +84,7 @@
 .overviewLayout a:focus-visible{outline:2px solid #d11b62;outline-offset:3px}
 @media(max-width:767px){.overviewLayout{grid-template-columns:minmax(0,1fr);gap:24px}.overviewNav{grid-template-columns:1fr 1fr;gap:8px}.overviewNav a{padding:8px;font-size:14px;gap:8px}.overviewNav a>svg:first-child{padding:0;width:20px}.overviewCards{gap:12px}.overviewCards li{padding:0}.overviewCards a{padding:12px}}
 /* jzqEs/kITlr queue pills + selected review geometry. */
-.applicationTabs button{border:0;border-radius:999px}.applicationList button[aria-pressed=true]{border-color:transparent;background:#fff0f6}.applicationTitle>span,.applicationDetailTitle>svg{background:#fff}.applicationDetail>li{border-radius:20px}.reportDetail{display:flex!important;flex-direction:column;align-items:stretch;gap:20px}.reportDetail .applicationDetailTitle,.reportDetail .applicationFacts{margin:0}.reportDetail>form{margin:0;max-width:none}.reportDetail fieldset{display:flex;flex-direction:column;gap:16px}.reportDetail label:has(input[type=checkbox]){display:flex;align-items:center;gap:12px;min-height:44px}.reportDetail input[type=checkbox]{width:20px;height:20px;accent-color:#d11b62}.reportDetail textarea{min-height:96px;box-sizing:border-box}.reportDetail .applicationActions button:last-child{width:100%;height:48px;background:var(--color-accent);color:#fff;border-radius:999px}.rejectAction{min-height:44px;padding:0 16px;border:1px solid #dedede;border-radius:12px;background:#fff;color:#121212;font:inherit}.auditNote{margin:0;font-size:13px;line-height:20px;color:#5d5d5d}
+.applicationTabs button{border:0;border-radius:999px}.applicationList button[aria-pressed=true]{border-color:transparent;background:#fff0f6}.applicationTitle>span,.applicationDetailTitle>svg{background:#fff}.applicationDetail>li{border-radius:20px}.reportDetail{display:flex!important;flex-direction:column;align-items:stretch;gap:20px}.reportDetail .applicationDetailTitle,.reportDetail .applicationFacts{margin:0}.reportDetail>form{margin:0;max-width:none}.reportDetail fieldset{display:flex;flex-direction:column;gap:16px}.reportDetail label:has(input[type=checkbox]){display:flex;align-items:center;gap:12px;min-height:44px}.reportDetail input[type=checkbox]{width:20px;height:20px;accent-color:#d11b62}.reportDetail textarea{min-height:96px;box-sizing:border-box}.reportDetail .applicationActions button:last-child{width:100%;height:48px;background:linear-gradient(90.903deg,#d9194c -4.533%,#b91a93 50%,#6042d5 104.533%);color:#fff;border-radius:999px}.rejectAction{min-height:44px;padding:0 16px;border:1px solid #dedede;border-radius:12px;background:#fff;color:#121212;font:inherit}.auditNote{margin:0;font-size:13px;line-height:20px;color:#5d5d5d}
 .overviewNav a>svg:first-child,.overviewCards a>svg:first-child{box-sizing:content-box;padding:10px;border-radius:12px;background:#fff;flex:none}.overviewCards{gap:0}.overviewCards>li{padding:20px;border:0;border-radius:20px}.overviewCards>li>a{border:1px solid #eeecef}.applicationDetail>.auditNote{font-size:13px}
 
 .reportDetail .applicationDetailTitle{font-size:16px;line-height:22px}

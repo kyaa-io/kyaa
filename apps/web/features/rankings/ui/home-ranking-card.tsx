@@ -300,7 +300,7 @@ export function HomeRankingCard({ locale, headingId = "home-ranking-heading" }: 
         {updatedText ? <><span aria-hidden="true"> · </span><time dateTime={head.at!} data-updated-at="">{updatedText}</time></> : null}
       </div>
     </div>
-    <FanTabs variant="underline" sticky={false} panels className={styles.tabs} label={rankingsText(locale, "rkTitle")} current={tab} items={[
+    <FanTabs variant="underline" panels className={styles.tabs} label={rankingsText(locale, "rkTitle")} current={tab} items={[
       { key: "fans", label: rankingsText(locale, "rkFanTab"), onSelect: () => chooseTab("fans"), panel: week ? <WeekFanTab key="week" locale={locale} onHead={weekFansHead} /> : <FanTab key="all" locale={locale} onHead={fansHead} /> },
       { key: "creators", label: rankingsText(locale, "rkCreatorRankTab"), onSelect: () => chooseTab("creators"), panel: week ? <WeekCreatorTab key="week" locale={locale} onHead={weekCreatorsHead} /> : <CreatorTab key="all" locale={locale} onHead={creatorsHead} /> },
     ]} />

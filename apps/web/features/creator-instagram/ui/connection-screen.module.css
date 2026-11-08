@@ -20,25 +20,25 @@
 .main > .stack + .stack { margin-top: 24px; }
 .stack section > p, .stack div > h2 + p { margin-top: 8px; }
 .steps { display: flex; gap: 16px; align-items: center; margin-bottom: 28px; }
-.steps > span { display: inline-flex; align-items: center; min-height: 28px; padding: 4px 10px; border-radius: 99px; background: var(--color-accent-soft); color: var(--color-accent-ink); font-size: 12px; }
+.steps > span { display: inline-flex; align-items: center; min-height: 28px; padding: 4px 10px; border-radius: 99px; background: #f6effc; color: #703bad; font-size: 12px; }
 .steps .success { background: #eaf6ee; color: #246a42; }
 .steps small { color: #62626c; font-size: 12px; }
 .introGrid { display: grid; gap: 32px; }
-.main .eyebrow { display: none; color: var(--color-accent-ink); font-size: 13px; margin-bottom: 16px; }
+.main .eyebrow { display: none; color: #703bad; font-size: 13px; margin-bottom: 16px; }
 .description { margin-top: 20px !important; }
 .featureList { display: grid; gap: 24px; margin-top: 32px; }
 .feature { display: flex; align-items: flex-start; gap: 16px; }
-.feature > svg { color: var(--color-accent-ink); flex-shrink: 0; margin-top: 2px; }
+.feature > svg { color: #703bad; flex-shrink: 0; margin-top: 2px; }
 .feature p { margin-top: 6px; }
 .permissionCard { padding: 24px; border: 1px solid #e7e7ec; border-radius: 20px; background: #f7f7f9; }
 .permissionCard > h2 { margin-bottom: 20px; }
 .permissionCard > p { font-size: 13px; }
 .permissionCard ul { display: grid; gap: 12px; padding: 20px 0; margin: 20px 0; border-top: 1px solid #e7e7ec; list-style: none; }
 .permissionCard li { display: flex; align-items: flex-start; gap: 8px; font-size: 13px; line-height: 1.5; }
-.permissionCard li svg { color: var(--color-accent-ink); flex-shrink: 0; }
+.permissionCard li svg { color: #703bad; flex-shrink: 0; }
 .permissionCard .caption { margin-bottom: 24px; }
 .main .hint { font-size: 12px; text-align: center; margin-top: 12px; }
-.main :is(a, button)[data-fan-action-emphasis="primary"] { min-height: 52px; border-radius: 99px; background: var(--color-accent); box-shadow: none; }
+.main :is(a, button)[data-fan-action-emphasis="primary"] { min-height: 52px; border-radius: 99px; background: linear-gradient(125deg, #be236e, #7340b8); box-shadow: none; }
 .notes { display: grid; gap: 24px; padding-top: 28px; margin-top: 32px; border-top: 1px solid #e7e7ec; }
 .notes h2 { font-size: 14px; }
 .notes p { font-size: 13px; margin-top: 8px; }
@@ -50,17 +50,17 @@
 .account span:not([data-creator-avatar]) { color: #62626c; font-size: 14px; }
 .settings { padding: 24px; border: 1px solid #e7e7ec; border-radius: 16px; display: flex; flex-direction: column; gap: 20px; }
 .toggleRow { display: flex; flex-direction: column; gap: 16px; }
-.toggleButton { display: flex; align-self: center; align-items: center; justify-content: center; gap: 8px; padding: 8px; min-height: 44px; border: 0; background: transparent; color: var(--color-accent-ink); cursor: pointer; font: inherit; font-size: 13px; }
+.toggleButton { display: flex; align-self: center; align-items: center; justify-content: center; gap: 8px; padding: 8px; min-height: 44px; border: 0; background: transparent; color: #703bad; cursor: pointer; font: inherit; font-size: 13px; }
 .switch { width: 44px; height: 26px; border-radius: 99px; background: #777780; padding: 3px; }
 .switch::after { content: ''; display: block; width: 20px; height: 20px; border-radius: 50%; background: #fff; transition: transform 160ms; }
-.toggleButton[aria-checked="true"] .switch { background: var(--color-accent-ink); }
+.toggleButton[aria-checked="true"] .switch { background: #703bad; }
 .toggleButton[aria-checked="true"] .switch::after { transform: translateX(18px); }
 .mediaRow { display: flex; justify-content: space-between; gap: 16px; align-items: center; }
 .mediaRow h2 { font-size: 14px; }
-.mediaRow > span { color: var(--color-accent-ink); font-size: 12px; text-align: right; }
+.mediaRow > span { color: #703bad; font-size: 12px; text-align: right; }
 .disconnectArea { padding-top: 20px; border-top: 1px solid #e7e7ec; }
 .alternative { padding: 20px; border-radius: 12px; background: #f7f7f9; }
-.stateIcon { color: var(--color-accent-ink); margin-bottom: 24px; }
+.stateIcon { color: #703bad; margin-bottom: 24px; }
 .main .notice, .main .error { padding: 16px; border-radius: 12px; margin-bottom: 24px; background: #f7f7f9; }
 .main .error { color: #9c2442; border: 1px solid #d7a1ac; }
 .picker { display: grid; gap: 8px; font-size: 14px; }

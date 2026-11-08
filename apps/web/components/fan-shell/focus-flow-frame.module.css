@@ -8,7 +8,8 @@
   padding-bottom: env(safe-area-inset-bottom);
   background: #fff;
   color: oklch(18% 0 0);
-  }
+  font-family: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+}
 
 .frame *,
 .frame *::before,

@@ -22,7 +22,7 @@
 /* 터치 영역 44px. 눈에 보이는 높이는 36px로 둔다. */
 .star::after { content: ""; position: absolute; inset: -4px 0; }
 span.star { cursor: default; }
-a.star:hover, button.star:hover { background: var(--color-soft); }
+a.star:hover, button.star:hover { background: #faf9fb; }
 .star:focus-visible { outline: 2px solid #d11b62; outline-offset: 2px; }
 .star[aria-busy="true"] { cursor: progress; }
 .icon { flex: none; }

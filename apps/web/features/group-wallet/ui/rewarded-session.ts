@@ -50,10 +50,6 @@ export async function runRewardedSession(deps:RewardedSessionDeps):Promise<{show
    }
    deps.onState(state);
   });
- }catch(error){
-  // A second press while an ad is already up must not end that ad's flow on screen.
-  if(error instanceof Error&&error.message==='REWARDED_AD_BUSY')return handle;
-  if(deps.alive())deps.onState('error');
- }
+ }catch{if(deps.alive())deps.onState('error');}
  return handle;
 }

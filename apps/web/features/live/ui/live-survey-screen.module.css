@@ -1,7 +1,8 @@
 .page {
   color: oklch(18% 0 0);
   background: #fff;
-  }
+  font-family: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+}
 
 .page :where(a, button, input, textarea):focus-visible {
   outline: 3px solid oklch(18% 0 0);

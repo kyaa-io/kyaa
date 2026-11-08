@@ -13,10 +13,10 @@
   box-shadow: var(--shadow-overlay);
   outline: none;
   transform-origin: var(--transform-origin);
-  transition: opacity var(--motion-fast) var(--motion-easing), transform var(--motion-fast) var(--motion-easing);
+  transition: opacity var(--motion-control) var(--motion-easing), transform var(--motion-control) var(--motion-easing);
 }
 .popup[data-starting-style], .popup[data-ending-style] { opacity: 0; transform: translateY(-4px); }
-.popup[data-ending-style] { transition-duration: var(--motion-fast); transition-timing-function: ease-in; }
+.popup[data-ending-style] { transition-duration: var(--motion-exit); transition-timing-function: ease-in; }
 
 .item {
   box-sizing: border-box;
