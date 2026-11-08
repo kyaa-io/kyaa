@@ -101,7 +101,7 @@
 .shellHeader :is(.shellBrand, .shellIcon, .shellLogin) { color: var(--color-ink); }
 .shellInner {
   display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; column-gap: var(--space-4);
-  width: 100%; max-width: calc(var(--fan-container-max) + 2 * var(--space-4)); height: 100%; margin-inline: auto; padding-inline: var(--space-4);
+  width: 100%; max-width: calc(var(--fan-container-max, 1100px) + 2 * var(--space-4)); height: 100%; margin-inline: auto; padding-inline: var(--space-4);
 }
 .shellPlace { display: flex; min-width: 0; align-items: center; gap: var(--space-3); }
 .shellBrand { display: inline-flex; flex: none; align-items: center; min-height: var(--min-target); }
@@ -128,7 +128,7 @@
 .shellIcon:focus-visible, .shellLogin:focus-visible, .shellBrand:focus-visible, .shellTab:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 
 @media (min-width: 48rem) {
-  .shellInner { max-width: calc(var(--fan-container-max) + 2 * var(--space-8)); padding-inline: var(--space-8); }
+  .shellInner { max-width: calc(var(--fan-container-max, 1100px) + 2 * var(--space-8)); padding-inline: var(--space-8); }
   .shellLocation { display: block; }
 }
 @media (min-width: 64rem) {
