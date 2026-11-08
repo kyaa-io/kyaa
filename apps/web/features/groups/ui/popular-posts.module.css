@@ -1,8 +1,8 @@
 /* Pencil export: cdRJj, jp4s2, l6KPxd, NKU4m, cSZDE. */
 .panel{display:flex;flex-direction:column;gap:8px;box-sizing:border-box;width:100%;padding:20px;border:1px solid #e4e1e6;border-radius:12px;background:#fff}
 .panel header{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;width:100%}
-.panel h2{margin:0;color:#121212;font-family:"Pretendard UI 850",system-ui,sans-serif;font-size:24px;font-weight:400;line-height:var(--fan-heading-leading);font-synthesis:none}
+.panel h2{margin:0;color:#121212;font-weight:800;font-size:24px;line-height:var(--fan-heading-leading);font-synthesis:none}
 .panel header>div{display:flex}
-.panel button{display:flex;align-items:center;justify-content:center;min-width:44px;height:44px;padding:0 8px;border:0;border-radius:12px;background:transparent;color:#5d5d5d;font-family:"Pretendard UI 650",system-ui,sans-serif;font-size:14px;line-height:20px;white-space:nowrap;cursor:pointer;font-weight:400;font-synthesis:none}
+.panel button{display:flex;align-items:center;justify-content:center;min-width:44px;height:44px;padding:0 8px;border:0;border-radius:12px;background:transparent;color:#5d5d5d;font-weight:700;font-size:14px;line-height:20px;white-space:nowrap;cursor:pointer;font-synthesis:none}
 .panel button[aria-pressed=true]{background:#fff0f6;color:#ad1457}
 @media(max-width:767px){.panel{padding:16px}.panel h2{font-size:20px;line-height:var(--fan-heading-leading)}}

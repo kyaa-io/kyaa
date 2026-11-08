@@ -1,9 +1,9 @@
-.page { min-height:calc(100svh - 68px); background:var(--color-canvas); color:var(--color-ink); font-family:"Pretendard Variable",Pretendard,-apple-system,BlinkMacSystemFont,system-ui,sans-serif; }
+.page { min-height:calc(100svh - 68px); background:var(--color-canvas); color:var(--color-ink); }
 .page * { box-sizing:border-box; }
-.result,.error { display:grid; width:min(calc(100% - 32px),600px); justify-items:center; margin:40px auto; padding:40px; border:1px solid var(--color-line); border-radius:var(--radius-collection); text-align:center; }
+.result,.error { display:grid; width:min(calc(100% - 32px),600px); justify-items:center; margin:40px auto; padding:40px; border:1px solid var(--color-line); border-radius:var(--radius-card); text-align:center; }
 .completion { margin:0 0 20px; color:var(--color-muted); font-size:13px; font-weight:650; line-height:1.5; font-variant-numeric:tabular-nums; }
 .resultIcon { display:grid; width:64px; height:64px; place-items:center; margin-bottom:24px; border:1.5px solid currentColor; border-radius:50%; }
-.result[data-result="passed"] .resultIcon { color:var(--color-success); }
+.result[data-result="passed"] .resultIcon { color:var(--color-ink); }
 .resultIcon svg { width:32px; height:32px; stroke-width:2; }
 .result h1,.error h1 { max-width:24ch; margin:0; font-size:28px; font-weight:800; letter-spacing:-.035em; line-height:1.3; text-wrap:balance; overflow-wrap:anywhere; word-break:keep-all; }
 .score { margin:12px 0 0; color:var(--color-muted); font-size:14px; font-weight:550; line-height:1.5; }
@@ -23,7 +23,7 @@
 .error { gap:12px; }
 .error p { max-width:48ch; margin:0; color:var(--color-muted); font-size:14px; line-height:1.5; }
 .error > a:not([data-fan-action-emphasis]) { display:flex; min-height:44px; align-items:center; margin-top:12px; color:var(--color-ink); font-weight:650; }
-.skeleton { width:min(calc(100% - 32px),600px); min-height:540px; margin:40px auto; border-radius:var(--radius-collection); background:var(--color-soft); }
+.skeleton { width:min(calc(100% - 32px),600px); min-height:540px; margin:40px auto; border-radius:var(--radius-card); background:var(--color-soft); }
 .page :is(a,button):focus-visible { outline:3px solid var(--color-ink); outline-offset:3px; }
 @media (max-width:767px) {
   .result,.error { margin:24px auto; padding:28px 20px; }

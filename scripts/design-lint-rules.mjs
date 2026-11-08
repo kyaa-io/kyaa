@@ -32,7 +32,7 @@ export const RULES = {
   C9: { sev: 'fail', note: '포인트 숫자(+20P)를 화면 코드에 직접 쓰지 않는다. API 값을 쓴다' },
   C10: { sev: 'fail', note: '이모지·장식 기호로 아이콘을 대신하지 않는다' },
   // 안티패턴
-  S1: { sev: 'fail', note: '새 그라데이션·글자 그라데이션 금지(강조 버튼은 var(--color-primary-action))' },
+  S1: { sev: 'fail', note: '그라데이션 전부 금지(배경·테두리·마스크·글자). 강조 버튼은 var(--color-accent) 단색. 로고 아트 경로(*logo*·*wordmark*)만 예외(2026-11-09 8장 ⑤)' },
   S2: { sev: 'fail', note: 'backdrop-filter·filter: blur 장식 금지' },
   S3: { sev: 'fail', note: '유채색 번짐 그림자(글로) 금지' },
   S4: { sev: 'count', note: '정적으로 3번 나열된 같은 카드. 데이터라서 같은 경우가 많아 집계' },
@@ -130,7 +130,7 @@ export function scanCss(code, file) {
     if (prop === 'z-index' && !/^(var\(--z-[\w-]+\)|0|1|-1|auto)$/.test(value.trim())) add(out, `T8|${where}`);
     if (/^(width|height|min-height|min-width|block-size|inline-size)$/.test(prop) && /^(44|48|52)px$/.test(value.trim())) add(out, `T9|${where}`);
     if (prop === 'font-family' && !passportPaper && !/^(inherit|initial|unset|var\(--[^)]*\))$/i.test(value.trim())) add(out, `T10|${where}`);
-    if (/^background(-image)?$/.test(prop) && /gradient\(/i.test(value)) add(out, `S1|${where}`);
+    if (!/(logo|wordmark)/i.test(file) && /gradient\(/i.test(value)) add(out, `S1|${where}`);
     if (/^(-webkit-)?background-clip$/.test(prop) && /text/i.test(value)) add(out, `S1|${where}`);
     if (prop === '-webkit-text-fill-color' && /transparent/i.test(value)) add(out, `S1|${where}`);
     if (prop === 'backdrop-filter' || prop === '-webkit-backdrop-filter') add(out, `S2|${where}`);

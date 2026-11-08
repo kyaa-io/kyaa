@@ -3,7 +3,7 @@
 /* The overlay renders under body, outside the frame that sets the font. */
 .backdrop .panel[data-overlay-content] {
   display: flex; flex-direction: column; gap: var(--space-5); box-sizing: border-box; width: 420px; max-width: 100%;
-  padding: var(--space-6); background: var(--color-surface); color: var(--color-ink); border-radius: var(--radius-collection);
+  padding: var(--space-6); background: var(--color-surface); color: var(--color-ink); border-radius: var(--radius-card);
 }
 .handle { display: none; }
 .header { display: flex; align-items: flex-start; gap: var(--space-3); min-width: 0; }
@@ -22,7 +22,7 @@
 .failure p { margin: 0; }
 @media (max-width: 767px) {
   .backdrop { align-items: flex-end; padding: 0; }
-  .backdrop .panel[data-overlay-content] { width: 100%; padding: var(--space-3) var(--space-4) max(env(safe-area-inset-bottom), var(--space-5)); border-radius: var(--radius-hero) var(--radius-hero) 0 0; }
+  .backdrop .panel[data-overlay-content] { width: 100%; padding: var(--space-3) var(--space-4) max(env(safe-area-inset-bottom), var(--space-5)); border-radius: var(--radius-card) var(--radius-card) 0 0; }
   .handle { display: block; align-self: center; width: 40px; height: 4px; border-radius: var(--radius-pill); background: var(--color-line); }
 }
 /* 261107-2 design-r4 7.2: three numbers, SNS links the fan wrote, one-line intro. Nothing is drawn for what the fan left empty. */

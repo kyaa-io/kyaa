@@ -4,7 +4,7 @@
 .heading p,.sub,.help { color:var(--color-text-secondary, #737373); font-size:13px; line-height:1.6; margin:6px 0 0; }
 .count { font-size:14px; white-space:nowrap; font-variant-numeric:tabular-nums; color:var(--color-text-secondary, #737373); }
 /* 스탬프 한 종류가 한 행이다. 그림은 언제나 원색이고, 받았는지는 이름 옆 표시로만 말한다. */
-.rows { display:grid; margin:0; padding:0; border:1px solid var(--color-line); border-radius:var(--radius-collection); background:var(--color-surface); list-style:none; }
+.rows { display:grid; margin:0; padding:0; border:1px solid var(--color-line); border-radius:var(--radius-card); background:var(--color-surface); list-style:none; }
 .row { display:grid; min-width:0; grid-template-columns:40px minmax(0,1fr) auto; align-items:center; gap:var(--space-3); padding:var(--space-3) var(--space-4); }
 .row + .row { border-top:1px solid var(--color-line); }
 .art { display:block; width:40px; height:40px; }
@@ -13,7 +13,7 @@
 @media (min-width:1024px) { .row { grid-template-columns:48px minmax(0,1fr) auto; } .art { width:48px; height:48px; } }
 /* 행동이 둘인 행(공유)만 좁은 화면에서 다음 줄로 내린다. */
 @media (max-width:480px) { .row:has(.cardActions > :nth-child(2)) { grid-template-columns:40px minmax(0,1fr); } .row:has(.cardActions > :nth-child(2)) > :last-child { grid-column:2; justify-self:start; } }
-.state { display:inline-flex; align-items:center; gap:var(--space-1); color:var(--color-service-ink); font-size:var(--fan-metadata-size); font-weight:var(--fan-item-title-weight); }
+.state { display:inline-flex; align-items:center; gap:var(--space-1); color:var(--color-page-accent); font-size:var(--fan-metadata-size); font-weight:var(--fan-item-title-weight); }
 .state svg { width:13px; height:13px; }
 .action { min-height:44px; border:0; border-radius:12px; background:var(--color-surface-subtle,#f6f6f5); color:var(--color-text-primary,#292929); font:inherit; font-size:12px; font-weight:600; padding:9px 14px; display:inline-flex; align-items:center; justify-content:center; gap:6px; text-decoration:none; cursor:pointer; transition:background-color 160ms,scale 160ms; }
 .cardActions { display:flex; flex-wrap:wrap; align-items:center; gap:var(--space-2); }

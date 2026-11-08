@@ -1,4 +1,4 @@
-.page { min-height:calc(100svh - 68px); background:#fff; color:oklch(18% 0 0); font-family:"Pretendard Variable",Pretendard,-apple-system,BlinkMacSystemFont,system-ui,sans-serif; }
+.page { min-height:calc(100svh - 68px); background:#fff; color:oklch(18% 0 0); }
 .page *,.page *::before,.page *::after { box-sizing:border-box; }
 .shell { display:grid; width:min(100%,760px); min-height:calc(100svh - 68px); margin-inline:auto; padding:40px 16px; place-items:center; }
 .shellTopAligned { align-content:start; align-items:start; padding-top:32px; }

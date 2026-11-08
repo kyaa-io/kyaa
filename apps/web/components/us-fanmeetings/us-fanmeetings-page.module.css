@@ -5,14 +5,7 @@
   --fanmeeting-line: #e7e7ec;
   background: #fff;
   color: var(--fanmeeting-ink);
-  font-family:
-    "Pretendard Variable",
-    Pretendard,
-    -apple-system,
-    BlinkMacSystemFont,
-    system-ui,
-    sans-serif;
-}
+  }
 .page *,
 .page *::before,
 .page *::after {
@@ -121,8 +114,7 @@
   background: var(--fanmeeting-pink);
   color: #fff;
   font-size: 16px;
-  font-family: inherit;
-  line-height: 1.4;
+    line-height: 1.4;
   font-weight: 700;
   cursor: pointer;
   transition: background 150ms ease;
@@ -479,8 +471,7 @@
   padding: 0;
   border: 0;
   background: transparent;
-  font-family: inherit;
-  font-size: 32px;
+    font-size: 32px;
   line-height: 1.4;
   font-weight: 750;
   color: var(--fanmeeting-ink);

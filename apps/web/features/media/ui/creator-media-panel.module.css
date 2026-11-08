@@ -12,7 +12,7 @@
 .empty p { max-width: 52ch; margin: 0 0 16px; font-size: 15px; line-height: 1.65; text-wrap: pretty; }
 
 .panel { width:100%; min-width:0; margin:0; }
-.heading { --fan-heading-size:20px; --fan-heading-size-wide:24px; --fan-description-size:16px; margin-bottom:20px; }
+.heading { --fan-heading-size:var(--fan-section-size); --fan-heading-weight:var(--fan-section-weight); margin-bottom:20px; }
 .heading [data-fan-section-header] { margin-bottom:0; }
 .channels { display:flex; flex-wrap:wrap; align-items:center; gap:0 16px; margin-bottom:16px; border-bottom:1px solid var(--color-line); }
 .channels > span { display:flex; align-items:center; min-height:44px; color:var(--color-muted); font-size:13px; font-weight:650; }
@@ -85,9 +85,9 @@
 
 :is(.compactPreview,.compactOverview) .previewGrid>li>a.play{height:auto;display:block}:is(.compactPreview,.compactOverview) [data-media-live=true] .play{aspect-ratio:16/9;overflow:hidden}:is(.compactPreview,.compactOverview) [data-media-live=true] .play img{height:100%;aspect-ratio:16/9!important;object-fit:cover;object-position:center}:is(.compactPreview,.compactOverview) .play{overflow:hidden}
 
-.heading [data-fan-heading]{font-family:"Pretendard UI 850",system-ui,sans-serif;font-weight:400;font-synthesis:none;line-height:var(--fan-heading-leading)}
+.heading [data-fan-heading]{font-weight:800;font-synthesis:none;line-height:var(--fan-heading-leading)}
 
-.previewHeading [data-fan-heading]{font-family:"Pretendard UI 850",system-ui,sans-serif;font-weight:400;font-synthesis:none;line-height:var(--fan-heading-leading)}
+.previewHeading [data-fan-heading]{font-weight:800;font-synthesis:none;line-height:var(--fan-heading-leading)}
 
 
 /* Reuse the approved home strip in the full creator media overview. */

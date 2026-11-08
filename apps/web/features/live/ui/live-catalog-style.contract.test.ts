@@ -9,15 +9,13 @@ const css = readFileSync(
 );
 
 describe("LIVE catalog repeated action style contract", () => {
-  it("uses one consistent Spectrum-outline Secondary treatment", () => {
+  it("uses the shared secondary treatment: 1px ink line, radius 8, no gradient (2026-11-09 8장 ④⑤)", () => {
     const actionRule = css.match(/\.action\s*\{([^}]*)\}/)?.[1];
 
     expect(actionRule).toBeDefined();
-    expect(actionRule).toContain("border:1px solid transparent");
-    expect(actionRule).toContain("linear-gradient(#fff,#fff) padding-box");
-    expect(actionRule).toContain("var(--color-primary-action) border-box");
-    expect(actionRule).toContain("color:var(--color-service-ink)");
-    expect(readFileSync(resolve(process.cwd(), "app/globals.css"), "utf8")).toContain("--color-service-ink: oklch(45% 0.22 315)");
+    expect(actionRule).toContain("border:1px solid var(--color-ink)");
+    expect(actionRule).toContain("border-radius:var(--radius-control)");
+    expect(actionRule).not.toContain("gradient");
   });
 
   it("preserves the desktop and mobile target contracts", () => {

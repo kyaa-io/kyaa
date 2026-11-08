@@ -1,7 +1,7 @@
 /* M06/M07 native border-box geometry, not export height + padding. */
-.content{box-sizing:border-box;display:flex;flex-direction:column;align-items:stretch;gap:20px;width:100%;max-width:none;min-width:0;margin:32px 0 0;color:#121212;font:400 16px/24px "Pretendard Variable",system-ui,sans-serif;overflow-wrap:anywhere}
-.content h1{margin:0;font:400 32px/48px "Pretendard Variable",system-ui,sans-serif}
-.content p{margin:0;font:400 16px/24px "Pretendard Variable",system-ui,sans-serif}
+.content{box-sizing:border-box;display:flex;flex-direction:column;align-items:stretch;gap:20px;width:100%;max-width:none;min-width:0;margin:32px 0 0;color:#121212;font-weight:400;font-size:16px;line-height:24px;overflow-wrap:anywhere}
+.content h1{margin:0;font-weight:400;font-size:32px;line-height:48px}
+.content p{margin:0;font-weight:400;font-size:16px;line-height:24px}
 .scope{display:flex;flex-direction:column;gap:8px;min-width:0}
 .scopeValue{display:flex;align-items:center;gap:12px;min-height:48px;padding:12px 16px;border-radius:12px;box-shadow:inset 0 0 0 1px #8a8a8a;font-size:14px;line-height:21px}
 .scopeValue>span{flex:1;min-width:0}.scopeValue>svg{flex:none}
@@ -9,18 +9,18 @@
 .row{box-sizing:border-box;display:flex;align-items:center;flex-wrap:wrap;gap:16px;min-height:89px;padding:16px 0;box-shadow:inset 0 -.5px 0 #e4e1e6;min-width:0}
 .row[data-status=pending],.row[data-status=no_reward],.row[data-status=entered]{padding:12px 0;min-height:81px}
 .rowCopy{display:flex;flex-direction:column;gap:6px;flex:1 1 150px;min-width:0}
-.content .rowCopy h2,.content .fact h2{margin:0;font:400 18px/27px "Pretendard Variable",system-ui,sans-serif;white-space:pre-wrap;overflow-wrap:anywhere}
+.content .rowCopy h2,.content .fact h2{margin:0;font-weight:400;font-size:18px;line-height:27px;white-space:pre-wrap;overflow-wrap:anywhere}
 .content .rowCopy p,.content .fact p{color:#5d5d5d;white-space:pre-wrap}
-.amount{max-width:100%;font:700 24px/normal "Pretendard Variable",system-ui,sans-serif;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
-.content .detail{min-width:72px;min-height:44px;padding:10px 20px;border-radius:999px;font:800 15px/21px "Pretendard Variable",system-ui,sans-serif}
+.amount{max-width:100%;font-weight:700;font-size:24px;line-height:normal;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.content .detail{min-width:72px;min-height:44px;padding:10px 20px;border-radius:999px;font-weight:800;font-size:15px;line-height:21px}
 .content .empty,.content .error{padding:16px;border-radius:8px;box-shadow:inset 0 0 0 1px #e4e1e6;color:#5d5d5d}
 .content .error{background:#fff1f4;color:#9f1239}
 .content .retry,.content .back{width:280px;max-width:100%;min-height:48px;align-self:flex-start}
-.content .retry{border-radius:12px;font:400 14px/20px "Pretendard UI 650",system-ui,sans-serif}
-.content .back{border:0;border-radius:999px;background:linear-gradient(92.062deg,#d9194c -7.665%,#b91a93 50%,#6042d5 107.665%);color:white;font:800 15px/21px "Pretendard Variable",system-ui,sans-serif}
+.content .retry{border-radius:12px;font-weight:700;font-size:14px;line-height:20px}
+.content .back{border:0;border-radius:999px;background:linear-gradient(92.062deg,#d9194c -7.665%,#b91a93 50%,#6042d5 107.665%);color:white;font-weight:800;font-size:15px;line-height:21px}
 .fact{box-sizing:border-box;display:flex;flex-direction:column;gap:6px;min-height:81px;min-width:0;padding:12px 0;box-shadow:inset 0 -.5px 0 #e4e1e6}
 .time{gap:8px;min-height:78px;padding:16px 0}
-.content .time h2,.content .time p{font:400 16px/normal "Pretendard Variable",system-ui,sans-serif}
+.content .time h2,.content .time p{font-weight:400;font-size:16px;line-height:normal}
 .content a:focus-visible,.content button:focus-visible{outline:3px solid #121212;outline-offset:3px}
 @media(max-width:1023px){.content{margin-bottom:calc(64px + env(safe-area-inset-bottom))}}
 @media(max-width:767px){.content{margin-top:16px}.content h1{font-size:24px;line-height:36px}.content .retry,.content .back{width:100%}}

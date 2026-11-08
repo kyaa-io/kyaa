@@ -1,4 +1,4 @@
-.banner, .dialog { --campaign-ink: hsl(30 8% 10%); --campaign-paper: hsl(38 30% 96%); --campaign-accent: hsl(336 100% 42%); color: var(--campaign-ink); font-family: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif; }
+.banner, .dialog { --campaign-ink: hsl(30 8% 10%); --campaign-paper: hsl(38 30% 96%); --campaign-accent: hsl(336 100% 42%); color: var(--campaign-ink); }
 .banner { position: relative; isolation: isolate; display: flex; align-items: center; justify-content: space-between; gap: 24px; overflow: hidden; min-height: 224px; margin-bottom: 24px; padding: 32px; border-radius: 20px; background: var(--campaign-ink); color: var(--campaign-paper); }
 .bannerImage { z-index: -2; object-fit: cover; object-position: 70% 55%; }
 .banner::after { content: ""; position: absolute; inset: 0; z-index: -1; background: linear-gradient(90deg, hsl(30 8% 7% / .96), hsl(30 8% 7% / .82) 45%, hsl(30 8% 7% / .25)); }

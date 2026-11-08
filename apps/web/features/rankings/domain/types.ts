@@ -77,13 +77,22 @@ export type PlatformFanRanking = z.infer<typeof platformFanRankingSchema>;
 
 /** Home ranking by day (feedback C3). delta = yesterday's rank minus today's: positive went up, null = no comparison (first seven days or new). */
 const delta = z.number().int().nullable();
-const homeHead = { day: z.string().nullable(), computedAt: timestamp, comparable: z.boolean() };
+/** r5(R12·R21): the route adds the basis line's values. period is always "day" (the list is today's KST standings, rebuilt every 10 minutes);
+ * closesAt = the next KST midnight, when today's standings are kept and tomorrow's start; fetchedAt = when the server answered. Optional so an answer
+ * from an older server still parses. */
+const homeHead = {
+  day: z.string().nullable(), computedAt: timestamp, comparable: z.boolean(),
+  period: z.literal("day").optional(), closesAt: z.iso.datetime({ offset: true }).nullable().optional(), fetchedAt: z.iso.datetime({ offset: true }).optional(),
+};
 export const HOME_RANKING_LIMIT = 20;
 /** The creator this fan gave the most hearts (E2 ②), named in the viewer's language. null: no listed public page qualifies. */
 const favorite = z.object({ slug: z.string(), name: z.string() }).nullable();
 export const homeFanRankingSchema = z.object({
   ...homeHead,
-  rows: z.array(platformFanRankingRowSchema.extend({ delta, favorite })).max(HOME_RANKING_LIMIT),
+  /** Days the fan weekGain comparison spans (20261217010000). Optional: absent before that migration. */
+  weekGainDays: z.number().int().min(1).max(7).nullable().optional(),
+  /** weekGain: hearts gained over the rolling seven days (20261217010000); null on the first day, absent from an older database. */
+  rows: z.array(platformFanRankingRowSchema.extend({ delta, favorite, weekGain: z.number().int().nullable().optional() })).max(HOME_RANKING_LIMIT),
   me: z.object({ rank: z.number().int().min(1), score: z.number().int().min(0), inTop: z.boolean() }).nullable(),
 });
 export type HomeFanRanking = z.infer<typeof homeFanRankingSchema>;

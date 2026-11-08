@@ -32,7 +32,7 @@
   line-height: 18px;
   white-space: nowrap;
   cursor: pointer;
-  transition: background-color var(--motion-control) var(--motion-easing), color var(--motion-control) var(--motion-easing);
+  transition: background-color var(--motion-fast) var(--motion-easing), color var(--motion-fast) var(--motion-easing);
 }
 
 /* 선택 상태는 모임·덕질 칩(groups.module.css .chip[aria-pressed])과 같은 분홍 값. 굵기는 바꾸지 않는다. */

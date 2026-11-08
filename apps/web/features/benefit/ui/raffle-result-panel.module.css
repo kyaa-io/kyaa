@@ -10,7 +10,7 @@
 .status > span { width: 40px; height: 40px; display: grid; flex: 0 0 auto; place-items: center; border-radius: 50%; background: oklch(95% 0.035 330); color: oklch(48% 0.18 345); }
 .status > span svg { width: 21px; height: 21px; }
 .status h2 { margin: 0; font-size: var(--fan-heading-size); font-weight: var(--fan-heading-weight); line-height: var(--fan-heading-leading); letter-spacing: -.03em; }
-@media (min-width: 768px) { .status h2 { font-size: var(--fan-heading-size-wide); } }
+@media (min-width: 768px) { .status h2 { font-size: var(--fan-heading-size); } }
 .status p { margin: 7px 0 0; color: oklch(42% 0 0); line-height: 1.55; }
 .revealPanel { padding: 0; overflow: hidden; container-type: inline-size; background: #fff; }
 .revealPanel .actions { margin: 20px 0 24px; }

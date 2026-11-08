@@ -5,8 +5,7 @@
   --guide-line: #e6e6e9;
   background: #fff;
   color: var(--guide-ink);
-  font-family: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
-}
+  }
 .page,
 .page *,
 .page *::before,

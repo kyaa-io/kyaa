@@ -253,7 +253,7 @@
 @media(prefers-reduced-motion:reduce){.track{transition:none}}
 @media(max-width:357px){.track .slide{width:calc(100vw - 90px)}.track[data-active="1"]{transform:translateX(calc(-100vw + 78px))}}
 
-.copy h2{font-family:"Pretendard UI 850",system-ui,sans-serif;font-weight:400;font-synthesis:none}
+.copy h2{font-weight:800;font-synthesis:none}
 
 /* Managed banners can contain any number of slides; preserve the approved spacing. */
 .track{--slide-step:984px;transform:translateX(calc(var(--active,0) * var(--slide-step) * -1))}

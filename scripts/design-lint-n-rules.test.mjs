@@ -56,6 +56,38 @@ const CASES = {
     () => ts('import { motion } from "motion/react";', 'apps/web/features/home/ui/hero.tsx'),
     () => ts('import { motion, useReducedMotion } from "motion/react";', 'apps/web/components/fan-ui/fan-dialog.tsx'),
   ],
+  N21: [
+    () => ts('export const A = () => <section className={styles.a}>x</section>;'),
+    () => ts('export const A = () => <section data-block="wallet">x</section>;'),
+  ],
+  N22: [
+    () => ts('export const A = () => <ul><li className={styles.row}>x</li></ul>;', 'apps/web/features/home/ui/list.tsx'),
+    () => ts('export const A = () => <ul><li data-row="notice">x</li><li><FanRow variant="menu"/></li></ul>;', 'apps/web/features/home/ui/list.tsx'),
+  ],
+  N23: [
+    () => ts('const t = formatRelativeTime(at, locale); const f = new Intl.DateTimeFormat(l, { dateStyle: "medium" });', 'apps/web/features/home/ui/list.tsx'),
+    () => ts('const f = new Intl.DateTimeFormat(l, { month: "2-digit", day: "2-digit" });', 'apps/web/features/home/ui/list.tsx'),
+  ],
+  N24: [
+    () => ts('export const A = () => <FanAction href="/a" trailingIcon={<ArrowRight/>}>x</FanAction>;'),
+    () => ts('export const A = () => <FanAction href="/a">x</FanAction>;'),
+  ],
+  N25: [
+    () => ts('import { Heart } from "lucide-react";\nexport const A = () => <Heart strokeWidth={2}/>;', 'apps/web/features/home/ui/list.tsx'),
+    () => ts('import { Heart } from "lucide-react";\nexport const A = () => <Heart strokeWidth={1.5}/>;', 'apps/web/components/fan-ui/fan-icon.tsx'),
+  ],
+  N26: [
+    () => css('.a{box-shadow:0 2px 8px rgb(0 0 0 / 8%)}'),
+    () => css('.a{box-shadow:none} .b{box-shadow:var(--shadow-overlay)} .c{box-shadow:0 0 0 1px var(--color-line)} .d{box-shadow:inset 0 -2px 0 var(--color-accent)}'),
+  ],
+  N27: [
+    () => css('.a{border-radius:16px} .b{border-radius:var(--radius-collection)}'),
+    () => css('.a{border-radius:var(--radius-card)} .b{border-radius:var(--radius-control)} .c{border-radius:50%} .d{border-radius:0}'),
+  ],
+  N28: [
+    () => css('.a{font-family:"Pretendard UI 850",sans-serif}'),
+    () => css('.a{font-weight:var(--fan-heading-weight)}'),
+  ],
 };
 
 test('every static N rule has a red and a green case', () => {
@@ -110,8 +142,9 @@ test('N19 N17 N18 N13 N5 N12 N2 are run by contract files that exist and carry t
   }
 });
 
-test('severity table: N rules all fail on a new violation (two with a counted branch)', () => {
-  for (const id of Object.keys(RULES_N)) assert.equal(RULES_N[id].sev, 'fail', id);
+test('severity table: N rules fail on a new violation (two with a counted branch); N26~N28 count only', () => {
+  const counted = ['N26', 'N27', 'N28'];
+  for (const id of Object.keys(RULES_N)) assert.equal(RULES_N[id].sev, counted.includes(id) ? 'count' : 'fail', id);
   assert.deepEqual(Object.keys(RULES_N).filter((id) => RULES_N[id].countDecl).sort(), ['N11', 'N3']);
 });
 

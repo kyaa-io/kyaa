@@ -20,7 +20,7 @@
 }
 
 /* Approved guide art: 2:1 desktop art is anchored right so a narrower slot trims only its empty left side; mobile art sits on top at its own ratio. */
-.root[data-guide-art] .artwork { background:color-mix(in oklab, var(--color-ink) 88%, var(--color-service-ink)); }
+.root[data-guide-art] .artwork { background:color-mix(in oklab, var(--color-ink) 88%, var(--color-page-accent)); }
 .root[data-guide-art] .artwork img { object-fit:cover; object-position:right center; }
 @media (max-width:767px) {
   .root[data-guide-art] .artwork { height:auto; }

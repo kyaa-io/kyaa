@@ -56,14 +56,15 @@ describe("dukjil routes", () => {
       attendance: { attendedToday: false, streak: 3, nextBonusIn: 4 }, hasPassport: true };
     d.rpc.mockResolvedValue(db);
     const res = await createDukjilHandlers(d).today(req("GET", "https://x.test/t?creator=artist"));
-    expect(await res.json()).toEqual(db);
+    // r5(R12): the route adds when today's counters reset (the KST midnight after kstDate).
+    expect(await res.json()).toEqual({ ...db, resetAt: "2026-12-12T00:00:00+09:00" });
     expect(d.resolveCreatorId).toHaveBeenCalledWith("artist");
     expect(d.rpc).toHaveBeenCalledWith("read_dukjil_today", { p_user: user, p_celebrity: celeb });
   });
   it("today: without a creator sends a null celebrity; inactive policy gives only kstDate and policyActive", async () => {
     const d = deps(); d.rpc.mockResolvedValue({ kstDate: "2026-12-11", policyActive: false });
     const res = await createDukjilHandlers(d).today(req("GET", "https://x.test/t"));
-    expect(await res.json()).toEqual({ kstDate: "2026-12-11", policyActive: false });
+    expect(await res.json()).toEqual({ kstDate: "2026-12-11", policyActive: false, resetAt: "2026-12-12T00:00:00+09:00" });
     expect(d.rpc).toHaveBeenCalledWith("read_dukjil_today", { p_user: user, p_celebrity: null });
     expect(d.resolveCreatorId).not.toHaveBeenCalled();
   });
