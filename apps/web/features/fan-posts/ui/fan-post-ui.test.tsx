@@ -26,6 +26,8 @@ const state = vi.hoisted(() => ({
   pages: {} as Record<string, { items: Record<string, unknown>[]; nextCursor: string | null }>,
 }));
 
+const toast = vi.hoisted(() => ({ show: vi.fn() }));
+vi.mock("./mission-reward-toast", () => ({ showMissionRewardToast: toast.show }));
 vi.mock("@/components/editor/lazy-rich-editor", () => ({ LazyRichEditor: ({ label, onChange }: { label: string; onChange: (value: unknown) => void }) => <textarea aria-label={label} onChange={event => onChange({ type: "doc", content: [{ type: "paragraph", content: [{ type: "text", text: event.target.value }] }] })} /> }));
 vi.mock("next/navigation", () => ({ useRouter: () => ({ replace: state.replace }), useSearchParams: () => new URLSearchParams(state.returnTo ? { returnTo: state.returnTo } : {}) }));
 vi.mock("@privy-io/react-auth", () => ({
@@ -263,29 +265,31 @@ describe("fan post UI navigation and context", () => {
     ));
   });
 
-  it("plays the point burst after a new post only when the response carries reward points", async () => {
+  it("tells a finished post mission by a toast only when the response carries reward points (C8)", async () => {
     state.pages = { first: { items: [], nextCursor: null } };
     for (const [response, shown] of [[{ id: "p", reward: { points: 30 } }, true], [{ id: "p" }, false]] as const) {
-      cleanup(); state.request.mockReset().mockResolvedValue(response);
+      cleanup(); toast.show.mockReset(); state.request.mockReset().mockResolvedValue(response);
       render(<FanPostFeed slug="artist" locale="en" />);
       fireEvent.click(screen.getByRole("button", { name: "Write a post" }));
       fireEvent.change(screen.getByRole("textbox", { name: "Write a post" }), { target: { value: "hello" } });
       await waitFor(() => expect(screen.getByRole("button", { name: "Publish" })).toBeEnabled());
       fireEvent.click(screen.getByRole("button", { name: "Publish" }));
       await waitFor(() => expect(state.request).toHaveBeenCalled());
-      await waitFor(() => expect(document.querySelector("[data-testid=point-reward-burst]") !== null).toBe(shown));
+      await waitFor(() => expect(toast.show.mock.calls.some(([, mission, reward]) => mission === "post" && reward.points === 30)).toBe(shown));
+      expect(document.querySelector("[data-testid=point-reward-burst]")).toBeNull();
     }
   });
 
-  it("plays the point burst after a comment only when the response carries reward points", async () => {
+  it("tells a finished comment mission by a toast only when the response carries reward points (C8)", async () => {
     state.post = post("Commented post");
     for (const [response, shown] of [[{ id: "c", reward: { points: 5 } }, true], [{ id: "c" }, false]] as const) {
-      cleanup(); state.request.mockReset().mockResolvedValue(response);
+      cleanup(); toast.show.mockReset(); state.request.mockReset().mockResolvedValue(response);
       render(<FanPostDetail postId={state.post.id as string} locale="en" />);
       fireEvent.change(screen.getByRole("textbox"), { target: { value: "nice" } });
       fireEvent.submit(document.querySelector("form")!);
       await waitFor(() => expect(state.request).toHaveBeenCalledWith(expect.stringContaining("/comments"), "POST", expect.anything()));
-      await waitFor(() => expect(document.querySelector("[data-testid=point-reward-burst]") !== null).toBe(shown));
+      await waitFor(() => expect(toast.show.mock.calls.some(([, mission, reward]) => mission === "comment" && reward.points === 5)).toBe(shown));
+      expect(document.querySelector("[data-testid=point-reward-burst]")).toBeNull();
     }
   });
 

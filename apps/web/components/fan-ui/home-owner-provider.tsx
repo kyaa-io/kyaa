@@ -5,7 +5,7 @@ import type { AppLocale } from "@/i18n/locales";
 import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 import { z } from "zod";
-import { mySummarySchema, type MySummary } from "../../features/my/domain/my-summary";
+import { mySummaryPath, mySummarySchema, type MySummary } from "../../features/my/domain/my-summary";
 import type { ContentLocale } from "../../server/content/content-domain";
 import { stampTypeSchema } from "../../features/passport/domain/passport-read-model";
 import { firstReactionStampSchema, passportStampDisplay } from "../../features/passport/domain/first-like-stamp";
@@ -50,7 +50,7 @@ function HomeOwnerStateProvider({ locale, children, auth, publishedCreatorSlugs 
   const ownerId = auth.user?.id;
   const privateReady = auth.ready && (!auth.authenticated || Boolean(ownerId));
   const ownerAuth = { ready: privateReady, authenticated: auth.authenticated, user: ownerId ? { id: ownerId } : null, getAccessToken: auth.getAccessToken };
-  const summaryResource = useOwnedFanResource(auth.authenticated && ownerId ? `/api/me/summary?locale=${toContentLocale(locale)}&tierStages=1` : null, parseHomeSummary, ownerAuth);
+  const summaryResource = useOwnedFanResource(auth.authenticated && ownerId ? mySummaryPath(toContentLocale(locale)) : null, parseHomeSummary, ownerAuth);
   const personalization: PersonalizationState = !privateReady ? { status: "auth-loading" }
     : !auth.authenticated ? { status: "guest" }
     : summaryResource.state.status === "loading" || publishedCreatorSlugs === undefined ? { status: "authenticated-loading" }

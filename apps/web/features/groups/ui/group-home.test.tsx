@@ -59,7 +59,7 @@ it('promises only what the server pays on a group: check-in points, no post or c
 it('reads today without a creator for a signed-in fan and shows it in the head',async()=>{
  h.auth=true;
  home();
- await screen.findByRole('group',{name:'오늘 받은 포인트 22P · 도장 1개'});
+ await screen.findByText('오늘 +22P');
  expect(h.urls).toContain('/api/me/dukjil/today');
 });
 

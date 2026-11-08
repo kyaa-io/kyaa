@@ -2,6 +2,8 @@ import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/re
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import { CheerReplies } from "./cheer-replies";
 const mocks = vi.hoisted(() => ({ auth: { ready: true, authenticated: true, user: { id: "owner-a" }, getAccessToken: async () => "token" }, request: vi.fn(), retry: vi.fn(), replies: [] as unknown[] }));
+const toast = vi.hoisted(() => ({ show: vi.fn() }));
+vi.mock("./mission-reward-toast", () => ({ showMissionRewardToast: toast.show }));
 vi.mock("@/features/auth/client/cognito-auth", () => ({ useByUsAuth: () => mocks.auth }));
 vi.mock("@/components/byus-session-provider", () => ({ useByUsSession: () => ({ ready: true, ownerId: mocks.auth.user.id, generation: 1 }) }));
 vi.mock("@/features/fanpage/ui/use-community-resource", () => ({ useCommunityResource: () => ({ state: { status: "ready", data: { replies: mocks.replies, nextCursor: null } }, retry: mocks.retry }) }));
@@ -30,12 +32,13 @@ it("does not refresh earning status after a failed reply", async () => {
  fireEvent.change(screen.getByLabelText("댓글 쓰기"), { target: { value: "unsent" } }); fireEvent.click(screen.getByRole("button", { name: "등록" }));
  await waitFor(() => expect(mocks.request).toHaveBeenCalledTimes(1)); expect(statusReads).toBe(1); expect(screen.getByLabelText("댓글 쓰기")).toHaveValue("unsent");
 });
-it("plays the point burst only when the reply response carries reward points", async () => {
+it("tells a finished comment mission by a toast only when the reply response carries reward points (C8)", async () => {
  for (const [response, shown] of [[{ ok: true, reward: { points: 12 } }, true], [{ ok: true }, false], [{ ok: true, reward: { points: 0 } }, false]] as const) {
-  cleanup(); mocks.request.mockReset().mockResolvedValue(response); show();
+  cleanup(); toast.show.mockReset(); mocks.request.mockReset().mockResolvedValue(response); show();
   fireEvent.change(screen.getByLabelText("댓글 쓰기"), { target: { value: "reply" } }); fireEvent.click(screen.getByRole("button", { name: "등록" }));
   await waitFor(() => expect(mocks.request).toHaveBeenCalled());
-  await waitFor(() => expect(document.querySelector("[data-testid=point-reward-burst]") !== null).toBe(shown));
+  await waitFor(() => expect(toast.show.mock.calls.some(([, mission, reward]) => mission === "comment" && reward.points === 12)).toBe(shown));
+  expect(document.querySelector("[data-testid=point-reward-burst]")).toBeNull();
  }
 });
 it("shows the artist mark only for replies the server marks as artist", () => {

@@ -1,7 +1,12 @@
 "use client";
 import {WalletHistoryPanel} from '@/features/group-wallet/ui/wallet-screen';
-import {WalletBalances,WalletCard,WalletExchange,WalletStrip} from '@/features/group-wallet/ui/wallet-card';
-import {useSelectedBias,type SelectedBiasOption} from '@/features/selected-bias/ui/use-selected-bias';
+import {WalletBalances,WalletCard,WalletExchange} from '@/features/group-wallet/ui/wallet-card';
+import {StanWallet,type StanSlot} from '@/features/group-wallet/ui/stan-wallet';
+import {FavoritePickMenu,SelectedBiasBar} from '@/features/selected-bias/ui/selected-bias-chip';
+import walletStyles from '@/features/group-wallet/ui/stan-wallet.module.css';
+import {openingPage} from '@/features/passport/ui/passport-mission-book';
+import {passportRoadmapSchema} from '@/features/passport/domain/dukjil-types';
+import {useSelectedBias,type SelectedBias,type SelectedBiasOption} from '@/features/selected-bias/ui/use-selected-bias';
 import {FanHelpTip} from '@/components/fan-ui/fan-help-tip';
 import {fanUiText} from '@/components/fan-ui/fan-ui-copy';
 import {createContext,useCallback,useContext,useEffect,useRef,useState,type ReactNode} from 'react';
@@ -40,6 +45,12 @@ const parseWallet=(value:unknown)=>walletSchema.parse(value);
 const parseRaffles=(value:unknown)=>groupBenefitsCatalogSchema.options[0].parse(value);
 const TODAY_ROWS=5,HISTORY_ROWS=5,HISTORY_ROWS_WIDE=3,LUCKY_CARDS=2;
 const parseJoined=(value:unknown)=>groupListSchema.parse(value);
+const parseRoadmap=(value:unknown)=>passportRoadmapSchema.parse(value);
+/** The favorite of this screen: while the browser signs in, the favorite the server read for this request (so the first HTML has it); a request the server saw signed out is a guest at once. */
+function useStanBias(locale:AppLocale,initial:SelectedBiasOption|null,signedOut:boolean):SelectedBias{
+ const live=useSelectedBias(locale);
+ return live.status==='loading'&&initial?{...live,status:'ready',selected:initial}:live.status==='loading'&&signedOut?{...live,status:'guest'}:live;
+}
 const lessLabel=(locale:AppLocale)=>locale==='ko'?'접기':translate(locale,myMessages.ma9d92b36cfae,'Show less');
 /** Section failures: when every mounted section failed, the screen shows one alert (in the wallet slot) with one retry instead of one error per section. */
 type SectionState={failed:boolean;retry:()=>void};
@@ -66,12 +77,12 @@ function BenefitsSide({children}:{children:ReactNode}){
 /** U4: the exchange is a secondary action and the one emphasised action is the check-in row of the missions, so the wallet no longer moves the emphasis. */
 const ignoreAffordable=()=>{};
 export function GroupBenefitsScreen({locale,initialHeart=null,signedOut=false}:{locale:AppLocale;initialHeart?:SelectedBiasOption|null;signedOut?:boolean}){
- const auth=useGroupRequest(),c=groupBenefitsCopy(locale);
+ const auth=useGroupRequest(),c=groupBenefitsCopy(locale),bias=useStanBias(locale,initialHeart,signedOut);
  return <FanAppFrame locale={locale} currentPath='/benefits' groupsEnabled mainId='benefits-main'><FanContentContainer as='main' id='benefits-main' className={styles.page}>
  <header className={styles.srOnly}><FanHeading as='h1'>{c.title}</FanHeading></header>
  <BenefitsAlerts><BenefitsSections><BenefitsAlertList/>
- <div className={styles.top}><BenefitsWallet key={`${locale}:${auth.ownerKey}`} locale={locale} signedOut={signedOut} onAffordableChange={ignoreAffordable}/></div>
- <div className={styles.firstRow}><BenefitsLucky locale={locale}/><BenefitsHeart locale={locale} initial={initialHeart} signedOut={signedOut}/></div>
+ <div className={styles.top}><SelectedBiasBar locale={locale} bias={bias} loginHref={fanLoginHref(locale,`/benefits?locale=${locale}`)}/><BenefitsWallet key={`${locale}:${auth.ownerKey}`} locale={locale} signedOut={signedOut} bias={bias} onAffordableChange={ignoreAffordable}/></div>
+ <div className={styles.firstRow}><BenefitsLucky locale={locale}/><BenefitsHeart locale={locale} bias={bias}/></div>
  <div className={styles.main}><BenefitsDailyMissions locale={locale}/><BenefitsToday locale={locale} emphasise={false}/></div>
  <BenefitsSide>{auth.ready?(auth.authenticated?<BenefitsHistory locale={locale}/>:<BenefitsGuestHistory locale={locale}/>):signedOut&&<BenefitsGuestHistory locale={locale}/>}</BenefitsSide></BenefitsSections></BenefitsAlerts>
  </FanContentContainer></FanAppFrame>;
@@ -82,15 +93,17 @@ function BenefitsLucky({locale}:{locale:AppLocale}){
  return <section className={styles.pLucky} aria-label={c.lucky} hidden={allFailed} data-lucky-soon><div className={styles.sectionHead}><FanHeading>{c.lucky}</FanHeading><FanHelpTip label={preparing} title={c.lucky} closeLabel={fanUiText(locale,'close')}>{preparing}</FanHelpTip></div>
  <ul className={styles.luckyCards}>{Array.from({length:LUCKY_CARDS},(_,index)=><li className={styles.luckyCard} key={index}><span className={styles.luckyImage}><img src='/images/economy/ticket.svg' alt='' width={40} height={40} data-fallback=''/></span><span className={styles.luckyText}><strong>{c.lucky} {index+1}</strong></span><FanTag tone='neutral' className={styles.luckyState}>{preparing}</FanTag></li>)}</ul></section>;
 }
-/** 하트 응원: the viewer's favorite (헤더의 최애) with one link to its page, where hearts and the like are sent. Without a favorite: pick one; guests: log in. */
-function BenefitsHeart({locale,initial,signedOut}:{locale:AppLocale;initial:SelectedBiasOption|null;signedOut:boolean}){
- // While the browser signs in, the favorite the server read for this request draws the card (same markup as the loaded one), so it is in the first HTML.
- const live=useSelectedBias(locale),bias=live.status==='loading'&&initial?{...live,status:'ready' as const,selected:initial}:live.status==='loading'&&signedOut?{...live,status:'guest' as const}:live,t=(key:Parameters<typeof dukjilText>[1],values?:unknown[])=>dukjilText(locale,key,values),title=t('heartTitle');
- const target=bias.selected??bias.unverified,href=target?`/${encodeURIComponent(target.slug)}?locale=${locale}`:`/pages/groups?locale=${locale}`;
+/** 하트 응원 (feedback D15): not open yet, like 럭키드로우 — the card keeps the viewer's favorite, its action is shown disabled with the 준비 중 tag and the reason
+ * behind a help tip. Without a favorite it still leads to choosing one (D2: no dead end); guests go to sign in. */
+function BenefitsHeart({locale,bias}:{locale:AppLocale;bias:SelectedBias}){
+ const t=(key:Parameters<typeof dukjilText>[1],values?:unknown[])=>dukjilText(locale,key,values),title=t('heartTitle'),preparing=benefitsRaffleState(locale,'preparing');
+ const target=bias.selected??bias.unverified;
  const body=bias.status==='loading'?<div className={styles.heartPending}><FanSkeletonRows rows={1}/></div>
   :bias.status==='guest'?<Link className={styles.heartLink} href={fanLoginHref(locale,`/benefits?locale=${locale}`) as Route}><span className={styles.heartIcon}><Heart aria-hidden='true' size={20}/></span><span className={styles.heartName}>{t('heartPick')}</span><ArrowRight aria-hidden='true' size={16}/></Link>
-  :<Link className={styles.heartLink} href={href as Route}>{bias.selected?<img className={styles.heartAvatar} src={bias.selected.image} alt='' width={40} height={40} style={bias.selected.imagePosition?{objectPosition:bias.selected.imagePosition}:undefined}/>:<span className={styles.heartIcon}><Heart aria-hidden='true' size={20}/></span>}<span className={styles.heartName}>{target?t('heartGo',[target.name]):t('heartPick')}</span><ArrowRight aria-hidden='true' size={16}/></Link>;
- return <section className={styles.pHeart} aria-label={title}><div className={styles.sectionHead}><FanHeading>{title}</FanHeading></div>{body}</section>;
+  :!bias.selected&&bias.options.length?<FavoritePickMenu locale={locale} bias={bias} className={styles.heartLink}><span className={styles.heartIcon}><Heart aria-hidden='true' size={20}/></span><span className={styles.heartName}>{t('heartPick')}</span><ArrowRight aria-hidden='true' size={16}/></FavoritePickMenu>
+  :!target?<Link className={styles.heartLink} href={`/pages/groups?locale=${locale}` as Route}><span className={styles.heartIcon}><Heart aria-hidden='true' size={20}/></span><span className={styles.heartName}>{t('heartPick')}</span><ArrowRight aria-hidden='true' size={16}/></Link>
+  :<div className={styles.heartLink} data-heart-soon='' aria-disabled='true'>{bias.selected?<img className={styles.heartAvatar} src={bias.selected.image} alt='' width={40} height={40} style={bias.selected.imagePosition?{objectPosition:bias.selected.imagePosition}:undefined}/>:<span className={styles.heartIcon}><Heart aria-hidden='true' size={20}/></span>}<span className={styles.heartName}>{t('heartGo',[target.name])}</span><FanTag tone='neutral'>{preparing}</FanTag></div>;
+ return <section className={styles.pHeart} aria-label={title} data-heart-soon=''><div className={styles.sectionHead}><FanHeading>{title}</FanHeading><FanHelpTip label={preparing} title={title} closeLabel={fanUiText(locale,'close')}>{preparing}</FanHelpTip></div>{body}</section>;
 }
 /** 오늘의 덕질: one tile/row per joined fan page; guests see the spotlight pages with a login check-in (same outline). Hidden while the policy is off; the skeleton holds the height until both are known. Its first check-in is the emphasised action while the exchange is not usable. */
 function BenefitsToday({locale,emphasise}:{locale:AppLocale;emphasise:boolean}){
@@ -125,14 +138,22 @@ function BenefitsGuestHistory({locale}:{locale:AppLocale}){
  return <div className={styles.pGuestHistory}><section className={styles.pGuestHistorySection} aria-label={c.historyLink}><div className={styles.guestHistoryHead}><h2 className={styles.guestHistoryTitle}>{c.historyLink}</h2><FanLockedValue locale={locale}/></div><FanLockedRows rows={3}/></section></div>;
 }
 /** The wallet column's first piece: the shared wallet card. Guests keep the card and balances with the login action in the exchange slot. */
-function BenefitsWallet({locale,signedOut=false,onAffordableChange}:{locale:AppLocale;signedOut?:boolean;onAffordableChange:(canExchange:boolean|null)=>void}){
+function BenefitsWallet({locale,signedOut=false,bias,onAffordableChange}:{locale:AppLocale;signedOut?:boolean;bias:SelectedBias;onAffordableChange:(canExchange:boolean|null)=>void}){
  const auth=useGroupRequest(),w=walletCopy(locale),wallet=useGroupResource(auth.authenticated?'/api/me/wallet':null,parseWallet);
+ // Flow 2 (C9): stamps are the stamped slots of the passport page being filled (the MY card's number), hearts come with the summary.
+ const passportId=auth.authenticated?bias.selected?.passportId:undefined,roadmap=useGroupResource(passportId?`/api/me/passports/${encodeURIComponent(passportId)}/roadmap`:null,parseRoadmap);
+ const guest=(!auth.ready&&signedOut)||(auth.ready&&!auth.authenticated)||bias.status==='guest';
+ const page=roadmap.data?roadmap.data.pages[openingPage(roadmap.data.pages)]:undefined;
+ const stamps:StanSlot=guest?'locked':!bias.selected?(bias.status==='loading'?'loading':0):page?page.filled:roadmap.data?0:roadmap.error?'missing':'loading';
+ const hearts:StanSlot=guest?'locked':bias.status==='loading'?'loading':bias.selected?bias.selected.hearts??'missing':0;
+ // D2: with passports but no favorite named, "최애 고르기" opens the favorite menu right here; without a passport it goes to finding one.
+ const cheer=bias.status==='loading'?{kind:'loading' as const}:bias.selected?{kind:'favorite' as const,name:bias.selected.name}:!guest&&bias.options.length?{kind:'menu' as const,node:<FavoritePickMenu locale={locale} bias={bias} className={walletStyles.cheer}><span>{dukjilText(locale,'heartPick')}</span><ArrowRight size={16} aria-hidden='true'/></FavoritePickMenu>}:{kind:'pick' as const,href:guest?fanLoginHref(locale,`/benefits?locale=${locale}`):`/pages/groups?locale=${locale}`};
  useEffect(()=>{window.addEventListener(GROUP_WALLET_CHANGED_EVENT,wallet.retry);return()=>window.removeEventListener(GROUP_WALLET_CHANGED_EVENT,wallet.retry);},[wallet.retry]);
  const sections=useContext(SectionContext),retryAll=()=>window.dispatchEvent(new Event(GROUP_WALLET_CHANGED_EVENT)),failed=auth.ready&&auth.authenticated&&!wallet.loading&&!wallet.data,allFailed=useSectionFailure('wallet',failed,retryAll),lifted=useLiftedAlert('wallet',{message:w.error,label:w.retry,retry:retryAll},failed&&!allFailed),walletAlert=lifted?null:<FanState inline kind='error' className={styles.inlineError} title={w.error} actions={<FanAction onClick={retryAll}>{w.retry}</FanAction>}/>;
  const known=auth.ready&&auth.authenticated&&!wallet.loading,canExchange=known?Boolean(wallet.data&&wallet.data.points>=wallet.data.pointCost):null;
  useEffect(()=>{onAffordableChange(canExchange);},[canExchange,onAffordableChange]);
  if(allFailed)return <div className={styles.pWallet}><FanState inline compact kind='error' title={w.error} actions={<FanAction variant='text' onClick={()=>sections?.retryAll()}>{w.retry}</FanAction>}/></div>;
- const card=(state:Parameters<typeof WalletCard>[0]['state'])=><WalletStrip className={styles.pWallet} locale={locale} title={w.wallet} state={state}/>;
+ const card=(state:Parameters<typeof WalletCard>[0]['state'])=><StanWallet className={styles.pWallet} locale={locale} state={state} stamps={stamps} hearts={hearts} cheer={cheer}/>;
  // The server saw no session: the signed-out card is drawn from the first HTML instead of a loading card of another height.
  if(!auth.ready&&signedOut||auth.ready&&!auth.authenticated)return card({kind:'guest',action:<FanAction variant='primary' fullWidth href={fanLoginHref(locale,`/benefits?locale=${locale}`)}>{w.login}</FanAction>});
  if(!auth.ready||wallet.loading)return card({kind:'loading'});

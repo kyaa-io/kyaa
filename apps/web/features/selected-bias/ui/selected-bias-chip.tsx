@@ -1,11 +1,9 @@
 "use client";
 import { Menu } from "@base-ui/react/menu";
-import { Check, ChevronDown, Star, Thermometer } from "lucide-react";
-import { useEffect } from "react";
+import { Check, ChevronDown, Heart, Star } from "lucide-react";
+import type { ReactNode } from "react";
 import { FanNumber } from "@/components/fan-ui/fan-number";
-import { DukjilProvider, useDukjil } from "@/features/dukjil/ui/dukjil-provider";
-import { GROUP_WALLET_CHANGED_EVENT } from "@/features/groups/ui/use-group-resource";
-import { temperatureParts, temperatureValue } from "@/features/temperature/temperature";
+import { FanLockedValue } from "@/components/fan-ui/fan-locked-value";
 import type { Route } from "next";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
@@ -41,41 +39,41 @@ export function SelectedBiasChip({ locale }: { locale: AppLocale }) {
   if (bias.unverified) return <Link className={styles.chip} data-selected-bias="unverified" href={`/${encodeURIComponent(bias.unverified.slug)}?locale=${locale}` as Route}><Star size={20} aria-hidden="true" className={styles.star} /><span className={styles.name}>{bias.unverified.name}</span></Link>;
   if (bias.status === "empty") return <Link className={styles.chip} data-selected-bias="empty" href={`/pages/groups?locale=${locale}` as Route}><Empty locale={locale} /></Link>;
   if (bias.status === "error") return <FanAction variant="text" className={styles.chip} data-selected-bias="error" onClick={bias.retry}><Empty locale={locale} /></FanAction>;
-  const current = bias.selected!;
-  // One catalog read and one `today` read for the selected favorite; the temperature comes from them (D2).
-  return <DukjilProvider slug={current.slug} locale={locale}><SelectedChip locale={locale} bias={bias} current={current} /></DukjilProvider>;
+  // D2: passports but no favorite named yet — "최애 고르기" opens the same menu to name one, never a dead end.
+  if (!bias.selected) return <PickChip locale={locale} bias={bias} />;
+  return <SelectedChip locale={locale} bias={bias} current={bias.selected} />;
 }
 
-/** The header state's three cells (261107-2 N17): tier · favorite · temperature°. Without a favorite it asks to choose and draws no temperature;
- * without today's daily missions (total 0 or unknown) there is no temperature cell. The temperature pulses once when it changes. */
-export function SelectedBiasStatus({ locale, grade, favorite, tier, stageKey, completedMissions, totalMissions }: {
-  locale: AppLocale; grade: string; favorite: string | null; tier?: SelectedBiasOption["tier"]; stageKey?: FanStageKey;
-  completedMissions?: number; totalMissions?: number;
+/** The header's hearts: a heart and the count beside it (not inside: 1,234 does not fit a 16px heart). Number and heart pulse once together when
+ * the count changes (FanNumber's data-pulse; none on first draw or with reduced motion). */
+function HeartsValue({ locale, hearts }: { locale: AppLocale; hearts: number }) {
+  return <FanNumber value={hearts} locale={locale} pulseOnChange className={styles.heartsValue} icon={<Heart size={16} strokeWidth={1.75} className={styles.heart} />} />;
+}
+
+/** The favorite's 팬·랭킹 tab, where hearts are counted per fan. */
+const fansHref = (slug: string, locale: AppLocale) => `/${encodeURIComponent(slug)}?tab=fans&locale=${locale}` as Route;
+
+/** The header state's three cells (feedback C1): tier · favorite · ♥hearts. Hearts are the ones collected in the selected favorite's community;
+ * without a favorite it asks to choose and draws no hearts. A missing count reads as 0. */
+export function SelectedBiasStatus({ locale, grade, favorite, tier, stageKey, hearts }: {
+  locale: AppLocale; grade: string; favorite: string | null; tier?: SelectedBiasOption["tier"]; stageKey?: FanStageKey; hearts?: number | null;
 }) {
   if (!favorite) return <Empty locale={locale} />;
-  const temperature = totalMissions ? temperatureValue(completedMissions ?? 0, totalMissions) : null;
+  const value = hearts ?? 0;
   return <>
     {tier ? <FanTierBadge tier={tier} stageKey={stageKey} locale={locale} size={24} className={styles.badge} /> : null}
     <span className={styles.grade}>{grade}</span>
     <span className={styles.name}>{favorite}</span>
-    {temperature !== null ? <span className={styles.temp} data-temperature={temperature}><FanNumber value={temperature} unit="°" locale={locale} pulseOnChange className={styles.tempValue} /></span> : null}
+    <span className={styles.hearts} data-hearts={value} aria-label={text(locale, "heartsLabel", [value.toLocaleString(locale), favorite])}><HeartsValue locale={locale} hearts={value} /></span>
   </>;
 }
 
-/** Header state (261107-2 U2, D2): tier · favorite · temperature°. The tier word shows from 1200px; below that the tier stamp alone stands for it. No temperature without a daily mission. */
+/** Header state (feedback C1): tier · favorite · ♥hearts. The tier word shows from 1200px; below that the tier stamp alone stands for it.
+ * Hearts come with the summary (`hearts=1`); when the server gave none (its hearts read failed) the cell is left out rather than showing a guess. 0 is shown as 0. */
 function SelectedChip({ locale, bias, current }: { locale: AppLocale; bias: SelectedBias; current: SelectedBiasOption }) {
-  const dukjil = useDukjil();
-  const refresh = dukjil?.refresh;
-  // A mission paid on another screen moves the wallet; read today's count again so the temperature follows.
-  useEffect(() => {
-    if (!refresh) return;
-    window.addEventListener(GROUP_WALLET_CHANGED_EVENT, refresh);
-    return () => window.removeEventListener(GROUP_WALLET_CHANGED_EVENT, refresh);
-  }, [refresh]);
-  const temp = dukjil?.status === "on" ? temperatureParts(dukjil.catalog, dukjil.today, dukjil.attendance?.attendedToday) : null;
+  const hearts = current.hearts;
   const grade = gradeOf(locale, current);
-  const temperature = temp?.total ? temperatureValue(temp.done, temp.total) : null;
-  // F10: each cell has its own destination — the tier opens the 찐팬 tier guide, the favorite opens the switch menu, the temperature opens today's missions.
+  // F10: each cell has its own destination — the tier opens the 찐팬 tier guide, the favorite opens the switch menu, the hearts open the favorite's 팬·랭킹 tab.
   return <span className={styles.group} data-selected-bias="selected">
     <Link className={styles.cell} data-cell="tier" href={`/guide/jjinfan?locale=${locale}` as Route} aria-label={grade}>
       {current.tier ? <FanTierBadge tier={current.tier} stageKey={current.stage?.key} locale={locale} size={24} className={styles.badge} /> : null}
@@ -86,15 +84,25 @@ function SelectedChip({ locale, bias, current }: { locale: AppLocale; bias: Sele
       <span className={styles.name}>{current.name}</span>
       <ChevronDown size={16} aria-hidden="true" className={styles.chevron} />
     </Menu.Trigger>
+    <FavoriteMenu locale={locale} bias={bias} current={current} />
+    </Menu.Root>
+    {hearts !== undefined ? <Link className={`${styles.cell} ${styles.hearts}`} data-cell="hearts" data-hearts={hearts} href={fansHref(current.slug, locale)} aria-label={text(locale, "heartsLabel", [hearts.toLocaleString(locale), current.name])}><HeartsValue locale={locale} hearts={hearts} /></Link> : null}
+  </span>;
+}
+
+/** The favorite switch menu, shared by the header chip and the 덕질 status bar: hearts first (to the fans tab), then every passport, then more. */
+function FavoriteMenu({ locale, bias, current }: { locale: AppLocale; bias: SelectedBias; current: SelectedBiasOption | null }) {
+  const hearts = current?.hearts;
+  return <>
     <Menu.Portal>
       <Menu.Positioner className={styles.positioner} sideOffset={8} align="end">
         <Menu.Popup className={styles.menu}>
-          {temp ? <Menu.Item className={styles.tempRow} render={<Link href={`/benefits?locale=${locale}` as Route} />}>
-            <Thermometer size={20} strokeWidth={1.75} aria-hidden="true" />
-            <span className={styles.itemText}><strong>{text(locale, "tempTitle")} {temp.value.toLocaleString(locale)}°</strong><small>{text(locale, "tempMissions", [temp.done, temp.total])}</small></span>
+          {current && hearts !== undefined ? <Menu.Item className={styles.heartsRow} render={<Link href={fansHref(current.slug, locale)} />}>
+            <Heart size={20} strokeWidth={1.75} aria-hidden="true" className={styles.heart} />
+            <span className={styles.itemText}><strong>{hearts.toLocaleString(locale)}</strong><small>{text(locale, "heartsMenu", [current.name])}</small></span>
           </Menu.Item> : null}
-          <p className={styles.title}>{text(locale, "biasMine")}</p>
-          <Menu.RadioGroup value={current.slug} onValueChange={(slug: string) => bias.select(slug)}>
+          <p className={styles.title}>{text(locale, current ? "biasMine" : "biasPickTitle")}</p>
+          <Menu.RadioGroup value={current?.slug ?? null} onValueChange={(slug: string) => bias.select(slug)}>
             {bias.options.map((option) => <Menu.RadioItem key={option.slug} value={option.slug} className={styles.item}>
               <FanTierBadge tier={option.tier} stageKey={option.stage?.key} locale={locale} size={32} />
               <span className={styles.itemText}><strong>{option.name}</strong><small>{gradeOf(locale, option)}</small></span>
@@ -105,7 +113,53 @@ function SelectedChip({ locale, bias, current }: { locale: AppLocale; bias: Sele
         </Menu.Popup>
       </Menu.Positioner>
     </Menu.Portal>
+  </>;
+}
+
+/** 덕질 status bar (feedback C1·C9, 390 and 1440): one row, the same three values as the header. Left: tier · favorite, which opens the
+ * favorite menu; right: ♥N, which opens the favorite's fans tab. Signed out: choose-favorite (to sign in) and a locked hearts value.
+ * `bias` is passed in so the screen can draw the server-read favorite in the first HTML. */
+export function SelectedBiasBar({ locale, bias, loginHref }: { locale: AppLocale; bias: SelectedBias; loginHref: string }) {
+  if (bias.status === "loading") return <div className={styles.bar} data-selected-bias-bar="loading" aria-hidden="true"><span className={styles.placeholder} /></div>;
+  if (bias.status === "guest") return <div className={styles.bar} data-selected-bias-bar="guest"><Link className={styles.chip} href={loginHref as Route}><Empty locale={locale} /></Link><span className={styles.barHearts}><Heart size={20} strokeWidth={1.75} aria-hidden="true" className={styles.heart} /><FanLockedValue locale={locale} /></span></div>;
+  const current = bias.selected;
+  if (!current && bias.options.length) return <div className={styles.bar} data-selected-bias-bar="unnamed"><Menu.Root>
+    <Menu.Trigger className={`${styles.chip} ${styles.barTrigger}`}><Empty locale={locale} /><ChevronDown size={16} aria-hidden="true" className={styles.barChevron} /></Menu.Trigger>
+    <FavoriteMenu locale={locale} bias={bias} current={null} />
+  </Menu.Root></div>;
+  if (!current) {
+    const target = bias.unverified;
+    return <div className={styles.bar} data-selected-bias-bar="empty"><Link className={styles.chip} href={(target ? `/${encodeURIComponent(target.slug)}?locale=${locale}` : `/pages/groups?locale=${locale}`) as Route}>{target ? <><Star size={20} aria-hidden="true" className={styles.star} /><span className={styles.name}>{target.name}</span></> : <Empty locale={locale} />}</Link></div>;
+  }
+  const grade = gradeOf(locale, current), hearts = current.hearts;
+  return <div className={styles.bar} data-selected-bias-bar="selected">
+    <Menu.Root>
+      <Menu.Trigger className={`${styles.chip} ${styles.barTrigger}`} aria-label={text(locale, "biasCurrent", [current.name, grade])}>
+        {current.tier ? <FanTierBadge tier={current.tier} stageKey={current.stage?.key} locale={locale} size={24} className={styles.badge} /> : null}
+        <span className={styles.barGrade}>{grade}</span>
+        <span className={styles.name}>{current.name}</span>
+        <ChevronDown size={16} aria-hidden="true" className={styles.barChevron} />
+      </Menu.Trigger>
+      <FavoriteMenu locale={locale} bias={bias} current={current} />
     </Menu.Root>
-    {temperature !== null ? <Link className={`${styles.cell} ${styles.temp}`} data-cell="temperature" data-temperature={temperature} href={`/benefits?locale=${locale}` as Route} aria-label={`${text(locale, "tempTitle")} ${temperature.toLocaleString(locale)}°`}><FanNumber value={temperature} unit="°" locale={locale} pulseOnChange className={styles.tempValue} /></Link> : null}
-  </span>;
+    {hearts !== undefined ? <Link className={styles.barHearts} data-hearts={hearts} href={fansHref(current.slug, locale)} aria-label={text(locale, "heartsLabel", [hearts.toLocaleString(locale), current.name])}>
+      <FanNumber value={hearts} size="lg" locale={locale} pulseOnChange className={styles.heartsValue} icon={<Heart size={20} strokeWidth={1.75} className={styles.heart} />} />
+    </Link> : null}
+  </div>;
+}
+
+/** Passports but no favorite named: the chip says "최애 고르기" and opens the menu of passports to name one (D2). */
+function PickChip({ locale, bias }: { locale: AppLocale; bias: SelectedBias }) {
+  return <Menu.Root>
+    <Menu.Trigger className={`${styles.chip} ${styles.trigger}`} data-selected-bias="unnamed"><Empty locale={locale} /></Menu.Trigger>
+    <FavoriteMenu locale={locale} bias={bias} current={null} />
+  </Menu.Root>;
+}
+
+/** A "최애 고르기" trigger anywhere on a page (덕질 wallet, heart card) that opens the favorite menu when passports exist (D2). */
+export function FavoritePickMenu({ locale, bias, className, children }: { locale: AppLocale; bias: SelectedBias; className?: string; children: ReactNode }) {
+  return <Menu.Root>
+    <Menu.Trigger className={className} data-favorite-pick="">{children}</Menu.Trigger>
+    <FavoriteMenu locale={locale} bias={bias} current={null} />
+  </Menu.Root>;
 }

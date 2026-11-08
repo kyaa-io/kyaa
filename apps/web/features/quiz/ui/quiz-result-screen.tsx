@@ -17,6 +17,7 @@ import type { FanLocale } from "@/components/fan-shell/fan-app-shell";
 import { FocusFlowFrame } from "@/components/fan-shell/focus-flow-frame";
 import { passportBookText } from "@/features/passport/ui/passport-book-copy";
 import { FanAction } from "@/components/fan-ui/fan-action";
+import { celebrateStamp } from "@/features/dukjil/ui/stamp-slam";
 import styles from "./quiz-result-screen.module.css";
 
 interface QuizResultScreenProps {
@@ -161,6 +162,15 @@ export function QuizResultScreen({
   useEffect(() => {
     if (actionError) actionErrorRef.current?.focus();
   }, [actionError]);
+
+  // D3: passing lands the first passport stamp over the whole screen, once per attempt (a reload or a return does not replay it).
+  const passedNow = view.kind === "ready" && view.projection.attempt.status === "passed";
+  useEffect(() => {
+    if (!passedNow || !attemptId) return;
+    const key = `kyaa:stamp-slam:quiz:${attemptId}`;
+    try { if (window.sessionStorage.getItem(key)) return; window.sessionStorage.setItem(key, "1"); } catch { /* still plays once in this view */ }
+    void celebrateStamp({ locale, stamps: 1 });
+  }, [attemptId, locale, passedNow]);
 
   useEffect(() => {
     if (!ready) return;

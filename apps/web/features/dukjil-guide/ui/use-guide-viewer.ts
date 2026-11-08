@@ -2,9 +2,9 @@
 
 import { useByUsAuth } from "@/features/auth/client/cognito-auth";
 import { useOwnedFanResource } from "@/components/fan-ui/use-owned-fan-resource";
-import { mySummarySchema, type MySummary } from "@/features/my/domain/my-summary";
+import { mySummaryPath, mySummarySchema, type MySummary } from "@/features/my/domain/my-summary";
 import { passportRoadmapSchema } from "@/features/passport/domain/dukjil-types";
-import { pickSelectedBias, readSelectedBiasSlug, selectedBiasOptions } from "@/features/selected-bias/ui/use-selected-bias";
+import { defaultPassport, pickSelectedBias, selectedBiasOptions } from "@/features/selected-bias/ui/use-selected-bias";
 import { toContentLocale, type AppLocale } from "@/i18n/locales";
 
 export type GuideCreator = { slug: string; name: string; passportId: string };
@@ -20,9 +20,10 @@ const parseRoadmap = (value: unknown) => passportRoadmapSchema.parse(value);
 type ReadState<T> = { status: "loading" } | { status: "ready"; data: T } | { status: "error"; kind: "auth" | "missing" | "network" };
 type Roadmap = ReturnType<typeof parseRoadmap>;
 
-/** The favorite the header shows: the selected one, otherwise the first passport. Null when they hold none. */
-export function pickGuideCreator(summary: MySummary | undefined, selectedSlug: string | null = null): GuideCreator | null {
-  const picked = pickSelectedBias(selectedBiasOptions(summary), selectedSlug);
+/** The favorite named in MY (the header's), otherwise the passport MY opens first. Null when they hold none. */
+export function pickGuideCreator(summary: MySummary | undefined, selectedSlug: string | null = summary?.favorite?.slug ?? null): GuideCreator | null {
+  const options = selectedBiasOptions(summary);
+  const picked = pickSelectedBias(options, selectedSlug) ?? defaultPassport(options);
   return picked ? { slug: picked.slug, name: picked.name, passportId: picked.passportId } : null;
 }
 
@@ -55,12 +56,13 @@ export function buildGuideViewer(input: {
 export function useGuideViewer(locale: AppLocale, withProgress: boolean): GuideViewer {
   const auth = useByUsAuth();
   const summary = useOwnedFanResource(
-    auth.authenticated ? `/api/me/summary?locale=${toContentLocale(locale)}&tierStages=1` : null,
+    auth.authenticated ? mySummaryPath(toContentLocale(locale)) : null,
     parseSummary,
     auth,
   );
-  const selectedSlug = readSelectedBiasSlug(auth.user?.id);
-  const creator = pickGuideCreator(summary.state.status === "ready" ? summary.state.data : undefined, selectedSlug);
+  const ready = summary.state.status === "ready" ? summary.state.data : undefined;
+  const selectedSlug = ready?.favorite?.slug ?? null;
+  const creator = pickGuideCreator(ready, selectedSlug);
   const roadmap = useOwnedFanResource(
     withProgress && creator ? `/api/me/passports/${creator.passportId}/roadmap` : null,
     parseRoadmap,

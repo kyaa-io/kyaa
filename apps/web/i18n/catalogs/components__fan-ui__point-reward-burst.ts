@@ -17,3 +17,24 @@ const earned = {
 
 export const pointRewardAnnouncement = (locale: AppLocale, points: number) =>
   earned[locale].replace("{0}", points.toLocaleString(locale));
+
+// C8: the completion notice names what a finished mission paid, "포인트 +20 · 스탬프 +1". Stamps are counted on the passport.
+const pointWord = {
+  ko: "포인트", en: "Points", ja: "ポイント", "zh-Hans": "积分", "zh-Hant": "點數", es: "Puntos",
+  id: "Poin", vi: "Điểm", th: "พอยต์", pt: "Pontos", fr: "Points", ru: "Баллы",
+} satisfies Record<AppLocale, string>;
+const stampWord = {
+  ko: "스탬프", en: "Stamp", ja: "スタンプ", "zh-Hans": "印章", "zh-Hant": "印章", es: "Sello",
+  id: "Stempel", vi: "Con dấu", th: "แสตมป์", pt: "Selo", fr: "Tampon", ru: "Штамп",
+} satisfies Record<AppLocale, string>;
+
+export const pointRewardLine = (locale: AppLocale, points: number, stamps = 0) =>
+  [`${pointWord[locale]} +${points.toLocaleString(locale)}`, ...(stamps > 0 ? [`${stampWord[locale]} +${stamps.toLocaleString(locale)}`] : [])].join(" · ");
+
+// C8: a mission finished on another screen (a post on the board, a comment under a post) is told by a toast titled with the mission.
+const missionDone = {
+  ko: "{0} 미션 완료", en: "{0} mission done", ja: "{0}ミッション達成", "zh-Hans": "{0}任务完成", "zh-Hant": "{0}任務完成", es: "Misión {0} completada",
+  id: "Misi {0} selesai", vi: "Hoàn thành nhiệm vụ {0}", th: "ภารกิจ{0}สำเร็จ", pt: "Missão {0} concluída", fr: "Mission {0} terminée", ru: "Миссия «{0}» выполнена",
+} satisfies Record<AppLocale, string>;
+
+export const missionDoneTitle = (locale: AppLocale, mission: string) => missionDone[locale].replace("{0}", mission);

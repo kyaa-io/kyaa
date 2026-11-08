@@ -6,8 +6,6 @@ import { resolve } from "node:path";
 import type { Page } from "@playwright/test";
 import { test, expect, sql, loggedInPage, SKIP_AUTH, WRITE, ROUTES } from "./q-fixtures";
 import { APP_LOCALES } from "../i18n/locales";
-import { temperatureParts } from "../features/temperature/temperature";
-import { parseDukjilCatalog, parseDukjilToday } from "../features/dukjil/domain/dukjil-ui";
 
 async function settle(page: Page, ms = 1500) { await page.locator("main").first().waitFor({ state: "visible", timeout: 30_000 }); await page.waitForTimeout(ms); }
 const get = async (page: Page, url: string) => { const r = await page.request.get(url); return { status: r.status(), json: await r.json().catch(() => null) as any }; };
@@ -86,23 +84,22 @@ test("F3: 글 상세에서 댓글 ⋯ 메뉴와 답글이 있고, 사진 업로�
   await auth!.close();
 });
 
-test("F4: 헤더 온도·포인트 값이 서버 값과 같다", async ({ browser, baseURL }, info) => {
+test("F4: 헤더 하트 값이 서버 값과 같다(C1)", async ({ browser, baseURL }, info) => {
   const auth = await loggedInPage(browser, info.project.use.viewport as { width: number; height: number }, baseURL!);
   test.skip(!auth, SKIP_AUTH);
   const p = auth!.page;
-  // 헤더가 실제로 고른 최애의 오늘 기록 주소를 잡는다(최애 선택은 브라우저에 저장되어 서버 요약만으로는 알 수 없다).
-  let todayPath = "";
-  p.on("request", (r) => { const u = new URL(r.url()); if (u.pathname === "/api/me/dukjil/today") todayPath = u.pathname + u.search; });
+  // 헤더가 실제로 고른 최애의 패스포트 주소를 잡는다(최애 선택은 브라우저에 저장되어 서버 요약만으로는 알 수 없다).
+  let roadmapPath = "";
+  p.on("request", (r) => { const u = new URL(r.url()); if (/^\/api\/me\/passports\/[^/]+\/roadmap$/.test(u.pathname)) roadmapPath = u.pathname; });
   await p.goto(ROUTES.home); await settle(p, 3000);
   const header = p.locator("header").first();
-  await expect(header.locator('[data-selected-bias="selected"]').filter({ visible: true }).first(), "최애가 있는 계정이어야 온도를 비교할 수 있다").toBeVisible();
-  expect(todayPath, "헤더가 오늘 기록을 읽지 않았다").not.toBe("");
-  const [catalog, today] = await Promise.all([auth!.api("/api/dukjil/catalog?locale=ko"), auth!.api(todayPath)]);
-  expect([catalog.status, today.status], "카탈로그·오늘 기록 응답").toEqual([200, 200]);
-  const parts = temperatureParts(parseDukjilCatalog(catalog.json), parseDukjilToday(today.json));
-  const cell = header.locator("[data-temperature]").filter({ visible: true });
-  if (!parts) { await expect(cell, "서버 기준 오늘 미션이 없으면 온도 칸이 없어야 한다").toHaveCount(0); }
-  else await expect(cell.first(), `서버 기준 ${parts.done}/${parts.total}`).toHaveAttribute("data-temperature", String(parts.value));
+  await expect(header.locator('[data-selected-bias="selected"]').filter({ visible: true }).first(), "최애가 있는 계정이어야 하트를 비교할 수 있다").toBeVisible();
+  expect(roadmapPath, "헤더가 최애 패스포트의 하트를 읽지 않았다").not.toBe("");
+  const roadmap = await auth!.api(roadmapPath);
+  expect(roadmap.status, "패스포트 하트 응답").toBe(200);
+  const hearts = (roadmap.json as { hearts: number }).hearts;
+  await expect(header.locator("[data-cell=hearts][data-hearts]").filter({ visible: true }).first(), `서버 기준 하트 ${hearts}`).toHaveAttribute("data-hearts", String(hearts));
+  await expect(header.locator('[data-selected-bias="selected"]').filter({ visible: true }).first()).not.toContainText("°");
   await auth!.close();
 });
 

@@ -13,6 +13,9 @@ import { useDukjil } from "@/features/dukjil/ui/dukjil-provider";
 import { EarnBadge } from "@/features/dukjil/ui/earn-badge";
 import { StampPress } from "@/features/dukjil/ui/stamp-press";
 import { GroupRequestError, useGroupRequest, useGroupResource } from "@/features/groups/ui/use-group-resource";
+import { notifyFanActivityUpdated } from "@/components/fan-ui/fan-activity-updates";
+import { useByUsSession } from "@/components/byus-session-provider";
+import { useByUsAuth } from "@/features/auth/client/cognito-auth";
 import type { Route } from "next";
 import type { AppLocale } from "@/i18n/locales";
 import { buildGuideModel } from "@/features/dukjil-guide/domain/guide-model";
@@ -160,6 +163,7 @@ export function PassportMissionBook({ passportId, creatorSlug, locale, stampSrc 
   const on = dukjil?.status === "on";
   const roadmap = useGroupResource(on ? `/api/me/passports/${encodeURIComponent(passportId)}/roadmap` : null, parseRoadmap);
   const { request } = useGroupRequest();
+  const session = useByUsSession(), auth = useByUsAuth(), ownerId = session.ownerId ?? auth.user?.id;
   const [busy, setBusy] = useState<number | null>(null);
   const [failedPage, setFailedPage] = useState<number | null>(null);
   const [picked, setPicked] = useState<number | null>(null);
@@ -174,11 +178,13 @@ export function PassportMissionBook({ passportId, creatorSlug, locale, stampSrc 
       const result = await request(`/api/me/passports/${encodeURIComponent(passportId)}/pages/${pageNo}/claim`, { method: "POST", body: JSON.stringify({ requestKey }) });
       passportClaimResultSchema.parse(result);
       keys.current.delete(pageNo);
+      // A claimed page is a heart: the header ♥N and 덕질 read hearts from the summary, which re-reads on this signal (C1).
+      notifyFanActivityUpdated(ownerId, ["summary", "passports"]);
     } catch (error) {
       if (error instanceof GroupRequestError && error.status === 409) keys.current.delete(pageNo);
       else setFailedPage(pageNo);
     } finally { setBusy(null); retry(); }
-  }, [passportId, request, retry]);
+  }, [ownerId, passportId, request, retry]);
   if (!on) return null;
   const proofHref = withLocale(`/c/${encodeURIComponent(creatorSlug)}/certifications`, locale);
   const pages = roadmap.data?.pages ?? [];

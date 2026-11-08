@@ -9,11 +9,12 @@ describe("PointRewardBurst", () => {
   beforeEach(() => { vi.useFakeTimers(); media(false); });
   afterEach(() => vi.useRealTimers());
 
-  it("announces the amount in the locale and shows +N P without blocking input", () => {
+  it("announces the amount in the locale and shows 포인트 +N without blocking input", () => {
     render(<div><PointRewardBurst locale="ko" points={10} burstKey={1} /></div>);
     expect(screen.getByRole("status").textContent).toBe("포인트 10점을 받았어요");
     const burst = screen.getByTestId("point-reward-burst");
-    expect(burst.textContent).toContain("+10 P");
+    expect(burst.textContent).toContain("포인트 +10");
+    expect(burst.textContent).not.toContain("스탬프");
     expect(burst.getAttribute("aria-hidden")).toBe("true");
   });
 
@@ -58,10 +59,16 @@ describe("PointRewardBurst", () => {
     const { result } = renderHook(() => usePointRewardBurst());
     act(() => { result.current.add(10); });
     act(() => { vi.advanceTimersByTime(300); result.current.add(10); });
-    expect(result.current.burst).toEqual({ points: 20, key: 2 });
-    act(() => { vi.advanceTimersByTime(POINT_REWARD_MERGE_MS + 100); result.current.add(30); });
-    expect(result.current.burst).toEqual({ points: 30, key: 3 });
+    expect(result.current.burst).toEqual({ points: 20, stamps: 0, key: 2 });
+    act(() => { vi.advanceTimersByTime(POINT_REWARD_MERGE_MS + 100); result.current.add(30, 1); });
+    expect(result.current.burst).toEqual({ points: 30, stamps: 1, key: 3 });
     act(() => { result.current.add(0); result.current.add(-5); });
     expect(result.current.burst?.points).toBe(30);
+  });
+
+  it("names a stamp beside the points when the server said one was stamped (C8)", () => {
+    render(<PointRewardBurst locale="ko" points={20} stamps={1} burstKey={1} />);
+    expect(screen.getByTestId("point-reward-burst").textContent).toBe("포인트 +20 · 스탬프 +1");
+    expect(screen.getByRole("status").textContent).toBe("포인트 +20 · 스탬프 +1");
   });
 });

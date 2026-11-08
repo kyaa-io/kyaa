@@ -46,7 +46,7 @@ import type { MyReward } from "../../benefit/domain/my-reward";
 import { raffleListSchema } from "../../benefit/domain/raffle";
 import { useFanpageResource } from "../../fanpage/ui/use-fanpage-resource";
 import { levelLabel } from "../../passport/domain/passport-read-model";
-import { mySummarySchema, prioritizeReservedLives, type MySummary } from "../domain/my-summary";
+import { mySummaryPath, mySummarySchema, prioritizeReservedLives, type MySummary } from "../domain/my-summary";
 import { FanHeading, FanSectionHeader } from "../../../components/fan-ui/fan-heading";
 
 import { fanStageLabel } from "../../rewards/domain/fan-stage";
@@ -63,7 +63,7 @@ import styles from "./my-screen.module.css";
 import { participationCopy } from "@/i18n/catalogs/features__schedules__ui__participation";
 import { personalCopy } from "@/i18n/catalogs/features__my__ui__personal-copy";
 import { useByUsSession } from "@/components/byus-session-provider";
-import { pickSelectedBias, readSelectedBiasSlug, selectedBiasOptions } from "@/features/selected-bias/ui/use-selected-bias";
+import { defaultPassport, pickSelectedBias, selectedBiasOptions } from "@/features/selected-bias/ui/use-selected-bias";
 
 const copy = {
   ko: {
@@ -205,7 +205,7 @@ export function MyScreen({ locale }: { locale: FanLocale }) {
   const auth = usePrivy();
   const session = useByUsSession();
   const { ready, authenticated } = auth;
-  const resource = useOwnedFanResource(`/api/me/summary?locale=${toContentLocale(locale)}&tierStages=1`, parseSummaryResponse, auth);
+  const resource = useOwnedFanResource(mySummaryPath(toContentLocale(locale)), parseSummaryResponse, auth);
   const avatarResource = useAvatar();
   const state = resource.state;
   const t = copy[locale];
@@ -236,7 +236,7 @@ function OwnerScopedDashboard({ summary, fallback, locale, avatarResource, refre
     if (!summary) return;
     setSelectedSlug((current) => current && summary.creators.some((creator) => creator.celebrity.slug === current)
       ? current
-      : pickSelectedBias(selectedBiasOptions(summary), readSelectedBiasSlug(ownerKey))?.slug ?? summary.creators[0]?.celebrity.slug ?? null);
+      : (pickSelectedBias(selectedBiasOptions(summary), summary.favorite?.slug) ?? defaultPassport(selectedBiasOptions(summary)))?.slug ?? summary.creators[0]?.celebrity.slug ?? null);
   }, [summary, ownerKey]);
 
   return summary

@@ -45,7 +45,7 @@ const submitText = async (onSaved: (reward?: { points: number }) => void) => {
 it("hands the server reward points to onSaved after a new post", async () => {
   mocks.request.mockResolvedValue({ id: "p1", reward: { points: 30 } });
   const onSaved = vi.fn(); await submitText(onSaved);
-  await waitFor(() => expect(onSaved).toHaveBeenCalledWith({ points: 30 }));
+  await waitFor(() => expect(onSaved).toHaveBeenCalledWith({ points: 30, stamps: 0 }));
 });
 it("passes no reward when the response has none, a replay, or an invalid value", async () => {
   for (const response of [{ id: "p1" }, { id: "p1", reward: { points: 0 } }, { id: "p1", reward: { points: "30" } }]) {

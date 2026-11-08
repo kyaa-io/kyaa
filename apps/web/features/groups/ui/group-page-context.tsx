@@ -8,7 +8,7 @@ import type { FanStarActionProps } from "@/components/fan-ui/fan-star-action";
 import type { FanPageKind } from "@/components/fan-ui/fan-entity-card";
 import { useOwnedFanResource } from "@/components/fan-ui/use-owned-fan-resource";
 import { useByUsAuth } from "@/features/auth/client/cognito-auth";
-import { mySummarySchema } from "@/features/my/domain/my-summary";
+import { mySummaryPath, mySummarySchema } from "@/features/my/domain/my-summary";
 import { fanPageReturnPath, fanVerifyHref, sanitizeLiveReturnTo } from "@/features/quiz/domain/live-return-context";
 import { useAppLocale } from "@/components/locale-provider";
 import { parseAppLocale, toContentLocale, type AppLocale } from "@/i18n/locales";
@@ -125,7 +125,7 @@ export function GroupPageProvider({ pageId, slug, celebrity: serverCelebrity, ce
   const presence = useOwnGroupPresence(presencePageId, true, Boolean(membership));
 
   const auth = useByUsAuth();
-  const summary = useOwnedFanResource(auth.authenticated ? `/api/me/summary?locale=${toContentLocale(locale)}&tierStages=1` : null, parseSummary, auth);
+  const summary = useOwnedFanResource(auth.authenticated ? mySummaryPath(toContentLocale(locale)) : null, parseSummary, auth);
 
   const [activeTab, setActiveTab] = useOptimistic(queryTab);
   const selectTab = useCallback((tab: string) => { startTransition(() => setActiveTab(tab)); }, [setActiveTab]);

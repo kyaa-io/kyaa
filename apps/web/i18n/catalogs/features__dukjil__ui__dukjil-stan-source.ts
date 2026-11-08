@@ -1,6 +1,11 @@
 import type { TranslatedMessage } from "../messages";
 
 export const messages = {
+  "stanFlowStamps": { "ja": "スタンプ", "zh-Hans": "印章", "zh-Hant": "印章", "es": "Sellos", "id": "Stempel", "vi": "Con dấu", "th": "แสตมป์", "pt": "Selos", "fr": "Tampons", "ru": "Штампы" },
+  "stanFlowHearts": { "ja": "ハート", "zh-Hans": "爱心", "zh-Hant": "愛心", "es": "Corazones", "id": "Hati", "vi": "Tim", "th": "หัวใจ", "pt": "Corações", "fr": "Cœurs", "ru": "Сердца" },
+  "stanFlowCheer": { "ja": "推しを応援", "zh-Hans": "为最爱应援", "zh-Hant": "為最愛應援", "es": "Apoyar", "id": "Dukung", "vi": "Cổ vũ", "th": "เชียร์", "pt": "Apoiar", "fr": "Soutenir", "ru": "Поддержать" },
+  "stanHeartHelp": { "ja": "ハート1個で本気ファン1人と数えます", "zh-Hans": "1个爱心算作1名铁粉", "zh-Hant": "1個愛心算作1名鐵粉", "es": "Un corazón cuenta como un fan de verdad", "id": "Satu hati dihitung sebagai satu penggemar sejati", "vi": "Một tim được tính là một fan thật sự", "th": "หัวใจ 1 ดวงนับเป็นแฟนตัวจริง 1 คน", "pt": "Um coração conta como um fã de verdade", "fr": "Un cœur compte pour un vrai fan", "ru": "Одно сердце — один настоящий фанат" },
+  "stanWalletFlows": { "ja": "マイウォレット", "zh-Hans": "我的钱包", "zh-Hant": "我的錢包", "es": "Mi billetera", "id": "Dompet saya", "vi": "Ví của tôi", "th": "กระเป๋าของฉัน", "pt": "Minha carteira", "fr": "Mon portefeuille", "ru": "Мой кошелёк" },
   "missionsGroupToday": {
     "ja": "今日やること",
     "zh-Hans": "今天要做的",

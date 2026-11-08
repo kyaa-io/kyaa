@@ -387,7 +387,7 @@ describe("approved fanpage", () => {
     expect(screen.getByText("2점")).toBeInTheDocument();
     expect(screen.queryByText("87점")).not.toBeInTheDocument();
     expect(fetcher.mock.calls.filter(([url]) => String(url).includes("/api/me/summary"))).toHaveLength(1);
-    expect(fetcher.mock.calls.some(([url]) => String(url) === "/api/me/summary?locale=ko&tierStages=1")).toBe(true);
+    expect(fetcher.mock.calls.some(([url]) => String(url) === "/api/me/summary?locale=ko&tierStages=1&hearts=1")).toBe(true);
     expect(fetcher.mock.calls.filter(([url]) => String(url).includes("/api/passports"))).toHaveLength(0);
   });
   it("keeps the complete fan name on home and removes the fan card from content tabs", async () => {

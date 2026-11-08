@@ -16,6 +16,7 @@ import type { AppLocale } from "@/i18n/locales";
 import { dukjilText } from "./dukjil-copy";
 import { useDukjil } from "./dukjil-provider";
 import { preloadStampPress, StampPress } from "./stamp-press";
+import { celebrateStamp } from "./stamp-slam";
 import styles from "./dukjil.module.css";
 import missionStyles from "./fan-missions.module.css";
 import inkStyles from "@/components/fan-ui/fan-ink.module.css";
@@ -57,6 +58,8 @@ export function CreatorAttendanceDialog({ open, onClose, reviewHref, pageName }:
       const result = parseAttendanceResult(await auth.request(`/api/me/attendance/${encodeURIComponent(slug)}`, { method: "POST", body: JSON.stringify({ requestKey: requestKey.current }) }, "json", false));
       requestKey.current = null;
       setPressed(true);
+      // D3: a stamp the server just issued lands over the whole screen (not on a replay); the dialog then shows it still.
+      if (result.stampId && !result.replayed) void celebrateStamp({ locale, points: result.points + result.bonusPoints, stamps: 1 });
       state!.setAttendance({ attendedToday: true, streak: result.streak, nextBonusIn: null, result });
       state!.refresh();
     } catch (error) {
@@ -85,7 +88,7 @@ export function CreatorAttendanceDialog({ open, onClose, reviewHref, pageName }:
         <section className={`${styles.checkin} ${inkStyles.palette}`}>
           <div className={styles.checkinBox}>
             <div className={styles.checkinHead}>
-              {pressed || checkedIn ? <StampPress state={pressed ? "press" : "stamped"} size={48} /> : <img className={styles.checkinArt} src={STAMP_ART} alt="" width={48} height={48} />}
+              {pressed || checkedIn ? <StampPress state="stamped" size={48} /> : <img className={styles.checkinArt} src={STAMP_ART} alt="" width={48} height={48} />}
               <div className={styles.checkinHeadCopy}>
                 <FanHeading as="h3">{heading}</FanHeading>
                 <span className={styles.checkinBar}>

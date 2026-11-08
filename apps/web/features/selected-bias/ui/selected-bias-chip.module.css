@@ -4,16 +4,21 @@
 .star { flex-shrink: 0; color: var(--color-ink); }
 .name { overflow: hidden; min-width: 0; text-overflow: ellipsis; white-space: nowrap; }
 .grade { display: none; flex-shrink: 0; color: var(--color-muted); font-size: var(--fan-metadata-size); font-weight: var(--fan-tab-weight); }
-.grade::after, .temp::before { content: "·"; margin: 0 var(--space-1); color: var(--color-muted); }
+.grade::after, .hearts::before { content: "·"; margin: 0 var(--space-1); color: var(--color-muted); }
 /* 세 칸이 각자 누르는 자리다(F10). 모양은 한 칩처럼 붙여 둔다. */
 .group { display: inline-flex; flex: 0 1 auto; align-items: center; min-width: 0; max-width: 100%; height: var(--min-target); color: var(--color-ink); font-size: var(--fan-action-label-size); font-weight: var(--fan-item-title-weight); line-height: var(--fan-body-leading); }
 .cell { display: inline-flex; flex-shrink: 0; align-items: center; height: var(--min-target); border-radius: var(--radius-control); color: inherit; text-decoration: none; }
 .cell:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 .trigger { min-width: 0; flex: 0 1 auto; padding-inline: var(--space-1); }
-.temp { display: inline-flex; flex-shrink: 0; align-items: center; }
-.tempValue { font-size: var(--fan-action-label-size); font-weight: var(--fan-item-title-weight); }
-.tempRow { display: flex; align-items: center; gap: var(--space-3); box-sizing: border-box; min-height: var(--fan-action-primary-height); margin-bottom: var(--space-1); padding: var(--space-2) var(--space-3); border-radius: var(--radius-control); color: var(--color-ink); text-decoration: none; cursor: pointer; }
-.tempRow[data-highlighted] { background: var(--color-soft); }
+.hearts { display: inline-flex; flex-shrink: 0; align-items: center; }
+.heart { display: block; flex-shrink: 0; color: var(--color-accent); fill: currentColor; }
+.heartsValue { gap: var(--space-1); font-size: var(--fan-action-label-size); font-weight: var(--fan-item-title-weight); font-variant-numeric: tabular-nums; }
+/* The heart pops with the number's one pulse (data-pulse is set only when motion is allowed). */
+.heartsValue[data-pulse="true"] .heart { animation: heart-pop var(--motion-count) var(--motion-easing) 1; }
+@keyframes heart-pop { 50% { transform: scale(1.2); } }
+@media (prefers-reduced-motion: reduce) { .heartsValue[data-pulse="true"] .heart { animation: none; } }
+.heartsRow { display: flex; align-items: center; gap: var(--space-3); box-sizing: border-box; min-height: var(--fan-action-primary-height); margin-bottom: var(--space-1); padding: var(--space-2) var(--space-3); border-radius: var(--radius-control); color: var(--color-ink); text-decoration: none; cursor: pointer; }
+.heartsRow[data-highlighted] { background: var(--color-soft); }
 .chevron { flex-shrink: 0; color: var(--color-muted); }
 .placeholder { display: block; width: 72px; height: 20px; border-radius: var(--radius-pill); background: var(--color-soft); }
 
@@ -28,10 +33,22 @@
 .check { display: inline-flex; color: var(--color-ink); }
 .more { display: flex; align-items: center; min-height: var(--min-target); margin-top: var(--space-1); padding: 0 var(--space-3); border-radius: var(--radius-control); color: var(--color-ink); font-size: var(--fan-action-label-size); font-weight: var(--fan-item-title-weight); text-decoration: none; cursor: pointer; }
 
+@media (min-width: 64rem) { .hearts { min-width: 56px; } }
 @media (min-width: 75rem) { .grade { display: inline; } .name { max-width: 140px; } }
 /* 390: 등급은 도장으로만, 이름은 6자에서 말줄임. */
 @media (max-width: 63.999rem) { .badge { width: 20px; height: 20px; } .name { max-width: 6em; } }
 @media (min-width: 64rem) and (max-width: 74.999rem) { .name { max-width: 52px; } }
-/* 숫자와 ° 사이를 띄우지 않는다(60°). 390은 화살표 없이 이름에 자리를 준다(누르면 메뉴가 열리는 것은 같다). */
-.tempValue { gap: 0; }
+/* 390은 화살표 없이 이름에 자리를 준다(누르면 메뉴가 열리는 것은 같다). */
 @media (max-width: 63.999rem) { .chevron { display: none; } .chip { padding: 0; } }
+
+/* 덕질 status bar (C9): one row, 48px, full width, a 1px line below. Left opens the favorite menu, right opens the fans tab. */
+.bar { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); min-width: 0; min-height: 48px; border-bottom: 1px solid var(--color-line); color: var(--color-ink); }
+.bar .placeholder { width: 160px; }
+.barTrigger { min-width: 0; padding-inline: 0; }
+.barTrigger .name { max-width: none; }
+.barGrade { flex-shrink: 0; color: var(--color-muted); font-size: var(--fan-metadata-size); font-weight: var(--fan-tab-weight); }
+.barGrade::after { content: "·"; margin: 0 var(--space-1); color: var(--color-muted); }
+.barChevron { flex-shrink: 0; color: var(--color-muted); }
+.barHearts { display: inline-flex; flex-shrink: 0; align-items: center; gap: var(--space-1); min-height: var(--min-target); border-radius: var(--radius-control); color: var(--color-ink); text-decoration: none; }
+.barHearts:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
+@media (max-width: 63.999rem) { .bar .badge { width: 24px; height: 24px; } .barTrigger .name { max-width: 10em; } }

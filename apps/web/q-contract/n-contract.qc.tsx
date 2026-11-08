@@ -21,7 +21,7 @@ async function load<T = Record<string, unknown>>(rel: string): Promise<T> {
 const PROPS = {
   // 제목만 받는 접기는 FanDisclosure(label)다. FanCollapsible 은 trigger 렌더 함수를 받는 하위 부품이다.
   collapsible: { component: "FanDisclosure", open: "defaultOpen", title: "label" },
-  headerStatus: { grade: "grade", favorite: "favorite", completed: "completedMissions", total: "totalMissions" },
+  headerStatus: { grade: "grade", favorite: "favorite", hearts: "hearts" },
 };
 // 헤더 상태 3칸은 설계 문서의 components/fan-shell/fan-header-status 가 아니라 헤더 최애 칩의 표시부로 구현됐다(같은 역할, 경로·이름만 다름).
 const HEADER_STATUS = { path: "features/selected-bias/ui/selected-bias-chip", name: "SelectedBiasStatus" } as const;
@@ -32,7 +32,6 @@ const loadHeaderStatus = async () => {
   return C;
 };
 // 숫자와 단위가 다른 span 이어도 화면에는 한 덩어리로 보인다. 그 덩어리를 가장 안쪽 요소의 textContent 로 찾는다.
-const shownText = (text: string) => screen.getByText((_, el) => el?.textContent === text && Array.from(el.children).every((child) => child.textContent !== text));
 
 describe("N5 FanCollapsible 기본 상태", () => {
   it("N5: 오늘 할 것은 열려 있고 완료·미래는 닫혀 있으며 토글 뒤 재렌더에서도 유지된다", async () => {
@@ -86,34 +85,40 @@ describe("N13 비동기 버튼의 3상태", () => {
   });
 });
 
-describe("N17 헤더 상태 3칸", () => {
+describe("N17 헤더 상태 3칸(C1: 온도 → 하트)", () => {
   const props = (over: Record<string, unknown> = {}) => ({
     locale: "ko",
     [PROPS.headerStatus.grade]: "골드",
     [PROPS.headerStatus.favorite]: "엘리나",
-    [PROPS.headerStatus.completed]: 3,
-    [PROPS.headerStatus.total]: 4,
+    [PROPS.headerStatus.hearts]: 7,
     ...over,
   });
-  it("N17: 등급·최애·온도 3칸이고 온도는 완료 3/4 → 75°", async () => {
+  it("N17: 등급·최애·하트 3칸이고 온도(°)는 없다", async () => {
     const FanHeaderStatus = await loadHeaderStatus();
-    render(<FanHeaderStatus {...props()} />);
+    const { container } = render(<FanHeaderStatus {...props()} />);
     expect(screen.getByText("골드")).toBeInTheDocument();
     expect(screen.getByText("엘리나")).toBeInTheDocument();
-    expect(shownText("75°")).toBeInTheDocument();
+    expect(container.querySelector("[data-hearts]")).toHaveAttribute("data-hearts", "7");
+    expect(container.textContent).not.toMatch(/°/);
   });
-  it("N17: 최애가 없으면 온도 칸이 없다", async () => {
+  it("N17: 하트 값이 없으면 0", async () => {
+    const FanHeaderStatus = await loadHeaderStatus();
+    const { container } = render(<FanHeaderStatus {...props({ [PROPS.headerStatus.hearts]: null })} />);
+    expect(container.querySelector("[data-hearts]")).toHaveAttribute("data-hearts", "0");
+  });
+  it("N17: 최애가 없으면 하트 칸 없이 고르기를 권한다", async () => {
     const FanHeaderStatus = await loadHeaderStatus();
     const { container } = render(<FanHeaderStatus {...props({ [PROPS.headerStatus.favorite]: null })} />);
-    expect(container.textContent).not.toMatch(/\d+°/);
+    expect(container.querySelector("[data-hearts]")).toBeNull();
+    expect(container).toHaveTextContent("최애 고르기");
   });
   it("N17: 값이 바뀔 때만 data-pulse 가 한 번 붙고 이후 제거된다", async () => {
     const FanHeaderStatus = await loadHeaderStatus();
     const { container, rerender } = render(<FanHeaderStatus {...props()} />);
     expect(container.querySelector("[data-pulse]")).toBeNull();
-    rerender(<FanHeaderStatus {...props({ [PROPS.headerStatus.completed]: 4 })} />);
+    rerender(<FanHeaderStatus {...props({ [PROPS.headerStatus.hearts]: 8 })} />);
     expect(container.querySelector("[data-pulse]")).not.toBeNull();
-    expect(shownText("100°")).toBeInTheDocument();
+    expect(container.querySelector("[data-hearts]")).toHaveAttribute("data-hearts", "8");
     // 브라우저는 animationend 로 바로 뗀다. jsdom 에는 AnimationEvent 가 없어 React 가 이 이벤트를 받지 않으므로, 연출 시간(400ms) 안에 떨어지는지 본다.
     fireEvent.animationEnd(container.querySelector("[data-pulse]") as Element);
     await waitFor(() => expect(container.querySelector("[data-pulse]")).toBeNull(), { timeout: 1000 });

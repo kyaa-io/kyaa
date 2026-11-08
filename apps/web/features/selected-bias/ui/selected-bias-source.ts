@@ -4,7 +4,8 @@ export const selectedBiasSource = {
   biasMine: { ko: "내 최애", en: "My favorites" },
   biasFindMore: { ko: "다른 최애 찾기", en: "Find more favorites" },
   biasCurrent: { ko: "내 최애 {0}, 등급 {1}. 눌러서 바꾸기", en: "Favorite {0}, tier {1}. Press to change" },
-  biasCurrentTemp: { ko: "내 최애 {0}, 등급 {1}, 온도 {2}도. 눌러서 바꾸기", en: "Favorite {0}, tier {1}, temperature {2}°. Press to change" },
-  tempTitle: { ko: "오늘 온도", en: "Today's temperature" },
-  tempMissions: { ko: "오늘 미션 {0}/{1}", en: "Today's missions {0}/{1}" },
+  heartsLabel: { ko: "{1}에서 모은 하트 {0}개", en: "Hearts from {1}: {0}" },
+  biasSaveFailed: { ko: "최애를 바꾸지 못했어요", en: "We couldn't change your favorite" },
+  biasPickTitle: { ko: "내 최애로 고르기", en: "Pick your favorite" },
+  heartsMenu: { ko: "{0}에서 모은 하트", en: "Hearts from {0}" },
 } as const;

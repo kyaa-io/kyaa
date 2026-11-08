@@ -217,3 +217,8 @@ section.pWallet{position:relative;box-sizing:border-box;border:1px solid var(--c
 @media(min-width:1280px){.firstRow{column-gap:var(--space-8)}}
 .pLucky .sectionHead h2,.pHeart .sectionHead h2{flex:none}
 .pLucky .sectionHead,.pHeart .sectionHead{justify-content:flex-start}
+/* feedback C9: the status bar (등급 · 최애 | ♥N) sits right above the two-flow wallet. D15: the heart card stays, its action is not open yet. */
+.top{display:grid;gap:var(--space-3)}
+.heartLink[aria-disabled]{grid-template-columns:40px minmax(0,1fr) auto;cursor:default}
+.heartLink[aria-disabled] .heartName{color:var(--color-muted)}
+.top section.pWallet[data-wallet-card="flows"]{border:1px solid var(--color-line);background:var(--color-surface)}
