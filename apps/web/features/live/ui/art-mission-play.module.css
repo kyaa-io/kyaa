@@ -84,7 +84,7 @@
 .confetti i:nth-child(3n + 1) { width: 4px; height: 16px; background: #44333c; }
 .rewardSection > p { margin: 0 0 18px; color: #737079; font-size: 13px; line-height: 1.5; }
 .rewards { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin: 0; }
-.rewards > div { display: flex; min-width: 0; flex-direction: column; align-items: center; gap: 6px; padding: 16px 12px; border: 1px solid #ece8ed; border-radius: 18px; background: #fff; }
+.rewards > div { display: flex; min-width: 0; flex-direction: column; align-items: center; gap: 6px; padding: 16px 12px; border: 1px solid var(--color-line-subtle); border-radius: 18px; background: #fff; }
 .rewards dd { order: 1; margin: 0; overflow: hidden; font-size: 36px; font-weight: 800; line-height: 1.15; }
 .rewards dd span { display: block; }
 .rewards dt { order: 0; color: #76636d; font-size: 13px; font-weight: 700; }

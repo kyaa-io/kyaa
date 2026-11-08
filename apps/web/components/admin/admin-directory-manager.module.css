@@ -38,7 +38,7 @@
 .tableWrap time { color: var(--secondary-ink); font-variant-numeric: tabular-nums; white-space: nowrap; }
 .inactiveRow { color: var(--muted); background: #fcfcfd; }
 .selfBadge, .activeBadge, .inactiveBadge { display: inline-flex; min-height: 28px; align-items: center; border-radius: 999px; font-size: 11px; font-weight: 800; white-space: nowrap; }
-.selfBadge { margin-left: 8px; padding: 0 9px; background: var(--accent-soft); color: #5133cf; }
+.selfBadge { margin-left: 8px; padding: 0 9px; background: var(--accent-soft); color: var(--color-accent); }
 .activeBadge, .inactiveBadge { gap: 7px; padding: 0 10px; }
 .activeBadge { background: #ebf8f1; color: var(--success); }
 .inactiveBadge { background: var(--soft); color: var(--muted); }

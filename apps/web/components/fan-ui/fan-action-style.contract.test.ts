@@ -57,7 +57,7 @@ describe("FanAction icon layout contract", () => {
   });
 
   it("keeps disabled colors on the documented tokens", () => {
-    expect(readFileSync(resolve(process.cwd(), "app/globals.css"), "utf8")).toMatch(/--fan-action-disabled-bg:\s*#e4e1e6/);
+    expect(readFileSync(resolve(process.cwd(), "app/globals.css"), "utf8")).toMatch(/--fan-action-disabled-bg:\s*#e5e5e5/);
     expect(actionCss).toMatch(/background:\s*var\(--fan-action-disabled-bg\)/);
     expect(actionCss).toMatch(/color:\s*var\(--fan-action-disabled-ink\)/);
   });

@@ -11,7 +11,7 @@
 .passport {
   width: 100%;
   height: auto;
-  filter: drop-shadow(0 10px 12px #32254512);
+  filter: drop-shadow(0 10px 12px color-mix(in srgb, var(--color-ink) 7%, transparent));
 }
 
 .visualLabels {
@@ -19,7 +19,7 @@
   flex-direction: column;
   gap: 12px;
   padding: 20px 0 0;
-  border-top: 1px solid #e6deed;
+  border-top: 1px solid var(--color-line);
   list-style: none;
 }
 
@@ -27,7 +27,7 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  color: #655172;
+  color: var(--color-muted);
   font-size: 15px;
   line-height: 1.4;
   font-weight: 650;
@@ -47,7 +47,7 @@
   gap: 12px;
   width: 100%;
   padding: 28px 0 0;
-  border-top: 1px solid #e6deed;
+  border-top: 1px solid var(--color-line);
   list-style: none;
 }
 
@@ -56,7 +56,7 @@
   flex-direction: column;
   align-items: center;
   gap: 12px;
-  color: #655172;
+  color: var(--color-muted);
   text-align: center;
   font-size: 14px;
   line-height: 1.4;

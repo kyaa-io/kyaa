@@ -6,12 +6,12 @@
 .returnLink { display:inline-flex; min-height:44px; align-items:center; gap:8px; margin-bottom:28px; color:oklch(48% 0 0); font-size:14px; font-weight:650; text-decoration:none; }
 .returnLink svg { width:18px; height:18px; }
 .entry header p,.entry header h1,.description,.facts,.note,.message h1,.message p,.loading p,.inlineError { margin:0; }
-.entry header p { margin-bottom:10px; color:oklch(45% .22 315); font-size:13px; font-weight:800; }
+.entry header p { margin-bottom:10px; color:var(--color-accent-ink); font-size:13px; font-weight:800; }
 .entry header h1 { max-width:18ch; font-size:32px; font-weight:850; letter-spacing:-.035em; line-height:1.18; text-wrap:balance; }
 .description { max-width:52ch; margin-top:20px; color:oklch(48% 0 0); font-size:15px; font-weight:550; line-height:1.65; text-wrap:pretty; }
 .facts { display:grid; gap:12px; margin-top:36px; padding:0; list-style:none; }
 .facts li { display:flex; min-height:44px; align-items:center; gap:12px; font-size:15px; line-height:1.5; }
-.facts svg { flex:none; width:24px; height:24px; padding:5px; border-radius:50%; background:oklch(97% .014 315); color:oklch(45% .22 315); stroke-width:2.5; }
+.facts svg { flex:none; width:24px; height:24px; padding:5px; border-radius:50%; background:var(--color-accent-soft); color:var(--color-accent-ink); stroke-width:2.5; }
 .facts strong { font-weight:800; }
 .secondaryAction { display:inline-flex; min-height:52px; align-items:center; justify-content:center; gap:8px; margin-top:36px; padding-inline:24px; border-radius:12px; font-size:15px; font-weight:800; text-decoration:none; }
 .secondaryAction svg { width:18px; height:18px; }

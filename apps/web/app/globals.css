@@ -13,7 +13,7 @@
   --color-muted: oklch(48% 0 0);
   --color-line: oklch(90% 0 0);
   --color-line-subtle: oklch(93% 0 0);
-  --fan-action-disabled-bg: #e4e1e6;
+  --fan-action-disabled-bg: #e5e5e5;
   --fan-action-disabled-ink: #5d5d5d;
   --fan-action-disabled-text-ink: #6b6b6b;
   /* 상태색은 빨강 1. 성공은 체크 아이콘 + 잉크(success·warning 폐기). */

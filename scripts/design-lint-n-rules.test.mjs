@@ -88,6 +88,15 @@ const CASES = {
     () => css('.a{font-family:"Pretendard UI 850",sans-serif}'),
     () => css('.a{font-weight:var(--fan-heading-weight)}'),
   ],
+  // H6: 보라 색상값(hex·rgb·hsl·oklch)과 짙은 회색 채움 알약
+  N29: [
+    () => css('.a{color:#7c3aed;background:rgb(124 58 237 / .2);border-color:hsl(270 60% 50%);outline-color:oklch(60% .2 300)}'),
+    () => css('.a{color:var(--color-accent);background:#fff0f6;border-color:#f4c3d7;outline-color:oklch(62% .2 5);fill:#d11b62}'),
+  ],
+  N30: [
+    () => css('.chip{border-radius:999px;background:var(--color-ink);color:#fff} .dot{border-radius:var(--radius-pill);background:#17171b}'),
+    () => css('.chip{border-radius:999px;background:var(--color-surface);border:1px solid var(--color-line)} .on{border-radius:999px;background:var(--color-accent-soft)} .btn{border-radius:8px;background:var(--color-ink)} .veil{border-radius:999px;background:rgb(0 0 0 / .5)}'),
+  ],
 };
 
 test('every static N rule has a red and a green case', () => {
@@ -140,6 +149,22 @@ test('N19 N17 N18 N13 N5 N12 N2 are run by contract files that exist and carry t
     assert.ok(existsSync(p), `${id}: ${c.file} 없음`);
     assert.match(readFileSync(p, 'utf8'), new RegExp(`['"\`]${id}[ :]`), `${id}: 시험 이름에 규칙 ID 없음`);
   }
+});
+
+test('N29 reads purple in TSX strings and tinted grays, ignores comments, logo art files and pink', () => {
+  assert.ok(hits(ts('export const A = () => <path fill="#8a18b8" />;'), 'N29').length === 1);
+  assert.ok(hits(ts('export const A = () => <div style={{ background: "#f4f3f7" }} />;'), 'N29').length === 1);
+  assert.equal(hits(ts('// old #7c3aed\nexport const A = () => <path fill="#d11b62" />;'), 'N29').length, 0);
+  assert.equal(hits(css('/* was #7c3aed */ .a{color:#ad1457;background:#fd48aa}'), 'N29').length, 0);
+  assert.equal(hits(css('.a{color:#7c3aed}', 'apps/web/components/brand-logo.module.css'), 'N29').length, 0);
+  assert.equal(hits(css('.a{background:#e8e8e8;color:#5d5d5d;border:1px solid #3b82f6}'), 'N29').length, 0);
+  assert.equal(hits(css('.a{color:rebeccapurple}'), 'N29').length, 1);
+});
+
+test('N29 also covers fan-ui, globals.css and admin files (the other N rules skip admin)', () => {
+  assert.equal(hits(css('.a{color:#6d4aff}', 'apps/web/components/fan-ui/fan-x.module.css'), 'N29').length, 1);
+  assert.equal(hits(css(':root{--c:#6d4aff}', 'apps/web/app/globals.css'), 'N29').length, 1);
+  assert.equal(hits(css('.a{color:#6d4aff}', 'apps/web/components/admin/x.module.css'), 'N29').length, 1);
 });
 
 test('severity table: N rules fail on a new violation (two with a counted branch); N26~N28 count only', () => {

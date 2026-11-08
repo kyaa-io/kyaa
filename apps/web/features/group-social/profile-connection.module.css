@@ -9,7 +9,7 @@
 /* Preserve the four-module quiet zone; the central logo plate covers at most 6.25% of the QR square. */
 .qrCode{position:relative;width:240px;max-width:100%;aspect-ratio:1;flex:none}.qrCode[hidden]{display:none}.qrCode>canvas{display:block;width:100%!important;height:auto!important}.qrLogo{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);box-sizing:border-box;width:25%;height:25%;padding:6px;object-fit:contain;background:#fff;border-radius:4px}.qr [role=alert]{text-align:center;font-size:14px}.qr [role=alert] p{font-size:14px}.scanner{display:flex;flex-direction:column;gap:16px}.scanner [data-active]{height:360px;aspect-ratio:auto;border-radius:16px}.scanner video{width:100%;height:100%;object-fit:cover}.scanner>div>p:first-child{font-size:16px;line-height:24px}
 
-.friendConnection{display:flex;flex-direction:column;gap:12px;width:100%}.friendConnection h3{margin:0;font-weight:400;font-size:20px;line-height:normal}.friendConnection>button{width:100%;min-height:48px;border-radius:12px;font-size:14px;background:linear-gradient(91.641deg,#d9194c -7.768%,#b91a93 50%,#6042d5 107.768%);color:#fff;border:0}
+.friendConnection{display:flex;flex-direction:column;gap:12px;width:100%}.friendConnection h3{margin:0;font-weight:400;font-size:20px;line-height:normal}.friendConnection>button{width:100%;min-height:48px;border-radius:12px;font-size:14px;background:var(--color-accent);color:#fff;border:0}
 
 .qr>button{width:100%;min-height:48px;border-radius:12px;font-size:14px;justify-content:center;gap:10px}.friendConnection>button{justify-content:center;gap:10px}.friendConnection>button>span,.qr>button>span{flex:0 1 auto}
 

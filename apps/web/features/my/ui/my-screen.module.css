@@ -9,7 +9,7 @@
 
 .profileHeader { display:grid; min-width:0; grid-template-columns:64px minmax(0,1fr); align-items:center; gap:var(--space-4); padding-block:var(--space-4) var(--space-8); border-bottom:1px solid var(--color-line); }
 .avatarLink { position:relative; display: inline-grid; width: 64px; height: 64px; border-radius: var(--radius-pill); }
-.avatarEdit { position:absolute; right:-3px; bottom:-3px; display:grid; width:24px; height:24px; place-items:center; border:2px solid var(--color-canvas); border-radius:var(--radius-pill); background:var(--color-ink); color:var(--color-canvas); }
+.avatarEdit { position:absolute; right:-3px; bottom:-3px; display:grid; width:24px; height:24px; place-items:center; border:2px solid var(--color-canvas); border-radius:var(--radius-pill); background:var(--color-surface); color:var(--color-ink); box-shadow:0 0 0 1px var(--color-line); }
 .avatarEdit svg { width:12px; height:12px; }
 .avatarLink:focus-visible { outline: 3px solid var(--color-ink); outline-offset: 3px; }
 .profileCopy { min-width:0; }
@@ -98,7 +98,7 @@
 .stat[data-kind="favorite"] .statIcon { color:oklch(58% .2 350); }
 .stat[data-kind="passport"] .statIcon { color:oklch(48% .16 285); }
 .stat[data-kind="stamp"] .statIcon { color:oklch(62% .17 52); }
-.stat[data-kind="ticket"] .statIcon { color:oklch(52% .17 300); }
+.stat[data-kind="ticket"] .statIcon { color:var(--color-accent); }
 .stat[data-kind="collectible"] .statIcon { color:oklch(55% .16 18); }
 .overview>h2 { font-size:16px; }
 
@@ -165,7 +165,7 @@
 .destinationIcon svg { width:20px; height:20px; }
 .destinationIcon[data-kind="passport"] { color:oklch(48% .16 285); }
 .destinationIcon[data-kind="live"] { color:oklch(52% .17 350); }
-.destinationIcon[data-kind="benefit"] { color:oklch(48% .17 300); }
+.destinationIcon[data-kind="benefit"] { color:var(--color-accent-ink); }
 .destinationIcon[data-kind="activity"] { color:oklch(45% .12 240); }
 .destinationIcon[data-kind="requests"] { color:oklch(49% .14 150); }
 .ticketHistoryLink { display:flex; min-height:44px; align-items:center; justify-content:space-between; gap:var(--space-3); color:var(--my-accent-ink); font-size:12px; font-weight:750; }

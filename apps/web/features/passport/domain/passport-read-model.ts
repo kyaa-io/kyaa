@@ -68,7 +68,7 @@ export const STAMP_METADATA = {
     shortLabel: { ko: "예약", en: "RESERVE" ,
   ...additionalLocales((translationLocale) => (localizedMessages.m69b01836073b[translationLocale]))
 },
-    inkToken: "oklch(46% 0.13 290)",
+    inkToken: "#ad1457",
   },
   attendance: {
     label: { ko: "라이브 출석", en: "Live Attendance" ,

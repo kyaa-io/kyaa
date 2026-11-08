@@ -38,7 +38,7 @@
 .toolbar svg { width: 17px; height: 17px; }
 .tabs { display: flex; gap: 8px; }
 .tabs button { border-color: transparent; background: transparent; }
-.tabs button[aria-selected="true"] { background: #eee8fc; color: #6333bf; }
+.tabs button[aria-selected="true"] { background: var(--color-accent-soft); color: var(--color-accent-ink); }
 .statusTabs { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
 .statusTabs button { font-size: 13px; }
 .statusTabs button[aria-pressed="true"] { background: #25242b; color: #fff; border-color: #25242b; }

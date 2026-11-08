@@ -1,4 +1,4 @@
-.banner { position:relative; width:100%; height:100%; overflow:hidden; background:#f8f2f6; color:#19191e; }
+.banner { position:relative; width:100%; height:100%; overflow:hidden; background:var(--color-accent-soft); color:#19191e; }
 .image { position:absolute; inset:0 0 0 auto; width:40%; overflow:hidden; }
 .desktopImage { position:absolute; inset:0; }
 .overlay { display:none; position:absolute; inset:0; background:linear-gradient(to top, rgb(10 10 12 / 82%) 0%, rgb(10 10 12 / 46%) 36%, rgb(10 10 12 / 8%) 70%, transparent 100%); }
@@ -23,7 +23,7 @@
 .banner[data-kind="live"] .copy { position:absolute; inset:auto 0 0; width:100%; height:auto; color:#fff; }
 .banner[data-kind="live"] .eyebrow,
 .banner[data-kind="live"] .description { color:#fff; }
-.banner[data-kind="live"] .eyebrow { width:fit-content; padding:5px 12px; border:1px solid #ff5fbf99; border-radius:999px; background:#17131abf; font-size:12px; }
+.banner[data-kind="live"] .eyebrow { width:fit-content; padding:5px 12px; border:1px solid #ff5fbf99; border-radius:999px; background:color-mix(in srgb, var(--color-ink) 75%, transparent); font-size:12px; }
 .banner[data-kind="live"] .action > a { width:min(320px, 100%); padding:0 20px; border-radius:999px; background:linear-gradient(#0003,#0003),var(--spectrum); color:#fff !important; font-size:15px; }
 @media (max-width:767px) {
   .banner { background:#19191e; color:#fff; }
@@ -31,7 +31,7 @@
   .desktopImage { display:none; }
   .overlay { display:block; }
   .banner .copy { position:absolute; inset:auto 0 0; width:100%; height:auto; padding:24px; gap:12px; text-shadow:0 1px 3px #0008; }
-  .banner .eyebrow { width:fit-content; min-height:28px; padding:4px 12px; border:1px solid #ff5fbf99; border-radius:999px; background:#17131abf; color:#fff; font-size:12px; }
+  .banner .eyebrow { width:fit-content; min-height:28px; padding:4px 12px; border:1px solid #ff5fbf99; border-radius:999px; background:color-mix(in srgb, var(--color-ink) 75%, transparent); color:#fff; font-size:12px; }
   .copy h2 { font-size:clamp(28px, 7.2vw, 36px); line-height:1.08; }
   .banner .description { color:#ffffffeb; font-size:14px; }
   .banner .action { margin-top:8px; }
@@ -136,7 +136,7 @@
   .banner[data-kind="welcome"] .image { width:100%; }
   .banner[data-kind="welcome"] .overlay { display:block; }
   .banner[data-kind="welcome"] .copy { position:absolute; inset:auto 0 0; width:100%; height:auto; padding:24px; color:#fff; text-shadow:0 1px 3px #0008; }
-  .banner[data-kind="welcome"] .eyebrow { width:fit-content; padding:4px 12px; border:1px solid #ff5fbf99; border-radius:999px; background:#17131abf; color:#fff; font-size:12px; }
+  .banner[data-kind="welcome"] .eyebrow { width:fit-content; padding:4px 12px; border:1px solid #ff5fbf99; border-radius:999px; background:color-mix(in srgb, var(--color-ink) 75%, transparent); color:#fff; font-size:12px; }
   .banner[data-kind="welcome"] .copy h2 { font-size:32px; }
   .banner[data-kind="welcome"] .description { color:#fff; font-size:14px; }
 }
