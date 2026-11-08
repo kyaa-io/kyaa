@@ -2,7 +2,8 @@
 // 키에는 항상 소유자가 들어가고, 소유자가 바뀌면(로그인·로그아웃) 전부 지운다. 다른 회원의 값이 남지 않게 한다.
 import { useMemo, useState, useSyncExternalStore } from "react";
 
-export const RESOURCE_FRESH_MS = 30_000;
+/** 5차 R21: 집계 값(랭킹·팬 수·목록)은 60초 재사용하고, 화면은 읽은 시각(`업데이트 HH:MM`)을 함께 보인다. */
+export const RESOURCE_FRESH_MS = 60_000;
 
 type Entry = { value: unknown; storedAt: number };
 const entries = new Map<string, Entry>();
