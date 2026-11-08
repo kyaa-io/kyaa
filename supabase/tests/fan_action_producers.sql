@@ -705,7 +705,8 @@ begin
   -- all mapped routes are enabled, it must retain its canonical legacy job.
   share_link:=public.create_community_stamp_share_link(owner,'fan-action-producer');
   -- 20261215070000: with link-opening payouts off (the default) the opening is recorded and nothing is issued on any lane.
-  perform pg_temp.assert(not public.share_visit_payouts_enabled(), 'share link opening payouts are not off by default');
+  perform pg_temp.assert((select column_default from information_schema.columns where table_schema='public' and table_name='fan_share_settings' and column_name='visit_payouts')='false', 'share link opening payouts are not off by default');
+  update public.fan_share_settings set visit_payouts=false where singleton;
   perform public.visit_community_stamp_share_link(invitee,share_link->>'token');
   perform pg_temp.assert(exists(select 1 from public.fan_share_link_opens o join public.community_stamp_share_links link on link.id=o.share_link_id
       where link.token=share_link->>'token' and o.visitor_app_user_id=invitee)

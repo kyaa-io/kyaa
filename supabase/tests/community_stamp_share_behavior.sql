@@ -125,7 +125,9 @@ begin
 
   -- 20261215070000: opening a share link pays only while fan_share_settings.visit_payouts is on (default off). Off: the opening is
   -- recorded once in fan_share_link_opens, with no paying visit row and no share stamp; navigation is unchanged.
-  if public.share_visit_payouts_enabled() then raise exception 'share link opening payouts are not off by default'; end if;
+  -- The migration default is off; a disposable replay may have turned it on earlier, so the off case is set here explicitly.
+  if not (select column_default from information_schema.columns where table_schema='public' and table_name='fan_share_settings' and column_name='visit_payouts')='false' then raise exception 'share link opening payouts are not off by default'; end if;
+  update public.fan_share_settings set visit_payouts=false where singleton;
   result:=public.visit_community_stamp_share_link(visitor_a,owner_link->>'token');
   perform public.visit_community_stamp_share_link(visitor_a,owner_link->>'token');
   if result is distinct from jsonb_build_object('creator','community-share-proof')
