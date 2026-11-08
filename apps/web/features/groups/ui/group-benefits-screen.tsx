@@ -67,30 +67,31 @@ export function GroupBenefitsScreen({locale,initialHeart=null,signedOut=false,ta
  const [tab,setTab]=useState<StanTab>(initialTab);
  useEffect(()=>{setTab(initialTab);},[initialTab]);
  const go=(next:StanTab)=>()=>setTab(next);
+ const h1=<header className={styles.srOnly}><FanHeading as='h1'>{c.title}</FanHeading></header>;
  return <FanAppFrame locale={locale} currentPath='/benefits' groupsEnabled mainId='benefits-main' className={styles.frame}>
- <FanContentContainer as='main' id='benefits-main' className={styles.page} data-stan-tab={tab}>
- <div className={styles.subnav}><FanTabs variant='underline' label={c.title} current={tab} items={[{key:'today',label:dukjilText(locale,'stanTabToday'),href:tabHref(locale,'today'),onSelect:go('today')},{key:'history',label:dukjilText(locale,'stanTabHistory'),href:tabHref(locale,'history'),onSelect:go('history')}]}/></div>
- <header className={styles.srOnly}><FanHeading as='h1'>{c.title}</FanHeading></header>
- {tab==='history'?<HistoryTab locale={locale} signedOut={signedOut} bias={bias}/>:<TodayTab locale={locale} signedOut={signedOut} bias={bias} onHistory={go('history')}/>}
- </FanContentContainer></FanAppFrame>;
+ <FanContentContainer className={styles.subnav}><FanTabs variant='underline' label={c.title} current={tab} items={[{key:'today',label:dukjilText(locale,'stanTabToday'),href:tabHref(locale,'today'),onSelect:go('today')},{key:'history',label:dukjilText(locale,'stanTabHistory'),href:tabHref(locale,'history'),onSelect:go('history')}]}/></FanContentContainer>
+ {tab==='history'?<HistoryTab locale={locale} signedOut={signedOut} bias={bias} heading={h1}/>:<TodayTab locale={locale} signedOut={signedOut} bias={bias} onHistory={go('history')} heading={h1}/>}
+ </FanAppFrame>;
 }
-function HistoryTab({locale,signedOut,bias}:{locale:AppLocale;signedOut:boolean;bias:SelectedBias}){
+function HistoryTab({locale,signedOut,bias,heading}:{locale:AppLocale;signedOut:boolean;bias:SelectedBias;heading:ReactNode}){
  const auth=useGroupRequest(),guest=useGuest(signedOut,bias);
- return <div className={styles.single}><StanHistoryTab key={auth.ownerKey} locale={locale} guest={guest}/></div>;
+ return <FanContentContainer as='main' id='benefits-main' className={styles.page} data-stan-tab='history'>{heading}<StanHistoryTab key={auth.ownerKey} locale={locale} guest={guest}/></FanContentContainer>;
 }
-function TodayTab({locale,signedOut,bias,onHistory}:{locale:AppLocale;signedOut:boolean;bias:SelectedBias;onHistory:()=>void}){
+/** 오늘: main is the two-column grid itself (main > column > [data-block]): body wallet · list · lucky, aside 최애 응원 · 내역. */
+function TodayTab({locale,signedOut,bias,onHistory,heading}:{locale:AppLocale;signedOut:boolean;bias:SelectedBias;onHistory:()=>void;heading:ReactNode}){
  const auth=useGroupRequest(),guest=useGuest(signedOut,bias),[exchange,setExchange]=useState(false),openExchange=()=>setExchange(true);
- return <BenefitsSections><div className={styles.grid}>
- <div className={styles.body}>
-  <BenefitsWallet key={`${locale}:${auth.ownerKey}`} locale={locale} signedOut={signedOut} bias={bias} onExchange={openExchange} onHistory={onHistory}/>
-  <BenefitsDailyMissions locale={locale}/>
-  <BenefitsLucky locale={locale} bias={bias} guest={guest} onExchange={openExchange}/>
- </div>
- <aside className={styles.aside}>
-  <BenefitsCheer locale={locale} bias={bias} signedOut={signedOut}/>
-  {(auth.ready||signedOut)&&<BenefitsHistory key={auth.ownerKey} locale={locale} guest={guest} onHistory={onHistory}/>}
- </aside>
- </div>{!guest&&<WalletExchangeDialog locale={locale} open={exchange} onClose={()=>setExchange(false)}/>}</BenefitsSections>;
+ return <BenefitsSections><FanContentContainer as='main' id='benefits-main' className={`${styles.page} ${styles.grid}`} data-stan-tab='today' data-layout='two-col'>
+  <div className={styles.column}>
+   {heading}
+   <div className={styles.slot} data-block='wallet'><BenefitsWallet key={`${locale}:${auth.ownerKey}`} locale={locale} signedOut={signedOut} bias={bias} onExchange={openExchange} onHistory={onHistory}/></div>
+   <BenefitsDailyMissions locale={locale}/>
+   <BenefitsLucky locale={locale} bias={bias} guest={guest} onExchange={openExchange}/>
+  </div>
+  <aside className={styles.column}>
+   <BenefitsCheer locale={locale} bias={bias} signedOut={signedOut}/>
+   {(auth.ready||signedOut)&&<BenefitsHistory key={auth.ownerKey} locale={locale} guest={guest} onHistory={onHistory}/>}
+  </aside>
+ </FanContentContainer>{!guest&&<WalletExchangeDialog locale={locale} open={exchange} onClose={()=>setExchange(false)}/>}</BenefitsSections>;
 }
 /** The numbers the wallet and the cheer card share (C9): stamps are the stamped slots of the passport page being filled (the MY card's number), hearts come with the summary. */
 function useStanNumbers(bias:SelectedBias,signedOut:boolean){
@@ -105,12 +106,12 @@ function useStanNumbers(bias:SelectedBias,signedOut:boolean){
 /** 럭키드로우 모듈: under the missions in the body (390: after the missions, before the cheer card). */
 function BenefitsLucky({locale,bias,guest,onExchange}:{locale:AppLocale;bias:SelectedBias;guest:boolean;onExchange:()=>void}){
  const allFailed=Boolean(useContext(SectionContext)?.allFailed);
- return <div className={styles.slot} hidden={allFailed}><LuckyDrawModule locale={locale} bias={bias} guest={guest} onExchange={onExchange}/></div>;
+ return <div className={styles.slot} hidden={allFailed} data-block='lucky'><LuckyDrawModule locale={locale} bias={bias} guest={guest} onExchange={onExchange}/></div>;
 }
 /** 최애 응원: the aside's first card from 1024px (390: under the lucky draw). */
 function BenefitsCheer({locale,bias,signedOut}:{locale:AppLocale;bias:SelectedBias;signedOut:boolean}){
  const allFailed=Boolean(useContext(SectionContext)?.allFailed),{guest,hearts}=useStanNumbers(bias,signedOut);
- return <div className={styles.slot} hidden={allFailed}><StanCheer locale={locale} bias={bias} guest={guest} hearts={typeof hearts==='number'?hearts:null}/></div>;
+ return <div className={styles.slot} hidden={allFailed} data-block='aside-card'><StanCheer locale={locale} bias={bias} guest={guest} hearts={typeof hearts==='number'?hearts:null}/></div>;
 }
 /** 오늘 할 것: every catalog activity for the viewer's favorite (else the first joined creator page); its rows lead to that page. Guests and viewers without a page see the same list and go to the login or the page directory. */
 function BenefitsDailyMissions({locale}:{locale:AppLocale}){
@@ -123,13 +124,13 @@ function BenefitsDailyMissions({locale}:{locale:AppLocale}){
  // H6: the rows lead to the favorite chosen in the header (its passport first), then a followed creator, then the first joined creator page.
  const first=(joined.data?.items??[]).find(item=>item.celebrityId&&item.slug),chosen=bias.selected??bias.unverified;
  const page=chosen?{slug:chosen.slug,name:chosen.name}:first?{slug:first.slug,name:first.name}:null,slug=page?.slug??'',directory=`/pages/groups?locale=${locale}`;
- return <div className={styles.slot} hidden={allFailed}><DukjilProvider key={slug} slug={slug||undefined} accountToday={!slug} locale={locale}><FanMissions all locale={locale} slug={slug} title={title} passportHref={`/passports?locale=${locale}`} proofHref={`/${slug}?tab=certifications&locale=${locale}`} noPage={slug?undefined:directory} onAttendance={()=>setAttendance(true)}/>{attendance&&page&&<CreatorAttendanceEntry slug={slug} pageName={page.name} locale={locale} reviewHref={`/c/${encodeURIComponent(slug)}/verify?locale=${locale}`} onClose={()=>setAttendance(false)}/>}</DukjilProvider></div>;
+ return <div className={styles.slot} hidden={allFailed} data-block='list'><DukjilProvider key={slug} slug={slug||undefined} accountToday={!slug} locale={locale}><FanMissions all locale={locale} slug={slug} title={title} passportHref={`/passports?locale=${locale}`} proofHref={`/${slug}?tab=certifications&locale=${locale}`} noPage={slug?undefined:directory} onAttendance={()=>setAttendance(true)}/>{attendance&&page&&<CreatorAttendanceEntry slug={slug} pageName={page.name} locale={locale} reviewHref={`/c/${encodeURIComponent(slug)}/verify?locale=${locale}`} onClose={()=>setAttendance(false)}/>}</DukjilProvider></div>;
 }
 /** 내역 card (aside 2): the last three rows; its failure joins the section failures. */
 function BenefitsHistory({locale,guest,onHistory}:{locale:AppLocale;guest:boolean;onHistory:()=>void}){
  const [state,setState]=useState<SectionState>({failed:false,retry:()=>{}}),onFailure=(failed:boolean,retry:()=>void)=>setState({failed,retry});
  const lifted=useSectionFailure('history',state.failed,()=>state.retry());
- return <div className={styles.slot} hidden={lifted}><StanHistoryCard locale={locale} guest={guest} href={tabHref(locale,'history')} onAll={onHistory} onFailure={onFailure}/></div>;
+ return <div className={styles.slot} hidden={lifted} data-block='aside-card'><StanHistoryCard locale={locale} guest={guest} href={tabHref(locale,'history')} onAll={onHistory} onFailure={onFailure}/></div>;
 }
 /** 잔액 카드: guests keep the card with locked values and the login in the exchange slot; 교환 steps back to secondary while a lucky draw is open (plan ③). */
 function BenefitsWallet({locale,signedOut=false,bias,onExchange,onHistory}:{locale:AppLocale;signedOut?:boolean;bias:SelectedBias;onExchange:()=>void;onHistory:()=>void}){
@@ -137,7 +138,7 @@ function BenefitsWallet({locale,signedOut=false,bias,onExchange,onHistory}:{loca
  const {guest,stamps,hearts}=useStanNumbers(bias,signedOut),favorite=guest?null:stanFavorite(bias),slug=favorite?.slug??null,luckyOpen=useLuckyOpen(locale,slug);
  useEffect(()=>{window.addEventListener(GROUP_WALLET_CHANGED_EVENT,wallet.retry);return()=>window.removeEventListener(GROUP_WALLET_CHANGED_EVENT,wallet.retry);},[wallet.retry]);
  const sections=useContext(SectionContext),retryAll=()=>window.dispatchEvent(new Event(GROUP_WALLET_CHANGED_EVENT)),failed=auth.ready&&auth.authenticated&&!wallet.loading&&!wallet.data,allFailed=useSectionFailure('wallet',failed,retryAll);
- if(allFailed)return <div className={styles.slot}><FanState inline compact kind='error' title={w.error} actions={<FanAction variant='text' onClick={()=>sections?.retryAll()}>{w.retry}</FanAction>}/></div>;
+ if(allFailed)return <div><FanState inline compact kind='error' title={w.error} actions={<FanAction variant='text' onClick={()=>sections?.retryAll()}>{w.retry}</FanAction>}/></div>;
  const card=(state:WalletCardState)=><StanWallet locale={locale} state={state} stamps={stamps} hearts={hearts} exchangeSecondary={luckyOpen} onExchange={onExchange}
   links={{hearts:slug?`/${encodeURIComponent(slug)}?tab=fans&locale=${locale}`:`/passports?locale=${locale}`,tickets:`/my/raffles?locale=${locale}`,history:tabHref(locale,'history'),onHistory}}/>;
  // The server saw no session: the signed-out card is drawn from the first HTML instead of a loading card of another height.

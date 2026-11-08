@@ -72,7 +72,7 @@ export function StanHistoryCard({ locale, guest, href, onAll, onFailure }: { loc
   useEffect(() => { report.current = onFailure; retry.current = history.retry; });
   useEffect(() => { if (!guest && settled) report.current?.(failed, () => retry.current()); }, [guest, settled, failed]);
   const entries = history.data?.entries.slice(0, 3) ?? [];
-  return <section className={styles.card} id="stan-history" tabIndex={-1} aria-labelledby="stan-history-title" data-block="aside-card">
+  return <section className={styles.card} id="stan-history" tabIndex={-1} aria-labelledby="stan-history-title">
     <div className={styles.head}><FanHeading id="stan-history-title">{t(locale, "stanTabHistory")}</FanHeading>{guest ? <FanLockedValue locale={locale} /> : <Link className={styles.all} href={href as Route} scroll={false} onClick={onAll}>{seeAllLabel[locale]}<FanIcon icon={ChevronRight} size={16} /></Link>}</div>
     <div className={styles.box}>
       {guest ? <FanLockedRows rows={3} className={styles.locked} />

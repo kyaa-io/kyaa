@@ -103,7 +103,7 @@ export function FanMissions({ locale, slug, title, passportHref, proofHref, foot
         const onClick = !guest && mission.key === "checkin" ? (event: MouseEvent<HTMLAnchorElement>) => { if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return; event.preventDefault(); onAttendance(event.currentTarget); } : undefined;
         return <FanMissionRow key={mission.key} dataMission={mission.key} done={finished} href={href} onClick={onClick}
           art={<MissionIcon mission={mission.key} />}
-          title={<><span>{mission.label}</span>{known && limit !== null ? <span className={styles.count}>{count.toLocaleString(locale)}/{limit.toLocaleString(locale)}</span> : null}</>}
+          title={<><span data-row-title="">{mission.label}</span>{known && limit !== null ? <span className={styles.count} data-row-progress="">{count.toLocaleString(locale)}/{limit.toLocaleString(locale)}</span> : null}</>}
           detail={known && limit !== null ? <MissionBar value={count} max={limit} label={mission.label} /> : loadingBar ? <span className={styles.barPending} aria-hidden="true"><FanSkeleton width="100%" height={2} /></span> : undefined}
           trailing={finished ? <MissionDone label={dukjilText(locale, "missionDoneShort")} /> : (on || group) && points ? <MissionReward points={points} locale={locale} /> : undefined} />;
       })}
@@ -137,7 +137,7 @@ export function FanMissions({ locale, slug, title, passportHref, proofHref, foot
   );
   const folded = all && !group && on;
   return (
-    <section className={`${styles.section} ${all ? styles.full : ""} ${inkStyles.palette}`} aria-labelledby={headingId} data-fan-missions data-block={all ? "list" : undefined}>
+    <section className={`${styles.section} ${all ? styles.full : ""} ${inkStyles.palette}`} aria-labelledby={headingId} data-fan-missions>
       <div className={styles.head}>
         <h2 id={headingId}>{title}</h2>
         {folded && !guest && todayKnown && <span className={styles.summary} data-missions-left="" data-mission-reset="" data-meta="">{todayAllDone ? t("missionsTodayDone") : t("missionsGroupLeft", [todayLeft.toLocaleString(locale)])} · {t("missionsReset")}</span>}

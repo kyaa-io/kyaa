@@ -105,16 +105,16 @@ export function LuckyDrawModule({ locale, bias, guest, onExchange }: { locale: A
     <FanIcon icon={ChevronRight} size={16} />
   </Link> : null;
 
-  return <section className={styles.section} id="stan-lucky" tabIndex={-1} aria-labelledby="stan-lucky-title" data-block="lucky">
+  return <section className={styles.section} id="stan-lucky" tabIndex={-1} aria-labelledby="stan-lucky-title">
     <div className={styles.head}><FanHeading id="stan-lucky-title">{title}</FanHeading></div>
     <div className={styles.card} data-lucky-module="" data-lucky-state={guest ? "guest" : !slug && !loading ? "pick" : state} data-motion="still">
       <div className={styles.stage}><LuckyMachine closed={state === "closed" && Boolean(raffle)} /></div>
       {raffle && !guest ? <p className={styles.prize} data-raffle-title="">{raffle.title}</p> : null}
       {pick ? pick
         : raffles.error ? <div className={styles.error} role="alert"><span>{t(locale, "luckyLoadError")}</span><FanAction variant="text" onClick={raffles.retry}>{groupsCopy(locale).retry}</FanAction></div>
-        : <dl className={styles.values} data-row="label-value" data-cells={loading ? 3 : cells.length}>
-          {loading ? [0, 1, 2].map(index => <div key={index}><dt><FanSkeleton width={40} height={12} /></dt><dd>{pending}</dd></div>)
-            : cells.map(cell => <div key={cell.key} data-cell={cell.key}><dt>{cell.label}</dt><dd>{cell.value}</dd></div>)}
+        : <dl className={styles.values} data-cells={loading ? 3 : cells.length}>
+          {loading ? [0, 1, 2].map(index => <div key={index} data-row="label-value"><dt><FanSkeleton width={40} height={12} /></dt><dd>{pending}</dd></div>)
+            : cells.map(cell => <div key={cell.key} data-cell={cell.key} data-row="label-value"><dt>{cell.label}</dt><dd>{cell.value}</dd></div>)}
         </dl>}
       {action ? <div className={styles.actionRow}>{action}</div> : null}
       {pastRow}

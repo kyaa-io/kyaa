@@ -31,7 +31,7 @@ function Slot({ locale, slot, children }: { locale: AppLocale; slot: StanSlot; c
 function Row({ row, label, rate, href, children }: { row: string; label: string; rate: string; href: string; children: ReactNode }) {
   return <Link className={styles.row} href={href as Route} data-row="label-value" data-wallet-row={row}>
     <span className={styles.rowCopy}><span className={styles.rowLabel}>{label}</span><span className={styles.rowRate} data-meta="">{rate}</span></span>
-    <span className={styles.rowValue}>{children}</span>
+    <span className={styles.rowValue} data-row-end="">{children}</span>
     <FanIcon icon={ChevronRight} className={styles.next} size={16} />
   </Link>;
 }
@@ -54,7 +54,7 @@ export function StanWallet({ locale, state, stamps, hearts, links, exchangeSecon
     : state.kind === "loading" ? <FanSkeleton shape="block" width={96} height={44} />
     : state.kind === "failed" ? (state.retry ? <FanAction variant="text" onClick={state.retry}>{w.retry}</FanAction> : null)
     : <FanAction variant={exchangeSecondary ? "secondary" : "primary"} className={styles.exchange} disabled={!affordable} onClick={onExchange}>{rewardedExchangeCopy(locale).action}</FanAction>;
-  return <section className={[styles.wallet, className].filter(Boolean).join(" ")} aria-label={s("stanWalletFlows")} data-wallet-card="stan" data-block="wallet">
+  return <section className={[styles.wallet, className].filter(Boolean).join(" ")} aria-label={s("stanWalletFlows")} data-wallet-card="stan">
     <div className={styles.top}>
       <div className={styles.balance}>
         <p className={styles.label}><span>{w.points}</span><Link className={styles.history} href={links.history as Route} scroll={false} onClick={links.onHistory} data-balance-history="">{s("walletPointsHistory")}<FanIcon icon={ChevronRight} size={16} /></Link></p>

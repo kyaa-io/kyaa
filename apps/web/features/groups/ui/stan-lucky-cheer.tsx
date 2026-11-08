@@ -88,7 +88,7 @@ export function StanCheer({ locale, bias, guest, hearts }: { locale: AppLocale; 
   const login = fanLoginHref(locale, `/benefits?locale=${locale}`);
   const heading = <div className={styles.head}><FanHeading id="stan-cheer-title">{title}</FanHeading></div>;
   const pickInner = <><FanIcon icon={Plus} size={20} /><span className={styles.pickLabel}>{t(locale, "heartPick")}</span><FanIcon icon={ChevronRight} size={16} /></>;
-  if (!guest && bias.status !== "loading" && !favorite) return <section className={styles.section} id="stan-cheer" tabIndex={-1} aria-labelledby="stan-cheer-title" data-block="aside-card">
+  if (!guest && bias.status !== "loading" && !favorite) return <section className={styles.section} id="stan-cheer" tabIndex={-1} aria-labelledby="stan-cheer-title">
     {heading}
     <div className={styles.card} data-cheer="pick">{bias.options.length ? <FavoritePickMenu locale={locale} bias={bias} className={styles.pick}>{pickInner}</FavoritePickMenu> : <Link className={styles.pick} href={`/pages/groups?locale=${locale}` as Route} data-row="menu">{pickInner}</Link>}</div>
   </section>;
@@ -101,13 +101,13 @@ export function StanCheer({ locale, bias, guest, hearts }: { locale: AppLocale; 
   const heart = <FanIcon icon={Heart} size={16} className={styles.heart} />;
   const rankValue = guest ? <FanLockedValue locale={locale} /> : rank.loading || bias.status === "loading" ? <FanSkeleton width={56} height={20} />
     : rank.row ? <>{t(locale, "cheerRankValue", [rank.row.rank.toLocaleString(locale)])}{rank.comparable ? <RankDelta delta={rank.row.delta} locale={locale} /> : null}</> : t(locale, "cheerRankOutShort");
-  return <section className={styles.section} id="stan-cheer" tabIndex={-1} aria-labelledby="stan-cheer-title" data-block="aside-card">
+  return <section className={styles.section} id="stan-cheer" tabIndex={-1} aria-labelledby="stan-cheer-title">
     {heading}
     <div className={styles.card} data-cheer={guest ? "guest" : "favorite"}>
       {who}
       <dl className={styles.rows}>
-        <div className={styles.row} data-row="label-value"><dt><span className={styles.rowLabel}>{t(locale, "cheerMyHearts")}</span></dt><dd className={styles.rowValue}>{guest ? <FanLockedValue locale={locale} /> : hearts === null ? <FanSkeleton width={48} height={20} /> : <FanNumber value={hearts} size="md" countUp locale={locale} icon={heart} />}</dd></div>
-        <div className={styles.row} data-row="label-value"><dt><span className={styles.rowLabel}>{t(locale, "cheerRankLabel")}</span><span className={styles.rowMeta} data-ranking-basis="" data-meta="">{t(locale, "cheerRankBasis")}</span></dt><dd className={styles.rowValue}>{rankValue}</dd></div>
+        <div className={styles.row} data-row="label-value"><dt><span className={styles.rowLabel}>{t(locale, "cheerMyHearts")}</span></dt><dd className={styles.rowValue} data-row-end="">{guest ? <FanLockedValue locale={locale} /> : hearts === null ? <FanSkeleton width={48} height={20} /> : <FanNumber value={hearts} size="md" countUp locale={locale} icon={heart} />}</dd></div>
+        <div className={styles.row} data-row="label-value"><dt><span className={styles.rowLabel}>{t(locale, "cheerRankLabel")}</span><span className={styles.rowMeta} data-ranking-basis="" data-meta="">{t(locale, "cheerRankBasis")}</span></dt><dd className={styles.rowValue} data-row-end="">{rankValue}</dd></div>
       </dl>
       <FanAction variant="secondary" fullWidth className={styles.action} href={guest ? login : `/${encodeURIComponent(slug ?? "")}?tab=fans&locale=${locale}`}>{guest ? t(locale, "heartPick") : t(locale, "cheerFanRanking")}</FanAction>
     </div>

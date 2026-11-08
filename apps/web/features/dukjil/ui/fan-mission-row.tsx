@@ -28,7 +28,7 @@ function RowBody({ art, title, detail, trailing }: { art?: ReactNode; title: Rea
       <span className={styles.title} data-mission-title="">{title}</span>
       {detail ? <span className={styles.detail} data-mission-detail="">{detail}</span> : null}
     </span>
-    <span className={styles.trailing} data-mission-trailing="">{trailing}</span>
+    <span className={styles.trailing} data-mission-trailing="" data-row-end="">{trailing}</span>
   </>;
 }
 
@@ -36,7 +36,7 @@ function RowBody({ art, title, detail, trailing }: { art?: ReactNode; title: Rea
  * `FanCollapsible` hands it the aria contract; `count` sits beside the title, `points` and the chevron in the trailing column. */
 export function FanMissionFoldRow({ title, count, points, ...triggerProps }: FanCollapsibleTriggerProps & { title: ReactNode; count?: ReactNode; points?: ReactNode }) {
   return <FanCollapsibleTrigger {...triggerProps} className={`${styles.row} ${styles.fold}`} data-fan-mission-row="fold" data-row="mission">
-    <RowBody art={null} title={<><span>{title}</span>{count ? <span className={styles.count}>{count}</span> : null}</>} trailing={<>{points ? <span className={styles.reward}>{points}</span> : null}<FanIcon icon={ChevronDown} size={16} className={styles.chevron} /></>} />
+    <RowBody art={null} title={<><span data-row-title="">{title}</span>{count ? <span className={styles.count}>{count}</span> : null}</>} trailing={<>{points ? <span className={styles.reward}>{points}</span> : null}<FanIcon icon={ChevronDown} size={16} className={styles.chevron} /></>} />
   </FanCollapsibleTrigger>;
 }
 
@@ -52,7 +52,7 @@ export function MissionDone({ label }: { label: string }) {
 
 /** The progress under a title: a 2px bar (160 / 240 from 1024) at the title's x. */
 export function MissionBar({ value, max, label }: { value: number; max: number; label: string }) {
-  return <span className={styles.bar} role="progressbar" aria-label={label} aria-valuemin={0} aria-valuemax={max} aria-valuenow={Math.min(value, max)}><i style={{ width: `${Math.min(100, Math.round((value / Math.max(1, max)) * 100))}%` }} /></span>;
+  return <span className={styles.bar} data-row-bar="" role="progressbar" aria-label={label} aria-valuemin={0} aria-valuemax={max} aria-valuenow={Math.min(value, max)}><i style={{ width: `${Math.min(100, Math.round((value / Math.max(1, max)) * 100))}%` }} /></span>;
 }
 
 /** The list the rows sit in: inside a fold it draws only the dividers; on its own (`framed`) it is the outlined card. */
