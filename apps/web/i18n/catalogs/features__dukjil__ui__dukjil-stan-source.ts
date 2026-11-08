@@ -6,18 +6,6 @@ export const messages = {
   "stanFlowCheer": { "ja": "推しを応援", "zh-Hans": "为最爱应援", "zh-Hant": "為最愛應援", "es": "Apoyar", "id": "Dukung", "vi": "Cổ vũ", "th": "เชียร์", "pt": "Apoiar", "fr": "Soutenir", "ru": "Поддержать" },
   "stanWalletFlows": { "ja": "マイウォレット", "zh-Hans": "我的钱包", "zh-Hant": "我的錢包", "es": "Mi billetera", "id": "Dompet saya", "vi": "Ví của tôi", "th": "กระเป๋าของฉัน", "pt": "Minha carteira", "fr": "Mon portefeuille", "ru": "Мой кошелёк" },
   "stanGuide": { "ja": "案内", "zh-Hans": "说明", "zh-Hant": "說明", "es": "Guía", "id": "Panduan", "vi": "Hướng dẫn", "th": "คู่มือ", "pt": "Guia", "fr": "Guide", "ru": "Правила" },
-  "missionsGroupToday": {
-    "ja": "今日やること",
-    "zh-Hans": "今天要做的",
-    "zh-Hant": "今天要做的",
-    "es": "Para hoy",
-    "id": "Untuk hari ini",
-    "vi": "Việc hôm nay",
-    "th": "สิ่งที่ทำวันนี้",
-    "pt": "Para hoje",
-    "fr": "À faire aujourd'hui",
-    "ru": "На сегодня"
-  },
   "missionsGroupMore": {
     "ja": "その他のミッション",
     "zh-Hans": "更多任务",
