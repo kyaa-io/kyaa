@@ -249,11 +249,11 @@ export function LiveCalendarScreen({
   // A string, so the refresh callback stays stable across renders.
   const linkedQuery = groupScope ? "" : initialCelebritySlugs.filter((slug) => unlistedSlugs.includes(slug)).slice(0, 10).map((slug) => `&celebrity=${encodeURIComponent(slug)}`).join("");
   const linkedKey = linkedUnlisted.join(",");
-  const schedules = useMemo(() => linkedKey === "" ? monthSchedules : {
-    status: monthSchedules.status === "ready" ? linkedSchedules.status : monthSchedules.status,
+  // The month list owns the loading, error and retry state; a failed linked read only leaves those creators' schedules out.
+  const schedules = linkedKey === "" ? monthSchedules : {
+    ...monthSchedules,
     items: [...monthSchedules.items, ...linkedSchedules.items.filter((item) => !monthSchedules.items.some((own) => own.id === item.id))],
-    retry: () => { monthSchedules.retry(); linkedSchedules.retry(); },
-  }, [linkedKey, monthSchedules, linkedSchedules]);
+  };
   const participation = participationCopy(locale);
   const [selectedCelebritySlugs, setSelectedCelebritySlugs] = useState<string[]>([
     ...initialCelebritySlugs,

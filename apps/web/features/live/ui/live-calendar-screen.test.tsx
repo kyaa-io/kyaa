@@ -447,6 +447,24 @@ describe("LIVE calendar screen", () => {
     expect(scheduleMonth).toHaveBeenCalledWith("2026-09", "ko", ["elina"], true);
   });
 
+  it("keeps the month schedules and no error state when only the linked creators' read fails", () => {
+    vi.stubGlobal("fetch", vi.fn(async () => ({ ok: true, json: async () => calendar }) as Response));
+    scheduleMonth.mockImplementation((...args: unknown[]) => Array.isArray(args[2])
+      ? { status: "error" as const, items: [], retry: () => undefined }
+      : { status: "ready" as const, items: [], retry: () => undefined });
+    try {
+      const view = render(<LiveCalendarScreen locale="ko" initialCalendar={calendar} celebrities={celebrities} unlistedSlugs={["elina"]} eventMetadata={eventMetadata} initialCelebritySlugs={["elina"]} />);
+      expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+      view.unmount();
+      // Control: a failed month read still shows the error state.
+      scheduleMonth.mockImplementation(() => ({ status: "error" as const, items: [], retry: () => undefined }));
+      render(<LiveCalendarScreen locale="ko" initialCalendar={calendar} celebrities={celebrities} eventMetadata={eventMetadata} initialCelebritySlugs={[]} />);
+      expect(screen.getByRole("alert")).toBeInTheDocument();
+    } finally {
+      scheduleMonth.mockImplementation(() => ({ status: "ready" as const, items: [], retry: () => undefined }));
+    }
+  });
+
   it("reads every link-selected unlisted creator's schedules, not only the first", async () => {
     vi.stubGlobal("fetch", vi.fn(async () => ({ ok: true, json: async () => calendar }) as Response));
     scheduleMonth.mockClear();
