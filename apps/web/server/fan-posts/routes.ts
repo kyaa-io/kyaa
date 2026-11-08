@@ -55,6 +55,8 @@ function richBoardBody(value: { body: string; assetIds: string[]; bodyDoc?: unkn
   return { ...prepared, body: `${title}\n${prepared.body}`.trim() };
 }
 const bodyParams = dukjilBodyParams;
+// A path id is any-case (z.uuid()); the reward keys use the database's lowercase form, so one post is one key and the self-like check matches.
+const rewardKeyId = (id: string) => id.toLowerCase();
 async function awardForPost(deps: Pick<ContentDependencies, "rpc">, owner: string | null, postId: string, actionKey: "comment" | "reaction", sourceKey: string, params: Record<string, unknown>) {
   if (!owner) return null;
   try {
@@ -256,7 +258,7 @@ export function createContentHandlers(deps: ContentDependencies) {
       }
       const value = createCommentSchema.parse(await boundedJson(request, 8192));
       const written = checked(writeSchema, await deps.rpc("post_fan_post_comment", { p_app_user_id, p_post_id: id, p_parent_id: value.parentId, p_body: value.body, p_idempotency_key: value.idempotencyKey }));
-      const award = written.replayed ? null : await awardCommentDetailed(deps, p_app_user_id, id, written.id, { ...bodyParams(value.body), isReply: value.parentId != null, targetKey: id });
+      const award = written.replayed ? null : await awardCommentDetailed(deps, p_app_user_id, id, written.id, { ...bodyParams(value.body), isReply: value.parentId != null, targetKey: rewardKeyId(id) });
       return json({ ...written, ...await missionReward(deps, p_app_user_id, written, award) }, 201);
     }),
     removeComment: (request: Request, id: string) => run(async () => {
@@ -269,11 +271,11 @@ export function createContentHandlers(deps: ContentDependencies) {
       if ("liked" in value) {
         await deps.rpc("set_fan_post_like", { p_app_user_id, p_post_id: id, p_liked: value.liked });
         // Only a like pays; the source is the post, so cancel and re-click never pays twice.
-        if (value.liked) await awardForPost(deps, p_app_user_id, id, "reaction", `post-like:${id}`, {});
+        if (value.liked) await awardForPost(deps, p_app_user_id, id, "reaction", `post-like:${rewardKeyId(id)}`, {});
         return json(value);
       }
       const result = checked(postReactionSchema, await deps.rpc("set_fan_post_reaction", { p_app_user_id, p_post_id: id, p_reaction: value.reaction }));
-      const award = result.reaction === "like" ? await awardForPost(deps, p_app_user_id, id, "reaction", `post-like:${id}`, {}) : null;
+      const award = result.reaction === "like" ? await awardForPost(deps, p_app_user_id, id, "reaction", `post-like:${rewardKeyId(id)}`, {}) : null;
       // 261107-2 D8: a fresh grant goes back so the screen can celebrate it; a replay or a capped like says nothing.
       return json(award && !award.replayed ? { ...result, ...rewardFromAward(award) } : result);
     }),
