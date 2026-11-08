@@ -22,7 +22,7 @@ drop index if exists public.fan_product_events_share_member_idx;
 drop index if exists public.group_creator_attendance_member_created_idx;
 drop index if exists public.fan_passports_owner_issued_idx;
 drop index if exists public.fan_passports_issued_idx;
-drop function if exists public.consume_product_event_rate_budget(text);
+drop function if exists public.consume_product_event_rate_budget(text,text);
 drop table if exists public.product_event_rate_budgets;
 
 do $patch$

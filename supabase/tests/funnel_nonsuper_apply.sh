@@ -45,7 +45,7 @@ begin
   if (select rolsuper or rolbypassrls from pg_roles where rolname = 'f_funnel_apply') then raise exception 'probe role is privileged'; end if;
   owners_ok := (select bool_and(pg_get_userbyid(proowner) = 'f_funnel_apply') from pg_proc where oid in (
     'public.read_admin_web_traffic(uuid,uuid,integer)'::regprocedure, 'public.read_admin_funnel_analytics(uuid,uuid,integer)'::regprocedure,
-    'public.project_funnel_activity_event_v1()'::regprocedure, 'public.consume_product_event_rate_budget(text)'::regprocedure));
+    'public.project_funnel_activity_event_v1()'::regprocedure, 'public.consume_product_event_rate_budget(text,text)'::regprocedure));
   raise notice 'policies for f_funnel_apply: %', (select string_agg(c.relname, ',' order by c.relname) from pg_policy p join pg_class c on c.oid = p.polrelid
     where 'f_funnel_apply'::regrole = any(p.polroles));
 

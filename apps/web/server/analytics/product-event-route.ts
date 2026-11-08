@@ -29,16 +29,20 @@ const json = (body: unknown, status: number) => Response.json(body, { status, he
 const dropped = () => new Response(null, { status: 204, headers });
 
 /**
- * HMAC of the rate bucket: the client IP the AWS edge writes (CloudFront function) together with the anonymous session or
- * the member. The key is derived from the server secret with its own label, so this hash cannot be compared with other
- * uses of that secret. Other hosts and local runs (no edge header) have no per-bucket budget.
+ * HMACs of the two rate buckets: the client IP the AWS edge writes (CloudFront function) alone, and that IP together with
+ * the anonymous session or the member. The key is derived from the server secret with its own label, so these hashes
+ * cannot be compared with other uses of that secret. Other hosts and local runs (no edge header) have no bucket budget.
  */
-export function rateBucketHash(secret: string, request: Request, owner: { appUserId: string } | null, anonymousSessionId: string | null): string | null {
+export function rateBucketHashes(secret: string, request: Request, owner: { appUserId: string } | null, anonymousSessionId: string | null): { ip: string; holder: string } | null {
   const raw = request.headers.get("x-byus-client-ip")?.trim() ?? "";
   if (!isIP(raw)) return null;
   const key = createHmac("sha256", secret).update("product-event-ip-v1").digest();
+  const ip = raw.toLowerCase();
   const holder = owner ? `member:${owner.appUserId}` : `anonymous:${anonymousSessionId ?? ""}`;
-  return createHmac("sha256", key).update(`${raw.toLowerCase()}|${holder}`).digest("hex");
+  return {
+    ip: createHmac("sha256", key).update(`${ip}|ip`).digest("hex"),
+    holder: createHmac("sha256", key).update(`${ip}|${holder}`).digest("hex"),
+  };
 }
 
 function logIdempotencyConflict(eventName: ClientProductEventV1["eventName"]): void {
@@ -69,12 +73,14 @@ export function createRecordProductEventHandler(dependencies: ProductEventRouteD
       assertSafeProductEventTime(input.occurredAt, dependencies.now());
       const owner = await dependencies.identify(request.headers.get("authorization"));
       if (!owner && !input.anonymousSessionId) return json({ error: { code: "EVENT_OWNER_REQUIRED" } }, 400);
-      const bucket = dependencies.rateSecret && dependencies.repository.consumeRateBudget
-        ? rateBucketHash(dependencies.rateSecret, request, owner, input.anonymousSessionId) : null;
-      if (bucket) {
+      const buckets = dependencies.rateSecret && dependencies.repository.consumeRateBudget
+        ? rateBucketHashes(dependencies.rateSecret, request, owner, input.anonymousSessionId) : null;
+      if (buckets) {
+        // The IP bucket goes first: a client rotating its session id is stopped there before it creates holder rows.
         // A budget lookup failure must not lose events; the per-owner page view cap still holds in the database.
-        const allowed = await dependencies.repository.consumeRateBudget!(bucket).catch(() => true);
-        if (!allowed) return dropped();
+        const consume = dependencies.repository.consumeRateBudget!.bind(dependencies.repository);
+        if (!await consume(buckets.ip, "ip").catch(() => true)) return dropped();
+        if (!await consume(buckets.holder, "holder").catch(() => true)) return dropped();
       }
       const result = await dependencies.repository.record({
         ...input,

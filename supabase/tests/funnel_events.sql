@@ -219,12 +219,20 @@ begin
   perform public.record_product_event_v1(1::smallint, 'page_view', null, repeat('d', 64), null, null, null, null,
     'web.page_view', 'page-view:' || gen_random_uuid(), statement_timestamp(), page);
   for i in 1..301 loop
-    if public.consume_product_event_rate_budget(repeat('e', 64)) then allowed := allowed + 1; end if;
+    if public.consume_product_event_rate_budget(repeat('e', 64), 'holder') then allowed := allowed + 1; end if;
   end loop;
-  perform pg_temp.funnel_check(allowed = 300, 'bucket budget is 300 a minute');
-  perform pg_temp.funnel_check(public.consume_product_event_rate_budget(repeat('f', 64)), 'another bucket has its own budget');
+  perform pg_temp.funnel_check(allowed = 300, 'holder budget is 300 a minute');
+  perform pg_temp.funnel_check(public.consume_product_event_rate_budget(repeat('f', 64), 'holder'), 'another holder has its own budget');
+  allowed := 0;
+  for i in 1..3001 loop
+    if public.consume_product_event_rate_budget(repeat('a', 64), 'ip') then allowed := allowed + 1; end if;
+  end loop;
+  perform pg_temp.funnel_check(allowed = 3000, 'ip budget is 3,000 a minute');
+  perform pg_temp.funnel_check((select count(*) from public.product_event_rate_budgets where bucket_hash = repeat('a', 64)) = 1,
+    'the ip bucket is one row a minute however many requests');
+  perform pg_temp.funnel_rejects($f$select public.consume_product_event_rate_budget(repeat('b', 64), 'session')$f$, '22023');
   perform pg_temp.funnel_check((select 'lock_timeout=1s' = any(proconfig) from pg_proc where oid = 'public.project_funnel_activity_event_v1()'::regprocedure), 'projector lock wait');
-  if has_function_privilege('anon', 'public.consume_product_event_rate_budget(text)', 'execute')
+  if has_function_privilege('anon', 'public.consume_product_event_rate_budget(text,text)', 'execute')
      or has_table_privilege('service_role', 'public.product_event_rate_budgets', 'select') then
     raise exception 'FUNNEL_EVENTS rate budget grants';
   end if;

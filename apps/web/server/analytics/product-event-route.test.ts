@@ -5,7 +5,7 @@ vi.mock("server-only", () => ({}));
 import { AuthError } from "../../features/auth/domain/auth-errors";
 import type { ProductEventRepository } from "./product-event-repository";
 import { ProductEventRepositoryError, SupabaseProductEventRepository } from "./product-event-repository";
-import { createRecordProductEventHandler, rateBucketHash } from "./product-event-route";
+import { createRecordProductEventHandler, rateBucketHashes } from "./product-event-route";
 
 const now = new Date("2026-09-03T09:00:00.000Z");
 const appUserId = "11111111-1111-4111-8111-111111111111";
@@ -61,42 +61,54 @@ describe("product event HTTP boundary", () => {
     expect(capped.status).toBe(204);
     expect(await capped.text()).toBe("");
   });
-  it("drops events past the bucket budget only when the edge gave a client IP, and keeps them if the budget lookup fails", async () => {
-    const consumeRateBudget = vi.fn().mockResolvedValueOnce(true).mockResolvedValueOnce(false).mockRejectedValueOnce(new Error("db"));
+  it("checks the IP bucket before the holder bucket, drops over either with 204, and keeps events if a lookup fails", async () => {
+    const consumeRateBudget = vi.fn(async (_hash: string, _scope: "ip" | "holder") => true);
     const repo = { ...repository(), consumeRateBudget };
     const handler = createRecordProductEventHandler({ identify: vi.fn().mockResolvedValue(null), repository: repo, now: () => now, rateSecret: "server-secret-for-tests" });
-    const withIp = (ip: string) => { const r = request(input); r.headers.set("x-byus-client-ip", ip); return r; };
+    const withIp = (ip: string, session: string = input.anonymousSessionId) => { const r = request({ ...input, anonymousSessionId: session }); r.headers.set("x-byus-client-ip", ip); return r; };
     expect((await handler(withIp("203.0.113.7"))).status).toBe(201);
+    expect(consumeRateBudget.mock.calls.map(([, scope]) => scope)).toEqual(["ip", "holder"]);
+    // A session rotated on every request: the IP bucket is the same, so once it is spent the holder bucket is never touched.
+    consumeRateBudget.mockClear();
+    consumeRateBudget.mockImplementation(async (_hash, scope) => scope !== "ip");
+    for (const session of ["rotating-session-0001", "rotating-session-0002", "rotating-session-0003"]) {
+      expect((await handler(withIp("203.0.113.7", session))).status).toBe(204);
+    }
+    expect(consumeRateBudget.mock.calls.every(([, scope]) => scope === "ip")).toBe(true);
+    expect(new Set(consumeRateBudget.mock.calls.map(([hash]) => hash)).size).toBe(1);
+    consumeRateBudget.mockImplementation(async (_hash, scope) => scope !== "holder");
     expect((await handler(withIp("203.0.113.7"))).status).toBe(204);
+    consumeRateBudget.mockImplementation(async () => { throw new Error("db"); });
     expect((await handler(withIp("203.0.113.7"))).status).toBe(201);
-    expect(consumeRateBudget.mock.calls[0][0]).toMatch(/^[0-9a-f]{64}$/);
     expect(JSON.stringify(consumeRateBudget.mock.calls)).not.toContain("203.0.113.7");
+    consumeRateBudget.mockClear();
     expect((await handler(request(input))).status).toBe(201);
     expect((await handler(withIp("not-an-ip"))).status).toBe(201);
-    expect(consumeRateBudget).toHaveBeenCalledTimes(3);
-    expect(repo.record).toHaveBeenCalledTimes(4);
-    const noSecret = createRecordProductEventHandler({ identify: vi.fn().mockResolvedValue(null), repository: { ...repository(), consumeRateBudget }, now: () => now });
+    const noSecret = createRecordProductEventHandler({ identify: vi.fn().mockResolvedValue(null), repository: repo, now: () => now });
     expect((await noSecret(withIp("203.0.113.7"))).status).toBe(201);
-    expect(consumeRateBudget).toHaveBeenCalledTimes(3);
+    expect(consumeRateBudget).not.toHaveBeenCalled();
   });
-  it("keys the bucket by IP with the session or the member, under a key derived from the secret", () => {
+  it("keys the IP bucket by IP alone and the holder bucket by IP with the session or the member, under a key derived from the secret", () => {
     const at = (ip: string) => { const r = new Request("https://kyaa.test/api/events"); r.headers.set("x-byus-client-ip", ip); return r; };
     const member = { appUserId: "44444444-4444-4444-8444-444444444444" };
-    const a = rateBucketHash("secret-one-0000000", at("203.0.113.7"), null, "session-a");
-    expect(a).toMatch(/^[0-9a-f]{64}$/);
-    expect(rateBucketHash("secret-one-0000000", at("203.0.113.7"), null, "session-a")).toBe(a);
-    expect(rateBucketHash("secret-one-0000000", at("203.0.113.7"), null, "session-b")).not.toBe(a);
-    expect(rateBucketHash("secret-one-0000000", at("203.0.113.8"), null, "session-a")).not.toBe(a);
-    expect(rateBucketHash("secret-one-0000000", at("203.0.113.7"), member, "session-a")).not.toBe(a);
-    expect(rateBucketHash("secret-two-0000000", at("203.0.113.7"), null, "session-a")).not.toBe(a);
-    expect(rateBucketHash("secret-one-0000000", new Request("https://kyaa.test/api/events"), null, "session-a")).toBeNull();
+    const a = rateBucketHashes("secret-one-0000000", at("203.0.113.7"), null, "session-a")!;
+    expect(a.ip).toMatch(/^[0-9a-f]{64}$/);
+    expect(a.holder).toMatch(/^[0-9a-f]{64}$/);
+    expect(a.ip).not.toBe(a.holder);
+    const otherSession = rateBucketHashes("secret-one-0000000", at("203.0.113.7"), null, "session-b")!;
+    expect(otherSession.ip).toBe(a.ip);
+    expect(otherSession.holder).not.toBe(a.holder);
+    expect(rateBucketHashes("secret-one-0000000", at("203.0.113.7"), member, "session-a")!.holder).not.toBe(a.holder);
+    expect(rateBucketHashes("secret-one-0000000", at("203.0.113.8"), null, "session-a")!.ip).not.toBe(a.ip);
+    expect(rateBucketHashes("secret-two-0000000", at("203.0.113.7"), null, "session-a")!.ip).not.toBe(a.ip);
+    expect(rateBucketHashes("secret-one-0000000", new Request("https://kyaa.test/api/events"), null, "session-a")).toBeNull();
   });
   it("maps the database page view cap to RATE_LIMITED and reads the bucket budget", async () => {
     const capped = new SupabaseProductEventRepository({ rpc: vi.fn().mockResolvedValue({ data: null, error: { code: "54000", message: "PRODUCT_EVENT_RATE_LIMITED" } }) });
     await expect(capped.record({ ...input, appUserId: null })).rejects.toMatchObject({ code: "RATE_LIMITED" });
     const rpc = vi.fn().mockResolvedValue({ data: false, error: null });
-    await expect(new SupabaseProductEventRepository({ rpc }).consumeRateBudget("a".repeat(64))).resolves.toBe(false);
-    expect(rpc).toHaveBeenCalledWith("consume_product_event_rate_budget", { p_bucket_hash: "a".repeat(64) });
+    await expect(new SupabaseProductEventRepository({ rpc }).consumeRateBudget("a".repeat(64), "ip")).resolves.toBe(false);
+    expect(rpc).toHaveBeenCalledWith("consume_product_event_rate_budget", { p_bucket_hash: "a".repeat(64), p_scope: "ip" });
   });
   it("hashes the anonymous session only on the server before persistence", async () => {
     const rpc = vi.fn().mockResolvedValue({

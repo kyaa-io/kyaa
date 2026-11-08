@@ -7,8 +7,9 @@
 --   comment_created, cheer_completed: projected from the business row on commit (server.commit_projection), keyed by
 --   the row id so retries and replays are recorded once. post_created covers fan board and group posts (property
 --   board). cheer_completed is once per member, creator and KST day: enough to find a first activity.
--- Limits: page_view at most 500 per owner (tab session or member) per KST day, and 300 events a minute per client IP
--- together with the anonymous session or the member (consume_product_event_rate_budget, HMAC-keyed bucket). The route
+-- Limits: page_view at most 500 per owner (tab session or member) per KST day; per minute, 3,000 events per client IP
+-- and, behind it, 300 per client IP together with the anonymous session or the member (consume_product_event_rate_budget,
+-- HMAC-keyed buckets). The route
 -- drops anything over a limit with 204. Page views and shares are counted and reported by created_at (server time);
 -- the client's occurred_at is only stored.
 -- record_product_event_v1 is patched in place (same pattern as 20261012100000) so earlier rules stay intact.
@@ -474,9 +475,12 @@ grant execute on function public.read_admin_web_traffic(uuid,uuid,integer) to se
 revoke all on function public.read_admin_funnel_analytics(uuid,uuid,integer) from public, anon, authenticated;
 grant execute on function public.read_admin_funnel_analytics(uuid,uuid,integer) to service_role;
 
--- Rate budget for /api/events: 300 events a minute per bucket. A bucket is the edge-set client IP together with the
--- anonymous session (signed out) or the member (signed in), so many people behind one carrier NAT do not share a budget.
--- The route sends only an HMAC of the bucket, keyed from a server-only secret; the IP itself never reaches the database.
+-- Rate budgets for /api/events, two buckets checked in order:
+--   ip: the edge-set client IP alone, 3,000 a minute. A client that changes its anonymous session on every request still
+--       meets this one, and it is checked first so such a client stops creating new bucket rows here.
+--   holder: the client IP together with the anonymous session or the member, 300 a minute, so many people behind one
+--       carrier NAT do not share the small budget.
+-- The route sends only HMACs of the buckets, keyed from a server-only secret; the IP itself never reaches the database.
 create table public.product_event_rate_budgets (
   bucket_hash text not null check (bucket_hash ~ '^[0-9a-f]{64}$'),
   window_start timestamptz not null,
@@ -486,7 +490,7 @@ create table public.product_event_rate_budgets (
 alter table public.product_event_rate_budgets enable row level security;
 revoke all on table public.product_event_rate_budgets from public, anon, authenticated, service_role;
 
-create function public.consume_product_event_rate_budget(p_bucket_hash text)
+create function public.consume_product_event_rate_budget(p_bucket_hash text, p_scope text)
 returns boolean
 language plpgsql
 security definer
@@ -496,7 +500,7 @@ declare
   v_window timestamptz := pg_catalog.date_trunc('minute', statement_timestamp());
   v_used integer;
 begin
-  if p_bucket_hash is null or p_bucket_hash !~ '^[0-9a-f]{64}$' then
+  if p_bucket_hash is null or p_bucket_hash !~ '^[0-9a-f]{64}$' or p_scope is null or p_scope not in ('ip','holder') then
     raise exception 'PRODUCT_EVENT_INVALID' using errcode = '22023';
   end if;
   insert into public.product_event_rate_budgets as budget (bucket_hash, window_start, used) values (p_bucket_hash, v_window, 1)
@@ -505,11 +509,11 @@ begin
   if pg_catalog.random() < 0.01 then
     delete from public.product_event_rate_budgets where window_start < v_window - interval '10 minutes';
   end if;
-  return v_used <= 300;
+  return v_used <= case p_scope when 'ip' then 3000 else 300 end;
 end;
 $$;
-revoke all on function public.consume_product_event_rate_budget(text) from public, anon, authenticated;
-grant execute on function public.consume_product_event_rate_budget(text) to service_role;
+revoke all on function public.consume_product_event_rate_budget(text,text) from public, anon, authenticated;
+grant execute on function public.consume_product_event_rate_budget(text,text) to service_role;
 
 -- owner-policy-begin (review REVIEW-FUNNEL H1)
 -- The readers and the projector above belong to the applying role, and record_product_event_v1 (patched above) keeps its
