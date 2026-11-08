@@ -1,25 +1,27 @@
 "use client";
 
-import { useEffect, useRef } from "react";
-import { CalendarIcon } from "@animateicons/react/lucide/calendar-icon";
-import { TicketIcon } from "@animateicons/react/lucide/ticket-icon";
-import { GiftIcon } from "@animateicons/react/lucide/gift-icon";
-import { RadioIcon } from "@animateicons/react/lucide/radio-icon";
+import { useEffect, useRef, useState } from "react";
+import { Calendar, Gift, Radio, Ticket } from "lucide-react";
 import styles from "./fan-motion-icon.module.css";
 
-const icons = { calendar: CalendarIcon, ticket: TicketIcon, gift: GiftIcon, radio: RadioIcon };
+// 같은 모양의 정지 아이콘을 먼저 그리고, 움직이는 아이콘(Motion 포함)은 아이콘이 화면에 처음 보일 때 불러온다.
+// 정적으로 가져오면 이 아이콘을 쓰는 화면을 미리 읽을 때마다(홈의 탭 미리 읽기 포함) Motion 청크가 함께 내려온다.
+const staticIcons = { calendar: Calendar, ticket: Ticket, gift: Gift, radio: Radio };
+type AnimatedIcons = typeof import("./fan-motion-icon-animated").animatedIcons;
+let animatedModule: Promise<AnimatedIcons> | null = null;
+const loadAnimated = () => (animatedModule ??= import("./fan-motion-icon-animated").then((module) => module.animatedIcons));
 type IconHandle = { startAnimation(): void; stopAnimation(): void };
 
 /** Decorative only. Labels belong to the surrounding action. */
 export function FanMotionIcon({ name, size = 20, className, active = false }: {
-  name: keyof typeof icons;
+  name: keyof typeof staticIcons;
   size?: number;
   className?: string;
   active?: boolean;
 }) {
   const root = useRef<HTMLSpanElement>(null);
   const handle = useRef<IconHandle>(null);
-  const Icon = icons[name];
+  const [animated, setAnimated] = useState<AnimatedIcons | null>(null);
   useEffect(() => {
     const element = root.current;
     if (!element) return;
@@ -54,8 +56,10 @@ export function FanMotionIcon({ name, size = 20, className, active = false }: {
       }
     };
     const hover = () => { if (pointer.matches) play(); };
+    let alive = true;
     const observer = typeof IntersectionObserver === "undefined" ? null : new IntersectionObserver(([entry]) => {
       visible = entry.isIntersecting;
+      if (visible && !reduced.matches) void loadAnimated().then((loaded) => { if (alive) setAnimated(() => loaded); }).catch(() => undefined);
       sync();
     }, { threshold: 0.1 });
     observer?.observe(element);
@@ -67,6 +71,7 @@ export function FanMotionIcon({ name, size = 20, className, active = false }: {
     reduced.addEventListener("change", sync);
     pointer.addEventListener("change", sync);
     return () => {
+      alive = false;
       stop();
       observer?.disconnect();
       target.removeEventListener("pointerenter", hover);
@@ -78,7 +83,8 @@ export function FanMotionIcon({ name, size = 20, className, active = false }: {
       pointer.removeEventListener("change", sync);
     };
   }, [active, name]);
+  const Animated = animated?.[name], Static = staticIcons[name];
   return <span ref={root} className={`${styles.icon} ${className ?? ""}`} aria-hidden="true" data-fan-motion={name} data-animating="false" style={{ width: size, height: size }}>
-    <Icon ref={handle} size={size} isAnimated={false} />
+    {Animated ? <Animated ref={handle} size={size} isAnimated={false} /> : <Static size={size} aria-hidden="true" />}
   </span>;
 }
