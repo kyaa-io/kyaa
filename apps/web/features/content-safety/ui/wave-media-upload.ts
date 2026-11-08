@@ -58,7 +58,8 @@ function putWithProgress(url: string, file: File, headers: Record<string, string
     xhr.withCredentials = false;
     for (const [name, value] of Object.entries(headers)) xhr.setRequestHeader(name, value);
     xhr.upload.onprogress = event => { if (event.lengthComputable && event.total > 0) onProgress(event.loaded / event.total); };
-    xhr.onload = () => { signal.removeEventListener("abort", abort); onProgress(1); resolve(xhr.status); };
+    // Only a stored file fills the bar; a refused PUT goes straight to the failed row (review r4 L1).
+    xhr.onload = () => { signal.removeEventListener("abort", abort); if ((xhr.status >= 200 && xhr.status < 300) || xhr.status === 409 || xhr.status === 412) onProgress(1); resolve(xhr.status); };
     xhr.onerror = () => { signal.removeEventListener("abort", abort); reject(new Error("MEDIA_UPLOAD_FAILED")); };
     xhr.onabort = () => { signal.removeEventListener("abort", abort); reject(new DOMException("Aborted", "AbortError")); };
     xhr.send(file);

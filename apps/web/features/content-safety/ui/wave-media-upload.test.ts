@@ -77,5 +77,7 @@ it("reports byte progress through the PUT and fails the upload on a rejected PUT
   expect(progress.at(-1)).toBe(1);
   expect(media).toMatchObject({ state: "ready" });
   vi.stubGlobal("fetch", vi.fn().mockResolvedValueOnce(reserve()).mockResolvedValueOnce(new Response(null, { status: 403 })));
-  await expect(uploadWaveMedia({ key: id, file: image() }, "wave_album", async () => "access", new AbortController().signal, () => undefined)).rejects.toThrow("MEDIA_UPLOAD_FAILED");
+  const refused: number[] = [];
+  await expect(uploadWaveMedia({ key: id, file: image() }, "wave_album", async () => "access", new AbortController().signal, sent => refused.push(sent))).rejects.toThrow("MEDIA_UPLOAD_FAILED");
+  expect(refused).not.toContain(1);
 });
