@@ -41,7 +41,9 @@ export function PostCard({ post, locale, onChanged, onDeleted, detail = false, r
   const [reactionState, setReactionState] = useState(initialReaction);
   const liked = reactionState.reaction === "like", likeCount = reactionState.likeCount;
   const href = `/c/${post.celebritySlug}/community/${post.id}?locale=${locale}${returnTo ? `&returnTo=${encodeURIComponent(returnTo)}` : ""}` as Route;
-  useEffect(() => { setReactionState(initialReaction()); }, [initialReaction]);
+  // A server value read while a choice is still on its way is older than the choice; the read after it settles brings the answer.
+  const reacting = useRef(false);
+  useEffect(() => { if (!reacting.current) setReactionState(initialReaction()); }, [initialReaction]);
   async function remove() {if(deleteUncertain){const value=await mutation.request(`/api/posts/${post.id}?locale=${toContentLocale(locale)}`,'GET');const checked=postSchema.safeParse((value as {post?:unknown}|null)?.post);if(checked.success&&checked.data.id===post.id){setDeleteUncertain(false);onChanged();}return;}if(await mutation.request(`/api/posts/${post.id}`,'DELETE')){setDeleting(false);(onDeleted??onChanged)();}else setDeleteUncertain(true);}
   /** The feed has no document. A post is opened from its detail read, so editing keeps its formatting. */
   const [editTarget, setEditTarget] = useState<FanPost | null>(null), [editBlocked, setEditBlocked] = useState(false);
@@ -60,11 +62,13 @@ export function PostCard({ post, locale, onChanged, onDeleted, detail = false, r
   async function react(choice: PostReactionChoice) {
     const previous = reactionState;
     setReactionState(applyReaction(previous, choice));
-    const result = await mutation.request(`/api/posts/${post.id}/like`, "PUT", { reaction: choice }) as { reward?: { points?: number; stamps?: number } } | null;
+    reacting.current = true;
+    const result = await mutation.request(`/api/posts/${post.id}/like`, "PUT", { reaction: choice }).finally(() => { reacting.current = false; }) as { reward?: { points?: number; stamps?: number } } | null;
     if (!result) { setReactionState(previous); return; }
     // 261107-2 D8: the shared coin badge rises from the thumbs up, with the shared toast.
     if (result.reward) celebrateReward({ locale, points: result.reward.points, stamps: result.reward.stamps, anchor: articleRef.current?.querySelector(`.${detailStyles.reactionLike}`) });
-    onChanged();
+    // 261107-2 F4: no onChanged here. Re-reading the whole detail (post and comments) redrew the page; the write already drops
+    // only this post's reads and the fan's own values (resource-cache invalidateAfterWrite), and that re-read confirms the count.
   }
   const like = () => react(liked ? "none" : "like");
   const document = useMemo(() => readRichDocument(post.bodyDoc), [post.bodyDoc]);

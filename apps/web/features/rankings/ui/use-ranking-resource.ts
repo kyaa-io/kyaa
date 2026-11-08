@@ -17,7 +17,7 @@ export function useRankingResource<T>(url: string, parse: (value: unknown) => T)
   // A quiet re-read (home ranking, back on the tab after a while): the rows stay on screen while it runs and if it fails.
   const quiet = useRef(false);
   const refresh = useCallback(() => { quiet.current = true; dropResource(cacheKey); setAttempt((n) => n + 1); }, [cacheKey]);
-  const epoch = useResourceEpoch();
+  const epoch = useResourceEpoch(cacheKey);
   const handled = useRef({ cacheKey, attempt, epoch });
   const shown = useRef<State<T> | undefined>(undefined);
   const storedValue = useRetainedResource(cacheKey, ready ? peekResource(cacheKey)?.value : undefined);

@@ -4,6 +4,7 @@ import { FanPostFeed } from "./fan-post-feed";
 import { FanPostDetail } from "./fan-post-detail";
 import { NoticeDetail } from "@/components/notice/notice-detail";
 import { notifyFanActivityUpdated } from "@/components/fan-ui/fan-activity-updates";
+import { installResourceWriteWatch } from "@/components/fan-ui/resource-cache";
 
 vi.mock("@privy-io/react-auth", () => ({ usePrivy: () => ({ ready: true, authenticated: true, user: { id: "viewer" }, getAccessToken: async () => "token" }) }));
 vi.mock("@/components/byus-session-provider", () => ({ useByUsSession: () => ({ ready: true, ownerId: "viewer", generation: 0 }) }));
@@ -34,6 +35,8 @@ beforeEach(() => {
 afterEach(() => { cleanup(); vi.unstubAllGlobals(); });
 
 it("keeps the post and selected heart mounted while a successful like refresh is pending", async () => {
+  // The app installs the write watch (PrivyProvider); a like re-reads the feed through it, not through a whole-detail reload (F4).
+  const uninstall = installResourceWriteWatch();
   render(<FanPostFeed slug="artist" locale="en" />);
   const original = await screen.findByText("A fan story");
   refresh = () => new Promise(() => {});
@@ -42,6 +45,8 @@ it("keeps the post and selected heart mounted while a successful like refresh is
   expect(writes).toBe(1);
   expect(original.isConnected).toBe(true);
   expect(screen.getByRole("button", { name: "Like 1" })).toHaveAttribute("aria-pressed", "true");
+
+  uninstall();
 });
 
 it("keeps an edit draft mounted on return to the window", async () => {
@@ -116,4 +121,28 @@ it("preserves the notice comment draft when returning to the window", async () =
   await waitFor(() => expect(reads).toBeGreaterThanOrEqual(5));
   expect(draft.isConnected).toBe(true);
   expect(draft).toHaveValue("Unsaved notice comment");
+});
+
+it("261107-2 F4: ten like toggles on a detail change the button at once and never reload the comments or drop the post", async () => {
+  const seen: string[] = [];
+  const mock = vi.mocked(globalThis.fetch), base = mock.getMockImplementation()!;
+  mock.mockImplementation(async (input, init) => { seen.push(`${init?.method ?? "GET"} ${String(input).split("?")[0]}`); return base(input as string, init); });
+  const uninstall = installResourceWriteWatch();
+  render(<FanPostDetail postId={post.id} locale="en" />);
+  const original = await screen.findByText("A fan story");
+  const draft = screen.getByRole("textbox", { name: "Write a comment" });
+  fireEvent.change(draft, { target: { value: "Typing" } });
+  const commentReads = () => seen.filter(call => call.startsWith("GET ") && call.endsWith("/comments")).length;
+  const before = commentReads();
+  for (let i = 0; i < 10; i++) {
+    const liked = i % 2 === 0;
+    fireEvent.click(screen.getByRole("button", { name: liked ? "Like 0" : "Like 1" }));
+    expect(screen.getByRole("button", { name: liked ? "Like 1" : "Like 0" })).toHaveAttribute("aria-pressed", String(liked));
+    await waitFor(() => expect(screen.getByRole("button", { name: liked ? "Like 1" : "Like 0" })).toBeEnabled());
+  }
+  expect(seen.filter(call => call.startsWith("PUT ")).length).toBe(10);
+  expect(commentReads()).toBe(before);
+  expect(original.isConnected).toBe(true);
+  expect(draft).toHaveValue("Typing");
+  uninstall();
 });

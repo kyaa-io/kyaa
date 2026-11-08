@@ -6,7 +6,7 @@ import { useFanpageResource } from "@/features/fanpage/ui/use-fanpage-resource";
 import { usePreloadGroupResource } from "@/features/groups/ui/use-group-preload";
 import { useGroupRequest, useGroupResource } from "@/features/groups/ui/use-group-resource";
 import { useRankingResource } from "@/features/rankings/ui/use-ranking-resource";
-import { clearResources, installResourceWriteWatch, ME_RESOURCE_FRESH_MS, peekResource, storeResource, syncResourceOwner } from "./resource-cache";
+import { clearResources, invalidateAfterWrite, installResourceWriteWatch, ME_RESOURCE_FRESH_MS, peekResource, storeResource, syncResourceOwner } from "./resource-cache";
 
 const identity = vi.hoisted(() => ({ owner: "owner-a", generation: 1 }));
 vi.mock("@/features/auth/client/cognito-auth", () => {
@@ -261,6 +261,49 @@ describe("writes outside useGroupRequest", () => {
     expect(peekResource(`${ownerKey()}:ko:true:/api/groups/1/posts`)).toBeUndefined();
     await flushNotify();
     await waitFor(() => expect(screen.getByTestId("group")).toHaveTextContent("n=2"));
+    uninstall();
+  });
+});
+
+describe("261107-2 F4: a reaction, comment or comment like re-reads only the post and the fan's own values", () => {
+  const shared = ["k:/api/me/wallet", "k:ko:true:/api/me/dukjil/today", "k:/api/celebrities/elina/feed?x=1", "k:ko:true:/api/groups/g1/posts?category=all"];
+  const comments = ["k:/api/posts/p1/comments?locale=ko", "k:ko:true:/api/groups/g1/posts/p1/comments"];
+  const posts = ["k:/api/posts/p1?locale=ko", "k:ko:true:/api/groups/g1/posts/p1?format=rich"];
+  it.each([
+    ["fan post like", "/api/posts/p1/like", [...posts], comments],
+    ["group post reaction", "/api/groups/g1/posts/p1/reaction", [...posts], comments],
+    ["group post dislike", "/api/groups/g1/posts/p1/dislike", [...posts], comments],
+    ["fan post comment", "/api/posts/p1/comments", [...posts, ...comments], []],
+    ["group comment", "/api/groups/g1/posts/p1/comments", [...posts, ...comments], []],
+    ["group comment delete", "/api/groups/g1/posts/p1/comments/c1", [...posts, ...comments], []],
+    ["comment like", "/api/post-comments/c1/reaction", comments, posts],
+    ["comment delete", "/api/post-comments/c1", comments, posts],
+  ])("%s", (_name, path, dropped, alsoKept) => {
+    const kept = ["k:/api/groups/g1", "k:/api/celebrities/elina", "ranking:k:/api/rankings/x", "k:/api/notifications", "k:/api/posts/p2?locale=ko", ...alsoKept];
+    for (const key of [...kept, ...dropped, ...shared]) storeResource(key, 1);
+    invalidateAfterWrite(path);
+    for (const key of kept) expect(peekResource(key)?.value, key).toBe(1);
+    for (const key of [...dropped, ...shared]) expect(peekResource(key), key).toBeUndefined();
+  });
+  it("still empties everything for other writes (blocks, hearts, entries)", () => {
+    for (const path of ["/api/content-blocks", "/api/celebrities/x/reactions", "/api/groups/g1/raffles/r1/entries", "/api/posts"]) {
+      storeResource("k:/api/groups/g1", 1);
+      invalidateAfterWrite(path);
+      expect(peekResource("k:/api/groups/g1"), path).toBeUndefined();
+    }
+  });
+  it("does not wake an unrelated mounted hook, and re-reads the post behind its value without a loading state", async () => {
+    const io = jsonFetch({ "/api/groups/1": { n: 1 }, "/api/groups/1/posts/p1?format=rich": { n: 10 } });
+    const uninstall = installResourceWriteWatch();
+    render(<><GroupView url="/api/groups/1" /><FanpageView url="/api/groups/1/posts/p1?format=rich" /></>);
+    await waitFor(() => expect(screen.getByTestId("fanpage")).toHaveTextContent("n=10"));
+    await waitFor(() => expect(screen.getByTestId("group")).toHaveTextContent("n=1"));
+    const before = io.reads().length; seen.length = 0;
+    await act(async () => { await window.fetch("/api/groups/1/posts/p1/reaction", { method: "PUT", body: "{}" }); });
+    await flushNotify();
+    await waitFor(() => expect(io.reads().length).toBe(before + 1));
+    expect(io.reads().at(-1)).toBe("GET /api/groups/1/posts/p1?format=rich");
+    expect(seen.filter((entry) => /loading/.test(entry))).toEqual([]);
     uninstall();
   });
 });

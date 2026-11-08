@@ -9,7 +9,7 @@ const mine = { ...parent, id: "22222222-2222-4222-8222-222222222222", body: "내
 
 vi.mock("./use-group-resource", () => ({ useGroupResource: () => ({ data: { items: [parent, mine], nextCursor: null }, error: false, loading: false, authenticated: true, ownerKey: "me", retry, request }) }));
 vi.mock("@/features/content-safety/ui/use-wave-media-upload", () => ({ useWaveMediaUpload: () => ({ items: [], busy: false, ready: true, invalid: false, add: vi.fn(), retry: vi.fn(), remove: vi.fn(), markUsed: vi.fn() }) }));
-vi.mock("@/features/dukjil/ui/earn-badge", () => ({ EarnBadgeCorner: ({ children }: { children: React.ReactNode }) => children }));
+vi.mock("@/features/dukjil/ui/earn-badge", () => ({ EarnBadgeCorner: ({ children }: { children: React.ReactNode }) => children, EarnActionBadge: () => null }));
 const toast = vi.fn();
 vi.mock("@/components/fan-ui/fan-toast", () => ({ showFanToast: (options: unknown) => toast(options) }));
 

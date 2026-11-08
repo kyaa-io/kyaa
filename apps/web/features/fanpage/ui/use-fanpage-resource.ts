@@ -26,7 +26,7 @@ export function useFanpageResource<T>(url: string | null, parse: (value: unknown
   useEffect(() => { if (canRead && !anonymous) syncResourceOwner(ownerScope); }, [anonymous, canRead, ownerScope]);
   const key = `${ownerKey}:${revision}`;
   const [snapshot, setSnapshot] = useState<{ key: string; ownerKey: string; state: State<T>; refreshFailed?: boolean }>();
-  const epoch = useResourceEpoch();
+  const epoch = useResourceEpoch(cacheKey);
   const handled = useRef({ key, epoch });
   const shown = useRef<State<T> | undefined>(undefined);
   const storedValue = useRetainedResource(key, canRead && url ? peekResource(cacheKey)?.value : undefined);
