@@ -25,7 +25,7 @@ describe("brand public page routing", () => {
 
   it.each(["live", "media"])("loads the shared brand %s destination", async (tab) => {
     const page = await CelebrityPage({ params: Promise.resolve({ slug: "runmusic" }), searchParams: Promise.resolve({ locale: "ko", tab }) });
-    expect(page.props.children[0].props).toMatchObject({
+    expect(page.props.children.props).toMatchObject({
       initialTab: "board", initialBoardSection: tab,
       upcomingLive: { slug: "festival-live", celebritySlug: "runmusic" },
     });

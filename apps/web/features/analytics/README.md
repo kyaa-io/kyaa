@@ -35,3 +35,14 @@
 `GET /api/admin/analytics/acquisition`은 기존 관리자 인증 후 두 관리자 식별자를 DB에서 다시 확인한다. `read_admin_acquisition_analytics`는 service_role만 실행할 수 있으며 원장 직접 읽기 권한을 추가하지 않는다. 응답은 `private, no-store`이며 허용된 채널·화면 유형과 집계값만 반환한다. 1~4명인 값은 기존 `SMALL_COHORT_LT_5` 규칙으로 숨기고, 숨긴 행을 역산할 수 있는 해당 전체 합계도 숨긴다. 0명은 실제 0으로 표시한다.
 
 익명 세션을 회원과 연결하거나 검색어를 회원 전환에 귀속하지 않는다. 페이지·유입 사이트별 방문은 기존 방문 통계를, 검색어별 노출·클릭은 Search Console을 사용한다. 수집 차단·누락이나 서버 측 측정 실패가 있을 수 있어 이 집계는 업무 원장을 대체하지 않는다. `20261018082738_acquisition_conversion_analytics.sql`을 앱보다 먼저 적용하며, 관련 웹 테스트와 `supabase/tests/acquisition_conversion_analytics.sql`로 권한·기간·중복·완료 조건·비공개 규칙을 검증한다.
+
+## 화면 조회·퍼널 이벤트 (20261219010000)
+
+`/admin/traffic`의 방문 통계는 Vercel Web Analytics 대신 원장의 `page_view`를 읽는다(운영이 AWS라 Vercel 분석은 렌더되지 않았다). Vercel 분석 패키지와 `VERCEL_ANALYTICS_*` 조회 경로는 제거했다.
+
+- `page_view`(브라우저, `PageViewTracker`): 경로가 바뀔 때 1건, 항상 익명(Authorization 헤더가 있으면 400). 속성은 `pageKind`(열거형 화면 종류), `entry`(탭 세션 첫 화면), `channel`(첫 화면만, 이후 `internal`), `device`, `browser`, `os` 여섯 개뿐이다. 경로·슬러그·쿼리·해시·참조 주소는 보내지 않는다. 관리자·운영자·크리에이터 도구·인증 경로는 세지 않는다.
+- `share_completed`(브라우저, `recordShareCompleted`): 공유 시트 완료나 링크 복사 성공 뒤 1건. `method`(native/copy)와 `contentType`(post/notice/passport/jjinfan/share_proof)만. 로그인 상태면 회원 소유로 기록해 첫 활동에 들어간다.
+- 서버 기록(`server.commit_projection`, 업무 행의 id로 멱등): `fan_verification_started`(퀴즈 시작), `fan_verification_submitted`(`outcome`·`reason`=none/score_below_pass·`score`), `daily_checkin_completed`(`streak`), `post_created`(`category`), `comment_created`(`reply`), `cheer_completed`(응원 글, 답글 제외). DB가 업무 행의 존재·소유자·값을 다시 확인하므로 위조 기록은 거부된다. 기록 실패는 업무 쓰기를 막지 않는다.
+- GA4 이름 대응은 `domain/funnel-event.ts`의 `GA4_EVENT_NAME`(funnel-audit `ga4-plan.md` 6절)을 따른다.
+
+`read_admin_web_traffic`·`read_admin_funnel_analytics`는 service_role만 실행하며 관리자를 DB에서 다시 확인한다. 퍼널 4단계는 같은 UTC 기간의 단계별 수이고 한 코호트를 따라간 전환이 아니다: 방문 세션(`page_view` 세션), 가입(`app_users` 생성), 첫 팬 인증(회원의 첫 패스포트 발급), 첫 활동(출석·글·댓글·응원·로그인 공유 중 회원의 첫 기록). 방문 세션 수집이 기간 중간에 시작됐으면 가입/방문 비율은 표시하지 않는다. 검증: `supabase/tests/funnel_events.sql`, `features/analytics/domain/funnel-*.test.ts`, `server/admin/web-analytics-route.test.ts`.

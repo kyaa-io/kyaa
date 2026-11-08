@@ -7,7 +7,7 @@ export const webAnalyticsDaysSchema = z.union([
 ]);
 
 export const webAnalyticsRowSchema = z.object({
-  label: z.string(),
+  label: z.string().regex(/^[a-z_]{1,40}$/),
   visitors: z.number().int().nonnegative(),
   pageviews: z.number().int().nonnegative(),
 }).strict();
@@ -31,7 +31,6 @@ export const webAnalyticsSchema = z.object({
   breakdowns: z.object({
     pages: z.array(webAnalyticsRowSchema),
     referrers: z.array(webAnalyticsRowSchema),
-    countries: z.array(webAnalyticsRowSchema),
     devices: z.array(webAnalyticsRowSchema),
     browsers: z.array(webAnalyticsRowSchema),
     operatingSystems: z.array(webAnalyticsRowSchema),

@@ -14,7 +14,7 @@ import { publicRuntimeConfig } from "../server/config/public-runtime-config";
 import { isAwsHosting } from "../server/config/hosting";
 import { AcquisitionSessionTracker } from "../features/analytics/client/acquisition-session-tracker";
 import { OutboundLinkTracker } from "../features/analytics/client/outbound-link-tracker";
-import { VercelTelemetry } from "../features/analytics/client/vercel-telemetry";
+import { PageViewTracker } from "../features/analytics/client/page-view-tracker";
 import { AwsPerformanceTelemetry } from "../features/analytics/client/aws-performance-telemetry";
 import { BanksyEntryPromotion } from "../components/banksy-promotion/banksy-promotion";
 import { ChatDockHost } from "../features/group-social/chat-dock-host";
@@ -91,10 +91,10 @@ export default async function RootLayout({
         >
           <PwaRegistration />
           <ChatDockHost />
-          {!isAwsHosting() && process.env.VERCEL_ENV === "production" && <VercelTelemetry />}
           {isAwsHosting() && <AwsPerformanceTelemetry />}
           <Suspense fallback={null}>
             <AcquisitionSessionTracker />
+            <PageViewTracker />
             <OutboundLinkTracker />
           </Suspense>
           <Suspense fallback={null}>
