@@ -59,7 +59,7 @@ begin
 
   result := public.read_home_fan_ranking(null, 20);
   if not (result ->> 'comparable')::boolean or result ->> 'day' <> '2099-03-08' then raise exception 'Day 8 not comparable: %', result; end if;
-  if exists (select 1 from jsonb_array_elements(result -> 'rows') r where (select array_agg(k order by k) from jsonb_object_keys(r) k) <> array['characterId', 'delta', 'isMe', 'nickname', 'rank', 'score', 'tier'])
+  if exists (select 1 from jsonb_array_elements(result -> 'rows') r where (select array_agg(k order by k) from jsonb_object_keys(r) k) <> array['characterId', 'delta', 'favorite', 'isMe', 'nickname', 'rank', 'score', 'tier'])
     then raise exception 'Fan row has other keys: %', result; end if;
   foreach u in array array[f1, f2, f3, late, sanctioned, blocker, viewer, anon_only] loop
     if result::text like '%' || u::text || '%' then raise exception 'A member id is in the answer: %', result; end if;
@@ -92,7 +92,7 @@ begin
   if (result -> 'rows' -> 1 ->> 'score')::int <> 2 or not (result -> 'rows' -> 1 ->> 'challenge')::boolean or (result -> 'rows' -> 0 ->> 'challenge')::boolean
     then raise exception 'Second creator or challenge flag wrong: %', result; end if;
   if (result -> 'rows' -> 0 ->> 'delta')::int <> 0 then raise exception 'Creator delta wrong: %', result; end if;
-  if exists (select 1 from jsonb_array_elements(result -> 'rows') r where (select array_agg(k order by k) from jsonb_object_keys(r) k) <> array['challenge', 'delta', 'hearts', 'imageUrl', 'name', 'rank', 'score', 'slug'])
+  if exists (select 1 from jsonb_array_elements(result -> 'rows') r where (select array_agg(k order by k) from jsonb_object_keys(r) k) <> array['challenge', 'delta', 'hearts', 'imageUrl', 'name', 'rank', 'score', 'slug', 'weekGain'])
     then raise exception 'Creator row has other keys: %', result; end if;
   set local session_replication_role = replica;
   -- f3 converted stamps into 2 hearts on other: f3 = 1 (other) + 1 (unlisted) + 2 = 4, other keeps 2 fans and gains 2 hearts.

@@ -79,12 +79,15 @@ export type PlatformFanRanking = z.infer<typeof platformFanRankingSchema>;
 const delta = z.number().int().nullable();
 const homeHead = { day: z.string().nullable(), computedAt: timestamp, comparable: z.boolean() };
 export const HOME_RANKING_LIMIT = 20;
+/** The creator this fan gave the most hearts (E2 ②), named in the viewer's language. null: no listed public page qualifies. */
+const favorite = z.object({ slug: z.string(), name: z.string() }).nullable();
 export const homeFanRankingSchema = z.object({
   ...homeHead,
-  rows: z.array(platformFanRankingRowSchema.extend({ delta })).max(HOME_RANKING_LIMIT),
+  rows: z.array(platformFanRankingRowSchema.extend({ delta, favorite })).max(HOME_RANKING_LIMIT),
   me: z.object({ rank: z.number().int().min(1), score: z.number().int().min(0), inTop: z.boolean() }).nullable(),
 });
 export type HomeFanRanking = z.infer<typeof homeFanRankingSchema>;
+export type HomeFanRankingRow = HomeFanRanking["rows"][number];
 export const homeCreatorRankingRowSchema = z.object({
   rank: z.number().int().min(1),
   slug: z.string(),
@@ -96,8 +99,15 @@ export const homeCreatorRankingRowSchema = z.object({
   /** An administrator turned on the 찐팬 100 challenge for this creator. */
   challenge: z.boolean(),
   delta,
+  /** 찐팬 gained over the rolling seven days (E2 ①). null on the first day of history. May be negative when fans left. */
+  weekGain: z.number().int().nullable(),
 });
-export const homeCreatorRankingSchema = z.object({ ...homeHead, rows: z.array(homeCreatorRankingRowSchema).max(HOME_RANKING_LIMIT) });
+export const homeCreatorRankingSchema = z.object({
+  ...homeHead,
+  /** Days the weekGain comparison spans: 7 once a week of days is kept, fewer in the first week, null when there is nothing to compare. */
+  weekGainDays: z.number().int().min(1).max(7).nullable(),
+  rows: z.array(homeCreatorRankingRowSchema).max(HOME_RANKING_LIMIT),
+});
 export type HomeCreatorRankingRow = z.infer<typeof homeCreatorRankingRowSchema>;
 export type HomeCreatorRanking = z.infer<typeof homeCreatorRankingSchema>;
 
