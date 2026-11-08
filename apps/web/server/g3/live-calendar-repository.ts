@@ -21,6 +21,10 @@ export interface LiveCalendarRepository {
     includeIdentity?: boolean;
     /** Cross-creator calendar: leave out LIVE events of creators whose fan page is unlisted. A creator's own calendar keeps them. */
     listedOnly?: boolean;
+    /** With listedOnly: creators a link selected (?celebrity=), kept even when unlisted. */
+    keepCreators?: readonly string[];
+    /** With listedOnly: an unlisted set the caller already reads, so one request reads it once (null: the read failed). */
+    unlistedCreators?: Promise<ReadonlySet<string> | null>;
     now: Date;
   }): Promise<LiveCalendarMonth>;
 }
@@ -113,13 +117,17 @@ export class PublicImageLiveCalendarRepository implements LiveCalendarRepository
     appUserId: string | null;
     includeIdentity?: boolean;
     listedOnly?: boolean;
+    keepCreators?: readonly string[];
+    unlistedCreators?: Promise<ReadonlySet<string> | null>;
     now: Date;
   }): Promise<LiveCalendarMonth> {
     // A failed unlisted read empties only the LIVE events of a listed-only calendar (null: nothing counts as listed).
+    const { listedOnly, keepCreators, unlistedCreators, ...month } = input;
     const [calendar, unlisted] = await Promise.all([
-      this.repository.readMonth(input),
-      input.listedOnly ? this.unlistedCreators().catch(() => null) : Promise.resolve(new Set<string>()),
+      this.repository.readMonth(month),
+      listedOnly ? unlistedCreators ?? this.unlistedCreators().catch(() => null) : Promise.resolve(new Set<string>()),
     ]);
+    const kept = new Set(keepCreators ?? []);
     const slugs = calendar.days.flatMap(({ events }) =>
       events.map(({ slug }) => slug),
     );
@@ -137,7 +145,8 @@ export class PublicImageLiveCalendarRepository implements LiveCalendarRepository
         events: day.events.filter(event => {
           const creatorSlug = creatorsByLiveSlug[event.slug]?.celebritySlug;
           if (creatorSlug === "kyaa-wave-fanpage") return false;
-          return !input.listedOnly || (unlisted !== null && creatorSlug !== undefined && !unlisted.has(creatorSlug));
+          // The viewer's own reservation and a creator the link selected stay, as the home rail keeps the viewer's own creators.
+          return !listedOnly || event.reservationState === "reserved" || (creatorSlug !== undefined && (kept.has(creatorSlug) || (unlisted !== null && !unlisted.has(creatorSlug))));
         }).map((event) => {
           const photos = photosBySlug[event.slug];
           const creator = creatorsByLiveSlug[event.slug];

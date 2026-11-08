@@ -4,7 +4,8 @@ import { act, fireEvent, render, screen, waitFor, within } from "@testing-librar
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { LiveCalendarScreen } from "./live-calendar-screen";
-vi.mock("@/features/schedules/ui/use-schedule-month", () => ({ useScheduleMonth: () => ({ status: "ready", items: [], retry: vi.fn() }) }));
+const { scheduleMonth } = vi.hoisted(() => ({ scheduleMonth: vi.fn((..._args: unknown[]) => ({ status: "ready" as const, items: [], retry: () => undefined })) }));
+vi.mock("@/features/schedules/ui/use-schedule-month", () => ({ useScheduleMonth: (...args: unknown[]) => scheduleMonth(...args) }));
 
 const auth = vi.hoisted(() => ({ authenticated: false, getAccessToken: vi.fn() }));
 vi.mock("@privy-io/react-auth", () => ({
@@ -433,6 +434,17 @@ describe("LIVE calendar screen", () => {
     open();
     view.rerender(<LiveCalendarScreen locale="en" initialCalendar={{...calendar, month:"2026-10", days:[]}} celebrities={celebrities} eventMetadata={eventMetadata} initialCelebritySlugs={[]} />);
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+  });
+
+  it("reads a link-selected unlisted creator by its own slug for schedules and the LIVE refresh", async () => {
+    auth.authenticated = true;
+    const request = vi.fn((_input: RequestInfo | URL, _init?: RequestInit) => Promise.resolve({ ok: true, json: async () => calendar } as Response));
+    vi.stubGlobal("fetch", request);
+    scheduleMonth.mockClear();
+    render(<LiveCalendarScreen locale="ko" initialCalendar={calendar} celebrities={celebrities} unlistedSlugs={["elina"]} eventMetadata={eventMetadata} initialCelebritySlugs={["elina"]} />);
+    await waitFor(() => expect(request).toHaveBeenCalledWith("/api/live-events/calendar?month=2026-09&locale=ko&celebrity=elina", expect.anything()));
+    expect(scheduleMonth).toHaveBeenCalledWith("2026-09", "ko", undefined, true);
+    expect(scheduleMonth).toHaveBeenCalledWith("2026-09", "ko", "elina", true);
   });
 
   it("ignores an older authenticated refresh that resolves after the month changes", async () => {

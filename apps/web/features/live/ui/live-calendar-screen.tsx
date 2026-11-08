@@ -242,7 +242,17 @@ export function LiveCalendarScreen({
   const requestAuthenticated = ready && session.ready && authenticated;
   const [calendar, setCalendar] = useState(initialCalendar);
   const [openedAt] = useState(() => Date.now());
-  const schedules = useScheduleMonth(initialCalendar.month, locale, groupScope?.celebritySlug, !groupScope || Boolean(groupScope.celebritySlug));
+  const monthSchedules = useScheduleMonth(initialCalendar.month, locale, groupScope?.celebritySlug, !groupScope || Boolean(groupScope.celebritySlug));
+  // The cross-creator lists leave unlisted creators out; one a link opened this calendar for is read by its own slug.
+  const linkedUnlisted = groupScope ? undefined : initialCelebritySlugs.find((slug) => unlistedSlugs.includes(slug));
+  const linkedSchedules = useScheduleMonth(initialCalendar.month, locale, linkedUnlisted, Boolean(linkedUnlisted));
+  // A string, so the refresh callback stays stable across renders.
+  const linkedQuery = groupScope ? "" : initialCelebritySlugs.filter((slug) => unlistedSlugs.includes(slug)).slice(0, 10).map((slug) => `&celebrity=${encodeURIComponent(slug)}`).join("");
+  const schedules = useMemo(() => linkedUnlisted === undefined ? monthSchedules : {
+    status: monthSchedules.status === "ready" ? linkedSchedules.status : monthSchedules.status,
+    items: [...monthSchedules.items, ...linkedSchedules.items.filter((item) => !monthSchedules.items.some((own) => own.id === item.id))],
+    retry: () => { monthSchedules.retry(); linkedSchedules.retry(); },
+  }, [linkedUnlisted, monthSchedules, linkedSchedules]);
   const participation = participationCopy(locale);
   const [selectedCelebritySlugs, setSelectedCelebritySlugs] = useState<string[]>([
     ...initialCelebritySlugs,
@@ -331,7 +341,7 @@ export function LiveCalendarScreen({
       if (controller.signal.aborted) return;
       if (requestAuthenticated && !token) return;
       const response = await fetch(
-        `/api/live-events/calendar?month=${initialCalendar.month}&locale=${toContentLocale(locale)}${groupScope ? "&identity=1" : ""}`,
+        `/api/live-events/calendar?month=${initialCalendar.month}&locale=${toContentLocale(locale)}${groupScope ? "&identity=1" : linkedQuery}`,
         {
           headers: token ? { Authorization: `Bearer ${token}` } : undefined,
           signal: controller.signal,
@@ -348,7 +358,7 @@ export function LiveCalendarScreen({
     }
   // Session generation deliberately restarts and aborts an otherwise identical public refresh.
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [abortCalendarRefresh, getAccessToken, initialCalendar.month, locale, ready, requestAuthenticated, session.generation, groupScope, refreshLive]);
+  }, [abortCalendarRefresh, getAccessToken, initialCalendar.month, locale, ready, requestAuthenticated, session.generation, groupScope, refreshLive, linkedQuery]);
 
   useEffect(() => {
     if (!ready) return;

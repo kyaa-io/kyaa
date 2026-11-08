@@ -93,3 +93,10 @@ it("adds exact artist identity only for the opt-in calendar request",async()=>{
  expect(value.readMonth.mock.calls[0]?.[0]).not.toHaveProperty("listedOnly");
  expect((await value.run(new Request("https://byus.test/api?month=2026-09&identity=0"))).status).toBe(400);
 });
+
+it("passes link-selected creators to the cross-creator calendar and rejects malformed ones",async()=>{
+ const value=target(); await value.run(new Request("https://byus.test/api?month=2026-09&celebrity=testpage&celebrity=kara"));
+ expect(value.readMonth).toHaveBeenCalledWith(expect.objectContaining({listedOnly:true,keepCreators:["testpage","kara"]}));
+ expect((await value.run(new Request("https://byus.test/api?month=2026-09&celebrity=Bad_Slug"))).status).toBe(400);
+ expect((await value.run(new Request(`https://byus.test/api?month=2026-09${"&celebrity=a".repeat(11)}`))).status).toBe(400);
+});

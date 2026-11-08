@@ -38,10 +38,13 @@ export default async function LiveCalendarPage({
   const liveRepository = createLiveEventRepositoryFromEnvironment(repositoryConfig);
   const now = new Date();
   // A failed unlisted read leaves only the filter chips empty (null: nothing counts as listed); the calendar itself still renders.
+  // One unlisted read per request, shared by the LIVE events and the chips. A creator the link selected stays in both.
+  const unlistedRead = contentRepository.listUnlistedSlugs().catch(() => null);
+  const linkedSlugs = Array.isArray(requested.celebrity) ? requested.celebrity : requested.celebrity ? [requested.celebrity] : [];
   const [calendar, publishedCelebrities, unlisted] = await Promise.all([
-    repository.readMonth({ month, locale: toContentLocale(locale), appUserId: null, listedOnly: true, now }),
+    repository.readMonth({ month, locale: toContentLocale(locale), appUserId: null, listedOnly: true, keepCreators: linkedSlugs.slice(0, 10), unlistedCreators: unlistedRead, now }),
     contentRepository.list(toContentLocale(locale)),
-    contentRepository.listUnlistedSlugs().catch(() => null),
+    unlistedRead,
   ]);
   const allCelebrities = publishedCelebrities.map((celebrity) => ({
     slug: celebrity.slug,
