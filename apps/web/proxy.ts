@@ -5,6 +5,7 @@ import { isInstagramManagementPath, requestLocale } from "./components/locale-pa
 import { isAppLocale } from "./i18n/locales";
 import { awsStorageContentSecurityPolicy } from "./security-headers";
 import { isAwsHosting } from "./server/config/hosting";
+import { isNativeAppAvailable, openAppWebPath } from "./server/app-link/open-app-redirect";
 
 const LEGACY_APP_ORIGINS = new Set(["https://byus.kr", "https://www.byus.kr"]);
 const OAUTH_RETURN_PARAMETERS = new Set(["code", "state", "error", "error_description"]);
@@ -42,6 +43,14 @@ export function proxy(request: NextRequest): NextResponse {
     if (redirectStatus === 307) response.headers.set("Cache-Control", "private, no-store");
     if (isPrivatePath(request.nextUrl.pathname)) response.headers.set("X-Robots-Tag", "noindex, nofollow");
     return response;
+  }
+  // Before the native app is released, the "continue in the app" screen has nothing to offer. Old links keep working.
+  if (request.nextUrl.pathname === "/open-app" && (request.method === "GET" || request.method === "HEAD") && !isNativeAppAvailable()) {
+    return new NextResponse(null, { status: 302, headers: {
+      Location: openAppWebPath(request.nextUrl.searchParams),
+      "Cache-Control": "private, no-store",
+      "X-Robots-Tag": "noindex, nofollow",
+    } });
   }
   if (!request.nextUrl.pathname.startsWith("/api/admin/")) {
     const isAdminPage =
