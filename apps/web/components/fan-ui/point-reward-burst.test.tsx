@@ -1,58 +1,58 @@
-import { act, render, renderHook, screen } from "@testing-library/react";
+import { act, render, renderHook } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+import { registerFanToastHandler } from "./fan-toast";
+const shown: unknown[] = [];
+registerFanToastHandler({ show: options => { shown.push(options); return `t${shown.length}`; }, close: () => undefined });
 import { PointRewardBurst, POINT_REWARD_MERGE_MS, usePointRewardBurst } from "./point-reward-burst";
+import { resetRewardCelebration } from "./reward-celebration";
 
-const media = (reduced: boolean) => Object.defineProperty(window, "matchMedia", { configurable: true, writable: true, value: (query: string) => ({ matches: reduced && query.includes("reduce"), media: query, addEventListener() {}, removeEventListener() {}, addListener() {}, removeListener() {} }) });
+const media = (reduced: boolean) => Object.defineProperty(window, "matchMedia", { configurable: true, writable: true, value: (query: string) => ({ matches: reduced && query.includes("reduce"), media: query, addEventListener() {}, removeEventListener() {} }) });
 
-describe("PointRewardBurst", () => {
-  beforeEach(() => { vi.useFakeTimers(); media(false); });
+describe("PointRewardBurst (261107-2 D8: the shared reward celebration)", () => {
+  beforeEach(() => { vi.useFakeTimers(); media(false); shown.length = 0; resetRewardCelebration(); document.body.innerHTML = ""; });
   afterEach(() => vi.useRealTimers());
 
-  it("announces the amount in the locale and shows 포인트 +N without blocking input", () => {
-    render(<div><PointRewardBurst locale="ko" points={10} burstKey={1} /></div>);
-    expect(screen.getByRole("status").textContent).toBe("포인트 10점을 받았어요");
-    const burst = screen.getByTestId("point-reward-burst");
-    expect(burst.textContent).toContain("포인트 +10");
-    expect(burst.textContent).not.toContain("스탬프");
-    expect(burst.getAttribute("aria-hidden")).toBe("true");
+  it("pops the shared coin badge in the body and shows the shared toast with the amount", () => {
+    render(<div style={{ overflow: "hidden" }}><PointRewardBurst locale="ko" points={10} burstKey={1} /></div>);
+    const badge = document.body.querySelector("[data-testid=point-reward-burst]")!;
+    expect(badge.textContent).toBe("+10");
+    expect(badge.getAttribute("aria-hidden")).toBe("true");
+    expect(shown).toEqual([{ title: "+10P", description: undefined, tone: "success" }]);
   });
 
-  it("renders the overlay in a body portal and can skip its own live region", () => {
-    const { container } = render(<div style={{ overflow: "hidden" }}><PointRewardBurst locale="en" points={10} burstKey={1} announce={false} /></div>);
-    expect(container.querySelector("[data-testid=point-reward-burst]")).toBeNull();
-    expect(document.body.querySelector("[data-testid=point-reward-burst]")).not.toBeNull();
-    expect(screen.queryByRole("status")).toBeNull();
+  it("names stamps beside points", () => {
+    render(<PointRewardBurst locale="ko" points={20} stamps={1} label="글쓰기 미션 완료" burstKey={1} />);
+    expect(shown.at(-1)).toMatchObject({ title: "+20P · 도장 1", description: "글쓰기 미션 완료" });
   });
 
-  it("replaces the announcement node when the same amount repeats", () => {
+  it("takes the hook's merged total as it is instead of adding it again", () => {
     const { rerender } = render(<PointRewardBurst locale="en" points={10} burstKey={1} />);
-    const first = screen.getByRole("status").firstElementChild;
-    rerender(<PointRewardBurst locale="en" points={10} burstKey={2} />);
-    expect(screen.getByRole("status").firstElementChild).not.toBe(first);
+    rerender(<PointRewardBurst locale="en" points={20} burstKey={2} />);
+    expect(shown.at(-1)).toMatchObject({ title: "+20P" });
+    expect(document.body.querySelectorAll("[data-testid=point-reward-burst]")).toHaveLength(1);
   });
 
-  it("hides after the animation and keeps the live region mounted", () => {
-    render(<PointRewardBurst locale="en" points={30} burstKey={1} />);
+  it("removes the badge after its moment and calls onDone", () => {
+    const onDone = vi.fn();
+    render(<PointRewardBurst locale="en" points={30} burstKey={1} onDone={onDone} />);
     act(() => { vi.advanceTimersByTime(1600); });
-    expect(screen.queryByTestId("point-reward-burst")).toBeNull();
-    expect(screen.getByRole("status")).toBeTruthy();
+    expect(document.body.querySelector("[data-testid=point-reward-burst]")).toBeNull();
+    expect(onDone).toHaveBeenCalledOnce();
   });
 
-  it("renders nothing for zero points", () => {
+  it("does nothing for zero points", () => {
     render(<PointRewardBurst locale="en" points={0} />);
-    expect(screen.queryByTestId("point-reward-burst")).toBeNull();
-    expect(screen.getByRole("status").textContent).toBe("");
+    expect(document.body.querySelector("[data-testid=point-reward-burst]")).toBeNull();
+    expect(shown).toHaveLength(0);
   });
 
-  it("uses a static display without particles under reduced motion", () => {
+  it("holds the badge still and longer under reduced motion", () => {
     media(true);
     render(<PointRewardBurst locale="en" points={10} burstKey={1} />);
-    const burst = screen.getByTestId("point-reward-burst");
-    expect(burst.getAttribute("data-reduced")).toBe("true");
-    expect(burst.querySelectorAll("[class*=particle]").length).toBe(0);
-    act(() => { vi.advanceTimersByTime(1600); });
-    expect(screen.queryByTestId("point-reward-burst")).not.toBeNull();
+    expect(document.body.querySelector("[data-testid=point-reward-burst]")!.hasAttribute("data-reduced")).toBe(true);
+    act(() => { vi.advanceTimersByTime(1000); });
+    expect(document.body.querySelector("[data-testid=point-reward-burst]")).not.toBeNull();
   });
 
   it("merges grants inside the window and starts a new total after it", () => {
@@ -64,11 +64,5 @@ describe("PointRewardBurst", () => {
     expect(result.current.burst).toEqual({ points: 30, stamps: 1, key: 3 });
     act(() => { result.current.add(0); result.current.add(-5); });
     expect(result.current.burst?.points).toBe(30);
-  });
-
-  it("names a stamp beside the points when the server said one was stamped (C8)", () => {
-    render(<PointRewardBurst locale="ko" points={20} stamps={1} burstKey={1} />);
-    expect(screen.getByTestId("point-reward-burst").textContent).toBe("포인트 +20 · 스탬프 +1");
-    expect(screen.getByRole("status").textContent).toBe("포인트 +20 · 스탬프 +1");
   });
 });

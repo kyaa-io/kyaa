@@ -23,7 +23,10 @@ export function useWaveMediaUpload(purpose: "fan_post" | "wave_album" | "wave_po
     if (activeOwner.current !== ownerKey || removed.current.has(task.key) || pending.current.has(task.key) || !auth.authenticated || !session.ready) return;
     const controller = new AbortController(); pending.current.set(task.key, controller);
     task.failed = false; update(task);
-    try { await uploadWaveMedia(task, purpose, () => provider.current(), controller.signal); }
+    // Repaint at most every 5% so a large video does not re-render the form on every progress event.
+    let shown = -1;
+    const onProgress = (sent: number) => { const step = Math.floor(sent * 20); if (step === shown) return; shown = step; task.progress = sent; update(task); };
+    try { await uploadWaveMedia(task, purpose, () => provider.current(), controller.signal, onProgress); }
     catch { if (!controller.signal.aborted) task.failed = true; }
     finally { pending.current.delete(task.key); if (controller.signal.aborted) discard(task); else update(task); }
   }

@@ -98,3 +98,22 @@ it("requests an independently authorized admin notice preview", async () => {
   await screen.findByRole("img", { name: "미리보기" });
   expect(transport).toHaveBeenCalledWith("/api/public/notice-media/photo-id?admin=1", expect.objectContaining({ headers: { Authorization: "Bearer admin-token" } }));
 });
+
+it("fills a photo frame on failure with an icon, one line and a retry that asks again (261107-2 9.2)", async () => {
+  transport.mockResolvedValueOnce({ ok: false });
+  const { container } = render(<ContentAssetImage asset={photo} locale="ko" alt="사진" failure="frame" />);
+  const retry = await screen.findByRole("button", { name: "다시 시도" });
+  expect(container.querySelector("svg")).not.toBeNull();
+  expect(screen.getByRole("status")).toHaveTextContent("사진을 불러오지 못했어요");
+  fireEvent.click(retry);
+  expect(await screen.findByRole("img", { name: "사진" })).toHaveAttribute("src", "blob:photo");
+  expect(transport).toHaveBeenCalledTimes(2);
+});
+
+it("shows a failed thumbnail as an icon with the failure named for screen readers, no clipped text", async () => {
+  transport.mockResolvedValue({ ok: false });
+  render(<ContentAssetImage asset={photo} locale="ko" alt="" thumbnail failure="icon" />);
+  const status = await screen.findByRole("status", { name: /사진을 불러오지 못했어요/ });
+  expect(status.textContent).toBe("");
+  expect(screen.queryByRole("button")).toBeNull();
+});

@@ -16,7 +16,7 @@ export function PostAttachmentViewer({assets,video,locale,publicFanPost=false}:P
  const [selected,setSelected]=useState(0),[open,setOpen]=useState(false),[playing,setPlaying]=useState(false);
  const copy=contentCopy(locale),page=paginationCopy(locale),media=waveMediaCopy(locale),asset=assets[selected]??assets[0],count=assets.length||Number(Boolean(video));
  if(!count)return null;
- const photo=(thumbnail=false,index=selected)=><ContentAssetImage asset={assets[index]??assets[0]} locale={locale} alt={thumbnail?'':copy.photo} thumbnail={thumbnail}/>;
+ const photo=(thumbnail=false,index=selected)=><ContentAssetImage asset={assets[index]??assets[0]} locale={locale} alt={thumbnail?'':copy.photo} thumbnail={thumbnail} failure={thumbnail?'icon':'frame'}/>;
  const controls=assets.length>1&&<><button className={styles.previous} type='button' aria-label={page.previous} disabled={selected===0} onClick={()=>setSelected(value=>value-1)}><ChevronLeft size={20}/></button><button className={styles.next} type='button' aria-label={page.next} disabled={selected===assets.length-1} onClick={()=>setSelected(value=>value+1)}><ChevronRight size={20}/></button></>;
  const thumbnails=<div className={styles.thumbnails}>{assets.map((item,index)=><div className={styles.thumbnail} key={item.id}><div className={styles.thumbnailMedia}>{photo(true,index)}</div><button className={styles.selectThumbnail} type='button' aria-label={`${copy.photo} ${index+1}`} aria-pressed={selected===index} onClick={()=>setSelected(index)}/></div>)}</div>;
  return <div className={`${styles.viewer} ${!asset?styles.videoViewer:''}`}>

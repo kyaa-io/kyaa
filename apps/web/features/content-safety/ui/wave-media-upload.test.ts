@@ -68,3 +68,14 @@ it.each(["group_post","group_image"] as const)("reuses the authenticated upload 
  expect(JSON.parse(fetcher.mock.calls[0][1].body)).toMatchObject({purpose,requestId:id});
  expect(validWaveFiles(Array.from({length:6},image),[],5)).toBe(false);
 });
+it("reports byte progress through the PUT and fails the upload on a rejected PUT (261107-2 D5)", async () => {
+  const ready = { assetId: id, state: "ready", kind: "image", purpose: "wave_album", contentType: "image/jpeg", byteSize: 5, assetVersion: 1, width: 100, height: 100, durationSeconds: null, failureCode: null, retryAt: null, expiresAt: "2026-11-08T00:00:00Z" };
+  const reserve = () => Response.json({ assetId: id, uploadUrl: "https://storage.test/signed", uploadToken: "private", expiresAt: ready.expiresAt, replayed: false });
+  const progress: number[] = [];
+  vi.stubGlobal("fetch", vi.fn().mockResolvedValueOnce(reserve()).mockResolvedValueOnce(new Response(null, { status: 200 })).mockResolvedValueOnce(Response.json(ready)));
+  const media = await uploadWaveMedia({ key: id, file: image() }, "wave_album", async () => "access", new AbortController().signal, sent => progress.push(sent)).catch(error => error);
+  expect(progress.at(-1)).toBe(1);
+  expect(media).toMatchObject({ state: "ready" });
+  vi.stubGlobal("fetch", vi.fn().mockResolvedValueOnce(reserve()).mockResolvedValueOnce(new Response(null, { status: 403 })));
+  await expect(uploadWaveMedia({ key: id, file: image() }, "wave_album", async () => "access", new AbortController().signal, () => undefined)).rejects.toThrow("MEDIA_UPLOAD_FAILED");
+});

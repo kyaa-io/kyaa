@@ -4,7 +4,7 @@ import { AuthError } from "@/features/auth/domain/auth-errors";
 import { celebritySlugSchema } from "@/features/fanpage/domain/community";
 import { prepareRichPostBody, richDocumentForPost, RICH_DOCUMENT_MAX_BYTES } from "@/components/editor/rich-document";
 import { WAVE_FANPAGE_SLUG } from "@/features/fanpage/domain/wave-programs";
-import { assetSchema, blocksSchema, commentSchema, createCommentSchema, boardCreatePostSchema, boardEditPostSchema, postAttachmentPolicySchema, noticeSchema, postSchema, reportInputSchema, adminReportSchema, adminReportSummarySchema, targetSchema, translationInputSchema, translationSchema } from "@/features/fan-posts/domain/content";
+import { type FanPost, postReactionInputSchema, postReactionSchema, assetSchema, blocksSchema, commentSchema, createCommentSchema, boardCreatePostSchema, boardEditPostSchema, postAttachmentPolicySchema, noticeSchema, postSchema, reportInputSchema, adminReportSchema, adminReportSummarySchema, targetSchema, translationInputSchema, translationSchema } from "@/features/fan-posts/domain/content";
 import { boundedJson, boundedMultipart, CertificationBodyError, json } from "@/server/certification/certification-http";
 import { MAX_PUBLIC_IMAGE_BYTES, MAX_PUBLIC_IMAGE_MULTIPART_BYTES, PublicImageError } from "@/server/media/public-image-processing";
 import type { FanpageDependencies } from "@/server/fanpage/routes";
@@ -33,6 +33,17 @@ function checked<T>(schema: z.ZodType<T>, value: unknown): T {
   return result.data;
 }
 
+/**
+ * The reader's own reaction, and the dislike count only when the database says this reader may see it.
+ * The post stays readable without it: a failed read leaves both fields out, which shows no count.
+ */
+async function withReaction(deps: Pick<ContentDependencies, "rpc">, owner: string | null, post: FanPost): Promise<FanPost> {
+  let raw: unknown;
+  try { raw = await deps.rpc("read_fan_post_reaction", { p_app_user_id: owner, p_post_id: post.id }); } catch { return post; }
+  const reaction = postReactionSchema.safeParse(raw);
+  return reaction.success ? { ...post, reaction: reaction.data.reaction, dislikeCount: reaction.data.dislikeCount } : post;
+}
+
 // Best-effort fan activity reward (contract §11-B). Verification inputs go in params; the policy decides. Never throws.
 const RICH_POST_REQUEST_BYTES = RICH_DOCUMENT_MAX_BYTES + 32_768;
 /** The board title stays the first line of `body`; the rest of `body` is derived from the sanitized document, never taken from the client. */
@@ -48,13 +59,13 @@ function bodyParams(body: string) {
   return { chars: [...text].length, bodyHash: createHash("sha256").update(text).digest("hex") };
 }
 async function awardForPost(deps: Pick<ContentDependencies, "rpc">, owner: string | null, postId: string, actionKey: "comment" | "reaction", sourceKey: string, params: Record<string, unknown>) {
-  if (!owner) return;
+  if (!owner) return null;
   try {
     const raw = await deps.rpc("read_fan_post", { p_app_user_id: owner, p_post_id: postId, p_locale: "ko" });
     const slug = (raw as { post?: { celebritySlug?: unknown } } | null)?.post?.celebritySlug;
-    if (typeof slug !== "string") return;
+    if (typeof slug !== "string") return null;
     return await awardDukjilAction(deps, { appUserId: owner, creatorSlug: slug, actionKey, sourceKey, params });
-  } catch { /* the original action already succeeded */ }
+  } catch { /* the original action already succeeded */ return null; }
 }
 const REWARD_READ_TIMEOUT_MS = 800;
 // Reads the just-granted points after the write has committed. Never throws: a failed read must not turn a committed post or
@@ -184,6 +195,7 @@ export function createContentHandlers(deps: ContentDependencies) {
       if (raw === null) throw new Error("FAN_WEB_NOT_FOUND");
       const data = checked(z.object({ post: postSchema }).strict(), raw);
       if (request.method === "GET") {
+        data.post = await withReaction(deps, p_app_user_id, data.post);
         if (new URL(request.url).searchParams.get("format") !== "rich") return json(data);
         // The plain body stays readable if the document cannot be read, and the reader is told it is not the whole post.
         let stored: unknown;
@@ -218,11 +230,17 @@ export function createContentHandlers(deps: ContentDependencies) {
     }),
     like: (request: Request, id: string) => run(async () => {
       z.uuid().parse(id); const p_app_user_id = await owner(request);
-      const value = z.object({ liked: z.boolean() }).strict().parse(await boundedJson(request, 1024));
-      await deps.rpc("set_fan_post_like", { p_app_user_id, p_post_id: id, p_liked: value.liked });
-      // Only a like pays; the source is the post, so cancel and re-click never pays twice.
-      if (value.liked) await awardForPost(deps, p_app_user_id, id, "reaction", `post-like:${id}`, {});
-      return json(value);
+      const value = postReactionInputSchema.parse(await boundedJson(request, 1024));
+      if ("liked" in value) {
+        await deps.rpc("set_fan_post_like", { p_app_user_id, p_post_id: id, p_liked: value.liked });
+        // Only a like pays; the source is the post, so cancel and re-click never pays twice.
+        if (value.liked) await awardForPost(deps, p_app_user_id, id, "reaction", `post-like:${id}`, {});
+        return json(value);
+      }
+      const result = checked(postReactionSchema, await deps.rpc("set_fan_post_reaction", { p_app_user_id, p_post_id: id, p_reaction: value.reaction }));
+      const award = result.reaction === "like" ? await awardForPost(deps, p_app_user_id, id, "reaction", `post-like:${id}`, {}) : null;
+      // 261107-2 D8: a fresh grant goes back so the screen can celebrate it; a replay or a capped like says nothing.
+      return json(award && !award.replayed && award.points > 0 ? { ...result, reward: { points: award.points, stamps: award.stampId ? 1 : 0 } } : result);
     }),
     upload: (request: Request) => run(async () => {
       const actor = (await owner(request))!;

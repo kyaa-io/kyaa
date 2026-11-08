@@ -1,5 +1,6 @@
 "use client";
 import { createRoot, type Root } from "react-dom/client";
+import { celebrateReward } from "@/components/fan-ui/reward-celebration";
 import type { AppLocale } from "@/i18n/locales";
 import { StampPress } from "./stamp-press";
 import styles from "./stamp-slam.module.css";
@@ -36,11 +37,8 @@ export function playStampSlam(): Promise<void> {
 }
 
 /** The stamp first, then the common reward (coin badge + toast, feedback D8) — the one place the two meet.
- * MERGE(C t3/r4-c-post, D8): replace the body after the slam with
- *   `celebrateReward({ locale: reward.locale, points: reward.points ?? 0, stamps: reward.stamps ?? 1, anchor: reward.anchor ?? undefined, label: reward.label })`
- * from "@/components/fan-ui/reward-celebration" (server-confirmed grants only; it merges grants within 1.2s and handles reduced motion).
- * Until then `then` runs whatever the caller already shows (a toast or the screen's own burst). */
-export async function celebrateStamp(reward: StampReward, then?: () => void) {
+ * Callers pass server-confirmed grants only; `celebrateReward` merges grants within 1.2s and handles reduced motion. */
+export async function celebrateStamp(reward: StampReward) {
   await playStampSlam();
-  then?.();
+  celebrateReward({ locale: reward.locale, points: reward.points ?? 0, stamps: reward.stamps ?? 1, anchor: reward.anchor ?? undefined, label: reward.label });
 }

@@ -197,3 +197,25 @@ describe("group post input", () => {
   });
  });
 });
+describe("group post dislikes", () => {
+ const page = "30000000-0000-4000-8000-000000000003", requestId = "40000000-0000-4000-8000-000000000004";
+ it("writes a dislike only for a signed-in reader with a boolean choice", async () => {
+  const s = setup();
+  s.rpc.mockResolvedValue({ liked: false, count: 2, disliked: true, dislikeCount: null });
+  const response = await s.handler("dislike", req(`/api/groups/${page}/posts/${other}/dislike`, { disliked: true, requestId }), { id: page, itemId: other });
+  expect(await response.json()).toEqual({ liked: false, count: 2, disliked: true, dislikeCount: null });
+  expect(s.rpc).toHaveBeenCalledWith("groups_content_dispatch", expect.objectContaining({ p_operation: "dislike", p_actor: me, p_page_id: page, p_item_id: other, p_input: { disliked: true, requestId }, p_admin_id: null }));
+  s.rpc.mockClear();
+  expect((await s.handler("dislike", req(`/api/groups/${page}/posts/${other}/dislike`, { disliked: true, requestId }, null), { id: page, itemId: other })).status).toBe(401);
+  for (const input of [{ disliked: "yes", requestId }, { disliked: true }, { disliked: true, requestId, dislikeCount: 9 }])
+   expect((await s.handler("dislike", req(`/api/groups/${page}/posts/${other}/dislike`, input), { id: page, itemId: other })).status).toBe(400);
+  expect(s.rpc).not.toHaveBeenCalled();
+ });
+ it("leaves the database's dislike answer untouched on the post detail", async () => {
+  const s = setup();
+  s.rpc.mockResolvedValue({ id: other, title: "제목", body: "본문", assets: [], disliked: false, dislikeCount: null });
+  const guest = await (await s.handler("post-detail", req(`/api/groups/${page}/posts/${other}`, undefined, null), { id: page, itemId: other })).json();
+  expect(guest.dislikeCount).toBeNull();
+  expect(s.rpc).toHaveBeenLastCalledWith("groups_content_dispatch", expect.objectContaining({ p_actor: null, p_admin_id: null }));
+ });
+});

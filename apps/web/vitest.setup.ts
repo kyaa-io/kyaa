@@ -1,8 +1,14 @@
 import "@testing-library/jest-dom/vitest";
 import { afterEach, vi } from "vitest";
 import { clearResources } from "./components/fan-ui/resource-cache";
+import { resetRewardCelebration } from "./components/fan-ui/reward-celebration";
 
-afterEach(() => clearResources());
+afterEach(() => {
+  clearResources();
+  // 261107-2 D8: the shared reward badge lives on document.body outside any rendered tree; do not let one test see another's.
+  document.querySelectorAll("[data-reward-badge]").forEach(node => node.remove());
+  resetRewardCelebration();
+});
 
 vi.mock("next/navigation", async (importOriginal) => ({
   ...await importOriginal<typeof import("next/navigation")>(),
@@ -75,3 +81,23 @@ Object.defineProperty(globalThis, "IntersectionObserver", {
   configurable: true,
   value: TestIntersectionObserver,
 });
+
+// 261107-2 D5: media uploads send their PUT through XMLHttpRequest to report progress. jsdom's XHR would reach the network,
+// so tests get a small XHR that hands the request to the (mocked) global fetch and reports one full progress event.
+class FetchBackedXhr {
+  status = 0; withCredentials = false;
+  upload: { onprogress: ((event: { lengthComputable: boolean; loaded: number; total: number }) => void) | null } = { onprogress: null };
+  onload: (() => void) | null = null; onerror: (() => void) | null = null; onabort: (() => void) | null = null;
+  private method = "GET"; private url = ""; private headers: Record<string, string> = {}; private controller = new AbortController();
+  open(method: string, url: string) { this.method = method; this.url = url; }
+  setRequestHeader(name: string, value: string) { this.headers[name] = value; }
+  abort() { this.controller.abort(); }
+  send(body?: Blob | null) {
+    void fetch(this.url, { method: this.method, headers: this.headers, body: body ?? undefined, signal: this.controller.signal, credentials: "omit" }).then(response => {
+      const size = body instanceof Blob ? body.size : 0;
+      this.upload.onprogress?.({ lengthComputable: size > 0, loaded: size, total: size });
+      this.status = response?.status ?? (response?.ok === false ? 500 : 200); this.onload?.();
+    }, () => { if (this.controller.signal.aborted) this.onabort?.(); else this.onerror?.(); });
+  }
+}
+Object.defineProperty(globalThis, "XMLHttpRequest", { configurable: true, writable: true, value: FetchBackedXhr });

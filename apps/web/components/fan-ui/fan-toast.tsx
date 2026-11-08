@@ -26,7 +26,7 @@ export function registerFanToastHandler(next: FanToastHandler | null) {
 }
 
 /** 같은 title은 새로 쌓지 않고 기존 것을 바꾼다. 서버 응답이 화면에 보이지 않는 곳(댓글 저장·업로드 실패·교환 완료·지급 실패)에만 쓴다.
- * 포인트 지급 성공은 `PointRewardBurst`, 폼 안 오류는 입력 아래 오류 글자가 맡는다. */
+ * 포인트·도장 지급은 `celebrateReward`(reward-celebration.ts)가 이 토스트와 코인 뱃지를 함께 띄운다. 폼 안 오류는 입력 아래 오류 글자가 맡는다. */
 export function showFanToast(options: FanToastOptions): string {
   if (handler) return handler.show(options);
   const index = pending.findIndex((item) => item.title === options.title);

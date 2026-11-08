@@ -1,15 +1,17 @@
 "use client";
 import { throwIfAborted } from "@/features/reliability/client/throw-if-aborted";
 import { useEffect, useRef, useState, type CSSProperties } from "react";
+import { ImageOff } from "lucide-react";
 import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import { useByUsSession } from "@/components/byus-session-provider";
 import type { ContentAsset } from "@/features/fan-posts/domain/content";
 import type { AppLocale } from "@/i18n/locales";
 import { contentCopy } from "@/i18n/catalogs/features__fan_posts__ui";
 import { FanSkeleton } from "@/components/fan-ui/fan-skeleton";
+import { FanAction } from "@/components/fan-ui/fan-action";
 import styles from "./content.module.css";
 
-export function ContentAssetImage({ asset, locale, alt, adminPreview = false, href, loading = "eager", anonymousPreview = false, noticeMedia = false, thumbnail = false, operatorChannelId, groupMedia = false }: { asset: ContentAsset; locale: AppLocale; alt: string; adminPreview?: boolean; href?: string; loading?: "eager" | "lazy"; anonymousPreview?: boolean; noticeMedia?: boolean; thumbnail?: boolean; operatorChannelId?: string; groupMedia?: boolean }) {
+export function ContentAssetImage({ asset, locale, alt, adminPreview = false, href, loading = "eager", anonymousPreview = false, noticeMedia = false, thumbnail = false, operatorChannelId, groupMedia = false, failure = "text" }: { asset: ContentAsset; locale: AppLocale; alt: string; adminPreview?: boolean; href?: string; loading?: "eager" | "lazy"; anonymousPreview?: boolean; noticeMedia?: boolean; thumbnail?: boolean; operatorChannelId?: string; failure?: "text" | "frame" | "icon"; groupMedia?: boolean }) {
   const auth = usePrivy(), session = useByUsSession(), copy = contentCopy(locale);
   const { ready, authenticated, getAccessToken } = auth;
   const tokenProvider = useRef(getAccessToken);
@@ -50,5 +52,11 @@ export function ContentAssetImage({ asset, locale, alt, adminPreview = false, hr
     const image = <img className={styles.photo} src={current.url} alt={alt} width={asset.width} height={asset.height} onError={() => setSnapshot({ key, failed: true })} />;
     return href ? <a href={href}>{image}</a> : image;
   }
+  // 261107-2 9.2: inside a photo frame the failure fills the frame (icon, one line, retry) so arrows and counters never sit on text;
+  // a thumbnail shows the icon alone and names the failure for screen readers.
+  if (current?.failed && failure !== "text") return <span ref={placeholder} className={failure === "icon" ? styles.failedIcon : styles.failedFrame} role="status" aria-label={failure === "icon" ? copy.photoFailed : undefined}>
+    <ImageOff size={24} strokeWidth={1.75} aria-hidden="true" />
+    {failure === "frame" && <><span>{copy.photoFailed}</span><FanAction variant="text" size="sm" onClick={() => setRetry(value => value + 1)}>{copy.retry}</FanAction></>}
+  </span>;
   return <span ref={placeholder} className={styles.status} role={current?.failed ? "status" : undefined} aria-busy={current?.failed ? undefined : true} data-content-asset-placeholder={loading === "lazy" || undefined} style={{ "--content-asset-ratio": `${asset.width}/${asset.height}` } as CSSProperties}>{current?.failed ? copy.photoFailed : <FanSkeleton shape="block" width="100%" height="100%" className={styles.mediaLoading} />}{current?.failed && <button type="button" className={styles.button} onClick={() => setRetry(value => value + 1)}>{copy.retry}</button>}</span>;
 }

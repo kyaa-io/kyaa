@@ -4,4 +4,6 @@
 .article { display:flex; flex-direction:column; gap:16px; padding:0; border:0; border-radius:0; box-shadow:none; }
 .article>[data-post-media]:empty { display:none; }
 .article>[data-post-media]>div { margin:0; }
+/* 261107-2 9.2: the photo frame takes the reading column, so a failed photo keeps the same frame as a loaded one. */
+.article>[data-post-media] { width:100%; }
 .article>[data-post-body] p { font-size:16px; line-height:26px; }
