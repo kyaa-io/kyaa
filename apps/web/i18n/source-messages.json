@@ -17548,5 +17548,11 @@
     "ko": "진행 중인 선물이 없어요",
     "source": "features/benefit/ui/creator-raffles-screen",
     "id": "features/benefit/ui/creator-raffles-screen:rafflesEmpty"
+  },
+  "headerUnreadNotifications": {
+    "en": "{0} unread",
+    "ko": "안 읽은 알림 {0}개",
+    "source": "features/notification/ui/header-notification-link",
+    "id": "features/notification/ui/header-notification-link:headerUnreadNotifications"
   }
 }

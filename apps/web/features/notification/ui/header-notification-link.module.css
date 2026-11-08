@@ -1,0 +1,21 @@
+.link { position: relative; }
+/* 미읽음 수(DESIGN.md 359행: 미읽음 수는 Spectrum Ink). 종 아이콘 오른쪽 위에 겹친다. 99를 넘으면 99+. */
+.badge {
+  position: absolute;
+  top: 6px;
+  left: 24px;
+  min-width: 18px;
+  height: 18px;
+  padding-inline: 5px;
+  border: 2px solid #fff;
+  border-radius: var(--radius-pill);
+  background: var(--color-service-ink);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  line-height: 14px;
+  text-align: center;
+  white-space: nowrap;
+  box-sizing: border-box;
+}
