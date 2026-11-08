@@ -66,7 +66,7 @@ function BenefitsAlertList(){
  return <div className={styles.alertList}>{[...groups].map(([message,list])=><FanState inline key={message} kind='error' className={styles.inlineError} title={message} actions={<FanAction onClick={()=>list.forEach(entry=>entry.retry())}>{list[0].label}</FanAction>}/>)}</div>;
 }
 export function BenefitsComingSoon({locale,children,grouped}:{locale:AppLocale;children:ReactNode;grouped?:boolean}){
- const [counts,setCounts]=useState({fail:0,content:0}),[report]=useState<SoonSignal['report']>(()=>(kind,delta)=>setCounts(current=>({...current,[kind]:Math.max(0,current[kind]+delta)}))),failed=counts.fail>0&&counts.content===0;
+ const [counts,setCounts]=useState({fail:0,content:0}),[report]=useState<SoonSignal['report']>(()=>(kind:'fail'|'content',delta:number)=>setCounts(current=>({...current,[kind]:Math.max(0,current[kind]+delta)}))),failed=counts.fail>0&&counts.content===0;
  const outer=useContext(AlertContext),block=<SoonContext.Provider value={{report}}><div className={grouped?`${styles.soon} ${styles.soonGroup}`:styles.soon} data-failed={failed?'':undefined}><div className={styles.soonContent} inert aria-hidden='true'>{children}</div>{!failed&&<p className={styles.soonNotice}>{groupBenefitsCopy(locale).soon}</p>}</div></SoonContext.Provider>;
  return outer?block:<BenefitsAlerts><BenefitsAlertList/>{block}</BenefitsAlerts>;
 }
