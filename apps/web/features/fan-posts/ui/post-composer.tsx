@@ -6,7 +6,6 @@ import { useRichPostBody } from "@/components/editor/use-rich-post-body";
 import { editorText } from "@/components/editor/editor-copy";
 import type { RichAttachment } from "@/components/editor/rich-document";
 import editorStyles from "@/components/editor/rich-text.module.css";
-import { FanSkeleton } from "@/components/fan-ui/fan-skeleton";
 import {ActivityPointHint} from "./activity-point-hint";
 import {SourceDiscardDialog} from "@/features/groups/ui/source-confirm-dialog";
 import { throwIfAborted } from "@/features/reliability/client/throw-if-aborted";
@@ -33,6 +32,7 @@ import { MAX_POST_PHOTO_BYTES, preparePostPhoto } from "./prepare-post-photo";
 import {useGroupRequest,useGroupResource} from '@/features/groups/ui/use-group-resource';
 import {postAttachmentPolicySchema} from '../domain/content';
 import {MemberGate,isMemberGate} from './member-gate';
+import { UploadProgressList, waveUploadRow, type UploadRow } from "@/components/editor/upload-progress";
 import {fanBoardMediaCopy} from './fan-board-media-copy';
 import { PostEditorForm, PostEditorSelect } from "./post-editor-form";
 import { boardCopy } from "@/features/groups/ui/board-copy";
@@ -67,6 +67,8 @@ function PostComposerForOwner({ board = false, introduction = false, program, sl
   const [isMobile, setIsMobile] = useState(false), photoInput = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false),[discardOpen,setDiscardOpen]=useState(false);
   const [failedPhotos, setFailedPhotos] = useState<File[]>([]);
+  /** 261107-2 D5: one row per photo of the current pick (uploading, uploaded, failed). The fan upload has no byte progress, so the row spins. */
+  const [photoRows, setPhotoRows] = useState<UploadRow[]>([]);
   const uploadPending = useRef<AbortController | null>(null);
   useEffect(() => () => uploadPending.current?.abort(), [session.ownerId, session.generation]);
   const busy = mutation.busy || uploading, submitReady = policyReady || (!assets.length && !hasVideo);
@@ -112,6 +114,8 @@ function PostComposerForOwner({ board = false, introduction = false, program, sl
     setProblem("");
     setFailedPhotos([]);
     let completed = 0;
+    const rows: UploadRow[] = selectedFiles.map((file, index) => ({ key: `photo-${Date.now()}-${index}`, name: file.name, state: "uploading" }));
+    setPhotoRows(rows);
     const controller = new AbortController();
     uploadPending.current = controller;
     setUploading(true);
@@ -127,17 +131,21 @@ function PostComposerForOwner({ board = false, introduction = false, program, sl
         if (!parsed.success) throw new Error("UPLOAD_FAILED");
         setAssets(current => [...current, parsed.data]);
         if (board) rich.insertAttachment({ assetId: parsed.data.id, kind: "image" });
+        const doneKey = rows[completed]?.key;
+        setPhotoRows(current => current.map(row => row.key === doneKey ? { ...row, state: "done" } : row));
         completed += 1;
       }
     } catch {
       if (!controller.signal.aborted) {
-        const remaining = selectedFiles.slice(completed);
+        const remaining = selectedFiles.slice(completed), failedKeys = new Set(rows.slice(completed).map(row => row.key));
+        setPhotoRows(current => current.map(row => failedKeys.has(row.key) ? { ...row, state: "failed" } : row));
         setProblem(copy.photoUploadFailed); setFailedPhotos(remaining);
         showFanToast({ title: copy.photoUploadFailed, tone: "error", action: { label: copy.retry, onClick: () => { void upload(remaining); } } });
       }
     } finally {
       uploadPending.current = null;
       setUploading(false);
+      if (completed === selectedFiles.length) setTimeout(() => setPhotoRows(current => current.filter(row => !rows.some(done => done.key === row.key))), 2400);
     }
   }
 
@@ -165,10 +173,8 @@ function PostComposerForOwner({ board = false, introduction = false, program, sl
       videoBlocked: assets.length > 0 || hasVideo,
       onBlocked: () => setProblem(blockedMessage),
       renderAttachment,
-      status: (uploading || videoUploads.items.some(item => item.failed || item.media?.state !== "ready")) ? <div className={editorStyles.uploads}>
-        {uploading && <div className={editorStyles.upload} role="status"><span>{editorText(locale, "uploading", [editorText(locale, "photo")])}</span><FanSkeleton width={64} height={8} /></div>}
-        {videoUploads.items.filter(item => item.failed || item.media?.state !== "ready").map(item => <div key={item.key} className={editorStyles.upload} role={item.failed ? "alert" : "status"}><span>{editorText(locale, item.failed ? "uploadFailed" : "uploading", [item.file.name])}</span>{item.failed ? <FanAction variant="text" onClick={() => videoUploads.retry(item)}>{editorText(locale, "retry")}</FanAction> : <FanSkeleton width={64} height={8} />}<FanAction variant="text" onClick={() => videoUploads.remove(item.key)}>{editorText(locale, "remove")}</FanAction></div>)}
-      </div> : undefined,
+      status: (() => { const videoRows = videoUploads.items.filter(item => item.failed || item.media?.state !== "ready").map(waveUploadRow), rows = [...photoRows, ...videoRows];
+        return rows.length ? <UploadProgressList items={rows} locale={locale} onRetry={key => { if (photoRows.some(row => row.key === key)) { void upload(failedPhotos); return; } const item = videoUploads.items.find(row => row.key === key); if (item) videoUploads.retry(item); }} onRemove={key => { if (photoRows.some(row => row.key === key)) { setPhotoRows(current => current.filter(row => row.state !== "failed")); setFailedPhotos([]); setProblem(""); } else videoUploads.remove(key); }} /> : undefined; })(),
     }} />}
     options={allowMembers ? <>
       <PostEditorSelect label={copy.visibility} value={visibility} disabled={busy} onChange={setVisibility} options={[{ value: "public", label: copy.public }, { value: "members", label: copy.members }]} />

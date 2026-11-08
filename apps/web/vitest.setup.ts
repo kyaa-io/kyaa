@@ -75,3 +75,23 @@ Object.defineProperty(globalThis, "IntersectionObserver", {
   configurable: true,
   value: TestIntersectionObserver,
 });
+
+// 261107-2 D5: media uploads send their PUT through XMLHttpRequest to report progress. jsdom's XHR would reach the network,
+// so tests get a small XHR that hands the request to the (mocked) global fetch and reports one full progress event.
+class FetchBackedXhr {
+  status = 0; withCredentials = false;
+  upload: { onprogress: ((event: { lengthComputable: boolean; loaded: number; total: number }) => void) | null } = { onprogress: null };
+  onload: (() => void) | null = null; onerror: (() => void) | null = null; onabort: (() => void) | null = null;
+  private method = "GET"; private url = ""; private headers: Record<string, string> = {}; private controller = new AbortController();
+  open(method: string, url: string) { this.method = method; this.url = url; }
+  setRequestHeader(name: string, value: string) { this.headers[name] = value; }
+  abort() { this.controller.abort(); }
+  send(body?: Blob | null) {
+    void fetch(this.url, { method: this.method, headers: this.headers, body: body ?? undefined, signal: this.controller.signal, credentials: "omit" }).then(response => {
+      const size = body instanceof Blob ? body.size : 0;
+      this.upload.onprogress?.({ lengthComputable: size > 0, loaded: size, total: size });
+      this.status = response?.status ?? (response?.ok === false ? 500 : 200); this.onload?.();
+    }, () => { if (this.controller.signal.aborted) this.onabort?.(); else this.onerror?.(); });
+  }
+}
+Object.defineProperty(globalThis, "XMLHttpRequest", { configurable: true, writable: true, value: FetchBackedXhr });

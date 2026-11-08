@@ -15,6 +15,7 @@ import { RelativeTime } from "@/components/relative-time";
 import { useWaveMediaUpload } from "@/features/content-safety/ui/use-wave-media-upload";
 import { EarnBadgeCorner } from "@/features/dukjil/ui/earn-badge";
 import { threadComments } from "@/features/fan-posts/domain/comment-thread";
+import { UploadProgressList, waveUploadRow } from "@/components/editor/upload-progress";
 import { postReactionCopy } from "@/features/fan-posts/ui/post-reaction-copy";
 import detailStyles from "@/features/fan-posts/ui/post-detail.module.css";
 import editorStyles from "@/components/editor/rich-text.module.css";
@@ -89,7 +90,7 @@ export function GroupPostComments({ pageId, postId, locale, commentCount, canWri
     {canWrite ? <form className={detailStyles.commentForm} data-filled={draft.length > 0 || undefined} onSubmit={submit}>
       <label className={detailStyles.srOnly} htmlFor={`${postId}-comment`}>{b.comments}</label>
       <textarea id={`${postId}-comment`} placeholder={postReactionCopy(locale).placeholder} value={draft} onChange={event => setDraft(event.target.value)} maxLength={2000} disabled={busy === "comment"} required rows={1} />
-      {upload.items.map(item => <div className={editorStyles.upload} key={item.key} data-failed={item.failed || undefined}><span>{item.file.name}</span>{item.failed && <span role="alert" className={detailStyles.commentUploadError}>{k.uploadFailed}</span>}{item.failed && <FanAction variant="text" onClick={() => upload.retry(item)}>{t.retry}</FanAction>}<FanAction variant="text" onClick={() => upload.remove(item.key)}>{m.remove}</FanAction></div>)}
+      <UploadProgressList items={upload.items.map(waveUploadRow)} locale={locale} removeDone onRetry={key => { const item = upload.items.find(row => row.key === key); if (item) upload.retry(item); }} onRemove={upload.remove} />
       {upload.invalid && <p role="alert" className={detailStyles.commentsEmpty}>{t.error}</p>}
       <div className={detailStyles.commentTools}>
         <span className={detailStyles.commentCounter}>{draft.length.toLocaleString(locale)} / 2,000</span>

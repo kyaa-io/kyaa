@@ -1,12 +1,12 @@
 "use client";
 import { useCallback, useMemo, useState, type ReactNode } from "react";
 import { editorText } from "@/components/editor/editor-copy";
+import { UploadProgressList } from "@/components/editor/upload-progress";
 import { LazyRichEditor } from "@/components/editor/lazy-rich-editor";
 import { useRichPostBody } from "@/components/editor/use-rich-post-body";
 import { useRichPostUploads } from "@/components/editor/use-rich-post-uploads";
 import type { RichAttachment } from "@/components/editor/rich-document";
 import { FanAction } from "@/components/fan-ui/fan-action";
-import { FanSkeleton } from "@/components/fan-ui/fan-skeleton";
 import type { AppLocale } from "@/i18n/locales";
 import { GroupPostAsset } from "./group-post-asset";
 import editorStyles from "@/components/editor/rich-text.module.css";
@@ -44,7 +44,7 @@ export function useGroupPostBody({ locale, label, placeholder, disabled = false,
       onPickPhotos: add,
       onPickVideo: file => add([file]),
       renderAttachment,
-      status: uploads.pendingItems.length ? <div className={editorStyles.uploads}>{uploads.pendingItems.map(item => <div key={item.key} className={editorStyles.upload} role={item.failed ? "alert" : "status"}><span>{editorText(locale, item.failed ? "uploadFailed" : "uploading", [item.file.name])}</span>{item.failed ? <FanAction variant="text" onClick={() => uploads.retry(item)}>{editorText(locale, "retry")}</FanAction> : <FanSkeleton width={64} height={8} />}<FanAction variant="text" onClick={() => uploads.remove(item.key)}>{editorText(locale, "remove")}</FanAction></div>)}</div> : undefined,
+      status: uploads.rows.length ? <UploadProgressList items={uploads.rows} locale={locale} onRetry={key => { const item = uploads.pendingItems.find(row => row.key === key); if (item) uploads.retry(item); }} onRemove={uploads.remove} /> : undefined,
     }} />
     {showLimit && <p role="alert" style={{ margin: 0, color: "var(--color-error)", fontSize: 13, lineHeight: "20px" }}>{editorText(locale, "mediaLimit", [GROUP_POST_MEDIA_MAX])}</p>}
     {(body.tooLarge || tooLong) && <p role="alert" style={{ margin: 0, color: "var(--color-error)", fontSize: 13, lineHeight: "20px" }}>{editorText(locale, body.tooLarge ? "documentTooLarge" : "tooLong")}</p>}
