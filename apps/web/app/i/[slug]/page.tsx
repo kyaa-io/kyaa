@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Route } from "next";
 import { notFound, redirect } from "next/navigation";
 import { parseAppLocale } from "@/i18n/locales";
 import { NO_INDEX } from "@/seo/metadata";
@@ -14,5 +14,5 @@ export default async function InviteShortLinkPage({ params, searchParams }: { pa
   const single = new URLSearchParams(Object.entries(query).flatMap(([key, value]) => typeof value === "string" ? [[key, value]] : []));
   const target = await resolveInviteShortLink(slug, parseAppLocale(single.get("locale") ?? undefined), createFanpageDependencies(), single);
   if (!target) notFound();
-  redirect(target);
+  redirect(target as Route);
 }
