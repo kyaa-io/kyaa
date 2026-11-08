@@ -1,7 +1,10 @@
 -- 261107-2 feedback C3: the home ranking card shows day-over-day movement (▲▼—).
 -- ranking_snapshots keeps one row per open period and is overwritten in place, so it has no yesterday. This file adds a per-day table instead:
---   home_ranking_daily  kind fan_hearts       subject = fan,       score = that fan's passport_page_claim hearts across every counted creator (all time)
---                       kind creator_jjinfan  subject = celebrity, score = fans holding at least one counted heart there, hearts = heart total
+--   home_ranking_daily  kind fan_hearts       subject = fan,       score = that fan's hearts across every counted creator (all time)
+--                       kind creator_jjinfan  subject = celebrity, score = 찐팬 = active fans holding at least one heart there, hearts = heart total
+-- One heart count for the product (coordination 2026-11-08): the same sum passport_hearts(user, creator) gives the header ♥N and the fan list,
+-- i.e. passport_page_claim ledger amounts plus the one-time stamp conversion (fan_heart_conversions.hearts). heart_totals() is that sum per pair,
+-- and creator_jjinfan_count() counts the fans whose sum is positive, which the 찐팬 100 gauge also reads (20261215020000).
 -- Counted pages and members are the same as the existing platform rankings: platform_fan_heart_counted (published, not archived, not anonymous,
 -- not the wave page), creator_listed (fan page not unlisted), a fan group page exists, members active. Sanctioned members leave the fan rows when
 -- the day is written and again at read time; blocks with the viewer leave at read time. Ranks are counted again after the read-time filters.
@@ -40,6 +43,41 @@ create table public.home_ranking_builds (
 alter table public.home_ranking_builds enable row level security;
 revoke all on public.home_ranking_builds from public, anon, authenticated, service_role;
 
+-- passport_hearts for every (fan, creator) with a positive sum, active members only. Same terms as passport_hearts(uuid, uuid).
+create function public.heart_totals()
+returns table (app_user_id uuid, celebrity_id uuid, hearts bigint, achieved_at timestamptz)
+language sql stable security definer set search_path = '' as $$
+  select x.app_user_id, x.celebrity_id, sum(x.n)::bigint, max(x.at)
+    from (select l.app_user_id, l.celebrity_id, l.amount::bigint as n, l.created_at as at from public.creator_heart_ledger l where l.source_type = 'passport_page_claim'
+          union all
+          select c.app_user_id, c.celebrity_id, c.hearts::bigint, c.converted_at from public.fan_heart_conversions c where c.hearts > 0) x
+    join public.app_users u on u.id = x.app_user_id and u.status = 'active'
+   group by x.app_user_id, x.celebrity_id
+  having sum(x.n) > 0
+$$;
+
+-- 찐팬 of one creator: active fans whose passport_hearts there is positive (하트 1개 = 찐팬 1명).
+create function public.creator_jjinfan_count(p_celebrity uuid)
+returns bigint language sql stable security definer set search_path = '' as $$
+  select count(*) from (
+    select x.app_user_id
+      from (select l.app_user_id, l.amount::bigint as n from public.creator_heart_ledger l where l.celebrity_id = p_celebrity and l.source_type = 'passport_page_claim'
+            union all
+            select c.app_user_id, c.hearts::bigint from public.fan_heart_conversions c where c.celebrity_id = p_celebrity) x
+      join public.app_users u on u.id = x.app_user_id and u.status = 'active'
+     group by x.app_user_id
+    having sum(x.n) > 0) f
+$$;
+
+-- Fans by their hearts on the creators the platform rankings may name (platform_fan_heart_counted), ordered as the stored rows are.
+create function public.fan_heart_scores()
+returns table (subject_id uuid, score bigint, achieved_at timestamptz)
+language sql stable security definer set search_path = '' as $$
+  select t.app_user_id, sum(t.hearts)::bigint, max(t.achieved_at) from public.heart_totals() t
+   where public.platform_fan_heart_counted(t.celebrity_id)
+   group by t.app_user_id
+$$;
+
 create function public.refresh_home_rankings(p_now timestamptz default pg_catalog.clock_timestamp())
 returns jsonb language plpgsql security definer set search_path = '' as $$
 declare d date := (p_now at time zone 'Asia/Seoul')::date; fans integer; creators integer;
@@ -51,7 +89,7 @@ begin
   insert into public.home_ranking_daily(kind, day, subject_id, rank, score, hearts, achieved_at, computed_at)
   select 'fan_hearts', d, r.subject_id, r.rn, r.score, r.score, r.achieved_at, p_now
     from (select s.subject_id, s.score, s.achieved_at, pg_catalog.row_number() over (order by s.score desc, s.achieved_at asc, s.subject_id asc) as rn
-            from public.ranking_scores('fan_hearts', null, '-infinity'::timestamptz, 'infinity'::timestamptz) s
+            from public.fan_heart_scores() s
            where not exists (select 1 from public.app_user_moderation_restrictions mr where mr.app_user_id = s.subject_id and mr.revoked_at is null)) r
    where r.rn <= 100;
   get diagnostics fans = row_count;
@@ -59,11 +97,9 @@ begin
   select 'creator_jjinfan', d, r.celebrity_id, r.rn, r.fans, r.hearts, r.achieved_at, p_now
     from (select x.celebrity_id, x.fans, x.hearts, x.achieved_at,
                  pg_catalog.row_number() over (order by x.fans desc, x.hearts desc, x.achieved_at asc, x.celebrity_id asc) as rn
-            from (select l.celebrity_id, count(distinct l.app_user_id) as fans, count(*) as hearts, max(l.created_at) as achieved_at
-                    from public.creator_heart_ledger l
-                    join public.app_users u on u.id = l.app_user_id and u.status = 'active'
-                   where l.source_type = 'passport_page_claim'
-                   group by l.celebrity_id) x
+            from (select t.celebrity_id, count(*) as fans, sum(t.hearts) as hearts, max(t.achieved_at) as achieved_at
+                    from public.heart_totals() t
+                   group by t.celebrity_id) x
            where public.platform_fan_heart_counted(x.celebrity_id) and public.creator_listed(x.celebrity_id)
              and exists (select 1 from public.group_pages g where g.celebrity_id = x.celebrity_id and g.kind = 'fan')) r
    where r.rn <= 100;
@@ -118,17 +154,17 @@ begin
       'delta', case when h.comparable then (select y.rank - s.stored_rank from public.home_ranking_daily y where y.kind = 'fan_hearts' and y.day = h.previous and y.subject_id = s.subject_id) end,
       'tier', (select case max(public.fan_level_rank(public.get_fan_effective_tier(s.subject_id, x.celebrity_id)))
                         when 1 then 'Bronze' when 2 then 'Silver' when 3 then 'Gold' when 4 then 'Platinum' when 5 then 'Diamond' end
-                 from (select distinct l.celebrity_id from public.creator_heart_ledger l
-                        where l.app_user_id = s.subject_id and l.source_type = 'passport_page_claim' and public.platform_fan_heart_counted(l.celebrity_id)) x)
+                 from (select t.celebrity_id from public.heart_totals() t
+                        where t.app_user_id = s.subject_id and public.platform_fan_heart_counted(t.celebrity_id)) x)
     ) order by s.rn), '[]'::jsonb),
     (select pg_catalog.jsonb_build_object('rank', m.rn, 'score', m.score, 'inTop', m.rn <= lim) from shown m where p_viewer is not null and m.subject_id = p_viewer)
     into items, me
     from shown s where s.rn <= lim;
   -- Outside the stored hundred: the live rank over all time, the same count the platform ranking uses.
   if me is null and p_viewer is not null then
-    select * into mine from public.ranking_scores('fan_hearts', null, '-infinity'::timestamptz, 'infinity'::timestamptz) s where s.subject_id = p_viewer;
+    select * into mine from public.fan_heart_scores() s where s.subject_id = p_viewer;
     if mine.subject_id is not null then
-      me := pg_catalog.jsonb_build_object('rank', 1 + (select count(*) from public.ranking_scores('fan_hearts', null, '-infinity'::timestamptz, 'infinity'::timestamptz) s
+      me := pg_catalog.jsonb_build_object('rank', 1 + (select count(*) from public.fan_heart_scores() s
               where s.score > mine.score or (s.score = mine.score and (s.achieved_at < mine.achieved_at or (s.achieved_at = mine.achieved_at and s.subject_id < mine.subject_id)))),
         'score', mine.score, 'inTop', false);
     end if;
@@ -170,6 +206,7 @@ $$;
 
 revoke all on function public.list_unlisted_creator_slugs() from public, anon, authenticated, service_role;
 grant execute on function public.list_unlisted_creator_slugs() to service_role;
+revoke all on function public.heart_totals(), public.creator_jjinfan_count(uuid), public.fan_heart_scores() from public, anon, authenticated, service_role;
 revoke all on function public.ensure_home_rankings(timestamptz) from public, anon, authenticated, service_role;
 grant execute on function public.ensure_home_rankings(timestamptz) to service_role;
 revoke all on function public.refresh_home_rankings(timestamptz), public.home_ranking_days(text),
@@ -182,7 +219,7 @@ declare t text; f text; c pg_catalog.pg_class; me pg_catalog.pg_roles; gaps text
 begin
   select * into me from pg_catalog.pg_roles where rolname = current_user;
   if me.rolsuper then return; end if;
-  foreach t in array array['creator_heart_ledger', 'celebrities', 'celebrity_localizations', 'group_pages', 'app_users', 'user_profiles', 'app_user_avatars',
+  foreach t in array array['creator_heart_ledger', 'fan_heart_conversions', 'celebrities', 'celebrity_localizations', 'group_pages', 'app_users', 'user_profiles', 'app_user_avatars',
                            'app_user_moderation_restrictions', 'user_blocks', 'jjinfan_challenge_campaigns'] loop
     select * into c from pg_catalog.pg_class where oid = ('public.' || t)::regclass;
     if not pg_catalog.has_table_privilege(me.oid, c.oid, 'select') and not (t = 'jjinfan_challenge_campaigns' and pg_catalog.has_column_privilege(me.oid, c.oid, 'enabled', 'select')) then
@@ -193,7 +230,7 @@ begin
       gaps := gaps || format('read policy on %s', t);
     end if;
   end loop;
-  foreach f in array array['public.platform_fan_heart_counted(uuid)', 'public.creator_listed(uuid)', 'public.ranking_scores(text,uuid,timestamptz,timestamptz)',
+  foreach f in array array['public.platform_fan_heart_counted(uuid)', 'public.creator_listed(uuid)',
                            'public.get_fan_effective_tier(uuid,uuid)', 'public.fan_level_rank(text)'] loop
     if not pg_catalog.has_function_privilege(me.oid, f, 'execute') then gaps := gaps || format('execute %s', f); end if;
   end loop;

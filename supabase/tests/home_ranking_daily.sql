@@ -14,6 +14,7 @@ declare
 begin
   set local session_replication_role = replica;
   delete from public.creator_heart_ledger;
+  delete from public.fan_heart_conversions;
   delete from public.home_ranking_daily;
   foreach c in array array[shown, other, anon_cel, unlisted] loop
     insert into public.celebrities(id, slug, status, image_url, published_at, roles, primary_role) values (c, 'hrd-' || left(c::text, 8), 'published', '/fixture.webp', now(), '{creator}', 'creator');
@@ -44,12 +45,17 @@ begin
   result := public.read_home_fan_ranking(null, 20);
   if (result ->> 'comparable')::boolean or exists (select 1 from jsonb_array_elements(result -> 'rows') r where r -> 'delta' <> 'null'::jsonb) then raise exception 'Movement before seven days: %', result; end if;
 
+  -- One heart definition: every pair equals passport_hearts, and a one-time stamp conversion counts like ledger hearts.
+  if exists (select 1 from public.heart_totals() t where t.hearts <> public.passport_hearts(t.app_user_id, t.celebrity_id)) then raise exception 'heart_totals differs from passport_hearts'; end if;
+  if public.creator_jjinfan_count(shown) <> (select count(*) from public.app_users u where u.status = 'active' and public.passport_hearts(u.id, shown) > 0) then raise exception 'jjinfan count differs'; end if;
+
   -- Day 8: f2 passes f1 (f2 4+3=7 > f1 5), late enters.
   set local session_replication_role = replica;
   insert into public.creator_heart_ledger(celebrity_id, app_user_id, amount, source_type, source_id, created_at)
   select shown, x.who, 1, 'passport_page_claim', extensions.gen_random_uuid(), d8 - interval '1 minute' * x.n from (values (f2, 1), (f2, 2), (f2, 3), (late, 4)) as x(who, n);
   set local session_replication_role = origin;
   perform public.refresh_home_rankings(d8);
+
 
   result := public.read_home_fan_ranking(null, 20);
   if not (result ->> 'comparable')::boolean or result ->> 'day' <> '2099-03-08' then raise exception 'Day 8 not comparable: %', result; end if;
@@ -88,6 +94,15 @@ begin
   if (result -> 'rows' -> 0 ->> 'delta')::int <> 0 then raise exception 'Creator delta wrong: %', result; end if;
   if exists (select 1 from jsonb_array_elements(result -> 'rows') r where (select array_agg(k order by k) from jsonb_object_keys(r) k) <> array['challenge', 'delta', 'hearts', 'imageUrl', 'name', 'rank', 'score', 'slug'])
     then raise exception 'Creator row has other keys: %', result; end if;
+  set local session_replication_role = replica;
+  -- f3 converted stamps into 2 hearts on other: f3 = 1 (other) + 1 (unlisted) + 2 = 4, other keeps 2 fans and gains 2 hearts.
+  insert into public.fan_heart_conversions(app_user_id, celebrity_id, stamps_counted, hearts, remainder, cutoff_at) values (f3, other, 18, 2, 0, d8);
+  set local session_replication_role = origin;
+  perform public.refresh_home_rankings(d8);
+  if (select score from public.home_ranking_daily where kind = 'fan_hearts' and day = '2099-03-08' and subject_id = f3) <> 4 then raise exception 'Conversion hearts not in the fan score'; end if;
+  if exists (select 1 from public.home_ranking_daily d where d.kind = 'fan_hearts' and d.day = '2099-03-08'
+              and d.score <> (select sum(public.passport_hearts(d.subject_id, c.id)) from public.celebrities c where public.platform_fan_heart_counted(c.id))) then raise exception 'Fan score is not the passport_hearts sum'; end if;
+  if (public.read_home_creator_ranking('ko', 20) -> 'rows' -> 1 ->> 'hearts')::int <> 4 then raise exception 'Conversion hearts not in the creator total'; end if;
   -- A page made unlisted after the write leaves at read time.
   update public.group_pages set listed = false where celebrity_id = shown;
   if public.read_home_creator_ranking('ko', 20)::text like '%hrd-' || left(shown::text, 8) || '%' then raise exception 'Unlisted at read time still shown'; end if;
@@ -98,7 +113,7 @@ begin
     then raise exception 'Unlisted slugs wrong: %', public.list_unlisted_creator_slugs(); end if;
 
   -- Read-time build: a day with no scores is still marked, so the second reader does not build again.
-  set local session_replication_role = replica; delete from public.creator_heart_ledger; set local session_replication_role = origin;
+  set local session_replication_role = replica; delete from public.creator_heart_ledger; delete from public.fan_heart_conversions; set local session_replication_role = origin;
   if (public.ensure_home_rankings('2099-04-01 12:00+09') ->> 'built')::boolean is not true then raise exception 'Missing day not built'; end if;
   if (public.ensure_home_rankings('2099-04-01 18:00+09') ->> 'built')::boolean then raise exception 'Built twice'; end if;
   if not exists (select 1 from public.home_ranking_builds where day = '2099-04-01') or exists (select 1 from public.home_ranking_daily where day = '2099-04-01') then raise exception 'Empty day mark wrong'; end if;

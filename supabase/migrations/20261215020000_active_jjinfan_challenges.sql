@@ -1,7 +1,10 @@
 -- 261107-2 feedback C7: the home "진행 중 챌린지" module, the challenge tag on group cards and the home ranking read which 찐팬 100 challenges are on.
 -- One public reader. Only campaigns an administrator turned on (jjinfan_challenge_campaigns.enabled) on pages the platform rankings may name:
 -- published, not archived, not anonymous, not hidden, not the wave page (platform_fan_heart_counted) and not unlisted (creator_listed).
--- The count is the same live count read_jjinfan_challenge answers (active jjinfan_titles), the target stays 100. Newest switched on first.
+-- 찐팬 count (coordination 2026-11-08): one definition everywhere, creator_jjinfan_count() from 20261215010000 = active fans whose
+-- passport_hearts on the creator is positive (the hearts the header ♥N and the fan list show). The gauge, the administrator's list, this reader and
+-- the /rankings jjinfanCount switch from active jjinfan_titles to it. Titles stay what they were for room entry and claims; only the count changes.
+-- The target stays 100. Newest switched on first. Depends on 20261215010000.
 -- Draft wording of a campaign that is off never leaves the server, as in read_jjinfan_challenge.
 -- An end date (ends_on, KST, inclusive) lets the gauge card say "11. 30.까지" and turns the campaign off after that day on its own:
 -- every public reader answers an ended campaign as off. The administrator sets it; empty means no end date (as before).
@@ -42,7 +45,7 @@ begin
   if not exists (select 1 from public.celebrities c where c.id = p_celebrity and c.status = 'published' and c.archived_at is null) then
     raise exception 'CREATOR_NOT_FOUND' using errcode = 'P0001';
   end if;
-  select count(*) into n from public.jjinfan_titles t join public.app_users tu on tu.id = t.app_user_id and tu.status = 'active' where t.celebrity_id = p_celebrity and t.revoked_at is null;
+  n := public.creator_jjinfan_count(p_celebrity);
   select pg_catalog.jsonb_build_object('title', c.title, 'description', c.description, 'endsOn', c.ends_on) into v_campaign
     from public.jjinfan_challenge_campaigns c where c.celebrity_id = p_celebrity and public.jjinfan_campaign_open(c.enabled, c.ends_on);
   return pg_catalog.jsonb_build_object('count', n, 'target', 100, 'campaign', v_campaign);
@@ -59,7 +62,7 @@ begin
           (select l.name from public.celebrity_localizations l where l.celebrity_id = c.id order by (l.locale = 'ko') desc, l.locale limit 1), c.slug) as name,
         coalesce(j.enabled, false) as enabled, coalesce(j.title, '') as title, coalesce(j.description, '') as description, j.updated_at as "updatedAt",
         j.ends_on as "endsOn",
-        (select count(*) from public.jjinfan_titles t join public.app_users tu on tu.id = t.app_user_id and tu.status = 'active' where t.celebrity_id = c.id and t.revoked_at is null) as count
+        public.creator_jjinfan_count(c.id) as count
       from public.celebrities c
       left join public.jjinfan_challenge_campaigns j on j.celebrity_id = c.id
       where c.status = 'published' and c.archived_at is null
@@ -104,8 +107,7 @@ returns jsonb language sql stable security definer set search_path = '' as $$
       'slug', r.slug, 'name', r.name, 'imageUrl', r.image_url, 'title', r.title, 'description', r.description, 'endsOn', r.ends_on, 'count', r.n, 'target', 100
     ) order by r.updated_at desc, r.slug), '[]'::jsonb))
     from (select c.slug, c.image_url, j.title, j.description, j.ends_on, j.updated_at, coalesce(nl.name, nk.name, ne.name, c.slug) as name,
-                 (select count(*) from public.jjinfan_titles t join public.app_users tu on tu.id = t.app_user_id and tu.status = 'active'
-                   where t.celebrity_id = c.id and t.revoked_at is null) as n
+                 public.creator_jjinfan_count(c.id) as n
             from public.jjinfan_challenge_campaigns j
             join public.celebrities c on c.id = j.celebrity_id and c.status = 'published' and c.archived_at is null
             left join public.celebrity_localizations nl on nl.celebrity_id = c.id and nl.locale::text = p_locale
@@ -117,6 +119,28 @@ returns jsonb language sql stable security definer set search_path = '' as $$
 $$;
 revoke all on function public.read_active_jjinfan_challenges(text, integer) from public, anon, authenticated, service_role;
 grant execute on function public.read_active_jjinfan_challenges(text, integer) to service_role;
+
+-- /rankings shows the same 찐팬 count: read_creator_ranking and read_creator_fan_ranking count through creator_jjinfan_count as well.
+-- Their owners may differ from the applying role (dev: postgres): they get execute on the counter, which reads as its own owner.
+do $patch$
+declare def text; f regprocedure; owner name;
+begin
+  foreach f in array array['public.read_creator_ranking(text,uuid,text,timestamptz)'::regprocedure, 'public.read_creator_fan_ranking(text,integer)'::regprocedure] loop
+    def := pg_catalog.pg_get_functiondef(f);
+    if position('creator_jjinfan_count' in def) = 0 then
+      if position($a$(select count(*) from public.jjinfan_titles t join public.app_users tu on tu.id = t.app_user_id and tu.status = 'active' where t.celebrity_id = $a$ in def) = 0 then
+        raise exception 'JJINFAN_COUNT_UNPATCHED: %', f;
+      end if;
+      def := pg_catalog.regexp_replace(def, $a$\(select count\(\*\) from public\.jjinfan_titles t join public\.app_users tu on tu\.id = t\.app_user_id and tu\.status = 'active' where t\.celebrity_id = ([a-z]+)\.id and t\.revoked_at is null\)$a$, $a$public.creator_jjinfan_count(\1.id)$a$, 'g');
+      execute def;
+    end if;
+  end loop;
+  for owner in select distinct o.rolname from pg_catalog.pg_proc p join pg_catalog.pg_roles o on o.oid = p.proowner
+                where p.oid in ('public.read_jjinfan_challenge(uuid)'::regprocedure, 'public.read_creator_ranking(text,uuid,text,timestamptz)'::regprocedure, 'public.read_creator_fan_ranking(text,integer)'::regprocedure)
+                  and not o.rolsuper and o.rolname <> current_user loop
+    execute format('grant execute on function public.creator_jjinfan_count(uuid) to %I', owner);
+  end loop;
+end $patch$;
 
 -- The function belongs to the applying role. Fail here rather than at the first home read when that role cannot see what it reads.
 do $check$

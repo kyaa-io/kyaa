@@ -23,7 +23,10 @@ begin
     (anon_cel, true, '익명 챌린지', '', extensions.gen_random_uuid(), now()),
     (unlisted, true, '비노출 챌린지', '', extensions.gen_random_uuid(), now());
   insert into public.app_users(id, privy_user_id, verified_email) values (off_cel, 'did:privy:ajc-' || off_cel, off_cel || '@example.test');
-  insert into public.jjinfan_titles(app_user_id, celebrity_id) values (off_cel, shown);
+  -- 찐팬 = a fan holding a heart (passport_hearts > 0), not a title: one title without hearts does not count, one heart does.
+  insert into public.app_users(id, privy_user_id, verified_email) values (newer, 'did:privy:ajc-' || newer, newer || '@example.test');
+  insert into public.jjinfan_titles(app_user_id, celebrity_id) values (newer, shown);
+  insert into public.creator_heart_ledger(celebrity_id, app_user_id, amount, source_type, source_id) values (shown, off_cel, 1, 'passport_page_claim', extensions.gen_random_uuid());
   set local session_replication_role = origin;
 
   result := public.read_active_jjinfan_challenges('ko', 10);

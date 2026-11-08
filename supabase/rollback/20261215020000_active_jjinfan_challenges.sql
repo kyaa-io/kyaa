@@ -4,6 +4,19 @@ begin;
 set local lock_timeout = '5s';
 drop function public.read_active_jjinfan_challenges(text, integer);
 
+-- /rankings back to the active-title count.
+do $patch$
+declare def text; f regprocedure;
+begin
+  foreach f in array array['public.read_creator_ranking(text,uuid,text,timestamptz)'::regprocedure, 'public.read_creator_fan_ranking(text,integer)'::regprocedure] loop
+    def := pg_catalog.pg_get_functiondef(f);
+    if position('creator_jjinfan_count' in def) > 0 then
+      execute pg_catalog.regexp_replace(def, $a$public\.creator_jjinfan_count\(([a-z]+)\.id\)$a$,
+        $a$(select count(*) from public.jjinfan_titles t join public.app_users tu on tu.id = t.app_user_id and tu.status = 'active' where t.celebrity_id = \1.id and t.revoked_at is null)$a$, 'g');
+    end if;
+  end loop;
+end $patch$;
+
 create or replace function public.read_jjinfan_challenge(p_celebrity uuid)
 returns jsonb language plpgsql stable security definer set search_path = '' as $$
 declare n bigint; v_campaign jsonb;
