@@ -1,5 +1,8 @@
 -- '최애 온라인 알림'(artist_online)은 그 페이지의 크리에이터를 최애로 고른 멤버에게만 간다(감독 2026-11-09 05:29, QA-I 6번).
--- 최애는 MY·헤더의 선택 최애와 같은 값 fan_profile_public_fields.favorite_celebrity_id이고, 페이지는 group_pages.celebrity_id로 잇는다.
+-- 최애는 팬이 MY에서 저장한 fan_profile_public_fields.favorite_celebrity_id이고, 페이지는 group_pages.celebrity_id로 잇는다.
+-- 헤더·MY 표시와 다른 점(검토 2026-11-09, 동작은 의도대로 둠): 화면은 그 크리에이터의 패스포트가 있을 때만 최애로 보이지만(pickSelectedBias),
+-- 저장값은 페이지 멤버이기만 해도 고를 수 있어(fan_profile_favorite_options) 패스포트 없이도 이 알림을 받는다. 반대로 예전 브라우저
+-- localStorage에만 남은 선택은 서버로 옮겨지기 전(패스포트가 있을 때 다음 방문에 저장)까지 저장값이 없어 받지 않는다.
 -- 크리에이터가 없는 페이지(hobby·brand)는 최애로 고를 수 없으므로 받는 사람이 없다. 멤버·활성 계정·알림 설정(artist_online_notifications,
 -- 페이지 알림)·차단 조건과 하루 한 번(source_key) 규칙, 문구는 그대로다. 아티스트 댓글 알림(artist_comment)의 수신자는 바뀌지 않는다.
 -- 함수 소유자(dev/운영: postgres)가 fan_profile_public_fields를 읽을 수 있게 SELECT를 주고, 소유자가 superuser도 BYPASSRLS도 아니면

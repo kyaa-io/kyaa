@@ -1,5 +1,6 @@
 -- 20261219040000: a like on your own fan post pays nothing (0P, no stamp, no log or wallet row); the like itself is saved.
 -- A like on someone else's post pays +1P as before, and the reaction daily cap (5 paid likes a day) still holds.
+-- An upper-case post id neither escapes the self check nor pays the same post again.
 -- Saves real posts through save_fan_post, likes through set_fan_post_like, then awards them the way the like route does
 -- (record_dukjil_action 'reaction', source 'post-like:<post id>', request key from award.ts). Local DB only, one transaction, rolled back.
 -- Needs a published fan group page whose creator has two members holding the creator's passport (picked from the data).
@@ -61,6 +62,12 @@ begin
   r := public.record_dukjil_action(author, c, 'reaction', 'post-like:' || p, pg_temp.req(author, 'reaction', 'post-like:' || p), '{}'::jsonb);
   if (r ->> 'points')::int <> 0 or (select count(*) from public.dukjil_action_log where app_user_id = author) <> before_rows then raise exception 'self like retry %', r; end if;
   if pg_temp.paid_today(author) <> before_paid then raise exception 'self like used the cap'; end if;
+  -- the same post id in upper case (the path accepts any case): still 0, still no row — with the route's lowercase key or an old
+  -- web's upper-case key alike.
+  r := public.record_dukjil_action(author, c, 'reaction', 'post-like:' || upper(p::text), pg_temp.req(author, 'reaction', 'post-like:' || upper(p::text)), '{}'::jsonb);
+  raise notice 'self like, upper-case id -> %', r;
+  if (r ->> 'points')::int <> 0 or r ->> 'reason' is distinct from 'SELF_REACTION' then raise exception 'upper-case self like %', r; end if;
+  if (select count(*) from public.dukjil_action_log where app_user_id = author) <> before_rows then raise exception 'upper-case self like wrote a row'; end if;
 
   -- 2. Someone else's post: +1P (until the day's 5), and the like of the same post never pays twice.
   before_paid := pg_temp.paid_today(liker);
@@ -74,6 +81,20 @@ begin
   end if;
   r := public.record_dukjil_action(liker, c, 'reaction', 'post-like:' || p, pg_temp.req(liker, 'reaction', 'post-like:' || p), '{}'::jsonb);
   if not (r ->> 'replayed')::boolean then raise exception 'same post paid again %', r; end if;
+  -- Upper case on someone else's post: the route sends the lowercase key (same request key) -> replay; an upper-case source with
+  -- its own request key (old web) -> SOURCE_REUSED, nothing paid. Either way one row for the post, stored lowercase.
+  r := public.record_dukjil_action(liker, c, 'reaction', 'post-like:' || upper(p::text), pg_temp.req(liker, 'reaction', 'post-like:' || p), '{}'::jsonb);
+  raise notice 'other like, upper-case id, route key -> %', r;
+  if not (r ->> 'replayed')::boolean then raise exception 'upper-case other like not replayed %', r; end if;
+  begin
+    r := public.record_dukjil_action(liker, c, 'reaction', 'post-like:' || upper(p::text), pg_temp.req(liker, 'reaction', 'post-like:' || upper(p::text)), '{}'::jsonb);
+    raise exception 'upper-case key with its own request key answered %', r;
+  exception when others then
+    if position('SOURCE_REUSED' in sqlerrm) = 0 then raise; end if;
+  end;
+  if (select count(*) from public.dukjil_action_log where app_user_id = liker and action_key = 'reaction' and lower(source_key) = 'post-like:' || p) <> 1
+    or exists(select 1 from public.dukjil_action_log where app_user_id = liker and source_key = 'post-like:' || upper(p::text)) then
+    raise exception 'upper-case like wrote a second or upper-case row'; end if;
 
   -- 3. Daily cap 5: likes on five more posts of the author pay until 5 paid in the day; past that 0P or DUKJIL_DAILY_LIMIT.
   for i in 1 .. 5 loop

@@ -73,6 +73,27 @@ describe("post reactions", () => {
     expect(d.rpc.mock.calls.some(([name]) => name === "record_dukjil_award_failure")).toBe(false);
   });
 
+  it("keys like and comment rewards on the lowercase post id when the path carries upper case (review 2026-11-09)", async () => {
+    const { dukjilRequestKey } = await import("@/server/dukjil/award");
+    const hexId = "abcdef00-0000-4000-8000-0000000000ab", upper = hexId.toUpperCase(), lowerSource = `post-like:${hexId}`;
+    const d = Object.assign(dependencies(), { resolveCreatorId: async () => "30000000-0000-4000-8000-000000000003" }), h = createContentHandlers(d);
+    d.rpc.mockImplementation(async (name: string) => name === "set_fan_post_reaction" ? { reaction: "like", dislikeCount: null } : name === "read_fan_post" ? { post }
+      : name === "post_fan_post_comment" ? { id: "50000000-0000-4000-8000-000000000005", revision: 1, replayed: false }
+      : name === "record_dukjil_action" ? { points: 1, stampId: null, capped: false, reason: null, replayed: false } : null);
+    const awards = () => d.rpc.mock.calls.filter(([name]) => name === "record_dukjil_action").map(([, args]) => args);
+    const at = (body: unknown) => new Request(`https://byus.test/api/posts/${upper}/like`, { method: "PUT", headers: { authorization: "Bearer token", "content-type": "application/json" }, body: JSON.stringify(body) });
+    for (const body of [{ reaction: "like" }, { liked: true }]) {
+      d.rpc.mockClear();
+      expect((await h.like(at(body), upper)).status).toBe(200);
+      expect(awards()).toEqual([expect.objectContaining({ p_action_key: "reaction", p_source_key: lowerSource, p_request_key: dukjilRequestKey(owner, "reaction", lowerSource) })]);
+    }
+    d.rpc.mockClear();
+    const comment = new Request(`https://byus.test/api/posts/${upper}/comments`, { method: "POST", headers: { authorization: "Bearer token", "content-type": "application/json" },
+      body: JSON.stringify({ body: "다섯 글자 넘는 댓글", parentId: null, idempotencyKey: "60000000-0000-4000-8000-000000000006" }) });
+    expect((await h.comments(comment, upper)).status).toBe(201);
+    expect(awards()).toEqual([expect.objectContaining({ p_action_key: "comment", p_params: expect.objectContaining({ targetKey: hexId }) })]);
+  });
+
   it("rejects unknown choices and mixed bodies before touching the database", async () => {
     const d = dependencies(), h = createContentHandlers(d);
     for (const body of [{ reaction: "love" }, { reaction: "like", liked: true }, { reaction: null }, {}])
