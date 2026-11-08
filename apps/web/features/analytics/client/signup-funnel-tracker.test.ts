@@ -1,9 +1,12 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { clientProductEventV1Schema } from "../domain/product-event";
+import { sendGa4Event } from "./ga4-client";
 import { createSignupFunnelTracker, SIGNUP_CONTEXT_TTL_MS } from "./signup-funnel-tracker";
 
+vi.mock("./ga4-client", () => ({ sendGa4Event: vi.fn() }));
+
 describe("best-effort signup observations", () => {
-  beforeEach(() => window.sessionStorage.clear());
+  beforeEach(() => { window.sessionStorage.clear(); vi.mocked(sendGa4Event).mockClear(); });
 
   function fixture() {
     let now = Date.parse("2026-09-11T13:00:00Z");
@@ -176,4 +179,22 @@ describe("best-effort signup observations", () => {
     expect(calls.at(-1)![0].properties).not.toHaveProperty("entryAction");
   });
 
+  it("sends the GA4 login event once with the chosen provider, and none for a restored session", () => {
+    const f = fixture();
+    const attempt = f.tracker.beginLogin("google", "provider", "ko")!;
+    f.tracker.result(attempt, "succeeded", "ready", "none");
+    f.tracker.result(attempt, "succeeded", "ready", "none");
+    expect(sendGa4Event).toHaveBeenCalledTimes(1);
+    expect(sendGa4Event).toHaveBeenCalledWith("login", { method: "google" });
+    vi.mocked(sendGa4Event).mockClear();
+    window.sessionStorage.clear();
+    const restored = f.tracker.resumeLogin("ko")!;
+    expect(restored.provider).toBe("unknown");
+    f.tracker.result(restored, "succeeded", "ready", "none");
+    expect((f.record.mock.calls as unknown as Array<[{ eventName?: string }]>).some(([event]) => event.eventName === "login_result")).toBe(true);
+    expect(sendGa4Event).not.toHaveBeenCalled();
+    const retry = f.tracker.beginLogin("unknown", "retry", "ko")!;
+    f.tracker.result(retry, "succeeded", "ready", "none");
+    expect(sendGa4Event).not.toHaveBeenCalled();
+  });
 });

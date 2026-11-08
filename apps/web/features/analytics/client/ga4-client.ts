@@ -20,31 +20,45 @@ function gtag(...args: unknown[]): void {
 
 /**
  * Loads gtag.js once, only after the visitor allowed it. Consent starts denied and is updated to granted for analytics
- * only; ads storage, signals and personalization stay off. Automatic page views are off: page_view is sent by hand.
+ * only; ads storage, signals and personalization stay off.
+ *
+ * The Google tag of a stream sends one page_view by itself when it starts, and ignores `send_page_view: false` from a
+ * config call (verified on a bare snippet against both kyaa streams). That hit reads the address, title and referrer
+ * from the global `set` values, never from config. So the first screen is not sent by hand: its normalized address,
+ * screen kind and external referrer are set before `js`, and gtag sends it exactly once. Returns true then. It returns
+ * false (nothing started) for a screen that is not measured, and false when gtag is already running, so the caller
+ * sends the page_view by hand.
  */
-export function startGa4(measurementId: string): void {
-  if (active?.id === measurementId && active.granted) return;
+export function startGa4(measurementId: string, pathname: string): boolean {
+  if (active?.id === measurementId && active.granted) return false;
+  const page = ga4PageLocation(window.location.origin, pathname);
+  if (!page) return false;
   window.gtag = window.gtag ?? gtag;
+  if (document.getElementById(SCRIPT_ID)) {
+    // Allowed again after a refusal: gtag has already started, so only consent changes and the caller sends the screen.
+    window.gtag("consent", "update", { analytics_storage: "granted" });
+    active = { id: measurementId, granted: true };
+    return false;
+  }
   window.gtag("consent", "default", {
     analytics_storage: "denied", ad_storage: "denied", ad_user_data: "denied", ad_personalization: "denied", wait_for_update: 500,
   });
   window.gtag("consent", "update", { analytics_storage: "granted" });
+  const referrer = referrerSent ? "" : ga4PageReferrer(document.referrer, window.location.origin);
+  referrerSent = true;
+  window.gtag("set", { page_location: page.location, page_referrer: referrer, page_title: page.kind });
   window.gtag("js", new Date());
   window.gtag("config", measurementId, {
-    send_page_view: false,
     allow_google_signals: false,
     allow_ad_personalization_signals: false,
-    page_location: `${window.location.origin}/`,
-    page_referrer: "",
   });
-  if (!document.getElementById(SCRIPT_ID)) {
-    const script = document.createElement("script");
-    script.id = SCRIPT_ID;
-    script.async = true;
-    script.src = `https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(measurementId)}`;
-    document.head.appendChild(script);
-  }
+  const script = document.createElement("script");
+  script.id = SCRIPT_ID;
+  script.async = true;
+  script.src = `https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(measurementId)}`;
+  document.head.appendChild(script);
   active = { id: measurementId, granted: true };
+  return true;
 }
 
 /** After a refusal nothing more is sent; GA cookies on this site are removed. */
@@ -71,7 +85,7 @@ export function sendGa4Event(name: string, parameters: Ga4Parameters = {}): void
   window.gtag!("event", payload.name, payload.parameters);
 }
 
-/** One page_view per screen with the normalized address; the external referrer goes with the first one only. */
+/** A page_view by hand for every screen after the first one (the first is sent by gtag, see startGa4). */
 export function sendGa4PageView(pathname: string): boolean {
   if (!ga4Active()) return false;
   const page = ga4PageLocation(window.location.origin, pathname);
