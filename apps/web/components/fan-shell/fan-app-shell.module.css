@@ -155,3 +155,15 @@
   .groupsNavigation .desktopNavItem { min-width: 0; padding: 0 var(--space-2); gap: var(--space-1); }
   .groupsNavigation .actions { min-width: 0; gap: var(--space-1); }
 }
+
+/* Feedback F (2026-11-08): signed in, the right side is [status capsule][bell][avatar] — one soft pill holds tier · favorite · ♥N · P N
+ * (each cell still its own destination). The language leaves the header from 768px (it is in the account menu); below 768px there is
+ * no account menu, so it stays. Signed out nothing changes. */
+.statusCapsule { display: inline-flex; flex: 0 1 auto; align-items: center; min-width: 0; max-width: 288px; height: var(--min-target); padding-inline: var(--space-2); border-radius: var(--radius-pill); background: var(--color-soft); color: var(--color-ink); font-size: var(--fan-action-label-size); }
+.headerLanguage { display: contents; }
+@media (min-width: 48rem) { .headerLanguage[data-signed-in] { display: none; } }
+@media (min-width: 64rem) and (max-width: 74.999rem) { .statusCapsule { max-width: 224px; } }
+@media (min-width: 48rem) and (max-width: 63.999rem) { .groupsNavigation .actions { gap: var(--space-2); } }
+@media (max-width: 47.999rem) { .statusCapsule { max-width: 182px; padding-inline: var(--space-1); } }
+/* Feedback F: from 1200px the tabs and the right group keep at least 24px apart, also with the wider ru·vi tab labels. */
+@media (min-width: 75rem) { .groupsNavigation .headerInner { column-gap: var(--space-6, 24px); } }

@@ -65,3 +65,13 @@ it('while the policy is still loading neither the legacy payout nor the new atte
  expect(screen.queryByRole('menuitem',{name:/출석하고/})).toBeNull();
  expect(screen.queryByRole('menuitem',{name:'엔카이브 출석체크'})).toBeNull();
 });
+it('signed in, the avatar is the one account-menu trigger and the menu has no 알림 item (feedback F)',async()=>{
+ state.wallet=wallet(true);const {container}=render(<GroupHeaderAccount locale='ko' languageHref='/'/>);
+ const trigger=screen.getByRole('button',{name:'계정 메뉴'});
+ expect(trigger).toHaveAttribute('data-account-trigger','avatar');
+ expect(container.querySelectorAll('button').length).toBe(1);
+ open();
+ expect(await screen.findByRole('menuitem',{name:/언어 설정/})).toHaveTextContent('한국어');
+ expect(screen.queryByRole('menuitem',{name:'알림'})).toBeNull();
+ expect(screen.getAllByRole('menuitem').length).toBe(6);
+});

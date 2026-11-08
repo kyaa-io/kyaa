@@ -8,6 +8,7 @@ import { creatorSlugFromHomePath } from "@/features/creator/domain/creator-navig
 import { useGroupsRelease } from "@/features/groups/ui/groups-release";
 import { GroupHeaderAccount, GroupHeaderPoints } from "@/features/groups/ui/group-header-account";
 import { SelectedBiasChip } from "@/features/selected-bias/ui/selected-bias-chip";
+import { useGroupRequest } from "@/features/groups/ui/use-group-resource";
 import { groupsCopy } from "@/features/groups/ui/copy";
 import { groupBenefitsCopy } from "@/features/groups/ui/group-benefits-copy";
 import { communityCopy } from "@/i18n/catalogs/features__community";
@@ -117,6 +118,21 @@ function mobileLabel(section: FanSection, locale: FanLocale, groupsEnabled = fal
   return "MY";
 }
 
+/** Feedback F: signed in, the right side is three things — one status capsule (tier · favorite · ♥N · P N, each cell its own destination),
+ * the bell, and the avatar that opens the account menu. The language moves into that menu from 768px; below 768px (no account menu) and
+ * signed out it stays in the header. */
+function GroupHeaderActions({ locale, languageHref, notificationsLabel, actions, actionsAreIdentity }: {
+  locale: FanLocale; languageHref: string; notificationsLabel: string; actions?: ReactNode; actionsAreIdentity?: boolean;
+}) {
+  const guest = useGroupRequest().ownerKey.startsWith("guest:");
+  return <>
+    {guest ? <SelectedBiasChip locale={locale} /> : <span className={styles.statusCapsule} data-header-status=""><SelectedBiasChip locale={locale} /><GroupHeaderPoints locale={locale} /></span>}
+    <span className={styles.headerLanguage} data-signed-in={guest ? undefined : ""}><FanLanguageSwitch locale={locale} href={languageHref} compact /></span>
+    <Link className={styles.utilityLink} href={`/notifications?locale=${locale}` as Route} aria-label={notificationsLabel} title={notificationsLabel}><Bell aria-hidden="true" /></Link>
+    <div className={styles.groupDesktopAccount}><GroupHeaderAccount locale={locale} actions={actions} actionsAreIdentity={actionsAreIdentity} languageHref={languageHref} /></div>
+  </>;
+}
+
 export function FanAppHeader({
   locale,
   actions,
@@ -162,7 +178,7 @@ export function FanAppHeader({
         items={items}
       />
       <div className={styles.actions}>
-        {groupsEnabled?<><SelectedBiasChip locale={locale}/><GroupHeaderPoints locale={locale}/><FanLanguageSwitch locale={locale} href={languageHref} compact/><Link className={styles.utilityLink} href={`/notifications?locale=${locale}` as Route} aria-label={notificationsLabel} title={notificationsLabel}><Bell aria-hidden="true"/></Link><div className={styles.groupDesktopAccount}><GroupHeaderAccount locale={locale} actions={actions} actionsAreIdentity={actionsAreIdentity} languageHref={languageHref}/></div></>:<>{actions}{pathname!=="/notifications"&&<Link className={styles.utilityLink} href={`/notifications?locale=${locale}` as Route} aria-label={notificationsLabel} title={notificationsLabel}><Bell aria-hidden="true"/></Link>}<FanLanguageSwitch locale={locale} href={languageHref}/></>}
+        {groupsEnabled?<GroupHeaderActions locale={locale} languageHref={languageHref} notificationsLabel={notificationsLabel} actions={actions} actionsAreIdentity={actionsAreIdentity}/>:<>{actions}{pathname!=="/notifications"&&<Link className={styles.utilityLink} href={`/notifications?locale=${locale}` as Route} aria-label={notificationsLabel} title={notificationsLabel}><Bell aria-hidden="true"/></Link>}<FanLanguageSwitch locale={locale} href={languageHref}/></>}
       </div>
     </FanHeader>
   );
