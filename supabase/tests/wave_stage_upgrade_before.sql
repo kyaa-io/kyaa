@@ -13,7 +13,7 @@ begin
    insert into public.celebrities select * from jsonb_populate_record(null::public.celebrities,template||jsonb_build_object('id',creator,'slug',c.slug,'status','published','archived_at',null));
    insert into public.celebrity_localizations(celebrity_id,locale,name,summary,image_alt) values(creator,'ko',c.slug,'fixture','fixture'),(creator,'en',c.slug,'fixture','fixture');
   end if;
-  select to_jsonb(x) into template from public.live_events x limit 1;
+  select to_jsonb(x) into template from public.live_events x where x.live_type='general' order by x.created_at,x.id limit 1;
   insert into public.live_events select * from jsonb_populate_record(null::public.live_events,template||jsonb_build_object('id',c.live,'celebrity_id',creator,'slug',c.slug||'-kyaa-wave-20261022','publication_status','published','published_at',statement_timestamp(),'archived_at',null,'starts_at',statement_timestamp()+interval '1 day','ends_at',statement_timestamp()+interval '2 days','reservation_opens_at',statement_timestamp()-interval '1 day','reservation_closes_at',statement_timestamp()+interval '1 day'));
   insert into public.live_event_localizations select (jsonb_populate_record(null::public.live_event_localizations,to_jsonb(x)||jsonb_build_object('live_event_id',c.live))).* from public.live_event_localizations x where live_event_id=(select live_event_id from public.live_event_localizations limit 1);
   select to_jsonb(x) into template from public.benefits x limit 1;

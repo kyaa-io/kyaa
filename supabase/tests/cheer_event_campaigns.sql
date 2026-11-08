@@ -24,7 +24,7 @@ begin
  (fan2,'did:privy:cheer-fan2','cheer-fan2@example.test','active');
  insert into public.admin_allowlist(id,email,role,active) values(admin_id,'cheer-admin@example.test','admin',true);
  select c.id,c.slug into creator,creator_slug from public.celebrities c join public.celebrity_localizations l on l.celebrity_id=c.id and l.locale='ko' where c.status='published' and c.archived_at is null limit 1;
- select to_jsonb(l) into record_template from public.live_events l limit 1;
+ select to_jsonb(l) into record_template from public.live_events l where l.live_type='general' order by l.created_at,l.id limit 1;
  insert into public.live_events select * from jsonb_populate_record(null::public.live_events,record_template||jsonb_build_object(
  'id',live_id,'celebrity_id',creator,'slug','cheer-test-live','publication_status','published','published_at',clock_timestamp(),'archived_at',null,
  'starts_at',statement_timestamp()+interval '1 day','ends_at',statement_timestamp()+interval '2 days',

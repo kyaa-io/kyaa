@@ -12,7 +12,7 @@ begin
  ('ce000000-0000-4000-8000-000000000003','did:privy:cheer-lock-fan2','cheer-lock-fan2@example.test','active');
  insert into public.admin_allowlist(id,email,role,active) values('ce000000-0000-4000-8000-000000000004','cheer-lock-admin@example.test','admin',true);
  select c.id into creator from public.celebrities c join public.celebrity_localizations l on l.celebrity_id=c.id and l.locale='ko' where c.status='published' and c.archived_at is null order by c.id limit 1;
- select to_jsonb(l) into template from public.live_events l limit 1;
+ select to_jsonb(l) into template from public.live_events l where l.live_type='general' order by l.created_at,l.id limit 1;
  insert into public.live_events select * from jsonb_populate_record(null::public.live_events,template||jsonb_build_object(
  'id',live_id,'celebrity_id',creator,'slug','cheer-lock-live','publication_status','published','published_at',statement_timestamp(),'archived_at',null,
  'starts_at',statement_timestamp()+interval '1 day','ends_at',statement_timestamp()+interval '2 days',
