@@ -131,17 +131,21 @@ export async function recordClientProductEvent(
   if (!response.ok) throw new Error("Product event was not recorded");
 }
 
+// 같은 멱등 키의 기록이 진행 중이면(효과가 연달아 다시 실행된 경우) 그 결과를 같이 기다린다. 서버도 같은 키를 한 번만 저장한다.
+const recordsInFlight = new Map<string, Promise<boolean>>();
+
 export async function recordProductEventV1(
   input: Parameters<typeof recordClientProductEvent>[0],
   accessToken?: string | null,
 ): Promise<boolean> {
   if (navigator.userAgent.toLowerCase().includes("jsdom")) return true;
-  try {
-    await recordClientProductEvent(input, accessToken);
-    return true;
-  } catch {
-    return false;
-  }
+  const flightKey = `${accessToken ? "member" : "anonymous"}:${input.idempotencyKey}`;
+  const pending = recordsInFlight.get(flightKey);
+  if (pending) return pending;
+  const record = recordClientProductEvent(input, accessToken).then(() => true, () => false)
+    .finally(() => { recordsInFlight.delete(flightKey); });
+  recordsInFlight.set(flightKey, record);
+  return record;
 }
 
 export async function pageViewIdempotencyKey(
