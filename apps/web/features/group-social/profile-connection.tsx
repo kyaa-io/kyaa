@@ -10,7 +10,7 @@ import { WaveFriendScanner } from '@/features/fanpage/ui/wave-friend-scanner';
 import { useGroupRequest, useGroupResource } from '@/features/groups/ui/use-group-resource';
 import { groupInvitationCopy } from '@/features/groups/ui/group-invitation-copy';
 import {ProfileCameraAccessState} from './profile-camera-access';
-import { profileConnectionCopy,profileConnectionDetailCopy } from './profile-copy';
+import { profileConnectionCopy,profileConnectionDetailCopy,profileUnreachableCopy } from './profile-copy';
 import { parseSocialProfileLink, parseSocialLinkedProfile, socialFriendToken } from './profile-link';
 import styles from './profile-connection.module.css';
 export type ProfileConnectionView='profile'|'scan'|'peer';
@@ -40,6 +40,7 @@ function LinkedProfile({locale,token,onFriendChanged,onClose}:{locale:AppLocale;
  const t=profileConnectionCopy(locale),details=profileConnectionDetailCopy(locale),c=waveFriendsCopy(locale),valid=z.uuid().safeParse(token).success,r=useGroupResource(valid?`/api/me/social/profile-links/${token}?locale=${locale==='ko'?'ko':'en'}`:null,parseSocialLinkedProfile),[pending,setPending]=useState(false),[failed,setFailed]=useState(false),[limited,setLimited]=useState(false),[sent,setSent]=useState(false),attempt=useRef<string|null>(null),active=useRef(true);
  useEffect(()=>{active.current=true;return()=>{active.current=false;};},[]);
  async function requestFriend(){if(pending||sent||!r.data||r.data.isSelf)return;const incoming=r.data.relationship.status==='incoming'&&Boolean(r.data.relationship.friendshipId);if(!incoming&&(!r.data.capabilities.canRequestFriend||r.data.relationship.status!=='none'))return;attempt.current??=crypto.randomUUID();setPending(true);setFailed(false);try{await r.request(incoming?`/api/me/social/friends/${r.data.relationship.friendshipId}`:'/api/me/social/friends',{method:incoming?'PATCH':'POST',body:JSON.stringify({...incoming?{action:'accept'}:{profileId:r.data.profile.id},requestId:attempt.current})});if(active.current){setSent(true);onFriendChanged?.();}}catch(error){if(active.current){setFailed(true);setLimited((error as {status?:number}).status===429);}}finally{if(active.current)setPending(false);}}
+ if(valid&&r.failure?.status===404)return <div role='alert'><p>{profileUnreachableCopy(locale)}</p></div>;
  if(!valid||r.error)return <div role='alert'><p>{c.invalidQr}</p>{valid&&<FanAction onClick={r.retry}>{c.retry}</FanAction>}</div>;
  if(!r.data)return <p role='status'>{c.loading}</p>;
  const d=r.data;

@@ -19,3 +19,19 @@ export function profileConnectionCopy(locale:AppLocale){return {...Object.fromEn
 
 const connectionDetail:Record<AppLocale,readonly[string,string]>={ko:['공개한 최애','친구 목록'],en:['Shared favorite','Friends list'],ja:['公開している推し','友だち一覧'],'zh-Hans':['公开的最爱','好友列表'],'zh-Hant':['公開的最愛','好友列表'],es:['Favorito público','Lista de amigos'],id:['Favorit publik','Daftar teman'],vi:['Yêu thích công khai','Danh sách bạn bè'],th:['รายการโปรดที่เปิดเผย','รายชื่อเพื่อน'],pt:['Favorito público','Lista de amigos'],fr:['Favori partagé','Liste d’amis'],ru:['Открытый фаворит','Список друзей']};
 export const profileConnectionDetailCopy=(locale:AppLocale)=>connectionDetail[locale];
+/** 404 from the profile link: an expired link, or no shared favorite whose Passport the viewer holds (resolve_social_profile_link returns null for both). */
+const profileUnreachable:Record<AppLocale,string>={
+ ko:'프로필을 열 수 없어요. 상대가 공개한 최애 중 내가 패스포트를 가진 크리에이터가 없거나, QR이 만료됐어요.',
+ en:'This profile can’t be opened. The other person has no shared favorite that you hold a Passport for, or the QR code has expired.',
+ ja:'プロフィールを開けません。相手が公開している推しの中にあなたがパスポートを持つクリエイターがいないか、QRの有効期限が切れています。',
+ 'zh-Hans':'无法打开该个人资料。对方公开的最爱中没有你持有护照的创作者，或二维码已过期。',
+ 'zh-Hant':'無法開啟該個人檔案。對方公開的最愛中沒有您持有護照的創作者，或 QR 碼已過期。',
+ es:'No se puede abrir este perfil. La otra persona no comparte ningún favorito del que tengas pasaporte, o el QR ha caducado.',
+ id:'Profil ini tidak bisa dibuka. Tidak ada favorit publik dia yang paspornya Anda miliki, atau QR sudah kedaluwarsa.',
+ vi:'Không thể mở hồ sơ này. Người kia không công khai người yêu thích nào mà bạn có hộ chiếu, hoặc mã QR đã hết hạn.',
+ th:'เปิดโปรไฟล์นี้ไม่ได้ อีกฝ่ายไม่ได้เปิดเผยรายการโปรดที่คุณมีพาสปอร์ต หรือ QR หมดอายุแล้ว',
+ pt:'Não foi possível abrir este perfil. A outra pessoa não compartilha nenhum favorito de que você tenha passaporte, ou o QR expirou.',
+ fr:'Impossible d’ouvrir ce profil. Cette personne ne partage aucun favori dont vous avez le passeport, ou le QR a expiré.',
+ ru:'Не удалось открыть профиль. У этого пользователя нет открытого фаворита, на которого у вас есть паспорт, либо QR истёк.'
+};
+export const profileUnreachableCopy=(locale:AppLocale)=>profileUnreachable[locale];
