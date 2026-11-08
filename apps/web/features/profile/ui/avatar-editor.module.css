@@ -37,7 +37,7 @@
 .cropViewport { position: relative; width: min(100%, 280px); aspect-ratio: 1; overflow: hidden; margin: 16px auto 0; border-radius: 50%; background: var(--color-line-subtle); cursor: grab; touch-action: none; user-select: none; }
 .cropViewport:active { cursor: grabbing; }
 .cropViewport img { position: absolute; max-width: none; object-fit: fill; pointer-events: none; }
-.zoomControl { min-height: 44px; display: grid; grid-template-columns: auto minmax(0, 1fr) 44px; align-items: center; gap: 10px; margin-top: 14px; font-size: 12px; font-weight: 750; }
+.zoomControl { min-height: 44px; display: grid; grid-template-columns: auto minmax(0, 1fr) 44px; align-items: center; gap: 10px; margin-top: 14px; font-size: 12px; font-weight: 700; }
 .zoomControl input { width: 100%; min-height: 44px; accent-color: var(--color-accent-ink); }
 .zoomControl output { color: var(--color-muted); font-variant-numeric: tabular-nums; text-align: right; }
 .dialog > footer { min-height: 52px; display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-top: 24px; padding-top: 18px; border-top: 1px solid var(--color-line-subtle); }

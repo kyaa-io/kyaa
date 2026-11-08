@@ -5,7 +5,7 @@
 .header{display:flex;justify-content:space-between;align-items:center;gap:12px;max-width:1280px;min-height:76px;margin:auto;padding:12px 32px;border-bottom:1px solid color-mix(in srgb, var(--color-accent-ink) 19%, transparent)}
 .deadline{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:4px 16px;max-width:1216px;margin:24px 32px 0;padding:16px 20px;border:1px solid color-mix(in srgb, var(--color-accent-ink) 19%, transparent);border-radius:8px;background:#efe3d3;font-size:16px;line-height:1.5;word-break:keep-all;overflow-wrap:anywhere}
 .deadline>span{font-weight:700}
-.deadline strong{font-weight:750}
+.deadline strong{font-weight:700}
 @media(min-width:1280px){.deadline{margin-inline:auto}}
 @media(max-width:900px){.deadline{margin-inline:24px}}
 @media(max-width:480px){.deadline{margin:20px 20px 0;padding:14px 16px}}
@@ -21,7 +21,7 @@
 .invitationTop{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
 .title{margin:0;font-size:clamp(56px,6vw,86px);font-weight:400;line-height:1.1;letter-spacing:-.055em}
 .title span{white-space:nowrap}
-.headline{margin:24px 0 12px;font-size:24px;font-weight:750;line-height:1.45;letter-spacing:-.035em;white-space:pre-line;text-wrap:balance}
+.headline{margin:24px 0 12px;font-size:24px;font-weight:700;line-height:1.45;letter-spacing:-.035em;white-space:pre-line;text-wrap:balance}
 .introduction{margin:0;color:var(--event-muted);font-size:16px;line-height:1.7;white-space:pre-line;text-wrap:pretty}
 .artwork{margin:16px 0 0;border:1px solid color-mix(in srgb, var(--color-accent-ink) 21%, transparent);background:#d9cdb8}
 .posterLink{display:block;width:100%}
@@ -33,7 +33,7 @@
 .seal{display:flex;flex-direction:column;align-items:center;justify-content:center;flex:none;width:94px;height:94px;border:1px solid currentColor;border-radius:50%;outline:1px solid color-mix(in srgb, var(--color-accent-ink) 40%, transparent);outline-offset:-6px;transform:rotate(-12deg);font-family:Georgia,"Times New Roman",serif;font-size:10px;letter-spacing:.04em;line-height:1.15}
 .seal b{font-size:33px;line-height:1}
 .schedule{min-width:0;padding:0}
-.schedule h2,.venue h2{margin:0;font-size:24px;line-height:1.5;font-weight:750}
+.schedule h2,.venue h2{margin:0;font-size:24px;line-height:1.5;font-weight:700}
 .schedule dl{margin:16px 0 0}
 .schedule dl>div{display:flex;justify-content:space-between;align-items:baseline;gap:16px;padding:6px 0}
 .schedule dt{font-size:16px;color:var(--event-muted)}
@@ -54,7 +54,7 @@
 .securityNotice a svg{flex:none}
 .scheduleNote{margin:14px 0 0;color:var(--event-muted);font-size:14px;line-height:1.6}
 .arrival{grid-column:1/-1;min-width:0;border-top:1px solid color-mix(in srgb, var(--color-accent-ink) 19%, transparent);border-bottom:1px solid color-mix(in srgb, var(--color-accent-ink) 19%, transparent)}
-.arrival h2{margin:0;font-size:24px;font-weight:750;line-height:1.5}
+.arrival h2{margin:0;font-size:24px;font-weight:700;line-height:1.5}
 .arrival p{margin:12px 0 0;font-size:16px;line-height:1.65;color:var(--event-muted)}
 .arrivalRoute{display:grid;gap:10px;margin:20px 0;padding:0;list-style:none;counter-reset:arrival}
 .arrivalRoute li{display:flex;align-items:baseline;gap:12px;font-size:16px;font-weight:700;line-height:1.6;counter-increment:arrival}
@@ -73,14 +73,14 @@
 .venueName span{white-space:nowrap}
 .accessNotes{margin-top:16px;padding-left:12px;border-left:4px solid var(--event-ink)}
 .venue .accessNotes p{margin:4px 0 0;font-size:16px;line-height:1.65}
-.venue .accessNotes strong{color:var(--event-ink);font-weight:750}
+.venue .accessNotes strong{color:var(--event-ink);font-weight:700}
 .venue .venueNote{margin-top:12px;font-size:13px}
 .registration{align-self:start;min-width:0;padding:32px;border:1px solid color-mix(in srgb, var(--color-accent-ink) 20%, transparent);border-radius:16px;background:#fffaf2;box-shadow:0 8px 28px color-mix(in srgb, var(--color-accent-ink) 3%, transparent);scroll-margin-top:24px}
 .formHeading{padding-bottom:24px;border-bottom:1px solid color-mix(in srgb, var(--color-accent-ink) 13%, transparent)}
-.formHeading h2{margin:8px 0;font-size:24px;font-weight:750;letter-spacing:-.03em}
+.formHeading h2{margin:8px 0;font-size:24px;font-weight:700;letter-spacing:-.03em}
 .formHeading>p:last-child{margin:0;font-size:16px;line-height:1.6;color:var(--event-muted);text-wrap:pretty}
 .parkingNotice{margin:20px 0;padding:16px;border:1px solid color-mix(in srgb, var(--color-accent-ink) 25%, transparent);border-left:4px solid var(--event-ink);border-radius:8px;background:var(--event-paper);word-break:keep-all;overflow-wrap:anywhere}
-.parkingNotice h3{margin:0;font-size:20px;font-weight:750;line-height:1.5}
+.parkingNotice h3{margin:0;font-size:20px;font-weight:700;line-height:1.5}
 .parkingNotice p{margin:8px 0 0;font-size:16px;line-height:1.65}
 .required{margin:18px 0;font-size:13px;color:var(--event-muted)}
 .fields{display:grid;gap:20px;min-width:0;margin:0;padding:0;border:0}
@@ -120,7 +120,7 @@
 .privacyDialog{--event-ink:var(--color-accent-ink);--event-muted:var(--color-accent);display:flex;flex-direction:column;width:min(100%,560px);max-height:calc(100dvh - 48px - env(safe-area-inset-top) - env(safe-area-inset-bottom));border:1px solid #bbaa97;border-radius:16px;background:#fffaf2;color:var(--event-ink);font-family:inherit;box-shadow:0 20px 60px color-mix(in srgb, var(--color-ink) 19%, transparent);overflow:hidden}
 .privacyBackdrop [data-overlay-content].privacyDialog{max-height:calc(100dvh - 48px - env(safe-area-inset-top) - env(safe-area-inset-bottom))}
 .privacyDialogHeading{display:flex;align-items:center;justify-content:space-between;gap:12px;flex:none;padding:16px 16px 16px 24px;border-bottom:1px solid color-mix(in srgb, var(--color-accent-ink) 13%, transparent)}
-.privacyDialogHeading h2{margin:0;min-width:0;font-size:20px;font-weight:750;line-height:1.5;word-break:keep-all;overflow-wrap:anywhere}
+.privacyDialogHeading h2{margin:0;min-width:0;font-size:20px;font-weight:700;line-height:1.5;word-break:keep-all;overflow-wrap:anywhere}
 .privacyDialogHeading button{display:grid;place-items:center;flex:none;width:44px;height:44px;padding:0;border:0;border-radius:8px;background:transparent;color:var(--event-ink);cursor:pointer}
 .privacyDialog :is(button,a):focus-visible{outline:3px solid var(--color-ink);outline-offset:3px}
 .submit{margin-top:20px;min-height:54px!important;border:1px solid var(--event-ink)!important;border-radius:8px!important;background:var(--event-ink)!important;color:#fffaf2!important;font-size:16px!important}
@@ -178,11 +178,11 @@
 @media(max-width:900px){.eventDetails{grid-template-columns:1fr;gap:32px}.eventDetails .venue{padding-top:32px;border-top:1px solid color-mix(in srgb, var(--color-accent-ink) 19%, transparent)}.arrivalBody{grid-template-columns:1fr;gap:24px}.headerRsvp{margin-left:auto}}
 @media(max-width:480px){.arrivalDisclosure>summary{align-items:flex-start;gap:12px}.disclosureAction{font-size:13px;max-width:110px;line-height:1.6}.arrivalSummary{font-size:14px}.program ol{grid-template-columns:1fr}.dateRow{padding:20px 0 0}}
 
-.securityNotice strong,.privacyCopy strong{font-weight:750}
+.securityNotice strong,.privacyCopy strong{font-weight:700}
 
 .eventSummary{display:grid;gap:6px;margin-top:8px;padding-bottom:16px;border-bottom:1px solid color-mix(in srgb, var(--color-accent-ink) 19%, transparent);color:var(--event-ink);font-size:16px;line-height:1.6;font-weight:700;word-break:keep-all}
 .eventSummary p{margin:0}
-.eventSummary .parkingSummary{margin-top:8px;padding-left:10px;border-left:4px solid var(--event-ink);font-size:16px;font-weight:750}
+.eventSummary .parkingSummary{margin-top:8px;padding-left:10px;border-left:4px solid var(--event-ink);font-size:16px;font-weight:700}
 .privacyCopy ul{list-style:disc;margin:0 0 20px;padding-left:22px}
 .privacyCopy li{padding-left:2px;margin-bottom:12px;font-size:16px;line-height:1.65;word-break:keep-all;overflow-wrap:anywhere}
 .privacyCopy li:last-child{margin-bottom:0}

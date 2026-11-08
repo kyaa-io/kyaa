@@ -75,7 +75,7 @@
 .eyebrow {
   color: var(--fanmeeting-pink);
   font-size: 12px;
-  font-weight: 750;
+  font-weight: 700;
   letter-spacing: 1.5px;
   line-height: 1.4;
 }
@@ -270,7 +270,7 @@
 .sectionHeading h2 {
   font-size: 40px;
   line-height: 1.25;
-  font-weight: 750;
+  font-weight: 700;
   letter-spacing: -0.8px;
 }
 .partnerGrid,
@@ -305,7 +305,7 @@
 }
 .partnerCard h3 {
   font-size: 26px;
-  font-weight: 750;
+  font-weight: 700;
   line-height: 1.4;
 }
 .partnerCard ul {
@@ -377,7 +377,7 @@
 .passportBand h3 {
   font-size: 28px;
   line-height: 1.4;
-  font-weight: 750;
+  font-weight: 700;
   margin-bottom: 10px;
 }
 .passportBand p,
@@ -421,13 +421,13 @@
 .stepNumber {
   font-size: 36px;
   line-height: 1.4;
-  font-weight: 750;
+  font-weight: 700;
   color: var(--color-accent);
 }
 .processGrid h3 {
   font-size: 23px;
   line-height: 1.4;
-  font-weight: 750;
+  font-weight: 700;
 }
 .faq {
   display: flex;
@@ -462,7 +462,7 @@
 }
 .inquiry h2 {
   font-size: 42px;
-  font-weight: 750;
+  font-weight: 700;
   line-height: 1.2;
 }
 .email {
@@ -473,7 +473,7 @@
   font-family: inherit;
   font-size: 32px;
   line-height: 1.4;
-  font-weight: 750;
+  font-weight: 700;
   color: var(--fanmeeting-ink);
   overflow-wrap: anywhere;
   cursor: pointer;

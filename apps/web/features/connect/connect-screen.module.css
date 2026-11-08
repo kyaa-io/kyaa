@@ -12,7 +12,7 @@
 .skip { min-height:44px; padding:0 8px; border:0; background:transparent; display:flex; align-items:center; gap:5px; color:var(--connect-pink); font-size:13px !important; font-weight:700 !important; }
 .languages { display:flex; }
 .languages button { width:44px; height:44px; border:0; border-radius:10px; background:transparent; color:var(--color-muted); font-size:12px !important; font-weight:700 !important; }
-.languages button[aria-pressed=true] { color:var(--connect-ink); font-weight:750 !important; }
+.languages button[aria-pressed=true] { color:var(--connect-ink); font-weight:700 !important; }
 .content { max-width:440px; margin:auto; padding:12px 24px 32px; display:grid; gap:16px; }
 .intro { display:block; max-width:none; padding:0; }
 .hub { grid-template-areas:'copy' 'passport' 'links' 'replay' 'credit'; padding-top:10px; }
@@ -63,7 +63,7 @@
 .sheet { width:100%; max-width:540px; max-height:90svh; overflow-y:auto; overscroll-behavior:contain; background:var(--connect-paper); border-radius:24px 24px 0 0; padding:12px 24px calc(24px + env(safe-area-inset-bottom)); }
 .handle { width:32px; height:4px; border-radius:4px; background:var(--color-accent-line); margin:0 auto 16px; }
 .sheetHeader { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:14px; }
-.sheetHeader h2 { margin:0; font-size:22px; line-height:1.35; letter-spacing:-.5px; font-weight:750; }
+.sheetHeader h2 { margin:0; font-size:22px; line-height:1.35; letter-spacing:-.5px; font-weight:700; }
 .sheetHeader button { width:44px; height:44px; display:grid; flex:none; place-items:center; padding:0; margin-right:-8px; border:0; background:transparent; color:var(--color-muted); border-radius:12px; }
 .email { min-height:74px; padding:14px 16px; display:flex; align-items:center; gap:16px; border-radius:16px; background:var(--color-accent-soft); }
 .email>svg { flex:none; color:var(--connect-pink); }

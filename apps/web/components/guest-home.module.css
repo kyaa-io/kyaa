@@ -72,7 +72,7 @@
 .liveStatus svg, .heroCountdown svg { width: 16px; height: 16px; }
 .heroDate { overflow: hidden; color: color-mix(in srgb, var(--color-surface) 84%, transparent); font-size: 14px; font-weight: 400; text-overflow: ellipsis; white-space: nowrap; }
 .heroContent h2 { max-width: 15ch; margin: 0; font-size: 32px; font-weight: 800; letter-spacing: -.04em; line-height: 1.02; text-wrap: balance; }
-.heroCountdown { display: flex; align-items: center; gap: 8px; margin-top: 12px; font: 750 14px ui-monospace, SFMono-Regular, Menlo, monospace; font-variant-numeric: tabular-nums; letter-spacing: -.02em; }
+.heroCountdown { display: flex; align-items: center; gap: 8px; margin-top: 12px; font: 700 14px ui-monospace, SFMono-Regular, Menlo, monospace; font-variant-numeric: tabular-nums; letter-spacing: -.02em; }
 .primaryButton { display: flex; width: min(320px, 100%); min-height: 48px; align-items: center; justify-content: space-between; margin-top: 20px; padding-inline: 20px; border-radius: 999rem; background: var(--spectrum); box-shadow: 0 5px 8px color-mix(in srgb, var(--color-ink) 22%, transparent); color: var(--color-surface) !important; font-size: 15px; font-weight: 800; text-shadow: none; transition: background 160ms cubic-bezier(.2, 0, 0, 1); }
 .primaryButton span { display: inline-flex; align-items: center; gap: 8px; }
 .primaryButton svg { width: 16px; height: 16px; }
@@ -107,7 +107,7 @@
 .favoriteFilterState :is(strong,p) { margin: 0; }
 .favoriteFilterState strong { color: var(--ink); font-size: 18px; }
 .favoriteFilterState p { max-width: 34ch; font-size: 14px; line-height: 1.6; }
-.favoriteFilterState :is(a,button) { display: inline-flex; min-height: 44px; align-items: center; padding: 0 12px; border: 0; background: transparent; color: var(--ink); font: inherit; font-size: 14px; font-weight: 750; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+.favoriteFilterState :is(a,button) { display: inline-flex; min-height: 44px; align-items: center; padding: 0 12px; border: 0; background: transparent; color: var(--ink); font: inherit; font-size: 14px; font-weight: 700; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
 .celebrityRail { display: grid; grid-auto-columns: var(--creator-card-size, min(82vw, 288px, 100%)); grid-auto-flow: column; gap: 16px; overflow-x: auto; padding-bottom: 0; scroll-snap-type: inline mandatory; scrollbar-width: none; }
 .celebrityRail::-webkit-scrollbar { display: none; }
 .celebrityCard { min-width: 0; scroll-snap-align: start; container-type: inline-size; }
@@ -153,7 +153,7 @@
 .livePagination button { display: grid; width: 44px; height: 44px; padding: 0; place-items: center; border: 0; border-radius: 11px; background: transparent; color: var(--ink); cursor: pointer; }
 .livePagination button svg { width: 18px; height: 18px; }
 .livePagination button:disabled { color: var(--muted); cursor: default; opacity: .35; }
-.livePagination span { min-width: 64px; color: var(--muted); font-size: 13px; font-weight: 750; font-variant-numeric: tabular-nums; text-align: center; }
+.livePagination span { min-width: 64px; color: var(--muted); font-size: 13px; font-weight: 700; font-variant-numeric: tabular-nums; text-align: center; }
 
 .contextPanel { display: none; min-width: 0; }
 .guestCard { border: 1px solid var(--card-line); border-radius: 12px; background: var(--canvas); box-shadow: var(--card-shadow); }
@@ -187,7 +187,7 @@
 .summarySection + .summarySection { border-top: 1px solid var(--card-line); }
 .summarySectionHeader { display: flex; min-height: 28px; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
 .summarySectionHeader > span { font-size: 14px; font-weight: 700; }
-.summarySectionHeader > small { display: grid; min-width: 30px; height: 24px; padding-inline: 8px; place-items: center; border-radius: 999rem; background: var(--surface-soft); color: var(--muted); font-size: 11px; font-weight: 750; }
+.summarySectionHeader > small { display: grid; min-width: 30px; height: 24px; padding-inline: 8px; place-items: center; border-radius: 999rem; background: var(--surface-soft); color: var(--muted); font-size: 11px; font-weight: 700; }
 .passportCarousel { display: grid; min-width: 0; }
 .ownedPassportPreview { position: relative; width: min(100%, 320px); margin: 14px auto 0; }
 .ownedPassportLink { display: block; width: 100%; border-radius: 12px; transition: transform 240ms cubic-bezier(.2,0,0,1); }
@@ -246,7 +246,7 @@
   overflow: hidden;
   margin: 0;
   font-size: 15px;
-  font-weight: 750;
+  font-weight: 700;
   line-height: 1.4;
   text-wrap: pretty;
   -webkit-box-orient: vertical;
@@ -270,7 +270,7 @@
   border: 1px solid var(--line);
   border-radius: 12px;
   font-size: 14px;
-  font-weight: 750;
+  font-weight: 700;
   transition: background-color 160ms cubic-bezier(.2,0,0,1);
 }
 .summaryOutlineAction svg { width: 16px; height: 16px; }
@@ -311,7 +311,7 @@
   color: var(--ink);
   font: inherit;
   font-size: 14px;
-  font-weight: 750;
+  font-weight: 700;
   cursor: pointer;
 }
 .stateSkeleton { width: 72%; height: 12px; border-radius: 999rem; background: var(--surface-soft); }

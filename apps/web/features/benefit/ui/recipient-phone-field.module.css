@@ -4,7 +4,7 @@
   gap: 8px;
   color: oklch(24% 0 0);
   font-size: 14px;
-  font-weight: 750;
+  font-weight: 700;
 }
 .field > label {
   display: flex;

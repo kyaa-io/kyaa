@@ -32,7 +32,7 @@
 .leaderboard td:last-child, .leaderboard th:last-child { text-align: end; font-variant-numeric: tabular-nums; }
 .leaderboard td:last-child { font-weight: 700; }
 .leaderboard tr[data-own] { background: var(--color-accent-soft); }
-.rank { display: inline-grid; position: relative; place-items: center; width: 32px; height: 32px; font-weight: 750; font-variant-numeric: tabular-nums; }
+.rank { display: inline-grid; position: relative; place-items: center; width: 32px; height: 32px; font-weight: 700; font-variant-numeric: tabular-nums; }
 .rank[data-medal] { border: 1px solid; border-radius: 50%; box-shadow: inset 0 0 0 3px color-mix(in srgb, var(--color-surface) 50%, transparent); }
 .rank[data-medal="1"] { color: #77500b; background: #ffe9a7; border-color: #c28b24; }
 .rank[data-medal="2"] { color: var(--color-accent-ink); background: var(--color-accent-soft); border-color: var(--color-accent); }

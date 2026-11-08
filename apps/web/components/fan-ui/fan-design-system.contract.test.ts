@@ -15,7 +15,7 @@ describe("fan design system ownership", () => {
   });
   it("uses only the 400·700·800 weights in CSS (design-sync-1 C5)", async () => {
     const { execSync } = await import("node:child_process");
-    const hits = execSync("git grep -nE '(font-weight: *|font: *)(850|650|600|550|500)([^0-9]|$)' -- '*.css' || true", { encoding: "utf8" });
+    const hits = execSync("git grep -nE '(font-weight: *|font: *)(1[0-9]{2}|[2356][0-9]{2}|4[1-9][0-9]|7[1-9][0-9]|8[1-9][0-9]|9[0-9]{2})([^0-9]|$)' -- '*.css' || true", { encoding: "utf8" });
     expect(hits).toBe("");
     for (const token of ["--fan-heading-weight: 800", "--fan-number-weight: 800", "--fan-tab-weight: 700", "--fan-action-weight: 700", "--fan-description-weight: 400", "--fan-aside-title-weight: var(--fan-item-title-weight)"]) expect(tokens).toContain(token);
   });

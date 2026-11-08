@@ -10,7 +10,7 @@
 }
 
 .locale { display: inline-flex; min-width: 88px; min-height: 44px; align-items: center; }
-.locale { justify-content: flex-end; color: var(--color-ink); font-size: 13px; font-weight: 750; text-decoration: none; }
+.locale { justify-content: flex-end; color: var(--color-ink); font-size: 13px; font-weight: 700; text-decoration: none; }
 
 .main { width: min(800px, calc(100% - 80px)); margin: 0 auto; padding: 28px 0 112px; }
 .back { display: inline-flex; min-height: 44px; align-items: center; gap: 8px; margin-bottom: 28px; color: var(--color-muted); font-size: 14px; font-weight: 700; text-decoration: none; }
@@ -66,7 +66,7 @@
 .stateIcon svg, .completeMark svg { width: 24px; }
 .state h1, .complete h1 { margin: 0; font-size: 26px; font-weight: 800; line-height: 1.2; letter-spacing: -.03em; text-wrap: balance; }
 .state p, .complete > p { max-width: 52ch; margin: 12px 0 0; color: var(--color-ink); font-size: 15px; line-height: 1.65; }
-.state > a { display: inline-flex; min-width: 200px; min-height: 48px; align-items: center; justify-content: center; margin-top: 20px; border: 1px solid var(--color-line); border-radius: 12px; background: var(--color-surface); color: var(--color-ink); font-weight: 750; text-decoration: none; cursor:pointer; }
+.state > a { display: inline-flex; min-width: 200px; min-height: 48px; align-items: center; justify-content: center; margin-top: 20px; border: 1px solid var(--color-line); border-radius: 12px; background: var(--color-surface); color: var(--color-ink); font-weight: 700; text-decoration: none; cursor:pointer; }
 .state > button { margin-top: 20px; }
 .stampArtwork { width: min(220px, 64%); margin: 20px auto 8px; filter: drop-shadow(0 8px 14px color-mix(in srgb, var(--color-ink) 7%, transparent)); }
 .rewards { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }

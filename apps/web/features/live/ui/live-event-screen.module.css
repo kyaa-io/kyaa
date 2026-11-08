@@ -23,7 +23,7 @@
   background: var(--color-ink);
   color: var(--color-surface);
   font-size: 14px;
-  font-weight: 750;
+  font-weight: 700;
   line-height: 44px;
   text-decoration: none;
   transform: translateY(calc(-100% - 16px));
@@ -163,7 +163,7 @@
 .schedule dt { display:flex; align-items:center; gap:var(--space-2); color:var(--color-muted); font-size:12px; line-height:1.5; }
 .schedule dt svg { width:16px; height:16px; flex:none; }
 .schedule dd { min-width:0; margin:0; font-size:14px; font-weight:700; line-height:1.6; overflow-wrap:anywhere; font-variant-numeric:tabular-nums; }
-.schedule .eventSchedule dd { font-size:20px; font-weight:750; line-height:1.5; }
+.schedule .eventSchedule dd { font-size:20px; font-weight:700; line-height:1.5; }
 .scheduleMeta { margin-top:var(--space-3); }
 .timeZone { margin:0; color:var(--color-muted); font-size:12px; line-height:1.5; }
 .reservationDetails { font-size:12px; color:var(--color-muted); }
@@ -346,7 +346,7 @@
   font-weight: 400;
 }
 .section .participationNote { margin-top:16px; color:var(--color-muted); font-size:13px; line-height:1.6; }
-.section .prizeName { margin-bottom:8px; color:var(--color-ink); font-size:18px; font-weight:750; }
+.section .prizeName { margin-bottom:8px; color:var(--color-ink); font-size:18px; font-weight:700; }
 
 .journey {
   display: grid;
@@ -449,7 +449,7 @@
 }
 .fanCodeForm label {
   font-size: 14px;
-  font-weight: 750;
+  font-weight: 700;
 }
 .fanCodeControl {
   display: grid;
@@ -467,7 +467,7 @@
   background: var(--color-surface);
   font: inherit;
   font-size: 16px;
-  font-weight: 750;
+  font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
@@ -790,7 +790,7 @@
   border-radius: 12px;
   background: var(--color-ink);
   color: var(--color-surface);
-  font-weight: 750;
+  font-weight: 700;
   text-decoration: none;
   cursor: pointer;
 }
@@ -948,7 +948,7 @@
 .collectible summary { display:flex; min-height:64px; align-items:center; justify-content:space-between; gap:12px; cursor:pointer; list-style:none; }
 .collectible summary::-webkit-details-marker { display:none; }
 .collectible summary:focus-visible { outline:3px solid var(--color-ink); outline-offset:3px; }
-.collectible h2 { margin:0; min-width:0; color:var(--color-ink); font-size:18px; font-weight:750; line-height:1.4; }
+.collectible h2 { margin:0; min-width:0; color:var(--color-ink); font-size:18px; font-weight:700; line-height:1.4; }
 .collectibleState { display:flex; flex:none; align-items:center; gap:6px; color:var(--color-muted); font-size:12px; }
 .collectibleState svg { width:16px; height:16px; flex:none; }
 .collectible details[open] .collectibleState svg:last-child { rotate:180deg; }

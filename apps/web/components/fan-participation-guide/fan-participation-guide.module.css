@@ -47,12 +47,12 @@
   font-size: 14px;
   font-weight: 700;
 }
-.navigation a:nth-child(3) { color: var(--color-ink); font-weight: 900; }
+.navigation a:nth-child(3) { color: var(--color-ink); font-weight: 800; }
 .navigation a:hover { background: var(--color-soft); }
 .main { display: flex; flex-direction: column; gap: 80px; padding-block: 40px 80px; }
 .hero { display: grid; grid-template-columns: minmax(0, 1fr) 580px; min-height: 560px; gap: 48px; align-items: center; }
 .heroCopy { display: flex; min-width: 0; flex-direction: column; align-items: flex-start; gap: 24px; }
-.eyebrow { color: var(--guide-pink); font-size: 12px; font-weight: 750; letter-spacing: .5px; line-height: 1.35; }
+.eyebrow { color: var(--guide-pink); font-size: 12px; font-weight: 700; letter-spacing: .5px; line-height: 1.35; }
 .heroCopy > .eyebrow { font-size: 13px; }
 .hero h1 { font-size: 56px; font-weight: 800; letter-spacing: -1.8px; line-height: 1.35; }
 .heroDescription { color: var(--color-muted); font-size: 19px; font-weight: 400; line-height: 1.35; white-space: pre-line; }
@@ -91,7 +91,7 @@
   list-style: none;
 }
 .stageNav li { display: flex; gap: 12px; align-items: center; color: var(--color-ink); font-size: 16px; font-weight: 700; line-height: 1.35; }
-.stageNav span { color: var(--guide-pink); font-size: 13px; font-weight: 750; }
+.stageNav span { color: var(--guide-pink); font-size: 13px; font-weight: 700; }
 .steps { display: flex; flex-direction: column; gap: 96px; scroll-margin-top: 24px; }
 .step { display: grid; grid-template-columns: 560px minmax(0, 1fr); gap: 80px; align-items: center; scroll-margin-top: 24px; }
 .visual { display: flex; width: 560px; min-height: 340px; align-items: center; justify-content: center; overflow: hidden; border-radius: 20px; background: var(--color-soft); }
@@ -118,7 +118,7 @@
 .stepActionRow { display: flex; flex-direction: column; align-items: flex-start; gap: 10px; }
 .history { display: grid; grid-template-columns: 40px minmax(0, 1fr) auto; gap: 32px; align-items: center; padding: 36px; border-radius: 20px; background: var(--color-soft); }
 .history > svg { width: 40px; height: 40px; color: var(--guide-pink); }
-.history h2 { margin-bottom: 8px; font-size: 24px; font-weight: 750; line-height: 1.35; }
+.history h2 { margin-bottom: 8px; font-size: 24px; font-weight: 700; line-height: 1.35; }
 .history p { color: var(--guide-muted); font-size: 16px; line-height: 1.45; }
 .faq { display: flex; flex-direction: column; gap: 24px; }
 .faq > h2 { font-size: 32px; font-weight: 800; line-height: 1.35; }

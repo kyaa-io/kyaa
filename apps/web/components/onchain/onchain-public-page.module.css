@@ -24,7 +24,7 @@
 .heroMeta { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px; margin-top: 28px; }
 .heroMeta p { margin: 0; font-size: 13px; font-weight: 700; }
 .unavailable { max-width: 64ch; color: var(--color-accent-ink); line-height: 1.5; }
-.download { display: inline-flex; min-height: 44px; align-items: center; padding: 0 16px; border: 1px solid var(--ink); border-radius: 999px; color: inherit; font-size: 13px; font-weight: 750; text-decoration: none; }
+.download { display: inline-flex; min-height: 44px; align-items: center; padding: 0 16px; border: 1px solid var(--ink); border-radius: 999px; color: inherit; font-size: 13px; font-weight: 700; text-decoration: none; }
 
 .content { display: grid; grid-template-columns: minmax(0, 1fr); gap: 0; }
 .section { min-width: 0; padding-block: 72px; border-bottom: 1px solid var(--line); }
@@ -49,7 +49,7 @@
 .actionTable tbody th span { margin-top: 4px; color: var(--muted); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 10px; font-weight: 700; }
 .actionTable code { font-weight: 800; }
 .countCell { font-weight: 800; font-variant-numeric: tabular-nums; }
-.status { display: inline-flex; min-height: 28px; align-items: center; padding: 4px 9px; border-radius: 999px; background: var(--soft); color: var(--muted); font-size: 11px; font-weight: 750; }
+.status { display: inline-flex; min-height: 28px; align-items: center; padding: 4px 9px; border-radius: 999px; background: var(--soft); color: var(--muted); font-size: 11px; font-weight: 700; }
 .status[data-tone="active"] { background: oklch(95% .05 150); color: var(--color-ink); }
 .status[data-tone="qa"] { background: oklch(95% .055 90); color: oklch(38% .1 70); }
 .status[data-tone="blocked"] { background: var(--color-accent-soft); color: var(--color-accent-ink); }
@@ -65,11 +65,11 @@
 .tags li { padding: 4px 8px; border-radius: 999px; background: var(--soft); color: var(--muted); font-size: 10px; font-weight: 800; }
 .evidenceDetails { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 24px; margin: 20px 0 0; }
 .evidenceDetails div { min-width: 0; }
-.evidenceDetails dt { margin-bottom: 4px; color: var(--muted); font-size: 10px; font-weight: 750; }
+.evidenceDetails dt { margin-bottom: 4px; color: var(--muted); font-size: 10px; font-weight: 700; }
 .evidenceDetails dd { margin: 0; overflow-wrap: anywhere; font-size: 12px; line-height: 1.5; font-variant-numeric: tabular-nums; }
 .evidenceDetails a, .evidenceLinks a, .directory a { color: inherit; text-decoration-thickness: 1px; text-underline-offset: 3px; }
 .evidenceLinks { display: flex; flex-wrap: wrap; gap: 8px 20px; margin-top: 20px; padding-top: 14px; border-top: 1px solid var(--line); }
-.evidenceLinks a { display: inline-flex; min-height: 44px; align-items: center; font-size: 12px; font-weight: 750; }
+.evidenceLinks a { display: inline-flex; min-height: 44px; align-items: center; font-size: 12px; font-weight: 700; }
 .empty { margin: 0; padding: 24px; background: var(--soft); color: var(--muted); font-size: 14px; line-height: 1.6; }
 .lifecycle { margin-top: 40px; padding-top: 32px; border-top: 1px solid var(--line); }
 .lifecycle h3 { margin: 0; font-size: 20px; }
@@ -79,7 +79,7 @@
 .lifecycleList li { display: grid; min-width: 0; grid-template-columns: minmax(120px, .45fr) minmax(0, 1.3fr) minmax(90px, .25fr); gap: 16px; align-items: center; padding: 14px 0; border-bottom: 1px solid var(--line); }
 .lifecycleList div { display: flex; align-items: center; gap: 8px; }
 .lifecycleList strong { font-size: 12px; }
-.lifecycleList div span { padding: 3px 7px; border-radius: 999px; background: var(--soft); color: var(--muted); font-size: 10px; font-weight: 750; }
+.lifecycleList div span { padding: 3px 7px; border-radius: 999px; background: var(--soft); color: var(--muted); font-size: 10px; font-weight: 700; }
 .lifecycleList > li > span { color: var(--muted); font-size: 11px; font-variant-numeric: tabular-nums; text-align: right; }
 .lifecycleList a { min-width: 0; overflow-wrap: anywhere; color: inherit; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 11px; line-height: 1.6; text-underline-offset: 3px; }
 

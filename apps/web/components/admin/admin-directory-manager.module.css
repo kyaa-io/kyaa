@@ -12,7 +12,7 @@
 .addPanel .emailField { flex: 1 1 320px; }
 .addPanel input, .addPanel select, .tableWrap select, .toolbar input { height: 44px; border: 1px solid var(--line); border-radius: 10px; background: var(--control); color: var(--ink); font: inherit; font-size: 14px; }
 .addPanel input, .addPanel select, .tableWrap select { padding: 0 12px; }
-.primaryButton { display: inline-flex; min-height: 44px; align-items: center; justify-content: center; gap: 8px; padding: 0 16px; border: 0; border-radius: 10px; background: var(--ink); color: var(--color-surface); cursor: pointer; font: inherit; font-size: 14px; font-weight: 750; }
+.primaryButton { display: inline-flex; min-height: 44px; align-items: center; justify-content: center; gap: 8px; padding: 0 16px; border: 0; border-radius: 10px; background: var(--ink); color: var(--color-surface); cursor: pointer; font: inherit; font-size: 14px; font-weight: 700; }
 .primaryButton svg { width: 17px; height: 17px; }
 .primaryButton:disabled { cursor: not-allowed; opacity: .45; }
 .toolbar { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 16px; padding: 16px; border-bottom: 1px solid var(--line); }
@@ -24,15 +24,15 @@
 .successMessage, .errorMessage { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 16px 16px 0; padding: 12px 14px; border-radius: 10px; font-size: 13px; font-weight: 700; }
 .successMessage { background: var(--color-soft); color: var(--success); }
 .errorMessage { background: var(--color-accent-soft); color: var(--error); }
-.errorMessage button { display: inline-flex; min-height: 40px; align-items: center; gap: 6px; padding: 0 10px; border: 1px solid color-mix(in srgb, var(--color-accent-ink) 18%, transparent); border-radius: 8px; background: var(--color-surface); color: inherit; cursor: pointer; font: inherit; font-weight: 750; }
+.errorMessage button { display: inline-flex; min-height: 40px; align-items: center; gap: 6px; padding: 0 10px; border: 1px solid color-mix(in srgb, var(--color-accent-ink) 18%, transparent); border-radius: 8px; background: var(--color-surface); color: inherit; cursor: pointer; font: inherit; font-weight: 700; }
 .errorMessage button svg { width: 15px; height: 15px; }
 .tableWrap { width: 100%; min-width: 0; overflow-x: auto; }
 .tableWrap table { width: 100%; min-width: 900px; border-collapse: collapse; font-size: 13px; }
-.tableWrap th { height: 44px; padding: 0 14px; border-bottom: 1px solid var(--line); background: var(--soft); color: var(--muted); font-size: 12px; font-weight: 750; text-align: left; white-space: nowrap; }
+.tableWrap th { height: 44px; padding: 0 14px; border-bottom: 1px solid var(--line); background: var(--soft); color: var(--muted); font-size: 12px; font-weight: 700; text-align: left; white-space: nowrap; }
 .tableWrap td { min-height: 64px; padding: 10px 14px; border-bottom: 1px solid var(--line); vertical-align: middle; }
 .tableWrap tr:last-child td { border-bottom: 0; }
 .tableWrap td:first-child { min-width: 220px; }
-.tableWrap strong { overflow-wrap: anywhere; font-weight: 720; }
+.tableWrap strong { overflow-wrap: anywhere; font-weight: 700; }
 .tableWrap small { display: block; max-width: 320px; margin-top: 5px; color: var(--muted); font-size: 11px; line-height: 1.45; }
 .tableWrap select { min-width: 116px; }
 .tableWrap time { color: var(--secondary-ink); font-variant-numeric: tabular-nums; white-space: nowrap; }
@@ -44,7 +44,7 @@
 .inactiveBadge { background: var(--soft); color: var(--muted); }
 .activeBadge i, .inactiveBadge i { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
 .rowActions { display: flex; gap: 8px; }
-.rowActions button, .stateMessage button, .confirmDialog button { min-height: 44px; padding: 0 12px; border: 1px solid var(--strong-line); border-radius: 9px; background: var(--color-surface); color: var(--ink); cursor: pointer; font: inherit; font-size: 12px; font-weight: 750; white-space: nowrap; }
+.rowActions button, .stateMessage button, .confirmDialog button { min-height: 44px; padding: 0 12px; border: 1px solid var(--strong-line); border-radius: 9px; background: var(--color-surface); color: var(--ink); cursor: pointer; font: inherit; font-size: 12px; font-weight: 700; white-space: nowrap; }
 .rowActions .revokeButton { border-color: color-mix(in srgb, var(--color-accent-ink) 20%, transparent); color: var(--error); }
 .rowActions button:disabled { cursor: not-allowed; opacity: .4; }
 .skeletonList { display: grid; gap: 1px; overflow: hidden; background: var(--line); }
@@ -76,7 +76,7 @@
   .tableWrap tbody { display: grid; gap: 12px; }
   .tableWrap tr { padding: 6px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--color-surface); }
   .tableWrap td { display: grid; min-height: 0; grid-template-columns: 88px minmax(0, 1fr); align-items: center; gap: 8px 12px; padding: 10px 0; border-bottom: 1px solid var(--line); }
-  .tableWrap td::before { content: attr(data-label); color: var(--muted); font-size: 11px; font-weight: 750; }
+  .tableWrap td::before { content: attr(data-label); color: var(--muted); font-size: 11px; font-weight: 700; }
   .tableWrap td:first-child { grid-template-columns: 88px minmax(0, 1fr); }
   .tableWrap td:first-child::before { grid-row: 1; }
   .tableWrap td:first-child strong { grid-column: 2; }

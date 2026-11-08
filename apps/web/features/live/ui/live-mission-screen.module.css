@@ -1,7 +1,7 @@
 .surface { color: var(--color-ink, var(--color-ink)); background: var(--color-surface); font-family:inherit; }
 .artSurface { min-height: 100dvh; background: var(--color-accent-soft); }
 .artSurface, .artSurface *, .artSurface *::before, .artSurface *::after { box-sizing: border-box; }
-.locale { display: inline-flex; min-width: 88px; min-height: 44px; align-items: center; justify-content: flex-end; color: inherit; font-size: 13px; font-weight: 750; text-decoration: none; }
+.locale { display: inline-flex; min-width: 88px; min-height: 44px; align-items: center; justify-content: flex-end; color: inherit; font-size: 13px; font-weight: 700; text-decoration: none; }
 .page { width: min(880px, calc(100% - 40px)); margin: 0 auto; padding: 28px 0 max(64px, env(safe-area-inset-bottom)); }
 .page header { margin-bottom: 28px; }
 .page h1 { margin: 4px 0; font-size: var(--fan-heading-size); font-weight: var(--fan-heading-weight); letter-spacing: var(--fan-heading-tracking); line-height: var(--fan-heading-leading); }

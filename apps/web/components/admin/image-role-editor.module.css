@@ -12,7 +12,7 @@
 .roleHeading small { display:block; margin-top:4px; color:#62636a; font-size:11px; }
 .roleHeading img { width:64px; height:48px; border-radius:8px; background:#eceef2; object-fit:contain; }
 .sourceActions { display:grid; gap:12px; }
-.uploadButton,.editor button { display:inline-flex; min-height:44px; box-sizing:border-box; align-items:center; justify-content:center; gap:7px; padding:0 13px; border:1px solid #c8c9cf; border-radius:10px; background:#fff; color:#17171a; cursor:pointer; font:inherit; font-size:13px; font-weight:750; }
+.uploadButton,.editor button { display:inline-flex; min-height:44px; box-sizing:border-box; align-items:center; justify-content:center; gap:7px; padding:0 13px; border:1px solid #c8c9cf; border-radius:10px; background:#fff; color:#17171a; cursor:pointer; font:inherit; font-size:13px; font-weight:700; }
 .uploadButton { justify-self:start; position:relative; }
 .uploadButton input { position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); clip-path:inset(50%); white-space:nowrap; }
 .uploadButton svg,.editor button svg { width:16px; }

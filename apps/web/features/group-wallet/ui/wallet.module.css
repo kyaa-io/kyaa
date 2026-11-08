@@ -5,7 +5,7 @@
 .passport h2 { margin: 0 0 12px; font-size: 24px; }
 .balances { grid-column: 1/-1; display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); margin: 0; padding: 24px 0; border-block: 1px solid var(--color-line-subtle); }
 .balances > div { padding-inline: 24px; }.balances > div + div { border-left: 1px solid var(--color-line-subtle); }
-.balances dt { display: flex; align-items: center; gap: 8px; font-size: 16px; flex-wrap: wrap; }.balances dd { font-size: 28px; font-weight: 750; margin: 8px 0 0; overflow-wrap: anywhere; }
+.balances dt { display: flex; align-items: center; gap: 8px; font-size: 16px; flex-wrap: wrap; }.balances dd { font-size: 28px; font-weight: 700; margin: 8px 0 0; overflow-wrap: anywhere; }
 .panel { padding: 24px; border: 1px solid var(--color-line-subtle); border-radius: 16px; min-width: 0; }
 .panel h2 { display: flex; align-items: center; gap: 8px; font-size: var(--fan-heading-size-wide); font-weight: var(--fan-heading-weight); line-height: var(--fan-heading-leading); margin: 0 0 16px; }.panel p { font-size: 16px; line-height: 1.6; }
 .panel fieldset { border: 0; padding: 0; margin: 0; min-width: 0; display: grid; gap: 16px; }.panel legend { position: absolute; width: 1px; height: 1px; clip-path: inset(50%); overflow: hidden; }

@@ -16,7 +16,7 @@
 .profileCopy>span { color:var(--color-muted); font-size:12px; font-weight:800; letter-spacing:.06em; }
 .profileCopy h1 { min-width:0; margin:var(--space-1) 0; overflow-wrap:anywhere; font-size:clamp(28px,5vw,40px); line-height:1.1; letter-spacing:-.04em; }
 .profileCopy p { margin:0; color:var(--color-muted); font-size:14px; line-height:1.5; }
-.tierBadge { display:flex; width:fit-content; min-height:32px; max-width:100%; align-items:center; gap:var(--space-2); padding-block:var(--space-1); color:var(--color-accent-ink); font-size:13px; font-weight:750; line-height:1.5; text-decoration:none; }
+.tierBadge { display:flex; width:fit-content; min-height:32px; max-width:100%; align-items:center; gap:var(--space-2); padding-block:var(--space-1); color:var(--color-accent-ink); font-size:13px; font-weight:700; line-height:1.5; text-decoration:none; }
 .tierBadge svg { width:20px; height:20px; flex-shrink:0; }
 .tierBadge span { overflow-wrap:anywhere; }
 .tierBadge[data-tier="Silver"] { color:var(--color-accent-ink); }
@@ -63,7 +63,7 @@
 .empty a { display:flex; min-height:var(--min-target); align-items:center; gap:var(--space-2); color:var(--color-ink); font-weight:800; white-space:nowrap; }
 .empty svg { width:17px; height:17px; }
 .history { margin-block-start:var(--space-3); border-top:1px solid var(--color-line-subtle); }
-.history summary { min-height:var(--min-target); padding:var(--space-3) var(--space-1); cursor:pointer; font-weight:750; }
+.history summary { min-height:var(--min-target); padding:var(--space-3) var(--space-1); cursor:pointer; font-weight:700; }
 .history a { display:flex; min-height:var(--min-target); align-items:center; justify-content:space-between; gap:var(--space-3); padding:var(--space-2) var(--space-1); font-size:14px; }
 .history a span { color:var(--color-muted); font-size:12px; white-space:nowrap; }
 
@@ -168,7 +168,7 @@
 .destinationIcon[data-kind="benefit"] { color:var(--color-accent); }
 .destinationIcon[data-kind="activity"] { color:var(--color-accent-ink); }
 .destinationIcon[data-kind="requests"] { color:oklch(49% .14 150); }
-.ticketHistoryLink { display:flex; min-height:44px; align-items:center; justify-content:space-between; gap:var(--space-3); color:var(--my-accent-ink); font-size:12px; font-weight:750; }
+.ticketHistoryLink { display:flex; min-height:44px; align-items:center; justify-content:space-between; gap:var(--space-3); color:var(--my-accent-ink); font-size:12px; font-weight:700; }
 .ticketHistoryLink svg { width:16px; height:16px; }
 .destinations > a:focus-visible { outline:3px solid var(--color-ink); outline-offset:3px; }
 @media(min-width:40rem) { .destinations { grid-template-columns:repeat(2,minmax(0,1fr)); } }
@@ -217,7 +217,7 @@
 .gradeIdentity strong { font-size:30px; line-height:1.15; letter-spacing:-.04em; }
 .gradeIdentity p { margin:0; color:var(--color-muted); font-size:13px; line-height:1.5; }
 .majorGoal { margin:2px 0 0; color:var(--color-muted); font-size:12px; line-height:1.45; text-align:right; overflow-wrap:anywhere; }
-.nextAction button { width:fit-content; min-height:44px; padding:0; border:0; background:transparent; color:var(--my-accent-ink); font:inherit; font-size:13px; font-weight:750; text-decoration:underline; cursor:pointer; }
+.nextAction button { width:fit-content; min-height:44px; padding:0; border:0; background:transparent; color:var(--my-accent-ink); font:inherit; font-size:13px; font-weight:700; text-decoration:underline; cursor:pointer; }
 .nextAction button:focus-visible { outline:3px solid var(--color-ink); outline-offset:3px; }
 
 .ticketTotal>span { padding-bottom:5px; color:var(--color-muted); }
@@ -302,7 +302,7 @@
 .panelContent { padding:var(--space-5) var(--space-5) 0; }
 .panelAction { padding:var(--space-4) var(--space-5) var(--space-5); display:flex; align-items:end; }
 .panelAction > a { min-height:48px; }
-.fanActivityLink { display:flex; align-items:center; gap:8px; color:var(--my-accent-ink); font-size:14px; font-weight:750; }
+.fanActivityLink { display:flex; align-items:center; gap:8px; color:var(--my-accent-ink); font-size:14px; font-weight:700; }
 .fanActivityLink svg { width:18px; height:18px; }
 .fanActivityLink:focus-visible { outline:3px solid var(--color-ink); outline-offset:3px; }
 .activityPanel [data-fan-section-header] { display:grid; grid-template-columns:minmax(0,1fr) auto; align-items:center; gap:8px; }

@@ -26,7 +26,7 @@
 .eyebrow svg { width:15px; height:15px; fill:currentColor; }
 .creatorPortrait { width:112px; height:112px; margin:20px auto 12px; border-radius:50%; overflow:hidden; border:5px solid var(--color-accent-soft); background:var(--color-accent-soft); }
 .creatorPortrait img { width:100%; height:100%; object-fit:cover; }
-.creatorName { margin:0; color:var(--color-accent); font-size:14px; font-weight:750; }
+.creatorName { margin:0; color:var(--color-accent); font-size:14px; font-weight:700; }
 .landingCard h1 { margin:12px auto 0; max-width:330px; font-size:27px; line-height:1.22; letter-spacing:-.045em; word-break:keep-all; overflow-wrap:anywhere; text-wrap:balance; }
 .landingBody { margin:14px auto 24px; max-width:350px; color:var(--color-muted); font-size:14px; line-height:1.65; }
 .shareArtwork { display:block; width:80px; height:80px; object-fit:contain; margin:-14px auto 10px; }

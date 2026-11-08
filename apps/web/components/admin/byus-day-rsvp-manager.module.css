@@ -3,7 +3,7 @@
 .heading p { margin: 8px 0 0; color: var(--secondary-ink); font-size: 16px; line-height: 1.5; text-wrap: pretty; }
 .total { display: grid; gap: 4px; }
 .total > span { color: var(--secondary-ink); font-size: 13px; }
-.total strong { font-size: 36px; font-weight: 750; line-height: 1.2; letter-spacing: -.03em; font-variant-numeric: tabular-nums; }
+.total strong { font-size: 36px; font-weight: 700; line-height: 1.2; letter-spacing: -.03em; font-variant-numeric: tabular-nums; }
 .total small { margin-left: 4px; color: var(--secondary-ink); font-size: 16px; font-weight: 400; }
 .panel { min-width: 0; padding: 20px; border: 1px solid var(--line); border-radius: 16px; background: #fff; }
 .panelHeading { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 16px; margin-bottom: 24px; }

@@ -1,7 +1,7 @@
 .main { max-width: 900px; padding-block: 36px 56px; }
 .adminMain { max-width: 1120px; margin-inline: auto; padding: 32px; }
 .heading { display: flex; align-items: start; justify-content: space-between; gap: 24px; margin-bottom: 28px; }
-.heading h1, .conversationHeading h1, .guest h1 { margin: 0; color: var(--color-ink); font-size: 28px; line-height: 1.4; font-weight: 750; letter-spacing: -.03em; overflow-wrap: anywhere; }
+.heading h1, .conversationHeading h1, .guest h1 { margin: 0; color: var(--color-ink); font-size: 28px; line-height: 1.4; font-weight: 700; letter-spacing: -.03em; overflow-wrap: anywhere; }
 .heading p, .guest p { color: var(--color-muted); font-size: 15px; line-height: 1.7; margin: 10px 0 0; }
 .heading > div { min-width: 0; }
 .heading > :last-child { flex-shrink: 0; }

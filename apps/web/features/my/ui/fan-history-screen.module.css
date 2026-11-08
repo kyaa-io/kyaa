@@ -5,7 +5,7 @@
 @media(min-width:768px) { .main h1 { font-size:24px; } }
 .tabs { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,140px),1fr)); gap:8px; margin-bottom:24px; }
 .tabs a { display:flex; align-items:center; justify-content:center; text-align:center; min-height:44px; padding:8px 16px; border:1px solid var(--fan-border,#e8e8e8); border-radius:12px; color:inherit; text-decoration:none; }
-.tabs a[aria-current] { color:#ad1457; background:#fff0f6; border-color:#d11b62; font-weight:750; }
+.tabs a[aria-current] { color:#ad1457; background:#fff0f6; border-color:#d11b62; font-weight:700; }
 .main a:focus-visible { outline:3px solid currentColor; outline-offset:3px; }
 /* 빈 목록은 탭 바로 아래에 붙여 첫 화면을 비우지 않는다. */
 .main .empty { min-height:0; padding-block:var(--space-8); }

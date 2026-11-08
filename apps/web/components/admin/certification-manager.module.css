@@ -80,7 +80,7 @@
   border: 1px solid var(--line);
   border-radius: 10px;
   background: var(--color-surface);
-  font-weight: 750;
+  font-weight: 700;
 }
 .sectionHeading svg,
 .actions svg,

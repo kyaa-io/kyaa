@@ -5,7 +5,7 @@
 :where(.page button,.dialog button){font:inherit;cursor:pointer}
 .page button:disabled{cursor:default;opacity:.55}
 .page :is(a,button,input,textarea):focus-visible,.dialog :focus-visible{outline:3px solid var(--color-accent);outline-offset:4px}
-.headerIdentity{display:flex;align-items:center;gap:10px;min-height:44px;text-decoration:none;color:var(--color-ink);font-size:14px;font-weight:750;max-width:180px}
+.headerIdentity{display:flex;align-items:center;gap:10px;min-height:44px;text-decoration:none;color:var(--color-ink);font-size:14px;font-weight:700;max-width:180px}
 .headerIdentity>span:last-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .hero{position:relative;height:360px;border:1px solid var(--color-line-subtle);border-radius:16px;overflow:hidden;background:var(--color-soft)}
 .heroPicture{position:absolute;inset:0 0 0 31%;display:block}
@@ -18,7 +18,7 @@
 .eyebrow{display:flex;align-items:center;gap:8px;margin:0;color:var(--fanpage-accent-text);font-size:12px;line-height:1.4;font-weight:800;letter-spacing:.02em}
 .eyebrow svg{width:20px;height:20px}
 .socials{display:flex;gap:20px;align-items:center;flex-wrap:wrap;margin:8px 0}
-.socials a{display:flex;align-items:center;gap:8px;min-height:44px;font-size:12px;font-weight:750}
+.socials a{display:flex;align-items:center;gap:8px;min-height:44px;font-size:12px;font-weight:700}
 .socials svg{width:20px;height:20px;flex:none}
 .socials [data-platform=instagram] svg{color:var(--color-accent)}.socials [data-platform=youtube] svg{color:var(--color-accent)}
 .heroTicketAction{width:min(100%,320px);min-width:0}
@@ -28,7 +28,7 @@
 @media(max-width:767px){.hero:has(.heroTicketAction):not([data-brand]),.hero:has(.heroTicketAction):not([data-brand]) .heroContent{min-height:470px}}
 .tabs{scroll-margin-top:calc(var(--fan-header-height) + 8px);display:flex;overflow-x:auto;border-bottom:1px solid var(--color-line-subtle);margin:22px 0 20px;min-height:58px;gap:16px;scroll-padding-inline:8px}
 .tabs>a,.tabs>button{flex:1 0 auto;min-width:92px;min-height:58px;padding-inline:8px;white-space:nowrap}
-.tabs>a,.tabs>button{position:relative;display:flex;align-items:center;justify-content:center;gap:7px;background:none;border:0;color:var(--color-muted);font-size:14px;font-weight:750;text-align:center}
+.tabs>a,.tabs>button{position:relative;display:flex;align-items:center;justify-content:center;gap:7px;background:none;border:0;color:var(--color-muted);font-size:14px;font-weight:700;text-align:center}
 .tabs [aria-current=page]{color:var(--color-ink)}
 .tabs [aria-current=page]::after{content:"";position:absolute;bottom:-1px;left:24%;right:24%;height:3px;background:var(--color-accent)}
 .boardTabs{display:flex;align-items:center;gap:8px;min-height:52px;margin:-8px 0 28px;overflow-x:auto;border-bottom:1px solid var(--color-line-subtle);scrollbar-width:none}
@@ -42,7 +42,7 @@
 .ownedFanbar{display:grid;grid-template-columns:minmax(220px,1.15fr) minmax(280px,1.5fr) auto;grid-template-areas:"identity progress actions";gap:16px 28px}
 .ownedFanbar .fanIdentity{grid-area:identity;min-width:0}
 .fanActions{grid-area:actions;display:flex;min-width:0;align-items:center;justify-content:flex-end;gap:12px;flex-wrap:wrap}
-.tier{display:inline-flex;align-items:center;justify-content:flex-end;gap:7px;min-height:44px;color:var(--color-accent-ink);font-size:13px;font-weight:750;white-space:nowrap}
+.tier{display:inline-flex;align-items:center;justify-content:flex-end;gap:7px;min-height:44px;color:var(--color-accent-ink);font-size:13px;font-weight:700;white-space:nowrap}
 .tier[data-tier=Silver]{color:var(--color-accent)}.tier[data-tier=Gold]{color:#8b6318}.tier[data-tier=Platinum]{color:#337167}.tier[data-tier=Diamond]{color:var(--color-accent)}
 .tier img,.tier svg{flex:none;object-fit:contain}
 .fanProgress{grid-area:progress;min-width:0}
@@ -51,7 +51,7 @@
 .progressHeading strong{margin-left:4px;color:var(--color-accent);font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap}
 .passportLink{display:inline-flex;align-items:center;justify-content:flex-end;flex:none;gap:6px;min-height:44px;font-size:12px;font-weight:700;white-space:nowrap}
 .passportLink svg{width:15px;height:15px;flex:none}
-.pillButton,.primaryButton,.darkButton{display:inline-flex;align-items:center;justify-content:center;gap:12px;min-height:46px;padding:10px 22px;border:1px solid var(--color-line-subtle);border-radius:10px;text-decoration:none;font-size:14px;font-weight:750;line-height:1.4}
+.pillButton,.primaryButton,.darkButton{display:inline-flex;align-items:center;justify-content:center;gap:12px;min-height:46px;padding:10px 22px;border:1px solid var(--color-line-subtle);border-radius:10px;text-decoration:none;font-size:14px;font-weight:700;line-height:1.4}
 .page .primaryButton,.primaryButton{border-color:var(--fanpage-action-solid);background:var(--fanpage-action-solid);color:var(--color-surface)}
 .page .darkButton,.darkButton{border-color:var(--color-ink);background:var(--color-ink);color:var(--color-surface)}
 .page .pillButton,.pillButton{border-color:var(--color-accent-soft);background:var(--color-surface);color:var(--color-ink);border-radius:999px;white-space:nowrap}
@@ -134,7 +134,7 @@
 
 .homeGrid{grid-template-areas:"main side";align-items:start}.homeGrid>.mainColumn{grid-area:main}.cheerPreview{grid-area:cheers;min-width:0}.homeGrid>.sideColumn{grid-area:side}@media(max-width:767px){.homeGrid{grid-template-areas:"main" "side"}}
 
-.availableRaffleTab{display:inline-flex;align-items:center;gap:10px;padding:8px 14px;border:1px solid var(--color-accent-line);border-radius:24px;background:var(--color-accent-soft);color:var(--color-accent);font-weight:750;white-space:nowrap}
+.availableRaffleTab{display:inline-flex;align-items:center;gap:10px;padding:8px 14px;border:1px solid var(--color-accent-line);border-radius:24px;background:var(--color-accent-soft);color:var(--color-accent);font-weight:700;white-space:nowrap}
 .availableRaffleTab>span{display:grid;place-items:center;min-width:24px;height:24px;padding:0 6px;border-radius:50%;background:var(--color-accent);color:var(--color-surface);font-size:12px;font-variant-numeric:tabular-nums}
 .homeRaffles{margin-bottom:32px;min-width:0}
 .homeRaffleHeading{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;min-height:44px;margin-bottom:16px}
@@ -156,7 +156,7 @@
 @media(max-width:767px){.homeGiftGrid{grid-template-columns:minmax(0,1fr);gap:16px}.homeRaffleTitle{gap:6px 12px}.homeRaffleTitle h2{font-size:20px}.homeRaffleHeading{gap:12px}.homeRaffles{margin-bottom:28px}.raffleWallet{gap:16px;font-size:12px}.availableRaffleTab{padding:6px 8px;gap:5px;font-size:12px}.availableRaffleTab>span{min-width:20px;height:20px;font-size:11px}}
 
 @media(max-width:767px){.headerIdentity,.headerLogin{display:none}}
-.headerLogin{min-height:44px;padding:12px;font-size:14px;font-weight:750}
+.headerLogin{min-height:44px;padding:12px;font-size:14px;font-weight:700}
 
 .mediaLayout { display:grid; min-width:0; gap:32px; }
 

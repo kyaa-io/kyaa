@@ -1,5 +1,5 @@
 .main { min-width:0; padding-top:40px; padding-bottom:96px; overflow-x:clip; }
-.catalogLink { display:inline-flex; min-height:44px; align-items:center; justify-content:center; gap:8px; border-radius:12px; color:var(--color-ink); font-size:14px; font-weight:750; text-decoration:none; transition:background 160ms cubic-bezier(.2,0,0,1),border-color 160ms cubic-bezier(.2,0,0,1); }
+.catalogLink { display:inline-flex; min-height:44px; align-items:center; justify-content:center; gap:8px; border-radius:12px; color:var(--color-ink); font-size:14px; font-weight:700; text-decoration:none; transition:background 160ms cubic-bezier(.2,0,0,1),border-color 160ms cubic-bezier(.2,0,0,1); }
 .catalogLink { flex:none; padding:0 14px; border:1px solid var(--color-muted); background:var(--color-surface); }
 .catalogLink svg { width:18px; height:18px; stroke-width:1.9; }
 .filters { display:grid; min-width:0; grid-template-columns:minmax(0,1fr) auto; align-items:center; gap:12px; margin-bottom:24px; padding:12px; border:1px solid var(--color-line); border-radius:16px; background:var(--color-soft); }
@@ -9,7 +9,7 @@
 .filterHeading p { margin-top:3px; color:var(--color-muted); font-size:12px; font-weight:400; line-height:1.4; }
 .filterCount { min-width:64px; justify-self:end; color:var(--color-accent-ink); font-size:12px; font-weight:800; text-align:right; white-space:nowrap; }
 .filterScroller { display:flex; min-width:0; grid-column:1 / -1; gap:8px; overflow-x:auto; padding:0 2px 6px; scrollbar-width:thin; }
-.filterChip { display:inline-flex; min-width:max-content; min-height:44px; align-items:center; justify-content:center; gap:8px; padding:0 14px; border:1px solid var(--color-muted); border-radius:999rem; background:var(--color-surface); color:var(--color-ink); font:inherit; font-size:13px; font-weight:750; cursor:pointer; transition:color 160ms cubic-bezier(.2,0,0,1),border-color 160ms cubic-bezier(.2,0,0,1),background 160ms cubic-bezier(.2,0,0,1),transform 160ms cubic-bezier(.2,0,0,1); }
+.filterChip { display:inline-flex; min-width:max-content; min-height:44px; align-items:center; justify-content:center; gap:8px; padding:0 14px; border:1px solid var(--color-muted); border-radius:999rem; background:var(--color-surface); color:var(--color-ink); font:inherit; font-size:13px; font-weight:700; cursor:pointer; transition:color 160ms cubic-bezier(.2,0,0,1),border-color 160ms cubic-bezier(.2,0,0,1),background 160ms cubic-bezier(.2,0,0,1),transform 160ms cubic-bezier(.2,0,0,1); }
 
 .filterChip[data-selected="true"] { border-color:var(--color-accent); background:var(--color-accent-soft); color:var(--color-accent-ink); }
 .filterChip > svg { width:16px; height:16px; flex:none; }
@@ -53,7 +53,7 @@
 .platforms img { width:14px; height:14px; object-fit:contain; }
 .status[data-status="live"] { background:var(--color-accent-soft); color:var(--color-accent-ink); }
 .status[data-status="cancelled"] { color:var(--color-muted); text-decoration:line-through; }
-.eventLink strong { display:-webkit-box; overflow:hidden; -webkit-box-orient:vertical; -webkit-line-clamp:2; font-size:var(--fan-calendar-event-size); font-weight:750; letter-spacing:-.02em; line-height:1.45; overflow-wrap:anywhere; }
+.eventLink strong { display:-webkit-box; overflow:hidden; -webkit-box-orient:vertical; -webkit-line-clamp:2; font-size:var(--fan-calendar-event-size); font-weight:700; letter-spacing:-.02em; line-height:1.45; overflow-wrap:anywhere; }
 .eventLink .eventTitle { display:flex; align-items:center; gap:6px; overflow:visible; }
 .eventTitle > span:first-child { display:-webkit-box; min-width:0; overflow:hidden; -webkit-box-orient:vertical; -webkit-line-clamp:2; }
 .reservationMark { flex:none; }
@@ -139,14 +139,14 @@
   .dayHeading { margin-bottom:10px; }
   .days[data-mobile-selected="true"] .dayHeading { display:none; }
   .dayHeading time { display:none; }
-  .dayHeading span { color:var(--color-ink); font-size:13px; font-weight:750; }
+  .dayHeading span { color:var(--color-ink); font-size:13px; font-weight:700; }
   .eventList { gap:10px; }
   .event[data-calendar-event-tone] { border:1px solid var(--color-line); border-radius:14px; background:var(--color-surface); }
   .event[data-calendar-event-status="ended"],.event[data-calendar-event-status="cancelled"] { background:var(--color-soft); }
   .eventLink { gap:8px; padding:16px; border-radius:13px; }
-  .eventLink strong { font-size:16px; font-weight:750; line-height:1.45; }
+  .eventLink strong { font-size:16px; font-weight:700; line-height:1.45; }
   .eventMeta { gap:6px; font-size:12px; }
-  .eventMeta time { color:var(--color-ink); font-size:13px; font-weight:750; font-variant-numeric:tabular-nums; }
+  .eventMeta time { color:var(--color-ink); font-size:13px; font-weight:700; font-variant-numeric:tabular-nums; }
   .eventTopline { gap:6px; }
   .creator { font-size:13px; }
 }

@@ -1,6 +1,6 @@
 .page{max-width:1240px;margin:0 auto;padding:44px 0 76px;color:var(--color-ink)}
 .page h1,.page h2,.page h3,.page p{margin:0;text-wrap:pretty}
-.page h1{font-size:34px;line-height:1.4;letter-spacing:-.035em;font-weight:750;text-wrap:balance}
+.page h1{font-size:34px;line-height:1.4;letter-spacing:-.035em;font-weight:700;text-wrap:balance}
 .page h2{font-size:22px;line-height:1.5;letter-spacing:-.025em}
 .page h3{font-size:19px;line-height:1.5;letter-spacing:-.025em}
 .page p{color:var(--color-muted);font-size:15px;line-height:1.7}

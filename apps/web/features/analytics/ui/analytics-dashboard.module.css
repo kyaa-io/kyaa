@@ -62,7 +62,7 @@
   border-radius: 10px;
   background: var(--color-surface);
   color: var(--color-ink);
-  font-weight: 750;
+  font-weight: 700;
 }
 .presets button[aria-pressed="true"] {
   border-color: var(--color-ink);
@@ -109,7 +109,7 @@
   color: var(--color-accent-ink);
 }
 .status p { margin: 0; }
-.status button { min-height: 44px; margin-top: 12px; padding: 0 14px; border: 1px solid var(--color-accent); border-radius: 10px; background: var(--color-surface); color: var(--color-accent-ink); cursor: pointer; font: inherit; font-size: 13px; font-weight: 750; }
+.status button { min-height: 44px; margin-top: 12px; padding: 0 14px; border: 1px solid var(--color-accent); border-radius: 10px; background: var(--color-surface); color: var(--color-accent-ink); cursor: pointer; font: inherit; font-size: 13px; font-weight: 700; }
 .metricGrid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -204,7 +204,7 @@
   color: var(--color-muted);
   background: var(--color-soft);
   font-size: 11px;
-  font-weight: 750;
+  font-weight: 700;
 }
 .table a {
   color: var(--color-ink);
@@ -265,7 +265,7 @@
   cursor: pointer;
   font: inherit;
   font-size: 12px;
-  font-weight: 750;
+  font-weight: 700;
 }
 .exportButton { display: inline-flex; align-items: center; gap: 6px; }
 .exportButton svg { width: 16px; height: 16px; }
@@ -439,7 +439,7 @@
   background: var(--color-ink);
   color: var(--color-surface);
   font-size: 12px;
-  font-weight: 750;
+  font-weight: 700;
   text-decoration: none;
 }
 .dashboard :is(button, input, select, summary, a):focus-visible { outline: 3px solid var(--color-ink); outline-offset: 3px; }

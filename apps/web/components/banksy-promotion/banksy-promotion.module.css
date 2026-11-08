@@ -22,7 +22,7 @@
 .cover::after { content: ""; position: absolute; inset: 0; background: transparent; }
 .coverType { position: relative; z-index: 1; display: flex; flex-direction: column; gap: 8px; padding: 32px; }
 .coverType > span:first-child { font-size: 20px; letter-spacing: .12em; }
-.coverType strong { font-size: clamp(48px, 5vw, 72px); line-height: 1; letter-spacing: -.055em; font-weight: 900; }
+.coverType strong { font-size: clamp(48px, 5vw, 72px); line-height: 1; letter-spacing: -.055em; font-weight: 800; }
 .coverType > span:last-child { margin-top: 4px; font-size: 10px; letter-spacing: .12em; }
 .dialogBody { display: flex; flex-direction: column; justify-content: center; padding: 64px 32px 24px; }
 .dialog .eyebrow { color: hsl(335 88% 33%); gap: 8px; font-size: 10px; }

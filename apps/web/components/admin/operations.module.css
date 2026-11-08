@@ -15,10 +15,10 @@
 .mobileNav { position: sticky; z-index: 19; top: 64px; max-height: calc(100svh - 64px); padding: 12px 16px 20px; overflow-y: auto; border-bottom: 1px solid var(--line); background: var(--color-surface); box-shadow: 0 12px 24px color-mix(in srgb, var(--color-ink) 7%, transparent); }
 .adminNav { display: grid; gap: 20px; }
 .navGroup { display: grid; gap: 2px; }
-.navGroup > p { margin: 0 12px 6px; color: var(--muted); font-size: 11px; font-weight: 750; letter-spacing: .06em; text-transform: uppercase; }
-.mobileNav a, .sidebar a { display: flex; min-height: 44px; align-items: center; gap: 10px; padding: 0 12px; border-radius: 10px; color: var(--secondary-ink); font-size: 14px; font-weight: 620; text-decoration: none; transition: background-color 160ms cubic-bezier(.23, 1, .32, 1), color 160ms cubic-bezier(.23, 1, .32, 1), transform 120ms cubic-bezier(.23, 1, .32, 1); }
+.navGroup > p { margin: 0 12px 6px; color: var(--muted); font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
+.mobileNav a, .sidebar a { display: flex; min-height: 44px; align-items: center; gap: 10px; padding: 0 12px; border-radius: 10px; color: var(--secondary-ink); font-size: 14px; font-weight: 700; text-decoration: none; transition: background-color 160ms cubic-bezier(.23, 1, .32, 1), color 160ms cubic-bezier(.23, 1, .32, 1), transform 120ms cubic-bezier(.23, 1, .32, 1); }
 .mobileNav a svg, .sidebar a svg { width: 18px; height: 18px; flex: none; color: var(--color-muted); stroke-width: 1.8; }
-.mobileNav .activeNav, .sidebar .activeNav { background: var(--accent-soft); color: var(--color-accent); font-weight: 750; }
+.mobileNav .activeNav, .sidebar .activeNav { background: var(--accent-soft); color: var(--color-accent); font-weight: 700; }
 .mobileNav .activeNav svg, .sidebar .activeNav svg { color: var(--accent); }
 .mobileNav a:active, .sidebar a:active { transform: scale(.98); }
 .layout { display: grid; min-width: 0; min-height: calc(100svh - 65px); grid-template-columns: minmax(0, 1fr); }
@@ -38,13 +38,13 @@
 .summaryGrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-bottom: 16px; }
 .summaryGrid button { display: grid; min-width: 0; min-height: 72px; align-content: center; gap: 4px; padding: 12px 14px; border: 1px solid var(--line); border-radius: 12px; background: var(--color-surface); color: var(--ink); cursor: pointer; font: inherit; text-align: left; }
 .summaryGrid button[aria-pressed="true"] { border-color: var(--color-accent-line); background: var(--accent-soft); }
-.summaryGrid span { color: var(--muted); font-size: 11px; font-weight: 750; letter-spacing: .04em; text-transform: uppercase; }
+.summaryGrid span { color: var(--muted); font-size: 11px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; }
 .summaryGrid strong { font-size: 24px; font-variant-numeric: tabular-nums; line-height: 1; }
 .filterBar { display: flex; flex-wrap: wrap; align-items: end; gap: 12px; margin-bottom: 20px; padding: 16px; border: 1px solid var(--line); border-radius: 12px; }
 .filterBar label { display: grid; min-width: 150px; gap: 7px; color: var(--color-ink); font-size: 12px; font-weight: 700; }
 .filterBar input, .filterBar select { width: 100%; height: 44px; padding: 0 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--control); color: var(--ink); font: inherit; font-size: 14px; }
 .growField { flex: 1 1 300px; }
-.secondaryButton, .primaryButton, .dangerButton, .loadMore, .stateMessage button { min-height: 44px; padding: 0 16px; border-radius: 10px; cursor: pointer; font: inherit; font-size: 14px; font-weight: 750; }
+.secondaryButton, .primaryButton, .dangerButton, .loadMore, .stateMessage button { min-height: 44px; padding: 0 16px; border-radius: 10px; cursor: pointer; font: inherit; font-size: 14px; font-weight: 700; }
 .secondaryButton, .loadMore, .stateMessage button { border: 1px solid var(--strong-line); background: var(--color-surface); color: var(--ink); }
 .textButton { padding: 0 12px; color: var(--muted); }
 .primaryButton { display: inline-flex; align-items: center; justify-content: center; gap: 8px; border: 0; background: var(--ink); color: var(--color-surface); }
@@ -55,7 +55,7 @@
 .filterActions { display: flex; flex: 1 0 100%; justify-content: flex-end; gap: 8px; }
 .tableWrap { width: 100%; min-width: 0; max-width: 100%; contain: inline-size paint; overflow-x: auto; border: 1px solid var(--line); border-radius: 12px; }
 .tableWrap table { width: 100%; min-width: 760px; border-collapse: collapse; font-size: 13px; }
-.tableWrap th { height: 44px; padding: 0 14px; border-bottom: 1px solid var(--line); background: var(--soft); color: var(--muted); font-size: 12px; font-weight: 750; text-align: left; white-space: nowrap; }
+.tableWrap th { height: 44px; padding: 0 14px; border-bottom: 1px solid var(--line); background: var(--soft); color: var(--muted); font-size: 12px; font-weight: 700; text-align: left; white-space: nowrap; }
 .tableWrap td { height: 56px; padding: 8px 14px; border-bottom: 1px solid var(--line); vertical-align: middle; font-variant-numeric: tabular-nums; }
 .tableWrap tr:last-child td { border-bottom: 0; }
 .tableWrap td strong { display: block; max-width: 320px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -114,7 +114,7 @@
 .accessPanel > svg { width: 32px; height: 32px; }
 .accessPanel h1, .accessPanel p { margin: 0; }
 .accessPanel p { color: var(--muted); line-height: 1.6; }
-.primaryLink { display: inline-flex; min-height: 48px; align-items: center; padding: 0 18px; border-radius: 10px; background: var(--ink); color: var(--color-surface); font-size: 14px; font-weight: 750; text-decoration: none; }
+.primaryLink { display: inline-flex; min-height: 48px; align-items: center; padding: 0 18px; border-radius: 10px; background: var(--ink); color: var(--color-surface); font-size: 14px; font-weight: 700; text-decoration: none; }
 .spin { animation: spin 1s linear infinite; }
 .srOnly { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap; }
 .adminPage :is(a, button, input, select):focus-visible, .accessPage a:focus-visible { outline: 3px solid var(--ink); outline-offset: 3px; }

@@ -16,7 +16,7 @@
   gap: 8px;
   margin: 0;
   font-size: 24px;
-  font-weight: 750;
+  font-weight: 700;
   line-height: 1.3;
   letter-spacing: -0.035em;
 }
@@ -48,7 +48,7 @@
 }
 .tabs button[aria-selected="true"] {
   color: var(--color-ink);
-  font-weight: 750;
+  font-weight: 700;
 }
 .tabs button[aria-selected="true"]::after {
   content: "";
@@ -186,7 +186,7 @@ a.card:active {
 }
 .cardIdentity strong {
   font-size: 16px;
-  font-weight: 750;
+  font-weight: 700;
   line-height: 1.5;
   letter-spacing: -0.02em;
   overflow-wrap: anywhere;
@@ -259,7 +259,7 @@ a.card:active {
   min-width: 0;
   color: var(--color-service-ink, var(--color-accent));
   font-size: 12px;
-  font-weight: 750;
+  font-weight: 700;
 }
 .reward > span {
   display: inline-flex;
@@ -720,8 +720,8 @@ a.tile:focus-visible { outline: 3px solid var(--color-accent); outline-offset: 3
 .stamp img { display: block; width: 100%; height: 100%; object-fit: contain; }
 /* R5: only an approved certification keeps color; every other state stays gray so an unclaimed item never reads as completed. */
 .stamp:not([data-state="approved"]) { filter: grayscale(1); opacity: .55; }
-.tileTitle { display: -webkit-box; min-width: 0; max-width: 100%; overflow: hidden; font-size: 14px; font-weight: 750; letter-spacing: -.02em; line-height: 1.4; overflow-wrap: anywhere; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
-.tileMeta { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px 8px; min-width: 0; color: var(--color-service-ink, var(--color-accent)); font-size: 12px; font-weight: 750; line-height: 1.5; }
+.tileTitle { display: -webkit-box; min-width: 0; max-width: 100%; overflow: hidden; font-size: 14px; font-weight: 700; letter-spacing: -.02em; line-height: 1.4; overflow-wrap: anywhere; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+.tileMeta { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px 8px; min-width: 0; color: var(--color-service-ink, var(--color-accent)); font-size: 12px; font-weight: 700; line-height: 1.5; }
 .tileMeta > span { display: inline-flex; align-items: center; gap: 4px; }
 .tileMeta svg { width: 14px; height: 14px; flex: none; }
 .tile .cardAction, .tile .status { margin-top: auto; }

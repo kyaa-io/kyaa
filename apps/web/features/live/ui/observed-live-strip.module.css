@@ -14,7 +14,7 @@
 .badge { position:absolute; inset:12px auto auto 12px; box-shadow:0 1px 6px rgb(0 0 0 / 18%); }
 .body { display:flex; min-width:0; flex-direction:column; align-items:flex-start; padding:16px; }
 .creator { font-size:13px; line-height:1.4; color:var(--color-muted); }
-.body h3 { display:-webkit-box; overflow:hidden; margin:8px 0; font-size:17px; font-weight:750; line-height:1.4; letter-spacing:-.02em; -webkit-box-orient:vertical; -webkit-line-clamp:2; overflow-wrap:anywhere; }
+.body h3 { display:-webkit-box; overflow:hidden; margin:8px 0; font-size:17px; font-weight:700; line-height:1.4; letter-spacing:-.02em; -webkit-box-orient:vertical; -webkit-line-clamp:2; overflow-wrap:anywhere; }
 .watch { display:flex; width:100%; align-items:center; justify-content:space-between; gap:12px; min-height:44px; margin-top:auto; padding-top:8px; font-size:13px; font-weight:700; }
 .watch svg { width:32px; height:32px; flex:none; padding:8px; border-radius:50%; background:var(--color-soft); stroke-width:2; }
 .card:focus-visible { outline:3px solid var(--color-ink); outline-offset:4px; }
