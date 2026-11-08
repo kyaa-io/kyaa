@@ -23,7 +23,7 @@ export function dukjilRequestKey(appUserId: string, actionKey: string, sourceKey
 
 // Codes that only mean "nothing to pay" (no active policy, caps, no passport, short text, wallet not ready, same body or same target again). Expected and silent.
 // UNKNOWN_ACTION, DUKJIL_PARAMS_INVALID, DUKJIL_CELEBRITY_REQUIRED, GROUP_WALLET_* are call bugs and are logged.
-const SILENT = ["POLICY_INACTIVE", "DUKJIL_DAILY_LIMIT", "PASSPORT_REQUIRED", "SOURCE_REUSED", "DUKJIL_CONTENT_TOO_SHORT", "COMMUNITY_STAMP_WALLET_NOT_READY", "DUKJIL_DUPLICATE_BODY", "DUKJIL_REPEAT_TARGET", "FAN_WEB_ACTIVE_ACCOUNT_REQUIRED", "COMMUNITY_STAMP_NOT_FOUND"];
+const SILENT = ["POLICY_INACTIVE", "DUKJIL_DAILY_LIMIT", "PASSPORT_REQUIRED", "SOURCE_REUSED", "DUKJIL_CONTENT_TOO_SHORT", "COMMUNITY_STAMP_WALLET_NOT_READY", "DUKJIL_DUPLICATE_BODY", "DUKJIL_REPEAT_TARGET", "FAN_WEB_ACTIVE_ACCOUNT_REQUIRED", "COMMUNITY_STAMP_NOT_FOUND", "SHARE_PROOF_REVOKED"];
 
 // Calls record_dukjil_action exactly once for one action. It never throws: a payout failure must not fail the action that already happened.
 // Returns null when nothing was paid or the call failed.

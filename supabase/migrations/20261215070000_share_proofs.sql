@@ -131,6 +131,8 @@ returns jsonb language sql stable security definer set search_path = '' as $$
 $$;
 
 -- Takes one share grant back, once. The same steps as dukjil_correct_content_grant (20261211090000) for the 'share' action.
+-- Review r4b H1: a step whose rows it cannot read (row security) or whose result it cannot see raises instead of answering
+-- 'replayed' or 'review', so the cancel stops and the proof stays open for another try.
 create function public.dukjil_correct_share_grant(p_actor uuid, p_owner uuid, p_source_key text)
 returns text language plpgsql security definer set search_path = '' as $$
 declare
@@ -142,28 +144,29 @@ begin
    order by created_at limit 1;
   if l.id is null then return 'none'; end if;
   if exists (select 1 from public.dukjil_point_corrections c where c.action_log_id = l.id) then return 'replayed'; end if;
-  if l.points = 0 then
-    select * into st from public.community_stamps where id = l.stamp_id;
-    if st.id is null or st.revoked_at is not null then return 'replayed'; end if;
-    perform public.void_passport_stamp(p_actor, st.id, 'share_proof_revoked', false, 'share-proof:' || l.id::text);
-    return 'stamp_voided';
-  end if;
   if l.stamp_id is not null then
     select * into st from public.community_stamps where id = l.stamp_id;
-    if st.id is not null and st.revoked_at is null then
+    if st.id is null then raise exception 'SHARE_GRANT_UNREADABLE: stamp %', l.stamp_id using errcode = 'P0001'; end if;
+    if st.revoked_at is null then
       perform public.void_passport_stamp(p_actor, st.id, 'share_proof_revoked', false, 'share-proof:' || l.id::text);
-      if exists (select 1 from public.dukjil_point_corrections c where c.action_log_id = l.id) then
-        return (select status from public.dukjil_point_corrections c where c.action_log_id = l.id limit 1);
+      if not exists (select 1 from public.community_stamps s where s.id = st.id and s.revoked_at is not null) then
+        raise exception 'SHARE_GRANT_NOT_REVERTED: stamp %', st.id using errcode = 'P0001';
       end if;
+    end if;
+    if l.points = 0 then return 'stamp_voided'; end if;
+    if exists (select 1 from public.dukjil_point_corrections c where c.action_log_id = l.id) then
+      return (select status from public.dukjil_point_corrections c where c.action_log_id = l.id limit 1);
     end if;
   end if;
   cid := extensions.gen_random_uuid();
   select e.owner_sequence into gseq from public.mobile_fan_economy_ledger e where e.id = l.ledger_id;
+  if gseq is null then raise exception 'SHARE_GRANT_UNREADABLE: ledger %', l.ledger_id using errcode = 'P0001'; end if;
   select exists (select 1 from public.mobile_fan_economy_ledger e
                  where e.app_user_id = p_owner and e.celebrity_id is null and e.asset = 'fan_point' and e.amount < 0
                    and e.source_type <> 'dukjil_correction' and e.owner_sequence > gseq) into spent;
   if not spent and public.group_wallet_balance(p_owner, 'fan_point') >= l.points then
     entry := public.group_wallet_post_correction(p_owner, 'fan_point', -l.points::bigint, 'dukjil_correction', cid);
+    if entry is null then raise exception 'SHARE_GRANT_NOT_REVERTED: points' using errcode = 'P0001'; end if;
     correction := 'corrected';
   else
     correction := 'review'; review := 'rights_spent';
@@ -171,6 +174,31 @@ begin
   insert into public.dukjil_point_corrections (id, action_log_id, stamp_id, app_user_id, amount, reason, ledger_id, status, void_reason)
     values (cid, l.id, null, p_owner, l.points, coalesce(review, 'share_proof_revoked'), entry, correction, 'share_proof_revoked');
   return correction;
+end $$;
+
+-- Pays one proof under the proof's row lock, so a cancel and a payout never interleave (review r4b M1), with the proof's own creator
+-- (M2), and keeps what the payout answered, replays included (L1). Refuses a cancelled proof.
+create function public.pay_fan_share_proof(p_app_user_id uuid, p_proof_id uuid, p_request_key uuid, p_params jsonb)
+returns jsonb language plpgsql security definer set search_path = '' as $$
+declare v_row public.fan_share_proofs%rowtype; v_result jsonb;
+begin
+  select * into v_row from public.fan_share_proofs where id = p_proof_id and app_user_id = p_app_user_id for update;
+  if not found then raise exception 'SHARE_PROOF_NOT_FOUND' using errcode = 'P0001'; end if;
+  if v_row.status <> 'accepted' then raise exception 'SHARE_PROOF_REVOKED' using errcode = 'P0001'; end if;
+  v_result := public.record_dukjil_action(p_app_user_id, v_row.celebrity_id, 'share', 'share-proof:' || v_row.id::text, p_request_key, coalesce(p_params, '{}'::jsonb));
+  update public.fan_share_proofs set points = greatest(coalesce((v_result ->> 'points')::integer, 0), 0) where id = v_row.id;
+  return v_result;
+end $$;
+
+-- Review r4b M1: the five-minute retry of failed payouts skips a share proof that is no longer accepted (cancelled by an operator).
+do $$
+declare d text; anchor text := 'elsif f.action_key in (''event_checkin'', ''event_review'') then'; begin
+  d := pg_get_functiondef('public.retry_dukjil_wire_failures(integer)'::regprocedure);
+  if position('share-proof-retry-gate' in d) > 0 then return; end if;
+  if position(anchor in d) = 0 then raise exception 'retry function changed: share proof gate anchor missing'; end if;
+  execute replace(d, anchor, $g$elsif f.action_key = 'share' and f.source_key like 'share-proof:%' then -- share-proof-retry-gate (20261215070000)
+        gone := not exists(select 1 from public.fan_share_proofs s where s.id::text = substr(f.source_key, 13) and s.status = 'accepted');
+      $g$ || anchor);
 end $$;
 
 -- An operator cancels a proof and takes its grant back. A second cancel replays the first result.
@@ -187,6 +215,8 @@ begin
     return jsonb_build_object('id', v_row.id, 'replayed', true, 'result', coalesce(v_row.revoke_result, 'none'));
   end if;
   v_result := public.dukjil_correct_share_grant(p_actor, v_row.app_user_id, 'share-proof:' || v_row.id::text);
+  -- A proof that recorded a payout must find it; 'none' then means the grant could not be read, not that nothing was paid.
+  if v_result = 'none' and coalesce(v_row.points, 0) > 0 then raise exception 'SHARE_GRANT_UNREADABLE: grant of %', v_row.id using errcode = 'P0001'; end if;
   update public.fan_share_proofs set status = 'revoked', revoked_at = clock_timestamp(), revoked_by = p_actor, revoke_reason = btrim(p_reason), revoke_result = v_result
    where id = v_row.id;
   return jsonb_build_object('id', v_row.id, 'replayed', false, 'result', v_result);
@@ -226,10 +256,34 @@ create trigger app_users_scrub_fan_share_proofs after update of status on public
 revoke all on function public.share_visit_payouts_enabled(), public.record_fan_share_link_open(uuid, uuid),
   public.submit_fan_share_proof(uuid, uuid, text, text, text, boolean), public.set_fan_share_proof_points(uuid, uuid, integer),
   public.list_fan_share_proofs(uuid, uuid), public.dukjil_correct_share_grant(uuid, uuid, text), public.revoke_fan_share_proof(uuid, uuid, uuid, text),
+  public.pay_fan_share_proof(uuid, uuid, uuid, jsonb),
   public.read_admin_share_proofs(uuid, uuid, text, timestamptz, integer), public.scrub_fan_share_proofs_on_deletion() from public, anon, authenticated, service_role;
 grant execute on function public.submit_fan_share_proof(uuid, uuid, text, text, text, boolean), public.set_fan_share_proof_points(uuid, uuid, integer),
+  public.pay_fan_share_proof(uuid, uuid, uuid, jsonb),
   public.list_fan_share_proofs(uuid, uuid), public.revoke_fan_share_proof(uuid, uuid, uuid, text),
   public.read_admin_share_proofs(uuid, uuid, text, timestamptz, integer) to service_role;
+
+-- owner-policy-begin (review r4b H1)
+-- The deletion scrub reads account_deletion_requests; the cancel reads the grant, its stamp and the wallet ledger and writes the correction row; the admin list reads names.
+-- In dev the applying role (byus_admin) owns these functions but is not a superuser, and some tables they read are owned by
+-- postgres with FORCE row security and no policy for it: reads answer 0 rows without an error. Same remedy as 20261215030000 and
+-- 20261210240000 (p3_fn_owner_<role>): the privilege the functions need and a policy for that role alone, only where row security
+-- would otherwise apply to it. A superuser or BYPASSRLS applier (local) needs nothing. Probe: supabase/tests/f_nonsuper_apply.sh.
+do $$
+declare me record; t record;
+begin
+  select oid, rolname, rolsuper, rolbypassrls into me from pg_roles where rolname = current_user;
+  if me.rolsuper or me.rolbypassrls then return; end if;
+  for t in select * from (values ('account_deletion_requests','select'),('app_users','select'),('fan_passports','select'),('community_stamps','select'),('mobile_fan_economy_ledger','select'),('dukjil_action_log','select'),('dukjil_point_corrections','select, insert'),('dukjil_wire_failures','select'),('celebrities','select'),('celebrity_localizations','select'),('user_profiles','select')) v(tname, privs) loop
+    execute format('grant %s on table public.%I to %I', t.privs, t.tname, me.rolname);
+    if exists (select 1 from pg_class c where c.oid = ('public.' || t.tname)::regclass and c.relrowsecurity
+        and (c.relforcerowsecurity or not pg_has_role(me.oid, c.relowner, 'USAGE')))
+      and not exists (select 1 from pg_policy pol where pol.polrelid = ('public.' || t.tname)::regclass and me.oid = any(pol.polroles)) then
+      execute format('create policy %I on public.%I for all to %I using (true) with check (true)', 'p3_fn_owner_' || me.rolname, t.tname, me.rolname);
+    end if;
+  end loop;
+end $$;
+-- owner-policy-end
 
 -- The visit function and the cancel may belong to another owner than the functions they call (same cause as 20261212030000).
 do $$ declare pair record; caller_owner name; target_owner name; begin
@@ -241,7 +295,8 @@ do $$ declare pair record; caller_owner name; target_owner name; begin
     ('public.revoke_fan_share_proof(uuid,uuid,uuid,text)', 'public.dukjil_correct_share_grant(uuid,uuid,text)'),
     ('public.dukjil_correct_share_grant(uuid,uuid,text)', 'public.void_passport_stamp(uuid,uuid,text,boolean,text)'),
     ('public.dukjil_correct_share_grant(uuid,uuid,text)', 'public.group_wallet_post_correction(uuid,text,bigint,text,uuid)'),
-    ('public.dukjil_correct_share_grant(uuid,uuid,text)', 'public.group_wallet_balance(uuid,text)')) v(caller, target) loop
+    ('public.dukjil_correct_share_grant(uuid,uuid,text)', 'public.group_wallet_balance(uuid,text)'),
+    ('public.pay_fan_share_proof(uuid,uuid,uuid,jsonb)', 'public.record_dukjil_action(uuid,uuid,text,text,uuid,jsonb)')) v(caller, target) loop
     select pg_get_userbyid(proowner) into caller_owner from pg_proc where oid = pair.caller::regprocedure;
     select pg_get_userbyid(proowner) into target_owner from pg_proc where oid = pair.target::regprocedure;
     if caller_owner in ('anon', 'authenticated', 'service_role') then raise exception 'Unexpected definer owner % for %', caller_owner, pair.caller; end if;

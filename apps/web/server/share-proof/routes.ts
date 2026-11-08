@@ -58,11 +58,18 @@ export function createShareProofHandlers(deps: ShareProofDependencies) {
       const written = { id: stored.id, replayed: stored.replayed };
       // A replay pays only when its payout never ran (the request died after the row was written); a cancelled proof never pays again.
       if (stored.replayed && (stored.points !== null || stored.status === "revoked")) return Response.json(shareProofResultSchema.parse(written), { status: 200, headers });
-      const award = await awardDukjilActionDetailed({ ...deps, resolveCreatorId: async () => celebrity }, { appUserId, creatorSlug: body.creator, actionKey: "share", sourceKey: `share-proof:${stored.id}`, params: { platform: proof.platform } });
+      // The payout runs inside pay_fan_share_proof: it locks the proof, refuses a cancelled one and pays with the proof's own creator,
+      // so an operator's cancel and this payout never interleave (review r4b M1, M2). awardDukjilActionDetailed keeps the failure
+      // record and the skip reasons; only its database call is routed through the locked function.
+      const locked = { rpc: (name: string, args: Record<string, unknown>) => name === "record_dukjil_action"
+        ? deps.rpc("pay_fan_share_proof", { p_app_user_id: appUserId, p_proof_id: stored.id, p_request_key: args.p_request_key, p_params: args.p_params })
+        : deps.rpc(name, args), resolveCreatorId: async () => celebrity };
+      const award = await awardDukjilActionDetailed(locked, { appUserId, creatorSlug: body.creator, actionKey: "share", sourceKey: `share-proof:${stored.id}`, params: { platform: proof.platform } });
       const result = award.result;
       const paid = result && !result.replayed && result.points > 0 ? result.points : 0;
-      try { await deps.rpc("set_fan_share_proof_points", { p_app_user_id: appUserId, p_id: stored.id, p_points: paid }); } catch { /* the list shows no amount */ }
       const skippedReason = paid ? undefined : award.skipped ?? (result?.capped ? "daily_limit" : undefined);
+      // A refusal (daily cap, passport) closes the proof at 0P so a later resubmission cannot pay it; a transient failure leaves it open for the retry.
+      if (!paid && (skippedReason || result)) { try { await deps.rpc("set_fan_share_proof_points", { p_app_user_id: appUserId, p_id: stored.id, p_points: 0 }); } catch { /* stays open */ } }
       const reward: MissionReward = { points: paid, stamps: paid && result?.stampId ? 1 : 0, ...(skippedReason ? { skippedReason } : {}) };
       return Response.json(shareProofResultSchema.parse({ ...written, reward }), { status: stored.replayed ? 200 : 201, headers });
     }),
