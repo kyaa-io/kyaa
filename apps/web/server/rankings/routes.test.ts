@@ -63,11 +63,17 @@ describe("rankings routes", () => {
     expect(await (await handlers.challenge(req("/x"), "star")).json()).toEqual({ count: 37, target: 100 });
   });
 
-  it("answers 401 for a rejected token and 503 for a database failure", async () => {
+  it("answers a rejected token as a signed-out reader, keeps other auth refusals, and answers 503 for a database failure", async () => {
     const { AuthError } = await import("@/features/auth/domain/auth-errors");
-    const a = make(() => ({}));
+    const a = make(() => ({ period: "week", periodStart: "2026-11-02", computedAt: "2026-11-06T00:00:00Z", rows: [] }));
     a.authorize.mockRejectedValueOnce(new AuthError("AUTHENTICATION_REQUIRED", 401, "no"));
-    expect((await a.handlers.creators(req("/x", { authorization: "Bearer bad" }))).status).toBe(401);
+    const guest = await a.handlers.creators(req("/x", { authorization: "Bearer bad" }));
+    expect(guest.status).toBe(200);
+    // The answer went to a request that carried a token: never shared through a public cache.
+    expect(guest.headers.get("cache-control")).toBe("private, no-store");
+    expect(a.rpc).toHaveBeenCalledWith("read_creator_ranking", { p_period: "week", p_viewer: null, p_locale: "ko" });
+    a.authorize.mockRejectedValueOnce(new AuthError("AUTHENTICATION_REQUIRED", 403, "blocked"));
+    expect((await a.handlers.creators(req("/x", { authorization: "Bearer blocked" }))).status).toBe(403);
     const b = make(() => { throw new Error("boom"); });
     expect((await b.handlers.creators(req("/x"))).status).toBe(503);
   });

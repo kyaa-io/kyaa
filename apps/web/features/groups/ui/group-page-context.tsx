@@ -67,6 +67,10 @@ export type GroupPageContextValue = {
   presence: GroupPresenceResult;
   /** 서버 상세로 그리는 동안 회원 메뉴 자리를 비워 둔다. */
   reserveMenu?: boolean;
+  /** 서버가 공개 접속 정보에서 인증 아티스트를 봤다. 접속 정보를 읽기 전까지 이름 옆 태그를 이 값으로 그린다. */
+  artistTag?: boolean;
+  /** 서버가 로그인 쿠키를 봤다. 로그인 확인이 끝날 때까지 회원 값(내 팬 등급) 자리를 같은 크기로 잡아 둔다. */
+  signedInHint?: boolean;
   /** The server read the page's public posts and found none: the home gallery has nothing to hold space for and the story preview opens at its empty height. */
   publicPostsEmpty?: boolean;
 };
@@ -87,13 +91,14 @@ const TAB_KEYS: Readonly<Record<string, readonly string[]>> = {
 };
 
 /** 페이지 상세·연결 크리에이터·접속·팬 등급을 한 번만 읽고, 가입 상태를 소유한다. 탭 본문은 useGroupPage()로 읽는다. */
-export function GroupPageProvider({ pageId, slug, celebrity: serverCelebrity, celebrityLocale, locale: localeProp, initialTab, initialDetail, reserveMenu = false, publicPostsEmpty = false, children }: {
+export function GroupPageProvider({ pageId, slug, celebrity: serverCelebrity, celebrityLocale, locale: localeProp, initialTab, initialDetail, reserveMenu = false, publicPostsEmpty = false, artistTag = false, children }: {
   pageId?: string;
   /** 서버가 비로그인 독자로 읽은 상세. 이 사람의 상세가 처음 도착할 때까지 머리를 그린다. */
   initialDetail?: GroupDetail;
   /** 로그인한 브라우저: 서버 상세로 그리는 동안 회원 메뉴 자리를 비워 둔다. */
   reserveMenu?: boolean;
   publicPostsEmpty?: boolean;
+  artistTag?: boolean;
   slug?: string;
   /** 서버가 읽은 크리에이터. `celebrityLocale`이 지금 언어와 다르면 다시 읽는다. */
   celebrity?: PublishedCelebrity;
@@ -111,7 +116,7 @@ export function GroupPageProvider({ pageId, slug, celebrity: serverCelebrity, ce
   const queryTab = initialTab ?? query?.get("tab") ?? "home";
   const viewerDetail = useGroupResource(url, parseDetail, { nameLocale: queryTab !== "manage" });
   // 서버 상세는 처음 읽는 동안만 쓴다. 가입·북마크 같은 이 사람의 값은 없으므로 그동안 행동 버튼은 기다린다.
-  const provisional = !viewerDetail.data && viewerDetail.loading && !viewerDetail.error && initialDetail?.page.id === pageId ? initialDetail : undefined;
+  const provisional = !viewerDetail.data && viewerDetail.loading && !viewerDetail.error && (pageId ? initialDetail?.page.id === pageId : Boolean(slug) && initialDetail?.page.slug === slug) ? initialDetail : undefined;
   const detail = provisional ? { ...viewerDetail, data: provisional } : viewerDetail;
   const page = detail.data?.page;
   const pageMatches = !pageId || page?.id === pageId;
@@ -196,8 +201,8 @@ export function GroupPageProvider({ pageId, slug, celebrity: serverCelebrity, ce
     locale, routePageId: pageId ?? null, routeSlug: slug ?? null, page: pageMatches ? page : undefined, detail: pageMatches ? viewerDetail.data : undefined, membership, celebrity,
     celebrityFailed: linked.error, retryCelebrity: linked.retry, kind, authenticated, ready, ownerKey, loading: detail.loading || !ready, error: detail.error || Boolean(page && !pageMatches), failure: detail.failure,
     refresh, hrefFor, activeTab, selectTab, preloadTab, startJoin, joinPending: pending, joinLabel: fanUiText(locale, kind === "fan" ? "starVerify" : "starJoin"), joinFormOpen, closeJoinForm: () => setJoinFormOpen(false), joinAnswer: answer, setJoinAnswer: setAnswer, submitJoin: () => void join({ answer }), joinFailed, actionFailed,
-    star, summary, presence, reserveMenu: Boolean(provisional && reserveMenu), publicPostsEmpty,
-  }), [activeTab, answer, authenticated, celebrity, viewerDetail.data, detail.error, detail.failure, detail.loading, hrefFor, join, joinFailed, actionFailed, joinFormOpen, kind, linked.error, linked.retry, locale, membership, ownerKey, page, pageId, pageMatches, pending, preloadTab, presence, provisional, publicPostsEmpty, ready, refresh, reserveMenu, selectTab, slug, star, startJoin, summary]);
+    star, summary, presence, reserveMenu: Boolean(provisional && reserveMenu), signedInHint: reserveMenu, artistTag, publicPostsEmpty,
+  }), [activeTab, answer, authenticated, celebrity, viewerDetail.data, detail.error, detail.failure, detail.loading, hrefFor, join, joinFailed, actionFailed, joinFormOpen, kind, linked.error, linked.retry, locale, membership, ownerKey, page, pageId, pageMatches, pending, preloadTab, presence, provisional, publicPostsEmpty, ready, refresh, reserveMenu, artistTag, selectTab, slug, star, startJoin, summary]);
   const presenceValue = useMemo(() => (presencePageId ? { pageId: presencePageId, result: presence } : null), [presence, presencePageId]);
   return <GroupPageContext.Provider value={value}><GroupPresenceContext.Provider value={presenceValue}>{children}</GroupPresenceContext.Provider></GroupPageContext.Provider>;
 }

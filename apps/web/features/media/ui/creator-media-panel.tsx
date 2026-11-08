@@ -62,7 +62,7 @@ export function CreatorMediaPanel({ slug, locale, channelId = slug === CHZZK_CRE
     router.replace(`${pathname}?${query.toString()}#celebrity-content` as Route, { scroll: false });
   }
   const auth = usePrivy(), session = useByUsSession();
-  const official = useNewsSource(`/api/celebrities/${encodeURIComponent(slug)}/media?locale=${toContentLocale(locale)}`, parseOfficial, key, { key: `${auth.ready}:${auth.authenticated}:${session.ownerId ?? auth.user?.id}:${session.generation}`, ready: !auth.ready || session.ready, getToken: async () => { if (!auth.ready || !auth.authenticated) return null; const token = await auth.getAccessToken(); if (!token) throw Error(); return token; } });
+  const official = useNewsSource(`/api/celebrities/${encodeURIComponent(slug)}/media?locale=${toContentLocale(locale)}`, parseOfficial, key, { key: auth.ready && auth.authenticated ? `member:${session.ownerId ?? auth.user?.id}:${session.generation}` : "public", ready: !auth.ready || session.ready, getToken: async () => { if (!auth.ready || !auth.authenticated) return null; const token = await auth.getAccessToken(); if (!token) throw Error(); return token; } });
   const youtube = useNewsSource(socialLinks.some(link => link.platform === "youtube") ? `/api/celebrities/${encodeURIComponent(slug)}/youtube` : null, parseOfficial, key);
   const instagram = useNewsSource(socialLinks.some(link => link.platform === "instagram") ? `/api/celebrities/${encodeURIComponent(slug)}/instagram` : null, parseInstagram, key);
   const chzzk = useNewsSource(channelId ? `/api/celebrities/${encodeURIComponent(slug)}/chzzk` : null, parseChzzk, key);
@@ -84,13 +84,13 @@ export function CreatorMediaPanel({ slug, locale, channelId = slug === CHZZK_CRE
   const active=items.find(item=>item.id===activeVideo),activeId=active?youtubeVideoId(active.href):null;
   const playerDialog=compact?<dialog ref={videoDialog} className={mediaStyles.videoDialog} aria-label={active?.title??c.videos} onClose={()=>setActiveVideo(null)}><header><strong>{active?.title}</strong><FanAction onClick={()=>videoDialog.current?.close()} leadingIcon={<X/>}>{closeLabels[locale]}</FanAction></header>{activeId&&<iframe ref={videoFrame} className={mediaStyles.player} title={active?.title??c.videos} src={'https://www.youtube.com/embed/'+activeId+'?autoplay=1&playsinline=1&hl='+locale} allow='autoplay; encrypted-media; picture-in-picture; fullscreen' allowFullScreen referrerPolicy='strict-origin-when-cross-origin'/>}</dialog>:null;
   const gallery = preview && compact;
-  function mediaCard(item: Media) {
+  function mediaCard(item: Media, index = -1) {
     const internal = item.href.startsWith("/");
     const externalSource = item.source === "YouTube" || item.source === "Instagram" || item.source === "CHZZK";
     const returnTo = preview ? `/${slug}?locale=${locale}` : boardHref(slug, locale, { section: "media", mediaFilter: filter === "all" ? undefined : filter });
     const href = internal ? `${item.href}?${new URLSearchParams({ locale, returnTo })}` : item.href;
     const id = (preview||compact) && item.kind !== "photos" ? youtubeVideoId(item.href) : null;
-    const thumbnail = item.asset ? <ContentAssetImage asset={item.asset} locale={locale} alt={item.title} loading="lazy" anonymousPreview={!auth.ready} /> : <MediaThumbnail key={`${item.image}:${item.href}`} image={item.image} href={item.href} kind={item.kind} source={item.source} locale={locale} />;
+    const thumbnail = item.asset ? <ContentAssetImage asset={item.asset} locale={locale} alt={item.title} loading="lazy" anonymousPreview={!auth.ready} /> : <MediaThumbnail key={`${item.image}:${item.href}`} image={item.image} href={item.href} kind={item.kind} source={item.source} locale={locale} priority={gallery && index === 0} />;
     const captionless = item.kind === "photos" && !item.title;
     const captionlessLabel = captionless ? `${c.photos} · ${new Date(item.date).toLocaleDateString(locale)}` : undefined;
     const body = captionless ? null : <span className={mediaStyles.cardBody}><strong>{item.title ? externalSource ? <span translate="no">{item.title.slice(0, 120)}</span> : <TranslatedText text={item.title.slice(0, 120)} locale={locale} controls={false} /> : c[item.kind]}</strong>{(!compact||!preview)&&<span className={mediaStyles.meta}>{item.source ? `${item.source} · ` : ""}{c[item.kind]}{!internal && <ArrowUpRight size={12} aria-hidden="true" />} · <time dateTime={item.date}>{new Date(item.date).toLocaleDateString(locale)}</time></span>}</span>;

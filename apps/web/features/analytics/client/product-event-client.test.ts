@@ -6,6 +6,7 @@ import {
   PAGE_VIEW_WINDOW_MS,
   pageViewIdempotencyKey,
   recordClientProductEvent,
+  recordProductEventV1,
 } from "./product-event-client";
 
 describe("page-view idempotency", () => {
@@ -209,5 +210,26 @@ describe("page-view idempotency", () => {
 
     const entries = JSON.parse(window.sessionStorage.getItem("byus.product-event.page-view-cache.v2") ?? "[]") as unknown[];
     expect(entries).toHaveLength(64);
+  });
+});
+
+describe("events recorded twice at once", () => {
+  afterEach(() => { vi.unstubAllGlobals(); vi.restoreAllMocks(); });
+
+  it("sends one request while the same idempotency key is on its way, and a new one after it settles", async () => {
+    vi.spyOn(navigator, "userAgent", "get").mockReturnValue("Mozilla/5.0");
+    let finish: (response: Response) => void = () => {};
+    const fetchMock = vi.fn().mockImplementation(() => new Promise<Response>((resolve) => { finish = resolve; }));
+    vi.stubGlobal("fetch", fetchMock);
+    const input = { eventName: "creator_page_view" as const, celebrityId: null, liveEventId: null, missionId: null, benefitId: null, source: "acquisition.session_landing", idempotencyKey: "acquisition:anonymous:00000000-0000-4000-8000-000000000001", properties: { channel: "direct", landing: "/", attribution: "session_first_touch" } };
+    const first = recordProductEventV1(input);
+    const second = recordProductEventV1(input);
+    await vi.waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
+    finish(new Response(null, { status: 201 }));
+    await expect(first).resolves.toBe(true);
+    await expect(second).resolves.toBe(true);
+    fetchMock.mockResolvedValueOnce(new Response(null, { status: 201 }));
+    await recordProductEventV1(input);
+    expect(fetchMock).toHaveBeenCalledTimes(2);
   });
 });

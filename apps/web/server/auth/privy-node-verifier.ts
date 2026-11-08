@@ -214,6 +214,12 @@ export function createPrivyNodeReauthenticationResolver(
   };
 }
 
+// One page load sends the same token on many API reads at once. While one check of a token is running, the others wait for
+// its answer instead of asking Privy again (no result is kept after it settles, so a revoked session is seen on the next read).
+type VerificationFlights = Map<string, ReturnType<PrivyAccessVerifier["verify"]>>;
+const sharedClientFlights: VerificationFlights = new Map();
+const injectedClientFlights = new WeakMap<PrivyNodeClientPort, VerificationFlights>();
+
 export function createPrivyNodeAccessVerifier(
   config: PrivyNodeServerConfig,
   client?: PrivyNodeClientPort,
@@ -223,7 +229,7 @@ export function createPrivyNodeAccessVerifier(
   const privy = client ?? new PrivyClient({ appId, appSecret });
   const lifecycle = createConfiguredAppleLifecycleGuard();
 
-  return {
+  const verifier: PrivyAccessVerifier = {
     async verify(accessToken) {
       if (isCognitoToken(accessToken)) {
         const { identity, mapping } = await resolveCognitoAccess(accessToken);
@@ -249,6 +255,22 @@ export function createPrivyNodeAccessVerifier(
         providerAccounts: providerAccounts(user),
         googleLinked: latestVerifiedGoogleEmail(user) !== null,
       };
+    },
+  };
+  // Every request builds its own verifier over a new Privy client, so checks join on the app and token, not on the instance.
+  let flights = sharedClientFlights;
+  if (client) {
+    flights = injectedClientFlights.get(client) ?? new Map();
+    injectedClientFlights.set(client, flights);
+  }
+  return {
+    verify(accessToken) {
+      const key = `${appId}:${accessToken}`;
+      const running = flights.get(key);
+      if (running) return running;
+      const check = verifier.verify(accessToken).finally(() => { flights.delete(key); });
+      flights.set(key, check);
+      return check;
     },
   };
 }

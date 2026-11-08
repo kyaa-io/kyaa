@@ -11,7 +11,7 @@ import type { AppLocale } from "@/i18n/locales";
 import type { PublishedCelebrity } from "@/server/content/content-domain";
 import type { GroupDetail } from "../domain/contracts";
 import { groupsCopy, pageUnavailable } from "./copy";
-import { CreatorFanGrade } from "./creator-fan-grade";
+import { CreatorFanGrade, CreatorFanGradePlaceholder } from "./creator-fan-grade";
 import { GroupArtistBadge } from "./group-artist-badge";
 import { GroupPageMenu } from "./group-page-menu";
 import { GroupPageProvider, useGroupPage } from "./group-page-context";
@@ -56,7 +56,7 @@ export function GroupPageHead() {
     star={g.star}
     badge={<GroupArtistBadge locale={g.locale} />}
     links={g.celebrity?.socialLinks.map((social) => ({ kind: social.platform, href: social.url }))}
-    utility={g.kind === "fan" && g.celebrity && g.authenticated ? <CreatorFanGrade slug={g.celebrity.slug} locale={g.locale} resource={g.summary} /> : undefined}
+    utility={g.kind === "fan" && g.celebrity ? g.authenticated ? <CreatorFanGrade slug={g.celebrity.slug} locale={g.locale} resource={g.summary} /> : g.signedInHint && !g.ready ? <CreatorFanGradePlaceholder /> : undefined : undefined}
     menu={g.detail?.membership ? <GroupPageMenu key={g.ownerKey} detail={g.detail} locale={g.locale} refresh={g.refresh} /> : g.reserveMenu ? <span aria-hidden="true" /> : undefined}
     stats={stats}
     tabs={tabs}
@@ -89,8 +89,8 @@ function GroupPageBody({ children }: { children: ReactNode }) {
 }
 
 /** `/pages/groups/{id}`의 레이아웃. 라우트 그룹 안이라 쿼리가 바뀌어도 다시 그려지지 않는다. */
-export function GroupPageFrame({ pageId, locale, initialTab, initialDetail, reserveMenu, publicPostsEmpty, celebrity, celebrityLocale, children }: { pageId: string; locale?: AppLocale; initialTab?: string; initialDetail?: GroupDetail; reserveMenu?: boolean; publicPostsEmpty?: boolean; celebrity?: PublishedCelebrity; celebrityLocale?: string; children: ReactNode }) {
-  return <GroupPageProvider pageId={pageId} locale={locale} initialTab={initialTab} initialDetail={initialDetail} reserveMenu={reserveMenu} publicPostsEmpty={publicPostsEmpty} celebrity={celebrity} celebrityLocale={celebrityLocale}><GroupFrameShell locale={locale}>{children}</GroupFrameShell></GroupPageProvider>;
+export function GroupPageFrame({ pageId, locale, initialTab, initialDetail, reserveMenu, publicPostsEmpty, artistTag, celebrity, celebrityLocale, children }: { pageId: string; locale?: AppLocale; initialTab?: string; initialDetail?: GroupDetail; reserveMenu?: boolean; publicPostsEmpty?: boolean; artistTag?: boolean; celebrity?: PublishedCelebrity; celebrityLocale?: string; children: ReactNode }) {
+  return <GroupPageProvider pageId={pageId} locale={locale} initialTab={initialTab} initialDetail={initialDetail} reserveMenu={reserveMenu} publicPostsEmpty={publicPostsEmpty} artistTag={artistTag} celebrity={celebrity} celebrityLocale={celebrityLocale}><GroupFrameShell locale={locale}>{children}</GroupFrameShell></GroupPageProvider>;
 }
 function GroupFrameShell({ locale, children }: { locale?: AppLocale; children: ReactNode }) {
   const g = useGroupPage();
@@ -98,8 +98,8 @@ function GroupFrameShell({ locale, children }: { locale?: AppLocale; children: R
 }
 
 /** `/{slug}`의 레이아웃. 서버가 읽은 크리에이터로 머리를 바로 그린다. */
-export function CreatorPageFrame({ slug, celebrity, celebrityLocale, locale, initialTab, children }: { slug: string; celebrity: PublishedCelebrity; celebrityLocale?: string; locale?: AppLocale; initialTab?: string; children: ReactNode }) {
-  return <GroupPageProvider slug={slug} celebrity={celebrity} celebrityLocale={celebrityLocale} locale={locale} initialTab={initialTab}><CreatorFrameShell>{children}</CreatorFrameShell></GroupPageProvider>;
+export function CreatorPageFrame({ slug, celebrity, celebrityLocale, locale, initialTab, initialDetail, reserveMenu, publicPostsEmpty, artistTag, children }: { slug: string; celebrity: PublishedCelebrity; celebrityLocale?: string; locale?: AppLocale; initialTab?: string; initialDetail?: GroupDetail; reserveMenu?: boolean; publicPostsEmpty?: boolean; artistTag?: boolean; children: ReactNode }) {
+  return <GroupPageProvider slug={slug} celebrity={celebrity} celebrityLocale={celebrityLocale} locale={locale} initialTab={initialTab} initialDetail={initialDetail} reserveMenu={reserveMenu} publicPostsEmpty={publicPostsEmpty} artistTag={artistTag}><CreatorFrameShell>{children}</CreatorFrameShell></GroupPageProvider>;
 }
 function CreatorFrameShell({ children }: { children: ReactNode }) {
   const g = useGroupPage();

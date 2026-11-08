@@ -2,6 +2,7 @@ import type { ComponentProps, ReactNode } from "react";
 import Link from "next/link";
 
 import styles from "./fan-navigation.module.css";
+import { IdleRoutePrefetch } from "./idle-route-prefetch";
 
 type LinkHref = ComponentProps<typeof Link>["href"];
 
@@ -45,13 +46,14 @@ export function FanPrimaryNavigation({
           )}
           aria-current={item.isCurrent ? "page" : undefined}
           href={item.href}
-          // The four main tabs are dynamic pages with no loading boundary, so the default prefetch reads nothing ahead; read the other tabs whole.
-          prefetch={item.isCurrent ? false : true}
+          // The main tabs are dynamic pages with no loading boundary: the default prefetch reads nothing ahead. They are read whole once the first load is idle.
+          prefetch={false}
         >
           {item.icon}
           {item.label}
         </Link>
       ))}
+      <IdleRoutePrefetch hrefs={items.flatMap((item) => !item.isCurrent && typeof item.href === "string" ? [item.href] : [])} />
     </nav>
   );
 }

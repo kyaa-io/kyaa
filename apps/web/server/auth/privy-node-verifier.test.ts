@@ -62,6 +62,25 @@ describe("@privy-io/node server adapter", () => {
     });
   });
 
+  it("asks Privy once for reads that carry the same token at the same time, and again after that check settles", async () => {
+    let release: (value: unknown) => void = () => {};
+    const verifyAccessToken = vi.fn().mockResolvedValue({ app_id: "app-1", user_id: "did:privy:user-1" });
+    const getUser = vi.fn().mockImplementation(() => new Promise((resolve) => { release = resolve; }));
+    const client = { utils: () => ({ auth: () => ({ verifyAccessToken }) }), users: () => ({ _get: getUser }) };
+    const config = { appId: "app-1", appSecret: "secret", appleLoginEnabled: false };
+    const first = createPrivyNodeAccessVerifier(config, client).verify("token-1");
+    const second = createPrivyNodeAccessVerifier(config, client).verify("token-1");
+    await vi.waitFor(() => expect(getUser).toHaveBeenCalledTimes(1));
+    release({ id: "did:privy:user-1", linked_accounts: [{ type: "google_oauth", email: "fan@example.com", verified_at: 20 }] });
+    await expect(first).resolves.toMatchObject({ privyUserId: "did:privy:user-1" });
+    await expect(second).resolves.toMatchObject({ privyUserId: "did:privy:user-1" });
+    expect(verifyAccessToken).toHaveBeenCalledTimes(1);
+
+    getUser.mockResolvedValueOnce({ id: "did:privy:user-1", linked_accounts: [] });
+    await createPrivyNodeAccessVerifier(config, client).verify("token-1");
+    expect(verifyAccessToken).toHaveBeenCalledTimes(2);
+  });
+
   it("keeps verified Google ahead of Apple and preserves Google provenance", async () => {
     const verifier = createPrivyNodeAccessVerifier({
       appId: "app-1",
