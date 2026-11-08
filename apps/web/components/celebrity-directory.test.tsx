@@ -487,18 +487,3 @@ it("marks only the Wave listing as private and explains check-in access", () => 
 vi.mock("@/features/content-safety/ui/use-automatic-translation", () => ({
   TranslatedText: ({ text, children, className, as: Tag = "span" }: { text: string; children?: import("react").ReactNode; className?: string; as?: "span" | "p" | "div" }) => <Tag className={className}>{children ?? text}</Tag>,
 }));
-
-it("leaves unlisted creators out of the browsing list but keeps them in My favorites", async () => {
-  authReady = true;
-  authenticated = false;
-  const guest = render(<CelebrityDirectory celebrities={publishedCelebrityFixtures} unlistedSlugs={["kara"]} locale="en" />);
-  expect(screen.getAllByRole("article")).toHaveLength(2);
-  expect(screen.queryByText("KARA")).not.toBeInTheDocument();
-  guest.unmount();
-  authenticated = true;
-  getAccessToken.mockResolvedValue("token");
-  vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: true, json: async () => ({ passports: [{ celebrity: { slug: "kara" }, score: ownedPassport.score }] }) }));
-  render(<CelebrityDirectory celebrities={publishedCelebrityFixtures} unlistedSlugs={["kara"]} locale="ko" />);
-  await screen.findByText("패스포트 보유");
-  expect(screen.getAllByRole("article")).toHaveLength(1);
-});

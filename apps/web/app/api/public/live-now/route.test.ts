@@ -380,6 +380,19 @@ describe("GET /api/public/live-now", () => {
     expect(captureLiveStarts.mock.calls[0]?.[0]).toMatchObject({ targets: [{ celebritySlug: "ifewknow" }, { celebritySlug: "testpage" }] });
   });
 
+  it("still captures live starts and answers without cards when the unlisted read fails", async () => {
+    const captureLiveStarts = vi.fn(async (_feed: unknown) => undefined);
+    const response = await createGetObservedLiveNow({
+      repository: { list: async () => [celebrity("ifewknow", "https://www.tiktok.com/@ifewknow")], listUnlistedSlugs: async () => { throw new Error("Unlisted creator query failed"); } },
+      observe: vi.fn().mockResolvedValue({ state: "offline", observedAt }),
+      now: () => new Date("2026-09-11T01:00:10.000Z"),
+      captureLiveStarts,
+    })(new Request("https://byus.kr/api/public/live-now?locale=ko"));
+    expect(response.status).toBe(200);
+    expect(await response.json()).toMatchObject({ items: [], targets: [] });
+    expect(captureLiveStarts).toHaveBeenCalledWith(expect.objectContaining({ targets: [expect.objectContaining({ celebritySlug: "ifewknow" })] }));
+  });
+
   it("rejects invalid locales before querying and maps content errors to 503", async () => {
     const list = vi.fn();
     const invalid = await createGetObservedLiveNow({ repository: { list, listUnlistedSlugs: noneUnlisted } })(

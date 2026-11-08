@@ -46,7 +46,9 @@ export function createGetObservedLiveNow(dependencies: LiveNowDependencies) {
     }
 
     try {
-      const [celebrities, unlisted] = await Promise.all([dependencies.repository.list(locale), dependencies.repository.listUnlistedSlugs()]);
+      // The unlisted read runs alongside and never blocks the feed or the alert capture; null means it failed.
+      const unlistedRead = dependencies.repository.listUnlistedSlugs().catch(() => null);
+      const celebrities = await dependencies.repository.list(locale);
       const version = new URL(request.url).searchParams.get("v");
       const feed = await buildObservedLiveFeed(
         celebrities,
@@ -60,7 +62,9 @@ export function createGetObservedLiveNow(dependencies: LiveNowDependencies) {
       // Live start alerts go to an unlisted creator's subscribers too; only the public strip leaves it out.
       try { await dependencies.captureLiveStarts?.(feed); }
       catch { console.error("YOUTUBE_LIVE_ALERT_CAPTURE_FAILED"); }
-      const shown = (item: { celebritySlug: string }) => !unlisted.has(item.celebritySlug);
+      // Without the unlisted set nothing counts as listed: the strip gets no cards rather than a test page's card.
+      const unlisted = await unlistedRead;
+      const shown = (item: { celebritySlug: string }) => unlisted !== null && !unlisted.has(item.celebritySlug);
       return NextResponse.json({ ...feed, items: feed.items.filter(shown), ...(feed.targets ? { targets: feed.targets.filter(shown) } : {}) }, {
         status: 200,
         headers: noStoreHeaders,

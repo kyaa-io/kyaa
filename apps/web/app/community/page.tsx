@@ -18,9 +18,11 @@ export default async function CommunityPage({ searchParams }: { searchParams: Pr
   const query = await searchParams, locale = parseAppLocale(query.locale);
   if (Array.isArray(query.creator)) notFound();
   const repository = createPublishedContentRepositoryFromEnvironment(), contentLocale = toContentLocale(locale);
-  const listed = await repository.listListed(contentLocale);
+  // A failed unlisted read empties only the menu and the default pick (no unlisted creator mixed in); a ?creator= link still opens.
+  const [all, unlisted] = await Promise.all([repository.list(contentLocale), repository.listUnlistedSlugs().catch(() => null)]);
+  const listed = unlisted === null ? [] : all.filter(({ slug }) => !unlisted.has(slug));
   // An unlisted creator stays out of the default pick and the menu, but its own link (?creator=) still opens.
-  const creator = selectCommunityCreator(listed, query.creator) ?? (query.creator === undefined ? undefined : await repository.findBySlug(contentLocale, query.creator) ?? undefined);
+  const creator = selectCommunityCreator(listed, query.creator) ?? (query.creator === undefined ? undefined : all.find(({ slug }) => slug === query.creator));
   if (query.creator !== undefined && !creator) notFound();
   const creators = creator && !listed.includes(creator) ? [...listed, creator] : listed;
   return <CommunityScreen key={`${creator?.slug}:${locale}:${query.tab}`} creators={creators} creator={creator} locale={locale} tab={parseCommunityTab(query.tab)} mediaOnly={query.media === "1"} />;

@@ -69,7 +69,7 @@ export function directoryIntroduction(summary: string, locale: AppLocale) {
   return Array.from(sentences)[0]?.segment.trim() ?? "";
 }
 
-export function CelebrityDirectory({ celebrities, unlistedSlugs = [], locale, initialQuery = "", initialSort = "published", initialOwnedOnly, initialRole = "all" }: { celebrities: readonly DirectoryCelebrity[]; unlistedSlugs?: readonly string[]; locale: AppLocale; initialQuery?: string; initialSort?: SortOrder; initialOwnedOnly?: boolean; initialRole?: CreatorRoleFilter }) {
+export function CelebrityDirectory({ celebrities, locale, initialQuery = "", initialSort = "published", initialOwnedOnly, initialRole = "all" }: { celebrities: readonly DirectoryCelebrity[]; locale: AppLocale; initialQuery?: string; initialSort?: SortOrder; initialOwnedOnly?: boolean; initialRole?: CreatorRoleFilter }) {
   const t = copy[locale], discovery = discoveryCopy(locale);
   const localeQuery = `?locale=${locale}`;
   const auth = usePrivy();
@@ -92,11 +92,9 @@ export function CelebrityDirectory({ celebrities, unlistedSlugs = [], locale, in
   const visibleCelebrities = useMemo(() => {
     const normalized = query.trim().toLocaleLowerCase("ko-KR");
     const ownedSlugs = passportState.status === "ready" ? passportState.passports : new Set<string>();
-    // As on the home rail: unlisted creators stay out of the browsing list; the viewer's own list still shows them.
-    const unlisted = new Set(unlistedSlugs);
     const filtered = celebrities.filter((celebrity) => {
       const matchesQuery = !normalized || celebrity.name.toLocaleLowerCase("ko-KR").includes(normalized);
-      return matchesQuery && matchesCreatorRole(celebrity.roles, role) && (ownedOnly ? passportState.status === "ready" && ownedSlugs.has(celebrity.slug) : !unlisted.has(celebrity.slug));
+      return matchesQuery && matchesCreatorRole(celebrity.roles, role) && (!ownedOnly || (passportState.status === "ready" && ownedSlugs.has(celebrity.slug)));
     });
     if (sort === "name-asc") {
       return filtered.toSorted((left, right) => left.name.localeCompare(right.name, locale));
@@ -107,7 +105,7 @@ export function CelebrityDirectory({ celebrities, unlistedSlugs = [], locale, in
     return orderCreatorsForDiscovery(filtered).toSorted((left, right) =>
       Number(ownedSlugs.has(right.slug)) - Number(ownedSlugs.has(left.slug)),
     );
-  }, [celebrities, unlistedSlugs, locale, ownedOnly, passportState, query, sort, role]);
+  }, [celebrities, locale, ownedOnly, passportState, query, sort, role]);
 
   const loginReturnQuery = new URLSearchParams({ locale, owned: "1", q: query, sort });
   const passportLoginHref = `/login?${new URLSearchParams({ locale, returnTo: `/celebrities?${loginReturnQuery}` })}` as Route;
