@@ -14,7 +14,7 @@ import { missionProgress } from "@/features/dukjil/domain/dukjil-ui";
 import { GroupRequestError, useGroupRequest, useGroupResource } from "@/features/groups/ui/use-group-resource";
 import { fanLoginHref } from "@/components/login-href";
 import type { AppLocale } from "@/i18n/locales";
-import { parseShareProofUrl, shareProofListSchema, shareProofResultSchema } from "../domain/share-proof";
+import { checkShareProofUrl, shareProofListSchema, shareProofResultSchema } from "../domain/share-proof";
 import { shareProofCopy, sharePlatformName } from "./share-proof-copy";
 import gridStyles from "@/features/certification/ui/certification-grid.module.css";
 import styles from "./share-proof.module.css";
@@ -50,7 +50,7 @@ export function ShareProofDialog({ slug, locale, onClose }: { slug: string; loca
   const pathname = usePathname() ?? "/", params = useSearchParams(), router = useRouter();
   const { request, authenticated, ready } = useGroupRequest();
   const list = useGroupResource(authenticated ? `/api/me/share-proofs?creator=${encodeURIComponent(slug)}` : null, parseList);
-  const [url, setUrl] = useState(""), [problem, setProblem] = useState(""), [busy, setBusy] = useState(false), [linkBusy, setLinkBusy] = useState(false);
+  const [url, setUrl] = useState(""), [own, setOwn] = useState(false), [problem, setProblem] = useState(""), [ownProblem, setOwnProblem] = useState(false), [busy, setBusy] = useState(false), [linkBusy, setLinkBusy] = useState(false);
   const { burst, add, clear } = usePointRewardBurst();
   async function shareLink() {
     if (linkBusy) return;
@@ -67,16 +67,20 @@ export function ShareProofDialog({ slug, locale, onClose }: { slug: string; loca
   async function submit(event?: FormEvent) {
     event?.preventDefault();
     if (busy) return;
-    if (!parseShareProofUrl(url)) { setProblem(c.invalid); return; }
-    setBusy(true); setProblem("");
+    const checked = checkShareProofUrl(url);
+    if (!checked.ok) { setProblem(checked.problem === "short" ? c.short : checked.problem === "not_post" ? c.notPost : c.invalid); return; }
+    if (!own) { setOwnProblem(true); return; }
+    setBusy(true); setProblem(""); setOwnProblem(false);
     try {
-      const result = shareProofResultSchema.parse(await request("/api/me/share-proofs", { method: "POST", body: JSON.stringify({ creator: slug, url: url.trim() }) }));
-      setUrl("");
-      if (result.reward) add(result.reward.points);
-      else if (result.rewardSkipped === "daily_limit") showFanToast({ title: c.dailyLimit, tone: "neutral" });
+      const result = shareProofResultSchema.parse(await request("/api/me/share-proofs", { method: "POST", body: JSON.stringify({ creator: slug, url: url.trim(), ownPost: true }) }));
+      setUrl(""); setOwn(false);
+      if (result.reward?.points) add(result.reward.points);
+      else if (result.reward?.skippedReason === "daily_limit") showFanToast({ title: c.dailyLimit, tone: "neutral" });
+      else if (result.replayed) showFanToast({ title: c.used, tone: "neutral" });
     } catch (error) {
       const code = error instanceof GroupRequestError ? error.code : "";
-      setProblem(code === "SHARE_PROOF_URL_INVALID" || code === "INVALID_REQUEST" ? c.invalid : code === "SHARE_PROOF_URL_USED" ? c.used : code === "PASSPORT_REQUIRED" ? c.passport : c.failed);
+      if (code === "SHARE_PROOF_OWN_POST_REQUIRED") { setOwnProblem(true); return; }
+      setProblem(code === "SHARE_PROOF_URL_SHORT" ? c.short : code === "SHARE_PROOF_URL_NOT_POST" ? c.notPost : code === "SHARE_PROOF_URL_UNSUPPORTED" || code === "INVALID_REQUEST" ? c.invalid : code === "PASSPORT_REQUIRED" ? c.passport : c.failed);
     } finally { setBusy(false); }
   }
   const returnTo = `${pathname}?${params?.toString() ?? ""}`;
@@ -93,13 +97,18 @@ export function ShareProofDialog({ slug, locale, onClose }: { slug: string; loca
         <input id={fieldId} className={styles.input} type="url" inputMode="url" autoComplete="off" spellCheck={false} placeholder="https://" value={url}
           onChange={event => { setUrl(event.target.value); if (problem) setProblem(""); }} aria-invalid={Boolean(problem) || undefined} aria-describedby={problem ? `${fieldId}-error` : undefined} disabled={!authenticated || busy} maxLength={600} />
         {problem && <p id={`${fieldId}-error`} className={styles.error} role="alert">{problem}</p>}
+        <label className={styles.check}>
+          <input type="checkbox" checked={own} onChange={event => { setOwn(event.target.checked); if (event.target.checked) setOwnProblem(false); }} disabled={!authenticated || busy} required aria-invalid={ownProblem || undefined} aria-describedby={ownProblem ? `${fieldId}-own-error` : undefined} />
+          <span>{c.own}</span>
+        </label>
+        {ownProblem && <p id={`${fieldId}-own-error`} className={styles.error} role="alert">{c.ownRequired}</p>}
       </form>
       {ready && !authenticated ? null : <section className={styles.step} aria-labelledby={`${fieldId}-mine`}>
         <p id={`${fieldId}-mine`} className={styles.stepTitle}>{c.mine}</p>
         {list.loading ? <FanSkeletonRows rows={2} variant="plain" /> : list.data?.items.length ? <ul className={styles.list}>{list.data.items.slice(0, 5).map(item => <li key={item.id}>
           <a href={item.url} target="_blank" rel="noopener noreferrer" data-outbound-tracking="off">{sharePlatformName(locale, item.platform)}</a>
           <time dateTime={item.createdAt}>{new Date(item.createdAt).toLocaleDateString(locale, { month: "2-digit", day: "2-digit" })}</time>
-          <span>{item.points ? `+${item.points.toLocaleString(locale)}P` : c.noPoints}</span>
+          <span data-status={item.status}>{item.status === "revoked" ? c.revoked : item.points ? `+${item.points.toLocaleString(locale)}P` : c.noPoints}</span>
         </li>)}</ul> : <p className={styles.muted}>{c.none}</p>}
       </section>}
     </div>
@@ -117,6 +126,6 @@ export function ShareProofHistoryRows({ slug, locale, classes, empty }: { slug: 
   const next = new URLSearchParams(params?.toString()); next.set("share", "1");
   return <>{items.map(item => <Link key={item.id} href={`${pathname}?${next.toString()}` as Route} scroll={false} className={classes.row} data-share-proof-row="">
     <span className={classes.copy}><strong>{c.title}</strong><small>{sharePlatformName(locale, item.platform)}</small><small>{new Intl.DateTimeFormat(locale, { calendar: "gregory", dateStyle: "medium" }).format(new Date(item.createdAt))}</small></span>
-    <span className={classes.status} data-status="approved">{item.points ? `+${item.points.toLocaleString(locale)}P` : c.noPoints}</span>
+    <span className={classes.status} data-status={item.status === "revoked" ? "rejected" : "approved"}>{item.status === "revoked" ? c.revoked : item.points ? `+${item.points.toLocaleString(locale)}P` : c.noPoints}</span>
   </Link>)}</>;
 }

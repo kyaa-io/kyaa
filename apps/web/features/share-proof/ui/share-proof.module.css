@@ -11,3 +11,5 @@
 .list li:first-child{border-top:0}
 .list a{overflow:hidden;color:inherit;font-weight:var(--fan-item-title-weight);text-overflow:ellipsis;white-space:nowrap}
 .list time,.list span{color:var(--color-muted);font-variant-numeric:tabular-nums;white-space:nowrap}
+.check{display:flex;align-items:center;gap:var(--space-2);min-height:44px;font-size:var(--fan-metadata-size);line-height:20px;font-weight:var(--fan-item-title-weight);cursor:pointer}
+.check input{width:20px;height:20px;margin:0;accent-color:var(--color-accent)}

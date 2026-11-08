@@ -19,7 +19,9 @@ import { shareProofCopy } from "./share-proof-copy";
 
 beforeEach(() => { h.authenticated = true; h.list = { items: [] }; h.request.mockReset(); h.toast.mockReset(); h.burst.mockReset(); h.replace.mockReset(); h.search = "tab=certifications&share=1&locale=ko"; });
 afterEach(cleanup);
-const field = () => screen.getByLabelText("2. SNS에 올린 글 주소");
+const field = () => screen.getByLabelText("2. SNS에 올린 게시물 주소");
+const XURL = "https://x.com/fan/status/1850000000000000001";
+const own = () => fireEvent.click(screen.getByRole("checkbox", { name: "내가 직접 올린 게시물이에요" }));
 
 it("is a tile of the 인증 list with today's share count, opening the proof dialog in the address", () => {
   h.search = "tab=certifications&locale=ko";
@@ -34,33 +36,44 @@ it("checks the address on the device first and names a profile address as the pr
   render(<ShareProofTile slug="elina" locale="ko" />);
   fireEvent.change(field(), { target: { value: "https://www.instagram.com/elina_official/" } });
   fireEvent.click(screen.getByRole("button", { name: "인증하기" }));
-  expect(await screen.findByRole("alert")).toHaveTextContent("프로필 주소는 인증되지 않아요");
+  expect(await screen.findByRole("alert")).toHaveTextContent("게시물 주소가 아니에요");
+  fireEvent.change(field(), { target: { value: "https://vm.tiktok.com/ZMabc123/" } });
+  fireEvent.click(screen.getByRole("button", { name: "인증하기" }));
+  expect(await screen.findByRole("alert")).toHaveTextContent("단축 주소는 받지 않아요");
   expect(h.request).not.toHaveBeenCalled();
 });
 
-it("submits a post address and celebrates the server's grant", async () => {
+it("asks for the own-post confirmation before sending", async () => {
+  render(<ShareProofTile slug="elina" locale="ko" />);
+  fireEvent.change(field(), { target: { value: XURL } });
+  fireEvent.click(screen.getByRole("button", { name: "인증하기" }));
+  expect(await screen.findByRole("alert")).toHaveTextContent("직접 올린 게시물인지 확인해 주세요.");
+  expect(h.request).not.toHaveBeenCalled();
+});
+
+it("submits a confirmed post address and celebrates the server's grant", async () => {
   h.request.mockResolvedValue({ id: "33333333-3333-4333-8333-333333333333", replayed: false, reward: { points: 10, stamps: 1 } });
   render(<ShareProofTile slug="elina" locale="ko" />);
-  fireEvent.change(field(), { target: { value: "https://x.com/fan/status/1" } });
+  fireEvent.change(field(), { target: { value: XURL } }); own();
   fireEvent.click(screen.getByRole("button", { name: "인증하기" }));
   await waitFor(() => expect(h.burst).toHaveBeenCalledWith(10));
-  expect(h.request).toHaveBeenCalledWith("/api/me/share-proofs", { method: "POST", body: JSON.stringify({ creator: "elina", url: "https://x.com/fan/status/1" }) });
+  expect(h.request).toHaveBeenCalledWith("/api/me/share-proofs", { method: "POST", body: JSON.stringify({ creator: "elina", url: XURL, ownPost: true }) });
   expect(field()).toHaveValue("");
 });
 
-it.each([["SHARE_PROOF_URL_USED", "이미 인증에 쓰인 글이에요."], ["PASSPORT_REQUIRED", "패스포트가 있어야"], ["SHARE_PROOF_UNAVAILABLE", "인증하지 못했어요"]])("explains %s", async (code, line) => {
+it.each([["SHARE_PROOF_URL_SHORT", "단축 주소는 받지 않아요"], ["PASSPORT_REQUIRED", "패스포트가 있어야"], ["SHARE_PROOF_UNAVAILABLE", "인증하지 못했어요"]])("explains %s", async (code, line) => {
   const { GroupRequestError } = await import("@/features/groups/ui/use-group-resource");
   h.request.mockRejectedValue(new GroupRequestError(409, code));
   render(<ShareProofTile slug="elina" locale="ko" />);
-  fireEvent.change(field(), { target: { value: "https://x.com/fan/status/1" } });
+  fireEvent.change(field(), { target: { value: XURL } }); own();
   fireEvent.click(screen.getByRole("button", { name: "인증하기" }));
   expect(await screen.findByRole("alert")).toHaveTextContent(line);
 });
 
 it("says the daily cap in the shared toast when the proof paid nothing", async () => {
-  h.request.mockResolvedValue({ id: "33333333-3333-4333-8333-333333333333", replayed: false, rewardSkipped: "daily_limit" });
+  h.request.mockResolvedValue({ id: "33333333-3333-4333-8333-333333333333", replayed: false, reward: { points: 0, stamps: 0, skippedReason: "daily_limit" } });
   render(<ShareProofTile slug="elina" locale="ko" />);
-  fireEvent.change(field(), { target: { value: "https://x.com/fan/status/1" } });
+  fireEvent.change(field(), { target: { value: XURL } }); own();
   fireEvent.click(screen.getByRole("button", { name: "인증하기" }));
   await waitFor(() => expect(h.toast).toHaveBeenCalledWith({ title: "인증은 됐어요. 오늘 공유 포인트는 모두 받았어요.", tone: "neutral" }));
   expect(h.burst).not.toHaveBeenCalled();
@@ -77,15 +90,19 @@ it("keeps the dialog for a signed-out fan with a sign-in action and no list read
 });
 
 it("lists own proofs in the dialog and as rows of the 인증 history", () => {
-  h.list = { items: [{ id: "33333333-3333-4333-8333-333333333333", platform: "instagram", url: "https://www.instagram.com/p/C1abc/", points: 10, createdAt: "2026-11-08T09:48:11+09:00" }] };
+  h.list = { items: [{ id: "33333333-3333-4333-8333-333333333333", platform: "instagram", url: "https://www.instagram.com/p/C1aBc_D-2xY/", points: 10, createdAt: "2026-11-08T09:48:11+09:00", status: "accepted" },
+    { id: "44444444-4444-4444-8444-444444444444", platform: "x", url: XURL, points: 10, createdAt: "2026-11-07T09:48:11+09:00", status: "revoked" }] };
   render(<ShareProofTile slug="elina" locale="ko" />);
   const link = screen.getByRole("link", { name: "인스타그램" });
-  expect(link).toHaveAttribute("href", "https://www.instagram.com/p/C1abc/");
+  expect(link).toHaveAttribute("href", "https://www.instagram.com/p/C1aBc_D-2xY/");
+  expect(screen.getByRole("link", { name: "X" }).closest("li")).toHaveTextContent("운영자 취소");
   expect(link).toHaveAttribute("data-outbound-tracking", "off");
   cleanup();
   h.search = "tab=certifications&locale=ko";
   render(<ShareProofHistoryRows slug="elina" locale="ko" classes={{ row: "row", copy: "copy", status: "status" }} empty={<p>없음</p>} />);
-  expect(screen.getByRole("link", { name: /SNS 공유 인증/ })).toHaveTextContent("+10P");
+  const rows = screen.getAllByRole("link", { name: /SNS 공유 인증/ });
+  expect(rows[0]).toHaveTextContent("+10P");
+  expect(rows[1]).toHaveTextContent("운영자 취소");
   expect(screen.queryByText("없음")).toBeNull();
 });
 
