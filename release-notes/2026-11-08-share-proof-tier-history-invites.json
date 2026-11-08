@@ -7,7 +7,7 @@
     "친구 초대 링크를 복사하면 화면 아래 알림으로 알려 주고, 초대 코드 등록이 안 되면 내 코드·이미 패스포트를 받은 계정·이미 초대 관계가 있는 계정처럼 이유를 나눠서 알려 줘요.",
     "첨부한 그림은 로컬 확인 화면(비로그인 공유 인증 창)이며 운영 화면이 아니에요."
   ],
-  "path": "/elina?tab=certifications&share=1",
+  "path": "/elina",
   "images": [
     "release-notes/images/2026-11-08-share-proof-local.png"
   ]

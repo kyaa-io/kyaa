@@ -704,6 +704,17 @@ begin
   -- SHARE has verified source evidence but no ActionHub action code. Even while
   -- all mapped routes are enabled, it must retain its canonical legacy job.
   share_link:=public.create_community_stamp_share_link(owner,'fan-action-producer');
+  -- 20261215070000: with link-opening payouts off (the default) the opening is recorded and nothing is issued on any lane.
+  perform pg_temp.assert(not public.share_visit_payouts_enabled(), 'share link opening payouts are not off by default');
+  perform public.visit_community_stamp_share_link(invitee,share_link->>'token');
+  perform pg_temp.assert(exists(select 1 from public.fan_share_link_opens o join public.community_stamp_share_links link on link.id=o.share_link_id
+      where link.token=share_link->>'token' and o.visitor_app_user_id=invitee)
+    and not exists(select 1 from public.community_stamp_share_visits visit join public.community_stamp_share_links link on link.id=visit.share_link_id
+      where link.token=share_link->>'token')
+    and not exists(select 1 from public.community_stamps where app_user_id=owner and celebrity_id=creator and kind='share'),
+    'share link opening paid while payouts are off');
+  -- The legacy share lane below is checked with the setting on (this transaction only).
+  update public.fan_share_settings set visit_payouts=true where singleton;
   perform public.visit_community_stamp_share_link(invitee,share_link->>'token');
   perform public.visit_community_stamp_share_link(invitee,share_link->>'token');
   perform pg_temp.assert((select count(*) from public.community_stamps

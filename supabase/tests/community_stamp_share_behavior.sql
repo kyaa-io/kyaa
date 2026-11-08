@@ -123,6 +123,22 @@ begin
     raise exception 'resolve or self visit awarded a share stamp';
   end if;
 
+  -- 20261215070000: opening a share link pays only while fan_share_settings.visit_payouts is on (default off). Off: the opening is
+  -- recorded once in fan_share_link_opens, with no paying visit row and no share stamp; navigation is unchanged.
+  if public.share_visit_payouts_enabled() then raise exception 'share link opening payouts are not off by default'; end if;
+  result:=public.visit_community_stamp_share_link(visitor_a,owner_link->>'token');
+  perform public.visit_community_stamp_share_link(visitor_a,owner_link->>'token');
+  if result is distinct from jsonb_build_object('creator','community-share-proof')
+    or (select count(*) from public.fan_share_link_opens o join public.community_stamp_share_links link on link.id=o.share_link_id
+      where link.owner_app_user_id=owner and link.celebrity_id=creator and o.visitor_app_user_id=visitor_a)<>1
+    or exists(select 1 from public.community_stamp_share_visits visit join public.community_stamp_share_links link on link.id=visit.share_link_id
+      where link.owner_app_user_id=owner and link.celebrity_id=creator)
+    or exists(select 1 from public.community_stamps where app_user_id=owner and celebrity_id=creator and kind='share') then
+    raise exception 'share link opening paid or was not recorded while payouts are off';
+  end if;
+  -- The legacy visit payout below is checked with the setting on (this transaction only).
+  update public.fan_share_settings set visit_payouts=true where singleton;
+
   result:=public.visit_community_stamp_share_link(visitor_a,owner_link->>'token');
   if result is distinct from jsonb_build_object('creator','community-share-proof') then
     raise exception 'verified share visit changed navigation DTO';
