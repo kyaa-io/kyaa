@@ -68,18 +68,14 @@ export function createRankingsHandlers(deps: RankingsDependencies) {
     await deps.rpc("refresh_ranking_snapshots", {});
     return deps.rpc(name, args);
   };
-  // Home day table (decision 2026-11-08 08:25): every environment builds the day on read; the database locks and checks again, so concurrent first
-  // readers build once. When an earlier day is on hand it answers at once and today is built behind the response; only an empty table waits for the
-  // build. A build or re-read that fails never turns into a 503: the answer already read is returned.
+  // Home day table (decision 2026-11-08 08:25): every environment builds the day on read. An answer not from today (KST) asks the database to build
+  // today once (it locks and checks again, so concurrent first readers build once) and is read again. Later reads of the day only read.
   const kstDay = () => new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Seoul", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date(now()));
-  let building: Promise<unknown> | null = null;
-  const build = () => building ??= deps.rpc("ensure_home_rankings", {}).catch(() => undefined).finally(() => { building = null; });
   const readHome = async (name: string, args: Record<string, unknown>) => {
     const raw = await deps.rpc(name, args);
     if (obj(raw).builtDay === kstDay()) return raw;
-    if (obj(raw).day) { void build(); return raw; }
-    await build();
-    try { return await deps.rpc(name, args); } catch { return raw; }
+    await deps.rpc("ensure_home_rankings", {});
+    return deps.rpc(name, args);
   };
   const locale = (request: Request) => z.string().regex(/^[A-Za-z-]{2,12}$/).parse(one(request, "locale") ?? "ko");
   const celebrity = async (idOrSlug: string) => {

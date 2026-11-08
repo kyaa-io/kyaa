@@ -164,33 +164,18 @@ describe("rankings routes", () => {
     expect((await handlers.home(req("/x?limit=21"))).status).toBe(400);
   });
 
-  it("answers at once with an earlier day and builds today behind the response, once", async () => {
+  it("builds today's home table once on read when the answer is not from today, in every environment", async () => {
     const t = Date.parse("2026-11-08T15:30:00Z"); // 2026-11-09 00:30 KST
-    let release!: () => void;
-    const { handlers, rpc } = make((name) => name === "ensure_home_rankings" ? new Promise((done) => { release = () => done({ built: true }); })
-      : { day: "2026-11-08", builtDay: "2026-11-08", computedAt: null, comparable: false, rows: [], me: null }, { now: () => t });
-    const [first, second] = await Promise.all([handlers.home(req("/x")), handlers.home(req("/x?kind=creators"))]);
-    expect([first.status, second.status]).toEqual([200, 200]);
-    expect((await first.json()).day).toBe("2026-11-08");
-    expect(rpc.mock.calls.filter(([n]) => n === "ensure_home_rankings")).toHaveLength(1);
-    release();
-  });
-
-  it("waits for the build only when no day exists, and never answers 503 because the build failed", async () => {
-    const t = Date.parse("2026-11-08T15:30:00Z");
-    let built = false;
-    const empty = { day: null, builtDay: null, computedAt: null, comparable: false, rows: [], me: null };
+    let built = "2026-11-08";
     const { handlers, rpc } = make((name) => {
-      if (name === "ensure_home_rankings") { built = true; return { built: true }; }
-      return built ? { ...empty, day: "2026-11-09", builtDay: "2026-11-09" } : empty;
+      if (name === "ensure_home_rankings") { built = "2026-11-09"; return { day: built, built: true }; }
+      return { day: built, builtDay: built, computedAt: null, comparable: false, rows: [], me: null };
     }, { now: () => t });
-    const body = await (await handlers.home(req("/x"))).json();
+    await handlers.home(req("/x"));
     expect(rpc.mock.calls.map(([n]) => n)).toEqual(["read_home_fan_ranking", "ensure_home_rankings", "read_home_fan_ranking"]);
-    expect(body.day).toBe("2026-11-09");
-    const failing = make((name) => { if (name === "ensure_home_rankings") throw new Error("statement timeout"); return empty; }, { now: () => t });
-    const res = await failing.handlers.home(req("/x"));
-    expect(res.status).toBe(200);
-    expect((await res.json()).rows).toEqual([]);
+    rpc.mockClear();
+    await handlers.home(req("/x?kind=creators"));
+    expect(rpc.mock.calls.map(([n]) => n)).toEqual(["read_home_creator_ranking"]);
   });
 
   it("lists the challenges switched on, and fails closed on an odd answer", async () => {
