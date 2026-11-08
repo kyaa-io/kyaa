@@ -111,6 +111,21 @@ begin
   if (r->>'disliked')::boolean then raise exception 'Group cancel failed'; end if;
   begin perform public.groups_content_dispatch('dislike',null,gp.page_id,gp.id,jsonb_build_object('disliked',true)); raise exception 'accepted';
   exception when others then if sqlerrm not like '%GROUPS_FORBIDDEN%' then raise; end if; end;
+  -- A restricted member is refused the dislike exactly like the like (review r4 M3). Needs one report and one admin row.
+  if exists(select 1 from public.content_reports) and exists(select 1 from public.admin_allowlist) then
+    insert into public.app_user_moderation_restrictions(app_user_id,report_id,reason,actor_admin_id)
+      values(m1,(select id from public.content_reports limit 1),'post_dislikes test restriction',(select id from public.admin_allowlist limit 1))
+      on conflict (app_user_id) do update set revoked_at=null;
+    begin perform public.groups_content_dispatch('reaction',m1,gp.page_id,gp.id,jsonb_build_object('liked',true,'requestId',gen_random_uuid())); raise exception 'like accepted';
+    exception when others then if sqlerrm not like '%FAN_WEB_ACTIVE_ACCOUNT_REQUIRED%' then raise; end if; end;
+    begin perform public.groups_content_dispatch('dislike',m1,gp.page_id,gp.id,jsonb_build_object('disliked',true,'requestId',gen_random_uuid())); raise exception 'restricted dislike accepted';
+    exception when others then if sqlerrm not like '%FAN_WEB_ACTIVE_ACCOUNT_REQUIRED%' then raise; end if; end;
+    if exists(select 1 from public.group_post_dislikes where post_id=gp.id and app_user_id=m1) then raise exception 'Restricted dislike stored'; end if;
+    begin perform public.set_fan_post_reaction(m1,fp.id,'dislike'); raise exception 'restricted fan dislike accepted';
+    exception when others then if sqlerrm not like '%FAN_WEB_%' then raise; end if; end;
+  else
+    raise notice 'post_dislikes: restriction case skipped (no report or admin row)';
+  end if;
   raise notice 'post_dislikes: ok (fan post %, group post %)', fp.id, gp.id;
 end $$;
 

@@ -137,8 +137,10 @@ returns jsonb language plpgsql security definer set search_path='' as $$
 declare result jsonb; v_role text; v_disliked boolean;
 begin
  if p_operation='dislike' then
-  -- The same gates the 'reaction' operation passes: signed in, page readable, a member, the post visible.
+  -- The same gates the 'reaction' operation passes: signed in, active and unrestricted, page readable, a member, the post visible.
   if p_actor is null then raise exception 'GROUPS_FORBIDDEN'; end if;
+  -- An active, unrestricted account, checked first like every content write (review r4 M3).
+  perform public.fan_web_lock_active_user(p_actor);
   if p_page_id is null then raise exception 'GROUPS_NOT_FOUND'; end if;
   v_disliked:=(p_input->>'disliked')::boolean;
   if v_disliked is null then raise exception 'GROUPS_INVALID_REQUEST'; end if;
@@ -168,6 +170,29 @@ revoke all on function public.clear_opposite_post_reaction(),public.scrub_post_d
 grant execute on function public.read_fan_post_reaction(uuid,uuid),public.set_fan_post_reaction(uuid,uuid,text),
  public.groups_content_dispatch(text,uuid,uuid,uuid,jsonb,uuid) to service_role;
 
+-- Review r4 M2: the functions above are owned by the applying role. In dev that role is not a superuser and some of the tables
+-- they read or write directly are owned by another role or have FORCE row security with no policy for it, which makes reads
+-- answer 0 rows (a liked post read as no reaction) and the write to content_write_events fail with 42501. Reproduced locally
+-- with a non-superuser owner that is a member of the table owners. Same remedy as 20261210240000 (p3_fn_owner_<role>):
+-- the privilege it needs and a policy for that role alone, only where row security would otherwise apply to it.
+do $$
+declare me record; t record;
+begin
+ select oid,rolname,rolsuper,rolbypassrls into me from pg_roles where rolname=current_user;
+ if me.rolsuper or me.rolbypassrls then return; end if;
+ for t in select * from (values
+   ('fan_post_likes','select, delete'),('content_write_events','select, insert'),('fan_posts','select'),
+   ('group_pages','select'),('group_memberships','select'),('group_posts','select'),('group_post_reactions','select, delete'),
+   ('channel_operators','select'),('account_deletion_requests','select'),('app_users','select')) v(tname,privs) loop
+  execute format('grant %s on table public.%I to %I',t.privs,t.tname,me.rolname);
+  if exists(select 1 from pg_class c where c.oid=('public.'||t.tname)::regclass and c.relrowsecurity
+      and (c.relforcerowsecurity or not pg_has_role(me.oid,c.relowner,'USAGE')))
+    and not exists(select 1 from pg_policy pol where pol.polrelid=('public.'||t.tname)::regclass and me.oid=any(pol.polroles)) then
+   execute format('create policy %I on public.%I for all to %I using (true) with check (true)','p3_fn_owner_'||me.rolname,t.tname,me.rolname);
+  end if;
+ end loop;
+end $$;
+
 -- Same cause as 20261212030000: a renamed or reused function's ACL must name the owners of the security definer functions that call it.
 do $$declare target regprocedure;owner_name name;target_owner name;begin
  foreach target in array array[
@@ -186,3 +211,6 @@ do $$declare target regprocedure;owner_name name;target_owner name;begin
  end loop;
 end$$;
 commit;
+
+-- PostgREST must see the new RPCs before the web calls them (review r4 M1).
+notify pgrst, 'reload schema';

@@ -95,8 +95,10 @@ class FetchBackedXhr {
   send(body?: Blob | null) {
     void fetch(this.url, { method: this.method, headers: this.headers, body: body ?? undefined, signal: this.controller.signal, credentials: "omit" }).then(response => {
       const size = body instanceof Blob ? body.size : 0;
-      this.upload.onprogress?.({ lengthComputable: size > 0, loaded: size, total: size });
-      this.status = response?.status ?? (response?.ok === false ? 500 : 200); this.onload?.();
+      this.status = response?.status ?? (response?.ok === false ? 500 : 200);
+      // Byte events only for a stored file, so a test can see what onload alone reports for a refused PUT.
+      if (this.status >= 200 && this.status < 300) this.upload.onprogress?.({ lengthComputable: size > 0, loaded: size, total: size });
+      this.onload?.();
     }, () => { if (this.controller.signal.aborted) this.onabort?.(); else this.onerror?.(); });
   }
 }

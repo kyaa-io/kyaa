@@ -9,9 +9,9 @@ import { celebrateStamp } from "@/features/dukjil/ui/stamp-slam";
  * toast ("+3P · 도장 1", second line "댓글 미션 완료"). Only what the server reported is named. A mission that stamped lands its
  * stamp over the screen first (D3), then the same toast. */
 export function showMissionRewardToast(locale: AppLocale, mission: "post" | "comment", reward: { points: number; stamps?: number }) {
-  if (!Number.isFinite(reward.points) || reward.points <= 0) return;
+  const points = Number.isFinite(reward.points) && reward.points > 0 ? reward.points : 0, stamps = reward.stamps ?? 0;
+  if (!points && stamps <= 0) return;
   const label = missionDoneTitle(locale, dukjilText(locale, mission === "post" ? "dukjilTilePost" : "dukjilTileComment"));
-  const stamps = reward.stamps ?? 0;
-  if (stamps > 0) void celebrateStamp({ locale, points: reward.points, stamps, label });
-  else celebrateReward({ locale, points: reward.points, label });
+  if (stamps > 0) void celebrateStamp({ locale, points, stamps, label });
+  else celebrateReward({ locale, points, label });
 }

@@ -1,6 +1,6 @@
 -- Rollback for 20261215030000_post_dislikes.sql.
 -- Roll the web back first: the current web calls set_fan_post_reaction, read_fan_post_reaction and the group 'dislike' operation.
--- Every dislike is lost. Likes are untouched.
+-- Every dislike is lost. Likes are untouched. The p3_fn_owner_<role> grants and policies stay, as with 20261210240000.
 begin;
 set local lock_timeout = '5s';
 drop function public.groups_content_dispatch(text,uuid,uuid,uuid,jsonb,uuid);
