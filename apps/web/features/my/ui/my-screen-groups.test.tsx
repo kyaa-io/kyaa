@@ -106,14 +106,14 @@ it('uses the same ad-based exchange wording as 덕질 and enables it only when t
   expect(within(wallet).getByText('100 P')).toBeInTheDocument();
   expect(within(wallet).getByText('1장')).toBeInTheDocument();
   expect(screen.queryByText('포인트로 교환하기')).toBeNull();
-  const exchange = within(wallet).getByRole('button', { name: '교환' });
+  const exchange = within(wallet).getByRole('button', { name: '광고 보고 교환하기' });
   expect(exchange).toBeEnabled();
   fireEvent.click(exchange);
   expect(screen.getByRole('dialog', { name: '교환' })).toBeInTheDocument();
   unmount();
   data.wallet = { points: 40, hearts: 0, tickets: 0, pointCost: 100 };
   renderMy();
-  expect(screen.getByRole('button', { name: '교환' })).toBeDisabled();
+  expect(screen.getByRole('button', { name: '광고 보고 교환하기' })).toBeDisabled();
 });
 
 it('puts the raffle result above the passport and hides it once the result is opened, until a new result arrives', () => {
