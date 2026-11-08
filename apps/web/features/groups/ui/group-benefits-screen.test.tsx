@@ -270,7 +270,7 @@ it('r5 A5: the lucky module has one stage graphic, three label-values and one ac
  await waitFor(()=>expect(lucky()).toHaveAttribute('data-lucky-state','closed'));
  await waitFor(()=>expect(luckyCells()[0]).toBe('내 응모0장'));
  expect(within(lucky()).getByRole('link',{name:'결과 보기'})).toBeInTheDocument();
- const past=lucky().querySelector('[data-row="notice"]')!;expect(past).toHaveTextContent('지난 럭키드로우');expect(past.querySelector('[data-meta]')).toHaveTextContent(/^Gift 5 · 3명 · 발표 /);
+ const past=lucky().querySelector('[data-row="notice"]')!;expect(past).toHaveTextContent('지난 럭키드로우');expect(past.querySelector('[data-meta]')).toHaveTextContent(/^Gift 5 · 3명 · 마감 \d{2}\. \d{2}\. \d{2}:\d{2}$/);
 });
 it('r5 A5: with no draw yet the module is 준비 중 (no empty box): 다음 주 and one disabled 다음 주 시작',async()=>{
  withFavorite();creatorRaffles=[];render(<GroupBenefitsScreen locale='ko'/>);

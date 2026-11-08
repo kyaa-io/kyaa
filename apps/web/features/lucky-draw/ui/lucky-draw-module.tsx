@@ -75,7 +75,9 @@ export function LuckyDrawModule({ locale, bias, guest, onExchange }: { locale: A
       { key: "winners", label: t(locale, "luckyLabelWinners"), value: people(raffle.winnerQuantity) },
     ] : state === "closed" ? [
       { key: "mine", label: t(locale, "luckyLabelMine"), value: entry === undefined ? (entries.loading ? pending : null) : count(entry?.enteredTickets ?? 0) },
-      { key: "results", label: t(locale, "luckyLabelResults"), value: raffle.resultsPublishedAt ? <time dateTime={raffle.resultsPublishedAt}>{luckyDate(raffle.resultsPublishedAt, locale)}</time> : raffle.entryClosesAt ? <time dateTime={raffle.entryClosesAt}>{luckyDate(raffle.entryClosesAt, locale)}</time> : null },
+      // No results date yet: the close date under its own label, never a close date called 발표.
+      raffle.resultsPublishedAt ? { key: "results", label: t(locale, "luckyLabelResults"), value: <time dateTime={raffle.resultsPublishedAt}>{luckyDate(raffle.resultsPublishedAt, locale)}</time> }
+        : { key: "closes", label: t(locale, "luckyLabelCloses"), value: raffle.entryClosesAt ? <time dateTime={raffle.entryClosesAt}>{luckyDate(raffle.entryClosesAt, locale)}</time> : null },
       { key: "winners", label: t(locale, "luckyLabelWinners"), value: people(raffle.winnerQuantity) },
     ] : [
       { key: "available", label: t(locale, "luckyLabelAvailable"), value: tickets },
@@ -101,7 +103,7 @@ export function LuckyDrawModule({ locale, bias, guest, onExchange }: { locale: A
     : <Link className={styles.pickRow} href={`/pages/groups?locale=${locale}` as Route} data-row="menu"><FanIcon icon={Plus} size={20} /><span>{t(locale, "heartPick")}</span><FanIcon icon={ChevronRight} size={16} /></Link>) : null;
 
   const pastRow = slug && past ? <Link className={styles.pastRow} href={creatorRafflesHref(slug, locale)} data-row="notice">
-    <span className={styles.pastCopy}><strong>{t(locale, "luckyPast")}</strong><span data-meta="">{t(locale, "luckyPastMeta", [past.raffle.title, past.raffle.winnerQuantity.toLocaleString(locale), past.raffle.resultsPublishedAt ? luckyDate(past.raffle.resultsPublishedAt, locale) : past.raffle.entryClosesAt ? luckyDate(past.raffle.entryClosesAt, locale) : ""])}</span></span>
+    <span className={styles.pastCopy}><strong>{t(locale, "luckyPast")}</strong><span data-meta="">{[past.raffle.title, t(locale, "luckyPeople", [past.raffle.winnerQuantity.toLocaleString(locale)]), past.raffle.resultsPublishedAt ? t(locale, "luckyResultsAt", [luckyDate(past.raffle.resultsPublishedAt, locale)]) : past.raffle.entryClosesAt ? t(locale, "luckyClosesAt", [luckyDate(past.raffle.entryClosesAt, locale)]) : null].filter(Boolean).join(" · ")}</span></span>
     <FanIcon icon={ChevronRight} size={16} />
   </Link> : null;
 
