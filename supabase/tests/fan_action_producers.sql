@@ -324,7 +324,7 @@ begin
   update public.fan_action_producer_routes set binding_id=binding where action_code in(2,3,4,5);
   insert into public.fan_action_verified_creators(binding_id,creator_id,verified_block_number,verified_block_hash,verified_at)
     values(binding,creator,123456,'0x'||repeat('8',64),clock_timestamp());
-  select * into strict template_live from public.live_events where publication_status='published' limit 1;
+  select * into strict template_live from public.live_events where publication_status='published' and live_type='general' order by created_at,id limit 1;
   select * into strict template_localization from public.live_event_localizations
     where live_event_id=template_live.id and locale='ko';
   insert into public.live_events select (jsonb_populate_record(null::public.live_events,to_jsonb(template_live)||jsonb_build_object(

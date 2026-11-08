@@ -233,7 +233,7 @@ begin
   perform pg_temp.assert((select count(*)=1 from public.live_reservations where app_user_id=actor and live_event_id=booked_id),
     'pausing a series removed its existing booking');
   -- An already published and reserved manual LIVE remains the canonical event.
-  select * into strict manual_template from public.live_events where live_type='general' and brand_id is not null limit 1;
+  select * into strict manual_template from public.live_events where live_type='general' and brand_id is not null order by created_at,id limit 1;
   insert into public.live_events select (jsonb_populate_record(null::public.live_events,to_jsonb(manual_template)||jsonb_build_object(
     'id',manual_id,'slug','recurring-manual-preservation','celebrity_id',creator,
     'starts_at',manual_start,'ends_at',manual_start+interval '1 hour',

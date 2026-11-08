@@ -265,7 +265,7 @@ begin
     where occurrence.source_namespace='quiz_passes' and occurrence.app_user_id=owner)=2,
     'enabled quiz did not enqueue both credentials');
 
-  select * into strict template_live from public.live_events where publication_status='published' limit 1;
+  select * into strict template_live from public.live_events where publication_status='published' and live_type='general' order by created_at,id limit 1;
   select * into strict template_localization from public.live_event_localizations
     where live_event_id=template_live.id and locale='ko';
   insert into public.live_events select (jsonb_populate_record(null::public.live_events,to_jsonb(template_live)||jsonb_build_object(

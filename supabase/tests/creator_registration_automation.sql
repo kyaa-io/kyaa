@@ -102,7 +102,7 @@ declare binding uuid; creator uuid; live_id uuid:=extensions.gen_random_uuid(); 
 begin
  select id into strict binding from public.fan_action_bindings where hub_proxy='0x'||repeat('e',40);
  select id into strict creator from public.celebrities where slug='registration-auto-first';
- select to_jsonb(l) into strict template from public.live_events l limit 1;
+ select to_jsonb(l) into strict template from public.live_events l where l.live_type='general' order by l.created_at,l.id limit 1;
  insert into public.live_events select * from jsonb_populate_record(null::public.live_events,template||jsonb_build_object('id',live_id,'celebrity_id',creator,'slug','registration-explicit-live','publication_status','published','published_at',clock_timestamp(),'archived_at',null));
  select id into wave_creator from public.celebrities where slug='kyaa-wave-fanpage';
  if wave_creator is null then

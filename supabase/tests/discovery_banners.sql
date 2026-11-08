@@ -12,7 +12,7 @@ begin
  insert into public.admin_allowlist(id,email,role,active) values
  (allow_id,'home-banner@example.invalid','admin',true),(viewer_allow,'home-banner-viewer@example.invalid','viewer',true),
  (inactive_allow,'home-banner-inactive@example.invalid','admin',false),(operator_allow,'home-banner-operator@example.invalid','operator',true);
- select * into template from public.live_events where publication_status='published' limit 1;
+ select * into template from public.live_events where publication_status='published' and live_type='general' order by created_at,id limit 1;
  if template.id is null then raise exception 'home banner test requires seeded published LIVE fixture'; end if;
  creator:=template.celebrity_id;
  if not exists(select 1 from public.celebrity_localizations where celebrity_id=creator and locale='ko')
