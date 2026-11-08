@@ -696,6 +696,7 @@ function BenefitManager({
                   />
                   <Select
                     label="Required stamp"
+                    required={false}
                     value={form.requiredStampType}
                     set={(v) => set("requiredStampType", v)}
                     options={[
@@ -710,6 +711,7 @@ function BenefitManager({
                   />
                   <Select
                     label="Required activity"
+                    required={false}
                     value={form.requiredActivityType}
                     set={(v) => set("requiredActivityType", v)}
                     options={[
@@ -949,16 +951,19 @@ function Select({
   value,
   set,
   options,
+  required = true,
 }: {
   label: string;
   value: string;
   set(v: string): void;
   options: string[][];
+  /** False for a select whose "" choice is a real answer (None). A placeholder "" that must be replaced keeps it. */
+  required?: boolean;
 }) {
   return (
     <label>
       <span>{label}</span>
-      <select required value={value} onChange={(e) => set(e.target.value)}>
+      <select required={required} value={value} onChange={(e) => set(e.target.value)}>
         {options.map((o) => (
           <option key={o[0]} value={o[0]}>
             {o[1]}
