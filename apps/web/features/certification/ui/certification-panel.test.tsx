@@ -8,6 +8,11 @@ const auth = vi.hoisted(() => ({
   getAccessToken: vi.fn(async () => "token"),
 }));
 vi.mock("@privy-io/react-auth", () => ({ usePrivy: () => auth }));
+// 261107-2 D12: the share proof tile leads the list and its rows join the history; their own behaviour is tested in share-proof-panel.test.tsx.
+vi.mock("@/features/share-proof/ui/share-proof-panel", () => ({
+  ShareProofTile: () => <a href="?share=1" data-share-proof-tile="">share proof</a>,
+  ShareProofHistoryRows: ({ empty }: { empty: import("react").ReactNode }) => <>{empty}</>,
+}));
 import { CertificationPanel } from "./certification-panel";
 const id = "22222222-2222-4222-8222-222222222222";
 describe("CertificationPanel", () => {
@@ -200,7 +205,9 @@ describe("CertificationPanel", () => {
     );
     expect(screen.queryByText("참여 인증")).not.toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "전체" }));
-    expect(screen.getAllByRole("listitem")).toHaveLength(4);
+    // The four certifications plus the share proof tile first.
+    expect(screen.getAllByRole("listitem")).toHaveLength(5);
+    expect(screen.getAllByRole("listitem")[0]).toHaveTextContent("share proof");
   });
 
   it("supports keyboard tabs and keeps signed-out history private", async () => {
@@ -209,7 +216,8 @@ describe("CertificationPanel", () => {
       .spyOn(globalThis, "fetch")
       .mockResolvedValue(Response.json({ certifications: [] }));
     render(<CertificationPanel slug="kara" locale="en" />);
-    await screen.findByText("No verification is available.");
+    // With no certification the list still offers the share proof (D12), instead of an empty line.
+    await screen.findByRole("link", { name: "share proof" });
     const missions = screen.getByRole("tab", {
       name: "Verification",
     });
@@ -239,9 +247,7 @@ describe("CertificationPanel", () => {
       "인증을 불러오지 못했어요.",
     );
     fireEvent.click(screen.getByRole("button", { name: "다시 시도" }));
-    expect(
-      await screen.findByText("등록된 인증이 없어요."),
-    ).toBeInTheDocument();
+    expect(await screen.findByRole("link", { name: "share proof" })).toBeInTheDocument();
   });
 
   it("falls back to all when a locale change removes the selected category", async () => {

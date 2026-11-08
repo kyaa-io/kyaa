@@ -9,7 +9,7 @@ vi.mock("@/features/groups/ui/use-group-resource", () => {
   return { GroupRequestError, useGroupRequest: () => ({ request: h.request, authenticated: h.authenticated, ready: true, ownerKey: "u:1" }),
     useGroupResource: (url: string | null, parse: (value: unknown) => unknown) => ({ data: url ? parse(h.list) : undefined, loading: false, retry: vi.fn() }) };
 });
-vi.mock("@/features/dukjil/ui/dukjil-provider", () => ({ DukjilProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+vi.mock("@/features/dukjil/ui/dukjil-provider", () => ({ DukjilProvider: ({ children }: { children: import("react").ReactNode }) => <>{children}</>,
   useDukjil: () => ({ status: "on", catalog: { rules: { share: { points: 10, dailyLimit: 3 } } }, today: { policyActive: true, actions: { share: { count: 1, points: 10, remaining: 2, stamped: true } } } }) }));
 vi.mock("@/components/fan-ui/fan-toast", () => ({ showFanToast: h.toast }));
 vi.mock("@/components/fan-ui/point-reward-burst", () => ({ usePointRewardBurst: () => ({ burst: null, add: h.burst, clear: vi.fn() }), PointRewardBurst: () => null }));
