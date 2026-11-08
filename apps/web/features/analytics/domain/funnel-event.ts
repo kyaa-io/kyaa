@@ -14,9 +14,14 @@ export const FUNNEL_SERVER_EVENT_NAMES = [
 export type FunnelClientEventName = (typeof FUNNEL_CLIENT_EVENT_NAMES)[number];
 export type FunnelServerEventName = (typeof FUNNEL_SERVER_EVENT_NAMES)[number];
 
-/** Self ledger name → GA4 event name (ga4-plan.md §6). passport_issued keeps its name on both sides. */
+/**
+ * Self ledger name → GA4 event name (ga4-plan.md §6). passport_issued keeps its name on both sides. The browser sends the
+ * GA4 event at the client success point of the same action (ga4-client.ts); comment_create has no sender yet.
+ */
 export const GA4_EVENT_NAME = {
   page_view: "page_view",
+  login_result: "login",
+  profile_completed: "sign_up",
   share_completed: "share",
   fan_verification_started: "fan_verification_start",
   fan_verification_submitted: "fan_verification_submit",
@@ -25,7 +30,8 @@ export const GA4_EVENT_NAME = {
   post_created: "post_create",
   comment_created: "comment_create",
   cheer_completed: "cheer",
-} as const satisfies Partial<Record<FunnelClientEventName | FunnelServerEventName | "passport_issued", string>>;
+  benefit_entered: "raffle_entry",
+} as const satisfies Partial<Record<FunnelClientEventName | FunnelServerEventName | "passport_issued" | "login_result" | "profile_completed" | "benefit_entered", string>>;
 
 export const pageKindSchema = z.enum([
   "home", "creator_directory", "creator", "live_directory", "live", "benefit", "fan_guide",

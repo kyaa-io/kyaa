@@ -17542,5 +17542,41 @@
     "ko": "안 읽은 알림 {0}개",
     "source": "features/notification/ui/header-notification-link",
     "id": "features/notification/ui/header-notification-link:headerUnreadNotifications"
+  },
+  "analyticsConsentQuestion": {
+    "en": "Can we use Google Analytics for visit statistics?",
+    "ko": "방문 통계에 Google 애널리틱스를 써도 될까요?",
+    "source": "features/analytics/client/analytics-consent",
+    "id": "features/analytics/client/analytics-consent:analyticsConsentQuestion"
+  },
+  "analyticsConsentPolicy": {
+    "en": "Privacy Policy",
+    "ko": "개인정보처리방침",
+    "source": "features/analytics/client/analytics-consent",
+    "id": "features/analytics/client/analytics-consent:analyticsConsentPolicy"
+  },
+  "analyticsConsentDecline": {
+    "en": "Decline",
+    "ko": "거부",
+    "source": "features/analytics/client/analytics-consent",
+    "id": "features/analytics/client/analytics-consent:analyticsConsentDecline"
+  },
+  "analyticsConsentAllow": {
+    "en": "Allow",
+    "ko": "허용",
+    "source": "features/analytics/client/analytics-consent",
+    "id": "features/analytics/client/analytics-consent:analyticsConsentAllow"
+  },
+  "analyticsConsentSettings": {
+    "en": "Visit statistics settings",
+    "ko": "방문 통계 설정",
+    "source": "features/analytics/client/analytics-consent",
+    "id": "features/analytics/client/analytics-consent:analyticsConsentSettings"
+  },
+  "analyticsConsentRegion": {
+    "en": "Visit statistics consent",
+    "ko": "방문 통계 동의",
+    "source": "features/analytics/client/analytics-consent",
+    "id": "features/analytics/client/analytics-consent:analyticsConsentRegion"
   }
 }

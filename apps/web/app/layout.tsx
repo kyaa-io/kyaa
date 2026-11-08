@@ -15,6 +15,7 @@ import { isAwsHosting } from "../server/config/hosting";
 import { AcquisitionSessionTracker } from "../features/analytics/client/acquisition-session-tracker";
 import { OutboundLinkTracker } from "../features/analytics/client/outbound-link-tracker";
 import { PageViewTracker } from "../features/analytics/client/page-view-tracker";
+import { GoogleAnalytics } from "../features/analytics/client/google-analytics";
 import { AwsPerformanceTelemetry } from "../features/analytics/client/aws-performance-telemetry";
 import { BanksyEntryPromotion } from "../components/banksy-promotion/banksy-promotion";
 import { ChatDockHost } from "../features/group-social/chat-dock-host";
@@ -76,7 +77,7 @@ export default async function RootLayout({
   const requestHeaders = await headers();
   const locale = parseAppLocale(requestHeaders.get("x-byus-locale"));
   const rewardedExchange = rewardedExchangeDecision(process.env);
-  const { authProvider, privyAppId, testAccountLoginEnabled, appleLoginEnabled } = publicRuntimeConfig();
+  const { authProvider, privyAppId, testAccountLoginEnabled, appleLoginEnabled, ga4MeasurementId } = publicRuntimeConfig();
   return (
     <html lang={locale}>
       <body>
@@ -95,6 +96,7 @@ export default async function RootLayout({
           <Suspense fallback={null}>
             <AcquisitionSessionTracker />
             <PageViewTracker />
+            {ga4MeasurementId && <GoogleAnalytics measurementId={ga4MeasurementId} />}
             <OutboundLinkTracker />
           </Suspense>
           <Suspense fallback={null}>
