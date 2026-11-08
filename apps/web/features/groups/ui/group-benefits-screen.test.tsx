@@ -251,7 +251,7 @@ it('shows geometry placeholders only during initial reads and replaces them with
 
 
 it('F2: the wallet is two assets, their next steps and one action, with the rules behind 안내 and no help button',async()=>{
- withFavorite();render(<GroupBenefitsScreen locale='ko'/>);const button=await screen.findByRole('button',{name:'광고 보고 교환하기'});
+ withFavorite();render(<GroupBenefitsScreen locale='ko'/>);const button=await screen.findByRole('button',{name:'교환'});
  expect(screen.queryByRole('radio')).toBeNull();expect(document.querySelector('fieldset')).toBeNull();
  const card=button.closest('section')!;expect(card).toHaveAttribute('data-wallet-card','stan');expect(card).toHaveTextContent('137P');expect(card).toHaveTextContent('응모권7장');expect(card).toHaveTextContent('교환 가능');
  const hrefs=Object.fromEntries([...card.querySelectorAll<HTMLElement>('[data-cell]')].map(cell=>[cell.dataset.cell,cell.getAttribute('href')]));
@@ -265,7 +265,7 @@ it('F2: the wallet is two assets, their next steps and one action, with the rule
 it('E5: zero values are written as numbers, never a dash',async()=>{
  const base=fetch;vi.stubGlobal('fetch',vi.fn((url:string,init?:RequestInit)=>url==='/api/me/wallet'?Promise.resolve(Response.json({...wallet,points:0,tickets:0})):base(url,init)));
  bias.value={status:'empty',options:[],selected:null,unverified:null,select:()=>{},retry:()=>{}};
- render(<GroupBenefitsScreen locale='ko'/>);const card=(await screen.findByRole('button',{name:'광고 보고 교환하기'})).closest('section')!;
+ render(<GroupBenefitsScreen locale='ko'/>);const card=(await screen.findByRole('button',{name:'교환'})).closest('section')!;
  await waitFor(()=>expect(card).toHaveTextContent('0P'));expect(card).toHaveTextContent('0장');expect(card).toHaveTextContent('0/9');expect(card.textContent).not.toContain('—');
  // r6 visual review: the next-step numbers keep their unit attached (no gap class missing).
  const steps=[...card.querySelectorAll('[data-number-role="asset"]')].filter(n=>/장|\/9/.test(n.textContent??''));expect(steps).toHaveLength(2);expect(steps.every(n=>/stepNumber/.test(n.className))).toBe(true);
@@ -273,12 +273,12 @@ it('E5: zero values are written as numbers, never a dash',async()=>{
 /* A disabled exchange keeps the common grey pill; only enabled primary controls count as emphasis. */
 const primaryLabels=()=>[...document.querySelectorAll<HTMLElement>('main a,main button')].filter(el=>!el.closest('[inert]')&&/primary/.test(el.className)&&!(el as HTMLButtonElement).disabled).map(el=>el.textContent);
 const withPoints=(points:number)=>{const base=fetch;vi.stubGlobal('fetch',vi.fn((url:string,init?:RequestInit)=>url==='/api/me/wallet'?Promise.resolve(Response.json({...wallet,points})):base(url,init)));};
-const exchangeButton=()=>screen.findByRole('button',{name:'광고 보고 교환하기'});
+const exchangeButton=()=>screen.findByRole('button',{name:'교환'});
 it('keeps the exchange a secondary action at the rate boundary (100 and 101)',async()=>{
  for(const points of [100,101]){
   withPoints(points);joinedCount=2;const view=render(<GroupBenefitsScreen locale='ko'/>);
   const button=await exchangeButton();await screen.findByText('Creator 2');
-  expect(button).toBeEnabled();expect(button.className).not.toMatch(/primary/);expect(primaryLabels()).not.toContain('광고 보고 교환하기');
+  expect(button).toBeEnabled();expect(button.className).not.toMatch(/primary/);expect(primaryLabels()).not.toContain('교환');
   view.unmount();
  }
 });
@@ -298,7 +298,7 @@ it('enables the exchange when a check-in brings the points to the rate',async()=
  joinedCount=2;render(<GroupBenefitsScreen locale='ko'/>);const button=await exchangeButton();
  expect(button).toBeDisabled();
  points=105;await act(async()=>window.dispatchEvent(new Event('kyaa:group-wallet-changed')));
- await waitFor(()=>expect(button).toBeEnabled());expect(primaryLabels()).not.toContain('광고 보고 교환하기');
+ await waitFor(()=>expect(button).toBeEnabled());expect(primaryLabels()).not.toContain('교환');
 });
 it('never emphasises the exchange (no joined page, points cover the rate)',async()=>{
  render(<GroupBenefitsScreen locale='ko'/>);await exchangeButton();expect(primaryLabels()).toEqual([]);
@@ -319,7 +319,7 @@ it('keeps the wallet card for guests: locked balances, the public exchange rate 
  expect(within(card).getAllByRole('img',{name:'로그인 후 확인'})).toHaveLength(4);expect(card.textContent).not.toContain('—');
  expect(card).toHaveTextContent('응모권까지 100P');expect(card).toHaveTextContent('다음 하트까지 9칸');
  expect(login.getAttribute('href')).toBe('/login?returnTo=%2Fbenefits%3Flocale%3Dko&locale=ko');expect(login).toHaveAttribute('data-fan-action-emphasis','primary');
- expect(screen.queryByRole('button',{name:'광고 보고 교환하기'})).toBeNull();expect(document.getElementById('wallet-history')).toBeNull();
+ expect(screen.queryByRole('button',{name:'교환'})).toBeNull();expect(document.getElementById('wallet-history')).toBeNull();
  expect(document.querySelectorAll('[data-fan-action-emphasis="primary"]')).toHaveLength(1);
 });
 it('shows guests a locked history block under the same heading with no tabs or links',async()=>{
@@ -381,10 +381,10 @@ it('hides 오늘의 덕질 while the attendance policy is off',async()=>{
 });
 it('does not offer a conversion the balance cannot cover',async()=>{
  const base=fetch;vi.stubGlobal('fetch',vi.fn((url:string,init?:RequestInit)=>url==='/api/me/wallet'?Promise.resolve(Response.json({...wallet,points:0})):base(url,init)));
- render(<GroupBenefitsScreen locale='ko'/>);expect(await screen.findByRole('button',{name:'광고 보고 교환하기'})).toBeDisabled();
+ render(<GroupBenefitsScreen locale='ko'/>);expect(await screen.findByRole('button',{name:'교환'})).toBeDisabled();
 });
 it('keeps conversion closed with a notice until an ad unit is configured',async()=>{
- adUnit.value=undefined;empty=true;render(<GroupBenefitsScreen locale='ko'/>);const off=await screen.findByRole('button',{name:'광고 보고 교환하기'});expect(off).not.toBeDisabled();expect(screen.queryByText(/광고 준비 중/)).toBeNull();adUnit.value='/123/rewarded';
+ adUnit.value=undefined;empty=true;render(<GroupBenefitsScreen locale='ko'/>);const off=await screen.findByRole('button',{name:'교환'});expect(off).not.toBeDisabled();expect(screen.queryByText(/광고 준비 중/)).toBeNull();adUnit.value='/123/rewarded';
 });
 it('moves the ranking out of 덕질 and folds the missions into today, more and certifications',async()=>{
  joinedCount=1;const view=render(<GroupBenefitsScreen locale='ko'/>);

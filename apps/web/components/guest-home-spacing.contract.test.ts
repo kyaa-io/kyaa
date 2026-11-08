@@ -53,7 +53,7 @@ describe("guest home compact icon-only action spacing", () => {
     const status = declarationBlock(".liveStatus");
 
     expect(status).toMatch(
-      /\bborder:\s*1px\s+solid\s+rgb\(255\s+95\s+191\s*\/\s*92%\)/,
+      /\bborder:\s*1px\s+solid\s+color-mix\(in srgb, var\(--color-accent\) 92%, transparent\)/,
     );
     expect(status).not.toMatch(/\bbackground(?:-color)?:/);
   });

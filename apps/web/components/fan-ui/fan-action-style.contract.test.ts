@@ -30,7 +30,7 @@ describe("shared fan action style contract", () => {
 
     expect(passportRule).toContain("min-height: var(--fan-action-service-height)");
     expect(passportRule).toContain("border-radius: var(--radius-pill)");
-    expect(passportRule).toContain("linear-gradient(#fff, #fff) padding-box");
+    expect(passportRule).toContain("linear-gradient(var(--color-surface), var(--color-surface)) padding-box");
     expect(passportRule).toContain("color: var(--color-service-ink)");
     expect(passportRule).toContain('"Pretendard Variable"');
     expect(passportRule).not.toContain('"Google Sans"');
@@ -86,7 +86,7 @@ describe("FanAction icon layout contract", () => {
   });
 
   it("keeps disabled colors on the documented tokens", () => {
-    expect(readFileSync(resolve(process.cwd(), "app/globals.css"), "utf8")).toMatch(/--fan-action-disabled-bg:\s*#e4e1e6/);
+    expect(readFileSync(resolve(process.cwd(), "app/globals.css"), "utf8")).toMatch(/--fan-action-disabled-bg:\s*#fff/);
     expect(actionCss).toMatch(/background:\s*var\(--fan-action-disabled-bg\)/);
     expect(actionCss).toMatch(/color:\s*var\(--fan-action-disabled-ink\)/);
   });

@@ -14,10 +14,9 @@ describe("LIVE catalog repeated action style contract", () => {
 
     expect(actionRule).toBeDefined();
     expect(actionRule).toContain("border:1px solid transparent");
-    expect(actionRule).toContain("linear-gradient(#fff,#fff) padding-box");
-    expect(actionRule).toContain("var(--color-primary-action) border-box");
+    expect(actionRule).toContain("background:var(--color-surface); border-color: var(--color-accent)");
     expect(actionRule).toContain("color:var(--color-service-ink)");
-    expect(readFileSync(resolve(process.cwd(), "app/globals.css"), "utf8")).toContain("--color-service-ink: oklch(45% 0.22 315)");
+    expect(readFileSync(resolve(process.cwd(), "app/globals.css"), "utf8")).toContain("--color-service-ink: var(--color-accent-ink)");
   });
 
   it("preserves the desktop and mobile target contracts", () => {
