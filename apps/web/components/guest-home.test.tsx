@@ -99,3 +99,9 @@ it("a favorite with no posts shows one gray sentence", () => {
   expect(empty.textContent).toBe("새 소식이 없습니다");
   expect(container.querySelector('[data-block="hero"]')).toHaveAttribute("data-hero-kind", "banner");
 });
+
+it("draws no hero (not an endless skeleton) when there is no LIVE, post or banner", () => {
+  const { container } = render(<GuestHome locale="ko" featuredLives={[]} homeBanners={[]} />);
+  expect(container.querySelector('[data-block="hero"]')).toBeNull();
+  expect(container.querySelector("[aria-busy]")).toBeNull();
+});

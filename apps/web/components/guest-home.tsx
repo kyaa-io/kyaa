@@ -29,6 +29,7 @@ import { formatCountMetric } from "./fan-ui/fan-count";
 import { FanAppFrame, FanContentContainer } from "./fan-shell/fan-app-shell";
 import { fanLoginHref } from "./login-href";
 import type { HomeQueries } from "./home-query-stream";
+import { gggiHomeBanner } from "@/features/home/domain/gggi-home-banner";
 import styles from "./guest-home.module.css";
 
 /** Home words (ko·en; the other languages read the English until the catalog carries them). */
@@ -103,6 +104,7 @@ function pickHero(locale: AppLocale, lives: readonly LiveEventResponse[], notice
 
 function HomeHero({ locale, hero, upcoming, loading }: { locale: AppLocale; hero: HeroModel | null; upcoming: LiveEventResponse | null; loading: boolean }) {
   const t = words(locale);
+  if (!loading && !hero) return null;
   if (loading || !hero) return <section className={styles.hero} data-block="hero" aria-busy={loading || undefined}>
     <div className={styles.heroMedia} data-skeleton="" aria-hidden="true"><FanSkeleton shape="block" width="100%" height="100%" /></div>
     <div className={styles.heroBody}><FanSkeleton width="70%" height={26} /><FanSkeleton width="40%" height={12} /></div>
@@ -211,7 +213,8 @@ type StreamingHomeProps = { locale: AppLocale; queries: HomeQueries; publishedCr
 
 function StreamedBody({ locale, queries }: { locale: AppLocale; queries: HomeQueries }) {
   const lives = use(queries.featuredLives), banners = use(queries.homeBanners);
-  return <HomeBody locale={locale} data={{ lives: lives.status === "fulfilled" ? lives.value : [], banners: banners.status === "fulfilled" ? banners.value : [], ready: true }} />;
+  // The operator banners from the CMS first; the built-in event banner stays as the last fallback so the hero is never empty.
+  return <HomeBody locale={locale} data={{ lives: lives.status === "fulfilled" ? lives.value : [], banners: [...(banners.status === "fulfilled" ? banners.value : []), gggiHomeBanner(locale)], ready: true }} />;
 }
 
 export function StreamingGuestHome({ queries, locale }: StreamingHomeProps) {
