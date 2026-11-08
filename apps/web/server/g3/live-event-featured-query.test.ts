@@ -22,6 +22,7 @@ beforeEach(() => {
     const query = {
       select: vi.fn().mockReturnThis(),
       eq: vi.fn((key, value) => { if (key === "slug") lookups.push(value); return query; }),
+      is: vi.fn().mockReturnThis(),
       order: vi.fn().mockResolvedValue({ data: rows, error: null }),
       maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null }),
     };
@@ -35,6 +36,8 @@ it("only expands upcoming and currently overridden LIVE rows for the home page",
   expect(lookups).toEqual(["upcoming", "manual-live"]);
   expect(database.from).toHaveBeenCalledTimes(3);
   expect(database.from.mock.results[0].value.select).toHaveBeenCalledWith(expect.stringContaining("live_status_overrides("));
+  // An archived LIVE leaves the public list and its detail even if it is still marked published (DEV-TIDY 2026-11-09).
+  for (const result of database.from.mock.results) expect(result.value.is).toHaveBeenCalledWith("archived_at", null);
 });
 
 describe("full catalog", () => {
@@ -65,7 +68,7 @@ describe("full catalog", () => {
     stub([row]);
     await repository().listPublishedCatalog({ creatorSlug: "elina", locale: "ko", now, appUserId: null });
     expect(eventRead().filters).toEqual(expect.arrayContaining([
-      ["eq", "publication_status", "published"], ["eq", "celebrity.slug", "elina"], ["eq", "celebrity.status", "published"], ["eq", "brand.status", "published"],
+      ["eq", "publication_status", "published"], ["is", "archived_at", null], ["eq", "celebrity.slug", "elina"], ["eq", "celebrity.status", "published"], ["eq", "brand.status", "published"],
       ["eq", "live_event_localizations.locale", "ko"], ["eq", "celebrity.celebrity_localizations.locale", "ko"], ["eq", "brand.brand_localizations.locale", "ko"],
       ["eq", "live_event_previews.publication_status", "published"], ["is", "live_event_previews.archived_at", null],
     ]));
