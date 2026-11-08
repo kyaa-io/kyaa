@@ -1,0 +1,16 @@
+.rise{display:grid;justify-items:center;gap:var(--space-3);padding-block:var(--space-2) var(--space-1);text-align:center}
+.riseBadge{display:block;width:112px;height:112px}
+.riseLine{display:grid;gap:var(--space-1);margin:0}
+.riseLine strong{font-size:var(--fan-item-title-size);line-height:22px;font-weight:var(--fan-item-title-weight);overflow-wrap:anywhere}
+.riseLine span{font-size:var(--fan-metadata-size);line-height:20px;color:var(--color-muted)}
+
+.history{display:grid;gap:var(--space-3);scroll-margin-top:80px}
+.history h2{margin:0;font-size:var(--fan-aside-title-size);line-height:24px;font-weight:var(--fan-aside-title-weight)}
+.list{display:grid;margin:0;padding:0;list-style:none;border:1px solid var(--color-line-subtle);border-radius:12px}
+.row{display:grid;grid-template-columns:32px minmax(0,1fr) auto;align-items:center;gap:var(--space-3);min-height:56px;padding:var(--space-2) var(--space-4)}
+.row+.row{border-top:1px solid var(--color-line-subtle)}
+.row img{display:block}
+.what{display:grid;gap:2px;min-width:0}
+.what strong{overflow:hidden;font-size:var(--fan-item-title-size);line-height:22px;font-weight:var(--fan-item-title-weight);text-overflow:ellipsis;white-space:nowrap}
+.what span{font-size:var(--fan-metadata-size);line-height:20px;color:var(--color-muted)}
+.row time{font-size:var(--fan-metadata-size);line-height:20px;color:var(--color-muted);font-variant-numeric:tabular-nums;white-space:nowrap}
