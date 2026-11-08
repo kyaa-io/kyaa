@@ -8,11 +8,12 @@ vi.mock("@/components/fan-ui/use-owned-fan-resource", () => ({ useOwnedFanResour
 vi.mock("next/navigation", () => ({ usePathname: () => "/my", useSearchParams: () => new URLSearchParams("locale=ko") }));
 
 const creator = (slug: string, name: string, passport: boolean, hearts?: number) => ({ celebrity: { slug, name, image: "/a.png" }, relationship: passport ? "passport" : "first_reaction_only", passport: passport ? { id: `${slug}-p`, tier: "Silver", score: 0, remainingToNextTier: 0, stageProgress: null, ...(hearts === undefined ? {} : { hearts }) } : null, ticketBalance: 0, firstReaction: null });
-const ready = (...creators: unknown[]) => { state.summary = { state: { status: "ready", data: { creators } }, retry: () => {} }; };
+const ready = (...creators: unknown[]) => { state.summary = { state: { status: "ready", data: { creators, favorite: favorite.slug ? { slug: favorite.slug, name: favorite.slug } : null } }, retry: () => {} }; };
+const favorite = { slug: null as string | null };
 
-beforeEach(() => { window.localStorage.clear(); state.auth = { ready: true, authenticated: true, user: { id: "owner" } }; });
+beforeEach(() => { favorite.slug = "elina"; window.localStorage.clear(); state.auth = { ready: true, authenticated: true, user: { id: "owner" } }; });
 
-it("shows the first passport's name and tier while closed when nothing was chosen", () => {
+it("shows the favorite named in MY with its tier", () => {
   ready(creator("elina", "엘리나", true), creator("p1", "시험", true));
   render(<SelectedBiasChip locale="ko" />);
   const chip = document.querySelector("[data-selected-bias]")!;
@@ -21,8 +22,8 @@ it("shows the first passport's name and tier while closed when nothing was chose
   expect(chip).toHaveTextContent("실버");
   expect(chip).not.toHaveTextContent("최애 고르기");
 });
-it("shows the stored choice while its passport exists", () => {
-  window.localStorage.setItem("kyaa:selected-bias:v1:owner", "p1");
+it("shows the named favorite among several passports", () => {
+  favorite.slug = "p1";
   ready(creator("elina", "엘리나", true), creator("p1", "시험", true));
   render(<SelectedBiasChip locale="ko" />);
   expect(screen.getByRole("button")).toHaveTextContent("시험");
@@ -49,8 +50,8 @@ it("does not say choose while the login or the summary is still loading", () => 
 });
 
 it("reads tier · favorite · ♥hearts of the selected favorite, from the summary (C1)", () => {
+  favorite.slug = "p1";
   ready(creator("elina", "엘리나", true, 3), creator("p1", "시험", true, 12));
-  window.localStorage.setItem("kyaa:selected-bias:v1:owner", "p1");
   render(<SelectedBiasChip locale="ko" />);
   const chip = document.querySelector("[data-selected-bias]")!;
   expect(chip.textContent).toMatch(/^실버.*시험.*12$/);
@@ -77,4 +78,20 @@ it("draws no hearts number when the summary carried none (its hearts read failed
   render(<SelectedBiasChip locale="ko" />);
   expect(document.querySelector("[data-cell=hearts]")).toBeNull();
   expect(document.querySelector("[data-selected-bias]")).toHaveTextContent("엘리나");
+});
+
+it("D2: with passports but no favorite named, 최애 고르기 opens the favorite menu instead of leading away", () => {
+  favorite.slug = null;
+  ready(creator("elina", "엘리나", true), creator("p1", "시험", true));
+  render(<SelectedBiasChip locale="ko" />);
+  const pick = screen.getByRole("button", { name: /최애 고르기/ });
+  expect(pick).toHaveAttribute("data-selected-bias", "unnamed");
+  expect(document.querySelector("[data-cell=hearts]")).toBeNull();
+});
+it("does not read the old browser choice as the favorite", () => {
+  favorite.slug = null;
+  window.localStorage.setItem("kyaa:selected-bias:v1:owner", "p1");
+  ready(creator("elina", "엘리나", true), creator("p1", "시험", true));
+  render(<SelectedBiasChip locale="ko" />);
+  expect(document.querySelector("[data-selected-bias]")).not.toHaveTextContent("시험");
 });

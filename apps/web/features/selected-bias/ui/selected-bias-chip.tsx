@@ -1,6 +1,7 @@
 "use client";
 import { Menu } from "@base-ui/react/menu";
 import { Check, ChevronDown, Heart, Star } from "lucide-react";
+import type { ReactNode } from "react";
 import { FanNumber } from "@/components/fan-ui/fan-number";
 import { FanLockedValue } from "@/components/fan-ui/fan-locked-value";
 import type { Route } from "next";
@@ -38,7 +39,9 @@ export function SelectedBiasChip({ locale }: { locale: AppLocale }) {
   if (bias.unverified) return <Link className={styles.chip} data-selected-bias="unverified" href={`/${encodeURIComponent(bias.unverified.slug)}?locale=${locale}` as Route}><Star size={20} aria-hidden="true" className={styles.star} /><span className={styles.name}>{bias.unverified.name}</span></Link>;
   if (bias.status === "empty") return <Link className={styles.chip} data-selected-bias="empty" href={`/pages/groups?locale=${locale}` as Route}><Empty locale={locale} /></Link>;
   if (bias.status === "error") return <FanAction variant="text" className={styles.chip} data-selected-bias="error" onClick={bias.retry}><Empty locale={locale} /></FanAction>;
-  return <SelectedChip locale={locale} bias={bias} current={bias.selected!} />;
+  // D2: passports but no favorite named yet — "최애 고르기" opens the same menu to name one, never a dead end.
+  if (!bias.selected) return <PickChip locale={locale} bias={bias} />;
+  return <SelectedChip locale={locale} bias={bias} current={bias.selected} />;
 }
 
 /** The header's hearts: a heart and the count beside it (not inside: 1,234 does not fit a 16px heart). Number and heart pulse once together when
@@ -88,18 +91,18 @@ function SelectedChip({ locale, bias, current }: { locale: AppLocale; bias: Sele
 }
 
 /** The favorite switch menu, shared by the header chip and the 덕질 status bar: hearts first (to the fans tab), then every passport, then more. */
-function FavoriteMenu({ locale, bias, current }: { locale: AppLocale; bias: SelectedBias; current: SelectedBiasOption }) {
-  const hearts = current.hearts;
+function FavoriteMenu({ locale, bias, current }: { locale: AppLocale; bias: SelectedBias; current: SelectedBiasOption | null }) {
+  const hearts = current?.hearts;
   return <>
     <Menu.Portal>
       <Menu.Positioner className={styles.positioner} sideOffset={8} align="end">
         <Menu.Popup className={styles.menu}>
-          {hearts !== undefined ? <Menu.Item className={styles.heartsRow} render={<Link href={fansHref(current.slug, locale)} />}>
+          {current && hearts !== undefined ? <Menu.Item className={styles.heartsRow} render={<Link href={fansHref(current.slug, locale)} />}>
             <Heart size={20} strokeWidth={1.75} aria-hidden="true" className={styles.heart} />
             <span className={styles.itemText}><strong>{hearts.toLocaleString(locale)}</strong><small>{text(locale, "heartsMenu", [current.name])}</small></span>
           </Menu.Item> : null}
-          <p className={styles.title}>{text(locale, "biasMine")}</p>
-          <Menu.RadioGroup value={current.slug} onValueChange={(slug: string) => bias.select(slug)}>
+          <p className={styles.title}>{text(locale, current ? "biasMine" : "biasPickTitle")}</p>
+          <Menu.RadioGroup value={current?.slug ?? null} onValueChange={(slug: string) => bias.select(slug)}>
             {bias.options.map((option) => <Menu.RadioItem key={option.slug} value={option.slug} className={styles.item}>
               <FanTierBadge tier={option.tier} stageKey={option.stage?.key} locale={locale} size={32} />
               <span className={styles.itemText}><strong>{option.name}</strong><small>{gradeOf(locale, option)}</small></span>
@@ -120,6 +123,10 @@ export function SelectedBiasBar({ locale, bias, loginHref }: { locale: AppLocale
   if (bias.status === "loading") return <div className={styles.bar} data-selected-bias-bar="loading" aria-hidden="true"><span className={styles.placeholder} /></div>;
   if (bias.status === "guest") return <div className={styles.bar} data-selected-bias-bar="guest"><Link className={styles.chip} href={loginHref as Route}><Empty locale={locale} /></Link><span className={styles.barHearts}><Heart size={20} strokeWidth={1.75} aria-hidden="true" className={styles.heart} /><FanLockedValue locale={locale} /></span></div>;
   const current = bias.selected;
+  if (!current && bias.options.length) return <div className={styles.bar} data-selected-bias-bar="unnamed"><Menu.Root>
+    <Menu.Trigger className={`${styles.chip} ${styles.barTrigger}`}><Empty locale={locale} /><ChevronDown size={16} aria-hidden="true" className={styles.barChevron} /></Menu.Trigger>
+    <FavoriteMenu locale={locale} bias={bias} current={null} />
+  </Menu.Root></div>;
   if (!current) {
     const target = bias.unverified;
     return <div className={styles.bar} data-selected-bias-bar="empty"><Link className={styles.chip} href={(target ? `/${encodeURIComponent(target.slug)}?locale=${locale}` : `/pages/groups?locale=${locale}`) as Route}>{target ? <><Star size={20} aria-hidden="true" className={styles.star} /><span className={styles.name}>{target.name}</span></> : <Empty locale={locale} />}</Link></div>;
@@ -139,4 +146,20 @@ export function SelectedBiasBar({ locale, bias, loginHref }: { locale: AppLocale
       <FanNumber value={hearts} size="lg" locale={locale} pulseOnChange className={styles.heartsValue} icon={<Heart size={20} strokeWidth={1.75} className={styles.heart} />} />
     </Link> : null}
   </div>;
+}
+
+/** Passports but no favorite named: the chip says "최애 고르기" and opens the menu of passports to name one (D2). */
+function PickChip({ locale, bias }: { locale: AppLocale; bias: SelectedBias }) {
+  return <Menu.Root>
+    <Menu.Trigger className={`${styles.chip} ${styles.trigger}`} data-selected-bias="unnamed"><Empty locale={locale} /></Menu.Trigger>
+    <FavoriteMenu locale={locale} bias={bias} current={null} />
+  </Menu.Root>;
+}
+
+/** A "최애 고르기" trigger anywhere on a page (덕질 wallet, heart card) that opens the favorite menu when passports exist (D2). */
+export function FavoritePickMenu({ locale, bias, className, children }: { locale: AppLocale; bias: SelectedBias; className?: string; children: ReactNode }) {
+  return <Menu.Root>
+    <Menu.Trigger className={className} data-favorite-pick="">{children}</Menu.Trigger>
+    <FavoriteMenu locale={locale} bias={bias} current={null} />
+  </Menu.Root>;
 }

@@ -26,7 +26,7 @@ import styles from "./stan-wallet.module.css";
 export type StanSlot = "loading" | "locked" | "missing" | number;
 
 /** The cheer cell: heart cheering is not open yet (feedback D15), so it names the favorite on a disabled button; without one it leads to choosing. */
-export type StanCheer = { kind: "favorite"; name: string } | { kind: "pick"; href: string } | { kind: "loading" };
+export type StanCheer = { kind: "favorite"; name: string } | { kind: "pick"; href: string } | { kind: "menu"; node: ReactNode } | { kind: "loading" };
 
 function Cell({ label, help, children, next = false }: { label: ReactNode; help?: ReactNode; children: ReactNode; next?: boolean }) {
   return <div className={styles.cell}>
@@ -81,6 +81,7 @@ export function StanWallet({ locale, state, stamps, hearts, cheer, className }: 
       </Cell>
       <Cell label={s("stanFlowCheer")} help={<FanHelpTip label={preparing} title={s("stanFlowCheer")} closeLabel={close}>{preparing}</FanHelpTip>}>
         {cheer.kind === "loading" ? <FanSkeleton width={120} height={20} />
+          : cheer.kind === "menu" ? cheer.node
           : cheer.kind === "favorite" ? <FanAction variant="secondary" size="sm" disabled className={styles.cellAction}>{s("heartGo", [cheer.name])}</FanAction>
           : <Link className={styles.cheer} href={cheer.href as Route}><span>{s("heartPick")}</span><ArrowRight size={16} aria-hidden="true" /></Link>}
       </Cell>

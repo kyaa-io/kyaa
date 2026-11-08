@@ -28,18 +28,18 @@ export function selectedBiasOptions(summary: MySummary | undefined): SelectedBia
 
 const stageRank = (option: SelectedBiasOption) => FAN_STAGE_KEYS.indexOf(option.stage?.key ?? fanTierEntryKey(option.tier));
 
-/** The favorite named in MY (server, D's fan_profile_public_fields) comes first when it is one of the passports; then the browser's stored
- * choice; then, without either, the default must not follow the summary's order: it sorts creators by their localized name,
- * so "the first passport" was a different favorite in ko and en (261107-2 H-1). Highest stage first, then slug. */
-export function pickSelectedBias(options: readonly SelectedBiasOption[], stored: string | null, named?: string | null): SelectedBiasOption | null {
-  const chosen = named ? options.find((option) => option.slug === named) : undefined;
-  if (chosen) return chosen;
-  const kept = options.find((option) => option.slug === stored);
-  if (kept) return kept;
+/** The favorite is the one the fan named in MY (fan_profile_public_fields, `summary.favorite`) and nothing else: the header, the 덕질 bar,
+ * the fan list, the ranking and the profile card all read that one value. It counts here while its passport exists; otherwise there is none. */
+export function pickSelectedBias(options: readonly SelectedBiasOption[], named: string | null | undefined): SelectedBiasOption | null {
+  return named ? options.find((option) => option.slug === named) ?? null : null;
+}
+
+/** Which passport a screen opens when the fan named no favorite (MY's card, the guide's progress). Not a favorite: nothing shows it as one.
+ * It must not follow the summary's order, which sorts by the localized name (261107-2 H-1): highest stage first, then slug. */
+export function defaultPassport(options: readonly SelectedBiasOption[]): SelectedBiasOption | null {
   return options.reduce<SelectedBiasOption | null>((best, option) => {
     if (!best) return option;
     const byStage = stageRank(option) - stageRank(best);
     return byStage > 0 || (byStage === 0 && option.slug < best.slug) ? option : best;
   }, null);
 }
-

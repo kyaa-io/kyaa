@@ -2,7 +2,8 @@
 import {WalletHistoryPanel} from '@/features/group-wallet/ui/wallet-screen';
 import {WalletBalances,WalletCard,WalletExchange} from '@/features/group-wallet/ui/wallet-card';
 import {StanWallet,type StanSlot} from '@/features/group-wallet/ui/stan-wallet';
-import {SelectedBiasBar} from '@/features/selected-bias/ui/selected-bias-chip';
+import {FavoritePickMenu,SelectedBiasBar} from '@/features/selected-bias/ui/selected-bias-chip';
+import walletStyles from '@/features/group-wallet/ui/stan-wallet.module.css';
 import {openingPage} from '@/features/passport/ui/passport-mission-book';
 import {passportRoadmapSchema} from '@/features/passport/domain/dukjil-types';
 import {useSelectedBias,type SelectedBias,type SelectedBiasOption} from '@/features/selected-bias/ui/use-selected-bias';
@@ -99,6 +100,7 @@ function BenefitsHeart({locale,bias}:{locale:AppLocale;bias:SelectedBias}){
  const target=bias.selected??bias.unverified;
  const body=bias.status==='loading'?<div className={styles.heartPending}><FanSkeletonRows rows={1}/></div>
   :bias.status==='guest'?<Link className={styles.heartLink} href={fanLoginHref(locale,`/benefits?locale=${locale}`) as Route}><span className={styles.heartIcon}><Heart aria-hidden='true' size={20}/></span><span className={styles.heartName}>{t('heartPick')}</span><ArrowRight aria-hidden='true' size={16}/></Link>
+  :!bias.selected&&bias.options.length?<FavoritePickMenu locale={locale} bias={bias} className={styles.heartLink}><span className={styles.heartIcon}><Heart aria-hidden='true' size={20}/></span><span className={styles.heartName}>{t('heartPick')}</span><ArrowRight aria-hidden='true' size={16}/></FavoritePickMenu>
   :!target?<Link className={styles.heartLink} href={`/pages/groups?locale=${locale}` as Route}><span className={styles.heartIcon}><Heart aria-hidden='true' size={20}/></span><span className={styles.heartName}>{t('heartPick')}</span><ArrowRight aria-hidden='true' size={16}/></Link>
   :<div className={styles.heartLink} data-heart-soon='' aria-disabled='true'>{bias.selected?<img className={styles.heartAvatar} src={bias.selected.image} alt='' width={40} height={40} style={bias.selected.imagePosition?{objectPosition:bias.selected.imagePosition}:undefined}/>:<span className={styles.heartIcon}><Heart aria-hidden='true' size={20}/></span>}<span className={styles.heartName}>{t('heartGo',[target.name])}</span><FanTag tone='neutral'>{preparing}</FanTag></div>;
  return <section className={styles.pHeart} aria-label={title} data-heart-soon=''><div className={styles.sectionHead}><FanHeading>{title}</FanHeading><FanHelpTip label={preparing} title={title} closeLabel={fanUiText(locale,'close')}>{preparing}</FanHelpTip></div>{body}</section>;
@@ -144,7 +146,8 @@ function BenefitsWallet({locale,signedOut=false,bias,onAffordableChange}:{locale
  const page=roadmap.data?roadmap.data.pages[openingPage(roadmap.data.pages)]:undefined;
  const stamps:StanSlot=guest?'locked':!bias.selected?(bias.status==='loading'?'loading':0):page?page.filled:roadmap.data?0:roadmap.error?'missing':'loading';
  const hearts:StanSlot=guest?'locked':bias.status==='loading'?'loading':bias.selected?bias.selected.hearts??'missing':0;
- const cheer=bias.status==='loading'?{kind:'loading' as const}:bias.selected?{kind:'favorite' as const,name:bias.selected.name}:{kind:'pick' as const,href:guest?fanLoginHref(locale,`/benefits?locale=${locale}`):`/pages/groups?locale=${locale}`};
+ // D2: with passports but no favorite named, "최애 고르기" opens the favorite menu right here; without a passport it goes to finding one.
+ const cheer=bias.status==='loading'?{kind:'loading' as const}:bias.selected?{kind:'favorite' as const,name:bias.selected.name}:!guest&&bias.options.length?{kind:'menu' as const,node:<FavoritePickMenu locale={locale} bias={bias} className={walletStyles.cheer}><span>{dukjilText(locale,'heartPick')}</span><ArrowRight size={16} aria-hidden='true'/></FavoritePickMenu>}:{kind:'pick' as const,href:guest?fanLoginHref(locale,`/benefits?locale=${locale}`):`/pages/groups?locale=${locale}`};
  useEffect(()=>{window.addEventListener(GROUP_WALLET_CHANGED_EVENT,wallet.retry);return()=>window.removeEventListener(GROUP_WALLET_CHANGED_EVENT,wallet.retry);},[wallet.retry]);
  const sections=useContext(SectionContext),retryAll=()=>window.dispatchEvent(new Event(GROUP_WALLET_CHANGED_EVENT)),failed=auth.ready&&auth.authenticated&&!wallet.loading&&!wallet.data,allFailed=useSectionFailure('wallet',failed,retryAll),lifted=useLiftedAlert('wallet',{message:w.error,label:w.retry,retry:retryAll},failed&&!allFailed),walletAlert=lifted?null:<FanState inline kind='error' className={styles.inlineError} title={w.error} actions={<FanAction onClick={retryAll}>{w.retry}</FanAction>}/>;
  const known=auth.ready&&auth.authenticated&&!wallet.loading,canExchange=known?Boolean(wallet.data&&wallet.data.points>=wallet.data.pointCost):null;
