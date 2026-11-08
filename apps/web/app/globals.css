@@ -28,6 +28,7 @@
   --color-accent-soft: #fff0f6;
   --color-accent-line: #f4c3d7;
   --color-accent-ink: #ad1457;
+  --color-page-accent: var(--color-accent);
   --color-coin: #ffc83d;
   --color-coin-ink: #4a3500;
   --color-foil: #b8975a;
@@ -45,11 +46,14 @@
   --space-12: 48px;
   --space-16: 64px;
 
+  --radius-card: 12px;
   --radius-control: 12px;
   --radius-collection: 16px;
   --radius-hero: 20px;
   --radius-pill: 999rem;
 
+  --motion-fast: 150ms;
+  --motion-slow: 200ms;
   --motion-control: 160ms;
   --motion-layout: 240ms;
   --motion-easing: cubic-bezier(.2, 0, 0, 1);
@@ -81,6 +85,7 @@
   --fan-item-title-weight: 700;
   --fan-event-catalog-title-size: 20px;
   --fan-body-size: 16px;
+  --fan-body-size-wide: var(--fan-body-size);
   --fan-body-leading: 1.5;
   --fan-tab-weight: 500;
   --fan-section-gap: 32px;
