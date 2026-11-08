@@ -3,7 +3,7 @@ import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/re
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import { APP_LOCALES } from "@/i18n/locales";
 
-const h = vi.hoisted(() => ({ authenticated: true, list: { items: [] as unknown[] }, request: vi.fn(), toast: vi.fn(), burst: vi.fn(), replace: vi.fn(), search: "tab=certifications&share=1&locale=ko" }));
+const h = vi.hoisted(() => ({ authenticated: true, list: { items: [] as unknown[] }, request: vi.fn(), toast: vi.fn(), burst: vi.fn(), replace: vi.fn(), push: vi.fn(), search: "tab=certifications&share=1&locale=ko" }));
 vi.mock("@/features/groups/ui/use-group-resource", () => {
   class GroupRequestError extends Error { constructor(readonly status: number, readonly code: string) { super(code); } }
   return { GroupRequestError, useGroupRequest: () => ({ request: h.request, authenticated: h.authenticated, ready: true, ownerKey: "u:1" }),
@@ -13,8 +13,7 @@ vi.mock("@/features/dukjil/ui/dukjil-provider", () => ({ DukjilProvider: ({ chil
   useDukjil: () => ({ status: "on", catalog: { rules: { share: { points: 10, dailyLimit: 3 } } }, today: { policyActive: true, actions: { share: { count: 1, points: 10, remaining: 2, stamped: true } } } }) }));
 vi.mock("@/components/fan-ui/fan-toast", () => ({ showFanToast: h.toast }));
 vi.mock("@/components/fan-ui/point-reward-burst", () => ({ usePointRewardBurst: () => ({ burst: null, add: h.burst, clear: vi.fn() }), PointRewardBurst: () => null }));
-vi.mock("@/features/my/ui/guest-login", () => ({ GuestLoginAction: () => <a href="/login">로그인</a> }));
-vi.mock("next/navigation", () => ({ usePathname: () => "/elina", useSearchParams: () => new URLSearchParams(h.search), useRouter: () => ({ replace: h.replace, push: vi.fn() }) }));
+vi.mock("next/navigation", () => ({ usePathname: () => "/elina", useSearchParams: () => new URLSearchParams(h.search), useRouter: () => ({ replace: h.replace, push: h.push }) }));
 import { ShareProofHistoryRows, ShareProofTile } from "./share-proof-panel";
 import { shareProofCopy } from "./share-proof-copy";
 
@@ -71,8 +70,10 @@ it("keeps the dialog for a signed-out fan with a sign-in action and no list read
   h.authenticated = false;
   render(<ShareProofTile slug="elina" locale="ko" />);
   expect(screen.getByRole("dialog", { name: "SNS 공유 인증" })).toBeInTheDocument();
-  expect(screen.getByRole("link", { name: "로그인" })).toBeInTheDocument();
   expect(field()).toBeDisabled();
+  fireEvent.click(screen.getByRole("button", { name: "로그인하고 인증하기" }));
+  expect(h.push).toHaveBeenCalledWith(expect.stringContaining("/login"));
+  expect(h.push.mock.calls[0][0]).toContain(encodeURIComponent("share=1"));
 });
 
 it("lists own proofs in the dialog and as rows of the 인증 history", () => {

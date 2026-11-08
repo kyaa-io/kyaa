@@ -12,7 +12,7 @@ import { communityShareLinkSchema } from "@/features/community-stamps/domain/com
 import { DukjilProvider, useDukjil } from "@/features/dukjil/ui/dukjil-provider";
 import { missionProgress } from "@/features/dukjil/domain/dukjil-ui";
 import { GroupRequestError, useGroupRequest, useGroupResource } from "@/features/groups/ui/use-group-resource";
-import { GuestLoginAction } from "@/features/my/ui/guest-login";
+import { fanLoginHref } from "@/components/login-href";
 import type { AppLocale } from "@/i18n/locales";
 import { parseShareProofUrl, shareProofListSchema, shareProofResultSchema } from "../domain/share-proof";
 import { shareProofCopy, sharePlatformName } from "./share-proof-copy";
@@ -47,7 +47,7 @@ function ShareProofTileInner({ slug, locale }: { slug: string; locale: AppLocale
 
 export function ShareProofDialog({ slug, locale, onClose }: { slug: string; locale: AppLocale; onClose: () => void }) {
   const c = shareProofCopy(locale), fieldId = useId();
-  const pathname = usePathname() ?? "/", params = useSearchParams();
+  const pathname = usePathname() ?? "/", params = useSearchParams(), router = useRouter();
   const { request, authenticated, ready } = useGroupRequest();
   const list = useGroupResource(authenticated ? `/api/me/share-proofs?creator=${encodeURIComponent(slug)}` : null, parseList);
   const [url, setUrl] = useState(""), [problem, setProblem] = useState(""), [busy, setBusy] = useState(false), [linkBusy, setLinkBusy] = useState(false);
@@ -81,7 +81,7 @@ export function ShareProofDialog({ slug, locale, onClose }: { slug: string; loca
   }
   const returnTo = `${pathname}?${params?.toString() ?? ""}`;
   return <FanDialog open onOpenChange={value => { if (!value) onClose(); }} responsive size="md" title={c.title} closeLabel={c.close}
-    primary={ready && authenticated ? { label: c.submit, onClick: () => void submit(), loading: busy } : undefined} secondary={{ label: c.close, onClick: onClose }}>
+    primary={!ready ? undefined : authenticated ? { label: c.submit, onClick: () => void submit(), loading: busy } : { label: c.login, onClick: () => router.push(fanLoginHref(locale, returnTo) as Route) }} secondary={{ label: c.close, onClick: onClose }}>
     <PointRewardBurst locale={locale} points={burst?.points ?? 0} burstKey={burst?.key} onDone={clear} />
     <div className={styles.body} data-share-proof="">
       <section className={styles.step}>
@@ -94,7 +94,7 @@ export function ShareProofDialog({ slug, locale, onClose }: { slug: string; loca
           onChange={event => { setUrl(event.target.value); if (problem) setProblem(""); }} aria-invalid={Boolean(problem) || undefined} aria-describedby={problem ? `${fieldId}-error` : undefined} disabled={!authenticated || busy} maxLength={600} />
         {problem && <p id={`${fieldId}-error`} className={styles.error} role="alert">{problem}</p>}
       </form>
-      {ready && !authenticated ? <GuestLoginAction locale={locale} returnTo={returnTo} variant="primary" fullWidth /> : <section className={styles.step} aria-labelledby={`${fieldId}-mine`}>
+      {ready && !authenticated ? null : <section className={styles.step} aria-labelledby={`${fieldId}-mine`}>
         <p id={`${fieldId}-mine`} className={styles.stepTitle}>{c.mine}</p>
         {list.loading ? <FanSkeletonRows rows={2} variant="plain" /> : list.data?.items.length ? <ul className={styles.list}>{list.data.items.slice(0, 5).map(item => <li key={item.id}>
           <a href={item.url} target="_blank" rel="noopener noreferrer" data-outbound-tracking="off">{sharePlatformName(locale, item.platform)}</a>
