@@ -1,13 +1,12 @@
 "use client";
 import Link from "next/link";
 import type { Route } from "next";
-import { useMemo, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import { FanHeading } from "@/components/fan-ui/fan-heading";
 import { FanIcon } from "@/components/fan-ui/fan-icon";
 import { FanTabs } from "@/components/fan-ui/fan-tabs";
 import { FanSkeletonRows } from "@/components/fan-ui/fan-skeleton";
-import { FanLockedRows } from "@/components/fan-ui/fan-locked-value";
 import { BadgeCheck, Bell, ChevronDown, ChevronRight, MessageCircle, Settings, Star, UserPlus, type LucideIcon } from "@/components/fan-ui/inbox-icons";
 import { withLocalePath } from "@/components/locale-path";
 import { TranslatedText } from "@/features/content-safety/ui/use-automatic-translation";
@@ -62,18 +61,20 @@ export function NotificationInbox({ locale, inbox, favoriteName = null, headingL
   const chipItems = notificationChips.map((key) => ({ key, label: key === "favorite" && favoriteName ? <span className={styles.chipName} title={favoriteName}>{favoriteName}</span> : c.chips[key], onSelect: () => { setChip(key); setLimit(PAGE); } }));
   const total = groups.reduce((sum, group) => sum + group.entries.length, 0);
   const shown = useMemo(() => limitInbox(groups, limit), [groups, limit]);
-  return <div className={styles.inbox} data-inbox="">
+  // 비로그인(검토 VISUAL-K ①): 문구와 로그인 버튼만. 칩·설정·잠금 뼈대는 그리지 않는다.
+  const guest = state.kind === "auth";
+  return <div className={styles.inbox} data-inbox="" data-guest={guest || undefined}>
     <header className={styles.head} data-show-title={showTitle || undefined}>
       {showTitle ? <FanHeading as={headingLevel}>{c.title}</FanHeading> : null}
       {unread > 0 ? <span className={styles.unread} data-metric="count">{c.unread(unread)}</span> : null}
       <span className={styles.headEnd}>
         {unread > 0 ? <FanAction variant="text" size="sm" className={styles.textAction} onClick={() => void inbox.readAll()} disabled={inbox.readingAll}>{c.readAll}</FanAction> : null}
-        <Link className={styles.iconLink} href={`/settings?locale=${locale}&section=notifications` as Route} aria-label={c.settings} title={c.settings} onClick={onNavigate}><FanIcon icon={Settings} size={20} /></Link>
+        {guest ? null : <Link className={styles.iconLink} href={`/settings?locale=${locale}&section=notifications` as Route} aria-label={c.settings} title={c.settings} onClick={onNavigate}><FanIcon icon={Settings} size={20} /></Link>}
       </span>
     </header>
-    <FanTabs variant="chip" label={c.filter} current={chip} items={chipItems} className={styles.kindFilter} />
+    {guest ? null : <ChipRow><FanTabs variant="chip" label={c.filter} current={chip} items={chipItems} className={styles.kindFilter} /></ChipRow>}
     {state.kind === "loading" ? <FanSkeletonRows rows={5} variant="entity" ariaLabel={c.title} />
-      : state.kind === "auth" ? <div className={styles.guest}><FanLockedRows rows={3} /><p className={styles.state}>{c.signIn}</p><GuestLoginAction locale={locale} returnTo={returnTo} variant="primary" fullWidth /></div>
+      : state.kind === "auth" ? <div className={styles.guest}><p className={styles.state}>{c.signIn}</p><GuestLoginAction locale={locale} returnTo={returnTo} variant="primary" fullWidth /></div>
       : state.kind === "error" ? <div className={styles.stateRow} role="alert"><span>{c.loadError}</span><FanAction variant="text" size="sm" className={styles.textAction} onClick={() => void inbox.reload()}>{c.retry}</FanAction></div>
       : !groups.length ? <p className={styles.state} role="status">{chip === "all" ? c.empty : c.chipEmpty}</p>
       : <>
@@ -87,6 +88,23 @@ export function NotificationInbox({ locale, inbox, favoriteName = null, headingL
         {total > limit ? <FanAction variant="text" size="sm" className={styles.more} onClick={() => setLimit((value) => value + PAGE)}>{c.more}</FanAction> : null}
       </>}
   </div>;
+}
+
+/** 칩 줄이 오른쪽으로 더 있을 때 끝을 흐리게 해 가로로 밀 수 있음을 보인다(검토 VISUAL-K ① 낮음). 끝까지 밀면 흐림이 사라진다. */
+function ChipRow({ children }: { children: ReactNode }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [more, setMore] = useState(false);
+  useEffect(() => {
+    const row = ref.current?.firstElementChild as HTMLElement | null;
+    if (!row) return;
+    const sync = () => setMore(row.scrollLeft + row.clientWidth < row.scrollWidth - 1);
+    sync();
+    row.addEventListener("scroll", sync, { passive: true });
+    const observer = typeof ResizeObserver === "undefined" ? null : new ResizeObserver(sync);
+    observer?.observe(row);
+    return () => { row.removeEventListener("scroll", sync); observer?.disconnect(); };
+  }, []);
+  return <div ref={ref} className={styles.chipRow} data-more={more || undefined}>{children}</div>;
 }
 
 const entryKey = (entry: InboxEntry) => entry.type === "item" ? entry.item.id : `bundle-${entry.items[0].id}`;

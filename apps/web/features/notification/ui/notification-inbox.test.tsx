@@ -12,3 +12,13 @@ it("keeps a long favorite name whole for the chip's name and title while the chi
   expect(favorite.querySelector(`[title="${name}"]`)?.className).toMatch(/chipName/);
   expect(chips.className).toMatch(/kindFilter/);
 });
+
+it("VISUAL-K ①: signed out, the inbox is the line and the sign-in action only — no chips, no settings gear, no locked rows", () => {
+  const inbox = { state: { kind: "auth" as const }, unread: 0, reload: vi.fn(), markRead: vi.fn(), readAll: vi.fn(), readingAll: false };
+  const { container } = render(<NotificationInbox locale="ko" inbox={inbox as never} returnTo="/" />);
+  expect(screen.getByText("로그인하면 받은 알림이 여기에 쌓입니다.")).toBeVisible();
+  expect(screen.queryByRole("navigation", { name: "알림 종류" })).toBeNull();
+  expect(screen.queryByRole("link", { name: "알림 설정" })).toBeNull();
+  expect(container.querySelector("[data-locked-rows], [data-fan-locked]")).toBeNull();
+  expect(container.querySelectorAll("a, button").length).toBeGreaterThan(0);
+});

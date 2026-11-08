@@ -21,6 +21,8 @@ describe("NotificationPanel 1024+", () => {
     render(<Harness />);
     const panel = await screen.findByRole("region", { name: "알림" });
     expect(panel).toHaveAttribute("data-notification-panel", "popover");
+    // VISUAL-K ①: focus starts on the first control inside the popover, not on the frame.
+    expect(panel.contains(document.activeElement) && document.activeElement !== panel).toBe(true);
     await act(async () => { fireEvent.keyDown(document, { key: "Escape" }); });
     expect(screen.queryByRole("region", { name: "알림" })).toBeNull();
     expect(document.activeElement).toBe(screen.getByRole("button", { name: "bell" }));

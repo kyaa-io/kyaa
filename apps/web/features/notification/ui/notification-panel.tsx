@@ -64,7 +64,9 @@ function Popover({ anchorRef, onClose, label, children }: { anchorRef: RefObject
   useEffect(() => {
     const anchor = anchorRef.current;
     const onClose = () => closeRef.current();
-    ref.current?.focus({ preventScroll: true });
+    // 검토 VISUAL-K ①: 열리면 첫 조작 요소(모두 읽음·설정·칩·로그인)로 포커스를 옮긴다. 없으면 창 자체.
+    const first = ref.current?.querySelector<HTMLElement>("a[href], button:not([disabled]), [tabindex]:not([tabindex='-1'])");
+    (first ?? ref.current)?.focus({ preventScroll: true });
     const onKey = (event: KeyboardEvent) => { if (event.key === "Escape") { event.stopPropagation(); onClose(); } };
     const onDown = (event: PointerEvent) => {
       const target = event.target as Node;
