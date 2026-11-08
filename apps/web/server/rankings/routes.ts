@@ -53,7 +53,10 @@ export function createRankingsHandlers(deps: RankingsDependencies) {
   // A viewer is optional: without an Authorization header the ranking is public and cacheable; with one it also carries "my" values.
   const viewer = async (request: Request) => {
     const authorization = request.headers.get("authorization");
-    return authorization ? (await deps.authorize(authorization)).appUserId : null;
+    if (!authorization) return null;
+    // A token that is expired or not yet accepted must not turn a public ranking into an error: answer as a signed-out reader.
+    try { return (await deps.authorize(authorization)).appUserId; }
+    catch (error) { if (error instanceof AuthError && error.status === 401) return null; throw error; }
   };
   const stale = (raw: unknown) => {
     const at = obj(raw).computedAt;
@@ -96,7 +99,7 @@ export function createRankingsHandlers(deps: RankingsDependencies) {
         return { rank: r.rank, slug: r.slug, name: r.name, imageUrl: r.imageUrl ?? null, score: r.score, jjinfanCount: r.jjinfanCount, myHearts: appUserId ? (r.myHearts ?? 0) : null };
       });
       const body = checked(creatorRankingSchema, { period: p, periodStart: raw.periodStart, computedAt: raw.computedAt ?? null, rows });
-      return Response.json(body, { headers: appUserId ? privateHeaders : publicHeaders });
+      return Response.json(body, { headers: appUserId || request.headers.has("authorization") ? privateHeaders : publicHeaders });
     }),
     // Platform top fans across every creator. Rows are rebuilt from named fields so a new database key never reaches the client.
     fans: (request: Request) => run(async () => {
@@ -113,7 +116,7 @@ export function createRankingsHandlers(deps: RankingsDependencies) {
         period: p, periodStart: raw.periodStart, computedAt: raw.computedAt ?? null, rows,
         me: appUserId && raw.me ? { rank: me.rank, score: me.score, inTop: me.inTop === true } : null,
       });
-      return Response.json(body, { headers: appUserId ? privateHeaders : publicHeaders });
+      return Response.json(body, { headers: appUserId || request.headers.has("authorization") ? privateHeaders : publicHeaders });
     }),
     page: (request: Request, idOrSlug: string) => run(async () => {
       const p = period(request);
@@ -134,7 +137,7 @@ export function createRankingsHandlers(deps: RankingsDependencies) {
         me: raw.me ? { rank: me.rank, score: me.score, inTop: me.inTop === true } : null,
         ...(raw.available === false ? { available: false } : {}),
       });
-      return Response.json(body, { headers: appUserId ? privateHeaders : publicHeaders });
+      return Response.json(body, { headers: appUserId || request.headers.has("authorization") ? privateHeaders : publicHeaders });
     }),
     challenge: (_request: Request, idOrSlug: string) => run(async () => {
       const id = await celebrity(idOrSlug);
