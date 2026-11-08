@@ -41,6 +41,7 @@ export const dukjilStanSource = {
   luckyDetails: { ko: "선물 보기", en: "See the gift" },
   luckyResults: { ko: "결과 보기", en: "See results" },
   luckyEmpty: { ko: "지금 진행 중인 럭키드로우가 없어요", en: "No lucky draws open right now" },
+  luckyPast: { ko: "지난 럭키드로우", en: "Past lucky draws" },
   luckyNeedPassport: { ko: "패스포트를 받으면 응모할 수 있어요", en: "Get the passport to enter" },
   luckyGetPassport: { ko: "패스포트 받기", en: "Get the passport" },
   luckyNeedPolicy: { ko: "받는 방법이 정해지면 응모할 수 있어요", en: "Entries open once delivery is set" },

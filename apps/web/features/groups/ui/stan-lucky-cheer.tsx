@@ -42,6 +42,7 @@ const parseWallet = (value: unknown) => walletSchema.parse(value);
 const parseEntries = (value: unknown) => benefitListResponseSchema.parse(value);
 const t = (locale: AppLocale, key: Parameters<typeof dukjilText>[1], values?: unknown[]) => dukjilText(locale, key, values);
 const shortDate = (value: string, locale: AppLocale) => new Date(value).toLocaleString(locale, { month: "numeric", day: "numeric", hour: "2-digit", minute: "2-digit", hourCycle: "h23", timeZone: "Asia/Seoul" });
+const dayDate = (value: string, locale: AppLocale) => new Date(value).toLocaleDateString(locale, { month: "numeric", day: "numeric", timeZone: "Asia/Seoul" });
 const statusOrder = { open: 0, preparing: 1, closed: 2, cancelled: 3 } as const;
 
 /** The stamp gauge's words (E4): 9 − (n mod 9) stamps to the next heart; a full page (n a positive multiple of 9) reads 하트 +1. */
@@ -78,8 +79,11 @@ export function useStanRank(locale: AppLocale, slug: string | null): { loading: 
 function RaffleDate({ raffle, status, locale }: { raffle: Raffle; status: Raffle["status"]; locale: AppLocale }) {
   if (status === "preparing" && raffle.entryOpensAt) return <time dateTime={raffle.entryOpensAt}>{t(locale, "luckyOpensAt", [shortDate(raffle.entryOpensAt, locale)])}</time>;
   if (status === "open" && raffle.entryClosesAt) return <time dateTime={raffle.entryClosesAt}>{t(locale, "luckyClosesAt", [shortDate(raffle.entryClosesAt, locale)])}</time>;
-  if (status === "closed" && raffle.resultsPublishedAt) return <time dateTime={raffle.resultsPublishedAt}>{t(locale, "luckyResultsAt", [shortDate(raffle.resultsPublishedAt, locale)])}</time>;
-  if (status === "closed") return <span>{raffle.entryClosesAt ? t(locale, "luckyClosesAt", [shortDate(raffle.entryClosesAt, locale)]) : t(locale, "luckyClosed")}</span>;
+  // F5: a closed card names its own close day beside the results day, so two draws of the same gift no longer read the same.
+  if (status === "closed") {
+    const closes = raffle.entryClosesAt ? <time dateTime={raffle.entryClosesAt}>{t(locale, "luckyClosesAt", [dayDate(raffle.entryClosesAt, locale)])}</time> : <span>{t(locale, "luckyClosed")}</span>;
+    return raffle.resultsPublishedAt ? <>{closes} · <time dateTime={raffle.resultsPublishedAt}>{t(locale, "luckyResultsAt", [dayDate(raffle.resultsPublishedAt, locale)])}</time></> : closes;
+  }
   return null;
 }
 
@@ -136,15 +140,23 @@ export function StanLucky({ locale, bias, guest }: { locale: AppLocale; bias: Se
   const raffles = useStanRaffles(locale, slug), title = groupBenefitsCopy(locale).lucky;
   const wallet = useGroupResource(!guest && slug ? "/api/me/wallet" : null, parseWallet);
   const entries = useGroupResource(!guest && slug ? `/api/benefits?celebrity=${encodeURIComponent(slug)}&locale=${toContentLocale(locale)}` : null, parseEntries);
-  const shown = raffles.items.slice(0, LUCKY_CARDS);
-  const more = slug && raffles.items.length > LUCKY_CARDS ? <Link className={styles.headLink} href={creatorRafflesHref(slug, locale)}>{seeAllLabel[locale]}<ArrowRight size={16} aria-hidden="true" /></Link> : null;
-  const empty = (title: string, action?: ReactNode) => <FanState inline compact kind="empty" className={styles.empty} title={title} actions={action} />;
+  // F5: open and upcoming draws take the first place; closed ones only fill a separate 지난 럭키드로우 list when none is live.
+  const live = raffles.items.filter(item => item.status !== "closed"), past = live.length ? [] : raffles.items.filter(item => item.status === "closed");
+  const shown = live.slice(0, LUCKY_CARDS), shownPast = past.slice(0, LUCKY_CARDS);
+  const more = slug && raffles.items.length > shown.length + shownPast.length ? <Link className={styles.headLink} href={creatorRafflesHref(slug, locale)}>{seeAllLabel[locale]}<ArrowRight size={16} aria-hidden="true" /></Link> : null;
+  const empty = (title: string, action?: ReactNode, short = false) => <FanState inline compact kind="empty" className={short ? `${styles.empty} ${styles.emptyShort}` : styles.empty} title={title} actions={action} />;
   const history = <FanAction variant="text" href={`/my/raffles?locale=${locale}`} trailingIcon={<ArrowRight />}>{t(locale, "luckyHistory")}</FanAction>;
   const body = bias.status === "loading" || (slug && raffles.loading) ? <div className={styles.pending} aria-busy="true"><FanSkeleton shape="block" width="100%" height="100%" /></div>
     : guest ? empty(t(locale, "luckyNoFavorite"))
     : !slug ? empty(t(locale, "luckyNoFavorite"), bias.options.length ? <FavoritePickMenu locale={locale} bias={bias} className={styles.pick}><span>{t(locale, "heartPick")}</span><ArrowRight size={16} aria-hidden="true" /></FavoritePickMenu> : <FanAction variant="text" href={`/pages/groups?locale=${locale}`} trailingIcon={<ArrowRight />}>{t(locale, "heartPick")}</FanAction>)
     : raffles.error ? <FanState inline compact kind="error" className={styles.empty} title={t(locale, "luckyLoadError")} actions={<FanAction variant="text" onClick={raffles.retry}>{groupsCopy(locale).retry}</FanAction>} />
-    : shown.length === 0 ? empty(t(locale, "luckyEmpty"), history)
+    : shown.length === 0 && shownPast.length === 0 ? empty(t(locale, "luckyEmpty"), history)
+    : shown.length === 0 ? <>{empty(t(locale, "luckyEmpty"), history, true)}
+      <p className={styles.pastHead} id="stan-lucky-past">{t(locale, "luckyPast")}</p>
+      <ul className={styles.raffles} data-count={shownPast.length} data-raffle-list="past" aria-labelledby="stan-lucky-past">{shownPast.map(({ raffle, status }) => {
+        const entry = entries.data?.benefits.find(item => item.id === raffle.benefitId)?.entry ?? null;
+        return <RaffleCard key={raffle.id} raffle={raffle} status={status} slug={slug} locale={locale} entered={entry?.enteredTickets ?? null} allowance={null} />;
+      })}</ul></>
     : <ul className={styles.raffles} data-count={shown.length}>{shown.map(({ raffle, status }) => {
       // A loaded list without this benefit means no entry yet (entered 0); undefined while the list is not known.
       const entry = entries.data ? entries.data.benefits.find(item => item.id === raffle.benefitId)?.entry ?? null : undefined;

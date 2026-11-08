@@ -7,8 +7,10 @@ import {additionalLocales} from '@/i18n/messages';
 import {activityLabel} from '@/features/dukjil-guide/ui/guide-copy';
 import type {GuideActivityKey} from '@/features/dukjil-guide/domain/guide-model';
 import {walletCopy} from './copy';
+import {dukjilText} from '@/features/dukjil/ui/dukjil-copy';
 /** Detail the history API adds for 덕질 rows: which activity earned the points, and why a correction took them back. */
-export type WalletHistoryDetail={actionKey?:string|null;correctionReason?:string|null};
+/** pageName: the fan page of a check-in row (F5), so check-ins on several pages the same day read apart; absent on an older database. */
+export type WalletHistoryDetail={actionKey?:string|null;correctionReason?:string|null;pageName?:string|null};
 const GUIDE_ACTIVITIES:ReadonlySet<string>=new Set<GuideActivityKey>(['post','comment','reaction','share','invite','quiz','subscription','live_reserve','live_attend','survey','mission','event_checkin','event_review','proof']);
 // The invited friend's own reward (dukjil action invite_friend, 100 P when the friend finishes the entry review); the inviter's reward is `invite`.
 const invitedFriend:Record<AppLocale,string>={ko:'초대로 가입',en:'Joined by invitation',ja:'招待で参加','zh-Hans':'通过邀请加入','zh-Hant':'透過邀請加入',es:'Unirse por invitación',id:'Bergabung lewat undangan',vi:'Tham gia nhờ lời mời',th:'เข้าร่วมผ่านคำเชิญ',pt:'Entrada por convite',fr:'Inscription sur invitation',ru:'Вступление по приглашению'};
@@ -42,6 +44,7 @@ export function walletHistoryLabel(locale:AppLocale,sourceType:string,detail:Wal
   return groupEarningsCopy(locale).statuses.corrected;
  }
  if(sourceType==='dukjil_proof')return activityName(locale,'proof');
+ if(sourceType==='dukjil_action'&&detail.actionKey==='checkin'&&detail.pageName)return dukjilText(locale,'dukjilPageTitle',[detail.pageName]);
  if(sourceType==='dukjil_action'){const named=activityName(locale,detail.actionKey);if(named)return named;}
  if(sourceType==='group_check_in')return walletCopy(locale).attendance;
  if(sourceType==='group_exchange')return walletCopy(locale).exchange;

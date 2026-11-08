@@ -113,6 +113,24 @@ it('E4: an empty lucky-draw list is one state box with the way to my entries, no
  expect(within(section).getByRole('link',{name:/내 응모 내역/})).toHaveAttribute('href','/my/raffles?locale=ko');
  expect(section.querySelectorAll('[data-raffle-status]')).toHaveLength(0);
 });
+it('F5: with nothing open or upcoming, past draws sit under 지난 럭키드로우 below the empty line, each naming its own close day beside the results day',async()=>{
+ withFavorite();
+ const closed=(n:number,closes:number)=>({...creatorRaffle(n,'closed',closes-7*day,closes),title:'Same gift',benefitId:uid(499),resultsPublishedAt:iso(-5*day)});
+ creatorRaffles=[closed(1,-12*day),closed(2,-10*day),creatorRaffle(4,'cancelled',-day,7*day)];
+ render(<GroupBenefitsScreen locale='ko'/>);
+ const section=await screen.findByRole('region',{name:groupBenefitsCopy('ko').lucky});
+ await within(section).findByText('지금 진행 중인 럭키드로우가 없어요');
+ const list=within(section).getByRole('list',{name:'지난 럭키드로우'});
+ expect(list).toHaveAttribute('data-raffle-list','past');
+ expect(section.querySelector('[data-raffle-status]')!.closest('ul')).toBe(list);
+ const cards=[...list.querySelectorAll<HTMLElement>('[data-raffle-status="closed"]')];
+ expect(cards).toHaveLength(2);
+ const dates=cards.map(card=>card.querySelector('[class*="meta"]')!.textContent);
+ for(const text of dates)expect(text).toMatch(/^마감 \d+\. \d+\. · 발표 \d+\. \d+\.$/);
+ expect(new Set(dates).size).toBe(2);
+ expect(within(cards[0]).getByRole('link',{name:/결과 보기/})).toBeInTheDocument();
+ expect(within(section).queryByRole('link',{name:/전체 보기/})).toBeNull();
+});
 it('E4 · F2: the cheer card shows the favorite’s creator rank, my hearts (the header’s number) and the community numbers, with no send button and no stamp gauge (the wallet has it)',async()=>{
  withFavorite();roadmapBody={passportId:uid(900),celebrityId:uid(901),hearts:3,pages:[{pageNo:1,slots:Array.from({length:9},(_,i)=>({slotNo:i+1,kind:null,state:i<4?'filled':'empty',stampId:null,clearedAt:null})),filled:4,claimable:false,claimed:false,locked:false,lockedReason:null}]};
  const view=render(<GroupBenefitsScreen locale='ko'/>);
