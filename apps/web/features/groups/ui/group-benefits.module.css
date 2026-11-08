@@ -101,8 +101,9 @@ section.pWallet{position:relative;box-sizing:border-box;border:1px solid var(--c
 .pWallet .walletAction{width:100%;max-width:none}
 .pHistory{box-sizing:border-box}
 .pHistoryWrap{order:5;min-width:0}
-.missionsPending{min-block-size:485px}
-@media(min-width:1024px){.missionsPending{min-block-size:529px}}
+/* F3: the loaded missions section — head 28/32 + gap 12 + five 64 rows and two 64 folded heads in one card (measured 496 / 500). */
+.missionsPending{min-block-size:496px}
+@media(min-width:1024px){.missionsPending{min-block-size:500px}}
 .pRank[hidden]{display:none}
 .walletSkeleton>div{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}
 .walletSkeleton i{display:block;border-radius:var(--space-1);background:var(--color-line-subtle);animation:benefitsPulse 1.4s ease-in-out infinite}
@@ -117,17 +118,6 @@ section.pWallet{position:relative;box-sizing:border-box;border:1px solid var(--c
 .rankSkeleton>div>div>i{width:48px;height:48px;border-radius:var(--radius-pill)}
 .rankSkeleton span{display:grid;gap:8px}.rankSkeleton span i:first-child{width:36%}.rankSkeleton span i:last-child{width:60%;height:8px}
 @media(prefers-reduced-motion:reduce){.walletSkeleton i,.rankSkeleton i{animation:none}}
-@media(min-width:1024px){
- .page{display:grid;grid-template-columns:minmax(0,1fr) 360px;column-gap:var(--space-6);row-gap:var(--space-8);align-items:start}
- .heading,.alertList{grid-column:1/-1}
- .alertList{order:0}
- .main{display:flex;flex-direction:column;gap:var(--fan-section-gap);grid-column:1;min-width:0}
- .side{display:block;grid-column:2;min-width:0}
- .side[data-card]{border:1px solid var(--color-line);border-radius:var(--radius-control);background:#fff}
- .side[data-card] section.pWallet{border:0;border-radius:0;background:transparent}
- .side .pHistory{border-top:1px solid var(--color-line);padding:var(--space-2) var(--space-5) var(--space-1)}
-}
-@media(min-width:1280px){.page{grid-template-columns:minmax(0,1fr) 384px;column-gap:var(--space-8)}}
 
 /* 1차 시각 검토 반영 (2026-11-06): lucky-draw band, title-row link ends, wallet column. */
 .soonGroup{max-height:none}
@@ -151,39 +141,28 @@ section.pWallet{position:relative;box-sizing:border-box;border:1px solid var(--c
 @media(min-width:1024px){.rankSkeleton>div>div{grid-template-columns:44px minmax(0,1fr) clamp(112px,14vw,224px) 112px}.rankSkeleton{padding-bottom:var(--space-6)}}
 @media(min-width:1280px){.rankSkeleton>div>div{grid-template-columns:44px minmax(0,1fr) 224px 112px}}
 
-/* 비로그인 (2026-11-06): the locked "my hearts" cell exists only as a column (768px+); the guest history block only from 1024px, inside the wallet card column. */
-.pRank [data-mine-lock]{display:none}
-@media(min-width:48rem){.pRank [data-mine-lock]{display:inline-flex;align-items:center;gap:var(--space-1);white-space:nowrap}}
-.pGuestHistory,.pGuestHistorySection{display:none}
-.guestHistoryHead{display:flex;align-items:center;justify-content:space-between;gap:var(--space-3)}
-.guestHistoryTitle{margin:0;font-size:var(--fan-item-title-size);font-weight:var(--fan-item-title-weight);line-height:1.5}
-@media(min-width:1024px){
- .pGuestHistory{display:block;order:5;min-width:0}
- .pGuestHistorySection{display:grid;gap:var(--space-3);border-top:1px solid var(--color-line);padding:var(--space-4) var(--space-5) var(--space-2)}
-}
-
-
-/* 261107-2 U4 (2026-11-07), E4 (2026-11-08): 지갑 띠가 첫 요소로 전폭, 그 아래 럭키드로우·최애 응원 한 줄(1024+ 두 칸, 카드는 stan-lucky-cheer.module.css), 그 아래 미션(본문) + 내역(오른쪽 열).
-   390: 지갑 → 럭키드로우(가로 스크롤) → 최애 응원 → 미션 → 오늘의 덕질 → 내역. */
-.top,.firstRow{min-width:0}
+/* 피드백 F2·F3 (2026-11-08): 덕질 한 화면 구성. 390: 지갑 → 오늘의 미션 → 럭키드로우 → 최애 응원 → 오늘의 덕질 → 내역 (구역 간격 24).
+   1024+: 1,024 가운데(1440 좌우 208) — 지갑 전폭, 그 아래 본문 640(미션 → 럭키드로우 → 오늘의 덕질) + 32 + 레일 352(최애 응원 → 내역).
+   1024~1199에서도 레일 352, 본문은 나머지. Duolingo 웹의 본문 + 오른쪽 레일. */
+.top,.pLucky,.pCheer{min-width:0}
 .top{order:2}
-.firstRow{order:3;display:grid;gap:var(--fan-section-gap);min-width:0}
-.firstRow[hidden]{display:none}
-.main{order:4}
-.side{order:5}
-.top section.pWallet{border:0;background:transparent}
-.top section.pWallet[data-wallet-card="strip"]{border:1px solid var(--color-line);background:var(--color-surface)}
+.main{order:3}
+.pMissions{order:3}.pLucky{order:4}.pCheer{order:5}.pToday{order:6}.pHistoryWrap,.pGuestHistory{order:7}
+.pLucky[hidden],.pCheer[hidden]{display:none}
+/* 내역: 머리(최애 응원과 같은 제목) 아래 카드 하나. 로그인 카드는 wallet.module.css .historyCard, 비로그인은 같은 외곽에 잠긴 행 3. */
+.pHistoryWrap,.pGuestHistory{min-width:0;scroll-margin-top:var(--space-16,64px)}
+.pHistoryWrap:focus,.pGuestHistory:focus{outline:none}
+.pHistoryWrap[hidden]{display:none}
+.pGuestHistorySection{display:grid;gap:var(--space-2)}
+.guestHistoryHead{display:flex;align-items:center;justify-content:space-between;gap:var(--space-3);min-height:var(--min-target)}
+.guestHistoryCard{box-sizing:border-box;min-width:0;padding:var(--space-3) var(--space-4);border:1px solid var(--color-line);border-radius:var(--radius-control);background:var(--color-surface)}
+@media(min-width:768px){.guestHistoryCard{padding-inline:var(--space-5)}}
 @media(min-width:1024px){
- .page{grid-template-areas:"alert alert" "top top" "row row" "main side"}
- /* Without an alert the empty first row would still take a row gap and push the wallet 32px down. */
- .page:not(:has(> .alertList)){grid-template-areas:"top top" "row row" "main side"}
+ .page{display:grid;grid-template-columns:minmax(0,640px) 352px;justify-content:center;grid-template-areas:"alert alert" "top top" "main side";column-gap:var(--space-8);row-gap:var(--space-8);align-items:start}
+ .page:not(:has(> .alertList)){grid-template-areas:"top top" "main side"}
  .alertList{grid-area:alert}
- .top{grid-area:top;grid-column:1/-1}
- .firstRow{grid-area:row;grid-column:1/-1;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:var(--space-6);align-items:stretch}
- .main{grid-area:main}
- .side{grid-area:side}
+ .top{grid-area:top}
+ .main{grid-area:main;display:flex;flex-direction:column;gap:var(--fan-section-gap);min-width:0}
+ .side{grid-area:side;display:flex;flex-direction:column;gap:var(--space-8);min-width:0}
 }
-@media(min-width:1280px){.firstRow{column-gap:var(--space-8)}}
-/* feedback C9: the status bar (등급 · 최애 | ♥N) sits right above the two-flow wallet. */
-.top{display:grid;gap:var(--space-3)}
-.top section.pWallet[data-wallet-card="flows"]{border:1px solid var(--color-line);background:var(--color-surface)}
+

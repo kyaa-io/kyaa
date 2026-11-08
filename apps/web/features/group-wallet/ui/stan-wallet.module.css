@@ -1,44 +1,55 @@
-/* 덕질 wallet (feedback C9, E5). 390: two rows of three linked cells with the exchange row between them.
-   1024+: one row of six cells (points → tickets → lucky draws | stamps → hearts → cheer), the exchange row below the whole line.
-   Each cell is one link; the help button sits over the label row beside the link (grid overlap, no positioning, so the help popover still opens to the card). */
-.wallet { display: grid; min-width: 0; border: 1px solid var(--color-line); border-radius: var(--radius-control); background: var(--color-surface); }
-.flows { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); min-width: 0; }
-.flow { display: grid; grid-column: 1 / -1; grid-template-columns: subgrid; min-width: 0; }
-.flow + .exchange, .exchange + .flow { border-top: 1px solid var(--color-line); }
-.cell { display: grid; grid-template-columns: minmax(0, max-content) auto minmax(12px, 1fr); grid-template-rows: 20px minmax(32px, auto); row-gap: var(--space-1); min-width: 0; padding: var(--space-3) var(--space-2); }
-.cell:first-child { padding-inline-start: var(--space-3); }
-.cellLink { display: grid; grid-column: 1 / -1; grid-row: 1 / -1; grid-template-columns: subgrid; grid-template-rows: subgrid; row-gap: var(--space-1); min-width: 0; margin: calc(var(--space-3) * -1) calc(var(--space-2) * -1); padding: var(--space-3) var(--space-2); border-radius: var(--space-2); color: inherit; text-decoration: none; }
-.cell:first-child .cellLink { margin-inline-start: calc(var(--space-3) * -1); padding-inline-start: var(--space-3); }
-a.cellLink:hover { background: var(--color-soft); }
-a.cellLink:focus-visible { outline: 2px solid var(--color-focus); outline-offset: -2px; }
-.label { grid-column: 1; grid-row: 1; overflow: hidden; color: var(--color-muted); font-size: var(--fan-metadata-size); line-height: 20px; text-overflow: ellipsis; white-space: nowrap; }
-.help { display: flex; grid-column: 2; grid-row: 1; align-items: center; z-index: 1; margin-inline-start: var(--space-1); }
-.next { grid-column: 3; grid-row: 1; align-self: center; justify-self: end; color: var(--color-muted); }
-.value { display: flex; grid-column: 1 / -1; grid-row: 2; align-items: center; min-width: 0; min-height: 32px; white-space: nowrap; }
+/* 덕질 wallet (feedback F2). 390: points | hearts, under each its next step (tickets | stamps), the action row below.
+   768+: a third 288px column holds the action, centered; the guide link sits at the top of the last column (390: the end of the hearts label row).
+   Every cell is one link; the guide link overlaps the hearts cell's label row through the grid (no positioning). */
+.wallet {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  grid-template-areas: "points hearts" "tickets stamps" "action action";
+  min-width: 0;
+  box-sizing: border-box;
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-control);
+  background: var(--color-surface);
+}
+.cell { display: grid; align-content: start; gap: var(--space-1); min-width: 0; padding: var(--space-3) var(--space-4) var(--space-2); color: inherit; text-decoration: none; }
+.cell:hover { background: var(--color-soft); }
+.cell:focus-visible { outline: 2px solid var(--color-focus); outline-offset: -2px; }
+.cell[data-cell="points"] { grid-area: points; border-start-start-radius: inherit; }
+.cell[data-cell="hearts"] { grid-area: hearts; border-inline-start: 1px solid var(--color-line); border-start-end-radius: inherit; }
+.cell[data-cell="tickets"], .cell[data-cell="stamps"] { gap: var(--space-1); padding: var(--space-2) var(--space-4) var(--space-3); border-top: 1px solid var(--color-line-subtle); }
+.cell[data-cell="tickets"] { grid-area: tickets; }
+.cell[data-cell="stamps"] { grid-area: stamps; border-inline-start: 1px solid var(--color-line); }
+.label { overflow: hidden; color: var(--color-muted); font-size: var(--fan-metadata-size); line-height: 20px; text-overflow: ellipsis; white-space: nowrap; }
+.cell[data-cell="hearts"] .label { max-width: 50%; }
+.value { display: flex; align-items: center; min-width: 0; min-height: 32px; white-space: nowrap; }
 .value img { display: block; }
 .heart { display: block; color: var(--color-accent); fill: currentColor; }
-.text { font-size: var(--fan-item-title-size); font-weight: var(--fan-item-title-weight); line-height: 32px; font-variant-numeric: tabular-nums; }
-.text[data-zero] { color: var(--color-muted); }
-.rank { display: flex; align-items: baseline; gap: var(--space-1); min-width: 0; }
-.rankName { overflow: hidden; color: var(--color-muted); font-size: var(--fan-metadata-size); text-overflow: ellipsis; white-space: nowrap; }
-.pick, .cheer { display: inline-flex; align-items: center; gap: var(--space-1); min-width: 0; color: var(--color-accent-ink); font-size: var(--fan-metadata-size); font-weight: var(--fan-item-title-weight); line-height: 20px; white-space: nowrap; }
-.cheer { min-height: 32px; padding: 0; border: 0; background: none; font-family: inherit; text-decoration: none; cursor: pointer; }
-.pick > svg, .cheer > svg { flex: none; }
-.cheer:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
-.exchange { display: grid; grid-column: 1 / -1; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: var(--space-3); min-width: 0; padding: var(--space-2) var(--space-3); }
-.gauge { display: flex; align-items: center; min-width: 0; color: var(--color-muted); font-size: var(--fan-metadata-size); }
-.gauge > * { flex: 1; min-width: 0; }
+.step { display: flex; flex-wrap: wrap; align-items: center; column-gap: var(--space-1); min-width: 0; min-height: 24px; font-size: var(--fan-item-title-size); font-weight: var(--fan-item-title-weight); line-height: 24px; }
+.next { flex: none; color: var(--color-muted); }
+.progress { display: block; min-width: 0; min-height: 30px; }
+/* 390: the bar over its words (the cell is too narrow for both on one line in every language); 768+: one line. */
+.gauge { flex-direction: column; align-items: stretch; gap: var(--space-1); }
+.gauge > span:first-child { flex: none; }
+.gauge > span:last-child { color: var(--color-muted); font-weight: 400; line-height: 20px; white-space: normal; overflow-wrap: anywhere; }
 .ready { color: var(--color-accent-ink, var(--color-ink)); font-weight: var(--fan-item-title-weight); }
-.exchangeAction { display: grid; min-width: 0; }
-.exchangeAction > * { white-space: nowrap; }
-@media (min-width: 64rem) {
-  .flows { grid-template-columns: repeat(6, minmax(0, 1fr)); }
-  .flow { grid-column: auto / span 3; grid-row: 1; }
-  .flow[data-flow="hearts"] { grid-column: 4 / span 3; border-inline-start: 1px solid var(--color-line); }
-  .flow + .exchange, .exchange + .flow { border-top: 0; }
-  .exchange { grid-row: 2; border-top: 1px solid var(--color-line); grid-template-columns: minmax(0, 1fr) minmax(240px, 320px); gap: var(--space-6); padding: var(--space-3) var(--space-6); }
-  .cell, .cell:first-child { grid-template-rows: 20px minmax(40px, auto); padding: var(--space-4) var(--space-6); }
-  .cellLink, .cell:first-child .cellLink { margin: calc(var(--space-4) * -1) calc(var(--space-6) * -1); padding: var(--space-4) var(--space-6); border-radius: 0; }
-  .cell + .cell { border-inline-start: 1px solid var(--color-line-subtle); }
-  .text { line-height: 40px; }
+.guide { display: inline-flex; grid-area: hearts; align-self: start; justify-self: end; align-items: center; gap: 0; z-index: 1; min-height: 44px; box-sizing: border-box; padding: var(--space-3) var(--space-4); color: var(--color-ink); font-size: var(--fan-metadata-size); font-weight: var(--fan-item-title-weight); line-height: 20px; text-decoration: none; white-space: nowrap; }
+.guide:hover { color: var(--color-accent-ink, var(--color-ink)); }
+.guide:focus-visible { outline: 2px solid var(--color-focus); outline-offset: -2px; border-radius: var(--space-2); }
+.guide > svg { flex: none; color: var(--color-muted); }
+.action { display: grid; grid-area: action; min-width: 0; padding: var(--space-3) var(--space-4); border-top: 1px solid var(--color-line); }
+.action > * { white-space: nowrap; }
+@media (min-width: 48rem) {
+  .wallet { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 288px; grid-template-areas: "points hearts action" "tickets stamps action"; }
+  .cell { padding: var(--space-4) var(--space-5) var(--space-1); }
+  .cell[data-cell="hearts"] { border-start-end-radius: 0; }
+  .cell[data-cell="hearts"] .label { max-width: none; }
+  .cell[data-cell="tickets"], .cell[data-cell="stamps"] { gap: var(--space-1); padding: var(--space-2) var(--space-5) var(--space-4); }
+  .value { min-height: 40px; }
+  .progress { min-height: 20px; }
+  .gauge { flex-direction: row; align-items: center; gap: var(--space-2); }
+  .gauge > span:first-child { flex: 1; }
+  .gauge > span:last-child { white-space: nowrap; }
+  /* The action fills the whole column (its line runs the card's height) and centers the button; the guide link sits over its top end. */
+  .guide { grid-area: action; padding-inline: var(--space-5); }
+  .action { align-content: center; padding: 0 var(--space-4); border-top: 0; border-inline-start: 1px solid var(--color-line); }
 }

@@ -79,12 +79,15 @@ export function FanCollapsible({ open: controlled, defaultOpen = false, onOpenCh
   </div>;
 }
 
-/** 접기 머리 한 줄: 이름 + 오른쪽 요약(개수·보상 합) + 체브론. 전체가 누르는 영역(최소 44). */
-export function FanCollapsibleTrigger({ label, meta, ...triggerProps }: FanCollapsibleTriggerProps & Readonly<{ label: ReactNode; meta?: ReactNode }>) {
-  return <button type="button" className={styles.trigger} {...triggerProps}>
-    <span className={styles.triggerLabel}>{label}</span>
-    {meta ? <span className={styles.triggerMeta}>{meta}</span> : null}
-    <ChevronDown className={styles.chevron} aria-hidden="true" />
+/** 접기 머리 한 줄: 이름 + 오른쪽 요약(개수·보상 합) + 체브론. 전체가 누르는 영역(최소 44).
+ * `className` + `children`을 주면 같은 버튼·aria 계약에 그 모양을 그린다(덕질 미션 목록의 접힌 머리 행, F3). */
+export function FanCollapsibleTrigger({ label, meta, className, children, ...triggerProps }: FanCollapsibleTriggerProps & Readonly<{ label?: ReactNode; meta?: ReactNode; className?: string; children?: ReactNode; [key: `data-${string}`]: string | undefined }>) {
+  return <button type="button" className={className ?? styles.trigger} {...triggerProps}>
+    {children ?? <>
+      <span className={styles.triggerLabel}>{label}</span>
+      {meta ? <span className={styles.triggerMeta}>{meta}</span> : null}
+      <ChevronDown className={styles.chevron} aria-hidden="true" />
+    </>}
   </button>;
 }
 
