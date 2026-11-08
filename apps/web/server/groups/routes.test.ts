@@ -219,3 +219,36 @@ describe("group post dislikes", () => {
   expect(s.rpc).toHaveBeenLastCalledWith("groups_content_dispatch", expect.objectContaining({ p_actor: null, p_admin_id: null }));
  });
 });
+
+describe("K6: a group board post pays the 글쓰기 mission", () => {
+ const post = "10000000-0000-4000-8000-0000000000aa", celebrity = "10000000-0000-4000-8000-0000000000cc";
+ function board(celebrityId: string | null, award: () => Promise<unknown> = async () => ({ points: 20, stampId: null, replayed: false, capped: false, reason: null })) {
+  const s = setup();
+  s.rpc.mockImplementation(async (name: string, args: Record<string, unknown>) => name === "groups_content_dispatch" ? { id: post, title: "T" }
+   : name === "groups_dispatch" && args.p_operation === "detail" ? { page: { id: me, celebrityId }, membership: null, bookmarked: false }
+   : name === "record_dukjil_action" ? award() : null);
+  return s;
+ }
+ const write = (s: ReturnType<typeof setup>) => s.handler("post", req("/api", { title: "오늘 무대 후기", body: "앵콜 곡까지 다 들었어요 정말 좋았어요", visibility: "public", requestId: other }), { id: me });
+ it("awards once per post with the post id, the creator and the text length", async () => {
+  const s = board(celebrity);
+  const response = await write(s);
+  expect(response.status).toBe(200);
+  expect(await response.json()).toEqual({ id: post, title: "T" });
+  const calls = s.rpc.mock.calls.filter(([name]) => name === "record_dukjil_action");
+  expect(calls).toHaveLength(1);
+  expect(calls[0]![1]).toMatchObject({ p_user: me, p_celebrity: celebrity, p_action_key: "post", p_source_key: post, p_params: { chars: [..."오늘 무대 후기 앵콜 곡까지 다 들었어요 정말 좋았어요"].length } });
+ });
+ it("pays nothing on a page without a creator and never fails a saved post", async () => {
+  const none = board(null);
+  expect((await write(none)).status).toBe(200);
+  expect(none.rpc.mock.calls.some(([name]) => name === "record_dukjil_action")).toBe(false);
+  const failing = board(celebrity, async () => { throw new Error("DUKJIL_CONTENT_TOO_SHORT"); });
+  expect((await write(failing)).status).toBe(200);
+ });
+ it("does not award an edit", async () => {
+  const s = board(celebrity);
+  await s.handler("post-edit", req("/api", { title: "고친 제목", body: "고친 본문입니다 스무 자가 넘도록 길게", visibility: "public", requestId: other, expectedRevision: 1 }), { id: me, itemId: post });
+  expect(s.rpc.mock.calls.some(([name]) => name === "record_dukjil_action")).toBe(false);
+ });
+});

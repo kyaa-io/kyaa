@@ -15,6 +15,12 @@ export interface DukjilAwardInput {
   params?: Record<string, unknown>;
 }
 
+/** The text params every post and comment award sends: its length and a hash for the same-body rule, whitespace folded. */
+export function dukjilBodyParams(body: string) {
+  const text = body.replace(/\s+/g, " ").trim();
+  return { chars: [...text].length, bodyHash: createHash("sha256").update(text).digest("hex") };
+}
+
 // Deterministic request key: the same user, action and source always give the same key, so a retry replays instead of paying again.
 export function dukjilRequestKey(appUserId: string, actionKey: string, sourceKey: string): string {
   const hex = createHash("sha256").update(`dukjil:${appUserId}:${actionKey}:${sourceKey}`).digest("hex");
