@@ -4,36 +4,46 @@
 import { readFileSync, existsSync } from "node:fs";
 import { resolve } from "node:path";
 import type { Page } from "@playwright/test";
-import { test, expect, sql, loggedInPage, SKIP_AUTH, WRITE, ROUTES } from "./q-fixtures";
+import { test, expect, sql, loggedInPage, mappedUrl, SKIP_AUTH, WRITE, ROUTES } from "./q-fixtures";
 import { APP_LOCALES } from "../i18n/locales";
 
 async function settle(page: Page, ms = 1500) { await page.locator("main").first().waitFor({ state: "visible", timeout: 30_000 }); await page.waitForTimeout(ms); }
-const get = async (page: Page, url: string) => { const r = await page.request.get(url); return { status: r.status(), json: await r.json().catch(() => null) as any }; };
+const get = async (page: Page, url: string) => { const r = await page.request.get(mappedUrl(url, process.env.Q_BASE_URL || "http://localhost:3000")); return { status: r.status(), json: await r.json().catch(() => null) as any }; };
 
-test("F1: 홈 랭킹 두 탭(팬·크리에이터)이 /rankings 와 같은 API 를 쓰고 실제 행이 나온다", async ({ page }) => {
-  const rankingUrls = async (url: string) => {
-    const urls = new Set<string>();
-    const on = (r: import("@playwright/test").Request) => { const u = new URL(r.url()); if (/^\/api\/(rankings|pages\/[^/]+\/rankings)/.test(u.pathname)) urls.add(u.pathname); };
-    page.on("request", on);
-    await page.goto(url, { waitUntil: "domcontentloaded" }); await settle(page, 3000);
-    page.off("request", on);
-    return urls;
-  };
-  const rankingsPage = await rankingUrls(ROUTES.rankings);
-  const home = await rankingUrls(ROUTES.home);
-  expect(rankingsPage.size, "/rankings 가 랭킹 API 를 부르지 않았다").toBeGreaterThan(0);
-  expect(home.size, "홈이 랭킹 API 를 부르지 않았다").toBeGreaterThan(0);
-  expect([...home].filter((u) => !rankingsPage.has(u)), "홈에만 있는 랭킹 엔드포인트").toEqual([]);
-  // 홈 크리에이터 탭은 팬 수 기준(D3)이다. 같은 응답의 1위가 탭을 누른 뒤 실제로 보여야 한다.
-  const { json } = await get(page, "/api/rankings/creators?metric=fans&limit=5&locale=ko");
-  expect(json.rows.length).toBeGreaterThan(0);
-  // 390·1440 이 같은 카드를 따로 그리고, 1440 은 최애 구역에도 "랭킹" 제목이 있다. 이름이 "랭킹"인 보이는 구역만 본다.
+test("F1: 홈 랭킹 두 탭(팬·크리에이터)이 홈 랭킹 API(/api/rankings/home)를 쓰고, 그 응답이 DB 함수 값과 같으며 실제 행이 나온다", async ({ page }) => {
+  // 새 설계(C3): 홈 카드는 하루 단위 홈 전용 집계 /api/rankings/home?kind=fans|creators 를 쓴다. /rankings 의 기간별 목록과는 다른 계약이다.
+  const homeAnswers = new Map<string, any>();
+  page.on("response", async (r) => {
+    const u = new URL(r.url());
+    if (u.pathname !== "/api/rankings/home" || r.request().method() !== "GET") return;
+    const kind = u.searchParams.get("kind") ?? "fans";
+    homeAnswers.set(kind, { status: r.status(), json: await r.json().catch(() => null), locale: u.searchParams.get("locale") });
+  });
+  await page.goto(ROUTES.home, { waitUntil: "domcontentloaded" }); await settle(page, 3000);
   const ranking = page.getByRole("region", { name: "랭킹", exact: true }).filter({ visible: true }).first();
   await expect(ranking, "홈에 랭킹 구역이 없다").toBeVisible();
   const tab = (name: RegExp) => ranking.getByRole("button", { name }).or(ranking.getByRole("tab", { name })).first();
   for (const name of [/팬/, /크리에이터/]) await expect(tab(name), `홈 랭킹 탭 ${name}`).toBeVisible();
+  await expect.poll(() => homeAnswers.has("fans"), { message: "홈이 팬 랭킹을 /api/rankings/home?kind=fans 로 읽지 않았다" }).toBe(true);
   await tab(/크리에이터/).click();
-  await expect(ranking).toContainText(json.rows[0].name);
+  await expect.poll(() => homeAnswers.has("creators"), { message: "홈이 크리에이터 랭킹을 /api/rankings/home?kind=creators 로 읽지 않았다" }).toBe(true);
+  const fans = homeAnswers.get("fans"), creators = homeAnswers.get("creators");
+  expect(fans.status, "홈 팬 랭킹 응답").toBe(200);
+  expect(creators.status, "홈 크리에이터 랭킹 응답").toBe(200);
+  expect(fans.json.rows.length, "홈 팬 랭킹 행").toBeGreaterThan(0);
+  expect(creators.json.rows.length, "홈 크리에이터 랭킹 행").toBeGreaterThan(0);
+  // 응답이 DB 함수의 값을 그대로 옮긴다(비로그인이라 viewer 는 null). 순위·점수·닉네임/주소·하트가 한 줄이라도 다르면 실패.
+  const limit = fans.json.rows.length;
+  const [[fanDb]] = sql(`select read_home_fan_ranking(null, ${limit})::text`);
+  const dbFans = (JSON.parse(fanDb).rows as any[]).map((r) => [r.rank, r.score, r.nickname, r.favorite?.slug ?? null]);
+  expect(fans.json.rows.map((r: any) => [r.rank, r.score, r.nickname, r.favorite?.slug ?? null]), "홈 팬 랭킹 = read_home_fan_ranking").toEqual(dbFans);
+  const [[creatorDb]] = sql(`select read_home_creator_ranking('${creators.locale ?? "ko"}', ${creators.json.rows.length})::text`);
+  const dbCreators = (JSON.parse(creatorDb).rows as any[]).map((r) => [r.rank, r.slug, r.score, r.hearts]);
+  expect(creators.json.rows.map((r: any) => [r.rank, r.slug, r.score, r.hearts]), "홈 크리에이터 랭킹 = read_home_creator_ranking").toEqual(dbCreators);
+  // 응답 1위가 화면에 실제로 보인다(크리에이터 탭을 누른 뒤).
+  await expect(ranking).toContainText(creators.json.rows[0].name);
+  await tab(/팬/).click();
+  await expect(ranking).toContainText(fans.json.rows[0].nickname);
 });
 
 test("F2: 인기글 10개, 추천·댓글·조회수와 랭킹이 DB 값과 일치한다", async ({ page }) => {
@@ -84,21 +94,30 @@ test("F3: 글 상세에서 댓글 ⋯ 메뉴와 답글이 있고, 사진 업로�
   await auth!.close();
 });
 
-test("F4: 헤더 하트 값이 서버 값과 같다(C1)", async ({ browser, baseURL }, info) => {
+test("F4: 헤더 하트 값이 서버 요약(/api/me/summary?hearts=1)의 최애 패스포트 하트와 같다(C1)", async ({ browser, baseURL }, info) => {
   const auth = await loggedInPage(browser, info.project.use.viewport as { width: number; height: number }, baseURL!);
   test.skip(!auth, SKIP_AUTH);
   const p = auth!.page;
-  // 헤더가 실제로 고른 최애의 패스포트 주소를 잡는다(최애 선택은 브라우저에 저장되어 서버 요약만으로는 알 수 없다).
-  let roadmapPath = "";
-  p.on("request", (r) => { const u = new URL(r.url()); if (/^\/api\/me\/passports\/[^/]+\/roadmap$/.test(u.pathname)) roadmapPath = u.pathname; });
+  // 새 설계: 헤더 ♥ 는 요약 한 번(hearts=1)에서 MY 에 정한 최애(summary.favorite)의 passport.hearts 를 읽는다. 따로 패스포트 로드맵을 부르지 않는다.
+  let summaryPath = "";
+  p.on("request", (r) => { const u = new URL(r.url()); if (u.pathname === "/api/me/summary" && u.searchParams.get("hearts") === "1") summaryPath = u.pathname + u.search; });
   await p.goto(ROUTES.home); await settle(p, 3000);
   const header = p.locator("header").first();
   await expect(header.locator('[data-selected-bias="selected"]').filter({ visible: true }).first(), "최애가 있는 계정이어야 하트를 비교할 수 있다").toBeVisible();
-  expect(roadmapPath, "헤더가 최애 패스포트의 하트를 읽지 않았다").not.toBe("");
-  const roadmap = await auth!.api(roadmapPath);
-  expect(roadmap.status, "패스포트 하트 응답").toBe(200);
-  const hearts = (roadmap.json as { hearts: number }).hearts;
+  expect(summaryPath, "헤더가 하트를 담은 요약(/api/me/summary?hearts=1)을 읽지 않았다").not.toBe("");
+  const summary = await auth!.api(summaryPath);
+  expect(summary.status, "요약 응답").toBe(200);
+  const body = summary.json.summary;
+  const favorite = body?.favorite?.slug as string | undefined;
+  expect(favorite, "요약에 최애(favorite)가 없다").toBeTruthy();
+  const creator = (body.creators as any[]).find((c) => c.celebrity.slug === favorite);
+  const hearts = creator?.passport?.hearts;
+  expect(typeof hearts, `최애 ${favorite} 의 패스포트 하트가 요약에 없다`).toBe("number");
+  // 서버 하트는 DB passport_hearts 와 같아야 한다(요약이 값을 바꾸지 않는다).
+  const [[dbHearts]] = sql(`select public.passport_hearts(fp.app_user_id, fp.celebrity_id) from fan_passports fp where fp.id='${creator.passport.id}'`);
+  expect(hearts, "요약 하트 = DB passport_hearts").toBe(Number(dbHearts));
   await expect(header.locator("[data-cell=hearts][data-hearts]").filter({ visible: true }).first(), `서버 기준 하트 ${hearts}`).toHaveAttribute("data-hearts", String(hearts));
+  await expect(header.locator('[data-selected-bias="selected"]').filter({ visible: true }).first()).toContainText(creator.celebrity.name);
   await expect(header.locator('[data-selected-bias="selected"]').filter({ visible: true }).first()).not.toContainText("°");
   await auth!.close();
 });
@@ -231,22 +250,23 @@ test("F10: 헤더 최애 칸을 누르면 최애를 고르거나 바꾸는 곳�
 
 test("F11: 팬페이지 소개가 수집 원문과 같고, 다른 언어에서는 번역과 원문 보기가 따로 있다", async ({ page }) => {
   // ko·en 은 운영자가 쓴 언어별 소개 그대로다. 나머지 10개 언어는 영어 소개를 기계 번역해 보이고, 원문 보기로 되돌릴 수 있어야 한다.
+  const original: string = (await get(page, "/api/public/celebrities/elina?locale=en")).json.celebrity.summary;
+  // 로컬에는 번역 키가 없어 번역 API 가 503 이다. 앱은 503 을 받으면 같은 탭에서 5분 동안 자동 번역을 멈춘다(sessionStorage).
+  // 그래서 ko·en 화면에서 다른 글의 번역이 503 을 받으면 뒤의 ja 화면이 번역을 묻지 않았다(5회차 1440 실패, 환경 탓).
+  // 첫 화면을 열기 전에 번역 응답을 정해 두어 로컬 503 이 이 시험에 끼어들지 않게 한다. 원문 데이터는 바꾸지 않는다.
+  const translated = `Q-TRANSLATED ${Date.now()}`;
+  let asked = 0;
+  await page.route("**/api/display-translations", async (route) => {
+    const body = route.request().postDataJSON() as { text?: string; texts?: string[]; targetLocale: string };
+    if (body.targetLocale === "ja") asked += 1;
+    const map = (t: string | undefined) => (t === original && body.targetLocale === "ja" ? translated : `${t}`);
+    await route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(body.texts ? { translatedTexts: body.texts.map(map), cached: false } : { translatedText: map(body.text), cached: false }) });
+  });
   for (const locale of ["ko", "en"] as const) {
     const { json } = await get(page, `/api/public/celebrities/elina?locale=${locale}`);
     await page.goto(`/c/elina?locale=${locale}`, { waitUntil: "domcontentloaded" }); await settle(page, 2000);
     await expect(page.locator("[data-fan-page-header]").first(), `${locale} 소개`).toContainText(json.celebrity.summary);
   }
-  const original: string = (await get(page, "/api/public/celebrities/elina?locale=en")).json.celebrity.summary;
-  // 로컬에는 번역 키가 없어 번역 API 가 503 이다. 그때 화면은 원문과 "번역 보기"만 둔다(실패하면 원문 표시).
-  // 번역이 있을 때의 계약은 번역 응답을 정해 두고 본다. 원문 데이터는 바꾸지 않는다.
-  const translated = `Q-TRANSLATED ${Date.now()}`;
-  let asked = 0;
-  await page.route("**/api/display-translations", async (route) => {
-    const body = route.request().postDataJSON() as { text?: string; texts?: string[]; targetLocale: string };
-    asked += 1;
-    const map = (t: string | undefined) => (t === original ? translated : `${t}`);
-    await route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(body.texts ? { translatedTexts: body.texts.map(map), cached: false } : { translatedText: map(body.text), cached: false }) });
-  });
   await page.goto("/c/elina?locale=ja", { waitUntil: "domcontentloaded" }); await settle(page, 2500);
   const head = page.locator("[data-fan-page-header]").first();
   await expect(head, "번역이 소개 자리에 보인다").toContainText(translated, { timeout: 10_000 });

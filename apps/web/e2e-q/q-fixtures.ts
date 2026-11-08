@@ -36,9 +36,19 @@ export async function loggedInPage(browser: import("@playwright/test").Browser, 
   if (!token) return null;
   const context = await browser.newContext({ storageState: STATE, viewport, baseURL });
   const page = await context.newPage();
-  const api = async (url: string) => { const r = await page.request.get(url, { headers: { Authorization: `Bearer ${token}` } }); return { status: r.status(), json: await r.json().catch(() => null) }; };
+  const api = async (url: string) => { const r = await page.request.get(mappedUrl(url, baseURL), { headers: { Authorization: `Bearer ${token}` } }); return { status: r.status(), json: await r.json().catch(() => null) }; };
   if ((await api("/api/me/summary")).status !== 200) { await context.close(); return null; }
   return { page, api, close: () => context.close() };
+}
+
+/** Q_MAP_TO 를 쓰면 브라우저 연결만 다른 포트로 간다. Node 쪽 요청(page.request)은 그 규칙을 모르니 같은 곳으로 보낸다(Host 는 그대로 두지 않아도 앱은 경로만 본다). */
+export function mappedUrl(url: string, baseURL: string): string {
+  const mapTo = process.env.Q_MAP_TO;
+  const full = new URL(url, baseURL);
+  if (!mapTo) return full.href;
+  const base = new URL(baseURL);
+  if (full.host === base.host) full.host = mapTo;
+  return full.href;
 }
 
 export const SKIP_AUTH = "로그인 상태 파일(Q_STATE)이 없거나 토큰이 만료되어 Bearer /api/me/summary 가 200 이 아니다(kyaa-t3 local-login 으로 갱신). 로그인 필요 시험을 실행하지 못했다.";
