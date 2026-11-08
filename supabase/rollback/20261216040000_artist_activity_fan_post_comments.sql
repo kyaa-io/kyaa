@@ -1,10 +1,15 @@
 -- Rollback of 20261216040000_artist_activity_fan_post_comments. Roll the web back first if it depends on fan-post notices.
+-- Order: run this before the rollback of 20261216031000 (that one does not know the fan-post trigger it would leave behind).
+-- A group-post notice that a later fan-post comment in the same hour re-pointed is a fan-post notice now and is deleted with them.
 -- Removes the fan-post comment trigger and functions, deletes the artist notices that point at fan-post comments (and their
 -- queued push rows) and the queued fan-post jobs, and restores the three replaced functions as 20261216031000 wrote them.
 begin;
 set local lock_timeout = '5s';
 drop trigger if exists artist_activity_fan_post_comment on public.fan_post_comments;
 
+-- Every table that keeps fan_notifications rows with ON DELETE RESTRICT (artist notices get no external plan today; cleared anyway).
+delete from public.external_notification_delivery_outbox where notification_id in (select id from public.fan_notifications where kind::text = 'artist_comment' and payload ->> 'targetType' = 'fan_post_comment');
+delete from public.notification_delivery_plans where notification_id in (select id from public.fan_notifications where kind::text = 'artist_comment' and payload ->> 'targetType' = 'fan_post_comment');
 delete from public.notification_delivery_outbox where notification_id in (select id from public.fan_notifications where kind::text = 'artist_comment' and payload ->> 'targetType' = 'fan_post_comment');
 delete from public.mobile_push_delivery_outbox where notification_id in (select id from public.fan_notifications where kind::text = 'artist_comment' and payload ->> 'targetType' = 'fan_post_comment');
 delete from public.fan_notifications where kind::text = 'artist_comment' and payload ->> 'targetType' = 'fan_post_comment';

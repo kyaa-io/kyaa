@@ -60,7 +60,16 @@ select (select count(*) from public.fan_notifications where app_user_id = :'fan'
        (select count(*) from public.artist_activity_failures where artist_app_user_id = :'artist') as failures \gset probe_
 select coalesce(string_agg(kind || ' ' || error_state || ' ' || left(error_message, 160), ' | '), 'none') as failure_detail from public.artist_activity_failures where artist_app_user_id = :'artist' \gset probe_
 \echo PROBE fan-post notices=:probe_notices failures=:probe_failures (:probe_failure_detail)
-create temporary table e6_fx as select :'fan'::uuid as fan, :probe_notices::integer as notices, :probe_failures::integer as failures;
+-- Members-only post (review r6 H1) through the big-page path (review r6 L2): the fan holds no passport of this creator, so the
+-- job the worker runs as service_role must finish and write nothing for them.
+select exists (select 1 from public.fan_passports where app_user_id = :'fan' and celebrity_id = :'celebrity' and business_status = 'issued') as fan_holds \gset probe_
+insert into public.fan_posts(celebrity_id, app_user_id, body, visibility, idempotency_key, create_request_hash) values (:'celebrity', :'artist', '탐침 회원 공개 글', 'members', extensions.gen_random_uuid(), 'probe') returning id as mpost \gset
+update public.artist_activity_push_control set inbox_enabled = false where id;
+insert into public.fan_post_comments(post_id, app_user_id, body, idempotency_key) values (:'mpost', :'artist', '탐침 회원 공개 글 댓글', extensions.gen_random_uuid()) returning id as mcomment \gset
+update public.artist_activity_push_control set inbox_enabled = true where id;
+insert into public.artist_activity_jobs(kind, target_id, page_id, artist_app_user_id, at) values ('artist_fan_post_comment', :'mcomment', :'page', :'artist', now()) returning id as mjob \gset
+\echo PROBE fan holds a passport of this creator (want f): :probe_fan_holds
+create temporary table e6_fx as select :'fan'::uuid as fan, :probe_notices::integer as notices, :probe_failures::integer as failures, :'mjob'::uuid as job;
 grant select on e6_fx to service_role;
 set role service_role;
 do \$\$
@@ -79,5 +88,18 @@ begin
   else raise exception 'RESULT FAIL (mode $MODE)'; end if;
 end \$\$;
 reset role;
+select (select finished_at is not null and gave_up_at is null from public.artist_activity_jobs where id = :'mjob') as job_done,
+       (select count(*) from public.fan_notifications where app_user_id = :'fan' and kind::text = 'artist_comment' and payload ->> 'postId' = :'mpost') as members_rows,
+       (select count(*) from public.fan_notifications n where n.kind::text = 'artist_comment' and n.payload ->> 'postId' = :'mpost'
+          and not public.fan_web_is_member(n.app_user_id, :'celebrity')) as non_holder_rows,
+       (select count(*) from public.artist_activity_failures where artist_app_user_id = :'artist') as failures_after \gset probe_
+\echo PROBE members-only job (service_role worker): done=:probe_job_done rows for the passport-less fan=:probe_members_rows non-holder rows=:probe_non_holder_rows failures=:probe_failures_after
+select :'probe_job_done' = 't' and :probe_members_rows = 0 and :probe_non_holder_rows = 0 and :probe_failures_after = 0 as job_ok \gset probe_
+\if :probe_job_ok
+\echo RESULT members-only job pass (mode $MODE)
+\else
+\echo RESULT members-only job FAIL (mode $MODE)
+select 1/0;
+\endif
 rollback;
 SQL

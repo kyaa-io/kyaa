@@ -3,7 +3,9 @@ const count = z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER);
 const positive = count.refine(n => n > 0);
 const uuid = z.uuid();
 /** Ids the server reads back from ledgers and source rows. Some are derived in SQL (`md5(...)::uuid`) without RFC version bits;
- * Postgres accepts them. Used only by the web's activity source read; the mobile wallet/history/missions contracts stay pinned (support.test.ts). */
+ * Postgres accepts them. Used by activitySourceSchema (also read by the web). The wallet/history/missions contracts stay strict and pinned
+ * (support.test.ts). The shared fanRewardSchema (features/rewards) already reads its sourceId/ledgerId with z.guid(), so the mobile reward
+ * answers (reward, supportRewardEnvelopeSchema) accept such ids too; whether the mobile app's own parser does is not checked here. */
 const dbId = z.guid();
 export const policySchema = z.object({ status: z.enum(["configured", "unconfigured"]) }).strict();
 export const exchangePolicySchema = z.union([z.object({status:z.literal("unconfigured")}).strict(),z.object({status:z.literal("configured"),version:z.string(),freeDrawPointCost:positive.nullable(),freeVotePointCost:positive.nullable(),maxUnits:positive.max(1000),dailyRemaining:count.nullable()}).strict()]);
