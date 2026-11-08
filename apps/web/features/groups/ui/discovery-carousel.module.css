@@ -142,7 +142,7 @@
 /* Pencil Zukgx */
 .copy a {
   align-items: center;
-  background-color: #FFFFFF;
+  background-color: var(--color-surface);
   border-radius: 999px;
   box-sizing: border-box;
   display: flex;
@@ -154,7 +154,7 @@
   padding: 0px 16px;
   width: 160px;
 }
-.carousel{min-width:0}.slide{background-image:linear-gradient(0deg,#000000D9 0%,#00000066 36%,#00000000 70%),var(--slide-image);color:white}.photograph{display:none}.copy h2{font-size:32px!important;font-weight:850;line-height:38px;margin:0!important;color:white}.copy p{font-size:16px;line-height:25px;color:white!important;margin:0}.copy a{color:#121212!important;border:0;box-shadow:none;font-size:15px;font-weight:750;text-decoration:none}.dots button,.arrows button{border:0;cursor:pointer}.dots button{background:transparent}.dots span{width:8px;height:8px;border-radius:50%;background:#bbb}.dots [aria-pressed=true] span{background:#d11b62}.controls{margin:0}.arrows button{color:#121212}
+.carousel{min-width:0}.slide{background-image:var(--slide-image);color:white}.photograph{display:none}.copy h2{font-size:32px!important;font-weight:850;line-height:38px;margin:0!important;color:white}.copy p{font-size:16px;line-height:25px;color:white!important;margin:0}.copy a{color:var(--color-ink)!important;border:0;box-shadow:none;font-size:15px;font-weight:750;text-decoration:none}.dots button,.arrows button{border:0;cursor:pointer}.dots button{background:transparent}.dots span{width:8px;height:8px;border-radius:50%;background:var(--color-muted)}.dots [aria-pressed=true] span{background:var(--color-accent)}.controls{margin:0}.arrows button{color:var(--color-ink)}
 @media(max-width:1023px){
 /* Pencil tbCyx */
 .carousel {
@@ -184,7 +184,7 @@
 /* Pencil TrYKA */
 .slide {
   align-items: flex-start;
-  background-color: #17171A;
+  background-color: var(--color-ink);
   border-radius: 16px;
   box-sizing: border-box;
   display: flex;
@@ -246,45 +246,51 @@
 .copy a{width:max-content;max-width:100%;min-width:160px;white-space:nowrap;background:var(--color-surface);color:var(--color-ink)!important}
 @media(max-width:1023px){.copy a{min-width:0;white-space:normal;text-align:center}}
 @media(prefers-reduced-motion:no-preference){.slide{animation:carousel-enter 480ms cubic-bezier(.22,1,.36,1) both}@keyframes carousel-enter{from{opacity:.7;transform:translateX(24px)}to{opacity:1;transform:translateX(0)}}}
-.pause{width:44px;height:44px;border:0;border-radius:50%;background:var(--color-soft);color:#121212;cursor:pointer;font-size:15px}
+.pause{width:44px;height:44px;border:0;border-radius:50%;background:var(--color-soft);color:var(--color-ink);cursor:pointer;font-size:15px}
 /* Keep slides mounted so the visible track moves continuously between positions. */
 .viewport{display:block}.track{display:flex;gap:24px;width:max-content;transform:translateX(0);transition:transform 480ms cubic-bezier(.22,1,.36,1)}.track[data-active="1"]{transform:translateX(-984px)}.track .slide{animation:none}
 @media(max-width:1023px){.viewport{height:auto}.track{gap:12px}.track .slide{width:300px;flex:none}.track[data-active="1"]{transform:translateX(-312px)}}
 @media(prefers-reduced-motion:reduce){.track{transition:none}}
 @media(max-width:357px){.track .slide{width:calc(100vw - 90px)}.track[data-active="1"]{transform:translateX(calc(-100vw + 78px))}}
 
-.copy h2{font-weight:800;font-synthesis:none}
+.copy h2{font-family:inherit;font-weight:800;font-synthesis:none}
 
 /* Managed banners can contain any number of slides; preserve the approved spacing. */
 .track{--slide-step:984px;transform:translateX(calc(var(--active,0) * var(--slide-step) * -1))}
-.category{font-size:13px;font-weight:700;line-height:20px;color:#fff}
-@media(max-width:1023px){.track{--slide-step:312px}.slide{background-image:linear-gradient(0deg,#000000D9 0%,#00000066 36%,#00000000 70%),var(--slide-mobile-image)}}
+.category{font-size:13px;font-weight:700;line-height:20px;color:var(--color-surface)}
+@media(max-width:1023px){.track{--slide-step:312px}.slide{background-image:var(--slide-mobile-image)}}
 @media(max-width:357px){.track{--slide-step:calc(100vw - 78px)}}
 
 /* One overlay layout for managed banners; align artwork to its top edge. */
 .viewport{height:auto}
 .track{align-items:stretch}
-.track .slide{display:grid;position:relative;grid-template-columns:minmax(0,1fr);height:auto;min-height:0;padding:0;background:#121212;background-image:none;color:#fff}
+.track .slide{display:grid;position:relative;grid-template-columns:minmax(0,1fr);height:auto;min-height:0;padding:0;background:var(--color-ink);background-image:none;color:var(--color-surface)}
 .track .slide::before{content:"";grid-area:1/1;padding-top:50%}
 .slide .photograph{display:block;position:absolute;inset:0;width:100%;height:100%;min-width:0;min-height:0;background:none}
 .photograph img{display:block;width:100%;height:100%;object-fit:cover;object-position:center top}
-.slide .copy{grid-area:1/1;position:relative;align-self:end;min-width:0;width:100%;box-sizing:border-box;display:flex;align-items:end;justify-content:space-between;gap:16px;padding:32px;background:linear-gradient(0deg,#000000E6,#000000B3 70%,transparent)}
-.slide .copy h2,.slide .copy p,.slide .category{color:#fff!important}
+.slide .copy{grid-area:1/1;position:relative;align-self:end;min-width:0;width:100%;box-sizing:border-box;display:flex;align-items:end;justify-content:space-between;gap:16px;padding:32px;background:color-mix(in srgb, var(--color-ink) 80%, transparent)}
+.slide .copy h2,.slide .copy p,.slide .category{color:var(--color-surface)!important}
 @media(max-width:1023px){.track .slide::before{padding-top:83.333333%}.slide .copy{padding:12px;gap:8px;flex-wrap:wrap}.slide .copy h2{font-size:20px!important;line-height:24px}.slide .copy p{font-size:13px;line-height:18px}.slide .copy a{min-height:44px}}
 
-.track .slide{outline:1px solid #e4e1e6;outline-offset:-1px}
+.track .slide{outline:1px solid var(--color-line);outline-offset:-1px}
 
 /* Keep the artwork clear when measured copy occupies its protected upper region. */
 .track{align-items:flex-start}
 .track .slide[data-extended]{display:flex;flex-direction:column}
 .track .slide[data-extended]::before{display:none}
 .slide[data-extended] .photograph{position:relative;inset:auto;aspect-ratio:2/1;height:auto;flex:none}
-.slide[data-extended] .copy{position:relative;align-self:stretch;background:#121212}
+.slide[data-extended] .copy{position:relative;align-self:stretch;background:var(--color-ink)}
 .slide .copy a{height:auto;min-height:48px;white-space:normal;overflow-wrap:anywhere;text-align:center}
 .slide .copy h2,.slide .copy p{overflow-wrap:anywhere}
 @media(max-width:1023px){.slide[data-extended] .photograph{aspect-ratio:6/5}.slide .copy a{min-height:44px}}
 @media(min-width:1024px){.slide .copy a{max-width:35%;flex-shrink:0}.slide .copy>div{min-width:0}}
 
 /* 2026-11-04 UI-RUBRIC D-15: copy stays readable over faces. */
-.slide .copy{background:linear-gradient(0deg,#000000E6,#000000B3 55%,#00000000)}
-.slide .category,.slide .copy p{text-shadow:0 1px 2px #000000B3}
+.slide .copy{background:color-mix(in srgb, var(--color-ink) 53%, transparent)}
+.slide .category,.slide .copy p{text-shadow:0 1px 2px color-mix(in srgb, var(--color-ink) 70%, transparent)}
+/* VISUAL-K 중간 2 (2026-11-09): the copy is its own solid ink panel under the photograph, never a see-through band over it (no gradient, H6). */
+.track .slide{grid-template-rows:auto auto}
+.track .slide .photograph{position:relative;inset:auto;grid-area:1/1;aspect-ratio:2/1;height:auto}
+.track .slide .copy{grid-area:2/1;align-self:stretch;background:var(--color-ink)}
+.track .slide .category,.track .slide .copy p{text-shadow:none}
+@media(max-width:767px){.track .slide .photograph{aspect-ratio:6/5}}

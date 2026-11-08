@@ -36,7 +36,7 @@ describe("LIVE detail information hierarchy contract", () => {
   it("keeps the mission arrow aligned with its label at a fixed size", () => {
     expect(declarations(".actionRail > div:has(> .missionLink)")).toMatchObject({ width: "100%", "margin-top": "var(--space-4)", "--fan-action-max-width": "100%" });
     expect(declarations(".missionLink")).toMatchObject({ width: "100%", "min-height": "52px" });
-    expect(declarations(".missionLink:disabled")).toMatchObject({ "border-color": "var(--color-line-subtle)", background: "oklch(98% 0 0)", color: "var(--color-muted)", "box-shadow": "none" });
+    expect(declarations(".missionLink:disabled")).toMatchObject({ "border-color": "var(--color-line-subtle)", background: "var(--color-soft)", color: "var(--color-muted)", "box-shadow": "none" });
     expect(declarations(".missionLinkContent")).toMatchObject({ display: "flex", "align-items": "center", gap: "var(--space-2)" });
     expect(declarations(".missionLinkContent svg")).toMatchObject({ display: "block", width: "18px", height: "18px", flex: "none" });
   });

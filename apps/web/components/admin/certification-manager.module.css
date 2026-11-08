@@ -1,11 +1,12 @@
 .page {
-  --ink: #19191c;
-  --muted: #6b6867;
-  --line: #e5e2df;
-  --pink: #ff008a;
+  --ink: var(--color-ink);
+  --muted: var(--color-muted);
+  --line: var(--color-line);
+  --pink: var(--color-accent);
   padding: 32px 16px 72px;
   color: var(--ink);
-  }
+  font-family:inherit;
+}
 .page > header p,
 .page > header h1,
 .page > header span {
@@ -32,16 +33,16 @@
   font-size: 14px;
 }
 .message:empty { display: none; }
-.message[data-error="true"] { color: #9f1239; }
+.message[data-error="true"] { color: var(--color-accent-ink); }
 .toolbar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px; margin: 24px 0; border-bottom: 1px solid var(--line); padding-bottom: 16px; }
-.toolbar button, .statusTabs button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; padding: 10px 16px; border: 1px solid var(--line); border-radius: 10px; background: #fff; color: var(--ink); font: inherit; font-size: 14px; font-weight: 650; cursor: pointer; }
+.toolbar button, .statusTabs button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; padding: 10px 16px; border: 1px solid var(--line); border-radius: 10px; background: var(--color-surface); color: var(--ink); font: inherit; font-size: 14px; font-weight: 650; cursor: pointer; }
 .toolbar svg { width: 17px; height: 17px; }
 .tabs { display: flex; gap: 8px; }
 .tabs button { border-color: transparent; background: transparent; }
-.tabs button[aria-selected="true"] { background: var(--color-accent-soft); color: var(--color-accent-ink); }
+.tabs button[aria-selected="true"] { background: var(--color-accent-soft); color: var(--color-accent); }
 .statusTabs { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
 .statusTabs button { font-size: 13px; }
-.statusTabs button[aria-pressed="true"] { background: #25242b; color: #fff; border-color: #25242b; }
+.statusTabs button[aria-pressed="true"] { background: var(--color-ink); color: var(--color-surface); border-color: var(--color-ink); }
 .loadState { padding: 64px 16px; text-align: center; color: var(--muted); }
 .advanced { font-size: 12px; color: var(--muted); overflow-wrap: anywhere; }
 .advanced summary { cursor: pointer; min-height: 32px; }
@@ -53,7 +54,7 @@
 }
 .missions {
   padding: 18px;
-  background: #faf9f8;
+  background: var(--color-soft);
   max-height: 760px;
   overflow-y: auto;
 }
@@ -78,7 +79,7 @@
   padding: 0 13px;
   border: 1px solid var(--line);
   border-radius: 10px;
-  background: #fff;
+  background: var(--color-surface);
   font-weight: 750;
 }
 .sectionHeading svg,
@@ -99,7 +100,7 @@
   text-align: left;
 }
 .missions > button[aria-pressed="true"] {
-  background: #fff;
+  background: var(--color-surface);
 }
 .missions > button span {
   display: grid;
@@ -111,12 +112,12 @@
 .missions em {
   padding: 5px 8px;
   border-radius: 999px;
-  background: #eee;
+  background: var(--color-line-subtle);
   font-size: 11px;
   font-style: normal;
 }
 .missions em[data-status="active"] {
-  background: #eaf7ef;
+  background: var(--color-soft);
   color: #17643a;
 }
 .editor {
@@ -139,9 +140,9 @@
 .editor textarea {
   box-sizing: border-box;
   width: 100%;
-  border: 1px solid #d6d2cf;
+  border: 1px solid var(--color-muted);
   border-radius: 10px;
-  background: #fff;
+  background: var(--color-surface);
   font: inherit;
 }
 .editor input {
@@ -171,7 +172,7 @@
 .reviewActions button:first-child {
   border-color: var(--pink);
   background: var(--pink);
-  color: #fff;
+  color: var(--color-surface);
 }
 .queue {
   margin-top: 28px;
@@ -227,7 +228,7 @@
   padding: 0 14px;
   border: 1px solid var(--line);
   border-radius: 10px;
-  background: #fff;
+  background: var(--color-surface);
   color: inherit;
   font: inherit;
   text-decoration: none;
@@ -244,7 +245,7 @@
 .queue textarea {
   min-height: 72px;
   padding: 10px;
-  border: 1px solid #d6d2cf;
+  border: 1px solid var(--color-muted);
   border-radius: 10px;
   font: inherit;
 }
@@ -255,7 +256,7 @@
   color: var(--muted);
 }
 .page :is(button, a, input, select, textarea):focus-visible {
-  outline: 3px solid rgb(217 35 84 / 28%);
+  outline: 3px solid color-mix(in srgb, var(--color-accent) 28%, transparent);
   outline-offset: 3px;
 }
 .page button:disabled {

@@ -122,16 +122,16 @@ export const messages = {
     "ru": "Вы и {0}"
   },
   "tierNow": {
-    "ja": "現在 {0}",
-    "zh-Hans": "目前 {0}",
-    "zh-Hant": "目前 {0}",
-    "es": "Ahora {0}",
-    "id": "Sekarang {0}",
-    "vi": "Hiện tại {0}",
-    "th": "ตอนนี้ {0}",
-    "pt": "Agora {0}",
-    "fr": "Actuellement {0}",
-    "ru": "Сейчас {0}"
+    "ja": "私のファン等級：{0}",
+    "zh-Hans": "我的粉丝等级：{0}",
+    "zh-Hant": "我的粉絲等級：{0}",
+    "es": "Mi nivel de fan: {0}",
+    "id": "Tingkat fan saya: {0}",
+    "vi": "Hạng fan của tôi: {0}",
+    "th": "ระดับแฟนของฉัน: {0}",
+    "pt": "Meu nível de fã: {0}",
+    "fr": "Mon niveau de fan : {0}",
+    "ru": "Мой уровень фаната: {0}"
   },
   "tierToNext": {
     "ja": "{0}まで{1}点",

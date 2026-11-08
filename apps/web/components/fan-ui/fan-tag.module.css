@@ -13,6 +13,6 @@
   white-space: nowrap;
 }
 .tag svg { flex: none; }
-.fan, .artist { background: #fff0f6; color: #ad1457; }
-.neutral { background: var(--color-soft); color: #5d5d5d; }
+.fan, .artist { background: var(--color-accent-soft); color: var(--color-accent-ink); }
+.neutral { background: var(--color-soft); color: var(--color-muted); }
 .notice { border: 1px solid var(--color-line); background: transparent; color: var(--color-ink); line-height: 20px; }

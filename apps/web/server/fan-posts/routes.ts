@@ -10,9 +10,8 @@ import { MAX_PUBLIC_IMAGE_BYTES, MAX_PUBLIC_IMAGE_MULTIPART_BYTES, PublicImageEr
 import type { FanpageDependencies } from "@/server/fanpage/routes";
 import type { AppLocale } from "@/i18n/locales";
 import { parseNoticeDocument } from "@/server/notice/notice-domain";
-import { awardDukjilAction, awardDukjilActionDetailed, dukjilSkipReason, type DukjilSkip } from "@/server/dukjil/award";
+import { awardDukjilAction, awardDukjilActionDetailed, dukjilBodyParams, dukjilSkipReason, type DukjilSkip } from "@/server/dukjil/award";
 import type { DukjilActionResult } from "@/features/passport/domain/dukjil-types";
-import { createHash } from "node:crypto";
 
 export interface ContentDependencies extends FanpageDependencies {
   upload(owner: string, slug: string, bytes: Uint8Array): Promise<z.infer<typeof assetSchema>>;
@@ -55,10 +54,7 @@ function richBoardBody(value: { body: string; assetIds: string[]; bodyDoc?: unkn
   const prepared = prepareRichPostBody({ document: value.bodyDoc, assetIds: value.assetIds, maxPlainLength: 4999 - title.length });
   return { ...prepared, body: `${title}\n${prepared.body}`.trim() };
 }
-function bodyParams(body: string) {
-  const text = body.replace(/\s+/g, " ").trim();
-  return { chars: [...text].length, bodyHash: createHash("sha256").update(text).digest("hex") };
-}
+const bodyParams = dukjilBodyParams;
 async function awardForPost(deps: Pick<ContentDependencies, "rpc">, owner: string | null, postId: string, actionKey: "comment" | "reaction", sourceKey: string, params: Record<string, unknown>) {
   if (!owner) return null;
   try {

@@ -1,7 +1,7 @@
 .list { display: grid; gap: var(--space-3); min-width: 0; margin-top: var(--space-8); }
 .screen .list, .screen > .guest { margin-top: 0; }
 .screen { display: grid; gap: var(--space-6); max-width: 720px; margin-inline: auto; padding-block: var(--space-6) var(--space-12); }
-.screen h1 { margin: 0; font-size:var(--fan-heading-size); font-weight: 700; line-height: 36px; }
+.screen h1 { margin: 0; font-size:var(--fan-heading-size-wide); font-weight: 700; line-height: 36px; }
 .title { margin: 0; font-size:var(--fan-item-title-size); font-weight: 700; line-height: 26px; }
 .item { display: grid; gap: var(--space-2); min-width: 0; padding: var(--space-4); border: 1px solid var(--color-line); border-radius:var(--radius-control); }
 .head { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); min-width: 0; }
@@ -10,5 +10,5 @@
 .reason { margin: 0; font-size:var(--fan-description-size); line-height: 22px; white-space: pre-wrap; overflow-wrap: anywhere; }
 .action { justify-self: start; }
 .guest { display: grid; gap: var(--space-4); }
-@media (max-width: 767px) { .screen h1 { font-size:var(--fan-heading-size); line-height: 32px; } .screen { padding-block: var(--space-4) var(--space-8); } }
+@media (max-width: 767px) { .screen h1 { font-size:var(--fan-heading-size-wide); line-height: 32px; } .screen { padding-block: var(--space-4) var(--space-8); } }
 .item input:not([type="checkbox"]), .item textarea { font-weight: 400; }

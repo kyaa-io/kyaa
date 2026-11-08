@@ -293,6 +293,19 @@ describe("fan post UI navigation and context", () => {
     }
   });
 
+  it("K5: typing a comment renders only the composer, never the post page above it, and keeps the same field", () => {
+    state.post = post("Typed under post");
+    render(<FanPostDetail postId={state.post.id as string} locale="en" />);
+    const field = screen.getByRole("textbox"), reads = state.urls.length;
+    let typed = "";
+    for (const letter of "Hello world 안녕하세요 반가") { typed += letter; fireEvent.change(field, { target: { value: typed } }); }
+    // The page's reads run on every render of the detail; no new call means the post, its body and the comment list were not rendered again.
+    expect(state.urls.length).toBe(reads);
+    expect(screen.getByRole("textbox")).toBe(field);
+    expect((field as HTMLTextAreaElement).value).toBe(typed);
+    expect(screen.getByText(`${typed.length} / 1,000`)).toBeTruthy();
+  });
+
   it("offers a way back to sign in when a comment fails on an expired sign-in", () => {
     state.mutationError = "Your sign-in has expired. Please sign in again."; state.mutationFailure = "auth";
     render(<FanPostDetail postId={state.post.id as string} locale="en" />);

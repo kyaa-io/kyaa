@@ -12,7 +12,7 @@ const router = { push, replace };
 let privyState = { ready: true, authenticated: true };
 
 vi.mock("@/features/auth/client/cognito-auth", () => ({ useByUsAuth: () => ({ ...privyState, getAccessToken }) }));
-vi.mock("next/navigation", () => ({ useRouter: () => router }));
+vi.mock("next/navigation", () => ({ usePathname: () => "/", useSearchParams: () => new URLSearchParams(), useRouter: () => router }));
 
 const attemptId = "11111111-1111-4111-8111-111111111111";
 const intro = { celebrity: { slug: "kara", name: "KARA" }, quiz: { availability: "available", totalQuestions: 3, passThreshold: 2 } };
@@ -50,7 +50,7 @@ describe("QuizEntryScreen", () => {
     expect(screen.getByRole("heading", { name: "KARA 나의 팬심을 확인해 보세요." })
       .closest('[data-content-alignment="top"]')).not.toBeNull();
     expect(screen.getByRole("link", { name: "KARA 팬페이지로 돌아가기" })).toHaveAttribute("href", "/kara?locale=ko");
-    const home = screen.getByRole("link", { name: "kyaa 홈" });
+    const home = screen.getAllByRole("link", { name: "kyaa 홈" })[0];
     expect(within(home).getByRole("img", { name: "kyaa" })).toHaveAttribute("src", "/images/guest-home/kyaa-wordmark.svg");
     // N19: one language switch, inside the start dialog (the header behind the modal backdrop is not reachable).
     expect(document.querySelectorAll("[data-language-switch]")).toHaveLength(1);

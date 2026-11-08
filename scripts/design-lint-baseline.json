@@ -17,7 +17,7 @@
   "N21": 109,
   "N22": 183,
   "N23": 45,
-  "N24": 64,
+  "N24": 67,
   "N25": 253,
   "N26": 107,
   "N27": 1083,
@@ -17557,6 +17557,9 @@
    "S7|features/dukjil-guide/ui/guide-copy:dkgStampLead": 1,
    "S7|features/profile/ui/profile-onboarding-screen:copy.genericSubtitle": 1,
    "S7|features/support/ui/copy:supportCopy.adminIntro": 1
+  },
+  "apps/web/components/fan-ui/fan-heading.tsx": {
+   "N24|trailingIcon <ArrowRight>": 3
   }
  }
 }

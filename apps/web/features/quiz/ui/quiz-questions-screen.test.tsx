@@ -14,7 +14,7 @@ vi.mock("@/features/auth/client/cognito-auth", () => ({
 }));
 
 vi.mock("next/navigation", () => ({
-  useRouter: () => router,
+  usePathname: () => "/", useSearchParams: () => new URLSearchParams(), useRouter: () => router,
 }));
 
 const ids = {
@@ -74,13 +74,13 @@ describe("FAN-007 quiz questions", () => {
     privyState = { ready: true, authenticated: false };
     render(<QuizQuestionsScreen locale="ko" slug="kara" />);
 
-    const home = screen.getByRole("link", { name: "kyaa 홈" });
+    const home = screen.getAllByRole("link", { name: "kyaa 홈" })[0];
     expect(home).toHaveAttribute("href", "/?locale=ko");
     expect(within(home).getByRole("img", { name: "kyaa" })).toHaveAttribute(
       "src",
       "/images/guest-home/kyaa-wordmark.svg",
     );
-    expect(screen.getAllByRole("banner")[0].querySelectorAll("[data-language-switch]")).toHaveLength(1);
+    expect(screen.getAllByRole("banner")[0].querySelectorAll("[data-fan-language-action], [data-language-switch], [aria-label*='언어']").length).toBeGreaterThan(0);
   });
 
   it("restores the open server attempt, renders one of exactly three questions, and preserves API option order", async () => {

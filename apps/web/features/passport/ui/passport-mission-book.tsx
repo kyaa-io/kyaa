@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import { useCallback, useEffect, useId, useRef, useState, type CSSProperties, type ReactNode } from "react";
+import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import { Check, ChevronLeft, ChevronRight, Heart } from "lucide-react";
 import paper from "@/components/fan-ui/passport-paper.module.css";
 import { FanAction } from "@/components/fan-ui/fan-action";
@@ -152,7 +152,9 @@ function Page({ page, locale, busy, failed, onClaim, proofHref, pager, stampSrc,
     {page.claimed ? <p className={styles.claimed}><Heart aria-hidden="true" size={18} />{dukjilText(locale, "missionClaimed")}</p>
       : locked ? <FanAction className={styles.lockedAction} variant="neutral" href={proofHref}>{dukjilText(locale, "missionLocked")}</FanAction>
       : <FanAction className={styles.claim} variant="primary" disabled={!page.claimable || busy} ariaDescribedBy={page.claimable ? undefined : `mission-page-${page.pageNo}-hint`} onClick={onClaim} leadingIcon={<Heart size={18} />}>{dukjilText(locale, "missionClaim")}</FanAction>}
-    {!page.claimed && !locked && !page.claimable ? <p id={`mission-page-${page.pageNo}-hint`} className={styles.hint}>{dukjilText(locale, "missionClaimHint", [page.slots.length])}</p> : null}
+    {/* K8: every page keeps the hint line, hidden where it does not apply, so turning 1/2 → 2/2 (locked, claimed) never changes the page height. */}
+    {!page.claimed && !locked && !page.claimable ? <p id={`mission-page-${page.pageNo}-hint`} className={styles.hint}>{dukjilText(locale, "missionClaimHint", [page.slots.length])}</p>
+      : <p className={styles.hint} data-hint-placeholder="" aria-hidden="true">{dukjilText(locale, "missionClaimHint", [page.slots.length])}</p>}
     {failed ? <p className={styles.error} role="alert">{dukjilText(locale, "missionClaimFailed")}</p> : null}
   </section>;
 }
@@ -185,6 +187,7 @@ export function PassportMissionBook({ passportId, creatorSlug, locale, stampSrc 
       else setFailedPage(pageNo);
     } finally { setBusy(null); retry(); }
   }, [ownerId, passportId, request, retry]);
+  const pagesRef = useSteadyPageHeight(`${roadmap.loading}:${picked ?? ""}:${roadmap.data?.pages.length ?? 0}`);
   if (!on) return null;
   const proofHref = withLocale(`/c/${encodeURIComponent(creatorSlug)}/certifications`, locale);
   const pages = roadmap.data?.pages ?? [];
@@ -198,8 +201,31 @@ export function PassportMissionBook({ passportId, creatorSlug, locale, stampSrc 
     </div>
     {roadmap.loading ? <div className={styles.skeleton} aria-hidden="true"><i /><i /></div>
       : roadmap.error || !roadmap.data ? <div className={styles.errorBox} role="alert"><p>{dukjilText(locale, "missionLoadError")}</p><FanAction variant="neutral" onClick={retry}>{dukjilText(locale, "missionRetry")}</FanAction></div>
-      : page ? <div className={styles.pages}><Page key={page.pageNo} page={page} locale={locale} busy={busy === page.pageNo} failed={failedPage === page.pageNo} onClaim={() => void claim(page.pageNo)} proofHref={proofHref} stampSrc={stampSrc} hrefFor={hrefFor} pager={<Pager index={index} total={pages.length} locale={locale} onChange={setPicked} />} /><MissionOnboarding page={page} locale={locale} hrefFor={hrefFor} /></div> : null}
+      : page ? <div ref={pagesRef} className={styles.pages}><Page key={page.pageNo} page={page} locale={locale} busy={busy === page.pageNo} failed={failedPage === page.pageNo} onClaim={() => void claim(page.pageNo)} proofHref={proofHref} stampSrc={stampSrc} hrefFor={hrefFor} pager={<Pager index={index} total={pages.length} locale={locale} onChange={setPicked} />} /><MissionOnboarding page={page} locale={locale} hrefFor={hrefFor} /></div> : null}
   </section>;
+}
+
+/** K8: turning 1/2 → 2/2 must not make the book jump. The page area keeps the tallest page height seen at this width
+ * (the first page is measured on arrival), so a shorter page leaves its space instead of pulling the book up. A width change measures again. */
+export function useSteadyPageHeight(page: unknown) {
+  const ref = useRef<HTMLDivElement | null>(null), tallest = useRef({ width: 0, height: 0 });
+  useLayoutEffect(() => {
+    const box = ref.current;
+    if (!box) return;
+    const measure = () => {
+      const width = box.clientWidth;
+      if (width !== tallest.current.width) { tallest.current = { width, height: 0 }; box.style.minHeight = ""; }
+      const content = box.firstElementChild instanceof HTMLElement ? box.firstElementChild.offsetHeight : box.offsetHeight;
+      if (content > tallest.current.height) { tallest.current.height = content; box.style.minHeight = `${content}px`; }
+    };
+    measure();
+    if (typeof ResizeObserver === "undefined") return;
+    const observer = new ResizeObserver(measure);
+    observer.observe(box);
+    if (box.firstElementChild) observer.observe(box.firstElementChild);
+    return () => observer.disconnect();
+  }, [page]);
+  return ref;
 }
 
 const STACK = 9;
@@ -209,8 +235,9 @@ export function StackedStampPages({ stamps, locale }: { stamps: readonly { id: s
   const [picked, setPicked] = useState<number | null>(null);
   const index = Math.min(picked ?? (stamps.length && stamps.length % STACK === 0 ? total - 1 : Math.floor(stamps.length / STACK)), total - 1);
   const onPage = stamps.slice(index * STACK, (index + 1) * STACK);
+  const pagesRef = useSteadyPageHeight(index);
   return <section id="mission-book" className={`${paper.palette} ${styles.book}`}>
-    <div className={styles.pages}><section className={styles.page}>
+    <div ref={pagesRef} className={styles.pages}><section className={styles.page}>
       <header className={styles.pageHead}>
         <h3>{dukjilText(locale, "missionPage", [index + 1])}</h3>
         <span className={styles.count}>{onPage.length}/{STACK}</span>

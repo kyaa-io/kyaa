@@ -475,6 +475,7 @@ class SupabaseLiveEventDataSource implements LiveEventDataSource {
       .from("live_events")
       .select("slug, created_at, content_status, starts_at, ends_at, live_status_overrides(effective_status, effective_from, effective_until, created_at)")
       .eq("publication_status", "published")
+      .is("archived_at", null)
       .order("created_at", { ascending: true });
     if (error) throw new Error("Published live list lookup failed");
     // Skip historical detail/mission lookups before the home page fans out.
@@ -503,6 +504,7 @@ class SupabaseLiveEventDataSource implements LiveEventDataSource {
       .select("id, slug, live_type, celebrity_id, brand_id, content_status, starts_at, ends_at, attendance_valid_from, attendance_valid_until, reservation_opens_at, reservation_closes_at, live_provider, external_live_url, youtube_url, approved_hero_url, replay_provider, replay_url, replay_published")
       .eq("slug", slug)
       .eq("publication_status", "published")
+      .is("archived_at", null)
       .maybeSingle();
     if (eventError) throw new Error("Published live event lookup failed");
     if (!event) return null;
@@ -548,6 +550,7 @@ class SupabaseLiveEventDataSource implements LiveEventDataSource {
         live_status_overrides(effective_status, effective_from, effective_until, created_at),
         live_event_previews(kind, duration_ms, landscape_video_url, landscape_poster_url)`)
       .eq("publication_status", "published")
+      .is("archived_at", null)
       .eq("live_event_localizations.locale", locale)
       .eq("celebrity.status", "published")
       .eq("celebrity.celebrity_localizations.locale", locale)

@@ -13,8 +13,7 @@ import { useEffect, useRef, useState } from "react";
 
 import { parseQuizAttemptProjection, parseQuizStartProjection, type QuizAttemptProjection } from "../domain/quiz-attempt";
 import { appendLiveReturnTo, sanitizeLiveReturnTo } from "../domain/live-return-context";
-import type { FanLocale } from "@/components/fan-shell/fan-app-shell";
-import { FocusFlowFrame } from "@/components/fan-shell/focus-flow-frame";
+import { FanAppFrame, type FanLocale } from "@/components/fan-shell/fan-app-shell";
 import { passportBookText } from "@/features/passport/ui/passport-book-copy";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import { celebrateStamp } from "@/features/dukjil/ui/stamp-slam";
@@ -133,11 +132,11 @@ function withLocale(path: string, locale: FanLocale): Route {
 
 function ResultFrame({ children, locale }: { children: React.ReactNode; locale: FanLocale }) {
   return (
-    <FocusFlowFrame locale={locale} mainId="fan-verification-result-main" languageSwitch>
+    <FanAppFrame locale={locale} mainId="fan-verification-result-main">
       <main className={styles.page} id="fan-verification-result-main" tabIndex={-1}>
         {children}
       </main>
-    </FocusFlowFrame>
+    </FanAppFrame>
   );
 }
 

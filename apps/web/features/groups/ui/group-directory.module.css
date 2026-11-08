@@ -4,7 +4,7 @@
 .roleChip[aria-disabled="true"] { color: var(--color-muted); cursor: default; }
 .attendanceAction { display: block; }
 .attendanceAction > a { width: 100%; }
-.myApplication { display: flex; margin-top: var(--space-3); align-items: center; gap: var(--space-2); min-width: 0; padding: var(--space-3) var(--space-4); border: 1px solid var(--color-line); border-radius:var(--radius-card); color: var(--color-ink); text-decoration: none; }
+.myApplication { display: flex; margin-top: var(--space-3); align-items: center; gap: var(--space-2); min-width: 0; padding: var(--space-3) var(--space-4); border: 1px solid var(--color-line); border-radius:var(--radius-collection); color: var(--color-ink); text-decoration: none; }
 .myApplication:hover { background: var(--color-soft); }
 .myApplication:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 .myApplication > svg { flex: none; color: var(--color-muted); }

@@ -1,13 +1,14 @@
 .footer {
-  --footer-ink: oklch(18% 0 0);
-  --footer-muted: oklch(44% 0 0);
-  --footer-line: oklch(91.5% 0 0);
+  --footer-ink: var(--color-ink);
+  --footer-muted: var(--color-ink);
+  --footer-line: var(--color-line);
   width: 100%;
   padding: var(--space-10) 0 var(--space-4);
   border-top: 1px solid var(--footer-line);
-  background: #fff;
+  background: var(--color-surface);
   color: var(--footer-ink);
-  }
+  font-family:inherit;
+}
 
 .inner {
   display: grid;

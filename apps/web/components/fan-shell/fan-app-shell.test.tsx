@@ -1,6 +1,6 @@
 import styles from "./fan-app-shell.module.css";
 import { GroupsReleaseProvider } from "@/features/groups/ui/groups-release";
-import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
+import { fireEvent, render, screen, within } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
@@ -197,36 +197,16 @@ describe("fan app shell navigation", () => {
    for(const link of screen.getAllByRole("link",{name:"덕질"}))expect(link).toHaveAttribute("href","/benefits?locale=ko");
  });
 
- it("5차 셸: the released header is 56px text tabs (no icons) + bell + account, the 390 tab bar has lucide icons, and the gate-off keeps the old shell", () => {
-   pathname = "/";
-   const { rerender, container } = render(<GroupsReleaseProvider enabled><FanAppFrame locale="ko"><main>본문</main></FanAppFrame></GroupsReleaseProvider>);
+ it("scopes Pencil shell geometry to the enabled release and honors an explicit gate-off", () => {
+   const { rerender } = render(<GroupsReleaseProvider enabled><FanAppFrame locale="ko"><main>본문</main></FanAppFrame></GroupsReleaseProvider>);
    expect(screen.getByRole("main").closest("[data-fan-surface]")).toHaveClass(styles.groupsNavigation);
-   const header = screen.getByRole("banner");
-   expect(header).toHaveAttribute("data-fan-header");
-   expect(header).toHaveClass(styles.shellHeader);
-   const tabs = header.querySelector("[data-shell-tabs]")!;
-   expect([...tabs.querySelectorAll("a")].map((a) => a.textContent)).toEqual(["HOME", "모임", "덕질", "MY"]);
-   expect(tabs.querySelectorAll("svg")).toHaveLength(0);
-   expect(tabs.querySelectorAll('[aria-current="page"]')).toHaveLength(1);
-   expect(header.querySelector("[data-shell-location]")?.textContent).toBe("홈");
-   expect(header.textContent).not.toMatch(/\d/);
-   const bar = container.querySelector("[data-bottom-nav]")!;
-   expect(bar).toHaveClass(styles.tabbar);
-   expect(bar.querySelectorAll('svg[data-icon-set="lucide"][stroke-width="1.5"]')).toHaveLength(4);
+   expect(screen.getByRole("banner")).toHaveClass(styles.groupsNavigation);
+   expect(screen.getByRole("navigation", { name: "모바일 주요 메뉴" })).toHaveClass(styles.groupsNavigation);
    rerender(<GroupsReleaseProvider enabled><FanAppFrame locale="ko" groupsEnabled={false}><main>본문</main></FanAppFrame></GroupsReleaseProvider>);
    expect(screen.getByRole("main").closest("[data-fan-surface]")).not.toHaveClass(styles.groupsNavigation);
-   expect(screen.getByRole("banner")).not.toHaveAttribute("data-fan-header");
+   expect(screen.getByRole("banner")).not.toHaveClass(styles.groupsNavigation);
+   expect(screen.getByRole("navigation", { name: "모바일 주요 메뉴" })).not.toHaveClass(styles.groupsNavigation);
    for (const link of screen.getAllByRole("link", { name: "최애" })) expect(link).toHaveAttribute("href", "/celebrities?locale=ko");
- });
-
- it("names the place: 덕질 on /benefits, a screen-given name (fan page) wins and shows on 390 too", () => {
-   render(<FanAppFrame locale="ko" groupsEnabled currentPath="/benefits"><main>본문</main></FanAppFrame>);
-   expect(screen.getByRole("banner").querySelector("[data-shell-location]")?.textContent).toBe("덕질");
-   cleanup();
-   render(<FanAppFrame locale="ko" groupsEnabled currentPath="/elina" locationName="엘리나"><main>본문</main></FanAppFrame>);
-   const place = screen.getByRole("banner").querySelector("[data-shell-location]")!;
-   expect(place.textContent).toBe("엘리나");
-   expect(place).toHaveAttribute("data-named");
  });
 
  it('keeps a group fan page under Groups even when the local preview is served at root',()=>{

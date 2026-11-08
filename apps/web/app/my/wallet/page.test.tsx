@@ -6,7 +6,7 @@ import Page from "./page";
 describe("/my/wallet",()=>{
  it("moves the wallet page to the history on 덕질",async()=>{
   vi.stubEnv("KYAA_GROUPS_ENABLED","true");
-  await expect(Page({searchParams:Promise.resolve({locale:"ko"})})).rejects.toThrow("REDIRECT:/benefits?tab=history&locale=ko");
+  await expect(Page({searchParams:Promise.resolve({locale:"ko"})})).rejects.toThrow("REDIRECT:/benefits?locale=ko#wallet-history");
  });
  it("keeps the attendance view",async()=>{
   vi.stubEnv("KYAA_GROUPS_ENABLED","true");

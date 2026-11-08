@@ -12,7 +12,7 @@ import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import type { Route } from "next";
-import { useEffect, useId, useRef, useState, type ReactNode } from "react";
+import { memo, useEffect, useId, useRef, useState, type ReactNode } from "react";
 import { flushSync } from "react-dom";
 import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import { RelativeTime } from "@/components/relative-time";
@@ -53,9 +53,10 @@ export function FanPostDetail(props: { postId: string; locale: AppLocale; presen
 function DetailForOwner({ postId, locale, presentation: requestedPresentation }: { postId: string; locale: AppLocale; presentation?: "board" }) {
   const online = useNetworkOnline();
   const copy = contentCopy(locale), auth = usePrivy(), mutation = useContentMutation(locale), fieldId = useId(), router = useRouter(), searchParams = useSearchParams();
-  const [cursor, setCursor] = useState<string | null>(null), [body, setBody] = useState(""), [replyDrafts, setReplyDrafts] = useState<Record<string, string>>({}), [replyTarget, setReplyTarget] = useState<{ id: string; nickname: string; body: string } | null>(null);
+  const [cursor, setCursor] = useState<string | null>(null), [replyTarget, setReplyTarget] = useState<{ id: string; nickname: string; body: string } | null>(null);
   const parentId = replyTarget?.id ?? null;
-  const draft = parentId ? replyDrafts[parentId] ?? "" : body;
+  // K5: drafts live outside render state. Typing re-renders only the composer, never the post, its body or the comment list.
+  const drafts = useRef<Record<string, string>>({});
   const attempt = useRef<{ snapshot: string; key: string } | null>(null);
   const replyTrigger = useRef<HTMLButtonElement | null>(null), restoreReplyFocus = useRef(false);
   const post = useCommunityResource(`/api/posts/${postId}?locale=${toContentLocale(locale)}&format=rich`, parsePost);
@@ -95,20 +96,24 @@ function DetailForOwner({ postId, locale, presentation: requestedPresentation }:
     field?.focus({ preventScroll: true });
     field?.closest("form")?.scrollIntoView?.({ block: "center", behavior: window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
   };
-  async function submit() {
-    if (gated) { setGateOpen(true); return; }
-    if (mutation.busy || !draft.trim()) return;
+  async function submit(draft: string) {
+    if (gated) { setGateOpen(true); return false; }
+    if (mutation.busy || !draft.trim()) return false;
     const value = { body: draft.trim(), parentId }, snapshot = JSON.stringify(value);
     if (!attempt.current || attempt.current.snapshot !== snapshot) attempt.current = { snapshot, key: crypto.randomUUID() };
     const result = await mutation.request(`/api/posts/${postId}/comments`, "POST", { ...value, idempotencyKey: attempt.current.key });
     if (result) {
       const reward = registrationReward(result); if (reward) showMissionRewardToast(locale, "comment", reward); else announceMissionSkip(locale, "comment", result);
-      if (parentId) setReplyDrafts(previous => ({ ...previous, [parentId]: "" }));
-      else setBody("");
+      drafts.current[parentId ?? ""] = "";
       restoreReplyFocus.current = Boolean(parentId);
       setReplyTarget(null); setCursor(null); attempt.current = null; refresh();
+      return true;
     }
+    return false;
   }
+  const readDraft = (target: string) => drafts.current[target] ?? "";
+  const keepDraft = (target: string, value: string) => { drafts.current[target] = value; };
+  const cancelReply = () => { restoreReplyFocus.current = true; setReplyTarget(null); };
   async function remove(id: string) { if (window.confirm(copy.deleteConfirm) && await mutation.request(`/api/post-comments/${id}`, "DELETE")) refresh(); }
   if (post.state.status === "loading") return <><FanSkeletonStatus locale={locale} /><PostDetailSkeleton /></>;
   if (post.state.status !== "ready") return <p role="status" className={styles.status}>{copy.unavailable}<button className={styles.button} onClick={post.retry}>{copy.retry}</button></p>;
@@ -117,27 +122,8 @@ function DetailForOwner({ postId, locale, presentation: requestedPresentation }:
   const returnTo = `/c/${data.celebritySlug}/community/${postId}?locale=${locale}&returnTo=${encodeURIComponent(communityHref)}`;
   const loginHref = fanLoginHref(locale, returnTo);
   const mutationError = mutation.error && <p role="alert" className={styles.error}>{mutation.error}{mutation.failure === "auth" && <FanAction href={loginHref} variant="text">{copy.signInAgain}</FanAction>}</p>;
-  const composer = <form className={`${commentStyles.composer} ${detailStyles.commentForm}`} data-filled={draft.length > 0 || undefined} data-expanded={replyTarget ? "" : undefined} aria-busy={mutation.busy} onSubmit={event => { event.preventDefault(); void submit(); }}>
-    <fieldset className={styles.gateFields}>
-    {replyTarget && <div id={`${fieldId}-reply-target`} className={commentStyles.target}>
-      <span>{copy.replying}: <strong>{replyTarget.nickname}</strong></span>
-      <p>{replyTarget.body.length > 80 ? `${replyTarget.body.slice(0, 80)}…` : replyTarget.body}</p>
-    </div>}
-    <label className={detailStyles.srOnly} htmlFor={fieldId}>{replyTarget ? copy.reply : copy.newComment}</label>
-    {/* A fan without this page's passport sees why only when trying to write (focus or send), not before. */}
-    <textarea id={fieldId} rows={1} required maxLength={1000} readOnly={gated} placeholder={rc.placeholder} disabled={mutation.busy} value={draft} aria-describedby={replyTarget ? `${fieldId}-reply-target` : undefined} onFocus={() => { if (gated) setGateOpen(true); }} onChange={event => {
-      const value = event.target.value;
-      if (parentId) setReplyDrafts(previous => ({ ...previous, [parentId]: value }));
-      else setBody(value);
-    }} />
-    {gated && gateOpen && <MemberGate slug={data.celebritySlug} locale={locale} inline />}
-    {replyTarget && mutationError}
-    <div className={detailStyles.commentTools}>
-      <span className={detailStyles.commentCounter}>{draft.length.toLocaleString(locale)} / 1,000</span>
-      {replyTarget && <FanAction type="button" variant="text" disabled={mutation.busy} onClick={() => { restoreReplyFocus.current = true; setReplyTarget(null); }}>{copy.cancel}</FanAction>}
-      <EarnActionBadge action="comment" locale={locale} /><FanAction type="submit" variant="neutral" size="sm" ariaBusy={mutation.busy} loading={mutation.busy} disabled={!gated && !draft.trim()}>{rc.post}</FanAction>
-    </div>
-  </fieldset></form>;
+  const composer = <CommentComposer key={parentId ?? ""} fieldId={fieldId} locale={locale} readDraft={readDraft} onDraft={keepDraft} replyTarget={replyTarget} gated={gated} gate={gated && gateOpen ? <MemberGate slug={data.celebritySlug} locale={locale} inline /> : null}
+    busy={mutation.busy} error={replyTarget ? mutationError : null} onGate={setGateOpen} onSubmit={submit} onCancel={cancelReply} />;
   return <section className={`${styles.section} ${styles.postDetail} ${presentation === "board" ? boardStyles.detail : ""}`}>
     <FanAction href={communityHref} variant="text" leadingIcon={<ArrowLeft />}>{presentation === "board" ? boardCopy(locale).back : copy.back}</FanAction>
     {presentation !== "board" && <FanHeading as="h1" variant="personal-page">{copy.community}</FanHeading>}{data.celebritySlug === WAVE_FANPAGE_SLUG && <WavePrivacyNotice locale={locale} />}<PostCard presentation={presentation} post={data} locale={locale} returnTo={communityHref} onChanged={refresh} onDeleted={() => router.replace(communityHref)} detail />
@@ -159,6 +145,37 @@ function DetailForOwner({ postId, locale, presentation: requestedPresentation }:
     </section>
   </section>;
 }
+
+type ComposerProps = { fieldId: string; locale: AppLocale; readDraft: (target: string) => string; onDraft: (target: string, value: string) => void; replyTarget: { id: string; nickname: string; body: string } | null; gated: boolean; gate: ReactNode;
+  busy: boolean; error: ReactNode; onGate: (open: boolean) => void; onSubmit: (draft: string) => Promise<boolean>; onCancel: () => void };
+/** K5: the draft is this component's own state, so a keystroke renders only the field, its counter and the send button. The post above
+ * and the comment list are not rendered again (they flickered on every letter). The parent keeps the text per target (`onDraft`)
+ * without rendering, so moving between the new-comment box and a reply box keeps what was typed. */
+export const CommentComposer = memo(function CommentComposer({ fieldId, locale, readDraft, onDraft, replyTarget, gated, gate, busy, error, onGate, onSubmit, onCancel }: ComposerProps) {
+  const copy = contentCopy(locale), rc = postReactionCopy(locale), target = replyTarget?.id ?? "";
+  const [draft, setDraft] = useState(() => readDraft(target));
+  return <form className={`${commentStyles.composer} ${detailStyles.commentForm}`} data-filled={draft.length > 0 || undefined} data-expanded={replyTarget ? "" : undefined} aria-busy={busy} onSubmit={event => { event.preventDefault(); void onSubmit(draft).then(sent => { if (sent) setDraft(""); }); }}>
+    <fieldset className={styles.gateFields}>
+    {replyTarget && <div id={`${fieldId}-reply-target`} className={commentStyles.target}>
+      <span>{copy.replying}: <strong>{replyTarget.nickname}</strong></span>
+      <p>{replyTarget.body.length > 80 ? `${replyTarget.body.slice(0, 80)}…` : replyTarget.body}</p>
+    </div>}
+    <label className={detailStyles.srOnly} htmlFor={fieldId}>{replyTarget ? copy.reply : copy.newComment}</label>
+    {/* A fan without this page's passport sees why only when trying to write (focus or send), not before. */}
+    <textarea id={fieldId} rows={1} required maxLength={1000} readOnly={gated} placeholder={rc.placeholder} disabled={busy} value={draft} aria-describedby={replyTarget ? `${fieldId}-reply-target` : undefined} onFocus={() => { if (gated) onGate(true); }} onChange={event => {
+      const value = event.target.value;
+      onDraft(target, value);
+      setDraft(value);
+    }} />
+    {gate}
+    {error}
+    <div className={detailStyles.commentTools}>
+      <span className={detailStyles.commentCounter}>{draft.length.toLocaleString(locale)} / 1,000</span>
+      {replyTarget && <FanAction type="button" variant="text" disabled={busy} onClick={onCancel}>{copy.cancel}</FanAction>}
+      <EarnActionBadge action="comment" locale={locale} /><FanAction type="submit" variant="neutral" size="sm" ariaBusy={busy} loading={busy} disabled={!gated && !draft.trim()}>{rc.post}</FanAction>
+    </div>
+  </fieldset></form>;
+});
 
 const parseCheerDetail=(value:unknown)=>z.object({source:z.literal('cheer'),id:z.uuid(),celebritySlug:z.string().min(1),body:z.string().min(1).max(1000)}).strict().parse(value);
 function CheerDetail({postId,locale,expectedSlug}:{postId:string;locale:AppLocale;expectedSlug?:string}){

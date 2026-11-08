@@ -1,15 +1,15 @@
 /* Direct current002 state roles: root24/16/16, title24, actions48. */
-.panel{box-sizing:border-box;display:flex;flex-direction:column;align-items:stretch;gap:16px;padding:24px;width:100%;max-width:640px;min-width:0;border:0;outline:1px solid #e4e1e6;outline-offset:-.5px;border-radius:16px;background:#fff;color:#121212;}
-.heading{display:flex;align-items:center;gap:12px;min-width:0;}.heading>span{display:flex;flex-shrink:0;color:#68616b;}
+.panel{box-sizing:border-box;display:flex;flex-direction:column;align-items:stretch;gap:16px;padding:24px;width:100%;max-width:640px;min-width:0;border:0;outline:1px solid var(--color-line);outline-offset:-.5px;border-radius:16px;background:var(--color-surface);color:var(--color-ink);}
+.heading{display:flex;align-items:center;gap:12px;min-width:0;}.heading>span{display:flex;flex-shrink:0;color:var(--color-muted);}
 .title{margin:0;font-size:24px;font-weight:850;line-height:31px;letter-spacing:0;overflow-wrap:anywhere;}
 .description{font-size:16px;font-weight:400;line-height:1.5;overflow-wrap:anywhere;}.description p{margin:0;}.description p+p{margin-top:16px;}
-.feedback{display:grid;place-items:center;align-self:flex-start;width:48px;height:48px;border-radius:16px;background:#f5f4f6;color:#68616b;}.feedback[data-kind=danger]{background:#fff1f4;color:#be123c;}.feedback[data-kind=success]{background:#edf8f2;color:#146a48;}
+.feedback{display:grid;place-items:center;align-self:flex-start;width:48px;height:48px;border-radius:16px;background:var(--color-soft);color:var(--color-muted);}.feedback[data-kind=danger]{background:var(--color-accent-soft);color:var(--color-accent);}.feedback[data-kind=success]{background:var(--color-soft);color:#146a48;}
 .actions{display:flex;gap:12px;width:100%;min-width:0;}.actions[data-layout=column]{flex-direction:column;}.action{box-sizing:border-box;min-height:48px;flex:1;min-width:0;max-width:100%;padding:0 20px;font-size:14px;line-height:20px;}.actions[data-layout=column]>.action{width:100%;flex:none;}
 @media(max-width:600px){.title{font-size:24px;}.actions[data-layout=row]{flex-wrap:wrap;}}
 /* Keep feature page heading/paragraph margins from changing source state geometry. */
 .panel .title{margin:0;font-size:24px;font-weight:850;line-height:31px;letter-spacing:0;}
 .panel .description{margin:0;font-size:16px;line-height:1.5;}.panel .description p{margin:0;}.panel .description p+p{margin-top:16px;}
-:is(.panel[data-source-state="VMiFI"],.panel[data-source-state="uNHy1"]) .action>span{font-weight:650;font-size:14px;line-height:20px;}
+:is(.panel[data-source-state="VMiFI"],.panel[data-source-state="uNHy1"]) .action>span{font-family:inherit;font-weight:650;font-size:14px;line-height:20px;}
 /* Empty state with illustration: centered stack (DESIGN: center alignment is reserved for empty states). Compact fits sidebars. */
 .panel[data-empty-art]{align-items:center;text-align:center;}.panel[data-empty-art] .heading{justify-content:center;}.panel[data-empty-art] .actions{justify-content:center;}.panel[data-empty-art] .actions[data-layout=column]{align-items:stretch;max-width:320px;}
 .panel[data-empty-art=compact]{padding:20px 16px;gap:12px;}.panel[data-empty-art=compact] .title{font-size:18px;line-height:25px;}.panel[data-empty-art=compact] .description{font-size:14px;}

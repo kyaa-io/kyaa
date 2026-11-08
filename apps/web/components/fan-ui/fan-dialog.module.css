@@ -10,11 +10,11 @@
   min-width: 0;
   background: var(--color-surface);
   color: var(--color-ink);
-  box-shadow: var(--shadow-overlay);
+  box-shadow: var(--shadow-dialog);
   outline: none;
 }
 
-.dialog { width: 100%; max-height: min(85dvh, 100%); border-radius: var(--radius-card); }
+.dialog { width: 100%; max-height: min(85dvh, 100%); border-radius: var(--radius-collection); }
 /* AccessibleOverlay의 `.backdrop [data-overlay-content]{max-width:100%}`(0,2,0)보다 높게. */
 .backdrop .dialog.size-sm { max-width: 360px; }
 .backdrop .dialog.size-md { max-width: 480px; }
@@ -22,7 +22,7 @@
 
 .sheet { width: 100%; }
 .backdrop .side-bottom { max-width: 640px; }
-.side-bottom { border-radius: var(--radius-card) var(--radius-card) 0 0; }
+.side-bottom { border-radius: var(--radius-collection) var(--radius-collection) 0 0; }
 .side-right { width: min(420px, 100%); height: 100dvh; border-radius: 0; }
 .snap-half.side-bottom { height: 50dvh; }
 .snap-full.side-bottom { height: calc(100dvh - var(--space-6)); }

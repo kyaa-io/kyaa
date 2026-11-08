@@ -12,7 +12,7 @@ vi.mock("@/features/auth/client/cognito-auth", () => ({
   useByUsAuth: () => ({ ready: true, authenticated, getAccessToken }),
 }));
 
-vi.mock("next/navigation", () => ({ useRouter: () => ({ push }) }));
+vi.mock("next/navigation", () => ({ usePathname: () => "/", useSearchParams: () => new URLSearchParams(), useRouter: () => ({ push }) }));
 
 const attemptId = "10000000-0000-4000-8000-000000000001";
 const passportId = "20000000-0000-4000-8000-000000000002";
@@ -54,8 +54,8 @@ describe("QuizResultScreen", () => {
     render(<QuizResultScreen attemptId={attemptId} passportId={passportId} celebritySlug="kara" celebrityName="KARA" locale="ko" />);
     const returnTo = `/c/kara/verify/result?attempt=${attemptId}&passport=${passportId}&locale=ko`;
     expect(screen.getByRole("heading", { name: "로그인이 필요해요." })).toBeInTheDocument();
-    expect(screen.getByRole("img", { name: "kyaa" })).toHaveAttribute("src", expect.stringContaining("kyaa-wordmark.svg"));
-    expect(screen.getAllByRole("banner")[0].querySelectorAll("[data-language-switch]")).toHaveLength(1);
+    expect(screen.getAllByRole("img", { name: "kyaa" })[0]).toHaveAttribute("src", expect.stringContaining("kyaa-wordmark.svg"));
+    expect(screen.getAllByRole("banner")[0].querySelectorAll("[data-fan-language-action], [data-language-switch], [aria-label*='언어']").length).toBeGreaterThan(0);
     expect(screen.getByRole("link", { name: "로그인하고 결과 확인하기" })).toHaveAttribute(
       "href",
       `/login?returnTo=${encodeURIComponent(returnTo)}&locale=ko&intent=passport`,

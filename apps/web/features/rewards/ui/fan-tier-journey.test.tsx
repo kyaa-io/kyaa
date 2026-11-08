@@ -12,7 +12,7 @@ describe("FanTierJourney", () => {
     const { container } = render(<FanTierJourney {...base} tier="Silver" fallback={{ nextLevel: "Gold", remaining: 1, percent: 0, maxed: false }} />);
     expect(stops(container)).toEqual(["passed", "current", "ahead", "ahead", "ahead"]);
     expect(screen.getByRole("heading", { name: "나와 엘리나" })).toBeTruthy();
-    expect(screen.getByText("지금 실버")).toBeTruthy();
+    expect(screen.getByText("내 팬 등급 실버")).toBeTruthy();
     expect(screen.getByText("골드까지 1점")).toBeTruthy();
     expect(screen.getByRole("progressbar", { name: "다음 등급: 골드" }).getAttribute("value")).toBe("0");
   });

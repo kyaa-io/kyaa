@@ -8,9 +8,9 @@ const heading = read("components/fan-ui/fan-heading.module.css");
 
 describe("fan design system ownership", () => {
   it("keeps the approved responsive and control dimensions in the central foundation", () => {
-    // 2026-11-09 브리프 v1.1 8장 ②④: h1 26/800 · h2 18/700, primary 44(390)/48(1024+), 반경 12/8.
-    for (const token of ["--fan-heading-size: 26px", "--fan-heading-weight: 800", "--fan-section-size: 18px", "--fan-section-weight: 700", "--fan-hero-number-size: 44px", "--fan-hero-number-size-wide: 48px", "--fan-action-primary-height: 44px", "--fan-action-primary-height: 48px", "--fan-action-icon-size: 18px", "--radius-card: 12px", "--radius-control: 8px", "--motion-fast: 150ms", "--motion-slow: 200ms"]) expect(tokens).toContain(token);
-    for (const gone of ["--color-primary-action", "--color-coin", "--color-foil", "--shadow-dialog", "--radius-collection", "--radius-hero", "--motion-control", "--motion-layout", "--fan-heading-size-wide"]) expect(tokens).not.toContain(`${gone}:`);
+    for (const token of ["--fan-heading-size: 20px", "--fan-heading-size-wide: 24px", "--fan-heading-weight: 850", "--fan-heading-editorial-weight: var(--fan-heading-weight)", "--fan-action-primary-height: 48px", "--fan-action-service-height: 52px", "--fan-action-icon-size: 18px"]) expect(tokens).toContain(token);
+    expect(heading).toContain("@media (min-width: 40rem)");
+    expect(heading).toContain("@media (min-width: 48rem)");
     expect(heading).not.toMatch(/font-size:\s*\d/);
   });
   it("resolves every shared fan variable rather than silently falling back", () => {
@@ -20,9 +20,10 @@ describe("fan design system ownership", () => {
   it("keeps the event catalog title exception explicit and separate from item names", () => {
     const catalog = read("features/home/ui/events-catalog-screen.module.css");
     const title = catalog.match(/\.copy h2\s*\{([^}]*)\}/)?.[1];
-    expect(tokens).toContain("--fan-item-title-size: 15px");
-    expect(tokens).toContain("--fan-section-size: 18px");
-    expect(title).toContain("font-size: var(--fan-section-size)");
+    expect(read("../../DESIGN.md")).toContain("use 20px/700 event titles and 16px body copy");
+    expect(tokens).toContain("--fan-item-title-size: 16px");
+    expect(tokens).toContain("--fan-event-catalog-title-size: 20px");
+    expect(title).toContain("font-size: var(--fan-event-catalog-title-size)");
     expect(title).toContain("font-weight: var(--fan-item-title-weight)");
   });
   it("keeps the event catalog within the shared full-width shell", () => {

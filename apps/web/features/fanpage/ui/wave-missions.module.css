@@ -5,7 +5,7 @@
 .progress::-webkit-progress-bar { background: var(--color-soft); }
 .progress::-webkit-progress-value { background: var(--color-accent); border-radius: 999px; }
 .progress::-moz-progress-bar { background: var(--color-accent); border-radius: 999px; }
-.list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); margin: 0; padding: 8px; list-style: none; border: 1px solid var(--color-line); border-radius: 20px; background: var(--color-surface, #fff); }
+.list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); margin: 0; padding: 8px; list-style: none; border: 1px solid var(--color-line); border-radius: 20px; background: var(--color-surface, var(--color-surface)); }
 .mission { position: relative; display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 24px 12px; min-width: 0; text-align: center; border-bottom: 1px dashed var(--color-line); }
 .mission:nth-child(odd) { border-right: 1px dashed var(--color-line); }
 .mission:nth-last-child(-n+2) { border-bottom: 0; }

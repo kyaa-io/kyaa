@@ -53,8 +53,8 @@ export type FanNumberProps = Readonly<{
   value: number;
   /** 숫자 뒤 한 번: `P`, `장`, `°`, `명`(문구는 화면이 넘긴다). */
   unit?: ReactNode;
-  /** md 15/700(라벨-값 행 값) · lg·xl 24/800(카드 안 2단계) · hero 44(390)/48(768+)/800(화면당 1, 핵심 숫자) */
-  size?: "md" | "lg" | "xl" | "hero";
+  /** md 16/700 · lg 24/850 · xl 24(390)/32(768+)/850 */
+  size?: "md" | "lg" | "xl";
   countUp?: boolean;
   pulseOnChange?: boolean;
   locale: string;
@@ -72,7 +72,7 @@ export function FanNumber({ value, unit, size = "md", countUp = false, pulseOnCh
   const final = value.toLocaleString(locale);
   const counting = shown !== value;
   // 카운트업 중에만 최종 값 폭을 잡아 옆 요소가 흔들리지 않게 한다. 멈춘 값은 글자 폭 그대로(앞 빈칸 없음).
-  return <span className={[styles.number, styles[size], className ?? ""].filter(Boolean).join(" ")} data-number-role="asset" data-number-size={size} data-pulse={pulse ? "true" : undefined} onAnimationEnd={pulse ? endPulse : undefined}>
+  return <span className={[styles.number, styles[size], className ?? ""].filter(Boolean).join(" ")} data-number-role="asset" data-pulse={pulse ? "true" : undefined} onAnimationEnd={pulse ? endPulse : undefined}>
     {icon ? <span className={styles.icon} aria-hidden="true">{icon}</span> : null}
     <span className={styles.value} style={counting ? { minWidth: `${Math.max(formatted.length, final.length)}ch` } : undefined} aria-hidden={counting ? true : undefined}>{formatted}</span>
     {counting ? <span className={styles.srOnly}>{final}</span> : null}
@@ -85,8 +85,7 @@ export type FanGaugeProps = Readonly<{
   max: number;
   /** progressbar 이름. */
   label: string;
-  /** line: 2px 막대(미션·챌린지). sm·md 는 옛 6·8px. */
-  size?: "line" | "sm" | "md";
+  size?: "sm" | "md";
   /** 막대 오른쪽 13/700 글자(`4/6`). 막대 안에 넣지 않는다. */
   valueText?: ReactNode;
   /** 칸 나눔(7일 등). 칸 사이 2px. */
@@ -94,7 +93,7 @@ export type FanGaugeProps = Readonly<{
   className?: string;
 }>;
 
-/** 남은 양을 보여 주는 막대. 채움 폭 변화는 `--motion-slow`. */
+/** 남은 양을 보여 주는 막대. 채움 폭 변화는 `--motion-layout`. */
 export function FanGauge({ value, max, label, size = "md", valueText, segments, className }: FanGaugeProps) {
   const safeMax = Math.max(0, max);
   const clamped = Math.min(Math.max(0, value), safeMax);

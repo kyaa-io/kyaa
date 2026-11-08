@@ -20,9 +20,7 @@ export type FanActionVariant =
   | "text"
   /** 모달 안 확인(삭제·신고)에만. */
   | "danger"
-  /** 폐기(2026-11-09): 그라데이션 테두리 변형. 이제 secondary 와 같은 모양이며 새 코드에서 쓰지 않는다. */
   | "service"
-  /** 폐기(2026-11-09): secondary 와 같은 모양. */
   | "passport";
 
 export function fanActionClassName(
@@ -31,7 +29,7 @@ export function fanActionClassName(
 ) {
   return [
     styles.action,
-    styles[variant === "secondary" || variant === "service" || variant === "passport" ? "neutral" : variant],
+    styles[variant === "secondary" ? "neutral" : variant],
     options.size === "sm" ? styles.sm : "",
     options.fullWidth ? styles.fullWidth : "",
     options.className ?? "",
