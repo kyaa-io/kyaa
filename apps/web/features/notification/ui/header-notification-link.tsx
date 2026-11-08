@@ -1,6 +1,5 @@
 "use client";
-import Link from "next/link";
-import type { Route } from "next";
+import { useRef, useState } from "react";
 import { Bell } from "lucide-react";
 import { useOwnedFanResource } from "@/components/fan-ui/use-owned-fan-resource";
 import { useByUsAuth } from "@/features/auth/client/cognito-auth";
@@ -8,6 +7,7 @@ import { mySummaryPath, mySummarySchema } from "@/features/my/domain/my-summary"
 import { toContentLocale, type AppLocale } from "@/i18n/locales";
 import { translate } from "@/i18n/messages";
 import { messages } from "@/i18n/catalogs/features__notification__ui__header-notification-link";
+import { NotificationPanel } from "./notification-panel";
 import styles from "./header-notification-link.module.css";
 
 const parseSummary = (body: unknown) => mySummarySchema.parse((body as { summary?: unknown } | null)?.summary);
@@ -23,14 +23,22 @@ export function unreadLabel(locale: AppLocale, label: string, count: number) {
 
 /** Header bell (E6): the unread count from the one shared summary read (`unreadNotificationCount`, one row per notification, so a bundle of
  * artist comments counts once). The header already reads the same summary for the favorite, so this adds no request. Signed out or while
- * loading: the plain bell. */
+ * loading: the plain bell. The bell keeps the 4차 place and number badge and opens the inbox panel (6차 E) — a popover under the bell
+ * from 1024, a full sheet below. */
 export function HeaderNotificationLink({ locale, label, className }: { locale: AppLocale; label: string; className?: string }) {
   const auth = useByUsAuth();
   const summary = useOwnedFanResource(auth.authenticated ? mySummaryPath(toContentLocale(locale)) : null, parseSummary, auth);
   const count = summary.state.status === "ready" ? summary.state.data.unreadNotificationCount : 0;
   const name = unreadLabel(locale, label, count);
-  return <Link className={`${className ?? ""} ${styles.link}`} href={`/notifications?locale=${locale}` as Route} aria-label={name} title={name} data-unread={count}>
-    <Bell aria-hidden="true" />
-    {count > 0 ? <span className={styles.badge} aria-hidden="true">{unreadBadgeText(count)}</span> : null}
-  </Link>;
+  // One ref for the life of the bell: the panel measures from it and returns focus to it.
+  const bellRef = useRef<HTMLButtonElement>(null);
+  const [open, setOpen] = useState(false);
+  return <>
+    <button ref={bellRef} type="button" className={`${className ?? ""} ${styles.link}`} aria-label={name} title={name} data-unread={count}
+      aria-haspopup="dialog" aria-expanded={open} onClick={() => setOpen((value) => !value)}>
+      <Bell aria-hidden="true" />
+      {count > 0 ? <span className={styles.badge} aria-hidden="true">{unreadBadgeText(count)}</span> : null}
+    </button>
+    <NotificationPanel open={open} onOpenChange={setOpen} locale={locale} anchorRef={bellRef} />
+  </>;
 }
