@@ -36,7 +36,7 @@ const copy = {
     completeBody: "첫 팬 인증 스탬프와 팬 점수 +1이 기록됐어요.",
     score: "이번 인증으로 받은 점수",
     level: "시작 등급",
-    fanId: "Fan ID",
+    fanId: "팬 ID",
     copyFanId: "전체 팬 ID 복사",
     copiedFanId: "팬 ID를 복사했어요.",
     copyFanIdFailed: "팬 ID를 복사하지 못했어요.",
