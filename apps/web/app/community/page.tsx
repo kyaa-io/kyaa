@@ -17,8 +17,11 @@ export async function generateMetadata({ searchParams }: { searchParams: Promise
 export default async function CommunityPage({ searchParams }: { searchParams: Promise<Query> }) {
   const query = await searchParams, locale = parseAppLocale(query.locale);
   if (Array.isArray(query.creator)) notFound();
-  const creators = await createPublishedContentRepositoryFromEnvironment().list(toContentLocale(locale));
-  const creator = selectCommunityCreator(creators, query.creator);
+  const repository = createPublishedContentRepositoryFromEnvironment(), contentLocale = toContentLocale(locale);
+  const listed = await repository.listListed(contentLocale);
+  // An unlisted creator stays out of the default pick and the menu, but its own link (?creator=) still opens.
+  const creator = selectCommunityCreator(listed, query.creator) ?? (query.creator === undefined ? undefined : await repository.findBySlug(contentLocale, query.creator) ?? undefined);
   if (query.creator !== undefined && !creator) notFound();
+  const creators = creator && !listed.includes(creator) ? [...listed, creator] : listed;
   return <CommunityScreen key={`${creator?.slug}:${locale}:${query.tab}`} creators={creators} creator={creator} locale={locale} tab={parseCommunityTab(query.tab)} mediaOnly={query.media === "1"} />;
 }
