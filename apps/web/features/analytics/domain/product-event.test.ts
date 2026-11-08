@@ -28,7 +28,7 @@ describe("ProductEventV1", () => {
     expect(PRODUCT_EVENT_NAMES).toContain("ticket_credited");
     expect(PRODUCT_EVENT_NAMES).toContain("ticket_debited");
     expect(PRODUCT_EVENT_NAMES).toContain("outbound_link_click");
-    expect(PRODUCT_EVENT_NAMES).toHaveLength(23);
+    expect(PRODUCT_EVENT_NAMES).toHaveLength(31);
     expect(productEventV1Schema.parse(base)).toEqual(base);
   });
 
@@ -54,6 +54,7 @@ describe("ProductEventV1", () => {
       "outbound_link_click",
       "benefit_page_view",
       "signup_guide_view", "signup_guide_cta", "login_started", "login_result",
+      "page_view", "share_completed",
     ]);
     for (const eventName of PRODUCT_EVENT_NAMES.filter(
       (name) => !CLIENT_PRODUCT_EVENT_NAMES.includes(name as (typeof CLIENT_PRODUCT_EVENT_NAMES)[number]),

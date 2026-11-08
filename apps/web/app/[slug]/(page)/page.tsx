@@ -3,7 +3,6 @@ import { WAVE_FANPAGE_SLUG } from "@/features/fanpage/domain/wave-programs";
 import { readPublicCheerEvent } from "@/server/fanpage/public-cheer-event";
 import { toContentLocale } from "@/i18n/locales";
 import { parseAppLocale } from "@/i18n/locales";
-import { VercelTelemetry } from "@/features/analytics/client/vercel-telemetry";
 import { creatorHomeHref, isCreatorHandle } from "@/features/creator/domain/creator-navigation";
 import { GROUP_COLLECTIONS_VISIBLE } from "@/features/groups/domain/collection-visibility";
 import { SITE_URL, publicMetadata } from "@/seo/metadata";
@@ -61,6 +60,6 @@ export default async function CelebrityPage({ params, searchParams }: { params: 
   // The 찐팬 100 gauge's answer is read here too, so the card (or its absence) is in the first paint. A failed read leaves it to the client.
   const [primaryLives, initialCheerEvent, jjinfanSeed] = slug === WAVE_FANPAGE_SLUG ? [[], null, undefined] : await Promise.all([createPublishedContentRepositoryFromEnvironment().listPrimaryLives(toContentLocale(locale)), readPublicCheerEvent(slug, toContentLocale(locale)), readJjinfanSeed(slug)]);
   const upcomingLive = primaryLives.find((live) => live.celebritySlug === slug) ?? null;
-  const content = <JjinfanSeed slug={slug} value={jjinfanSeed}><CelebrityFanPage groupsEnabled={process.env.KYAA_GROUPS_ENABLED === "true"} celebrity={celebrity} locale={locale} upcomingLive={upcomingLive} initialCheerEvent={initialCheerEvent} initialTab={initialTab} calendarMonth={requestedMonth} initialBoardSection={initialBoardSection} initialBoardSource={initialBoardSource} initialNewsFilter={requestedNews === "artist_post" || requestedNews === "notice" || requestedNews === "chzzk" ? requestedNews : "all"} initialMediaFilter={requestedMedia === "photos" || requestedMedia === "videos" || requestedMedia === "replays" ? requestedMedia : undefined} instagramEnabled={process.env.INSTAGRAM_INTEGRATION_ENABLED === "true"} />{process.env.VERCEL_ENV === "production" && <VercelTelemetry publicCreatorSlug={slug} />}</JjinfanSeed>;
+  const content = <JjinfanSeed slug={slug} value={jjinfanSeed}><CelebrityFanPage groupsEnabled={process.env.KYAA_GROUPS_ENABLED === "true"} celebrity={celebrity} locale={locale} upcomingLive={upcomingLive} initialCheerEvent={initialCheerEvent} initialTab={initialTab} calendarMonth={requestedMonth} initialBoardSection={initialBoardSection} initialBoardSource={initialBoardSource} initialNewsFilter={requestedNews === "artist_post" || requestedNews === "notice" || requestedNews === "chzzk" ? requestedNews : "all"} initialMediaFilter={requestedMedia === "photos" || requestedMedia === "videos" || requestedMedia === "replays" ? requestedMedia : undefined} instagramEnabled={process.env.INSTAGRAM_INTEGRATION_ENABLED === "true"} /></JjinfanSeed>;
   return slug === WAVE_FANPAGE_SLUG ? <WaveAccessBoundary locale={locale}>{content}</WaveAccessBoundary> : content;
 }

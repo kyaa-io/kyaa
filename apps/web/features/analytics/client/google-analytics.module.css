@@ -1,0 +1,43 @@
+/* GA4 consent bar: one line above the 390 bottom tab bar (64px), bottom centre on wide screens. Neutral only (H6). */
+.bar {
+  position: fixed;
+  z-index: var(--z-dropdown);
+  inset-inline: var(--space-4);
+  bottom: calc(var(--space-16) + env(safe-area-inset-bottom) + var(--space-2));
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  max-width: 720px;
+  margin-inline: auto;
+  padding: var(--space-2) var(--space-2) var(--space-2) var(--space-4);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-control);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-overlay);
+  color: var(--color-ink);
+}
+
+.copy {
+  flex: 1 1 auto;
+  min-width: 0;
+  margin: 0;
+  font-size: var(--fan-metadata-size);
+  line-height: var(--fan-description-leading);
+  overflow-wrap: anywhere;
+}
+
+.policy {
+  color: var(--color-muted);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.actions {
+  display: flex;
+  flex: none;
+  gap: var(--space-2);
+}
+
+@media (min-width: 64rem) {
+  .bar { bottom: var(--space-6); }
+}

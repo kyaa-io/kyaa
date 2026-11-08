@@ -35,3 +35,25 @@
 `GET /api/admin/analytics/acquisition`은 기존 관리자 인증 후 두 관리자 식별자를 DB에서 다시 확인한다. `read_admin_acquisition_analytics`는 service_role만 실행할 수 있으며 원장 직접 읽기 권한을 추가하지 않는다. 응답은 `private, no-store`이며 허용된 채널·화면 유형과 집계값만 반환한다. 1~4명인 값은 기존 `SMALL_COHORT_LT_5` 규칙으로 숨기고, 숨긴 행을 역산할 수 있는 해당 전체 합계도 숨긴다. 0명은 실제 0으로 표시한다.
 
 익명 세션을 회원과 연결하거나 검색어를 회원 전환에 귀속하지 않는다. 페이지·유입 사이트별 방문은 기존 방문 통계를, 검색어별 노출·클릭은 Search Console을 사용한다. 수집 차단·누락이나 서버 측 측정 실패가 있을 수 있어 이 집계는 업무 원장을 대체하지 않는다. `20261018082738_acquisition_conversion_analytics.sql`을 앱보다 먼저 적용하며, 관련 웹 테스트와 `supabase/tests/acquisition_conversion_analytics.sql`로 권한·기간·중복·완료 조건·비공개 규칙을 검증한다.
+
+## 화면 조회·퍼널 이벤트 (20261219010000)
+
+`/admin/traffic`의 방문 통계는 Vercel Web Analytics 대신 원장의 `page_view`를 읽는다(운영이 AWS라 Vercel 분석은 렌더되지 않았다). Vercel 분석 패키지와 `VERCEL_ANALYTICS_*` 조회 경로는 제거했다.
+
+- `page_view`(브라우저, `PageViewTracker`): 경로가 바뀔 때 1건. 로그인 상태면 회원 소유, 아니면 익명 탭 세션 소유로 기록한다(내부 집계용, 외부 전송 없음, 관리자 화면은 집계만). 속성은 `pageKind`(열거형 화면 종류), `entry`(탭 세션 첫 화면), `channel`(첫 화면만, 이후 `internal`), `device`, `browser`, `os` 여섯 개뿐이다. 경로·슬러그·쿼리·해시·참조 주소는 보내지 않는다. 관리자·운영자·크리에이터 도구·인증 경로는 세지 않는다. **방문(세션)은 `entry=true` 1건**이고, 첫 화면 표시는 sessionStorage에 남아 로그인 뒤에도 유지되므로 보던 탭에서 로그인해도 방문은 1번이다. 익명 세션과 회원은 연결하지 않는다.
+- `share_completed`(브라우저, `recordShareCompleted`): 공유 시트 완료나 링크 복사 성공 뒤 1건. `method`(native/copy)와 `contentType`(post/notice/passport/jjinfan/share_proof)만. 로그인 상태면 회원 소유로 기록해 첫 활동에 들어간다.
+- 서버 기록(`server.commit_projection`, 업무 행의 id로 멱등): `fan_verification_started`(퀴즈 시작), `fan_verification_submitted`(`outcome`·`reason`=none/score_below_pass·`score`), `daily_checkin_completed`(`streak`), `post_created`(`category`, `board`=fan/group: 팬게시판과 모임 글), `comment_created`(`reply`), `cheer_completed`(응원 글, 답글 제외, 회원·크리에이터·KST 일 단위 1건). DB가 업무 행의 존재·소유자·값을 다시 확인하므로 위조 기록은 거부된다. 기록 실패나 1초 넘는 잠금 대기는 이벤트만 건너뛰고 업무 쓰기를 막지 않는다.
+- 상한: `/api/events`는 분당 두 묶음을 차례로 센다. 먼저 엣지가 넣은 클라이언트 IP(`x-byus-client-ip`) 단독 3,000건(세션 값을 요청마다 바꾸는 경우도 여기서 막히고, 그때는 다음 묶음의 행을 만들지 않는다), 이어서 IP + 익명 세션(로그인이면 IP + 회원) 300건. DB에는 묶음의 HMAC만 간다(키는 서버 전용 `requestHashSecret`에서 `product-event-ip-v1`로 파생, IP 원문은 저장하지 않음). `page_view`는 소유자(탭 세션 또는 회원)당 KST 하루 500건이며 하루는 서버 시각(`created_at`)으로 판정한다. 넘으면 204로 조용히 버린다.
+- 시각: `page_view`·`share_completed`의 집계·상한·첫 활동 판정은 서버 시각 `created_at`을 쓴다. 클라이언트의 `occurred_at`은 저장만 한다(±24시간 범위 검사는 유지).
+- GA4 이름 대응은 `domain/funnel-event.ts`의 `GA4_EVENT_NAME`(funnel-audit `ga4-plan.md` 6절)을 따른다.
+
+`read_admin_web_traffic`·`read_admin_funnel_analytics`는 service_role만 실행하며 관리자를 DB에서 다시 확인한다. 퍼널 4단계는 같은 UTC 기간의 단계별 수이고 한 코호트를 따라간 전환이 아니다: 방문 세션(`page_view` 세션), 가입(`app_users` 생성), 첫 팬 인증(회원의 첫 패스포트 발급), 첫 활동(출석·팬게시판 글·모임 글·댓글·응원·로그인 공유 중 회원의 첫 기록). 보조 지표 `visitedMembers`는 기간 안에 로그인 상태로 방문한 회원 중 같은 기간에 가입·첫 인증·첫 활동한 수다. 방문 세션 수집이 기간 중간에 시작됐으면 가입/방문 비율은 표시하지 않는다. 검증: `supabase/tests/funnel_events.sql`, 비슈퍼 적용 `supabase/tests/funnel_nonsuper_apply.sh`(dev의 byus_admin 형태, 소유 함수의 FORCE RLS 읽기), `features/analytics/domain/funnel-*.test.ts`, `server/admin/web-analytics-route.test.ts`.
+
+## GA4 (동의 뒤에만)
+
+- 측정 ID: 실행 시 환경값 `GA4_MEASUREMENT_ID`(AWS 공개 허용 목록, `runtimeEnvironment`가 `NEXT_PUBLIC_GA4_MEASUREMENT_ID`로 매핑). 형식이 `G-…`가 아니면 없는 것으로 본다. 없으면 동의 바·gtag·CSP 허용 모두 0. 배포 스크립트는 dev에 운영 스트림(G-HPXFR0PQP0), 운영에 dev 스트림(G-WKSF9KP5QW)을 넣으면 거부한다.
+- 동의: 화면 하단 한 줄 바(`GoogleAnalytics`)에서 `허용`·`거부`. 선택은 이 브라우저에 1년(`kyaa.analytics-consent.v1`), 계정과 묶지 않는다. 거부·미선택이면 Google로 가는 요청 0. 푸터 "방문 통계 설정"으로 다시 열어 바꾼다. 관리자·운영자 화면에는 바를 띄우지 않는다.
+- gtag: 허용한 뒤에만 `gtag.js`를 넣는다. consent 기본 denied → analytics_storage만 granted. 광고 저장·신호·개인화는 끈다. 자동 page_view는 끄고(`send_page_view: false`) 경로가 바뀔 때 1번 보낸다. 주소는 origin + 정규화 경로(UUID·숫자·긴 토큰·짧은 링크 토큰 → `:id`/`:token`, 쿼리·해시 없음), 제목은 화면 종류, 참조는 외부 사이트 origin만, 첫 page_view에만.
+- 이벤트와 파라미터는 `domain/ga4.ts`의 `GA4_EVENT_PARAMETERS` 허용 목록만 보낸다(회원·크리에이터·글 식별자, 자유 문구 없음). 자체 원장 이름과의 대응은 `GA4_EVENT_NAME`.
+- CSP: `awsStorageContentSecurityPolicy({ ga4 })`가 ID가 있는 환경에서만 `script-src https://www.googletagmanager.com`, `connect-src https://*.google-analytics.com https://*.analytics.google.com https://www.googletagmanager.com`을 연다(이미지는 기존 `img-src https:`). 이 CSP는 `AWS_STORAGE_ENABLED=true`인 AWS 응답에 적용된다.
+- GA 관리 화면에서 향상된 측정의 "브라우저 기록 이벤트 기반 페이지 변경·아웃바운드 클릭·사이트 검색·양식 상호작용"을 꺼야 중복·수집 과다가 없다(코드로 끌 수 없음).

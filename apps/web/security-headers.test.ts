@@ -173,3 +173,17 @@ describe("rewarded ad content security policy", () => {
     }
   });
 });
+
+it("opens the GA4 origins only where a GA4 stream is configured", () => {
+  const off = awsStorageContentSecurityPolicy({ bucket: "byus-dev-private", region: "ap-northeast-2" });
+  const on = awsStorageContentSecurityPolicy({ bucket: "byus-dev-private", region: "ap-northeast-2", ga4: true });
+  expect(off).not.toContain("googletagmanager");
+  expect(off).not.toContain("google-analytics");
+  const directive = (policy: string, name: string) => policy.split("; ").find((part) => part.startsWith(`${name} `)) ?? "";
+  expect(directive(on, "script-src")).toContain("https://www.googletagmanager.com");
+  expect(directive(on, "connect-src")).toContain("https://*.google-analytics.com");
+  expect(directive(on, "connect-src")).toContain("https://*.analytics.google.com");
+  expect(directive(on, "connect-src")).toContain("https://byus-dev-private.s3.ap-northeast-2.amazonaws.com/mobile-media/");
+  expect(directive(on, "frame-src")).not.toContain("googletagmanager");
+  expect(awsStorageContentSecurityPolicy({ ga4: true, rewardedAds: true })).toContain("https://securepubads.g.doubleclick.net");
+});

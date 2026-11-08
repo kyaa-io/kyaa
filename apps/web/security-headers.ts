@@ -58,8 +58,14 @@ export const responseSecurityHeaders: ResponseHeader[] = [
 ];
 
 /** Runtime bucket names keep one image deployable across isolated environments. */
-export function awsStorageContentSecurityPolicy(config: { bucket?: string; region?: string; stage?: boolean; rewardedAds?: boolean }): string {
+export function awsStorageContentSecurityPolicy(config: { bucket?: string; region?: string; stage?: boolean; rewardedAds?: boolean; ga4?: boolean }): string {
   let policy = contentSecurityPolicy;
+  // GA4 origins open only where a GA4 stream is configured (GA4_MEASUREMENT_ID); gtag.js itself loads only after consent.
+  if (config.ga4) {
+    policy = policy
+      .replace("https://challenges.cloudflare.com", "https://challenges.cloudflare.com https://www.googletagmanager.com")
+      .replace("connect-src 'self'", "connect-src 'self' https://*.google-analytics.com https://*.analytics.google.com https://www.googletagmanager.com");
+  }
   // Google Publisher Tag origins load only once a rewarded ad unit is configured.
   if (config.rewardedAds) {
     policy = policy

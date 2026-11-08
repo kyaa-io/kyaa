@@ -21,6 +21,7 @@ import { raffleStateCopy, raffleBalanceCopy } from "./state-copy";
 import { raffleCopy, raffleOutcomeCopy, raffleRecipientSubmitted, raffleRecipientSubmit } from './copy';
 import { groupRaffleDetailSchema, entryReceiptSchema, pendingEntrySchema, recipientsSchema } from './domain';
 import styles from '@/features/groups/ui/groups.module.css';
+import { sendGa4Event } from "@/features/analytics/client/ga4-client";
 const parse=(v:unknown)=>groupRaffleDetailSchema.parse(v),parseWallet=(v:unknown)=>walletSchema.parse(v),parseRecipients=(v:unknown)=>recipientsSchema.parse(v),parseCatalog=(v:unknown)=>groupBenefitsCatalogSchema.parse(v);
 export function GroupRaffleScreen({pageId,raffleId,locale,localPresentation}:{pageId:string;raffleId:string;locale:AppLocale;localPresentation?:GroupActivityPresentation&{totalEntries?:number}}){
  const auth=useGroupRequest(),t=groupsCopy(locale),c=raffleCopy(locale);
@@ -44,7 +45,7 @@ function OwnedRaffle({pageId,raffleId,locale,sourcePresentation=false,totalEntri
  useEffect(()=>{alive.current=true;try{const stored=sessionStorage.getItem(storageKey);if(stored)setPending(pendingEntrySchema.parse(JSON.parse(stored)));setReady(true);}catch{setFeedback('error');}return()=>{alive.current=false;};},[storageKey]);
  async function enter(input:{requestId:string;amount:number}){
   if(running.current||!ready)return;running.current=true;setBusy(true);setFeedback(null);
-  try{sessionStorage.setItem(storageKey,JSON.stringify(input));setPending(input);const receipt=entryReceiptSchema.parse(await wallet.request(`${base}/entries`,{method:'POST',body:JSON.stringify(input)}));if(receipt.amount!==input.amount)throw new Error('RECEIPT_MISMATCH');if(!alive.current)return;sessionStorage.removeItem(storageKey);setPending(null);setAcceptedAmount(receipt.amount);setAcceptedTotal(receipt.enteredTickets);setFeedback('accepted');detail.retry();wallet.retry();}
+  try{sessionStorage.setItem(storageKey,JSON.stringify(input));setPending(input);const receipt=entryReceiptSchema.parse(await wallet.request(`${base}/entries`,{method:'POST',body:JSON.stringify(input)}));if(receipt.amount!==input.amount)throw new Error('RECEIPT_MISMATCH');sendGa4Event('raffle_entry',{kind:'ticket'});if(!alive.current)return;sessionStorage.removeItem(storageKey);setPending(null);setAcceptedAmount(receipt.amount);setAcceptedTotal(receipt.enteredTickets);setFeedback('accepted');detail.retry();wallet.retry();}
   catch(e){if(alive.current){if(e instanceof GroupRequestError&&['GROUP_RAFFLE_INVALID','GROUP_RAFFLE_CLOSED','GROUP_RAFFLE_LIMIT','GROUP_WALLET_INSUFFICIENT_BALANCE','GROUP_RAFFLE_MEMBERS_REQUIRED'].includes(e.code)){sessionStorage.removeItem(storageKey);setPending(null);}setEntryError(e instanceof GroupRequestError?e.code:undefined);setFeedback('error');}}
   finally{running.current=false;if(alive.current)setBusy(false);}
  }

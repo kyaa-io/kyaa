@@ -27,7 +27,11 @@ describe("hosting runtime configuration", () => {
     for (const [key, value] of Object.entries(aws)) vi.stubEnv(key, value);
     vi.stubEnv("PRIVY_APP_SECRET", "never-public");
     vi.stubEnv("WEB_PUSH_VAPID_PUBLIC_KEY", "vapid");
-    expect(publicRuntimeConfig()).toEqual({ authProvider: "privy", privyAppId: "runtime-id", appleLoginEnabled: false, testAccountLoginEnabled: true, webPushVapidPublicKey: "vapid" });
+    expect(publicRuntimeConfig()).toEqual({ authProvider: "privy", privyAppId: "runtime-id", appleLoginEnabled: false, testAccountLoginEnabled: true, webPushVapidPublicKey: "vapid", ga4MeasurementId: "" });
+    vi.stubEnv("GA4_MEASUREMENT_ID", "G-WKSF9KP5QW");
+    expect(publicRuntimeConfig().ga4MeasurementId).toBe("G-WKSF9KP5QW");
+    vi.stubEnv("GA4_MEASUREMENT_ID", "UA-123-1");
+    expect(publicRuntimeConfig().ga4MeasurementId).toBe("");
     vi.stubEnv("PRIVY_APP_ID", "promoted-id");
     vi.stubEnv("APP_ENV", "prod");
     expect(publicRuntimeConfig()).toMatchObject({ privyAppId: "promoted-id", testAccountLoginEnabled: false });

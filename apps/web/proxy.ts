@@ -5,6 +5,7 @@ import { isInstagramManagementPath, requestLocale } from "./components/locale-pa
 import { isAppLocale } from "./i18n/locales";
 import { awsStorageContentSecurityPolicy } from "./security-headers";
 import { isAwsHosting } from "./server/config/hosting";
+import { readGa4MeasurementId } from "./features/analytics/domain/ga4-id";
 import { isNativeAppAvailable, openAppWebPath } from "./server/app-link/open-app-redirect";
 
 const LEGACY_APP_ORIGINS = new Set(["https://byus.kr", "https://www.byus.kr"]);
@@ -88,6 +89,7 @@ export function proxy(request: NextRequest): NextResponse {
       && !request.nextUrl.pathname.startsWith("/connect/instagram/")) {
       response.headers.set("Content-Security-Policy", awsStorageContentSecurityPolicy({
         rewardedAds: rewardedExchangeDecision(process.env).enabled,
+        ga4: readGa4MeasurementId(process.env.GA4_MEASUREMENT_ID) !== "",
         bucket: process.env.S3_PRIVATE_BUCKET, region: process.env.AWS_REGION,
         stage: request.nextUrl.pathname === "/admin/wave-stage",
       }));

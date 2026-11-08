@@ -7,6 +7,7 @@ import {
   type SignupPlacement, type SignupProvider, type SignupReason, type SignupStage, type SignupTrigger,
 } from "../domain/signup-funnel-event";
 import { recordProductEventV1 } from "./product-event-client";
+import { sendGa4Event } from "./ga4-client";
 
 const CONTEXT_KEY = "byus.signup.context.v1";
 const ATTEMPT_KEY = "byus.signup.attempt.v1";
@@ -146,6 +147,7 @@ export function createSignupFunnelTracker(environment: TrackerEnvironment) {
         idempotencyKey: key, occurredAt: new Date(environment.now()).toISOString(),
         properties: { ...attempt.context, provider: attempt.provider, trigger: attempt.trigger,
           ...(attempt.entryAction === undefined ? {} : { entryAction: attempt.entryAction }), outcome, stage, reason, ...diagnostic } });
+      if (outcome === "succeeded") sendGa4Event("login", { method: attempt.provider });
     } catch { /* Telemetry does not establish or revoke a session. */ }
   }
   return { guideView, guideCta, beginLogin, pendingLogin, resumeLogin, forgetLoginAttempt, result };

@@ -13,6 +13,7 @@ import Link from "next/link";
 import type { FanLocale } from "./fan-app-shell";
 import { FanContentContainer } from "./fan-content-container";
 import styles from "./fan-site-footer.module.css";
+import { AnalyticsConsentLink } from "@/features/analytics/client/analytics-consent-link";
 
 const TELEGRAM_CHANNEL_URL = "https://t.me/Kyaa_Official";
 
@@ -210,6 +211,7 @@ export function FanSiteFooter({ locale }: { locale: FanLocale }) {
           <Link className={styles.privacyLink} href={fanHref("/privacy", locale)} aria-label={locale === "ko" ? "개인정보처리방침 열기" : translate(locale, localizedMessages.mc2da954c6e18, "Open Privacy Policy")}>{t.privacy}</Link>
           <span aria-hidden="true">·</span>
           <Link href={fanHref("/terms", locale)} aria-label={locale === "ko" ? "이용약관 열기" : translate(locale, localizedMessages.m9083a379799f, "Open Terms of Use")}>{t.terms}</Link>
+          <AnalyticsConsentLink locale={locale} />
         </div>
       </FanContentContainer>
     </footer>

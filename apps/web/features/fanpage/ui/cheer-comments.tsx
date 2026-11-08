@@ -24,6 +24,7 @@ import { cheerEventCopy, eventText } from "../domain/cheer-event-copy";
 import { notifyFanActivityUpdated } from "@/components/fan-ui/fan-activity-updates";
 import { useByUsSession } from "@/components/byus-session-provider";
 import { ContentActions, ContentTranslation } from "@/features/content-safety/ui/content-actions";
+import { sendGa4Event } from "@/features/analytics/client/ga4-client";
 
 const parse = (value: unknown) => cheerPageSchema.parse(value);
 type CheerCommentsProps = { slug: string; name: string; locale: AppLocale; eventPresentation?: boolean; submissionClosed?: boolean; liveRefresh?: boolean; returnTo?: string; onPosted?: () => void };
@@ -75,7 +76,7 @@ function CommentsForOwner({ slug, name, locale, eventPresentation = false, submi
         setError(response.status === 429 ? (locale === "ko" ? "잠시 후 다시 응원을 남겨 주세요." : translate(locale, localizedMessages.md39fa5353e8c, "Please wait before posting another cheer.")) : (locale === "ko" ? "저장하지 못했어요. 다시 시도해 주세요." : translate(locale, localizedMessages.m533d8477fa7e, "Couldn't save. Please try again.")));
         return;
       }
-      if (!id) { setBody(""); attempt.current = null; onPosted?.(); }
+      if (!id) { setBody(""); attempt.current = null; sendGa4Event("cheer"); onPosted?.(); }
       setCursor(null); resource.retry();
       notifyFanActivityUpdated(session.ownerId ?? user?.id);
     } catch {
