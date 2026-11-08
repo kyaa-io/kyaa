@@ -2,12 +2,13 @@ import {fireEvent,render,screen,waitFor} from '@testing-library/react';
 import {beforeEach,expect,it,vi} from 'vitest';
 import {resetDukjilCatalogCache} from '@/features/dukjil/ui/dukjil-provider';
 import {GroupHeaderAccount,GroupHeaderPoints} from './group-header-account';
-const state=vi.hoisted(()=>({wallet:undefined as any,request:undefined as any,failure:undefined as any,retry:undefined as any}));
+const state=vi.hoisted(()=>({favorite:null as null|{name:string},wallet:undefined as any,request:undefined as any,failure:undefined as any,retry:undefined as any}));
 vi.mock('next/navigation',()=>({usePathname:()=>'/benefits',useSearchParams:()=>new URLSearchParams('locale=ko')}));
 vi.mock('./use-group-resource',()=>({GROUP_WALLET_CHANGED_EVENT:'wallet-changed',useGroupRequest:()=>({authenticated:true,ready:true,ownerKey:'u',request:state.request}),useGroupResource:()=>({data:state.wallet,error:Boolean(state.failure),failure:state.failure,loading:false,retry:state.retry??vi.fn()})}));
+vi.mock('@/features/selected-bias/ui/use-selected-bias',()=>({useSelectedBias:()=>({status:state.favorite?'ready':'empty',options:[],selected:state.favorite,unverified:null,select:()=>{},retry:()=>{}})}));
 vi.mock('@/features/profile/ui/use-avatar',()=>({useAvatar:()=>({state:{status:'none'}})}));
 vi.mock('@/features/group-social/profile-connection',()=>({ProfileConnectionPanel:()=>null}));
-beforeEach(()=>{resetDukjilCatalogCache();state.failure=undefined;state.retry=undefined;state.request=vi.fn().mockRejectedValue(new Error('no policy'));});
+beforeEach(()=>{resetDukjilCatalogCache();state.favorite=null;state.failure=undefined;state.retry=undefined;state.request=vi.fn().mockRejectedValue(new Error('no policy'));});
 const wallet=(checkedIn:boolean,nextBonusIn=3)=>({points:500,tickets:0,attendance:{date:'2026-11-05',checkedIn,streak:1,nextBonusIn,days:[]}});
 const open=()=>fireEvent.click(screen.getByRole('button',{name:'계정 메뉴'}));
 it('points header link goes to the benefits page, not My',()=>{
@@ -49,7 +50,7 @@ it('hides the menu check-in entry before the reward start date or while writes a
 it('under an active policy the menu shows a plain attendance item with no fixed points, and the legacy payout line is gone',async()=>{
  state.request=vi.fn().mockResolvedValue({version:1,rules:{checkin:{points:2,streakEvery:7,streakBonus:10}},missionBook:{}});
  state.wallet=wallet(false);render(<GroupHeaderAccount locale='ko' languageHref='/'/>);open();
- const item=await screen.findByRole('menuitem',{name:'엔카이브 출석체크'});
+ const item=await screen.findByRole('menuitem',{name:'출석체크'});
  expect(item).toHaveAttribute('href','/my/wallet?view=attendance&locale=ko');
  expect(item.textContent).not.toMatch(/\d+\s?P/);
  await waitFor(()=>expect(screen.queryByRole('menuitem',{name:/출석하고/})).toBeNull());
@@ -63,7 +64,7 @@ it('while the policy is still loading neither the legacy payout nor the new atte
  state.request=vi.fn().mockReturnValue(new Promise(()=>{}));
  state.wallet=wallet(false);render(<GroupHeaderAccount locale='ko' languageHref='/'/>);open();
  expect(screen.queryByRole('menuitem',{name:/출석하고/})).toBeNull();
- expect(screen.queryByRole('menuitem',{name:'엔카이브 출석체크'})).toBeNull();
+ expect(screen.queryByRole('menuitem',{name:/출석체크/})).toBeNull();
 });
 it('signed in, the avatar is the one account-menu trigger and the menu has no 알림 item (feedback F)',async()=>{
  state.wallet=wallet(true);const {container}=render(<GroupHeaderAccount locale='ko' languageHref='/'/>);
@@ -74,4 +75,11 @@ it('signed in, the avatar is the one account-menu trigger and the menu has no �
  expect(await screen.findByRole('menuitem',{name:/언어 설정/})).toHaveTextContent('한국어');
  expect(screen.queryByRole('menuitem',{name:'알림'})).toBeNull();
  expect(screen.getAllByRole('menuitem').length).toBe(6);
+});
+it('r6 H1: the attendance item names the fan\'s own favorite page, and no fixed page name appears for anyone',async()=>{
+ state.request=vi.fn().mockResolvedValue({version:1,rules:{checkin:{points:2,streakEvery:7,streakBonus:10}},missionBook:{}});
+ state.favorite={name:'[시험] 랭킹 확인 페이지'};state.wallet=wallet(false);render(<GroupHeaderAccount locale='ko' languageHref='/'/>);open();
+ const item=await screen.findByRole('menuitem',{name:'[시험] 랭킹 확인 페이지 출석체크'});
+ expect(item).toHaveAttribute('href','/my/wallet?view=attendance&locale=ko');
+ expect(document.body.textContent).not.toContain('엔카이브');
 });

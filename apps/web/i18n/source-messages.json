@@ -16015,7 +16015,7 @@
   },
   "dukjilTitle": {
     "en": "Attendance check-in",
-    "ko": "엔카이브 출석체크",
+    "ko": "출석체크",
     "source": "features/dukjil/ui/dukjil-copy",
     "id": "features/dukjil/ui/dukjil-copy:dukjilTitle"
   },

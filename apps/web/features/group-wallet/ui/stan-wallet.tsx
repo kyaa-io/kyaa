@@ -32,7 +32,8 @@ function Value({ locale, slot, size, unit, icon }: { locale: AppLocale; slot: St
   if (slot === "loading") return <FanSkeleton width={size === "xl" ? 96 : 32} height={size === "xl" ? 32 : 20} />;
   if (slot === "locked") return <FanLockedValue locale={locale} />;
   if (slot === "missing") return null;
-  return <FanNumber value={slot} size={size} countUp locale={locale} unit={unit} icon={icon} />;
+  // The next-step cells read as one word in Korean ("2장", "4/9"): number and unit sit together there.
+  return <FanNumber value={slot} size={size} countUp locale={locale} unit={unit} icon={icon} className={size === "md" ? styles.stepNumber : undefined} />;
 }
 
 /** 덕질 wallet (feedback F2): the two assets (points, hearts) as big numbers, under each the step it becomes next

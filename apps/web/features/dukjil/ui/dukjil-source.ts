@@ -1,6 +1,6 @@
 // Generated from the dukjil i18n table; ko/en live here, the other locales in i18n/catalogs/features__dukjil__ui__dukjil-copy.ts.
 export const dukjilSource = {
-  dukjilTitle: { ko: "엔카이브 출석체크", en: "Attendance check-in" },
+  dukjilTitle: { ko: "출석체크", en: "Attendance check-in" },
   dukjilClaim: { ko: "오늘 출석하고 {0}P·스탬프 받기", en: "Check in today for {0}P and a stamp" },
   dukjilStart: { ko: "입국 심사 보고 출석 시작하기", en: "Take entry review to start checking in" },
   dukjilDone: { ko: "오늘 출석 완료", en: "Checked in today" },

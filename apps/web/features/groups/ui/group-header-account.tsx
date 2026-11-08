@@ -1,6 +1,7 @@
 "use client";
 import { useDukjilStatus } from '@/features/dukjil/ui/dukjil-provider';
 import { dukjilText } from '@/features/dukjil/ui/dukjil-copy';
+import { useSelectedBias } from '@/features/selected-bias/ui/use-selected-bias';
 import { POINT_COIN_SRC } from '@/features/dukjil/ui/earn-badge';
 import { useEffect, useRef, useState, isValidElement, type ReactNode, type ReactElement } from 'react';
 import Link from 'next/link';
@@ -33,6 +34,8 @@ export function GroupHeaderAccount({locale,actions,actionsAreIdentity=false,lang
  const identity=actionsAreIdentity&&isValidElement(actions)?(actions as ReactElement<{children?:ReactNode}>).props.children:<>{avatar.state.status==='ready'?<Avatar avatar={avatar.state.avatar} imageUrl={avatar.state.imageUrl} label='' size={48}/>:<AvatarPlaceholder size={48}/>}<span>{profileLabel}</span></>;
  const refreshWallet=wallet.retry;
  const ko=locale==='ko',dukjilStatus=useDukjilStatus(locale),dukjilOn=dukjilStatus==='on';
+ // The attendance item names the fan's own favorite page ("{page} 출석체크"), or the plain 출석체크 without one — never a fixed page.
+ const favorite=useSelectedBias(locale).selected,attendanceLabel=favorite?dukjilText(locale,'dukjilPageTitle',[favorite.name]):dukjilText(locale,'dukjilTitle');
  useEffect(()=>{const refresh=()=>refreshWallet();window.addEventListener(GROUP_WALLET_CHANGED_EVENT,refresh);return()=>window.removeEventListener(GROUP_WALLET_CHANGED_EVENT,refresh);},[refreshWallet]);
  const links=[{href:'/my',label:ko?'MY · 패스포트':'MY · Passport',icon:'my' as const},{href:'/my/friends',label:ko?'친구·메시지':'Friends · Messages',icon:'message' as const},{href:'/settings',label:ko?'개인 설정':'Settings',icon:'settings' as const}];
  // Only while dukjil is off; the amount is the server's to say, so the label names no number. Hidden once today's share is received.
@@ -42,7 +45,7 @@ export function GroupHeaderAccount({locale,actions,actionsAreIdentity=false,lang
   {/* Feedback F: signed in, the avatar is the menu trigger (one control, not avatar + ☰); signed out it is ☰. */}
   <Menu.Root><Menu.Trigger ref={trigger} className={`${styles.menuTrigger} ${auth.authenticated?styles.avatarTrigger:''}`} data-account-trigger={auth.authenticated?'avatar':'menu'} aria-label={ko?'계정 메뉴':'Account menu'}>{auth.authenticated?(avatar.state.status==='ready'?<Avatar avatar={avatar.state.avatar} imageUrl={avatar.state.imageUrl} label='' size={44}/>:<AvatarPlaceholder size={44}/>):<PencilHeaderIcon name="menu" size={20}/>}</Menu.Trigger><Menu.Portal><Menu.Positioner className={styles.positioner} sideOffset={8} align='end'><Menu.Popup className={styles.menu}>
   {auth.authenticated&&<Menu.Item className={styles.menuIdentity} onClick={openProfile}>{identity}</Menu.Item>}
-  {auth.authenticated&&dukjilOn&&<Menu.Item className={styles.menuItem} data-earn='attendance' render={<Link href={`/my/wallet?view=attendance&locale=${locale}` as Route}/>}><PencilHeaderIcon name='points' size={20}/>{dukjilText(locale,'dukjilTitle')}</Menu.Item>}
+  {auth.authenticated&&dukjilOn&&<Menu.Item className={styles.menuItem} data-earn='attendance' render={<Link href={`/my/wallet?view=attendance&locale=${locale}` as Route}/>}><PencilHeaderIcon name='points' size={20}/>{attendanceLabel}</Menu.Item>}
   {dukjilStatus==='off'&&canCheckIn&&<Menu.Item className={styles.menuItem} data-earn='attendance' render={<Link href={`/my/wallet?view=attendance&locale=${locale}` as Route}/>}><PencilHeaderIcon name='points' size={20}/>{walletCopy(locale).checkIn}</Menu.Item>}
   {links.map(({href,label,icon},i)=><Menu.Item key={href} className={`${styles.menuItem} ${href==='/settings'?styles.divided:''}`} render={<Link href={`${href}?locale=${locale}` as Route}/>}><PencilHeaderIcon name={icon} size={20}/>{label}</Menu.Item>)}
   <Menu.Item className={styles.menuItem} onClick={()=>{if(trigger.current)rememberOverlayTrigger(trigger.current);setLanguageOpen(true);}}><PencilHeaderIcon name="languages" size={20}/><span>{ko?'언어 설정':'Language'}</span><small>{APP_LOCALE_NATIVE_NAMES[locale]}</small></Menu.Item>

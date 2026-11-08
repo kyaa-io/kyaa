@@ -267,6 +267,8 @@ it('E5: zero values are written as numbers, never a dash',async()=>{
  bias.value={status:'empty',options:[],selected:null,unverified:null,select:()=>{},retry:()=>{}};
  render(<GroupBenefitsScreen locale='ko'/>);const card=(await screen.findByRole('button',{name:'광고 보고 교환하기'})).closest('section')!;
  await waitFor(()=>expect(card).toHaveTextContent('0P'));expect(card).toHaveTextContent('0장');expect(card).toHaveTextContent('0/9');expect(card.textContent).not.toContain('—');
+ // r6 visual review: the next-step numbers keep their unit attached (no gap class missing).
+ const steps=[...card.querySelectorAll('[data-number-role="asset"]')].filter(n=>/장|\/9/.test(n.textContent??''));expect(steps).toHaveLength(2);expect(steps.every(n=>/stepNumber/.test(n.className))).toBe(true);
 });
 /* A disabled exchange keeps the common grey pill; only enabled primary controls count as emphasis. */
 const primaryLabels=()=>[...document.querySelectorAll<HTMLElement>('main a,main button')].filter(el=>!el.closest('[inert]')&&/primary/.test(el.className)&&!(el as HTMLButtonElement).disabled).map(el=>el.textContent);
