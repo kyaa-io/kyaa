@@ -146,6 +146,13 @@ describe("global web wallet trust boundary", () => {
     expect(await response.json()).toEqual({ entries });
     expect(deps.rpc).toHaveBeenCalledWith("read_owned_group_wallet_history", { p_app_user_id: owner, p_limit: 30 });
   });
+  it("reads ledger ids that Postgres derived without RFC version bits (md5(...)::uuid)", async () => {
+    const entries = [{ id: key, asset: "fan_point", amount: 1000, sourceType: "group_check_in", sourceId: "09b85f08-8bbe-54b1-c53d-5ea9948e16a3", celebrityId: null, createdAt: "2026-11-07T13:13:09Z" }];
+    vi.mocked(deps.rpc).mockResolvedValue({ entries });
+    const response = await api.history(request("/history"));
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual({ entries });
+  });
   it("bounds history queries and rejects duplicate limit keys", async () => {
     for (const path of ["/history?limit=101", "/history?limit=1&limit=2"]) expect((await api.history(request(path))).status).toBe(400);
     expect(deps.rpc).not.toHaveBeenCalled();
