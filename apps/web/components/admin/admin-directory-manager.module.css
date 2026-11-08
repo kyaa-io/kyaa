@@ -21,7 +21,7 @@
 .toolbar label > div { position: relative; }
 .toolbar svg { position: absolute; top: 13px; left: 12px; width: 18px; height: 18px; color: var(--muted); pointer-events: none; }
 .toolbar input { width: 100%; padding: 0 12px 0 38px; }
-.successMessage, .errorMessage { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 16px 16px 0; padding: 12px 14px; border-radius: 10px; font-size: 13px; font-weight: 650; }
+.successMessage, .errorMessage { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 16px 16px 0; padding: 12px 14px; border-radius: 10px; font-size: 13px; font-weight: 700; }
 .successMessage { background: var(--color-soft); color: var(--success); }
 .errorMessage { background: var(--color-accent-soft); color: var(--error); }
 .errorMessage button { display: inline-flex; min-height: 40px; align-items: center; gap: 6px; padding: 0 10px; border: 1px solid color-mix(in srgb, var(--color-accent-ink) 18%, transparent); border-radius: 8px; background: var(--color-surface); color: inherit; cursor: pointer; font: inherit; font-weight: 750; }

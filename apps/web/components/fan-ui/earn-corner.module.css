@@ -7,4 +7,4 @@
 .host [data-earn-badge="done"] { position: absolute; top: -8px; right: -8px; z-index: 1; pointer-events: none; }
 
 /* S4 보조 글자: 배지 밖 `오늘 3번 남음`·`5명까지`. */
-.remaining { color: var(--color-muted); font-size: var(--fan-metadata-size); font-weight: 500; line-height: 1.4; font-variant-numeric: tabular-nums; }
+.remaining { color: var(--color-muted); font-size: var(--fan-metadata-size); font-weight: 400; line-height: 1.4; font-variant-numeric: tabular-nums; }

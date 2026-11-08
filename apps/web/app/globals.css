@@ -72,33 +72,35 @@
   --z-tooltip: 60;
 
   /* Fan UI owns these roles. Screens select variants, not ad-hoc sizes. */
+  /* 폐기 예정 7종(--fan-heading-size-wide, --fan-heading-editorial-weight, --fan-personal-section-*, --fan-event-catalog-title-size,
+   * --fan-aside-title-*, --fan-description-*, --fan-action-emphasis-size): 1단계는 별칭(크기 값 동일), 사용처 치환 뒤 삭제. 굵기는 400·700·800만. */
   --fan-heading-size: 20px;
   --fan-heading-size-wide: 24px;
-  --fan-heading-weight: 850;
+  --fan-heading-weight: 800;
   --fan-heading-editorial-weight: var(--fan-heading-weight);
   --fan-heading-tracking: -.03em;
   --fan-heading-leading: 1.2;
   --fan-personal-section-size: var(--fan-heading-size);
-  --fan-personal-section-weight: 700;
+  --fan-personal-section-weight: var(--fan-item-title-weight);
   --fan-item-title-size: 16px;
   --fan-item-title-weight: 700;
-  --fan-event-catalog-title-size: 20px;
+  --fan-event-catalog-title-size: var(--fan-heading-size);
   --fan-body-size: 16px;
   --fan-body-size-wide: var(--fan-body-size);
   --fan-body-leading: 1.5;
-  --fan-tab-weight: 500;
+  --fan-tab-weight: 700;
   --fan-section-gap: 32px;
   --fan-metadata-size: 13px;
   --fan-badge-size: 12px;
-  --fan-aside-title-size: 16px;
-  --fan-aside-title-weight: 650;
+  --fan-aside-title-size: var(--fan-item-title-size);
+  --fan-aside-title-weight: var(--fan-item-title-weight);
   /* 지갑·온도 같은 큰 숫자. 1440 가로 카드에서 24px은 보조 정보와 구분되지 않아 768+만 32px(감독 결정 ②). */
   --fan-number-size: 24px;
   --fan-number-size-wide: 32px;
-  --fan-number-weight: 850;
+  --fan-number-weight: 800;
   --fan-description-size: 14px;
-  --fan-description-leading: 1.5;
-  --fan-description-weight: 550;
+  --fan-description-leading: var(--fan-body-leading);
+  --fan-description-weight: 400;
   --fan-section-heading-min-height: 56px;
   --fan-action-primary-height: 48px;
   --fan-action-service-height: 52px;

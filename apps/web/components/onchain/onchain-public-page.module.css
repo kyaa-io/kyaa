@@ -16,7 +16,7 @@
 
 .hero { padding: 72px 0 64px; border-bottom: 1px solid var(--line); }
 .eyebrow { margin: 0 0 20px; font-size: 12px; font-weight: 800; letter-spacing: .14em; }
-.hero h1 { max-width: 15ch; margin: 0; font-size: clamp(44px, 7vw, 88px); font-weight: 850; letter-spacing: -.055em; line-height: .98; text-wrap: balance; }
+.hero h1 { max-width: 15ch; margin: 0; font-size: clamp(44px, 7vw, 88px); font-weight: 800; letter-spacing: -.055em; line-height: .98; text-wrap: balance; }
 .intro { max-width: 68ch; margin: 28px 0 0; color: var(--muted); font-size: clamp(16px, 2vw, 20px); line-height: 1.65; text-wrap: pretty; }
 .networkNotice { display: grid; gap: 5px; max-width: 820px; margin-top: 32px; padding: 18px 20px; border-left: 4px solid var(--ink); background: var(--soft); }
 .networkNotice strong { font-size: 14px; }
@@ -37,8 +37,8 @@
 .metricGrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1px; margin: 0; background: var(--line); border: 1px solid var(--line); }
 .metric { min-width: 0; padding: 22px; background: var(--color-surface); }
 .metric dt { color: var(--muted); font-size: 13px; font-weight: 700; }
-.metric dd { margin: 22px 0 16px; font-size: clamp(32px, 5vw, 54px); font-weight: 850; letter-spacing: -.045em; line-height: 1; font-variant-numeric: tabular-nums; }
-.metric .metricScope { margin: 0; color: var(--muted); font-size: 11px; font-weight: 500; letter-spacing: 0; line-height: 1.5; }
+.metric dd { margin: 22px 0 16px; font-size: clamp(32px, 5vw, 54px); font-weight: 800; letter-spacing: -.045em; line-height: 1; font-variant-numeric: tabular-nums; }
+.metric .metricScope { margin: 0; color: var(--muted); font-size: 11px; font-weight: 400; letter-spacing: 0; line-height: 1.5; }
 
 .tableScroll { max-width: 100%; overflow-x: auto; }
 .actionTable { width: 100%; min-width: 960px; border-collapse: collapse; text-align: left; }
@@ -46,7 +46,7 @@
 .actionTable thead th { color: var(--muted); font-size: 11px; letter-spacing: .06em; text-transform: uppercase; }
 .actionTable tbody th { min-width: 190px; }
 .actionTable tbody th strong, .actionTable tbody th span { display: block; }
-.actionTable tbody th span { margin-top: 4px; color: var(--muted); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 10px; font-weight: 500; }
+.actionTable tbody th span { margin-top: 4px; color: var(--muted); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 10px; font-weight: 700; }
 .actionTable code { font-weight: 800; }
 .countCell { font-weight: 800; font-variant-numeric: tabular-nums; }
 .status { display: inline-flex; min-height: 28px; align-items: center; padding: 4px 9px; border-radius: 999px; background: var(--soft); color: var(--muted); font-size: 11px; font-weight: 750; }

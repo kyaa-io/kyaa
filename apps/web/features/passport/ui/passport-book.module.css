@@ -16,7 +16,7 @@
 .photo > * { --avatar-size: 60px !important; max-width: 100%; }
 .fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); min-width: 0; margin: 0; gap: var(--space-2) var(--space-3); }
 .fields > div { min-width: 0; padding-bottom: var(--space-1); border-bottom: 1px solid var(--passport-line); }
-.fields dt { color: var(--passport-muted); font-size: var(--passport-micro); font-weight: 600; letter-spacing: .06em; }
+.fields dt { color: var(--passport-muted); font-size: var(--passport-micro); font-weight: 700; letter-spacing: .06em; }
 .fields dd { margin: 0; overflow-wrap: anywhere; font-size: var(--fan-description-size); font-weight: 750; line-height: 1.35; }
 .fields dd[data-long-name="true"] { font-size: var(--fan-metadata-size); }
 .fields dd a { min-height: 0; }

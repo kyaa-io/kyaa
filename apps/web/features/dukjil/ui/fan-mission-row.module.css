@@ -17,7 +17,7 @@
 /* Folded head: a button in the row's shape. */
 .fold { border: 0; background: none; font: inherit; text-align: start; cursor: pointer; }
 .fold .title { display: flex; flex-wrap: wrap; align-items: center; gap: 0 var(--space-2); }
-.foldMeta { color: var(--color-muted); font-weight: 600; font-variant-numeric: tabular-nums; }
+.foldMeta { color: var(--color-muted); font-weight: 700; font-variant-numeric: tabular-nums; }
 .chevron { flex: none; color: var(--color-muted); transition: transform 160ms var(--motion-easing); }
 .fold[aria-expanded="true"] .chevron { transform: rotate(180deg); }
 @media (min-width: 1024px) { .row { grid-template-columns: 40px minmax(0, 1fr) 120px; } }

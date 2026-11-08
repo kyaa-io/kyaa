@@ -9,7 +9,7 @@
 .myApplication:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 .myApplication > svg { flex: none; color: var(--color-muted); }
 .myApplicationCopy { display: grid; flex: 1; min-width: 0; font-size:var(--fan-description-size); line-height: 20px; }
-.myApplicationCopy strong { font-weight: 650; }
+.myApplicationCopy strong { font-weight: 700; }
 .myApplicationCopy span { overflow: hidden; color: var(--color-muted); text-overflow: ellipsis; white-space: nowrap; }
 @media (max-width: 1023px) { .cards { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 600px) { .cards { grid-template-columns: minmax(0, 1fr); } }

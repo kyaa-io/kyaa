@@ -43,7 +43,7 @@
   color: var(--color-muted);
   font: inherit;
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
 }
 .tabs button[aria-selected="true"] {
@@ -87,7 +87,7 @@
   color: var(--color-muted);
   font: inherit;
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
 }
 .categories button[aria-pressed="true"] {
@@ -181,7 +181,7 @@ a.card:active {
 .cardCategory {
   color: var(--color-muted);
   font-size: 12px;
-  font-weight: 500;
+  font-weight: 400;
   line-height: 1.5;
 }
 .cardIdentity strong {
@@ -224,7 +224,7 @@ a.card:active {
 }
 .cardAction:not([data-status="available"]) {
   color: var(--color-muted);
-  font-weight: 500;
+  font-weight: 700;
 }
 .srOnly {
   position: absolute;
@@ -335,7 +335,7 @@ a.card:active {
 .hero > span {
   color: var(--color-service-ink);
   font-size: 13px;
-  font-weight: 850;
+  font-weight: 800;
 }
 .hero h1 {
   margin: 8px 0 12px;

@@ -55,10 +55,10 @@
 .eyebrow { color: var(--guide-pink); font-size: 12px; font-weight: 750; letter-spacing: .5px; line-height: 1.35; }
 .heroCopy > .eyebrow { font-size: 13px; }
 .hero h1 { font-size: 56px; font-weight: 800; letter-spacing: -1.8px; line-height: 1.35; }
-.heroDescription { color: var(--color-muted); font-size: 19px; font-weight: 500; line-height: 1.35; white-space: pre-line; }
-.schedule { display: flex; align-items: center; gap: 10px; color: var(--color-ink); font-size: 16px; font-weight: 650; line-height: 1.45; }
+.heroDescription { color: var(--color-muted); font-size: 19px; font-weight: 400; line-height: 1.35; white-space: pre-line; }
+.schedule { display: flex; align-items: center; gap: 10px; color: var(--color-ink); font-size: 16px; font-weight: 700; line-height: 1.45; }
 .schedule svg { flex-shrink: 0; color: var(--guide-pink); }
-.prizeSummary { color: var(--guide-ink); font-size: 15px; font-weight: 650; line-height: 1.5; }
+.prizeSummary { color: var(--guide-ink); font-size: 15px; font-weight: 700; line-height: 1.5; }
 .heroImage { display: block; width: 580px; height: 560px; border-radius: 20px; object-fit: cover; object-position: center; }
 .eventHero { min-height: 0; }
 .eventImage { position: relative; overflow: hidden; display: block; width: 100%; height: auto; aspect-ratio: 2 / 1; border-radius: 20px; object-fit: contain; }
@@ -82,7 +82,7 @@
 .action:hover { border-color: var(--color-muted); background: var(--color-soft); }
 .page .primaryAction { border-color: transparent; background: var(--color-accent); color: var(--color-surface); }
 .page .primaryAction:hover { border-color: transparent; background: var(--color-accent); }
-.note { color: var(--color-muted); font-size: 13px; font-weight: 500; line-height: 1.45; white-space: pre-line; }
+.note { color: var(--color-muted); font-size: 13px; font-weight: 400; line-height: 1.45; white-space: pre-line; }
 .stageNav {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -90,7 +90,7 @@
   border-block: 1px solid var(--guide-line);
   list-style: none;
 }
-.stageNav li { display: flex; gap: 12px; align-items: center; color: var(--color-ink); font-size: 16px; font-weight: 600; line-height: 1.35; }
+.stageNav li { display: flex; gap: 12px; align-items: center; color: var(--color-ink); font-size: 16px; font-weight: 700; line-height: 1.35; }
 .stageNav span { color: var(--guide-pink); font-size: 13px; font-weight: 750; }
 .steps { display: flex; flex-direction: column; gap: 96px; scroll-margin-top: 24px; }
 .step { display: grid; grid-template-columns: 560px minmax(0, 1fr); gap: 80px; align-items: center; scroll-margin-top: 24px; }
@@ -99,22 +99,22 @@
 .liveCard { display: flex; width: 360px; flex-direction: column; gap: 16px; padding: 22px; border: 1px solid var(--color-line-subtle); border-radius: 16px; background: var(--color-surface); }
 .liveTitle { display: flex; align-items: center; gap: 12px; }
 .liveTitle img { width: 48px; height: 48px; border-radius: 50%; object-fit: cover; }
-.liveTitle strong { color: var(--color-ink); font-size: 17px; font-weight: 600; }
+.liveTitle strong { color: var(--color-ink); font-size: 17px; font-weight: 700; }
 .liveCard > p { color: var(--guide-muted); font-size: 15px; line-height: 1.35; }
 .code { display: flex; flex-direction: column; gap: 8px; padding: 16px; border-radius: 12px; background: var(--color-soft); }
-.code small { color: var(--color-muted); font-size: 12px; font-weight: 600; }
-.code span { color: var(--color-muted); font-size: 24px; font-weight: 600; line-height: 1.35; white-space: nowrap; }
+.code small { color: var(--color-muted); font-size: 12px; font-weight: 700; }
+.code span { color: var(--color-muted); font-size: 24px; font-weight: 700; line-height: 1.35; white-space: nowrap; }
 .liveCard .code span { white-space: normal; overflow-wrap: anywhere; }
 .missionCards { display: flex; width: calc(100% - 64px); flex-direction: column; gap: 16px; }
 .missionCards > div { display: flex; align-items: center; gap: 16px; padding: 20px; border-radius: 14px; background: var(--color-surface); }
 .missionCards svg { width: 28px; height: 28px; flex-shrink: 0; color: var(--guide-pink); }
 .missionCards span { display: flex; flex-direction: column; gap: 5px; }
-.missionCards strong { color: var(--color-ink); font-size: 18px; font-weight: 600; }
-.missionCards small { color: var(--color-muted); font-size: 14px; font-weight: 500; }
+.missionCards strong { color: var(--color-ink); font-size: 18px; font-weight: 700; }
+.missionCards small { color: var(--color-muted); font-size: 14px; font-weight: 400; }
 .prizeImage { display: block; width: 100%; height: 340px; object-fit: cover; }
 .stepCopy { display: flex; min-width: 0; flex-direction: column; align-items: flex-start; gap: 18px; }
 .stepCopy h2 { font-size: 36px; font-weight: 800; letter-spacing: -.8px; line-height: 1.35; }
-.stepBody { color: var(--guide-muted); font-size: 17px; font-weight: 500; line-height: 1.45; white-space: pre-line; }
+.stepBody { color: var(--guide-muted); font-size: 17px; font-weight: 400; line-height: 1.45; white-space: pre-line; }
 .stepActionRow { display: flex; flex-direction: column; align-items: flex-start; gap: 10px; }
 .history { display: grid; grid-template-columns: 40px minmax(0, 1fr) auto; gap: 32px; align-items: center; padding: 36px; border-radius: 20px; background: var(--color-soft); }
 .history > svg { width: 40px; height: 40px; color: var(--guide-pink); }

@@ -4,7 +4,7 @@
 .total { display: grid; gap: 4px; }
 .total > span { color: var(--secondary-ink); font-size: 13px; }
 .total strong { font-size: 36px; font-weight: 750; line-height: 1.2; letter-spacing: -.03em; font-variant-numeric: tabular-nums; }
-.total small { margin-left: 4px; color: var(--secondary-ink); font-size: 16px; font-weight: 500; }
+.total small { margin-left: 4px; color: var(--secondary-ink); font-size: 16px; font-weight: 400; }
 .panel { min-width: 0; padding: 20px; border: 1px solid var(--line); border-radius: 16px; background: #fff; }
 .panelHeading { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 16px; margin-bottom: 24px; }
 .panelHeading h2 { margin: 0; font-size: 20px; font-weight: 800; letter-spacing: -.03em; }
@@ -22,7 +22,7 @@
 .tableScroll { max-width: 100%; overflow: auto; border: 1px solid var(--line); border-radius: 12px; }
 .tableScroll:focus-visible { outline: 3px solid var(--ink); outline-offset: 3px; }
 .table { width: 100%; min-width: 1040px; border-collapse: collapse; table-layout: fixed; text-align: left; }
-.table thead th { padding: 16px; background: var(--soft); color: var(--secondary-ink); font-size: 13px; font-weight: 650; }
+.table thead th { padding: 16px; background: var(--soft); color: var(--secondary-ink); font-size: 13px; font-weight: 700; }
 .table thead th:nth-child(1) { width: 20%; }
 .table thead th:nth-child(2) { width: 17%; }
 .table thead th:nth-child(3) { width: 12%; }

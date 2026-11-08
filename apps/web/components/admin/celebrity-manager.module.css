@@ -31,7 +31,7 @@
   gap: 6px;
   color: var(--muted);
   font-size: 12px;
-  font-weight: 650;
+  font-weight: 700;
 }
 
 .statusField select {
@@ -73,7 +73,7 @@
 .fieldHelp {
   color: var(--muted);
   font-size: 12px;
-  font-weight: 500;
+  font-weight: 400;
   line-height: 1.5;
 }
 

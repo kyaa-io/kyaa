@@ -15,7 +15,7 @@
 @media (max-width:480px) { .row:has(.cardActions > :nth-child(2)) { grid-template-columns:40px minmax(0,1fr); } .row:has(.cardActions > :nth-child(2)) > :last-child { grid-column:2; justify-self:start; } }
 .state { display:inline-flex; align-items:center; gap:var(--space-1); color:var(--color-service-ink); font-size:var(--fan-metadata-size); font-weight:var(--fan-item-title-weight); }
 .state svg { width:13px; height:13px; }
-.action { min-height:44px; border:0; border-radius:12px; background:var(--color-surface-subtle,var(--color-soft)); color:var(--color-text-primary,var(--color-ink)); font:inherit; font-size:12px; font-weight:600; padding:9px 14px; display:inline-flex; align-items:center; justify-content:center; gap:6px; text-decoration:none; cursor:pointer; transition:background-color 160ms,scale 160ms; }
+.action { min-height:44px; border:0; border-radius:12px; background:var(--color-surface-subtle,var(--color-soft)); color:var(--color-text-primary,var(--color-ink)); font:inherit; font-size:12px; font-weight:700; padding:9px 14px; display:inline-flex; align-items:center; justify-content:center; gap:6px; text-decoration:none; cursor:pointer; transition:background-color 160ms,scale 160ms; }
 .cardActions { display:flex; flex-wrap:wrap; align-items:center; gap:var(--space-2); }
 .action svg { width:16px; height:16px; }
 .action:active:not(:disabled) { scale:.96; }
@@ -38,7 +38,7 @@
 .close { width:44px; height:44px; border:0; border-radius:50%; background:var(--color-soft); display:flex; align-items:center; justify-content:center; margin:-12px -12px 0 auto; cursor:pointer; }
 .close svg { width:20px; height:20px; }
 .checkin { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:12px 0; border-top:1px solid var(--color-line-subtle); }
-.checkinTitle { display:flex; align-items:center; gap:8px; font-size:14px; font-weight:600; }
+.checkinTitle { display:flex; align-items:center; gap:8px; font-size:14px; font-weight:700; }
 .checkinTitle img { width:44px; height:44px; }
 .checkin .help { font-size:12px; }
 .checkinMark { position:absolute; bottom:2px; right:3px; font-size:10px; line-height:1; color:var(--color-accent); pointer-events:none; }

@@ -37,7 +37,7 @@
 .activityCard dd { margin:4px 0 0; font-size:14px; font-weight:700; overflow-wrap:anywhere; }
 .landingCard .primary { width:100%; font-size:14px; }
 .proof { margin:10px auto 0; max-width:330px; color:var(--color-muted); font-size:12px; line-height:1.55; }
-.secondary { display:inline-flex; min-height:44px; align-items:center; justify-content:center; margin-top:8px; color:var(--color-ink); font-size:13px; font-weight:650; text-underline-offset:3px; }
+.secondary { display:inline-flex; min-height:44px; align-items:center; justify-content:center; margin-top:8px; color:var(--color-ink); font-size:13px; font-weight:700; text-underline-offset:3px; }
 .landingCard .error { margin-top:12px; text-align:center; }
 @media (max-width:380px) { .landing { padding:16px 12px; } .landingCard { padding:24px 18px 20px; border-radius:22px; } .landingCard h1 { font-size:24px; } }
 @media (prefers-reduced-motion:reduce) { .primary { transition:none; } .primary:active:not(:disabled) { transform:none; } }

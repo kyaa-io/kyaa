@@ -35,7 +35,7 @@
 .message:empty { display: none; }
 .message[data-error="true"] { color: var(--color-accent-ink); }
 .toolbar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px; margin: 24px 0; border-bottom: 1px solid var(--line); padding-bottom: 16px; }
-.toolbar button, .statusTabs button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; padding: 10px 16px; border: 1px solid var(--line); border-radius: 10px; background: var(--color-surface); color: var(--ink); font: inherit; font-size: 14px; font-weight: 650; cursor: pointer; }
+.toolbar button, .statusTabs button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; padding: 10px 16px; border: 1px solid var(--line); border-radius: 10px; background: var(--color-surface); color: var(--ink); font: inherit; font-size: 14px; font-weight: 700; cursor: pointer; }
 .toolbar svg { width: 17px; height: 17px; }
 .tabs { display: flex; gap: 8px; }
 .tabs button { border-color: transparent; background: transparent; }

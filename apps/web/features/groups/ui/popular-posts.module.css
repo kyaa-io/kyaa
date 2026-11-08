@@ -3,6 +3,6 @@
 .panel header{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;width:100%}
 .panel h2{margin:0;color:var(--color-ink);font-family:inherit;font-weight:800;font-size:24px;font-weight:400;line-height:var(--fan-heading-leading);font-synthesis:none}
 .panel header>div{display:flex}
-.panel button{display:flex;align-items:center;justify-content:center;min-width:44px;height:44px;padding:0 8px;border:0;border-radius:12px;background:transparent;color:var(--color-muted);font-family:inherit;font-weight:600;font-size:14px;line-height:20px;white-space:nowrap;cursor:pointer;font-weight:400;font-synthesis:none}
+.panel button{display:flex;align-items:center;justify-content:center;min-width:44px;height:44px;padding:0 8px;border:0;border-radius:12px;background:transparent;color:var(--color-muted);font-family:inherit;font-weight:700;font-size:14px;line-height:20px;white-space:nowrap;cursor:pointer;font-weight:400;font-synthesis:none}
 .panel button[aria-pressed=true]{background:var(--color-accent-soft);color:var(--color-accent-ink)}
 @media(max-width:767px){.panel{padding:16px}.panel h2{font-size:20px;line-height:var(--fan-heading-leading)}}

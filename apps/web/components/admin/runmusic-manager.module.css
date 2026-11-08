@@ -14,7 +14,7 @@
 .schedule { display: grid; gap: 8px; }
 .schedule > div { display: flex; flex-wrap: wrap; gap: 4px 16px; }
 .schedule dt { color: var(--color-muted); }
-.schedule dd { margin: 0; font-weight: 650; }
+.schedule dd { margin: 0; font-weight: 700; }
 .prizes { padding-left: 20px; margin: 16px 0 24px; }
 .checks { display: grid; gap: 8px; padding: 0; border: 0; margin: 0 0 16px; min-width: 0; }
 .checks label { display: flex; align-items: center; gap: 12px; min-height: 44px; }

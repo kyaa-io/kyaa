@@ -20,7 +20,7 @@
 .form small { max-width:22ch; color:var(--color-muted); font-size:11px; line-height:1.6; }
 .submit { flex:none; min-height:44px; padding:10px 16px; border:0; border-radius:999px; background:#b81769; color:#fff; font:inherit; font-size:13px; font-weight:700; cursor:pointer; }
 .submit:disabled { opacity:.45; cursor:not-allowed; }
-.cheers .signIn { display:flex; align-items:center; justify-content:center; min-height:44px; padding:10px 16px; border:1px solid var(--color-line); border-radius:999px; color:var(--color-ink); font-size:13px; font-weight:650; text-decoration:none; text-align:center; }
+.cheers .signIn { display:flex; align-items:center; justify-content:center; min-height:44px; padding:10px 16px; border:1px solid var(--color-line); border-radius:999px; color:var(--color-ink); font-size:13px; font-weight:700; text-decoration:none; text-align:center; }
 .commentList { display:grid; gap:16px; margin:20px 0 0; padding:20px 0 0; border-top:1px solid var(--color-line); list-style:none; }
 .commentList > li { display:flex; align-items:flex-start; gap:10px; min-width:0; }
 .commentList > li > img { flex:none; border-radius:50%; }

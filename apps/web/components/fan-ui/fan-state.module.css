@@ -33,7 +33,7 @@
 .state .title {
   color: oklch(18% 0 0);
   font-size: 20px;
-  font-weight: 850;
+  font-weight: 800;
   line-height: 1.25;
   letter-spacing: -0.03em;
   text-wrap: balance;
@@ -91,7 +91,7 @@
 
 .state.compact .title {
   font-size: 14px;
-  font-weight: 500;
+  font-weight: 400;
   letter-spacing: normal;
   line-height: 20px;
   text-wrap: pretty;

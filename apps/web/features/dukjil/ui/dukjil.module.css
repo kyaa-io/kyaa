@@ -10,7 +10,7 @@
 .balanceValue{font-size:var(--fan-heading-size-wide);line-height:32px;font-weight:var(--fan-heading-weight)}
 .balanceUnit{align-self:flex-end;font-size:var(--fan-metadata-size);line-height:24px;font-weight:var(--fan-item-title-weight)}
 .stampPart{display:inline-flex;align-items:center;gap:2px}
-.remaining{color:inherit;font-weight:var(--fan-tab-weight)}
+.remaining{color:inherit;font-weight:400}
 .done{min-height:20px;padding:0 8px;border-radius:999px;background:var(--color-soft);color:var(--color-muted);font-size:13px;line-height:20px;font-weight:700}
 .done svg{flex:none}
 
@@ -89,7 +89,7 @@
 .streakBand{text-decoration:none}
 .streakOwner{display:flex;flex:1 1 auto;align-items:center;gap:var(--space-2);min-width:0}
 .streakImage{flex:none;width:32px;height:32px;border-radius:var(--radius-pill);object-fit:cover;background:var(--color-soft)}
-.streakName{flex:0 1 auto;min-width:0;overflow:hidden;font-size:var(--fan-action-emphasis-size);line-height:22px;font-weight:600;text-overflow:ellipsis;white-space:nowrap}
+.streakName{flex:0 1 auto;min-width:0;overflow:hidden;font-size:var(--fan-action-emphasis-size);line-height:22px;font-weight:700;text-overflow:ellipsis;white-space:nowrap}
 .streakCount{flex:none;font-size:var(--fan-item-title-size);line-height:22px;font-weight:var(--fan-item-title-weight);font-variant-numeric:tabular-nums}
 .streakCells{display:flex;flex:none;align-items:center;gap:var(--space-2)}
 .streakCell{display:grid;place-items:center;width:28px;height:28px;box-sizing:border-box;border:1px solid var(--color-line);border-radius:var(--radius-pill);color:var(--color-muted)}

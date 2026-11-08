@@ -8,7 +8,7 @@
 .eyebrow { font-size: 13px; color: var(--color-muted); }
 .invitation h2 { font-size: 24px; font-weight: var(--fan-heading-weight); line-height: 1.35; letter-spacing: -.035em; margin: 16px 0; text-wrap: balance; }
 .invitation p { color: var(--color-muted); font-size: 16px; line-height: 1.65; margin: 0 0 28px; word-break: keep-all; }
-.invitation h3 { font-size: 13px; font-weight: 500; line-height: 1.6; color: var(--color-muted); margin: 24px 0 0; overflow-wrap: anywhere; }
+.invitation h3 { font-size: 13px; font-weight: 700; line-height: 1.6; color: var(--color-muted); margin: 24px 0 0; overflow-wrap: anywhere; }
 .invitation button { min-height: 48px; }
 .ticket { position: absolute; inset: 28px; filter: drop-shadow(0 5px 8px #2020200a); }
 .ticketTop, .ticketBottom { position: absolute; left: 0; width: 100%; background: #fff; border: 1px solid #e6e4e1; padding: 28px; }

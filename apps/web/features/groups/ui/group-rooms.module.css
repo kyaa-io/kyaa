@@ -16,7 +16,7 @@
 
 /* EU2Nf: the desktop conversation sits inside its 24px section inset. */
 @media(min-width:1024px){.openRoom .roomHeading,.openRoom .roomNav,.openRoom>p,.openRoom .roomConversation{margin-inline:24px}.openRoom .roomComposer button{width:104px}}
-.roomCount{color:var(--color-muted);font-weight:600;font-variant-numeric:tabular-nums}
+.roomCount{color:var(--color-muted);font-weight:700;font-variant-numeric:tabular-nums}
 
 /* 비밀방 목록 머리·알림·게이트. 개설 버튼은 머리 줄 오른쪽에 있어 늦게 나와도 높이가 변하지 않는다. */
 .roomHead{display:flex;align-items:center;justify-content:space-between;gap:var(--space-3);min-height:44px}

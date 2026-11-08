@@ -76,7 +76,7 @@
 .field small {
   color: oklch(45% 0 0);
   font-size: 12px;
-  font-weight: 650;
+  font-weight: 700;
 }
 .field input {
   width: 100%;
@@ -105,7 +105,7 @@
   color: oklch(44% 0.18 25);
   font-size: 13px;
   font-style: normal;
-  font-weight: 650;
+  font-weight: 700;
 }
 .shippingCountry {
   grid-column: 1 / -1;

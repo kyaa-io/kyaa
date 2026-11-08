@@ -35,7 +35,7 @@
 .heroSection, .contentSection { scroll-margin-top: calc(var(--header-height) + 16px); }
 .contentSection { margin-top: var(--fan-section-gap); }
 .brandTitle { display:flex; flex-wrap:wrap; align-items:baseline; gap:4px 8px; }
-.brandSlogan { color:var(--muted); font-size:13px; font-weight:500; line-height:1.4; letter-spacing:normal; text-wrap:pretty; }
+.brandSlogan { color:var(--muted); font-size:13px; font-weight:400; line-height:1.4; letter-spacing:normal; text-wrap:pretty; }
 .heroCarousel { position: relative; color: var(--color-surface); }
 .heroCarousel[data-has-controls="true"] { margin-bottom: 44px; }
 .heroViewport { position: relative; width: 100%; overflow: hidden; aspect-ratio: 4 / 5; border-radius: 20px; background: var(--ink); touch-action: pan-y pinch-zoom; }
@@ -70,8 +70,8 @@
 @keyframes statusShimmerSpin { 0% { transform: translateZ(0) rotate(0); } 15%, 35% { transform: translateZ(0) rotate(90deg); } 65%, 85% { transform: translateZ(0) rotate(270deg); } 100% { transform: translateZ(0) rotate(360deg); } }
 @media (prefers-reduced-motion: reduce) { .statusShimmer { display: none; } .statusShimmerSlide, .statusShimmerLight { animation: none; } }
 .liveStatus svg, .heroCountdown svg { width: 16px; height: 16px; }
-.heroDate { overflow: hidden; color: color-mix(in srgb, var(--color-surface) 84%, transparent); font-size: 14px; font-weight: 550; text-overflow: ellipsis; white-space: nowrap; }
-.heroContent h2 { max-width: 15ch; margin: 0; font-size: 32px; font-weight: 850; letter-spacing: -.04em; line-height: 1.02; text-wrap: balance; }
+.heroDate { overflow: hidden; color: color-mix(in srgb, var(--color-surface) 84%, transparent); font-size: 14px; font-weight: 400; text-overflow: ellipsis; white-space: nowrap; }
+.heroContent h2 { max-width: 15ch; margin: 0; font-size: 32px; font-weight: 800; letter-spacing: -.04em; line-height: 1.02; text-wrap: balance; }
 .heroCountdown { display: flex; align-items: center; gap: 8px; margin-top: 12px; font: 750 14px ui-monospace, SFMono-Regular, Menlo, monospace; font-variant-numeric: tabular-nums; letter-spacing: -.02em; }
 .primaryButton { display: flex; width: min(320px, 100%); min-height: 48px; align-items: center; justify-content: space-between; margin-top: 20px; padding-inline: 20px; border-radius: 999rem; background: var(--spectrum); box-shadow: 0 5px 8px color-mix(in srgb, var(--color-ink) 22%, transparent); color: var(--color-surface) !important; font-size: 15px; font-weight: 800; text-shadow: none; transition: background 160ms cubic-bezier(.2, 0, 0, 1); }
 .primaryButton span { display: inline-flex; align-items: center; gap: 8px; }
@@ -128,7 +128,7 @@
 .celebrityInfo h3 { color: var(--ink); font-size: var(--fan-item-title-size); font-weight: var(--fan-item-title-weight); overflow-wrap: anywhere; }
 .celebrityInfo p { font-size: var(--fan-metadata-size); font-weight: 400; }
 .celebrityActions { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 4px 8px; margin-top: 8px; }
-.celebrityFanLink { display: inline-flex; max-width: 100%; min-width: 44px; min-height: 44px; align-items: center; gap: 4px; border-radius: var(--radius-control); color: var(--ink); font-size: var(--fan-metadata-size); font-weight: 550; line-height: 1.5; text-decoration: none; overflow-wrap: anywhere; }
+.celebrityFanLink { display: inline-flex; max-width: 100%; min-width: 44px; min-height: 44px; align-items: center; gap: 4px; border-radius: var(--radius-control); color: var(--ink); font-size: var(--fan-metadata-size); font-weight: 400; line-height: 1.5; text-decoration: none; overflow-wrap: anywhere; }
 .celebrityFanLink svg { width: 16px; height: 16px; flex: none; }
 .celebrityFanLink:hover { color: var(--muted); }
 .celebrityFanLink:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
@@ -144,7 +144,7 @@
 .liveRow > .rowAction { grid-area:action; }
 
 .liveDetails { grid-area:details; min-width: 0; }
-.liveDetails span { color: var(--muted); font-size: var(--fan-metadata-size); font-weight: 550; }
+.liveDetails span { color: var(--muted); font-size: var(--fan-metadata-size); font-weight: 400; }
 .liveDetails h3 { margin: 4px 0; font-size: var(--fan-item-title-size); font-weight: var(--fan-item-title-weight); line-height: 1.5; overflow-wrap: anywhere; }
 .liveDetails p, .liveMeta p { margin: 0; color: var(--muted); font-size: var(--fan-metadata-size); }
 .liveMeta { grid-area:time; display:block; text-align:left; }
@@ -162,12 +162,12 @@
 .favoriteReferenceCard { aspect-ratio: 523 / 440; overflow: hidden; }
 .favoriteReferenceContent { display: grid; height: 100%; padding: 24px; grid-template-rows: auto minmax(0, 1fr) auto; gap: 24px; }
 .favoriteReferenceContent :is(h2,p) { margin: 0; }
-.favoriteReferenceContent h2 { font-size: 20px; font-weight: 850; letter-spacing: -.03em; }
-.loginHint { color: var(--muted); font-size: 14px; font-weight: 550; line-height: 1.5; }
+.favoriteReferenceContent h2 { font-size: 20px; font-weight: 800; letter-spacing: -.03em; }
+.loginHint { color: var(--muted); font-size: 14px; font-weight: 400; line-height: 1.5; }
 .loginPrompt { display: grid; align-content: end; justify-items: center; gap: 12px; }
 .emptyIcon { width: 64px !important; height: 64px !important; align-self: center; justify-self: center; color: var(--muted); stroke-width: 1.35 !important; }
 .favoriteReferenceContent .loginHint { max-width: 240px; justify-self: center; text-align: center; }
-.signInButton { width: min(280px, 100%); min-height: 44px; justify-self: center; font-weight: 650; }
+.signInButton { width: min(280px, 100%); min-height: 44px; justify-self: center; font-weight: 700; }
 
 .mobilePersonalization { margin-top: var(--fan-section-gap); }
 .mobileGuides { margin-top: var(--fan-section-gap); }
@@ -186,7 +186,7 @@
 .summarySection { padding: 20px; }
 .summarySection + .summarySection { border-top: 1px solid var(--card-line); }
 .summarySectionHeader { display: flex; min-height: 28px; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
-.summarySectionHeader > span { font-size: 14px; font-weight: 650; }
+.summarySectionHeader > span { font-size: 14px; font-weight: 700; }
 .summarySectionHeader > small { display: grid; min-width: 30px; height: 24px; padding-inline: 8px; place-items: center; border-radius: 999rem; background: var(--surface-soft); color: var(--muted); font-size: 11px; font-weight: 750; }
 .passportCarousel { display: grid; min-width: 0; }
 .ownedPassportPreview { position: relative; width: min(100%, 320px); margin: 14px auto 0; }
@@ -210,7 +210,7 @@
   gap: 4px;
   color: var(--muted) !important;
   font-size: var(--fan-metadata-size);
-  font-weight: 550;
+  font-weight: 400;
   overflow-wrap: anywhere;
 }
 .passportCollectionLink svg { width: 15px; height: 15px; }
@@ -223,7 +223,7 @@
   margin: 8px auto 0;
   color: var(--muted) !important;
   font-size: 14px;
-  font-weight: 650;
+  font-weight: 700;
 }
 .summaryTextLink svg { width: 16px; height: 16px; }
 .reservationSummary {
@@ -284,7 +284,7 @@
   filter: drop-shadow(0 8px 14px color-mix(in srgb, var(--color-ink) 7%, transparent));
 }
 .summaryEmpty p { margin: 0; color: var(--muted); font-size: 14px; line-height: 1.5; }
-.emptyPassportHint { color: var(--muted); font-size: 13px; font-weight: 550; line-height: 1.5; }
+.emptyPassportHint { color: var(--muted); font-size: 13px; font-weight: 400; line-height: 1.5; }
 .summaryEmpty .summaryTextLink, .summaryEmpty .summaryOutlineAction { margin-top: 0; }
 .personalizationState {
   display: grid;
@@ -317,7 +317,7 @@
 .stateSkeleton { width: 72%; height: 12px; border-radius: 999rem; background: var(--surface-soft); }
 
 .bottomNav { position: fixed; z-index: 50; right: 0; bottom: 0; left: 0; display: grid; grid-template-columns: repeat(4, 1fr); min-height: calc(var(--bottom-nav-height) + env(safe-area-inset-bottom)); padding-bottom: env(safe-area-inset-bottom); border-top: 1px solid var(--line); background: var(--canvas); }
-.bottomNav a { display: flex; min-width: 0; min-height: var(--bottom-nav-height); align-items: center; justify-content: center; flex-direction: column; gap: 4px; color: var(--muted); font-size: 11px; font-weight: 650; }
+.bottomNav a { display: flex; min-width: 0; min-height: var(--bottom-nav-height); align-items: center; justify-content: center; flex-direction: column; gap: 4px; color: var(--muted); font-size: 11px; font-weight: 700; }
 .bottomNav .bottomNavActive { position: relative; color: var(--ink); font-weight: 800; }
 .bottomNav .bottomNavActive::before { position: absolute; top: 0; right: 28%; left: 28%; height: 2px; background: var(--ink); content: ""; }
 
@@ -325,7 +325,7 @@
   .headerInner, .shell { padding-inline: 32px; }
   .headerInner { grid-template-columns: auto minmax(0,1fr) auto; column-gap: 8px; }
   .desktopNav { display: flex; justify-self: start; height: 44px; padding-inline: 4px; border: 1px solid var(--line); border-radius: 999rem; transform: translateY(-1px); }
-  .desktopNav a { position: relative; display: inline-flex; align-items: center; height: 100%; padding-inline: 16px; color: var(--muted); font-size: 15px; font-weight: 600; }
+  .desktopNav a { position: relative; display: inline-flex; align-items: center; height: 100%; padding-inline: 16px; color: var(--muted); font-size: 15px; font-weight: 700; }
   .desktopNav .activeNav { color: var(--ink); font-weight: 800; }
   .headerActions { min-height: 44px; padding-inline: 4px; border: 1px solid var(--line); border-radius: 999rem; }
   .shell { padding-top: 32px; }

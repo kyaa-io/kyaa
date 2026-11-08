@@ -7,11 +7,11 @@
 .screen a:focus-visible { outline: 3px solid var(--color-ink); outline-offset: 3px; }
 .header { display: flex; flex: none; align-items: center; justify-content: space-between; gap: 24px; }
 .brand { display: flex; align-items: baseline; gap: 20px; }
-.brand h1 { font-size: clamp(24px, 2.1vw, 40px); font-weight: 850; letter-spacing: -.055em; }
+.brand h1 { font-size: clamp(24px, 2.1vw, 40px); font-weight: 800; letter-spacing: -.055em; }
 .brand p { color: var(--color-muted); font-size: 16px; }
 .headerActions { display: flex; align-items: center; gap: 16px; }
 .views { display: flex; padding: 4px; border: 1px solid var(--color-line-subtle); border-radius: 12px; background: var(--color-soft); }
-.views button { min-height: 44px; padding: 8px 20px; border: 0; border-radius: 8px; background: transparent; color: var(--color-muted); font-size: 16px; font-weight: 650; }
+.views button { min-height: 44px; padding: 8px 20px; border: 0; border-radius: 8px; background: transparent; color: var(--color-muted); font-size: 16px; font-weight: 700; }
 .views button[aria-pressed="true"] { background: var(--color-ink); color: var(--color-surface); }
 .fullscreen { display: grid; place-items: center; width: 44px; height: 44px; border: 1px solid var(--color-line-subtle); border-radius: 12px; background: var(--color-surface); color: var(--color-ink); }
 .fullscreen svg { width: 20px; height: 20px; }
@@ -20,7 +20,7 @@
 .presentationTools button { min-height: 44px; padding: 8px 12px; border: 0; border-radius: 12px; background: var(--color-surface); color: var(--color-muted); font-size: 13px; }
 .presentationTools button:hover { background: var(--color-soft); color: var(--color-ink); }
 .sceneNumber { color: var(--color-ink); font-size: 24px; font-weight: 750; font-variant-numeric: tabular-nums; white-space: nowrap; }
-.sceneNumber small { color: var(--color-muted); font-size: 14px; font-weight: 500; }
+.sceneNumber small { color: var(--color-muted); font-size: 14px; font-weight: 400; }
 .scopeRow { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
 .scopeRow .views button { padding-inline: 16px; font-size: 14px; }
 .scopeRow time, .observed { color: var(--color-muted); font-size: 12px; }
@@ -86,7 +86,7 @@
 .prize header p { color: var(--color-muted); font-size: 14px; }
 .prize h3 { margin-top: 4px; font-size: clamp(18px, 1.35vw, 26px); font-weight: 750; letter-spacing: -.025em; overflow-wrap: anywhere; }
 .prize header strong { margin-top: auto; padding-top: 8px; font-size: 24px; font-weight: 800; }
-.prize header strong span { margin-left: 4px; color: var(--color-muted); font-size: 14px; font-weight: 500; }
+.prize header strong span { margin-left: 4px; color: var(--color-muted); font-size: 14px; font-weight: 400; }
 .winners { display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px 16px; padding: 16px 0 0; list-style: none; }
 .screen[data-view="results"] .prize header { min-height: 100px; }
 .screen[data-view="results"] .winners { row-gap: 4px; }

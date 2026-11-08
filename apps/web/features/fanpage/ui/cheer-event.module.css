@@ -6,14 +6,14 @@
 .banner { display:grid; grid-template-columns:minmax(0,.85fr) minmax(0,1.1fr); grid-template-rows:1fr auto; gap:20px 28px; min-height:346px; margin:24px 0 32px; padding:32px; }
 .promotionHeading { align-self:end; min-width:0; }
 .eyebrow { margin:0 0 16px; color:var(--color-accent); font-size:13px; font-weight:750; line-height:1.5; }
-.promotionHeading h2 { font-size:36px; font-weight:850; line-height:1.28; white-space:pre-line; }
+.promotionHeading h2 { font-size:36px; font-weight:800; line-height:1.28; white-space:pre-line; }
 .promotionRewards { grid-column:2; grid-row:1 / 3; min-width:0; }
 .promotionAction { align-self:start; min-width:0; }
 .primary { display:flex; flex-wrap:wrap; align-items:center; justify-content:center; gap:12px 20px; min-height:56px; padding:12px 16px; border:0; border-radius:12px; background:var(--color-accent); color:var(--color-surface); font-size:16px; font-weight:750; text-align:center; text-decoration:none; line-height:1.4; }
 .entryTag { flex:none; padding:5px 8px; border-radius:6px; background:var(--color-surface); color:var(--color-accent); font-size:11px; font-weight:750; line-height:1.4; }
 .doubleReward { display:flex; align-items:center; gap:24px; margin:0 0 16px; color:var(--color-accent-ink); }
-.doubleReward > strong,.double { flex:none; color:var(--color-accent); font-size:88px; font-weight:850; line-height:1.05; font-variant-numeric:tabular-nums; white-space:nowrap; }
-.doubleReward p { max-width:24ch; margin:0; font-size:14px; font-weight:650; line-height:1.6; }
+.doubleReward > strong,.double { flex:none; color:var(--color-accent); font-size:88px; font-weight:800; line-height:1.05; font-variant-numeric:tabular-nums; white-space:nowrap; }
+.doubleReward p { max-width:24ch; margin:0; font-size:14px; font-weight:700; line-height:1.6; }
 .prizes { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:24px; }
 .prize { min-width:0; border:1px solid var(--color-line,var(--color-accent-soft)); border-radius:16px; overflow:hidden; background:var(--color-surface); }
 .prizeImage { width:100%; aspect-ratio:1400 / 580; overflow:hidden; background:#cce9e5; }
@@ -39,8 +39,8 @@
 .heroMeta { display:flex; flex-wrap:wrap; align-items:center; gap:12px; }
 .rewardPill { display:inline-flex; align-items:center; gap:6px; padding:5px 10px; border-radius:999px; background:var(--color-accent-soft); color:var(--color-accent); font-size:12px; font-weight:700; }
 .rewardPill b { font-size:20px; }
-.date { color:var(--color-muted,var(--color-muted)); font-size:12px; font-weight:550; line-height:1.6; }
-.detailHero h2 { margin:24px 0 20px; font-size:44px; font-weight:850; line-height:1.22; white-space:pre-line; }
+.date { color:var(--color-muted,var(--color-muted)); font-size:12px; font-weight:400; line-height:1.6; }
+.detailHero h2 { margin:24px 0 20px; font-size:44px; font-weight:800; line-height:1.22; white-space:pre-line; }
 .detailHero p { margin:0 0 24px; color:var(--color-muted,var(--color-muted)); font-size:16px; line-height:1.8; white-space:pre-line; }
 .detailHero .primary { width:fit-content; }
 .creatorPhoto { display:block; width:100%; height:auto; border-radius:20px; }
@@ -72,7 +72,7 @@
 .backdrop { z-index:var(--z-dialog); display:grid; place-items:center; padding:max(16px,env(safe-area-inset-top)) max(16px,env(safe-area-inset-right)) max(16px,env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left)); background:color-mix(in srgb, var(--color-ink) 58%, transparent); }
 .modal { width:min(600px,100%); max-height:calc(100dvh - 32px); overflow:auto; border:0; border-radius:24px; background:var(--color-surface); box-shadow:0 16px 64px color-mix(in srgb, var(--color-ink) 13%, transparent); }
 .modalHeader { display:flex; align-items:center; justify-content:space-between; gap:16px; min-height:68px; padding:12px 16px; }
-.modalHeader h2 { font-size:13px; font-weight:650; color:var(--color-muted); }
+.modalHeader h2 { font-size:13px; font-weight:700; color:var(--color-muted); }
 .modalHeader button { display:grid; place-items:center; flex:none; width:44px; height:44px; border:0; border-radius:50%; background:var(--color-soft); color:var(--color-ink); cursor:pointer; }
 .modalPromotion { display:grid; gap:20px; padding:20px; background:var(--color-accent-soft); }
 .modalPromotion .promotionHeading h2 { font-size:36px; }

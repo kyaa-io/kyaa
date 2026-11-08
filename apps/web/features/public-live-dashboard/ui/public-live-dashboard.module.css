@@ -9,7 +9,7 @@
 .header p, .sectionHeader p { margin: 0; max-width: 78ch; color: var(--color-muted); font-size: 16px; line-height: 1.65; }
 .metrics, .chainMetrics { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; margin: 0; }
 .metric { min-width: 0; padding: 24px; background: var(--color-soft); }
-.metric dt { color: var(--color-muted); font-size: 13px; font-weight: 600; line-height: 1.5; overflow-wrap: anywhere; }
+.metric dt { color: var(--color-muted); font-size: 13px; font-weight: 700; line-height: 1.5; overflow-wrap: anywhere; }
 .metric dd { margin: 12px 0 0; color: var(--color-ink); font-size: 36px; line-height: 1.2; font-weight: 750; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; letter-spacing: -.03em; }
 .metricHelp { display: block; font-weight: 400; letter-spacing: normal; margin: 12px 0 0; color: var(--color-muted); font-size: 13px; line-height: 1.6; }
 .records { display: grid; gap: 24px; min-width: 0; }
@@ -28,7 +28,7 @@
 .timestamp, .sourceMessage, .unknown { margin: 0; color: var(--color-muted); font-size: 13px; line-height: 1.65; overflow-wrap: anywhere; }
 .timestamp time { white-space: normal; }
 .chainTimes { display: grid; gap: 8px; }
-.processTitle { margin: 0; font-size: 13px; font-weight: 600; line-height: 1.5; }
+.processTitle { margin: 0; font-size: 13px; font-weight: 700; line-height: 1.5; }
 .process { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin: 0; padding-top: 16px; border-top: 1px solid var(--color-line-subtle); }
 .process .metric { padding: 0; background: transparent; }
 .process .metric dt { font-weight: 400; }
