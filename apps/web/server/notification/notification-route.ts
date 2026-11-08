@@ -87,11 +87,16 @@ export const createGetNotificationsHandler =
     const locale = params.get("locale") === "en" ? "en" : "ko";
     const recipientLinkValues = params.getAll("recipientLinks");
     const recipientLinks = recipientLinkValues.length === 1 && recipientLinkValues[0] === "1";
+    const fieldValues = params.getAll("fields");
+    if (fieldValues.length > 1 || (fieldValues.length === 1 && fieldValues[0] !== "actor"))
+      return json({ error: { code: "NOTIFICATIONS_INVALID_REQUEST" } }, 400);
+    const facts = fieldValues[0] === "actor";
     try {
       const notifications = await deps.repository.list({
         appUserId: owner.appUserId,
         locale,
         recipientLinks,
+        ...(facts ? { facts } : {}),
       });
       return json({
         notifications,

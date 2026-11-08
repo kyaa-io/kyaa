@@ -33,6 +33,7 @@ export const safeNotificationPathSchema = z
     /^\/(?:connect\/runmusic\/results|my(?:\/requests\?tab=(?:schedules|fanpages)&item=[0-9a-f-]{36}|\/rewards\/[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}\/recipient)?|passports|live\/[a-z0-9]+(?:-[a-z0-9]+)*(?:\/survey)?|live\/calendar\/schedules\/[0-9a-f-]{36}|benefits\/[0-9a-f-]{36}|c\/[a-z0-9]+(?:-[a-z0-9]+)*\/(?:community\/[0-9a-f-]{36}(?:#comment-[0-9a-f-]{36})?|notices\/[a-z0-9]+(?:-[a-z0-9]+)*))$/,
   ).or(z.string().regex(/^\/open-app\?returnTo=%2F(?:(?:messages|support|activities|stamps)%2F[0-9a-f-]{36}|my%2Fcommunity-stamps|people%2F[0-9a-f-]{36}%2Ffriend-request%3Ffavorite%3D[a-z0-9]+(?:-[a-z0-9]+)*)$/i)).or(groupNotificationPathSchema);
 
+export const notificationTargetTypeSchema = z.enum(["fan_post", "group_post", "notice", "friendship", "conversation", "group_page", "group_event", "schedule", "celebrity", "live_event", "benefit"]);
 export const notificationItemSchema = z.object({
   id: z.uuid(),
   kind: notificationKindSchema,
@@ -42,6 +43,11 @@ export const notificationItemSchema = z.object({
   readAt: z.iso.datetime({ offset: true }).nullable(),
   deepLink: safeNotificationPathSchema,
   eventReview: z.object({ decision: z.enum(["approved", "rejected"]), name: z.string().min(1) }).optional(),
+  // Only with /api/notifications?fields=actor. actor is null when nobody is shown (a blocked, restricted or anonymous person,
+  // or a kind with no person); profileId is null for an official post, where the creator is named.
+  actor: z.object({ profileId: z.uuid().nullable(), nickname: z.string().min(1), avatarUrl: z.string().nullable() }).nullable().optional(),
+  target: z.object({ type: notificationTargetTypeSchema, id: z.uuid(), label: z.string().nullable() }).nullable().optional(),
+  thumbnailUrl: z.string().nullable().optional(),
 });
 export const notificationCollectionSchema = z.object({
   notifications: z.array(notificationItemSchema),

@@ -253,7 +253,8 @@ export function createContentHandlers(deps: ContentDependencies) {
       z.uuid().parse(id);
       const p_app_user_id = await owner(request, request.method === "GET");
       if (request.method === "GET") {
-        const raw = await deps.rpc("read_fan_post_comments", { p_app_user_id, p_post_id: id, ...pageParams(request) });
+        const replies = z.enum(["replies"]).optional().parse(one(new URL(request.url), "fields")) === "replies";
+        const raw = await deps.rpc(replies ? "read_fan_post_comments_replies" : "read_fan_post_comments", { p_app_user_id, p_post_id: id, ...pageParams(request) });
         if (raw === null) throw new Error("FAN_WEB_NOT_FOUND");
         return json(page(commentSchema, raw));
       }

@@ -106,7 +106,8 @@ export function createFanpageHandlers(dependencies: FanpageDependencies) {
         const limit = z.coerce.number().int().min(1).max(50).parse(url.searchParams.get("limit") ?? 20);
         const cursor = url.searchParams.get("cursor");
         const before = cursor ? decodeCursor(cursor) : null;
-        const result = await dependencies.rpc("read_celebrity_notice_comments", {
+        const replies = z.enum(["replies"]).optional().parse(url.searchParams.get("fields") ?? undefined) === "replies";
+        const result = await dependencies.rpc(replies ? "read_celebrity_notice_comments_replies" : "read_celebrity_notice_comments", {
           p_slug: slug, p_notice_slug: noticeSlug, p_app_user_id: owner, p_limit: limit, p_before: before?.at ?? null, p_before_id: before?.id ?? null, p_locale: contentLocale,
         });
         if (!result) return fanpageJson({ error: { code: "FANPAGE_NOT_FOUND" } }, 404);

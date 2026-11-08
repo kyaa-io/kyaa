@@ -2,6 +2,16 @@ import { z } from "zod";
 import { publicAvatarUrlSchema } from "@/features/profile/domain/avatar";
 
 export const waveFriendSchema = z.object({ id: z.uuid(), profileId: z.uuid(), nickname: z.string().min(1), avatarUrl: publicAvatarUrlSchema, status: z.enum(["friends", "incoming", "outgoing"]) });
+/**
+ * Friend facts, only with /api/me/social/friends?fields=facts: the grade and hearts for the creator the friendship belongs to
+ * (null when it has none) and the friend's favorite creator. All three are null for a restricted account.
+ */
+export const friendFactsSchema = z.object({
+  tier: z.string().nullable().optional(),
+  hearts: z.number().int().nonnegative().nullable().optional(),
+  favorite: z.object({ slug: z.string(), name: z.string() }).nullable().optional(),
+});
+export type FriendFacts = z.infer<typeof friendFactsSchema>;
 export type WaveFriend = z.infer<typeof waveFriendSchema>;
 export const parseWaveFriends = (value: unknown) => z.object({ friendships: z.array(waveFriendSchema) }).parse(value);
 export const waveMemberSchema = waveFriendSchema.pick({ profileId: true, nickname: true, avatarUrl: true });
