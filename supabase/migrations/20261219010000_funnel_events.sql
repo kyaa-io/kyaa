@@ -246,11 +246,9 @@ begin
     v_properties := pg_catalog.jsonb_build_object('category', new.category, 'board', 'fan');
   elsif tg_table_name = 'group_posts' then
     v_event := 'post_created'; v_occurred := new.created_at;
-    select page.celebrity_id into v_celebrity from public.group_pages page where page.id = new.page_id;
     v_properties := pg_catalog.jsonb_build_object('category', new.category, 'board', 'group');
   elsif tg_table_name = 'fan_post_comments' then
     v_event := 'comment_created'; v_occurred := new.created_at;
-    select post.celebrity_id into v_celebrity from public.fan_posts post where post.id = new.post_id;
     v_properties := pg_catalog.jsonb_build_object('reply', new.parent_id is not null);
   elsif tg_table_name = 'fan_lounge_messages' then
     if new.reply_to_id is not null then return new; end if;
@@ -259,17 +257,24 @@ begin
     return new;
   end if;
   v_properties := v_properties || pg_catalog.jsonb_build_object('businessEntityId', new.id);
-  if v_event = 'cheer_completed' then
-    v_key := 'server:cheer_completed:' || v_owner::text || ':' || coalesce(v_celebrity::text, '') || ':'
-      || pg_catalog.to_char((v_occurred at time zone 'Asia/Seoul')::date, 'YYYY-MM-DD');
-    -- Later cheers of the day end here, without a subtransaction or the ledger's advisory lock.
-    if exists (select 1 from public.fan_product_events event where event.schema_version = 1 and event.idempotency_key = v_key) then
-      return new;
-    end if;
-  else
-    v_key := 'server:' || v_event || ':' || new.id::text;
-  end if;
+  -- Every table read sits inside this block: a lock wait past lock_timeout (55P03) or any other failure skips only the
+  -- event and never reaches the business transaction.
   begin
+    if tg_table_name = 'group_posts' then
+      select page.celebrity_id into v_celebrity from public.group_pages page where page.id = new.page_id;
+    elsif tg_table_name = 'fan_post_comments' then
+      select post.celebrity_id into v_celebrity from public.fan_posts post where post.id = new.post_id;
+    end if;
+    if v_event = 'cheer_completed' then
+      v_key := 'server:cheer_completed:' || v_owner::text || ':' || coalesce(v_celebrity::text, '') || ':'
+        || pg_catalog.to_char((v_occurred at time zone 'Asia/Seoul')::date, 'YYYY-MM-DD');
+      -- Later cheers of the day end here, before the ledger's advisory lock and validation.
+      if exists (select 1 from public.fan_product_events event where event.schema_version = 1 and event.idempotency_key = v_key) then
+        return new;
+      end if;
+    else
+      v_key := 'server:' || v_event || ':' || new.id::text;
+    end if;
     perform public.record_product_event_v1(1::smallint, v_event, v_owner, null, v_celebrity, null, null, null,
       'server.commit_projection', v_key, v_occurred, v_properties);
   exception when others then
