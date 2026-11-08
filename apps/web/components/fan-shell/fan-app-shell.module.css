@@ -12,8 +12,7 @@
   padding-bottom: calc(64px + env(safe-area-inset-bottom));
   background: #fff;
   color: var(--fan-ink);
-  font-family: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
-}
+  }
 .frame *, .frame *::before, .frame *::after { box-sizing: border-box; }
 .frame :is(input, textarea, select) {
   scroll-margin-top: calc(var(--fan-header-height) + 16px);
@@ -66,121 +65,98 @@
 
 .activeNav[data-fan-navigation-id="live"],.activeBottomItem[data-fan-navigation-id="live"] { color:#b91469; }
 .activeBottomItem[data-fan-navigation-id="live"]::before { background:#b91469; }
-.groupsNavigation .activeNav, .groupsNavigation .activeBottomItem { color:#ad1457; }
-.groupsNavigation .activeBottomItem::before { background:#d11b62; }
 
 :is(.desktopNavItem,.bottomNavigationItem,.utilityLink){text-decoration:none;}
 
 .bottomNavigation{grid-template-columns:repeat(4,minmax(0,1fr))}.bottomNavigationItem{min-width:0;padding:8px 4px;line-height:1.25;text-align:center}.bottomNavigationItem>span{max-width:100%;white-space:normal;overflow-wrap:anywhere}.bottomNavigationItem svg{flex-shrink:0}@media(max-width:63.999rem){.frame{padding-bottom:calc(32px + 3em + env(safe-area-inset-bottom))}}
 
-/* The released groups shell follows the shared Pencil header and navigation. */
-.groupsNavigation.header { box-sizing: border-box; height: 68px; color: #121212; }
-.groupsNavigation.header *, .groupsNavigation.bottomNavigation, .groupsNavigation.bottomNavigation * { box-sizing: border-box; }
-.groupsNavigation .headerInner { padding-inline: 16px; }
-.groupsNavigation .brand img { width: 88px; height: auto; transform: none; }
-.groupsNavigation .actions { gap: 0; }
-.groupsNavigation [data-fan-language-action] { width: auto; min-inline-size: 80px; max-inline-size: min(42vw, 184px); padding-inline: 10px; color: #5d5d5d; line-height: 18px; }
-.groupsNavigation [data-fan-language-action] > svg:first-child { display: none; }
-.groupsNavigation .utilityLink { order: -1; }
-.groupsNavigation.bottomNavigation { min-height: calc(65px + env(safe-area-inset-bottom)); border-top-color: #dedede; }
-.groupsNavigation .bottomNavigationItem { min-height: 64px; justify-content: flex-end; padding: 0 4px 12px; color: #5d5d5d; line-height: 15px; }
-.groupsNavigation .activeBottomItem { color: #ad1457; }
-@media (max-width: 63.999rem) {
-  .groupsNavigation.frame { padding-bottom: calc(65px + env(safe-area-inset-bottom)); }
-}
-@media (min-width: 64rem) {
-  .groupsNavigation .headerInner { grid-template-columns: minmax(88px,1fr) auto minmax(308px,1fr); column-gap: 16px; padding-inline: 40px; }
-  .groupsNavigation.header { height: 88px; }
-  .groupsNavigation .desktopNav { width: 366px; min-height: 46px; border-color: #e4e1e6; }
-  .groupsNavigation .desktopNavItem { width: 88px; min-width: 88px; flex-shrink: 0; color: #5d5d5d; line-height: 17px; text-align: center; overflow-wrap: anywhere; }
-  .groupsNavigation .activeNav { color: #ad1457; }
-  .groupsNavigation .actions { gap: 12px; }
-  .groupsNavigation [data-fan-language-action] { width: 96px; max-inline-size: 96px; padding-inline: 4px; }
-  .groupsNavigation [data-fan-language-action] > svg:first-child { display: block; }
-  .groupsNavigation .utilityLink { order: 0; }
-}
-
-/* Approved 2026-11-02 Pencil header: icon tabs and a compact account menu. */
-@media(min-width:64rem){
- .groupsNavigation .headerInner{grid-template-columns:minmax(0,1fr) 488px minmax(0,1fr);gap:16px}
- .groupsNavigation .desktopNav{width:488px;height:64px;min-height:64px;gap:16px;border:0;border-radius:0}
- .groupsNavigation .desktopNavItem{width:110px;min-width:110px;height:64px;gap:10px;padding:0 4px;border-radius:0;border-bottom:2px solid transparent}
- .groupsNavigation .desktopNavItem svg{width:20px;height:20px;flex-shrink:0}
- .groupsNavigation .activeNav{border-bottom-color:#ed1a68}
- .groupsNavigation .actions{gap:16px;width:240px;justify-content:flex-end}
-}
-.groupsNavigation .desktopNavItem{font-family:"Pretendard UI 650",sans-serif;font-weight:400;font-synthesis:none}
-.groupsNavigation .activeNav{font-family:"Pretendard UI 850",sans-serif;font-weight:400;border-bottom-color:#d11b62}
-.groupsNavigation .desktopNavItem svg{width:24px;height:24px;stroke:none}
-.groupsNavigation .bottomNavigationItem{font-family:"Pretendard UI 650",sans-serif;font-weight:400;font-synthesis:none}.groupsNavigation .activeBottomItem{font-family:"Pretendard UI 850",sans-serif;font-weight:400}
-/* Preserve exported Korean tab widths; translated labels may grow without splitting words. */
-@media(min-width:64rem){.groupsNavigation .headerInner{grid-template-columns:minmax(88px,1fr) auto minmax(240px,1fr)}.groupsNavigation .desktopNav{width:max-content;max-width:100%;gap:16px}.groupsNavigation .desktopNavItem{width:auto;min-width:110px;white-space:nowrap;overflow-wrap:normal;flex-shrink:0}.groupsNavigation .desktopNavItem svg{flex-shrink:0}}
-
-.groupDesktopAccount{display:contents}.groupMobileUtilities{display:none}@media(max-width:767px){.groupDesktopAccount{display:none}.groupMobileUtilities{display:flex;align-items:center;gap:12px}}
-
 /* Short pages: the footer starts below the first screen, not behind the fixed bottom tab, so it is never on screen while
  * the body is still loading and is never pushed down (layout shift) when the body arrives. */
 .frame { --fan-bottom-nav-height: 64px; }
-.groupsNavigation.frame { --fan-bottom-nav-height: 65px; }
 @media (max-width: 63.999rem) {
   .frame > :has(+ [data-fan-site-footer]) { min-height: calc(100dvh - var(--fan-header-height)); grid-auto-rows: max-content; }
 }
-/* 내용이 오기 전 짧은 본문 때문에 푸터가 첫 화면에 올라왔다가 밀려 내려가지 않게 한다. 1023px 이하 규칙과 같다. */
 @media (min-width: 1024px) {
   .frame > :has(+ [data-fan-site-footer]) { min-height: calc(100dvh - var(--fan-header-height)); grid-auto-rows: max-content; }
 }
 
-/* R2: the favorite chip takes what the utilities leave and truncates first. */
-@media (max-width: 63.999rem) {
-  .groupsNavigation .headerInner { grid-template-columns: 88px minmax(0,1fr); }
-  .groupsNavigation .actions { min-width: 0; justify-content: flex-end; gap: var(--space-1); }
-  .groupMobileUtilities { flex-shrink: 0; }
+/* ── 5차 셸(R3, design-md-change B "셸"): 헤더 56 = `kyaa │ 위치명` · 가운데 글자 탭 4(1024+) · 종(점) + 아바타.
+ * 숫자·언어·☰ 없음, 그림자 0, 1px 선. 390은 하단 탭바 56(아이콘 24 + 11/700). 컨테이너 1,100. */
+.groupsNavigation.frame {
+  --fan-shell-top: 56px;
+  --fan-tabbar: 56px;
+  --fan-bottom-nav-height: 56px;
+  --fan-header-height: var(--fan-shell-top);
+  padding-bottom: calc(var(--fan-tabbar) + env(safe-area-inset-bottom));
+}
+@media (min-width: 64rem) { .groupsNavigation.frame { padding-bottom: 0; } }
+
+.shellHeader {
+  position: sticky; z-index: var(--z-sticky-header); top: 0;
+  box-sizing: border-box; height: var(--fan-shell-top, 56px);
+  border-bottom: 1px solid var(--color-line); background: var(--color-surface); color: var(--color-ink);
+}
+.shellHeader *, .shellHeader *::before, .shellHeader *::after { box-sizing: border-box; }
+.shellHeader a { color: inherit; text-decoration: none; }
+.shellInner {
+  display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; column-gap: var(--space-4);
+  width: 100%; max-width: calc(1100px + 2 * var(--space-4)); height: 100%; margin-inline: auto; padding-inline: var(--space-4);
+}
+.shellPlace { display: flex; min-width: 0; align-items: center; gap: var(--space-3); }
+.shellBrand { display: inline-flex; flex: none; align-items: center; min-height: var(--min-target); }
+.shellBrand img { display: block; width: 56px; height: auto; }
+.shellLocation {
+  display: none; min-width: 0; max-width: 10em; overflow: hidden; padding-inline-start: var(--space-3);
+  border-inline-start: 1px solid var(--color-line);
+  font-size: var(--fan-item-title-size, 15px); font-weight: 700; line-height: 20px; text-overflow: ellipsis; white-space: nowrap;
+}
+/* 390: 위치명은 팬페이지·모임 안(화면이 이름을 준 경우)에서만. */
+.shellLocation[data-named] { display: block; }
+.shellTabs { display: none; }
+.shellActions { display: flex; flex: none; align-items: center; justify-content: flex-end; gap: var(--space-2); }
+.shellIcon {
+  position: relative; display: inline-flex; flex: none; width: var(--min-target); height: var(--min-target);
+  align-items: center; justify-content: center; border-radius: 8px; color: var(--color-ink);
+}
+.shellIcon [data-dot] { position: absolute; top: 10px; right: 10px; box-shadow: 0 0 0 2px var(--color-surface); }
+.shellLogin {
+  display: inline-flex; align-items: center; min-height: var(--min-target); padding-inline: var(--space-2);
+  border-radius: 8px; font-size: var(--fan-item-title-size, 15px); font-weight: 700; white-space: nowrap;
+}
+.shellAvatarPending { display: inline-block; flex: none; width: var(--min-target); height: var(--min-target); }
+.shellIcon:focus-visible, .shellLogin:focus-visible, .shellBrand:focus-visible, .shellTab:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
+
+@media (min-width: 48rem) {
+  .shellInner { max-width: calc(1100px + 2 * var(--space-8)); padding-inline: var(--space-8); }
+  .shellLocation { display: block; }
 }
 @media (min-width: 64rem) {
-  .groupsNavigation .headerInner { grid-template-columns: minmax(88px,1fr) auto minmax(max-content,1fr); }
-  .groupsNavigation .actions { width: auto; }
+  .shellInner { grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); column-gap: var(--space-6); }
+  .shellTabs { display: flex; align-self: stretch; align-items: stretch; gap: var(--space-8); }
+  .shellTab {
+    display: flex; align-items: center; min-height: 0; margin-bottom: -1px;
+    border-bottom: 2px solid transparent; color: var(--color-muted);
+    font-size: var(--fan-item-title-size, 15px); font-weight: 700; line-height: 20px; white-space: nowrap;
+  }
+  .shellTabActive { border-bottom-color: var(--color-accent); color: var(--color-ink); }
+}
+@media (hover: hover) and (pointer: fine) {
+  .shellTab:hover { color: var(--color-ink); }
+  .shellIcon:hover, .shellLogin:hover { background: var(--color-soft); }
 }
 
-/* 261107-2 U2: chip · points · language · bell on every width; avatar and menu from 768px. The chip gives way first. */
-.groupsNavigation .actions > .utilityLink { order: 0; }
-.groupsNavigation .actions > [data-selected-bias] { min-width: 0; }
-@media (max-width: 63.999rem) { .groupsNavigation .actions { gap: 0; } }
-
-/* 261107-2 3차: signed in, 1024–1199px had 518px of header actions for ~336px of room (the right column was max-content), so the
- * avatar and menu ran past the screen. In this band the main tabs keep their icon and label but drop the fixed 110px cells, the
- * actions sit closer and may shrink, and the favorite chip (already 52px of name here) gives way first. Nothing is hidden. */
-@media (min-width: 64rem) and (max-width: 74.999rem) {
-  .groupsNavigation .headerInner { grid-template-columns: 88px auto minmax(0, 1fr); gap: var(--space-2); }
-  .groupsNavigation .desktopNav { gap: 0; }
-  .groupsNavigation .desktopNavItem { min-width: 0; padding: 0 var(--space-2); gap: var(--space-1); }
-  .groupsNavigation .actions { min-width: 0; gap: var(--space-1); }
+.tabbar {
+  position: fixed; z-index: var(--z-bottom-nav); right: 0; bottom: 0; left: 0;
+  display: grid; grid-template-columns: repeat(4, minmax(0, 1fr));
+  box-sizing: border-box; height: calc(var(--fan-tabbar, 56px) + env(safe-area-inset-bottom)); padding-bottom: env(safe-area-inset-bottom);
+  border-top: 1px solid var(--color-line); background: var(--color-surface);
 }
-
-/* Feedback F (2026-11-08): signed in, the right side is [status capsule][bell][avatar] — one soft pill holds tier · favorite · ♥N · P N
- * (each cell still its own destination). The language leaves the header from 768px (it is in the account menu); below 768px there is
- * no account menu, so it stays. Signed out nothing changes. */
-.statusCapsule { display: inline-flex; flex: 0 1 auto; align-items: center; min-width: 0; max-width: 288px; height: var(--min-target); padding-inline: var(--space-2); border-radius: var(--radius-pill); background: var(--color-soft); color: var(--color-ink); font-size: var(--fan-action-label-size); }
-.headerLanguage { display: contents; }
-@media (min-width: 48rem) { .headerLanguage[data-signed-in] { display: none; } }
-@media (min-width: 64rem) and (max-width: 74.999rem) { .statusCapsule { max-width: 224px; } }
-@media (min-width: 48rem) and (max-width: 63.999rem) { .groupsNavigation .actions { gap: var(--space-2); } }
-@media (max-width: 47.999rem) { .statusCapsule { max-width: 182px; padding-inline: var(--space-1); } }
-/* Feedback F: from 1200px the tabs and the right group keep at least 24px apart, also with the wider ru·vi tab labels. */
-@media (min-width: 75rem) { .groupsNavigation .headerInner { column-gap: var(--space-6, 24px); } }
-
-/* Header follow-up (bundle r6): the slot held while sign-in is unknown — no background, so no blank capsule flashes. */
-.statusPending { display: inline-block; flex: 0 1 auto; width: 160px; min-width: 0; height: var(--min-target); }
-@media (min-width: 64rem) and (max-width: 74.999rem) { .statusPending { width: 120px; } }
-@media (max-width: 47.999rem) { .statusPending { width: 96px; } }
-/* From 1200px the capsule takes what its values need, so large ♥ and P numbers no longer squeeze the favorite to a sliver. */
-@media (min-width: 75rem) { .statusCapsule { max-width: none; } }
-
-/* bundle r6 login check: at 1200–1299px the tabs take their 110px cells again, and with long tab names (vi "Hoạt động người hâm mộ")
- * plus the signed-in capsule the header ran 21px past the screen. In this band the tabs keep the compact cells of 1024–1199; the
- * 24px between the tabs and the right group (feedback F) stays. */
-@media (min-width: 75rem) and (max-width: 81.249rem) {
-  .groupsNavigation .headerInner { grid-template-columns: 88px auto minmax(0, 1fr); }
-  .groupsNavigation .desktopNav { gap: 0; }
-  .groupsNavigation .desktopNavItem { min-width: 0; padding: 0 var(--space-2); gap: var(--space-1); }
-  .groupsNavigation .actions { min-width: 0; }
+.tabbar a { color: inherit; text-decoration: none; }
+.tabbarItem {
+  display: flex; min-width: 0; min-height: var(--fan-tabbar, 56px); flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+  padding: 0 var(--space-1); color: var(--color-muted); font-size: var(--fan-badge-size, 11px); font-weight: 700; line-height: 14px; text-align: center;
 }
+.tabbarItem > span { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tabbarActive { color: var(--color-accent); }
+.tabbarItem:focus-visible { outline: 2px solid var(--color-focus); outline-offset: -2px; }
+@media (min-width: 64rem) { .tabbar { display: none; } }
