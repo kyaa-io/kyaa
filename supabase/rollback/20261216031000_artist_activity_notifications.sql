@@ -14,7 +14,9 @@ delete from public.fan_notifications where kind::text in ('artist_comment','arti
 do $$
 declare signature text; source text; fname text; backup text;
 begin
-  foreach signature in array array['fan_web_notification_path(uuid,uuid)', 'notification_delivery_is_eligible(uuid,timestamp with time zone)', 'create_external_notification_plan(uuid,timestamp with time zone)'] loop
+  foreach signature in array array['fan_web_notification_path(uuid,uuid)', 'notification_delivery_is_eligible(uuid,timestamp with time zone)',
+      'create_external_notification_plan(uuid,timestamp with time zone)', 'mobile_prepare_push_delivery(uuid,text)',
+      'enqueue_due_notification_maintenance(timestamp with time zone)'] loop
     fname := split_part(signature, '(', 1); backup := fname || '_before_artist_activity';
     if to_regprocedure('public.' || replace(signature, fname, backup)) is null then continue; end if;
     source := pg_get_functiondef(('public.' || replace(signature, fname, backup))::regprocedure);
@@ -29,7 +31,7 @@ begin
   select obj_description(oid, 'pg_constraint') into note from pg_constraint where conrelid = 'public.fan_notifications'::regclass and conname = 'fan_notifications_source_shape';
   if note is null or note not like 'before_artist_activity:%' then return; end if;
   alter table public.fan_notifications drop constraint fan_notifications_source_shape;
-  execute 'alter table public.fan_notifications add constraint fan_notifications_source_shape check (' || substr(note, length('before_artist_activity:') + 1) || ')';
+  execute 'alter table public.fan_notifications add constraint fan_notifications_source_shape check (' || substr(note, length('before_artist_activity:') + 1) || ') not valid';
 end $$;
 
 create or replace function public.fan_web_patch_notification_preferences(p_app_user_id uuid, p_patch jsonb)
@@ -50,13 +52,34 @@ begin
     where app_user_id=p_app_user_id;
 end $$;
 
+-- The owner policies this file added (artist_activity_owner_<role>) on tables that stay.
+do $$
+declare p record;
+begin
+  for p in select pol.polname, c.relname from pg_policy pol join pg_class c on c.oid = pol.polrelid
+      where pol.polname like 'artist\_activity\_owner\_%' and c.relnamespace = 'public'::regnamespace
+        and c.relname not in ('artist_activity_push_control', 'artist_online_daily', 'artist_activity_jobs', 'artist_activity_failures') loop
+    execute format('drop policy %I on public.%I', p.polname, p.relname);
+  end loop;
+end $$;
 drop function if exists public.artist_activity_mobile_push_gate();
 drop function if exists public.artist_activity_presence_trigger();
 drop function if exists public.artist_activity_comment_trigger();
+drop function if exists public.run_artist_activity_jobs(integer);
 drop function if exists public.artist_activity_notify_online(uuid, uuid, timestamptz);
 drop function if exists public.artist_activity_notify_comment(uuid, timestamptz);
+drop function if exists public.artist_activity_online_batch(uuid, uuid, timestamptz, uuid, integer);
+drop function if exists public.artist_activity_comment_batch(uuid, timestamptz, uuid, integer);
+drop function if exists public.artist_activity_recipients(uuid, uuid, text, uuid, integer);
+drop function if exists public.artist_activity_record_failure(text, uuid, uuid, uuid, timestamptz, text, text);
+drop function if exists public.artist_activity_notification_path(uuid, uuid);
+drop function if exists public.artist_activity_delivery_allowed(uuid, timestamptz);
+drop function if exists public.artist_activity_is_artist_notice(uuid);
+drop function if exists public.artist_activity_mobile_delivery_refused(uuid, text);
 drop function if exists public.artist_activity_display_name(uuid, text);
 drop function if exists public.artist_activity_push_allowed(uuid, text, timestamptz);
+drop table if exists public.artist_activity_failures;
+drop table if exists public.artist_activity_jobs;
 drop table if exists public.artist_online_daily;
 drop table if exists public.artist_activity_push_control;
 alter table public.notification_preferences drop column if exists artist_activity_notifications, drop column if exists artist_online_notifications;

@@ -4,7 +4,7 @@ begin;
 do $$
 declare
   page uuid; artist uuid; fan uuid; outsider uuid; post uuid; cm uuid; n integer; c integer; path text; day0 date; t0 timestamptz;
-  admin_id uuid; sub uuid; ids uuid[];
+  admin_id uuid; sub uuid; ids uuid[]; inst uuid; dlv uuid; r jsonb; jobs integer; members integer;
   function_result integer;
 begin
   day0 := (now() at time zone 'Asia/Seoul')::date - 2;
@@ -123,6 +123,49 @@ begin
   perform public.fan_web_patch_notification_preferences(fan, '{"artist_activity_notifications": true}');
   insert into public.group_comments(post_id, author_id, body, anonymous) values (post, outsider, '일반 팬', false) returning id into cm;
   if public.artist_activity_notify_comment(cm) <> 0 then raise exception 'non-artist notified'; end if;
+
+  -- M2 (review r5): a mobile push already queued is refused at prepare time when the gate now says no (operator stop).
+  update public.artist_activity_push_control set mode = 'test', test_user_ids = array[fan];
+  insert into public.mobile_app_settings(app_user_id, push_enabled) values (fan, true) on conflict (app_user_id) do update set push_enabled = true;
+  insert into public.mobile_installations(app_user_id, installation_id, platform, push_token, push_token_hash, permission, app_version, locale)
+    values (fan, extensions.gen_random_uuid(), 'ios', 'probe-token-artist', encode(extensions.digest('probe-token-artist', 'sha256'), 'hex'), 'authorized', '1.0', 'ko') returning id into inst;
+  delete from public.fan_notifications where kind::text = 'artist_comment' and app_user_id = fan;
+  insert into public.group_comments(post_id, author_id, body, anonymous) values (post, artist, '앱 푸시', false) returning id into cm;
+  perform public.artist_activity_notify_comment(cm, (day0 + 1 + time '10:00') at time zone 'Asia/Seoul');
+  select d.id into dlv from public.mobile_push_delivery_outbox d join public.fan_notifications f on f.id = d.notification_id where d.installation_row_id = inst and f.kind::text = 'artist_comment';
+  if dlv is null then raise exception 'M2 fixture: no mobile delivery queued'; end if;
+  update public.mobile_push_delivery_outbox set status = 'processing', lease_owner = 'artist-probe', lease_expires_at = clock_timestamp() + interval '5 minutes' where id = dlv;
+  update public.artist_activity_push_control set mode = 'disabled', test_user_ids = '{}';
+  r := public.mobile_prepare_push_delivery(dlv, 'artist-probe');
+  raise notice 'M2 prepare after stop -> % (status %, %)', r, (select status from public.mobile_push_delivery_outbox where id = dlv), (select last_error_code from public.mobile_push_delivery_outbox where id = dlv);
+  if r is not null or (select last_error_code from public.mobile_push_delivery_outbox where id = dlv) <> 'CURRENT_STATE_INELIGIBLE' then raise exception 'M2 failed'; end if;
+
+  -- H2 (review r5): a failing notice write is recorded, and the comment still saves.
+  alter table public.fan_notifications add constraint artist_probe_refuse check (kind::text <> 'artist_online') not valid;
+  delete from public.artist_online_daily where artist_app_user_id = artist;
+  update public.group_presence set seen_at = (day0 + 5 + time '10:00') at time zone 'Asia/Seoul' where app_user_id = artist and page_id = page;
+  select count(*) into n from public.artist_activity_failures where artist_app_user_id = artist and kind = 'artist_online' and error_state = '23514';
+  raise notice 'H2 failure recorded: %', n;
+  if n <> 1 then raise exception 'H2 failure not recorded'; end if;
+  alter table public.fan_notifications drop constraint artist_probe_refuse;
+  -- M1 (review r5): a page over 500 members queues one job instead of writing in the comment's transaction; the worker's
+  -- maintenance call writes it in slices.
+  insert into public.group_memberships(page_id, app_user_id)
+    select page, u.id from public.app_users u where u.status = 'active' and not exists (select 1 from public.group_memberships m where m.page_id = page and m.app_user_id = u.id)
+    order by u.id limit 520;
+  select count(*) into members from public.artist_activity_recipients(page, artist, 'artist_comment', null, null);
+  insert into public.group_comments(post_id, author_id, body, anonymous) values (post, artist, '큰 페이지', false) returning id into cm;
+  if public.artist_activity_notify_comment(cm, (day0 + 1 + time '14:00') at time zone 'Asia/Seoul') <> 0 then raise exception 'M1 wrote inline'; end if;
+  if (select count(*) from public.artist_activity_jobs where target_id = cm and finished_at is null) <> 1 then raise exception 'M1 no job'; end if;
+  jobs := public.run_artist_activity_jobs(300);
+  if jobs <> 300 or (select cursor is null or finished_at is not null from public.artist_activity_jobs where target_id = cm) then raise exception 'M1 slice failed %', jobs; end if;
+  r := public.enqueue_due_notification_maintenance(now());
+  if (select finished_at is null from public.artist_activity_jobs where target_id = cm) then raise exception 'M1 maintenance did not finish the job'; end if;
+  select count(*) into n from public.fan_notifications where kind::text = 'artist_comment' and payload ->> 'artistId' = artist::text
+    and scheduled_for > ((day0 + 1 + time '14:00') at time zone 'Asia/Seoul') - interval '1 hour' and scheduled_for <= (day0 + 1 + time '14:00') at time zone 'Asia/Seoul';
+  raise notice 'M1 members % -> notices % (first slice %, then maintenance answered %)', members, n, jobs, r;
+  if n <> members or r ->> 'scheduledNotifications' is null then raise exception 'M1 job write failed'; end if;
+
   raise notice 'RESULT all artist activity checks passed';
 end $$;
 rollback;
