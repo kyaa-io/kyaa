@@ -2,7 +2,7 @@
 import Link from "next/link";
 import type { Route } from "next";
 import { ArrowRight, Heart } from "lucide-react";
-import { useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import { FanCount } from "@/components/fan-ui/fan-count-chip";
 import { FanHeading } from "@/components/fan-ui/fan-heading";
@@ -13,7 +13,8 @@ import { FanState } from "@/components/fan-ui/fan-state";
 import { fanLoginHref } from "@/components/login-href";
 import { raffleListSchema, raffleStatus, type RaffleList } from "@/features/benefit/domain/raffle";
 import { benefitListResponseSchema } from "@/features/benefit/domain/benefit";
-import { creatorRaffleHref, creatorRafflesHref } from "@/features/benefit/domain/raffle-navigation";
+import { creatorRaffleHref, creatorRafflesHref, creatorRaffleVerificationHref } from "@/features/benefit/domain/raffle-navigation";
+import type { BenefitEntryState } from "@/features/benefit/domain/benefit-entry";
 import { deliveryLabel } from "@/features/benefit/ui/creator-raffles-screen";
 import { dukjilText } from "@/features/dukjil/ui/dukjil-copy";
 import { RankDelta } from "@/features/rankings/ui/rank-delta";
@@ -25,6 +26,7 @@ import { toContentLocale, type AppLocale } from "@/i18n/locales";
 import { walletSchema } from "@/server/group-wallet/domain";
 import { groupBenefitsCopy } from "./group-benefits-copy";
 import { seeAllLabel } from "./group-directory";
+import { groupsCopy } from "./copy";
 import { useGroupResource } from "./use-group-resource";
 import styles from "./stan-lucky-cheer.module.css";
 
@@ -55,7 +57,13 @@ export function stanFavorite(bias: SelectedBias) {
 /** Lucky draws of the favorite, open first, then upcoming, then the latest closed; cancelled ones are left out. */
 export function useStanRaffles(locale: AppLocale, slug: string | null) {
   const resource = useGroupResource(slug ? `/api/celebrities/${encodeURIComponent(slug)}/raffles?locale=${toContentLocale(locale)}` : null, parseRaffles);
-  const [now] = useState(() => Date.now());
+  const [now, setNow] = useState(() => Date.now());
+  // Re-read the status when a draw opens or closes while the screen stays open (at most a minute late).
+  useEffect(() => {
+    const next = (resource.data?.raffles ?? []).flatMap(raffle => [raffle.entryOpensAt, raffle.entryClosesAt]).filter((date): date is string => Boolean(date)).map(date => Date.parse(date)).filter(time => time > now);
+    const timer = setTimeout(() => setNow(Date.now()), Math.max(1000, Math.min(60_000, ...next.map(time => time - now))));
+    return () => clearTimeout(timer);
+  }, [now, resource.data]);
   const items = (resource.data?.raffles ?? []).map(raffle => ({ raffle, status: raffleStatus(raffle, now) })).filter(item => item.status !== "cancelled")
     .sort((a, b) => statusOrder[a.status] - statusOrder[b.status] || (a.status === "closed" ? -1 : 1) * (Date.parse(a.raffle.entryClosesAt ?? "") - Date.parse(b.raffle.entryClosesAt ?? "") || 0));
   return { ...resource, items, live: items.filter(item => item.status === "open" || item.status === "preparing").length };
@@ -75,19 +83,43 @@ function RaffleDate({ raffle, status, locale }: { raffle: Raffle; status: Raffle
   return null;
 }
 
+/** What the card can promise for an open draw, with the server's entry conditions (enter_owned_benefit_v2): an active fulfillment policy,
+ * the creator's passport for a standalone draw, the wallet tickets and the remaining per-fan limit. Unknown while a read is pending or failed. */
+export type RaffleAllowance = { kind: "count"; count: number } | { kind: "loading" } | { kind: "unknown" } | { kind: "locked" } | { kind: "passport" } | { kind: "policy" };
+export function raffleAllowance({ raffle, guest, hasPassport, tickets, entries }: {
+  raffle: Raffle; guest: boolean; hasPassport: boolean;
+  tickets: { loading: boolean; value: number | undefined };
+  entries: { loading: boolean; error: boolean; entry: BenefitEntryState | null | undefined };
+}): RaffleAllowance {
+  if (guest) return { kind: "locked" };
+  if (!raffle.fulfillmentPolicy) return { kind: "policy" };
+  if (raffle.requiresFanVerification && (!hasPassport || entries.entry?.fanVerified === false)) return { kind: "passport" };
+  if (tickets.loading || entries.loading) return { kind: "loading" };
+  if (tickets.value === undefined || entries.error || entries.entry === undefined) return { kind: "unknown" };
+  const remaining = entries.entry ? entries.entry.remainingBenefitTickets : raffle.perFanTicketLimit;
+  return { kind: "count", count: Math.max(0, Math.min(Math.floor(tickets.value / RAFFLE_TICKET_COST), remaining ?? Number.POSITIVE_INFINITY)) };
+}
+
 function raffleHref(slug: string, benefitId: string | null, locale: AppLocale): string {
   if (benefitId) return creatorRaffleHref(slug, benefitId, locale);
   return creatorRafflesHref(slug, locale);
 }
 
-/** One lucky-draw card (E4): prize, date, winners, ticket cost with the entries the wallet allows now, and one action that always works. */
-function RaffleCard({ raffle, status, slug, locale, tickets, entered, remaining, guest }: { raffle: Raffle; status: Raffle["status"]; slug: string; locale: AppLocale; tickets: number | null; entered: number | null; remaining: number | null; guest: boolean }) {
-  const href = raffleHref(slug, raffle.benefitId, locale);
-  const now = tickets === null ? null : Math.min(Math.floor(tickets / RAFFLE_TICKET_COST), remaining ?? Number.POSITIVE_INFINITY);
-  const cost = status !== "open" ? null : guest ? <>{t(locale, "luckyCostGuest", [RAFFLE_TICKET_COST])} · <FanLockedValue locale={locale} /></>
-    : now === null ? <FanSkeleton width={160} height={20} /> : t(locale, "luckyCost", [RAFFLE_TICKET_COST, now.toLocaleString(locale)]);
-  const label = status === "open" ? t(locale, "luckyEnter") : status === "closed" ? t(locale, "luckyResults") : t(locale, "luckyDetails");
-  return <li className={styles.raffle} data-raffle-status={status}>
+/** One lucky-draw card (E4): prize, date, winners, ticket cost with the entries the server would take now, and one action that always works.
+ * When the server would refuse (no passport, no fulfillment policy yet) the card says why and leads to the fix instead of a count. */
+function RaffleCard({ raffle, status, slug, locale, entered, allowance }: { raffle: Raffle; status: Raffle["status"]; slug: string; locale: AppLocale; entered: number | null; allowance: RaffleAllowance | null }) {
+  const open = status === "open" && allowance !== null;
+  const cost = !open ? null
+    : allowance.kind === "locked" ? <>{t(locale, "luckyCostGuest", [RAFFLE_TICKET_COST])} · <FanLockedValue locale={locale} /></>
+    : allowance.kind === "loading" ? <FanSkeleton width={160} height={20} />
+    : allowance.kind === "count" ? t(locale, "luckyCost", [RAFFLE_TICKET_COST, allowance.count.toLocaleString(locale)])
+    : allowance.kind === "passport" ? t(locale, "luckyNeedPassport")
+    : allowance.kind === "policy" ? t(locale, "luckyNeedPolicy")
+    : t(locale, "luckyCostGuest", [RAFFLE_TICKET_COST]);
+  const passport = open && allowance.kind === "passport";
+  const href = passport ? creatorRaffleVerificationHref(slug, locale, raffle.benefitId) : raffleHref(slug, raffle.benefitId, locale);
+  const label = passport ? t(locale, "luckyGetPassport") : status === "open" && allowance?.kind !== "policy" ? t(locale, "luckyEnter") : status === "closed" ? t(locale, "luckyResults") : t(locale, "luckyDetails");
+  return <li className={styles.raffle} data-raffle-status={status} data-raffle-allowance={open ? allowance.kind : undefined}>
     <span className={styles.prize}>{raffle.imageUrl ? <img src={raffle.imageUrl} alt="" width={80} height={60} loading="lazy" /> : <img src="/images/economy/ticket.svg" alt="" width={32} height={32} data-fallback="" />}</span>
     <span className={styles.raffleHead}><strong className={styles.raffleTitle}>{raffle.title}</strong><span className={styles.meta}><RaffleDate raffle={raffle} status={status} locale={locale} /></span></span>
     <span className={styles.facts}>
@@ -111,11 +143,13 @@ export function StanLucky({ locale, bias, guest }: { locale: AppLocale; bias: Se
   const body = bias.status === "loading" || (slug && raffles.loading) ? <div className={styles.pending} aria-busy="true"><FanSkeleton shape="block" width="100%" height="100%" /></div>
     : guest ? empty(t(locale, "luckyNoFavorite"))
     : !slug ? empty(t(locale, "luckyNoFavorite"), bias.options.length ? <FavoritePickMenu locale={locale} bias={bias} className={styles.pick}><span>{t(locale, "heartPick")}</span><ArrowRight size={16} aria-hidden="true" /></FavoritePickMenu> : <FanAction variant="text" href={`/pages/groups?locale=${locale}`} trailingIcon={<ArrowRight />}>{t(locale, "heartPick")}</FanAction>)
-    : raffles.error ? empty(t(locale, "luckyEmpty"), history)
+    : raffles.error ? <FanState inline compact kind="error" className={styles.empty} title={t(locale, "luckyLoadError")} actions={<FanAction variant="text" onClick={raffles.retry}>{groupsCopy(locale).retry}</FanAction>} />
     : shown.length === 0 ? empty(t(locale, "luckyEmpty"), history)
     : <ul className={styles.raffles} data-count={shown.length}>{shown.map(({ raffle, status }) => {
-      const entry = entries.data?.benefits.find(item => item.id === raffle.benefitId)?.entry ?? null;
-      return <RaffleCard key={raffle.id} raffle={raffle} status={status} slug={slug} locale={locale} guest={guest} tickets={wallet.data?.tickets ?? (wallet.loading ? null : 0)} entered={entry?.enteredTickets ?? null} remaining={entry?.remainingBenefitTickets ?? null} />;
+      // A loaded list without this benefit means no entry yet (entered 0); undefined while the list is not known.
+      const entry = entries.data ? entries.data.benefits.find(item => item.id === raffle.benefitId)?.entry ?? null : undefined;
+      const allowance = status === "open" ? raffleAllowance({ raffle, guest, hasPassport: bias.selected?.slug === slug, tickets: { loading: wallet.loading, value: wallet.data?.tickets }, entries: { loading: entries.loading, error: entries.error, entry } }) : null;
+      return <RaffleCard key={raffle.id} raffle={raffle} status={status} slug={slug} locale={locale} entered={entry?.enteredTickets ?? null} allowance={allowance} />;
     })}</ul>;
   return <section className={styles.section} id="stan-lucky" tabIndex={-1} aria-labelledby="stan-lucky-title">
     <div className={styles.head}><FanHeading id="stan-lucky-title">{title}</FanHeading><FanCount value={raffles.live} />{more}</div>
