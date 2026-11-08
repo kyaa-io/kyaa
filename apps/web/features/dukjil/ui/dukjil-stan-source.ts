@@ -55,6 +55,7 @@ export const dukjilStanSource = {
   cheerHeartReady: { ko: "하트 +1", en: "Heart +1" },
   cheerFanRanking: { ko: "팬 순위 보기", en: "See fan ranking" },
   // r5 (2026-11-09): 덕질 보조 탭·잔액 카드 라벨-값·럭키드로우 모듈·응원 카드·내역.
+  stanTodayTitle: { ko: "오늘 할 것", en: "To do today" },
   stanTabToday: { ko: "오늘", en: "Today" },
   stanTabHistory: { ko: "내역", en: "History" },
   walletPointsHistory: { ko: "적립·사용", en: "Earned & used" },

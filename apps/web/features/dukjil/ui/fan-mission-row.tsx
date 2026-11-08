@@ -1,20 +1,20 @@
 "use client";
-import { ChevronDown } from "lucide-react";
+import { Check, ChevronDown } from "lucide-react";
 import Link from "next/link";
 import type { Route } from "next";
 import type { MouseEvent, ReactNode } from "react";
 import { FanCollapsibleTrigger, type FanCollapsibleTriggerProps } from "@/components/fan-ui/fan-collapsible";
 import styles from "./fan-mission-row.module.css";
 
-/** feedback D1 · F3: the one row of every 덕질 list — today's missions, more missions, certifications, the folded heads and the 오늘의 덕질 empty row.
- * Same box everywhere: a 40 circle with the art (28) · title (one line 22) with an optional line below at the same x (progress or state) ·
- * one fixed trailing column (96, 120 from 1024px) holding one thing: `+NP`, a short action or the done tag. No arrow. Height 64, padding 12. */
+/** r5.1 미션 행 (plan-ux 4-B, DESIGN 목록 행 템플릿 mission 64): `40 (1px line circle, lucide 20) │ 1fr │ 96/120`, gap 12, padding 12·16.
+ * Title 15/700 with `0/3` 12 beside it (gap 8), the 2px bar 4 below at the title's x (64), one trailing thing: `+20P` 15/700 in ink or `✓ 완료`.
+ * The whole row is the link (출석 too: no button inside). Used by every 덕질 list — today's missions, more missions, certifications. */
 export function FanMissionRow({ href, art, title, detail, trailing, onClick, status, dataMission, done }: {
-  href: string; art?: ReactNode; title: ReactNode; detail?: ReactNode; trailing?: ReactNode;
+  href: string; art?: ReactNode | null; title: ReactNode; detail?: ReactNode; trailing?: ReactNode;
   onClick?: (event: MouseEvent<HTMLAnchorElement>) => void; status?: string; dataMission?: string; done?: boolean;
 }) {
   return <li className={styles.item} data-mission={dataMission} data-status={status} data-done={done === undefined ? undefined : String(done)}>
-    <Link className={styles.row} href={href as Route} onClick={onClick} data-fan-mission-row="">
+    <Link className={styles.row} href={href as Route} onClick={onClick} data-fan-mission-row="" data-row="mission">
       <RowBody art={art} title={title} detail={detail} trailing={trailing} />
     </Link>
   </li>;
@@ -22,7 +22,7 @@ export function FanMissionRow({ href, art, title, detail, trailing, onClick, sta
 
 function RowBody({ art, title, detail, trailing }: { art?: ReactNode; title: ReactNode; detail?: ReactNode; trailing?: ReactNode }) {
   return <>
-    <span className={styles.art} aria-hidden="true" data-mission-art="">{art}</span>
+    {art === null ? null : <span className={styles.art} aria-hidden="true" data-mission-art="">{art}</span>}
     <span className={styles.copy}>
       <span className={styles.title} data-mission-title="">{title}</span>
       {detail ? <span className={styles.detail} data-mission-detail="">{detail}</span> : null}
@@ -31,12 +31,27 @@ function RowBody({ art, title, detail, trailing }: { art?: ReactNode; title: Rea
   </>;
 }
 
-/** F3: a folded group's head drawn as a mission row (same grid, height, circle and trailing column) so the fold reads as one more row.
- * `FanCollapsible` hands it the aria contract; the trailing column holds the count and the chevron. */
-export function FanMissionFoldRow({ icon, title, meta, ...triggerProps }: FanCollapsibleTriggerProps & { icon: ReactNode; title: ReactNode; meta?: ReactNode }) {
-  return <FanCollapsibleTrigger {...triggerProps} className={`${styles.row} ${styles.fold}`} data-fan-mission-row="fold">
-    <RowBody art={icon} title={title} trailing={<>{meta ? <span className={styles.foldMeta}>{meta}</span> : null}<ChevronDown size={16} className={styles.chevron} aria-hidden="true" /></>} />
+/** A folded group's head drawn as a mission row of the same height without the circle (title at x = 16): `그 밖의 미션 9개 … +465P ˅`.
+ * `FanCollapsible` hands it the aria contract; `count` sits beside the title, `points` and the chevron in the trailing column. */
+export function FanMissionFoldRow({ title, count, points, ...triggerProps }: FanCollapsibleTriggerProps & { title: ReactNode; count?: ReactNode; points?: ReactNode }) {
+  return <FanCollapsibleTrigger {...triggerProps} className={`${styles.row} ${styles.fold}`} data-fan-mission-row="fold" data-row="mission">
+    <RowBody art={null} title={<><span>{title}</span>{count ? <span className={styles.count}>{count}</span> : null}</>} trailing={<>{points ? <span className={styles.reward}>{points}</span> : null}<ChevronDown size={16} strokeWidth={1.5} className={styles.chevron} aria-hidden="true" /></>} />
   </FanCollapsibleTrigger>;
+}
+
+/** The reward in the trailing column: `+20P` in ink, no coin (8장 ⑥). */
+export function MissionReward({ points, locale }: { points: number; locale: string }) {
+  return <span className={styles.reward} data-mission-reward="">+{points.toLocaleString(locale)}P</span>;
+}
+
+/** The done tag: `✓ 완료`, a grey pill of 20 (11/700). */
+export function MissionDone({ label }: { label: string }) {
+  return <span className={styles.done} data-badge="" data-mission-done=""><Check size={12} strokeWidth={1.5} aria-hidden="true" />{label}</span>;
+}
+
+/** The progress under a title: a 2px bar (160 / 240 from 1024) at the title's x. */
+export function MissionBar({ value, max, label }: { value: number; max: number; label: string }) {
+  return <span className={styles.bar} role="progressbar" aria-label={label} aria-valuemin={0} aria-valuemax={max} aria-valuenow={Math.min(value, max)}><i style={{ width: `${Math.min(100, Math.round((value / Math.max(1, max)) * 100))}%` }} /></span>;
 }
 
 /** The list the rows sit in: inside a fold it draws only the dividers; on its own (`framed`) it is the outlined card. */

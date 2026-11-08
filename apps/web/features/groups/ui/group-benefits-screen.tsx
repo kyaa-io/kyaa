@@ -79,7 +79,7 @@ function HistoryTab({locale,signedOut,bias}:{locale:AppLocale;signedOut:boolean;
  return <div className={styles.single}><StanHistoryTab key={auth.ownerKey} locale={locale} guest={guest}/></div>;
 }
 function TodayTab({locale,signedOut,bias,onHistory}:{locale:AppLocale;signedOut:boolean;bias:SelectedBias;onHistory:()=>void}){
- const auth=useGroupRequest(),guest=useGuest(signedOut,bias),[exchange,setExchange]=useState(false),openExchange=useCallback(()=>setExchange(true),[]);
+ const auth=useGroupRequest(),guest=useGuest(signedOut,bias),[exchange,setExchange]=useState(false),openExchange=()=>setExchange(true);
  return <BenefitsSections><div className={styles.grid}>
  <div className={styles.body}>
   <BenefitsWallet key={`${locale}:${auth.ownerKey}`} locale={locale} signedOut={signedOut} bias={bias} onExchange={openExchange} onHistory={onHistory}/>
@@ -115,7 +115,7 @@ function BenefitsCheer({locale,bias,signedOut}:{locale:AppLocale;bias:SelectedBi
 function BenefitsDailyMissions({locale}:{locale:AppLocale}){
  const auth=useGroupRequest(),status=useDukjilStatus(locale),bias=useSelectedBias(locale),joined=useGroupResource(auth.authenticated?'/api/groups?mine=joined&limit=50':null,parseJoined),[attendance,setAttendance]=useState(false),allFailed=Boolean(useContext(SectionContext)?.allFailed);
  if(status==='off')return null;
- const title=dukjilText(locale,'missionsTitle');
+ const title=dukjilText(locale,'stanTodayTitle');
  // Hold the section's place, at the height the loaded section takes (no jump below), until the policy, the favorite and the joined pages are known, so it does not appear late and push the page (V12).
  if(status==='loading'||!auth.ready||(auth.authenticated&&(joined.loading||bias.status==='loading')))return <section className={`${styles.slot} ${styles.missionsPending}`} hidden={allFailed} aria-busy='true' data-missions-pending='' data-block='list'><FanHeading>{title}</FanHeading><FanSkeletonRows rows={5}/></section>;
  if(status!=='on')return null;
@@ -126,7 +126,7 @@ function BenefitsDailyMissions({locale}:{locale:AppLocale}){
 }
 /** 내역 card (aside 2): the last three rows; its failure joins the section failures. */
 function BenefitsHistory({locale,guest,onHistory}:{locale:AppLocale;guest:boolean;onHistory:()=>void}){
- const [state,setState]=useState<SectionState>({failed:false,retry:()=>{}}),onFailure=useCallback((failed:boolean,retry:()=>void)=>setState({failed,retry}),[]);
+ const [state,setState]=useState<SectionState>({failed:false,retry:()=>{}}),onFailure=(failed:boolean,retry:()=>void)=>setState({failed,retry});
  const lifted=useSectionFailure('history',state.failed,()=>state.retry());
  return <div className={styles.slot} hidden={lifted}><StanHistoryCard locale={locale} guest={guest} href={tabHref(locale,'history')} onAll={onHistory} onFailure={onFailure}/></div>;
 }

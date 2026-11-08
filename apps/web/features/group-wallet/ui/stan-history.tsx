@@ -2,7 +2,7 @@
 import { ChevronRight } from "lucide-react";
 import Link from "next/link";
 import type { Route } from "next";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import { FanHeading } from "@/components/fan-ui/fan-heading";
 import { FanLockedRows, FanLockedValue } from "@/components/fan-ui/fan-locked-value";
@@ -64,8 +64,9 @@ function ErrorLine({ locale, retry }: { locale: AppLocale; retry: () => void }) 
 /** 내역 card of the 덕질 aside (plan-ux r5.1 3.2, 보조 2): the last three rows and `전체 보기 ›` to the history tab. Guests see three locked rows in the same outline. */
 export function StanHistoryCard({ locale, guest, href, onAll, onFailure }: { locale: AppLocale; guest: boolean; href: string; onAll?: () => void; onFailure?: (failed: boolean, retry: () => void) => void }) {
   const history = useHistory(guest ? null : "/api/me/wallet/history");
-  const failed = Boolean(history.error), settled = !history.loading;
-  useEffect(() => { if (!guest && settled) onFailure?.(failed, history.retry); }, [guest, settled, failed, history.retry, onFailure]);
+  const failed = Boolean(history.error), settled = !history.loading, report = useRef(onFailure), retry = useRef(history.retry);
+  useEffect(() => { report.current = onFailure; retry.current = history.retry; });
+  useEffect(() => { if (!guest && settled) report.current?.(failed, () => retry.current()); }, [guest, settled, failed]);
   const entries = history.data?.entries.slice(0, 3) ?? [];
   return <section className={styles.card} id="stan-history" tabIndex={-1} aria-labelledby="stan-history-title" data-block="aside-card">
     <div className={styles.head}><FanHeading id="stan-history-title">{t(locale, "stanTabHistory")}</FanHeading>{guest ? <FanLockedValue locale={locale} /> : <Link className={styles.all} href={href as Route} scroll={false} onClick={onAll}>{seeAllLabel[locale]}<ChevronRight size={12} strokeWidth={1.5} aria-hidden="true" /></Link>}</div>
