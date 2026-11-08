@@ -139,7 +139,6 @@
 .historySkeleton>div{display:grid}
 .historySkeleton i{display:block;height:20px;margin-block:calc(var(--space-6) + var(--space-1) / 2);background:var(--color-line-subtle);border-radius:var(--space-1);animation:walletLoadingPulse 1.4s ease-in-out infinite}
 @media(min-width:48rem){.historyPreview .historyHead h2{font-size:var(--fan-heading-size-wide)}}
-@media(min-width:64rem){.historyPreview .historyHead h2{font:400 16px/24px "Pretendard UI 650",system-ui,sans-serif;font-synthesis:none;letter-spacing:normal}}
 @media(prefers-reduced-motion:reduce){.historySkeleton i{animation:none}}
 
 /* While an ad is on its way the form stays in place (no height jump) and cannot be used. */
@@ -150,3 +149,13 @@
 .adBusy svg{animation:adSpin calc(var(--motion-layout) * 4) linear infinite;color:var(--color-muted)}
 @keyframes adSpin{to{transform:rotate(360deg)}}
 @media (prefers-reduced-motion:reduce){.adBusy svg{animation:none}}
+/* 피드백 F2 (2026-11-08): the 덕질 history preview is a section heading over one card (segment + rows), like the cheer card beside it.
+   The rows keep one height, and the empty, loading and error states hold the same height, so the card does not jump. */
+.historyPreview .historyCard{display:grid;gap:var(--space-2);box-sizing:border-box;min-width:0;padding:var(--space-3) var(--space-4) var(--space-1);border:1px solid var(--color-line);border-radius:var(--radius-control);background:var(--color-surface)}
+.historyPreview .historyBody{display:grid;align-content:start;min-width:0}
+.historyPreview .historyBody[data-history-rows="3"]{min-height:calc(3 * var(--space-16))}
+.historyPreview .historyBody li{box-sizing:border-box;min-height:var(--space-16);padding-block:var(--space-2)}
+.historyPreview .historyBody li:first-child{border-top:0}
+.historyPreview .historyBody>[role="status"],.historyPreview .historyBody>div:not([role]){align-self:stretch}
+.historyPreview .historySkeleton i{height:20px;margin-block:calc((var(--space-16) - var(--space-5)) / 2)}
+@media(min-width:48rem){.historyPreview .historyCard{padding-inline:var(--space-5)}}

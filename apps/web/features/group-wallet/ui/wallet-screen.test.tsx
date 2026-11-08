@@ -307,6 +307,13 @@ it('previews five history rows, expands from the title row, and opens expanded f
  await screen.findAllByText('출석체크');await act(async()=>{});expect(hashed.container.querySelectorAll('li')).toHaveLength(8);
  window.location.hash='';
 });
+it('F2: holds the preview height for its rows in the empty state, the segment and rows in one card under the heading',async()=>{
+ vi.stubGlobal('fetch',vi.fn(async(url:string)=>Response.json(url.endsWith('/history')?{entries:[]}:wallet)));
+ const view=render(<WalletHistoryPanel locale='ko' preview={{rows:3,moreLabel:'전체 보기',lessLabel:'접기'}}/>);
+ await screen.findByText('아직 내역이 없어요');
+ const body=view.container.querySelector('[data-history-rows="3"]')!;expect(body).not.toBeNull();expect(body.parentElement!.querySelector('[role="tablist"],nav')).not.toBeNull();
+ expect(body.parentElement!.contains(document.getElementById('wallet-history'))).toBe(false);
+});
 it('keeps the full history list without preview props',async()=>{
  vi.stubGlobal('fetch',vi.fn(async(url:string)=>Response.json(url.endsWith('/history')?{entries:historyRows(8)}:wallet)));
  const view=render(<WalletHistoryPanel locale='ko'/>);await screen.findAllByText('출석체크');expect(view.container.querySelectorAll('li')).toHaveLength(8);expect(screen.queryByRole('button',{name:'전체 보기'})).toBeNull();
