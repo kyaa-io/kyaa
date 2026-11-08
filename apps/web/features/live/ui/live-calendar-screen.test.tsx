@@ -444,7 +444,14 @@ describe("LIVE calendar screen", () => {
     render(<LiveCalendarScreen locale="ko" initialCalendar={calendar} celebrities={celebrities} unlistedSlugs={["elina"]} eventMetadata={eventMetadata} initialCelebritySlugs={["elina"]} />);
     await waitFor(() => expect(request).toHaveBeenCalledWith("/api/live-events/calendar?month=2026-09&locale=ko&celebrity=elina", expect.anything()));
     expect(scheduleMonth).toHaveBeenCalledWith("2026-09", "ko", undefined, true);
-    expect(scheduleMonth).toHaveBeenCalledWith("2026-09", "ko", "elina", true);
+    expect(scheduleMonth).toHaveBeenCalledWith("2026-09", "ko", ["elina"], true);
+  });
+
+  it("reads every link-selected unlisted creator's schedules, not only the first", async () => {
+    vi.stubGlobal("fetch", vi.fn(async () => ({ ok: true, json: async () => calendar }) as Response));
+    scheduleMonth.mockClear();
+    render(<LiveCalendarScreen locale="ko" initialCalendar={calendar} celebrities={celebrities} unlistedSlugs={["elina", "kara"]} eventMetadata={eventMetadata} initialCelebritySlugs={["kara", "elina"]} />);
+    expect(scheduleMonth).toHaveBeenCalledWith("2026-09", "ko", ["kara", "elina"], true);
   });
 
   it("ignores an older authenticated refresh that resolves after the month changes", async () => {

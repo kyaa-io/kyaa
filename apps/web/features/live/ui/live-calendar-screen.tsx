@@ -244,15 +244,16 @@ export function LiveCalendarScreen({
   const [openedAt] = useState(() => Date.now());
   const monthSchedules = useScheduleMonth(initialCalendar.month, locale, groupScope?.celebritySlug, !groupScope || Boolean(groupScope.celebritySlug));
   // The cross-creator lists leave unlisted creators out; one a link opened this calendar for is read by its own slug.
-  const linkedUnlisted = groupScope ? undefined : initialCelebritySlugs.find((slug) => unlistedSlugs.includes(slug));
-  const linkedSchedules = useScheduleMonth(initialCalendar.month, locale, linkedUnlisted, Boolean(linkedUnlisted));
+  const linkedUnlisted = groupScope ? [] : initialCelebritySlugs.filter((slug) => unlistedSlugs.includes(slug)).slice(0, 10);
+  const linkedSchedules = useScheduleMonth(initialCalendar.month, locale, linkedUnlisted, linkedUnlisted.length > 0);
   // A string, so the refresh callback stays stable across renders.
   const linkedQuery = groupScope ? "" : initialCelebritySlugs.filter((slug) => unlistedSlugs.includes(slug)).slice(0, 10).map((slug) => `&celebrity=${encodeURIComponent(slug)}`).join("");
-  const schedules = useMemo(() => linkedUnlisted === undefined ? monthSchedules : {
+  const linkedKey = linkedUnlisted.join(",");
+  const schedules = useMemo(() => linkedKey === "" ? monthSchedules : {
     status: monthSchedules.status === "ready" ? linkedSchedules.status : monthSchedules.status,
     items: [...monthSchedules.items, ...linkedSchedules.items.filter((item) => !monthSchedules.items.some((own) => own.id === item.id))],
     retry: () => { monthSchedules.retry(); linkedSchedules.retry(); },
-  }, [linkedUnlisted, monthSchedules, linkedSchedules]);
+  }, [linkedKey, monthSchedules, linkedSchedules]);
   const participation = participationCopy(locale);
   const [selectedCelebritySlugs, setSelectedCelebritySlugs] = useState<string[]>([
     ...initialCelebritySlugs,

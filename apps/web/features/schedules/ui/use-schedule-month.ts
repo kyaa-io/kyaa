@@ -9,13 +9,15 @@ import { toContentLocale, type AppLocale } from "@/i18n/locales";
 import { pageSchema, scheduleSchema, type Schedule } from "../domain/participation";
 const parse = pageSchema(scheduleSchema);
 type State = { key: string; status: "ready"; items: Schedule[] } | { key: string; status: "error" };
-export function useScheduleMonth(month: string, locale: AppLocale, celebritySlug?: string, active = true) {
+/** celebritySlug: one creator's list, or several read one after another and merged (by id, in time order). */
+export function useScheduleMonth(month: string, locale: AppLocale, celebritySlug?: string | readonly string[], active = true) {
   const auth = usePrivy(), session = useByUsSession();
   const [revision, setRevision] = useState(0), [snapshot, setSnapshot] = useState<State>();
   const tokenProvider = useRef(auth.getAccessToken);
   useEffect(() => { tokenProvider.current = auth.getAccessToken; }, [auth.getAccessToken]);
   const enabled = active && auth.ready && (!auth.authenticated || session.ready);
-  const key = `${month}:${locale}:${celebritySlug ?? ""}:${enabled}:${auth.authenticated}:${auth.user?.id ?? ""}:${session.generation}:${revision}`;
+  const slugKey = celebritySlug === undefined ? "" : typeof celebritySlug === "string" ? celebritySlug : celebritySlug.join(",");
+  const key = `${month}:${locale}:${slugKey}:${enabled}:${auth.authenticated}:${auth.user?.id ?? ""}:${session.generation}:${revision}`;
   useEffect(() => {
     if (!enabled) return;
     const controller = new AbortController();
@@ -26,27 +28,31 @@ export function useScheduleMonth(month: string, locale: AppLocale, celebritySlug
       // 같은 달·같은 사람을 읽는 화면(달력·일정 요약)은 진행 중이거나 막 받은 한 요청을 같이 쓴다.
       const shared = `schedules:${key}`, cached = peekResource(shared);
       const items = cached?.fresh ? cached.value as Schedule[] : await shareResourceRead(shared, async (signal) => {
-      const items: Schedule[] = [], seen = new Set<string>();
+      const items: Schedule[] = [], ids = new Set<string>();
+      for (const slug of slugKey.split(",").map((value) => value || undefined)) {
+      const seen = new Set<string>();
       let cursor: string | null = null;
       do {
         const query = new URLSearchParams({ month, locale: toContentLocale(locale) });
-        if (celebritySlug) query.set("celebritySlug", celebritySlug);
+        if (slug) query.set("celebritySlug", slug);
         if (cursor) query.set("cursor", cursor);
         const page = await withRequestDeadline(async signal => {
           const response = await fetch(`/api/schedules?${query}`, { signal, cache: "no-store", headers: token ? { authorization: `Bearer ${token}` } : undefined });
           if (!response.ok) throw new Error("SCHEDULE_UNAVAILABLE");
           return parse.parse(await response.json());
         }, { signal });
-        items.push(...page.items); cursor = page.nextCursor;
+        for (const item of page.items) if (!ids.has(item.id)) { ids.add(item.id); items.push(item); }
+        cursor = page.nextCursor;
         if (cursor && seen.has(cursor)) throw new Error("INVALID_CURSOR");
         if (cursor) seen.add(cursor);
       } while (cursor);
-      return items;
+      }
+      return slugKey.includes(",") ? items.toSorted((a, b) => Date.parse(a.startsAt) - Date.parse(b.startsAt) || a.id.localeCompare(b.id)) : items;
       }, controller.signal);
       if (!controller.signal.aborted) setSnapshot({ key, status: "ready", items });
     })().catch(() => { if (!controller.signal.aborted) setSnapshot({ key, status: "error" }); });
     return () => controller.abort();
-  }, [key, month, locale, celebritySlug, enabled, auth.authenticated]);
+  }, [key, month, locale, slugKey, enabled, auth.authenticated]);
   const retry = useCallback(() => setRevision(value => value + 1), []);
   return { status: snapshot?.key === key ? snapshot.status : "loading" as const,
     items: snapshot?.key === key && snapshot.status === "ready" ? snapshot.items : [], retry };
