@@ -64,7 +64,8 @@
   --z-drawer: 45;
   --z-dialog: 50;
   --z-alertdialog: 55;
-  --z-toast: 58;
+  /* Above every modal, including the older screen modals that still set z-index 100–1000 directly (261107-2 r4). */
+  --z-toast: 1100;
   --z-tooltip: 60;
 
   /* Fan UI owns these roles. Screens select variants, not ad-hoc sizes. */

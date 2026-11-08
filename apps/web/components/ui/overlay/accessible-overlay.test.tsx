@@ -39,6 +39,19 @@ describe("AccessibleOverlay", () => {
     Object.defineProperty(window, "scrollTo", { configurable: true, value: scrollTo });
   });
 
+  it("leaves the shared toast layer live above a modal while the page behind goes inert", async () => {
+    const layer = document.createElement("div");
+    layer.innerHTML = '<div data-fan-toast-viewport=""><button type="button">Close toast</button></div>';
+    document.body.append(layer);
+    render(<Harness />);
+    fireEvent.click(screen.getByRole("button", { name: "Open drawer" }));
+    await screen.findByRole("dialog", { name: "Drawer" });
+    expect(screen.getByTestId("application").parentElement).toHaveProperty("inert", true);
+    expect(layer.inert).toBe(false);
+    expect(layer.hasAttribute("aria-hidden")).toBe(false);
+    layer.remove();
+  });
+
   it("isolates and locks the page, traps focus, closes on Escape, and restores its trigger", async () => {
     render(<Harness />);
     const trigger = screen.getByRole("button", { name: "Open drawer" });

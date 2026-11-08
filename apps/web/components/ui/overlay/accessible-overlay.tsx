@@ -56,7 +56,9 @@ function syncDocumentIsolation() {
         ariaHidden: child.getAttribute("aria-hidden"),
       });
     }
-    const active = child === top;
+    // The shared toast layer stays live and clickable above a modal (its close and retry buttons answer the modal's own action).
+    const toastLayer = child.childElementCount === 1 && Boolean(child.firstElementChild?.matches("[data-fan-toast-viewport]"));
+    const active = child === top || toastLayer;
     child.inert = !active;
     if (active) child.removeAttribute("aria-hidden");
     else child.setAttribute("aria-hidden", "true");
