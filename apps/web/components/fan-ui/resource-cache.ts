@@ -1,6 +1,6 @@
 // 클라이언트 읽기의 모듈 단위 저장소. 원본 JSON을 담고 해석은 부르는 쪽이 한다(같은 주소를 다른 스키마로 읽는 화면이 있다).
 // 키에는 항상 소유자가 들어가고, 소유자가 바뀌면(로그인·로그아웃) 전부 지운다. 다른 회원의 값이 남지 않게 한다.
-import { useState, useSyncExternalStore } from "react";
+import { useMemo, useState, useSyncExternalStore } from "react";
 
 export const RESOURCE_FRESH_MS = 30_000;
 
@@ -20,8 +20,8 @@ export function peekResource(key: string): (Entry & { fresh: boolean }) | undefi
   if (!entry) return undefined;
   return { ...entry, fresh: Date.now() - entry.storedAt < freshFor(key) };
 }
-/** 저장소가 비워진 횟수. 저장소 밖의 짧은 공유 읽기도 쓰기 뒤에는 다시 읽게 한다. */
-export const resourceEpoch = () => epoch;
+/** 쓰기가 있었던 횟수(전부 비움 + 범위 무효화). 저장소 밖의 짧은 공유 읽기도 쓰기 뒤에는 다시 읽게 한다. */
+export const resourceEpoch = () => epoch + scopedDrops;
 export function storeResource(key: string, value: unknown) { entries.set(key, { value, storedAt: Date.now() }); }
 export function dropResource(key: string) { entries.delete(key); inFlight.delete(key); }
 
@@ -30,19 +30,46 @@ export function dropResource(key: string) { entries.delete(key); inFlight.delete
 const NOTIFY_DELAY_MS = 50;
 const listeners = new Set<() => void>();
 let epoch = 0;
+let scopedDrops = 0;
+/** 범위 무효화가 키마다 올리는 번호. 마운트된 훅의 키만 센다(`useResourceEpoch(key)`가 등록). */
+const keyVersions = new Map<string, number>();
+const watchedKeys = new Map<string, number>();
 let notifyTimer: ReturnType<typeof setTimeout> | null = null;
-function bumpEpoch() {
-  epoch += 1;
+function scheduleNotify() {
   if (notifyTimer !== null) return;
   notifyTimer = setTimeout(() => {
     notifyTimer = null;
     for (const listener of listeners) listener();
   }, NOTIFY_DELAY_MS);
 }
+function bumpEpoch() { epoch += 1; scheduleNotify(); }
 export function clearResources() { entries.clear(); inFlight.clear(); bumpEpoch(); }
-const subscribeEpoch = (listener: () => void) => { listeners.add(listener); return () => { listeners.delete(listener); }; };
-/** 저장소가 비워질 때마다 바뀌는 값. 읽기 effect의 의존값으로 쓴다. */
-export const useResourceEpoch = () => useSyncExternalStore(subscribeEpoch, () => epoch, () => 0);
+/** 주소가 `pattern`에 맞는 값만 버리고, 그 키를 읽는 마운트된 훅만 다시 읽게 한다. 다른 구역은 그대로 둔다. */
+export function dropResourcesMatching(pattern: RegExp) {
+  for (const key of [...entries.keys()]) if (pattern.test(key)) entries.delete(key);
+  for (const key of [...inFlight.keys()]) if (pattern.test(key)) inFlight.delete(key);
+  for (const key of watchedKeys.keys()) if (pattern.test(key)) keyVersions.set(key, (keyVersions.get(key) ?? 0) + 1);
+  scopedDrops += 1;
+  scheduleNotify();
+}
+function subscribeEpochFor(key: string | undefined) {
+  return (listener: () => void) => {
+    listeners.add(listener);
+    if (key !== undefined) watchedKeys.set(key, (watchedKeys.get(key) ?? 0) + 1);
+    return () => {
+      listeners.delete(listener);
+      if (key === undefined) return;
+      const left = (watchedKeys.get(key) ?? 1) - 1;
+      if (left > 0) watchedKeys.set(key, left);
+      else { watchedKeys.delete(key); keyVersions.delete(key); }
+    };
+  };
+}
+/** 저장소가 비워지거나 이 키가 무효화될 때마다 바뀌는 값. 읽기 effect의 의존값으로 쓴다. */
+export function useResourceEpoch(key?: string) {
+  const subscribe = useMemo(() => subscribeEpochFor(key), [key]);
+  return useSyncExternalStore(subscribe, () => key === undefined ? String(epoch) : `${epoch}:${keyVersions.get(key) ?? 0}`, () => "0");
+}
 
 /** 저장소가 비어도 같은 범위(소유자와 주소를 담은 값)에서는 마지막 원본을 돌려준다. 범위가 바뀌면 곧바로 버린다. */
 export function useRetainedResource(scope: string, value: unknown): unknown {
@@ -61,6 +88,36 @@ export function isResourceWrite(method: string | undefined, pathname: string) {
   return !NOT_A_WRITE.test(pathname);
 }
 
+/** 261107-2 F4. 글 반응(👍👎)·댓글·댓글 공감은 글과 댓글 읽기, 내 값(포인트·미션·스탬프)만 바꾼다.
+ * 저장소 전체를 비우면 머리·옆 칸·페이지 머리가 모두 다시 읽혀 화면 전체가 새로 그려지는 것처럼 보였다. */
+const MINE = String.raw`/api/(?:me|dukjil)/`;
+const POST_LISTS = String.raw`/api/celebrities/[^/?]+/(?:feed|posts|programs/[^/?]+/posts)(?:[?]|$)|/api/groups/[^/?]+/posts(?:[?]|$)`;
+const narrowWrites: [RegExp, RegExp][] = [
+  // 👍👎: the post (its counts and my choice), the lists that show its count, my points and missions. Not its comments.
+  [/^\/api\/posts\/([^/]+)\/like$/, /$^/],
+  [/^\/api\/groups\/[^/]+\/posts\/([^/]+)\/(?:reaction|dislike)$/, /$^/],
+  // A comment: also the post's comments.
+  [/^\/api\/posts\/([^/]+)\/comments$/, /\/comments(?:[?]|$)/],
+  [/^\/api\/groups\/[^/]+\/posts\/([^/]+)\/comments(?:\/[^/]+)?$/, /\/comments(?:[?/]|$)/],
+  // A comment like or delete: comment reads and my values.
+  [/^\/api\/post-comments\/[^/]+(?:\/reaction)?$/, /\/comments(?:[?/]|$)|\/api\/post-comments\//],
+];
+function narrowScope(pathname: string): RegExp | null {
+  for (const [write, extra] of narrowWrites) {
+    const match = write.exec(pathname);
+    if (!match) continue;
+    const post = match[1] ? String.raw`|/posts/${match[1].replace(/[^0-9A-Za-z-]/g, "")}(?:[?]|$)` : "";
+    return new RegExp(`${MINE}|${POST_LISTS}${post}|${extra.source}`);
+  }
+  return null;
+}
+/** 성공한 쓰기 뒤의 무효화. 범위를 아는 쓰기는 그 키만, 나머지는 전부 비운다. */
+export function invalidateAfterWrite(pathname: string) {
+  const scope = narrowScope(pathname);
+  if (scope) dropResourcesMatching(scope);
+  else clearResources();
+}
+
 let watchedFetch: { wrapper: typeof fetch; original: typeof fetch } | null = null;
 /** `useGroupRequest` 밖의 쓰기(차단, 하트, 응모 등)도 저장소를 비우게 한다. 호출부가 많아 fetch를 감싼다. */
 export function installResourceWriteWatch() {
@@ -74,7 +131,8 @@ export function installResourceWriteWatch() {
     catch { return result; }
     const method = init?.method ?? (input instanceof Request ? input.method : "GET");
     if (url.origin !== window.location.origin || !url.pathname.startsWith("/api/") || !isResourceWrite(method, url.pathname)) return result;
-    return result.then((response) => { if (response.ok) clearResources(); return response; });
+    const pathname = url.pathname;
+    return result.then((response) => { if (response.ok) invalidateAfterWrite(pathname); return response; });
   };
   window.fetch = wrapper;
   watchedFetch = { wrapper, original };

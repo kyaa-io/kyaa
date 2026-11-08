@@ -1,6 +1,6 @@
 "use client";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
-import { clearResources, dropResource, isResourceWrite, peekResource, shareResourceRead, syncResourceOwner, useResourceEpoch, useRetainedResource } from "@/components/fan-ui/resource-cache";
+import { dropResource, invalidateAfterWrite, isResourceWrite, peekResource, shareResourceRead, syncResourceOwner, useResourceEpoch, useRetainedResource } from "@/components/fan-ui/resource-cache";
 import { useByUsAuth } from "@/features/auth/client/cognito-auth";
 import { useByUsSession } from "@/components/byus-session-provider";
 import { withRequestDeadline } from "@/features/reliability/client/request-deadline";
@@ -55,7 +55,7 @@ export function useGroupRequest() {
       const code = typeof failure === "object" && failure !== null && "error" in failure && typeof failure.error === "object" && failure.error !== null && "code" in failure.error && typeof failure.error.code === "string" ? failure.error.code : "REQUEST_FAILED";
       throw new GroupRequestError(response.status, code);
     }
-    if (isResourceWrite(input?.method, path.split('?')[0]!)) clearResources();
+    if (isResourceWrite(input?.method, path.split('?')[0]!)) invalidateAfterWrite(path.split('?')[0]!);
     const result = response.status === 204 ? null : format === "blob" ? await response.blob() : await response.json();
     if (identity.current !== ownerKey) throw new GroupRequestError(409, "SESSION_CHANGED");
     // Only a real write can change the wallet: a presence heartbeat or an analytics POST made every wallet reader re-read.
@@ -78,11 +78,11 @@ export function useGroupResource<T>(url: string | null, parse: (value: unknown) 
   const { request, ready, ownerKey } = auth;
   const key = `${ownerKey}:${url}`;
   const cacheKey = `${ownerKey}:${locale}:${nameLocale}:${url}`;
-  const [snapshot,setSnapshot] = useState<{ key: string; version: number; epoch: number; data?: T; error: boolean; failure?:GroupRequestError }>();
+  const [snapshot,setSnapshot] = useState<{ key: string; version: number; epoch: string; data?: T; error: boolean; failure?:GroupRequestError }>();
   const [version,setVersion] = useState(0);
   const [openedUrl,setOpenedUrl] = useState(url);
   if (forEdit && openedUrl !== url) { setOpenedUrl(url); setSnapshot(undefined); }
-  const epoch = useResourceEpoch();
+  const epoch = useResourceEpoch(cacheKey);
   const handled = useRef({ cacheKey, version: 0, epoch });
   const shown = useRef<T | undefined>(undefined);
   const latestCacheKey = useRef(cacheKey);

@@ -1,7 +1,7 @@
 "use client";
 import { Menu } from "@base-ui/react/menu";
 import { Ellipsis } from "lucide-react";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { editorText } from "@/components/editor/editor-copy";
 import { RichBody } from "@/components/editor/rich-body";
 import { readRichDocument, richDocumentAttachments, type RichAttachment } from "@/components/editor/rich-document";
@@ -11,7 +11,7 @@ import { fanLoginHref } from "@/components/login-href";
 import { NoticeShare } from "@/components/notice/notice-share";
 import contentStyles from "@/features/content-safety/ui/content.module.css";
 import { PostDetailHeader } from "@/features/fan-posts/ui/post-detail-header";
-import { PostReactions, type PostReactionChoice } from "@/features/fan-posts/ui/post-reactions";
+import { applyReaction, PostReactions, type PostReactionChoice, type PostReactionState } from "@/features/fan-posts/ui/post-reactions";
 import detailStyles from "@/features/fan-posts/ui/post-detail.module.css";
 import type { AppLocale } from "@/i18n/locales";
 import { boardCopy } from "./board-copy";
@@ -25,7 +25,7 @@ import styles from "./groups.module.css";
 
 export type GroupPostView = { id: string; title: string; body: string; bodyDoc?: unknown; bodyDocUnavailable?: boolean; nickname: string; avatarUrl: string | null; artist?: boolean; createdAt: string; visibility: string; category?: "notice" | "free"; viewCount?: number; likeCount?: number; commentCount?: number; liked?: boolean; disliked?: boolean; dislikeCount?: number | null; canEdit?: boolean; canDelete?: boolean; assets?: GroupPostAssetRef[] };
 
-export function GroupPostArticle({ pageId, post, locale, member, authenticated, busy, onReact, onEdit, onDelete, onReport, onRefresh, onJoin, joinPending, joinLabel }: { onRefresh?: () => void; pageId: string; post: GroupPostView; locale: AppLocale; member: boolean; authenticated: boolean; busy: boolean; onReact: (choice: PostReactionChoice) => void; onEdit: () => void; onDelete: () => void; onReport: () => void; onJoin?: () => void; joinPending?: boolean; joinLabel?: string }) {
+export function GroupPostArticle({ pageId, post, locale, member, authenticated, busy, onReact, onEdit, onDelete, onReport, onRefresh, onJoin, joinPending, joinLabel }: { onRefresh?: () => void; pageId: string; post: GroupPostView; locale: AppLocale; member: boolean; authenticated: boolean; busy: boolean; onReact: (choice: PostReactionChoice, current: PostReactionState["reaction"]) => Promise<boolean> | void; onEdit: () => void; onDelete: () => void; onReport: () => void; onJoin?: () => void; joinPending?: boolean; joinLabel?: string }) {
   const b = boardCopy(locale), m = managementCopy(locale), t = groupsCopy(locale), [editBlocked, setEditBlocked] = useState(false);
   // Plain text standing in for a document that failed to read would replace the document on save.
   const startEdit = () => { if (post.bodyDocUnavailable) { setEditBlocked(true); onRefresh?.(); return; } setEditBlocked(false); onEdit(); };
@@ -35,10 +35,23 @@ export function GroupPostArticle({ pageId, post, locale, member, authenticated, 
     const asset = post.assets?.find(item => item.id === attachment.assetId);
     return asset ? <GroupPostAsset asset={asset} locale={locale} /> : null;
   }, [post.assets, locale]);
-  const likes = post.likeCount ?? 0, returnTo = `/pages/groups/${pageId}?locale=${locale}&tab=board&post=${post.id}`;
-  const reaction = <PostReactions reaction={post.liked ? "like" : post.disliked ? "dislike" : null} likeCount={likes} dislikeCount={post.dislikeCount ?? null} locale={locale} busy={busy}
+  // 261107-2 F4: the thumbs change where they are pressed; a failed write puts the server value back.
+  const server: PostReactionState = { reaction: post.liked ? "like" : post.disliked ? "dislike" : null, likeCount: post.likeCount ?? 0, dislikeCount: post.dislikeCount ?? null };
+  const [optimistic, setOptimistic] = useState<PostReactionState | null>(null), reacting = useRef(false);
+  // A new read of the post replaces the guess once no choice is on its way.
+  useEffect(() => { if (!reacting.current) setOptimistic(null); }, [post]);
+  const shownReaction = optimistic ?? server;
+  const react = async (choice: PostReactionChoice) => {
+    const current = shownReaction.reaction;
+    setOptimistic(applyReaction(shownReaction, choice));
+    reacting.current = true;
+    const saved = await Promise.resolve(onReact(choice, current)).finally(() => { reacting.current = false; });
+    if (saved === false) setOptimistic(null);
+  };
+  const likes = shownReaction.likeCount, returnTo = `/pages/groups/${pageId}?locale=${locale}&tab=board&post=${post.id}`;
+  const reaction = <PostReactions reaction={shownReaction.reaction} likeCount={likes} dislikeCount={shownReaction.dislikeCount} locale={locale} busy={busy}
     loginHref={authenticated ? undefined : String(fanLoginHref(locale, returnTo))} join={authenticated && !member ? { onJoin, pending: joinPending } : undefined}
-    onChange={onReact} likeReward={member && !post.liked} />;
+    onChange={choice => void react(choice)} likeReward={member && shownReaction.reaction !== "like"} />;
   const menu = (post.canEdit || post.canDelete || authenticated) ? <Menu.Root>
     <Menu.Trigger className={contentStyles.moreTrigger} aria-label={t.more}><Ellipsis size={20} aria-hidden="true" /></Menu.Trigger>
     <Menu.Portal><Menu.Positioner className={contentStyles.menuPositioner} sideOffset={4} align="end"><Menu.Popup className={contentStyles.menuPopup}>
