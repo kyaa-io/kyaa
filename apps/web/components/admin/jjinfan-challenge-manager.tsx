@@ -15,13 +15,13 @@ import styles from "./jjinfan-challenge-manager.module.css";
 const copy = {
   ko: {
     eyebrow: "운영 관리", title: "찐팬 100명 게이지", lead: "표시를 켠 크리에이터 페이지에만 게이지가 보입니다. 팬에게 보이는 제목과 설명은 아래 입력값 그대로입니다. 약속처럼 읽히는 문구는 확정된 내용만 쓰세요.",
-    enable: "페이지에 표시", titleLabel: "제목", descriptionLabel: "설명", save: "저장", saving: "저장 중…", saved: "저장했습니다.", count: "찐팬", on: "표시 중", off: "꺼짐",
+    enable: "페이지에 표시", titleLabel: "제목", descriptionLabel: "설명", endsOnLabel: "마지막 날(비우면 기한 없음)", save: "저장", saving: "저장 중…", saved: "저장했습니다.", count: "찐팬", on: "표시 중", off: "꺼짐",
     loading: "크리에이터 목록을 불러오는 중입니다.", empty: "공개된 크리에이터가 없습니다.", loadError: "목록을 불러오지 못했습니다.", retry: "다시 시도", needTitle: "표시하려면 제목을 입력해 주세요.",
     readOnly: "보기 권한은 수정할 수 없습니다.", saveError: "저장하지 못했습니다. 잠시 후 다시 시도해 주세요.",
   },
   en: {
     eyebrow: "Operations", title: "100 true fans gauge", lead: "The gauge appears only on the creator pages turned on here. Fans read the title and description exactly as entered. Write only what has been confirmed if it reads like a promise.",
-    enable: "Show on page", titleLabel: "Title", descriptionLabel: "Description", save: "Save", saving: "Saving…", saved: "Saved.", count: "True fans", on: "Showing", off: "Off",
+    enable: "Show on page", titleLabel: "Title", descriptionLabel: "Description", endsOnLabel: "Last day (empty: no end date)", save: "Save", saving: "Saving…", saved: "Saved.", count: "True fans", on: "Showing", off: "Off",
     loading: "Loading creators.", empty: "There are no published creators.", loadError: "Creators could not be loaded.", retry: "Try again", needTitle: "Enter a title to show the gauge.",
     readOnly: "Viewers cannot edit.", saveError: "Could not save. Try again later.",
   },
@@ -71,6 +71,7 @@ function CampaignRow({ item, locale, canWrite }: { item: JjinfanCampaignRow; loc
   const [saved, setSaved] = useState(item.enabled);
   const [title, setTitle] = useState(item.title);
   const [description, setDescription] = useState(item.description);
+  const [endsOn, setEndsOn] = useState(item.endsOn ?? "");
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<{ ok: boolean; text: string } | null>(null);
   async function submit(event: FormEvent) {
@@ -81,7 +82,7 @@ function CampaignRow({ item, locale, canWrite }: { item: JjinfanCampaignRow; loc
     try {
       const token = await getAccessToken();
       if (!token) throw new Error("missing token");
-      const response = await fetch(`/api/admin/jjinfan-challenge/${item.celebrityId}`, { method: "PUT", cache: "no-store", headers: { authorization: `Bearer ${token}`, "content-type": "application/json" }, body: JSON.stringify({ enabled, title, description }) });
+      const response = await fetch(`/api/admin/jjinfan-challenge/${item.celebrityId}`, { method: "PUT", cache: "no-store", headers: { authorization: `Bearer ${token}`, "content-type": "application/json" }, body: JSON.stringify({ enabled, title, description, endsOn: endsOn || null }) });
       if (!response.ok) throw new Error("save failed");
       setSaved(enabled);
       setMessage({ ok: true, text: t.saved });
@@ -97,6 +98,7 @@ function CampaignRow({ item, locale, canWrite }: { item: JjinfanCampaignRow; loc
       <label className={styles.toggle}><input type="checkbox" checked={enabled} disabled={!canWrite || busy} onChange={event => setEnabled(event.target.checked)} />{t.enable}</label>
       <label className={styles.field}><span>{t.titleLabel}</span><input value={title} maxLength={JJINFAN_CAMPAIGN_TITLE_MAX} disabled={!canWrite || busy} onChange={event => setTitle(event.target.value)} /></label>
       <label className={styles.field}><span>{t.descriptionLabel}</span><textarea rows={2} value={description} maxLength={JJINFAN_CAMPAIGN_DESCRIPTION_MAX} disabled={!canWrite || busy} onChange={event => setDescription(event.target.value)} /></label>
+      <label className={styles.field}><span>{t.endsOnLabel}</span><input type="date" value={endsOn} disabled={!canWrite || busy} onChange={event => setEndsOn(event.target.value)} /></label>
       <div className={styles.actions}>
         {message && <span role={message.ok ? "status" : "alert"} className={message.ok ? shared.successMessage : shared.errorMessage}>{message.text}</span>}
         {canWrite && <FanAction variant="primary" type="submit" disabled={busy}>{busy ? t.saving : t.save}</FanAction>}

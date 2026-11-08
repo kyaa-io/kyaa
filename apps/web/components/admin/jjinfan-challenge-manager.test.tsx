@@ -37,7 +37,7 @@ it("saves the administrator's words for that creator", async () => {
   await waitFor(() => expect(screen.getByRole("status")).toHaveTextContent("저장했습니다"));
   const [url, init] = fetchMock.mock.calls.find(([, options]) => options?.method === "PUT")!;
   expect(url).toBe(`/api/admin/jjinfan-challenge/${row.celebrityId}`);
-  expect(JSON.parse(init.body)).toEqual({ enabled: true, title: "운영자 제목", description: "운영자 설명" });
+  expect(JSON.parse(init.body)).toEqual({ enabled: true, title: "운영자 제목", description: "운영자 설명", endsOn: null });
   expect(screen.getByText("표시 중")).toBeInTheDocument();
 });
 it("reports a failed save and keeps the input", async () => {

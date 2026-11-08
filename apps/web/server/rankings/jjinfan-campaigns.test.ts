@@ -39,6 +39,7 @@ describe("jjinfan campaign admin API", () => {
     expect((await handlers.save(put({ enabled: false, title: "가".repeat(81), description: "" }), ID)).status).toBe(400);
     expect((await handlers.save(put({ enabled: false, title: "", description: "가".repeat(301) }), ID)).status).toBe(400);
     expect((await handlers.save(put({ enabled: false, title: "", description: "", target: 50 }), ID)).status).toBe(400);
+    expect((await handlers.save(put({ enabled: false, title: "", description: "", endsOn: "11/30" }), ID)).status).toBe(400);
     expect(repository.save).not.toHaveBeenCalled();
   });
   it("saves trimmed values for a full administrator with no-store", async () => {
@@ -66,6 +67,14 @@ describe("jjinfan campaign repository", () => {
     const repository = createJjinfanCampaignRepository({ url: "", serviceRoleKey: "" }, { rpc } as never);
     await repository.save(actor, ID, { enabled: true, title: "제목", description: "" }, "c");
     expect(rpc).toHaveBeenCalledWith("set_jjinfan_challenge_campaign", { p_actor_app_user_id: "u", p_actor_admin_allowlist_id: "a", p_correlation_id: "c", p_celebrity_id: ID, p_enabled: true, p_title: "제목", p_description: "" });
+  });
+  it("sends an end date, or its removal, only when the screen sent one", async () => {
+    const rpc = vi.fn(async () => ({ data: { ...saved, endsOn: "2026-11-30" }, error: null }));
+    const repository = createJjinfanCampaignRepository({ url: "", serviceRoleKey: "" }, { rpc } as never);
+    await repository.save(actor, ID, { enabled: true, title: "제목", description: "", endsOn: "2026-11-30" }, "c");
+    expect(rpc).toHaveBeenLastCalledWith("set_jjinfan_challenge_campaign", expect.objectContaining({ p_ends_on: "2026-11-30", p_set_ends_on: true }));
+    await repository.save(actor, ID, { enabled: true, title: "제목", description: "", endsOn: null }, "c");
+    expect(rpc).toHaveBeenLastCalledWith("set_jjinfan_challenge_campaign", expect.objectContaining({ p_ends_on: null, p_set_ends_on: true }));
   });
   it("turns a known message into its code and everything else into unavailable", async () => {
     const rpc = vi.fn().mockResolvedValueOnce({ data: null, error: { message: "CREATOR_NOT_FOUND" } }).mockResolvedValueOnce({ data: null, error: { message: "secret detail" } }).mockResolvedValueOnce({ data: { items: "bad" }, error: null });

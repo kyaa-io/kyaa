@@ -17386,5 +17386,119 @@
     "ko": "하트 {0}개",
     "source": "features/fan-profile/fan-profile-copy",
     "id": "features/fan-profile/fan-profile-copy:favCardHearts"
+  },
+  "rkFanTab": {
+    "en": "True fan ranking",
+    "ko": "찐팬 순위",
+    "source": "features/rankings/ui/rankings-copy",
+    "id": "features/rankings/ui/rankings-copy:rkFanTab"
+  },
+  "rkCreatorRankTab": {
+    "en": "Creator ranking",
+    "ko": "크리에이터 순위",
+    "source": "features/rankings/ui/rankings-copy",
+    "id": "features/rankings/ui/rankings-copy:rkCreatorRankTab"
+  },
+  "rkCumulativeHearts": {
+    "en": "All-time hearts",
+    "ko": "누적 하트",
+    "source": "features/rankings/ui/rankings-copy",
+    "id": "features/rankings/ui/rankings-copy:rkCumulativeHearts"
+  },
+  "rkCumulativeFans": {
+    "en": "True fans",
+    "ko": "찐팬 수",
+    "source": "features/rankings/ui/rankings-copy",
+    "id": "features/rankings/ui/rankings-copy:rkCumulativeFans"
+  },
+  "rkMore1120": {
+    "en": "#11–20",
+    "ko": "11~20위",
+    "source": "features/rankings/ui/rankings-copy",
+    "id": "features/rankings/ui/rankings-copy:rkMore1120"
+  },
+  "rkDeltaUp": {
+    "en": "Up {0}",
+    "ko": "{0}계단 올라감",
+    "source": "features/rankings/ui/rankings-copy",
+    "id": "features/rankings/ui/rankings-copy:rkDeltaUp"
+  },
+  "rkDeltaDown": {
+    "en": "Down {0}",
+    "ko": "{0}계단 내려감",
+    "source": "features/rankings/ui/rankings-copy",
+    "id": "features/rankings/ui/rankings-copy:rkDeltaDown"
+  },
+  "rkDeltaSame": {
+    "en": "No change",
+    "ko": "변동 없음",
+    "source": "features/rankings/ui/rankings-copy",
+    "id": "features/rankings/ui/rankings-copy:rkDeltaSame"
+  },
+  "rkJjinfanCount": {
+    "en": "{0} true fans",
+    "ko": "찐팬 {0}",
+    "source": "features/rankings/ui/rankings-copy",
+    "id": "features/rankings/ui/rankings-copy:rkJjinfanCount"
+  },
+  "rkEmptyFans": {
+    "en": "No fan has sent a heart yet",
+    "ko": "아직 하트를 보낸 팬이 없어요",
+    "source": "features/rankings/ui/rankings-copy",
+    "id": "features/rankings/ui/rankings-copy:rkEmptyFans"
+  },
+  "jjTitle": {
+    "en": "100 True Fans Challenge",
+    "ko": "찐팬 100 챌린지",
+    "source": "features/rankings/ui/rankings-copy",
+    "id": "features/rankings/ui/rankings-copy:jjTitle"
+  },
+  "jjDone": {
+    "en": "Reached",
+    "ko": "달성",
+    "source": "features/rankings/ui/rankings-copy",
+    "id": "features/rankings/ui/rankings-copy:jjDone"
+  },
+  "jjUntil": {
+    "en": "Until {0}",
+    "ko": "{0}까지",
+    "source": "features/rankings/ui/rankings-copy",
+    "id": "features/rankings/ui/rankings-copy:jjUntil"
+  },
+  "jjShare": {
+    "en": "Share",
+    "ko": "공유",
+    "source": "features/rankings/ui/rankings-copy",
+    "id": "features/rankings/ui/rankings-copy:jjShare"
+  },
+  "jjCopied": {
+    "en": "Link copied",
+    "ko": "링크를 복사했어요",
+    "source": "features/rankings/ui/rankings-copy",
+    "id": "features/rankings/ui/rankings-copy:jjCopied"
+  },
+  "jjCopyFailed": {
+    "en": "Couldn't copy the link",
+    "ko": "링크를 복사하지 못했어요",
+    "source": "features/rankings/ui/rankings-copy",
+    "id": "features/rankings/ui/rankings-copy:jjCopyFailed"
+  },
+  "jjTag": {
+    "en": "100 True Fans challenge",
+    "ko": "찐팬 100 도전 중",
+    "source": "features/rankings/ui/rankings-copy",
+    "id": "features/rankings/ui/rankings-copy:jjTag"
+  },
+  "jjCheer": {
+    "en": "Go cheer",
+    "ko": "응원하러 가기",
+    "source": "features/rankings/ui/rankings-copy",
+    "id": "features/rankings/ui/rankings-copy:jjCheer"
+  },
+  "jjRankLocked": {
+    "en": "Rankings open at 100 true fans",
+    "ko": "찐팬 100명부터 순위를 공개해요",
+    "source": "features/rankings/ui/rankings-copy",
+    "id": "features/rankings/ui/rankings-copy:jjRankLocked"
   }
 }

@@ -1,0 +1,4 @@
+/* 전일 대비 순위 변동(C3). 폭 36 고정·오른쪽 정렬, 글리프 대신 아이콘. 뜻은 아이콘이 말하고 색은 보조. */
+.delta { display: inline-flex; align-items: center; justify-content: flex-end; gap: 0; box-sizing: border-box; width: 36px; color: var(--color-muted); font-size: var(--fan-badge-size); font-weight: 700; font-variant-numeric: tabular-nums; line-height: 1; white-space: nowrap; }
+.delta[data-direction="up"] { color: var(--color-accent-ink); }
+.delta svg { flex: none; }

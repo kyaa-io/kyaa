@@ -29,7 +29,7 @@ export function FanPageImageSlot({ image, name, locale, size, className, priorit
 
 /** 페이지 한 개를 나타내는 칸. 한 칸은 2줄이다: 이름 / 유형 태그 + 팬 수.
  * `list`는 모임 목록의 구분선 행이다: 외곽선·화살표가 없고, 팬페이지면 유형 태그를 빼며, 팬 수가 0이면 숫자를 쓰지 않는다. */
-export function FanEntityCard({ href, image, name, kind, locale, memberCount, trailing, size = "card", className }: Readonly<{
+export function FanEntityCard({ href, image, name, kind, locale, memberCount, trailing, badge, size = "card", className }: Readonly<{
   href: string;
   image: FanPageImage;
   name: string;
@@ -37,6 +37,8 @@ export function FanEntityCard({ href, image, name, kind, locale, memberCount, tr
   locale: AppLocale;
   memberCount?: number;
   trailing?: ReactNode;
+  /** One highlight tag after the kind (the 찐팬 100 challenge, C7). */
+  badge?: ReactNode;
   /** `card`는 1px 외곽선이 있는 칸, `row`는 목록 안에서 아래 선으로 나뉘는 행, `list`는 이름 시작선부터 선이 그어지는 목록 행이다. */
   size?: "row" | "card" | "list";
   className?: string;
@@ -49,7 +51,7 @@ export function FanEntityCard({ href, image, name, kind, locale, memberCount, tr
     <FanPageImageSlot image={image} name={name} locale={locale} size={48} className={styles.image} />
     <span className={styles.copy}>
       <strong className={styles.name}>{name}</strong>
-      {(showKind || count !== undefined) && <span className={styles.meta}>{showKind && <FanTag tone={fanPageKindTone(kind)}>{fanPageKindLabel(locale, kind)}</FanTag>}{count !== undefined && <span>{fanUiText(locale, "fanCount", [count.toLocaleString(locale)])}</span>}</span>}
+      {(showKind || badge || count !== undefined) && <span className={styles.meta}>{showKind && <FanTag tone={fanPageKindTone(kind)}>{fanPageKindLabel(locale, kind)}</FanTag>}{badge}{count !== undefined && <span>{fanUiText(locale, "fanCount", [count.toLocaleString(locale)])}</span>}</span>}
     </span>
     {list ? trailing && <span className={styles.trailing}>{trailing}</span> : <span className={styles.trailing}>{trailing ?? <ChevronRight size={16} aria-hidden="true" />}</span>}
   </Link>;

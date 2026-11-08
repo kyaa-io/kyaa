@@ -43,6 +43,10 @@ import { FanSectionHeader } from "./fan-ui/fan-heading";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import { FanSkeleton, FanSkeletonStatus } from "@/components/fan-ui/fan-skeleton";
 import { HomeRankingCard } from "@/features/rankings/ui/home-ranking-card";
+import { HomeChallenges } from "@/features/rankings/ui/home-challenges";
+import { FanTag } from "./fan-ui/fan-tag";
+import { useRankingResource } from "@/features/rankings/ui/use-ranking-resource";
+import { activeJjinfanChallengesSchema } from "@/features/rankings/domain/types";
 import styles from "./guest-home.module.css";
 import { HomeEntryCards, ElinaGuideCard } from "./home-entry-cards/home-entry-cards";
 import { HomeCommunityPreview } from "./home-community-preview";
@@ -159,7 +163,8 @@ function HomeHero({ locale, homeBanners = [], celebrities, elinaRaffles, content
 
 </>);
 }
-function HomeCreators({ celebrities, celebrityLives = [], locale, contentErrors = {}, initialOwnedOnly, initialRole = "all", previewQuery }: GuestHomeProps & { previewQuery?: HomeQueries["celebrityLives"] }) {
+const parseChallenges = (value: unknown) => activeJjinfanChallengesSchema.parse(value);
+function HomeCreators({ celebrities, celebrityLives = [], locale, contentErrors = {}, initialOwnedOnly, initialRole = "all", previewQuery, unlistedSlugs = [] }: GuestHomeProps & { previewQuery?: HomeQueries["celebrityLives"]; unlistedSlugs?: readonly string[] }) {
   const t = copy[locale];
   const router = useRouter();
   const localeQuery = `?locale=${locale}`;
@@ -175,7 +180,9 @@ function HomeCreators({ celebrities, celebrityLives = [], locale, contentErrors 
   // Resolve the default before revealing the roster; explicit choices take precedence.
   const ownedOnly = ownedOnlyOverride ?? (role === "all" && hasOwnedPassport);
   const favoritesLoading = personalization.state.status === "auth-loading" || personalization.state.status === "authenticated-loading";
-  const visibleCreators = orderedCreators.filter((creator) => matchesCreatorRole(creator.roles, role) && (!ownedOnly || (personalization.state.status === "authenticated-ready" && ownedSlugs.has(creator.slug))));
+  // Unlisted pages (test and fixture pages) stay out of the discovery chips, like the rankings; the viewer's own chip still shows them.
+  const unlisted = new Set(unlistedSlugs), listedCreators = celebrities.filter((creator) => !unlisted.has(creator.slug));
+  const visibleCreators = orderedCreators.filter((creator) => matchesCreatorRole(creator.roles, role) && (ownedOnly ? personalization.state.status === "authenticated-ready" && ownedSlugs.has(creator.slug) : !unlisted.has(creator.slug)));
   const directoryQuery = new URLSearchParams({ locale });
   if (ownedOnly) directoryQuery.set("owned", "1");
   else if (role !== "all") directoryQuery.set("role", role);
@@ -205,6 +212,9 @@ function HomeCreators({ celebrities, celebrityLives = [], locale, contentErrors 
     setRole("all");
     replaceHomeFilterUrl(true, "all");
   };
+  // 찐팬 100 challenge (C7): creators an administrator turned on carry a tag on their card.
+  const challenges = useRankingResource(`/api/rankings/challenges?locale=${locale}`, parseChallenges);
+  const challengeSlugs = new Set(challenges.state.status === "ready" ? challenges.state.data.items.map((item) => item.slug) : []);
   const creatorRailRef = useRef<HTMLDivElement>(null);
   const [creatorScroll, setCreatorScroll] = useState({ previous: false, next: false });
   const updateCreatorScroll = useCallback(() => {
@@ -250,7 +260,7 @@ function HomeCreators({ celebrities, celebrityLives = [], locale, contentErrors 
                 </div>
               </div>
             ) : null}
-            {!contentErrors.celebrities && celebrities.length > 0 && !favoritesLoading ? <CreatorRoleFilterControl roles={availableCreatorRoles(celebrities)} value={role} onChange={changeRole} locale={locale} controls="home-creator-rail" ownedOnly={ownedOnly} onSelectOwned={selectOwned} /> : null}
+            {!contentErrors.celebrities && celebrities.length > 0 && !favoritesLoading ? <CreatorRoleFilterControl roles={availableCreatorRoles(listedCreators)} value={role} onChange={changeRole} locale={locale} controls="home-creator-rail" ownedOnly={ownedOnly} onSelectOwned={selectOwned} /> : null}
             <ActivePreviewCoordinator initialActiveId={visibleCreators.find(creator => celebrityLives.some(live => live.celebritySlug === creator.slug && live.preview))?.slug ?? (previewQuery ? visibleCreators[0]?.slug ?? null : null)}>
             {contentErrors.celebrities || contentErrors.celebrityLives ? <ContentLoadError locale={locale} /> : null}
             {!contentErrors.celebrities && ownedOnly && personalization.state.status === "guest" ? <div className={styles.favoriteFilterState} role="status"><p>{t.myFavoritesGuest}</p><Link href={ownedLoginHref}>{t.signIn}</Link></div> : null}
@@ -262,6 +272,7 @@ function HomeCreators({ celebrities, celebrityLives = [], locale, contentErrors 
                 return (
                 <article className={styles.celebrityCard} key={celebrity.slug}>
                   <Link className={styles.celebrityMediaBox} href={`${creatorHomeHref(celebrity.slug)}${localeQuery}` as Route} aria-label={locale === "ko" ? `${celebrity.name} ${t.detail}` : translate(locale, localizedMessages.m7c3e6608522c, "View {0} details", [celebrity.name])}>
+                    {challengeSlugs.has(celebrity.slug) ? <FanTag tone="fan" className={styles.challengeTag}>{rankingsText(locale, "jjTag")}</FanTag> : null}
                     <Suspense fallback={<CreatorPortrait locale={locale} slug={celebrity.slug} image={celebrity.image} sizes="(max-width: 767px) min(82vw, 288px), 240px" />}>
                       <HomeCreatorPreview celebrity={celebrity} locale={locale} celebrityLives={celebrityLives} previewQuery={previewQuery} />
                     </Suspense>
@@ -351,13 +362,16 @@ function HomeUpcoming({ featuredLives, locale, contentErrors = {} }: GuestHomePr
           </section>
 </>);
 }
-/** The old "my fan activity" place: the ranking card (261107-2 U3, D3). The passport card moved to MY and the header. Same card on 390 (under the hero) and in the side panel. */
+/** The old "my fan activity" place: the ranking card (261107-2 U3, D3), then the 찐팬 100 challenges (C7). The passport card moved to MY and the header. Same cards on 390 (under the hero) and in the side panel. */
 function HomePersonalization({ locale, placement }: GuestHomeProps & { placement: "mobile" | "desktop" }) {
+  const owner = useHomeOwner();
+  const mine = owner.personalization.status === "authenticated-ready" ? owner.personalization.summary.creators.flatMap((creator) => creator.passport ? [creator.celebrity.slug] : []) : [];
   return placement === "mobile"
-    ? <div className={styles.mobilePersonalization}><HomeRankingCard locale={locale} headingId="home-ranking-heading-mobile" /></div>
-    : <HomeRankingCard locale={locale} headingId="home-ranking-heading-desktop" />;
+    ? <div className={styles.mobilePersonalization}><HomeRankingCard locale={locale} headingId="home-ranking-heading-mobile" /><HomeChallenges locale={locale} preferredSlugs={mine} headingId="home-challenges-heading-mobile" /></div>
+    : <><HomeRankingCard locale={locale} headingId="home-ranking-heading-desktop" /><HomeChallenges locale={locale} preferredSlugs={mine} headingId="home-challenges-heading-desktop" /></>;
 }
 
+const NO_UNLISTED: HomeQueries["unlistedCreators"] & object = Promise.resolve({ status: "fulfilled", value: [] });
 type StreamingHomeProps = Pick<GuestHomeProps, "locale" | "initialOwnedOnly" | "initialRole"> & {
   queries: HomeQueries;
   publishedCreatorSlugs: Promise<readonly string[] | null>;
@@ -388,7 +402,8 @@ function StreamHomeHero({ queries, ...props }: Pick<StreamingHomeProps, "queries
 
 function StreamHomeCreators({ queries, ...props }: Omit<StreamingHomeProps, "publishedCreatorSlugs">) {
   const result = use(queries.celebrities);
-  return <HomeCreators {...props} celebrities={result.status === "fulfilled" ? result.value : []} featuredLives={[]}
+  const unlisted = use(queries.unlistedCreators ?? NO_UNLISTED);
+  return <HomeCreators {...props} celebrities={result.status === "fulfilled" ? result.value : []} featuredLives={[]} unlistedSlugs={unlisted.status === "fulfilled" ? unlisted.value : []}
     contentErrors={{ celebrities: result.status === "rejected" }} previewQuery={queries.celebrityLives} />;
 }
 

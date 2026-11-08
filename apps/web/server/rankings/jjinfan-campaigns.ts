@@ -40,6 +40,7 @@ export function createJjinfanCampaignRepository(config: { url: string | undefine
       return checked(jjinfanCampaignSavedSchema, await call("set_jjinfan_challenge_campaign", {
         p_actor_app_user_id: actor.appUserId, p_actor_admin_allowlist_id: actor.allowlistId, p_correlation_id: correlationId,
         p_celebrity_id: celebrityId, p_enabled: input.enabled, p_title: input.title, p_description: input.description,
+        ...(input.endsOn === undefined ? {} : { p_ends_on: input.endsOn, p_set_ends_on: true }),
       }));
     },
   };

@@ -10,6 +10,7 @@ import { ProfileModal, type ProfileModalPerson } from "@/features/group-social/p
 import { reachText } from "@/features/group-social/reach-copy";
 import { pageRankingSchema } from "@/features/rankings/domain/types";
 import { useRankingResource } from "@/features/rankings/ui/use-ranking-resource";
+import { JjinfanGauge } from "@/features/rankings/ui/jjinfan-gauge";
 import { groupPeopleSchema, type GroupPeopleMode } from "@/server/group-members/domain";
 import { useGroupResource } from "./use-group-resource";
 import { GroupPersonHearts, GroupPersonRow, GroupPersonTier } from "./group-person-row";
@@ -69,6 +70,7 @@ export function GroupMembers({ pageId, locale, member, presentation, inTab = fal
   return <section className={styles.section} data-member-mode={mode} aria-labelledby="group-people-title">
     <h2 id="group-people-title" className={inTab ? styles.visuallyHidden : styles.title}>{t.title}</h2>
     {presentation?.overview && mode !== "ranking" && <div className={styles.overview}>{presentation.overview}</div>}
+    {rankingsSlug && <JjinfanGauge slug={rankingsSlug} locale={locale} name={presentation?.creatorName}/>}
     <FanTabs variant="chip" label={t.title} current={mode} className={styles.tabs} items={(["members", "friends", "ranking"] as const).map(key => ({ key, label: t[key], onSelect: () => choose(key) }))}/>
     {!member ? <GroupPublicPeople mode={mode} pageId={pageId} slug={rankingsSlug} locale={locale} authenticated={resource.authenticated} onJoin={onJoin} joinPending={joinPending} joinLabel={joinLabel}/> : <div className={styles.body}>
       {presentation && mode === "members" && <FanAction className={styles.incomingRequests} href={`/my/friends?locale=${locale}&filter=incoming`}>{t.incomingRequests}</FanAction>}

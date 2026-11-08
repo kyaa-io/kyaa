@@ -27,6 +27,8 @@ const routerRefresh = routerActions.refresh;
 vi.mock("./home-community-preview", () => ({ HomeCommunityPreview: () => <div data-testid="home-community-preview" /> }));
 // The ranking card (261107-2 U3) has its own tests; here it only holds its place.
 vi.mock("@/features/rankings/ui/home-ranking-card", () => ({ HomeRankingCard: ({ headingId }: { headingId?: string }) => <section data-testid="home-ranking" aria-labelledby={headingId} /> }));
+vi.mock("@/features/rankings/ui/home-challenges", () => ({ HomeChallenges: () => <section data-testid="home-challenges" /> }));
+vi.mock("@/features/rankings/ui/use-ranking-resource", () => ({ useRankingResource: () => ({ state: { status: "ready", data: { items: [{ slug: "kara", name: "KARA", imageUrl: null, title: "찐팬 100명", description: "", endsOn: null, count: 40, target: 100 }] } }, retry: () => undefined }) }));
 
 vi.mock("@privy-io/react-auth", () => ({
   usePrivy: () => privy,
@@ -769,6 +771,14 @@ it("keeps the chosen filter and cards visible during background personalization 
   expect(within(section).getByRole("button", { name: "전체" })).toHaveAttribute("aria-pressed", "true");
 });
 
+it("tags a creator whose 찐팬 100 challenge is on, and no other", () => {
+  render(<GuestHome {...defaultProps} featuredLives={[]} initialOwnedOnly={false} />);
+  const rail = document.getElementById("home-creator-rail") as HTMLElement;
+  const kara = within(rail).getByRole("heading", { name: "KARA" }).closest("article") as HTMLElement;
+  expect(within(kara).getByText("찐팬 100 도전 중")).toBeInTheDocument();
+  expect(within(rail).getAllByText("찐팬 100 도전 중")).toHaveLength(1);
+});
+
 it("places My favorites first and sends guests to login with a restorable Home filter", () => {
   render(<GuestHome {...defaultProps} featuredLives={[]} />);
   const filters = screen.getByRole("group", { name: "분류로 찾기" });
@@ -977,6 +987,44 @@ describe("streamed Home sections", () => {
     expect(within(view.container.querySelector("#upcoming") as HTMLElement).getByText("2 / 2")).toBeInTheDocument();
     expect(view.container.querySelector('[aria-roledescription="slide"][data-active="true"]')).toBe(activeSlide);
     expect(fetcher.mock.calls.filter(([url]) => String(url).startsWith("/api/me/summary"))).toHaveLength(1);
+  });
+
+  it("keeps unlisted pages out of the discovery chips and in My favorites", async () => {
+    privy.authenticated = true;
+    const summary = {
+      profile: { nickname: "Fan" },
+      creators: ["kara", "elina"].map((slug, index) => ({
+        celebrity: { slug, name: slug === "kara" ? "KARA" : "Elina", image: `/${slug}.jpg`, isPublic: true },
+        relationship: "passport", passport: { id: index ? "22222222-2222-4222-8222-222222222222" : "11111111-1111-4111-8111-111111111111", tier: "Bronze", score: 1, remainingToNextTier: 14 }, ticketBalance: 0, firstReaction: null,
+      })),
+      live: { upcoming: [], history: [] }, rewards: { availableCount: 0, entries: 0, items: [] },
+      collection: { passportCount: 2, stampCount: 0, collectibleCount: 0, recent: [] }, unreadNotificationCount: 0,
+    };
+    vi.stubGlobal("fetch", vi.fn(async (input: string | URL | Request) => String(input).startsWith("/api/passports/")
+      ? Response.json({ passport: { stamps: [], activities: [], stampSummary: { total: 0 } } }) : Response.json({ summary })));
+    const home = pendingHome();
+    const queries: HomeQueries = { ...home.queries, unlistedCreators: Promise.resolve({ status: "fulfilled", value: ["kara", "changha"] }) };
+    let view!: ReturnType<typeof render>;
+    await act(async () => { view = render(<StreamingGuestHome queries={queries} publishedCreatorSlugs={home.publishedCreatorSlugs} locale="ko" />); });
+    await act(async () => { home.pending.celebrities.resolve(celebrities); });
+    const filters = await screen.findByRole("group", { name: "분류로 찾기" });
+    const rail = () => [...view.container.querySelectorAll("#home-creator-rail article h3")].map(heading => heading.textContent);
+    await act(async () => { fireEvent.click(within(filters).getByRole("button", { name: "전체" })); });
+    expect(rail()).toEqual(["Elina"]);
+    await act(async () => { fireEvent.click(within(filters).getByRole("button", { name: "내 최애" })); });
+    await waitFor(() => expect([...rail()].sort()).toEqual(["Elina", "KARA"]));
+    // The only idol is unlisted, so no idol chip offers an empty rail.
+    expect(within(filters).queryByRole("button", { name: "아이돌" })).not.toBeInTheDocument();
+  });
+
+  it("shows every creator when the unlisted list fails", async () => {
+    const home = pendingHome();
+    const queries: HomeQueries = { ...home.queries, unlistedCreators: Promise.resolve({ status: "rejected" }) };
+    let view!: ReturnType<typeof render>;
+    await act(async () => { view = render(<StreamingGuestHome queries={queries} publishedCreatorSlugs={home.publishedCreatorSlugs} locale="ko" />); });
+    await act(async () => { home.pending.celebrities.resolve(celebrities); });
+    await screen.findByRole("group", { name: "분류로 찾기" });
+    expect(view.container.querySelectorAll("#home-creator-rail article")).toHaveLength(3);
   });
 
   it.each(["homeBanners", "celebrities", "featuredLives", "celebrityLives", "elinaRaffles"] as const)("isolates a failed %s query", async (failed) => {

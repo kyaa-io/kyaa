@@ -13,8 +13,7 @@ import { translate } from "@/i18n/messages";
 import { LEADERBOARD_CATEGORIES, LEADERBOARD_MIN_FANS, leaderboardSchema } from "../domain/community";
 import { fanPageHref } from "../domain/board-navigation";
 import { useFanpageResource } from "./use-fanpage-resource";
-import { FanGatheringPanel } from "./fan-gathering";
-import gatheringStyles from "./fan-gathering.module.css";
+import { JjinfanGauge } from "@/features/rankings/ui/jjinfan-gauge";
 import { ResourceMessage } from "./home-panels";
 import styles from "./leaderboard-panel.module.css";
 
@@ -28,8 +27,8 @@ export function LeaderboardPanel({ slug, locale, showGathering = true }: { slug:
   const { state, retry } = useFanpageResource(`/api/celebrities/${slug}/leaderboard?locale=${toContentLocale(locale)}&category=${category}`, parse);
 
   if (state.status === "error" && state.code === "LEADERBOARD_NOT_AVAILABLE") return <>
-    {showGathering && <FanGatheringPanel slug={slug} locale={locale} />}
-    <p className={gatheringStyles.rankStatus}>
+    {showGathering && <JjinfanGauge slug={slug} locale={locale} />}
+    <p className={styles.rankStatus}>
       {locale === "ko" ? `함께하는 팬 ${LEADERBOARD_MIN_FANS}명부터 팬 점수 리더보드를 공개해요.` : translate(locale, localizedMessages.m178a185dcf7b, "The Fan Score leaderboard opens at 100 fans.")}
       <span>{locale === "ko" ? `현재 ${state.fanCount ?? state.membershipCount ?? 0}명 / ${LEADERBOARD_MIN_FANS}명` : translate(locale, localizedMessages.m019211255592, "{0} / 100 fans", [state.fanCount ?? state.membershipCount ?? 0])}</span>
     </p>

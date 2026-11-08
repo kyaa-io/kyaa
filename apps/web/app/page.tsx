@@ -11,6 +11,7 @@ import { parseCreatorRoleFilter } from "../features/creator/domain/creator-role"
 import { loadServerEnv } from "../server/config/env";
 import { createPublishedContentRepositoryFromEnvironment } from "../server/content/published-content-repository";
 import { createLiveEventRepositoryFromEnvironment } from "../server/g3/live-event-repository";
+import { readUnlistedCreatorSlugs } from "../server/rankings/unlisted-creators";
 
 export const dynamic = "force-dynamic";
 
@@ -34,6 +35,7 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
     celebrities: settleHomeQuery(measureHomeQuery("celebrities", () => celebrityRepository.list(toContentLocale(locale)))),
     celebrityLives: settleHomeQuery(measureHomeQuery("celebrityLives", () => celebrityRepository.listPrimaryLives(toContentLocale(locale)))),
     homeBanners: settleHomeQuery(measureHomeQuery("homeBanners", () => createHomeBannerRepository({ url: environment.SUPABASE_URL, serviceRoleKey: environment.SUPABASE_SERVICE_ROLE_KEY }).list(toContentLocale(locale)))),
+    unlistedCreators: settleHomeQuery(readUnlistedCreatorSlugs()),
     elinaRaffles: settleHomeQuery(measureHomeQuery("elinaRaffles", () => createRaffleDependencies().list({ celebritySlug: "elina", locale: toContentLocale(locale), now: new Date() }))),
   };
   const publishedCreatorSlugs = queries.celebrities.then(result => result.status === "fulfilled" ? result.value.map(({ slug }) => slug) : null);
