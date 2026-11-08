@@ -143,7 +143,7 @@ it('wallet page shows the shared wallet card with its exchange and no quantity f
  expect(await screen.findByRole('button',{name:'교환'})).toBeEnabled();
  expect(screen.queryByRole('spinbutton')).toBeNull();
 });
-it.each([['cancelled','광고 시청이 완료되지 않았어요. 포인트는 차감되지 않았어요.'],['no-fill','지금은 볼 수 있는 광고가 없어요. 포인트는 차감되지 않았어요.'],['error','광고를 불러오지 못했어요. 잠시 후 다시 시도해 주세요. 포인트는 차감되지 않았어요.']])('does not debit points when the ad ends as %s',async(outcome,message)=>{
+it.each([['cancelled','광고 시청이 완료되지 않았어요. 포인트는 차감되지 않았어요.'],['no-fill','지금은 볼 수 있는 광고가 없어요. 포인트는 차감되지 않았어요'],['error','광고를 불러오지 못했어요']])('does not debit points when the ad ends as %s',async(outcome,message)=>{
  rewardedAd.outcome=outcome;const writes:string[]=[];
  vi.stubGlobal('fetch',vi.fn(async(url:string,init?:RequestInit)=>{if(init?.method==='POST')writes.push(url);return Response.json(url.endsWith('/history')?{entries:[]}:wallet);}));
  render(<WalletExchangeDialog locale='ko' open onClose={()=>{}}/>);fireEvent.click(await screen.findByRole('button',{name:'교환'}));
@@ -153,8 +153,8 @@ it('shows the load-failure text, not the no-ad text, for an unknown session refu
  sessionRefusal.code='GROUP_WALLET_SOMETHING_NEW';const writes:string[]=[];
  vi.stubGlobal('fetch',vi.fn(async(url:string,init?:RequestInit)=>{if(init?.method==='POST')writes.push(url);return Response.json(url.endsWith('/history')?{entries:[]}:wallet);}));
  render(<WalletExchangeDialog locale='ko' open onClose={()=>{}}/>);fireEvent.click(await screen.findByRole('button',{name:'교환'}));
- expect(await screen.findByText('광고를 불러오지 못했어요. 잠시 후 다시 시도해 주세요. 포인트는 차감되지 않았어요.')).toBeInTheDocument();
- expect(screen.queryByText('지금은 볼 수 있는 광고가 없어요. 포인트는 차감되지 않았어요.')).toBeNull();expect(rewardedAd.requests).toBe(0);
+ expect(await screen.findByText('광고를 불러오지 못했어요')).toBeInTheDocument();expect(screen.getByRole('button',{name:'다시 시도'})).toBeInTheDocument();
+ expect(screen.queryByText(/지금은 볼 수 있는 광고가 없어요/)).toBeNull();expect(rewardedAd.requests).toBe(0);
 });
 it('does not debit points without a configured ad unit',async()=>{
  rewardedAd.unit=undefined;const writes:string[]=[];
@@ -196,9 +196,22 @@ it('retries a session after no-fill as before',async()=>{
  rewardedAd.outcome='no-fill';const writes:string[]=[];
  vi.stubGlobal('fetch',vi.fn(async(url:string,init?:RequestInit)=>{if(init?.method==='POST')writes.push(url);return Response.json(url.endsWith('/history')?{entries:[]}:wallet);}));
  render(<WalletExchangeDialog locale='ko' open onClose={()=>{}}/>);fireEvent.click(await screen.findByRole('button',{name:'교환'}));
- await screen.findByText('지금은 볼 수 있는 광고가 없어요. 포인트는 차감되지 않았어요.');
+ await screen.findByText('지금은 볼 수 있는 광고가 없어요. 포인트는 차감되지 않았어요');
  fireEvent.click(screen.getByRole('button',{name:'교환'}));
  await vi.waitFor(()=>expect(issued()).toBe(2));
+});
+it('shows one failure line with 다시 시도, which starts a new session and ad',async()=>{
+ rewardedAd.outcome='error';vi.stubGlobal('fetch',vi.fn(async(url:string)=>Response.json(url.endsWith('/history')?{entries:[]}:wallet)));
+ render(<WalletExchangeDialog locale='ko' open onClose={()=>{}}/>);fireEvent.click(await screen.findByRole('button',{name:'교환'}));
+ const line=await screen.findByRole('alert');expect(line).toHaveTextContent('광고를 불러오지 못했어요다시 시도');
+ fireEvent.click(screen.getByRole('button',{name:'다시 시도'}));
+ await vi.waitFor(()=>expect(issued()).toBe(2));
+});
+it('a double press starts one session',async()=>{
+ rewardedAd.outcome='error';vi.stubGlobal('fetch',vi.fn(async(url:string)=>Response.json(url.endsWith('/history')?{entries:[]}:wallet)));
+ render(<WalletExchangeDialog locale='ko' open onClose={()=>{}}/>);const button=await screen.findByRole('button',{name:'교환'});
+ fireEvent.click(button);fireEvent.click(button);
+ await screen.findByText('광고를 불러오지 못했어요');expect(issued()).toBe(1);
 });
 it('sends the ticket target in the exchange body through the real dialog',async()=>{
  const bodies:any[]=[];
