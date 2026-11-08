@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 vi.mock("server-only", () => ({}));
-const { from } = vi.hoisted(() => ({ from: vi.fn() }));
-vi.mock("@supabase/supabase-js", () => ({ createClient: () => ({ from }) }));
+const { from, rpc } = vi.hoisted(() => ({ from: vi.fn(), rpc: vi.fn() }));
+vi.mock("@supabase/supabase-js", () => ({ createClient: () => ({ from, rpc }) }));
 vi.mock("../media/public-image-reader", () => ({ createPublicImageRoleReader: () => ({ readCelebrityPhotoSetsBySlug: async () => ({}), readLivePhotoSetsBySlug: async () => ({}) }) }));
 import { loadSitemapContent } from "./sitemap-content";
 
@@ -10,6 +10,7 @@ beforeEach(() => {
   vi.stubEnv("SUPABASE_URL", "https://example.supabase.co");
   vi.stubEnv("SUPABASE_SERVICE_ROLE_KEY", "test-only");
   from.mockReset();
+  rpc.mockReset().mockImplementation(async (fn: string) => fn === "list_unlisted_creator_slugs" ? { data: [], error: null } : { data: { raffles: [] }, error: null });
 });
 
 it("paginates even below the requested page size and filters archived parents and exact translations", async () => {
@@ -54,4 +55,25 @@ it("rejects a truncated read rather than interpreting it as removals", async () 
   const query = { select: () => query, eq: () => query, is: () => query, order: () => query, range: async () => ({ data: [], count: 1, error: null }) };
   from.mockReturnValue(query);
   await expect(loadSitemapContent()).rejects.toThrow("query incomplete");
+});
+
+it("leaves creators with an unlisted fan page out of discovery and fails closed when that read fails", async () => {
+  const rows: Record<string, unknown[]> = { celebrities: [{ slug: "kara" }, { slug: "testpage" }], published_celebrities: [] };
+  from.mockImplementation((relation: string) => {
+    let locale = "ko";
+    const query = {
+      select() { return query; }, is() { return query; }, order() { return query; },
+      eq(key: string, value: string) { if (key === "locale") locale = value; return query; },
+      async range() {
+        const data = relation === "published_celebrities" ? ["kara", "testpage"].map(slug => ({ slug, locale })) : rows[relation] ?? [];
+        return { data, count: data.length, error: null };
+      },
+    }; return query;
+  });
+  rpc.mockImplementation(async (fn: string) => fn === "list_unlisted_creator_slugs" ? { data: ["testpage"], error: null } : { data: { raffles: [] }, error: null });
+  const paths = (await loadSitemapContent()).map(page => page.path);
+  expect(paths.some(path => path.includes("kara"))).toBe(true);
+  expect(paths.some(path => path.includes("testpage"))).toBe(false);
+  rpc.mockImplementation(async () => ({ data: null, error: { message: "denied" } }));
+  await expect(loadSitemapContent()).rejects.toThrow("Unlisted creator query failed");
 });

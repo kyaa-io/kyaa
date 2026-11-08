@@ -60,7 +60,7 @@ describe("YouTube live start capture", () => {
     const rpc = vi.fn().mockResolvedValue({ error: null });
     const observeYouTube = vi.fn().mockResolvedValue({ state: "live", observedAt: now.toISOString(), channelId, videoId });
     const handler = createGetObservedLiveNow({
-      repository: { list: async () => [creator] }, observeYouTube, now: () => now,
+      repository: { list: async () => [creator], listUnlistedSlugs: async () => new Set<string>() }, observeYouTube, now: () => now,
       captureLiveStarts: (value) => captureYouTubeLiveStarts(value, { rpc }, now),
     });
     for (let i = 0; i < 2; i++) {

@@ -52,6 +52,7 @@ psql -X -v ON_ERROR_STOP=1 -f "$root_dir/supabase/tests/content_report_resolutio
 psql -X -v ON_ERROR_STOP=1 -f "$root_dir/supabase/tests/dm_report_replay.sql"
 psql -X -v ON_ERROR_STOP=1 -f "$root_dir/supabase/tests/unified_creator_feed.sql"
 psql -X -v ON_ERROR_STOP=1 -f "$root_dir/supabase/tests/public_home_feed.sql"
+psql -X -v ON_ERROR_STOP=1 -f "$root_dir/supabase/tests/public_lists_listed_filter.sql"
 psql -X -v ON_ERROR_STOP=1 -f "$root_dir/supabase/tests/fan_web_participation.sql"
 bash "$root_dir/supabase/tests/fan_web_participation_concurrency.sh"
 psql -X -v ON_ERROR_STOP=1 -f "$root_dir/supabase/tests/fan_web_notifications.sql"

@@ -26,8 +26,10 @@ export default async function CelebritiesPage({ searchParams }: { searchParams: 
     redirect(`/pages/groups?${params}` as Route);
   }
   const repository = createPublishedContentRepositoryFromEnvironment();
+  // Filtered on the server so the page data carries no unlisted creator; the directory is the whole page, so a failed read errors it
+  // like a failed list() rather than showing an empty directory.
   const [publishedCelebrities, primaryLives] = await Promise.all([
-    repository.list(toContentLocale(locale)),
+    repository.listListed(toContentLocale(locale)),
     repository.listPrimaryLives(toContentLocale(locale)),
   ]);
   const livesByCelebrity = new Map(primaryLives.map((live) => [live.celebritySlug, live]));

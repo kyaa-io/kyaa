@@ -208,6 +208,7 @@ export function LiveCalendarScreen({
   initialCalendar,
   locale,
   celebrities,
+  unlistedSlugs = [],
   eventMetadata,
   initialCelebritySlugs,
   embedded = false,
@@ -222,6 +223,8 @@ export function LiveCalendarScreen({
   initialCalendar: LiveCalendarMonth;
   locale: FanLocale;
   celebrities: readonly LiveCalendarCelebrityFilter[];
+  /** Left out of the filter chips unless already selected (a link may name one); their events still render. */
+  unlistedSlugs?: readonly string[];
   eventMetadata: readonly LiveCalendarEventMetadata[];
   initialCelebritySlugs: readonly string[];
   embedded?: boolean;
@@ -488,7 +491,7 @@ export function LiveCalendarScreen({
             >
               {selectedCelebritySlugs.length === 0 ? <Check aria-hidden="true" /> : null}{t.allCelebrities}
             </button>
-            {celebrities.map((celebrity) => {
+            {celebrities.filter((celebrity) => !unlistedSlugs.includes(celebrity.slug) || selectedCelebritySet.has(celebrity.slug)).map((celebrity) => {
               const selected = selectedCelebritySet.has(celebrity.slug);
               return <button
                 className={styles.filterChip}
