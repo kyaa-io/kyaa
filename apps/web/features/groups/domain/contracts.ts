@@ -6,6 +6,11 @@ export const groupPageSchema = z.object({
   slug: z.string().nullable(), anonymous:z.boolean().optional(), name: z.string(), description: z.string(),
   imageUrl: z.string().nullable(), question: z.string().nullable(), memberCount: z.number().int().nonnegative(),
   lastSeenAt: z.iso.datetime({offset:true}).nullable().optional(),
+  // Only with ?fields=facts (groupApiQuery({ fields: "facts" })). Absent on older servers and without the parameter.
+  weeklyJoined: z.number().int().nonnegative().nullable().optional(),
+  newPostCount: z.number().int().nonnegative().nullable().optional(),
+  liveNow: z.boolean().nullable().optional(),
+  lastActiveAt: z.iso.datetime({offset:true}).nullable().optional(),
 });
 export const groupListSchema = z.object({ items: z.array(groupPageSchema), totalCount: z.number().int().nonnegative().optional(), nextCursor: z.union([z.string().uuid(),z.string().regex(/^[A-Za-z0-9_-]{1,512}$/)]).nullable() });
 export const groupDetailSchema = z.object({ page: groupPageSchema, membership: z.object({ role: z.enum(["owner", "manager", "member"]), joinedAt: z.string() }).nullable(), bookmarked: z.boolean() });
@@ -17,12 +22,14 @@ export type GroupList = z.infer<typeof groupListSchema>;
 export function groupHref(page: GroupPage, locale: string) {
   return page.slug && page.celebrityId ? `/${encodeURIComponent(page.slug)}?locale=${encodeURIComponent(locale)}` : `/pages/groups/${page.id}?locale=${encodeURIComponent(locale)}`;
 }
-export function groupApiQuery(input: { type?: string; search?: string; sort?: string; cursor?: string; mine?: string; owned?: string; artistRole?: string; limit?: string }) {
+export function groupApiQuery(input: { type?: string; search?: string; sort?: string; cursor?: string; mine?: string; owned?: string; artistRole?: string; limit?: string; fields?: "facts" }) {
   const query = new URLSearchParams({ limit: "8" });
   for (const [key, value] of Object.entries(input)) if (value) query.set(key, value);
   return `/api/groups?${query}`;
 }
 export const groupPostsSchema = z.object({ items:z.array(z.object({id:z.string().uuid(),pageId:z.string().uuid(),title:z.string(),body:z.string(),visibility:z.enum(["public","members"]),anonymous:z.boolean(),artist:z.boolean().optional(),profileId:z.string().nullable(),nickname:z.string(),avatarUrl:z.string().nullable(),createdAt:z.string()})),nextCursor:z.string().nullable() });
+/** A group comment page. replyCount is on top-level comments only, and only with ?fields=replies. */
+export const groupCommentsSchema = z.object({items:z.array(z.object({id:z.uuid(),parentId:z.uuid().nullable().optional(),body:z.string(),profileId:z.string().nullable(),nickname:z.string(),avatarUrl:z.string().nullable(),anonymous:z.boolean(),artist:z.boolean().optional(),createdAt:z.string(),canDelete:z.boolean().optional(),assets:z.array(z.object({id:z.uuid(),kind:z.string(),width:z.number().nullable().optional(),height:z.number().nullable().optional()})).optional(),replyCount:z.number().int().nonnegative().optional()})),nextCursor:z.string().nullable()});
 export const groupMembersSchema = z.object({items:z.array(z.object({profileId:z.string().uuid(),nickname:z.string(),avatarUrl:z.string().nullable(),role:z.enum(["owner","manager","member"]),artist:z.boolean().optional(),answer:z.string().nullable().optional(),tier:z.string().nullable().optional(),joinedAt:z.string().nullable().optional(),lastActiveAt:z.string().nullable().optional(),postCount:z.number().int().nonnegative().nullable().optional(),commentCount:z.number().int().nonnegative().nullable().optional()})),nextCursor:z.string().nullable()});
 export const groupRoomsSchema = z.object({canManage:z.boolean().optional(),items:z.array(z.object({id:z.string().uuid(),name:z.string(),defaultKey:z.enum(["artist","certified","free"]).nullable().optional(),minimumTier:z.string().nullable(),status:z.string(),canEnter:z.boolean(),reason:z.enum(["ok","stage_low","jjinfan_required","not_member"]).optional(),minimumStageKey:z.string().nullable().optional(),opensAt:z.string().nullable().optional(),closesAt:z.string().nullable().optional(),latestMessage:z.string().nullable().optional(),unreadCount:z.number().int().nonnegative().nullable().optional()}))});
 export const groupMessagesSchema = z.object({canSend:z.boolean().optional(),items:z.array(z.object({id:z.string().uuid(),body:z.string(),profileId:z.string().uuid(),nickname:z.string(),createdAt:z.string(),mine:z.boolean().optional(),avatarUrl:z.string().nullable().optional(),artist:z.boolean().optional()})),participants:z.array(z.object({profileId:z.string().uuid(),nickname:z.string(),avatarUrl:z.string().nullable(),tier:z.string().nullable()})).optional()});

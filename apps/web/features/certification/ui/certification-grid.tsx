@@ -13,7 +13,9 @@ import { toContentLocale, type AppLocale } from "@/i18n/locales";
 import { knownCertificationTitle } from "../domain/certification-title";
 import { certificationListItemSchema, type CertificationListItem } from "../domain/certification";
 import { certificationStampSrc } from "../domain/certification-stamp";
-import { FanMissionList, FanMissionRow, MissionArt } from "@/features/dukjil/ui/fan-mission-row";
+import { BadgeCheck } from "@/components/fan-ui/stan-icons";
+import { FanIcon } from "@/components/fan-ui/fan-icon";
+import { FanMissionList, FanMissionRow } from "@/features/dukjil/ui/fan-mission-row";
 import styles from "./certification-grid.module.css";
 
 const listSchema = z.object({ certifications: z.array(certificationListItemSchema) }).passthrough();
@@ -50,7 +52,7 @@ export function CertificationGrid({ locale, slug, guest, fallbackHref, variant =
   }, [slug, locale, attempt]);
   const go = (href: string) => (guest ? fanLoginHref(locale, href) : href) as Route;
   const rows = variant === "rows";
-  if (!slug && rows) return <FanMissionList data-certification-grid="kinds">{CERTIFICATION_KINDS.map(kind => <FanMissionRow key={kind.key} href={go(fallbackHref)} art={<MissionArt src={`/images/stamps/ink-v1/${kind.art}.webp`} />} title={dukjilText(locale, kind.key)} />)}</FanMissionList>;
+  if (!slug && rows) return <FanMissionList data-certification-grid="kinds">{CERTIFICATION_KINDS.map(kind => <FanMissionRow key={kind.key} href={go(fallbackHref)} art={<FanIcon icon={BadgeCheck} size={20} />} title={dukjilText(locale, kind.key)} />)}</FanMissionList>;
   if (!slug) {
     return <ul className={styles.grid} data-certification-grid="kinds">{CERTIFICATION_KINDS.map(kind => <li key={kind.key}><Link className={styles.tile} href={go(fallbackHref)}>
       <img src={`/images/stamps/ink-v1/${kind.art}.webp`} alt="" width={32} height={32} loading="lazy" /><strong>{dukjilText(locale, kind.key)}</strong>
@@ -63,7 +65,7 @@ export function CertificationGrid({ locale, slug, guest, fallbackHref, variant =
   const order = { available: 0, preparing: 1, closed: 2 } as const;
   const items = [...load.items].sort((a, b) => order[a.status] - order[b.status]);
   if (rows) return <FanMissionList data-certification-grid="items">{items.map(item => <FanMissionRow key={item.id} status={item.status} href={go(item.actionHref)}
-    art={<MissionArt src={certificationStampSrc(item)} />} title={knownCertificationTitle(locale, item) ?? item.title}
+    art={<FanIcon icon={BadgeCheck} size={20} />} title={knownCertificationTitle(locale, item) ?? item.title}
     detail={<span className={styles.state} data-status={item.status}>{dukjilText(locale, STATE_KEY[item.status])}</span>} />)}</FanMissionList>;
   return <ul className={styles.grid} data-certification-grid="items">{items.map(item => <li key={item.id}><Link className={styles.tile} href={go(item.actionHref)} data-status={item.status}>
     <img src={certificationStampSrc(item)} alt="" width={32} height={32} loading="lazy" />

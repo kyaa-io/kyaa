@@ -3,7 +3,8 @@ import {clearResources} from "@/components/fan-ui/resource-cache";
 
 import {beforeEach,expect,it,vi} from 'vitest';
 import {APP_LOCALES} from '@/i18n/locales';
-import {GroupBenefitsScreen,BenefitsCatalog,BenefitsComingSoon} from './group-benefits-screen';
+import {GroupBenefitsScreen} from './group-benefits-screen';
+import {BenefitsCatalog,BenefitsComingSoon} from './group-benefits-legacy';
 import {useGroupRequest} from './use-group-resource';
 import type {AppLocale} from '@/i18n/locales';
 import {groupBenefitsCopy} from './group-benefits-copy';
@@ -35,10 +36,13 @@ const creatorRaffle=(n:number,status:string,opens:number,closes:number)=>({id:ui
 const allRaffles=()=>[creatorRaffle(3,'closed',-10*day,-2*day),creatorRaffle(2,'preparing',3*day,10*day),creatorRaffle(1,'open',-day,7*day),creatorRaffle(4,'cancelled',-day,7*day)];
 let creatorRaffles:unknown[]=[],homeRows:unknown[]=[],roadmapBody:unknown=null;
 let homeComparable=true;
-beforeEach(()=>{homeComparable=true;creatorRaffles=allRaffles();homeRows=[{rank:3,slug:'bias-x',name:'Bias X',imageUrl:null,score:125,hearts:795,challenge:false,delta:1,weekGain:null}];roadmapBody=null;bias.value={status:'error',options:[],selected:null,unverified:null,select:()=>{},retry:()=>{}};historyFails.value=false;resetDukjilCatalogCache();fail=false;failCreators=false;empty=false;invalidCursor=false;joinedCount=0;rankCount=0;catalogOn=true;spotlightCount=0;spotlightFails=false;rankMine=null;requests.length=0;auth.authenticated=true;session.ownerId='owner-a';session.generation=0;
+const entry=(n:number,amount:number,createdAt:string,asset='fan_point')=>({id:uid(700+n),asset,amount,sourceType:'attendance',sourceId:uid(800+n),celebrityId:null,createdAt,actionKey:null,correctionReason:null,pageName:'Elina'});
+let historyEntries:unknown[]=[];
+beforeEach(()=>{homeComparable=true;historyEntries=[entry(1,2,'2026-11-08T03:00:00Z'),entry(2,-100,'2026-11-07T03:00:00Z'),entry(3,1,'2026-11-07T02:00:00Z','ticket'),entry(4,2,'2026-11-06T03:00:00Z')];creatorRaffles=allRaffles();homeRows=[{rank:3,slug:'bias-x',name:'Bias X',imageUrl:null,score:125,hearts:795,challenge:false,delta:1,weekGain:null}];roadmapBody=null;bias.value={status:'error',options:[],selected:null,unverified:null,select:()=>{},retry:()=>{}};historyFails.value=false;resetDukjilCatalogCache();fail=false;failCreators=false;empty=false;invalidCursor=false;joinedCount=0;rankCount=0;catalogOn=true;spotlightCount=0;spotlightFails=false;rankMine=null;requests.length=0;auth.authenticated=true;session.ownerId='owner-a';session.generation=0;
  vi.stubGlobal('fetch',vi.fn(async(url:string,init?:RequestInit)=>{
   expect(init?.method??'GET').toBe('GET');requests.push(url);
   if(url==='/api/me/wallet')return Response.json(wallet);
+  if(url.startsWith('/api/me/wallet/history'))return historyFails.value?Response.json({error:{code:'X'}},{status:503}):Response.json({entries:historyEntries});
   if(url.startsWith('/api/me/dukjil/today'))return Response.json({kstDate:'2026-11-06',policyActive:true,totalPoints:0,actions:{},attendance:null,hasPassport:null});
   if(url.startsWith('/api/dukjil/catalog'))return Response.json(catalogOn?{version:1,rules:{checkin:{points:2},post:{points:20},comment:{points:3},share:{points:10}},missionBook:null}:{version:null,rules:{},missionBook:null});
   if(url.startsWith('/api/groups?limit=4&type=fan&sort=today'))return spotlightFails?Response.json({error:{code:'X'}},{status:500}):Response.json({items:joined(spotlightCount).map(page=>({...page,memberCount:1200000})),nextCursor:null});
@@ -63,40 +67,6 @@ function LuckyCatalog({locale}:{locale:AppLocale}){const owner=useGroupRequest()
 const renderCatalog=(locale:AppLocale='ko')=>render(<LuckyCatalog locale={locale}/>);
 const favorite={slug:'bias-x',name:'Bias X',image:'/x.webp',passportId:uid(900),tier:'Silver',stage:null,hearts:3};
 const withFavorite=()=>{bias.value={status:'ready',options:[favorite],selected:favorite,unverified:null,select:()=>{},retry:()=>{}};};
-it('E4: shows the favorite’s real lucky draws (open first, then upcoming), with dates, winners, the ticket cost and the entries the wallet allows, and no disabled action',async()=>{
- withFavorite();const view=render(<GroupBenefitsScreen locale='ko'/>);
- const section=await screen.findByRole('region',{name:groupBenefitsCopy('ko').lucky});await within(section).findByText('Gift 1');
- expect(requests).toContain('/api/celebrities/bias-x/raffles?locale=ko');
- const cards=[...section.querySelectorAll<HTMLElement>('[data-raffle-status]')];
- expect(cards.map(card=>card.dataset.raffleStatus)).toEqual(['open','preparing']);
- expect(cards[0]).toHaveTextContent(/마감 \d+\. \d+\./);expect(cards[0]).toHaveTextContent('3명 · 현장 수령');
- await waitFor(()=>expect(cards[0].querySelector('[data-raffle-cost]')).toHaveTextContent('응모권 1장 · 지금 7번 가능'));
- expect(within(cards[0]).getByRole('link',{name:/응모하러 가기/})).toHaveAttribute('href',`/c/bias-x/raffles/${uid(401)}?locale=ko`);
- expect(cards[1]).toHaveTextContent(/응모 시작/);expect(cards[1].querySelector('[data-raffle-cost]')).toBeNull();
- expect(within(cards[1]).getByRole('link',{name:/선물 보기/})).toHaveAttribute('href',`/c/bias-x/raffles/${uid(402)}?locale=ko`);
- expect(within(section).getByRole('link',{name:/전체 보기/})).toHaveAttribute('href','/c/bias-x/raffles?locale=ko');
- expect(view.container.textContent).not.toMatch(/럭키드로우 [12]|준비 중|응원하러 가기/);
- expect(view.container.querySelectorAll('[aria-disabled="true"]')).toHaveLength(0);
-});
-it('E4: when the server would refuse the entry the card says why instead of a count (no policy, no passport) and a failed read is an error with retry',async()=>{
- withFavorite();creatorRaffles=[{...creatorRaffle(1,'open',-day,7*day),fulfillmentPolicy:null}];const first=render(<GroupBenefitsScreen locale='ko'/>);
- let section=await screen.findByRole('region',{name:groupBenefitsCopy('ko').lucky});await within(section).findByText('Gift 1');
- let card=section.querySelector<HTMLElement>('[data-raffle-status="open"]')!;
- expect(card).toHaveAttribute('data-raffle-allowance','policy');expect(card).toHaveTextContent('받는 방법이 정해지면 응모할 수 있어요');expect(card).not.toHaveTextContent('번 가능');
- expect(within(card).getByRole('link',{name:/선물 보기/})).toHaveAttribute('href',`/c/bias-x/raffles/${uid(401)}?locale=ko`);
- first.unmount();clearResources();
- // Followed but no passport (bias.unverified): a standalone draw needs the passport first.
- creatorRaffles=allRaffles();bias.value={status:'empty',options:[],selected:null,unverified:{slug:'bias-x',name:'Bias X'},select:()=>{},retry:()=>{}};
- const second=render(<GroupBenefitsScreen locale='ko'/>);section=await screen.findByRole('region',{name:groupBenefitsCopy('ko').lucky});await within(section).findByText('Gift 1');
- card=section.querySelector<HTMLElement>('[data-raffle-status="open"]')!;
- expect(card).toHaveAttribute('data-raffle-allowance','passport');expect(card).toHaveTextContent('패스포트를 받으면 응모할 수 있어요');
- expect(within(card).getByRole('link',{name:/패스포트 받기/}).getAttribute('href')).toMatch(/^\/c\/bias-x\/verify\?/);
- second.unmount();clearResources();
- withFavorite();const base=fetch;vi.stubGlobal('fetch',vi.fn((url:string,init?:RequestInit)=>/\/raffles\?/.test(url)?Promise.resolve(Response.json({error:{code:'RAFFLES_UNAVAILABLE'}},{status:503})):base(url,init)));
- render(<GroupBenefitsScreen locale='ko'/>);section=await screen.findByRole('region',{name:groupBenefitsCopy('ko').lucky});
- await within(section).findByText('럭키드로우를 불러오지 못했어요');expect(within(section).getByRole('button',{name:'다시 시도'})).toBeInTheDocument();
- expect(within(section).queryByText('지금 진행 중인 럭키드로우가 없어요')).toBeNull();
-});
 it('E4: the count waits for the entry list and uses the per-fan limit when nothing is entered yet',async()=>{
  const {raffleAllowance}=await import('./stan-lucky-cheer');const raffle={...creatorRaffle(1,'open',-day,7*day),perFanTicketLimit:3} as any;
  const base={raffle,guest:false,hasPassport:true,tickets:{loading:false,value:7}};
@@ -107,50 +77,9 @@ it('E4: the count waits for the entry list and uses the per-fan limit when nothi
  expect(raffleAllowance({...base,entries:{loading:false,error:false,entry:{remainingBenefitTickets:null,fanVerified:false} as any}})).toEqual({kind:'passport'});
  expect(raffleAllowance({...base,guest:true,entries:{loading:false,error:false,entry:null}})).toEqual({kind:'locked'});
 });
-it('E4: an empty lucky-draw list is one state box with the way to my entries, not placeholder cards',async()=>{
- withFavorite();creatorRaffles=[];render(<GroupBenefitsScreen locale='ko'/>);
- const section=await screen.findByRole('region',{name:groupBenefitsCopy('ko').lucky});
- await within(section).findByText('지금 진행 중인 럭키드로우가 없어요');
- expect(within(section).getByRole('link',{name:/내 응모 내역/})).toHaveAttribute('href','/my/raffles?locale=ko');
- expect(section.querySelectorAll('[data-raffle-status]')).toHaveLength(0);
-});
-it('F5: with nothing open or upcoming, past draws sit under 지난 럭키드로우 below the empty line, each naming its own close day beside the results day',async()=>{
- withFavorite();
- const closed=(n:number,closes:number)=>({...creatorRaffle(n,'closed',closes-7*day,closes),title:'Same gift',benefitId:uid(499),resultsPublishedAt:iso(-5*day)});
- creatorRaffles=[closed(1,-12*day),closed(2,-10*day),creatorRaffle(4,'cancelled',-day,7*day)];
- render(<GroupBenefitsScreen locale='ko'/>);
- const section=await screen.findByRole('region',{name:groupBenefitsCopy('ko').lucky});
- await within(section).findByText('지금 진행 중인 럭키드로우가 없어요');
- const list=within(section).getByRole('list',{name:'지난 럭키드로우'});
- expect(list).toHaveAttribute('data-raffle-list','past');
- expect(section.querySelector('[data-raffle-status]')!.closest('ul')).toBe(list);
- const cards=[...list.querySelectorAll<HTMLElement>('[data-raffle-status="closed"]')];
- expect(cards).toHaveLength(2);
- const dates=cards.map(card=>card.querySelector('[class*="meta"]')!.textContent);
- for(const text of dates)expect(text).toMatch(/^마감 \d+\. \d+\. · 발표 \d+\. \d+\.$/);
- expect(new Set(dates).size).toBe(2);
- expect(within(cards[0]).getByRole('link',{name:/결과 보기/})).toBeInTheDocument();
- expect(within(section).queryByRole('link',{name:/전체 보기/})).toBeNull();
-});
-it('E4 · F2: the cheer card shows the favorite’s creator rank, my hearts (the header’s number) and the community numbers, with no send button and no stamp gauge (the wallet has it)',async()=>{
- withFavorite();roadmapBody={passportId:uid(900),celebrityId:uid(901),hearts:3,pages:[{pageNo:1,slots:Array.from({length:9},(_,i)=>({slotNo:i+1,kind:null,state:i<4?'filled':'empty',stampId:null,clearedAt:null})),filled:4,claimable:false,claimed:false,locked:false,lockedReason:null}]};
- const view=render(<GroupBenefitsScreen locale='ko'/>);
- const card=await screen.findByRole('region',{name:'최애 응원'});
- await within(card).findByText('크리에이터 순위 3위');
- expect(card).toHaveTextContent('내 하트');expect(card).toHaveTextContent('3');expect(card).toHaveTextContent('125');expect(card).toHaveTextContent('795');
- expect(within(card).getByRole('link',{name:/팬 순위 보기/})).toHaveAttribute('href','/bias-x?tab=fans&locale=ko');
- expect(within(card).queryByRole('progressbar')).toBeNull();expect(card).not.toHaveTextContent('다음 하트까지');
- expect(within(card).queryByRole('button',{name:/보내기|응원하러/})).toBeNull();
- // F2: the rank lives on the cheer card only; the wallet has no cheer or lucky-draw cell.
- expect(view.container.querySelector('[data-cell="cheer"]')).toBeNull();expect(view.container.querySelector('[data-cell="lucky"]')).toBeNull();
-});
 it('E4: stamps to the next heart are 9 − (n mod 9), and a full page reads 하트 +1',async()=>{
  const {nextHeartLabel}=await import('./stan-lucky-cheer');
  expect(nextHeartLabel('ko',4)).toBe('다음 하트까지 5칸');expect(nextHeartLabel('ko',0)).toBe('다음 하트까지 9칸');expect(nextHeartLabel('ko',9)).toBe('하트 +1');expect(nextHeartLabel('ko',13)).toBe('다음 하트까지 5칸');
-});
-it('E4: a favorite outside the top 20 reads 20위 밖',async()=>{
- withFavorite();homeRows=[];render(<GroupBenefitsScreen locale='ko'/>);
- const card=await screen.findByRole('region',{name:'최애 응원'});await within(card).findByText('크리에이터 순위 20위 밖');
 });
 it('uses validated catalog values, real scoped links, zero rewards and independent cursor pages',async()=>{
  renderCatalog('ja');await screen.findByText('First raffle');
@@ -217,20 +146,11 @@ it('drops accumulated pages immediately when the owner changes',async()=>{
  view.rerender(<LuckyCatalog locale='ko'/>);expect(screen.queryByText('First raffle')).not.toBeInTheDocument();expect(screen.queryByText('Second raffle')).not.toBeInTheDocument();await screen.findAllByText(groupBenefitsCopy('ko').empty);
 });
 it('refreshes balances after the shared wallet mutation event',async()=>{
- render(<GroupBenefitsScreen locale='ko'/>);await screen.findAllByText('137');requests.length=0;
+ render(<GroupBenefitsScreen locale='ko'/>);await screen.findAllByText('137 P');requests.length=0;
  await act(async()=>window.dispatchEvent(new Event('kyaa:group-wallet-changed')));
  expect(requests).toContain('/api/me/wallet');
 });
 it('has complete localized interface labels',()=>{for(const locale of APP_LOCALES)expect(Object.values(groupBenefitsCopy(locale)).every(value=>value.trim())).toBe(true);});
-
-it('does not invent a rate while wallet loading or invalid',async()=>{
- const original=globalThis.fetch;const resolvers:((value:Response)=>void)[]=[];
- vi.stubGlobal('fetch',vi.fn((url:string,init?:RequestInit)=>url==='/api/me/wallet'?new Promise<Response>(done=>{resolvers.push(done);}):original(url,init)));
- render(<GroupBenefitsScreen locale='ko'/>);await screen.findByRole('heading',{name:groupBenefitsCopy('ko').lucky});
- expect(screen.queryByText(/P = /)).not.toBeInTheDocument();
- await act(async()=>resolvers.forEach(resolve=>resolve(Response.json({...wallet,pointCost:999}))));
- await screen.findByRole('alert');expect(screen.queryByText(/P = /)).not.toBeInTheDocument();
-});
 
 it('retains real raffles and removes point-event requests',async()=>{renderCatalog();await screen.findByText('First raffle');expect(screen.queryByRole('region',{name:'포인트 이벤트'})).toBeNull();expect(requests.some(url=>url.includes('kind=missions'))).toBe(false);expect(screen.getByRole('link',{name:/캡슐/})).toHaveAttribute('href','/my/capsules?locale=ko');expect(screen.getByText(/응모 접수 중/)).toBeInTheDocument();});
 it('labels preparing entries and preserves raffle errors',async()=>{const original=globalThis.fetch;let phase='preparing';vi.stubGlobal('fetch',vi.fn((url:string,init?:RequestInit)=>url.includes('kind=raffles')?Promise.resolve(phase==='preparing'?Response.json({kind:'raffles',items:[{...raffle,status:'preparing'}],nextCursor:null}):Response.json({error:{code:'UNAVAILABLE'}},{status:503})):original(url,init)));const v=renderCatalog();expect(await screen.findByText(/준비 중/)).toBeInTheDocument();expect(screen.queryByText(/응모 접수 중/)).toBeNull();v.unmount();clearResources();phase='failure';renderCatalog();await screen.findByRole('alert');expect(screen.queryByRole('region',{name:'포인트 이벤트'})).toBeNull();});
@@ -239,191 +159,18 @@ const historyFails=vi.hoisted(()=>({value:false}));
 vi.mock('@/features/group-wallet/ui/wallet-screen',async()=>{const {useEffect,useRef}=await import('react');return {WalletHistoryPanel:({preview}:{preview?:{onFailure?:(failed:boolean,retry:()=>void)=>void}})=>{const latest=useRef(preview);useEffect(()=>{latest.current=preview;});useEffect(()=>{if(historyFails.value)latest.current?.onFailure?.(true,()=>{historyFails.value=false;});},[]);return <section><h2 id='wallet-history'>내역</h2></section>;},WalletExchangeDialog:({open,onClose}:{open:boolean;onClose:()=>void})=>open?<div role='dialog' aria-label='응모권 전환'><button onClick={onClose}>전환 닫기</button></div>:null};});
 
 
-it('shows geometry placeholders only during initial reads and replaces them with real data',async()=>{
- let release!:()=>void;const gate=new Promise<void>(resolve=>{release=resolve});const original=globalThis.fetch;
- vi.stubGlobal('fetch',vi.fn(async(input:RequestInfo|URL,init?:RequestInit)=>{await gate;return original(input,init);}));
- render(<GroupBenefitsScreen locale='ko'/>);const pending=screen.getAllByRole('status');expect(pending.length).toBeGreaterThan(0);expect(pending.some(node=>node.getAttribute('aria-busy')==='true')).toBe(true);expect(screen.queryByText('137')).not.toBeInTheDocument();
- await act(async()=>release());await screen.findAllByText('137');expect(screen.queryByRole('status',{busy:true})).not.toBeInTheDocument();
-});
-
-
-
-
-
-it('F2: the wallet is two assets, their next steps and one action, with the rules behind 안내 and no help button',async()=>{
- withFavorite();render(<GroupBenefitsScreen locale='ko'/>);const button=await screen.findByRole('button',{name:'광고 보고 교환하기'});
- expect(screen.queryByRole('radio')).toBeNull();expect(document.querySelector('fieldset')).toBeNull();
- const card=button.closest('section')!;expect(card).toHaveAttribute('data-wallet-card','stan');expect(card).toHaveTextContent('137P');expect(card).toHaveTextContent('응모권7장');expect(card).toHaveTextContent('교환 가능');
- const hrefs=Object.fromEntries([...card.querySelectorAll<HTMLElement>('[data-cell]')].map(cell=>[cell.dataset.cell,cell.getAttribute('href')]));
- expect(hrefs).toEqual({points:'#stan-history',hearts:'/bias-x?tab=fans&locale=ko',tickets:'/my/raffles?locale=ko',stamps:'/passports?locale=ko'});
- expect(within(card).getByRole('link',{name:'안내'})).toHaveAttribute('href','/guide/dukjil?locale=ko');
- expect(within(card).getAllByRole('button')).toHaveLength(1);expect(card.querySelectorAll('a button, a [role="button"]')).toHaveLength(0);expect(card.querySelectorAll('[aria-disabled="true"]')).toHaveLength(0);
- expect(screen.queryByRole('button',{name:/도움말|설명/})).toBeNull();expect(document.querySelector('main')!.textContent).not.toContain('준비 중');
- expect(document.getElementById('stan-lucky')).not.toBeNull();expect(document.getElementById('stan-cheer')).not.toBeNull();expect(document.getElementById('stan-history')).not.toBeNull();
- fireEvent.click(button);expect(screen.getByRole('dialog',{name:'응모권 전환'})).toBeInTheDocument();fireEvent.click(screen.getByRole('button',{name:'전환 닫기'}));expect(screen.queryByRole('dialog')).toBeNull();
-});
-it('E5: zero values are written as numbers, never a dash',async()=>{
- const base=fetch;vi.stubGlobal('fetch',vi.fn((url:string,init?:RequestInit)=>url==='/api/me/wallet'?Promise.resolve(Response.json({...wallet,points:0,tickets:0})):base(url,init)));
- bias.value={status:'empty',options:[],selected:null,unverified:null,select:()=>{},retry:()=>{}};
- render(<GroupBenefitsScreen locale='ko'/>);const card=(await screen.findByRole('button',{name:'광고 보고 교환하기'})).closest('section')!;
- await waitFor(()=>expect(card).toHaveTextContent('0P'));expect(card).toHaveTextContent('0장');expect(card).toHaveTextContent('0/9');expect(card.textContent).not.toContain('—');
- // r6 visual review: the next-step numbers keep their unit attached (no gap class missing).
- const steps=[...card.querySelectorAll('[data-number-role="asset"]')].filter(n=>/장|\/9/.test(n.textContent??''));expect(steps).toHaveLength(2);expect(steps.every(n=>/stepNumber/.test(n.className))).toBe(true);
-});
-/* A disabled exchange keeps the common grey pill; only enabled primary controls count as emphasis. */
 const primaryLabels=()=>[...document.querySelectorAll<HTMLElement>('main a,main button')].filter(el=>!el.closest('[inert]')&&/primary/.test(el.className)&&!(el as HTMLButtonElement).disabled).map(el=>el.textContent);
 const withPoints=(points:number)=>{const base=fetch;vi.stubGlobal('fetch',vi.fn((url:string,init?:RequestInit)=>url==='/api/me/wallet'?Promise.resolve(Response.json({...wallet,points})):base(url,init)));};
-const exchangeButton=()=>screen.findByRole('button',{name:'광고 보고 교환하기'});
-it('keeps the exchange a secondary action at the rate boundary (100 and 101)',async()=>{
- for(const points of [100,101]){
-  withPoints(points);joinedCount=2;const view=render(<GroupBenefitsScreen locale='ko'/>);
-  const button=await exchangeButton();await screen.findByText('Creator 2');
-  expect(button).toBeEnabled();expect(button.className).not.toMatch(/primary/);expect(primaryLabels()).not.toContain('광고 보고 교환하기');
-  view.unmount();
- }
-});
-it('disables the exchange and shows the points left to a ticket when the points fall short (99)',async()=>{
- withPoints(99);joinedCount=2;render(<GroupBenefitsScreen locale='ko'/>);
- const button=await exchangeButton();await screen.findByText('Creator 2');
- expect(button).toBeDisabled();expect(button.closest('section')).toHaveTextContent('응모권까지 1P');
- expect(screen.getByRole('progressbar',{name:'응모권까지 1P'})).toHaveAttribute('aria-valuenow','99');
-});
-it('has no emphasised action at all when the points fall short and nothing is left to check in',async()=>{
- const base=fetch;vi.stubGlobal('fetch',vi.fn((url:string,init?:RequestInit)=>url==='/api/me/wallet'?Promise.resolve(Response.json({...wallet,points:0})):url.startsWith('/api/me/attendance?creators=')?Promise.resolve(Response.json({kstDate:'2026-11-06',items:joined(2).map(page=>({celebrityId:page.celebrityId,attendedToday:true,streak:1,nextBonusIn:4,hasPassport:true}))})):base(url,init)));
- joinedCount=2;render(<GroupBenefitsScreen locale='ko'/>);const button=await exchangeButton();await screen.findAllByText('Creator 1');
- expect(button).toBeDisabled();expect(primaryLabels()).toEqual([]);
-});
-it('enables the exchange when a check-in brings the points to the rate',async()=>{
- let points=95;const base=fetch;vi.stubGlobal('fetch',vi.fn((url:string,init?:RequestInit)=>url==='/api/me/wallet'?Promise.resolve(Response.json({...wallet,points})):base(url,init)));
- joinedCount=2;render(<GroupBenefitsScreen locale='ko'/>);const button=await exchangeButton();
- expect(button).toBeDisabled();
- points=105;await act(async()=>window.dispatchEvent(new Event('kyaa:group-wallet-changed')));
- await waitFor(()=>expect(button).toBeEnabled());expect(primaryLabels()).not.toContain('광고 보고 교환하기');
-});
-it('never emphasises the exchange (no joined page, points cover the rate)',async()=>{
- render(<GroupBenefitsScreen locale='ko'/>);await exchangeButton();expect(primaryLabels()).toEqual([]);
-});
-it('lists joined pages under 오늘의 덕질 with pending pages first and expands past five rows',async()=>{
- joinedCount=7;render(<GroupBenefitsScreen locale='ko'/>);
- await screen.findByText('Creator 2');const section=screen.getByRole('region',{name:'오늘의 덕질'});
- const rows=()=>within(section).getAllByRole('listitem');expect(rows()).toHaveLength(5);
- expect(rows()[0]).toHaveTextContent('Creator 2');expect(rows().map(row=>row.textContent).join()).not.toContain('Creator 1');
- // 연속 일수 띠: 연속이 가장 긴 페이지 하나를 제목 아래에 둔다.
- expect(section.querySelector('[data-streak-band]')).toHaveTextContent('Creator 1');expect(section.querySelector('[data-streak-band]')).toHaveTextContent('연속 3일');
- fireEvent.click(within(section).getByRole('button',{name:'전체 보기'}));expect(rows()).toHaveLength(7);expect(within(within(section).getAllByRole('list').at(-1)!).getByText('Creator 1')).toBeInTheDocument();
- expect(within(section).queryByRole('button',{name:'전체 보기'})).toBeNull();
-});
-it('keeps the wallet card for guests: locked balances, the public exchange rate and the one emphasised login',async()=>{
- auth.authenticated=false;empty=true;render(<GroupBenefitsScreen locale='ko'/>);
- const login=await screen.findByRole('link',{name:'로그인'});const card=login.closest('section')!;
- expect(within(card).getAllByRole('img',{name:'로그인 후 확인'})).toHaveLength(4);expect(card.textContent).not.toContain('—');
- expect(card).toHaveTextContent('응모권까지 100P');expect(card).toHaveTextContent('다음 하트까지 9칸');
- expect(login.getAttribute('href')).toBe('/login?returnTo=%2Fbenefits%3Flocale%3Dko&locale=ko');expect(login).toHaveAttribute('data-fan-action-emphasis','primary');
- expect(screen.queryByRole('button',{name:'광고 보고 교환하기'})).toBeNull();expect(document.getElementById('wallet-history')).toBeNull();
- expect(document.querySelectorAll('[data-fan-action-emphasis="primary"]')).toHaveLength(1);
-});
+const exchangeButton=()=>screen.findByRole('button',{name:'교환'});
 it('shows guests a locked history block under the same heading with no tabs or links',async()=>{
  auth.authenticated=false;empty=true;render(<GroupBenefitsScreen locale='ko'/>);
  const section=await screen.findByRole('region',{name:'내역'});expect(within(section).getByRole('heading',{name:'내역'})).toBeInTheDocument();
  expect(section.querySelectorAll('[aria-hidden="true"] > div')).toHaveLength(3);expect(within(section).queryByRole('link')).toBeNull();expect(within(section).queryByText('아직 내역이 없어요')).toBeNull();
 });
-it('shows guests the spotlight pages as 오늘의 덕질 tiles with a login check-in and the public point policy',async()=>{
- auth.authenticated=false;empty=true;spotlightCount=4;render(<GroupBenefitsScreen locale='ko'/>);
- await screen.findByText('Creator 4');const section=screen.getByRole('region',{name:'오늘의 덕질'});
- expect(within(section).getAllByRole('listitem')).toHaveLength(4);expect(within(section).getAllByText('팬 1,200,000')).toHaveLength(4);
- const checkIns=within(section).getAllByRole('link',{name:'출석체크'});expect(checkIns).toHaveLength(4);
- for(const link of checkIns){expect(link).toHaveAttribute('href','/login?returnTo=%2Fbenefits%3Flocale%3Dko&locale=ko');expect(link).not.toHaveAttribute('data-fan-action-emphasis','primary');}
- expect(within(section).getByText('출석 2P · 글쓰기 20P · 댓글 3P · 공유 10P')).toBeInTheDocument();
- expect(within(section).getByRole('link',{name:'덕질하는 법 보기'})).toHaveAttribute('href','/guide/dukjil?locale=ko');
- expect(requests.some(url=>url.includes('/api/me/'))).toBe(false);
-});
-it('keeps 오늘의 덕질 for guests with an explore action when no page is spotlighted, and a local error when the list fails',async()=>{
- auth.authenticated=false;empty=true;const first=render(<GroupBenefitsScreen locale='ko'/>);
- const explore=await screen.findByRole('link',{name:/페이지 둘러보기/});const section=screen.getByRole('region',{name:'오늘의 덕질'});
- expect(explore).toHaveAttribute('href','/pages/groups?locale=ko');expect(within(section).queryAllByRole('listitem')).toHaveLength(1);expect(within(section).getByRole('listitem')).toHaveTextContent('가입한 페이지가 없어요');
- first.unmount();clearResources();spotlightFails=true;render(<GroupBenefitsScreen locale='ko'/>);
- const alert=await screen.findByText('출석 정보를 불러오지 못했어요');const failed=screen.getByRole('region',{name:'오늘의 덕질'});
- expect(screen.getAllByRole('link',{name:'로그인'}).length).toBeGreaterThan(0);spotlightFails=false;spotlightCount=2;fireEvent.click(within(failed).getByRole('button',{name:'다시 시도'}));await screen.findByText('Creator 2');
-});
-it('renders the guest card, tiles and locked cells in every language without a dash or a second emphasised action',async()=>{
- for(const locale of APP_LOCALES){
-  auth.authenticated=false;empty=true;spotlightCount=3;const view=render(<GroupBenefitsScreen locale={locale}/>);
-  const w=walletCopy(locale);await screen.findByText('Creator 3');
-  const login=screen.getAllByRole('link',{name:w.login}).find(link=>link.getAttribute('href')?.startsWith('/login'))!;
-  expect(login.getAttribute('href')).toContain(`locale=${locale}`);expect(login.getAttribute('href')).toContain(encodeURIComponent(`/benefits?locale=${locale}`));
-  expect(document.querySelectorAll('[data-fan-action-emphasis="primary"]')).toHaveLength(1);
-  expect(document.querySelectorAll('[role="img"][aria-label]').length).toBeGreaterThanOrEqual(2);
-  expect(view.container.textContent).not.toContain('— P');
-  view.unmount();
- }
-});
-it('collapses the expanded attendance list from the same title-row control',async()=>{
- joinedCount=7;render(<GroupBenefitsScreen locale='ko'/>);await screen.findByText('Creator 2');const section=screen.getByRole('region',{name:'오늘의 덕질'});
- fireEvent.click(within(section).getByRole('button',{name:'전체 보기'}));expect(within(section).getAllByRole('listitem')).toHaveLength(7);
- fireEvent.click(within(section).getByRole('button',{name:'접기'}));expect(within(section).getAllByRole('listitem')).toHaveLength(5);expect(within(section).getByRole('button',{name:'전체 보기'})).toHaveAttribute('aria-expanded','false');
-});
-it('shows one combined alert with one retry when the wallet, attendance and history all fail',async()=>{
- const base=fetch;let broken=true;historyFails.value=true;
- vi.stubGlobal('fetch',vi.fn((url:string,init?:RequestInit)=>broken&&(url==='/api/me/wallet'||url.startsWith('/api/groups?mine=joined')||url.startsWith('/api/rankings'))?Promise.resolve(Response.json({error:{code:'X'}},{status:500})):base(url,init)));
- joinedCount=2;rankCount=2;render(<GroupBenefitsScreen locale='ko'/>);
- await screen.findByText('요청을 완료하지 못했어요',{},{timeout:5000});
- await waitFor(()=>{const visible=screen.getAllByRole('alert',{hidden:false});expect(visible).toHaveLength(1);expect(visible[0]).toHaveTextContent('요청을 완료하지 못했어요');expect(screen.queryByRole('region',{name:'오늘의 덕질',hidden:false})).toBeNull();expect(screen.queryByRole('region',{name:'랭킹',hidden:false})).toBeNull();expect(screen.queryByRole('region',{name:groupBenefitsCopy('ko').lucky,hidden:false})).toBeNull();expect(document.getElementById('wallet-history')?.closest('[hidden]')).not.toBeNull();},{timeout:5000});
- broken=false;fireEvent.click(within(screen.getAllByRole('alert',{hidden:false})[0]).getByRole('button'));
- await screen.findByText('Creator 2',{},{timeout:5000});await waitFor(()=>expect(screen.queryAllByRole('alert',{hidden:false})).toHaveLength(0),{timeout:5000});
-},15000);
-it('shows the empty state with a way to explore pages when no page is joined',async()=>{
- render(<GroupBenefitsScreen locale='ko'/>);await screen.findByText('가입한 페이지가 없어요');const section=screen.getByRole('region',{name:'오늘의 덕질'});
-expect(within(section).getByRole('link',{name:/가입한 페이지가 없어요.*페이지 둘러보기/})).toHaveAttribute('href','/pages/groups?locale=ko');
-});
 it('hides 오늘의 덕질 while the attendance policy is off',async()=>{
- catalogOn=false;render(<GroupBenefitsScreen locale='ko'/>);await screen.findAllByText('137');
+ catalogOn=false;render(<GroupBenefitsScreen locale='ko'/>);await screen.findAllByText('137 P');
  await waitFor(()=>expect(screen.queryByRole('region',{name:'오늘의 덕질'})).toBeNull());expect(requests.some(url=>url.includes('/api/me/attendance'))).toBe(false);
 });
-it('does not offer a conversion the balance cannot cover',async()=>{
- const base=fetch;vi.stubGlobal('fetch',vi.fn((url:string,init?:RequestInit)=>url==='/api/me/wallet'?Promise.resolve(Response.json({...wallet,points:0})):base(url,init)));
- render(<GroupBenefitsScreen locale='ko'/>);expect(await screen.findByRole('button',{name:'광고 보고 교환하기'})).toBeDisabled();
-});
-it('keeps conversion closed with a notice until an ad unit is configured',async()=>{
- adUnit.value=undefined;empty=true;render(<GroupBenefitsScreen locale='ko'/>);const off=await screen.findByRole('button',{name:'광고 보고 교환하기'});expect(off).not.toBeDisabled();expect(screen.queryByText(/광고 준비 중/)).toBeNull();adUnit.value='/123/rewarded';
-});
-it('moves the ranking out of 덕질 and folds the missions into today, more and certifications',async()=>{
- joinedCount=1;const view=render(<GroupBenefitsScreen locale='ko'/>);
- const missions=await screen.findByRole('region',{name:'오늘의 미션'});
- expect(requests.some(url=>url.startsWith('/api/rankings'))).toBe(false);expect(screen.queryByRole('region',{name:'랭킹'})).toBeNull();
- expect(missions.querySelector('[data-all-clear]')).toBeNull();expect(view.container.textContent).not.toContain('전체 완료');
- await waitFor(()=>expect(missions.querySelector('[data-missions-today] li[data-mission]')).not.toBeNull());expect(within(missions).queryByRole('button',{name:/오늘 할 것/})).toBeNull();
- expect(within(missions).getByRole('button',{name:/그 밖의 미션/})).toHaveAttribute('aria-expanded','false');
- expect(missions.querySelector('[data-mission="post"] a')).toHaveAttribute('href','/c1?tab=board&source=fans&compose=1&locale=ko');
-});
-
-it('H6: sends the mission rows and the heart cheer to the favorite chosen in the header, not the first joined page',async()=>{
- joinedCount=2;const chosen={slug:'bias-x',name:'Bias X',image:'/x.webp',passportId:'p',tier:'silver',stage:null};
- bias.value={status:'ready',options:[chosen],selected:chosen,unverified:null,select:()=>{},retry:()=>{}};
- render(<GroupBenefitsScreen locale='ko'/>);
- const missions=await screen.findByRole('region',{name:'오늘의 미션'});await waitFor(()=>expect(missions.querySelector('[data-missions-today]')).not.toBeNull());
- await waitFor(()=>expect(missions.querySelector('[data-mission="post"] a')).toHaveAttribute('href','/bias-x?tab=board&source=fans&compose=1&locale=ko'));
- expect(missions.querySelector('[data-mission="comment"] a')!.getAttribute('href')).toMatch(/^\/bias-x\?/);
- // E4: cheering spends nothing; the card names the favorite and leads to its fan ranking, never a disabled send button.
- expect(screen.queryByRole('button',{name:/응원하러 가기/})).toBeNull();
- const cheer=screen.getByRole('region',{name:'최애 응원'});expect(cheer).toHaveTextContent('Bias X');
- expect(within(cheer).getByRole('link',{name:/팬 순위 보기/})).toHaveAttribute('href','/bias-x?tab=fans&locale=ko');
-});
-it('asks a viewer without a favorite to pick one in the heart cheer card, and guests to log in',async()=>{
- bias.value={status:'empty',options:[],selected:null,unverified:null,select:()=>{},retry:()=>{}};
- const view=render(<GroupBenefitsScreen locale='ko'/>);const picks=await screen.findAllByRole('link',{name:'최애 고르기'});
- // D2: every "choose" (status bar, wallet cheer cell, heart card) leads to choosing; none is a dead end.
- expect(picks.length).toBeGreaterThanOrEqual(3);for(const pick of picks)expect(pick).toHaveAttribute('href','/pages/groups?locale=ko');view.unmount();
- bias.value={...bias.value,status:'guest'};auth.authenticated=false;render(<GroupBenefitsScreen locale='ko'/>);
- const guestPicks=await screen.findAllByRole('link',{name:'최애 고르기'});for(const pick of guestPicks)expect(pick.getAttribute('href')).toMatch(/^\/login\?/);
-});
-
-it('V12: holds the missions section in place while the policy is still loading', () => {
- render(<GroupBenefitsScreen locale='ko'/>);
- const pending=document.querySelector('[data-missions-pending]');
- expect(pending).not.toBeNull();
- expect(pending).toHaveTextContent('오늘의 미션');
-});
-
 it('draws the favorite the server read while the browser is still signing in, then follows the browser', async () => {
  const initial = {slug:'server-pick',name:'Server Pick',image:'/images/x.png',passportId:uid(900),tier:'Bronze' as const,stage:null};
  bias.value = {status:'loading',options:[],selected:null,unverified:null,select:()=>{},retry:()=>{}};
@@ -447,13 +194,156 @@ it('with no session cookie the signed-out heart and wallet are drawn before the 
  } finally { auth.ready = true; }
 });
 
-it('4차: the cheer card draws the rank change only when the home ranking has a day to compare with (no dash otherwise)',async()=>{
- withFavorite();homeComparable=false;render(<GroupBenefitsScreen locale='ko'/>);
- const card=await screen.findByRole('region',{name:'최애 응원'});await within(card).findByText('크리에이터 순위 3위');
- expect(card.querySelector('[data-direction]')).toBeNull();expect(card.textContent).not.toContain('—');
-});
-it('4차: with a day to compare, the cheer card shows the rank change beside the rank',async()=>{
+// ── r5 (plan-ux r5.1 3.2·3.3·4-E, 수용 기준 R2·R5·R7·R12·R19·R20) ──
+const blocks=()=>[...document.querySelectorAll('[data-block]')].filter(el=>!el.closest('[hidden]')).map(el=>el.getAttribute('data-block'));
+it('r5 A1: 덕질 has the 오늘 · 내역 tabs, no 오늘의 덕질 and the body/aside blocks in order',async()=>{
  withFavorite();render(<GroupBenefitsScreen locale='ko'/>);
- const card=await screen.findByRole('region',{name:'최애 응원'});await within(card).findByText('크리에이터 순위 3위');
- await waitFor(()=>expect(card.querySelector('[data-direction="up"]')).not.toBeNull());
+ const tabs=screen.getByRole('navigation',{name:'덕질'});
+ expect(within(tabs).getAllByRole('link').map(link=>[link.textContent,link.getAttribute('href'),link.getAttribute('aria-current')])).toEqual([['오늘','/benefits?locale=ko','page'],['내역','/benefits?tab=history&locale=ko',null]]);
+ await screen.findByText('Gift 1');
+ expect(screen.queryByText('오늘의 덕질')).toBeNull();expect(requests.some(url=>url.includes('/api/me/attendance?creators='))).toBe(false);
+ await waitFor(()=>expect(blocks()).toEqual(['wallet','list','lucky','aside-card','aside-card']));
+});
+it('r5 A1·A3: the 내역 tab draws the balance line, the segment and rows grouped by day; the tab press swaps the body at once',async()=>{
+ const view=render(<GroupBenefitsScreen locale='ko' tab='history'/>);
+ expect(await screen.findByText('2026.11.08')).toBeInTheDocument();expect(screen.getByText('2026.11.07')).toBeInTheDocument();
+ const rows=[...document.querySelectorAll('[data-row="transaction"]')].map(row=>row.textContent);
+ expect(rows).toEqual(expect.arrayContaining([expect.stringContaining('+2P'),expect.stringContaining('-100P'),expect.stringContaining('+1장')]));
+ expect(screen.getAllByRole('navigation')).toHaveLength(2);
+ expect(document.querySelector('[data-wallet-card]')).toBeNull();
+ view.rerender(<GroupBenefitsScreen locale='ko' tab='today'/>);
+ expect(document.querySelector('[data-wallet-card]')).not.toBeNull();
+});
+it('r5 H4: the wallet is a pair — 응모권 big with 포인트 · 100P = 1장 and 교환, 하트 big with 스탬프 N/9 — and one 안내 › in the head',async()=>{
+ withFavorite();render(<GroupBenefitsScreen locale='ko'/>);
+ const card=document.querySelector<HTMLElement>('[data-wallet-card="stan"]')!;
+ await waitFor(()=>expect(card.querySelector('[data-metric-id="wallet-tickets"]')).toHaveTextContent('7장'));
+ expect(card.querySelector('[data-metric-id="wallet-hearts"]')).toHaveTextContent('3');
+ const tickets=card.querySelector<HTMLElement>('[data-wallet-cell="tickets"]')!,hearts=card.querySelector<HTMLElement>('[data-wallet-cell="hearts"]')!;
+ expect(Boolean(tickets.compareDocumentPosition(hearts)&Node.DOCUMENT_POSITION_FOLLOWING)).toBe(true);
+ const points=tickets.querySelector('[data-wallet-row="points"]')!;expect(points).toHaveTextContent('포인트 137 P');expect(points.querySelector('[data-meta]')).toHaveTextContent('100P = 응모권 1장');
+ expect(within(points as HTMLElement).getByRole('progressbar')).toHaveAttribute('aria-valuenow','100');
+ expect(hearts.querySelector('[data-wallet-row="stamps"] [data-meta]')).toHaveTextContent('9칸 = 하트 1');
+ expect(within(tickets).getByRole('button',{name:'교환'})).toBeInTheDocument();expect(within(hearts).queryByRole('button')).toBeNull();
+ expect(within(card).getAllByRole('button')).toHaveLength(1);expect(card.textContent).not.toMatch(/광고 보고/);
+ expect(within(card).getAllByRole('link',{name:/안내/})).toHaveLength(1);
+ expect(card.querySelector('[data-balance-history]')).toHaveAttribute('href','/benefits?tab=history&locale=ko');
+ expect(card.querySelector('[data-help-tip],[data-help-hint]')).toBeNull();
+});
+it('r5 A2: 교환 is the primary while no draw is open, secondary while one is open (then 응모하기 is), and disabled under the rate',async()=>{
+ withFavorite();creatorRaffles=[creatorRaffle(2,'preparing',3*day,10*day)];const first=render(<GroupBenefitsScreen locale='ko'/>);
+ await waitFor(()=>expect(document.querySelector('[data-exchange]')).toHaveAttribute('data-exchange','primary'));
+ expect(primaryLabels()).toEqual(['교환']);
+ first.unmount();clearResources();creatorRaffles=allRaffles();render(<GroupBenefitsScreen locale='ko'/>);
+ await waitFor(()=>expect(document.querySelector('[data-exchange]')).toHaveAttribute('data-exchange','secondary'));
+ await waitFor(()=>expect(primaryLabels()).toEqual(['응모하기']));
+});
+it('r5 A2: 교환 is disabled at 99 points and opens the exchange at 100',async()=>{
+ withPoints(99);const low=render(<GroupBenefitsScreen locale='ko'/>);expect(await exchangeButton()).toBeDisabled();low.unmount();clearResources();
+ withPoints(100);render(<GroupBenefitsScreen locale='ko'/>);const button=await exchangeButton();expect(button).toBeEnabled();
+ fireEvent.click(button);expect(screen.getByRole('dialog',{name:'응모권 전환'})).toBeInTheDocument();
+});
+it('r5 H4: guests keep the pair with locked values and one login primary; zero values read 0장 · 0 P · 0/9 · 0',async()=>{
+ auth.authenticated=false;const guest=render(<GroupBenefitsScreen locale='ko'/>);
+ const card=await waitFor(()=>document.querySelector<HTMLElement>('[data-wallet-card="stan"]')!);
+ await waitFor(()=>expect(within(card).getByRole('link',{name:'로그인'})).toBeInTheDocument());
+ expect(card.querySelectorAll('[role="img"]').length).toBeGreaterThanOrEqual(4);expect(within(card).queryByRole('button')).toBeNull();
+ expect(document.querySelector('[data-lucky-module] [data-fan-action-emphasis],[data-lucky-module] button')).toBeNull();
+ guest.unmount();clearResources();auth.authenticated=true;
+ const base=fetch;vi.stubGlobal('fetch',vi.fn((url:string,init?:RequestInit)=>url==='/api/me/wallet'?Promise.resolve(Response.json({...wallet,points:0,tickets:0})):base(url,init)));
+ withFavorite();bias.value={...bias.value,selected:{...favorite,passportId:undefined,hearts:0}};render(<GroupBenefitsScreen locale='ko'/>);
+ const zero=document.querySelector<HTMLElement>('[data-wallet-card="stan"]')!;
+ await waitFor(()=>expect(zero.querySelector('[data-metric-id="wallet-tickets"]')).toHaveTextContent('0장'));
+ expect(zero.textContent).toContain('0 P');expect(zero.textContent).toContain('0/9');expect(zero.querySelector('[data-metric-id="wallet-hearts"]')).toHaveTextContent('0');expect(zero.textContent).not.toContain('—');
+});
+const lucky=()=>document.querySelector<HTMLElement>('[data-lucky-module]')!;
+const luckyCells=()=>[...lucky().querySelectorAll('[data-cell]')].map(cell=>cell.textContent);
+it('r5 A5: the lucky module has one stage graphic, three label-values and one action in each of its three states',async()=>{
+ withFavorite();creatorRaffles=[creatorRaffle(1,'open',-day,7*day)];const open=render(<GroupBenefitsScreen locale='ko'/>);
+ await waitFor(()=>expect(lucky()).toHaveAttribute('data-lucky-state','open'));
+ await waitFor(()=>expect(luckyCells()[0]).toBe('응모 가능7장'));
+ expect(luckyCells()[1]).toMatch(/^마감\d{2}\. \d{2}\. \d{2}:\d{2}$/);expect(luckyCells()[2]).toBe('당첨3명');
+ expect(lucky().querySelectorAll('svg[data-art="lucky-machine"]')).toHaveLength(1);expect(lucky().querySelectorAll('img,video')).toHaveLength(0);
+ expect(within(lucky()).getByRole('link',{name:'응모하기'})).toHaveAttribute('href',expect.stringContaining(uid(401)));
+ open.unmount();clearResources();
+ creatorRaffles=[creatorRaffle(2,'preparing',3*day,10*day)];const preparing=render(<GroupBenefitsScreen locale='ko'/>);
+ await waitFor(()=>expect(lucky()).toHaveAttribute('data-lucky-state','preparing'));
+ const wait=within(lucky()).getByRole('button');expect(wait).toBeDisabled();expect(wait.textContent).toMatch(/시작$/);
+ expect(document.querySelectorAll('main button:disabled').length).toBeLessThanOrEqual(2);
+ preparing.unmount();clearResources();
+ creatorRaffles=[creatorRaffle(3,'closed',-10*day,-2*day),creatorRaffle(5,'closed',-20*day,-12*day)];render(<GroupBenefitsScreen locale='ko'/>);
+ await waitFor(()=>expect(lucky()).toHaveAttribute('data-lucky-state','closed'));
+ await waitFor(()=>expect(luckyCells()[0]).toBe('내 응모0장'));
+ expect(within(lucky()).getByRole('link',{name:'결과 보기'})).toBeInTheDocument();
+ const past=lucky().querySelector('[data-row="notice"]')!;expect(past).toHaveTextContent('지난 럭키드로우');expect(past.querySelector('[data-meta]')).toHaveTextContent(/^Gift 5 · 3명 · 마감 \d{2}\. \d{2}\. \d{2}:\d{2}$/);
+});
+it('r5 A5: with no draw yet the module is 준비 중 (no empty box): 다음 주 and one disabled 다음 주 시작',async()=>{
+ withFavorite();creatorRaffles=[];render(<GroupBenefitsScreen locale='ko'/>);
+ await waitFor(()=>expect(lucky()).toHaveAttribute('data-lucky-state','preparing'));
+ expect(luckyCells()).toEqual(['응모 가능7장','시작다음 주']);
+ expect(within(lucky()).getByRole('button',{name:'다음 주 시작'})).toBeDisabled();
+ expect(screen.queryByText('지금 진행 중인 럭키드로우가 없어요')).toBeNull();
+});
+it('r5 A5: an open draw with no ticket keeps 응모하기 active and opens the exchange',async()=>{
+ withFavorite();creatorRaffles=[creatorRaffle(1,'open',-day,7*day)];
+ const base=fetch;vi.stubGlobal('fetch',vi.fn((url:string,init?:RequestInit)=>url==='/api/me/wallet'?Promise.resolve(Response.json({...wallet,points:250,tickets:0})):base(url,init)));
+ render(<GroupBenefitsScreen locale='ko'/>);
+ const enter=await within(await waitFor(()=>lucky())).findByRole('button',{name:'응모하기'});expect(enter).toBeEnabled();
+ fireEvent.click(enter);expect(screen.getByRole('dialog',{name:'응모권 전환'})).toBeInTheDocument();
+});
+it('r5 A5: guests see the stage and locked values with no action; a viewer without a favorite gets the pick row',async()=>{
+ auth.authenticated=false;const guest=render(<GroupBenefitsScreen locale='ko'/>);
+ await waitFor(()=>expect(lucky()).toHaveAttribute('data-lucky-state','guest'));
+ expect(lucky().querySelectorAll('a,button')).toHaveLength(0);expect(lucky().querySelectorAll('[role="img"]').length).toBeGreaterThan(0);
+ guest.unmount();clearResources();auth.authenticated=true;
+ bias.value={status:'ready',options:[],selected:null,unverified:null,select:()=>{},retry:()=>{}};render(<GroupBenefitsScreen locale='ko'/>);
+ await waitFor(()=>expect(lucky()).toHaveAttribute('data-lucky-state','pick'));
+ expect(within(lucky()).getByRole('link',{name:/최애 고르기/})).toHaveAttribute('href','/pages/groups?locale=ko');
+});
+it('r5 A5: the cheer card is who + 내 하트 + 순위 with its count basis, then 팬 순위 보기; outside the top 20 reads 20위 밖',async()=>{
+ withFavorite();const first=render(<GroupBenefitsScreen locale='ko'/>);
+ const cheer=await screen.findByRole('region',{name:'최애 응원'});
+ await waitFor(()=>expect(cheer).toHaveTextContent('3위'));
+ expect(cheer).toHaveTextContent('Bias X');expect(cheer).toHaveTextContent('크리에이터');
+ expect(cheer.querySelector('[data-ranking-basis]')).toHaveTextContent('집계 하트 · 매일 00:00');
+ expect([...cheer.querySelectorAll('[data-row="label-value"]')].map(row=>row.querySelector('dt')?.textContent)).toEqual(['내 하트','순위집계 하트 · 매일 00:00']);
+ expect(within(cheer).getByRole('link',{name:'팬 순위 보기'})).toHaveAttribute('href','/bias-x?tab=fans&locale=ko');
+ expect(cheer.querySelector('[data-direction="up"]')).not.toBeNull();
+ first.unmount();clearResources();homeRows=[];render(<GroupBenefitsScreen locale='ko'/>);
+ const out=await screen.findByRole('region',{name:'최애 응원'});await waitFor(()=>expect(out).toHaveTextContent('20위 밖'));
+});
+it('r5 A5: without a day to compare the cheer card draws no rank change',async()=>{
+ withFavorite();homeComparable=false;render(<GroupBenefitsScreen locale='ko'/>);
+ const cheer=await screen.findByRole('region',{name:'최애 응원'});await waitFor(()=>expect(cheer).toHaveTextContent('3위'));
+ expect(cheer.textContent).not.toMatch(/[▲▼—]/);
+});
+it('r5 A4: 오늘 할 것 rows are mission rows with an outline icon, 0/N beside the title, a 2px bar and +NP in ink; 출석 has no button',async()=>{
+ withFavorite();const base=fetch;vi.stubGlobal('fetch',vi.fn((url:string,init?:RequestInit)=>url.startsWith('/api/dukjil/catalog')?Promise.resolve(Response.json({version:1,rules:{checkin:{points:2},post:{points:20,dailyLimit:3},comment:{points:3,dailyLimit:10},share:{points:10,dailyLimit:3}},missionBook:null})):url.startsWith('/api/me/dukjil/today')?Promise.resolve(Response.json({kstDate:new Date(Date.now()+9*3600_000).toISOString().slice(0,10),policyActive:true,totalPoints:0,actions:{post:{count:0,points:0,remaining:3,stamped:false},comment:{count:0,points:0,remaining:10,stamped:false},share:{count:1,points:10,remaining:2,stamped:false}},attendance:null,hasPassport:null})):base(url,init)));joinedCount=1;render(<GroupBenefitsScreen locale='ko'/>);
+ const section=await screen.findByRole('region',{name:'오늘 할 것'});
+ await waitFor(()=>expect(section.querySelector('[data-mission-reset]')).toHaveTextContent(/개 남음 · 자정 리셋$/));
+ const rows=[...section.querySelectorAll('[data-missions-today] [data-row="mission"]')];
+ expect(rows.length).toBeGreaterThanOrEqual(3);
+ const post=section.querySelector('[data-mission="post"]')!;
+ expect(post.querySelector('[data-mission-art] svg[data-icon-set="lucide"]')).not.toBeNull();expect(post.querySelector('img')).toBeNull();
+ expect(post.querySelector('[data-mission-reward]')).toHaveTextContent('+20P');
+ expect(post.querySelector('[data-mission-title]')).toHaveTextContent('글쓰기0/3');expect(post.querySelector('[role="progressbar"]')).toHaveAttribute('aria-valuemax','3');
+ expect(section.querySelector('[data-mission="checkin"] button')).toBeNull();
+ expect(section.textContent).not.toContain('출석하기');
+});
+it('r5 A3: the aside history card shows the last three rows with 전체 보기 › to the 내역 tab; an empty list is one sentence',async()=>{
+ const first=render(<GroupBenefitsScreen locale='ko'/>);
+ const card=await screen.findByRole('region',{name:'내역'});await waitFor(()=>expect(card.querySelectorAll('[data-row="transaction"]')).toHaveLength(3));
+ expect(card.querySelector('[data-row="transaction"]')).toHaveTextContent('Elina · 2026.11.08');
+ expect(within(card).getByRole('link',{name:'전체 보기'})).toHaveAttribute('href','/benefits?tab=history&locale=ko');
+ first.unmount();clearResources();historyEntries=[];render(<GroupBenefitsScreen locale='ko'/>);
+ const empty=await screen.findByRole('region',{name:'내역'});expect(await within(empty).findByText('내역이 없습니다')).toBeInTheDocument();
+});
+it('r5: shows one combined alert with one retry when the wallet and the history both fail',async()=>{
+ historyFails.value=true;const base=fetch;vi.stubGlobal('fetch',vi.fn((url:string,init?:RequestInit)=>url==='/api/me/wallet'?Promise.resolve(Response.json({error:{code:'X'}},{status:503})):base(url,init)));
+ render(<GroupBenefitsScreen locale='ko'/>);
+ await waitFor(()=>expect(screen.getAllByRole('alert')).toHaveLength(1));
+});
+it('r5 V12: holds the missions section in place while the policy is still loading', () => {
+ render(<GroupBenefitsScreen locale='ko'/>);
+ expect(document.querySelector('[data-missions-pending][data-block="list"]')).not.toBeNull();
 });

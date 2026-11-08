@@ -26,8 +26,8 @@ function Failure({ locale, retry }: { locale: AppLocale; retry: () => void }) {
 export type RankingsTab = "fans" | "creators";
 
 /** Platform fans by hearts: the same answer as the home card's fan tab (261107-2 D3), here with every period and up to 50 rows. */
-function PlatformFanPanel({ locale }: { locale: AppLocale }) {
-  const [period, setPeriod] = useState<RankingPeriod>("week");
+function PlatformFanPanel({ locale, initialPeriod = "week" }: { locale: AppLocale; initialPeriod?: RankingPeriod }) {
+  const [period, setPeriod] = useState<RankingPeriod>(initialPeriod);
   const { state, retry } = useRankingResource(`/api/rankings/fans?period=${period}&limit=50`, (v) => platformFanRankingSchema.parse(v));
   return (
     <div className={styles.tabPanel}>
@@ -38,8 +38,8 @@ function PlatformFanPanel({ locale }: { locale: AppLocale }) {
   );
 }
 
-function CreatorPanel({ locale }: { locale: AppLocale }) {
-  const [period, setPeriod] = useState<RankingPeriod>("week");
+function CreatorPanel({ locale, initialPeriod = "week" }: { locale: AppLocale; initialPeriod?: RankingPeriod }) {
+  const [period, setPeriod] = useState<RankingPeriod>(initialPeriod);
   const { state, retry } = useRankingResource(`/api/rankings/creators?period=${period}&locale=${locale}`, (v) => creatorRankingSchema.parse(v));
   return (
     <div className={styles.tabPanel}>
@@ -51,14 +51,14 @@ function CreatorPanel({ locale }: { locale: AppLocale }) {
 }
 
 /** The full rankings behind the home card's "view all": the same two tabs, opening on the one the card showed. */
-export function CreatorRankingScreen({ locale, initialTab = "fans" }: { locale: AppLocale; initialTab?: RankingsTab }) {
+export function CreatorRankingScreen({ locale, initialTab = "fans", initialPeriod = "week" }: { locale: AppLocale; initialTab?: RankingsTab; initialPeriod?: RankingPeriod }) {
   const [tab, setTab] = useState<RankingsTab>(initialTab);
   return (
     <>
       <h1>{rankingsText(locale, "rkTitle")}</h1>
       <FanTabs variant="segment" panels label={rankingsText(locale, "rkTitle")} current={tab} items={[
-        { key: "fans", label: rankingsText(locale, "rkFanTitle"), onSelect: () => setTab("fans"), panel: <PlatformFanPanel locale={locale} /> },
-        { key: "creators", label: rankingsText(locale, "rkCreatorTab"), onSelect: () => setTab("creators"), panel: <CreatorPanel locale={locale} /> },
+        { key: "fans", label: rankingsText(locale, "rkFanTitle"), onSelect: () => setTab("fans"), panel: <PlatformFanPanel locale={locale} initialPeriod={initialPeriod} /> },
+        { key: "creators", label: rankingsText(locale, "rkCreatorTab"), onSelect: () => setTab("creators"), panel: <CreatorPanel locale={locale} initialPeriod={initialPeriod} /> },
       ]} />
     </>
   );

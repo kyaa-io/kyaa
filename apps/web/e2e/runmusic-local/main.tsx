@@ -6,7 +6,6 @@ import {parseAppLocale} from "../../i18n/locales";
 import {runmusicActionSchema,runmusicSettingsSchema} from "../../features/runmusic/domain";
 import {ManagedHomeBanner} from "../../components/home-entry-cards/managed-home-banner";
 import {makeCampaign,makeStatus,makeAdmin,makeBanner} from "./fixture";
-import homeStyles from "../../components/guest-home.module.css";
 import "../../app/globals.css";
 import "pretendard/dist/web/variable/pretendardvariable-dynamic-subset.css";
 
@@ -45,4 +44,4 @@ window.fetch=async(input,init)=>{
  }
  throw new Error(`LOCAL_FIXTURE_UNHANDLED_API:${method}:${url.pathname}`);
 };
-createRoot(document.getElementById("root")!).render(<LocaleProvider initialLocale={locale}>{location.pathname==="/login"?<main><h1>Local login return fixture</h1><p>{params.get("returnTo")}</p></main>:params.get("view")==="banner"?<div className={homeStyles.page} data-fan-surface><div className={homeStyles.shell}><main className={homeStyles.main}><div className={homeStyles.heroCarousel}><div className={homeStyles.heroViewport}><div className={homeStyles.heroTrack}><article className={homeStyles.heroCard}><ManagedHomeBanner banner={makeBanner(locale)} locale={locale} priority/></article></div></div></div></main></div></div>:params.get("view")==="admin"?<RunmusicManager locale={locale==="ko"?"ko":"en"}/>:<RunmusicScreen resultsOnly={location.pathname.endsWith("/results")}/>}</LocaleProvider>);
+createRoot(document.getElementById("root")!).render(<LocaleProvider initialLocale={locale}>{location.pathname==="/login"?<main><h1>Local login return fixture</h1><p>{params.get("returnTo")}</p></main>:params.get("view")==="banner"?<div data-fan-surface style={{width:"min(100%, 1440px)",marginInline:"auto",padding:"24px 16px"}}><main style={{minWidth:0}}><article style={{position:"relative",display:"block",width:"100%",aspectRatio:"4 / 5",overflow:"hidden",borderRadius:12}}><ManagedHomeBanner banner={makeBanner(locale)} locale={locale} priority/></article></main></div>:params.get("view")==="admin"?<RunmusicManager locale={locale==="ko"?"ko":"en"}/>:<RunmusicScreen resultsOnly={location.pathname.endsWith("/results")}/>}</LocaleProvider>);

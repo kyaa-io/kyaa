@@ -16,9 +16,10 @@ const areaOf = (slot: BannerSlotKey) => slot.startsWith("home_") ? "home" as con
  * A managed banner slot. Nothing is drawn while it loads, when it is empty or when it fails: no box and no space,
  * so the page keeps the spacing it has without the slot. Spacing comes from the parent, or from `className` where the parent spaces with margins.
  */
-export function BannerSlot({ slot, locale, className }: { slot: BannerSlotKey; locale: AppLocale; className?: string }) {
+export function BannerSlot({ slot, locale, className, excludeIds }: { slot: BannerSlotKey; locale: AppLocale; className?: string; excludeIds?: readonly string[] }) {
   const banner = useBannerSlots(areaOf(slot), locale)[slot];
-  return banner ? <BannerSlotCard key={banner.id} banner={banner} slot={slot} locale={locale} className={className}/> : null;
+  // A banner already drawn elsewhere on the page (the home hero's fallback) is not shown twice; the slot folds instead.
+  return banner && !excludeIds?.includes(banner.id) ? <BannerSlotCard key={banner.id} banner={banner} slot={slot} locale={locale} className={className}/> : null;
 }
 
 export function BannerSlotCard({ banner, slot, locale, className }: { banner: HomeBanner; slot: BannerSlotKey; locale: AppLocale; className?: string }) {

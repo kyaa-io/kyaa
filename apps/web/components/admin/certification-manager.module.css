@@ -5,14 +5,7 @@
   --pink: #ff008a;
   padding: 32px 16px 72px;
   color: var(--ink);
-  font-family:
-    "Pretendard Variable",
-    Pretendard,
-    -apple-system,
-    BlinkMacSystemFont,
-    "Segoe UI",
-    sans-serif;
-}
+  }
 .page > header p,
 .page > header h1,
 .page > header span {
@@ -45,7 +38,7 @@
 .toolbar svg { width: 17px; height: 17px; }
 .tabs { display: flex; gap: 8px; }
 .tabs button { border-color: transparent; background: transparent; }
-.tabs button[aria-selected="true"] { background: #eee8fc; color: #6333bf; }
+.tabs button[aria-selected="true"] { background: var(--color-accent-soft); color: var(--color-accent-ink); }
 .statusTabs { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
 .statusTabs button { font-size: 13px; }
 .statusTabs button[aria-pressed="true"] { background: #25242b; color: #fff; border-color: #25242b; }

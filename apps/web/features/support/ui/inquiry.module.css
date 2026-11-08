@@ -17,7 +17,7 @@
 .rowMeta { color: #626262; font-size: 12px; line-height: 1.6; }
 .badge { display: inline-flex; align-items: center; border: 1px solid #dedede; border-radius: 999px; padding: 3px 10px; font-size: 12px; line-height: 1.5; font-weight: 650; white-space: nowrap; color: #555; background: #f7f7f7; }
 .badge[data-status="open"] { background: white; color: #242424; border-color: #888; }
-.badge[data-status="answered"] { color: #6d237b; border-color: #d5bfdc; background: #faf5fc; }
+.badge[data-status="answered"] { color: var(--color-accent-ink); border-color: var(--color-line); background: var(--color-accent-soft); }
 .empty { padding: 56px 24px; text-align: center; color: #626262; line-height: 1.7; }
 .empty > svg { width: 28px; height: 28px; margin-inline: auto; }
 .pagination { justify-content: flex-end; margin-top: 24px; }
@@ -47,7 +47,7 @@
 .messageMeta { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; font-size: 11px; color: #626262; margin-bottom: 8px; line-height: 1.6; }
 .messageMeta strong { color: #414141; font-size: 13px; }
 .message p { white-space: pre-wrap; overflow-wrap: anywhere; margin: 0; padding: 16px 20px; border-radius: 16px; background: #f5f5f5; color: #242424; line-height: 1.75; font-size: 15px; }
-.message[data-own="true"] p { border: 1px solid #e1dbe7; background: #fbf9fd; }
+.message[data-own="true"] p { border: 1px solid var(--color-line); background: var(--color-accent-soft); }
 .resolvedHelp { padding: 16px 0; border-top: 1px solid #e5e5e5; color: #626262; font-size: 14px; line-height: 1.75; }
 .guest { padding: 48px 0; max-width: 580px; }
 .guest p { margin-bottom: 24px; }

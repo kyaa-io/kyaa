@@ -1,12 +1,11 @@
 .page {
   --guide-ink: #19191c;
   --guide-muted: #65656e;
-  --guide-pink: #a32985;
+  --guide-pink: var(--color-accent-ink);
   --guide-line: #e6e6e9;
   background: #fff;
   color: var(--guide-ink);
-  font-family: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
-}
+  }
 .page,
 .page *,
 .page *::before,
@@ -80,8 +79,8 @@
   transition: border-color 150ms ease, background 150ms ease;
 }
 .action:hover { border-color: #aaaab2; background: #fafafa; }
-.page .primaryAction { border-color: transparent; background: linear-gradient(125deg, #c42a73, #9330c2); color: #fff; }
-.page .primaryAction:hover { border-color: transparent; background: linear-gradient(125deg, #b52367, #8325b1); }
+.page .primaryAction { border-color: transparent; background: var(--color-accent); color: #fff; }
+.page .primaryAction:hover { border-color: transparent; background: var(--color-accent); }
 .note { color: #686873; font-size: 13px; font-weight: 500; line-height: 1.45; white-space: pre-line; }
 .stageNav {
   display: grid;

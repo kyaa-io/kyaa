@@ -2,14 +2,7 @@
   min-height: 100dvh;
   background: #fff;
   color: var(--color-ink);
-  font-family:
-    "Pretendard Variable",
-    Pretendard,
-    -apple-system,
-    BlinkMacSystemFont,
-    system-ui,
-    sans-serif;
-}
+  }
 .main { padding-top:56px; padding-bottom:96px; }
 .main > * { max-width:720px; margin-inline:auto; }
 .intro {
@@ -152,7 +145,7 @@
   border: 0;
   border-radius: 10px;
   background: transparent;
-  color: oklch(45% 0.22 315);
+  color: var(--color-accent-ink);
   font-weight: 800;
   cursor: pointer;
 }
@@ -409,8 +402,7 @@
   justify-items: center;
   gap: 16px;
   color: var(--color-muted);
-  font-family: "Pretendard Variable", Pretendard, system-ui, sans-serif;
-  text-align: center;
+    text-align: center;
 }
 .spinner {
   width: 30px;

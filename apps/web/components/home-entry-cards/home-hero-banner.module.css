@@ -1,4 +1,4 @@
-.banner { position:relative; width:100%; height:100%; overflow:hidden; background:#f8f2f6; color:#19191e; }
+.banner { position:relative; width:100%; height:100%; overflow:hidden; background:var(--color-accent-soft); color:#19191e; }
 .image { position:absolute; inset:0 0 0 auto; width:40%; overflow:hidden; }
 .desktopImage { position:absolute; inset:0; }
 .overlay { display:none; position:absolute; inset:0; background:linear-gradient(to top, rgb(10 10 12 / 82%) 0%, rgb(10 10 12 / 46%) 36%, rgb(10 10 12 / 8%) 70%, transparent 100%); }
@@ -23,7 +23,7 @@
 .banner[data-kind="live"] .copy { position:absolute; inset:auto 0 0; width:100%; height:auto; color:#fff; }
 .banner[data-kind="live"] .eyebrow,
 .banner[data-kind="live"] .description { color:#fff; }
-.banner[data-kind="live"] .eyebrow { width:fit-content; padding:5px 12px; border:1px solid #ff5fbf99; border-radius:999px; background:#17131abf; font-size:12px; }
+.banner[data-kind="live"] .eyebrow { width:fit-content; padding:5px 12px; border:1px solid #ff5fbf99; border-radius:999px; background:color-mix(in srgb, var(--color-ink) 75%, transparent); font-size:12px; }
 .banner[data-kind="live"] .action > a { width:min(320px, 100%); padding:0 20px; border-radius:999px; background:linear-gradient(#0003,#0003),var(--spectrum); color:#fff !important; font-size:15px; }
 @media (max-width:767px) {
   .banner { background:#19191e; color:#fff; }
@@ -31,7 +31,7 @@
   .desktopImage { display:none; }
   .overlay { display:block; }
   .banner .copy { position:absolute; inset:auto 0 0; width:100%; height:auto; padding:24px; gap:12px; text-shadow:0 1px 3px #0008; }
-  .banner .eyebrow { width:fit-content; min-height:28px; padding:4px 12px; border:1px solid #ff5fbf99; border-radius:999px; background:#17131abf; color:#fff; font-size:12px; }
+  .banner .eyebrow { width:fit-content; min-height:28px; padding:4px 12px; border:1px solid #ff5fbf99; border-radius:999px; background:color-mix(in srgb, var(--color-ink) 75%, transparent); color:#fff; font-size:12px; }
   .copy h2 { font-size:clamp(28px, 7.2vw, 36px); line-height:1.08; }
   .banner .description { color:#ffffffeb; font-size:14px; }
   .banner .action { margin-top:8px; }
@@ -136,7 +136,7 @@
   .banner[data-kind="welcome"] .image { width:100%; }
   .banner[data-kind="welcome"] .overlay { display:block; }
   .banner[data-kind="welcome"] .copy { position:absolute; inset:auto 0 0; width:100%; height:auto; padding:24px; color:#fff; text-shadow:0 1px 3px #0008; }
-  .banner[data-kind="welcome"] .eyebrow { width:fit-content; padding:4px 12px; border:1px solid #ff5fbf99; border-radius:999px; background:#17131abf; color:#fff; font-size:12px; }
+  .banner[data-kind="welcome"] .eyebrow { width:fit-content; padding:4px 12px; border:1px solid #ff5fbf99; border-radius:999px; background:color-mix(in srgb, var(--color-ink) 75%, transparent); color:#fff; font-size:12px; }
   .banner[data-kind="welcome"] .copy h2 { font-size:32px; }
   .banner[data-kind="welcome"] .description { color:#fff; font-size:14px; }
 }
@@ -178,7 +178,7 @@
 }
 
 /* Approved guide art: the picture fills the slide and the copy sits on its empty half (desktop) or empty bottom (mobile). */
-.banner[data-kind="art"] { background:color-mix(in oklab, var(--color-ink) 88%, var(--color-service-ink)); color:var(--color-canvas); }
+.banner[data-kind="art"] { background:color-mix(in oklab, var(--color-ink) 88%, var(--color-page-accent)); color:var(--color-canvas); }
 .banner[data-kind="art"] .image { display:none; }
 .banner[data-kind="art"] .overlay { display:none; }
 .banner[data-kind="art"] .copy { position:absolute; inset:0 auto 0 0; width:50%; height:100%; justify-content:center; gap:var(--space-4); padding:var(--space-10) var(--space-6) var(--space-10) var(--space-16); color:var(--color-canvas); }
@@ -186,7 +186,7 @@
 .banner[data-kind="art"] .copy h2 { font-size:clamp(28px, 3.4vw, 44px); line-height:1.12; overflow-wrap:anywhere; text-wrap:balance; }
 .banner[data-kind="art"] .description { color:color-mix(in srgb, var(--color-canvas) 92%, transparent); font-size:var(--fan-body-size); line-height:1.5; font-weight:550; overflow-wrap:anywhere; }
 .banner[data-kind="art"] .action { margin-top:var(--space-2); }
-.banner[data-kind="art"] .action > a { width:fit-content; max-width:100%; min-height:48px; gap:var(--space-6); padding:0 var(--space-6); border-radius:var(--radius-pill); background:var(--color-primary-action); color:var(--color-canvas) !important; font-size:var(--fan-action-emphasis-size); }
+.banner[data-kind="art"] .action > a { width:fit-content; max-width:100%; min-height:48px; gap:var(--space-6); padding:0 var(--space-6); border-radius:var(--radius-pill); background:var(--color-accent); color:var(--color-canvas) !important; font-size:var(--fan-action-label-size); }
 .banner[data-kind="art"] .action svg { width:16px; height:16px; }
 /* Tablet and the narrow laptop hero trim the picture's empty left side, so the copy column narrows with it. */
 @media (min-width:768px) and (max-width:1199px) {

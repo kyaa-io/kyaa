@@ -2,8 +2,7 @@
   background: #fff;
   color: #17171b;
   min-height: 100dvh;
-  font-family: var(--font-pretendard, "Pretendard Variable"), Pretendard, sans-serif;
-  font-size: 16px;
+    font-size: 16px;
   line-height: 1.6;
 }
 .root * {
@@ -35,7 +34,7 @@
   opacity: 0.45;
 }
 .root :is(button, a, input):focus-visible {
-  outline: 3px solid #b12683;
+  outline: 3px solid var(--color-accent-ink);
   outline-offset: 4px;
 }
 .header {
@@ -174,11 +173,11 @@
   border: 2px solid transparent;
 }
 .person[aria-pressed="true"] {
-  color: #b12683;
+  color: var(--color-accent-ink);
   font-weight: 600;
 }
 .person[aria-pressed="true"] .avatarRing {
-  border-color: #b12683;
+  border-color: var(--color-accent-ink);
 }
 .allCircle {
   background: #f7f7f9;
@@ -229,7 +228,7 @@
   text-align: center;
 }
 .primary {
-  background: linear-gradient(110deg, #c52277, #7b39b3);
+  background: var(--color-accent);
   border-color: transparent;
   color: white !important;
 }
@@ -287,7 +286,7 @@
   border-top: 1px solid #e7e7ec;
 }
 .letter {
-  color: #b12683;
+  color: var(--color-accent-ink);
   font-size: 14px;
   font-weight: 650;
   display: block;
@@ -373,7 +372,7 @@
 .previewLink {
   display: flex;
   gap: 8px;
-  color: #b12683;
+  color: var(--color-accent-ink);
   font-weight: 600;
   font-size: 14px;
   margin-top: 12px;
@@ -588,8 +587,7 @@
   flex-direction: column;
   overflow: auto;
   color: #17171b;
-  font-family: var(--font-pretendard, "Pretendard Variable"), Pretendard, sans-serif;
-}
+  }
 .picker button,
 .picker input {
   font: inherit;
@@ -600,7 +598,7 @@
   cursor: default;
 }
 .picker :is(button, input):focus-visible {
-  outline: 3px solid #b12683;
+  outline: 3px solid var(--color-accent-ink);
   outline-offset: 3px;
 }
 .pickerHeader {
@@ -1018,7 +1016,7 @@
 }
 
 .copyUrl {
-  color: #b12683;
+  color: var(--color-accent-ink);
   display: block;
   margin-top: 10px;
 }

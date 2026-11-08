@@ -6,6 +6,7 @@ import { isAppLocale } from "./i18n/locales";
 import { awsStorageContentSecurityPolicy } from "./security-headers";
 import { isAwsHosting } from "./server/config/hosting";
 import { readGa4MeasurementId } from "./features/analytics/domain/ga4-id";
+import { isNativeAppAvailable, openAppWebPath } from "./server/app-link/open-app-redirect";
 
 const LEGACY_APP_ORIGINS = new Set(["https://byus.kr", "https://www.byus.kr"]);
 const OAUTH_RETURN_PARAMETERS = new Set(["code", "state", "error", "error_description"]);
@@ -42,6 +43,14 @@ export function proxy(request: NextRequest): NextResponse {
     const response = NextResponse.redirect(destination, redirectStatus);
     if (redirectStatus === 307) response.headers.set("Cache-Control", "private, no-store");
     if (isPrivatePath(request.nextUrl.pathname)) response.headers.set("X-Robots-Tag", "noindex, nofollow");
+    return response;
+  }
+  // Before the native app is released, the "continue in the app" screen has nothing to offer. Old links keep working.
+  if (request.nextUrl.pathname === "/open-app" && (request.method === "GET" || request.method === "HEAD") && !isNativeAppAvailable()) {
+    // An absolute Location: the production proxy rejects a relative one (TypeError: Invalid URL → 500).
+    const response = NextResponse.redirect(new URL(openAppWebPath(request.nextUrl.searchParams), request.nextUrl), 302);
+    response.headers.set("Cache-Control", "private, no-store");
+    response.headers.set("X-Robots-Tag", "noindex, nofollow");
     return response;
   }
   if (!request.nextUrl.pathname.startsWith("/api/admin/")) {

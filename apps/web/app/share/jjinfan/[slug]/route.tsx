@@ -53,7 +53,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ slug
         <div style={{ display: "flex", alignItems: "center", marginTop: 40 }}>
           {picture
             ? <img src={picture} alt="" width={240} height={240} style={{ borderRadius: 120, objectFit: "cover" }} />
-            : <div style={{ display: "flex", width: 240, height: 240, borderRadius: 120, background: "#f2f0f3", alignItems: "center", justifyContent: "center", fontSize: 96, fontWeight: 800, color: "#5d5d5d" }}>{name.slice(0, 1)}</div>}
+            : <div style={{ display: "flex", width: 240, height: 240, borderRadius: 120, background: "#f2f2f2", alignItems: "center", justifyContent: "center", fontSize: 96, fontWeight: 800, color: "#5d5d5d" }}>{name.slice(0, 1)}</div>}
           <div style={{ display: "flex", flexDirection: "column", marginLeft: 48, flex: 1 }}>
             <div style={{ display: "flex", fontSize: 36, color: "#737373" }}>{rankingsText(locale, "jjTitle")}</div>
             <div style={{ display: "flex", fontSize: 64, fontWeight: 800, marginTop: 8, lineHeight: 1.15 }}>{name}</div>

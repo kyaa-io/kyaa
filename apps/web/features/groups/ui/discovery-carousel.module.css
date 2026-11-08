@@ -128,7 +128,7 @@
 /* Pencil yRWD5 */
 .arrows button {
   align-items: center;
-  background-color: #F6F5F7;
+  background-color: var(--color-soft);
   border-radius: 999px;
   box-sizing: border-box;
   display: flex;
@@ -246,14 +246,14 @@
 .copy a{width:max-content;max-width:100%;min-width:160px;white-space:nowrap;background:var(--color-surface);color:var(--color-ink)!important}
 @media(max-width:1023px){.copy a{min-width:0;white-space:normal;text-align:center}}
 @media(prefers-reduced-motion:no-preference){.slide{animation:carousel-enter 480ms cubic-bezier(.22,1,.36,1) both}@keyframes carousel-enter{from{opacity:.7;transform:translateX(24px)}to{opacity:1;transform:translateX(0)}}}
-.pause{width:44px;height:44px;border:0;border-radius:50%;background:#f6f5f7;color:#121212;cursor:pointer;font-size:15px}
+.pause{width:44px;height:44px;border:0;border-radius:50%;background:var(--color-soft);color:#121212;cursor:pointer;font-size:15px}
 /* Keep slides mounted so the visible track moves continuously between positions. */
 .viewport{display:block}.track{display:flex;gap:24px;width:max-content;transform:translateX(0);transition:transform 480ms cubic-bezier(.22,1,.36,1)}.track[data-active="1"]{transform:translateX(-984px)}.track .slide{animation:none}
 @media(max-width:1023px){.viewport{height:auto}.track{gap:12px}.track .slide{width:300px;flex:none}.track[data-active="1"]{transform:translateX(-312px)}}
 @media(prefers-reduced-motion:reduce){.track{transition:none}}
 @media(max-width:357px){.track .slide{width:calc(100vw - 90px)}.track[data-active="1"]{transform:translateX(calc(-100vw + 78px))}}
 
-.copy h2{font-family:"Pretendard UI 850",system-ui,sans-serif;font-weight:400;font-synthesis:none}
+.copy h2{font-weight:800;font-synthesis:none}
 
 /* Managed banners can contain any number of slides; preserve the approved spacing. */
 .track{--slide-step:984px;transform:translateX(calc(var(--active,0) * var(--slide-step) * -1))}

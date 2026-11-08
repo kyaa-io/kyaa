@@ -32,6 +32,8 @@ export const commentSchema = z.object({
   id: z.uuid(), postId: z.uuid(), parentId: z.uuid().nullable(), body: z.string().min(1).max(1000), revision: z.number().int().positive(),
   author: authorSchema, createdAt: instant, isOwner: z.boolean(), artist: z.boolean().optional(),
   reactions: z.array(z.object({ emoji: z.enum(["❤", "👏", "✨"]), count: z.number().int().nonnegative(), selected: z.boolean() }).strict()).max(3).default([]),
+  /** Top-level comments only, and only with ?fields=replies. */
+  replyCount: z.number().int().nonnegative().optional(),
 }).strict();
 export type PostComment = z.infer<typeof commentSchema>;
 export const postPageSchema = z.object({ items: z.array(postSchema).max(50), nextCursor: z.string().nullable() }).strict();

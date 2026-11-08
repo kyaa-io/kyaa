@@ -19,7 +19,7 @@
 .prize:disabled { cursor: default; }
 .prize:disabled:not([aria-pressed="true"]) { opacity: .55; }
 .prize strong { font-size: 16px; line-height: 1.5; font-weight: 700; overflow-wrap: anywhere; }
-.artwork { position: relative; display: grid; place-items: center; aspect-ratio: 1; width: 100%; padding: 16px; border: 2px solid transparent; border-radius: 16px; background: #f7f6f9; margin-bottom: 4px; }
+.artwork { position: relative; display: grid; place-items: center; aspect-ratio: 1; width: 100%; padding: 16px; border: 2px solid transparent; border-radius: 16px; background: var(--color-soft); margin-bottom: 4px; }
 .artwork img { width: 100%; height: 100%; object-fit: contain; min-height: 0; }
 .prize[aria-pressed="true"] .artwork { border-color: var(--color-ink); }
 .rank { position: absolute; inset: 8px auto auto 8px; display: grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; color: white; background: var(--color-ink); font-size: 13px; font-weight: 700; }

@@ -1,4 +1,4 @@
-.page { min-height:100dvh; background:#fff; color:oklch(18% 0 0); font-family:"Pretendard Variable",Pretendard,-apple-system,BlinkMacSystemFont,system-ui,sans-serif; }
+.page { min-height:100dvh; background:#fff; color:oklch(18% 0 0); }
 .page *,.page *::before,.page *::after { box-sizing:border-box; }
 .directoryLink { display:inline-flex; min-height:44px; align-items:center; color:oklch(48% 0 0); font-size:14px; font-weight:650; text-decoration:none; }
 .directoryLink svg { width:16px; height:16px; }
@@ -14,7 +14,7 @@
 .heroCopy h1 { font-size:40px; font-weight:850; letter-spacing:-.04em; line-height:1; text-wrap:balance; }
 .heroCopy span { max-width:48ch; color:rgb(255 255 255 / 90%); font-size:14px; font-weight:550; line-height:1.55; }
 .heroAction { width:100%; }
-.page .heroAction > a { display:flex; width:100%; min-height:48px; align-items:center; justify-content:space-between; padding:0 20px; border-radius:999rem; background:linear-gradient(125deg,oklch(68% .22 18),oklch(62% .25 340),oklch(56% .22 285)); color:#fff; font-size:15px; font-weight:800; text-decoration:none; box-shadow:0 5px 8px rgb(58 18 55 / 22%); }
+.page .heroAction > a { display:flex; width:100%; min-height:48px; align-items:center; justify-content:space-between; padding:0 20px; border-radius:999rem; background:var(--color-accent); color:#fff; font-size:15px; font-weight:800; text-decoration:none; box-shadow:0 5px 8px color-mix(in srgb, var(--color-ink) 12%, transparent); }
 .heroAction svg { width:18px; height:18px; }
 .ctaLoading { display:flex; min-height:48px; align-items:center; justify-content:center; border:1px solid rgb(255 255 255 / 64%); border-radius:999rem; background:rgb(20 20 22 / 58%); color:#fff; font-size:14px; font-weight:700; }
 .ctaError { display:flex; min-height:52px; align-items:center; justify-content:space-between; gap:12px; padding:4px 6px 4px 16px; border-radius:14px; background:rgb(255 255 255 / 96%); color:oklch(25% 0 0); font-size:13px; font-weight:650; }
@@ -27,33 +27,33 @@
 .calendarWeekdays span { display:grid; min-height:24px; place-items:center; color:var(--color-muted); font-size:var(--fan-calendar-meta-size); font-weight:700; }
 .calendarDays { gap:0; }
 .calendarDay,.calendarEventDay { position:relative; display:grid; min-width:0; min-height:44px; place-items:center; border-radius:10px; color:oklch(30% 0 0); font-size:12px; font-weight:650; font-variant-numeric:tabular-nums; text-decoration:none; }
-.calendarEventDay { grid-template-rows:1fr 7px; padding:5px 2px 3px; color:oklch(35% .18 315); font-weight:850; }
-.calendarEventDay > span { display:block; width:6px; height:6px; border-radius:50%; background:oklch(50% .22 315); color:transparent; font-size:0; }
+.calendarEventDay { grid-template-rows:1fr 7px; padding:5px 2px 3px; color:var(--color-accent-ink); font-weight:850; }
+.calendarEventDay > span { display:block; width:6px; height:6px; border-radius:50%; background:var(--color-accent-ink); color:transparent; font-size:0; }
 .calendarMessage { min-height:16px; margin:0; color:oklch(48% 0 0); font-size:11px; font-weight:650; }
 .calendarUpcoming { display:grid; gap:8px; padding-top:12px; border-top:1px solid oklch(93% 0 0); }
 .calendarUpcoming h3,.calendarUpcoming p { margin:0; }
 .calendarUpcoming h3 { color:oklch(40% 0 0); font-size:12px; font-weight:800; letter-spacing:.02em; }
 .calendarUpcoming p { padding-block:8px; color:oklch(52% 0 0); font-size:12px; line-height:1.5; }
 .calendarUpcoming ol { display:grid; gap:4px; margin:0; padding:0; list-style:none; }
-.calendarUpcoming li { overflow:hidden; border-radius:10px; background:oklch(97.5% .022 305); }
+.calendarUpcoming li { overflow:hidden; border-radius:10px; background:var(--color-accent-soft); }
 .calendarUpcoming li[data-status="live"] { background:oklch(97% .028 18); }
 .calendarUpcoming a { display:grid; min-height:52px; grid-template-columns:72px minmax(0,1fr) auto; grid-template-areas:"time title state"; align-items:center; gap:8px; padding:8px 10px; color:oklch(24% 0 0); text-decoration:none; }
 .calendarUpcoming time { grid-area:time; color:oklch(48% 0 0); font-size:10px; font-weight:700; line-height:1.35; font-variant-numeric:tabular-nums; }
 .calendarUpcoming strong { grid-area:title; display:-webkit-box; overflow:hidden; -webkit-box-orient:vertical; -webkit-line-clamp:2; font-size:12px; font-weight:750; line-height:1.35; }
-.calendarUpcoming a > span { grid-area:state; color:oklch(43% .17 315); font-size:10px; font-weight:800; white-space:nowrap; }
+.calendarUpcoming a > span { grid-area:state; color:var(--color-accent-ink); font-size:10px; font-weight:800; white-space:nowrap; }
 .calendarFooter { display:flex; flex-direction:column; min-height:44px; align-items:stretch; gap:8px; padding-top:12px; border-top:1px solid oklch(93% 0 0); }
 .calendarLegend { display:flex; flex-wrap:wrap; min-width:0; align-items:center; gap:8px 12px; }
 .calendarLegend > span { display:flex; align-items:center; gap:5px; color:oklch(48% 0 0); font-size:var(--fan-calendar-meta-size); font-weight:650; white-space:nowrap; }
 .calendarLegend i { width:7px; height:7px; border-radius:50%; }
-.calendarLegend i[data-state="reserved"] { background:oklch(50% .22 315); }
-.calendarLegend i[data-state="not_reserved"] { border:1px solid oklch(50% .22 315); background:#fff; }
+.calendarLegend i[data-state="reserved"] { background:var(--color-accent-ink); }
+.calendarLegend i[data-state="not_reserved"] { border:1px solid var(--color-accent-ink); background:#fff; }
 .calendarFooter > a { align-self:flex-end; display:inline-flex; min-height:44px; align-items:center; gap:8px; color:oklch(30% 0 0); font-size:13px; font-weight:750; text-decoration:none; }
 .calendarFooter svg { width:16px; height:16px; }
 .sectionNav { position:sticky; z-index:calc(var(--z-sticky-header) - 1); top:var(--fan-header-height); display:flex; width:100%; min-height:56px; align-items:center; gap:0; overflow-x:auto; margin-top:24px; padding:0 8px; border-bottom:1px solid oklch(90% 0 0); background:#fff; scrollbar-width:none; }
 .sectionNav::-webkit-scrollbar { display:none; }
 .sectionNav a { position:relative; display:inline-flex; min-width:max-content; min-height:56px; flex:1; align-items:center; justify-content:center; padding:0 16px; color:oklch(44% 0 0); font-size:14px; font-weight:700; text-decoration:none; transition:color 160ms cubic-bezier(.2,0,0,1); }
 .sectionNav a[aria-selected="true"] { color:oklch(18% 0 0); font-weight:850; }
-.sectionNav a[aria-selected="true"]::after { position:absolute; right:28%; bottom:-1px; left:28%; height:3px; border-radius:999rem 999rem 0 0; background:linear-gradient(90deg,oklch(66% .24 18),oklch(56% .22 285)); content:""; }
+.sectionNav a[aria-selected="true"]::after { position:absolute; right:28%; bottom:-1px; left:28%; height:3px; border-radius:999rem 999rem 0 0; background:var(--color-accent); content:""; }
 .tabContentAnchor { scroll-margin-top:calc(var(--fan-header-height) + 64px); }
 .tabPanel { min-height:320px; padding-block:48px 88px; }
 .homeAside { display:grid; align-content:start; gap:16px; }
@@ -72,7 +72,7 @@
 .benefitGrid > a[data-state="expired"],.benefitGrid > a[data-state="sold_out"] { background:oklch(98.5% 0 0); box-shadow:none; }
 .benefitGrid h3,.benefitGrid p { margin:0; }
 .benefitGrid > a > span { display:inline-flex; width:max-content; align-items:center; gap:5px; padding:4px 8px; border-radius:999rem; background:oklch(96.5% 0 0); color:oklch(42% 0 0); font-size:11px; font-weight:800; }
-.benefitGrid > a[data-state="eligible"] > span { background:oklch(96% .04 315); color:oklch(43% .19 315); }
+.benefitGrid > a[data-state="eligible"] > span { background:var(--color-accent-soft); color:var(--color-accent-ink); }
 .benefitGrid h3 { font-size:18px; font-weight:800; letter-spacing:-.02em; }
 .benefitGrid p { color:oklch(42% 0 0); font-size:14px; line-height:1.5; }
 .benefitGrid small { margin-top:auto; padding-top:8px; color:oklch(48% 0 0); font-size:13px; }
@@ -92,7 +92,7 @@
 .liveSection { display:grid; min-height:136px; gap:20px; padding:24px; border:1px solid oklch(93% 0 0); border-radius:16px; box-shadow:0 1px 2px oklch(18% 0 0 / .05),0 4px 12px oklch(18% 0 0 / .03); }
 .liveCopy { display:grid; gap:8px; }
 .liveCopy h3,.liveCopy > span,.liveStatus { margin:0; }
-.liveStatus { display:flex; align-items:center; gap:8px; color:oklch(45% .22 315); font-size:12px; font-weight:800; letter-spacing:.04em; }
+.liveStatus { display:flex; align-items:center; gap:8px; color:var(--color-accent-ink); font-size:12px; font-weight:800; letter-spacing:.04em; }
 .liveStatus svg,.liveCopy > span svg { width:16px; height:16px; flex-shrink:0; }
 .liveCopy h3 { font-size:22px; font-weight:850; letter-spacing:-.03em; line-height:1.15; }
 .liveCopy > span { display:flex; align-items:center; gap:8px; color:oklch(48% 0 0); font-size:14px; }
@@ -101,7 +101,7 @@
 .passportStatus { display:grid; gap:6px; color:oklch(48% 0 0); font-size:14px; line-height:1.55; }
 .passportStatus strong,.passportStatus p { margin:0; }
 .passportStatus strong { color:oklch(24% 0 0); font-size:16px; font-weight:800; }
-.passportStatus > span { width:max-content; padding:4px 8px; border:1px solid oklch(78% .12 315); border-radius:999rem; color:oklch(42% .19 315); font-size:12px; font-weight:800; }
+.passportStatus > span { width:max-content; padding:4px 8px; border:1px solid var(--color-accent); border-radius:999rem; color:var(--color-accent-ink); font-size:12px; font-weight:800; }
 .passportError { display:grid; gap:12px; color:oklch(34% 0 0); font-size:14px; line-height:1.5; }
 .passportError button { min-height:44px; padding:0 14px; border:1px solid oklch(82% 0 0); border-radius:12px; background:#fff; color:oklch(18% 0 0); font:inherit; font-weight:750; cursor:pointer; }
 .passportFacts { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); margin:0; border-block:1px solid oklch(93% 0 0); }
@@ -157,18 +157,18 @@
   .heroStage { display:block; }
 }
 @media (hover:hover) and (pointer:fine) {
-  .directoryLink:hover { color:oklch(45% .22 315); }
+  .directoryLink:hover { color:var(--color-accent-ink); }
   .sectionNav a:hover { color:oklch(18% 0 0); }
   .socialLinks a:hover { background:oklch(97.5% 0 0); }
-  .calendarEventDay:hover { background:oklch(97% .025 315); }
-  .calendarUpcoming a:hover { background:oklch(95.5% .03 305); }
-  .calendarFooter > a:hover { color:oklch(45% .22 315); }
+  .calendarEventDay:hover { background:var(--color-accent-soft); }
+  .calendarUpcoming a:hover { background:var(--color-accent-soft); }
+  .calendarFooter > a:hover { color:var(--color-accent-ink); }
 }
 @media (prefers-reduced-motion:reduce) { .page * { scroll-behavior:auto!important; transition-duration:.01ms!important; } }
 
 /* Today lives on CalendarDayNumber; the cell border only describes reservation state. */
 .calendarLegend i[data-state="unknown"] { border-radius:0; width:8px; height:2px; background:var(--color-muted); }
-.calendarLegend i[data-state="reserved"] { width:8px; height:5px; border:solid var(--color-service-ink); border-width:0 0 2px 2px; border-radius:0; background:transparent; transform:rotate(-45deg); }
+.calendarLegend i[data-state="reserved"] { width:8px; height:5px; border:solid var(--color-page-accent); border-width:0 0 2px 2px; border-radius:0; background:transparent; transform:rotate(-45deg); }
 .calendarMessage { font-size:var(--fan-calendar-meta-size); line-height:1.5; }
 @media (min-width:390px) { .heroCalendar { padding:16px; } }
 
@@ -217,14 +217,14 @@
 /* Date selection is separate from each LIVE's reservation state. */
 .calendarEventDay { border:0; background:transparent; font:inherit; cursor:pointer; min-height:48px; }
 .calendarEventDay time { width:32px; height:32px; }
-.calendarEventDay[data-upcoming="true"] time { background:oklch(97% .025 315); color:var(--color-service-ink); }
-.calendarEventDay[aria-pressed="true"] time { background:var(--color-service-ink); color:#fff; }
+.calendarEventDay[data-upcoming="true"] time { background:var(--color-accent-soft); color:var(--color-page-accent); }
+.calendarEventDay[aria-pressed="true"] time { background:var(--color-page-accent); color:#fff; }
 .calendarEventDay:focus-visible { outline:3px solid var(--color-focus); outline-offset:-3px; }
 .calendarListHeading { display:flex; align-items:center; justify-content:space-between; gap:12px; }
-.calendarListHeading button { min-height:44px; padding:0 8px; border:0; background:transparent; color:var(--color-service-ink); font:inherit; font-size:12px; font-weight:700; cursor:pointer; }
+.calendarListHeading button { min-height:44px; padding:0 8px; border:0; background:transparent; color:var(--color-page-accent); font:inherit; font-size:12px; font-weight:700; cursor:pointer; }
 .calendarUpcoming a { grid-template-areas:"time title state" "time reservation reservation"; }
 .calendarReservation { grid-area:reservation; display:flex; align-items:center; gap:4px; color:var(--color-muted); font-size:11px; }
-.calendarReservation svg { width:12px; height:12px; color:var(--color-service-ink); }
+.calendarReservation svg { width:12px; height:12px; color:var(--color-page-accent); }
 
 /* Let the complete title lead; time and status share the quiet metadata row. */
 .calendarUpcoming a { grid-template-columns:minmax(0,1fr) auto; grid-template-areas:"title title" "time state" "reservation reservation"; row-gap:6px; }

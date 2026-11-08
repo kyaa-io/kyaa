@@ -79,3 +79,9 @@ it.each(['cancel','no-fill','report-failure','load-error'])('a retry after %s is
  const second=run();const h2=await runRewardedSession(second.deps);
  expect(issued).toBe(2);expect(g.defined()).toBe(2);h2.cancel();
 });
+it('a second press while an ad is up leaves that ad\'s state alone',async()=>{
+ const m=setup(vi.fn(async()=>({sessionId:sid,status:'issued',expiresAt:'x'})));
+ m.deps.requestAd=(()=>{throw new Error('REWARDED_AD_BUSY');}) as never;
+ await runRewardedSession(m.deps);
+ expect(m.onState).toHaveBeenCalledWith('loading');expect(m.onState).not.toHaveBeenCalledWith('error');
+});

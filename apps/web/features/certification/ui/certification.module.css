@@ -1,13 +1,6 @@
 .panel,
 .detail {
-  font-family:
-    "Pretendard Variable",
-    Pretendard,
-    -apple-system,
-    BlinkMacSystemFont,
-    "Segoe UI",
-    sans-serif;
-  color: var(--color-ink, #19191c);
+    color: var(--color-ink, #19191c);
 }
 .panel {
   display: grid;
@@ -29,12 +22,12 @@
 .panelHeading h2 svg {
   width: 24px;
   height: 24px;
-  color: var(--color-service-ink, #be185d);
+  color: var(--color-page-accent, #be185d);
 }
 .tabs {
   display: flex;
   gap: 24px;
-  border-bottom: 1px solid #e8e7ec;
+  border-bottom: 1px solid var(--color-line-subtle);
 }
 .tabs button {
   position: relative;
@@ -138,7 +131,7 @@
   flex-direction: column;
   gap: 16px;
   padding: 20px;
-  border: 1px solid #e8e7ec;
+  border: 1px solid var(--color-line-subtle);
   border-radius: 16px;
   background: #fff;
   color: inherit;
@@ -152,7 +145,7 @@ a.card:hover {
   background: #fcfcfd;
 }
 a.card:active {
-  background: #f6f5f7;
+  background: var(--color-soft);
 }
 .card[data-disabled="true"] {
   background: #f8f8fa;
@@ -212,7 +205,7 @@ a.card:active {
   gap: 12px;
   margin-top: auto;
   padding-top: 16px;
-  border-top: 1px solid #f0eff3;
+  border-top: 1px solid var(--color-soft);
 }
 .cardAction {
   display: inline-flex;
@@ -263,7 +256,7 @@ a.card:active {
   flex-wrap: wrap;
   gap: 8px;
   min-width: 0;
-  color: var(--color-service-ink, #be185d);
+  color: var(--color-page-accent, #be185d);
   font-size: 12px;
   font-weight: 750;
 }
@@ -339,7 +332,7 @@ a.card:active {
   border-bottom: 1px solid #e7e4e2;
 }
 .hero > span {
-  color: var(--color-service-ink);
+  color: var(--color-page-accent);
   font-size: 13px;
   font-weight: 850;
 }
@@ -422,7 +415,7 @@ a.card:active {
   min-height: 44px;
   align-items: center;
   gap: 6px;
-  color: var(--color-service-ink);
+  color: var(--color-page-accent);
   font-size: 14px;
   font-weight: 800;
   text-decoration: underline;
@@ -717,9 +710,9 @@ a.card:focus-visible{outline:3px solid #d11b62;outline-offset:3px}.card{min-heig
 /* 2026-11-05 D5 F10: compact stamp-circle tiles replace the long mission cards (existing ink-v1 stamps, no new artwork). */
 .missionGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
 .missionGrid:has(>:only-child) { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-.tile { box-sizing: border-box; display: flex; height: 100%; min-height: 0; flex-direction: column; align-items: center; gap: 8px; padding: 16px 12px; border: 1px solid #e8e7ec; border-radius: 16px; background: #fff; color: inherit; text-align: center; text-decoration: none; transition: border-color 160ms ease, background-color 160ms ease; }
+.tile { box-sizing: border-box; display: flex; height: 100%; min-height: 0; flex-direction: column; align-items: center; gap: 8px; padding: 16px 12px; border: 1px solid var(--color-line-subtle); border-radius: 16px; background: #fff; color: inherit; text-align: center; text-decoration: none; transition: border-color 160ms ease, background-color 160ms ease; }
 a.tile:hover { border-color: #bdbdc7; background: #fcfcfd; }
-a.tile:active { background: #f6f5f7; }
+a.tile:active { background: var(--color-soft); }
 a.tile:focus-visible { outline: 3px solid #d11b62; outline-offset: 3px; }
 .tile[data-disabled="true"] { background: #f8f8fa; }
 .stamp { display: grid; width: 72px; height: 72px; flex: none; place-items: center; border-radius: 50%; background: #fafafa; box-shadow: inset 0 0 0 1px #eeeef2; overflow: hidden; }
@@ -727,7 +720,7 @@ a.tile:focus-visible { outline: 3px solid #d11b62; outline-offset: 3px; }
 /* R5: only an approved certification keeps color; every other state stays gray so an unclaimed item never reads as completed. */
 .stamp:not([data-state="approved"]) { filter: grayscale(1); opacity: .55; }
 .tileTitle { display: -webkit-box; min-width: 0; max-width: 100%; overflow: hidden; font-size: 14px; font-weight: 750; letter-spacing: -.02em; line-height: 1.4; overflow-wrap: anywhere; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
-.tileMeta { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px 8px; min-width: 0; color: var(--color-service-ink, #be185d); font-size: 12px; font-weight: 750; line-height: 1.5; }
+.tileMeta { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px 8px; min-width: 0; color: var(--color-page-accent, #be185d); font-size: 12px; font-weight: 750; line-height: 1.5; }
 .tileMeta > span { display: inline-flex; align-items: center; gap: 4px; }
 .tileMeta svg { width: 14px; height: 14px; flex: none; }
 .tile .cardAction, .tile .status { margin-top: auto; }

@@ -1,8 +1,8 @@
 /* feedback D3: full-screen stamp. Taps pass through; the screen stays readable under a light dim. */
 .host { position: fixed; inset: 0; z-index: var(--z-toast); pointer-events: none; }
 .host:empty { display: none; }
-.layer { position: absolute; inset: 0; display: grid; place-items: center; background: var(--color-backdrop); animation: slam-in var(--motion-control) var(--motion-easing) both; }
-.host[data-leaving] .layer { animation: slam-out var(--motion-control) var(--motion-easing) both; }
+.layer { position: absolute; inset: 0; display: grid; place-items: center; background: var(--color-backdrop); animation: slam-in var(--motion-fast) var(--motion-easing) both; }
+.host[data-leaving] .layer { animation: slam-out var(--motion-fast) var(--motion-easing) both; }
 .stamp { width: min(72vw, 360px) !important; height: min(72vw, 360px) !important; }
 @keyframes slam-in { from { opacity: 0; } to { opacity: 1; } }
 @keyframes slam-out { from { opacity: 1; } to { opacity: 0; } }

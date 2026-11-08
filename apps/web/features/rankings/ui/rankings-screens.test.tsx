@@ -29,3 +29,10 @@ it("switches to the creator ranking, and opens on it when asked", async () => {
   render(<CreatorRankingScreen locale="ko" initialTab="creators" />);
   expect(await screen.findByRole("tab", { name: "크리에이터 랭킹" })).toHaveAttribute("aria-selected", "true");
 });
+
+it("opens on the period the home card's segment asked for (이번 주 → week, 전체 → all)", async () => {
+  render(<CreatorRankingScreen locale="ko" initialPeriod="all" />);
+  expect(await screen.findByText("하트팬")).toBeInTheDocument();
+  expect(urls.some((url) => url.startsWith("/api/rankings/fans?period=all"))).toBe(true);
+  expect(urls.some((url) => url.startsWith("/api/rankings/fans?period=week"))).toBe(false);
+});

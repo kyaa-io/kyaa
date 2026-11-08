@@ -27,7 +27,8 @@ it("passes the database's fan answer through the route schema without the build 
   const res = await GET(new Request("https://byus.test/api/rankings/home"));
   expect(res.status).toBe(200);
   const body = await res.json();
-  expect(Object.keys(body).sort()).toEqual(["comparable", "computedAt", "day", "me", "rows"]);
+  // r5: the route adds the basis line (period·closesAt·fetchedAt); an answer from before 20261217010000 has no fan weekGain keys.
+  expect(Object.keys(body).sort()).toEqual(["closesAt", "comparable", "computedAt", "day", "fetchedAt", "me", "period", "rows"]);
   expect(body.rows[0]).toEqual({ rank: 1, score: 12, nickname: "시험팬 001", characterId: "star-pink", tier: "Gold", isMe: false, delta: null, favorite: { slug: "doc261107-test-ranking", name: "[시험] 랭킹 확인 페이지" } });
   expect(body.rows[1].favorite).toBeNull();
   expect(state.rpc).toHaveBeenCalledTimes(1);
@@ -36,6 +37,16 @@ it("passes the database's fan answer through the route schema without the build 
   // No stored Japanese name: Korean first.
   const japanese = await (await GET(new Request("https://byus.test/api/rankings/home?kind=fans&locale=ja"))).json();
   expect(japanese.rows[0].favorite.name).toBe("[시험] 랭킹 확인 페이지");
+});
+
+// read_home_fan_ranking(null, 1) from the local database after 20261217010000 (2026-11-08 20:xx KST), favorite trimmed to two names.
+it("passes the fan weekGain of 20261217010000 through the route schema", async () => {
+  state.rpc.mockImplementation(async () => ({ me: null, day: today, builtDay: today, comparable: true, computedAt: "2026-11-08T18:53:14.997554+09:00", weekGainDays: 7,
+    rows: [{ isMe: false, rank: 1, tier: "Diamond", delta: 0, score: 911, favorite, nickname: "시험팬 027", weekGain: 897, characterId: "ghost-cream" }] }));
+  const res = await GET(new Request("https://byus.test/api/rankings/home?kind=fans"));
+  expect(res.status).toBe(200);
+  const body = await res.json();
+  expect(body).toMatchObject({ period: "day", weekGainDays: 7, rows: [{ rank: 1, score: 911, delta: 0, weekGain: 897 }] });
 });
 
 it("passes the database's creator answer through the route schema, first day without a week gain", async () => {

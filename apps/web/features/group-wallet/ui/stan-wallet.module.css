@@ -1,58 +1,32 @@
-/* 덕질 wallet (feedback F2). 390: points | hearts, under each its next step (tickets | stamps), the action row below.
-   768+: a third 288px column holds the action, centered; the guide link sits at the top of the last column (390: the end of the hearts label row).
-   Every cell is one link; the guide link overlaps the hearts cell's label row through the grid (no positioning). */
-.wallet {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  grid-template-areas: "points hearts" "tickets stamps" "action action";
-  min-width: 0;
-  box-sizing: border-box;
-  border: 1px solid var(--color-line);
-  border-radius: var(--radius-control);
-  background: var(--color-surface);
-}
-.cell { display: grid; align-content: start; gap: var(--space-1); min-width: 0; padding: var(--space-3) var(--space-4) var(--space-2); color: inherit; text-decoration: none; }
-.cell:hover { background: var(--color-soft); }
-.cell:focus-visible { outline: 2px solid var(--color-focus); outline-offset: -2px; }
-.cell[data-cell="points"] { grid-area: points; border-start-start-radius: inherit; }
-.cell[data-cell="hearts"] { grid-area: hearts; border-inline-start: 1px solid var(--color-line); border-start-end-radius: inherit; }
-.cell[data-cell="tickets"], .cell[data-cell="stamps"] { gap: var(--space-1); padding: var(--space-2) var(--space-4) var(--space-3); border-top: 1px solid var(--color-line-subtle); }
-.cell[data-cell="tickets"] { grid-area: tickets; }
-.cell[data-cell="stamps"] { grid-area: stamps; border-inline-start: 1px solid var(--color-line); }
-.label { overflow: hidden; color: var(--color-muted); font-size: var(--fan-metadata-size); line-height: 20px; text-overflow: ellipsis; white-space: nowrap; }
-.cell[data-cell="hearts"] .label { max-width: 50%; }
-.value { display: flex; align-items: center; min-width: 0; min-height: 32px; white-space: nowrap; }
-.value img { display: block; }
-.heart { display: block; color: var(--color-accent); fill: currentColor; }
-.step { display: flex; flex-wrap: wrap; align-items: center; column-gap: var(--space-1); min-width: 0; min-height: 24px; font-size: var(--fan-item-title-size); font-weight: var(--fan-item-title-weight); line-height: 24px; }
-.next { flex: none; color: var(--color-muted); }
-.progress { display: block; min-width: 0; min-height: 30px; }
-/* 390: the bar over its words (the cell is too narrow for both on one line in every language); 768+: one line. */
-.gauge { flex-direction: column; align-items: stretch; gap: var(--space-1); }
-.gauge > span:first-child { flex: none; }
-.gauge > span:last-child { color: var(--color-muted); font-weight: 400; line-height: 20px; white-space: normal; overflow-wrap: anywhere; }
-.ready { color: var(--color-accent-ink, var(--color-ink)); font-weight: var(--fan-item-title-weight); }
-.guide { display: inline-flex; grid-area: hearts; align-self: start; justify-self: end; align-items: center; gap: 0; z-index: 1; min-height: 44px; box-sizing: border-box; padding: var(--space-3) var(--space-4); color: var(--color-ink); font-size: var(--fan-metadata-size); font-weight: var(--fan-item-title-weight); line-height: 20px; text-decoration: none; white-space: nowrap; }
-.guide:hover { color: var(--color-accent-ink, var(--color-ink)); }
-.guide:focus-visible { outline: 2px solid var(--color-focus); outline-offset: -2px; border-radius: var(--space-2); }
-.guide > svg { flex: none; color: var(--color-muted); }
-.action { display: grid; grid-area: action; min-width: 0; padding: var(--space-3) var(--space-4); border-top: 1px solid var(--color-line); }
-.action > * { white-space: nowrap; }
+/* 덕질 지갑 쌍 (브리프 규칙 25, 팀 피드백 H4). Head: h2 `내 지갑` + the one guide link `안내 ›`.
+   Two cards of the same shape (12, 1px line, no shadow): label › over the big number (44/48) — 응모권 with `교환` on its right, 하트 —
+   then one progress row (56): 포인트 N P · 100P = 1장 with its 2px bar / 스탬프 N/9 · 9칸 = 하트 1 with 9 segments.
+   390: the cards stack (응모권 first); 768+: side by side, equal width. */
+.wallet { display: grid; gap: var(--space-3); min-width: 0; }
+.head { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); min-height: 28px; }
+.guide, .history { display: inline-flex; align-items: center; color: var(--color-muted); font-size: var(--fan-metadata-size); text-decoration: none; white-space: nowrap; }
+.guide:hover, .history:hover { color: var(--color-ink); }
+.guide:focus-visible, .history:focus-visible, .label:focus-visible, .progress:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
+.pair { display: grid; gap: var(--space-3); min-width: 0; }
+.card { box-sizing: border-box; display: grid; align-content: start; gap: var(--space-2); min-width: 0; padding: var(--space-4); border: 1px solid var(--color-line); border-radius: var(--radius-card); background: var(--color-surface); }
+.cardTop { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: end; gap: var(--space-3); }
+.balance { display: grid; gap: var(--space-2); min-width: 0; }
+.label { display: inline-flex; align-items: center; justify-self: start; color: var(--color-ink); font-size: var(--fan-item-title-size); font-weight: var(--fan-section-weight); text-decoration: none; }
+.label > svg { color: var(--color-muted); }
+.hero { display: flex; align-items: center; min-height: 44px; }
+.action { display: flex; justify-content: flex-end; min-width: 96px; }
+.exchange { min-width: 96px; white-space: nowrap; }
+.progress { display: grid; align-content: center; gap: var(--space-2); box-sizing: border-box; min-height: 56px; padding-top: var(--space-2); border-top: 1px solid var(--color-line-subtle); color: inherit; text-decoration: none; }
+.progressLine { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 0 var(--space-3); min-width: 0; }
+.progressLabel { font-size: var(--fan-item-title-size); font-weight: 400; }
+.progressValue { font-weight: var(--fan-section-weight); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.rate { color: var(--color-muted); font-size: var(--fan-metadata-size); white-space: nowrap; }
+.progressBar { display: block; min-width: 0; }
+.history { justify-self: start; }
+.heart { display: block; color: var(--color-accent); }
 @media (min-width: 48rem) {
-  .wallet { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 288px; grid-template-areas: "points hearts action" "tickets stamps action"; }
-  .cell { padding: var(--space-4) var(--space-5) var(--space-1); }
-  .cell[data-cell="hearts"] { border-start-end-radius: 0; }
-  .cell[data-cell="hearts"] .label { max-width: none; }
-  .cell[data-cell="tickets"], .cell[data-cell="stamps"] { gap: var(--space-1); padding: var(--space-2) var(--space-5) var(--space-4); }
-  .value { min-height: 40px; }
-  .progress { min-height: 20px; }
-  .gauge { flex-direction: row; align-items: center; gap: var(--space-2); }
-  .gauge > span:first-child { flex: 1; }
-  .gauge > span:last-child { white-space: nowrap; }
-  /* The action fills the whole column (its line runs the card's height) and centers the button; the guide link sits over its top end. */
-  .guide { grid-area: action; padding-inline: var(--space-5); }
-  .action { align-content: center; padding: 0 var(--space-4); border-top: 0; border-inline-start: 1px solid var(--color-line); }
+  .pair { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .card { padding: var(--space-5); }
+  .hero { min-height: 48px; }
 }
-
-/* r6 visual review: "응모권 2 장", "스탬프 4 /9" read as split; the step number keeps its unit attached. */
-.step .stepNumber { gap: 0; }
+@media (min-width: 1024px) { .action, .exchange { min-width: 120px; } }

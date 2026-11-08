@@ -948,5 +948,17 @@ export const messages = {
     "fr": "Fan Passport ouvert avec neuf cercles de tampon vides",
     ru: "Открытый Fan Passport с девятью пустыми кругами для Stamp"
 
-  }
+  },
+  "homeTitle": {"ja": "ホーム", "zh-Hans": "首页", "zh-Hant": "首頁", "es": "Inicio", "id": "Beranda", "vi": "Trang chủ", "th": "หน้าแรก", "pt": "Início", "fr": "Accueil", "ru": "Главная"},
+  "homeMyNews": {"ja": "推しのニュース", "zh-Hans": "我的最爱动态", "zh-Hant": "我的最愛動態", "es": "Noticias de tu favorito", "id": "Kabar favoritmu", "vi": "Tin thần tượng của tôi", "th": "ข่าวคนโปรด", "pt": "Novidades do seu favorito", "fr": "Actus de votre favori", "ru": "Новости кумира"},
+  "homeMore": {"ja": "もっと見る", "zh-Hans": "更多", "zh-Hant": "更多", "es": "Ver más", "id": "Lainnya", "vi": "Xem thêm", "th": "ดูเพิ่ม", "pt": "Ver mais", "fr": "Voir plus", "ru": "Ещё"},
+  "homeOfficial": {"ja": "公式ニュース", "zh-Hans": "官方动态", "zh-Hant": "官方動態", "es": "Oficial", "id": "Resmi", "vi": "Chính thức", "th": "ข่าวทางการ", "pt": "Oficial", "fr": "Officiel", "ru": "Официально"},
+  "homeLiveNow": {"ja": "LIVE配信中", "zh-Hans": "LIVE进行中", "zh-Hant": "LIVE進行中", "es": "LIVE ahora", "id": "Sedang LIVE", "vi": "Đang LIVE", "th": "กำลัง LIVE", "pt": "LIVE agora", "fr": "LIVE en cours", "ru": "LIVE сейчас"},
+  "homeLiveAt": {"ja": "LIVE {0}", "zh-Hans": "LIVE {0}", "zh-Hant": "LIVE {0}", "es": "LIVE {0}", "id": "LIVE {0}", "vi": "LIVE {0}", "th": "LIVE {0}", "pt": "LIVE {0}", "fr": "LIVE {0}", "ru": "LIVE {0}"},
+  "homeNoNews": {"ja": "新しいニュースはありません", "zh-Hans": "暂无新动态", "zh-Hant": "暫無新動態", "es": "No hay novedades", "id": "Belum ada kabar baru", "vi": "Chưa có tin mới", "th": "ยังไม่มีข่าวใหม่", "pt": "Sem novidades", "fr": "Aucune nouvelle publication", "ru": "Новых публикаций нет"},
+  "homeChoose": {"ja": "推しを選ぶ", "zh-Hans": "选择我的最爱", "zh-Hant": "選擇我的最愛", "es": "Elegir favorito", "id": "Pilih favorit", "vi": "Chọn thần tượng", "th": "เลือกคนโปรด", "pt": "Escolher favorito", "fr": "Choisir un favori", "ru": "Выбрать кумира"},
+  "homeYourFavorite": {"ja": "あなたの推し", "zh-Hans": "你的最爱", "zh-Hant": "你的最愛", "es": "Tu favorito", "id": "Favoritmu", "vi": "Thần tượng của bạn", "th": "คนโปรดของคุณ", "pt": "Seu favorito", "fr": "Votre favori", "ru": "Ваш кумир"},
+  "homeFanPage": {"ja": "ファンページを見る", "zh-Hans": "查看粉丝页面", "zh-Hant": "查看粉絲頁面", "es": "Ver página de fans", "id": "Lihat halaman penggemar", "vi": "Xem trang người hâm mộ", "th": "ดูหน้าแฟนคลับ", "pt": "Ver página de fãs", "fr": "Voir la page de fans", "ru": "Посмотреть страницу фанатов"},
+  "homeLoginChoose": {"ja": "ログインして推しを選ぶ", "zh-Hans": "登录后选择最爱", "zh-Hant": "登入後選擇最愛", "es": "Inicia sesión y elige favorito", "id": "Masuk untuk pilih favorit", "vi": "Đăng nhập để chọn thần tượng", "th": "เข้าสู่ระบบเพื่อเลือกคนโปรด", "pt": "Entre para escolher favorito", "fr": "Connectez-vous pour choisir", "ru": "Войдите и выберите кумира"},
+  "homeFans": {"ja": "ファン {0}", "zh-Hans": "粉丝 {0}", "zh-Hant": "粉絲 {0}", "es": "{0} fans", "id": "{0} penggemar", "vi": "{0} người hâm mộ", "th": "แฟน {0}", "pt": "{0} fãs", "fr": "{0} fans", "ru": "{0} фанатов"}
 } satisfies Record<string, TranslatedMessage>;

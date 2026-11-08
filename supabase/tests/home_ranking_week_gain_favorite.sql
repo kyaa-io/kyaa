@@ -51,7 +51,7 @@ begin
     if nick = 'hwg' || left(f2::text, 8) and row -> 'favorite' ->> 'slug' <> 'hwg-' || left(b::text, 8) then raise exception 'f2 favorite: %', row; end if;
     if nick = 'hwg' || left(f3::text, 8) and row -> 'favorite' ->> 'slug' <> 'hwg-' || left(a::text, 8) then raise exception 'f3 favorite (unlisted page chosen?): %', row; end if;
     if nick = 'hwg' || left(f4::text, 8) and row -> 'favorite' ->> 'slug' <> 'hwg-' || left(a::text, 8) then raise exception 'f4 tie: %', row; end if;
-    if (select array_agg(k order by k) from jsonb_object_keys(row) k) <> array['characterId', 'delta', 'favorite', 'isMe', 'nickname', 'rank', 'score', 'tier']
+    if (select array_agg(k order by k) from jsonb_object_keys(row) k) <> array['characterId', 'delta', 'favorite', 'isMe', 'nickname', 'rank', 'score', 'tier', 'weekGain']
       then raise exception 'Fan row keys: %', row; end if;
   end loop;
   if (select r -> 'favorite' -> 'names' from jsonb_array_elements(result -> 'rows') r where r ->> 'nickname' = 'hwg' || left(f1::text, 8))

@@ -41,7 +41,7 @@ export function ByUsPrivyProvider({
         ],
         appearance: {
           theme: "light",
-          accentColor: "#8A18B8",
+          accentColor: "#d11b62",
           logo: "/images/guest-home/kyaa-wordmark.svg",
           landingHeader: locale === "ko" ? "kyaa 시작하기" : translate(locale, localizedMessages.mec65a0eab4d9, "Get started with kyaa"),
           loginMessage: testAccountLoginEnabled

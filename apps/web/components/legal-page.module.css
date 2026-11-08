@@ -108,7 +108,7 @@
 }
 
 .document a {
-  color: oklch(38% .16 300);
+  color: var(--color-accent-ink);
   font-weight: 700;
   text-underline-offset: 3px;
 }

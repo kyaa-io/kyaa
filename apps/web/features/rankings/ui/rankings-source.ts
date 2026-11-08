@@ -38,6 +38,7 @@ export const rankingsSource = {
   rkEmptyFans: { ko: "아직 하트를 보낸 팬이 없어요", en: "No fan has sent a heart yet" },
   rkUpdatedAt: { ko: "업데이트 {0}", en: "Updated {0}" },
   rkWeekGain: { ko: "이번 주 {0}", en: "This week {0}" },
+  rkSince: { ko: "{0}부터", en: "from {0}" },
   rkFavorite: { ko: "최애 {0}", en: "Fave {0}" },
   rkDeltaNew: { ko: "신규", en: "New" },
   jjTitle: { ko: "찐팬 100 챌린지", en: "100 True Fans Challenge" },

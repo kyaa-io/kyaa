@@ -1,4 +1,4 @@
-import {BenefitsSummary,BenefitsCatalog,BenefitsComingSoon,BenefitsExchangeShop} from '@/features/groups/ui/group-benefits-screen';
+import {BenefitsSummary,BenefitsCatalog,BenefitsComingSoon,BenefitsExchangeShop} from '@/features/groups/ui/group-benefits-legacy';
 import {useEffect,useState,type MouseEvent} from 'react';
 import {ChevronRight,Minus,Plus,RefreshCw} from 'lucide-react';
 import {FanAppHeader,FanAppBottomNavigation} from '@/components/fan-shell/fan-app-shell';

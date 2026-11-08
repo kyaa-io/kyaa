@@ -1,17 +1,17 @@
-.page { position: relative; isolation: isolate; display: grid; min-height: 100svh; min-height: 100dvh; box-sizing: border-box; grid-template-rows: minmax(0, 1fr) auto; gap: 24px; padding: 24px 16px max(24px, env(safe-area-inset-bottom)); overflow-x: clip; background: #fdfdfe; color: oklch(18% 0 0); font-family: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif; }
+.page { position: relative; isolation: isolate; display: grid; min-height: 100svh; min-height: 100dvh; box-sizing: border-box; grid-template-rows: minmax(0, 1fr) auto; gap: 24px; padding: 24px 16px max(24px, env(safe-area-inset-bottom)); overflow-x: clip; background: #fdfdfe; color: oklch(18% 0 0); }
 .background { position: absolute; z-index: -1; inset: 0; display: block; overflow: hidden; }
 .background img { width: 100%; height: 100%; object-fit: cover; }
 .authStage { display: grid; min-height: 0; place-items: center; }
 .contents { display: grid; width: 100%; min-width: 0; gap: 28px; }
-.sessionPage { display: grid; min-height: 100dvh; box-sizing: border-box; place-items: center; padding: 32px 16px; background: #fff; color: oklch(18% 0 0); font-family: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif; }
+.sessionPage { display: grid; min-height: 100dvh; box-sizing: border-box; place-items: center; padding: 32px 16px; background: #fff; color: oklch(18% 0 0); }
 .sessionContents { display: grid; width: 100%; min-width: 0; gap: 20px; }
 .panel { display: grid; width: min(100%, 440px); box-sizing: border-box; gap: 28px; padding: 32px 24px; border: 1px solid oklch(90% 0 0 / .72); border-radius: 16px; background: rgb(255 255 255 / 96%); box-shadow: 0 1px 2px oklch(18% 0 0 / .05), 0 4px 12px oklch(18% 0 0 / .03); }
 .gatewayPanel { display: grid; width: min(100%, 960px); min-height: 500px; box-sizing: border-box; grid-template-columns: repeat(2, minmax(0, 1fr)); overflow: hidden; border: 1px solid oklch(90% 0 0 / .72); border-radius: 20px; background: rgb(255 255 255 / 96%); box-shadow: 0 1px 2px oklch(18% 0 0 / .05), 0 4px 12px oklch(18% 0 0 / .03); }
-.passportVisual { position: relative; isolation: isolate; display: grid; min-width: 0; overflow: hidden; align-content: center; padding: 40px 32px; border-right: 1px solid oklch(91% .012 315); background: linear-gradient(145deg, #fff 8%, oklch(97.5% .018 340) 58%, oklch(96.5% .025 300)); }
-.passportVisual::before, .passportVisual::after { position: absolute; z-index: -1; border: 1px solid oklch(78% .08 320 / .22); border-radius: 50%; content: ""; pointer-events: none; }
+.passportVisual { position: relative; isolation: isolate; display: grid; min-width: 0; overflow: hidden; align-content: center; padding: 40px 32px; border-right: 1px solid var(--color-line); background: var(--color-soft); }
+.passportVisual::before, .passportVisual::after { position: absolute; z-index: -1; border: 1px solid color-mix(in srgb, var(--color-accent) 22%, transparent); border-radius: 50%; content: ""; pointer-events: none; }
 .passportVisual::before { width: 264px; height: 264px; top: -132px; left: -88px; }
 .passportVisual::after { width: 184px; height: 184px; right: -92px; bottom: -72px; }
-.passportLabel { position: absolute; top: 36px; left: 32px; color: oklch(40% .12 315); font-size: 11px; font-weight: 800; letter-spacing: .12em; line-height: 1.4; }
+.passportLabel { position: absolute; top: 36px; left: 32px; color: var(--color-accent-ink); font-size: 11px; font-weight: 800; letter-spacing: .12em; line-height: 1.4; }
 .passportArtwork { display: grid; min-width: 0; place-items: center; }
 .passportImage { display: block; width: 100%; height: auto; max-width: 380px; max-height: 330px; object-fit: contain; filter: drop-shadow(0 8px 14px rgb(23 25 28 / 7%)); transform: rotate(0deg); }
 .loginColumn { display: grid; min-width: 0; align-content: center; justify-items: center; padding: 48px clamp(32px, 4vw, 56px); }
@@ -26,7 +26,7 @@
 .copy { display: grid; justify-items: center; text-align: center; }
 .copy h1 { max-width: 13ch; margin: 0; font-size: 30px; font-weight: 850; letter-spacing: -.035em; line-height: 1.12; text-wrap: balance; }
 .error { margin: 0; font-size: 14px; line-height: 1.6; text-wrap: pretty; }
-.googleButton { display: flex; width: 90%; min-height: 52px; align-items: center; justify-content: space-between; justify-self: center; gap: 12px; padding-inline: 20px; border: 1px solid transparent; border-radius: 999rem; background: linear-gradient(#fff,#fff) padding-box, linear-gradient(125deg,oklch(68% .22 18),oklch(62% .25 340),oklch(56% .22 285)) border-box; color: oklch(45% .22 315); cursor: pointer; font-family: "Google Sans", Roboto, Arial, sans-serif; font-size: 15px; font-weight: 600; }
+.googleButton { display: flex; width: 90%; min-height: 52px; align-items: center; justify-content: space-between; justify-self: center; gap: 12px; padding-inline: 20px; border: 1px solid transparent; border-radius: 999rem; border-color: var(--color-ink); background: var(--color-surface); color: var(--color-accent-ink); cursor: pointer; font-family: "Google Sans", Roboto, Arial, sans-serif; font-size: 15px; font-weight: 600; }
 .googleButton span { flex: 1; text-align: center; }
 .googleButton svg { width: 18px; height: 18px; flex: none; }
 .appleButton { display: flex; width: 90%; min-height: 52px; align-items: center; justify-content: space-between; justify-self: center; gap: 12px; padding-inline: 20px; border: 1px solid #000; border-radius: 999rem; background: #000; color: #fff; cursor: pointer; font: inherit; font-size: 15px; font-weight: 700; }
@@ -65,7 +65,7 @@
 }
 @media (max-width: 20rem), (prefers-reduced-data: reduce) {
   .background { display: none; }
-  .page { background: oklch(98% .008 300); }
+  .page { background: var(--color-accent-soft); }
 }
 @media (prefers-reduced-motion: reduce) { .page * { transition-duration: .01ms !important; } }
 

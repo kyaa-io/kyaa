@@ -85,7 +85,7 @@ describe("LiveSurveyScreen", () => {
     vi.spyOn(globalThis, "fetch").mockResolvedValue(jsonResponse(payload()));
     render(<GroupsReleaseProvider enabled><LiveSurveyScreen slug="kara-nualeaf" locale="ko" /></GroupsReleaseProvider>);
     expect(await screen.findByRole("heading", { name: "LIVE 설문" })).toBeInTheDocument();
-    expect(screen.getAllByRole("banner")[0].querySelectorAll("[data-language-switch]")).toHaveLength(1);
+    expect(screen.getAllByRole("banner")[0].querySelectorAll("[data-language-switch]")).toHaveLength(0); // 5차 R3: 언어는 헤더를 떠나 계정 메뉴로
     expect(screen.getByRole("navigation", { name: "주요 메뉴" })).toBeInTheDocument();
     expect(screen.getByRole("navigation", { name: "모바일 주요 메뉴" })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "LIVE로 돌아가기" })).toHaveAttribute("href", "/live/kara-nualeaf?locale=ko");

@@ -1,9 +1,9 @@
 /* 찐팬 100 챌린지 카드(C7, 설계 5.1). r12, 1px 선, 머리 16/650, 수치 24/850, 막대 8px. 장식·캐릭터 없음. */
 .gauge { display: grid; gap: var(--space-2); box-sizing: border-box; min-width: 0; padding: var(--space-4); border: 1px solid var(--color-line); border-radius: var(--radius-control); background: var(--color-surface); color: var(--color-ink); }
 .head { display: flex; align-items: center; justify-content: space-between; gap: var(--space-2); min-width: 0; }
-.head h2 { min-width: 0; margin: 0; font: 400 16px/24px "Pretendard UI 650", system-ui, sans-serif; font-synthesis: none; overflow-wrap: anywhere; }
+.head h2 { min-width: 0; margin: 0; font-weight:700;font-size:16px;line-height:24px; font-synthesis: none; overflow-wrap: anywhere; }
 .count { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 var(--space-2); margin: 0; color: var(--color-muted); font-size: var(--fan-metadata-size); line-height: 18px; }
-.count strong { color: var(--color-ink); font: 400 24px/32px "Pretendard UI 850", system-ui, sans-serif; font-synthesis: none; font-variant-numeric: tabular-nums; }
+.count strong { color: var(--color-ink); font-weight:800;font-size:24px;line-height:32px; font-synthesis: none; font-variant-numeric: tabular-nums; }
 .done { color: var(--color-accent-ink); font-weight: 700; }
 .meta { margin: 0; color: var(--color-muted); font-size: var(--fan-metadata-size); line-height: 1.5; overflow-wrap: anywhere; white-space: pre-line; }
 /* Above the fans tab's list, outside its loading state: the same 16px the tab's own stack uses. */

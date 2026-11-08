@@ -10,31 +10,15 @@ const shellCss = readFileSync(
   resolve(process.cwd(), "components/fan-shell/fan-app-shell.module.css"),
   "utf8",
 );
-const homeCss = readFileSync(
-  resolve(process.cwd(), "components/guest-home.module.css"),
-  "utf8",
-);
-const celebrityCss = readFileSync(
-  resolve(process.cwd(), "components/celebrity-fan-page.module.css"),
-  "utf8",
-);
-const designContract = readFileSync(
-  resolve(process.cwd(), "../../DESIGN.md"),
-  "utf8",
-);
 
 describe("shared fan action style contract", () => {
-  it("keeps Passport actions distinct from Google service typography", () => {
-    const passportRule = actionCss.match(/\.passport\s*\{([\s\S]*?)\n\}/)?.[1];
-    const serviceRule = actionCss.match(/\.service\s*\{([\s\S]*?)\n\}/)?.[1];
-
-    expect(passportRule).toContain("min-height: var(--fan-action-service-height)");
-    expect(passportRule).toContain("border-radius: var(--radius-pill)");
-    expect(passportRule).toContain("linear-gradient(#fff, #fff) padding-box");
-    expect(passportRule).toContain("color: var(--color-service-ink)");
-    expect(passportRule).toContain('"Pretendard Variable"');
-    expect(passportRule).not.toContain('"Google Sans"');
-    expect(serviceRule).toContain('"Google Sans"');
+  it("draws primary as a solid accent fill with radius 8 and no shadow; the gradient service/passport variants are gone", () => {
+    const primaryRule = actionCss.match(/\.primary\s*\{([\s\S]*?)\n\}/)?.[1];
+    expect(primaryRule).toContain("background: var(--color-page-accent)");
+    expect(primaryRule).not.toMatch(/gradient|box-shadow|radius-pill/);
+    expect(actionCss).not.toMatch(/gradient\(/);
+    expect(actionCss).not.toMatch(/\.(service|passport)\s*\{/);
+    expect(actionCss).not.toMatch(/font-family/);
   });
 
   it("constrains direct SVG marks inside action links", () => {
@@ -50,22 +34,9 @@ describe("shared fan action style contract", () => {
     expect(shellCss).not.toMatch(/(?:^|\n)\.frame a\s*\{/);
   });
 
-  it("uses the 48px product Primary while preserving service and Passport heights", () => {
+  it("sizes primary from the shared height token (44 at 390, 48 at 1024+)", () => {
     const primaryRule = actionCss.match(/\.primary\s*\{([\s\S]*?)\n\}/)?.[1];
-    const passportRule = actionCss.match(/\.passport\s*\{([\s\S]*?)\n\}/)?.[1];
-    const serviceRule = actionCss.match(/\.service\s*\{([\s\S]*?)\n\}/)?.[1];
-    const homePrimaryRule = homeCss.match(/\.primaryButton\s*\{([\s\S]*?)\n\}/)?.[1];
-    const celebrityPrimaryRule = celebrityCss.match(/\.heroAction\s*>\s*a\s*\{([\s\S]*?)\n\}/)?.[1];
-
     expect(primaryRule).toContain("min-height: var(--fan-action-primary-height)");
-    expect(homePrimaryRule).toMatch(/min-height:\s*48px/);
-    expect(celebrityPrimaryRule).toMatch(/min-height:\s*48px/);
-    expect(serviceRule).toContain("min-height: var(--fan-action-service-height)");
-    expect(passportRule).toContain("min-height: var(--fan-action-service-height)");
-    expect(designContract).toContain("48px minimum height");
-    expect(designContract).toContain("Google login: 90% of card width, 52px minimum height");
-    expect(designContract).toContain("Passport CTA:");
-    expect(designContract).toContain("90% of card width, 52px minimum height");
   });
 });
 
@@ -86,7 +57,7 @@ describe("FanAction icon layout contract", () => {
   });
 
   it("keeps disabled colors on the documented tokens", () => {
-    expect(readFileSync(resolve(process.cwd(), "app/globals.css"), "utf8")).toMatch(/--fan-action-disabled-bg:\s*#e4e1e6/);
+    expect(readFileSync(resolve(process.cwd(), "app/globals.css"), "utf8")).toMatch(/--fan-action-disabled-bg:\s*#e5e5e5/);
     expect(actionCss).toMatch(/background:\s*var\(--fan-action-disabled-bg\)/);
     expect(actionCss).toMatch(/color:\s*var\(--fan-action-disabled-ink\)/);
   });

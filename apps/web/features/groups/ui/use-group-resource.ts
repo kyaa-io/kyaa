@@ -64,7 +64,7 @@ export function useGroupRequest() {
   }, { signal: input?.signal ?? undefined }), [auth.ready, authenticated, getAccessToken, locale, ownerKey, session.ready]);
   return { request, authenticated, ready: auth.ready && session.ready, ownerKey };
 }
-/** A value read in the last 30 seconds comes back at once; an older one comes back at once and is re-read behind it (`refreshing`).
+/** A value read in the last 60 seconds (5차 R21) comes back at once; an older one comes back at once and is re-read behind it (`refreshing`).
  * `loading` is true only while there has never been a value. `retry` and any write drop the stored value;
  * a mounted hook keeps showing its last value and re-reads behind it. A changed owner never keeps a value.
  * nameLocale:false reads the stored page name (management screens whose forms save the name back).
@@ -80,6 +80,9 @@ export function useGroupResource<T>(url: string | null, parse: (value: unknown) 
   const cacheKey = `${ownerKey}:${locale}:${nameLocale}:${url}`;
   const [snapshot,setSnapshot] = useState<{ key: string; version: number; epoch: string; data?: T; error: boolean; failure?:GroupRequestError }>();
   const [version,setVersion] = useState(0);
+  // R21: back on the tab or window after the value went stale, read again behind the shown value (never an error over it).
+  const [revisit,setRevisit] = useState(0);
+  const revisiting = useRef(false);
   const [openedUrl,setOpenedUrl] = useState(url);
   if (forEdit && openedUrl !== url) { setOpenedUrl(url); setSnapshot(undefined); }
   const epoch = useResourceEpoch(cacheKey);
@@ -92,20 +95,29 @@ export function useGroupResource<T>(url: string | null, parse: (value: unknown) 
   const storedValue = useRetainedResource(cacheKey, stored?.value);
   const cached = useMemo(()=>{ if(storedValue===undefined)return undefined; try{return {data:parse(storedValue)};}catch{return undefined;} },[parse,storedValue]);
   useEffect(()=>{
+    if (!ready || !url || forEdit) return;
+    const back=()=>{ if(document.visibilityState!=='visible')return; const entry=peekResource(latestCacheKey.current); if(entry&&!entry.fresh){revisiting.current=true;setRevisit(n=>n+1);} };
+    document.addEventListener('visibilitychange',back); window.addEventListener('focus',back);
+    return ()=>{ document.removeEventListener('visibilitychange',back); window.removeEventListener('focus',back); };
+  },[forEdit,ready,url]);
+  useEffect(()=>{
     if (!ready || !url) return;
     // `retry` always reads again, even when the screen moves to another address in the same update (a cursor reset).
     const last = handled.current;
     handled.current = { cacheKey, version, epoch };
     if (!forEdit && peekResource(cacheKey)?.fresh && last.version === version) return;
     // A re-read caused only by a write elsewhere must not replace a screen that already has a value with an error.
-    const behind = last.cacheKey === cacheKey && last.version === version && last.epoch !== epoch;
+    const behind = (last.cacheKey === cacheKey && last.version === version && last.epoch !== epoch) || revisiting.current;
+    revisiting.current = false;
     const controller = new AbortController();
     void shareResourceRead(cacheKey,signal=>request(url,{signal},"json",nameLocale),controller.signal).then(value=>{if(!controller.signal.aborted)setSnapshot({key,version,epoch,data:parse(value),error:false});}).catch(error=>{if(controller.signal.aborted)return;dropResource(cacheKey);const kept=behind?shown.current:undefined;setSnapshot(kept!==undefined?{key,version,epoch,data:kept,error:false}:{key,version,epoch,error:true,failure:error instanceof GroupRequestError?error:undefined});});
     return ()=>controller.abort();
-  },[cacheKey,epoch,forEdit,key,nameLocale,parse,ready,request,url,version]);
+  },[cacheKey,epoch,forEdit,key,nameLocale,parse,ready,request,url,version,revisit]);
   const current = snapshot?.key === key ? snapshot : undefined;
   const data = current ? current.data : cached?.data;
   const hasValue = data !== undefined;
   useLayoutEffect(() => { shown.current = data; });
-  return { ...auth, data, error: current?.error ?? false, failure:current?.failure, loading: !current && !cached && Boolean(url), refreshing: hasValue && ready && Boolean(url) && !stored?.fresh && (current?.version !== version || current.epoch !== epoch), retry };
+  // When the shown value was read (R21 `업데이트 HH:MM`); undefined until there is one.
+  const fetchedAt = hasValue && ready && url ? peekResource(cacheKey)?.storedAt : undefined;
+  return { ...auth, data, fetchedAt, error: current?.error ?? false, failure:current?.failure, loading: !current && !cached && Boolean(url), refreshing: hasValue && ready && Boolean(url) && !stored?.fresh && (current?.version !== version || current.epoch !== epoch), retry };
 }

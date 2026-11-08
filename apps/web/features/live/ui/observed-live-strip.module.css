@@ -1,5 +1,5 @@
 .section { margin-block:40px; color:var(--color-ink); }
-.header { display:flex; align-items:center; gap:8px; min-height:44px; margin-bottom:6px; --fan-heading-size:18px; --fan-heading-size-wide:20px; }
+.header { display:flex; align-items:center; gap:8px; min-height:44px; margin-bottom:6px; --fan-heading-size:var(--fan-section-size); --fan-heading-weight:var(--fan-section-weight); }
 .count { display:none; min-width:24px; height:24px; padding-inline:6px; place-items:center; border-radius:999px; background:var(--color-soft); color:var(--color-muted); font-size:12px; font-weight:650; font-variant-numeric:tabular-nums; }
 .pagination { display:flex; flex:none; align-items:center; gap:4px; margin-left:auto; color:var(--color-muted); font-size:12px; font-variant-numeric:tabular-nums; white-space:nowrap; }
 .pagination button { display:grid; width:44px; height:44px; padding:0; place-items:center; border:0; border-radius:999px; background:transparent; color:var(--color-ink); cursor:pointer; }

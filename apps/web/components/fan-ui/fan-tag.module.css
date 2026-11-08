@@ -14,5 +14,5 @@
 }
 .tag svg { flex: none; }
 .fan, .artist { background: #fff0f6; color: #ad1457; }
-.neutral { background: #f2f0f3; color: #5d5d5d; }
+.neutral { background: var(--color-soft); color: #5d5d5d; }
 .notice { border: 1px solid var(--color-line); background: transparent; color: var(--color-ink); line-height: 20px; }

@@ -2,14 +2,7 @@
   min-height: 100dvh;
   color: oklch(18% 0 0);
   background: #fff;
-  font-family:
-    "Pretendard Variable",
-    Pretendard,
-    -apple-system,
-    BlinkMacSystemFont,
-    system-ui,
-    sans-serif;
-}
+  }
 
 .page :where(a, button):focus-visible,
 .page input:focus-visible,
@@ -26,7 +19,7 @@
   min-height: 44px;
   padding: 0 16px;
   border-radius: 12px;
-  background: oklch(18% 0 0);
+  background: var(--color-accent);
   color: #fff;
   font-size: 14px;
   font-weight: 750;
@@ -192,7 +185,7 @@
   gap: 10px;
   border: 0;
   border-radius: 999rem;
-  background: oklch(18% 0 0);
+  background: var(--color-accent);
   color: #fff;
   font-size: 15px;
   font-weight: 800;
@@ -385,7 +378,7 @@
   height: 28px;
   place-items: center;
   border-radius: 999rem;
-  background: oklch(18% 0 0);
+  background: var(--color-accent);
   color: #fff;
   font-size: 12px;
   font-weight: 800;
@@ -629,8 +622,7 @@
   border-radius: 16px;
   color: oklch(18% 0 0);
   background: #fff;
-  font-family: inherit;
-}
+  }
 
 .dialog::backdrop {
   background: rgb(15 15 17 / 68%);
@@ -662,7 +654,7 @@
   margin: 4px auto 16px;
   place-items: center;
   border-radius: 50%;
-  background: oklch(18% 0 0);
+  background: var(--color-accent);
   color: #fff;
 }
 .dialogStatus svg {
@@ -794,7 +786,7 @@
   margin: 4px;
   border: 0;
   border-radius: 12px;
-  background: oklch(18% 0 0);
+  background: var(--color-accent);
   color: #fff;
   font-weight: 750;
   text-decoration: none;
@@ -941,7 +933,7 @@
     top: 0;
     width: 32px;
     height: 2px;
-    background: oklch(18% 0 0);
+    background: var(--color-accent);
     content: "";
   }
 }
@@ -978,7 +970,7 @@
 }
 
 /* Shared reservation controls retain the existing async and recovery flows. */
-.actionRail { border-color:var(--color-line); border-radius:var(--radius-collection); box-shadow:none; }
+.actionRail { border-color:var(--color-line); border-radius:var(--radius-card); box-shadow:none; }
 .titleGroup { margin-top:var(--space-3); }
 .scheduleGroup { margin-top:var(--space-5); padding-top:var(--space-4); border-top:1px solid var(--color-line-subtle); }
 .schedule { gap:var(--space-3); }

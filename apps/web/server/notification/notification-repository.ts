@@ -8,7 +8,8 @@ import type {
   NotificationPreferences,
 } from "../../features/notification/domain/notification-model";
 
-import { groupNotificationPathSchema } from "@/features/notification/domain/notification-model";
+import { groupNotificationPathSchema, notificationItemSchema } from "@/features/notification/domain/notification-model";
+import { openAppWebPath } from "@/server/app-link/open-app-redirect";
 
 type Db = Pick<SupabaseClient, "from" | "rpc">;
 type Row = Record<string, unknown>;
@@ -17,6 +18,8 @@ export interface NotificationRepository {
     appUserId: string;
     locale: "ko" | "en";
     recipientLinks?: boolean;
+    /** Adds actor, target and thumbnailUrl (/api/notifications?fields=actor). Without it the items keep their old keys. */
+    facts?: boolean;
   }): Promise<NotificationItem[]>;
   markRead(input: {
     appUserId: string;
@@ -76,6 +79,15 @@ export function artistNotificationText(kind: "artist_comment" | "artist_online",
     detail: text(payload.postTitle, ko ? "게시글" : "Post"),
   };
 }
+const factsSchema = notificationItemSchema.pick({ actor: true, target: true, thumbnailUrl: true }).required();
+/** The person, the subject and the picture get_owned_web_notifications_facts adds to a row. A malformed value is dropped, not the row. */
+export function notificationRowFacts(row: Row): Pick<NotificationItem, "actor" | "target" | "thumbnailUrl"> {
+  const pick = <K extends "actor" | "target" | "thumbnailUrl">(key: K, value: unknown) => {
+    const read = factsSchema.shape[key].safeParse(value ?? null);
+    return read.success ? read.data : null;
+  };
+  return { actor: pick("actor", row.actor), target: pick("target", row.target), thumbnailUrl: pick("thumbnailUrl", row.thumbnail_url) };
+}
 export function projectNotificationRow(
   row: Row,
   locale: "ko" | "en",
@@ -117,7 +129,7 @@ export function projectNotificationRow(
       return { id: String(row.id), kind, title: said.title, detail: said.detail, createdAt: String(row.created_at), readAt: row.read_at == null ? null : String(row.read_at), deepLink: String(row.deep_link), eventReview };
     }
     return { id: String(row.id), kind, title: copy[locale === "ko" ? 0 : 2], detail: copy[locale === "ko" ? 1 : 3], createdAt: String(row.created_at), readAt: row.read_at == null ? null : String(row.read_at), deepLink: !directWeb && ["fan_friend_request", "fan_dm_request", "fan_dm_message", "support_reply", "stamp_issued", "participation_deadline"].includes(kind)
-      ? `/open-app?returnTo=${encodeURIComponent(String(row.deep_link))}` : String(row.deep_link) };
+      ? openAppWebPath(`returnTo=${encodeURIComponent(String(row.deep_link))}`) : String(row.deep_link) };
   }
   const live = one(row.live_events);
   const benefit = one(row.benefits);
@@ -285,13 +297,14 @@ export function createNotificationRepository(
     };
   }
   return {
-    async list({ appUserId, locale, recipientLinks = false }) {
+    async list({ appUserId, locale, recipientLinks = false, facts = false }) {
       const drained = await db.rpc("fan_web_drain_notification_intents", { p_app_user_id: appUserId, p_limit: 100 });
       if (drained.error) throw new Error("notifications unavailable");
-      const { data, error } = await db.rpc("get_owned_web_notifications", { p_app_user_id: appUserId, p_locale: locale });
+      const { data, error } = await db.rpc(facts ? "get_owned_web_notifications_facts" : "get_owned_web_notifications", { p_app_user_id: appUserId, p_locale: locale });
       if (error) throw new Error("notifications unavailable");
-      return (data ?? []).map((row: unknown) =>
-        projectNotificationRow(row as Row, locale, recipientLinks),
+      return (data ?? []).map((row: unknown) => facts
+        ? { ...projectNotificationRow(row as Row, locale, recipientLinks), ...notificationRowFacts(row as Row) }
+        : projectNotificationRow(row as Row, locale, recipientLinks),
       );
     },
     async markRead({ appUserId, notificationId }) {
