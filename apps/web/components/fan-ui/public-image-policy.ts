@@ -35,3 +35,8 @@ export function creatorCropScale(slug: string): number {
 export function homeHeroSizes(): string {
   return "(min-width: 1440px) 952px, (min-width: 1280px) calc(100vw - 488px), (min-width: 1024px) calc(100vw - 448px), (min-width: 768px) calc(100vw - 64px), calc(100vw - 32px)";
 }
+
+/** The GGGI campaign art fills 46% of the hero slot from 768px (managed-home-banner.module.css); below it, the full one column. */
+export function homeHeroCampaignSizes(): string {
+  return "(min-width: 1440px) 438px, (min-width: 1280px) calc((100vw - 488px) * 0.46), (min-width: 1024px) calc((100vw - 448px) * 0.46), (min-width: 768px) calc((100vw - 64px) * 0.46), calc(100vw - 32px)";
+}
