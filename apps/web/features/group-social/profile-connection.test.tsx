@@ -48,6 +48,12 @@ describe('Pencil profile connection',()=>{
   mock.resource.mockReturnValue({error:true,failure:{status:404,code:'SOCIAL_NOT_FOUND'}});render(<ProfileConnectionPanel locale={locale} identity='나' initialToken={token} onClose={()=>{}}/>);
   const alert=await screen.findByRole('alert');expect(alert).toHaveTextContent(profileUnreachableCopy(locale));expect(alert).not.toHaveTextContent(waveFriendsCopy(locale).invalidQr);expect(screen.queryByRole('button',{name:waveFriendsCopy(locale).retry})).toBeNull();expect(profileUnreachableCopy(locale).length).toBeGreaterThan(10);
  });
+ it('hides the "friend once they accept" note while the profile cannot be opened, and shows it for a real profile',async()=>{
+  mock.resource.mockReturnValue({error:true,failure:{status:404,code:'SOCIAL_NOT_FOUND'}});const view=render(<ProfileConnectionPanel locale='ko' identity='나' initialToken={token} onClose={()=>{}}/>);
+  expect(await screen.findByRole('alert')).toHaveTextContent(profileUnreachableCopy('ko'));expect(screen.queryByText(profileConnectionCopy('ko').acceptance)).toBeNull();expect(screen.getByRole('button',{name:profileConnectionCopy('ko').again})).toBeInTheDocument();
+  view.unmount();mock.resource.mockReturnValue({data:peer});render(<ProfileConnectionPanel locale='ko' identity='나' initialToken={token} onClose={()=>{}}/>);
+  await screen.findByText('하늘');expect(screen.getByText(profileConnectionCopy('ko').acceptance)).toBeInTheDocument();
+ });
  it('keeps the retry for failures that are not a missing link',async()=>{
   mock.resource.mockReturnValue({error:true,failure:{status:500,code:'INTERNAL'}});render(<ProfileConnectionPanel locale='ko' identity='나' initialToken={token} onClose={()=>{}}/>);expect(await screen.findByRole('alert')).toHaveTextContent(copy.invalidQr);fireEvent.click(screen.getByRole('button',{name:copy.retry}));expect(mock.retry).toHaveBeenCalledOnce();
  });

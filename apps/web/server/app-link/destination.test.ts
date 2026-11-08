@@ -8,7 +8,7 @@ describe("app-link destination", () => {
     for (const path of [`/support/${id}`, `/activities/${id}`]) {
       expect(resolveAppLinkDestination(path)).toMatchObject({ valid: true, returnTo: path, webReturnTo: "/" });
     }
-    expect(resolveAppLinkDestination("/my/community-stamps")).toMatchObject({ valid: true, returnTo: "/my/community-stamps", webReturnTo: "/my#community-stamps" });
+    expect(resolveAppLinkDestination("/my/community-stamps")).toMatchObject({ valid: true, returnTo: "/my/community-stamps", webReturnTo: "/passports" });
     for (const prefix of ["support", "activities", "stamps"]) {
       expect(safeAppReturnTo(`/${prefix}/------------------------------------`)).toBeNull();
       expect(safeAppReturnTo(`/${prefix}/${id}?token=private`)).toBeNull();

@@ -70,7 +70,7 @@ const copy = {
     title: "MY", profileSummary: "내 팬 활동",
     
     login: "로그인하기", loading: "팬 활동을 불러오는 중이에요.", error: "팬 활동을 불러오지 못했어요.", retry: "다시 시도",
-    creators: "내 최애", creatorsHelp: "크리에이터별 패스포트와 응모권 잔액을 확인하세요.",
+    creators: "내 최애", creatorsHelp: "크리에이터별 패스포트와 모든 크리에이터에서 함께 쓰는 응모권을 확인하세요.",
     noCreators: "아직 등록한 최애가 없어요.", findCreator: "최애 찾기", live: "내 예약 LIVE", upcoming: "예약 완료",
     history: "지난 LIVE", noLive: "예약한 LIVE가 없어요.", browseLive: "LIVE 둘러보기", rewards: "받은 혜택",
     collection: "최근 수집",
@@ -91,7 +91,7 @@ const copy = {
     title: "MY", profileSummary: "My fan activity",
     
     login: "Sign in", loading: "Loading your fan activity.", error: "We couldn’t load your fan activity.", retry: "Try again",
-    creators: "My favorites", creatorsHelp: "Check each Fan Passport and its raffle ticket balance.",
+    creators: "My favorites", creatorsHelp: "Check each Fan Passport and your raffle tickets, which are shared across all creators.",
     noCreators: "No favorites added yet.", findCreator: "Find favorites", live: "My reserved LIVE", upcoming: "Reserved",
     history: "Past LIVE", noLive: "No reserved LIVE events.", browseLive: "Browse LIVE", rewards: "My rewards",
     collection: "Recent collection",

@@ -73,8 +73,8 @@ export function resolveAppLinkDestination(value: string | string[] | null | unde
   return { returnTo, appUrl: url.toString(), valid: safe !== null, kind: destinationKind(path),
     ...(/^\/c\/([a-z0-9]+(?:-[a-z0-9]+)*)\/clips\/[0-9a-f-]{36}$/i.test(path) ? { webReturnTo: path.split("/").slice(0,3).join("/") } : {}),
     ...(/^\/(?:participation|people|messages|support|activities)\//.test(path) ? { webReturnTo: "/" } : {}),
-    // The stamp shelf has no page of its own on the web; it is the stamp section of MY.
-    ...(path === "/my/community-stamps" ? { webReturnTo: "/my#community-stamps" } : {}) };
+    // The stamp shelf has no page of its own on the web, and MY draws no #community-stamps section. The passports show the stamps (per creator).
+    ...(path === "/my/community-stamps" ? { webReturnTo: "/passports" } : {}) };
 }
 
 function appStoreUrl(value: string | undefined) {

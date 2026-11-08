@@ -9396,8 +9396,8 @@
     "id": "features/my/ui/my-screen:copy.creators"
   },
   "m6c62da6f7772": {
-    "en": "Check each Fan Passport and its raffle ticket balance.",
-    "ko": "크리에이터별 패스포트와 응모권 잔액을 확인하세요.",
+    "en": "Check each Fan Passport and your raffle tickets, which are shared across all creators.",
+    "ko": "크리에이터별 패스포트와 모든 크리에이터에서 함께 쓰는 응모권을 확인하세요.",
     "source": "features/my/ui/my-screen",
     "id": "features/my/ui/my-screen:copy.creatorsHelp"
   },
