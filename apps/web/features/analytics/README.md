@@ -48,3 +48,12 @@
 - GA4 이름 대응은 `domain/funnel-event.ts`의 `GA4_EVENT_NAME`(funnel-audit `ga4-plan.md` 6절)을 따른다.
 
 `read_admin_web_traffic`·`read_admin_funnel_analytics`는 service_role만 실행하며 관리자를 DB에서 다시 확인한다. 퍼널 4단계는 같은 UTC 기간의 단계별 수이고 한 코호트를 따라간 전환이 아니다: 방문 세션(`page_view` 세션), 가입(`app_users` 생성), 첫 팬 인증(회원의 첫 패스포트 발급), 첫 활동(출석·팬게시판 글·모임 글·댓글·응원·로그인 공유 중 회원의 첫 기록). 보조 지표 `visitedMembers`는 기간 안에 로그인 상태로 방문한 회원 중 같은 기간에 가입·첫 인증·첫 활동한 수다. 방문 세션 수집이 기간 중간에 시작됐으면 가입/방문 비율은 표시하지 않는다. 검증: `supabase/tests/funnel_events.sql`, 비슈퍼 적용 `supabase/tests/funnel_nonsuper_apply.sh`(dev의 byus_admin 형태, 소유 함수의 FORCE RLS 읽기), `features/analytics/domain/funnel-*.test.ts`, `server/admin/web-analytics-route.test.ts`.
+
+## GA4 (동의 뒤에만)
+
+- 측정 ID: 실행 시 환경값 `GA4_MEASUREMENT_ID`(AWS 공개 허용 목록, `runtimeEnvironment`가 `NEXT_PUBLIC_GA4_MEASUREMENT_ID`로 매핑). 형식이 `G-…`가 아니면 없는 것으로 본다. 없으면 동의 바·gtag·CSP 허용 모두 0. 배포 스크립트는 dev에 운영 스트림(G-HPXFR0PQP0), 운영에 dev 스트림(G-WKSF9KP5QW)을 넣으면 거부한다.
+- 동의: 화면 하단 한 줄 바(`GoogleAnalytics`)에서 `허용`·`거부`. 선택은 이 브라우저에 1년(`kyaa.analytics-consent.v1`), 계정과 묶지 않는다. 거부·미선택이면 Google로 가는 요청 0. 푸터 "방문 통계 설정"으로 다시 열어 바꾼다. 관리자·운영자 화면에는 바를 띄우지 않는다.
+- gtag: 허용한 뒤에만 `gtag.js`를 넣는다. consent 기본 denied → analytics_storage만 granted. 광고 저장·신호·개인화는 끈다. 자동 page_view는 끄고(`send_page_view: false`) 경로가 바뀔 때 1번 보낸다. 주소는 origin + 정규화 경로(UUID·숫자·긴 토큰·짧은 링크 토큰 → `:id`/`:token`, 쿼리·해시 없음), 제목은 화면 종류, 참조는 외부 사이트 origin만, 첫 page_view에만.
+- 이벤트와 파라미터는 `domain/ga4.ts`의 `GA4_EVENT_PARAMETERS` 허용 목록만 보낸다(회원·크리에이터·글 식별자, 자유 문구 없음). 자체 원장 이름과의 대응은 `GA4_EVENT_NAME`.
+- CSP: `awsStorageContentSecurityPolicy({ ga4 })`가 ID가 있는 환경에서만 `script-src https://www.googletagmanager.com`, `connect-src https://*.google-analytics.com https://*.analytics.google.com https://www.googletagmanager.com`을 연다(이미지는 기존 `img-src https:`). 이 CSP는 `AWS_STORAGE_ENABLED=true`인 AWS 응답에 적용된다.
+- GA 관리 화면에서 향상된 측정의 "브라우저 기록 이벤트 기반 페이지 변경·아웃바운드 클릭·사이트 검색·양식 상호작용"을 꺼야 중복·수집 과다가 없다(코드로 끌 수 없음).

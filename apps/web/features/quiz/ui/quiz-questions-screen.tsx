@@ -29,6 +29,7 @@ import {
   withRequestDeadline,
 } from "@/features/reliability/client/request-deadline";
 import styles from "./quiz-questions-screen.module.css";
+import { sendGa4Event } from "@/features/analytics/client/ga4-client";
 
 type ScreenState =
   | { kind: "loading" }
@@ -312,6 +313,8 @@ export function QuizQuestionsScreen({
         return await readJson(response) as { result?: unknown };
       });
       const result = parseQuizSubmitProjection(body.result);
+      sendGa4Event("fan_verification_submit", { outcome: result.attempt.status, score: result.attempt.score });
+      if (result.issuance) sendGa4Event("passport_issued");
       if (generation !== requestGeneration.current) return;
       const destination: string = result.issuance
         ? String(resultPath(result.attempt.id, result.issuance.passportId))

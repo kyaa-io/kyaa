@@ -40,6 +40,7 @@ import { managementCopy } from "@/features/groups/ui/management-copy";
 import { registrationReward } from "../domain/registration-reward";
 import { announceMissionSkip } from "./mission-skip-notice";
 import styles from "@/features/content-safety/ui/content.module.css";
+import { sendGa4Event } from "@/features/analytics/client/ga4-client";
 
 type PostComposerProps = { board?: boolean; introduction?: boolean; program?: WaveProgramKey; slug: string; locale: AppLocale; post?: FanPost; onSaved: (reward?: { points: number; stamps?: number }) => void; onCancel?: () => void; featured?: boolean; autoFocus?: boolean; allowMembers?: boolean; /** Board write form: its heading, with the back action above it. */ heading?: string; headingId?: string };
 export function PostComposer(props:PostComposerProps){const auth=useGroupRequest();return <PostComposerForOwner key={`${auth.ownerKey}:${props.slug}:${props.post?.id??'new'}`} {...props}/>;}
@@ -161,7 +162,7 @@ function PostComposerForOwner({ board = false, introduction = false, program, sl
     if (!attempt.current || attempt.current.snapshot !== snapshot) attempt.current = { snapshot, key: crypto.randomUUID() };
     const result = post ? await mutation.request(`/api/posts/${post.id}`, "PATCH", { ...value, expectedRevision: post.revision })
       : await mutation.request(program ? `/api/celebrities/${slug}/programs/${program}/posts` : `/api/celebrities/${slug}/posts`, "POST", { ...value, idempotencyKey: attempt.current.key });
-    if (result) { setBody(""); setAssets([]); setExistingVideo(null); if (board) rich.reset(); videoUploads.items.forEach(item => videoUploads.markUsed(item.key)); attempt.current = null; if (!post) notifyFanActivityUpdated(session.ownerId ?? auth.user?.id); if (!post) announceMissionSkip(locale, "post", result); onSaved(post ? undefined : registrationReward(result)); }
+    if (result) { setBody(""); setAssets([]); setExistingVideo(null); if (board) rich.reset(); videoUploads.items.forEach(item => videoUploads.markUsed(item.key)); attempt.current = null; if (!post) notifyFanActivityUpdated(session.ownerId ?? auth.user?.id); if (!post) sendGa4Event("post_create", { board: "fan" }); if (!post) announceMissionSkip(locale, "post", result); onSaved(post ? undefined : registrationReward(result)); }
   }
   const requestCancel = () => { const initialTitle = board ? post?.body.split("\n")[0] ?? "" : ""; const initialBody = board ? post?.body.split("\n").slice(1).join("\n") ?? "" : post?.body ?? ""; const dirty = title !== initialTitle || (board ? rich.dirty : body !== initialBody) || visibility !== (post?.visibility ?? "public") || JSON.stringify(assets.map(a => a.id)) !== JSON.stringify((post?.assets ?? []).map(a => a.id)) || hasVideo !== Boolean(post?.video); if (dirty) setDiscardOpen(true); else onCancel?.(); };
   const discardDialog = discardOpen && <SourceDiscardDialog sourceId="RS2uz" locale={locale} pending={busy} onContinue={() => setDiscardOpen(false)} onDiscard={() => { setDiscardOpen(false); onCancel?.(); }} />;
