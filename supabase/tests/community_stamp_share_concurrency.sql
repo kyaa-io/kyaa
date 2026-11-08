@@ -1,4 +1,11 @@
 -- Committed fixtures for independent psql sessions in a disposable clean replay.
+-- 20261215070000: share link opening payouts are off by default (opening only recorded). These races check the legacy
+-- visit payout lane, so the disposable replay turns it on here, after asserting the default; the cardinality checks below stay
+-- (one visit, one share stamp, one mint job per owner under concurrent opens).
+do $$ begin
+  if public.share_visit_payouts_enabled() then raise exception 'share link opening payouts are not off by default'; end if;
+end $$;
+update public.fan_share_settings set visit_payouts=true where singleton;
 insert into public.celebrities(id,slug,status,image_url,published_at,roles,primary_role)
 values('fc130000-0000-4000-8000-000000000001','community-share-race','draft',
   '/share-race.webp',null,'{artist}','idol');

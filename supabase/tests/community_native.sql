@@ -21,6 +21,8 @@ select code,'fa140000-0000-4000-8000-000000000001',false,1 from unnest(array[7,8
 insert into public.fan_action_verified_creators(binding_id,creator_id,verified_block_number,verified_block_hash,verified_at)
 values('fa140000-0000-4000-8000-000000000001','fc130000-0000-4000-8000-000000000001',1,'0x'||repeat('6',64),now());
 -- Prepare leaves share legacy and available until the explicit T2 transaction.
+-- (community_stamp_share_concurrency.sql above turned the legacy share link opening payout on for this disposable replay.)
+select pg_temp.assert(public.share_visit_payouts_enabled(),'legacy share link opening payout is not on for the cutover fixture');
 select public.visit_community_stamp_share_link('fc130000-0000-4000-8000-000000000021',token)
 from public.community_share_race_tokens where owner_id='fc130000-0000-4000-8000-000000000011';
 select pg_temp.assert(exists(select 1 from public.community_stamps where app_user_id='fc130000-0000-4000-8000-000000000011' and kind='share' and blockchain_job_id is not null),'prepare stopped legacy share');
