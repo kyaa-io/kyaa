@@ -71,9 +71,10 @@ export function useStanRaffles(locale: AppLocale, slug: string | null) {
 }
 
 /** The favorite's row in the public creator ranking (top 20); null when the read is done and the favorite is not in it. */
-export function useStanRank(locale: AppLocale, slug: string | null): { loading: boolean; row: HomeCreatorRankingRow | null } {
+/** `comparable`: the home ranking has a previous day to compare with. Without it the rank change is not drawn (same rule as the home card). */
+export function useStanRank(locale: AppLocale, slug: string | null): { loading: boolean; row: HomeCreatorRankingRow | null; comparable: boolean } {
   const resource = useGroupResource(slug ? `/api/rankings/home?kind=creators&locale=${locale}` : null, parseCreators);
-  return { loading: resource.loading, row: resource.data?.rows.find(row => row.slug === slug) ?? null };
+  return { loading: resource.loading, row: resource.data?.rows.find(row => row.slug === slug) ?? null, comparable: resource.data?.comparable === true };
 }
 
 function RaffleDate({ raffle, status, locale }: { raffle: Raffle; status: Raffle["status"]; locale: AppLocale }) {
@@ -182,7 +183,7 @@ export function StanCheer({ locale, bias, guest, hearts }: { locale: AppLocale; 
     : <Link className={styles.who} href={`/${encodeURIComponent(favorite.slug)}?locale=${locale}` as Route}>
       {selected ? <img className={styles.avatar} src={selected.image} alt="" width={40} height={40} style={selected.imagePosition ? { objectPosition: selected.imagePosition } : undefined} /> : <span className={styles.avatarIcon}><Heart size={20} aria-hidden="true" /></span>}
       <span className={styles.whoText}><span className={styles.name}>{favorite.name}</span>
-        <span className={styles.rank}>{rank.loading ? <FanSkeleton width={120} height={16} /> : rank.row ? <>{t(locale, "cheerRank", [rank.row.rank])}<RankDelta delta={rank.row.delta} locale={locale} /></> : t(locale, "cheerRankOut")}</span></span>
+        <span className={styles.rank}>{rank.loading ? <FanSkeleton width={120} height={16} /> : rank.row ? <>{t(locale, "cheerRank", [rank.row.rank])}{rank.comparable ? <RankDelta delta={rank.row.delta} locale={locale} /> : null}</> : t(locale, "cheerRankOut")}</span></span>
     </Link>;
   const heartIcon = <Heart size={20} strokeWidth={1.75} className={styles.heart} aria-hidden="true" />;
   return <section className={styles.section} id="stan-cheer" tabIndex={-1} aria-labelledby="stan-cheer-title">

@@ -34,7 +34,8 @@ const pickupPolicy={version:'test-pickup-v1',method:'on_site_pickup',shippingCou
 const creatorRaffle=(n:number,status:string,opens:number,closes:number)=>({id:uid(300+n),benefitId:uid(400+n),title:`Gift ${n}`,summary:'s',imageUrl:null,winnerQuantity:3,status,entryOpensAt:iso(opens),entryClosesAt:iso(closes),resultsPublishedAt:null,fulfillmentMethod:'on_site_pickup',perFanTicketLimit:null,requiresFanVerification:true,fulfillmentPolicy:pickupPolicy});
 const allRaffles=()=>[creatorRaffle(3,'closed',-10*day,-2*day),creatorRaffle(2,'preparing',3*day,10*day),creatorRaffle(1,'open',-day,7*day),creatorRaffle(4,'cancelled',-day,7*day)];
 let creatorRaffles:unknown[]=[],homeRows:unknown[]=[],roadmapBody:unknown=null;
-beforeEach(()=>{creatorRaffles=allRaffles();homeRows=[{rank:3,slug:'bias-x',name:'Bias X',imageUrl:null,score:125,hearts:795,challenge:false,delta:1,weekGain:null}];roadmapBody=null;bias.value={status:'error',options:[],selected:null,unverified:null,select:()=>{},retry:()=>{}};historyFails.value=false;resetDukjilCatalogCache();fail=false;failCreators=false;empty=false;invalidCursor=false;joinedCount=0;rankCount=0;catalogOn=true;spotlightCount=0;spotlightFails=false;rankMine=null;requests.length=0;auth.authenticated=true;session.ownerId='owner-a';session.generation=0;
+let homeComparable=true;
+beforeEach(()=>{homeComparable=true;creatorRaffles=allRaffles();homeRows=[{rank:3,slug:'bias-x',name:'Bias X',imageUrl:null,score:125,hearts:795,challenge:false,delta:1,weekGain:null}];roadmapBody=null;bias.value={status:'error',options:[],selected:null,unverified:null,select:()=>{},retry:()=>{}};historyFails.value=false;resetDukjilCatalogCache();fail=false;failCreators=false;empty=false;invalidCursor=false;joinedCount=0;rankCount=0;catalogOn=true;spotlightCount=0;spotlightFails=false;rankMine=null;requests.length=0;auth.authenticated=true;session.ownerId='owner-a';session.generation=0;
  vi.stubGlobal('fetch',vi.fn(async(url:string,init?:RequestInit)=>{
   expect(init?.method??'GET').toBe('GET');requests.push(url);
   if(url==='/api/me/wallet')return Response.json(wallet);
@@ -44,7 +45,7 @@ beforeEach(()=>{creatorRaffles=allRaffles();homeRows=[{rank:3,slug:'bias-x',name
   if(url.startsWith('/api/groups?mine=joined&limit=50'))return Response.json({items:joined(joinedCount),nextCursor:null});
   if(url.startsWith('/api/me/attendance?creators='))return Response.json({kstDate:'2026-11-06',items:joined(joinedCount).map((page,i)=>({celebrityId:page.celebrityId,attendedToday:i===0,streak:i===0?3:0,nextBonusIn:4,hasPassport:true}))});
   if(/^\/api\/celebrities\/[^/]+\/raffles/.test(url))return Response.json({raffles:creatorRaffles});
-  if(url.startsWith('/api/rankings/home'))return Response.json({day:'2026-11-08',computedAt:'2026-11-08T00:00:00Z',comparable:true,weekGainDays:null,rows:homeRows});
+  if(url.startsWith('/api/rankings/home'))return Response.json({day:'2026-11-08',computedAt:'2026-11-08T00:00:00Z',comparable:homeComparable,weekGainDays:null,rows:homeRows});
   if(url.startsWith('/api/benefits?celebrity='))return Response.json({benefits:[]});
   if(/^\/api\/me\/passports\/[^/]+\/roadmap/.test(url))return Response.json(roadmapBody);
   if(url.startsWith('/api/rankings/creators'))return Response.json({period:'week',periodStart:'2026-11-02',computedAt:'2026-11-06T00:00:00Z',rows:rankRows(rankCount)});
@@ -442,4 +443,15 @@ it('with no session cookie the signed-out heart and wallet are drawn before the 
   expect(document.querySelector('[data-wallet-card] [aria-busy="true"]')).toBeNull();
   expect(screen.getAllByRole('img',{name:'로그인 후 확인'}).length).toBeGreaterThan(0);
  } finally { auth.ready = true; }
+});
+
+it('4차: the cheer card draws the rank change only when the home ranking has a day to compare with (no dash otherwise)',async()=>{
+ withFavorite();homeComparable=false;render(<GroupBenefitsScreen locale='ko'/>);
+ const card=await screen.findByRole('region',{name:'최애 응원'});await within(card).findByText('크리에이터 순위 3위');
+ expect(card.querySelector('[data-direction]')).toBeNull();expect(card.textContent).not.toContain('—');
+});
+it('4차: with a day to compare, the cheer card shows the rank change beside the rank',async()=>{
+ withFavorite();render(<GroupBenefitsScreen locale='ko'/>);
+ const card=await screen.findByRole('region',{name:'최애 응원'});await within(card).findByText('크리에이터 순위 3위');
+ await waitFor(()=>expect(card.querySelector('[data-direction="up"]')).not.toBeNull());
 });
