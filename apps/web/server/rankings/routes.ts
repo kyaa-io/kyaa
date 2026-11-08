@@ -185,7 +185,7 @@ export function createRankingsHandlers(deps: RankingsDependencies) {
     }),
     challenge: (_request: Request, idOrSlug: string) => run(async () => {
       const id = await celebrity(idOrSlug);
-      const raw = await deps.rpc("read_jjinfan_challenge", { p_celebrity: id });
+      const raw = await deps.rpc("read_jjinfan_gauge", { p_celebrity: id });
       return Response.json(checked(jjinfanChallengeSchema, raw), { headers: publicHeaders });
     }),
   };

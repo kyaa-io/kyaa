@@ -11,7 +11,7 @@ export async function readSharedJjinfanChallenge(slug: string, deps: { resolveCr
   if (!creatorSlugSchema.safeParse(slug).success) return null;
   const id = await deps.resolveCreatorId(slug);
   if (!id) return null;
-  const parsed = jjinfanChallengeSchema.safeParse(await deps.rpc("read_jjinfan_challenge", { p_celebrity: id }));
+  const parsed = jjinfanChallengeSchema.safeParse(await deps.rpc("read_jjinfan_gauge", { p_celebrity: id }));
   if (!parsed.success || !parsed.data.campaign) return null;
   return { ...parsed.data, campaign: parsed.data.campaign };
 }
@@ -24,7 +24,7 @@ export async function readJjinfanSeed(slug: string, deps: { resolveCreatorId(slu
     if (!creatorSlugSchema.safeParse(slug).success) return undefined;
     const id = await deps.resolveCreatorId(slug);
     if (!id) return undefined;
-    const parsed = jjinfanChallengeSchema.safeParse(await deps.rpc("read_jjinfan_challenge", { p_celebrity: id }));
+    const parsed = jjinfanChallengeSchema.safeParse(await deps.rpc("read_jjinfan_gauge", { p_celebrity: id }));
     return parsed.success ? parsed.data : undefined;
   } catch { return undefined; }
 }

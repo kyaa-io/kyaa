@@ -49,7 +49,7 @@ begin
  if jsonb_typeof(public.read_jjinfan_challenge(c)->'campaign')<>'null' then raise exception 'off still reads'; end if;
 
  foreach r in array array['"anon"'::jsonb,'"authenticated"'::jsonb] loop
-  if has_function_privilege(r#>>'{}','public.set_jjinfan_challenge_campaign(uuid,uuid,uuid,uuid,boolean,text,text)','execute') or has_function_privilege(r#>>'{}','public.list_jjinfan_challenge_campaigns(uuid,uuid)','execute') or has_table_privilege(r#>>'{}','public.jjinfan_challenge_campaigns','select') then raise exception 'public grant for %',r; end if;
+  if has_function_privilege(r#>>'{}','public.set_jjinfan_challenge_campaign(uuid,uuid,uuid,uuid,boolean,text,text,date,boolean)','execute') or has_function_privilege(r#>>'{}','public.read_jjinfan_gauge(uuid)','execute') or has_function_privilege(r#>>'{}','public.list_jjinfan_challenge_campaigns(uuid,uuid)','execute') or has_table_privilege(r#>>'{}','public.jjinfan_challenge_campaigns','select') then raise exception 'public grant for %',r; end if;
  end loop;
  if has_table_privilege('service_role','public.jjinfan_challenge_campaigns','select') then raise exception 'service role reads the table directly'; end if;
 end $$;
