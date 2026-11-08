@@ -36,7 +36,9 @@ export function NotificationPanel({ open, onOpenChange, locale, anchorRef }: Not
   const favoriteName = useFavoriteName(locale);
   const pathname = usePathname();
   const search = useSearchParams();
-  const returnTo = `${pathname}${search.size ? `?${search.toString()}` : ""}`;
+  // useSearchParams can be null outside the app router (and in screens that mock it); the return path then has no query.
+  const query = search?.toString() ?? "";
+  const returnTo = `${pathname ?? "/"}${query ? `?${query}` : ""}`;
   const c = inboxCopy(locale);
   const close = () => onOpenChange(false);
   if (!wide) return <FanSheet open={open} onOpenChange={onOpenChange} title={c.title} closeLabel={c.close} side="bottom" snap="full" handle={false} className={styles.sheet}>
