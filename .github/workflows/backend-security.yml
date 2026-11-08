@@ -365,9 +365,58 @@ jobs:
       - run: npm run security:patch
       - run: npm run build --workspace @byus/worker
       - run: sudo apt-get update && sudo apt-get install -y postgresql ripgrep
-      - uses: foundry-rs/foundry-toolchain@v1
+      - name: Restore the pinned Foundry binaries
+        id: foundry-cache
+        uses: actions/cache@v4
         with:
-          version: stable
+          path: |
+            ~/.foundry/bin
+            ~/.foundry/versions
+          key: foundry-${{ runner.os }}-v1.9.0
+      - name: Use the cached Foundry
+        if: steps.foundry-cache.outputs.cache-hit == 'true'
+        run: echo "$HOME/.foundry/bin" >> "$GITHUB_PATH"
+      - name: Install Foundry v1.9.0 (attempt 1)
+        id: foundry1
+        if: steps.foundry-cache.outputs.cache-hit != 'true'
+        continue-on-error: true
+        uses: foundry-rs/foundry-toolchain@v1
+        with:
+          version: v1.9.0
+      - name: Wait 10s before retrying the Foundry download
+        if: steps.foundry-cache.outputs.cache-hit != 'true' && steps.foundry1.outcome == 'failure'
+        run: sleep 10
+      - name: Install Foundry v1.9.0 (attempt 2)
+        id: foundry2
+        if: steps.foundry-cache.outputs.cache-hit != 'true' && steps.foundry1.outcome == 'failure'
+        continue-on-error: true
+        uses: foundry-rs/foundry-toolchain@v1
+        with:
+          version: v1.9.0
+      - name: Wait 20s before retrying the Foundry download
+        if: steps.foundry-cache.outputs.cache-hit != 'true' && steps.foundry2.outcome == 'failure'
+        run: sleep 20
+      - name: Install Foundry v1.9.0 (attempt 3)
+        id: foundry3
+        if: steps.foundry-cache.outputs.cache-hit != 'true' && steps.foundry2.outcome == 'failure'
+        continue-on-error: true
+        uses: foundry-rs/foundry-toolchain@v1
+        with:
+          version: v1.9.0
+      - name: Wait 40s before retrying the Foundry download
+        if: steps.foundry-cache.outputs.cache-hit != 'true' && steps.foundry3.outcome == 'failure'
+        run: sleep 40
+      - name: Install Foundry v1.9.0 (attempt 4)
+        id: foundry4
+        if: steps.foundry-cache.outputs.cache-hit != 'true' && steps.foundry3.outcome == 'failure'
+        continue-on-error: false
+        uses: foundry-rs/foundry-toolchain@v1
+        with:
+          version: v1.9.0
+      - name: Require the pinned Foundry
+        run: |
+          forge --version
+          forge --version | grep -F 'Version: 1.9.0'
       - run: forge test --root contracts
       - name: Verify immediate-registration deployment plan guards
         run: |

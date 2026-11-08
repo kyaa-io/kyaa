@@ -135,3 +135,15 @@ test('daily critical checks reuse all suites and fail on any missing result', ()
   assert.match(backend.jobs['api-runtime'].steps.map(step => step.run || '').join('\n'), /server\/fanpage\/routes.test.ts/);
   assert.match(readFileSync('scripts/verify-backend-security-behavior.sh', 'utf8'), /groups_content_release.sql/);
 });
+
+test('Foundry install is pinned, cached by version and retried with 10, 20 and 40 second waits', () => {
+  const steps = backend.jobs.blockchain.steps;
+  const installs = steps.filter(step => step.uses === 'foundry-rs/foundry-toolchain@v1');
+  assert.equal(installs.length, 4);
+  for (const step of installs) assert.equal(step.with.version, 'v1.9.0');
+  assert.deepEqual(installs.map(step => step['continue-on-error']), [true, true, true, false]);
+  const cache = steps.find(step => step.id === 'foundry-cache');
+  assert.match(cache.with.key, /v1\.9\.0/);
+  assert.deepEqual(steps.filter(step => /^sleep \d+$/.test(step.run ?? '')).map(step => step.run), ['sleep 10', 'sleep 20', 'sleep 40']);
+  assert.ok(steps.findIndex(step => step.run === 'forge test --root contracts') > steps.findIndex(step => step.name === 'Require the pinned Foundry'));
+});

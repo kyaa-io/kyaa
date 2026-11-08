@@ -8,7 +8,8 @@ COPY apps/web/package.json apps/web/package.json
 COPY apps/worker/package.json apps/worker/package.json
 COPY tools ./tools
 COPY scripts/apply-security-patches.mjs scripts/apply-security-patches.mjs
-RUN npm ci --include=dev
+# ffmpeg-static downloads its binary from GitHub releases during npm ci; retry the whole install (10, 20, 40 s) on a transient failure. Its own integrity check still runs each attempt.
+RUN d=10; for n in 1 2 3 4; do npm ci --include=dev && exit 0; [ "$n" = 4 ] && exit 1; echo "npm ci failed (attempt $n of 4); retrying in ${d}s" >&2; sleep "$d"; d=$((d*2)); done
 COPY . .
 RUN node scripts/aws-release-media-build.mjs
 RUN npm prune --omit=dev

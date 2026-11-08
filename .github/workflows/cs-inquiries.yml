@@ -43,7 +43,14 @@ jobs:
       - name: Local SQL, authority, concurrency and browser flow
         run: bash scripts/verify-cs-local.sh
       - name: Install the approved media runtime for the ordinary build
-        run: npm rebuild ffmpeg-static --foreground-scripts
+        run: |
+          d=10
+          for n in 1 2 3 4; do
+            npm rebuild ffmpeg-static --foreground-scripts && exit 0
+            [ "$n" = 4 ] && exit 1
+            echo "ffmpeg-static download failed (attempt $n of 4); retrying in ${d}s" >&2
+            sleep "$d"; d=$((d*2))
+          done
       # Next's build typecheck took 6.2 of this job's 8.6 minutes from scratch. Its build info lets it re-check only what changed;
       # a missing or unusable file means a full check, and backend-security still runs the full `npm run typecheck` on every push.
       - name: Restore the typecheck build info of an earlier ordinary build

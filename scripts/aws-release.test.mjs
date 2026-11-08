@@ -75,7 +75,9 @@ test('workflow uses environment OIDC, a single dev build and promoted artifacts 
 
 test('web and media Docker builds can reuse the same dependency installation layer', async () => {
  const [web, media] = await Promise.all(['Dockerfile.aws','Dockerfile.media.aws'].map(file => readFile(file, 'utf8')));
- const dependencyStage = dockerfile => { assert(dockerfile.includes('RUN npm ci --include=dev')); return dockerfile.replace('FROM scratch AS nextcache\n\n', '').split('\n').filter(line => !line.startsWith('#')).join('\n').split('RUN npm ci --include=dev')[0]; };
+ const install = 'RUN d=10; for n in 1 2 3 4; do npm ci --include=dev && exit 0;';
+ const dependencyStage = dockerfile => { assert(dockerfile.includes(install)); return dockerfile.replace('FROM scratch AS nextcache\n\n', '').split('\n').filter(line => !line.startsWith('#')).join('\n').split(install)[0]; };
+ for (const dockerfile of [web, media]) assert(dockerfile.includes('sleep "$d"; d=$((d*2)); done'), 'npm ci retries with doubling delay');
  assert.equal(dependencyStage(web), dependencyStage(media));
 });
 
