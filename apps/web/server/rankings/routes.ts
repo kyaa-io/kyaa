@@ -41,6 +41,15 @@ type Json = Record<string, unknown>;
 const obj = (v: unknown): Json => (v !== null && typeof v === "object" && !Array.isArray(v) ? (v as Json) : {});
 const arr = (v: unknown): unknown[] => (Array.isArray(v) ? v : []);
 
+/** The fan row's favorite comes with its name in every stored language; keep the viewer's, then Korean, then English, then the slug. */
+function favoriteIn(value: unknown, lang: string) {
+  const f = obj(value);
+  if (typeof f.slug !== "string") return null;
+  const names = obj(f.names);
+  const name = [names[lang], names.ko, names.en].find((n): n is string => typeof n === "string" && n.trim() !== "");
+  return { slug: f.slug, name: name ?? f.slug };
+}
+
 export function createRankingsHandlers(deps: RankingsDependencies) {
   const now = deps.now ?? Date.now;
   let lastRefreshAt = 0;
@@ -157,16 +166,19 @@ export function createRankingsHandlers(deps: RankingsDependencies) {
         const raw = obj(await readHome("read_home_creator_ranking", { p_locale: locale(request), p_limit: limit }));
         const rows = arr(raw.rows).map((row) => {
           const r = obj(row);
-          return { rank: r.rank, slug: r.slug, name: r.name, imageUrl: r.imageUrl ?? null, score: r.score, hearts: r.hearts, challenge: r.challenge === true, delta: r.delta ?? null };
+          return { rank: r.rank, slug: r.slug, name: r.name, imageUrl: r.imageUrl ?? null, score: r.score, hearts: r.hearts, challenge: r.challenge === true, delta: r.delta ?? null, weekGain: r.weekGain ?? null };
         });
-        return Response.json(checked(homeCreatorRankingSchema, { day: raw.day ?? null, computedAt: raw.computedAt ?? null, comparable: raw.comparable === true, rows }), { headers: publicHeaders });
+        return Response.json(checked(homeCreatorRankingSchema, {
+          day: raw.day ?? null, computedAt: raw.computedAt ?? null, comparable: raw.comparable === true, weekGainDays: raw.weekGainDays ?? null, rows,
+        }), { headers: publicHeaders });
       }
+      const lang = locale(request);
       const appUserId = await viewer(request);
       const raw = obj(await readHome("read_home_fan_ranking", { p_viewer: appUserId, p_limit: limit }));
       const me = obj(raw.me);
       const rows = arr(raw.rows).map((row) => {
         const r = obj(row);
-        return { rank: r.rank, score: r.score, nickname: r.nickname, characterId: r.characterId, tier: r.tier ?? null, isMe: appUserId !== null && r.isMe === true, delta: r.delta ?? null };
+        return { rank: r.rank, score: r.score, nickname: r.nickname, characterId: r.characterId, tier: r.tier ?? null, isMe: appUserId !== null && r.isMe === true, delta: r.delta ?? null, favorite: favoriteIn(r.favorite, lang) };
       });
       const body = checked(homeFanRankingSchema, {
         day: raw.day ?? null, computedAt: raw.computedAt ?? null, comparable: raw.comparable === true, rows,
