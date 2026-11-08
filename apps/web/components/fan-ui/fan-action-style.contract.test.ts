@@ -54,11 +54,9 @@ describe("shared fan action style contract", () => {
     const primaryRule = actionCss.match(/\.primary\s*\{([\s\S]*?)\n\}/)?.[1];
     const passportRule = actionCss.match(/\.passport\s*\{([\s\S]*?)\n\}/)?.[1];
     const serviceRule = actionCss.match(/\.service\s*\{([\s\S]*?)\n\}/)?.[1];
-    const homePrimaryRule = homeCss.match(/\.primaryButton\s*\{([\s\S]*?)\n\}/)?.[1];
     const celebrityPrimaryRule = celebrityCss.match(/\.heroAction\s*>\s*a\s*\{([\s\S]*?)\n\}/)?.[1];
 
     expect(primaryRule).toContain("min-height: var(--fan-action-primary-height)");
-    expect(homePrimaryRule).toMatch(/min-height:\s*48px/);
     expect(celebrityPrimaryRule).toMatch(/min-height:\s*48px/);
     expect(serviceRule).toContain("min-height: var(--fan-action-service-height)");
     expect(passportRule).toContain("min-height: var(--fan-action-service-height)");

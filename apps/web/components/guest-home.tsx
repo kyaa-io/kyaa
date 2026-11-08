@@ -1,72 +1,46 @@
 "use client";
 
-import type { RaffleList } from "@/features/benefit/domain/raffle";
-import type { AppLocale } from "@/i18n/locales";
-import { messages as localizedMessages } from "@/i18n/catalogs/components__guest-home";
-import { additionalLocales, translate } from "@/i18n/messages";
-import { rankingsText } from "@/features/rankings/ui/rankings-copy";
-import { nearestRecurringLives } from "@/features/live/domain/nearest-recurring-lives";
-import type { HomeBanner } from "../features/home/domain/home-banner";
-
-import { creatorHomeHref } from "@/features/creator/domain/creator-navigation";
-
-import { CreatorFanLink } from "./fan-ui/creator-fan-link";
-import { CreatorAvatar } from "@/components/fan-ui/creator-avatar";
-
-import { LiveTimeIndicator } from "@/features/live/ui/live-time-indicator";
-
-import { CreatorPortrait } from "./fan-ui/creator-portrait";
-import { CreatorRoleFilterControl } from "./fan-ui/creator-roles";
-import { availableCreatorRoles, matchesCreatorRole, type CreatorRoleFilter } from "@/features/creator/domain/creator-role";
-import { HomeOwnerProvider, useHomeOwner } from "./fan-ui/home-owner-provider";
-
-import Image from "next/image";
-import { orderCreatorsForDiscovery } from "../server/content/creator-discovery";
-import Link from "next/link";
 import type { Route } from "next";
-import { Suspense, use, useCallback, useEffect, useRef, useState, type ReactNode } from "react";
-import type { HomeQueries } from "./home-query-stream";
-import { gggiHomeBanner } from "../features/home/domain/gggi-home-banner";
-import { useRouter } from "next/navigation";
-import { ChevronLeft, ChevronRight } from "./icons";
-import type { LiveEventResponse } from "../features/live/domain/live-event";
-import type { PublishedCelebrity, PublishedCelebrityLive } from "../server/content/content-domain";
-import { fanLoginHref } from "./login-href";
-import { FanAppFrame } from "./fan-shell/fan-app-shell";
-import { LiveHeroCarousel } from "./live-hero-carousel";
-import {
-  ActivePreviewCoordinator,
-  ActivePreviewVideo,
-} from "./active-preview-video";
-import { levelLabel, type PassportLevel } from "../features/passport/domain/passport-read-model";
-import { FanSectionHeader } from "./fan-ui/fan-heading";
-import { FanAction } from "@/components/fan-ui/fan-action";
-import { FanSkeleton, FanSkeletonStatus } from "@/components/fan-ui/fan-skeleton";
-import { HomeRankingCard } from "@/features/rankings/ui/home-ranking-card";
+import Link from "next/link";
+import { ChevronRight, Plus } from "lucide-react";
+import { Suspense, use, useMemo, type ReactNode } from "react";
+
+import type { AppLocale } from "@/i18n/locales";
+import { toContentLocale } from "@/i18n/locales";
+import { levelLabel, type PassportLevel } from "@/features/passport/domain/passport-read-model";
+import { HomeRankingCard, feedDate } from "@/features/rankings/ui/home-ranking-card";
 import { HomeChallenges } from "@/features/rankings/ui/home-challenges";
-import { FanTag } from "./fan-ui/fan-tag";
-import { useRankingResource } from "@/features/rankings/ui/use-ranking-resource";
-import { activeJjinfanChallengesSchema } from "@/features/rankings/domain/types";
+import { useSelectedBias } from "@/features/selected-bias/ui/use-selected-bias";
+import { useGroupResource } from "@/features/groups/ui/use-group-resource";
+import { feedPageSchema, type FeedItem } from "@/features/fan-posts/domain/feed";
+import { noticeMedia } from "@/features/media/domain/official-media";
+import { groupDetailSchema } from "@/features/groups/domain/contracts";
+import { useByUsAuth } from "@/features/auth/client/cognito-auth";
+import type { HomeBanner } from "@/features/home/domain/home-banner";
+import { localizedBannerHref } from "@/features/home/domain/home-banner";
+import type { LiveEventResponse } from "@/features/live/domain/live-event";
+import type { PublishedCelebrity } from "@/server/content/content-domain";
+import { CreatorAvatar } from "./fan-ui/creator-avatar";
+import { FanAction } from "./fan-ui/fan-action";
+import { FanHeading } from "./fan-ui/fan-heading";
+import { FanIcon } from "./fan-ui/fan-icon";
+import { FanSkeleton } from "./fan-ui/fan-skeleton";
+import { formatCountMetric } from "./fan-ui/fan-count";
+import { FanAppFrame, FanContentContainer } from "./fan-shell/fan-app-shell";
+import { fanLoginHref } from "./login-href";
+import type { HomeQueries } from "./home-query-stream";
 import styles from "./guest-home.module.css";
-import { HomeEntryCards, ElinaGuideCard } from "./home-entry-cards/home-entry-cards";
-import { HomeCommunityPreview } from "./home-community-preview";
-import { ObservedLiveStrip } from "@/features/live/ui/observed-live-strip";
-import { BannerSlot } from "./banner-slot/banner-slot";
-import { FavoriteCreatorStats, useFavoriteCreatorStats } from "@/features/home/ui/favorite-creator-stats";
-import { fanProfileText } from "@/features/fan-profile/fan-profile-copy";
 
-const socialLabel = { youtube: "YouTube", tiktok: "TikTok", instagram: "Instagram", chzzk: "치지직" } as const;
-const UPCOMING_LIVE_PAGE_SIZE = 3;
-
-export type HomeContentErrors = { homeBanners?: boolean; celebrities?: boolean; celebrityLives?: boolean; featuredLives?: boolean };
-const allEvents = { ko: "전체 이벤트", en: "All events", ...localizedMessages.allEvents };
-
-const copy = {
-  ko: { skip: "본문으로 바로가기", language: "언어 선택, 현재 한국어", liveHeading: "Kyaa.", liveSub: "Every Fan Moment Counts.", allLive: "전체 라이브", noneStatus: "공개된 LIVE 없음", noneTitle: "새로운 LIVE를 준비하고 있어요.", reserve: "라이브 예약하기", details: "LIVE 상세보기", context: "로그인 및 팬 패스포트 시작", favorites: "당신의 최애", all: "전체 보기", celebrityList: "셀럽 목록", detail: "상세 보기", social: "공식 채널", liveNow: "LIVE 진행중", liveUpcoming: "LIVE 예정", noCelebrities: "현재 공개된 셀럽이 없습니다.", myFavoritesGuest: "내 최애를 보려면 로그인해 주세요.", myFavoritesLoading: "보유한 팬 패스포트를 확인하고 있어요.", myFavoritesError: "보유한 팬 패스포트를 확인하지 못했어요.", myFavoritesEmpty: "아직 보유한 팬 패스포트가 없어요.", myFavoritesUnavailable: "지금 공개된 내 최애가 없어요.", myFavoritesUnavailableHelp: "전체에서 다른 최애를 만나보세요.", myFavoritesHelp: "전체 최애를 둘러보고 팬 패스포트를 만들어 보세요.", signIn: "로그인하기", upcoming: "다가오는 LIVE", previousLivePage: "이전 LIVE 목록", nextLivePage: "다음 LIVE 목록", noLive: "현재 공개된 LIVE가 없습니다.", guestPanel: "로그인 전 팬 활동", soon: "곧 만날 최애", loginHint: "로그인하고 예약한 LIVE를 확인해 보세요.", signedInPanel: "나의 팬 활동", welcome: "반가워요.", myPassport: "내 패스포트", allPassports: "패스포트 전체 보기", reservedLive: "예약한 LIVE", liveDetails: "LIVE 상세 보기", noPassport: "아직 발급된 패스포트가 없어요.", passportPreview: "발급 전 팬 패스포트 미리보기", passportPreviewHint: "팬 인증 완료 후 발급돼요.", findFavorite: "팬 인증할 최애 찾기", noReservation: "예약한 LIVE가 없어요.", browseLive: "LIVE 둘러보기", retryTitle: "팬 활동을 불러오지 못했어요.", retryHelp: "잠시 후 다시 시도해 주세요.", retry: "다시 시도", loading: "팬 활동을 불러오는 중이에요.", stamps: "스탬프", recentNine: "최근 9개 표시" },
-  en: { skip: "Skip to main content", language: "Choose language, currently English", liveHeading: "Kyaa.", liveSub: "Every Fan Moment Counts.", allLive: "All LIVE events", noneStatus: "No LIVE events available", noneTitle: "We’re preparing a new LIVE.", reserve: "Reserve a spot", details: "View LIVE details", context: "Sign in and start a Fan Passport", favorites: "Your favorites", all: "View all", celebrityList: "Celebrity list", detail: "View details", social: "Official channel", liveNow: "LIVE NOW", liveUpcoming: "UPCOMING LIVE", noCelebrities: "No profiles are available right now.", myFavoritesGuest: "Sign in to see your favorites.", myFavoritesLoading: "Checking your Fan Passports.", myFavoritesError: "We couldn't check your Fan Passports.", myFavoritesEmpty: "You don't have a Fan Passport yet.", myFavoritesUnavailable: "None of your favorites are available right now.", myFavoritesUnavailableHelp: "Browse all celebrities to find another favorite.", myFavoritesHelp: "Browse all celebrities and create a Fan Passport.", signIn: "Sign in", upcoming: "Upcoming LIVE", previousLivePage: "Previous LIVE events", nextLivePage: "Next LIVE events", noLive: "No LIVE events are available right now.", guestPanel: "Fan activity preview", soon: "Your next LIVE", loginHint: "Sign in to see the LIVE events you reserved.", signedInPanel: "My fan activity", welcome: "Welcome back.", myPassport: "My Fan Passport", allPassports: "View all Passports", reservedLive: "Reserved LIVE", liveDetails: "View LIVE details", noPassport: "You don't have a Passport yet.", passportPreview: "Fan Passport preview", passportPreviewHint: "Issued after fan verification.", findFavorite: "Find a celebrity to verify", noReservation: "You don't have any reserved LIVE events.", browseLive: "Browse LIVE events", retryTitle: "We couldn't load your fan activity.", retryHelp: "Please try again in a moment.", retry: "Try again", loading: "Loading your fan activity.", stamps: "Stamps", recentNine: "Showing the latest 9" },
-
-  ...additionalLocales((translationLocale) => ({ skip: localizedMessages.m1f2d07933f72[translationLocale], language: localizedMessages.m2b9cc6c160b5[translationLocale], liveHeading: "Kyaa.", liveSub: "Every Fan Moment Counts.", allLive: localizedMessages.m54dd85c7923f[translationLocale], noneStatus: localizedMessages.mccde2af4a88b[translationLocale], noneTitle: localizedMessages.md8d8997a6c05[translationLocale], reserve: localizedMessages.m828c4b76dc47[translationLocale], details: localizedMessages.m357122ff8ba1[translationLocale], context: localizedMessages.mb486d46ca0ac[translationLocale], favorites: localizedMessages.m66d82efbdffe[translationLocale], all: localizedMessages.mb77becf4fc95[translationLocale], celebrityList: localizedMessages.m0cf3ec288523[translationLocale], detail: localizedMessages.m60da1bd22057[translationLocale], social: localizedMessages.me22245be7785[translationLocale], liveNow: localizedMessages.m3e2b2258026f[translationLocale], liveUpcoming: localizedMessages.m2385a41c8a58[translationLocale], noCelebrities: localizedMessages.m479576e01e3c[translationLocale], myFavoritesGuest: localizedMessages.m4b15ddf79f44[translationLocale], myFavoritesLoading: localizedMessages.me5538b70d1cf[translationLocale], myFavoritesError: localizedMessages.m6a62efb9c6f4[translationLocale], myFavoritesEmpty: localizedMessages.m2f6d85cfec82[translationLocale], myFavoritesUnavailable: localizedMessages.m59d84902398d[translationLocale], myFavoritesUnavailableHelp: localizedMessages.m97666ea9a11d[translationLocale], myFavoritesHelp: localizedMessages.m9a6d2845fc3e[translationLocale], signIn: localizedMessages.m07e0a9e48bd0[translationLocale], upcoming: localizedMessages.m51dfa5dd0f6f[translationLocale], previousLivePage: localizedMessages.mdf97b80344c5[translationLocale], nextLivePage: localizedMessages.m2eb9d49d3f74[translationLocale], noLive: localizedMessages.m35ff321a05aa[translationLocale], guestPanel: localizedMessages.mda49bf52819f[translationLocale], soon: localizedMessages.mc4ee815b442a[translationLocale], loginHint: localizedMessages.m6bb68c22ac32[translationLocale], signedInPanel: localizedMessages.mab415ccf7109[translationLocale], welcome: localizedMessages.m0b42e19ddd4d[translationLocale], myPassport: localizedMessages.m487a655fb68b[translationLocale], allPassports: localizedMessages.m543cb3ace5a0[translationLocale], reservedLive: localizedMessages.mdaf6cfd14de9[translationLocale], liveDetails: localizedMessages.m2536a94af120[translationLocale], noPassport: localizedMessages.mf590bcb19fb6[translationLocale], passportPreview: localizedMessages.m0fee008df904[translationLocale], passportPreviewHint: localizedMessages.mf031d3cda80f[translationLocale], findFavorite: localizedMessages.m135d3e0c6806[translationLocale], noReservation: localizedMessages.m9cd4b16f64f8[translationLocale], browseLive: localizedMessages.m6f3142fd97ae[translationLocale], retryTitle: localizedMessages.m0af50b904df8[translationLocale], retryHelp: localizedMessages.md769f12cf36e[translationLocale], retry: localizedMessages.m0261983ec47a[translationLocale], loading: localizedMessages.md2b2e951eb03[translationLocale], stamps: localizedMessages.m6c7f6a661030[translationLocale], recentNine: localizedMessages.m39ef6e8eec22[translationLocale] }))
-} as const;
+/** Home words (ko·en; the other languages read the English until the catalog carries them). */
+const words = (locale: AppLocale) => locale === "ko" ? {
+  title: "홈", myNews: "내 최애 소식", more: "더 보기", official: "공식 소식", liveNow: "LIVE 중", liveAt: (at: string) => `LIVE ${at}`,
+  noNews: "새 소식이 없습니다", choose: "최애 고르기", yourFavorite: "당신의 최애", fanPage: "팬페이지 보기", loginChoose: "로그인하고 최애 고르기",
+  fans: (n: string) => `팬 ${n}`,
+} : {
+  title: "Home", myNews: "My favorite's news", more: "More", official: "Official", liveNow: "LIVE now", liveAt: (at: string) => `LIVE ${at}`,
+  noNews: "No new posts", choose: "Choose a favorite", yourFavorite: "Your favorite", fanPage: "View fan page", loginChoose: "Sign in to choose a favorite",
+  fans: (n: string) => `${n} fans`,
+};
 
 export function formatKoreanLiveDate(value: string) {
   const instant = new Date(value);
@@ -78,354 +52,167 @@ export function formatKoreanLiveDate(value: string) {
   return `${kst.getUTCMonth() + 1}월 ${kst.getUTCDate()}일 ${period} ${displayHour}:${String(kst.getUTCMinutes()).padStart(2, "0")}`;
 }
 
-function formatLiveDate(value: string, locale: AppLocale) {
-  if (locale === "ko") return formatKoreanLiveDate(value);
-  return new Intl.DateTimeFormat(locale, { calendar: "gregory", month: "short", day: "numeric", hour: "numeric", minute: "2-digit", timeZone: "Asia/Seoul" }).format(new Date(value));
-}
-
 export function formatPassportTier(tier: PassportLevel, locale: AppLocale) {
   return levelLabel(locale, tier);
 }
 
-function PersonalizationLoading({ locale, quiet = false }: { locale: AppLocale; quiet?: boolean }) {
-  return (
-    <section className={`${styles.personalizationState} ${styles.personalizationLoading}`} aria-busy="true">
-      {quiet ? null : <FanSkeletonStatus locale={locale} label={copy[locale].loading} />}
-      <FanSkeleton shape="block" width="100%" height="100%" />
-      <FanSkeleton shape="block" width="100%" height="100%" />
-    </section>
-  );
+const parseFeed = (value: unknown) => feedPageSchema.parse(value);
+const parseGroup = (value: unknown) => groupDetailSchema.parse(value);
+type Notice = Extract<FeedItem, { kind: "notice" }>;
+
+/** The favorite's official posts, newest first: artist posts, then notices (8장 plan ⑥). */
+function useFavoriteNews(locale: AppLocale, slug: string | null) {
+  const feed = useGroupResource(slug ? `/api/celebrities/${encodeURIComponent(slug)}/feed?locale=${toContentLocale(locale)}&source=official&limit=10` : null, parseFeed);
+  const notices = useMemo(() => (feed.data?.items ?? []).filter((item): item is Notice => item.kind === "notice"), [feed.data]);
+  const ordered = useMemo(() => [...notices.filter((item) => item.postType === "artist_post"), ...notices.filter((item) => item.postType !== "artist_post")], [notices]);
+  return { notices, ordered, loading: feed.loading, error: feed.error };
 }
 
-function ContentLoadError({ locale }: { locale: AppLocale }) {
-  const router = useRouter();
-  return <div className={styles.personalizationState} role="alert"><strong>{copy[locale].retryTitle}</strong><span>{copy[locale].retryHelp}</span><FanAction onClick={() => router.refresh()}>{copy[locale].retry}</FanAction></div>;
+type HeroModel = { kind: "live" | "official" | "banner"; title: string; href: string; image: string | null; alt: string; meta: ReactNode; external?: boolean };
+
+/** The post's first public photo, or none (a body this screen cannot read draws the title alone). */
+function noticeImage(notice: Notice, slug: string) {
+  try { return noticeMedia({ ...notice, kind: notice.noticeKind } as Parameters<typeof noticeMedia>[0], slug).find((item) => item.kind === "photos" && item.image)?.image ?? null; }
+  catch { return null; }
 }
 
-type GuestHomeProps = { elinaRaffles?: RaffleList["raffles"]; homeBanners?: readonly HomeBanner[]; celebrities: readonly PublishedCelebrity[]; celebrityLives?: readonly PublishedCelebrityLive[]; featuredLives: readonly LiveEventResponse[]; featuredLivesQuery?: HomeQueries["featuredLives"]; locale: AppLocale; contentErrors?: HomeContentErrors; initialOwnedOnly?: boolean; initialRole?: CreatorRoleFilter };
-
-export function GuestHome(props: GuestHomeProps) {
-  return <HomeOwnerProvider locale={props.locale} publishedCreatorSlugs={props.celebrities.map(({ slug }) => slug)}><GuestHomeContent {...props} /></HomeOwnerProvider>;
+const isLive = (event: LiveEventResponse) => event.live.effectiveStatus === "live";
+function nextLive(lives: readonly LiveEventResponse[], now = Date.now()) {
+  return [...lives].filter((event) => event.live.effectiveStatus === "scheduled" && Date.parse(event.live.startsAt) > now).sort((a, b) => Date.parse(a.live.startsAt) - Date.parse(b.live.startsAt))[0] ?? null;
 }
 
-function GuestHomeContent(props: GuestHomeProps) {
-  return <HomeLayout locale={props.locale} celebrities={props.celebrities}
-    hero={<HomeHero {...props} />} creators={<HomeCreators {...props} />}
-    upcoming={<HomeUpcoming {...props} />} guides={<HomeEntryCards {...props} />}
-    mobile={<HomePersonalization {...props} placement="mobile" />}
-    desktop={<HomePersonalization {...props} placement="desktop" />} />;
+/** ① Hero (8장 plan ⑥): a LIVE in progress, else the favorite's newest official post, else the operator banner. A LIVE coming up is
+ * one meta item, not a block (plan ⑦). One image 16:9, title 26/800 (the home's first look), meta 12. */
+function pickHero(locale: AppLocale, lives: readonly LiveEventResponse[], notices: readonly Notice[], favoriteSlug: string | null, banners: readonly HomeBanner[]): HeroModel | null {
+  const t = words(locale);
+  const live = lives.find(isLive);
+  if (live) return { kind: "live", title: live.live.title, href: `/live/${live.live.slug}?locale=${locale}`, image: live.live.heroImage.url, alt: live.live.heroImage.alt,
+    meta: <><span className={styles.liveDot} aria-hidden="true" /><span>{t.liveNow}</span><span aria-hidden="true"> · </span><span>{live.live.celebrity.name}</span></> };
+  const notice = notices[0];
+  if (notice && favoriteSlug) {
+    const image = noticeImage(notice, favoriteSlug);
+    const date = feedDate(notice.publishedAt);
+    return { kind: "official", title: notice.title, href: `/c/${encodeURIComponent(favoriteSlug)}/notices/${encodeURIComponent(notice.slug)}?locale=${locale}`, image, alt: "",
+      meta: <><span>{t.official}</span>{date ? <><span aria-hidden="true"> · </span><time dateTime={notice.publishedAt}>{date}</time></> : null}</> };
+  }
+  const banner = banners[0];
+  if (banner) return { kind: "banner", title: banner.title, href: localizedBannerHref(banner.href, locale), image: (banner.desktopImage ?? banner.mobileImage)?.url ?? null, alt: banner.alt,
+    meta: banner.description ? <span>{banner.description}</span> : null, external: !banner.href.startsWith("/") };
+  return null;
 }
 
-function HomeLayout({ locale, celebrities = [], community, hero, creators, upcoming, guides, mobile, desktop }: { locale: AppLocale; celebrities?: readonly PublishedCelebrity[]; community?: ReactNode; hero: ReactNode; creators: ReactNode; upcoming: ReactNode; guides: ReactNode; mobile: ReactNode; desktop: ReactNode }) {
-  const t = copy[locale];
-  const owner = useHomeOwner();
-  const communityPreview = community ?? <HomeCommunityPreview locale={locale} celebrities={celebrities} />;
-  return (
-    <FanAppFrame
-      locale={locale}
-      mainId="main-content"
-    >
-    <div className={styles.page} data-fan-pulse-home data-candidate="03">
-      <div className={styles.shell}>
-        <main id="main-content" className={styles.main}>
-          {hero}
+function HomeHero({ locale, hero, upcoming, loading }: { locale: AppLocale; hero: HeroModel | null; upcoming: LiveEventResponse | null; loading: boolean }) {
+  const t = words(locale);
+  if (loading || !hero) return <section className={styles.hero} data-block="hero" aria-busy={loading || undefined}>
+    <div className={styles.heroMedia} data-skeleton="" aria-hidden="true"><FanSkeleton shape="block" width="100%" height="100%" /></div>
+    <div className={styles.heroBody}><FanSkeleton width="70%" height={26} /><FanSkeleton width="40%" height={12} /></div>
+  </section>;
+  const next = upcoming && hero.kind !== "live" ? feedDate(upcoming.live.startsAt) : null;
+  return <section className={styles.hero} data-block="hero" data-hero-kind={hero.kind} aria-labelledby="home-hero-title">
+    <Link className={styles.heroLink} href={hero.href as Route} {...(hero.external ? { target: "_blank", rel: "noreferrer" } : {})}>
+      <span className={styles.heroMedia}>{hero.image ? <img src={hero.image} alt={hero.alt} loading="eager" fetchPriority="high" decoding="async" /> : null}</span>
+      <span className={styles.heroBody}>
+        <h1 id="home-hero-title" className={styles.heroTitle}>{hero.title}</h1>
+        {hero.meta || next ? <span className={styles.heroMeta} data-meta="">{hero.meta}{hero.meta && next ? <span aria-hidden="true"> · </span> : null}{next ? <span data-live-next="">{t.liveAt(next)}</span> : null}</span> : null}
+      </span>
+    </Link>
+  </section>;
+}
 
-          {mobile}{communityPreview}<BannerSlot slot="home_below_board" locale={locale} className={styles.contentSection} /><ObservedLiveStrip locale={locale} />
+/** ② 내 최애 소식 (plan ⑥): two or three 72px rows — avatar 32 · name · date / one line. Signed out: no block. No favorite: one 48px row to choose. */
+function MyNews({ locale, favorite, news }: { locale: AppLocale; favorite: { slug: string; name: string; image: string; imagePosition?: string } | null; news: ReturnType<typeof useFavoriteNews> }) {
+  const t = words(locale);
+  const head = <div className={styles.sectionHead}><FanHeading id="home-news-heading">{t.myNews}</FanHeading>
+    {favorite ? <Link className={styles.more} href={`/${encodeURIComponent(favorite.slug)}?tab=notice&locale=${locale}` as Route}>{t.more}<FanIcon icon={ChevronRight} size={16} /></Link> : null}</div>;
+  if (!favorite) return <section className={styles.news} data-block="feed" aria-labelledby="home-news-heading">{head}
+    <Link className={styles.chooseRow} data-row="menu" href={`/pages/groups?locale=${locale}` as Route}><FanIcon icon={Plus} size={20} /><span>{t.choose}</span><FanIcon icon={ChevronRight} size={16} /></Link>
+  </section>;
+  const rows = news.ordered.slice(0, 3);
+  return <section className={styles.news} data-block="feed" aria-labelledby="home-news-heading" aria-busy={news.loading || undefined}>{head}
+    {news.loading ? <ul className={styles.newsRows}>{[0, 1].map((i) => <li key={i} className={styles.newsRow} data-skeleton="" aria-hidden="true"><FanSkeleton shape="circle" width={32} height={32} /><span className={styles.newsText}><FanSkeleton width="30%" height={14} /><FanSkeleton width="80%" height={14} /></span></li>)}</ul>
+      : rows.length === 0 ? <p className={styles.empty} data-fan-state="empty">{t.noNews}</p>
+      : <ul className={styles.newsRows}>{rows.map((item) => {
+        const date = feedDate(item.publishedAt);
+        return <li key={item.id}><Link className={styles.newsRow} data-row="notice" href={`/c/${encodeURIComponent(favorite.slug)}/notices/${encodeURIComponent(item.slug)}?locale=${locale}` as Route}>
+          <CreatorAvatar slug={favorite.slug} src={favorite.image} position={favorite.imagePosition} size={32} photos={undefined} />
+          <span className={styles.newsText}>
+            <span className={styles.newsHead} data-meta=""><strong>{favorite.name}</strong>{date ? <time dateTime={item.publishedAt}>{date}</time> : null}</span>
+            <span className={styles.newsLine}>{item.title}</span>
+          </span>
+        </Link></li>;
+      })}</ul>}
+  </section>;
+}
 
-          {creators}
+/** Aside 당신의 최애 (plan ②): avatar 48 · name · 팬 N, and the home's one primary `팬페이지 보기`. No favorite: `최애 고르기`; signed out:
+ * `로그인하고 최애 고르기` — the card stays, so a guest sees what the place is for. */
+function FavoriteCard({ locale, favorite, guest }: { locale: AppLocale; favorite: { slug: string; name: string; image: string; imagePosition?: string } | null; guest: boolean }) {
+  const t = words(locale);
+  const group = useGroupResource(favorite ? `/api/groups/resolve/${encodeURIComponent(favorite.slug)}` : null, parseGroup);
+  const members = group.data?.page.memberCount;
+  return <section className={styles.favorite} data-block="aside-card" aria-labelledby="home-favorite-heading">
+    <FanHeading id="home-favorite-heading">{t.yourFavorite}</FanHeading>
+    {favorite ? <div className={styles.favoriteIdentity}>
+      <CreatorAvatar slug={favorite.slug} src={favorite.image} position={favorite.imagePosition} size={48} photos={undefined} />
+      <span className={styles.favoriteText}><strong>{favorite.name}</strong>
+        <span className={styles.favoriteMeta} data-meta="">{members === undefined ? <span className={styles.metaHold} aria-hidden="true" /> : <span data-metric="count" data-fact="">{t.fans(formatCountMetric(locale, members))}</span>}</span>
+      </span>
+    </div> : null}
+    {favorite ? <FanAction variant="primary" fullWidth href={`/${encodeURIComponent(favorite.slug)}?locale=${locale}`}>{t.fanPage}</FanAction>
+      : guest ? <FanAction variant="primary" fullWidth href={fanLoginHref(locale, `/?locale=${locale}`)}>{t.loginChoose}</FanAction>
+      : <FanAction variant="primary" fullWidth href={`/pages/groups?locale=${locale}`}>{t.choose}</FanAction>}
+  </section>;
+}
 
-          <div className={styles.mobileGuides}>
-            {guides}
-          </div>
+type HomeData = { lives: readonly LiveEventResponse[]; banners: readonly HomeBanner[]; ready: boolean };
 
-          {upcoming}
-        </main>
-
-        <aside id="guest-context-panel" className={styles.contextPanel} aria-label={rankingsText(locale, "rkTitle")}>
-          {desktop}
-          {guides}
-        </aside>
-      </div>
-
+/** 5차 홈(B4, 4-F): ① 히어로 ② 내 최애 소식 ③ 랭킹 ④ 찐팬 100 챌린지 + 보조 `당신의 최애`. 1440 = 본문 733 + 보조 343 in a 1,100 container,
+ * 390 = one column hero → 당신의 최애 → 소식 → 랭킹 → 챌린지. 팬게시판·이벤트 배너·다가오는 LIVE·크리에이터 줄은 없다(8장 plan ⑦). */
+function HomeBody({ locale, data }: { locale: AppLocale; data: HomeData }) {
+  const auth = useByUsAuth();
+  const bias = useSelectedBias(locale);
+  const guest = auth.ready && !auth.authenticated;
+  const favorite = bias.selected ? { slug: bias.selected.slug, name: bias.selected.name, image: bias.selected.image, imagePosition: bias.selected.imagePosition } : null;
+  const news = useFavoriteNews(locale, favorite?.slug ?? null);
+  const deciding = !data.ready || bias.status === "loading" || (favorite !== null && news.loading);
+  const hero = deciding ? null : pickHero(locale, data.lives, news.ordered.length ? news.notices : [], favorite?.slug ?? null, data.banners);
+  const mine = favorite ? [favorite.slug] : [];
+  return <div className={styles.layout} data-layout="two-col">
+    <div className={styles.primary}>
+      <div className={styles.slotHero}><HomeHero locale={locale} hero={hero} upcoming={nextLive(data.lives)} loading={deciding} /></div>
+      {guest ? null : <div className={styles.slotNews}><MyNews locale={locale} favorite={bias.status === "loading" ? null : favorite} news={news} /></div>}
+      <div className={styles.slotRanking}><HomeRankingCard locale={locale} /></div>
+      <div className={styles.slotChallenge}><HomeChallenges locale={locale} preferredSlugs={mine} /></div>
     </div>
-    </FanAppFrame>
-  );
+    <aside className={styles.aside} aria-labelledby="home-favorite-heading">
+      <div className={styles.slotFavorite}><FavoriteCard locale={locale} favorite={favorite} guest={guest} /></div>
+    </aside>
+  </div>;
 }
 
-function HomeHero({ locale, homeBanners = [], celebrities, elinaRaffles, contentErrors = {}, elinaGuide }: GuestHomeProps & { elinaGuide?: ReactNode }) {
-  const t = copy[locale];
-  const localeQuery = `?locale=${locale}`;
-  return (<>          <section className={styles.heroSection} aria-labelledby="live-heading">
-            <FanSectionHeader variant="editorial" as="h1" id="live-heading" title={<span className={styles.brandTitle}>{t.liveHeading}{" "}<span className={styles.brandSlogan}>{t.liveSub}</span></span>} action={{ href: `/events${localeQuery}`, label: allEvents[locale] }} />
-            {contentErrors.homeBanners ? <ContentLoadError locale={locale} /> : null}
-            <LiveHeroCarousel elinaRaffles={elinaRaffles} elina={celebrities.find(celebrity => celebrity.slug === "elina")} homeBanners={homeBanners} locale={locale} elinaGuide={elinaGuide} />
-          </section>
-
-</>);
-}
-const parseChallenges = (value: unknown) => activeJjinfanChallengesSchema.parse(value);
-function HomeCreators({ celebrities, celebrityLives = [], locale, contentErrors = {}, initialOwnedOnly, initialRole = "all", previewQuery, unlistedSlugs = [] }: GuestHomeProps & { previewQuery?: HomeQueries["celebrityLives"]; unlistedSlugs?: readonly string[] }) {
-  const t = copy[locale];
-  const router = useRouter();
-  const localeQuery = `?locale=${locale}`;
-  const owner = useHomeOwner();
-  const personalization = { state: owner.personalization, retry: owner.retryPersonalization };
-  const orderedCreators = orderCreatorsForDiscovery(celebrities);
-  const [ownedOnlyOverride, setOwnedOnly] = useState(initialOwnedOnly);
-  const [role, setRole] = useState<CreatorRoleFilter>(initialOwnedOnly ? "all" : initialRole);
-  const ownedSlugs = personalization.state.status === "authenticated-ready"
-    ? new Set(personalization.state.summary.creators.flatMap((creator) => creator.passport ? [creator.celebrity.slug] : []))
-    : new Set<string>();
-  const hasOwnedPassport = personalization.state.status === "authenticated-ready" && personalization.state.summary.collection.passportCount > 0;
-  // Resolve the default before revealing the roster; explicit choices take precedence.
-  const ownedOnly = ownedOnlyOverride ?? (role === "all" && hasOwnedPassport);
-  const favoritesLoading = personalization.state.status === "auth-loading" || personalization.state.status === "authenticated-loading";
-  // Unlisted pages (test and fixture pages) stay out of the discovery chips, like the rankings; the viewer's own chip still shows them.
-  const unlisted = new Set(unlistedSlugs), listedCreators = celebrities.filter((creator) => !unlisted.has(creator.slug));
-  const visibleCreators = orderedCreators.filter((creator) => matchesCreatorRole(creator.roles, role) && (ownedOnly ? personalization.state.status === "authenticated-ready" && ownedSlugs.has(creator.slug) : !unlisted.has(creator.slug)));
-  const directoryQuery = new URLSearchParams({ locale });
-  if (ownedOnly) directoryQuery.set("owned", "1");
-  else if (role !== "all") directoryQuery.set("role", role);
-  const directoryHref = `/celebrities?${directoryQuery}` as Route;
-  const homeOwnedQuery = new URLSearchParams({ locale, owned: "1" });
-  const ownedLoginHref = fanLoginHref(locale, `/?${homeOwnedQuery}`);
-
-  const replaceHomeFilterUrl = (nextOwnedOnly: boolean, nextRole: CreatorRoleFilter) => {
-    const url = new URL(window.location.href);
-    if (nextOwnedOnly) url.searchParams.set("owned", "1");
-    else url.searchParams.delete("owned");
-    if (!nextOwnedOnly) url.searchParams.set("role", nextRole);
-    else url.searchParams.delete("role");
-    window.history.replaceState(window.history.state, "", `${url.pathname}${url.search}${url.hash}`);
-  };
-  const changeRole = (nextRole: CreatorRoleFilter) => {
-    setOwnedOnly(false);
-    setRole(nextRole);
-    replaceHomeFilterUrl(false, nextRole);
-  };
-  const selectOwned = () => {
-    if (personalization.state.status === "guest") {
-      router.push(ownedLoginHref);
-      return;
-    }
-    setOwnedOnly(true);
-    setRole("all");
-    replaceHomeFilterUrl(true, "all");
-  };
-  // 찐팬 100 challenge (C7): creators an administrator turned on carry a tag on their card.
-  const challenges = useRankingResource(`/api/rankings/challenges?locale=${locale}`, parseChallenges);
-  const challengeSlugs = new Set(challenges.state.status === "ready" ? challenges.state.data.items.map((item) => item.slug) : []);
-  const creatorRailRef = useRef<HTMLDivElement>(null);
-  const [creatorScroll, setCreatorScroll] = useState({ previous: false, next: false });
-  const updateCreatorScroll = useCallback(() => {
-    const rail = creatorRailRef.current;
-    const first = rail?.querySelector<HTMLElement>("article");
-    if (!rail || !first || rail.clientWidth === 0) {
-      setCreatorScroll({ previous: false, next: false });
-      return;
-    }
-    setCreatorScroll({ previous: rail.scrollLeft > 2, next: rail.scrollLeft + rail.clientWidth < rail.scrollWidth - 2 });
-  }, []);
-  useEffect(() => {
-    const rail = creatorRailRef.current;
-    if (!rail) return;
-    updateCreatorScroll();
-    const observer = typeof ResizeObserver === "undefined" ? null : new ResizeObserver(updateCreatorScroll);
-    observer?.observe(rail);
-    window.addEventListener("resize", updateCreatorScroll);
-    return () => { observer?.disconnect(); window.removeEventListener("resize", updateCreatorScroll); };
-  }, [updateCreatorScroll, visibleCreators.length, ownedOnly, role, favoritesLoading]);
-  const creatorStats = useFavoriteCreatorStats(locale);
-  const moveCreators = (direction: number) => {
-    const rail = creatorRailRef.current;
-    const card = rail?.querySelector<HTMLElement>("article");
-    if (!rail || !card) return;
-    const gap = Number.parseFloat(getComputedStyle(rail).columnGap) || 0;
-    const stride = card.getBoundingClientRect().width + gap;
-    const count = Math.max(1, Math.floor((rail.clientWidth + gap + 1) / stride));
-    rail.scrollBy({ left: direction * stride * count, behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
-  };
-
-  return (<>          <section id="celebrities" className={`${styles.contentSection} ${styles.favoriteSection}`} aria-labelledby="celebrities-heading">
-            <FanSectionHeader variant="editorial" id="celebrities-heading" title={t.favorites} action={favoritesLoading ? undefined : { href: directoryHref, label: fanProfileText(locale, "favCardAll") }} extraAction={favoritesLoading ? undefined : { href: `/rankings${localeQuery}`, label: rankingsText(locale, "rkTitle") }} />
-            {!contentErrors.celebrities && celebrities.length > 0 && favoritesLoading ? (
-              <div role="status" aria-label={t.myFavoritesLoading} aria-busy="true">
-                <span className={styles.srOnly}>{t.myFavoritesLoading}</span>
-                <div aria-hidden="true">
-                  <div className={styles.favoriteSkeletonFilters}>{[0, 1, 2, 3].map(index => <span key={index} className={`${styles.stateSkeleton} ${styles.favoriteSkeletonChip}`} />)}</div>
-                  <div className={styles.celebrityRail}>{[0, 1, 2].map(index => <div key={index} className={styles.celebrityCard}>
-                    <div className={`${styles.celebrityMediaBox} ${styles.stateSkeleton} ${styles.favoriteSkeletonMedia}`} />
-                    <div className={styles.celebrityInfo}><div className={styles.celebrityIdentity}><span className={`${styles.stateSkeleton} ${styles.favoriteSkeletonName}`} /><span className={`${styles.stateSkeleton} ${styles.favoriteSkeletonCount}`} /></div></div>
-                  </div>)}</div>
-                </div>
-              </div>
-            ) : null}
-            {!contentErrors.celebrities && celebrities.length > 0 && !favoritesLoading ? <CreatorRoleFilterControl roles={availableCreatorRoles(listedCreators)} value={role} onChange={changeRole} locale={locale} controls="home-creator-rail" ownedOnly={ownedOnly} onSelectOwned={selectOwned} /> : null}
-            <ActivePreviewCoordinator initialActiveId={visibleCreators.find(creator => celebrityLives.some(live => live.celebritySlug === creator.slug && live.preview))?.slug ?? (previewQuery ? visibleCreators[0]?.slug ?? null : null)}>
-            {contentErrors.celebrities || contentErrors.celebrityLives ? <ContentLoadError locale={locale} /> : null}
-            {!contentErrors.celebrities && ownedOnly && personalization.state.status === "guest" ? <div className={styles.favoriteFilterState} role="status"><p>{t.myFavoritesGuest}</p><Link href={ownedLoginHref}>{t.signIn}</Link></div> : null}
-            {!contentErrors.celebrities && ownedOnly && personalization.state.status === "authenticated-error" ? <div className={styles.favoriteFilterState} role="alert"><p>{t.myFavoritesError}</p><FanAction onClick={personalization.retry}>{t.retry}</FanAction></div> : null}
-            {!contentErrors.celebrities && ownedOnly && personalization.state.status === "authenticated-ready" && visibleCreators.length === 0 ? <div className={styles.favoriteFilterState} role="status"><strong>{hasOwnedPassport ? t.myFavoritesUnavailable : t.myFavoritesEmpty}</strong><p>{hasOwnedPassport ? t.myFavoritesUnavailableHelp : t.myFavoritesHelp}</p><FanAction onClick={() => changeRole("all")}>{t.all}</FanAction></div> : null}
-            {!contentErrors.celebrities && (!favoritesLoading || celebrities.length === 0) && (!ownedOnly || (personalization.state.status === "authenticated-ready" && visibleCreators.length > 0)) ? <div className={styles.celebrityCarousel}>
-            <div id="home-creator-rail" ref={creatorRailRef} className={styles.celebrityRail} data-count={visibleCreators.length <= 2 ? visibleCreators.length : undefined} aria-label={t.celebrityList} onScroll={updateCreatorScroll}>
-              {visibleCreators.map((celebrity) => {
-                return (
-                <article className={styles.celebrityCard} key={celebrity.slug}>
-                  <Link className={styles.celebrityMediaBox} href={`${creatorHomeHref(celebrity.slug)}${localeQuery}` as Route} aria-label={locale === "ko" ? `${celebrity.name} ${t.detail}` : translate(locale, localizedMessages.m7c3e6608522c, "View {0} details", [celebrity.name])}>
-                    {challengeSlugs.has(celebrity.slug) ? <FanTag tone="fan" className={styles.challengeTag}>{rankingsText(locale, "jjTag")}</FanTag> : null}
-                    <Suspense fallback={<CreatorPortrait locale={locale} slug={celebrity.slug} image={celebrity.image} sizes="(max-width: 767px) min(82vw, 288px), 240px" />}>
-                      <HomeCreatorPreview celebrity={celebrity} locale={locale} celebrityLives={celebrityLives} previewQuery={previewQuery} />
-                    </Suspense>
-                  </Link>
-                  <div className={styles.celebrityInfo}>
-                    <h3>{celebrity.name}</h3>
-                    <FavoriteCreatorStats slug={celebrity.slug} stats={creatorStats} locale={locale} />
-                    <div className={styles.celebrityActions}>
-                      <CreatorFanLink slug={celebrity.slug} name={celebrity.name} locale={locale} />
-                      <div className={styles.socialLinks} role="group" aria-label={`${celebrity.name} ${locale === "ko" ? "소셜 채널" : translate(locale, localizedMessages.m81fb78c7ebd5, "social channels")}`}>
-                        {celebrity.socialLinks.map((social) => <a className={styles.socialLink} href={social.url} target="_blank" rel="noreferrer" aria-label={`${celebrity.name} ${social.platform === "chzzk" && locale !== "ko" ? "CHZZK" : socialLabel[social.platform]} ${t.social}`} data-social-icon-only="true" data-platform={social.platform} key={social.platform}><Image src={social.platform === "chzzk" ? "/images/guest-home/chzzk.png" : `/images/guest-home/${social.platform}.svg`} alt="" width={20} height={20} aria-hidden="true" /></a>)}
-                      </div>
-                    </div>
-                  </div>
-                </article>
-              )})}
-              {celebrities.length === 0 ? <p role="status">{t.noCelebrities}</p> : null}
-            </div>
-            {creatorScroll.previous || creatorScroll.next ? (
-              <nav className={styles.creatorControls} aria-label={locale === "ko" ? "최애 목록 이동" : translate(locale, localizedMessages.mdcf61c1a1ca5, "Browse creators")}>
-                <button type="button" aria-label={locale === "ko" ? "이전 최애" : translate(locale, localizedMessages.me65af7523189, "Previous creators")} aria-controls="home-creator-rail" disabled={!creatorScroll.previous} onClick={() => moveCreators(-1)}><ChevronLeft /></button>
-                <button type="button" aria-label={locale === "ko" ? "다음 최애" : translate(locale, localizedMessages.m0aab33b2d3dc, "Next creators")} aria-controls="home-creator-rail" disabled={!creatorScroll.next} onClick={() => moveCreators(1)}><ChevronRight /></button>
-              </nav>
-            ) : null}
-            </div> : null}
-            </ActivePreviewCoordinator>
-
-          </section>
-
-</>);
-}
-function HomeCreatorPreview({ celebrity, locale, celebrityLives, previewQuery }: { celebrity: PublishedCelebrity; locale: AppLocale; celebrityLives: readonly PublishedCelebrityLive[]; previewQuery?: HomeQueries["celebrityLives"] }) {
-  const result = previewQuery ? use(previewQuery) : undefined;
-  const lives = result?.status === "fulfilled" ? result.value : celebrityLives;
-  const celebrityLive = lives.find(live => live.celebritySlug === celebrity.slug);
-  return (<>                    {celebrityLive?.preview ? (
-                      <ActivePreviewVideo
-                        id={celebrity.slug}
-                        mode="card"
-                        preview={{
-                          videoUrl: celebrityLive.preview.square.videoUrl,
-                          posterUrl: celebrityLive.preview.square.posterUrl,
-                          durationMs: celebrityLive.preview.durationMs,
-                        }}
-                      />
-                    ) : (
-                      <CreatorPortrait locale={locale} slug={celebrity.slug} image={celebrity.image} sizes="(max-width: 767px) min(82vw, 288px), 240px" />
-                    )}</>);
-}
-function HomeUpcoming({ featuredLives, locale, contentErrors = {} }: GuestHomeProps) {
-  const t = copy[locale];
-  const localeQuery = `?locale=${locale}`;
-  const router = useRouter();
-  const refreshLiveStatus = useCallback(() => router.refresh(), [router]);
-  const [upcomingPage, setUpcomingPage] = useState(0);
-  const upcomingLives = nearestRecurringLives(featuredLives);
-  const upcomingPageCount = Math.max(1, Math.ceil(upcomingLives.length / UPCOMING_LIVE_PAGE_SIZE));
-  const visibleFeaturedLives = upcomingLives.slice(
-    upcomingPage * UPCOMING_LIVE_PAGE_SIZE,
-    (upcomingPage + 1) * UPCOMING_LIVE_PAGE_SIZE,
-  );
-  useEffect(() => {
-    setUpcomingPage((currentPage) => Math.min(currentPage, upcomingPageCount - 1));
-  }, [upcomingPageCount]);
-
-  return (<>          <section id="upcoming" className={styles.contentSection} aria-labelledby="upcoming-heading">
-            <FanSectionHeader variant="editorial" id="upcoming-heading" title={t.upcoming} action={{ href: `/live${localeQuery}`, label: t.allLive }} />
-            {contentErrors.featuredLives ? <ContentLoadError locale={locale} /> : <div className={styles.liveList} data-paginated={upcomingPageCount > 1 ? "true" : undefined}>
-              {featuredLives.length > 0 ? visibleFeaturedLives.map((featuredLive) => {
-                return (
-                  <article className={styles.liveRow} key={featuredLive.live.id}>
-                    <CreatorAvatar slug={featuredLive.live.celebrity.slug} src={featuredLive.live.celebrity.image} photos={featuredLive.live.celebrity.photos} position={featuredLive.live.celebrity.imagePosition} size={{ mobile: 56, desktop: 64 }} />
-                    <div className={styles.liveDetails}><span>{featuredLive.live.celebrity.name}</span><h3>{featuredLive.live.title}</h3><p>{formatLiveDate(featuredLive.live.startsAt, locale)}</p></div>
-                    <div className={styles.liveMeta}><LiveTimeIndicator event={featuredLive.live} locale={locale} onStartReached={refreshLiveStatus} /></div>
-                    <Link className={styles.rowAction} href={`/live/${featuredLive.live.slug}${localeQuery}` as Route} aria-label={locale === "ko" ? `${featuredLive.live.title} ${t.detail}` : translate(locale, localizedMessages.mbbae831d75b7, "View {0} details", [featuredLive.live.title])}><ChevronRight /></Link>
-                  </article>
-                );
-              }) : <p>{t.noLive}</p>}
-            </div>}
-            {!contentErrors.featuredLives && upcomingPageCount > 1 ? (
-              <nav className={styles.livePagination} aria-label={t.upcoming}>
-                <button type="button" aria-label={t.previousLivePage} disabled={upcomingPage === 0} onClick={() => setUpcomingPage((page) => Math.max(0, page - 1))}><ChevronLeft /></button>
-                <span aria-live="polite" aria-atomic="true">{upcomingPage + 1} / {upcomingPageCount}</span>
-                <button type="button" aria-label={t.nextLivePage} disabled={upcomingPage === upcomingPageCount - 1} onClick={() => setUpcomingPage((page) => Math.min(upcomingPageCount - 1, page + 1))}><ChevronRight /></button>
-              </nav>
-            ) : null}
-          </section>
-</>);
-}
-/** The old "my fan activity" place: the ranking card (261107-2 U3, D3), then the 찐팬 100 challenges (C7). The passport card moved to MY and the header. Same cards on 390 (under the hero) and in the side panel. */
-function HomePersonalization({ locale, placement }: GuestHomeProps & { placement: "mobile" | "desktop" }) {
-  const owner = useHomeOwner();
-  const mine = owner.personalization.status === "authenticated-ready" ? owner.personalization.summary.creators.flatMap((creator) => creator.passport ? [creator.celebrity.slug] : []) : [];
-  return placement === "mobile"
-    ? <div className={styles.mobilePersonalization}><HomeRankingCard locale={locale} headingId="home-ranking-heading-mobile" /><HomeChallenges locale={locale} preferredSlugs={mine} headingId="home-challenges-heading-mobile" /></div>
-    : <><HomeRankingCard locale={locale} headingId="home-ranking-heading-desktop" /><HomeChallenges locale={locale} preferredSlugs={mine} headingId="home-challenges-heading-desktop" /></>;
+function HomeLayout({ locale, children }: { locale: AppLocale; children: ReactNode }) {
+  return <FanAppFrame locale={locale} mainId="main-content">
+    <div className={styles.page} data-fan-pulse-home="">
+      <FanContentContainer as="main" id="main-content" tabIndex={-1} className={styles.main}>{children}</FanContentContainer>
+    </div>
+  </FanAppFrame>;
 }
 
-const NO_UNLISTED: HomeQueries["unlistedCreators"] & object = Promise.resolve({ status: "fulfilled", value: [] });
-type StreamingHomeProps = Pick<GuestHomeProps, "locale" | "initialOwnedOnly" | "initialRole"> & {
-  queries: HomeQueries;
-  publishedCreatorSlugs: Promise<readonly string[] | null>;
-};
+type GuestHomeProps = { homeBanners?: readonly HomeBanner[]; celebrities?: readonly PublishedCelebrity[]; featuredLives: readonly LiveEventResponse[]; locale: AppLocale };
 
-export function StreamingGuestHome({ queries, publishedCreatorSlugs, ...props }: StreamingHomeProps) {
-  const fallbackProps = { ...props, celebrities: [], featuredLives: [] };
-  const guide = <Suspense fallback={null}><StreamHomeGuide queries={queries} locale={props.locale} /></Suspense>;
-  return <HomeOwnerProvider locale={props.locale} publishedCreatorSlugsPromise={publishedCreatorSlugs}>
-    <HomeLayout locale={props.locale}
-      community={<Suspense fallback={<HomeCommunityPreview locale={props.locale} />}><StreamHomeCommunity locale={props.locale} queries={queries} /></Suspense>}
-      hero={<Suspense fallback={<HomeHero {...fallbackProps} homeBanners={[gggiHomeBanner(props.locale)]} elinaGuide={null} />}><StreamHomeHero {...props} queries={queries} /></Suspense>}
-      creators={<Suspense fallback={<PersonalizationLoading quiet locale={props.locale} />}><StreamHomeCreators {...props} queries={queries} /></Suspense>}
-      upcoming={<Suspense fallback={<PersonalizationLoading quiet locale={props.locale} />}><StreamHomeUpcoming {...props} queries={queries} /></Suspense>}
-      guides={guide}
-      mobile={<HomePersonalization {...fallbackProps} placement="mobile" />}
-      desktop={<HomePersonalization {...fallbackProps} placement="desktop" />} />
-  </HomeOwnerProvider>;
+export function GuestHome({ locale, homeBanners = [], featuredLives }: GuestHomeProps) {
+  return <HomeLayout locale={locale}><HomeBody locale={locale} data={{ lives: featuredLives, banners: homeBanners, ready: true }} /></HomeLayout>;
 }
 
-function StreamHomeHero({ queries, ...props }: Pick<StreamingHomeProps, "queries" | "locale">) {
-  const result = use(queries.homeBanners);
-  return <HomeHero {...props} celebrities={[]} featuredLives={[]}
-    homeBanners={[gggiHomeBanner(props.locale), ...(result.status === "fulfilled" ? result.value : [])]}
-    contentErrors={{ homeBanners: result.status === "rejected" }}
-    elinaGuide={<Suspense fallback={<PersonalizationLoading quiet locale={props.locale} />}><StreamElinaGuide queries={queries} locale={props.locale} hero /></Suspense>} />;
+type StreamingHomeProps = { locale: AppLocale; queries: HomeQueries; publishedCreatorSlugs?: Promise<readonly string[] | null>; initialOwnedOnly?: boolean; initialRole?: unknown };
+
+function StreamedBody({ locale, queries }: { locale: AppLocale; queries: HomeQueries }) {
+  const lives = use(queries.featuredLives), banners = use(queries.homeBanners);
+  return <HomeBody locale={locale} data={{ lives: lives.status === "fulfilled" ? lives.value : [], banners: banners.status === "fulfilled" ? banners.value : [], ready: true }} />;
 }
 
-function StreamHomeCreators({ queries, ...props }: Omit<StreamingHomeProps, "publishedCreatorSlugs">) {
-  const result = use(queries.celebrities);
-  const unlisted = use(queries.unlistedCreators ?? NO_UNLISTED);
-  return <HomeCreators {...props} celebrities={result.status === "fulfilled" ? result.value : []} featuredLives={[]} unlistedSlugs={unlisted.status === "fulfilled" ? unlisted.value : []}
-    contentErrors={{ celebrities: result.status === "rejected" }} previewQuery={queries.celebrityLives} />;
+export function StreamingGuestHome({ queries, locale }: StreamingHomeProps) {
+  return <HomeLayout locale={locale}>
+    <Suspense fallback={<HomeBody locale={locale} data={{ lives: [], banners: [], ready: false }} />}><StreamedBody locale={locale} queries={queries} /></Suspense>
+  </HomeLayout>;
 }
-
-/** The board preview gets the fan page images once the celebrity list has arrived; until then its rows keep the post icon. */
-function StreamHomeCommunity({ queries, locale }: Pick<StreamingHomeProps, "queries" | "locale">) {
-  const result = use(queries.celebrities);
-  return <HomeCommunityPreview locale={locale} celebrities={result.status === "fulfilled" ? result.value : []} />;
-}
-
-function StreamHomeUpcoming({ queries, ...props }: Pick<StreamingHomeProps, "queries" | "locale">) {
-  const result = use(queries.featuredLives);
-  return <HomeUpcoming {...props} celebrities={[]} featuredLives={result.status === "fulfilled" ? result.value : []} contentErrors={{ featuredLives: result.status === "rejected" }} />;
-}
-
-function StreamElinaGuide({ queries, locale, hero = false }: Pick<StreamingHomeProps, "queries" | "locale"> & { hero?: boolean }) {
-  const raffles = use(queries.elinaRaffles);
-  const celebrities = use(queries.celebrities);
-  if (raffles.status === "rejected") return <ContentLoadError locale={locale} />;
-  return <ElinaGuideCard locale={locale} hero={hero} elina={celebrities.status === "fulfilled" ? celebrities.value.find(item => item.slug === "elina") : undefined} raffles={raffles.value.raffles} />;
-}
-
-function StreamHomeGuide({ queries, locale }: Pick<StreamingHomeProps, "queries" | "locale">) {
-  return <HomeEntryCards locale={locale} celebrities={[]} elinaGuide={<Suspense fallback={null}><StreamElinaGuide queries={queries} locale={locale} /></Suspense>} />;
-}
-
