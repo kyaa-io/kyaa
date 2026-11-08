@@ -78,7 +78,7 @@ begin
   end;
   if exists(select 1 from public.dukjil_action_log where app_user_id = stranger and source_key = p::text) then raise exception 'stranger has a log row'; end if;
 
-  -- The other actions keep their minimum: a 4-character comment is still too short.
+  -- The other actions keep their minimum: a 3-character comment is still too short.
   begin
     perform public.record_dukjil_action(holder, c, 'comment', 'short-comment-probe', extensions.gen_random_uuid(), pg_temp.text_params('짧은댓'));
     raise exception 'short comment accepted';

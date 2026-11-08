@@ -55,6 +55,14 @@ it('says why a new group post paid nothing',async()=>{
  expect(toast.reward).not.toHaveBeenCalled();
  expect(toast.fan).toHaveBeenCalledWith({title:'오늘 글쓰기 포인트는 모두 받았어요',tone:'neutral'});
 });
+it('keeps a saved post saved when the reward toast throws',async()=>{
+ answer={reward:{points:20,stamps:0}};toast.reward.mockImplementationOnce(()=>{throw new Error('toast');});
+ render(<GroupBoard detail={detail} locale='ko'/>);
+ await post();
+ expect(toast.reward).toHaveBeenCalledTimes(1);
+ expect(screen.queryByText('게시글을 등록하지 못했어요')).toBeNull();
+ expect(vi.mocked(fetch).mock.calls.filter(([,init])=>init?.method==='POST')).toHaveLength(1);
+});
 it('stays quiet without a reward and on an edit',async()=>{
  answer={};
  render(<GroupBoard detail={detail} locale='ko' initialPostId={id}/>);
