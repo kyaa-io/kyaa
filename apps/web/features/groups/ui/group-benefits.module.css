@@ -221,3 +221,4 @@ section.pWallet{position:relative;box-sizing:border-box;border:1px solid var(--c
 .top{display:grid;gap:var(--space-3)}
 .heartLink[aria-disabled]{grid-template-columns:40px minmax(0,1fr) auto;cursor:default}
 .heartLink[aria-disabled] .heartName{color:var(--color-muted)}
+.top section.pWallet[data-wallet-card="flows"]{border:1px solid var(--color-line);background:var(--color-surface)}
