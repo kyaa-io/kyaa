@@ -87,6 +87,8 @@ export const dukjilTodaySchema = z.object({
   actions: z.record(z.string(), dukjilTodayActionSchema).optional(),
   attendance: dukjilAttendanceStateSchema.nullable().optional(),
   hasPassport: z.boolean().nullable().optional(),
+  /** r5(R12): when today's counters reset — the KST midnight after kstDate. Added by the route; optional for older answers. */
+  resetAt: z.iso.datetime({ offset: true }).optional(),
 }).strict();
 export type DukjilToday = z.infer<typeof dukjilTodaySchema>;
 

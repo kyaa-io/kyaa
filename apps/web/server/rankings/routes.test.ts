@@ -145,6 +145,11 @@ describe("rankings routes", () => {
     expect(rpc).toHaveBeenCalledWith("read_home_fan_ranking", { p_viewer: null, p_limit: 20 });
     expect(body.rows.map((r: { delta: number | null }) => r.delta)).toEqual([2, null]);
     expect(body.rows.map((r: { favorite: unknown }) => r.favorite)).toEqual([null, null]);
+    // r5: basis line values; an older database without the fan weekGain leaves the key out (optional), not null.
+    expect(body).toMatchObject({ period: "day", closesAt: "2026-11-09T00:00:00+09:00" });
+    expect(Number.isNaN(Date.parse(body.fetchedAt))).toBe(false);
+    expect("weekGain" in body.rows[0]).toBe(false);
+    expect("weekGainDays" in body).toBe(false);
     expect(body.rows[0].isMe).toBe(false);
     expect(body.me).toBeNull();
     expect(JSON.stringify(body)).not.toContain(ME);
@@ -156,6 +161,18 @@ describe("rankings routes", () => {
     expect(JSON.stringify(mine)).not.toContain(ME);
   });
 
+  it("passes the fan weekGain through once the database sends it (20261217010000)", async () => {
+    const { handlers } = make(() => ({
+      day: "2026-12-31", computedAt: null, comparable: false, weekGainDays: 7,
+      rows: [{ rank: 1, score: 7, nickname: "A", characterId: "x", tier: null, isMe: false, delta: null, weekGain: 5 }, { rank: 2, score: 3, nickname: "B", characterId: "x", tier: null, isMe: false, delta: null, weekGain: null }],
+      me: null,
+    }));
+    const body = await (await handlers.home(req("/api/rankings/home"))).json();
+    expect(body.weekGainDays).toBe(7);
+    expect(body.rows.map((r: { weekGain: number | null }) => r.weekGain)).toEqual([5, null]);
+    expect(body.closesAt).toBe("2027-01-01T00:00:00+09:00");
+  });
+
   it("answers the home creator ranking by fans holding hearts, and an empty first day", async () => {
     const { handlers, rpc, authorize } = make(() => ({
       day: "2026-11-08", computedAt: null, comparable: false,
@@ -165,9 +182,9 @@ describe("rankings routes", () => {
     expect(rpc).toHaveBeenCalledWith("read_home_creator_ranking", { p_locale: "en", p_limit: 10 });
     expect(authorize).not.toHaveBeenCalled();
     // An older database without weekGain answers null for it, not a missing key.
-    expect(body).toEqual({ day: "2026-11-08", computedAt: null, comparable: false, weekGainDays: null, rows: [{ rank: 1, slug: "a", name: "A", imageUrl: null, score: 125, hearts: 795, challenge: true, delta: null, weekGain: null }] });
+    expect(body).toEqual({ day: "2026-11-08", computedAt: null, comparable: false, period: "day", closesAt: "2026-11-09T00:00:00+09:00", fetchedAt: expect.any(String), weekGainDays: null, rows: [{ rank: 1, slug: "a", name: "A", imageUrl: null, score: 125, hearts: 795, challenge: true, delta: null, weekGain: null }] });
     const empty = make(() => ({ day: null, computedAt: null, comparable: false, rows: [], me: null }));
-    expect(await (await empty.handlers.home(req("/x"))).json()).toEqual({ day: null, computedAt: null, comparable: false, rows: [], me: null });
+    expect(await (await empty.handlers.home(req("/x"))).json()).toEqual({ day: null, computedAt: null, comparable: false, period: "day", closesAt: null, fetchedAt: expect.any(String), rows: [], me: null });
     expect((await handlers.home(req("/x?kind=money"))).status).toBe(400);
     expect((await handlers.home(req("/x?limit=21"))).status).toBe(400);
   });
