@@ -52,7 +52,7 @@
 
 /* Product polish: one summary strip, one exchange panel, links that read as links. */
 .srOnly{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap;font-size:var(--fan-heading-size);font-weight:var(--fan-heading-weight);line-height:var(--fan-heading-leading)}
-@media(min-width:48rem){.srOnly{font-size:var(--fan-heading-size-wide)}}
+@media(min-width:48rem){.srOnly{font-size:var(--fan-heading-size)}}
 .page{gap:32px}
 @media(max-width:767px){
  .page{gap:24px;padding-top:var(--space-4)}

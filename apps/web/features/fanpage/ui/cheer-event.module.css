@@ -1,4 +1,4 @@
-.banner,.sidebar,.detail,.modal { --color-primary-action:linear-gradient(110deg,#d61a70,#9d42e7); color:var(--color-ink,#19181c); font-family:"Pretendard Variable",Pretendard,-apple-system,BlinkMacSystemFont,system-ui,sans-serif; }
+.banner,.sidebar,.detail,.modal { color:var(--color-ink,#19181c); }
 .banner *,.sidebar *,.detail *,.modal * { box-sizing:border-box; }
 .banner h2,.sidebar h2,.detail h2,.modal h2 { margin:0; text-wrap:balance; }
 .banner p,.sidebar p,.detail p,.modal p { text-wrap:pretty; }
@@ -9,7 +9,7 @@
 .promotionHeading h2 { font-size:36px; font-weight:850; line-height:1.28; white-space:pre-line; }
 .promotionRewards { grid-column:2; grid-row:1 / 3; min-width:0; }
 .promotionAction { align-self:start; min-width:0; }
-.primary { display:flex; flex-wrap:wrap; align-items:center; justify-content:center; gap:12px 20px; min-height:56px; padding:12px 16px; border:0; border-radius:12px; background:var(--color-primary-action); color:#fff; font-size:16px; font-weight:750; text-align:center; text-decoration:none; line-height:1.4; }
+.primary { display:flex; flex-wrap:wrap; align-items:center; justify-content:center; gap:12px 20px; min-height:56px; padding:12px 16px; border:0; border-radius:12px; background:var(--color-accent); color:#fff; font-size:16px; font-weight:750; text-align:center; text-decoration:none; line-height:1.4; }
 .entryTag { flex:none; padding:5px 8px; border-radius:6px; background:#fff; color:#bc0759; font-size:11px; font-weight:750; line-height:1.4; }
 .doubleReward { display:flex; align-items:center; gap:24px; margin:0 0 16px; color:#982455; }
 .doubleReward > strong,.double { flex:none; color:#d80b6a; font-size:88px; font-weight:850; line-height:1.05; font-variant-numeric:tabular-nums; white-space:nowrap; }
@@ -67,7 +67,7 @@
 .eventComments form { padding-top:12px; }
 .eventComments form > div { display:flex; flex-direction:column; align-items:stretch; gap:16px; }
 .eventComments form small { max-width:none; font-size:12px; }
-.eventComments form button[type="submit"] { display:flex; flex-wrap:wrap; justify-content:center; align-items:center; gap:12px; width:100%; min-height:56px; border-radius:12px; background:var(--color-primary-action); font-size:16px; }
+.eventComments form button[type="submit"] { display:flex; flex-wrap:wrap; justify-content:center; align-items:center; gap:12px; width:100%; min-height:56px; border-radius:12px; background:var(--color-accent); font-size:16px; }
 .eventComments form textarea { min-height:140px; background:#f8f7fa; }
 .backdrop { z-index:var(--z-dialog); display:grid; place-items:center; padding:max(16px,env(safe-area-inset-top)) max(16px,env(safe-area-inset-right)) max(16px,env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left)); background:rgb(20 19 24 / 58%); }
 .modal { width:min(600px,100%); max-height:calc(100dvh - 32px); overflow:auto; border:0; border-radius:24px; background:#fff; box-shadow:0 16px 64px #0002; }
@@ -101,7 +101,7 @@
 .backdrop .modal { max-height:calc(100dvh - 32px); }
 .rewardArtwork { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; width:100%; aspect-ratio:1400 / 580; padding:12px; background:#f4e8f7; color:#773695; font-size:13px; font-weight:750; }
 .rewardArtwork svg { width:32px; height:32px; }
-.photocardViewer { width:min(640px,calc(100vw - 32px)); max-height:calc(100dvh - 32px); overflow:auto; padding:20px; border-radius:20px; background:#fff; color:var(--color-ink); font-family:"Pretendard Variable",Pretendard,sans-serif; }
+.photocardViewer { width:min(640px,calc(100vw - 32px)); max-height:calc(100dvh - 32px); overflow:auto; padding:20px; border-radius:20px; background:#fff; color:var(--color-ink); }
 .photocardImage { display:block; width:100%; height:auto; margin-top:16px; user-select:none; }
 .photocardAction { display:inline-flex; align-items:center; min-height:44px; color:var(--color-ink); }
 .photocardClaim { display:grid; gap:16px; margin-top:16px; }

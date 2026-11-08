@@ -1,4 +1,4 @@
-.screen { width:100%; min-height:calc(100dvh - 68px); margin:0; padding:0; border:0; background:#fff; color:oklch(18% 0 0); font-family:"Pretendard Variable",Pretendard,-apple-system,BlinkMacSystemFont,system-ui,sans-serif; }
+.screen { width:100%; min-height:calc(100dvh - 68px); margin:0; padding:0; border:0; background:#fff; color:oklch(18% 0 0); }
 .screen * { box-sizing:border-box; }
 .frame { width:min(100%,1168px); min-height:100%; margin:auto; padding:32px 24px 40px; }
 .headerActions { display:flex; min-width:0; align-items:center; gap:16px; }
@@ -40,11 +40,11 @@
 .stampImpact > span { width:100%; max-width:none; }
 .stampImpact > .stampPress { width:100% !important; height:auto !important; aspect-ratio:1; }
 .stampMoment[data-state="settling"] .stampImpact { animation:stamp-settle 240ms cubic-bezier(.2,0,0,1) both; }
-.summary { display:grid; overflow:hidden; border:1px solid var(--color-line); border-radius:var(--radius-collection); }
+.summary { display:grid; overflow:hidden; border:1px solid var(--color-line); border-radius:var(--radius-card); }
 .scoreSummary { display:grid; justify-items:center; gap:8px; padding:24px 20px 20px; }
 .scoreSummary > span { color:var(--color-muted); font-size:13px; font-weight:550; line-height:1.5; text-align:center; }
 .scoreSummary > strong { font-size:40px; font-weight:800; letter-spacing:-.04em; line-height:1.1; font-variant-numeric:tabular-nums; }
-.stampStatus { display:flex; align-items:center; justify-content:center; gap:6px; margin:0; padding:0 16px 20px; color:var(--color-success); text-align:center; font-size:14px; font-weight:650; line-height:1.5; }
+.stampStatus { display:flex; align-items:center; justify-content:center; gap:6px; margin:0; padding:0 16px 20px; color:var(--color-ink); text-align:center; font-size:14px; font-weight:650; line-height:1.5; }
 .stampStatus:first-child { padding-top:var(--space-5); }
 .stampStatus svg { flex:none; width:16px; height:16px; }
 .summaryFacts { display:grid; margin:0; padding:0 20px; border-top:1px solid var(--color-line-subtle); }

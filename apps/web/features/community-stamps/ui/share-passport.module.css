@@ -20,7 +20,7 @@
 .secondaryButton:focus-visible { outline:3px solid #292929; outline-offset:3px; }
 .secondaryButton svg { width:17px; height:17px; }
 .srOnly { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
-.landing { font-family:"Pretendard Variable",Pretendard,-apple-system,BlinkMacSystemFont,system-ui,sans-serif; min-height:100dvh; display:grid; place-items:center; padding:24px 16px; background:radial-gradient(circle at 10% 5%,#f5eafa 0,transparent 34%),#f6f6f5; color:#292929; }
+.landing { min-height:100dvh; display:grid; place-items:center; padding:24px 16px; background:radial-gradient(circle at 10% 5%,#f5eafa 0,transparent 34%),#f6f6f5; color:#292929; }
 .landingCard { min-width:0; width:min(100%,460px); padding:30px 24px 24px; text-align:center; background:#fff; border:1px solid #e8e8e8; border-radius:28px; box-shadow:0 16px 48px rgb(42 26 48 / 10%); }
 .eyebrow { display:flex; align-items:center; justify-content:center; gap:6px; color:#813193; font-size:11px; font-weight:800; letter-spacing:.1em; }
 .eyebrow svg { width:15px; height:15px; fill:currentColor; }

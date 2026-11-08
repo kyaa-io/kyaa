@@ -2,7 +2,7 @@
 .panel {
   display: grid;
   grid-template-rows: 1fr;
-  transition: grid-template-rows var(--motion-layout) var(--motion-easing);
+  transition: grid-template-rows var(--motion-slow) var(--motion-easing);
 }
 .panel[data-state="closed"] { grid-template-rows: 0fr; }
 .inner { min-height: 0; overflow: hidden; }
@@ -29,7 +29,7 @@
 .trigger:focus-visible { outline: var(--focus-width) solid var(--color-focus); outline-offset: var(--focus-offset); border-radius: var(--radius-control); }
 .triggerLabel { flex: 1; min-width: 0; overflow-wrap: anywhere; word-break: keep-all; }
 .triggerMeta { flex: none; color: var(--color-muted); font-size: var(--fan-metadata-size); font-weight: 600; font-variant-numeric: tabular-nums; }
-.chevron { width: var(--space-5); height: var(--space-5); flex: none; color: var(--color-muted); transition: transform var(--motion-control) var(--motion-easing); }
+.chevron { width: var(--space-5); height: var(--space-5); flex: none; color: var(--color-muted); transition: transform var(--motion-fast) var(--motion-easing); }
 .trigger[aria-expanded="true"] .chevron { transform: rotate(180deg); }
 
 @media (prefers-reduced-motion: reduce) {

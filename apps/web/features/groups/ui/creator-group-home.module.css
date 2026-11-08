@@ -8,12 +8,12 @@
 .main.main { display:grid; gap:var(--fan-section-gap); min-width:0; }
 .stories { display:grid; gap:var(--space-3); min-width:0; }
 .storiesHeader { display:flex; align-items:center; justify-content:space-between; gap:var(--space-4); min-width:0; }
-.storiesHeader h2 { margin:0; min-width:0; font:400 24px/var(--fan-heading-leading) "Pretendard UI 850",system-ui,sans-serif; font-synthesis:none; }
+.storiesHeader h2 { margin:0; min-width:0; font-weight:800;font-size:24px;line-height:var(--fan-heading-leading); font-synthesis:none; }
 .storiesHeader a { flex:none; min-height:44px; white-space:nowrap; }
 .toolbar { display:flex; align-items:center; justify-content:space-between; gap:var(--space-4); min-width:0; }
 .toolbar > :first-child { min-width:0; }
 .rows { display:grid; min-width:0; }
-@media (max-width:1023px) { .storiesHeader h2 { font:700 20px/var(--fan-heading-leading) "Pretendard Variable",system-ui,sans-serif; } }
+@media (max-width:1023px) { .storiesHeader h2 { font-weight:700;font-size:20px;line-height:var(--fan-heading-leading); } }
 @media (max-width:767px) { .rows > :nth-child(n+6) { display:none; } }
 .infoAside.infoAside { padding:0; }
 .mobileOnly { display:grid; gap:var(--space-2); }

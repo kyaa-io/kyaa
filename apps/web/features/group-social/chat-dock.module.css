@@ -3,7 +3,7 @@
   position: fixed; right: var(--space-6); bottom: var(--space-6); z-index: var(--z-dropdown);
   display: flex; flex-direction: column; box-sizing: border-box; width: 360px; height: 480px; max-height: calc(100dvh - var(--space-12));
   background: var(--color-surface); color: var(--color-ink);
-  border: 1px solid var(--color-line); border-radius: var(--radius-collection); box-shadow: 0 var(--space-2) var(--space-6) var(--color-line); overflow: hidden;
+  border: 1px solid var(--color-line); border-radius: var(--radius-card); box-shadow: 0 var(--space-2) var(--space-6) var(--color-line); overflow: hidden;
 }
 .header { display: flex; align-items: center; gap: var(--space-2); flex: none; min-height: 56px; box-sizing: border-box; padding: var(--space-1) var(--space-1) var(--space-1) var(--space-3); border-bottom: 1px solid var(--color-line-subtle); }
 .avatar { display: flex; align-items: center; justify-content: center; flex: none; width: 32px; height: 32px; border-radius: 50%; object-fit: contain; background: var(--color-soft); color: var(--color-muted); }

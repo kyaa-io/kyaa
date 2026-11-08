@@ -11,14 +11,14 @@
   font-variant-numeric:tabular-nums;
   line-height:1.4;
   white-space:nowrap;
-  color:var(--color-service-ink);
+  color:var(--color-page-accent);
 }
 .indicator[data-variant="badge"] {
   min-height:26px;
   padding:3px 9px;
   border:1px solid var(--color-line-subtle);
   border-radius:var(--radius-pill);
-  background:var(--color-surface-focus);
+  background:var(--color-soft);
 }
 .indicator[data-live-time="live"] { color:var(--color-error); }
 .indicator[data-live-time="ended"],.indicator[data-live-time="cancelled"] { color:var(--color-muted); }

@@ -269,7 +269,7 @@
   .carouselControls button:focus-visible,.viewAll:focus-visible { outline:3px solid var(--color-ink); outline-offset:-3px; border-radius:8px; }
 }
 .modalBackdrop { display:grid; place-items:center; padding:24px; background:rgb(0 0 0 / .38); }
-.modal { font-family:"Pretendard Variable",Pretendard,-apple-system,BlinkMacSystemFont,system-ui,sans-serif; width:min(100%,640px); max-height:calc(100dvh - 48px); display:flex; flex-direction:column; border-radius:16px; background:#fff; color:var(--color-ink); box-shadow:0 16px 48px rgb(0 0 0 / .18); overflow:hidden; }
+.modal { width:min(100%,640px); max-height:calc(100dvh - 48px); display:flex; flex-direction:column; border-radius:16px; background:#fff; color:var(--color-ink); box-shadow:0 16px 48px rgb(0 0 0 / .18); overflow:hidden; }
 .modalHeader { display:flex; align-items:center; justify-content:space-between; gap:16px; padding:16px 20px; border-bottom:1px solid var(--color-line); }
 .modalHeader h2 { margin:0; font-size:20px; line-height:1.4; }
 .modalHeader button { display:grid; flex:none; place-items:center; width:44px; height:44px; border:0; border-radius:8px; background:transparent; color:inherit; cursor:pointer; }
@@ -329,7 +329,7 @@
 }
 @media (min-width:64rem) {
   .listHead { display:flex; align-items:center; gap:var(--space-3); margin-bottom:var(--space-3); }
-  .listHead h1,.listHead h2 { margin:0; font-size:var(--fan-heading-size-wide); }
+  .listHead h1,.listHead h2 { margin:0; font-size:var(--fan-heading-size); }
   .listCount { flex:none; }
   .monthEmpty { margin:var(--space-4) 0 0; font-size:var(--fan-description-size); font-weight:600; color:var(--color-muted); text-align:left; }
 }

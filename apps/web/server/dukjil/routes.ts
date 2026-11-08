@@ -1,4 +1,5 @@
 import "server-only";
+import { kstMidnightAfter } from "@/server/kst-midnight";
 import { z } from "zod";
 import { AuthError } from "@/features/auth/domain/auth-errors";
 import {
@@ -87,7 +88,9 @@ export function createDukjilHandlers(deps: DukjilDependencies) {
         if (!celebrity) throw new Error("CREATOR_NOT_FOUND");
       }
       const raw = await deps.rpc("read_dukjil_today", { p_user: appUserId, p_celebrity: celebrity });
-      return Response.json(checked(dukjilTodaySchema, raw), { headers: privateHeaders });
+      const today = checked(dukjilTodaySchema, raw);
+      const resetAt = kstMidnightAfter(today.kstDate);
+      return Response.json(resetAt ? { ...today, resetAt } : today, { headers: privateHeaders });
     }),
     attendanceList: (request: Request) => run(async () => {
       const { appUserId } = await deps.authorize(request.headers.get("authorization"));
