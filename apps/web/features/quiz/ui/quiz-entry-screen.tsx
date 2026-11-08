@@ -21,10 +21,9 @@ import { appendLiveReturnTo, sanitizeLiveReturnTo } from "../domain/live-return-
 import { certificationListHref, clearQuizCloseReturn, readQuizCloseReturn, rememberQuizFocusReturn, type QuizCloseReturn } from "../domain/quiz-close-return";
 import { consumeAuthIntent, readAuthIntent } from "@/components/auth-intent";
 import { AuthIntentLink } from "@/components/auth-intent-link";
-import { FocusFlowFrame } from "@/components/fan-shell/focus-flow-frame";
 import { FanLanguageSwitch } from "@/components/fan-shell/fan-language-switch";
 import { FanAction, fanActionClassName } from "@/components/fan-ui/fan-action";
-import type { FanLocale } from "@/components/fan-shell/fan-app-shell";
+import { FanAppFrame, type FanLocale } from "@/components/fan-shell/fan-app-shell";
 import { appendLoginContext, sanitizeAuthIntentId } from "@/components/login-intent";
 import styles from "./quiz-entry-screen.module.css";
 
@@ -358,7 +357,7 @@ export function QuizEntryScreen({
     screen.intro.quiz.availability === "available";
 
   return (
-    <FocusFlowFrame locale={locale} mainId="fan-verification-intro-main" languageSwitch={!dialogOpen}>
+    <FanAppFrame locale={locale} mainId="fan-verification-intro-main">
       <main className={styles.page} id="fan-verification-intro-main" tabIndex={-1}>
       <div
         className={topAligned ? `${styles.shell} ${styles.shellTopAligned}` : styles.shell}
@@ -428,6 +427,6 @@ export function QuizEntryScreen({
         )}
       </div>
       </main>
-    </FocusFlowFrame>
+    </FanAppFrame>
   );
 }
