@@ -25,7 +25,7 @@ radius-scale: "12px / 8px / pill"
 | 본문 | 본문 15(390)·14(768+)/400/1.5, 글 본문·댓글 15 고정 | `--fan-body-size(-wide)`, `--fan-post-body-size` | 2026-11-09 8장 ① |
 | 보조 정보 | 메타 12/400 `--color-muted` | `--fan-metadata-size` | 2026-11-09 R1 |
 | 카드 외곽 | 카드 12 반경(`--radius-card`), 1px `--color-line`, 그림자 0, 바탕 `--color-surface` 위 캔버스 `--color-soft` | `FanSurface` | 2026-11-09 8장 ⑦ R14 |
-| 강조 버튼 | primary: 단색 `--color-accent`(`--color-page-accent`) 채움 + 흰 글자, 높이 44(390)/48(1024+), 반경 8, 15/700. 화면당 1개(예외: 럭키드로우 응모 가능 상태에서는 `응모하기` primary·`교환` secondary — 8장 plan ③) | `fan-action.module.css` | 2026-11-09 8장 ②④⑤ |
+| 강조 버튼 | primary: 단색 `--color-accent`(`--color-page-accent`) 채움 + 흰 글자, 높이 44(390)/48(1024+), 반경 8, 15/700. 현재 dev: 알약·48 고정·모임 밖 그림자(게이트 A 전까지 알약·48 유지). 화면당 1개(예외: 럭키드로우 응모 가능 상태에서는 `응모하기` primary·`교환` secondary — 8장 plan ③) | `fan-action.module.css` | 2026-11-09 8장 ②④⑤ |
 | 보조 버튼 | secondary: 높이 44, 반경 8, 1px `--color-ink` 선, 15/700 | `fan-action.module.css` | 2026-11-09 R14 |
 | 탭/세그먼트(칩) | 밑줄 탭(`underline`) 44 sticky top 56, 15/700, 활성 밑줄 2px accent / 칩 36 반경 8 14/700, 선택 `--color-accent-soft` + 1px accent / 세그먼트 40 반경 8 | `fan-tabs.tsx` | 2026-11-09 R3·R14 |
 | 빈 상태 | 섹션 틀 유지 + 회색 14/400 한 문장(`…이 없습니다`, 느낌표·권유 0), 높이 = 그 자리 행 템플릿(78), 아이콘·일러스트·버튼 0. 행동이 필요하면 아래 행 자체(`지난 럭키드로우 ›`, `+ 최애 고르기`). 비로그인은 빈 상태가 아니라 잠금(`FanLockedValue`, 화면당 로그인 primary 1) | `fan-state.tsx` | 2026-11-09 R7 + 5장 |
@@ -45,8 +45,8 @@ radius-scale: "12px / 8px / pill"
 | 페이지 머리(팬페이지) | 팬페이지 히어로(6차 적용): 390 높이 ≤ 첫 화면 1/3, 이름 26 + `팬 1.2K · ✓ 가입` 1줄 + 버튼 1 + SNS 줄, 이미지 반경 12 | `fan-page-header` | 2026-11-09 8장 block ④(6차) |
 | 별 버튼 | 높이 36, 반경 8, 12/700 | `fan-star-action` | 2026-11-09 R14 |
 | 유형·공지·인증 태그 | 상태 배지 `FanTag` 높이 20 알약 11/700, 팬페이지·인증 태그는 `--color-accent-soft`/`-ink`(강조색 1 안), 모임·취미는 `--color-soft`/muted | `fan-tag` | 2026-11-09 R14 |
-| 페이지 카드·행 | `FanEntityCard` → `FanRow notice`(78, 사실 ≥ 2)로 대체 | `fan-row` | 2026-11-09 R5·R18 |
-| 게시판 목록 행 | `FanPostRow` → `FanRow notice` 78(홈 미리보기는 폐지 — 8장 plan ⑦) | `fan-row` | 2026-11-09 R5 |
+| 페이지 카드·행 | 목표: `FanRow notice`(78, 사실 ≥ 2). **5차 보류**, 현재 소유자 = `FanEntityCard` | `fan-entity-card`(현재) | 2026-11-09 R5·R18. `FanRow`는 아직 없다(C15) |
+| 게시판 목록 행 | 목표: `FanRow notice` 78. **5차 보류**, 현재 소유자 = `FanPostRow` | `fan-post-row`(현재) | 2026-11-09 R5. `FanRow`는 아직 없다(C15) |
 | 로딩 | `FanSkeleton`만 쓴다. `불러오는 중` 글자와 `FanState kind="loading"`을 쓰지 않는다. 비로그인의 내 값 자리는 로딩이 아니라 `FanLockedValue`·`FanLockedRows`다. 스켈레톤은 실제 내용과 같은 자리·크기(로딩 전후 높이 차 0), 150ms 안에 값이 오거나 캐시가 있으면 그리지 않는다. 구역 제목은 실제 글자로 둔다. 캘린더는 날짜 칸을 바로 그리고 일정만 채운다. 바탕 #f2f0f3, 띠 #f9f8fa, 1.2초, 움직임 줄이기에서 멈춤 | `components/fan-ui/fan-skeleton.tsx` | 2026-11-07 [15][33] |
 | 상단 고정·캐시 | 페이지 머리·접속 띠·탭은 라우트 레이아웃의 `GroupPageFrame`이 그린다(재마운트·재요청 없음). 집계 응답은 60초 캐시 + `fetchedAt` 노출, 포커스 복귀 재조회 | `use-group-resource.ts` | 2026-11-09 R21 |
 | 화면 밀림 금지 | 검색·필터·정렬·탭은 자기보다 위의 영역을 없애거나 만들지 않는다. 다시 불러올 때 이전 목록 유지, 스켈레톤은 첫 로딩만. 빈 상태 높이 = 행 템플릿(78). 쿼리만 바뀌는 이동은 `scroll:false` | 화면별 | 2026-11-09 R7 |
@@ -59,14 +59,16 @@ radius-scale: "12px / 8px / pill"
 | 바텀시트 `FanSheet` | 390 바닥(위 모서리 12, 최대 85dvh, 안전 영역), 1024+ 오른쪽 서랍(폭 420) | `fan-dialog.tsx` | 2026-11-09 R14 |
 | 드롭다운 `FanMenu` | 항목 48, 15/700, 반경 12, 1px 선, `--shadow-overlay`, 열림·닫힘 150ms | `fan-menu` | 2026-11-09 R5 |
 | 툴팁·도움말 | `FanTooltip`은 아이콘 이름표만(문장 0). `FanHelpTip`·`HelpHint` 폐기. 설명이 필요하면 `data-explains` 회색 12px 한 문장(설정·알림·번역 화면만, ≤ 2/화면) 또는 `자세히 ›` → `FanDialog sm` 한 문장 / `/guide/dukjil` | `fan-tooltip` | 2026-11-09 R6 |
-| 접기 `FanCollapsible` | 머리 = `FanRow` 64(미션) 또는 48(메뉴) 규격, 오른쪽 `9개 +465P ˅`, 체브론 150ms, 패널 200ms. 닫힌 내용은 `inert`·남겨 둠, `persistKey` 세션 유지 | `fan-collapsible` | 2026-11-09 R5·R15 |
-| 숫자 `FanNumber`·게이지 `FanGauge` | hero 44/48/800(화면당 1) · 2단계 24/800(카드 안, `lg`·`xl`) · 라벨-값 15/700(`md`). `tabular-nums`·폭 예약. 게이지 = 2px 막대(`size="line"`, 미션·챌린지, 폭 160/240·480) 또는 9칸 segments, 숫자는 막대 밖 12 | `fan-number.tsx` | 2026-11-09 R1 + 5장 |
-| 숫자 칩 `FanCount` | 헤더·탭바는 점 `FanDot`(8px 빨강), 숫자는 알림함 안 `읽지 않음 N`만. 섹션 머리 카운터는 12 muted `9개` | `fan-count-chip`, `fan-dot` | 2026-11-09 8장 ⑩ R9 |
+| 접기 `FanCollapsible` | 머리 = 64(미션) 또는 48(메뉴) 규격(`FanRow`는 5차 보류, 소유자 없음), 오른쪽 `9개 +465P ˅`, 체브론 150ms, 패널 200ms. 닫힌 내용은 `inert`·남겨 둠, `persistKey` 세션 유지 | `fan-collapsible` | 2026-11-09 R5·R15 |
+| 숫자 `FanNumber`·게이지 `FanGauge` | hero 44/48/800(화면당 1) · 2단계 24/800(카드 안, `lg`·`xl`) · 라벨-값 16/700(`md`, 지금 `--fan-item-title-size` 16. 15는 게이트 C 뒤). `tabular-nums`·폭 예약. 게이지 = 2px 막대(`size="line"`, 미션·챌린지, 폭 160/240·480) 또는 9칸 segments, 숫자는 막대 밖 12 | `fan-number.tsx` | 2026-11-09 R1 + 5장 |
+| 숫자 칩 `FanCount` | 헤더·탭바는 점 `FanDot`(8px 빨강, `FanRow`와 무관), 숫자는 알림함 안 `읽지 않음 N`만. 섹션 머리 카운터는 12 muted `9개` | `fan-count-chip`, `fan-dot` | 2026-11-09 8장 ⑩ R9 |
 | 토스트 `FanToast` | 루트 레이아웃에 하나. 제목 1줄만, `--shadow-overlay`, 반경 12 | `fan-toast` | 2026-11-09 R11 |
 | 버튼 변형 | `danger`(모달 안 확인만), `secondary`(= `neutral`), `size="sm"`(36, 누르는 영역 44). `trailingIcon` 화살표(`ArrowRight`) 금지 — 이동은 `FanRow`의 `›`만. `service`·`passport` 그라데이션 테두리 변형 폐기(남은 호출은 secondary 모양) | `fan-action.tsx` | 2026-11-09 R16·8장 ⑤ |
 | 연출 범위(Motion) | `motion`은 보상·미션 완료·출석 연출에만. + 럭키드로우 idle(`features/lucky-draw/`) 허용 경로, 스탬프 연출(`stamp-slam`)만 0.9초 예외 | N16 | 2026-11-09 8장 ⑧ R20 |
 
-측정 주의(2026-11-09): 정적 글꼴 `Pretendard UI 550/650/850`은 폐기했다. 글꼴은 `Pretendard Variable` 1벌이고 굵기는 400·700·800 토큰으로만 읽는다. r5 측정은 `apps/web/scripts/measure-r3.mjs`(루브릭 r3 U1~U16).
+현재 코드 상태(2026-11-09 design-sync-1, `board/tasks/design-sync/plan-ux.md` 판정): 위 표의 h1 26·h2 18·본문 15·메타 12(게이트 C), 강조 버튼 반경 8·390 높이 44(게이트 A), 칩 36(게이트 B), 페이지 전체 빈 상태(게이트 D), `FanRow`·`LuckyDrawModule`(5차 보류)은 **목표값이며 아직 코드에 없다**. 지금 코드는 h1=h2 20/24, 본문 16, 메타 13, 강조 버튼 알약 48, 칩 44다. 1단계(design-sync-1, 같은 브랜치의 뒤 커밋)로 바뀌는 값: 강조 버튼 단색·그림자 0·700, 굵기 400·700·800, 구역 안 빈 상태 78 한 문장.
+
+측정 주의(2026-11-09): 정적 글꼴 `Pretendard UI 550/650/850` 폐기는 **예정**이다. `globals.css`에 `@font-face` 6개와 `public/fonts/pencil/*.woff`가 남아 있다. 화면 글꼴은 `Pretendard Variable` 1벌이고, 굵기는 400·700·800 토큰으로 읽는다(1단계). r5 측정은 `apps/web/scripts/measure-r3.mjs`(루브릭 r3 U1~U16).
 
 ### 검증 절차 — 화면 기준선(층 4)
 
@@ -97,7 +99,7 @@ radius-scale: "12px / 8px / pill"
 | 메타 | 12 | 12 | 400 | 1.4 | `--fan-metadata-size`, 색 `--color-muted` |
 | 배지·상태 알약 | 11 | 11 | 700 | 1 | `--fan-badge-size`, 높이 20 |
 
-굵기는 **400·700·800** 세 값만. 글꼴은 `Pretendard Variable` 1벌(`globals.css` body 한 줄)이며 정적 `Pretendard UI 550/650/850` 웹 글꼴은 폐기했다(TTF는 공유 이미지 서버 렌더에만 남음). 모듈 CSS의 `font-family` 선언은 0이 기준이고, 예외는 온체인 주소 표시의 `ui-monospace`. 전역 `body { word-break: keep-all; overflow-wrap: anywhere }`. 영문·숫자도 같은 벌, 숫자는 `tabular-nums`만. 삭제한 토큰: `--fan-description-*`, `--fan-aside-title-*`(사이드 제목 = h2 18/700), `--fan-heading-editorial-weight`, `--fan-personal-section-*`, `--fan-event-catalog-title-size`, `--fan-action-emphasis-size`, `--fan-heading-size-wide`.
+굵기는 **400·700·800** 세 값만. 글꼴은 `Pretendard Variable` 1벌(`globals.css` body 한 줄)이며 정적 `Pretendard UI 550/650/850` 웹 글꼴은 폐기했다(TTF는 공유 이미지 서버 렌더에만 남음). 모듈 CSS의 `font-family` 선언은 0이 기준이고, 예외는 온체인 주소 표시의 `ui-monospace`. 전역 `body { word-break: keep-all; overflow-wrap: anywhere }`. 영문·숫자도 같은 벌, 숫자는 `tabular-nums`만. 삭제 예정 토큰(1단계는 globals에 별칭으로 남김, 값 동일, 사용처 치환 전): `--fan-description-*`, `--fan-aside-title-*`(사이드 제목 = h2 18/700), `--fan-heading-editorial-weight`, `--fan-personal-section-*`, `--fan-event-catalog-title-size`, `--fan-action-emphasis-size`, `--fan-heading-size-wide`.
 
 ### 색 (강조 1색 — 2026-11-09 8장 ⑤⑥)
 | 역할 | 값 | 토큰 |
@@ -110,7 +112,7 @@ radius-scale: "12px / 8px / pill"
 | 상태색 | 빨강 1 #9f1239(오류·LIVE·알림 점). 성공은 체크 아이콘 + 잉크 | `--color-error` |
 | 비활성 | #e5e5e5 / #5d5d5d (보랏빛 회색 #e4e1e6 폐기) | `--fan-action-disabled-bg/-ink` |
 | 백드롭 · 포커스 링 | rgb(23 23 26 / 42%) · `--color-ink` 3px/3px | `--color-backdrop`, `--color-focus`, `--focus-width`, `--focus-offset` |
-| 폐기 | 3색 그라데이션 `--color-primary-action`(로고 아트 제외), 코인 노랑 `--color-coin(-ink)`(→ lucide `Coins` 선 아이콘 + 잉크 글자), 금박 `--color-foil`(패스포트 삽화는 이미지 안에서만), 보라 `--color-service-ink`(→ `--color-page-accent`), `--color-surface-focus`(→ `--color-soft`), `--color-success`·`--color-warning`(→ 잉크) | 2026-11-09 기계 치환 완료 |
+| 폐기 | 3색 그라데이션 `--color-primary-action`(로고 아트 제외), 코인 노랑 `--color-coin(-ink)`(→ lucide `Coins` 선 아이콘 + 잉크 글자), 금박 `--color-foil`(패스포트 삽화는 이미지 안에서만), 보라 `--color-service-ink`(→ `--color-page-accent`), `--color-surface-focus`(→ `--color-soft`), `--color-success`·`--color-warning`(→ 잉크) | 예정: 모두 globals에 남아 있다. `--color-primary-action`·`--color-service-ink`·`--color-surface-focus`는 별칭 단계(값이 accent 계열과 같음), 코인·금박·성공·경고는 원래 값. 사용처 치환 전 |
 
 **H6 색 교체(사용자 지시 2026-11-08, 브리프 규칙 8 개정)**: UI 강조색은 kyaa 핑크 1색(`--color-accent` #d11b62, 흰 글자 대비 5.19:1이라 짙은 변형 없이 버튼에 쓰고, 글자용은 기존 `-ink` #ad1457). 로고 팔레트(#fd48aa 계열)에서 UI 토큰을 따로 늘리지 않았다. **보라는 CSS·TSX의 hex·rgb·hsl·oklch에서 전부 제거**(색상 250~320°·채도 10% 이상, 보랏빛 회색 포함, 로고·그림 아트 파일만 허용)하고 같은 자리를 핑크 토큰으로 바꿨다: 옅은 바탕 → `-soft`, 테두리 → `-line`, 채움·링크 → `-accent`, 짙은 글자 → `-ink`. 보랏빛 회색은 중립 토큰(`--color-soft` 바탕 1단, `--color-line-subtle`·`--color-line` 선, `--color-muted`·`--color-ink` 글자)으로 모았다. 핑크→보라 3색 그라데이션 버튼 50여 곳은 핑크 단색으로 바꿨다. **짙은 회색 채움 캡슐 금지**: 캡슐·칩·배지는 흰 바탕 + 1px 테두리(선택은 핑크 테두리·글자 또는 옅은 핑크 바탕 1단), 진행 막대·행동 버튼·읽지 않음 배지·단계 번호는 `--color-accent`. 기계 검사는 N29(보라 색상값)·N30(짙은 회색 알약), 예외는 Apple 로그인 버튼(브랜드)·영상 위 표시·관리자 설문 번호.
 
@@ -118,7 +120,7 @@ radius-scale: "12px / 8px / pill"
 | 항목 | 값 | 토큰 |
 |---|---|---|
 | 간격 | 4·8·12·16·20·24·32·40·48·64 | `--space-1`~`--space-16`. 쓰임은 핵심 규칙 표 "간격" 행 |
-| 반경 2단 + 원형 | **12**(카드·다이얼로그·시트·입력·메뉴·토스트·히어로 이미지) · **8**(버튼·칩·탭 칩·배지 상자·아이콘 컨테이너) · 알약(상태 배지 `FanTag`·`✓ 완료`·점에만) · 원형 50%(아바타·선 원 아이콘) | `--radius-card`, `--radius-control`, `--radius-pill`. `--radius-collection`·`--radius-hero` 폐기, 10·16·20px 직접값 0(8장 ④, N27) |
+| 반경 2단 + 원형 | **12**(카드·다이얼로그·시트·입력·메뉴·토스트·히어로 이미지) · **8**(버튼·칩·탭 칩·배지 상자·아이콘 컨테이너) · 알약(상태 배지 `FanTag`·`✓ 완료`·점에만) · 원형 50%(아바타·선 원 아이콘) | `--radius-card`, `--radius-control`, `--radius-pill`. `--radius-collection`(16)·`--radius-hero`(20) 폐기 예정(globals에 남음, 사용처 치환 전, C1 ②), 10·16·20px 직접값 0은 목표(N27 집계). 현재 `--radius-control`은 12(8은 게이트 A), `--radius-card` 12는 2026-11-09 design-sync-1에서 신설 |
 | 최소 터치 | 44 | `--min-target` |
 | 강조 버튼 높이 | 44(390) · 48(1024+) | `--fan-action-primary-height` |
 | 셸 | 헤더 56 · 컨텍스트 탭바 44 · 390 하단 탭바 56 | `--fan-shell-top`, `--fan-tabbar`, `--fan-bottom-nav-height` |
@@ -126,18 +128,18 @@ radius-scale: "12px / 8px / pill"
 좌측 액센트 바(`border-left ≥ 3px` 색 선)와 아이콘 뒤 채운 배경(파스텔 사각·원)은 쓰지 않는다.
 
 ### 깊이 (8장 ⑦)
-카드·행·버튼·탭·헤더는 **그림자 0**(구획은 1px `--color-line`). 오버레이(모달·시트·팝오버·드롭다운·툴팁·토스트)만 1토큰 `--shadow-overlay` = `0 8px 24px rgb(0 0 0 / 8%)`. `--shadow-dialog` 폐기. 유채색 그림자·글로·`filter: blur|drop-shadow`·`backdrop-filter` 0(T6·S2·S3 `fail`, N26 집계).
+카드·행·버튼·탭·헤더는 **그림자 0**(구획은 1px `--color-line`). 오버레이(모달·시트·팝오버·드롭다운·툴팁·토스트)만 1토큰 `--shadow-overlay` = `0 8px 24px rgb(0 0 0 / 8%)`. `--shadow-dialog` 폐기 예정(globals에 남음, 3파일 사용). 유채색 그림자·글로·`filter: blur|drop-shadow`·`backdrop-filter` 0(T6·S2·S3 `fail`, N26 집계).
 
 ### 모션 시간과 겹침 순서 (8장 ⑧ "150/200 2단·이징 1종")
 | 토큰 | 값 | 대상 |
 |---|---|---|
-| `--motion-fast` | 150ms | 색·투명도·체브론·탭 선택·메뉴·툴팁 열림·닫힘(나갈 때도 150) |
-| `--motion-slow` | 200ms | 접기 패널·시트·다이얼로그·토스트 이동·게이지 채움·페이지 전환 |
+| `--motion-fast` | 150ms(2026-11-09 design-sync-1 신설) | 색·투명도·체브론·탭 선택·메뉴·툴팁 열림·닫힘(나갈 때도 150) |
+| `--motion-slow` | 200ms(같은 날 신설) | 접기 패널·시트·다이얼로그·토스트 이동·게이지 채움·페이지 전환 |
 | `--motion-easing` | cubic-bezier(.2, 0, 0, 1) | 전부(들어올 때·나갈 때 같은 이징) |
 | 연출 예외(`data-motion`) | 랭킹 행 FLIP 240(`--motion-reorder`), 숫자 카운트 400(`--motion-count`), 스탬프 연출 `stamp-slam` 0.9초 + 보상 팝 600(`--motion-reward`), 럭키드로우 idle 2.4~4.0초(`[data-lucky-module]` 안만) | 8장 ⑧ + R18·R20 |
-| 폐기 | `--motion-control`(→ fast)·`--motion-layout`(→ slow)·`--motion-exit`(→ fast), 미션 nudge 깜빡임, 숫자 펄스 1.06 | 2026-11-09 기계 치환 완료 |
+| 폐기 | `--motion-control`(→ fast)·`--motion-layout`(→ slow)·`--motion-exit`(→ fast), 미션 nudge 깜빡임, 숫자 펄스 1.06 | 예정: 세 토큰은 globals에 원래 값(160·240·120ms)으로 남아 있고 사용처 치환 전 |
 
-`--z-*`: 헤더 20 · 하단 내비 30 · 드롭다운 35 · 백드롭 40 · 서랍 45 · 다이얼로그 50 · alertdialog 55 · 토스트 58 · 툴팁 60. z-index는 이 토큰만 쓴다(T8).
+`--z-*`: 헤더 20 · 하단 내비 30 · 드롭다운 35 · 백드롭 40 · 서랍 45 · 다이얼로그 50 · alertdialog 55 · 토스트 1100(옛 모달 z 100~1000 정리(T8) 뒤 58) · 툴팁 60. z-index는 이 토큰만 쓴다(T8).
 
 ## 2. 공통 컴포넌트와 쓰는 경우
 
@@ -161,11 +163,11 @@ radius-scale: "12px / 8px / pill"
 | `FanTabs` | `underline` 44 sticky top 56(페이지·보조 탭), `chip` 36 반경 8(필터), `segment` 40 반경 8(같은 자료 2~3개 보기) | 링크 탭(`href`)은 라우터가 그린다 |
 | `FanState` | 빈 상태(`empty`)는 한 문장 전용(`icon`·`actions` 없음), 오류(`error`)는 한 문장 + `다시 시도` 텍스트, 잠금(`auth`)은 로그인 primary 1 허용 | `kind=\"loading\"`은 쓰지 않는다(C6) |
 | `FanSkeleton` · `FanSkeletonRows` | 로딩. 실제 자리·크기와 같게, 구역 제목은 글자로 둔다. 변형 post·entity·member·plain | `불러오는 중` 글자(C5) |
-| `FanSurface` | 카드·면의 바탕(1px 선, 반경 12/16) | `FanCard`는 만들지 않았다(아래 "설계와 다르게 한 것") |
-| `FanRow` (신설, B 담당) | 목록 행 템플릿. variant `menu` 48·`setting` 65/81·`notice` 78·`transaction` 100/72·`label-value` 56·`mission` 64. `data-row` 자동, 오른쪽 칸 `data-row-end`, 사실 `data-fact`, 메타 `data-meta` | `FanEntityCard`·`FanPostRow`는 `FanRow notice`로 대체 |
+| `FanSurface` | 카드·면의 바탕(1px 선, 반경 목표 12. 현재 `--radius-collection` 16, C1 ② 치환 전) | `FanCard`는 만들지 않았다(아래 "설계와 다르게 한 것") |
+| `FanRow` (**5차 보류, 아직 없음**) | 목록 행 템플릿. variant `menu` 48·`setting` 65/81·`notice` 78·`transaction` 100/72·`label-value` 56·`mission` 64. `data-row` 자동, 오른쪽 칸 `data-row-end`, 사실 `data-fact`, 메타 `data-meta` | `FanEntityCard`·`FanPostRow`는 `FanRow notice`로 대체 |
 | `FanIcon` (신설, B 담당) | lucide 래퍼: `strokeWidth` 1.5, size 16·20·24, `data-icon`·`data-icon-set="lucide"`. 화면은 lucide를 직접 import하지 않는다(N25). 코인·티켓·하트 = `Coins`·`Ticket`·`Heart` | 도장 아트는 아이콘이 아니다(`data-art="stamp"`) |
 | `FanDot` (신설, B 담당) | 8px `--color-error` 점(`data-dot`). 헤더·탭바의 새 소식 | 숫자 배지 → 알림함 안 `읽지 않음 N`만 |
-| `LuckyDrawModule` (신설, A 담당) | 핵심 규칙 표 "럭키드로우 모듈" 행 | 카드 목록(`StanLucky`) 대체 |
+| `LuckyDrawModule` (**5차 보류, 아직 없음**) | 현재 소유자 = `StanLucky` | — |
 | `FanRewardPop` · `FanRouteTransition` | 보상·미션 완료 연출 래퍼 / 경로가 바뀔 때 본문 전환. 3절 | 이 두 곳 밖에서 `motion`을 부르지 않는다(N16) |
 
 기존 `FanHeading`·`FanPageHeader`·`FanEntityCard`·`FanPostRow`·`FanStarAction`·`FanLockedValue`는 핵심 규칙 표의 각 행을 따른다.
@@ -292,7 +294,7 @@ node apps/web/scripts/measure-r3.mjs --base http://127.0.0.1:3001 --out <dir> [-
 | 참여 수 축약 기준 1,000(브리프) | 10,000(시안 `하트 1,240` 유지) | 시안 우선(design-md-change 못 본 것) |
 | 보조 열 367(Weverse) | 343(1,100 − 733 − 24) | 컨테이너 1,100 안 2:1 |
 | 홈 랭킹 머리 `이번 주 · 마감`(plan-ux-r5 3.5 ③) | API는 `period: "day"`, `closesAt` = 다음 KST 자정 | 홈 랭킹은 오늘(KST) 기준표를 10분마다 다시 쓰는 하루 단위다. 주 단위로 표기하면 사실과 다르다(2026-11-09 C 담당 판단). 등락 없는 행의 `+N`은 7일 `weekGain`(팬 행은 20261217010000에서 추가) |
-| 폐기 토큰 사용처 | 반복 사용처는 2026-11-09 기계 치환(약 250곳), `service`·`passport` 변형 호출 2곳은 secondary 모양으로 남김 | A·B 화면 재작성 전에 깨지지 않게 |
+| 폐기 토큰 사용처 | **치환하지 않았다**(dev 1ee53b4db 기준 사용처 남음). 4차 복원(694096ef5) 뒤 globals에는 폐기 토큰이 남았고 `service`·`passport` 변형도 알약 그라데이션 테두리 그대로다. 치환은 단계로 한다(`board/tasks/design-sync/plan-ux.md`) | 4차 화면 구성 보존 |
 | 토큰 신설: accent·coin·foil·shadow·reward·count·z-toast | 설계 표에 없던 `--color-accent-line`(#f4c3d7)과 `--motion-exit`(120ms)가 더해졌다 | 분홍 연한 선과 나가는 시간에도 이름이 필요했다 |
 
 측정은 `next dev` 로컬 합성 데이터이며 운영 수치가 아니다(번들은 `next build`). 전후 표와 원자료는 보드 `reports/doc-261107-2-s-perf.md`. 덕질 비로그인 CLS 0.42는 기준 커밋부터 있던 값이다(S 변경과 무관).
@@ -329,10 +331,10 @@ node apps/web/scripts/measure-r3.mjs --base http://127.0.0.1:3001 --out <dir> [-
 
 | 종류 | 폐기 | 대체 | 상태(5차 C1 `aa9eec628` 기준) |
 |---|---|---|---|
-| 토큰 | `--color-primary-action`, `--color-coin(-ink)`, `--color-foil`, `--color-service-ink`, `--color-surface-focus`, `--color-success`, `--color-warning`, `--shadow-dialog`, `--radius-collection`, `--radius-hero`, `--motion-control/-layout/-exit`, `--fan-heading-size-wide`, `--fan-heading-editorial-weight`, `--fan-personal-section-*`, `--fan-event-catalog-title-size`, `--fan-aside-title-*`, `--fan-description-*`, `--fan-action-emphasis-size`, `--fan-action-service-height` | §1 새 토큰 | globals에서 삭제, 사용처 기계 치환 완료 |
-| 글꼴 | `@font-face` `Pretendard UI 550/650/850`, `public/fonts/pencil/*.woff`, 모듈 `font-family` 선언 | `globals.css` body 1줄 | 완료(TTF는 공유 이미지 서버 렌더용으로 남김) |
-| 컴포넌트 | `FanHelpTip`, `HelpHint`, `EarnBadge corner`, `EarnRemaining`, `EarnActionBadge`, `FanAction service/passport`, `FanEntityCard`·`FanPostRow`(→ `FanRow notice`), `SelectedBiasBar`·헤더 `SelectedBiasChip`(→ 메뉴 행), `GroupHeaderPoints`, `FanLanguageSwitch compact`(헤더), `PencilHeaderIcon`, `MissionArt`(미션 행), `StanLucky` 카드 목록(→ `LuckyDrawModule`), `WalletBalances`·`WalletExchange`(MY), `my-benefit-progress`, 오늘의 덕질 목록(`MyAttendanceList` 덕질 사용분), `relative-time.tsx`·`i18n/relative-time.ts`, 홈 `HomeCommunityPreview`·이벤트 배너·`HomeUpcoming`, 홈 브랜드 줄·배너 캐러셀 | §2 | A·B 화면 작업에서 제거. `FanAction service/passport`는 C1에서 secondary 모양으로 바꿈 |
-| CSS 패턴 | `linear-gradient`(로고 제외), `box-shadow`(오버레이 토큰 외), `border-radius` 10/16/20, `text-transform: uppercase`, `border-left` 액센트 바, 아이콘 뒤 채움 배경, `animation` 반복(모듈·스켈레톤 외), 개별 `keep-all`, `Pretendard UI` 참조 | 토큰·전역 | S1·N26·N27(집계)·N28로 추적. `Pretendard UI` 참조 0 |
+| 토큰 | `--color-primary-action`, `--color-coin(-ink)`, `--color-foil`, `--color-service-ink`, `--color-surface-focus`, `--color-success`, `--color-warning`, `--shadow-dialog`, `--radius-collection`, `--radius-hero`, `--motion-control/-layout/-exit`, `--fan-heading-size-wide`, `--fan-heading-editorial-weight`, `--fan-personal-section-*`, `--fan-event-catalog-title-size`, `--fan-aside-title-*`, `--fan-description-*`, `--fan-action-emphasis-size`, `--fan-action-service-height` | §1 새 토큰 | 예정. globals에 남아 있고 사용처 치환 전. 굵기 토큰 7종은 1단계에서 별칭(값 동일), `--color-primary-action`은 1단계에서 삭제 |
+| 글꼴 | `@font-face` `Pretendard UI 550/650/850`, `public/fonts/pencil/*.woff`, 모듈 `font-family` 선언 | `globals.css` body 1줄 | 부분: body 글꼴은 Variable 1줄이지만 `@font-face` 6개·`public/fonts/pencil/*.woff`와 e2e 하니스의 `Pretendard UI` 참조가 남아 있다 |
+| 컴포넌트 | `FanHelpTip`, `HelpHint`, `EarnBadge corner`, `EarnRemaining`, `EarnActionBadge`, `FanAction service/passport`, `FanEntityCard`·`FanPostRow`(→ `FanRow notice`), `SelectedBiasBar`·헤더 `SelectedBiasChip`(→ 메뉴 행), `GroupHeaderPoints`, `FanLanguageSwitch compact`(헤더), `PencilHeaderIcon`, `MissionArt`(미션 행), `StanLucky` 카드 목록(→ `LuckyDrawModule`), `WalletBalances`·`WalletExchange`(MY), `my-benefit-progress`, 오늘의 덕질 목록(`MyAttendanceList` 덕질 사용분), `relative-time.tsx`·`i18n/relative-time.ts`, 홈 `HomeCommunityPreview`·이벤트 배너·`HomeUpcoming`, 홈 브랜드 줄·배너 캐러셀 | §2 | 예정(A·B 화면 작업, 5차 보류). `FanAction service/passport`는 아직 알약 그라데이션 테두리(계약 시험 고정) |
+| CSS 패턴 | `linear-gradient`(로고 제외), `box-shadow`(오버레이 토큰 외), `border-radius` 10/16/20, `text-transform: uppercase`, `border-left` 액센트 바, 아이콘 뒤 채움 배경, `animation` 반복(모듈·스켈레톤 외), 개별 `keep-all`, `Pretendard UI` 참조 | 토큰·전역 | S1·N26·N27(집계)·N28로 추적. 목표 `Pretendard UI` 참조 0(현재 globals·e2e 하니스에 남음) |
 | 문구 키 | 도움말 키(`walletHelpCopy`·`stanHeartHelp` 등), `광고 보고 교환하기`, `오늘 N번 남음`·`N명까지`, `Kyaa. Every Fan Moment Counts.`(홈 본문), `모은 포인트 사용하기` | `/guide/dukjil` 사실 표, `교환`, `0/3` | A·B |
 
 # 상세 이력 (기존 전체 내용, 삭제하지 않음)
