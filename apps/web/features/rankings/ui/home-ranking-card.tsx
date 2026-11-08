@@ -89,7 +89,7 @@ function CreatorPanel({ locale, ranking }: { locale: AppLocale; ranking: HomeCre
         <CreatorAvatar slug={row.slug} src={row.imageUrl} size={32} photos={undefined} />
         <span className={styles.name}>{row.name}</span>
         <span className={styles.value}>{rankingsText(locale, "rkJjinfanCount", [row.score.toLocaleString(locale)])}</span>
-        <Hearts locale={locale} value={row.hearts} className={styles.wideOnly} />
+        <Hearts locale={locale} value={row.hearts} />
         <RankDelta delta={row.delta} locale={locale} />
       </Link>
     </li>)}</Rows>

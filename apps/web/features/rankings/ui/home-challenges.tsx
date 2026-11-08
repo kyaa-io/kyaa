@@ -38,7 +38,8 @@ export function HomeChallenges({ locale, preferredSlugs = [], headingId = "home-
           return <li key={item.slug}><Link className={styles.row} href={challengeHref(item.slug, locale)}>
             <CreatorAvatar slug={item.slug} src={item.imageUrl} size={40} photos={undefined} />
             <span className={styles.name}>{item.name}</span>
-            <FanGauge size="sm" className={styles.gauge} value={shown} max={item.target} label={`${item.name} ${title}`} valueText={dukjilText(locale, "gaugeCount", [shown.toLocaleString(locale), item.target.toLocaleString(locale)])} />
+            <FanGauge size="sm" className={styles.gauge} value={shown} max={item.target} label={`${item.name} ${title}`} />
+            <span className={styles.count}>{dukjilText(locale, "gaugeCount", [shown.toLocaleString(locale), item.target.toLocaleString(locale)])}</span>
           </Link></li>;
         })}
     </ul>
