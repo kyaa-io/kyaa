@@ -98,8 +98,8 @@ function GroupFrameShell({ locale, children }: { locale?: AppLocale; children: R
 }
 
 /** `/{slug}`의 레이아웃. 서버가 읽은 크리에이터로 머리를 바로 그린다. */
-export function CreatorPageFrame({ slug, celebrity, celebrityLocale, locale, initialTab, children }: { slug: string; celebrity: PublishedCelebrity; celebrityLocale?: string; locale?: AppLocale; initialTab?: string; children: ReactNode }) {
-  return <GroupPageProvider slug={slug} celebrity={celebrity} celebrityLocale={celebrityLocale} locale={locale} initialTab={initialTab}><CreatorFrameShell>{children}</CreatorFrameShell></GroupPageProvider>;
+export function CreatorPageFrame({ slug, celebrity, celebrityLocale, locale, initialTab, initialDetail, reserveMenu, publicPostsEmpty, children }: { slug: string; celebrity: PublishedCelebrity; celebrityLocale?: string; locale?: AppLocale; initialTab?: string; initialDetail?: GroupDetail; reserveMenu?: boolean; publicPostsEmpty?: boolean; children: ReactNode }) {
+  return <GroupPageProvider slug={slug} celebrity={celebrity} celebrityLocale={celebrityLocale} locale={locale} initialTab={initialTab} initialDetail={initialDetail} reserveMenu={reserveMenu} publicPostsEmpty={publicPostsEmpty}><CreatorFrameShell>{children}</CreatorFrameShell></GroupPageProvider>;
 }
 function CreatorFrameShell({ children }: { children: ReactNode }) {
   const g = useGroupPage();

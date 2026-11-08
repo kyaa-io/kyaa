@@ -111,7 +111,7 @@ export function GroupPageProvider({ pageId, slug, celebrity: serverCelebrity, ce
   const queryTab = initialTab ?? query?.get("tab") ?? "home";
   const viewerDetail = useGroupResource(url, parseDetail, { nameLocale: queryTab !== "manage" });
   // 서버 상세는 처음 읽는 동안만 쓴다. 가입·북마크 같은 이 사람의 값은 없으므로 그동안 행동 버튼은 기다린다.
-  const provisional = !viewerDetail.data && viewerDetail.loading && !viewerDetail.error && initialDetail?.page.id === pageId ? initialDetail : undefined;
+  const provisional = !viewerDetail.data && viewerDetail.loading && !viewerDetail.error && (pageId ? initialDetail?.page.id === pageId : Boolean(slug) && initialDetail?.page.slug === slug) ? initialDetail : undefined;
   const detail = provisional ? { ...viewerDetail, data: provisional } : viewerDetail;
   const page = detail.data?.page;
   const pageMatches = !pageId || page?.id === pageId;
