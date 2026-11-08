@@ -3,7 +3,7 @@ import { bypassImageOptimization, creatorCropScale, homeHeroSizes, publicImageRe
 
 describe("public image delivery boundary", () => {
   const host = "https://gmrykvmtmuaeswpajteq.supabase.co";
-  it("optimizes only local assets and the exact public CMS buckets", () => {
+  it("optimizes only local assets and the exact public CMS buckets, never the retired Supabase hosts", () => {
     expect(bypassImageOptimization("/images/profile.webp")).toBe(false);
     for (const pattern of publicImageRemotePatterns) {
       expect(bypassImageOptimization(`https://${pattern.hostname}${pattern.pathname.slice(0, -2)}celebrities/xin/image.jpg`)).toBe(false);
@@ -12,6 +12,7 @@ describe("public image delivery boundary", () => {
     for (const source of [
       `${host}/storage/v1/object/sign/fan-avatars/photo.webp?token=private`,
       `${host}/storage/v1/object/public/fan-avatars/photo.webp`,
+      `${host}/storage/v1/object/public/cms-assets/image.jpg`,
       `${host}/storage/v1/object/public/cms-assets/image.jpg?token=private`,
       "https://other.example/image.jpg",
       "https://kyaa.io/public-assets/fan-avatars/private.webp",

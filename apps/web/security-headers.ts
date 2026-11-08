@@ -32,15 +32,12 @@ const contentSecurityPolicy = [
     "https://explorer-api.walletconnect.com",
     "https://*.tiktokcdn.com",
     "https://*.tiktokcdn-us.com",
-    // Private media uploads use short-lived signed URLs issued by our server.
-    "https://gmrykvmtmuaeswpajteq.supabase.co/storage/v1/object/upload/sign/mobile-media/",
-    "https://xcppyedwusirqnfpbtit.supabase.co/storage/v1/object/upload/sign/mobile-media/",
   ].join(" "),
   "worker-src 'self' blob:",
   "manifest-src 'self'",
   // Published LIVE previews are rights-reviewed derivatives served from the
-  // public cms-assets bucket. Keep the exception limited to Supabase Storage.
-  "media-src 'self' blob: https://*.supabase.co",
+  // public cms-assets bucket under this site's own /public-assets path.
+  "media-src 'self' blob:",
 ].join("; ");
 
 export const responseSecurityHeaders: ResponseHeader[] = [
@@ -74,7 +71,7 @@ export function awsStorageContentSecurityPolicy(config: { bucket?: string; regio
       .replace("connect-src 'self'", "connect-src 'self' https://*.doubleclick.net https://*.googlesyndication.com https://*.adtrafficquality.google https://csi.gstatic.com")
       .replace("font-src 'self' data:", "font-src 'self' data: https://fonts.gstatic.com")
       .replace("style-src 'self' 'unsafe-inline'", "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com")
-      .replace("media-src 'self' blob: https://*.supabase.co", "media-src 'self' blob: https://*.supabase.co https://*.gvt1.com");
+      .replace("media-src 'self' blob:", "media-src 'self' blob: https://*.gvt1.com");
   }
   if (config.region === "ap-northeast-2" && /^[a-z0-9][a-z0-9-]{1,61}[a-z0-9]$/.test(config.bucket ?? "")) {
     policy = policy.replace("connect-src 'self'", `connect-src 'self' https://${config.bucket}.s3.${config.region}.amazonaws.com/mobile-media/`);

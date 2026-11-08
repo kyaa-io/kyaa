@@ -18,8 +18,7 @@ describe("response security headers", () => {
     "/images/guest-home/banksy-exhibition-campaign.webp",
     "/kyaa-app-icon-512.png",
     "/_next/image?url=%2Fimages%2Fguest-home%2Fbanksy-exhibition-campaign.webp&w=1200&q=75",
-    "/_next/image?url=https%3A%2F%2Fgmrykvmtmuaeswpajteq.supabase.co%2Fstorage%2Fv1%2Fobject%2Fpublic%2Fcms-assets%2Fbanner.jpg&w=1200&q=75",
-    "/_next/image?url=https%3A%2F%2Fxcppyedwusirqnfpbtit.supabase.co%2Fstorage%2Fv1%2Fobject%2Fpublic%2Fcms-assets%2Fbanner.jpg&w=1200&q=75",
+    "/_next/image?url=https%3A%2F%2Fdev.kyaa.io%2Fpublic-assets%2Fcms-assets%2Fbanner.jpg&w=1200&q=75",
   ])("allows public share artwork to render on other sites: %s", async (path) => {
     const response = await unstable_getResponseFromNextConfig({ url: `https://kyaa.io${path}`, nextConfig });
     expect(response.headers.get("cross-origin-resource-policy")).toBe("cross-origin");
@@ -39,8 +38,8 @@ describe("response security headers", () => {
     "/_next/image?url=%2Fimages%2F..%2Fapi%2Fcontent-assets%2Fasset-id&w=1200&q=75",
     "/_next/image?url=%2Fimages%2F%252e%252e%2Fapi%2Fcontent-assets%2Fasset-id&w=1200&q=75",
     "/_next/image?url=https%3A%2F%2Fexample.com%2Fprivate.jpg&w=1200&q=75",
-    "/_next/image?url=https%3A%2F%2Fgmrykvmtmuaeswpajteq.supabase.co%2Fstorage%2Fv1%2Fobject%2Fauthenticated%2Fproofs%2Ffile.jpg&w=1200&q=75",
-    "/_next/image?url=https%3A%2F%2Fgmrykvmtmuaeswpajteq.supabase.co%2Fstorage%2Fv1%2Fobject%2Fpublic%2Fcms-assets%2Fbanner.jpg%3Ftoken%3Dprivate&w=1200&q=75",
+    "/_next/image?url=https%3A%2F%2Fgmrykvmtmuaeswpajteq.supabase.co%2Fstorage%2Fv1%2Fobject%2Fpublic%2Fcms-assets%2Fbanner.jpg&w=1200&q=75",
+    "/_next/image?url=https%3A%2F%2Fkyaa.io%2Fpublic-assets%2Ffan-avatars%2Fprivate.webp&w=1200&q=75",
   ])("preserves isolation for personal resources: %s", async (path) => {
     const response = await unstable_getResponseFromNextConfig({ url: `https://kyaa.io${path}`, nextConfig });
     expect(response.headers.get("cross-origin-resource-policy")).toBe("same-origin");
@@ -89,19 +88,15 @@ describe("response security headers", () => {
     expect(csp).not.toContain("connect-src *");
   });
 
-  it("allows signed private-media uploads only to the known storage paths", () => {
-    const connect = header("Content-Security-Policy").split(";").find(value => value.trim().startsWith("connect-src "))!;
-    const storage = connect.split(/\s+/).filter(source => source.includes("supabase"));
-    expect(storage).toEqual([
-      "https://gmrykvmtmuaeswpajteq.supabase.co/storage/v1/object/upload/sign/mobile-media/",
-      "https://xcppyedwusirqnfpbtit.supabase.co/storage/v1/object/upload/sign/mobile-media/",
-    ]);
+  it("opens no origin for the retired Supabase Storage hosts", () => {
+    expect(header("Content-Security-Policy")).not.toContain("supabase");
+    expect(awsStorageContentSecurityPolicy({ bucket: "byus-test-private", region: "ap-northeast-2", rewardedAds: true, ga4: true })).not.toContain("supabase");
   });
 
-  it("allows published LIVE preview media from Supabase Storage", () => {
+  it("serves published LIVE preview media from this site's own origin only", () => {
     const csp = header("Content-Security-Policy");
 
-    expect(csp).toContain("media-src 'self' blob: https://*.supabase.co");
+    expect(csp.endsWith("media-src 'self' blob:")).toBe(true);
     expect(csp).not.toContain("media-src *");
   });
 
@@ -154,7 +149,7 @@ describe("rewarded ad content security policy", () => {
     const directive = (policy: string, name: string) => policy.split("; ").find((part) => part.startsWith(`${name} `)) ?? "";
     const on = awsStorageContentSecurityPolicy({ rewardedAds: true });
     const off = awsStorageContentSecurityPolicy({});
-    expect(directive(on, "media-src")).toBe("media-src 'self' blob: https://*.supabase.co https://*.gvt1.com");
+    expect(directive(on, "media-src")).toBe("media-src 'self' blob: https://*.gvt1.com");
     expect(directive(on, "font-src")).toBe("font-src 'self' data: https://fonts.gstatic.com");
     expect(directive(on, "style-src")).toBe("style-src 'self' 'unsafe-inline' https://fonts.googleapis.com");
     expect(directive(on, "script-src")).toContain("https://*.adtrafficquality.google");
@@ -163,7 +158,7 @@ describe("rewarded ad content security policy", () => {
     expect(directive(on, "connect-src")).toContain("https://csi.gstatic.com");
     expect(directive(on, "media-src")).not.toMatch(/\*(\s|$)|https:(\s|$)/);
     // Without rewarded ads the directives keep their previous values.
-    expect(directive(off, "media-src")).toBe("media-src 'self' blob: https://*.supabase.co");
+    expect(directive(off, "media-src")).toBe("media-src 'self' blob:");
     expect(directive(off, "font-src")).toBe("font-src 'self' data:");
     expect(off).not.toContain("gvt1.com");
     // Every previous source stays when rewarded ads are on.

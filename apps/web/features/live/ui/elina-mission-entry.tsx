@@ -14,9 +14,9 @@ import styles from "./elina-mission-entry.module.css";
 
 const ELINA_SLUG = "elina";
 const ARTWORKS = [
-  "https://gmrykvmtmuaeswpajteq.supabase.co/storage/v1/object/public/cms-assets/public-image-assets/a38bb88324437e505d910db35f94331cf67725fdb849871c60e8e0d1ce7e6b14.webp",
-  "https://gmrykvmtmuaeswpajteq.supabase.co/storage/v1/object/public/cms-assets/public-image-assets/9d1c78f0f777e0d34f304d4aae973115c11832ef00804148072440e44e4a9925.webp",
-  "https://gmrykvmtmuaeswpajteq.supabase.co/storage/v1/object/public/cms-assets/public-image-assets/5fca43c55e3aa002782e63aa3cd0135c484c55c4f49d2a88c01ef5c91ee0d382.webp",
+  "https://kyaa.io/public-assets/cms-assets/public-image-assets/a38bb88324437e505d910db35f94331cf67725fdb849871c60e8e0d1ce7e6b14.webp",
+  "https://kyaa.io/public-assets/cms-assets/public-image-assets/9d1c78f0f777e0d34f304d4aae973115c11832ef00804148072440e44e4a9925.webp",
+  "https://kyaa.io/public-assets/cms-assets/public-image-assets/5fca43c55e3aa002782e63aa3cd0135c484c55c4f49d2a88c01ef5c91ee0d382.webp",
 ] as const;
 
 const copy = {

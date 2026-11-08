@@ -1,18 +1,9 @@
 import { resolveCreatorImage } from "./creator-image-config";
 
 /** Only explicitly registered public CMS paths use the shared image optimizer. */
-export const publicImageRemotePatterns = [...[
-  "gmrykvmtmuaeswpajteq.supabase.co",
-  "xcppyedwusirqnfpbtit.supabase.co",
-].map((hostname) => ({
-  protocol: "https" as const,
-  hostname,
-  port: "",
-  pathname: "/storage/v1/object/public/cms-assets/**",
-  search: "",
-})), ...["kyaa.io", "dev.kyaa.io", "staging.kyaa.io"].map((hostname) => ({
+export const publicImageRemotePatterns = ["kyaa.io", "dev.kyaa.io", "staging.kyaa.io"].map((hostname) => ({
   protocol: "https" as const, hostname, port: "", pathname: "/public-assets/cms-assets/**", search: "",
-}))];
+}));
 
 export function bypassImageOptimization(source: string): boolean {
   if (source.startsWith("/")) return false;

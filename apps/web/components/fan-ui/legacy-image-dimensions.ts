@@ -1,3 +1,5 @@
+import { cmsAssetBase, cmsAssetPath } from "./cms-asset-source";
+
 /** Measured legacy public source dimensions; no inferred dimensions for remote assets. */
 export const legacyImageDimensions: Readonly<Record<string, readonly [number, number]>> = {
   "/images/celebrities/changha/gggi-20261030.jpg": [1883, 2510],
@@ -159,31 +161,31 @@ export const legacyImageDimensions: Readonly<Record<string, readonly [number, nu
     450,
     594
   ],
-  "https://gmrykvmtmuaeswpajteq.supabase.co/storage/v1/object/public/cms-assets/celebrities/yuna/profile-f6180ad3a36ea5c1.webp": [
+  "https://kyaa.io/public-assets/cms-assets/celebrities/yuna/profile-f6180ad3a36ea5c1.webp": [
     1067,
     1600
   ],
-  "https://gmrykvmtmuaeswpajteq.supabase.co/storage/v1/object/public/cms-assets/celebrities/xin/profile-f2ec8b19121877f6.jpg": [
+  "https://kyaa.io/public-assets/cms-assets/celebrities/xin/profile-f2ec8b19121877f6.jpg": [
     4096,
     2537
   ],
-  "https://gmrykvmtmuaeswpajteq.supabase.co/storage/v1/object/public/cms-assets/celebrities/jenny-jeong/profile-a9daf680da1fe99b.jpg": [
+  "https://kyaa.io/public-assets/cms-assets/celebrities/jenny-jeong/profile-a9daf680da1fe99b.jpg": [
     853,
     1280
   ],
-  "https://gmrykvmtmuaeswpajteq.supabase.co/storage/v1/object/public/cms-assets/celebrities/aryeom/profile-f596fa168833a2cb.jpg": [
+  "https://kyaa.io/public-assets/cms-assets/celebrities/aryeom/profile-f596fa168833a2cb.jpg": [
     1080,
     1080
   ],
-  "https://gmrykvmtmuaeswpajteq.supabase.co/storage/v1/object/public/cms-assets/celebrities/park-myungho/profile-536c3c1765064266.jpg": [
+  "https://kyaa.io/public-assets/cms-assets/celebrities/park-myungho/profile-536c3c1765064266.jpg": [
     1080,
     1350
   ],
-  "https://gmrykvmtmuaeswpajteq.supabase.co/storage/v1/object/public/cms-assets/celebrities/ifewknow/profile-7951fc437251547f.png": [
+  "https://kyaa.io/public-assets/cms-assets/celebrities/ifewknow/profile-7951fc437251547f.png": [
     1622,
     1622
   ],
-  "https://gmrykvmtmuaeswpajteq.supabase.co/storage/v1/object/public/cms-assets/celebrities/thisisj-official/profile-b0e528d586a167fb.jpg": [
+  "https://kyaa.io/public-assets/cms-assets/celebrities/thisisj-official/profile-b0e528d586a167fb.jpg": [
     540,
     540
   ],
@@ -199,3 +201,9 @@ export const legacyImageDimensions: Readonly<Record<string, readonly [number, nu
   "/images/celebrities/park-myungho/hero-editorial-portrait-20260911.webp": [1122, 1402],
   "/images/celebrities/thisisj-official/hero-editorial-portrait-20260911.webp": [1122, 1402],
 };
+
+/** CMS photos are measured once; the same file reads the same size from any environment host. */
+export function legacyImageSize(source: string): readonly [number, number] | undefined {
+  const path = cmsAssetPath(source);
+  return legacyImageDimensions[path ? cmsAssetBase + path : source];
+}

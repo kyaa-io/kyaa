@@ -1,7 +1,7 @@
 import { messages as localizedMessages } from "@/i18n/catalogs/components__ifew-fan-guide__content";
 import { additionalLocales } from "@/i18n/messages";
-export const ifewGuideImage = "https://gmrykvmtmuaeswpajteq.supabase.co/storage/v1/object/public/cms-assets/celebrities/ifewknow/profile-7951fc437251547f.png";
-export const ifewEventBanner = "https://gmrykvmtmuaeswpajteq.supabase.co/storage/v1/object/public/cms-assets/lives/ifew-100-days/banner-9dddada89193dd87.png";
+export const ifewGuideImage = "https://kyaa.io/public-assets/cms-assets/celebrities/ifewknow/profile-7951fc437251547f.png";
+export const ifewEventBanner = "https://kyaa.io/public-assets/cms-assets/lives/ifew-100-days/banner-9dddada89193dd87.png";
 export { ifewLiveSlug, ifewBenefitId } from "@/features/live/domain/ifew-event";
 export const ifewTikTokEvent = "https://www.tiktok.com/live/event/7680769355085185044";
 

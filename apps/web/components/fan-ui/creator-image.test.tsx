@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import { CreatorImage } from "./creator-image";
 import { creatorCalendarPhotos, creatorImageSizes, parkMyunghoProfile, resolveCreatorHeroImage, resolveCreatorImage, type CreatorImagePresentation } from "./creator-image-config";
 
-const previous = "https://gmrykvmtmuaeswpajteq.supabase.co/storage/v1/object/public/cms-assets/celebrities/park-myungho/profile-dcc87957756c27df.jpg";
+const previous = "https://kyaa.io/public-assets/cms-assets/celebrities/park-myungho/profile-dcc87957756c27df.jpg";
 
 describe("shared creator photography", () => {
   it("uses Changha's supplied photos by role and resets the previous focal position", () => {
@@ -45,7 +45,7 @@ describe("shared creator photography", () => {
   it("uses the approved source across all identity presentations without overriding a later CMS replacement", () => {
     for (const presentation of ["portrait", "avatar", "passport", "collection", "vertical", "calendar"] as CreatorImagePresentation[]) {
       if (["portrait", "avatar", "passport"].includes(presentation)) expect(resolveCreatorImage({ slug: "park-myungho", src: previous, presentation }).src).toBe(parkMyunghoProfile);
-      const replacement = "https://gmrykvmtmuaeswpajteq.supabase.co/storage/v1/object/public/cms-assets/celebrities/park-myungho/new-photo.jpg";
+      const replacement = "https://kyaa.io/public-assets/cms-assets/celebrities/park-myungho/new-photo.jpg";
       expect(resolveCreatorImage({ slug: "park-myungho", src: replacement, position: "50% 32%", presentation })).toMatchObject({ src: replacement, crop: { scale: 1, position: "50% 32%" } });
     }
   });
@@ -73,7 +73,7 @@ describe("shared creator photography", () => {
   });
 
   it("uses Jenny's CMS replacement in the banner and calendar instead of her previous dedicated photos", () => {
-    const oldPhoto = "https://gmrykvmtmuaeswpajteq.supabase.co/storage/v1/object/public/cms-assets/celebrities/jenny-jeong/profile-88d6cd4994afe602.jpg";
+    const oldPhoto = "https://kyaa.io/public-assets/cms-assets/celebrities/jenny-jeong/profile-88d6cd4994afe602.jpg";
     const replacement = oldPhoto.replace("profile-88d6cd4994afe602.jpg", "new-profile.jpg");
     expect(resolveCreatorHeroImage("jenny-jeong", { url: oldPhoto, position: "center" })?.src).toBe("/images/celebrities/jenny-jeong/hero-source.jpg");
     expect(resolveCreatorHeroImage("jenny-jeong", { url: replacement, position: "50% 30%" })).toMatchObject({ src: replacement, desktopPosition: "50% 30%", mobilePosition: "50% 30%" });
@@ -94,15 +94,18 @@ describe("shared creator photography", () => {
     ["jenny-jeong", "profile-a9daf680da1fe99b.jpg"],
     ["park-myungho", "profile-536c3c1765064266.jpg"],
   ])("binds %s editorial heroes to the current source while preserving identity and calendar", (slug, filename) => {
-    const src = `https://gmrykvmtmuaeswpajteq.supabase.co/storage/v1/object/public/cms-assets/celebrities/${slug}/${filename}`;
+    const src = `https://kyaa.io/public-assets/cms-assets/celebrities/${slug}/${filename}`;
     expect(resolveCreatorHeroImage(slug, { url: src, position: "center" })).toMatchObject({
       src: `/images/celebrities/${slug}/hero-editorial-20260911.webp`,
       mobileSrc: `/images/celebrities/${slug}/hero-editorial-portrait-20260911.webp`,
       desktopFit: "cover", mobileFit: "cover", mobileScale: 1,
     });
+    for (const host of ["dev.kyaa.io", "staging.kyaa.io"]) {
+      expect(resolveCreatorHeroImage(slug, { url: src.replace("kyaa.io", host), position: "center" })?.src).toBe(`/images/celebrities/${slug}/hero-editorial-20260911.webp`);
+    }
     expect(resolveCreatorImage({ slug, src, presentation: "avatar" }).src).toBe(src);
     expect(creatorCalendarPhotos(slug, src)).toEqual([src]);
-    for (const replacement of [src.replace(filename, "future-profile.jpg"), src.replace("gmrykvmtmuaeswpajteq.supabase.co", "example.com")]) {
+    for (const replacement of [src.replace(filename, "future-profile.jpg"), src.replace("kyaa.io", "example.com")]) {
       expect(resolveCreatorHeroImage(slug, { url: replacement, position: "50% 30%" })).toMatchObject({ src: replacement, mobileSrc: replacement, desktopFit: "contain", mobileFit: "contain" });
     }
     expect(resolveCreatorHeroImage(slug, { url: src, position: "center", photos: { landscape: null, portrait: null } })).toMatchObject({ src, mobileSrc: src });
