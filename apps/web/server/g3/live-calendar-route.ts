@@ -32,8 +32,8 @@ function errorResponse(code: string, status: number, authenticated: boolean): Re
   );
 }
 
-function parseRequest(url: URL): { month: string; locale: LiveLocale; includeIdentity?: boolean } {
-  const allowedKeys = new Set(["month", "locale", "identity"]);
+function parseRequest(url: URL): { month: string; locale: LiveLocale; includeIdentity?: boolean; listedOnly?: boolean; keepCreators?: string[] } {
+  const allowedKeys = new Set(["month", "locale", "identity", "celebrity"]);
   for (const key of url.searchParams.keys()) {
     if (!allowedKeys.has(key)) throw new Error("unexpected calendar parameter");
   }
@@ -44,8 +44,13 @@ function parseRequest(url: URL): { month: string; locale: LiveLocale; includeIde
     throw new Error("locale may be supplied once");
   }
   if (url.searchParams.getAll("identity").length > 1 || (url.searchParams.has("identity") && url.searchParams.get("identity") !== "1")) throw new Error("invalid identity option");
+  // celebrity: creators /live/calendar was opened for by link (kept even when unlisted). Bounded and slug-shaped.
+  const keepCreators = url.searchParams.getAll("celebrity");
+  if (keepCreators.length > 10 || keepCreators.some((slug) => !/^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$/.test(slug))) throw new Error("invalid celebrity option");
   return {
-    ...(url.searchParams.get("identity") === "1" ? { includeIdentity: true } : {}),
+    // identity=1 is the creator and group calendars, which keep their own creator's events (an unlisted page stays usable by link);
+    // the cross-creator /live/calendar reads without it and leaves unlisted creators out.
+    ...(url.searchParams.get("identity") === "1" ? { includeIdentity: true } : { listedOnly: true, ...(keepCreators.length ? { keepCreators } : {}) }),
     month: liveCalendarMonthValueSchema.parse(url.searchParams.get("month")),
     locale: parseLiveLocale(url.searchParams.get("locale") ?? "ko"),
   };

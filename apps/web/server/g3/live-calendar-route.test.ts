@@ -33,7 +33,7 @@ describe("GET LIVE calendar handler", () => {
 
     expect(response.status).toBe(200);
     expect(await response.json()).toEqual(guestPayload);
-    expect(value.readMonth).toHaveBeenCalledWith({ month: "2026-09", locale: "ko", appUserId: null, now: new Date("2026-09-03T00:00:00.000Z") });
+    expect(value.readMonth).toHaveBeenCalledWith({ month: "2026-09", locale: "ko", appUserId: null, listedOnly: true, now: new Date("2026-09-03T00:00:00.000Z") });
     expect(response.headers.get("cache-control")).toContain("s-maxage=60");
     expect(response.headers.get("vercel-cache-tag")).toBe("byus-public-content");
     expect(response.headers.get("vary")).toContain("Authorization");
@@ -89,5 +89,14 @@ describe("GET LIVE calendar handler", () => {
 it("adds exact artist identity only for the opt-in calendar request",async()=>{
  const value=target(); await value.run(new Request("https://byus.test/api?month=2026-09&identity=1"));
  expect(value.readMonth).toHaveBeenCalledWith(expect.objectContaining({includeIdentity:true}));
+ // The creator and group calendars (identity=1) keep their own creator's events even when its page is unlisted.
+ expect(value.readMonth.mock.calls[0]?.[0]).not.toHaveProperty("listedOnly");
  expect((await value.run(new Request("https://byus.test/api?month=2026-09&identity=0"))).status).toBe(400);
+});
+
+it("passes link-selected creators to the cross-creator calendar and rejects malformed ones",async()=>{
+ const value=target(); await value.run(new Request("https://byus.test/api?month=2026-09&celebrity=testpage&celebrity=kara"));
+ expect(value.readMonth).toHaveBeenCalledWith(expect.objectContaining({listedOnly:true,keepCreators:["testpage","kara"]}));
+ expect((await value.run(new Request("https://byus.test/api?month=2026-09&celebrity=Bad_Slug"))).status).toBe(400);
+ expect((await value.run(new Request(`https://byus.test/api?month=2026-09${"&celebrity=a".repeat(11)}`))).status).toBe(400);
 });
