@@ -1,0 +1,58 @@
+/* E4 (feedback E): the favorite's lucky draws and the cheer card. 390: lucky cards scroll sideways (300px, the next card peeks), the cheer card below.
+   1024+: the two sections share one row (group-benefits .firstRow); every card stretches to the row so the outer bottoms and the action rows line up. */
+.section { display: grid; grid-template-rows: auto 1fr; gap: var(--space-3); min-width: 0; scroll-margin-top: var(--space-16, 64px); }
+.section:focus { outline: none; }
+.head { display: flex; align-items: center; gap: var(--space-2); min-width: 0; min-height: var(--min-target); }
+.head h2 { flex: none; }
+.headLink { display: inline-flex; align-items: center; gap: var(--space-1); min-height: var(--min-target); margin-inline-start: auto; color: var(--color-ink); font-size: var(--fan-metadata-size); font-weight: var(--fan-item-title-weight); text-decoration: none; white-space: nowrap; }
+.headLink:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
+
+.raffles { display: grid; grid-auto-flow: column; grid-auto-columns: 300px; gap: var(--space-3); margin: 0; padding: 0; overflow-x: auto; list-style: none; scroll-snap-type: x mandatory; overscroll-behavior-x: contain; }
+.raffles[data-count="1"] { grid-auto-columns: minmax(0, 1fr); }
+.raffle { box-sizing: border-box; display: grid; grid-template-columns: 80px minmax(0, 1fr); grid-template-rows: auto auto 1fr; gap: var(--space-2) var(--space-3); min-width: 0; padding: var(--space-3); border: 1px solid var(--color-line); border-radius: var(--radius-control); background: var(--color-surface); scroll-snap-align: start; }
+.prize { display: grid; place-items: center; width: 80px; height: 60px; overflow: hidden; border-radius: var(--space-2); background: var(--color-soft); }
+.prize img { width: 100%; height: 100%; object-fit: contain; }
+.prize img[data-fallback] { width: 32px; height: 32px; }
+.raffleHead { display: grid; align-content: center; gap: var(--space-1); min-width: 0; }
+.raffleTitle { overflow: hidden; font-size: var(--fan-item-title-size); font-weight: var(--fan-item-title-weight); line-height: var(--fan-body-leading); text-overflow: ellipsis; white-space: nowrap; }
+.meta { color: var(--color-muted); font-size: var(--fan-metadata-size); line-height: 20px; overflow-wrap: anywhere; }
+.facts { grid-column: 1 / -1; display: grid; align-content: start; gap: var(--space-1); min-width: 0; }
+.cost { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-1); color: var(--color-ink); font-size: var(--fan-metadata-size); font-weight: var(--fan-item-title-weight); line-height: 20px; font-variant-numeric: tabular-nums; }
+.action { grid-column: 1 / -1; align-self: end; white-space: nowrap; }
+.section .empty { box-sizing: border-box; min-height: 180px; align-content: center; padding: var(--space-3) var(--space-4); border: 1px solid var(--color-line); border-radius: var(--radius-control); background: var(--color-surface); }
+.pending { min-height: 180px; }
+.pending > span { min-height: 180px; border-radius: var(--radius-control); }
+.pick { display: inline-flex; align-items: center; gap: var(--space-1); min-height: var(--min-target); padding: 0; border: 0; background: none; color: var(--color-accent-ink); font: inherit; font-size: var(--fan-metadata-size); font-weight: var(--fan-item-title-weight); cursor: pointer; }
+
+.cheer { box-sizing: border-box; display: grid; grid-template-rows: auto auto auto 1fr; gap: var(--space-3); min-width: 0; padding: var(--space-3); border: 1px solid var(--color-line); border-radius: var(--radius-control); background: var(--color-surface); }
+.who { display: grid; grid-template-columns: 40px minmax(0, 1fr) auto; align-items: center; gap: var(--space-3); min-width: 0; min-height: var(--min-target); padding: 0; border: 0; background: none; color: inherit; font: inherit; text-align: start; text-decoration: none; cursor: pointer; }
+span.who { cursor: default; }
+.who:focus-visible, .stampGauge:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; border-radius: var(--space-2); }
+.avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
+.avatarIcon { display: grid; place-items: center; width: 40px; height: 40px; border-radius: 50%; background: var(--color-accent-soft); color: var(--color-accent-ink); }
+.whoText { display: grid; gap: var(--space-1); min-width: 0; }
+.name { overflow: hidden; font-size: var(--fan-item-title-size); font-weight: var(--fan-item-title-weight); line-height: var(--fan-body-leading); text-overflow: ellipsis; white-space: nowrap; }
+.rank { display: flex; align-items: center; gap: var(--space-1); color: var(--color-muted); font-size: var(--fan-metadata-size); line-height: 20px; white-space: nowrap; }
+.numbers { display: flex; flex-wrap: wrap; gap: var(--space-2) var(--space-6); margin: 0; }
+.numbers > div { display: grid; gap: var(--space-1); min-width: 0; }
+.numbers dt { color: var(--color-muted); font-size: var(--fan-metadata-size); line-height: 20px; }
+.numbers dd { display: flex; align-items: center; min-height: 32px; margin: 0; }
+.community { gap: var(--space-1); font-size: var(--fan-item-title-size); font-weight: var(--fan-item-title-weight); font-variant-numeric: tabular-nums; }
+.heart { display: block; flex: none; color: var(--color-accent); fill: currentColor; }
+.community .heart { width: 16px; height: 16px; }
+.stampGauge { display: flex; align-items: center; gap: var(--space-2); min-width: 0; min-height: var(--min-target); color: var(--color-muted); font-size: var(--fan-metadata-size); text-decoration: none; }
+.stampGauge > :first-child { flex: 1; min-width: 0; }
+.ready { color: var(--color-accent-ink); font-weight: var(--fan-item-title-weight); }
+
+@media (min-width: 64rem) {
+  .raffles { grid-auto-flow: row; grid-auto-columns: auto; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); overflow: visible; }
+  .raffles[data-count="1"] { grid-template-columns: minmax(0, 1fr); }
+  .raffle { grid-template-rows: subgrid; grid-row: span 3; height: 100%; }
+  .raffles { grid-template-rows: auto auto 1fr; align-items: stretch; }
+  .cheer { height: 100%; grid-template-columns: minmax(0, 1fr) auto; grid-template-rows: auto auto 1fr; column-gap: var(--space-6); }
+  .cheer > .who { grid-column: 1; grid-row: 1; }
+  .cheer > .numbers { grid-column: 2; grid-row: 1; flex-wrap: nowrap; }
+  .cheer > .stampGauge, .cheer > .action { grid-column: 1 / -1; }
+  .cheer > .action { align-self: end; }
+  .pending, .pending > span, .section .empty { min-height: 100%; }
+}

@@ -162,45 +162,17 @@ section.pWallet{position:relative;box-sizing:border-box;border:1px solid var(--c
  .pGuestHistorySection{display:grid;gap:var(--space-3);border-top:1px solid var(--color-line);padding:var(--space-4) var(--space-5) var(--space-2)}
 }
 
-/* 럭키드로우 prize cards: 96x72 image, title and one line of page, state and deadline. Two columns only where a card keeps 320px, so one card still reaches both column edges. */
-.pLucky{order:6;display:grid;gap:var(--space-3);min-width:0}
-.pLucky[hidden]{display:none}
-.pLucky .sectionHead{margin-bottom:0;min-height: var(--min-target)}
-.pLucky .sectionHead>button{margin-inline-end:calc(var(--space-2) * -1)}
-.luckyCards{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));gap:var(--space-3)}
-.luckyCard{display:grid;grid-template-columns:96px minmax(0,1fr) 20px;align-items:center;gap:var(--space-3);box-sizing:border-box;min-width:0;padding:var(--space-3);border:1px solid var(--color-line);border-radius:var(--radius-control);background:var(--color-surface);color:inherit;text-decoration:none}
-.luckyCard:focus-visible{outline:3px solid var(--color-focus);outline-offset:3px}
-.luckyCard>svg{color:var(--color-muted)}
-.luckyImage{display:grid;place-items:center;width:96px;height:72px;overflow:hidden;border-radius:var(--space-2);background:var(--color-line-subtle)}
-.luckyImage img{width:100%;height:100%;object-fit:cover}
-.luckyImage img[data-fallback]{width:40px;height:40px;object-fit:contain}
-.luckyText{display:grid;gap:var(--space-1);min-width:0}
-.luckyText strong{overflow:hidden;font-size:var(--fan-item-title-size);font-weight:var(--fan-item-title-weight);line-height:1.5;text-overflow:ellipsis;white-space:nowrap}
-.luckyText small{color:var(--color-muted);font-size:var(--fan-metadata-size);line-height:20px;overflow-wrap:anywhere}
 
-/* 261107-2 U4 (2026-11-07): 지갑 띠가 첫 요소로 전폭, 그 아래 럭키드로우·하트 응원 한 줄(1024+ 두 칸), 그 아래 미션(본문) + 내역(오른쪽 열).
-   390: 지갑 → 럭키드로우(가로 스크롤 두 장) → 하트 응원 → 미션 → 오늘의 덕질 → 내역. */
+/* 261107-2 U4 (2026-11-07), E4 (2026-11-08): 지갑 띠가 첫 요소로 전폭, 그 아래 럭키드로우·최애 응원 한 줄(1024+ 두 칸, 카드는 stan-lucky-cheer.module.css), 그 아래 미션(본문) + 내역(오른쪽 열).
+   390: 지갑 → 럭키드로우(가로 스크롤) → 최애 응원 → 미션 → 오늘의 덕질 → 내역. */
 .top,.firstRow{min-width:0}
 .top{order:2}
 .firstRow{order:3;display:grid;gap:var(--fan-section-gap);min-width:0}
+.firstRow[hidden]{display:none}
 .main{order:4}
 .side{order:5}
 .top section.pWallet{border:0;background:transparent}
 .top section.pWallet[data-wallet-card="strip"]{border:1px solid var(--color-line);background:var(--color-surface)}
-.pLucky,.pHeart{order:0;display:grid;align-content:start;gap:var(--space-3);min-width:0}
-.pLucky .sectionHead,.pHeart .sectionHead{display:flex;align-items:center;gap:var(--space-2);min-height: var(--min-target);margin:0}
-.luckyCards{margin:0;padding:0;list-style:none;display:grid;grid-auto-flow:column;grid-auto-columns:minmax(260px,82%);grid-template-columns:none;overflow-x:auto;scroll-snap-type:x mandatory;gap:var(--space-3)}
-.luckyCard{scroll-snap-align:start;grid-template-columns:72px minmax(0,1fr);grid-template-rows:auto auto;row-gap:var(--space-2)}
-.luckyCard .luckyImage{grid-row:1/span 2;width:72px;height:72px}
-.luckyState{justify-self:start}
-.heartLink{display:grid;grid-template-columns:40px minmax(0,1fr) 16px;align-items:center;gap:var(--space-3);box-sizing:border-box;min-height:64px;padding:var(--space-3);border:1px solid var(--color-line);border-radius:var(--radius-control);background:var(--color-surface);color:inherit;text-decoration:none}
-.heartLink:focus-visible{outline:3px solid var(--color-focus);outline-offset:3px}
-.heartLink>svg:last-child{color:var(--color-muted)}
-.heartAvatar{width:40px;height:40px;border-radius:50%;object-fit:cover}
-.heartIcon{display:grid;place-items:center;width:40px;height:40px;border-radius:50%;background:var(--color-accent-soft);color:var(--color-accent-ink)}
-/* Loading: the height of the loaded link (64px + its border), so the sections below do not move when it arrives. */
-.heartPending{display:grid;align-content:center;min-height:66px}
-.heartName{min-width:0;font-size:var(--fan-item-title-size);font-weight:var(--fan-item-title-weight);line-height:1.4;overflow-wrap:anywhere;word-break:keep-all}
 @media(min-width:1024px){
  .page{grid-template-areas:"alert alert" "top top" "row row" "main side"}
  /* Without an alert the empty first row would still take a row gap and push the wallet 32px down. */
@@ -210,15 +182,8 @@ section.pWallet{position:relative;box-sizing:border-box;border:1px solid var(--c
  .firstRow{grid-area:row;grid-column:1/-1;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:var(--space-6);align-items:stretch}
  .main{grid-area:main}
  .side{grid-area:side}
- .luckyCards{grid-auto-flow:row;grid-auto-columns:auto;grid-template-columns:repeat(2,minmax(0,1fr));overflow:visible}
- .luckyCard{grid-template-columns:64px minmax(0,1fr)}
- .luckyCard .luckyImage{width:64px;height:64px}
 }
 @media(min-width:1280px){.firstRow{column-gap:var(--space-8)}}
-.pLucky .sectionHead h2,.pHeart .sectionHead h2{flex:none}
-.pLucky .sectionHead,.pHeart .sectionHead{justify-content:flex-start}
-/* feedback C9: the status bar (등급 · 최애 | ♥N) sits right above the two-flow wallet. D15: the heart card stays, its action is not open yet. */
+/* feedback C9: the status bar (등급 · 최애 | ♥N) sits right above the two-flow wallet. */
 .top{display:grid;gap:var(--space-3)}
-.heartLink[aria-disabled]{grid-template-columns:40px minmax(0,1fr) auto;cursor:default}
-.heartLink[aria-disabled] .heartName{color:var(--color-muted)}
 .top section.pWallet[data-wallet-card="flows"]{border:1px solid var(--color-line);background:var(--color-surface)}
