@@ -250,7 +250,7 @@ function basisLine(locale: AppLocale, head: Head) {
     const week = rankingsText(locale, "rkWeekGain", [""]).trim();
     const m = head.since ? /^(\d{4})-(\d{2})-(\d{2})$/.exec(head.since) : null;
     const from = m ? `${m[2]}. ${m[3]}. 00:00` : null;
-    return from ? `${week} · ${locale === "ko" ? `${from}부터` : `from ${from}`}` : week;
+    return from ? `${week} · ${rankingsText(locale, "rkSince", [from])}` : week;
   }
   // The home list is today's standings (period "day", DESIGN §6): the basis names what is counted, the close is the next midnight.
   const items: string[] = [rankingsText(locale, head.basis === "fans" ? "rkCumulativeFans" : "rkCumulativeHearts")];

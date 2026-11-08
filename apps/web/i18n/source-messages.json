@@ -17674,5 +17674,11 @@
     "ko": "포인트 {0}",
     "source": "features/groups/ui/group-header-account",
     "id": "features/groups/ui/group-header-account:accountPoints"
+  },
+  "rkSince": {
+    "en": "from {0}",
+    "ko": "{0}부터",
+    "source": "features/rankings/ui/rankings-copy",
+    "id": "features/rankings/ui/rankings-copy:rkSince"
   }
 }
