@@ -29,12 +29,12 @@ it("corner variant shows the coin and +points without the P suffix or a remainin
 });
 it("a monthly cap says this month, never today", () => {
   render(<EarnBadge variant="inline" locale="ko" points={100} remaining={2} remainingPer="month" />);
-  expect(screen.getByText("포인트 100 적립, 이번 달 2번 남음")).toBeInTheDocument();
+  expect(screen.getByText("포인트 100 적립, 이번 달 2회 남음")).toBeInTheDocument();
   expect(screen.queryByText(/오늘/)).toBeNull();
 });
 it("EarnRemaining names the month for a monthly cap in ko and en", () => {
   const { container, rerender } = render(<EarnRemaining locale="ko" remaining={4} per="month" />);
-  expect(container.textContent).toBe("이번 달 4번 남음");
+  expect(container.textContent).toBe("이번 달 4회 남음");
   rerender(<EarnRemaining locale="en" remaining={4} per="month" />);
   expect(container.textContent).toBe("4 left this month");
   rerender(<EarnRemaining locale="ko" remaining={4} />);

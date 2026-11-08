@@ -20,7 +20,7 @@ export const fanUiSource = {
   loadingStatus: { ko: "불러오는 중", en: "Loading" },
   // S4: 배지에는 금액 하나만, 횟수·조건은 배지 밖 보조 글자로. `×N`은 쓰지 않는다.
   earnRemainingToday: { ko: "오늘 {0}번 남음", en: "{0} left today" },
-  earnRemainingMonth: { ko: "이번 달 {0}번 남음", en: "{0} left this month" },
+  earnRemainingMonth: { ko: "이번 달 {0}회 남음", en: "{0} left this month" },
   earnUpTo: { ko: "{0}명까지", en: "up to {0}" },
   close: { ko: "닫기", en: "Close" },
 } as const;
