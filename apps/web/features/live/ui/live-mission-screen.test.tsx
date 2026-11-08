@@ -22,7 +22,7 @@ it("keeps a locale-preserving return route for guests without showing a raw slug
 it("uses the main fan header and shell with the shared language switch and keeps Back to LIVE",()=>{
  authenticated=false;vi.stubGlobal("fetch",vi.fn(async()=>new Response(null,{status:404})));
  render(<GroupsReleaseProvider enabled><LiveMissionScreen slug="test-live" locale="ko"/></GroupsReleaseProvider>);
- expect(screen.getAllByRole("banner")[0].querySelectorAll("[data-language-switch]")).toHaveLength(1);
+ expect(screen.getAllByRole("banner")[0].querySelectorAll("[data-language-switch]")).toHaveLength(0); // 5차 R3: 언어는 헤더를 떠나 계정 메뉴로
  expect(screen.getByRole("navigation",{name:"주요 메뉴"})).toBeInTheDocument();
  expect(screen.getByRole("navigation",{name:"모바일 주요 메뉴"})).toBeInTheDocument();
  expect(screen.getByRole("link",{name:"LIVE로 돌아가기"})).toHaveAttribute("href","/live/test-live?locale=ko");
