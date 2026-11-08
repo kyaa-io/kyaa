@@ -5,9 +5,39 @@ import { usePathname } from "next/navigation";
 import { decorateOutboundUrl, outboundCampaign, outboundKindSchema, outboundPlacementSchema, outboundTrackingAllowed } from "../domain/outbound-link";
 import { recordProductEventV1 } from "./product-event-client";
 
+const REACT_FIBER = "__reactFiber$", REACT_PROPS = "__reactProps$";
+const ownKey = (node: Element, prefix: string) => Object.keys(node).find((key) => key.startsWith(prefix));
+
+/**
+ * Has React finished hydrating the part of the page this anchor belongs to? Changing an attribute of server HTML that React has not
+ * hydrated yet makes React report a hydration mismatch (feedback F5: the footer links under a Suspense boundary). Walking up, the first
+ * element React owns decides: the anchor itself, or a `dangerouslySetInnerHTML` container (rich text: React never owns its children),
+ * means hydrated; any other owned ancestor above unowned elements means the subtree is still server HTML. No owned element at all
+ * (DOM that React does not manage) counts as ready.
+ */
+export function anchorHydrated(anchor: HTMLAnchorElement) {
+  for (let node: Element | null = anchor; node; node = node.parentElement) {
+    if (!ownKey(node, REACT_FIBER)) continue;
+    if (node === anchor) return true;
+    const propsKey = ownKey(node, REACT_PROPS);
+    return Boolean(propsKey && (node as unknown as Record<string, { dangerouslySetInnerHTML?: unknown } | undefined>)[propsKey]?.dangerouslySetInnerHTML);
+  }
+  return true;
+}
+
+const PENDING_RETRY_MS = 250, PENDING_LIMIT_MS = 30_000;
+
 export function trackOutboundLinks(root: Document, pathname: string) {
   if (!outboundTrackingAllowed(pathname)) return () => {};
   const owned = new Map<HTMLAnchorElement, { original: string; decorated: string }>();
+  // Anchors whose subtree React has not hydrated yet: their href is left as the server drew it and tried again shortly.
+  const pending = new Set<HTMLAnchorElement>();
+  let retry: number | undefined; const startedAt = Date.now();
+  const retryPending = () => {
+    retry = undefined;
+    for (const anchor of [...pending]) { pending.delete(anchor); if (anchor.isConnected) decorate(anchor); }
+    if (pending.size && Date.now() - startedAt < PENDING_LIMIT_MS) retry = window.setTimeout(retryPending, PENDING_RETRY_MS);
+  };
   function decorate(anchor: HTMLAnchorElement) {
     const href = anchor.getAttribute("href");
     if (href === null) return null;
@@ -27,8 +57,16 @@ export function trackOutboundLinks(root: Document, pathname: string) {
       linkKind: kind.success ? kind.data : anchor.hasAttribute("data-platform") ? "social" : "external",
     });
     if (!result) { owned.delete(anchor); return null; }
+    if (href !== result.href) {
+      if (!anchorHydrated(anchor)) {
+        // Measure the click, but do not touch server HTML React still has to hydrate; try again once it has.
+        pending.add(anchor);
+        if (retry === undefined) retry = window.setTimeout(retryPending, PENDING_RETRY_MS);
+        return result;
+      }
+      anchor.setAttribute("href", result.href);
+    }
     owned.set(anchor, { original, decorated: result.href });
-    if (href !== result.href) anchor.setAttribute("href", result.href);
     return result;
   }
   const scan = () => root.querySelectorAll<HTMLAnchorElement>("a[href]").forEach(decorate);
@@ -50,6 +88,8 @@ export function trackOutboundLinks(root: Document, pathname: string) {
   root.addEventListener("click", click);
   root.addEventListener("auxclick", click);
   return () => {
+    if (retry !== undefined) window.clearTimeout(retry);
+    pending.clear();
     observer.disconnect();
     root.removeEventListener("click", click);
     root.removeEventListener("auxclick", click);
