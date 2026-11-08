@@ -9,9 +9,17 @@ export const NAVIGATION_PROGRESS_DELAY_MS = 300;
 /** A move that never reports its end (an error page, a cancelled click) stops showing the bar after this. */
 const NAVIGATION_PROGRESS_LIMIT_MS = 15_000;
 
+/**
+ * A click that moves to another page of this site. `defaultPrevented` is not a signal: the Next router link cancels the browser's own
+ * move in a handler on `document` and then moves the page itself, which is exactly the move this bar is for. A button or field inside
+ * the link (a card's like button) is a different action, not a move.
+ */
 function internalTarget(event: MouseEvent): URL | null {
-  if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return null;
-  const anchor = (event.target as Element | null)?.closest?.("a[href]");
+  if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return null;
+  const target = event.target as Element | null;
+  const anchor = target?.closest?.("a[href]");
+  const control = target?.closest?.("button, input, select, textarea, label, summary, [role=button]");
+  if (control && anchor?.contains(control)) return null;
   if (!(anchor instanceof HTMLAnchorElement) || (anchor.target && anchor.target !== "_self") || anchor.hasAttribute("download")) return null;
   const url = new URL(anchor.href, window.location.href);
   if (url.origin !== window.location.origin) return null;
@@ -40,10 +48,10 @@ export function FanNavigationProgress() {
     const onClick = (event: MouseEvent) => { if (internalTarget(event)) start(); };
     // Back/forward: only when the path or query really changes (a hash-only step also fires popstate).
     const onPop = () => { if (window.location.pathname + window.location.search !== shown.current) start(); };
-    // Bubble phase: a handler that cancels the move (preventDefault) has already run.
-    document.addEventListener("click", onClick);
+    // On `window`, after the router's own handler on `document`; a handler that stops the click (stopPropagation) hides it from here.
+    window.addEventListener("click", onClick);
     window.addEventListener("popstate", onPop);
-    return () => { document.removeEventListener("click", onClick); window.removeEventListener("popstate", onPop); stop(); };
+    return () => { window.removeEventListener("click", onClick); window.removeEventListener("popstate", onPop); stop(); };
   }, []);
   // The address changed: the move finished.
   useEffect(() => { shown.current = pathname + (search ? `?${search}` : ""); stop(); }, [pathname, search]);

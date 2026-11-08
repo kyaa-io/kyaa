@@ -9,8 +9,12 @@ beforeEach(() => { vi.useFakeTimers(); nav.pathname = "/a"; window.history.repla
 afterEach(() => { vi.useRealTimers(); document.body.innerHTML = ""; });
 
 const link = (href: string) => { const a = document.createElement("a"); a.href = href; a.textContent = href; document.body.append(a); return a; };
-// jsdom would follow the link; a router link cancels it in its own handler after ours (document, bubble) has seen the click.
-const click = (a: HTMLAnchorElement, init: MouseEventInit = {}) => { const event = new MouseEvent("click", { bubbles: true, cancelable: true, button: 0, ...init }); const stopNav = (e: Event) => e.preventDefault(); document.addEventListener("click", stopNav); a.dispatchEvent(event); document.removeEventListener("click", stopNav); };
+// The real order: Next hydrates the React root on `document` before this component mounts, so the router link's handler (which cancels the
+// browser's move with preventDefault) runs first. The handler is added here, before render, and stays for the whole test.
+let routerHandler: (e: Event) => void;
+beforeEach(() => { routerHandler = (e: Event) => e.preventDefault(); document.addEventListener("click", routerHandler); });
+afterEach(() => { document.removeEventListener("click", routerHandler); });
+const click = (a: Element, init: MouseEventInit = {}) => { a.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true, button: 0, ...init })); };
 const bar = () => document.querySelector("[data-fan-navigation-progress]");
 
 it("shows the bar only when a move takes longer than 300ms and hides it when the address changes", () => {
@@ -22,6 +26,24 @@ it("shows the bar only when a move takes longer than 300ms and hides it when the
   act(() => { vi.advanceTimersByTime(20); });
   expect(bar()).not.toBeNull();
   nav.pathname = "/b"; view.rerender(<FanNavigationProgress />);
+  expect(bar()).toBeNull();
+});
+
+it("shows the bar for a link the router has already cancelled (defaultPrevented) and for a click on text inside it", () => {
+  render(<FanNavigationProgress />);
+  const a = link("/b"); const inner = document.createElement("span"); a.append(inner);
+  click(inner);
+  act(() => { vi.advanceTimersByTime(NAVIGATION_PROGRESS_DELAY_MS + 10); });
+  expect(bar()).not.toBeNull();
+});
+
+it("draws nothing for a button inside the link or a click that a handler stopped", () => {
+  render(<FanNavigationProgress />);
+  const a = link("/b"); const like = document.createElement("button"); a.append(like);
+  click(like);
+  const c = link("/c"); c.addEventListener("click", (e) => e.stopPropagation());
+  click(c);
+  act(() => { vi.advanceTimersByTime(1000); });
   expect(bar()).toBeNull();
 });
 
