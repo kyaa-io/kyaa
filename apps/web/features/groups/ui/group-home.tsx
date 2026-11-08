@@ -20,6 +20,7 @@ import {useCompactHeader} from './group-page-menu';
 import {GroupScheduleCard} from './group-schedule-card';
 import {groupsCopy} from './copy';
 import {brandJoin,fanStories} from './home-copy';
+import {BannerSlot} from '@/components/banner-slot/banner-slot';
 import styles from './groups.module.css';
 import homeStyles from './creator-group-home.module.css';
 import railStyles from './creator-board-aside.module.css';
@@ -64,7 +65,9 @@ export function GroupHome({locale,pageId,heading}:{locale:AppLocale;pageId:strin
   <div className={`${styles.creatorHomeMain} ${homeStyles.main}`}>
    {page.kind==='brand'&&<GroupBrandHomeEvent pageId={pageId} locale={locale}/>}
    <GroupHomeGallery pageId={pageId} locale={locale}/>
+   {page.kind==='fan'&&<BannerSlot slot='fanpage_below_gallery' locale={locale}/>}
    <GroupBoard key={g.ownerKey} detail={detail} locale={locale} onJoin={g.startJoin} joinPending={g.joinPending} joinLabel={page.kind==='fan'?g.joinLabel:page.kind==='brand'?brandJoin[locale]:t.join} preview heading={heading??fanStories[locale]}/>
+   {page.kind==='fan'&&<BannerSlot slot='fanpage_second' locale={locale}/>}
    {narrow&&<div className={styles.mobileParticipation}>{parts}</div>}
   </div>
   {!narrow&&<aside className={styles.creatorHomeAside}>

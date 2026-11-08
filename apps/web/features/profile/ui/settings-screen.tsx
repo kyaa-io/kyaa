@@ -41,6 +41,7 @@ import styles from "./settings-screen.module.css";
 import type { NotificationConnections } from "../../notification/domain/connected-account";
 import { PhoneSmsEnrollment } from "./phone-sms-enrollment";
 import { AvatarSettings } from "./avatar-settings";
+import { ProfilePublicFields } from "@/features/fan-profile/ui/profile-public-fields";
 import { AccountDeletion } from "./account-deletion";
 import { BlockedUsers } from "@/features/content-safety/ui/blocked-users";
 import { useAvatar } from "./use-avatar";
@@ -1247,6 +1248,8 @@ export function SettingsScreen({ locale, initialSection = null, kakaoLoginEnable
               {nicknameMessage}
             </p>
           ) : null}
+          {/* One edit at a time: while the nickname is being edited its own save is the only one in this section. */}
+          {!editing ? <ProfilePublicFields locale={locale} /> : null}
         </section> : null}
 
         {section === "language" ? <>

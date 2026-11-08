@@ -181,3 +181,13 @@
 @media(max-width:767px){
   .waveVenuePhoto{width:calc(100% - 48px);margin:24px 24px 0}
 }
+
+/* 261107-2 3회차 높음 fanpage-live-gray-bands (design-r4 9.3, image-framing.md): from 768 up the card is 2 columns and as tall as the photo.
+   Without an approved cover frame the frame takes the photo's own ratio, so no band appears above or below it; an approved cover frame keeps 16:9. */
+@media(min-width:768px){
+  .liveCard{grid-template-columns:minmax(280px,2fr) 3fr;min-height:0;align-items:center}
+  .livePhoto:has(> [data-desktop-fit="cover"]){aspect-ratio:16/9}
+  .livePhoto:has(> [data-desktop-fit="contain"]){aspect-ratio:auto}
+  .livePhoto>[data-desktop-fit="contain"]{position:relative}
+  .livePhoto>[data-desktop-fit="contain"] img{display:block;position:relative!important;height:auto!important;aspect-ratio:auto 16/9}
+}

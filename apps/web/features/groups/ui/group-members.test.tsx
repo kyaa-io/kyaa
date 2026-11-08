@@ -78,3 +78,19 @@ it("links the fan ranking tab to the public creator ranking only when a slug is 
   fireEvent.click(screen.getByRole("button",{name:"팬 랭킹"}));
   expect(screen.queryByRole("link",{name:"팬 랭킹"})).not.toBeInTheDocument();
 });
+
+it("puts grade beside the name, hearts at the end and favorite · points · stamps on the second line (261107-2 C2)",()=>{
+ resource.data={items:[
+  {profileId:profile,nickname:"별빛",avatarUrl:null,role:"member",rank:null,points:null,tier:"Silver",hearts:12,fanPoints:1234,stamps:7,favorite:{slug:"elina",name:"엘리나"}},
+  {profileId:page,nickname:"새 팬",avatarUrl:null,role:"member",rank:null,points:null,tier:"Bronze",hearts:0,fanPoints:0,stamps:0,favorite:null},
+ ],nextCursor:null,ranking:null};
+ render(<GroupMembers pageId={page} locale="ko" member/>);
+ const [first,second]=screen.getAllByRole("listitem");
+ expect(first).toHaveTextContent("별빛실버");
+ expect(first).toHaveTextContent("최애 엘리나 · 1,234 P · 스탬프 7");
+ expect(screen.getByLabelText("하트 12")).toBeVisible();
+ // No favorite: left out. Zero points and stamps stay so rows compare.
+ expect(second).toHaveTextContent("0 P · 스탬프 0");
+ expect(second).not.toHaveTextContent("최애");
+ expect(screen.getByLabelText("하트 0")).toBeVisible();
+});

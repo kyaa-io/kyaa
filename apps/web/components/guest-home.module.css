@@ -425,3 +425,12 @@
 .reservationEmpty { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:4px 12px; }
 .reservationEmpty p { margin:0; color:var(--muted); font-size:13px; line-height:1.5; }
 .reservationEmpty .summaryTextLink { margin-top:0; }
+/* 261107-2 D14: one favorite card = photo · name · true fans and hearts · one row with `팬페이지 보기` and the SNS icons. 390: photo 80 so the row fits. */
+/* One row when it fits; with three SNS icons at 390 the icons move under the link instead of running past the card edge. */
+.celebrityRail[data-count="1"] .celebrityActions { gap: 0 var(--space-2); margin-top: var(--space-1); }
+.celebrityRail[data-count="1"] .celebrityActions .socialLinks { flex-wrap: nowrap; margin-inline-start: auto; margin-inline-end: calc(var(--space-3) * -1); }
+@media (max-width: 47.99rem) {
+  .celebrityRail[data-count="1"] .celebrityCard { grid-template-columns: calc(var(--space-10) * 2) minmax(0, 1fr); }
+}
+/* D14: the title and both text links share one line at 390; the shared header keeps its 10rem title basis elsewhere. */
+.favoriteSection [data-fan-section-header] > div > div:first-child { flex-basis: auto; }

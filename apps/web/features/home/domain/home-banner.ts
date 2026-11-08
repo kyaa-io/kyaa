@@ -3,8 +3,12 @@ import { z } from "zod";
 import { safeAssetUrlSchema } from "../../live/domain/live-event";
 
 export const bannerLocaleSchema = z.enum(["ko", "en"]);
-export const bannerPlacementSchema = z.enum(["home", "groups", "both"]);
-export const bannerCategorySchema = z.enum(["event", "group", "fanpage", "announcement", "live", "guide"]);
+export const bannerSlotSchema = z.enum(["home_below_board", "home_between_events", "fanpage_below_gallery", "fanpage_second"]);
+export type BannerSlot = z.infer<typeof bannerSlotSchema>;
+export type BannerSlotArea = "home" | "fanpage";
+export const bannerSlotsByArea: Record<BannerSlotArea, readonly BannerSlot[]> = { home: ["home_below_board", "home_between_events"], fanpage: ["fanpage_below_gallery", "fanpage_second"] };
+export const bannerPlacementSchema = z.enum(["home", "groups", "both", ...bannerSlotSchema.options]);
+export const bannerCategorySchema = z.enum(["event", "group", "fanpage", "announcement", "live", "guide", "ad"]);
 const bannerMetadata = { placement: bannerPlacementSchema.optional(), category: bannerCategorySchema.optional() };
 
 // Guide banners are shown on the home slider and the discovery slider; the event card list leaves them out.
@@ -76,6 +80,8 @@ export const homeBannerCommandSchema = z.discriminatedUnion("action", [
     .refine(v => new Set(v.items.map(i => i.id)).size === v.items.length, "DUPLICATE_BANNER"),
 ]);
 export type HomeBanner = z.infer<typeof homeBannerSchema>;
+/** One banner per slot of an area. A slot that is missing is empty and the page draws nothing there. */
+export type BannerSlotMap = Partial<Record<BannerSlot, HomeBanner>>;
 export type AdminHomeBanner = z.infer<typeof adminHomeBannerSchema>;
 export type HomeBannerManagerData = z.infer<typeof homeBannerManagerDataSchema>;
 export type HomeBannerCommand = z.infer<typeof homeBannerCommandSchema>;

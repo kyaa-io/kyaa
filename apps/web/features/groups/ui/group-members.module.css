@@ -49,5 +49,10 @@ button.person:hover .identity strong { text-decoration: underline; }
   .searchField { max-width: none; }
   .incomingRequests { display: flex; width: 100%; }
 }
-.grade { display: inline-flex; min-width: 0; flex-wrap: wrap; align-items: center; gap: var(--space-1); }
-.gradeHearts { display: inline-flex; align-items: center; gap: var(--space-1); margin-inline-start: var(--space-2); color: var(--color-ink); font-weight: var(--fan-item-title-weight); font-variant-numeric: tabular-nums; }
+
+/* 261107-2 design-r4 7.1: name and grade tag on line 1, hearts at the row end, favorite · points · stamps on line 2. Row 64. */
+.list .person { min-height: 64px; }
+.nameLine { display: flex; align-items: center; gap: var(--space-2); min-width: 0; }
+.nameLine strong { min-width: 0; }
+.tierTag { flex: none; }
+.rowHearts { display: inline-flex; flex: none; align-items: center; gap: var(--space-1); font-size: var(--fan-item-title-size); font-weight: 700; font-variant-numeric: tabular-nums; color: var(--color-ink); }

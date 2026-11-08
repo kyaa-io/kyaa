@@ -430,11 +430,12 @@ describe("canonical 03 guest home", () => {
     expect(card.queryByText("YouTube")).not.toBeInTheDocument();
     expect(card.queryByText("TikTok")).not.toBeInTheDocument();
     expect(card.queryByText("Instagram")).not.toBeInTheDocument();
-    expect(card.queryByText("팬 1280만")).toBeInTheDocument();
+    // D13: the card no longer shows SNS follower totals as "fans"; true fans and hearts come from the creator ranking.
+    expect(card.queryByText("팬 1280만")).not.toBeInTheDocument();
     expect(card.getByRole("link", { name: "KARA 팬페이지 보기" })).toHaveAttribute("href", "/kara?locale=ko");
-    expect(screen.queryByText("팬 320만")).toBeInTheDocument();
+    expect(screen.queryByText("팬 320만")).not.toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Elina 팬페이지 보기" })).toHaveAttribute("href", "/elina?locale=ko");
-    expect(screen.queryByText("팬 145만")).toBeInTheDocument();
+    expect(screen.queryByText("팬 145만")).not.toBeInTheDocument();
     const changhaCard = screen.getByRole("heading", { name: "Changha", level: 3 }).closest("article");
     expect(within(changhaCard!).getByRole("link", { name: "Changha 팬페이지 보기" })).toHaveAttribute("href", "/changha?locale=ko");
   });
@@ -629,7 +630,8 @@ describe("canonical 03 guest home", () => {
     vi.stubGlobal("fetch", fetcher);
     render(<GuestHome {...defaultProps} featuredLives={[]} />);
     await act(async () => {});
-    expect(fetcher).not.toHaveBeenCalled();
+    // Public reads (banner slots, the all-time creator ranking) may go out; nothing private does.
+    expect(fetcher.mock.calls.map(([input]) => String(input)).filter(url => !url.startsWith("/api/public/") && !url.startsWith("/api/rankings/creators"))).toEqual([]);
   });
 
   it("shows retry UI for failed LIVE data without presenting it as an empty LIVE list", () => {
@@ -673,7 +675,7 @@ it("filters any assigned role and carries it into the directory without exposing
   expect(within(filters).queryByRole("button", { name: "쇼호스트" })).not.toBeInTheDocument();
   fireEvent.click(within(filters).getByRole("button", { name: "크리에이터" }));
   expect(container.querySelectorAll("#home-creator-rail article")).toHaveLength(2);
-  expect(within(container.querySelector("#celebrities") as HTMLElement).getByRole("link", { name: "최애 전체 보기" })).toHaveAttribute("href", "/celebrities?locale=ko&role=creator");
+  expect(within(container.querySelector("#celebrities") as HTMLElement).getByRole("link", { name: "전체 보기" })).toHaveAttribute("href", "/celebrities?locale=ko&role=creator");
   expect(within(filters).getByRole("button", { name: "크리에이터" })).toHaveAttribute("aria-pressed", "true");
   fireEvent.click(within(filters).getByRole("button", { name: "아이돌" }));
   expect(container.querySelectorAll("#home-creator-rail article")).toHaveLength(1);
@@ -703,13 +705,22 @@ function favoriteSummary() {
   };
 }
 
+/** Public reads every Home render may make (banner slots, all-time creator ranking for the favorite cards). They never take the private answer. */
+function publicRead(input: string | URL | Request) {
+  const url = String(input);
+  if (url.startsWith("/api/public/banner-slots")) return Response.json({ slots: {} });
+  if (url.startsWith("/api/rankings/creators")) return Response.json({ period: "all", periodStart: "1970-01-01", computedAt: null, rows: [] });
+  return null;
+}
+const privateCalls = (fetcher: { mock: { calls: unknown[][] } }) => fetcher.mock.calls.map(([input]) => String(input)).filter(url => !url.startsWith("/api/public/") && !url.startsWith("/api/rankings/creators"));
+
 it.each(["owned", "empty", "error", "guest"] as const)("hides intermediate filters until auth and personalization resolve: %s", async (mode) => {
   privy.ready = false;
   privy.authenticated = mode !== "guest";
   let resolveSummary!: (response: Response) => void;
   const pendingSummary = new Promise<Response>(resolve => { resolveSummary = resolve; });
-  const fetcher = vi.fn(async (input: string | URL | Request) => String(input).startsWith("/api/passports/")
-    ? Response.json({ passport: { stamps: [], activities: [], stampSummary: { total: 0 } } }) : pendingSummary);
+  const fetcher = vi.fn(async (input: string | URL | Request) => publicRead(input) ?? (String(input).startsWith("/api/passports/")
+    ? Response.json({ passport: { stamps: [], activities: [], stampSummary: { total: 0 } } }) : pendingSummary));
   vi.stubGlobal("fetch", fetcher);
   const view = render(<GuestHome {...defaultProps} featuredLives={[]} />);
   const expectSkeleton = () => {
@@ -720,11 +731,11 @@ it.each(["owned", "empty", "error", "guest"] as const)("hides intermediate filte
     expect(within(section).queryByRole("link")).not.toBeInTheDocument();
   };
   expectSkeleton();
-  expect(fetcher).not.toHaveBeenCalled();
+  expect(privateCalls(fetcher)).toEqual([]);
   privy.ready = true;
   view.rerender(<GuestHome {...defaultProps} featuredLives={[]} />);
   if (mode !== "guest") {
-    await waitFor(() => expect(fetcher).toHaveBeenCalled());
+    await waitFor(() => expect(privateCalls(fetcher)).not.toEqual([]));
     expectSkeleton();
     const summary = favoriteSummary();
     if (mode === "empty") { summary.creators = []; summary.collection.passportCount = 0; }
@@ -742,6 +753,7 @@ it("keeps the chosen filter and cards visible during background personalization 
   const pending = new Promise<Response>(resolve => { resolveSummary = resolve; });
   let summaryReads = 0;
   vi.stubGlobal("fetch", vi.fn(async (input: string | URL | Request) => {
+    const shared = publicRead(input); if (shared) return shared;
     if (String(input).startsWith("/api/passports/")) return Response.json({ passport: { stamps: [], activities: [], stampSummary: { total: 0 } } });
     summaryReads += 1;
     return summaryReads === 1 ? Response.json({ summary: favoriteSummary() }) : pending;
@@ -772,6 +784,7 @@ it("defaults to My favorites after loading and excludes first-reaction-only crea
   const summary = favoriteSummary();
   vi.stubGlobal("fetch", vi.fn(async (input: string | URL | Request) => {
     const url = String(input);
+    const shared = publicRead(input); if (shared) return shared;
     if (url.startsWith("/api/me/creator-reactions")) return Response.json(reactionStates(celebrities.map(({ slug }) => slug)));
     if (url.startsWith("/api/passports/")) return Response.json({ passport: { stamps: [], activities: [], stampSummary: { total: 0 } } });
     return Response.json({ summary });
@@ -784,7 +797,7 @@ it("defaults to My favorites after loading and excludes first-reaction-only crea
   expect(container.querySelectorAll("#home-creator-rail article")).toHaveLength(1);
   expect(within(container.querySelector("#celebrities") as HTMLElement).getByRole("heading", { name: "KARA" })).toBeInTheDocument();
   expect(within(container.querySelector("#celebrities") as HTMLElement).queryByRole("heading", { name: "Elina" })).not.toBeInTheDocument();
-  expect(within(container.querySelector("#celebrities") as HTMLElement).getByRole("link", { name: "최애 전체 보기" })).toHaveAttribute("href", "/celebrities?locale=ko&owned=1");
+  expect(within(container.querySelector("#celebrities") as HTMLElement).getByRole("link", { name: "전체 보기" })).toHaveAttribute("href", "/celebrities?locale=ko&owned=1");
   expect(new URL(window.location.href).searchParams.get("owned")).toBe("1");
   expect(new URL(window.location.href).searchParams.get("role")).toBeNull();
 });
@@ -798,6 +811,7 @@ it.each(["none", "explicit-all", "role"] as const)("keeps the appropriate defaul
   }
   vi.stubGlobal("fetch", vi.fn(async (input: string | URL | Request) => {
     const url = String(input);
+    const shared = publicRead(input); if (shared) return shared;
     if (url.startsWith("/api/me/creator-reactions")) return Response.json(reactionStates(celebrities.map(({ slug }) => slug)));
     if (url.startsWith("/api/passports/")) return Response.json({ passport: { stamps: [], activities: [], stampSummary: { total: 0 } } });
     return Response.json({ summary });
@@ -816,6 +830,7 @@ it("preserves an explicit All choice once personal data resolves", async () => {
   const pendingSummary = new Promise<Response>((resolve) => { resolveSummary = resolve; });
   vi.stubGlobal("fetch", vi.fn(async (input: string | URL | Request) => {
     const url = String(input);
+    const shared = publicRead(input); if (shared) return shared;
     if (url.startsWith("/api/me/creator-reactions")) return Response.json(reactionStates(celebrities.map(({ slug }) => slug)));
     if (url.startsWith("/api/passports/")) return Response.json({ passport: { stamps: [], activities: [], stampSummary: { total: 0 } } });
     return pendingSummary;
@@ -982,4 +997,18 @@ describe("streamed Home sections", () => {
     if (failed === "elinaRaffles") expect(screen.queryByRole("link", { name: "엘리나와 함께 뱅크시 전시 보러 가요" })).not.toBeInTheDocument();
     if (failed !== "celebrityLives") expect(screen.getAllByRole("alert").length).toBeGreaterThan(0);
   });
+});
+
+it("shows true fans and hearts from the creator ranking on each favorite card (261107-2 D13)", async () => {
+  vi.stubGlobal("fetch", vi.fn(async (input: string | URL | Request) => String(input).startsWith("/api/rankings/creators")
+    ? Response.json({ period: "all", periodStart: "1970-01-01", computedAt: null, rows: [{ rank: 1, slug: "kara", name: "KARA", imageUrl: null, score: 1234, jjinfanCount: 56, myHearts: null }] })
+    : Response.json({}, { status: 503 })));
+  render(<GuestHome {...defaultProps} featuredLives={[]} />);
+  const kara = within(screen.getByRole("heading", { name: "KARA", level: 3 }).closest("article")!);
+  expect(await kara.findByText("찐팬 56")).toBeVisible();
+  expect(kara.getByLabelText("하트 1,234개")).toBeVisible();
+  // A creator not in the ranking yet shows 0, not a follower count.
+  const elina = within(screen.getByRole("heading", { name: "Elina", level: 3 }).closest("article")!);
+  expect(elina.getByText("찐팬 0")).toBeVisible();
+  expect(elina.queryByText(/팬 320만/)).toBeNull();
 });

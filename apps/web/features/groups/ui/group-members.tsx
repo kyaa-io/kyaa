@@ -12,7 +12,8 @@ import { pageRankingSchema } from "@/features/rankings/domain/types";
 import { useRankingResource } from "@/features/rankings/ui/use-ranking-resource";
 import { groupPeopleSchema, type GroupPeopleMode } from "@/server/group-members/domain";
 import { useGroupResource } from "./use-group-resource";
-import { GroupPersonGrade, GroupPersonRow } from "./group-person-row";
+import { GroupPersonHearts, GroupPersonRow, GroupPersonTier } from "./group-person-row";
+import { fanProfileText } from "@/features/fan-profile/fan-profile-copy";
 import { GroupPublicPeople } from "./group-public-people";
 import { groupMembersCopy } from "./group-members-copy";
 import styles from "./group-members.module.css";
@@ -22,10 +23,20 @@ const parseRanking = (value: unknown) => pageRankingSchema.parse(value);
 type Row = ReturnType<typeof parse>["items"][number];
 export type GroupMembersPresentation = { overview?: ReactNode; creatorName: string; subtitles: Record<string, string>; selectedProfileId?: string };
 
-/** The grade, with the role beside it for people who run the page. The role alone when there is no grade. */
+/**
+ * Second line of a fan row (261107-2 design-r4 7.1): the role for people who run the page, then the chosen favorite,
+ * points and stamps on this page. A missing favorite is left out; 0 points and 0 stamps stay, so rows compare.
+ * Pages without grades show the role alone.
+ */
 function personMeta(row: Row, t: ReturnType<typeof groupMembersCopy>, locale: AppLocale) {
   if (!row.tier) return t[row.role];
-  return <GroupPersonGrade tier={row.tier} hearts={row.hearts} locale={locale} role={row.role === "member" ? undefined : t[row.role]}/>;
+  const parts = [
+    row.role === "member" ? null : t[row.role],
+    row.favorite ? fanProfileText(locale, "profFavorite", [row.favorite.name]) : null,
+    row.fanPoints == null ? null : fanProfileText(locale, "profPointsValue", [row.fanPoints.toLocaleString(locale)]),
+    row.stamps == null ? null : fanProfileText(locale, "rowStamps", [row.stamps.toLocaleString(locale)]),
+  ].filter(Boolean);
+  return parts.length ? parts.join(" · ") : undefined;
 }
 
 /** The viewer's own rank when it is below the list. The people API has no "me", so this reads the signed-in page ranking. */
@@ -64,7 +75,7 @@ export function GroupMembers({ pageId, locale, member, presentation, inTab = fal
       {modeTitle && <div className={styles.modeHead}><h3 className={styles.modeTitle}>{modeTitle}</h3>{mode === "ranking" && <p className={styles.scope}>{t.topScope}</p>}</div>}
       {!hideSearch && <form className={styles.search} onSubmit={event => { event.preventDefault(); setSearch(draft.trim()); reset(); }}><label className={styles.searchField}><Search size={18} aria-hidden="true"/><input className={styles.input} type="search" value={draft} onChange={event => setDraft(event.target.value)} maxLength={100} placeholder={t.search} aria-label={t.search}/></label><FanAction type="submit">{t.find}</FanAction></form>}
       {resource.error ? <div className={styles.state} role="alert"><p>{t.error}</p><FanAction onClick={resource.retry}>{t.retry}</FanAction></div>
-        : shown.length ? <ul className={`${styles.list} ${mode === "ranking" ? styles.rankingList : ""}`} aria-busy={resource.loading || undefined}>{shown.map(row => <GroupPersonRow key={row.profileId} nickname={row.nickname} avatarUrl={row.avatarUrl} rank={row.rank} rankLabel={row.rank === null ? undefined : `${t.ranking} ${row.rank}`} meta={mode === "ranking" ? undefined : personMeta(row, t, locale)} score={mode === "ranking" && row.points !== null ? `${row.points.toLocaleString(locale)}${locale === "ko" ? " 점" : ""}` : undefined} selected={presentation?.selectedProfileId === row.profileId} onOpen={() => setOpened({ profileId: row.profileId, nickname: row.nickname, avatarUrl: row.avatarUrl, tier: row.tier })}/>)}</ul>
+        : shown.length ? <ul className={`${styles.list} ${mode === "ranking" ? styles.rankingList : ""}`} aria-busy={resource.loading || undefined}>{shown.map(row => <GroupPersonRow key={row.profileId} nickname={row.nickname} avatarUrl={row.avatarUrl} rank={row.rank} rankLabel={row.rank === null ? undefined : `${t.ranking} ${row.rank}`} badge={row.tier ? <GroupPersonTier tier={row.tier} locale={locale}/> : undefined} meta={personMeta(row, t, locale)} score={mode === "ranking" && row.points !== null ? `${row.points.toLocaleString(locale)}${locale === "ko" ? " 점" : ""}` : row.hearts != null ? <GroupPersonHearts hearts={row.hearts} locale={locale}/> : undefined} selected={presentation?.selectedProfileId === row.profileId} onOpen={() => setOpened({ profileId: row.profileId, nickname: row.nickname, avatarUrl: row.avatarUrl, tier: row.tier, pageId })}/>)}</ul>
         : resource.loading ? <FanSkeletonRows rows={6} variant="member" className={styles.skeleton}/>
         : <div className={styles.state}>{mode === "ranking" ? <Trophy size={32} aria-hidden="true"/> : <UsersRound size={32} aria-hidden="true"/>}<p>{mode === "ranking" && ranking && !ranking.available ? t[ranking.reason === "creator_required" ? "creatorRequired" : "threshold"] : mode === "friends" && !search ? t.noFriends : t.empty}</p>{mode === "friends" && !search && <FanAction href={`/my/friends?locale=${locale}`} trailingIcon={<ArrowRight size={18}/>}>{t.manageFriends}</FanAction>}</div>}
       {mode === "ranking" && rankingsSlug && <MyRankRow slug={rankingsSlug} locale={locale} listed={shown.length > 0}/>}

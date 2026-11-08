@@ -16,6 +16,7 @@ import catalogStyles from "@/features/home/ui/events-catalog-screen.module.css";
 import { HomeHeroBanner } from "./home-hero-banner";
 import { elinaRafflesHref } from "@/features/live/domain/elina-event";
 import { raffleDiscoveryCopy } from "@/i18n/catalogs/features__benefit__ui__raffle-discovery";
+import { BannerSlot } from "../banner-slot/banner-slot";
 
 const copy = {
   ko: {
@@ -97,6 +98,7 @@ export function HomeEntryCards({ locale, celebrities, elinaRaffles, elinaGuide }
   return (
     <div className={styles.cards} data-home-entry-cards>
       {elinaGuide !== undefined ? elinaGuide : <ElinaGuideCard locale={locale} elina={elina} raffles={elinaRaffles} />}
+      <BannerSlot slot="home_between_events" locale={locale} />
       <Link className={styles.fanmeeting} href={`/pages/us-fanmeetings?locale=${locale}`} aria-label={t.fanmeeting}>
         <span className={styles.flag} aria-hidden="true"><span>{Array.from({ length: 20 }, (_, i) => <span key={i}>☆</span>)}</span></span>
         <span className={styles.fanmeetingCopy}><strong>{t.fanmeeting}</strong><span>{t.explore}</span></span>
