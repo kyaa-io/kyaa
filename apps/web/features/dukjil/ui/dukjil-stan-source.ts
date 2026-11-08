@@ -26,7 +26,6 @@ export const dukjilStanSource = {
   stanFlowStamps: { ko: "스탬프", en: "Stamps" },
   stanFlowHearts: { ko: "하트", en: "Hearts" },
   stanFlowCheer: { ko: "최애 응원", en: "Cheer" },
-  stanHeartHelp: { ko: "하트 1개가 찐팬 1명으로 셉니다", en: "One heart counts as one true fan" },
   stanWalletFlows: { ko: "내 지갑", en: "My wallet" },
   // F2 (feedback F): the one entry to the 덕질 rules, in place of the help buttons.
   stanGuide: { ko: "안내", en: "Guide" },
@@ -55,7 +54,4 @@ export const dukjilStanSource = {
   cheerNextHeart: { ko: "다음 하트까지 {0}칸", en: "{0} stamps to the next heart" },
   cheerHeartReady: { ko: "하트 +1", en: "Heart +1" },
   cheerFanRanking: { ko: "팬 순위 보기", en: "See fan ranking" },
-  flowLuckyOpen: { ko: "진행 {0}", en: "{0} open" },
-  flowRank: { ko: "{0}위", en: "#{0}" },
-  flowRankOut: { ko: "20위 밖", en: "Not top 20" },
 } as const;
