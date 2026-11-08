@@ -52,7 +52,7 @@ it("R18: five 56px rows of rank · name · hearts · movement, the movement alwa
   await waitFor(() => expect(basis.textContent).toMatch(/^누적 하트 · 업데이트 (\d\d\. \d\d\. )?\d\d:\d\d$/));
   expect(basis.querySelector("[data-updated-at]")).not.toBeNull();
   expect(basis.tagName).not.toBe("P");
-  expect(screen.getByRole("link", { name: /전체 보기/ })).toHaveAttribute("href", "/rankings?locale=ko&tab=fans");
+  expect(screen.getByRole("link", { name: /전체 보기/ })).toHaveAttribute("href", "/rankings?locale=ko&tab=fans&period=all");
   expect(screen.queryByRole("button", { name: "11~20위" })).toBeNull();
   expect(container.querySelector('[data-block="ranking"]')).not.toBeNull();
   expect(fetcher).toHaveBeenCalledWith("/api/rankings/home?kind=fans&locale=ko", expect.anything());

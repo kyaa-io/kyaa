@@ -304,6 +304,6 @@ export function HomeRankingCard({ locale, headingId = "home-ranking-heading" }: 
       { key: "fans", label: rankingsText(locale, "rkFanTab"), onSelect: () => chooseTab("fans"), panel: week ? <WeekFanTab key="week" locale={locale} onHead={weekFansHead} /> : <FanTab key="all" locale={locale} onHead={fansHead} /> },
       { key: "creators", label: rankingsText(locale, "rkCreatorRankTab"), onSelect: () => chooseTab("creators"), panel: week ? <WeekCreatorTab key="week" locale={locale} onHead={weekCreatorsHead} /> : <CreatorTab key="all" locale={locale} onHead={creatorsHead} /> },
     ]} />
-    <Link className={styles.all} href={`/rankings?locale=${locale}&tab=${tab}${week ? "&period=week" : ""}` as Route}>{rankingsText(locale, "rkViewAll")}<FanIcon icon={ChevronRight} size={16} /></Link>
+    <Link className={styles.all} href={`/rankings?locale=${locale}&tab=${tab}&period=${week ? "week" : "all"}` as Route}>{rankingsText(locale, "rkViewAll")}<FanIcon icon={ChevronRight} size={16} /></Link>
   </section>;
 }
