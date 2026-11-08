@@ -370,11 +370,10 @@ describe("approved fanpage", () => {
     render(<CelebrityFanPage celebrity={kara} locale="ko" upcomingLive={null} />);
     expect(routerReplace).toHaveBeenCalledWith("/kara?tab=board&source=fans&locale=ko#celebrity-content", { scroll: false });
   });
-  it("shows the gathering at 99 while keeping the ranking table locked", async () => {
+  it("shows the true-fan gauge at 99 while keeping the ranking table locked (the gathering box became the gauge, 261107-2 C7)", async () => {
     membershipCount = 99;
     render(<CelebrityFanPage celebrity={kara} locale="ko" upcomingLive={null} initialTab="leaderboard" />);
     expect(await screen.findByText("현재 99명 / 100명")).toBeInTheDocument();
-    expect(await screen.findByRole("heading", { name: "좋아하는 마음으로 모인 팬들" })).toBeInTheDocument();
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
     expect(screen.queryByRole("table")).not.toBeInTheDocument();
   });

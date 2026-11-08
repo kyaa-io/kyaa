@@ -28,7 +28,12 @@ vi.mock("./home-community-preview", () => ({ HomeCommunityPreview: () => <div da
 // The ranking card (261107-2 U3) has its own tests; here it only holds its place.
 vi.mock("@/features/rankings/ui/home-ranking-card", () => ({ HomeRankingCard: ({ headingId }: { headingId?: string }) => <section data-testid="home-ranking" aria-labelledby={headingId} /> }));
 vi.mock("@/features/rankings/ui/home-challenges", () => ({ HomeChallenges: () => <section data-testid="home-challenges" /> }));
-vi.mock("@/features/rankings/ui/use-ranking-resource", () => ({ useRankingResource: () => ({ state: { status: "ready", data: { items: [{ slug: "kara", name: "KARA", imageUrl: null, title: "찐팬 100명", description: "", endsOn: null, count: 40, target: 100 }] } }, retry: () => undefined }) }));
+// The challenge list (B) is a fixed answer; the favorite card's creator ranking (D13) keeps the real hook so its fetch stub answers it.
+vi.mock("@/features/rankings/ui/use-ranking-resource", async () => {
+  const actual = await vi.importActual<typeof import("@/features/rankings/ui/use-ranking-resource")>("@/features/rankings/ui/use-ranking-resource");
+  const challenges = { state: { status: "ready", data: { items: [{ slug: "kara", name: "KARA", imageUrl: null, title: "찐팬 100명", description: "", endsOn: null, count: 40, target: 100 }] } }, retry: () => undefined };
+  return { ...actual, useRankingResource: (url: string, parse: (value: unknown) => unknown) => url.startsWith("/api/rankings/creators") ? actual.useRankingResource(url, parse) : challenges };
+});
 
 vi.mock("@privy-io/react-auth", () => ({
   usePrivy: () => privy,
