@@ -16,6 +16,10 @@ take() { # file -> $TMP/file without its own transaction lines
 }
 for f in supabase/rollback/20261215070000_share_proofs.sql supabase/rollback/20261215060000_fan_tier_history.sql \
          supabase/migrations/20261215060000_fan_tier_history.sql supabase/migrations/20261215070000_share_proofs.sql; do take "$f"; done
+# 20261215090000 (one tier source) exists only in the working tree.
+HAS90=0; if [ -z "$REF" ] || git -C "$ROOT" cat-file -e "$REF:supabase/migrations/20261215090000_tier_source_hearts.sql" 2>/dev/null; then HAS90=1; take supabase/migrations/20261215090000_tier_source_hearts.sql; fi
+grep -v -x -e 'begin;' -e 'commit;' -e "notify pgrst, 'reload schema';" "$ROOT/supabase/rollback/20261215090000_tier_source_hearts.sql" > "$TMP/rb90.sql"
+APPLY90=""; [ "$HAS90" = 1 ] && APPLY90="\\i $TMP/supabase/migrations/20261215090000_tier_source_hearts.sql"
 if [ "${STRIP_POLICY:-}" = 1 ]; then
   for f in supabase/migrations/20261215060000_fan_tier_history.sql supabase/migrations/20261215070000_share_proofs.sql; do
     sed -i '' '/-- owner-policy-begin/,/-- owner-policy-end/d' "$TMP/$f"
@@ -30,17 +34,19 @@ create role f_apply nologin nosuperuser nobypassrls;
 grant postgres, byus_admin to f_apply;
 -- Local only: functions made by earlier local applies belong to the local superuser; membership stands in for that ownership.
 grant localsuper to f_apply;
+\i $TMP/rb90.sql
 \i $TMP/supabase/rollback/20261215070000_share_proofs.sql
 \i $TMP/supabase/rollback/20261215060000_fan_tier_history.sql
 set role f_apply;
 \i $TMP/supabase/migrations/20261215060000_fan_tier_history.sql
 \i $TMP/supabase/migrations/20261215070000_share_proofs.sql
+$APPLY90
 reset role;
 -- Locally byus_admin is a superuser and would hide the problem; take its row security bypass away inside this transaction only
 -- for the functions f_apply now owns (they run as f_apply). Existing byus_admin functions keep running as before.
 do \$\$
 declare fp record; adm record; tier_rows integer; r jsonb; v_id uuid; award jsonb; bal_before bigint; bal_paid bigint; bal_after bigint;
-  stamp_ok boolean; points_ok boolean; scrub_ok boolean; tier_ok boolean; cancel_text text; trg record; other uuid;
+  stamp_ok boolean; points_ok boolean; scrub_ok boolean; tier_ok boolean; one_ok boolean; one_bad integer; one_all integer; cancel_text text; trg record; other uuid;
 begin
   if (select rolsuper or rolbypassrls from pg_roles where rolname = 'f_apply') then raise exception 'probe role is privileged'; end if;
   if pg_get_userbyid((select proowner from pg_proc where oid = 'public.dukjil_correct_share_grant(uuid,uuid,text)'::regprocedure)) <> 'f_apply' then raise exception 'functions not owned by the applying role'; end if;
@@ -91,8 +97,17 @@ begin
   scrub_ok := (select url from public.fan_share_proofs where id = v_id) is null and exists (select 1 from public.fan_share_proofs where id = v_id);
   raise notice 'probe2 address cleared by the deletion trigger: %', scrub_ok;
 
-  raise notice 'RESULT stamp=% points=% scrub=% tier=%', stamp_ok, points_ok, scrub_ok, tier_ok;
-  if $EXPECT = 1 and not (stamp_ok and points_ok and scrub_ok and tier_ok) then raise exception 'probe failed'; end if;
+  -- (4) one tier source (20261215090000): the replaced functions keep their owner, and MY agrees with the fan list.
+  select count(*) filter (where (x.value -> 'passport' ->> 'tier') is distinct from public.get_fan_effective_tier(p.app_user_id, p.celebrity_id)), count(*)
+    into one_bad, one_all
+    from (select distinct app_user_id from public.fan_passports limit 60) u
+    cross join lateral jsonb_array_elements(public.get_owned_my_fan_activity_with_stages(u.app_user_id, 'ko', now()) -> 'creators') x
+    join public.celebrities c on c.slug = x.value -> 'celebrity' ->> 'slug'
+    join public.fan_passports p on p.app_user_id = u.app_user_id and p.celebrity_id = c.id;
+  one_ok := one_bad = 0 and pg_get_userbyid((select proowner from pg_proc where oid = 'public.get_fan_effective_tier_for_score(uuid,uuid,integer,integer)'::regprocedure)) = 'postgres';
+  raise notice 'probe4 MY vs fan list tier differences: % of % passports, for_score owner %', one_bad, one_all, pg_get_userbyid((select proowner from pg_proc where oid = 'public.get_fan_effective_tier_for_score(uuid,uuid,integer,integer)'::regprocedure));
+  raise notice 'RESULT stamp=% points=% scrub=% tier=% one_source=%', stamp_ok, points_ok, scrub_ok, tier_ok, one_ok;
+  if $EXPECT = 1 and not (stamp_ok and points_ok and scrub_ok and tier_ok and one_ok) then raise exception 'probe failed'; end if;
 end \$\$;
 rollback;
 SQL

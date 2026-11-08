@@ -1,10 +1,11 @@
 -- 261107-2 D11: a fan's tier changes are kept, so the app can celebrate a rise once and the passport can list every change.
 --
--- The tier is not stored anywhere: MY and the header compute it on every read (get_fan_effective_tier_for_score with the
--- active policy; under policy 3 that is hearts, three placed stamps and the old level events). fan_level_events only covers
+-- The tier is not stored anywhere: every screen computes it on read. Under policy 3 it comes from hearts (passport_hearts) and the
+-- filled stamp slots (20261210134000); get_fan_effective_tier is that one source (fan list, profile card, passport stage), and
+-- 20261215090000 makes the MY summary path use it too. fan_level_events only covers
 -- the score policy, so a rise to Silver from three stamps left no trace and the fan could not tell when it happened.
 --
--- How a change is recorded: observe_fan_tiers(user) computes each passport's tier with the same expression the MY summary uses
+-- How a change is recorded: observe_fan_tiers(user) computes each passport's tier with get_fan_effective_tier
 -- and appends a row when it differs from the last row. The app calls it when it starts and after every write it makes, so a rise
 -- is recorded within one screen of the action that caused it. The first observation of a passport writes a 'start' row
 -- (Bronze, at the passport's issue time) and, if the passport is already above Bronze, a 'baseline' row at that moment: the
@@ -22,7 +23,7 @@ create table public.fan_tier_history (
   app_user_id uuid not null references public.app_users(id) on delete cascade,
   celebrity_id uuid not null references public.celebrities(id) on delete cascade,
   passport_id uuid not null references public.fan_passports(id) on delete cascade,
-  kind text not null check (kind in ('start', 'baseline', 'up', 'down')),
+  kind text not null check (kind in ('start', 'baseline', 'up', 'down', 'correction')),
   previous_tier text check (previous_tier in ('Bronze', 'Silver', 'Gold', 'Platinum', 'Diamond')),
   tier text not null check (tier in ('Bronze', 'Silver', 'Gold', 'Platinum', 'Diamond')),
   occurred_at timestamptz not null default clock_timestamp(),
@@ -64,9 +65,8 @@ begin
   -- Without the active policy the badge expression cannot be matched; write nothing rather than a wrong tier (review r4 M2).
   if v_policy is null then return jsonb_build_object('changes', '[]'::jsonb); end if;
   for p in select fp.id, fp.celebrity_id, fp.issued_at from public.fan_passports fp where fp.app_user_id = p_app_user_id loop
-    -- The same expression as the MY summary (get_owned_my_fan_activity_before_fan_web), so the history never disagrees with the badge.
-    v_tier := public.get_fan_effective_tier_for_score(p_app_user_id, p.celebrity_id,
-      coalesce((select sum(points)::integer from public.fan_score_ledger x where x.app_user_id = p_app_user_id and x.celebrity_id = p.celebrity_id), 0), v_policy);
+    -- The one tier source (merge checklist 9): the same function as the fan list, profile card and passport stage, hearts under policy 3.
+    v_tier := public.get_fan_effective_tier(p_app_user_id, p.celebrity_id);
     continue when public.fan_tier_rank(v_tier) is null;
     select * into v_last from public.fan_tier_history h where h.passport_id = p.id order by h.occurred_at desc, h.id desc limit 1;
     if not found then
@@ -121,7 +121,7 @@ grant execute on function public.observe_fan_tiers(uuid, public.content_locale),
   public.read_fan_tier_history(uuid, uuid) to service_role;
 
 -- owner-policy-begin (review r4b H1)
--- observe_fan_tiers reads the active policy and the tier inputs; get_fan_effective_tier_for_score (invoker) reads milestones, level events and cutover snapshots as this owner.
+-- observe_fan_tiers reads the active policy and the passports; get_fan_effective_tier and what it calls are postgres-owned definers.
 -- In dev the applying role (byus_admin) owns these functions but is not a superuser, and some tables they read are owned by
 -- postgres with FORCE row security and no policy for it: reads answer 0 rows without an error. Same remedy as 20261215030000 and
 -- 20261210240000 (p3_fn_owner_<role>): the privilege the functions need and a policy for that role alone, only where row security
@@ -145,7 +145,7 @@ end $$;
 -- The tier functions this file calls may belong to another owner than the one applying it (same cause as 20261212030000).
 do $$ declare target regprocedure; target_owner name; me name := (select pg_get_userbyid(proowner) from pg_proc where oid = 'public.observe_fan_tiers(uuid,public.content_locale)'::regprocedure);
 begin
-  foreach target in array array['public.get_fan_effective_tier_for_score(uuid,uuid,integer,integer)'::regprocedure] loop
+  foreach target in array array['public.get_fan_effective_tier(uuid,uuid)'::regprocedure] loop
     select pg_get_userbyid(proowner) into target_owner from pg_proc where oid = target;
     if me in ('anon', 'authenticated', 'service_role') then raise exception 'Unexpected definer owner % for observe_fan_tiers', me; end if;
     if me <> target_owner then execute format('grant execute on function %s to %I', target, me); end if;

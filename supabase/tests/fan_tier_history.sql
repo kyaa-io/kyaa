@@ -15,10 +15,9 @@ begin
     raise exception 'Tier history exposed or not callable by the server';
   end if;
 
-  -- A Bronze passport (the summary's expression says Bronze).
+  -- A Bronze passport (the one tier source says Bronze).
   select p.id, p.app_user_id, p.celebrity_id, p.issued_at into fp from public.fan_passports p join public.app_users u on u.id = p.app_user_id and u.status = 'active'
-   where public.get_fan_effective_tier_for_score(p.app_user_id, p.celebrity_id, coalesce((select sum(points)::integer from public.fan_score_ledger x where x.app_user_id = p.app_user_id and x.celebrity_id = p.celebrity_id), 0),
-     (select policy_version from public.reward_policy_activation where singleton)) = 'Bronze'
+   where public.get_fan_effective_tier(p.app_user_id, p.celebrity_id) = 'Bronze'
    order by p.issued_at desc limit 1;
   if fp.id is null then raise exception 'Fixture: no Bronze passport'; end if;
   delete from public.fan_tier_history where app_user_id = fp.app_user_id;
@@ -45,11 +44,9 @@ begin
   end if;
 
   -- A rise: a passport above Bronze whose last row says one tier lower gets one unseen 'up' row, returned with slug and name.
-  select p.id, p.app_user_id, p.celebrity_id, public.get_fan_effective_tier_for_score(p.app_user_id, p.celebrity_id, coalesce((select sum(points)::integer from public.fan_score_ledger x where x.app_user_id = p.app_user_id and x.celebrity_id = p.celebrity_id), 0),
-     (select policy_version from public.reward_policy_activation where singleton)) tier into fp
+  select p.id, p.app_user_id, p.celebrity_id, public.get_fan_effective_tier(p.app_user_id, p.celebrity_id) tier into fp
    from public.fan_passports p join public.app_users u on u.id = p.app_user_id and u.status = 'active'
-   where public.get_fan_effective_tier_for_score(p.app_user_id, p.celebrity_id, coalesce((select sum(points)::integer from public.fan_score_ledger x where x.app_user_id = p.app_user_id and x.celebrity_id = p.celebrity_id), 0),
-     (select policy_version from public.reward_policy_activation where singleton)) <> 'Bronze' limit 1;
+   where public.get_fan_effective_tier(p.app_user_id, p.celebrity_id) <> 'Bronze' limit 1;
   if fp.id is null then raise exception 'Fixture: no passport above Bronze'; end if;
   delete from public.fan_tier_history where app_user_id = fp.app_user_id;
   r := public.observe_fan_tiers(fp.app_user_id, 'ko');

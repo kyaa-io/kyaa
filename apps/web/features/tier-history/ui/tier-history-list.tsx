@@ -24,7 +24,7 @@ export function TierHistoryList({ passportId, locale }: { passportId: string; lo
 
 function TierHistoryRow({ item, locale }: { item: TierHistoryItem; locale: AppLocale }) {
   const c = tierHistoryCopy(locale), tier = fanTierName(locale, item.tier);
-  const what = item.kind === "start" ? c.start : item.kind === "baseline" ? c.baseline : item.kind === "up" ? c.up : c.down;
+  const what = item.kind === "start" ? c.start : item.kind === "baseline" ? c.baseline : item.kind === "up" ? c.up : item.kind === "correction" ? c.correction : c.down;
   const detail = item.previousTier && item.kind !== "baseline" ? `${fanTierName(locale, item.previousTier)} → ${tier}` : tier;
   return <li className={styles.row} data-tier-kind={item.kind}>
     <FanTierBadge tier={item.tier} locale={locale} size={32} adjacentLabel />
