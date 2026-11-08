@@ -66,7 +66,7 @@ it('orders the screen profile, notice, passport, wallet, favorites, shortcuts an
   const name = screen.getByRole('heading', { level: 1, name: '별빛님' });
   const notice = screen.getByRole('heading', { name: '래플 결과가 발표됐어요' });
   const passport = screen.getByRole('heading', { name: '내 패스포트' });
-  const wallet = screen.getByRole('heading', { name: '내 지갑' });
+  const wallet = document.querySelector('[data-my-wallet]')!;
   const favorites = screen.getByRole('heading', { name: '내 최애' });
   const shortcuts = screen.getByRole('heading', { name: '바로가기' });
   [name, notice, passport, wallet, favorites, shortcuts].reduce((previous, current) => { expect(before(previous, current)).toBe(true); return current; });
@@ -98,24 +98,14 @@ it('switches the passport card to the other favorite', () => {
   expect(within(card).getByText('실버까지 7점')).toBeInTheDocument();
 });
 
-it('uses the same ad-based exchange wording as 덕질 and enables it only when the points cover the rate', () => {
-  const { unmount } = renderMy();
-  const wallet = screen.getByRole('region', { name: '내 지갑' });
-  expect(wallet).toHaveTextContent('375P');
-  expect(wallet).toHaveTextContent('9장');
-  expect(within(wallet).getByText('100 P')).toBeInTheDocument();
-  expect(within(wallet).getByText('1장')).toBeInTheDocument();
-  expect(screen.queryByText('포인트로 교환하기')).toBeNull();
-  const exchange = within(wallet).getByRole('button', { name: '광고 보고 교환하기' });
-  expect(exchange).toBeEnabled();
-  fireEvent.click(exchange);
-  expect(screen.getByRole('dialog', { name: '교환' })).toBeInTheDocument();
-  unmount();
-  data.wallet = { points: 40, hearts: 0, tickets: 0, pointCost: 100 };
+it('r5 R19: MY has one wallet menu row (지갑 · P N ›) to 덕질 and no exchange, rate line or 모은 포인트 사용하기', () => {
   renderMy();
-  expect(screen.getByRole('button', { name: '광고 보고 교환하기' })).toBeDisabled();
+  const row = document.querySelector<HTMLElement>('[data-my-wallet]')!;
+  expect(row).toHaveAttribute('data-row', 'menu');expect(row).toHaveAttribute('href', '/benefits?locale=ko');
+  expect(row).toHaveTextContent('지갑');expect(row).toHaveTextContent('P 375');
+  expect(screen.queryByRole('button', { name: '교환' })).toBeNull();
+  expect(screen.queryByText('100 P')).toBeNull();expect(screen.queryByText('모은 포인트 사용하기')).toBeNull();
 });
-
 it('puts the raffle result above the passport and hides it once the result is opened, until a new result arrives', () => {
   data.rewards = [reward('50000000-0000-4000-8000-000000000001')];
   const first = renderMy();

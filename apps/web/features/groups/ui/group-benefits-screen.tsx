@@ -97,7 +97,8 @@ function useStanNumbers(bias:SelectedBias,signedOut:boolean){
  const auth=useGroupRequest(),guest=useGuest(signedOut,bias);
  const passportId=auth.authenticated?bias.selected?.passportId:undefined,roadmap=useGroupResource(passportId?`/api/me/passports/${encodeURIComponent(passportId)}/roadmap`:null,parseRoadmap);
  const page=roadmap.data?roadmap.data.pages[openingPage(roadmap.data.pages)]:undefined;
- const stamps:StanSlot=guest?'locked':!bias.selected?(bias.status==='loading'?'loading':0):page?page.filled:roadmap.data?0:roadmap.error?'missing':'loading';
+ // A favorite without a passport has no stamped page yet: 0/9, not a skeleton that never ends.
+ const stamps:StanSlot=guest?'locked':!bias.selected?(bias.status==='loading'?'loading':0):!passportId&&auth.ready?0:page?page.filled:roadmap.data?0:roadmap.error?'missing':'loading';
  const hearts:StanSlot=guest?'locked':bias.status==='loading'?'loading':bias.selected?bias.selected.hearts??'missing':0;
  return {guest,stamps,hearts};
 }

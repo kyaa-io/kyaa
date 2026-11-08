@@ -26,7 +26,7 @@ for (const w of [390, 1440]) {
       targets: await page.locator('[role=group] button').evaluateAll(n => n.map(e => { const r = e.getBoundingClientRect(); return `${e.textContent || e.getAttribute('aria-label')}:${Math.round(r.width)}x${Math.round(r.height)}`; })) });
     await ctx.close(); }
   { const { ctx, page, errs } = await open(w, 'remaining=5&plan=earn,cancel,earn'); await page.getByRole('button', { name: '3', exact: true }).click();
-    await page.getByRole('button', { name: /광고 보고 교환하기/ }).click(); await page.waitForTimeout(500);
+    await page.getByRole('button', { name: /교환/ }).click(); await page.waitForTimeout(500);
     log.push({ w, case: 'buttons-after-start', buttons: await page.getByRole('button').allInnerTexts() });
     await shot(page, w, 'b1-loading');
     const show = page.getByRole('button', { name: /광고 보기|광고 시작|보기/ }); if (await show.count()) await show.first().click();
@@ -36,7 +36,7 @@ for (const w of [390, 1440]) {
     await page.waitForTimeout(1500); await shot(page, w, 'b3-stopped');
     log.push({ w, case: 'stopped', text: (await page.locator('body').innerText()).slice(0, 500), posts: await page.evaluate(() => window.__posts), errs }); await ctx.close(); }
   for (const lc of ['ru', 'th']) { const { ctx, page } = await open(w, 'remaining=5&locale=' + lc); await page.getByRole('button').filter({ hasText: /^3$/ }).first().click(); await shot(page, w, 'd-' + lc + '-pick3'); await ctx.close(); }
-  { const { ctx, page } = await open(w, 'unit=none&remaining=5'); await page.getByRole('button', { name: /광고 보고 교환하기/ }).click(); await page.waitForTimeout(700); await shot(page, w, 'c1-nounit');
+  { const { ctx, page } = await open(w, 'unit=none&remaining=5'); await page.getByRole('button', { name: /교환/ }).click(); await page.waitForTimeout(700); await shot(page, w, 'c1-nounit');
     log.push({ w, case: 'nounit', posts: await page.evaluate(() => window.__posts), text: (await page.locator('[role=status],[role=alert]').allInnerTexts()) }); await ctx.close(); }
 }
 console.log(JSON.stringify(log, null, 1)); await browser.close(); await server.close();

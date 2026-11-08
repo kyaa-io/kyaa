@@ -5,3 +5,4 @@
 .label { font-size: var(--fan-item-title-size); font-weight: 700; }
 .value { display: flex; align-items: center; font-size: var(--fan-item-title-size); font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; }
 .next { color: var(--color-muted); }
+.guest { display: grid; gap: var(--space-3); }

@@ -19,6 +19,7 @@ import type { AppLocale } from "@/i18n/locales";
 import { activeToday, checkinNumbers, missionProgress } from "../domain/dukjil-ui";
 import { dukjilText } from "./dukjil-copy";
 import { useDukjil } from "./dukjil-provider";
+import { EarnBadge } from "./earn-badge";
 import { useAttendedAnywhereToday } from "./use-attended-anywhere";
 import styles from "./fan-missions.module.css";
 import inkStyles from "@/components/fan-ui/fan-ink.module.css";
@@ -142,7 +143,7 @@ export function FanMissions({ locale, slug, title, passportHref, proofHref, foot
         {!folded && on && today && !guest && (
           <div className={styles.summary}>
             {/* C8: no stamp icon box here. Stamps are counted on the passport (덕질 and MY); a finished mission says what it paid. */}
-            <span className={styles.reward}>+{today.totalPoints.toLocaleString(locale)}P</span>
+            <EarnBadge variant="inline" locale={locale} points={today.totalPoints} today />
           </div>
         )}
         {pending && <span className={styles.summary} aria-hidden="true"><FanSkeleton width={96} height={20} /></span>}

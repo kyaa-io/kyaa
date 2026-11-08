@@ -85,12 +85,13 @@ export function LuckyDrawModule({ locale, bias, guest, onExchange }: { locale: A
   const action = guest || !slug || loading || raffles.error ? null : (() => {
     if (state === "open" && raffle) {
       if (allowance?.kind === "passport") return <FanAction variant="primary" fullWidth href={creatorRaffleVerificationHref(slug, locale, raffle.benefitId)} className={styles.action}>{t(locale, "luckyGetPassport")}</FanAction>;
-      const href = raffle.benefitId ? creatorRaffleHref(slug, raffle.benefitId, locale) : creatorRafflesHref(slug, locale);
+      const href: string = raffle.benefitId ? String(creatorRaffleHref(slug, raffle.benefitId, locale)) : String(creatorRafflesHref(slug, locale));
       // No ticket to enter with: the button stays active and opens the exchange (plan ③ "누르면 교환 안내").
       if (onExchange && allowance?.kind === "count" && allowance.count === 0 && wallet.data?.tickets === 0) return <FanAction variant="primary" fullWidth onClick={onExchange} className={styles.action}>{t(locale, "luckyEnterShort")}</FanAction>;
       return <FanAction variant="primary" fullWidth href={href} className={styles.action}>{t(locale, "luckyEnterShort")}</FanAction>;
     }
-    if (state === "closed" && raffle) return <FanAction variant="secondary" fullWidth href={raffle.benefitId ? creatorRaffleHref(slug, raffle.benefitId, locale) : creatorRafflesHref(slug, locale)} className={styles.action}>{t(locale, "luckyResults")}</FanAction>;
+    const resultHref: string | null = state === "closed" && raffle ? (raffle.benefitId ? String(creatorRaffleHref(slug, raffle.benefitId, locale)) : String(creatorRafflesHref(slug, locale))) : null;
+    if (resultHref) return <FanAction variant="secondary" fullWidth href={resultHref} className={styles.action}>{t(locale, "luckyResults")}</FanAction>;
     // 준비 중: the one disabled action the plan allows here (8장 plan ④); its reason is the label.
     return <FanAction variant="primary" fullWidth disabled className={styles.action}>{raffle?.entryOpensAt ? t(locale, "luckyStartsOn", [luckyDate(raffle.entryOpensAt, locale)]) : t(locale, "luckyStartsNextWeek")}</FanAction>;
   })();

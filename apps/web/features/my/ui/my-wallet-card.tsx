@@ -6,10 +6,11 @@ import type { Route } from "next";
 import { useEffect } from "react";
 import { FanLockedValue } from "@/components/fan-ui/fan-locked-value";
 import { FanSkeleton } from "@/components/fan-ui/fan-skeleton";
-import { walletCopy } from "@/features/group-wallet/ui/copy";
+import { dukjilText } from "@/features/dukjil/ui/dukjil-copy";
 import { GROUP_WALLET_CHANGED_EVENT, useGroupResource } from "@/features/groups/ui/use-group-resource";
 import type { AppLocale } from "@/i18n/locales";
 import { walletSchema } from "@/server/group-wallet/domain";
+import { GuestLoginAction } from "./guest-login";
 import styles from "./my-wallet-card.module.css";
 
 const parseWallet = (value: unknown) => walletSchema.parse(value);
@@ -18,7 +19,7 @@ const parseWallet = (value: unknown) => walletSchema.parse(value);
 function WalletRow({ locale, value }: { locale: AppLocale; value: React.ReactNode }) {
   return <Link className={styles.row} href={`/benefits?locale=${locale}` as Route} data-row="menu" data-my-wallet="">
     <Coins size={24} strokeWidth={1.5} aria-hidden="true" data-icon="" data-icon-set="lucide" />
-    <span className={styles.label}>{walletCopy(locale).wallet}</span>
+    <span className={styles.label}>{dukjilText(locale, "myWalletRow")}</span>
     <span className={styles.value} data-metric="asset" data-metric-id="my-wallet-points">{value}</span>
     <ChevronRight size={16} strokeWidth={1.5} className={styles.next} aria-hidden="true" />
   </Link>;
@@ -39,7 +40,7 @@ export function MyWalletCardSkeleton({ locale }: { locale: AppLocale }) {
   return <WalletRow locale={locale} value={<FanSkeleton width={64} height={20} />} />;
 }
 
-/** 비로그인: 같은 행에 잠긴 값. */
-export function MyGuestWalletCard({ locale }: { locale: AppLocale; returnTo?: string }) {
-  return <WalletRow locale={locale} value={<FanLockedValue locale={locale} />} />;
+/** 비로그인: 같은 행에 잠긴 값, 그 아래 MY의 로그인 하나(비로그인 원칙: 구조 유지 + 로그인 유도). */
+export function MyGuestWalletCard({ locale, returnTo }: { locale: AppLocale; returnTo: string }) {
+  return <div className={styles.guest}><WalletRow locale={locale} value={<FanLockedValue locale={locale} />} /><GuestLoginAction locale={locale} returnTo={returnTo} variant="primary" fullWidth /></div>;
 }
