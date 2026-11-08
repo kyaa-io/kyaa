@@ -1,9 +1,14 @@
 -- Funnel events in the self ledger (funnel-audit A-3, A-5, A-7, A-8).
---   page_view          client, anonymous only, one per screen: kind of screen + coarse context, no path or query.
+--   page_view          client, one per screen: kind of screen + coarse context, no path or query. Owned by the member
+--                      when signed in, otherwise by the anonymous tab session. A visit (tab session) is its single
+--                      entry=true event, so a tab that signs in midway is still one visit.
 --   share_completed    client, member or anonymous: share method and content kind only.
 --   fan_verification_started / fan_verification_submitted, daily_checkin_completed, post_created,
---   comment_created, cheer_completed: projected from the business row on commit (server.commit_projection),
---   keyed by the row id, so retries and replays are recorded once.
+--   comment_created, cheer_completed: projected from the business row on commit (server.commit_projection), keyed by
+--   the row id so retries and replays are recorded once. post_created covers fan board and group posts (property
+--   board). cheer_completed is once per member, creator and KST day: enough to find a first activity.
+-- Limits: page_view at most 500 per owner (tab session or member) per KST day, and 60 events per client IP per minute
+-- (consume_product_event_ip_budget). The route drops anything over a limit with 204.
 -- record_product_event_v1 is patched in place (same pattern as 20261012100000) so earlier rules stay intact.
 begin;
 set local lock_timeout = '5s';
@@ -19,12 +24,26 @@ alter table public.fan_product_events
     'login_result','account_created','profile_completed','outbound_link_click',
     'page_view','share_completed','fan_verification_started','fan_verification_submitted',
     'daily_checkin_completed','post_created','comment_created','cheer_completed'
-  ));
+  )) not valid;
+alter table public.fan_product_events validate constraint fan_product_events_event_name_check;
 
 create index if not exists fan_product_events_page_view_occurred_idx
   on public.fan_product_events (occurred_at)
   include (anonymous_session_hash)
   where event_name = 'page_view';
+-- Daily page_view cap per owner.
+create index if not exists fan_product_events_page_view_owner_idx
+  on public.fan_product_events ((coalesce(anonymous_session_hash, app_user_id::text)), occurred_at)
+  where event_name = 'page_view';
+-- Funnel first-activity checks.
+create index if not exists fan_product_events_share_member_idx
+  on public.fan_product_events (app_user_id, occurred_at)
+  where event_name = 'share_completed' and app_user_id is not null;
+create index if not exists group_creator_attendance_member_created_idx
+  on public.group_creator_attendance (app_user_id, created_at);
+create index if not exists group_posts_author_created_idx on public.group_posts (author_id, created_at);
+create index if not exists fan_passports_owner_issued_idx on public.fan_passports (app_user_id, issued_at);
+create index if not exists fan_passports_issued_idx on public.fan_passports (issued_at);
 
 do $patch$
 declare
@@ -42,9 +61,7 @@ $a$;
   rules_anchor text := $a$  if p_event_name in ('ticket_credited', 'ticket_debited') then$a$;
   rules_patched text := $a$  -- funnel events (20261219010000)
   if p_event_name = 'page_view' and (
-    p_app_user_id is not null
-    or p_anonymous_session_hash is null
-    or p_celebrity_id is not null or p_live_event_id is not null
+    p_celebrity_id is not null or p_live_event_id is not null
     or p_mission_id is not null or p_benefit_id is not null
     or p_source <> 'web.page_view'
     or p_idempotency_key !~ '^page-view:[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$'
@@ -65,6 +82,17 @@ $a$;
     or p_properties->>'os' not in ('ios','android','other')
   ) then
     raise exception 'PRODUCT_EVENT_INVALID' using errcode = '22023';
+  end if;
+  if p_event_name = 'page_view' and (
+    select count(*) from (
+      select 1 from public.fan_product_events event
+      where event.event_name = 'page_view'
+        and coalesce(event.anonymous_session_hash, event.app_user_id::text) = coalesce(p_anonymous_session_hash, p_app_user_id::text)
+        and event.occurred_at >= (pg_catalog.date_trunc('day', statement_timestamp() at time zone 'Asia/Seoul') at time zone 'Asia/Seoul')
+      limit 500
+    ) today
+  ) >= 500 then
+    raise exception 'PRODUCT_EVENT_RATE_LIMITED' using errcode = '54000';
   end if;
 
   if p_event_name = 'share_completed' and (
@@ -94,10 +122,13 @@ $a$;
     end;
     if p_app_user_id is null
        or p_anonymous_session_hash is not null
-       or p_celebrity_id is null
+       or (p_celebrity_id is null and not (p_event_name = 'post_created' and p_properties->>'board' = 'group'))
        or p_live_event_id is not null or p_mission_id is not null or p_benefit_id is not null
        or p_source <> 'server.commit_projection'
-       or p_idempotency_key <> 'server:' || p_event_name || ':' || funnel_entity_id::text
+       or p_idempotency_key <> 'server:' || p_event_name || ':' || (case when p_event_name = 'cheer_completed'
+            then p_app_user_id::text || ':' || coalesce(p_celebrity_id::text, '') || ':'
+              || pg_catalog.to_char((p_occurred_at at time zone 'Asia/Seoul')::date, 'YYYY-MM-DD')
+            else funnel_entity_id::text end)
        or (p_event_name = 'fan_verification_started' and (
          (p_properties - 'businessEntityId') <> '{}'::jsonb
          or not exists (select 1 from public.quiz_attempts source_record
@@ -127,11 +158,18 @@ $a$;
              and source_record.streak::text = p_properties->>'streak')
        ))
        or (p_event_name = 'post_created' and (
-         (p_properties - array['businessEntityId','category']::text[]) <> '{}'::jsonb
-         or not exists (select 1 from public.fan_posts source_record
-           where source_record.id = funnel_entity_id and source_record.app_user_id = p_app_user_id
-             and source_record.celebrity_id = p_celebrity_id
-             and source_record.category = p_properties->>'category')
+         (p_properties - array['businessEntityId','category','board']::text[]) <> '{}'::jsonb
+         or not (
+           (p_properties->>'board' = 'fan' and exists (select 1 from public.fan_posts source_record
+             where source_record.id = funnel_entity_id and source_record.app_user_id = p_app_user_id
+               and source_record.celebrity_id = p_celebrity_id
+               and source_record.category = p_properties->>'category'))
+           or (p_properties->>'board' = 'group' and exists (select 1 from public.group_posts source_record
+             join public.group_pages page on page.id = source_record.page_id
+             where source_record.id = funnel_entity_id and source_record.author_id = p_app_user_id
+               and page.celebrity_id is not distinct from p_celebrity_id
+               and source_record.category = p_properties->>'category'))
+         )
        ))
        or (p_event_name = 'comment_created' and (
          (p_properties - array['businessEntityId','reply']::text[]) <> '{}'::jsonb
@@ -176,11 +214,17 @@ set search_path = ''
 as $$
 declare
   v_event text;
-  v_owner uuid := new.app_user_id;
+  v_owner uuid;
   v_celebrity uuid;
   v_occurred timestamptz;
   v_properties jsonb := '{}'::jsonb;
+  v_key text;
 begin
+  if tg_table_name = 'group_posts' then
+    v_owner := new.author_id;
+  else
+    v_owner := new.app_user_id;
+  end if;
   if tg_table_name = 'quiz_attempts' then
     v_celebrity := new.celebrity_id;
     if tg_op = 'INSERT' then
@@ -199,7 +243,11 @@ begin
     v_properties := pg_catalog.jsonb_build_object('streak', new.streak);
   elsif tg_table_name = 'fan_posts' then
     v_event := 'post_created'; v_celebrity := new.celebrity_id; v_occurred := new.created_at;
-    v_properties := pg_catalog.jsonb_build_object('category', new.category);
+    v_properties := pg_catalog.jsonb_build_object('category', new.category, 'board', 'fan');
+  elsif tg_table_name = 'group_posts' then
+    v_event := 'post_created'; v_occurred := new.created_at;
+    select page.celebrity_id into v_celebrity from public.group_pages page where page.id = new.page_id;
+    v_properties := pg_catalog.jsonb_build_object('category', new.category, 'board', 'group');
   elsif tg_table_name = 'fan_post_comments' then
     v_event := 'comment_created'; v_occurred := new.created_at;
     select post.celebrity_id into v_celebrity from public.fan_posts post where post.id = new.post_id;
@@ -211,9 +259,19 @@ begin
     return new;
   end if;
   v_properties := v_properties || pg_catalog.jsonb_build_object('businessEntityId', new.id);
+  if v_event = 'cheer_completed' then
+    v_key := 'server:cheer_completed:' || v_owner::text || ':' || coalesce(v_celebrity::text, '') || ':'
+      || pg_catalog.to_char((v_occurred at time zone 'Asia/Seoul')::date, 'YYYY-MM-DD');
+    -- Later cheers of the day end here, without a subtransaction or the ledger's advisory lock.
+    if exists (select 1 from public.fan_product_events event where event.schema_version = 1 and event.idempotency_key = v_key) then
+      return new;
+    end if;
+  else
+    v_key := 'server:' || v_event || ':' || new.id::text;
+  end if;
   begin
     perform public.record_product_event_v1(1::smallint, v_event, v_owner, null, v_celebrity, null, null, null,
-      'server.commit_projection', 'server:' || v_event || ':' || new.id::text, v_occurred, v_properties);
+      'server.commit_projection', v_key, v_occurred, v_properties);
   exception when others then
     raise warning 'product event projection skipped: % %', v_event, sqlstate;
   end;
@@ -221,6 +279,8 @@ begin
 end;
 $$;
 
+-- A projection waits at most 1s for a lock; past that only the event is skipped (warning) and the business write goes on.
+alter function public.project_funnel_activity_event_v1() set lock_timeout = '1s';
 revoke all on function public.project_funnel_activity_event_v1() from public, anon, authenticated, service_role;
 
 create trigger quiz_attempts_funnel_event_insert after insert on public.quiz_attempts
@@ -231,12 +291,16 @@ create trigger group_creator_attendance_funnel_event after insert on public.grou
   for each row execute function public.project_funnel_activity_event_v1();
 create trigger fan_posts_funnel_event after insert on public.fan_posts
   for each row execute function public.project_funnel_activity_event_v1();
+create trigger group_posts_funnel_event after insert on public.group_posts
+  for each row execute function public.project_funnel_activity_event_v1();
 create trigger fan_post_comments_funnel_event after insert on public.fan_post_comments
   for each row execute function public.project_funnel_activity_event_v1();
 create trigger fan_lounge_messages_funnel_event after insert on public.fan_lounge_messages
   for each row execute function public.project_funnel_activity_event_v1();
 
 -- /admin/traffic visits, from the ledger's page_view instead of Vercel Web Analytics.
+-- Visitors are tab sessions: one entry=true page_view each, whether the tab was signed in or not. Breakdown rows count
+-- distinct owners (anonymous session or member), so a tab that signed in midway can appear twice inside one row only.
 create function public.read_admin_web_traffic(
   p_actor_app_user_id uuid,
   p_actor_admin_allowlist_id uuid,
@@ -261,17 +325,19 @@ begin
   v_from := v_to - pg_catalog.make_interval(days => p_days);
 
   with views as (
-    select event.anonymous_session_hash as session, event.occurred_at, event.properties as p
+    select coalesce(event.anonymous_session_hash, event.app_user_id::text) as owner,
+      event.occurred_at, event.properties as p, (event.properties->>'entry')::boolean as entry
     from public.fan_product_events event
     where event.event_name = 'page_view' and event.occurred_at >= v_from and event.occurred_at < v_to
   ), by_day as (
-    select (occurred_at at time zone 'UTC')::date as day, count(distinct session) as visitors, count(*) as pageviews
+    select (occurred_at at time zone 'UTC')::date as day, count(*) filter (where entry) as visitors, count(*) as pageviews
     from views group by 1
   ), breakdown as (
-    select dimension, label, count(distinct session) as visitors, count(*) as pageviews
+    select dimension, label,
+      case when dimension = 'referrers' then count(*) else count(distinct owner) end as visitors, count(*) as pageviews
     from views cross join lateral (values
       ('pages', p->>'pageKind'),
-      ('referrers', case when p->>'entry' = 'true' then p->>'channel' end),
+      ('referrers', case when entry then p->>'channel' end),
       ('devices', p->>'device'),
       ('browsers', p->>'browser'),
       ('operatingSystems', p->>'os')
@@ -281,7 +347,7 @@ begin
   )
   select pg_catalog.jsonb_build_object(
     'days', p_days, 'from', v_from, 'to', v_to, 'fetchedAt', v_now,
-    'totals', (select pg_catalog.jsonb_build_object('visitors', count(distinct session), 'pageviews', count(*)) from views),
+    'totals', (select pg_catalog.jsonb_build_object('visitors', count(*) filter (where entry), 'pageviews', count(*)) from views),
     'trend', (select pg_catalog.jsonb_agg(pg_catalog.jsonb_build_object(
         'date', day.value::text,
         'visitors', coalesce(by_day.visitors, 0),
@@ -304,8 +370,10 @@ end;
 $$;
 
 -- Four steps in one UTC period. Steps are period counts, not one cohort followed through:
---   visitors: sessions with a page_view; accounts: app_users created; verified: members whose first passport
---   was issued; first activity: members whose first check-in, post, comment, cheer or signed-in share happened.
+--   visitors: tab sessions (entry page views); accounts: app_users created; verified: members whose first passport
+--   was issued; first activity: members whose first check-in, fan board or group post, comment, cheer or signed-in
+--   share happened. visitedMembers follows one cohort instead: members with a signed-in page view in the period, and
+--   how many of them signed up, got a first passport and made a first activity in the same period. Counts only.
 create function public.read_admin_funnel_analytics(
   p_actor_app_user_id uuid,
   p_actor_admin_allowlist_id uuid,
@@ -322,9 +390,8 @@ declare
   v_from timestamptz;
   v_visitors bigint;
   v_page_views_since timestamptz;
-  v_accounts bigint;
-  v_verified bigint;
-  v_first_activity bigint;
+  v_steps jsonb;
+  v_members jsonb;
 begin
   perform public.assert_active_admin(p_actor_app_user_id, p_actor_admin_allowlist_id, false);
   if p_days is null or p_days not in (7,30,90) then
@@ -333,43 +400,65 @@ begin
   v_to := (pg_catalog.date_trunc('day', v_now at time zone 'UTC') at time zone 'UTC') + interval '1 day';
   v_from := v_to - pg_catalog.make_interval(days => p_days);
 
-  select count(distinct event.anonymous_session_hash) into v_visitors
+  select count(*) into v_visitors
   from public.fan_product_events event
-  where event.event_name = 'page_view' and event.occurred_at >= v_from and event.occurred_at < v_to;
+  where event.event_name = 'page_view' and event.occurred_at >= v_from and event.occurred_at < v_to
+    and event.properties->>'entry' = 'true';
 
   select min(event.occurred_at) into v_page_views_since
   from public.fan_product_events event where event.event_name = 'page_view';
 
-  select count(*) into v_accounts from public.app_users member
-  where member.created_at >= v_from and member.created_at < v_to;
-
-  select count(*) into v_verified from (
-    select passport.app_user_id from public.fan_passports passport
-    group by passport.app_user_id
-    having min(passport.issued_at) >= v_from and min(passport.issued_at) < v_to
-  ) firsts;
-
-  select count(*) into v_first_activity from (
-    select activity.app_user_id from (
-      select app_user_id, created_at as at from public.group_creator_attendance
-      union all select app_user_id, created_at from public.fan_posts
-      union all select app_user_id, created_at from public.fan_post_comments
-      union all select app_user_id, created_at from public.fan_lounge_messages where reply_to_id is null
-      union all select app_user_id, occurred_at from public.fan_product_events
-        where event_name = 'share_completed' and app_user_id is not null
-    ) activity
-    group by activity.app_user_id
-    having min(activity.at) >= v_from and min(activity.at) < v_to
-  ) firsts;
+  with accounts as (
+    select member.id as app_user_id from public.app_users member
+    where member.created_at >= v_from and member.created_at < v_to
+  ), verified as (
+    -- Candidates: passports issued in the period; kept only without an earlier passport.
+    select distinct passport.app_user_id from public.fan_passports passport
+    where passport.issued_at >= v_from and passport.issued_at < v_to
+      and not exists (select 1 from public.fan_passports earlier
+        where earlier.app_user_id = passport.app_user_id and earlier.issued_at < v_from)
+  ), candidates as (
+    select app_user_id from public.group_creator_attendance where created_at >= v_from and created_at < v_to
+    union select app_user_id from public.fan_posts where created_at >= v_from and created_at < v_to
+    union select author_id from public.group_posts where created_at >= v_from and created_at < v_to
+    union select app_user_id from public.fan_post_comments where created_at >= v_from and created_at < v_to
+    union select app_user_id from public.fan_lounge_messages
+      where reply_to_id is null and created_at >= v_from and created_at < v_to
+    union select app_user_id from public.fan_product_events
+      where event_name = 'share_completed' and app_user_id is not null and occurred_at >= v_from and occurred_at < v_to
+  ), activated as (
+    select candidate.app_user_id from candidates candidate
+    where not exists (select 1 from public.group_creator_attendance x where x.app_user_id = candidate.app_user_id and x.created_at < v_from)
+      and not exists (select 1 from public.fan_posts x where x.app_user_id = candidate.app_user_id and x.created_at < v_from)
+      and not exists (select 1 from public.group_posts x where x.author_id = candidate.app_user_id and x.created_at < v_from)
+      and not exists (select 1 from public.fan_post_comments x where x.app_user_id = candidate.app_user_id and x.created_at < v_from)
+      and not exists (select 1 from public.fan_lounge_messages x
+        where x.app_user_id = candidate.app_user_id and x.reply_to_id is null and x.created_at < v_from)
+      and not exists (select 1 from public.fan_product_events x where x.event_name = 'share_completed'
+        and x.app_user_id = candidate.app_user_id and x.occurred_at < v_from)
+  ), visited as (
+    select distinct event.app_user_id from public.fan_product_events event
+    where event.event_name = 'page_view' and event.app_user_id is not null
+      and event.occurred_at >= v_from and event.occurred_at < v_to
+  )
+  select
+    pg_catalog.jsonb_build_object(
+      'visitors', v_visitors,
+      'accountCreated', (select count(*) from accounts),
+      'fanVerified', (select count(*) from verified),
+      'firstActivity', (select count(*) from activated)),
+    pg_catalog.jsonb_build_object(
+      'visited', (select count(*) from visited),
+      'accountCreated', (select count(*) from visited join accounts using (app_user_id)),
+      'fanVerified', (select count(*) from visited join verified using (app_user_id)),
+      'firstActivity', (select count(*) from visited join activated using (app_user_id)))
+  into v_steps, v_members;
 
   return pg_catalog.jsonb_build_object(
     'days', p_days, 'from', v_from, 'to', v_to,
     'pageViewsSince', v_page_views_since,
-    'steps', pg_catalog.jsonb_build_object(
-      'visitors', v_visitors,
-      'accountCreated', v_accounts,
-      'fanVerified', v_verified,
-      'firstActivity', v_first_activity));
+    'steps', v_steps,
+    'visitedMembers', v_members);
 end;
 $$;
 
@@ -377,5 +466,81 @@ revoke all on function public.read_admin_web_traffic(uuid,uuid,integer) from pub
 grant execute on function public.read_admin_web_traffic(uuid,uuid,integer) to service_role;
 revoke all on function public.read_admin_funnel_analytics(uuid,uuid,integer) from public, anon, authenticated;
 grant execute on function public.read_admin_funnel_analytics(uuid,uuid,integer) to service_role;
+
+-- Per-IP budget for /api/events: 60 events per client IP per minute. The route sends a hash of the edge-set client IP.
+create table public.product_event_ip_budgets (
+  ip_hash text not null check (ip_hash ~ '^[0-9a-f]{64}$'),
+  window_start timestamptz not null,
+  used integer not null default 0,
+  primary key (ip_hash, window_start)
+);
+alter table public.product_event_ip_budgets enable row level security;
+revoke all on table public.product_event_ip_budgets from public, anon, authenticated, service_role;
+
+create function public.consume_product_event_ip_budget(p_ip_hash text)
+returns boolean
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  v_window timestamptz := pg_catalog.date_trunc('minute', statement_timestamp());
+  v_used integer;
+begin
+  if p_ip_hash is null or p_ip_hash !~ '^[0-9a-f]{64}$' then
+    raise exception 'PRODUCT_EVENT_INVALID' using errcode = '22023';
+  end if;
+  insert into public.product_event_ip_budgets as budget (ip_hash, window_start, used) values (p_ip_hash, v_window, 1)
+  on conflict (ip_hash, window_start) do update set used = budget.used + 1
+  returning used into v_used;
+  if pg_catalog.random() < 0.01 then
+    delete from public.product_event_ip_budgets where window_start < v_window - interval '10 minutes';
+  end if;
+  return v_used <= 60;
+end;
+$$;
+revoke all on function public.consume_product_event_ip_budget(text) from public, anon, authenticated;
+grant execute on function public.consume_product_event_ip_budget(text) to service_role;
+
+-- owner-policy-begin (review REVIEW-FUNNEL H1)
+-- The readers and the projector above belong to the applying role, and record_product_event_v1 (patched above) keeps its
+-- own owner. In dev the applier (byus_admin) is not a superuser and some of these tables have FORCE row security with no
+-- policy for it: reads would answer 0 rows without an error. Same remedy as 20261215060000: select and a policy for that
+-- role alone, only where row security applies to it, then fail the migration if any read is still blocked.
+-- A superuser or BYPASSRLS role (local) needs nothing. Probe: supabase/tests/funnel_nonsuper_apply.sh.
+do $$
+declare
+  r record;
+  t text;
+  gaps text[] := '{}';
+begin
+  for r in select distinct role.oid, role.rolname from pg_catalog.pg_roles role
+      where role.rolname in (current_user,
+        pg_catalog.pg_get_userbyid((select proowner from pg_catalog.pg_proc
+          where oid = 'public.record_product_event_v1(smallint,text,uuid,text,uuid,uuid,uuid,uuid,text,text,timestamptz,jsonb)'::regprocedure)))
+        and not role.rolsuper and not role.rolbypassrls loop
+    foreach t in array array['fan_product_events','fan_post_comments','fan_lounge_messages','fan_posts','fan_passports',
+        'app_users','group_creator_attendance','group_posts','group_pages','quiz_attempts'] loop
+      execute pg_catalog.format('grant select on table public.%I to %I', t, r.rolname);
+      if exists (select 1 from pg_catalog.pg_class c where c.oid = ('public.' || t)::regclass and c.relrowsecurity
+            and (c.relforcerowsecurity or c.relowner <> r.oid))
+         and not exists (select 1 from pg_catalog.pg_policy pol where pol.polrelid = ('public.' || t)::regclass
+            and pol.polcmd in ('r','*') and r.oid = any(pol.polroles)) then
+        execute pg_catalog.format('create policy %I on public.%I for select to %I using (true)', 'p3_fn_owner_' || r.rolname, t, r.rolname);
+      end if;
+      if not pg_catalog.has_table_privilege(r.oid, ('public.' || t)::regclass, 'select')
+         or (exists (select 1 from pg_catalog.pg_class c where c.oid = ('public.' || t)::regclass and c.relrowsecurity
+               and (c.relforcerowsecurity or c.relowner <> r.oid))
+             and not exists (select 1 from pg_catalog.pg_policy pol where pol.polrelid = ('public.' || t)::regclass
+               and pol.polcmd in ('r','*') and r.oid = any(pol.polroles))) then
+        gaps := gaps || (r.rolname || ':' || t);
+      end if;
+    end loop;
+  end loop;
+  if pg_catalog.cardinality(gaps) > 0 then
+    raise exception 'FUNNEL_EVENTS_OWNER_READ_BLOCKED: %', pg_catalog.array_to_string(gaps, ', ');
+  end if;
+end $$;
+-- owner-policy-end
 
 commit;

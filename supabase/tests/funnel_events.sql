@@ -19,6 +19,11 @@ language sql as $$
   select count(*) from public.fan_product_events
   where event_name = p_event and idempotency_key = 'server:' || p_event || ':' || p_entity::text
 $$;
+create function pg_temp.cheer_events(p_owner uuid, p_celebrity uuid) returns bigint
+language sql as $$
+  select count(*) from public.fan_product_events
+  where event_name = 'cheer_completed' and app_user_id = p_owner and celebrity_id = p_celebrity
+$$;
 
 do $$
 declare
@@ -52,7 +57,8 @@ begin
   perform pg_temp.funnel_check(jsonb_array_length(traffic_before->'trend') = 7, 'trend has one row per UTC day');
   perform pg_temp.funnel_check((traffic_before->>'to')::timestamptz - (traffic_before->>'from')::timestamptz = interval '7 days', '7-day window ends after UTC today');
 
-  -- page_view: anonymous only, fixed keys, replay is idempotent.
+  -- page_view: anonymous tab or member, fixed keys, replay is idempotent. Tab 'a' enters signed out, opens the login
+  -- screen and signs in (member view, not an entry); tab 'b' enters signed out. Two visits.
   first_result := public.record_product_event_v1(1::smallint, 'page_view', null, repeat('a', 64), null, null, null, null,
     'web.page_view', 'page-view:95800000-0000-4000-8000-000000000101', statement_timestamp(), page);
   replay_result := public.record_product_event_v1(1::smallint, 'page_view', null, repeat('a', 64), null, null, null, null,
@@ -63,6 +69,9 @@ begin
     page || '{"pageKind":"login","entry":false,"channel":"internal"}');
   perform public.record_product_event_v1(1::smallint, 'page_view', null, repeat('b', 64), null, null, null, null,
     'web.page_view', 'page-view:95800000-0000-4000-8000-000000000103', statement_timestamp(), page);
+  perform public.record_product_event_v1(1::smallint, 'page_view', fan, null, null, null, null, null,
+    'web.page_view', 'page-view:95800000-0000-4000-8000-000000000104', statement_timestamp(),
+    page || '{"pageKind":"my","entry":false,"channel":"internal"}');
 
   foreach bad in array array[
     page || '{"path":"/community?creator=elina&post=1"}',
@@ -74,7 +83,7 @@ begin
     perform pg_temp.funnel_rejects(format($f$select public.record_product_event_v1(1::smallint,'page_view',null,repeat('a',64),null,null,null,null,
       'web.page_view','page-view:95800000-0000-4000-8000-000000000199',statement_timestamp(),%L::jsonb)$f$, bad), '22023');
   end loop;
-  perform pg_temp.funnel_rejects(format($f$select public.record_product_event_v1(1::smallint,'page_view',%L::uuid,null,null,null,null,null,
+  perform pg_temp.funnel_rejects(format($f$select public.record_product_event_v1(1::smallint,'page_view',%L::uuid,repeat('a',64),null,null,null,null,
     'web.page_view','page-view:95800000-0000-4000-8000-000000000198',statement_timestamp(),%L::jsonb)$f$, fan, page), '22023');
   perform pg_temp.funnel_rejects(format($f$select public.record_product_event_v1(1::smallint,'page_view',null,repeat('a',64),null,null,null,null,
     'web.page_view','page-view:not-a-uuid-key',statement_timestamp(),%L::jsonb)$f$, page), '22023');
@@ -91,7 +100,8 @@ begin
   insert into public.celebrity_quizzes(id, celebrity_id, version) values (quiz, celebrity, 1);
 
   perform pg_temp.funnel_rejects(format($f$select public.record_product_event_v1(1::smallint,'cheer_completed',%L::uuid,null,%L::uuid,null,null,null,
-    'server.commit_projection','server:cheer_completed:%s',statement_timestamp(),'{"businessEntityId":"%s"}')$f$, fan, celebrity, cheer, cheer), '23514');
+    'server.commit_projection','server:cheer_completed:%s:%s:%s',statement_timestamp(),'{"businessEntityId":"%s"}')$f$,
+    fan, celebrity, fan, celebrity, to_char((statement_timestamp() at time zone 'Asia/Seoul')::date, 'YYYY-MM-DD'), cheer), '23514');
 
   -- Quiz: start, then a failed submission with its reason code.
   insert into public.quiz_attempts(id, app_user_id, celebrity_id, quiz_id, quiz_version, idempotency_key)
@@ -119,13 +129,17 @@ begin
     values (cheer, celebrity, fan, 'funnel cheer', gen_random_uuid());
   insert into public.fan_lounge_messages(id, celebrity_id, app_user_id, body, idempotency_key, reply_to_id)
     values (reply, celebrity, other_fan, 'funnel reply', gen_random_uuid(), cheer);
-  perform pg_temp.funnel_check(pg_temp.funnel_events('cheer_completed', cheer) = 1, 'cheer projected');
-  perform pg_temp.funnel_check(pg_temp.funnel_events('cheer_completed', reply) = 0, 'reply is not a cheer');
+  insert into public.fan_lounge_messages(celebrity_id, app_user_id, body, idempotency_key)
+    values (celebrity, fan, 'funnel cheer again', gen_random_uuid());
+  perform pg_temp.funnel_check(pg_temp.cheer_events(fan, celebrity) = 1, 'one cheer event per member, creator and KST day');
+  perform pg_temp.funnel_check((select idempotency_key from public.fan_product_events where event_name = 'cheer_completed' and app_user_id = fan)
+    = 'server:cheer_completed:' || fan || ':' || celebrity || ':' || to_char((statement_timestamp() at time zone 'Asia/Seoul')::date, 'YYYY-MM-DD'), 'cheer day key');
+  perform pg_temp.funnel_check(pg_temp.cheer_events(other_fan, celebrity) = 0, 'reply is not a cheer');
 
   -- Aggregates move by exactly what this test added.
   traffic_after := public.read_admin_web_traffic(admin_user, admin_allowlist, 7);
-  perform pg_temp.funnel_check((traffic_after#>>'{totals,pageviews}')::int - (traffic_before#>>'{totals,pageviews}')::int = 3, 'three page views');
-  perform pg_temp.funnel_check((traffic_after#>>'{totals,visitors}')::int - (traffic_before#>>'{totals,visitors}')::int = 2, 'two sessions');
+  perform pg_temp.funnel_check((traffic_after#>>'{totals,pageviews}')::int - (traffic_before#>>'{totals,pageviews}')::int = 4, 'four page views');
+  perform pg_temp.funnel_check((traffic_after#>>'{totals,visitors}')::int - (traffic_before#>>'{totals,visitors}')::int = 2, 'two visits: signing in keeps the tab one visit');
   funnel_after := public.read_admin_funnel_analytics(admin_user, admin_allowlist, 7);
   perform pg_temp.funnel_check((funnel_after#>>'{steps,visitors}')::int - (funnel_before#>>'{steps,visitors}')::int = 2, 'funnel visitors');
   perform pg_temp.funnel_check((funnel_after#>>'{steps,accountCreated}')::int - (funnel_before#>>'{steps,accountCreated}')::int = 0,
@@ -133,6 +147,11 @@ begin
   -- fan: check-in + cheer + share, other_fan: reply only (a reply is not an activity).
   perform pg_temp.funnel_check((funnel_after#>>'{steps,firstActivity}')::int - (funnel_before#>>'{steps,firstActivity}')::int = 1, 'one first-activity member');
   perform pg_temp.funnel_check(funnel_after->>'pageViewsSince' is not null, 'collection start reported');
+  -- The cohort: fan viewed signed in, signed up and made a first activity in this period, no passport.
+  perform pg_temp.funnel_check((funnel_after#>>'{visitedMembers,visited}')::int - (funnel_before#>>'{visitedMembers,visited}')::int = 1, 'visited member');
+  perform pg_temp.funnel_check((funnel_after#>>'{visitedMembers,accountCreated}')::int - (funnel_before#>>'{visitedMembers,accountCreated}')::int = 1, 'visited member signed up');
+  perform pg_temp.funnel_check((funnel_after#>>'{visitedMembers,fanVerified}')::int - (funnel_before#>>'{visitedMembers,fanVerified}')::int = 0, 'visited member not verified');
+  perform pg_temp.funnel_check((funnel_after#>>'{visitedMembers,firstActivity}')::int - (funnel_before#>>'{visitedMembers,firstActivity}')::int = 1, 'visited member activated');
 
   -- Admin gate.
   perform pg_temp.funnel_rejects(format('select public.read_admin_funnel_analytics(%L::uuid,%L::uuid,7)', fan, admin_allowlist), 'P0001');
@@ -166,7 +185,49 @@ begin
     where idempotency_key = 'server:post_created:' || post) = 'general', 'post projected');
   perform pg_temp.funnel_check((select properties->>'reply' from public.fan_product_events
     where idempotency_key = 'server:comment_created:' || comment) = 'false', 'comment projected');
-  raise notice 'FUNNEL_EVENTS post and comment projections: PASS';
+  -- Group posts: a fan page (with its creator) and a hobby page (no creator).
+  insert into public.group_pages(id, kind, name, celebrity_id) values
+    ('95800000-0000-4000-8000-000000000081', 'fan', 'Funnel fan page', celebrity),
+    ('95800000-0000-4000-8000-000000000082', 'hobby', 'Funnel hobby page', null);
+  insert into public.group_posts(id, page_id, author_id, title, body, visibility, anonymous) values
+    ('95800000-0000-4000-8000-000000000091', '95800000-0000-4000-8000-000000000081', fan, 't', 'b', 'public', false),
+    ('95800000-0000-4000-8000-000000000092', '95800000-0000-4000-8000-000000000082', fan, 't', 'b', 'members', true);
+  perform pg_temp.funnel_check((select celebrity_id = celebrity and properties->>'board' = 'group' and properties->>'category' = 'free'
+    from public.fan_product_events where idempotency_key = 'server:post_created:95800000-0000-4000-8000-000000000091'), 'fan page group post');
+  perform pg_temp.funnel_check((select celebrity_id is null and app_user_id = fan from public.fan_product_events
+    where idempotency_key = 'server:post_created:95800000-0000-4000-8000-000000000092'), 'hobby page group post');
+  perform pg_temp.funnel_check((select properties->>'board' from public.fan_product_events
+    where idempotency_key = 'server:post_created:' || post) = 'fan', 'fan board post');
+  raise notice 'FUNNEL_EVENTS post, group post and comment projections: PASS';
+end $$;
+
+-- Limits and lock wait.
+do $$
+declare
+  member uuid := '95800000-0000-4000-8000-000000000011';
+  page jsonb := '{"pageKind":"home","entry":false,"channel":"internal","device":"desktop","browser":"chrome","os":"other"}';
+  allowed integer := 0;
+begin
+  for i in 1..500 loop
+    perform public.record_product_event_v1(1::smallint, 'page_view', null, repeat('c', 64), null, null, null, null,
+      'web.page_view', 'page-view:' || gen_random_uuid(), statement_timestamp(), page);
+  end loop;
+  perform pg_temp.funnel_rejects(format($f$select public.record_product_event_v1(1::smallint,'page_view',null,repeat('c',64),null,null,null,null,
+    'web.page_view','page-view:%s',statement_timestamp(),%L::jsonb)$f$, gen_random_uuid(), page), '54000');
+  -- Another tab is not affected.
+  perform public.record_product_event_v1(1::smallint, 'page_view', null, repeat('d', 64), null, null, null, null,
+    'web.page_view', 'page-view:' || gen_random_uuid(), statement_timestamp(), page);
+  for i in 1..61 loop
+    if public.consume_product_event_ip_budget(repeat('e', 64)) then allowed := allowed + 1; end if;
+  end loop;
+  perform pg_temp.funnel_check(allowed = 60, 'ip budget is 60 a minute');
+  perform pg_temp.funnel_check(public.consume_product_event_ip_budget(repeat('f', 64)), 'another ip has its own budget');
+  perform pg_temp.funnel_check((select 'lock_timeout=1s' = any(proconfig) from pg_proc where oid = 'public.project_funnel_activity_event_v1()'::regprocedure), 'projector lock wait');
+  if has_function_privilege('anon', 'public.consume_product_event_ip_budget(text)', 'execute')
+     or has_table_privilege('service_role', 'public.product_event_ip_budgets', 'select') then
+    raise exception 'FUNNEL_EVENTS ip budget grants';
+  end if;
+  raise notice 'FUNNEL_EVENTS page_view daily cap, ip budget, lock wait: PASS';
 end $$;
 
 rollback;
