@@ -7,6 +7,11 @@
 -- Changed: artist_activity_comment_batch also stores targetType 'group_comment' when it raises a notice (a notice may now have
 --   been opened by a fan-post comment); artist_activity_notification_path links a fan-post notice to /c/{slug}/community/{post}
 --   (#comment-{id} while the comment is visible); run_artist_activity_jobs runs the new job kind.
+-- Who may see the post (review r6 H1): a members-only fan post ('members') is shown only to holders of that creator's issued
+--   passport (fan_web_is_member, the check read_fan_post uses), so its notice goes only to them and its link and title are kept
+--   from anyone else; a public post goes to every member as before. Group posts likewise go only to members group_post_visible
+--   lets read the post (author blocks, the KYAA WAVE check-in scope); secret rooms are chats (group_messages) and get no notices.
+--   The page and the creator must still be published when the link is read (review r6 M1).
 -- Roles as in 20261216031000: the new functions belong to the owner of fan_notifications; replaced functions keep their owner.
 --   If that owner has neither superuser nor BYPASSRLS it gets select on fan_post_comments, fan_posts and celebrities and one
 --   policy per row-security table it reads. Probe: supabase/tests/artist_activity_fan_post_nonsuper_apply.sh.
@@ -20,13 +25,13 @@ alter table public.artist_activity_jobs add constraint artist_activity_jobs_kind
 
 -- The fan page a fan post belongs to, and the visible comment. Null when the comment, the post or the page is gone or hidden.
 create function public.artist_activity_fan_post_comment_source(p_comment uuid)
-returns table(comment_id uuid, post_id uuid, author_id uuid, page_id uuid, page_name text, slug text, post_text text)
+returns table(comment_id uuid, post_id uuid, author_id uuid, page_id uuid, page_name text, slug text, post_text text, celebrity_id uuid, members_only boolean)
 language sql stable security definer set search_path = '' as $$
   select c.id, p.id, c.app_user_id, g.id, g.name, ce.slug,
-    left(pg_catalog.btrim(pg_catalog.regexp_replace(coalesce(p.body, ''), '\s+', ' ', 'g')), 60)
+    left(pg_catalog.btrim(pg_catalog.regexp_replace(coalesce(p.body, ''), '\s+', ' ', 'g')), 60), p.celebrity_id, p.visibility = 'members'
   from public.fan_post_comments c
   join public.fan_posts p on p.id = c.post_id and p.deleted_at is null and p.hidden_at is null
-  join public.celebrities ce on ce.id = p.celebrity_id
+  join public.celebrities ce on ce.id = p.celebrity_id and ce.status = 'published' and ce.archived_at is null
   join public.group_pages g on g.celebrity_id = p.celebrity_id and g.kind = 'fan' and g.status = 'published'
   where c.id = p_comment and c.deleted_at is null and c.hidden_at is null
   order by g.created_at
@@ -36,7 +41,7 @@ $$;
 -- One slice of a fan-post comment notice. Same shape and bundling as artist_activity_comment_batch.
 create function public.artist_activity_fan_post_comment_batch(p_comment uuid, p_at timestamptz, p_after uuid, p_limit integer)
 returns jsonb language plpgsql security definer set search_path = '' as $$
-declare c record; artist_name text; bumped integer; added integer; seen integer; last_id uuid; ids uuid[]; title text;
+declare c record; artist_name text; bumped integer; added integer; seen integer; last_id uuid; ids uuid[]; readers uuid[]; title text;
 begin
   if not public.artist_activity_inbox_enabled() then return jsonb_build_object('written', 0, 'last', p_after, 'done', false); end if;
   select * into c from public.artist_activity_fan_post_comment_source(p_comment);
@@ -47,10 +52,13 @@ begin
   select coalesce(array_agg(r.app_user_id order by r.app_user_id), '{}') into ids
     from public.artist_activity_recipients(c.page_id, c.author_id, 'artist_comment', p_after, p_limit) r;
   seen := cardinality(ids); last_id := ids[seen];
+  -- Only members who may read the post: a members-only post needs the creator's issued passport (as read_fan_post).
+  select coalesce(array_agg(r order by r), '{}') into readers from unnest(ids) r
+    where not c.members_only or public.fan_web_is_member(r, c.celebrity_id);
   update public.fan_notifications n set read_at = null,
     payload = n.payload || jsonb_build_object('count', coalesce((n.payload ->> 'count')::integer, 1) + 1, 'targetType', 'fan_post_comment',
       'targetId', c.comment_id, 'postId', c.post_id, 'pageId', c.page_id, 'slug', c.slug, 'postTitle', title, 'artistName', artist_name)
-  where n.app_user_id = any(ids) and n.kind::text = 'artist_comment' and n.superseded_at is null
+  where n.app_user_id = any(readers) and n.kind::text = 'artist_comment' and n.superseded_at is null
     and n.payload ->> 'artistId' = c.author_id::text and n.scheduled_for > p_at - interval '1 hour' and n.scheduled_for <= p_at;
   get diagnostics bumped = row_count;
   insert into public.fan_notifications(app_user_id, kind, source_key, scheduled_for, payload, web_only)
@@ -58,7 +66,7 @@ begin
     jsonb_build_object('schemaVersion', 1, 'targetType', 'fan_post_comment', 'targetId', c.comment_id, 'postId', c.post_id, 'pageId', c.page_id,
       'slug', c.slug, 'artistId', c.author_id, 'artistName', artist_name, 'postTitle', title, 'count', 1),
     not public.artist_activity_push_allowed(r, 'artist_comment', p_at)
-  from unnest(ids) r
+  from unnest(readers) r
   where not exists (select 1 from public.fan_notifications n where n.app_user_id = r and n.kind::text = 'artist_comment'
     and n.superseded_at is null and n.payload ->> 'artistId' = c.author_id::text and n.scheduled_for > p_at - interval '1 hour' and n.scheduled_for <= p_at)
   on conflict (app_user_id, source_key) do nothing;
@@ -105,7 +113,7 @@ create trigger artist_activity_fan_post_comment after insert on public.fan_post_
 -- Group-post batch: unchanged except that a raised notice says again which kind of comment it now points at.
 create or replace function public.artist_activity_comment_batch(p_comment uuid, p_at timestamptz, p_after uuid, p_limit integer)
 returns jsonb language plpgsql security definer set search_path = '' as $$
-declare c record; artist_name text; bumped integer; added integer; seen integer; last_id uuid; ids uuid[];
+declare c record; artist_name text; bumped integer; added integer; seen integer; last_id uuid; ids uuid[]; readers uuid[];
 begin
   if not public.artist_activity_inbox_enabled() then return jsonb_build_object('written', 0, 'last', p_after, 'done', false); end if;
   select gc.id, gc.post_id, gc.author_id, gc.anonymous, gc.removed_at, gp.page_id, gp.title, gp.removed_at post_removed, g.name page_name
@@ -117,10 +125,12 @@ begin
   select coalesce(array_agg(r.app_user_id order by r.app_user_id), '{}') into ids
     from public.artist_activity_recipients(c.page_id, c.author_id, 'artist_comment', p_after, p_limit) r;
   seen := cardinality(ids); last_id := ids[seen];
+  -- Only members who may read the post (author blocks, the KYAA WAVE check-in scope): group_post_visible, as the board reads it.
+  select coalesce(array_agg(r order by r), '{}') into readers from unnest(ids) r where public.group_post_visible(r, c.post_id);
   update public.fan_notifications n set read_at = null,
     payload = n.payload || jsonb_build_object('count', coalesce((n.payload ->> 'count')::integer, 1) + 1, 'targetType', 'group_comment', 'targetId', c.id,
       'postId', c.post_id, 'pageId', c.page_id, 'postTitle', left(c.title, 60), 'artistName', artist_name)
-  where n.app_user_id = any(ids) and n.kind::text = 'artist_comment' and n.superseded_at is null
+  where n.app_user_id = any(readers) and n.kind::text = 'artist_comment' and n.superseded_at is null
     and n.payload ->> 'artistId' = c.author_id::text and n.scheduled_for > p_at - interval '1 hour' and n.scheduled_for <= p_at;
   get diagnostics bumped = row_count;
   insert into public.fan_notifications(app_user_id, kind, source_key, scheduled_for, payload, web_only)
@@ -128,7 +138,7 @@ begin
     jsonb_build_object('schemaVersion', 1, 'targetType', 'group_comment', 'targetId', c.id, 'postId', c.post_id, 'pageId', c.page_id,
       'artistId', c.author_id, 'artistName', artist_name, 'postTitle', left(c.title, 60), 'count', 1),
     not public.artist_activity_push_allowed(r, 'artist_comment', p_at)
-  from unnest(ids) r
+  from unnest(readers) r
   where not exists (select 1 from public.fan_notifications n where n.app_user_id = r and n.kind::text = 'artist_comment'
     and n.superseded_at is null and n.payload ->> 'artistId' = c.author_id::text and n.scheduled_for > p_at - interval '1 hour' and n.scheduled_for <= p_at)
   on conflict (app_user_id, source_key) do nothing;
@@ -155,15 +165,17 @@ begin
   if n.kind::text = 'artist_comment' and n.payload ->> 'targetType' = 'fan_post_comment' then
     select '/c/' || ce.slug || '/community/' || p.id || case when c.id is not null and c.deleted_at is null and c.hidden_at is null then '#comment-' || c.id else '' end
       into path from public.fan_posts p
-      join public.celebrities ce on ce.id = p.celebrity_id
+      join public.celebrities ce on ce.id = p.celebrity_id and ce.status = 'published' and ce.archived_at is null
+      join public.group_pages g on g.id = page and g.celebrity_id = p.celebrity_id and g.status = 'published'
       left join public.fan_post_comments c on c.id = (n.payload ->> 'targetId')::uuid and c.post_id = p.id
-      where p.id = (n.payload ->> 'postId')::uuid and p.deleted_at is null and p.hidden_at is null;
+      where p.id = (n.payload ->> 'postId')::uuid and p.deleted_at is null and p.hidden_at is null
+        and (p.visibility <> 'members' or public.fan_web_is_member(p_owner, p.celebrity_id));
   elsif n.kind::text = 'artist_comment' then
     select '/pages/groups/' || p.page_id || '?tab=board&post=' || p.id || case when c.id is not null and c.removed_at is null then '#comment-' || c.id else '' end
       into path from public.group_posts p
       join public.group_pages g on g.id = p.page_id and g.status = 'published'
       left join public.group_comments c on c.id = (n.payload ->> 'targetId')::uuid and c.post_id = p.id
-      where p.id = (n.payload ->> 'postId')::uuid and p.removed_at is null;
+      where p.id = (n.payload ->> 'postId')::uuid and p.removed_at is null and public.group_post_visible(p_owner, p.id);
   else
     select '/pages/groups/' || g.id into path from public.group_pages g where g.id = page and g.status = 'published';
   end if;
@@ -212,6 +224,16 @@ begin
   exception when insufficient_privilege then
     raise exception 'ARTIST_ACTIVITY_OWNER: the applying role must be able to act as % (owner of fan_notifications)', me.rolname;
   end;
+  -- The read checks the new code calls (owned elsewhere: fan_web_is_member by postgres, group_post_visible by byus_admin).
+  foreach f in array array['fan_web_is_member(uuid,uuid)', 'group_post_visible(uuid,uuid)'] loop
+    if not pg_catalog.has_function_privilege(me.rolname, 'public.' || f, 'execute') then
+      begin
+        execute format('grant execute on function public.%s to %I', f, me.rolname);
+      exception when insufficient_privilege then
+        raise exception 'ARTIST_ACTIVITY_GRANT: the applying role cannot let % execute %', me.rolname, f;
+      end;
+    end if;
+  end loop;
   for t in select * from (values ('fan_post_comments'), ('fan_posts'), ('celebrities')) v(tname) loop
     execute format('grant select on table public.%I to %I', t.tname, me.rolname);
     if not me.rolsuper and not me.rolbypassrls
