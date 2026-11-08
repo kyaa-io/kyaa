@@ -121,6 +121,16 @@ begin
   -- A past or test day never removes the real days: retention follows the clock.
   if not exists (select 1 from public.home_ranking_daily where day = '2099-03-08') then raise exception 'Retention removed by p_now'; end if;
 
+  -- Reads never count hearts: the readers use the stored rows only (review M4).
+  if pg_get_functiondef('public.read_home_fan_ranking(uuid,integer)'::regprocedure) ~ 'heart_totals|creator_heart_ledger|get_fan_effective_tier'
+     or pg_get_functiondef('public.read_home_creator_ranking(text,integer)'::regprocedure) ~ 'heart_totals|creator_heart_ledger' then raise exception 'A reader counts hearts'; end if;
+  -- A failed build leaves a mark: readers wait five minutes instead of retrying the whole count each time.
+  alter table public.fan_heart_conversions rename to fan_heart_conversions_hidden;
+  if (public.ensure_home_rankings('2099-04-02 12:00+09') ->> 'failed')::boolean is not true then raise exception 'Failed build not reported'; end if;
+  if (public.ensure_home_rankings('2099-04-02 12:01+09') ->> 'waiting')::boolean is not true then raise exception 'No backoff after a failed build'; end if;
+  alter table public.fan_heart_conversions_hidden rename to fan_heart_conversions;
+  if exists (select 1 from public.home_ranking_daily where day = '2099-04-02') then raise exception 'Failed build left rows'; end if;
+
   -- Empty table: no rows, nothing comparable.
   delete from public.home_ranking_daily;
   result := public.read_home_fan_ranking(null, 20);
@@ -143,17 +153,34 @@ end $$;
 
 rollback;
 
--- The rollback, run inside a transaction that is rolled back too (the rollback file's own begin/commit would end this one).
+-- The rollback, run inside a transaction that is rolled back too (the rollback file's own begin/commit would end this one). Body = the rollback file.
 begin;
-do $cron$ begin if exists (select 1 from pg_catalog.pg_namespace where nspname = 'cron') then perform cron.unschedule(jobid) from cron.job where jobname = 'home-ranking-daily'; end if; end $cron$;
+set local lock_timeout = '5s';
+do $cron$
+begin
+  if exists (select 1 from pg_catalog.pg_namespace where nspname = 'cron') then
+    perform cron.unschedule(jobid) from cron.job where jobname = 'home-ranking-daily';
+  end if;
+end $cron$;
 drop function public.ensure_home_rankings(timestamptz);
 drop function public.list_unlisted_creator_slugs();
 drop function public.read_home_creator_ranking(text, integer);
 drop function public.read_home_fan_ranking(uuid, integer);
 drop function public.home_ranking_days(text);
+drop function public.creator_jjinfan_count(uuid);
+drop function public.heart_totals();
 drop function public.refresh_home_rankings(timestamptz);
+do $policies$
+declare r record;
+begin
+  for r in select p.polname, c.relname from pg_catalog.pg_policy p join pg_catalog.pg_class c on c.oid = p.polrelid
+            where c.relnamespace = 'public'::regnamespace and p.polname like 'r4b\_read\_%' loop
+    execute format('drop policy %I on public.%I', r.polname, r.relname);
+  end loop;
+end $policies$;
 drop table public.home_ranking_daily;
 drop table public.home_ranking_builds;
+drop table public.home_ranking_build_failures;
 do $$ begin
   if to_regclass('public.home_ranking_daily') is not null then raise exception 'Rollback left the table'; end if;
   perform public.refresh_ranking_snapshots();

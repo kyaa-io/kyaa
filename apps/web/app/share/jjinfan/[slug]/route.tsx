@@ -10,11 +10,17 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 const WORDMARK = "public/images/guest-home/kyaa-wordmark-transparent.png";
-/** The creator photo as a data URI for Satori (PNG and JPEG only). Anything else, or a failed read: null, and the card draws the initial instead. */
-async function photo(src: string | undefined, origin: string) {
+/** The creator photo as a data URI for Satori (PNG and JPEG only). A stored path is read from public/ like the fonts; a stored absolute URL is the
+ * public asset host. The request's Host is never used. Anything else, or a failed read: null, and the card draws the initial instead. */
+async function photo(src: string | undefined) {
   if (!src) return null;
   try {
-    const res = await fetch(new URL(src, origin), { signal: AbortSignal.timeout(3000) });
+    if (src.startsWith("/") && !src.startsWith("//")) {
+      const type = /\.png$/i.test(src) ? "image/png" : /\.jpe?g$/i.test(src) ? "image/jpeg" : null;
+      if (!type || src.includes("..")) return null;
+      return `data:${type};base64,${base64(await publicFile(`public${src}` as `public/${string}`))}`;
+    }
+    const res = await fetch(src, { signal: AbortSignal.timeout(3000) });
     const type = res.headers.get("content-type")?.split(";")[0] ?? "";
     if (!res.ok || !["image/png", "image/jpeg"].includes(type)) return null;
     return `data:${type};base64,${Buffer.from(await res.arrayBuffer()).toString("base64")}`;
@@ -37,8 +43,8 @@ export async function GET(request: Request, { params }: { params: Promise<{ slug
     const creator = await loadSeoCreator(slug, toContentLocale(locale));
     const name = creator?.name ?? slug;
     const [regular, bold, wordmark, picture] = await Promise.all([
-      publicFile("public/fonts/pencil/PretendardUI650.ttf", url.origin), publicFile("public/fonts/pencil/PretendardUI850.ttf", url.origin),
-      publicFile(WORDMARK, url.origin), photo(creator?.image.url, url.origin),
+      publicFile("public/fonts/pencil/PretendardUI650.ttf"), publicFile("public/fonts/pencil/PretendardUI850.ttf"),
+      publicFile(WORDMARK), photo(creator?.image.url),
     ]);
     const shown = Math.min(challenge.count, challenge.target), percent = Math.round((shown / challenge.target) * 100);
     return new ImageResponse(

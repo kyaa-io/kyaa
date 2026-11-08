@@ -12,10 +12,20 @@ drop function public.list_unlisted_creator_slugs();
 drop function public.read_home_creator_ranking(text, integer);
 drop function public.read_home_fan_ranking(uuid, integer);
 drop function public.home_ranking_days(text);
-drop function public.fan_heart_scores();
 drop function public.creator_jjinfan_count(uuid);
 drop function public.heart_totals();
 drop function public.refresh_home_rankings(timestamptz);
+-- Read policies the migration (or 20261215020000) made for its applying role.
+do $policies$
+declare r record;
+begin
+  for r in select p.polname, c.relname from pg_catalog.pg_policy p join pg_catalog.pg_class c on c.oid = p.polrelid
+            where c.relnamespace = 'public'::regnamespace and p.polname like 'r4b\_read\_%' loop
+    execute format('drop policy %I on public.%I', r.polname, r.relname);
+  end loop;
+end $policies$;
 drop table public.home_ranking_daily;
 drop table public.home_ranking_builds;
+drop table public.home_ranking_build_failures;
 commit;
+notify pgrst, 'reload schema';
