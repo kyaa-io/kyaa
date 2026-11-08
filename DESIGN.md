@@ -179,7 +179,7 @@ radius-scale: "12px / 16px / 20px / pill"
 | `FanCount` | 알림·댓글 수 같은 숫자 칩. 0이면 그리지 않고 99 넘으면 `99+` | 지갑 잔액(0도 보여야 함) → `FanNumber` |
 | `FanTag` | 유형·공지·인증 표시 글자(tone fan·neutral·notice·artist) | 숫자·설명을 넣지 않는다(S9). 성공·대기·실패 색 태그는 아직 없다 |
 | `EarnBadge` · `EarnRemaining` · `EarnActionBadge` | 지급 금액 `+20P`(버튼은 `corner`, 행은 `inline`), 남은 횟수는 배지 밖 `EarnRemaining` | 배지 안에 횟수·조건을 넣지 않는다. 숫자를 화면에 직접 쓰지 않고 카탈로그 값을 읽는다(C9) |
-| `FanToast` (`useFanToast`·`showFanToast`) | 서버 응답이 화면에 안 보이는 곳의 결과: 댓글 저장, 업로드 실패, 교환 완료, 미션 지급 실패 | 포인트 지급 성공은 `PointRewardBurst`가 맡는다. 폼 안 오류는 입력 아래 |
+| `FanToast` (`useFanToast`·`showFanToast`) | 서버 응답이 화면에 안 보이는 곳의 결과: 댓글 저장, 업로드 실패, 교환 완료, 미션 지급 실패 | 포인트·도장 지급 성공은 `celebrateReward`(코인 뱃지 + 공통 토스트, 아래 §3-1)가 맡는다. 폼 안 오류는 입력 아래 |
 | `FanTabs` | `underline` 페이지 탭, `chip` 필터, `segment` 같은 자료의 2~3개 보기(홈 랭킹 팬/크리에이터, 내역). `count`는 이름 옆 `FanCount`, `panels`는 상태 탭 | 링크 탭(`href`)은 프리미티브 없이 라우터가 그린다. `segment`는 2~3칸 |
 | `FanState` | 화면 일부·전체의 빈 상태·오류·로그인 필요(`empty`·`error`·`auth`), 구역 안은 `inline`·`compact` | `kind="loading"`은 쓰지 않는다(C6). 폼 입력 오류는 입력 아래 |
 | `FanSkeleton` · `FanSkeletonRows` | 로딩. 실제 자리·크기와 같게, 구역 제목은 글자로 둔다. 변형 post·entity·member·plain | `불러오는 중` 글자(C5) |
@@ -220,6 +220,17 @@ radius-scale: "12px / 16px / 20px / pill"
 - 연출 자리는 처음부터 차지해 CLS를 만들지 않는다. 오른쪽 위에 겹치는 `corner` 배지는 변환 때문에 위치가 튀므로 팝하지 않는다.
 - 전역 `prefers-reduced-motion` 한 줄 규칙은 **없다**. 모듈마다 `@media (prefers-reduced-motion: reduce)`로 끄고, `animation`을 쓰는 새 CSS는 N7이 분기 없으면 실패시킨다. Motion은 `MotionConfig reducedMotion="user"`로 변환을 끈다.
 - 연출은 보상을 *알리기* 위한 것이다. 전면 폭죽·파티클·상시 효과를 더하지 않는다.
+
+### 3-1. 4회차 공통 규칙 (261107-2 피드백 C·D, 2026-11-08 합침)
+
+| 대상 | 규칙 | 소유 | 근거 |
+|---|---|---|---|
+| 지급 연출 (D8) | 서버가 지급을 확정한 뒤 `celebrateReward({ locale, points, stamps, anchor, label })` 하나만 부른다. 누른 요소 위에서 코인 뱃지(`+20`, 코인 20px)가 튀어오르고(앵커가 없으면 화면 가운데), `FanToast` success 제목 `+20P · 도장 1`(지급분만, 0인 쪽은 뺌), 설명은 무엇을 끝냈는지 한 줄(`댓글 미션 완료`)만. 1.2초 안의 지급은 뱃지 하나·토스트 하나로 합친다. reduced-motion은 이동 없이 제자리 표시 후 사라짐. 화면별 자체 토스트·자체 금액 연출을 만들지 않는다. `PointRewardBurst`·`usePointRewardBurst`(도장 수 포함)는 이 함수를 부르는 화면용 훅이다 | `components/fan-ui/reward-celebration.ts`, `point-reward-burst.tsx` | 피드백 D8. C8의 `포인트 +20 · 스탬프 +1` 표기는 토스트를 하나로 합치며 D8 표기와 앱 용어 `도장`으로 통일 |
+| 도장 연출 (D3) | 도장이 실제로 찍힌 지급(출석·팬 인증 퀴즈 통과·도장 주는 미션)만 전체 화면 도장(Lottie 0.9초, 최대 360px, 입력 통과·`aria-hidden`)을 먼저 보이고, 끝나면 위 지급 연출을 부른다. 재요청(replay)에는 없음. reduced-motion은 도장 없이 바로 지급 연출 | `features/dukjil/ui/stamp-slam.tsx`(`celebrateStamp`) | 피드백 D3 |
+| 업로드 행 (D5) | 글·댓글 첨부 하나당 한 줄, 높이 44 이상, `--color-soft` 바탕, 반경 12. 왼쪽 16px 상태 아이콘(진행 스피너 → 완료 체크 `--color-accent` → 실패 `--color-error`), 파일 이름 한 줄 말줄임 + 진행률 숫자(tabular-nums), 행 아래 끝에 3px 진행 막대. 실패 문구만 줄바꿈해 다 보인다. reduced-motion은 스피너 감속·막대 고정 | `components/editor/upload-progress.tsx`, `rich-text.module.css .upload` | 피드백 D5 |
+| 헤더 `♥N` (C1) | 헤더 최애 칩: 최애 이름 · 등급 · 하트 아이콘(`--color-accent`, 채움) + 숫자. N = 최애 커뮤니티에서 내가 모은 하트(하트 1개 = 찐팬 1명). 값이 바뀔 때만 하트가 한 번 커졌다 돌아옴(`--motion-count`), reduced-motion은 없음. 1024+는 숫자 칸 최소 56px 예약. 온도 표기는 없앴다 | `features/selected-bias/ui/selected-bias-chip.tsx` | 피드백 C1 |
+| 최애 값 출처 | 최애는 `fan_profile_public_fields`(MY에서 고른 값) 하나만 읽고 쓴다. 헤더 메뉴의 선택도 `PUT /api/me/social/profile-fields`로 저장하고, 헤더·덕질 상단·홈 최애 카드·프로필 카드가 같은 값을 읽는다. 옛 브라우저 저장값(`kyaa:selected-bias:v1:`)은 최애가 비었을 때 한 번 옮긴 뒤 지운다 | `features/selected-bias/ui/use-selected-bias.ts`, `server/my/my-summary-repository.ts` | 감독 결정(합침 검토 1) |
+| 미션 행 (D1) | 덕질의 오늘 미션·더 많은 미션·팬 인증·빈 행은 모두 `FanMissionRow` 하나. 도장 그림 40(1024+ 48) · 제목 + 오른쪽 보상 배지(`EarnBadge inline`) · 아래 한 줄(진행 `0/3` 또는 상태) · 끝 칸 하나(화살표, 짧은 행동, 또는 완료 태그). 최소 높이 64, 안쪽 12, 목록 구분선. 준비 중·마감은 글자 `--color-muted`. `×N`·도장 아이콘 상자 없음 | `features/dukjil/ui/fan-mission-row.tsx` | 피드백 D1·C8 |
 
 ## 4. 숫자·아이콘 표기
 
