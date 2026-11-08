@@ -195,7 +195,9 @@ export function scanTsx(code, file) {
     if (m[1] === 'input' && /type=["'](hidden|file)["']/.test(m[2])) continue;
     add(out, `C3|<${m[1]}>`);
   }
-  for (const m of c.matchAll(/style=\{\{\s*([^}]{0,60})/g)) {
+  // OG image routes under app/share render through Satori, which reads inline styles only (no CSS modules or variables).
+  const ogImageRoute = /^apps\/web\/app\/share\/.+\/route\.tsx$/.test(file);
+  for (const m of ogImageRoute ? [] : c.matchAll(/style=\{\{\s*([^}]{0,60})/g)) {
     const head = m[1];
     if (/^(width\s*:|["']--|\.\.\.)/.test(head)) continue;
     add(out, `C4|style={{ ${short(head, 40)}`);

@@ -69,6 +69,12 @@ test('T1 and T3 (stylelint) red and green', async () => {
   assert.equal(hits(ok, 'T1').length + hits(ok, 'T3').length, 0);
 });
 
+test('C4 skips only the share OG image routes (Satori reads inline styles only)', () => {
+  const code = 'export const A = () => <div style={{ display: "flex" }} />;';
+  assert.equal(hits(scanTsx(code, 'apps/web/app/share/jjinfan/[slug]/route.tsx'), 'C4').length, 0);
+  assert.equal(hits(scanTsx(code, 'apps/web/app/share/jjinfan/[slug]/page.tsx'), 'C4').length, 1);
+  assert.equal(hits(scanTsx(code, 'apps/web/app/live/route.tsx'), 'C4').length, 1);
+});
 test('C2 skips the guide pages', () => {
   assert.equal(hits(scanTsx('export const A = () => <h2>x</h2>;', 'apps/web/app/guide/a.tsx'), 'C2').length, 0);
 });

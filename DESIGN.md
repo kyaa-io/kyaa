@@ -281,6 +281,10 @@ npm run test:qe --workspace @byus/web                     # 실행 계약(N2 N12
 | `FanSheet` 드래그로 닫기(Motion drag) | 넣지 않음 | 버튼·ESC·백드롭으로 닫는다. 이유는 기록에 없다 |
 | `FanDialog`를 Base UI Dialog로 교체(2차) | 기존 `AccessibleOverlay`를 안에 유지 | 포커스 가둠·스크롤 잠금·중첩·포커스 복귀가 이미 맞다. 외부 API는 같아 나중에 바꿔도 화면은 그대로 |
 | `FanInput`·`FanTextarea`·`FanSelect`·`FanField`, `FanCard` 신설 | **만들지 않음** | 구현되지 않았고 이유 기록도 없다(미완). 원시 입력은 C3 집계로 남고 카드는 `FanSurface`를 쓴다 |
+| C4 인라인 style 금지(전 경로) | `app/share/**/route.tsx`(공유 OG 이미지 라우트)만 C4 예외 | OG 이미지는 Satori로 그려 CSS 모듈·변수를 읽지 못하고 인라인 style만 받는다. 예외는 그 경로의 `route.tsx`로만 좁혔다(`design-lint-rules.mjs` `ogImageRoute`, 2026-11-08 오케스트레이터 결정) |
+| 홈 랭킹 11~20위를 카드 안에서 펼침(4회차 C3) | 펼치지 않음, `전체 보기`로 리더보드 이동 | 2026-11-08 오케스트레이터 수용(B 구현) |
+| 리더보드 `찐팬 순위` 칩을 찐팬 100명 전 비활성 | 비활성으로 두지 않음 | 2026-11-08 오케스트레이터 수용(B 구현) |
+| 찐팬 게이지 카드 로딩 골격 | 골격 없음 | 2026-11-08 오케스트레이터 수용(B 구현). 대신 챌린지 있는 페이지의 CLS를 로컬에서 재 0.02 초과면 보고 |
 | `FanTag tone="state"`(성공·대기·실패) | 없음 | 구현되지 않음(미완) |
 | `FanSkeletonRows` 변형 mission·ranking·wallet | post·entity·member·plain만 | 구현되지 않음(미완). 해당 화면은 plain 사용 |
 | `FanState` `loading` 종류 제거 | 타입에 남기되 폐기 표시, 로그인 세션 동기화 한 곳만 사용 | 한 곳이 아직 의존. 새 사용은 C6이 실패시킴 |
