@@ -146,7 +146,7 @@ it('drops accumulated pages immediately when the owner changes',async()=>{
  view.rerender(<LuckyCatalog locale='ko'/>);expect(screen.queryByText('First raffle')).not.toBeInTheDocument();expect(screen.queryByText('Second raffle')).not.toBeInTheDocument();await screen.findAllByText(groupBenefitsCopy('ko').empty);
 });
 it('refreshes balances after the shared wallet mutation event',async()=>{
- render(<GroupBenefitsScreen locale='ko'/>);await screen.findAllByText('137');requests.length=0;
+ render(<GroupBenefitsScreen locale='ko'/>);await screen.findAllByText('137 P');requests.length=0;
  await act(async()=>window.dispatchEvent(new Event('kyaa:group-wallet-changed')));
  expect(requests).toContain('/api/me/wallet');
 });
@@ -168,7 +168,7 @@ it('shows guests a locked history block under the same heading with no tabs or l
  expect(section.querySelectorAll('[aria-hidden="true"] > div')).toHaveLength(3);expect(within(section).queryByRole('link')).toBeNull();expect(within(section).queryByText('아직 내역이 없어요')).toBeNull();
 });
 it('hides 오늘의 덕질 while the attendance policy is off',async()=>{
- catalogOn=false;render(<GroupBenefitsScreen locale='ko'/>);await screen.findAllByText('137');
+ catalogOn=false;render(<GroupBenefitsScreen locale='ko'/>);await screen.findAllByText('137 P');
  await waitFor(()=>expect(screen.queryByRole('region',{name:'오늘의 덕질'})).toBeNull());expect(requests.some(url=>url.includes('/api/me/attendance'))).toBe(false);
 });
 it('draws the favorite the server read while the browser is still signing in, then follows the browser', async () => {
@@ -214,15 +214,20 @@ it('r5 A1·A3: the 내역 tab draws the balance line, the segment and rows group
  view.rerender(<GroupBenefitsScreen locale='ko' tab='today'/>);
  expect(document.querySelector('[data-wallet-card]')).not.toBeNull();
 });
-it('r5 A2: the balance card is one hero number with 적립·사용 ›, one 교환 and three rate rows from the API values',async()=>{
+it('r5 H4: the wallet is a pair — 응모권 big with 포인트 · 100P = 1장 and 교환, 하트 big with 스탬프 N/9 — and one 안내 › in the head',async()=>{
  withFavorite();render(<GroupBenefitsScreen locale='ko'/>);
  const card=document.querySelector<HTMLElement>('[data-wallet-card="stan"]')!;
- await waitFor(()=>expect(card.querySelector('[data-metric-id="wallet-points"]')).toHaveTextContent('137P'));
+ await waitFor(()=>expect(card.querySelector('[data-metric-id="wallet-tickets"]')).toHaveTextContent('7장'));
+ expect(card.querySelector('[data-metric-id="wallet-hearts"]')).toHaveTextContent('3');
+ const tickets=card.querySelector<HTMLElement>('[data-wallet-cell="tickets"]')!,hearts=card.querySelector<HTMLElement>('[data-wallet-cell="hearts"]')!;
+ expect(Boolean(tickets.compareDocumentPosition(hearts)&Node.DOCUMENT_POSITION_FOLLOWING)).toBe(true);
+ const points=tickets.querySelector('[data-wallet-row="points"]')!;expect(points).toHaveTextContent('포인트 137 P');expect(points.querySelector('[data-meta]')).toHaveTextContent('100P = 응모권 1장');
+ expect(within(points as HTMLElement).getByRole('progressbar')).toHaveAttribute('aria-valuenow','100');
+ expect(hearts.querySelector('[data-wallet-row="stamps"] [data-meta]')).toHaveTextContent('9칸 = 하트 1');
+ expect(within(tickets).getByRole('button',{name:'교환'})).toBeInTheDocument();expect(within(hearts).queryByRole('button')).toBeNull();
+ expect(within(card).getAllByRole('button')).toHaveLength(1);expect(card.textContent).not.toMatch(/광고 보고/);
+ expect(within(card).getAllByRole('link',{name:/안내/})).toHaveLength(1);
  expect(card.querySelector('[data-balance-history]')).toHaveAttribute('href','/benefits?tab=history&locale=ko');
- const rows=[...card.querySelectorAll('[data-row="label-value"]')];
- expect(rows.map(row=>row.querySelector('[data-meta]')?.textContent)).toEqual(['100P = 응모권 1장','9칸 = 하트 1','하트 1 = 찐팬 1']);
- expect(rows[0]).toHaveTextContent('7장');expect(rows[2]).toHaveTextContent('3');
- expect(within(card).getAllByRole('button')).toHaveLength(1);expect(card.textContent).not.toMatch(/광고 보고|안내/);
  expect(card.querySelector('[data-help-tip],[data-help-hint]')).toBeNull();
 });
 it('r5 A2: 교환 is the primary while no draw is open, secondary while one is open (then 응모하기 is), and disabled under the rate',async()=>{
@@ -238,7 +243,7 @@ it('r5 A2: 교환 is disabled at 99 points and opens the exchange at 100',async(
  withPoints(100);render(<GroupBenefitsScreen locale='ko'/>);const button=await exchangeButton();expect(button).toBeEnabled();
  fireEvent.click(button);expect(screen.getByRole('dialog',{name:'응모권 전환'})).toBeInTheDocument();
 });
-it('r5 A2: guests keep the card with locked values and one login primary; zero values read 0 P · 0장 · 0/9 · 0',async()=>{
+it('r5 H4: guests keep the pair with locked values and one login primary; zero values read 0장 · 0 P · 0/9 · 0',async()=>{
  auth.authenticated=false;const guest=render(<GroupBenefitsScreen locale='ko'/>);
  const card=await waitFor(()=>document.querySelector<HTMLElement>('[data-wallet-card="stan"]')!);
  await waitFor(()=>expect(within(card).getByRole('link',{name:'로그인'})).toBeInTheDocument());
@@ -248,8 +253,8 @@ it('r5 A2: guests keep the card with locked values and one login primary; zero v
  const base=fetch;vi.stubGlobal('fetch',vi.fn((url:string,init?:RequestInit)=>url==='/api/me/wallet'?Promise.resolve(Response.json({...wallet,points:0,tickets:0})):base(url,init)));
  withFavorite();bias.value={...bias.value,selected:{...favorite,passportId:undefined,hearts:0}};render(<GroupBenefitsScreen locale='ko'/>);
  const zero=document.querySelector<HTMLElement>('[data-wallet-card="stan"]')!;
- await waitFor(()=>expect(zero.querySelector('[data-metric-id="wallet-points"]')).toHaveTextContent('0P'));
- expect(zero.textContent).toContain('0장');expect(zero.textContent).toContain('0/9');expect(zero.textContent).not.toContain('—');
+ await waitFor(()=>expect(zero.querySelector('[data-metric-id="wallet-tickets"]')).toHaveTextContent('0장'));
+ expect(zero.textContent).toContain('0 P');expect(zero.textContent).toContain('0/9');expect(zero.querySelector('[data-metric-id="wallet-hearts"]')).toHaveTextContent('0');expect(zero.textContent).not.toContain('—');
 });
 const lucky=()=>document.querySelector<HTMLElement>('[data-lucky-module]')!;
 const luckyCells=()=>[...lucky().querySelectorAll('[data-cell]')].map(cell=>cell.textContent);
