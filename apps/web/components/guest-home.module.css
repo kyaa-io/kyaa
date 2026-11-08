@@ -39,7 +39,7 @@
 .heroCarousel { position: relative; color: var(--color-surface); }
 .heroCarousel[data-has-controls="true"] { margin-bottom: 44px; }
 .heroViewport { position: relative; width: 100%; overflow: hidden; aspect-ratio: 4 / 5; border-radius: 20px; background: var(--ink); touch-action: pan-y pinch-zoom; }
-.heroShine { position: absolute; inset: 0; z-index: 2; overflow: hidden; padding: 1.5px; border-radius: inherit; background: var(--spectrum); pointer-events: none; -webkit-mask: none; -webkit-mask-composite: xor; mask: none; mask-composite: exclude; }
+.heroShine { position: absolute; inset: 0; z-index: 2; border-radius: inherit; box-shadow: inset 0 0 0 1.5px var(--color-accent); pointer-events: none; }
 .heroShine::before { content: ""; position: absolute; inset: -100%; background: var(--color-accent-line); animation: heroShineSpin 8s linear infinite paused; }
 .heroCarousel[data-motion-visible="true"][data-shine-paused="false"] .heroShine::before { animation-play-state: running; }
 @keyframes heroShineSpin { to { transform: rotate(1turn); } }
