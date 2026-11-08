@@ -2,7 +2,8 @@
 import { ChevronDown } from "lucide-react";
 import Link from "next/link";
 import type { Route } from "next";
-import type { MouseEvent, MouseEventHandler, ReactNode } from "react";
+import type { MouseEvent, ReactNode } from "react";
+import { FanCollapsibleTrigger, type FanCollapsibleTriggerProps } from "@/components/fan-ui/fan-collapsible";
 import styles from "./fan-mission-row.module.css";
 
 /** feedback D1 · F3: the one row of every 덕질 list — today's missions, more missions, certifications, the folded heads and the 오늘의 덕질 empty row.
@@ -32,13 +33,10 @@ function RowBody({ art, title, detail, trailing }: { art?: ReactNode; title: Rea
 
 /** F3: a folded group's head drawn as a mission row (same grid, height, circle and trailing column) so the fold reads as one more row.
  * `FanCollapsible` hands it the aria contract; the trailing column holds the count and the chevron. */
-export function FanMissionFoldRow({ icon, title, meta, ...triggerProps }: {
-  "aria-expanded": boolean; "aria-controls": string; onClick: MouseEventHandler<HTMLElement>;
-  icon: ReactNode; title: ReactNode; meta?: ReactNode;
-}) {
-  return <button type="button" className={`${styles.row} ${styles.fold}`} data-fan-mission-row="fold" {...triggerProps}>
+export function FanMissionFoldRow({ icon, title, meta, ...triggerProps }: FanCollapsibleTriggerProps & { icon: ReactNode; title: ReactNode; meta?: ReactNode }) {
+  return <FanCollapsibleTrigger {...triggerProps} className={`${styles.row} ${styles.fold}`} data-fan-mission-row="fold">
     <RowBody art={icon} title={title} trailing={<>{meta ? <span className={styles.foldMeta}>{meta}</span> : null}<ChevronDown size={16} className={styles.chevron} aria-hidden="true" /></>} />
-  </button>;
+  </FanCollapsibleTrigger>;
 }
 
 /** The list the rows sit in: inside a fold it draws only the dividers; on its own (`framed`) it is the outlined card. */
