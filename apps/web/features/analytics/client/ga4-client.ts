@@ -36,6 +36,7 @@ export function startGa4(measurementId: string, pathname: string): boolean {
   window.gtag = window.gtag ?? gtag;
   if (document.getElementById(SCRIPT_ID)) {
     // Allowed again after a refusal: gtag has already started, so only consent changes and the caller sends the screen.
+    setDisabled(measurementId, false);
     window.gtag("consent", "update", { analytics_storage: "granted" });
     active = { id: measurementId, granted: true };
     return false;
@@ -61,9 +62,20 @@ export function startGa4(measurementId: string, pathname: string): boolean {
   return true;
 }
 
-/** After a refusal nothing more is sent; GA cookies on this site are removed. */
+function setDisabled(measurementId: string, disabled: boolean): void {
+  (window as unknown as Record<string, unknown>)[`ga-disable-${measurementId}`] = disabled;
+}
+
+/**
+ * After a refusal nothing more is sent; GA cookies on this site are removed. Consent mode alone still lets the tag send
+ * cookieless pings (user_engagement, scroll) when the page is left, so the stream is also switched off with Google's
+ * `ga-disable-<ID>` flag until the visitor allows it again.
+ */
 export function stopGa4(): void {
-  if (active) window.gtag?.("consent", "update", { analytics_storage: "denied" });
+  if (active) {
+    window.gtag?.("consent", "update", { analytics_storage: "denied" });
+    setDisabled(active.id, true);
+  }
   active = active ? { ...active, granted: false } : null;
   for (const name of document.cookie.split(";").map((part) => part.split("=")[0]?.trim() ?? "")) {
     if (name === "_ga" || name.startsWith("_ga_")) {

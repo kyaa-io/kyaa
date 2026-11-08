@@ -120,6 +120,8 @@ describe("GoogleAnalytics", () => {
     fireEvent.click(screen.getByRole("button", { name: "거부" }));
     expect(layer().at(-1)).toEqual(["consent", "update", { analytics_storage: "denied" }]);
     expect(document.cookie).not.toMatch(/_ga=/);
+    // The tag would still send cookieless pings when the page is left; the stream is switched off until allowed again.
+    expect((window as unknown as Record<string, unknown>)["ga-disable-G-WKSF9KP5QW"]).toBe(true);
     sendGa4Event("cheer");
     expect(layer().some(([kind, name]) => kind === "event" && name === "cheer")).toBe(false);
   });
@@ -131,6 +133,7 @@ describe("GoogleAnalytics", () => {
     fireEvent.click(screen.getByRole("button", { name: "거부" }));
     act(() => openAnalyticsConsent());
     fireEvent.click(screen.getByRole("button", { name: "허용" }));
+    expect((window as unknown as Record<string, unknown>)["ga-disable-G-WKSF9KP5QW"]).toBe(false);
     expect(scripts()).toHaveLength(1);
     expect(layer().filter(([kind]) => kind === "js")).toHaveLength(1);
     expect(layer().filter(([kind]) => kind === "config")).toHaveLength(1);
