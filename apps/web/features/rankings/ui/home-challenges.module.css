@@ -10,4 +10,4 @@
 .bar > span { display: block; height: 100%; background: var(--color-accent); transition: width var(--motion-slow, 200ms) var(--motion-easing); }
 .cheer { flex: none; }
 .body:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
-@media (max-width: 47.999rem) { .row { grid-template-columns: 1fr; row-gap: var(--space-3); } .cheer { width: 100%; } }
+@media (max-width: 47.999rem) { .row { column-gap: var(--space-4); } }
