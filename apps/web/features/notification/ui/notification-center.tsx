@@ -2,6 +2,8 @@
 import { FanSkeletonRows } from "@/components/fan-ui/fan-skeleton";
 import { useGroupsRelease } from "@/features/groups/ui/groups-release";
 import { GroupNotificationPanel } from "./group-notification-panel";
+import { FanTag } from "@/components/fan-ui/fan-tag";
+import { fanUiText } from "@/components/fan-ui/fan-ui-copy";
 import { throwIfAborted } from "@/features/reliability/client/throw-if-aborted";
 import { TranslatedText } from "@/features/content-safety/ui/use-automatic-translation";
 
@@ -32,6 +34,7 @@ import { GuestLoginAction } from "@/features/my/ui/guest-login";
 import { withLocalePath } from "@/components/locale-path";
 import { withRequestDeadline } from "@/features/reliability/client/request-deadline";
 import {
+  isArtistNotificationKind,
   notificationCollectionSchema,
   type NotificationItem,
 } from "../domain/notification-model";
@@ -339,7 +342,7 @@ export function NotificationCenter() {
           : permission === "failed"
             ? c.failed
             : null;
-  if(groupsEnabled&&state.kind==='ready')return <FanAppFrame locale={locale} groupsEnabled mainId='notification-content'><main id='notification-content' style={{width:'100%',padding:'32px 16px',display:'flex',justifyContent:'center',boxSizing:'border-box'}}><div style={{width:'100%',maxWidth:640,minWidth:0}}><GroupNotificationPanel locale={locale} rows={state.items.map(item=>{const said=itemText(item,locale);return {id:item.id,label:said.title,actionLabel:said.detail,href:withLocalePath(item.deepLink,locale),meta:time(item.createdAt,locale),unread:!item.readAt};})} emptyLabel={c.empty} onOpen={id=>{const item=state.items.find(candidate=>candidate.id===id);if(item)void openNotification(item);}}/>{readFailure&&<div role='alert'><p>{c.readFailed}</p><FanAction onClick={()=>void openNotification(readFailure)}>{c.retry}</FanAction><Link href={withLocalePath(readFailure.deepLink,locale) as Route}>{c.continueToNotification}</Link></div>}{actionError&&<p role='alert'>{actionError}</p>}</div></main></FanAppFrame>;
+  if(groupsEnabled&&state.kind==='ready')return <FanAppFrame locale={locale} groupsEnabled mainId='notification-content'><main id='notification-content' style={{width:'100%',padding:'32px 16px',display:'flex',justifyContent:'center',boxSizing:'border-box'}}><div style={{width:'100%',maxWidth:640,minWidth:0}}><GroupNotificationPanel locale={locale} rows={state.items.map(item=>{const said=itemText(item,locale);return {id:item.id,label:said.title,actionLabel:said.detail,href:withLocalePath(item.deepLink,locale),meta:time(item.createdAt,locale),unread:!item.readAt,tag:isArtistNotificationKind(item.kind)?<FanTag tone='artist'>{fanUiText(locale,'artistTag')}</FanTag>:undefined};})} emptyLabel={c.empty} onOpen={id=>{const item=state.items.find(candidate=>candidate.id===id);if(item)void openNotification(item);}}/>{readFailure&&<div role='alert'><p>{c.readFailed}</p><FanAction onClick={()=>void openNotification(readFailure)}>{c.retry}</FanAction><Link href={withLocalePath(readFailure.deepLink,locale) as Route}>{c.continueToNotification}</Link></div>}{actionError&&<p role='alert'>{actionError}</p>}</div></main></FanAppFrame>;
   return (
     <FanAppFrame locale={locale} mainId="notification-content" actions={
         <Link className={styles.settingsLink} href={`/settings?locale=${locale}&section=notifications`} aria-label={c.settings}>

@@ -12,7 +12,9 @@ export type NotificationKind =
   | "recipient_information_required"
   | "fulfillment_meaningful_update"
   | "collectible_claim_available"
-  | "collectible_claim_expiring";
+  | "collectible_claim_expiring"
+  | "artist_comment"
+  | "artist_online";
 export interface NotificationDelivery {
   id: string;
   notificationId: string;

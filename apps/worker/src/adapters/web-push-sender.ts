@@ -21,6 +21,8 @@ const copy: Record<NotificationDelivery["locale"], Record<NotificationDelivery["
     fulfillment_meaningful_update: { title: "Benefit 수령 상태가 변경됐어요", body: "MY에서 현재 수령 상태를 확인해 주세요." },
     collectible_claim_available: { title: "Collectible을 받을 수 있어요", body: "수령 가능한 Collectible을 확인해 주세요." },
     collectible_claim_expiring: { title: "Collectible 수령 기간이 곧 끝나요", body: "기간 안에 Collectible을 수령해 주세요." },
+    artist_comment: { title: "아티스트가 댓글을 남겼어요", body: "팬페이지 게시글에서 댓글을 확인해 주세요." },
+    artist_online: { title: "아티스트가 팬페이지에 들어왔어요", body: "팬페이지에서 접속 상태를 확인해 주세요." },
   },
   en: {
     live_24h: { title: "Your reserved LIVE starts tomorrow", body: "Review your reserved LIVE." },
@@ -37,6 +39,8 @@ const copy: Record<NotificationDelivery["locale"], Record<NotificationDelivery["
     fulfillment_meaningful_update: { title: "Your Benefit status changed", body: "Review the current status in MY." },
     collectible_claim_available: { title: "Your Collectible is ready", body: "Review the Collectible available to claim." },
     collectible_claim_expiring: { title: "Your Collectible claim period ends soon", body: "Claim your Collectible before the deadline." },
+    artist_comment: { title: "The artist left a comment", body: "Read the comment on the fan page post." },
+    artist_online: { title: "The artist is on the fan page", body: "Check who is online on the fan page." },
   },
 };
 export class WebPushSender implements PushSender {

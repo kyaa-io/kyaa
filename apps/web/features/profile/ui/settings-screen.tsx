@@ -50,10 +50,11 @@ import { useByUsSession } from "@/components/byus-session-provider";
 import { contentCopy } from "@/i18n/catalogs/features__fan_posts__ui";
 import { accountDeletionCopy } from "@/i18n/catalogs/features__profile__ui__account-deletion";
 import { parseSettingsSection, type SettingsSection } from "../domain/settings-navigation";
+import { artistNotificationSettingCopy } from "@/features/notification/artist-notification-copy";
 
 type Locale = AppLocale;
 type PreferenceKey =
-  "liveReminders" | "surveyReminders" | "benefitNotifications" | "replyNotifications" | "officialPostNotifications" | "scheduleNotifications";
+  "liveReminders" | "surveyReminders" | "benefitNotifications" | "replyNotifications" | "officialPostNotifications" | "scheduleNotifications" | "artistActivityNotifications" | "artistOnlineNotifications";
 interface SettingsSummary {
   nickname: string;
   preferredLocale: "ko" | "en";
@@ -66,6 +67,8 @@ interface Preferences {
   replyNotifications: boolean;
   officialPostNotifications: boolean;
   scheduleNotifications: boolean;
+  artistActivityNotifications?: boolean;
+  artistOnlineNotifications?: boolean;
   browserSubscription: "subscribed" | "unsubscribed";
 }
 interface KakaoEnrollmentState {
@@ -1319,6 +1322,8 @@ export function SettingsScreen({ locale, initialSection = null, kakaoLoginEnable
                 ["replyNotifications", personalCopy[locale].replyNotifications],
                 ["officialPostNotifications", personalCopy[locale].officialPostNotifications],
                 ["scheduleNotifications", personalCopy[locale].scheduleNotifications],
+                ["artistActivityNotifications", artistNotificationSettingCopy[locale].artistActivityNotifications],
+                ["artistOnlineNotifications", artistNotificationSettingCopy[locale].artistOnlineNotifications],
               ] as const
             ).map(([key, label]) => (
               <label key={key}>
