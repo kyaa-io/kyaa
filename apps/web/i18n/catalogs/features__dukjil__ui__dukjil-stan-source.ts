@@ -260,6 +260,7 @@ export const messages = {
   },
   "luckyOpensAt": {"ja": "{0} 応募開始", "zh-Hans": "{0} 开始报名", "zh-Hant": "{0} 開始報名", "es": "Inscripción desde {0}", "id": "Pendaftaran mulai {0}", "vi": "Mở đăng ký {0}", "th": "เริ่มสมัคร {0}", "pt": "Inscrições a partir de {0}", "fr": "Inscriptions dès le {0}", "ru": "Приём заявок с {0}"},
   "luckyClosesAt": {"ja": "締切 {0}", "zh-Hans": "截止 {0}", "zh-Hant": "截止 {0}", "es": "Cierra {0}", "id": "Tutup {0}", "vi": "Hạn chót {0}", "th": "ปิด {0}", "pt": "Encerra {0}", "fr": "Clôture {0}", "ru": "До {0}"},
+  "luckyPast": {"ja": "過去のラッキードロー", "zh-Hans": "往期幸运抽奖", "zh-Hant": "往期幸運抽獎", "es": "Sorteos anteriores", "id": "Undian sebelumnya", "vi": "Đợt rút thăm đã qua", "th": "การลุ้นรางวัลที่ผ่านมา", "pt": "Sorteios anteriores", "fr": "Tirages passés", "ru": "Прошедшие розыгрыши"},
   "luckyResultsAt": {"ja": "発表 {0}", "zh-Hans": "公布 {0}", "zh-Hant": "公布 {0}", "es": "Resultados {0}", "id": "Pengumuman {0}", "vi": "Công bố {0}", "th": "ประกาศ {0}", "pt": "Resultado {0}", "fr": "Résultats {0}", "ru": "Итоги {0}"},
   "luckyClosed": {"ja": "応募締切", "zh-Hans": "报名已截止", "zh-Hant": "報名已截止", "es": "Inscripción cerrada", "id": "Pendaftaran ditutup", "vi": "Đã đóng đăng ký", "th": "ปิดรับสมัครแล้ว", "pt": "Inscrições encerradas", "fr": "Inscriptions closes", "ru": "Приём заявок закрыт"},
   "luckyWinners": {"ja": "{0}名", "zh-Hans": "{0}名", "zh-Hant": "{0}名", "es": "{0} ganadores", "id": "{0} pemenang", "vi": "{0} người thắng", "th": "{0} รางวัล", "pt": "{0} ganhadores", "fr": "{0} gagnants", "ru": "{0} победителей"},

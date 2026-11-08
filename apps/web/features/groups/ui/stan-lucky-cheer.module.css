@@ -22,6 +22,9 @@
 .cost { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-1); color: var(--color-ink); font-size: var(--fan-metadata-size); font-weight: var(--fan-item-title-weight); line-height: 20px; font-variant-numeric: tabular-nums; }
 .action { grid-column: 1 / -1; align-self: end; white-space: nowrap; }
 .section .empty { box-sizing: border-box; min-height: 180px; align-content: center; padding: var(--space-3) var(--space-4); border: 1px solid var(--color-line); border-radius: var(--radius-control); background: var(--color-surface); }
+/* F5: no live draw but past ones below: the empty line stays short so the 지난 럭키드로우 cards keep the first screen. */
+.section .emptyShort { min-height: 0; }
+.pastHead { margin: var(--space-2) 0 0; color: var(--color-ink); font-size: var(--fan-item-title-size); font-weight: var(--fan-item-title-weight); line-height: var(--fan-body-leading); }
 .pending { min-height: 180px; }
 .pending > span { min-height: 180px; border-radius: var(--radius-control); }
 .pick { display: inline-flex; align-items: center; gap: var(--space-1); min-height: var(--min-target); padding: 0; border: 0; background: none; color: var(--color-accent-ink); font: inherit; font-size: var(--fan-metadata-size); font-weight: var(--fan-item-title-weight); cursor: pointer; }

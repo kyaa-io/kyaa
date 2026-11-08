@@ -63,3 +63,12 @@ it('names the invited friend\'s own reward (invite_friend) differently from the 
  expect(walletHistoryLabel('ko','dukjil_action',{actionKey:'invite_friend'})).toBe('초대로 가입');
  expect(walletHistoryLabel('ko','dukjil_action',{actionKey:'invite'})).toBe('친구 초대');
 });
+
+it('names a check-in row after its fan page when the history carries it (F5), and keeps 출석체크 on an older database',()=>{
+ expect(walletHistoryLabel('ko','dukjil_action',{actionKey:'checkin',pageName:'이퓨'})).toBe('이퓨 출석체크');
+ expect(walletHistoryLabel('en','dukjil_action',{actionKey:'checkin',pageName:'Elina'})).toBe('Elina check-in');
+ expect(walletHistoryLabel('ko','dukjil_action',{actionKey:'checkin',pageName:null})).toBe('출석체크');
+ expect(walletHistoryLabel('ko','dukjil_action',{actionKey:'checkin'})).toBe('출석체크');
+ expect(walletHistoryLabel('ko','dukjil_action',{actionKey:'post',pageName:'이퓨'})).toBe('글 쓰기');
+ for(const locale of APP_LOCALES)expect(walletHistoryLabel(locale,'dukjil_action',{actionKey:'checkin',pageName:'P'}),locale).toContain('P');
+});
