@@ -38,6 +38,7 @@ export function FunnelAnalyticsContent({ data, locale }: { data: FunnelAnalytics
         <th scope="col">{ko ? "단계" : "Step"}</th>
         <th scope="col">{ko ? "수" : "Count"}</th>
         <th scope="col">{ko ? "이전 단계 대비" : "Of previous step"}</th>
+        <th scope="col">{ko ? "방문 회원 중" : "Of visiting members"}</th>
       </tr></thead><tbody>
         {FUNNEL_STEPS.map((step) => <tr key={step}>
           <th scope="row">{stepLabels[step][ko ? 0 : 1]}{step === "visitors" && (since !== null || data.pageViewsSince === null)
@@ -45,6 +46,7 @@ export function FunnelAnalyticsContent({ data, locale }: { data: FunnelAnalytics
             : null}</th>
           <td>{number.format(data.steps[step])}</td>
           <td>{rates[step] === null ? "—" : percent.format(rates[step])}</td>
+          <td>{number.format(step === "visitors" ? data.visitedMembers.visited : data.visitedMembers[step])}</td>
         </tr>)}
       </tbody></table>
     </div>

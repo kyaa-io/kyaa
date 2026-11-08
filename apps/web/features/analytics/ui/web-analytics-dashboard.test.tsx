@@ -35,6 +35,7 @@ const acquisitionData: AcquisitionAnalyticsData = {
 const funnelData: FunnelAnalyticsData = {
   days: 7, from: "2026-09-05T00:00:00Z", to: "2026-09-12T00:00:00Z", pageViewsSince: "2026-09-08T03:00:00Z",
   steps: { visitors: 400, accountCreated: 20, fanVerified: 10, firstActivity: 4 },
+  visitedMembers: { visited: 30, accountCreated: 12, fanVerified: 6, firstActivity: 3 },
 };
 const response = (payload: unknown, status = 200) => Promise.resolve(new Response(JSON.stringify(payload), { status }));
 const analyticsResponse = (url: string, web = data) => url.includes("/outbound")
@@ -79,7 +80,7 @@ describe("WebAnalyticsDashboard", () => {
     const funnel = await screen.findByRole("region", { name: "가입 퍼널 단계" });
     expect(within(funnel).getByText("9월 8일부터 수집")).toBeInTheDocument();
     expect(within(funnel).getAllByRole("row").map((row) => row.textContent)).toEqual([
-      "단계수이전 단계 대비", "방문 세션9월 8일부터 수집400—", "가입20—", "첫 팬 인증1050%", "첫 활동440%",
+      "단계수이전 단계 대비방문 회원 중", "방문 세션9월 8일부터 수집400—30", "가입20—12", "첫 팬 인증1050%6", "첫 활동440%3",
     ]);
     fireEvent.click(screen.getByRole("button", { name: "최근 30일" }));
     await waitFor(() => expect(fetcher).toHaveBeenCalledWith("/api/admin/analytics/web?days=30", expect.anything()));

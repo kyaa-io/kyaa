@@ -17,6 +17,13 @@ export const funnelAnalyticsSchema = z.object({
     fanVerified: count,
     firstActivity: count,
   }).strict(),
+  /** One cohort: members with a signed-in page view in the period, and how many of them reached each step in it. */
+  visitedMembers: z.object({
+    visited: count,
+    accountCreated: count,
+    fanVerified: count,
+    firstActivity: count,
+  }).strict(),
 }).strict().refine((data) => Date.parse(data.from) < Date.parse(data.to), { message: "Invalid reporting window" });
 export type FunnelAnalyticsData = z.infer<typeof funnelAnalyticsSchema>;
 

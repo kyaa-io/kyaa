@@ -4,6 +4,7 @@ import { funnelAnalyticsSchema, funnelRates } from "./funnel-analytics";
 const data = funnelAnalyticsSchema.parse({
   days: 7, from: "2026-11-02T00:00:00Z", to: "2026-11-09T00:00:00Z", pageViewsSince: "2026-10-01T00:00:00Z",
   steps: { visitors: 1000, accountCreated: 50, fanVerified: 20, firstActivity: 0 },
+  visitedMembers: { visited: 30, accountCreated: 12, fanVerified: 8, firstActivity: 0 },
 });
 
 describe("funnel rates", () => {

@@ -8,7 +8,7 @@ import { AuthError } from "@/features/auth/domain/auth-errors";
 import { GET } from "./route";
 
 const ADMIN = { appUserId: "55555555-5555-4555-8555-555555555555", allowlistId: "66666666-6666-4666-8666-666666666666", email: "a@example.invalid", role: "viewer" };
-const report = { days: 30, from: "2026-10-10T00:00:00Z", to: "2026-11-09T00:00:00Z", pageViewsSince: null, steps: { visitors: 0, accountCreated: 3, fanVerified: 1, firstActivity: 0 } };
+const report = { days: 30, from: "2026-10-10T00:00:00Z", to: "2026-11-09T00:00:00Z", pageViewsSince: null, steps: { visitors: 0, accountCreated: 3, fanVerified: 1, firstActivity: 0 }, visitedMembers: { visited: 0, accountCreated: 0, fanVerified: 0, firstActivity: 0 } };
 beforeEach(() => { vi.clearAllMocks(); state.authorize.mockResolvedValue(ADMIN); state.funnel.mockResolvedValue(report); });
 
 it("returns the funnel for an admin and the chosen period", async () => {
