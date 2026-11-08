@@ -147,7 +147,7 @@ describe("public card (261107-2 C2)", () => {
     mock.data = profile({ card }); open();
     expect(screen.getByText("골드 · 최애 엘리나")).toBeVisible();
     const numbers = screen.getByText("하트").closest("dl")!;
-    expect(numbers).toHaveTextContent("하트12포인트1,234P스탬프7");
+    expect(numbers).toHaveTextContent("하트12포인트1,234P도장7");
     const instagram = screen.getByRole("link", { name: "Instagram @star_fan" });
     expect(instagram).toHaveAttribute("target", "_blank"); expect(instagram.getAttribute("rel")).toContain("noopener");
     expect(instagram).toHaveAttribute("data-outbound-kind", "social");

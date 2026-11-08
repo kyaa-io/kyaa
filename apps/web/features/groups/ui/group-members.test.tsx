@@ -87,10 +87,10 @@ it("puts grade beside the name, hearts at the end and favorite · points · stam
  render(<GroupMembers pageId={page} locale="ko" member/>);
  const [first,second]=screen.getAllByRole("listitem");
  expect(first).toHaveTextContent("별빛실버");
- expect(first).toHaveTextContent("최애 엘리나 · 1,234 P · 스탬프 7");
+ expect(first).toHaveTextContent("최애 엘리나 · 1,234 P · 도장 7");
  expect(screen.getByLabelText("하트 12")).toBeVisible();
  // No favorite: left out. Zero points and stamps stay so rows compare.
- expect(second).toHaveTextContent("0 P · 스탬프 0");
+ expect(second).toHaveTextContent("0 P · 도장 0");
  expect(second).not.toHaveTextContent("최애");
  expect(screen.getByLabelText("하트 0")).toBeVisible();
 });

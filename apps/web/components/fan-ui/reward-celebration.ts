@@ -36,8 +36,8 @@ const unit: Record<AppLocale, { points: (n: string) => string; stamps: (n: strin
   es: { points: n => `+${n}P`, stamps: (n, c) => `${n} ${c === 1 ? "sello" : "sellos"}` },
   id: { points: n => `+${n}P`, stamps: n => `${n} stempel` },
   vi: { points: n => `+${n}P`, stamps: n => `${n} con dấu` },
-  th: { points: n => `+${n}P`, stamps: n => `แสตมป์ ${n}` },
-  pt: { points: n => `+${n}P`, stamps: (n, c) => `${n} ${c === 1 ? "selo" : "selos"}` },
+  th: { points: n => `+${n}P`, stamps: n => `ตราประทับ ${n}` },
+  pt: { points: n => `+${n}P`, stamps: (n, c) => `${n} ${c === 1 ? "carimbo" : "carimbos"}` },
   fr: { points: n => `+${n}P`, stamps: (n, c) => `${n} ${c === 1 ? "tampon" : "tampons"}` },
   ru: { points: n => `+${n}P`, stamps: n => `Штампы: ${n}` },
 };

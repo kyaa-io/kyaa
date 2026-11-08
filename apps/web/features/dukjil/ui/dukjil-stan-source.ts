@@ -23,7 +23,7 @@ export const dukjilStanSource = {
   walletNextTicket: { ko: "응모권까지 {0}P", en: "{0}P to a ticket" },
   walletExchangeReady: { ko: "교환 가능", en: "Ready to exchange" },
   // C9 (feedback C): the 덕질 wallet's two flows, points → tickets → lucky draw and stamps → hearts → cheering the favorite.
-  stanFlowStamps: { ko: "스탬프", en: "Stamps" },
+  stanFlowStamps: { ko: "도장", en: "Stamps" },
   stanFlowHearts: { ko: "하트", en: "Hearts" },
   stanFlowCheer: { ko: "최애 응원", en: "Cheer" },
   stanHeartHelp: { ko: "하트 1개가 찐팬 1명으로 셉니다", en: "One heart counts as one true fan" },

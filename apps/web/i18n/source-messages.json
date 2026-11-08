@@ -17275,7 +17275,7 @@
   },
   "profStamps": {
     "en": "Stamps",
-    "ko": "스탬프",
+    "ko": "도장",
     "source": "features/fan-profile/fan-profile-copy",
     "id": "features/fan-profile/fan-profile-copy:profStamps"
   },
@@ -17287,7 +17287,7 @@
   },
   "rowStamps": {
     "en": "{0} stamps",
-    "ko": "스탬프 {0}",
+    "ko": "도장 {0}",
     "source": "features/fan-profile/fan-profile-copy",
     "id": "features/fan-profile/fan-profile-copy:rowStamps"
   },
