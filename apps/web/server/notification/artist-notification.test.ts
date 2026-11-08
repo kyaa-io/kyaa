@@ -31,7 +31,10 @@ describe("261107-2 E6 artist activity notices", () => {
     const sql = readFileSync(resolve(process.cwd(), "../../supabase/migrations/20261216031000_artist_activity_notifications.sql"), "utf8");
     expect(sql).toContain("mode text not null default 'test'");
     expect(sql).toContain("between 8 and 22");
-    expect(sql).toMatch(/create or replace function public\.create_external_notification_plan[\s\S]*artist_comment[\s\S]*return null/);
+    expect(sql).toMatch(/create or replace function public\.create_external_notification_plan[\s\S]*?artist_activity_is_artist_notice\(p_notification_id\) then return null/);
+    // review r5: the callers' owners get EXECUTE on what they call, and the mobile queue is checked again at prepare time.
+    expect(sql).toMatch(/grant execute on function public\.%s to %I/);
+    expect(sql).toContain("artist_activity_mobile_delivery_refused(p_delivery_id, p_worker_id)");
     expect(sql).not.toMatch(/insert into public\.artist_activity_push_control\([^)]*mode/);
   });
 });
