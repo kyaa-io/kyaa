@@ -216,7 +216,7 @@ export function PassportStampCanvas({
     >
       {assetFailed ? (
         <div className={styles.assetError} role="status">
-          {locale === "ko" ? "Passport 이미지를 불러오지 못했어요." : translate(locale, localizedMessages.ma2e490dda1bc, "The Passport image could not be loaded.")}
+          {locale === "ko" ? "패스포트 이미지를 불러오지 못했어요." : translate(locale, localizedMessages.ma2e490dda1bc, "The Passport image could not be loaded.")}
         </div>
       ) : (
         <Image

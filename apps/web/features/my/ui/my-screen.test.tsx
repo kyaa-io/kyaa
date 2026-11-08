@@ -390,7 +390,7 @@ it("shows a date-led reserved event and keeps recent records below favorites in 
   const {container} = render(<MyScreen locale="ko"/>);
   await screen.findByText("내 예약 LIVE", { selector: "strong" });
   expect(container.querySelector('time[datetime="2026-09-18T11:30:00.000Z"]')).toHaveTextContent("9월18");
-  expect(screen.getByText("KARA 도장").closest("aside")).toBeNull();
+  expect(screen.getByText("KARA 스탬프").closest("aside")).toBeNull();
   expect(container.querySelector("#my-creators")!.compareDocumentPosition(container.querySelector("#my-collection")!) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   expect(container.querySelector("#my-collection")!.parentElement?.className).toContain("lowerGrid");
   expect(within(container.querySelector("#my-creators")!).getByText("KARA").closest("button")?.querySelector("img")).toHaveAttribute("src", expect.stringContaining("%2Fkara.jpg"));
@@ -462,7 +462,7 @@ it("groups indistinguishable stamps while preserving a Passport destination and 
   }));
   vi.stubGlobal("fetch", vi.fn(async () => Response.json({ summary: { ...summary, collection: { ...summary.collection, recent: stamps } } })));
   render(<MyScreen locale="ko"/>);
-  const group = await screen.findByRole("link", { name: /KARA 도장 2개/ });
+  const group = await screen.findByRole("link", { name: /KARA 스탬프 2개/ });
   expect(group).toHaveAttribute("href", `/passports/${id}?locale=ko`);
   expect(group.querySelector("img")).not.toBeNull();
   expect(screen.getByRole("link", { name: "도장 3" })).toHaveAttribute("href", "/passports?locale=ko#collection");

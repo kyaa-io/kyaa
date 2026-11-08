@@ -27,7 +27,7 @@ describe("FanActivityCompletionSummary", () => {
     expect(rewards).toHaveTextContent("총점5");
     expect(rewards).toHaveTextContent("레벨상승 · 실버");
     expect(screen.getAllByText("+3")).toHaveLength(1);
-    expect(screen.getByRole("link", { name: "Passport에서 확인하기" })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: "패스포트에서 확인하기" })).toHaveAttribute(
       "href",
       "/passports/passport-id?locale=ko",
     );

@@ -1681,7 +1681,7 @@
   },
   "m8f1b5fa4dba6": {
     "en": "View in Passport",
-    "ko": "Passport에서 확인하기",
+    "ko": "패스포트에서 확인하기",
     "source": "components/fan-ui/fan-activity-completion-summary",
     "id": "components/fan-ui/fan-activity-completion-summary:inline.m4ede7b4554f3"
   },
@@ -8197,7 +8197,7 @@
   },
   "mc6dfac436e41": {
     "en": "Your Passport is still getting ready. Try again shortly.",
-    "ko": "Passport 준비가 끝나지 않았어요. 잠시 후 다시 시도해 주세요.",
+    "ko": "패스포트 준비가 끝나지 않았어요. 잠시 후 다시 시도해 주세요.",
     "source": "features/live/ui/live-event-screen",
     "id": "features/live/ui/live-event-screen:copy.attendance.wallet"
   },
@@ -8767,7 +8767,7 @@
   },
   "md8a4cb6fc81f": {
     "en": "View participation in Passport",
-    "ko": "Passport에서 참여 기록 보기",
+    "ko": "패스포트에서 참여 기록 보기",
     "source": "features/live/ui/live-event-screen",
     "id": "features/live/ui/live-event-screen:inline.m306937f88d23"
   },
@@ -10297,19 +10297,19 @@
   },
   "m9f51d19ce306": {
     "en": "Passport issuance progress",
-    "ko": "Passport 발급 과정",
+    "ko": "패스포트 발급 과정",
     "source": "features/passport/ui/passport-issuance-dialog",
     "id": "features/passport/ui/passport-issuance-dialog:copy.progress"
   },
   "m84198a93cc93": {
     "en": "{0} Passport issued",
-    "ko": "{0} Passport 발급 완료",
+    "ko": "{0} 패스포트 발급 완료",
     "source": "features/passport/ui/passport-issuance-dialog",
     "id": "features/passport/ui/passport-issuance-dialog:copy.completeTitle.message"
   },
   "m052058d743cc": {
     "en": "Your first fan verification Stamp and +1 fan score are recorded.",
-    "ko": "첫 팬 인증 도장과 팬 점수 +1이 기록됐어요.",
+    "ko": "첫 팬 인증 스탬프와 팬 점수 +1이 기록됐어요.",
     "source": "features/passport/ui/passport-issuance-dialog",
     "id": "features/passport/ui/passport-issuance-dialog:copy.completeBody"
   },
@@ -10345,13 +10345,13 @@
   },
   "mdd07540869ca": {
     "en": "Fan Verification Stamp earned",
-    "ko": "팬 인증 도장 획득",
+    "ko": "팬 인증 스탬프 획득",
     "source": "features/passport/ui/passport-issuance-dialog",
     "id": "features/passport/ui/passport-issuance-dialog:copy.stampEarned"
   },
   "m425873a1d4dd": {
     "en": "Open Passport",
-    "ko": "Passport 열기",
+    "ko": "패스포트 열기",
     "source": "features/passport/ui/passport-issuance-dialog",
     "id": "features/passport/ui/passport-issuance-dialog:copy.open"
   },
@@ -10363,7 +10363,7 @@
   },
   "m84b26c0c9170": {
     "en": "Find your Passport again in MY.",
-    "ko": "내 Passport는 MY에서 다시 볼 수 있어요.",
+    "ko": "내 패스포트는 MY에서 다시 볼 수 있어요.",
     "source": "features/passport/ui/passport-issuance-dialog",
     "id": "features/passport/ui/passport-issuance-dialog:copy.myHint"
   },
@@ -10405,13 +10405,13 @@
   },
   "m039933af6727": {
     "en": "Your Passport is ready to use.",
-    "ko": "Passport는 지금 사용할 수 있어요.",
+    "ko": "패스포트는 지금 사용할 수 있어요.",
     "source": "features/passport/ui/passport-issuance-dialog",
     "id": "features/passport/ui/passport-issuance-dialog:copy.passportAvailable"
   },
   "m105e6d0a2755": {
     "en": "Checking your issued Passport",
-    "ko": "발급된 Passport 확인 중",
+    "ko": "발급된 패스포트 확인 중",
     "source": "features/passport/ui/passport-issuance-dialog",
     "id": "features/passport/ui/passport-issuance-dialog:copy.loadingTitle"
   },
@@ -10429,7 +10429,7 @@
   },
   "m40c4986c3cc7": {
     "en": "Sign in to view the Passport already issued to your account.",
-    "ko": "내 계정에 이미 발급된 Passport를 확인하려면 로그인해 주세요.",
+    "ko": "내 계정에 이미 발급된 패스포트를 확인하려면 로그인해 주세요.",
     "source": "features/passport/ui/passport-issuance-dialog",
     "id": "features/passport/ui/passport-issuance-dialog:copy.authBody"
   },
@@ -10447,7 +10447,7 @@
   },
   "mae093a964a2d": {
     "en": "Try again in a moment, or open your Passport.",
-    "ko": "잠시 후 다시 확인하거나, 내 Passport를 열어보세요.",
+    "ko": "잠시 후 다시 확인하거나, 내 패스포트를 열어보세요.",
     "source": "features/passport/ui/passport-issuance-dialog",
     "id": "features/passport/ui/passport-issuance-dialog:copy.errorBody"
   },
@@ -10795,7 +10795,7 @@
   },
   "mbba0de6c334a": {
     "en": "Passport collection",
-    "ko": "Passport 목록",
+    "ko": "패스포트 목록",
     "source": "features/passport/ui/passport-screens",
     "id": "features/passport/ui/passport-screens:inline.m49413da96ff5"
   },
@@ -10873,7 +10873,7 @@
   },
   "ma2e490dda1bc": {
     "en": "The Passport image could not be loaded.",
-    "ko": "Passport 이미지를 불러오지 못했어요.",
+    "ko": "패스포트 이미지를 불러오지 못했어요.",
     "source": "features/passport/ui/passport-stamp-artwork",
     "id": "features/passport/ui/passport-stamp-artwork:inline.mb970c97c700f"
   },
@@ -12109,7 +12109,7 @@
   },
   "mb94ea63f587c": {
     "en": "We couldn't prepare your Passport. Please try again in a moment.",
-    "ko": "Passport 발급을 준비하지 못했어요. 잠시 후 다시 시도해 주세요.",
+    "ko": "패스포트 발급을 준비하지 못했어요. 잠시 후 다시 시도해 주세요.",
     "source": "features/quiz/ui/quiz-questions-screen",
     "id": "features/quiz/ui/quiz-questions-screen:copy.wallet"
   },
@@ -12283,7 +12283,7 @@
   },
   "mb4249e42aaee": {
     "en": "Sign in to securely view your fan verification result and issued Passport.",
-    "ko": "팬 인증 결과와 발급된 Passport를 안전하게 확인하려면 로그인해 주세요.",
+    "ko": "팬 인증 결과와 발급된 패스포트를 안전하게 확인하려면 로그인해 주세요.",
     "source": "features/quiz/ui/quiz-result-screen",
     "id": "features/quiz/ui/quiz-result-screen:copy.loginBody"
   },
@@ -12343,7 +12343,7 @@
   },
   "mbe6cbd7da6d2": {
     "en": "Your first Stamp and fan score are recorded in your Passport.",
-    "ko": "첫 도장과 팬 점수가 Passport에 기록됐어요.",
+    "ko": "첫 도장과 팬 점수가 패스포트에 기록됐어요.",
     "source": "features/quiz/ui/quiz-result-screen",
     "id": "features/quiz/ui/quiz-result-screen:copy.passedHelper"
   },
@@ -12361,7 +12361,7 @@
   },
   "mf2435aa22e21": {
     "en": "Open Passport",
-    "ko": "Passport 확인하기",
+    "ko": "패스포트 확인하기",
     "source": "features/quiz/ui/quiz-result-screen",
     "id": "features/quiz/ui/quiz-result-screen:copy.receivePassport"
   },

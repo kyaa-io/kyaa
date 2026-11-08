@@ -68,7 +68,7 @@ export function FanActivityCompletionSummary({
         <div className={styles.actions}>
           {passportHref ? (
             <FanAction href={passportHref} variant="neutral">
-              {locale === "ko" ? "Passport에서 확인하기" : translate(locale, localizedMessages.m8f1b5fa4dba6, "View in Passport")}
+              {locale === "ko" ? "패스포트에서 확인하기" : translate(locale, localizedMessages.m8f1b5fa4dba6, "View in Passport")}
             </FanAction>
           ) : null}
           {primaryAction}

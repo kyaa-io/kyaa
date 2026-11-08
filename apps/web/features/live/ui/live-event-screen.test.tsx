@@ -784,7 +784,7 @@ describe("LiveEventScreen", () => {
     expect(screen.getByText("라이브 예약 도장")).toBeInTheDocument();
     expect(screen.getByText("총점").parentElement).toHaveTextContent("5");
     expect(screen.getByText("상승 · 실버")).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Passport에서 확인하기" })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: "패스포트에서 확인하기" })).toHaveAttribute(
       "href",
       "/passports/33333333-3333-4333-8333-333333333333?locale=ko",
     );
@@ -1215,7 +1215,7 @@ describe("LiveEventScreen", () => {
     });
     fireEvent.click(screen.getByRole("button", { name: "출석 인증하기" }));
 
-    expect(await screen.findByRole("link", { name: "Passport에서 참여 기록 보기" }))
+    expect(await screen.findByRole("link", { name: "패스포트에서 참여 기록 보기" }))
       .toHaveAttribute("href", "/passports/33333333-3333-4333-8333-333333333333?locale=ko");
     expect(screen.queryByRole("link", { name: /설문 참여/ })).not.toBeInTheDocument();
   });

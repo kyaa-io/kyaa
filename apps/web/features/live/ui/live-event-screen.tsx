@@ -156,7 +156,7 @@ const copy = {
       rateLimited: "입력 횟수를 초과했어요. {time} 후 다시 시도해 주세요.",
       unavailable:
         "지금은 출석을 확인할 수 없어요. 잠시 후 다시 시도해 주세요.",
-      wallet: "Passport 준비가 끝나지 않았어요. 잠시 후 다시 시도해 주세요.",
+      wallet: "패스포트 준비가 끝나지 않았어요. 잠시 후 다시 시도해 주세요.",
       authenticationRequired: "로그인이 만료됐어요. 다시 로그인해 주세요.",
       successTitle: "LIVE 출석을 남겼어요",
       successHelper: "출석 도장, Fan Score +3, 응모권 2장이 기록되었습니다.",
@@ -1657,7 +1657,7 @@ export function LiveEventScreen({
                             ? locale === "ko" ? "선물 고르고 응모하기" : translate(locale, localizedMessages.mb16d9d8b336e, "Choose a prize and enter")
                           : live.missionsAvailable !== false
                             ? attendanceCopy.survey
-                            : locale === "ko" ? "Passport에서 참여 기록 보기" : translate(locale, localizedMessages.md8a4cb6fc81f, "View participation in Passport")}
+                            : locale === "ko" ? "패스포트에서 참여 기록 보기" : translate(locale, localizedMessages.md8a4cb6fc81f, "View participation in Passport")}
                       </FanAction>
                     }
                   />
