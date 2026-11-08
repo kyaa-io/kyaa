@@ -112,7 +112,7 @@ function HomeHero({ locale, hero, upcoming, loading }: { locale: AppLocale; hero
     <Link className={styles.heroLink} href={hero.href as Route} {...(hero.external ? { target: "_blank", rel: "noreferrer" } : {})}>
       <span className={styles.heroMedia}>{hero.image ? <img src={hero.image} alt={hero.alt} loading="eager" fetchPriority="high" decoding="async" /> : null}</span>
       <span className={styles.heroBody}>
-        <h1 id="home-hero-title" className={styles.heroTitle}>{hero.title}</h1>
+        <FanHeading as="h1" id="home-hero-title">{hero.title}</FanHeading>
         {hero.meta || next ? <span className={styles.heroMeta} data-meta="">{hero.meta}{hero.meta && next ? <span aria-hidden="true"> · </span> : null}{next ? <span data-live-next="">{t.liveAt(next)}</span> : null}</span> : null}
       </span>
     </Link>
@@ -150,6 +150,9 @@ function FavoriteCard({ locale, favorite, guest }: { locale: AppLocale; favorite
   const t = words(locale);
   const group = useGroupResource(favorite ? `/api/groups/resolve/${encodeURIComponent(favorite.slug)}` : null, parseGroup);
   const members = group.data?.page.memberCount;
+  const action = favorite ? { href: `/${encodeURIComponent(favorite.slug)}?locale=${locale}`, label: t.fanPage }
+    : guest ? { href: fanLoginHref(locale, `/?locale=${locale}`), label: t.loginChoose }
+    : { href: `/pages/groups?locale=${locale}`, label: t.choose };
   return <section className={styles.favorite} data-block="aside-card" aria-labelledby="home-favorite-heading">
     <FanHeading id="home-favorite-heading">{t.yourFavorite}</FanHeading>
     {favorite ? <div className={styles.favoriteIdentity}>
@@ -158,9 +161,7 @@ function FavoriteCard({ locale, favorite, guest }: { locale: AppLocale; favorite
         <span className={styles.favoriteMeta} data-meta="">{members === undefined ? <span className={styles.metaHold} aria-hidden="true" /> : <span data-metric="count" data-fact="">{t.fans(formatCountMetric(locale, members))}</span>}</span>
       </span>
     </div> : null}
-    {favorite ? <FanAction variant="primary" fullWidth href={`/${encodeURIComponent(favorite.slug)}?locale=${locale}`}>{t.fanPage}</FanAction>
-      : guest ? <FanAction variant="primary" fullWidth href={fanLoginHref(locale, `/?locale=${locale}`)}>{t.loginChoose}</FanAction>
-      : <FanAction variant="primary" fullWidth href={`/pages/groups?locale=${locale}`}>{t.choose}</FanAction>}
+    <FanAction variant="primary" fullWidth href={action.href}>{action.label}</FanAction>
   </section>;
 }
 

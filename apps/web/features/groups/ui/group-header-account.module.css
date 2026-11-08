@@ -31,7 +31,7 @@
 .avatarTrigger { display: grid; place-items: center; flex: none; width: var(--min-target); height: var(--min-target); padding: 0; border: 0; border-radius: 50%; background: transparent; cursor: pointer; }
 .avatarTrigger > * { border-radius: 50%; overflow: hidden; }
 .avatarTrigger:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
-.menu { box-sizing: border-box; display: flex; flex-direction: column; width: 280px; max-width: calc(100vw - 32px); padding: var(--space-2) 0; border: 1px solid var(--color-line); border-radius: 12px; background: var(--color-surface); box-shadow: var(--shadow-overlay); color: var(--color-ink); outline: 0; }
+.menu { box-sizing: border-box; display: flex; flex-direction: column; width: 280px; max-width: calc(100vw - 32px); padding: var(--space-2) 0; border: 1px solid var(--color-line); border-radius: var(--radius-card, 12px); background: var(--color-surface); box-shadow: var(--shadow-overlay); color: var(--color-ink); outline: 0; }
 .menuItem { box-sizing: border-box; display: flex; align-items: center; gap: var(--space-2); width: 100%; min-height: 48px; height: 48px; margin: 0; padding: 0 var(--space-4); border: 0; background: transparent; color: inherit; font: inherit; font-size: var(--fan-item-title-size, 15px); font-weight: 700; line-height: 20px; text-align: start; text-decoration: none; cursor: pointer; }
 .menuItem[data-highlighted] { background: var(--color-soft); outline: none; }
 .menuItem[data-disabled] { color: var(--color-muted); cursor: default; }
@@ -43,8 +43,8 @@
 .statusLine { display: flex; flex: 1 1 auto; min-width: 0; align-items: center; gap: var(--space-1); overflow: hidden; white-space: nowrap; font-variant-numeric: tabular-nums; }
 .statusGrade { flex: none; }
 .statusName { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
-.statusCell { display: inline-flex; flex: none; align-items: center; gap: 2px; }
+.statusCell { display: inline-flex; flex: none; align-items: center; gap: calc(var(--space-1) / 2); }
 .statusDot { flex: none; color: var(--color-muted); font-weight: 400; }
 .heart { color: var(--color-accent); }
 /* 언어 창(오버레이): 반경 12, 오버레이 그림자 1토큰(8장 ⑦). */
-.dialog.dialog { border-radius: 12px; box-shadow: var(--shadow-overlay); }
+.dialog.dialog { border-radius: var(--radius-card, 12px); box-shadow: var(--shadow-overlay); }
