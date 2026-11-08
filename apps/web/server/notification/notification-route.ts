@@ -34,6 +34,8 @@ const patch = z
     replyNotifications: z.boolean().optional(),
     officialPostNotifications: z.boolean().optional(),
     scheduleNotifications: z.boolean().optional(),
+    artistActivityNotifications: z.boolean().optional(),
+    artistOnlineNotifications: z.boolean().optional(),
   })
   .strict()
   .refine((v) => Object.keys(v).length > 0);

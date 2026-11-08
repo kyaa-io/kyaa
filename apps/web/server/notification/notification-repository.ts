@@ -43,6 +43,8 @@ export interface NotificationRepository {
     replyNotifications?: boolean;
     officialPostNotifications?: boolean;
     scheduleNotifications?: boolean;
+    artistActivityNotifications?: boolean;
+    artistOnlineNotifications?: boolean;
   }): Promise<NotificationPreferences>;
   enqueueDue(now: string): Promise<number>;
 }
@@ -63,6 +65,17 @@ function one(value: unknown): Row | null {
 function text(value: unknown, fallback: string) {
   return typeof value === "string" && value.trim() ? value : fallback;
 }
+/** E6: the artist's name and the post or page are stored on the notice when it is written; the count grows within the hour. */
+export function artistNotificationText(kind: "artist_comment" | "artist_online", payload: Row, locale: "ko" | "en") {
+  const ko = locale === "ko";
+  const name = text(payload.artistName, ko ? "아티스트" : "The artist");
+  if (kind === "artist_online") return { title: ko ? `${name} 님이 팬페이지에 들어왔어요` : `${name} is on the fan page`, detail: text(payload.pageName, ko ? "팬페이지" : "Fan page") };
+  const count = typeof payload.count === "number" && Number.isInteger(payload.count) && payload.count > 1 ? payload.count : 1;
+  return {
+    title: ko ? (count > 1 ? `${name} 님이 댓글 ${count}개를 남겼어요` : `${name} 님이 댓글을 남겼어요`) : (count > 1 ? `${name} left ${count} comments` : `${name} left a comment`),
+    detail: text(payload.postTitle, ko ? "게시글" : "Post"),
+  };
+}
 export function projectNotificationRow(
   row: Row,
   locale: "ko" | "en",
@@ -70,6 +83,10 @@ export function projectNotificationRow(
 ): NotificationItem {
   const kind = String(row.kind) as NotificationItem["kind"];
   const directWeb = groupNotificationPathSchema.safeParse(row.deep_link).success;
+  if (kind === "artist_comment" || kind === "artist_online") {
+    const said = artistNotificationText(kind, one(row.payload) ?? {}, locale);
+    return { id: String(row.id), kind, title: said.title, detail: said.detail, createdAt: String(row.created_at), readAt: row.read_at == null ? null : String(row.read_at), deepLink: String(row.deep_link) as NotificationItem["deepLink"] };
+  }
   const webCopy = {
     group_event_reviewed: ["행사 승인 검토가 끝났어요", "결과를 확인해 주세요.", "Event review finished", "View the result."],
     group_raffle_won: ["추첨에 당첨됐어요", "수령 기한과 경품 정보를 확인해 주세요.", "You won the draw", "Check the claim deadline and prize details."],
@@ -244,7 +261,7 @@ export function createNotificationRepository(
     const [pref, sub] = await Promise.all([
       db
         .from("notification_preferences")
-        .select("live_reminders,survey_reminders,benefit_notifications,reply_notifications,official_post_notifications,schedule_notifications")
+        .select("live_reminders,survey_reminders,benefit_notifications,reply_notifications,official_post_notifications,schedule_notifications,artist_activity_notifications,artist_online_notifications")
         .eq("app_user_id", appUserId)
         .maybeSingle(),
       db
@@ -262,6 +279,8 @@ export function createNotificationRepository(
       replyNotifications: pref.data?.reply_notifications ?? true,
       officialPostNotifications: pref.data?.official_post_notifications ?? true,
       scheduleNotifications: pref.data?.schedule_notifications ?? true,
+      artistActivityNotifications: pref.data?.artist_activity_notifications ?? true,
+      artistOnlineNotifications: pref.data?.artist_online_notifications ?? true,
       browserSubscription: (sub.count ?? 0) > 0 ? "subscribed" : "unsubscribed",
     };
   }
@@ -321,6 +340,8 @@ export function createNotificationRepository(
           ...(input.replyNotifications === undefined ? {} : { reply_notifications: input.replyNotifications }),
           ...(input.officialPostNotifications === undefined ? {} : { official_post_notifications: input.officialPostNotifications }),
           ...(input.scheduleNotifications === undefined ? {} : { schedule_notifications: input.scheduleNotifications }),
+          ...(input.artistActivityNotifications === undefined ? {} : { artist_activity_notifications: input.artistActivityNotifications }),
+          ...(input.artistOnlineNotifications === undefined ? {} : { artist_online_notifications: input.artistOnlineNotifications }),
         },
       });
       if (error) throw new Error("notification preferences update failed");

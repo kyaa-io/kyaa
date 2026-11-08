@@ -21,9 +21,12 @@ export const notificationKindSchema = z.enum([
   "support_reply", "stamp_issued", "participation_deadline",
   "fan_friend_request", "fan_dm_request", "fan_dm_message", "friend_post", "friend_reaction",
   "content_reply", "official_post", "schedule_reminder", "schedule_changed", "schedule_cancelled", "schedule_suggestion_reviewed", "fanpage_request_reviewed",
+  "artist_comment", "artist_online",
 ]);
+export const artistNotificationKinds = ["artist_comment", "artist_online"] as const;
+export function isArtistNotificationKind(kind: string): kind is (typeof artistNotificationKinds)[number] { return (artistNotificationKinds as readonly string[]).includes(kind); }
 const groupId = "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}";
-export const groupNotificationPathSchema = z.string().regex(new RegExp(`^/(?:my/friends(?:\\?(?:profileId|conversationId)=${groupId})?|pages/groups/(?:apply\\?applicationId=${groupId}|${groupId}(?:\\?tab=board&postId=${groupId}|/raffles/${groupId}|/events/${groupId})?))$`));
+export const groupNotificationPathSchema = z.string().regex(new RegExp(`^/(?:my/friends(?:\\?(?:profileId|conversationId)=${groupId})?|pages/groups/(?:apply\\?applicationId=${groupId}|${groupId}(?:\\?tab=board&postId=${groupId}|\\?tab=board&post=${groupId}(?:#comment-${groupId})?|/raffles/${groupId}|/events/${groupId})?))$`));
 export const safeNotificationPathSchema = z
   .string()
   .regex(
@@ -51,6 +54,8 @@ export const notificationPreferencesSchema = z.object({
   replyNotifications: z.boolean().default(true),
   officialPostNotifications: z.boolean().default(true),
   scheduleNotifications: z.boolean().default(true),
+  artistActivityNotifications: z.boolean().default(true),
+  artistOnlineNotifications: z.boolean().default(true),
   browserSubscription: z.enum(["subscribed", "unsubscribed"]),
 });
 export type NotificationItem = z.infer<typeof notificationItemSchema>;

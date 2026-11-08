@@ -15,3 +15,9 @@ it('draws each notification as one link row: title, then action and time, not a 
  expect(link).toHaveAttribute('data-unread','true');
  expect(screen.getByRole('listitem').children).toHaveLength(1);
 });
+it('puts the artist tag before an artist notice title (261107-2 E6)',()=>{
+ render(<GroupNotificationPanel locale='ko' rows={[{...rows[0],label:'엘리나 님이 댓글을 남겼어요',tag:<span data-fan-tag='artist'>아티스트</span>}]} />);
+ const title=screen.getByRole('link').querySelector('strong');
+ expect(title?.firstElementChild?.querySelector('[data-fan-tag="artist"]')).not.toBeNull();
+ expect(title).toHaveTextContent('아티스트엘리나 님이 댓글을 남겼어요');
+});

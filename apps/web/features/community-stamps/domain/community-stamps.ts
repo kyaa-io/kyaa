@@ -170,6 +170,8 @@ export const socialStampCollectionSchema = z
   .strict();
 export type SocialStampCollection = z.infer<typeof socialStampCollectionSchema>;
 export const communityShareTokenSchema = z.string().regex(/^[a-f0-9]{32}$/);
+export const communityInviteShortLinkSchema = z.object({ slug: z.string().regex(/^[a-hjkmnp-z2-9]{7}$/) }).strict();
+export const communityInviteShortTargetSchema = z.object({ code: z.string().regex(/^[A-F0-9]{24}$/), destination: z.string().max(120) }).strict();
 export const communityShareLinkSchema = z
   .object({ token: communityShareTokenSchema })
   .strict();

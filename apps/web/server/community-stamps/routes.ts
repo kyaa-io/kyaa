@@ -4,7 +4,7 @@ import { wantsFanReward } from "../rewards/fan-reward";
 import { fanRewardSchema } from "../../features/rewards/domain/fan-reward";
 import { z } from "zod";
 import { AuthError } from "@/features/auth/domain/auth-errors";
-import { communityShareTokenSchema, communityShareLinkSchema, communityShareDestinationSchema, communityAwardResultSchema, communityCreatorSlugSchema, communityInvitationOverviewSchema, communityInviteRedemptionResultSchema, communityInviteSchema, communityStampCollectionSchema, socialStampCollectionSchema } from "@/features/community-stamps/domain/community-stamps";
+import { communityShareTokenSchema, communityShareLinkSchema, communityInviteShortLinkSchema, communityShareDestinationSchema, communityAwardResultSchema, communityCreatorSlugSchema, communityInvitationOverviewSchema, communityInviteRedemptionResultSchema, communityInviteSchema, communityStampCollectionSchema, socialStampCollectionSchema } from "@/features/community-stamps/domain/community-stamps";
 
 export interface CommunityStampDependencies {
   authorize(authorization: string | null): Promise<{ appUserId: string }>;
@@ -72,6 +72,9 @@ export function createCommunityStampHandlers(deps: CommunityStampDependencies) {
         } else if (action === "invite-code") {
           z.object({}).strict().parse(raw);
           return json(parseResponse(communityInviteSchema, await deps.rpc("get_community_stamp_invite_code", { p_app_user_id: appUserId })));
+        } else if (action === "invite-short-link") {
+          const input = z.object({ destination: z.string().max(120) }).strict().parse(raw);
+          return json(parseResponse(communityInviteShortLinkSchema, await deps.rpc("create_community_invite_short_link", { p_app_user_id: appUserId, p_destination: input.destination })));
         } else if (action === "invitation-overview") {
           z.object({}).strict().parse(raw);
           const rawOverview=await deps.rpc("get_community_stamp_invitation_overview", { p_app_user_id: appUserId });

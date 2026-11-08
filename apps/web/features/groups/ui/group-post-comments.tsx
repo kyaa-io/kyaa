@@ -1,5 +1,5 @@
 "use client";
-import { useRef, useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 import { flushSync } from "react-dom";
 import { Ellipsis, ImagePlus } from "lucide-react";
 import { z } from "zod";
@@ -76,6 +76,15 @@ export function GroupPostComments({ pageId, postId, locale, commentCount, canWri
   const comments = [...(previous.key === r.ownerKey ? previous.items : []), ...(r.data?.items ?? [])];
   const ordered = threadComments(comments.map(comment => ({ ...comment, parentId: comment.parentId ?? null })));
   const returnTo = `/pages/groups/${pageId}?locale=${locale}&tab=board&post=${postId}`;
+  // 261107-2 E6: an artist notice opens the post at #comment-<id>; scroll there once the comment is on screen.
+  const anchored = useRef(false), loadedCount = ordered.length;
+  useEffect(() => {
+    if (anchored.current || !loadedCount || !window.location.hash.startsWith("#comment-")) return;
+    const target = document.getElementById(window.location.hash.slice(1));
+    if (!target) return;
+    anchored.current = true;
+    target.scrollIntoView?.({ block: "center" });
+  }, [loadedCount]);
   const notReady = Boolean(busy) || !draft.trim() || upload.busy || upload.items.some(item => item.failed) || Boolean(upload.items.length && !upload.ready);
   // 261107-2 D7: open the reply box and focus it inside the tap, so iOS opens the keyboard and the reply button never looks dead.
   const toggleReply = (parentId: string) => {
