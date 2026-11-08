@@ -21,51 +21,28 @@ function stub(fanBody: unknown, creatorBody: unknown = creators) {
   return fetcher;
 }
 
-it("lists true fans by all-time hearts with the move since yesterday, and asks a guest to sign in for their own rank", async () => {
-  const fetcher = stub(fans());
-  render(<HomeRankingCard locale="ko" />);
-  const list = (await screen.findByText("별빛")).closest("ol")!;
-  expect(within(list).getAllByRole("listitem")).toHaveLength(4);
-  expect(list.textContent).toContain("골드");
-  // Second line: grade and favorite; a row without a favorite has neither the item nor a dot.
-  const first = within(list).getAllByRole("listitem")[0]!;
-  expect(first.textContent).toContain("골드·최애 엘리나");
-  expect(within(first).getByLabelText("하트 29개")).toBeInTheDocument();
-  expect(within(list).getAllByRole("listitem")[2]!.textContent).not.toMatch(/최애|·/);
-  // A row not ranked yesterday reads 신규 once movement is shown.
-  expect(within(list).getAllByRole("listitem")[3]!.textContent).toContain("신규");
-  expect(await screen.findAllByText(/^업데이트 \d\d:\d\d$/)).toHaveLength(1);
-  expect(list.textContent).not.toMatch(/원|₩|P\b/);
-  expect(within(list).getByRole("img", { name: "2계단 올라감" })).toBeInTheDocument();
-  expect(within(list).getByRole("img", { name: "1계단 내려감" })).toBeInTheDocument();
-  expect(within(list).getByRole("img", { name: "변동 없음" })).toBeInTheDocument();
-  expect(screen.getByRole("tab", { name: "찐팬 순위" })).toHaveAttribute("aria-selected", "true");
-  expect(screen.getByText("누적 하트")).toBeInTheDocument();
-  expect(screen.getByRole("link", { name: /로그인하고 내 순위 보기/ })).toHaveAttribute("href", expect.stringContaining("/login"));
+it("R18: five 56px rows of rank · name · hearts · movement, the movement always drawn, a basis line and 전체 보기", async () => {
+  const fetcher = stub(fans(Array.from({ length: 8 }, (_, i) => fanRow(i + 1, { delta: [2, -1, 0, null, 1, 0, 0, 0][i] }))));
+  const { container } = render(<HomeRankingCard locale="ko" />);
+  const list = (await screen.findByText("팬1")).closest("ol")!;
+  const rows = within(list).getAllByRole("listitem");
+  expect(rows).toHaveLength(5);
+  for (const row of rows) { expect(row).toHaveAttribute("data-row", "rank"); expect(row.querySelectorAll("[data-delta]")).toHaveLength(1); }
+  expect(rows.map((row) => row.querySelector("[data-delta]")!.getAttribute("data-delta"))).toEqual(["up", "down", "same", "new", "up"]);
+  expect(within(rows[0]!).getByRole("img", { name: "2계단 올라감" })).toBeInTheDocument();
+  expect(within(rows[0]!).getByLabelText("하트 29개")).toBeInTheDocument();
+  expect(rows[0]!.querySelector('svg[data-icon="heart"]')).toHaveAttribute("fill", "currentColor");
+  const basis = container.querySelector("[data-ranking-basis]")!;
+  await waitFor(() => expect(basis.textContent).toMatch(/^누적 하트 · 업데이트 (\d\d\. \d\d\. )?\d\d:\d\d$/));
+  expect(basis.querySelector("[data-updated-at]")).not.toBeNull();
+  expect(basis.tagName).not.toBe("P");
+  expect(screen.getByRole("link", { name: /전체 보기/ })).toHaveAttribute("href", "/rankings?locale=ko&tab=fans");
+  expect(screen.queryByRole("button", { name: "11~20위" })).toBeNull();
+  expect(container.querySelector('[data-block="ranking"]')).not.toBeNull();
   expect(fetcher).toHaveBeenCalledWith("/api/rankings/home?kind=fans&locale=ko", expect.anything());
 });
 
-it("shows ten rows and opens 11 to 20 inside the card", async () => {
-  stub(fans(Array.from({ length: 20 }, (_, i) => fanRow(i + 1))));
-  const { container } = render(<HomeRankingCard locale="ko" />);
-  await screen.findByText("팬1");
-  expect(container.querySelectorAll("ol > li")).toHaveLength(10);
-  const more = screen.getByRole("button", { name: "11~20위" });
-  expect(more).toHaveAttribute("aria-expanded", "false");
-  fireEvent.click(more);
-  expect(container.querySelectorAll("ol > li")).toHaveLength(20);
-  expect(more).toHaveAttribute("aria-expanded", "true");
-});
-
-it("keeps the empty state at the ten-row height without the bottom line", async () => {
-  stub(fans([]));
-  const { container } = render(<HomeRankingCard locale="ko" />);
-  expect(await screen.findByText("아직 하트를 보낸 팬이 없어요")).toBeInTheDocument();
-  expect(container.querySelector("ol")).toBeNull();
-  expect(screen.queryByRole("button", { name: "11~20위" })).not.toBeInTheDocument();
-});
-
-it("shows creators by true fans with the heart total, each row opening the fan page", async () => {
+it("before seven days are kept the movement shows this week's gain (+N), and — when there is nothing to compare", async () => {
   stub(fans());
   render(<HomeRankingCard locale="ko" />);
   await screen.findByText("별빛");
@@ -73,33 +50,27 @@ it("shows creators by true fans with the heart total, each row opening the fan p
   const row = await screen.findByRole("link", { name: /엘리나/ });
   expect(row).toHaveAttribute("href", "/elina?locale=ko");
   expect(within(row).getByLabelText("찐팬 125")).toBeInTheDocument();
-  expect(within(row).getByLabelText("하트 795개")).toBeInTheDocument();
-  expect(row.textContent).toContain("이번 주 +12");
-  expect(screen.getByRole("link", { name: /크리에이터2/ }).textContent).toContain("이번 주 0");
-  // weekGain null: no item and no dot after the hearts.
-  expect(screen.getByRole("link", { name: /크리에이터3/ }).textContent).not.toMatch(/이번 주|·/);
-  expect(document.body.textContent).not.toMatch(/팬 \d/);
-  // Seven days not kept yet: no movement column at all, four columns.
-  expect(row.querySelector("[data-direction]")).toBeNull();
-  expect(row).not.toHaveAttribute("data-comparable");
+  expect(row.querySelector("[data-delta]")).toHaveAttribute("data-delta", "gain");
+  expect(row.querySelector("[data-delta]")!.textContent).toBe("+12");
+  expect(screen.getByRole("link", { name: /크리에이터2/ }).querySelector("[data-delta]")).toHaveAttribute("data-delta", "same");
   expect(screen.getByText("찐팬 수")).toBeInTheDocument();
 });
 
-it("pins a signed-in viewer's own rank on the bottom line when it is below the shown rows", async () => {
-  auth.value = { ...auth.value, authenticated: true, user: { id: "me" } };
-  stub(fans(undefined, { rank: 42, score: 1, inTop: false }));
-  render(<HomeRankingCard locale="ko" />);
-  await waitFor(() => expect(screen.getByRole("status").textContent).toContain("42위"));
-  expect(screen.queryByRole("link", { name: /로그인하고/ })).not.toBeInTheDocument();
+it("uses the server's close and read time (period day: no week claimed) and the fans' weekly gain", async () => {
+  stub({ ...fans([fanRow(1, { weekGain: 40 }), fanRow(2)]), comparable: false, period: "day", closesAt: new Date(2026, 10, 10, 0, 0).toISOString(), fetchedAt: new Date().toISOString() });
+  const { container } = render(<HomeRankingCard locale="ko" />);
+  await screen.findByText("팬1");
+  await waitFor(() => expect(container.querySelector("[data-ranking-basis]")!.textContent).toMatch(/^누적 하트 · 11\. 10\. 00:00 마감 · 업데이트 \d\d:\d\d$/));
+  expect(container.textContent).not.toMatch(/이번 주 ·|day/);
+  const deltas = [...container.querySelectorAll("[data-delta]")].map((node) => node.textContent);
+  expect(deltas[0]).toBe("+40");
 });
 
-it("keeps the two home copies on one tab, so pressing the hidden copy also switches the visible one", async () => {
-  stub(fans());
-  render(<><HomeRankingCard locale="ko" headingId="a" /><HomeRankingCard locale="ko" headingId="b" /></>);
-  await waitFor(() => expect(screen.getAllByText("별빛")).toHaveLength(2));
-  fireEvent.click(screen.getAllByRole("tab", { name: "크리에이터 순위" })[0]!);
-  await waitFor(() => expect(screen.getAllByRole("link", { name: /엘리나/ })).toHaveLength(2));
-  for (const tab of screen.getAllByRole("tab", { name: "크리에이터 순위" })) expect(tab).toHaveAttribute("aria-selected", "true");
+it("keeps the empty state at the five-row place", async () => {
+  stub(fans([]));
+  const { container } = render(<HomeRankingCard locale="ko" />);
+  expect(await screen.findByText("아직 하트를 보낸 팬이 없어요")).toBeInTheDocument();
+  expect(container.querySelector("ol")).toBeNull();
 });
 
 it("uses the same words in English", async () => {
@@ -110,7 +81,7 @@ it("uses the same words in English", async () => {
   expect(screen.getByRole("img", { name: "Up 2" })).toBeInTheDocument();
 });
 
-it("moves only the rows whose rank changed when the tab comes back after ten minutes, and not under reduced motion", async () => {
+it("moves only the rows whose rank changed when the tab comes back after 60 seconds (R21), and not under reduced motion", async () => {
   const animate = vi.fn((_keyframes: unknown, _options?: unknown) => ({}) as Animation);
   const original = Object.getOwnPropertyDescriptor(HTMLElement.prototype, "offsetTop");
   Object.defineProperty(HTMLElement.prototype, "offsetTop", { configurable: true, get(this: HTMLElement) { return this.parentElement ? Array.from(this.parentElement.children).indexOf(this) * 56 : 0; } });
@@ -128,7 +99,7 @@ it("moves only the rows whose rank changed when the tab comes back after ten min
       await screen.findByText("가");
       expect(animate).not.toHaveBeenCalled();
       answer = fans([fanRow(1, { nickname: "나나", score: 40, delta: 1 }), fanRow(2, { nickname: "가", delta: -1 }), fanRow(3, { nickname: "다", delta: 0 })]);
-      now += 11 * 60 * 1000;
+      now += 61 * 1000;
       document.dispatchEvent(new Event("visibilitychange"));
       await waitFor(() => expect(view.container.querySelector("ol > li")!.textContent).toContain("나나"));
       // The rows stayed on screen while reading again.
@@ -143,18 +114,10 @@ it("moves only the rows whose rank changed when the tab comes back after ten min
   }
 });
 
-it("draws no movement column before seven days are kept", async () => {
-  stub({ ...fans(), comparable: false });
-  const { container } = render(<HomeRankingCard locale="ko" />);
-  await screen.findByText("별빛");
-  expect(container.querySelectorAll("[data-direction]")).toHaveLength(0);
-  expect(container.querySelectorAll("li[data-comparable]")).toHaveLength(0);
-});
-
-it("says when the day was written: the time today, the date otherwise", () => {
+it("says when the list was read: the time today, the feed date otherwise", () => {
   const now = new Date(2026, 10, 8, 15, 0);
   expect(updatedLabel("ko", new Date(2026, 10, 8, 9, 40).toISOString(), now)).toBe("업데이트 09:40");
-  expect(updatedLabel("ko", new Date(2026, 10, 7, 23, 50).toISOString(), now)).toBe("업데이트 11. 7.");
+  expect(updatedLabel("ko", new Date(2026, 10, 7, 23, 50).toISOString(), now)).toBe("업데이트 11. 07. 23:50");
   expect(updatedLabel("en", new Date(2026, 10, 8, 9, 40).toISOString(), now)).toBe("Updated 09:40");
   expect(updatedLabel("ko", "not a time", now)).toBeNull();
 });

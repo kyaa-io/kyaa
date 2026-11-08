@@ -48,10 +48,10 @@
 .page :is(a,button,input,select,textarea):focus-visible { outline:3px solid #121212; outline-offset:3px; }
 @media(max-width:1023px) { .page { padding-block:24px 32px; } .layout { grid-template-columns:minmax(0,1fr); gap:24px; } .aside { padding:16px; } .panel { padding:16px; } .identity { flex-wrap:wrap; gap:12px; } .identityCopy { flex-basis:calc(100% - 80px); } }
 .creatorPage { background:#fff; padding-top:32px; min-height:70dvh; }
-.shell { --fan-header-height:68px; --fan-ink:#121212; --fan-line:#e4e1e6; --fan-muted:#5d5d5d; }
+.shell { --fan-header-height:56px; --fan-shell-top:56px; --fan-ink:#121212; --fan-line:#e4e1e6; --fan-muted:#5d5d5d; }
 .row>div { min-width:0; flex:1; }
 @media(max-width:1023px){.shell~[data-fan-site-footer]{padding-bottom:calc(96px + env(safe-area-inset-bottom));}}
-@media(min-width:1024px){.shell{--fan-header-height:88px;}}
+/* 5차 셸: 헤더 56(모든 폭). */
 
 .eventLayout>.form{max-width:none;width:100%;}.eventSummary{grid-template-columns:200px minmax(0,1fr);align-items:center;gap:24px}.eventImage{width:200px;height:150px;object-fit:cover;border-radius:12px}.eventLayout aside .panel{border:0;padding:0}.eventLayout aside canvas{justify-self:center}.eventLayout aside h2{font-size:20px}.eventLayout aside .panel h2{margin:0}@media(max-width:767px){.eventSummary{grid-template-columns:minmax(0,1fr);gap:16px}.eventImage{width:100%;height:160px}.eventLayout{gap:16px}}
 

@@ -41,6 +41,7 @@
     "typecheck": "npm run typecheck --workspace @byus/web",
     "lint": "eslint apps/web apps/worker scripts --max-warnings=0",
     "design-lint": "node scripts/design-lint.mjs",
+    "copy-lint": "node scripts/copy-lint.mjs",
     "lint:web": "eslint apps/web --max-warnings=0",
     "lint:worker": "eslint apps/worker --max-warnings=0",
     "security:audit": "npm audit --omit=dev --ignore-scripts",

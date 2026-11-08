@@ -11,3 +11,6 @@ export { FanTabs, type FanTabItem } from "./fan-tabs";
 export { FanCount } from "./fan-count-chip";
 export { FanIconButton, type FanIconButtonProps } from "./fan-icon-button";
 export { FanRewardPop, FanRouteTransition, type FanRewardPopProps } from "./fan-motion";
+export { FanIcon, type FanIconSize } from "./fan-icon";
+export { FanDot } from "./fan-dot";
+export * from "./fan-icons";

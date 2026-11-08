@@ -20,6 +20,8 @@ type FanNavigationProps = {
   className?: string;
   itemClassName?: string;
   items: readonly FanNavigationItem[];
+  /** 측정용 표식(`data-shell-tabs`·`data-bottom-nav`). */
+  dataAttribute?: "data-shell-tabs" | "data-bottom-nav";
 };
 
 function classNames(...values: Array<string | undefined>) {
@@ -32,9 +34,10 @@ export function FanPrimaryNavigation({
   className,
   itemClassName,
   items,
+  dataAttribute,
 }: FanNavigationProps) {
   return (
-    <nav className={className} aria-label={ariaLabel}>
+    <nav className={className} aria-label={ariaLabel} {...(dataAttribute ? { [dataAttribute]: "" } : {})}>
       {items.map((item) => (
         <Link
           key={item.id}

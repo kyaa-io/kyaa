@@ -23,7 +23,7 @@ function text(locale: AppLocale, key: keyof typeof selectedBiasSource, values: r
   return translate(locale, messages[key], locale === "ko" ? source.ko : source.en, values);
 }
 
-function gradeOf(locale: AppLocale, option: SelectedBiasOption) {
+export function gradeOf(locale: AppLocale, option: SelectedBiasOption) {
   const key = option.stage?.key ?? fanTierEntryKey(option.tier);
   return fanStageLabel(locale, { tier: option.tier, subdivision: option.stage?.subdivision ?? Number(key.split("-").at(-1)) });
 }
