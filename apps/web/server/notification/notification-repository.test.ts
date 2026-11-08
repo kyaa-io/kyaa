@@ -13,13 +13,13 @@ const base = {
   live_events: null,
 };
 describe("FAN-019 progress notification projection", () => {
-  it("keeps social message content out of inbox copy and links through the app", () => {
+  it("keeps social message content out of inbox copy and links to a web page that exists", () => {
     const target = "10000000-0000-4000-8000-000000000001";
     for (const kind of ["fan_dm_request", "fan_dm_message", "fan_friend_request"]) {
       const path = kind === "fan_friend_request" ? `/people/${target}/friend-request?favorite=kara` : `/messages/${target}`;
       const item = projectNotificationRow({ ...base, kind, deep_link: path, payload: { body: "private message", nickname: "Private Name" } }, "ko");
       expect(notificationItemSchema.safeParse(item).success).toBe(true);
-      expect(item.deepLink).toBe(`/open-app?returnTo=${encodeURIComponent(path)}`);
+      expect(item.deepLink).toBe("/");
       expect(JSON.stringify(item)).not.toContain("private message");
       expect(JSON.stringify(item)).not.toContain("Private Name");
     }
@@ -30,7 +30,8 @@ describe("FAN-019 progress notification projection", () => {
       for (const locale of ["ko", "en"] as const) {
         const item = projectNotificationRow({ ...base, kind, deep_link: path, payload: { body: "private source", subject: "private source" } }, locale);
         expect(notificationItemSchema.safeParse(item).success).toBe(true);
-        expect(item.deepLink).toBe(`/open-app?returnTo=${encodeURIComponent(path)}`);
+        expect(item.deepLink).toBe(path.startsWith("/stamps/") ? path : "/");
+        expect(item.deepLink).not.toContain("open-app");
         expect(JSON.stringify(item)).not.toContain("private source");
       }
     }

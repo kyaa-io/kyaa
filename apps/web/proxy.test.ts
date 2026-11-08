@@ -264,3 +264,31 @@ describe("AWS admin redirect origin", () => {
     expect(proxy(new NextRequest("https://preview.example/admin")).headers.get("location")).toBe("https://preview.example/admin?lang=en");
   });
 });
+
+describe("open-app before the native app exists", () => {
+  const passport = "/s/0123456789abcdef0123456789abcdef";
+  it.each(["GET", "HEAD"])("answers %s with a 302 to the web destination and keeps its query, hash, and UTM values", (method) => {
+    const response = proxy(new NextRequest(`https://kyaa.io/open-app?returnTo=${encodeURIComponent(`${passport}?locale=ko`)}&utm_source=push#x`, { method }));
+    expect(response.status).toBe(302);
+    expect(response.headers.get("location")).toBe(`${passport}?locale=ko&utm_source=push`);
+    expect(response.headers.get("cache-control")).toContain("no-store");
+    expect(response.headers.get("x-robots-tag")).toBe("noindex, nofollow");
+  });
+  it("sends a missing, unsafe, or off-site destination home", () => {
+    for (const query of ["", "?returnTo=https%3A%2F%2Fevil.test", "?returnTo=%2F%2Fevil.test", "?invalid=1&locale=en"]) {
+      const response = proxy(new NextRequest(`https://kyaa.io/open-app${query}`));
+      expect(response.status).toBe(302);
+      expect(response.headers.get("location")).toBe(query.includes("locale=en") ? "/?locale=en" : "/");
+    }
+  });
+  it("keeps the install screen once the app is out and leaves other methods alone", () => {
+    vi.stubEnv("NATIVE_APP_AVAILABLE", "true");
+    vi.stubEnv("NEXT_PUBLIC_KYAA_APP_STORE_URL", "https://apps.apple.com/kr/app/kyaa/id123456789");
+    expect(proxy(new NextRequest("https://kyaa.io/open-app?returnTo=%2Flive")).headers.get("location")).toBeNull();
+    vi.unstubAllEnvs();
+    expect(proxy(new NextRequest("https://kyaa.io/open-app?returnTo=%2Flive", { method: "POST" })).headers.get("location")).toBeNull();
+  });
+  it("does not touch other paths", () => {
+    expect(proxy(new NextRequest("https://kyaa.io/live")).status).not.toBe(302);
+  });
+});

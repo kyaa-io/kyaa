@@ -9,6 +9,7 @@ import type {
 } from "../../features/notification/domain/notification-model";
 
 import { groupNotificationPathSchema, notificationItemSchema } from "@/features/notification/domain/notification-model";
+import { openAppWebPath } from "@/server/app-link/open-app-redirect";
 
 type Db = Pick<SupabaseClient, "from" | "rpc">;
 type Row = Record<string, unknown>;
@@ -128,7 +129,7 @@ export function projectNotificationRow(
       return { id: String(row.id), kind, title: said.title, detail: said.detail, createdAt: String(row.created_at), readAt: row.read_at == null ? null : String(row.read_at), deepLink: String(row.deep_link), eventReview };
     }
     return { id: String(row.id), kind, title: copy[locale === "ko" ? 0 : 2], detail: copy[locale === "ko" ? 1 : 3], createdAt: String(row.created_at), readAt: row.read_at == null ? null : String(row.read_at), deepLink: !directWeb && ["fan_friend_request", "fan_dm_request", "fan_dm_message", "support_reply", "stamp_issued", "participation_deadline"].includes(kind)
-      ? `/open-app?returnTo=${encodeURIComponent(String(row.deep_link))}` : String(row.deep_link) };
+      ? openAppWebPath(`returnTo=${encodeURIComponent(String(row.deep_link))}`) : String(row.deep_link) };
   }
   const live = one(row.live_events);
   const benefit = one(row.benefits);
