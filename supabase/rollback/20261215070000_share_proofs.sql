@@ -10,6 +10,16 @@ declare d text; g_start integer; g_end integer; begin
   g_end := position('insert into public.community_stamp_share_visits(' in d);
   execute substr(d, 1, g_start - 1) || substr(d, g_end);
 end $$;
+do $$
+declare d text; g_start integer; g_end integer; anchor text := 'elsif f.action_key in (''event_checkin'', ''event_review'') then'; begin
+  d := pg_get_functiondef('public.retry_dukjil_wire_failures(integer)'::regprocedure);
+  g_start := position('elsif f.action_key = ''share'' and f.source_key like ''share-proof:%'' then -- share-proof-retry-gate' in d);
+  if g_start = 0 then return; end if;
+  g_end := position(anchor in d);
+  execute substr(d, 1, g_start - 1) || substr(d, g_end);
+end $$;
+-- The p3_fn_owner_<role> policies and grants the files added for the applying role stay: other files use the same policies.
+drop function if exists public.pay_fan_share_proof(uuid, uuid, uuid, jsonb);
 drop trigger if exists app_users_scrub_fan_share_proofs on public.app_users;
 drop function if exists public.scrub_fan_share_proofs_on_deletion();
 drop function if exists public.read_admin_share_proofs(uuid, uuid, text, timestamptz, integer);

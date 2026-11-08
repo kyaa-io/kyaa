@@ -131,6 +131,30 @@ begin
   r := public.submit_fan_share_proof(other.id, fp.celebrity_id, 'x', 'https://x.com/fan/status/1850000000000000099', 'x:1850000000000000099', true);
   if not (r->>'replayed')::boolean or (r->>'id')::uuid <> v_other then raise exception 'Kept key allowed a second row for the same member: %', r; end if;
 
+
+  -- 5. Review r4b M1: a cancelled proof is never paid afterwards, by the five-minute retry or by the locked payout.
+  r := public.submit_fan_share_proof(fp.app_user_id, fp.celebrity_id, 'tiktok', 'https://www.tiktok.com/@fan/video/7430000000000000555', 'tiktok:7430000000000000555', true);
+  v_other := (r->>'id')::uuid;
+  update public.fan_share_proofs set status = 'revoked', revoked_at = clock_timestamp(), revoked_by = adm.actor, revoke_reason = '지급 전 취소', revoke_result = 'none' where id = v_other;
+  insert into public.dukjil_wire_failures (wire, app_user_id, celebrity_id, action_key, source_key, error_message)
+    values ('server', fp.app_user_id, fp.celebrity_id, 'share', 'share-proof:' || v_other::text, 'probe: payout failed before the cancel');
+  perform public.retry_dukjil_wire_failures(500);
+  if (select resolution from public.dukjil_wire_failures where source_key = 'share-proof:' || v_other::text) is distinct from 'content_gone' then
+    raise exception 'Retry did not skip the cancelled proof: %', (select row_to_json(f) from public.dukjil_wire_failures f where source_key = 'share-proof:' || v_other::text);
+  end if;
+  if exists (select 1 from public.dukjil_action_log where app_user_id = fp.app_user_id and source_key = 'share-proof:' || v_other::text) then raise exception 'Retry paid a cancelled proof'; end if;
+  begin
+    perform public.pay_fan_share_proof(fp.app_user_id, v_other, extensions.gen_random_uuid(), '{}'::jsonb);
+    raise exception 'Locked payout paid a cancelled proof';
+  exception when others then if sqlerrm <> 'SHARE_PROOF_REVOKED' then raise; end if; end;
+  -- The locked payout pays with the proof's own creator and keeps the amount, replays included.
+  r := public.submit_fan_share_proof(fp.app_user_id, fp.celebrity_id, 'threads', 'https://www.threads.net/@fan/post/DAbC12xYz9', 'threads:DAbC12xYz9', true);
+  begin
+    award := public.pay_fan_share_proof(fp.app_user_id, (r->>'id')::uuid, extensions.gen_random_uuid(), '{}'::jsonb);
+    if (select points from public.fan_share_proofs where id = (r->>'id')::uuid) is distinct from coalesce((award->>'points')::int, 0) then raise exception 'Locked payout did not keep the amount'; end if;
+    if (select celebrity_id from public.dukjil_action_log where source_key = 'share-proof:' || (r->>'id')) is distinct from fp.celebrity_id then raise exception 'Paid another creator'; end if;
+  exception when others then if sqlerrm !~ 'DUKJIL_DAILY_LIMIT' then raise; end if; end;
+
   raise notice 'share_proofs contract ok (cancel result %, correction rows %)', (select revoke_result from public.fan_share_proofs where id = v_id), corrections;
 end $$;
 

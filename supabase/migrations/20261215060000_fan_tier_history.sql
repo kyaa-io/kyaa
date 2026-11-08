@@ -120,6 +120,28 @@ revoke all on function public.fan_tier_rank(text), public.observe_fan_tiers(uuid
 grant execute on function public.observe_fan_tiers(uuid, public.content_locale), public.mark_fan_tier_changes_seen(uuid, uuid[]),
   public.read_fan_tier_history(uuid, uuid) to service_role;
 
+-- owner-policy-begin (review r4b H1)
+-- observe_fan_tiers reads the active policy and the tier inputs; get_fan_effective_tier_for_score (invoker) reads milestones, level events and cutover snapshots as this owner.
+-- In dev the applying role (byus_admin) owns these functions but is not a superuser, and some tables they read are owned by
+-- postgres with FORCE row security and no policy for it: reads answer 0 rows without an error. Same remedy as 20261215030000 and
+-- 20261210240000 (p3_fn_owner_<role>): the privilege the functions need and a policy for that role alone, only where row security
+-- would otherwise apply to it. A superuser or BYPASSRLS applier (local) needs nothing. Probe: supabase/tests/f_nonsuper_apply.sh.
+do $$
+declare me record; t record;
+begin
+  select oid, rolname, rolsuper, rolbypassrls into me from pg_roles where rolname = current_user;
+  if me.rolsuper or me.rolbypassrls then return; end if;
+  for t in select * from (values ('reward_policy_activation','select'),('reward_policy_tier_milestones','select'),('fan_level_events','select'),('fan_tier_cutover_snapshots','select'),('fan_passports','select'),('fan_score_ledger','select'),('passport_page_slots','select'),('celebrities','select'),('celebrity_localizations','select')) v(tname, privs) loop
+    execute format('grant %s on table public.%I to %I', t.privs, t.tname, me.rolname);
+    if exists (select 1 from pg_class c where c.oid = ('public.' || t.tname)::regclass and c.relrowsecurity
+        and (c.relforcerowsecurity or not pg_has_role(me.oid, c.relowner, 'USAGE')))
+      and not exists (select 1 from pg_policy pol where pol.polrelid = ('public.' || t.tname)::regclass and me.oid = any(pol.polroles)) then
+      execute format('create policy %I on public.%I for all to %I using (true) with check (true)', 'p3_fn_owner_' || me.rolname, t.tname, me.rolname);
+    end if;
+  end loop;
+end $$;
+-- owner-policy-end
+
 -- The tier functions this file calls may belong to another owner than the one applying it (same cause as 20261212030000).
 do $$ declare target regprocedure; target_owner name; me name := (select pg_get_userbyid(proowner) from pg_proc where oid = 'public.observe_fan_tiers(uuid,public.content_locale)'::regprocedure);
 begin
