@@ -159,7 +159,8 @@ function Page({ page, locale, busy, failed, onClaim, proofHref, pager, stampSrc,
   </section>;
 }
 
-/** Mission book of one passport: 9 stamp slots per page, one heart per completed page, page 2+ locked until the 찐팬 title. Rendered only while the dukjil policy is active. */
+/** Mission book of one passport (K8: every page is drawn in one grid cell, the others hidden and inert, so the book is the tallest page's height
+ * from the first paint whichever page it opens on and whichever way it turns): 9 stamp slots per page, one heart per completed page, page 2+ locked until the 찐팬 title. Rendered only while the dukjil policy is active. */
 export function PassportMissionBook({ passportId, creatorSlug, locale, stampSrc }: { passportId: string; creatorSlug: string; locale: AppLocale; stampSrc?: (stampId: string) => string | undefined }) {
   const dukjil = useDukjil();
   const on = dukjil?.status === "on";
@@ -187,7 +188,6 @@ export function PassportMissionBook({ passportId, creatorSlug, locale, stampSrc 
       else setFailedPage(pageNo);
     } finally { setBusy(null); retry(); }
   }, [ownerId, passportId, request, retry]);
-  const pagesRef = useSteadyPageHeight(`${roadmap.loading}:${picked ?? ""}:${roadmap.data?.pages.length ?? 0}`);
   if (!on) return null;
   const proofHref = withLocale(`/c/${encodeURIComponent(creatorSlug)}/certifications`, locale);
   const pages = roadmap.data?.pages ?? [];
@@ -201,11 +201,13 @@ export function PassportMissionBook({ passportId, creatorSlug, locale, stampSrc 
     </div>
     {roadmap.loading ? <div className={styles.skeleton} aria-hidden="true"><i /><i /></div>
       : roadmap.error || !roadmap.data ? <div className={styles.errorBox} role="alert"><p>{dukjilText(locale, "missionLoadError")}</p><FanAction variant="neutral" onClick={retry}>{dukjilText(locale, "missionRetry")}</FanAction></div>
-      : page ? <div ref={pagesRef} className={styles.pages}><Page key={page.pageNo} page={page} locale={locale} busy={busy === page.pageNo} failed={failedPage === page.pageNo} onClaim={() => void claim(page.pageNo)} proofHref={proofHref} stampSrc={stampSrc} hrefFor={hrefFor} pager={<Pager index={index} total={pages.length} locale={locale} onChange={setPicked} />} /><MissionOnboarding page={page} locale={locale} hrefFor={hrefFor} /></div> : null}
+      : page ? <div className={styles.pages} data-stacked="">{pages.map((each, i) => <div key={each.pageNo} className={styles.bookPage} data-current={i === index || undefined} inert={i !== index} aria-hidden={i !== index || undefined}>
+        <Page page={each} locale={locale} busy={busy === each.pageNo} failed={failedPage === each.pageNo} onClaim={() => void claim(each.pageNo)} proofHref={proofHref} stampSrc={stampSrc} hrefFor={hrefFor} pager={<Pager index={i} total={pages.length} locale={locale} onChange={setPicked} />} />
+      </div>)}<MissionOnboarding page={page} locale={locale} hrefFor={hrefFor} /></div> : null}
   </section>;
 }
 
-/** K8: turning 1/2 → 2/2 must not make the book jump. The page area keeps the tallest page height seen at this width
+/** K8 (stacked stamps): turning 1/2 → 2/2 must not make the book jump. The page area keeps the tallest page height seen at this width
  * (the first page is measured on arrival), so a shorter page leaves its space instead of pulling the book up. A width change measures again. */
 export function useSteadyPageHeight(page: unknown) {
   const ref = useRef<HTMLDivElement | null>(null), tallest = useRef({ width: 0, height: 0 });
