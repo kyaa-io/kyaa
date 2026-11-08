@@ -113,14 +113,14 @@ it('E4: an empty lucky-draw list is one state box with the way to my entries, no
  expect(within(section).getByRole('link',{name:/내 응모 내역/})).toHaveAttribute('href','/my/raffles?locale=ko');
  expect(section.querySelectorAll('[data-raffle-status]')).toHaveLength(0);
 });
-it('E4: the cheer card shows the favorite’s creator rank, my hearts (the header’s number), the community numbers and the stamps to the next heart, with no send button',async()=>{
+it('E4 · F2: the cheer card shows the favorite’s creator rank, my hearts (the header’s number) and the community numbers, with no send button and no stamp gauge (the wallet has it)',async()=>{
  withFavorite();roadmapBody={passportId:uid(900),celebrityId:uid(901),hearts:3,pages:[{pageNo:1,slots:Array.from({length:9},(_,i)=>({slotNo:i+1,kind:null,state:i<4?'filled':'empty',stampId:null,clearedAt:null})),filled:4,claimable:false,claimed:false,locked:false,lockedReason:null}]};
  const view=render(<GroupBenefitsScreen locale='ko'/>);
  const card=await screen.findByRole('region',{name:'최애 응원'});
  await within(card).findByText('크리에이터 순위 3위');
  expect(card).toHaveTextContent('내 하트');expect(card).toHaveTextContent('3');expect(card).toHaveTextContent('125');expect(card).toHaveTextContent('795');
  expect(within(card).getByRole('link',{name:/팬 순위 보기/})).toHaveAttribute('href','/bias-x?tab=fans&locale=ko');
- await waitFor(()=>expect(within(card).getByRole('link',{name:'다음 하트까지 5칸'})).toHaveAttribute('href','/passports?locale=ko'));
+ expect(within(card).queryByRole('progressbar')).toBeNull();expect(card).not.toHaveTextContent('다음 하트까지');
  expect(within(card).queryByRole('button',{name:/보내기|응원하러/})).toBeNull();
  // F2: the rank lives on the cheer card only; the wallet has no cheer or lucky-draw cell.
  expect(view.container.querySelector('[data-cell="cheer"]')).toBeNull();expect(view.container.querySelector('[data-cell="lucky"]')).toBeNull();
@@ -370,7 +370,7 @@ it('moves the ranking out of 덕질 and folds the missions into today, more and 
  const missions=await screen.findByRole('region',{name:'오늘의 미션'});
  expect(requests.some(url=>url.startsWith('/api/rankings'))).toBe(false);expect(screen.queryByRole('region',{name:'랭킹'})).toBeNull();
  expect(missions.querySelector('[data-all-clear]')).toBeNull();expect(view.container.textContent).not.toContain('전체 완료');
- const today=await within(missions).findByRole('button',{name:/오늘 할 것/});expect(today).toHaveAttribute('aria-expanded','true');
+ await waitFor(()=>expect(missions.querySelector('[data-missions-today] li[data-mission]')).not.toBeNull());expect(within(missions).queryByRole('button',{name:/오늘 할 것/})).toBeNull();
  expect(within(missions).getByRole('button',{name:/그 밖의 미션/})).toHaveAttribute('aria-expanded','false');
  expect(missions.querySelector('[data-mission="post"] a')).toHaveAttribute('href','/c1?tab=board&source=fans&compose=1&locale=ko');
 });
@@ -379,7 +379,7 @@ it('H6: sends the mission rows and the heart cheer to the favorite chosen in the
  joinedCount=2;const chosen={slug:'bias-x',name:'Bias X',image:'/x.webp',passportId:'p',tier:'silver',stage:null};
  bias.value={status:'ready',options:[chosen],selected:chosen,unverified:null,select:()=>{},retry:()=>{}};
  render(<GroupBenefitsScreen locale='ko'/>);
- const missions=await screen.findByRole('region',{name:'오늘의 미션'});await within(missions).findByRole('button',{name:/오늘 할 것/});
+ const missions=await screen.findByRole('region',{name:'오늘의 미션'});await waitFor(()=>expect(missions.querySelector('[data-missions-today]')).not.toBeNull());
  await waitFor(()=>expect(missions.querySelector('[data-mission="post"] a')).toHaveAttribute('href','/bias-x?tab=board&source=fans&compose=1&locale=ko'));
  expect(missions.querySelector('[data-mission="comment"] a')!.getAttribute('href')).toMatch(/^\/bias-x\?/);
  // E4: cheering spends nothing; the card names the favorite and leads to its fan ranking, never a disabled send button.

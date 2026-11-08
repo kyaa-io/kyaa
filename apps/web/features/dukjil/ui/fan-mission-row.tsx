@@ -1,27 +1,44 @@
 "use client";
-import { ArrowRight } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 import Link from "next/link";
 import type { Route } from "next";
-import type { MouseEvent, ReactNode } from "react";
+import type { MouseEvent, MouseEventHandler, ReactNode } from "react";
 import styles from "./fan-mission-row.module.css";
 
-/** feedback D1: the one row of every 덕질 list — today's missions, more missions, certifications and the 오늘의 덕질 empty row.
- * Same box everywhere: stamp art 40 (48 from 1024px) · title with its reward badge on the right · one line below (progress or state) · one
- * trailing slot (an arrow by default, a short action or the done tag). Height 64 at least, padding 12, divider lines from the list. */
-export function FanMissionRow({ href, art, title, badge, detail, trailing, onClick, status, dataMission, done }: {
-  href: string; art?: ReactNode; title: ReactNode; badge?: ReactNode; detail?: ReactNode; trailing?: ReactNode;
+/** feedback D1 · F3: the one row of every 덕질 list — today's missions, more missions, certifications, the folded heads and the 오늘의 덕질 empty row.
+ * Same box everywhere: a 40 circle with the art (28) · title (one line 22) with an optional line below at the same x (progress or state) ·
+ * one fixed trailing column (96, 120 from 1024px) holding one thing: `+NP`, a short action or the done tag. No arrow. Height 64, padding 12. */
+export function FanMissionRow({ href, art, title, detail, trailing, onClick, status, dataMission, done }: {
+  href: string; art?: ReactNode; title: ReactNode; detail?: ReactNode; trailing?: ReactNode;
   onClick?: (event: MouseEvent<HTMLAnchorElement>) => void; status?: string; dataMission?: string; done?: boolean;
 }) {
   return <li className={styles.item} data-mission={dataMission} data-status={status} data-done={done === undefined ? undefined : String(done)}>
     <Link className={styles.row} href={href as Route} onClick={onClick} data-fan-mission-row="">
-      <span className={styles.art} aria-hidden="true">{art}</span>
-      <span className={styles.copy}>
-        <span className={styles.titleRow}><strong>{title}</strong>{badge ? <span className={styles.badge}>{badge}</span> : null}</span>
-        {detail ? <span className={styles.detail}>{detail}</span> : null}
-      </span>
-      <span className={styles.trailing}>{trailing ?? <ArrowRight size={16} aria-hidden="true" className={styles.arrow} />}</span>
+      <RowBody art={art} title={title} detail={detail} trailing={trailing} />
     </Link>
   </li>;
+}
+
+function RowBody({ art, title, detail, trailing }: { art?: ReactNode; title: ReactNode; detail?: ReactNode; trailing?: ReactNode }) {
+  return <>
+    <span className={styles.art} aria-hidden="true" data-mission-art="">{art}</span>
+    <span className={styles.copy}>
+      <span className={styles.title} data-mission-title="">{title}</span>
+      {detail ? <span className={styles.detail} data-mission-detail="">{detail}</span> : null}
+    </span>
+    <span className={styles.trailing} data-mission-trailing="">{trailing}</span>
+  </>;
+}
+
+/** F3: a folded group's head drawn as a mission row (same grid, height, circle and trailing column) so the fold reads as one more row.
+ * `FanCollapsible` hands it the aria contract; the trailing column holds the count and the chevron. */
+export function FanMissionFoldRow({ icon, title, meta, ...triggerProps }: {
+  "aria-expanded": boolean; "aria-controls": string; onClick: MouseEventHandler<HTMLElement>;
+  icon: ReactNode; title: ReactNode; meta?: ReactNode;
+}) {
+  return <button type="button" className={`${styles.row} ${styles.fold}`} data-fan-mission-row="fold" {...triggerProps}>
+    <RowBody art={icon} title={title} trailing={<>{meta ? <span className={styles.foldMeta}>{meta}</span> : null}<ChevronDown size={16} className={styles.chevron} aria-hidden="true" /></>} />
+  </button>;
 }
 
 /** The list the rows sit in: inside a fold it draws only the dividers; on its own (`framed`) it is the outlined card. */
@@ -29,7 +46,7 @@ export function FanMissionList({ framed = false, children, className, ...data }:
   return <ul className={[styles.list, framed ? styles.framed : "", className ?? ""].filter(Boolean).join(" ")} {...data}>{children}</ul>;
 }
 
-/** Stamp art image for a row (decorative). */
+/** Stamp art image for a row (decorative), 28 inside the 40 circle. */
 export function MissionArt({ src }: { src: string }) {
-  return <img src={src} alt="" width={40} height={40} loading="lazy" />;
+  return <img src={src} alt="" width={28} height={28} loading="lazy" />;
 }
