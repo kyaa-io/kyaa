@@ -83,12 +83,19 @@ export function streakBandPage<T>(pages: readonly T[], streakOf: (page: T) => nu
   return best;
 }
 
+/** The window a point cap counts in. `remaining` from the server uses this same window, so the label must name it (a monthly cap is not "today"). */
+export function capPeriod(rule: unknown): "day" | "month" {
+  const cap = (rule as { pointCap?: { per?: unknown } } | undefined)?.pointCap;
+  return cap?.per === "user_month" || cap?.per === "creator_month" ? "month" : "day";
+}
+
 /** One mission card's progress: today's count against the daily limit, both from the server. Without a daily limit (a monthly cap, or none) there is no bar. */
 export function missionProgress(catalog: DukjilCatalogView | undefined, today: DukjilTodayView | undefined, action: DukjilActionKey) {
   const rule = catalog?.rules[action] as { points?: unknown; dailyLimit?: unknown } | undefined;
   const points = typeof rule?.points === "number" ? rule.points : undefined;
   const item = todayItem(today, action);
-  if (!item) return { points, count: undefined, limit: null as number | null, remaining: null as number | null, done: false };
+  const period = capPeriod(rule);
+  if (!item) return { points, count: undefined, limit: null as number | null, remaining: null as number | null, done: false, period };
   const limit = typeof rule?.dailyLimit === "number" && rule.dailyLimit > 0 ? rule.dailyLimit : null;
-  return { points, count: item.count, limit, remaining: item.remaining, done: item.remaining === 0 };
+  return { points, count: item.count, limit, remaining: item.remaining, done: item.remaining === 0, period };
 }
