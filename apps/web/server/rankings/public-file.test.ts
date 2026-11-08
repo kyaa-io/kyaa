@@ -1,6 +1,6 @@
 import { afterEach, expect, it, vi } from "vitest";
 vi.mock("server-only", () => ({}));
-import { forgetPublicFiles, publicFile } from "./public-file";
+import { forgetPublicFiles, internalOrigin, publicFile } from "./public-file";
 
 afterEach(forgetPublicFiles);
 
@@ -23,4 +23,11 @@ it("falls back to the same server when public/ is not beside the server, and doe
   await Promise.resolve();
   const ok = vi.fn(async () => new Response(new Uint8Array([7])));
   expect(new Uint8Array(await publicFile("public/fonts/c.ttf", "https://kyaa.io", read, ok as unknown as typeof fetch))).toEqual(new Uint8Array([7]));
+});
+
+it("uses this server's internal address, never a request Host", () => {
+  expect(internalOrigin("3000")).toBe("http://127.0.0.1:3000");
+  expect(internalOrigin("8080")).toBe("http://127.0.0.1:8080");
+  expect(internalOrigin("evil.example")).toBe("http://127.0.0.1:3000");
+  expect(internalOrigin(undefined)).toBe("http://127.0.0.1:3000");
 });

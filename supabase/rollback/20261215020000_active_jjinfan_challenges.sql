@@ -1,4 +1,4 @@
--- Rollback for 20261215020000_active_jjinfan_challenges.sql. Roll the web back first: the new home module and card tags read /api/rankings/challenges,
+-- Rollback for 20261215020000_active_jjinfan_challenges.sql. Read policies r4b_read_<role> stay for 20261215010000 and leave with its rollback. Roll the web back first: the new home module and card tags read /api/rankings/challenges,
 -- and the new admin screen sends an end date. Stored end dates are dropped; campaigns that had ended show again while switched on.
 begin;
 set local lock_timeout = '5s';
@@ -88,3 +88,4 @@ end $owner$;
 drop function public.jjinfan_campaign_open(boolean, date, timestamptz);
 alter table public.jjinfan_challenge_campaigns drop column ends_on;
 commit;
+notify pgrst, 'reload schema';

@@ -20,7 +20,7 @@ alter table public.jjinfan_challenge_campaigns add column ends_on date;
 
 -- Open on p_at (KST): switched on and not past its end date.
 create function public.jjinfan_campaign_open(p_enabled boolean, p_ends_on date, p_at timestamptz default pg_catalog.clock_timestamp())
-returns boolean language sql immutable set search_path = '' as $$
+returns boolean language sql stable set search_path = '' as $$
   select coalesce(p_enabled, false) and (p_ends_on is null or p_ends_on >= (p_at at time zone 'Asia/Seoul')::date)
 $$;
 revoke all on function public.jjinfan_campaign_open(boolean, date, timestamptz) from public, anon, authenticated, service_role;
@@ -128,10 +128,16 @@ begin
   foreach f in array array['public.read_creator_ranking(text,uuid,text,timestamptz)'::regprocedure, 'public.read_creator_fan_ranking(text,integer)'::regprocedure] loop
     def := pg_catalog.pg_get_functiondef(f);
     if position('creator_jjinfan_count' in def) = 0 then
+      -- Replacing a function needs its owner or a member of it (dev: postgres owns read_creator_ranking, byus_admin is a member).
+      if not exists (select 1 from pg_catalog.pg_proc p join pg_catalog.pg_roles me on me.rolname = current_user
+                      where p.oid = f and (me.rolsuper or pg_catalog.pg_has_role(me.oid, p.proowner, 'USAGE'))) then
+        raise exception 'JJINFAN_COUNT_OWNER: % cannot replace % (owner %)', current_user, f, (select pg_catalog.pg_get_userbyid(proowner) from pg_catalog.pg_proc where oid = f);
+      end if;
       if position($a$(select count(*) from public.jjinfan_titles t join public.app_users tu on tu.id = t.app_user_id and tu.status = 'active' where t.celebrity_id = $a$ in def) = 0 then
         raise exception 'JJINFAN_COUNT_UNPATCHED: %', f;
       end if;
       def := pg_catalog.regexp_replace(def, $a$\(select count\(\*\) from public\.jjinfan_titles t join public\.app_users tu on tu\.id = t\.app_user_id and tu\.status = 'active' where t\.celebrity_id = ([a-z]+)\.id and t\.revoked_at is null\)$a$, $a$public.creator_jjinfan_count(\1.id)$a$, 'g');
+      if position('creator_jjinfan_count' in def) = 0 then raise exception 'JJINFAN_COUNT_UNPATCHED: % (shape changed)', f; end if;
       execute def;
     end if;
   end loop;
@@ -144,20 +150,33 @@ end $patch$;
 
 -- The function belongs to the applying role. Fail here rather than at the first home read when that role cannot see what it reads.
 do $check$
-declare t text; me pg_catalog.pg_roles; c pg_catalog.pg_class; gaps text[] := '{}';
+declare t text; f text; c pg_catalog.pg_class; me pg_catalog.pg_roles; gaps text[] := '{}';
 begin
   select * into me from pg_catalog.pg_roles where rolname = current_user;
   if me.rolsuper then return; end if;
-  foreach t in array array['jjinfan_challenge_campaigns', 'celebrities', 'celebrity_localizations', 'jjinfan_titles', 'app_users', 'group_pages'] loop
+  foreach t in array array['jjinfan_challenge_campaigns', 'celebrities', 'celebrity_localizations', 'app_users', 'group_pages', 'creator_heart_ledger', 'fan_heart_conversions'] loop
     select * into c from pg_catalog.pg_class where oid = ('public.' || t)::regclass;
-    if not pg_catalog.has_table_privilege(me.oid, c.oid, 'select') then gaps := gaps || format('select on %s', t); end if;
-    if not me.rolbypassrls and c.relrowsecurity and (c.relforcerowsecurity or c.relowner <> me.oid)
-       and not exists (select 1 from pg_catalog.pg_policy p where p.polrelid = c.oid and me.oid = any (p.polroles) and p.polpermissive and p.polcmd in ('r', '*')) then
-      gaps := gaps || format('read policy on %s', t);
+    if not pg_catalog.has_table_privilege(me.oid, c.oid, 'select') and not (t = 'jjinfan_challenge_campaigns' and pg_catalog.has_column_privilege(me.oid, c.oid, 'enabled', 'select')) then
+      gaps := gaps || format('select on %s', t);
+      continue;
+    end if;
+    -- Row security binds this role unless it bypasses it, or owns the table (directly or as a member of the owner, as byus_admin of postgres on dev)
+    -- and the table is not FORCE. Where it binds and no policy lets it read, give it its own read policy, as 20261213060000 does for its owners.
+    -- The campaign table stays limited to switched-on rows, so an administrator's draft is never readable through these functions.
+    if not me.rolbypassrls and c.relrowsecurity and (c.relforcerowsecurity or not pg_catalog.pg_has_role(me.oid, c.relowner, 'USAGE'))
+       and not exists (select 1 from pg_catalog.pg_policy p where p.polrelid = c.oid and (me.oid = any (p.polroles) or 0 = any (p.polroles)) and p.polpermissive and p.polcmd in ('r', '*')) then
+      begin
+        execute format('create policy %I on public.%I for select to %I using (%s)', 'r4b_read_' || me.rolname, t, me.rolname, case when t = 'jjinfan_challenge_campaigns' then 'enabled' else 'true' end);
+      exception when insufficient_privilege then gaps := gaps || format('read policy on %s', t);
+      end;
     end if;
   end loop;
-  if not pg_catalog.has_function_privilege(me.oid, 'public.platform_fan_heart_counted(uuid)', 'execute') then gaps := gaps || 'execute platform_fan_heart_counted'::text; end if;
-  if not pg_catalog.has_function_privilege(me.oid, 'public.creator_listed(uuid)', 'execute') then gaps := gaps || 'execute creator_listed'::text; end if;
+  foreach f in array array['public.platform_fan_heart_counted(uuid)', 'public.creator_listed(uuid)', 'public.creator_jjinfan_count(uuid)'] loop
+    if not pg_catalog.has_function_privilege(me.oid, f, 'execute') then gaps := gaps || format('execute %s', f); end if;
+  end loop;
   if cardinality(gaps) > 0 then raise exception 'ACTIVE_JJINFAN_OWNER_GAP: % lacks %', current_user, array_to_string(gaps, '; '); end if;
 end $check$;
 commit;
+
+-- PostgREST learns the new reader and the nine-argument save without a restart.
+notify pgrst, 'reload schema';
