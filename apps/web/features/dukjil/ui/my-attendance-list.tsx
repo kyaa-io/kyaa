@@ -19,6 +19,7 @@ import { DukjilProvider, useDukjil } from "./dukjil-provider";
 import { EarnBadge } from "./earn-badge";
 import { StreakBand } from "./streak-band";
 import { FanMissionList, FanMissionRow } from "./fan-mission-row";
+import { JOINED_PAGES_PATH, attendanceListPath } from "./use-attended-anywhere";
 import styles from "./dukjil.module.css";
 
 /** feedback D1: 오늘의 덕질 with no page is one card row in the same shape as the mission rows: "가입한 페이지가 없어요" → 페이지 둘러보기. */
@@ -61,12 +62,12 @@ const canCheckIn = (item: DukjilAttendanceList["items"][number] | undefined) => 
 /** Attendance status of every joined creator page (plan §13.5). The page list comes from the joined list; all states from one `GET /api/me/attendance?creators=`. Renders only under an active policy. */
 export function MyAttendanceList({ locale, section }: { locale: AppLocale; section?: AttendanceSection }) {
   const auth = useGroupRequest();
-  const list = useGroupResource(auth.authenticated ? "/api/groups?mine=joined&limit=50" : null, parseList);
+  const list = useGroupResource(auth.authenticated ? JOINED_PAGES_PATH : null, parseList);
   const [expanded, setExpanded] = useState(false);
   const [bandOpen, setBandOpen] = useState(false);
   const creators = (list.data?.items ?? []).filter((page): page is Creator => Boolean(page.celebrityId && page.slug)).slice(0, 50);
   const slugs = creators.map(page => encodeURIComponent(page.slug)).join(",");
-  const status = useGroupResource(slugs ? `/api/me/attendance?creators=${slugs}` : null, parseDukjilAttendanceList);
+  const status = useGroupResource(slugs ? attendanceListPath(slugs) : null, parseDukjilAttendanceList);
   const c = walletCopy(locale);
   const loading = !auth.ready || list.loading || Boolean(slugs && status.loading);
   const failed = Boolean(list.error || !list.data || (slugs && (status.error || !status.data)));

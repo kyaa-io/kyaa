@@ -21,6 +21,7 @@ import type { AppLocale } from "@/i18n/locales";
 import { activeToday, checkinNumbers, missionProgress } from "../domain/dukjil-ui";
 import { dukjilText } from "./dukjil-copy";
 import { useDukjil } from "./dukjil-provider";
+import { useAttendedAnywhereToday } from "./use-attended-anywhere";
 import { EarnBadge } from "./earn-badge";
 import styles from "./fan-missions.module.css";
 import inkStyles from "@/components/fan-ui/fan-ink.module.css";
@@ -36,6 +37,7 @@ export type GroupMissionLinks = { write: string; comment: string };
 /** One row per fan activity: what to do, the points, today's count against the daily limit, a stamp when done. Pressing a row goes to where that activity happens. `all` lists every catalog activity with an all-clear row on top (the 덕질 tab); without it a page shows its six main ones. */
 export function FanMissions({ locale, slug, title, passportHref, proofHref, footer, onAttendance, group, all = false, noPage }: { locale: AppLocale; slug: string; title: string; passportHref: string; proofHref: string; footer?: ReactNode; onAttendance: (trigger: HTMLElement) => void; group?: GroupMissionLinks; all?: boolean; /** Where the activity rows go while the viewer has no page to do them on. */ noPage?: string }) {
   const state = useDukjil();
+  const anywhere = useAttendedAnywhereToday(!group && state?.authenticated === true);
   const headingId = useId();
   const on = state?.status === "on";
   const guest = state?.status !== "loading" && state?.authenticated === false;
@@ -70,12 +72,14 @@ export function FanMissions({ locale, slug, title, passportHref, proofHref, foot
   ] : [];
   const missions = [...main, ...more];
   const checkin = checkinNumbers(state?.catalog);
-  const checkedIn = state?.attendance?.attendedToday ?? false;
+  // M4-3: the 출석 mission is done when the fan checked in on any page today (the favorite's own read, or the joined-pages read).
+  const checkedIn = (state?.attendance?.attendedToday ?? false) || anywhere.attended;
+  const checkinKnown = checkedIn || anywhere.known || (anywhere.failed && Boolean(state?.attendanceKnown));
   const view = missions
     .filter(mission => group ? true : on ? Boolean(state?.catalog?.rules[mission.key]) : state?.status === "off" ? LEGACY_KEYS.includes(mission.key) : true)
     .map(mission => {
       if (group) return { mission, points: mission.key === "checkin" ? checkin.points : undefined, count: undefined, limit: null, remaining: null, done: false };
-      if (mission.key === "checkin") return { mission, points: checkin.points, count: state?.attendanceKnown ? Number(checkedIn) : undefined, limit: 1 as number | null, remaining: null as number | null, done: checkedIn };
+      if (mission.key === "checkin") return { mission, points: checkin.points, count: checkinKnown ? Number(checkedIn) : undefined, limit: 1 as number | null, remaining: null as number | null, done: checkedIn };
       return { mission, ...missionProgress(state?.catalog, state?.today, mission.key) };
     })
     .sort((a, b) => Number(a.done) - Number(b.done));

@@ -2,11 +2,11 @@ import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/re
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 
 const rules = { checkin: { points: 2, streakBonus: 10, streakEvery: 7 }, post: { points: 20, dailyLimit: 3 }, comment: { points: 3, dailyLimit: 10 }, share: { points: 10, dailyLimit: 3 }, invite: { points: 200, dailyLimit: null }, proof: { points: 100, dailyLimit: null } };
-const h = vi.hoisted(() => ({ auth: true, ready: true, catalog: undefined as unknown, today: undefined as unknown, failure: undefined as unknown, urls: [] as (string | null)[] }));
+const h = vi.hoisted(() => ({ auth: true, ready: true, catalog: undefined as unknown, today: undefined as unknown, failure: undefined as unknown, urls: [] as (string | null)[], byUrl: {} as Record<string, unknown> }));
 vi.mock("@/features/groups/ui/use-group-resource", () => ({
   GroupRequestError: class extends Error {},
   useGroupRequest: () => ({ request: () => Promise.resolve(h.catalog), authenticated: h.auth, ready: h.ready, ownerKey: "u" }),
-  useGroupResource: (url: string | null) => { h.urls.push(url); return { data: url ? h.today : undefined, failure: h.failure, loading: false, retry: vi.fn() }; },
+  useGroupResource: (url: string | null) => { h.urls.push(url); const own = url ? Object.entries(h.byUrl).find(([prefix]) => url.startsWith(prefix))?.[1] : undefined; return { data: url ? own ?? h.today : undefined, failure: h.failure, loading: false, retry: vi.fn() }; },
 }));
 import { DukjilProvider, resetDukjilCatalogCache } from "./dukjil-provider";
 import { FanMissions } from "./fan-missions";
@@ -16,7 +16,7 @@ const today = { kstDate: "2026-11-07", policyActive: true, totalPoints: 22, hasP
 const onAttendance = vi.fn();
 const ui = () => render(<DukjilProvider slug="elina" locale="ko"><FanMissions locale="ko" slug="elina" title="팬 활동" passportHref="/passports/p?locale=ko" proofHref="/elina?tab=certifications&locale=ko" onAttendance={onAttendance} /></DukjilProvider>);
 
-beforeEach(() => { resetDukjilCatalogCache(); h.auth = true; h.ready = true; h.catalog = { version: 1, rules, missionBook: {} }; h.today = today; h.failure = undefined; h.urls = []; onAttendance.mockReset(); });
+beforeEach(() => { resetDukjilCatalogCache(); h.auth = true; h.ready = true; h.catalog = { version: 1, rules, missionBook: {} }; h.today = today; h.failure = undefined; h.urls = []; h.byUrl = {}; onAttendance.mockReset(); });
 afterEach(cleanup);
 const rowNow = (key: string) => document.querySelector<HTMLElement>(`li[data-mission="${key}"]`)!;
 const row = (key: string) => waitFor(() => { const el = rowNow(key); if (!el) throw new Error(key); return el; });
@@ -90,4 +90,21 @@ it("offers a retry when today fails", async () => {
   h.failure = new Error("x");
   ui();
   expect(await screen.findByText("출석 정보를 불러오지 못했어요")).toBeInTheDocument();
+});
+
+it("M4-3: counts a check-in on any joined page today, not only the favorite's own page", async () => {
+  h.today = { ...today, attendance: { attendedToday: false, streak: 0, nextBonusIn: 7 } };
+  h.byUrl = { "/api/groups?mine=joined": { items: [{ celebrityId: "c-elina", slug: "elina" }, { celebrityId: "c-other", slug: "other" }] },
+    "/api/me/attendance?creators=": { items: [{ celebrityId: "c-elina", attendedToday: false }, { celebrityId: "c-other", attendedToday: true }] } };
+  ui();
+  await waitFor(() => expect(rowNow("checkin")).toHaveAttribute("data-done", "true"));
+  expect(rowNow("checkin")).toHaveTextContent("1/1");
+  expect(h.urls).toContain("/api/me/attendance?creators=elina,other");
+});
+it("M4-3: stays 0/1 when no joined page was checked in today", async () => {
+  h.today = { ...today, attendance: { attendedToday: false, streak: 0, nextBonusIn: 7 } };
+  h.byUrl = { "/api/groups?mine=joined": { items: [{ celebrityId: "c-elina", slug: "elina" }] }, "/api/me/attendance?creators=": { items: [{ celebrityId: "c-elina", attendedToday: false }] } };
+  ui();
+  await waitFor(() => expect(rowNow("checkin")).toHaveTextContent("0/1"));
+  expect(rowNow("checkin")).toHaveAttribute("data-done", "false");
 });

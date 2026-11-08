@@ -9,6 +9,7 @@ import { useGroupsRelease } from "@/features/groups/ui/groups-release";
 import { GroupHeaderAccount, GroupHeaderPoints } from "@/features/groups/ui/group-header-account";
 import { SelectedBiasChip } from "@/features/selected-bias/ui/selected-bias-chip";
 import { useGroupRequest } from "@/features/groups/ui/use-group-resource";
+import { HeaderNotificationLink } from "@/features/notification/ui/header-notification-link";
 import { groupsCopy } from "@/features/groups/ui/copy";
 import { groupBenefitsCopy } from "@/features/groups/ui/group-benefits-copy";
 import { communityCopy } from "@/i18n/catalogs/features__community";
@@ -133,7 +134,7 @@ export function GroupHeaderActions({ locale, languageHref, notificationsLabel, a
   return <>
     {status}
     <span className={styles.headerLanguage} data-signed-in={guest ? undefined : ""}><FanLanguageSwitch locale={locale} href={languageHref} compact /></span>
-    <Link className={styles.utilityLink} href={`/notifications?locale=${locale}` as Route} aria-label={notificationsLabel} title={notificationsLabel}><Bell aria-hidden="true" /></Link>
+    <HeaderNotificationLink locale={locale} label={notificationsLabel} className={styles.utilityLink} />
     <div className={styles.groupDesktopAccount}><GroupHeaderAccount locale={locale} actions={actions} actionsAreIdentity={actionsAreIdentity} languageHref={languageHref} /></div>
   </>;
 }
