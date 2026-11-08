@@ -173,7 +173,7 @@ describe("granted point result on post and comment creation", () => {
     const d = rpcBy({ id, revision: 1, replayed: false }, () => ({ amount: 10 }));
     const response = await createContentHandlers(d).posts(request("POST", create), "artist");
     expect(response.status).toBe(201);
-    expect(await response.json()).toEqual({ id, revision: 1, replayed: false, reward: { points: 10 } });
+    expect(await response.json()).toEqual({ id, revision: 1, replayed: false, reward: { points: 10, stamps: 0 } });
     expect(d.rpc).toHaveBeenLastCalledWith("read_owned_fan_post_reward", { p_app_user_id: owner, p_source_id: id });
   });
   it("forwards parentId so a reply is stored under its parent", async () => {
@@ -185,7 +185,7 @@ describe("granted point result on post and comment creation", () => {
   it("adds the amount for a new comment", async () => {
     const d = rpcBy({ id, revision: 1, replayed: false }, () => ({ amount: 10 }));
     const response = await createContentHandlers(d).comments(request("POST", comment), id);
-    expect(await response.json()).toEqual({ id, revision: 1, replayed: false, reward: { points: 10 } });
+    expect(await response.json()).toEqual({ id, revision: 1, replayed: false, reward: { points: 10, stamps: 0 } });
   });
   it.each([[{ amount: 0 }], [{ amount: -5 }], [{ amount: 1.5 }], [{ amount: 10, extra: 1 }], [null], ["x"]])("omits reward for non-granted or malformed read %j", async (read) => {
     const d = rpcBy({ id, revision: 1, replayed: false }, () => read);
@@ -357,5 +357,26 @@ describe("account-unavailable versus non-member failure codes", () => {
       expect(response.status).toBe(404);
       expect(d.rpc.mock.calls.map(call => call[0])).toEqual(["read_fan_post"]);
     });
+  });
+});
+
+// 261107-2 D6 / review r4: every mission write answers the one reward shape { points, stamps, skippedReason? }.
+describe("mission reward shape on posts", () => {
+  const owner = "11111111-1111-4111-8111-111111111111", postId = "22222222-2222-4222-8222-222222222222";
+  const deps = (award: unknown) => ({
+    rpc: vi.fn(async (name: string) => name === "save_fan_post" ? { id: postId, revision: 1, replayed: false }
+      : name === "record_dukjil_action" ? (award instanceof Error ? Promise.reject(award) : award) : name === "read_owned_fan_post_reward" ? { amount: 0 } : null),
+    resolveCreatorId: async () => "33333333-3333-4333-8333-333333333333",
+  });
+  it.each([
+    [{ points: 20, stampId: "44444444-4444-4444-8444-444444444444", capped: false, reason: null, replayed: false }, { points: 20, stamps: 1 }],
+    [new Error("DUKJIL_CONTENT_TOO_SHORT"), { points: 0, stamps: 0, skippedReason: "too_short" }],
+    [new Error("DUKJIL_DAILY_LIMIT"), { points: 0, stamps: 0, skippedReason: "daily_limit" }],
+  ])("answers %o as %o", async (award, reward) => {
+    const { missionRewardForTest } = await import("./routes");
+    const d = deps(award);
+    const { awardDukjilActionDetailed } = await import("@/server/dukjil/award");
+    const detailed = await awardDukjilActionDetailed(d, { appUserId: owner, creatorSlug: "elina", actionKey: "post", sourceKey: postId, params: {} }, () => {});
+    expect(await missionRewardForTest(d, owner, { id: postId, revision: 1, replayed: false }, detailed)).toEqual({ reward });
   });
 });

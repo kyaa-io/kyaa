@@ -65,17 +65,20 @@ async function awardCommentDetailed(deps: Pick<ContentDependencies, "rpc">, owne
     return typeof slug === "string" ? await awardDukjilActionDetailed(deps, { appUserId: owner, creatorSlug: slug, actionKey: "comment", sourceKey, params }) : null;
   } catch { return null; }
 }
-// 261107-2 D6: what the screen needs right after a mission write. A fresh grant goes back as `reward` (points and the stamp it
-// placed) so the screen celebrates it and the mission count moves at once; a refusal the fan can act on goes back as `rewardSkipped`.
-// Without a mission grant the older registration reward read still answers.
+// 261107-2 D6: what the screen needs right after a mission write, in the one reward shape every mission write answers with
+// (post, comment, like, share proof): { points, stamps, skippedReason? }. A fresh grant says what it paid; a refusal the fan can act on
+// says why with points 0. Without a mission grant the older registration reward read still answers. No reward key when nothing applies.
 async function missionReward(deps: Pick<ContentDependencies, "rpc">, owner: string | null, write: z.infer<typeof writeSchema>,
-  award: { result: { points: number; stampId: string | null; replayed: boolean; capped: boolean; reason: string | null } | null; skipped?: DukjilSkip } | null): Promise<{ reward?: { points: number; stamps?: number }; rewardSkipped?: DukjilSkip }> {
+  award: { result: { points: number; stampId: string | null; replayed: boolean; capped: boolean; reason: string | null } | null; skipped?: DukjilSkip } | null): Promise<{ reward?: { points: number; stamps: number; skippedReason?: DukjilSkip } }> {
   const result = award?.result;
-  if (result && !result.replayed && result.points > 0) return { reward: { points: result.points, ...(result.stampId ? { stamps: 1 } : {}) } };
+  if (result && !result.replayed && result.points > 0) return { reward: { points: result.points, stamps: result.stampId ? 1 : 0 } };
   const skipped = award?.skipped ?? (result?.capped ? "daily_limit" : undefined);
   const legacy = await readReward(deps, owner, write);
-  return legacy.reward ? legacy : skipped ? { rewardSkipped: skipped } : {};
+  if (legacy.reward) return { reward: { points: legacy.reward.points, stamps: 0 } };
+  return skipped ? { reward: { points: 0, stamps: 0, skippedReason: skipped } } : {};
 }
+/** Tests only. */
+export const missionRewardForTest = (...args: Parameters<typeof missionReward>) => missionReward(...args);
 const REWARD_READ_TIMEOUT_MS = 800;
 // Reads the just-granted points after the write has committed. Never throws: a failed read must not turn a committed post or
 // comment into an error, and a replayed (idempotent) request must not replay the reward.
