@@ -977,15 +977,15 @@ export const messages = {
 
   },
   "mb60738bd2925": {
-    "ja": "LIVEの出席が記録され、ifewの抽選券を2枚獲得しました。",
-    "zh-Hans": "已记录您的LIVE出席，并获得2张ifew抽奖券。",
-    "zh-Hant": "已記錄您的LIVE出席，並獲得2張ifew抽獎券。",
-    "es": "Tu asistencia al LIVE quedó registrada y recibiste 2 boletos de sorteo de ifew.",
-    "id": "Kehadiran LIVE-mu telah dicatat dan kamu menerima 2 tiket undian ifew.",
-    "vi": "Điểm danh LIVE của bạn đã được ghi nhận và bạn đã nhận 2 vé quay thưởng ifew.",
-    "th": "บันทึกการเข้าร่วม LIVE แล้ว และได้รับบัตรจับรางวัล ifew 2 ใบ",
-    "pt": "Sua presença no LIVE foi registrada e você recebeu 2 tickets de sorteio ifew.",
-    "fr": "Votre présence au LIVE est enregistrée et vous avez reçu 2 tickets de tirage au sort ifew.",
+    "ja": "LIVEの出席が記録され、応募券を2枚獲得しました。",
+    "zh-Hans": "已记录您的LIVE出席，并获得2张抽奖券。",
+    "zh-Hant": "已記錄您的LIVE出席，並獲得2張抽獎票券。",
+    "es": "Tu asistencia al LIVE quedó registrada y recibiste 2 boletos de sorteo.",
+    "id": "Kehadiran LIVE-mu telah dicatat dan kamu menerima 2 tiket undian.",
+    "vi": "Điểm danh LIVE của bạn đã được ghi nhận và bạn đã nhận 2 vé quay thưởng.",
+    "th": "บันทึกการเข้าร่วม LIVE แล้ว และได้รับบัตรจับรางวัล 2 ใบ",
+    "pt": "Sua presença no LIVE foi registrada e você recebeu 2 tickets de sorteio.",
+    "fr": "Votre présence au LIVE est enregistrée et vous avez reçu 2 tickets de tirage au sort.",
     ru: "Ваше присутствие LIVE зафиксировано, и вы получили 2 лотерейных билета."
 
   },
@@ -1081,16 +1081,16 @@ export const messages = {
 
   },
   "m26439d5fae3a": {
-    "ja": "ifewの抽選券を使ってBanksyチケット抽選に応募",
-    "zh-Hans": "使用ifew抽奖券参与Banksy门票抽选",
-    "zh-Hant": "使用ifew抽獎券參與Banksy門票抽選",
-    "es": "Usa tus boletos de ifew para participar en el sorteo de entradas de Banksy",
-    "id": "Gunakan tiket undian ifew untuk mengikuti undian tiket Banksy",
-    "vi": "Dùng vé quay thưởng ifew để tham gia quay thưởng vé Banksy",
-    "th": "ใช้บัตรจับรางวัล ifew เพื่อเข้าร่วมจับรางวัลบัตร Banksy",
-    "pt": "Use seus tickets ifew para concorrer a ingressos da exposição Banksy",
-    "fr": "Utilisez vos tickets ifew pour tenter de gagner des billets pour l’exposition Banksy",
-    ru: "Используйте свои лотерейные билеты ifew, чтобы принять участие в розыгрыше билетов на концерт Бэнкси."
+    "ja": "応募券を使ってBanksyチケット抽選に応募",
+    "zh-Hans": "使用抽奖券参与Banksy门票抽选",
+    "zh-Hant": "使用抽獎票券參與Banksy門票抽選",
+    "es": "Usa tus boletos para participar en el sorteo de entradas de Banksy",
+    "id": "Gunakan tiket undian untuk mengikuti undian tiket Banksy",
+    "vi": "Dùng vé quay thưởng để tham gia quay thưởng vé Banksy",
+    "th": "ใช้บัตรจับรางวัลเพื่อเข้าร่วมจับรางวัลบัตร Banksy",
+    "pt": "Use seus tickets para concorrer a ingressos da exposição Banksy",
+    "fr": "Utilisez vos tickets pour tenter de gagner des billets pour l’exposition Banksy",
+    ru: "Используйте свои лотерейные билеты, чтобы принять участие в розыгрыше билетов на выставку Бэнкси."
 
   },
   "mc8cc08deb635": {
@@ -1627,16 +1627,16 @@ export const messages = {
 
   },
   "mc834e986d105": {
-    "ja": "ifewの抽選券を使って抽選に応募してください。LIVEの予約や視聴だけでは自動的に応募されません。",
-    "zh-Hans": "使用ifew抽奖券参与抽选。预约或观看LIVE不会自动参与抽选。",
-    "zh-Hant": "使用ifew抽獎券參與抽選。預約或觀看LIVE不會自動參與抽選。",
-    "es": "Usa tus boletos de ifew para participar en el sorteo. Reservar o ver el LIVE no te inscribe automáticamente.",
-    "id": "Gunakan tiket undian ifew untuk mengikuti undian. Reservasi atau menonton LIVE tidak membuatmu otomatis ikut.",
-    "vi": "Dùng vé quay thưởng ifew để tham gia quay thưởng. Đặt chỗ hoặc xem LIVE không giúp bạn tự động tham gia.",
-    "th": "ใช้บัตรจับรางวัล ifew เพื่อเข้าร่วม การจองหรือรับชม LIVE ไม่ได้ทำให้เข้าร่วมอัตโนมัติ",
-    "pt": "Use seus tickets ifew para participar do sorteio. Reservar ou assistir ao LIVE não inscreve você automaticamente.",
-    "fr": "Utilisez vos tickets ifew pour participer au tirage au sort. Réserver ou regarder le LIVE ne vous inscrit pas automatiquement.",
-    ru: "Используйте свои лотерейные билеты ifew для участия в розыгрыше. Бронирование или просмотр LIVE не дает вам права на участие автоматически."
+    "ja": "応募券を使って抽選に応募してください。LIVEの予約や視聴だけでは自動的に応募されません。",
+    "zh-Hans": "使用抽奖券参与抽选。预约或观看LIVE不会自动参与抽选。",
+    "zh-Hant": "使用抽獎票券參與抽選。預約或觀看LIVE不會自動參與抽選。",
+    "es": "Usa tus boletos para participar en el sorteo. Reservar o ver el LIVE no te inscribe automáticamente.",
+    "id": "Gunakan tiket undian untuk mengikuti undian. Reservasi atau menonton LIVE tidak membuatmu otomatis ikut.",
+    "vi": "Dùng vé quay thưởng để tham gia quay thưởng. Đặt chỗ hoặc xem LIVE không giúp bạn tự động tham gia.",
+    "th": "ใช้บัตรจับรางวัลเพื่อเข้าร่วม การจองหรือรับชม LIVE ไม่ได้ทำให้เข้าร่วมอัตโนมัติ",
+    "pt": "Use seus tickets para participar do sorteio. Reservar ou assistir ao LIVE não inscreve você automaticamente.",
+    "fr": "Utilisez vos tickets de tirage au sort pour participer au tirage au sort. Réserver ou regarder le LIVE ne vous inscrit pas automatiquement.",
+    ru: "Используйте свои лотерейные билеты для участия в розыгрыше. Бронирование или просмотр LIVE не дает вам права на участие автоматически."
 
   },
   "m67af00c954ea": {

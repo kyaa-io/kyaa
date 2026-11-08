@@ -1194,7 +1194,7 @@ describe("LiveEventScreen", () => {
     fireEvent.click(screen.getByRole("button", { name: "출석 인증하기" }));
 
     expect(await screen.findByRole("heading", { name: "LIVE 출석을 남겼어요" })).toBeInTheDocument();
-    expect(screen.getByText("LIVE 출석이 기록되고 이퓨 응모권 2장을 받았어요.")).toBeVisible();
+    expect(screen.getByText("LIVE 출석이 기록되고 응모권 2장을 받았어요.")).toBeVisible();
     const prizeActions = screen.getAllByRole("link", { name: "뱅크시 관람권 추첨 응모하기" });
     expect(prizeActions).toHaveLength(1);
     expect(prizeActions[0]).toHaveAttribute("href", "/c/ifewknow/raffles?locale=ko");

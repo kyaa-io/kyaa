@@ -340,16 +340,16 @@ export const messages = {
 
   },
   "mff98492d13c4": {
-    "ja": "9月20日00:00 KST締切。\nファン認証とLIVE出席で獲得したifew抽選券を使用します。\n予約や出席だけでは自動応募になりません。特典ページで応募を確定してください。",
-    "zh-Hans": "9 月 20 日 00:00 KST 截止。\n使用通过粉丝认证和 LIVE 出席获得的 ifew 抽奖券。\n预约和出席不会自动参与抽奖。请在奖品页面确认报名。",
-    "zh-Hant": "9 月 20 日 00:00 KST 截止。\n使用通過粉絲認證和 LIVE 出席獲得的 ifew 抽獎券。\n預約和出席不會自動參與抽獎。請在獎品頁面確認報名。",
-    "es": "Cierra el 20 de septiembre a las 00:00 KST.\nUsa los boletos de sorteo de ifew obtenidos mediante la verificación de fans y la asistencia al LIVE.\nLas reservas y la asistencia no te inscriben automáticamente. Confirma tu inscripción en la página del premio.",
-    "id": "Ditutup pada 20 September pukul 00.00 KST.\nGunakan tiket undian ifew yang diperoleh melalui verifikasi penggemar dan kehadiran LIVE.\nReservasi dan kehadiran tidak mendaftarkan Anda secara otomatis. Konfirmasikan pendaftaran di halaman hadiah.",
-    "vi": "Kết thúc lúc 00:00 KST ngày 20 tháng 9.\nDùng vé quay thưởng ifew nhận được qua xác minh người hâm mộ và tham dự LIVE.\nĐặt chỗ và tham dự không tự động đăng ký cho bạn. Hãy xác nhận đăng ký trên trang quà tặng.",
-    "th": "ปิดรับวันที่ 20 กันยายน เวลา 00:00 KST\nใช้บัตรจับรางวัล ifew ที่ได้รับจากการยืนยันแฟนคลับและเข้าร่วม LIVE\nการจองและเข้าร่วมไม่ใช่การสมัครอัตโนมัติ โปรดยืนยันการสมัครในหน้ารางวัล",
-    "pt": "Encerra em 20 de setembro às 00:00 KST.\nUse os bilhetes de sorteio de ifew obtidos com a verificação de fã e a presença na LIVE.\nReservas e presença não inscrevem você automaticamente. Confirme sua inscrição na página do prêmio.",
-    "fr": "Clôture le 20 septembre à 00:00 KST.\nUtilisez les billets de tirage ifew obtenus grâce à la vérification de fan et à la présence au LIVE.\nLes réservations et la présence ne vous inscrivent pas automatiquement. Confirmez votre participation sur la page du prix.",
-    ru: "Закрывается 20 сентября в 00:00 по корейскому времени.\nИспользуйте несколько лотерейных билетов, полученных за подтверждение участия в розыгрыше и отметку LIVE.\nБронирование и участие не дают вам права на автоматическое зачисление. Подтвердите свое участие на странице приза."
+    "ja": "9月20日00:00 KST締切。\nファン認証とLIVE出席で獲得した応募券を使用します。\n予約や出席だけでは自動応募になりません。特典ページで応募を確定してください。",
+    "zh-Hans": "9 月 20 日 00:00 KST 截止。\n使用通过粉丝认证和 LIVE 出席获得的抽奖券。\n预约和出席不会自动参与抽奖。请在奖品页面确认报名。",
+    "zh-Hant": "9 月 20 日 00:00 KST 截止。\n使用通過粉絲認證和 LIVE 出席獲得的抽獎券。\n預約和出席不會自動參與抽獎。請在獎品頁面確認報名。",
+    "es": "Cierra el 20 de septiembre a las 00:00 KST.\nUsa los boletos de sorteo obtenidos mediante la verificación de fans y la asistencia al LIVE.\nLas reservas y la asistencia no te inscriben automáticamente. Confirma tu inscripción en la página del premio.",
+    "id": "Ditutup pada 20 September pukul 00.00 KST.\nGunakan tiket undian yang diperoleh melalui verifikasi penggemar dan kehadiran LIVE.\nReservasi dan kehadiran tidak mendaftarkan Anda secara otomatis. Konfirmasikan pendaftaran di halaman hadiah.",
+    "vi": "Kết thúc lúc 00:00 KST ngày 20 tháng 9.\nDùng vé quay thưởng nhận được qua xác minh người hâm mộ và tham dự LIVE.\nĐặt chỗ và tham dự không tự động đăng ký cho bạn. Hãy xác nhận đăng ký trên trang quà tặng.",
+    "th": "ปิดรับวันที่ 20 กันยายน เวลา 00:00 KST\nใช้บัตรจับรางวัลที่ได้รับจากการยืนยันแฟนคลับและเข้าร่วม LIVE\nการจองและเข้าร่วมไม่ใช่การสมัครอัตโนมัติ โปรดยืนยันการสมัครในหน้ารางวัล",
+    "pt": "Encerra em 20 de setembro às 00:00 KST.\nUse os bilhetes de sorteio obtidos com a verificação de fã e a presença na LIVE.\nReservas e presença não inscrevem você automaticamente. Confirme sua inscrição na página do prêmio.",
+    "fr": "Clôture le 20 septembre à 00:00 KST.\nUtilisez les billets de tirage obtenus grâce à la vérification de fan et à la présence au LIVE.\nLes réservations et la présence ne vous inscrivent pas automatiquement. Confirmez votre participation sur la page du prix.",
+    ru: "Закрывается 20 сентября в 00:00 по корейскому времени.\nИспользуйте билеты розыгрыша, полученные за подтверждение участия в розыгрыше и отметку LIVE.\nБронирование и участие не дают вам права на автоматическое зачисление. Подтвердите свое участие на странице приза."
 
   },
   "m7317bbda198c": {
@@ -535,16 +535,16 @@ export const messages = {
 
   },
   "mb77a3dfd2d64": {
-    "ja": "いいえ。予約と特典への応募は別です。使用するifew抽選券の枚数を選び、応募を確定してください。すでに抽選券をお持ちなら、LIVE前でも応募できます。",
-    "zh-Hans": "不会。LIVE 预约和奖品抽奖报名是两个步骤。请选择要使用的 ifew 抽奖券数量并确认报名。如果已有抽奖券，也可在 LIVE 前报名。",
-    "zh-Hant": "不會。LIVE 預約和獎品抽獎報名是兩個步驟。請選擇要使用的 ifew 抽獎券數量並確認報名。如果已有抽獎券，也可在 LIVE 前報名。",
-    "es": "No. Las reservas y las inscripciones a premios son pasos independientes. Elige cuántos boletos de sorteo de ifew quieres usar y confirma tu inscripción. Si ya tienes boletos, puedes inscribirte antes del LIVE.",
-    "id": "Tidak. Reservasi dan pendaftaran hadiah merupakan langkah terpisah. Pilih jumlah tiket undian ifew yang ingin digunakan dan konfirmasikan pendaftaran Anda. Jika sudah memiliki tiket, Anda dapat mendaftar sebelum LIVE.",
-    "vi": "Không. Đặt chỗ và đăng ký quà tặng là hai bước riêng biệt. Chọn số vé quay thưởng ifew muốn dùng và xác nhận đăng ký. Nếu đã có vé, bạn có thể đăng ký trước LIVE.",
-    "th": "ไม่ การจองและการสมัครรางวัลเป็นคนละขั้นตอน เลือกจำนวนบัตรจับรางวัล ifew ที่จะใช้และยืนยันการสมัคร หากมีบัตรอยู่แล้ว สามารถสมัครก่อน LIVE ได้",
-    "pt": "Não. Reservas e inscrições no sorteio são separadas. Escolha quantos bilhetes de sorteio de ifew deseja usar e confirme sua inscrição. Se já tiver bilhetes, você poderá se inscrever antes da LIVE.",
-    "fr": "Non. La réservation et la participation au tirage sont distinctes. Choisissez le nombre de billets de tirage ifew à utiliser et confirmez votre participation. Si vous avez déjà des billets, vous pouvez participer avant le LIVE.",
-    ru: "Нет. Бронирование и участие в розыгрыше призов осуществляются отдельно. Выберите, сколько лотерейных билетов вы хотите использовать, и подтвердите свое участие. Если у вас уже есть билеты, вы можете принять участие до LIVE."
+    "ja": "いいえ。予約と特典への応募は別です。使用する応募券の枚数を選び、応募を確定してください。すでに応募券をお持ちなら、LIVE前でも応募できます。",
+    "zh-Hans": "不会。LIVE 预约和奖品抽奖报名是两个步骤。请选择要使用的抽奖券数量并确认报名。如果已有抽奖券，也可在 LIVE 前报名。",
+    "zh-Hant": "不會。LIVE 預約和獎品抽獎報名是兩個步驟。請選擇要使用的抽獎券數量並確認報名。如果已有抽獎券，也可在 LIVE 前報名。",
+    "es": "No. Las reservas y las inscripciones a premios son pasos independientes. Elige cuántos boletos de sorteo quieres usar y confirma tu inscripción. Si ya tienes boletos, puedes inscribirte antes del LIVE.",
+    "id": "Tidak. Reservasi dan pendaftaran hadiah merupakan langkah terpisah. Pilih jumlah tiket undian yang ingin digunakan dan konfirmasikan pendaftaran Anda. Jika sudah memiliki tiket, Anda dapat mendaftar sebelum LIVE.",
+    "vi": "Không. Đặt chỗ và đăng ký quà tặng là hai bước riêng biệt. Chọn số vé quay thưởng muốn dùng và xác nhận đăng ký. Nếu đã có vé, bạn có thể đăng ký trước LIVE.",
+    "th": "ไม่ การจองและการสมัครรางวัลเป็นคนละขั้นตอน เลือกจำนวนบัตรจับรางวัลที่จะใช้และยืนยันการสมัคร หากมีบัตรอยู่แล้ว สามารถสมัครก่อน LIVE ได้",
+    "pt": "Não. Reservas e inscrições no sorteio são separadas. Escolha quantos bilhetes de sorteio deseja usar e confirme sua inscrição. Se já tiver bilhetes, você poderá se inscrever antes da LIVE.",
+    "fr": "Non. La réservation et la participation au tirage sont distinctes. Choisissez le nombre de billets de tirage à utiliser et confirmez votre participation. Si vous avez déjà des billets, vous pouvez participer avant le LIVE.",
+    ru: "Нет. Бронирование и участие в розыгрыше призов осуществляются отдельно. Выберите, сколько билетов розыгрыша вы хотите использовать, и подтвердите свое участие. Если у вас уже есть билеты, вы можете принять участие до LIVE."
 
   },
   "md0305ad948fd": {
@@ -561,16 +561,16 @@ export const messages = {
 
   },
   "ma01b69d6c4f9": {
-    "ja": "ifewのファン認証とLIVE出席でifew抽選券を獲得できます。抽選券は抽選への応募に使うもので、当選者に贈られる展示入場券とは異なります。他のクリエイターの抽選券は使用できません。",
-    "zh-Hans": "通过 ifew 粉丝认证和 LIVE 出席可获得 ifew 抽奖券。抽奖券用于报名抽奖，与获奖者得到的展览入场券不同。其他创作者的抽奖券不能使用。",
-    "zh-Hant": "通過 ifew 粉絲認證和 LIVE 出席可獲得 ifew 抽獎券。抽獎券用於報名抽獎，與獲獎者得到的展覽入場券不同。其他創作者的抽獎券不能使用。",
-    "es": "Obtén boletos de sorteo de ifew mediante la verificación de fans y la asistencia al LIVE. Estos boletos se usan para participar en el sorteo y son distintos de las entradas para la exposición que reciben los ganadores. No puedes usar boletos de otro creador.",
-    "id": "Dapatkan tiket undian ifew melalui verifikasi penggemar dan kehadiran LIVE. Tiket undian digunakan untuk mengikuti undian dan berbeda dari tiket masuk pameran yang diberikan kepada pemenang. Tiket undian kreator lain tidak dapat digunakan.",
-    "vi": "Nhận vé quay thưởng ifew qua xác minh người hâm mộ và tham dự LIVE. Vé quay thưởng dùng để đăng ký quay thưởng, khác với vé vào cửa triển lãm dành cho người trúng. Không thể dùng vé quay thưởng của nhà sáng tạo khác.",
-    "th": "รับบัตรจับรางวัล ifew จากการยืนยันแฟนคลับและเข้าร่วม LIVE บัตรจับรางวัลใช้สมัครจับรางวัล ซึ่งต่างจากบัตรเข้านิทรรศการที่มอบให้ผู้ชนะ และใช้บัตรของครีเอเตอร์อื่นไม่ได้",
-    "pt": "Ganhe bilhetes de sorteio de ifew com a verificação de fã e a presença na LIVE. Os bilhetes de sorteio são usados para participar do sorteio e são diferentes dos ingressos para a exposição concedidos aos vencedores. Não é possível usar bilhetes de sorteio de outro criador.",
-    "fr": "Gagnez des billets de tirage ifew grâce à la vérification de fan et à la présence au LIVE. Ils servent à participer au tirage et sont différents des billets d’entrée à l’exposition remis aux gagnants. Les billets de tirage d’un autre créateur ne peuvent pas être utilisés.",
-    ru: "Получите несколько лотерейных билетов, пройдя верификацию фаната и отметившись в посещении LIVE. Лотерейные билеты используются для участия в розыгрыше; они отличаются от билетов на выставку, которые выдаются победителям. Лотерейные билеты других авторов использовать нельзя."
+    "ja": "ifewのファン認証とLIVE出席で応募券を獲得できます。応募券は抽選への応募に使うもので、当選者に贈られる展示入場券とは異なります。",
+    "zh-Hans": "通过 ifew 粉丝认证和 LIVE 出席可获得抽奖券。抽奖券用于报名抽奖，与获奖者得到的展览入场券不同。",
+    "zh-Hant": "通過 ifew 粉絲認證和 LIVE 出席可獲得抽獎券。抽獎券用於報名抽獎，與獲獎者得到的展覽入場券不同。",
+    "es": "Obtén boletos de sorteo mediante la verificación de fans de ifew y la asistencia al LIVE. Estos boletos se usan para participar en el sorteo y son distintos de las entradas para la exposición que reciben los ganadores.",
+    "id": "Dapatkan tiket undian melalui verifikasi penggemar ifew dan kehadiran LIVE. Tiket undian digunakan untuk mengikuti undian dan berbeda dari tiket masuk pameran yang diberikan kepada pemenang.",
+    "vi": "Nhận vé quay thưởng qua xác minh người hâm mộ ifew và tham dự LIVE. Vé quay thưởng dùng để đăng ký quay thưởng, khác với vé vào cửa triển lãm dành cho người trúng.",
+    "th": "รับบัตรจับรางวัลจากการยืนยันแฟนคลับ ifew และเข้าร่วม LIVE บัตรจับรางวัลใช้สมัครจับรางวัล ซึ่งต่างจากบัตรเข้านิทรรศการที่มอบให้ผู้ชนะ",
+    "pt": "Ganhe bilhetes de sorteio com a verificação de fã de ifew e a presença na LIVE. Os bilhetes de sorteio são usados para participar do sorteio e são diferentes dos ingressos para a exposição concedidos aos vencedores.",
+    "fr": "Gagnez des billets de tirage grâce à la vérification de fan ifew et à la présence au LIVE. Ils servent à participer au tirage et sont différents des billets d’entrée à l’exposition remis aux gagnants.",
+    ru: "Получите билеты розыгрыша, пройдя верификацию фаната ifew и отметившись в посещении LIVE. Билеты розыгрыша используются для участия в розыгрыше; они отличаются от билетов на выставку, которые выдаются победителям."
 
   },
   "mef4579ad4537": {

@@ -2358,8 +2358,8 @@
     "id": "components/ifew-fan-guide/content:ifewFanGuideContent.steps.3.actions.0"
   },
   "mff98492d13c4": {
-    "en": "Closes September 20 at 00:00 KST.\nUse ifew raffle tickets earned through fan verification and LIVE attendance.\nReservations and attendance do not enter you automatically. Confirm your entry on the prize page.",
-    "ko": "마감: 9월 20일(일) 00:00 KST.\n팬 인증·LIVE 출석으로 받은 이퓨 응모권을 사용해요.\n예약·출석만으로 자동 응모되지 않으니 직접 응모해 주세요.",
+    "en": "Closes September 20 at 00:00 KST.\nUse raffle tickets earned through fan verification and LIVE attendance.\nReservations and attendance do not enter you automatically. Confirm your entry on the prize page.",
+    "ko": "마감: 9월 20일(일) 00:00 KST.\n팬 인증·LIVE 출석으로 받은 응모권을 사용해요.\n예약·출석만으로 자동 응모되지 않으니 직접 응모해 주세요.",
     "source": "components/ifew-fan-guide/content",
     "id": "components/ifew-fan-guide/content:ifewFanGuideContent.steps.3.note"
   },
@@ -2448,8 +2448,8 @@
     "id": "components/ifew-fan-guide/content:ifewFanGuideContent.faqs.1.0"
   },
   "mb77a3dfd2d64": {
-    "en": "No. Reservations and prize entries are separate. Choose how many ifew raffle tickets to use and confirm your entry. If you already have tickets, you can enter before the LIVE.",
-    "ko": "아니요. LIVE 예약과 선물 응모는 별개예요. 이퓨 응모권으로 사용할 수량을 선택하고 직접 응모해 주세요. 이미 응모권이 있다면 LIVE 전에도 응모할 수 있어요.",
+    "en": "No. Reservations and prize entries are separate. Choose how many raffle tickets to use and confirm your entry. If you already have tickets, you can enter before the LIVE.",
+    "ko": "아니요. LIVE 예약과 선물 응모는 별개예요. 사용할 응모권 수량을 선택하고 직접 응모해 주세요. 이미 응모권이 있다면 LIVE 전에도 응모할 수 있어요.",
     "source": "components/ifew-fan-guide/content",
     "id": "components/ifew-fan-guide/content:ifewFanGuideContent.faqs.1.1"
   },
@@ -2460,8 +2460,8 @@
     "id": "components/ifew-fan-guide/content:ifewFanGuideContent.faqs.2.0"
   },
   "ma01b69d6c4f9": {
-    "en": "Earn ifew raffle tickets through fan verification and LIVE attendance. Raffle tickets are used to enter the draw; they are different from the exhibition admission tickets awarded to winners. Another creator’s raffle tickets cannot be used.",
-    "ko": "이퓨 팬 인증과 LIVE 출석으로 이퓨 응모권을 받을 수 있어요. 응모권은 추첨에 참여할 때 사용하는 수량이며, 당첨자에게 드리는 전시 관람권과는 달라요. 다른 최애의 응모권은 사용할 수 없어요.",
+    "en": "Earn raffle tickets through ifew fan verification and LIVE attendance. Raffle tickets are used to enter the draw; they are different from the exhibition admission tickets awarded to winners.",
+    "ko": "이퓨 팬 인증과 LIVE 출석으로 응모권을 받을 수 있어요. 응모권은 추첨에 참여할 때 사용하는 수량이며, 당첨자에게 드리는 전시 관람권과는 달라요.",
     "source": "components/ifew-fan-guide/content",
     "id": "components/ifew-fan-guide/content:ifewFanGuideContent.faqs.2.1"
   },
@@ -5646,8 +5646,8 @@
     "id": "features/benefit/ui/benefit-screen:inline.m013714828987"
   },
   "m6a69019aed6d": {
-    "en": "Five winners receive two admission tickets each, for 10 tickets in total. Ifew raffle tickets are used to enter the draw.",
-    "ko": "5명을 추첨해 관람권을 2장씩, 총 10장 드려요. 이퓨 응모권은 추첨에 참여할 때 사용합니다.",
+    "en": "Five winners receive two admission tickets each, for 10 tickets in total. Raffle tickets are used to enter the draw.",
+    "ko": "5명을 추첨해 관람권을 2장씩, 총 10장 드려요. 응모권은 추첨에 참여할 때 사용합니다.",
     "source": "features/benefit/ui/benefit-screen",
     "id": "features/benefit/ui/benefit-screen:inline.m136e62d56041"
   },
@@ -5670,14 +5670,14 @@
     "id": "features/benefit/ui/benefit-screen:inline.m23b11d4d47b2"
   },
   "m2b5088f52e34": {
-    "en": "Choose how many ifew raffle tickets to use and submit your entry. Fan verification or LIVE participation does not enter you automatically.",
-    "ko": "사용할 이퓨 응모권 수량을 선택하고 직접 응모해 주세요. 팬 인증이나 LIVE 참여만으로 자동 응모되지는 않아요.",
+    "en": "Choose how many raffle tickets to use and submit your entry. Fan verification or LIVE participation does not enter you automatically.",
+    "ko": "사용할 응모권 수량을 선택하고 직접 응모해 주세요. 팬 인증이나 LIVE 참여만으로 자동 응모되지는 않아요.",
     "source": "features/benefit/ui/benefit-screen",
     "id": "features/benefit/ui/benefit-screen:inline.mfb5601f38ca5"
   },
   "m13ed96cd2401": {
-    "en": "Use this creator’s raffle tickets to enter for this benefit.",
-    "ko": "이 크리에이터의 응모권을 사용해 혜택에 응모할 수 있어요.",
+    "en": "Use your raffle tickets to enter for this benefit.",
+    "ko": "응모권을 사용해 혜택에 응모할 수 있어요.",
     "source": "features/benefit/ui/benefit-screen",
     "id": "features/benefit/ui/benefit-screen:inline.m2fe4bd58310c"
   },
@@ -7572,8 +7572,8 @@
     "id": "features/fanpage/ui/home-panels:inline.m4575a1971d88"
   },
   "mbac879409dfb": {
-    "en": "{0} {1} tickets",
-    "ko": "내 {0} 응모권 {1}장",
+    "en": "My tickets: {0}",
+    "ko": "내 응모권 {0}장",
     "source": "features/fanpage/ui/home-panels",
     "id": "features/fanpage/ui/home-panels:inline.me216aff945f0"
   },
@@ -8484,8 +8484,8 @@
     "id": "features/live/ui/live-event-screen:ifewLiveCopy.attendance.invalid"
   },
   "mb60738bd2925": {
-    "en": "Your LIVE attendance is recorded, and you received 2 ifew raffle tickets.",
-    "ko": "LIVE 출석이 기록되고 이퓨 응모권 2장을 받았어요.",
+    "en": "Your LIVE attendance is recorded, and you received 2 raffle tickets.",
+    "ko": "LIVE 출석이 기록되고 응모권 2장을 받았어요.",
     "source": "features/live/ui/live-event-screen",
     "id": "features/live/ui/live-event-screen:ifewLiveCopy.attendance.successHelper"
   },
@@ -8532,8 +8532,8 @@
     "id": "features/live/ui/live-event-screen:ifewLiveCopy.stepHelpers.2"
   },
   "m26439d5fae3a": {
-    "en": "Use your ifew raffle tickets to enter the Banksy ticket draw",
-    "ko": "이퓨 응모권으로 뱅크시 관람권 추첨에 응모해요",
+    "en": "Use your raffle tickets to enter the Banksy ticket draw",
+    "ko": "응모권으로 뱅크시 관람권 추첨에 응모해요",
     "source": "features/live/ui/live-event-screen",
     "id": "features/live/ui/live-event-screen:ifewLiveCopy.stepHelpers.3"
   },
@@ -8784,8 +8784,8 @@
     "id": "features/live/ui/live-event-screen:inline.m1c2ed13b8347"
   },
   "mc834e986d105": {
-    "en": "Use your ifew raffle tickets to enter the draw. Reserving or watching the LIVE does not enter you automatically.",
-    "ko": "이퓨 응모권으로 추첨에 응모해 보세요. LIVE 예약이나 시청만으로 자동 응모되지는 않아요.",
+    "en": "Use your raffle tickets to enter the draw. Reserving or watching the LIVE does not enter you automatically.",
+    "ko": "응모권으로 추첨에 응모해 보세요. LIVE 예약이나 시청만으로 자동 응모되지는 않아요.",
     "source": "features/live/ui/live-event-screen",
     "id": "features/live/ui/live-event-screen:inline.me3624d09e356"
   },
@@ -9588,8 +9588,8 @@
     "id": "features/my/ui/my-screen:copy.myPassport"
   },
   "m7c96f7637dc5": {
-    "en": "{0} raffle tickets",
-    "ko": "{0} 응모권",
+    "en": "Raffle tickets",
+    "ko": "응모권",
     "source": "features/my/ui/my-screen",
     "id": "features/my/ui/my-screen:copy.ticketPanel.message"
   },

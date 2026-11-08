@@ -496,16 +496,16 @@ export const messages = {
 
   },
   "m7c96f7637dc5": {
-    "ja": "応募券{0}枚",
-    "zh-Hans": "{0} 张抽奖券",
-    "zh-Hant": "{0} 張抽獎票券",
-    "es": "{0} boletos de sorteo",
-    "id": "{0} tiket undian",
-    "vi": "{0} vé rút thăm",
-    "th": "ตั๋วจับรางวัล {0} ใบ",
-    "pt": "{0} bilhetes de sorteio",
-    "fr": "{0} tickets de tirage",
-    ru: "лотерейные билеты {0}"
+    "ja": "応募券",
+    "zh-Hans": "抽奖券",
+    "zh-Hant": "抽獎票券",
+    "es": "Boletos de sorteo",
+    "id": "Tiket undian",
+    "vi": "Vé rút thăm",
+    "th": "ตั๋วจับรางวัล",
+    "pt": "Bilhetes de sorteio",
+    "fr": "Tickets de tirage",
+    ru: "Билеты розыгрыша"
 
   },
   "mf0c1202ac4b6": {

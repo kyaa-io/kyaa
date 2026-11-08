@@ -40,7 +40,7 @@ export const ifewFanGuideContent = {
         title: "뱅크시 전시 관람권,\n5명에게 2장씩.",
         body: "더현대 서울 뱅크시 전시 관람권을 드려요.\n추첨으로 5명에게 관람권을 2장씩, 총 10장 드려요.\n응모는 9월 19일(토) 밤 12시(KST)까지예요.",
         actions: ["뱅크시 관람권 추첨 응모하기"],
-        note: "마감: 9월 20일(일) 00:00 KST.\n팬 인증·LIVE 출석으로 받은 이퓨 응모권을 사용해요.\n예약·출석만으로 자동 응모되지 않으니 직접 응모해 주세요.",
+        note: "마감: 9월 20일(일) 00:00 KST.\n팬 인증·LIVE 출석으로 받은 응모권을 사용해요.\n예약·출석만으로 자동 응모되지 않으니 직접 응모해 주세요.",
       },
     ],
     liveCard: {
@@ -59,8 +59,8 @@ export const ifewFanGuideContent = {
     faqTitle: "참여 전에 확인해 주세요",
     faqs: [
       ["LIVE는 어디에서 하나요?", "9월 12일(토) 오전 8시부터 오후 1시까지 TikTok @ifewknow에서 진행해요. 모두 한국 시간(KST, UTC+9) 기준이에요."],
-      ["LIVE를 예약하면 자동으로 선물에 응모되나요?", "아니요. LIVE 예약과 선물 응모는 별개예요. 이퓨 응모권으로 사용할 수량을 선택하고 직접 응모해 주세요. 이미 응모권이 있다면 LIVE 전에도 응모할 수 있어요."],
-      ["응모권은 어떻게 받나요?", "이퓨 팬 인증과 LIVE 출석으로 이퓨 응모권을 받을 수 있어요. 응모권은 추첨에 참여할 때 사용하는 수량이며, 당첨자에게 드리는 전시 관람권과는 달라요. 다른 최애의 응모권은 사용할 수 없어요."],
+      ["LIVE를 예약하면 자동으로 선물에 응모되나요?", "아니요. LIVE 예약과 선물 응모는 별개예요. 사용할 응모권 수량을 선택하고 직접 응모해 주세요. 이미 응모권이 있다면 LIVE 전에도 응모할 수 있어요."],
+      ["응모권은 어떻게 받나요?", "이퓨 팬 인증과 LIVE 출석으로 응모권을 받을 수 있어요. 응모권은 추첨에 참여할 때 사용하는 수량이며, 당첨자에게 드리는 전시 관람권과는 달라요."],
       ["응모는 언제까지인가요?", "9월 19일(토)이 끝나는 밤 12시, 즉 9월 20일(일) 00:00 KST에 마감해요. 선물 상세에서 참여 조건과 응모 내역을 확인하세요."],
     ],
     closingTitle: "이퓨의 100일,\n이번 토요일에 만나요.",
@@ -104,7 +104,7 @@ export const ifewFanGuideContent = {
         title: "Banksy exhibition tickets.\n5 winners. Two each.",
         body: "Enter the draw for Banksy exhibition admission at The Hyundai Seoul. Five winners receive two admission tickets each, for 10 tickets in total. Enter by the end of Saturday, September 19 (KST).",
         actions: ["Enter the Banksy ticket draw"],
-        note: "Closes September 20 at 00:00 KST.\nUse ifew raffle tickets earned through fan verification and LIVE attendance.\nReservations and attendance do not enter you automatically. Confirm your entry on the prize page.",
+        note: "Closes September 20 at 00:00 KST.\nUse raffle tickets earned through fan verification and LIVE attendance.\nReservations and attendance do not enter you automatically. Confirm your entry on the prize page.",
       },
     ],
     liveCard: {
@@ -123,8 +123,8 @@ export const ifewFanGuideContent = {
     faqTitle: "Before you join",
     faqs: [
       ["Where does the LIVE take place?", "On TikTok @ifewknow, Saturday, September 12 from 8 AM to 1 PM. All times are Korea Standard Time (KST, UTC+9)."],
-      ["Does reserving the LIVE enter me in the draw?", "No. Reservations and prize entries are separate. Choose how many ifew raffle tickets to use and confirm your entry. If you already have tickets, you can enter before the LIVE."],
-      ["How do I get raffle tickets?", "Earn ifew raffle tickets through fan verification and LIVE attendance. Raffle tickets are used to enter the draw; they are different from the exhibition admission tickets awarded to winners. Another creator’s raffle tickets cannot be used."],
+      ["Does reserving the LIVE enter me in the draw?", "No. Reservations and prize entries are separate. Choose how many raffle tickets to use and confirm your entry. If you already have tickets, you can enter before the LIVE."],
+      ["How do I get raffle tickets?", "Earn raffle tickets through ifew fan verification and LIVE attendance. Raffle tickets are used to enter the draw; they are different from the exhibition admission tickets awarded to winners."],
       ["When do entries close?", "At the end of Saturday, September 19: September 20 at 00:00 KST. Check the prize page for entry conditions and your entry history."],
     ],
     closingTitle: "Celebrate 100 days with ifew.\nSee you this Saturday.",
