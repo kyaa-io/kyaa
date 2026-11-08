@@ -1,0 +1,5 @@
+/* 2px at the very top, above the sticky header; grows towards 90% while the move waits. */
+.bar { position: fixed; z-index: var(--z-dropdown); top: 0; right: 0; left: 0; height: 2px; pointer-events: none; }
+.bar > span { display: block; height: 100%; background: var(--color-accent); transform-origin: left center; transform: scaleX(0.9); animation: navigation-progress 8s cubic-bezier(0.1, 0.7, 0.2, 1) both; }
+@keyframes navigation-progress { from { transform: scaleX(0.08); } to { transform: scaleX(0.9); } }
+@media (prefers-reduced-motion: reduce) { .bar > span { animation: none; transform: scaleX(0.6); } }
