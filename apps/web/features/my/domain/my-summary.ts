@@ -62,6 +62,8 @@ export const ownerMySummarySchema = z.object({
     }).strict()).max(12),
   }).strict(),
   unreadNotificationCount: z.number().int().nonnegative(),
+  /** The one favorite the fan named in MY (fan_profile_public_fields, read_owned_fan_profile_public). Only with `hearts=1`, like the hearts. */
+  favorite: z.object({ slug: z.string().min(1), name: z.string() }).strict().nullable().optional(),
 }).strict();
 
 export const mySummarySchema = ownerMySummarySchema.extend({

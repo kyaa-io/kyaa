@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 vi.mock("server-only", () => ({}));
-import { PublicImageMySummaryRepository, SupabaseMySummaryRepository, SupabasePassportHeartsReader, type PassportHeartsReader } from "./my-summary-repository";
+import { PublicImageMySummaryRepository, SupabaseMySummaryRepository, SupabasePassportHeartsReader, SupabaseProfileFavoriteReader, type PassportHeartsReader, type ProfileFavoriteReader } from "./my-summary-repository";
 import { mySummarySchema, ownerMySummarySchema } from "../../features/my/domain/my-summary";
 
 const id = "11111111-1111-4111-8111-111111111111";
@@ -137,6 +137,28 @@ describe("MY summary repository", () => {
       expect(eq).toHaveBeenCalledWith("app_user_id", id);
       expect(rpc).toHaveBeenCalledWith("passport_hearts", { p_user: id, p_celebrity: creatorId });
       expect((await reader.read(id, [])).size).toBe(0);
+    });
+  });
+
+  describe("favorite named in MY (D's read_owned_fan_profile_public)", () => {
+    const data = { ...valid, creators: [] };
+    const make = (favorite?: ProfileFavoriteReader) => new PublicImageMySummaryRepository(
+      new SupabaseMySummaryRepository({ rpc: vi.fn().mockResolvedValue({ data, error: null }) }),
+      { readCelebrityPhotoSetsBySlug: vi.fn().mockResolvedValue({}), readLivePhotoSetsBySlug: vi.fn() },
+      { list: vi.fn().mockResolvedValue([]) }, undefined, favorite,
+    );
+    it("adds it with hearts=1 and leaves the key out when the read fails (before that migration) or was not asked", async () => {
+      const read = vi.fn().mockResolvedValue({ slug: "elina", name: "엘리나" });
+      expect((await make({ read }).get({ appUserId: id, locale: "ko", asOf: new Date(), includeHearts: true })).favorite).toEqual({ slug: "elina", name: "엘리나" });
+      expect(await make({ read }).get({ appUserId: id, locale: "ko", asOf: new Date() })).not.toHaveProperty("favorite");
+      expect(await make({ read: vi.fn().mockRejectedValue(new Error("missing function")) }).get({ appUserId: id, locale: "ko", asOf: new Date(), includeHearts: true })).not.toHaveProperty("favorite");
+      expect((await make({ read: vi.fn().mockResolvedValue(null) }).get({ appUserId: id, locale: "ko", asOf: new Date(), includeHearts: true })).favorite).toBeNull();
+    });
+    it("reads only the favorite out of D's response shape", async () => {
+      const rpc = vi.fn().mockResolvedValue({ data: { favorite: { slug: "elina", name: "엘리나" }, links: [], bio: null, favoriteOptions: [] }, error: null });
+      expect(await new SupabaseProfileFavoriteReader({ rpc }).read(id, "ko")).toEqual({ slug: "elina", name: "엘리나" });
+      expect(rpc).toHaveBeenCalledWith("read_owned_fan_profile_public", { p_app_user_id: id, p_locale: "ko" });
+      await expect(new SupabaseProfileFavoriteReader({ rpc: vi.fn().mockResolvedValue({ data: null, error: { message: "function does not exist" } }) }).read(id, "ko")).rejects.toThrow();
     });
   });
 });

@@ -27,7 +27,8 @@ export async function loadServerSelectedBias(locale: AppLocale): Promise<Selecte
       repository: createSupabaseFanAuthRepository({ url: environment.SUPABASE_URL, serviceRoleKey: environment.SUPABASE_SERVICE_ROLE_KEY }, database),
     });
     const summary = await createSupabaseMySummaryRepository({ url: environment.SUPABASE_URL, serviceRoleKey: environment.SUPABASE_SERVICE_ROLE_KEY }, database).get({ appUserId: fan.appUserId, locale: toContentLocale(locale), asOf: new Date(), includeStages: true, includeHearts: true });
-    return pickSelectedBias(selectedBiasOptions(mySummarySchema.parse(JSON.parse(JSON.stringify(summary)))), null);
+    const parsed = mySummarySchema.parse(JSON.parse(JSON.stringify(summary)));
+    return pickSelectedBias(selectedBiasOptions(parsed), null, parsed.favorite?.slug);
   })();
   let timer: ReturnType<typeof setTimeout> | undefined;
   try {

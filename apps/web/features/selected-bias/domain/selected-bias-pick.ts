@@ -28,9 +28,12 @@ export function selectedBiasOptions(summary: MySummary | undefined): SelectedBia
 
 const stageRank = (option: SelectedBiasOption) => FAN_STAGE_KEYS.indexOf(option.stage?.key ?? fanTierEntryKey(option.tier));
 
-/** Without a stored choice the default must not follow the summary's order: it sorts creators by their localized name,
+/** The favorite named in MY (server, D's fan_profile_public_fields) comes first when it is one of the passports; then the browser's stored
+ * choice; then, without either, the default must not follow the summary's order: it sorts creators by their localized name,
  * so "the first passport" was a different favorite in ko and en (261107-2 H-1). Highest stage first, then slug. */
-export function pickSelectedBias(options: readonly SelectedBiasOption[], stored: string | null): SelectedBiasOption | null {
+export function pickSelectedBias(options: readonly SelectedBiasOption[], stored: string | null, named?: string | null): SelectedBiasOption | null {
+  const chosen = named ? options.find((option) => option.slug === named) : undefined;
+  if (chosen) return chosen;
   const kept = options.find((option) => option.slug === stored);
   if (kept) return kept;
   return options.reduce<SelectedBiasOption | null>((best, option) => {

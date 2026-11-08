@@ -11,6 +11,21 @@ interface RpcClient {
   rpc(name: string, parameters: Record<string, string>): PromiseLike<{ data: unknown; error: unknown }>;
 }
 
+/** The favorite the fan named in MY (feedback C1/C2, D's fan_profile_public_fields). Absent until that migration is applied, so a failure is "unknown". */
+export interface ProfileFavoriteReader {
+  read(appUserId: string, locale: "ko" | "en"): Promise<{ slug: string; name: string } | null>;
+}
+const profileFavoriteSchema = z.object({ favorite: z.object({ slug: z.string().min(1), name: z.string() }).nullable() });
+export class SupabaseProfileFavoriteReader implements ProfileFavoriteReader {
+  constructor(private readonly client: RpcClient) {}
+  async read(appUserId: string, locale: "ko" | "en") {
+    const { data, error } = await this.client.rpc("read_owned_fan_profile_public", { p_app_user_id: appUserId, p_locale: locale });
+    if (error) throw new Error("Profile favorite query failed");
+    const favorite = profileFavoriteSchema.parse(data).favorite;
+    return favorite ? { slug: favorite.slug, name: favorite.name } : null;
+  }
+}
+
 /** Reads the creator of each owned passport and its hearts. Separate from the summary function so that function (and its migration) stays as it is. */
 export interface PassportHeartsReader {
   read(appUserId: string, passportIds: readonly string[]): Promise<ReadonlyMap<string, number>>;
@@ -88,11 +103,16 @@ export class PublicImageMySummaryRepository implements MySummaryRepository {
     private readonly images: PublicImageRoleReader,
     private readonly published: PublicCreatorDirectory,
     private readonly hearts?: PassportHeartsReader,
+    private readonly favorite?: ProfileFavoriteReader,
   ) {}
 
   async get(input: { appUserId: string; locale: "ko" | "en"; asOf: Date; includeStages?: boolean; includeHearts?: boolean }): Promise<MySummary> {
     const read = await this.repository.get(input);
-    const summary = input.includeHearts && this.hearts ? await withHearts(read, input.appUserId, this.hearts) : read;
+    const [withHeartCounts, favorite] = input.includeHearts ? await Promise.all([
+      this.hearts ? withHearts(read, input.appUserId, this.hearts) : read,
+      this.favorite ? this.favorite.read(input.appUserId, input.locale).then((value) => ({ value }), () => null) : null,
+    ]) : [read, null];
+    const summary: OwnerMySummary = favorite ? { ...withHeartCounts, favorite: favorite.value } : withHeartCounts;
     if (summary.creators.length === 0) return { ...summary, creators: [] };
     const slugs = summary.creators.map(({ celebrity }) => celebrity.slug);
     const [photosBySlug, publicCreators] = await Promise.all([
@@ -138,5 +158,6 @@ export function createSupabaseMySummaryRepository(config: { url: string | undefi
     createPublicImageRoleReader(config, database as unknown as SupabaseClient),
     new SupabasePublishedContentRepository(database as unknown as PublishedContentClient),
     new SupabasePassportHeartsReader(database as unknown as PassportTableClient),
+    new SupabaseProfileFavoriteReader(database as unknown as RpcClient),
   );
 }
