@@ -1,4 +1,5 @@
 "use client";
+import { FanSkeleton } from "@/components/fan-ui/fan-skeleton";
 import Link from 'next/link';
 import type {Route} from 'next';
 import {useByUsAuth} from '@/features/auth/client/cognito-auth';
@@ -20,10 +21,15 @@ type SummaryResource={state:ReturnType<typeof useOwnedFanResource<ReturnType<typ
 export function CreatorFanGrade({slug,locale,resource:shared}:{slug:string;locale:AppLocale;resource?:SummaryResource}){
  const auth=useByUsAuth(),own=useOwnedFanResource(!shared&&auth.authenticated?`/api/me/summary?locale=${toContentLocale(locale)}&tierStages=1`:null,parseSummary,auth),resource=shared??own,t=groupsCopy(locale);
  if(!auth.ready||!auth.authenticated)return null;
- if(resource.state.status==='loading')return null;
+ if(resource.state.status==='loading')return <CreatorFanGradePlaceholder/>;
  if(resource.state.status==='error')return <div className={styles.creatorFanGrade} role="alert"><span>{locale==='ko'?'내 팬 활동을 불러오지 못했어요.':translate(locale,localizedMessages.m0aea4924b59e,"Couldn't load your fan activity.")}</span><FanAction variant="text" onClick={resource.retry}>{t.retry}</FanAction></div>;
  const passport=resource.state.data.creators.find(item=>item.celebrity.slug===slug)?.passport;
  if(!passport)return null;
  const stage=passport.stageProgress?.current,label=stage?fanStageLabel(locale,stage):levelLabel(locale,passport.tier);
  return <Link className={styles.creatorFanGrade} href={`/passports/${passport.id}?locale=${locale}` as Route}><FanTierBadge tier={passport.tier} stageKey={stage?.key} locale={locale} size={24}/><span>{managementMembersCopy(locale).tier} · {label}</span></Link>;
+}
+
+/** 내 팬 등급이 들어올 자리. 로그인 확인과 요약을 읽는 동안 같은 크기(배지 24px + 한 줄)를 차지해 머리 행동 줄이 접히지 않게 한다. */
+export function CreatorFanGradePlaceholder(){
+ return <span className={styles.creatorFanGrade} aria-hidden="true" data-fan-grade-placeholder=""><FanSkeleton shape="circle" width={24} height={24}/><FanSkeleton width={66} height={14}/></span>;
 }

@@ -35,3 +35,14 @@ export async function loadPublicGroupPostsEmpty(pageId: string): Promise<boolean
     return Array.isArray(body.items) && body.items.length === 0;
   } catch { return false; }
 }
+
+/** Whether the page shows the verified-artist tag, read through the same handler as `GET /api/groups/{id}/presence` with no credentials.
+ * The head reserves the tag beside the name from the first paint instead of adding it when the viewer's presence read lands. Unknown is false. */
+export async function loadPublicGroupHasArtists(pageId: string): Promise<boolean> {
+  try {
+    const response = await groupRoute("presence", new Request(`http://localhost/api/groups/${pageId}/presence`), { id: pageId });
+    if (!response.ok) return false;
+    const body = (await response.json()) as { artists?: unknown };
+    return Array.isArray(body.artists) && body.artists.length > 0;
+  } catch { return false; }
+}
