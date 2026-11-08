@@ -1,5 +1,6 @@
 import "server-only";
 import { runtimeEnvironment } from "./hosting";
+import { readGa4MeasurementId } from "../../features/analytics/domain/ga4-id";
 import { readPublicPrivyAppleLoginPolicy } from "../../components/privy-apple-login-policy";
 import { readPublicPrivyTestAccountPolicy } from "../../components/privy-test-account-policy";
 
@@ -12,5 +13,6 @@ export function publicRuntimeConfig() {
     appleLoginEnabled: readPublicPrivyAppleLoginPolicy(),
     testAccountLoginEnabled: readPublicPrivyTestAccountPolicy(),
     webPushVapidPublicKey: source["NEXT_PUBLIC_WEB_PUSH_VAPID_PUBLIC_KEY"] ?? "",
+    ga4MeasurementId: readGa4MeasurementId(source["NEXT_PUBLIC_GA4_MEASUREMENT_ID"]),
   };
 }

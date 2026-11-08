@@ -82,6 +82,8 @@ const publicEnvSchema = z
       .trim()
       .refine(isSecureAppUrl, "must be HTTPS, except for an HTTP localhost app URL"),
     NEXT_PUBLIC_PRIVY_APP_ID: z.string().trim().min(1),
+    // GA4 web stream (runtime GA4_MEASUREMENT_ID on AWS). Absent: no consent bar, no gtag.
+    NEXT_PUBLIC_GA4_MEASUREMENT_ID: z.preprocess((value) => value === "" ? undefined : value, z.string().regex(/^G-[A-Z0-9]{6,12}$/).optional()),
     NEXT_PUBLIC_BYUS_DATA_ENVIRONMENT: dataEnvironment,
     NEXT_PUBLIC_PRIVY_APP_ENVIRONMENT: privyAppEnvironment,
     NEXT_PUBLIC_PRIVY_APPLE_LOGIN_ENABLED: booleanFlag,

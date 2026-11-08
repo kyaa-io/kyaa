@@ -408,6 +408,8 @@ test('rewarded ad runtime values are public runtime settings; production rejects
  Object.assign(c.runtimeEnvironment,S);
  if(c.environment!=='prod'){validateConfig(c,t);assert(web().some(x=>x.Name==='KYAA_REWARDED_AD_UNIT'));}
  const p=config('environment','prod');p.runtimeEnvironment.KYAA_REWARDED_AD_UNIT='/22639388115/rewarded_web_example';assert.throws(()=>validateConfig(p,t),/Production forbids the Google test rewarded/);
+ {const d=config('environment','dev');d.runtimeEnvironment.GA4_MEASUREMENT_ID='G-WKSF9KP5QW';assert.doesNotThrow(()=>validateConfig(d,t));d.runtimeEnvironment.GA4_MEASUREMENT_ID='G-HPXFR0PQP0';assert.throws(()=>validateConfig(d,t),/is the prod stream/);d.runtimeEnvironment.GA4_MEASUREMENT_ID='UA-1';assert.throws(()=>validateConfig(d,t),/GA4 measurement ID/);
+  const q=config('environment','prod');q.runtimeEnvironment.GA4_MEASUREMENT_ID='G-WKSF9KP5QW';assert.throws(()=>validateConfig(q,t),/is the dev stream/);q.runtimeEnvironment.GA4_MEASUREMENT_ID='G-HPXFR0PQP0';assert.doesNotThrow(()=>validateConfig(q,t));}
  c.runtimeEnvironment.KYAA_REWARDED_AD_UNIT='bad';assert.throws(()=>validateConfig(c,t),/KYAA_REWARDED_AD_UNIT/);
  delete c.runtimeEnvironment.KYAA_REWARDED_AD_UNIT;assert.throws(()=>validateConfig(c,t),/requires KYAA_REWARDED_AD_UNIT/);
  c.runtimeEnvironment.KYAA_REWARDED_AD_UNIT='/1/x';c.runtimeEnvironment.KYAA_REWARDED_TICKET_EXCHANGE_ENABLED='false';assert.throws(()=>validateConfig(c,t),/session settings require/);c.runtimeEnvironment.KYAA_REWARDED_TICKET_EXCHANGE_ENABLED='true';delete c.runtimeEnvironment.KYAA_REWARDED_AD_UNIT;for(const k of Object.keys(S))delete c.runtimeEnvironment[k];
