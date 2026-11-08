@@ -127,6 +127,36 @@ describe("autoplay waits for the next slide's picture", () => {
     return { view, picture, finish: (event: "load" | "error") => { ready.add(picture); act(() => { fireEvent[event](picture); }); } };
   };
 
+  it("does not ask for the next picture early before the first screen has settled", () => {
+    const readyState = vi.spyOn(document, "readyState", "get").mockReturnValue("loading");
+    vi.stubGlobal("requestIdleCallback", undefined);
+    const { picture, finish } = setup();
+    advance(19_000);
+    expect(picture).toHaveAttribute("loading", "lazy");
+    readyState.mockReturnValue("complete");
+    act(() => { window.dispatchEvent(new Event("load")); });
+    advance(0);
+    expect(picture).toHaveAttribute("loading", "eager");
+    advance(); finish("load");
+    expect(activeSlide()).toBe("2 of 2");
+  });
+
+  it("asks only for the next slide's picture after the first screen, and moves the moment it loads", () => {
+    const third = { ...second, id: "90000000-0000-4000-8000-000000000021", title: "세 번째 배너",
+      mobileImage: { ...second.mobileImage, id: "90000000-0000-4000-8000-000000000024", url: "/images/guest-home/kara-third.jpg" } };
+    vi.spyOn(HTMLImageElement.prototype, "complete", "get").mockImplementation(function (this: HTMLImageElement) {
+      return !/kara-(second|third)/.test(this.src) || this.dataset.ready === "1";
+    });
+    const { container } = render(<LiveHeroCarousel homeBanners={[banner, second, third]} elinaGuide={null} locale="en" />);
+    const [next, later] = ["kara-second", "kara-third"].map((name) => [...container.querySelectorAll("img")].find((image) => image.src.includes(name))!);
+    expect(next).toHaveAttribute("loading", "eager");
+    expect(later).toHaveAttribute("loading", "lazy");
+    advance(); expect(activeSlide()).toBe("1 of 3");
+    next.dataset.ready = "1"; act(() => { fireEvent.load(next); });
+    expect(activeSlide()).toBe("2 of 3");
+    expect(later).toHaveAttribute("loading", "eager");
+  });
+
   it("moves as soon as the picture has loaded", () => {
     const { finish } = setup();
     advance(); advance(3_000); expect(activeSlide()).toBe("1 of 2");

@@ -62,6 +62,12 @@ function pendingImages(slide: Element | null | undefined) {
   return slide ? [...slide.querySelectorAll("img")].filter((image) => !image.complete) : [];
 }
 
+// A fully clipped next slide (1440, no peek) never starts its lazy picture, so autoplay would sit out the fallback.
+// Asked only after the first screen, so the download cannot compete with the LCP picture.
+function fetchAhead(slide: Element | null | undefined) {
+  for (const image of pendingImages(slide)) if (image.getAttribute("loading") === "lazy") image.setAttribute("loading", "eager");
+}
+
 const carouselCopy = {
   ko: {
     label: "홈 배너",
@@ -244,6 +250,7 @@ export function LiveHeroCarousel({
   useEffect(() => {
     if (total <= 1 || autoplayPaused || !firstScreenSettled) return;
     const next = (activeIndex + 1) % total;
+    fetchAhead(trackRef.current?.children[next]);
     let waiting: HTMLImageElement[] = [];
     let fallback: number | undefined;
     const advance = () => goTo(next, false);
