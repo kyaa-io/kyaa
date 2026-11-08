@@ -545,6 +545,8 @@ describe("canonical 03 guest home", () => {
 
   it("auto-advances every six seconds and supports clean previous, next, and indicator controls", () => {
     vi.useFakeTimers();
+    // jsdom never finishes loading pictures; the carousel waits for the next slide's picture in a browser.
+    vi.spyOn(HTMLImageElement.prototype, "complete", "get").mockReturnValue(true);
     const secondLive = {
       ...featuredLive,
       live: {

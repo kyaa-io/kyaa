@@ -23,6 +23,32 @@ import { ManagedHomeBanner } from "./home-entry-cards/managed-home-banner";
 const AUTOPLAY_INTERVAL_MS = 6_000;
 const REDUCED_MOTION_QUERY = "(prefers-reduced-motion: reduce)";
 
+// Autoplay waits for the first screen: a slide that slides in while its picture is still downloading
+// paints in view and becomes a later, larger LCP (dev 390 Slow 4G: 8.8s → 23.5s).
+function documentLoaded() {
+  return typeof document !== "undefined" && document.readyState === "complete";
+}
+
+function whenFirstScreenSettled(onSettled: () => void) {
+  let idle: number | undefined;
+  let timer: number | undefined;
+  const schedule = () => {
+    if (typeof window.requestIdleCallback === "function") idle = window.requestIdleCallback(onSettled, { timeout: 2_000 });
+    else timer = window.setTimeout(onSettled, 0);
+  };
+  if (documentLoaded()) schedule();
+  else window.addEventListener("load", schedule, { once: true });
+  return () => {
+    window.removeEventListener("load", schedule);
+    if (idle !== undefined) window.cancelIdleCallback?.(idle);
+    if (timer !== undefined) window.clearTimeout(timer);
+  };
+}
+
+function pendingImages(slide: Element | null | undefined) {
+  return slide ? [...slide.querySelectorAll("img")].filter((image) => !image.complete) : [];
+}
+
 const carouselCopy = {
   ko: {
     label: "홈 배너",
@@ -110,6 +136,8 @@ export function LiveHeroCarousel({
   const total = slides.length;
   const hasControls = total > 1;
   const rootRef = useRef<HTMLDivElement>(null);
+  const trackRef = useRef<HTMLDivElement>(null);
+  const [firstScreenSettled, setFirstScreenSettled] = useState(documentLoaded);
   const [activeIndex, setActiveIndex] = useState(0);
   const [userPaused, setUserPaused] = useState(false);
   const [hovered, setHovered] = useState(false);
@@ -163,6 +191,11 @@ export function LiveHeroCarousel({
   }, []);
 
   useEffect(() => {
+    if (firstScreenSettled) return;
+    return whenFirstScreenSettled(() => setFirstScreenSettled(true));
+  }, [firstScreenSettled]);
+
+  useEffect(() => {
     if (!emblaApi) return;
     const syncActiveIndex = () => setActiveIndex(emblaApi.selectedScrollSnap());
     syncActiveIndex();
@@ -186,6 +219,7 @@ export function LiveHeroCarousel({
     if (emblaApi) emblaApi.scrollTo(nextIndex, reducedMotion);
     else setActiveIndex(nextIndex);
     if (manual) {
+      setFirstScreenSettled(true);
       setTimerRevision((value) => value + 1);
       setAnnouncement(t.position(nextIndex + 1, total));
     }
@@ -195,10 +229,39 @@ export function LiveHeroCarousel({
   const autoplayPaused = userPaused || hovered || focusWithin || pointerActive || !visible || reducedMotion;
 
   useEffect(() => {
-    if (total <= 1 || autoplayPaused) return;
-    const timer = window.setTimeout(() => goTo(activeIndex + 1, false), AUTOPLAY_INTERVAL_MS);
-    return () => window.clearTimeout(timer);
-  }, [activeIndex, goTo, autoplayPaused, timerRevision, total]);
+    if (total <= 1 || autoplayPaused || !firstScreenSettled) return;
+    const next = (activeIndex + 1) % total;
+    let waiting: HTMLImageElement[] = [];
+    let fallback: number | undefined;
+    const advance = () => goTo(next, false);
+    const settle = () => {
+      if (waiting.some((image) => !image.complete)) return;
+      stopWaiting();
+      advance();
+    };
+    const stopWaiting = () => {
+      for (const image of waiting) {
+        image.removeEventListener("load", settle);
+        image.removeEventListener("error", settle);
+      }
+      waiting = [];
+      if (fallback !== undefined) window.clearTimeout(fallback);
+    };
+    const timer = window.setTimeout(() => {
+      // Move only onto a slide whose picture is ready, so it never finishes painting in view.
+      waiting = pendingImages(trackRef.current?.children[next]);
+      if (waiting.length === 0) return advance();
+      for (const image of waiting) {
+        image.addEventListener("load", settle);
+        image.addEventListener("error", settle);
+      }
+      fallback = window.setTimeout(() => { stopWaiting(); advance(); }, AUTOPLAY_INTERVAL_MS);
+    }, AUTOPLAY_INTERVAL_MS);
+    return () => {
+      window.clearTimeout(timer);
+      stopWaiting();
+    };
+  }, [activeIndex, goTo, autoplayPaused, firstScreenSettled, timerRevision, total]);
 
   return (
     <div
@@ -223,7 +286,7 @@ export function LiveHeroCarousel({
       onPointerCancel={() => setPointerActive(false)}
     >
       <div className={styles.heroViewport} ref={viewportRef}>
-        <div className={styles.heroTrack}>
+        <div className={styles.heroTrack} ref={trackRef}>
           {slides.map((banner, index) => (
             <article className={`${styles.heroCard} ${banner ? "" : styles.campaignHeroCard}`} key={banner?.id ?? "elina-guide"}
               aria-hidden={index !== activeIndex} aria-roledescription="slide"

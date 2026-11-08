@@ -15,6 +15,7 @@ beforeEach(() => {
   vi.setSystemTime(new Date("2027-01-01T00:00:00Z"));
   vi.stubGlobal("IntersectionObserver", undefined);
   vi.stubGlobal("matchMedia", vi.fn(() => ({ matches: false, addEventListener: vi.fn(), removeEventListener: vi.fn() })));
+  vi.spyOn(HTMLImageElement.prototype, "complete", "get").mockReturnValue(true);
 });
 afterEach(() => { cleanup(); vi.useRealTimers(); vi.restoreAllMocks(); vi.unstubAllGlobals(); });
 
@@ -65,6 +66,48 @@ describe("hero visibility and independent pause reasons", () => {
     expect(screen.getByRole("region")).toHaveAttribute("data-shine-paused", "false");
     advance(); expect(activeSlide()).toBe("2 of 2");
     view.unmount(); expect(disconnect).toHaveBeenCalled(); expect(vi.getTimerCount()).toBe(0);
+  });
+
+  it("does not autoplay before the first screen has finished loading", () => {
+    const readyState = vi.spyOn(document, "readyState", "get").mockReturnValue("loading");
+    const idle = vi.fn((callback: () => void) => window.setTimeout(callback, 300));
+    vi.stubGlobal("requestIdleCallback", idle);
+    vi.stubGlobal("cancelIdleCallback", (id: number) => window.clearTimeout(id));
+    render(<LiveHeroCarousel homeBanners={[banner]} locale="en" />);
+    advance(20_000);
+    expect(activeSlide()).toBe("1 of 2");
+    expect(screen.getByRole("region")).toHaveAttribute("data-shine-paused", "false");
+    readyState.mockReturnValue("complete");
+    act(() => { window.dispatchEvent(new Event("load")); });
+    expect(idle).toHaveBeenCalledTimes(1);
+    advance(300);
+    advance(5_999); expect(activeSlide()).toBe("1 of 2");
+    advance(1); expect(activeSlide()).toBe("2 of 2");
+  });
+
+  it("keeps the autoplay schedule once the visitor has moved a slide before the page finished loading", () => {
+    vi.spyOn(document, "readyState", "get").mockReturnValue("loading");
+    render(<LiveHeroCarousel homeBanners={[banner]} locale="en" />);
+    fireEvent.click(screen.getByRole("button", { name: "Next banner" }));
+    expect(activeSlide()).toBe("2 of 2");
+    advance(); expect(activeSlide()).toBe("1 of 2");
+  });
+
+  it("moves onto the next slide only after its picture has loaded", () => {
+    const second = { ...banner, id: "90000000-0000-4000-8000-000000000011", title: "두 번째 배너",
+      desktopImage: { ...banner.desktopImage, id: "90000000-0000-4000-8000-000000000013" },
+      mobileImage: { ...banner.mobileImage!, id: "90000000-0000-4000-8000-000000000014", url: "/images/guest-home/kara-second.jpg" } };
+    const loaded = new WeakSet<HTMLImageElement>();
+    vi.spyOn(HTMLImageElement.prototype, "complete", "get").mockImplementation(function (this: HTMLImageElement) {
+      return !this.src.includes("kara-second") || loaded.has(this);
+    });
+    const { container } = render(<LiveHeroCarousel homeBanners={[banner, second]} elinaGuide={null} locale="en" />);
+    advance(); expect(activeSlide()).toBe("1 of 2");
+    advance(3_000); expect(activeSlide()).toBe("1 of 2");
+    const picture = [...container.querySelectorAll("img")].find((image) => image.src.includes("kara-second"))!;
+    loaded.add(picture);
+    act(() => { fireEvent.load(picture); });
+    expect(activeSlide()).toBe("2 of 2");
   });
 
   it("keeps reduced-motion manual navigation and gives only the first image high priority", () => {
