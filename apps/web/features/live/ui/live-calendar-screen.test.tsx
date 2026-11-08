@@ -4,7 +4,7 @@ import { act, fireEvent, render, screen, waitFor, within } from "@testing-librar
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { LiveCalendarScreen } from "./live-calendar-screen";
-const { scheduleMonth } = vi.hoisted(() => ({ scheduleMonth: vi.fn((..._args: unknown[]) => ({ status: "ready" as const, items: [], retry: () => undefined })) }));
+const { scheduleMonth } = vi.hoisted(() => ({ scheduleMonth: vi.fn((..._args: unknown[]): { status: "ready" | "error" | "loading"; items: never[]; retry: () => undefined } => ({ status: "ready", items: [], retry: () => undefined })) }));
 vi.mock("@/features/schedules/ui/use-schedule-month", () => ({ useScheduleMonth: (...args: unknown[]) => scheduleMonth(...args) }));
 
 const auth = vi.hoisted(() => ({ authenticated: false, getAccessToken: vi.fn() }));
