@@ -10,7 +10,7 @@ export const NAVIGATION_PROGRESS_DELAY_MS = 300;
 const NAVIGATION_PROGRESS_LIMIT_MS = 15_000;
 
 function internalTarget(event: MouseEvent): URL | null {
-  if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return null;
+  if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return null;
   const anchor = (event.target as Element | null)?.closest?.("a[href]");
   if (!(anchor instanceof HTMLAnchorElement) || (anchor.target && anchor.target !== "_self") || anchor.hasAttribute("download")) return null;
   const url = new URL(anchor.href, window.location.href);
@@ -40,10 +40,11 @@ export function FanNavigationProgress() {
     const onClick = (event: MouseEvent) => { if (internalTarget(event)) start(); };
     // Back/forward: only when the path or query really changes (a hash-only step also fires popstate).
     const onPop = () => { if (window.location.pathname + window.location.search !== shown.current) start(); };
-    // Bubble phase: a handler that cancels the move (preventDefault) has already run.
-    document.addEventListener("click", onClick);
+    // Capture phase: the router link cancels the browser's own navigation (preventDefault) before a bubbling listener would see it.
+    // A move that never starts is cleared by the limit below.
+    document.addEventListener("click", onClick, true);
     window.addEventListener("popstate", onPop);
-    return () => { document.removeEventListener("click", onClick); window.removeEventListener("popstate", onPop); stop(); };
+    return () => { document.removeEventListener("click", onClick, true); window.removeEventListener("popstate", onPop); stop(); };
   }, []);
   // The address changed: the move finished.
   useEffect(() => { shown.current = pathname + (search ? `?${search}` : ""); stop(); }, [pathname, search]);

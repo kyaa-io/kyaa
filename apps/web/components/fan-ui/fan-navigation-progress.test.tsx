@@ -9,8 +9,8 @@ beforeEach(() => { vi.useFakeTimers(); nav.pathname = "/a"; window.history.repla
 afterEach(() => { vi.useRealTimers(); document.body.innerHTML = ""; });
 
 const link = (href: string) => { const a = document.createElement("a"); a.href = href; a.textContent = href; document.body.append(a); return a; };
-// jsdom would follow the link; a router link cancels it in its own handler after ours (document, bubble) has seen the click.
-const click = (a: HTMLAnchorElement, init: MouseEventInit = {}) => { const event = new MouseEvent("click", { bubbles: true, cancelable: true, button: 0, ...init }); const stopNav = (e: Event) => e.preventDefault(); document.addEventListener("click", stopNav); a.dispatchEvent(event); document.removeEventListener("click", stopNav); };
+// A router link cancels the browser navigation in its own handler (as Next Link does); the bar still starts.
+const click = (a: HTMLAnchorElement, init: MouseEventInit = {}) => { a.addEventListener("click", (e) => e.preventDefault(), { once: true }); a.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true, button: 0, ...init })); };
 const bar = () => document.querySelector("[data-fan-navigation-progress]");
 
 it("shows the bar only when a move takes longer than 300ms and hides it when the address changes", () => {
