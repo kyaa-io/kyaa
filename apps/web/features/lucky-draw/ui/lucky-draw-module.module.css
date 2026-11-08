@@ -37,3 +37,4 @@
 }
 /* 2단계 idle loop hooks here (transform·opacity only); reduced motion keeps the still frame. */
 @media (prefers-reduced-motion: reduce) { .machineGroup * { animation: none; transition: none; } }
+.card > .values:last-child { padding-bottom: var(--space-3); }
