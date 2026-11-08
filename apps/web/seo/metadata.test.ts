@@ -47,7 +47,7 @@ describe("public search and sharing metadata", () => {
     expect(openGraphLocale(locale)).toBe(expected);
   });
   it("resizes approved public assets without changing their source or crop", () => {
-    const source = "https://gmrykvmtmuaeswpajteq.supabase.co/storage/v1/object/public/cms-assets/lives/ifew/banner.png";
+    const source = "https://kyaa.io/public-assets/cms-assets/lives/ifew/banner.png";
     const url = new URL(shareImageUrl(source));
     expect(url.pathname).toBe("/_next/image");
     expect(url.searchParams.get("url")).toBe(source);

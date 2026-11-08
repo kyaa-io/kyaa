@@ -1,5 +1,6 @@
 import { imageSlots, resolvePhoto, type PhotoSet, type ImageSlot } from "../../features/media/domain/public-image";
-import { legacyImageDimensions } from "./legacy-image-dimensions";
+import { cmsAssetPath } from "./cms-asset-source";
+import { legacyImageSize } from "./legacy-image-dimensions";
 /** Creator photo sources and reviewed framing. Surfaces choose a presentation, never a crop. */
 export const creatorPresentationSlots = {
   portrait: "identity.square", passportCard: "identity.square", avatar: "identity.avatar", passport: "identity.passport",
@@ -41,12 +42,12 @@ const ifewCrop: Crop = { position: "center", scale: 2.45, origin: "48% 40%" };
 /** Replace only the previous registered Park photo; a later CMS upload remains authoritative. */
 function isPreviousParkSource(source: string | null | undefined) {
   return !source || source === parkMyunghoProfile || source === "/images/celebrities/park-myungho/hero-portrait.jpg"
-    || /^https:\/\/(gmrykvmtmuaeswpajteq|xcppyedwusirqnfpbtit)\.supabase\.co\/storage\/v1\/object\/public\/cms-assets\/celebrities\/park-myungho\/profile-dcc87957756c27df\.jpg$/.test(source);
+    || cmsAssetPath(source) === "celebrities/park-myungho/profile-dcc87957756c27df.jpg";
 }
 
 function isPreviousJennySource(source: string) {
   return calendarPortraits["jenny-jeong"]!.includes(source)
-    || /^https:\/\/(gmrykvmtmuaeswpajteq|xcppyedwusirqnfpbtit)\.supabase\.co\/storage\/v1\/object\/public\/cms-assets\/celebrities\/jenny-jeong\/profile-88d6cd4994afe602\.jpg$/.test(source);
+    || cmsAssetPath(source) === "celebrities/jenny-jeong/profile-88d6cd4994afe602.jpg";
 }
 
 export function resolveCreatorImage({ slug, src, presentation = "portrait", position, photos }: {
@@ -170,8 +171,7 @@ const sourceBoundHeroPhotos: Readonly<Record<string, string>> = {
 
 function sourceBoundHero(slug: string, source: string): CreatorHeroImage | undefined {
   const filename = sourceBoundHeroPhotos[slug];
-  if (!filename || !["gmrykvmtmuaeswpajteq", "xcppyedwusirqnfpbtit"].some((ref) =>
-    source === `https://${ref}.supabase.co/storage/v1/object/public/cms-assets/celebrities/${slug}/${filename}`)) return undefined;
+  if (!filename || cmsAssetPath(source) !== `celebrities/${slug}/${filename}`) return undefined;
   return {
     src: `/images/celebrities/${slug}/hero-editorial-20260911.webp`,
     mobileSrc: `/images/celebrities/${slug}/hero-editorial-portrait-20260911.webp`,
@@ -186,8 +186,8 @@ export function resolveCreatorHeroImage(slug: string, image: { url: string; posi
   const legacy = sourceBoundHero(slug, image.url) ?? (replaced ? undefined : dedicated);
   const desktopSource = legacy?.src ?? image.url;
   const mobileSource = legacy?.mobileSrc ?? desktopSource;
-  const desktopDimensions = legacyImageDimensions[desktopSource];
-  const mobileDimensions = legacyImageDimensions[mobileSource];
+  const desktopDimensions = legacyImageSize(desktopSource);
+  const mobileDimensions = legacyImageSize(mobileSource);
   const desktop = resolvePhoto(image.photos, "creator.hero.desktop", image.photos?.landscape === null ? image.url : desktopSource);
   // WENA's compact mobile header uses the same complete group portrait and approved frame as desktop.
   const mobile = slug === "wena" ? desktop : resolvePhoto(image.photos, "creator.hero.mobile", image.photos?.portrait === null ? image.url : mobileSource);

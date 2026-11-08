@@ -25,7 +25,7 @@ function watch(page, label) {
   page.on("pageerror", (error) => evidence.errors.push(`${label}: ${error.message}`));
   page.on("request", (request) => {
     const url = new URL(request.url());
-    if (url.origin !== harness.baseURL && url.hostname !== "gmrykvmtmuaeswpajteq.supabase.co") {
+    if (url.origin !== harness.baseURL && url.hostname !== "kyaa.io") {
       evidence.errors.push(`${label}: unexpected network request ${url}`);
     }
   });

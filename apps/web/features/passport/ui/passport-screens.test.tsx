@@ -133,7 +133,7 @@ describe("passport fan screens", () => {
   it("optimizes allowlisted HTTPS and local collection photos through the shared policy", async () => {
     const external = { ...passport, id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa", celebrity: {
       slug: "xin", name: "엑신", image: {
-        url: "https://gmrykvmtmuaeswpajteq.supabase.co/storage/v1/object/public/cms-assets/celebrities/xin/profile-f2ec8b19121877f6.jpg",
+        url: "https://kyaa.io/public-assets/cms-assets/celebrities/xin/profile-f2ec8b19121877f6.jpg",
         alt: "엑신 멤버들의 행사 단체 사진", position: "center bottom",
       },
     } };

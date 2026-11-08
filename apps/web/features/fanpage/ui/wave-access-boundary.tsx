@@ -5,6 +5,7 @@ import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { FanAppFrame, FanContentContainer } from "@/components/fan-shell/fan-app-shell";
 import { useByUsSession } from "@/components/byus-session-provider";
+import { sanitizeReturnTo } from "@/components/login-intent";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import { FanHeading } from "@/components/fan-ui/fan-heading";
 import { participationResponseSchema } from "@/features/connect/kyaa-wave-participation";
@@ -35,22 +36,31 @@ const help: Record<AppLocale, string> = {
   ru: "Войдите в систему и пройдите регистрацию на мероприятие, чтобы просмотреть свои задания и страницу для фанатов.",
 
 };
+/**
+ * Routes that open as intercepted overlays (app/@modal: login, benefits, stamps) keep the page underneath mounted, so this
+ * boundary keeps running while the address bar already shows the overlay. /connect and /onboarding are full pages of their own.
+ * No redirect may run on any of them: on /login it wrapped /login into returnTo again on every pass.
+ */
+export function isOverlayPath(path: string) {
+  return /^\/(?:login|benefits|stamps|connect|onboarding)(?:[/?#]|$)/.test(path);
+}
 export function WaveAccessBoundary({ locale, children }: { locale: AppLocale; children: ReactNode }) {
   const auth = usePrivy(), session = useByUsSession(), router = useRouter(), path = usePathname(), query = useSearchParams();
   const copy = participationCopy[locale];
   const resource = useFanpageResource(auth.ready && auth.authenticated ? "/api/kyaa-wave/participation" : null, parse);
   const destinationQuery = new URLSearchParams(query.toString());
   destinationQuery.delete("code");
-  const returnTo = `${path}${destinationQuery.size ? `?${destinationQuery}` : ""}`;
+  const returnTo = sanitizeReturnTo(`${path}${destinationQuery.size ? `?${destinationQuery}` : ""}`);
+  const overlay = isOverlayPath(path);
   const code = query.getAll("code").length === 1 ? query.get("code") : null;
   const checkinHref = `/connect/kyaa-wave/participate?${new URLSearchParams({ locale, returnTo, ...(code ? { code } : {}) })}`;
   const loginHref = `/login?${new URLSearchParams({ locale, returnTo: checkinHref })}`;
   const needsCheckin = auth.authenticated && resource.state.status === "ready" && !resource.state.data.participation;
   useEffect(() => {
-    if (!auth.ready || !session.ready) return;
+    if (!auth.ready || !session.ready || overlay) return;
     if (!auth.authenticated) router.replace(loginHref as Route);
     else if (needsCheckin) router.replace(checkinHref as Route);
-  }, [auth.ready, auth.authenticated, session.ready, needsCheckin, router, loginHref, checkinHref]);
+  }, [auth.ready, auth.authenticated, session.ready, needsCheckin, overlay, router, loginHref, checkinHref]);
   if (auth.ready && auth.authenticated && resource.state.status === "ready" && resource.state.data.participation) return <WaveParticipantNameContext.Provider value={resource.state.data.participation.displayName ?? null}>{children}</WaveParticipantNameContext.Provider>;
   return <FanAppFrame locale={locale} mainId="wave-access-main"><FanContentContainer as="main" id="wave-access-main" className={styles.main} tabIndex={-1}>
     <p className={styles.eyebrow}>KYAA WAVE · 2026.10.22</p>
