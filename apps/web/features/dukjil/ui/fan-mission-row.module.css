@@ -9,7 +9,7 @@
 .art > img, .art > svg { display: block; width: 28px; height: 28px; object-fit: contain; }
 .art > svg { width: 20px; height: 20px; }
 .copy { display: grid; align-content: center; min-width: 0; }
-.title { min-width: 0; font-size: var(--fan-action-emphasis-size); line-height: 22px; font-weight: var(--fan-item-title-weight); overflow-wrap: anywhere; word-break: keep-all; }
+.title { min-width: 0; font-size: var(--fan-action-label-size); line-height: 22px; font-weight: var(--fan-item-title-weight); overflow-wrap: anywhere; word-break: keep-all; }
 .detail { display: flex; align-items: center; gap: var(--space-2); min-width: 0; min-height: 18px; color: var(--color-muted); font-size: var(--fan-metadata-size); line-height: 18px; }
 .detail > * { min-width: 0; }
 .trailing { display: flex; align-items: center; justify-content: flex-end; gap: var(--space-2); min-width: 0; font-size: var(--fan-metadata-size); line-height: 20px; }

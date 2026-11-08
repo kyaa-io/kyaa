@@ -1,5 +1,4 @@
 import type { ReactNode } from "react";
-import { ArrowRight } from "../icons";
 import { FanAction } from "./fan-action";
 import styles from "./fan-heading.module.css";
 
@@ -32,9 +31,9 @@ export function FanSectionHeader({ title, description, action, extraAction, vari
         <FanHeading as={as} id={id} variant={variant === "personal" ? "personal-section" : variant}>{title}</FanHeading>
       </div>
       {action && extraAction ? <div className={styles.actions}>
-        <FanAction variant="text" href={action.href} trailingIcon={<ArrowRight />}>{action.label}</FanAction>
-        <FanAction variant="text" href={extraAction.href} trailingIcon={<ArrowRight />}>{extraAction.label}</FanAction>
-      </div> : action ? <FanAction variant="text" className={styles.action} href={action.href} trailingIcon={<ArrowRight />}>{action.label}</FanAction> : null}
+        <FanAction variant="text" href={action.href}>{action.label}</FanAction>
+        <FanAction variant="text" href={extraAction.href}>{extraAction.label}</FanAction>
+      </div> : action ? <FanAction variant="text" className={styles.action} href={action.href}>{action.label}</FanAction> : null}
     </div>
     {description != null ? <p className={styles.description}>{description}</p> : null}
   </div>;

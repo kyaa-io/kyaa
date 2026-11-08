@@ -8,8 +8,8 @@
   justify-content:center;
   box-sizing:border-box;
   border-radius:50%;
-  color:var(--color-service-ink);
-  background:var(--color-surface-focus);
+  color:var(--color-page-accent);
+  background:var(--color-soft);
   border:1px solid currentColor;
   vertical-align:middle;
 }

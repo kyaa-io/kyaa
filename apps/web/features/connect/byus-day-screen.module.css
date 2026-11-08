@@ -1,5 +1,5 @@
 .page,.page *,.page *::before,.page *::after{box-sizing:border-box}
-.page{--event-ink:#681923;--event-paper:#f5eee2;--event-muted:#765951;min-height:100dvh;color:var(--event-ink);background:var(--event-paper);font-family:"Pretendard Variable",Pretendard,system-ui,sans-serif}
+.page{--event-ink:#681923;--event-paper:#f5eee2;--event-muted:#765951;min-height:100dvh;color:var(--event-ink);background:var(--event-paper);}
 .page a{color:inherit;text-decoration:none}
 .page :is(a,button,input,select,summary,[tabindex]):focus-visible{outline:3px solid var(--event-ink);outline-offset:4px}
 .header{display:flex;justify-content:space-between;align-items:center;gap:12px;max-width:1280px;min-height:76px;margin:auto;padding:12px 32px;border-bottom:1px solid #68192330}
@@ -111,13 +111,13 @@
 .registrationPart{display:flex;align-items:center;flex:none}
 .registrationSeparator{margin-inline:3px;color:var(--event-muted);font-size:16px}
 .field .registrationNumber input{height:44px;min-width:44px;padding:0;border:0;border-radius:4px;background:transparent;font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:16px;font-variant-numeric:tabular-nums}
-.field .registrationNumber input::placeholder{font-family:inherit;font-size:16px}
+.field .registrationNumber input::placeholder{font-size:16px}
 .field .registrationNumber .registrationSixDigits{width:6.5ch}
 .field .registrationNumber .registrationFirstDigit{width:44px;text-align:center}
 .registrationVisibility{display:grid;place-items:center;flex:none;width:44px;height:44px;margin-left:auto;padding:0;border:0;border-radius:6px;background:transparent;color:var(--event-ink);cursor:pointer}
 .page .registrationNumber :is(input,button):focus-visible{outline:3px solid #1d1d1d;outline-offset:0}
 .privacyBackdrop{align-items:center;justify-content:center;padding:max(24px,env(safe-area-inset-top)) max(16px,env(safe-area-inset-right)) max(24px,env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left));background:#20171170}
-.privacyDialog{--event-ink:#681923;--event-muted:#765951;display:flex;flex-direction:column;width:min(100%,560px);max-height:calc(100dvh - 48px - env(safe-area-inset-top) - env(safe-area-inset-bottom));border:1px solid #bbaa97;border-radius:16px;background:#fffaf2;color:var(--event-ink);font-family:"Pretendard Variable",Pretendard,system-ui,sans-serif;box-shadow:0 20px 60px #20171130;overflow:hidden}
+.privacyDialog{--event-ink:#681923;--event-muted:#765951;display:flex;flex-direction:column;width:min(100%,560px);max-height:calc(100dvh - 48px - env(safe-area-inset-top) - env(safe-area-inset-bottom));border:1px solid #bbaa97;border-radius:16px;background:#fffaf2;color:var(--event-ink);box-shadow:0 20px 60px #20171130;overflow:hidden}
 .privacyBackdrop [data-overlay-content].privacyDialog{max-height:calc(100dvh - 48px - env(safe-area-inset-top) - env(safe-area-inset-bottom))}
 .privacyDialogHeading{display:flex;align-items:center;justify-content:space-between;gap:12px;flex:none;padding:16px 16px 16px 24px;border-bottom:1px solid #68192320}
 .privacyDialogHeading h2{margin:0;min-width:0;font-size:20px;font-weight:750;line-height:1.5;word-break:keep-all;overflow-wrap:anywhere}

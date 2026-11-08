@@ -46,7 +46,7 @@
 .dialog .deleteButton { color: oklch(42% .16 24); }
 .deleteButton svg { width: 17px; }
 .actions { display: flex; gap: 8px; }
-.dialog footer .saveButton { min-width: 88px; background: linear-gradient(rgb(0 0 0 / 18%), rgb(0 0 0 / 18%)), var(--color-primary-action); color: #fff; }
+.dialog footer .saveButton { min-width: 88px; background: linear-gradient(rgb(0 0 0 / 18%), rgb(0 0 0 / 18%)), var(--color-accent); color: #fff; }
 .error { min-height: 20px; margin-top: 8px !important; color: oklch(42% .16 24); font-size: 12px; line-height: 1.5; text-align: right; }
 .refreshError { min-height: 44px; display: flex; align-items: center; justify-content: flex-end; gap: 10px; color: oklch(42% .16 24); font-size: 12px; line-height: 1.5; text-align: right; }
 .dialog button:focus-visible, .dialog label:has(input:focus-visible), .cropViewport:focus-visible { outline: 3px solid oklch(18% 0 0); outline-offset: 3px; }

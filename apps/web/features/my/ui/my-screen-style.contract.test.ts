@@ -15,7 +15,7 @@ describe("MY creator ticket row style contract", () => {
 describe("MY headings follow the fan heading tokens", () => {
   const read = (file: string) => readFileSync(resolve(process.cwd(), "features/my/ui", file), "utf8");
   it("uses the shared size, weight and leading for the profile title and section titles", () => {
-    expect(css).toMatch(/\.pencilProfileCopy h1\{font-size:var\(--fan-heading-size-wide\);font-weight:var\(--fan-heading-weight\);line-height:var\(--fan-heading-leading\)/);
+    expect(css).toMatch(/\.pencilProfileCopy h1\{font-size:var\(--fan-heading-size\);font-weight:var\(--fan-heading-weight\);line-height:var\(--fan-heading-leading\)/);
     expect(css).toContain(".pencilProfileCopy h1{font-size:var(--fan-heading-size)}");
     for (const file of ["my-passport-card.module.css", "my-shortcuts.module.css", "my-favorites.module.css"]) {
       const source = read(file);

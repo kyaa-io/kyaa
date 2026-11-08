@@ -53,4 +53,4 @@
 .cheers[data-wave] .form { gap: 8px; }
 .cheers[data-wave] .form > div { flex-wrap: wrap; gap: 8px 16px; }
 .cheers[data-wave] .form small { flex: 1 1 12rem; max-width: none; font-size: 13px; }
-@media (min-width: 768px) { .cheers[data-wave] .heading h2 { font-size: var(--fan-heading-size-wide); } }
+@media (min-width: 768px) { .cheers[data-wave] .heading h2 { font-size: var(--fan-heading-size); } }

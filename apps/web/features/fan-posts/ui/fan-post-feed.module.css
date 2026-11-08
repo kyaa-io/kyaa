@@ -30,7 +30,7 @@
 .feed > :global([data-fan-section-header]) { margin-bottom: 0; }
 
 /* Pencil W0Xri: top write action and 44px page controls. */
-.compactHeading{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}.compactHeading h2{font-family:"Pretendard UI 850",system-ui,sans-serif;font-size:var(--fan-heading-size-wide);line-height:var(--fan-heading-leading);font-weight:400}@media(max-width:767px){.compactHeading h2{font-size:var(--fan-heading-size)}}.writeRow{display:flex;justify-content:flex-end;min-height:48px}
+.compactHeading{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}.compactHeading h2{font-weight:800;font-size:var(--fan-heading-size);line-height:var(--fan-heading-leading);}@media(max-width:767px){.compactHeading h2{font-size:var(--fan-heading-size)}}.writeRow{display:flex;justify-content:flex-end;min-height:48px}
 .writeButton{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:48px;padding:0 20px;border:0;border-radius:999px;background:linear-gradient(98deg,#d9194c,#b91a93 50%,#6042d5);color:white;font-size:15px;font-weight:800;text-decoration:none;cursor:pointer}
 .pageNumbers{display:flex;justify-content:center;gap:4px;padding:12px 0;margin-top:12px}
 .pageNumbers button{display:grid;place-items:center;min-width:44px;height:44px;padding:0 10px;border:1px solid transparent;border-radius:10px;background:#fff;color:#5d5d5d;cursor:pointer}
