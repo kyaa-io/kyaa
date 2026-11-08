@@ -1,7 +1,8 @@
 "use client";
 import Link from "next/link";
 import type { Route } from "next";
-import { ChevronRight, Heart, Plus } from "lucide-react";
+import { ChevronRight, Heart, Plus } from "@/components/fan-ui/stan-icons";
+import { FanIcon } from "@/components/fan-ui/fan-icon";
 import { useEffect, useState } from "react";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import { FanHeading } from "@/components/fan-ui/fan-heading";
@@ -86,7 +87,7 @@ export function StanCheer({ locale, bias, guest, hearts }: { locale: AppLocale; 
   const rank = useStanRank(locale, slug), selected = bias.selected && bias.selected.slug === slug ? bias.selected : null;
   const login = fanLoginHref(locale, `/benefits?locale=${locale}`);
   const heading = <div className={styles.head}><FanHeading id="stan-cheer-title">{title}</FanHeading></div>;
-  const pickInner = <><Plus size={20} strokeWidth={1.5} aria-hidden="true" data-icon="" data-icon-set="lucide" /><span className={styles.pickLabel}>{t(locale, "heartPick")}</span><ChevronRight size={16} strokeWidth={1.5} aria-hidden="true" /></>;
+  const pickInner = <><FanIcon icon={Plus} size={20} /><span className={styles.pickLabel}>{t(locale, "heartPick")}</span><FanIcon icon={ChevronRight} size={16} /></>;
   if (!guest && bias.status !== "loading" && !favorite) return <section className={styles.section} id="stan-cheer" tabIndex={-1} aria-labelledby="stan-cheer-title" data-block="aside-card">
     {heading}
     <div className={styles.card} data-cheer="pick">{bias.options.length ? <FavoritePickMenu locale={locale} bias={bias} className={styles.pick}>{pickInner}</FavoritePickMenu> : <Link className={styles.pick} href={`/pages/groups?locale=${locale}` as Route} data-row="menu">{pickInner}</Link>}</div>
@@ -97,7 +98,7 @@ export function StanCheer({ locale, bias, guest, hearts }: { locale: AppLocale; 
       {selected ? <img className={styles.avatar} src={selected.image} alt="" width={40} height={40} style={selected.imagePosition ? { objectPosition: selected.imagePosition } : undefined} /> : <span className={styles.avatarEmpty} aria-hidden="true" />}
       <span className={styles.whoText}><span className={styles.name}>{favorite.name}</span><span className={styles.role}>{t(locale, "cheerCreator")}</span></span>
     </Link>;
-  const heart = <Heart size={16} strokeWidth={1.5} className={styles.heart} aria-hidden="true" data-icon="" data-icon-set="lucide" />;
+  const heart = <FanIcon icon={Heart} size={16} className={styles.heart} />;
   const rankValue = guest ? <FanLockedValue locale={locale} /> : rank.loading || bias.status === "loading" ? <FanSkeleton width={56} height={20} />
     : rank.row ? <>{t(locale, "cheerRankValue", [rank.row.rank.toLocaleString(locale)])}{rank.comparable ? <RankDelta delta={rank.row.delta} locale={locale} /> : null}</> : t(locale, "cheerRankOutShort");
   return <section className={styles.section} id="stan-cheer" tabIndex={-1} aria-labelledby="stan-cheer-title" data-block="aside-card">

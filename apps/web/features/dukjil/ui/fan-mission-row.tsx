@@ -1,5 +1,6 @@
 "use client";
-import { Check, ChevronDown } from "lucide-react";
+import { Check, ChevronDown } from "@/components/fan-ui/stan-icons";
+import { FanIcon } from "@/components/fan-ui/fan-icon";
 import Link from "next/link";
 import type { Route } from "next";
 import type { MouseEvent, ReactNode } from "react";
@@ -35,7 +36,7 @@ function RowBody({ art, title, detail, trailing }: { art?: ReactNode; title: Rea
  * `FanCollapsible` hands it the aria contract; `count` sits beside the title, `points` and the chevron in the trailing column. */
 export function FanMissionFoldRow({ title, count, points, ...triggerProps }: FanCollapsibleTriggerProps & { title: ReactNode; count?: ReactNode; points?: ReactNode }) {
   return <FanCollapsibleTrigger {...triggerProps} className={`${styles.row} ${styles.fold}`} data-fan-mission-row="fold" data-row="mission">
-    <RowBody art={null} title={<><span>{title}</span>{count ? <span className={styles.count}>{count}</span> : null}</>} trailing={<>{points ? <span className={styles.reward}>{points}</span> : null}<ChevronDown size={16} strokeWidth={1.5} className={styles.chevron} aria-hidden="true" /></>} />
+    <RowBody art={null} title={<><span>{title}</span>{count ? <span className={styles.count}>{count}</span> : null}</>} trailing={<>{points ? <span className={styles.reward}>{points}</span> : null}<FanIcon icon={ChevronDown} size={16} className={styles.chevron} /></>} />
   </FanCollapsibleTrigger>;
 }
 
@@ -46,7 +47,7 @@ export function MissionReward({ points, locale }: { points: number; locale: stri
 
 /** The done tag: `✓ 완료`, a grey pill of 20 (11/700). */
 export function MissionDone({ label }: { label: string }) {
-  return <span className={styles.done} data-badge="" data-mission-done=""><Check size={12} strokeWidth={1.5} aria-hidden="true" />{label}</span>;
+  return <span className={styles.done} data-badge="" data-mission-done=""><FanIcon icon={Check} size={16} />{label}</span>;
 }
 
 /** The progress under a title: a 2px bar (160 / 240 from 1024) at the title's x. */

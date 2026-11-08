@@ -2,7 +2,8 @@
 import Link from "next/link";
 import type { Route } from "next";
 import { useId, type ReactNode } from "react";
-import { BadgeCheck, BellRing, CalendarCheck, CircleHelp, ClipboardList, Heart, MapPin, MessageCircle, Pencil, Radio, Share2, Star, Target, UserPlus, type LucideIcon } from "lucide-react";
+import { BadgeCheck, BellRing, CalendarCheck, CircleHelp, ClipboardList, Heart, MapPin, MessageCircle, Pencil, Radio, Share2, Star, Target, UserPlus, type LucideIcon } from "@/components/fan-ui/stan-icons";
+import { FanIcon } from "@/components/fan-ui/fan-icon";
 import type { MouseEvent } from "react";
 import { FanMissionFoldRow, FanMissionList, FanMissionRow, MissionBar, MissionDone, MissionReward } from "./fan-mission-row";
 import { activityLabel } from "@/features/dukjil-guide/ui/guide-copy";
@@ -34,7 +35,7 @@ const MISSION_ICONS: Partial<Record<MissionKey, LucideIcon>> = {
 };
 function MissionIcon({ mission }: { mission: MissionKey }) {
   const Icon = MISSION_ICONS[mission] ?? Target;
-  return <Icon size={20} strokeWidth={1.5} aria-hidden="true" data-icon="" data-icon-set="lucide" />;
+  return <FanIcon icon={Icon} size={20} />;
 }
 
 const LEGACY_KEYS: readonly MissionKey[] = ["checkin", "post", "comment"];

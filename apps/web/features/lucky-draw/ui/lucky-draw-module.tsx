@@ -1,7 +1,8 @@
 "use client";
 import Link from "next/link";
 import type { Route } from "next";
-import { ChevronRight, Plus } from "lucide-react";
+import { ChevronRight, Plus } from "@/components/fan-ui/stan-icons";
+import { FanIcon } from "@/components/fan-ui/fan-icon";
 import type { ReactNode } from "react";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import { FanHeading } from "@/components/fan-ui/fan-heading";
@@ -82,27 +83,26 @@ export function LuckyDrawModule({ locale, bias, guest, onExchange }: { locale: A
       { key: "winners", label: t(locale, "luckyLabelWinners"), value: people(raffle.winnerQuantity) },
     ];
 
-  const action = guest || !slug || loading || raffles.error ? null : (() => {
-    if (state === "open" && raffle) {
-      if (allowance?.kind === "passport") return <FanAction variant="primary" fullWidth href={creatorRaffleVerificationHref(slug, locale, raffle.benefitId)} className={styles.action}>{t(locale, "luckyGetPassport")}</FanAction>;
-      const href: string = raffle.benefitId ? String(creatorRaffleHref(slug, raffle.benefitId, locale)) : String(creatorRafflesHref(slug, locale));
+  // One action, described first and drawn once (one emphasised button per screen state, plan ③④).
+  type ActionSpec = { label: string; variant: "primary" | "secondary"; href?: string; onClick?: () => void; disabled?: boolean };
+  const spec: ActionSpec | null = guest || !slug || loading || raffles.error ? null
+    : state === "open" && raffle ? (allowance?.kind === "passport" ? { label: t(locale, "luckyGetPassport"), variant: "primary", href: String(creatorRaffleVerificationHref(slug, locale, raffle.benefitId)) }
       // No ticket to enter with: the button stays active and opens the exchange (plan ③ "누르면 교환 안내").
-      if (onExchange && allowance?.kind === "count" && allowance.count === 0 && wallet.data?.tickets === 0) return <FanAction variant="primary" fullWidth onClick={onExchange} className={styles.action}>{t(locale, "luckyEnterShort")}</FanAction>;
-      return <FanAction variant="primary" fullWidth href={href} className={styles.action}>{t(locale, "luckyEnterShort")}</FanAction>;
-    }
-    const resultHref: string | null = state === "closed" && raffle ? (raffle.benefitId ? String(creatorRaffleHref(slug, raffle.benefitId, locale)) : String(creatorRafflesHref(slug, locale))) : null;
-    if (resultHref) return <FanAction variant="secondary" fullWidth href={resultHref} className={styles.action}>{t(locale, "luckyResults")}</FanAction>;
+      : onExchange && allowance?.kind === "count" && allowance.count === 0 && wallet.data?.tickets === 0 ? { label: t(locale, "luckyEnterShort"), variant: "primary", onClick: onExchange }
+      : { label: t(locale, "luckyEnterShort"), variant: "primary", href: raffle.benefitId ? String(creatorRaffleHref(slug, raffle.benefitId, locale)) : String(creatorRafflesHref(slug, locale)) })
+    : state === "closed" && raffle ? { label: t(locale, "luckyResults"), variant: "secondary", href: raffle.benefitId ? String(creatorRaffleHref(slug, raffle.benefitId, locale)) : String(creatorRafflesHref(slug, locale)) }
     // 준비 중: the one disabled action the plan allows here (8장 plan ④); its reason is the label.
-    return <FanAction variant="primary" fullWidth disabled className={styles.action}>{raffle?.entryOpensAt ? t(locale, "luckyStartsOn", [luckyDate(raffle.entryOpensAt, locale)]) : t(locale, "luckyStartsNextWeek")}</FanAction>;
-  })();
+    : { label: raffle?.entryOpensAt ? t(locale, "luckyStartsOn", [luckyDate(raffle.entryOpensAt, locale)]) : t(locale, "luckyStartsNextWeek"), variant: "primary", disabled: true };
+  const action = !spec ? null : spec.href ? <FanAction variant={spec.variant} fullWidth href={spec.href} className={styles.action}>{spec.label}</FanAction>
+    : <FanAction variant={spec.variant} fullWidth onClick={spec.onClick ?? (() => undefined)} disabled={spec.disabled} className={styles.action}>{spec.label}</FanAction>;
 
   const pick = !guest && !loading && !slug ? (bias.options.length
-    ? <FavoritePickMenu locale={locale} bias={bias} className={styles.pickRow}><Plus size={20} strokeWidth={1.5} aria-hidden="true" data-icon="" data-icon-set="lucide" /><span>{t(locale, "heartPick")}</span><ChevronRight size={16} strokeWidth={1.5} aria-hidden="true" /></FavoritePickMenu>
-    : <Link className={styles.pickRow} href={`/pages/groups?locale=${locale}` as Route} data-row="menu"><Plus size={20} strokeWidth={1.5} aria-hidden="true" data-icon="" data-icon-set="lucide" /><span>{t(locale, "heartPick")}</span><ChevronRight size={16} strokeWidth={1.5} aria-hidden="true" /></Link>) : null;
+    ? <FavoritePickMenu locale={locale} bias={bias} className={styles.pickRow}><FanIcon icon={Plus} size={20} /><span>{t(locale, "heartPick")}</span><FanIcon icon={ChevronRight} size={16} /></FavoritePickMenu>
+    : <Link className={styles.pickRow} href={`/pages/groups?locale=${locale}` as Route} data-row="menu"><FanIcon icon={Plus} size={20} /><span>{t(locale, "heartPick")}</span><FanIcon icon={ChevronRight} size={16} /></Link>) : null;
 
   const pastRow = slug && past ? <Link className={styles.pastRow} href={creatorRafflesHref(slug, locale)} data-row="notice">
     <span className={styles.pastCopy}><strong>{t(locale, "luckyPast")}</strong><span data-meta="">{t(locale, "luckyPastMeta", [past.raffle.title, past.raffle.winnerQuantity.toLocaleString(locale), past.raffle.resultsPublishedAt ? luckyDate(past.raffle.resultsPublishedAt, locale) : past.raffle.entryClosesAt ? luckyDate(past.raffle.entryClosesAt, locale) : ""])}</span></span>
-    <ChevronRight size={16} strokeWidth={1.5} aria-hidden="true" />
+    <FanIcon icon={ChevronRight} size={16} />
   </Link> : null;
 
   return <section className={styles.section} id="stan-lucky" tabIndex={-1} aria-labelledby="stan-lucky-title" data-block="lucky">

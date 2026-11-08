@@ -2,17 +2,17 @@
    One outlined card (12, no shadow) of FanMissionRow rows (64); on the 덕질 tab today's rows open the card and 그 밖의 미션·인증 fold behind 64 heads. */
 .section{display:grid;gap:var(--space-3);min-width:0}
 .head{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:var(--space-1) var(--space-3);min-width:0;min-height:28px}
-.head h2{margin:0;font-size:var(--fan-section-size,18px);line-height:1.2;font-weight:700;letter-spacing:var(--fan-heading-tracking);overflow-wrap:anywhere}
+.head h2{margin:0;font-size:var(--fan-section-size);line-height:1.2;font-weight:var(--fan-section-weight);letter-spacing:var(--fan-heading-tracking);overflow-wrap:anywhere}
 .summary{display:flex;flex-wrap:wrap;align-items:center;gap:var(--space-1) var(--space-2);min-width:0;color:var(--color-muted);font-size:var(--fan-metadata-size);line-height:20px;font-weight:400;font-variant-numeric:tabular-nums}
-.reward{color:var(--color-ink);font-weight:700}
-.cards{display:grid;margin:0;padding:0;list-style:none;border:1px solid var(--color-line);border-radius:var(--radius-card,12px);overflow:hidden;background:var(--color-surface)}
+.reward{color:var(--color-ink);font-weight:var(--fan-section-weight)}
+.cards{display:grid;margin:0;padding:0;list-style:none;border:1px solid var(--color-line);border-radius:var(--radius-card);overflow:hidden;background:var(--color-surface)}
 .count{color:var(--color-muted);font-size:var(--fan-metadata-size);font-weight:400;font-variant-numeric:tabular-nums}
 .barPending{display:block;width:160px;max-width:100%}
 @media (min-width:1024px){.barPending{width:240px}}
 .footer{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:0 var(--space-3)}
 .footer>a{padding-inline:0}
 /* 덕질 탭: today's rows first, then 그 밖의 미션·인증 folded behind heads drawn as mission rows, all in one card. */
-.folds{border:1px solid var(--color-line);border-radius:var(--radius-card,12px);background:var(--color-surface);overflow:hidden}
+.folds{border:1px solid var(--color-line);border-radius:var(--radius-card);background:var(--color-surface);overflow:hidden}
 .fold+.fold{border-top:1px solid var(--color-line-subtle)}
 .fold .cards{border:0;border-radius:0}
 .fold[data-state] .cards,.proofRows{border-top:1px solid var(--color-line-subtle)}

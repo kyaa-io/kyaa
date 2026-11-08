@@ -1,5 +1,6 @@
 "use client";
-import { ChevronRight, Heart } from "lucide-react";
+import { ChevronRight, Heart } from "@/components/fan-ui/stan-icons";
+import { FanIcon } from "@/components/fan-ui/fan-icon";
 import Link from "next/link";
 import type { Route } from "next";
 import type { ReactNode } from "react";
@@ -31,7 +32,7 @@ function Row({ row, label, rate, href, children }: { row: string; label: string;
   return <Link className={styles.row} href={href as Route} data-row="label-value" data-wallet-row={row}>
     <span className={styles.rowCopy}><span className={styles.rowLabel}>{label}</span><span className={styles.rowRate} data-meta="">{rate}</span></span>
     <span className={styles.rowValue}>{children}</span>
-    <ChevronRight className={styles.next} size={16} strokeWidth={1.5} aria-hidden="true" />
+    <FanIcon icon={ChevronRight} className={styles.next} size={16} />
   </Link>;
 }
 
@@ -48,7 +49,7 @@ export function StanWallet({ locale, state, stamps, hearts, links, exchangeSecon
   const points: StanSlot = state.kind === "ready" ? state.points : state.kind === "guest" ? "locked" : state.kind === "loading" ? "loading" : "missing";
   const tickets: StanSlot = state.kind === "ready" ? state.tickets : points;
   const affordable = state.kind === "ready" && state.points >= pointCost;
-  const heart = <Heart size={16} strokeWidth={1.5} className={styles.heart} aria-hidden="true" data-icon="" data-icon-set="lucide" />;
+  const heart = <FanIcon icon={Heart} size={16} className={styles.heart} />;
   const action = state.kind === "guest" ? state.action
     : state.kind === "loading" ? <FanSkeleton shape="block" width={96} height={44} />
     : state.kind === "failed" ? (state.retry ? <FanAction variant="text" onClick={state.retry}>{w.retry}</FanAction> : null)
@@ -56,10 +57,10 @@ export function StanWallet({ locale, state, stamps, hearts, links, exchangeSecon
   return <section className={[styles.wallet, className].filter(Boolean).join(" ")} aria-label={s("stanWalletFlows")} data-wallet-card="stan" data-block="wallet">
     <div className={styles.top}>
       <div className={styles.balance}>
-        <p className={styles.label}><span>{w.points}</span><Link className={styles.history} href={links.history as Route} scroll={false} onClick={links.onHistory} data-balance-history="">{s("walletPointsHistory")}<ChevronRight size={12} strokeWidth={1.5} aria-hidden="true" /></Link></p>
+        <p className={styles.label}><span>{w.points}</span><Link className={styles.history} href={links.history as Route} scroll={false} onClick={links.onHistory} data-balance-history="">{s("walletPointsHistory")}<FanIcon icon={ChevronRight} size={16} /></Link></p>
         <div className={styles.hero} data-metric="asset" data-metric-id="wallet-points">
           {points === "loading" ? <FanSkeleton width={160} height={44} /> : points === "locked" ? <FanLockedValue locale={locale} /> : points === "missing" ? null
-            : <FanNumber value={points} size="xl" countUp locale={locale} unit="P" className={styles.heroNumber} />}
+            : <FanNumber value={points} size="hero" countUp locale={locale} unit="P" />}
         </div>
       </div>
       <div className={styles.action} data-exchange={state.kind === "ready" ? (exchangeSecondary ? "secondary" : "primary") : undefined}>{action}</div>

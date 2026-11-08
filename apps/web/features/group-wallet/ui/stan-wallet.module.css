@@ -1,16 +1,14 @@
 /* 덕질 잔액 카드 (plan-ux r5.1 3.2 · 4-B, pen/stan.png). Card 12, 1px line, no shadow.
    Top: label `포인트 적립·사용 ›` over the hero number (44 / 48 from 768) with `교환` on the right of the label row (390 44×96, 1440 44×120).
    Below: three label-value rows of 56 (label 15 over rate 12 · value 15/700 on the right). */
-.wallet { box-sizing: border-box; display: grid; min-width: 0; padding: var(--space-4) var(--space-4) var(--space-1); border: 1px solid var(--color-line); border-radius: var(--radius-card, 12px); background: var(--color-surface); }
+.wallet { box-sizing: border-box; display: grid; min-width: 0; padding: var(--space-4) var(--space-4) var(--space-1); border: 1px solid var(--color-line); border-radius: var(--radius-card); background: var(--color-surface); }
 .top { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: start; gap: var(--space-3); padding-bottom: var(--space-3); border-bottom: 1px solid var(--color-line-subtle); }
 .balance { display: grid; gap: var(--space-2); min-width: 0; }
-.label { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 var(--space-2); margin: 0; font-size: var(--fan-item-title-size); font-weight: 700; line-height: 1.4; }
+.label { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 var(--space-2); margin: 0; font-size: var(--fan-item-title-size); font-weight: var(--fan-section-weight); line-height: 1.4; }
 .history { display: inline-flex; align-items: center; color: var(--color-muted); font-size: var(--fan-metadata-size); font-weight: 400; text-decoration: none; }
 .history:hover { color: var(--color-ink); }
 .history:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 .hero { display: flex; align-items: center; min-height: 44px; }
-.heroNumber.heroNumber { gap: var(--space-1); font-size: var(--fan-hero-number-size, 44px); font-weight: 800; line-height: 1; letter-spacing: -.02em; }
-.heroNumber.heroNumber > span:last-child { font-size: var(--fan-section-size, 18px); font-weight: 700; letter-spacing: 0; }
 .action { display: flex; justify-content: flex-end; min-width: 96px; }
 .exchange { min-width: 96px; white-space: nowrap; }
 .rows { display: grid; }
@@ -18,10 +16,10 @@
 .row + .row { border-top: 1px solid var(--color-line-subtle); }
 .row:hover { background: var(--color-soft); }
 .row:focus-visible { outline: 2px solid var(--color-focus); outline-offset: -2px; }
-.rowCopy { display: grid; gap: 2px; min-width: 0; }
+.rowCopy { display: grid; gap: var(--space-1); min-width: 0; }
 .rowLabel { font-size: var(--fan-item-title-size); font-weight: 400; line-height: 1.4; }
 .rowRate { overflow: hidden; color: var(--color-muted); font-size: var(--fan-metadata-size); line-height: 1.4; text-overflow: ellipsis; white-space: nowrap; }
-.rowValue { display: flex; align-items: center; font-size: var(--fan-item-title-size); font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.rowValue { display: flex; align-items: center; font-size: var(--fan-item-title-size); font-weight: var(--fan-section-weight); font-variant-numeric: tabular-nums; white-space: nowrap; }
 .heartValue { display: inline-flex; align-items: center; gap: var(--space-1); }
 .heart { display: block; flex: none; color: var(--color-accent); fill: currentColor; }
 .next { color: var(--color-muted); }
@@ -29,6 +27,5 @@
   .wallet { padding: var(--space-5) var(--space-5) var(--space-1); }
   .row { margin-inline: calc(var(--space-5) * -1); padding-inline: var(--space-5); }
   .hero { min-height: 48px; }
-  .heroNumber.heroNumber { font-size: var(--fan-hero-number-size-wide, 48px); }
-}
+  }
 @media (min-width: 1024px) { .action, .exchange { min-width: 120px; } }

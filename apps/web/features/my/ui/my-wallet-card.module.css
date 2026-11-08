@@ -1,8 +1,8 @@
 /* MY 지갑 메뉴 행 (FanRow menu 48): icon 24 · label 15/700 · value 15/700 tabular · ›. Card 12, 1px line, no shadow. */
-.row { display: grid; grid-template-columns: 24px minmax(0, 1fr) auto 16px; align-items: center; gap: var(--space-3); box-sizing: border-box; min-height: 48px; padding: 0 var(--space-4); border: 1px solid var(--color-line); border-radius: var(--radius-card, 12px); background: var(--color-surface); color: var(--color-ink); text-decoration: none; }
+.row { display: grid; grid-template-columns: 24px minmax(0, 1fr) auto 16px; align-items: center; gap: var(--space-3); box-sizing: border-box; min-height: 48px; padding: 0 var(--space-4); border: 1px solid var(--color-line); border-radius: var(--radius-card); background: var(--color-surface); color: var(--color-ink); text-decoration: none; }
 .row:hover { background: var(--color-soft); }
 .row:focus-visible { outline: 2px solid var(--color-focus); outline-offset: -2px; }
-.label { font-size: var(--fan-item-title-size); font-weight: 700; }
-.value { display: flex; align-items: center; font-size: var(--fan-item-title-size); font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.label { font-size: var(--fan-item-title-size); font-weight: var(--fan-section-weight); }
+.value { display: flex; align-items: center; font-size: var(--fan-item-title-size); font-weight: var(--fan-section-weight); font-variant-numeric: tabular-nums; white-space: nowrap; }
 .next { color: var(--color-muted); }
 .guest { display: grid; gap: var(--space-3); }

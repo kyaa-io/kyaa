@@ -1,5 +1,6 @@
 "use client";
-import { ChevronRight } from "lucide-react";
+import { ChevronRight } from "@/components/fan-ui/stan-icons";
+import { FanIcon } from "@/components/fan-ui/fan-icon";
 import Link from "next/link";
 import type { Route } from "next";
 import { useEffect, useRef, useState } from "react";
@@ -69,7 +70,7 @@ export function StanHistoryCard({ locale, guest, href, onAll, onFailure }: { loc
   useEffect(() => { if (!guest && settled) report.current?.(failed, () => retry.current()); }, [guest, settled, failed]);
   const entries = history.data?.entries.slice(0, 3) ?? [];
   return <section className={styles.card} id="stan-history" tabIndex={-1} aria-labelledby="stan-history-title" data-block="aside-card">
-    <div className={styles.head}><FanHeading id="stan-history-title">{t(locale, "stanTabHistory")}</FanHeading>{guest ? <FanLockedValue locale={locale} /> : <Link className={styles.all} href={href as Route} scroll={false} onClick={onAll}>{seeAllLabel[locale]}<ChevronRight size={12} strokeWidth={1.5} aria-hidden="true" /></Link>}</div>
+    <div className={styles.head}><FanHeading id="stan-history-title">{t(locale, "stanTabHistory")}</FanHeading>{guest ? <FanLockedValue locale={locale} /> : <Link className={styles.all} href={href as Route} scroll={false} onClick={onAll}>{seeAllLabel[locale]}<FanIcon icon={ChevronRight} size={16} /></Link>}</div>
     <div className={styles.box}>
       {guest ? <FanLockedRows rows={3} className={styles.locked} />
         : history.loading ? <ul className={styles.list} aria-busy="true">{[0, 1, 2].map(index => <li key={index} className={styles.row} data-row="transaction"><span className={styles.rowCopy}><FanSkeleton width={96} height={16} /><FanSkeleton width={120} height={12} /></span><FanSkeleton width={40} height={16} /></li>)}</ul>
@@ -92,7 +93,7 @@ export function StanHistoryTab({ locale, guest }: { locale: AppLocale; guest: bo
   const days: Array<[string, Entry[]]> = [];
   for (const entry of shown) { const day = ledgerDate(entry.createdAt), last = days.at(-1); if (last && last[0] === day) last[1].push(entry); else days.push([day, [entry]]); }
   return <section className={styles.tab} aria-labelledby="stan-history-tab-title" data-block="list">
-    <h2 className={styles.srOnly} id="stan-history-tab-title">{t(locale, "stanTabHistory")}</h2>
+    <div className={styles.srOnly}><FanHeading id="stan-history-tab-title">{t(locale, "stanTabHistory")}</FanHeading></div>
     <div className={styles.balanceLine} data-row="balance">
       <span className={styles.balanceMain}><span>{t(locale, "historyBalance")}</span>{guest ? <FanLockedValue locale={locale} /> : wallet.data ? <FanNumber value={wallet.data.points} size="md" countUp locale={locale} unit="P" className={styles.balanceNumber} /> : wallet.loading ? <FanSkeleton width={96} height={24} /> : null}</span>
       <span className={styles.balanceSide}><span>{w.tickets}</span>{guest ? <FanLockedValue locale={locale} /> : wallet.data ? <strong>{t(locale, "walletTicketsValue", [wallet.data.tickets.toLocaleString(locale)])}</strong> : null}</span>
@@ -104,8 +105,8 @@ export function StanHistoryTab({ locale, guest }: { locale: AppLocale; guest: bo
         : history.error ? <ErrorLine locale={locale} retry={history.retry} />
         : entries.length === 0 ? <p className={styles.empty}>{t(locale, "historyEmpty")}</p>
         : days.map(([day, list]) => <div key={day} className={styles.day}>
-          <h3 className={styles.dayHead}>{day}</h3>
-          <ul className={`${styles.list} ${styles.tabList}`}>{list.map(entry => <TransactionRow key={entry.id} locale={locale} entry={entry} withDate={false} />)}</ul>
+          <p className={styles.dayHead} id={`stan-day-${day}`}>{day}</p>
+          <ul className={`${styles.list} ${styles.tabList}`} aria-labelledby={`stan-day-${day}`}>{list.map(entry => <TransactionRow key={entry.id} locale={locale} entry={entry} withDate={false} />)}</ul>
         </div>)}
     </div>
     {more && !guest && !history.error ? <FanAction variant="text" className={styles.more} onClick={() => setAll(true)}>{groupsCopy(locale).more}</FanAction> : null}

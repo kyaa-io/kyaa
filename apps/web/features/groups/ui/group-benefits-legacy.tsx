@@ -4,7 +4,7 @@ import {WalletBalances,WalletExchange} from '@/features/group-wallet/ui/wallet-c
 import {createContext,useContext,useEffect,useRef,useState,type ReactNode} from 'react';
 import Link from 'next/link';
 import type {Route} from 'next';
-import {ChevronRight,Ticket} from 'lucide-react';
+import {ChevronRight,Ticket} from '@/components/fan-ui/stan-icons';
 import {FanAction} from '@/components/fan-ui/fan-action';
 import {FanHeading} from '@/components/fan-ui/fan-heading';
 import {FanState} from '@/components/fan-ui/fan-state';
@@ -18,7 +18,7 @@ import {GroupImage} from './group-image';
 import {GROUP_WALLET_CHANGED_EVENT,useGroupRequest,useGroupResource} from './use-group-resource';
 import {groupsCopy} from './copy';
 import {groupBenefitsCopy,benefitsRaffleState} from './group-benefits-copy';
-import styles from './group-benefits-legacy.module.css';
+import styles from './group-benefits.module.css';
 const parseWallet=(value:unknown)=>walletSchema.parse(value);
 const parseRaffles=(value:unknown)=>groupBenefitsCatalogSchema.options[0].parse(value);
 export function BenefitsExchangeShop({locale}:{locale:AppLocale}){
@@ -42,7 +42,7 @@ function useSoonContent(active:boolean){
 /** Registers a failure with the screen-level list; returns true when the list shows it instead of the caller. */
 function useLiftedAlert(id:string,entry:AlertEntry,enabled:boolean){
  const registry=useContext(AlertContext),retryRef=useRef(entry.retry),{message,label}=entry;
- retryRef.current=entry.retry;
+ useEffect(()=>{retryRef.current=entry.retry;});
  const lifted=enabled&&!!registry;
  useEffect(()=>{if(!lifted)return;return registry.register(id,{message,label,retry:()=>retryRef.current()});},[registry,lifted,id,message,label]);
  return lifted;
@@ -55,7 +55,7 @@ function SoonAlert({id,message,retryLabel,onRetry,blocking=true}:{id:string;mess
 /** Collects failures from every benefits section so the screen shows one alert per distinct message. */
 function BenefitsAlerts({children}:{children:ReactNode}){
  const [entries,setEntries]=useState<Record<string,AlertEntry>>({});
- const registry=useRef<AlertRegistry>({register:(id,entry)=>{setEntries(current=>({...current,[id]:entry}));return()=>setEntries(current=>{const {[id]:_removed,...rest}=current;return rest;});}}).current;
+ const [registry]=useState<AlertRegistry>(()=>({register:(id,entry)=>{setEntries(current=>({...current,[id]:entry}));return()=>setEntries(current=>{const {[id]:_removed,...rest}=current;return rest;});}}));
  return <AlertContext.Provider value={registry}><AlertEntriesContext.Provider value={entries}>{children}</AlertEntriesContext.Provider></AlertContext.Provider>;
 }
 /** One alert per distinct message; its retry calls every failed request that shares the message. */
@@ -66,7 +66,7 @@ function BenefitsAlertList(){
  return <div className={styles.alertList}>{[...groups].map(([message,list])=><FanState inline key={message} kind='error' className={styles.inlineError} title={message} actions={<FanAction onClick={()=>list.forEach(entry=>entry.retry())}>{list[0].label}</FanAction>}/>)}</div>;
 }
 export function BenefitsComingSoon({locale,children,grouped}:{locale:AppLocale;children:ReactNode;grouped?:boolean}){
- const [counts,setCounts]=useState({fail:0,content:0}),report=useRef<SoonSignal['report']>((kind,delta)=>setCounts(current=>({...current,[kind]:Math.max(0,current[kind]+delta)}))).current,failed=counts.fail>0&&counts.content===0;
+ const [counts,setCounts]=useState({fail:0,content:0}),[report]=useState<SoonSignal['report']>(()=>(kind,delta)=>setCounts(current=>({...current,[kind]:Math.max(0,current[kind]+delta)}))),failed=counts.fail>0&&counts.content===0;
  const outer=useContext(AlertContext),block=<SoonContext.Provider value={{report}}><div className={grouped?`${styles.soon} ${styles.soonGroup}`:styles.soon} data-failed={failed?'':undefined}><div className={styles.soonContent} inert aria-hidden='true'>{children}</div>{!failed&&<p className={styles.soonNotice}>{groupBenefitsCopy(locale).soon}</p>}</div></SoonContext.Provider>;
  return outer?block:<BenefitsAlerts><BenefitsAlertList/>{block}</BenefitsAlerts>;
 }

@@ -68,8 +68,8 @@ export function GroupBenefitsScreen({locale,initialHeart=null,signedOut=false,ta
  useEffect(()=>{setTab(initialTab);},[initialTab]);
  const go=(next:StanTab)=>()=>setTab(next);
  return <FanAppFrame locale={locale} currentPath='/benefits' groupsEnabled mainId='benefits-main' className={styles.frame}>
- <div className={styles.tabBar}><div className={styles.tabInner}><FanTabs variant='underline' label={c.title} current={tab} items={[{key:'today',label:dukjilText(locale,'stanTabToday'),href:tabHref(locale,'today'),onSelect:go('today')},{key:'history',label:dukjilText(locale,'stanTabHistory'),href:tabHref(locale,'history'),onSelect:go('history')}]}/></div></div>
  <FanContentContainer as='main' id='benefits-main' className={styles.page} data-stan-tab={tab}>
+ <div className={styles.subnav}><FanTabs variant='underline' label={c.title} current={tab} items={[{key:'today',label:dukjilText(locale,'stanTabToday'),href:tabHref(locale,'today'),onSelect:go('today')},{key:'history',label:dukjilText(locale,'stanTabHistory'),href:tabHref(locale,'history'),onSelect:go('history')}]}/></div>
  <header className={styles.srOnly}><FanHeading as='h1'>{c.title}</FanHeading></header>
  {tab==='history'?<HistoryTab locale={locale} signedOut={signedOut} bias={bias}/>:<TodayTab locale={locale} signedOut={signedOut} bias={bias} onHistory={go('history')}/>}
  </FanContentContainer></FanAppFrame>;

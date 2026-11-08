@@ -1,6 +1,7 @@
 "use client";
 
-import { ChevronRight, Coins } from "lucide-react";
+import { ChevronRight, Coins } from "@/components/fan-ui/stan-icons";
+import { FanIcon } from "@/components/fan-ui/fan-icon";
 import Link from "next/link";
 import type { Route } from "next";
 import { useEffect } from "react";
@@ -18,10 +19,10 @@ const parseWallet = (value: unknown) => walletSchema.parse(value);
 /** MY 지갑 (plan-ux r5.1 3.6, G2): one menu row `지갑 … P 1,431 ›` to the 덕질 balance card. Exchange lives on 덕질 only (R19). */
 function WalletRow({ locale, value }: { locale: AppLocale; value: React.ReactNode }) {
   return <Link className={styles.row} href={`/benefits?locale=${locale}` as Route} data-row="menu" data-my-wallet="">
-    <Coins size={24} strokeWidth={1.5} aria-hidden="true" data-icon="" data-icon-set="lucide" />
+    <FanIcon icon={Coins} size={24} />
     <span className={styles.label}>{dukjilText(locale, "myWalletRow")}</span>
     <span className={styles.value} data-metric="asset" data-metric-id="my-wallet-points">{value}</span>
-    <ChevronRight size={16} strokeWidth={1.5} className={styles.next} aria-hidden="true" />
+    <FanIcon icon={ChevronRight} size={16} className={styles.next} />
   </Link>;
 }
 
