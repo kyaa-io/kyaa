@@ -4,15 +4,15 @@
 .main { outline: none; }
 .layout { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-4); }
 .primary, .aside { display: contents; }
-.slotHero { order: 1; } .slotFavorite { order: 2; } .slotNews { order: 3; } .slotRanking { order: 4; } .slotChallenge { order: 5; }
-.slotHero, .slotFavorite, .slotNews, .slotRanking, .slotChallenge { min-width: 0; }
+.slotHero { order: 1; } .slotFavorite { order: 2; } .slotNews { order: 3; } .slotBanner { order: 3; } .slotRanking { order: 4; } .slotChallenge { order: 5; }
+.slotHero, .slotFavorite, .slotNews, .slotBanner, .slotRanking, .slotChallenge { min-width: 0; }
 
 @media (min-width: 64rem) {
   .page { padding-block: var(--space-8) var(--space-12); }
   .layout { grid-template-columns: minmax(0, 733fr) minmax(0, 343fr); column-gap: var(--space-6); align-items: start; }
   .primary { display: grid; gap: var(--space-6); min-width: 0; }
   .aside { display: grid; gap: var(--space-4); min-width: 0; }
-  .slotHero, .slotFavorite, .slotNews, .slotRanking, .slotChallenge { order: 0; }
+  .slotHero, .slotFavorite, .slotNews, .slotBanner, .slotRanking, .slotChallenge { order: 0; }
 }
 
 /* ① 히어로 */

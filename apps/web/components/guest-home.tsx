@@ -31,6 +31,7 @@ import { fanLoginHref } from "./login-href";
 import type { HomeQueries } from "./home-query-stream";
 import { gggiHomeBanner } from "@/features/home/domain/gggi-home-banner";
 import { translate } from "@/i18n/messages";
+import { BannerSlot } from "./banner-slot/banner-slot";
 import { messages as homeMessages } from "@/i18n/catalogs/components__guest-home";
 import styles from "./guest-home.module.css";
 
@@ -75,7 +76,7 @@ function useFavoriteNews(locale: AppLocale, slug: string | null) {
   return { notices, ordered, loading: feed.loading, error: feed.error };
 }
 
-type HeroModel = { kind: "live" | "official" | "banner"; title: string; href: string; image: string | null; alt: string; meta: ReactNode; external?: boolean };
+type HeroModel = { kind: "live" | "official" | "banner"; bannerId?: string; title: string; href: string; image: string | null; alt: string; meta: ReactNode; external?: boolean };
 
 /** The post's first public photo, or none (a body this screen cannot read draws the title alone). */
 function noticeImage(notice: Notice, slug: string) {
@@ -103,7 +104,7 @@ function pickHero(locale: AppLocale, lives: readonly LiveEventResponse[], notice
       meta: <><span>{t.official}</span>{date ? <><span aria-hidden="true"> · </span><time dateTime={notice.publishedAt}>{date}</time></> : null}</> };
   }
   const banner = banners[0];
-  if (banner) return { kind: "banner", title: banner.title, href: localizedBannerHref(banner.href, locale), image: (banner.desktopImage ?? banner.mobileImage)?.url ?? null, alt: banner.alt,
+  if (banner) return { kind: "banner", bannerId: banner.id, title: banner.title, href: localizedBannerHref(banner.href, locale), image: (banner.desktopImage ?? banner.mobileImage)?.url ?? null, alt: banner.alt,
     meta: banner.description ? <span>{banner.description}</span> : null, external: !banner.href.startsWith("/") };
   return null;
 }
@@ -192,6 +193,8 @@ function HomeBody({ locale, data }: { locale: AppLocale; data: HomeData }) {
     <div className={styles.primary}>
       <div className={styles.slotHero}><HomeHero locale={locale} hero={hero} upcoming={nextLive(data.lives)} loading={deciding} /></div>
       {guest ? null : <div className={styles.slotNews}><MyNews locale={locale} favorite={favorite} news={news} deciding={!auth.ready || bias.status === "loading"} /></div>}
+      {/* Managed banner slot (C6, feedback I ①): one operator banner between 내 최애 소식 and the ranking; folds when empty or when the hero already shows it. */}
+      <BannerSlot slot="home_below_board" locale={locale} className={styles.slotBanner} excludeIds={hero?.bannerId ? [hero.bannerId] : undefined} />
       <div className={styles.slotRanking}><HomeRankingCard locale={locale} /></div>
       <div className={styles.slotChallenge}><HomeChallenges locale={locale} preferredSlugs={mine} /></div>
     </div>

@@ -10,6 +10,7 @@ const h = vi.hoisted(() => ({
   feed: undefined as unknown,
   group: undefined as unknown,
   urls: [] as (string | null)[],
+  slots: {} as Record<string, unknown>,
 }));
 vi.mock("@/features/auth/client/cognito-auth", () => ({ useByUsAuth: () => h.auth }));
 vi.mock("@/features/selected-bias/ui/use-selected-bias", () => ({ useSelectedBias: () => ({ ...h.bias, options: [], unverified: null, select: () => {}, retry: () => {} }) }));
@@ -21,11 +22,12 @@ vi.mock("@/features/groups/ui/use-group-resource", () => ({ useGroupResource: (u
 vi.mock("@/features/rankings/ui/home-ranking-card", async (importActual) => ({ ...(await importActual<object>()), HomeRankingCard: () => <section data-block="ranking" data-testid="ranking" /> }));
 vi.mock("@/features/rankings/ui/home-challenges", () => ({ HomeChallenges: () => <section data-block="challenge" data-testid="challenge" /> }));
 vi.mock("@/components/fan-shell/fan-app-shell", async (importActual) => ({ ...(await importActual<object>()), FanAppFrame: ({ children }: { children: React.ReactNode }) => <div>{children}</div> }));
+vi.mock("@/components/banner-slot/banner-slot-source", () => ({ useBannerSlots: () => h.slots }));
 vi.mock("next/navigation", () => ({ usePathname: () => "/", useSearchParams: () => new URLSearchParams(), useRouter: () => ({ push: () => {}, refresh: () => {} }) }));
 
 import { GuestHome } from "./guest-home";
 
-afterEach(() => { h.auth = { ready: true, authenticated: false }; h.bias = { status: "guest", selected: null }; h.feed = undefined; h.group = undefined; h.urls = []; });
+afterEach(() => { h.auth = { ready: true, authenticated: false }; h.bias = { status: "guest", selected: null }; h.feed = undefined; h.group = undefined; h.urls = []; h.slots = {}; });
 
 const live = (status: "live" | "scheduled", startsAt = new Date(Date.now() + 3_600_000).toISOString()) => ({
   live: { id: "819b52d9-62c3-450c-b3dc-78d84d2238c6", slug: "live-a", effectiveStatus: status, startsAt, endsAt: null, reservationOpensAt: startsAt, reservationClosesAt: startsAt,
@@ -104,4 +106,26 @@ it("draws no hero (not an endless skeleton) when there is no LIVE, post or banne
   const { container } = render(<GuestHome locale="ko" featuredLives={[]} homeBanners={[]} />);
   expect(container.querySelector('[data-block="hero"]')).toBeNull();
   expect(container.querySelector("[aria-busy]")).toBeNull();
+});
+
+it("feedback I ①: one managed banner between 내 최애 소식 and the ranking, folded when empty or when the hero already shows it", () => {
+  h.auth = { ready: true, authenticated: true }; h.bias = { status: "ready", selected: favorite };
+  h.feed = { items: [], nextCursor: null, unavailableSources: [] };
+  const slotBanner = { ...banner, id: "9bf2f180-cb32-4f00-93e2-e84b570ad450", title: "찐팬 100 챌린지" } as HomeBanner;
+  h.slots = { home_below_board: slotBanner };
+  const { container, unmount } = render(<GuestHome locale="ko" featuredLives={[live("live")]} homeBanners={[]} />);
+  const slots = container.querySelectorAll("[data-banner-slot]");
+  expect(slots).toHaveLength(1);
+  const order = [...container.querySelectorAll('[data-block="feed"], [data-banner-slot], [data-testid="ranking"]')].map((el) => el.getAttribute("data-block") ?? el.getAttribute("data-banner-slot") ?? el.getAttribute("data-testid"));
+  expect(order).toEqual(["feed", "home_below_board", "ranking"]);
+  unmount();
+  // The hero falls back to the same operator banner: the slot folds rather than drawing it twice.
+  h.slots = { home_below_board: banner };
+  const again = render(<GuestHome locale="ko" featuredLives={[]} homeBanners={[banner]} />);
+  expect(again.container.querySelector('[data-block="hero"]')).toHaveAttribute("data-hero-kind", "banner");
+  expect(again.container.querySelector("[data-banner-slot]")).toBeNull();
+  again.unmount();
+  h.slots = {};
+  const empty = render(<GuestHome locale="ko" featuredLives={[live("live")]} homeBanners={[]} />);
+  expect(empty.container.querySelector("[data-banner-slot]")).toBeNull();
 });
