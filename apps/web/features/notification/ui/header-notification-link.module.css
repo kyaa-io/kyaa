@@ -1,5 +1,4 @@
-.link { position: relative; padding: 0; border: 0; background: transparent; font: inherit; cursor: pointer; }
-.link:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
+.link { position: relative; }
 /* 미읽음 수(DESIGN.md 359행: 미읽음 수는 Spectrum Ink). 종 아이콘 오른쪽 위에 겹친다. 99를 넘으면 99+. */
 .badge {
   position: absolute;

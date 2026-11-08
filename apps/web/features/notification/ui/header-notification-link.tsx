@@ -1,6 +1,7 @@
 "use client";
 import { useRef, useState } from "react";
 import { Bell } from "lucide-react";
+import { FanIconButton } from "@/components/fan-ui/fan-icon-button";
 import { useOwnedFanResource } from "@/components/fan-ui/use-owned-fan-resource";
 import { useByUsAuth } from "@/features/auth/client/cognito-auth";
 import { mySummaryPath, mySummarySchema } from "@/features/my/domain/my-summary";
@@ -34,11 +35,11 @@ export function HeaderNotificationLink({ locale, label, className }: { locale: A
   const bellRef = useRef<HTMLButtonElement>(null);
   const [open, setOpen] = useState(false);
   return <>
-    <button ref={bellRef} type="button" className={`${className ?? ""} ${styles.link}`} aria-label={name} title={name} data-unread={count}
+    <FanIconButton ref={bellRef} className={`${className ?? ""} ${styles.link}`} aria-label={name} title={name} data-unread={count}
       aria-haspopup="dialog" aria-expanded={open} onClick={() => setOpen((value) => !value)}>
       <Bell aria-hidden="true" />
       {count > 0 ? <span className={styles.badge} aria-hidden="true">{unreadBadgeText(count)}</span> : null}
-    </button>
+    </FanIconButton>
     <NotificationPanel open={open} onOpenChange={setOpen} locale={locale} anchorRef={bellRef} />
   </>;
 }
