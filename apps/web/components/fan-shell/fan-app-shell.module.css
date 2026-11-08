@@ -167,3 +167,10 @@
 @media (max-width: 47.999rem) { .statusCapsule { max-width: 182px; padding-inline: var(--space-1); } }
 /* Feedback F: from 1200px the tabs and the right group keep at least 24px apart, also with the wider ru·vi tab labels. */
 @media (min-width: 75rem) { .groupsNavigation .headerInner { column-gap: var(--space-6, 24px); } }
+
+/* Header follow-up (bundle r6): the slot held while sign-in is unknown — no background, so no blank capsule flashes. */
+.statusPending { display: inline-block; flex: 0 1 auto; width: 160px; min-width: 0; height: var(--min-target); }
+@media (min-width: 64rem) and (max-width: 74.999rem) { .statusPending { width: 120px; } }
+@media (max-width: 47.999rem) { .statusPending { width: 96px; } }
+/* From 1200px the capsule takes what its values need, so large ♥ and P numbers no longer squeeze the favorite to a sliver. */
+@media (min-width: 75rem) { .statusCapsule { max-width: none; } }

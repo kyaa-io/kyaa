@@ -70,3 +70,5 @@
   [data-header-status] .grade::after, [data-header-status] .hearts::before { margin: 0 calc(var(--space-1) / 2); }
 }
 [data-header-status] .cell[data-cell="tier"] { gap: var(--space-1); }
+/* Header follow-up (bundle r6): at 1200px and up the favorite keeps at least three letters' width (ellipsis), never a 2px fragment. */
+@media (min-width: 75rem) { [data-header-status] .name { min-width: 3em; } }

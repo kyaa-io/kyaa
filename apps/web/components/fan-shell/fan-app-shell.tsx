@@ -121,12 +121,17 @@ function mobileLabel(section: FanSection, locale: FanLocale, groupsEnabled = fal
 /** Feedback F: signed in, the right side is three things — one status capsule (tier · favorite · ♥N · P N, each cell its own destination),
  * the bell, and the avatar that opens the account menu. The language moves into that menu from 768px; below 768px (no account menu) and
  * signed out it stays in the header. */
-function GroupHeaderActions({ locale, languageHref, notificationsLabel, actions, actionsAreIdentity }: {
+export function GroupHeaderActions({ locale, languageHref, notificationsLabel, actions, actionsAreIdentity }: {
   locale: FanLocale; languageHref: string; notificationsLabel: string; actions?: ReactNode; actionsAreIdentity?: boolean;
 }) {
-  const guest = useGroupRequest().ownerKey.startsWith("guest:");
+  const owner = useGroupRequest().ownerKey, guest = owner.startsWith("guest:");
+  // Until sign-in is known (server HTML and the first client frames) the slot is held empty, not drawn as a blank capsule that then
+  // turns into the guest chip or fills with values.
+  const status = owner.startsWith("pending:") ? <span className={styles.statusPending} data-header-status-pending="" aria-hidden="true" />
+    : guest ? <SelectedBiasChip locale={locale} />
+    : <span className={styles.statusCapsule} data-header-status=""><SelectedBiasChip locale={locale} /><GroupHeaderPoints locale={locale} /></span>;
   return <>
-    {guest ? <SelectedBiasChip locale={locale} /> : <span className={styles.statusCapsule} data-header-status=""><SelectedBiasChip locale={locale} /><GroupHeaderPoints locale={locale} /></span>}
+    {status}
     <span className={styles.headerLanguage} data-signed-in={guest ? undefined : ""}><FanLanguageSwitch locale={locale} href={languageHref} compact /></span>
     <Link className={styles.utilityLink} href={`/notifications?locale=${locale}` as Route} aria-label={notificationsLabel} title={notificationsLabel}><Bell aria-hidden="true" /></Link>
     <div className={styles.groupDesktopAccount}><GroupHeaderAccount locale={locale} actions={actions} actionsAreIdentity={actionsAreIdentity} languageHref={languageHref} /></div>
