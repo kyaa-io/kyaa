@@ -28,7 +28,12 @@ const joined=(count:number)=>Array.from({length:count},(_,i)=>({id:uid(i+1),kind
 const rankRows=(count:number)=>Array.from({length:count},(_,i)=>({rank:i+1,slug:`r${i+1}`,name:`Ranked ${i+1}`,imageUrl:null,score:100-i,jjinfanCount:i,myHearts:rankMine}));
 let fail=false,failCreators=false,empty=false,invalidCursor=false,joinedCount=0,rankCount=0,catalogOn=true,spotlightCount=0,spotlightFails=false,rankMine:number|null=null;
 const requests:string[]=[];
-beforeEach(()=>{bias.value={status:'error',options:[],selected:null,unverified:null,select:()=>{},retry:()=>{}};historyFails.value=false;resetDukjilCatalogCache();fail=false;failCreators=false;empty=false;invalidCursor=false;joinedCount=0;rankCount=0;catalogOn=true;spotlightCount=0;spotlightFails=false;rankMine=null;requests.length=0;auth.authenticated=true;session.ownerId='owner-a';session.generation=0;
+// E4: the favorite's creator lucky draws (open, upcoming, closed, cancelled) and its row in the home creator ranking.
+const day=86_400_000,iso=(offset:number)=>new Date(Date.now()+offset).toISOString();
+const creatorRaffle=(n:number,status:string,opens:number,closes:number)=>({id:uid(300+n),benefitId:uid(400+n),title:`Gift ${n}`,summary:'s',imageUrl:null,winnerQuantity:3,status,entryOpensAt:iso(opens),entryClosesAt:iso(closes),resultsPublishedAt:null,fulfillmentMethod:'on_site_pickup',perFanTicketLimit:null});
+const allRaffles=()=>[creatorRaffle(3,'closed',-10*day,-2*day),creatorRaffle(2,'preparing',3*day,10*day),creatorRaffle(1,'open',-day,7*day),creatorRaffle(4,'cancelled',-day,7*day)];
+let creatorRaffles:unknown[]=[],homeRows:unknown[]=[],roadmapBody:unknown=null;
+beforeEach(()=>{creatorRaffles=allRaffles();homeRows=[{rank:3,slug:'bias-x',name:'Bias X',imageUrl:null,score:125,hearts:795,challenge:false,delta:1}];roadmapBody=null;bias.value={status:'error',options:[],selected:null,unverified:null,select:()=>{},retry:()=>{}};historyFails.value=false;resetDukjilCatalogCache();fail=false;failCreators=false;empty=false;invalidCursor=false;joinedCount=0;rankCount=0;catalogOn=true;spotlightCount=0;spotlightFails=false;rankMine=null;requests.length=0;auth.authenticated=true;session.ownerId='owner-a';session.generation=0;
  vi.stubGlobal('fetch',vi.fn(async(url:string,init?:RequestInit)=>{
   expect(init?.method??'GET').toBe('GET');requests.push(url);
   if(url==='/api/me/wallet')return Response.json(wallet);
@@ -37,6 +42,10 @@ beforeEach(()=>{bias.value={status:'error',options:[],selected:null,unverified:n
   if(url.startsWith('/api/groups?limit=4&type=fan&sort=today'))return spotlightFails?Response.json({error:{code:'X'}},{status:500}):Response.json({items:joined(spotlightCount).map(page=>({...page,memberCount:1200000})),nextCursor:null});
   if(url.startsWith('/api/groups?mine=joined&limit=50'))return Response.json({items:joined(joinedCount),nextCursor:null});
   if(url.startsWith('/api/me/attendance?creators='))return Response.json({kstDate:'2026-11-06',items:joined(joinedCount).map((page,i)=>({celebrityId:page.celebrityId,attendedToday:i===0,streak:i===0?3:0,nextBonusIn:4,hasPassport:true}))});
+  if(/^\/api\/celebrities\/[^/]+\/raffles/.test(url))return Response.json({raffles:creatorRaffles});
+  if(url.startsWith('/api/rankings/home'))return Response.json({day:'2026-11-08',computedAt:'2026-11-08T00:00:00Z',comparable:true,rows:homeRows});
+  if(url.startsWith('/api/benefits?celebrity='))return Response.json({benefits:[]});
+  if(/^\/api\/me\/passports\/[^/]+\/roadmap/.test(url))return Response.json(roadmapBody);
   if(url.startsWith('/api/rankings/creators'))return Response.json({period:'week',periodStart:'2026-11-02',computedAt:'2026-11-06T00:00:00Z',rows:rankRows(rankCount)});
   if(url.includes('/api/public/celebrities')&&failCreators)return Response.json({error:{code:'UNAVAILABLE'}},{status:503});
   if(url.includes('/api/public/celebrities'))return Response.json({celebrities:[{slug:'synthetic-creator',name:'Actual creator'}]});
@@ -50,14 +59,48 @@ beforeEach(()=>{bias.value={status:'error',options:[],selected:null,unverified:n
 });
 function LuckyCatalog({locale}:{locale:AppLocale}){const owner=useGroupRequest();return <BenefitsComingSoon locale={locale} grouped><section><BenefitsCatalog key={`raffles:${owner.ownerKey}`} kind='raffles' locale={locale} heading={groupBenefitsCopy(locale).lucky}/></section></BenefitsComingSoon>;}
 const renderCatalog=(locale:AppLocale='ko')=>render(<LuckyCatalog locale={locale}/>);
-it('shows balances and keeps 럭키드로우 cards with disabled entry buttons and the 준비 중 reason without reading raffles',async()=>{
- const view=render(<GroupBenefitsScreen locale='ja'/>);
- await screen.findAllByText('137');
- expect(requests).not.toContain('/api/groups/benefits?kind=raffles');
- const section=view.container.querySelector('[data-lucky-soon]')! as HTMLElement;
- expect(within(section).getByRole('heading',{name:groupBenefitsCopy('ja').lucky})).toBeInTheDocument();
- expect(section.querySelectorAll('[data-fan-tag]')).toHaveLength(2);expect(within(section).queryByRole('button',{name:'応募する'})).toBeNull();
- expect(section.querySelectorAll('a')).toHaveLength(0);expect(section).toHaveTextContent('準備中');
+const favorite={slug:'bias-x',name:'Bias X',image:'/x.webp',passportId:uid(900),tier:'Silver',stage:null,hearts:3};
+const withFavorite=()=>{bias.value={status:'ready',options:[favorite],selected:favorite,unverified:null,select:()=>{},retry:()=>{}};};
+it('E4: shows the favorite’s real lucky draws (open first, then upcoming), with dates, winners, the ticket cost and the entries the wallet allows, and no disabled action',async()=>{
+ withFavorite();const view=render(<GroupBenefitsScreen locale='ko'/>);
+ const section=await screen.findByRole('region',{name:groupBenefitsCopy('ko').lucky});await within(section).findByText('Gift 1');
+ expect(requests).toContain('/api/celebrities/bias-x/raffles?locale=ko');
+ const cards=[...section.querySelectorAll<HTMLElement>('[data-raffle-status]')];
+ expect(cards.map(card=>card.dataset.raffleStatus)).toEqual(['open','preparing']);
+ expect(cards[0]).toHaveTextContent(/마감 \d+\. \d+\./);expect(cards[0]).toHaveTextContent('3명 · 현장 수령');
+ await waitFor(()=>expect(cards[0].querySelector('[data-raffle-cost]')).toHaveTextContent('응모권 1장 · 지금 7번 가능'));
+ expect(within(cards[0]).getByRole('link',{name:/응모하러 가기/})).toHaveAttribute('href',`/c/bias-x/raffles/${uid(401)}?locale=ko`);
+ expect(cards[1]).toHaveTextContent(/응모 시작/);expect(cards[1].querySelector('[data-raffle-cost]')).toBeNull();
+ expect(within(cards[1]).getByRole('link',{name:/선물 보기/})).toHaveAttribute('href',`/c/bias-x/raffles/${uid(402)}?locale=ko`);
+ expect(within(section).getByRole('link',{name:/전체 보기/})).toHaveAttribute('href','/c/bias-x/raffles?locale=ko');
+ expect(view.container.textContent).not.toMatch(/럭키드로우 [12]|준비 중|응원하러 가기/);
+ expect(view.container.querySelectorAll('[aria-disabled="true"]')).toHaveLength(0);
+});
+it('E4: an empty lucky-draw list is one state box with the way to my entries, not placeholder cards',async()=>{
+ withFavorite();creatorRaffles=[];render(<GroupBenefitsScreen locale='ko'/>);
+ const section=await screen.findByRole('region',{name:groupBenefitsCopy('ko').lucky});
+ await within(section).findByText('지금 진행 중인 럭키드로우가 없어요');
+ expect(within(section).getByRole('link',{name:/내 응모 내역/})).toHaveAttribute('href','/my/raffles?locale=ko');
+ expect(section.querySelectorAll('[data-raffle-status]')).toHaveLength(0);
+});
+it('E4: the cheer card shows the favorite’s creator rank, my hearts (the header’s number), the community numbers and the stamps to the next heart, with no send button',async()=>{
+ withFavorite();roadmapBody={passportId:uid(900),celebrityId:uid(901),hearts:3,pages:[{pageNo:1,slots:Array.from({length:9},(_,i)=>({slotNo:i+1,kind:null,state:i<4?'filled':'empty',stampId:null,clearedAt:null})),filled:4,claimable:false,claimed:false,locked:false,lockedReason:null}]};
+ const view=render(<GroupBenefitsScreen locale='ko'/>);
+ const card=await screen.findByRole('region',{name:'최애 응원'});
+ await within(card).findByText('크리에이터 순위 3위');
+ expect(card).toHaveTextContent('내 하트');expect(card).toHaveTextContent('3');expect(card).toHaveTextContent('125');expect(card).toHaveTextContent('795');
+ expect(within(card).getByRole('link',{name:/팬 순위 보기/})).toHaveAttribute('href','/bias-x?tab=fans&locale=ko');
+ await waitFor(()=>expect(within(card).getByRole('link',{name:'다음 하트까지 5칸'})).toHaveAttribute('href','/passports?locale=ko'));
+ expect(within(card).queryByRole('button',{name:/보내기|응원하러/})).toBeNull();
+ expect(view.container.querySelector('[data-cell="cheer"]')).toHaveTextContent('3위');
+});
+it('E4: stamps to the next heart are 9 − (n mod 9), and a full page reads 하트 +1',async()=>{
+ const {nextHeartLabel}=await import('./stan-lucky-cheer');
+ expect(nextHeartLabel('ko',4)).toBe('다음 하트까지 5칸');expect(nextHeartLabel('ko',0)).toBe('다음 하트까지 9칸');expect(nextHeartLabel('ko',9)).toBe('하트 +1');expect(nextHeartLabel('ko',13)).toBe('다음 하트까지 5칸');
+});
+it('E4: a favorite outside the top 20 reads 20위 밖',async()=>{
+ withFavorite();homeRows=[];render(<GroupBenefitsScreen locale='ko'/>);
+ const card=await screen.findByRole('region',{name:'최애 응원'});await within(card).findByText('크리에이터 순위 20위 밖');
 });
 it('uses validated catalog values, real scoped links, zero rewards and independent cursor pages',async()=>{
  renderCatalog('ja');await screen.findByText('First raffle');
@@ -157,15 +200,24 @@ it('shows geometry placeholders only during initial reads and replaces them with
 
 
 
-it('opens only the group ticket conversion from the two-flow wallet (C9): points → tickets → lucky draw, stamps → hearts → cheer',async()=>{
- render(<GroupBenefitsScreen locale='ko'/>);const button=await screen.findByRole('button',{name:'광고 보고 교환하기'});
+it('E5: the wallet is six linked cells, points → tickets → lucky draws / stamps → hearts → cheer, with no button inside a cell link',async()=>{
+ withFavorite();render(<GroupBenefitsScreen locale='ko'/>);const button=await screen.findByRole('button',{name:'광고 보고 교환하기'});
  expect(screen.queryByRole('radio')).toBeNull();expect(document.querySelector('fieldset')).toBeNull();
- expect(screen.queryByText(/100 P = 1개/)).toBeNull();expect(screen.queryByText(/공식 응모권/)).toBeNull();
  const card=button.closest('section')!;expect(card).toHaveAttribute('data-wallet-card','flows');expect(card).toHaveTextContent('137P');expect(card).toHaveTextContent('7장');expect(card).toHaveTextContent('교환 가능');
- const flows=card.querySelectorAll('dl[data-flow]');expect([...flows].map(flow=>flow.getAttribute('data-flow'))).toEqual(['tickets','hearts']);
- expect(flows[0]).toHaveTextContent(/포인트.*응모권.*럭키드로우/);expect(within(flows[0] as HTMLElement).getByRole('button',{name:'응모하기'})).toHaveAttribute('aria-disabled','true');
- expect(flows[1]).toHaveTextContent(/도장.*하트.*최애 응원/);
+ const flows=card.querySelectorAll('[data-flow]');expect([...flows].map(flow=>flow.getAttribute('data-flow'))).toEqual(['tickets','hearts']);
+ expect(flows[0]).toHaveTextContent(/포인트.*응모권.*럭키드로우/);expect(flows[1]).toHaveTextContent(/스탬프.*하트.*최애 응원/);
+ await waitFor(()=>expect(card.querySelector('[data-cell="lucky"]')).toHaveTextContent('진행 2'));
+ const hrefs=Object.fromEntries([...card.querySelectorAll<HTMLElement>('[data-cell]')].map(cell=>[cell.dataset.cell,cell.querySelector('a')?.getAttribute('href')]));
+ expect(hrefs).toEqual({points:'#stan-history',tickets:'/my/raffles?locale=ko',lucky:'#stan-lucky',stamps:'/passports?locale=ko',hearts:'/bias-x?tab=fans&locale=ko',cheer:'#stan-cheer'});
+ expect(card.querySelectorAll('a button, a [role="button"]')).toHaveLength(0);expect(card.querySelectorAll('[aria-disabled="true"]')).toHaveLength(0);
+ expect(document.getElementById('stan-lucky')).not.toBeNull();expect(document.getElementById('stan-cheer')).not.toBeNull();expect(document.getElementById('stan-history')).not.toBeNull();
  fireEvent.click(button);expect(screen.getByRole('dialog',{name:'응모권 전환'})).toBeInTheDocument();fireEvent.click(screen.getByRole('button',{name:'전환 닫기'}));expect(screen.queryByRole('dialog')).toBeNull();
+});
+it('E5: zero values are written as numbers, never a dash',async()=>{
+ const base=fetch;vi.stubGlobal('fetch',vi.fn((url:string,init?:RequestInit)=>url==='/api/me/wallet'?Promise.resolve(Response.json({...wallet,points:0,tickets:0})):base(url,init)));
+ bias.value={status:'empty',options:[],selected:null,unverified:null,select:()=>{},retry:()=>{}};
+ render(<GroupBenefitsScreen locale='ko'/>);const card=(await screen.findByRole('button',{name:'광고 보고 교환하기'})).closest('section')!;
+ await waitFor(()=>expect(card).toHaveTextContent('0P'));expect(card).toHaveTextContent('0장');expect(card).toHaveTextContent('0/9');expect(card.textContent).not.toContain('—');
 });
 /* A disabled exchange keeps the common grey pill; only enabled primary controls count as emphasis. */
 const primaryLabels=()=>[...document.querySelectorAll<HTMLElement>('main a,main button')].filter(el=>!el.closest('[inert]')&&/primary/.test(el.className)&&!(el as HTMLButtonElement).disabled).map(el=>el.textContent);
@@ -213,7 +265,7 @@ it('lists joined pages under 오늘의 덕질 with pending pages first and expan
 it('keeps the wallet card for guests: locked balances, the public exchange rate and the one emphasised login',async()=>{
  auth.authenticated=false;empty=true;render(<GroupBenefitsScreen locale='ko'/>);
  const login=await screen.findByRole('link',{name:'로그인'});const card=login.closest('section')!;
- expect(within(card).getAllByRole('img',{name:'로그인 후 확인'})).toHaveLength(4);expect(card.textContent).not.toContain('—');
+ expect(within(card).getAllByRole('img',{name:'로그인 후 확인'})).toHaveLength(5);expect(card.textContent).not.toContain('—');
  expect(within(card).getByText('100 P')).toBeInTheDocument();expect(within(card).getByText('1장')).toBeInTheDocument();
  expect(login.getAttribute('href')).toBe('/login?returnTo=%2Fbenefits%3Flocale%3Dko&locale=ko');expect(login).toHaveAttribute('data-fan-action-emphasis','primary');
  expect(screen.queryByRole('button',{name:'광고 보고 교환하기'})).toBeNull();expect(document.getElementById('wallet-history')).toBeNull();
@@ -300,10 +352,10 @@ it('H6: sends the mission rows and the heart cheer to the favorite chosen in the
  const missions=await screen.findByRole('region',{name:'오늘의 미션'});await within(missions).findByRole('button',{name:/오늘 할 것/});
  await waitFor(()=>expect(missions.querySelector('[data-mission="post"] a')).toHaveAttribute('href','/bias-x?tab=board&source=fans&compose=1&locale=ko'));
  expect(missions.querySelector('[data-mission="comment"] a')!.getAttribute('href')).toMatch(/^\/bias-x\?/);
- // D15: heart cheering is not open yet — the favorite is named, the action stays disabled, nothing links away.
- expect(screen.queryByRole('link',{name:'Bias X 응원하러 가기'})).toBeNull();
- expect(screen.getByRole('button',{name:'Bias X 응원하러 가기'})).toHaveAttribute('aria-disabled','true');
- expect(screen.getByRole('region',{name:'하트 응원'})).toHaveTextContent(/Bias X 응원하러 가기.*준비 중/);
+ // E4: cheering spends nothing; the card names the favorite and leads to its fan ranking, never a disabled send button.
+ expect(screen.queryByRole('button',{name:/응원하러 가기/})).toBeNull();
+ const cheer=screen.getByRole('region',{name:'최애 응원'});expect(cheer).toHaveTextContent('Bias X');
+ expect(within(cheer).getByRole('link',{name:/팬 순위 보기/})).toHaveAttribute('href','/bias-x?tab=fans&locale=ko');
 });
 it('asks a viewer without a favorite to pick one in the heart cheer card, and guests to log in',async()=>{
  bias.value={status:'empty',options:[],selected:null,unverified:null,select:()=>{},retry:()=>{}};
@@ -325,11 +377,11 @@ it('draws the favorite the server read while the browser is still signing in, th
  const initial = {slug:'server-pick',name:'Server Pick',image:'/images/x.png',passportId:uid(900),tier:'Bronze' as const,stage:null};
  bias.value = {status:'loading',options:[],selected:null,unverified:null,select:()=>{},retry:()=>{}};
  const {rerender} = render(<GroupBenefitsScreen locale='ko' initialHeart={initial}/>);
- expect(screen.getByRole('region',{name:'하트 응원'})).toHaveTextContent('Server Pick 응원하러 가기');
+ expect(screen.getByRole('region',{name:'최애 응원'})).toHaveTextContent('Server Pick');
  expect(document.querySelector('[data-selected-bias-bar="selected"]')).toHaveTextContent('Server Pick');
  bias.value = {status:'ready',options:[],selected:{...initial,slug:'stored-pick',name:'Stored Pick'},unverified:null,select:()=>{},retry:()=>{}};
  rerender(<GroupBenefitsScreen locale='ko' initialHeart={initial}/>);
- expect(screen.getByRole('region',{name:'하트 응원'})).toHaveTextContent('Stored Pick 응원하러 가기');
+ expect(screen.getByRole('region',{name:'최애 응원'})).toHaveTextContent('Stored Pick');
 });
 
 it('with no session cookie the signed-out heart and wallet are drawn before the browser finishes signing in', () => {
