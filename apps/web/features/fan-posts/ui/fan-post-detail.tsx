@@ -22,6 +22,7 @@ import { useCommunityResource } from "@/features/fanpage/ui/use-community-resour
 import { communityHref as hubHref } from "@/features/community/domain/navigation";
 import { PointRewardBurst, usePointRewardBurst } from "@/components/fan-ui/point-reward-burst";
 import { registrationRewardPoints } from "../domain/registration-reward";
+import { announceMissionSkip } from "./mission-skip-notice";
 import { postSchema, commentPageSchema } from "../domain/content";
 import { WAVE_FANPAGE_SLUG } from "@/features/fanpage/domain/wave-programs";
 import { WavePrivacyNotice } from "@/features/fanpage/ui/wave-privacy";
@@ -84,7 +85,7 @@ function DetailForOwner({ postId, locale, presentation: requestedPresentation }:
     if (!attempt.current || attempt.current.snapshot !== snapshot) attempt.current = { snapshot, key: crypto.randomUUID() };
     const result = await mutation.request(`/api/posts/${postId}/comments`, "POST", { ...value, idempotencyKey: attempt.current.key });
     if (result) {
-      const points = registrationRewardPoints(result); if (points) addReward(points);
+      const points = registrationRewardPoints(result); if (points) addReward(points); else announceMissionSkip(locale, "comment", result);
       if (parentId) setReplyDrafts(previous => ({ ...previous, [parentId]: "" }));
       else setBody("");
       restoreReplyFocus.current = Boolean(parentId);
