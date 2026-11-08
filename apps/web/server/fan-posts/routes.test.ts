@@ -173,7 +173,7 @@ describe("granted point result on post and comment creation", () => {
     const d = rpcBy({ id, revision: 1, replayed: false }, () => ({ amount: 10 }));
     const response = await createContentHandlers(d).posts(request("POST", create), "artist");
     expect(response.status).toBe(201);
-    expect(await response.json()).toEqual({ id, revision: 1, replayed: false, reward: { points: 10 } });
+    expect(await response.json()).toEqual({ id, revision: 1, replayed: false, reward: { points: 10, stamps: 0 } });
     expect(d.rpc).toHaveBeenLastCalledWith("read_owned_fan_post_reward", { p_app_user_id: owner, p_source_id: id });
   });
   it("forwards parentId so a reply is stored under its parent", async () => {
@@ -185,7 +185,7 @@ describe("granted point result on post and comment creation", () => {
   it("adds the amount for a new comment", async () => {
     const d = rpcBy({ id, revision: 1, replayed: false }, () => ({ amount: 10 }));
     const response = await createContentHandlers(d).comments(request("POST", comment), id);
-    expect(await response.json()).toEqual({ id, revision: 1, replayed: false, reward: { points: 10 } });
+    expect(await response.json()).toEqual({ id, revision: 1, replayed: false, reward: { points: 10, stamps: 0 } });
   });
   it.each([[{ amount: 0 }], [{ amount: -5 }], [{ amount: 1.5 }], [{ amount: 10, extra: 1 }], [null], ["x"]])("omits reward for non-granted or malformed read %j", async (read) => {
     const d = rpcBy({ id, revision: 1, replayed: false }, () => read);

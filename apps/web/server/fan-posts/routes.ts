@@ -11,6 +11,7 @@ import type { FanpageDependencies } from "@/server/fanpage/routes";
 import type { AppLocale } from "@/i18n/locales";
 import { parseNoticeDocument } from "@/server/notice/notice-domain";
 import { awardDukjilAction } from "@/server/dukjil/award";
+import type { DukjilActionResult } from "@/features/passport/domain/dukjil-types";
 import { createHash } from "node:crypto";
 
 export interface ContentDependencies extends FanpageDependencies {
@@ -70,7 +71,17 @@ async function awardForPost(deps: Pick<ContentDependencies, "rpc">, owner: strin
 const REWARD_READ_TIMEOUT_MS = 800;
 // Reads the just-granted points after the write has committed. Never throws: a failed read must not turn a committed post or
 // comment into an error, and a replayed (idempotent) request must not replay the reward.
-async function readReward(deps: Pick<ContentDependencies, "rpc">, owner: string | null, write: z.infer<typeof writeSchema>) {
+/** One reward shape for post, comment and like responses (review r4): `{ points, stamps, skippedReason? }`. A fresh grant only;
+ * a replay says nothing, and a write the policy declined says why with points 0. */
+export type ResponseReward = { points: number; stamps: number; skippedReason?: string };
+function rewardFromAward(award: DukjilActionResult | null, points = award?.points ?? 0): { reward: ResponseReward } | Record<string, never> {
+  if (!award || award.replayed) return points > 0 ? { reward: { points, stamps: 0 } } : {};
+  const stamps = award.stampId ? 1 : 0;
+  if (points > 0 || stamps > 0) return { reward: { points, stamps } };
+  const skippedReason = award.reason ?? (award.capped ? "capped" : null);
+  return skippedReason ? { reward: { points: 0, stamps: 0, skippedReason } } : {};
+}
+async function readReward(deps: Pick<ContentDependencies, "rpc">, owner: string | null, write: z.infer<typeof writeSchema>, award: DukjilActionResult | null = null) {
   if (write.replayed || !owner) return {};
   let timer: ReturnType<typeof setTimeout> | undefined;
   try {
@@ -78,8 +89,9 @@ async function readReward(deps: Pick<ContentDependencies, "rpc">, owner: string 
     const timeout = new Promise<null>((resolve) => { timer = setTimeout(() => resolve(null), REWARD_READ_TIMEOUT_MS); });
     const raw = await Promise.race([deps.rpc("read_owned_fan_post_reward", { p_app_user_id: owner, p_source_id: write.id }), timeout]);
     const parsed = rewardReadSchema.safeParse(raw);
-    return parsed.success && parsed.data.amount > 0 ? { reward: { points: parsed.data.amount } } : {};
-  } catch { return {}; } finally { if (timer) clearTimeout(timer); }
+    // The ledger read is the amount; the award result adds the stamp and why nothing was paid.
+    return rewardFromAward(award, parsed.success ? parsed.data.amount : 0);
+  } catch { return rewardFromAward(award, 0); } finally { if (timer) clearTimeout(timer); }
 }
 function one(url: URL, name: string) {
   const all = url.searchParams.getAll(name);
@@ -181,8 +193,8 @@ export function createContentHandlers(deps: ContentDependencies) {
       const rich = richBoardBody(value, slug);
       const written = checked(writeSchema, await deps.rpc(rich ? "save_fan_post_rich" : "save_fan_post", { p_app_user_id, p_slug: slug, p_post_id: null, p_body: rich?.body ?? value.body, p_visibility: value.visibility,
         p_asset_ids: rich?.assetIds ?? value.assetIds, p_expected_revision: null, p_idempotency_key: value.idempotencyKey, ...(rich ? { p_body_doc: rich.document } : {}) }));
-      if (p_app_user_id && !written.replayed) await awardDukjilAction(deps, { appUserId: p_app_user_id, creatorSlug: slug, actionKey: "post", sourceKey: written.id, params: bodyParams(rich?.body ?? value.body) });
-      return json({ ...written, ...await readReward(deps, p_app_user_id, written) }, 201);
+      const award = p_app_user_id && !written.replayed ? await awardDukjilAction(deps, { appUserId: p_app_user_id, creatorSlug: slug, actionKey: "post", sourceKey: written.id, params: bodyParams(rich?.body ?? value.body) }) : null;
+      return json({ ...written, ...await readReward(deps, p_app_user_id, written, award) }, 201);
     }),
     post: (request: Request, id: string) => run(async () => {
       z.uuid().parse(id);
@@ -218,8 +230,8 @@ export function createContentHandlers(deps: ContentDependencies) {
       }
       const value = createCommentSchema.parse(await boundedJson(request, 8192));
       const written = checked(writeSchema, await deps.rpc("post_fan_post_comment", { p_app_user_id, p_post_id: id, p_parent_id: value.parentId, p_body: value.body, p_idempotency_key: value.idempotencyKey }));
-      if (!written.replayed) await awardForPost(deps, p_app_user_id, id, "comment", written.id, { ...bodyParams(value.body), isReply: value.parentId != null, targetKey: id });
-      return json({ ...written, ...await readReward(deps, p_app_user_id, written) }, 201);
+      const award = written.replayed ? null : await awardForPost(deps, p_app_user_id, id, "comment", written.id, { ...bodyParams(value.body), isReply: value.parentId != null, targetKey: id });
+      return json({ ...written, ...await readReward(deps, p_app_user_id, written, award) }, 201);
     }),
     removeComment: (request: Request, id: string) => run(async () => {
       z.uuid().parse(id); const p_app_user_id = await owner(request);
@@ -237,7 +249,7 @@ export function createContentHandlers(deps: ContentDependencies) {
       const result = checked(postReactionSchema, await deps.rpc("set_fan_post_reaction", { p_app_user_id, p_post_id: id, p_reaction: value.reaction }));
       const award = result.reaction === "like" ? await awardForPost(deps, p_app_user_id, id, "reaction", `post-like:${id}`, {}) : null;
       // 261107-2 D8: a fresh grant goes back so the screen can celebrate it; a replay or a capped like says nothing.
-      return json(award && !award.replayed && award.points > 0 ? { ...result, reward: { points: award.points, stamps: award.stampId ? 1 : 0 } } : result);
+      return json(award && !award.replayed ? { ...result, ...rewardFromAward(award) } : result);
     }),
     upload: (request: Request) => run(async () => {
       const actor = (await owner(request))!;
