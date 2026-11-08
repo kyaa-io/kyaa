@@ -13500,8 +13500,8 @@
     "id": "features/benefit/ui/raffle-entry-panel:inline.m6ac9a485a1ac"
   },
   "m0dc40d19d2b2": {
-    "en": "Verify your {0} fan status to receive 1 ticket and enter.",
-    "ko": "{0} 팬 인증을 완료하면 응모권 1장을 받아 응모할 수 있어요.",
+    "en": "{0} fan verification is required. Verifying gives you 1 more ticket.",
+    "ko": "{0} 팬 인증이 필요해요. 인증하면 응모권 1장을 더 받아요.",
     "source": "features/benefit/ui/raffle-entry-panel",
     "id": "features/benefit/ui/raffle-entry-panel:inline.m3e678c5bbc41"
   },
@@ -13512,7 +13512,7 @@
     "id": "features/benefit/ui/raffle-entry-panel:inline.m5bd5d50efba4"
   },
   "m8be27e2b94a3": {
-    "en": "tickets available: {0}",
+    "en": "Tickets available: {0}",
     "ko": "응모권 {0}장 보유",
     "source": "features/benefit/ui/raffle-entry-panel",
     "id": "features/benefit/ui/raffle-entry-panel:inline.m16c7cba98fb1"
@@ -13618,12 +13618,6 @@
     "ko": "이 선물의 응모 한도 {0}장",
     "source": "features/benefit/ui/raffle-entry-panel",
     "id": "features/benefit/ui/raffle-entry-panel:inline.me68a3917c445"
-  },
-  "m03c9d1eac3c2": {
-    "en": "tickets only",
-    "ko": "응모권 전용",
-    "source": "features/benefit/ui/raffle-entry-panel",
-    "id": "features/benefit/ui/raffle-entry-panel:inline.m260dbd447c02"
   },
   "m6703bf407a9c": {
     "en": "Request to check: {0} tickets",
@@ -17526,8 +17520,8 @@
     "id": "features/benefit/ui/raffle-entry-panel:raffleEntryReceived"
   },
   "raffleTicketOf": {
-    "en": "{0} ticket",
-    "ko": "{0} 응모권",
+    "en": "Ticket",
+    "ko": "응모권",
     "source": "features/benefit/ui/raffle-entry-panel",
     "id": "features/benefit/ui/raffle-entry-panel:raffleTicketOf"
   },

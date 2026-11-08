@@ -133,6 +133,25 @@ describe("standalone raffle fan verification", () => {
     expect(decodeURIComponent(link.getAttribute("href")!)).toContain(`/c/creator/raffles/${raffle.benefitId}?locale=${locale}`);
     expect(screen.queryByRole("spinbutton")).toBeNull();
   });
+  it.each([
+    ["ko", "Creator 팬 인증이 필요해요. 인증하면 응모권 1장을 더 받아요."],
+    ["en", "Creator fan verification is required. Verifying gives you 1 more ticket."],
+  ] as const)("says verification is the reason right away in %s, without a ticket-shortage reading", (locale, text) => {
+    render(<RaffleEntryPanel celebrity={celebrity} locale={locale}
+      raffle={{ ...raffle, requiresFanVerification: true }}
+      benefit={{ ...benefit, entry: { ...benefit.entry!, requiresFanVerification: true, fanVerified: false, canEnter: false } }}
+      loading={false} loadFailed={false} status="open" refresh={vi.fn()} onAccepted={vi.fn()} onReconciled={vi.fn()} />);
+    expect(screen.getByText(text)).toBeInTheDocument();
+    expect(screen.queryByText(/받아 응모할 수 있어요|to receive 1 ticket and enter/)).toBeNull();
+  });
+  it("calls the shared ticket wallet plain 응모권 and never a creator-only ticket", () => {
+    const { container } = render(<RaffleEntryPanel celebrity={celebrity} locale="ko"
+      raffle={raffle} benefit={benefit}
+      loading={false} loadFailed={false} status="open" refresh={vi.fn()} onAccepted={vi.fn()} onReconciled={vi.fn()} />);
+    expect(screen.getByText("응모권 4장 보유")).toBeInTheDocument();
+    expect(container.textContent).not.toMatch(/Creator 응모권|응모권 전용/);
+    expect(screen.getByText(/이 선물의 응모 한도 3장/).textContent).toBe("이 선물의 응모 한도 3장");
+  });
   it("allows verified fans to choose tickets", () => {
     render(<RaffleEntryPanel celebrity={celebrity} locale="ko"
       raffle={{ ...raffle, requiresFanVerification: true }}

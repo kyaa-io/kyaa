@@ -79,7 +79,7 @@ it('hides the quantity control when only one exchange is possible',async()=>{
 it('keeps source wallet balances on the shared wallet card',async()=>{
  vi.stubGlobal('fetch',vi.fn(async(url:string)=>Response.json(url.endsWith('/history')?{entries:[]}:wallet)));
  render(<WalletScreen locale='ko' localProfile={{nickname:'스타벅스라이프',avatarUrl:'/images/avatars/star-pink.webp'}} localPresentation={{benefitsHref:'/benefits',historyRows:[{label:'출석체크 · 오늘',value:'포인트 적립'}]}}/>);
- expect(await screen.findByRole('button',{name:'광고 보고 교환하기'})).toBeEnabled();expect(await screen.findByText('포인트 적립')).toBeInTheDocument();expect(screen.getAllByText('모임 응모권')).toHaveLength(1);expect(screen.queryByRole('spinbutton')).not.toBeInTheDocument();
+ expect(await screen.findByRole('button',{name:'광고 보고 교환하기'})).toBeEnabled();expect(await screen.findByText('포인트 적립')).toBeInTheDocument();expect(screen.getAllByText('응모권')).toHaveLength(1);expect(screen.queryByRole('spinbutton')).not.toBeInTheDocument();
 });
 it('renders source balance failure from the real resource and retries the same read',async()=>{
  let reads=0;vi.stubGlobal('fetch',vi.fn(async(url:string)=>{if(url==='/api/me/wallet'){reads++;return reads===1?Response.json({error:{code:'UNAVAILABLE'}},{status:503}):Response.json(wallet);}return Response.json({entries:[]});}));

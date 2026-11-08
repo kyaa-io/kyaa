@@ -91,7 +91,7 @@ export function WalletAttendanceDialog({locale,open,onClose}:{locale:AppLocale;o
 export function WalletExchangeDialog({locale,open,onClose}:{locale:AppLocale;open:boolean;onClose:()=>void}) {
  const auth=useGroupRequest(),c=walletCopy(locale),titleId=useId(),returnTo=`/benefits?locale=${locale}`;
  return <Dialog open={open} onClose={onClose} labelledBy={titleId} backdropClassName={styles.supportBackdrop} contentClassName={styles.supportDialog}>
-  <header className={styles.supportDialogHeader}><h2 id={titleId}>{locale==='ko'?'모임 응모권 전환':c.exchange}</h2><FanAction onClick={onClose}>{locale==='ko'?'닫기':translate(locale,closeMessages.m05a1db569ca0,'Close')}</FanAction></header>
+  <header className={styles.supportDialogHeader}><h2 id={titleId}>{locale==='ko'?'응모권 전환':c.exchange}</h2><FanAction onClick={onClose}>{locale==='ko'?'닫기':translate(locale,closeMessages.m05a1db569ca0,'Close')}</FanAction></header>
   {!auth.ready?<WalletLoading label={c.loading} kind="wallet"/>:!auth.authenticated?<FanAction href={`/login?locale=${locale}&returnTo=${encodeURIComponent(returnTo)}`}>{c.login}</FanAction>:open&&<OwnedWallet key={auth.ownerKey} locale={locale} attendance={false} ticketExchange onClose={onClose} embedded/>}
  </Dialog>;
 }
