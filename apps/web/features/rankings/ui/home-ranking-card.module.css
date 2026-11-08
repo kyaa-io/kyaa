@@ -38,6 +38,8 @@ a.row { border-radius: var(--radius-control); }
 /* 오류: 열 줄 높이를 지켜 탭을 바꿔도 카드가 줄지 않는다. 빈 탭은 행 세 줄 높이(한 줄 + 행동 하나). */
 .state { display: grid; align-items: center; min-height: calc((var(--min-target) + var(--space-3)) * 10); }
 .state[data-empty] { min-height: calc((var(--min-target) + var(--space-3)) * 3); }
+/* VISUAL-K ④: the empty line is body text (size and weight), not an 18px bold heading. */
+.state[data-empty] p { color: var(--color-ink); font-size: var(--fan-body-size); font-weight: 400; letter-spacing: normal; }
 /* 바닥 줄은 내 순위·로그인·읽는 중 모두 같은 높이. */
 .foot { display: flex; align-items: center; justify-content: space-between; gap: var(--space-2); box-sizing: border-box; height: calc(var(--min-target) + var(--space-2)); padding-top: var(--space-2); border-top: 1px solid var(--color-line-subtle); }
 .me { display: flex; align-items: center; gap: var(--space-2); min-width: 0; margin: 0; color: var(--color-muted); font-size: var(--fan-metadata-size); }

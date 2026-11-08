@@ -11,8 +11,8 @@
 /* 칩은 한 줄: 넘치면 가로로 밀어 보고(스크롤바 숨김, 끝 칩 잘림 허용), 최애 칩 이름은 최대 폭에서 말줄임. 공통 fan-tabs는 그대로. */
 .inbox .kindFilter { flex-wrap: nowrap; overflow-x: auto; overscroll-behavior-x: contain; scrollbar-width: none; }
 .inbox .kindFilter::-webkit-scrollbar { display: none; }
-.chipRow { min-width: 0; }
-.chipRow[data-more] .kindFilter { mask-image: linear-gradient(to right, var(--color-ink) calc(100% - var(--space-10)), transparent); }
+.chipRow { position: relative; min-width: 0; }
+.chipNext { position: absolute; top: 50%; right: 0; transform: translateY(-50%); border: 1px solid var(--color-line); border-radius: var(--radius-pill); background: var(--color-surface); }
 .inbox .kindFilter > * { flex: none; white-space: nowrap; }
 .chipName { display: inline-block; max-width: 8em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; vertical-align: bottom; }
 .group { display: grid; }

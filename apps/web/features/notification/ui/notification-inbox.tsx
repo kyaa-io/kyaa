@@ -5,6 +5,7 @@ import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import { FanHeading } from "@/components/fan-ui/fan-heading";
 import { FanIcon } from "@/components/fan-ui/fan-icon";
+import { FanIconButton } from "@/components/fan-ui/fan-icon-button";
 import { FanTabs } from "@/components/fan-ui/fan-tabs";
 import { FanSkeletonRows } from "@/components/fan-ui/fan-skeleton";
 import { BadgeCheck, Bell, ChevronDown, ChevronRight, MessageCircle, Settings, Star, UserPlus, type LucideIcon } from "@/components/fan-ui/inbox-icons";
@@ -72,7 +73,7 @@ export function NotificationInbox({ locale, inbox, favoriteName = null, headingL
         {guest ? null : <Link className={styles.iconLink} href={`/settings?locale=${locale}&section=notifications` as Route} aria-label={c.settings} title={c.settings} onClick={onNavigate}><FanIcon icon={Settings} size={20} /></Link>}
       </span>
     </header>
-    {guest ? null : <ChipRow><FanTabs variant="chip" label={c.filter} current={chip} items={chipItems} className={styles.kindFilter} /></ChipRow>}
+    {guest ? null : <ChipRow label={c.more}><FanTabs variant="chip" label={c.filter} current={chip} items={chipItems} className={styles.kindFilter} /></ChipRow>}
     {state.kind === "loading" ? <FanSkeletonRows rows={5} variant="entity" ariaLabel={c.title} />
       : state.kind === "auth" ? <div className={styles.guest}><p className={styles.state}>{c.signIn}</p><GuestLoginAction locale={locale} returnTo={returnTo} variant="primary" fullWidth /></div>
       : state.kind === "error" ? <div className={styles.stateRow} role="alert"><span>{c.loadError}</span><FanAction variant="text" size="sm" className={styles.textAction} onClick={() => void inbox.reload()}>{c.retry}</FanAction></div>
@@ -90,8 +91,9 @@ export function NotificationInbox({ locale, inbox, favoriteName = null, headingL
   </div>;
 }
 
-/** 칩 줄이 오른쪽으로 더 있을 때 끝을 흐리게 해 가로로 밀 수 있음을 보인다(검토 VISUAL-K ① 낮음). 끝까지 밀면 흐림이 사라진다. */
-function ChipRow({ children }: { children: ReactNode }) {
+/** 칩 줄이 오른쪽으로 더 있을 때 끝에 › 버튼을 두어 가로로 밀 수 있음을 보인다(검토 VISUAL-K ① 낮음; 그라데이션 금지 S1이라 흐림 대신).
+ * 누르면 칩 줄이 한 화면만큼 밀리고, 끝까지 가면 버튼이 사라진다. */
+function ChipRow({ children, label }: { children: ReactNode; label: string }) {
   const ref = useRef<HTMLDivElement>(null);
   const [more, setMore] = useState(false);
   useEffect(() => {
@@ -104,7 +106,10 @@ function ChipRow({ children }: { children: ReactNode }) {
     observer?.observe(row);
     return () => { row.removeEventListener("scroll", sync); observer?.disconnect(); };
   }, []);
-  return <div ref={ref} className={styles.chipRow} data-more={more || undefined}>{children}</div>;
+  const next = () => { const row = ref.current?.firstElementChild as HTMLElement | null; row?.scrollBy({ left: Math.max(120, row.clientWidth * 0.6), behavior: "smooth" }); };
+  return <div ref={ref} className={styles.chipRow} data-more={more || undefined}>{children}
+    {more ? <FanIconButton className={styles.chipNext} aria-label={label} tabIndex={-1} onClick={next}><FanIcon icon={ChevronRight} size={20} /></FanIconButton> : null}
+  </div>;
 }
 
 const entryKey = (entry: InboxEntry) => entry.type === "item" ? entry.item.id : `bundle-${entry.items[0].id}`;
