@@ -145,3 +145,13 @@
 .groupsNavigation .actions > .utilityLink { order: 0; }
 .groupsNavigation .actions > [data-selected-bias] { min-width: 0; }
 @media (max-width: 63.999rem) { .groupsNavigation .actions { gap: 0; } }
+
+/* 261107-2 3차: signed in, 1024–1199px had 518px of header actions for ~336px of room (the right column was max-content), so the
+ * avatar and menu ran past the screen. In this band the main tabs keep their icon and label but drop the fixed 110px cells, the
+ * actions sit closer and may shrink, and the favorite chip (already 52px of name here) gives way first. Nothing is hidden. */
+@media (min-width: 64rem) and (max-width: 74.999rem) {
+  .groupsNavigation .headerInner { grid-template-columns: 88px auto minmax(0, 1fr); gap: var(--space-2); }
+  .groupsNavigation .desktopNav { gap: 0; }
+  .groupsNavigation .desktopNavItem { min-width: 0; padding: 0 var(--space-2); gap: var(--space-1); }
+  .groupsNavigation .actions { min-width: 0; gap: var(--space-1); }
+}
