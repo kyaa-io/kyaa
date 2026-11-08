@@ -1,5 +1,5 @@
 /* 홈 찐팬 100 챌린지(5차 B4 ④): 카드 12·1px 선·그림자 0. 행 = 이름 15/700 · `37/100` 15/700 · 2px 막대 / 오른쪽 secondary 버튼. */
-.card { display: grid; gap: var(--space-3); box-sizing: border-box; min-width: 0; padding: var(--space-5); border: 1px solid var(--color-line); border-radius: var(--radius-card, 12px); background: var(--color-surface); }
+.card { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-3); box-sizing: border-box; min-width: 0; padding: var(--space-5); border: 1px solid var(--color-line); border-radius: var(--radius-card, 12px); background: var(--color-surface); }
 .card h2 { margin: 0; }
 .rows { display: grid; gap: var(--space-4); margin: 0; padding: 0; list-style: none; }
 .row { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; column-gap: var(--space-6); min-width: 0; }
