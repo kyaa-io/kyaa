@@ -3,6 +3,7 @@
 import { Toast } from "@base-ui/react/toast";
 import { X } from "lucide-react";
 import { useEffect } from "react";
+import { useOpenNativeModal } from "./top-layer";
 import { useAppLocale } from "@/components/locale-provider";
 import { registerFanToastHandler, type FanToastOptions, type FanToastTone } from "./fan-toast";
 import { fanUiText } from "./fan-ui-copy";
@@ -51,8 +52,11 @@ function FanToastList({ closeLabel }: { closeLabel: string }) {
 /** 자리: 390 하단 내비 위 가운데, 1024+ 오른쪽 아래. 최대 2개. 닫기 라벨은 현재 언어. */
 export function FanToastViewport() {
   const closeLabel = fanUiText(useAppLocale().locale, "close");
+  // A native modal <dialog> sits in the browser's top layer above any z-index and makes everything outside it inert, so while one is
+  // open the toast layer is drawn inside it (visible and clickable); otherwise in <body> above every z-indexed modal (261107-2 r4).
+  const modal = useOpenNativeModal();
   return <Toast.Provider toastManager={manager} limit={MAX_VISIBLE} timeout={DEFAULT_DURATION}>
-    <Toast.Portal>
+    <Toast.Portal container={modal ?? undefined}>
       <Toast.Viewport className={styles.viewport} data-fan-toast-viewport="">
         <FanToastList closeLabel={closeLabel} />
       </Toast.Viewport>
