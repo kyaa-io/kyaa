@@ -38,6 +38,7 @@ import { FanAction } from "@/components/fan-ui/fan-action";
 import { proofsText } from "@/features/passport-proofs/ui/proofs-copy";
 import { certificationStampSrc } from "../domain/certification-stamp";
 import styles from "./certification.module.css";
+import { ShareProofHistoryRows, ShareProofTile } from "@/features/share-proof/ui/share-proof-panel";
 import gridStyles from "./certification-grid.module.css";
 
 const copy = {
@@ -303,6 +304,7 @@ export function CertificationPanel({
             ) : null}
             {items.length ? (
               <ul className={gridStyles.grid} data-certification-grid="panel">
+                {!selectedCategory && <li><ShareProofTile slug={slug} locale={locale} /></li>}
                 {filteredItems.map((item) => {
                   const own = ready && authenticated && ownedStatus?.key === identityKey && !ownedStatus.error ? ownedStatus.items.filter(entry=>entry.missionId===item.id && entry.kind===item.kind).sort((a,b)=>b.submittedAt.localeCompare(a.submittedAt))[0] : undefined;
                   const reviewing = own?.status === "pending";
@@ -340,7 +342,7 @@ export function CertificationPanel({
                 })}
               </ul>
             ) : (
-              <p className={styles.state}>{t.empty}</p>
+              <ul className={gridStyles.grid} data-certification-grid="panel"><li><ShareProofTile slug={slug} locale={locale} /></li></ul>
             )}
           </div>
         ) : !ready ? (
@@ -352,6 +354,7 @@ export function CertificationPanel({
           </div>
         ) : (
           <div className={styles.list}>
+            <ShareProofHistoryRows slug={slug} locale={locale} classes={{ row: styles.row, copy: styles.rowCopy, status: styles.status }} empty={historyItems.length ? null : <p className={styles.state}>{t.historyEmpty}</p>} />
             {historyItems.length ? (
               historyItems.map((item) => (
                 <Link
@@ -388,9 +391,7 @@ export function CertificationPanel({
                   <ChevronRight aria-hidden="true" />
                 </Link>
               ))
-            ) : (
-              <p className={styles.state}>{t.historyEmpty}</p>
-            )}
+            ) : null}
           </div>
         )}
       </div>

@@ -50,7 +50,7 @@ export function FanMissions({ locale, slug, title, passportHref, proofHref, foot
     checkinMission,
     { key: "post", label: t("dukjilTilePost"), art: "post", href: compose },
     { key: "comment", label: t("dukjilTileComment"), art: "first-comment", href: board },
-    { key: "share", label: t("dukjilTileShare"), art: "share", href: passportHref.includes("/passports/") ? `${passportHref}#stamp-book` : passportHref },
+    { key: "share", label: t("dukjilTileShare"), art: "share", href: noPage ?? `/${slug}?tab=certifications&share=1&locale=${locale}` },
     { key: "invite", label: t("dukjilTileInvite"), art: "invite", href: `/my/invitations?locale=${locale}` },
     { key: "proof", label: t("dukjilTileProof"), art: "proof", href: proof },
   ];

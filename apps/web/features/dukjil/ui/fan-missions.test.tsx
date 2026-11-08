@@ -53,7 +53,7 @@ it("goes to the screen of each activity and opens the dialog for check-in", asyn
   ui();
   expect((await row("post")).querySelector("a")).toHaveAttribute("href", "/elina?tab=board&source=fans&compose=1&locale=ko");
   expect(rowNow("comment").querySelector("a")).toHaveAttribute("href", "/elina?tab=board&source=fans&locale=ko");
-  expect(rowNow("share").querySelector("a")).toHaveAttribute("href", "/passports/p?locale=ko#stamp-book");
+  expect(rowNow("share").querySelector("a")).toHaveAttribute("href", "/elina?tab=certifications&share=1&locale=ko");
   expect(rowNow("invite").querySelector("a")).toHaveAttribute("href", "/my/invitations?locale=ko");
   expect(rowNow("proof").querySelector("a")).toHaveAttribute("href", "/elina?tab=certifications&locale=ko");
   fireEvent.click(rowNow("checkin").querySelector("a")!);
