@@ -1,7 +1,8 @@
 "use client";
 
 import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
-import { CircleAlert } from "lucide-react";
+import { CircleAlert } from "@/components/fan-ui/fan-icons";
+import { FanIcon } from "@/components/fan-ui/fan-icon";
 import { useEffect, useState } from "react";
 import type { AdminLocale } from "../../../components/admin/operations-shell";
 import { useAdminSession } from "../../../components/admin/use-admin-session";
@@ -56,7 +57,7 @@ export function FunnelAnalyticsContent({ data, locale }: { data: FunnelAnalytics
 function FunnelAnalyticsStatus({ status, locale }: { status: "loading" | "error" | "unauthenticated" | "denied"; locale: AdminLocale }) {
   const ko = locale === "ko";
   if (status === "loading") return <section className={base.loading} role="status"><div className={base.skeletonChart} /><span>{ko ? "가입 퍼널을 불러오고 있습니다." : "Loading the signup funnel…"}</span></section>;
-  return <section className={`${styles.outboundError} ${styles.funnelHeading}`} role="alert"><CircleAlert aria-hidden="true" /><div><FanHeading>{ko ? "가입 퍼널을 불러오지 못했습니다" : "Could not load the signup funnel"}</FanHeading><p>{status === "denied" ? (ko ? "이 집계를 볼 권한이 없습니다." : "You do not have access to this report.") : status === "unauthenticated" ? (ko ? "관리자 로그인이 만료되었습니다." : "Your admin session has expired.") : (ko ? "잠시 후 새로고침해 주세요." : "Refresh to try again.")}</p></div></section>;
+  return <section className={`${styles.outboundError} ${styles.funnelHeading}`} role="alert"><FanIcon icon={CircleAlert} /><div><FanHeading>{ko ? "가입 퍼널을 불러오지 못했습니다" : "Could not load the signup funnel"}</FanHeading><p>{status === "denied" ? (ko ? "이 집계를 볼 권한이 없습니다." : "You do not have access to this report.") : status === "unauthenticated" ? (ko ? "관리자 로그인이 만료되었습니다." : "Your admin session has expired.") : (ko ? "잠시 후 새로고침해 주세요." : "Refresh to try again.")}</p></div></section>;
 }
 
 export function FunnelAnalytics({ days, refresh, locale }: { days: Days; refresh: number; locale: AdminLocale }) {
