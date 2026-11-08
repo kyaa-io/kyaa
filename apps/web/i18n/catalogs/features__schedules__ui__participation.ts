@@ -45,7 +45,7 @@ const copy = {
     "delete": "삭제",
     "mine": "내 제출",
     "deadline": "접수 마감",
-    "members": "Fan Passport가 있는 팬에게 공개돼요.",
+    "members": "팬 패스포트가 있는 팬에게 공개돼요.",
     "check": "중복 확인",
     "all": "전체",
     "photos": "사진",

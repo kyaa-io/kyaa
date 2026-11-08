@@ -189,7 +189,7 @@ export function projectNotificationRow(
                   ? `팬 레벨이 ${text(payload.currentLevel, "새 레벨")}로 올랐어요`
                   : `Your fan level is now ${text(payload.currentLevel, "upgraded")}`,
                 locale === "ko"
-                  ? "Passport에서 새로운 팬 레벨을 확인해 보세요."
+                  ? "패스포트에서 새로운 팬 레벨을 확인해 보세요."
                   : "See your new level in Passport.",
               ]
             : kind === "benefit_unlocked"

@@ -199,7 +199,7 @@
   },
   "m3eaba3812b30": {
     "en": "Fan Passport keeps a record of fan verification and LIVE participation. Plan future activities around those records.",
-    "ko": "팬 인증부터 LIVE 참여까지, 팬의 활동을 Fan Passport에 남깁니다. 팬이 쌓아가는 기록에 맞춰 다음 활동을 기획합니다.",
+    "ko": "팬 인증부터 LIVE 참여까지, 팬의 활동을 팬 패스포트에 남깁니다. 팬이 쌓아가는 기록에 맞춰 다음 활동을 기획합니다.",
     "source": "components/business-inquiries/content",
     "id": "components/business-inquiries/content:businessPageContent.creator.services.2.description"
   },
@@ -751,13 +751,13 @@
   },
   "mbed47a1091b0": {
     "en": "Loading your Fan Passports.",
-    "ko": "보유한 Fan Passport를 확인하고 있어요.",
+    "ko": "보유한 팬 패스포트를 확인하고 있어요.",
     "source": "components/celebrity-directory",
     "id": "components/celebrity-directory:copy.loadingPassport"
   },
   "m8261b7a0bdb7": {
     "en": "We couldn't load your Fan Passports.",
-    "ko": "보유한 Fan Passport를 확인하지 못했어요.",
+    "ko": "보유한 팬 패스포트를 확인하지 못했어요.",
     "source": "components/celebrity-directory",
     "id": "components/celebrity-directory:copy.retryPrefix"
   },
@@ -787,7 +787,7 @@
   },
   "m306505f6ba01": {
     "en": "You don't own a Fan Passport yet.",
-    "ko": "아직 보유한 Fan Passport가 없어요.",
+    "ko": "아직 보유한 팬 패스포트가 없어요.",
     "source": "components/celebrity-directory",
     "id": "components/celebrity-directory:copy.ownedEmpty"
   },
@@ -799,7 +799,7 @@
   },
   "me4d7e93c8b8f": {
     "en": "Browse all favorites and create a Fan Passport.",
-    "ko": "전체 최애를 둘러보고 Fan Passport를 만들어 보세요.",
+    "ko": "전체 최애를 둘러보고 팬 패스포트를 만들어 보세요.",
     "source": "components/celebrity-directory",
     "id": "components/celebrity-directory:copy.ownedHelp"
   },
@@ -1099,7 +1099,7 @@
   },
   "m9d1ca2ea6a0d": {
     "en": "Sign in and answer at least 2 of Elina’s 3 quiz questions correctly to receive your Fan Passport and 1 raffle ticket. Then continue to the LIVE reservation page.",
-    "ko": "로그인 후 엘리나 퀴즈 3문항 중 2문항 이상을 맞히면 Fan Passport와 응모권 1장을 받아요. 인증이 끝나면 LIVE 예약 화면으로 이어져요.",
+    "ko": "로그인 후 엘리나 퀴즈 3문항 중 2문항 이상을 맞히면 팬 패스포트와 응모권 1장을 받아요. 인증이 끝나면 LIVE 예약 화면으로 이어져요.",
     "source": "components/elina-fan-guide/content",
     "id": "components/elina-fan-guide/content:elinaFanGuideContent.steps.0.body"
   },
@@ -1141,7 +1141,7 @@
   },
   "mc75b958e0f02": {
     "en": "Reservations close September 18 at 8:20 PM KST. An Elina Passport is required.",
-    "ko": "예약은 9월 18일 오후 8시 20분(KST)에 마감돼요. 엘리나 Passport가 필요해요.",
+    "ko": "예약은 9월 18일 오후 8시 20분(KST)에 마감돼요. 엘리나 패스포트가 필요해요.",
     "source": "components/elina-fan-guide/content",
     "id": "components/elina-fan-guide/content:elinaFanGuideContent.steps.1.note"
   },
@@ -1207,7 +1207,7 @@
   },
   "mf5fabcca671f": {
     "en": "Code entry is open from September 18 at 8:30 PM until September 19 at 00:00 KST (midnight at the end of September 18). Return to the kyaa LIVE page after watching on Instagram. Check-in is separate from reservation and requires an Elina Passport.",
-    "ko": "코드 입력은 9월 18일 오후 8시 30분부터 9월 19일 00:00(KST), 방송 당일 밤 12시까지 가능해요. 방송을 보다가 이 kyaa 화면으로 돌아와 주세요. 예약과 출석은 별도이며, 엘리나 Passport가 필요해요.",
+    "ko": "코드 입력은 9월 18일 오후 8시 30분부터 9월 19일 00:00(KST), 방송 당일 밤 12시까지 가능해요. 방송을 보다가 이 kyaa 화면으로 돌아와 주세요. 예약과 출석은 별도이며, 엘리나 패스포트가 필요해요.",
     "source": "components/elina-fan-guide/content",
     "id": "components/elina-fan-guide/content:elinaFanGuideContent.steps.3.note"
   },
@@ -1747,7 +1747,7 @@
   },
   "mb486d46ca0ac": {
     "en": "Sign in and start a Fan Passport",
-    "ko": "로그인 및 Fan Passport 시작",
+    "ko": "로그인 및 팬 패스포트 시작",
     "source": "components/guest-home",
     "id": "components/guest-home:copy.context"
   },
@@ -1759,7 +1759,7 @@
   },
   "m146056e1f7fb": {
     "en": "Get your Fan Passport",
-    "ko": "Fan Passport 발급받기",
+    "ko": "팬 패스포트 발급받기",
     "source": "components/guest-home",
     "id": "components/guest-home:copy.passportIssue"
   },
@@ -1819,19 +1819,19 @@
   },
   "me5538b70d1cf": {
     "en": "Checking your Fan Passports.",
-    "ko": "보유한 Fan Passport를 확인하고 있어요.",
+    "ko": "보유한 팬 패스포트를 확인하고 있어요.",
     "source": "components/guest-home",
     "id": "components/guest-home:copy.myFavoritesLoading"
   },
   "m6a62efb9c6f4": {
     "en": "We couldn't check your Fan Passports.",
-    "ko": "보유한 Fan Passport를 확인하지 못했어요.",
+    "ko": "보유한 팬 패스포트를 확인하지 못했어요.",
     "source": "components/guest-home",
     "id": "components/guest-home:copy.myFavoritesError"
   },
   "m2f6d85cfec82": {
     "en": "You don't have a Fan Passport yet.",
-    "ko": "아직 보유한 Fan Passport가 없어요.",
+    "ko": "아직 보유한 팬 패스포트가 없어요.",
     "source": "components/guest-home",
     "id": "components/guest-home:copy.myFavoritesEmpty"
   },
@@ -1849,7 +1849,7 @@
   },
   "m9a6d2845fc3e": {
     "en": "Browse all celebrities and create a Fan Passport.",
-    "ko": "전체 최애를 둘러보고 Fan Passport를 만들어 보세요.",
+    "ko": "전체 최애를 둘러보고 팬 패스포트를 만들어 보세요.",
     "source": "components/guest-home",
     "id": "components/guest-home:copy.myFavoritesHelp"
   },
@@ -1909,19 +1909,19 @@
   },
   "m1f0bf3c5fcdd": {
     "en": "Fan Passports for your favorites",
-    "ko": "최애의 Fan Passport",
+    "ko": "최애의 팬 패스포트",
     "source": "components/guest-home",
     "id": "components/guest-home:copy.passportHeading"
   },
   "mb7a08e173fe7": {
     "en": "Keep every fan moment in your Passport.",
-    "ko": "팬이 된 모든 순간을 Passport에 기록하세요.",
+    "ko": "팬이 된 모든 순간을 패스포트에 기록하세요.",
     "source": "components/guest-home",
     "id": "components/guest-home:copy.passportSub"
   },
   "m7918f39efab0": {
     "en": "You don't have a Passport or any Stamps yet.",
-    "ko": "아직 발급된 Passport와 스탬프가 없어요.",
+    "ko": "아직 발급된 패스포트와 스탬프가 없어요.",
     "source": "components/guest-home",
     "id": "components/guest-home:copy.passportEmpty"
   },
@@ -1969,13 +1969,13 @@
   },
   "mf590bcb19fb6": {
     "en": "You don't have a Passport yet.",
-    "ko": "아직 발급된 Passport가 없어요.",
+    "ko": "아직 발급된 패스포트가 없어요.",
     "source": "components/guest-home",
     "id": "components/guest-home:copy.noPassport"
   },
   "m0fee008df904": {
     "en": "Fan Passport preview",
-    "ko": "발급 전 Fan Passport 미리보기",
+    "ko": "발급 전 팬 패스포트 미리보기",
     "source": "components/guest-home",
     "id": "components/guest-home:copy.passportPreview"
   },
@@ -2053,7 +2053,7 @@
   },
   "mfa3f5fc72bf9": {
     "en": "Passport carousel",
-    "ko": "Passport 슬라이드",
+    "ko": "패스포트 슬라이드",
     "source": "components/guest-home",
     "id": "components/guest-home:inline.mafc4e211fdcb"
   },
@@ -2119,7 +2119,7 @@
   },
   "mc91e6e2d8dcc": {
     "en": "Opened Fan Passport with nine empty Stamp circles",
-    "ko": "빈 스탬프 원 9개가 있는 펼쳐진 Fan Passport",
+    "ko": "빈 스탬프 원 9개가 있는 펼쳐진 팬 패스포트",
     "source": "components/guest-home",
     "id": "components/guest-home:inline.mcd41f0122fb6"
   },
@@ -2269,7 +2269,7 @@
   },
   "m248e947d35bf": {
     "en": "Complete fan verification to get your ifew Fan Passport. You’ll return to the LIVE page to make your reservation.",
-    "ko": "팬 인증을 마치면 이퓨 Fan Passport가 생겨요.\n인증 후 LIVE 화면으로 돌아와\n이어서 예약할 수 있어요.",
+    "ko": "팬 인증을 마치면 이퓨 팬 패스포트가 생겨요.\n인증 후 LIVE 화면으로 돌아와\n이어서 예약할 수 있어요.",
     "source": "components/ifew-fan-guide/content",
     "id": "components/ifew-fan-guide/content:ifewFanGuideContent.steps.0.body"
   },
@@ -2305,7 +2305,7 @@
   },
   "m63bfdea50767": {
     "en": "All times are Korea Standard Time (KST, UTC+9).\nAn ifew Passport is required to reserve on kyaa.",
-    "ko": "한국 시간(KST, UTC+9) 기준이에요.\nkyaa 예약에는 이퓨 Passport가 필요해요.",
+    "ko": "한국 시간(KST, UTC+9) 기준이에요.\nkyaa 예약에는 이퓨 패스포트가 필요해요.",
     "source": "components/ifew-fan-guide/content",
     "id": "components/ifew-fan-guide/content:ifewFanGuideContent.steps.1.note"
   },
@@ -3223,7 +3223,7 @@
   },
   "mab1cb2ccc525": {
     "en": "Open Fan Passport",
-    "ko": "펼쳐진 Fan Passport",
+    "ko": "펼쳐진 팬 패스포트",
     "source": "components/login-page",
     "id": "components/login-page:inline.m73bb7b4510c3"
   },
@@ -3859,7 +3859,7 @@
   },
   "mdafefe2ef1a5": {
     "en": "Record moments with each of your favorites in a Fan Passport.",
-    "ko": "최애의 라이브와 함께한 순간을 Fan Passport에 기록하세요.",
+    "ko": "최애의 라이브와 함께한 순간을 팬 패스포트에 기록하세요.",
     "source": "components/pwa-manifest",
     "id": "components/pwa-manifest:inline.mc41f33a476c3"
   },
@@ -3871,7 +3871,7 @@
   },
   "m0daebd272cc6": {
     "en": "Learn how fan verification, Fan Passports, LIVE reservations and attendance, and prize entries work on kyaa.",
-    "ko": "팬 인증, Fan Passport, LIVE 예약·출석, 선물 응모를 이용하는 방법과 자주 묻는 질문을 확인하세요.",
+    "ko": "팬 인증, 팬 패스포트, LIVE 예약·출석, 선물 응모를 이용하는 방법과 자주 묻는 질문을 확인하세요.",
     "source": "components/service-guide/content",
     "id": "components/service-guide/content:serviceGuideContent.metadataDescription"
   },
@@ -3919,7 +3919,7 @@
   },
   "mf3ae5fb82904": {
     "en": "Take the fan verification quiz on the creator’s page. After you pass, you can start a Fan Passport for that creator.",
-    "ko": "최애 페이지에서 팬 인증에 참여하세요. 인증을 통과하면 해당 최애의 Fan Passport를 시작할 수 있어요.",
+    "ko": "최애 페이지에서 팬 인증에 참여하세요. 인증을 통과하면 해당 최애의 팬 패스포트를 시작할 수 있어요.",
     "source": "components/service-guide/content",
     "id": "components/service-guide/content:serviceGuideContent.steps.0.description"
   },
@@ -3961,19 +3961,19 @@
   },
   "m8ec124cede9e": {
     "en": "What does a Fan Passport record?",
-    "ko": "Fan Passport에는 무엇이 기록되나요?",
+    "ko": "팬 패스포트에는 무엇이 기록되나요?",
     "source": "components/service-guide/content",
     "id": "components/service-guide/content:serviceGuideContent.passportTitle"
   },
   "md231d4e64298": {
     "en": "A Fan Passport is a digital record of your fan activities with a favorite creator on kyaa.",
-    "ko": "Fan Passport는 kyaa 안에서 최애와 함께한 팬 활동을 기록하는 디지털 기록이에요.",
+    "ko": "팬 패스포트는 kyaa 안에서 최애와 함께한 팬 활동을 기록하는 디지털 기록이에요.",
     "source": "components/service-guide/content",
     "id": "components/service-guide/content:serviceGuideContent.passportDescription"
   },
   "m231eb1d4add4": {
     "en": "A Passport is created for each favorite after you pass their fan verification.",
-    "ko": "팬 인증을 통과한 최애별로 Passport가 만들어져요.",
+    "ko": "팬 인증을 통과한 최애별로 패스포트가 만들어져요.",
     "source": "components/service-guide/content",
     "id": "components/service-guide/content:serviceGuideContent.passportPoints.0"
   },
@@ -3985,7 +3985,7 @@
   },
   "m2d16c97f1f60": {
     "en": "Passports and Stamps do not represent cash, securities, investment products, or rights in the company.",
-    "ko": "Passport와 스탬프는 현금, 증권, 투자 상품이나 회사에 대한 권리를 뜻하지 않아요.",
+    "ko": "패스포트와 스탬프는 현금, 증권, 투자 상품이나 회사에 대한 권리를 뜻하지 않아요.",
     "source": "components/service-guide/content",
     "id": "components/service-guide/content:serviceGuideContent.passportPoints.2"
   },
@@ -4261,7 +4261,7 @@
   },
   "m173214f15b6c": {
     "en": "Fan Passport · Surveys · Follow-ups",
-    "ko": "Fan Passport · 설문 · 후속 캠페인",
+    "ko": "팬 패스포트 · 설문 · 후속 캠페인",
     "source": "components/us-fanmeetings/content",
     "id": "components/us-fanmeetings/content:fanmeetingContent.stages.2.2"
   },
@@ -4693,7 +4693,7 @@
   },
   "m3ac21cee1000": {
     "en": "Use Fan Passport activity records\nto plan future campaigns and fan experiences.",
-    "ko": "Fan Passport에 쌓인 참여를 바탕으로\n다음 캠페인과 팬 경험을 함께 기획합니다.",
+    "ko": "팬 패스포트에 쌓인 참여를 바탕으로\n다음 캠페인과 팬 경험을 함께 기획합니다.",
     "source": "components/us-fanmeetings/us-fanmeetings-page",
     "id": "components/us-fanmeetings/us-fanmeetings-page:inline.ma739631a39fd"
   },
@@ -8143,13 +8143,13 @@
   },
   "m6d0df9f61ad7": {
     "en": "Create a Fan Passport before joining.",
-    "ko": "Fan Passport 발급 후 참여할 수 있어요.",
+    "ko": "팬 패스포트 발급 후 참여할 수 있어요.",
     "source": "features/live/ui/live-event-screen",
     "id": "features/live/ui/live-event-screen:copy.attendance.passport"
   },
   "m9fcefc28009a": {
     "en": "Get your Fan Passport",
-    "ko": "Fan Passport 발급받기",
+    "ko": "팬 패스포트 발급받기",
     "source": "features/live/ui/live-event-screen",
     "id": "features/live/ui/live-event-screen:copy.attendance.issuePassport"
   },
@@ -8341,7 +8341,7 @@
   },
   "m21ef7db4e5f6": {
     "en": "A {celebrity} Fan Passport is required to reserve.",
-    "ko": "예약하려면 {celebrity} Fan Passport가 필요해요.",
+    "ko": "예약하려면 {celebrity} 팬 패스포트가 필요해요.",
     "source": "features/live/ui/live-event-screen",
     "id": "features/live/ui/live-event-screen:copy.actionHelper.verifyFan"
   },
@@ -8515,7 +8515,7 @@
   },
   "m3214aef0a091": {
     "en": "Get your ifew Fan Passport",
-    "ko": "이퓨 Fan Passport를 발급받아요",
+    "ko": "이퓨 팬 패스포트를 발급받아요",
     "source": "features/live/ui/live-event-screen",
     "id": "features/live/ui/live-event-screen:ifewLiveCopy.stepHelpers.0"
   },
@@ -8761,7 +8761,7 @@
   },
   "m753ad0ab8812": {
     "en": "With a Fan Passport, you can check in without a reservation. Use your raffle tickets to enter the prize draw separately.",
-    "ko": "Fan Passport가 있으면 예약 없이도 출석할 수 있어요. 선물은 응모권으로 별도 신청해 주세요.",
+    "ko": "팬 패스포트가 있으면 예약 없이도 출석할 수 있어요. 선물은 응모권으로 별도 신청해 주세요.",
     "source": "features/live/ui/live-event-screen",
     "id": "features/live/ui/live-event-screen:inline.me0240ed79196"
   },
@@ -11275,13 +11275,13 @@
   },
   "mb2cc6130dfa0": {
     "en": "After verification, it will appear in your {0} Fan Passport and activity history.",
-    "ko": "팬 인증을 통과하면 {0} Fan Passport와 활동 기록에 표시돼요.",
+    "ko": "팬 인증을 통과하면 {0} 팬 패스포트와 활동 기록에 표시돼요.",
     "source": "features/profile/ui/profile-onboarding-screen",
     "id": "features/profile/ui/profile-onboarding-screen:copy.subtitle.message"
   },
   "m77a8433b4b98": {
     "en": "Fan Passport preview before issuance",
-    "ko": "발급 예정 Fan Passport 미리보기",
+    "ko": "발급 예정 팬 패스포트 미리보기",
     "source": "features/profile/ui/profile-onboarding-screen",
     "id": "features/profile/ui/profile-onboarding-screen:copy.preview"
   },
@@ -12019,7 +12019,7 @@
   },
   "me8b8a3dcf2ea": {
     "en": "Pass a short quiz to receive your first Fan Verification Stamp and Fan Passport.",
-    "ko": "간단한 퀴즈를 통과하면 첫 팬 인증 스탬프와 Fan Passport를 받을 수 있어요.",
+    "ko": "간단한 퀴즈를 통과하면 첫 팬 인증 스탬프와 팬 패스포트를 받을 수 있어요.",
     "source": "features/quiz/ui/quiz-entry-screen",
     "id": "features/quiz/ui/quiz-entry-screen:copy.description"
   },
@@ -12493,7 +12493,7 @@
   },
   "m3cadbfa88dd5": {
     "en": "Your First Like Stamp is saved. Complete fan verification to add it to your Fan Passport.",
-    "ko": "첫 좋아요 스탬프를 보관했어요. 팬 인증을 마치고 Fan Passport를 만들면 스탬프함에 담겨요.",
+    "ko": "첫 좋아요 스탬프를 보관했어요. 팬 인증을 마치고 팬 패스포트를 만들면 스탬프함에 담겨요.",
     "source": "features/reaction/ui/reaction-action",
     "id": "features/reaction/ui/reaction-action:inline.md8fea9e6d780"
   },
@@ -13261,7 +13261,7 @@
   },
   "m66f358c91b9f": {
     "en": "Discover your favorite creators and their LIVE events. Verify your fandom, reserve a spot for a LIVE, and record your attendance in your Fan Passport.",
-    "ko": "최애의 LIVE 일정을 확인하고 팬 인증, 예약, 출석으로 함께한 순간을 Fan Passport에 기록하세요.",
+    "ko": "최애의 LIVE 일정을 확인하고 팬 인증, 예약, 출석으로 함께한 순간을 팬 패스포트에 기록하세요.",
     "source": "seo/metadata",
     "id": "seo/metadata:pageCopy.home.description"
   },
@@ -15810,7 +15810,7 @@
     "id": "features/live/ui/attendance-spotlight:inline.mc3ee95588d2b"
   },
   "mc708ece152e0": {
-    "ko": "Fan Passport가 있으면 예약 없이 참여 가능",
+    "ko": "팬 패스포트가 있으면 예약 없이 참여 가능",
     "en": "No reservation needed with a Fan Passport",
     "source": "features/live/ui/attendance-spotlight",
     "id": "features/live/ui/attendance-spotlight:inline.mc708ece152e0"

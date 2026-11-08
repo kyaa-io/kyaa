@@ -2,7 +2,7 @@ import { z } from "zod";
 
 // Source: KYAA_WAVE_미션북_1page.pdf, with the organizer’s 2026-10-21 photo-mission revision.
 export const WAVE_MISSIONS = [
-  { key: "checkin", name: "체크인 완료", description: "체크인하면 KYAA Passport에 스탬프 1개!" },
+  { key: "checkin", name: "체크인 완료", description: "체크인하면 KYAA 패스포트에 스탬프 1개!" },
   { key: "event-photo", name: "오늘의 한 컷", description: "사진·영상 탭에 사진을 올려요." },
   { key: "fanpage-like", name: "WAVE 팬페이지 좋아요", description: "KYAA WAVE 팬페이지에 좋아요를 눌러요." },
   { key: "introduction", name: "게시판 자기소개", description: "KYAA 게시판에 나를 소개하는 글을 남겨요." },

@@ -24,7 +24,7 @@ it("persists a submitted question then reloads owned state, disabling duplicate 
 it("uses server member gate and removes old owner's visible data before the next read", async () => {
   const fetcher = vi.fn(async () => Response.json({ ...base, access: "members_required", mine: [{ ...owned, body: null }], items: [] }));
   vi.stubGlobal("fetch", fetcher); const view = render(<LiveFanSubmissions slug="event" celebritySlug="kara" locale="ko" />);
-  await screen.findByText(/Fan Passport가/); expect(screen.getByRole("link", { name: "팬 인증하기" })).toHaveAttribute("href", "/c/kara/verify?locale=ko"); expect(screen.queryByRole("textbox")).not.toBeInTheDocument(); expect(screen.queryByText("질문입니다")).not.toBeInTheDocument();
+  await screen.findByText(/팬 패스포트가/); expect(screen.getByRole("link", { name: "팬 인증하기" })).toHaveAttribute("href", "/c/kara/verify?locale=ko"); expect(screen.queryByRole("textbox")).not.toBeInTheDocument(); expect(screen.queryByText("질문입니다")).not.toBeInTheDocument();
   let resolve!: (value: Response) => void; fetcher.mockImplementationOnce(() => new Promise<Response>(done => { resolve = done; }));
   auth.user = { id: "owner-b" }; session.ownerId = "owner-b"; session.generation++; auth.getAccessToken.mockResolvedValue("token-b");
   view.rerender(<LiveFanSubmissions slug="event" celebritySlug="kara" locale="ko" />);

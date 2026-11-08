@@ -40,7 +40,7 @@ export const fanmeetingContent = {
       [
         "행사 이후",
         "참여 기록과 의견을\n다음 만남에 활용합니다.",
-        "Fan Passport · 설문 · 후속 캠페인",
+        "팬 패스포트 · 설문 · 후속 캠페인",
       ],
     ],
     support: "현지 준비도,\n필요한 범위부터.",
