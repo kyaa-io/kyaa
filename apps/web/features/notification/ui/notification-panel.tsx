@@ -59,14 +59,19 @@ function Popover({ anchorRef, onClose, label, children }: { anchorRef: RefObject
     window.addEventListener("resize", measure);
     return () => window.removeEventListener("resize", measure);
   }, [anchorRef]);
+  // 검토 VISUAL-K ①: 자리가 정해져 보이게 된 뒤(숨김 상태에서는 focus가 무시된다) 첫 조작 요소(모두 읽음·설정·칩·로그인)로 포커스를 한 번 옮긴다. 없으면 창 자체.
+  const placed = place !== null, focused = useRef(false);
+  useEffect(() => {
+    if (!placed || focused.current) return;
+    focused.current = true;
+    const first = ref.current?.querySelector<HTMLElement>("a[href], button:not([disabled]), [tabindex]:not([tabindex='-1'])");
+    (first ?? ref.current)?.focus({ preventScroll: true });
+  }, [placed]);
   const closeRef = useRef(onClose);
   useEffect(() => { closeRef.current = onClose; }, [onClose]);
   useEffect(() => {
     const anchor = anchorRef.current;
     const onClose = () => closeRef.current();
-    // 검토 VISUAL-K ①: 열리면 첫 조작 요소(모두 읽음·설정·칩·로그인)로 포커스를 옮긴다. 없으면 창 자체.
-    const first = ref.current?.querySelector<HTMLElement>("a[href], button:not([disabled]), [tabindex]:not([tabindex='-1'])");
-    (first ?? ref.current)?.focus({ preventScroll: true });
     const onKey = (event: KeyboardEvent) => { if (event.key === "Escape") { event.stopPropagation(); onClose(); } };
     const onDown = (event: PointerEvent) => {
       const target = event.target as Node;
