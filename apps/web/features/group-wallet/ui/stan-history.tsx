@@ -5,6 +5,7 @@ import Link from "next/link";
 import type { Route } from "next";
 import { useEffect, useRef, useState } from "react";
 import { FanAction } from "@/components/fan-ui/fan-action";
+import { fanLoginHref } from "@/components/login-href";
 import { FanHeading } from "@/components/fan-ui/fan-heading";
 import { FanLockedRows, FanLockedValue } from "@/components/fan-ui/fan-locked-value";
 import { FanNumber } from "@/components/fan-ui/fan-number";
@@ -45,7 +46,9 @@ function amountText(locale: AppLocale, entry: Entry) {
 /** One transaction row (72 / 100 from 1024 in the tab): what happened (15/700) over where and when (12), the signed amount on the right in ink (no colour split). */
 function TransactionRow({ locale, entry, withDate }: { locale: AppLocale; entry: Entry; withDate: boolean }) {
   const label = walletHistoryLabel(locale, entry.sourceType, entry) ?? walletCopy(locale).history;
-  const meta = [entry.pageName, withDate ? ledgerDate(entry.createdAt) : null].filter(Boolean).join(" · ");
+  const time = new Date(entry.createdAt).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", hourCycle: "h23", timeZone: "Asia/Seoul" });
+  // Aside: where · day; tab rows sit under their day head, so where · time.
+  const meta = [entry.pageName, withDate ? ledgerDate(entry.createdAt) : time].filter(Boolean).join(" · ");
   return <li className={styles.row} data-row="transaction">
     <span className={styles.rowCopy}><span className={styles.rowTitle}>{label}</span>{meta ? <span className={styles.rowMeta} data-meta=""><time dateTime={entry.createdAt}>{meta}</time></span> : null}</span>
     <strong className={styles.amount}>{amountText(locale, entry)}</strong>
@@ -109,6 +112,7 @@ export function StanHistoryTab({ locale, guest }: { locale: AppLocale; guest: bo
           <ul className={`${styles.list} ${styles.tabList}`} aria-labelledby={`stan-day-${day}`}>{list.map(entry => <TransactionRow key={entry.id} locale={locale} entry={entry} withDate={false} />)}</ul>
         </div>)}
     </div>
+    {guest ? <FanAction variant="primary" fullWidth href={fanLoginHref(locale, `/benefits?tab=history&locale=${locale}`)}>{w.login}</FanAction> : null}
     {more && !guest && !history.error ? <FanAction variant="text" className={styles.more} onClick={() => setAll(true)}>{groupsCopy(locale).more}</FanAction> : null}
   </section>;
 }
