@@ -46,11 +46,11 @@ export function proxy(request: NextRequest): NextResponse {
   }
   // Before the native app is released, the "continue in the app" screen has nothing to offer. Old links keep working.
   if (request.nextUrl.pathname === "/open-app" && (request.method === "GET" || request.method === "HEAD") && !isNativeAppAvailable()) {
-    return new NextResponse(null, { status: 302, headers: {
-      Location: openAppWebPath(request.nextUrl.searchParams),
-      "Cache-Control": "private, no-store",
-      "X-Robots-Tag": "noindex, nofollow",
-    } });
+    // An absolute Location: the production proxy rejects a relative one (TypeError: Invalid URL → 500).
+    const response = NextResponse.redirect(new URL(openAppWebPath(request.nextUrl.searchParams), request.nextUrl), 302);
+    response.headers.set("Cache-Control", "private, no-store");
+    response.headers.set("X-Robots-Tag", "noindex, nofollow");
+    return response;
   }
   if (!request.nextUrl.pathname.startsWith("/api/admin/")) {
     const isAdminPage =

@@ -270,7 +270,7 @@ describe("open-app before the native app exists", () => {
   it.each(["GET", "HEAD"])("answers %s with a 302 to the web destination and keeps its query, hash, and UTM values", (method) => {
     const response = proxy(new NextRequest(`https://kyaa.io/open-app?returnTo=${encodeURIComponent(`${passport}?locale=ko`)}&utm_source=push#x`, { method }));
     expect(response.status).toBe(302);
-    expect(response.headers.get("location")).toBe(`${passport}?locale=ko&utm_source=push`);
+    expect(response.headers.get("location")).toBe(`https://kyaa.io${passport}?locale=ko&utm_source=push`);
     expect(response.headers.get("cache-control")).toContain("no-store");
     expect(response.headers.get("x-robots-tag")).toBe("noindex, nofollow");
   });
@@ -278,7 +278,7 @@ describe("open-app before the native app exists", () => {
     for (const query of ["", "?returnTo=https%3A%2F%2Fevil.test", "?returnTo=%2F%2Fevil.test", "?invalid=1&locale=en"]) {
       const response = proxy(new NextRequest(`https://kyaa.io/open-app${query}`));
       expect(response.status).toBe(302);
-      expect(response.headers.get("location")).toBe(query.includes("locale=en") ? "/?locale=en" : "/");
+      expect(response.headers.get("location")).toBe(query.includes("locale=en") ? "https://kyaa.io/?locale=en" : "https://kyaa.io/");
     }
   });
   it("keeps the install screen once the app is out and leaves other methods alone", () => {
