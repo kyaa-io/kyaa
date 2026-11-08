@@ -30,6 +30,9 @@ describe("261107-2 E6 artist activity notices", () => {
   it("keeps push to the dev list and outside quiet hours in the migration, never email or Kakao", () => {
     const sql = readFileSync(resolve(process.cwd(), "../../supabase/migrations/20261216031000_artist_activity_notifications.sql"), "utf8");
     expect(sql).toContain("mode text not null default 'test'");
+    // deploy order: no artist notice is written until the inbox switch is turned on after the new web is live.
+    expect(sql).toContain("inbox_enabled boolean not null default false");
+    expect(sql.match(/if not public\.artist_activity_inbox_enabled\(\) then return/g)?.length).toBe(5);
     expect(sql).toContain("between 8 and 22");
     expect(sql).toMatch(/create or replace function public\.create_external_notification_plan[\s\S]*?artist_activity_is_artist_notice\(p_notification_id\) then return null/);
     // review r5: the callers' owners get EXECUTE on what they call, and the mobile queue is checked again at prepare time.

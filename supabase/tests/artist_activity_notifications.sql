@@ -21,11 +21,24 @@ begin
   insert into public.group_memberships(page_id, app_user_id) values (page, artist), (page, fan);
   delete from public.notification_preferences where app_user_id = fan;
   delete from public.user_blocks where (app_user_id = fan and blocked_app_user_id = artist) or (app_user_id = artist and blocked_app_user_id = fan);
-  update public.artist_activity_push_control set mode = 'test', test_user_ids = '{}';
+  update public.artist_activity_push_control set mode = 'test', test_user_ids = '{}', inbox_enabled = false;
   insert into public.push_subscriptions(app_user_id, endpoint, endpoint_hash, p256dh, auth_secret)
     values (fan, 'https://fcm.googleapis.com/fcm/send/artist-activity-probe', encode(extensions.digest('artist-activity-probe', 'sha256'), 'hex'), repeat('p', 40), repeat('a', 16))
     returning id into sub;
   insert into public.group_posts(page_id, author_id, title, body, visibility, anonymous) values (page, fan, '시험 글', '본문', 'members', false) returning id into post;
+
+  -- 0. Inbox switch off (the state right after the migration): a comment, a heartbeat and a direct call write nothing at all,
+  -- no notice, no online marker, no job, no failure.
+  insert into public.group_comments(post_id, author_id, body, anonymous) values (post, artist, '꺼짐 댓글', false) returning id into cm;
+  perform public.artist_activity_notify_comment(cm, t0);
+  delete from public.artist_online_daily where artist_app_user_id = artist;
+  insert into public.group_presence values (page, artist, now()) on conflict (page_id, app_user_id) do update set seen_at = excluded.seen_at;
+  select count(*) into n from public.fan_notifications where kind::text in ('artist_comment', 'artist_online') and payload ->> 'artistId' = artist::text;
+  select (select count(*) from public.artist_online_daily where artist_app_user_id = artist) + (select count(*) from public.artist_activity_jobs where artist_app_user_id = artist)
+    + (select count(*) from public.artist_activity_failures where artist_app_user_id = artist) into c;
+  raise notice 'OFF notices=% markers+jobs+failures=% maintenance=%', n, c, public.enqueue_due_notification_maintenance(now()) ->> 'artistActivityNotifications';
+  if n <> 0 or c <> 0 then raise exception 'OFF switch wrote rows'; end if;
+  update public.artist_activity_push_control set inbox_enabled = true;
 
   -- 1. A real comment (trigger path): the member gets one notice, the outsider none, and the inbox link lands on the comment.
   insert into public.group_comments(post_id, author_id, body, anonymous) values (post, artist, '안녕하세요', false) returning id into cm;
