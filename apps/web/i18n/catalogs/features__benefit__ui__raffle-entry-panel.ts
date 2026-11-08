@@ -962,5 +962,29 @@ export const messages = {
     "fr": "Confirmer la participation",
     ru: "Подтвердите вход"
 
+  },
+  "raffleEntryReceived": {
+    "ja": "応募受付",
+    "zh-Hans": "报名已受理",
+    "zh-Hant": "報名已受理",
+    "es": "Participación recibida",
+    "id": "Entri diterima",
+    "vi": "Đã nhận lượt tham gia",
+    "th": "รับการเข้าร่วมแล้ว",
+    "pt": "Participação recebida",
+    "fr": "Participation reçue",
+    ru: "Заявка принята"
+  },
+  "raffleTicketOf": {
+    "ja": "{0} 応募券",
+    "zh-Hans": "{0} 抽奖券",
+    "zh-Hant": "{0} 抽獎票券",
+    "es": "Boleto de {0}",
+    "id": "Tiket {0}",
+    "vi": "Vé {0}",
+    "th": "ตั๋ว {0}",
+    "pt": "Bilhete de {0}",
+    "fr": "Ticket {0}",
+    ru: "Билет {0}"
   }
 } satisfies Record<string, TranslatedMessage>;

@@ -17524,5 +17524,17 @@
     "ko": "찐팬 100명부터 순위를 공개해요",
     "source": "features/rankings/ui/rankings-copy",
     "id": "features/rankings/ui/rankings-copy:jjRankLocked"
+  },
+  "raffleEntryReceived": {
+    "en": "Entry received",
+    "ko": "응모 접수",
+    "source": "features/benefit/ui/raffle-entry-panel",
+    "id": "features/benefit/ui/raffle-entry-panel:raffleEntryReceived"
+  },
+  "raffleTicketOf": {
+    "en": "{0} ticket",
+    "ko": "{0} 응모권",
+    "source": "features/benefit/ui/raffle-entry-panel",
+    "id": "features/benefit/ui/raffle-entry-panel:raffleTicketOf"
   }
 }
