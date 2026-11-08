@@ -10,6 +10,7 @@ import { fanLoginHref } from "@/components/login-href";
 import { dukjilText, type DukjilCopyKey } from "@/features/dukjil/ui/dukjil-copy";
 import { walletCopy } from "@/features/group-wallet/ui/copy";
 import { toContentLocale, type AppLocale } from "@/i18n/locales";
+import { knownCertificationTitle } from "../domain/certification-title";
 import { certificationListItemSchema, type CertificationListItem } from "../domain/certification";
 import { certificationStampSrc } from "../domain/certification-stamp";
 import { FanMissionList, FanMissionRow, MissionArt } from "@/features/dukjil/ui/fan-mission-row";
@@ -62,11 +63,11 @@ export function CertificationGrid({ locale, slug, guest, fallbackHref, variant =
   const order = { available: 0, preparing: 1, closed: 2 } as const;
   const items = [...load.items].sort((a, b) => order[a.status] - order[b.status]);
   if (rows) return <FanMissionList data-certification-grid="items">{items.map(item => <FanMissionRow key={item.id} status={item.status} href={go(item.actionHref)}
-    art={<MissionArt src={certificationStampSrc(item)} />} title={item.title}
+    art={<MissionArt src={certificationStampSrc(item)} />} title={knownCertificationTitle(locale, item) ?? item.title}
     detail={<span className={styles.state} data-status={item.status}>{dukjilText(locale, STATE_KEY[item.status])}</span>} />)}</FanMissionList>;
   return <ul className={styles.grid} data-certification-grid="items">{items.map(item => <li key={item.id}><Link className={styles.tile} href={go(item.actionHref)} data-status={item.status}>
     <img src={certificationStampSrc(item)} alt="" width={32} height={32} loading="lazy" />
-    <strong>{item.title}</strong>
+    <strong>{knownCertificationTitle(locale, item) ?? item.title}</strong>
     <span className={styles.state} data-status={item.status}>{dukjilText(locale, STATE_KEY[item.status])}</span>
   </Link></li>)}</ul>;
 }

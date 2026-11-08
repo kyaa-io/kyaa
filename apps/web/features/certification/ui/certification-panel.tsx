@@ -1,4 +1,5 @@
 "use client";
+import { knownCertificationTitle } from "../domain/certification-title";
 import { TranslatedText } from "@/features/content-safety/ui/use-automatic-translation";
 import { toContentLocale } from "@/i18n/locales";
 import type { AppLocale } from "@/i18n/locales";
@@ -226,7 +227,7 @@ export function CertificationPanel({
         <h2 id={`${panelId}-heading`}>
           {t.title}
         </h2>
-        <Link className={styles.proofsLink} href={`/c/${encodeURIComponent(slug)}/proofs?locale=${locale}` as Route}>{proofsText(locale, "pfTitle")}</Link>
+        <FanAction variant="text" href={`/c/${encodeURIComponent(slug)}/proofs?locale=${locale}`}>{proofsText(locale, "pfTitle")}</FanAction>
       </header>
       <div className={styles.tabs} role="tablist" aria-label={t.title}>
         <button
@@ -314,7 +315,7 @@ export function CertificationPanel({
                   const content = (
                     <>
                       <Image src={certificationStampSrc(item)} alt="" width={32} height={32} />
-                      <strong><TranslatedText text={item.title} locale={locale} controls={false} /></strong>
+                      <strong>{knownCertificationTitle(locale, item) ?? <TranslatedText text={item.title} locale={locale} controls={false} />}</strong>
                       <span className={gridStyles.state} data-status={own?.status ?? item.status}>
                         {stateText}{reward && actionable && own?.status !== "approved" ? <span className={gridStyles.reward}> · {reward}</span> : null}
                       </span>
@@ -365,7 +366,7 @@ export function CertificationPanel({
                   className={styles.row}
                 >
                   <span className={styles.rowCopy}>
-                    <strong><TranslatedText text={item.title} locale={locale} controls={false} /></strong>
+                    <strong>{knownCertificationTitle(locale, item) ?? <TranslatedText text={item.title} locale={locale} controls={false} />}</strong>
                     {item.membershipPlatform ? (
                       <small>
                         {membershipPlatformLabel(item.membershipPlatform)}
