@@ -61,6 +61,8 @@ begin
   -- One observer per user at a time, so two tabs cannot append the same change twice.
   perform pg_catalog.pg_advisory_xact_lock(pg_catalog.hashtextextended('fan-tier-history:' || p_app_user_id::text, 0));
   select policy_version into v_policy from public.reward_policy_activation where singleton;
+  -- Without the active policy the badge expression cannot be matched; write nothing rather than a wrong tier (review r4 M2).
+  if v_policy is null then return jsonb_build_object('changes', '[]'::jsonb); end if;
   for p in select fp.id, fp.celebrity_id, fp.issued_at from public.fan_passports fp where fp.app_user_id = p_app_user_id loop
     -- The same expression as the MY summary (get_owned_my_fan_activity_before_fan_web), so the history never disagrees with the badge.
     v_tier := public.get_fan_effective_tier_for_score(p_app_user_id, p.celebrity_id,
@@ -128,4 +130,5 @@ begin
   end loop;
 end $$;
 
+notify pgrst, 'reload schema';
 commit;

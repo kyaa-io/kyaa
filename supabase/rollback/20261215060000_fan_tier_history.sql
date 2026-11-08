@@ -6,4 +6,5 @@ drop function if exists public.mark_fan_tier_changes_seen(uuid, uuid[]);
 drop function if exists public.observe_fan_tiers(uuid, public.content_locale);
 drop function if exists public.fan_tier_rank(text);
 drop table if exists public.fan_tier_history;
+notify pgrst, 'reload schema';
 commit;
