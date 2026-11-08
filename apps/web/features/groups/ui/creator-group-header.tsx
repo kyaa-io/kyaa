@@ -3,6 +3,8 @@ import type { PublishedCelebrity } from "@/server/content/content-domain";
 import type { AppLocale } from "@/i18n/locales";
 import { FanSkeletonRows } from "@/components/fan-ui/fan-skeleton";
 import { GroupMembers } from "./group-members";
+import { JjinfanGauge } from "@/features/rankings/ui/jjinfan-gauge";
+import gaugeStyles from "@/features/rankings/ui/jjinfan-gauge.module.css";
 import { GroupActivitiesPanel, GroupCollections, GroupEventsList } from "./group-activities";
 import { GroupRoomsPanel } from "./group-rooms-panel";
 import { FanAction } from "@/components/fan-ui/fan-action";
@@ -41,5 +43,6 @@ export function CreatorGroupMembers({celebrity,locale}:{celebrity:PublishedCeleb
  const g=useGroupPage(),t=groupsCopy(locale),page=g.page;
  const linked=page&&page.slug===celebrity.slug&&page.celebrityId&&page.kind===(celebrity.roles.includes('brand')?'brand':'fan');
  if(g.error||page&&!linked)return <div role="alert"><p>{t.error}</p><FanAction onClick={g.refresh}>{t.retry}</FanAction></div>;
- return linked?<GroupMembers key={g.ownerKey} pageId={page.id} rankingsSlug={celebrity.slug} locale={locale} member={Boolean(g.membership)} onJoin={g.startJoin} joinPending={g.joinPending} joinLabel={g.joinLabel} inTab presentation={{creatorName:celebrity.name,subtitles:{}}}/>:<FanSkeletonRows rows={5} variant="member"/>;
+ // The gauge stands outside the page read, so it is in the first paint (server answer) and the list below never moves for it.
+ return <><JjinfanGauge slug={celebrity.slug} locale={locale} name={celebrity.name} className={gaugeStyles.above}/>{linked?<GroupMembers gaugeAbove key={g.ownerKey} pageId={page.id} rankingsSlug={celebrity.slug} locale={locale} member={Boolean(g.membership)} onJoin={g.startJoin} joinPending={g.joinPending} joinLabel={g.joinLabel} inTab presentation={{creatorName:celebrity.name,subtitles:{}}}/>:<FanSkeletonRows rows={5} variant="member"/>}</>;
 }

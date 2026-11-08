@@ -18,7 +18,8 @@ import { CelebrityFanPage, type CelebrityFanTab } from "@/components/celebrity-f
 import { createPublishedContentRepositoryFromEnvironment } from "@/server/content/published-content-repository";
 import { parseFanPageTab, resolveBoardSection, resolveBoardSource } from "@/features/fanpage/domain/board-navigation";
 import { JJINFAN_SHARE_VALUE, jjinfanShareImagePath } from "@/features/rankings/domain/jjinfan-share";
-import { readSharedJjinfanChallenge } from "@/server/rankings/jjinfan-share";
+import { readJjinfanSeed, readSharedJjinfanChallenge } from "@/server/rankings/jjinfan-share";
+import { JjinfanSeed } from "@/features/rankings/ui/jjinfan-seed";
 
 export const dynamic = "force-dynamic";
 
@@ -57,8 +58,9 @@ export default async function CelebrityPage({ params, searchParams }: { params: 
   const initialTab: CelebrityFanTab = slug === WAVE_FANPAGE_SLUG && requestedTab === "friends" ? "friends" : parseFanPageTab(requestedTab);
   const initialBoardSection = resolveBoardSection(requestedTab, requestedSection);
   const initialBoardSource = resolveBoardSource(requestedTab, requestedSource);
-  const [primaryLives, initialCheerEvent] = slug === WAVE_FANPAGE_SLUG ? [[], null] : await Promise.all([createPublishedContentRepositoryFromEnvironment().listPrimaryLives(toContentLocale(locale)), readPublicCheerEvent(slug, toContentLocale(locale))]);
+  // The 찐팬 100 gauge's answer is read here too, so the card (or its absence) is in the first paint. A failed read leaves it to the client.
+  const [primaryLives, initialCheerEvent, jjinfanSeed] = slug === WAVE_FANPAGE_SLUG ? [[], null, undefined] : await Promise.all([createPublishedContentRepositoryFromEnvironment().listPrimaryLives(toContentLocale(locale)), readPublicCheerEvent(slug, toContentLocale(locale)), readJjinfanSeed(slug)]);
   const upcomingLive = primaryLives.find((live) => live.celebritySlug === slug) ?? null;
-  const content = <><CelebrityFanPage groupsEnabled={process.env.KYAA_GROUPS_ENABLED === "true"} celebrity={celebrity} locale={locale} upcomingLive={upcomingLive} initialCheerEvent={initialCheerEvent} initialTab={initialTab} calendarMonth={requestedMonth} initialBoardSection={initialBoardSection} initialBoardSource={initialBoardSource} initialNewsFilter={requestedNews === "artist_post" || requestedNews === "notice" || requestedNews === "chzzk" ? requestedNews : "all"} initialMediaFilter={requestedMedia === "photos" || requestedMedia === "videos" || requestedMedia === "replays" ? requestedMedia : undefined} instagramEnabled={process.env.INSTAGRAM_INTEGRATION_ENABLED === "true"} />{process.env.VERCEL_ENV === "production" && <VercelTelemetry publicCreatorSlug={slug} />}</>;
+  const content = <JjinfanSeed slug={slug} value={jjinfanSeed}><CelebrityFanPage groupsEnabled={process.env.KYAA_GROUPS_ENABLED === "true"} celebrity={celebrity} locale={locale} upcomingLive={upcomingLive} initialCheerEvent={initialCheerEvent} initialTab={initialTab} calendarMonth={requestedMonth} initialBoardSection={initialBoardSection} initialBoardSource={initialBoardSource} initialNewsFilter={requestedNews === "artist_post" || requestedNews === "notice" || requestedNews === "chzzk" ? requestedNews : "all"} initialMediaFilter={requestedMedia === "photos" || requestedMedia === "videos" || requestedMedia === "replays" ? requestedMedia : undefined} instagramEnabled={process.env.INSTAGRAM_INTEGRATION_ENABLED === "true"} />{process.env.VERCEL_ENV === "production" && <VercelTelemetry publicCreatorSlug={slug} />}</JjinfanSeed>;
   return slug === WAVE_FANPAGE_SLUG ? <WaveAccessBoundary locale={locale}>{content}</WaveAccessBoundary> : content;
 }

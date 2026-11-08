@@ -11,7 +11,7 @@ vi.mock("@/server/fanpage/public-cheer-event", () => ({readPublicCheerEvent:vi.f
 vi.mock("@/server/seo/public-content", () => ({ loadSeoCreator: vi.fn(async () => mocks.creator) }));
 vi.mock("@/server/content/published-content-repository", () => ({ createPublishedContentRepositoryFromEnvironment: () => ({ listPrimaryLives: mocks.listPrimaryLives }) }));
 vi.mock("@/components/celebrity-fan-page", () => ({ CelebrityFanPage: () => <div>Fan page</div> }));
-vi.mock("@/server/rankings/jjinfan-share", () => ({ readSharedJjinfanChallenge: mocks.challenge }));
+vi.mock("@/server/rankings/jjinfan-share", () => ({ readSharedJjinfanChallenge: mocks.challenge, readJjinfanSeed: vi.fn(async () => undefined) }));
 vi.mock("next/navigation", () => ({ notFound: vi.fn(() => { throw new Error("not-found"); }), redirect: mocks.redirect }));
 
 import CelebrityPage from "./page";

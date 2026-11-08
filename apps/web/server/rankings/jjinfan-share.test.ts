@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 vi.mock("server-only", () => ({}));
 vi.mock("@/server/dukjil/creator-id", () => ({ resolveCreatorId: vi.fn() }));
 vi.mock("@/server/fanpage/dependencies", () => ({ createFanpageDependencies: vi.fn() }));
-import { readSharedJjinfanChallenge } from "./jjinfan-share";
+import { readJjinfanSeed, readSharedJjinfanChallenge } from "./jjinfan-share";
 
 const ID = "22222222-2222-4222-8222-222222222222";
 const deps = (answer: unknown, id: string | null = ID) => ({ resolveCreatorId: vi.fn(async () => id), rpc: vi.fn(async () => answer) });
@@ -22,5 +22,14 @@ describe("shared jjinfan challenge", () => {
     const unknown = deps({}, null);
     expect(await readSharedJjinfanChallenge("nobody", unknown)).toBeNull();
     expect(unknown.rpc).not.toHaveBeenCalled();
+  });
+});
+
+describe("jjinfan seed for the fan page's first paint", () => {
+  it("answers the gauge as read, off included, and undefined when it cannot read", async () => {
+    expect(await readJjinfanSeed("elina", deps({ count: 3, target: 100, campaign: null }))).toEqual({ count: 3, target: 100, campaign: null });
+    expect(await readJjinfanSeed("elina", { resolveCreatorId: vi.fn(async () => ID), rpc: vi.fn(async () => { throw new Error("db"); }) })).toBeUndefined();
+    expect(await readJjinfanSeed("Bad Slug", deps({}))).toBeUndefined();
+    expect(await readJjinfanSeed("nobody", deps({}, null))).toBeUndefined();
   });
 });
