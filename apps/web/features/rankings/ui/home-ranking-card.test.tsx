@@ -5,7 +5,7 @@ const auth = vi.hoisted(() => ({ value: { ready: true, authenticated: false, use
 vi.mock("@/features/auth/client/cognito-auth", () => ({ useByUsAuth: () => auth.value }));
 
 import { clearResources } from "@/components/fan-ui/resource-cache";
-import { HomeRankingCard, resetHomeRankingTab, updatedLabel } from "./home-ranking-card";
+import { HomeRankingCard, resetHomeRankingShape, resetHomeRankingTab, updatedLabel } from "./home-ranking-card";
 
 const fanRow = (rank: number, extra: Record<string, unknown> = {}) => ({ rank, score: 30 - rank, nickname: `팬${rank}`, characterId: "star-pink", tier: rank === 1 ? "Gold" : null, isMe: false, delta: null, favorite: null, ...extra });
 const fans = (rows = [fanRow(1, { nickname: "별빛", delta: 2, favorite: { slug: "elina", name: "엘리나" } }), fanRow(2, { nickname: "나", isMe: true, delta: -1 }), fanRow(3, { delta: 0 }), fanRow(4, { nickname: "새별" })], me: unknown = null) =>
@@ -13,7 +13,7 @@ const fans = (rows = [fanRow(1, { nickname: "별빛", delta: 2, favorite: { slug
 const creatorRow = (rank: number, extra: Record<string, unknown> = {}) => ({ rank, slug: `c${rank}`, name: `크리에이터${rank}`, imageUrl: null, score: 200 - rank, hearts: 900 - rank, challenge: false, delta: null, weekGain: null, ...extra });
 const creators = { day: "2026-11-08", computedAt: null, comparable: false, weekGainDays: 7, rows: [creatorRow(1, { slug: "elina", name: "엘리나", score: 125, hearts: 795, challenge: true, weekGain: 12 }), creatorRow(2, { weekGain: 0 }), creatorRow(3)] };
 
-afterEach(() => { vi.unstubAllGlobals(); clearResources(); resetHomeRankingTab(); auth.value = { ...auth.value, authenticated: false, user: null }; });
+afterEach(() => { vi.unstubAllGlobals(); clearResources(); resetHomeRankingTab(); resetHomeRankingShape(); auth.value = { ...auth.value, authenticated: false, user: null }; });
 
 function stub(fanBody: unknown, creatorBody: unknown = creators) {
   const fetcher = vi.fn(async (input: string | URL | Request) => Response.json(String(input).includes("kind=creators") ? creatorBody : fanBody));
@@ -65,6 +65,18 @@ it("R6-EXTRACT ⑧: an empty tab is one line and one action (fan pages) at three
   expect(screen.getByRole("link", { name: "팬페이지 둘러보기" })).toHaveAttribute("href", "/celebrities?locale=ko");
   expect(container.querySelector("ol")).toBeNull();
   expect(screen.queryByRole("button", { name: "11~20위" })).not.toBeInTheDocument();
+});
+
+it("an empty creator tab takes the height of the drawn 찐팬 tab (rows and bottom line)", async () => {
+  stub(fans(), { ...creators, rows: [] });
+  const { container } = render(<HomeRankingCard locale="ko" />);
+  await screen.findByText("별빛");
+  fireEvent.click(screen.getByRole("tab", { name: "크리에이터 순위" }));
+  const empty = await waitFor(() => { const node = container.querySelector<HTMLElement>("[data-empty]"); expect(node).toBeTruthy(); return node!; });
+  // Four rows, and a guest's bottom line ("내 순위 보기").
+  expect(empty).toHaveAttribute("data-match-fans");
+  expect(empty.style.getPropertyValue("--rank-rows")).toBe("4");
+  expect(empty.style.getPropertyValue("--rank-foot")).toBe("1");
 });
 
 it("shows creators by true fans with the heart total, each row opening the fan page", async () => {
