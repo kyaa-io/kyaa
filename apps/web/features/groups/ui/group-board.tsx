@@ -13,6 +13,12 @@ import { fanUiText } from "@/components/fan-ui/fan-ui-copy";
 import { fanLoginHref } from "@/components/login-href";
 import { GroupPostArticle } from "./group-post-article";
 import { GroupPostComposer, type GroupPostInput } from "./group-post-composer";
+import { registrationReward } from "@/features/fan-posts/domain/registration-reward";
+import { announceMissionSkip } from "@/features/fan-posts/ui/mission-skip-notice";
+import { showMissionRewardToast } from "@/features/fan-posts/ui/mission-reward-toast";
+import { notifyFanActivityUpdated } from "@/components/fan-ui/fan-activity-updates";
+import { useByUsAuth } from "@/features/auth/client/cognito-auth";
+import { useByUsSession } from "@/components/byus-session-provider";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import type { AppLocale } from "@/i18n/locales";
 import { RelativeTime } from "@/components/relative-time";
@@ -40,6 +46,7 @@ export const parseGroupPosts=(v:unknown)=>postsSchema.parse(v);
 const parseList=parseGroupPosts,parsePost=(v:unknown)=>postSchema.parse(v);
 export type BoardLocation={category?:string;search?:string;sort?:string;cursor?:string};
 export function GroupBoard({detail,locale,preview=false,compact=false,heading,initialPostId,initialBoardState={},listHref,onJoin,joinPending=false,joinLabel}:{joinLabel?:string;onJoin?:()=>void;joinPending?:boolean;listHref?:string;detail:GroupDetail;locale:AppLocale;preview?:boolean;compact?:boolean;heading?:string;initialPostId?:string;initialBoardState?:BoardLocation}){
+ const auth=useByUsAuth(),session=useByUsSession();
  const t=groupsCopy(locale),m=managementCopy(locale),b=boardCopy(locale),c=interactionCopy(locale),home=groupHomeCopy(locale),base=`/api/groups/${detail.page.id}`;
  // 미션 카드의 `글쓰기`가 `compose=1`로 들어온다. 가입한 팬에게만 바로 작성 화면을 연다.
  const composeRequested=useSearchParams()?.get('compose')==='1'&&!preview&&Boolean(detail.membership);
@@ -62,8 +69,8 @@ export function GroupBoard({detail,locale,preview=false,compact=false,heading,in
  const [reported,setReported]=useState(false),[deleteDialog,setDeleteDialog]=useState<{id:string;title:string;uncertain:boolean;open:boolean}|null>(null),[deleteChecking,setDeleteChecking]=useState(false);
  const pending=useRef<{input:string;requestId:string}|undefined>(undefined);
  const reset=()=>{setCursor(undefined);setPreviewCursors([undefined]);setPrevious({key:'',items:[]});};
- const send=async(path:string,method:string,input:Record<string,unknown>)=>{if(busy)return false;setBusy(true);setFailed(false);const key=JSON.stringify([path,method,input]);if(pending.current?.input!==key)pending.current={input:key,requestId:crypto.randomUUID()};try{await list.request(`${base}/${path}`,{method,body:JSON.stringify({...input,requestId:pending.current.requestId})});pending.current=undefined;if(path==='reports')setReported(true);list.retry();post.retry();return true;}catch{setFailed(true);return false;}finally{setBusy(false);}};
- const write=async(input:GroupPostInput)=>{const result=await send(editing&&selected?`posts/${selected}`:'posts',editing?'PATCH':'POST',input);if(result){setWriting(false);setEditing(false);reset();}return result;};
+ const send=async(path:string,method:string,input:Record<string,unknown>,onDone?:(response:unknown)=>void)=>{if(busy)return false;setBusy(true);setFailed(false);const key=JSON.stringify([path,method,input]);if(pending.current?.input!==key)pending.current={input:key,requestId:crypto.randomUUID()};try{const response=await list.request(`${base}/${path}`,{method,body:JSON.stringify({...input,requestId:pending.current.requestId})});pending.current=undefined;try{onDone?.(response);}catch{/* the post is saved: a failed toast or refresh never turns it into a failure */}if(path==='reports')setReported(true);list.retry();post.retry();return true;}catch{setFailed(true);return false;}finally{setBusy(false);}};
+ const write=async(input:GroupPostInput)=>{const result=await send(editing&&selected?`posts/${selected}`:'posts',editing?'PATCH':'POST',input,editing?undefined:response=>{notifyFanActivityUpdated(session.ownerId??auth.user?.id);announceMissionSkip(locale,'post',response);const reward=registrationReward(response);if(reward)showMissionRewardToast(locale,'post',reward);});if(result){setWriting(false);setEditing(false);reset();}return result;};
  const items=[...(previous.key===list.ownerKey?previous.items:[]),...(list.data?.items??[])];
  // 필터·검색·페이지를 바꾸는 동안 이전 목록을 그대로 둔다. 스켈레톤은 값이 한 번도 없을 때만 그린다.
  const listData=list.data,listKey=items.map(item=>item.id).join();
