@@ -8,6 +8,10 @@
 --   artist_activity_push_control allows it. The control starts in 'test' with no fans listed, so nothing is sent anywhere
 --   until an operator lists dev test accounts. 'enabled' (everyone) needs a separate operator statement after the user approves.
 --   The same check runs again when web push is claimed and when a mobile push is prepared. Email and Kakao never carry these kinds.
+-- Inbox switch (deploy order): artist_activity_push_control.inbox_enabled starts false. While it is false no artist notice,
+--   online marker or job is written at all, so the web that is still live before the new web is deployed (it rejects unknown
+--   notice kinds and would fail the whole inbox) never meets these rows, and nothing piles up to be sent later. Turn it on after
+--   the new web is live: board dev-apply/e6-artist-inbox-enable.sql.
 -- Size: a page with up to 500 members is written in the comment's own transaction; a bigger page gets one row in
 --   artist_activity_jobs and enqueue_due_notification_maintenance (run by the notification worker) writes it 1,000 members at a time.
 -- Failures never block the comment or heartbeat and never vanish: they land in artist_activity_failures.
@@ -29,6 +33,7 @@ create table public.artist_activity_push_control(
   mode text not null default 'test' check (mode in ('disabled','test','enabled')),
   test_user_ids uuid[] not null default '{}' check (array_ndims(test_user_ids) is null or (array_ndims(test_user_ids) = 1 and cardinality(test_user_ids) <= 20 and array_position(test_user_ids, null) is null)),
   enabled_at timestamptz,
+  inbox_enabled boolean not null default false,
   updated_at timestamptz not null default pg_catalog.clock_timestamp(),
   check (mode <> 'enabled' or enabled_at is not null)
 );
@@ -126,6 +131,11 @@ returns boolean language sql stable security definer set search_path = '' as $$
       from public.notification_preferences p where p.app_user_id = p_recipient), true)
 $$;
 
+create function public.artist_activity_inbox_enabled()
+returns boolean language sql stable security definer set search_path = '' as $$
+  select coalesce((select c.inbox_enabled from public.artist_activity_push_control c where c.id), false)
+$$;
+
 create function public.artist_activity_display_name(p_artist uuid, p_fallback text)
 returns text language sql stable security definer set search_path = '' as $$
   select coalesce((select nullif(pg_catalog.btrim(nickname), '') from public.user_profiles where app_user_id = p_artist), p_fallback)
@@ -159,6 +169,7 @@ create function public.artist_activity_comment_batch(p_comment uuid, p_at timest
 returns jsonb language plpgsql security definer set search_path = '' as $$
 declare c record; artist_name text; bumped integer; added integer; seen integer; last_id uuid; ids uuid[];
 begin
+  if not public.artist_activity_inbox_enabled() then return jsonb_build_object('written', 0, 'last', p_after, 'done', false); end if;
   select gc.id, gc.post_id, gc.author_id, gc.anonymous, gc.removed_at, gp.page_id, gp.title, gp.removed_at post_removed, g.name page_name
     into c from public.group_comments gc join public.group_posts gp on gp.id = gc.post_id join public.group_pages g on g.id = gp.page_id and g.status = 'published'
     where gc.id = p_comment;
@@ -191,6 +202,7 @@ create function public.artist_activity_online_batch(p_page uuid, p_artist uuid, 
 returns jsonb language plpgsql security definer set search_path = '' as $$
 declare g record; artist_name text; kst_day date := (p_at at time zone 'Asia/Seoul')::date; added integer; seen integer; ids uuid[];
 begin
+  if not public.artist_activity_inbox_enabled() then return jsonb_build_object('written', 0, 'last', p_after, 'done', false); end if;
   select id, name into g from public.group_pages where id = p_page and status = 'published';
   if not found then return jsonb_build_object('written', 0, 'last', null, 'done', true); end if;
   artist_name := public.artist_activity_display_name(p_artist, g.name);
@@ -212,6 +224,7 @@ create function public.artist_activity_notify_comment(p_comment uuid, p_at times
 returns integer language plpgsql security definer set search_path = '' as $$
 declare c record; members integer;
 begin
+  if not public.artist_activity_inbox_enabled() then return 0; end if;
   select gc.id, gc.author_id, gc.anonymous, gc.removed_at, gp.page_id, gp.removed_at post_removed
     into c from public.group_comments gc join public.group_posts gp on gp.id = gc.post_id join public.group_pages g on g.id = gp.page_id and g.status = 'published'
     where gc.id = p_comment;
@@ -230,6 +243,7 @@ create function public.artist_activity_notify_online(p_page uuid, p_artist uuid,
 returns integer language plpgsql security definer set search_path = '' as $$
 declare members integer;
 begin
+  if not public.artist_activity_inbox_enabled() then return 0; end if;
   if not exists (select 1 from public.group_pages where id = p_page and status = 'published') then return 0; end if;
   if not exists (select 1 from public.group_artist_bindings b
       join public.group_artist_presence_settings s on s.app_user_id = b.app_user_id and s.enabled
@@ -250,6 +264,7 @@ create function public.run_artist_activity_jobs(p_budget integer default 2000)
 returns integer language plpgsql security definer set search_path = '' as $$
 declare j public.artist_activity_jobs; r jsonb; written integer := 0; left_budget integer := greatest(least(coalesce(p_budget, 2000), 10000), 1); slice integer;
 begin
+  if not public.artist_activity_inbox_enabled() then return 0; end if;
   for j in select * from public.artist_activity_jobs where finished_at is null and gave_up_at is null order by created_at for update skip locked loop
     exit when left_budget <= 0;
     slice := least(1000, left_budget);
@@ -288,7 +303,8 @@ end $$;
 create function public.artist_activity_presence_trigger()
 returns trigger language plpgsql security definer set search_path = '' as $$
 begin
-  if not exists (select 1 from public.group_artist_bindings where page_id = new.page_id and app_user_id = new.app_user_id) then return null; end if;
+  if not exists (select 1 from public.group_artist_bindings where page_id = new.page_id and app_user_id = new.app_user_id)
+    or not public.artist_activity_inbox_enabled() then return null; end if;
   begin
     perform public.artist_activity_notify_online(new.page_id, new.app_user_id, new.seen_at);
   exception when others then
@@ -440,7 +456,7 @@ end $$;
 do $$
 declare
   me record; caller record; t record; f text;
-  new_fns text[] := array['artist_activity_push_allowed(uuid,text,timestamp with time zone)', 'artist_activity_display_name(uuid,text)',
+  new_fns text[] := array['artist_activity_inbox_enabled()', 'artist_activity_push_allowed(uuid,text,timestamp with time zone)', 'artist_activity_display_name(uuid,text)',
     'artist_activity_record_failure(text,uuid,uuid,uuid,timestamp with time zone,text,text)', 'artist_activity_recipients(uuid,uuid,text,uuid,integer)',
     'artist_activity_comment_batch(uuid,timestamp with time zone,uuid,integer)', 'artist_activity_online_batch(uuid,uuid,timestamp with time zone,uuid,integer)',
     'artist_activity_notify_comment(uuid,timestamp with time zone)', 'artist_activity_notify_online(uuid,uuid,timestamp with time zone)',

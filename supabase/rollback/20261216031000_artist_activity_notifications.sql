@@ -77,6 +77,7 @@ drop function if exists public.artist_activity_delivery_allowed(uuid, timestampt
 drop function if exists public.artist_activity_is_artist_notice(uuid);
 drop function if exists public.artist_activity_mobile_delivery_refused(uuid, text);
 drop function if exists public.artist_activity_display_name(uuid, text);
+drop function if exists public.artist_activity_inbox_enabled();
 drop function if exists public.artist_activity_push_allowed(uuid, text, timestamptz);
 drop table if exists public.artist_activity_failures;
 drop table if exists public.artist_activity_jobs;

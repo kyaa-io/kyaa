@@ -66,6 +66,17 @@ insert into public.group_artist_bindings(page_id, app_user_id, verified_by) sele
 insert into public.group_artist_presence_settings values (:'artist', true) on conflict (app_user_id) do update set enabled = true;
 insert into public.group_memberships(page_id, app_user_id) values (:'page', :'artist'), (:'page', :'fan');
 update public.artist_activity_push_control set mode = 'test', test_user_ids = array[:'fan'::uuid] where id;
+-- Off first (as applied): the triggers below must write nothing. (Files before the switch have no column: skipped.)
+select exists (select 1 from information_schema.columns where table_schema = 'public' and table_name = 'artist_activity_push_control' and column_name = 'inbox_enabled') as has_switch \gset
+\set probe_off_rows 0
+\if :has_switch
+update public.artist_activity_push_control set inbox_enabled = false where id;
+insert into public.group_comments(post_id, author_id, body, anonymous) select p.id, :'artist', '꺼짐 탐침', false from public.group_posts p where p.page_id = :'page' and p.removed_at is null limit 1;
+insert into public.group_presence values (:'page', :'artist', now()) on conflict (page_id, app_user_id) do update set seen_at = excluded.seen_at;
+select (select count(*) from public.fan_notifications where app_user_id = :'fan' and kind::text like 'artist%') + (select count(*) from public.artist_online_daily where artist_app_user_id = :'artist') + (select count(*) from public.artist_activity_jobs where artist_app_user_id = :'artist') as off_rows \gset probe_
+\echo PROBE switch off: rows written :probe_off_rows
+update public.artist_activity_push_control set inbox_enabled = true where id;
+\endif
 insert into public.push_subscriptions(app_user_id, endpoint, endpoint_hash, p256dh, auth_secret)
   values (:'fan', 'https://fcm.googleapis.com/fcm/send/e6-probe', encode(extensions.digest('e6-probe', 'sha256'), 'hex'), repeat('p', 40), repeat('a', 16));
 insert into public.group_posts(page_id, author_id, title, body, visibility, anonymous) values (:'page', :'fan', '탐침 글', '본문', 'public', false) returning id as post \gset
@@ -90,7 +101,7 @@ select coalesce(string_agg(c.relname, ',' order by c.relname), 'none') as owner_
 \echo PROBE owner policies: :probe_owner_policies
 \echo PROBE failures: :probe_failure_detail
 \echo PROBE notices comment=:probe_comment_notices online=:probe_online_notices queued_web_push=:probe_queued_web_push recorded_failures=:probe_recorded_failures
-create temporary table e6_fx as select :'fan'::uuid as fan, :probe_comment_notices::integer as comments, :probe_online_notices::integer as onlines, :probe_recorded_failures::integer as failures;
+create temporary table e6_fx as select :'fan'::uuid as fan, :probe_comment_notices::integer as comments, :probe_online_notices::integer as onlines, :probe_recorded_failures::integer as failures, :probe_off_rows::integer as off_rows;
 grant select on e6_fx to service_role;
 set role service_role;
 do \$\$
@@ -114,7 +125,7 @@ begin
   raise notice 'PROBE inbox(service_role): %', inbox;
   raise notice 'PROBE web push claim(service_role): %', claim;
   raise notice 'PROBE worker maintenance(service_role): %', maint;
-  if fx.comments >= 1 and fx.onlines >= 1 and fx.failures = 0 and inbox like 'ok, artist rows 2' and (claim like 'ok%' or claim like 'not called%') and maint = 'ok' then
+  if fx.off_rows = 0 and fx.comments >= 1 and fx.onlines >= 1 and fx.failures = 0 and inbox like 'ok, artist rows 2' and (claim like 'ok%' or claim like 'not called%') and maint = 'ok' then
     raise notice 'RESULT pass (mode %)', mode;
   else
     raise notice 'RESULT FAIL (mode %)', mode;
