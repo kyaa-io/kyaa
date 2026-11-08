@@ -33,7 +33,7 @@ export type ServiceGuideContent = {
 export const serviceGuideContent = {
   ko: {
     metadataTitle: "이용 가이드와 자주 묻는 질문",
-    metadataDescription: "팬 인증, Fan Passport, LIVE 예약·출석, 선물 응모를 이용하는 방법과 자주 묻는 질문을 확인하세요.",
+    metadataDescription: "팬 인증, 팬 패스포트, LIVE 예약·출석, 선물 응모를 이용하는 방법과 자주 묻는 질문을 확인하세요.",
     eyebrow: "KYAA GUIDE",
     title: "팬 활동을 시작하는 방법",
     description: "최애를 찾고 팬 인증을 완료한 뒤, LIVE와 혜택에 참여할 수 있어요. 각 활동의 조건과 기간은 해당 화면에서 확인해 주세요.",
@@ -42,17 +42,17 @@ export const serviceGuideContent = {
     overviewTitle: "kyaa 참여 순서",
     overviewDescription: "팬 인증, 예약, 출석, 선물 응모는 각각 확인하고 완료해야 하는 별도 단계예요.",
     steps: [
-      { number: "01", title: "최애를 찾고 팬 인증하기", description: "최애 페이지에서 팬 인증에 참여하세요. 인증을 통과하면 해당 최애의 Fan Passport를 시작할 수 있어요." },
+      { number: "01", title: "최애를 찾고 팬 인증하기", description: "최애 페이지에서 팬 인증에 참여하세요. 인증을 통과하면 해당 최애의 팬 패스포트를 시작할 수 있어요." },
       { number: "02", title: "LIVE 예약하기", description: "예약이 열려 있는 LIVE를 확인하고 기간 안에 예약하세요. 예약만으로 출석이 완료되지는 않아요." },
       { number: "03", title: "LIVE에 출석하기", description: "방송 중 이벤트 화면에 안내된 방법으로 출석하세요. LIVE마다 출석 방식과 운영 시간이 다를 수 있어요." },
       { number: "04", title: "선물에 따로 응모하기", description: "응모 조건과 기간을 확인한 뒤 혜택 화면에서 직접 응모하세요. 예약이나 출석만으로 자동 응모되지 않아요." },
     ],
-    passportTitle: "Fan Passport에는 무엇이 기록되나요?",
-    passportDescription: "Fan Passport는 kyaa 안에서 최애와 함께한 팬 활동을 기록하는 디지털 기록이에요.",
+    passportTitle: "팬 패스포트에는 무엇이 기록되나요?",
+    passportDescription: "팬 패스포트는 kyaa 안에서 최애와 함께한 팬 활동을 기록하는 디지털 기록이에요.",
     passportPoints: [
-      "팬 인증을 통과한 최애별로 Passport가 만들어져요.",
+      "팬 인증을 통과한 최애별로 패스포트가 만들어져요.",
       "지원되는 팬 활동을 완료하면 스탬프와 참여 기록을 확인할 수 있어요.",
-      "Passport와 스탬프는 현금, 증권, 투자 상품이나 회사에 대한 권리를 뜻하지 않아요.",
+      "패스포트와 스탬프는 현금, 증권, 투자 상품이나 회사에 대한 권리를 뜻하지 않아요.",
     ],
     faqTitle: "자주 묻는 질문",
     faqs: [

@@ -4,7 +4,7 @@ export const fanRewardSchema = z.object({
   status: z.enum(["unconfigured", "not_eligible", "awarded"]),
   asset: z.enum(["fan_point", "legacy_free_draw"]),
   amount: z.number().int().min(0).max(Number.MAX_SAFE_INTEGER),
-  policyVersion: z.string().nullable(), sourceId: z.uuid().nullable(), ledgerId: z.uuid().nullable(),
+  policyVersion: z.string().nullable(), sourceId: z.guid().nullable(), ledgerId: z.guid().nullable(),
 }).strict().refine(r => r.status === "awarded"
   ? r.amount > 0 && r.ledgerId !== null && r.sourceId !== null && r.policyVersion !== null
   : r.amount === 0 && r.ledgerId === null);

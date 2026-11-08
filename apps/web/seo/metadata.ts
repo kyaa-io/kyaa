@@ -84,7 +84,7 @@ export function publicMetadata(input: {
 
 export const pageCopy = {
   home: {
-    ko: { title: "Kyaa. Every Fan Moment Counts.", description: "최애의 LIVE 일정을 확인하고 팬 인증, 예약, 출석으로 함께한 순간을 Fan Passport에 기록하세요." },
+    ko: { title: "Kyaa. Every Fan Moment Counts.", description: "최애의 LIVE 일정을 확인하고 팬 인증, 예약, 출석으로 함께한 순간을 팬 패스포트에 기록하세요." },
     en: { title: "Kyaa. Every Fan Moment Counts.", description: "Discover your favorite creators and their LIVE events. Verify your fandom, reserve a spot for a LIVE, and record your attendance in your Fan Passport." },
 
   ...additionalLocales((translationLocale) => ({ title: "Kyaa. Every Fan Moment Counts.", description: localizedMessages.m66f358c91b9f[translationLocale] }))

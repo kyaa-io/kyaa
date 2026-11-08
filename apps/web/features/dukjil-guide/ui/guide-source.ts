@@ -13,7 +13,6 @@ export const dukjilGuideSource = {
   dkgJjBookTitle: { ko: "미션북 {0}칸", en: "Mission book: {0} slots" },
   dkgColSlot: { ko: "칸", en: "Slot" },
   dkgColHow: { ko: "받는 법", en: "How to fill" },
-  dkgColAction: { ko: "덕질", en: "Activity" },
   dkgColPoints: { ko: "포인트", en: "Points" },
   dkgColLimit: { ko: "한도", en: "Limit" },
   dkgColStamp: { ko: "스탬프", en: "Stamp" },

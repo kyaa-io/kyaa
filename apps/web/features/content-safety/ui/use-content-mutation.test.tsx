@@ -58,3 +58,20 @@ it("says the connection dropped when the request cannot reach the server", async
     expect(result.current.error).toBe("처리하지 못했어요. 다시 시도해 주세요.");
   } finally { vi.unstubAllGlobals(); }
 });
+
+it("drops the offline line once the browser is back online, not before (M4-2)", async () => {
+  const fetcher = vi.fn().mockRejectedValue(new TypeError("Failed to fetch"));
+  vi.stubGlobal("fetch", fetcher);
+  const onLine = vi.spyOn(navigator, "onLine", "get").mockReturnValue(false);
+  try {
+    const { result } = renderHook(() => useContentMutation("ko"));
+    act(() => { window.dispatchEvent(new Event("offline")); });
+    await act(async () => { expect(await result.current.request("/api/posts/x/like", "PUT", { reaction: "like" })).toBeNull(); });
+    expect(result.current.failure).toBe("offline");
+    expect(result.current.error).toBe("인터넷 연결이 끊겨 처리하지 못했어요. 연결을 확인하고 다시 시도해 주세요.");
+    onLine.mockReturnValue(true);
+    act(() => { window.dispatchEvent(new Event("online")); });
+    expect(result.current.failure).toBeNull();
+    expect(result.current.error).toBe("");
+  } finally { onLine.mockRestore(); vi.unstubAllGlobals(); }
+});

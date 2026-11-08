@@ -78,7 +78,7 @@ export function createCommunityStampHandlers(deps: CommunityStampDependencies) {
         } else if (action === "invitation-overview") {
           z.object({}).strict().parse(raw);
           const rawOverview=await deps.rpc("get_community_stamp_invitation_overview", { p_app_user_id: appUserId });
-          const {rewardSources,...legacy}=parseResponse(z.object({rewardSources:z.array(z.object({sourceId:z.uuid(),pointReceiptId:z.uuid().nullable()}).strict()).optional()}).passthrough(),rawOverview);
+          const {rewardSources,...legacy}=parseResponse(z.object({rewardSources:z.array(z.object({sourceId:z.guid(),pointReceiptId:z.guid().nullable()}).strict()).optional()}).passthrough(),rawOverview);
           const overview=parseResponse(communityInvitationOverviewSchema,legacy);
           if (!wantsFanReward(request)) return json(overview);
           const fanRewards=await Promise.all((rewardSources??[]).map(async source=>{

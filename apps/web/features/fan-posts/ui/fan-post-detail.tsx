@@ -35,6 +35,7 @@ import { PostCard } from "./post-card";
 import { CommentLike } from "./comment-like";
 import { ContentActions, ContentTranslation } from "@/features/content-safety/ui/content-actions";
 import { useContentMutation } from "@/features/content-safety/ui/use-content-mutation";
+import { useNetworkOnline } from "@/features/content-safety/ui/use-network-online";
 import { contentCopy } from "@/i18n/catalogs/features__fan_posts__ui";
 import { toContentLocale, type AppLocale } from "@/i18n/locales";
 import styles from "@/features/content-safety/ui/content.module.css";
@@ -50,6 +51,7 @@ export function FanPostDetail(props: { postId: string; locale: AppLocale; presen
   return <DetailForOwner key={`${props.postId}:${props.locale}:${auth.authenticated}:${auth.user?.id}`} {...props} />;
 }
 function DetailForOwner({ postId, locale, presentation: requestedPresentation }: { postId: string; locale: AppLocale; presentation?: "board" }) {
+  const online = useNetworkOnline();
   const copy = contentCopy(locale), auth = usePrivy(), mutation = useContentMutation(locale), fieldId = useId(), router = useRouter(), searchParams = useSearchParams();
   const [cursor, setCursor] = useState<string | null>(null), [body, setBody] = useState(""), [replyDrafts, setReplyDrafts] = useState<Record<string, string>>({}), [replyTarget, setReplyTarget] = useState<{ id: string; nickname: string; body: string } | null>(null);
   const parentId = replyTarget?.id ?? null;
@@ -58,6 +60,9 @@ function DetailForOwner({ postId, locale, presentation: requestedPresentation }:
   const replyTrigger = useRef<HTMLButtonElement | null>(null), restoreReplyFocus = useRef(false);
   const post = useCommunityResource(`/api/posts/${postId}?locale=${toContentLocale(locale)}&format=rich`, parsePost);
   const comments = useCommunityResource(`/api/posts/${postId}/comments?locale=${toContentLocale(locale)}${cursor ? `&cursor=${encodeURIComponent(cursor)}` : ""}`, parseComments);
+  // M4-2: a refresh that failed while offline is not shown (the action's own line already says to reconnect); it runs again once online.
+  const retryPost = post.retry, retryComments = comments.retry, postStale = post.refreshFailed, commentsStale = comments.refreshFailed;
+  useEffect(() => { if (!online) return; if (postStale) retryPost(); if (commentsStale) retryComments(); }, [online]); // eslint-disable-line react-hooks/exhaustive-deps
   const gateSlug = post.state.status === "ready" && auth.authenticated && post.state.data.celebritySlug !== WAVE_FANPAGE_SLUG ? post.state.data.celebritySlug : null;
   const [gateOpen, setGateOpen] = useState(false), rc = postReactionCopy(locale);
   const gated = isMemberGate(useGroupResource(gateSlug ? `/api/celebrities/${gateSlug}/attachment-policy` : null, postAttachmentPolicySchema.parse).failure);
@@ -136,12 +141,12 @@ function DetailForOwner({ postId, locale, presentation: requestedPresentation }:
   return <section className={`${styles.section} ${styles.postDetail} ${presentation === "board" ? boardStyles.detail : ""}`}>
     <FanAction href={communityHref} variant="text" leadingIcon={<ArrowLeft />}>{presentation === "board" ? boardCopy(locale).back : copy.back}</FanAction>
     {presentation !== "board" && <FanHeading as="h1" variant="personal-page">{copy.community}</FanHeading>}{data.celebritySlug === WAVE_FANPAGE_SLUG && <WavePrivacyNotice locale={locale} />}<PostCard presentation={presentation} post={data} locale={locale} returnTo={communityHref} onChanged={refresh} onDeleted={() => router.replace(communityHref)} detail />
-    {post.refreshFailed && <p role="status" className={styles.status}>{copy.failed}<button type="button" className={styles.button} onClick={post.retry}>{copy.retry}</button></p>}
+    {post.refreshFailed && online && <p role="status" className={styles.status}>{copy.failed}<button type="button" className={styles.button} onClick={post.retry}>{copy.retry}</button></p>}
     <section id="comments" className={detailStyles.comments} aria-labelledby={`${fieldId}-heading`} data-post-comments=""><h2 id={`${fieldId}-heading`}>{copy.comments} {data.commentCount.toLocaleString(locale)}</h2>
       {auth.ready && (auth.authenticated ? !replyTarget && composer : <div className={detailStyles.commentForm}><Link className={detailStyles.guestField} href={loginHref as Route}>{rc.placeholder}</Link><div className={detailStyles.commentTools}><FanAction href={loginHref} variant="neutral" size="sm">{copy.login}</FanAction></div></div>)}
       {!replyTarget && mutationError}
       {comments.state.status === "ready" ? <>
-        {comments.refreshFailed && <p role="status" className={styles.status}>{copy.failed}<button type="button" className={styles.button} onClick={comments.retry}>{copy.retry}</button></p>}
+        {comments.refreshFailed && online && <p role="status" className={styles.status}>{copy.failed}<button type="button" className={styles.button} onClick={comments.retry}>{copy.retry}</button></p>}
         {!comments.state.data.items.length ? null : <ul className={`${commentStyles.list} ${detailStyles.commentList}`}>{threadComments(comments.state.data.items).map(comment => <li key={comment.id} id={`comment-${comment.id}`} data-reply={comment.parentId ? "" : undefined}>
           <div className={detailStyles.commentMeta}><img src={comment.author.avatarUrl} alt="" width={32} height={32} /><strong>{comment.author.nickname}</strong>{comment.artist && <GroupArtistMark locale={locale} />}<RelativeTime value={comment.createdAt} locale={locale} />{!comment.isOwner && <ContentActions targetType="fan_post_comment" targetId={comment.id} locale={locale} onChanged={refresh} />}</div>
           <ContentTranslation sourceText={comment.body} targetType="fan_post_comment" targetId={comment.id} sourceRevision={comment.revision} locale={locale}><p className={styles.body}>{comment.body}</p></ContentTranslation>

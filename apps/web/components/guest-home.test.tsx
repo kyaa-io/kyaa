@@ -868,15 +868,15 @@ it("shows honest loading and error states for a personal Home deep link", async 
   vi.stubGlobal("fetch", vi.fn(() => new Promise(() => undefined)));
   const loading = render(<GuestHome {...defaultProps} featuredLives={[]} initialOwnedOnly />);
   const loadingSection = loading.container.querySelector("#celebrities") as HTMLElement;
-  expect(within(loadingSection).getByText("보유한 Fan Passport를 확인하고 있어요.")).toBeInTheDocument();
+  expect(within(loadingSection).getByText("보유한 팬 패스포트를 확인하고 있어요.")).toBeInTheDocument();
   expect(loadingSection.querySelectorAll("article")).toHaveLength(0);
   loading.unmount();
 
   vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: false, status: 500, json: async () => ({}) }));
   const failed = render(<GuestHome {...defaultProps} featuredLives={[]} initialOwnedOnly />);
   const failedSection = failed.container.querySelector("#celebrities") as HTMLElement;
-  expect(await within(failedSection).findByRole("alert")).toHaveTextContent("보유한 Fan Passport를 확인하지 못했어요.");
-  expect(within(failedSection).queryByText("아직 보유한 Fan Passport가 없어요.")).not.toBeInTheDocument();
+  expect(await within(failedSection).findByRole("alert")).toHaveTextContent("보유한 팬 패스포트를 확인하지 못했어요.");
+  expect(within(failedSection).queryByText("아직 보유한 팬 패스포트가 없어요.")).not.toBeInTheDocument();
   expect(failedSection.querySelectorAll("article")).toHaveLength(0);
 });
 
@@ -892,7 +892,7 @@ it.each([0, 1])("offers the full roster when no owned profile is published and P
     : Response.json({ summary })));
   const { container } = render(<GuestHome {...defaultProps} featuredLives={[]} initialOwnedOnly />);
   const section = container.querySelector("#celebrities") as HTMLElement;
-  expect(await within(section).findByText(passportCount > 0 ? "지금 공개된 내 최애가 없어요." : "아직 보유한 Fan Passport가 없어요.")).toBeInTheDocument();
+  expect(await within(section).findByText(passportCount > 0 ? "지금 공개된 내 최애가 없어요." : "아직 보유한 팬 패스포트가 없어요.")).toBeInTheDocument();
   fireEvent.click(within(section).getByRole("button", { name: "전체 보기" }));
   expect(section.querySelectorAll("#home-creator-rail article")).toHaveLength(3);
   expect(new URL(window.location.href).searchParams.get("owned")).toBeNull();
@@ -971,7 +971,7 @@ describe("streamed Home sections", () => {
     const home = pendingHome();
     let view!: ReturnType<typeof render>;
     await act(async () => { view = render(<StreamingGuestHome {...home} locale="ko" />); });
-    expect(screen.queryByText("아직 보유한 Fan Passport가 없어요.")).not.toBeInTheDocument();
+    expect(screen.queryByText("아직 보유한 팬 패스포트가 없어요.")).not.toBeInTheDocument();
     await act(async () => {
       home.pending.celebrities.resolve(celebrities);
       home.pending.homeBanners.resolve([]);

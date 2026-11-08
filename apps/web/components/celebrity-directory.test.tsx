@@ -135,7 +135,7 @@ describe("directory initial loading", () => {
     await screen.findByRole("button", { name: "전체" });
     expect(screen.getAllByRole("article")).toHaveLength(3);
     fireEvent.click(screen.getByRole("button", { name: "내 최애" }));
-    expect(screen.getByRole("alert")).toHaveTextContent("보유한 Fan Passport를 확인하지 못했어요.");
+    expect(screen.getByRole("alert")).toHaveTextContent("보유한 팬 패스포트를 확인하지 못했어요.");
     fireEvent.click(screen.getByRole("button", { name: "다시 시도" }));
     await screen.findByText("패스포트 보유");
     expect(screen.getAllByRole("article")).toHaveLength(1);
@@ -275,7 +275,7 @@ describe("published celebrity directory", () => {
 
     await waitFor(() => expect(screen.getByRole("button", { name: "내 최애" })).toBeEnabled());
     fireEvent.click(screen.getByRole("button", { name: "내 최애" }));
-    expect(await screen.findByRole("alert")).toHaveTextContent("보유한 Fan Passport를 확인하지 못했어요.");
+    expect(await screen.findByRole("alert")).toHaveTextContent("보유한 팬 패스포트를 확인하지 못했어요.");
   });
 
   it("sends guests to login with the selected filter and search context", () => {
@@ -430,7 +430,7 @@ it("does not expose public results while a personal deep link is loading", async
   getAccessToken.mockResolvedValue("token");
   vi.stubGlobal("fetch", vi.fn(() => new Promise(() => undefined)));
   render(<CelebrityDirectory celebrities={publishedCelebrityFixtures} locale="ko" initialOwnedOnly />);
-  expect(screen.getByText("보유한 Fan Passport를 확인하고 있어요.")).toBeInTheDocument();
+  expect(screen.getByText("보유한 팬 패스포트를 확인하고 있어요.")).toBeInTheDocument();
   expect(screen.queryByRole("article")).not.toBeInTheDocument();
   expect(screen.queryByText("총 0개")).not.toBeInTheDocument();
 });
@@ -441,7 +441,7 @@ it("offers all profiles when the authenticated owner has no Passports", async ()
   vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: true, json: async () => ({ passports: [] }) }));
   render(<CelebrityDirectory celebrities={publishedCelebrityFixtures} locale="ko" initialOwnedOnly />);
   const showAll = await screen.findByRole("button", { name: "전체 보기" });
-  expect(screen.getByRole("status")).toHaveTextContent("아직 보유한 Fan Passport가 없어요.");
+  expect(screen.getByRole("status")).toHaveTextContent("아직 보유한 팬 패스포트가 없어요.");
   fireEvent.click(showAll);
   expect(screen.getAllByRole("article")).toHaveLength(3);
 });

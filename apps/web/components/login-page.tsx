@@ -754,7 +754,7 @@ export function LoginPage({
               <Image
                 className={styles.passportImage}
                 src={passportPreview}
-                alt={locale === "ko" ? "펼쳐진 Fan Passport" : translate(locale, localizedMessages.mab1cb2ccc525, "Open Fan Passport")}
+                alt={locale === "ko" ? "펼쳐진 팬 패스포트" : translate(locale, localizedMessages.mab1cb2ccc525, "Open Fan Passport")}
                 width={1536}
                 height={1024}
                 sizes="(min-width: 768px) 390px, 1px"

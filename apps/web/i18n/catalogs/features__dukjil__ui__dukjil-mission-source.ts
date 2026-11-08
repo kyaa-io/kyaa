@@ -74,7 +74,7 @@ export const messages = {
     "ru": "Прокомментируйте пост на доске"
   },
   "missionTaskShare": {
-    "ja": "友だちがパスポートのリンクを開くと加算されます", "zh-Hans": "好友打开你的护照链接后计入", "zh-Hant": "好友開啟你的護照連結後計入", "es": "Cuenta cuando un amigo abre tu enlace del pasaporte", "id": "Terhitung saat teman membuka tautan paspormu", "vi": "Được tính khi bạn bè mở liên kết hộ chiếu của bạn", "th": "นับเมื่อเพื่อนเปิดลิงก์พาสปอร์ตของคุณ", "pt": "Conta quando um amigo abre o link do seu passaporte", "fr": "Compte quand un ami ouvre le lien de votre passeport", "ru": "Засчитывается, когда друг открывает ссылку на ваш паспорт"
+    "ja": "SNSに投稿した投稿のアドレスを認証します", "zh-Hans": "认证你在社交媒体发布的帖子地址", "zh-Hant": "認證你在社群媒體發布的貼文網址", "es": "Verifica la dirección de tu publicación en redes", "id": "Verifikasi alamat postingan media sosialmu", "vi": "Xác nhận địa chỉ bài đăng mạng xã hội của bạn", "th": "ยืนยันลิงก์โพสต์โซเชียลของคุณ", "pt": "Verifique o endereço do seu post nas redes", "fr": "Vérifiez l’adresse de votre publication sur les réseaux", "ru": "Подтвердите адрес своей публикации в соцсети"
   },
   "missionTaskInvite": {
     "ja": "招待リンクで友だちを誘います",

@@ -98,7 +98,8 @@
   padding-inline: 8px;
   border-color: transparent;
   background: transparent;
-  color: oklch(42% 0 0);
+  /* 보조 버튼 역할 공통 색(DESIGN.md 보조 버튼 행): 테두리 없는 text 변형도 neutral 과 같은 잉크색이다. 5회차 N2: 회색 42%가 홈 '11~20위'·덕질 '덕질하는 법 보기'만 달랐다. */
+  color: var(--color-ink);
 }
 
 .service {

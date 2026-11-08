@@ -18,7 +18,7 @@ export const ifewFanGuideContent = {
       {
         label: "01  /  GET READY",
         title: "이퓨의 팬 패스포트로\n참여를 준비해요.",
-        body: "팬 인증을 마치면 이퓨 Fan Passport가 생겨요.\n인증 후 LIVE 화면으로 돌아와\n이어서 예약할 수 있어요.",
+        body: "팬 인증을 마치면 이퓨 팬 패스포트가 생겨요.\n인증 후 LIVE 화면으로 돌아와\n이어서 예약할 수 있어요.",
         actions: ["이퓨 팬 인증하기"],
       },
       {
@@ -26,7 +26,7 @@ export const ifewFanGuideContent = {
         title: "토요일 아침의 약속,\n미리 예약해요.",
         body: "9월 12일 토요일 오전 8시부터 오후 1시까지.\nkyaa에서 이퓨의 100일 기념 LIVE를 예약하고\nMY에서 예약 내역을 확인하세요.",
         actions: ["LIVE 예약하기", "예약 내역 보기"],
-        note: "한국 시간(KST, UTC+9) 기준이에요.\nkyaa 예약에는 이퓨 Passport가 필요해요.",
+        note: "한국 시간(KST, UTC+9) 기준이에요.\nkyaa 예약에는 이퓨 패스포트가 필요해요.",
       },
       {
         label: "03  /  CHECK IN TOGETHER",

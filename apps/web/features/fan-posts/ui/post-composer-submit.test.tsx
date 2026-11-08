@@ -25,7 +25,7 @@ it("shows the shared loading state on the submit button while saving", () => {
 it("shows the member guidance and blocks input before writing when the policy read answers 403", () => {
   mocks.failure = { status: 403, code: "FAN_WEB_FORBIDDEN" };
   render(<PostComposer slug="artist" locale="ko" onSaved={vi.fn()} />);
-  expect(screen.getByRole("alert")).toHaveTextContent("Passport");
+  expect(screen.getByRole("alert")).toHaveTextContent("이 아티스트의 발급된 패스포트가 필요해요.");
   expect(screen.getByRole("link")).toHaveAttribute("href", `/c/artist/verify?locale=ko&returnTo=${encodeURIComponent("/artist?locale=ko")}`);
   expect(screen.getByRole("textbox", { name: /./ })).toBeDisabled();
   expect(document.querySelector<HTMLButtonElement>("button[type=submit]")).toBeDisabled();

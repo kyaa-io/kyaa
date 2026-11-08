@@ -6,7 +6,7 @@ export const dukjilMissionSource = {
   missionTaskCheckin: { ko: "오늘 출석해요", en: "Check in today" },
   missionTaskPost: { ko: "팬게시판에 글을 올려요", en: "Post on the fan board" },
   missionTaskComment: { ko: "팬게시판 글에 댓글을 달아요", en: "Comment on a fan board post" },
-  missionTaskShare: { ko: "친구가 내 패스포트 링크를 열면 쌓여요", en: "Counts when a friend opens your passport link" },
+  missionTaskShare: { ko: "SNS에 올린 게시물 주소를 인증해요", en: "Verify the address of your social post" },
   missionTaskInvite: { ko: "초대 링크로 친구를 데려와요", en: "Bring a friend with your invite link" },
   missionTaskProof: { ko: "조건을 확인하고 인증을 제출해요", en: "Check the conditions and submit proof" },
   missionTaskQuiz: { ko: "입국 심사 문제를 풀어요", en: "Answer the entry review questions" },

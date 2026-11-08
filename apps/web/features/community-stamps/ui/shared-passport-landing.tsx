@@ -65,7 +65,7 @@ function SharedPassportLandingInner({ token, creator, locale, activity, authenti
       <p className={styles.creatorName}>{creator.name}</p>
       <h1 id="shared-passport-title">{c.title}</h1>
       <p className={styles.landingBody}>{c.body}</p>
-      {activity ? <section className={styles.activityCard} aria-label="Fan Passport">
+      {activity ? <section className={styles.activityCard} aria-label={locale === "ko" ? "팬 패스포트" : "Fan Passport"}>
         <FanTierBadge tier={activity.tier} locale={locale} size={64} adjacentLabel={false}/>
         <dl><div><dt>{t.issued}</dt><dd><time dateTime={activity.issuedAt}>{new Intl.DateTimeFormat(locale, { dateStyle: "medium" }).format(new Date(activity.issuedAt))}</time></dd></div>
           <div><dt>{t.score}</dt><dd>{activity.score.toLocaleString(locale)}</dd></div>

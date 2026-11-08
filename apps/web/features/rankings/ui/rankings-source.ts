@@ -8,7 +8,6 @@ export const rankingsSource = {
   rkMonth: { ko: "월간", en: "Monthly" },
   rkAll: { ko: "전체", en: "All time" },
   rkHeartsTab: { ko: "하트", en: "Hearts" },
-  rkDukjilTab: { ko: "덕질", en: "Stan" },
   rkHearts: { ko: "하트 {0}개", en: "{0} hearts" },
   rkStamps: { ko: "스탬프 {0}개", en: "{0} stamps" },
   rkJjinfan: { ko: "찐팬 {0}/{1}", en: "True fans {0}/{1}" },

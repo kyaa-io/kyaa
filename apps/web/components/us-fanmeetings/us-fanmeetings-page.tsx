@@ -178,7 +178,7 @@ export function UsFanmeetingsPage({ locale }: { locale: FanLocale }) {
           <div className={styles.passportBand}>
             <Image
               src="/images/passport/passport-open-book.svg"
-              alt="Fan Passport"
+              alt={locale === "ko" ? "팬 패스포트" : "Fan Passport"}
               width={240}
               height={160}
             />
@@ -187,7 +187,7 @@ export function UsFanmeetingsPage({ locale }: { locale: FanLocale }) {
                 {locale === "ko" ? "팬이 쌓아가는 참여의 기록" : translate(locale, localizedMessages.mddfc05395797, "A record of fan activities")}
               </h3>
               <p>
-                {locale === "ko" ? "Fan Passport에 쌓인 참여를 바탕으로\n다음 캠페인과 팬 경험을 함께 기획합니다." : translate(locale, localizedMessages.m3ac21cee1000, "Use Fan Passport activity records\nto plan future campaigns and fan experiences.")}
+                {locale === "ko" ? "팬 패스포트에 쌓인 참여를 바탕으로\n다음 캠페인과 팬 경험을 함께 기획합니다." : translate(locale, localizedMessages.m3ac21cee1000, "Use Fan Passport activity records\nto plan future campaigns and fan experiences.")}
               </p>
             </div>
           </div>

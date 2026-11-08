@@ -879,7 +879,7 @@ function AnalyticsResults({
           locale={locale}
         />
         <Metric
-          label={locale === "ko" ? "발급 Passport" : "Passports issued"}
+          label={locale === "ko" ? "발급 패스포트" : "Passports issued"}
           metric={metrics.passportsIssued}
           locale={locale}
         />

@@ -5,6 +5,7 @@ import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import { useByUsSession } from "@/components/byus-session-provider";
 import { contentCopy } from "@/i18n/catalogs/features__fan_posts__ui";
 import type { AppLocale } from "@/i18n/locales";
+import { useNetworkOnline } from "./use-network-online";
 
 /** Why a mutation failed when the person can act on it: sign in again, or reconnect. */
 export type MutationFailure = "auth" | "offline" | null;
@@ -16,6 +17,7 @@ export function useContentMutation(locale: AppLocale) {
   const key = `${auth.ready}:${auth.authenticated}:${session.ownerId ?? auth.user?.id}:${session.generation}`;
   const [state, setState] = useState<{ key: string; busy: boolean; error: string; failure: MutationFailure }>({ key, busy: false, error: "", failure: null });
   const pending = useRef<AbortController | null>(null);
+  const online = useNetworkOnline();
   useEffect(() => () => { pending.current?.abort(); pending.current = null; }, [key]);
   async function request(url: string, method: string, body?: unknown): Promise<unknown | null> {
     if (pending.current || !auth.ready || !auth.authenticated || !session.ready) return null;
@@ -49,5 +51,8 @@ export function useContentMutation(locale: AppLocale) {
       if (!controller.signal.aborted) setState(previous => previous.key === key ? { ...previous, busy: false } : previous);
     }
   }
+  // An offline failure says to reconnect; when the browser comes back online the line is stale, so it goes (M4-2: it stayed beside
+  // the next failure). Only on that change: a failed fetch while the browser still reports online keeps its line.
+  useEffect(() => { if (online) setState(previous => previous.failure === "offline" ? { ...previous, error: "", failure: null } : previous); }, [online]);
   return { request, busy: state.key === key && state.busy, error: state.key === key ? state.error : "", failure: state.key === key ? state.failure : null };
 }
