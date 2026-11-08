@@ -35,8 +35,9 @@ const contentSecurityPolicy = [
   ].join(" "),
   "worker-src 'self' blob:",
   "manifest-src 'self'",
-  // Published LIVE previews are rights-reviewed derivatives served from the
-  // public cms-assets bucket under this site's own /public-assets path.
+  // Published LIVE previews are rights-reviewed derivatives in the public cms-assets bucket, served at
+  // https://kyaa.io/public-assets. That is this site's own origin only on kyaa.io; dev and staging read it
+  // cross-origin, so previews there need kyaa.io added here before they can play.
   "media-src 'self' blob:",
 ].join("; ");
 

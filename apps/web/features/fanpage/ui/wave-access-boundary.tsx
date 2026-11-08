@@ -37,8 +37,9 @@ const help: Record<AppLocale, string> = {
 
 };
 /**
- * Login, benefit and stamp screens open as intercepted overlays (app/@modal) on top of the page, so this boundary stays mounted
- * while the address bar already reads /login. Its own redirect must not run there: it would wrap /login into returnTo again.
+ * Routes that open as intercepted overlays (app/@modal: login, benefits, stamps) keep the page underneath mounted, so this
+ * boundary keeps running while the address bar already shows the overlay. /connect and /onboarding are full pages of their own.
+ * No redirect may run on any of them: on /login it wrapped /login into returnTo again on every pass.
  */
 export function isOverlayPath(path: string) {
   return /^\/(?:login|benefits|stamps|connect|onboarding)(?:[/?#]|$)/.test(path);
