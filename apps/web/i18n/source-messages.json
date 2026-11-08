@@ -17536,5 +17536,17 @@
     "ko": "{0} 응모권",
     "source": "features/benefit/ui/raffle-entry-panel",
     "id": "features/benefit/ui/raffle-entry-panel:raffleTicketOf"
+  },
+  "rafflesTickets": {
+    "en": "Tickets",
+    "ko": "응모권",
+    "source": "features/benefit/ui/creator-raffles-screen",
+    "id": "features/benefit/ui/creator-raffles-screen:rafflesTickets"
+  },
+  "rafflesEmpty": {
+    "en": "No gifts open right now",
+    "ko": "진행 중인 선물이 없어요",
+    "source": "features/benefit/ui/creator-raffles-screen",
+    "id": "features/benefit/ui/creator-raffles-screen:rafflesEmpty"
   }
 }
