@@ -91,9 +91,8 @@ function BenefitsLucky({locale,bias,signedOut}:{locale:AppLocale;bias:SelectedBi
 }
 /** F2: the cheer card heads the right column from 1024px (390: under the lucky draws). */
 function BenefitsCheer({locale,bias,signedOut}:{locale:AppLocale;bias:SelectedBias;signedOut:boolean}){
- const allFailed=Boolean(useContext(SectionContext)?.allFailed),{guest,stamps,hearts}=useStanNumbers(bias,signedOut);
- const n=(slot:StanSlot)=>typeof slot==='number'?slot:null;
- return <div className={styles.pCheer} hidden={allFailed}><StanCheer locale={locale} bias={bias} guest={guest} stamps={n(stamps)} hearts={n(hearts)}/></div>;
+ const allFailed=Boolean(useContext(SectionContext)?.allFailed),{guest,hearts}=useStanNumbers(bias,signedOut);
+ return <div className={styles.pCheer} hidden={allFailed}><StanCheer locale={locale} bias={bias} guest={guest} hearts={typeof hearts==='number'?hearts:null}/></div>;
 }
 /** 오늘의 덕질: one tile/row per joined fan page; guests see the spotlight pages with a login check-in (same outline). Hidden while the policy is off; the skeleton holds the height until both are known. Its first check-in is the emphasised action while the exchange is not usable. */
 function BenefitsToday({locale,emphasise}:{locale:AppLocale;emphasise:boolean}){

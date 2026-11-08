@@ -7,7 +7,7 @@ import { FanAction } from "@/components/fan-ui/fan-action";
 import { FanCount } from "@/components/fan-ui/fan-count-chip";
 import { FanHeading } from "@/components/fan-ui/fan-heading";
 import { FanLockedValue } from "@/components/fan-ui/fan-locked-value";
-import { FanGauge, FanNumber } from "@/components/fan-ui/fan-number";
+import { FanNumber } from "@/components/fan-ui/fan-number";
 import { FanSkeleton } from "@/components/fan-ui/fan-skeleton";
 import { FanState } from "@/components/fan-ui/fan-state";
 import { fanLoginHref } from "@/components/login-href";
@@ -158,8 +158,8 @@ export function StanLucky({ locale, bias, guest }: { locale: AppLocale; bias: Se
 }
 
 /** 최애 응원 (E4, user decision: cheering spends nothing): my hearts already count toward the favorite's rank, so the card shows that rank,
- * my share, the next heart from stamps, and the way to the fan ranking. No send button. */
-export function StanCheer({ locale, bias, guest, stamps, hearts }: { locale: AppLocale; bias: SelectedBias; guest: boolean; stamps: number | null; hearts: number | null }) {
+ * my share and the way to the fan ranking. No send button. F2: the stamps to the next heart live in the wallet's stamp cell only (one value, one shape). */
+export function StanCheer({ locale, bias, guest, hearts }: { locale: AppLocale; bias: SelectedBias; guest: boolean; hearts: number | null }) {
   const favorite = guest ? null : stanFavorite(bias), slug = favorite?.slug ?? null, title = t(locale, "stanFlowCheer");
   const rank = useStanRank(locale, slug), selected = bias.selected && bias.selected.slug === slug ? bias.selected : null;
   const login = fanLoginHref(locale, `/benefits?locale=${locale}`);
@@ -172,8 +172,6 @@ export function StanCheer({ locale, bias, guest, stamps, hearts }: { locale: App
       <span className={styles.whoText}><span className={styles.name}>{favorite.name}</span>
         <span className={styles.rank}>{rank.loading ? <FanSkeleton width={120} height={16} /> : rank.row ? <>{t(locale, "cheerRank", [rank.row.rank])}<RankDelta delta={rank.row.delta} locale={locale} /></> : t(locale, "cheerRankOut")}</span></span>
     </Link>;
-  const filled = stamps === null ? null : stamps % STAMPS_PER_HEART, full = stamps !== null && stamps > 0 && stamps % STAMPS_PER_HEART === 0;
-  const gaugeText = stamps === null ? undefined : full ? <strong className={styles.ready}>{nextHeartLabel(locale, stamps)}</strong> : nextHeartLabel(locale, stamps);
   const heartIcon = <Heart size={20} strokeWidth={1.75} className={styles.heart} aria-hidden="true" />;
   return <section className={styles.section} id="stan-cheer" tabIndex={-1} aria-labelledby="stan-cheer-title">
     <div className={styles.head}><FanHeading id="stan-cheer-title">{title}</FanHeading></div>
@@ -183,11 +181,6 @@ export function StanCheer({ locale, bias, guest, stamps, hearts }: { locale: App
         <div><dt>{t(locale, "cheerMyHearts")}</dt><dd>{guest ? <FanLockedValue locale={locale} /> : hearts === null ? <FanSkeleton width={48} height={24} /> : <FanNumber value={hearts} size="lg" countUp locale={locale} icon={heartIcon} />}</dd></div>
         {rank.row ? <div><dt>{rankingsText(locale, "rkCumulativeFans")} · {rankingsText(locale, "rkCumulativeHearts")}</dt><dd className={styles.community}>{rank.row.score.toLocaleString(locale)} · {heartIcon}{rank.row.hearts.toLocaleString(locale)}</dd></div> : null}
       </dl>
-      <Link className={styles.stampGauge} href={`/passports?locale=${locale}` as Route} aria-label={typeof gaugeText === "string" ? gaugeText : full ? t(locale, "cheerHeartReady") : t(locale, "stanFlowStamps")}>
-        {guest ? <FanGauge size="sm" value={0} max={STAMPS_PER_HEART} segments={STAMPS_PER_HEART} label={t(locale, "stanFlowStamps")} />
-          : filled === null ? <FanSkeleton width="100%" height={20} />
-          : <FanGauge size="sm" value={full ? STAMPS_PER_HEART : filled} max={STAMPS_PER_HEART} segments={STAMPS_PER_HEART} label={t(locale, "stanFlowStamps")} valueText={gaugeText} />}
-      </Link>
       <FanAction variant="secondary" size="sm" fullWidth className={styles.action} trailingIcon={<ArrowRight />} href={guest ? login : slug ? `/${encodeURIComponent(slug)}?tab=fans&locale=${locale}` : `/pages/groups?locale=${locale}`}>{guest || !slug ? t(locale, "heartPick") : t(locale, "cheerFanRanking")}</FanAction>
     </div>
   </section>;
