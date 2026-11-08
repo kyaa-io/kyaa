@@ -6,7 +6,7 @@ it("names the points and the remaining count for screen readers, and draws only 
   const { container } = render(<EarnBadge variant="inline" locale="ko" points={20} stamp remaining={2} />);
   expect(screen.getByText("포인트 20 적립, 오늘 2번 남음")).toBeInTheDocument();
   expect(container.textContent).not.toMatch(/×/);
-  expect(screen.getByText(/도장/)).toBeInTheDocument();
+  expect(screen.getByText(/스탬프/)).toBeInTheDocument();
 });
 it("done badge carries text, not colour only, and no remaining count", () => {
   const { container } = render(<EarnBadge variant="done" locale="ko" />);

@@ -26,7 +26,7 @@ it("shows today's points as the coin badge, with no stamp icon box beside it (C8
   expect(await screen.findByText("오늘 +22P")).toBeInTheDocument();
   const head = container.querySelector("[data-fan-missions] h2")!.parentElement!;
   expect(head.querySelector("svg.lucide-stamp")).toBeNull();
-  expect(head).not.toHaveTextContent(/도장/);
+  expect(head).not.toHaveTextContent(/스탬프/);
 });
 it("shows each mission's reward as one amount with no ×N count, and its progress as a bar with count/limit (C8)", async () => {
   const { container } = ui();
