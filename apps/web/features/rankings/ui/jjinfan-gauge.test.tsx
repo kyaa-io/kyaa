@@ -5,6 +5,7 @@ vi.mock("./use-ranking-resource", () => ({ useRankingResource: (url: string) => 
 vi.mock("@/components/fan-ui/fan-toast", () => ({ showFanToast: h.toast }));
 import { jjinfanChallengeSchema } from "../domain/types";
 import { JjinfanGauge, challengeEndDate } from "./jjinfan-gauge";
+import { JjinfanSeed } from "./jjinfan-seed";
 
 afterEach(() => { cleanup(); vi.unstubAllGlobals(); h.toast.mockClear(); Reflect.deleteProperty(navigator, "share"); });
 const ready = (data: unknown) => { h.state = { status: "ready", data }; };
@@ -64,4 +65,26 @@ it("formats the last day in the viewer's language and accepts old and new answer
   expect(jjinfanChallengeSchema.parse({ count: 1, target: 100 }).campaign).toBeUndefined();
   expect(jjinfanChallengeSchema.parse({ count: 1, target: 100, campaign: { title: "t", description: "" } }).campaign?.title).toBe("t");
   expect(jjinfanChallengeSchema.parse({ count: 1, target: 100, campaign: { title: "t", description: "", endsOn: null } }).campaign?.endsOn).toBeNull();
+});
+
+it("draws the server's answer while the client read is pending or failed, and nothing when the server says off", () => {
+  const seeded = { count: 40, target: 100 as const, campaign: { title: "제목", description: "", endsOn: null } };
+  for (const state of [{ status: "loading" }, { status: "error" }]) {
+    h.state = state;
+    render(<JjinfanSeed slug="elina" value={seeded}><JjinfanGauge slug="elina" locale="ko" /></JjinfanSeed>);
+    expect(screen.getByText("40 / 100명")).toBeInTheDocument();
+    cleanup();
+  }
+  h.state = { status: "loading" };
+  const off = render(<JjinfanSeed slug="elina" value={{ count: 3, target: 100, campaign: null }}><JjinfanGauge slug="elina" locale="ko" /></JjinfanSeed>);
+  expect(off.container).toBeEmptyDOMElement();
+  cleanup();
+  // Another creator's seed is not used.
+  const other = render(<JjinfanSeed slug="wena" value={seeded}><JjinfanGauge slug="elina" locale="ko" /></JjinfanSeed>);
+  expect(other.container).toBeEmptyDOMElement();
+  cleanup();
+  // The client answer replaces the seed once it lands.
+  ready({ count: 41, target: 100, campaign: { title: "제목", description: "" } });
+  render(<JjinfanSeed slug="elina" value={seeded}><JjinfanGauge slug="elina" locale="ko" /></JjinfanSeed>);
+  expect(screen.getByText("41 / 100명")).toBeInTheDocument();
 });

@@ -6,3 +6,5 @@
 .count strong { color: var(--color-ink); font: 400 24px/32px "Pretendard UI 850", system-ui, sans-serif; font-synthesis: none; font-variant-numeric: tabular-nums; }
 .done { color: var(--color-accent-ink); font-weight: 700; }
 .meta { margin: 0; color: var(--color-muted); font-size: var(--fan-metadata-size); line-height: 1.5; overflow-wrap: anywhere; white-space: pre-line; }
+/* Above the fans tab's list, outside its loading state: the same 16px the tab's own stack uses. */
+.above { margin-bottom: var(--space-4); }

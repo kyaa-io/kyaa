@@ -15,3 +15,16 @@ export async function readSharedJjinfanChallenge(slug: string, deps: { resolveCr
   if (!parsed.success || !parsed.data.campaign) return null;
   return { ...parsed.data, campaign: parsed.data.campaign };
 }
+
+/** The gauge's answer for the fan page's first paint: the challenge (campaign null when off), or undefined when it cannot be read here. */
+export async function readJjinfanSeed(slug: string, deps: { resolveCreatorId(slug: string): Promise<string | null>; rpc(name: string, args: Record<string, unknown>): Promise<unknown> } = {
+  resolveCreatorId, rpc: (name, args) => createFanpageDependencies().rpc(name, args),
+}): Promise<JjinfanChallenge | undefined> {
+  try {
+    if (!creatorSlugSchema.safeParse(slug).success) return undefined;
+    const id = await deps.resolveCreatorId(slug);
+    if (!id) return undefined;
+    const parsed = jjinfanChallengeSchema.safeParse(await deps.rpc("read_jjinfan_challenge", { p_celebrity: id }));
+    return parsed.success ? parsed.data : undefined;
+  } catch { return undefined; }
+}

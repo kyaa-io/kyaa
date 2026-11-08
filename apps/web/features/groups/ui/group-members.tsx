@@ -48,7 +48,7 @@ function MyRankRow({ slug, locale, listed }: { slug: string; locale: AppLocale; 
   return <div className={styles.myRank}><span className={styles.rank}>{me.rank}</span><strong>{reachText(locale, "myRank")}</strong><strong className={styles.score}>{me.score.toLocaleString(locale)}{locale === "ko" ? " 점" : ""}</strong><span className={styles.visuallyHidden}>{t.scoreColumn}</span></div>;
 }
 
-export function GroupMembers({ pageId, locale, member, presentation, inTab = false, onJoin, joinPending = false, joinLabel, rankingsSlug }: { rankingsSlug?: string | null; pageId: string; locale: AppLocale; member: boolean; presentation?: GroupMembersPresentation; inTab?: boolean; onJoin?: () => void; joinPending?: boolean; joinLabel?: string }) {
+export function GroupMembers({ pageId, locale, member, presentation, inTab = false, onJoin, joinPending = false, joinLabel, rankingsSlug, gaugeAbove = false }: { rankingsSlug?: string | null; /** The caller draws the 찐팬 100 gauge above, outside its own loading state. */ gaugeAbove?: boolean; pageId: string; locale: AppLocale; member: boolean; presentation?: GroupMembersPresentation; inTab?: boolean; onJoin?: () => void; joinPending?: boolean; joinLabel?: string }) {
   const t = groupMembersCopy(locale);
   const [mode, setMode] = useState<GroupPeopleMode>("members"), [draft, setDraft] = useState(""), [search, setSearch] = useState(""), [cursor, setCursor] = useState<string>(), [previous, setPrevious] = useState<Row[]>([]);
   const [settled, setSettled] = useState<{ mode: GroupPeopleMode; rows: Row[] }>(), [opened, setOpened] = useState<ProfileModalPerson | null>(null);
@@ -70,7 +70,7 @@ export function GroupMembers({ pageId, locale, member, presentation, inTab = fal
   return <section className={styles.section} data-member-mode={mode} aria-labelledby="group-people-title">
     <h2 id="group-people-title" className={inTab ? styles.visuallyHidden : styles.title}>{t.title}</h2>
     {presentation?.overview && mode !== "ranking" && <div className={styles.overview}>{presentation.overview}</div>}
-    {rankingsSlug && <JjinfanGauge slug={rankingsSlug} locale={locale} name={presentation?.creatorName}/>}
+    {rankingsSlug && !gaugeAbove && <JjinfanGauge slug={rankingsSlug} locale={locale} name={presentation?.creatorName}/>}
     <FanTabs variant="chip" label={t.title} current={mode} className={styles.tabs} items={(["members", "friends", "ranking"] as const).map(key => ({ key, label: t[key], onSelect: () => choose(key) }))}/>
     {!member ? <GroupPublicPeople mode={mode} pageId={pageId} slug={rankingsSlug} locale={locale} authenticated={resource.authenticated} onJoin={onJoin} joinPending={joinPending} joinLabel={joinLabel}/> : <div className={styles.body}>
       {presentation && mode === "members" && <FanAction className={styles.incomingRequests} href={`/my/friends?locale=${locale}&filter=incoming`}>{t.incomingRequests}</FanAction>}
