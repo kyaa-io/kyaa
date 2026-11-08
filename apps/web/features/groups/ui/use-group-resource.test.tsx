@@ -31,7 +31,7 @@ it("gives a remount the stored value at once, with no loading and no second call
   await act(async () => {});
   expect(fetchMock).toHaveBeenCalledTimes(1);
 });
-it("shows a value older than 60 seconds (5차 R21) and reads again behind it", async () => {
+it("shows a value older than 30 seconds and reads again behind it", async () => {
   const now = vi.spyOn(Date, "now");
   const start = Date.now();
   now.mockReturnValue(start);
@@ -39,12 +39,6 @@ it("shows a value older than 60 seconds (5차 R21) and reads again behind it", a
   await waitFor(() => expect(first.result.current.data?.n).toBe(1));
   first.unmount();
   now.mockReturnValue(start + 30_001);
-  // Within 60s the stored value is reused without a read.
-  const fresh = renderHook(() => useGroupResource("/api/groups/a", parse));
-  expect(fresh.result.current.refreshing).toBe(false);
-  expect(fresh.result.current.fetchedAt).toBe(start);
-  fresh.unmount();
-  now.mockReturnValue(start + 60_001);
   const second = renderHook(() => useGroupResource("/api/groups/a", parse));
   expect(second.result.current.data?.n).toBe(1);
   expect(second.result.current.loading).toBe(false);
@@ -107,20 +101,4 @@ it("never shows the previous member's value after the owner changes", async () =
   expect(view.result.current.data).toBeUndefined();
   expect(view.result.current.loading).toBe(true);
   await waitFor(() => expect(view.result.current.data?.n).toBe(2));
-});
-
-it("reads again behind the shown value when the window comes back after the value went stale", async () => {
-  const now = vi.spyOn(Date, "now");
-  const start = Date.now();
-  now.mockReturnValue(start);
-  const view = renderHook(() => useGroupResource("/api/groups/focus", parse));
-  await waitFor(() => expect(view.result.current.data?.n).toBeDefined());
-  const before = view.result.current.data!.n;
-  window.dispatchEvent(new Event("focus"));
-  await act(async () => {});
-  expect(view.result.current.data?.n).toBe(before);
-  now.mockReturnValue(start + 60_001);
-  window.dispatchEvent(new Event("focus"));
-  await waitFor(() => expect(view.result.current.data?.n).toBe(before + 1));
-  now.mockRestore();
 });

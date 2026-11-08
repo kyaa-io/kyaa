@@ -16,7 +16,7 @@ export const passportBookSource = {
   noNickname: { ko: "닉네임 없음", en: "No nickname" },
   communityHistory: { ko: "스탬프 모으기 기록 보기", en: "View collected Stamps" },
   tierJourneyTitle: { ko: "나와 {0}", en: "You and {0}" },
-  tierNow: { ko: "지금 {0}", en: "Now {0}" },
+  tierNow: { ko: "내 팬 등급 {0}", en: "My fan tier: {0}" },
   tierToNext: { ko: "{0}까지 {1}점", en: "{1} pts to {0}" },
   pagePrev: { ko: "이전 쪽", en: "Previous page" },
   pageNext: { ko: "다음 쪽", en: "Next page" },

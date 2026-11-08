@@ -32,7 +32,7 @@ it('recovers a committed exchange after a lost response without another debit',a
   expect(JSON.parse(sessionStorage.getItem('kyaa-wallet-pending:owner-a')!).requestKey).toBe(key);
   throw new TypeError('Response lost');
  }));
- const view=render(<WalletExchangeDialog locale='ko' open onClose={()=>{}}/>);fireEvent.click(await screen.findByRole('button',{name:'교환'}));
+ const view=render(<WalletExchangeDialog locale='ko' open onClose={()=>{}}/>);fireEvent.click(await screen.findByRole('button',{name:'광고 보고 교환하기'}));
  await screen.findByRole('button',{name:'교환 내역 확인'});view.unmount();render(<WalletExchangeDialog locale='ko' open onClose={()=>{}}/>);
  fireEvent.click(await screen.findByRole('button',{name:'처리 결과 확인'}));await screen.findByText('교환했어요');
  expect(mutations).toEqual(['/api/me/wallet/exchange']);expect(sessionStorage.length).toBe(0);
@@ -47,8 +47,8 @@ it('shows the seventh-day reward and blocks exchanges beyond the balance',async(
  const view=render(<WalletScreen locale='ko' attendance/>);await screen.findByRole('button',{name:'오늘 출석하고 포인트 받기'});
  expect(screen.getByRole('heading',{name:'6일 연속 출석 중'})).toBeInTheDocument();
  expect(screen.getByText('오늘 일곱 번째 스탬프를 찍어요')).toBeInTheDocument();expect(screen.getByText('매일 출석하면 포인트를 받아요 · 7일 연속 출석하면 보너스 포인트')).toBeInTheDocument();expect(screen.queryByText('+20P')).not.toBeInTheDocument();
- view.rerender(<WalletExchangeDialog locale='ko' open onClose={()=>{}}/>);await screen.findByRole('button',{name:'교환'});
- expect(screen.queryByRole('spinbutton')).toBeNull();expect(screen.getByRole('button',{name:'교환'})).toBeEnabled();
+ view.rerender(<WalletExchangeDialog locale='ko' open onClose={()=>{}}/>);await screen.findByRole('button',{name:'광고 보고 교환하기'});
+ expect(screen.queryByRole('spinbutton')).toBeNull();expect(screen.getByRole('button',{name:'광고 보고 교환하기'})).toBeEnabled();
 });
 it('keeps legacy receipts pending instead of reposting them',async()=>{
  sessionStorage.setItem('kyaa-wallet-pending:owner-a',JSON.stringify({operation:'exchange',requestKey:id,target:'ticket',units:1,policyVersion:'group-wallet-v1'}));
@@ -61,16 +61,16 @@ it('disables attendance before the configured reward start date',async()=>{
  vi.stubGlobal('fetch',vi.fn(async(url:string)=>Response.json(url.endsWith('/history')?{entries:[]}: {...wallet,rewardsStartOn:'2026-11-03'})));
  const view=render(<WalletScreen locale='ko' attendance/>);
  expect(await screen.findByRole('button',{name:/부터 출석/})).toBeDisabled();
- expect(screen.queryByRole('button',{name:'교환'})).not.toBeInTheDocument();
+ expect(screen.queryByRole('button',{name:'광고 보고 교환하기'})).not.toBeInTheDocument();
  view.rerender(<WalletExchangeDialog locale='ko' open onClose={()=>{}}/>);
- expect(await screen.findByRole('button',{name:'교환'})).toBeEnabled();
+ expect(await screen.findByRole('button',{name:'광고 보고 교환하기'})).toBeEnabled();
 });
 
 
 it('hides the quantity control when only one exchange is possible',async()=>{
  vi.stubGlobal('fetch',vi.fn(async(url:string)=>Response.json(url.endsWith('/history')?{entries:[]}:{...wallet,points:199})));
  render(<WalletExchangeDialog locale='ko' open onClose={()=>{}}/>);
- await screen.findByRole('button',{name:'교환'});
+ await screen.findByRole('button',{name:'광고 보고 교환하기'});
  expect(screen.queryByRole('group',{name:'수량'})).toBeNull();
  expect(screen.getByText('100 P')).toBeInTheDocument();
 });
@@ -79,11 +79,11 @@ it('hides the quantity control when only one exchange is possible',async()=>{
 it('keeps source wallet balances on the shared wallet card',async()=>{
  vi.stubGlobal('fetch',vi.fn(async(url:string)=>Response.json(url.endsWith('/history')?{entries:[]}:wallet)));
  render(<WalletScreen locale='ko' localProfile={{nickname:'스타벅스라이프',avatarUrl:'/images/avatars/star-pink.webp'}} localPresentation={{benefitsHref:'/benefits',historyRows:[{label:'출석체크 · 오늘',value:'포인트 적립'}]}}/>);
- expect(await screen.findByRole('button',{name:'교환'})).toBeEnabled();expect(await screen.findByText('포인트 적립')).toBeInTheDocument();expect(screen.getAllByText('모임 응모권')).toHaveLength(1);expect(screen.queryByRole('spinbutton')).not.toBeInTheDocument();
+ expect(await screen.findByRole('button',{name:'광고 보고 교환하기'})).toBeEnabled();expect(await screen.findByText('포인트 적립')).toBeInTheDocument();expect(screen.getAllByText('모임 응모권')).toHaveLength(1);expect(screen.queryByRole('spinbutton')).not.toBeInTheDocument();
 });
 it('renders source balance failure from the real resource and retries the same read',async()=>{
  let reads=0;vi.stubGlobal('fetch',vi.fn(async(url:string)=>{if(url==='/api/me/wallet'){reads++;return reads===1?Response.json({error:{code:'UNAVAILABLE'}},{status:503}):Response.json(wallet);}return Response.json({entries:[]});}));
- const view=render(<WalletScreen locale='ko'/>);expect(await screen.findByRole('heading',{name:'잔액을 불러오지 못했어요'})).toBeInTheDocument();expect(view.container.querySelector('[data-source-state="QnIgR"]')).not.toBeNull();fireEvent.click(screen.getByRole('button',{name:'잔액 다시 확인'}));await screen.findByRole('button',{name:'교환'});expect(reads).toBe(2);
+ const view=render(<WalletScreen locale='ko'/>);expect(await screen.findByRole('heading',{name:'잔액을 불러오지 못했어요'})).toBeInTheDocument();expect(view.container.querySelector('[data-source-state="QnIgR"]')).not.toBeNull();fireEvent.click(screen.getByRole('button',{name:'잔액 다시 확인'}));await screen.findByRole('button',{name:'광고 보고 교환하기'});expect(reads).toBe(2);
 });
 it('shows only returned attendance points rather than the source example bonus',async()=>{
  vi.stubGlobal('fetch',vi.fn(async(url:string)=>Response.json(url.endsWith('/history')?{entries:[]}:{...wallet,attendance:{...wallet.attendance,checkedIn:true,days:[{date:wallet.attendance.date,points:10}]}})));
@@ -92,7 +92,7 @@ it('shows only returned attendance points rather than the source example bonus',
 it('holds an unknown conversion result without reposting or discarding the original request',async()=>{
  sessionStorage.setItem('kyaa-wallet-pending:owner-a',JSON.stringify({operation:'exchange',requestKey:id,target:'ticket',units:1,policyVersion:'group-wallet-v1'}));const writes:string[]=[];
  vi.stubGlobal('fetch',vi.fn(async(url:string,init?:RequestInit)=>{if(init?.method==='POST')writes.push(url);return Response.json(url.includes('/requests/')?{status:'unknown'}:url.endsWith('/history')?{entries:[]}:wallet);}));
- const close=vi.fn();render(<WalletExchangeDialog locale='ko' open onClose={close}/>);fireEvent.click(await screen.findByRole('button',{name:'처리 결과 확인'}));await screen.findByRole('heading',{name:'전환 결과를 확인해 주세요'});expect(document.querySelector('[data-source-state="VMiFI"]')).not.toBeNull();expect(screen.queryByRole('link',{name:'교환 내역 확인'})).toBeNull();fireEvent.click(screen.getByRole('button',{name:'교환 내역 확인'}));expect(close).toHaveBeenCalledTimes(1);expect(window.location.hash).toBe('#wallet-history');expect(screen.queryByRole('button',{name:'처리 결과 확인'})).not.toBeInTheDocument();expect(writes).toEqual([]);expect(JSON.parse(sessionStorage.getItem('kyaa-wallet-pending:owner-a')!).requestKey).toBe(id);expect(screen.getByRole('button',{name:'교환'})).toBeDisabled();
+ const close=vi.fn();render(<WalletExchangeDialog locale='ko' open onClose={close}/>);fireEvent.click(await screen.findByRole('button',{name:'처리 결과 확인'}));await screen.findByRole('heading',{name:'전환 결과를 확인해 주세요'});expect(document.querySelector('[data-source-state="VMiFI"]')).not.toBeNull();expect(screen.queryByRole('link',{name:'교환 내역 확인'})).toBeNull();fireEvent.click(screen.getByRole('button',{name:'교환 내역 확인'}));expect(close).toHaveBeenCalledTimes(1);expect(window.location.hash).toBe('#wallet-history');expect(screen.queryByRole('button',{name:'처리 결과 확인'})).not.toBeInTheDocument();expect(writes).toEqual([]);expect(JSON.parse(sessionStorage.getItem('kyaa-wallet-pending:owner-a')!).requestKey).toBe(id);expect(screen.getByRole('button',{name:'광고 보고 교환하기'})).toBeDisabled();
 });
 
 
@@ -140,46 +140,46 @@ it('UI019 attendance retries a lost receipt without another check-in',async()=>{
 it('wallet page shows the shared wallet card with its exchange and no quantity field',async()=>{
  vi.stubGlobal('fetch',vi.fn(async(url:string)=>Response.json(url.endsWith('/history')?{entries:[]}:wallet)));
  render(<WalletScreen locale='ko'/>);
- expect(await screen.findByRole('button',{name:'교환'})).toBeEnabled();
+ expect(await screen.findByRole('button',{name:'광고 보고 교환하기'})).toBeEnabled();
  expect(screen.queryByRole('spinbutton')).toBeNull();
 });
 it.each([['cancelled','광고 시청이 완료되지 않았어요. 포인트는 차감되지 않았어요.'],['no-fill','지금은 볼 수 있는 광고가 없어요. 포인트는 차감되지 않았어요'],['error','광고를 불러오지 못했어요']])('does not debit points when the ad ends as %s',async(outcome,message)=>{
  rewardedAd.outcome=outcome;const writes:string[]=[];
  vi.stubGlobal('fetch',vi.fn(async(url:string,init?:RequestInit)=>{if(init?.method==='POST')writes.push(url);return Response.json(url.endsWith('/history')?{entries:[]}:wallet);}));
- render(<WalletExchangeDialog locale='ko' open onClose={()=>{}}/>);fireEvent.click(await screen.findByRole('button',{name:'교환'}));
+ render(<WalletExchangeDialog locale='ko' open onClose={()=>{}}/>);fireEvent.click(await screen.findByRole('button',{name:'광고 보고 교환하기'}));
  expect(await screen.findByText(message)).toBeInTheDocument();expect(writes).toEqual([]);expect(sessionStorage.length).toBe(0);
 });
 it('shows the load-failure text, not the no-ad text, for an unknown session refusal code',async()=>{
  sessionRefusal.code='GROUP_WALLET_SOMETHING_NEW';const writes:string[]=[];
  vi.stubGlobal('fetch',vi.fn(async(url:string,init?:RequestInit)=>{if(init?.method==='POST')writes.push(url);return Response.json(url.endsWith('/history')?{entries:[]}:wallet);}));
- render(<WalletExchangeDialog locale='ko' open onClose={()=>{}}/>);fireEvent.click(await screen.findByRole('button',{name:'교환'}));
+ render(<WalletExchangeDialog locale='ko' open onClose={()=>{}}/>);fireEvent.click(await screen.findByRole('button',{name:'광고 보고 교환하기'}));
  expect(await screen.findByText('광고를 불러오지 못했어요')).toBeInTheDocument();expect(screen.getByRole('button',{name:'다시 시도'})).toBeInTheDocument();
  expect(screen.queryByText(/지금은 볼 수 있는 광고가 없어요/)).toBeNull();expect(rewardedAd.requests).toBe(0);
 });
 it('does not debit points without a configured ad unit',async()=>{
  rewardedAd.unit=undefined;const writes:string[]=[];
  vi.stubGlobal('fetch',vi.fn(async(url:string,init?:RequestInit)=>{if(init?.method==='POST')writes.push(url);return Response.json(url.endsWith('/history')?{entries:[]}:wallet);}));
- render(<WalletExchangeDialog locale='ko' open onClose={()=>{}}/>);fireEvent.click(await screen.findByRole('button',{name:'교환'}));
+ render(<WalletExchangeDialog locale='ko' open onClose={()=>{}}/>);fireEvent.click(await screen.findByRole('button',{name:'광고 보고 교환하기'}));
  await screen.findByText('지금은 광고를 볼 수 없어요. 포인트는 차감되지 않았어요.');expect(writes).toEqual([]);
 });
 it('keeps the exchange action pressable without an ad unit and reports the refusal after the press',async()=>{
  rewardedAd.unit=undefined;
  vi.stubGlobal('fetch',vi.fn(async(url:string)=>Response.json(url.endsWith('/history')?{entries:[]}:wallet)));
- render(<WalletExchangeDialog locale='ko' open onClose={()=>{}}/>);fireEvent.click(await screen.findByRole('button',{name:'교환'}));
+ render(<WalletExchangeDialog locale='ko' open onClose={()=>{}}/>);fireEvent.click(await screen.findByRole('button',{name:'광고 보고 교환하기'}));
  await screen.findByText('지금은 광고를 볼 수 없어요. 포인트는 차감되지 않았어요.');
- expect(screen.getByRole('button',{name:'교환'})).not.toBeDisabled();
+ expect(screen.getByRole('button',{name:'광고 보고 교환하기'})).not.toBeDisabled();
 });
 it('sends the exchange once after the ad grants its reward',async()=>{
  const writes:string[]=[];
  vi.stubGlobal('fetch',vi.fn(async(url:string,init?:RequestInit)=>{if(init?.method==='POST'){writes.push(url);const body=JSON.parse(init.body as string);expect(body.target).toBe('ticket');expect(body.units).toBe(1);expect(body.adSessionId).toBe(sessionIds.current);return Response.json({...receipt(body.requestKey),target:'ticket'});}return Response.json(url.endsWith('/history')?{entries:[]}:wallet);}));
- render(<WalletExchangeDialog locale='ko' open onClose={()=>{}}/>);fireEvent.click(await screen.findByRole('button',{name:'교환'}));
+ render(<WalletExchangeDialog locale='ko' open onClose={()=>{}}/>);fireEvent.click(await screen.findByRole('button',{name:'광고 보고 교환하기'}));
  await screen.findByText('교환했어요');expect(writes).toEqual(['/api/me/wallet/exchange']);
 });
 
 it.each([['GROUP_WALLET_AD_DAILY_LIMIT','하루'],['GROUP_WALLET_AD_RATE_LIMITED',''],['GROUP_WALLET_INSUFFICIENT_BALANCE',''],['GROUP_WALLET_AD_GATE_CLOSED','']])('refuses before any ad request when the session is refused with %s',async(code)=>{
  sessionRefusal.code=code;const writes:string[]=[];
  vi.stubGlobal('fetch',vi.fn(async(url:string,init?:RequestInit)=>{if(init?.method==='POST')writes.push(url);return Response.json(url.endsWith('/history')?{entries:[]}:wallet);}));
- render(<WalletExchangeDialog locale='ko' open onClose={()=>{}}/>);fireEvent.click(await screen.findByRole('button',{name:'교환'}));
+ render(<WalletExchangeDialog locale='ko' open onClose={()=>{}}/>);fireEvent.click(await screen.findByRole('button',{name:'광고 보고 교환하기'}));
  await screen.findByRole('alert');expect(rewardedAd.requests).toBe(0);expect(writes).toEqual([]);expect(sessionStorage.length).toBe(0);
 });
 
@@ -187,36 +187,36 @@ const issued=()=>(globalThis.fetch as unknown as {mock:{calls:unknown[][]}}).moc
 it('does not issue another session after unsupported appeared in the same dialog, and keeps the same error',async()=>{
  rewardedAd.outcome='unsupported';const writes:string[]=[];
  vi.stubGlobal('fetch',vi.fn(async(url:string,init?:RequestInit)=>{if(init?.method==='POST')writes.push(url);return Response.json(url.endsWith('/history')?{entries:[]}:wallet);}));
- render(<WalletExchangeDialog locale='ko' open onClose={()=>{}}/>);fireEvent.click(await screen.findByRole('button',{name:'교환'}));
+ render(<WalletExchangeDialog locale='ko' open onClose={()=>{}}/>);fireEvent.click(await screen.findByRole('button',{name:'광고 보고 교환하기'}));
  await screen.findByText('이 기기나 브라우저에서는 광고를 볼 수 없어요. 포인트는 차감되지 않았어요.');expect(issued()).toBe(1);
- fireEvent.click(screen.getByRole('button',{name:'교환'}));
+ fireEvent.click(screen.getByRole('button',{name:'광고 보고 교환하기'}));
  await screen.findByText('이 기기나 브라우저에서는 광고를 볼 수 없어요. 포인트는 차감되지 않았어요.');expect(issued()).toBe(1);expect(rewardedAd.requests).toBe(1);
 });
 it('retries a session after no-fill as before',async()=>{
  rewardedAd.outcome='no-fill';const writes:string[]=[];
  vi.stubGlobal('fetch',vi.fn(async(url:string,init?:RequestInit)=>{if(init?.method==='POST')writes.push(url);return Response.json(url.endsWith('/history')?{entries:[]}:wallet);}));
- render(<WalletExchangeDialog locale='ko' open onClose={()=>{}}/>);fireEvent.click(await screen.findByRole('button',{name:'교환'}));
+ render(<WalletExchangeDialog locale='ko' open onClose={()=>{}}/>);fireEvent.click(await screen.findByRole('button',{name:'광고 보고 교환하기'}));
  await screen.findByText('지금은 볼 수 있는 광고가 없어요. 포인트는 차감되지 않았어요');
- fireEvent.click(screen.getByRole('button',{name:'교환'}));
+ fireEvent.click(screen.getByRole('button',{name:'광고 보고 교환하기'}));
  await vi.waitFor(()=>expect(issued()).toBe(2));
 });
 it('shows one failure line with 다시 시도, which starts a new session and ad',async()=>{
  rewardedAd.outcome='error';vi.stubGlobal('fetch',vi.fn(async(url:string)=>Response.json(url.endsWith('/history')?{entries:[]}:wallet)));
- render(<WalletExchangeDialog locale='ko' open onClose={()=>{}}/>);fireEvent.click(await screen.findByRole('button',{name:'교환'}));
+ render(<WalletExchangeDialog locale='ko' open onClose={()=>{}}/>);fireEvent.click(await screen.findByRole('button',{name:'광고 보고 교환하기'}));
  const line=await screen.findByRole('alert');expect(line).toHaveTextContent('광고를 불러오지 못했어요다시 시도');
  fireEvent.click(screen.getByRole('button',{name:'다시 시도'}));
  await vi.waitFor(()=>expect(issued()).toBe(2));
 });
 it('a double press starts one session',async()=>{
  rewardedAd.outcome='error';vi.stubGlobal('fetch',vi.fn(async(url:string)=>Response.json(url.endsWith('/history')?{entries:[]}:wallet)));
- render(<WalletExchangeDialog locale='ko' open onClose={()=>{}}/>);const button=await screen.findByRole('button',{name:'교환'});
+ render(<WalletExchangeDialog locale='ko' open onClose={()=>{}}/>);const button=await screen.findByRole('button',{name:'광고 보고 교환하기'});
  fireEvent.click(button);fireEvent.click(button);
  await screen.findByText('광고를 불러오지 못했어요');expect(issued()).toBe(1);
 });
 it('sends the ticket target in the exchange body through the real dialog',async()=>{
  const bodies:any[]=[];
  vi.stubGlobal('fetch',vi.fn(async(url:string,init?:RequestInit)=>{if(init?.method==='POST'&&url==='/api/me/wallet/exchange'){const body=JSON.parse(init.body as string);bodies.push(body);return Response.json(receipt(body.requestKey));}return Response.json(url.endsWith('/history')?{entries:[]}:wallet);}));
- render(<WalletExchangeDialog locale='ko' open onClose={()=>{}}/>);fireEvent.click(await screen.findByRole('button',{name:'교환'}));
+ render(<WalletExchangeDialog locale='ko' open onClose={()=>{}}/>);fireEvent.click(await screen.findByRole('button',{name:'광고 보고 교환하기'}));
  await screen.findByText('교환했어요');expect(bodies).toHaveLength(1);expect(bodies[0]).toMatchObject({target:'ticket',units:1,policyVersion:'group-wallet-v1',adSessionId:sessionIds.current});
 });
 
@@ -238,13 +238,13 @@ it('uses the points-based maximum when the remaining count is absent and blocks 
  // A later visit: the wallet read moments ago is no longer reused (writes and the short reuse window both end it).
  clearResources();
  runStubs(bigWallet({points:99}));render(<WalletExchangeDialog locale='ko' open onClose={()=>{}}/>);
- expect(await screen.findByRole('button',{name:'교환'})).toBeDisabled();expect(screen.queryByRole('group',{name:'수량'})).toBeNull();
+ expect(await screen.findByRole('button',{name:'광고 보고 교환하기'})).toBeDisabled();expect(screen.queryByRole('group',{name:'수량'})).toBeNull();
 });
 it('runs N ads and N one-unit exchanges in order and announces progress',async()=>{
  const {posts,bodies}=runStubs(bigWallet());
  render(<WalletExchangeDialog locale='ko' open onClose={()=>{}}/>);await screen.findByRole('group',{name:'수량'});
  fireEvent.click(screen.getByRole('button',{name:'수량 늘리기'}));fireEvent.click(screen.getByRole('button',{name:'수량 늘리기'}));
- fireEvent.click(screen.getByRole('button',{name:'교환'}));
+ fireEvent.click(screen.getByRole('button',{name:'광고 보고 교환하기'}));
  await screen.findByText('+3장');expect(screen.getByText('교환했어요')).toBeInTheDocument();
  expect(bodies).toHaveLength(3);expect(new Set(bodies.map(b=>b.requestKey)).size).toBe(3);expect(bodies.every(b=>b.units===1&&b.target==='ticket'&&typeof b.adSessionId==='string')).toBe(true);
  expect(issued()).toBe(3);expect(rewardedAd.requests).toBe(3);expect(posts).toEqual(Array(3).fill('/api/me/wallet/exchange'));
@@ -253,21 +253,21 @@ it('runs N ads and N one-unit exchanges in order and announces progress',async()
 it('stops at the count received when an ad is cancelled and keeps those units',async()=>{
  const {bodies}=runStubs(bigWallet(),n=>{if(n===1)rewardedAd.outcome='cancelled';});
  render(<WalletExchangeDialog locale='ko' open onClose={()=>{}}/>);await screen.findByRole('group',{name:'수량'});
- fireEvent.click(screen.getByRole('button',{name:'최대'}));fireEvent.click(screen.getByRole('button',{name:'교환'}));
+ fireEvent.click(screen.getByRole('button',{name:'최대'}));fireEvent.click(screen.getByRole('button',{name:'광고 보고 교환하기'}));
  await screen.findByText('광고 시청이 완료되지 않았어요. 멈춘 광고분은 포인트가 차감되지 않았어요.');
- expect(screen.getByRole('progressbar')).toHaveAttribute('aria-valuenow','1');expect(screen.getByText('1/10')).toBeInTheDocument();expect(bodies).toHaveLength(1);expect(screen.getByRole('button',{name:'교환'})).not.toBeDisabled();
+ expect(screen.getByRole('progressbar')).toHaveAttribute('aria-valuenow','1');expect(screen.getByText('1/10')).toBeInTheDocument();expect(bodies).toHaveLength(1);expect(screen.getByRole('button',{name:'광고 보고 교환하기'})).not.toBeDisabled();
 });
 it('stops on the daily limit mid-run and does not issue further sessions',async()=>{
  const {bodies}=runStubs(bigWallet(),n=>{if(n===1)sessionRefusal.code='GROUP_WALLET_AD_DAILY_LIMIT';});
  render(<WalletExchangeDialog locale='ko' open onClose={()=>{}}/>);await screen.findByRole('group',{name:'수량'});
- fireEvent.click(screen.getByRole('button',{name:'수량 늘리기'}));fireEvent.click(screen.getByRole('button',{name:'수량 늘리기'}));fireEvent.click(screen.getByRole('button',{name:'교환'}));
+ fireEvent.click(screen.getByRole('button',{name:'수량 늘리기'}));fireEvent.click(screen.getByRole('button',{name:'수량 늘리기'}));fireEvent.click(screen.getByRole('button',{name:'광고 보고 교환하기'}));
  await screen.findByText('오늘은 더 교환할 수 없어요.');expect(screen.queryByText(/차감되지 않았어요/)).toBeNull();
  expect(screen.getByText('1/3')).toBeInTheDocument();expect(bodies).toHaveLength(1);expect(issued()).toBe(2);
 });
 it('holds an unconfirmed exchange mid-run without another ad or exchange',async()=>{
  const {bodies}=runStubs(bigWallet(),()=>{throw new Error('network');});
  render(<WalletExchangeDialog locale='ko' open onClose={()=>{}}/>);await screen.findByRole('group',{name:'수량'});
- fireEvent.click(screen.getByRole('button',{name:'수량 늘리기'}));fireEvent.click(screen.getByRole('button',{name:'교환'}));
+ fireEvent.click(screen.getByRole('button',{name:'수량 늘리기'}));fireEvent.click(screen.getByRole('button',{name:'광고 보고 교환하기'}));
  await screen.findByText('전환 결과를 확인해 주세요');
  expect(bodies).toHaveLength(1);expect(issued()).toBe(1);expect(rewardedAd.requests).toBe(1);
 });
@@ -275,7 +275,7 @@ it('holds an unconfirmed exchange mid-run without another ad or exchange',async(
 it('does not wait for a close that never comes when the first session is already granted',async()=>{
  grantedFirst.left=1;const {bodies}=runStubs(bigWallet());
  render(<WalletExchangeDialog locale='ko' open onClose={()=>{}}/>);await screen.findByRole('group',{name:'수량'});
- fireEvent.click(screen.getByRole('button',{name:'수량 늘리기'}));fireEvent.click(screen.getByRole('button',{name:'교환'}));
+ fireEvent.click(screen.getByRole('button',{name:'수량 늘리기'}));fireEvent.click(screen.getByRole('button',{name:'광고 보고 교환하기'}));
  await screen.findByText('+2장');
  expect(bodies).toHaveLength(2);expect(rewardedAd.requests).toBe(1);expect(new Set(bodies.map(b=>b.requestKey)).size).toBe(2);
 });
@@ -284,21 +284,21 @@ it('stops the run and unlocks the form when the ad never closes after the reward
  try{
   rewardedAd.noClose=true;const {bodies}=runStubs(bigWallet());
   render(<WalletExchangeDialog locale='ko' open onClose={()=>{}}/>);await screen.findByRole('group',{name:'수량'});
-  fireEvent.click(screen.getByRole('button',{name:'수량 늘리기'}));fireEvent.click(screen.getByRole('button',{name:'교환'}));
+  fireEvent.click(screen.getByRole('button',{name:'수량 늘리기'}));fireEvent.click(screen.getByRole('button',{name:'광고 보고 교환하기'}));
   await vi.waitFor(()=>expect(screen.getByRole('progressbar')).toHaveAttribute('aria-valuenow','1'));
   expect(rewardedAd.requests).toBe(1);
   await act(async()=>{vi.advanceTimersByTime(119000);});
-  expect(screen.getByRole('button',{name:'교환'})).toBeDisabled();
+  expect(screen.getByRole('button',{name:'광고 보고 교환하기'})).toBeDisabled();
   await act(async()=>{vi.advanceTimersByTime(1000);});
   expect(rewardedAd.requests).toBe(1);expect(bodies).toHaveLength(1);expect(screen.getByRole('progressbar')).toHaveAttribute('aria-valuenow','1');
-  expect(screen.getByRole('button',{name:'교환'})).not.toBeDisabled();
+  expect(screen.getByRole('button',{name:'광고 보고 교환하기'})).not.toBeDisabled();
  }finally{vi.useRealTimers();}
 });
 it('prices the stopped state from the live balance and resets the quantity',async()=>{
  const {bodies}=runStubs(bigWallet(),n=>{if(n===1)rewardedAd.outcome='cancelled';});
  render(<WalletExchangeDialog locale='ko' open onClose={()=>{}}/>);await screen.findByRole('group',{name:'수량'});
  fireEvent.click(screen.getByRole('button',{name:'수량 늘리기'}));fireEvent.click(screen.getByRole('button',{name:'수량 늘리기'}));expect(screen.getByText('300 P')).toBeInTheDocument();
- fireEvent.click(screen.getByRole('button',{name:'교환'}));
+ fireEvent.click(screen.getByRole('button',{name:'광고 보고 교환하기'}));
  await vi.waitFor(()=>expect(screen.getByRole('progressbar')).toHaveAttribute('aria-valuenow','1'));
  await vi.waitFor(()=>expect(qtyGroup().querySelector('output')).toHaveTextContent('1'));
  expect(screen.getByText('100 P')).toBeInTheDocument();expect(screen.queryByText('300 P')).toBeNull();
@@ -364,7 +364,7 @@ it('names history rows after the real activity and the correction reason, with t
 it('opens the ad with the one exchange press and blocks the form until the result',async()=>{
  const writes:string[]=[];
  vi.stubGlobal('fetch',vi.fn(async(url:string,init?:RequestInit)=>{if(init?.method==='POST'){writes.push(url);const body=JSON.parse(init.body as string);return Response.json({...receipt(body.requestKey),target:'ticket'});}return Response.json(url.endsWith('/history')?{entries:[]}:wallet);}));
- render(<WalletExchangeDialog locale='ko' open onClose={()=>{}}/>);fireEvent.click(await screen.findByRole('button',{name:'교환'}));
+ render(<WalletExchangeDialog locale='ko' open onClose={()=>{}}/>);fireEvent.click(await screen.findByRole('button',{name:'광고 보고 교환하기'}));
  expect(screen.queryByRole('button',{name:'광고 보기'})).toBeNull();
- await screen.findByText('교환했어요');expect(writes).toEqual(['/api/me/wallet/exchange']);expect(screen.queryByRole('button',{name:'교환'})).toBeNull();
+ await screen.findByText('교환했어요');expect(writes).toEqual(['/api/me/wallet/exchange']);expect(screen.queryByRole('button',{name:'광고 보고 교환하기'})).toBeNull();
 });

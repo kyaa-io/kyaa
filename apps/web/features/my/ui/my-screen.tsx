@@ -33,6 +33,7 @@ import { myHomeText } from "./my-home-copy";
 import { MyFavorites, MyFavoritesSkeleton, MyGuestFavorites } from "./my-favorites";
 import { MyGuestPassportCard, MyPassportCard, MyPassportCardSkeleton, passportTierName } from "./my-passport-card";
 import { MyRaffleNotice } from "./my-raffle-notice";
+import { PointsUseEntry } from "@/features/group-wallet/ui/points-use-entry";
 import { MyShortcuts, type MyShortcut } from "./my-shortcuts";
 import { MyGuestWalletCard, MyWalletCard, MyWalletCardSkeleton } from "./my-wallet-card";
 import { DukjilProvider } from "@/features/dukjil/ui/dukjil-provider";
@@ -296,7 +297,7 @@ function Dashboard({ summary, locale, avatarResource, refreshSummary, selectedSl
       <MyRaffleNotice locale={locale} ownerKey={ownerKey} resultIds={summary.rewards.items.map(reward => reward.rewardResultId)}/>
       <div className={styles.homeRow}>
         <MyPassportCard creators={visibleCreators} selectedSlug={selectedSlug} onSelect={onSelectSlug} communityStamps={stamps} stampsError={communityStamps.state.status === "error"} retryStamps={communityStamps.retry} locale={locale} labels={labels}/>
-        <div className={styles.walletColumn}><MyWalletCard locale={locale}/></div>
+        <div className={styles.walletColumn}><MyWalletCard locale={locale}/><PointsUseEntry locale={locale}/></div>
       </div>
       <MyFavorites creators={passportCreators} locale={locale} labels={{ title: t.creators, find: t.findCreator, empty: t.noCreators }}/>
       <MyShortcuts locale={locale} {...myShortcutGroups(locale, hrefWithLocale(locale))}/>
@@ -545,7 +546,7 @@ function MyGuest({ locale }: { locale: FanLocale }) {
     </header>
     <div className={styles.homeRow}>
       <MyGuestPassportCard locale={locale} labels={{ title: t.myPassport, detail: myHomeText(locale, "viewDetails") }}/>
-      <div className={styles.walletColumn}><MyGuestWalletCard locale={locale} returnTo={here}/></div>
+      <div className={styles.walletColumn}><MyGuestWalletCard locale={locale} returnTo={here}/><PointsUseEntry locale={locale}/></div>
     </div>
     <MyGuestFavorites locale={locale} labels={{ title: t.creators, find: t.findCreator, empty: t.noCreators }}/>
     <MyShortcuts locale={locale} {...myShortcutGroups(locale, loginTo)}/>

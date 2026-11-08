@@ -21,7 +21,7 @@
 .photo[data-group="true"] { background:var(--color-soft); }
 .photo[data-group="true"] img { object-fit:contain; }
 .name { position:absolute; bottom:8.4%; left:13%; max-width:76%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font:italic calc(var(--stack) * .055)/1 Georgia,'Times New Roman',serif; color:var(--color-ink); }
-.card::after { position:absolute; bottom:6%; left:39%; width:37%; height:2px; border-radius:50%; background:var(--color-accent); transform:rotate(-4deg); content:""; }
+.card::after { position:absolute; bottom:6%; left:39%; width:37%; height:2px; border-radius:50%; background:var(--color-primary-action); transform:rotate(-4deg); content:""; }
 .cardStar { position:absolute; right:10%; bottom:9%; width:8%; height:auto; }
 .star { position:absolute; top:-4%; left:-6%; width:calc(var(--stack) * .15); height:auto; transform:rotate(-9deg); }
 .brand { width:90%; height:100%; margin-inline:auto; object-fit:contain; transform:rotate(-8deg); }

@@ -1,4 +1,4 @@
-.card { display: grid; gap: var(--space-5); margin-top: var(--space-6); padding: var(--space-5) var(--space-4); border: 1px solid var(--color-line); border-radius: var(--radius-card); }
+.card { display: grid; gap: var(--space-5); margin-top: var(--space-6); padding: var(--space-5) var(--space-4); border: 1px solid var(--color-line); border-radius: var(--radius-collection); }
 .card h2 { margin: 0; overflow-wrap: anywhere; font-size: var(--fan-heading-size); font-weight: var(--fan-heading-weight); letter-spacing: var(--fan-heading-tracking); line-height: var(--fan-heading-leading); }
 .path { display: grid; grid-template-columns: 44px minmax(0, 1fr) 44px; align-items: start; gap: var(--space-2); }
 .end { position: relative; display: grid; width: 44px; height: 44px; overflow: hidden; place-items: center; border-radius: 50%; background: var(--color-soft); }
@@ -6,11 +6,11 @@
 .stops { position: relative; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); margin: 0; padding: 0; list-style: none; }
 .stops::before, .stops::after { position: absolute; top: 21px; left: 10%; height: 2px; content: ""; }
 .stops::before { right: 10%; background: var(--color-line); }
-.stops::after { width: calc(var(--tier-fill) * .8); background: var(--color-ink); }
+.stops::after { width: calc(var(--tier-fill) * .8); background: var(--color-accent); }
 .stops li { position: relative; z-index: 1; display: grid; min-width: 0; justify-items: center; gap: var(--space-1); padding-top: var(--space-1); text-align: center; }
 .stops img { display: block; border-radius: 50%; background: var(--color-surface); }
 .stops li[data-state="ahead"] img { filter: grayscale(1); opacity: .35; }
-.stops li[data-state="current"] img { outline: 2px solid var(--color-ink); outline-offset: 1px; }
+.stops li[data-state="current"] img { outline: 2px solid var(--color-accent); outline-offset: 1px; }
 .stops span { max-width: 100%; overflow-wrap: anywhere; color: var(--color-muted); font-size: var(--passport-micro); font-weight: 600; line-height: 1.3; }
 .stops li[data-state="current"] span { color: var(--color-ink); font-weight: 800; }
 .stops li[data-state="passed"] span, .stops li[data-state="ahead"]:not([data-next]) span { visibility: hidden; }
@@ -19,14 +19,14 @@
 .nowText { display: grid; min-width: 0; gap: var(--space-2); }
 .nowText strong { overflow-wrap: anywhere; font-size: var(--fan-heading-size); font-weight: 850; line-height: 1.25; }
 .nowText span { color: var(--color-muted); font-size: var(--fan-description-size); font-weight: 600; line-height: 1.4; }
-.nowText progress { width: 100%; height: 8px; overflow: hidden; border: 0; border-radius: var(--radius-pill); background: var(--color-line); appearance: none; color: var(--color-ink); }
+.nowText progress { width: 100%; height: 8px; overflow: hidden; border: 0; border-radius: var(--radius-pill); background: var(--color-line); appearance: none; color: var(--color-accent); }
 .nowText progress::-webkit-progress-bar { border-radius: var(--radius-pill); background: var(--color-line); }
 .nowText progress::-webkit-progress-value { border-radius: var(--radius-pill); background: var(--color-accent); }
 .nowText progress::-moz-progress-bar { border-radius: var(--radius-pill); background: var(--color-accent); }
 .facts { grid-column: 1 / -1; min-width: 0; }
 @media (min-width: 768px) {
   .card { padding: var(--space-6); }
-  .card h2 { font-size: var(--fan-heading-size); }
+  .card h2 { font-size: var(--fan-heading-size-wide); }
   .path { grid-template-columns: 64px minmax(0, 1fr) 64px; gap: var(--space-3); }
   .end { width: 64px; height: 64px; }
   .stops::before, .stops::after { top: 25px; }

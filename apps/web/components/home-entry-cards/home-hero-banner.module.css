@@ -1,16 +1,16 @@
-.banner { position:relative; width:100%; height:100%; overflow:hidden; background:var(--color-accent-soft); color:#19191e; }
+.banner { position:relative; width:100%; height:100%; overflow:hidden; background:var(--color-soft); color:var(--color-ink); }
 .image { position:absolute; inset:0 0 0 auto; width:40%; overflow:hidden; }
 .desktopImage { position:absolute; inset:0; }
-.overlay { display:none; position:absolute; inset:0; background:linear-gradient(to top, rgb(10 10 12 / 82%) 0%, rgb(10 10 12 / 46%) 36%, rgb(10 10 12 / 8%) 70%, transparent 100%); }
+.overlay { display:none; position:absolute; inset:0; background:transparent; }
 .copy { position:relative; display:flex; flex-direction:column; width:60%; height:100%; padding:clamp(24px, 3vw, 48px); gap:16px; }
-.eyebrow { display:flex; align-items:center; min-height:24px; color:#ad1d59; font-size:clamp(11px, 1.3vw, 20px); font-weight:750; letter-spacing:.06em; }
+.eyebrow { display:flex; align-items:center; min-height:24px; color:var(--color-accent); font-size:clamp(11px, 1.3vw, 20px); font-weight:750; letter-spacing:.06em; }
 .eyebrow > span { display:inline-flex; align-items:center; gap:6px; }
 .eyebrow svg { width:16px; height:16px; }
 .copy h2 { margin:0; font-size:clamp(36px, 3vw, 40px); font-weight:800; line-height:1.2; letter-spacing:-.04em; text-wrap:balance; }
-.description { display:grid; justify-items:start; gap:8px; color:#686873; font-size:16px; line-height:1.4; }
+.description { display:grid; justify-items:start; gap:8px; color:var(--color-muted); font-size:16px; line-height:1.4; }
 .description [data-tone="on-image"] { font-size:clamp(12px, 1.2vw, 16px); }
 .action { margin-top:auto; }
-.action > a { display:flex; align-items:center; justify-content:space-between; gap:8px; min-height:48px; color:#19191e !important; font-size:16px; font-weight:750; text-decoration:none; }
+.action > a { display:flex; align-items:center; justify-content:space-between; gap:8px; min-height:48px; color:var(--color-ink) !important; font-size:16px; font-weight:750; text-decoration:none; }
 .action > a > span { display:inline-flex; align-items:center; gap:6px; }
 .action svg { width:20px; height:20px; flex:none; }
 @media (min-width:768px) {
@@ -20,22 +20,22 @@
 
 .banner[data-kind="live"] .image { display:none; }
 .banner[data-kind="live"] .overlay { display:block; }
-.banner[data-kind="live"] .copy { position:absolute; inset:auto 0 0; width:100%; height:auto; color:#fff; }
+.banner[data-kind="live"] .copy { position:absolute; inset:auto 0 0; width:100%; height:auto; color:var(--color-surface); }
 .banner[data-kind="live"] .eyebrow,
-.banner[data-kind="live"] .description { color:#fff; }
-.banner[data-kind="live"] .eyebrow { width:fit-content; padding:5px 12px; border:1px solid #ff5fbf99; border-radius:999px; background:color-mix(in srgb, var(--color-ink) 75%, transparent); font-size:12px; }
-.banner[data-kind="live"] .action > a { width:min(320px, 100%); padding:0 20px; border-radius:999px; background:linear-gradient(#0003,#0003),var(--spectrum); color:#fff !important; font-size:15px; }
+.banner[data-kind="live"] .description { color:var(--color-surface); }
+.banner[data-kind="live"] .eyebrow { width:fit-content; padding:5px 12px; border:1px solid color-mix(in srgb, var(--color-accent) 60%, transparent); border-radius:999px; background:color-mix(in srgb, var(--color-ink) 75%, transparent); font-size:12px; }
+.banner[data-kind="live"] .action > a { width:min(320px, 100%); padding:0 20px; border-radius:999px; background:var(--spectrum); color:var(--color-surface) !important; font-size:15px; }
 @media (max-width:767px) {
-  .banner { background:#19191e; color:#fff; }
+  .banner { background:var(--color-ink); color:var(--color-surface); }
   .banner[data-kind] .image { display:block; inset:0; width:100%; }
   .desktopImage { display:none; }
   .overlay { display:block; }
-  .banner .copy { position:absolute; inset:auto 0 0; width:100%; height:auto; padding:24px; gap:12px; text-shadow:0 1px 3px #0008; }
-  .banner .eyebrow { width:fit-content; min-height:28px; padding:4px 12px; border:1px solid #ff5fbf99; border-radius:999px; background:color-mix(in srgb, var(--color-ink) 75%, transparent); color:#fff; font-size:12px; }
+  .banner .copy { position:absolute; inset:auto 0 0; width:100%; height:auto; padding:24px; gap:12px; text-shadow:0 1px 3px color-mix(in srgb, var(--color-ink) 53%, transparent); }
+  .banner .eyebrow { width:fit-content; min-height:28px; padding:4px 12px; border:1px solid color-mix(in srgb, var(--color-accent) 60%, transparent); border-radius:999px; background:color-mix(in srgb, var(--color-ink) 75%, transparent); color:var(--color-surface); font-size:12px; }
   .copy h2 { font-size:clamp(28px, 7.2vw, 36px); line-height:1.08; }
-  .banner .description { color:#ffffffeb; font-size:14px; }
+  .banner .description { color:color-mix(in srgb, var(--color-surface) 92%, transparent); font-size:14px; }
   .banner .action { margin-top:8px; }
-  .banner[data-kind] .action > a { width:100%; min-height:48px; padding:0 20px; border-radius:999px; background:linear-gradient(#0003,#0003),var(--spectrum); color:#fff !important; font-size:15px; text-shadow:none; }
+  .banner[data-kind] .action > a { width:100%; min-height:48px; padding:0 20px; border-radius:999px; background:var(--spectrum); color:var(--color-surface) !important; font-size:15px; text-shadow:none; }
   .action svg { width:16px; height:16px; }
 }
 
@@ -44,7 +44,7 @@
 .banner[data-kind="live"] .copy {
   padding:24px;
   gap:12px;
-  text-shadow:0 1px 3px rgb(10 10 12 / 62%);
+  text-shadow:0 1px 3px color-mix(in srgb, var(--color-ink) 62%, transparent);
 }
 .banner[data-kind="live"] .copy h2 {
   min-width:0;
@@ -126,8 +126,8 @@
     gap:12px;
     padding:10px 16px;
     border-radius:999px;
-    background:linear-gradient(#0003,#0003),var(--spectrum);
-    color:#fff !important;
+    background:var(--spectrum);
+    color:var(--color-surface) !important;
   }
 }
 
@@ -135,10 +135,11 @@
 @media (min-width:1024px) and (max-width:1199px) {
   .banner[data-kind="welcome"] .image { width:100%; }
   .banner[data-kind="welcome"] .overlay { display:block; }
-  .banner[data-kind="welcome"] .copy { position:absolute; inset:auto 0 0; width:100%; height:auto; padding:24px; color:#fff; text-shadow:0 1px 3px #0008; }
-  .banner[data-kind="welcome"] .eyebrow { width:fit-content; padding:4px 12px; border:1px solid #ff5fbf99; border-radius:999px; background:color-mix(in srgb, var(--color-ink) 75%, transparent); color:#fff; font-size:12px; }
+  /* VISUAL-K 낮음 6: a solid ink copy panel with a clean top edge instead of a see-through cover over the whole photo (the 4차 fade is a gradient). */
+  .banner[data-kind="welcome"] .copy { position:absolute; inset:auto 0 0; width:100%; height:auto; padding:24px; background:var(--color-ink); color:var(--color-surface); text-shadow:none; }
+  .banner[data-kind="welcome"] .eyebrow { width:fit-content; padding:4px 12px; border:1px solid color-mix(in srgb, var(--color-accent) 60%, transparent); border-radius:999px; background:color-mix(in srgb, var(--color-ink) 75%, transparent); color:var(--color-surface); font-size:12px; }
   .banner[data-kind="welcome"] .copy h2 { font-size:32px; }
-  .banner[data-kind="welcome"] .description { color:#fff; font-size:14px; }
+  .banner[data-kind="welcome"] .description { color:var(--color-surface); font-size:14px; }
 }
 
 @media (max-width:767px), (min-width:1024px) and (max-width:1199px) {
@@ -146,18 +147,18 @@
   .banner[data-kind="welcome"] .action { margin-top:24px; }
 }
 
-.banner[data-kind="campaign"]{background:#073d33;color:#fff}
+.banner[data-kind="campaign"]{background:var(--campaign-art);color:var(--color-surface)}
 .banner[data-kind="campaign"] .image{display:none}
-.banner[data-kind="campaign"] .overlay{display:block;background:linear-gradient(90deg,#073d33e6,transparent 72%)}
+.banner[data-kind="campaign"] .overlay{display:none}
 .banner[data-kind="campaign"] .copy{position:absolute;inset:0 auto 0 0;width:60%;height:100%;justify-content:center;gap:16px;padding:40px 48px}
-.banner[data-kind="campaign"] .eyebrow,.banner[data-kind="campaign"] .description{color:#fff}
+.banner[data-kind="campaign"] .eyebrow,.banner[data-kind="campaign"] .description{color:var(--color-surface)}
 .banner[data-kind="campaign"] .eyebrow{font-size:13px;letter-spacing:.08em}
 .banner[data-kind="campaign"] .copy h2{font-size:32px;line-height:1.3;overflow-wrap:anywhere}
 .banner[data-kind="campaign"] .description{font-size:16px;line-height:1.6;overflow-wrap:anywhere}
 .banner[data-kind="campaign"] .action{margin-top:8px}
-.banner[data-kind="campaign"] .action>a{width:fit-content;gap:16px;padding:10px 20px;border-radius:999px;background:#fff;color:#073d33!important}
+.banner[data-kind="campaign"] .action>a{width:fit-content;gap:16px;padding:10px 20px;border-radius:999px;background:var(--color-surface);color:var(--campaign-art)!important}
 @media(max-width:767px){
- .banner[data-kind="campaign"] .overlay{background:linear-gradient(0deg,#073d33 28%,#073d3300 75%)}
+ .banner[data-kind="campaign"] .overlay{inset:50% 0 0;background:var(--campaign-art)}
  .banner[data-kind="campaign"] .copy{inset:auto 0 0;width:100%;height:auto;padding:24px;gap:8px}
  .banner[data-kind="campaign"] .copy h2{font-size:28px}
  .banner[data-kind="campaign"] .description{font-size:16px;line-height:1.5}
@@ -165,20 +166,20 @@
 }
 
 @media (max-width:767px) {
-  .banner:is([data-kind="welcome"], [data-kind="campaign"]) { display:flex; flex-direction:column; background:#fff; color:#19191e; }
+  .banner:is([data-kind="welcome"], [data-kind="campaign"]) { display:flex; flex-direction:column; background:var(--color-surface); color:var(--color-ink); }
   .banner:is([data-kind="welcome"], [data-kind="campaign"]) :is(.image, .fullImage) { position:relative; inset:auto; width:100%; flex:none; }
   .banner[data-kind="campaign"] .image { display:none; }
   .banner:is([data-kind="welcome"], [data-kind="campaign"]) .overlay { display:none; }
   .banner:is([data-kind="welcome"], [data-kind="campaign"]) .copy { position:relative; inset:auto; width:100%; height:auto; flex:1; justify-content:flex-start; padding:20px; gap:8px; text-shadow:none; }
-  .banner:is([data-kind="welcome"], [data-kind="campaign"]) .eyebrow { min-height:24px; margin:0; padding:0; border:0; border-radius:0; background:transparent; color:#686873; font-size:12px; }
+  .banner:is([data-kind="welcome"], [data-kind="campaign"]) .eyebrow { min-height:24px; margin:0; padding:0; border:0; border-radius:0; background:transparent; color:var(--color-muted); font-size:12px; }
   .banner:is([data-kind="welcome"], [data-kind="campaign"]) .copy h2 { font-size:28px; line-height:1.2; overflow-wrap:anywhere; }
-  .banner:is([data-kind="welcome"], [data-kind="campaign"]) .description { margin:0; color:#686873; font-size:14px; line-height:1.5; }
+  .banner:is([data-kind="welcome"], [data-kind="campaign"]) .description { margin:0; color:var(--color-muted); font-size:14px; line-height:1.5; }
   .banner:is([data-kind="welcome"], [data-kind="campaign"]) .action { margin-top:8px; }
-  .banner[data-kind="campaign"] .action > a { width:100%; background:#073d33; color:#fff!important; }
+  .banner[data-kind="campaign"] .action > a { width:100%; background:var(--campaign-art); color:var(--color-surface)!important; }
 }
 
 /* Approved guide art: the picture fills the slide and the copy sits on its empty half (desktop) or empty bottom (mobile). */
-.banner[data-kind="art"] { background:color-mix(in oklab, var(--color-ink) 88%, var(--color-page-accent)); color:var(--color-canvas); }
+.banner[data-kind="art"] { background:color-mix(in oklab, var(--color-ink) 88%, var(--color-service-ink)); color:var(--color-canvas); }
 .banner[data-kind="art"] .image { display:none; }
 .banner[data-kind="art"] .overlay { display:none; }
 .banner[data-kind="art"] .copy { position:absolute; inset:0 auto 0 0; width:50%; height:100%; justify-content:center; gap:var(--space-4); padding:var(--space-10) var(--space-6) var(--space-10) var(--space-16); color:var(--color-canvas); }
@@ -186,7 +187,7 @@
 .banner[data-kind="art"] .copy h2 { font-size:clamp(28px, 3.4vw, 44px); line-height:1.12; overflow-wrap:anywhere; text-wrap:balance; }
 .banner[data-kind="art"] .description { color:color-mix(in srgb, var(--color-canvas) 92%, transparent); font-size:var(--fan-body-size); line-height:1.5; font-weight:550; overflow-wrap:anywhere; }
 .banner[data-kind="art"] .action { margin-top:var(--space-2); }
-.banner[data-kind="art"] .action > a { width:fit-content; max-width:100%; min-height:48px; gap:var(--space-6); padding:0 var(--space-6); border-radius:var(--radius-pill); background:var(--color-accent); color:var(--color-canvas) !important; font-size:var(--fan-action-label-size); }
+.banner[data-kind="art"] .action > a { width:fit-content; max-width:100%; min-height:48px; gap:var(--space-6); padding:0 var(--space-6); border-radius:var(--radius-pill); background:var(--color-primary-action); color:var(--color-canvas) !important; font-size:var(--fan-action-emphasis-size); }
 .banner[data-kind="art"] .action svg { width:16px; height:16px; }
 /* Tablet and the narrow laptop hero trim the picture's empty left side, so the copy column narrows with it. */
 @media (min-width:768px) and (max-width:1199px) {

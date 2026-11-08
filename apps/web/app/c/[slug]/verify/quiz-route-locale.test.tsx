@@ -14,7 +14,7 @@ vi.mock("@/server/seo/public-content", () => ({
 }));
 
 vi.mock("next/navigation", () => ({
-  notFound: vi.fn(() => {
+  usePathname: () => "/", useSearchParams: () => new URLSearchParams(), notFound: vi.fn(() => {
     throw new Error("not found");
   }),
   useRouter: () => ({ push: vi.fn() }),

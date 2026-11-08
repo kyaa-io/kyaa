@@ -20,26 +20,23 @@ it("puts the exact count in the accessible name in every language", () => {
   expect(unreadLabel("ko", "알림", 0)).toBe("알림");
 });
 
-it("reads the shared summary and draws a dot, not the number (5차 8장 ⑩; dev-fan-3 had 44)", () => {
+it("reads the shared summary and draws the badge with the unread count (dev-fan-3 had 44)", () => {
   state.resource = { state: { status: "ready", data: { unreadNotificationCount: 44 } } };
   render(<HeaderNotificationLink locale="ko" label="알림" />);
   const link = screen.getByRole("link", { name: "알림, 안 읽은 알림 44개" });
   expect(link).toHaveAttribute("href", "/notifications?locale=ko");
-  expect(link).not.toHaveTextContent("44");
-  expect(link.querySelectorAll("[data-dot]")).toHaveLength(1);
-  expect(link.querySelector('svg[data-icon="bell"][data-icon-set="lucide"]')).toHaveAttribute("stroke-width", "1.5");
+  expect(link).toHaveTextContent("44");
   expect(state.path).toBe("/api/me/summary?locale=ko&tierStages=1&hearts=1");
 });
 
-it("draws one dot past 99 and no dot at 0, signed out or loading", () => {
+it("draws 99+ past 99 and no badge at 0, signed out or loading", () => {
   state.resource = { state: { status: "ready", data: { unreadNotificationCount: 135 } } };
   const { rerender } = render(<HeaderNotificationLink locale="ko" label="알림" />);
-  expect(screen.getByRole("link").querySelectorAll("[data-dot]")).toHaveLength(1);
-  expect(screen.getByRole("link")).toHaveTextContent("");
+  expect(screen.getByRole("link")).toHaveTextContent("99+");
   expect(screen.getByRole("link")).toHaveAccessibleName("알림, 안 읽은 알림 135개");
   state.resource = { state: { status: "ready", data: { unreadNotificationCount: 0 } } };
   rerender(<HeaderNotificationLink locale="ko" label="알림" />);
-  expect(screen.getByRole("link", { name: "알림" }).querySelector("[data-dot]")).toBeNull();
+  expect(screen.getByRole("link", { name: "알림" })).toHaveTextContent("");
   state.auth = { authenticated: false, ready: true }; state.resource = { state: { status: "idle" } };
   rerender(<HeaderNotificationLink locale="ko" label="알림" />);
   expect(state.path).toBeNull();

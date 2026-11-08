@@ -3,14 +3,14 @@
 .postDetail > :first-child { justify-self:start; }
 .section h2,.section h3 { margin:0; letter-spacing:-.02em; }
 .section h2 { font-size:var(--fan-heading-size); }.section h3 { font-size:var(--fan-item-title-size); font-weight:var(--fan-item-title-weight); }
-@media(min-width:768px) { .section h2 { font-size:var(--fan-heading-size); } }
+@media(min-width:768px) { .section h2 { font-size:var(--fan-heading-size-wide); } }
 .composer,.card { min-width:0; padding:20px 0; border-bottom:1px solid var(--color-line); }
 .composer { display:grid; gap:12px; }
-.composerFeatured { padding:20px; border:1px solid var(--color-line); border-radius:16px; background:var(--color-paper,#fff); box-shadow:var(--shadow-subtle,0 8px 24px rgba(26,21,18,.06)); }
+.composerFeatured { padding:20px; border:1px solid var(--color-line); border-radius:16px; background:var(--color-paper,var(--color-surface)); box-shadow:var(--shadow-subtle,0 8px 24px color-mix(in srgb, var(--color-ink) 6%, transparent)); }
 .composerFeatured input[type="file"] { max-width:100%; color:var(--color-muted); font:inherit; font-size:13px; }
-.composerFeatured input[type="file"]::file-selector-button { min-height:44px; margin-right:10px; border:1px solid var(--color-line); border-radius:12px; padding:10px 12px; background:var(--color-paper,#fff); color:var(--color-ink); font:inherit; cursor:pointer; }
+.composerFeatured input[type="file"]::file-selector-button { min-height:44px; margin-right:10px; border:1px solid var(--color-line); border-radius:12px; padding:10px 12px; background:var(--color-paper,var(--color-surface)); color:var(--color-ink); font:inherit; cursor:pointer; }
 .composer label,.field { display:grid; gap:8px; font-size:14px; font-weight:600; }
-.composer textarea,.composer select,.field textarea,.field select { box-sizing:border-box; width:100%; min-height:44px; border:1px solid var(--color-line); border-radius:12px; padding:12px; color:var(--color-ink); background:var(--color-paper,#fff); font:inherit; font-weight:400; }
+.composer textarea,.composer select,.field textarea,.field select { box-sizing:border-box; width:100%; min-height:44px; border:1px solid var(--color-line); border-radius:12px; padding:12px; color:var(--color-ink); background:var(--color-paper,var(--color-surface)); font:inherit; font-weight:400; }
 .composer textarea,.field textarea { resize:vertical; font-size:var(--fan-body-size,16px); line-height:1.65; }
 .row,.actions,.meta { display:flex; flex-wrap:wrap; align-items:center; gap:8px 12px; }
 .row { justify-content:space-between; }.actions { margin-top:8px; }
@@ -29,15 +29,15 @@
 .moreTrigger { display:inline-grid; place-items:center; flex:none; width:44px; height:44px; margin-left:auto; border:0; border-radius:12px; padding:0; background:transparent; color:var(--color-ink); cursor:pointer; }
 .moreTrigger:disabled { opacity:.5; cursor:not-allowed; }
 .menuPositioner { z-index:30; }
-.menuPopup,.reportDialog { }
-.menuPopup { min-width:168px; padding:6px; border:1px solid var(--color-line); border-radius:12px; background:var(--color-paper,#fff); color:var(--color-ink); box-shadow:var(--shadow-subtle,0 8px 24px rgba(26,21,18,.12)); transform-origin:var(--transform-origin); }
+.menuPopup,.reportDialog { font-family:inherit; }
+.menuPopup { min-width:168px; padding:6px; border:1px solid var(--color-line); border-radius:12px; background:var(--color-paper,var(--color-surface)); color:var(--color-ink); box-shadow:var(--shadow-subtle,0 8px 24px color-mix(in srgb, var(--color-ink) 12%, transparent)); transform-origin:var(--transform-origin); }
 .menuItem { display:flex; align-items:center; min-height:44px; border-radius:8px; padding:8px 10px; font-size:13px; cursor:pointer; outline:0; }
 .menuItem[data-highlighted],.menuItem:focus-visible { background:var(--color-soft); outline:var(--focus-width) solid var(--color-focus); outline-offset:calc(-1 * var(--focus-width)); }
 .menuItem[data-disabled] { opacity:.5; cursor:not-allowed; }
 .menuItemDanger { color:var(--color-error); }
 /* Report geometry must override the shared overlay defaults regardless of CSS chunk order. */
 .reportBackdrop[data-overlay-root] { align-items:center; justify-content:center; padding:max(16px,env(safe-area-inset-top)) max(16px,env(safe-area-inset-right)) max(16px,env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left)); }
-.reportDialog { width:min(420px,100%); overflow:auto; padding:20px; border:1px solid var(--color-line); border-radius:16px; background:var(--color-paper,#fff); color:var(--color-ink); box-shadow:0 18px 60px rgba(26,21,18,.22); }
+.reportDialog { width:min(420px,100%); overflow:auto; padding:20px; border:1px solid var(--color-line); border-radius:16px; background:var(--color-paper,var(--color-surface)); color:var(--color-ink); box-shadow:0 18px 60px color-mix(in srgb, var(--color-ink) 22%, transparent); }
 .reportBackdrop .reportDialog[data-overlay-content] { max-height:min(100%,calc(100dvh - 32px)); }
 .reportDialog h2 { margin:0 0 16px; font-size:var(--fan-heading-size); line-height:1.4; font-weight:700; }.reportDialog form { display:grid; gap:16px; }.reportDialog .actions { justify-content:flex-end; margin-top:0; }
 .pagination { display:flex; justify-content:space-between; gap:12px; }.reply { margin-left:20px; border-left:2px solid var(--color-line); padding-left:16px; }
@@ -67,16 +67,16 @@
 .photoPicker button[aria-disabled="true"] { opacity:.5; cursor:not-allowed; }
 .photoPicker input { position:absolute; width:1px; height:1px; overflow:hidden; clip-path:inset(50%); white-space:nowrap; }
 .visibilityBackdrop[data-overlay-root] { align-items:center; justify-content:center; padding:max(16px,env(safe-area-inset-top)) max(16px,env(safe-area-inset-right)) max(16px,env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left)); }
-.visibilityDialog { width:min(400px,100%); max-height:min(100%,calc(100dvh - 32px)); overflow:auto; padding:20px; border:1px solid var(--color-line); border-radius:16px; background:var(--color-paper,#fff); color:var(--color-ink); box-shadow:0 18px 60px rgba(26,21,18,.22); }
+.visibilityDialog { width:min(400px,100%); max-height:min(100%,calc(100dvh - 32px)); overflow:auto; padding:20px; border:1px solid var(--color-line); border-radius:16px; background:var(--color-paper,var(--color-surface)); color:var(--color-ink); box-shadow:0 18px 60px color-mix(in srgb, var(--color-ink) 22%, transparent); font-family:inherit; }
 .visibilityDialog h2 { margin:0 0 16px; font-size:20px; }
 .visibilityActions { display:flex; justify-content:flex-end; margin-top:16px; }
 .visibilityActions button { min-height:44px; border:0; border-radius:12px; padding:10px 14px; background:transparent; color:var(--color-ink); font:inherit; cursor:pointer; }
-.likeButton[aria-pressed="true"] { color:#d92354; font-weight:700; }
+.likeButton[aria-pressed="true"] { color:var(--color-accent); font-weight:700; }
 .composer .actions { justify-content:flex-end; }
 @media(max-width:767px) { .visibilityBackdrop[data-overlay-root] { align-items:flex-end; padding:0; } .visibilityBackdrop .visibilityDialog[data-overlay-content] { width:100%; max-height:min(78dvh,640px); padding:20px max(20px,env(safe-area-inset-right)) max(20px,env(safe-area-inset-bottom)) max(20px,env(safe-area-inset-left)); border-width:1px 0 0; border-radius:20px 20px 0 0; } }
 @media(max-width:479px) { .composeTrigger { padding:8px 14px; }.composeTrigger strong { display:none; }.composerTools { align-items:center; gap:8px; }.visibilityTrigger { margin-left:-10px; }.composer .actions > button { flex:1; } }
 
-.composer .actions button[data-fan-action-emphasis="primary"] { width:auto; min-width:104px; min-height:44px; border-radius:12px; background:var(--fanpage-action-solid,var(--color-ink)); color:#fff; box-shadow:none; }
+.composer .actions button[data-fan-action-emphasis="primary"] { width:auto; min-width:104px; min-height:44px; border-radius:12px; background:var(--fanpage-action-solid,var(--color-ink)); color:var(--color-surface); box-shadow:none; }
 
 .translation:has(> .translationButton) > p:first-child { margin-bottom:0; }
 .translationButton { display:inline-flex; align-items:center; min-width:44px; min-height:44px; padding:4px 0; border:0; border-radius:4px; background:transparent; color:var(--color-muted); font:inherit; font-size:13px; text-align:start; cursor:pointer; }

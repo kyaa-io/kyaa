@@ -1,11 +1,12 @@
 .page {
-  --fanmeeting-ink: #19191e;
-  --fanmeeting-muted: #686873;
-  --fanmeeting-pink: #d91d68;
-  --fanmeeting-line: #e7e7ec;
-  background: #fff;
+  --fanmeeting-ink: var(--color-ink);
+  --fanmeeting-muted: var(--color-muted);
+  --fanmeeting-pink: var(--color-accent);
+  --fanmeeting-line: var(--color-line-subtle);
+  background: var(--color-surface);
   color: var(--fanmeeting-ink);
-  }
+  font-family:inherit;
+}
 .page *,
 .page *::before,
 .page *::after {
@@ -112,15 +113,16 @@
   border: 0;
   border-radius: 12px;
   background: var(--fanmeeting-pink);
-  color: #fff;
+  color: var(--color-surface);
   font-size: 16px;
-    line-height: 1.4;
+  font-family: inherit;
+  line-height: 1.4;
   font-weight: 700;
   cursor: pointer;
   transition: background 150ms ease;
 }
 .cta:hover {
-  background: #bf1558;
+  background: var(--color-accent);
 }
 .supportLink {
   display: inline-flex;
@@ -139,7 +141,7 @@
   flex-direction: column;
   gap: 24px;
   padding: 32px;
-  background: var(--color-accent-soft);
+  background: var(--color-soft);
   border-radius: 24px;
   min-width: 0;
 }
@@ -166,7 +168,7 @@
   width: 20px;
   height: 8px;
   border-radius: 3px;
-  background: var(--color-muted);
+  background: var(--color-accent);
 }
 .stageBackdrop {
   position: absolute;
@@ -177,10 +179,7 @@
   justify-content: center;
   gap: 12px;
   border-radius: 16px 16px 0 0;
-  background:
-    linear-gradient(115deg, transparent 28%, #ffffff08 28%, #ffffff08 48%, transparent 48%),
-    linear-gradient(245deg, transparent 28%, #ffffff08 28%, #ffffff08 48%, transparent 48%),
-    var(--color-accent-ink);
+  background:var(--color-accent-ink);
 }
 .stageBackdrop img {
   width: 96px;
@@ -198,7 +197,7 @@
   inset: auto 8px 34px;
   height: 12px;
   border-radius: 3px 3px 8px 8px;
-  background: var(--color-muted);
+  background: var(--color-accent);
 }
 .fanRow {
   position: absolute;
@@ -227,14 +226,14 @@
   background: inherit;
 }
 .fanRow > span:nth-child(3n + 2) {
-  background: #e8b4ce;
+  background: var(--color-accent-line);
 }
 .visualServices {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 8px;
   padding: 20px 0 0;
-  border-top: 1px solid var(--color-line);
+  border-top: 1px solid var(--color-accent-line);
   list-style: none;
 }
 .visualServices li {
@@ -242,7 +241,7 @@
   flex-direction: column;
   align-items: center;
   gap: 8px;
-  color: var(--color-muted);
+  color: var(--color-accent);
   font-size: 12px;
   font-weight: 650;
   line-height: 1.4;
@@ -288,7 +287,7 @@
   flex-direction: column;
   gap: 24px;
   padding: 32px;
-  background: var(--color-accent-soft);
+  background: var(--color-soft);
   border-radius: 20px;
 }
 .partnerIcon {
@@ -329,12 +328,12 @@
   margin-top: 3px;
 }
 .operationsCard {
-  background: #222032;
-  color: #fff;
+  background: var(--color-accent-ink);
+  color: var(--color-surface);
 }
 .operationsCard li,
 .operationsCard .partnerHeading p {
-  color: var(--color-line);
+  color: var(--color-accent-line);
 }
 .operationsCard li svg,
 .operationsCard .partnerIcon {
@@ -368,7 +367,7 @@
   align-items: center;
   padding: 32px;
   border-radius: 20px;
-  background: #f7f7f9;
+  background: var(--color-soft);
 }
 .passportBand > img {
   flex-shrink: 0;
@@ -423,7 +422,7 @@
   font-size: 36px;
   line-height: 1.4;
   font-weight: 750;
-  color: var(--color-muted);
+  color: var(--color-accent);
 }
 .processGrid h3 {
   font-size: 23px;
@@ -449,7 +448,7 @@
   gap: 40px;
   padding: 56px 48px;
   border-radius: 24px;
-  background: var(--color-accent-soft);
+  background: var(--color-soft);
 }
 .inquiryMessage,
 .contact {
@@ -459,7 +458,7 @@
   min-width: 0;
 }
 .inquiryMessage > .eyebrow {
-  color: #bb1757;
+  color: var(--color-accent);
 }
 .inquiry h2 {
   font-size: 42px;
@@ -471,7 +470,8 @@
   padding: 0;
   border: 0;
   background: transparent;
-    font-size: 32px;
+  font-family: inherit;
+  font-size: 32px;
   line-height: 1.4;
   font-weight: 750;
   color: var(--fanmeeting-ink);

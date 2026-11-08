@@ -20,8 +20,7 @@ import {
   type QuizAttemptProjection,
 } from "../domain/quiz-attempt";
 import { appendLiveReturnTo, sanitizeLiveReturnTo } from "../domain/live-return-context";
-import type { FanLocale } from "@/components/fan-shell/fan-app-shell";
-import { FocusFlowFrame } from "@/components/fan-shell/focus-flow-frame";
+import { FanAppFrame, type FanLocale } from "@/components/fan-shell/fan-app-shell";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import {
   reportRecoveryFailure,
@@ -418,7 +417,7 @@ function QuizFrame({
   topAligned?: boolean;
 }) {
   return (
-    <FocusFlowFrame locale={locale} mainId="fan-verification-questions-main" languageSwitch>
+    <FanAppFrame locale={locale} mainId="fan-verification-questions-main">
       <main className={styles.page} id="fan-verification-questions-main" tabIndex={-1}>
         <div
           className={topAligned ? `${styles.shell} ${styles.shellTopAligned}` : styles.shell}
@@ -427,6 +426,6 @@ function QuizFrame({
           {children}
         </div>
       </main>
-    </FocusFlowFrame>
+    </FanAppFrame>
   );
 }

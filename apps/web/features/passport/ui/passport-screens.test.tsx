@@ -473,7 +473,7 @@ describe("passport fan screens", () => {
     vi.stubGlobal("fetch", fetcher);
     const { container } = render(<PassportDetailScreen id={passport.id} explorerBaseUrl={explorerBaseUrl} />);
 
-    expect(await screen.findByText("지금 골드 2")).toBeInTheDocument();
+    expect(await screen.findByText("내 팬 등급 골드 2")).toBeInTheDocument();
     expect(screen.getByText("골드 3까지 15점")).toBeInTheDocument();
     expect(screen.getByRole("progressbar", { name: "다음 등급: 골드 3" })).toHaveAttribute("value", "40");
     expect([...container.querySelectorAll("img")].some((image) => decodeURIComponent(image.src).includes("/ink-v1/gold-2.webp"))).toBe(true);

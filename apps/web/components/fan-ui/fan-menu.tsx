@@ -79,5 +79,5 @@ function FanMenuSeparator() {
   return <Menu.Separator className={styles.separator} />;
 }
 
-/** 드롭다운 메뉴(⋯·계정·최애 선택·정렬). 항목 높이 44, 최소 폭 200, 열림 연출 `--motion-fast`. */
+/** 드롭다운 메뉴(⋯·계정·최애 선택·정렬). 항목 높이 44, 최소 폭 200, 열림 연출 `--motion-control`. */
 export const FanMenu = Object.assign(FanMenuRoot, { Item: FanMenuItem, Radio: FanMenuRadio, Separator: FanMenuSeparator });
