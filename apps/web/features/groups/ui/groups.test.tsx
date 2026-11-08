@@ -87,7 +87,7 @@ it.each([403,404])('offers exploration instead of permanent retry for unavailabl
 
 it('renders actual management tier and detail values without borrowing sample statistics',async()=>{
  const member='30000000-0000-4000-8000-000000000001';vi.stubGlobal('fetch',vi.fn(async()=>Response.json({items:[{profileId:member,nickname:'하늘',avatarUrl:null,role:'member',answer:'무대 이야기를 나누고 싶어요',tier:'Gold',joinedAt:null,lastActiveAt:null,postCount:12,commentCount:36}],nextCursor:null})));
- render(<GroupManagementMembers detail={{page,membership:{role:'owner',joinedAt:'2026-11-01T00:00:00Z'},bookmarked:false}} locale='ko' refresh={()=>{}}/>);expect(await screen.findByRole('table')).toBeInTheDocument();expect(await screen.findByText('무대 이야기를 나누고 싶어요')).toBeInTheDocument();expect(screen.getByText('12')).toBeInTheDocument();expect(screen.getByText('36')).toBeInTheDocument();expect(screen.getByText('Gold · 변경 불가')).toBeInTheDocument();
+ render(<GroupManagementMembers detail={{page,membership:{role:'owner',joinedAt:'2026-11-01T00:00:00Z'},bookmarked:false}} locale='ko' refresh={()=>{}}/>);expect(await screen.findByRole('table')).toBeInTheDocument();expect(await screen.findByText('무대 이야기를 나누고 싶어요')).toBeInTheDocument();expect(screen.getByText('12')).toBeInTheDocument();expect(screen.getByText('36')).toBeInTheDocument();expect(screen.getByText('골드 · 변경 불가')).toBeInTheDocument();
 });
 it('keeps home board preview compact while the full board retains filters and search',async()=>{
  vi.stubGlobal('fetch',vi.fn(async()=>Response.json({items:[],nextCursor:null})));const detail={page,membership:{role:'member' as const,joinedAt:'2026-11-01T00:00:00Z'},bookmarked:false};
@@ -230,7 +230,7 @@ it('keeps free and certified room conditions distinct and does not direct locked
  vi.stubGlobal('fetch',vi.fn(async()=>Response.json({items:[{id:freeId,name:'자유방',defaultKey:'free',minimumTier:null,status:'open',canEnter:false},{id:certifiedId,name:'인증방',defaultKey:'certified',minimumTier:'Bronze',status:'open',canEnter:false}]})));
  render(<GroupRoomsPanel pageId={page.id} locale='ko' slug='nchive'/>);
  await screen.findByRole('button',{name:/자유방/});
- expect(within(screen.getByRole('button',{name:/자유방/})).getByText('가입한 팬')).toBeInTheDocument();expect(within(screen.getByRole('button',{name:/인증방/})).getByText('Bronze 이상')).toBeInTheDocument();
+ expect(within(screen.getByRole('button',{name:/자유방/})).getByText('가입한 팬')).toBeInTheDocument();expect(within(screen.getByRole('button',{name:/인증방/})).getByText('브론즈 이상')).toBeInTheDocument();
  fireEvent.click(screen.getByRole('button',{name:/자유방/}));
  expect(screen.queryByRole('link',{name:'팬 인증'})).not.toBeInTheDocument();
 });

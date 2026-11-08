@@ -203,6 +203,11 @@ const labels = {
 } as const;
 
 export function levelLabel(locale: AppLocale, level: z.infer<typeof levelSchema>): string { return labels[locale].levels[level]; }
+/** A tier name that arrives as plain text from an API ("Silver"), in the viewer's language. Unknown names are returned as they are. */
+export function tierDisplayName(locale: AppLocale, tier: string): string {
+  const parsed = levelSchema.safeParse(tier);
+  return parsed.success ? levelLabel(locale, parsed.data) : tier;
+}
 export function stampTypeLabel(locale: AppLocale, type: PassportStampType): string { return STAMP_METADATA[type].label[locale]; }
 export function stampShortLabel(locale: AppLocale, type: PassportStampType): string { return STAMP_METADATA[type].shortLabel[locale]; }
 export function mintStatusLabel(locale: AppLocale, status: z.infer<typeof mintStatusSchema>): string { return labels[locale].mint[status]; }

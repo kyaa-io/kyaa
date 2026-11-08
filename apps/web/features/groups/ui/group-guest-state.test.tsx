@@ -81,7 +81,7 @@ it("audit 8: shows room names, count and entry tier from the public read only; r
  routes={"/public-rooms":{roomCount:2,items:[{name:"인증팬 소통방",minimumTier:"Bronze"},{name:"자유 소통방",minimumTier:null}]}};
  render(<GroupRoomsPanel pageId={pageId} locale="ko" slug="elina"/>);
  const link=await screen.findByRole("link",{name:/인증팬 소통방/});
- expect(within(link).getByText("Bronze 이상")).toBeVisible();expect(returnTo(link)).toBe("/elina?locale=ko&tab=rooms");
+ expect(within(link).getByText("브론즈 이상")).toBeVisible();expect(returnTo(link)).toBe("/elina?locale=ko&tab=rooms");
  expect(screen.getByRole("heading",{level:2})).toHaveTextContent("2");
  expect(privateCalls()).toEqual([]);
 });
