@@ -3,9 +3,11 @@ import { messages as localizedMessages } from "@/i18n/catalogs/seo__metadata";
 import { additionalLocales } from "@/i18n/messages";
 import type { Metadata } from "next";
 import { bypassImageOptimization } from "@/components/fan-ui/public-image-policy";
+import { runtimeEnvironment } from "@/server/config/hosting";
 
 export type SeoLocale = AppLocale;
 export const SITE_URL = "https://kyaa.io";
+/** The production default picture. Other environments use `defaultShareImage()`. */
 export const DEFAULT_SHARE_IMAGE = `${SITE_URL}/share/default.png`;
 export const NO_INDEX: Metadata["robots"] = { index: false, follow: false };
 
@@ -23,6 +25,26 @@ const OPEN_GRAPH_LOCALES: Record<AppLocale, string> = {
   fr: "fr_FR",
   ru: "ru_RU",
 };
+
+/** Only these hosts may serve their own share pictures; production, an unset value and anything else keep SITE_URL. */
+const OWN_SHARE_HOST = /^(?:dev|staging)\.kyaa\.io$/;
+
+/** Origin that serves this deployment's own share pictures (og:image, twitter:image). A dev or staging link pasted into a messenger
+ * must fetch that environment's picture, not production's. Production's value is SITE_URL and does not change.
+ * The canonical URL, sitemap and structured data deliberately stay on SITE_URL. Indexed read: the Next build must not freeze the value. */
+export function shareOrigin(source: Readonly<Record<string, string | undefined>> = runtimeEnvironment()): string {
+  try {
+    const url = new URL(source["NEXT_PUBLIC_APP_URL"] ?? "");
+    const own = url.protocol === "https:" && OWN_SHARE_HOST.test(url.hostname)
+      || url.protocol === "http:" && url.hostname === "localhost";
+    if (own && !url.username && !url.password && url.pathname === "/" && !url.search && !url.hash) return url.origin;
+  } catch { /* unset or malformed: production */ }
+  return SITE_URL;
+}
+
+export function defaultShareImage(): string {
+  return `${shareOrigin()}/share/default.png`;
+}
 
 export function openGraphLocale(locale: AppLocale): string {
   return OPEN_GRAPH_LOCALES[locale];
@@ -50,11 +72,12 @@ export function isPrivatePath(path: string): boolean {
 
 /** Reuse the existing public-image allowlist/optimizer; never fetch arbitrary URLs. */
 export function shareImageUrl(source?: string): string {
-  if (!source || source === DEFAULT_SHARE_IMAGE) return DEFAULT_SHARE_IMAGE;
+  const origin = shareOrigin(), fallback = defaultShareImage();
+  if (!source || source === DEFAULT_SHARE_IMAGE || source === fallback) return fallback;
   if (!bypassImageOptimization(source) && !source.endsWith(".svg")) {
-    return `${SITE_URL}/_next/image?${new URLSearchParams({ url: source, w: "1200", q: "75" })}`;
+    return `${origin}/_next/image?${new URLSearchParams({ url: source, w: "1200", q: "75" })}`;
   }
-  return new URL(source, SITE_URL).href;
+  return new URL(source, origin).href;
 }
 
 export function publicMetadata(input: {
@@ -70,7 +93,7 @@ export function publicMetadata(input: {
   const url = canonicalUrl(path, locale);
   const image = shareImageUrl(input.image);
   const images = [{ url: image, alt: input.imageAlt || "Kyaa. Every Fan Moment Counts.",
-    ...(image === DEFAULT_SHARE_IMAGE ? { width: 1200, height: 630 } : {}) }];
+    ...(image === defaultShareImage() ? { width: 1200, height: 630 } : {}) }];
   return {
     title, description,
     alternates: { canonical: url, languages: languageAlternates(path, input.locales) },
