@@ -25,19 +25,22 @@ export function TierCelebration() {
   const { request, authenticated } = useGroupRequest();
   const quiet = QUIET_PATHS.test(pathname);
   const changes = useGroupResource(authenticated && !quiet ? `/api/me/tier-changes?locale=${toContentLocale(locale)}` : null, parse);
-  const [shown, setShown] = useState<TierChange | null>(null);
-  const marked = useRef(new Set<string>());
-  const next = changes.data?.changes.find(change => !marked.current.has(change.id));
+  // Rises closed on this screen stay closed even if a re-read returns them before the seen mark lands.
+  const [dismissed, setDismissed] = useState<ReadonlySet<string>>(() => new Set());
+  const batch = (changes.data?.changes ?? []).filter(change => !dismissed.has(change.id));
+  const ids = batch.map(change => change.id).join(",");
+  const posted = useRef(new Set<string>());
   useEffect(() => {
-    if (!next || shown) return;
-    // The highest rise of the batch speaks for all of them; every one is marked so none comes back.
-    const batch = changes.data!.changes.filter(change => !marked.current.has(change.id));
-    batch.forEach(change => marked.current.add(change.id));
-    setShown(batch.at(-1)!);
-    void request("/api/me/tier-changes/seen", { method: "POST", body: JSON.stringify({ ids: batch.map(change => change.id) }) }).catch(() => undefined);
-  }, [changes.data, next, request, shown]);
+    // Marked seen as soon as it is shown, so a reload or another tab never shows the same rise twice.
+    const fresh = ids ? ids.split(",").filter(id => !posted.current.has(id)) : [];
+    if (!fresh.length) return;
+    fresh.forEach(id => posted.current.add(id));
+    void request("/api/me/tier-changes/seen", { method: "POST", body: JSON.stringify({ ids: fresh }) }).catch(() => undefined);
+  }, [ids, request]);
+  // The highest rise of the batch speaks for all of them.
+  const shown = batch.at(-1);
   if (!shown) return null;
-  return <TierRiseDialog change={shown} onClose={() => setShown(null)} />;
+  return <TierRiseDialog change={shown} onClose={() => setDismissed(current => new Set([...current, ...batch.map(change => change.id)]))} />;
 }
 
 export function TierRiseDialog({ change, onClose }: { change: TierChange; onClose: () => void }) {

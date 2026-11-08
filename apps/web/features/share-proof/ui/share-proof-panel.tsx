@@ -37,7 +37,6 @@ function ShareProofTileInner({ slug, locale }: { slug: string; locale: AppLocale
   const reward = progress?.points && !progress.done ? `+${progress.points.toLocaleString(locale)}P` : "";
   return <>
     <Link href={withShare(true) as Route} scroll={false} className={gridStyles.tile} data-status="available" data-share-proof-tile="">
-      {/* eslint-disable-next-line @next/next/no-img-element -- the same 32px stamp art as the other tiles */}
       <img src="/images/stamps/ink-v1/share.webp" alt="" width={32} height={32} />
       <strong>{c.title}</strong>
       <span className={gridStyles.state} data-status={progress?.done ? "approved" : "available"}>{state}{reward ? <span className={gridStyles.reward}> · {reward}</span> : null}</span>
