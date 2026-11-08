@@ -40,6 +40,14 @@ it("asks to choose only with no favorite at all", () => {
   render(<SelectedBiasChip locale="ko" />);
   expect(screen.getByRole("link")).toHaveTextContent("최애 고르기");
 });
+it("keeps the choose-favorite chip named when its label is hidden at narrow widths, and never ellipsizes the label", () => {
+  ready();
+  render(<SelectedBiasChip locale="ko" />);
+  const chip = screen.getByRole("link", { name: "최애 고르기" });
+  const label = chip.querySelector("span")!;
+  expect(label).toHaveTextContent("최애 고르기");
+  expect(label.className).not.toMatch(/\bname\b/);
+});
 it("does not say choose while the login or the summary is still loading", () => {
   state.summary = { state: { status: "loading" }, retry: () => {} };
   const { container, rerender } = render(<SelectedBiasChip locale="ko" />);

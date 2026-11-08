@@ -28,17 +28,17 @@ function gradeOf(locale: AppLocale, option: SelectedBiasOption) {
   return fanStageLabel(locale, { tier: option.tier, subdivision: option.stage?.subdivision ?? Number(key.split("-").at(-1)) });
 }
 
-const Empty = ({ locale }: { locale: AppLocale }) => <><Star size={20} aria-hidden="true" className={styles.star} /><span className={styles.name}>{text(locale, "biasChoose")}</span></>;
+const Empty = ({ locale }: { locale: AppLocale }) => <><Star size={20} aria-hidden="true" className={styles.star} /><span className={styles.pickLabel}>{text(locale, "biasChoose")}</span></>;
 
 /** The header's tier and selected favorite. Signed out it stays in place as the way in; pressing it changes the favorite everywhere the hook is read. */
 export function SelectedBiasChip({ locale }: { locale: AppLocale }) {
   const bias = useSelectedBias(locale);
   const pathname = usePathname() || "/", query = useSearchParams()?.toString();
   if (bias.status === "loading") return <span className={styles.chip} data-selected-bias="loading" aria-hidden="true"><span className={styles.placeholder} /></span>;
-  if (bias.status === "guest") return <Link className={styles.chip} data-selected-bias="guest" href={fanLoginHref(locale, `${pathname}${query ? `?${query}` : ""}`)}><Empty locale={locale} /></Link>;
+  if (bias.status === "guest") return <Link className={styles.chip} data-selected-bias="guest" aria-label={text(locale, "biasChoose")} href={fanLoginHref(locale, `${pathname}${query ? `?${query}` : ""}`)}><Empty locale={locale} /></Link>;
   if (bias.unverified) return <Link className={styles.chip} data-selected-bias="unverified" href={`/${encodeURIComponent(bias.unverified.slug)}?locale=${locale}` as Route}><Star size={20} aria-hidden="true" className={styles.star} /><span className={styles.name}>{bias.unverified.name}</span></Link>;
-  if (bias.status === "empty") return <Link className={styles.chip} data-selected-bias="empty" href={`/pages/groups?locale=${locale}` as Route}><Empty locale={locale} /></Link>;
-  if (bias.status === "error") return <FanAction variant="text" className={styles.chip} data-selected-bias="error" onClick={bias.retry}><Empty locale={locale} /></FanAction>;
+  if (bias.status === "empty") return <Link className={styles.chip} data-selected-bias="empty" aria-label={text(locale, "biasChoose")} href={`/pages/groups?locale=${locale}` as Route}><Empty locale={locale} /></Link>;
+  if (bias.status === "error") return <FanAction variant="text" className={styles.chip} data-selected-bias="error" aria-label={text(locale, "biasChoose")} onClick={bias.retry}><Empty locale={locale} /></FanAction>;
   // D2: passports but no favorite named yet — "최애 고르기" opens the same menu to name one, never a dead end.
   if (!bias.selected) return <PickChip locale={locale} bias={bias} />;
   return <SelectedChip locale={locale} bias={bias} current={bias.selected} />;
@@ -151,7 +151,7 @@ export function SelectedBiasBar({ locale, bias, loginHref }: { locale: AppLocale
 /** Passports but no favorite named: the chip says "최애 고르기" and opens the menu of passports to name one (D2). */
 function PickChip({ locale, bias }: { locale: AppLocale; bias: SelectedBias }) {
   return <Menu.Root>
-    <Menu.Trigger className={`${styles.chip} ${styles.trigger}`} data-selected-bias="unnamed"><Empty locale={locale} /></Menu.Trigger>
+    <Menu.Trigger className={`${styles.chip} ${styles.trigger}`} data-selected-bias="unnamed" aria-label={text(locale, "biasChoose")}><Empty locale={locale} /></Menu.Trigger>
     <FavoriteMenu locale={locale} bias={bias} current={null} />
   </Menu.Root>;
 }
