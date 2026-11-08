@@ -5,17 +5,16 @@
   --muted: var(--color-muted);
   --line: var(--color-line);
   --card-line: var(--color-line-subtle);
-  --spectrum: var(--color-primary-action);
+  --spectrum: var(--color-accent);
   --spectrum-hover: linear-gradient(125deg, oklch(62% .22 18), oklch(56% .24 340), oklch(50% .21 285));
-  --service-ink: var(--color-service-ink);
+  --service-ink: var(--color-page-accent);
   --card-shadow: 0 1px 2px oklch(18% 0 0 / .05), 0 4px 12px oklch(18% 0 0 / .03);
   --header-height: 4rem;
   --bottom-nav-height: 4rem;
   overflow-x: clip;
   background: var(--canvas);
   color: var(--ink);
-  font-family: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
-}
+  }
 
 .page *, .page *::before, .page *::after { box-sizing: border-box; }
 .page a { color: inherit; text-decoration: none; }
@@ -116,7 +115,7 @@
 /* N7: 최애가 하나나 둘이면 큰 정사각 카드 옆이 비지 않게 가로 카드로 그린다. */
 .celebrityRail[data-count="1"] { grid-auto-columns: 100%; }
 .celebrityRail[data-count="2"] { grid-auto-columns: calc((100% - var(--space-4)) / 2); }
-.celebrityRail[data-count="1"] .celebrityCard { display: grid; grid-template-columns: calc(var(--space-12) * 2) minmax(0, 1fr); align-items: center; column-gap: var(--space-4); padding: var(--space-3); border: 1px solid var(--card-line); border-radius: var(--radius-collection); }
+.celebrityRail[data-count="1"] .celebrityCard { display: grid; grid-template-columns: calc(var(--space-12) * 2) minmax(0, 1fr); align-items: center; column-gap: var(--space-4); padding: var(--space-3); border: 1px solid var(--card-line); border-radius: var(--radius-card); }
 .celebrityRail[data-count="1"] .celebrityInfo { padding: 0; }
 .celebrityRail[data-count="1"] .celebrityIdentity { min-height: 0; }
 @media (min-width: 48rem) {
@@ -182,7 +181,7 @@
 .signedInGreeting { padding: 20px; border-bottom: 1px solid var(--card-line); }
 .signedInGreeting p { margin: 8px 0 0; color: var(--muted); font-size: var(--fan-body-size); line-height: 1.5; overflow-wrap: anywhere; }
 .signedInGreeting h2 { overflow-wrap: anywhere; margin: 0; font-size: var(--fan-heading-size); font-weight: var(--fan-heading-weight); letter-spacing: var(--fan-heading-tracking); line-height: var(--fan-heading-leading); text-wrap: balance; }
-@media (min-width: 48rem) { .signedInGreeting h2 { font-size: var(--fan-heading-size-wide); } }
+@media (min-width: 48rem) { .signedInGreeting h2 { font-size: var(--fan-heading-size); } }
 .summarySection { padding: 20px; }
 .summarySection + .summarySection { border-top: 1px solid var(--card-line); }
 .summarySectionHeader { display: flex; min-height: 28px; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px; }

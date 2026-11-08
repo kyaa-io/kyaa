@@ -1,4 +1,4 @@
-.page { padding-block:32px 88px; color:oklch(18% 0 0); font-family:"Pretendard Variable",Pretendard,-apple-system,BlinkMacSystemFont,system-ui,sans-serif; }
+.page { padding-block:32px 88px; color:oklch(18% 0 0); }
 .page.standalone { max-width:840px; }
 .page.withRecent { max-width:1152px; }
 .back { display:inline-flex; min-height:44px; align-items:center; gap:8px; color:oklch(40% 0 0); font-size:14px; font-weight:700; text-decoration:none; }

@@ -1,7 +1,7 @@
 .section { display:grid; min-width:0; gap:var(--space-3); }
-.section h2 { margin:0; font-size:var(--fan-heading-size-wide); font-weight:var(--fan-heading-weight); line-height:var(--fan-heading-leading); letter-spacing:var(--fan-heading-tracking); }
+.section h2 { margin:0; font-size:var(--fan-heading-size); font-weight:var(--fan-heading-weight); line-height:var(--fan-heading-leading); letter-spacing:var(--fan-heading-tracking); }
 .grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:var(--space-3); }
-.grid > a { display:grid; min-width:0; min-block-size:96px; justify-items:center; align-content:center; gap:var(--space-2); padding:var(--space-4) var(--space-2); border:1px solid var(--color-line); border-radius:var(--radius-collection); background:var(--color-canvas); color:var(--color-ink); text-align:center; }
+.grid > a { display:grid; min-width:0; min-block-size:96px; justify-items:center; align-content:center; gap:var(--space-2); padding:var(--space-4) var(--space-2); border:1px solid var(--color-line); border-radius:var(--radius-card); background:var(--color-canvas); color:var(--color-ink); text-align:center; }
 .grid > a > span { display:grid; inline-size:40px; block-size:40px; place-items:center; border-radius:var(--radius-control); background:var(--color-soft); }
 .grid svg { inline-size:22px; block-size:22px; }
 .grid strong { font-size:var(--fan-description-size); font-weight:700; line-height:1.35; overflow-wrap:anywhere; }

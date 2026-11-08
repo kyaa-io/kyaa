@@ -1,5 +1,5 @@
 .page,.dialog{--fanpage-action-solid:#ce0066;--fanpage-accent-text:#ce0066;--fanpage-text-muted:#6b6570}
-.page{padding-top:8px;padding-bottom:64px;color:#17161b;font-family:"Pretendard Variable",Pretendard,-apple-system,BlinkMacSystemFont,system-ui,sans-serif}
+.page{padding-top:8px;padding-bottom:64px;color:#17161b;}
 .page *,.page *::before,.page *::after{box-sizing:border-box}
 .page :where(a:not([data-fan-action-emphasis="primary"])){color:inherit;text-decoration:none}
 :where(.page button,.dialog button){font:inherit;cursor:pointer}

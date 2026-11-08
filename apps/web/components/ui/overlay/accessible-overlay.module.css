@@ -7,7 +7,7 @@
   min-height: 0;
   background: var(--color-backdrop);
   overscroll-behavior: contain;
-  animation: overlay-fade-in var(--motion-control) ease-out;
+  animation: overlay-fade-in var(--motion-fast) ease-out;
   padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
 }
 
@@ -17,7 +17,7 @@
   max-width: 100%;
   max-height: 100dvh;
   overscroll-behavior: contain;
-  animation: overlay-content-in var(--motion-layout) cubic-bezier(.2, .8, .2, 1);
+  animation: overlay-content-in var(--motion-slow) cubic-bezier(.2, .8, .2, 1);
 }
 
 .backdrop [data-overlay-content] *,

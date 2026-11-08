@@ -23,7 +23,7 @@
 .surface .reviewList>li{padding:0;border:0;background:transparent;border-radius:0}.surface .reviewList>li>button{margin:0}
 
 /* Pencil jzqEs: application review has its own full-width admin workspace. */
-.platformShell{font-family:"Pretendard Variable",system-ui,sans-serif;min-height:100dvh;background:#fff;color:#29242a}
+.platformShell{min-height:100dvh;background:#fff;color:#29242a}
 .platformHeader{display:flex;align-items:center;justify-content:space-between;gap:16px;min-height:104px;padding:32px;box-sizing:border-box;background:#302c33;color:#fff}
 .platformHeader a{display:flex;align-items:center;gap:16px;color:inherit;text-decoration:none;font-size:28px;line-height:39px;font-weight:700}
 .platformHeader>span{color:#e4e1e6;font-size:14px;line-height:20px;font-weight:700}

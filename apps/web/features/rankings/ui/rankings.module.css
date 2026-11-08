@@ -6,7 +6,7 @@
 
 .page h1 {
   margin: 0;
-  font-size: var(--fan-heading-size-wide);
+  font-size: var(--fan-heading-size);
   font-weight: var(--fan-heading-weight);
   letter-spacing: var(--fan-heading-tracking);
   line-height: var(--fan-heading-leading);
@@ -38,9 +38,9 @@
 }
 
 .chip[aria-pressed="true"] {
-  border-color: var(--color-service-ink);
-  background: var(--color-surface-focus);
-  color: var(--color-service-ink);
+  border-color: var(--color-page-accent);
+  background: var(--color-soft);
+  color: var(--color-page-accent);
 }
 
 .row a:focus-visible {
@@ -76,7 +76,7 @@
 }
 
 .rowMe {
-  background: var(--color-surface-focus);
+  background: var(--color-soft);
   margin-inline: calc(var(--space-3) * -1);
   padding-inline: var(--space-3);
   border-radius: var(--radius-control);
@@ -93,9 +93,9 @@
   font-variant-numeric: tabular-nums;
 }
 
-.medal1 { background: color-mix(in srgb, var(--color-warning) 30%, var(--color-canvas)); color: var(--color-warning); }
+.medal1 { background: color-mix(in srgb, var(--color-ink) 30%, var(--color-canvas)); color: var(--color-ink); }
 .medal2 { background: color-mix(in srgb, var(--color-muted) 25%, var(--color-canvas)); color: var(--color-ink); }
-.medal3 { background: color-mix(in srgb, var(--color-warning) 55%, var(--color-canvas)); color: var(--color-canvas); }
+.medal3 { background: color-mix(in srgb, var(--color-ink) 55%, var(--color-canvas)); color: var(--color-canvas); }
 
 .who {
   display: flex;
@@ -137,7 +137,7 @@
   margin-inline-start: var(--space-2);
   padding: 0 var(--space-2);
   border-radius: var(--radius-pill);
-  background: var(--color-service-ink);
+  background: var(--color-page-accent);
   color: var(--color-canvas);
   font-size: var(--fan-metadata-size);
 }
@@ -157,7 +157,7 @@
 .barFill {
   height: 100%;
   border-radius: var(--radius-pill);
-  background: var(--color-service-ink);
+  background: var(--color-page-accent);
 }
 
 .soon.shortBadge { display: block; width: auto; overflow: hidden; max-width: 100%; box-sizing: border-box; padding-inline: var(--space-2); text-overflow: ellipsis; white-space: nowrap; }
@@ -167,8 +167,8 @@
   width: fit-content;
   padding: var(--space-1) var(--space-3);
   border-radius: var(--radius-pill);
-  background: var(--color-surface-focus);
-  color: var(--color-service-ink);
+  background: var(--color-soft);
+  color: var(--color-page-accent);
   font-size: var(--fan-metadata-size);
   font-weight: var(--fan-action-weight);
 }
@@ -179,8 +179,8 @@
   display: grid;
   gap: var(--space-1);
   padding: var(--space-3) var(--space-4);
-  border: 1px solid var(--color-service-ink);
-  border-radius: var(--radius-collection);
+  border: 1px solid var(--color-page-accent);
+  border-radius: var(--radius-card);
   background: var(--color-canvas);
 }
 

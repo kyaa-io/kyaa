@@ -3,7 +3,7 @@
 .postDetail > :first-child { justify-self:start; }
 .section h2,.section h3 { margin:0; letter-spacing:-.02em; }
 .section h2 { font-size:var(--fan-heading-size); }.section h3 { font-size:var(--fan-item-title-size); font-weight:var(--fan-item-title-weight); }
-@media(min-width:768px) { .section h2 { font-size:var(--fan-heading-size-wide); } }
+@media(min-width:768px) { .section h2 { font-size:var(--fan-heading-size); } }
 .composer,.card { min-width:0; padding:20px 0; border-bottom:1px solid var(--color-line); }
 .composer { display:grid; gap:12px; }
 .composerFeatured { padding:20px; border:1px solid var(--color-line); border-radius:16px; background:var(--color-paper,#fff); box-shadow:var(--shadow-subtle,0 8px 24px rgba(26,21,18,.06)); }
@@ -29,7 +29,7 @@
 .moreTrigger { display:inline-grid; place-items:center; flex:none; width:44px; height:44px; margin-left:auto; border:0; border-radius:12px; padding:0; background:transparent; color:var(--color-ink); cursor:pointer; }
 .moreTrigger:disabled { opacity:.5; cursor:not-allowed; }
 .menuPositioner { z-index:30; }
-.menuPopup,.reportDialog { font-family:"Pretendard Variable",Pretendard,-apple-system,BlinkMacSystemFont,system-ui,sans-serif; }
+.menuPopup,.reportDialog { }
 .menuPopup { min-width:168px; padding:6px; border:1px solid var(--color-line); border-radius:12px; background:var(--color-paper,#fff); color:var(--color-ink); box-shadow:var(--shadow-subtle,0 8px 24px rgba(26,21,18,.12)); transform-origin:var(--transform-origin); }
 .menuItem { display:flex; align-items:center; min-height:44px; border-radius:8px; padding:8px 10px; font-size:13px; cursor:pointer; outline:0; }
 .menuItem[data-highlighted],.menuItem:focus-visible { background:var(--color-soft); outline:var(--focus-width) solid var(--color-focus); outline-offset:calc(-1 * var(--focus-width)); }
@@ -67,7 +67,7 @@
 .photoPicker button[aria-disabled="true"] { opacity:.5; cursor:not-allowed; }
 .photoPicker input { position:absolute; width:1px; height:1px; overflow:hidden; clip-path:inset(50%); white-space:nowrap; }
 .visibilityBackdrop[data-overlay-root] { align-items:center; justify-content:center; padding:max(16px,env(safe-area-inset-top)) max(16px,env(safe-area-inset-right)) max(16px,env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left)); }
-.visibilityDialog { width:min(400px,100%); max-height:min(100%,calc(100dvh - 32px)); overflow:auto; padding:20px; border:1px solid var(--color-line); border-radius:16px; background:var(--color-paper,#fff); color:var(--color-ink); box-shadow:0 18px 60px rgba(26,21,18,.22); font-family:"Pretendard Variable",Pretendard,-apple-system,BlinkMacSystemFont,system-ui,sans-serif; }
+.visibilityDialog { width:min(400px,100%); max-height:min(100%,calc(100dvh - 32px)); overflow:auto; padding:20px; border:1px solid var(--color-line); border-radius:16px; background:var(--color-paper,#fff); color:var(--color-ink); box-shadow:0 18px 60px rgba(26,21,18,.22); }
 .visibilityDialog h2 { margin:0 0 16px; font-size:20px; }
 .visibilityActions { display:flex; justify-content:flex-end; margin-top:16px; }
 .visibilityActions button { min-height:44px; border:0; border-radius:12px; padding:10px 14px; background:transparent; color:var(--color-ink); font:inherit; cursor:pointer; }

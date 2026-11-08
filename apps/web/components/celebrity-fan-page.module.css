@@ -1,4 +1,4 @@
-.page { min-height:100dvh; background:#fff; color:oklch(18% 0 0); font-family:"Pretendard Variable",Pretendard,-apple-system,BlinkMacSystemFont,system-ui,sans-serif; }
+.page { min-height:100dvh; background:#fff; color:oklch(18% 0 0); }
 .page *,.page *::before,.page *::after { box-sizing:border-box; }
 .directoryLink { display:inline-flex; min-height:44px; align-items:center; color:oklch(48% 0 0); font-size:14px; font-weight:650; text-decoration:none; }
 .directoryLink svg { width:16px; height:16px; }
@@ -168,7 +168,7 @@
 
 /* Today lives on CalendarDayNumber; the cell border only describes reservation state. */
 .calendarLegend i[data-state="unknown"] { border-radius:0; width:8px; height:2px; background:var(--color-muted); }
-.calendarLegend i[data-state="reserved"] { width:8px; height:5px; border:solid var(--color-service-ink); border-width:0 0 2px 2px; border-radius:0; background:transparent; transform:rotate(-45deg); }
+.calendarLegend i[data-state="reserved"] { width:8px; height:5px; border:solid var(--color-page-accent); border-width:0 0 2px 2px; border-radius:0; background:transparent; transform:rotate(-45deg); }
 .calendarMessage { font-size:var(--fan-calendar-meta-size); line-height:1.5; }
 @media (min-width:390px) { .heroCalendar { padding:16px; } }
 
@@ -217,14 +217,14 @@
 /* Date selection is separate from each LIVE's reservation state. */
 .calendarEventDay { border:0; background:transparent; font:inherit; cursor:pointer; min-height:48px; }
 .calendarEventDay time { width:32px; height:32px; }
-.calendarEventDay[data-upcoming="true"] time { background:oklch(97% .025 315); color:var(--color-service-ink); }
-.calendarEventDay[aria-pressed="true"] time { background:var(--color-service-ink); color:#fff; }
+.calendarEventDay[data-upcoming="true"] time { background:oklch(97% .025 315); color:var(--color-page-accent); }
+.calendarEventDay[aria-pressed="true"] time { background:var(--color-page-accent); color:#fff; }
 .calendarEventDay:focus-visible { outline:3px solid var(--color-focus); outline-offset:-3px; }
 .calendarListHeading { display:flex; align-items:center; justify-content:space-between; gap:12px; }
-.calendarListHeading button { min-height:44px; padding:0 8px; border:0; background:transparent; color:var(--color-service-ink); font:inherit; font-size:12px; font-weight:700; cursor:pointer; }
+.calendarListHeading button { min-height:44px; padding:0 8px; border:0; background:transparent; color:var(--color-page-accent); font:inherit; font-size:12px; font-weight:700; cursor:pointer; }
 .calendarUpcoming a { grid-template-areas:"time title state" "time reservation reservation"; }
 .calendarReservation { grid-area:reservation; display:flex; align-items:center; gap:4px; color:var(--color-muted); font-size:11px; }
-.calendarReservation svg { width:12px; height:12px; color:var(--color-service-ink); }
+.calendarReservation svg { width:12px; height:12px; color:var(--color-page-accent); }
 
 /* Let the complete title lead; time and status share the quiet metadata row. */
 .calendarUpcoming a { grid-template-columns:minmax(0,1fr) auto; grid-template-areas:"title title" "time state" "reservation reservation"; row-gap:6px; }

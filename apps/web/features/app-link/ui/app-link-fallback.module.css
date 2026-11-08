@@ -1,5 +1,5 @@
 .page, .page * { box-sizing: border-box; }
-.page { font-family: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif; min-height: 100svh; background: #fff; color: #19191b; }
+.page { min-height: 100svh; background: #fff; color: #19191b; }
 .card { width: 100%; min-height: 100svh; display: flex; flex-direction: column; padding: 0 20px 28px; }
 .header { min-height: 56px; display: flex; align-items: center; gap: 4px; }
 .origin { flex: 1; font-size: 20px; font-weight: 750; letter-spacing: -.02em; }

@@ -1,5 +1,5 @@
 .page, .page *, .page *::before, .page *::after, .sheet, .sheet *, .sheet *::before, .sheet *::after { box-sizing:border-box; }
-.page, .sheet { --connect-ink:#231c24; --connect-muted:#685b66; --connect-pink:#cb006e; --connect-paper:#fffafd; color:var(--connect-ink); font-family:"Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif; }
+.page, .sheet { --connect-ink:#231c24; --connect-muted:#685b66; --connect-pink:#cb006e; --connect-paper:#fffafd; color:var(--connect-ink); }
 .page { min-height:100svh; background:var(--connect-paper); padding-bottom:env(safe-area-inset-bottom); }
 .page button, .sheet button { font:inherit; cursor:pointer; }
 .page a, .sheet a { color:inherit; text-decoration:none; }

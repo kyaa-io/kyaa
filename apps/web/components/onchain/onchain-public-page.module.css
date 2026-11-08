@@ -6,8 +6,7 @@
   min-width: 0;
   background: #fff;
   color: var(--ink);
-  font-family: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
-}
+  }
 
 .headerInner { max-width: 1440px; padding-inline: 16px; }
 .page * { box-sizing: border-box; }

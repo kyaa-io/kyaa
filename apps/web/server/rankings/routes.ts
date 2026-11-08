@@ -1,4 +1,5 @@
 import "server-only";
+import { kstMidnightAfter } from "@/server/kst-midnight";
 import { z } from "zod";
 import { AuthError } from "@/features/auth/domain/auth-errors";
 import {
@@ -160,6 +161,7 @@ export function createRankingsHandlers(deps: RankingsDependencies) {
     }),
     // Home card by day (C3): fans by hearts, creators by fans holding hearts. 1 to 20, movement against yesterday. Member ids stay on the server.
     home: (request: Request) => run(async () => {
+      const basis = (day: unknown) => ({ period: "day" as const, closesAt: typeof day === "string" ? kstMidnightAfter(day) : null, fetchedAt: new Date().toISOString() });
       const kind = z.enum(["fans", "creators"]).parse(one(request, "kind") ?? "fans");
       const limit = z.coerce.number().int().min(1).max(HOME_RANKING_LIMIT).parse(one(request, "limit") ?? String(HOME_RANKING_LIMIT));
       if (kind === "creators") {
@@ -169,7 +171,7 @@ export function createRankingsHandlers(deps: RankingsDependencies) {
           return { rank: r.rank, slug: r.slug, name: r.name, imageUrl: r.imageUrl ?? null, score: r.score, hearts: r.hearts, challenge: r.challenge === true, delta: r.delta ?? null, weekGain: r.weekGain ?? null };
         });
         return Response.json(checked(homeCreatorRankingSchema, {
-          day: raw.day ?? null, computedAt: raw.computedAt ?? null, comparable: raw.comparable === true, weekGainDays: raw.weekGainDays ?? null, rows,
+          day: raw.day ?? null, computedAt: raw.computedAt ?? null, comparable: raw.comparable === true, ...basis(raw.day), weekGainDays: raw.weekGainDays ?? null, rows,
         }), { headers: publicHeaders });
       }
       const lang = locale(request);
@@ -178,10 +180,11 @@ export function createRankingsHandlers(deps: RankingsDependencies) {
       const me = obj(raw.me);
       const rows = arr(raw.rows).map((row) => {
         const r = obj(row);
-        return { rank: r.rank, score: r.score, nickname: r.nickname, characterId: r.characterId, tier: r.tier ?? null, isMe: appUserId !== null && r.isMe === true, delta: r.delta ?? null, favorite: favoriteIn(r.favorite, lang) };
+        return { rank: r.rank, score: r.score, nickname: r.nickname, characterId: r.characterId, tier: r.tier ?? null, isMe: appUserId !== null && r.isMe === true, delta: r.delta ?? null, favorite: favoriteIn(r.favorite, lang), ...("weekGain" in r ? { weekGain: r.weekGain ?? null } : {}) };
       });
       const body = checked(homeFanRankingSchema, {
-        day: raw.day ?? null, computedAt: raw.computedAt ?? null, comparable: raw.comparable === true, rows,
+        day: raw.day ?? null, computedAt: raw.computedAt ?? null, comparable: raw.comparable === true, ...basis(raw.day),
+        ...("weekGainDays" in raw ? { weekGainDays: raw.weekGainDays ?? null } : {}), rows,
         me: appUserId && raw.me ? { rank: me.rank, score: me.score, inTop: me.inTop === true } : null,
       });
       return Response.json(body, { headers: appUserId ? privateHeaders : publicHeaders });

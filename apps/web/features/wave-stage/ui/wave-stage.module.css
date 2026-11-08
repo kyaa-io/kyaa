@@ -1,7 +1,7 @@
-.screen { position: fixed; inset: 0; z-index: 60; display: flex; flex-direction: column; gap: 24px; padding: 28px 36px 20px; background: #fff; color: #18181b; font-family: "Pretendard Variable", Pretendard, sans-serif; font-size: 16px; line-height: 1.45; overflow: auto; }
+.screen { position: fixed; inset: 0; z-index: 60; display: flex; flex-direction: column; gap: 24px; padding: 28px 36px 20px; background: #fff; color: #18181b; font-size: 16px; line-height: 1.45; overflow: auto; }
 .screen *, .confirm * { box-sizing: border-box; }
 .screen h1, .screen h2, .screen h3, .screen p, .screen dl, .screen dd, .screen ol { margin: 0; }
-.screen button, .confirm button { font-family: inherit; cursor: pointer; }
+.screen button, .confirm button { cursor: pointer; }
 .screen button:disabled, .confirm button:disabled { cursor: default; opacity: .45; }
 .screen button:focus-visible, .confirm button:focus-visible, .confirm input:focus-visible { outline: 3px solid #18181b; outline-offset: 3px; }
 .screen a:focus-visible { outline: 3px solid #18181b; outline-offset: 3px; }
@@ -95,7 +95,7 @@
 .winnerName { font-size: clamp(16px, 1.25vw, 24px); line-height: 1.25; font-weight: 700; overflow-wrap: anywhere; }
 .winnerCode { color: #65656d; font-size: 13px; line-height: 1.2; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
 .backdrop[data-overlay-root] { z-index: 61; display: grid; place-items: center; padding: 24px; background: rgb(0 0 0 / 65%); }
-.confirm { width: min(100%, 640px); max-height: calc(100dvh - 48px); overflow: auto; padding: 32px; border-radius: 20px; background: #fff; color: #18181b; font-family: "Pretendard Variable", Pretendard, sans-serif; font-size: 16px; line-height: 1.6; }
+.confirm { width: min(100%, 640px); max-height: calc(100dvh - 48px); overflow: auto; padding: 32px; border-radius: 20px; background: #fff; color: #18181b; font-size: 16px; line-height: 1.6; }
 .confirm h2 { margin: 0 0 16px; font-size: 24px; line-height: 1.35; letter-spacing: -.03em; }
 .confirm p { margin: 0 0 16px; }
 .confirmPrizes { display: grid; gap: 12px; margin: 24px 0; padding: 0; list-style: none; }
