@@ -234,7 +234,7 @@ describe("K6: a group board post pays the 글쓰기 mission", () => {
   const s = board(celebrity);
   const response = await write(s);
   expect(response.status).toBe(200);
-  expect(await response.json()).toEqual({ id: post, title: "T" });
+  expect(await response.json()).toEqual({ id: post, title: "T", reward: { points: 20, stamps: 0 } });
   const calls = s.rpc.mock.calls.filter(([name]) => name === "record_dukjil_action");
   expect(calls).toHaveLength(1);
   expect(calls[0]![1]).toMatchObject({ p_user: me, p_celebrity: celebrity, p_action_key: "post", p_source_key: post, p_params: { chars: [..."오늘 무대 후기 앵콜 곡까지 다 들었어요 정말 좋았어요"].length } });
@@ -245,6 +245,36 @@ describe("K6: a group board post pays the 글쓰기 mission", () => {
   expect(none.rpc.mock.calls.some(([name]) => name === "record_dukjil_action")).toBe(false);
   const failing = board(celebrity, async () => { throw new Error("DUKJIL_CONTENT_TOO_SHORT"); });
   expect((await write(failing)).status).toBe(200);
+ });
+ it("sends a short post to the award like any other: the length is not judged here", async () => {
+  const s = board(celebrity);
+  await s.handler("post", req("/api", { title: "응", body: "네", visibility: "public", requestId: other }), { id: me });
+  const calls = s.rpc.mock.calls.filter(([name]) => name === "record_dukjil_action");
+  expect(calls).toHaveLength(1);
+  expect(calls[0]![1]).toMatchObject({ p_params: { chars: 3 } });
+ });
+ it("counts the title once for a post holding only media", async () => {
+  const s = board(celebrity), asset = "30000000-0000-4000-8000-000000000009";
+  await s.handler("post", req("/api", { title: "사진 올려요", visibility: "public", assetIds: [asset], bodyDoc: { type: "doc", content: [{ type: "attachment", attrs: { assetId: asset, kind: "image" } }] }, requestId: other }), { id: me });
+  const call = s.rpc.mock.calls.find(([name]) => name === "record_dukjil_action")!;
+  expect(call[1].p_params.chars).toBe([..."사진 올려요"].length);
+  const plain = board(celebrity);
+  await plain.handler("post", req("/api", { title: "사진 올려요", body: "사진 올려요", visibility: "public", requestId: other }), { id: me });
+  expect(plain.rpc.mock.calls.find(([name]) => name === "record_dukjil_action")![1].p_params.chars).toBe([..."사진 올려요 사진 올려요"].length);
+ });
+ it("answers why nothing was paid, and nothing for a replayed write", async () => {
+  expect(await (await write(board(celebrity, async () => { throw new Error("PASSPORT_REQUIRED"); }))).json()).toEqual({ id: post, title: "T", reward: { points: 0, stamps: 0, skippedReason: "passport_required" } });
+  expect(await (await write(board(celebrity, async () => ({ points: 0, stampId: null, replayed: false, capped: true, reason: "POINT_CAP" })))).json()).toEqual({ id: post, title: "T", reward: { points: 0, stamps: 0, skippedReason: "daily_limit" } });
+  expect(await (await write(board(celebrity, async () => ({ points: 20, stampId: null, replayed: true, capped: false, reason: null })))).json()).toEqual({ id: post, title: "T" });
+ });
+ it("keeps a failure row when the page could not be read, and still answers the saved post", async () => {
+  const s = setup();
+  s.rpc.mockImplementation(async (name: string) => { if (name === "groups_content_dispatch") return { id: post, title: "T" }; if (name === "groups_dispatch") throw new Error("boom"); return null; });
+  const response = await write(s);
+  expect(response.status).toBe(200);
+  expect(await response.json()).toEqual({ id: post, title: "T" });
+  expect(s.rpc.mock.calls.some(([name]) => name === "record_dukjil_action")).toBe(false);
+  expect(s.rpc).toHaveBeenCalledWith("record_dukjil_award_failure", expect.objectContaining({ p_user: me, p_celebrity: null, p_action: "post", p_source: post, p_message: expect.stringContaining("GROUP_POST_PAGE_UNREAD") }));
  });
  it("does not award an edit", async () => {
   const s = board(celebrity);

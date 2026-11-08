@@ -45,6 +45,15 @@ export function dukjilSkipReason(message: string): DukjilSkip | undefined {
   return code ? SKIP_REASON[code] : undefined;
 }
 
+/** The reward a mission write answers with, from its award alone: a fresh grant says what it paid (a stamp placed while points were
+ * capped counts), a refusal the fan can act on says why with points 0, and a replay or nothing to say gives no key. */
+export function dukjilWriteReward(award: { result: DukjilActionResult | null; skipped?: DukjilSkip } | null): { reward?: { points: number; stamps: number; skippedReason?: DukjilSkip } } {
+  const result = award?.result;
+  if (result && !result.replayed && (result.points > 0 || result.stampId)) return { reward: { points: result.points, stamps: result.stampId ? 1 : 0 } };
+  const skipped = award?.skipped ?? (result && !result.replayed ? (result.capped ? "daily_limit" : result.reason ? dukjilSkipReason(result.reason) : undefined) : undefined);
+  return skipped ? { reward: { points: 0, stamps: 0, skippedReason: skipped } } : {};
+}
+
 /** `awardDukjilAction` plus the reason a silent refusal carried. Never throws. */
 export async function awardDukjilActionDetailed(deps: Rpc, input: DukjilAwardInput, onError?: (error: unknown) => void): Promise<{ result: DukjilActionResult | null; skipped?: DukjilSkip }> {
   let celebrity: string | null = null;

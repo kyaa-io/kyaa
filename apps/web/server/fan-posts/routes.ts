@@ -12,7 +12,6 @@ import type { AppLocale } from "@/i18n/locales";
 import { parseNoticeDocument } from "@/server/notice/notice-domain";
 import { awardDukjilAction, awardDukjilActionDetailed, dukjilBodyParams, dukjilSkipReason, type DukjilSkip } from "@/server/dukjil/award";
 import type { DukjilActionResult } from "@/features/passport/domain/dukjil-types";
-import { createHash } from "node:crypto";
 
 export interface ContentDependencies extends FanpageDependencies {
   upload(owner: string, slug: string, bytes: Uint8Array): Promise<z.infer<typeof assetSchema>>;

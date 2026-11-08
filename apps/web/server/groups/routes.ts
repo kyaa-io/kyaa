@@ -6,24 +6,38 @@ import { applicationStatusListSchema } from "@/features/groups/domain/applicatio
 import { AuthError } from "@/features/auth/domain/auth-errors";
 import type { FanpageDependencies } from "@/server/fanpage/routes";
 import { APP_LOCALES } from "@/i18n/locales";
-import { awardDukjilActionDetailed, dukjilBodyParams } from "@/server/dukjil/award";
+import { awardDukjilActionDetailed, dukjilBodyParams, dukjilWriteReward } from "@/server/dukjil/award";
 import { prepareRichPostBody, readRichDocument, RICH_DOCUMENT_MAX_BYTES, richDocumentForPost, richDocumentPlainText } from "@/components/editor/rich-document";
 
 const uuid = z.uuid();
 const requestId = uuid;
 /** K6: a new post on a creator's group board pays the 글쓰기 mission like a fan-page post: the same award call, the post id as the source
- * (a replayed write is SOURCE_REUSED and pays nothing twice), the same text rules and daily cap. A page without a creator has no stamp
- * owner (DUKJIL_CELEBRITY_REQUIRED), so it pays nothing here. Never throws: the post is already saved. */
+ * (a replayed write replays the award and pays nothing twice), the same text rules and daily cap. A page without a creator has no stamp
+ * owner, so it pays nothing here. A page that could not be read is kept in the award failure table. Never throws: the post is already saved.
+ * Answers the same `reward` key a fan-page post does. */
 async function awardGroupPost(rpc: (name: string, args: Record<string, unknown>) => Promise<unknown>, owner: string, pageId: string, post: unknown, input: Record<string, unknown>) {
+  const saved = z.object({ id: uuid }).passthrough().safeParse(post);
+  if (!saved.success) return {};
+  const params = dukjilBodyParams(groupPostAwardText(input));
   try {
-    const saved = z.object({ id: uuid }).passthrough().safeParse(post);
-    if (!saved.success) return;
-    const detail = z.object({ page: z.object({ celebrityId: uuid.nullable() }).passthrough() }).passthrough().safeParse(await rpc("groups_dispatch", { p_operation: "detail", p_actor: owner, p_page_id: pageId, p_item_id: null, p_input: {}, p_admin_id: null }));
-    const celebrity = detail.success ? detail.data.page.celebrityId : null;
-    if (!celebrity) return;
-    const text = [input.title, input.body].filter((part): part is string => typeof part === "string").join("\n");
-    await awardDukjilActionDetailed({ rpc, resolveCreatorId: async () => celebrity }, { appUserId: owner, creatorSlug: celebrity, actionKey: "post", sourceKey: saved.data.id, params: dukjilBodyParams(text) });
-  } catch { /* the award never fails a saved post */ }
+    let celebrity: string | null;
+    try {
+      celebrity = z.object({ page: z.object({ celebrityId: uuid.nullable() }).passthrough() }).passthrough().parse(await rpc("groups_dispatch", { p_operation: "detail", p_actor: owner, p_page_id: pageId, p_item_id: null, p_input: {}, p_admin_id: null })).page.celebrityId;
+    } catch (error) {
+      try { await rpc("record_dukjil_award_failure", { p_user: owner, p_celebrity: null, p_action: "post", p_source: saved.data.id, p_params: params, p_state: null, p_message: `GROUP_POST_PAGE_UNREAD ${pageId}: ${error instanceof Error ? error.message : "unknown"}` }); } catch { /* best effort */ }
+      return {};
+    }
+    if (!celebrity) return {};
+    return dukjilWriteReward(await awardDukjilActionDetailed({ rpc, resolveCreatorId: async () => celebrity }, { appUserId: owner, creatorSlug: celebrity, actionKey: "post", sourceKey: saved.data.id, params }));
+  } catch { return {}; }
+}
+/** The text a group post is judged by: its title and what the writer typed. A post holding only media stores its title as the body,
+ * so that body is not counted again (a fan-page post counts the title alone the same way). */
+function groupPostAwardText(input: Record<string, unknown>) {
+  const title = typeof input.title === "string" ? input.title : "", body = typeof input.body === "string" ? input.body : "";
+  const doc = input.bodyDoc === undefined ? null : readRichDocument(input.bodyDoc);
+  const mediaOnly = doc !== null && !richDocumentPlainText(doc).trim() && body === title;
+  return mediaOnly ? title : [title, body].filter(Boolean).join("\n");
 }
 const visitedCursor = z.object({v:z.literal(1),sort:z.literal("visited"),owner:uuid,id:uuid,lastSeenAt:z.iso.datetime({offset:true}).nullable()}).strict();
 function decodeVisitedCursor(token:string,owner:string) {
@@ -146,7 +160,7 @@ export function createGroupHandler(deps: FanpageDependencies) {
       }
       if(operation === "own-reports")return Response.json(groupOwnReportsSchema.parse(result),{headers});
       if(operation === "messages"){const messages=groupMessagesSchema.parse(result);return Response.json({...messages,items:messages.items.map(item=>({...item,mine:item.profileId===owner}))},{headers});}
-      if (operation === "post" && owner && params.id) await awardGroupPost((name, args) => deps.rpc(name, args), owner, uuid.parse(params.id), result, payload);
+      if (operation === "post" && owner && params.id) return Response.json({ ...(result as object), ...await awardGroupPost((name, args) => deps.rpc(name, args), owner, uuid.parse(params.id), result, payload) }, { headers });
       if (operation === "post-detail") return Response.json(richGroupPost(result), { headers });
       return Response.json(result, { headers });
     } catch (error) {
