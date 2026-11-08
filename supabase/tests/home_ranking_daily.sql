@@ -59,7 +59,7 @@ begin
 
   result := public.read_home_fan_ranking(null, 20);
   if not (result ->> 'comparable')::boolean or result ->> 'day' <> '2099-03-08' then raise exception 'Day 8 not comparable: %', result; end if;
-  if exists (select 1 from jsonb_array_elements(result -> 'rows') r where (select array_agg(k order by k) from jsonb_object_keys(r) k) <> array['characterId', 'delta', 'favorite', 'isMe', 'nickname', 'rank', 'score', 'tier'])
+  if exists (select 1 from jsonb_array_elements(result -> 'rows') r where (select array_agg(k order by k) from jsonb_object_keys(r) k) <> array['characterId', 'delta', 'favorite', 'isMe', 'nickname', 'rank', 'score', 'tier', 'weekGain'])
     then raise exception 'Fan row has other keys: %', result; end if;
   foreach u in array array[f1, f2, f3, late, sanctioned, blocker, viewer, anon_only] loop
     if result::text like '%' || u::text || '%' then raise exception 'A member id is in the answer: %', result; end if;
