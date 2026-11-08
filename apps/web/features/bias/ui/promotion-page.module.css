@@ -1,8 +1,8 @@
 .root {
-  background: #fff;
-  color: #17171b;
+  background: var(--color-surface);
+  color: var(--color-ink);
   min-height: 100dvh;
-  font-family: var(--font-pretendard, "Pretendard Variable"), Pretendard, sans-serif;
+  font-family:inherit;
   font-size: 16px;
   line-height: 1.6;
 }
@@ -35,13 +35,13 @@
   opacity: 0.45;
 }
 .root :is(button, a, input):focus-visible {
-  outline: 3px solid #b12683;
+  outline: 3px solid var(--color-accent);
   outline-offset: 4px;
 }
 .header {
   height: 88px;
   padding: 0 48px;
-  border-bottom: 1px solid #eeeef1;
+  border-bottom: 1px solid var(--color-line-subtle);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -55,7 +55,7 @@
 }
 .brand > span {
   font-size: 14px;
-  color: #74747f;
+  color: var(--color-muted);
 }
 .brand a {
   display: flex;
@@ -81,7 +81,7 @@
 }
 .breadcrumb {
   font-size: 13px;
-  color: #777782;
+  color: var(--color-muted);
 }
 .hero {
   display: flex;
@@ -99,11 +99,11 @@
 }
 .hero p {
   font-size: 17px;
-  color: #6c6c79;
+  color: var(--color-muted);
   white-space: pre-line;
 }
 .selector {
-  border: 1px solid #e7e7ec;
+  border: 1px solid var(--color-line-subtle);
   border-radius: 20px;
   padding: 28px;
   display: flex;
@@ -124,14 +124,14 @@
 }
 .searchTrigger,
 .searchInput {
-  background: #f7f7f9;
+  background: var(--color-soft);
   border: 1px solid transparent;
   border-radius: 12px;
   min-height: 48px;
   display: flex;
   gap: 10px;
   align-items: center;
-  color: #777782;
+  color: var(--color-muted);
   padding: 0 16px;
 }
 .searchTrigger {
@@ -154,7 +154,7 @@
   gap: 8px;
   width: 96px;
   min-width: 0;
-  color: #555561;
+  color: var(--color-ink);
   font-size: 14px !important;
   line-height: 1.5 !important;
 }
@@ -174,18 +174,18 @@
   border: 2px solid transparent;
 }
 .person[aria-pressed="true"] {
-  color: #b12683;
+  color: var(--color-accent);
   font-weight: 600;
 }
 .person[aria-pressed="true"] .avatarRing {
-  border-color: #b12683;
+  border-color: var(--color-accent);
 }
 .allCircle {
-  background: #f7f7f9;
-  color: #777782;
+  background: var(--color-soft);
+  color: var(--color-muted);
 }
 .selected {
-  border-top: 1px solid #e7e7ec;
+  border-top: 1px solid var(--color-line-subtle);
   padding-top: 24px;
   display: flex;
   align-items: center;
@@ -198,7 +198,7 @@
 }
 .selected p {
   font-size: 13px;
-  color: #777782;
+  color: var(--color-muted);
 }
 .url {
   font-size: 30px;
@@ -213,8 +213,8 @@
   flex-wrap: wrap;
 }
 .button {
-  border: 1px solid #dddde5;
-  background: #fff;
+  border: 1px solid var(--color-accent-line);
+  background: var(--color-surface);
   min-height: 48px;
   padding: 10px 18px;
   border-radius: 12px;
@@ -222,19 +222,19 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
-  color: #24242a;
+  color: var(--color-ink);
   font-size: 14px !important;
   font-weight: 600;
   line-height: 1.5 !important;
   text-align: center;
 }
 .primary {
-  background: linear-gradient(110deg, #c52277, #7b39b3);
+  background: var(--color-accent);
   border-color: transparent;
   color: white !important;
 }
 .general {
-  background: #f7f7f9;
+  background: var(--color-soft);
   border-radius: 16px;
   padding: 28px;
   display: grid;
@@ -243,7 +243,7 @@
 }
 .general > div > p:not(.copyText) {
   font-size: 14px;
-  color: #73737f;
+  color: var(--color-muted);
   white-space: pre-line;
   margin-top: 10px;
 }
@@ -275,7 +275,7 @@
 }
 .intro {
   font-size: 16px;
-  color: #73737f;
+  color: var(--color-muted);
   margin: 14px 0 28px !important;
 }
 .method {
@@ -284,10 +284,10 @@
   gap: 64px;
   align-items: center;
   padding: 32px 0;
-  border-top: 1px solid #e7e7ec;
+  border-top: 1px solid var(--color-line-subtle);
 }
 .letter {
-  color: #b12683;
+  color: var(--color-accent);
   font-size: 14px;
   font-weight: 650;
   display: block;
@@ -301,38 +301,38 @@
 }
 .description {
   font-size: 16px;
-  color: #73737f;
+  color: var(--color-muted);
   white-space: pre-line;
   margin-top: 12px !important;
 }
 .copyBox {
-  background: #f7f7f9;
+  background: var(--color-soft);
   border-radius: 12px;
   padding: 20px;
   margin: 24px 0 20px;
 }
 .copyBox > span {
   font-size: 12px;
-  color: #777782;
+  color: var(--color-muted);
   display: block;
   margin-bottom: 8px;
 }
 .textButton {
   border: 0;
   background: none;
-  color: #777782;
+  color: var(--color-muted);
   font-size: 13px !important;
   min-height: 44px;
   padding: 0 8px;
 }
 .hint {
   font-size: 13px;
-  color: #777782;
+  color: var(--color-muted);
   margin-top: 14px !important;
 }
 .preview {
   height: 356px;
-  background: #f7f7f9;
+  background: var(--color-soft);
   border-radius: 16px;
   display: flex;
   flex-direction: column;
@@ -345,10 +345,10 @@
   width: 100%;
   max-width: 326px;
   border-radius: 16px;
-  border: 1px solid #e7e7ec;
-  background: #fff;
+  border: 1px solid var(--color-line-subtle);
+  background: var(--color-surface);
   padding: 24px;
-  box-shadow: 0 5px 15px #20203504;
+  box-shadow: 0 5px 15px color-mix(in srgb, var(--color-accent-ink) 2%, transparent);
 }
 .previewIdentity {
   display: flex;
@@ -363,7 +363,7 @@
   overflow-wrap: anywhere;
 }
 .previewIdentity span {
-  color: #777782;
+  color: var(--color-muted);
   font-size: 12px;
 }
 .profileCard > p {
@@ -373,7 +373,7 @@
 .previewLink {
   display: flex;
   gap: 8px;
-  color: #b12683;
+  color: var(--color-accent);
   font-weight: 600;
   font-size: 14px;
   margin-top: 12px;
@@ -391,12 +391,12 @@
   border-radius: 16px;
   overflow: hidden;
   isolation: isolate;
-  background: #e3e3e9;
+  background: var(--color-accent-soft);
 }
 .storyShade {
   position: absolute;
   inset: 0;
-  background: linear-gradient(transparent 25%, #0009);
+  background: var(--color-ink) 60%, transparent);
 }
 .storyHandle {
   position: absolute;
@@ -412,7 +412,7 @@
   right: 12px;
   text-align: center;
   white-space: pre-line;
-  color: #fff;
+  color: var(--color-surface);
   font-size: 15px;
   font-weight: 650;
   line-height: 1.55;
@@ -422,14 +422,14 @@
   background: white;
   border-radius: 8px;
   padding: 8px;
-  color: #24242a;
+  color: var(--color-ink);
   font-size: 12px;
   margin-top: 14px;
   overflow-wrap: anywhere;
 }
 .previewCaption {
   font-size: 12px;
-  color: #777782;
+  color: var(--color-muted);
   margin-top: 12px !important;
 }
 .live {
@@ -439,7 +439,7 @@
   position: relative;
   overflow: hidden;
   border-radius: 12px;
-  background: #dddde5;
+  background: var(--color-accent-line);
 }
 .liveTag {
   position: absolute;
@@ -447,9 +447,9 @@
   left: 12px;
   padding: 2px 9px;
   font-size: 11px;
-  background: #c52277;
+  background: var(--color-accent);
   border-radius: 5px;
-  color: #fff;
+  color: var(--color-surface);
   font-weight: 700;
 }
 .liveAddress {
@@ -479,12 +479,12 @@
   width: 64px;
   height: 64px;
   border-radius: 50%;
-  background: #eeeef3;
+  background: var(--color-line-subtle);
   display: block;
   flex-shrink: 0;
 }
 .events {
-  border-top: 1px solid #e7e7ec;
+  border-top: 1px solid var(--color-line-subtle);
   padding-top: 36px;
 }
 .steps {
@@ -503,7 +503,7 @@
 .steps li > span {
   width: 28px;
   height: 28px;
-  background: #f7f7f9;
+  background: var(--color-soft);
   border-radius: 50%;
   font-size: 13px;
   display: flex;
@@ -517,7 +517,7 @@
 }
 .steps p {
   font-size: 14px;
-  color: #73737f;
+  color: var(--color-muted);
   margin-top: 8px;
 }
 .related {
@@ -525,7 +525,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 24px;
-  border-top: 1px solid #e7e7ec;
+  border-top: 1px solid var(--color-line-subtle);
   padding-top: 32px;
 }
 .related h2 {
@@ -534,20 +534,20 @@
 }
 .related p {
   font-size: 14px;
-  color: #777782;
+  color: var(--color-muted);
   margin-top: 8px;
 }
 .footer {
   max-width: 1120px;
   margin: auto;
-  border-top: 1px solid #e7e7ec;
+  border-top: 1px solid var(--color-line-subtle);
   padding: 24px 0 32px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 20px;
   font-size: 12px;
-  color: #777782;
+  color: var(--color-muted);
 }
 .footer > div {
   display: flex;
@@ -571,7 +571,7 @@
 .backdrop {
   position: fixed;
   inset: 0;
-  background: #0006;
+  background: color-mix(in srgb, var(--color-ink) 40%, transparent);
   z-index: 90;
   display: flex;
   align-items: center;
@@ -587,8 +587,8 @@
   display: flex;
   flex-direction: column;
   overflow: auto;
-  color: #17171b;
-  font-family: var(--font-pretendard, "Pretendard Variable"), Pretendard, sans-serif;
+  color: var(--color-ink);
+  font-family:inherit;
 }
 .picker button,
 .picker input {
@@ -600,7 +600,7 @@
   cursor: default;
 }
 .picker :is(button, input):focus-visible {
-  outline: 3px solid #b12683;
+  outline: 3px solid var(--color-accent);
   outline-offset: 3px;
 }
 .pickerHeader {
@@ -617,7 +617,7 @@
 }
 .pickerHeader p {
   font-size: 14px;
-  color: #777782;
+  color: var(--color-muted);
   margin: 8px 0 0;
 }
 .iconButton {
@@ -629,7 +629,7 @@
   flex-shrink: 0;
   border: 0;
   background: transparent;
-  color: #777782;
+  color: var(--color-muted);
   border-radius: 8px;
 }
 .searchInput input {
@@ -643,7 +643,7 @@
 }
 .resultCount {
   font-size: 13px;
-  color: #777782;
+  color: var(--color-muted);
   margin: 20px 0 16px;
 }
 .pickerGrid {
@@ -661,7 +661,7 @@
   justify-content: center;
   gap: 24px;
   font-size: 13px;
-  color: #777782;
+  color: var(--color-muted);
   margin: 24px 0 12px;
 }
 .confirm {
@@ -671,7 +671,7 @@
 .empty {
   text-align: center;
   font-size: 14px;
-  color: #777782;
+  color: var(--color-muted);
   min-height: 120px;
 }
 .pickerGrid:empty {
@@ -1010,20 +1010,20 @@
       border-color 0.15s;
   }
   .button:hover:not(:disabled) {
-    border-color: #a0a0ad;
+    border-color: var(--color-muted);
   }
   .person:hover .avatarRing {
-    background: #f7f7f9;
+    background: var(--color-soft);
   }
 }
 
 .copyUrl {
-  color: #b12683;
+  color: var(--color-accent);
   display: block;
   margin-top: 10px;
 }
 .previewLink {
-  background: #fff5fb;
+  background: var(--color-accent-soft);
   border-radius: 8px;
   padding: 8px 10px;
 }

@@ -1,6 +1,6 @@
 .srOnly{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
 .badge{display:inline-flex;align-items:center;gap:4px;flex:none;font-variant-numeric:tabular-nums;white-space:nowrap}
-.icon{justify-content:center;width:18px;height:18px;border-radius:999px;background:#ffc83d;color:#4a3500;font-size:11px;line-height:1;font-weight:800}
+.icon{justify-content:center;width:18px;height:18px;border-radius:999px;background:#ffc83d;color:var(--color-ink);font-size:11px;line-height:1;font-weight:800}
 /* 2026-11-08 13:25: the row, not the points, is what is pressed. No pill, border or shadow: the coin and the number only. */
 .inline{min-height:20px;padding:0;background:none;color:inherit;font-size:var(--fan-metadata-size);line-height:20px;font-weight:var(--fan-item-title-weight)}
 .inline>img{display:block;flex:none}
@@ -11,17 +11,17 @@
 .balanceUnit{align-self:flex-end;font-size:var(--fan-metadata-size);line-height:24px;font-weight:var(--fan-item-title-weight)}
 .stampPart{display:inline-flex;align-items:center;gap:2px}
 .remaining{color:inherit;font-weight:var(--fan-tab-weight)}
-.done{min-height:20px;padding:0 8px;border-radius:999px;background:#f2f0f3;color:#5d5d5d;font-size:13px;line-height:20px;font-weight:700}
+.done{min-height:20px;padding:0 8px;border-radius:999px;background:var(--color-soft);color:var(--color-muted);font-size:13px;line-height:20px;font-weight:700}
 .done svg{flex:none}
 
 .rows{display:grid;gap:0;margin:0;padding:0;list-style:none}
-.row{display:grid;grid-template-columns:44px minmax(0,1fr) auto;align-items:center;gap:12px;min-height:68px;padding:12px 0;border-bottom:1px solid #eeecef}
-.row img,.rowImage{width:44px;height:44px;border-radius:999px;object-fit:cover;background:#f2f0f3}
+.row{display:grid;grid-template-columns:44px minmax(0,1fr) auto;align-items:center;gap:12px;min-height:68px;padding:12px 0;border-bottom:1px solid var(--color-line-subtle)}
+.row img,.rowImage{width:44px;height:44px;border-radius:999px;object-fit:cover;background:var(--color-soft)}
 .rowText{display:grid;gap:2px;min-width:0}
 .rowText strong{font-size:16px;line-height:22px;overflow-wrap:anywhere}
-.rowText small{font-size:13px;line-height:18px;color:#5d5d5d}
+.rowText small{font-size:13px;line-height:18px;color:var(--color-muted)}
 .rowAction{min-width:88px;min-height:44px}
-.state{display:grid;gap:12px;padding:16px;border-radius:16px;background:#faf9fb;font-size:15px;line-height:22px}
+.state{display:grid;gap:12px;padding:16px;border-radius:16px;background:var(--color-soft);font-size:15px;line-height:22px}
 @media(max-width:480px){.tileList{grid-template-columns:repeat(2,minmax(0,1fr))}.row{grid-template-columns:44px minmax(0,1fr)}.row>:last-child{grid-column:2}}
 
 /* 덕질 tab "오늘의 덕질" section: title row with expand control, rows keep the 44px image / name / action tracks at every width. */

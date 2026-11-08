@@ -1,5 +1,5 @@
-.surface { color: var(--color-ink, #161616); background: #fff; font-family: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif; }
-.artSurface { min-height: 100dvh; background: #fff4f8; }
+.surface { color: var(--color-ink, var(--color-ink)); background: var(--color-surface); font-family:inherit; }
+.artSurface { min-height: 100dvh; background: var(--color-accent-soft); }
 .artSurface, .artSurface *, .artSurface *::before, .artSurface *::after { box-sizing: border-box; }
 .locale { display: inline-flex; min-width: 88px; min-height: 44px; align-items: center; justify-content: flex-end; color: inherit; font-size: 13px; font-weight: 750; text-decoration: none; }
 .page { width: min(880px, calc(100% - 40px)); margin: 0 auto; padding: 28px 0 max(64px, env(safe-area-inset-bottom)); }
@@ -7,21 +7,21 @@
 .page h1 { margin: 4px 0; font-size: var(--fan-heading-size); font-weight: var(--fan-heading-weight); letter-spacing: var(--fan-heading-tracking); line-height: var(--fan-heading-leading); }
 @media (min-width: 768px) { .page h1 { font-size: var(--fan-heading-size-wide); } }
 .page :is(h2, p, legend) { overflow-wrap: anywhere; }
-.card { min-width: 0; margin: 20px 0; padding: 24px; border: 1px solid #ddd; border-radius: 20px; background: #fff; }
+.card { min-width: 0; margin: 20px 0; padding: 24px; border: 1px solid var(--color-line); border-radius: 20px; background: var(--color-surface); }
 .card fieldset { min-width: 0; margin: 0; padding: 16px 0; border: 0; }
 .card legend { max-width: 100%; margin-bottom: 12px; font-weight: 700; }
-.option { display: grid; grid-template-columns: 20px minmax(0, 1fr); min-height: 52px; align-items: center; gap: 12px; margin: 8px 0; padding: 12px; border: 1px solid #ddd; border-radius: 12px; cursor: pointer; }
+.option { display: grid; grid-template-columns: 20px minmax(0, 1fr); min-height: 52px; align-items: center; gap: 12px; margin: 8px 0; padding: 12px; border: 1px solid var(--color-line); border-radius: 12px; cursor: pointer; }
 .option input { grid-column: 1; grid-row: 1; margin: 0; }
 .option > :is(span, img, video) { grid-column: 2; min-width: 0; }
 .option span { overflow-wrap: anywhere; line-height: 1.5; }
 .option img, .option video { width: min(240px, 100%); max-width: 100%; height: auto; border-radius: 8px; }
 .card > fieldset > :is(img, video) { display: block; max-width: 100%; height: auto; margin-bottom: 16px; border-radius: 8px; }
-.option:has(input:checked) { border-color: var(--color-ink, #161616); background: #f7f7f7; }
-.option:has(input:focus-visible) { outline: 3px solid var(--color-ink, #161616); outline-offset: 3px; }
-.notice { padding: 14px; border-radius: 12px; background: #eef7ff; }
+.option:has(input:checked) { border-color: var(--color-ink, var(--color-ink)); background: var(--color-soft); }
+.option:has(input:focus-visible) { outline: 3px solid var(--color-ink, var(--color-ink)); outline-offset: 3px; }
+.notice { padding: 14px; border-radius: 12px; background: var(--color-accent-soft); }
 .back { display: inline-flex; min-height: 44px; align-items: center; gap: var(--space-2); margin-bottom: 20px; color: var(--color-muted); font-size: var(--fan-action-label-size); font-weight: var(--fan-aside-title-weight); text-decoration: none; }
 .back svg { width: var(--fan-action-icon-size); }
-.surface :is(a, button, input):focus-visible { outline: 3px solid var(--color-ink, #161616); outline-offset: 3px; }
+.surface :is(a, button, input):focus-visible { outline: 3px solid var(--color-ink, var(--color-ink)); outline-offset: 3px; }
 @media (max-width: 640px) {
   .page { width: calc(100% - 32px); padding-top: 20px; }
   .card { padding: 20px 16px; }

@@ -8,21 +8,21 @@
   --color-surface: #fff;
   /* Opt-in collection / personal utility surfaces, not the editorial shell. */
   --color-utility-canvas: var(--color-canvas);
-  --color-surface-focus: oklch(97% 0.012 315);
+  --color-surface-focus: var(--color-accent-soft);
   --color-soft: oklch(97.5% 0 0);
   --color-ink: oklch(18% 0 0);
   --color-muted: oklch(48% 0 0);
   --color-line: oklch(90% 0 0);
   --color-line-subtle: oklch(93% 0 0);
-  --fan-action-disabled-bg: #e4e1e6;
-  --fan-action-disabled-ink: #5d5d5d;
+  --fan-action-disabled-bg: #fff;
+  --fan-action-disabled-ink: oklch(64% 0 0);
   --fan-action-disabled-text-ink: #6b6b6b;
   --color-error: #9f1239;
   --color-success: #17613f;
   --color-warning: #8a4b08;
   --color-backdrop: rgb(23 23 26 / 42%);
   --color-focus: var(--color-ink);
-  --color-primary-action: linear-gradient(125deg, oklch(68% 0.22 18), oklch(62% 0.25 340), oklch(56% 0.22 285));
+  --color-primary-action: var(--color-accent);
   /* 261107-2 S1: 화면마다 직접 쓰던 값에 역할 이름만 붙인다(값 변경 없음). */
   --color-accent: #d11b62;
   --color-accent-soft: #fff0f6;
@@ -103,7 +103,7 @@
   --fan-action-label-size: 14px;
   --fan-action-emphasis-size: 15px;
   --fan-action-weight: 800;
-  --color-service-ink: oklch(45% 0.22 315);
+  --color-service-ink: var(--color-accent-ink);
 
   /* Full calendar and embedded widget share type; layout stays surface-specific. */
   --fan-calendar-month-size: 20px;

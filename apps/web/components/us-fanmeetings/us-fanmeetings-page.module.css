@@ -1,17 +1,11 @@
 .page {
-  --fanmeeting-ink: #19191e;
-  --fanmeeting-muted: #686873;
-  --fanmeeting-pink: #d91d68;
-  --fanmeeting-line: #e7e7ec;
-  background: #fff;
+  --fanmeeting-ink: var(--color-ink);
+  --fanmeeting-muted: var(--color-muted);
+  --fanmeeting-pink: var(--color-accent);
+  --fanmeeting-line: var(--color-line-subtle);
+  background: var(--color-surface);
   color: var(--fanmeeting-ink);
-  font-family:
-    "Pretendard Variable",
-    Pretendard,
-    -apple-system,
-    BlinkMacSystemFont,
-    system-ui,
-    sans-serif;
+  font-family:inherit;
 }
 .page *,
 .page *::before,
@@ -119,7 +113,7 @@
   border: 0;
   border-radius: 12px;
   background: var(--fanmeeting-pink);
-  color: #fff;
+  color: var(--color-surface);
   font-size: 16px;
   font-family: inherit;
   line-height: 1.4;
@@ -128,7 +122,7 @@
   transition: background 150ms ease;
 }
 .cta:hover {
-  background: #bf1558;
+  background: var(--color-accent);
 }
 .supportLink {
   display: inline-flex;
@@ -147,7 +141,7 @@
   flex-direction: column;
   gap: 24px;
   padding: 32px;
-  background: #f8f5fa;
+  background: var(--color-soft);
   border-radius: 24px;
   min-width: 0;
 }
@@ -156,7 +150,7 @@
   font-weight: 800;
   line-height: 1.2;
   letter-spacing: -1px;
-  color: #322545;
+  color: var(--color-accent-ink);
   white-space: pre-line;
 }
 .stageScene {
@@ -174,7 +168,7 @@
   width: 20px;
   height: 8px;
   border-radius: 3px;
-  background: #a99ab9;
+  background: var(--color-accent);
 }
 .stageBackdrop {
   position: absolute;
@@ -185,10 +179,7 @@
   justify-content: center;
   gap: 12px;
   border-radius: 16px 16px 0 0;
-  background:
-    linear-gradient(115deg, transparent 28%, #ffffff08 28%, #ffffff08 48%, transparent 48%),
-    linear-gradient(245deg, transparent 28%, #ffffff08 28%, #ffffff08 48%, transparent 48%),
-    #322545;
+  background:var(--color-accent-ink);
 }
 .stageBackdrop img {
   width: 96px;
@@ -196,7 +187,7 @@
   filter: brightness(0) invert(1);
 }
 .stageBackdrop > span {
-  color: #e4daed;
+  color: var(--color-accent-line);
   font-size: 10px;
   font-weight: 650;
   letter-spacing: 1.5px;
@@ -206,7 +197,7 @@
   inset: auto 8px 34px;
   height: 12px;
   border-radius: 3px 3px 8px 8px;
-  background: #897498;
+  background: var(--color-accent);
 }
 .fanRow {
   position: absolute;
@@ -221,7 +212,7 @@
   max-width: 34px;
   height: 26px;
   border-radius: 18px 18px 5px 5px;
-  background: #d0c0df;
+  background: var(--color-accent-line);
 }
 .fanRow > span::before {
   content: "";
@@ -235,14 +226,14 @@
   background: inherit;
 }
 .fanRow > span:nth-child(3n + 2) {
-  background: #e8b4ce;
+  background: var(--color-accent-line);
 }
 .visualServices {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 8px;
   padding: 20px 0 0;
-  border-top: 1px solid #e6deed;
+  border-top: 1px solid var(--color-accent-line);
   list-style: none;
 }
 .visualServices li {
@@ -250,7 +241,7 @@
   flex-direction: column;
   align-items: center;
   gap: 8px;
-  color: #655172;
+  color: var(--color-accent);
   font-size: 12px;
   font-weight: 650;
   line-height: 1.4;
@@ -296,7 +287,7 @@
   flex-direction: column;
   gap: 24px;
   padding: 32px;
-  background: #f8f5fa;
+  background: var(--color-soft);
   border-radius: 20px;
 }
 .partnerIcon {
@@ -337,16 +328,16 @@
   margin-top: 3px;
 }
 .operationsCard {
-  background: #222032;
-  color: #fff;
+  background: var(--color-accent-ink);
+  color: var(--color-surface);
 }
 .operationsCard li,
 .operationsCard .partnerHeading p {
-  color: #dedbea;
+  color: var(--color-accent-line);
 }
 .operationsCard li svg,
 .operationsCard .partnerIcon {
-  color: #cbbaf0;
+  color: var(--color-accent-line);
 }
 .journeyGrid {
   display: grid;
@@ -376,7 +367,7 @@
   align-items: center;
   padding: 32px;
   border-radius: 20px;
-  background: #f7f7f9;
+  background: var(--color-soft);
 }
 .passportBand > img {
   flex-shrink: 0;
@@ -431,7 +422,7 @@
   font-size: 36px;
   line-height: 1.4;
   font-weight: 750;
-  color: #897498;
+  color: var(--color-accent);
 }
 .processGrid h3 {
   font-size: 23px;
@@ -457,7 +448,7 @@
   gap: 40px;
   padding: 56px 48px;
   border-radius: 24px;
-  background: #f8f2f6;
+  background: var(--color-soft);
 }
 .inquiryMessage,
 .contact {
@@ -467,7 +458,7 @@
   min-width: 0;
 }
 .inquiryMessage > .eyebrow {
-  color: #bb1757;
+  color: var(--color-accent);
 }
 .inquiry h2 {
   font-size: 42px;

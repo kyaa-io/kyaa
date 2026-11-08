@@ -6,15 +6,15 @@
   --line: var(--color-line);
   --card-line: var(--color-line-subtle);
   --spectrum: var(--color-primary-action);
-  --spectrum-hover: linear-gradient(125deg, oklch(62% .22 18), oklch(56% .24 340), oklch(50% .21 285));
+  --spectrum-hover: var(--color-accent);
   --service-ink: var(--color-service-ink);
-  --card-shadow: 0 1px 2px oklch(18% 0 0 / .05), 0 4px 12px oklch(18% 0 0 / .03);
+  --card-shadow: none;
   --header-height: 4rem;
   --bottom-nav-height: 4rem;
   overflow-x: clip;
   background: var(--canvas);
   color: var(--ink);
-  font-family: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  font-family:inherit;
 }
 
 .page *, .page *::before, .page *::after { box-sizing: border-box; }
@@ -36,49 +36,49 @@
 .contentSection { margin-top: var(--fan-section-gap); }
 .brandTitle { display:flex; flex-wrap:wrap; align-items:baseline; gap:4px 8px; }
 .brandSlogan { color:var(--muted); font-size:13px; font-weight:500; line-height:1.4; letter-spacing:normal; text-wrap:pretty; }
-.heroCarousel { position: relative; color: #fff; }
+.heroCarousel { position: relative; color: var(--color-surface); }
 .heroCarousel[data-has-controls="true"] { margin-bottom: 44px; }
 .heroViewport { position: relative; width: 100%; overflow: hidden; aspect-ratio: 4 / 5; border-radius: 20px; background: var(--ink); touch-action: pan-y pinch-zoom; }
-.heroShine { position: absolute; inset: 0; z-index: 2; overflow: hidden; padding: 1.5px; border-radius: inherit; background: var(--spectrum); pointer-events: none; -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0); -webkit-mask-composite: xor; mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0); mask-composite: exclude; }
-.heroShine::before { content: ""; position: absolute; inset: -100%; background: conic-gradient(transparent 0deg 335deg, #ffc5e5 345deg, #fff 350deg, #decaff 355deg, transparent 360deg); animation: heroShineSpin 8s linear infinite paused; }
+.heroShine { position: absolute; inset: 0; z-index: 2; overflow: hidden; padding: 1.5px; border-radius: inherit; background: var(--spectrum); pointer-events: none; -webkit-mask: none; -webkit-mask-composite: xor; mask: none; mask-composite: exclude; }
+.heroShine::before { content: ""; position: absolute; inset: -100%; background: var(--color-accent-line); animation: heroShineSpin 8s linear infinite paused; }
 .heroCarousel[data-motion-visible="true"][data-shine-paused="false"] .heroShine::before { animation-play-state: running; }
 @keyframes heroShineSpin { to { transform: rotate(1turn); } }
 @media (prefers-reduced-motion: reduce) { .heroShine::before { animation: none; display: none; } }
 .heroTrack { display: flex; width: 100%; height: 100%; }
 .heroCarousel .heroCard { flex: 0 0 100%; width: 100%; height: 100%; aspect-ratio: auto; border-radius: 0; }
-.heroCard { position: relative; display: flex; aspect-ratio: 4 / 5; overflow: hidden; align-items: flex-end; border-radius: 20px; background: var(--ink); color: #fff; }
+.heroCard { position: relative; display: flex; aspect-ratio: 4 / 5; overflow: hidden; align-items: flex-end; border-radius: 20px; background: var(--ink); color: var(--color-surface); }
 .heroCard > img { object-fit: cover; object-position: 51% center; }
 .heroCreatorPicture { position:absolute; inset:0; }
 .heroCreatorPicture img { object-fit:cover; object-position:var(--creator-hero-mobile-position); }
 @media (min-width:48rem) { .heroCreatorPicture img { object-position:var(--creator-hero-desktop-position); } }
-.heroCarousel .campaignHeroCard { display:block; background:#f8f2f6; }
-.heroOverlay { position: absolute; inset: 0; background: linear-gradient(to top, rgb(10 10 12 / 52%) 0%, rgb(10 10 12 / 24%) 28%, rgb(10 10 12 / 6%) 54%, transparent 76%), linear-gradient(to right, rgb(10 10 12 / 24%) 0%, rgb(10 10 12 / 6%) 38%, transparent 64%); }
-.heroContent { position: relative; z-index: 1; width: 100%; padding: 24px; text-shadow: 0 1px 3px rgb(10 10 12 / 62%); }
+.heroCarousel .campaignHeroCard { display:block; background:var(--color-soft); }
+.heroOverlay { position: absolute; inset: 0; background: var(--color-ink) 15%, transparent); }
+.heroContent { position: relative; z-index: 1; width: 100%; padding: 24px; text-shadow: 0 1px 3px color-mix(in srgb, var(--color-ink) 62%, transparent); }
 .statusRail { display: flex; max-width: 320px; align-items: center; gap: 12px; margin-bottom: 12px; }
 .statusRail p, .heroCountdown { margin: 0; }
-.liveStatus { display: inline-flex; flex: none; min-height: 28px; align-items: center; gap: 8px; padding-inline: 12px; border: 1px solid rgb(255 95 191 / 92%); border-radius: 999rem; font-size: 12px; font-weight: 800; letter-spacing: .04em; }
+.liveStatus { display: inline-flex; flex: none; min-height: 28px; align-items: center; gap: 8px; padding-inline: 12px; border: 1px solid color-mix(in srgb, var(--color-accent) 92%, transparent); border-radius: 999rem; font-size: 12px; font-weight: 800; letter-spacing: .04em; }
 /* Perimeter shimmer adapted from Magic UI Shimmer Button (MIT), default 3s rhythm. */
-.liveStatus[data-hero-status] { position: relative; isolation: isolate; overflow: hidden; background: #17131a; border-color: rgb(255 95 191 / 55%); }
-.liveStatus[data-hero-status]::before { content: ""; position: absolute; inset: .8px; z-index: 1; border-radius: inherit; background: #17131a; }
+.liveStatus[data-hero-status] { position: relative; isolation: isolate; overflow: hidden; background: var(--color-ink); border-color: color-mix(in srgb, var(--color-accent) 55%, transparent); }
+.liveStatus[data-hero-status]::before { content: ""; position: absolute; inset: .8px; z-index: 1; border-radius: inherit; background: var(--color-ink); }
 .liveStatus[data-hero-status] svg, .statusText { position: relative; z-index: 2; }
 .statusShimmer { position: absolute; inset: -1px; z-index: 0; container-type: size; filter: blur(2px); pointer-events: none; }
 .statusShimmerSlide { position: absolute; inset: 0; height: 100cqh; aspect-ratio: 1; animation: statusShimmerSlide 3s ease-in-out infinite alternate; animation-play-state: paused; }
-.statusShimmerLight { position: absolute; inset: -100%; background: conic-gradient(from 225deg, transparent 0, #fff1fa 90deg, transparent 90deg); animation: statusShimmerSpin 6s linear infinite; animation-play-state: paused; }
+.statusShimmerLight { position: absolute; inset: -100%; background: var(--color-accent-soft); animation: statusShimmerSpin 6s linear infinite; animation-play-state: paused; }
 .heroCarousel[data-motion-visible="true"] .heroCard[data-active="true"] .statusShimmerSlide,
 .heroCarousel[data-motion-visible="true"] .heroCard[data-active="true"] .statusShimmerLight { animation-play-state: running; }
 @keyframes statusShimmerSlide { to { transform: translate(calc(100cqw - 100%), 0); } }
 @keyframes statusShimmerSpin { 0% { transform: translateZ(0) rotate(0); } 15%, 35% { transform: translateZ(0) rotate(90deg); } 65%, 85% { transform: translateZ(0) rotate(270deg); } 100% { transform: translateZ(0) rotate(360deg); } }
 @media (prefers-reduced-motion: reduce) { .statusShimmer { display: none; } .statusShimmerSlide, .statusShimmerLight { animation: none; } }
 .liveStatus svg, .heroCountdown svg { width: 16px; height: 16px; }
-.heroDate { overflow: hidden; color: rgb(255 255 255 / 84%); font-size: 14px; font-weight: 550; text-overflow: ellipsis; white-space: nowrap; }
+.heroDate { overflow: hidden; color: color-mix(in srgb, var(--color-surface) 84%, transparent); font-size: 14px; font-weight: 550; text-overflow: ellipsis; white-space: nowrap; }
 .heroContent h2 { max-width: 15ch; margin: 0; font-size: 32px; font-weight: 850; letter-spacing: -.04em; line-height: 1.02; text-wrap: balance; }
 .heroCountdown { display: flex; align-items: center; gap: 8px; margin-top: 12px; font: 750 14px ui-monospace, SFMono-Regular, Menlo, monospace; font-variant-numeric: tabular-nums; letter-spacing: -.02em; }
-.primaryButton { display: flex; width: min(320px, 100%); min-height: 48px; align-items: center; justify-content: space-between; margin-top: 20px; padding-inline: 20px; border-radius: 999rem; background: linear-gradient(rgb(0 0 0 / 18%), rgb(0 0 0 / 18%)), var(--spectrum); box-shadow: 0 5px 8px rgb(58 18 55 / 22%); color: #fff !important; font-size: 15px; font-weight: 800; text-shadow: none; transition: background 160ms cubic-bezier(.2, 0, 0, 1); }
+.primaryButton { display: flex; width: min(320px, 100%); min-height: 48px; align-items: center; justify-content: space-between; margin-top: 20px; padding-inline: 20px; border-radius: 999rem; background: var(--spectrum); box-shadow: 0 5px 8px color-mix(in srgb, var(--color-ink) 22%, transparent); color: var(--color-surface) !important; font-size: 15px; font-weight: 800; text-shadow: none; transition: background 160ms cubic-bezier(.2, 0, 0, 1); }
 .primaryButton span { display: inline-flex; align-items: center; gap: 8px; }
 .primaryButton svg { width: 16px; height: 16px; }
 .carouselControls { position: absolute; z-index: 3; inset: 0; pointer-events: none; }
-.carouselControls > button { position: absolute; top: calc(50% - 22px); display: grid; width: 44px; min-width: 44px; height: 44px; padding: 0; place-items: center; border: 0; background: transparent; color: #fff; cursor: pointer; pointer-events: auto; }
-.carouselControls > button::before { position: absolute; width: 32px; height: 32px; border: 1px solid rgb(255 255 255 / 24%); border-radius: 50%; background: rgb(10 10 12 / 44%); content: ""; transition: background-color 160ms cubic-bezier(.2,0,0,1); }
+.carouselControls > button { position: absolute; top: calc(50% - 22px); display: grid; width: 44px; min-width: 44px; height: 44px; padding: 0; place-items: center; border: 0; background: transparent; color: var(--color-surface); cursor: pointer; pointer-events: auto; }
+.carouselControls > button::before { position: absolute; width: 32px; height: 32px; border: 1px solid color-mix(in srgb, var(--color-surface) 24%, transparent); border-radius: 50%; background: color-mix(in srgb, var(--color-ink) 44%, transparent); content: ""; transition: background-color 160ms cubic-bezier(.2,0,0,1); }
 .carouselControls > button svg { position: relative; z-index: 1; width: 16px; height: 16px; }
 .carouselPrevious { left: 8px; }
 .carouselNext { right: 8px; }
@@ -98,7 +98,7 @@
 
 
 .mobileContextActions { display: grid; margin-top: 16px; }
-.mobileContextActions a, .signInButton { display: flex; min-height: 48px; align-items: center; justify-content: center; gap: 12px; padding-inline: 16px; border: 1px solid transparent; border-radius: 999rem; background: linear-gradient(#fff, #fff) padding-box, var(--spectrum) border-box; color: var(--service-ink) !important; font-size: 14px; font-weight: 800; }
+.mobileContextActions a, .signInButton { display: flex; min-height: 48px; align-items: center; justify-content: center; gap: 12px; padding-inline: 16px; border: 1px solid transparent; border-radius: 999rem; background: var(--color-surface); border-color: var(--color-accent); color: var(--service-ink) !important; font-size: 14px; font-weight: 800; }
 .mobileContextActions a > svg:first-child, .signInButton svg { width: 16px; height: 16px; }
 .passportAction span { flex: 1; text-align: center; }
 
@@ -111,7 +111,7 @@
 .celebrityRail { display: grid; grid-auto-columns: var(--creator-card-size, min(82vw, 288px, 100%)); grid-auto-flow: column; gap: 16px; overflow-x: auto; padding-bottom: 0; scroll-snap-type: inline mandatory; scrollbar-width: none; }
 .celebrityRail::-webkit-scrollbar { display: none; }
 .celebrityCard { min-width: 0; scroll-snap-align: start; container-type: inline-size; }
-.celebrityMediaBox { position: relative; display: grid; aspect-ratio: 1; overflow: hidden; place-items: center; border: 1px solid var(--card-line); border-radius: 12px; background: #f6f6f5; transition: transform 160ms cubic-bezier(.2,0,0,1), border-color 160ms cubic-bezier(.2,0,0,1); }
+.celebrityMediaBox { position: relative; display: grid; aspect-ratio: 1; overflow: hidden; place-items: center; border: 1px solid var(--card-line); border-radius: 12px; background: var(--color-soft); transition: transform 160ms cubic-bezier(.2,0,0,1), border-color 160ms cubic-bezier(.2,0,0,1); }
 .celebrityMediaBox > [data-preview-mode="card"] { inset: 8%; border-radius: 4px; }
 /* N7: 최애가 하나나 둘이면 큰 정사각 카드 옆이 비지 않게 가로 카드로 그린다. */
 .celebrityRail[data-count="1"] { grid-auto-columns: 100%; }
@@ -281,7 +281,7 @@
   width: min(80%, 280px);
   height: auto;
   object-fit: contain;
-  filter: drop-shadow(0 8px 14px rgb(23 25 28 / 7%));
+  filter: drop-shadow(0 8px 14px color-mix(in srgb, var(--color-ink) 7%, transparent));
 }
 .summaryEmpty p { margin: 0; color: var(--muted); font-size: 14px; line-height: 1.5; }
 .emptyPassportHint { color: var(--muted); font-size: 13px; font-weight: 550; line-height: 1.5; }
@@ -357,10 +357,10 @@
 
 @media (hover: hover) and (pointer: fine) {
   .desktopNav a:hover, .languageButton:hover, .rowAction:hover, .socialLink:hover { background: var(--surface-soft); color: var(--ink) !important; }
-  .carouselControls > button:hover::before { background: rgb(10 10 12 / 68%); }
-  .primaryButton:hover { background: linear-gradient(rgb(0 0 0 / 18%), rgb(0 0 0 / 18%)), var(--spectrum-hover); }
+  .carouselControls > button:hover::before { background: color-mix(in srgb, var(--color-ink) 68%, transparent); }
+  .primaryButton:hover { background: var(--spectrum-hover); }
   .celebrityMediaBox:hover { transform: translateY(-2px); border-color: color-mix(in srgb, var(--ink) 18%, transparent); }
-  .mobileContextActions a:hover, .signInButton:hover { background: linear-gradient(var(--surface-soft), var(--surface-soft)) padding-box, var(--spectrum-hover) border-box; }
+  .mobileContextActions a:hover, .signInButton:hover { background: var(--surface-soft); border-color: var(--color-accent); }
   .ownedPassportLink:hover { transform: translateY(-3px); }
   .summaryOutlineAction:hover, .personalizationState button:hover, .passportControls > button:hover, .passportDots button:hover { background: var(--surface-soft); color: var(--ink); }
 }
@@ -377,15 +377,15 @@
 .celebrityCarousel { position: relative; container-type: inline-size; --creator-card-size: min(82vw, 288px, 100cqw); }
 @media (min-width: 48rem) { .celebrityCarousel { --creator-card-size: max(240px, calc((100cqw - 32px) / 3)); } }
 .creatorControls { position: absolute; inset: 0 0 auto; height: var(--creator-card-size); pointer-events: none; }
-.creatorControls button { position: absolute; top: 50%; display: grid; width: 44px; height: 44px; padding: 6px; place-items: center; transform: translateY(-50%); border: none; border-radius: 50%; background: transparent; color: #fff; cursor: pointer; pointer-events: auto; }
-.creatorControls button::before { content: ""; position: absolute; inset: 6px; border: 1px solid rgb(255 255 255 / 40%); border-radius: 50%; background: rgb(17 17 17 / 72%); }
+.creatorControls button { position: absolute; top: 50%; display: grid; width: 44px; height: 44px; padding: 6px; place-items: center; transform: translateY(-50%); border: none; border-radius: 50%; background: transparent; color: var(--color-surface); cursor: pointer; pointer-events: auto; }
+.creatorControls button::before { content: ""; position: absolute; inset: 6px; border: 1px solid color-mix(in srgb, var(--color-surface) 40%, transparent); border-radius: 50%; background: color-mix(in srgb, var(--color-ink) 72%, transparent); }
 .creatorControls button:first-child { left: 0; }
 .creatorControls button:last-child { right: 0; }
 .creatorControls button svg { position: relative; width: 18px; height: 18px; }
 .creatorControls button:disabled { opacity: .3; cursor: default; }
 .creatorControls button:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
 
-.celebrityFanLink[data-verified="true"] { color: #dc2626; }
+.celebrityFanLink[data-verified="true"] { color: var(--color-accent); }
 .celebrityFanLink[data-verified="true"] svg { fill: currentColor; }
 
 /* Stable owner-state slots; the two responsive views share their data. */

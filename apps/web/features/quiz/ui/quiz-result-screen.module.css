@@ -1,4 +1,4 @@
-.page { min-height:calc(100svh - 68px); background:var(--color-canvas); color:var(--color-ink); font-family:"Pretendard Variable",Pretendard,-apple-system,BlinkMacSystemFont,system-ui,sans-serif; }
+.page { min-height:calc(100svh - 68px); background:var(--color-canvas); color:var(--color-ink); font-family:inherit; }
 .page * { box-sizing:border-box; }
 .result,.error { display:grid; width:min(calc(100% - 32px),600px); justify-items:center; margin:40px auto; padding:40px; border:1px solid var(--color-line); border-radius:var(--radius-collection); text-align:center; }
 .completion { margin:0 0 20px; color:var(--color-muted); font-size:13px; font-weight:650; line-height:1.5; font-variant-numeric:tabular-nums; }

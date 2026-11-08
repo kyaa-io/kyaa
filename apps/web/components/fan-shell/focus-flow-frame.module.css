@@ -6,9 +6,9 @@
   min-height: 100svh;
   min-height: 100dvh;
   padding-bottom: env(safe-area-inset-bottom);
-  background: #fff;
-  color: oklch(18% 0 0);
-  font-family: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  background: var(--color-surface);
+  color: var(--color-ink);
+  font-family:inherit;
 }
 
 .frame *,
@@ -21,7 +21,7 @@
 .frame > [data-fan-site-footer] { margin-top: auto; }
 
 .header {
-  border-bottom: 1px solid oklch(93% 0 0);
+  border-bottom: 1px solid var(--color-line-subtle);
 }
 
 .headerActions {
@@ -45,8 +45,8 @@
   padding: 11px 16px;
   transform: translateY(-200px);
   border-radius: 12px;
-  background: oklch(18% 0 0);
-  color: #fff;
+  background: var(--color-ink);
+  color: var(--color-surface);
   font-size: 14px;
   font-weight: 750;
   text-decoration: none;
@@ -54,7 +54,7 @@
 
 .skipLink:focus-visible {
   transform: translateY(0);
-  outline: 3px solid #fff;
+  outline: 3px solid var(--color-surface);
   outline-offset: 2px;
 }
 

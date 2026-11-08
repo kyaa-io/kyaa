@@ -1,13 +1,7 @@
 .panel,
 .detail {
-  font-family:
-    "Pretendard Variable",
-    Pretendard,
-    -apple-system,
-    BlinkMacSystemFont,
-    "Segoe UI",
-    sans-serif;
-  color: var(--color-ink, #19191c);
+  font-family:inherit;
+  color: var(--color-ink, var(--color-ink));
 }
 .panel {
   display: grid;
@@ -29,12 +23,12 @@
 .panelHeading h2 svg {
   width: 24px;
   height: 24px;
-  color: var(--color-service-ink, #be185d);
+  color: var(--color-service-ink, var(--color-accent));
 }
 .tabs {
   display: flex;
   gap: 24px;
-  border-bottom: 1px solid #e8e7ec;
+  border-bottom: 1px solid var(--color-line-subtle);
 }
 .tabs button {
   position: relative;
@@ -46,14 +40,14 @@
   padding: 0 0 12px;
   border: 0;
   background: transparent;
-  color: #65656d;
+  color: var(--color-muted);
   font: inherit;
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
 }
 .tabs button[aria-selected="true"] {
-  color: #19191c;
+  color: var(--color-ink);
   font-weight: 750;
 }
 .tabs button[aria-selected="true"]::after {
@@ -62,7 +56,7 @@
   inset: auto 0 -1px;
   height: 2px;
   border-radius: 2px;
-  background: #19191c;
+  background: var(--color-ink);
 }
 .tabs svg {
   width: 16px;
@@ -74,7 +68,7 @@
   gap: 16px;
 }
 .list {
-  border-top: 1px solid #e7e4e2;
+  border-top: 1px solid var(--color-line);
 }
 .categories {
   display: flex;
@@ -87,19 +81,19 @@
   min-height: 44px;
   flex: none;
   padding: 0 13px;
-  border: 1px solid #ddd9d6;
+  border: 1px solid var(--color-muted);
   border-radius: 999px;
-  background: #fff;
-  color: #65656d;
+  background: var(--color-surface);
+  color: var(--color-muted);
   font: inherit;
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
 }
 .categories button[aria-pressed="true"] {
-  border-color: #d11b62;
-  background: #fff0f6;
-  color: #ad1457;
+  border-color: var(--color-accent);
+  background: var(--color-accent-soft);
+  color: var(--color-accent-ink);
 }
 .row {
   display: grid;
@@ -108,7 +102,7 @@
   align-items: center;
   gap: 14px;
   padding: 16px 4px;
-  border-bottom: 1px solid #e7e4e2;
+  border-bottom: 1px solid var(--color-line);
   color: inherit;
   text-decoration: none;
 }
@@ -118,7 +112,7 @@
 }
 .row > svg {
   width: 18px;
-  color: #777270;
+  color: var(--color-muted);
 }
 .missionGrid {
   display: grid;
@@ -138,9 +132,9 @@
   flex-direction: column;
   gap: 16px;
   padding: 20px;
-  border: 1px solid #e8e7ec;
+  border: 1px solid var(--color-line-subtle);
   border-radius: 16px;
-  background: #fff;
+  background: var(--color-surface);
   color: inherit;
   text-decoration: none;
   transition:
@@ -148,14 +142,14 @@
     background-color 160ms ease;
 }
 a.card:hover {
-  border-color: #bdbdc7;
-  background: #fcfcfd;
+  border-color: var(--color-muted);
+  background: var(--color-surface);
 }
 a.card:active {
-  background: #f6f5f7;
+  background: var(--color-soft);
 }
 .card[data-disabled="true"] {
-  background: #f8f8fa;
+  background: var(--color-soft);
 }
 .cardHeading {
   display: flex;
@@ -168,10 +162,10 @@ a.card:active {
   height: 48px;
   flex-shrink: 0;
   place-items: center;
-  border: 1px solid #eeeef2;
+  border: 1px solid var(--color-line-subtle);
   border-radius: 12px;
-  background: #fafafa;
-  color: #4d4d58;
+  background: var(--color-soft);
+  color: var(--color-ink);
 }
 .kind :is(img, svg) {
   display: block;
@@ -185,7 +179,7 @@ a.card:active {
   gap: 4px;
 }
 .cardCategory {
-  color: #65656d;
+  color: var(--color-muted);
   font-size: 12px;
   font-weight: 500;
   line-height: 1.5;
@@ -198,7 +192,7 @@ a.card:active {
   overflow-wrap: anywhere;
 }
 .cardDescription {
-  color: #65656d;
+  color: var(--color-muted);
   font-size: 14px;
   line-height: 1.6;
   overflow-wrap: anywhere;
@@ -212,7 +206,7 @@ a.card:active {
   gap: 12px;
   margin-top: auto;
   padding-top: 16px;
-  border-top: 1px solid #f0eff3;
+  border-top: 1px solid var(--color-line-subtle);
 }
 .cardAction {
   display: inline-flex;
@@ -229,7 +223,7 @@ a.card:active {
   height: 16px;
 }
 .cardAction:not([data-status="available"]) {
-  color: #65656d;
+  color: var(--color-muted);
   font-weight: 500;
 }
 .srOnly {
@@ -252,7 +246,7 @@ a.card:active {
 }
 .rowCopy small {
   overflow: hidden;
-  color: #777270;
+  color: var(--color-muted);
   font-size: 13px;
   line-height: 1.4;
   text-overflow: ellipsis;
@@ -263,7 +257,7 @@ a.card:active {
   flex-wrap: wrap;
   gap: 8px;
   min-width: 0;
-  color: var(--color-service-ink, #be185d);
+  color: var(--color-service-ink, var(--color-accent));
   font-size: 12px;
   font-weight: 750;
 }
@@ -279,7 +273,7 @@ a.card:active {
   flex-shrink: 0;
 }
 .reason {
-  color: #9f1239;
+  color: var(--color-accent-ink);
   font-size: 12px;
   line-height: 1.5;
   overflow-wrap: anywhere;
@@ -287,15 +281,15 @@ a.card:active {
 .status {
   padding: 6px 9px;
   border-radius: 999px;
-  background: #f1f0ef;
-  color: #686462;
+  background: var(--color-soft);
+  color: var(--color-muted);
   font-size: 11px;
   font-weight: 800;
   white-space: nowrap;
 }
 .status[data-status="available"],
 .status[data-status="approved"] {
-  background: #eaf7ef;
+  background: var(--color-soft);
   color: #17643a;
 }
 .status[data-status="pending"] {
@@ -303,8 +297,8 @@ a.card:active {
   color: #7a5700;
 }
 .status[data-status="rejected"] {
-  background: #fff0f4;
-  color: #9f1239;
+  background: var(--color-accent-soft);
+  color: var(--color-accent-ink);
 }
 .state {
   min-height: 160px;
@@ -313,7 +307,7 @@ a.card:active {
   place-content: center;
   justify-items: center;
   gap: 12px;
-  color: #777270;
+  color: var(--color-muted);
   text-align: center;
 }
 .detail {
@@ -326,7 +320,7 @@ a.card:active {
   min-height: 44px;
   align-items: center;
   gap: 8px;
-  color: #686462;
+  color: var(--color-muted);
   font-size: 14px;
   font-weight: 700;
   text-decoration: none;
@@ -336,7 +330,7 @@ a.card:active {
 }
 .hero {
   padding: 36px 0 28px;
-  border-bottom: 1px solid #e7e4e2;
+  border-bottom: 1px solid var(--color-line);
 }
 .hero > span {
   color: var(--color-service-ink);
@@ -353,7 +347,7 @@ a.card:active {
 .instructions p {
   max-width: 62ch;
   margin: 0;
-  color: #686462;
+  color: var(--color-muted);
   line-height: 1.7;
   white-space: pre-line;
 }
@@ -364,8 +358,8 @@ a.card:active {
   margin-top: 24px;
   padding: 16px 18px;
   border-radius: 12px;
-  background: #fff0f4;
-  color: #ae1641;
+  background: var(--color-accent-soft);
+  color: var(--color-accent);
 }
 .rewardCard span {
   display: flex;
@@ -380,7 +374,7 @@ a.card:active {
 .submissionDetail,
 .submissionState {
   padding-block: 28px;
-  border-bottom: 1px solid #e7e4e2;
+  border-bottom: 1px solid var(--color-line);
 }
 .instructions h2,
 .formArea h2,
@@ -396,18 +390,18 @@ a.card:active {
   gap: 10px;
   margin-bottom: 22px;
   padding: 18px;
-  border: 1px solid #e4dfdc;
+  border: 1px solid var(--color-accent-line);
   border-radius: 14px;
-  background: #faf9f8;
+  background: var(--color-soft);
 }
 .membershipGuide > strong {
-  color: #292624;
+  color: var(--color-ink);
   font-size: 16px;
 }
 .membershipGuide p,
 .membershipGuide ul {
   margin: 0;
-  color: #5f5a57;
+  color: var(--color-muted);
   font-size: 14px;
   line-height: 1.6;
 }
@@ -450,7 +444,7 @@ a.card:active {
   line-height: 1.5;
 }
 .submissionDetail dt {
-  color: #777270;
+  color: var(--color-muted);
 }
 .submissionDetail dd {
   margin: 0;
@@ -463,7 +457,7 @@ a.card:active {
 }
 .submissionCopy p {
   margin: 7px 0 0;
-  color: #514e4c;
+  color: var(--color-ink);
   line-height: 1.65;
   white-space: pre-wrap;
 }
@@ -489,7 +483,7 @@ a.card:active {
 }
 .requiredFieldHeading span,
 .fileHint {
-  color: #686462;
+  color: var(--color-muted);
   font-size: 13px;
   line-height: 1.5;
 }
@@ -500,9 +494,9 @@ a.card:active {
   justify-items: center;
   gap: 10px;
   padding: 18px;
-  border: 1px dashed #b9b4b1;
+  border: 1px dashed var(--color-muted);
   border-radius: 14px;
-  background: #faf9f8;
+  background: var(--color-soft);
   cursor: pointer;
   text-align: center;
 }
@@ -531,7 +525,7 @@ a.card:active {
   gap: 10px;
   padding: 8px 10px;
   border-radius: 9px;
-  background: #f4f3f2;
+  background: var(--color-soft);
   font-size: 13px;
 }
 .fileList img {
@@ -551,7 +545,7 @@ a.card:active {
   white-space: nowrap;
 }
 .fileList small {
-  color: #777270;
+  color: var(--color-muted);
 }
 .fileList button {
   display: grid;
@@ -572,7 +566,7 @@ a.card:active {
   overflow-wrap: anywhere;
   min-height: 20px;
   margin: 4px 0 0;
-  color: #a81743;
+  color: var(--color-accent-ink);
   font-size: 13px;
   font-weight: 700;
   line-height: 1.5;
@@ -587,7 +581,7 @@ a.card:active {
 .note textarea {
   min-height: 92px;
   padding: 12px;
-  border: 1px solid #d6d2cf;
+  border: 1px solid var(--color-muted);
   border-radius: 12px;
   resize: vertical;
   font: inherit;
@@ -598,8 +592,8 @@ a.card:active {
   margin-top: 20px;
   padding: 14px;
   border-radius: 10px;
-  background: #fff0f4;
-  color: #8d1738;
+  background: var(--color-accent-soft);
+  color: var(--color-accent-ink);
 }
 .submissionState {
   display: grid;
@@ -609,11 +603,11 @@ a.card:active {
 .submissionState > svg {
   width: 42px;
   height: 42px;
-  color: #ff008a;
+  color: var(--color-accent);
 }
 .submissionState p {
   margin: 0;
-  color: #686462;
+  color: var(--color-muted);
 }
 .approvedNext {
   gap: 12px;
@@ -632,12 +626,12 @@ a.card:active {
 }
 .message {
   min-height: 24px;
-  color: #8d1738;
+  color: var(--color-accent-ink);
   font-size: 13px;
 }
 .panel :is(button, a, input, textarea):focus-visible,
 .detail :is(button, a, input, textarea):focus-visible {
-  outline: 3px solid rgb(217 35 84 / 28%);
+  outline: 3px solid color-mix(in srgb, var(--color-accent) 28%, transparent);
   outline-offset: 3px;
 }
 @media (min-width: 48rem) {
@@ -686,7 +680,7 @@ a.card:active {
 }
 
 .panel :is(button, a):focus-visible {
-  outline: 3px solid #19191c;
+  outline: 3px solid var(--color-ink);
   outline-offset: 4px;
 }
 @media (max-width: 30rem) {
@@ -707,7 +701,7 @@ a.card:active {
 }
 
 /* UI022: card is the selection target, with a visible keyboard state. */
-a.card:focus-visible{outline:3px solid #d11b62;outline-offset:3px}.card{min-height:152px}.card .status{align-self:flex-start}
+a.card:focus-visible{outline:3px solid var(--color-accent);outline-offset:3px}.card{min-height:152px}.card .status{align-self:flex-start}
 
 /* 2026-11-04 FX-47: panel follows the page header width instead of an inset 1120px column. */
 @media(min-width:1024px){.panel{width:100%}}
@@ -717,17 +711,17 @@ a.card:focus-visible{outline:3px solid #d11b62;outline-offset:3px}.card{min-heig
 /* 2026-11-05 D5 F10: compact stamp-circle tiles replace the long mission cards (existing ink-v1 stamps, no new artwork). */
 .missionGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
 .missionGrid:has(>:only-child) { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-.tile { box-sizing: border-box; display: flex; height: 100%; min-height: 0; flex-direction: column; align-items: center; gap: 8px; padding: 16px 12px; border: 1px solid #e8e7ec; border-radius: 16px; background: #fff; color: inherit; text-align: center; text-decoration: none; transition: border-color 160ms ease, background-color 160ms ease; }
-a.tile:hover { border-color: #bdbdc7; background: #fcfcfd; }
-a.tile:active { background: #f6f5f7; }
-a.tile:focus-visible { outline: 3px solid #d11b62; outline-offset: 3px; }
-.tile[data-disabled="true"] { background: #f8f8fa; }
-.stamp { display: grid; width: 72px; height: 72px; flex: none; place-items: center; border-radius: 50%; background: #fafafa; box-shadow: inset 0 0 0 1px #eeeef2; overflow: hidden; }
+.tile { box-sizing: border-box; display: flex; height: 100%; min-height: 0; flex-direction: column; align-items: center; gap: 8px; padding: 16px 12px; border: 1px solid var(--color-line-subtle); border-radius: 16px; background: var(--color-surface); color: inherit; text-align: center; text-decoration: none; transition: border-color 160ms ease, background-color 160ms ease; }
+a.tile:hover { border-color: var(--color-muted); background: var(--color-surface); }
+a.tile:active { background: var(--color-soft); }
+a.tile:focus-visible { outline: 3px solid var(--color-accent); outline-offset: 3px; }
+.tile[data-disabled="true"] { background: var(--color-soft); }
+.stamp { display: grid; width: 72px; height: 72px; flex: none; place-items: center; border-radius: 50%; background: var(--color-soft); box-shadow: inset 0 0 0 1px var(--color-line-subtle); overflow: hidden; }
 .stamp img { display: block; width: 100%; height: 100%; object-fit: contain; }
 /* R5: only an approved certification keeps color; every other state stays gray so an unclaimed item never reads as completed. */
 .stamp:not([data-state="approved"]) { filter: grayscale(1); opacity: .55; }
 .tileTitle { display: -webkit-box; min-width: 0; max-width: 100%; overflow: hidden; font-size: 14px; font-weight: 750; letter-spacing: -.02em; line-height: 1.4; overflow-wrap: anywhere; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
-.tileMeta { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px 8px; min-width: 0; color: var(--color-service-ink, #be185d); font-size: 12px; font-weight: 750; line-height: 1.5; }
+.tileMeta { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px 8px; min-width: 0; color: var(--color-service-ink, var(--color-accent)); font-size: 12px; font-weight: 750; line-height: 1.5; }
 .tileMeta > span { display: inline-flex; align-items: center; gap: 4px; }
 .tileMeta svg { width: 14px; height: 14px; flex: none; }
 .tile .cardAction, .tile .status { margin-top: auto; }

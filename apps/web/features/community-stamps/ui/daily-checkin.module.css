@@ -5,15 +5,15 @@
   gap: 10px 14px;
   padding: 14px;
   border-radius: 14px;
-  background: oklch(97.5% .018 335);
-  box-shadow: inset 0 0 0 1px oklch(88% .025 335 / .7);
+  background: var(--color-accent-soft);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-accent-line) 70%, transparent);
 }
 
 .copy { min-width: 0; }
 .panel h3, .panel p { margin: 0; }
-.panel h3 { color: oklch(27% .025 335); font-size: 14px; font-weight: 850; letter-spacing: -.015em; }
-.panel p { margin-top: 3px; color: oklch(46% .02 335); font-size: 11px; font-weight: 650; line-height: 1.5; }
-.count { display: block; color: var(--fanpage-action-solid, #ce0066); font-weight: 800; }
+.panel h3 { color: var(--color-accent-ink); font-size: 14px; font-weight: 850; letter-spacing: -.015em; }
+.panel p { margin-top: 3px; color: var(--color-ink); font-size: 11px; font-weight: 650; line-height: 1.5; }
+.count { display: block; color: var(--fanpage-action-solid, var(--color-accent)); font-weight: 800; }
 
 .primary {
   display: inline-flex;
@@ -24,8 +24,8 @@
   padding: 0 14px;
   border: 0;
   border-radius: 12px;
-  background: var(--fanpage-action-solid, #ce0066);
-  color: #fff;
+  background: var(--fanpage-action-solid, var(--color-accent));
+  color: var(--color-surface);
   font: inherit;
   font-size: 12px;
   font-weight: 800;
@@ -34,13 +34,13 @@
   transition: opacity 120ms ease-out, scale 120ms cubic-bezier(.2, 0, 0, 1);
 }
 .primary:active:not(:disabled) { scale: .96; }
-.primary:disabled { background: oklch(61% .025 335); cursor: default; }
+.primary:disabled { background: var(--color-muted); cursor: default; }
 .primary:focus-visible, .retry:focus-visible { outline: 3px solid var(--color-focus); outline-offset: 2px; }
 .primary svg, .retry svg { width: 15px; height: 15px; stroke-width: 2; }
 
-.retry { display: inline-flex; min-height: 44px; align-items: center; gap: 5px; padding: 0 6px; border: 0; background: transparent; color: var(--fanpage-action-solid, #ce0066); font: inherit; font-weight: 800; cursor: pointer; }
-.message { grid-column: 1 / -1; padding-top: 8px; border-top: 1px solid oklch(88% .025 335 / .7); }
-.message.error { color: oklch(45% .17 25); }
+.retry { display: inline-flex; min-height: 44px; align-items: center; gap: 5px; padding: 0 6px; border: 0; background: transparent; color: var(--fanpage-action-solid, var(--color-accent)); font: inherit; font-weight: 800; cursor: pointer; }
+.message { grid-column: 1 / -1; padding-top: 8px; border-top: 1px solid color-mix(in srgb, var(--color-accent-line) 70%, transparent); }
+.message.error { color: var(--color-accent-ink); }
 
 .checkinMark {
   position: absolute;
@@ -50,10 +50,10 @@
   width: 15px;
   height: 15px;
   place-items: center;
-  border: 2px solid #fff;
+  border: 2px solid var(--color-surface);
   border-radius: 50%;
-  background: var(--fanpage-action-solid, #ce0066);
-  color: #fff;
+  background: var(--fanpage-action-solid, var(--color-accent));
+  color: var(--color-surface);
   font-size: 9px;
   font-style: normal;
   font-weight: 900;

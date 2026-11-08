@@ -14,7 +14,7 @@
 .stamps { display: grid; gap: 16px; padding: 0; margin: 24px 0; list-style: none; }
 .stamp { display: flex; align-items: center; gap: 16px; }
 .seal { display: grid; place-items: center; flex: 0 0 64px; height: 64px; border-radius: 50%; border: 1px solid var(--color-line); background: var(--color-soft); color: var(--color-muted); }
-.seal[data-earned="true"] { border-color: #bd3fa3; color: #a82b8e; background: #fcf1fa; }
+.seal[data-earned="true"] { border-color: var(--color-accent); color: var(--color-accent); background: var(--color-accent-soft); }
 .stamp strong { display: block; font-size: 16px; overflow-wrap: anywhere; }
 .stamp small { display: block; font-size: 13px; color: var(--color-muted); margin-top: 4px; }
 .event { margin-top: 24px; padding-top: 24px; border-top: 1px solid var(--color-line); }

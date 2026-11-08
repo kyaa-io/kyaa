@@ -2,8 +2,8 @@
   display: grid;
   gap: 24px;
   min-width: 0;
-  color: #18171c;
-  font-family: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  color: var(--color-ink);
+  font-family:inherit;
   font-size: 14px;
 }
 .hero {
@@ -17,7 +17,7 @@
   margin: 0;
 }
 .eyebrow {
-  color: #6b6d75;
+  color: var(--color-muted);
   font-size: 12px;
   font-weight: 800;
   letter-spacing: 0.08em;
@@ -33,7 +33,7 @@
 .hero > div > p:last-child {
   max-width: 65ch;
   margin-top: 8px;
-  color: #666973;
+  color: var(--color-muted);
   font-size: 14px;
   line-height: 1.6;
 }
@@ -41,9 +41,9 @@
   display: grid;
   gap: 12px;
   padding: 16px;
-  border: 1px solid rgb(24 23 28 / 9%);
+  border: 1px solid color-mix(in srgb, var(--color-ink) 9%, transparent);
   border-radius: 12px;
-  background: #fff;
+  background: var(--color-surface);
 }
 .windowControl h2 {
   margin: 0;
@@ -58,16 +58,16 @@
 .customWindow button {
   min-height: 44px;
   padding: 0 14px;
-  border: 1px solid #d6d7dc;
+  border: 1px solid var(--color-muted);
   border-radius: 10px;
-  background: #fff;
-  color: #24252a;
+  background: var(--color-surface);
+  color: var(--color-ink);
   font-weight: 750;
 }
 .presets button[aria-pressed="true"] {
-  border-color: #17171a;
-  background: #17171a;
-  color: #fff;
+  border-color: var(--color-ink);
+  background: var(--color-ink);
+  color: var(--color-surface);
 }
 .customWindow {
   display: grid;
@@ -83,33 +83,33 @@
   min-width: 0;
   height: 44px;
   padding: 0 10px;
-  border: 1px solid rgb(24 23 28 / 12%);
+  border: 1px solid color-mix(in srgb, var(--color-ink) 12%, transparent);
   border-radius: 9px;
-  background: #f7f7f8;
+  background: var(--color-soft);
 }
 .customWindow p {
   grid-column: 1/-1;
   margin: 0;
-  color: #9f1239;
+  color: var(--color-accent-ink);
   font-size: 12px;
 }
 .customWindow button {
   align-self: end;
-  background: #17171a;
-  color: #fff;
+  background: var(--color-ink);
+  color: var(--color-surface);
 }
 .status {
   padding: 22px;
   border-radius: 14px;
-  background: #f5f5f7;
-  color: #61636b;
+  background: var(--color-soft);
+  color: var(--color-muted);
 }
 .status[data-error="true"] {
-  background: #fff1f4;
-  color: #8b1734;
+  background: var(--color-accent-soft);
+  color: var(--color-accent-ink);
 }
 .status p { margin: 0; }
-.status button { min-height: 44px; margin-top: 12px; padding: 0 14px; border: 1px solid #e3aabc; border-radius: 10px; background: #fff; color: #8b1734; cursor: pointer; font: inherit; font-size: 13px; font-weight: 750; }
+.status button { min-height: 44px; margin-top: 12px; padding: 0 14px; border: 1px solid var(--color-accent); border-radius: 10px; background: var(--color-surface); color: var(--color-accent-ink); cursor: pointer; font: inherit; font-size: 13px; font-weight: 750; }
 .metricGrid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -118,9 +118,9 @@
 .metric {
   min-width: 0;
   padding: 16px;
-  border: 1px solid rgb(24 23 28 / 9%);
+  border: 1px solid color-mix(in srgb, var(--color-ink) 9%, transparent);
   border-radius: 12px;
-  background: #fff;
+  background: var(--color-surface);
 }
 .metric h3,
 .metric p {
@@ -128,7 +128,7 @@
 }
 .metric h3 {
   font-size: 12px;
-  color: #696c75;
+  color: var(--color-muted);
 }
 .metric strong {
   display: block;
@@ -140,21 +140,21 @@
 }
 .metric p {
   overflow-wrap: anywhere;
-  color: #858790;
+  color: var(--color-muted);
   font-size: 11px;
   line-height: 1.4;
 }
 .metric[data-state="suppressed"],
 .metric[data-state="unavailable"] {
-  background: #f6f6f8;
+  background: var(--color-soft);
 }
 .section {
   min-width: 0;
   padding: 20px;
-  border: 1px solid rgb(24 23 28 / 9%);
+  border: 1px solid color-mix(in srgb, var(--color-ink) 9%, transparent);
   border-radius: 16px;
-  background: #fff;
-  box-shadow: 0 1px 2px rgb(24 23 28 / 4%);
+  background: var(--color-surface);
+  box-shadow: 0 1px 2px color-mix(in srgb, var(--color-ink) 4%, transparent);
 }
 .sectionHeading {
   display: flex;
@@ -178,7 +178,7 @@
 }
 .sectionHeading p {
   margin-top: 4px;
-  color: #727079;
+  color: var(--color-muted);
   font-size: 13px;
   line-height: 1.5;
 }
@@ -196,18 +196,18 @@
 .table td {
   height: 48px;
   padding: 8px 12px;
-  border-bottom: 1px solid #ececef;
+  border-bottom: 1px solid var(--color-line-subtle);
   text-align: left;
   white-space: nowrap;
 }
 .table th {
-  color: #6a6d75;
-  background: #f7f7f8;
+  color: var(--color-muted);
+  background: var(--color-soft);
   font-size: 11px;
   font-weight: 750;
 }
 .table a {
-  color: #151519;
+  color: var(--color-ink);
   font-weight: 800;
 }
 .tableTools {
@@ -228,17 +228,17 @@
   left: 12px;
   width: 18px;
   height: 18px;
-  color: #85828c;
+  color: var(--color-muted);
   pointer-events: none;
 }
 .searchField input,
 .sortField select {
   width: 100%;
   height: 44px;
-  border: 1px solid rgb(24 23 28 / 11%);
+  border: 1px solid color-mix(in srgb, var(--color-ink) 11%, transparent);
   border-radius: 10px;
-  background: #f7f7f8;
-  color: #18171c;
+  background: var(--color-soft);
+  color: var(--color-ink);
   font: inherit;
 }
 .searchField input { padding: 0 12px 0 38px; }
@@ -247,7 +247,7 @@
   min-width: 136px;
   align-items: center;
   gap: 8px;
-  color: #727079;
+  color: var(--color-muted);
   font-size: 12px;
   font-weight: 700;
 }
@@ -258,10 +258,10 @@
 .pagination button {
   min-height: 44px;
   padding: 0 12px;
-  border: 1px solid rgb(24 23 28 / 12%);
+  border: 1px solid color-mix(in srgb, var(--color-ink) 12%, transparent);
   border-radius: 10px;
-  background: #fff;
-  color: #343239;
+  background: var(--color-surface);
+  color: var(--color-ink);
   cursor: pointer;
   font: inherit;
   font-size: 12px;
@@ -277,7 +277,7 @@
 .pagination button:disabled { cursor: not-allowed; opacity: .42; }
 .resultCount {
   margin: 0 0 8px;
-  color: #85828c;
+  color: var(--color-muted);
   font-size: 12px;
   font-variant-numeric: tabular-nums;
 }
@@ -288,7 +288,7 @@
   gap: 12px;
   margin-top: 12px;
 }
-.pagination span { color: #727079; font-size: 12px; font-variant-numeric: tabular-nums; }
+.pagination span { color: var(--color-muted); font-size: 12px; font-variant-numeric: tabular-nums; }
 .tableEmpty,
 .dataState,
 .chartEmpty {
@@ -299,7 +299,7 @@
   gap: 6px;
   padding: 20px;
   border-radius: 10px;
-  background: #f7f7f8;
+  background: var(--color-soft);
   text-align: center;
 }
 .tableEmpty strong,
@@ -307,7 +307,7 @@
 .chartEmpty strong { font-size: 14px; }
 .tableEmpty p,
 .dataState p,
-.chartEmpty p { margin: 0; color: #727079; font-size: 12px; line-height: 1.5; }
+.chartEmpty p { margin: 0; color: var(--color-muted); font-size: 12px; line-height: 1.5; }
 .metricTabs {
   display: flex;
   flex-wrap: wrap;
@@ -320,35 +320,35 @@
   border: 0;
   border-radius: 9px;
   background: transparent;
-  color: #66636d;
+  color: var(--color-muted);
   cursor: pointer;
   font: inherit;
   font-size: 12px;
   font-weight: 700;
 }
-.metricTabs button[aria-pressed="true"] { background: #f2efff; color: #5133cf; }
+.metricTabs button[aria-pressed="true"] { background: var(--color-accent-soft); color: var(--color-accent); }
 .lineChart { min-width: 0; }
 .lineChart svg { display: block; width: 100%; min-height: 200px; overflow: visible; }
-.chartGridLine { stroke: rgb(24 23 28 / 9%); stroke-width: 1; }
-.chartAxisLabel { fill: #85828c; font-size: 11px; font-variant-numeric: tabular-nums; }
-.chartLine { fill: none; stroke: #6d4aff; stroke-linecap: round; stroke-linejoin: round; stroke-width: 2.5; vector-effect: non-scaling-stroke; }
-.chartPoint { fill: #fff; stroke: #6d4aff; stroke-width: 2.5; vector-effect: non-scaling-stroke; }
-.zeroNote { margin: -28px 0 8px; color: #727079; font-size: 12px; text-align: center; }
+.chartGridLine { stroke: color-mix(in srgb, var(--color-ink) 9%, transparent); stroke-width: 1; }
+.chartAxisLabel { fill: var(--color-muted); font-size: 11px; font-variant-numeric: tabular-nums; }
+.chartLine { fill: none; stroke: var(--color-accent); stroke-linecap: round; stroke-linejoin: round; stroke-width: 2.5; vector-effect: non-scaling-stroke; }
+.chartPoint { fill: var(--color-surface); stroke: var(--color-accent); stroke-width: 2.5; vector-effect: non-scaling-stroke; }
+.zeroNote { margin: -28px 0 8px; color: var(--color-muted); font-size: 12px; text-align: center; }
 .chartData { margin-top: 4px; }
 .chartData summary {
   display: inline-flex;
   min-height: 44px;
   align-items: center;
-  color: #5e5b65;
+  color: var(--color-muted);
   cursor: pointer;
   font-size: 12px;
   font-weight: 700;
 }
 .chartData table { width: 100%; border-collapse: collapse; font-size: 12px; font-variant-numeric: tabular-nums; }
-.chartData th, .chartData td { padding: 8px; border-bottom: 1px solid rgb(24 23 28 / 9%); text-align: left; }
+.chartData th, .chartData td { padding: 8px; border-bottom: 1px solid color-mix(in srgb, var(--color-ink) 9%, transparent); text-align: left; }
 .technicalDetails {
-  border-top: 1px solid rgb(24 23 28 / 9%);
-  color: #727079;
+  border-top: 1px solid color-mix(in srgb, var(--color-ink) 9%, transparent);
+  color: var(--color-muted);
 }
 .technicalDetails summary {
   display: inline-flex;
@@ -369,7 +369,7 @@
   grid-template-columns: minmax(120px, 1fr) minmax(0, 2fr);
   gap: 12px;
 }
-.technicalDetails dt { color: #5e5b65; font-size: 12px; font-weight: 700; }
+.technicalDetails dt { color: var(--color-muted); font-size: 12px; font-weight: 700; }
 .technicalDetails dd { margin: 0; overflow-wrap: anywhere; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 11px; }
 .srOnly { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap; }
 .trendBars {
@@ -386,7 +386,7 @@
 .trendBar {
   min-height: 4px;
   border-radius: 5px 5px 0 0;
-  background: #17171a;
+  background: var(--color-ink);
 }
 .funnel {
   display: grid;
@@ -395,7 +395,7 @@
   gap: 9px;
 }
 .funnelArrow {
-  color: #8b8d95;
+  color: var(--color-muted);
 }
 .split {
   display: grid;
@@ -408,7 +408,7 @@
 .mission {
   padding: 15px;
   border-radius: 12px;
-  background: #f5f5f7;
+  background: var(--color-soft);
 }
 .mission h3,
 .mission p {
@@ -416,12 +416,12 @@
 }
 .mission p {
   margin-top: 7px;
-  color: #676a73;
+  color: var(--color-muted);
   font-size: 12px;
 }
 .source {
   margin: 10px 0 0;
-  color: #858790;
+  color: var(--color-muted);
   font-size: 10px;
 }
 .chainLinks {
@@ -436,16 +436,16 @@
   align-items: center;
   padding: 0 12px;
   border-radius: 9px;
-  background: #17171a;
-  color: #fff;
+  background: var(--color-ink);
+  color: var(--color-surface);
   font-size: 12px;
   font-weight: 750;
   text-decoration: none;
 }
-.dashboard :is(button, input, select, summary, a):focus-visible { outline: 3px solid #18171c; outline-offset: 3px; }
+.dashboard :is(button, input, select, summary, a):focus-visible { outline: 3px solid var(--color-ink); outline-offset: 3px; }
 @media (hover: hover) {
-  .sortDirection:hover, .exportButton:hover, .pagination button:not(:disabled):hover, .metricTabs button:hover { background: #f7f7f8; color: #18171c; }
-  .metricTabs button[aria-pressed="true"]:hover { background: #ebe6ff; color: #4428bd; }
+  .sortDirection:hover, .exportButton:hover, .pagination button:not(:disabled):hover, .metricTabs button:hover { background: var(--color-soft); color: var(--color-ink); }
+  .metricTabs button[aria-pressed="true"]:hover { background: var(--color-accent-soft); color: var(--color-accent); }
 }
 @media (min-width: 48rem) {
   .metricGrid {

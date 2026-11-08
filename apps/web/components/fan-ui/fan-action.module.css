@@ -64,22 +64,22 @@
   border-color: transparent;
   border-radius: var(--radius-pill);
   /* Preserve brand hues while giving 15px white labels sufficient contrast. */
-  background: linear-gradient(rgb(0 0 0 / 18%), rgb(0 0 0 / 18%)), var(--color-primary-action);
-  color: #fff;
+  background: linear-gradient(color-mix(in srgb, var(--color-ink) 18%, transparent), color-mix(in srgb, var(--color-ink) 18%, transparent)), var(--color-primary-action);
+  color: var(--color-surface);
   font-size: var(--fan-action-emphasis-size);
-  box-shadow: 0 5px 8px rgb(58 18 55 / 22%);
+  box-shadow: 0 5px 8px color-mix(in srgb, var(--color-ink) 22%, transparent);
 }
 
 .neutral {
   border-color: var(--color-line);
-  background: #fff;
+  background: var(--color-surface);
   color: var(--color-ink);
 }
 
 .danger {
   border-color: transparent;
   background: var(--color-error);
-  color: #fff;
+  color: var(--color-surface);
 }
 
 /* 행 안 작은 버튼: 보이는 높이 36, 누르는 영역은 ::after로 44. */
@@ -107,7 +107,7 @@
   border-color: transparent;
   border-radius: var(--radius-pill);
   background:
-    linear-gradient(#fff, #fff) padding-box,
+    linear-gradient(var(--color-surface), var(--color-surface)) padding-box,
     var(--color-primary-action) border-box;
   color: var(--color-service-ink);
   font-family: "Google Sans", Roboto, Arial, sans-serif;
@@ -127,7 +127,7 @@
   border-color: transparent;
   border-radius: var(--radius-pill);
   background:
-    linear-gradient(#fff, #fff) padding-box,
+    linear-gradient(var(--color-surface), var(--color-surface)) padding-box,
     var(--color-primary-action) border-box;
   color: var(--color-service-ink);
   font-family: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
@@ -224,19 +224,19 @@
 
   .neutral:hover:not(:disabled),
   .text:hover:not(:disabled) {
-    background: oklch(97.5% 0 0);
+    background: var(--color-soft);
   }
 
   .service:hover:not(:disabled) {
     background:
-      linear-gradient(oklch(97.5% 0 0), oklch(97.5% 0 0)) padding-box,
-      linear-gradient(125deg, oklch(62% 0.23 18), oklch(56% 0.26 340), oklch(50% 0.23 285)) border-box;
+      linear-gradient(var(--color-soft), var(--color-soft)) padding-box,
+      linear-gradient(125deg, var(--color-accent), var(--color-accent), var(--color-accent)) border-box;
   }
 
   .passport:hover:not(:disabled) {
     background:
-      linear-gradient(oklch(97.5% 0 0), oklch(97.5% 0 0)) padding-box,
-      linear-gradient(125deg, oklch(62% 0.23 18), oklch(56% 0.26 340), oklch(50% 0.23 285)) border-box;
+      linear-gradient(var(--color-soft), var(--color-soft)) padding-box,
+      linear-gradient(125deg, var(--color-accent), var(--color-accent), var(--color-accent)) border-box;
   }
 }
 
@@ -256,7 +256,7 @@
 }
 
 /* Current Pencil source applies only to the groups release. */
-.groups.primary:not(:disabled){background:linear-gradient(91.463deg,#d9194c -7.804%,#b91a93 50%,#6042d5 107.804%);box-shadow:none}
+.groups.primary:not(:disabled){background:linear-gradient(91.463deg,var(--color-accent) -7.804%,var(--color-accent) 50%,var(--color-accent) 107.804%);box-shadow:none}
 
 /* Icon-only action: a square 44px target, the icon is the only flex child. */
 .action.iconOnly{min-width:44px;width:44px;padding:0;gap:0}
