@@ -2,7 +2,7 @@
 import {WalletHistoryPanel} from '@/features/group-wallet/ui/wallet-screen';
 import {WalletBalances,WalletCard,WalletExchange} from '@/features/group-wallet/ui/wallet-card';
 import {StanWallet,type StanSlot} from '@/features/group-wallet/ui/stan-wallet';
-import {FavoritePickMenu,SelectedBiasBar} from '@/features/selected-bias/ui/selected-bias-chip';
+import {FavoritePickMenu} from '@/features/selected-bias/ui/selected-bias-chip';
 import walletStyles from '@/features/group-wallet/ui/stan-wallet.module.css';
 import {openingPage} from '@/features/passport/ui/passport-mission-book';
 import {passportRoadmapSchema} from '@/features/passport/domain/dukjil-types';
@@ -79,7 +79,7 @@ export function GroupBenefitsScreen({locale,initialHeart=null,signedOut=false}:{
  return <FanAppFrame locale={locale} currentPath='/benefits' groupsEnabled mainId='benefits-main'><FanContentContainer as='main' id='benefits-main' className={styles.page}>
  <header className={styles.srOnly}><FanHeading as='h1'>{c.title}</FanHeading></header>
  <BenefitsAlerts><BenefitsSections><BenefitsAlertList/>
- <div className={styles.top}><SelectedBiasBar locale={locale} bias={bias} loginHref={fanLoginHref(locale,`/benefits?locale=${locale}`)}/><BenefitsWallet key={`${locale}:${auth.ownerKey}`} locale={locale} signedOut={signedOut} bias={bias} onAffordableChange={ignoreAffordable}/></div>
+ <div className={styles.top}><BenefitsWallet key={`${locale}:${auth.ownerKey}`} locale={locale} signedOut={signedOut} bias={bias} onAffordableChange={ignoreAffordable}/></div>
  <BenefitsFirstRow locale={locale} bias={bias} signedOut={signedOut}/>
  <div className={styles.main}><BenefitsDailyMissions locale={locale}/><BenefitsToday locale={locale} emphasise={false}/></div>
  <BenefitsSide>{auth.ready?(auth.authenticated?<BenefitsHistory locale={locale}/>:<BenefitsGuestHistory locale={locale}/>):signedOut&&<BenefitsGuestHistory locale={locale}/>}</BenefitsSide></BenefitsSections></BenefitsAlerts>

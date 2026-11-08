@@ -408,7 +408,8 @@ it('draws the favorite the server read while the browser is still signing in, th
  bias.value = {status:'loading',options:[],selected:null,unverified:null,select:()=>{},retry:()=>{}};
  const {rerender} = render(<GroupBenefitsScreen locale='ko' initialHeart={initial}/>);
  expect(screen.getByRole('region',{name:'최애 응원'})).toHaveTextContent('Server Pick');
- expect(document.querySelector('[data-selected-bias-bar="selected"]')).toHaveTextContent('Server Pick');
+ // F1: the header capsule carries 등급 · 최애 · ♥ · P, so the 덕질 body draws no status bar of its own.
+ expect(document.querySelector('[data-selected-bias-bar]')).toBeNull();
  bias.value = {status:'ready',options:[],selected:{...initial,slug:'stored-pick',name:'Stored Pick'},unverified:null,select:()=>{},retry:()=>{}};
  rerender(<GroupBenefitsScreen locale='ko' initialHeart={initial}/>);
  expect(screen.getByRole('region',{name:'최애 응원'})).toHaveTextContent('Stored Pick');
