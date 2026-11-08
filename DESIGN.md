@@ -25,7 +25,7 @@ radius-scale: "12px / 8px / pill"
 | 본문 | 본문 15(390)·14(768+)/400/1.5, 글 본문·댓글 15 고정 | `--fan-body-size(-wide)`, `--fan-post-body-size` | 2026-11-09 8장 ① |
 | 보조 정보 | 메타 12/400 `--color-muted` | `--fan-metadata-size` | 2026-11-09 R1 |
 | 카드 외곽 | 카드 12 반경(`--radius-card`), 1px `--color-line`, 그림자 0, 바탕 `--color-surface` 위 캔버스 `--color-soft` | `FanSurface` | 2026-11-09 8장 ⑦ R14 |
-| 강조 버튼 | primary: 단색 `--color-accent`(`--color-page-accent`) 채움 + 흰 글자, 높이 44(390)/48(1024+), 반경 8, 15/700. 현재 dev: 알약·48 고정·모임 밖 그림자(게이트 A 전까지 알약·48 유지). 화면당 1개(예외: 럭키드로우 응모 가능 상태에서는 `응모하기` primary·`교환` secondary — 8장 plan ③) | `fan-action.module.css` | 2026-11-09 8장 ②④⑤ |
+| 강조 버튼 | primary: 단색 `--color-accent`(`--color-page-accent`) 채움 + 흰 글자, 높이 44(390)/48(1024+), 반경 8, 15/700. 현재 코드: 단색 accent·그림자 0·15/700(2026-11-09 design-sync-1), 반경은 알약·높이 48 고정(게이트 A 전까지 유지). 화면당 1개(예외: 럭키드로우 응모 가능 상태에서는 `응모하기` primary·`교환` secondary — 8장 plan ③) | `fan-action.module.css` | 2026-11-09 8장 ②④⑤ |
 | 보조 버튼 | secondary: 높이 44, 반경 8, 1px `--color-ink` 선, 15/700 | `fan-action.module.css` | 2026-11-09 R14 |
 | 탭/세그먼트(칩) | 밑줄 탭(`underline`) 44 sticky top 56, 15/700, 활성 밑줄 2px accent / 칩 36 반경 8 14/700, 선택 `--color-accent-soft` + 1px accent / 세그먼트 40 반경 8 | `fan-tabs.tsx` | 2026-11-09 R3·R14 |
 | 빈 상태 | 섹션 틀 유지 + 회색 14/400 한 문장(`…이 없습니다`, 느낌표·권유 0), 높이 = 그 자리 행 템플릿(78), 아이콘·일러스트·버튼 0. 행동이 필요하면 아래 행 자체(`지난 럭키드로우 ›`, `+ 최애 고르기`). 비로그인은 빈 상태가 아니라 잠금(`FanLockedValue`, 화면당 로그인 primary 1) | `fan-state.tsx` | 2026-11-09 R7 + 5장 |
@@ -112,7 +112,7 @@ radius-scale: "12px / 8px / pill"
 | 상태색 | 빨강 1 #9f1239(오류·LIVE·알림 점). 성공은 체크 아이콘 + 잉크 | `--color-error` |
 | 비활성 | #e5e5e5 / #5d5d5d (보랏빛 회색 #e4e1e6 폐기) | `--fan-action-disabled-bg/-ink` |
 | 백드롭 · 포커스 링 | rgb(23 23 26 / 42%) · `--color-ink` 3px/3px | `--color-backdrop`, `--color-focus`, `--focus-width`, `--focus-offset` |
-| 폐기 | 3색 그라데이션 `--color-primary-action`(로고 아트 제외), 코인 노랑 `--color-coin(-ink)`(→ lucide `Coins` 선 아이콘 + 잉크 글자), 금박 `--color-foil`(패스포트 삽화는 이미지 안에서만), 보라 `--color-service-ink`(→ `--color-page-accent`), `--color-surface-focus`(→ `--color-soft`), `--color-success`·`--color-warning`(→ 잉크) | 예정: 모두 globals에 남아 있다. `--color-primary-action`·`--color-service-ink`·`--color-surface-focus`는 별칭 단계(값이 accent 계열과 같음), 코인·금박·성공·경고는 원래 값. 사용처 치환 전 |
+| 폐기 | 3색 그라데이션 `--color-primary-action`(로고 아트 제외), 코인 노랑 `--color-coin(-ink)`(→ lucide `Coins` 선 아이콘 + 잉크 글자), 금박 `--color-foil`(패스포트 삽화는 이미지 안에서만), 보라 `--color-service-ink`(→ `--color-page-accent`), `--color-surface-focus`(→ `--color-soft`), `--color-success`·`--color-warning`(→ 잉크) | 예정: 모두 globals에 남아 있다. `--color-primary-action`은 2026-11-09 design-sync-1에서 삭제(사용처 10파일을 `--color-accent`로 치환, 값 동일). `--color-service-ink`·`--color-surface-focus`는 별칭 단계(값이 accent 계열과 같음), 코인·금박·성공·경고는 원래 값. 사용처 치환 전 |
 
 **H6 색 교체(사용자 지시 2026-11-08, 브리프 규칙 8 개정)**: UI 강조색은 kyaa 핑크 1색(`--color-accent` #d11b62, 흰 글자 대비 5.19:1이라 짙은 변형 없이 버튼에 쓰고, 글자용은 기존 `-ink` #ad1457). 로고 팔레트(#fd48aa 계열)에서 UI 토큰을 따로 늘리지 않았다. **보라는 CSS·TSX의 hex·rgb·hsl·oklch에서 전부 제거**(색상 250~320°·채도 10% 이상, 보랏빛 회색 포함, 로고·그림 아트 파일만 허용)하고 같은 자리를 핑크 토큰으로 바꿨다: 옅은 바탕 → `-soft`, 테두리 → `-line`, 채움·링크 → `-accent`, 짙은 글자 → `-ink`. 보랏빛 회색은 중립 토큰(`--color-soft` 바탕 1단, `--color-line-subtle`·`--color-line` 선, `--color-muted`·`--color-ink` 글자)으로 모았다. 핑크→보라 3색 그라데이션 버튼 50여 곳은 핑크 단색으로 바꿨다. **짙은 회색 채움 캡슐 금지**: 캡슐·칩·배지는 흰 바탕 + 1px 테두리(선택은 핑크 테두리·글자 또는 옅은 핑크 바탕 1단), 진행 막대·행동 버튼·읽지 않음 배지·단계 번호는 `--color-accent`. 기계 검사는 N29(보라 색상값)·N30(짙은 회색 알약), 예외는 Apple 로그인 버튼(브랜드)·영상 위 표시·관리자 설문 번호.
 

@@ -5,7 +5,7 @@
   --muted: var(--color-muted);
   --line: var(--color-line);
   --card-line: var(--color-line-subtle);
-  --spectrum: var(--color-primary-action);
+  --spectrum: var(--color-accent);
   --spectrum-hover: var(--color-accent);
   --service-ink: var(--color-service-ink);
   --card-shadow: none;

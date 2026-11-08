@@ -22,7 +22,6 @@
   --color-warning: #8a4b08;
   --color-backdrop: rgb(23 23 26 / 42%);
   --color-focus: var(--color-ink);
-  --color-primary-action: var(--color-accent);
   /* 261107-2 S1: 화면마다 직접 쓰던 값에 역할 이름만 붙인다(값 변경 없음). */
   --color-accent: #d11b62;
   --color-accent-soft: #fff0f6;
@@ -107,7 +106,7 @@
   --fan-action-icon-size: 18px;
   --fan-action-label-size: 14px;
   --fan-action-emphasis-size: 15px;
-  --fan-action-weight: 800;
+  --fan-action-weight: 700;
   --color-service-ink: var(--color-accent-ink);
 
   /* Full calendar and embedded widget share type; layout stays surface-specific. */

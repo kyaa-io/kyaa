@@ -63,11 +63,11 @@
   min-height: var(--fan-action-primary-height);
   border-color: transparent;
   border-radius: var(--radius-pill);
-  /* Preserve brand hues while giving 15px white labels sufficient contrast. */
-  background: linear-gradient(color-mix(in srgb, var(--color-ink) 18%, transparent), color-mix(in srgb, var(--color-ink) 18%, transparent)), var(--color-primary-action);
+  /* 단색 강조 1색: #d11b62 위 흰 글자 5.19:1(AA). 그림자 0(DESIGN.md 깊이). */
+  background: var(--color-accent);
   color: var(--color-surface);
   font-size: var(--fan-action-emphasis-size);
-  box-shadow: 0 5px 8px color-mix(in srgb, var(--color-ink) 22%, transparent);
+  box-shadow: none;
 }
 
 .neutral {
@@ -108,7 +108,7 @@
   border-radius: var(--radius-pill);
   background:
     linear-gradient(var(--color-surface), var(--color-surface)) padding-box,
-    var(--color-primary-action) border-box;
+    var(--color-accent) border-box;
   color: var(--color-service-ink);
   font-family: "Google Sans", Roboto, Arial, sans-serif;
   font-size: var(--fan-action-emphasis-size);
@@ -128,7 +128,7 @@
   border-radius: var(--radius-pill);
   background:
     linear-gradient(var(--color-surface), var(--color-surface)) padding-box,
-    var(--color-primary-action) border-box;
+    var(--color-accent) border-box;
   color: var(--color-service-ink);
   font-family: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
   font-size: var(--fan-action-emphasis-size);
@@ -254,9 +254,6 @@
     animation-duration: 3s;
   }
 }
-
-/* Current Pencil source applies only to the groups release. */
-.groups.primary:not(:disabled){background:linear-gradient(91.463deg,var(--color-accent) -7.804%,var(--color-accent) 50%,var(--color-accent) 107.804%);box-shadow:none}
 
 /* Icon-only action: a square 44px target, the icon is the only flex child. */
 .action.iconOnly{min-width:44px;width:44px;padding:0;gap:0}

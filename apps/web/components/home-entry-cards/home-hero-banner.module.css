@@ -187,7 +187,7 @@
 .banner[data-kind="art"] .copy h2 { font-size:clamp(28px, 3.4vw, 44px); line-height:1.12; overflow-wrap:anywhere; text-wrap:balance; }
 .banner[data-kind="art"] .description { color:color-mix(in srgb, var(--color-canvas) 92%, transparent); font-size:var(--fan-body-size); line-height:1.5; font-weight:550; overflow-wrap:anywhere; }
 .banner[data-kind="art"] .action { margin-top:var(--space-2); }
-.banner[data-kind="art"] .action > a { width:fit-content; max-width:100%; min-height:48px; gap:var(--space-6); padding:0 var(--space-6); border-radius:var(--radius-pill); background:var(--color-primary-action); color:var(--color-canvas) !important; font-size:var(--fan-action-emphasis-size); }
+.banner[data-kind="art"] .action > a { width:fit-content; max-width:100%; min-height:48px; gap:var(--space-6); padding:0 var(--space-6); border-radius:var(--radius-pill); background:var(--color-accent); color:var(--color-canvas) !important; font-size:var(--fan-action-emphasis-size); }
 .banner[data-kind="art"] .action svg { width:16px; height:16px; }
 /* Tablet and the narrow laptop hero trim the picture's empty left side, so the copy column narrows with it. */
 @media (min-width:768px) and (max-width:1199px) {

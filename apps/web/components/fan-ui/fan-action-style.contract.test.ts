@@ -69,6 +69,21 @@ describe("shared fan action style contract", () => {
   });
 });
 
+describe("FanAction primary 1단계(design-sync-1)", () => {
+  it("fills primary with the single accent, no shadow, weight 700, and keeps the pill and 48 height for gate A", () => {
+    const primaryRule = actionCss.match(/\.primary\s*\{([\s\S]*?)\n\}/)?.[1] ?? "";
+    const tokens = readFileSync(resolve(process.cwd(), "app/globals.css"), "utf8");
+    expect(primaryRule).toContain("background: var(--color-accent);");
+    expect(primaryRule).toContain("box-shadow: none;");
+    expect(primaryRule).not.toMatch(/gradient|color-mix/);
+    expect(primaryRule).toContain("border-radius: var(--radius-pill)");
+    expect(tokens).toContain("--fan-action-weight: 700;");
+    expect(tokens).toContain("--fan-action-primary-height: 48px;");
+    expect(tokens).not.toContain("--color-primary-action");
+    expect(actionCss).not.toMatch(/\.groups\.primary/);
+  });
+});
+
 describe("FanAction icon layout contract", () => {
   it("keeps icon slots in flex flow, never absolute", () => {
     const css = actionCss;
