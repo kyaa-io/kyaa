@@ -12,7 +12,7 @@ type Locale = "ko" | "en";
 const TEXT = {
   ko: { title: "SNS 공유 인증", accepted: "인정", revoked: "취소됨", all: "전체", member: "회원", creator: "크리에이터", post: "게시물", points: "지급", submitted: "제출", duplicate: (n: number) => `중복 제출 ${n}명`,
     reason: "취소 사유", revoke: "취소하고 회수", empty: "공유 인증이 없습니다.", more: "더 보기", failed: "처리하지 못했습니다.", ADMIN_REQUIRED: "관리자 권한이 필요합니다.", REASON_REQUIRED: "취소 사유를 3자 이상 적어 주세요.",
-    corrected: "취소했고 포인트를 회수했습니다.", review: "취소했습니다. 포인트를 이미 써서 포인트 환수 검토로 넘겼습니다.", stamp_voided: "취소했고 도장을 무효 처리했습니다.", none: "취소했습니다. 회수할 지급이 없었습니다.", replayed: "이미 취소된 인증입니다." },
+    corrected: "취소했고 포인트를 회수했습니다.", review: "취소했습니다. 포인트를 이미 써서 포인트 환수 검토로 넘겼습니다.", stamp_voided: "취소했고 스탬프를 무효 처리했습니다.", none: "취소했습니다. 회수할 지급이 없었습니다.", replayed: "이미 취소된 인증입니다." },
   en: { title: "Social share proofs", accepted: "Accepted", revoked: "Cancelled", all: "All", member: "Member", creator: "Creator", post: "Post", points: "Paid", submitted: "Submitted", duplicate: (n: number) => `Also submitted by ${n}`,
     reason: "Reason", revoke: "Cancel and take back", empty: "No share proofs.", more: "Load more", failed: "Could not complete.", ADMIN_REQUIRED: "Admin rights are required.", REASON_REQUIRED: "Enter a reason of at least 3 characters.",
     corrected: "Cancelled and points taken back.", review: "Cancelled. The points were already spent and went to the point clawback review.", stamp_voided: "Cancelled and the stamp voided.", none: "Cancelled. Nothing had been paid.", replayed: "Already cancelled." },

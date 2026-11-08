@@ -63,8 +63,8 @@ it("keeps onchain stamp status and bingo separate from ten mission progress", ()
  ]} />);
  expect(screen.getByRole("progressbar")).toHaveAttribute("value", "1");
  expect(screen.getAllByRole("listitem")).toHaveLength(10);
- expect(screen.getByText("미션 도장 · 지갑 준비 대기")).toBeTruthy();
- expect(screen.getByText("BINGO · 미션 도장 · 발급 완료")).toBeTruthy();
+ expect(screen.getByText("미션 스탬프 · 지갑 준비 대기")).toBeTruthy();
+ expect(screen.getByText("BINGO · 미션 스탬프 · 발급 완료")).toBeTruthy();
 });
 
 // Keep these domain-request tests independent of the separately tested translation transport.

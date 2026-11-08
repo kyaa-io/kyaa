@@ -65,7 +65,7 @@ function conditionLabel(condition: NextPassportBenefit["missingConditions"][numb
   switch (condition.type) {
     case "score": return `${copy[locale].score} ${condition.current} / ${condition.required}`;
     case "level": return locale === "ko" ? `${levelLabel(locale, condition.required)} 등급 필요` : translate(locale, localizedMessages.maf617b4b6fb9, "{0} level required", [levelLabel(locale, condition.required)]);
-    case "stamp": return `${stampTypeLabel(locale, condition.required)} ${locale === "ko" ? "도장 필요" : translate(locale, localizedMessages.m1d222f21cbca, "Stamp required")}`;
+    case "stamp": return `${stampTypeLabel(locale, condition.required)} ${locale === "ko" ? "스탬프 필요" : translate(locale, localizedMessages.m1d222f21cbca, "Stamp required")}`;
     case "activity": return locale === "ko" ? `${stampTypeLabel(locale, condition.required)} 완료 필요` : translate(locale, localizedMessages.m1b757b0b21b2, "{0} activity required", [stampTypeLabel(locale, condition.required)]);
     case "opens_at": return `${locale === "ko" ? "신청·수령 시작" : translate(locale, localizedMessages.m181b0bcb5990, "Opens")}: ${new Intl.DateTimeFormat(locale, { calendar: "gregory", dateStyle: "medium", timeStyle: "short", timeZone: "Asia/Seoul" }).format(new Date(condition.at))} KST`;
   }

@@ -52,7 +52,7 @@ export function FanActivityCompletionSummary({
         <StampArtwork type={stampType} locale={locale} label={stampName} />
       </div>
       <div className={styles.content}>
-        <p className={styles.eyebrow}>{stampName} {locale === "ko" ? "도장" : "Stamp"}</p>
+        <p className={styles.eyebrow}>{stampName} {locale === "ko" ? "스탬프" : "Stamp"}</p>
         <Heading id={headingId}>{title}</Heading>
         {description ? <p className={styles.description}>{description}</p> : null}
         <dl className={styles.metrics} aria-label={locale === "ko" ? "활동 보상" : translate(locale, localizedMessages.mc2562d2ef72d, "Activity rewards")}>

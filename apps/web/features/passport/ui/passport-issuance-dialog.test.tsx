@@ -166,7 +166,7 @@ describe("PassportIssuanceCeremony", () => {
     });
     const settling = container.querySelector("[data-issuance-stamp-moment]");
     expect(settling).toHaveAttribute("data-state", "settling");
-    expect(screen.getByRole("img", { name: /KARA 팬 인증 도장.*1점 획득/ })).toBeInTheDocument();
+    expect(screen.getByRole("img", { name: /KARA 팬 인증 스탬프.*1점 획득/ })).toBeInTheDocument();
     expect(settling).toHaveTextContent("2026.07.21");
     expect(settling).toHaveTextContent("+1");
     expect(decodeURIComponent(settling!.querySelector("img")!.getAttribute("src")!)).toContain("/images/stamps/ink-v1/frame");
@@ -195,9 +195,9 @@ describe("PassportIssuanceCeremony", () => {
     render(<PassportIssuanceCeremony issuance={aggregate} />);
 
     expect(screen.getAllByText("20000000…0002")).toHaveLength(2);
-    fireEvent.click(screen.getByRole("button", { name: "전체 Fan ID 복사" }));
+    fireEvent.click(screen.getByRole("button", { name: "전체 팬 ID 복사" }));
     await waitFor(() => expect(navigator.clipboard.writeText).toHaveBeenCalledWith(aggregate.passport.id));
-    expect(screen.getByText("Fan ID를 복사했어요.")).toBeInTheDocument();
+    expect(screen.getByText("팬 ID를 복사했어요.")).toBeInTheDocument();
   });
 
   it("localizes the verification description while reusing the same text-free artwork", () => {

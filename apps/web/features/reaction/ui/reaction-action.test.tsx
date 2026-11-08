@@ -63,7 +63,7 @@ describe("ReactionAction", () => {
     vi.stubGlobal("fetch", fetch);
     render(<ReactionAction slug="changha" locale="ko" variant="compact" />);
     fireEvent.click(await screen.findByRole("button", { name: "좋아요 남기기" }));
-    expect(await screen.findByRole("dialog")).toHaveTextContent("첫 좋아요 도장을 받았어요");
+    expect(await screen.findByRole("dialog")).toHaveTextContent("첫 좋아요 스탬프를 받았어요");
     fireEvent.click(screen.getByRole("button", { name: "나중에 할게요" }));
     expect(await screen.findByRole("button", { name: "좋아요 완료" })).toBeDisabled();
     expect(screen.queryByRole("alert")).not.toBeInTheDocument();
@@ -173,7 +173,7 @@ describe("ReactionAction", () => {
     resolvePost(response({ ...existing("queued"), created: true, passportExists: false }));
 
     expect(await screen.findByRole("dialog")).toBeInTheDocument();
-    expect(screen.getByRole("dialog")).toHaveTextContent("첫 좋아요 도장을 보관했어요");
+    expect(screen.getByRole("dialog")).toHaveTextContent("첫 좋아요 스탬프를 보관했어요");
     expect(screen.getByRole("link", { name: "패스포트 만들기" })).toHaveAttribute("href", `/c/kara/verify?locale=ko&source=reaction&reactionId=${reactionId}`);
     expect(fetch.mock.calls.filter(([, init]) => init?.method === "POST")).toHaveLength(1);
     expect(update).toHaveBeenCalledTimes(1);
@@ -187,7 +187,7 @@ describe("ReactionAction", () => {
     const button = await screen.findByRole("button", { name: locale === "ko" ? "좋아요 남기기" : "Leave a like" });
     await waitFor(() => expect(button).toBeEnabled());
     fireEvent.click(button);
-    expect(await screen.findByRole("dialog")).toHaveTextContent(locale === "ko" ? "첫 좋아요 도장을 받았어요" : "You earned your First Like Stamp");
+    expect(await screen.findByRole("dialog")).toHaveTextContent(locale === "ko" ? "첫 좋아요 스탬프를 받았어요" : "You earned your First Like Stamp");
     expect(screen.getByRole("link", { name: locale === "ko" ? "내 패스포트 보기" : "View my Passports" })).toHaveAttribute("href", `/passports?locale=${locale}#collection`);
     expect(decodeURIComponent(screen.getByRole("dialog").querySelector("img")!.getAttribute("src")!)).toContain("/images/stamps/ink-v1/first-like.webp");
   });

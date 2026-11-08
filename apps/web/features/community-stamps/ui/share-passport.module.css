@@ -42,9 +42,9 @@
 @media (max-width:380px) { .landing { padding:16px 12px; } .landingCard { padding:24px 18px 20px; border-radius:22px; } .landingCard h1 { font-size:24px; } }
 @media (prefers-reduced-motion:reduce) { .primary { transition:none; } .primary:active:not(:disabled) { transform:none; } }
 
-/* 도장 행 안에서는 강조 버튼을 쓰지 않는다. 화면의 강조는 하나다. */
+/* 스탬프 행 안에서는 강조 버튼을 쓰지 않는다. 화면의 강조는 하나다. */
 .quiet { width:auto; }
-/* 페이지마다 강조 버튼은 하나: 도장 줄 안의 공유는 글자 버튼이다. */
+/* 페이지마다 강조 버튼은 하나: 스탬프 줄 안의 공유는 글자 버튼이다. */
 .quietAction { min-height:var(--min-target); border:0; border-radius:var(--radius-control); background:transparent; color:var(--color-ink); font:inherit; font-size:var(--fan-metadata-size); font-weight:var(--fan-item-title-weight); padding:0 var(--space-1); display:inline-flex; align-items:center; justify-content:center; gap:var(--space-2); cursor:pointer; white-space:nowrap; }
 .quietAction:disabled { cursor:default; opacity:.7; }
 .quietAction svg { width:17px; height:17px; }

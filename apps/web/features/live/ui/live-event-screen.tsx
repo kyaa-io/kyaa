@@ -136,22 +136,22 @@ const copy = {
     introduction: "LIVE 소개",
     howTo: "참여 방법",
     benefit: "LIVE 혜택",
-    fanCode: "Fan Code",
+    fanCode: "출석코드",
     fanCodeHelper:
-      "LIVE에서 공개된 Fan Code를 입력하면 예약 여부와 관계없이 출석을 남길 수 있어요.",
+      "LIVE에서 공개된 출석코드를 입력하면 예약 여부와 관계없이 출석을 남길 수 있어요.",
     attendance: {
-      label: "Fan Code 입력",
+      label: "출석코드 입력",
       placeholder: "영문·숫자 4자 이상",
       submit: "출석 인증하기",
       pending: "출석 확인 중",
       signIn: "로그인하고 출석 인증하기",
       passport: "패스포트 발급 후 참여할 수 있어요.",
       issuePassport: "패스포트 발급받기",
-      beforeLive: "Fan Code는 LIVE 시작 후 입력할 수 있어요.",
+      beforeLive: "출석코드는 LIVE 시작 후 입력할 수 있어요.",
       notOpen: "아직 출석 인증 시간이 아니에요.",
       attendanceEnded: "출석 인증 시간이 종료되었어요.",
       invalid:
-        "Fan Code가 올바르지 않아요. LIVE에서 공개된 코드를 다시 확인해 주세요.",
+        "출석코드가 올바르지 않아요. LIVE에서 공개된 코드를 다시 확인해 주세요.",
       format: "영문과 숫자로 4자 이상 입력해 주세요.",
       rateLimited: "입력 횟수를 초과했어요. {time} 후 다시 시도해 주세요.",
       unavailable:
@@ -159,11 +159,11 @@ const copy = {
       wallet: "패스포트 준비가 끝나지 않았어요. 잠시 후 다시 시도해 주세요.",
       authenticationRequired: "로그인이 만료됐어요. 다시 로그인해 주세요.",
       successTitle: "LIVE 출석을 남겼어요",
-      successHelper: "출석 도장, Fan Score +3, 응모권 2장이 기록되었습니다.",
+      successHelper: "출석 스탬프, Fan Score +3, 응모권 2장이 기록되었습니다.",
       replay: "이미 완료한 출석 기록을 안전하게 확인했어요.",
-      survey: "설문 참여하고 다음 도장 받기",
+      survey: "설문 참여하고 다음 스탬프 받기",
     },
-    steps: ["예약", "LIVE 시청", "Fan Code", "설문", "도장"],
+    steps: ["예약", "LIVE 시청", "출석코드", "설문", "스탬프"],
     stepHelpers: [
       "일정을 먼저 저장해요",
       "새 탭에서 시청해요",
@@ -203,7 +203,7 @@ const copy = {
     watch: "LIVE 보러가기",
     newWindow: "새 창",
     reservedTitle: "예약이 완료되었습니다",
-    stampIssued: "예약 도장 적립 완료",
+    stampIssued: "예약 스탬프 적립 완료",
     continue: "계속 보기",
     close: "예약 완료 창 닫기",
   },
@@ -1667,7 +1667,7 @@ export function LiveEventScreen({
                   <div className={styles.fanCodeIntro}>
                     <div className={styles.fanCodeHeading}>
                       {attendancePhase === 'open' && <p className={styles.attendanceOpenLabel}><Radio aria-hidden="true" />{locale === "ko" ? '출석 접수 중' : translate(locale, localizedMessages.m322388657d99, "CHECK-IN OPEN")}</p>}
-                      <h2 id="fan-code-title">{attendancePhase === 'open' ? locale === "ko" ? '지금 Fan Code를 입력해 주세요' : translate(locale, localizedMessages.mbe3a5f73fa38, "Enter your Fan Code now") : eventCopy?.fanCode ?? c.fanCode}</h2>
+                      <h2 id="fan-code-title">{attendancePhase === 'open' ? locale === "ko" ? '지금 출석코드를 입력해 주세요' : translate(locale, localizedMessages.mbe3a5f73fa38, "Enter your Fan Code now") : eventCopy?.fanCode ?? c.fanCode}</h2>
                       {live.effectiveStatus !== "scheduled" || attendancePhase === 'open' ? <p>{eventCopy?.fanCodeHelper ?? c.fanCodeHelper}</p> : null}
                     </div>
                     <div className={styles.fanCodeIcon} data-fan-code-header-icon aria-hidden="true">

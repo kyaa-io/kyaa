@@ -43,7 +43,7 @@ describe("SharePassport", () => {
     fireEvent.click(screen.getByRole("button", { name: "공유" }));
     await waitFor(() => expect(navigator.share).toHaveBeenCalledOnce());
     expect(screen.queryByRole("alert")).not.toBeInTheDocument();
-    expect(screen.queryByText(/도장이 기록/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/스탬프가 기록/)).not.toBeInTheDocument();
   });
 
   it("drops an old owner's pending link after an owner switch", async () => {

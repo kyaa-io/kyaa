@@ -180,7 +180,7 @@ describe("LiveSurveyScreen", () => {
       "href",
       `/passports/${ids.passport}?locale=ko`,
     );
-    expect(screen.getByRole("img", { name: "후기 참여 도장" })).toHaveAttribute("data-stamp-type", "survey");
+    expect(screen.getByRole("img", { name: "후기 참여 스탬프" })).toHaveAttribute("data-stamp-type", "survey");
     expect(container.querySelector('[data-stamp-type="survey"]')).toBeInTheDocument();
   });
 

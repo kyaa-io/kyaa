@@ -438,7 +438,7 @@ describe("CertificationDetailScreen", () => {
     expect(screen.getByText(/멤버십 시작일이나 가입 기간은 선택 사항/)).toBeInTheDocument();
     expect(screen.getByText(/최초 승인 시 한 번만 보상/)).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "크리에이터 계정 확인" })).toHaveAttribute("href", "https://www.youtube.com/@kara");
-    expect(screen.getByText("멤버십 도장 1개")).toBeInTheDocument();
+    expect(screen.getByText("멤버십 스탬프 1개")).toBeInTheDocument();
     expect(screen.queryByText("응모권")).not.toBeInTheDocument();
     expect(screen.getByText("보완 필요")).toBeInTheDocument();
     expect(screen.getByText("보완 요청 사유")).toBeInTheDocument();

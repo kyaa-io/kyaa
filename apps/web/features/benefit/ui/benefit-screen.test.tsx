@@ -292,7 +292,7 @@ describe("benefit screens", () => {
 
     render(<BenefitDetailScreen benefitId={benefit.id} locale="ko" />);
 
-    expect(await screen.findByText("설문 도장 보유")).toBeInTheDocument();
+    expect(await screen.findByText("설문 스탬프 보유")).toBeInTheDocument();
     expect(screen.getByText("브론즈")).toBeInTheDocument();
     expect(screen.getAllByText("설문")).toHaveLength(2);
     expect(screen.getByText("공식 YouTube 링크")).toBeInTheDocument();
@@ -923,7 +923,7 @@ describe("benefit screens", () => {
 
     expect(await screen.findByText("필요 팬 점수")).toBeInTheDocument();
     expect(screen.getByText("필요 등급")).toBeInTheDocument();
-    expect(screen.getByText("필요 도장")).toBeInTheDocument();
+    expect(screen.getByText("필요 스탬프")).toBeInTheDocument();
     expect(screen.getByText("필요 활동")).toBeInTheDocument();
     expect(screen.getByText("골드")).toBeInTheDocument();
     expect(screen.getByText("attendance")).toBeInTheDocument();

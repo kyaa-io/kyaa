@@ -121,7 +121,7 @@ describe("CertificationPanel", () => {
     });
     expect(mission).toHaveTextContent("Instagram");
     expect(mission).toHaveTextContent("+1점");
-    expect(mission).not.toHaveTextContent("멤버십 도장");
+    expect(mission).not.toHaveTextContent("멤버십 스탬프");
     expect(mission).not.toHaveTextContent("응모권");
 
     fireEvent.click(screen.getByRole("tab", { name: "내 인증 내역" }));

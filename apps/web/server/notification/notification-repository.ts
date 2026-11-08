@@ -74,7 +74,7 @@ export function projectNotificationRow(
     group_event_reviewed: ["행사 승인 검토가 끝났어요", "결과를 확인해 주세요.", "Event review finished", "View the result."],
     group_raffle_won: ["추첨에 당첨됐어요", "수령 기한과 경품 정보를 확인해 주세요.", "You won the draw", "Check the claim deadline and prize details."],
     support_reply: ["문의 답변이 도착했어요", "앱에서 답변을 확인해 주세요.", "Your support reply is ready", "View the reply in the app."],
-    stamp_issued: ["새 도장이 발급됐어요", "내 도장을 확인해 주세요.", "You received a new stamp", "View your stamp in the app."],
+    stamp_issued: ["새 스탬프가 발급됐어요", "내 스탬프를 확인해 주세요.", "You received a new stamp", "View your stamp in the app."],
     participation_deadline: ["참여 마감이 다가오고 있어요", "진행 중인 미션을 확인해 주세요.", "A mission closes soon", "Check your unfinished mission in the app."],
     fan_friend_request: ["친구 요청이 도착했어요", "친구 요청을 확인해 주세요.", "New friend request", "Review your friend request."],
     fan_dm_request: ["메시지 요청이 도착했어요", "메시지 요청을 확인해 주세요.", "New message request", "Review your message request."],

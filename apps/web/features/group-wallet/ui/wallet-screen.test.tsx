@@ -40,13 +40,13 @@ it('recovers a committed exchange after a lost response without another debit',a
 it('asks for the first stamp instead of a zero-day streak',async()=>{
  vi.stubGlobal('fetch',vi.fn(async(url:string)=>Response.json(url.endsWith('/history')?{entries:[]}:{...wallet,attendance:{...wallet.attendance,streak:0,nextBonusIn:7}})));
  render(<WalletScreen locale='ko' attendance/>);await screen.findByRole('button',{name:'오늘 출석하고 포인트 받기'});
- expect(screen.getByRole('heading',{name:'오늘 첫 도장을 찍어요'})).toBeInTheDocument();expect(screen.queryByText(/0일 연속/)).toBeNull();
+ expect(screen.getByRole('heading',{name:'오늘 첫 스탬프를 찍어요'})).toBeInTheDocument();expect(screen.queryByText(/0일 연속/)).toBeNull();
 });
 it('shows the seventh-day reward and blocks exchanges beyond the balance',async()=>{
  vi.stubGlobal('fetch',vi.fn(async(url:string)=>Response.json(url.endsWith('/history')?{entries:[]}:wallet)));
  const view=render(<WalletScreen locale='ko' attendance/>);await screen.findByRole('button',{name:'오늘 출석하고 포인트 받기'});
  expect(screen.getByRole('heading',{name:'6일 연속 출석 중'})).toBeInTheDocument();
- expect(screen.getByText('오늘 일곱 번째 도장을 찍어요')).toBeInTheDocument();expect(screen.getByText('매일 출석하면 포인트를 받아요 · 7일 연속 출석하면 보너스 포인트')).toBeInTheDocument();expect(screen.queryByText('+20P')).not.toBeInTheDocument();
+ expect(screen.getByText('오늘 일곱 번째 스탬프를 찍어요')).toBeInTheDocument();expect(screen.getByText('매일 출석하면 포인트를 받아요 · 7일 연속 출석하면 보너스 포인트')).toBeInTheDocument();expect(screen.queryByText('+20P')).not.toBeInTheDocument();
  view.rerender(<WalletExchangeDialog locale='ko' open onClose={()=>{}}/>);await screen.findByRole('button',{name:'광고 보고 교환하기'});
  expect(screen.queryByRole('spinbutton')).toBeNull();expect(screen.getByRole('button',{name:'광고 보고 교환하기'})).toBeEnabled();
 });

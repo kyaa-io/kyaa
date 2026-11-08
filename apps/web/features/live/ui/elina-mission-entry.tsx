@@ -26,7 +26,7 @@ const copy = {
     invitation: "마음에 드는 작품을 고르고, 그림 속 디테일도 찾아봐요.",
     count: "투표 1개 · 퀴즈 1개",
     action: "미션 시작하기",
-    hint: "작품을 고르고 도장을 남겨요.",
+    hint: "작품을 고르고 스탬프를 남겨요.",
   },
   en: {
     eyebrow: "MISSIONS OPEN NOW",

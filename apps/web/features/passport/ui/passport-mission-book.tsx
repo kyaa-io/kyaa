@@ -42,7 +42,7 @@ const parseRoadmap = (value: unknown) => passportRoadmapSchema.parse(value);
 const ONBOARDING_KEY = "kyaa:passport:mission-onboarding:v1";
 const ONBOARDING_ROWS = 3;
 
-/** 그 미션을 바로 할 수 있는 곳. 값 없는 칸(옛 도장 쌓기)은 링크가 없다. */
+/** 그 미션을 바로 할 수 있는 곳. 값 없는 칸(옛 스탬프 쌓기)은 링크가 없다. */
 export function missionHref(kind: string | null | undefined, slug: string, passportId: string, locale: AppLocale): string | null {
   const creator = encodeURIComponent(slug);
   switch (kind) {
@@ -71,7 +71,7 @@ function Slot({ slot, locale, stampSrc, href }: { slot: PassportRoadmapSlot; loc
   const days = model?.slots.find(item => item.action === "steady_checkin")?.days ?? null;
   const task = !meta ? null : slot.kind === "quiz" ? passportBookText(locale, "entryReviewTask") : days ? dukjilText(locale, "missionTaskSteady", [days]) : dukjilText(locale, meta.task);
   const rule = slot.kind ? dukjil?.catalog?.rules[slot.kind] as { points?: unknown } | undefined : undefined;
-  // 받지 않은 칸은 틀 모양 점선만 그린다. 회색 도장을 늘어놓지 않는다.
+  // 받지 않은 칸은 틀 모양 점선만 그린다. 회색 스탬프를 늘어놓지 않는다.
   const src = !filled ? undefined : meta ? `/images/stamps/ink-v1/${meta.art}.webp` : stampSrc;
   // A slot that fills while the page is open gets the stamp press once; a slot already filled on arrival stays still.
   const before = useRef(filled);

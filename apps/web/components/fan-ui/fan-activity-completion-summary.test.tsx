@@ -21,7 +21,7 @@ describe("FanActivityCompletionSummary", () => {
       />,
     );
 
-    expect(screen.getByRole("img", { name: "라이브 출석 도장" })).toBeInTheDocument();
+    expect(screen.getByRole("img", { name: "라이브 출석 스탬프" })).toBeInTheDocument();
     const rewards = screen.getByText("Fan Score").closest("dl");
     expect(rewards).toHaveTextContent("Fan Score+3");
     expect(rewards).toHaveTextContent("총점5");

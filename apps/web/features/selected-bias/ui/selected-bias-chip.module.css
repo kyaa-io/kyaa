@@ -35,7 +35,7 @@
 
 @media (min-width: 64rem) { .hearts { min-width: 56px; } }
 @media (min-width: 75rem) { .grade { display: inline; } .name { max-width: 140px; } }
-/* 390: 등급은 도장으로만, 이름은 6자에서 말줄임. */
+/* 390: 등급은 스탬프로만, 이름은 6자에서 말줄임. */
 @media (max-width: 63.999rem) { .badge { width: 20px; height: 20px; } .name { max-width: 6em; } }
 @media (min-width: 64rem) and (max-width: 74.999rem) { .name { max-width: 52px; } }
 /* 390은 화살표 없이 이름에 자리를 준다(누르면 메뉴가 열리는 것은 같다). */

@@ -33,7 +33,7 @@ export function usePassportBook(passportId: string | null | undefined) {
   const dukjil = useDukjil();
   const on = dukjil?.status === "on";
   const roadmap = useGroupResource(on && passportId ? `/api/me/passports/${encodeURIComponent(passportId)}/roadmap` : null, parseRoadmap);
-  // 도장 수는 어디서나 "지금 채우는 미션북 쪽의 찍힌 칸/그 쪽의 칸"이다. 패스포트 상세가 여는 쪽과 같다.
+  // 스탬프 수는 어디서나 "지금 채우는 미션북 쪽의 찍힌 칸/그 쪽의 칸"이다. 패스포트 상세가 여는 쪽과 같다.
   const pages = roadmap.data?.pages ?? [];
   const page = pages[openingPage(pages)];
   return { status: !dukjil || dukjil.status === "off" ? "off" as const : roadmap.error && !roadmap.data ? "error" as const : page ? "ready" as const : "loading" as const, page, retry: roadmap.retry };
@@ -56,15 +56,15 @@ function Bar({ value, label }: { value: number; label: string }) {
   return <div className={styles.bar} role="progressbar" aria-label={label} aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(value)}><span style={{ inlineSize: `${Math.min(100, Math.max(0, value))}%` }} /></div>;
 }
 
-/** 찍힌 칸의 그림. 미션이 정해지지 않은 2쪽부터는 공통 미션 도장을 쓴다. */
+/** 찍힌 칸의 그림. 미션이 정해지지 않은 2쪽부터는 공통 미션 스탬프를 쓴다. */
 const slotArtSrc = (slot: PassportRoadmapSlot) => `/images/stamps/ink-v1/${(slot.kind ? SLOT[slot.kind]?.art : undefined) ?? "mission"}.webp`;
 
-/** 여권 그림의 칸에 찍을 도장들. 숫자와 같은 쪽에서 가져온다. */
+/** 여권 그림의 칸에 찍을 스탬프들. 숫자와 같은 쪽에서 가져온다. */
 export function filledSlotArt(page: NonNullable<ReturnType<typeof usePassportBook>["page"]> | undefined) {
   return page?.slots.flatMap((slot) => slot.state === "filled" ? [{ key: String(slot.slotNo), src: slotArtSrc(slot) }] : []) ?? [];
 }
 
-/** 미션북 한 쪽의 도장 줄. 카드 안에서 도장 수와 같은 쪽을 보여 준다. */
+/** 미션북 한 쪽의 스탬프 줄. 카드 안에서 스탬프 수와 같은 쪽을 보여 준다. */
 export function PassportSlotRow({ page, locale }: { page: NonNullable<ReturnType<typeof usePassportBook>["page"]>; locale: AppLocale }) {
   return <ul className={styles.slots}>{page.slots.map((slot) => <SlotItem key={slot.slotNo} slot={slot} locale={locale} />)}</ul>;
 }
@@ -94,7 +94,7 @@ type CardProps = {
   labels: MyPassportLabels;
 };
 
-/** MY에서 가장 큰 덩어리. 여권, 등급, 도장 진행과 등급 진행, 그 아래 받은 도장(색)과 못 받은 도장(회색 잠금)을 한 카드에 둔다. */
+/** MY에서 가장 큰 덩어리. 여권, 등급, 스탬프 진행과 등급 진행, 그 아래 받은 스탬프(색)과 못 받은 스탬프(회색 잠금)을 한 카드에 둔다. */
 export function MyPassportCard({ creators, selectedSlug, onSelect, communityStamps, stampsError, retryStamps, locale, labels }: CardProps) {
   const eligible = creators.filter((creator) => creator.passport);
   const selected = eligible.find((creator) => creator.celebrity.slug === selectedSlug) ?? eligible[0];

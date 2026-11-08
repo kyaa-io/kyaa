@@ -1,7 +1,7 @@
 import type { AppLocale } from "@/i18n/locales";
 const keys = ["wallet","points","tickets","exchange","quantity","cost","remaining","attendance","checkIn","checkedIn","bonus","history","passport","stamps","error","retry","loading","login","recover","pending","success","empty"] as const;
 const copy = {
- ko: ["포인트·응모권","포인트","응모권","교환하기","교환 수량","필요 포인트","교환 후 포인트","출석체크","출석하고 포인트 받기","오늘 출석 완료","7일 연속 출석하면 보너스 포인트","적립·사용 내역","내 패스포트","모은 도장 보기","요청을 완료하지 못했어요.","다시 시도","불러오는 중","로그인","처리 결과 확인","처리 중인 요청이 있어요. 결과를 먼저 확인해 주세요.","완료했어요.","아직 내역이 없어요."],
+ ko: ["포인트·응모권","포인트","응모권","교환하기","교환 수량","필요 포인트","교환 후 포인트","출석체크","출석하고 포인트 받기","오늘 출석 완료","7일 연속 출석하면 보너스 포인트","적립·사용 내역","내 패스포트","모은 스탬프 보기","요청을 완료하지 못했어요.","다시 시도","불러오는 중","로그인","처리 결과 확인","처리 중인 요청이 있어요. 결과를 먼저 확인해 주세요.","완료했어요.","아직 내역이 없어요."],
  en: ["Points & tickets","Points","Tickets","Exchange","Quantity","Points required","Points remaining","Check-in","Check in for points","Checked in today","Bonus points every 7 days in a row","Transaction history","My Passport","View stamps","Couldn’t complete the request.","Try again","Loading","Sign in","Check result","A request is pending. Check its result first.","Completed.","No transactions yet."],
  ja: ["ポイント・応募券","ポイント","応募券","交換する","数量","必要ポイント","交換後のポイント","出席","出席してポイント獲得","本日の出席完了","7日連続出席ごとにボーナスポイント","獲得・利用履歴","マイパスポート","スタンプを見る","処理できませんでした。","再試行","読み込み中","ログイン","結果を確認","処理中の申請があります。先に結果を確認してください。","完了しました。","履歴はありません。"],
  "zh-Hans": ["积分和抽奖券","积分","抽奖券","兑换","数量","所需积分","兑换后积分","签到","签到领取积分","今日已签到","每连续签到7天可获额外积分","收支记录","我的护照","查看印章","未能完成请求。","重试","加载中","登录","查看结果","有待处理的请求，请先查看结果。","已完成。","暂无记录。"],

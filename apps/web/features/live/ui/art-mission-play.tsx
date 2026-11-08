@@ -136,9 +136,9 @@ export function ArtMissionPlay({ missions, locale, answers, submissions, errors,
   if (!current) return <main className={styles.complete} data-celebrate={Boolean(result)} id="live-mission-main" tabIndex={-1}>
     {result && <CompletionConfetti />}
     <h1 ref={heading} tabIndex={-1}>{ko ? <>두 미션<br />모두 완료!</> : translate(locale, localizedMessages.m57e2240c992b, "Both missions complete!")}</h1>
-    <p role="status">{result?.correctness === true ? (locale === "ko" ? "정답이에요! 도장을 남겼어요." : translate(locale, localizedMessages.m54078a49fc9e, "That's right! Your Stamp is recorded."))
+    <p role="status">{result?.correctness === true ? (locale === "ko" ? "정답이에요! 스탬프를 남겼어요." : translate(locale, localizedMessages.m54078a49fc9e, "That's right! Your Stamp is recorded."))
       : result?.correctness === false ? (locale === "ko" ? "정답은 아니지만, 미션 참여는 완료됐어요." : translate(locale, localizedMessages.m99d80911332b, "Not the right answer, but your mission is complete."))
-      : result ? (locale === "ko" ? "취향을 남겼어요! 도장도 기록됐어요." : translate(locale, localizedMessages.m91bc1fc2355c, "Your pick and Stamp are recorded."))
+      : result ? (locale === "ko" ? "취향을 남겼어요! 스탬프도 기록됐어요." : translate(locale, localizedMessages.m91bc1fc2355c, "Your pick and Stamp are recorded."))
       : (locale === "ko" ? "이미 참여한 미션이에요. 패스포트에서 기록을 확인해 보세요." : translate(locale, localizedMessages.m9d161f6f675b, "You've already completed these missions. View your record in your Passports."))}</p>
     <div className={styles.collectibleScene} aria-hidden="true">
       <div className={styles.artworkPrint}>
