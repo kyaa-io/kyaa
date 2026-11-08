@@ -57,10 +57,12 @@ it("shows ten rows and opens 11 to 20 inside the card", async () => {
   expect(more).toHaveAttribute("aria-expanded", "true");
 });
 
-it("keeps the empty state at the ten-row height without the bottom line", async () => {
+it("R6-EXTRACT ⑧: an empty tab is one line and one action (fan pages) at three rows' height, without the bottom line", async () => {
   stub(fans([]));
   const { container } = render(<HomeRankingCard locale="ko" />);
   expect(await screen.findByText("아직 하트를 보낸 팬이 없어요")).toBeInTheDocument();
+  expect(container.querySelector("[data-empty]")).toBeTruthy();
+  expect(screen.getByRole("link", { name: "팬페이지 둘러보기" })).toHaveAttribute("href", "/celebrities?locale=ko");
   expect(container.querySelector("ol")).toBeNull();
   expect(screen.queryByRole("button", { name: "11~20위" })).not.toBeInTheDocument();
 });
@@ -75,7 +77,8 @@ it("shows creators by true fans with the heart total, each row opening the fan p
   expect(within(row).getByLabelText("찐팬 125")).toBeInTheDocument();
   expect(within(row).getByLabelText("하트 795개")).toBeInTheDocument();
   expect(row.textContent).toContain("이번 주 +12");
-  expect(screen.getByRole("link", { name: /크리에이터2/ }).textContent).toContain("이번 주 0");
+  // weekGain 0: no lone 0.
+  expect(screen.getByRole("link", { name: /크리에이터2/ }).textContent).not.toMatch(/이번 주|·/);
   // weekGain null: no item and no dot after the hearts.
   expect(screen.getByRole("link", { name: /크리에이터3/ }).textContent).not.toMatch(/이번 주|·/);
   expect(document.body.textContent).not.toMatch(/팬 \d/);
@@ -159,13 +162,23 @@ it("says when the day was written: the time today, the date otherwise", () => {
   expect(updatedLabel("ko", "not a time", now)).toBeNull();
 });
 
-it("피드백 K: a fan row with the server's weekGain shows +N in bold on the right and the all-time hearts in the gray line", async () => {
+it("R6-EXTRACT ⑦: a fan row keeps the 4차 all-time ♥N on the right and adds +N only when this week's gain is above 0", async () => {
   resetHomeRankingTab();
   const row = { rank: 1, score: 911, nickname: "주간팬", characterId: "fairy-cream", tier: null, isMe: false, delta: 0, favorite: null, weekGain: 35 };
   vi.stubGlobal("fetch", vi.fn(async () => new Response(JSON.stringify({ day: "2026-11-09", computedAt: null, comparable: true, me: null, rows: [row] }), { status: 200 })));
   const { container } = render(<HomeRankingCard locale="ko" />);
   const gain = await waitFor(() => { const el = container.querySelector("[data-week-gain]"); if (!el) throw new Error("no gain"); return el; });
   expect(gain.textContent).toBe("+35");
-  expect(container.querySelector('[data-kind="fans"]')!.textContent).toContain("911");
+  expect(screen.getByLabelText("하트 911개")).toBeInTheDocument();
   expect(container.textContent).not.toMatch(/이번 주 ·/);
+});
+
+it("R6-EXTRACT ⑦: a fan row with no gain this week shows only the all-time ♥N, never a lone 0", async () => {
+  resetHomeRankingTab();
+  const row = { rank: 1, score: 911, nickname: "조용한팬", characterId: "fairy-cream", tier: null, isMe: false, delta: 0, favorite: null, weekGain: 0 };
+  vi.stubGlobal("fetch", vi.fn(async () => new Response(JSON.stringify({ day: "2026-11-09", computedAt: null, comparable: false, me: null, rows: [row] }), { status: 200 })));
+  const { container } = render(<HomeRankingCard locale="ko" />);
+  expect(await screen.findByLabelText("하트 911개")).toBeInTheDocument();
+  expect(container.querySelector("[data-week-gain]")).toBeNull();
+  expect(container.querySelector('[data-kind="fans"]')!.textContent).not.toMatch(/(^|[^\d])0$/);
 });

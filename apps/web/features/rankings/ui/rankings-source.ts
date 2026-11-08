@@ -38,6 +38,7 @@ export const rankingsSource = {
   rkEmptyFans: { ko: "아직 하트를 보낸 팬이 없어요", en: "No fan has sent a heart yet" },
   rkUpdatedAt: { ko: "업데이트 {0}", en: "Updated {0}" },
   rkWeekGain: { ko: "이번 주 {0}", en: "This week {0}" },
+  rkBrowseFanPages: { ko: "팬페이지 둘러보기", en: "Browse fan pages" },
   rkSince: { ko: "{0}부터", en: "from {0}" },
   rkFavorite: { ko: "최애 {0}", en: "Fave {0}" },
   rkDeltaNew: { ko: "신규", en: "New" },

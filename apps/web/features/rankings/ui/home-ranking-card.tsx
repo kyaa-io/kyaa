@@ -91,8 +91,9 @@ function Loading() {
 function Failed({ locale, retry }: { locale: AppLocale; retry: () => void }) {
   return <div className={styles.state}><FanState inline compact kind="error" title={rankingsText(locale, "rkError")} actions={<FanAction variant="text" size="sm" onClick={retry}>{rankingsText(locale, "rkRetry")}</FanAction>} /></div>;
 }
-function Empty({ title }: { title: string }) {
-  return <div className={styles.state}><FanState inline compact kind="empty" title={title} /></div>;
+/** 빈 탭: 행 세 줄 높이에 한 줄과 행동 하나(팬페이지 목록). 하트는 팬페이지에서 보낸다. */
+function Empty({ title, locale }: { title: string; locale: AppLocale }) {
+  return <div className={styles.state} data-empty=""><FanState inline compact kind="empty" title={title} actions={<FanAction variant="text" size="sm" href={`/celebrities?locale=${locale}`} trailingIcon={<ArrowRight aria-hidden="true" />}>{rankingsText(locale, "rkBrowseFanPages")}</FanAction>} /></div>;
 }
 
 const heartIcon = (size: number) => <img src="/images/economy/heart.svg" alt="" width={size} height={size} />;
@@ -120,9 +121,10 @@ function Delta({ locale, delta }: { locale: AppLocale; delta: number | null }) {
     : <RankDelta delta={delta} locale={locale} />}</span>;
 }
 
-function WeekGain({ locale, value }: { locale: AppLocale; value: number | null }) {
-  if (value === null) return null;
-  return <span className={styles.gain} data-tone={value > 0 ? "up" : undefined}>{rankingsText(locale, "rkWeekGain", [`${value > 0 ? "+" : ""}${value.toLocaleString(locale)}`])}</span>;
+/** This week's gain, only when there is one: a 0 or a missing value draws nothing, so no row reads a lone 0. */
+function WeekGain({ locale, value }: { locale: AppLocale; value: number | null | undefined }) {
+  if (typeof value !== "number" || value <= 0) return null;
+  return <span className={styles.gain} data-tone="up">{rankingsText(locale, "rkWeekGain", [`+${value.toLocaleString(locale)}`])}</span>;
 }
 
 /** Bottom line: the next ten on the left, my rank (or sign in) on the right. */
@@ -142,7 +144,7 @@ function FanPanel({ locale, ranking, guestEnd }: { locale: AppLocale; ranking: H
   const shown = ranking.rows.slice(0, expanded ? ranking.rows.length : ROWS);
   const keys = shown.map((row, i) => fanKey(row, i, shown));
   const place = useRowMotion(keys);
-  if (ranking.rows.length === 0) return <Empty title={rankingsText(locale, "rkEmptyFans")} />;
+  if (ranking.rows.length === 0) return <Empty title={rankingsText(locale, "rkEmptyFans")} locale={locale} />;
   const me = ranking.me && ranking.me.rank > shown.length ? ranking.me : null;
   const end = me ? <p className={styles.me} role="status"><span>{rankingsText(locale, "rkMyRank")}</span><strong>{rankingsText(locale, "rkRank", [me.rank.toLocaleString(locale)])}</strong><span className={styles.meHearts} aria-label={rankingsText(locale, "rkHearts", [me.score.toLocaleString(locale)])}>{heartIcon(14)}<span aria-hidden="true">{me.score.toLocaleString(locale)}</span></span></p> : guestEnd;
   return <>
@@ -154,13 +156,13 @@ function FanPanel({ locale, ranking, guestEnd }: { locale: AppLocale; ranking: H
         <Meta items={[
           row.tier ? <span key="tier" className={styles.tier}><FanTierBadge tier={row.tier} locale={locale} size={16} /><span>{levelLabel(locale, row.tier)}</span></span> : null,
           row.favorite ? <span key="fav" className={styles.favorite}>{rankingsText(locale, "rkFavorite", [row.favorite.name])}</span> : null,
-          typeof row.weekGain === "number" ? <span key="total" className={styles.hearts} aria-label={rankingsText(locale, "rkHearts", [row.score.toLocaleString(locale)])}>{heartIcon(12)}<span aria-hidden="true">{row.score.toLocaleString(locale)}</span></span> : null,
         ]} />
       </span>
-      {/* 피드백 K(5차 H1 데이터 열만 4차 행에): this week's +N in bold from the server's weekGain; the all-time hearts move to the gray line. Without a weekGain the row reads as 4차. */}
-      {typeof row.weekGain === "number"
-        ? <span className={styles.main} data-week-gain="" aria-label={rankingsText(locale, "rkWeekGain", [`${row.weekGain > 0 ? "+" : ""}${row.weekGain.toLocaleString(locale)}`])}><span aria-hidden="true" className={styles.mainInner}>{`${row.weekGain > 0 ? "+" : ""}${row.weekGain.toLocaleString(locale)}`}</span></span>
-        : <Main locale={locale} value={row.score} label={rankingsText(locale, "rkHearts", [row.score.toLocaleString(locale)])} icon={heartIcon(14)} />}
+      {/* R6-EXTRACT ⑦: the 4차 all-time ♥N on the right; this week's +N is added after it only when the server's weekGain is above 0. */}
+      <span className={styles.value}>
+        <Main locale={locale} value={row.score} label={rankingsText(locale, "rkHearts", [row.score.toLocaleString(locale)])} icon={heartIcon(14)} />
+        {typeof row.weekGain === "number" && row.weekGain > 0 ? <span className={styles.gain} data-tone="up" data-week-gain="" aria-label={rankingsText(locale, "rkWeekGain", [`+${row.weekGain.toLocaleString(locale)}`])}><span aria-hidden="true">{`+${row.weekGain.toLocaleString(locale)}`}</span></span> : null}
+      </span>
       {ranking.comparable ? <Delta locale={locale} delta={row.delta} /> : null}
     </li>)}</Rows>
     <Foot more={ranking.rows.length > ROWS} expanded={expanded} onToggle={() => setExpanded((open) => !open)} end={end} locale={locale} />
@@ -171,7 +173,7 @@ function CreatorPanel({ locale, ranking }: { locale: AppLocale; ranking: HomeCre
   const [expanded, setExpanded] = useState(false);
   const shown = ranking.rows.slice(0, expanded ? ranking.rows.length : ROWS);
   const place = useRowMotion(shown.map((row) => row.slug));
-  if (ranking.rows.length === 0) return <Empty title={rankingsText(locale, "rkEmpty")} />;
+  if (ranking.rows.length === 0) return <Empty title={rankingsText(locale, "rkEmpty")} locale={locale} />;
   const template = rankingsText(locale, "rkJjinfanCount", ["\u0000"]);
   return <>
     <Rows>{shown.map((row) => <li key={row.slug} ref={place(row.slug)} id={`home-rank-creators-${row.rank}`}>
@@ -182,7 +184,7 @@ function CreatorPanel({ locale, ranking }: { locale: AppLocale; ranking: HomeCre
           <span className={styles.name}>{row.name}</span>
           <Meta items={[
             <span key="hearts" className={styles.hearts} aria-label={rankingsText(locale, "rkHearts", [row.hearts.toLocaleString(locale)])}>{heartIcon(12)}<span aria-hidden="true">{row.hearts.toLocaleString(locale)}</span></span>,
-            row.weekGain === null ? null : <WeekGain key="gain" locale={locale} value={row.weekGain} />,
+            typeof row.weekGain === "number" && row.weekGain > 0 ? <WeekGain key="gain" locale={locale} value={row.weekGain} /> : null,
           ]} />
         </span>
         <Main locale={locale} value={row.score} label={rankingsText(locale, "rkJjinfanCount", [row.score.toLocaleString(locale)])} template={template} />
