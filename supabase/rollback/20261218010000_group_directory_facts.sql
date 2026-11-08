@@ -14,5 +14,12 @@ grant execute on function public.groups_content_dispatch(text,uuid,uuid,uuid,jso
 drop function public.group_directory_facts(jsonb);
 drop function public.group_comment_reply_counts(uuid,jsonb);
 drop index if exists public.group_memberships_page_joined_idx;
+-- 20261218020000 lists the two helpers among the owner functions; take them out so the owner check does not look for them.
+do $patch$
+declare def text;
+begin
+ def:=pg_catalog.pg_get_functiondef('public.group_public_directory_owner_functions()'::regprocedure);
+ execute replace(def,$a$'public.group_directory_facts(jsonb)','public.group_comment_reply_counts(uuid,jsonb)',$a$,'');
+end $patch$;
 drop index if exists public.group_comments_parent_idx;
 commit;
