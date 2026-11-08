@@ -181,8 +181,26 @@ describe("owned fan resource freshness", () => {
     expect(fetcher).toHaveBeenCalledTimes(1);
     await act(async () => { notifyFanActivityUpdated("owner-a"); await flush(); });
     expect(fetcher).toHaveBeenCalledTimes(2);
+    // A return visit reuses an answer from moments ago; after the reuse window it reads again.
+    const clock = vi.spyOn(Date, "now").mockReturnValue(Date.now() + OWNED_READ_REUSE_MS + 1);
     await act(async () => { window.dispatchEvent(new PageTransitionEvent("pageshow", { persisted: true })); await flush(); });
     expect(fetcher).toHaveBeenCalledTimes(3);
+    clock.mockRestore();
+  });
+
+  it("perf r5: coming back after ten minutes reads once for every mounted reader, though focus and visibilitychange both fire", async () => {
+    const fetcher = vi.fn(async () => response("minted"));
+    vi.stubGlobal("fetch", fetcher);
+    const first = renderHook(() => useOwnedFanResource("/owned-return", parse, auth));
+    const second = renderHook(() => useOwnedFanResource("/owned-return", parse, auth));
+    await waitFor(() => expect(first.result.current.state.status).toBe("ready"));
+    await waitFor(() => expect(second.result.current.state.status).toBe("ready"));
+    expect(fetcher).toHaveBeenCalledTimes(1);
+    const clock = vi.spyOn(Date, "now").mockReturnValue(Date.now() + 10 * 60 * 1000);
+    await act(async () => { document.dispatchEvent(new Event("visibilitychange")); window.dispatchEvent(new Event("focus")); await flush(); });
+    await act(async () => { await flush(); });
+    expect(fetcher).toHaveBeenCalledTimes(2);
+    clock.mockRestore();
   });
 
   it("does not re-read on the first load's pageshow, only on a back-forward cache restore", async () => {
