@@ -170,7 +170,11 @@ export function useOwnedFanResource<T>(
       failures = 0;
       publish({ status: "ready", data: next });
     };
-    const unsubscribe = subscribeFanActivityUpdates(ownerId, refresh);
+    // A return visit fires focus and visibilitychange together (and every mounted reader of the same address hears both). It joins the read
+    // already running instead of queueing a fresh one behind it, so coming back reads /api/me/summary once (perf round 5, 중간 9).
+    // Mutations still read fresh: they must see the newer server state.
+    const onUpdate = (reason?: "return" | "mutation") => { if (reason === "return") { if (!inFlight) void load(false); return; } refresh(); };
+    const unsubscribe = subscribeFanActivityUpdates(ownerId, onUpdate);
     void load();
     return () => {
       active = false;
