@@ -110,8 +110,9 @@ $$;
 revoke all on function public.get_owned_web_notifications_facts(uuid,public.content_locale) from public,anon,authenticated;
 grant execute on function public.get_owned_web_notifications_facts(uuid,public.content_locale) to service_role;
 
--- Friends: the friend's grade and hearts for the creator the friendship belongs to, and the friend's favorite creator,
--- with the same exclusions as read_group_people: a sanctioned friend shows none of them. Blocked and closed accounts are
+-- Friends: the friend's favorite creator, and the friend's grade and hearts for the creator the friendship belongs to or,
+-- for a friendship with no creator (most are), for that favorite. With neither, grade and hearts are null.
+-- Same exclusions as read_group_people: a sanctioned friend shows none of them. Blocked and closed accounts are
 -- already left out by read_owned_social_friends.
 create or replace function public.read_owned_social_friends_facts(p_app_user_id uuid,p_locale public.content_locale)
 returns jsonb language plpgsql stable security definer set search_path='' as $$
@@ -119,13 +120,17 @@ declare base jsonb;
 begin
  base:=public.read_owned_social_friends(p_app_user_id,p_locale);
  return jsonb_set(base,'{friendships}',coalesce((select jsonb_agg(t.item||jsonb_build_object(
-   'tier',case when not x.open or c.id is null then null else public.get_fan_effective_tier(x.id,c.id) end,
-   'hearts',case when not x.open or c.id is null then null else public.passport_hearts(x.id,c.id) end,
-   'favorite',case when not x.open then null else(select public.fan_profile_favorite_json(f.favorite_celebrity_id,p_locale) from public.fan_profile_public_fields f where f.app_user_id=x.id) end
+   'tier',case when not x.open or y.creator is null then null else public.get_fan_effective_tier(x.id,y.creator) end,
+   'hearts',case when not x.open or y.creator is null then null else public.passport_hearts(x.id,y.creator) end,
+   'favorite',case when not x.open or y.favorite is null then null else public.fan_profile_favorite_json(y.favorite,p_locale) end
   ) order by t.ord)
   from jsonb_array_elements(base->'friendships') with ordinality t(item,ord)
   cross join lateral(select (t.item->>'profileId')::uuid id,not exists(select 1 from public.app_user_moderation_restrictions r where r.app_user_id=(t.item->>'profileId')::uuid and r.revoked_at is null) open) x
-  left join public.celebrities c on c.slug=t.item->>'celebritySlug' and c.status='published' and c.archived_at is null),'[]'::jsonb));
+  cross join lateral(select fav.id favorite,coalesce(c.id,fav.id) creator
+   from (select 1) one
+   left join public.celebrities c on c.slug=t.item->>'celebritySlug' and c.status='published' and c.archived_at is null
+   left join lateral(select v.id from public.fan_profile_public_fields f join public.celebrities v on v.id=f.favorite_celebrity_id and v.status='published' and v.archived_at is null
+     where f.app_user_id=x.id) fav on true) y),'[]'::jsonb));
 end $$;
 revoke all on function public.read_owned_social_friends_facts(uuid,public.content_locale) from public,anon,authenticated;
 grant execute on function public.read_owned_social_friends_facts(uuid,public.content_locale) to service_role;

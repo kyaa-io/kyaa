@@ -101,7 +101,8 @@ begin
  if (select(i->>'replyCount')::integer from jsonb_array_elements(result->'items')i where i->>'id'=froot::text)<>1 then raise exception 'Fan reply count wrong: %',result;end if;
  if (select(i->>'replyCount')::integer from jsonb_array_elements(result->'items')i where i->>'id'=friend_comment::text)<>0 then raise exception 'Fan zero reply count wrong';end if;
 
- -- Friends: grade, hearts and favorite for an open friend; nothing for a sanctioned one; no creator means no grade.
+ -- Friends: grade, hearts and favorite for an open friend; nothing for a sanctioned one; a friendship with no creator
+ -- takes the grade for the friend's favorite, and with no favorite either it has none.
  insert into public.social_friendships(requester_id,addressee_id,status,request_id,payload_hash,celebrity_id,accepted_at)values
   (viewer,friend,'accepted',extensions.gen_random_uuid(),repeat('b',64),creator,now()),(sanctioned,viewer,'accepted',extensions.gen_random_uuid(),repeat('c',64),creator,now());
  insert into public.fan_profile_public_fields(app_user_id,favorite_celebrity_id)values(friend,creator),(sanctioned,creator);
@@ -115,6 +116,12 @@ begin
  select i into item from jsonb_array_elements(result->'friendships')i where i->>'profileId'=sanctioned::text;
  if item is not null and (item->'tier'<>'null'::jsonb or item->'hearts'<>'null'::jsonb or item->'favorite'<>'null'::jsonb) then raise exception 'Sanctioned friend facts shown: %',item;end if;
  if public.read_owned_social_friends_facts(lonely,'ko')->'friendships'<>'[]'::jsonb then raise exception 'Empty friends not []';end if;
+ insert into public.social_friendships(requester_id,addressee_id,status,request_id,payload_hash,accepted_at)values(lonely,friend,'accepted',extensions.gen_random_uuid(),repeat('d',64),now()),(lonely,old_member,'accepted',extensions.gen_random_uuid(),repeat('e',64),now());
+ result:=public.read_owned_social_friends_facts(lonely,'ko');
+ select i into item from jsonb_array_elements(result->'friendships')i where i->>'profileId'=friend::text;
+ if item->>'celebritySlug' is not null or (item->>'hearts')::integer<>3 or item->'favorite'->>'slug'<>'r6-facts-fixture' then raise exception 'Global friend did not take the favorite: %',item;end if;
+ select i into item from jsonb_array_elements(result->'friendships')i where i->>'profileId'=old_member::text;
+ if item->'tier'<>'null'::jsonb or item->'hearts'<>'null'::jsonb or item->'favorite'<>'null'::jsonb then raise exception 'Friend with no creator and no favorite has facts: %',item;end if;
 
  -- Notifications: the person is the comment author unless blocked, sanctioned, anonymous or the reader; official posts name the creator.
  insert into public.group_comments(id,post_id,author_id,body,anonymous,parent_id)values(blocked_comment,post,blocker,'차단 답글2','f',other_root),(anon_comment,post,old_member,'익명 답글','t',other_root);
