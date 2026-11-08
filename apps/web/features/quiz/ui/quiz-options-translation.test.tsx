@@ -6,7 +6,7 @@ const auth = vi.hoisted(() => ({ ready: true, authenticated: true, user: { id: "
 const router = vi.hoisted(() => ({ replace: vi.fn() }));
 vi.mock("@/features/auth/client/cognito-auth", () => ({ useByUsAuth: () => auth }));
 vi.mock("@/components/byus-session-provider", () => ({ useByUsSession: () => ({ ready: true, ownerId: "quiz-policy-owner", generation: 761 }) }));
-vi.mock("next/navigation", () => ({ useRouter: () => router }));
+vi.mock("next/navigation", () => ({ usePathname: () => "/", useSearchParams: () => new URLSearchParams(), useRouter: () => router }));
 afterEach(() => { cleanup(); vi.unstubAllGlobals(); });
 
 it("translates ordinary options while preserving titles, legacy labels and submitted answer IDs", async () => {
