@@ -46,7 +46,7 @@ reset role;
 -- for the functions f_apply now owns (they run as f_apply). Existing byus_admin functions keep running as before.
 do \$\$
 declare fp record; adm record; tier_rows integer; r jsonb; v_id uuid; award jsonb; bal_before bigint; bal_paid bigint; bal_after bigint;
-  stamp_ok boolean; points_ok boolean; scrub_ok boolean; tier_ok boolean; one_ok boolean; one_bad integer; one_all integer; cancel_text text; trg record; other uuid;
+  stamp_ok boolean; points_ok boolean; scrub_ok boolean; tier_ok boolean; one_ok boolean; one_bad integer; one_all integer; stage_bad integer; stage_all integer; cancel_text text; trg record; other uuid;
 begin
   if (select rolsuper or rolbypassrls from pg_roles where rolname = 'f_apply') then raise exception 'probe role is privileged'; end if;
   if pg_get_userbyid((select proowner from pg_proc where oid = 'public.dukjil_correct_share_grant(uuid,uuid,text)'::regprocedure)) <> 'f_apply' then raise exception 'functions not owned by the applying role'; end if;
@@ -104,7 +104,18 @@ begin
     cross join lateral jsonb_array_elements(public.get_owned_my_fan_activity_with_stages(u.app_user_id, 'ko', now()) -> 'creators') x
     join public.celebrities c on c.slug = x.value -> 'celebrity' ->> 'slug'
     join public.fan_passports p on p.app_user_id = u.app_user_id and p.celebrity_id = c.id;
-  one_ok := one_bad = 0 and pg_get_userbyid((select proowner from pg_proc where oid = 'public.get_fan_effective_tier_for_score(uuid,uuid,integer,integer)'::regprocedure)) = 'postgres';
+  -- Stages on the passport detail and the mobile list agree with the passport stage where both are present.
+  select count(*) filter (where ds is not null and ds <> ps) + count(*) filter (where ms is not null and ms <> ps), count(*) into stage_bad, stage_all
+    from (select p.id, public.get_fan_passport_stage(p.app_user_id, p.celebrity_id) ->> 'stageKey' ps,
+            (select d -> 'score' -> 'stageProgress' -> 'current' ->> 'key' from public.get_owned_passport_detail_with_stages(p.id, p.app_user_id, 'ko') d limit 1) ds,
+            (select x -> 'progress' -> 'current' ->> 'key' from jsonb_array_elements(public.read_owned_mobile_passports(p.app_user_id, 'ko') -> 'passports') x
+              where x ->> 'kind' = 'favorite' and x -> 'favorite' ->> 'slug' = (select slug from public.celebrities where id = p.celebrity_id)) ms
+          from public.fan_passports p join public.app_users a on a.id = p.app_user_id and a.status = 'active' limit 60) z;
+  raise notice 'probe4b stage differences (detail, mobile) vs passport stage: % of % passports; heart unlock owner % (point unlock owner %)', stage_bad, stage_all,
+    pg_get_userbyid((select proowner from pg_proc where proname = 'project_heart_benefit_unlock_events')), pg_get_userbyid((select proowner from pg_proc where proname = 'project_benefit_unlock_events'));
+  one_ok := one_bad = 0 and stage_bad = 0
+    and pg_get_userbyid((select proowner from pg_proc where oid = 'public.get_fan_effective_tier_for_score(uuid,uuid,integer,integer)'::regprocedure)) = 'postgres'
+    and pg_get_userbyid((select proowner from pg_proc where proname = 'project_heart_benefit_unlock_events')) = pg_get_userbyid((select proowner from pg_proc where proname = 'project_benefit_unlock_events'));
   raise notice 'probe4 MY vs fan list tier differences: % of % passports, for_score owner %', one_bad, one_all, pg_get_userbyid((select proowner from pg_proc where oid = 'public.get_fan_effective_tier_for_score(uuid,uuid,integer,integer)'::regprocedure));
   raise notice 'RESULT stamp=% points=% scrub=% tier=% one_source=%', stamp_ok, points_ok, scrub_ok, tier_ok, one_ok;
   if $EXPECT = 1 and not (stamp_ok and points_ok and scrub_ok and tier_ok and one_ok) then raise exception 'probe failed'; end if;
