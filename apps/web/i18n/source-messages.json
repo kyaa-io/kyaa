@@ -17447,6 +17447,12 @@
     "source": "features/rankings/ui/rankings-copy",
     "id": "features/rankings/ui/rankings-copy:rkWeekGain"
   },
+  "rkBrowseFanPages": {
+    "en": "Browse fan pages",
+    "ko": "팬페이지 둘러보기",
+    "source": "features/rankings/ui/rankings-copy",
+    "id": "features/rankings/ui/rankings-copy:rkBrowseFanPages"
+  },
   "rkFavorite": {
     "en": "Fave {0}",
     "ko": "최애 {0}",

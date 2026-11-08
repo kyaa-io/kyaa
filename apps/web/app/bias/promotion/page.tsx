@@ -30,8 +30,11 @@ export default async function Page({ searchParams }: { searchParams: Params }) {
   let profiles: readonly PromotionProfile[] = [];
   let unavailable = false;
   try {
-    profiles =
-      await createPublishedContentRepositoryFromEnvironment().list(toContentLocale(locale));
+    // Search lists listed creators only; a link naming an unlisted one (?celebrity=) still opens it.
+    const repository = createPublishedContentRepositoryFromEnvironment(), contentLocale = toContentLocale(locale);
+    const listed = await repository.listListed(contentLocale);
+    const named = params.celebrity && !listed.some(({ slug }) => slug === params.celebrity) ? await repository.findBySlug(contentLocale, params.celebrity) : null;
+    profiles = named ? [...listed, named] : listed;
   } catch {
     unavailable = true;
   }

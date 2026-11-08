@@ -75,14 +75,14 @@ describe("PassportMissionBook", () => {
     expect(screen.getByText("문제를 풀면 팬 인증이 돼요")).toBeTruthy();
     expect(screen.getByText("며칠 연속으로 출석해요")).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: "다음 쪽" }));
-    expect(container.querySelectorAll("[data-slot-task]")).toHaveLength(0);
+    expect(container.querySelectorAll("[data-current] [data-slot-task]")).toHaveLength(0);
     expect(screen.getAllByRole("checkbox")).toHaveLength(9);
   });
   it("opens on the page ready to claim, then the one still filling, and pages with 44px controls", () => {
     state.resource = { loading: false, error: false, data: data([page({ claimed: true, claimable: false }), page({ pageNo: 2, slots: slots(0), filled: 0, claimable: false })], 1), retry: vi.fn() };
-    ui();
+    const { container } = ui();
     expect(screen.getByRole("heading", { name: "2쪽" })).toBeTruthy();
-    expect(screen.getByTestId("passport-page-indicator").textContent).toBe("2/2");
+    expect(container.querySelector("[data-current] [data-testid='passport-page-indicator']")?.textContent).toBe("2/2");
     expect((screen.getByRole("button", { name: "다음 쪽" }) as HTMLButtonElement).disabled).toBe(true);
     fireEvent.click(screen.getByRole("button", { name: "이전 쪽" }));
     expect(screen.getByText("하트 받음")).toBeTruthy();
@@ -127,6 +127,21 @@ describe("PassportMissionBook", () => {
     expect(screen.getByRole("heading", { name: "2쪽" })).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: "이전 쪽" }));
     expect(screen.getAllByRole("checkbox").filter(el => el.getAttribute("aria-checked") === "true")).toHaveLength(9);
+  });
+  it("K8: every page of the book is in the page area from the first paint, only the current one shown and reachable, whichever page it opens on", () => {
+    state.resource = { loading: false, error: false, data: data([page({ slots: slots(9), filled: 9, claimable: true }), page({ pageNo: 2, slots: slots(3), filled: 3, claimable: false, locked: true, lockedReason: "jjinfan_required" }), page({ pageNo: 3, slots: slots(0), filled: 0, claimable: false, locked: true, lockedReason: "jjinfan_required" })], 1), retry: vi.fn() };
+    const { container } = ui();
+    const area = container.querySelector("[data-stacked]")!;
+    expect(area.children).toHaveLength(3);
+    const current = () => [...area.children].filter(child => child.hasAttribute("data-current"));
+    expect(current()).toHaveLength(1);
+    for (const child of area.children) if (!child.hasAttribute("data-current")) { expect(child.hasAttribute("inert")).toBe(true); expect(child.getAttribute("aria-hidden")).toBe("true"); }
+    const opened = current()[0];
+    fireEvent.click(screen.getByRole("button", { name: "다음 쪽" }));
+    expect(area.children).toHaveLength(3);
+    expect(current()[0]).not.toBe(opened);
+    fireEvent.click(screen.getByRole("button", { name: "이전 쪽" }));
+    expect(current()[0]).toBe(opened);
   });
   it("K8: turning to a shorter page keeps the book's height (the tallest page seen holds the space)", () => {
     const heights = [520, 430];

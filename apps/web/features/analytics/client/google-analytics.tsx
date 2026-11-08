@@ -16,7 +16,7 @@ import {
   writeAnalyticsConsent,
   type AnalyticsConsent,
 } from "./analytics-consent";
-import { sendGa4PageView, startGa4, stopGa4 } from "./ga4-client";
+import { ga4Active, sendGa4PageView, startGa4, stopGa4 } from "./ga4-client";
 import styles from "./google-analytics.module.css";
 
 const staffPath = /^\/(?:admin|operator)(?:\/|$)/;
@@ -24,7 +24,7 @@ const staffPath = /^\/(?:admin|operator)(?:\/|$)/;
 /**
  * GA4 for the stream configured on this deployment (GA4_MEASUREMENT_ID at runtime). Without an ID nothing renders and
  * nothing loads. With one, gtag.js loads only after the visitor allows it; until then, or after a refusal, no request
- * goes to Google. Page views are sent by hand once per screen.
+ * goes to Google. One page_view per screen: the first by the Google tag as it starts, later ones by hand.
  */
 export function GoogleAnalytics({ measurementId }: { measurementId: string }) {
   const id = readGa4MeasurementId(measurementId);
@@ -45,8 +45,14 @@ export function GoogleAnalytics({ measurementId }: { measurementId: string }) {
   useEffect(() => {
     if (!id || choice === "unread") return;
     if (choice !== "granted") { stopGa4(); lastPath.current = null; return; }
-    startGa4(id);
-    if (pathname && lastPath.current !== pathname && sendGa4PageView(pathname)) lastPath.current = pathname;
+    if (!pathname || lastPath.current === pathname) return;
+    // The first screen is sent by the Google tag itself when it starts (see startGa4); later screens are sent by hand.
+    if (!ga4Active()) {
+      const sentByTag = startGa4(id, pathname);
+      if (sentByTag || (ga4Active() && sendGa4PageView(pathname))) lastPath.current = pathname;
+      return;
+    }
+    if (sendGa4PageView(pathname)) lastPath.current = pathname;
   }, [id, choice, pathname]);
 
   if (!id || choice === "unread" || (choice !== null && !reopened)) return null;

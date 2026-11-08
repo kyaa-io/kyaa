@@ -12,6 +12,8 @@ import {
   fetchTikTokLiveObservation,
   parseCanonicalTikTokProfileUrl,
 } from "../../../../server/tiktok/tiktok-live-source";
+
+const noneUnlisted = async (): Promise<ReadonlySet<string>> => new Set();
 import { createGetObservedLiveNow } from "./route";
 
 const observedAt = "2026-09-11T01:00:00.000Z";
@@ -349,7 +351,7 @@ describe("GET /api/public/live-now", () => {
       celebrity("ifewknow", "https://www.tiktok.com/@ifewknow"),
     ]);
     const response = await createGetObservedLiveNow({
-      repository: { list },
+      repository: { list, listUnlistedSlugs: noneUnlisted },
       observe: vi.fn().mockResolvedValue({ state: "offline", observedAt }),
       now: () => new Date("2026-09-11T01:00:10.000Z"),
     })(new Request("https://byus.kr/api/public/live-now?locale=ko"));
@@ -365,9 +367,35 @@ describe("GET /api/public/live-now", () => {
     expect(list).toHaveBeenCalledWith("ko");
   });
 
+  it("keeps unlisted creators out of the public strip while live start capture still sees them", async () => {
+    const captureLiveStarts = vi.fn(async (_feed: unknown) => undefined);
+    const response = await createGetObservedLiveNow({
+      repository: { list: async () => [celebrity("ifewknow", "https://www.tiktok.com/@ifewknow"), celebrity("testpage", "https://www.tiktok.com/@testpage")], listUnlistedSlugs: async () => new Set(["testpage"]) },
+      observe: vi.fn().mockResolvedValue({ state: "offline", observedAt }),
+      now: () => new Date("2026-09-11T01:00:10.000Z"),
+      captureLiveStarts,
+    })(new Request("https://byus.kr/api/public/live-now?locale=ko"));
+    const body = await response.json();
+    expect(body.targets.map((target: { celebritySlug: string }) => target.celebritySlug)).toEqual(["ifewknow"]);
+    expect(captureLiveStarts.mock.calls[0]?.[0]).toMatchObject({ targets: [{ celebritySlug: "ifewknow" }, { celebritySlug: "testpage" }] });
+  });
+
+  it("still captures live starts and answers without cards when the unlisted read fails", async () => {
+    const captureLiveStarts = vi.fn(async (_feed: unknown) => undefined);
+    const response = await createGetObservedLiveNow({
+      repository: { list: async () => [celebrity("ifewknow", "https://www.tiktok.com/@ifewknow")], listUnlistedSlugs: async () => { throw new Error("Unlisted creator query failed"); } },
+      observe: vi.fn().mockResolvedValue({ state: "offline", observedAt }),
+      now: () => new Date("2026-09-11T01:00:10.000Z"),
+      captureLiveStarts,
+    })(new Request("https://byus.kr/api/public/live-now?locale=ko"));
+    expect(response.status).toBe(200);
+    expect(await response.json()).toMatchObject({ items: [], targets: [] });
+    expect(captureLiveStarts).toHaveBeenCalledWith(expect.objectContaining({ targets: [expect.objectContaining({ celebritySlug: "ifewknow" })] }));
+  });
+
   it("rejects invalid locales before querying and maps content errors to 503", async () => {
     const list = vi.fn();
-    const invalid = await createGetObservedLiveNow({ repository: { list } })(
+    const invalid = await createGetObservedLiveNow({ repository: { list, listUnlistedSlugs: noneUnlisted } })(
       new Request("https://byus.kr/api/public/live-now?locale=ja"),
     );
     expect(invalid.status).toBe(400);
@@ -376,7 +404,7 @@ describe("GET /api/public/live-now", () => {
     expect(list).not.toHaveBeenCalled();
 
     list.mockRejectedValue(new Error("service role key must not leak"));
-    const unavailable = await createGetObservedLiveNow({ repository: { list } })(
+    const unavailable = await createGetObservedLiveNow({ repository: { list, listUnlistedSlugs: noneUnlisted } })(
       new Request("https://byus.kr/api/public/live-now?locale=en"),
     );
     expect(unavailable.status).toBe(503);
@@ -426,7 +454,7 @@ describe("multi-platform observed feed", () => {
     const observeYouTube = vi.fn(async () => ({ state: "live" as const, observedAt, channelId, videoId }));
     const observeInstagram = vi.fn(async () => instagramLive);
     const observeChzzk = vi.fn(async () => ({ state: "live" as const, observedAt, channelId: chzzkChannelId, title: "공식 치지직 LIVE" }));
-    const handler = createGetObservedLiveNow({ repository: { list: async () => [allPlatforms()] }, observe: async () => ({ state: "offline", observedAt }), observeYouTube, observeInstagram, observeChzzk, now: () => new Date(observedAt) });
+    const handler = createGetObservedLiveNow({ repository: { list: async () => [allPlatforms()], listUnlistedSlugs: noneUnlisted }, observe: async () => ({ state: "offline", observedAt }), observeYouTube, observeInstagram, observeChzzk, now: () => new Date(observedAt) });
     await handler(new Request("https://byus.kr/api/public/live-now"));
     expect(observeYouTube).not.toHaveBeenCalled();
     expect(observeInstagram).not.toHaveBeenCalled();

@@ -147,7 +147,9 @@ export function createSignupFunnelTracker(environment: TrackerEnvironment) {
         idempotencyKey: key, occurredAt: new Date(environment.now()).toISOString(),
         properties: { ...attempt.context, provider: attempt.provider, trigger: attempt.trigger,
           ...(attempt.entryAction === undefined ? {} : { entryAction: attempt.entryAction }), outcome, stage, reason, ...diagnostic } });
-      if (outcome === "succeeded") sendGa4Event("login", { method: attempt.provider });
+      // GA4 login is a sign-in the visitor just made, with the way they chose. A session picked up again on a later visit
+      // (no provider is known) is not a login and must not be counted as one with method "unknown".
+      if (outcome === "succeeded" && attempt.trigger !== "session_restore" && attempt.provider !== "unknown") sendGa4Event("login", { method: attempt.provider });
     } catch { /* Telemetry does not establish or revoke a session. */ }
   }
   return { guideView, guideCta, beginLogin, pendingLogin, resumeLogin, forgetLoginAttempt, result };

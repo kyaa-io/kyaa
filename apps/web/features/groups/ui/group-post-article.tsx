@@ -8,7 +8,7 @@ import { readRichDocument, richDocumentAttachments, type RichAttachment } from "
 import { FanTag } from "@/components/fan-ui/fan-tag";
 import { fanUiText } from "@/components/fan-ui/fan-ui-copy";
 import { fanLoginHref } from "@/components/login-href";
-import { NoticeShare } from "@/components/notice/notice-share";
+import { PostShareAction } from "@/features/fan-posts/ui/post-share-action";
 import contentStyles from "@/features/content-safety/ui/content.module.css";
 import { PostDetailHeader } from "@/features/fan-posts/ui/post-detail-header";
 import { applyReaction, PostReactions, type PostReactionChoice, type PostReactionState } from "@/features/fan-posts/ui/post-reactions";
@@ -66,7 +66,7 @@ export function GroupPostArticle({ pageId, post, locale, member, authenticated, 
       {document ? <RichBody document={document} locale={locale} renderAttachment={renderAttachment} /> : <p className={styles.boardDetailBody} style={{ padding: 0 }}>{post.body}</p>}
     </div>
     {post.assets?.filter(asset => !inline.has(asset.id)).map(asset => <GroupPostAsset key={asset.id} asset={asset} locale={locale} />)}
-    <div className={detailStyles.bodyEnd}>{reaction}<NoticeShare title={post.title} locale={locale} /></div>
+    <div className={detailStyles.bodyEnd}>{reaction}<PostShareAction title={post.title} locale={locale} /></div>
     {editBlocked && post.bodyDocUnavailable && <p role="alert" className={contentStyles.error}>{editorText(locale, "bodyDocUnavailable")}</p>}
     <GroupPostComments key={post.id} pageId={pageId} postId={post.id} locale={locale} commentCount={post.commentCount} canWrite={member} onJoin={onJoin} joinPending={joinPending} joinLabel={joinLabel} />
   </article>;

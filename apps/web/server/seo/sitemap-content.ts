@@ -4,6 +4,7 @@ import { creatorHomeHref, isCreatorHandle } from "@/features/creator/domain/crea
 import { raffleListSchema } from "@/features/benefit/domain/raffle";
 import { canonicalUrl, isRehearsalPath, type SeoLocale } from "@/seo/metadata";
 import { createPublicImageRoleReader } from "../media/public-image-reader";
+import { readUnlistedCreatorSlugs } from "../content/published-content-repository";
 
 export type IndexablePage = { path: string; locale: SeoLocale };
 export type PublicationPage = IndexablePage & { content: unknown };
@@ -39,8 +40,10 @@ export async function loadPublicationContent(): Promise<PublicationPage[]> {
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
   if ((!url || !key) && (!process.env.POSTGREST_URL || !process.env.POSTGREST_SERVICE_TOKEN)) throw new Error("Sitemap content is not configured");
   const client = createClient(url, key, { auth: { persistSession: false, autoRefreshToken: false } });
-  const [activeCreators, overrides, previews] = await Promise.all([
+  // Unlisted creator pages stay reachable by link but are not advertised for discovery, as in the directory.
+  const [activeCreators, unlisted, overrides, previews] = await Promise.all([
     readAll<{ slug: string }>(() => client.from("celebrities").select("slug", { count: "exact" }).eq("status", "published").is("archived_at", null).order("slug"), "creator"),
+    readUnlistedCreatorSlugs(client),
     readAll<{ live_event_id: string } & Record<string, unknown>>(() => client.from("live_status_overrides")
       .select("id,live_event_id,effective_status,effective_from,effective_until,created_at,live_events!inner(publication_status,archived_at)", { count: "exact" })
       .eq("live_events.publication_status", "published").is("live_events.archived_at", null).order("id"), "LIVE override"),
@@ -49,7 +52,7 @@ export async function loadPublicationContent(): Promise<PublicationPage[]> {
       .eq("publication_status", "published").is("archived_at", null)
       .eq("live_events.publication_status", "published").is("live_events.archived_at", null).order("live_event_id"), "LIVE preview"),
   ]);
-  const active = new Set(activeCreators.map(row => row.slug));
+  const active = new Set(activeCreators.map(row => row.slug).filter(slug => !unlisted.has(slug)));
   const images = createPublicImageRoleReader({ url, serviceRoleKey: key }, client);
   const locales = await Promise.all((["ko", "en"] as const).map(async locale => {
     const [creatorRows, liveRows, benefits] = await Promise.all([

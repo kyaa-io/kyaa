@@ -40,7 +40,7 @@ export function GroupPageHead() {
   const { observeElement, ...summaryTranslation } = useAutomaticTranslation({ texts: summaryTexts, locale: g.locale, enabled: Boolean(g.celebrity) });
   const tabs = name ? <FanTabs id={g.celebrity ? "celebrity-content" : undefined} label={name} current={g.activeTab} items={items} /> : <FanTabs label={t.groups} current={g.activeTab} items={items} />;
   const memberCount = g.page?.memberCount;
-  const stats = <GroupPresence pageId={g.loading ? null : g.page?.id ?? null} locale={g.locale} member={Boolean(g.membership)} memberCount={memberCount} />;
+  const stats = <GroupPresence pageId={g.loading ? null : g.page?.id ?? null} locale={g.locale} member={Boolean(g.membership)} memberCount={memberCount} challengeSlug={g.kind === "fan" ? g.celebrity?.slug : undefined} />;
   const waitingForCreator = g.page?.kind === "fan" && !g.celebrity;
   if (!name || !g.kind || waitingForCreator) return <FanPageHeaderSkeleton stats={stats} tabs={tabs} />;
   const summary = g.celebrity ? <span ref={observeElement} lang={summaryTranslation.showing ? g.locale : undefined}>{summaryTranslation.texts[0]}</span> : g.page?.description;

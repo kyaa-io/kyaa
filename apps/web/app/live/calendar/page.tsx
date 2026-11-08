@@ -37,16 +37,18 @@ export default async function LiveCalendarPage({
   const contentRepository = createPublishedContentRepositoryFromEnvironment();
   const liveRepository = createLiveEventRepositoryFromEnvironment(repositoryConfig);
   const now = new Date();
-  const [calendar, publishedCelebrities] = await Promise.all([
+  // A failed unlisted read leaves only the filter chips empty (null: nothing counts as listed); the calendar itself still renders.
+  const [calendar, publishedCelebrities, unlisted] = await Promise.all([
     repository.readMonth({ month, locale: toContentLocale(locale), appUserId: null, now }),
     contentRepository.list(toContentLocale(locale)),
+    contentRepository.listUnlistedSlugs().catch(() => null),
   ]);
-  const celebrities = publishedCelebrities.map((celebrity) => ({
+  const allCelebrities = publishedCelebrities.map((celebrity) => ({
     slug: celebrity.slug,
     name: celebrity.name,
     image: celebrity.image.url, photos: celebrity.image.photos, imagePosition: celebrity.image.position,
   }));
-  const availableSlugs = new Set(celebrities.map((celebrity) => celebrity.slug));
+  const availableSlugs = new Set(allCelebrities.map((celebrity) => celebrity.slug));
   const requestedCelebritySlugs = (Array.isArray(requested.celebrity)
     ? requested.celebrity
     : requested.celebrity ? [requested.celebrity] : [])
@@ -62,11 +64,18 @@ export default async function LiveCalendarPage({
       celebritySlug: live.celebrity.slug,
       platforms: [live.watch.provider],
     }));
+  // Sent to the client: listed creators (the chips), plus a creator the link selected or this month's events name, filtered here so
+  // the page data carries no other unlisted creator. Only those extra unlisted ones are passed as unlistedSlugs, to keep them off the chips.
+  const listed = (slug: string) => unlisted !== null && !unlisted.has(slug);
+  const needed = new Set([...requestedCelebritySlugs, ...eventMetadata.map((event) => event.celebritySlug)]);
+  const celebrities = allCelebrities.filter((celebrity) => listed(celebrity.slug) || needed.has(celebrity.slug));
+  const offChips = celebrities.filter((celebrity) => !listed(celebrity.slug)).map((celebrity) => celebrity.slug);
 
   return <LiveCalendarScreen
     initialCalendar={calendar}
     locale={locale}
     celebrities={celebrities}
+    unlistedSlugs={offChips}
     eventMetadata={eventMetadata}
     initialCelebritySlugs={requestedCelebritySlugs}
   />;

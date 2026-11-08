@@ -67,6 +67,23 @@ describe("SupabasePublishedContentRepository", () => {
     ]);
   });
 
+  it("leaves creators with an unlisted fan page out of the directory list only", async () => {
+    const query = queryResult([row, { ...row, slug: "test-page", display_order: 9 }]);
+    const rpc = vi.fn(async () => ({ data: ["test-page"], error: null }));
+    const repository = new SupabasePublishedContentRepository({ from: () => query, rpc });
+    expect((await repository.listListed("ko")).map(({ slug }) => slug)).toEqual(["kara"]);
+    expect(rpc).toHaveBeenCalledWith("list_unlisted_creator_slugs");
+    expect((await repository.list("ko")).map(({ slug }) => slug)).toEqual(["kara", "test-page"]);
+  });
+
+  it("fails the directory list closed when the unlisted read fails or is malformed", async () => {
+    const query = queryResult([row]);
+    for (const rpc of [async () => ({ data: null, error: { message: "denied" } }), async () => ({ data: [1], error: null })]) {
+      await expect(new SupabasePublishedContentRepository({ from: () => query, rpc }).listListed("ko")).rejects.toThrow("Unlisted creator query failed");
+    }
+    await expect(new SupabasePublishedContentRepository({ from: () => query }).listListed("ko")).rejects.toThrow("Unlisted creator query failed");
+  });
+
   it("finds one published projection by canonical locale and slug", async () => {
     const query = queryResult(row);
     const client = { from: vi.fn(() => query) };

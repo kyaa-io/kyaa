@@ -1,0 +1,56 @@
+/* 알림함(plan-ux r6 6.5): 머리 `알림` 18 + `모두 읽음` 텍스트 + 설정 / 칩 36 / 날짜 머리 12 muted 32 / 행 78 notice. 그림자 0(겉 틀만 overlay). */
+.inbox { display: grid; gap: var(--space-2); min-width: 0; color: var(--color-ink); }
+.head { display: flex; align-items: center; gap: var(--space-2); min-height: 44px; }
+.unread { color: var(--color-accent-ink); font-size: var(--fan-metadata-size); font-variant-numeric: tabular-nums; }
+.headEnd { display: flex; align-items: center; gap: var(--space-1); margin-left: auto; }
+.textAction { white-space: nowrap; }
+.iconLink { display: inline-grid; width: 44px; height: 44px; place-items: center; border-radius: var(--radius-control); color: var(--color-ink); }
+.iconLink:hover { background: var(--color-accent-soft); }
+.iconLink:focus-visible { outline: var(--focus-width) solid var(--color-focus); outline-offset: -2px; }
+.kindFilter { margin-bottom: var(--space-1); }
+/* 칩은 한 줄: 넘치면 가로로 밀어 보고(스크롤바 숨김, 끝 칩 잘림 허용), 최애 칩 이름은 최대 폭에서 말줄임. 공통 fan-tabs는 그대로. */
+.inbox .kindFilter { flex-wrap: nowrap; overflow-x: auto; overscroll-behavior-x: contain; scrollbar-width: none; }
+.inbox .kindFilter::-webkit-scrollbar { display: none; }
+.chipRow { position: relative; min-width: 0; }
+.chipNext { position: absolute; top: 50%; right: 0; transform: translateY(-50%); border: 1px solid var(--color-line); border-radius: var(--radius-pill); background: var(--color-surface); }
+.inbox .kindFilter > * { flex: none; white-space: nowrap; }
+.chipName { display: inline-block; max-width: 8em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; vertical-align: bottom; }
+.group { display: grid; }
+.day { display: flex; align-items: center; min-height: 32px; margin: 0; color: var(--color-muted); font-size: var(--fan-metadata-size); font-weight: 400; }
+.rows, .bundleRows { display: grid; margin: 0; padding: 0; list-style: none; }
+.bundleRows { padding-left: var(--space-10); }
+.row {
+  display: grid;
+  grid-template-columns: 32px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--space-3);
+  box-sizing: border-box;
+  height: 78px;
+  padding: 0 var(--space-2);
+  border-radius: var(--radius-control);
+  color: inherit;
+  text-decoration: none;
+  cursor: pointer;
+  list-style: none;
+}
+.row::-webkit-details-marker { display: none; }
+.row:hover { background: var(--color-accent-soft); }
+.row:focus-visible { outline: var(--focus-width) solid var(--color-focus); outline-offset: -2px; }
+.avatar { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; background: var(--color-soft); }
+.kindIcon { display: inline-grid; width: 32px; height: 32px; place-items: center; box-sizing: border-box; border: 1px solid var(--color-line); border-radius: 50%; color: var(--color-ink); }
+.copy { display: grid; gap: var(--space-1); min-width: 0; }
+.line1 { overflow: hidden; font-size: var(--fan-item-title-size); font-weight: 400; line-height: 20px; text-overflow: ellipsis; white-space: nowrap; }
+.row[data-unread] .line1 { font-weight: var(--fan-item-title-weight); }
+.line2 { display: flex; min-width: 0; gap: var(--space-1); overflow: hidden; color: var(--color-muted); font-size: var(--fan-metadata-size); line-height: 16px; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.source { overflow: hidden; text-overflow: ellipsis; }
+.end { display: flex; align-items: center; gap: var(--space-2); }
+.thumb { width: 40px; height: 40px; border-radius: var(--radius-control); object-fit: cover; background: var(--color-soft); }
+.dot { width: 8px; height: 8px; border-radius: 50%; background: var(--color-accent); }
+.action { display: inline-flex; align-items: center; gap: var(--space-1); font-size: var(--fan-item-title-size); font-weight: var(--fan-item-title-weight); white-space: nowrap; }
+.chevron { color: var(--color-muted); transition: transform var(--motion-fast) var(--motion-easing); }
+.bundle[open] .chevron { transform: rotate(180deg); }
+.state { display: flex; align-items: center; min-height: 78px; margin: 0; color: var(--color-muted); font-size: var(--fan-body-size-wide); }
+.stateRow { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); min-height: 78px; font-size: var(--fan-body-size-wide); }
+.guest { display: grid; gap: var(--space-3); }
+.more { justify-self: center; }
+@media (prefers-reduced-motion: reduce) { .chevron { transition: none; } }
