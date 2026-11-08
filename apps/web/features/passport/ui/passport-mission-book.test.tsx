@@ -128,6 +128,18 @@ describe("PassportMissionBook", () => {
     fireEvent.click(screen.getByRole("button", { name: "이전 쪽" }));
     expect(screen.getAllByRole("checkbox").filter(el => el.getAttribute("aria-checked") === "true")).toHaveLength(9);
   });
+  it("K8: turning to a shorter page keeps the book's height (the tallest page seen holds the space)", () => {
+    const heights = [520, 430];
+    let call = 0;
+    const spy = vi.spyOn(HTMLElement.prototype, "offsetHeight", "get").mockImplementation(function (this: HTMLElement) { return this.tagName === "SECTION" ? heights[Math.min(call++, 1)]! : 0; });
+    const stamps = Array.from({ length: 10 }, (_, i) => ({ id: `s${i}`, src: `/stamp-${i}.webp` }));
+    render(<StackedStampPages stamps={stamps} locale="ko" />);
+    const pages = screen.getByRole("heading", { name: "2쪽" }).closest("section")!.parentElement as HTMLElement;
+    expect(pages.style.minHeight).toBe("520px");
+    fireEvent.click(screen.getByRole("button", { name: "이전 쪽" }));
+    expect(pages.style.minHeight).toBe("520px");
+    spy.mockRestore();
+  });
   it("keeps one page and no page control for zero stamps", () => {
     render(<StackedStampPages stamps={[]} locale="ko" />);
     expect(screen.getAllByRole("checkbox")).toHaveLength(9);
