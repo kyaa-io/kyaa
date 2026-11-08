@@ -1,5 +1,5 @@
 "use client";
-import { EarnBadgeCorner } from "@/features/dukjil/ui/earn-badge";
+import { EarnActionBadge } from "@/features/dukjil/ui/earn-badge";
 import { FanSkeleton, FanSkeletonRows, FanSkeletonStatus } from "@/components/fan-ui/fan-skeleton";
 import { fanLoginHref } from "@/components/login-href";
 import { boardCopy } from "@/features/groups/ui/board-copy";
@@ -130,7 +130,7 @@ function DetailForOwner({ postId, locale, presentation: requestedPresentation }:
     <div className={detailStyles.commentTools}>
       <span className={detailStyles.commentCounter}>{draft.length.toLocaleString(locale)} / 1,000</span>
       {replyTarget && <FanAction type="button" variant="text" disabled={mutation.busy} onClick={() => { restoreReplyFocus.current = true; setReplyTarget(null); }}>{copy.cancel}</FanAction>}
-      <EarnBadgeCorner action="comment" locale={locale}><FanAction type="submit" variant="neutral" size="sm" ariaBusy={mutation.busy} loading={mutation.busy} disabled={!gated && !draft.trim()}>{rc.post}</FanAction></EarnBadgeCorner>
+      <EarnActionBadge action="comment" locale={locale} /><FanAction type="submit" variant="neutral" size="sm" ariaBusy={mutation.busy} loading={mutation.busy} disabled={!gated && !draft.trim()}>{rc.post}</FanAction>
     </div>
   </fieldset></form>;
   return <section className={`${styles.section} ${styles.postDetail} ${presentation === "board" ? boardStyles.detail : ""}`}>
