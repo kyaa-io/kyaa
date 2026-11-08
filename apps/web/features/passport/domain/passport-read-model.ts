@@ -36,7 +36,7 @@ export const ACTIVITY_SOURCE_BY_TYPE = {
 
 export const passportActivityContextSchema = z.object({
   sourceType: activitySourceTypeSchema,
-  sourceId: z.uuid(),
+  sourceId: z.guid(),
   live: z.object({
     slug: z.string().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/).max(120),
     title: z.string().trim().min(1).max(160),

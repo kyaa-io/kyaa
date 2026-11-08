@@ -2,6 +2,9 @@ import { z } from "zod";
 const count = z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER);
 const positive = count.refine(n => n > 0);
 const uuid = z.uuid();
+/** Ids the server reads back from ledgers and source rows. Some are derived in SQL (`md5(...)::uuid`) without RFC version bits;
+ * Postgres accepts them. Used only by the web's activity source read; the mobile wallet/history/missions contracts stay pinned (support.test.ts). */
+const dbId = z.guid();
 export const policySchema = z.object({ status: z.enum(["configured", "unconfigured"]) }).strict();
 export const exchangePolicySchema = z.union([z.object({status:z.literal("unconfigured")}).strict(),z.object({status:z.literal("configured"),version:z.string(),freeDrawPointCost:positive.nullable(),freeVotePointCost:positive.nullable(),maxUnits:positive.max(1000),dailyRemaining:count.nullable()}).strict()]);
 export const influencePolicySchema = z.union([z.object({status:z.literal("unconfigured")}).strict(),z.object({status:z.literal("configured"),version:z.string(),freeEnabled:z.boolean(),paidEnabled:z.boolean(),maxUnits:positive.max(1000),influenceAlgorithm:z.string().nullable(),maxPaidInfluenceBps:count.max(2000).nullable()}).strict()]);
@@ -39,4 +42,4 @@ export const supportRewardEnvelopeSchema = z.object({reward:fanRewardSchema,ledg
 export const earningActionKeys = ["verification","reaction","comment","checkin","certification","membership_instagram","membership_tiktok","membership_youtube","share","live_reservation","live_attendance","mission_completion","first_clip","journey_completion","invitation_milestone"] as const;
 export const activitySourceTypes = ["fan_post_likes","fan_clip_likes","celebrity_notice_likes","fan_lounge_messages","celebrity_notice_comments","fan_posts","fan_post_comments","fan_clip_comments","quiz_attempts","live_survey_responses"] as const;
 export const earningStatusSchema = z.object({celebrityId:uuid,policy:z.object({status:z.enum(["configured","unconfigured"]),version:z.string().min(1).max(80).nullable()}).strict(),actions:z.array(z.object({key:z.enum(earningActionKeys),pointAmount:count,scope:z.enum(["daily","lifetime","source"]),dailyLimit:count.nullable(),usedToday:count,remainingToday:count.nullable(),lifetimeLimit:count.nullable(),lifetimeUsed:count,status:z.enum(["available","daily_limit","lifetime_limit","disabled","not_eligible"]),sourceId:uuid.nullable(),ledgerId:uuid.nullable()}).strict()).max(15)}).strict().refine(v=>new Set(v.actions.map(a=>a.key)).size===v.actions.length&&(v.policy.status==="configured"?v.policy.version!==null:v.policy.version===null&&v.actions.length===0));
-export const activitySourceSchema = z.object({sourceId:uuid.nullable()}).strict();
+export const activitySourceSchema = z.object({sourceId:dbId.nullable()}).strict();
