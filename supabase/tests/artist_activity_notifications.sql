@@ -9,7 +9,8 @@ declare
 begin
   day0 := (now() at time zone 'Asia/Seoul')::date - 2;
   t0 := (day0 + time '09:00') at time zone 'Asia/Seoul';
-  select g.id into page from public.group_pages g where g.status = 'published' order by g.created_at limit 1;
+  -- 20261219041000: the online notice needs the page's creator as the fan's favorite, so the page has a creator.
+  select g.id into page from public.group_pages g where g.status = 'published' and g.celebrity_id is not null order by g.created_at limit 1;
   select id into admin_id from public.admin_allowlist limit 1;
   select array_agg(id) into ids from (select u.id from public.app_users u where u.status = 'active'
     and not exists (select 1 from public.group_memberships m where m.page_id = page and m.app_user_id = u.id)
@@ -20,6 +21,10 @@ begin
   insert into public.group_artist_presence_settings values (artist, true) on conflict (app_user_id) do update set enabled = true;
   insert into public.group_memberships(page_id, app_user_id) values (page, artist), (page, fan);
   delete from public.notification_preferences where app_user_id = fan;
+  -- Fixture users may carry artist notices left by earlier local runs; start them empty (rolled back with the rest).
+  delete from public.fan_notifications where app_user_id = any(ids) and kind::text in ('artist_comment', 'artist_online');
+  insert into public.fan_profile_public_fields(app_user_id, favorite_celebrity_id) values (fan, (select celebrity_id from public.group_pages where id = page))
+    on conflict (app_user_id) do update set favorite_celebrity_id = excluded.favorite_celebrity_id;
   delete from public.user_blocks where (app_user_id = fan and blocked_app_user_id = artist) or (app_user_id = artist and blocked_app_user_id = fan);
   update public.artist_activity_push_control set mode = 'test', test_user_ids = '{}', inbox_enabled = false;
   insert into public.push_subscriptions(app_user_id, endpoint, endpoint_hash, p256dh, auth_secret)

@@ -67,6 +67,10 @@ describe("post reactions", () => {
     expect((await (await h.like(put({ reaction: "like" }), id)).json()).reward).toEqual({ points: 20, stamps: 1 });
     award = { points: 1, stampId: null, capped: false, reason: null, replayed: true };
     expect(await (await h.like(put({ reaction: "like" }), id)).json()).not.toHaveProperty("reward");
+    // 20261219040000: a like on your own post answers 0 with SELF_REACTION — no reward key, no skip notice, no failure row.
+    award = { points: 0, stampId: null, capped: false, reason: "SELF_REACTION", replayed: false };
+    expect(await (await h.like(put({ reaction: "like" }), id)).json()).toEqual({ reaction: "like", dislikeCount: null });
+    expect(d.rpc.mock.calls.some(([name]) => name === "record_dukjil_award_failure")).toBe(false);
   });
 
   it("rejects unknown choices and mixed bodies before touching the database", async () => {
