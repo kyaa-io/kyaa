@@ -52,3 +52,21 @@
 .barHearts { display: inline-flex; flex-shrink: 0; align-items: center; gap: var(--space-1); min-height: var(--min-target); border-radius: var(--radius-control); color: var(--color-ink); text-decoration: none; }
 .barHearts:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 @media (max-width: 63.999rem) { .bar .badge { width: 24px; height: 24px; } .barTrigger .name { max-width: 10em; } }
+
+/* Feedback F: inside the header status capsule every letter is one size (14px) and two weights — tier word regular and muted,
+ * name and numbers bold. Each cell keeps its own hover and focus ring. */
+[data-header-status] .group { font-size: var(--fan-action-label-size); }
+[data-header-status] .grade { font-size: var(--fan-action-label-size); font-weight: var(--fan-tab-weight); }
+[data-header-status] .grade::after, [data-header-status] .hearts::before { font-weight: var(--fan-tab-weight); }
+[data-header-status] .cell, [data-header-status] .trigger { padding-inline: calc(var(--space-1) / 2); }
+[data-header-status] .hearts { min-width: 0; }
+@media (hover: hover) and (pointer: fine) { [data-header-status] :is(.cell, .trigger):hover { background: var(--color-line-subtle); } }
+[data-header-status] .placeholder { width: 160px; }
+@media (min-width: 75rem) { [data-header-status] .name { max-width: 96px; } }
+@media (min-width: 64rem) and (max-width: 74.999rem) { [data-header-status] .placeholder { width: 120px; } }
+@media (max-width: 47.999rem) {
+  [data-header-status] .placeholder { width: 96px; }
+  [data-header-status] .trigger { min-width: 0; padding-inline: 0; }
+  [data-header-status] .grade::after, [data-header-status] .hearts::before { margin: 0 calc(var(--space-1) / 2); }
+}
+[data-header-status] .cell[data-cell="tier"] { gap: var(--space-1); }
