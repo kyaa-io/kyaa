@@ -63,6 +63,13 @@ export function ParticipationState({ locale, status, retry }: { locale: AppLocal
   return <div role={status === "error" ? "alert" : "status"} className={styles.feedback}><p>{status === "error" ? c.error : c.loading}</p>{status === "error" && retry && <FanAction onClick={retry}>{c.retry}</FanAction>}</div>;
 }
 export type ScheduleFieldErrors = Partial<Record<"startsAt" | "endsAt" | "timeZone" | "sourceUrl", string>>;
+/** The zones an operator picks from; a saved schedule in another zone keeps its own zone as the first choice. */
+const SCHEDULE_ZONES = ["Asia/Seoul", "Asia/Tokyo", "America/Los_Angeles", "America/New_York", "Europe/London", "UTC"];
+/** "한국 표준시", not "Asia/Seoul": the zone's own name in the viewer's language. */
+function zoneLabel(zone: string, locale: AppLocale): string {
+  try { return new Intl.DateTimeFormat(locale, { timeZone: zone, timeZoneName: "long" }).formatToParts(new Date()).find(part => part.type === "timeZoneName")?.value ?? zone; } catch { return zone; }
+}
+
 export function ScheduleFields({ locale, initial, errors = {} }: { locale: AppLocale; initial?: Partial<ScheduleInput>; errors?: ScheduleFieldErrors }) {
   const c = participationCopy(locale), zone = initial?.timeZone ?? "Asia/Seoul";
   const error = (name: keyof ScheduleFieldErrors) => ({ "aria-invalid": Boolean(errors[name]) || undefined, "aria-describedby": errors[name] ? `schedule-${name}-error` : undefined });
@@ -71,7 +78,7 @@ export function ScheduleFields({ locale, initial, errors = {} }: { locale: AppLo
     <label>{c.title}<input name="title" required maxLength={160} defaultValue={initial?.title} /></label>
     <label>{c.description}<textarea name="description" rows={3} maxLength={4000} defaultValue={initial?.description} /></label>
     <div className={styles.columns}><label>{c.start}<input name="startsAt" required type="datetime-local" lang={locale} defaultValue={initial?.startsAt ? localScheduleTime(initial.startsAt, zone) : ""} {...error("startsAt")} />{errors.startsAt && <span id="schedule-startsAt-error" className={styles.meta}>{errors.startsAt}</span>}</label><label>{c.end}<input name="endsAt" required type="datetime-local" lang={locale} defaultValue={initial?.endsAt ? localScheduleTime(initial.endsAt, zone) : ""} {...error("endsAt")} />{errors.endsAt && <span id="schedule-endsAt-error" className={styles.meta}>{errors.endsAt}</span>}</label></div>
-    <label>{c.timezone}<input name="timeZone" required maxLength={100} defaultValue={zone} {...error("timeZone")} />{errors.timeZone && <span id="schedule-timeZone-error" className={styles.meta}>{errors.timeZone}</span>}</label>
+    <label>{c.timezone}<select name="timeZone" required defaultValue={zone} {...error("timeZone")}>{[...new Set([zone, ...SCHEDULE_ZONES])].map(value => <option key={value} value={value}>{zoneLabel(value, locale)}</option>)}</select>{errors.timeZone && <span id="schedule-timeZone-error" className={styles.meta}>{errors.timeZone}</span>}</label>
     <label>{c.location}<input name="location" maxLength={300} defaultValue={initial?.location} /></label>
     <label>{c.instructions}<textarea name="participationInstructions" rows={2} maxLength={2000} defaultValue={initial?.participationInstructions} /></label>
     <label>{c.source}<input name="sourceUrl" required type="url" maxLength={2048} defaultValue={initial?.sourceUrl ?? ""} {...error("sourceUrl")} />{errors.sourceUrl && <span id="schedule-sourceUrl-error" className={styles.meta}>{errors.sourceUrl}</span>}</label>

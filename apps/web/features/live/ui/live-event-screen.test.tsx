@@ -155,7 +155,7 @@ describe("LiveEventScreen", () => {
     vi.spyOn(globalThis, 'fetch').mockResolvedValue(Response.json({ ...response, live }));
     render(<LiveEventScreen slug="kara-nualeaf" locale="ko" />);
     expect(await screen.findByRole('link', { name: '출석코드 입력하기' })).toHaveAttribute('href', '#fan-code');
-    expect(screen.getByRole('textbox', { name: 'Fan Code 입력' })).toBeEnabled();
+    expect(screen.getByRole('textbox', { name: '출석코드 입력' })).toBeEnabled();
   });
   it('does not invite users to enter codes after the configured window closes', async () => {
     const response = payload('watch_live');
@@ -165,7 +165,7 @@ describe("LiveEventScreen", () => {
     render(<LiveEventScreen slug="kara-nualeaf" locale="ko" />);
     expect(await screen.findByText('출석 인증 시간이 종료되었어요.')).toBeVisible();
     expect(screen.queryByRole('link', { name: '출석코드 입력하기' })).not.toBeInTheDocument();
-    expect(screen.queryByRole('textbox', { name: 'Fan Code 입력' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('textbox', { name: '출석코드 입력' })).not.toBeInTheDocument();
   });
   it.each(["locked", "eligible", "claimed"] as const)("preserves the collectible %s state in the compact reward card", async (state) => {
     const response = payload();
@@ -269,7 +269,7 @@ describe("LiveEventScreen", () => {
       .mockResolvedValueOnce(Response.json(attendanceResult));
 
     render(<LiveEventScreen slug={livePayload.live.slug} locale={locale} />);
-    const field = await screen.findByRole("textbox", { name: locale === "ko" ? "Fan Code 입력" : "Enter Fan Code" });
+    const field = await screen.findByRole("textbox", { name: locale === "ko" ? "출석코드 입력" : "Enter Fan Code" });
     expect(screen.getByText(locale === "ko" ? "선물 응모" : "Enter for prizes", { selector: "strong" })).toBeVisible();
     expect(screen.queryByText(locale === "ko" ? "설문" : "Survey", { selector: "strong" })).not.toBeInTheDocument();
     fireEvent.change(field, { target: { value: "TESTCODE" } });
@@ -316,7 +316,7 @@ describe("LiveEventScreen", () => {
     vi.spyOn(globalThis, "fetch").mockResolvedValue(new Response(JSON.stringify(payload()), { status: 200 }));
     const { container } = render(<LiveEventScreen slug="kara-nualeaf" locale="ko" />);
 
-    const heading = await screen.findByRole("heading", { name: "Fan Code" });
+    const heading = await screen.findByRole("heading", { name: "출석코드" });
     const icon = container.querySelector("[data-fan-code-header-icon]");
     expect(icon).not.toBeNull();
     expect(heading.parentElement).not.toBeNull();
@@ -526,7 +526,7 @@ describe("LiveEventScreen", () => {
     vi.spyOn(globalThis, "fetch").mockResolvedValue(new Response(JSON.stringify(livePayload), { status: 200 }));
 
     render(<LiveEventScreen slug="kara-nualeaf" locale="ko" />);
-    fireEvent.change(await screen.findByRole("textbox", { name: "Fan Code 입력" }), { target: { value: " kara 2026 " } });
+    fireEvent.change(await screen.findByRole("textbox", { name: "출석코드 입력" }), { target: { value: " kara 2026 " } });
     fireEvent.click(screen.getByRole("button", { name: "로그인하고 출석 인증하기" }));
 
     expect(sessionStorage.getItem("byus:fan-code-draft:kara-nualeaf")).toBe("KARA2026");
@@ -616,7 +616,7 @@ describe("LiveEventScreen", () => {
     query = back.searchParams.toString();
     const clock = vi.spyOn(Date, "now").mockReturnValue(now + 3_600_000);
     const waiting = render(<LiveEventScreen slug="kara-nualeaf" locale="ko" />);
-    await screen.findByText("Fan Code는 LIVE 시작 후 입력할 수 있어요.");
+    await screen.findByText("출석코드는 LIVE 시작 후 입력할 수 있어요.");
     await act(async () => { await new Promise(resolve => setTimeout(resolve, 30)); });
     expect(sessionStorage.getItem("byus:fan-code-draft:kara-nualeaf")).toBe("5VSD6N");
     expect(push).toHaveBeenCalledTimes(1);
@@ -636,7 +636,7 @@ describe("LiveEventScreen", () => {
     const fetchMock = vi.spyOn(globalThis, "fetch").mockImplementation(async (_url, init) =>
       init?.method === "POST" ? Response.json(attendanceResult) : Response.json(livePayload));
     render(<LiveEventScreen slug="kara-nualeaf" locale="ko" />);
-    await screen.findByText("Fan Code는 LIVE 시작 후 입력할 수 있어요.");
+    await screen.findByText("출석코드는 LIVE 시작 후 입력할 수 있어요.");
     await act(async () => { await new Promise(resolve => setTimeout(resolve, 30)); });
     expect(fetchMock.mock.calls.filter(([, init]) => init?.method === "POST")).toHaveLength(0);
     expect(replace).not.toHaveBeenCalled();
@@ -656,7 +656,7 @@ describe("LiveEventScreen", () => {
     const livePayload = { ...payload("watch_live"), live: { ...payload().live, attendanceWindow: { opensAt: new Date(now + (phase === "upcoming" ? 60_000 : -120_000)).toISOString(), closesAt: new Date(now + (phase === "upcoming" ? 120_000 : -60_000)).toISOString() } } };
     const fetchMock = vi.spyOn(globalThis, "fetch").mockImplementation(async (_url, init) => init?.method === "POST" ? Response.json(attendanceResult) : Response.json(livePayload));
     render(<LiveEventScreen slug="kara-nualeaf" locale="ko" />);
-    await screen.findByRole("heading", { name: "Fan Code" });
+    await screen.findByRole("heading", { name: "출석코드" });
     await act(async () => { await new Promise(resolve => setTimeout(resolve, 30)); });
     expect(fetchMock.mock.calls.filter(([, init]) => init?.method === "POST")).toHaveLength(0);
     if (phase === "closed") {
@@ -722,7 +722,7 @@ describe("LiveEventScreen", () => {
     expect(replace).toHaveBeenCalledWith("/live/kara-nualeaf?locale=ko#fan-code");
     expect(push).not.toHaveBeenCalled();
     expect(fetchMock.mock.calls.filter(([url]) => String(url).includes("/attendance"))).toHaveLength(0);
-    await waitFor(() => expect(screen.getByRole("textbox", { name: "Fan Code 입력" })).toHaveFocus());
+    await waitFor(() => expect(screen.getByRole("textbox", { name: "출석코드 입력" })).toHaveFocus());
   });
 
   it("explains an authentication failure while automatically submitting a deep link", async () => {
@@ -781,7 +781,7 @@ describe("LiveEventScreen", () => {
     fireEvent.click(await screen.findByRole("button", { name: "LIVE 예약하기" }));
     expect(await screen.findByRole("dialog")).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "예약이 완료되었습니다" })).toBeInTheDocument();
-    expect(screen.getByText("라이브 예약 도장")).toBeInTheDocument();
+    expect(screen.getByText("라이브 예약 스탬프")).toBeInTheDocument();
     expect(screen.getByText("총점").parentElement).toHaveTextContent("5");
     expect(screen.getByText("상승 · 실버")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "패스포트에서 확인하기" })).toHaveAttribute(
@@ -993,7 +993,7 @@ describe("LiveEventScreen", () => {
       return Promise.resolve(Response.json(ownerData));
     });
     const view = render(<LiveEventScreen slug="kara-nualeaf" locale="ko" />);
-    const fanCodeInput = await screen.findByRole("textbox", { name: "Fan Code 입력" });
+    const fanCodeInput = await screen.findByRole("textbox", { name: "출석코드 입력" });
     fireEvent.change(fanCodeInput, { target: { value: "OWNERACODE" } });
     fireEvent.click(await screen.findByRole("button", { name: "소장품 받기" }));
     await waitFor(() => expect(fetchMock.mock.calls.some(([, init]) => init?.method === "POST")).toBe(true));
@@ -1004,7 +1004,7 @@ describe("LiveEventScreen", () => {
     Object.assign(session, { ready: true, pending: false });
     view.rerender(<LiveEventScreen slug="kara-nualeaf" locale="ko" />);
 
-    const ownerBInput = await screen.findByRole("textbox", { name: "Fan Code 입력" });
+    const ownerBInput = await screen.findByRole("textbox", { name: "출석코드 입력" });
     expect(ownerBInput).toHaveValue("");
     expect(await screen.findByRole("button", { name: "소장품 받기" })).toBeEnabled();
   });
@@ -1161,12 +1161,12 @@ describe("LiveEventScreen", () => {
       .mockResolvedValueOnce(new Response(JSON.stringify(attendanceResult), { status: 200 }));
 
     render(<LiveEventScreen slug="kara-nualeaf" locale="ko" />);
-    const input = await screen.findByRole("textbox", { name: "Fan Code 입력" });
+    const input = await screen.findByRole("textbox", { name: "출석코드 입력" });
     fireEvent.change(input, { target: { value: " kara 2026 " } });
     fireEvent.click(screen.getByRole("button", { name: "출석 인증하기" }));
 
     expect(await screen.findByRole("heading", { name: "LIVE 출석을 남겼어요" })).toBeInTheDocument();
-    expect(screen.getByText("출석 도장, Fan Score +3, 응모권 2장이 기록되었습니다.")).toBeInTheDocument();
+    expect(screen.getByText("출석 스탬프, Fan Score +3, 응모권 2장이 기록되었습니다.")).toBeInTheDocument();
     expect(screen.getByText("총점").parentElement).toHaveTextContent("8");
     expect(screen.getByText("실버")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /설문 참여/ })).toHaveAttribute("href", "/live/kara-nualeaf/survey?locale=ko");
@@ -1176,7 +1176,7 @@ describe("LiveEventScreen", () => {
       headers: expect.objectContaining({ "content-type": "application/json", "idempotency-key": expect.any(String) }),
       body: JSON.stringify({ code: "KARA2026" }),
     }));
-    expect(screen.queryByRole("textbox", { name: "Fan Code 입력" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("textbox", { name: "출석코드 입력" })).not.toBeInTheDocument();
   });
 
   it("sends IfeW attendance success to the Banksy ticket draw without a survey action", async () => {
@@ -1210,7 +1210,7 @@ describe("LiveEventScreen", () => {
       .mockResolvedValueOnce(Response.json(attendanceResult));
 
     render(<LiveEventScreen slug="kara-nualeaf" locale="ko" />);
-    fireEvent.change(await screen.findByRole("textbox", { name: "Fan Code 입력" }), {
+    fireEvent.change(await screen.findByRole("textbox", { name: "출석코드 입력" }), {
       target: { value: "KARA2026" },
     });
     fireEvent.click(screen.getByRole("button", { name: "출석 인증하기" }));
@@ -1268,7 +1268,7 @@ describe("LiveEventScreen", () => {
     expect(await screen.findByText("패스포트 발급 후 참여할 수 있어요.")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "패스포트 발급받기" }))
       .toHaveAttribute("href", "/c/kara/verify?locale=ko&returnTo=%2Flive%2Fkara-nualeaf%3Flocale%3Dko");
-    expect(screen.queryByRole("textbox", { name: "Fan Code 입력" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("textbox", { name: "출석코드 입력" })).not.toBeInTheDocument();
   });
 
   it("uses the shared English Passport action copy for the attendance gate", async () => {
@@ -1295,7 +1295,7 @@ describe("LiveEventScreen", () => {
 
     render(<LiveEventScreen slug="kara-nualeaf" locale="ko" />);
 
-    expect(await screen.findByRole("textbox", { name: "Fan Code 입력" })).toBeEnabled();
+    expect(await screen.findByRole("textbox", { name: "출석코드 입력" })).toBeEnabled();
     expect(screen.getByRole("button", { name: "출석 인증하기" })).toBeInTheDocument();
   });
 
@@ -1307,7 +1307,7 @@ describe("LiveEventScreen", () => {
       .mockResolvedValueOnce(new Response(JSON.stringify({ error: { code: "ATTENDANCE_RATE_LIMITED" } }), { status: 429, headers: { "retry-after": "60" } }));
 
     render(<LiveEventScreen slug="kara-nualeaf" locale="ko" />);
-    const input = await screen.findByRole("textbox", { name: "Fan Code 입력" });
+    const input = await screen.findByRole("textbox", { name: "출석코드 입력" });
     fireEvent.change(input, { target: { value: "KARA2026" } });
     fireEvent.click(screen.getByRole("button", { name: "출석 인증하기" }));
 
@@ -1325,7 +1325,7 @@ describe("LiveEventScreen", () => {
       .mockResolvedValueOnce(new Response(JSON.stringify(attendanceResult), { status: 200 }));
 
     render(<LiveEventScreen slug="kara-nualeaf" locale="ko" />);
-    const input = await screen.findByRole("textbox", { name: "Fan Code 입력" });
+    const input = await screen.findByRole("textbox", { name: "출석코드 입력" });
     fireEvent.change(input, { target: { value: "KARA2026" } });
     fireEvent.click(screen.getByRole("button", { name: "출석 인증하기" }));
     expect(await screen.findByRole("alert")).toHaveTextContent("지금은 출석을 확인할 수 없어요");
