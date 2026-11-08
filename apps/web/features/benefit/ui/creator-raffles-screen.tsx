@@ -23,7 +23,7 @@ import { useGroupResource } from "@/features/groups/ui/use-group-resource";
 import { walletSchema } from "@/server/group-wallet/domain";
 import { resolvePhoto } from "@/features/media/domain/public-image";
 import type { PublishedCelebrity } from "@/server/content/content-domain";
-import { raffleStatus, type RaffleList } from "../domain/raffle";
+import { raffleStatus, sortRafflesForList, type RaffleList } from "../domain/raffle";
 import { benefitListResponseSchema, type BenefitCatalogItem, type BenefitListResponse } from "../domain/benefit";
 import type { BenefitEntryResult } from "../domain/benefit-entry";
 import { creatorRaffleHref, creatorRafflesHref, creatorRaffleVerificationHref } from "../domain/raffle-navigation";
@@ -122,7 +122,7 @@ function OwnedCreatorRaffles({ celebrity, locale, raffles, benefitId, deliveryIn
         </header>
         {auth.authenticated && resource.state.status === "loading" && !known ? <div className={styles.notice} aria-busy="true"><FanSkeleton width={200} height={20} /></div> : auth.authenticated && (!known || resource.refreshFailed) ? <div className={styles.notice} role="status">{(locale === "ko" ? "내 응모권을 불러오지 못했어요." : translate(locale, localizedMessages.mc486fbb64dec, "We couldn’t load your tickets."))}<FanAction variant="text" onClick={resource.retry}>{locale === "ko" ? "다시 확인" : translate(locale, localizedMessages.m04155d1d3e60, "Try again")}</FanAction></div> : null}
         {raffles.length === 0 ? <FanState inline kind="empty" className={styles.emptyGifts} title={locale === "ko" ? "진행 중인 선물이 없어요" : translate(locale, localizedMessages.rafflesEmpty, "No gifts open right now")} /> : <div className={styles.grid} data-testid="raffle-grid">
-          {raffles.map((raffle) => {
+          {sortRafflesForList(raffles, now).map((raffle) => {
             const owned = known ? data?.benefits.find((item) => item.id === raffle.benefitId)?.entry : null;
             return <article className={styles.card} key={raffle.id}>
               <RaffleArtwork raffle={raffle} />

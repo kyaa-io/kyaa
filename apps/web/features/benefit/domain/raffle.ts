@@ -27,3 +27,14 @@ export function raffleStatus(raffle: RaffleList["raffles"][number], now: number)
   if (raffle.entryOpensAt && now < Date.parse(raffle.entryOpensAt)) return "preparing";
   return raffle.status;
 }
+
+type ListedRaffle = RaffleList["raffles"][number];
+/** List place by state (QA-i M2): open, then upcoming, then closed (awaiting or published results), then cancelled. */
+const LIST_RANK: Record<ListedRaffle["status"], number> = { open: 0, preparing: 1, closed: 2, cancelled: 3 };
+
+/** Gift list order: an open draw is never pushed under closed ones. Same state keeps the server order (entry opening time); the sort is stable. */
+export function sortRafflesForList<T extends ListedRaffle>(raffles: readonly T[], now: number): T[] {
+  return raffles.map((raffle, index) => ({ raffle, index, rank: LIST_RANK[raffleStatus(raffle, now)] }))
+    .sort((a, b) => a.rank - b.rank || a.index - b.index)
+    .map(({ raffle }) => raffle);
+}
