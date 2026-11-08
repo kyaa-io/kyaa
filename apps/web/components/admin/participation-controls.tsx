@@ -33,7 +33,7 @@ export function useParticipationCreators(url = "/api/admin/lives") { return useF
 export type CreatorRefs = z.infer<typeof refsSchema>["celebrities"];
 export function CreatorSelect({ locale, creators, value, locked = false, required = true }: { locale: AdminLocale; creators: CreatorRefs; value?: string; locked?: boolean; required?: boolean }) {
   const c = participationCopy(locale);
-  return <label>{c.fanpageLabel}<select name="celebrityId" defaultValue={value ?? ""} required={required} disabled={locked}><option value="">—</option>{creators.map(item => <option key={item.id} value={item.id}>{locale === "ko" ? item.nameKo : item.nameEn} · {c[item.status]}</option>)}</select>{locked && <input type="hidden" name="celebrityId" value={value} />}</label>;
+  return <label>{c.fanpageLabel}<select name="celebrityId" defaultValue={value ?? ""} required={required} disabled={locked}><option value="">{locale === "ko" ? "최애 선택" : "Choose a creator"}</option>{creators.map(item => <option key={item.id} value={item.id}>{locale === "ko" ? item.nameKo : item.nameEn} · {c[item.status]}</option>)}</select>{locked && <input type="hidden" name="celebrityId" value={value} />}</label>;
 }
 export function AdminScheduleForm({ locale, creators, initial, busy, onSave, onInvalid }: { locale: AdminLocale; creators: CreatorRefs; initial?: AdminSchedule | ScheduleSuggestion; busy: boolean; onSave: (payload: ScheduleWrite) => void; onInvalid: () => void }) {
   const c = participationCopy(locale), existing = initial && "officialSourceUrl" in initial ? initial : null, suggestion = initial && "sourceUrl" in initial ? initial : null;
