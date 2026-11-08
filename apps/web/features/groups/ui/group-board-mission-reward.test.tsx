@@ -6,7 +6,8 @@ import {clearResources} from '@/components/fan-ui/resource-cache';
 import {GroupBoard} from './group-board';
 
 // K6: 모임 글 저장 응답의 reward를 팬 글과 같은 지급 토스트·미지급 안내로 띄운다. 수정 저장은 띄우지 않는다.
-const toast=vi.hoisted(()=>({reward:vi.fn(),fan:vi.fn()}));
+const toast=vi.hoisted(()=>({reward:vi.fn(),fan:vi.fn(),activity:vi.fn()}));
+vi.mock('@/components/fan-ui/fan-activity-updates',async importOriginal=>({...await importOriginal<object>(),notifyFanActivityUpdated:toast.activity}));
 vi.mock('@/features/fan-posts/ui/mission-reward-toast',()=>({showMissionRewardToast:toast.reward}));
 vi.mock('@/components/fan-ui/fan-toast',()=>({showFanToast:toast.fan}));
 vi.mock('@/features/auth/client/cognito-auth',()=>{const getAccessToken=async()=>'token';return {useByUsAuth:()=>({ready:true,authenticated:true,user:{id:'owner'},getAccessToken})};});
@@ -21,7 +22,7 @@ const row={id,pageId,title:'응',body:'응',visibility:'public',anonymous:false,
 const detail={page:{id:pageId,kind:'fan' as const,celebrityId:'30000000-0000-4000-8000-000000000003',slug:null,name:'Fans',description:'d',imageUrl:null,question:null,memberCount:1},membership:{role:'member'},bookmarked:false} as never;
 let answer:Record<string,unknown>={};
 beforeEach(()=>{
- clearResources();toast.reward.mockClear();toast.fan.mockClear();
+ clearResources();toast.reward.mockClear();toast.fan.mockClear();toast.activity.mockClear();
  vi.stubGlobal('fetch',vi.fn(async(input:RequestInfo|URL,init?:RequestInit)=>{
   const method=init?.method??'GET';
   if(method==='POST')return Response.json({...row,...answer});
@@ -40,6 +41,13 @@ it('celebrates what a new group post paid, with the fan-post toast',async()=>{
  expect(toast.reward).toHaveBeenCalledWith('ko','post',{points:20,stamps:1});
  expect(toast.fan).not.toHaveBeenCalled();
 });
+it('asks the fan activity summary to read again after a new group post, as a fan post does',async()=>{
+ answer={};
+ render(<GroupBoard detail={detail} locale='ko'/>);
+ await post();
+ expect(toast.activity).toHaveBeenCalledTimes(1);
+ expect(toast.activity).toHaveBeenCalledWith('owner');
+});
 it('says why a new group post paid nothing',async()=>{
  answer={reward:{points:0,stamps:0,skippedReason:'daily_limit'}};
  render(<GroupBoard detail={detail} locale='ko'/>);
@@ -55,4 +63,5 @@ it('stays quiet without a reward and on an edit',async()=>{
  await waitFor(()=>expect(screen.queryByRole('form',{name:'composer'})).toBeNull());
  expect(toast.reward).not.toHaveBeenCalled();
  expect(toast.fan).not.toHaveBeenCalled();
+ expect(toast.activity).not.toHaveBeenCalled();
 });
