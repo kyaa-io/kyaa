@@ -14,6 +14,9 @@ export function useRankingResource<T>(url: string, parse: (value: unknown) => T)
   const [settled, setSettled] = useState<{ key: string; state: State<T> }>();
   const [attempt, setAttempt] = useState(0);
   const retry = useCallback(() => { dropResource(cacheKey); setSettled(undefined); setAttempt((n) => n + 1); }, [cacheKey]);
+  // A quiet re-read (home ranking, back on the tab after a while): the rows stay on screen while it runs and if it fails.
+  const quiet = useRef(false);
+  const refresh = useCallback(() => { quiet.current = true; dropResource(cacheKey); setAttempt((n) => n + 1); }, [cacheKey]);
   const epoch = useResourceEpoch();
   const handled = useRef({ cacheKey, attempt, epoch });
   const shown = useRef<State<T> | undefined>(undefined);
@@ -26,7 +29,8 @@ export function useRankingResource<T>(url: string, parse: (value: unknown) => T)
     handled.current = { cacheKey, attempt, epoch };
     if (peekResource(cacheKey)?.fresh) return;
     // A re-read caused only by a write elsewhere keeps the value on screen if it fails.
-    const behind = last.cacheKey === cacheKey && last.attempt === attempt && last.epoch !== epoch;
+    const behind = (last.cacheKey === cacheKey && last.attempt === attempt && last.epoch !== epoch) || quiet.current;
+    quiet.current = false;
     const controller = new AbortController();
     (async () => {
       try {
@@ -52,5 +56,5 @@ export function useRankingResource<T>(url: string, parse: (value: unknown) => T)
 
   const state: State<T> = settled?.key === cacheKey ? settled.state : cached ?? { status: "loading" };
   useLayoutEffect(() => { shown.current = state; });
-  return { state, retry };
+  return { state, retry, refresh };
 }
