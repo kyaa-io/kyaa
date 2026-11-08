@@ -26,6 +26,7 @@
 .pressed { position: absolute; inset: 0; }
 .slotTask { max-width: 100%; color: var(--passport-muted); font-size: var(--fan-metadata-size); line-height: 1.35; overflow-wrap: anywhere; word-break: keep-all; }
 .hint { margin: 0; color: var(--passport-muted); font-size: var(--fan-metadata-size); text-align: center; }
+.hint[data-hint-placeholder] { visibility: hidden; }
 /* An inked stamp lands a little crooked, each slot in its own way. */
 .slot[data-state="filled"] .art img { transform: rotate(var(--stamp-tilt, 0deg)); }
 .slotLabel { max-width: 100%; font-size: var(--fan-item-title-size); font-weight: 700; line-height: 1.3; }
