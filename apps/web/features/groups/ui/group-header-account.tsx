@@ -16,14 +16,23 @@ import { useAvatar } from '@/features/profile/ui/use-avatar';
 import { Avatar, AvatarPlaceholder } from '@/features/profile/ui/avatar';
 import { GroupLanguageDialog } from './group-language-dialog';
 import { GROUP_WALLET_CHANGED_EVENT, useGroupRequest, useGroupResource } from './use-group-resource';
+import { translate } from '@/i18n/messages';
+import { messages as accountMessages } from '@/i18n/catalogs/features__groups__ui__group-header-account';
 import styles from './group-header-account.module.css';
 
 const parse = (value: unknown) => walletSchema.parse(value);
 
-/** Menu words (ko·en here, the other languages read the English until the catalog carries them — same as the 4차 menu). */
+/** Menu words (ko here; the other languages through i18n/catalogs/features__groups__ui__group-header-account.ts). */
 const words = (locale: AppLocale) => locale === 'ko'
   ? { menu: '계정 메뉴', passport: '패스포트', friends: '친구·메시지', settings: '설정', language: '언어', openPage: '팬페이지 개설', logout: '로그아웃', choose: '최애 고르기', hearts: (n: string, name: string) => `${name} 하트 ${n}`, points: (n: string) => `포인트 ${n}` }
-  : { menu: 'Account menu', passport: 'Passport', friends: 'Friends · Messages', settings: 'Settings', language: 'Language', openPage: 'Open a fan page', logout: 'Sign out', choose: 'Choose a favorite', hearts: (n: string, name: string) => `${n} hearts for ${name}`, points: (n: string) => `${n} points` };
+  : {
+    menu: translate(locale, accountMessages.accountMenu, 'Account menu'), passport: translate(locale, accountMessages.accountPassport, 'Passport'),
+    friends: translate(locale, accountMessages.accountFriends, 'Friends · Messages'), settings: translate(locale, accountMessages.accountSettings, 'Settings'),
+    language: translate(locale, accountMessages.accountLanguage, 'Language'), openPage: translate(locale, accountMessages.accountOpenPage, 'Open a fan page'),
+    logout: translate(locale, accountMessages.accountLogout, 'Sign out'), choose: translate(locale, accountMessages.accountChoose, 'Choose a favorite'),
+    hearts: (n: string, name: string) => translate(locale, accountMessages.accountHearts, '{0} hearts for {1}', [n, name]),
+    points: (n: string) => translate(locale, accountMessages.accountPoints, '{0} points', [n]),
+  };
 
 /** First row (5차 B2, K10): my state in one line — tier · favorite ♥N · P N ›, to the 덕질 tab. Without a favorite: ☆ 최애 고르기 · P N.
  * The values leave the header (8장 / 2.1) and live here and in the 덕질 wallet. While a value is unknown its place stays empty, never a dash. */

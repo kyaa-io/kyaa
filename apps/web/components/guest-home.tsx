@@ -30,17 +30,23 @@ import { FanAppFrame, FanContentContainer } from "./fan-shell/fan-app-shell";
 import { fanLoginHref } from "./login-href";
 import type { HomeQueries } from "./home-query-stream";
 import { gggiHomeBanner } from "@/features/home/domain/gggi-home-banner";
+import { translate } from "@/i18n/messages";
+import { messages as homeMessages } from "@/i18n/catalogs/components__guest-home";
 import styles from "./guest-home.module.css";
 
-/** Home words (ko·en; the other languages read the English until the catalog carries them). */
+/** Home words (ko here; the other languages through i18n/catalogs/components__guest-home.ts). */
 const words = (locale: AppLocale) => locale === "ko" ? {
   title: "홈", myNews: "내 최애 소식", more: "더 보기", official: "공식 소식", liveNow: "LIVE 중", liveAt: (at: string) => `LIVE ${at}`,
   noNews: "새 소식이 없습니다", choose: "최애 고르기", yourFavorite: "당신의 최애", fanPage: "팬페이지 보기", loginChoose: "로그인하고 최애 고르기",
   fans: (n: string) => `팬 ${n}`,
 } : {
-  title: "Home", myNews: "My favorite's news", more: "More", official: "Official", liveNow: "LIVE now", liveAt: (at: string) => `LIVE ${at}`,
-  noNews: "No new posts", choose: "Choose a favorite", yourFavorite: "Your favorite", fanPage: "View fan page", loginChoose: "Sign in to choose a favorite",
-  fans: (n: string) => `${n} fans`,
+  title: translate(locale, homeMessages.homeTitle, "Home"), myNews: translate(locale, homeMessages.homeMyNews, "My favorite's news"),
+  more: translate(locale, homeMessages.homeMore, "More"), official: translate(locale, homeMessages.homeOfficial, "Official"),
+  liveNow: translate(locale, homeMessages.homeLiveNow, "LIVE now"), liveAt: (at: string) => translate(locale, homeMessages.homeLiveAt, "LIVE {0}", [at]),
+  noNews: translate(locale, homeMessages.homeNoNews, "No new posts"), choose: translate(locale, homeMessages.homeChoose, "Choose a favorite"),
+  yourFavorite: translate(locale, homeMessages.homeYourFavorite, "Your favorite"), fanPage: translate(locale, homeMessages.homeFanPage, "View fan page"),
+  loginChoose: translate(locale, homeMessages.homeLoginChoose, "Sign in to choose a favorite"),
+  fans: (n: string) => translate(locale, homeMessages.homeFans, "{0} fans", [n]),
 };
 
 export function formatKoreanLiveDate(value: string) {

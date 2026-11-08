@@ -17542,5 +17542,137 @@
     "ko": "안 읽은 알림 {0}개",
     "source": "features/notification/ui/header-notification-link",
     "id": "features/notification/ui/header-notification-link:headerUnreadNotifications"
+  },
+  "homeTitle": {
+    "en": "Home",
+    "ko": "홈",
+    "source": "components/guest-home",
+    "id": "components/guest-home:homeTitle"
+  },
+  "homeMyNews": {
+    "en": "My favorite's news",
+    "ko": "내 최애 소식",
+    "source": "components/guest-home",
+    "id": "components/guest-home:homeMyNews"
+  },
+  "homeMore": {
+    "en": "More",
+    "ko": "더 보기",
+    "source": "components/guest-home",
+    "id": "components/guest-home:homeMore"
+  },
+  "homeOfficial": {
+    "en": "Official",
+    "ko": "공식 소식",
+    "source": "components/guest-home",
+    "id": "components/guest-home:homeOfficial"
+  },
+  "homeLiveNow": {
+    "en": "LIVE now",
+    "ko": "LIVE 중",
+    "source": "components/guest-home",
+    "id": "components/guest-home:homeLiveNow"
+  },
+  "homeLiveAt": {
+    "en": "LIVE {0}",
+    "ko": "LIVE {0}",
+    "source": "components/guest-home",
+    "id": "components/guest-home:homeLiveAt"
+  },
+  "homeNoNews": {
+    "en": "No new posts",
+    "ko": "새 소식이 없습니다",
+    "source": "components/guest-home",
+    "id": "components/guest-home:homeNoNews"
+  },
+  "homeChoose": {
+    "en": "Choose a favorite",
+    "ko": "최애 고르기",
+    "source": "components/guest-home",
+    "id": "components/guest-home:homeChoose"
+  },
+  "homeYourFavorite": {
+    "en": "Your favorite",
+    "ko": "당신의 최애",
+    "source": "components/guest-home",
+    "id": "components/guest-home:homeYourFavorite"
+  },
+  "homeFanPage": {
+    "en": "View fan page",
+    "ko": "팬페이지 보기",
+    "source": "components/guest-home",
+    "id": "components/guest-home:homeFanPage"
+  },
+  "homeLoginChoose": {
+    "en": "Sign in to choose a favorite",
+    "ko": "로그인하고 최애 고르기",
+    "source": "components/guest-home",
+    "id": "components/guest-home:homeLoginChoose"
+  },
+  "homeFans": {
+    "en": "{0} fans",
+    "ko": "팬 {0}",
+    "source": "components/guest-home",
+    "id": "components/guest-home:homeFans"
+  },
+  "accountMenu": {
+    "en": "Account menu",
+    "ko": "계정 메뉴",
+    "source": "features/groups/ui/group-header-account",
+    "id": "features/groups/ui/group-header-account:accountMenu"
+  },
+  "accountPassport": {
+    "en": "Passport",
+    "ko": "패스포트",
+    "source": "features/groups/ui/group-header-account",
+    "id": "features/groups/ui/group-header-account:accountPassport"
+  },
+  "accountFriends": {
+    "en": "Friends · Messages",
+    "ko": "친구·메시지",
+    "source": "features/groups/ui/group-header-account",
+    "id": "features/groups/ui/group-header-account:accountFriends"
+  },
+  "accountSettings": {
+    "en": "Settings",
+    "ko": "설정",
+    "source": "features/groups/ui/group-header-account",
+    "id": "features/groups/ui/group-header-account:accountSettings"
+  },
+  "accountLanguage": {
+    "en": "Language",
+    "ko": "언어",
+    "source": "features/groups/ui/group-header-account",
+    "id": "features/groups/ui/group-header-account:accountLanguage"
+  },
+  "accountOpenPage": {
+    "en": "Open a fan page",
+    "ko": "팬페이지 개설",
+    "source": "features/groups/ui/group-header-account",
+    "id": "features/groups/ui/group-header-account:accountOpenPage"
+  },
+  "accountLogout": {
+    "en": "Sign out",
+    "ko": "로그아웃",
+    "source": "features/groups/ui/group-header-account",
+    "id": "features/groups/ui/group-header-account:accountLogout"
+  },
+  "accountChoose": {
+    "en": "Choose a favorite",
+    "ko": "최애 고르기",
+    "source": "features/groups/ui/group-header-account",
+    "id": "features/groups/ui/group-header-account:accountChoose"
+  },
+  "accountHearts": {
+    "en": "{0} hearts for {1}",
+    "ko": "{1} 하트 {0}",
+    "source": "features/groups/ui/group-header-account",
+    "id": "features/groups/ui/group-header-account:accountHearts"
+  },
+  "accountPoints": {
+    "en": "{0} points",
+    "ko": "포인트 {0}",
+    "source": "features/groups/ui/group-header-account",
+    "id": "features/groups/ui/group-header-account:accountPoints"
   }
 }
