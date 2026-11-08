@@ -28,10 +28,18 @@ export function ContentAssetImage({ asset, locale, alt, adminPreview = false, hr
   }, [loading, visible]);
   useEffect(() => { tokenProvider.current = getAccessToken; }, [getAccessToken]);
   const [retry, setRetry] = useState(0), [snapshot, setSnapshot] = useState<{ key: string; url?: string; failed?: boolean }>();
-  const key = `${asset.id}:${thumbnail}:${noticeMedia}:${adminPreview}:${operatorChannelId ?? ""}:${groupMedia}:${anonymousPreview}:${auth.ready}:${auth.authenticated}:${session.ownerId ?? auth.user?.id}:${session.generation}:${retry}`;
+  // 토큰 없이 읽는 경우(미리보기·비로그인)는 로그인 확인 전후가 같은 응답이라 한 키로 둔다. 확인이 끝났다고 같은 사진을 다시 받지 않는다.
+  const anonymous = anonymousPreview || (ready && !authenticated);
+  const viewer = anonymous ? "public" : `${auth.ready}:${auth.authenticated}:${session.ownerId ?? auth.user?.id}:${session.generation}`;
+  const canRead = anonymousPreview || (ready && session.ready);
+  const key = `${asset.id}:${thumbnail}:${noticeMedia}:${adminPreview}:${operatorChannelId ?? ""}:${groupMedia}:${viewer}:${retry}`;
+  const shown = useRef<{ key: string; url?: string } | null>(null);
+  useEffect(() => () => { if (shown.current?.url) URL.revokeObjectURL(shown.current.url); }, []);
+  // 다른 사진·다른 독자·다시 시도로 키가 바뀌면 이전 사진 주소를 바로 놓는다.
+  useEffect(() => { const previous = shown.current; if (previous && previous.key !== key) { if (previous.url) URL.revokeObjectURL(previous.url); shown.current = null; } }, [key]);
   useEffect(() => {
-    if (!visible || (!anonymousPreview && (!ready || !session.ready))) return;
-    const controller = new AbortController(); let objectUrl: string | undefined;
+    if (!visible || !canRead || shown.current?.key === key) return;
+    const controller = new AbortController();
     void (async () => {
       try {
         const token = authenticated && !anonymousPreview ? await tokenProvider.current() : null;
@@ -42,11 +50,13 @@ export function ContentAssetImage({ asset, locale, alt, adminPreview = false, hr
         const response = await fetch(url, { cache: "no-store", credentials: "omit", signal: controller.signal, headers: token ? { Authorization: `Bearer ${token}` } : undefined });
         if (!response.ok) throw new Error();
         const blob = await response.blob(); throwIfAborted(controller.signal);
-        objectUrl = URL.createObjectURL(blob); setSnapshot({ key, url: objectUrl });
-      } catch { if (!controller.signal.aborted) setSnapshot({ key, failed: true }); }
+        const objectUrl = URL.createObjectURL(blob);
+        if (shown.current?.url) URL.revokeObjectURL(shown.current.url);
+        shown.current = { key, url: objectUrl }; setSnapshot({ key, url: objectUrl });
+      } catch { if (!controller.signal.aborted) { shown.current = { key }; setSnapshot({ key, failed: true }); } }
     })();
-    return () => { controller.abort(); if (objectUrl) URL.revokeObjectURL(objectUrl); };
-  }, [key, asset.id, thumbnail, noticeMedia, adminPreview, operatorChannelId, groupMedia, anonymousPreview, ready, authenticated, session.ready, visible]);
+    return () => { controller.abort(); };
+  }, [key, asset.id, thumbnail, noticeMedia, adminPreview, operatorChannelId, groupMedia, anonymousPreview, authenticated, canRead, visible]);
   const current = snapshot?.key === key ? snapshot : null;
   if (current?.url) {
     const image = <img className={styles.photo} src={current.url} alt={alt} width={asset.width} height={asset.height} onError={() => setSnapshot({ key, failed: true })} />;
