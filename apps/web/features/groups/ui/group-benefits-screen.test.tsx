@@ -30,7 +30,8 @@ let fail=false,failCreators=false,empty=false,invalidCursor=false,joinedCount=0,
 const requests:string[]=[];
 // E4: the favorite's creator lucky draws (open, upcoming, closed, cancelled) and its row in the home creator ranking.
 const day=86_400_000,iso=(offset:number)=>new Date(Date.now()+offset).toISOString();
-const creatorRaffle=(n:number,status:string,opens:number,closes:number)=>({id:uid(300+n),benefitId:uid(400+n),title:`Gift ${n}`,summary:'s',imageUrl:null,winnerQuantity:3,status,entryOpensAt:iso(opens),entryClosesAt:iso(closes),resultsPublishedAt:null,fulfillmentMethod:'on_site_pickup',perFanTicketLimit:null});
+const pickupPolicy={version:'test-pickup-v1',method:'on_site_pickup',shippingCountry:null,requiresShippingAcknowledgment:false,recipientWindowDays:7,pickupEndsOn:'2100-01-01',pickupVenue:{ko:'v',en:'v'},pickupInstructions:{ko:'i',en:'i'}};
+const creatorRaffle=(n:number,status:string,opens:number,closes:number)=>({id:uid(300+n),benefitId:uid(400+n),title:`Gift ${n}`,summary:'s',imageUrl:null,winnerQuantity:3,status,entryOpensAt:iso(opens),entryClosesAt:iso(closes),resultsPublishedAt:null,fulfillmentMethod:'on_site_pickup',perFanTicketLimit:null,requiresFanVerification:true,fulfillmentPolicy:pickupPolicy});
 const allRaffles=()=>[creatorRaffle(3,'closed',-10*day,-2*day),creatorRaffle(2,'preparing',3*day,10*day),creatorRaffle(1,'open',-day,7*day),creatorRaffle(4,'cancelled',-day,7*day)];
 let creatorRaffles:unknown[]=[],homeRows:unknown[]=[],roadmapBody:unknown=null;
 beforeEach(()=>{creatorRaffles=allRaffles();homeRows=[{rank:3,slug:'bias-x',name:'Bias X',imageUrl:null,score:125,hearts:795,challenge:false,delta:1}];roadmapBody=null;bias.value={status:'error',options:[],selected:null,unverified:null,select:()=>{},retry:()=>{}};historyFails.value=false;resetDukjilCatalogCache();fail=false;failCreators=false;empty=false;invalidCursor=false;joinedCount=0;rankCount=0;catalogOn=true;spotlightCount=0;spotlightFails=false;rankMine=null;requests.length=0;auth.authenticated=true;session.ownerId='owner-a';session.generation=0;
@@ -75,6 +76,35 @@ it('E4: shows the favorite’s real lucky draws (open first, then upcoming), wit
  expect(within(section).getByRole('link',{name:/전체 보기/})).toHaveAttribute('href','/c/bias-x/raffles?locale=ko');
  expect(view.container.textContent).not.toMatch(/럭키드로우 [12]|준비 중|응원하러 가기/);
  expect(view.container.querySelectorAll('[aria-disabled="true"]')).toHaveLength(0);
+});
+it('E4: when the server would refuse the entry the card says why instead of a count (no policy, no passport) and a failed read is an error with retry',async()=>{
+ withFavorite();creatorRaffles=[{...creatorRaffle(1,'open',-day,7*day),fulfillmentPolicy:null}];const first=render(<GroupBenefitsScreen locale='ko'/>);
+ let section=await screen.findByRole('region',{name:groupBenefitsCopy('ko').lucky});await within(section).findByText('Gift 1');
+ let card=section.querySelector<HTMLElement>('[data-raffle-status="open"]')!;
+ expect(card).toHaveAttribute('data-raffle-allowance','policy');expect(card).toHaveTextContent('받는 방법이 정해지면 응모할 수 있어요');expect(card).not.toHaveTextContent('번 가능');
+ expect(within(card).getByRole('link',{name:/선물 보기/})).toHaveAttribute('href',`/c/bias-x/raffles/${uid(401)}?locale=ko`);
+ first.unmount();clearResources();
+ // Followed but no passport (bias.unverified): a standalone draw needs the passport first.
+ creatorRaffles=allRaffles();bias.value={status:'empty',options:[],selected:null,unverified:{slug:'bias-x',name:'Bias X'},select:()=>{},retry:()=>{}};
+ const second=render(<GroupBenefitsScreen locale='ko'/>);section=await screen.findByRole('region',{name:groupBenefitsCopy('ko').lucky});await within(section).findByText('Gift 1');
+ card=section.querySelector<HTMLElement>('[data-raffle-status="open"]')!;
+ expect(card).toHaveAttribute('data-raffle-allowance','passport');expect(card).toHaveTextContent('패스포트를 받으면 응모할 수 있어요');
+ expect(within(card).getByRole('link',{name:/패스포트 받기/}).getAttribute('href')).toMatch(/^\/c\/bias-x\/verify\?/);
+ second.unmount();clearResources();
+ withFavorite();const base=fetch;vi.stubGlobal('fetch',vi.fn((url:string,init?:RequestInit)=>/\/raffles\?/.test(url)?Promise.resolve(Response.json({error:{code:'RAFFLES_UNAVAILABLE'}},{status:503})):base(url,init)));
+ render(<GroupBenefitsScreen locale='ko'/>);section=await screen.findByRole('region',{name:groupBenefitsCopy('ko').lucky});
+ await within(section).findByText('럭키드로우를 불러오지 못했어요');expect(within(section).getByRole('button',{name:'다시 시도'})).toBeInTheDocument();
+ expect(within(section).queryByText('지금 진행 중인 럭키드로우가 없어요')).toBeNull();
+});
+it('E4: the count waits for the entry list and uses the per-fan limit when nothing is entered yet',async()=>{
+ const {raffleAllowance}=await import('./stan-lucky-cheer');const raffle={...creatorRaffle(1,'open',-day,7*day),perFanTicketLimit:3} as any;
+ const base={raffle,guest:false,hasPassport:true,tickets:{loading:false,value:7}};
+ expect(raffleAllowance({...base,entries:{loading:true,error:false,entry:undefined}})).toEqual({kind:'loading'});
+ expect(raffleAllowance({...base,entries:{loading:false,error:true,entry:undefined}})).toEqual({kind:'unknown'});
+ expect(raffleAllowance({...base,entries:{loading:false,error:false,entry:null}})).toEqual({kind:'count',count:3});
+ expect(raffleAllowance({...base,entries:{loading:false,error:false,entry:{remainingBenefitTickets:1,fanVerified:true} as any}})).toEqual({kind:'count',count:1});
+ expect(raffleAllowance({...base,entries:{loading:false,error:false,entry:{remainingBenefitTickets:null,fanVerified:false} as any}})).toEqual({kind:'passport'});
+ expect(raffleAllowance({...base,guest:true,entries:{loading:false,error:false,entry:null}})).toEqual({kind:'locked'});
 });
 it('E4: an empty lucky-draw list is one state box with the way to my entries, not placeholder cards',async()=>{
  withFavorite();creatorRaffles=[];render(<GroupBenefitsScreen locale='ko'/>);
