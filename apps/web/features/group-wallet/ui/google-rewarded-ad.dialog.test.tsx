@@ -13,7 +13,7 @@ it('keeps the exchange Dialog open through the rewarded overlay and puts the pag
   pubads:()=>({addEventListener:(n:string,f:(e:object)=>void)=>handlers.set(n,f),removeEventListener:(n:string)=>handlers.delete(n)}),
   enableServices:()=>{},display:()=>{},destroySlots:()=>{restore();return true;}} as unknown as RewardedGpt;
  const onClose=vi.fn();
- render(<Dialog open onClose={onClose} labelledBy="t"><h2 id="t">모임 응모권 전환</h2></Dialog>);
+ render(<Dialog open onClose={onClose} labelledBy="t" backdropClassName="" contentClassName=""><h2 id="t">모임 응모권 전환</h2></Dialog>);
  await act(async()=>{await new Promise(r=>setTimeout(r,0));});
  const locked=document.body.getAttribute('style');expect(locked).toContain('width: 100%');
  const ad=requestRewardedAd(gpt,'/22639388115/rewarded_web_example',()=>{});
