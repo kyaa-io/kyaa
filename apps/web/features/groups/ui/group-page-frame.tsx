@@ -13,7 +13,6 @@ import type { GroupDetail } from "../domain/contracts";
 import { groupsCopy, pageUnavailable } from "./copy";
 import { CreatorFanGrade, CreatorFanGradePlaceholder } from "./creator-fan-grade";
 import { GroupArtistBadge } from "./group-artist-badge";
-import { PageChallengeTag } from "./page-challenge-tag";
 import { GroupPageMenu } from "./group-page-menu";
 import { GroupPageProvider, useGroupPage } from "./group-page-context";
 import { GroupPresence } from "./group-presence";
@@ -41,7 +40,7 @@ export function GroupPageHead() {
   const { observeElement, ...summaryTranslation } = useAutomaticTranslation({ texts: summaryTexts, locale: g.locale, enabled: Boolean(g.celebrity) });
   const tabs = name ? <FanTabs id={g.celebrity ? "celebrity-content" : undefined} label={name} current={g.activeTab} items={items} /> : <FanTabs label={t.groups} current={g.activeTab} items={items} />;
   const memberCount = g.page?.memberCount;
-  const stats = <GroupPresence pageId={g.loading ? null : g.page?.id ?? null} locale={g.locale} member={Boolean(g.membership)} memberCount={memberCount} />;
+  const stats = <GroupPresence pageId={g.loading ? null : g.page?.id ?? null} locale={g.locale} member={Boolean(g.membership)} memberCount={memberCount} challengeSlug={g.kind === "fan" ? g.celebrity?.slug : undefined} />;
   const waitingForCreator = g.page?.kind === "fan" && !g.celebrity;
   if (!name || !g.kind || waitingForCreator) return <FanPageHeaderSkeleton stats={stats} tabs={tabs} />;
   const summary = g.celebrity ? <span ref={observeElement} lang={summaryTranslation.showing ? g.locale : undefined}>{summaryTranslation.texts[0]}</span> : g.page?.description;
@@ -55,7 +54,7 @@ export function GroupPageHead() {
     descriptionLabels={pageHeadCopy(g.locale)}
     descriptionAction={g.celebrity ? <TranslationControl locale={g.locale} translation={summaryTranslation} /> : undefined}
     star={g.star}
-    badge={<><GroupArtistBadge locale={g.locale} />{g.kind === "fan" && g.celebrity ? <PageChallengeTag slug={g.celebrity.slug} locale={g.locale} /> : null}</>}
+    badge={<GroupArtistBadge locale={g.locale} />}
     links={g.celebrity?.socialLinks.map((social) => ({ kind: social.platform, href: social.url }))}
     utility={g.kind === "fan" && g.celebrity ? g.authenticated ? <CreatorFanGrade slug={g.celebrity.slug} locale={g.locale} resource={g.summary} /> : g.signedInHint && !g.ready ? <CreatorFanGradePlaceholder /> : undefined : undefined}
     menu={g.detail?.membership ? <GroupPageMenu key={g.ownerKey} detail={g.detail} locale={g.locale} refresh={g.refresh} /> : g.reserveMenu ? <span aria-hidden="true" /> : undefined}
