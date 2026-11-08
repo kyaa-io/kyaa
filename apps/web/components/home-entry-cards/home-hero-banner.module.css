@@ -1,7 +1,7 @@
 .banner { position:relative; width:100%; height:100%; overflow:hidden; background:var(--color-soft); color:var(--color-ink); }
 .image { position:absolute; inset:0 0 0 auto; width:40%; overflow:hidden; }
 .desktopImage { position:absolute; inset:0; }
-.overlay { display:none; position:absolute; inset:0; background:color-mix(in srgb, var(--color-ink) 45%, transparent); }
+.overlay { display:none; position:absolute; inset:0; background:transparent; }
 .copy { position:relative; display:flex; flex-direction:column; width:60%; height:100%; padding:clamp(24px, 3vw, 48px); gap:16px; }
 .eyebrow { display:flex; align-items:center; min-height:24px; color:var(--color-accent); font-size:clamp(11px, 1.3vw, 20px); font-weight:750; letter-spacing:.06em; }
 .eyebrow > span { display:inline-flex; align-items:center; gap:6px; }
@@ -135,7 +135,8 @@
 @media (min-width:1024px) and (max-width:1199px) {
   .banner[data-kind="welcome"] .image { width:100%; }
   .banner[data-kind="welcome"] .overlay { display:block; }
-  .banner[data-kind="welcome"] .copy { position:absolute; inset:auto 0 0; width:100%; height:auto; padding:24px; color:var(--color-surface); text-shadow:0 1px 3px color-mix(in srgb, var(--color-ink) 53%, transparent); }
+  /* VISUAL-K 낮음 6: a solid ink copy panel with a clean top edge instead of a see-through cover over the whole photo (the 4차 fade is a gradient). */
+  .banner[data-kind="welcome"] .copy { position:absolute; inset:auto 0 0; width:100%; height:auto; padding:24px; background:var(--color-ink); color:var(--color-surface); text-shadow:none; }
   .banner[data-kind="welcome"] .eyebrow { width:fit-content; padding:4px 12px; border:1px solid color-mix(in srgb, var(--color-accent) 60%, transparent); border-radius:999px; background:color-mix(in srgb, var(--color-ink) 75%, transparent); color:var(--color-surface); font-size:12px; }
   .banner[data-kind="welcome"] .copy h2 { font-size:32px; }
   .banner[data-kind="welcome"] .description { color:var(--color-surface); font-size:14px; }
@@ -148,7 +149,7 @@
 
 .banner[data-kind="campaign"]{background:var(--campaign-art);color:var(--color-surface)}
 .banner[data-kind="campaign"] .image{display:none}
-.banner[data-kind="campaign"] .overlay{display:block;inset:0 40% 0 0;background:color-mix(in srgb, var(--campaign-art) 90%, transparent)}
+.banner[data-kind="campaign"] .overlay{display:none}
 .banner[data-kind="campaign"] .copy{position:absolute;inset:0 auto 0 0;width:60%;height:100%;justify-content:center;gap:16px;padding:40px 48px}
 .banner[data-kind="campaign"] .eyebrow,.banner[data-kind="campaign"] .description{color:var(--color-surface)}
 .banner[data-kind="campaign"] .eyebrow{font-size:13px;letter-spacing:.08em}
