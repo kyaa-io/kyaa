@@ -70,3 +70,14 @@ it('keeps the scroll position when it drops the hash',()=>{
  const g=fakeGpt();const ad=requestRewardedAd(g.gpt,'/1/test',()=>{});g.emit('rewardedSlotReady',{makeRewardedVisible:g.makeRewardedVisible});ad.show();g.close();
  expect(window.location.hash).toBe('');expect(scrollTo).not.toHaveBeenCalled();scrollTo.mockRestore();
 });
+
+it('keeps the ad popstate from a Back listener added before the ad was requested, whatever the browser does at the target (3001, 2026-11-08)', () => {
+ // Chromium ran the overlay's Back listener (added when the exchange dialog opened) before a capture listener added at request time.
+ const earlier=vi.fn();window.addEventListener('popstate',earlier,true);
+ try{
+  const m=fakeGpt();const ad=requestRewardedAd(m.gpt,'/123/test',()=>{});
+  m.emit('rewardedSlotReady',{makeRewardedVisible:m.makeRewardedVisible});expect(ad.show()).toBe(true);
+  expect(earlier).not.toHaveBeenCalled();
+  m.close();
+ }finally{window.removeEventListener('popstate',earlier,true);}
+});

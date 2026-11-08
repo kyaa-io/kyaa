@@ -29,6 +29,12 @@ function writeAttrs(el: Element, attrs: PageAttrs) {
  * position:fixed without width (left-shifted, 1206px of 1440) and the hash stayed in the address.
  * This guard keeps that popstate away from the page, and on every ending puts html/body back and drops the hash.
  */
+/** The page guard's popstate hook. Listeners on window run in the order they were added, so the overlay that opened the
+ * exchange (its Back listener is added on open) would hear GPT's #goog_rewarded popstate first if the guard listened only
+ * once the ad is requested (seen in Chromium on 3001, 2026-11-08). This one listener is added when the module loads —
+ * before any overlay opens — and does nothing unless an ad is on its way. */
+let activePopStateGuard: ((event: PopStateEvent) => void) | null = null;
+if (typeof window !== 'undefined') window.addEventListener('popstate', event => activePopStateGuard?.(event), true);
 function guardRewardedPage() {
  if (typeof document === 'undefined' || typeof window === 'undefined') return { shown() {}, release(destroy: () => void) { destroy(); } };
  const els = [document.documentElement, document.body].filter((el): el is HTMLElement => Boolean(el));
@@ -36,16 +42,16 @@ function guardRewardedPage() {
  let shown: PageAttrs[] | undefined;
  const onPopState = (event: PopStateEvent) => {
   if (window.location.hash !== REWARDED_HASH) return;
-  // Window capture listeners run before the page's own popstate listeners (overlay Back handling, router).
+  // Runs from the listener added at module load, ahead of the overlay's Back listener and the router.
   event.stopImmediatePropagation();
   try { window.history.replaceState(state, '', window.location.href); } catch { /* history unavailable */ }
  };
- window.addEventListener('popstate', onPopState, true);
+ activePopStateGuard = onPopState;
  return {
   /** Call right after the overlay was made visible: the page attributes GPT just set. */
   shown() { shown = els.map(readAttrs); },
   release(destroy: () => void) {
-   window.removeEventListener('popstate', onPopState, true);
+   if (activePopStateGuard === onPopState) activePopStateGuard = null;
    // Still exactly GPT's lock: nothing else touched the page during the ad, so the pre-ad state is right. Anything else
    // (GPT already restored, or an overlay closed and restored its own lock) is the state the page wants now.
    const current = els.map(readAttrs), lockStuck = shown !== undefined && current.every((attrs, i) => sameAttrs(attrs, shown![i]!));
