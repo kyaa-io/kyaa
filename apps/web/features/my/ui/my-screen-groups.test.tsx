@@ -77,8 +77,8 @@ it('orders the screen profile, notice, passport, wallet, favorites, shortcuts an
 it('shows stamp progress and the next tier with earned stamps in colour and the rest locked', () => {
   renderMy();
   const card = screen.getByRole('region', { name: '내 패스포트' });
-  expect(within(card).getByText('도장 3/9')).toBeInTheDocument();
-  expect(within(card).getByRole('progressbar', { name: '도장 3/9' })).toHaveAttribute('aria-valuenow', '33');
+  expect(within(card).getByText('이번 쪽 3/9')).toBeInTheDocument();
+  expect(within(card).getByRole('progressbar', { name: '패스포트 이번 쪽 도장 3/9칸' })).toHaveAttribute('aria-valuenow', '33');
   expect(within(card).getByText('실버 2까지 35점')).toBeInTheDocument();
   expect(within(card).getAllByRole('listitem').filter(item => item.getAttribute('data-state') === 'filled')).toHaveLength(3);
   expect(within(card).getAllByRole('listitem').filter(item => item.getAttribute('data-state') === 'empty')).toHaveLength(6);
@@ -94,7 +94,7 @@ it('switches the passport card to the other favorite', () => {
   renderMy();
   fireEvent.click(screen.getByRole('button', { name: /두번째/ }));
   const card = screen.getByRole('region', { name: '내 패스포트' });
-  expect(within(card).getByText('도장 1/9')).toBeInTheDocument();
+  expect(within(card).getByText('이번 쪽 1/9')).toBeInTheDocument();
   expect(within(card).getByText('실버까지 7점')).toBeInTheDocument();
 });
 
@@ -143,8 +143,8 @@ it('shows no notice when there is no result', () => {
 it('adds streak and stamp progress to each favorite with a fan page link', () => {
   renderMy();
   const favorites = screen.getByRole('region', { name: '내 최애' });
-  expect(within(favorites).getByText('연속 3일 · 도장 3/9')).toBeInTheDocument();
-  expect(within(favorites).getByText('도장 1/9')).toBeInTheDocument();
+  expect(within(favorites).getByText('연속 3일 · 이번 쪽 3/9')).toBeInTheDocument();
+  expect(within(favorites).getByText('이번 쪽 1/9')).toBeInTheDocument();
   expect(within(favorites).getAllByRole('link', { name: '팬페이지 보기' })[0]).toHaveAttribute('href', '/nchive?locale=ko');
 });
 

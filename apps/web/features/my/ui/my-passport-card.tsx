@@ -129,7 +129,7 @@ export function MyPassportCard({ creators, selectedSlug, onSelect, communityStam
             <strong>{tierName}</strong>
           </p>
           <div className={styles.progress}>
-            {book.status === "ready" && filled !== null ? <><span>{myHomeText(locale, "stampProgress", [filled, total])}</span><Bar value={(filled / total) * 100} label={myHomeText(locale, "stampProgress", [filled, total])} /></> : book.status === "loading" ? <FanSkeleton width="60%" height={20} /> : null}
+            {book.status === "ready" && filled !== null ? <><span>{myHomeText(locale, "stampProgress", [filled, total])}</span><Bar value={(filled / total) * 100} label={myHomeText(locale, "stampProgressFull", [filled, total])} /></> : book.status === "loading" ? <FanSkeleton width="60%" height={20} /> : null}
           </div>
           {tierStep ? <div className={styles.progress}>
             <span>{tierStep.text}</span>

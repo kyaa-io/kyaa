@@ -62,16 +62,28 @@ export const messages = {
     "ru": "Мой кошелёк"
   },
   "stampProgress": {
-    "ja": "スタンプ {0}/{1}",
-    "zh-Hans": "印章 {0}/{1}",
-    "zh-Hant": "印章 {0}/{1}",
-    "es": "Sellos {0}/{1}",
-    "id": "Stempel {0}/{1}",
-    "vi": "Con dấu {0}/{1}",
-    "th": "ตราประทับ {0}/{1}",
-    "pt": "Carimbos {0}/{1}",
-    "fr": "Tampons {0}/{1}",
-    "ru": "Штампы {0}/{1}"
+    "ja": "このページ {0}/{1}",
+    "zh-Hans": "本页 {0}/{1}",
+    "zh-Hant": "本頁 {0}/{1}",
+    "es": "Esta página {0}/{1}",
+    "id": "Halaman ini {0}/{1}",
+    "vi": "Trang này {0}/{1}",
+    "th": "หน้านี้ {0}/{1}",
+    "pt": "Esta página {0}/{1}",
+    "fr": "Cette page {0}/{1}",
+    "ru": "Эта страница {0}/{1}"
+  },
+  "stampProgressFull": {
+    "ja": "パスポートのこのページのスタンプ {0}/{1}",
+    "zh-Hans": "护照本页印章 {0}/{1}",
+    "zh-Hant": "護照本頁印章 {0}/{1}",
+    "es": "Sellos en esta página del pasaporte: {0} de {1}",
+    "id": "Stempel di halaman paspor ini: {0} dari {1}",
+    "vi": "Con dấu trên trang hộ chiếu này: {0}/{1}",
+    "th": "ตราประทับในหน้าพาสปอร์ตนี้ {0}/{1}",
+    "pt": "Carimbos nesta página do passaporte: {0} de {1}",
+    "fr": "Tampons sur cette page du passeport : {0} sur {1}",
+    "ru": "Штампы на этой странице паспорта: {0} из {1}"
   },
   "nextTier": {
     "ja": "{0}まであと{1}ポイント",

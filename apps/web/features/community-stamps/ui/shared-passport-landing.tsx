@@ -16,6 +16,7 @@ import { useEffect, useRef, useState } from "react";
 
 import { communityStampAsset, communityShareDestinationSchema, type SharedPassportActivity } from "../domain/community-stamps";
 import { personalCopy } from "@/i18n/catalogs/features__my__ui__personal-copy";
+import { fanProfileText } from "@/features/fan-profile/fan-profile-copy";
 import { FanTierBadge } from "@/features/rewards/ui/fan-tier-badge";
 import { communityStampAction } from "./use-community-stamps";
 import styles from "./share-passport.module.css";
@@ -69,7 +70,7 @@ function SharedPassportLandingInner({ token, creator, locale, activity, authenti
         <dl><div><dt>{t.issued}</dt><dd><time dateTime={activity.issuedAt}>{new Intl.DateTimeFormat(locale, { dateStyle: "medium" }).format(new Date(activity.issuedAt))}</time></dd></div>
           <div><dt>{t.score}</dt><dd>{activity.score.toLocaleString(locale)}</dd></div>
           <div><dt>{t.activities}</dt><dd>{activity.activityCount.toLocaleString(locale)}</dd></div>
-          {activity.stampCount === null ? null : <div><dt>{t.stamps}</dt><dd>{activity.stampCount.toLocaleString(locale)}</dd></div>}</dl>
+          {activity.stampCount === null ? null : <div><dt>{fanProfileText(locale, "profStamps")}</dt><dd>{activity.stampCount.toLocaleString(locale)}</dd></div>}</dl>
       </section> : null}
       <Image className={styles.shareArtwork} unoptimized src={communityStampAsset("share")} alt="" width={512} height={512} />
       {ready && authenticated ? <button type="button" className={styles.primary} disabled={busy} onClick={() => void visit()}>{busy ? c.signing : c.signedIn}<ArrowRight aria-hidden="true" /></button> : ready ? <Link className={styles.primary} href={loginHref as Route}>{c.signIn}<ArrowRight aria-hidden="true" /></Link> : null}

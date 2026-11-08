@@ -38,16 +38,16 @@ export const messages = {
     "ru": "Баллы"
   },
   "profStamps": {
-    "ja": "スタンプ",
-    "zh-Hans": "印章",
-    "zh-Hant": "印章",
-    "es": "Sellos",
-    "id": "Stempel",
-    "vi": "Con dấu",
-    "th": "ตราประทับ",
-    "pt": "Carimbos",
-    "fr": "Tampons",
-    "ru": "Штампы"
+    "ja": "累計スタンプ",
+    "zh-Hans": "累计印章",
+    "zh-Hant": "累計印章",
+    "es": "Sellos totales",
+    "id": "Total stempel",
+    "vi": "Tổng con dấu",
+    "th": "ตราประทับสะสม",
+    "pt": "Carimbos no total",
+    "fr": "Tampons au total",
+    "ru": "Всего штампов"
   },
   "profPointsValue": {
     "ja": "{0} P",
@@ -62,16 +62,16 @@ export const messages = {
     "ru": "{0} P"
   },
   "rowStamps": {
-    "ja": "スタンプ {0}",
-    "zh-Hans": "印章 {0}",
-    "zh-Hant": "印章 {0}",
-    "es": "{0} sellos",
-    "id": "{0} stempel",
-    "vi": "{0} con dấu",
-    "th": "ตราประทับ {0}",
-    "pt": "{0} carimbos",
-    "fr": "{0} tampons",
-    "ru": "Штампы: {0}"
+    "ja": "累計スタンプ {0}",
+    "zh-Hans": "累计印章 {0}",
+    "zh-Hant": "累計印章 {0}",
+    "es": "{0} sellos en total",
+    "id": "Total stempel {0}",
+    "vi": "Tổng {0} con dấu",
+    "th": "ตราประทับสะสม {0}",
+    "pt": "{0} carimbos no total",
+    "fr": "{0} tampons au total",
+    "ru": "Всего штампов: {0}"
   },
   "profFavoriteLabel": {
     "ja": "推し",
