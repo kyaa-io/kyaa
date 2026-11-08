@@ -1,47 +1,44 @@
 "use client";
 import type { Route } from "next";
 import Link from "next/link";
-import { ChevronRight, Heart } from "@/components/fan-ui/fan-icons";
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, useSyncExternalStore, type ReactNode } from "react";
+import { ArrowRight } from "@/components/icons";
+import { ChevronDown, ChevronUp } from "@/components/fan-ui/fan-icons";
+import { FanIcon } from "@/components/fan-ui/fan-icon";
+import { Fragment, useCallback, useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore, type ReactNode } from "react";
 
 import { FanAction } from "@/components/fan-ui/fan-action";
 import { CreatorAvatar } from "@/components/fan-ui/creator-avatar";
 import { FanHeading } from "@/components/fan-ui/fan-heading";
-import { FanIcon } from "@/components/fan-ui/fan-icon";
 import { FanSkeleton } from "@/components/fan-ui/fan-skeleton";
 import { FanNumber } from "@/components/fan-ui/fan-number";
 import { FanState } from "@/components/fan-ui/fan-state";
+import { FanTag } from "@/components/fan-ui/fan-tag";
 import { FanTabs } from "@/components/fan-ui/fan-tabs";
-import { formatCountMetric } from "@/components/fan-ui/fan-count";
-import { Avatar } from "@/features/profile/ui/avatar";
-import type { AppLocale } from "@/i18n/locales";
-import { creatorRankingSchema, homeCreatorRankingSchema, homeFanRankingSchema, platformFanRankingSchema, type CreatorRanking, type HomeCreatorRanking, type HomeFanRanking, type HomeFanRankingRow, type PlatformFanRanking } from "../domain/types";
+import { fanLoginHref } from "@/components/login-href";
+import { useByUsAuth } from "@/features/auth/client/cognito-auth";
 import { levelLabel } from "@/features/passport/domain/passport-read-model";
+import { Avatar } from "@/features/profile/ui/avatar";
+import { FanTierBadge } from "@/features/rewards/ui/fan-tier-badge";
+import type { AppLocale } from "@/i18n/locales";
+import { homeCreatorRankingSchema, homeFanRankingSchema, type HomeCreatorRanking, type HomeFanRanking, type HomeFanRankingRow } from "../domain/types";
 import { fanAvatar } from "./rankings-content";
 import { rankingsText } from "./rankings-copy";
 import { RankDelta } from "./rank-delta";
 import { useRankingResource } from "./use-ranking-resource";
 import styles from "./home-ranking-card.module.css";
 
-/** 5차 R18: five rows on the home, the rest on /rankings. */
-const ROWS = 5;
-/** R21: a value is reused for 60s; a tab that comes back after that reads again, and an open home reads again every 90s
- * (so three minutes on the home make at most three reads of one address). */
-export const RANKING_FRESH_MS = 60 * 1000;
-export const RANKING_POLL_MS = 90 * 1000;
+/** Ten rows first; "11~20위" opens the next ten inside the card, from the same answer, so the rows below never come from another ranking. */
+const ROWS = 10;
+/** A tab that comes back into view reads again once its answer is this old (the day table is rewritten every 10 minutes at most). */
+const STALE_MS = 10 * 60 * 1000;
 const MOVE_MS = 240;
-
-type Extra = { period: string | null; closesAt: string | null; fetchedAt: string | null };
-/** The basis values the route adds (C2: period "day", closesAt = next KST midnight, fetchedAt). Absent from an older server. */
-const extrasOf = (value: { period?: string; closesAt?: string | null; fetchedAt?: string }): Extra => ({ period: value.period ?? null, closesAt: value.closesAt ?? null, fetchedAt: value.fetchedAt ?? null });
-type WithExtra<T> = T & { extra: Extra };
-const parseFans = (value: unknown): WithExtra<HomeFanRanking> => { const data = homeFanRankingSchema.parse(value); return { ...data, extra: extrasOf(data) }; };
-const parseCreators = (value: unknown): WithExtra<HomeCreatorRanking> => { const data = homeCreatorRankingSchema.parse(value); return { ...data, extra: extrasOf(data) }; };
+const parseFans = (value: unknown) => homeFanRankingSchema.parse(value);
+const parseCreators = (value: unknown) => homeCreatorRankingSchema.parse(value);
 
 const reducedMotion = () => typeof window !== "undefined" && typeof window.matchMedia === "function" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-/** FLIP (8장 ⑧ 예외, R18): a row whose rank changed between two answers slides from its old place (transform only, 240ms) and its
- * movement mark fades in after it. Nothing moves on the first answer, on a row that kept its place, or under reduced motion. */
+/** A row whose rank changed between two answers slides from its old place (transform only, 240ms); its movement mark fades in.
+ * Nothing moves on the first answer, on a row whose place did not change, or under reduced motion. */
 function useRowMotion(order: readonly string[]) {
   const nodes = useRef(new Map<string, HTMLElement>());
   const tops = useRef(new Map<string, number>());
@@ -57,37 +54,39 @@ function useRowMotion(order: readonly string[]) {
       const node = nodes.current.get(key);
       if (was === undefined || was === top || !node || typeof node.animate !== "function") continue;
       node.animate([{ transform: `translateY(${was - top}px)` }, { transform: "translateY(0)" }], { duration: MOVE_MS, easing: "cubic-bezier(.2, 0, 0, 1)" });
-      node.querySelector<HTMLElement>("[data-delta]")?.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 150, delay: MOVE_MS - 150, fill: "backwards" });
+      node.querySelector<HTMLElement>("[data-delta-cell]")?.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 160, delay: MOVE_MS - 160, fill: "backwards" });
     }
   }, [signature]);
   return (key: string) => (node: HTMLElement | null) => { if (node) nodes.current.set(key, node); else nodes.current.delete(key); };
 }
 
-/** Reads again when the tab comes back after RANKING_FRESH_MS, and every RANKING_POLL_MS while the page is visible. */
-function useLiveRanking<T>(url: string, parse: (value: unknown) => T) {
+/** Keeps the answer's time for the card head and reads again, quietly, when the tab comes back after STALE_MS. */
+function useLiveRanking<T extends { computedAt: string | null }>(url: string, parse: (value: unknown) => T, onUpdated: (at: string | null) => void) {
   const { state, retry, refresh } = useRankingResource(url, parse);
   const data = state.status === "ready" ? state.data : null;
   const loadedAt = useRef(0);
-  useEffect(() => { if (data) loadedAt.current = Date.now(); }, [data]);
+  useEffect(() => { if (data) loadedAt.current = Date.now(); onUpdated(data?.computedAt ?? null); }, [data, onUpdated]);
   useEffect(() => {
-    const stale = () => loadedAt.current > 0 && Date.now() - loadedAt.current >= RANKING_FRESH_MS;
-    const back = () => { if (document.visibilityState === "visible" && stale()) refresh(); };
-    const timer = window.setInterval(() => { if (document.visibilityState === "visible" && stale()) refresh(); }, RANKING_POLL_MS);
+    const back = () => { if (document.visibilityState === "visible" && loadedAt.current > 0 && Date.now() - loadedAt.current > STALE_MS) refresh(); };
     document.addEventListener("visibilitychange", back);
-    window.addEventListener("focus", back);
-    return () => { window.clearInterval(timer); document.removeEventListener("visibilitychange", back); window.removeEventListener("focus", back); };
+    return () => document.removeEventListener("visibilitychange", back);
   }, [refresh]);
   return { state, retry };
+}
+
+function Rank({ rank }: { rank: number }) {
+  return <span className={styles.rank} data-medal={rank <= 3 ? rank : undefined}>{rank}</span>;
 }
 
 function Rows({ children }: { children: ReactNode }) {
   return <ol className={styles.rows}>{children}</ol>;
 }
-/** Five rows the same height while reading, so the card does not jump when the answer comes. */
+/** Ten two-line rows and the bottom line, the same heights while reading, so the card does not jump when the answer comes. */
 function Loading() {
-  return <Rows>{Array.from({ length: ROWS }, (_, i) => <li key={i} className={styles.row} aria-hidden="true" data-skeleton="">
-    <FanSkeleton width={16} height={16} /><FanSkeleton shape="circle" width={32} height={32} /><FanSkeleton width="50%" height={16} /><FanSkeleton width={72} height={16} /><span />
-  </li>)}</Rows>;
+  return <><Rows>{Array.from({ length: ROWS }, (_, i) => <li key={i} className={styles.row} aria-hidden="true">
+    <FanSkeleton width={20} height={16} /><FanSkeleton shape="circle" width={32} height={32} />
+    <span className={styles.body}><FanSkeleton width="60%" height={14} /><FanSkeleton width="40%" height={12} /></span>
+  </li>)}</Rows><div className={styles.foot} aria-hidden="true"><FanSkeleton width={64} height={16} /></div></>;
 }
 function Failed({ locale, retry }: { locale: AppLocale; retry: () => void }) {
   return <div className={styles.state}><FanState inline compact kind="error" title={rankingsText(locale, "rkError")} actions={<FanAction variant="text" size="sm" onClick={retry}>{rankingsText(locale, "rkRetry")}</FanAction>} /></div>;
@@ -96,214 +95,159 @@ function Empty({ title }: { title: string }) {
   return <div className={styles.state}><FanState inline compact kind="empty" title={title} /></div>;
 }
 
-/** The movement column of the all-time list (R18): ▲N/▼N against yesterday once a week of days is kept, 신규 for a row new today, — otherwise. */
-function Delta({ locale, comparable, delta }: { locale: AppLocale; comparable: boolean; delta: number | null }) {
-  if (comparable && delta !== null) return <span className={styles.deltaCell} data-delta={delta > 0 ? "up" : delta < 0 ? "down" : "same"}><RankDelta delta={delta} locale={locale} /></span>;
-  if (comparable && delta === null) return <span className={styles.deltaCell} data-delta="new"><span className={styles.newMark}>{rankingsText(locale, "rkDeltaNew")}</span></span>;
-  return <span className={styles.deltaCell} data-delta="same"><RankDelta delta={0} locale={locale} /></span>;
+const heartIcon = (size: number) => <img src="/images/economy/heart.svg" alt="" width={size} height={size} />;
+
+/** Second line: the items that have a value, one dot between them. An item without a value leaves with its dot. */
+function Meta({ items }: { items: ReactNode[] }) {
+  const shown = items.filter(Boolean);
+  return <span className={styles.meta}>{shown.map((item, i) => <Fragment key={i}>{i > 0 ? <span className={styles.dot} aria-hidden="true">·</span> : null}{item}</Fragment>)}</span>;
 }
 
-/** 피드백 H1(규칙 22): this week's gain in bold first, the all-time value in gray after it. A missing gain leaves its place (no 0, no dash). */
-function Gain({ locale, value, unit }: { locale: AppLocale; value: number | null | undefined; unit: "hearts" | "fans" }) {
-  if (value === null || value === undefined) return null;
-  const text = `${value > 0 ? "+" : ""}${formatCountMetric(locale, value)}`;
-  return <span className={styles.gain} data-fact="week" data-tone={value > 0 ? "up" : undefined} aria-label={rankingsText(locale, "rkWeekGain", [unit === "hearts" ? rankingsText(locale, "rkHearts", [text]) : text])}>
-    <span aria-hidden="true">{unit === "hearts" ? <FanIcon icon={Heart} size={16} filled className={styles.heart} /> : null}{text}</span>
+/** The right-hand number of a row. It counts up only when a later answer changes it. */
+function Main({ locale, value, label, icon, template }: { locale: AppLocale; value: number; label: string; icon?: ReactNode; template?: string }) {
+  const [before, after] = template ? template.split("\u0000") : ["", ""];
+  return <span className={styles.main} aria-label={label}>
+    <span aria-hidden="true" className={styles.mainInner}>
+      {icon}{before ? <span>{before.trim()}</span> : null}<FanNumber value={value} locale={locale} countUp className={styles.mainNumber} />{after ? <span>{after.trim()}</span> : null}
+    </span>
   </span>;
 }
-function Total({ locale, value, label, icon, prefix, narrowHidden = false }: { locale: AppLocale; value: number; label: string; icon?: ReactNode; prefix?: string; narrowHidden?: boolean }) {
-  return <span className={styles.total} data-fact="total" data-metric="count" data-narrow-hidden={narrowHidden || undefined} aria-label={label}>
-    <span aria-hidden="true">{icon}{prefix ? `${prefix} ` : ""}{formatCountMetric(locale, value)}</span>
-  </span>;
+
+/** Movement against yesterday, drawn only once seven days are kept. A row not ranked yesterday reads 신규. */
+function Delta({ locale, delta }: { locale: AppLocale; delta: number | null }) {
+  return <span className={styles.deltaCell} data-delta-cell>{delta === null
+    ? <FanTag tone="neutral" className={styles.newTag}><span data-direction="new">{rankingsText(locale, "rkDeltaNew")}</span></FanTag>
+    : <RankDelta delta={delta} locale={locale} />}</span>;
 }
-const tierText = (locale: AppLocale, tier: string | null | undefined) => tier ? levelLabel(locale, tier as Parameters<typeof levelLabel>[1]) : null;
-function Name({ name, tier }: { name: string; tier: string | null }) {
-  return <span className={styles.nameCell}><span className={styles.name}>{name}</span>{tier ? <span className={styles.tier}>{tier}</span> : null}</span>;
+
+function WeekGain({ locale, value }: { locale: AppLocale; value: number | null }) {
+  if (value === null) return null;
+  return <span className={styles.gain} data-tone={value > 0 ? "up" : undefined}>{rankingsText(locale, "rkWeekGain", [`${value > 0 ? "+" : ""}${value.toLocaleString(locale)}`])}</span>;
+}
+
+/** Bottom line: the next ten on the left, my rank (or sign in) on the right. */
+function Foot({ more, expanded, onToggle, end, locale }: { more: boolean; expanded: boolean; onToggle: () => void; end: ReactNode; locale: AppLocale }) {
+  if (!more && !end) return null;
+  return <div className={styles.foot}>
+    {more ? <FanAction variant="text" size="sm" aria-expanded={expanded} onClick={onToggle} trailingIcon={<FanIcon icon={expanded ? ChevronUp : ChevronDown} size={16} />}>{rankingsText(locale, "rkMore1120")}</FanAction> : <span />}
+    {end}
+  </div>;
 }
 
 const fanKey = (row: HomeFanRankingRow, index: number, rows: readonly HomeFanRankingRow[]) =>
   rows.findIndex((other) => other.nickname === row.nickname) === index ? `n:${row.nickname}` : `r:${row.rank}`;
 
-
-function FanPanel({ locale, ranking }: { locale: AppLocale; ranking: WithExtra<HomeFanRanking> }) {
-  const shown = ranking.rows.slice(0, ROWS);
+function FanPanel({ locale, ranking, guestEnd }: { locale: AppLocale; ranking: HomeFanRanking; guestEnd: ReactNode }) {
+  const [expanded, setExpanded] = useState(false);
+  const shown = ranking.rows.slice(0, expanded ? ranking.rows.length : ROWS);
   const keys = shown.map((row, i) => fanKey(row, i, shown));
   const place = useRowMotion(keys);
   if (ranking.rows.length === 0) return <Empty title={rankingsText(locale, "rkEmptyFans")} />;
-  return <Rows>{shown.map((row, i) => <li key={keys[i]} ref={place(keys[i]!)} id={`home-rank-fans-${row.rank}`} className={styles.row} data-row="rank" data-motion="layout" data-me={row.isMe || undefined} aria-current={row.isMe || undefined}>
-    <span className={styles.rank}>{row.rank}</span>
-    <Avatar avatar={fanAvatar(row.characterId)} imageUrl={null} label="" size={32} />
-    <Name name={row.nickname} tier={tierText(locale, row.tier)} />
-    <span className={styles.values}><Gain locale={locale} value={row.weekGain} unit="hearts" /><Total locale={locale} value={row.score} label={rankingsText(locale, "rkHearts", [row.score.toLocaleString(locale)])} icon={<FanIcon icon={Heart} size={16} />} /></span>
-    <Delta locale={locale} comparable={ranking.comparable} delta={row.delta} />
-  </li>)}</Rows>;
+  const me = ranking.me && ranking.me.rank > shown.length ? ranking.me : null;
+  const end = me ? <p className={styles.me} role="status"><span>{rankingsText(locale, "rkMyRank")}</span><strong>{rankingsText(locale, "rkRank", [me.rank.toLocaleString(locale)])}</strong><span className={styles.meHearts} aria-label={rankingsText(locale, "rkHearts", [me.score.toLocaleString(locale)])}>{heartIcon(14)}<span aria-hidden="true">{me.score.toLocaleString(locale)}</span></span></p> : guestEnd;
+  return <>
+    <Rows>{shown.map((row, i) => <li key={keys[i]} ref={place(keys[i]!)} id={`home-rank-fans-${row.rank}`} className={styles.row} data-kind="fans" data-comparable={ranking.comparable || undefined} data-me={row.isMe || undefined} aria-current={row.isMe || undefined}>
+      <Rank rank={row.rank} />
+      <Avatar avatar={fanAvatar(row.characterId)} imageUrl={null} label="" size={32} />
+      <span className={styles.body}>
+        <span className={styles.name}>{row.nickname}</span>
+        <Meta items={[
+          row.tier ? <span key="tier" className={styles.tier}><FanTierBadge tier={row.tier} locale={locale} size={16} /><span>{levelLabel(locale, row.tier)}</span></span> : null,
+          row.favorite ? <span key="fav" className={styles.favorite}>{rankingsText(locale, "rkFavorite", [row.favorite.name])}</span> : null,
+          typeof row.weekGain === "number" ? <span key="total" className={styles.hearts} aria-label={rankingsText(locale, "rkHearts", [row.score.toLocaleString(locale)])}>{heartIcon(12)}<span aria-hidden="true">{row.score.toLocaleString(locale)}</span></span> : null,
+        ]} />
+      </span>
+      {/* 피드백 K(5차 H1 데이터 열만 4차 행에): this week's +N in bold from the server's weekGain; the all-time hearts move to the gray line. Without a weekGain the row reads as 4차. */}
+      {typeof row.weekGain === "number"
+        ? <span className={styles.main} data-week-gain="" aria-label={rankingsText(locale, "rkWeekGain", [`${row.weekGain > 0 ? "+" : ""}${row.weekGain.toLocaleString(locale)}`])}><span aria-hidden="true" className={styles.mainInner}>{`${row.weekGain > 0 ? "+" : ""}${row.weekGain.toLocaleString(locale)}`}</span></span>
+        : <Main locale={locale} value={row.score} label={rankingsText(locale, "rkHearts", [row.score.toLocaleString(locale)])} icon={heartIcon(14)} />}
+      {ranking.comparable ? <Delta locale={locale} delta={row.delta} /> : null}
+    </li>)}</Rows>
+    <Foot more={ranking.rows.length > ROWS} expanded={expanded} onToggle={() => setExpanded((open) => !open)} end={end} locale={locale} />
+  </>;
 }
 
-function CreatorPanel({ locale, ranking }: { locale: AppLocale; ranking: WithExtra<HomeCreatorRanking> }) {
-  const shown = ranking.rows.slice(0, ROWS);
+function CreatorPanel({ locale, ranking }: { locale: AppLocale; ranking: HomeCreatorRanking }) {
+  const [expanded, setExpanded] = useState(false);
+  const shown = ranking.rows.slice(0, expanded ? ranking.rows.length : ROWS);
   const place = useRowMotion(shown.map((row) => row.slug));
   if (ranking.rows.length === 0) return <Empty title={rankingsText(locale, "rkEmpty")} />;
-  const [before] = rankingsText(locale, "rkJjinfanCount", ["\u0000"]).split("\u0000");
-  return <Rows>{shown.map((row) => <li key={row.slug} ref={place(row.slug)} id={`home-rank-creators-${row.rank}`} data-motion="layout">
-    <Link className={styles.row} data-row="rank" href={`/${row.slug}?locale=${locale}` as Route}>
-      <span className={styles.rank}>{row.rank}</span>
-      <CreatorAvatar slug={row.slug} src={row.imageUrl} size={32} photos={undefined} />
-      <Name name={row.name} tier={null} />
-      <span className={styles.values}><Gain locale={locale} value={row.weekGain} unit="fans" /><Total locale={locale} value={row.score} label={rankingsText(locale, "rkJjinfanCount", [row.score.toLocaleString(locale)])} prefix={before?.trim() || undefined} /><Total narrowHidden locale={locale} value={row.hearts} label={rankingsText(locale, "rkHearts", [row.hearts.toLocaleString(locale)])} icon={<FanIcon icon={Heart} size={16} />} /></span>
-      <Delta locale={locale} comparable={ranking.comparable} delta={row.delta} />
-    </Link>
-  </li>)}</Rows>;
+  const template = rankingsText(locale, "rkJjinfanCount", ["\u0000"]);
+  return <>
+    <Rows>{shown.map((row) => <li key={row.slug} ref={place(row.slug)} id={`home-rank-creators-${row.rank}`}>
+      <Link className={styles.row} data-kind="creators" data-comparable={ranking.comparable || undefined} href={`/${row.slug}?locale=${locale}` as Route}>
+        <Rank rank={row.rank} />
+        <CreatorAvatar slug={row.slug} src={row.imageUrl} size={32} photos={undefined} />
+        <span className={styles.body}>
+          <span className={styles.name}>{row.name}</span>
+          <Meta items={[
+            <span key="hearts" className={styles.hearts} aria-label={rankingsText(locale, "rkHearts", [row.hearts.toLocaleString(locale)])}>{heartIcon(12)}<span aria-hidden="true">{row.hearts.toLocaleString(locale)}</span></span>,
+            row.weekGain === null ? null : <WeekGain key="gain" locale={locale} value={row.weekGain} />,
+          ]} />
+        </span>
+        <Main locale={locale} value={row.score} label={rankingsText(locale, "rkJjinfanCount", [row.score.toLocaleString(locale)])} template={template} />
+        {ranking.comparable ? <Delta locale={locale} delta={row.delta} /> : null}
+      </Link>
+    </li>)}</Rows>
+    <Foot more={ranking.rows.length > ROWS} expanded={expanded} onToggle={() => setExpanded((open) => !open)} end={null} locale={locale} />
+  </>;
 }
 
-type Head = { at: string | null; period: string | null; closesAt: string | null; basis: "hearts" | "fans"; since?: string | null };
-
-const parseWeekFans = (value: unknown) => platformFanRankingSchema.parse(value);
-const parseWeekCreators = (value: unknown) => creatorRankingSchema.parse(value);
-
-/** 이번 주 (피드백 H1): the server's own weekly list — hearts counted since this week's Monday 00:00 KST (`period=week`, `periodStart`),
- * ranked by the server. The all-time value is attached from the home list only when the same fan/page is there; nothing is re-ranked here.
- * This list keeps no previous week, so it has no movement column. */
-function WeekFanPanel({ locale, ranking, totals }: { locale: AppLocale; ranking: PlatformFanRanking; totals: ReadonlyMap<string, number> }) {
-  const shown = ranking.rows.slice(0, ROWS);
-  const keys = shown.map((row, i) => (shown.findIndex((other) => other.nickname === row.nickname) === i ? `n:${row.nickname}` : `r:${row.rank}`));
-  const place = useRowMotion(keys);
-  if (shown.length === 0) return <Empty title={rankingsText(locale, "rkEmptyFans")} />;
-  return <Rows>{shown.map((row, i) => { const total = totals.get(row.nickname); return <li key={keys[i]} ref={place(keys[i]!)} className={styles.row} data-row="rank" data-week="" data-motion="layout" data-me={row.isMe || undefined} aria-current={row.isMe || undefined}>
-    <span className={styles.rank}>{row.rank}</span>
-    <Avatar avatar={fanAvatar(row.characterId)} imageUrl={null} label="" size={32} />
-    <Name name={row.nickname} tier={tierText(locale, row.tier)} />
-    <span className={styles.values}><Gain locale={locale} value={row.score} unit="hearts" />{total !== undefined ? <Total locale={locale} value={total} label={rankingsText(locale, "rkHearts", [total.toLocaleString(locale)])} icon={<FanIcon icon={Heart} size={16} />} /> : null}</span>
-  </li>; })}</Rows>;
-}
-function WeekCreatorPanel({ locale, ranking }: { locale: AppLocale; ranking: CreatorRanking }) {
-  const shown = ranking.rows.slice(0, ROWS);
-  const place = useRowMotion(shown.map((row) => row.slug));
-  if (shown.length === 0) return <Empty title={rankingsText(locale, "rkEmpty")} />;
-  const [before] = rankingsText(locale, "rkJjinfanCount", ["\u0000"]).split("\u0000");
-  return <Rows>{shown.map((row) => <li key={row.slug} ref={place(row.slug)} data-motion="layout">
-    <Link className={styles.row} data-row="rank" data-week="" href={`/${row.slug}?locale=${locale}` as Route}>
-      <span className={styles.rank}>{row.rank}</span>
-      <CreatorAvatar slug={row.slug} src={row.imageUrl} size={32} photos={undefined} />
-      <Name name={row.name} tier={null} />
-      <span className={styles.values}><Gain locale={locale} value={row.score} unit="hearts" /><Total locale={locale} value={row.jjinfanCount} label={rankingsText(locale, "rkJjinfanCount", [row.jjinfanCount.toLocaleString(locale)])} prefix={before?.trim() || undefined} /></span>
-    </Link>
-  </li>)}</Rows>;
-}
-function WeekFanTab({ locale, onHead }: { locale: AppLocale; onHead: (head: Head) => void }) {
-  const { state, retry } = useLiveRanking(`/api/rankings/fans?period=week&limit=${ROWS}`, parseWeekFans);
-  const home = useLiveRanking(`/api/rankings/home?kind=fans&locale=${locale}`, parseFans).state;
-  const totals = new Map((home.status === "ready" ? home.data.rows : []).map((row) => [row.nickname, row.score] as const));
-  const data = state.status === "ready" ? state.data : null;
-  useEffect(() => { if (data) onHead({ at: data.computedAt, period: "week", closesAt: null, basis: "hearts", since: data.periodStart }); }, [data, onHead]);
+function FanTab({ locale, guestEnd, onUpdated }: { locale: AppLocale; guestEnd: ReactNode; onUpdated: (at: string | null) => void }) {
+  const { state, retry } = useLiveRanking(`/api/rankings/home?kind=fans&locale=${locale}`, parseFans, onUpdated);
   if (state.status === "loading") return <Loading />;
   if (state.status === "error") return <Failed locale={locale} retry={retry} />;
-  return <WeekFanPanel locale={locale} ranking={state.data} totals={totals} />;
-}
-function WeekCreatorTab({ locale, onHead }: { locale: AppLocale; onHead: (head: Head) => void }) {
-  const { state, retry } = useLiveRanking(`/api/rankings/creators?period=week&locale=${locale}`, parseWeekCreators);
-  const data = state.status === "ready" ? state.data : null;
-  useEffect(() => { if (data) onHead({ at: data.computedAt, period: "week", closesAt: null, basis: "hearts", since: data.periodStart }); }, [data, onHead]);
-  if (state.status === "loading") return <Loading />;
-  if (state.status === "error") return <Failed locale={locale} retry={retry} />;
-  return <WeekCreatorPanel locale={locale} ranking={state.data} />;
+  return <FanPanel locale={locale} ranking={state.data} guestEnd={guestEnd} />;
 }
 
-function FanTab({ locale, onHead }: { locale: AppLocale; onHead: (head: Head) => void }) {
-  const { state, retry } = useLiveRanking(`/api/rankings/home?kind=fans&locale=${locale}`, parseFans);
-  const data = state.status === "ready" ? state.data : null;
-  useEffect(() => { if (data) onHead({ at: data.extra.fetchedAt ?? data.computedAt, period: data.extra.period, closesAt: data.extra.closesAt, basis: "hearts" }); }, [data, onHead]);
-  if (state.status === "loading") return <Loading />;
-  if (state.status === "error") return <Failed locale={locale} retry={retry} />;
-  return <FanPanel locale={locale} ranking={state.data} />;
-}
-
-function CreatorTab({ locale, onHead }: { locale: AppLocale; onHead: (head: Head) => void }) {
-  const { state, retry } = useLiveRanking(`/api/rankings/home?kind=creators&locale=${locale}`, parseCreators);
-  const data = state.status === "ready" ? state.data : null;
-  useEffect(() => { if (data) onHead({ at: data.extra.fetchedAt ?? data.computedAt, period: data.extra.period, closesAt: data.extra.closesAt, basis: "fans" }); }, [data, onHead]);
+function CreatorTab({ locale, onUpdated }: { locale: AppLocale; onUpdated: (at: string | null) => void }) {
+  const { state, retry } = useLiveRanking(`/api/rankings/home?kind=creators&locale=${locale}`, parseCreators, onUpdated);
   if (state.status === "loading") return <Loading />;
   if (state.status === "error") return <Failed locale={locale} retry={retry} />;
   return <CreatorPanel locale={locale} ranking={state.data} />;
 }
 
-const two = (n: number) => String(n).padStart(2, "0");
-/** Feed date (E-1 5): `11. 08. 13:47` (this year), `2025. 11. 08. 13:47` otherwise. Viewer's clock. */
-export function feedDate(at: string | Date, now = new Date()) {
-  const when = typeof at === "string" ? new Date(at) : at;
-  if (Number.isNaN(when.getTime())) return null;
-  const body = `${two(when.getMonth() + 1)}. ${two(when.getDate())}. ${two(when.getHours())}:${two(when.getMinutes())}`;
-  return when.getFullYear() === now.getFullYear() ? body : `${when.getFullYear()}. ${body}`;
-}
-
-/** "업데이트 13:03" for an answer written today (viewer's clock), "업데이트 11. 07. 21:10" otherwise. */
+/** "업데이트 13:03" for an answer written today (viewer's clock), the date otherwise. */
 export function updatedLabel(locale: AppLocale, at: string, now = new Date()) {
   const when = new Date(at);
   if (Number.isNaN(when.getTime())) return null;
   const sameDay = when.toDateString() === now.toDateString();
-  return rankingsText(locale, "rkUpdatedAt", [sameDay ? `${two(when.getHours())}:${two(when.getMinutes())}` : feedDate(when, now)]);
+  const text = sameDay ? when.toLocaleTimeString(locale, { hour: "2-digit", minute: "2-digit", hourCycle: "h23" }) : when.toLocaleDateString(locale, { month: "numeric", day: "numeric" });
+  return rankingsText(locale, "rkUpdatedAt", [text]);
 }
 
-/** Basis line (R12·피드백 G ①): what is counted and until when, then when it was last read. Never a week — the list is daily. */
-function basisLine(locale: AppLocale, head: Head) {
-  if (head.period === "week") {
-    // periodStart is the Monday (KST) the server counts from: 이번 주 · 11. 02. 00:00부터.
-    const week = rankingsText(locale, "rkWeekGain", [""]).trim();
-    const m = head.since ? /^(\d{4})-(\d{2})-(\d{2})$/.exec(head.since) : null;
-    const from = m ? `${m[2]}. ${m[3]}. 00:00` : null;
-    return from ? `${week} · ${rankingsText(locale, "rkSince", [from])}` : week;
-  }
-  // The home list is today's standings (period "day", DESIGN §6): the basis names what is counted, the close is the next midnight.
-  const items: string[] = [rankingsText(locale, head.basis === "fans" ? "rkCumulativeFans" : "rkCumulativeHearts")];
-  if (head.closesAt) { const close = feedDate(head.closesAt); if (close) items.push(locale === "ko" ? `${close} 마감` : close); }
-  return items.join(" · ");
-}
-
-// The tab choice is kept outside the card so a second copy (if a screen draws one) never shows the other tab.
+// The home draws this card twice (narrow and wide columns, one hidden by CSS). Both copies read one tab choice, so pressing either one never leaves the visible copy on the other tab.
 let sharedTab = "fans";
 const tabListeners = new Set<() => void>();
 const subscribeTab = (listener: () => void) => { tabListeners.add(listener); return () => { tabListeners.delete(listener); }; };
 const readTab = () => sharedTab;
 const readServerTab = () => "fans";
 function chooseTab(next: string) { if (next === sharedTab) return; sharedTab = next; for (const listener of tabListeners) listener(); }
-let sharedScope = "week";
-const readScope = () => sharedScope;
-const readServerScope = () => "week";
-function chooseScope(next: string) { if (next === sharedScope) return; sharedScope = next; for (const listener of tabListeners) listener(); }
-/** Tests only: pick 이번 주 / 전체 without pressing. */
-export function selectHomeRankingScope(next: "week" | "all") { chooseScope(next); }
-/** Tests only: back to the first tab and this week. */
-export function resetHomeRankingTab() { sharedTab = "fans"; sharedScope = "week"; }
+/** Tests only: back to the first tab. */
+export function resetHomeRankingTab() { sharedTab = "fans"; }
 
 /**
- * Home ranking (5차 B5, R12·R18·R21): heading + one basis line (`누적 하트 · 업데이트 13:47`), fan / creator tabs, five 56px rows
- * (rank · avatar · name · value · movement, movement always drawn), `전체 보기 ›` to /rankings. Public for everyone.
+ * The home ranking (261107-2 U3, feedback C3, E2): true fans by all-time hearts (grade, favorite) and creators by true fans (hearts, this week's gain),
+ * the move since yesterday once seven days are kept, and when the day was last written.
+ * Public for everyone; signed out, the bottom line asks to sign in for one's own rank. The tab is local state, not the address, so the home never moves.
  */
 export function HomeRankingCard({ locale, headingId = "home-ranking-heading" }: { locale: AppLocale; headingId?: string }) {
+  const auth = useByUsAuth();
   const tab = useSyncExternalStore(subscribeTab, readTab, readServerTab);
-  const scope = useSyncExternalStore(subscribeTab, readScope, readServerScope);
-  const week = scope === "week";
-  const [heads, setHeads] = useState<Record<string, Head | null>>({});
-  const keep = useCallback((key: string) => (head: Head) => setHeads((was) => (JSON.stringify(was[key]) === JSON.stringify(head) ? was : { ...was, [key]: head })), []);
-  const fansHead = useMemo(() => keep("all:fans"), [keep]), creatorsHead = useMemo(() => keep("all:creators"), [keep]);
-  const weekFansHead = useMemo(() => keep("week:fans"), [keep]), weekCreatorsHead = useMemo(() => keep("week:creators"), [keep]);
-  const head = heads[`${scope}:${tab}`] ?? { at: null, period: week ? "week" : null, closesAt: null, basis: tab === "creators" && !week ? "fans" : "hearts" };
-  const updatedText = head.at ? updatedLabel(locale, head.at) : null;
-  return <section className={styles.card} aria-labelledby={headingId} data-home-ranking="" data-block="ranking">
+  const [updated, setUpdated] = useState<{ fans: string | null; creators: string | null }>({ fans: null, creators: null });
+  const fansUpdated = useCallback((at: string | null) => setUpdated((was) => (was.fans === at ? was : { ...was, fans: at })), []);
+  const creatorsUpdated = useCallback((at: string | null) => setUpdated((was) => (was.creators === at ? was : { ...was, creators: at })), []);
+  const at = tab === "creators" ? updated.creators : updated.fans;
+  const updatedText = at ? updatedLabel(locale, at) : null;
+  const guestEnd = auth.ready && !auth.authenticated ? <Link className={styles.login} href={fanLoginHref(locale, `/?locale=${locale}`)}>{rankingsText(locale, "rkSeeMyRank")}<ArrowRight aria-hidden="true" /></Link> : null;
+  return <section className={styles.card} aria-labelledby={headingId} data-home-ranking>
     <div className={styles.head}>
-      <FanHeading id={headingId}>{rankingsText(locale, "rkTitle")}</FanHeading>
-      <FanTabs variant="segment" className={styles.scope} label={rankingsText(locale, "rkPeriodLabel")} current={scope} items={[
-        { key: "week", label: rankingsText(locale, "rkWeekGain", [""]).trim(), onSelect: () => chooseScope("week") },
-        { key: "all", label: rankingsText(locale, "rkAll"), onSelect: () => chooseScope("all") },
-      ]} />
-      <div className={styles.basis} data-meta="" data-ranking-basis="">
-        <span>{basisLine(locale, head)}</span>
-        {updatedText ? <><span aria-hidden="true"> · </span><time dateTime={head.at!} data-updated-at="">{updatedText}</time></> : null}
-      </div>
+      <div className={styles.title}><FanHeading id={headingId}>{rankingsText(locale, "rkTitle")}</FanHeading><span className={styles.period}>{rankingsText(locale, tab === "creators" ? "rkCumulativeFans" : "rkCumulativeHearts")}</span>{updatedText ? <time className={styles.updated} dateTime={at!}>{updatedText}</time> : null}</div>
+      <Link className={styles.all} href={`/rankings?locale=${locale}&tab=${tab}` as Route}>{rankingsText(locale, "rkViewAll")}<ArrowRight aria-hidden="true" /></Link>
     </div>
-    <FanTabs variant="underline" panels className={styles.tabs} label={rankingsText(locale, "rkTitle")} current={tab} items={[
-      { key: "fans", label: rankingsText(locale, "rkFanTab"), onSelect: () => chooseTab("fans"), panel: week ? <WeekFanTab key="week" locale={locale} onHead={weekFansHead} /> : <FanTab key="all" locale={locale} onHead={fansHead} /> },
-      { key: "creators", label: rankingsText(locale, "rkCreatorRankTab"), onSelect: () => chooseTab("creators"), panel: week ? <WeekCreatorTab key="week" locale={locale} onHead={weekCreatorsHead} /> : <CreatorTab key="all" locale={locale} onHead={creatorsHead} /> },
+    <FanTabs variant="segment" panels label={rankingsText(locale, "rkTitle")} current={tab} items={[
+      { key: "fans", label: rankingsText(locale, "rkFanTab"), onSelect: () => chooseTab("fans"), panel: <FanTab locale={locale} guestEnd={guestEnd} onUpdated={fansUpdated} /> },
+      { key: "creators", label: rankingsText(locale, "rkCreatorRankTab"), onSelect: () => chooseTab("creators"), panel: <CreatorTab locale={locale} onUpdated={creatorsUpdated} /> },
     ]} />
-    <Link className={styles.all} href={`/rankings?locale=${locale}&tab=${tab}&period=${week ? "week" : "all"}` as Route}>{rankingsText(locale, "rkViewAll")}<FanIcon icon={ChevronRight} size={16} /></Link>
   </section>;
 }
