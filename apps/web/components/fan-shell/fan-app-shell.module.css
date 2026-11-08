@@ -174,3 +174,13 @@
 @media (max-width: 47.999rem) { .statusPending { width: 96px; } }
 /* From 1200px the capsule takes what its values need, so large ♥ and P numbers no longer squeeze the favorite to a sliver. */
 @media (min-width: 75rem) { .statusCapsule { max-width: none; } }
+
+/* bundle r6 login check: at 1200–1299px the tabs take their 110px cells again, and with long tab names (vi "Hoạt động người hâm mộ")
+ * plus the signed-in capsule the header ran 21px past the screen. In this band the tabs keep the compact cells of 1024–1199; the
+ * 24px between the tabs and the right group (feedback F) stays. */
+@media (min-width: 75rem) and (max-width: 81.249rem) {
+  .groupsNavigation .headerInner { grid-template-columns: 88px auto minmax(0, 1fr); }
+  .groupsNavigation .desktopNav { gap: 0; }
+  .groupsNavigation .desktopNavItem { min-width: 0; padding: 0 var(--space-2); gap: var(--space-1); }
+  .groupsNavigation .actions { min-width: 0; }
+}
