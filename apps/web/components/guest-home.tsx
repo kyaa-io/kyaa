@@ -120,19 +120,21 @@ function HomeHero({ locale, hero, upcoming, loading }: { locale: AppLocale; hero
 }
 
 /** ② 내 최애 소식 (plan ⑥): two or three 72px rows — avatar 32 · name · date / one line. Signed out: no block. No favorite: one 48px row to choose. */
-function MyNews({ locale, favorite, news }: { locale: AppLocale; favorite: { slug: string; name: string; image: string; imagePosition?: string } | null; news: ReturnType<typeof useFavoriteNews> }) {
+function MyNews({ locale, favorite, news, deciding = false }: { locale: AppLocale; favorite: { slug: string; name: string; image: string; imagePosition?: string } | null; news: ReturnType<typeof useFavoriteNews>; deciding?: boolean }) {
   const t = words(locale);
+  if (deciding) news = { ...news, loading: true };
   const head = <div className={styles.sectionHead}><FanHeading id="home-news-heading">{t.myNews}</FanHeading>
     {favorite ? <Link className={styles.more} href={`/${encodeURIComponent(favorite.slug)}?tab=notice&locale=${locale}` as Route}>{t.more}<FanIcon icon={ChevronRight} size={16} /></Link> : null}</div>;
-  if (!favorite) return <section className={styles.news} data-block="feed" aria-labelledby="home-news-heading">{head}
+  if (!favorite && !deciding) return <section className={styles.news} data-block="feed" aria-labelledby="home-news-heading">{head}
     <Link className={styles.chooseRow} data-row="menu" href={`/pages/groups?locale=${locale}` as Route}><FanIcon icon={Plus} size={20} /><span>{t.choose}</span><FanIcon icon={ChevronRight} size={16} /></Link>
   </section>;
-  const rows = news.ordered.slice(0, 3);
+  const rows = favorite ? news.ordered.slice(0, 3) : [];
   return <section className={styles.news} data-block="feed" aria-labelledby="home-news-heading" aria-busy={news.loading || undefined}>{head}
     {news.loading ? <ul className={styles.newsRows}>{[0, 1].map((i) => <li key={i} className={styles.newsRow} data-skeleton="" aria-hidden="true"><FanSkeleton shape="circle" width={32} height={32} /><span className={styles.newsText}><FanSkeleton width="30%" height={14} /><FanSkeleton width="80%" height={14} /></span></li>)}</ul>
       : rows.length === 0 ? <p className={styles.empty} data-fan-state="empty">{t.noNews}</p>
       : <ul className={styles.newsRows}>{rows.map((item) => {
         const date = feedDate(item.publishedAt);
+        if (!favorite) return null;
         return <li key={item.id}><Link className={styles.newsRow} data-row="notice" href={`/c/${encodeURIComponent(favorite.slug)}/notices/${encodeURIComponent(item.slug)}?locale=${locale}` as Route}>
           <CreatorAvatar slug={favorite.slug} src={favorite.image} position={favorite.imagePosition} size={32} photos={undefined} />
           <span className={styles.newsText}>
@@ -181,7 +183,7 @@ function HomeBody({ locale, data }: { locale: AppLocale; data: HomeData }) {
   return <div className={styles.layout} data-layout="two-col">
     <div className={styles.primary}>
       <div className={styles.slotHero}><HomeHero locale={locale} hero={hero} upcoming={nextLive(data.lives)} loading={deciding} /></div>
-      {guest ? null : <div className={styles.slotNews}><MyNews locale={locale} favorite={bias.status === "loading" ? null : favorite} news={news} /></div>}
+      {guest ? null : <div className={styles.slotNews}><MyNews locale={locale} favorite={favorite} news={news} deciding={!auth.ready || bias.status === "loading"} /></div>}
       <div className={styles.slotRanking}><HomeRankingCard locale={locale} /></div>
       <div className={styles.slotChallenge}><HomeChallenges locale={locale} preferredSlugs={mine} /></div>
     </div>
