@@ -11,7 +11,7 @@ describe("shared jjinfan challenge", () => {
   it("answers the live gauge only while the challenge is on", async () => {
     const on = deps({ count: 47, target: 100, campaign: { title: "찐팬 100명", description: "" } });
     expect(await readSharedJjinfanChallenge("elina", on)).toEqual({ count: 47, target: 100, campaign: { title: "찐팬 100명", description: "" } });
-    expect(on.rpc).toHaveBeenCalledWith("read_jjinfan_challenge", { p_celebrity: ID });
+    expect(on.rpc).toHaveBeenCalledWith("read_jjinfan_gauge", { p_celebrity: ID });
     expect(await readSharedJjinfanChallenge("elina", deps({ count: 47, target: 100, campaign: null }))).toBeNull();
     expect(await readSharedJjinfanChallenge("elina", deps({ count: 47, target: 100 }))).toBeNull();
   });

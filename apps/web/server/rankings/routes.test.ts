@@ -56,7 +56,7 @@ describe("rankings routes", () => {
   });
 
   it("returns an empty ranking and the challenge count", async () => {
-    const { handlers } = make((name) => (name === "read_jjinfan_challenge" ? { count: 37, target: 100 } : { periodStart: "2026-11-02", computedAt: null, rows: [], me: null }));
+    const { handlers } = make((name) => (name === "read_jjinfan_gauge" ? { count: 37, target: 100 } : { periodStart: "2026-11-02", computedAt: null, rows: [], me: null }));
     const empty = await (await handlers.page(req("/x"), "star")).json();
     expect(empty.rows).toEqual([]);
     expect(empty.computedAt).toBeNull();

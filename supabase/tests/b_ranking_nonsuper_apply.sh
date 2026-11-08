@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# 20261215010000 + 20261215020000 applied by a role shaped like dev's byus_admin: no superuser, no BYPASSRLS, a member of postgres and byus_admin
+# 20261215010000 + 20261215020000 + 20261215100000 applied by a role shaped like dev's byus_admin: no superuser, no BYPASSRLS, a member of postgres and byus_admin
 # (the owners of the tables the functions read). Everything runs in one transaction that is rolled back, the role included.
 # Checks: both files apply without OWNER_GAP; a FORCE table gets the role's own read policy, a table the role reads as an owner member gets none;
 # the build made by that role sees the same hearts as a superuser count; the gauge and the readers answer as service_role.
@@ -9,8 +9,8 @@ DB="${1:-byus}"
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 TMP="$(mktemp -d)"; trap 'rm -rf "$TMP"' EXIT
 strip() { grep -v -x -e 'begin;' -e 'commit;' -e "notify pgrst, 'reload schema';" "$1" > "$TMP/$(basename "$1")"; }
-for f in supabase/rollback/20261215020000_active_jjinfan_challenges.sql supabase/rollback/20261215010000_home_ranking_daily.sql \
-         supabase/migrations/20261215010000_home_ranking_daily.sql supabase/migrations/20261215020000_active_jjinfan_challenges.sql; do
+for f in supabase/rollback/20261215100000_jjinfan_count_reader_grant.sql supabase/rollback/20261215020000_active_jjinfan_challenges.sql supabase/rollback/20261215010000_home_ranking_daily.sql \
+         supabase/migrations/20261215010000_home_ranking_daily.sql supabase/migrations/20261215020000_active_jjinfan_challenges.sql supabase/migrations/20261215100000_jjinfan_count_reader_grant.sql; do
   mkdir -p "$TMP/$(dirname "$f")"; grep -v -x -e 'begin;' -e 'commit;' -e "notify pgrst, 'reload schema';" "$ROOT/$f" > "$TMP/$f"
 done
 psql -X -q -v ON_ERROR_STOP=1 -d "$DB" <<SQL
@@ -26,11 +26,13 @@ grant postgres, byus_admin to r4b_apply;
 -- here and to the applying role on dev. Membership stands in for that ownership; it does not make r4b_apply a superuser.
 grant localsuper to r4b_apply;
 -- Take the B objects away as the superuser, then apply both files as r4b_apply.
+\i $TMP/supabase/rollback/20261215100000_jjinfan_count_reader_grant.sql
 \i $TMP/supabase/rollback/20261215020000_active_jjinfan_challenges.sql
 \i $TMP/supabase/rollback/20261215010000_home_ranking_daily.sql
 set role r4b_apply;
 \i $TMP/supabase/migrations/20261215010000_home_ranking_daily.sql
 \i $TMP/supabase/migrations/20261215020000_active_jjinfan_challenges.sql
+\i $TMP/supabase/migrations/20261215100000_jjinfan_count_reader_grant.sql
 reset role;
 do \$\$
 declare got bigint; want bigint;
@@ -55,7 +57,7 @@ begin
   if jsonb_array_length(r -> 'rows') = 0 and (select fans from expected) > 0 then raise exception 'Fan ranking empty as service_role: %', r; end if;
   r := public.read_home_creator_ranking('ko', 20);
   perform public.read_active_jjinfan_challenges('ko', 10);
-  perform public.read_jjinfan_challenge(c.id) from public.celebrities c where c.status = 'published' and c.archived_at is null limit 3;
+  perform public.read_jjinfan_challenge(c.id), public.read_jjinfan_gauge(c.id) from public.celebrities c where c.status = 'published' and c.archived_at is null limit 3;
   perform public.ensure_home_rankings();
   raise notice 'PASS non-superuser apply (readers answer as service_role)';
 end \$\$;

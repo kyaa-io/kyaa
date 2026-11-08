@@ -41,10 +41,10 @@ begin
   set local session_replication_role = replica;
   update public.jjinfan_challenge_campaigns set ends_on = (now() at time zone 'Asia/Seoul')::date where celebrity_id = shown;
   if not public.read_active_jjinfan_challenges('ko', 10)::text like '%켜진 챌린지%' then raise exception 'Last day hidden'; end if;
-  if public.read_jjinfan_challenge(shown) -> 'campaign' ->> 'endsOn' is null then raise exception 'Gauge lacks endsOn: %', public.read_jjinfan_challenge(shown); end if;
+  if public.read_jjinfan_gauge(shown) -> 'campaign' ->> 'endsOn' is null then raise exception 'Gauge lacks endsOn: %', public.read_jjinfan_gauge(shown); end if;
   update public.jjinfan_challenge_campaigns set ends_on = (now() at time zone 'Asia/Seoul')::date - 1 where celebrity_id = shown;
   if public.read_active_jjinfan_challenges('ko', 10)::text like '%켜진 챌린지%' then raise exception 'Ended campaign listed'; end if;
-  if public.read_jjinfan_challenge(shown) -> 'campaign' <> 'null'::jsonb then raise exception 'Ended campaign on the gauge: %', public.read_jjinfan_challenge(shown); end if;
+  if public.read_jjinfan_gauge(shown) -> 'campaign' <> 'null'::jsonb then raise exception 'Ended campaign on the gauge: %', public.read_jjinfan_gauge(shown); end if;
   update public.jjinfan_challenge_campaigns set ends_on = null where celebrity_id = shown;
   set local session_replication_role = origin;
   set local session_replication_role = replica; update public.celebrities set status = 'draft', published_at = null where id = newer; set local session_replication_role = origin;
@@ -54,6 +54,19 @@ begin
   raised := false; begin execute 'set local role anon'; perform public.read_active_jjinfan_challenges('ko', 10); exception when others then get stacked diagnostics state = returned_sqlstate; raised := state = '42501'; end;
   execute 'reset role';
   if not raised then raise exception 'anon may read: %', state; end if;
+  -- 20261215100000: the gauge reader counts 찐팬 by hearts; the legacy reader keeps the title count and calls no other function, so an owner
+  -- that cannot execute the counter still answers it.
+  set local session_replication_role = replica;
+  insert into public.jjinfan_challenge_campaigns(celebrity_id, enabled, title, updated_by_admin_allowlist_id) values (shown, true, '켜진 챌린지', extensions.gen_random_uuid());
+  set local session_replication_role = origin;
+  if (public.read_jjinfan_gauge(shown) ->> 'count')::int <> 1 or (public.read_jjinfan_challenge(shown) ->> 'count')::int <> 1 then raise exception 'Gauge counts wrong: % %', public.read_jjinfan_gauge(shown), public.read_jjinfan_challenge(shown); end if;
+  insert into public.app_users(id, privy_user_id, verified_email) values (unlisted, 'did:privy:ajc-' || unlisted, unlisted || '@example.test');
+  insert into public.creator_heart_ledger(celebrity_id, app_user_id, amount, source_type, source_id) values (shown, unlisted, 1, 'passport_page_claim', extensions.gen_random_uuid());
+  if (public.read_jjinfan_gauge(shown) ->> 'count')::int <> 2 or (public.read_jjinfan_challenge(shown) ->> 'count')::int <> 1 then raise exception 'Gauge must count hearts, legacy titles'; end if;
+  if pg_get_functiondef('public.read_jjinfan_challenge(uuid)'::regprocedure) ~ 'creator_jjinfan_count|jjinfan_campaign_open' then raise exception 'Legacy reader calls another function'; end if;
+  raised := false; begin execute 'set local role anon'; perform public.read_jjinfan_gauge(shown); exception when others then get stacked diagnostics state = returned_sqlstate; raised := state = '42501'; end;
+  execute 'reset role';
+  if not raised then raise exception 'anon may read the gauge: %', state; end if;
   raise notice 'PASS active jjinfan challenges';
 end $$;
 rollback;
