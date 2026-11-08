@@ -146,18 +146,18 @@
   .banner[data-kind="welcome"] .action { margin-top:24px; }
 }
 
-.banner[data-kind="campaign"]{background:var(--color-ink);color:var(--color-surface)}
+.banner[data-kind="campaign"]{background:var(--campaign-art);color:var(--color-surface)}
 .banner[data-kind="campaign"] .image{display:none}
-.banner[data-kind="campaign"] .overlay{display:block;background:color-mix(in srgb, var(--color-ink) 90%, transparent)}
+.banner[data-kind="campaign"] .overlay{display:block;inset:0 40% 0 0;background:color-mix(in srgb, var(--campaign-art) 90%, transparent)}
 .banner[data-kind="campaign"] .copy{position:absolute;inset:0 auto 0 0;width:60%;height:100%;justify-content:center;gap:16px;padding:40px 48px}
 .banner[data-kind="campaign"] .eyebrow,.banner[data-kind="campaign"] .description{color:var(--color-surface)}
 .banner[data-kind="campaign"] .eyebrow{font-size:13px;letter-spacing:.08em}
 .banner[data-kind="campaign"] .copy h2{font-size:32px;line-height:1.3;overflow-wrap:anywhere}
 .banner[data-kind="campaign"] .description{font-size:16px;line-height:1.6;overflow-wrap:anywhere}
 .banner[data-kind="campaign"] .action{margin-top:8px}
-.banner[data-kind="campaign"] .action>a{width:fit-content;gap:16px;padding:10px 20px;border-radius:999px;background:var(--color-surface);color:var(--color-ink)!important}
+.banner[data-kind="campaign"] .action>a{width:fit-content;gap:16px;padding:10px 20px;border-radius:999px;background:var(--color-surface);color:var(--campaign-art)!important}
 @media(max-width:767px){
- .banner[data-kind="campaign"] .overlay{background:color-mix(in srgb, var(--color-ink) 0%, transparent)}
+ .banner[data-kind="campaign"] .overlay{inset:50% 0 0;background:var(--campaign-art)}
  .banner[data-kind="campaign"] .copy{inset:auto 0 0;width:100%;height:auto;padding:24px;gap:8px}
  .banner[data-kind="campaign"] .copy h2{font-size:28px}
  .banner[data-kind="campaign"] .description{font-size:16px;line-height:1.5}
@@ -174,7 +174,7 @@
   .banner:is([data-kind="welcome"], [data-kind="campaign"]) .copy h2 { font-size:28px; line-height:1.2; overflow-wrap:anywhere; }
   .banner:is([data-kind="welcome"], [data-kind="campaign"]) .description { margin:0; color:var(--color-muted); font-size:14px; line-height:1.5; }
   .banner:is([data-kind="welcome"], [data-kind="campaign"]) .action { margin-top:8px; }
-  .banner[data-kind="campaign"] .action > a { width:100%; background:var(--color-ink); color:var(--color-surface)!important; }
+  .banner[data-kind="campaign"] .action > a { width:100%; background:var(--campaign-art); color:var(--color-surface)!important; }
 }
 
 /* Approved guide art: the picture fills the slide and the copy sits on its empty half (desktop) or empty bottom (mobile). */
