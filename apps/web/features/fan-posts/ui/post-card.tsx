@@ -3,13 +3,14 @@ import { WAVE_FANPAGE_SLUG } from "@/features/fanpage/domain/wave-programs";
 import { WavePrivateBadge } from "@/features/fanpage/ui/wave-privacy";
 import Link from "next/link";
 import type { Route } from "next";
-import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { editorText } from "@/components/editor/editor-copy";
 import { fanLoginHref } from "@/components/login-href";
 import { readRichDocument, richDocumentAttachments, type RichAttachment } from "@/components/editor/rich-document";
 import { NoticeShare } from "@/components/notice/notice-share";
 import { GroupArtistMark } from "@/features/groups/ui/group-artist-mark";
 import { PostDetailHeader } from "./post-detail-header";
+import { celebrateReward } from "@/components/fan-ui/reward-celebration";
 import { applyReaction, PostReactions, type PostReactionChoice, type PostReactionState } from "./post-reactions";
 import { PostInlineVideo, TranslatedRichPostBody } from "./rich-post-body";
 import detailStyles from "./post-detail.module.css";
@@ -35,6 +36,7 @@ import { RelativeTime } from "@/components/relative-time";
 
 export function PostCard({ post, locale, onChanged, onDeleted, detail = false, returnTo, presentation,boardMetadata,boardLikeLabel,boardLikeReward }: { post: FanPost; locale: AppLocale; onChanged: () => void; onDeleted?: () => void; detail?: boolean; returnTo?: string; presentation?: "board";boardMetadata?:ReactNode;boardLikeLabel?:string;boardLikeReward?:ReactNode }) {
   const auth = usePrivy(), copy = contentCopy(locale), mutation = useContentMutation(locale), [editing, setEditing] = useState(false),[deleting,setDeleting]=useState(false),[deleteUncertain,setDeleteUncertain]=useState(false);
+  const articleRef = useRef<HTMLElement>(null);
   const initialReaction = useCallback((): PostReactionState => ({ reaction: post.reaction !== undefined ? post.reaction : post.liked ? "like" : null, likeCount: post.likeCount, dislikeCount: post.dislikeCount ?? null }), [post.reaction, post.liked, post.likeCount, post.dislikeCount]);
   const [reactionState, setReactionState] = useState(initialReaction);
   const liked = reactionState.reaction === "like", likeCount = reactionState.likeCount;
@@ -58,8 +60,11 @@ export function PostCard({ post, locale, onChanged, onDeleted, detail = false, r
   async function react(choice: PostReactionChoice) {
     const previous = reactionState;
     setReactionState(applyReaction(previous, choice));
-    if (await mutation.request(`/api/posts/${post.id}/like`, "PUT", { reaction: choice })) onChanged();
-    else setReactionState(previous);
+    const result = await mutation.request(`/api/posts/${post.id}/like`, "PUT", { reaction: choice }) as { reward?: { points?: number; stamps?: number } } | null;
+    if (!result) { setReactionState(previous); return; }
+    // 261107-2 D8: the shared coin badge rises from the thumbs up, with the shared toast.
+    if (result.reward) celebrateReward({ locale, points: result.reward.points, stamps: result.reward.stamps, anchor: articleRef.current?.querySelector(`.${detailStyles.reactionLike}`) });
+    onChanged();
   }
   const like = () => react(liked ? "none" : "like");
   const document = useMemo(() => readRichDocument(post.bodyDoc), [post.bodyDoc]);
@@ -82,7 +87,7 @@ export function PostCard({ post, locale, onChanged, onDeleted, detail = false, r
     </Menu.Popup></Menu.Positioner></Menu.Portal>
   </Menu.Root> : <ContentActions targetType="fan_post" targetId={post.id} locale={locale} onChanged={onChanged} />;
   const loginHref = fanLoginHref(locale, `/c/${post.celebritySlug}/community/${post.id}?locale=${locale}${returnTo ? `&returnTo=${encodeURIComponent(returnTo)}` : ""}`);
-  return <article className={`${styles.card} ${presentation === "board" ? boardStyles.article : ""}`} data-post-id={post.id}>
+  return <article ref={articleRef} className={`${styles.card} ${presentation === "board" ? boardStyles.article : ""}`} data-post-id={post.id}>
     {boardDetail ? <PostDetailHeader title={post.body.split("\n")[0] || copy.community} author={post.author.nickname} avatarUrl={post.author.avatarUrl} authorBadge={<>{post.artist && <GroupArtistMark locale={locale} />}{post.celebritySlug === WAVE_FANPAGE_SLUG ? <WavePrivateBadge locale={locale} /> : post.visibility === "members" && <span className={styles.badge}>{copy.members}</span>}</>} createdAt={post.createdAt} viewCount={post.viewCount} likeCount={likeCount} commentCount={post.commentCount} locale={locale} menu={menu} /> : <header className={`${styles.meta} ${styles.postHeader}`}>{boardMetadata??<><img src={post.author.avatarUrl} alt="" width={32} height={32} /><div className={styles.postIdentity}><strong>{post.author.nickname}</strong>
       {post.celebritySlug === WAVE_FANPAGE_SLUG ? <WavePrivateBadge locale={locale} /> : <span className={styles.badge}>{post.visibility === "members" ? copy.members : copy.public}</span>}
       </div>

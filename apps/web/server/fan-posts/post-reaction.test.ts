@@ -55,6 +55,16 @@ describe("post reactions", () => {
     expect(d.rpc.mock.calls.map(call => call[0])).toEqual(["set_fan_post_reaction", "read_fan_post"]);
   });
 
+  it("returns a fresh like grant for the shared celebration, and nothing for a replayed or empty grant (261107-2 D8)", async () => {
+    const d = Object.assign(dependencies(), { resolveCreatorId: async () => "30000000-0000-4000-8000-000000000003" }), h = createContentHandlers(d);
+    let award: unknown = { points: 1, stampId: null, capped: false, reason: null, replayed: false };
+    d.rpc.mockImplementation(async (name: string) => name === "set_fan_post_reaction" ? { reaction: "like", dislikeCount: null } : name === "read_fan_post" ? { post } : name === "record_dukjil_action" ? award : null);
+    const fresh = await (await h.like(put({ reaction: "like" }), id)).json();
+    expect(fresh).toEqual({ reaction: "like", dislikeCount: null, reward: { points: 1, stamps: 0 } });
+    award = { points: 1, stampId: null, capped: false, reason: null, replayed: true };
+    expect(await (await h.like(put({ reaction: "like" }), id)).json()).not.toHaveProperty("reward");
+  });
+
   it("rejects unknown choices and mixed bodies before touching the database", async () => {
     const d = dependencies(), h = createContentHandlers(d);
     for (const body of [{ reaction: "love" }, { reaction: "like", liked: true }, { reaction: null }, {}])

@@ -59,13 +59,13 @@ function bodyParams(body: string) {
   return { chars: [...text].length, bodyHash: createHash("sha256").update(text).digest("hex") };
 }
 async function awardForPost(deps: Pick<ContentDependencies, "rpc">, owner: string | null, postId: string, actionKey: "comment" | "reaction", sourceKey: string, params: Record<string, unknown>) {
-  if (!owner) return;
+  if (!owner) return null;
   try {
     const raw = await deps.rpc("read_fan_post", { p_app_user_id: owner, p_post_id: postId, p_locale: "ko" });
     const slug = (raw as { post?: { celebritySlug?: unknown } } | null)?.post?.celebritySlug;
-    if (typeof slug !== "string") return;
-    await awardDukjilAction(deps, { appUserId: owner, creatorSlug: slug, actionKey, sourceKey, params });
-  } catch { /* the original action already succeeded */ }
+    if (typeof slug !== "string") return null;
+    return await awardDukjilAction(deps, { appUserId: owner, creatorSlug: slug, actionKey, sourceKey, params });
+  } catch { /* the original action already succeeded */ return null; }
 }
 const REWARD_READ_TIMEOUT_MS = 800;
 // Reads the just-granted points after the write has committed. Never throws: a failed read must not turn a committed post or
@@ -235,8 +235,9 @@ export function createContentHandlers(deps: ContentDependencies) {
         return json(value);
       }
       const result = checked(postReactionSchema, await deps.rpc("set_fan_post_reaction", { p_app_user_id, p_post_id: id, p_reaction: value.reaction }));
-      if (result.reaction === "like") await awardForPost(deps, p_app_user_id, id, "reaction", `post-like:${id}`, {});
-      return json(result);
+      const award = result.reaction === "like" ? await awardForPost(deps, p_app_user_id, id, "reaction", `post-like:${id}`, {}) : null;
+      // 261107-2 D8: a fresh grant goes back so the screen can celebrate it; a replay or a capped like says nothing.
+      return json(award && !award.replayed && award.points > 0 ? { ...result, reward: { points: award.points, stamps: award.stampId ? 1 : 0 } } : result);
     }),
     upload: (request: Request) => run(async () => {
       const actor = (await owner(request))!;
