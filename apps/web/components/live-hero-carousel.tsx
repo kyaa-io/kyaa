@@ -23,26 +23,39 @@ import { ManagedHomeBanner } from "./home-entry-cards/managed-home-banner";
 const AUTOPLAY_INTERVAL_MS = 6_000;
 const REDUCED_MOTION_QUERY = "(prefers-reduced-motion: reduce)";
 
-// Autoplay waits for the first screen: a slide that slides in while its picture is still downloading
+// Autoplay waits for the first screen (at most 20s): a slide that slides in while its picture is still downloading
 // paints in view and becomes a later, larger LCP (dev 390 Slow 4G: 8.8s → 23.5s).
 function documentLoaded() {
   return typeof document !== "undefined" && document.readyState === "complete";
 }
 
+// A load that never comes (a hanging request) must not stop autoplay for good.
+const FIRST_SCREEN_WAIT_LIMIT_MS = 20_000;
+
 function whenFirstScreenSettled(onSettled: () => void) {
   let idle: number | undefined;
   let timer: number | undefined;
-  const schedule = () => {
-    if (typeof window.requestIdleCallback === "function") idle = window.requestIdleCallback(onSettled, { timeout: 2_000 });
-    else timer = window.setTimeout(onSettled, 0);
+  let done = false;
+  const settle = () => {
+    if (done) return;
+    done = true;
+    stop();
+    onSettled();
   };
-  if (documentLoaded()) schedule();
-  else window.addEventListener("load", schedule, { once: true });
-  return () => {
+  const schedule = () => {
+    if (typeof window.requestIdleCallback === "function") idle = window.requestIdleCallback(settle, { timeout: 2_000 });
+    else timer = window.setTimeout(settle, 0);
+  };
+  const limit = window.setTimeout(settle, FIRST_SCREEN_WAIT_LIMIT_MS);
+  const stop = () => {
     window.removeEventListener("load", schedule);
+    window.clearTimeout(limit);
     if (idle !== undefined) window.cancelIdleCallback?.(idle);
     if (timer !== undefined) window.clearTimeout(timer);
   };
+  if (documentLoaded()) schedule();
+  else window.addEventListener("load", schedule, { once: true });
+  return stop;
 }
 
 function pendingImages(slide: Element | null | undefined) {

@@ -70,17 +70,36 @@ describe("hero visibility and independent pause reasons", () => {
 
   it("does not autoplay before the first screen has finished loading", () => {
     const readyState = vi.spyOn(document, "readyState", "get").mockReturnValue("loading");
-    const idle = vi.fn((callback: () => void) => window.setTimeout(callback, 300));
-    vi.stubGlobal("requestIdleCallback", idle);
+    vi.stubGlobal("requestIdleCallback", (callback: () => void) => window.setTimeout(callback, 300));
     vi.stubGlobal("cancelIdleCallback", (id: number) => window.clearTimeout(id));
     render(<LiveHeroCarousel homeBanners={[banner]} locale="en" />);
-    advance(20_000);
+    advance(19_000);
     expect(activeSlide()).toBe("1 of 2");
     expect(screen.getByRole("region")).toHaveAttribute("data-shine-paused", "false");
     readyState.mockReturnValue("complete");
     act(() => { window.dispatchEvent(new Event("load")); });
-    expect(idle).toHaveBeenCalledTimes(1);
-    advance(300);
+    advance(299); advance(1);
+    advance(5_999); expect(activeSlide()).toBe("1 of 2");
+    advance(1); expect(activeSlide()).toBe("2 of 2");
+  });
+
+  it("starts after load without requestIdleCallback on the next task", () => {
+    const readyState = vi.spyOn(document, "readyState", "get").mockReturnValue("loading");
+    vi.stubGlobal("requestIdleCallback", undefined);
+    render(<LiveHeroCarousel homeBanners={[banner]} locale="en" />);
+    advance(10_000); expect(activeSlide()).toBe("1 of 2");
+    readyState.mockReturnValue("complete");
+    act(() => { window.dispatchEvent(new Event("load")); });
+    advance(0);
+    advance(5_999); expect(activeSlide()).toBe("1 of 2");
+    advance(1); expect(activeSlide()).toBe("2 of 2");
+  });
+
+  it("stops waiting for a load that never comes 20 seconds after mount", () => {
+    vi.spyOn(document, "readyState", "get").mockReturnValue("loading");
+    render(<LiveHeroCarousel homeBanners={[banner]} locale="en" />);
+    advance(19_999); expect(activeSlide()).toBe("1 of 2");
+    advance(1);
     advance(5_999); expect(activeSlide()).toBe("1 of 2");
     advance(1); expect(activeSlide()).toBe("2 of 2");
   });
@@ -92,24 +111,59 @@ describe("hero visibility and independent pause reasons", () => {
     expect(activeSlide()).toBe("2 of 2");
     advance(); expect(activeSlide()).toBe("1 of 2");
   });
+});
 
-  it("moves onto the next slide only after its picture has loaded", () => {
-    const second = { ...banner, id: "90000000-0000-4000-8000-000000000011", title: "두 번째 배너",
-      desktopImage: { ...banner.desktopImage, id: "90000000-0000-4000-8000-000000000013" },
-      mobileImage: { ...banner.mobileImage!, id: "90000000-0000-4000-8000-000000000014", url: "/images/guest-home/kara-second.jpg" } };
-    const loaded = new WeakSet<HTMLImageElement>();
+describe("autoplay waits for the next slide's picture", () => {
+  const second = { ...banner, id: "90000000-0000-4000-8000-000000000011", title: "두 번째 배너",
+    desktopImage: { ...banner.desktopImage, id: "90000000-0000-4000-8000-000000000013" },
+    mobileImage: { ...banner.mobileImage!, id: "90000000-0000-4000-8000-000000000014", url: "/images/guest-home/kara-second.jpg" } };
+  const setup = () => {
+    const ready = new WeakSet<HTMLImageElement>();
     vi.spyOn(HTMLImageElement.prototype, "complete", "get").mockImplementation(function (this: HTMLImageElement) {
-      return !this.src.includes("kara-second") || loaded.has(this);
+      return !this.src.includes("kara-second") || ready.has(this);
     });
-    const { container } = render(<LiveHeroCarousel homeBanners={[banner, second]} elinaGuide={null} locale="en" />);
-    advance(); expect(activeSlide()).toBe("1 of 2");
-    advance(3_000); expect(activeSlide()).toBe("1 of 2");
-    const picture = [...container.querySelectorAll("img")].find((image) => image.src.includes("kara-second"))!;
-    loaded.add(picture);
-    act(() => { fireEvent.load(picture); });
+    const view = render(<LiveHeroCarousel homeBanners={[banner, second]} elinaGuide={null} locale="en" />);
+    const picture = [...view.container.querySelectorAll("img")].find((image) => image.src.includes("kara-second"))!;
+    return { view, picture, finish: (event: "load" | "error") => { ready.add(picture); act(() => { fireEvent[event](picture); }); } };
+  };
+
+  it("moves as soon as the picture has loaded", () => {
+    const { finish } = setup();
+    advance(); advance(3_000); expect(activeSlide()).toBe("1 of 2");
+    finish("load");
     expect(activeSlide()).toBe("2 of 2");
   });
 
+  it("moves at once when the picture fails", () => {
+    const { finish } = setup();
+    advance(); expect(activeSlide()).toBe("1 of 2");
+    finish("error");
+    expect(activeSlide()).toBe("2 of 2");
+  });
+
+  it("moves after one more interval when the picture never finishes", () => {
+    setup();
+    advance(); advance(5_999); expect(activeSlide()).toBe("1 of 2");
+    advance(1); expect(activeSlide()).toBe("2 of 2");
+  });
+
+  it("does not move when hovered while waiting, even if the picture then loads", () => {
+    const { finish } = setup();
+    advance(); fireEvent.mouseEnter(screen.getByRole("region"));
+    finish("load"); advance(12_000);
+    expect(activeSlide()).toBe("1 of 2");
+  });
+
+  it("leaves no timer or listener behind when unmounted while waiting", () => {
+    const { view, finish } = setup();
+    advance(); view.unmount();
+    expect(vi.getTimerCount()).toBe(0);
+    finish("load");
+    expect(vi.getTimerCount()).toBe(0);
+  });
+});
+
+describe("reduced motion", () => {
   it("keeps reduced-motion manual navigation and gives only the first image high priority", () => {
     vi.stubGlobal("matchMedia", vi.fn(() => ({ matches: true, addEventListener: vi.fn(), removeEventListener: vi.fn() })));
     render(<LiveHeroCarousel homeBanners={[banner]} locale="en" />);
