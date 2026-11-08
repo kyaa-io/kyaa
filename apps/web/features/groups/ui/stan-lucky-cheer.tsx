@@ -174,7 +174,7 @@ export function StanCheer({ locale, bias, guest, hearts }: { locale: AppLocale; 
     </Link>;
   const heartIcon = <Heart size={20} strokeWidth={1.75} className={styles.heart} aria-hidden="true" />;
   return <section className={styles.section} id="stan-cheer" tabIndex={-1} aria-labelledby="stan-cheer-title">
-    <div className={styles.head}><FanHeading id="stan-cheer-title">{title}</FanHeading></div>
+    <div className={`${styles.head} ${styles.plainHead}`}><FanHeading id="stan-cheer-title">{title}</FanHeading></div>
     <div className={styles.cheer} data-cheer={guest ? "guest" : favorite ? "favorite" : "pick"}>
       {head}
       <dl className={styles.numbers}>
