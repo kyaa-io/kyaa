@@ -44,7 +44,7 @@ it("F3: lists today's rows (check-in and the daily-limit activities) under the s
   expect([...more.querySelectorAll("li[data-mission]")].map(li => li.getAttribute("data-mission"))).toEqual(["invite", "quiz"]);
 });
 
-it("shows S4 numbers in the F3 row: the reward is the amount only in the trailing column, the gauge says the count, invite is its reward alone, check-in has its action", async () => {
+it("r5 A4: the reward is +NP in ink in the trailing column, 0/N sits beside the title over a 2px bar, invite is its reward alone, 출석 has no action inside", async () => {
   ui();
   await screen.findByRole("button", { name: /그 밖의 미션/ });
   const post = (await screen.findByText("글쓰기")).closest("li")!;
@@ -56,17 +56,15 @@ it("shows S4 numbers in the F3 row: the reward is the amount only in the trailin
   expect(post.querySelector("[data-mission-trailing]")).toHaveTextContent("+20P");
   expect(document.querySelector('[data-mission="invite"]')).not.toHaveTextContent("5명까지");
   expect(document.querySelector('[data-mission="invite"] [data-mission-trailing]')).toHaveTextContent("+200P");
-  expect(document.querySelector('[data-mission="checkin"] [data-mission-trailing]')).toHaveTextContent("출석하기");
+  expect(post.querySelector("[data-mission-title]")).toHaveTextContent("글쓰기1/3");
+  expect(document.querySelector('[data-mission="checkin"] [data-mission-trailing]')).not.toHaveTextContent("출석하기");
+  expect(document.querySelector('[data-mission="checkin"] button')).toBeNull();
+  expect(document.querySelectorAll("[data-fan-missions] img")).toHaveLength(0);
   // No arrow anywhere in a row: the trailing column holds one thing.
   expect(document.querySelectorAll("[data-fan-missions] .lucide-arrow-right")).toHaveLength(0);
 });
 
-it("nudges the open reward badges on the first visit of a session only", async () => {
-  const first = ui();
-  await screen.findByRole("button", { name: /그 밖의 미션/ });
-  await waitFor(() => expect(window.sessionStorage.getItem("dukjil-missions:nudged")).toBe("1"));
-  expect(document.querySelector("[data-nudge]")).not.toBeNull();
-  first.unmount();
+it("r5 A4: no reward badge pulses (nudge removed)", async () => {
   ui();
   await screen.findByRole("button", { name: /그 밖의 미션/ });
   expect(document.querySelector("[data-nudge]")).toBeNull();
@@ -75,7 +73,7 @@ it("nudges the open reward badges on the first visit of a session only", async (
 it("says so in the section head when everything daily is done, the rows staying with their done tags", async () => {
   h.today = todayWith({ ...open, post: action(3, 0), comment: action(10, 0), share: action(3, 0) }, true);
   ui();
-  await waitFor(() => expect(document.querySelector("[data-missions-left]")).toHaveTextContent("모두 완료"));
+  await waitFor(() => expect(document.querySelector("[data-missions-left]")).toHaveTextContent("오늘 미션 완료 · 자정 리셋"));
   expect(document.querySelectorAll("[data-missions-today] li[data-done=true]")).toHaveLength(5);
 });
 
