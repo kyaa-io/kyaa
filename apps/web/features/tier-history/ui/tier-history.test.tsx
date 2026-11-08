@@ -48,16 +48,19 @@ it("reads nothing signed out or on admin screens, and shows nothing without a ri
 
 it("lists the passport's tier changes newest first with what happened and when", () => {
   h.data = { items: [
+    { id: "20000000-0000-4000-8000-000000000004", kind: "correction", previousTier: "Diamond", tier: "Gold", occurredAt: "2026-11-08T11:00:00+09:00" },
     { id: "20000000-0000-4000-8000-000000000003", kind: "up", previousTier: "Silver", tier: "Gold", occurredAt: "2026-11-08T08:28:00+09:00" },
     { id: "20000000-0000-4000-8000-000000000002", kind: "baseline", previousTier: "Bronze", tier: "Silver", occurredAt: "2026-11-07T10:00:00+09:00" },
     { id: "20000000-0000-4000-8000-000000000001", kind: "start", previousTier: null, tier: "Bronze", occurredAt: "2026-10-02T10:00:00+09:00" },
   ] };
   render(<TierHistoryList passportId={passport} locale="ko" />);
   const rows = screen.getAllByRole("listitem");
-  expect(rows.map(row => row.getAttribute("data-tier-kind"))).toEqual(["up", "baseline", "start"]);
-  expect(rows[0]).toHaveTextContent("등급 올라감실버 → 골드");
-  expect(rows[1]).toHaveTextContent("기록 시작 때 등급실버");
-  expect(rows[2]).toHaveTextContent("패스포트 발급브론즈");
+  expect(rows.map(row => row.getAttribute("data-tier-kind"))).toEqual(["correction", "up", "baseline", "start"]);
+  // 20261215090000: the move to the hearts source is listed as a correction, not as a rise or a drop.
+  expect(rows[0]).toHaveTextContent("등급 기준 정정다이아몬드 → 골드");
+  expect(rows[1]).toHaveTextContent("등급 올라감실버 → 골드");
+  expect(rows[2]).toHaveTextContent("기록 시작 때 등급실버");
+  expect(rows[3]).toHaveTextContent("패스포트 발급브론즈");
   expect(h.urls).toContain(`/api/me/passports/${passport}/tier-history`);
 });
 
