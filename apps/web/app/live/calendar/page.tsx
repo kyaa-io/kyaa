@@ -39,7 +39,7 @@ export default async function LiveCalendarPage({
   const now = new Date();
   // A failed unlisted read leaves only the filter chips empty (null: nothing counts as listed); the calendar itself still renders.
   const [calendar, publishedCelebrities, unlisted] = await Promise.all([
-    repository.readMonth({ month, locale: toContentLocale(locale), appUserId: null, now }),
+    repository.readMonth({ month, locale: toContentLocale(locale), appUserId: null, listedOnly: true, now }),
     contentRepository.list(toContentLocale(locale)),
     contentRepository.listUnlistedSlugs().catch(() => null),
   ]);

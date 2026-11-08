@@ -11,6 +11,7 @@ import {
 import type { LiveLocale } from "../../features/live/domain/live-event";
 import { SupabaseCalendarCreatorImageLookup, type CalendarCreatorImageClient, type CalendarCreatorImageLookup } from "../media/calendar-creator-images";
 import { createPublicImageRoleReader, type PublicImageRoleReader } from "../media/public-image-reader";
+import { readUnlistedCreatorSlugs, type PublishedContentClient } from "../content/published-content-repository";
 
 export interface LiveCalendarRepository {
   readMonth(input: {
@@ -18,6 +19,8 @@ export interface LiveCalendarRepository {
     locale: LiveLocale;
     appUserId: string | null;
     includeIdentity?: boolean;
+    /** Cross-creator calendar: leave out LIVE events of creators whose fan page is unlisted. A creator's own calendar keeps them. */
+    listedOnly?: boolean;
     now: Date;
   }): Promise<LiveCalendarMonth>;
 }
@@ -101,6 +104,7 @@ export class PublicImageLiveCalendarRepository implements LiveCalendarRepository
     private readonly repository: LiveCalendarRepository,
     private readonly images: PublicImageRoleReader,
     private readonly creators: CalendarCreatorImageLookup,
+    private readonly unlistedCreators: () => Promise<ReadonlySet<string>> = async () => new Set(),
   ) {}
 
   async readMonth(input: {
@@ -108,9 +112,14 @@ export class PublicImageLiveCalendarRepository implements LiveCalendarRepository
     locale: LiveLocale;
     appUserId: string | null;
     includeIdentity?: boolean;
+    listedOnly?: boolean;
     now: Date;
   }): Promise<LiveCalendarMonth> {
-    const calendar = await this.repository.readMonth(input);
+    // A failed unlisted read empties only the LIVE events of a listed-only calendar (null: nothing counts as listed).
+    const [calendar, unlisted] = await Promise.all([
+      this.repository.readMonth(input),
+      input.listedOnly ? this.unlistedCreators().catch(() => null) : Promise.resolve(new Set<string>()),
+    ]);
     const slugs = calendar.days.flatMap(({ events }) =>
       events.map(({ slug }) => slug),
     );
@@ -125,7 +134,11 @@ export class PublicImageLiveCalendarRepository implements LiveCalendarRepository
       ...calendar,
       days: calendar.days.map((day) => ({
         ...day,
-        events: day.events.filter(event => creatorsByLiveSlug[event.slug]?.celebritySlug !== "kyaa-wave-fanpage").map((event) => {
+        events: day.events.filter(event => {
+          const creatorSlug = creatorsByLiveSlug[event.slug]?.celebritySlug;
+          if (creatorSlug === "kyaa-wave-fanpage") return false;
+          return !input.listedOnly || (unlisted !== null && creatorSlug !== undefined && !unlisted.has(creatorSlug));
+        }).map((event) => {
           const photos = photosBySlug[event.slug];
           const creator = creatorsByLiveSlug[event.slug];
           if (photos === undefined && creator === undefined) return event;
@@ -158,5 +171,6 @@ export function createLiveCalendarRepositoryFromEnvironment(config: {
     new SupabaseLiveCalendarRepository(database as unknown as RpcClient),
     createPublicImageRoleReader(config, database as unknown as SupabaseClient),
     new SupabaseCalendarCreatorImageLookup(database as unknown as CalendarCreatorImageClient),
+    () => readUnlistedCreatorSlugs(database as unknown as Pick<PublishedContentClient, "rpc">),
   );
 }

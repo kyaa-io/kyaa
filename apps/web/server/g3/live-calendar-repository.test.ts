@@ -172,3 +172,22 @@ it("excludes Wave-owned calendar entries while preserving other festival creator
   const result = await repository.readMonth({ month: "2026-09", locale: "ko", appUserId: null, now: new Date("2026-09-03T00:00:00Z") });
   expect(result.days.flatMap(day => day.events).map(item => item.slug)).toEqual([event.slug]);
 });
+
+it("leaves unlisted creators' LIVE out of the cross-creator calendar only, and empties its events when that read fails", async () => {
+  const unlisted = { ...event, slug: "unlisted-live" };
+  const build = (unlistedCreators: () => Promise<ReadonlySet<string>>) => new PublicImageLiveCalendarRepository(
+    new SupabaseLiveCalendarRepository({ rpc: vi.fn().mockResolvedValue({ data: [unlisted, event], error: null }) }),
+    { readLivePhotoSetsBySlug: vi.fn().mockResolvedValue({}), readCelebrityPhotoSetsBySlug: vi.fn().mockResolvedValue({}) },
+    { readByLiveSlugs: vi.fn().mockResolvedValue({ "unlisted-live": { celebritySlug: "testpage", imagePosition: "center" }, [event.slug]: { celebritySlug: "kara", imagePosition: "center" } }) },
+    unlistedCreators,
+  );
+  const input = { month: "2026-09", locale: "ko" as const, appUserId: null, now: new Date("2026-09-03T00:00:00Z") };
+  const slugs = (month: Awaited<ReturnType<PublicImageLiveCalendarRepository["readMonth"]>>) => month.days.flatMap(day => day.events).map(item => item.slug);
+  const reader = vi.fn(async () => new Set(["testpage"]));
+  expect(slugs(await build(reader).readMonth({ ...input, listedOnly: true }))).toEqual([event.slug]);
+  expect(slugs(await build(reader).readMonth({ ...input, includeIdentity: true })).toSorted()).toEqual([event.slug, "unlisted-live"].toSorted());
+  expect(reader).toHaveBeenCalledTimes(1);
+  const failed = await build(async () => { throw new Error("Unlisted creator query failed"); }).readMonth({ ...input, listedOnly: true });
+  expect(slugs(failed)).toEqual([]);
+  expect(failed.days.length).toBeGreaterThan(0);
+});
