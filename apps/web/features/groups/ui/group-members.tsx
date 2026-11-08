@@ -17,6 +17,8 @@ import { GroupPersonHearts, GroupPersonRow, GroupPersonTier } from "./group-pers
 import { fanProfileText } from "@/features/fan-profile/fan-profile-copy";
 import { GroupPublicPeople } from "./group-public-people";
 import { groupMembersCopy } from "./group-members-copy";
+import { RoleBadge, pageRoleOf, type PageRole } from "./role-badge";
+import { useOptionalGroupPage } from "./group-page-context";
 import styles from "./group-members.module.css";
 
 const parse = (value: unknown) => groupPeopleSchema.parse(value);
@@ -30,14 +32,20 @@ export type GroupMembersPresentation = { overview?: ReactNode; creatorName: stri
  * Pages without grades show the role alone.
  */
 function personMeta(row: Row, t: ReturnType<typeof groupMembersCopy>, locale: AppLocale) {
-  if (!row.tier) return t[row.role];
+  // 소유자·운영진은 이름 옆 역할 배지가 맡는다(피드백 I ⑤). 같은 말을 둘째 줄에 다시 쓰지 않는다.
+  if (!row.tier) return row.role === "member" ? t.member : undefined;
   const parts = [
-    row.role === "member" ? null : t[row.role],
     row.favorite ? fanProfileText(locale, "profFavorite", [row.favorite.name]) : null,
     row.fanPoints == null ? null : fanProfileText(locale, "profPointsValue", [row.fanPoints.toLocaleString(locale)]),
     row.stamps == null ? null : fanProfileText(locale, "rowStamps", [row.stamps.toLocaleString(locale)]),
   ].filter(Boolean);
   return parts.length ? parts.join(" · ") : undefined;
+}
+
+/** 이름 옆: 역할 배지(아티스트·운영자) 1개 + 등급. */
+function RowBadges({ role, tier, locale }: { role: PageRole | null; tier?: string | null; locale: AppLocale }) {
+  if (!role && !tier) return null;
+  return <>{role ? <RoleBadge role={role} locale={locale}/> : null}{tier ? <GroupPersonTier tier={tier} locale={locale}/> : null}</>;
 }
 
 /** The viewer's own rank when it is below the list. The people API has no "me", so this reads the signed-in page ranking. */
@@ -50,6 +58,8 @@ function MyRankRow({ slug, locale, listed }: { slug: string; locale: AppLocale; 
 
 export function GroupMembers({ pageId, locale, member, presentation, inTab = false, onJoin, joinPending = false, joinLabel, rankingsSlug, gaugeAbove = false }: { rankingsSlug?: string | null; /** The caller draws the 찐팬 100 gauge above, outside its own loading state. */ gaugeAbove?: boolean; pageId: string; locale: AppLocale; member: boolean; presentation?: GroupMembersPresentation; inTab?: boolean; onJoin?: () => void; joinPending?: boolean; joinLabel?: string }) {
   const t = groupMembersCopy(locale);
+  const presence = useOptionalGroupPage()?.presence.data;
+  const artistIds = useMemo(() => new Set(presence?.artists.map((artist) => artist.profileId) ?? []), [presence]);
   const [mode, setMode] = useState<GroupPeopleMode>("members"), [draft, setDraft] = useState(""), [search, setSearch] = useState(""), [cursor, setCursor] = useState<string>(), [previous, setPrevious] = useState<Row[]>([]);
   const [settled, setSettled] = useState<{ mode: GroupPeopleMode; rows: Row[] }>(), [opened, setOpened] = useState<ProfileModalPerson | null>(null);
   // /rankings/[slug] moved here: that address opens this tab on the ranking.
@@ -77,7 +87,7 @@ export function GroupMembers({ pageId, locale, member, presentation, inTab = fal
       {modeTitle && <div className={styles.modeHead}><h3 className={styles.modeTitle}>{modeTitle}</h3>{mode === "ranking" && <p className={styles.scope}>{t.topScope}</p>}</div>}
       {!hideSearch && <form className={styles.search} onSubmit={event => { event.preventDefault(); setSearch(draft.trim()); reset(); }}><label className={styles.searchField}><Search size={18} aria-hidden="true"/><input className={styles.input} type="search" value={draft} onChange={event => setDraft(event.target.value)} maxLength={100} placeholder={t.search} aria-label={t.search}/></label><FanAction type="submit">{t.find}</FanAction></form>}
       {resource.error ? <div className={styles.state} role="alert"><p>{t.error}</p><FanAction onClick={resource.retry}>{t.retry}</FanAction></div>
-        : shown.length ? <ul className={`${styles.list} ${mode === "ranking" ? styles.rankingList : ""}`} aria-busy={resource.loading || undefined}>{shown.map(row => <GroupPersonRow key={row.profileId} nickname={row.nickname} avatarUrl={row.avatarUrl} rank={row.rank} rankLabel={row.rank === null ? undefined : `${t.ranking} ${row.rank}`} badge={row.tier ? <GroupPersonTier tier={row.tier} locale={locale}/> : undefined} meta={personMeta(row, t, locale)} score={mode === "ranking" && row.points !== null ? `${row.points.toLocaleString(locale)}${locale === "ko" ? " 점" : ""}` : row.hearts != null ? <GroupPersonHearts hearts={row.hearts} locale={locale}/> : undefined} selected={presentation?.selectedProfileId === row.profileId} onOpen={() => setOpened({ profileId: row.profileId, nickname: row.nickname, avatarUrl: row.avatarUrl, tier: row.tier, pageId })}/>)}</ul>
+        : shown.length ? <ul className={`${styles.list} ${mode === "ranking" ? styles.rankingList : ""}`} aria-busy={resource.loading || undefined}>{shown.map(row => <GroupPersonRow key={row.profileId} nickname={row.nickname} avatarUrl={row.avatarUrl} rank={row.rank} rankLabel={row.rank === null ? undefined : `${t.ranking} ${row.rank}`} badge={<RowBadges role={pageRoleOf(row, artistIds)} tier={row.tier} locale={locale}/>} meta={personMeta(row, t, locale)} score={mode === "ranking" && row.points !== null ? `${row.points.toLocaleString(locale)}${locale === "ko" ? " 점" : ""}` : row.hearts != null ? <GroupPersonHearts hearts={row.hearts} locale={locale}/> : undefined} selected={presentation?.selectedProfileId === row.profileId} onOpen={() => setOpened({ profileId: row.profileId, nickname: row.nickname, avatarUrl: row.avatarUrl, tier: row.tier, pageId })}/>)}</ul>
         : resource.loading ? <FanSkeletonRows rows={6} variant="member" className={styles.skeleton}/>
         : <div className={styles.state}>{mode === "ranking" ? <Trophy size={32} aria-hidden="true"/> : <UsersRound size={32} aria-hidden="true"/>}<p>{mode === "ranking" && ranking && !ranking.available ? t[ranking.reason === "creator_required" ? "creatorRequired" : "threshold"] : mode === "friends" && !search ? t.noFriends : t.empty}</p>{mode === "friends" && !search && <FanAction href={`/my/friends?locale=${locale}`} trailingIcon={<ArrowRight size={18}/>}>{t.manageFriends}</FanAction>}</div>}
       {mode === "ranking" && rankingsSlug && <MyRankRow slug={rankingsSlug} locale={locale} listed={shown.length > 0}/>}

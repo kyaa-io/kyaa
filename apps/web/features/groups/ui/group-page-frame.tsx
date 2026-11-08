@@ -13,6 +13,7 @@ import type { GroupDetail } from "../domain/contracts";
 import { groupsCopy, pageUnavailable } from "./copy";
 import { CreatorFanGrade, CreatorFanGradePlaceholder } from "./creator-fan-grade";
 import { GroupArtistBadge } from "./group-artist-badge";
+import { PageChallengeTag } from "./page-challenge-tag";
 import { GroupPageMenu } from "./group-page-menu";
 import { GroupPageProvider, useGroupPage } from "./group-page-context";
 import { GroupPresence } from "./group-presence";
@@ -54,7 +55,7 @@ export function GroupPageHead() {
     descriptionLabels={pageHeadCopy(g.locale)}
     descriptionAction={g.celebrity ? <TranslationControl locale={g.locale} translation={summaryTranslation} /> : undefined}
     star={g.star}
-    badge={<GroupArtistBadge locale={g.locale} />}
+    badge={<><GroupArtistBadge locale={g.locale} />{g.kind === "fan" && g.celebrity ? <PageChallengeTag slug={g.celebrity.slug} locale={g.locale} /> : null}</>}
     links={g.celebrity?.socialLinks.map((social) => ({ kind: social.platform, href: social.url }))}
     utility={g.kind === "fan" && g.celebrity ? g.authenticated ? <CreatorFanGrade slug={g.celebrity.slug} locale={g.locale} resource={g.summary} /> : g.signedInHint && !g.ready ? <CreatorFanGradePlaceholder /> : undefined : undefined}
     menu={g.detail?.membership ? <GroupPageMenu key={g.ownerKey} detail={g.detail} locale={g.locale} refresh={g.refresh} /> : g.reserveMenu ? <span aria-hidden="true" /> : undefined}
