@@ -161,7 +161,7 @@ radius-scale: "12px / 8px / pill"
 | `EarnBadge inline` | `+20P` 글자 15/700 잉크, 행 오른쪽 열에만. `corner`·`EarnRemaining`·`EarnActionBadge`는 폐기(남은 횟수는 `0/3`) | 숫자를 화면에 직접 쓰지 않고 카탈로그 값을 읽는다(C9) |
 | `FanToast` (`useFanToast`·`showFanToast`) | 서버 응답이 화면에 안 보이는 곳의 결과: 댓글 저장, 업로드 실패, 교환 완료, 미션 지급 실패 | 포인트·도장 지급 성공은 `celebrateReward`(코인 뱃지 + 공통 토스트, 아래 §3-1)가 맡는다. 폼 안 오류는 입력 아래 |
 | `FanTabs` | `underline` 44 sticky top 56(페이지·보조 탭), `chip` 36 반경 8(필터), `segment` 40 반경 8(같은 자료 2~3개 보기) | 링크 탭(`href`)은 라우터가 그린다 |
-| `FanState` | 빈 상태(`empty`)는 한 문장 전용(`icon`·`actions` 없음), 오류(`error`)는 한 문장 + `다시 시도` 텍스트, 잠금(`auth`)은 로그인 primary 1 허용 | `kind=\"loading\"`은 쓰지 않는다(C6) |
+| `FanState` | 빈 상태(`empty`)는 한 문장 전용(`icon`·`actions`·`description` 없음, 타입에서 막음, 높이 78 14/400 회색, 2026-11-09 design-sync-1). 페이지 전체가 빈 6곳(`my-raffles-screen`·`benefit-recipient-screen`·`fan-history-screen`·`home-ranking-card`·`participation-requests`·`notification-center`)만 게이트 D 전까지 `scope="page"`로 옛 280 틀 유지, 오류(`error`)는 한 문장 + `다시 시도` 텍스트, 잠금(`auth`)은 로그인 primary 1 허용 | `kind=\"loading\"`은 쓰지 않는다(C6) |
 | `FanSkeleton` · `FanSkeletonRows` | 로딩. 실제 자리·크기와 같게, 구역 제목은 글자로 둔다. 변형 post·entity·member·plain | `불러오는 중` 글자(C5) |
 | `FanSurface` | 카드·면의 바탕(1px 선, 반경 목표 12. 현재 `--radius-collection` 16, C1 ② 치환 전) | `FanCard`는 만들지 않았다(아래 "설계와 다르게 한 것") |
 | `FanRow` (**5차 보류, 아직 없음**) | 목록 행 템플릿. variant `menu` 48·`setting` 65/81·`notice` 78·`transaction` 100/72·`label-value` 56·`mission` 64. `data-row` 자동, 오른쪽 칸 `data-row-end`, 사실 `data-fact`, 메타 `data-meta` | `FanEntityCard`·`FanPostRow`는 `FanRow notice`로 대체 |

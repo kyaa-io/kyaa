@@ -104,6 +104,27 @@
   margin-inline-end: calc(var(--space-2) * -1);
 }
 
+/* 구역 안 빈 상태(C6·C8): 그 자리 행 템플릿 높이 78, 한 문장 14/400 회색, 왼쪽 정렬, 구역 폭 전체. */
+.state.section {
+  display: flex;
+  width: 100%;
+  min-height: 78px;
+  align-items: center;
+  margin-inline: 0;
+  padding: var(--space-3) 0;
+  text-align: start;
+}
+
+.state.section .title {
+  max-width: none;
+  color: var(--color-muted);
+  font-size: 14px;
+  font-weight: 400;
+  letter-spacing: normal;
+  line-height: 20px;
+  text-wrap: pretty;
+}
+
 @keyframes fan-state-progress {
   from { transform: translateX(-100%); }
   to { transform: translateX(240%); }

@@ -419,6 +419,7 @@ export function NotificationCenter() {
       {state.kind === "ready" && state.items.length === 0 && (
         <FanState
           kind="empty"
+          scope="page"
           icon={<Radio aria-hidden="true" />}
           title={c.empty}
           description={c.emptyHelp}

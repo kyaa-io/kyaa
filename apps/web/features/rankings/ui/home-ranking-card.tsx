@@ -93,7 +93,7 @@ function Failed({ locale, retry }: { locale: AppLocale; retry: () => void }) {
 }
 /** 빈 탭: 행 세 줄 높이 가운데에 한 줄과 행동 하나(팬페이지 목록). 하트는 팬페이지에서 보낸다. 탭을 바꿔도 카드가 크게 늘지 않는다. */
 function Empty({ title, locale }: { title: string; locale: AppLocale }) {
-  return <div className={styles.state} data-empty=""><FanState inline kind="empty" title={title} actions={<FanAction variant="neutral" size="sm" href={`/celebrities?locale=${locale}`}>{rankingsText(locale, "rkBrowseFanPages")}</FanAction>} /></div>;
+  return <div className={styles.state} data-empty=""><FanState inline kind="empty" scope="page" title={title} actions={<FanAction variant="neutral" size="sm" href={`/celebrities?locale=${locale}`}>{rankingsText(locale, "rkBrowseFanPages")}</FanAction>} /></div>;
 }
 
 const heartIcon = (size: number) => <img src="/images/economy/heart.svg" alt="" width={size} height={size} />;
