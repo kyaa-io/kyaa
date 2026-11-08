@@ -62,7 +62,7 @@
 .grid [data-media-kind="photos"] [data-content-asset-placeholder] { aspect-ratio:var(--content-asset-ratio,3/4); }
 .play { display:block; position:relative; width:100%; padding:0; border:0; background:var(--color-soft); cursor:pointer; }
 .play img { display:block; }
-.playIcon { position:absolute; inset:0; display:grid; place-items:center; color:white; background:var(--color-ink) 20%, transparent); }
+.playIcon { position:absolute; inset:0; display:grid; place-items:center; color:white; background:color-mix(in srgb, var(--color-ink) 20%, transparent); }
 .playIcon svg { width:48px; height:48px; padding:12px; border-radius:50%; background:color-mix(in srgb, var(--color-ink) 85%, transparent); }
 .player { display:block; width:100%; aspect-ratio:16/9; border:0; background:var(--color-ink); }
 .preview :is(a,button,iframe):focus-visible { outline:3px solid var(--color-ink); outline-offset:3px; }

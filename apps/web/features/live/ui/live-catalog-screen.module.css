@@ -21,7 +21,7 @@
 .actionLabel { display:inline-flex; min-width:0; align-items:center; justify-content:center; white-space:nowrap; }
 .actionSkeleton,.actionUnavailable { display:grid; width:44px; height:44px; place-items:center; border-radius:var(--radius-control); }
 .actionSkeleton { position:relative; overflow:hidden; background:var(--color-line-subtle); }
-.actionSkeleton::after { position:absolute; inset:0; background:var(--color-surface) 72%, transparent); content:""; transform:translateX(-100%); animation:reservation-shimmer 1.35s ease-in-out infinite; }
+.actionSkeleton::after { position:absolute; inset:0; background:color-mix(in srgb, var(--color-surface) 72%, transparent); content:""; transform:translateX(-100%); animation:reservation-shimmer 1.35s ease-in-out infinite; }
 .actionUnavailable { border:1px solid var(--color-line); background:var(--color-soft); color:var(--color-muted); }
 .actionUnavailable svg { width:18px; height:18px; }
 .actionUnavailable > span { display:none; }

@@ -6,7 +6,7 @@
 .hero { position:relative; display:flex; width:100%; aspect-ratio:4/5; overflow:hidden; align-items:flex-end; border-radius:20px; color:var(--color-surface); }
 .hero > img,.heroPicture img { object-fit:cover; }
 .heroPicture { position:absolute; inset:0; display:block; }
-.scrim { position:absolute; inset:0; background:var(--color-ink) 50%, transparent); }
+.scrim { position:absolute; inset:0; background:color-mix(in srgb, var(--color-ink) 50%, transparent); }
 .heroContent { position:relative; z-index:1; display:grid; width:100%; gap:20px; padding:24px; }
 .heroCopy { display:grid; gap:8px; text-shadow:0 1px 3px color-mix(in srgb, var(--color-ink) 62%, transparent); }
 .heroCopy p,.heroCopy h1,.heroCopy span { margin:0; }

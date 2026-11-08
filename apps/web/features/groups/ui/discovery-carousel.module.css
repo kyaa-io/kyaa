@@ -268,7 +268,7 @@
 .track .slide::before{content:"";grid-area:1/1;padding-top:50%}
 .slide .photograph{display:block;position:absolute;inset:0;width:100%;height:100%;min-width:0;min-height:0;background:none}
 .photograph img{display:block;width:100%;height:100%;object-fit:cover;object-position:center top}
-.slide .copy{grid-area:1/1;position:relative;align-self:end;min-width:0;width:100%;box-sizing:border-box;display:flex;align-items:end;justify-content:space-between;gap:16px;padding:32px;background:var(--color-ink) 80%, transparent)}
+.slide .copy{grid-area:1/1;position:relative;align-self:end;min-width:0;width:100%;box-sizing:border-box;display:flex;align-items:end;justify-content:space-between;gap:16px;padding:32px;background:color-mix(in srgb, var(--color-ink) 80%, transparent)}
 .slide .copy h2,.slide .copy p,.slide .category{color:var(--color-surface)!important}
 @media(max-width:1023px){.track .slide::before{padding-top:83.333333%}.slide .copy{padding:12px;gap:8px;flex-wrap:wrap}.slide .copy h2{font-size:20px!important;line-height:24px}.slide .copy p{font-size:13px;line-height:18px}.slide .copy a{min-height:44px}}
 
@@ -286,5 +286,5 @@
 @media(min-width:1024px){.slide .copy a{max-width:35%;flex-shrink:0}.slide .copy>div{min-width:0}}
 
 /* 2026-11-04 UI-RUBRIC D-15: copy stays readable over faces. */
-.slide .copy{background:var(--color-ink) 53%, transparent)}
+.slide .copy{background:color-mix(in srgb, var(--color-ink) 53%, transparent)}
 .slide .category,.slide .copy p{text-shadow:0 1px 2px color-mix(in srgb, var(--color-ink) 70%, transparent)}

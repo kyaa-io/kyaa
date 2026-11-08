@@ -52,7 +52,7 @@
 .heroCreatorPicture img { object-fit:cover; object-position:var(--creator-hero-mobile-position); }
 @media (min-width:48rem) { .heroCreatorPicture img { object-position:var(--creator-hero-desktop-position); } }
 .heroCarousel .campaignHeroCard { display:block; background:var(--color-soft); }
-.heroOverlay { position: absolute; inset: 0; background: var(--color-ink) 15%, transparent); }
+.heroOverlay { position: absolute; inset: 0; background: color-mix(in srgb, var(--color-ink) 15%, transparent); }
 .heroContent { position: relative; z-index: 1; width: 100%; padding: 24px; text-shadow: 0 1px 3px color-mix(in srgb, var(--color-ink) 62%, transparent); }
 .statusRail { display: flex; max-width: 320px; align-items: center; gap: 12px; margin-bottom: 12px; }
 .statusRail p, .heroCountdown { margin: 0; }

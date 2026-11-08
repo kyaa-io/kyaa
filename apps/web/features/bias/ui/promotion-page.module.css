@@ -396,7 +396,7 @@
 .storyShade {
   position: absolute;
   inset: 0;
-  background: var(--color-ink) 60%, transparent);
+  background: color-mix(in srgb, var(--color-ink) 60%, transparent);
 }
 .storyHandle {
   position: absolute;

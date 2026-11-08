@@ -1,7 +1,7 @@
 .banner { position:relative; width:100%; height:100%; overflow:hidden; background:var(--color-soft); color:var(--color-ink); }
 .image { position:absolute; inset:0 0 0 auto; width:40%; overflow:hidden; }
 .desktopImage { position:absolute; inset:0; }
-.overlay { display:none; position:absolute; inset:0; background:var(--color-ink) 45%, transparent); }
+.overlay { display:none; position:absolute; inset:0; background:color-mix(in srgb, var(--color-ink) 45%, transparent); }
 .copy { position:relative; display:flex; flex-direction:column; width:60%; height:100%; padding:clamp(24px, 3vw, 48px); gap:16px; }
 .eyebrow { display:flex; align-items:center; min-height:24px; color:var(--color-accent); font-size:clamp(11px, 1.3vw, 20px); font-weight:750; letter-spacing:.06em; }
 .eyebrow > span { display:inline-flex; align-items:center; gap:6px; }
@@ -148,7 +148,7 @@
 
 .banner[data-kind="campaign"]{background:var(--color-ink);color:var(--color-surface)}
 .banner[data-kind="campaign"] .image{display:none}
-.banner[data-kind="campaign"] .overlay{display:block;background:var(--color-ink) 90%, transparent)}
+.banner[data-kind="campaign"] .overlay{display:block;background:color-mix(in srgb, var(--color-ink) 90%, transparent)}
 .banner[data-kind="campaign"] .copy{position:absolute;inset:0 auto 0 0;width:60%;height:100%;justify-content:center;gap:16px;padding:40px 48px}
 .banner[data-kind="campaign"] .eyebrow,.banner[data-kind="campaign"] .description{color:var(--color-surface)}
 .banner[data-kind="campaign"] .eyebrow{font-size:13px;letter-spacing:.08em}
@@ -157,7 +157,7 @@
 .banner[data-kind="campaign"] .action{margin-top:8px}
 .banner[data-kind="campaign"] .action>a{width:fit-content;gap:16px;padding:10px 20px;border-radius:999px;background:var(--color-surface);color:var(--color-ink)!important}
 @media(max-width:767px){
- .banner[data-kind="campaign"] .overlay{background:var(--color-ink) 0%, transparent)}
+ .banner[data-kind="campaign"] .overlay{background:color-mix(in srgb, var(--color-ink) 0%, transparent)}
  .banner[data-kind="campaign"] .copy{inset:auto 0 0;width:100%;height:auto;padding:24px;gap:8px}
  .banner[data-kind="campaign"] .copy h2{font-size:28px}
  .banner[data-kind="campaign"] .description{font-size:16px;line-height:1.5}
