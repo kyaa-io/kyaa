@@ -17,7 +17,7 @@ export function useAttendedAnywhereToday(enabled = true): { known: boolean; atte
   const list = useGroupResource(enabled && auth.authenticated ? JOINED_PAGES_PATH : null, parseList);
   const slugs = (list.data?.items ?? []).filter(page => page.celebrityId && page.slug).slice(0, 50).map(page => encodeURIComponent(page.slug!)).join(",");
   const status = useGroupResource(slugs ? attendanceListPath(slugs) : null, parseDukjilAttendanceList);
-  const attended = Boolean(status.data?.items.some(item => item.attendedToday));
+  const attended = (status.data?.items ?? []).some(item => item.attendedToday);
   const failed = Boolean(list.error || status.error);
   const known = attended || (Boolean(list.data) && (!slugs || Boolean(status.data)));
   return { known, attended, failed };
