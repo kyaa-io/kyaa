@@ -1,8 +1,14 @@
 import "@testing-library/jest-dom/vitest";
 import { afterEach, vi } from "vitest";
 import { clearResources } from "./components/fan-ui/resource-cache";
+import { resetRewardCelebration } from "./components/fan-ui/reward-celebration";
 
-afterEach(() => clearResources());
+afterEach(() => {
+  clearResources();
+  // 261107-2 D8: the shared reward badge lives on document.body outside any rendered tree; do not let one test see another's.
+  document.querySelectorAll("[data-reward-badge]").forEach(node => node.remove());
+  resetRewardCelebration();
+});
 
 vi.mock("next/navigation", async (importOriginal) => ({
   ...await importOriginal<typeof import("next/navigation")>(),

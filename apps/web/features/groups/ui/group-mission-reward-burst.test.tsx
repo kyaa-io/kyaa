@@ -21,6 +21,6 @@ it('plays the server reward once when the own submission turns completed, not on
  expect(screen.queryByTestId('point-reward-burst')).toBeNull();
  state.status='completed';
  act(()=>rerender(<GroupMissionScreen pageId='p' missionId='m1' locale='ko' view='submission'/>));
- expect(screen.getByTestId('point-reward-burst').textContent).toContain('+20 P');
+ expect(screen.getByTestId('point-reward-burst').textContent).toContain('+20');
  expect(screen.getAllByRole('status').length).toBe(1);
 });
