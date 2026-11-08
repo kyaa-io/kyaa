@@ -79,12 +79,12 @@ function Rank({ rank }: { rank: number }) {
 function Rows({ children }: { children: ReactNode }) {
   return <ol className={styles.rows}>{children}</ol>;
 }
-/** Ten two-line rows of the same height while reading, so the card does not jump when the answer comes. */
+/** Ten two-line rows and the bottom line, the same heights while reading, so the card does not jump when the answer comes. */
 function Loading() {
-  return <Rows>{Array.from({ length: ROWS }, (_, i) => <li key={i} className={styles.row} aria-hidden="true">
+  return <><Rows>{Array.from({ length: ROWS }, (_, i) => <li key={i} className={styles.row} aria-hidden="true">
     <FanSkeleton width={20} height={16} /><FanSkeleton shape="circle" width={32} height={32} />
     <span className={styles.body}><FanSkeleton width="60%" height={14} /><FanSkeleton width="40%" height={12} /></span>
-  </li>)}</Rows>;
+  </li>)}</Rows><div className={styles.foot} aria-hidden="true"><FanSkeleton width={64} height={16} /></div></>;
 }
 function Failed({ locale, retry }: { locale: AppLocale; retry: () => void }) {
   return <div className={styles.state}><FanState inline compact kind="error" title={rankingsText(locale, "rkError")} actions={<FanAction variant="text" size="sm" onClick={retry}>{rankingsText(locale, "rkRetry")}</FanAction>} /></div>;
