@@ -111,7 +111,7 @@ it("uses the same words in English", async () => {
 });
 
 it("moves only the rows whose rank changed when the tab comes back after ten minutes, and not under reduced motion", async () => {
-  const animate = vi.fn(() => ({}) as Animation);
+  const animate = vi.fn((_keyframes: unknown, _options?: unknown) => ({}) as Animation);
   const original = Object.getOwnPropertyDescriptor(HTMLElement.prototype, "offsetTop");
   Object.defineProperty(HTMLElement.prototype, "offsetTop", { configurable: true, get(this: HTMLElement) { return this.parentElement ? Array.from(this.parentElement.children).indexOf(this) * 56 : 0; } });
   Element.prototype.animate = animate as unknown as Element["animate"];
