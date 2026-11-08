@@ -1,5 +1,7 @@
 import "server-only";
 
+import { isIP } from "node:net";
+
 import { AuthError } from "../../features/auth/domain/auth-errors";
 import { isSignupClientEvent } from "../../features/analytics/domain/signup-funnel-event";
 import {
@@ -20,6 +22,16 @@ export type ProductEventRouteDependencies = {
 
 const headers = { "cache-control": "no-store", vary: "Authorization" } as const;
 const json = (body: unknown, status: number) => Response.json(body, { status, headers });
+/** Over a limit the event is dropped without an error, so a flooding client learns nothing and a real one is not disturbed. */
+const dropped = () => new Response(null, { status: 204, headers });
+
+/** Only the address the AWS edge writes (CloudFront function); other hosts and local runs have no per-IP budget. */
+async function clientIpHash(request: Request): Promise<string | null> {
+  const raw = request.headers.get("x-byus-client-ip")?.trim() ?? "";
+  if (!isIP(raw)) return null;
+  const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(`byus-product-event-ip-v1:${raw.toLowerCase()}`));
+  return Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, "0")).join("");
+}
 
 function logIdempotencyConflict(eventName: ClientProductEventV1["eventName"]): void {
   try {
@@ -43,11 +55,16 @@ export function createRecordProductEventHandler(dependencies: ProductEventRouteD
       const raw = await request.json();
       const input = clientProductEventV1Schema.parse(raw);
       acceptedEventName = input.eventName;
-      if ((isSignupClientEvent(input.eventName) || input.eventName === "outbound_link_click" || input.eventName === "page_view")
-        && request.headers.has("authorization")) {
+      if ((isSignupClientEvent(input.eventName) || input.eventName === "outbound_link_click") && request.headers.has("authorization")) {
         return json({ error: { code: "EVENT_INVALID" } }, 400);
       }
       assertSafeProductEventTime(input.occurredAt, dependencies.now());
+      const ipHash = dependencies.repository.consumeIpBudget ? await clientIpHash(request) : null;
+      if (ipHash) {
+        // A budget lookup failure must not lose events; the per-owner page view cap still holds in the database.
+        const allowed = await dependencies.repository.consumeIpBudget!(ipHash).catch(() => true);
+        if (!allowed) return dropped();
+      }
       const owner = await dependencies.identify(request.headers.get("authorization"));
       if (!owner && !input.anonymousSessionId) return json({ error: { code: "EVENT_OWNER_REQUIRED" } }, 400);
       const result = await dependencies.repository.record({
@@ -59,6 +76,7 @@ export function createRecordProductEventHandler(dependencies: ProductEventRouteD
     } catch (error) {
       if (error instanceof AuthError) return json({ error: { code: "AUTHENTICATION_REQUIRED" } }, error.status);
       if (error instanceof ProductEventRepositoryError) {
+        if (error.code === "RATE_LIMITED") return dropped();
         if (error.code === "IDEMPOTENCY_CONFLICT" && acceptedEventName) {
           logIdempotencyConflict(acceptedEventName);
         }

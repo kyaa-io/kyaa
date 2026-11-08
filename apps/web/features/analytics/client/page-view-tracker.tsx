@@ -1,5 +1,6 @@
 "use client";
 
+import { useByUsAuth } from "@/features/auth/client/cognito-auth";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef } from "react";
 import { classifyAcquisitionChannel } from "../domain/acquisition-attribution";
@@ -34,28 +35,38 @@ export function pageViewProperties(pathname: string, entry: boolean): PageViewPr
   };
 }
 
-/** One anonymous page_view per screen (pathname change). Query-only changes such as ?tab= are not new screens. */
+/**
+ * One page_view per screen (pathname change); query-only changes such as ?tab= are not new screens. Signed in, the view
+ * belongs to the member; signed out, to the anonymous tab session. The entry flag lives in sessionStorage and survives
+ * signing in, so a tab is one visit (its single entry=true view) even when it signs in midway.
+ */
 export function PageViewTracker() {
   const pathname = usePathname();
+  const { ready, authenticated, getAccessToken } = useByUsAuth();
   const lastPath = useRef<string | null>(null);
 
   useEffect(() => {
-    if (!pathname || lastPath.current === pathname) return;
+    // Wait for the session so a signed-in screen is not recorded as anonymous first.
+    if (!ready || !pathname || lastPath.current === pathname) return;
     lastPath.current = pathname;
     if (!pageKindForPath(pathname)) return;
     const properties = pageViewProperties(pathname, claimEntry());
     if (!properties) return;
-    void recordProductEventV1({
-      eventName: "page_view",
-      celebrityId: null,
-      liveEventId: null,
-      missionId: null,
-      benefitId: null,
-      source: "web.page_view",
-      idempotencyKey: `page-view:${crypto.randomUUID()}`,
-      properties,
-    });
-  }, [pathname]);
+    const idempotencyKey = `page-view:${crypto.randomUUID()}`;
+    void (async () => {
+      const token = authenticated ? await getAccessToken().catch(() => null) : null;
+      await recordProductEventV1({
+        eventName: "page_view",
+        celebrityId: null,
+        liveEventId: null,
+        missionId: null,
+        benefitId: null,
+        source: "web.page_view",
+        idempotencyKey,
+        properties,
+      }, token);
+    })();
+  }, [pathname, ready, authenticated, getAccessToken]);
 
   return null;
 }

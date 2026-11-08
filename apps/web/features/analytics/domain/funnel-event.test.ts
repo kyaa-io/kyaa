@@ -51,8 +51,9 @@ describe("funnel events", () => {
     expect(clientProductEventV1Schema.safeParse(event).success).toBe(false);
   });
 
-  it("keeps a member page view out of the ledger", () => {
-    expect(productEventV1Schema.safeParse({ ...pageView, anonymousSessionId: null, appUserId: "95800000-0000-4000-8000-000000000011" }).success).toBe(false);
+  it("accepts a page view owned by a member and refuses one with two owners", () => {
+    expect(productEventV1Schema.safeParse({ ...pageView, anonymousSessionId: null, appUserId: "95800000-0000-4000-8000-000000000011" }).success).toBe(true);
+    expect(productEventV1Schema.safeParse({ ...pageView, appUserId: "95800000-0000-4000-8000-000000000011" }).success).toBe(false);
   });
 
   it("keeps server projections out of the browser and maps every funnel event to a GA4 name", () => {

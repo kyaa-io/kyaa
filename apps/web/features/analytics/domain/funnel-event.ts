@@ -94,7 +94,6 @@ export function validateFunnelClientEvent(event: EventShape, context: z.Refineme
   const noEntities = [event.celebrityId, event.liveEventId, event.missionId, event.benefitId].every((id) => id === null);
   const valid = event.eventName === "page_view"
     ? noEntities && event.source === "web.page_view" && pageViewKey.test(event.idempotencyKey)
-      && event.appUserId == null && event.anonymousSessionId !== null
       && pageViewPropertiesSchema.safeParse(event.properties).success
     : noEntities && event.source === "web.share" && shareKey.test(event.idempotencyKey)
       && sharePropertiesSchema.safeParse(event.properties).success;

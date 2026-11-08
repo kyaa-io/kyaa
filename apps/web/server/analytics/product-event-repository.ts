@@ -9,7 +9,7 @@ type RpcClient = {
 };
 
 export class ProductEventRepositoryError extends Error {
-  constructor(readonly code: "IDEMPOTENCY_CONFLICT" | "EVENT_UNAVAILABLE") {
+  constructor(readonly code: "IDEMPOTENCY_CONFLICT" | "EVENT_UNAVAILABLE" | "RATE_LIMITED") {
     super(code);
     this.name = "ProductEventRepositoryError";
   }
@@ -17,6 +17,8 @@ export class ProductEventRepositoryError extends Error {
 
 export interface ProductEventRepository {
   record(input: ProductEventV1): Promise<{ id: string; replayed: boolean }>;
+  /** False once this client IP used its 60 events of the current minute. */
+  consumeIpBudget?(ipHash: string): Promise<boolean>;
 }
 
 async function sha256(value: string): Promise<string> {
@@ -54,6 +56,9 @@ export class SupabaseProductEventRepository implements ProductEventRepository {
       p_properties: input.properties,
     });
     if (error) {
+      if (error.message?.includes("PRODUCT_EVENT_RATE_LIMITED") || error.code === "54000") {
+        throw new ProductEventRepositoryError("RATE_LIMITED");
+      }
       if (error.message?.includes("PRODUCT_EVENT_IDEMPOTENCY_CONFLICT") || error.code === "23514") {
         throw new ProductEventRepositoryError("IDEMPOTENCY_CONFLICT");
       }
@@ -61,6 +66,12 @@ export class SupabaseProductEventRepository implements ProductEventRepository {
     }
     try { return singleResult(data); }
     catch { throw new ProductEventRepositoryError("EVENT_UNAVAILABLE"); }
+  }
+
+  async consumeIpBudget(ipHash: string): Promise<boolean> {
+    const { data, error } = await this.client.rpc("consume_product_event_ip_budget", { p_ip_hash: ipHash });
+    if (error || typeof data !== "boolean") throw new ProductEventRepositoryError("EVENT_UNAVAILABLE");
+    return data;
   }
 }
 
