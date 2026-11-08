@@ -7,8 +7,10 @@
 --   comment_created, cheer_completed: projected from the business row on commit (server.commit_projection), keyed by
 --   the row id so retries and replays are recorded once. post_created covers fan board and group posts (property
 --   board). cheer_completed is once per member, creator and KST day: enough to find a first activity.
--- Limits: page_view at most 500 per owner (tab session or member) per KST day, and 60 events per client IP per minute
--- (consume_product_event_ip_budget). The route drops anything over a limit with 204.
+-- Limits: page_view at most 500 per owner (tab session or member) per KST day, and 300 events a minute per client IP
+-- together with the anonymous session or the member (consume_product_event_rate_budget, HMAC-keyed bucket). The route
+-- drops anything over a limit with 204. Page views and shares are counted and reported by created_at (server time);
+-- the client's occurred_at is only stored.
 -- record_product_event_v1 is patched in place (same pattern as 20261012100000) so earlier rules stay intact.
 begin;
 set local lock_timeout = '5s';
@@ -28,16 +30,16 @@ alter table public.fan_product_events
 alter table public.fan_product_events validate constraint fan_product_events_event_name_check;
 
 create index if not exists fan_product_events_page_view_occurred_idx
-  on public.fan_product_events (occurred_at)
+  on public.fan_product_events (created_at)
   include (anonymous_session_hash)
   where event_name = 'page_view';
 -- Daily page_view cap per owner.
 create index if not exists fan_product_events_page_view_owner_idx
-  on public.fan_product_events ((coalesce(anonymous_session_hash, app_user_id::text)), occurred_at)
+  on public.fan_product_events ((coalesce(anonymous_session_hash, app_user_id::text)), created_at)
   where event_name = 'page_view';
 -- Funnel first-activity checks.
 create index if not exists fan_product_events_share_member_idx
-  on public.fan_product_events (app_user_id, occurred_at)
+  on public.fan_product_events (app_user_id, created_at)
   where event_name = 'share_completed' and app_user_id is not null;
 create index if not exists group_creator_attendance_member_created_idx
   on public.group_creator_attendance (app_user_id, created_at);
@@ -88,7 +90,7 @@ $a$;
       select 1 from public.fan_product_events event
       where event.event_name = 'page_view'
         and coalesce(event.anonymous_session_hash, event.app_user_id::text) = coalesce(p_anonymous_session_hash, p_app_user_id::text)
-        and event.occurred_at >= (pg_catalog.date_trunc('day', statement_timestamp() at time zone 'Asia/Seoul') at time zone 'Asia/Seoul')
+        and event.created_at >= (pg_catalog.date_trunc('day', statement_timestamp() at time zone 'Asia/Seoul') at time zone 'Asia/Seoul')
       limit 500
     ) today
   ) >= 500 then
@@ -331,9 +333,9 @@ begin
 
   with views as (
     select coalesce(event.anonymous_session_hash, event.app_user_id::text) as owner,
-      event.occurred_at, event.properties as p, (event.properties->>'entry')::boolean as entry
+      event.created_at as occurred_at, event.properties as p, (event.properties->>'entry')::boolean as entry
     from public.fan_product_events event
-    where event.event_name = 'page_view' and event.occurred_at >= v_from and event.occurred_at < v_to
+    where event.event_name = 'page_view' and event.created_at >= v_from and event.created_at < v_to
   ), by_day as (
     select (occurred_at at time zone 'UTC')::date as day, count(*) filter (where entry) as visitors, count(*) as pageviews
     from views group by 1
@@ -407,10 +409,10 @@ begin
 
   select count(*) into v_visitors
   from public.fan_product_events event
-  where event.event_name = 'page_view' and event.occurred_at >= v_from and event.occurred_at < v_to
+  where event.event_name = 'page_view' and event.created_at >= v_from and event.created_at < v_to
     and event.properties->>'entry' = 'true';
 
-  select min(event.occurred_at) into v_page_views_since
+  select min(event.created_at) into v_page_views_since
   from public.fan_product_events event where event.event_name = 'page_view';
 
   with accounts as (
@@ -430,7 +432,7 @@ begin
     union select app_user_id from public.fan_lounge_messages
       where reply_to_id is null and created_at >= v_from and created_at < v_to
     union select app_user_id from public.fan_product_events
-      where event_name = 'share_completed' and app_user_id is not null and occurred_at >= v_from and occurred_at < v_to
+      where event_name = 'share_completed' and app_user_id is not null and created_at >= v_from and created_at < v_to
   ), activated as (
     select candidate.app_user_id from candidates candidate
     where not exists (select 1 from public.group_creator_attendance x where x.app_user_id = candidate.app_user_id and x.created_at < v_from)
@@ -440,11 +442,11 @@ begin
       and not exists (select 1 from public.fan_lounge_messages x
         where x.app_user_id = candidate.app_user_id and x.reply_to_id is null and x.created_at < v_from)
       and not exists (select 1 from public.fan_product_events x where x.event_name = 'share_completed'
-        and x.app_user_id = candidate.app_user_id and x.occurred_at < v_from)
+        and x.app_user_id = candidate.app_user_id and x.created_at < v_from)
   ), visited as (
     select distinct event.app_user_id from public.fan_product_events event
     where event.event_name = 'page_view' and event.app_user_id is not null
-      and event.occurred_at >= v_from and event.occurred_at < v_to
+      and event.created_at >= v_from and event.created_at < v_to
   )
   select
     pg_catalog.jsonb_build_object(
@@ -472,17 +474,19 @@ grant execute on function public.read_admin_web_traffic(uuid,uuid,integer) to se
 revoke all on function public.read_admin_funnel_analytics(uuid,uuid,integer) from public, anon, authenticated;
 grant execute on function public.read_admin_funnel_analytics(uuid,uuid,integer) to service_role;
 
--- Per-IP budget for /api/events: 60 events per client IP per minute. The route sends a hash of the edge-set client IP.
-create table public.product_event_ip_budgets (
-  ip_hash text not null check (ip_hash ~ '^[0-9a-f]{64}$'),
+-- Rate budget for /api/events: 300 events a minute per bucket. A bucket is the edge-set client IP together with the
+-- anonymous session (signed out) or the member (signed in), so many people behind one carrier NAT do not share a budget.
+-- The route sends only an HMAC of the bucket, keyed from a server-only secret; the IP itself never reaches the database.
+create table public.product_event_rate_budgets (
+  bucket_hash text not null check (bucket_hash ~ '^[0-9a-f]{64}$'),
   window_start timestamptz not null,
   used integer not null default 0,
-  primary key (ip_hash, window_start)
+  primary key (bucket_hash, window_start)
 );
-alter table public.product_event_ip_budgets enable row level security;
-revoke all on table public.product_event_ip_budgets from public, anon, authenticated, service_role;
+alter table public.product_event_rate_budgets enable row level security;
+revoke all on table public.product_event_rate_budgets from public, anon, authenticated, service_role;
 
-create function public.consume_product_event_ip_budget(p_ip_hash text)
+create function public.consume_product_event_rate_budget(p_bucket_hash text)
 returns boolean
 language plpgsql
 security definer
@@ -492,20 +496,20 @@ declare
   v_window timestamptz := pg_catalog.date_trunc('minute', statement_timestamp());
   v_used integer;
 begin
-  if p_ip_hash is null or p_ip_hash !~ '^[0-9a-f]{64}$' then
+  if p_bucket_hash is null or p_bucket_hash !~ '^[0-9a-f]{64}$' then
     raise exception 'PRODUCT_EVENT_INVALID' using errcode = '22023';
   end if;
-  insert into public.product_event_ip_budgets as budget (ip_hash, window_start, used) values (p_ip_hash, v_window, 1)
-  on conflict (ip_hash, window_start) do update set used = budget.used + 1
+  insert into public.product_event_rate_budgets as budget (bucket_hash, window_start, used) values (p_bucket_hash, v_window, 1)
+  on conflict (bucket_hash, window_start) do update set used = budget.used + 1
   returning used into v_used;
   if pg_catalog.random() < 0.01 then
-    delete from public.product_event_ip_budgets where window_start < v_window - interval '10 minutes';
+    delete from public.product_event_rate_budgets where window_start < v_window - interval '10 minutes';
   end if;
-  return v_used <= 60;
+  return v_used <= 300;
 end;
 $$;
-revoke all on function public.consume_product_event_ip_budget(text) from public, anon, authenticated;
-grant execute on function public.consume_product_event_ip_budget(text) to service_role;
+revoke all on function public.consume_product_event_rate_budget(text) from public, anon, authenticated;
+grant execute on function public.consume_product_event_rate_budget(text) to service_role;
 
 -- owner-policy-begin (review REVIEW-FUNNEL H1)
 -- The readers and the projector above belong to the applying role, and record_product_event_v1 (patched above) keeps its

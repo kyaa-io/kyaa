@@ -22,8 +22,8 @@ drop index if exists public.fan_product_events_share_member_idx;
 drop index if exists public.group_creator_attendance_member_created_idx;
 drop index if exists public.fan_passports_owner_issued_idx;
 drop index if exists public.fan_passports_issued_idx;
-drop function if exists public.consume_product_event_ip_budget(text);
-drop table if exists public.product_event_ip_budgets;
+drop function if exists public.consume_product_event_rate_budget(text);
+drop table if exists public.product_event_rate_budgets;
 
 do $patch$
 declare
@@ -67,7 +67,7 @@ $a$;
       select 1 from public.fan_product_events event
       where event.event_name = 'page_view'
         and coalesce(event.anonymous_session_hash, event.app_user_id::text) = coalesce(p_anonymous_session_hash, p_app_user_id::text)
-        and event.occurred_at >= (pg_catalog.date_trunc('day', statement_timestamp() at time zone 'Asia/Seoul') at time zone 'Asia/Seoul')
+        and event.created_at >= (pg_catalog.date_trunc('day', statement_timestamp() at time zone 'Asia/Seoul') at time zone 'Asia/Seoul')
       limit 500
     ) today
   ) >= 500 then

@@ -70,7 +70,7 @@ begin
   perform public.record_product_event_v1(1::smallint, 'page_view', null, repeat('b', 64), null, null, null, null,
     'web.page_view', 'page-view:95800000-0000-4000-8000-000000000103', statement_timestamp(), page);
   perform public.record_product_event_v1(1::smallint, 'page_view', fan, null, null, null, null, null,
-    'web.page_view', 'page-view:95800000-0000-4000-8000-000000000104', statement_timestamp(),
+    'web.page_view', 'page-view:95800000-0000-4000-8000-000000000104', statement_timestamp() - interval '23 hours',
     page || '{"pageKind":"my","entry":false,"channel":"internal"}');
 
   foreach bad in array array[
@@ -208,26 +208,27 @@ declare
   page jsonb := '{"pageKind":"home","entry":false,"channel":"internal","device":"desktop","browser":"chrome","os":"other"}';
   allowed integer := 0;
 begin
+  -- Server time decides the day: views the client stamps 23 hours earlier still count against today's cap.
   for i in 1..500 loop
     perform public.record_product_event_v1(1::smallint, 'page_view', null, repeat('c', 64), null, null, null, null,
-      'web.page_view', 'page-view:' || gen_random_uuid(), statement_timestamp(), page);
+      'web.page_view', 'page-view:' || gen_random_uuid(), statement_timestamp() - interval '23 hours', page);
   end loop;
   perform pg_temp.funnel_rejects(format($f$select public.record_product_event_v1(1::smallint,'page_view',null,repeat('c',64),null,null,null,null,
     'web.page_view','page-view:%s',statement_timestamp(),%L::jsonb)$f$, gen_random_uuid(), page), '54000');
   -- Another tab is not affected.
   perform public.record_product_event_v1(1::smallint, 'page_view', null, repeat('d', 64), null, null, null, null,
     'web.page_view', 'page-view:' || gen_random_uuid(), statement_timestamp(), page);
-  for i in 1..61 loop
-    if public.consume_product_event_ip_budget(repeat('e', 64)) then allowed := allowed + 1; end if;
+  for i in 1..301 loop
+    if public.consume_product_event_rate_budget(repeat('e', 64)) then allowed := allowed + 1; end if;
   end loop;
-  perform pg_temp.funnel_check(allowed = 60, 'ip budget is 60 a minute');
-  perform pg_temp.funnel_check(public.consume_product_event_ip_budget(repeat('f', 64)), 'another ip has its own budget');
+  perform pg_temp.funnel_check(allowed = 300, 'bucket budget is 300 a minute');
+  perform pg_temp.funnel_check(public.consume_product_event_rate_budget(repeat('f', 64)), 'another bucket has its own budget');
   perform pg_temp.funnel_check((select 'lock_timeout=1s' = any(proconfig) from pg_proc where oid = 'public.project_funnel_activity_event_v1()'::regprocedure), 'projector lock wait');
-  if has_function_privilege('anon', 'public.consume_product_event_ip_budget(text)', 'execute')
-     or has_table_privilege('service_role', 'public.product_event_ip_budgets', 'select') then
-    raise exception 'FUNNEL_EVENTS ip budget grants';
+  if has_function_privilege('anon', 'public.consume_product_event_rate_budget(text)', 'execute')
+     or has_table_privilege('service_role', 'public.product_event_rate_budgets', 'select') then
+    raise exception 'FUNNEL_EVENTS rate budget grants';
   end if;
-  raise notice 'FUNNEL_EVENTS page_view daily cap, ip budget, lock wait: PASS';
+  raise notice 'FUNNEL_EVENTS page_view daily cap by server time, rate budget, lock wait: PASS';
 end $$;
 
 rollback;

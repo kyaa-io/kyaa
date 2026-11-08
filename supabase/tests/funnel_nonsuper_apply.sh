@@ -4,7 +4,7 @@
 # so FORCE row security applies to their reads. Checks:
 #   (1) read_admin_web_traffic and read_admin_funnel_analytics count what a superuser counts directly,
 #   (2) project_funnel_activity_event_v1 still finds the post's creator for a comment and records it,
-#   (3) the readers, the projector and the IP budget belong to the applying role.
+#   (3) the readers, the projector and the rate budget belong to the applying role.
 # usage: funnel_nonsuper_apply.sh   STRIP_POLICY=1: the migration without its owner-policy block, to show reads coming back empty.
 # Uses the caller's PG* environment (local: PGHOST=127.0.0.1 PGPORT=55433 PGUSER=localsuper). Database: byus.
 set -euo pipefail
@@ -45,7 +45,7 @@ begin
   if (select rolsuper or rolbypassrls from pg_roles where rolname = 'f_funnel_apply') then raise exception 'probe role is privileged'; end if;
   owners_ok := (select bool_and(pg_get_userbyid(proowner) = 'f_funnel_apply') from pg_proc where oid in (
     'public.read_admin_web_traffic(uuid,uuid,integer)'::regprocedure, 'public.read_admin_funnel_analytics(uuid,uuid,integer)'::regprocedure,
-    'public.project_funnel_activity_event_v1()'::regprocedure, 'public.consume_product_event_ip_budget(text)'::regprocedure));
+    'public.project_funnel_activity_event_v1()'::regprocedure, 'public.consume_product_event_rate_budget(text)'::regprocedure));
   raise notice 'policies for f_funnel_apply: %', (select string_agg(c.relname, ',' order by c.relname) from pg_policy p join pg_class c on c.oid = p.polrelid
     where 'f_funnel_apply'::regrole = any(p.polroles));
 

@@ -17,8 +17,8 @@ export class ProductEventRepositoryError extends Error {
 
 export interface ProductEventRepository {
   record(input: ProductEventV1): Promise<{ id: string; replayed: boolean }>;
-  /** False once this client IP used its 60 events of the current minute. */
-  consumeIpBudget?(ipHash: string): Promise<boolean>;
+  /** False once this bucket (client IP with the anonymous session or the member) used its 300 events of the minute. */
+  consumeRateBudget?(bucketHash: string): Promise<boolean>;
 }
 
 async function sha256(value: string): Promise<string> {
@@ -68,8 +68,8 @@ export class SupabaseProductEventRepository implements ProductEventRepository {
     catch { throw new ProductEventRepositoryError("EVENT_UNAVAILABLE"); }
   }
 
-  async consumeIpBudget(ipHash: string): Promise<boolean> {
-    const { data, error } = await this.client.rpc("consume_product_event_ip_budget", { p_ip_hash: ipHash });
+  async consumeRateBudget(bucketHash: string): Promise<boolean> {
+    const { data, error } = await this.client.rpc("consume_product_event_rate_budget", { p_bucket_hash: bucketHash });
     if (error || typeof data !== "boolean") throw new ProductEventRepositoryError("EVENT_UNAVAILABLE");
     return data;
   }

@@ -6,8 +6,14 @@ import { authorizeFanRequest } from "@/server/fan-auth/fan-auth-gate";
 import { createSupabaseFanAuthRepository } from "@/server/fan-auth/supabase-fan-auth-repository";
 import { createSupabaseProductEventRepository } from "@/server/analytics/product-event-repository";
 import { createRecordProductEventHandler } from "@/server/analytics/product-event-route";
+import { requestHashSecret } from "@/server/inquiries/fanmeeting-route";
 
 export const dynamic = "force-dynamic";
+
+/** The existing server-only request hash secret; the route derives its own key from it. */
+function rateSecret(environment: Parameters<typeof requestHashSecret>[0]): string | undefined {
+  try { return requestHashSecret(environment); } catch { return undefined; }
+}
 
 export async function POST(request: Request): Promise<Response> {
   try {
@@ -34,6 +40,7 @@ export async function POST(request: Request): Promise<Response> {
         serviceRoleKey: environment.SUPABASE_SERVICE_ROLE_KEY,
       }, database),
       now: () => new Date(),
+      rateSecret: rateSecret(environment),
     })(request);
   } catch {
     return Response.json({ error: { code: "EVENT_UNAVAILABLE" } }, {
