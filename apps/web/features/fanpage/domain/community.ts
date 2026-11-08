@@ -43,6 +43,8 @@ export const commentSchema = z.object({
     emoji: z.enum(["heart", "thumbs_up", "clap", "laugh", "star"]),
     count: z.number().int().nonnegative(), selected: z.boolean(),
   }).strict()).max(5).optional(),
+  /** Top-level comments only, and only with ?fields=replies. */
+  replyCount: z.number().int().nonnegative().optional(),
 }).strict().superRefine((value, ctx) => {
   const schema = value.isOfficial ? safeAssetUrlSchema : publicAvatarUrlSchema;
   if (!schema.safeParse(value.avatarUrl).success) {
