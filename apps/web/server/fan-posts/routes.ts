@@ -10,7 +10,7 @@ import { MAX_PUBLIC_IMAGE_BYTES, MAX_PUBLIC_IMAGE_MULTIPART_BYTES, PublicImageEr
 import type { FanpageDependencies } from "@/server/fanpage/routes";
 import type { AppLocale } from "@/i18n/locales";
 import { parseNoticeDocument } from "@/server/notice/notice-domain";
-import { awardDukjilAction } from "@/server/dukjil/award";
+import { awardDukjilAction, awardDukjilActionDetailed, dukjilSkipReason, type DukjilSkip } from "@/server/dukjil/award";
 import type { DukjilActionResult } from "@/features/passport/domain/dukjil-types";
 import { createHash } from "node:crypto";
 
@@ -68,17 +68,45 @@ async function awardForPost(deps: Pick<ContentDependencies, "rpc">, owner: strin
     return await awardDukjilAction(deps, { appUserId: owner, creatorSlug: slug, actionKey, sourceKey, params });
   } catch { /* the original action already succeeded */ return null; }
 }
+// 261107-2 D6: the comment award with the reason a refusal carried (the post's slug comes from the post, like awardForPost).
+async function awardCommentDetailed(deps: Pick<ContentDependencies, "rpc">, owner: string | null, postId: string, sourceKey: string, params: Record<string, unknown>) {
+  if (!owner) return null;
+  try {
+    const raw = await deps.rpc("read_fan_post", { p_app_user_id: owner, p_post_id: postId, p_locale: "ko" });
+    const slug = (raw as { post?: { celebritySlug?: unknown } } | null)?.post?.celebritySlug;
+    return typeof slug === "string" ? await awardDukjilActionDetailed(deps, { appUserId: owner, creatorSlug: slug, actionKey: "comment", sourceKey, params }) : null;
+  } catch { return null; }
+}
+// 261107-2 D6: what the screen needs right after a mission write, in the one reward shape every mission write answers with
+// (post, comment, like, share proof): { points, stamps, skippedReason? }. A fresh grant says what it paid; a refusal the fan can act on
+// says why with points 0. Without a mission grant the older registration reward read still answers. No reward key when nothing applies.
+async function missionReward(deps: Pick<ContentDependencies, "rpc">, owner: string | null, write: z.infer<typeof writeSchema>,
+  award: { result: { points: number; stampId: string | null; replayed: boolean; capped: boolean; reason: string | null } | null; skipped?: DukjilSkip } | null): Promise<{ reward?: { points: number; stamps: number; skippedReason?: DukjilSkip } }> {
+  const result = award?.result;
+  // A stamp the write really placed is reported even when the points were capped (stamps is always a number).
+  if (result && !result.replayed && (result.points > 0 || result.stampId)) return { reward: { points: result.points, stamps: result.stampId ? 1 : 0 } };
+  const skipped = award?.skipped ?? (result && !result.replayed ? awardSkip(result) : undefined);
+  const legacy = await readReward(deps, owner, write);
+  if (legacy.reward) return { reward: { points: legacy.reward.points, stamps: 0 } };
+  return skipped ? { reward: { points: 0, stamps: 0, skippedReason: skipped } } : {};
+}
+/** Tests only. */
+export const missionRewardForTest = (...args: Parameters<typeof missionReward>) => missionReward(...args);
 const REWARD_READ_TIMEOUT_MS = 800;
 // Reads the just-granted points after the write has committed. Never throws: a failed read must not turn a committed post or
 // comment into an error, and a replayed (idempotent) request must not replay the reward.
 /** One reward shape for post, comment and like responses (review r4): `{ points, stamps, skippedReason? }`. A fresh grant only;
  * a replay says nothing, and a write the policy declined says why with points 0. */
-export type ResponseReward = { points: number; stamps: number; skippedReason?: string };
+export type ResponseReward = { points: number; stamps: number; skippedReason?: DukjilSkip };
+/** The one name for why a granted action paid nothing: any daily cap (POINT_CAP, STAMP_CAP) is `daily_limit`. */
+function awardSkip(award: { capped: boolean; reason: string | null }): DukjilSkip | undefined {
+  return award.capped ? "daily_limit" : award.reason ? dukjilSkipReason(award.reason) : undefined;
+}
 function rewardFromAward(award: DukjilActionResult | null, points = award?.points ?? 0): { reward: ResponseReward } | Record<string, never> {
   if (!award || award.replayed) return points > 0 ? { reward: { points, stamps: 0 } } : {};
   const stamps = award.stampId ? 1 : 0;
   if (points > 0 || stamps > 0) return { reward: { points, stamps } };
-  const skippedReason = award.reason ?? (award.capped ? "capped" : null);
+  const skippedReason = awardSkip(award);
   return skippedReason ? { reward: { points: 0, stamps: 0, skippedReason } } : {};
 }
 async function readReward(deps: Pick<ContentDependencies, "rpc">, owner: string | null, write: z.infer<typeof writeSchema>, award: DukjilActionResult | null = null) {
@@ -194,8 +222,8 @@ export function createContentHandlers(deps: ContentDependencies) {
       const rich = richBoardBody(value, slug);
       const written = checked(writeSchema, await deps.rpc(rich ? "save_fan_post_rich" : "save_fan_post", { p_app_user_id, p_slug: slug, p_post_id: null, p_body: rich?.body ?? value.body, p_visibility: value.visibility,
         p_asset_ids: rich?.assetIds ?? value.assetIds, p_expected_revision: null, p_idempotency_key: value.idempotencyKey, ...(rich ? { p_body_doc: rich.document } : {}) }));
-      const award = p_app_user_id && !written.replayed ? await awardDukjilAction(deps, { appUserId: p_app_user_id, creatorSlug: slug, actionKey: "post", sourceKey: written.id, params: bodyParams(rich?.body ?? value.body) }) : null;
-      return json({ ...written, ...await readReward(deps, p_app_user_id, written, award) }, 201);
+      const award = p_app_user_id && !written.replayed ? await awardDukjilActionDetailed(deps, { appUserId: p_app_user_id, creatorSlug: slug, actionKey: "post", sourceKey: written.id, params: bodyParams(rich?.body ?? value.body) }) : null;
+      return json({ ...written, ...await missionReward(deps, p_app_user_id, written, award) }, 201);
     }),
     post: (request: Request, id: string) => run(async () => {
       z.uuid().parse(id);
@@ -231,8 +259,8 @@ export function createContentHandlers(deps: ContentDependencies) {
       }
       const value = createCommentSchema.parse(await boundedJson(request, 8192));
       const written = checked(writeSchema, await deps.rpc("post_fan_post_comment", { p_app_user_id, p_post_id: id, p_parent_id: value.parentId, p_body: value.body, p_idempotency_key: value.idempotencyKey }));
-      const award = written.replayed ? null : await awardForPost(deps, p_app_user_id, id, "comment", written.id, { ...bodyParams(value.body), isReply: value.parentId != null, targetKey: id });
-      return json({ ...written, ...await readReward(deps, p_app_user_id, written, award) }, 201);
+      const award = written.replayed ? null : await awardCommentDetailed(deps, p_app_user_id, id, written.id, { ...bodyParams(value.body), isReply: value.parentId != null, targetKey: id });
+      return json({ ...written, ...await missionReward(deps, p_app_user_id, written, award) }, 201);
     }),
     removeComment: (request: Request, id: string) => run(async () => {
       z.uuid().parse(id); const p_app_user_id = await owner(request);

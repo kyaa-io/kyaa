@@ -61,8 +61,8 @@ describe("post reactions", () => {
     d.rpc.mockImplementation(async (name: string) => name === "set_fan_post_reaction" ? { reaction: "like", dislikeCount: null } : name === "read_fan_post" ? { post } : name === "record_dukjil_action" ? award : null);
     const fresh = await (await h.like(put({ reaction: "like" }), id)).json();
     expect(fresh).toEqual({ reaction: "like", dislikeCount: null, reward: { points: 1, stamps: 0 } });
-    award = { points: 0, stampId: null, capped: true, reason: "daily_cap", replayed: false };
-    expect((await (await h.like(put({ reaction: "like" }), id)).json()).reward).toEqual({ points: 0, stamps: 0, skippedReason: "daily_cap" });
+    award = { points: 0, stampId: null, capped: true, reason: "POINT_CAP", replayed: false };
+    expect((await (await h.like(put({ reaction: "like" }), id)).json()).reward).toEqual({ points: 0, stamps: 0, skippedReason: "daily_limit" });
     award = { points: 20, stampId: "40000000-0000-4000-8000-000000000004", capped: false, reason: null, replayed: false };
     expect((await (await h.like(put({ reaction: "like" }), id)).json()).reward).toEqual({ points: 20, stamps: 1 });
     award = { points: 1, stampId: null, capped: false, reason: null, replayed: true };

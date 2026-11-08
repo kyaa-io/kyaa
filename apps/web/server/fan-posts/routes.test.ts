@@ -359,3 +359,24 @@ describe("account-unavailable versus non-member failure codes", () => {
     });
   });
 });
+
+// 261107-2 D6 / review r4: every mission write answers the one reward shape { points, stamps, skippedReason? }.
+describe("mission reward shape on posts", () => {
+  const owner = "11111111-1111-4111-8111-111111111111", postId = "22222222-2222-4222-8222-222222222222";
+  const deps = (award: unknown) => ({
+    rpc: vi.fn(async (name: string) => name === "save_fan_post" ? { id: postId, revision: 1, replayed: false }
+      : name === "record_dukjil_action" ? (award instanceof Error ? Promise.reject(award) : award) : name === "read_owned_fan_post_reward" ? { amount: 0 } : null),
+    resolveCreatorId: async () => "33333333-3333-4333-8333-333333333333",
+  });
+  it.each([
+    [{ points: 20, stampId: "44444444-4444-4444-8444-444444444444", capped: false, reason: null, replayed: false }, { points: 20, stamps: 1 }],
+    [new Error("DUKJIL_CONTENT_TOO_SHORT"), { points: 0, stamps: 0, skippedReason: "too_short" }],
+    [new Error("DUKJIL_DAILY_LIMIT"), { points: 0, stamps: 0, skippedReason: "daily_limit" }],
+  ])("answers %o as %o", async (award, reward) => {
+    const { missionRewardForTest } = await import("./routes");
+    const d = deps(award);
+    const { awardDukjilActionDetailed } = await import("@/server/dukjil/award");
+    const detailed = await awardDukjilActionDetailed(d, { appUserId: owner, creatorSlug: "elina", actionKey: "post", sourceKey: postId, params: {} }, () => {});
+    expect(await missionRewardForTest(d, owner, { id: postId, revision: 1, replayed: false }, detailed)).toEqual({ reward });
+  });
+});

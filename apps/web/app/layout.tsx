@@ -6,6 +6,7 @@ import { Suspense } from "react";
 import { LocaleProvider } from "../components/locale-provider";
 import { GroupsReleaseProvider } from "@/features/groups/ui/groups-release";
 import { DocumentLocale } from "../components/document-locale";
+import { TierCelebration } from "@/features/tier-history/ui/tier-celebration";
 import { ByUsPrivyProvider } from "../components/privy-provider";
 import { PwaRegistration } from "../components/pwa-registration";
 import { publicRuntimeConfig } from "../server/config/public-runtime-config";
@@ -101,6 +102,7 @@ export default async function RootLayout({
           <AuthTransitionBoundary modal={modal}>{children}</AuthTransitionBoundary>
           <Suspense fallback={null}><BanksyEntryPromotion /></Suspense>
           <FanToastProvider />
+          <TierCelebration />
         </ByUsPrivyProvider>
         </GroupsReleaseProvider>
         </LocaleProvider>

@@ -7,6 +7,7 @@ import { AdminAccessState } from "./admin-access-state";
 import { AdminOperationsShell } from "./operations-shell";
 import { useAdminSession } from "./use-admin-session";
 import { ProofReviewPanel, type ProofRequest } from "./proof-review-panel";
+import { ShareProofAdminPanel } from "./share-proof-admin-panel";
 
 export function AuthorizedProofReview() {
   const locale = useSearchParams().get("lang") === "en" ? "en" : "ko";
@@ -26,6 +27,7 @@ export function AuthorizedProofReview() {
       <main style={{ display: "grid", gap: 16, padding: 16 }}>
         <h1>{locale === "ko" ? "인증 증빙 검토" : "Proof review"}</h1>
         <ProofReviewPanel locale={locale} request={request} canWrite={session.admin.role !== "viewer"} />
+        <ShareProofAdminPanel locale={locale} request={request} canWrite={session.admin.role !== "viewer"} />
       </main>
     </AdminOperationsShell>
   );

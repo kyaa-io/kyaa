@@ -73,7 +73,7 @@ function SharedPassportLandingInner({ token, creator, locale, activity, authenti
       </section> : null}
       <Image className={styles.shareArtwork} unoptimized src={communityStampAsset("share")} alt="" width={512} height={512} />
       {ready && authenticated ? <button type="button" className={styles.primary} disabled={busy} onClick={() => void visit()}>{busy ? c.signing : c.signedIn}<ArrowRight aria-hidden="true" /></button> : ready ? <Link className={styles.primary} href={loginHref as Route}>{c.signIn}<ArrowRight aria-hidden="true" /></Link> : null}
-      {ready && authenticated && <p className={styles.proof}>{c.proof}</p>}
+      {/* 261107-2 D12: opening a share link no longer records a share stamp for its sender, so the line saying so is gone. */}
       <Link className={styles.secondary} href={creatorHref as Route}>{c.ordinary}</Link>
       {error && <p className={styles.error} role="alert">{error}</p>}
     </section>

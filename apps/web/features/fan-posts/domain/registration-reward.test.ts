@@ -7,5 +7,5 @@ it("reads only a positive integer reward", () => {
 
 it("reads the shared reward shape and plays nothing for a declined grant (review r4)", () => {
   expect(registrationRewardPoints({ reward: { points: 20, stamps: 1 } })).toBe(20);
-  expect(registrationRewardPoints({ reward: { points: 0, stamps: 0, skippedReason: "daily_cap" } })).toBeUndefined();
+  expect(registrationRewardPoints({ reward: { points: 0, stamps: 0, skippedReason: "daily_limit" } })).toBeUndefined();
 });

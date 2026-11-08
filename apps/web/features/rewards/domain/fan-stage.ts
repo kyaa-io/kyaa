@@ -48,6 +48,12 @@ export function fanStageLabel(locale: AppLocale, stage: Pick<FanStage, "tier" | 
   return stage.tier === "Bronze" || stage.tier === "Diamond" ? tier : `${tier} ${stage.subdivision}`;
 }
 
+/** The major tier's name alone (실버, Silver), for places that speak of the tier rather than a stage. */
+export function fanTierName(locale: AppLocale, tier: FanStage["tier"]): string {
+  const label = fanStageLabel(locale, { tier, subdivision: 1 });
+  return tier === "Bronze" || tier === "Diamond" ? label : label.replace(/\s*1$/, "");
+}
+
 /** An old API exposes only the attained major tier; use its entry artwork. */
 export function fanTierEntryKey(tier: typeof FAN_TIERS[number]): FanStageKey {
   return `${tier.toLowerCase()}-1` as FanStageKey;

@@ -1,7 +1,8 @@
 import { describe, expect, it, vi } from "vitest";
 vi.mock("server-only", () => ({}));
 const award = vi.hoisted(() => ({ result: null as null | { points: number; stampId: string | null; capped: boolean; reason: string | null; replayed: boolean } }));
-vi.mock("@/server/dukjil/award", () => ({ awardDukjilAction: vi.fn(async () => award.result) }));
+vi.mock("@/server/dukjil/award", async (actual) => ({ ...await actual<typeof import("@/server/dukjil/award")>(),
+  awardDukjilAction: vi.fn(async () => award.result), awardDukjilActionDetailed: vi.fn(async () => ({ result: award.result })) }));
 import { createContentHandlers, type ContentDependencies } from "./routes";
 
 // One reward shape (review r4): { points, stamps, skippedReason? }. The stamp count comes from the award call of this very write; it never changes the points.
@@ -34,6 +35,6 @@ describe("reward stamps on post and comment creation", () => {
     award.result = { points: 0, stampId: stamp, capped: true, reason: "DUKJIL_DAILY_LIMIT", replayed: false };
     expect(await (await createContentHandlers(deps(0)).posts(request(create), "artist")).json()).toEqual({ id, revision: 1, replayed: false, reward: { points: 0, stamps: 1 } });
     award.result = { points: 0, stampId: null, capped: true, reason: "DUKJIL_DAILY_LIMIT", replayed: false };
-    expect(await (await createContentHandlers(deps(0)).posts(request(create), "artist")).json()).toEqual({ id, revision: 1, replayed: false, reward: { points: 0, stamps: 0, skippedReason: "DUKJIL_DAILY_LIMIT" } });
+    expect(await (await createContentHandlers(deps(0)).posts(request(create), "artist")).json()).toEqual({ id, revision: 1, replayed: false, reward: { points: 0, stamps: 0, skippedReason: "daily_limit" } });
   });
 });

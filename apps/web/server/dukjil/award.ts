@@ -28,11 +28,24 @@ const SILENT = ["POLICY_INACTIVE", "DUKJIL_DAILY_LIMIT", "PASSPORT_REQUIRED", "S
 // Calls record_dukjil_action exactly once for one action. It never throws: a payout failure must not fail the action that already happened.
 // Returns null when nothing was paid or the call failed.
 export async function awardDukjilAction(deps: Rpc, input: DukjilAwardInput, onError?: (error: unknown) => void): Promise<DukjilActionResult | null> {
+  return (await awardDukjilActionDetailed(deps, input, onError)).result;
+}
+
+/** Why nothing was paid, when the fan can act on it (261107-2 D6): the screen says so instead of leaving the count at 0. */
+export type DukjilSkip = "too_short" | "daily_limit" | "same_body" | "passport_required";
+const SKIP_REASON: Record<string, DukjilSkip> = { DUKJIL_CONTENT_TOO_SHORT: "too_short", DUKJIL_DAILY_LIMIT: "daily_limit", DUKJIL_DUPLICATE_BODY: "same_body", PASSPORT_REQUIRED: "passport_required" };
+export function dukjilSkipReason(message: string): DukjilSkip | undefined {
+  const code = Object.keys(SKIP_REASON).find((known) => message.includes(known));
+  return code ? SKIP_REASON[code] : undefined;
+}
+
+/** `awardDukjilAction` plus the reason a silent refusal carried. Never throws. */
+export async function awardDukjilActionDetailed(deps: Rpc, input: DukjilAwardInput, onError?: (error: unknown) => void): Promise<{ result: DukjilActionResult | null; skipped?: DukjilSkip }> {
   let celebrity: string | null = null;
   try {
     if (input.creatorSlug) {
       celebrity = await (deps.resolveCreatorId ?? resolveCreatorId)(input.creatorSlug);
-      if (!celebrity) return null;
+      if (!celebrity) return { result: null };
     }
     const raw = await deps.rpc("record_dukjil_action", {
       p_user: input.appUserId,
@@ -43,9 +56,10 @@ export async function awardDukjilAction(deps: Rpc, input: DukjilAwardInput, onEr
       p_params: input.params ?? {},
     });
     const parsed = dukjilActionResultSchema.safeParse(raw);
-    return parsed.success ? parsed.data : null;
+    return { result: parsed.success ? parsed.data : null };
   } catch (error) {
     const message = error instanceof Error ? error.message : "";
+    const skipped = dukjilSkipReason(message);
     if (!SILENT.some((code) => message.includes(code))) {
       (onError ?? ((e) => console.error("dukjil_award_failed", e instanceof Error ? e.message : "unknown")))(error);
       // The server log is not always readable: keep an operator-visible row (and a later retry) in the existing failure table.
@@ -54,6 +68,6 @@ export async function awardDukjilAction(deps: Rpc, input: DukjilAwardInput, onEr
           p_params: input.params ?? {}, p_state: (error as { code?: unknown } | null)?.code ?? null, p_message: message || "unknown" });
       } catch { /* the failure record is best effort */ }
     }
-    return null;
+    return skipped ? { result: null, skipped } : { result: null };
   }
 }
