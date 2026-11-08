@@ -1,6 +1,6 @@
 -- Synthetic-only assertions for 20261219030000: the cross-page public lists (home fan board, /api/public/home-feed) leave out posts and
 -- cheers of an unlisted creator fan page and posts of an unlisted group page; listed pages and creators without a page still show.
--- read_unlisted_creator_slugs names exactly the unlisted creators, for service_role only.
+-- list_unlisted_creator_slugs names exactly the unlisted creators, for service_role only.
 -- Every page of each list is read, so other rows in the database do not hide a leak. All changes roll back.
 \set ON_ERROR_STOP on
 begin;
@@ -79,19 +79,19 @@ begin
  if not (array[fp_listed::text,ch_listed::text,fp_nopage::text] <@ ids) then raise exception 'paged home feed lost a listed item';end if;
  if ids && array[fp_unlisted::text,ch_unlisted::text] then raise exception 'paged home feed shows the unlisted creator: %',array(select unnest(ids) intersect select unnest(array[fp_unlisted::text,ch_unlisted::text]));end if;
 
- -- Directory paths (/community, /api/public/celebrities, sitemap) read the unlisted creators from read_unlisted_creator_slugs.
- if not ('listed-fixture-unlisted' = any(public.read_unlisted_creator_slugs()))
-    or 'listed-fixture-shown' = any(public.read_unlisted_creator_slugs())
-    or 'listed-fixture-nopage' = any(public.read_unlisted_creator_slugs()) then raise exception 'unlisted creator slugs wrong: %',public.read_unlisted_creator_slugs();end if;
- if not has_function_privilege('service_role','public.read_unlisted_creator_slugs()','execute')
-    or has_function_privilege('anon','public.read_unlisted_creator_slugs()','execute')
-    or has_function_privilege('authenticated','public.read_unlisted_creator_slugs()','execute') then raise exception 'unlisted creator slugs grant wrong';end if;
+ -- Directory paths (/community, /api/public/celebrities, sitemap) read the unlisted creators from list_unlisted_creator_slugs.
+ if not ('listed-fixture-unlisted' = any(public.list_unlisted_creator_slugs()))
+    or 'listed-fixture-shown' = any(public.list_unlisted_creator_slugs())
+    or 'listed-fixture-nopage' = any(public.list_unlisted_creator_slugs()) then raise exception 'unlisted creator slugs wrong: %',public.list_unlisted_creator_slugs();end if;
+ if not has_function_privilege('service_role','public.list_unlisted_creator_slugs()','execute')
+    or has_function_privilege('anon','public.list_unlisted_creator_slugs()','execute')
+    or has_function_privilege('authenticated','public.list_unlisted_creator_slugs()','execute') then raise exception 'unlisted creator slugs grant wrong';end if;
 
  -- Listing the page again brings its posts back (the flag, not the data, decides).
  update public.group_pages set listed=true where id in (fanpage_unlisted,g_unlisted);
  if not (array[fp_unlisted::text,gp_unlisted::text,gp_unlisted_fan::text] <@ pg_temp.board_ids(null,true)) then raise exception 'relisted page posts missing';end if;
  r:=public.read_public_home_feed(null,'ko');
  if r#>>'{items,0,creatorSlug}'<>'listed-fixture-unlisted' then raise exception 'relisted creator missing from home feed: %',r;end if;
- if 'listed-fixture-unlisted' = any(public.read_unlisted_creator_slugs()) then raise exception 'relisted creator still in unlisted slugs';end if;
+ if 'listed-fixture-unlisted' = any(public.list_unlisted_creator_slugs()) then raise exception 'relisted creator still in unlisted slugs';end if;
 end $$;
 rollback;

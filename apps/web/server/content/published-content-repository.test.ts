@@ -72,7 +72,7 @@ describe("SupabasePublishedContentRepository", () => {
     const rpc = vi.fn(async () => ({ data: ["test-page"], error: null }));
     const repository = new SupabasePublishedContentRepository({ from: () => query, rpc });
     expect((await repository.listListed("ko")).map(({ slug }) => slug)).toEqual(["kara"]);
-    expect(rpc).toHaveBeenCalledWith("read_unlisted_creator_slugs");
+    expect(rpc).toHaveBeenCalledWith("list_unlisted_creator_slugs");
     expect((await repository.list("ko")).map(({ slug }) => slug)).toEqual(["kara", "test-page"]);
   });
 

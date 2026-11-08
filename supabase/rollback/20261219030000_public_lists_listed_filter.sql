@@ -1,5 +1,5 @@
 -- Rollback of 20261219030000_public_lists_listed_filter.sql: the home fan board and /api/public/home-feed show posts of unlisted pages
--- again, and read_unlisted_creator_slugs is dropped. Deploy the app without the listListed callers first (they fail closed without it).
+-- again. The app's listListed paths keep working (list_unlisted_creator_slugs is from 20261215010000).
 -- The read policies the migration may have created (listed_filter_owner_<role> on group_pages and celebrities) are dropped; a select
 -- grant it gave an owner stays (grants are not tracked, and the owners already read these tables in other definers).
 begin;
@@ -50,8 +50,6 @@ begin
   end loop;
 end
 $policy$;
-
-drop function if exists public.read_unlisted_creator_slugs();
 
 notify pgrst, 'reload schema';
 commit;

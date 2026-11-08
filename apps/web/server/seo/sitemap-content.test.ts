@@ -10,7 +10,7 @@ beforeEach(() => {
   vi.stubEnv("SUPABASE_URL", "https://example.supabase.co");
   vi.stubEnv("SUPABASE_SERVICE_ROLE_KEY", "test-only");
   from.mockReset();
-  rpc.mockReset().mockImplementation(async (fn: string) => fn === "read_unlisted_creator_slugs" ? { data: [], error: null } : { data: { raffles: [] }, error: null });
+  rpc.mockReset().mockImplementation(async (fn: string) => fn === "list_unlisted_creator_slugs" ? { data: [], error: null } : { data: { raffles: [] }, error: null });
 });
 
 it("paginates even below the requested page size and filters archived parents and exact translations", async () => {
@@ -70,7 +70,7 @@ it("leaves creators with an unlisted fan page out of discovery and fails closed 
       },
     }; return query;
   });
-  rpc.mockImplementation(async (fn: string) => fn === "read_unlisted_creator_slugs" ? { data: ["testpage"], error: null } : { data: { raffles: [] }, error: null });
+  rpc.mockImplementation(async (fn: string) => fn === "list_unlisted_creator_slugs" ? { data: ["testpage"], error: null } : { data: { raffles: [] }, error: null });
   const paths = (await loadSitemapContent()).map(page => page.path);
   expect(paths.some(path => path.includes("kara"))).toBe(true);
   expect(paths.some(path => path.includes("testpage"))).toBe(false);

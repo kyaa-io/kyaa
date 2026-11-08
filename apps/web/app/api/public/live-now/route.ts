@@ -20,7 +20,7 @@ import type { ObservedLiveFeed } from "../../../../features/live/domain/observed
 import { captureYouTubeLiveStartsFromEnvironment } from "../../../../server/youtube/live-start-alerts";
 
 type LiveNowDependencies = Readonly<{
-  repository: Pick<PublishedContentRepository, "list">;
+  repository: Pick<PublishedContentRepository, "list" | "listUnlistedSlugs">;
   observe?: TikTokLiveObserver;
   now?: () => Date;
   observeYouTube?: YouTubeLiveObserver;
@@ -46,7 +46,7 @@ export function createGetObservedLiveNow(dependencies: LiveNowDependencies) {
     }
 
     try {
-      const celebrities = await dependencies.repository.list(locale);
+      const [celebrities, unlisted] = await Promise.all([dependencies.repository.list(locale), dependencies.repository.listUnlistedSlugs()]);
       const version = new URL(request.url).searchParams.get("v");
       const feed = await buildObservedLiveFeed(
         celebrities,
@@ -57,9 +57,11 @@ export function createGetObservedLiveNow(dependencies: LiveNowDependencies) {
         version === "3" || version === "4" ? dependencies.observeInstagram ?? getCachedInstagramLiveDiscoveryObservation : undefined,
         version === "4" ? dependencies.observeChzzk ?? getCachedChzzkLiveObservation : undefined,
       );
+      // Live start alerts go to an unlisted creator's subscribers too; only the public strip leaves it out.
       try { await dependencies.captureLiveStarts?.(feed); }
       catch { console.error("YOUTUBE_LIVE_ALERT_CAPTURE_FAILED"); }
-      return NextResponse.json(feed, {
+      const shown = (item: { celebritySlug: string }) => !unlisted.has(item.celebritySlug);
+      return NextResponse.json({ ...feed, items: feed.items.filter(shown), ...(feed.targets ? { targets: feed.targets.filter(shown) } : {}) }, {
         status: 200,
         headers: noStoreHeaders,
       });

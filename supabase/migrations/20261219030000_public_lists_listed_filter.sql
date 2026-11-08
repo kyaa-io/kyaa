@@ -9,8 +9,7 @@
 -- The creator rule is written inline rather than as a call to creator_listed: the readers have other owners (dev: postgres, byus_admin)
 -- that are not granted that function, and the inline subquery uses group_pages_celebrity_id_key.
 -- /community, /api/public/celebrities and the sitemap read published_celebrities, which has no listed rule; that view also serves the
--- fan page by slug, so it stays as it is. read_unlisted_creator_slugs gives the list paths the creators to leave out (service_role only;
--- the view is security_invoker and service_role does not read group_pages).
+-- fan page by slug, so it stays as it is. The app leaves out list_unlisted_creator_slugs() (20261215010000) on those list paths.
 -- Rollback: supabase/rollback/20261219030000_public_lists_listed_filter.sql.
 begin;
 set local lock_timeout = '5s';
@@ -55,17 +54,8 @@ begin
 end
 $patch$;
 
-create or replace function public.read_unlisted_creator_slugs()
-returns text[] language sql stable security definer set search_path = '' as $$
-  select coalesce(array_agg(c.slug order by c.slug), '{}'::text[])
-    from public.group_pages g join public.celebrities c on c.id = g.celebrity_id
-   where g.kind = 'fan' and not g.listed
-$$;
-revoke all on function public.read_unlisted_creator_slugs() from public, anon, authenticated, service_role;
-grant execute on function public.read_unlisted_creator_slugs() to service_role;
-
--- read_public_home_feed(_page) and read_unlisted_creator_slugs did not read group_pages before. Under forced row security an owner without
--- a read policy sees no rows, and the filter would pass every creator. Give each ordinary owner what it needs, as 20261211400000 does, then fail if a gap remains.
+-- read_public_home_feed(_page) did not read group_pages before. Under forced row security an owner without a read policy sees no rows,
+-- and the filter would pass every creator. Give each ordinary owner what it needs, as 20261211400000 does, then fail if a gap remains.
 do $access$
 declare r record; c pg_catalog.pg_class; t text; gaps text[] := '{}';
 begin
@@ -73,8 +63,7 @@ begin
     select distinct o.oid role_oid, o.rolname, o.rolsuper, o.rolbypassrls from pg_catalog.pg_proc f join pg_catalog.pg_roles o on o.oid = f.proowner
      where f.oid in ('public.read_public_popular_posts_page(uuid,public.content_locale,integer,boolean)'::regprocedure,
                      'public.read_public_home_feed(uuid,public.content_locale)'::regprocedure,
-                     'public.read_public_home_feed_page(uuid,public.content_locale,integer)'::regprocedure,
-                     'public.read_unlisted_creator_slugs()'::regprocedure)
+                     'public.read_public_home_feed_page(uuid,public.content_locale,integer)'::regprocedure)
   loop
     continue when r.rolsuper;
     if r.rolname in ('anon', 'authenticated', 'service_role', 'public') then gaps := gaps || format('%s may not own these functions', r.rolname); continue; end if;

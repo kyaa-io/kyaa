@@ -2,7 +2,7 @@ import { afterEach, beforeEach, expect, it, vi } from "vitest";
 vi.mock("server-only", () => ({}));
 const { from, rpc, imageReads } = vi.hoisted(() => ({ from: vi.fn(), rpc: vi.fn(), imageReads: vi.fn().mockResolvedValue({}) }));
 // The unlisted-creator read is covered in sitemap-content.test.ts; here it answers "none" so rpc stays the raffle read.
-vi.mock("@supabase/supabase-js", () => ({ createClient: () => ({ from, rpc: (name: string, ...args: unknown[]) => name === "read_unlisted_creator_slugs" ? Promise.resolve({ data: [], error: null }) : rpc(name, ...args) }) }));
+vi.mock("@supabase/supabase-js", () => ({ createClient: () => ({ from, rpc: (name: string, ...args: unknown[]) => name === "list_unlisted_creator_slugs" ? Promise.resolve({ data: [], error: null }) : rpc(name, ...args) }) }));
 vi.mock("../media/public-image-reader", () => ({ createPublicImageRoleReader: () => ({ readCelebrityPhotoSetsBySlug: imageReads, readLivePhotoSetsBySlug: imageReads }) }));
 import { loadSearchPublicationSnapshot } from "./publication-snapshot";
 import { loadSitemapContent, loadPublicationContent } from "./sitemap-content";

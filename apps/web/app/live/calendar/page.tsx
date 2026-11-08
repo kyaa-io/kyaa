@@ -37,9 +37,11 @@ export default async function LiveCalendarPage({
   const contentRepository = createPublishedContentRepositoryFromEnvironment();
   const liveRepository = createLiveEventRepositoryFromEnvironment(repositoryConfig);
   const now = new Date();
-  const [calendar, publishedCelebrities] = await Promise.all([
+  // Full list: an unlisted creator's events still need its name and photo. Only the filter chips leave it out.
+  const [calendar, publishedCelebrities, unlisted] = await Promise.all([
     repository.readMonth({ month, locale: toContentLocale(locale), appUserId: null, now }),
     contentRepository.list(toContentLocale(locale)),
+    contentRepository.listUnlistedSlugs(),
   ]);
   const celebrities = publishedCelebrities.map((celebrity) => ({
     slug: celebrity.slug,
@@ -67,6 +69,7 @@ export default async function LiveCalendarPage({
     initialCalendar={calendar}
     locale={locale}
     celebrities={celebrities}
+    unlistedSlugs={[...unlisted]}
     eventMetadata={eventMetadata}
     initialCelebritySlugs={requestedCelebritySlugs}
   />;

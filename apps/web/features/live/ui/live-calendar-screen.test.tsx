@@ -129,6 +129,15 @@ describe("LIVE calendar screen", () => {
     vi.restoreAllMocks();
   });
 
+  it("leaves an unlisted creator out of the filter chips unless a link already selected it", () => {
+    const view = render(<LiveCalendarScreen locale="ko" initialCalendar={calendar} celebrities={celebrities} unlistedSlugs={["elina"]} eventMetadata={eventMetadata} initialCelebritySlugs={[]} />);
+    expect(screen.getByRole("button", { name: "KARA" })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "ELINA" })).not.toBeInTheDocument();
+    view.unmount();
+    render(<LiveCalendarScreen locale="ko" initialCalendar={calendar} celebrities={celebrities} unlistedSlugs={["elina"]} eventMetadata={eventMetadata} initialCelebritySlugs={["elina"]} />);
+    expect(screen.getByRole("button", { name: "ELINA" })).toHaveAttribute("aria-pressed", "true");
+  });
+
   it.each(["scheduled", "live", "ended", "cancelled"] as const)("marks only actionable mobile dates for %s events", (status) => {
     const { container } = render(<LiveCalendarScreen locale="ko" initialCelebritySlugs={[]} initialCalendar={{ ...calendar, days: calendar.days.map(day => ({ ...day, events: day.date === "2026-09-15" ? [{ ...events[0]!, effectiveStatus: status }] : [] })) }} celebrities={celebrities} eventMetadata={eventMetadata} />);
     const date = container.querySelector('[data-calendar-date="2026-09-15"]');

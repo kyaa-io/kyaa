@@ -35,13 +35,15 @@ interface PublishedQuery extends QueryResult {
 export interface PublishedContentClient {
   from(relation: string): PublishedQuery;
   /** Needed only by listListed; a client without it fails that read closed. */
-  rpc?(fn: "read_unlisted_creator_slugs"): QueryResult;
+  rpc?(fn: "list_unlisted_creator_slugs"): QueryResult;
 }
 
 export interface PublishedContentRepository {
   list(locale: ContentLocale): Promise<readonly PublishedCelebrity[]>;
   /** Directory lists: list() without creators whose fan page is unlisted. The page itself stays reachable by findBySlug. */
   listListed(locale: ContentLocale): Promise<readonly PublishedCelebrity[]>;
+  /** For lists that keep the full set for other uses (the viewer's own creators, alerts) and drop these from what they show. */
+  listUnlistedSlugs(): Promise<ReadonlySet<string>>;
   findBySlug(locale: ContentLocale, slug: string): Promise<PublishedCelebrity | null>;
   listPrimaryLives(locale: ContentLocale): Promise<readonly PublishedCelebrityLive[]>;
 }
@@ -79,8 +81,12 @@ export class SupabasePublishedContentRepository
   }
 
   async listListed(locale: ContentLocale): Promise<readonly PublishedCelebrity[]> {
-    const [celebrities, unlisted] = await Promise.all([this.list(locale), readUnlistedCreatorSlugs(this.client)]);
+    const [celebrities, unlisted] = await Promise.all([this.list(locale), this.listUnlistedSlugs()]);
     return celebrities.filter(({ slug }) => !unlisted.has(slug));
+  }
+
+  listUnlistedSlugs(): Promise<ReadonlySet<string>> {
+    return readUnlistedCreatorSlugs(this.client);
   }
 
   async findBySlug(
@@ -134,10 +140,10 @@ export class SupabasePublishedContentRepository
   }
 }
 
-/** Slugs of creators whose fan page is out of the directory (group_pages.listed=false). Fails closed. */
+/** Slugs of published creators whose fan page is out of the directory (list_unlisted_creator_slugs, as on the home rail). Fails closed. */
 export async function readUnlistedCreatorSlugs(client: Pick<PublishedContentClient, "rpc">): Promise<ReadonlySet<string>> {
   if (!client.rpc) throw new Error("Unlisted creator query failed");
-  const { data, error } = await client.rpc("read_unlisted_creator_slugs");
+  const { data, error } = await client.rpc("list_unlisted_creator_slugs");
   if (error || !Array.isArray(data) || !data.every(slug => typeof slug === "string")) {
     throw new Error("Unlisted creator query failed");
   }
@@ -158,6 +164,10 @@ export class PublicImagePublishedContentRepository
 
   async listListed(locale: ContentLocale): Promise<readonly PublishedCelebrity[]> {
     return this.withPhotos(await this.repository.listListed(locale));
+  }
+
+  listUnlistedSlugs(): Promise<ReadonlySet<string>> {
+    return this.repository.listUnlistedSlugs();
   }
 
   private async withPhotos(celebrities: readonly PublishedCelebrity[]): Promise<readonly PublishedCelebrity[]> {

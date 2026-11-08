@@ -26,9 +26,10 @@ export default async function CelebritiesPage({ searchParams }: { searchParams: 
     redirect(`/pages/groups?${params}` as Route);
   }
   const repository = createPublishedContentRepositoryFromEnvironment();
-  const [publishedCelebrities, primaryLives] = await Promise.all([
+  const [publishedCelebrities, primaryLives, unlisted] = await Promise.all([
     repository.list(toContentLocale(locale)),
     repository.listPrimaryLives(toContentLocale(locale)),
+    repository.listUnlistedSlugs(),
   ]);
   const livesByCelebrity = new Map(primaryLives.map((live) => [live.celebritySlug, live]));
   const celebrities = publishedCelebrities.map((celebrity) => ({
@@ -36,5 +37,5 @@ export default async function CelebritiesPage({ searchParams }: { searchParams: 
     upcomingLive: livesByCelebrity.get(celebrity.slug) ?? null,
   }));
   const initialOwnedOnly = owned === "1" ? true : owned !== undefined || role !== undefined || q !== undefined || sort !== undefined ? false : undefined;
-  return <CelebrityDirectory celebrities={celebrities} locale={locale} initialRole={initialOwnedOnly ? "all" : parseCreatorRoleFilter(role)} initialOwnedOnly={initialOwnedOnly} initialQuery={typeof q === "string" ? q : q?.[0] ?? ""} initialSort={sort === "name-asc" || sort === "live-first" ? sort : "published"} />;
+  return <CelebrityDirectory celebrities={celebrities} unlistedSlugs={[...unlisted]} locale={locale} initialRole={initialOwnedOnly ? "all" : parseCreatorRoleFilter(role)} initialOwnedOnly={initialOwnedOnly} initialQuery={typeof q === "string" ? q : q?.[0] ?? ""} initialSort={sort === "name-asc" || sort === "live-first" ? sort : "published"} />;
 }
