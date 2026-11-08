@@ -13,14 +13,14 @@ declare creator uuid:=extensions.gen_random_uuid();fan_page uuid:=extensions.gen
  old_member uuid:=extensions.gen_random_uuid();lonely uuid:=extensions.gen_random_uuid();
  post uuid:=extensions.gen_random_uuid();root uuid:=extensions.gen_random_uuid();other_root uuid:=extensions.gen_random_uuid();
  fpost uuid:=extensions.gen_random_uuid();froot uuid:=extensions.gen_random_uuid();live uuid:=extensions.gen_random_uuid();brand uuid:=extensions.gen_random_uuid();notice uuid:=extensions.gen_random_uuid();
- anon_comment uuid:=extensions.gen_random_uuid();blocked_comment uuid:=extensions.gen_random_uuid();friend_comment uuid:=extensions.gen_random_uuid();dm uuid;conv uuid;
+ anon_comment uuid:=extensions.gen_random_uuid();live2 uuid:=extensions.gen_random_uuid();live3 uuid:=extensions.gen_random_uuid();gone uuid:=extensions.gen_random_uuid();nroot uuid:=extensions.gen_random_uuid();blocked_comment uuid:=extensions.gen_random_uuid();friend_comment uuid:=extensions.gen_random_uuid();dm uuid;conv uuid;
  u uuid;result jsonb;plain jsonb;item jsonb;facts jsonb;raised boolean;state text;
 begin
  insert into public.celebrities(id,slug,status,image_url,published_at,roles,primary_role)values(creator,'r6-facts-fixture','published','/fixture.webp',now(),'{creator}','creator');
  insert into public.celebrity_localizations(celebrity_id,locale,name,summary,image_alt)values(creator,'ko','사실 검증','소개','사진'),(creator,'en','Facts fixture','Summary','Photo');
  insert into public.group_pages(id,kind,celebrity_id,name)values(fan_page,'fan',creator,'R6 facts fan');
  insert into public.group_pages(id,kind,name)values(hobby,'hobby','R6 facts hobby'),(empty_page,'hobby','R6 facts empty');
- foreach u in array array[viewer,friend,sanctioned,blocker,old_member,lonely] loop
+ foreach u in array array[viewer,friend,sanctioned,blocker,old_member,lonely,gone] loop
   insert into public.app_users(id,privy_user_id,verified_email)values(u,'did:privy:r6-facts-'||u,u||'@example.test');
   insert into public.user_profiles(app_user_id,nickname,nickname_normalized)values(u,'r'||left(u::text,8),'r'||left(u::text,8));
  end loop;
@@ -52,6 +52,16 @@ begin
  insert into public.fan_post_comments(post_id,parent_id,app_user_id,body,idempotency_key)values(fpost,froot,friend,'친구 답글',extensions.gen_random_uuid()),(fpost,froot,blocker,'차단 답글',extensions.gen_random_uuid());
  insert into public.celebrity_notices(id,celebrity_id,slug,publication_status,published_at)values(notice,creator,'r6-facts-notice','published',now());
  insert into public.celebrity_notice_localizations(notice_id,locale,title,body_json)values(notice,'ko','공식 공지 제목','{"type":"doc","content":[]}'::jsonb);
+ -- Not on the public board, so not new posts: proof, program and members-only fan posts, and one by a disabled account.
+ insert into public.fan_posts(celebrity_id,app_user_id,body,visibility,idempotency_key,create_request_hash,category,source_type,source_id)values(creator,friend,'인증 글','public',extensions.gen_random_uuid(),repeat('a',64),'proof','certification_submission',extensions.gen_random_uuid());
+ insert into public.fan_posts(celebrity_id,app_user_id,body,visibility,idempotency_key,create_request_hash,program_notice_id)values(creator,friend,'프로그램 글','public',extensions.gen_random_uuid(),repeat('a',64),notice);
+ insert into public.fan_posts(celebrity_id,app_user_id,body,visibility,idempotency_key,create_request_hash)values(creator,friend,'회원 글','members',extensions.gen_random_uuid(),repeat('a',64)),(creator,gone,'닫힌 계정 글','public',extensions.gen_random_uuid(),repeat('a',64));
+ -- A reply by a disabled account and a deleted reply never count.
+ insert into public.fan_post_comments(post_id,parent_id,app_user_id,body,idempotency_key)values(fpost,froot,gone,'닫힌 계정 답글',extensions.gen_random_uuid());
+ insert into public.fan_post_comments(post_id,parent_id,app_user_id,body,idempotency_key,deleted_at)values(fpost,froot,friend,'지운 답글',extensions.gen_random_uuid(),now());
+ insert into public.celebrity_notice_comments(id,notice_id,app_user_id,body,idempotency_key)values(nroot,notice,viewer,'공지 원댓글',extensions.gen_random_uuid());
+ insert into public.celebrity_notice_comments(notice_id,parent_id,app_user_id,body,idempotency_key)values(notice,nroot,friend,'공지 답글',extensions.gen_random_uuid()),(notice,nroot,blocker,'차단 공지 답글',extensions.gen_random_uuid()),(notice,nroot,gone,'닫힌 공지 답글',extensions.gen_random_uuid());
+ update public.app_users set status='disabled' where id=gone;
  set local session_replication_role=origin;
 
  -- Directory: the plain call is the old call, the facts call adds exactly four keys.
@@ -65,7 +75,8 @@ begin
  select i into item from jsonb_array_elements(result->'items')i where i->>'id'=hobby::text;
  -- old_member joined 10 days ago; the sanctioned fan is still an active account, so 4 of 5 joined this week.
  if (item->>'weeklyJoined')::integer<>4 then raise exception 'weeklyJoined wrong: %',item;end if;
- if (item->>'newPostCount')::integer<>2 then raise exception 'newPostCount wrong: %',item;end if;
+ -- One public post this week; the members-only one is not counted.
+ if (item->>'newPostCount')::integer<>1 then raise exception 'newPostCount wrong: %',item;end if;
  if (item->>'liveNow')::boolean then raise exception 'Hobby page live: %',item;end if;
  if (item->>'lastActiveAt')::timestamptz<now()-interval '1 minute' then raise exception 'lastActiveAt missed the newest join: %',item;end if;
  select i into item from jsonb_array_elements(result->'items')i where i->>'id'=fan_page::text;
@@ -79,6 +90,27 @@ begin
  set local session_replication_role=origin;
  result:=public.groups_dispatch('directory',null,null,null,'{"sort":"recent","type":"all","search":"R6 facts fan","limit":50,"fields":"facts"}'::jsonb);
  if (result->'items'->0->>'liveNow')::boolean then raise exception 'Override ignored: %',result;end if;
+ -- An archived live running by its times is not live.
+ set local session_replication_role=replica;
+ insert into public.live_events(id,slug,celebrity_id,brand_id,publication_status,content_status,starts_at,ends_at,reservation_opens_at,reservation_closes_at,youtube_url,external_live_url,approved_hero_url,
+   fan_code_hash,attendance_valid_from,attendance_valid_until,published_at,archived_at,archived_by_admin_allowlist_id,archive_reason)
+  values(live2,'r6-facts-archived',creator,brand,'published','scheduled',now()-interval '10 minutes',now()+interval '1 hour',now()-interval '2 days',now()-interval '1 day',
+   'https://www.youtube.com/watch?v=r6factsarch','https://www.youtube.com/watch?v=r6factsarch','https://kyaa.io/fixture-hero.webp',
+   '$2a$10$'||repeat('a',53),now()-interval '10 minutes',now()+interval '1 hour',now(),now(),extensions.gen_random_uuid(),'보관한 시험 라이브입니다');
+ set local session_replication_role=origin;
+ result:=public.groups_dispatch('directory',null,null,null,'{"sort":"recent","type":"all","search":"R6 facts fan","limit":50,"fields":"facts"}'::jsonb);
+ if (result->'items'->0->>'liveNow')::boolean then raise exception 'Archived live counted: %',result;end if;
+ -- A live scheduled for tomorrow that an override opened now is live.
+ insert into public.live_events(id,slug,celebrity_id,brand_id,publication_status,content_status,starts_at,ends_at,reservation_opens_at,reservation_closes_at,youtube_url,external_live_url,approved_hero_url,
+   fan_code_hash,attendance_valid_from,attendance_valid_until,published_at)
+  values(live3,'r6-facts-early',creator,brand,'published','scheduled',now()+interval '1 day',now()+interval '1 day 1 hour',now()-interval '2 days',now()-interval '1 day',
+   'https://www.youtube.com/watch?v=r6factsearly','https://www.youtube.com/watch?v=r6factsearly','https://kyaa.io/fixture-hero.webp',
+   '$2a$10$'||repeat('a',53),now()+interval '1 day',now()+interval '1 day 1 hour',now());
+ set local session_replication_role=replica;
+ insert into public.live_status_overrides(live_event_id,effective_status,effective_from,reason,actor_admin_allowlist_id)values(live3,'live',now()-interval '1 minute','시험',extensions.gen_random_uuid());
+ set local session_replication_role=origin;
+ result:=public.groups_dispatch('directory',null,null,null,'{"sort":"recent","type":"all","search":"R6 facts fan","limit":50,"fields":"facts"}'::jsonb);
+ if not (result->'items'->0->>'liveNow')::boolean then raise exception 'Override-opened live missed: %',result;end if;
  raised:=false;begin perform public.groups_dispatch('directory',null,null,null,'{"sort":"recent","type":"all","search":"","limit":8,"fields":"all"}'::jsonb);exception when others then raised:=sqlerrm='GROUPS_INVALID_REQUEST';end;
  if not raised then raise exception 'Unknown fields accepted';end if;
 
@@ -100,6 +132,13 @@ begin
  if result-'items'<>plain-'items' or (select array_agg(i-'replyCount' order by o) from jsonb_array_elements(result->'items') with ordinality t(i,o))<>(select array_agg(i order by o) from jsonb_array_elements(plain->'items') with ordinality t(i,o)) then raise exception 'Fan replies reader changed other keys';end if;
  if (select(i->>'replyCount')::integer from jsonb_array_elements(result->'items')i where i->>'id'=froot::text)<>1 then raise exception 'Fan reply count wrong: %',result;end if;
  if (select(i->>'replyCount')::integer from jsonb_array_elements(result->'items')i where i->>'id'=friend_comment::text)<>0 then raise exception 'Fan zero reply count wrong';end if;
+ if (select(i->>'replyCount')::integer from jsonb_array_elements(public.read_fan_post_comments_replies(null,fpost,null,null,20,'ko')->'items')i where i->>'id'=froot::text)<>2 then raise exception 'Signed-out fan reply count wrong';end if;
+
+ -- Notice comments: the friend's reply counts; the blocker's and the disabled account's do not.
+ result:=public.read_celebrity_notice_comments_replies('r6-facts-fixture','r6-facts-notice',viewer,null,null,50,'ko');
+ if result is null then raise exception 'Fixture notice not readable';end if;
+ if (select(i->>'replyCount')::integer from jsonb_array_elements(result->'comments')i where i->>'id'=nroot::text)<>1 then raise exception 'Notice reply count wrong: %',result;end if;
+ if (select(i->>'replyCount')::integer from jsonb_array_elements(public.read_celebrity_notice_comments_replies('r6-facts-fixture','r6-facts-notice',null,null,null,50,'ko')->'comments')i where i->>'id'=nroot::text)<>2 then raise exception 'Signed-out notice reply count wrong';end if;
 
  -- Friends: grade, hearts and favorite for an open friend; nothing for a sanctioned one; a friendship with no creator
  -- takes the grade for the friend's favorite, and with no favorite either it has none.
@@ -116,6 +155,12 @@ begin
  select i into item from jsonb_array_elements(result->'friendships')i where i->>'profileId'=sanctioned::text;
  if item is not null and (item->'tier'<>'null'::jsonb or item->'hearts'<>'null'::jsonb or item->'favorite'<>'null'::jsonb) then raise exception 'Sanctioned friend facts shown: %',item;end if;
  if public.read_owned_social_friends_facts(lonely,'ko')->'friendships'<>'[]'::jsonb then raise exception 'Empty friends not []';end if;
+ -- A restricted reader learns no friend facts: refused by the account lock, or every fact null.
+ begin
+  result:=public.read_owned_social_friends_facts(sanctioned,'ko');
+  if exists(select 1 from jsonb_array_elements(result->'friendships')i where i->'tier'<>'null'::jsonb or i->'hearts'<>'null'::jsonb or i->'favorite'<>'null'::jsonb) then raise exception 'Restricted reader got facts: %',result;end if;
+ exception when others then if sqlerrm<>'FAN_WEB_ACTIVE_ACCOUNT_REQUIRED' then raise;end if;
+ end;
  insert into public.social_friendships(requester_id,addressee_id,status,request_id,payload_hash,accepted_at)values(lonely,friend,'accepted',extensions.gen_random_uuid(),repeat('d',64),now()),(lonely,old_member,'accepted',extensions.gen_random_uuid(),repeat('e',64),now());
  result:=public.read_owned_social_friends_facts(lonely,'ko');
  select i into item from jsonb_array_elements(result->'friendships')i where i->>'profileId'=friend::text;
@@ -173,9 +218,23 @@ begin
  execute 'reset role';
  -- Called as the superuser, it still runs as the ordinary owner (definer); the service role reaches it only through the list reader.
  facts:=public.web_notification_facts(viewer,jsonb_build_object('kind','content_reply','payload',jsonb_build_object('targetType','group_comment','targetId',blocked_comment)),'ko');
- if (result->'items'->0->>'newPostCount')::integer<>2 or (result->'items'->0->>'weeklyJoined')::integer<>4 then raise exception 'Facts lost under an ordinary owner: %',result;end if;
+ if (result->'items'->0->>'newPostCount')::integer<>1 or (result->'items'->0->>'weeklyJoined')::integer<>4 then raise exception 'Facts lost under an ordinary owner: %',result;end if;
  if facts->'actor'<>'null'::jsonb then raise exception 'Block lost under an ordinary owner';end if;
  if (select(i->>'hearts')::integer from jsonb_array_elements(plain->'friendships')i where i->>'profileId'=friend::text)<>3 then raise exception 'Friend facts lost under an ordinary owner';end if;
+ -- The dispatch wrappers on an ordinary owner cannot run the renamed readers until the access step grants them, then they can.
+ alter function public.groups_dispatch(text,uuid,uuid,uuid,jsonb,uuid) owner to r6_facts_owner;
+ alter function public.groups_content_dispatch(text,uuid,uuid,uuid,jsonb,uuid) owner to r6_facts_owner;
+ raised:=false;begin execute 'set local role service_role';perform public.groups_dispatch('directory',null,null,null,'{"sort":"recent","type":"all","search":"R6 facts","limit":8,"fields":"facts"}'::jsonb);
+  exception when others then get stacked diagnostics state=returned_sqlstate;raised:=state='42501';end;
+ execute 'reset role';
+ if not raised then raise exception 'Wrapper ran without a grant: %',state;end if;
+ perform public.list_facts_wrapper_access();
+ execute 'set local role service_role';
+ result:=public.groups_dispatch('directory',null,null,null,'{"sort":"recent","type":"all","search":"R6 facts hobby","limit":8,"fields":"facts"}'::jsonb);
+ plain:=public.groups_content_dispatch('comments',viewer,hobby,post,'{"limit":30,"fields":"replies"}'::jsonb);
+ execute 'reset role';
+ if (result->'items'->0->>'newPostCount')::integer<>1 then raise exception 'Wrapper on an ordinary owner wrong: %',result;end if;
+ if (select(i->>'replyCount')::integer from jsonb_array_elements(plain->'items')i where i->>'id'=root::text)<>1 then raise exception 'Comment wrapper on an ordinary owner wrong: %',plain;end if;
  raise notice 'PASS r6 server facts';
 end $$;
 rollback;
@@ -183,12 +242,13 @@ rollback;
 \if :{?skip_rollback}
 \else
 -- The rollbacks stand on the current definitions and leave the readers the deployed web calls.
+\ir ../rollback/20261218030000_list_facts_review_fixes.sql
 \ir ../rollback/20261218020000_social_notification_facts.sql
 \ir ../rollback/20261218010000_group_directory_facts.sql
 do $$
 begin
  if to_regprocedure('public.groups_dispatch_before_directory_facts(text,uuid,uuid,uuid,jsonb,uuid)') is not null or to_regprocedure('public.group_directory_facts(jsonb)') is not null
-  or to_regprocedure('public.get_owned_web_notifications_facts(uuid,public.content_locale)') is not null then raise exception 'Rollback left new readers';end if;
+  or to_regprocedure('public.get_owned_web_notifications_facts(uuid,public.content_locale)') is not null or to_regprocedure('public.list_facts_wrapper_access()') is not null then raise exception 'Rollback left new readers';end if;
  if to_regprocedure('public.groups_dispatch(text,uuid,uuid,uuid,jsonb,uuid)') is null or to_regprocedure('public.groups_content_dispatch(text,uuid,uuid,uuid,jsonb,uuid)') is null then raise exception 'Rollback lost the dispatchers';end if;
  raise notice 'PASS r6 server facts rollback';
 end $$;
