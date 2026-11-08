@@ -127,7 +127,7 @@ const copy = {
     detail: "회원 상세",
     close: "상세 닫기",
     ledger: "팬 점수 원장",
-    stamps: "도장",
+    stamps: "스탬프",
     benefits: "혜택 상태",
     none: "기록 없음",
     adjust: "점수 교정",

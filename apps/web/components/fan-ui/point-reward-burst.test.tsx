@@ -23,7 +23,7 @@ describe("PointRewardBurst (261107-2 D8: the shared reward celebration)", () => 
 
   it("names stamps beside points", () => {
     render(<PointRewardBurst locale="ko" points={20} stamps={1} label="글쓰기 미션 완료" burstKey={1} />);
-    expect(shown.at(-1)).toMatchObject({ title: "+20P · 도장 1", description: "글쓰기 미션 완료" });
+    expect(shown.at(-1)).toMatchObject({ title: "+20P · 스탬프 1", description: "글쓰기 미션 완료" });
   });
 
   it("takes the hook's merged total as it is instead of adding it again", () => {

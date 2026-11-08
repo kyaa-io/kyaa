@@ -70,7 +70,7 @@ it('orders the screen profile, notice, passport, wallet, favorites, shortcuts an
   const favorites = screen.getByRole('heading', { name: '내 최애' });
   const shortcuts = screen.getByRole('heading', { name: '바로가기' });
   [name, notice, passport, wallet, favorites, shortcuts].reduce((previous, current) => { expect(before(previous, current)).toBe(true); return current; });
-  expect(screen.queryByRole('heading', { name: '함께 모은 도장' })).toBeNull();
+  expect(screen.queryByRole('heading', { name: '함께 모은 스탬프' })).toBeNull();
   expect(screen.queryByText('미인증 최애')).toBeNull();
 });
 
@@ -78,7 +78,7 @@ it('shows stamp progress and the next tier with earned stamps in colour and the 
   renderMy();
   const card = screen.getByRole('region', { name: '내 패스포트' });
   expect(within(card).getByText('이번 쪽 3/9')).toBeInTheDocument();
-  expect(within(card).getByRole('progressbar', { name: '패스포트 이번 쪽 도장 3/9칸' })).toHaveAttribute('aria-valuenow', '33');
+  expect(within(card).getByRole('progressbar', { name: '패스포트 이번 쪽 스탬프 3/9칸' })).toHaveAttribute('aria-valuenow', '33');
   expect(within(card).getByText('실버 2까지 35점')).toBeInTheDocument();
   expect(within(card).getAllByRole('listitem').filter(item => item.getAttribute('data-state') === 'filled')).toHaveLength(3);
   expect(within(card).getAllByRole('listitem').filter(item => item.getAttribute('data-state') === 'empty')).toHaveLength(6);
@@ -86,7 +86,7 @@ it('shows stamp progress and the next tier with earned stamps in colour and the 
   expect(within(card).getAllByLabelText(/아직 안 찍힘/)).toHaveLength(6);
   expect(within(card).getByRole('link', { name: '자세히 보기' })).toHaveAttribute('href', `/passports/${passportA}?locale=ko`);
   expect(card.textContent).not.toMatch(/가입기념/);
-  // 작은 여권 그림에도 받은 도장이 찍혀 있다.
+  // 작은 여권 그림에도 받은 스탬프가 찍혀 있다.
   expect(card.querySelectorAll('[data-passport-slot]')).toHaveLength(3);
 });
 

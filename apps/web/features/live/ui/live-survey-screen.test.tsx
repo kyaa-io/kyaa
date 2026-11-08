@@ -176,11 +176,11 @@ describe("LiveSurveyScreen", () => {
     expect(screen.getByText("Fan Score").parentElement).toHaveTextContent("+2");
     expect(screen.getByText("총점").parentElement).toHaveTextContent("10");
     expect(screen.getByText("상승 · 골드")).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Passport에서 확인하기" })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: "패스포트에서 확인하기" })).toHaveAttribute(
       "href",
       `/passports/${ids.passport}?locale=ko`,
     );
-    expect(screen.getByRole("img", { name: "후기 참여 도장" })).toHaveAttribute("data-stamp-type", "survey");
+    expect(screen.getByRole("img", { name: "후기 참여 스탬프" })).toHaveAttribute("data-stamp-type", "survey");
     expect(container.querySelector('[data-stamp-type="survey"]')).toBeInTheDocument();
   });
 

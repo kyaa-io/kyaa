@@ -121,7 +121,7 @@ describe("CertificationPanel", () => {
     });
     expect(mission).toHaveTextContent("Instagram");
     expect(mission).toHaveTextContent("+1점");
-    expect(mission).not.toHaveTextContent("멤버십 도장");
+    expect(mission).not.toHaveTextContent("멤버십 스탬프");
     expect(mission).not.toHaveTextContent("응모권");
 
     fireEvent.click(screen.getByRole("tab", { name: "내 인증 내역" }));
@@ -318,17 +318,17 @@ it('maps the owned passed quiz to its matching public quiz only',async()=>{
  const other={...quiz,id:'33333333-3333-4333-8333-333333333333',title:'다른 인증'};
  const history={id:'44444444-4444-4444-8444-444444444444',kind:'quiz',missionId:id,title:quiz.title,status:'approved',attemptNumber:1,rejectionReason:null,submittedAt:'2026-09-08T00:00:00Z',reviewedAt:null,actionHref:quiz.actionHref};
  vi.spyOn(globalThis,'fetch').mockImplementation(async input=>Response.json({certifications:String(input).includes('/api/me/')?[history]:[quiz,other]}));
- render(<CertificationPanel slug='kara' locale='ko'/>);const card=await screen.findByRole('link',{name:/Official Fan 인증 퀴즈/});await waitFor(()=>expect(card.querySelector('[data-status="approved"]')).toHaveTextContent('인증 완료'));expect(screen.getByRole('link',{name:/다른 인증/}).querySelector('[data-status="approved"]')).toBeNull();
+ render(<CertificationPanel slug='kara' locale='ko'/>);const card=await screen.findByRole('link',{name:/팬 인증 퀴즈/});await waitFor(()=>expect(card.querySelector('[data-status="approved"]')).toHaveTextContent('인증 완료'));expect(screen.getByRole('link',{name:/다른 인증/}).querySelector('[data-status="approved"]')).toBeNull();
 });
 it('remembers the list on a quiz click and restores focus to that card link when it returns',async()=>{
  auth.ready=true;auth.authenticated=false;sessionStorage.clear();window.history.replaceState({},'','/community?creator=kara&tab=certifications&locale=ko');
  const quiz={id,kind:'quiz',category:'팬 인증',title:'Official Fan 인증 퀴즈',description:'',status:'available',reward:null,actionHref:'/c/kara/verify?locale=ko'};
  vi.spyOn(globalThis,'fetch').mockImplementation(async()=>Response.json({certifications:[quiz]}));
- const view=render(<CertificationPanel slug='kara' locale='ko'/>);const card=await screen.findByRole('link',{name:/Official Fan 인증 퀴즈/});
+ const view=render(<CertificationPanel slug='kara' locale='ko'/>);const card=await screen.findByRole('link',{name:/팬 인증 퀴즈/});
  expect(card).not.toHaveFocus();card.addEventListener('click',e=>e.preventDefault());fireEvent.click(card);
  expect(JSON.parse(sessionStorage.getItem('byus:quiz-close-return')!)).toMatchObject({slug:'kara',href:'/community?creator=kara&tab=certifications&locale=ko',itemId:id});
  rememberQuizFocusReturn(sessionStorage,'kara',id);
  view.unmount();render(<CertificationPanel slug='kara' locale='ko'/>);
- await waitFor(()=>expect(screen.getByRole('link',{name:/Official Fan 인증 퀴즈/})).toHaveFocus());
+ await waitFor(()=>expect(screen.getByRole('link',{name:/팬 인증 퀴즈/})).toHaveFocus());
  expect(sessionStorage.getItem('byus:quiz-focus-return')).toBeNull();
 });

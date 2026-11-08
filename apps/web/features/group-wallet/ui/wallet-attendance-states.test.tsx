@@ -15,7 +15,7 @@ const serve=(attendance:Record<string,unknown>,extra:Record<string,unknown>={})=
 beforeEach(()=>{sessionStorage.clear();auth.ready=true;auth.authenticated=true;});
 it('day one: first-stamp title and a single check-in action',async()=>{
  serve({streak:0,nextBonusIn:7});render(<WalletScreen locale='ko' attendance/>);
- expect(await screen.findByRole('button',{name:'오늘 출석하고 포인트 받기'})).toBeEnabled();expect(screen.getByRole('heading',{name:'오늘 첫 도장을 찍어요'})).toBeInTheDocument();expect(screen.queryByText('오늘 출석 완료')).toBeNull();
+ expect(await screen.findByRole('button',{name:'오늘 출석하고 포인트 받기'})).toBeEnabled();expect(screen.getByRole('heading',{name:'오늘 첫 스탬프를 찍어요'})).toBeInTheDocument();expect(screen.queryByText('오늘 출석 완료')).toBeNull();
 });
 it('mid streak: check-in action and no completion row',async()=>{
  serve({streak:3,nextBonusIn:4});render(<WalletScreen locale='ko' attendance/>);
@@ -23,7 +23,7 @@ it('mid streak: check-in action and no completion row',async()=>{
 });
 it('before the seventh stamp: check-in action and the seventh-day hint',async()=>{
  serve({});render(<WalletScreen locale='ko' attendance/>);
- expect(await screen.findByRole('button',{name:'오늘 출석하고 포인트 받기'})).toBeEnabled();expect(screen.getByText('오늘 일곱 번째 도장을 찍어요')).toBeInTheDocument();
+ expect(await screen.findByRole('button',{name:'오늘 출석하고 포인트 받기'})).toBeEnabled();expect(screen.getByText('오늘 일곱 번째 스탬프를 찍어요')).toBeInTheDocument();
 });
 it('already done: says completion and the actual points once, offers only the record link',async()=>{
  serve({checkedIn:true,streak:7,nextBonusIn:7,days:[{date:'2026-11-02',points:30}]});render(<WalletScreen locale='ko' attendance/>);

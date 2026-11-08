@@ -72,7 +72,7 @@ export function StampArtwork({
     : null;
   const stampDescription = [
     celebrityName,
-    `${accessibleLabel} ${locale === "ko" ? "도장" : "Stamp"}`,
+    `${accessibleLabel} ${locale === "ko" ? "스탬프" : "Stamp"}`,
     accessibleDate,
     type !== "first_reaction" && typeof points === "number"
       ? locale === "ko" ? `${points}점 획득` : translate(locale, localizedMessages.m2ffacf60eac4, "{0} {1} earned", [points, pointUnit(locale, points)])
@@ -118,8 +118,8 @@ export function VerificationSealArtwork({
     day: "numeric",
   }).format(new Date(issuedAt));
   const accessibleLabel = points === 0
-    ? `${celebrityName} ${typeLabel} ${locale === "ko" ? "도장" : "Stamp"}, ${accessibleDate}`
-    : locale === "ko" ? `${celebrityName} ${typeLabel} 도장, ${accessibleDate}, ${points}점 획득` : translate(locale, localizedMessages.ma6f6c98a5da9, "{0} {1} Stamp, {2}, {3} {4} earned", [celebrityName, typeLabel, accessibleDate, points, pointUnit(locale, points)]);
+    ? `${celebrityName} ${typeLabel} ${locale === "ko" ? "스탬프" : "Stamp"}, ${accessibleDate}`
+    : locale === "ko" ? `${celebrityName} ${typeLabel} 스탬프, ${accessibleDate}, ${points}점 획득` : translate(locale, localizedMessages.ma6f6c98a5da9, "{0} {1} Stamp, {2}, {3} {4} earned", [celebrityName, typeLabel, accessibleDate, points, pointUnit(locale, points)]);
 
   return (
     <span
@@ -179,7 +179,7 @@ export function PassportStampCanvas({
   const visibleStamps = typeof revealCount === "number"
     ? recentStamps.slice(0, Math.max(0, Math.min(revealCount, recentStamps.length)))
     : recentStamps;
-  const countLabel = locale === "ko" ? `도장 ${totalCount}개` : locale === "en" ? `${totalCount} ${totalCount === 1 ? "Stamp" : "Stamps"}` : `${totalCount.toLocaleString(locale)} Stamp`;
+  const countLabel = locale === "ko" ? `스탬프 ${totalCount}개` : locale === "en" ? `${totalCount} ${totalCount === 1 ? "Stamp" : "Stamps"}` : `${totalCount.toLocaleString(locale)} Stamp`;
   const recentLabel = totalCount > 9
     ? locale === "ko" ? `전체 ${totalCount}개 중 최근 9개 표시` : translate(locale, localizedMessages.m045a5cc4ee53, "Showing the latest 9 of {0}", [totalCount])
     : countLabel;
@@ -216,7 +216,7 @@ export function PassportStampCanvas({
     >
       {assetFailed ? (
         <div className={styles.assetError} role="status">
-          {locale === "ko" ? "Passport 이미지를 불러오지 못했어요." : translate(locale, localizedMessages.ma2e490dda1bc, "The Passport image could not be loaded.")}
+          {locale === "ko" ? "패스포트 이미지를 불러오지 못했어요." : translate(locale, localizedMessages.ma2e490dda1bc, "The Passport image could not be loaded.")}
         </div>
       ) : (
         <Image

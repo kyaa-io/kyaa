@@ -32,7 +32,7 @@ export function usePointRewardBurst() {
 
 /**
  * 261107-2 D8: the screen-level hook for `celebrateReward` (components/fan-ui/reward-celebration.ts). Mount it where a grant
- * arrives and change `burstKey` per grant; it pops the shared coin badge and shows the shared "+20P · 도장 1" toast.
+ * arrives and change `burstKey` per grant; it pops the shared coin badge and shows the shared "+20P · 스탬프 1" toast.
  * The toast is the announcement, so there is no extra live region (`announce` is kept for callers and no longer adds speech).
  */
 export function PointRewardBurst({ locale, points, stamps = 0, label, anchor, burstKey = 0, onDone }: { locale: AppLocale; points: number; stamps?: number; label?: string; anchor?: Element | null; burstKey?: number; onDone?: () => void; announce?: boolean }) {

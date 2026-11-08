@@ -20,7 +20,7 @@ describe("GroupRoomHub", () => {
     expect(select).toHaveBeenCalledWith(rooms[0]);
     expect(screen.getByRole("heading", { name: "다른 방" })).toBeInTheDocument();
     const locked = screen.getByRole("button", { name: /잠긴 방/ });
-    expect(within(locked).getByText("Gold 이상")).toBeInTheDocument();
+    expect(within(locked).getByText("골드 이상")).toBeInTheDocument();
     expect(within(locked).getByText("조건 보기")).toBeInTheDocument();
     expect(screen.queryByText("비밀 메시지")).not.toBeInTheDocument();
     expect(screen.queryByText("9")).not.toBeInTheDocument();
@@ -51,7 +51,7 @@ describe("GroupRoomHub", () => {
     render(hub([room], { proofHref: "/c/x/certifications?locale=ko", onSelect: select }));
     const button = screen.getByRole("button", { name: /골드 방/ }) as HTMLButtonElement;
     expect(button.disabled).toBe(true);
-    expect(button.getAttribute("aria-label")).toContain("Gold · ");
+    expect(button.getAttribute("aria-label")).toContain("골드 · ");
     expect(screen.queryByText("비밀 메시지")).not.toBeInTheDocument();
     fireEvent.click(button);
     expect(select).not.toHaveBeenCalled();
@@ -67,7 +67,7 @@ describe("GroupPublicRoomList", () => {
   it("shows names and tiers as links and never any room content", () => {
     render(<GroupPublicRoomList rooms={[{ name: "인증팬 소통방", minimumTier: "Bronze" }, { name: "자유 소통방", minimumTier: null }]} locale="ko" rowHref="/login?x=1" />);
     const link = screen.getByRole("link", { name: /인증팬 소통방/ });
-    expect(within(link).getByText("Bronze 이상")).toBeVisible();
+    expect(within(link).getByText("브론즈 이상")).toBeVisible();
     expect(within(screen.getByRole("link", { name: /자유 소통방/ })).getByText("가입한 팬")).toBeVisible();
     expect(screen.queryByRole("searchbox")).not.toBeInTheDocument();
   });

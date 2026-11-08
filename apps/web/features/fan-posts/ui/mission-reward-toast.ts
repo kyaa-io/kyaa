@@ -6,7 +6,7 @@ import type { AppLocale } from "@/i18n/locales";
 import { celebrateStamp } from "@/features/dukjil/ui/stamp-slam";
 
 /** C8 + D8: a mission finished outside 덕질 (writing on the board, commenting under a post) is told once by the shared reward
- * toast ("+3P · 도장 1", second line "댓글 미션 완료"). Only what the server reported is named. A mission that stamped lands its
+ * toast ("+3P · 스탬프 1", second line "댓글 미션 완료"). Only what the server reported is named. A mission that stamped lands its
  * stamp over the screen first (D3), then the same toast. */
 export function showMissionRewardToast(locale: AppLocale, mission: "post" | "comment", reward: { points: number; stamps?: number }) {
   const points = Number.isFinite(reward.points) && reward.points > 0 ? reward.points : 0, stamps = reward.stamps ?? 0;

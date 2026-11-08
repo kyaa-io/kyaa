@@ -4,16 +4,13 @@ import { ChevronRight, UserRound } from "lucide-react";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import { FanTag } from "@/components/fan-ui/fan-tag";
 import { dukjilText } from "@/features/dukjil/ui/dukjil-copy";
-import { levelLabel } from "@/features/passport/domain/passport-read-model";
-import { FAN_TIERS, type FanTier } from "@/features/rewards/domain/reward-policy";
+import { tierDisplayName } from "@/features/passport/domain/passport-read-model";
 import type { AppLocale } from "@/i18n/locales";
 import styles from "./group-members.module.css";
 
-const isFanTier = (value: string): value is FanTier => (FAN_TIERS as readonly string[]).includes(value);
-
 /** Grade as a tag beside the name (261107-2 design-r4 7.1). */
 export function GroupPersonTier({ tier, locale }: { tier: string; locale: AppLocale }) {
-  return <FanTag tone="neutral" className={styles.tierTag}>{isFanTier(tier) ? levelLabel(locale, tier) : tier}</FanTag>;
+  return <FanTag tone="neutral" className={styles.tierTag}>{tierDisplayName(locale, tier)}</FanTag>;
 }
 
 /** Hearts at the row end: the main number of a fan row. One heart is one true fan. */

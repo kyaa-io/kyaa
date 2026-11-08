@@ -27,6 +27,23 @@ type Mission = z.infer<typeof liveMissionSchema>;
 type Props = { slug: string; locale: AppLocale };
 type SubmissionState = "pending" | "complete" | "error";
 
+/** The kind of a LIVE mission in the viewer's language (it used to print the raw type: QUIZ, SURVEY, VOTE). */
+const MISSION_TYPE_LABEL: Record<AppLocale, Record<"quiz" | "survey" | "vote", string>> = {
+  ko: { quiz: "퀴즈", survey: "설문", vote: "투표" },
+  en: { quiz: "Quiz", survey: "Survey", vote: "Vote" },
+  ja: { quiz: "クイズ", survey: "アンケート", vote: "投票" },
+  "zh-Hans": { quiz: "问答", survey: "问卷", vote: "投票" },
+  "zh-Hant": { quiz: "問答", survey: "問卷", vote: "投票" },
+  es: { quiz: "Quiz", survey: "Encuesta", vote: "Votación" },
+  id: { quiz: "Kuis", survey: "Survei", vote: "Voting" },
+  vi: { quiz: "Câu đố", survey: "Khảo sát", vote: "Bình chọn" },
+  th: { quiz: "ควิซ", survey: "แบบสำรวจ", vote: "โหวต" },
+  pt: { quiz: "Quiz", survey: "Pesquisa", vote: "Votação" },
+  fr: { quiz: "Quiz", survey: "Sondage", vote: "Vote" },
+  ru: { quiz: "Викторина", survey: "Опрос", vote: "Голосование" },
+};
+export const missionTypeLabel = (locale: AppLocale, type: "quiz" | "survey" | "vote") => MISSION_TYPE_LABEL[locale][type];
+
 export function LiveMissionScreen(props: Props) {
   const auth = usePrivy();
   const artCampaign = props.slug === elinaLiveSlug;
@@ -150,7 +167,7 @@ function MissionContent({ slug, locale, auth }: Props & { auth: ReturnType<typeo
         const href = mission.nextAction?.href ? new URL(mission.nextAction.href, "https://byus.invalid") : null;
         if (href) href.searchParams.set("locale", locale);
         return <article key={mission.id} className={styles.card} aria-busy={pending}>
-          <span>{mission.type.toUpperCase()} · {label}</span><h2><TranslatedText text={mission.title} locale={locale} controls={false} /></h2><TranslatedText as="p" text={mission.description} locale={locale} />
+          <span>{missionTypeLabel(locale, mission.type)} · {label}</span><h2><TranslatedText text={mission.title} locale={locale} controls={false} /></h2><TranslatedText as="p" text={mission.description} locale={locale} />
           {mission.completedAt && <p><time dateTime={mission.completedAt}>{new Date(mission.completedAt).toLocaleString(locale)}</time></p>}
           {href && <FanAction href={`${href.pathname}${href.search}${href.hash}`}>{mission.completed ? c.view : label}</FanAction>}
           {!blocked && mission.questions.map(question => <fieldset key={question.id} disabled={pending || mission.completed || blocked}>
@@ -163,7 +180,7 @@ function MissionContent({ slug, locale, auth }: Props & { auth: ReturnType<typeo
           <FanAction variant="primary" disabled={pending || mission.completed || blocked || mission.questions.some(question => !answers[question.id])} onClick={() => void submit(mission)}>
             {pending ? (locale === "ko" ? "제출 중…" : translate(locale, localizedMessages.m4ea9a49f362b, "Submitting…")) : mission.completed ? (locale === "ko" ? "완료됨" : translate(locale, localizedMessages.m4c70b81bb0c3, "Completed")) : (locale === "ko" ? "미션 완료" : translate(locale, localizedMessages.me1b43e38ddba, "Complete mission"))}
           </FanAction>
-          {submissions[mission.id] === "complete" && <p role="status" className={styles.notice}>{locale === "ko" ? "미션을 완료했어요. 보상과 도장이 기록되었습니다." : translate(locale, localizedMessages.m69b94777d35b, "Mission complete. Your rewards and Stamp were recorded.")}</p>}
+          {submissions[mission.id] === "complete" && <p role="status" className={styles.notice}>{locale === "ko" ? "미션을 완료했어요. 보상과 스탬프가 기록되었습니다." : translate(locale, localizedMessages.m69b94777d35b, "Mission complete. Your rewards and Stamp were recorded.")}</p>}
           {submissions[mission.id] === "error" && <p role="alert" className={styles.notice}>{locale === "ko" ? "미션을 완료하지 못했어요. 다시 시도해 주세요." : translate(locale, localizedMessages.m7e12c8224787, "Mission could not be completed. Please try again.")}</p>}
         </article>;
       })}

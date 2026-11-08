@@ -11,7 +11,7 @@ describe("recent collection grouping", () => {
   it("groups the same Passport and stamp title within the displayed minute, retaining total count and destination", () => {
     const groups = groupRecentCollection([item, { ...item, id: "another-stamp", occurredAt: "2026-09-06T10:30:10+09:00" }]);
     expect(groups).toEqual([{ item, count: 2 }]);
-    expect(collectionGroupTitle(groups[0], "ko")).toBe("엘리나 도장 2개");
+    expect(collectionGroupTitle(groups[0], "ko")).toBe("엘리나 스탬프 2개");
     expect(collectionGroupTitle(groups[0], "en")).toBe("엘리나 Stamp ×2");
   });
 
@@ -27,4 +27,13 @@ describe("recent collection grouping", () => {
     expect(groupRecentCollection(items).every(group => group.count === 1)).toBe(true);
     expect(collectionGroupTitle({ item: items[2], count: 1 }, "ko")).toBe("LIVE 출석");
   });
+});
+
+it("says 스탬프 and 패스포트 on Korean collection rows whichever spelling the database sent", async () => {
+  const { koreanCollectionTitle } = await import("./recent-collection");
+  expect(koreanCollectionTitle("엘리나 Stamp")).toBe("엘리나 스탬프");
+  expect(koreanCollectionTitle("엘리나 스탬프")).toBe("엘리나 스탬프");
+  expect(koreanCollectionTitle("엘리나 여권")).toBe("엘리나 패스포트");
+  expect(koreanCollectionTitle("[P1 시험] 시험 크리에이터 Stamp")).toBe("[P1 시험] 시험 크리에이터 스탬프");
+  expect(koreanCollectionTitle("엘리나 첫 응원 스탬프")).toBe("엘리나 첫 응원 스탬프");
 });

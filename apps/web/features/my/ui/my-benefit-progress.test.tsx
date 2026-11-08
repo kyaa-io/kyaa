@@ -53,7 +53,7 @@ describe("MY next benefit", () => {
     expect(await screen.findByRole("progressbar", { name: "팬 점수 조건 달성률" })).toHaveAttribute("value", "53");
     expect(screen.getByText("7점 더 필요해요.")).toBeInTheDocument();
     expect(screen.getByText("실버 등급 필요")).toBeInTheDocument();
-    expect(screen.getByText("라이브 출석 도장 필요")).toBeInTheDocument();
+    expect(screen.getByText("라이브 출석 스탬프 필요")).toBeInTheDocument();
     expect(screen.getByText("후기 참여 완료 필요")).toBeInTheDocument();
     expect(screen.getByText(/신청·수령 시작:/)).toHaveTextContent("KST");
   });

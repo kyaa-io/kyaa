@@ -45,7 +45,7 @@ const parseWallet = (value: unknown) => walletSchema.parse(value);
 
 export function RaffleCreator({ celebrity, locale }: Pick<Props, "celebrity" | "locale">) {
   const photo = resolvePhoto(celebrity.image.photos, "identity.avatar", celebrity.image.url, locale);
-  return <div className={styles.creator}><img src={photo.src} alt="" /><span>{celebrity.name} · FOR MY FANS</span></div>;
+  return <div className={styles.creator}><img src={photo.src} alt="" /><span>{celebrity.name}</span></div>;
 }
 
 export function deliveryLabel(raffle: Raffle, locale: AppLocale) {

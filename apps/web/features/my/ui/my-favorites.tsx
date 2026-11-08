@@ -49,7 +49,7 @@ export function MyFavoritesSkeleton({ title }: { title: string }) {
   </section>;
 }
 
-/** 내 최애: 사진을 크게 쓰고 연속 일수와 도장 진행을 한 줄로 붙인다. 값은 실제 응답이다. */
+/** 내 최애: 사진을 크게 쓰고 연속 일수와 스탬프 진행을 한 줄로 붙인다. 값은 실제 응답이다. */
 export function MyFavorites({ creators, locale, labels }: { creators: Creator[]; locale: AppLocale; labels: MyFavoritesLabels }) {
   return <section className={styles.section} aria-labelledby="my-favorites-title">
     <header><h2 id="my-favorites-title">{labels.title}</h2><FanAction variant="text" trailingIcon={<ArrowRight />} href={`/celebrities?locale=${locale}`}>{labels.find}</FanAction></header>

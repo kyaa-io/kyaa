@@ -52,7 +52,7 @@ export function FanActivityCompletionSummary({
         <StampArtwork type={stampType} locale={locale} label={stampName} />
       </div>
       <div className={styles.content}>
-        <p className={styles.eyebrow}>{stampName} {locale === "ko" ? "도장" : "Stamp"}</p>
+        <p className={styles.eyebrow}>{stampName} {locale === "ko" ? "스탬프" : "Stamp"}</p>
         <Heading id={headingId}>{title}</Heading>
         {description ? <p className={styles.description}>{description}</p> : null}
         <dl className={styles.metrics} aria-label={locale === "ko" ? "활동 보상" : translate(locale, localizedMessages.mc2562d2ef72d, "Activity rewards")}>
@@ -68,7 +68,7 @@ export function FanActivityCompletionSummary({
         <div className={styles.actions}>
           {passportHref ? (
             <FanAction href={passportHref} variant="neutral">
-              {locale === "ko" ? "Passport에서 확인하기" : translate(locale, localizedMessages.m8f1b5fa4dba6, "View in Passport")}
+              {locale === "ko" ? "패스포트에서 확인하기" : translate(locale, localizedMessages.m8f1b5fa4dba6, "View in Passport")}
             </FanAction>
           ) : null}
           {primaryAction}

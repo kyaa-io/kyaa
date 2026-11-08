@@ -252,7 +252,7 @@ describe("FanOperations", () => {
     const submit = within(dialog).getByRole("button", { name: "교정 기록" });
     expect(within(dialog).getByText("패스포트 NFT")).toBeInTheDocument();
     expect(
-      within(dialog).getByRole("heading", { name: "도장" }),
+      within(dialog).getByRole("heading", { name: "스탬프" }),
     ).toBeInTheDocument();
     expect(submit).toBeDisabled();
     fireEvent.change(within(dialog).getByRole("spinbutton", { name: "조정값 (-100~100)" }), {

@@ -10,7 +10,7 @@ const loadPop = () => (popModule ??= import("./fan-motion-pop").then((module) =>
 export type FanRewardPopProps = Readonly<{
   /** 이 값이 바뀔 때 한 번 연출한다(첫 마운트는 연출 없음). 보통 완료 여부나 지급 횟수. */
   trigger: string | number | boolean;
-  /** `complete`: 미션 완료 도장 scale .6→1, `reward`: 포인트·출석 획득 표시가 아래에서 올라옴. 둘 다 600ms 1회. */
+  /** `complete`: 미션 완료 스탬프 scale .6→1, `reward`: 포인트·출석 획득 표시가 아래에서 올라옴. 둘 다 600ms 1회. */
   kind?: "reward" | "complete";
   children: ReactNode;
 }>;

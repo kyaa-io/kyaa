@@ -1681,7 +1681,7 @@
   },
   "m8f1b5fa4dba6": {
     "en": "View in Passport",
-    "ko": "Passport에서 확인하기",
+    "ko": "패스포트에서 확인하기",
     "source": "components/fan-ui/fan-activity-completion-summary",
     "id": "components/fan-ui/fan-activity-completion-summary:inline.m4ede7b4554f3"
   },
@@ -1921,7 +1921,7 @@
   },
   "m7918f39efab0": {
     "en": "You don't have a Passport or any Stamps yet.",
-    "ko": "아직 발급된 Passport와 도장이 없어요.",
+    "ko": "아직 발급된 Passport와 스탬프가 없어요.",
     "source": "components/guest-home",
     "id": "components/guest-home:copy.passportEmpty"
   },
@@ -2029,7 +2029,7 @@
   },
   "m6c7f6a661030": {
     "en": "Stamps",
-    "ko": "도장",
+    "ko": "스탬프",
     "source": "components/guest-home",
     "id": "components/guest-home:copy.stamps"
   },
@@ -2119,7 +2119,7 @@
   },
   "mc91e6e2d8dcc": {
     "en": "Opened Fan Passport with nine empty Stamp circles",
-    "ko": "빈 도장 원 9개가 있는 펼쳐진 Fan Passport",
+    "ko": "빈 스탬프 원 9개가 있는 펼쳐진 Fan Passport",
     "source": "components/guest-home",
     "id": "components/guest-home:inline.mcd41f0122fb6"
   },
@@ -3979,13 +3979,13 @@
   },
   "m2c7f3722e34e": {
     "en": "You can view Stamps and participation records for supported fan activities you complete.",
-    "ko": "지원되는 팬 활동을 완료하면 도장과 참여 기록을 확인할 수 있어요.",
+    "ko": "지원되는 팬 활동을 완료하면 스탬프와 참여 기록을 확인할 수 있어요.",
     "source": "components/service-guide/content",
     "id": "components/service-guide/content:serviceGuideContent.passportPoints.1"
   },
   "m2d16c97f1f60": {
     "en": "Passports and Stamps do not represent cash, securities, investment products, or rights in the company.",
-    "ko": "Passport와 도장은 현금, 증권, 투자 상품이나 회사에 대한 권리를 뜻하지 않아요.",
+    "ko": "Passport와 스탬프는 현금, 증권, 투자 상품이나 회사에 대한 권리를 뜻하지 않아요.",
     "source": "components/service-guide/content",
     "id": "components/service-guide/content:serviceGuideContent.passportPoints.2"
   },
@@ -5275,7 +5275,7 @@
   },
   "m83ce39f9b546": {
     "en": "Stamp",
-    "ko": "필요 도장",
+    "ko": "필요 스탬프",
     "source": "features/benefit/ui/benefit-screen",
     "id": "features/benefit/ui/benefit-screen:copy.stamp"
   },
@@ -6301,7 +6301,7 @@
   },
   "m3b9adafe4d7e": {
     "en": "See you at my LIVE soon 💜\nLog your LIVE check-ins on kyaa and be sure to collect the cute stamps!\n{0}",
-    "ko": "곧 라이브에서 만나요 💜\nkyaa에서 라이브 출석도 기록하고 예쁜 도장도 꼭 받아가세요!\n{0}",
+    "ko": "곧 라이브에서 만나요 💜\nkyaa에서 라이브 출석도 기록하고 예쁜 스탬프도 꼭 받아가세요!\n{0}",
     "source": "features/bias/domain/promotion",
     "id": "features/bias/domain/promotion:copy.story"
   },
@@ -6409,7 +6409,7 @@
   },
   "maecca8f592dc": {
     "en": "1 Membership Stamp",
-    "ko": "멤버십 도장 1개",
+    "ko": "멤버십 스탬프 1개",
     "source": "features/certification/ui/certification-detail-screen",
     "id": "features/certification/ui/certification-detail-screen:inline.md3085a1836bb"
   },
@@ -6841,7 +6841,7 @@
   },
   "mdf1cff686174": {
     "en": "1 Membership Stamp",
-    "ko": "멤버십 도장 1개",
+    "ko": "멤버십 스탬프 1개",
     "source": "features/certification/ui/certification-panel",
     "id": "features/certification/ui/certification-panel:inline.md3085a1836bb"
   },
@@ -6859,7 +6859,7 @@
   },
   "m1126b31a7c01": {
     "en": "A welcome Stamp for joining kyaa.",
-    "ko": "가입하면 받는 기념 도장이에요.",
+    "ko": "가입하면 받는 기념 스탬프예요.",
     "source": "features/community-stamps/domain/community-stamps",
     "id": "features/community-stamps/domain/community-stamps:COMMUNITY_STAMPS.welcome.help"
   },
@@ -6943,7 +6943,7 @@
   },
   "m8a61cccb79fa": {
     "en": "Stamp",
-    "ko": "도장",
+    "ko": "스탬프",
     "source": "features/community-stamps/ui/community-stamp-artwork",
     "id": "features/community-stamps/ui/community-stamp-artwork:inline.m8520ef039320"
   },
@@ -6955,7 +6955,7 @@
   },
   "made923b999af": {
     "en": "Check in once a day and keep today with your favorite as a Stamp.",
-    "ko": "하루 한 번, 최애와 함께한 오늘을 도장으로 남겨요.",
+    "ko": "하루 한 번, 최애와 함께한 오늘을 스탬프로 남겨요.",
     "source": "features/community-stamps/ui/daily-checkin",
     "id": "features/community-stamps/ui/daily-checkin:copy.help"
   },
@@ -7003,7 +7003,7 @@
   },
   "me1b97abc8909": {
     "en": "You earned today’s check-in Stamp.",
-    "ko": "오늘의 출석 도장을 받았어요.",
+    "ko": "오늘의 출석 스탬프를 받았어요.",
     "source": "features/community-stamps/ui/daily-checkin",
     "id": "features/community-stamps/ui/daily-checkin:copy.awarded"
   },
@@ -7021,7 +7021,7 @@
   },
   "m9ca07fc0dbd7": {
     "en": "Your check-in Stamp is getting ready. Please try again shortly.",
-    "ko": "출석 도장을 받을 준비 중이에요. 잠시 후 다시 시도해 주세요.",
+    "ko": "출석 스탬프를 받을 준비 중이에요. 잠시 후 다시 시도해 주세요.",
     "source": "features/community-stamps/ui/daily-checkin",
     "id": "features/community-stamps/ui/daily-checkin:copy.wallet"
   },
@@ -7129,7 +7129,7 @@
   },
   "m08c56b12da41": {
     "en": "Confirm this favorite and the member who sent the link receives their Share Stamp.",
-    "ko": "최애를 확인하면 링크를 보낸 회원의 공유 도장이 기록돼요.",
+    "ko": "최애를 확인하면 링크를 보낸 회원의 공유 스탬프가 기록돼요.",
     "source": "features/community-stamps/ui/shared-passport-landing",
     "id": "features/community-stamps/ui/shared-passport-landing:inline.m25392b9251ce.proof"
   },
@@ -7723,7 +7723,7 @@
   },
   "mc7e1a60b9ffd": {
     "en": "Complete a mission to record a Stamp.",
-    "ko": "작품을 고르고 도장을 남겨요.",
+    "ko": "작품을 고르고 스탬프를 남겨요.",
     "source": "features/live/ui/elina-mission-entry",
     "id": "features/live/ui/elina-mission-entry:copy.hint"
   },
@@ -8107,13 +8107,13 @@
   },
   "m9cb659e21e1b": {
     "en": "Enter the Fan Code shared during the LIVE to record attendance—no reservation required.",
-    "ko": "LIVE에서 공개된 Fan Code를 입력하면 예약 여부와 관계없이 출석을 남길 수 있어요.",
+    "ko": "LIVE에서 공개된 출석코드를 입력하면 예약 여부와 관계없이 출석을 남길 수 있어요.",
     "source": "features/live/ui/live-event-screen",
     "id": "features/live/ui/live-event-screen:copy.fanCodeHelper"
   },
   "meb25155466c1": {
     "en": "Enter Fan Code",
-    "ko": "Fan Code 입력",
+    "ko": "출석코드 입력",
     "source": "features/live/ui/live-event-screen",
     "id": "features/live/ui/live-event-screen:copy.attendance.label"
   },
@@ -8155,7 +8155,7 @@
   },
   "m40fd2887086a": {
     "en": "You can enter the Fan Code once the LIVE starts.",
-    "ko": "Fan Code는 LIVE 시작 후 입력할 수 있어요.",
+    "ko": "출석코드는 LIVE 시작 후 입력할 수 있어요.",
     "source": "features/live/ui/live-event-screen",
     "id": "features/live/ui/live-event-screen:copy.attendance.beforeLive"
   },
@@ -8173,7 +8173,7 @@
   },
   "ma7c4c439c371": {
     "en": "That Fan Code isn’t valid. Check the code shared during the LIVE.",
-    "ko": "Fan Code가 올바르지 않아요. LIVE에서 공개된 코드를 다시 확인해 주세요.",
+    "ko": "출석코드가 올바르지 않아요. LIVE에서 공개된 코드를 다시 확인해 주세요.",
     "source": "features/live/ui/live-event-screen",
     "id": "features/live/ui/live-event-screen:copy.attendance.invalid"
   },
@@ -8197,7 +8197,7 @@
   },
   "mc6dfac436e41": {
     "en": "Your Passport is still getting ready. Try again shortly.",
-    "ko": "Passport 준비가 끝나지 않았어요. 잠시 후 다시 시도해 주세요.",
+    "ko": "패스포트 준비가 끝나지 않았어요. 잠시 후 다시 시도해 주세요.",
     "source": "features/live/ui/live-event-screen",
     "id": "features/live/ui/live-event-screen:copy.attendance.wallet"
   },
@@ -8215,7 +8215,7 @@
   },
   "mbb8252b2f1ce": {
     "en": "You earned an Attendance Stamp, +3 Fan Score, and 2 raffle tickets.",
-    "ko": "출석 도장, Fan Score +3, 응모권 2장이 기록되었습니다.",
+    "ko": "출석 스탬프, Fan Score +3, 응모권 2장이 기록되었습니다.",
     "source": "features/live/ui/live-event-screen",
     "id": "features/live/ui/live-event-screen:copy.attendance.successHelper"
   },
@@ -8227,7 +8227,7 @@
   },
   "md07b6a5fbdf5": {
     "en": "Take the survey for your next Stamp",
-    "ko": "설문 참여하고 다음 도장 받기",
+    "ko": "설문 참여하고 다음 스탬프 받기",
     "source": "features/live/ui/live-event-screen",
     "id": "features/live/ui/live-event-screen:copy.attendance.survey"
   },
@@ -8437,7 +8437,7 @@
   },
   "mfe35df368010": {
     "en": "Reservation Stamp earned",
-    "ko": "예약 도장 적립 완료",
+    "ko": "예약 스탬프 적립 완료",
     "source": "features/live/ui/live-event-screen",
     "id": "features/live/ui/live-event-screen:copy.stampIssued"
   },
@@ -8767,7 +8767,7 @@
   },
   "md8a4cb6fc81f": {
     "en": "View participation in Passport",
-    "ko": "Passport에서 참여 기록 보기",
+    "ko": "패스포트에서 참여 기록 보기",
     "source": "features/live/ui/live-event-screen",
     "id": "features/live/ui/live-event-screen:inline.m306937f88d23"
   },
@@ -8779,7 +8779,7 @@
   },
   "mbe3a5f73fa38": {
     "en": "Enter your Fan Code now",
-    "ko": "지금 Fan Code를 입력해 주세요",
+    "ko": "지금 출석코드를 입력해 주세요",
     "source": "features/live/ui/live-event-screen",
     "id": "features/live/ui/live-event-screen:inline.m1c2ed13b8347"
   },
@@ -8947,7 +8947,7 @@
   },
   "m69b94777d35b": {
     "en": "Mission complete. Your rewards and Stamp were recorded.",
-    "ko": "미션을 완료했어요. 보상과 도장이 기록되었습니다.",
+    "ko": "미션을 완료했어요. 보상과 스탬프가 기록되었습니다.",
     "source": "features/live/ui/live-mission-screen",
     "id": "features/live/ui/live-mission-screen:inline.m6dcdbd1df893"
   },
@@ -9007,13 +9007,13 @@
   },
   "m4aeb574b27d6": {
     "en": "Verify attendance with the LIVE Fan Code to unlock this survey.",
-    "ko": "LIVE의 Fan Code로 출석을 완료하면 설문이 열립니다.",
+    "ko": "LIVE의 출석코드로 출석을 완료하면 설문이 열립니다.",
     "source": "features/live/ui/live-survey-screen",
     "id": "features/live/ui/live-survey-screen:copy.attendanceBody"
   },
   "mffb86af5380b": {
     "en": "Enter Fan Code",
-    "ko": "Fan Code 입력하러 가기",
+    "ko": "출석코드 입력하러 가기",
     "source": "features/live/ui/live-survey-screen",
     "id": "features/live/ui/live-survey-screen:copy.attendanceAction"
   },
@@ -9139,7 +9139,7 @@
   },
   "m2e8bd9aa8ca2": {
     "en": "Survey Stamp earned",
-    "ko": "설문 도장 적립 완료",
+    "ko": "설문 스탬프 적립 완료",
     "source": "features/live/ui/live-survey-screen",
     "id": "features/live/ui/live-survey-screen:copy.stamp"
   },
@@ -9313,7 +9313,7 @@
   },
   "m1d222f21cbca": {
     "en": "Stamp required",
-    "ko": "도장 필요",
+    "ko": "스탬프 필요",
     "source": "features/my/ui/my-benefit-progress",
     "id": "features/my/ui/my-benefit-progress:inline.m736d14a6c94d"
   },
@@ -9463,7 +9463,7 @@
   },
   "mfadefc3042da": {
     "en": "Stamps",
-    "ko": "도장",
+    "ko": "스탬프",
     "source": "features/my/ui/my-screen",
     "id": "features/my/ui/my-screen:copy.stamps"
   },
@@ -10297,19 +10297,19 @@
   },
   "m9f51d19ce306": {
     "en": "Passport issuance progress",
-    "ko": "Passport 발급 과정",
+    "ko": "패스포트 발급 과정",
     "source": "features/passport/ui/passport-issuance-dialog",
     "id": "features/passport/ui/passport-issuance-dialog:copy.progress"
   },
   "m84198a93cc93": {
     "en": "{0} Passport issued",
-    "ko": "{0} Passport 발급 완료",
+    "ko": "{0} 패스포트 발급 완료",
     "source": "features/passport/ui/passport-issuance-dialog",
     "id": "features/passport/ui/passport-issuance-dialog:copy.completeTitle.message"
   },
   "m052058d743cc": {
     "en": "Your first fan verification Stamp and +1 fan score are recorded.",
-    "ko": "첫 팬 인증 도장과 팬 점수 +1이 기록됐어요.",
+    "ko": "첫 팬 인증 스탬프와 팬 점수 +1이 기록됐어요.",
     "source": "features/passport/ui/passport-issuance-dialog",
     "id": "features/passport/ui/passport-issuance-dialog:copy.completeBody"
   },
@@ -10327,31 +10327,31 @@
   },
   "m1b50b4cd86a2": {
     "en": "Copy full Fan ID",
-    "ko": "전체 Fan ID 복사",
+    "ko": "전체 팬 ID 복사",
     "source": "features/passport/ui/passport-issuance-dialog",
     "id": "features/passport/ui/passport-issuance-dialog:copy.copyFanId"
   },
   "m55401e01d6fa": {
     "en": "Fan ID copied.",
-    "ko": "Fan ID를 복사했어요.",
+    "ko": "팬 ID를 복사했어요.",
     "source": "features/passport/ui/passport-issuance-dialog",
     "id": "features/passport/ui/passport-issuance-dialog:copy.copiedFanId"
   },
   "mf1fe2e622705": {
     "en": "Couldn’t copy the Fan ID.",
-    "ko": "Fan ID를 복사하지 못했어요.",
+    "ko": "팬 ID를 복사하지 못했어요.",
     "source": "features/passport/ui/passport-issuance-dialog",
     "id": "features/passport/ui/passport-issuance-dialog:copy.copyFanIdFailed"
   },
   "mdd07540869ca": {
     "en": "Fan Verification Stamp earned",
-    "ko": "팬 인증 도장 획득",
+    "ko": "팬 인증 스탬프 획득",
     "source": "features/passport/ui/passport-issuance-dialog",
     "id": "features/passport/ui/passport-issuance-dialog:copy.stampEarned"
   },
   "m425873a1d4dd": {
     "en": "Open Passport",
-    "ko": "Passport 열기",
+    "ko": "패스포트 열기",
     "source": "features/passport/ui/passport-issuance-dialog",
     "id": "features/passport/ui/passport-issuance-dialog:copy.open"
   },
@@ -10363,7 +10363,7 @@
   },
   "m84b26c0c9170": {
     "en": "Find your Passport again in MY.",
-    "ko": "내 Passport는 MY에서 다시 볼 수 있어요.",
+    "ko": "내 패스포트는 MY에서 다시 볼 수 있어요.",
     "source": "features/passport/ui/passport-issuance-dialog",
     "id": "features/passport/ui/passport-issuance-dialog:copy.myHint"
   },
@@ -10405,13 +10405,13 @@
   },
   "m039933af6727": {
     "en": "Your Passport is ready to use.",
-    "ko": "Passport는 지금 사용할 수 있어요.",
+    "ko": "패스포트는 지금 사용할 수 있어요.",
     "source": "features/passport/ui/passport-issuance-dialog",
     "id": "features/passport/ui/passport-issuance-dialog:copy.passportAvailable"
   },
   "m105e6d0a2755": {
     "en": "Checking your issued Passport",
-    "ko": "발급된 Passport 확인 중",
+    "ko": "발급된 패스포트 확인 중",
     "source": "features/passport/ui/passport-issuance-dialog",
     "id": "features/passport/ui/passport-issuance-dialog:copy.loadingTitle"
   },
@@ -10429,7 +10429,7 @@
   },
   "m40c4986c3cc7": {
     "en": "Sign in to view the Passport already issued to your account.",
-    "ko": "내 계정에 이미 발급된 Passport를 확인하려면 로그인해 주세요.",
+    "ko": "내 계정에 이미 발급된 패스포트를 확인하려면 로그인해 주세요.",
     "source": "features/passport/ui/passport-issuance-dialog",
     "id": "features/passport/ui/passport-issuance-dialog:copy.authBody"
   },
@@ -10447,7 +10447,7 @@
   },
   "mae093a964a2d": {
     "en": "Try again in a moment, or open your Passport.",
-    "ko": "잠시 후 다시 확인하거나, 내 Passport를 열어보세요.",
+    "ko": "잠시 후 다시 확인하거나, 내 패스포트를 열어보세요.",
     "source": "features/passport/ui/passport-issuance-dialog",
     "id": "features/passport/ui/passport-issuance-dialog:copy.errorBody"
   },
@@ -10543,7 +10543,7 @@
   },
   "mbc614a24872e": {
     "en": "Stamps",
-    "ko": "도장",
+    "ko": "스탬프",
     "source": "features/passport/ui/passport-screens",
     "id": "features/passport/ui/passport-screens:copy.stamps"
   },
@@ -10573,7 +10573,7 @@
   },
   "mbd926ecb9a0a": {
     "en": "Stamp Book",
-    "ko": "도장 모음",
+    "ko": "스탬프 모음",
     "source": "features/passport/ui/passport-screens",
     "id": "features/passport/ui/passport-screens:copy.stampBook"
   },
@@ -10603,7 +10603,7 @@
   },
   "mcf03511bc0de": {
     "en": "View earned Stamp",
-    "ko": "받은 도장 보기",
+    "ko": "받은 스탬프 보기",
     "source": "features/passport/ui/passport-screens",
     "id": "features/passport/ui/passport-screens:copy.earned"
   },
@@ -10645,7 +10645,7 @@
   },
   "m0f3be195bc4a": {
     "en": "Stamp details",
-    "ko": "도장 상세",
+    "ko": "스탬프 상세",
     "source": "features/passport/ui/passport-screens",
     "id": "features/passport/ui/passport-screens:copy.stampDetail"
   },
@@ -10795,7 +10795,7 @@
   },
   "mbba0de6c334a": {
     "en": "Passport collection",
-    "ko": "Passport 목록",
+    "ko": "패스포트 목록",
     "source": "features/passport/ui/passport-screens",
     "id": "features/passport/ui/passport-screens:inline.m49413da96ff5"
   },
@@ -10849,7 +10849,7 @@
   },
   "ma6f6c98a5da9": {
     "en": "{0} {1} Stamp, {2}, {3} {4} earned",
-    "ko": "{0} {1} 도장, {2}, {3}점 획득",
+    "ko": "{0} {1} 스탬프, {2}, {3}점 획득",
     "source": "features/passport/ui/passport-stamp-artwork",
     "id": "features/passport/ui/passport-stamp-artwork:inline.m0396797db1a5"
   },
@@ -10873,7 +10873,7 @@
   },
   "ma2e490dda1bc": {
     "en": "The Passport image could not be loaded.",
-    "ko": "Passport 이미지를 불러오지 못했어요.",
+    "ko": "패스포트 이미지를 불러오지 못했어요.",
     "source": "features/passport/ui/passport-stamp-artwork",
     "id": "features/passport/ui/passport-stamp-artwork:inline.mb970c97c700f"
   },
@@ -11797,7 +11797,7 @@
   },
   "m7c5b48cc38fa": {
     "en": "This account receives your Passports and Stamps. It cannot be changed here, and only part of the address is shown.",
-    "ko": "패스포트와 도장을 받는 계정이에요. 변경할 수 없으며 주소는 일부만 표시돼요.",
+    "ko": "패스포트와 스탬프를 받는 계정이에요. 변경할 수 없으며 주소는 일부만 표시돼요.",
     "source": "features/profile/ui/settings-screen",
     "id": "features/profile/ui/settings-screen:copy.walletHelp"
   },
@@ -12019,7 +12019,7 @@
   },
   "me8b8a3dcf2ea": {
     "en": "Pass a short quiz to receive your first Fan Verification Stamp and Fan Passport.",
-    "ko": "간단한 퀴즈를 통과하면 첫 팬 인증 도장과 Fan Passport를 받을 수 있어요.",
+    "ko": "간단한 퀴즈를 통과하면 첫 팬 인증 스탬프와 Fan Passport를 받을 수 있어요.",
     "source": "features/quiz/ui/quiz-entry-screen",
     "id": "features/quiz/ui/quiz-entry-screen:copy.description"
   },
@@ -12109,7 +12109,7 @@
   },
   "mb94ea63f587c": {
     "en": "We couldn't prepare your Passport. Please try again in a moment.",
-    "ko": "Passport 발급을 준비하지 못했어요. 잠시 후 다시 시도해 주세요.",
+    "ko": "패스포트 발급을 준비하지 못했어요. 잠시 후 다시 시도해 주세요.",
     "source": "features/quiz/ui/quiz-questions-screen",
     "id": "features/quiz/ui/quiz-questions-screen:copy.wallet"
   },
@@ -12283,7 +12283,7 @@
   },
   "mb4249e42aaee": {
     "en": "Sign in to securely view your fan verification result and issued Passport.",
-    "ko": "팬 인증 결과와 발급된 Passport를 안전하게 확인하려면 로그인해 주세요.",
+    "ko": "팬 인증 결과와 발급된 패스포트를 안전하게 확인하려면 로그인해 주세요.",
     "source": "features/quiz/ui/quiz-result-screen",
     "id": "features/quiz/ui/quiz-result-screen:copy.loginBody"
   },
@@ -12343,7 +12343,7 @@
   },
   "mbe6cbd7da6d2": {
     "en": "Your first Stamp and fan score are recorded in your Passport.",
-    "ko": "첫 도장과 팬 점수가 Passport에 기록됐어요.",
+    "ko": "첫 스탬프와 팬 점수가 패스포트에 기록됐어요.",
     "source": "features/quiz/ui/quiz-result-screen",
     "id": "features/quiz/ui/quiz-result-screen:copy.passedHelper"
   },
@@ -12361,7 +12361,7 @@
   },
   "mf2435aa22e21": {
     "en": "Open Passport",
-    "ko": "Passport 확인하기",
+    "ko": "패스포트 확인하기",
     "source": "features/quiz/ui/quiz-result-screen",
     "id": "features/quiz/ui/quiz-result-screen:copy.receivePassport"
   },
@@ -12409,7 +12409,7 @@
   },
   "m8829e734e0e6": {
     "en": "Fan Verification Stamp",
-    "ko": "팬 인증 도장",
+    "ko": "팬 인증 스탬프",
     "source": "features/quiz/ui/quiz-result-screen",
     "id": "features/quiz/ui/quiz-result-screen:inline.m279806f32f3a"
   },
@@ -12481,19 +12481,19 @@
   },
   "m2e387fe4594c": {
     "en": "You earned your First Like Stamp",
-    "ko": "첫 좋아요 도장을 받았어요",
+    "ko": "첫 좋아요 스탬프를 받았어요",
     "source": "features/reaction/ui/reaction-action",
     "id": "features/reaction/ui/reaction-action:inline.mb24460f2bdf7"
   },
   "m7a4ba120835b": {
     "en": "Find your first like in your Passport stamp book.",
-    "ko": "패스포트 도장함에서 첫 좋아요를 확인해 보세요.",
+    "ko": "패스포트 스탬프함에서 첫 좋아요를 확인해 보세요.",
     "source": "features/reaction/ui/reaction-action",
     "id": "features/reaction/ui/reaction-action:inline.m64d0f59190df"
   },
   "m3cadbfa88dd5": {
     "en": "Your First Like Stamp is saved. Complete fan verification to add it to your Fan Passport.",
-    "ko": "첫 좋아요 도장을 보관했어요. 팬 인증을 마치고 Fan Passport를 만들면 도장함에 담겨요.",
+    "ko": "첫 좋아요 스탬프를 보관했어요. 팬 인증을 마치고 Fan Passport를 만들면 스탬프함에 담겨요.",
     "source": "features/reaction/ui/reaction-action",
     "id": "features/reaction/ui/reaction-action:inline.md8fea9e6d780"
   },
@@ -13765,13 +13765,13 @@
   },
   "m065af5f17fbb": {
     "en": "Your new Stamp has been recorded.",
-    "ko": "새 도장이 기록됐어요.",
+    "ko": "새 스탬프가 기록됐어요.",
     "source": "features/community-stamps/ui/community-stamp-collection",
     "id": "features/community-stamps/ui/community-stamp-collection:inline.m82279d74bc46"
   },
   "m3c048733aea8": {
     "en": "You’ve already earned this Stamp.",
-    "ko": "이미 받은 도장이에요.",
+    "ko": "이미 받은 스탬프예요.",
     "source": "features/community-stamps/ui/community-stamp-collection",
     "id": "features/community-stamps/ui/community-stamp-collection:inline.mcb6482c9df61"
   },
@@ -13789,7 +13789,7 @@
   },
   "m7a8ba5792eaa": {
     "en": "Collect Stamps",
-    "ko": "도장 모으기",
+    "ko": "스탬프 모으기",
     "source": "features/community-stamps/ui/community-stamp-collection",
     "id": "features/community-stamps/ui/community-stamp-collection:inline.m01196c4a9fdb"
   },
@@ -13813,13 +13813,13 @@
   },
   "m14ba0b095bf9": {
     "en": "Loading your Stamps.",
-    "ko": "도장을 불러오고 있어요.",
+    "ko": "스탬프를 불러오고 있어요.",
     "source": "features/community-stamps/ui/community-stamp-collection",
     "id": "features/community-stamps/ui/community-stamp-collection:inline.m5e9539586bc3"
   },
   "m6f4e687b2a1d": {
     "en": "Couldn’t load your Stamps.",
-    "ko": "도장을 불러오지 못했어요.",
+    "ko": "스탬프를 불러오지 못했어요.",
     "source": "features/community-stamps/ui/community-stamp-collection",
     "id": "features/community-stamps/ui/community-stamp-collection:inline.mdb218f5ff51e"
   },
@@ -13849,13 +13849,13 @@
   },
   "mc4481ae2313e": {
     "en": "View Stamp",
-    "ko": "도장 보기",
+    "ko": "스탬프 보기",
     "source": "features/community-stamps/ui/community-stamp-collection",
     "id": "features/community-stamps/ui/community-stamp-collection:inline.mfce1157f13f7"
   },
   "m41ade7763a1c": {
     "en": "Get welcome Stamp",
-    "ko": "가입 도장 받기",
+    "ko": "가입 스탬프 받기",
     "source": "features/community-stamps/ui/community-stamp-collection",
     "id": "features/community-stamps/ui/community-stamp-collection:inline.m8da9902f3bbc"
   },
@@ -13891,13 +13891,13 @@
   },
   "m31e0038fddfe": {
     "en": "A Stamp for both of you",
-    "ko": "친구와 함께 받는 도장",
+    "ko": "친구와 함께 받는 스탬프",
     "source": "features/community-stamps/ui/community-stamp-collection",
     "id": "features/community-stamps/ui/community-stamp-collection:inline.m68a817105d71"
   },
   "m100712960346": {
     "en": "Send your code to a friend or enter theirs. Each account earns this Stamp once.",
-    "ko": "내 코드를 친구에게 보내거나 친구의 코드를 입력하세요. 계정당 도장은 한 번 받아요.",
+    "ko": "내 코드를 친구에게 보내거나 친구의 코드를 입력하세요. 계정당 스탬프는 한 번 받아요.",
     "source": "features/community-stamps/ui/community-stamp-collection",
     "id": "features/community-stamps/ui/community-stamp-collection:inline.mf357988364e8"
   },
@@ -13939,25 +13939,25 @@
   },
   "me6921f55a8b4": {
     "en": "View all earned Stamps",
-    "ko": "받은 도장 전체 보기",
+    "ko": "받은 스탬프 전체 보기",
     "source": "features/community-stamps/ui/community-stamp-collection",
     "id": "features/community-stamps/ui/community-stamp-collection:inline.m00c8f7e40e78"
   },
   "mb2d78c607ac6": {
     "en": "Your Stamp has been issued.",
-    "ko": "도장 발급이 완료됐어요.",
+    "ko": "스탬프 발급이 완료됐어요.",
     "source": "features/community-stamps/ui/community-stamp-collection",
     "id": "features/community-stamps/ui/community-stamp-collection:inline.mcf126db0258f"
   },
   "ma9cc402faf99": {
     "en": "We’re checking your Stamp’s issuance status.",
-    "ko": "도장 발급 상태를 확인하고 있어요.",
+    "ko": "스탬프 발급 상태를 확인하고 있어요.",
     "source": "features/community-stamps/ui/community-stamp-collection",
     "id": "features/community-stamps/ui/community-stamp-collection:inline.m92df5d7ff02a"
   },
   "mb7d9b53a9daa": {
     "en": "Your Stamp is being prepared.",
-    "ko": "도장 발급을 준비하고 있어요.",
+    "ko": "스탬프 발급을 준비하고 있어요.",
     "source": "features/community-stamps/ui/community-stamp-collection",
     "id": "features/community-stamps/ui/community-stamp-collection:inline.m8740d9907380"
   },
@@ -13999,7 +13999,7 @@
   },
   "mf7203cb5f875": {
     "en": "Your Stamps are getting ready. Please try again shortly.",
-    "ko": "도장을 받을 준비 중이에요. 잠시 후 다시 시도해 주세요.",
+    "ko": "스탬프를 받을 준비 중이에요. 잠시 후 다시 시도해 주세요.",
     "source": "features/community-stamps/ui/community-stamp-collection",
     "id": "features/community-stamps/ui/community-stamp-collection:messages.COMMUNITY_STAMP_WALLET_NOT_READY"
   },
@@ -14671,7 +14671,7 @@
   },
   "m54078a49fc9e": {
     "en": "That's right! Your Stamp is recorded.",
-    "ko": "정답이에요! 도장을 남겼어요.",
+    "ko": "정답이에요! 스탬프를 남겼어요.",
     "source": "features/live/ui/art-mission-play",
     "id": "features/live/ui/art-mission-play:inline.m563a3332747d"
   },
@@ -14683,7 +14683,7 @@
   },
   "m91bc1fc2355c": {
     "en": "Your pick and Stamp are recorded.",
-    "ko": "취향을 남겼어요! 도장도 기록됐어요.",
+    "ko": "취향을 남겼어요! 스탬프도 기록됐어요.",
     "source": "features/live/ui/art-mission-play",
     "id": "features/live/ui/art-mission-play:inline.m3ff948b6cabc"
   },
@@ -15247,7 +15247,7 @@
   },
   "m966431b6e409": {
     "en": "Fan quiz passed; Passport and stamp issued",
-    "ko": "팬 퀴즈 통과와 Passport·도장 발급",
+    "ko": "팬 퀴즈 통과와 Passport·스탬프 발급",
     "source": "server/onchain/public-config",
     "id": "server/onchain/public-config:actionDefinitions.0.description"
   },
@@ -15283,7 +15283,7 @@
   },
   "m48512dc35c2a": {
     "en": "Welcome stamp claimed; not an account signup",
-    "ko": "웰컴 도장 수령 · 회원가입 수와 다름",
+    "ko": "웰컴 스탬프 수령 · 회원가입 수와 다름",
     "source": "server/onchain/public-config",
     "id": "server/onchain/public-config:actionDefinitions.6.description"
   },
@@ -15307,13 +15307,13 @@
   },
   "mcommunityStampLabel": {
     "en": "Community stamp issuance",
-    "ko": "커뮤니티 도장 발급",
+    "ko": "커뮤니티 스탬프 발급",
     "source": "server/onchain/public-config",
     "id": "server/onchain/public-config:actionDefinitions.11"
   },
   "mcommunityStampDescription": {
     "en": "A share or first clip stamp issued",
-    "ko": "공유 또는 첫 클립 도장 발급",
+    "ko": "공유 또는 첫 클립 스탬프 발급",
     "source": "server/onchain/public-config",
     "id": "server/onchain/public-config:actionDefinitions.11.description"
   },
@@ -15792,7 +15792,7 @@
     "id": "features/live/ui/attendance-spotlight:inline.m1a8044462ad1"
   },
   "m20ade23c673e": {
-    "ko": "방송에서 공개된 Fan Code를 입력해 주세요.",
+    "ko": "방송에서 공개된 출석코드를 입력해 주세요.",
     "en": "Enter the Fan Code shared during the broadcast.",
     "source": "features/live/ui/attendance-spotlight",
     "id": "features/live/ui/attendance-spotlight:inline.m20ade23c673e"
@@ -15931,13 +15931,13 @@
   },
   "m3f3e69fa36eb": {
     "en": "Stamp activities for this artist are currently unavailable.",
-    "ko": "현재 이 최애의 도장 활동을 이용할 수 없어요.",
+    "ko": "현재 이 최애의 스탬프 활동을 이용할 수 없어요.",
     "source": "features/community-stamps/ui/community-stamp-collection",
     "id": "features/community-stamps/ui/community-stamp-collection:inline.m3f3e69fa36eb"
   },
   "mb43cbc171691": {
     "en": "View my Stamps",
-    "ko": "내 도장 보기",
+    "ko": "내 스탬프 보기",
     "source": "features/community-stamps/ui/community-stamp-collection",
     "id": "features/community-stamps/ui/community-stamp-collection:inline.mb43cbc171691"
   },
@@ -16021,7 +16021,7 @@
   },
   "dukjilClaim": {
     "en": "Check in today for {0}P and a stamp",
-    "ko": "오늘 출석하고 {0}P·도장 받기",
+    "ko": "오늘 출석하고 {0}P·스탬프 받기",
     "source": "features/dukjil/ui/dukjil-copy",
     "id": "features/dukjil/ui/dukjil-copy:dukjilClaim"
   },
@@ -16099,7 +16099,7 @@
   },
   "dukjilStamp": {
     "en": "Stamp",
-    "ko": "도장",
+    "ko": "스탬프",
     "source": "features/dukjil/ui/dukjil-copy",
     "id": "features/dukjil/ui/dukjil-copy:dukjilStamp"
   },
@@ -16111,7 +16111,7 @@
   },
   "dukjilTodaySummary": {
     "en": "Earned today: {0}P · {1} stamps",
-    "ko": "오늘 받은 포인트 {0}P · 도장 {1}개",
+    "ko": "오늘 받은 포인트 {0}P · 스탬프 {1}개",
     "source": "features/dukjil/ui/dukjil-copy",
     "id": "features/dukjil/ui/dukjil-copy:dukjilTodaySummary"
   },
@@ -16279,7 +16279,7 @@
   },
   "dkgJjStep3Title": {
     "en": "True-fan stamp",
-    "ko": "찐팬 도장",
+    "ko": "찐팬 스탬프",
     "source": "features/dukjil-guide/ui/guide-copy",
     "id": "features/dukjil-guide/ui/guide-copy:dkgJjStep3Title"
   },
@@ -16327,7 +16327,7 @@
   },
   "dkgColStamp": {
     "en": "Stamp",
-    "ko": "도장",
+    "ko": "스탬프",
     "source": "features/dukjil-guide/ui/guide-copy",
     "id": "features/dukjil-guide/ui/guide-copy:dkgColStamp"
   },
@@ -16435,7 +16435,7 @@
   },
   "dkgActProof": {
     "en": "True-fan stamp proof",
-    "ko": "찐팬 도장 인증",
+    "ko": "찐팬 스탬프 인증",
     "source": "features/dukjil-guide/ui/guide-copy",
     "id": "features/dukjil-guide/ui/guide-copy:dkgActProof"
   },
@@ -16447,13 +16447,13 @@
   },
   "dkgDkMetaDesc": {
     "en": "See the points and stamps you earn from each fan activity.",
-    "ko": "덕질할 때마다 받는 포인트와 도장을 안내해요.",
+    "ko": "덕질할 때마다 받는 포인트와 스탬프를 안내해요.",
     "source": "features/dukjil-guide/ui/guide-copy",
     "id": "features/dukjil-guide/ui/guide-copy:dkgDkMetaDesc"
   },
   "dkgDkTitle": {
     "en": "Every fan activity earns points and a stamp",
-    "ko": "덕질하면 포인트와 도장이 쌓여요",
+    "ko": "덕질하면 포인트와 스탬프가 쌓여요",
     "source": "features/dukjil-guide/ui/guide-copy",
     "id": "features/dukjil-guide/ui/guide-copy:dkgDkTitle"
   },
@@ -16501,7 +16501,7 @@
   },
   "dkgStamp": {
     "en": "Stamp",
-    "ko": "도장",
+    "ko": "스탬프",
     "source": "features/dukjil-guide/ui/guide-copy",
     "id": "features/dukjil-guide/ui/guide-copy:dkgStamp"
   },
@@ -16519,13 +16519,13 @@
   },
   "dkgStampTitle": {
     "en": "Stamps fill your mission book",
-    "ko": "도장은 미션북을 채워요",
+    "ko": "스탬프는 미션북을 채워요",
     "source": "features/dukjil-guide/ui/guide-copy",
     "id": "features/dukjil-guide/ui/guide-copy:dkgStampTitle"
   },
   "dkgStampLead": {
     "en": "The stamps you earn fill the {0} slots of your mission book.",
-    "ko": "덕질로 받은 도장이 모여 미션북 {0}칸이 채워져요.",
+    "ko": "덕질로 받은 스탬프가 모여 미션북 {0}칸이 채워져요.",
     "source": "features/dukjil-guide/ui/guide-copy",
     "id": "features/dukjil-guide/ui/guide-copy:dkgStampLead"
   },
@@ -16609,7 +16609,7 @@
   },
   "rkStamps": {
     "en": "{0} stamps",
-    "ko": "도장 {0}개",
+    "ko": "스탬프 {0}개",
     "source": "features/rankings/ui/rankings-copy",
     "id": "features/rankings/ui/rankings-copy:rkStamps"
   },
@@ -17275,7 +17275,7 @@
   },
   "profStamps": {
     "en": "Total stamps",
-    "ko": "누적 도장",
+    "ko": "누적 스탬프",
     "source": "features/fan-profile/fan-profile-copy",
     "id": "features/fan-profile/fan-profile-copy:profStamps"
   },
@@ -17287,7 +17287,7 @@
   },
   "rowStamps": {
     "en": "Total stamps {0}",
-    "ko": "누적 도장 {0}",
+    "ko": "누적 스탬프 {0}",
     "source": "features/fan-profile/fan-profile-copy",
     "id": "features/fan-profile/fan-profile-copy:rowStamps"
   },

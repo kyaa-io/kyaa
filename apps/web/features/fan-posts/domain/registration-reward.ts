@@ -18,7 +18,7 @@ export function registrationRewardPoints(value: unknown): number | undefined { c
 export function registrationRewardStamps(value: unknown): number { return read(value)?.stamps ?? 0; }
 /** Why the mission paid nothing, when the server said so. */
 export function registrationRewardSkip(value: unknown): RegistrationRewardSkip | undefined { const reward = read(value); return reward && !reward.points ? reward.skippedReason : undefined; }
-/** What was paid, to celebrate together (D8 "+20P · 도장 1"), or undefined when nothing was paid (a stamp placed while points were capped counts). */
+/** What was paid, to celebrate together (D8 "+20P · 스탬프 1"), or undefined when nothing was paid (a stamp placed while points were capped counts). */
 export function registrationReward(value: unknown): { points: number; stamps: number } | undefined {
   const reward = read(value);
   if (!reward) return undefined;

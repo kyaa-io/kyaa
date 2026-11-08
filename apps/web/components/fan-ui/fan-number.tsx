@@ -63,7 +63,7 @@ export type FanNumberProps = Readonly<{
   className?: string;
 }>;
 
-/** 자산 숫자(포인트·응모권·도장·온도). tabular-nums에 최대 자릿수 폭을 미리 잡아 카운트업 중에도 폭이 변하지 않는다.
+/** 자산 숫자(포인트·응모권·스탬프·온도). tabular-nums에 최대 자릿수 폭을 미리 잡아 카운트업 중에도 폭이 변하지 않는다.
  * `aria-live`는 붙이지 않는다(호출 쪽이 한 번만). 화면 판독기는 최종 값만 읽는다. */
 export function FanNumber({ value, unit, size = "md", countUp = false, pulseOnChange = false, locale, icon, className }: FanNumberProps) {
   const shown = useCountUp(value, countUp);

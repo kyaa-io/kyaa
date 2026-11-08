@@ -54,7 +54,7 @@ const copy = {
     listBack: "인증 목록",
     eyebrow: "팬 인증 · 시작 전",
     title: (name: string) => `${name}\n나의 팬심을 확인해 보세요.`,
-    description: "간단한 퀴즈를 통과하면 첫 팬 인증 도장과 패스포트를 받을 수 있어요.",
+    description: "간단한 퀴즈를 통과하면 첫 팬 인증 스탬프와 패스포트를 받을 수 있어요.",
     questionCount: (count: number) => `${count}문항`,
     passThreshold: (count: number) => `${count}문항 이상`,
     passThresholdTail: " 정답이면 인증 완료",

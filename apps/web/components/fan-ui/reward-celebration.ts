@@ -9,7 +9,7 @@ const POINT_COIN_SRC = "/images/economy/point-coin.svg";
 
 /**
  * 261107-2 D8. The one way the app says "you earned something": a coin badge pops up from where the fan acted and the shared
- * toast reads "+20P · 도장 1". Any screen calls it right after the server confirms a grant.
+ * toast reads "+20P · 스탬프 1". Any screen calls it right after the server confirms a grant.
  *
  *   celebrateReward({ locale, points: 20, stamps: 1, anchor: event.currentTarget, label: "글쓰기 미션 완료" })
  *
@@ -28,7 +28,7 @@ export const REWARD_MERGE_MS = 1200;
 const BADGE_MS = 900;
 
 const unit: Record<AppLocale, { points: (n: string) => string; stamps: (n: string, count: number) => string }> = {
-  ko: { points: n => `+${n}P`, stamps: n => `도장 ${n}` },
+  ko: { points: n => `+${n}P`, stamps: n => `스탬프 ${n}` },
   en: { points: n => `+${n}P`, stamps: (n, c) => `${n} ${c === 1 ? "stamp" : "stamps"}` },
   ja: { points: n => `+${n}P`, stamps: n => `スタンプ ${n}` },
   "zh-Hans": { points: n => `+${n}P`, stamps: n => `印章 ${n}` },
@@ -42,7 +42,7 @@ const unit: Record<AppLocale, { points: (n: string) => string; stamps: (n: strin
   ru: { points: n => `+${n}P`, stamps: n => `Штампы: ${n}` },
 };
 
-/** "+20P · 도장 1", "+20P", "도장 1", or "" when nothing was granted. */
+/** "+20P · 스탬프 1", "+20P", "스탬프 1", or "" when nothing was granted. */
 export function rewardSummary(locale: AppLocale, points = 0, stamps = 0) {
   const u = unit[locale] ?? unit.en, parts: string[] = [];
   if (points > 0) parts.push(u.points(points.toLocaleString(locale)));

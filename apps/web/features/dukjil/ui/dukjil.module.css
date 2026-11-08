@@ -1,9 +1,10 @@
 .srOnly{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
 .badge{display:inline-flex;align-items:center;gap:4px;flex:none;font-variant-numeric:tabular-nums;white-space:nowrap}
 .icon{justify-content:center;width:18px;height:18px;border-radius:999px;background:#ffc83d;color:#4a3500;font-size:11px;line-height:1;font-weight:800}
-.inline{min-height:20px;padding:0 var(--space-2) 0 calc(var(--space-1) / 2);border-radius:var(--radius-pill);font-size:var(--fan-metadata-size);line-height:20px;font-weight:var(--fan-item-title-weight)}
+/* 2026-11-08 13:25: the row, not the points, is what is pressed. No pill, border or shadow: the coin and the number only. */
+.inline{min-height:20px;padding:0;background:none;color:inherit;font-size:var(--fan-metadata-size);line-height:20px;font-weight:var(--fan-item-title-weight)}
 .inline>img{display:block;flex:none}
-.small{min-height:16px;gap:calc(var(--space-1) / 2);padding-inline-end:var(--space-1);font-size:var(--fan-calendar-meta-size);line-height:16px}
+.small{min-height:16px;gap:calc(var(--space-1) / 2);font-size:var(--fan-calendar-meta-size);line-height:16px}
 .balance{gap:var(--space-1)}
 .balance>img{display:block;flex:none}
 .balanceValue{font-size:var(--fan-heading-size-wide);line-height:32px;font-weight:var(--fan-heading-weight)}

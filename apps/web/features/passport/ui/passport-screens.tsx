@@ -61,11 +61,11 @@ const copy = {
     passports: "내 패스포트", discover: "최애 찾기", open: "패스포트 보기",
     emptyTitle: "아직 발급된 패스포트가 없어요.", emptyBody: "좋아하는 크리에이터의 팬 인증을 완료하면 첫 기록이 시작돼요.", emptyAction: "팬 인증 가능한 크리에이터 보기",
     retry: "다시 불러오기", loadError: "기록을 불러오지 못했어요.", loadErrorBody: "잠시 후 다시 시도해 주세요. 이미 저장된 기록은 사라지지 않아요.", login: "로그인하고 내 기록 보기",
-    issued: "발급", score: "팬 점수", stamps: "도장", digital: "기록 등록 상태", pending: "기록을 등록하고 있어요", complete: "기록 등록이 완료됐어요", needsHelp: "기록 등록 상태를 확인해 주세요",
-    stampBook: "도장 모음", activity: "최근 활동", noActivity: "아직 활동 기록이 없어요.", noActivityBody: "팬 인증과 라이브 참여를 시작하면 이곳에 차곡차곡 남아요.",
-    emptySlot: "다음 순간을 기다리는 중", earned: "받은 도장 보기",
+    issued: "발급", score: "팬 점수", stamps: "스탬프", digital: "기록 등록 상태", pending: "기록을 등록하고 있어요", complete: "기록 등록이 완료됐어요", needsHelp: "기록 등록 상태를 확인해 주세요",
+    stampBook: "스탬프 모음", activity: "최근 활동", noActivity: "아직 활동 기록이 없어요.", noActivityBody: "팬 인증과 라이브 참여를 시작하면 이곳에 차곡차곡 남아요.",
+    emptySlot: "다음 순간을 기다리는 중", earned: "받은 스탬프 보기",
     points: "점", digitalInfo: "기록 등록 정보", token: "기록 번호", transaction: "등록 기록", explorer: "등록 기록 보기", noFacts: "등록 확인 정보가 아직 없어요.",
-    stampDetail: "도장 상세", earnedOn: "받은 날", activityDate: "활동한 날", reward: "팬 점수", backPassport: "패스포트로 돌아가기", notFound: "기록을 찾을 수 없어요.", notFoundBody: "삭제되었거나 내 소유의 기록이 아닐 수 있어요.",
+    stampDetail: "스탬프 상세", earnedOn: "받은 날", activityDate: "활동한 날", reward: "팬 점수", backPassport: "패스포트로 돌아가기", notFound: "기록을 찾을 수 없어요.", notFoundBody: "삭제되었거나 내 소유의 기록이 아닐 수 있어요.",
     nextLevel: "다음 등급", levelMax: "최고 등급에 도달했어요.", remaining: "점 남음", nextBenefit: "다음 혜택", benefitReady: "지금 받을 수 있어요.", participationReady: "지금 참여할 수 있어요.", benefitLocked: "조건을 달성하면 받을 수 있어요.", viewBenefit: "혜택 확인하기", relatedActivity: "관련 활동", currentScore: "현재", requiredScore: "필요", opensAt: "공개",
     firstReaction: "첫 좋아요", firstReactionDate: "첫 좋아요를 남긴 날", firstReactionTransaction: "첫 좋아요 등록 기록",
   },
@@ -151,7 +151,7 @@ function Frame({ locale, children, presentation = "page", collection = false }: 
 
 function Skeleton({ detail = false, locale }: { detail?: boolean; locale: AppLocale }) { return <div className={styles.skeleton} role="status" aria-label={locale === "ko" ? "패스포트 불러오는 중" : translate(locale, localizedMessages.mc27600a8c8ca, "Loading Passport")} aria-busy="true"><div className={styles.skeletonLine} /><div className={styles.skeletonLineShort} /><div className={detail ? styles.skeletonDetail : styles.skeletonGrid}>{Array.from({ length: detail ? 5 : 3 }, (_, i) => <span key={i} />)}</div></div>; }
 
-/** 비로그인 패스포트. 카드 외곽과 표지는 그대로 두고 내 값(팬 점수·도장)은 잠근 칸으로 둔다. 목록은 카드만, 상세는 제목과 공개 미션북 9칸을 더한다. */
+/** 비로그인 패스포트. 카드 외곽과 표지는 그대로 두고 내 값(팬 점수·스탬프)은 잠근 칸으로 둔다. 목록은 카드만, 상세는 제목과 공개 미션북 9칸을 더한다. */
 function PassportGuest({ locale, returnTo, detail }: { locale: AppLocale; returnTo: string; detail: boolean }) {
   const c = copy[locale];
   return <>
@@ -216,11 +216,11 @@ export function PassportCollectionScreen() {
       {(fetcher.state.status === "ready" && fetcher.state.data.length > 0) || (fetcher.state.status === "error" && fetcher.state.kind === "auth") ? <Link className={styles.discoverLink} href={withLocale("/celebrities", locale)}>{c.discover}<ArrowRight aria-hidden="true" /></Link> : null}
     </div>
     <div id="collection" className={styles.collectionAnchor}>{fetcher.state.status === "loading" ? <Skeleton locale={locale} /> : fetcher.state.status === "error" ? <StateMessage locale={locale} kind={fetcher.state.kind} retry={fetcher.retry} returnTo={`/passports?locale=${locale}`} detail={false} /> : fetcher.state.data.length === 0 ? <section className={styles.empty} role="status"><BookOpen aria-hidden="true" /><h2>{c.emptyTitle}</h2><p>{c.emptyBody}</p><Link className={styles.primaryButton} href={withLocale("/celebrities", locale)}>{c.emptyAction}<ArrowRight aria-hidden="true" /></Link></section> : <>
-      <DukjilProvider locale={locale}><section className={styles.collection} data-single={fetcher.state.data.length === 1 || undefined} aria-label={locale === "ko" ? "Passport 목록" : translate(locale, localizedMessages.mbba0de6c334a, "Passport collection")}>{fetcher.state.data.map((passport) => <PassportCollectionCard key={passport.id} passport={passport} locale={locale} single={fetcher.state.status === "ready" && fetcher.state.data.length === 1} communityCount={creatorCommunityStampCount(communityStamps.state, passport.celebrity.slug)} />)}</section></DukjilProvider></>}</div>
+      <DukjilProvider locale={locale}><section className={styles.collection} data-single={fetcher.state.data.length === 1 || undefined} aria-label={locale === "ko" ? "패스포트 목록" : translate(locale, localizedMessages.mbba0de6c334a, "Passport collection")}>{fetcher.state.data.map((passport) => <PassportCollectionCard key={passport.id} passport={passport} locale={locale} single={fetcher.state.status === "ready" && fetcher.state.data.length === 1} communityCount={creatorCommunityStampCount(communityStamps.state, passport.celebrity.slug)} />)}</section></DukjilProvider></>}</div>
   </Frame>;
 }
 
-/** 도장 수. 정책이 켜져 있으면 지금 채우는 미션북 쪽의 찍힌 칸/그 쪽의 칸(MY·상세와 같은 값)이고, 꺼져 있으면 받은 도장 수다. */
+/** 스탬프 수. 정책이 켜져 있으면 지금 채우는 미션북 쪽의 찍힌 칸/그 쪽의 칸(MY·상세와 같은 값)이고, 꺼져 있으면 받은 스탬프 수다. */
 function PassportStampFact({ book, fallback, locale, href }: { book: ReturnType<typeof usePassportBook>; fallback: number; locale: AppLocale; href: Route }) {
   const c = copy[locale];
   const value = book.status === "loading" ? <FanSkeleton width={48} height={24} /> : book.page ? `${book.page.filled}/${book.page.slots.length}` : fallback.toLocaleString(locale);
@@ -267,7 +267,7 @@ function PassportSwitcher({ currentId, locale }: { currentId: string; locale: Ap
   </ul></nav>;
 }
 
-/** 상세 숫자 칸의 도장 수. 카드와 같은 값이다. */
+/** 상세 숫자 칸의 스탬프 수. 카드와 같은 값이다. */
 function HeroStampFact({ passportId, fallback, locale }: { passportId: string; fallback: number; locale: AppLocale }) {
   const book = usePassportBook(passportId);
   return <PassportStampFact book={book} fallback={fallback} locale={locale} href={"#mission-book" as Route} />;

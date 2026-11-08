@@ -27,7 +27,7 @@ it('names a dukjil row after its real activity in every locale, each activity di
  expect(walletHistoryLabel('ko','dukjil_action',{actionKey:'quiz'})).toBe('입국 심사 퀴즈');
  expect(walletHistoryLabel('ko','dukjil_action',{actionKey:'checkin'})).toBe('출석체크');
  expect(walletHistoryLabel('en','dukjil_action',{actionKey:'comment'})).toBe('Comment');
- expect(walletHistoryLabel('ko','dukjil_proof')).toBe('찐팬 도장 인증');
+ expect(walletHistoryLabel('ko','dukjil_proof')).toBe('찐팬 스탬프 인증');
 });
 it('keeps the generic name when the activity is unknown (older rows, cheer, unknown keys)',()=>{
  expect(walletHistoryLabel('ko','dukjil_action',{actionKey:null})).toBe('활동 참여');

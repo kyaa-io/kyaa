@@ -60,7 +60,7 @@ export function WaveMissionsHome({ locale, progress = [], stamps = [] }: {
   </section>;
 }
 
-const stampTitle: Record<AppLocale, string> = { ko: "미션 도장", en: "Mission stamp", ja: "ミッションスタンプ", "zh-Hans": "任务印章", "zh-Hant": "任務印章", es: "Sello de misión", id: "Stempel misi", vi: "Dấu nhiệm vụ", th: "แสตมป์ภารกิจ", pt: "Selo de missão", fr: "Tampon de mission",
+const stampTitle: Record<AppLocale, string> = { ko: "미션 스탬프", en: "Mission stamp", ja: "ミッションスタンプ", "zh-Hans": "任务印章", "zh-Hant": "任務印章", es: "Sello de misión", id: "Stempel misi", vi: "Dấu nhiệm vụ", th: "แสตมป์ภารกิจ", pt: "Selo de missão", fr: "Tampon de mission",
   ru: "Почтовая марка миссии"
  };
 const waitingWallet: Record<AppLocale, string> = { ko: "지갑 준비 대기", en: "Waiting for wallet", ja: "ウォレット準備待ち", "zh-Hans": "等待钱包就绪", "zh-Hant": "等待錢包就緒", es: "Esperando la cartera", id: "Menunggu dompet", vi: "Đang chờ ví", th: "รอกระเป๋าเงินพร้อม", pt: "Aguardando carteira", fr: "En attente du portefeuille",

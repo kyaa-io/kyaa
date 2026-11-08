@@ -1,7 +1,7 @@
 // Generated from the dukjil i18n table; ko/en live here, the other locales in i18n/catalogs/features__dukjil__ui__dukjil-copy.ts.
 export const dukjilSource = {
   dukjilTitle: { ko: "엔카이브 출석체크", en: "Attendance check-in" },
-  dukjilClaim: { ko: "오늘 출석하고 {0}P·도장 받기", en: "Check in today for {0}P and a stamp" },
+  dukjilClaim: { ko: "오늘 출석하고 {0}P·스탬프 받기", en: "Check in today for {0}P and a stamp" },
   dukjilStart: { ko: "입국 심사 보고 출석 시작하기", en: "Take entry review to start checking in" },
   dukjilDone: { ko: "오늘 출석 완료", en: "Checked in today" },
   dukjilStreak: { ko: "연속 {0}일", en: "{0}-day streak" },
@@ -14,9 +14,9 @@ export const dukjilSource = {
   dukjilFailed: { ko: "출석하지 못했어요", en: "Couldn't check in" },
   dukjilEarnLabel: { ko: "포인트 {0} 적립", en: "Earn {0} points" },
   dukjilBadgeDone: { ko: "오늘 완료", en: "Done today" },
-  dukjilStamp: { ko: "도장", en: "Stamp" },
+  dukjilStamp: { ko: "스탬프", en: "Stamp" },
   dukjilTodayTitle: { ko: "오늘의 덕질", en: "Today's fandom" },
-  dukjilTodaySummary: { ko: "오늘 받은 포인트 {0}P · 도장 {1}개", en: "Earned today: {0}P · {1} stamps" },
+  dukjilTodaySummary: { ko: "오늘 받은 포인트 {0}P · 스탬프 {1}개", en: "Earned today: {0}P · {1} stamps" },
   dukjilTileAttendance: { ko: "출석", en: "Check-in" },
   dukjilTilePost: { ko: "글쓰기", en: "Write" },
   dukjilTileComment: { ko: "댓글", en: "Comment" },

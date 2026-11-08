@@ -39,7 +39,7 @@ it("keeps the signed-in order signed out: passport, wallet, favorites, shortcuts
   render(<MyScreen locale="ko" />);
   const sections = ["내 패스포트", "내 지갑", "내 최애", "바로가기"].map(name => screen.getByRole("heading", { name }));
   sections.reduce((previous, current) => { expect(Boolean(previous.compareDocumentPosition(current) & Node.DOCUMENT_POSITION_FOLLOWING)).toBe(true); return current; });
-  expect(screen.queryByRole("heading", { name: "함께 모은 도장" })).toBeNull();
+  expect(screen.queryByRole("heading", { name: "함께 모은 스탬프" })).toBeNull();
   expect(screen.queryByRole("heading", { name: "래플 결과가 발표됐어요" })).toBeNull();
   const wallet = screen.getByRole("region", { name: "내 지갑" });
   expect(wallet).toHaveTextContent("100 P");

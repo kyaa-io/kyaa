@@ -7,6 +7,7 @@ import type { Route } from "next";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import { FanSkeleton } from "@/components/fan-ui/fan-skeleton";
 import { dukjilText } from "@/features/dukjil/ui/dukjil-copy";
+import { tierDisplayName } from "@/features/passport/domain/passport-read-model";
 import type { AppLocale } from "@/i18n/locales";
 import { groupMessagesSchema, groupRoomsSchema } from "../domain/contracts";
 import { groupsCopy } from "./copy";
@@ -31,7 +32,8 @@ export function pickFeaturedRoom(rooms: readonly Room[]) {
 
 function accessLabel(locale: AppLocale, tier: string | null | undefined, verified: boolean) {
   const entry = roomEntryCopy(locale);
-  if (tier) return entry.minimum.replace("{tier}", tier);
+  // "Member" is the floor, not a grade: any joined fan may enter.
+  if (tier && tier !== "Member") return entry.minimum.replace("{tier}", tierDisplayName(locale, tier));
   return verified ? entry.verified : roomHubText(locale, "joinedFans");
 }
 
@@ -97,7 +99,7 @@ export function GroupRoomHub({ rooms, locale, imageUrl, statusLabels, unreadLabe
         const needsProof = room.reason === "jjinfan_required", enterable = isEnterable(room);
         const tier = accessLabel(locale, room.minimumTier, verifiable && (room.defaultKey === "artist" || room.defaultKey === "certified"));
         const sub = enterable ? room.latestMessage || entry.empty
-          : needsProof ? [room.minimumTier, dukjilText(locale, "roomJjinfan")].filter(Boolean).join(" · ")
+          : needsProof ? [room.minimumTier && room.minimumTier !== "Member" ? tierDisplayName(locale, room.minimumTier) : null, dukjilText(locale, "roomJjinfan")].filter(Boolean).join(" · ")
           : ["closed", "scheduled"].includes(room.status) ? [statusLabels[room.status], tier].join(" · ") : tier;
         return <li className={styles.card} key={room.id} data-locked={enterable ? undefined : "true"}>
           <RoomCardControl label={[room.name, sub, enterable && room.unreadCount ? `${unreadLabel} ${room.unreadCount}` : ""].filter(Boolean).join(" · ")} disabled={needsProof} onClick={() => onSelect(room)}>

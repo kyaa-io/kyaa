@@ -12,7 +12,7 @@ import type { FanTier } from "../domain/reward-policy";
 import type { AppLocale } from "@/i18n/locales";
 import styles from "./fan-grade-card.module.css";
 
-/** 팬 등급 카드: 지금 등급의 도장, 이름, 다음 등급까지의 막대. 값은 API에서만 온다. 패스포트가 없으면 브론즈 도장에 잠근 칸을 두고 팬 인증으로 보낸다. */
+/** 팬 등급 카드: 지금 등급의 스탬프, 이름, 다음 등급까지의 막대. 값은 API에서만 온다. 패스포트가 없으면 브론즈 스탬프에 잠근 칸을 두고 팬 인증으로 보낸다. */
 export function FanGradeCard({ locale, href, tier, stage, step }: { locale: AppLocale; href: string; tier?: FanTier | null; stage?: FanStageProgress | null; step?: { percent: number; text: string } | null }) {
   const label = managementMembersCopy(locale).tier;
   const key = stage?.current.key ?? (tier ? `${tier.toLowerCase()}-1` : "bronze-1");

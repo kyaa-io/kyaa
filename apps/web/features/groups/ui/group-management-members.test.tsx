@@ -67,3 +67,23 @@ it('appends the next page once after a failed continued read succeeds on retry, 
  expect(text.split('첫째회원').length-1).toBe(1);
  expect(text.split('둘째회원').length-1).toBe(1);
 });
+it('writes a plain empty value instead of a dash when a fan has no grade, activity or answer, and names a known grade in each locale',async()=>{
+ const {managementMembersCopy}=await import('./management-members-copy');
+ const {APP_LOCALES}=await import('@/i18n/locales');
+ const {tierDisplayName}=await import('@/features/passport/domain/passport-read-model');
+ state.items=[{profileId:'20000000-0000-4000-8000-000000000001',nickname:'회원',avatarUrl:null,role:'member',answer:null,tier:null,joinedAt:null,lastActiveAt:null,postCount:null,commentCount:null}];
+ for(const locale of APP_LOCALES){
+  const {container,unmount}=render(<GroupManagementMembers detail={detail} locale={locale} refresh={()=>{}}/>);
+  expect(container.textContent).not.toContain('—');
+  expect(container).toHaveTextContent(managementMembersCopy(locale).noRecord);
+  expect(container).toHaveTextContent(managementMembersCopy(locale).noAnswer);
+  unmount();
+ }
+ state.items=[{profileId:'20000000-0000-4000-8000-000000000002',nickname:'실버회원',avatarUrl:null,role:'member',answer:'답',tier:'Silver',joinedAt:'2026-11-01T00:00:00Z',lastActiveAt:'2026-11-02T00:00:00Z',postCount:1,commentCount:2}];
+ for(const locale of APP_LOCALES.filter(l=>l!=='en')){
+  const {container,unmount}=render(<GroupManagementMembers detail={detail} locale={locale} refresh={()=>{}}/>);
+  expect(tierDisplayName(locale,'Silver')).not.toBe('Silver');
+  expect(container.textContent).not.toContain('Silver');
+  unmount();
+ }
+});

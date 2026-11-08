@@ -115,7 +115,7 @@ const copy = {
     delivery: "받는 방법",
     score: "필요 팬 점수",
     level: "필요 등급",
-    stamp: "필요 도장",
+    stamp: "필요 스탬프",
     activity: "필요 활동",
     claim: "혜택 수령하기",
     signIn: "로그인하고 혜택 이어받기",
@@ -370,7 +370,7 @@ function localizeBenefitValue(value: string, locale: AppLocale) {
     silver: "실버",
     gold: "골드",
     survey: "설문",
-    "survey stamp 보유": "설문 도장 보유",
+    "survey stamp 보유": "설문 스탬프 보유",
     "공식 youtube url": "공식 YouTube 링크",
   };
   return knownValues[normalized] ?? value;

@@ -17,7 +17,7 @@ const rows = {
 } satisfies Record<AppLocale, readonly [string, string, string, string, string]>;
 
 const details = {
-  ko: ["이 진행 상태는 도장 발급이나 응모권 교환을 뜻하지 않아요.", "미션 진행 상태를 불러오지 못했어요.", "행사 참여를 완료한 뒤 미션 진행 상태를 확인할 수 있어요."],
+  ko: ["이 진행 상태는 스탬프 발급이나 응모권 교환을 뜻하지 않아요.", "미션 진행 상태를 불러오지 못했어요.", "행사 참여를 완료한 뒤 미션 진행 상태를 확인할 수 있어요."],
   en: ["This progress does not confirm stamp issuance or prize-draw entry exchange.", "Couldn't load mission progress.", "Complete event check-in to view your mission progress."],
   ja: ["この進捗はスタンプの発行や抽選券への交換を示すものではありません。", "ミッションの進捗を読み込めませんでした。", "イベントのチェックイン完了後に進捗を確認できます。"],
   "zh-Hans": ["此进度不代表已发放印章或兑换抽奖券。", "无法加载任务进度。", "完成活动签到后可查看任务进度。"],

@@ -190,10 +190,10 @@ function ReactionActionForOwner({ slug, locale, variant, showRewardDialog, ready
     {actionState === "error" && checkState !== "error" ? <p role="alert" className={styles.error}>{t.error}</p> : null}
     {actionState === "done" && result && showModal && <AccessibleOverlay open onClose={() => setShowModal(false)} labelledBy="reaction-modal-title" backdropClassName={styles.backdrop} contentClassName={styles.modal}>
       <div className={styles.stampReward}><StampArtwork type="first_reaction" locale={locale} /></div>
-      <h2 id="reaction-modal-title">{locale === "ko" ? "첫 좋아요 도장을 받았어요" : translate(locale, localizedMessages.m2e387fe4594c, "You earned your First Like Stamp")}</h2>
+      <h2 id="reaction-modal-title">{locale === "ko" ? "첫 좋아요 스탬프를 받았어요" : translate(locale, localizedMessages.m2e387fe4594c, "You earned your First Like Stamp")}</h2>
       <p>{result.passportExists
-        ? locale === "ko" ? "패스포트 도장함에서 첫 좋아요를 확인해 보세요." : translate(locale, localizedMessages.m7a4ba120835b, "Find your first like in your Passport stamp book.")
-        : locale === "ko" ? "첫 좋아요 도장을 보관했어요. 팬 인증을 마치고 패스포트를 만들면 도장함에 담겨요." : translate(locale, localizedMessages.m3cadbfa88dd5, "Your First Like Stamp is saved. Complete fan verification to add it to your Fan Passport.")}</p>
+        ? locale === "ko" ? "패스포트 스탬프함에서 첫 좋아요를 확인해 보세요." : translate(locale, localizedMessages.m7a4ba120835b, "Find your first like in your Passport stamp book.")
+        : locale === "ko" ? "첫 좋아요 스탬프를 보관했어요. 팬 인증을 마치고 패스포트를 만들면 스탬프함에 담겨요." : translate(locale, localizedMessages.m3cadbfa88dd5, "Your First Like Stamp is saved. Complete fan verification to add it to your Fan Passport.")}</p>
       <Link href={(result.passportExists ? `/passports?locale=${locale}#collection` : verificationHref) as Route}>{result.passportExists ? locale === "ko" ? "내 패스포트 보기" : translate(locale, localizedMessages.mca4d55210ded, "View my Passports") : t.passport}</Link>
       <button type="button" onClick={() => setShowModal(false)}>{t.later}</button>
     </AccessibleOverlay>}

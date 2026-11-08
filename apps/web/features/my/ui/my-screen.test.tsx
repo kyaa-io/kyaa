@@ -149,7 +149,7 @@ describe("unified MY hub", () => {
     expect(screen.getByRole("link", { name: /래플 결과.*당첨 여부와 응모 내역 확인/ })).toHaveAttribute("href", "/my/raffles?locale=ko");
     expect(screen.getByRole("heading", { name: "내 최애 1" })).toBeInTheDocument();
     expect(screen.getAllByRole("link", { name: /내 패스포트.*발급 1개/ })).toHaveLength(1);
-    expect(screen.getByRole("link", { name: /^도장 3$/ })).toHaveAttribute("href", "/passports?locale=ko#collection");
+    expect(screen.getByRole("link", { name: /^스탬프 3$/ })).toHaveAttribute("href", "/passports?locale=ko#collection");
     expect(screen.getByText("4장")).toBeInTheDocument();
     expect(within(screen.getByRole("region", { name: "KARA 팬 활동" })).getByRole("heading", { name: "KARA 이벤트" })).toBeInTheDocument();
     expect(within(screen.getByRole("region", { name: "KARA 팬 활동" })).getByRole("link", { name: "이벤트 보러 가기" })).toHaveAttribute("href", "/c/kara/raffles?locale=ko");
@@ -390,7 +390,7 @@ it("shows a date-led reserved event and keeps recent records below favorites in 
   const {container} = render(<MyScreen locale="ko"/>);
   await screen.findByText("내 예약 LIVE", { selector: "strong" });
   expect(container.querySelector('time[datetime="2026-09-18T11:30:00.000Z"]')).toHaveTextContent("9월18");
-  expect(screen.getByText("KARA 도장").closest("aside")).toBeNull();
+  expect(screen.getByText("KARA 스탬프").closest("aside")).toBeNull();
   expect(container.querySelector("#my-creators")!.compareDocumentPosition(container.querySelector("#my-collection")!) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   expect(container.querySelector("#my-collection")!.parentElement?.className).toContain("lowerGrid");
   expect(within(container.querySelector("#my-creators")!).getByText("KARA").closest("button")?.querySelector("img")).toHaveAttribute("src", expect.stringContaining("%2Fkara.jpg"));
@@ -462,10 +462,10 @@ it("groups indistinguishable stamps while preserving a Passport destination and 
   }));
   vi.stubGlobal("fetch", vi.fn(async () => Response.json({ summary: { ...summary, collection: { ...summary.collection, recent: stamps } } })));
   render(<MyScreen locale="ko"/>);
-  const group = await screen.findByRole("link", { name: /KARA 도장 2개/ });
+  const group = await screen.findByRole("link", { name: /KARA 스탬프 2개/ });
   expect(group).toHaveAttribute("href", `/passports/${id}?locale=ko`);
   expect(group.querySelector("img")).not.toBeNull();
-  expect(screen.getByRole("link", { name: "도장 3" })).toHaveAttribute("href", "/passports?locale=ko#collection");
+  expect(screen.getByRole("link", { name: "스탬프 3" })).toHaveAttribute("href", "/passports?locale=ko#collection");
   expect(screen.queryByRole("heading", { name: "활동 요약" })).not.toBeInTheDocument();
 });
 

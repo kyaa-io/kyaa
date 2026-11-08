@@ -22,6 +22,7 @@ import { interactionCopy } from "./interaction-copy";
 import { groupsCopy,pageUnavailable } from "./copy";
 import styles from "./groups.module.css";
 import {SourceStatePanel} from "./source-state-panel";
+import {tierDisplayName} from "@/features/passport/domain/passport-read-model";
 import roomStyles from "./group-rooms.module.css";
 const parseRooms=(x:unknown)=>groupRoomsSchema.parse(x),parseMessages=(x:unknown)=>groupMessagesSchema.parse(x),parsePublicRooms=(x:unknown)=>groupPublicRoomsSchema.parse(x);
 function RoomMessagesSkeleton({label}:{label:string}){return <div role="status" aria-busy="true" aria-label={label} className={roomStyles.roomMessagesLoading}>{[0,1,2].map(i=><div className={roomStyles.roomMessage} key={i} aria-hidden="true"><FanSkeleton shape="circle" width={40} height={40}/><div className={roomStyles.roomMessageCopy}><FanSkeleton width={96} height={16}/><FanSkeleton width={i===1?"40%":"70%"} height={20}/></div></div>)}</div>;}
@@ -56,7 +57,7 @@ function RoomMessages({pageId,roomId,locale,readonly=false}:{pageId:string;roomI
       <label className={styles.field}>{roomMessageLabel[locale]}<input className={styles.input} value={draft} onChange={e=>setDraft(e.target.value)} maxLength={2000} disabled={pending} required/></label>
       <FanAction type="submit" variant="primary" disabled={pending||!draft.trim()}>{sendFailed?t.retry:sendLabel[locale]}</FanAction>
     </form>}
-  </section>{Boolean(visible?.participants?.length)&&<aside className={roomStyles.roomParticipants}><h3><UsersRound size={20} aria-hidden='true'/>{roomContextCopy[locale][0]}</h3>{visible!.participants!.map(person=><Link href={`/my/friends?locale=${locale}&profileId=${person.profileId}` as Route} key={person.profileId} className={roomStyles.roomParticipant}>{person.avatarUrl?<GroupImage src={person.avatarUrl} locale={locale} alt='' width={40} height={40} className={roomStyles.roomMessageAvatar}/>:<UserRound aria-hidden='true'/>}<span><strong>{person.nickname}</strong>{person.tier&&<span className={styles.meta}>{person.tier} · {roomEntryCopy(locale).verified}</span>}</span><span className={roomStyles.roomProfileAction}>{locale==='ko'?'프로필 보기':t.info}</span></Link>)}</aside>}</div>;
+  </section>{Boolean(visible?.participants?.length)&&<aside className={roomStyles.roomParticipants}><h3><UsersRound size={20} aria-hidden='true'/>{roomContextCopy[locale][0]}</h3>{visible!.participants!.map(person=><Link href={`/my/friends?locale=${locale}&profileId=${person.profileId}` as Route} key={person.profileId} className={roomStyles.roomParticipant}>{person.avatarUrl?<GroupImage src={person.avatarUrl} locale={locale} alt='' width={40} height={40} className={roomStyles.roomMessageAvatar}/>:<UserRound aria-hidden='true'/>}<span><strong>{person.nickname}</strong>{person.tier&&<span className={styles.meta}>{tierDisplayName(locale,person.tier)} · {roomEntryCopy(locale).verified}</span>}</span><span className={roomStyles.roomProfileAction}>{locale==='ko'?'프로필 보기':t.info}</span></Link>)}</aside>}</div>;
 }
 export function GroupRoomsPanel({pageId,locale,slug,imageUrl,initialRoomId,onJoin,joinPending=false,joinLabel}:{pageId:string;locale:AppLocale;slug?:string|null;imageUrl?:string|null;initialRoomId?:string;onJoin?:()=>void;joinPending?:boolean;joinLabel?:string}) {
  const t=groupsCopy(locale),c=interactionCopy(locale),entry=roomEntryCopy(locale),labels=roomStatusCopy(locale),auth=useGroupRequest(),g=useOptionalGroupPage();
@@ -71,7 +72,7 @@ export function GroupRoomsPanel({pageId,locale,slug,imageUrl,initialRoomId,onJoi
  if(accessible&&room)return <section className={`${roomStyles.roomsPanel} ${roomStyles.openRoom}`}>
   <header className={roomStyles.roomHeading}><FanAction onClick={()=>setSelected(undefined)} leadingIcon={<ArrowLeft/>}>{t.rooms}</FanAction><h2>{room.name}</h2></header>
   <div className={roomStyles.roomNav}><FanTabs variant='chip' label={t.rooms} current={selected??''} items={rooms.data!.items.map(item=>({key:item.id,label:item.name,onSelect:()=>selectRoom(item)}))}/>{slug&&<FanAction variant='neutral' href={`/pages/groups/${pageId}?locale=${locale}&tab=info`}>{locale==='ko'?'아티스트 정보':t.info}</FanAction>}</div>
-  <p className={styles.meta}>{slug&&room.defaultKey!=='free'?`${entry.verified}${room.minimumTier?` · ${entry.minimum.replace('{tier}',room.minimumTier)}`:''}`:t.membersOnly}</p>
+  <p className={styles.meta}>{slug&&room.defaultKey!=='free'?`${entry.verified}${room.minimumTier&&room.minimumTier!=='Member'?` · ${entry.minimum.replace('{tier}',tierDisplayName(locale,room.minimumTier))}`:''}`:t.membersOnly}</p>
   <RoomMessages key={`${rooms.ownerKey}:${room.id}`} pageId={pageId} roomId={room.id} locale={locale} readonly={room.status==='readonly'}/>
  </section>;
  const count=nonMember?publicRooms.data?.roomCount:rooms.data?.items.length;

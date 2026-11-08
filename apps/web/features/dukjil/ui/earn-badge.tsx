@@ -32,7 +32,7 @@ export const POINT_COIN_SRC = "/images/economy/point-coin.svg";
 
 /** Point badge for buttons and tiles. State is carried by shape and text, never by colour alone; the hidden text names the points for screen readers. */
 export function EarnBadge({ variant, locale, points, stamp = false, remaining = null, today = false, size, className = "" }: EarnBadgeProps) {
-  const cls = `${styles.badge} ${styles[variant]} ${variant === "inline" ? cornerStyles.tone : ""} ${size === "sm" ? styles.small : ""} ${className}`;
+  const cls = `${styles.badge} ${styles[variant]} ${size === "sm" ? styles.small : ""} ${className}`;
   // S4 규칙 3: 오늘 받은 포인트가 0이면 배지를 그리지 않는다.
   if (variant === "inline" && today && (points ?? 0) <= 0) return null;
   if (variant === "done") {
@@ -81,7 +81,7 @@ export function EarnActionBadge({ action, locale, variant = "inline", stamp = fa
   const points = typeof rule.points === "number" ? rule.points : undefined;
   if (!state?.authenticated) return <EarnBadge variant={variant} locale={locale} points={points} stamp={stamp && typeof rule.stamp === "string"} className={className} />;
   if (!item) return null;
-  // 미션 완료(S3): 완료로 바뀐 순간 한 번만 도장처럼 scale .6→1. 처음부터 완료면 연출 없음.
+  // 미션 완료(S3): 완료로 바뀐 순간 한 번만 스탬프처럼 scale .6→1. 처음부터 완료면 연출 없음.
   // 버튼 모서리(corner) 배지는 절대 위치라 연출 중 transform이 기준 상자를 바꾼다. 연출은 타일·행 배지에만.
   const pop = variant === "corner" ? "static" : null;
   if (item.remaining === 0) return <FanRewardPop trigger={pop ?? "done"} kind="complete"><EarnBadge variant="done" locale={locale} className={className} /></FanRewardPop>;

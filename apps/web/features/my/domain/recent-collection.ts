@@ -18,7 +18,12 @@ export function groupRecentCollection(items: CollectionItem[]): RecentCollection
   return [...groups.values()];
 }
 
+/** The database names a row "엘리나 Stamp", "엘리나 스탬프" or "엘리나 여권"; Korean screens say 스탬프 and 패스포트 (user decision 2026-11-08 13:05, reversing N1). */
+export function koreanCollectionTitle(title: string): string {
+  return title.replace(/(^|\s)Stamp$/, "$1스탬프").replace(/(^|\s)여권$/, "$1패스포트");
+}
+
 export function collectionGroupTitle({ item, count }: RecentCollectionGroup, locale: AppLocale) {
-  const title = locale === "ko" && item.kind === "stamp" ? item.title.replace(/ Stamp$/, " 도장") : item.title;
+  const title = locale === "ko" ? koreanCollectionTitle(item.title) : item.title;
   return count > 1 ? `${title}${locale === "ko" ? ` ${count}개` : ` ×${count}`}` : title;
 }

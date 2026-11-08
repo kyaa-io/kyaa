@@ -46,7 +46,7 @@ export const officialAddresses = [
 ] as const;
 
 export const actionDefinitions = [
-  { code: 1, name: "FAN_VERIFIED", ko: "팬 인증", en: "Fan verification", descriptionKo: "팬 퀴즈 통과와 Passport·도장 발급", descriptionEn: "Fan quiz passed; Passport and stamp issued", description: { ko: "팬 퀴즈 통과와 Passport·도장 발급", en: "Fan quiz passed; Passport and stamp issued" ,
+  { code: 1, name: "FAN_VERIFIED", ko: "팬 인증", en: "Fan verification", descriptionKo: "팬 퀴즈 통과와 Passport·스탬프 발급", descriptionEn: "Fan quiz passed; Passport and stamp issued", description: { ko: "팬 퀴즈 통과와 Passport·스탬프 발급", en: "Fan quiz passed; Passport and stamp issued" ,
   ...additionalLocales((translationLocale) => (localizedMessages.m966431b6e409[translationLocale]))
 } ,
   ...additionalLocales((translationLocale) => (localizedMessages.m6879504e351c[translationLocale]))
@@ -76,7 +76,7 @@ export const actionDefinitions = [
 } ,
   ...additionalLocales((translationLocale) => (localizedMessages.mcd70a120b92c[translationLocale]))
 },
-  { code: 7, name: "WELCOME_COMPLETED", ko: "웰컴 미션 완료", en: "Welcome completion", descriptionKo: "웰컴 도장 수령 · 회원가입 수와 다름", descriptionEn: "Welcome stamp claimed; not an account signup", description: { ko: "웰컴 도장 수령 · 회원가입 수와 다름", en: "Welcome stamp claimed; not an account signup" ,
+  { code: 7, name: "WELCOME_COMPLETED", ko: "웰컴 미션 완료", en: "Welcome completion", descriptionKo: "웰컴 스탬프 수령 · 회원가입 수와 다름", descriptionEn: "Welcome stamp claimed; not an account signup", description: { ko: "웰컴 스탬프 수령 · 회원가입 수와 다름", en: "Welcome stamp claimed; not an account signup" ,
   ...additionalLocales((translationLocale) => (localizedMessages.m48512dc35c2a[translationLocale]))
 } ,
   ...additionalLocales((translationLocale) => (localizedMessages.m1aec0326bc22[translationLocale]))
@@ -101,7 +101,7 @@ export const actionDefinitions = [
 } ,
   ...additionalLocales((translationLocale) => (localizedMessages.m3cf119caeffa[translationLocale]))
 },
-  { code: 12, name: "COMMUNITY_STAMP_ISSUED", ko: "커뮤니티 도장 발급", en: "Community stamp issuance", descriptionKo: "공유 또는 첫 클립 도장 발급", descriptionEn: "A share or first clip stamp issued", description: { ko: "공유 또는 첫 클립 도장 발급", en: "A share or first clip stamp issued",
+  { code: 12, name: "COMMUNITY_STAMP_ISSUED", ko: "커뮤니티 스탬프 발급", en: "Community stamp issuance", descriptionKo: "공유 또는 첫 클립 스탬프 발급", descriptionEn: "A share or first clip stamp issued", description: { ko: "공유 또는 첫 클립 스탬프 발급", en: "A share or first clip stamp issued",
   ...additionalLocales((translationLocale) => (localizedMessages.mcommunityStampDescription[translationLocale]))
 },
   ...additionalLocales((translationLocale) => (localizedMessages.mcommunityStampLabel[translationLocale]))

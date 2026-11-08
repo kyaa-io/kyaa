@@ -163,7 +163,7 @@ describe("admin quiz stamps", () => {
   participationFetchMock.mockResolvedValueOnce(Response.json({ participants: [participant], nextCursor: null }))
    .mockResolvedValueOnce(Response.json({ id: participant.id, quizCorrectAt: "2026-10-22T10:01:00Z" }));
   render(<ByusDayRsvpManager locale="ko" />);
-  const button = await screen.findByRole("button", { name: "김테스트 퀴즈 정답 도장 지급" });
+  const button = await screen.findByRole("button", { name: "김테스트 퀴즈 정답 스탬프 지급" });
   fireEvent.click(button); fireEvent.click(button);
   await screen.findByText("지급 완료"); expect(participationFetchMock).toHaveBeenCalledTimes(2);
   expect(participationFetchMock).toHaveBeenLastCalledWith(`/api/admin/kyaa-wave-participants/${participant.id}/quiz-stamp`, expect.objectContaining({ method: "POST", headers: { authorization: "Bearer token" } }));
@@ -171,7 +171,7 @@ describe("admin quiz stamps", () => {
  it("shows viewer status without grant actions", async () => {
   participationFetchMock.mockResolvedValueOnce(Response.json({ participants: [participant], nextCursor: null }));
   render(<ByusDayRsvpManager locale="ko" />); await screen.findByText("미지급");
-  expect(screen.queryByRole("button", { name: "김테스트 퀴즈 정답 도장 지급" })).not.toBeInTheDocument();
+  expect(screen.queryByRole("button", { name: "김테스트 퀴즈 정답 스탬프 지급" })).not.toBeInTheDocument();
  });
  it("keeps the participant on failure and allows retry", async () => {
   session.admin.role = "admin";
@@ -179,8 +179,8 @@ describe("admin quiz stamps", () => {
    .mockResolvedValueOnce(Response.json({}, { status: 503 }))
    .mockResolvedValueOnce(Response.json({ id: participant.id, quizCorrectAt: "2026-10-22T10:01:00Z" }));
   render(<ByusDayRsvpManager locale="ko" />);
-  fireEvent.click(await screen.findByRole("button", { name: "김테스트 퀴즈 정답 도장 지급" }));
+  fireEvent.click(await screen.findByRole("button", { name: "김테스트 퀴즈 정답 스탬프 지급" }));
   await screen.findByText("지급하지 못했어요. 다시 시도해 주세요."); expect(screen.getByText("김테스트")).toBeInTheDocument();
-  fireEvent.click(screen.getByRole("button", { name: "김테스트 퀴즈 정답 도장 지급" })); await screen.findByText("지급 완료");
+  fireEvent.click(screen.getByRole("button", { name: "김테스트 퀴즈 정답 스탬프 지급" })); await screen.findByText("지급 완료");
  });
 });
