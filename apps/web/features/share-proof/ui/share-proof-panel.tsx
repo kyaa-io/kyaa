@@ -1,5 +1,7 @@
 "use client";
 import { useId, useState, type FormEvent, type ReactNode } from "react";
+import { useByUsAuth } from "@/features/auth/client/cognito-auth";
+import { recordShareCompleted } from "@/features/analytics/client/share-event";
 import Link from "next/link";
 import type { Route } from "next";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
@@ -49,6 +51,7 @@ export function ShareProofDialog({ slug, locale, onClose }: { slug: string; loca
   const c = shareProofCopy(locale), fieldId = useId();
   const pathname = usePathname() ?? "/", params = useSearchParams(), router = useRouter();
   const { request, authenticated, ready } = useGroupRequest();
+  const { getAccessToken } = useByUsAuth();
   const list = useGroupResource(authenticated ? `/api/me/share-proofs?creator=${encodeURIComponent(slug)}` : null, parseList);
   const [url, setUrl] = useState(""), [own, setOwn] = useState(false), [problem, setProblem] = useState(""), [ownProblem, setOwnProblem] = useState(false), [busy, setBusy] = useState(false), [linkBusy, setLinkBusy] = useState(false);
   const { burst, add, clear } = usePointRewardBurst();
@@ -58,8 +61,9 @@ export function ShareProofDialog({ slug, locale, onClose }: { slug: string; loca
     try {
       const { token } = communityShareLinkSchema.parse(await request("/api/community-stamps/share-link", { method: "POST", body: JSON.stringify({ creator: slug }) }));
       const link = `${window.location.origin}/s/${token}?locale=${locale}`;
-      if (typeof navigator.share === "function") { try { await navigator.share({ url: link }); return; } catch (error) { if ((error as { name?: string } | null)?.name === "AbortError") return; } }
+      if (typeof navigator.share === "function") { try { await navigator.share({ url: link }); recordShareCompleted("native", "share_proof", getAccessToken); return; } catch (error) { if ((error as { name?: string } | null)?.name === "AbortError") return; } }
       await navigator.clipboard.writeText(link);
+      recordShareCompleted("copy", "share_proof", getAccessToken);
       showFanToast({ title: c.copied, tone: "success" });
     } catch { showFanToast({ title: c.linkFailed, tone: "error", action: { label: c.shareLink, onClick: () => void shareLink() } }); }
     finally { setLinkBusy(false); }

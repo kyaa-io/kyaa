@@ -62,3 +62,6 @@
 .acquisitionScroll:focus-visible { outline: 3px solid var(--overview-accent); outline-offset: 3px; border-radius: 8px; }
 .acquisitionHint { display: none; }
 @media (max-width: 64rem) { .acquisitionHint { display: block; } }
+.funnelSince { display: block; color: var(--overview-muted); font-size: var(--fan-metadata-size); font-weight: 500; }
+/* Admin panel titles stay at the sibling panels' size; FanHeading's wide fan size does not apply here. */
+.funnelHeading h2[data-fan-heading] { font-size: var(--fan-item-title-size); line-height: normal; }

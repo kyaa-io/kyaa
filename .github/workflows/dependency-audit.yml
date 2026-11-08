@@ -48,4 +48,4 @@ jobs:
         run: node --test scripts/vercel-ignore-build.test.mjs
 
       - name: Check public telemetry privacy boundary
-        run: npm run test --workspace @byus/web -- features/analytics/client/vercel-telemetry.test.tsx
+        run: npm run test --workspace @byus/web -- features/analytics/client/public-telemetry-path.test.ts

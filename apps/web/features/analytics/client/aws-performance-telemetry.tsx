@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useReportWebVitals } from "next/web-vitals";
 import { performanceMetricSchema, type PerformanceMetric } from "../domain/performance-metric";
-import { isPublicTelemetryPath } from "./vercel-telemetry-policy";
+import { isPublicTelemetryPath } from "./public-telemetry-path";
 
 function routeKind(pathname: string): PerformanceMetric["routeKind"] {
   if (pathname === "/") return "home";

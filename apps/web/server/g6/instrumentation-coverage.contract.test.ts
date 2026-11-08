@@ -13,10 +13,13 @@ const outbound = readFileSync(resolve(process.cwd(), "features/analytics/client/
 const live = readFileSync(resolve(process.cwd(), "features/live/ui/live-event-screen.tsx"), "utf8");
 const creator = readFileSync(resolve(process.cwd(), "components/celebrity-fan-page.tsx"), "utf8");
 const benefit = readFileSync(resolve(process.cwd(), "features/benefit/ui/benefit-screen.tsx"), "utf8");
+const funnelMigration = readFileSync(resolve(root, "supabase/migrations/20261219010000_funnel_events.sql"), "utf8");
+const pageView = readFileSync(resolve(process.cwd(), "features/analytics/client/page-view-tracker.tsx"), "utf8");
+const share = readFileSync(resolve(process.cwd(), "features/analytics/client/share-event.ts"), "utf8");
 
 describe("Phase 6 instrumentation coverage", () => {
   it("covers every v1 name through a client surface or committed server projection", () => {
-    const inventory = [client, outbound, live, creator, benefit, migration, signupMigration, signupClient].join("\n");
+    const inventory = [client, outbound, live, creator, benefit, migration, signupMigration, signupClient, funnelMigration, pageView, share].join("\n");
     for (const name of PRODUCT_EVENT_NAMES) expect(inventory).toContain(name);
   });
   it("projects ticket events only after a ledger insert with the ledger row as stable source", () => {

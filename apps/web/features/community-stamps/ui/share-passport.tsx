@@ -1,6 +1,7 @@
 "use client";
 
 import type { AppLocale } from "@/i18n/locales";
+import { recordShareCompleted } from "@/features/analytics/client/share-event";
 import { messages as localizedMessages } from "@/i18n/catalogs/features__community-stamps__ui__share-passport";
 import { additionalLocales, translate } from "@/i18n/messages";
 import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
@@ -52,13 +53,13 @@ function SharePassportInner({creator, locale, getAccessToken, quiet = false }: {
 
   async function copyLink() {
     if (!url) return;
-    try { await navigator.clipboard.writeText(url); if (alive.current) { setFailed(false); setMessage(c.copied); } }
+    try { await navigator.clipboard.writeText(url); recordShareCompleted("copy", "passport", getAccessToken); if (alive.current) { setFailed(false); setMessage(c.copied); } }
     catch { if (alive.current) { setFailed(true); setMessage(c.fallback); } }
   }
 
   async function nativeShare() {
     if (!url || !navigator.share) return;
-    try { await navigator.share({ title: `${creator.name ?? creator.slug} Fan Passport`, url }); }
+    try { await navigator.share({ title: `${creator.name ?? creator.slug} Fan Passport`, url }); recordShareCompleted("native", "passport", getAccessToken); }
     catch (error) { if (!(error instanceof DOMException && error.name === "AbortError") && alive.current) { setFailed(true); setMessage(c.fallback); } }
   }
 

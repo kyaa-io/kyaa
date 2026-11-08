@@ -26,6 +26,7 @@ import { FanAction, fanActionClassName } from "@/components/fan-ui/fan-action";
 import { FanAppFrame, type FanLocale } from "@/components/fan-shell/fan-app-shell";
 import { appendLoginContext, sanitizeAuthIntentId } from "@/components/login-intent";
 import styles from "./quiz-entry-screen.module.css";
+import { sendGa4Event } from "@/features/analytics/client/ga4-client";
 
 type ScreenState =
   | { kind: "loading" }
@@ -290,6 +291,7 @@ export function QuizEntryScreen({
         router.push((liveReturnTo ?? withLocale(`/passports/${result.passportId}`, locale)) as Route);
         return;
       }
+      if (result.attempt.status === "open") sendGa4Event("fan_verification_start");
       if (result.attempt.status !== "open") {
         router.push(appendLiveReturnTo(
           withLocale(`/c/${slug}/verify/result?attempt=${result.attempt.id}`, locale),

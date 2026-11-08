@@ -1,7 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("server-only", () => ({}));
-vi.mock("@/features/analytics/client/vercel-telemetry", () => ({ VercelTelemetry: () => null }));
 
 const mocks = vi.hoisted(() => ({ creator: vi.fn(), live: vi.fn(), raffles: vi.fn(), benefit: vi.fn() }));
 vi.mock("@/server/seo/public-content", () => ({ loadSeoCreator: mocks.creator, loadSeoLive: mocks.live, loadSeoRaffles: mocks.raffles, loadSeoBenefit: mocks.benefit }));

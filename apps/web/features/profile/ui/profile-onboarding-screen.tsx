@@ -27,6 +27,7 @@ import {
 import type { PublishedCelebrity } from "@/server/content/content-domain";
 import { appendLoginContext, sanitizeAuthIntentId, sanitizeEntity, sanitizeIntent, sanitizeReturnTo } from "../../../components/login-intent";
 import styles from "./profile-onboarding-screen.module.css";
+import { sendGa4Event } from "@/features/analytics/client/ga4-client";
 
 type ScreenState = "checking" | "empty" | "typing" | "valid" | "duplicate" | "prohibited" | "invalid" | "saving" | "saved" | "network";
 
@@ -270,6 +271,7 @@ export function ProfileOnboardingScreen({ celebrity }: { celebrity: PublishedCel
         return;
       }
       const savedNickname = body.profile?.nickname ?? normalized;
+      sendGa4Event("sign_up");
       getSessionStorage().removeItem(draftStorageKey);
       setNickname(savedNickname);
       setState("saved");

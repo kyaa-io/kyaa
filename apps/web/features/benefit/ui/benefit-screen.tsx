@@ -72,6 +72,7 @@ import {
 import { fanPageHref } from "@/features/fanpage/domain/board-navigation";
 import { cheerEventCopy } from "@/features/fanpage/domain/cheer-event-copy";
 import { creatorHomeHref } from "@/features/creator/domain/creator-navigation";
+import { sendGa4Event } from "@/features/analytics/client/ga4-client";
 
 export type BenefitLocale = AppLocale;
 
@@ -813,6 +814,7 @@ function BenefitDetailOwnerScreen({
         );
         if (!response.ok) throw new Error();
         const result = benefitClaimResponseSchema.parse(await response.json());
+        sendGa4Event("raffle_entry", { kind: "claim" });
         setClaim(result);
         sessionStorage.removeItem(keyName);
         setView({
@@ -878,6 +880,7 @@ function BenefitDetailOwnerScreen({
           await response.json(),
         );
         setApplication(result);
+        sendGa4Event("raffle_entry", { kind: "application" });
         sessionStorage.removeItem(keyName);
         setView({
           kind: "ready",
@@ -981,6 +984,7 @@ function BenefitDetailOwnerScreen({
           throw new Error();
         }
         const result = benefitEntryResultSchema.parse(await response.json());
+        sendGa4Event("raffle_entry", { kind: "ticket" });
         setEntryResult(result);
         notifyFanActivityUpdated(auth.user?.id);
           setEntryConfirmation(null);

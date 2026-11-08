@@ -20,6 +20,7 @@ import { celebrateStamp } from "./stamp-slam";
 import styles from "./dukjil.module.css";
 import missionStyles from "./fan-missions.module.css";
 import inkStyles from "@/components/fan-ui/fan-ink.module.css";
+import { sendGa4Event } from "@/features/analytics/client/ga4-client";
 
 const STAMP_ART = "/images/stamps/ink-v1/daily-checkin.webp";
 type Failure = "none" | "failed" | "cap" | "inactive" | "passport";
@@ -57,6 +58,7 @@ export function CreatorAttendanceDialog({ open, onClose, reviewHref, pageName }:
     try {
       const result = parseAttendanceResult(await auth.request(`/api/me/attendance/${encodeURIComponent(slug)}`, { method: "POST", body: JSON.stringify({ requestKey: requestKey.current }) }, "json", false));
       requestKey.current = null;
+      if (!result.replayed) sendGa4Event("daily_checkin");
       setPressed(true);
       // D3: a stamp the server just issued lands over the whole screen (not on a replay); the dialog then shows it still.
       if (result.stampId && !result.replayed) void celebrateStamp({ locale, points: result.points + result.bonusPoints, stamps: 1 });

@@ -10,6 +10,7 @@ import { webAnalyticsSchema, type WebAnalyticsData, type WebAnalyticsDays, type 
 import { AnalyticsLineChart } from "./analytics-line-chart";
 import { OutboundAnalytics } from "./outbound-analytics";
 import { AcquisitionAnalytics } from "./acquisition-analytics";
+import { FunnelAnalytics } from "./funnel-analytics";
 import base from "./admin-overview-dashboard.module.css";
 import styles from "./web-analytics-dashboard.module.css";
 
@@ -20,15 +21,26 @@ const date = (value: string, locale: AdminLocale, withTime = false) => new Intl.
   ...(withTime ? { hour: "2-digit", minute: "2-digit" } as const : {}),
 }).format(new Date(value));
 
+const dimensionLabels: Record<string, Record<string, readonly [string, string]>> = {
+  pages: {
+    home: ["홈", "Home"], creator_directory: ["팬페이지 목록", "Fan page directory"], creator: ["팬페이지", "Fan page"],
+    live_directory: ["LIVE 목록", "LIVE directory"], live: ["LIVE", "LIVE"], benefit: ["혜택·선물", "Benefits & gifts"],
+    fan_guide: ["팬 가이드", "Fan guide"], community: ["팬게시판·응원", "Fan board & cheers"], login: ["로그인", "Sign-in"],
+    onboarding: ["닉네임 설정", "Nickname setup"], my: ["MY", "MY"], passport: ["패스포트", "Passports"],
+    verification: ["팬 인증", "Fan verification"], other: ["기타", "Other"],
+  },
+  referrers: {
+    direct: ["직접 방문", "Direct"], search: ["검색", "Search"], social: ["소셜", "Social"], email: ["이메일", "Email"],
+    paid: ["광고", "Paid"], referral: ["외부 사이트", "Referral"], internal: ["사이트 내부", "Internal"],
+  },
+  devices: { mobile: ["모바일", "Mobile"], tablet: ["태블릿", "Tablet"], desktop: ["데스크톱", "Desktop"] },
+  browsers: { instagram: ["인스타그램 앱", "Instagram app"], kakao: ["카카오톡 앱", "KakaoTalk app"], safari: ["Safari", "Safari"], chrome: ["Chrome", "Chrome"], other: ["기타", "Other"] },
+  operatingSystems: { ios: ["iOS", "iOS"], android: ["Android", "Android"], other: ["기타", "Other"] },
+};
+
 function dimensionLabel(value: string, kind: string, locale: AdminLocale) {
-  const ko = locale === "ko";
-  if (value === "Others") return ko ? "기타" : "Others";
-  if (!value || value === "(none)") return kind === "referrers" ? ko ? "직접 유입 / 확인 불가" : "Direct / unknown" : ko ? "확인 불가" : "Unknown";
-  if (kind === "countries" && /^[A-Z]{2}$/.test(value)) {
-    return new Intl.DisplayNames([locale], { type: "region" }).of(value) ?? value;
-  }
-  if (kind === "devices" && ko) return ({ mobile: "모바일", desktop: "데스크톱", tablet: "태블릿" } as Record<string, string>)[value] ?? value;
-  return value;
+  const label = dimensionLabels[kind]?.[value];
+  return label ? label[locale === "ko" ? 0 : 1] : value;
 }
 
 function Breakdown({ title, kind, rows, locale }: {
@@ -55,7 +67,6 @@ export function WebAnalyticsContent({ data, locale = "ko" }: { data: WebAnalytic
   const breakdowns = [
     ["pages", ko ? "인기 페이지" : "Top pages"],
     ["referrers", ko ? "유입 경로" : "Referrers"],
-    ["countries", ko ? "국가" : "Countries"],
     ["devices", ko ? "기기" : "Devices"],
     ["browsers", ko ? "브라우저" : "Browsers"],
     ["operatingSystems", ko ? "운영체제" : "Operating systems"],
@@ -65,7 +76,7 @@ export function WebAnalyticsContent({ data, locale = "ko" }: { data: WebAnalytic
       <div className={styles.metrics} role="group" aria-label={ko ? "차트 지표" : "Chart metric"}>
         {(["visitors", "pageviews"] as const).map((key) => <button key={key} type="button" onClick={() => setMetric(key)} aria-pressed={metric === key}>
           <span>{names[key]}</span><strong>{format(data.totals[key], locale)}</strong>
-          <small>{key === "visitors" ? ko ? "비로그인 방문 포함" : "Includes signed-out visits" : ko ? "페이지가 조회된 횟수" : "Total page views"}</small>
+          <small>{key === "visitors" ? ko ? "브라우저 세션 수" : "Browser sessions" : ko ? "화면이 열린 횟수" : "Screens opened"}</small>
         </button>)}
       </div>
       <div className={styles.chartHeading}><h2>{ko ? `일별 ${names[metric]}` : `Daily ${names[metric].toLowerCase()}`}</h2><span>UTC</span></div>
@@ -74,9 +85,8 @@ export function WebAnalyticsContent({ data, locale = "ko" }: { data: WebAnalytic
     <div className={styles.breakdowns}>{breakdowns.map(([kind, title]) =>
       <Breakdown key={kind} title={title} kind={kind} rows={data.breakdowns[kind]} locale={locale} />)}</div>
     <details className={base.definitions}><summary>{ko ? "방문 통계 집계 기준" : "How traffic is measured"}</summary><div>
-      <p>{ko ? "Vercel Web Analytics가 수집한 공개 페이지의 Production 방문 기록입니다. 비로그인 방문을 포함하며, 회원 수·활동 회원 수와는 다릅니다. 관리자와 비공개 페이지는 수집 대상에서 제외됩니다." : "Production visits to public pages tracked by Vercel Web Analytics. Includes signed-out visits and differs from registered or active members. Admin and private pages are excluded from tracking."}</p>
-      <p>{ko ? "날짜와 일별 구간은 UTC 기준이며 오늘을 포함합니다. 오늘 수치는 집계 중입니다. 한 방문자가 여러 페이지나 경로에 포함될 수 있어 항목별 방문자의 합은 전체 방문자와 다를 수 있습니다." : "Dates and daily intervals use UTC and include today. Today's figures are still accumulating. A visitor may appear in multiple rows, so row totals may differ from the overall visitor count."}</p>
-      <p>{ko ? "새로고침해도 최대 5분 동안 같은 집계 결과가 표시될 수 있습니다. 회원 가입·LIVE 예약·출석·경품 응모는 기존 서비스 통계에서 확인할 수 있습니다." : "Refreshing may show the same results for up to five minutes. See service analytics for signups, LIVE reservations, attendance and prize entries."}</p>
+      <p>{ko ? "kyaa가 직접 기록한 화면 조회입니다. 방문자는 브라우저 세션 수이고 회원 수와 다릅니다. 관리자·운영 화면은 세지 않고, 주소 대신 화면 종류만 기록합니다. 유입 경로는 세션의 첫 화면만 셉니다." : "Screen views recorded by kyaa itself. Visitors are browser sessions, not members. Admin and operator screens are not counted, and only the kind of screen is stored, never the address. Referrers count each session's first screen only."}</p>
+      <p>{ko ? "날짜와 일별 구간은 UTC 기준이며 오늘을 포함합니다. 오늘 수치는 집계 중입니다. 한 방문자가 여러 항목에 포함될 수 있어 항목별 방문자의 합은 전체 방문자와 다를 수 있습니다." : "Dates and daily intervals use UTC and include today. Today's figures are still accumulating. A visitor may appear in multiple rows, so row totals may differ from the overall visitor count."}</p>
     </div></details>
   </div>;
 }
@@ -128,10 +138,11 @@ export function WebAnalyticsDashboard({ locale = "ko" }: { locale?: AdminLocale 
     </header>
     <div className={base.toolbar}><div className={base.segmented} role="group" aria-label={ko ? "방문 통계 조회 기간" : "Traffic reporting period"}>
       {([7, 30, 90] as const).map((value) => <button key={value} type="button" aria-pressed={days === value} onClick={() => setDays(value)}>{ko ? `최근 ${value}일` : `Last ${value} days`}</button>)}
-    </div><p aria-live="polite">{visible.status === "ready" ? `${date(visible.data.from, locale)} – ${date(new Date(Date.parse(visible.data.to) - 1).toISOString(), locale)} · UTC · Production` : "Vercel Analytics · Production"}</p></div>
+    </div><p aria-live="polite">{visible.status === "ready" ? `${date(visible.data.from, locale)} – ${date(new Date(Date.parse(visible.data.to) - 1).toISOString(), locale)} · UTC` : "UTC"}</p></div>
     {visible.status === "loading" && <div className={base.loading} role="status"><div className={base.skeletonChart} /><span>{ko ? "방문 통계를 불러오고 있습니다." : "Loading web traffic…"}</span></div>}
     {visible.status === "error" && <section className={base.error} role="alert"><CircleAlert aria-hidden="true" /><h2>{ko ? "방문 통계를 불러오지 못했습니다" : "Could not load web traffic"}</h2><p>{ko ? "잠시 후 다시 시도해 주세요. 서비스 현황과 회원 통계는 계속 확인할 수 있습니다." : "Try again in a moment. Service and member analytics remain available."}</p><button type="button" onClick={() => setRefresh((value) => value + 1)}>{ko ? "다시 시도" : "Try again"}</button></section>}
-    {visible.status === "ready" && <><WebAnalyticsContent data={visible.data} locale={locale} /><p className={styles.updated}>{ko ? "마지막 조회" : "Last fetched"} {date(visible.data.fetchedAt, locale, true)} · UTC · Vercel Web Analytics</p></>}
+    {visible.status === "ready" && <><WebAnalyticsContent data={visible.data} locale={locale} /><p className={styles.updated}>{ko ? "마지막 조회" : "Last fetched"} {date(visible.data.fetchedAt, locale, true)} · UTC</p></>}
+    <FunnelAnalytics days={days} refresh={refresh} locale={locale} />
     <OutboundAnalytics days={days} refresh={refresh} locale={locale} />
     <AcquisitionAnalytics days={days} refresh={refresh} locale={locale} />
   </div></AdminOperationsShell>;
