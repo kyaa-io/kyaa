@@ -16307,12 +16307,6 @@
     "source": "features/dukjil-guide/ui/guide-copy",
     "id": "features/dukjil-guide/ui/guide-copy:dkgColHow"
   },
-  "dkgColAction": {
-    "en": "Activity",
-    "ko": "덕질",
-    "source": "features/dukjil-guide/ui/guide-copy",
-    "id": "features/dukjil-guide/ui/guide-copy:dkgColAction"
-  },
   "dkgColPoints": {
     "en": "Points",
     "ko": "포인트",
@@ -16594,12 +16588,6 @@
     "ko": "하트",
     "source": "features/rankings/ui/rankings-copy",
     "id": "features/rankings/ui/rankings-copy:rkHeartsTab"
-  },
-  "rkDukjilTab": {
-    "en": "Stan",
-    "ko": "덕질",
-    "source": "features/rankings/ui/rankings-copy",
-    "id": "features/rankings/ui/rankings-copy:rkDukjilTab"
   },
   "rkHearts": {
     "en": "{0} hearts",

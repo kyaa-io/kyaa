@@ -18,8 +18,8 @@ import styles from "./rankings.module.css";
 import { groupBenefitsCopy } from "@/features/groups/ui/group-benefits-copy";
 
 const PERIOD_KEY: Record<RankingPeriod, RankingsCopyKey> = { week: "rkWeek", month: "rkMonth", all: "rkAll" };
-// D1(M-5): 덕질 기준 칩 이름은 덕질 탭과 같은 키 navStan 하나에서 읽는다(rkDukjilTab 은 더 이상 화면에 쓰지 않는다).
-const METRIC_KEY: Record<PageRankingMetric, RankingsCopyKey> = { hearts: "rkHeartsTab", dukjil: "rkDukjilTab" };
+// D1(M-5)·M4-8: 덕질 기준 칩 이름은 덕질 탭과 같은 키 navStan 하나에서 읽는다(groupBenefitsCopy). 순위 문구에는 덕질 키를 두지 않는다.
+const METRIC_KEY: Partial<Record<PageRankingMetric, RankingsCopyKey>> = { hearts: "rkHeartsTab" };
 const MEDAL = [styles.medal1, styles.medal2, styles.medal3];
 
 export function fanAvatar(characterId: string): AvatarModel {
@@ -29,13 +29,13 @@ export function fanAvatar(characterId: string): AvatarModel {
 }
 
 function Chips<T extends string>({ label, values, keyOf, current, locale, onChange, textOf }: {
-  label: string; values: readonly T[]; keyOf: Record<T, RankingsCopyKey>; current: T; locale: AppLocale; onChange: (value: T) => void; textOf?: (value: T) => string | undefined;
+  label: string; values: readonly T[]; keyOf: Partial<Record<T, RankingsCopyKey>>; current: T; locale: AppLocale; onChange: (value: T) => void; textOf?: (value: T) => string | undefined;
 }) {
   return (
     <div className={styles.chips} role="group" aria-label={label}>
       {values.map((value) => (
         <FanAction key={value} variant="neutral" className={styles.chip} aria-pressed={value === current} onClick={() => onChange(value)}>
-          {textOf?.(value) ?? rankingsText(locale, keyOf[value])}
+          {textOf?.(value) ?? (keyOf[value] ? rankingsText(locale, keyOf[value]) : value)}
         </FanAction>
       ))}
     </div>

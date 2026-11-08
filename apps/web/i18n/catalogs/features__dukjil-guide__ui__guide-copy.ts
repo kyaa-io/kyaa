@@ -157,18 +157,6 @@ export const messages = {
     "fr": "Comment la remplir",
     "ru": "Как заполнить"
   },
-  "dkgColAction": {
-    "ja": "ファン活動",
-    "zh-Hans": "活动",
-    "zh-Hant": "活動",
-    "es": "Actividad",
-    "id": "Aktivitas",
-    "vi": "Hoạt động",
-    "th": "กิจกรรม",
-    "pt": "Atividade",
-    "fr": "Activité",
-    "ru": "Активность"
-  },
   "dkgColPoints": {
     "ja": "ポイント",
     "zh-Hans": "积分",

@@ -97,18 +97,6 @@ export const messages = {
     "fr": "Cœurs",
     "ru": "Сердца"
   },
-  "rkDukjilTab": {
-    "ja": "推し活",
-    "zh-Hans": "追星",
-    "zh-Hant": "追星",
-    "es": "Actividad fan",
-    "id": "Aktivitas fan",
-    "vi": "Hoạt động fan",
-    "th": "กิจกรรมแฟน",
-    "pt": "Atividade de fã",
-    "fr": "Activité fan",
-    "ru": "Активность"
-  },
   "rkHearts": {
     "ja": "ハート{0}個",
     "zh-Hans": "{0}个爱心",
