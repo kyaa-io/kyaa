@@ -231,6 +231,7 @@ radius-scale: "12px / 16px / 20px / pill"
 | 헤더 `♥N` (C1) | 헤더 최애 칩: 최애 이름 · 등급 · 하트 아이콘(`--color-accent`, 채움) + 숫자. N = 최애 커뮤니티에서 내가 모은 하트(하트 1개 = 찐팬 1명). 값이 바뀔 때만 하트가 한 번 커졌다 돌아옴(`--motion-count`), reduced-motion은 없음. 1024+는 숫자 칸 최소 56px 예약. 온도 표기는 없앴다 | `features/selected-bias/ui/selected-bias-chip.tsx` | 피드백 C1 |
 | 최애 값 출처 | 최애는 `fan_profile_public_fields`(MY에서 고른 값) 하나만 읽고 쓴다. 헤더 메뉴의 선택도 `PUT /api/me/social/profile-fields`로 저장하고, 헤더·덕질 상단·홈 최애 카드·프로필 카드가 같은 값을 읽는다. 옛 브라우저 저장값(`kyaa:selected-bias:v1:`)은 최애가 비었을 때 한 번 옮긴 뒤 지운다 | `features/selected-bias/ui/use-selected-bias.ts`, `server/my/my-summary-repository.ts` | 감독 결정(합침 검토 1) |
 | 미션 행 (D1) | 덕질의 오늘 미션·더 많은 미션·팬 인증·빈 행은 모두 `FanMissionRow` 하나. 도장 그림 40(1024+ 48) · 제목 + 오른쪽 보상 배지(`EarnBadge inline`) · 아래 한 줄(진행 `0/3` 또는 상태) · 끝 칸 하나(화살표, 짧은 행동, 또는 완료 태그). 최소 높이 64, 안쪽 12, 목록 구분선. 준비 중·마감은 글자 `--color-muted`. `×N`·도장 아이콘 상자 없음 | `features/dukjil/ui/fan-mission-row.tsx` | 피드백 D1·C8 |
+| 모달 위 알림·줄바꿈 | 공통 토스트는 `--z-toast`(1100)로 z-index 모달(옛 화면 100~1000 포함) 위에 있고, 모달이 열려도 `inert`가 되지 않는다. 네이티브 `<dialog>`(showModal)가 열려 있으면 토스트를 그 dialog 안에 그린다. `<body>`로 그리는 모달(`AccessibleOverlay`)은 팬 화면에서 `data-fan-surface`를 받아 한국어 `keep-all` 줄바꿈을 따른다 | `components/fan-ui/fan-toast-viewport.tsx`, `top-layer.ts`, `components/ui/overlay/accessible-overlay.tsx` | 4회차 합침 QA |
 
 ## 4. 숫자·아이콘 표기
 

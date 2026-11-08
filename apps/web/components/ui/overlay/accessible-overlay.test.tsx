@@ -39,6 +39,18 @@ describe("AccessibleOverlay", () => {
     Object.defineProperty(window, "scrollTo", { configurable: true, value: scrollTo });
   });
 
+  it("carries the fan surface's Korean wrapping into the modal drawn in <body>", async () => {
+    const surface = document.createElement("div");
+    surface.setAttribute("data-fan-surface", "");
+    document.body.append(surface);
+    render(<Harness />);
+    fireEvent.click(screen.getByRole("button", { name: "Open drawer" }));
+    const dialog = await screen.findByRole("dialog", { name: "Drawer" });
+    expect(dialog.closest("[data-overlay-root]")).toHaveAttribute("data-fan-surface", "");
+    fireEvent.keyDown(document, { key: "Escape" });
+    surface.remove();
+  });
+
   it("leaves the shared toast layer live above a modal while the page behind goes inert", async () => {
     const layer = document.createElement("div");
     layer.innerHTML = '<div data-fan-toast-viewport=""><button type="button">Close toast</button></div>';

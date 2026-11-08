@@ -289,10 +289,14 @@ export function AccessibleOverlay({
 
   if (!open || !host) return null;
   const Content = contentAs;
+  // The modal is drawn in <body>, outside the page's fan surface: carry the surface's Korean wrapping contract (globals.css,
+  // word-break keep-all) when the page is a fan surface, so a title such as "출석체크" never breaks inside a word. Admin pages stay out.
+  const fanSurface = host.ownerDocument.querySelector("[data-fan-surface]:not([data-overlay-root])") !== null;
   return createPortal(
     <div
       className={`${overlayStyles.backdrop} ${backdropClassName}`}
       data-overlay-root=""
+      data-fan-surface={fanSurface ? "" : undefined}
       data-variant={variant}
       data-reduced-motion="respect"
       onPointerDown={(event) => {
