@@ -51,8 +51,8 @@ export const serviceGuideContent = {
     passportDescription: "Fan Passport는 kyaa 안에서 최애와 함께한 팬 활동을 기록하는 디지털 기록이에요.",
     passportPoints: [
       "팬 인증을 통과한 최애별로 Passport가 만들어져요.",
-      "지원되는 팬 활동을 완료하면 Stamp와 참여 기록을 확인할 수 있어요.",
-      "Passport와 Stamp는 현금, 증권, 투자 상품이나 회사에 대한 권리를 뜻하지 않아요.",
+      "지원되는 팬 활동을 완료하면 도장과 참여 기록을 확인할 수 있어요.",
+      "Passport와 도장은 현금, 증권, 투자 상품이나 회사에 대한 권리를 뜻하지 않아요.",
     ],
     faqTitle: "자주 묻는 질문",
     faqs: [

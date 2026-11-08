@@ -67,7 +67,7 @@ const copy = {
     completeTitle: "설문 참여가 완료되었습니다",
     completeBody: "소중한 답변이 전달되었어요. LIVE 참여 기록도 함께 남겼습니다.",
     score: "Fan Score +2",
-    stamp: "Survey Stamp 적립 완료",
+    stamp: "설문 도장 적립 완료",
     returnLive: "LIVE로 돌아가기",
     submittedAt: "제출 완료",
     singleHint: "한 가지를 선택해 주세요.",

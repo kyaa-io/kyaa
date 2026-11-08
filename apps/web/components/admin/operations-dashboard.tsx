@@ -910,7 +910,7 @@ function AnalyticsResults({
           </p>
         </div>
         <div className={styles.distribution}>
-          <h3>{locale === "ko" ? "Stamp 유형" : "Stamp types"}</h3>
+          <h3>{locale === "ko" ? "도장 유형" : "Stamp types"}</h3>
           {stamps.state === "available" && stamps.value ? (
             <dl>
               {(

@@ -49,14 +49,14 @@ describe("PassportIssuanceCeremony", () => {
   it("can skip state motion and then reaches the locale-preserving Passport detail route", () => {
     render(<PassportIssuanceCeremony issuance={aggregate} />);
     expect(screen.getByRole("main", { name: "KARA Passport 발급 완료" })).toBeInTheDocument();
-    expect(screen.getByText("첫 팬 인증 Stamp와 팬 점수 +1이 기록됐어요.")).toBeInTheDocument();
+    expect(screen.getByText("첫 팬 인증 도장과 팬 점수 +1이 기록됐어요.")).toBeInTheDocument();
     expect(screen.getByRole("img", { name: "kyaa" })).toHaveAttribute("src", expect.stringContaining("kyaa-wordmark.svg"));
     expect(screen.getByRole("progressbar", { name: "Passport 발급 과정" })).toHaveAttribute("value", "1");
     expect(screen.getAllByRole("banner")[0].querySelectorAll("[data-language-switch]")).toHaveLength(1);
     expect(screen.queryByRole("link", { name: "Passport 열기" })).not.toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "건너뛰기" }));
     expect(screen.getByRole("progressbar", { name: "Passport 발급 과정" })).toHaveAttribute("value", "4");
-    expect(screen.getByText("팬 인증 Stamp 획득")).toBeInTheDocument();
+    expect(screen.getByText("팬 인증 도장 획득")).toBeInTheDocument();
     expect(screen.getByText("발급 상태 확인 중")).toBeInTheDocument();
     const openPassport = screen.getByRole("link", { name: "Passport 열기" });
     expect(openPassport).toHaveAttribute("href", `/passports/${aggregate.passport.id}?locale=ko`);
@@ -166,7 +166,7 @@ describe("PassportIssuanceCeremony", () => {
     });
     const settling = container.querySelector("[data-issuance-stamp-moment]");
     expect(settling).toHaveAttribute("data-state", "settling");
-    expect(screen.getByRole("img", { name: /KARA 팬 인증 Stamp.*1점 획득/ })).toBeInTheDocument();
+    expect(screen.getByRole("img", { name: /KARA 팬 인증 도장.*1점 획득/ })).toBeInTheDocument();
     expect(settling).toHaveTextContent("2026.07.21");
     expect(settling).toHaveTextContent("+1");
     expect(decodeURIComponent(settling!.querySelector("img")!.getAttribute("src")!)).toContain("/images/stamps/ink-v1/frame");
@@ -259,7 +259,7 @@ describe("PassportIssuanceCeremony", () => {
 
     expect(await screen.findByRole("main", { name: "KARA Passport 발급 완료" })).toBeInTheDocument();
     expect(screen.queryByRole("heading", { name: "발급 결과를 불러오지 못했어요." })).toBeNull();
-    expect(screen.queryByText("첫 팬 인증 Stamp와 팬 점수 +1이 기록됐어요.")).toBeNull();
+    expect(screen.queryByText("첫 팬 인증 도장과 팬 점수 +1이 기록됐어요.")).toBeNull();
     expect(screen.queryByText("이번 인증으로 받은 점수")).toBeNull();
 
     act(() => vi.advanceTimersByTime(1_350));
@@ -271,7 +271,7 @@ describe("PassportIssuanceCeremony", () => {
 
     act(() => vi.advanceTimersByTime(450));
     expect(container.querySelector('[data-passport-stamp="knowledge"]')?.outerHTML).not.toContain("0점");
-    expect(screen.getByText("팬 인증 Stamp 획득")).toBeInTheDocument();
+    expect(screen.getByText("팬 인증 도장 획득")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Passport 열기" })).toHaveAttribute("href", `/passports/${aggregate.passport.id}?locale=ko`);
     vi.useRealTimers();
   }, 20_000);

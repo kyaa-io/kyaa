@@ -52,7 +52,7 @@ describe("Passport Stamp artwork", () => {
       <StampArtwork type="knowledge" locale="ko" />,
     );
 
-    expect(screen.getByRole("img", { name: "팬 인증 Stamp" })).toBeInTheDocument();
+    expect(screen.getByRole("img", { name: "팬 인증 도장" })).toBeInTheDocument();
     expect(decodeURIComponent(container.querySelector("img")!.src)).toContain("/images/stamps/ink-v1/knowledge.webp");
     expect(container.innerHTML).not.toMatch(/kara|nualeaf/i);
   });
@@ -67,7 +67,7 @@ describe("Passport Stamp artwork", () => {
       />,
     );
 
-    const seal = screen.getByRole("img", { name: /KATSEYE 팬 인증 Stamp.*1점 획득/ });
+    const seal = screen.getByRole("img", { name: /KATSEYE 팬 인증 도장.*1점 획득/ });
     expect(seal).toHaveTextContent("2026.07.26");
     expect(seal).toHaveTextContent("+1");
     expect(decodeURIComponent(container.querySelector("img")!.src)).toContain("/images/stamps/ink-v1/frame.webp");
@@ -81,7 +81,7 @@ describe("Passport Stamp artwork", () => {
       </>,
     );
     const reservation = screen.getByRole("img", { name: `${stampTypeLabel("en", "reservation")} Stamp` });
-    const survey = screen.getByRole("img", { name: `${stampTypeLabel("ko", "survey")} Stamp` });
+    const survey = screen.getByRole("img", { name: `${stampTypeLabel("ko", "survey")} 도장` });
     expect(decodeURIComponent(reservation.querySelector("img")!.getAttribute("src")!)).toContain("/images/stamps/ink-v1/reservation.webp");
     expect(decodeURIComponent(survey.querySelector("img")!.getAttribute("src")!)).toContain("/images/stamps/ink-v1/survey.webp");
     expect(container.innerHTML).not.toContain("LIVE Reservation");
@@ -89,7 +89,7 @@ describe("Passport Stamp artwork", () => {
 
   it("renders membership with the shared kyaa artwork and localized label", () => {
     const { container } = render(<StampArtwork type="membership" locale="ko" />);
-    const stamp = screen.getByRole("img", { name: "멤버십 인증 Stamp" });
+    const stamp = screen.getByRole("img", { name: "멤버십 인증 도장" });
     expect(decodeURIComponent(container.querySelector("img")!.src)).toContain("/images/stamps/ink-v1/membership.webp");
   });
 
@@ -109,7 +109,7 @@ describe("Passport Stamp artwork", () => {
       />,
     );
 
-    expect(screen.getByRole("img", { name: /^Elina Fan Passport, 브론즈, Stamp 3개,/ })).toBeInTheDocument();
+    expect(screen.getByRole("img", { name: /^Elina Fan Passport, 브론즈, 도장 3개,/ })).toBeInTheDocument();
     expect(container.querySelectorAll('[data-passport-stamp="knowledge"]')).toHaveLength(3);
   });
 

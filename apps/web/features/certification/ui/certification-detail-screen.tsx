@@ -343,7 +343,7 @@ function CertificationDetailForOwner({
               {mission?.description ? <TranslatedText as="p" text={mission.description} locale={locale} /> : null}
               {reward.scorePoints > 0 || reward.ticketAmount > 0 || reward.stampCount ? <div className={styles.rewardCard}>
                 {reward.scorePoints > 0 ? <strong>+{reward.scorePoints} {locale === "ko" ? "팬 점수" : translate(locale, localizedMessages.mf5f0dc89bb4b, "fan score")}</strong> : null}
-                {reward.stampCount ? <span><Crown aria-hidden="true" />{locale === "ko" ? "멤버십 Stamp 1개" : translate(locale, localizedMessages.maecca8f592dc, "1 Membership Stamp")}</span> : null}
+                {reward.stampCount ? <span><Crown aria-hidden="true" />{locale === "ko" ? "멤버십 도장 1개" : translate(locale, localizedMessages.maecca8f592dc, "1 Membership Stamp")}</span> : null}
                 {reward.ticketAmount > 0 ? <span><Ticket aria-hidden="true" />+{reward.ticketAmount} {locale === "ko" ? "응모권" : translate(locale, localizedMessages.m93ab20a72717, "tickets")}</span> : null}
               </div> : null}
             </header>

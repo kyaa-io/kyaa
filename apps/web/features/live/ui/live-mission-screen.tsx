@@ -163,7 +163,7 @@ function MissionContent({ slug, locale, auth }: Props & { auth: ReturnType<typeo
           <FanAction variant="primary" disabled={pending || mission.completed || blocked || mission.questions.some(question => !answers[question.id])} onClick={() => void submit(mission)}>
             {pending ? (locale === "ko" ? "제출 중…" : translate(locale, localizedMessages.m4ea9a49f362b, "Submitting…")) : mission.completed ? (locale === "ko" ? "완료됨" : translate(locale, localizedMessages.m4c70b81bb0c3, "Completed")) : (locale === "ko" ? "미션 완료" : translate(locale, localizedMessages.me1b43e38ddba, "Complete mission"))}
           </FanAction>
-          {submissions[mission.id] === "complete" && <p role="status" className={styles.notice}>{locale === "ko" ? "미션을 완료했어요. 보상과 Stamp가 기록되었습니다." : translate(locale, localizedMessages.m69b94777d35b, "Mission complete. Your rewards and Stamp were recorded.")}</p>}
+          {submissions[mission.id] === "complete" && <p role="status" className={styles.notice}>{locale === "ko" ? "미션을 완료했어요. 보상과 도장이 기록되었습니다." : translate(locale, localizedMessages.m69b94777d35b, "Mission complete. Your rewards and Stamp were recorded.")}</p>}
           {submissions[mission.id] === "error" && <p role="alert" className={styles.notice}>{locale === "ko" ? "미션을 완료하지 못했어요. 다시 시도해 주세요." : translate(locale, localizedMessages.m7e12c8224787, "Mission could not be completed. Please try again.")}</p>}
         </article>;
       })}

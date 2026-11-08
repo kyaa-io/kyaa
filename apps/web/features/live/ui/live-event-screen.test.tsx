@@ -781,7 +781,7 @@ describe("LiveEventScreen", () => {
     fireEvent.click(await screen.findByRole("button", { name: "LIVE 예약하기" }));
     expect(await screen.findByRole("dialog")).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "예약이 완료되었습니다" })).toBeInTheDocument();
-    expect(screen.getByText("라이브 예약 Stamp")).toBeInTheDocument();
+    expect(screen.getByText("라이브 예약 도장")).toBeInTheDocument();
     expect(screen.getByText("총점").parentElement).toHaveTextContent("5");
     expect(screen.getByText("상승 · 실버")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Passport에서 확인하기" })).toHaveAttribute(
@@ -1166,7 +1166,7 @@ describe("LiveEventScreen", () => {
     fireEvent.click(screen.getByRole("button", { name: "출석 인증하기" }));
 
     expect(await screen.findByRole("heading", { name: "LIVE 출석을 남겼어요" })).toBeInTheDocument();
-    expect(screen.getByText("Attendance Stamp, Fan Score +3, 응모권 2장이 기록되었습니다.")).toBeInTheDocument();
+    expect(screen.getByText("출석 도장, Fan Score +3, 응모권 2장이 기록되었습니다.")).toBeInTheDocument();
     expect(screen.getByText("총점").parentElement).toHaveTextContent("8");
     expect(screen.getByText("실버")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /설문 참여/ })).toHaveAttribute("href", "/live/kara-nualeaf/survey?locale=ko");
