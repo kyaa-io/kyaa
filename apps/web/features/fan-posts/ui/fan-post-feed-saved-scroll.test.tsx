@@ -1,0 +1,20 @@
+import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { afterEach, expect, it, vi } from "vitest";
+import { FanPostFeed } from "./fan-post-feed";
+const mocks = vi.hoisted(() => ({ auth: { ready: true, authenticated: true, user: { id: "viewer" } }, session: { ready: true, ownerId: "viewer", generation: 1 } }));
+vi.mock("@/features/auth/client/cognito-auth", () => ({ useByUsAuth: () => mocks.auth }));
+vi.mock("@/components/byus-session-provider", () => ({ useByUsSession: () => mocks.session }));
+vi.mock("@/features/fanpage/ui/use-community-resource", () => ({ useCommunityResource: () => ({ state: { status: "ready", data: { items: [], nextCursor: null, unavailableSources: [] } }, retry: vi.fn() }) }));
+vi.mock("./post-composer", () => ({ PostComposer: ({ onSaved }: { onSaved: () => void }) => <button onClick={() => onSaved()}>Save</button> }));
+afterEach(cleanup);
+it("brings the list with the new row into view after a post is saved, and keeps the popular box mounted while writing", async () => {
+  const scroll = vi.fn(); Element.prototype.scrollIntoView = scroll;
+  render(<FanPostFeed slug="artist" locale="en" compact source="fans" beforeFeed={<p>Popular box</p>} />);
+  const popular = screen.getByText("Popular box"); const wrapper = popular.parentElement!;
+  fireEvent.click(screen.getByRole("button", { name: /Write a post/ }));
+  expect(screen.getByText("Popular box")).toBe(popular); expect(wrapper).toHaveAttribute("hidden");
+  fireEvent.click(screen.getByRole("button", { name: "Save" }));
+  expect(wrapper).not.toHaveAttribute("hidden");
+  await waitFor(() => expect(scroll).toHaveBeenCalledOnce());
+  expect(scroll.mock.contexts[0]).toBe(screen.getByRole("navigation", { name: "Post type" }).parentElement);
+});
