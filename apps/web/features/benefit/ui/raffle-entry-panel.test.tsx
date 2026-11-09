@@ -152,6 +152,35 @@ describe("standalone raffle fan verification", () => {
     expect(container.textContent).not.toMatch(/Creator 응모권|응모권 전용/);
     expect(screen.getByText(/이 선물의 응모 한도 3장/).textContent).toBe("이 선물의 응모 한도 3장");
   });
+  describe.each([["ko", "응모가 마감됐어요", "팬 인증 후 응모해요", "팬 인증하고 응모권 받기"], ["en", "Entries are closed", "Verify your fan status to enter", "Verify your fan status"]] as const)("status order: closed > verification needed > open (%s)", (locale, closed, verifyTitle, verifyLabel) => {
+    const panel = (status: "open" | "closed", fanVerified: boolean, enteredTickets = 0) => render(<RaffleEntryPanel celebrity={celebrity} locale={locale}
+      raffle={{ ...raffle, status, requiresFanVerification: true }}
+      benefit={{ ...benefit, entry: { ...benefit.entry!, requiresFanVerification: true, fanVerified, canEnter: fanVerified && status === "open", enteredTickets } }}
+      loading={false} loadFailed={false} status={status} refresh={vi.fn()} onAccepted={vi.fn()} onReconciled={vi.fn()} />);
+    it("closed and not verified: the title is the closed state; no verification prompt, no picker, no disabled entry button", () => {
+      panel("closed", false);
+      expect(screen.getByRole("heading", { name: closed })).toBeInTheDocument();
+      expect(screen.queryByText(verifyTitle)).toBeNull();
+      expect(screen.queryByRole("link", { name: verifyLabel })).toBeNull();
+      expect(screen.queryByRole("spinbutton")).toBeNull();
+      expect(screen.queryByRole("button", { name: /\d/ })).toBeNull();
+      expect(screen.getAllByText(closed)).toHaveLength(1);
+    });
+    it("closed and verified: the same closed block, and the result note once the fan has entered", () => {
+      panel("closed", true, 2);
+      expect(screen.getByRole("heading", { name: closed })).toBeInTheDocument();
+      expect(screen.queryByRole("spinbutton")).toBeNull();
+      expect(screen.queryByRole("button", { name: /\d/ })).toBeNull();
+      expect(screen.getByText(locale === "ko" ? "당첨 여부는 결과 발표 후 내 응모 내역에서 확인할 수 있어요." : "Check your raffle entries for the result after the announcement.")).toBeInTheDocument();
+    });
+    it("open and not verified: the verification prompt and its link", () => {
+      panel("open", false);
+      expect(screen.getByRole("heading", { name: verifyTitle })).toBeInTheDocument();
+      expect(screen.getByRole("link", { name: verifyLabel })).toBeInTheDocument();
+      expect(screen.queryByText(closed)).toBeNull();
+      expect(screen.queryByRole("spinbutton")).toBeNull();
+    });
+  });
   it("allows verified fans to choose tickets", () => {
     render(<RaffleEntryPanel celebrity={celebrity} locale="ko"
       raffle={{ ...raffle, requiresFanVerification: true }}
