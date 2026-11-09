@@ -49,12 +49,12 @@ distribution, certificate or role. Hosting matches `site.json` except for names,
 host, `/api/events` going to dev.kyaa.io and an `X-Robots-Tag: noindex` header;
 `aws-wave-release.test.mjs` fails on any other difference.
 
-Release: a push to `wave/dev` (or a manual run on `wave/dev` with `environment=dev`)
-runs the same `kyaawave-aws.yml` job with `WAVE_ENVIRONMENT=dev`. Its GitHub
+Release: a push to `wave/dev` (or a manual run on `wave/dev`; the `environment`
+input defaults to `auto`, the branch's own environment) runs the same `kyaawave-aws.yml` job with `WAVE_ENVIRONMENT=dev`. Its GitHub
 deployment record is `AWS wave dev` (not production, so no Bug Report notice). The
 role trusts only `ref:refs/heads/wave/dev` and can only write the dev bucket's
-`current/` and `releases/` and invalidate the dev distribution. A run whose branch and
-environment do not match fails.
+`current/` and `releases/` and invalidate the dev distribution. A manual run with an
+explicit environment that does not match its branch fails.
 
 Apply, with the write profile (example name `kyaa-admin`):
 
