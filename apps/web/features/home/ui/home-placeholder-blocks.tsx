@@ -38,9 +38,10 @@ export function formatHomeNoticeDate(value: string, locale: AppLocale) {
   return new Intl.DateTimeFormat(locale, { calendar: "gregory", month: "2-digit", day: "2-digit", timeZone: "Asia/Seoul" }).format(new Date(value));
 }
 
-/** 공지 5행(R8-DATA N1). 0건·오류는 자리표시 그대로, 1~4건은 남은 행을 "—"로 채우고, 5건이면 전체 보기를 단다. */
-export function HomeNotices({ locale, notices }: { locale: AppLocale; notices: readonly HomeNoticeSummary[] | null }) {
-  if (!notices?.length) return <HomeNoticesPlaceholder locale={locale} />;
+/** 공지 5행(R8-DATA N1). 정상 0건만 "아직 공지 없음", 로딩·실패는 글 없는 자리표시, 1~4건은 남은 행을 "—"로 채우고, 5건이면 전체 보기를 단다. */
+export function HomeNotices({ locale, notices }: { locale: AppLocale; notices: readonly HomeNoticeSummary[] | "loading" | "error" }) {
+  if (typeof notices === "string") return <HomeNoticesPlaceholder locale={locale} state={notices} />;
+  if (!notices.length) return <HomeNoticesPlaceholder locale={locale} state="empty" />;
   const v = values[locale];
   const rows = notices.slice(0, 5);
   return <section className={styles.block} aria-labelledby="home-notices-heading" data-home-block="notices">
@@ -58,11 +59,12 @@ export function HomeNotices({ locale, notices }: { locale: AppLocale; notices: r
   </section>;
 }
 
-export function HomeNoticesPlaceholder({ locale }: { locale: AppLocale }) {
+/** 5 placeholder rows. Only a read that found nothing says "아직 공지 없음"; loading and a failed read keep the rows without it (20:52). */
+export function HomeNoticesPlaceholder({ locale, state = "loading" }: { locale: AppLocale; state?: "loading" | "error" | "empty" }) {
   const v = values[locale];
-  return <section className={styles.block} aria-labelledby="home-notices-heading" data-home-block="notices">
+  return <section className={styles.block} aria-labelledby="home-notices-heading" data-home-block="notices" data-home-state={state}>
     <FanSectionHeader variant="editorial" id="home-notices-heading" title={v[0]!} />
-    <ul className={styles.notices}>{Array.from({ length: 5 }, (_, i) => <li key={i} className={styles.notice} data-row="notice-placeholder" aria-hidden={i > 0 || undefined}><span className={styles.note}>{i === 0 ? v[3] : "—"}</span></li>)}</ul>
+    <ul className={styles.notices}>{Array.from({ length: 5 }, (_, i) => <li key={i} className={styles.notice} data-row="notice-placeholder" aria-hidden={i > 0 || state !== "empty" || undefined}><span className={styles.note}>{i === 0 && state === "empty" ? v[3] : "—"}</span></li>)}</ul>
   </section>;
 }
 

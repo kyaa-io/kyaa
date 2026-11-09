@@ -14,12 +14,17 @@ function rowsOf(container: HTMLElement) {
 }
 
 describe("home notices block", () => {
-  it("keeps the five placeholder rows for no data and for a failed read", () => {
-    for (const notices of [null, []]) {
-      const { container, unmount } = render(<HomeNotices locale="ko" notices={notices} />);
-      expect(rowsOf(container)).toEqual(Array(5).fill("notice-placeholder"));
-      expect(screen.getByText("아직 공지 없음")).toBeInTheDocument();
-      unmount();
+  it("says 아직 공지 없음 only for a read that found nothing; a failed or loading read keeps the five rows without it", () => {
+    const { container, unmount } = render(<HomeNotices locale="ko" notices={[]} />);
+    expect(rowsOf(container)).toEqual(Array(5).fill("notice-placeholder"));
+    expect(screen.getByText("아직 공지 없음")).toBeInTheDocument();
+    unmount();
+    for (const state of ["error", "loading"] as const) {
+      const view = render(<HomeNotices locale="ko" notices={state} />);
+      expect(rowsOf(view.container)).toEqual(Array(5).fill("notice-placeholder"));
+      expect(view.container.querySelector(`[data-home-state="${state}"]`)).not.toBeNull();
+      expect(screen.queryByText("아직 공지 없음")).not.toBeInTheDocument();
+      view.unmount();
     }
   });
 

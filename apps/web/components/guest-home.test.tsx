@@ -108,7 +108,8 @@ describe("canonical 03 guest home", () => {
     const notices = container.querySelector("[data-home-block=notices]")!;
     const gallery = container.querySelector("[data-home-block=gallery]")!;
     expect(within(notices as HTMLElement).getByRole("heading", { name: "공지사항" })).toBeInTheDocument();
-    expect(within(notices as HTMLElement).getByText("아직 공지 없음")).toBeInTheDocument();
+    // No notice read happened here, so it is not "none yet" (20:52: the empty text is only for a read that found nothing).
+    expect(within(notices as HTMLElement).queryByText("아직 공지 없음")).not.toBeInTheDocument();
     expect(notices.querySelectorAll("li")).toHaveLength(5);
     expect(within(gallery as HTMLElement).getByRole("heading", { name: "갤러리" })).toBeInTheDocument();
     expect(within(gallery as HTMLElement).getByRole("heading", { name: "숏츠" })).toBeInTheDocument();

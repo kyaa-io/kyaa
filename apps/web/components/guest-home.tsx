@@ -190,10 +190,10 @@ function StreamHomeThinBanner({ queries, locale }: Pick<StreamingHomeProps, "que
   return <HomeThinBanner banner={result.status === "fulfilled" ? result.value.home_below_board : undefined} locale={locale} />;
 }
 
-/** 0건·오류면 자리표시 5행 그대로(D-3 기본안): 블록 높이가 같다. */
+/** 정상 0건만 "아직 공지 없음", 실패는 글 없는 자리표시 5행(20:52 결정): 블록 높이가 같다. */
 function StreamHomeNotices({ queries, locale }: Pick<StreamingHomeProps, "queries" | "locale">) {
   const result = use(queries.homeNotices);
-  return <HomeNotices locale={locale} notices={result.status === "fulfilled" ? result.value.items : null} />;
+  return <HomeNotices locale={locale} notices={result.status === "fulfilled" ? result.value.items : "error"} />;
 }
 
 /** 정상 0건만 빈 상태 글을 보이고, 실패는 같은 자리표시를 글 없이 둔다(로딩도 같다). */
