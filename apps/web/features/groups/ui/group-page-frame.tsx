@@ -1,7 +1,8 @@
 "use client";
-import { useEffect, useMemo, useRef, type ReactNode } from "react";
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { LockKeyhole } from "lucide-react";
 import { FanAction } from "@/components/fan-ui/fan-action";
+import { FanHeading } from "@/components/fan-ui/fan-heading";
 import { FanPageHeader, FanPageHeaderSkeleton } from "@/components/fan-ui/fan-page-header";
 import { FanTabs, type FanTabItem } from "@/components/fan-ui/fan-tabs";
 import { FanAppFrame, FanContentContainer } from "@/components/fan-shell/fan-app-shell";
@@ -25,12 +26,23 @@ import styles from "./groups.module.css";
 function useTabs(): FanTabItem[] {
   const g = useGroupPage();
   const hideMembers = g.routeSlug !== null && g.error;
-  return groupTabItems(g.locale, !hideMembers).map((item) => ({ ...item, href: g.hrefFor(item.key), onSelect: () => g.selectTab(item.key), onPreload: () => g.preloadTab(item.key), prefetch: true }));
+  return groupTabItems(g.locale, !hideMembers).map((item) => ({ ...item, href: g.hrefFor(item.key), onSelect: () => g.selectTab(item.key), onPreload: () => g.preloadTab(item.key) }));
 }
 
 /** 머리·접속 띠·탭. 레이아웃 안에서 한 번만 마운트되어 탭을 바꿔도 같은 노드로 남는다. */
 export function GroupPageHead() {
-  const g = useGroupPage();
+  const live = useGroupPage();
+  const key = `${live.ownerKey}:${live.locale}:${live.routePageId ?? live.routeSlug}`;
+  const failed = live.error || live.celebrityFailed;
+  // Keep only header presentation after a failed re-read, scoped to this viewer and address.
+  // Never restore stale membership or actions to the page body.
+  const [lastHead, setLastHead] = useState({ key, page: live.page, celebrity: live.celebrity, kind: live.kind, star: live.star });
+  if (lastHead.key !== key || !failed && (lastHead.page !== live.page || lastHead.celebrity !== live.celebrity)) {
+    setLastHead({ key, page: live.page, celebrity: live.celebrity, kind: live.kind, star: live.star });
+  }
+  const retained = failed && lastHead.key === key ? lastHead : undefined;
+  const g = { ...live, page: live.page ?? retained?.page, celebrity: live.celebrity ?? retained?.celebrity, kind: live.kind ?? retained?.kind,
+    star: live.star ?? (retained?.star ? { ...retained.star, href: undefined, onClick: undefined } : undefined) };
   const t = groupsCopy(g.locale);
   const items = useTabs();
   const name = g.celebrity?.name ?? g.page?.name;
@@ -82,10 +94,10 @@ export function GroupPageJoin() {
 function GroupPageBody({ children }: { children: ReactNode }) {
   const g = useGroupPage();
   const t = groupsCopy(g.locale);
-  // 주소 `/pages/groups/{id}`의 페이지가 없거나 볼 수 없으면 머리와 본문을 그리지 않는다.
-  if (g.routePageId && g.error) return <div className={styles.status} role="alert">{g.failure && [403, 404].includes(g.failure.status) ? <><LockKeyhole size={32} aria-hidden="true" /><h1>{pageUnavailable[g.locale]}</h1><FanAction href={`/pages/groups?locale=${g.locale}`}>{t.explore}</FanAction></> : <><p>{t.error}</p><FanAction onClick={g.refresh}>{t.retry}</FanAction></>}</div>;
-  if (g.routePageId && g.page?.kind === "fan" && g.celebrityFailed) return <div className={styles.status} role="alert"><p>{t.error}</p><FanAction onClick={g.retryCelebrity}>{t.retry}</FanAction></div>;
-  return <><GroupPageHead /><GroupPageJoin />{children}</>;
+  let panel: ReactNode = <><GroupPageJoin />{children}</>;
+  if (g.routePageId && g.error) panel = <div className={styles.status} role="alert">{g.failure && [403, 404].includes(g.failure.status) ? <><LockKeyhole size={32} aria-hidden="true" /><FanHeading>{pageUnavailable[g.locale]}</FanHeading><FanAction href={`/pages/groups?locale=${g.locale}`}>{t.explore}</FanAction></> : <p>{t.error}</p>}<FanAction onClick={g.refresh}>{t.retry}</FanAction></div>;
+  else if (g.routePageId && g.page?.kind === "fan" && g.celebrityFailed) panel = <div className={styles.status} role="alert"><p>{t.error}</p><FanAction onClick={g.retryCelebrity}>{t.retry}</FanAction></div>;
+  return <><GroupPageHead />{panel}</>;
 }
 
 /** `/pages/groups/{id}`의 레이아웃. 라우트 그룹 안이라 쿼리가 바뀌어도 다시 그려지지 않는다. */

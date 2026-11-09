@@ -103,6 +103,8 @@ it('keeps the same head and tab strip nodes when only the tab in the address cha
  const h1=screen.getByRole('heading',{level:1,name:'엘리나'}),nav=document.querySelector('nav[data-fan-tabs]');
  expect(nav?.querySelector('[aria-current="page"]')?.getAttribute('href')).toContain('tab=board');
  state.query='locale=ko&tab=rooms';view.rerender(tree());
+ expect(nav?.querySelector('[aria-current="page"]')?.getAttribute('href')).toContain('tab=rooms');
+ expect(screen.getByRole('link',{name:'게시판'})).not.toHaveAttribute('aria-current');
  expect(screen.getByRole('heading',{level:1,name:'엘리나'})).toBe(h1);
  expect(document.querySelector('nav[data-fan-tabs]')).toBe(nav);
 });
