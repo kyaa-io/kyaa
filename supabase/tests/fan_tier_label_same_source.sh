@@ -36,7 +36,7 @@ create temporary table label_cases on commit drop as
       and coalesce((select sum(points) from public.fan_score_ledger l where l.app_user_id = fp.app_user_id and l.celebrity_id = fp.celebrity_id), 0) = 0)
   select row_number() over (order by id) n, case row_number() over (order by id) when 1 then 'ledger' else 'conversion' end source, id, u, cel
   from x where st like 'silver-%' order by id limit 2;
-do \$\$ begin if (select count(*) from label_cases) <> 2 then raise exception 'expected 2 Silver passports without hearts in the local copy'; end if; end \$\$;
+do \$\$ begin if (select count(*) from label_cases) is distinct from 2 then raise exception 'expected 2 Silver passports without hearts in the local copy'; end if; end \$\$;
 set local session_replication_role = replica;
 insert into public.creator_heart_ledger(celebrity_id, app_user_id, amount, source_type, source_id)
   select cel, u, 1, 'passport_page_claim', extensions.gen_random_uuid() from label_cases where source = 'ledger';
@@ -56,7 +56,7 @@ language sql as \$f\$
 -- Before the file: the reported mismatch (a Silver label beside a Gold stage).
 do \$\$ declare r record; begin
   for r in select s.source, l.* from (values ('ledger'), ('conversion')) s(source), pg_temp.labels(s.source) l loop
-    if r.stage <> 'Gold' or r.detail <> 'Silver' then raise exception 'mismatch not reproduced for %: %', r.source, r; end if;
+    if r.stage is distinct from 'Gold' or r.detail is distinct from 'Silver' then raise exception 'mismatch not reproduced for %: %', r.source, r; end if;
   end loop;
 end \$\$;
 
@@ -65,7 +65,7 @@ end \$\$;
 
 do \$\$ declare r record; begin
   for r in select s.source, l.* from (values ('ledger'), ('conversion')) s(source), pg_temp.labels(s.source) l loop
-    if r.stage <> 'Gold' or r.detail <> 'Gold' or r.collection <> 'Gold' or r.summary <> 'Gold' then raise exception 'label differs for %: %', r.source, r; end if;
+    if r.stage is distinct from 'Gold' or r.detail is distinct from 'Gold' or r.collection is distinct from 'Gold' or r.summary is distinct from 'Gold' then raise exception 'label differs for %: %', r.source, r; end if;
     raise notice 'case %: detail % collection % summary % stage %', r.source, r.detail, r.collection, r.summary, r.stage;
   end loop;
   if has_function_privilege('anon', 'public.fan_passport_effective_tier(uuid,uuid)', 'execute')
@@ -75,7 +75,7 @@ end \$\$;
 \i $TMP/rollback/20261220051000_fan_tier_label_same_source.sql
 do \$\$ begin
   if to_regprocedure('public.fan_passport_effective_tier(uuid,uuid)') is not null then raise exception 'helper survived rollback'; end if;
-  if (select detail from pg_temp.labels('ledger')) <> 'Silver' then raise exception 'rollback did not restore the base label'; end if;
+  if (select detail from pg_temp.labels('ledger')) is distinct from 'Silver' then raise exception 'rollback did not restore the base label'; end if;
 end \$\$;
 savepoint second_rollback;
 do \$\$ begin
