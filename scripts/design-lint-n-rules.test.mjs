@@ -5,7 +5,7 @@ import { spawnSync, execFileSync } from 'node:child_process';
 import { mkdtempSync, mkdirSync, writeFileSync, rmSync, readFileSync, existsSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve, dirname } from 'node:path';
-import { RULES_N, N_CONTRACTS, scanNFile, scanNAll } from './design-lint-n-rules.mjs';
+import { RULES_N, N_CONTRACTS, scanNFile, scanNAll, n31ActionArrows } from './design-lint-n-rules.mjs';
 
 const SCREEN = 'apps/web/features/home/ui/home-screen.tsx';
 const PAGE = 'apps/web/app/pages/x/page.tsx';
@@ -230,6 +230,127 @@ test('N31 distinguishes close controls and app navigation from section actions',
     };
     assert.equal(hits(scanNAll(Object.keys(files), (f) => files[f]).get(SCREEN) ?? new Map(), 'N31').length, expected);
   }
+});
+
+test('N31 catches home-ranking-card function-separated conditional actions', () => {
+  const code = 'const all = (tab: string) => <Link href={tab}>전체<ArrowRight/></Link>; const head = (tab: string) => <div><FanHeading>순위</FanHeading>{tab ? all(tab) : null}</div>;';
+  assert.equal(hits(ts(code), 'N31').length, 1);
+});
+
+test('N31 catches wallet-card whole-card links with FanIcon', () => {
+  assert.equal(hits(ts('<Link href="/wallet"><span><FanHeading>지갑</FanHeading><FanIcon icon={ChevronRight}/></span><dl>잔액</dl></Link>'), 'N31').length, 1);
+});
+
+test('N31 catches stan-wallet guide links away from headings', () => {
+  assert.equal(hits(ts('<section><h2>지갑</h2><dl>잔액</dl><Link href="/guide">안내<ChevronRight size={16}/></Link></section>'), 'N31').length, 1);
+});
+
+test('N31 resolves same-file JSX variables, returned JSX and local components', () => {
+  for (const helper of [
+    'const arrow = <MoveRight/>; const body = <span>{arrow}</span>;',
+    'function icon() { return <MoveRight/>; } const body = <span>{icon()}</span>;',
+    'const icon = () => <MoveRight/>; const body = <span>{icon()}</span>;',
+    'const icon = () => { if (ready) return <MoveRight/>; return null; }; const body = icon();',
+    'function Icon() { return <MoveRight/>; } const body = <Icon/>;',
+    'const arrow = <MoveRight/>; const body = ready ? arrow : null;',
+  ]) {
+    const code = helper + ' const Card = () => <Link href="/x">{body}</Link>;';
+    assert.equal(n31ActionArrows(code, SCREEN).length, 1, helper);
+    assert.equal(hits(ts(code), 'N31').length, 1, helper);
+  }
+});
+
+test('N31 covers action tags, card wrappers, import aliases and icon props', () => {
+  for (const tag of ['a', 'Link', 'button', 'FanAction', 'FanCard', 'Cell']) {
+    for (const icon of ['<ChevronRight/>', '<FanIcon icon={ArrowRight}/>', '<MoveRight/>']) {
+      assert.equal(hits(ts(`<${tag} href="/x"><span>${icon}</span></${tag}>`), 'N31').length, 1);
+    }
+  }
+  for (const code of [
+    'import { ChevronRight as Next } from "lucide-react"; <Link href="/x"><Next/></Link>;',
+    'import { ArrowRight as Next, FanIcon as Icon } from "@/components/fan-ui"; <button><Icon icon={Next}/></button>;',
+    'import * as Icons from "lucide-react"; <button><Icons.MoveRight/></button>;',
+    'const Arrow = ChevronRight; <button><FanIcon icon={Arrow}/></button>;',
+    'const arrow = <ArrowRight/>; <FanAction trailingIcon={arrow}>더 보기</FanAction>;',
+    '<div role="button"><ChevronRight/></div>;',
+    '<FanCard onClick={open}><ArrowRight/></FanCard>;',
+  ]) assert.equal(hits(ts(code), 'N31').length, 1, code);
+});
+
+for (const [reason, controls] of Object.entries({
+  close: ['onClick={onClose}', 'aria-label="닫기"'],
+  back: ['onClick={goBack}', 'aria-label="Back"'],
+  carousel: ['onClick={scrollNext}', 'aria-label="Next slide"', 'aria-label="이전 슬라이드"'],
+  pagination: ['onClick={nextPage}', 'aria-label="Next page"', 'aria-label="이전 페이지"'],
+})) test(`N31 allows explicit ${reason} controls including heading-adjacent ones`, () => {
+  for (const attrs of controls) for (const wrapper of [false, true]) {
+    const code = `<button ${attrs}><ChevronRight/></button>`;
+    assert.equal(hits(ts(wrapper ? `<header><h2>Title</h2>${code}</header>` : code), 'N31').length, 0, attrs);
+  }
+});
+
+test('N31 does not exempt generic next, arbitrary labels or whole files', () => {
+  for (const attrs of ['onClick={onNext}', 'aria-label="More"', 'className={styles.carousel}', 'aria-label="Next"']) {
+    assert.equal(hits(ts(`<button ${attrs}><ArrowRight/></button>`), 'N31').length, 1);
+  }
+  const code = '<><button aria-label="Next slide"><ArrowRight/></button><Link href="/all"><ArrowRight/></Link></>';
+  assert.equal(n31ActionArrows(code, SCREEN).length, 1);
+});
+
+const localControls = [
+  ['components/fan-calendar/calendar-parts.tsx', '<Link className={styles.control} href={value.href}><ChevronRight/></Link>'],
+  ['components/home-community-preview.tsx', '<button aria-label={pagination.next} onClick={() => setPage(value => value + 1)}><ChevronRight/></button>'],
+  ['features/bias/ui/promotion-page.tsx', '<button aria-label={t.next} onClick={() => setPage(visiblePage + 1)}><ChevronRight/></button>'],
+  ['features/fan-posts/ui/fan-post-feed.tsx', '<button aria-label={copy.older} onClick={() => goToPage(cursors)}><ChevronRight/></button>'],
+  ['features/groups/ui/creator-group-home.tsx', '<button aria-label={t.next} onClick={() => setCursors(next)}><ChevronRight/></button>'],
+  ['features/groups/ui/group-board.tsx', '<button aria-label={paginationCopy(locale).next} onClick={() => goPreview(next)}><ChevronRight/></button>'],
+  ['features/home/ui/events-pagination.tsx', '<Link href={href(page + 1)}><ChevronRight/></Link>'],
+  ['features/live/ui/live-catalog-screen.tsx', '<button aria-label={t.next} onClick={() => setPage(Math.min(pageCount - 1, currentPage + 1))}><ChevronRight/></button>'],
+  ['features/passport/ui/passport-mission-book.tsx', '<FanAction ariaLabel={passportBookText(locale, "pageNext")} onClick={() => onChange(index + 1)} leadingIcon={<ChevronRight/>}/>'],
+  ['components/home-entry-cards/home-guide-carousel.tsx', '<button className={styles.carouselNext} onClick={() => goTo(activeIndex + 1, true)}><ChevronRight/></button>'],
+  ['components/live-hero-carousel.tsx', '<button className={styles.carouselNext} onClick={() => goTo(activeIndex + 1, true)}><ChevronRight/></button>'],
+  ['features/fan-posts/ui/post-attachment-viewer.tsx', '<button aria-label={page.next} onClick={() => setSelected(value => value + 1)}><ChevronRight/></button>'],
+  ['features/groups/ui/directory-top.tsx', '<FanAction ariaLabel={c.nextBanner} onClick={() => move(1)} leadingIcon={<ChevronRight/>}/>'],
+  ['features/groups/ui/discovery-carousel.tsx', '<button aria-label={t.next} onClick={() => setActive((index + 1) % slides.length)}><ArrowRight/></button>'],
+  ['features/live/ui/live-calendar-screen.tsx', '<button aria-label={participation.nextEvent} onClick={() => move(1)}><ChevronRight/></button>'],
+  ['features/live/ui/observed-live-strip.tsx', '<button aria-controls={listId} onClick={next}><ChevronRight/></button>'],
+  ['features/notification/ui/notification-inbox.tsx', '<FanIconButton className={styles.chipNext} onClick={next}><FanIcon icon={ChevronRight}/></FanIconButton>'],
+];
+for (const [path, control] of localControls) test(`N31 allows only the reviewed control in ${path}`, () => {
+  const file = `apps/web/${path}`;
+  assert.equal(hits(ts(control, file), 'N31').length, 0);
+  assert.equal(hits(ts(`<header><h2>Title</h2>${control}</header>`, file), 'N31').length, 0);
+  assert.equal(hits(ts(control, SCREEN), 'N31').length, 1, 'not a global markup exemption');
+  const code = `<>{control}<Link href="/all"><ArrowRight/></Link></>`;
+  assert.equal(n31ActionArrows(code, file).length, 1, 'content links in the same file still fail');
+});
+
+test('N31 recognizes a local card wrapper without repeating its href at the call site', () => {
+  const code = 'function Card({ children }) { return <Link href="/wallet">{children}</Link>; } <Card><FanIcon icon={ChevronRight}/></Card>;';
+  assert.equal(hits(ts(code), 'N31').length, 1);
+});
+
+test('N31 ignores unrendered arrows, comments, strings, event callbacks and shadowed bindings', () => {
+  for (const code of [
+    '<div><ChevronRight/><Link href="/x">전체 ›</Link></div>',
+    'const text = "<Link><ArrowRight/></Link>";',
+    '/* <Link><ArrowRight/></Link> */ <Link href="/x">전체 ›</Link>',
+    'const arrow = <ArrowRight/>; <button onClick={() => arrow}>확인</button>;',
+    'const arrow = <ArrowRight/>; function Card(arrow: string) { return <Link>{arrow}</Link>; }',
+    'const arrow = <ArrowRight/>; function Card({arrow}: Props) { return <Link>{arrow}</Link>; }',
+    'const arrow = <ArrowRight/>; function Card() { const arrow = "›"; return <Link>{arrow}</Link>; }',
+    'const cycle = () => cycle(); <Link>{cycle()}</Link>;',
+  ]) assert.equal(hits(ts(code), 'N31').length, 0, code);
+});
+
+test('N31 keeps stable counts and source locations across nested/repeated references', () => {
+  const code = '// lead\nconst icon = <ArrowRight/>;\nconst body = <span>{icon}</span>;\n<Link>{body}{body}</Link>;';
+  assert.equal(n31ActionArrows(code, SCREEN).length, 1);
+  assert.equal(n31ActionArrows(code, SCREEN)[0].line, 2);
+  const heading = '// lead\n<header><h2>Title</h2><Link><ArrowRight/></Link></header>;';
+  assert.equal([...ts(heading)].filter(([key]) => key.startsWith('N31|')).reduce((sum, [, n]) => sum + n, 0), 1);
+  assert.equal(n31ActionArrows('<Link><button aria-label="Next page"><ArrowRight/></button></Link>', SCREEN).length, 0);
+  assert.equal(n31ActionArrows('<Link><button><ArrowRight/></button></Link>', SCREEN).length, 1);
 });
 
 test('N29 reads purple in TSX strings and tinted grays, ignores comments, logo art files and pink', () => {

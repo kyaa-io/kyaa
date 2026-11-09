@@ -3,6 +3,7 @@
 // 정적으로 볼 수 있는 규칙(N1 N3 N4 N6 N7 N8 N9 N10 N11 N14 N15 N16)만 여기서 센다. 나머지는 실행 시험이 본다(N_CONTRACTS).
 // 오탐이 큰 부분은 RULES_N 의 countDecl 로 집계로 내린다(실패시키지 않고 경고로만 센다). 이유는 note 에 적었다.
 import postcss from 'postcss';
+import ts from 'typescript';
 import { posix } from 'node:path';
 import { jsxTags, stripComments } from './design-lint-rules.mjs';
 import { scanPurple, scanDarkCapsule } from './design-lint-color.mjs';
@@ -31,7 +32,7 @@ export const RULES_N = {
   N28: { sev: 'count', note: '정적 글꼴 Pretendard UI 참조 금지. 굵기 토큰을 쓴다(8장 ③)' },
   // 2026-11-08 H6(사용자 지시): 강조색은 kyaa 핑크 1색, 보라는 로고 아트에만, 짙은 회색 채움 캡슐 금지.
   N29: { sev: 'fail', note: 'CSS·TSX 의 보라 색상값(hex·rgb·hsl·oklch, 색상 250~320°·채도 10% 이상) 금지. 강조색은 var(--color-accent*) 핑크 1색. 로고·그림 아트 파일만 허용(H6)' },
-  N31: { sev: 'fail', note: '섹션 머리(제목 바로 옆) 행동은 글자 링크 + 글자 ›. FanAction 은 href 유무와 무관하게 variant="text" 이고 아이콘이 없어야 한다. Link·a·button 은 클래스·접근성 이름이 아니라 실제 CSS/인라인 테두리·배경·반경과 아이콘으로 판정한다. 닫기·뒤로 행동은 제외한다' },
+  N31: { sev: 'fail', note: '섹션 머리 행동은 글자 링크 + 글자 ›. FanAction 은 variant="text" 이고 아이콘이 없어야 한다. 링크·버튼·카드 래퍼 안의 오른쪽 화살표는 제목 위치와 무관하게 금지한다(같은 파일의 함수·변수 JSX 포함). 닫기·뒤로·캐러셀·페이지 넘김은 제외한다' },
   N30: { sev: 'fail', note: '짙은 회색(또는 --color-ink) 채움 알약 금지. 캡슐·칩·배지는 흰 바탕 + 1px 테두리, 선택은 핑크 테두리/글자나 옅은 핑크 바탕 1단, 진행 막대·행동 버튼은 핑크 토큰(H6)' },
 };
 
@@ -178,11 +179,56 @@ function headActionHasStyle(attrs, code, file, read, head, name) {
 }
 
 function headActionIsException(attrs, children) {
-  return /\bonClick=\{(?:close|onClose|handleClose|closeDialog|dismiss|onDismiss)\}/.test(attrs)
+  return n31ControlException(attrs.match(/\bonClick=\{\s*(\w+)\s*\}/)?.[1] ?? '', attrs.match(/\baria-label=["']([^"']+)["']/)?.[1] ?? '', children.trim())
+    || /\bonClick=\{(?:close|onClose|handleClose|closeDialog|dismiss|onDismiss)\}/.test(attrs)
     || /\bclassName=\{\w+\.(?:close|closeButton|backButton)\}/.test(attrs)
     || /^(?:닫기|Close|뒤로|Back)$/.test(children.trim())
     || (/^\s*<X\b[^>]*\/>\s*$/.test(children) && /\bonClick=/.test(attrs))
     || /\bleadingIcon=\{\s*<(?:ArrowLeft|ChevronLeft)\b/.test(attrs);
+}
+
+function n31ControlException(handler, label, text) {
+  // Dismiss/back controls change the current view, rather than link to more content.
+  if (/^(close|onClose|handleClose|closeDialog|dismiss|onDismiss|goBack|onBack|handleBack)$/.test(handler)
+    || /^(닫기|Close|뒤로|Back)$/.test(label || text)) return true;
+  // Carousel arrows move between slides. Generic next/onNext is NOT enough.
+  if (/^(scrollNext|scrollPrev|nextSlide|prevSlide|goToNextSlide|goToPreviousSlide)$/.test(handler)
+    || /^(Next slide|Previous slide|다음 슬라이드|이전 슬라이드)$/i.test(label)) return true;
+  // Pagination changes a page index; don't exempt arbitrary "next" actions.
+  return /^(nextPage|prevPage|previousPage|goToNextPage|goToPreviousPage)$/.test(handler)
+    || /^(Next page|Previous page|다음 페이지|이전 페이지)$/i.test(label);
+}
+
+// Reviewed controls whose localized labels/closures cannot be identified from a
+// literal accessible name. Match the action AND its owning file, never a file
+// exemption: ordinary content links in these components must still fail.
+const N31_LOCAL_CONTROLS = [
+  // Shared calendar arrows change the displayed month (URL or local state).
+  ['components/fan-calendar/calendar-parts.tsx', /className=\{styles\.control\}/, /(?:href|onClick)=\{value\.(?:href|onClick)\}/],
+  // Cursor/page navigation, including translated labels.
+  ['components/home-community-preview.tsx', /aria-label=\{pagination\.next\}/, /setPage\(/],
+  ['features/bias/ui/promotion-page.tsx', /aria-label=/, /setPage\(visiblePage\+1\)/],
+  ['features/fan-posts/ui/fan-post-feed.tsx', /aria-label=\{copy\.older\}/, /goToPage\(/],
+  ['features/groups/ui/creator-group-home.tsx', /aria-label=/, /setCursors\(/],
+  ['features/groups/ui/group-board.tsx', /aria-label=\{paginationCopy\(locale\)\.next\}/, /goPreview\(/],
+  ['features/home/ui/events-pagination.tsx', /href=\{href\(page\+1\)\}/, /^<Link/],
+  ['features/live/ui/live-catalog-screen.tsx', /aria-label=/, /setPage\(Math\.min\(pageCount-1,currentPage\+1\)\)/],
+  ['features/passport/ui/passport-mission-book.tsx', /ariaLabel=\{passportBookText\(locale,["']pageNext["']\)\}/, /onChange\(index\+1\)/],
+  // Carousel/media arrows advance the selected slide/event, not a destination.
+  ['components/home-entry-cards/home-guide-carousel.tsx', /styles\.carouselNext/, /goTo\(activeIndex\+1,true\)/],
+  ['components/live-hero-carousel.tsx', /styles\.carouselNext/, /goTo\(activeIndex\+1,true\)/],
+  ['features/fan-posts/ui/post-attachment-viewer.tsx', /aria-label=\{page\.next\}/, /setSelected\(value=>value\+1\)/],
+  ['features/groups/ui/directory-top.tsx', /ariaLabel=\{c\.nextBanner\}/, /move\(1\)/],
+  ['features/groups/ui/discovery-carousel.tsx', /aria-label=/, /setActive\(\(index\+1\)%slides\.length\)/],
+  ['features/live/ui/live-calendar-screen.tsx', /aria-label=\{participation\.nextEvent\}/, /move\(1\)/],
+  // Horizontal scrolling of already rendered LIVE cards and notification chips.
+  ['features/live/ui/observed-live-strip.tsx', /aria-controls=/, /onClick=\{next\}/],
+  ['features/notification/ui/notification-inbox.tsx', /styles\.chipNext/, /onClick=\{next\}/],
+];
+
+function n31LocalControlException(file, markup) {
+  const compact = markup.replace(/\s+/g, '');
+  return N31_LOCAL_CONTROLS.some(([path, identity, behavior]) => file === `apps/web/${path}` && identity.test(compact) && behavior.test(compact));
 }
 
 function headActionHasIcon(attrs, children, code) {
@@ -195,6 +241,137 @@ function headActionHasIcon(attrs, children, code) {
     }
   }
   return false;
+}
+
+// N31's wider arrow check uses syntax nodes, not proximity to a heading. Keep
+// source offsets for scan reports and deduplicate an icon reached via helpers.
+// Deliberately local: no module loading, execution or cross-file prop inference.
+export function n31ActionArrows(code, file) {
+  if (GUIDE.test(file) || ADMIN.test(file) || FAN_UI.test(file)) return [];
+  const source = ts.createSourceFile(file, code, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
+  const scopes = new Map(), elements = [], imports = new Map();
+  const boundary = (n) => ts.isSourceFile(n) || ts.isBlock(n) || ts.isFunctionLike(n);
+  const scopeOf = (n) => { while (n && !boundary(n)) n = n.parent; return n; };
+  const bind = (scope, name, value) => {
+    if (!ts.isIdentifier(name)) {
+      if (ts.isObjectBindingPattern(name) || ts.isArrayBindingPattern(name)) {
+        for (const element of name.elements) if (ts.isBindingElement(element)) bind(scope, element.name, undefined);
+      }
+      return;
+    }
+    if (!scopes.has(scope)) scopes.set(scope, new Map());
+    scopes.get(scope).set(name.text, value);
+  };
+  const index = (n) => {
+    if (ts.isVariableDeclaration(n)) bind(scopeOf(n.parent), n.name, n.initializer);
+    if (ts.isFunctionDeclaration(n) && n.name) bind(scopeOf(n.parent), n.name, n);
+    if (ts.isParameter(n)) bind(scopeOf(n.parent), n.name, undefined); // shadow outer helpers
+    if (ts.isImportSpecifier(n)) {
+      bind(source, n.name, n);
+      imports.set(n, n.propertyName?.text ?? n.name.text);
+    }
+    if (ts.isImportClause(n) && n.name) bind(source, n.name, n);
+    if (ts.isNamespaceImport(n)) bind(source, n.name, n);
+    if (ts.isJsxElement(n) || ts.isJsxSelfClosingElement(n)) elements.push(n);
+    ts.forEachChild(n, index);
+  };
+  index(source);
+  const lookup = (n) => {
+    if (!ts.isIdentifier(n)) return undefined;
+    for (let scope = scopeOf(n); scope; scope = scopeOf(scope.parent)) {
+      if (scopes.get(scope)?.has(n.text)) return scopes.get(scope).get(n.text);
+    }
+  };
+  const canonical = (n) => {
+    const declaration = lookup(n);
+    return imports.get(declaration) ?? n.getText(source);
+  };
+  const opening = (n) => ts.isJsxElement(n) ? n.openingElement : n;
+  const attributes = (n) => opening(n).attributes.properties.filter(ts.isJsxAttribute);
+  const attr = (n, name) => attributes(n).find((a) => a.name.getText(source) === name);
+  const value = (a) => a?.initializer && (ts.isJsxExpression(a.initializer) ? a.initializer.expression : a.initializer);
+  const returns = (fn) => {
+    if (!fn || !ts.isFunctionLike(fn) || !fn.body) return [];
+    if (!ts.isBlock(fn.body)) return [fn.body];
+    const result = [];
+    const visit = (n) => {
+      if (ts.isFunctionLike(n)) return;
+      if (ts.isReturnStatement(n) && n.expression) result.push(n.expression);
+      else ts.forEachChild(n, visit);
+    };
+    visit(fn.body);
+    return result;
+  };
+  const isAction = (n, seen = new Set()) => {
+    if (seen.has(n)) return false;
+    seen.add(n);
+    if (ts.isParenthesizedExpression(n)) return isAction(n.expression, seen);
+    if (ts.isConditionalExpression(n)) return isAction(n.whenTrue, seen) || isAction(n.whenFalse, seen);
+    if (!ts.isJsxElement(n) && !ts.isJsxSelfClosingElement(n)) return false;
+    const name = canonical(opening(n).tagName);
+    return /^(a|Link|button|FanAction)$/.test(name) || Boolean(attr(n, 'href') || attr(n, 'onClick'))
+      || /^(button|link)$/.test(value(attr(n, 'role'))?.text ?? '')
+      || returns(lookup(opening(n).tagName)).some((body) => isAction(body, seen));
+  };
+  const isException = (n) => {
+    const handler = value(attr(n, 'onClick'))?.getText(source) ?? '';
+    const label = value(attr(n, 'aria-label') ?? attr(n, 'ariaLabel'))?.text ?? '';
+    const text = (ts.isJsxElement(n) ? n.children.filter(ts.isJsxText).map((c) => c.text).join('') : '').trim();
+    return n31ControlException(handler, label, text)
+      || n31LocalControlException(file, opening(n).getText(source));
+  };
+  const arrowName = (n, seen = new Set()) => {
+    if (!n || seen.has(n)) return null;
+    seen.add(n);
+    const name = canonical(n);
+    if (/^(ChevronRight|ArrowRight|MoveRight)$/.test(name)) return name;
+    if (ts.isIdentifier(n)) return arrowName(lookup(n), seen);
+    if (ts.isPropertyAccessExpression(n) && /^(ChevronRight|ArrowRight|MoveRight)$/.test(n.name.text)) {
+      // Namespace imports (Icons.ChevronRight), not arbitrary object properties.
+      const namespace = lookup(n.expression);
+      if (namespace && ts.isNamespaceImport(namespace)) return n.name.text;
+    }
+    return null;
+  };
+  const found = new Map();
+  const collect = (n, action, seen) => {
+    if (!n || seen.has(n)) return;
+    seen.add(n);
+    if (ts.isJsxElement(n) || ts.isJsxSelfClosingElement(n)) {
+      if (n !== action && isAction(n)) return; // nested actions own their exception/context
+      const open = opening(n), name = canonical(open.tagName);
+      const icon = name === 'FanIcon' ? arrowName(value(attr(n, 'icon'))) : arrowName(open.tagName);
+      if (icon) {
+        const offset = n.getStart(source);
+        if (!found.has(offset)) found.set(offset, {
+          offset, line: source.getLineAndCharacterOfPosition(offset).line + 1,
+          actionOffset: action.getStart(source), action: opening(action).tagName.getText(source), icon,
+        });
+        return;
+      }
+      // A local component can return an icon or a fragment of rendered content.
+      for (const body of returns(lookup(open.tagName))) collect(body, action, seen);
+      for (const a of attributes(n)) {
+        // Event callbacks, styles and navigation targets aren't rendered children.
+        if (!/^(on[A-Z]|href$|className$|style$|aria-|data-)/.test(a.name.getText(source))) collect(value(a), action, seen);
+      }
+      if (ts.isJsxElement(n)) for (const child of n.children) collect(child, action, seen);
+    } else if (ts.isIdentifier(n)) {
+      const definition = lookup(n);
+      if (definition && !ts.isFunctionLike(definition)) collect(definition, action, seen);
+    } else if (ts.isCallExpression(n)) {
+      for (const body of returns(lookup(n.expression))) collect(body, action, seen);
+      // map/render callbacks and JSX arguments can contribute rendered content.
+      for (const arg of n.arguments) {
+        if (ts.isFunctionLike(arg)) for (const body of returns(arg)) collect(body, action, seen);
+        else collect(arg, action, seen);
+      }
+    } else if (!ts.isFunctionLike(n) && !ts.isTypeNode(n) && !ts.isPropertyAccessExpression(n)) {
+      ts.forEachChild(n, (child) => { collect(child, action, seen); });
+    }
+  };
+  for (const action of elements) if (isAction(action) && !isException(action)) collect(action, action, new Set());
+  return [...found.values()].sort((a, b) => a.offset - b.offset);
 }
 
 export function scanNTs(code, file, read) {
@@ -253,15 +430,24 @@ export function scanNTs(code, file, read) {
   // N31: 섹션 머리 알약·아이콘 행동 — 제목 닫는 태그 바로 뒤의 행동 요소
   if (!fanUi) {
     const tagsByName = {};
+    const oldActions = [];
     for (const m of c.matchAll(SECTION_HEAD_ACTION)) {
       const name = m[1];
       const start = m.index + m[0].length - name.length - 1;
       const tag = (tagsByName[name] ??= jsxTags(c, name)).find((t) => t.index === start);
       if (!tag) continue;
       const attrs = tag.attrs;
-      if (headActionIsException(attrs, tag.children)) continue;
+      if (headActionIsException(attrs, tag.children) || n31LocalControlException(file, `<${name} ${attrs}>`)) continue;
       if ((name === 'FanAction' && !/variant=\{?["']text["']/.test(attrs))
-        || headActionHasIcon(attrs, tag.children, c) || headActionHasStyle(attrs, c, file, read, m[0], name)) add(out, `N31|<${name}> after a heading`);
+        || headActionHasIcon(attrs, tag.children, c) || headActionHasStyle(attrs, c, file, read, m[0], name)) {
+        add(out, `N31|<${name}> after a heading`);
+        oldActions.push(start);
+      }
+    }
+    // Preserve existing baseline keys and avoid counting the same inline action
+    // twice. The legacy regex scans stripped text; map the AST offset to it.
+    for (const hit of n31ActionArrows(code, file)) {
+      if (!oldActions.includes(stripComments(code.slice(0, hit.actionOffset)).length)) add(out, `N31|<${hit.action}> contains ${hit.icon}`);
     }
   }
   // N25: lucide 직접 import·strokeWidth
