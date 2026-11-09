@@ -27,9 +27,8 @@ describe("Phase 6 instrumentation coverage", () => {
     expect(migration).toContain("'ledgerRowId',new.id");
     expect(migration).toContain("'server:'||v_event||':'||v_id::text");
   });
-  it("keeps measurement failure from rolling back business success", () => {
+  it("keeps measurement failure from rolling back business success (the client side is covered by product-event-client.test.ts)", () => {
     expect(migration).toMatch(/exception when others then[\s\S]*return new/);
-    expect(client).toContain("return false");
   });
   it("dedupes page views per route/session window and includes LIVE provider context", () => {
     expect(client).toContain("PAGE_VIEW_WINDOW_MS");
