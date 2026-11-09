@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen, within } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { SelectedBias, SelectedBiasOption } from "@/features/selected-bias/ui/use-selected-bias";
 import { APP_LOCALES } from "@/i18n/locales";
@@ -33,9 +33,9 @@ describe("header capsule", () => {
     expect(button).toHaveAttribute("aria-expanded", "false");
     expect(button).toHaveTextContent("P 1,260");
     expect(button).not.toHaveTextContent("Current favorite");
-    expect(screen.queryByRole("region")).not.toBeInTheDocument();
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
     fireEvent.click(button);
-    const panel = screen.getByRole("region");
+    const panel = screen.getByRole("dialog");
     expect(button).toHaveAttribute("aria-expanded", "true");
     expect(panel.id).toBe(button.getAttribute("aria-controls"));
     expect(within(panel).getByRole("button", { name: "최애 바꾸기" })).toHaveFocus();
@@ -43,10 +43,10 @@ describe("header capsule", () => {
     expect(within(panel).getByRole("link", { name: "덕질" })).toHaveAttribute("href", "/benefits?locale=ko");
     fireEvent.click(button);
     expect(button).toHaveAttribute("aria-expanded", "false");
-    expect(screen.queryByRole("region")).not.toBeInTheDocument();
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
   });
 
-  it("uses a native button for keyboard activation; Escape closes and returns focus", () => {
+  it("uses a native button for keyboard activation; Escape closes and returns focus", async () => {
     render(<FanHeaderStatus locale="ko" />);
     const button = toggle();
     button.focus();
@@ -57,13 +57,17 @@ describe("header capsule", () => {
     expect(button).toHaveAttribute("aria-expanded", "true");
     fireEvent.keyDown(document.activeElement!, { key: "Escape" });
     expect(button).toHaveAttribute("aria-expanded", "false");
-    expect(button).toHaveFocus();
+    await waitFor(() => expect(button).toHaveFocus());
   });
 
-  it("closes on outside pointer and focus, without stealing outside focus", () => {
+  it("closes on outside pointer and focus, without stealing outside focus", async () => {
     render(<><FanHeaderStatus locale="ko" /><button>Outside</button></>);
     fireEvent.click(toggle());
+    // Radix arms outside-pointer dismissal on the next task to ignore the opening pointer event.
+    await act(async () => { await new Promise(resolve => setTimeout(resolve, 0)); });
     fireEvent.pointerDown(screen.getByRole("button", { name: "Outside" }));
+    fireEvent.pointerUp(screen.getByRole("button", { name: "Outside" }));
+    fireEvent.click(screen.getByRole("button", { name: "Outside" }));
     expect(toggle()).toHaveAttribute("aria-expanded", "false");
     fireEvent.click(toggle());
     act(() => screen.getByRole("button", { name: "Outside" }).focus());
@@ -71,21 +75,22 @@ describe("header capsule", () => {
     expect(screen.getByRole("button", { name: "Outside" })).toHaveFocus();
   });
 
-  it("keeps logical Tab exit order across the portal", () => {
+  it("uses Radix keyboard focus cycling and Escape to return to the header", async () => {
     render(<FanHeaderStatus locale="ko" />);
     fireEvent.click(toggle());
-    fireEvent.keyDown(screen.getByRole("button", { name: "최애 바꾸기" }), { key: "Tab", shiftKey: true });
-    expect(toggle()).toHaveFocus();
-    expect(toggle()).toHaveAttribute("aria-expanded", "false");
-    fireEvent.click(toggle());
-    screen.getByRole("link", { name: "덕질" }).focus();
-    // The browser's default Tab then advances from this header trigger to the next header control.
-    expect(fireEvent.keyDown(document.activeElement!, { key: "Tab" })).toBe(true);
-    expect(toggle()).toHaveFocus();
+    const first = screen.getByRole("button", { name: "최애 바꾸기" });
+    const last = screen.getByRole("link", { name: "덕질" });
+    expect(first).toHaveFocus();
+    fireEvent.keyDown(first, { key: "Tab", shiftKey: true });
+    expect(last).toHaveFocus();
+    fireEvent.keyDown(last, { key: "Tab" });
+    expect(first).toHaveFocus();
+    fireEvent.keyDown(first, { key: "Escape" });
+    await waitFor(() => expect(toggle()).toHaveFocus());
     expect(toggle()).toHaveAttribute("aria-expanded", "false");
   });
 
-  it("changes favorite through the existing save hook and restores focus", () => {
+  it("changes favorite through the existing save hook and restores focus", async () => {
     render(<FanHeaderStatus locale="ko" />);
     fireEvent.click(toggle());
     fireEvent.click(screen.getByRole("button", { name: "최애 바꾸기" }));
@@ -93,17 +98,17 @@ describe("header capsule", () => {
     expect(screen.getByRole("button", { name: "Current favorite" })).toHaveFocus();
     fireEvent.click(screen.getByRole("button", { name: "Second favorite" }));
     expect(state.bias.select).toHaveBeenCalledWith("favorite-b");
-    expect(toggle()).toHaveFocus();
+    await waitFor(() => expect(toggle()).toHaveFocus());
     expect(toggle()).toHaveAttribute("aria-expanded", "false");
   });
 
-  it("closes with Escape while choosing a favorite", () => {
+  it("closes with Escape while choosing a favorite", async () => {
     render(<FanHeaderStatus locale="ko" />);
     fireEvent.click(toggle());
     fireEvent.click(screen.getByRole("button", { name: "최애 바꾸기" }));
     fireEvent.keyDown(document.activeElement!, { key: "Escape" });
-    expect(toggle()).toHaveFocus();
-    expect(screen.queryByRole("region")).not.toBeInTheDocument();
+    await waitFor(() => expect(toggle()).toHaveFocus());
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
   });
 
   it("discards the open panel when the account changes", () => {
@@ -121,7 +126,7 @@ describe("header capsule", () => {
     view.rerender(<FanHeaderStatus locale="ko" />);
     expect(screen.getByRole("link", { name: "최애 고르기" })).toHaveAttribute("href", "/login");
     expect(screen.queryByText(/1,260|Current favorite/)).not.toBeInTheDocument();
-    expect(screen.queryByRole("region")).not.toBeInTheDocument();
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
   });
 
   it.each([401, 403])("hides retained member data after a %i wallet response", status => {
