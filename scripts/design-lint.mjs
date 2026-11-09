@@ -23,7 +23,7 @@ const TSX_RE = /^apps\/web\/(app|components|features)\/.+\.tsx$/;
 const SRC_RE = /^apps\/web\/.+-source\.ts$/;
 const JSON_RE = /^apps\/web\/i18n\/source-messages\.json$/;
 const BASELINE_PATH = resolve(ROOT, 'scripts/design-lint-baseline.json');
-const SKIP_RE = /(\.test\.tsx?$|\/e2e\/|\/__tests__\/|^apps\/web\/components\/fan-ui\/|^apps\/web\/app\/globals\.css$)/;
+const SKIP_RE = /(\.test\.tsx?$|\.island-test\.tsx?$|\/e2e\/|\/__tests__\/|^apps\/web\/components\/fan-ui\/|^apps\/web\/app\/globals\.css$)/;
 
 export const areaOf = (file) => {
   if (/^apps\/web\/features\/dukjil\//.test(file)) return 'dukjil';

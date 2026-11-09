@@ -49,7 +49,7 @@ const short = (s, n = 90) => { const t = norm(s); return t.length > n ? `${t.sli
 const add = (m, key, n = 1) => { if (n > 0) m.set(key, (m.get(key) ?? 0) + n); };
 
 const FAN_UI = /^apps\/web\/components\/fan-ui\//;
-const TEST_PATH = /(\.test\.[tj]sx?$|\.spec\.[tj]sx?$|\.qc\.[tj]sx?$|\/e2e\/|\/e2e-q\/|\/q-contract\/|\/__tests__\/|\/scripts\/|\.d\.ts$)/;
+const TEST_PATH = /(\.test\.[tj]sx?$|\.island-test\.[tj]sx?$|\.spec\.[tj]sx?$|\.qc\.[tj]sx?$|\/e2e\/|\/e2e-q\/|\/q-contract\/|\/__tests__\/|\/scripts\/|\.d\.ts$)/;
 const ADMIN = /^apps\/web\/(app\/admin\/|components\/admin\/|features\/admin)/;
 const GUIDE = /^apps\/web\/app\/guide\//;
 
