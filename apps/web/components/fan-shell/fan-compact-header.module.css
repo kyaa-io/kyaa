@@ -1,11 +1,11 @@
 .header {
   display: flex;
-  width: min(100%, 1200px);
+  width: min(100%, var(--shell-max-width));
   min-height: 68px;
   align-items: center;
   justify-content: space-between;
   margin-inline: auto;
-  padding-inline: 16px;
+  padding-inline: var(--shell-inset);
 }
 
 .brand {
@@ -17,10 +17,4 @@
 .brand:focus-visible {
   outline: 3px solid oklch(18% 0 0);
   outline-offset: 3px;
-}
-
-@media (min-width: 48rem) {
-  .header {
-    padding-inline: 32px;
-  }
 }

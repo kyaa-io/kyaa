@@ -76,7 +76,6 @@
 /* The released groups shell follows the shared Pencil header and navigation. */
 .groupsNavigation.header { box-sizing: border-box; height: 68px; color: var(--color-ink); }
 .groupsNavigation.header *, .groupsNavigation.bottomNavigation, .groupsNavigation.bottomNavigation * { box-sizing: border-box; }
-.groupsNavigation .headerInner { padding-inline: 16px; }
 .groupsNavigation .brand img { width: 88px; height: auto; transform: none; }
 .groupsNavigation .actions { gap: 0; }
 .groupsNavigation [data-fan-language-action] { width: auto; min-inline-size: 80px; max-inline-size: min(42vw, 184px); padding-inline: 10px; color: var(--color-muted); line-height: 18px; }
@@ -89,7 +88,7 @@
   .groupsNavigation.frame { padding-bottom: calc(65px + env(safe-area-inset-bottom)); }
 }
 @media (min-width: 64rem) {
-  .groupsNavigation .headerInner { grid-template-columns: minmax(88px,1fr) auto minmax(308px,1fr); column-gap: 16px; padding-inline: 40px; }
+  .groupsNavigation .headerInner { grid-template-columns: minmax(88px,1fr) auto minmax(308px,1fr); column-gap: 16px; }
   .groupsNavigation.header { height: 88px; }
   .groupsNavigation .desktopNav { width: 366px; min-height: 46px; border-color: var(--color-line); }
   .groupsNavigation .desktopNavItem { width: 88px; min-width: 88px; flex-shrink: 0; color: var(--color-muted); line-height: 17px; text-align: center; overflow-wrap: anywhere; }

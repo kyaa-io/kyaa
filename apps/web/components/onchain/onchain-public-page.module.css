@@ -9,7 +9,7 @@
   font-family:inherit;
 }
 
-.headerInner { max-width: 1440px; padding-inline: 16px; }
+.headerInner { max-width: var(--shell-max-width); padding-inline: var(--shell-inset); }
 .page * { box-sizing: border-box; }
 .page main:focus { outline: none; }
 .page :is(a, [tabindex="0"]):focus-visible { outline: 3px solid var(--ink); outline-offset: 3px; }
@@ -97,12 +97,9 @@
 .srOnly { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
 
 @media (min-width: 48rem) {
-  .headerInner { padding-inline: 32px; }
   .metricGrid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .metric:last-child { grid-column: span 2; }
 }
-
-@media (min-width: 80rem) { .headerInner { padding-inline: 40px; } }
 
 @media (max-width: 47.999rem) {
   .hero { padding: 48px 0; }
