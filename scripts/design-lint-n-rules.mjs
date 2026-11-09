@@ -32,7 +32,7 @@ export const RULES_N = {
   N28: { sev: 'count', note: '정적 글꼴 Pretendard UI 참조 금지. 굵기 토큰을 쓴다(8장 ③)' },
   // 2026-11-08 H6(사용자 지시): 강조색은 kyaa 핑크 1색, 보라는 로고 아트에만, 짙은 회색 채움 캡슐 금지.
   N29: { sev: 'fail', note: 'CSS·TSX 의 보라 색상값(hex·rgb·hsl·oklch, 색상 250~320°·채도 10% 이상) 금지. 강조색은 var(--color-accent*) 핑크 1색. 로고·그림 아트 파일만 허용(H6)' },
-  N31: { sev: 'fail', note: '섹션 머리 행동은 글자 링크 + 글자 ›. FanAction 은 variant="text" 이고 아이콘이 없어야 한다. 링크·버튼·카드 래퍼 안의 오른쪽 화살표는 제목 위치와 무관하게 금지한다(같은 파일의 함수·변수 JSX 포함). 닫기·뒤로·캐러셀·페이지 넘김은 제외한다' },
+  N31: { sev: 'fail', note: '섹션 제목과 같은 헤더의 더보기·전체보기 행동은 글자 링크 + 글자 ›. 같은 파일의 함수·변수로 분리된 머리 행동도 검사한다. CTA·카드 전체 링크·목록 행·양식 단계·모달 열기는 제외한다' },
   N30: { sev: 'fail', note: '짙은 회색(또는 --color-ink) 채움 알약 금지. 캡슐·칩·배지는 흰 바탕 + 1px 테두리, 선택은 핑크 테두리/글자나 옅은 핑크 바탕 1단, 진행 막대·행동 버튼은 핑크 토큰(H6)' },
 };
 
@@ -178,119 +178,79 @@ function headActionHasStyle(attrs, code, file, read, head, name) {
   return false;
 }
 
-function headActionIsException(attrs, children) {
-  return n31ControlException(attrs.match(/\bonClick=\{\s*(\w+)\s*\}/)?.[1] ?? '', attrs.match(/\baria-label=["']([^"']+)["']/)?.[1] ?? '', children.trim())
-    || /\bonClick=\{(?:close|onClose|handleClose|closeDialog|dismiss|onDismiss)\}/.test(attrs)
-    || /\bclassName=\{\w+\.(?:close|closeButton|backButton)\}/.test(attrs)
-    || /^(?:닫기|Close|뒤로|Back)$/.test(children.trim())
-    || (/^\s*<X\b[^>]*\/>\s*$/.test(children) && /\bonClick=/.test(attrs))
-    || /\bleadingIcon=\{\s*<(?:ArrowLeft|ChevronLeft)\b/.test(attrs);
-}
-
-function n31ControlException(handler, label, text) {
-  // Dismiss/back controls change the current view, rather than link to more content.
-  if (/^(close|onClose|handleClose|closeDialog|dismiss|onDismiss|goBack|onBack|handleBack)$/.test(handler)
-    || /^(닫기|Close|뒤로|Back)$/.test(label || text)) return true;
-  // Carousel arrows move between slides. Generic next/onNext is NOT enough.
-  if (/^(scrollNext|scrollPrev|nextSlide|prevSlide|goToNextSlide|goToPreviousSlide)$/.test(handler)
-    || /^(Next slide|Previous slide|다음 슬라이드|이전 슬라이드)$/i.test(label)) return true;
-  // Pagination changes a page index; don't exempt arbitrary "next" actions.
-  return /^(nextPage|prevPage|previousPage|goToNextPage|goToPreviousPage)$/.test(handler)
-    || /^(Next page|Previous page|다음 페이지|이전 페이지)$/i.test(label);
-}
-
-// Reviewed controls whose localized labels/closures cannot be identified from a
-// literal accessible name. Match the action AND its owning file, never a file
-// exemption: ordinary content links in these components must still fail.
-const N31_LOCAL_CONTROLS = [
-  // Shared calendar arrows change the displayed month (URL or local state).
-  ['components/fan-calendar/calendar-parts.tsx', /className=\{styles\.control\}/, /(?:href|onClick)=\{value\.(?:href|onClick)\}/],
-  // Cursor/page navigation, including translated labels.
-  ['components/home-community-preview.tsx', /aria-label=\{pagination\.next\}/, /setPage\(/],
-  ['features/bias/ui/promotion-page.tsx', /aria-label=/, /setPage\(visiblePage\+1\)/],
-  ['features/fan-posts/ui/fan-post-feed.tsx', /aria-label=\{copy\.older\}/, /goToPage\(/],
-  ['features/groups/ui/creator-group-home.tsx', /aria-label=/, /setCursors\(/],
-  ['features/groups/ui/group-board.tsx', /aria-label=\{paginationCopy\(locale\)\.next\}/, /goPreview\(/],
-  ['features/home/ui/events-pagination.tsx', /href=\{href\(page\+1\)\}/, /^<Link/],
-  ['features/live/ui/live-catalog-screen.tsx', /aria-label=/, /setPage\(Math\.min\(pageCount-1,currentPage\+1\)\)/],
-  ['features/passport/ui/passport-mission-book.tsx', /ariaLabel=\{passportBookText\(locale,["']pageNext["']\)\}/, /onChange\(index\+1\)/],
-  // Carousel/media arrows advance the selected slide/event, not a destination.
-  ['components/home-entry-cards/home-guide-carousel.tsx', /styles\.carouselNext/, /goTo\(activeIndex\+1,true\)/],
-  ['components/live-hero-carousel.tsx', /styles\.carouselNext/, /goTo\(activeIndex\+1,true\)/],
-  ['features/fan-posts/ui/post-attachment-viewer.tsx', /aria-label=\{page\.next\}/, /setSelected\(value=>value\+1\)/],
-  ['features/groups/ui/directory-top.tsx', /ariaLabel=\{c\.nextBanner\}/, /move\(1\)/],
-  ['features/groups/ui/discovery-carousel.tsx', /aria-label=/, /setActive\(\(index\+1\)%slides\.length\)/],
-  ['features/live/ui/live-calendar-screen.tsx', /aria-label=\{participation\.nextEvent\}/, /move\(1\)/],
-  // Horizontal scrolling of already rendered LIVE cards and notification chips.
-  ['features/live/ui/observed-live-strip.tsx', /aria-controls=/, /onClick=\{next\}/],
-  ['features/notification/ui/notification-inbox.tsx', /styles\.chipNext/, /onClick=\{next\}/],
-];
-
-function n31LocalControlException(file, markup) {
-  const compact = markup.replace(/\s+/g, '');
-  return N31_LOCAL_CONTROLS.some(([path, identity, behavior]) => file === `apps/web/${path}` && identity.test(compact) && behavior.test(compact));
-}
-
-function headActionHasIcon(attrs, children, code) {
-  if (/\b(?:leadingIcon|trailingIcon)=\{(?!\s*(?:null|undefined|false)\s*\})/.test(attrs)) return true;
-  if (/<(?:svg|FanIcon|CalendarDays|X|(?:Arrow|Chevron)\w*|\w+Icon|RowChevron)\b/.test(children)) return true;
-  for (const imported of code.matchAll(/import\s*\{([^}]+)\}\s*from\s*["'][^"']*(?:lucide|fan-icons|react-icons)[^"']*["']/g)) {
-    for (const specifier of imported[1].split(',')) {
-      const name = specifier.trim().split(/\s+as\s+/).at(-1);
-      if (name && new RegExp(`<${name}\\b`).test(children)) return true;
-    }
-  }
-  return false;
-}
-
-// N31's wider arrow check uses syntax nodes, not proximity to a heading. Keep
-// source offsets for scan reports and deduplicate an icon reached via helpers.
-// Deliberately local: no module loading, execution or cross-file prop inference.
-export function n31ActionArrows(code, file) {
-  if (GUIDE.test(file) || ADMIN.test(file) || FAN_UI.test(file)) return [];
+// N31 starts at section headers, never at arbitrary links. Resolve only rendered
+// local JSX; map callbacks/list rows and other files are deliberately not followed.
+function n31SectionAnalysis(code, file) {
+  const empty = { arrows: [], actions: new Map() };
+  if (GUIDE.test(file) || ADMIN.test(file) || FAN_UI.test(file)) return empty;
   const source = ts.createSourceFile(file, code, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
-  const scopes = new Map(), elements = [], imports = new Map();
+  const scopes = new Map(), elements = [];
   const boundary = (n) => ts.isSourceFile(n) || ts.isBlock(n) || ts.isFunctionLike(n);
   const scopeOf = (n) => { while (n && !boundary(n)) n = n.parent; return n; };
-  const bind = (scope, name, value) => {
+  const bind = (scope, name, binding) => {
     if (!ts.isIdentifier(name)) {
       if (ts.isObjectBindingPattern(name) || ts.isArrayBindingPattern(name)) {
-        for (const element of name.elements) if (ts.isBindingElement(element)) bind(scope, element.name, undefined);
+        for (const element of name.elements) if (ts.isBindingElement(element)) bind(scope, element.name, { local: true });
       }
       return;
     }
     if (!scopes.has(scope)) scopes.set(scope, new Map());
-    scopes.get(scope).set(name.text, value);
+    scopes.get(scope).set(name.text, binding);
   };
   const index = (n) => {
-    if (ts.isVariableDeclaration(n)) bind(scopeOf(n.parent), n.name, n.initializer);
-    if (ts.isFunctionDeclaration(n) && n.name) bind(scopeOf(n.parent), n.name, n);
-    if (ts.isParameter(n)) bind(scopeOf(n.parent), n.name, undefined); // shadow outer helpers
-    if (ts.isImportSpecifier(n)) {
-      bind(source, n.name, n);
-      imports.set(n, n.propertyName?.text ?? n.name.text);
-    }
-    if (ts.isImportClause(n) && n.name) bind(source, n.name, n);
-    if (ts.isNamespaceImport(n)) bind(source, n.name, n);
+    if (ts.isVariableDeclaration(n)) bind(scopeOf(n.parent), n.name, { local: true, node: n.initializer });
+    if (ts.isFunctionDeclaration(n) && n.name) bind(scopeOf(n.parent), n.name, { local: true, node: n });
+    if (ts.isParameter(n)) bind(scopeOf(n.parent), n.name, { local: true });
+    if (ts.isImportSpecifier(n)) bind(source, n.name, { name: n.propertyName?.text ?? n.name.text, module: n.parent.parent.parent.moduleSpecifier.text });
+    if (ts.isImportClause(n) && n.name) bind(source, n.name, { name: n.name.text, module: n.parent.moduleSpecifier.text });
+    if (ts.isNamespaceImport(n)) bind(source, n.name, { namespace: true, module: n.parent.parent.moduleSpecifier.text });
     if (ts.isJsxElement(n) || ts.isJsxSelfClosingElement(n)) elements.push(n);
     ts.forEachChild(n, index);
   };
   index(source);
   const lookup = (n) => {
-    if (!ts.isIdentifier(n)) return undefined;
+    if (!n || !ts.isIdentifier(n)) return undefined;
     for (let scope = scopeOf(n); scope; scope = scopeOf(scope.parent)) {
       if (scopes.get(scope)?.has(n.text)) return scopes.get(scope).get(n.text);
     }
   };
-  const canonical = (n) => {
-    const declaration = lookup(n);
-    return imports.get(declaration) ?? n.getText(source);
+  const unwrap = (n) => {
+    while (n && (ts.isParenthesizedExpression(n) || ts.isAsExpression(n) || ts.isNonNullExpression(n) || ts.isSatisfiesExpression(n))) n = n.expression;
+    return n;
+  };
+  const resolveLocal = (n, seen = new Set()) => {
+    n = unwrap(n);
+    if (!n || seen.has(n)) return undefined;
+    seen.add(n);
+    if (ts.isIdentifier(n)) {
+      const binding = lookup(n);
+      return binding?.local ? resolveLocal(binding.node, seen) : n;
+    }
+    return n;
+  };
+  const symbol = (n) => {
+    n = resolveLocal(n);
+    if (!n) return {};
+    if (ts.isIdentifier(n)) {
+      const binding = lookup(n);
+      // Check lexical bindings before spelling: even a parameter with no value
+      // must hide an imported ArrowRight, FanIcon, Link or namespace.
+      return binding ?? { name: n.text };
+    }
+    if (ts.isPropertyAccessExpression(n)) {
+      const base = resolveLocal(n.expression), binding = lookup(base);
+      if (binding?.namespace) return { name: n.name.text, module: binding.module };
+    }
+    return {};
   };
   const opening = (n) => ts.isJsxElement(n) ? n.openingElement : n;
   const attributes = (n) => opening(n).attributes.properties.filter(ts.isJsxAttribute);
   const attr = (n, name) => attributes(n).find((a) => a.name.getText(source) === name);
   const value = (a) => a?.initializer && (ts.isJsxExpression(a.initializer) ? a.initializer.expression : a.initializer);
+  const nameOf = (n) => symbol(opening(n).tagName).name ?? '';
+  const children = (n) => ts.isJsxElement(n) || ts.isJsxFragment(n) ? n.children : [];
   const returns = (fn) => {
+    fn = resolveLocal(fn);
     if (!fn || !ts.isFunctionLike(fn) || !fn.body) return [];
     if (!ts.isBlock(fn.body)) return [fn.body];
     const result = [];
@@ -302,76 +262,158 @@ export function n31ActionArrows(code, file) {
     visit(fn.body);
     return result;
   };
-  const isAction = (n, seen = new Set()) => {
-    if (seen.has(n)) return false;
+  const roots = (n, seen = new Set()) => {
+    n = unwrap(n);
+    if (!n || seen.has(n)) return [];
     seen.add(n);
-    if (ts.isParenthesizedExpression(n)) return isAction(n.expression, seen);
-    if (ts.isConditionalExpression(n)) return isAction(n.whenTrue, seen) || isAction(n.whenFalse, seen);
-    if (!ts.isJsxElement(n) && !ts.isJsxSelfClosingElement(n)) return false;
-    const name = canonical(opening(n).tagName);
-    return /^(a|Link|button|FanAction)$/.test(name) || Boolean(attr(n, 'href') || attr(n, 'onClick'))
-      || /^(button|link)$/.test(value(attr(n, 'role'))?.text ?? '')
-      || returns(lookup(opening(n).tagName)).some((body) => isAction(body, seen));
+    if (ts.isJsxElement(n) || ts.isJsxSelfClosingElement(n)) return [n];
+    if (ts.isJsxFragment(n)) return [...n.children].flatMap((c) => roots(c, new Set(seen)));
+    if (ts.isJsxExpression(n)) return roots(n.expression, seen);
+    if (ts.isIdentifier(n)) return roots(lookup(n)?.node, seen);
+    if (ts.isConditionalExpression(n)) return [...roots(n.whenTrue, new Set(seen)), ...roots(n.whenFalse, new Set(seen))];
+    if (ts.isBinaryExpression(n) && [ts.SyntaxKind.AmpersandAmpersandToken, ts.SyntaxKind.BarBarToken, ts.SyntaxKind.QuestionQuestionToken].includes(n.operatorToken.kind)) return roots(n.right, seen);
+    if (ts.isCallExpression(n)) return returns(n.expression).flatMap((body) => roots(body, new Set(seen)));
+    return [];
+  };
+  const childRoots = (n) => [...children(n)].flatMap((c) => roots(c));
+  const isAction = (n) => /^(a|Link|button|FanAction)$/.test(nameOf(n));
+  const isTitle = (n) => /^(h2|h3|FanHeading)$/.test(nameOf(n)) && value(attr(n, 'as'))?.text !== 'h1';
+  const isTransparent = (n) => /^(div|span)$/.test(nameOf(n));
+  const hasTitle = (n) => isTitle(n) || (isTransparent(n) && childRoots(n).some(hasTitle));
+  const hasInteractiveAncestor = (n) => {
+    for (let parent = n.parent; parent; parent = parent.parent) {
+      if ((ts.isJsxElement(parent) || ts.isJsxSelfClosingElement(parent)) && (isAction(parent) || attr(parent, 'href') || attr(parent, 'onClick'))) return true;
+    }
+    return false;
+  };
+  const handlerCalls = (n) => {
+    const reference = unwrap(n);
+    n = resolveLocal(n);
+    // A callback parameter is opaque, but the onClick identifier itself is
+    // still a control reference (unlike a shadowed icon/component name).
+    if (!n && reference && ts.isIdentifier(reference)) return [reference.text];
+    if (!n) return [];
+    if (ts.isIdentifier(n)) return [n.text];
+    if (ts.isCallExpression(n) && /^(useCallback|React\.useCallback)$/.test(n.expression.getText(source))) n = n.arguments[0];
+    if (!n) return [];
+    if (!ts.isFunctionLike(n) || !n.body) return [];
+    const calls = [];
+    const visit = (node) => {
+      if (ts.isFunctionLike(node)) return;
+      if (ts.isCallExpression(node)) calls.push(node.expression.getText(source));
+      ts.forEachChild(node, visit);
+    };
+    visit(n.body);
+    return calls;
   };
   const isException = (n) => {
-    const handler = value(attr(n, 'onClick'))?.getText(source) ?? '';
-    const label = value(attr(n, 'aria-label') ?? attr(n, 'ariaLabel'))?.text ?? '';
-    const text = (ts.isJsxElement(n) ? n.children.filter(ts.isJsxText).map((c) => c.text).join('') : '').trim();
-    return n31ControlException(handler, label, text)
-      || n31LocalControlException(file, opening(n).getText(source));
+    const label = unwrap(value(attr(n, 'aria-label') ?? attr(n, 'ariaLabel')));
+    const labelText = label?.text ?? '';
+    const classText = value(attr(n, 'className'))?.getText(source) ?? '';
+    const calls = handlerCalls(value(attr(n, 'onClick')));
+    // Dismiss/back: explicit callback, or an identified close glyph. This keeps
+    // existing close-only header controls out without exempting forward actions.
+    if (calls.some((c) => /^(close|onClose|handleClose|closeDialog|dismiss|onDismiss|goBack|onBack|handleBack)$/.test(c))) return true;
+    const tags = [...childRoots(n), ...roots(value(attr(n, 'leadingIcon')))].map(nameOf);
+    if ((/^(닫기|Close|뒤로|Back)$/.test(labelText) || /\.(close|closeButton|backButton)$/.test(classText))
+      && tags.length > 0 && tags.every((tag) => /^(X|ArrowLeft|ChevronLeft)$/.test(tag))) return true;
+    if (tags.length === 1 && tags[0] === 'X' && calls.length > 0) return true;
+    // Pagination/carousel: an identifying attribute AND the actual onClick AST
+    // must agree. data-debug, strings and other attributes cannot supply calls.
+    const labelProperty = label && ts.isPropertyAccessExpression(label) ? label.name.text : '';
+    const pager = /^(Next page|Previous page|다음 페이지|이전 페이지)$/i.test(labelText)
+      || /^(pageNext|pagePrev)$/.test(labelProperty)
+      || (label && ts.isPropertyAccessExpression(label) && /^(next|previous)$/.test(labelProperty) && /^(pagination|paginationCopy\([^)]*\))$/.test(label.expression.getText(source)));
+    const carousel = /^(Next slide|Previous slide|다음 슬라이드|이전 슬라이드)$/i.test(labelText)
+      || /^(nextSlide|previousSlide|nextBanner|previousBanner)$/.test(labelProperty);
+    return (pager && calls.some((c) => /^(nextPage|prevPage|previousPage|goToNextPage|goToPreviousPage|setPage|setCursors|goToPage|goPreview)$/.test(c)))
+      || (carousel && calls.some((c) => /^(scrollNext|scrollPrev|nextSlide|prevSlide|goToNextSlide|goToPreviousSlide|goTo|move|setActive)$/.test(c)))
+      // An identified controlled viewport plus an actual scroll call is a rail
+      // control. A data-* callback cannot satisfy the onClick call list.
+      || (Boolean(value(attr(n, 'aria-controls'))) && calls.some((c) => /\.(scrollTo|scrollBy)$/.test(c)));
   };
-  const arrowName = (n, seen = new Set()) => {
-    if (!n || seen.has(n)) return null;
+  const excludedAction = (n) => {
+    // These are not section-head browse actions, even if placed in a header.
+    return /^(primary|passport)$/.test(value(attr(n, 'variant'))?.text ?? '')
+      || value(attr(n, 'type'))?.text === 'submit'
+      || /^(dialog|true)$/.test(value(attr(n, 'aria-haspopup'))?.text ?? '')
+      || (/\.profileAction\b/.test(value(attr(n, 'className'))?.getText(source) ?? '')
+        && handlerCalls(value(attr(n, 'onClick'))).includes('onProfile'))
+      || /\.(primaryAction|primaryButton|submitButton)\b/.test(value(attr(n, 'className'))?.getText(source) ?? '');
+  };
+  const viewAllLike = (n) => {
+    // Only rendered copy participates, not URLs, classes or debug attributes.
+    const copy = (node) => {
+      if (ts.isJsxText(node)) return /^(전체(?:\s*보기)?|더\s*보기|모두\s*보기|view\s*all|see\s*all|more)\s*[›>]?$/i.test(node.text.trim());
+      if (ts.isJsxExpression(node)) {
+        const expression = unwrap(node.expression);
+        if (!expression) return false;
+        if (ts.isPropertyAccessExpression(expression)) return /^(more|all|viewAll|seeAll|rkViewAll)$/i.test(expression.name.text);
+        if (ts.isCallExpression(expression)) return expression.arguments.some((a) => ts.isStringLiteral(a) && /^(more|all|viewAll|seeAll|rkViewAll)$/i.test(a.text));
+      }
+      return [...children(node)].some(copy);
+    };
+    return [...children(n)].some(copy);
+  };
+  const found = new Map(), actions = new Map();
+  const iconsIn = (n, seen = new Set()) => {
+    if (!n || seen.has(n)) return [];
     seen.add(n);
-    const name = canonical(n);
-    if (/^(ChevronRight|ArrowRight|MoveRight)$/.test(name)) return name;
-    if (ts.isIdentifier(n)) return arrowName(lookup(n), seen);
-    if (ts.isPropertyAccessExpression(n) && /^(ChevronRight|ArrowRight|MoveRight)$/.test(n.name.text)) {
-      // Namespace imports (Icons.ChevronRight), not arbitrary object properties.
-      const namespace = lookup(n.expression);
-      if (namespace && ts.isNamespaceImport(namespace)) return n.name.text;
+    const result = [];
+    for (const node of roots(n)) {
+      const open = opening(node), info = symbol(open.tagName), name = info.name ?? '';
+      const icon = name === 'FanIcon' ? symbol(value(attr(node, 'icon'))).name : name;
+      const isIcon = /^(svg|FanIcon|CalendarDays|X|RowChevron|(?:Arrow|Chevron|Move)\w*)$/.test(name)
+        || /Icon$/.test(name) || /lucide|fan-icons|react-icons/.test(info.module ?? '');
+      if (isIcon && (name !== 'FanIcon' || icon)) result.push({ node, icon: icon || name });
+      else if (!isAction(node)) {
+        for (const body of returns(open.tagName)) result.push(...iconsIn(body, new Set(seen)));
+      }
+      for (const a of attributes(node)) if (!/^(on[A-Z]|href$|className$|style$|aria-|data-)/.test(a.name.getText(source))) result.push(...iconsIn(value(a), new Set(seen)));
+      for (const child of children(node)) result.push(...iconsIn(child, new Set(seen)));
     }
-    return null;
+    return result;
   };
-  const found = new Map();
-  const collect = (n, action, seen) => {
-    if (!n || seen.has(n)) return;
-    seen.add(n);
-    if (ts.isJsxElement(n) || ts.isJsxSelfClosingElement(n)) {
-      if (n !== action && isAction(n)) return; // nested actions own their exception/context
-      const open = opening(n), name = canonical(open.tagName);
-      const icon = name === 'FanIcon' ? arrowName(value(attr(n, 'icon'))) : arrowName(open.tagName);
-      if (icon) {
-        const offset = n.getStart(source);
-        if (!found.has(offset)) found.set(offset, {
-          offset, line: source.getLineAndCharacterOfPosition(offset).line + 1,
-          actionOffset: action.getStart(source), action: opening(action).tagName.getText(source), icon,
-        });
-        return;
+  for (const header of elements) {
+    const name = nameOf(header), parts = childRoots(header);
+    if (hasInteractiveAncestor(header) || isAction(header) || attr(header, 'data-calendar-header')) continue;
+    const explicit = name === 'header' || (/^(div|section)$/.test(name) && /[Hh]ead/.test(value(attr(header, 'className'))?.getText(source) ?? ''));
+    // A compact title + single action section acts as its own section header.
+    // A section containing rows, body text, forms, etc. is NOT a header.
+    const inlineContent = (node) => {
+      const tag = nameOf(node), info = symbol(opening(node).tagName);
+      return (/^(span|strong|small|em)$/.test(tag) && childRoots(node).every(inlineContent))
+        || /^(FanIcon|(?:Arrow|Chevron|Move)\w*)$/.test(tag) || /lucide|fan-icons|react-icons/.test(info.module ?? '');
+    };
+    const structural = parts.length === 2 && isTitle(parts[0]) && isAction(parts[1])
+      && (name === 'section' || (name === 'div' && viewAllLike(parts[1])))
+      && childRoots(parts[1]).every(inlineContent);
+    if (!(explicit && parts.some(hasTitle)) && !structural) continue;
+    const visit = (node) => {
+      if (isAction(node)) {
+        if (isException(node) || excludedAction(node) || childRoots(node).some(hasTitle) || attr(node, 'key')) return;
+        const offset = node.getStart(source), icons = iconsIn(node);
+        actions.set(offset, { node, hasIcon: icons.length > 0 });
+        for (const { node: iconNode, icon } of icons) if (/^(ChevronRight|ArrowRight|MoveRight)$/.test(icon)) {
+          const iconOffset = iconNode.getStart(source);
+          if (!found.has(iconOffset)) found.set(iconOffset, { offset: iconOffset, line: source.getLineAndCharacterOfPosition(iconOffset).line + 1,
+            actionOffset: offset, action: opening(node).tagName.getText(source), icon,
+            headerLine: source.getLineAndCharacterOfPosition(header.getStart(source)).line + 1 });
+        }
+      } else if (isTransparent(node) && !isTitle(node)) {
+        // An action-only wrapper is part of the header; wallet summaries, row
+        // content and paging status beside an action are separate controls.
+        const nested = childRoots(node);
+        if (nested.length && nested.every(isAction)) for (const child of nested) visit(child);
       }
-      // A local component can return an icon or a fragment of rendered content.
-      for (const body of returns(lookup(open.tagName))) collect(body, action, seen);
-      for (const a of attributes(n)) {
-        // Event callbacks, styles and navigation targets aren't rendered children.
-        if (!/^(on[A-Z]|href$|className$|style$|aria-|data-)/.test(a.name.getText(source))) collect(value(a), action, seen);
-      }
-      if (ts.isJsxElement(n)) for (const child of n.children) collect(child, action, seen);
-    } else if (ts.isIdentifier(n)) {
-      const definition = lookup(n);
-      if (definition && !ts.isFunctionLike(definition)) collect(definition, action, seen);
-    } else if (ts.isCallExpression(n)) {
-      for (const body of returns(lookup(n.expression))) collect(body, action, seen);
-      // map/render callbacks and JSX arguments can contribute rendered content.
-      for (const arg of n.arguments) {
-        if (ts.isFunctionLike(arg)) for (const body of returns(arg)) collect(body, action, seen);
-        else collect(arg, action, seen);
-      }
-    } else if (!ts.isFunctionLike(n) && !ts.isTypeNode(n) && !ts.isPropertyAccessExpression(n)) {
-      ts.forEachChild(n, (child) => { collect(child, action, seen); });
-    }
-  };
-  for (const action of elements) if (isAction(action) && !isException(action)) collect(action, action, new Set());
-  return [...found.values()].sort((a, b) => a.offset - b.offset);
+    };
+    for (const part of parts) visit(part);
+  }
+  return { arrows: [...found.values()].sort((a, b) => a.offset - b.offset), actions };
+}
+
+export function n31ActionArrows(code, file) {
+  return n31SectionAnalysis(code, file).arrows;
 }
 
 export function scanNTs(code, file, read) {
@@ -431,22 +473,25 @@ export function scanNTs(code, file, read) {
   if (!fanUi) {
     const tagsByName = {};
     const oldActions = [];
+    const analysis = n31SectionAnalysis(code, file);
+    const scopedActions = new Map([...analysis.actions].map(([offset, action]) => [stripComments(code.slice(0, offset)).length, action]));
     for (const m of c.matchAll(SECTION_HEAD_ACTION)) {
       const name = m[1];
       const start = m.index + m[0].length - name.length - 1;
       const tag = (tagsByName[name] ??= jsxTags(c, name)).find((t) => t.index === start);
       if (!tag) continue;
       const attrs = tag.attrs;
-      if (headActionIsException(attrs, tag.children) || n31LocalControlException(file, `<${name} ${attrs}>`)) continue;
+      const scoped = scopedActions.get(start);
+      if (!scoped) continue;
       if ((name === 'FanAction' && !/variant=\{?["']text["']/.test(attrs))
-        || headActionHasIcon(attrs, tag.children, c) || headActionHasStyle(attrs, c, file, read, m[0], name)) {
+        || scoped.hasIcon || headActionHasStyle(attrs, c, file, read, m[0], name)) {
         add(out, `N31|<${name}> after a heading`);
         oldActions.push(start);
       }
     }
     // Preserve existing baseline keys and avoid counting the same inline action
     // twice. The legacy regex scans stripped text; map the AST offset to it.
-    for (const hit of n31ActionArrows(code, file)) {
+    for (const hit of analysis.arrows) {
       if (!oldActions.includes(stripComments(code.slice(0, hit.actionOffset)).length)) add(out, `N31|<${hit.action}> contains ${hit.icon}`);
     }
   }
