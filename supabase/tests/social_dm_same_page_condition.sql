@@ -65,7 +65,8 @@ begin
  end loop;
  message:='no error';
  begin perform public.request_social_dm(viewer,sanctioned,'hello',extensions.gen_random_uuid());exception when others then message:=sqlerrm;end;
- if message<>'FAN_WEB_ACTIVE_ACCOUNT_REQUIRED' then raise exception 'sanctioned request got %',message;end if;
+ -- B6: a sanctioned, disabled or blocked counterpart all answer SOCIAL_BLOCKED.
+ if message<>'SOCIAL_BLOCKED' then raise exception 'sanctioned request got %',message;end if;
  raised:=false;
  begin perform public.request_social_dm(viewer,blocked,'hello',extensions.gen_random_uuid());exception when others then raised:=sqlerrm='SOCIAL_BLOCKED';end;
  if not raised then raise exception 'blocked request';end if;
@@ -76,11 +77,11 @@ begin
  if public.social_dm_request_state(viewer,peer)<>'pending' then raise exception 'waiting for the answer';end if;
  if public.social_dm_request_state(peer,viewer)<>'incoming' then raise exception 'incoming';end if;
  perform public.resolve_social_dm(peer,conv,'reject',extensions.gen_random_uuid());
- if public.social_dm_request_state(viewer,peer)<>'retry_later' then raise exception 'rejected waits 24 hours';end if;
- update public.social_dm_conversations set retry_at=now()-interval'1 minute' where id=conv;
- if public.social_dm_request_state(viewer,peer)<>'available' then raise exception 'the wait ended';end if;
- r:=public.request_social_dm(viewer,peer,'again',extensions.gen_random_uuid());
- perform public.resolve_social_dm(peer,conv,'accept',extensions.gen_random_uuid());
+ -- B6: a decline is not shown to the sender; the person who declined starts fresh and may ask.
+ if public.social_dm_request_state(viewer,peer)<>'pending' then raise exception 'a decline must look like waiting';end if;
+ if public.social_dm_request_state(peer,viewer)<>'available' then raise exception 'the person who declined can ask: %',public.social_dm_request_state(peer,viewer);end if;
+ r:=public.request_social_dm(peer,viewer,'again',extensions.gen_random_uuid());
+ perform public.resolve_social_dm(viewer,conv,'accept',extensions.gen_random_uuid());
  if public.social_dm_request_state(viewer,peer)<>'open' then raise exception 'accepted';end if;
  if public.read_owned_dm_conversations(viewer)#>>'{conversations,0,canSend}'<>'true' then raise exception 'accepted conversation can send';end if;
  perform public.set_owned_social_settings(peer,true,'{}','none');
@@ -119,7 +120,7 @@ begin
 
  -- The daily limit for non-friends is still the same number and now shows before pressing.
  perform public.set_owned_social_settings(peer,true,'{}','requests');
- for i in 1..public.social_dm_request_daily_limit()-3 loop -- peer, pal and late_friend already count
+ for i in 1..public.social_dm_request_daily_limit()-2 loop -- peer and late_friend already count; B6: a request to a friend (pal) is logged as not counted
   insert into public.app_users(id,privy_user_id,verified_email)values(extensions.gen_random_uuid(),'did:privy:dm-fill-'||i,'dm-fill-'||i||'@example.test') returning id into u;
   insert into public.group_memberships(page_id,app_user_id)values(pub,u);
   perform public.request_social_dm(viewer,u,'fill',extensions.gen_random_uuid());

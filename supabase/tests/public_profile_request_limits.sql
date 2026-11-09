@@ -86,6 +86,7 @@ begin
  if public.request_social_dm(spammer,friend,'친구에게',extensions.gen_random_uuid())->>'status'<>'pending' then raise exception 'Friend message was limited';end if;
  -- The limit resets after a day.
  update public.social_dm_messages set created_at=now()-interval'25 hours' where sender_id=spammer;
+ update public.social_dm_request_log set created_at=now()-interval'25 hours' where sender_id=spammer; -- B6: the limit counts the request log
  if public.request_social_dm(spammer,targets[32],'안녕하세요',extensions.gen_random_uuid())->>'status'<>'pending' then raise exception 'Message limit did not reset';end if;
  raise notice 'PASS message request limit';
 end $$;

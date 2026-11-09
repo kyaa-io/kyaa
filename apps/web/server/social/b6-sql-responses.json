@@ -1,0 +1,311 @@
+{
+    "refs_open": {
+        "open": [
+            {
+                "id": "7d000000-0000-4000-8000-0000000000e1",
+                "kind": "fan_post"
+            }
+        ]
+    },
+    "return_ref": {
+        "returnRef": "00000000-0000-4000-8000-000000000000"
+    },
+    "admin_reports": {
+        "items": [
+            {
+                "id": "00000000-0000-4000-8000-000000000000",
+                "reason": "spam",
+                "status": "open",
+                "target": {
+                    "body": "nickname: s2\nbio: 응답 소개\nlinks: https://example.test/s2\ndetails: 응답 상세",
+                    "authorUserId": "7d000000-0000-4000-8000-000000000002",
+                    "celebritySlug": null,
+                    "authorNickname": "s2",
+                    "contextTargetId": "7d000000-0000-4000-8000-0000000000e1",
+                    "contextTargetType": "fan_post"
+                },
+                "targetId": "7d000000-0000-4000-8000-000000000002",
+                "createdAt": "2026-11-09T00:00:00+00:00",
+                "targetType": "user_profile",
+                "targetRevision": 1
+            }
+        ],
+        "hasMore": false
+    },
+    "blocks_closed": {
+        "profiles": [
+            {
+                "closed": true,
+                "nickname": null,
+                "avatarUrl": null,
+                "blockedAt": "2026-11-09T00:00:00+00:00",
+                "profileId": "7d000000-0000-4000-8000-000000000005"
+            }
+        ]
+    },
+    "report_replay": {
+        "id": "00000000-0000-4000-8000-000000000000",
+        "reported": true
+    },
+    "by_ref_signed_in": {
+        "dm": {
+            "status": "none",
+            "canSend": false,
+            "conversationId": null
+        },
+        "card": {
+            "bio": "응답 소개",
+            "links": [
+                "https://example.test/s2"
+            ],
+            "stats": {
+                "tier": "Bronze",
+                "hearts": 0,
+                "points": 0,
+                "stamps": 0,
+                "creator": {
+                    "name": "응답 크리에이터",
+                    "slug": "b6-response"
+                }
+            },
+            "favorite": {
+                "name": "응답 크리에이터",
+                "slug": "b6-response"
+            }
+        },
+        "reach": {
+            "artist": false,
+            "dmState": "available"
+        },
+        "isSelf": false,
+        "profile": {
+            "id": "7d000000-0000-4000-8000-000000000002",
+            "nickname": "s2",
+            "avatarUrl": "/images/avatars/star-pink.webp",
+            "accountLevel": {
+                "xp": 0,
+                "tier": "Bronze",
+                "status": "configured",
+                "progress": {
+                    "next": {
+                        "key": "silver-1",
+                        "rank": 2,
+                        "tier": "Silver",
+                        "subdivision": 1,
+                        "minimumScore": 15
+                    },
+                    "current": {
+                        "key": "bronze-1",
+                        "rank": 1,
+                        "tier": "Bronze",
+                        "subdivision": 1,
+                        "minimumScore": 0
+                    },
+                    "remaining": 15,
+                    "policyVersion": 2,
+                    "progressPercent": 0
+                },
+                "ruleVersion": "favorite-xp-sum-v1"
+            }
+        },
+        "favorite": null,
+        "activities": [
+        ],
+        "capabilities": {
+            "canBlock": true,
+            "canRequestDm": true,
+            "canRequestFriend": true
+        },
+        "relationship": {
+            "status": "none",
+            "friendshipId": null,
+            "celebritySlug": null
+        },
+        "commonFavorites": [
+        ],
+        "activityNextCursor": null,
+        "publicActivityCount": 0
+    },
+    "by_ref_signed_out": {
+        "card": {
+            "bio": "응답 소개",
+            "links": [
+                "https://example.test/s2"
+            ],
+            "stats": {
+                "tier": "Bronze",
+                "hearts": 0,
+                "points": 0,
+                "stamps": 0,
+                "creator": {
+                    "name": "응답 크리에이터",
+                    "slug": "b6-response"
+                }
+            },
+            "favorite": {
+                "name": "응답 크리에이터",
+                "slug": "b6-response"
+            }
+        },
+        "profile": {
+            "nickname": "s2",
+            "avatarUrl": "/images/avatars/star-pink.webp",
+            "accountLevel": {
+                "xp": 0,
+                "tier": "Bronze",
+                "status": "configured",
+                "progress": {
+                    "next": {
+                        "key": "silver-1",
+                        "rank": 2,
+                        "tier": "Silver",
+                        "subdivision": 1,
+                        "minimumScore": 15
+                    },
+                    "current": {
+                        "key": "bronze-1",
+                        "rank": 1,
+                        "tier": "Bronze",
+                        "subdivision": 1,
+                        "minimumScore": 0
+                    },
+                    "remaining": 15,
+                    "policyVersion": 2,
+                    "progressPercent": 0
+                },
+                "ruleVersion": "favorite-xp-sum-v1"
+            }
+        }
+    },
+    "conversations_decliner": {
+        "conversations": [
+        ]
+    },
+    "conversations_empty_user": {
+        "conversations": [
+        ]
+    },
+    "reach_sender_after_decline": {
+        "artist": false,
+        "dmState": "pending"
+    },
+    "by_ref_empty_user_signed_in": {
+        "dm": {
+            "status": "none",
+            "canSend": false,
+            "conversationId": null
+        },
+        "card": {
+            "bio": null,
+            "links": [
+            ],
+            "stats": null,
+            "favorite": null
+        },
+        "reach": {
+            "artist": false,
+            "dmState": "available"
+        },
+        "isSelf": false,
+        "profile": {
+            "id": "7d000000-0000-4000-8000-000000000003",
+            "nickname": "팬",
+            "avatarUrl": "/images/avatars/star-pink.webp",
+            "accountLevel": {
+                "xp": 0,
+                "tier": "Bronze",
+                "status": "configured",
+                "progress": {
+                    "next": {
+                        "key": "silver-1",
+                        "rank": 2,
+                        "tier": "Silver",
+                        "subdivision": 1,
+                        "minimumScore": 15
+                    },
+                    "current": {
+                        "key": "bronze-1",
+                        "rank": 1,
+                        "tier": "Bronze",
+                        "subdivision": 1,
+                        "minimumScore": 0
+                    },
+                    "remaining": 15,
+                    "policyVersion": 2,
+                    "progressPercent": 0
+                },
+                "ruleVersion": "favorite-xp-sum-v1"
+            }
+        },
+        "favorite": null,
+        "activities": [
+        ],
+        "capabilities": {
+            "canBlock": true,
+            "canRequestDm": true,
+            "canRequestFriend": true
+        },
+        "relationship": {
+            "status": "none",
+            "friendshipId": null,
+            "celebritySlug": null
+        },
+        "commonFavorites": [
+        ],
+        "activityNextCursor": null,
+        "publicActivityCount": 0
+    },
+    "by_ref_empty_user_signed_out": {
+        "card": {
+            "bio": null,
+            "links": [
+            ],
+            "stats": null,
+            "favorite": null
+        },
+        "profile": {
+            "nickname": "Fan",
+            "avatarUrl": "/images/avatars/star-pink.webp",
+            "accountLevel": {
+                "xp": 0,
+                "tier": "Bronze",
+                "status": "configured",
+                "progress": {
+                    "next": {
+                        "key": "silver-1",
+                        "rank": 2,
+                        "tier": "Silver",
+                        "subdivision": 1,
+                        "minimumScore": 15
+                    },
+                    "current": {
+                        "key": "bronze-1",
+                        "rank": 1,
+                        "tier": "Bronze",
+                        "subdivision": 1,
+                        "minimumScore": 0
+                    },
+                    "remaining": 15,
+                    "policyVersion": 2,
+                    "progressPercent": 0
+                },
+                "ruleVersion": "favorite-xp-sum-v1"
+            }
+        }
+    },
+    "conversations_sender_after_decline": {
+        "conversations": [
+            {
+                "id": "00000000-0000-4000-8000-000000000000",
+                "status": "outgoing_request",
+                "canSend": false,
+                "retryAt": null,
+                "nickname": "s4",
+                "avatarUrl": "/images/avatars/star-pink.webp",
+                "profileId": "7d000000-0000-4000-8000-000000000004",
+                "updatedAt": "2026-11-09T00:00:00+00:00",
+                "latestMessage": "response request"
+            }
+        ]
+    }
+}

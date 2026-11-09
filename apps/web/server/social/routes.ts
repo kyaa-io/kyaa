@@ -30,6 +30,35 @@ const reactionInput = z.object({ reaction: reaction.nullable(), requestId }).str
 const reportInput = z.object({ reason: z.enum(["spam", "harassment", "sexual", "hate", "other"]), details: z.string().trim().max(500).optional(), requestId }).strict();
 const blockInput = z.object({ profileId: uuid, requestId }).strict();
 const cursorSchema = z.object({ at: z.iso.datetime({ offset: true }), id: uuid }).strict();
+/** "The author of this content": a public reply never carries a member id, so a profile opens from what the viewer is looking at (B6). */
+export const profileRefSchema = z.discriminatedUnion("kind", [
+  z.object({ kind: z.literal("profile"), profileId: uuid }).strict(),
+  z.object({ kind: z.literal("fan_post"), id: uuid }).strict(),
+  z.object({ kind: z.literal("fan_post_comment"), id: uuid }).strict(),
+  z.object({ kind: z.literal("group_post"), id: uuid }).strict(),
+  z.object({ kind: z.literal("page_ranking"), slug: celebritySlugSchema, metric: z.enum(["fan_contribution", "dukjil"]), period: z.enum(["week", "month", "all"]), periodStart: z.iso.date(), computedAt: z.iso.datetime({ offset: true }), rank: z.number().int().min(1).max(1000) }).strict(),
+  z.object({ kind: z.literal("return"), token: uuid }).strict(),
+]);
+export type ProfileRef = z.infer<typeof profileRefSchema>;
+const contentRefSchema = z.discriminatedUnion("kind", [
+  z.object({ kind: z.literal("fan_post"), id: uuid }).strict(),
+  z.object({ kind: z.literal("fan_post_comment"), id: uuid }).strict(),
+  z.object({ kind: z.literal("group_post"), id: uuid }).strict(),
+]);
+export type ContentRef = z.infer<typeof contentRefSchema>;
+const returnRefInput = z.object({ ref: profileRefSchema }).strict();
+const refsOpenInput = z.object({ refs: z.array(contentRefSchema).min(1).max(50) }).strict();
+const profileReportInput = z.object({ ref: profileRefSchema, reason: z.enum(["spam", "harassment", "sexual", "hate", "other"]), details: z.string().trim().max(500).optional(), requestId }).strict();
+const returnRefSchema = z.object({ returnRef: uuid }).strict();
+const refsOpenSchema = z.object({ open: z.array(contentRefSchema).max(50) }).strict();
+const profileReportSchema = z.object({ id: uuid, reported: z.literal(true) }).strict();
+/** Signed out: the public card only. No member id, relationship, message state, capabilities or reach. */
+export const publicProfileByRefSchema = z.object({
+  profile: z.object({ nickname: z.string().min(1).max(80), avatarUrl: publicAvatarUrlSchema, accountLevel: mobileAccountLevelSchema }).strict(),
+  card: socialProfileCardSchema,
+}).strict();
+const closedBlocksSchema = z.object({ profiles: z.array(z.object({ profileId: uuid, closed: z.boolean(), nickname: z.string().min(1).max(80).nullable(), avatarUrl: publicAvatarUrlSchema.nullable(), blockedAt: z.iso.datetime({ offset: true }) }).strict()).max(1000) }).strict();
+function decodeRef(raw: string | null) { if (!raw) throw new SyntaxError("missing ref"); try { return profileRefSchema.parse(JSON.parse(Buffer.from(z.string().max(1000).parse(raw), "base64url").toString("utf8"))); } catch { throw new SyntaxError("invalid ref"); } }
 
 const favoriteSchema = z.object({ slug: celebritySlugSchema, name: z.string().min(1).max(120), imageUrl: z.string().min(1).max(2000), fanXp: z.number().int(), fanTier: z.string().min(1).max(40), verified: z.boolean() }).strict();
 export const socialProfileSchema = z.object({
@@ -49,7 +78,7 @@ function failure(error: unknown) {
   if (error instanceof AuthError) return json({ error: { code: "AUTHENTICATION_REQUIRED" } }, error.status);
   if (error instanceof z.ZodError || error instanceof SyntaxError) return json({ error: { code: "INVALID_REQUEST" } }, 400);
   const code = error instanceof Error ? error.message : "";
-  const status = ({ CONTENT_REJECTED: 400, PROFILE_INVALID_REQUEST: 400, SOCIAL_NOT_FOUND: 404, SOCIAL_FORBIDDEN: 403, SOCIAL_BLOCKED: 403, SOCIAL_CONFLICT: 409, SOCIAL_IDEMPOTENCY_CONFLICT: 409, SOCIAL_RATE_LIMITED: 429, SOCIAL_BODY_TOO_LARGE: 413, FAN_WEB_ACTIVE_ACCOUNT_REQUIRED: 403 } as Record<string, number>)[code];
+  const status = ({ CONTENT_REJECTED: 400, PROFILE_INVALID_REQUEST: 400, SOCIAL_NOT_FOUND: 404, SOCIAL_FORBIDDEN: 403, SOCIAL_BLOCKED: 403, SOCIAL_CONFLICT: 409, SOCIAL_STALE: 409, SOCIAL_IDEMPOTENCY_CONFLICT: 409, SOCIAL_RATE_LIMITED: 429, SOCIAL_BODY_TOO_LARGE: 413, FAN_WEB_ACTIVE_ACCOUNT_REQUIRED: 403 } as Record<string, number>)[code];
   return json({ error: { code: status ? code : "SOCIAL_UNAVAILABLE" } }, status ?? 503);
 }
 
@@ -79,6 +108,11 @@ async function card(deps: SocialDependencies, appUserId: string, profileId: stri
 function ownedFields(value: unknown) { const parsed = ownedFanProfilePublicSchema.safeParse(value); if (!parsed.success) throw new Error("SOCIAL_UNAVAILABLE"); return parsed.data; }
 function publicProfile(value: unknown) { const parsed = socialProfileSchema.parse(value); return { ...parsed, activityNextCursor: parsed.activityNextCursor ? Buffer.from(JSON.stringify(parsed.activityNextCursor)).toString("base64url") : null }; }
 async function owner(request: Request, deps: SocialDependencies) { return (await deps.authorize(request.headers.get("authorization"))).appUserId; }
+/** Signed out is a real answer here, not an error: no header means no viewer. A header that fails still asks to sign in. */
+async function optionalOwner(request: Request, deps: SocialDependencies) { return request.headers.has("authorization") ? owner(request, deps) : null; }
+/** A reply that breaks the contract is the server's fault, not the request's. */
+function checked<T>(schema: z.ZodType<T>, value: unknown) { const parsed = schema.safeParse(value); if (!parsed.success) throw new Error("SOCIAL_UNAVAILABLE"); return parsed.data; }
+const signedInByRefSchema = socialProfileSchema.extend({ reach: socialReachSchema.nullable(), card: socialProfileCardSchema.nullable() }).strict();
 
 export function createSocialHandlers(deps: SocialDependencies) {
   return {
@@ -102,7 +136,22 @@ export function createSocialHandlers(deps: SocialDependencies) {
     async listFriends(request: Request) { try { const url = new URL(request.url); const facts = z.enum(["facts"]).optional().parse(one(url, "fields") ?? undefined) === "facts"; return json(await deps.rpc(facts ? "read_owned_social_friends_facts" : "read_owned_social_friends", { p_app_user_id: await owner(request, deps), p_locale: locale.parse(one(url, "locale") ?? "ko") })); } catch (error) { return failure(error); } },
     async requestFriend(request: Request) { try { const input = friendInput.parse(await body(request)); return json(await deps.rpc("request_social_friend", { p_app_user_id: await owner(request, deps), p_profile_id: input.profileId, p_celebrity_slug: input.celebritySlug ?? null, p_request_id: input.requestId })); } catch (error) { return failure(error); } },
     async resolveFriend(request: Request, id: string) { try { const input = resolveInput.parse(await body(request)); return json(await deps.rpc("resolve_social_friend", { p_app_user_id: await owner(request, deps), p_friendship_id: uuid.parse(id), p_action: input.action, p_request_id: input.requestId })); } catch (error) { return failure(error); } },
-    async listBlocks(request: Request) { try { return json(await deps.rpc("read_owned_social_blocks", { p_app_user_id: await owner(request, deps) })); } catch (error) { return failure(error); } },
+    async listBlocks(request: Request) { try { const url = new URL(request.url); const closed = z.enum(["closed"]).optional().parse(one(url, "fields") ?? undefined) === "closed"; const appUserId = await owner(request, deps); return json(closed ? checked(closedBlocksSchema, await deps.rpc("read_owned_social_blocks_closed", { p_app_user_id: appUserId })) : await deps.rpc("read_owned_social_blocks", { p_app_user_id: appUserId })); } catch (error) { return failure(error); } },
+    /** GET /api/profiles/by-ref: the profile window from a content ref, signed in or out. Never writes. */
+    async profileByRef(request: Request) { try {
+      const url = new URL(request.url); const ref = decodeRef(one(url, "ref")); const profileLocale = locale.parse(one(url, "locale") ?? "ko");
+      const viewer = await optionalOwner(request, deps);
+      const result = await deps.rpc("read_social_profile_by_ref", { p_viewer: viewer, p_ref: ref, p_locale: profileLocale });
+      if (result === null) return json({ error: { code: "SOCIAL_NOT_FOUND" } }, 404);
+      if (viewer === null) return json(checked(publicProfileByRefSchema, result));
+      const parsed = checked(signedInByRefSchema, result);
+      return json({ ...parsed, activityNextCursor: parsed.activityNextCursor ? Buffer.from(JSON.stringify(parsed.activityNextCursor)).toString("base64url") : null });
+    } catch (error) { return failure(error); } },
+    /** POST /api/profiles/return-ref: signed out, before sign-in, so the same window opens afterwards. */
+    async issueReturnRef(request: Request) { try { const input = returnRefInput.parse(await body(request)); return json(checked(returnRefSchema, await deps.rpc("issue_social_profile_return_ref", { p_ref: input.ref }))); } catch (error) { return failure(error); } },
+    /** POST /api/profiles/refs-open: which authors on screen can be opened, so the rest stay plain text. */
+    async refsOpen(request: Request) { try { const input = refsOpenInput.parse(await body(request)); const viewer = await optionalOwner(request, deps); return json(checked(refsOpenSchema, await deps.rpc("read_social_profile_refs_open", { p_viewer: viewer, p_refs: input.refs }))); } catch (error) { return failure(error); } },
+    async reportProfile(request: Request) { try { const input = profileReportInput.parse(await body(request)); return json(checked(profileReportSchema, await deps.rpc("report_social_profile", { p_viewer: await owner(request, deps), p_ref: input.ref, p_reason: input.reason, p_details: input.details ?? null, p_request_id: input.requestId }))); } catch (error) { return failure(error); } },
     async block(request: Request) { try { const input = blockInput.parse(await body(request)); return json(await deps.rpc("block_social_profile", { p_app_user_id: await owner(request, deps), p_profile_id: input.profileId, p_request_id: input.requestId })); } catch (error) { return failure(error); } },
     async unblock(request: Request, profileId: string) { try { return json(await deps.rpc("unblock_social_profile", { p_app_user_id: await owner(request, deps), p_profile_id: uuid.parse(profileId) })); } catch (error) { return failure(error); } },
     async listConversations(request: Request) { try { return json(await deps.rpc("read_owned_dm_conversations", { p_app_user_id: await owner(request, deps) })); } catch (error) { return failure(error); } },
