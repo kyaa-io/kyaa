@@ -204,7 +204,8 @@ describe("published celebrity directory", () => {
     const block = mine.closest("section")!;
     expect(within(block).getAllByRole("article")).toHaveLength(1);
     expect(within(block).getByText("KARA", { selector: "strong" })).toBeInTheDocument();
-    const rest = screen.getByRole("heading", { name: "전체" }).closest("section")!;
+    expect(screen.queryByRole("heading", { name: "전체" })).not.toBeInTheDocument();
+    const rest = screen.getByRole("region", { name: "최애 목록" });
     expect(within(rest).getAllByRole("article")).toHaveLength(2);
     expect(within(rest).getByText("총 2개")).toBeInTheDocument();
     expect(fetch).toHaveBeenCalledWith("/api/passports?locale=ko&tierStages=1&view=directory", expect.objectContaining({ headers: { Authorization: "Bearer token" } }));
@@ -344,6 +345,7 @@ it("shows the empty state with a reset for a name search and restores every row"
   vi.unstubAllGlobals();
   render(<CelebrityDirectory celebrities={publishedCelebrityFixtures} locale="en" initialRole="creator" />);
   expect(screen.getAllByRole("article")).toHaveLength(2);
+  expect(screen.getByRole("heading", { name: "Creators" })).toBeInTheDocument();
   fireEvent.change(screen.getByRole("searchbox"), { target: { value: "Elina" } });
   expect(screen.getAllByRole("article")).toHaveLength(1);
   fireEvent.change(screen.getByRole("searchbox"), { target: { value: "KARA" } });
