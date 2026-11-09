@@ -1012,6 +1012,7 @@ export function SettingsScreen({ locale, initialSection = null, kakaoLoginEnable
     locale,
   });
 
+  if (ready && session.ready && !authenticated) return <FanAppFrame locale={locale} mainId="settings-content"><FanContentContainer as="main" className={styles.center} id="settings-content" tabIndex={-1}>{t.auth}</FanContentContainer></FanAppFrame>;
   if (!ready || !session.ready || state === "loading")
     return (
       <FanAppFrame locale={locale} mainId="settings-content"><FanContentContainer as="main" className={styles.center} id="settings-content" tabIndex={-1} aria-busy="true">
@@ -1019,7 +1020,6 @@ export function SettingsScreen({ locale, initialSection = null, kakaoLoginEnable
         {t.loading}
       </FanContentContainer></FanAppFrame>
     );
-  if (!authenticated) return <FanAppFrame locale={locale} mainId="settings-content"><FanContentContainer as="main" className={styles.center} id="settings-content" tabIndex={-1}>{t.auth}</FanContentContainer></FanAppFrame>;
   if (state === "profile_required")
     return (
       <FanAppFrame locale={locale} mainId="settings-content"><FanContentContainer as="main" className={styles.center} id="settings-content" tabIndex={-1}>

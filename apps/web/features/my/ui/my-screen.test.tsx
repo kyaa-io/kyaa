@@ -89,6 +89,15 @@ describe("unified MY hub", () => {
     expect(link).not.toHaveTextContent("카");
   });
 
+  it("ends the signed-in dashboard with a logout row", async () => {
+    vi.stubGlobal("fetch", vi.fn(async (input: RequestInfo | URL) =>
+      String(input).startsWith("/api/me/avatar") ? Response.json({ avatar: null }) : Response.json({ summary }),
+    ));
+    render(<MyScreen locale="ko" />);
+
+    expect(await screen.findByRole("button", { name: "로그아웃" })).toBeInTheDocument();
+  });
+
   it("renders a first-reaction favorite without manufacturing a fan tier", async () => {
     avatarOwner.id = "owner-a";
     const fetcher = vi.fn(async (input: RequestInfo | URL) => {

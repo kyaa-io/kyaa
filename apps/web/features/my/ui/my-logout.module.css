@@ -1,0 +1,13 @@
+.logout { min-width:0; border-top:1px solid var(--color-line); padding-top:var(--space-2); }
+.row { display:inline-flex; min-height:48px; align-items:center; gap:var(--space-2); margin-inline:calc(var(--space-3) * -1); padding:0 var(--space-3); border:0; border-radius:12px; background:transparent; color:var(--color-muted); font:inherit; font-size:15px; font-weight:400; line-height:1.4; cursor:pointer; transition:background-color 160ms ease, color 160ms ease; }
+.row svg { width:18px; height:18px; flex:0 0 auto; }
+.row:hover { background:#fff1f7; color:var(--color-ink); }
+.row:active { transform:scale(.97); }
+.row:focus-visible { outline:3px solid var(--color-ink); outline-offset:3px; }
+.backdrop { position:fixed; inset:0; z-index:100; display:grid; place-items:center; padding:20px; background:#17161b66; }
+.dialog { width:min(100%,360px); background:#fff; color:var(--color-ink); font-family:"Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif; border-radius:20px; padding:24px; box-shadow:0 18px 70px #17161b33; }
+.dialog h2 { margin:0 0 var(--space-6); font-size:20px; font-weight:800; line-height:1.4; }
+.dialog p { margin:0 0 var(--space-4); color:var(--color-muted); font-size:14px; }
+.actions { display:flex; flex-wrap:wrap; gap:var(--space-3); }
+.actions > * { flex:1 1 max-content; min-width:0; white-space:nowrap; }
+@media (prefers-reduced-motion: reduce) { .row { transition:none; } .row:active { transform:none; } }
