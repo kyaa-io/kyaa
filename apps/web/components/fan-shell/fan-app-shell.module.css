@@ -60,7 +60,7 @@
   .frame { padding-bottom: 0; }
 }
 @media (hover:hover) and (pointer:fine) {
-  .desktopNavItem:hover, .bottomNavigationItem:hover, .utilityLink:hover { background: var(--color-soft); color: var(--fan-ink); }
+  .desktopNavItem:hover, .bottomNavigationItem:hover, .utilityLink:hover { background: var(--color-accent-soft); color: var(--fan-ink); }
 }
 @media (prefers-reduced-motion:reduce) { .frame * { transition-duration: .01ms !important; } }
 
@@ -158,8 +158,9 @@
 
 /* Feedback F (2026-11-08): signed in, the right side is [status capsule][bell][avatar] — one soft pill holds tier · favorite · ♥N · P N
  * (each cell still its own destination). The language leaves the header from 768px (it is in the account menu); below 768px there is
- * no account menu, so it stays. Signed out nothing changes. */
-.statusCapsule { display: inline-flex; flex: 0 1 auto; align-items: center; min-width: 0; max-width: 288px; height: var(--min-target); padding-inline: var(--space-2); border-radius: var(--radius-pill); background: var(--color-soft); color: var(--color-ink); font-size: var(--fan-action-label-size); }
+ * no account menu, so it stays. Signed out nothing changes. User 2026-11-09 11:36 (mock 31 A): white pill + inset 1px hairline, no grey fill;
+ * the inset line keeps the 44px box and the layout unchanged. */
+.statusCapsule { display: inline-flex; flex: 0 1 auto; align-items: center; min-width: 0; max-width: 288px; height: var(--min-target); padding-inline: var(--space-2); border-radius: var(--radius-pill); background: var(--color-canvas); box-shadow: inset 0 0 0 1px var(--color-line); color: var(--color-ink); font-size: var(--fan-action-label-size); }
 .headerLanguage { display: contents; }
 @media (min-width: 48rem) { .headerLanguage[data-signed-in] { display: none; } }
 @media (min-width: 64rem) and (max-width: 74.999rem) { .statusCapsule { max-width: 224px; } }
