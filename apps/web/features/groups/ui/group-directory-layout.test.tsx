@@ -12,14 +12,12 @@ vi.mock('./use-group-resource',()=>({useGroupRequest:()=>({ready:true,authentica
 import {GroupDirectory} from './group-directory';
 beforeEach(()=>{state.urls.length=0;state.loading.clear();state.empty=false;state.authenticated=true;state.dialog.length=0;history.replaceState(null,'','/pages/groups');});
 afterEach(cleanup);
-const regions=()=>screen.getByRole('region',{name:'지금 주목할 페이지'});
 it.each(['?search=Ru','?type=fan','?type=hobby','?type=fan&artistRole=idol&search=Ru','?mine=joined','?type=brand&search=없음'])('keeps the area above the list for %s',query=>{
  history.replaceState(null,'',`/pages/groups${query}`);render(<GroupDirectory locale='ko'/>);
  expect(screen.getByRole('heading',{level:1,name:'팬페이지와 모임 찾기'})).toBeInTheDocument();
  expect(screen.getByTestId('banners')).toBeInTheDocument();
- expect(within(regions()).getAllByRole('link')).toHaveLength(3);
- // 7차 순서: 내 아티스트 → 얇은 배너 → Hot 게시글 → 페이지 둘러보기 → 내 페이지 → 지금 주목할 페이지.
- const order=[screen.getByTestId('my-artists'),screen.getByTestId('banners'),screen.getByTestId('hot-posts'),screen.getByRole('heading',{level:2,name:'페이지 둘러보기'}),screen.getByRole('heading',{level:2,name:'내 페이지'}),regions()];
+ // 순서: 내 아티스트 → 얇은 배너 → Hot 게시글 → 페이지 둘러보기 → 내 페이지.
+ const order=[screen.getByTestId('my-artists'),screen.getByTestId('banners'),screen.getByTestId('hot-posts'),screen.getByRole('heading',{level:2,name:'페이지 둘러보기'}),screen.getByRole('heading',{level:2,name:'내 페이지'})];
  order.slice(1).forEach((node,i)=>expect(order[i]!.compareDocumentPosition(node)&Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy());
  expect(screen.getByRole('heading',{level:2,name:'페이지 둘러보기'})).toBeInTheDocument();
  expect(screen.getByRole('button',{name:/^활동 분야/})).toBeInTheDocument();
@@ -29,11 +27,10 @@ it('draws the h1 with FanHeading so the one page-title size (26/800) applies',()
  const h1=screen.getByRole('heading',{level:1,name:'팬페이지와 모임 찾기'});
  expect(h1).toHaveAttribute('data-fan-heading','standard');
 });
-it('asks for the spotlight apart from the filters, so filtering re-reads the list only',()=>{
+it('reads the list only, so filtering re-reads one list and asks for no spotlight pages',()=>{
  render(<GroupDirectory locale='ko'/>);
- const spotlight=state.urls.find(url=>url.includes('sort=today'))!;expect(spotlight).toContain('type=fan');expect(spotlight).not.toContain('search');
  state.urls.length=0;fireEvent.click(screen.getByRole('button',{name:'브랜드'}));
- expect(new Set(state.urls.filter(url=>url.includes('sort=today')))).toEqual(new Set([spotlight]));
+ expect(state.urls.some(url=>url.includes('sort=today'))).toBe(false);
  expect(state.urls.some(url=>url.includes('type=brand')&&url.includes('limit=20'))).toBe(true);
 });
 it('keeps the previous cards busy at 0.6 while another filter loads, with no skeleton',()=>{

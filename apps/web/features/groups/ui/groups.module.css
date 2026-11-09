@@ -94,7 +94,6 @@
 
 /* Canonical asmGM / koi97 discovery composition. */
 .discoveryIntro{display:grid;gap:12px;margin:8px 0 32px}.discoveryIntro p{color:var(--color-muted);font-size:16px}
-.featured{padding:32px 0 0}.page .featured h2{margin:0 0 12px}.featured>div{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px}@media(max-width:767px){.featured{padding-top:24px}.page .featured h2{font-size:20px}.featured>div{grid-template-columns:1fr;gap:0}}
 .discoveryLayout{margin-top:40px}.discoveryHeading{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:12px}.discoveryHeading h2{margin:0}.discoveryAside{border-inline-start:1px solid var(--color-line-subtle);padding-inline-start:32px;display:grid;gap:32px;min-width:0}.discoveryAside h2,.discoveryAside h3{font-size:16px;line-height:1.4;margin:0 0 8px;font-weight:700}.discoveryAside p{font-size:13px;color:var(--color-muted);line-height:1.55}.discoveryAside section{display:grid;gap:12px;min-width:0}.discoveryAttendance a{width:100%}
 @media(max-width:1023px){.discoveryAside{border-inline-start:0;border-top:1px solid var(--color-line-subtle);padding:24px 0 0;gap:32px}.discoveryIntro{margin-top:0;gap:4px;margin-bottom:16px}.discoveryLayout{margin-top:24px}.discoveryAttendance{grid-template-columns:minmax(0,1fr) auto;align-items:center}.discoveryAttendance a{width:auto}.discoveryHeading h2{font-size:20px}}
 

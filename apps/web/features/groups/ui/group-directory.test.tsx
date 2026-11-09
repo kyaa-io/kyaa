@@ -1,22 +1,20 @@
 import {render,screen,within,fireEvent} from '@testing-library/react';
 import {expect,it,vi} from 'vitest';
 import {GroupDirectory} from './group-directory';
-const state=vi.hoisted(()=>({urls:[] as string[],pagination:false,owner:'owner',featuredMode:'ready',joinedMode:'ready',allLoading:false,withDataLoading:false,listEmpty:false,retry:vi.fn(),challenges:[] as string[]}));
+const state=vi.hoisted(()=>({urls:[] as string[],pagination:false,owner:'owner',joinedMode:'ready',allLoading:false,withDataLoading:false,listEmpty:false,retry:vi.fn(),challenges:[] as string[]}));
 vi.mock('@/features/group-wallet/ui/wallet-screen',()=>({WalletAttendanceDialog:({onClose}:{onClose:()=>void})=><div role='dialog'><button onClick={onClose}>닫기</button></div>}));
 vi.mock('next/navigation',()=>({useSearchParams:()=>new URLSearchParams(location.search)}));
 vi.mock('@/features/dukjil/ui/dukjil-provider',()=>({DukjilProvider:({children}:any)=>children,useDukjil:()=>null}));
 vi.mock('./group-shell',()=>({GroupShell:({children}:any)=><main>{children}</main>,GroupAvatar:()=>null}));
 vi.mock('./directory-top',()=>({MyArtists:()=>null,ThinCarousel:()=>null,HotPosts:()=>null}));
 vi.mock('@/features/rankings/ui/use-ranking-resource',()=>({useRankingResource:()=>({state:{status:'ready',data:{items:state.challenges.map(slug=>({slug,name:slug,imageUrl:null,title:'t',description:'',endsOn:null,count:1,target:100}))}},retry:()=>undefined})}));
-vi.mock('./use-group-resource',()=>({useGroupResource:(url:string)=>{state.urls.push(url);if(url?.includes('/applications/status'))return {ready:true,authenticated:true,ownerKey:state.owner,loading:false,error:false,retry:state.retry,data:{items:[]}};if(state.allLoading)return {ready:true,authenticated:true,ownerKey:state.owner,loading:true,error:false,retry:state.retry};if(url?.includes('sort=today')&&state.featuredMode!=='ready')return {ready:true,authenticated:true,ownerKey:state.owner,loading:state.featuredMode==='loading',error:state.featuredMode==='error',retry:state.retry,data:state.featuredMode==='empty'?{items:[],totalCount:0,nextCursor:null}:undefined};if(state.listEmpty&&!url?.includes('sort=today')&&!url?.includes('mine=joined'))return {ready:true,authenticated:true,ownerKey:state.owner,loading:false,error:false,retry:state.retry,data:{items:[],totalCount:0,nextCursor:null}};if(url?.includes('mine=joined')&&state.joinedMode==='empty')return {ready:true,authenticated:true,ownerKey:state.owner,loading:false,error:false,retry:state.retry,data:{items:[],totalCount:0,nextCursor:null}};if(url?.includes('mine=joined')&&state.joinedMode!=='ready')return {ready:true,authenticated:true,ownerKey:state.owner,loading:false,error:state.joinedMode==='error',retry:state.retry,data:undefined};const joined=state.pagination&&url?.includes('mine=joined');const cursor=joined&&url.includes('cursor=');return {ready:true,authenticated:true,ownerKey:state.owner,loading:state.withDataLoading,data:joined?{items:[{id:cursor?'next':'first',kind:'hobby',name:cursor?'Next page':'First page',memberCount:1}],totalCount:4,nextCursor:cursor?null:'eyJ2IjoxLCJzb3J0IjoidmlzaXRlZCJ9'}:{items:[{id:'brand',kind:'brand',name:'Original brand',memberCount:30},{id:'fan',kind:'fan',slug:'nchive',celebrityId:'verified-fixture',name:'Original artist',memberCount:20},{id:'hobby',kind:'hobby',name:'Original hobby',memberCount:10}],totalCount:3,nextCursor:null}};}}));
-it('separates fanpage and group labels without changing featured selection, order or identity links',()=>{
+vi.mock('./use-group-resource',()=>({useGroupResource:(url:string)=>{state.urls.push(url);if(url?.includes('/applications/status'))return {ready:true,authenticated:true,ownerKey:state.owner,loading:false,error:false,retry:state.retry,data:{items:[]}};if(state.allLoading)return {ready:true,authenticated:true,ownerKey:state.owner,loading:true,error:false,retry:state.retry};if(state.listEmpty&&!url?.includes('mine=joined'))return {ready:true,authenticated:true,ownerKey:state.owner,loading:false,error:false,retry:state.retry,data:{items:[],totalCount:0,nextCursor:null}};if(url?.includes('mine=joined')&&state.joinedMode==='empty')return {ready:true,authenticated:true,ownerKey:state.owner,loading:false,error:false,retry:state.retry,data:{items:[],totalCount:0,nextCursor:null}};if(url?.includes('mine=joined')&&state.joinedMode!=='ready')return {ready:true,authenticated:true,ownerKey:state.owner,loading:false,error:state.joinedMode==='error',retry:state.retry,data:undefined};const joined=state.pagination&&url?.includes('mine=joined');const cursor=joined&&url.includes('cursor=');return {ready:true,authenticated:true,ownerKey:state.owner,loading:state.withDataLoading,data:joined?{items:[{id:cursor?'next':'first',kind:'hobby',name:cursor?'Next page':'First page',memberCount:1}],totalCount:4,nextCursor:cursor?null:'eyJ2IjoxLCJzb3J0IjoidmlzaXRlZCJ9'}:{items:[{id:'brand',kind:'brand',name:'Original brand',memberCount:30},{id:'fan',kind:'fan',slug:'nchive',celebrityId:'verified-fixture',name:'Original artist',memberCount:20},{id:'hobby',kind:'hobby',name:'Original hobby',memberCount:10}],totalCount:3,nextCursor:null}};}}));
+it('separates fanpage and group labels without changing list order or identity links',()=>{
  history.replaceState(null,'','/pages/groups?type=all');
  render(<GroupDirectory locale='ko'/>);
- const featured=screen.getByRole('region',{name:'지금 주목할 페이지'});
- const links=within(featured).getAllByRole('link');
- expect(links.map(link=>link.textContent)).toEqual(['OrOriginal brand브랜드팬 30','Original artist팬페이지팬 20','OrOriginal hobby취미팬 10']);
- expect(links[1]).toHaveAttribute('href','/nchive?locale=ko');
- expect(state.urls.some(url=>url?.includes('sort=today')&&url?.includes('limit=3'))).toBe(true);
+ const [artist]=screen.getAllByRole('link',{name:/Original artist/});
+ expect(artist).toHaveAttribute('href','/nchive?locale=ko');
+ expect(state.urls.some(url=>url?.includes('sort=today'))).toBe(false);
  const groups=screen.getByRole('group',{name:'모임'});
  expect(within(groups).getByRole('button',{name:'취미'})).toBeInTheDocument();
  expect(within(groups).getByRole('button',{name:'브랜드'})).toBeInTheDocument();
@@ -54,39 +52,22 @@ it('pages the personal list and resets its cursor when the account changes',()=>
  state.pagination=false; state.owner='owner';
 });
 
-it('offers no favorite request anywhere, also when the spotlight is empty',()=>{
- history.replaceState(null,'','/pages/groups?type=all');state.featuredMode='empty';state.listEmpty=false;
+it('offers no favorite request anywhere',()=>{
+ history.replaceState(null,'','/pages/groups?type=all');state.listEmpty=false;
  const first=render(<GroupDirectory locale='ko'/>);
  expect(screen.queryByRole('link',{name:'최애 요청'})).toBeNull();
  first.unmount();state.listEmpty=true;
  render(<GroupDirectory locale='ko'/>);
  expect(screen.queryByText('최애 요청')).toBeNull();
  expect(screen.getAllByRole('button',{name:'팬페이지 개설 신청'})).toHaveLength(1);
- state.featuredMode='ready';state.listEmpty=false;
-});
-
-it('shows featured error and retries without changing other lists',()=>{
- history.replaceState(null,'','/pages/groups?type=all');
- state.featuredMode='error'; state.retry.mockClear();
- const view=render(<GroupDirectory locale='ko'/>);
- const featured=screen.getByRole('region',{name:'지금 주목할 페이지'});
- expect(within(featured).getByRole('alert')).toHaveTextContent('주목할 페이지를 불러오지 못했어요');
- fireEvent.click(within(featured).getByRole('button',{name:'다시 시도'}));
- expect(state.retry).toHaveBeenCalledOnce();
- state.featuredMode='ready';view.rerender(<GroupDirectory locale='ko'/>);
- expect(within(featured).getAllByRole('link')).toHaveLength(3);
- state.featuredMode='loading';view.rerender(<GroupDirectory locale='ko'/>);
- expect(within(featured).getByRole('status')).toHaveAttribute('aria-label','불러오는 중');
- state.featuredMode='empty';view.rerender(<GroupDirectory locale='ko'/>);
- expect(within(featured).getByText('아직 표시할 페이지가 없어요.')).toBeInTheDocument();
- state.featuredMode='ready';
+ state.listEmpty=false;
 });
 
 it('renders initial geometry as busy status without exposing decorative shapes',()=>{
  history.replaceState(null,'','/pages/groups?type=all');state.allLoading=true;
  render(<GroupDirectory locale='ko'/>);
  const skeletons=screen.getAllByRole('status',{name:'불러오는 중'});
- expect(skeletons).toHaveLength(3);
+ expect(skeletons).toHaveLength(2);
  for(const skeleton of skeletons){expect(skeleton).toHaveAttribute('aria-busy','true');expect(skeleton.querySelector('[aria-hidden=true]')).toBeInTheDocument();}
  state.allLoading=false;
 });
@@ -94,24 +75,21 @@ it('renders initial geometry as busy status without exposing decorative shapes',
 it('keeps existing same-key data visible while refreshing',()=>{
  history.replaceState(null,'','/pages/groups?type=all');state.withDataLoading=true;
  render(<GroupDirectory locale='ko'/>);
- expect(within(screen.getByRole('region',{name:'지금 주목할 페이지'})).getAllByRole('link')).toHaveLength(3);
  expect(screen.queryAllByRole('status',{name:'불러오는 중'})).toHaveLength(0);
  state.withDataLoading=false;
 });
 
-it('names the failed area in each error and omits an unknown personal-page count',()=>{
+it('names the failed area in the error and omits an unknown personal-page count',()=>{
  history.replaceState(null,'','/pages/groups?type=all');
- state.featuredMode='error';state.joinedMode='error';state.retry.mockClear();
+ state.joinedMode='error';state.retry.mockClear();
  const view=render(<GroupDirectory locale='ko'/>);
- const featured=screen.getByRole('region',{name:'지금 주목할 페이지'});
- expect(within(featured).getByRole('alert')).toHaveTextContent('주목할 페이지를 불러오지 못했어요');
  const joinedAlert=screen.getAllByRole('alert').find(node=>node.textContent?.includes('내 페이지를 불러오지 못했어요'))!;
  expect(joinedAlert).toHaveTextContent('잠시 뒤 다시 시도해 주세요.');
  expect(within(joinedAlert).getByRole('button',{name:'다시 시도'})).toBeInTheDocument();
  expect(screen.queryByText('최근 방문순')).toBeNull();
  const all=screen.getByRole('link',{name:/내 페이지 전체 보기/});
  expect(all).toHaveTextContent(/^전체 보기$/);
- state.featuredMode='ready';state.joinedMode='nodata';view.rerender(<GroupDirectory locale='ko'/>);
+ state.joinedMode='nodata';view.rerender(<GroupDirectory locale='ko'/>);
  expect(screen.getByRole('link',{name:/내 페이지 전체 보기/})).toHaveTextContent(/^전체 보기$/);
  state.joinedMode='ready';state.pagination=true;view.rerender(<GroupDirectory locale='ko'/>);
  expect(screen.getByRole('link',{name:/내 페이지 전체 보기/})).toHaveTextContent('전체 보기 · 4');
@@ -146,14 +124,14 @@ it('shows an illustrated status empty state for zero joined pages, apart from al
  state.joinedMode='ready';history.replaceState(null,'','/pages/groups?type=all');
 });
 
-it('lists every page type on the all tab and asks for fans before filling the spotlight',()=>{
+it('lists every page type on the all tab and reads no spotlight pages',()=>{
  history.replaceState(null,'','/pages/groups');state.urls.length=0;
  render(<GroupDirectory locale='ko'/>);
  expect(screen.queryByRole('region',{name:/^팬페이지$/})).toBeNull();
  expect(state.urls.some(url=>url?.includes('type=fan')&&url?.includes('limit=6'))).toBe(false);
  expect(state.urls.some(url=>url?.includes('type=all')&&url?.includes('limit=20'))).toBe(true);
  expect(state.urls.some(url=>url?.includes('type=nonfan'))).toBe(false);
- expect(state.urls.some(url=>url?.includes('type=fan')&&url?.includes('sort=today')&&url?.includes('limit=3'))).toBe(true);
+ expect(state.urls.some(url=>url?.includes('sort=today'))).toBe(false);
  history.replaceState(null,'','/pages/groups?type=hobby');state.urls.length=0;
  render(<GroupDirectory locale='ko'/>);
  expect(state.urls.some(url=>url?.includes('limit=6'))).toBe(false);
@@ -180,23 +158,12 @@ it('reports a re-read to Next only when the filter write passes a state without 
  wrapper.mockRestore();
 });
 
-it('shows only pages in the spotlight even when discovery banners exist',()=>{
- history.replaceState(null,'','/pages/groups?type=all');
- const banner={id:'b',kind:'announcement',title:'가이드 배너',description:'',ctaLabel:'보기',href:'/guide/jjinfan',alt:'대체',category:'guide',desktopImage:{id:'a',url:'/x.webp',width:1638,height:819,mimeType:'image/webp',revision:1},mobileImage:null} as any;
- render(<GroupDirectory locale='ko' banners={[banner]}/>);
- const region=screen.getByRole('region',{name:'지금 주목할 페이지'});
- expect(within(region).queryByRole('img')).toBeNull();expect(within(region).queryByText('가이드 배너')).toBeNull();
- expect(within(region).getAllByRole('link').length).toBe(3);
- expect(within(region).getAllByRole('link').some(link=>link.getAttribute('href')?.startsWith('/guide'))).toBe(false);
-});
-
 it('tags a fan page whose 찐팬 100 challenge is on, and not the group pages',()=>{
  state.challenges=['nchive'];
  history.replaceState(null,'','/pages/groups?type=all');
  render(<GroupDirectory locale='ko'/>);
- const featured=screen.getByRole('region',{name:'지금 주목할 페이지'});
- const links=within(featured).getAllByRole('link');
- expect(links[1]).toHaveTextContent('찐팬 100 도전 중');
- expect(within(featured).getAllByText('찐팬 100 도전 중')).toHaveLength(1);
+ const list=screen.getByRole('region',{name:'페이지 둘러보기'});
+ expect(within(list).getByRole('link',{name:/Original artist/})).toHaveTextContent('찐팬 100 도전 중');
+ expect(within(list).getAllByText('찐팬 100 도전 중')).toHaveLength(1);
  state.challenges=[];
 });

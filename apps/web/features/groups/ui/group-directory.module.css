@@ -1,5 +1,3 @@
-/* Same-row cards share a height (grid stretch); FanEntityCard fills its cell. */
-.cards { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); align-items: stretch; gap: var(--space-3); min-width: 0; }
 .refreshing { opacity: 0.6; transition: opacity 120ms linear; }
 .attendanceAction { display: block; }
 .attendanceAction > a { width: 100%; }
@@ -10,8 +8,6 @@
 .myApplicationCopy { display: grid; flex: 1; min-width: 0; font-size:var(--fan-description-size); line-height: 20px; }
 .myApplicationCopy strong { font-weight: 700; }
 .myApplicationCopy span { overflow: hidden; color: var(--color-muted); text-overflow: ellipsis; white-space: nowrap; }
-@media (max-width: 1023px) { .cards { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-@media (max-width: 600px) { .cards { grid-template-columns: minmax(0, 1fr); } }
 /* L5 directory grid (2026-11-09, Weverse artist picker on Mobbin: 3 square tiles a row, 12px apart). 4 from 600px, 5 from 768px, about 168px tiles beside the side column from 1024px. */
 .list { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); column-gap: var(--space-3); row-gap: var(--space-5); min-width: 0; }
 @media (min-width: 600px) { .list { grid-template-columns: repeat(4, minmax(0, 1fr)); } }

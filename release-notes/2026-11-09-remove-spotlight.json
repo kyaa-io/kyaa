@@ -1,0 +1,8 @@
+{
+  "changes": [
+    "모임 화면에서 '지금 주목할 페이지' 구간을 없앴어요. 페이지 둘러보기 목록 아래가 바로 이어져요.",
+    "첨부한 화면은 예시 데이터를 넣은 로컬 확인 화면이에요."
+  ],
+  "path": "/pages/groups",
+  "images": ["release-notes/images/2026-11-09-remove-spotlight-after-1440.png"]
+}

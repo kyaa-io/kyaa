@@ -1,5 +1,5 @@
 import {beforeEach,expect,it,vi} from 'vitest';
- it('adds the home guide banners to the discovery slides and passes no separate spotlight banners',async()=>{
+ it('adds the home guide banners to the discovery slides and passes no separate featured banners',async()=>{
  const group=[{id:'g',category:'group'},{id:'gg',category:'guide'}],home=[{id:'we',category:'announcement'},{id:'guide',category:'guide'},{id:'gg',category:'guide'}];
  list.mockImplementation(async(_l:string,p:string)=>p==='groups'?group:home);
  const result=await Page({searchParams:Promise.resolve({})});
