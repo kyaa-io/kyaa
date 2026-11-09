@@ -40,14 +40,14 @@ test('SQL groups are disjoint, retain setup, and do not wait for unrelated API o
   assert.equal(jobs.database.strategy['fail-fast'], false);
   assert.deepEqual(jobs.database.strategy.matrix.suite, ['core', 'live', 'events', 'economy']);
   const grouped = jobs.database.steps.filter(step => step.if);
-  assert.equal(grouped.length, 30);
+  assert.equal(grouped.length, 33);
   const counts = { core: 0, live: 0, events: 0, economy: 0 };
   for (const step of grouped) {
     const group = /^matrix\.suite == '(core|live|events|economy)'$/.exec(step.if)?.[1];
     assert.ok(group, step.name);
     counts[group]++;
   }
-  assert.deepEqual(counts, { core: 10, live: 1, events: 10, economy: 9 });
+  assert.deepEqual(counts, { core: 13, live: 1, events: 10, economy: 9 });
   assert.match(grouped.find(step => step.if === "matrix.suite == 'live'").run, /bash scripts\/verify-live-participation.sh/);
   // The economy replays run four at a time; all twelve stay listed, each on its own port, and a failing one fails the step.
   const replays = grouped.find(step => /one clean replay each/.test(step.name)).run;
