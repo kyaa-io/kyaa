@@ -438,11 +438,26 @@ end $$;
 insert into public.group_pages(id, kind, name, status) values ('b8000000-0000-4000-8000-0000000000a6', 'hobby', 'b8 큰 페이지', 'published');
 insert into public.app_users(id, privy_user_id, verified_email, status) select ('b8000000-0000-4000-8003-' || lpad(to_hex(g), 12, '0'))::uuid, 'did:privy:b8-big-' || g, 'b8-big-' || g || '@example.test', 'active' from generate_series(1, 20001) g;
 insert into public.group_memberships(page_id, app_user_id, role) select 'b8000000-0000-4000-8000-0000000000a6', ('b8000000-0000-4000-8003-' || lpad(to_hex(g), 12, '0'))::uuid, case when g = 1 then 'owner' else 'member' end from generate_series(1, 20001) g;
-do $$ declare t0 timestamptz := clock_timestamp(); begin
-  perform pg_temp.expect(pg_temp.err(format('select pg_temp.gd(%L,%L,%L)', 'operator-members-export', 'b8000000-0000-4000-8003-000000000001', 'b8000000-0000-4000-8000-0000000000a6')) = 'GROUPS_EXPORT_TOO_LARGE', '중간3 20,001행 CSV 413');
-  perform pg_temp.expect((select count(*) from public.group_member_exports where page_id = 'b8000000-0000-4000-8000-0000000000a6') = 0, '중간3 거절은 기록·몫 없음');
+do $$ declare t0 timestamptz := clock_timestamp(); r jsonb; owner uuid := 'b8000000-0000-4000-8003-000000000001'; big uuid := 'b8000000-0000-4000-8000-0000000000a6'; begin
+  r := pg_temp.gd('operator-members-export', owner, big);
+  perform pg_temp.expect(r = '{"error":"GROUPS_EXPORT_TOO_LARGE"}'::jsonb, '중간3 20,001행 CSV는 값으로 거절(라우트 413)', r::text);
   perform pg_temp.expect(clock_timestamp() - t0 < interval '5 seconds', '중간3 행마다의 집계 전에 거절(5초 안)', (clock_timestamp() - t0)::text);
-  perform pg_temp.expect(jsonb_array_length(pg_temp.gd('operator-members-export', 'b8000000-0000-4000-8003-000000000001', 'b8000000-0000-4000-8000-0000000000a6', '{"search":"없는닉"}')->'items') = 0, '중간3 거른 결과가 상한 안이면 내보낸다');
+  perform pg_temp.expect((select count(*) from public.group_member_exports where page_id = big and row_count = 20001 and filter->>'outcome' = 'too_large') = 1
+    and (select count(*) from public.audit_logs where action = 'group_members.export' and entity_id = big::text and (before_after_summary->>'tooLarge')::boolean and (before_after_summary->>'rowCount')::int = 20001) = 1,
+    '재확인 CSV가 실패해도 시도 기록·감사 1행이 남는다');
+  perform pg_temp.expect(pg_temp.err(format('select pg_temp.gd(%L,%L,%L)', 'operator-members-export', owner, big)) = 'GROUPS_RATE_LIMITED', '재확인 실패 뒤에도 10분 제한 유지(두 번째 429)');
+end $$;
+-- 정상 내보내기에서 기록 행 수·감사 행 수·돌려준 행 수가 같은 집합에서 나온다
+do $$ declare r jsonb; o2 uuid := 'b8000000-0000-4000-8000-00000000000a'; pg uuid := 'b8000000-0000-4000-8000-0000000000a8'; begin
+  insert into public.group_pages(id, kind, name, status) values (pg, 'hobby', 'b8 일치', 'published');
+  insert into public.group_memberships(page_id, app_user_id, role) values (pg, o2, 'owner');
+  insert into public.group_memberships(page_id, app_user_id) select pg, ('b8000000-0000-4000-8002-' || lpad(to_hex(g), 12, '0'))::uuid from generate_series(1, 25) g;
+  r := pg_temp.gd('operator-members-export', o2, pg);
+  perform pg_temp.expect((r->>'rowCount')::int = jsonb_array_length(r->'items')
+    and (select row_count from public.group_member_exports where page_id = pg) = (r->>'rowCount')::int
+    and (select (before_after_summary->>'rowCount')::int from public.audit_logs where action = 'group_members.export' and entity_id = pg::text) = (r->>'rowCount')::int
+    and (select filter->>'outcome' from public.group_member_exports where page_id = pg) = 'exported', '재확인 rowCount = items = 기록 row_count = 감사 rowCount', r->>'rowCount');
+  perform pg_temp.expect(pg_temp.err(format('select pg_temp.gd(%L,%L,%L)', 'operator-members-export', o2, pg)) = 'GROUPS_RATE_LIMITED', '재확인 성공(라우트가 CSV를 못 만들어도) 뒤 10분 제한');
 end $$;
 
 -- B1·B2·B3·B4: 권한 경계
@@ -458,7 +473,7 @@ begin
     perform pg_temp.expect((select relrowsecurity and relforcerowsecurity from pg_class where oid = ('public.' || t)::regclass), 'B1 enable+force RLS ' || t);
   end loop;
   foreach fn in array array['group_operator_role(uuid,uuid)','group_operator_require(uuid,uuid)','group_operator_consume_read(uuid,uuid,text)','group_operator_read_limit()',
-      'group_role_audit_capture()','group_operator_members_dispatch(text,uuid,uuid,jsonb)','group_operator_member_rows(uuid,uuid,text,text)','group_mission_stats_read(uuid,uuid,jsonb)','run_group_notice_broadcasts(integer,text)',
+      'group_role_audit_capture()','group_operator_members_dispatch(text,uuid,uuid,jsonb)','group_operator_member_rows(uuid,uuid,text,text)','group_operator_member_item(uuid,uuid,text,timestamp with time zone,text,integer)','group_mission_stats_read(uuid,uuid,jsonb)','run_group_notice_broadcasts(integer,text)',
       'group_notice_broadcast_batch(uuid,integer,text)','group_notice_broadcast_enabled()','groups_dispatch_before_operator_access(text,uuid,uuid,uuid,jsonb,uuid)',
       'groups_content_dispatch_before_notice_broadcast(text,uuid,uuid,uuid,jsonb,uuid)','group_activities_dispatch_before_mission_stats(text,uuid,uuid,uuid,uuid,jsonb,uuid)'] loop
     foreach rl in array array['anon','authenticated','service_role'] loop
@@ -466,7 +481,7 @@ begin
     end loop;
   end loop;
   foreach fn in array array['group_operator_role(uuid,uuid)','group_operator_require(uuid,uuid)','group_operator_consume_read(uuid,uuid,text)','group_role_audit_capture()',
-      'group_operator_members_dispatch(text,uuid,uuid,jsonb)','group_operator_member_rows(uuid,uuid,text,text)','group_mission_stats_read(uuid,uuid,jsonb)','run_group_notice_broadcasts(integer,text)','group_notice_broadcast_batch(uuid,integer,text)',
+      'group_operator_members_dispatch(text,uuid,uuid,jsonb)','group_operator_member_rows(uuid,uuid,text,text)','group_operator_member_item(uuid,uuid,text,timestamp with time zone,text,integer)','group_mission_stats_read(uuid,uuid,jsonb)','run_group_notice_broadcasts(integer,text)','group_notice_broadcast_batch(uuid,integer,text)',
       'group_notice_broadcast_enabled()','groups_dispatch(text,uuid,uuid,uuid,jsonb,uuid)','groups_content_dispatch(text,uuid,uuid,uuid,jsonb,uuid)',
       'group_activities_dispatch(text,uuid,uuid,uuid,uuid,jsonb,uuid)','fan_web_notification_path(uuid,uuid)','fan_web_notification_kind(text)',
       'enqueue_due_notification_maintenance(timestamp with time zone)','group_notice_broadcast_post_removed()'] loop

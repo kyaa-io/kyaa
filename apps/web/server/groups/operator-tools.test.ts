@@ -82,6 +82,12 @@ describe("B8 member CSV", () => {
     const s = setup(); s.rpc.mockRejectedValue(new Error(code));
     expect((await s.handler("operator-members-export", get("/api"), { id: page })).status).toBe(status);
   });
+  it("an over-limit export answered as a value (record kept in SQL) is a 413", async () => {
+    const s = setup({ error: "GROUPS_EXPORT_TOO_LARGE" });
+    const r = await s.handler("operator-members-export", get("/api"), { id: page });
+    expect(r.status).toBe(413);
+    expect(await r.json()).toEqual({ error: { code: "GROUPS_EXPORT_TOO_LARGE" } });
+  });
   it("rejects an unknown locale", async () => { const s = setup(); expect((await s.handler("operator-members-export", get("/api?locale=xx"), { id: page })).status).toBe(400); });
 });
 

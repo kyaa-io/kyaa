@@ -143,7 +143,10 @@ export function createGroupHandler(deps: FanpageDependencies) {
           return read.success ? Response.json(read.data, { headers }) : groupsUnavailable();
         }
         const locale = z.enum(APP_LOCALES).parse(one("locale") ?? "ko");
-        const read = groupOperatorMembersExportSchema.safeParse(await deps.rpc("groups_dispatch", { p_operation: operation, p_actor: owner, p_page_id: pageId, p_item_id: null, p_input: input, p_admin_id: null }));
+        const exported = await deps.rpc("groups_dispatch", { p_operation: operation, p_actor: owner, p_page_id: pageId, p_item_id: null, p_input: input, p_admin_id: null });
+        // Over 20,000 rows the RPC answers a value, not an exception, so the attempt and its 10-minute limit stay recorded.
+        if (z.object({ error: z.literal("GROUPS_EXPORT_TOO_LARGE") }).strict().safeParse(exported).success) return Response.json({ error: { code: "GROUPS_EXPORT_TOO_LARGE" } }, { status: 413, headers });
+        const read = groupOperatorMembersExportSchema.safeParse(exported);
         if (!read.success) return groupsUnavailable();
         const copy = operatorToolsCopy(locale);
         const csv = groupMembersCsv(read.data, { nickname: copy.nickname, joinedAt: copy.joined, hearts: copy.hearts, missions: copy.missions, lastActive: copy.lastActive });
