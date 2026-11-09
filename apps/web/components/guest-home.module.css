@@ -88,7 +88,7 @@
 .carouselControls > .carouselPrevious { left: 0; }
 .carouselControls > .carouselNext { right: 0; }
 .carouselControls > .carouselPrevious::before, .carouselControls > .carouselNext::before { border-color: var(--line); background: var(--color-soft); }
-.carouselControls > .carouselPrevious:hover::before, .carouselControls > .carouselNext:hover::before { background: var(--line); }
+.carouselControls > .carouselPrevious:hover::before, .carouselControls > .carouselNext:hover::before { background: var(--fan-action-neutral-active-bg); }
 .carouselDots { position: absolute; bottom: -42px; left: 50%; display: flex; width: min(var(--carousel-width), 100%); height: 44px; overflow-x: auto; overflow-y: hidden; align-items: center; justify-content: safe center; scrollbar-width: none; transform: translateX(-50%); pointer-events: auto; }
 .carouselControls .carouselDot { position: relative; display: grid; width: 44px; min-width: 44px; height: 44px; flex: 0 0 44px; padding: 0; place-items: center; border: 0; background: transparent; cursor: pointer; }
 /* 현재 점은 22px 막대: 폭 전이 대신 위에 겹친 막대의 transform·opacity만 움직인다(합성 단계, 배치 변화 0). 버튼이 44px라 이웃 점은 움직이지 않는다. */
