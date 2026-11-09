@@ -75,6 +75,8 @@ AWS dev 배포의 `release` 작업이 성공하면 같은 실행의 `DEV deploym
 
 전송 예약과 결과는 `Telegram deployment notice · DEV` check에 별도로 남는다. 같은 deployment의 성공 receipt는 재전송하지 않으며, 결과 불명은 `action_required`로 남기고 자동 재시도를 막는다. 해당 방과 check를 확인하지 않고 receipt를 삭제하거나 재실행하지 않는다. 전송 실패는 서비스 배포 성공과 별개로 표시한다.
 
+DEV receipt가 결과 불명(`action_required`)으로 남으면 `Deployment notices` 수동 실행에서 `environment`를 `dev`로 두고 `AWS dev` deployment ID를 넣는다. 운영과 같이 방을 확인해 미전송이 확실할 때만 `unsent_receipt_id`와 `inspection_evidence`를 입력한다. receipt 이름이 `Telegram deployment notice · DEV`이고 같은 커밋이며 github-actions가 만든 것만 받는다. 이 복구는 그 커밋이 아직 dev에 반영 중일 때만 전송한다. 결과 불명 receipt는 해당 deployment의 재전송만 막으며 다음 DEV 배포의 안내는 막지 않는다.
+
 GitHub `dev` Environment의 `TELEGRAM_BUG_REPORT_OPERATOR_SECRET`과 dev 런타임의 동일한 operator secret·`TELEGRAM_BUG_REPORT_BOT_TOKEN`이 필요하다. 봇 키는 기존 서버 런타임에서만 사용하며 CI에 복사하지 않는다. DEV 전송 요청은 dev의 내부 endpoint로 보내므로 운영 배포가 선행 조건이 아니다.
 
 검증: `node --test scripts/dev-deployment-notices.test.mjs scripts/deployment-notices.test.mjs`, `npm run test:web -- server/telegram/deployment-notice.test.ts`.

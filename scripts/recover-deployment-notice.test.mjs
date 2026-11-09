@@ -29,11 +29,14 @@ test('manual recovery shares the production lock and keeps inputs out of shell c
   const {readFileSync} = await import('node:fs'); const {load} = await import('js-yaml');
   const workflow = load(readFileSync('.github/workflows/deployment-notices.yml','utf8'));
   const job = workflow.jobs.recover;
-  assert.match(job.if,/refs\/heads\/main/); assert.equal(job.environment,'prod');
-  assert.equal(job.concurrency.group,'telegram-production-notices'); assert.equal(job.concurrency['cancel-in-progress'],false);
+  assert.match(job.if,/refs\/heads\/main/);
+  assert.equal(job.environment,"${{ inputs.environment == 'dev' && 'dev' || 'prod' }}");
+  assert.equal(job.concurrency.group,"${{ inputs.environment == 'dev' && 'aws-release-dev' || 'telegram-production-notices' }}"); assert.equal(job.concurrency['cancel-in-progress'],false);
+  assert.deepEqual(workflow.on.workflow_dispatch.inputs.environment.options,['prod','dev']); assert.equal(workflow.on.workflow_dispatch.inputs.environment.default,'prod');
   assert.equal(job.permissions.checks,'write');
   const step = job.steps.at(-1);
   assert.equal(step.run,'node scripts/recover-deployment-notice.mjs');
+  assert.equal(step.env.NOTICE_ENVIRONMENT,'${{ inputs.environment }}');
   assert.equal(step.env.NOTICE_INSPECTION_EVIDENCE,'${{ inputs.inspection_evidence }}');
 });
 
@@ -44,4 +47,25 @@ test('Wave recovery accepts only its matching receipt name and environment', asy
   if(name.endsWith('kyaa wave')){await reconcileUnsentReceipt(options);assert.equal(writes.length,1);}
   else {await assert.rejects(reconcileUnsentReceipt(options),/INVALID_RECEIPT/);assert.equal(writes.length,0);}
  }
+});
+
+const devReceipt={...check,name:'Telegram deployment notice · DEV'};
+function devHarness(receipt=devReceipt,deployment={}){
+ const {options,writes}=harness(receipt),original=options.github;
+ options.github=async(path,init)=>!init&&path.startsWith('/deployments/')?{sha,environment:'AWS dev',creator:{login:'github-actions[bot]'},...deployment}:original(path,init);
+ return {options,writes};
+}
+test('DEV recovery accepts only the DEV receipt of the same commit created by github-actions',async()=>{
+ const ok=devHarness(); await reconcileUnsentReceipt(ok.options); assert.equal(ok.writes.length,1); assert.equal(ok.writes[0].conclusion,'failure');
+ for(const [receipt,deployment] of [
+  [{...devReceipt,name:'Telegram deployment notice'},{}],
+  [{...devReceipt,name:'Telegram deployment notice · kyaa wave'},{}],
+  [devReceipt,{environment:'AWS staging'}],
+  [{...devReceipt,head_sha:'b'.repeat(40)},{}],
+  [{...devReceipt,app:{slug:'other'}},{}],
+  [devReceipt,{creator:{login:'someone'}}],
+ ]) { const {options,writes}=devHarness(receipt,deployment); await assert.rejects(reconcileUnsentReceipt(options),/INVALID_RECEIPT/); assert.equal(writes.length,0); }
+});
+test('production receipt name is rejected for a DEV-named receipt and unknown environments stay refused',async()=>{
+ const {options,writes}=harness({...check,name:'Telegram deployment notice · DEV'}); await assert.rejects(reconcileUnsentReceipt(options),/INVALID_RECEIPT/); assert.equal(writes.length,0);
 });
