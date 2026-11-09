@@ -28,6 +28,7 @@ import { groupBenefitsCopy } from "./group-benefits-copy";
 import { seeAllLabel } from "./group-directory";
 import { groupsCopy } from "./copy";
 import { useGroupResource } from "./use-group-resource";
+import { CapsuleMachineBlock } from "@/features/capsule-machine/capsule-machine-block";
 import styles from "./stan-lucky-cheer.module.css";
 
 type Raffle = RaffleList["raffles"][number];
@@ -166,6 +167,7 @@ export function StanLucky({ locale, bias, guest }: { locale: AppLocale; bias: Se
     })}</ul>;
   return <section className={styles.section} id="stan-lucky" tabIndex={-1} aria-labelledby="stan-lucky-title">
     <div className={styles.head}><FanHeading id="stan-lucky-title">{title}</FanHeading><FanCount value={raffles.live} />{more}</div>
+    <CapsuleMachineBlock locale={locale} guest={guest} />
     {body}
   </section>;
 }
