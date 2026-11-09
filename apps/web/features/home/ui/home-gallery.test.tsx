@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import page from "@/server/home-gallery/fixtures/read_public_home_gallery_photos.json";
+import relativePage from "@/server/home-gallery/fixtures/read_public_home_gallery_photos_relative.json";
 import shortsRows from "@/server/home-gallery/fixtures/read_public_home_shorts.json";
 import { homeShortsSchema, type HomeGalleryPhoto } from "@/features/home/domain/home-gallery";
 import { allocateGalleryColumns, homeGalleryLayouts } from "./home-gallery-layout";
@@ -25,6 +26,32 @@ describe("gallery column allocation", () => {
       }
       expect(placed).toBeLessThan(many.length);
       expect(columns.flat()).toHaveLength(placed);
+    }
+  });
+  it("fits a relative landscape photo only when column budget permits and preserves its natural ratio", () => {
+    const relative = relativePage.items as HomeGalleryPhoto[];
+    const portrait = relative.filter(item => item.image.height > item.image.width);
+    const landscape = relative.filter(item => item.image.width > item.image.height);
+    expect(relative).toHaveLength(9);
+    expect(landscape).toHaveLength(1);
+    for (const layout of Object.values(homeGalleryLayouts)) {
+      const squares = Array.from({ length: layout.columns }, (_, i) => photo(i, 1000, 1000));
+      const before = allocateGalleryColumns(squares, layout);
+      const after = allocateGalleryColumns([...squares, ...landscape], layout);
+      expect(after.placed).toBe(before.placed + 1);
+      const portraitsFirst = allocateGalleryColumns([...portrait, ...landscape], layout);
+      expect(portraitsFirst.placed).toBe(layout.columns + (layout === homeGalleryLayouts.mobile ? 1 : 0));
+      for (const column of after.columns) {
+        const used = column.reduce((sum, item, i) => sum + item.image.height / item.image.width + (i ? layout.gap : 0), 0);
+        expect(used).toBeLessThanOrEqual(layout.budget);
+      }
+    }
+    const { container } = render(<HomeGallery locale="ko" photos={[...landscape, ...portrait]} hasMore={false} shorts={[]} />);
+    for (const layout of ["mobile", "desktop"]) {
+      const img = container.querySelector(`[data-gallery-layout="${layout}"] img[src="${landscape[0]!.image.url}"]`);
+      expect(img).toHaveAttribute("width", "4032");
+      expect(img).toHaveAttribute("height", "3024");
+      expect(img).not.toHaveAttribute("srcset"); // direct no-store endpoint, never shared Next image cache
     }
   });
   it("fills the shortest column first and skips a photo too tall for every column", () => {
