@@ -107,17 +107,6 @@ it('shows the full matching total while rendering only the current directory pag
  expect(screen.queryByText('전체 1+')).not.toBeInTheDocument();
 });
 
-it('shows up to three top pages of the day in the discovery spotlight',async()=>{
- window.history.replaceState(null,'','/pages/groups');
- const items=Array.from({length:4},(_,i)=>({...page,id:`10000000-0000-4000-8000-${String(i+1).padStart(12,'0')}`,name:`모임 ${i+1}`}));
- const fetchMock=vi.fn(async(_url:string)=>Response.json({items,nextCursor:null}));vi.stubGlobal('fetch',fetchMock);
- render(<GroupDirectory locale='ko'/>);
- const section=await screen.findByRole('region',{name:'지금 주목할 페이지'});
- expect(section.querySelectorAll('a')).toHaveLength(3);
- expect(section).toHaveTextContent('모임 1');expect(section).not.toHaveTextContent('모임 4');
- expect(fetchMock.mock.calls.some(([url])=>{const q=new URL(String(url),'http://localhost').searchParams;return q.get('sort')==='today'&&q.get('limit')==='3';})).toBe(true);
-});
-
 it('hides an empty application history without hiding a fetch error',async()=>{
  vi.stubGlobal('fetch',vi.fn(async()=>Response.json({items:[],nextCursor:null})));
  const view=render(<GroupApplicationHistory locale='ko'/>);

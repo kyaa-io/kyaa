@@ -57,5 +57,3 @@
   .thin[data-fill] .thinControls { padding-right: var(--space-1); }
 }
 
-/* 지금 주목할 페이지는 목록·내 페이지 아래(순서: 내 아티스트 → 얇은 배너 → Hot 게시글 → 둘러보기 → 내 페이지 → 주목할 페이지). */
-.featuredLast { margin-top: var(--space-4); }

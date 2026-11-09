@@ -38,7 +38,6 @@ import { discoveryCopy } from "./discovery-copy";
 import { walletCopy } from "@/features/group-wallet/ui/copy";
 import { waveFriendsCopy } from "@/i18n/catalogs/features__fanpage__wave-friends";
 import styles from "./groups.module.css";
-import directoryTopStyles from "./directory-top.module.css";
 import stateStyles from "./group-directory-state.module.css";
 import loadingStyles from "./group-directory-loading.module.css";
 import {SourceStatePanel} from "./source-state-panel";
@@ -49,8 +48,8 @@ export const seeAllLabel:Record<AppLocale,string>={ko:'전체 보기',en:'View a
 const fanpageLabel:Record<AppLocale,string>={ko:'팬페이지',en:'Fan pages',ja:'ファンページ','zh-Hans':'粉丝主页','zh-Hant':'粉絲專頁',es:'Páginas de fans',id:'Halaman penggemar',vi:'Trang người hâm mộ',th:'แฟนเพจ',pt:'Páginas de fãs',fr:'Pages de fans',ru:'Фан-страницы'};
 const resetFiltersLabel:Record<AppLocale,string>={ko:'필터 초기화',en:'Reset filters',ja:'フィルターをリセット','zh-Hans':'重置筛选','zh-Hant':'重設篩選',es:'Restablecer filtros',id:'Atur ulang filter',vi:'Đặt lại bộ lọc',th:'รีเซ็ตตัวกรอง',pt:'Redefinir filtros',fr:'Réinitialiser les filtres',ru:'Сбросить фильтры'};
 const visitOrderLabel:Record<AppLocale,string>={ko:"최근 방문순",en:"Recently visited",ja:"最近の訪問順",'zh-Hans':"最近访问",'zh-Hant':"最近瀏覽",es:"Visitas recientes",id:"Kunjungan terbaru",vi:"Truy cập gần đây",th:"เข้าชมล่าสุด",pt:"Visitas recentes",fr:"Visites récentes",ru:"Недавние посещения"};
-function DirectorySkeleton({kind,label}:{kind:"featured"|"directory"|"joined";label:string}) {
- return <FanSkeletonRows rows={kind==="directory"?6:3} variant={kind==="directory"?"tile":"entity"} ariaLabel={label} className={kind==="joined"?undefined:kind==="directory"?directoryStyles.list:directoryStyles.cards}/>;
+function DirectorySkeleton({kind,label}:{kind:"directory"|"joined";label:string}) {
+ return <FanSkeletonRows rows={kind==="directory"?6:3} variant={kind==="directory"?"tile":"entity"} ariaLabel={label} className={kind==="joined"?undefined:directoryStyles.list}/>;
 }
 // Check-in is a catalog rule and not an action, and this button covers every page, so it shows the points and no done state.
 function CheckinCorner({locale,children}:{locale:AppLocale;children:ReactNode}){
@@ -71,9 +70,7 @@ const statusLabel:Record<ApplicationStatus["status"],GroupApplyCopyKey>={submitt
 const parseList = (value:unknown)=>groupListSchema.parse(value);
 const SEARCH_DELAY_MS=300;
 const ROLE_FILTERS=['all','idol','singer','actor','creator','show_host'] as const;
-const featuredErrorLabel:Record<AppLocale,string>={ko:'주목할 페이지를 불러오지 못했어요',en:'We couldn’t load the spotlight pages',ja:'注目のページを読み込めませんでした','zh-Hans':'无法加载热门页面','zh-Hant':'無法載入熱門頁面',es:'No pudimos cargar las páginas destacadas',id:'Halaman pilihan tidak dapat dimuat',vi:'Không thể tải các trang nổi bật',th:'ไม่สามารถโหลดเพจที่น่าสนใจได้',pt:'Não foi possível carregar as páginas em destaque',fr:'Impossible de charger les pages à découvrir',ru:'Не удалось загрузить популярные страницы'};
 const joinedErrorLabel:Record<AppLocale,string>={ko:'내 페이지를 불러오지 못했어요',en:'We couldn’t load your pages',ja:'マイページを読み込めませんでした','zh-Hans':'无法加载我的页面','zh-Hant':'無法載入我的頁面',es:'No pudimos cargar tus páginas',id:'Halaman Anda tidak dapat dimuat',vi:'Không thể tải các trang của bạn',th:'ไม่สามารถโหลดเพจของคุณได้',pt:'Não foi possível carregar suas páginas',fr:'Impossible de charger vos pages',ru:'Не удалось загрузить ваши страницы'};
-const featuredTitle:Record<AppLocale,string>={ko:'지금 주목할 페이지',en:'Pages in the spotlight',ja:'今注目のページ','zh-Hans':'热门页面','zh-Hant':'熱門頁面',es:'Páginas destacadas',id:'Halaman pilihan',vi:'Trang nổi bật',th:'เพจที่น่าสนใจ',pt:'Páginas em destaque',fr:'Pages à découvrir',ru:'Популярные страницы'};
 export function GroupDirectory({locale,initialOwned=false,banners=[]}:{locale:AppLocale;banners?:HomeBanner[];initialMine?:"joined"|"bookmarked";initialType?:"all"|"fan"|"hobby"|"brand";initialSearch?:string;initialSort?:"popular"|"recent";initialOwned?:boolean}) {
   const t=groupsCopy(locale),c=discoveryCopy(locale),w=walletCopy(locale);
  const [attendanceOpen,setAttendanceOpen]=useState(false);
@@ -103,11 +100,6 @@ export function GroupDirectory({locale,initialOwned=false,banners=[]}:{locale:Ap
   if(cursorKey!==listKey){setCursorKey(listKey);setCursor(undefined);setPrevious({ownerKey:"",items:[]});}
   const listQuery=groupApiQuery({type:listType,search,sort,mine,cursor,limit:'20',artistRole:listType==='fan'?artistRole:undefined,owned:initialOwned?"1":undefined});
   const resource=useGroupResource(listQuery,parseList);
-  const fanSpotlight=useGroupResource(groupApiQuery({type:'fan',sort:'today',limit:'3'}),parseList);
-  const fanSpotlightItems=fanSpotlight.data?.items??[];
-  const needsFill=fanSpotlight.ready&&!fanSpotlight.loading&&!fanSpotlight.error&&fanSpotlightItems.length<3;
-  const spotlightFill=useGroupResource(needsFill?groupApiQuery({sort:'today',limit:'6'}):null,parseList);
-  const featured={error:fanSpotlight.error||spotlightFill.error,retry:()=>{fanSpotlight.retry();if(spotlightFill.error)spotlightFill.retry();},loading:fanSpotlight.loading||(needsFill&&spotlightFill.loading),data:fanSpotlight.data?{items:[...fanSpotlightItems,...(needsFill?spotlightFill.data?.items??[]:[]).filter(page=>!fanSpotlightItems.some(fan=>fan.id===page.id))].slice(0,3)}:undefined};
   const [joinedPages,setJoinedPages]=useState<{ownerKey:string;cursors:(string|undefined)[]}>({ownerKey:"",cursors:[undefined]});
   useEffect(()=>{setJoinedPages({ownerKey:resource.ownerKey,cursors:[undefined]});},[resource.ownerKey,resource.authenticated]);
   const joinedCursors=joinedPages.ownerKey===resource.ownerKey?joinedPages.cursors:[undefined];
@@ -139,7 +131,7 @@ export function GroupDirectory({locale,initialOwned=false,banners=[]}:{locale:Ap
   if(mine&&!mineRow)setMineRow(true);
   // 찐팬 100 challenge (C7): fan pages an administrator turned on carry a tag in every list on this screen.
   const challenges=useRankingResource(`/api/rankings/challenges?locale=${locale}`,parseChallenges),challengeSlugs=new Set(challenges.state.status==='ready'?challenges.state.data.items.map(item=>item.slug):[]);
-  const pageCard=(page:GroupList["items"][number],size:"card"|"row"|"list"|"tile",count=true)=><FanEntityCard key={page.id} size={size} href={groupHref(page,locale)} image={{src:page.imageUrl,slug:page.slug}} name={page.name} kind={page.kind} locale={locale} memberCount={count?page.memberCount:undefined} badge={page.kind==='fan'&&page.slug&&challengeSlugs.has(page.slug)?<FanTag tone="fan">{rankingsText(locale,'jjTag')}</FanTag>:undefined}/>;
+  const pageCard=(page:GroupList["items"][number],size:"row"|"list"|"tile",count=true)=><FanEntityCard key={page.id} size={size} href={groupHref(page,locale)} image={{src:page.imageUrl,slug:page.slug}} name={page.name} kind={page.kind} locale={locale} memberCount={count?page.memberCount:undefined} badge={page.kind==='fan'&&page.slug&&challengeSlugs.has(page.slug)?<FanTag tone="fan">{rankingsText(locale,'jjTag')}</FanTag>:undefined}/>;
   const applyKind=nonFanType?'hobby':'fan';
   const applyLabel=nonFanType?t.apply:groupApplyText(locale,'fanPageApply');
   const attendanceAction=!resource.authenticated?<FanAction className={styles.discoveryAttendanceGuest} variant="neutral" href={directoryLogin}>{w.attendance}</FanAction>:<FanAction href={`/my/wallet?view=attendance&locale=${locale}`} onClick={event=>{if(event.defaultPrevented||event.button!==0||event.metaKey||event.ctrlKey||event.shiftKey||event.altKey||event.currentTarget.target||event.currentTarget.hasAttribute('download'))return;event.preventDefault();attendanceTrigger.current=event.currentTarget;setAttendanceOpen(true);}} variant="primary">{w.attendance}</FanAction>;
@@ -167,7 +159,6 @@ export function GroupDirectory({locale,initialOwned=false,banners=[]}:{locale:Ap
       <div className={styles.discoveryCreation}><section><h3>{c.fanTitle}</h3><FanAction href={`/pages/groups/apply?locale=${locale}&kind=fan`} onClick={event=>openApplication(event,'fan')} variant="text" trailingIcon={<ArrowRight/>}>{groupApplyText(locale,'fanPageApply')}</FanAction></section>
       <section><h3 className={directoryStyles.helpTitle}>{c.otherTitle}<FanHelpTip label={c.otherTitle} title={c.otherTitle} closeLabel={fanUiText(locale,"close")} detailsLabel={fanUiText(locale,"details")}><p>{groupApplyText(locale,'hobbyDescription')}</p><p>{groupApplyText(locale,'brandDescription')}</p></FanHelpTip></h3><FanAction href={`/pages/groups/apply?locale=${locale}`} onClick={event=>openApplication(event,'hobby')} variant="text" trailingIcon={<ArrowRight/>}>{t.apply}</FanAction></section></div>
     </aside></div>
-    <section className={`${styles.featured} ${directoryTopStyles.featuredLast}`} aria-label={featuredTitle[locale]}><h2>{featuredTitle[locale]}</h2>{featured.error?<DirectoryAreaError fit locale={locale} title={featuredErrorLabel[locale]} retryLabel={t.retry} onRetry={featured.retry}/>:featured.loading&&!featured.data?<DirectorySkeleton kind="featured" label={t.loading}/>:featured.data?.items.length?<div className={directoryStyles.cards}>{featured.data.items.map(page=>pageCard(page,"card"))}</div>:featured.data?<p>{t.empty}</p>:null}</section>
     {application&&<GroupApplicationDialog locale={locale} initialKind={application.kind} initialName={application.name} onClose={()=>setApplication(null)}/>}
   {attendanceOpen&&<WalletAttendanceDialog locale={locale} open onClose={()=>{setAttendanceOpen(false);requestAnimationFrame(()=>attendanceTrigger.current?.focus());}}/>}
   </GroupShell>;
