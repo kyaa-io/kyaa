@@ -9,7 +9,7 @@ const post = { id, celebritySlug: "artist", body: "hello", visibility: "public",
 function dependencies() {
   return { rpc: vi.fn(), authorize: vi.fn().mockResolvedValue({ appUserId: owner }),
     authorizeAdmin: vi.fn().mockResolvedValue({ appUserId: owner, allowlistId: id, role: "admin", email: "admin@example.test" }),
-    upload: vi.fn(), download: vi.fn(), translate: vi.fn(),
+    upload: vi.fn(), download: vi.fn(), translate: vi.fn(), translateTexts: vi.fn(),
   } satisfies ContentDependencies;
 }
 function request(method = "POST", body?: unknown, url = "https://byus.test/api/posts", authenticated = true) {
@@ -128,6 +128,75 @@ describe("fan content trust boundary", () => {
     expect((await createContentHandlers(d).translate(request("POST", body))).status).toBe(409);
     expect(d.rpc.mock.calls[2]).toEqual(["reserve_content_translation_request", { p_app_user_id: owner, p_character_count: 2 }]);
     expect(d.rpc).toHaveBeenLastCalledWith("save_content_translation", expect.objectContaining({ p_source_revision: 1, p_source_hash: "a".repeat(64) }));
+  });
+  describe("post translation by title and article slots", () => {
+    const hash = "a".repeat(64), asked = { targetType: "fan_post", targetId: id, targetLocale: "en", slots: "title-body" };
+    const target = (body: string) => ({ body, revision: 1, sourceHash: hash });
+    const row = (translatedText: string) => ({ targetType: "fan_post", targetId: id, targetLocale: "en", translatedText, sourceRevision: 1, cached: true });
+    const names = (d: ReturnType<typeof dependencies>) => d.rpc.mock.calls.map(call => call[0]);
+    it("translates the title and the article as two slots, stores them in the whole-body shape and returns them apart", async () => {
+      const d = dependencies();
+      d.rpc.mockResolvedValueOnce(target("안녕하세요?\n잘 지내세요?")).mockResolvedValueOnce(null).mockResolvedValueOnce(undefined).mockResolvedValueOnce(undefined).mockResolvedValueOnce(row("Hello?\nHow are you?"));
+      d.translateTexts.mockResolvedValue([{ translatedText: "Hello?\nSecond line of the title", detectedSourceLocale: "ko" }, { translatedText: "How are you?" }]);
+      const response = await createContentHandlers(d).translate(request("POST", asked));
+      expect(response.status).toBe(200);
+      expect(names(d)).toEqual(["fan_web_content_target", "read_content_translation", "reserve_content_translation_request", "save_content_translation", "read_content_translation"]);
+      expect(d.translateTexts).toHaveBeenCalledWith(["안녕하세요?", "잘 지내세요?"], "en");
+      expect(d.translate).not.toHaveBeenCalled();
+      expect(d.rpc).toHaveBeenCalledWith("reserve_content_translation_request", { p_app_user_id: owner, p_character_count: 13 });
+      // A line break the provider put into the translated title never becomes the boundary between title and article.
+      expect(d.rpc).toHaveBeenCalledWith("save_content_translation", expect.objectContaining({ p_target_type: "fan_post", p_source_revision: 1, p_source_hash: hash, p_translated_text: "Hello? Second line of the title\nHow are you?", p_detected_source_locale: "ko" }));
+      expect(await response.json()).toMatchObject({ cached: false, translatedText: "Hello?\nHow are you?", slots: ["Hello?", "How are you?"] });
+    });
+    it("a cache hit returns the slots without the provider or a new reservation, after the access check on the target", async () => {
+      const d = dependencies();
+      d.rpc.mockResolvedValueOnce(target("안녕하세요?\n잘 지내세요?")).mockResolvedValueOnce(row("Hello?\nHow are you?\nAnd you?"));
+      const response = await createContentHandlers(d).translate(request("POST", asked));
+      expect(await response.json()).toMatchObject({ cached: true, slots: ["Hello?", "How are you?\nAnd you?"] });
+      expect(names(d)).toEqual(["fan_web_content_target", "read_content_translation"]);
+      expect(d.translateTexts).not.toHaveBeenCalled();
+    });
+    it("a post with only a title has one slot", async () => {
+      const d = dependencies();
+      d.rpc.mockResolvedValueOnce(target("안녕하세요?")).mockResolvedValueOnce(null).mockResolvedValueOnce(undefined).mockResolvedValueOnce(undefined).mockResolvedValueOnce(row("Hello?"));
+      d.translateTexts.mockResolvedValue([{ translatedText: "Hello?" }]);
+      const response = await createContentHandlers(d).translate(request("POST", asked));
+      expect(d.translateTexts).toHaveBeenCalledWith(["안녕하세요?"], "en");
+      expect(d.rpc).toHaveBeenCalledWith("reserve_content_translation_request", { p_app_user_id: owner, p_character_count: 6 });
+      expect(await response.json()).toMatchObject({ slots: ["Hello?"] });
+    });
+    it("a post whose first line is empty has the article as its only slot", async () => {
+      const d = dependencies();
+      d.rpc.mockResolvedValueOnce(target("\n둘째 줄\n셋째 줄")).mockResolvedValueOnce(row("Second\nThird"));
+      expect(await (await createContentHandlers(d).translate(request("POST", asked))).json()).toMatchObject({ slots: ["Second\nThird"] });
+    });
+    it("a cached whole-body translation that lost its first line break is returned without slots", async () => {
+      const d = dependencies();
+      d.rpc.mockResolvedValueOnce(target("안녕하세요?\n잘 지내세요?")).mockResolvedValueOnce(row("Hello? How are you?"));
+      const body = await (await createContentHandlers(d).translate(request("POST", asked))).json();
+      expect(body.translatedText).toBe("Hello? How are you?"); expect(body).not.toHaveProperty("slots");
+    });
+    it("does not reach the provider for content the viewer cannot read or when the source changed while translating", async () => {
+      const hidden = dependencies(); hidden.rpc.mockResolvedValueOnce(null);
+      expect((await createContentHandlers(hidden).translate(request("POST", asked))).status).toBe(404);
+      const denied = dependencies(); denied.rpc.mockRejectedValueOnce(new Error("FAN_WEB_NOT_FOUND"));
+      expect((await createContentHandlers(denied).translate(request("POST", asked))).status).toBe(404);
+      expect(hidden.translateTexts).not.toHaveBeenCalled(); expect(denied.translateTexts).not.toHaveBeenCalled();
+      const stale = dependencies();
+      stale.rpc.mockResolvedValueOnce(target("안녕\n본문")).mockResolvedValueOnce(null).mockResolvedValueOnce(undefined).mockRejectedValueOnce(new Error("FAN_WEB_CONFLICT"));
+      stale.translateTexts.mockResolvedValue([{ translatedText: "Hi" }, { translatedText: "Body" }]);
+      expect((await createContentHandlers(stale).translate(request("POST", asked))).status).toBe(409);
+      expect(names(stale)).toEqual(["fan_web_content_target", "read_content_translation", "reserve_content_translation_request", "save_content_translation"]);
+    });
+    it("refuses slots for any other kind of content and a provider answer with the wrong number of texts", async () => {
+      const d = dependencies();
+      expect((await createContentHandlers(d).translate(request("POST", { ...asked, targetType: "cheer" }))).status).toBe(400);
+      expect(d.rpc).not.toHaveBeenCalled();
+      d.rpc.mockResolvedValueOnce(target("안녕\n본문")).mockResolvedValueOnce(null).mockResolvedValueOnce(undefined);
+      d.translateTexts.mockResolvedValue([{ translatedText: "Hi" }]);
+      expect((await createContentHandlers(d).translate(request("POST", asked))).status).toBeGreaterThanOrEqual(500);
+      expect(names(d)).not.toContain("save_content_translation");
+    });
   });
   it("denies viewer moderation before mutation and hides database errors", async () => {
     const d = dependencies(); d.authorizeAdmin.mockResolvedValue({ appUserId: owner, allowlistId: id, role: "viewer", email: "viewer@example.test" });

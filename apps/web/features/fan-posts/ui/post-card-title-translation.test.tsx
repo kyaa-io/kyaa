@@ -14,9 +14,12 @@ vi.mock("@/features/content-safety/ui/authenticated-media", () => ({ Authenticat
 
 const base: FanPost = { id: "10000000-0000-4000-8000-000000000002", celebritySlug: "artist", body: "안녕하세요?\n잘 지내세요?", visibility: "public", revision: 1, author: { nickname: "팬", avatarUrl: "/images/avatars/star-pink.webp" }, assets: [], createdAt: "2026-11-01T00:00:00Z", updatedAt: "2026-11-01T00:00:00Z", isOwner: false, liked: false, likeCount: 0, commentCount: 0 };
 const detail = (post: FanPost) => render(<PostCard presentation="board" detail post={post} locale="en" onChanged={vi.fn()} />);
-const answer = (translatedTexts: string[]) => { const fetcher = vi.fn().mockImplementation(async () => Response.json({ translatedTexts, cached: false })); vi.stubGlobal("fetch", fetcher); return fetcher; };
-// One slot goes out as `text`, two or more as `texts`; both are one request.
-const sent = (fetcher: ReturnType<typeof vi.fn>) => { const body = JSON.parse(String(fetcher.mock.calls[0]![1].body)); return { ...body, texts: body.texts ?? [body.text] } as { texts: string[]; targetLocale: string }; };
+// The post's own translation (shared cache, server-side access checks): the answer carries one text per slot of the request.
+const answer = (slots: string[], translatedText = slots.join("\n")) => {
+  const fetcher = vi.fn().mockImplementation(async (_url: string, init: RequestInit) => { const body = JSON.parse(String(init.body)); return Response.json({ targetType: body.targetType, targetId: body.targetId, targetLocale: body.targetLocale, sourceRevision: 1, cached: false, translatedText, slots }); });
+  vi.stubGlobal("fetch", fetcher); return fetcher;
+};
+const sent = (fetcher: ReturnType<typeof vi.fn>) => JSON.parse(String(fetcher.mock.calls[0]![1].body)) as { targetType: string; targetId: string; slots?: string };
 const heading = () => screen.getByRole("heading", { level: 1 });
 const articleText = (container: HTMLElement) => container.querySelector("[data-post-body]")?.textContent ?? "";
 
@@ -35,8 +38,8 @@ it("translates the title and the article in one request and tells them apart by 
   await waitFor(() => expect(heading()).toHaveTextContent("Hello?"));
   expect(heading()).toHaveAttribute("lang", "en");
   expect(fetcher).toHaveBeenCalledTimes(1);
-  expect(String(fetcher.mock.calls[0]![0])).toBe("/api/display-translations");
-  expect(sent(fetcher)).toEqual({ texts: ["안녕하세요?", "잘 지내세요?"], targetLocale: "en" });
+  expect(String(fetcher.mock.calls[0]![0])).toBe("/api/content-translations");
+  expect(sent(fetcher)).toMatchObject({ targetType: "fan_post", targetId: base.id, slots: "title-body" });
   expect(articleText(container)).toContain("How are you?");
   expect(articleText(container)).not.toContain("Hello?");
   fireEvent.click(screen.getByRole("button", { name: "Show original" }));
@@ -52,7 +55,7 @@ it("a post with only a title is translated and can be shown in the original", as
   const fetcher = answer(["Hello?"]);
   const { container } = detail({ ...base, body: "안녕하세요?" });
   await waitFor(() => expect(heading()).toHaveTextContent("Hello?"));
-  expect(sent(fetcher).texts).toEqual(["안녕하세요?"]);
+  expect(sent(fetcher).slots).toBe("title-body");
   expect(fetcher).toHaveBeenCalledTimes(1);
   expect(articleText(container)).not.toContain("Hello?");
   fireEvent.click(screen.getByRole("button", { name: "Show original" }));
@@ -78,9 +81,9 @@ it("an article answer that starts with an empty line does not move text into the
 
 it("a first line that is empty sends only the article and the title falls back to the board name", async () => {
   const fetcher = answer(["Line one"]);
-  detail({ ...base, body: "\n둘째 줄" });
-  await waitFor(() => expect(fetcher).toHaveBeenCalledTimes(1));
-  expect(sent(fetcher).texts).toEqual(["둘째 줄"]);
+  const { container } = detail({ ...base, body: "\n둘째 줄" });
+  await waitFor(() => expect(articleText(container)).toContain("Line one"));
+  expect(fetcher).toHaveBeenCalledTimes(1);
   expect(heading()).not.toHaveAttribute("lang");
 });
 
@@ -97,9 +100,23 @@ it("a post with a document shows the translated article in place of the document
 });
 
 it("a failed answer leaves the original title and article", async () => {
-  vi.stubGlobal("fetch", vi.fn().mockResolvedValue(Response.json({ error: { code: "TRANSLATION_FAILED" } }, { status: 502 })));
+  const fetcher = vi.fn().mockResolvedValue(Response.json({ error: { code: "TRANSLATION_FAILED" } }, { status: 502 }));
+  vi.stubGlobal("fetch", fetcher);
   const { container } = detail(base);
-  await act(async () => {});
+  await waitFor(() => expect(fetcher).toHaveBeenCalledTimes(1));
+  await waitFor(() => expect(screen.queryByRole("button", { name: "Translating" })).toBeNull());
+  expect(screen.getByRole("button", { name: "Translate" })).toBeEnabled();
+  expect(heading()).toHaveTextContent("안녕하세요?");
+  expect(heading()).not.toHaveAttribute("lang");
+  expect(articleText(container)).toContain("잘 지내세요?");
+});
+
+it("an answer that does not carry the slots of the request is not shown as a translation", async () => {
+  const fetcher = vi.fn().mockImplementation(async (_url: string, init: RequestInit) => { const body = JSON.parse(String(init.body)); return Response.json({ targetType: body.targetType, targetId: body.targetId, targetLocale: body.targetLocale, sourceRevision: 1, cached: true, translatedText: "Hello?\nHow are you?" }); });
+  vi.stubGlobal("fetch", fetcher);
+  const { container } = detail(base);
+  await waitFor(() => expect(fetcher).toHaveBeenCalledTimes(1));
+  await waitFor(() => expect(screen.queryByRole("button", { name: "Translating" })).toBeNull());
   expect(heading()).toHaveTextContent("안녕하세요?");
   expect(articleText(container)).toContain("잘 지내세요?");
 });

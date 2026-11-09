@@ -10,6 +10,7 @@ import { readRichDocument, richDocumentAttachments, type RichAttachment } from "
 import { PostShareAction } from "./post-share-action";
 import { GroupArtistMark } from "@/features/groups/ui/group-artist-mark";
 import { PostDetailHeader } from "./post-detail-header";
+import { postTitleSlots } from "../domain/post-title-slots";
 import { celebrateReward } from "@/components/fan-ui/reward-celebration";
 import { applyReaction, PostReactions, type PostReactionChoice, type PostReactionState } from "./post-reactions";
 import { PostInlineVideo, TranslatedRichPostBody } from "./rich-post-body";
@@ -41,13 +42,14 @@ export function PostCard({ post, locale, onChanged, onDeleted, detail = false, r
   const initialReaction = useCallback((): PostReactionState => ({ reaction: post.reaction !== undefined ? post.reaction : post.liked ? "like" : null, likeCount: post.likeCount, dislikeCount: post.dislikeCount ?? null }), [post.reaction, post.liked, post.likeCount, post.dislikeCount]);
   const [reactionState, setReactionState] = useState(initialReaction);
   const liked = reactionState.reaction === "like", likeCount = reactionState.likeCount;
-  // A board post's title is the first line of its body. The title and the article are two slots of one request, so the answer
-  // is told apart by position and never by a line break in the translated text. An empty slot is left out of the request.
-  const titleSource = presentation === "board" && detail ? post.body.split("\n")[0]! : "";
-  const bodySource = presentation === "board" && detail ? post.body.split("\n").slice(1).join("\n") : post.body;
-  const hasTitle = titleSource.trim() !== "", hasBody = bodySource.trim() !== "";
-  const slotTexts = useMemo(() => [...(hasTitle ? [titleSource] : []), ...(hasBody ? [bodySource] : [])], [hasTitle, hasBody, titleSource, bodySource]);
-  const { observeElement: observeBody, ...bodyTranslation } = useAutomaticTranslation({ texts: slotTexts, locale, enabled: presentation === "board" && slotTexts.length > 0 });
+  // A board post's title is the first line of its body. In the detail the title and the article are two slots of one request to the
+  // post's own translation (shared cache, access re-checked by the server), told apart by position and never by a line break in the answer.
+  const slots = useMemo(() => presentation === "board" && detail ? postTitleSlots(post.body) : null, [presentation, detail, post.body]);
+  const titleSource = slots?.title ?? "", bodySource = slots ? slots.article : post.body;
+  const hasTitle = slots?.hasTitle ?? false, hasBody = slots ? slots.hasArticle : post.body.trim() !== "";
+  const slotTexts = useMemo(() => slots ? slots.texts : [post.body], [slots, post.body]);
+  const bodyTarget = useMemo(() => ({ targetType: "fan_post" as const, targetId: post.id, sourceRevision: post.revision, ...(slots ? { slots: "title-body" as const } : {}) }), [post.id, post.revision, slots]);
+  const { observeElement: observeBody, ...bodyTranslation } = useAutomaticTranslation({ texts: slotTexts, locale, target: bodyTarget, enabled: presentation === "board" && slotTexts.length > 0 });
   const translatedTitle = bodyTranslation.showing && hasTitle ? bodyTranslation.texts[0] : undefined;
   const bodyView = bodyTranslation.showing ? { ...bodyTranslation, texts: [hasBody ? bodyTranslation.texts[hasTitle ? 1 : 0]! : ""] } : bodyTranslation;
   const href = `/c/${post.celebritySlug}/community/${post.id}?locale=${locale}${returnTo ? `&returnTo=${encodeURIComponent(returnTo)}` : ""}` as Route;

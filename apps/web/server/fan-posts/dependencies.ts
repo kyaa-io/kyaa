@@ -4,7 +4,7 @@ import { z } from "zod";
 import { createFanpageDependencies } from "@/server/fanpage/dependencies";
 import { loadServerEnv } from "@/server/config/env";
 import { createContentThumbnail, normalizePublicImage } from "@/server/media/public-image-processing";
-import { translateText } from "@/server/content-translation/google-translate";
+import { translateText, translateTexts } from "@/server/content-translation/google-translate";
 import { contentThumbnailPath, readContentThumbnail } from "./stored-thumbnail";
 import type { ContentDependencies } from "./routes";
 
@@ -13,7 +13,7 @@ export function createContentDependencies(): ContentDependencies {
   const db = createClient(env.SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY, { auth: { persistSession: false, autoRefreshToken: false },
     global: { fetch: (input, init) => fetch(input, { ...init, signal: init?.signal ? AbortSignal.any([init.signal, AbortSignal.timeout(60_000)]) : AbortSignal.timeout(60_000) }) },
   });
-  return { ...deps, translate: translateText,
+  return { ...deps, translate: translateText, translateTexts,
     async upload(owner, slug, bytes) {
       const image = await normalizePublicImage(bytes);
       const thumbnail = await createContentThumbnail(image.bytes);

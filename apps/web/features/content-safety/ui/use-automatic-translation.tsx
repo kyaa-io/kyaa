@@ -8,7 +8,8 @@ import { translationSchema, type TargetType } from "@/features/fan-posts/domain/
 import { shouldOfferTranslation } from "../domain/translation-eligibility";
 import styles from "./content.module.css";
 
-type Target = { targetType: TargetType; targetId: string; sourceRevision: number };
+/** `slots`: a board post asked for as its title and its article (one translated text per text of the request). */
+type Target = { targetType: TargetType; targetId: string; sourceRevision: number; slots?: "title-body" };
 export type AutomaticTranslationState = Omit<AutomaticTranslation, "observeElement">;
 export type AutomaticTranslation = { observeElement: (node: HTMLElement | null) => void; eligible: boolean; showing: boolean; texts: readonly string[]; busy: boolean; error: string; toggle: () => void };
 type Result = { key: string; texts?: readonly string[]; error?: string; busy?: boolean };
@@ -44,7 +45,7 @@ function requestTranslation(input: { force?: boolean; authenticated: boolean; ge
       const response = await fetch(objectTarget ? "/api/content-translations" : "/api/display-translations", {
         method: "POST", cache: "no-store", signal: AbortSignal.timeout(20_000),
         headers: { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) },
-        body: JSON.stringify(objectTarget ? { targetType: input.target!.targetType, targetId: input.target!.targetId, targetLocale: input.locale, locale: toContentLocale(input.locale) }
+        body: JSON.stringify(objectTarget ? { targetType: input.target!.targetType, targetId: input.target!.targetId, targetLocale: input.locale, locale: toContentLocale(input.locale), ...(input.target!.slots ? { slots: input.target!.slots } : {}) }
           : input.texts.length === 1 ? { text: input.texts[0], targetLocale: input.locale } : { texts: input.texts, targetLocale: input.locale }),
       });
       const raw: unknown = await response.json();
@@ -56,7 +57,10 @@ function requestTranslation(input: { force?: boolean; authenticated: boolean; ge
       if (objectTarget) {
         const parsed = translationSchema.parse(raw);
         if (parsed.targetId !== input.target!.targetId || parsed.targetType !== input.target!.targetType || parsed.targetLocale !== input.locale || parsed.sourceRevision !== input.target!.sourceRevision) throw new Error("TRANSLATION_FAILED");
-        return [parsed.translatedText];
+        if (!input.target!.slots) return [parsed.translatedText];
+        // The server cuts the post into the same slots the request holds; anything else is not shown as a translation.
+        if (parsed.slots?.length !== input.texts.length) throw new Error("TRANSLATION_FAILED");
+        return parsed.slots;
       }
       if (!raw || typeof raw !== "object") throw new Error("TRANSLATION_FAILED");
       const values = "translatedTexts" in raw ? raw.translatedTexts : "translatedText" in raw ? [raw.translatedText] : null;
