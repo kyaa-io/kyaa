@@ -170,8 +170,11 @@ export function scanNTs(code, file) {
   if (!fanUi && SCREEN(file)) for (const t of jsxTags(c, 'section')) if (!/\bdata-block\b|\{\.\.\./.test(t.attrs)) add(out, 'N21|<section> without data-block');
   // N22: 목록 행 data-row (FanRow 를 바로 감싸면 면제)
   if (!fanUi && /\.tsx$/.test(file)) for (const t of jsxTags(c, 'li')) if (!/\bdata-row\b|\{\.\.\./.test(t.attrs) && !/^\s*<FanRow\b/.test(t.children)) add(out, 'N22|<li> without data-row');
-  // N23: 상대 시간·dateStyle medium
-  for (const m of c.matchAll(/\b(formatRelativeTime|RelativeTime)\b|dateStyle:\s*["']medium["']/g)) add(out, `N23|${m[1] ?? 'dateStyle: "medium"'}`);
+  // N23: fan-list-sort brief (2026-11-09): only this first-heart label uses hours/days before 7 days.
+  for (const m of c.matchAll(/\b(formatRelativeTime|RelativeTime)\b|dateStyle:\s*["']medium["']/g)) {
+    if (file === 'apps/web/features/groups/ui/fan-list-time.ts' && m[1] === 'formatRelativeTime') continue;
+    add(out, `N23|${m[1] ?? 'dateStyle: "medium"'}`);
+  }
   // N24: 버튼 안 화살표
   for (const m of c.matchAll(/trailingIcon=\{\s*<(ArrowRight|ChevronRight|MoveRight)\b/g)) add(out, `N24|trailingIcon <${m[1]}>`);
   // N25: lucide 직접 import·strokeWidth

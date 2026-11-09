@@ -230,3 +230,10 @@ test('a counted N branch (raw <header> in a screen) warns but does not fail', ()
     assert.match(r.stderr, /count-only N3/);
   } finally { rmSync(dir, { recursive: true, force: true }); }
 });
+
+test('N23 only permits the approved first-heart relative label in fan-list-time', () => {
+  const file = 'apps/web/features/groups/ui/fan-list-time.ts';
+  assert.equal(hits(ts('const label = formatRelativeTime(at, locale);', file), 'N23').length, 0);
+  assert.equal(hits(ts('const label = formatRelativeTime(at, locale);', 'apps/web/features/groups/ui/other-time.ts'), 'N23').length, 1);
+  assert.equal(hits(ts('const label = new Intl.DateTimeFormat(locale, { dateStyle: "medium" });', file), 'N23').length, 1);
+});
