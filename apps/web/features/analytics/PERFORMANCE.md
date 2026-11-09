@@ -12,6 +12,6 @@ stdout 예: `{"event":"web_vital","name":"LCP","value":1200,"routeKind":"home"}`
 
 ## 홈 조회 시간
 
-`measureHomeQuery(label, () => repository.query())`는 기존 Promise의 반환값과 오류를 그대로 유지한다. `featuredLives`, `celebrities`, `celebrityLives`, `homeBanners`, `elinaRaffles`만 label로 허용하며 요청별 각 조회 완료 시 stdout에 한 건 기록한다. 조회 결과·오류 원문·요청 정보는 기록하지 않는다. 로거가 실패해도 조회 결과는 바뀌지 않는다. 이 시간은 서버에서 각 조회를 기다린 시간이며 브라우저 렌더링 시간이나 전체 홈 응답 시간과 다르다.
+`measureHomeQuery(label, () => repository.query())`는 기존 Promise의 반환값과 오류를 그대로 유지한다. `celebrities`, `celebrityLives`, `homeBanners`, `elinaRaffles`만 label로 허용하며 요청별 각 조회 완료 시 stdout에 한 건 기록한다. 조회 결과·오류 원문·요청 정보는 기록하지 않는다. 로거가 실패해도 조회 결과는 바뀌지 않는다. 이 시간은 서버에서 각 조회를 기다린 시간이며 브라우저 렌더링 시간이나 전체 홈 응답 시간과 다르다.
 
 stdout 예: `{"event":"home_query","name":"homeBanners","durationMs":42,"outcome":"success"}`. 실패는 `outcome: error`다. 기존 CloudWatch Logs Insights에서 `event = "web_vital"` 또는 `event = "home_query"`로 필터한 뒤 이름별 건수·평균·백분위수를 조회한다. 필터는 기존 서비스 로그 그룹에서 사용하며 새 로그 전달 경로는 만들지 않는다.

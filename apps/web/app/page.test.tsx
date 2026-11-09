@@ -3,7 +3,6 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 vi.mock("server-only", () => ({}));
 
 const repositories = vi.hoisted(() => ({
-  listFeaturedPublished: vi.fn(),
   homeBanners: vi.fn(),
   findBySlug: vi.fn(),
   listSlots: vi.fn(),
@@ -15,7 +14,6 @@ const repositories = vi.hoisted(() => ({
 }));
 
 vi.mock("../server/config/env", () => ({ loadServerEnv: () => ({ SUPABASE_URL: "https://db.test", SUPABASE_SERVICE_ROLE_KEY: "secret" }) }));
-vi.mock("../server/g3/live-event-repository", () => ({ createLiveEventRepositoryFromEnvironment: () => ({ listFeaturedPublished: repositories.listFeaturedPublished }) }));
 vi.mock("../server/content/published-content-repository", () => ({ createPublishedContentRepositoryFromEnvironment: () => ({ findBySlug: repositories.findBySlug }) }));
 
 vi.mock("../server/content/home-banner-repository", () => ({ createHomeBannerRepository: () => ({ list: repositories.homeBanners, listSlots: repositories.listSlots }) }));
@@ -33,7 +31,6 @@ describe("Home server content isolation", () => {
     repositories.homeBanners.mockReset().mockResolvedValue([]);
     repositories.raffles.mockReset().mockResolvedValue({ raffles: [] });
     repositories.guidePhotos.mockReset().mockResolvedValue(undefined);
-    repositories.listFeaturedPublished.mockReset().mockResolvedValue([]);
     repositories.findBySlug.mockReset().mockResolvedValue(null);
     repositories.listSlots.mockReset().mockResolvedValue({});
     repositories.homeNotices.mockReset().mockResolvedValue({ items: [], nextCursor: null });
@@ -42,7 +39,7 @@ describe("Home server content isolation", () => {
   });
 
   const props = (result: { props: { children: Array<{ props: Record<string, unknown> }> } }) => result.props.children[1].props as {
-    queries: Record<"featuredLives" | "celebrities" | "homeBanners" | "homeSlots" | "elinaRaffles" | "homeNotices" | "homeGallery" | "homeShorts", Promise<{ status: string; value?: unknown }>>;
+    queries: Record<"celebrities" | "homeBanners" | "homeSlots" | "elinaRaffles" | "homeNotices" | "homeGallery" | "homeShorts", Promise<{ status: string; value?: unknown }>>;
     [key: string]: unknown;
   };
 
@@ -55,14 +52,6 @@ describe("Home server content isolation", () => {
     repositories.raffles.mockRejectedValue(new Error("unavailable"));
     const fallback = await HomePage({ searchParams: Promise.resolve({}) });
     expect(await props(fallback).queries.elinaRaffles).toEqual({ status: "rejected" });
-  });
-
-  it("keeps successful creator content when LIVE loading fails", async () => {
-    repositories.listFeaturedPublished.mockRejectedValue(new Error("live unavailable"));
-    const result = await HomePage({ searchParams: Promise.resolve({ locale: "en" }) });
-    expect(props(result)).toMatchObject({ locale: "en" });
-    expect(await props(result).queries.featuredLives).toEqual({ status: "rejected" });
-    expect(await props(result).queries.celebrities).toEqual({ status: "fulfilled", value: [] });
   });
 
   it("reads the thin banner slot with the page and keeps the page when the slot read fails", async () => {
@@ -117,9 +106,9 @@ describe("Home server content isolation", () => {
     expect(await props(result).queries.celebrities).toEqual({ status: "fulfilled", value: [elina] });
   });
 
-  it("no longer reads the creator LIVE metadata or the unlisted list that only the retired favorites row used", async () => {
+  it("no longer reads the upcoming LIVE list, the creator LIVE metadata or the unlisted list that only the retired blocks used", async () => {
     const result = await HomePage({ searchParams: Promise.resolve({}) });
-    expect(Object.keys(props(result).queries).sort()).toEqual(["celebrities", "elinaRaffles", "featuredLives", "homeBanners", "homeGallery", "homeNotices", "homeShorts", "homeSlots"]);
+    expect(Object.keys(props(result).queries).sort()).toEqual(["celebrities", "elinaRaffles", "homeBanners", "homeGallery", "homeNotices", "homeShorts", "homeSlots"]);
   });
 
   it("no longer reads retired event artwork for the home page", async () => {
@@ -128,23 +117,20 @@ describe("Home server content isolation", () => {
     expect(await props(result).queries.celebrities).toEqual({ status: "fulfilled", value: [] });
   });
 
-  it("retains independent banners if live and creator lookups fail", async () => {
-    repositories.listFeaturedPublished.mockRejectedValue(new Error("live unavailable"));
+  it("retains independent banners if the creator lookup fails", async () => {
     repositories.findBySlug.mockRejectedValue(new Error("creator unavailable"));
     repositories.homeBanners.mockResolvedValue([{ id: "independent" }]);
     const result = await HomePage({ searchParams: Promise.resolve({}) });
     expect(await props(result).queries.homeBanners).toEqual({ status: "fulfilled", value: [{ id: "independent" }] });
-    expect(await props(result).queries.featuredLives).toEqual({ status: "rejected" });
     expect(await props(result).queries.celebrities).toEqual({ status: "rejected" });
   });
 
   it("renders instead of throwing when every main content source fails; each section degrades on its own", async () => {
-    repositories.listFeaturedPublished.mockRejectedValue(new Error("live unavailable"));
     repositories.findBySlug.mockRejectedValue(new Error("creators unavailable"));
     repositories.homeBanners.mockRejectedValue(new Error("banners unavailable"));
     const result = await HomePage({ searchParams: Promise.resolve({}) });
     const { queries } = props(result);
-    expect(await Promise.all([queries.featuredLives, queries.celebrities, queries.homeBanners])).toEqual([{ status: "rejected" }, { status: "rejected" }, { status: "rejected" }]);
+    expect(await Promise.all([queries.celebrities, queries.homeBanners])).toEqual([{ status: "rejected" }, { status: "rejected" }]);
   });
 });
 

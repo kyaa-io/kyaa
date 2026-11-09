@@ -357,7 +357,7 @@ node apps/web/scripts/measure-r3.mjs --base http://127.0.0.1:3001 --out <dir> [-
 |---|---|---|---|
 | 토큰 | `--color-primary-action`, `--color-coin(-ink)`, `--color-foil`, `--color-service-ink`, `--color-surface-focus`, `--color-success`, `--color-warning`, `--shadow-dialog`, `--radius-collection`, `--radius-hero`, `--motion-control/-layout/-exit`, `--fan-heading-size-wide`, `--fan-heading-editorial-weight`, `--fan-personal-section-*`, `--fan-event-catalog-title-size`, `--fan-aside-title-*`, `--fan-description-*`, `--fan-action-emphasis-size`, `--fan-action-service-height` | §1 새 토큰 | 예정. globals에 남아 있고 사용처 치환 전. 굵기 토큰 7종은 1단계에서 별칭(값 동일), `--color-primary-action`은 1단계에서 삭제 |
 | 글꼴 | `@font-face` `Pretendard UI 550/650/850`, `public/fonts/pencil/*.woff`, 모듈 `font-family` 선언 | `globals.css` body 1줄 | 부분: body 글꼴은 Variable 1줄이지만 `@font-face` 6개·`public/fonts/pencil/*.woff`와 e2e 하니스의 `Pretendard UI` 참조가 남아 있다 |
-| 컴포넌트 | `FanHelpTip`, `HelpHint`, `EarnBadge corner`, `EarnRemaining`, `EarnActionBadge`, `FanAction service/passport`, `FanEntityCard`·`FanPostRow`(→ `FanRow notice`), `SelectedBiasBar`·헤더 `SelectedBiasChip`(→ 메뉴 행), `GroupHeaderPoints`, `FanLanguageSwitch compact`(헤더), `PencilHeaderIcon`, `MissionArt`(미션 행), `StanLucky` 카드 목록(→ `LuckyDrawModule`), `WalletBalances`·`WalletExchange`(MY), `my-benefit-progress`, 오늘의 덕질 목록(`MyAttendanceList` 덕질 사용분), `relative-time.tsx`·`i18n/relative-time.ts`, 홈 `HomeCommunityPreview`·이벤트 배너·`HomeUpcoming`, 홈 브랜드 줄·배너 캐러셀 | §2 | 예정(A·B 화면 작업, 5차 보류). `FanAction service/passport`는 아직 알약 그라데이션 테두리(계약 시험 고정) |
+| 컴포넌트 | `FanHelpTip`, `HelpHint`, `EarnBadge corner`, `EarnRemaining`, `EarnActionBadge`, `FanAction service/passport`, `FanEntityCard`·`FanPostRow`(→ `FanRow notice`), `SelectedBiasBar`·헤더 `SelectedBiasChip`(→ 메뉴 행), `GroupHeaderPoints`, `FanLanguageSwitch compact`(헤더), `PencilHeaderIcon`, `MissionArt`(미션 행), `StanLucky` 카드 목록(→ `LuckyDrawModule`), `WalletBalances`·`WalletExchange`(MY), `my-benefit-progress`, 오늘의 덕질 목록(`MyAttendanceList` 덕질 사용분), `relative-time.tsx`·`i18n/relative-time.ts`, 홈 `HomeCommunityPreview`·이벤트 배너, 홈 브랜드 줄·배너 캐러셀 | §2 | 예정(A·B 화면 작업, 5차 보류). `FanAction service/passport`는 아직 알약 그라데이션 테두리(계약 시험 고정) |
 | CSS 패턴 | `linear-gradient`(로고 제외), `box-shadow`(오버레이 토큰 외), `border-radius` 10/16/20, `text-transform: uppercase`, `border-left` 액센트 바, 아이콘 뒤 채움 배경, `animation` 반복(모듈·스켈레톤 외), 개별 `keep-all`, `Pretendard UI` 참조 | 토큰·전역 | S1·N26·N27(집계)·N28로 추적. 목표 `Pretendard UI` 참조 0(현재 globals·e2e 하니스에 남음) |
 | 문구 키 | 도움말 키(`walletHelpCopy`·`stanHeartHelp` 등), `오늘 N번 남음`·`N명까지`, `Kyaa. Every Fan Moment Counts.`(홈 본문), `모은 포인트 사용하기`(B13에서 삭제: 모임 홈은 `포인트·응모권` 제목 + `내 포인트 보기` 링크). `광고 보고 교환하기`는 B13(2026-11-09 사용자 확정)으로 유지, 폐기 대상 아님 | `/guide/dukjil` 사실 표, `0/3` | A·B |
 
@@ -670,7 +670,7 @@ The page uses asymmetry only at desktop scale. The main content owns the visual 
 - Hero uses full-bleed high-resolution KARA photography with `object-fit: cover` and a slightly right-shifted focal position.
 - Home favorite cards use a nested gallery composition from 768px: a square `#F6F6F5` field contains the shared `min(84%, 240px)` square portrait. Below 768px, the portrait and preview fill the square frame, retaining the same registered crop. The `/celebrities` directory fills its entire media area, 5:4 below 768px and square from 768px. Both use the shared per-creator framing. Mobile directory images requiring `contain` use a content-sized frame instead of 5:4 letterboxing; never promote an unapproved crop to cover.
 - Favorite portraits are direct, colorful, face-legible editorial crops: blue KARA group styling, warm gold Elina close-up, cool dark Changha close-up.
-- Upcoming LIVE avatars reuse the corresponding artist imagery in circular 64px desktop / 56px mobile crops.
+- Upcoming LIVE avatars reuse the corresponding artist imagery in circular 64px desktop / 56px mobile crops. (Home no longer has this block since 2026-11-09; the LIVE list, calendar and fan pages keep their own.)
 - Passport uses the fully opened identity-and-stamp-book image `passport-open-book.svg` with `object-fit: contain` in small places and a CSS book with page turns on the detail screen. It is never shown as a closed burgundy cover; the detail screen keeps only a cover band.
 
 ### Distinctive Components
@@ -679,7 +679,7 @@ The page uses asymmetry only at desktop scale. The main content owns the visual 
 - Favorite Gallery Collection: one rounded outer collection with image-led items; each item reads portrait → emphasized name → fan count → fan-detail and social actions. Keep real YouTube, TikTok, and Instagram marks in full-size targets.
 - Logged-out Live Card: heading and subtitle at the top, centered calendar-heart line icon, centered explanatory copy, Google login CTA at the bottom.
 - Fan Passport Card: title/subtitle, opened Passport asset, lifecycle value copy, and login CTA in one quiet vertical composition.
-- Upcoming LIVE Row: circular avatar, identity/title/date block, right-aligned reservation metadata on tablet/desktop, and a 44px chevron action.
+- Upcoming LIVE Row: circular avatar, identity/title/date block, right-aligned reservation metadata on tablet/desktop, and a 44px chevron action. (Removed from Home 2026-11-09; see "홈 블록 순서" in 안내·배너.)
 
 ## 5. Layout Principles
 
@@ -1936,4 +1936,6 @@ At the user's request, registered Changha identity and hero images use the unedi
 
 - 그림 자르기(`image-framing.md` 적용): 칸에 cover로 채우고 종류별로 얼굴·글자가 남는 위치만 정한다. 위나 환영 정사각 원본 `50% 20%`, 모바일 4:3 원본 `53% 25%`(네 얼굴이 가로 74% 안), GGGI 인물 `50% 28%`, 안내 그림 데스크톱 `right center`·모바일 `center top`, 그 밖 `50% 35%`. 빈 띠 0, 단체 사진 얼굴 잘림 0을 390·1440에서 눈으로 확인했다(지정 원본 3장과 로컬 합성 슬라이드; 운영 CMS 실제 자산은 확인하지 못했다).
 - 소유자: 칸 높이는 `guest-home.module.css` `.heroViewport`, 칸 안 배치는 `home-hero-banner.module.css`, 그림 자르기는 `managed-home-banner.module.css`. 그림 `sizes`는 `homeHeroSizes()`(1440+ 572px).
+- **홈 블록 순서(2026-11-09 사용자 결정, TK-REMOVE-UPCOMING-LIVE)**: 브랜드 줄·메인 배너 → 랭킹(팬·크리에이터) → 얇은 배너 → 공지·갤러리·숏츠. 홈의 '다가오는 LIVE' 블록(제목·`전체 라이브` 링크·LIVE 행 3개·쪽 넘김)은 숨기지 않고 지웠다: `HomeUpcoming`·`StreamHomeUpcoming`, 홈 조회 `featuredLives`(와 저장소 `listFeaturedPublished`·`listPublishedSlugs`), `GuestHome`의 `featuredLives` 속성, 문구 키 6개(`upcoming`·`previousLivePage`·`nextLivePage`·`noLive`·`allLive`·`detail`) 및 번역, 행·쪽 넘김 스타일(`.liveList` 등), 시험.
+- 남긴 것과 이유: `nearestRecurringLives`와 `listPublishedCatalog`는 LIVE 목록 화면(`/live`)이 그대로 쓴다. `/live`·LIVE 캘린더·팬페이지 LIVE(`다가오는 일정` 사이드)는 이 결정과 무관하다. DB·API 경로는 바꾸지 않았다.
 

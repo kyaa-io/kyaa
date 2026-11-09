@@ -75,7 +75,7 @@ function AccountSwitcher({ children }: { children: ReactNode }) {
 }
 
 function fanWebScreen() {
-  if (feedbackMode && location.pathname === "/") return <GuestHome celebrities={feedbackPublishedCreators(locale)} featuredLives={[]} homeBanners={[feedbackBanner(locale)]} locale={locale} />;
+  if (feedbackMode && location.pathname === "/") return <GuestHome celebrities={feedbackPublishedCreators(locale)} homeBanners={[feedbackBanner(locale)]} locale={locale} />;
   if (location.pathname === "/community") {
     const communityLocale = parseAppLocale(params.get("locale"));
     const creator = selectCommunityCreator(communityCreators, params.get("creator") ?? undefined);

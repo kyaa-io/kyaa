@@ -21,10 +21,6 @@ import {
 import { createPublicImageRoleReader, type PublicImageRoleReader } from "../media/public-image-reader";
 
 export interface LiveEventRepository {
-  listFeaturedPublished(input: {
-    locale: LiveLocale;
-    now: Date;
-  }): Promise<readonly LiveEventResponse[]>;
   listPublishedCatalog(input: {
     creatorSlug?: string;
     locale: LiveLocale;
@@ -94,7 +90,6 @@ export interface LiveViewerRecord {
 }
 
 export interface LiveEventDataSource {
-  listPublishedSlugs(featuredAt?: Date): Promise<readonly { slug: string; createdAt: string }[]>;
   findPublishedEvent(slug: string, locale: LiveLocale): Promise<LiveEventRecord | null>;
   findViewer(appUserId: string, event: LiveEventRecord): Promise<LiveViewerRecord>;
   findMissionsAvailable?(eventId: string, locale: LiveLocale, now: Date): Promise<boolean>;
@@ -106,40 +101,6 @@ export interface LiveEventDataSource {
 
 export class DefaultLiveEventRepository implements LiveEventRepository {
   constructor(private readonly source: LiveEventDataSource) {}
-
-  async listFeaturedPublished(input: { locale: LiveLocale; now: Date }): Promise<readonly LiveEventResponse[]> {
-    const published = await this.source.listPublishedSlugs(input.now);
-    const projected = await Promise.all(
-      published.map(async ({ slug, createdAt }) => ({
-        createdAt,
-        response: await this.findPublishedBySlug({ ...input, slug, appUserId: null }),
-      })),
-    );
-
-    return projected
-      .filter(({ response }) => response?.live.celebrity.slug !== "kyaa-wave-fanpage")
-      .filter(
-        (item): item is { createdAt: string; response: LiveEventResponse } =>
-          item.response?.live.effectiveStatus === "live" ||
-          (item.response?.live.effectiveStatus === "scheduled" && Date.parse(item.response.live.startsAt) > input.now.getTime()),
-      )
-      .sort((left, right) => {
-        const statusOrder = (status: EffectiveLiveStatus) => status === "live" ? 0 : 1;
-        const statusDifference =
-          statusOrder(left.response.live.effectiveStatus) -
-          statusOrder(right.response.live.effectiveStatus);
-        if (statusDifference !== 0) return statusDifference;
-        const startDifference =
-          new Date(left.response.live.startsAt).getTime() -
-          new Date(right.response.live.startsAt).getTime();
-        if (startDifference !== 0) return startDifference;
-        const createdDifference =
-          new Date(left.createdAt).getTime() - new Date(right.createdAt).getTime();
-        if (createdDifference !== 0) return createdDifference;
-        return left.response.live.slug.localeCompare(right.response.live.slug);
-      })
-      .map(({ response }) => response);
-  }
 
   async listPublishedCatalog(input: {
     creatorSlug?: string;
@@ -315,13 +276,6 @@ export class PublicImageLiveEventRepository implements LiveEventRepository {
     private readonly images: PublicImageRoleReader,
   ) {}
 
-  async listFeaturedPublished(input: { locale: LiveLocale; now: Date }): Promise<readonly LiveEventResponse[]> {
-    return enrichLiveResponses(
-      await this.repository.listFeaturedPublished(input),
-      this.images,
-    );
-  }
-
   async listPublishedCatalog(input: { creatorSlug?: string; locale: LiveLocale; appUserId: string | null; now: Date }) {
     const catalog = await this.repository.listPublishedCatalog(input);
     const all = [...catalog.liveNow, ...catalog.upcoming, ...catalog.replay];
@@ -468,34 +422,6 @@ class SupabaseLiveEventDataSource implements LiveEventDataSource {
 
   findMissionsAvailable(eventId: string, locale: LiveLocale, now: Date) {
     return readPublishedMissionAvailability(this.database, eventId, locale, now);
-  }
-
-  async listPublishedSlugs(featuredAt?: Date): Promise<readonly { slug: string; createdAt: string }[]> {
-    const { data, error } = await this.database
-      .from("live_events")
-      .select("slug, created_at, content_status, starts_at, ends_at, live_status_overrides(effective_status, effective_from, effective_until, created_at)")
-      .eq("publication_status", "published")
-      .is("archived_at", null)
-      .order("created_at", { ascending: true });
-    if (error) throw new Error("Published live list lookup failed");
-    // Skip historical detail/mission lookups before the home page fans out.
-    const featured = featuredAt ? (data ?? []).filter((event) => {
-      const status = deriveEffectiveLiveStatus({
-        sourceStatus: event.content_status,
-        startsAt: event.starts_at,
-        endsAt: event.ends_at,
-        overrides: (event.live_status_overrides ?? []).map((override) => ({
-          effectiveStatus: override.effective_status, effectiveFrom: override.effective_from,
-          effectiveUntil: override.effective_until, createdAt: override.created_at,
-        })),
-        now: featuredAt,
-      });
-      return status === "live" || (status === "scheduled" && Date.parse(event.starts_at) > featuredAt.getTime());
-    }) : data ?? [];
-    return featured.map((event) => ({
-      slug: event.slug,
-      createdAt: event.created_at,
-    }));
   }
 
   async findPublishedEvent(slug: string, locale: LiveLocale): Promise<LiveEventRecord | null> {
