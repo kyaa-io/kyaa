@@ -1,0 +1,57 @@
+/* 모임 7차(plan-ux-r8 G1·G2·얇은 배너). 회색 채움 없음: 자리표시는 흰 바탕과 헤어라인, 호버는 옅은 핑크. 데이터가 적어도 블록 높이는 같다. */
+.card { display: grid; gap: var(--space-3); margin-bottom: var(--fan-section-gap); padding: var(--space-4); border: 1px solid var(--color-line-subtle); border-radius: var(--radius-card, 12px); background: var(--color-canvas); }
+.artistRow { display: flex; align-items: center; gap: var(--space-4); min-width: 0; }
+.rail { display: flex; flex: 1; gap: var(--space-4); min-width: 0; margin: 0; padding: 0; overflow-x: auto; list-style: none; scrollbar-width: none; overscroll-behavior-x: contain; }
+.rail::-webkit-scrollbar { display: none; }
+.slot { display: grid; flex: none; width: 72px; justify-items: center; align-content: start; gap: var(--space-2); }
+.add { display: grid; box-sizing: border-box; text-decoration: none; width: 64px; height: 64px; place-items: center; padding: 0; border: 1px dashed var(--color-muted); border-radius: 50%; background: var(--color-canvas); color: var(--color-ink); cursor: pointer; }
+.add:focus-visible, .artist:focus-visible, .postTitle:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
+.artist { display: grid; justify-items: center; gap: var(--space-2); border-radius: var(--radius-card, 12px); color: inherit; text-decoration: none; }
+.slotName { display: -webkit-box; width: 72px; min-height: 36px; overflow: hidden; font-size: var(--fan-metadata-size); font-weight: 700; line-height: 18px; text-align: center; overflow-wrap: anywhere; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+.ghost { display: block; width: 64px; height: 64px; border: 1px solid var(--color-line); border-radius: 50%; background: var(--color-canvas); }
+.ghostName { display: block; width: 48px; height: 12px; margin: var(--space-1) 0 var(--space-5); border: 1px solid var(--color-line-subtle); border-radius: var(--radius-pill); background: var(--color-canvas); }
+.login { flex: none; }
+@media (hover: hover) and (pointer: fine) { .add:hover, .artist:hover .slotName { background: var(--color-accent-soft); } }
+.add:active, .artist:active { transform: scale(.97); }
+
+.hot { display: grid; margin-bottom: var(--fan-section-gap); }
+.hotHead { display: flex; align-items: baseline; gap: var(--space-2); }
+.hotSub { color: var(--color-muted); font-size: var(--fan-metadata-size); line-height: 18px; }
+.posts { margin: var(--space-3) 0 0; padding: 0; border-top: 1px solid var(--color-line); list-style: none; }
+.post { display: grid; height: 56px; box-sizing: border-box; grid-template-columns: 32px minmax(0, 1fr); grid-template-rows: 22px 18px; align-content: center; column-gap: var(--space-3); border-bottom: 1px solid var(--color-line); }
+.post > :first-child { grid-row: 1 / 3; align-self: center; }
+.postTitle { overflow: hidden; color: inherit; font-size: var(--fan-item-title-size); font-weight: 700; line-height: 22px; text-decoration: none; text-overflow: ellipsis; white-space: nowrap; }
+.postMeta { display: flex; min-width: 0; gap: var(--space-1); overflow: hidden; color: var(--color-muted); font-size: var(--fan-metadata-size); line-height: 18px; white-space: nowrap; }
+.postMeta a { overflow: hidden; color: var(--color-ink); font-weight: 700; text-decoration: none; text-overflow: ellipsis; }
+.ghostSmall { display: block; width: 32px; height: 32px; border: 1px solid var(--color-line); border-radius: 50%; background: var(--color-canvas); }
+.placeholderText { grid-row: 1 / 3; align-self: center; color: var(--color-muted); font-size: var(--fan-action-label-size); font-weight: 400; line-height: 22px; }
+.more { display: flex; justify-content: center; margin-top: var(--space-3); }
+.state { display: grid; min-height: calc((var(--min-target) + var(--space-3)) * 5); align-items: center; border-top: 1px solid var(--color-line); margin-top: var(--space-3); }
+@media (hover: hover) and (pointer: fine) { .postTitle:hover, .postMeta a:hover { text-decoration: underline; text-underline-offset: 3px; } }
+
+/* 얇은 배너 캐러셀: 390 90px, 1440 120px. 띠 그림(원본 716×180 / 2720×240)이 있으면 꽉 채우고, 없으면 흰 바탕과 헤어라인에 썸네일. */
+.thin { position: relative; display: flex; height: 90px; box-sizing: border-box; align-items: stretch; margin-bottom: var(--fan-section-gap); overflow: hidden; border: 1px solid var(--color-line); border-radius: var(--radius-card, 12px); background: var(--color-canvas); }
+.thinFull { display: block; flex: 1; min-width: 0; height: 100%; }
+.thinFull picture, .thinFull img { display: block; width: 100%; height: 100%; }
+.thinFull img { object-fit: cover; object-position: center; }
+.thinSlide { display: flex; flex: 1; min-width: 0; align-items: center; gap: var(--space-3); color: inherit; text-decoration: none; }
+.thinImage { display: block; flex: none; height: 100%; }
+.thinImage img { display: block; width: auto; height: 100%; }
+.thinCopy { display: grid; min-width: 0; gap: var(--space-1); padding-right: var(--space-2); }
+.thinTitle { display: -webkit-box; overflow: hidden; font-size: var(--fan-action-emphasis-size); font-weight: 700; line-height: 20px; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+.thinAction { color: var(--color-accent-ink); font-size: var(--fan-metadata-size); font-weight: 700; line-height: 18px; }
+.thinFull:focus-visible, .thinSlide:focus-visible { outline: 2px solid var(--color-focus); outline-offset: -2px; }
+.thinControls { display: flex; flex: none; align-items: center; color: var(--color-muted); font-size: var(--fan-badge-size); font-variant-numeric: tabular-nums; }
+.thin[data-fill] { border: 0; }
+.thin[data-fill] .thinControls { position: absolute; right: var(--space-2); bottom: var(--space-2); height: 36px; padding: 0 var(--space-1); border-radius: var(--radius-pill); background: var(--color-canvas); box-shadow: inset 0 0 0 1px var(--color-line); }
+@media (min-width: 64rem) {
+  .thin { height: 120px; }
+  .thinSlide { gap: var(--space-6); }
+  .thinTitle { display: block; font-size: var(--fan-item-title-size); line-height: 24px; text-overflow: ellipsis; white-space: nowrap; }
+  .thinAction { font-size: var(--fan-action-label-size); }
+  .thinControls { gap: var(--space-1); padding-right: var(--space-3); font-size: var(--fan-metadata-size); }
+  .thin[data-fill] .thinControls { padding-right: var(--space-1); }
+}
+
+/* 지금 주목할 페이지는 목록·내 페이지 아래(순서: 내 아티스트 → 얇은 배너 → Hot 게시글 → 둘러보기 → 내 페이지 → 주목할 페이지). */
+.featuredLast { margin-top: var(--space-4); }

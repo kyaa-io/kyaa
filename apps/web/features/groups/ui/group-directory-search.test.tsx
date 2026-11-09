@@ -8,7 +8,7 @@ vi.mock('@/features/auth/client/cognito-auth',()=>({useByUsAuth:()=>auth}));
 vi.mock('@/components/byus-session-provider',()=>({useByUsSession:()=>session}));
 vi.mock('@/features/dukjil/ui/dukjil-provider',()=>({DukjilProvider:({children}:{children:React.ReactNode})=><>{children}</>,useDukjil:()=>null}));
 vi.mock('./group-shell',()=>({GroupShell:({children}:{children:React.ReactNode})=><main>{children}</main>,GroupAvatar:()=>null}));
-vi.mock('./discovery-carousel',()=>({DiscoveryCarousel:()=>null}));
+vi.mock('./directory-top',()=>({MyArtists:()=>null,ThinCarousel:()=>null,HotPosts:()=>null}));
 const row=(id:string,name:string)=>({id,kind:'hobby' as const,celebrityId:null,slug:null,name,description:'',imageUrl:null,question:null,memberCount:1});
 const all=[row('10000000-0000-4000-8000-000000000001','전체 모임 A'),row('10000000-0000-4000-8000-000000000002','한강 러닝')];
 type Pending={url:string;resolve:(items:typeof all)=>void};

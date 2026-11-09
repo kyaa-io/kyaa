@@ -31,12 +31,13 @@ import { groupApiQuery, groupHref, groupListSchema, type GroupList } from "../do
 import { useGroupResource } from "./use-group-resource";
 import { groupsCopy } from "./copy";
 import { GroupShell } from "./group-shell";
-import { DiscoveryCarousel } from "./discovery-carousel";
+import { HotPosts, MyArtists, ThinCarousel } from "./directory-top";
 import { creatorRoleFilterLabel } from "@/features/creator/domain/creator-role";
 import { discoveryCopy } from "./discovery-copy";
 import { walletCopy } from "@/features/group-wallet/ui/copy";
 import { waveFriendsCopy } from "@/i18n/catalogs/features__fanpage__wave-friends";
 import styles from "./groups.module.css";
+import directoryTopStyles from "./directory-top.module.css";
 import stateStyles from "./group-directory-state.module.css";
 import loadingStyles from "./group-directory-loading.module.css";
 import {SourceStatePanel} from "./source-state-panel";
@@ -128,9 +129,10 @@ export function GroupDirectory({locale,initialOwned=false,banners=[]}:{locale:Ap
   const attendanceAction=!resource.authenticated?<FanAction className={styles.discoveryAttendanceGuest} variant="neutral" href={directoryLogin}>{w.attendance}</FanAction>:<FanAction href={`/my/wallet?view=attendance&locale=${locale}`} onClick={event=>{if(event.defaultPrevented||event.button!==0||event.metaKey||event.ctrlKey||event.shiftKey||event.altKey||event.currentTarget.target||event.currentTarget.hasAttribute('download'))return;event.preventDefault();attendanceTrigger.current=event.currentTarget;setAttendanceOpen(true);}} variant="primary">{w.attendance}</FanAction>;
   return <GroupShell locale={locale}>
     <header className={styles.discoveryIntro}><h1>{c.title}</h1></header>
-    <DiscoveryCarousel locale={locale} banners={banners}/>
-    <section className={styles.featured} aria-label={featuredTitle[locale]}><h2>{featuredTitle[locale]}</h2>{featured.error?<DirectoryAreaError fit locale={locale} title={featuredErrorLabel[locale]} retryLabel={t.retry} onRetry={featured.retry}/>:featured.loading&&!featured.data?<DirectorySkeleton kind="featured" label={t.loading}/>:featured.data?.items.length?<div className={directoryStyles.cards}>{featured.data.items.map(page=>pageCard(page,"card"))}</div>:featured.data?<p>{t.empty}</p>:null}</section>
-    <div className={`${styles.layout} ${styles.discoveryLayout}`}><section className={styles.main} aria-label={t.explore}>
+    <MyArtists locale={locale} loginPath={`/pages/groups?${directoryLoginQuery}`}/>
+    <ThinCarousel banners={banners} locale={locale}/>
+    <div className={`${styles.layout} ${styles.discoveryLayout}`}><section className={styles.main} aria-label={t.explore} id="directory-explore" data-directory-explore="">
+      <HotPosts locale={locale}/>
       <div className={styles.discoveryHeading}><h2>{t.explore}</h2>{listData&&!resource.error&&<output aria-live="polite" className={styles.meta}>{t.all} {listedCount.toLocaleString(locale)}{listData.totalCount===undefined&&listData.nextCursor?'+':''}</output>}</div>
       <div className={styles.discoveryControls}><div className={`${styles.filters} ${styles.directoryFamilyFilters}`} aria-label={t.explore}><button className={styles.chip} aria-pressed={type==='all'} onClick={()=>setType('all')}>{t.all}</button><button className={styles.chip} aria-pressed={type==='fan'} onClick={()=>setType('fan')}>{fanpageLabel[locale]}</button><div className={styles.filters} role="group" aria-label={t.groups}><span className={styles.meta}>{t.groups}</span>{(['hobby','brand'] as const).map(value=><button className={styles.chip} aria-pressed={type===value} key={value} onClick={()=>{if(artistRole)updateQuery('artistRole',undefined);setType(value);}}>{t[value]}</button>)}</div></div>
       <form className={styles.search} onSubmit={submit}><input className={styles.input} aria-label={t.searchPlaceholder} placeholder={t.searchPlaceholder} value={draft} onChange={e=>setDraft(e.target.value)} onCompositionStart={()=>setComposing(true)} onCompositionEnd={()=>setComposing(false)} maxLength={100}/><button className={styles.searchIcon} aria-label={t.search}><Search size={18}/></button></form>
@@ -147,6 +149,7 @@ export function GroupDirectory({locale,initialOwned=false,banners=[]}:{locale:Ap
       <div className={styles.discoveryCreation}><section><h3>{c.fanTitle}</h3><FanAction href={`/pages/groups/apply?locale=${locale}&kind=fan`} onClick={event=>openApplication(event,'fan')} variant="text" trailingIcon={<ArrowRight/>}>{groupApplyText(locale,'fanPageApply')}</FanAction></section>
       <section><h3 className={directoryStyles.helpTitle}>{c.otherTitle}<FanHelpTip label={c.otherTitle} title={c.otherTitle} closeLabel={fanUiText(locale,"close")}><p>{groupApplyText(locale,'hobbyDescription')}</p><p>{groupApplyText(locale,'brandDescription')}</p></FanHelpTip></h3><FanAction href={`/pages/groups/apply?locale=${locale}`} onClick={event=>openApplication(event,'hobby')} variant="text" trailingIcon={<ArrowRight/>}>{t.apply}</FanAction></section></div>
     </aside></div>
+    <section className={`${styles.featured} ${directoryTopStyles.featuredLast}`} aria-label={featuredTitle[locale]}><h2>{featuredTitle[locale]}</h2>{featured.error?<DirectoryAreaError fit locale={locale} title={featuredErrorLabel[locale]} retryLabel={t.retry} onRetry={featured.retry}/>:featured.loading&&!featured.data?<DirectorySkeleton kind="featured" label={t.loading}/>:featured.data?.items.length?<div className={directoryStyles.cards}>{featured.data.items.map(page=>pageCard(page,"card"))}</div>:featured.data?<p>{t.empty}</p>:null}</section>
     {application&&<GroupApplicationDialog locale={locale} initialKind={application.kind} initialName={application.name} onClose={()=>setApplication(null)}/>}
   {attendanceOpen&&<WalletAttendanceDialog locale={locale} open onClose={()=>{setAttendanceOpen(false);requestAnimationFrame(()=>attendanceTrigger.current?.focus());}}/>}
   </GroupShell>;
