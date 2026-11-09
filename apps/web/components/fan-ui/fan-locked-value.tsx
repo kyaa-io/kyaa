@@ -18,7 +18,7 @@ export function FanLockedValue({ locale, className }: Readonly<{ locale: AppLoca
 }
 
 /** 비로그인 화면의 내 목록 자리. 로딩이 아니므로 움직이지 않고 aria-busy를 쓰지 않는다. */
-export function FanLockedRows({ rows, className }: Readonly<{ rows: 2 | 3; className?: string }>) {
+export function FanLockedRows({ rows, className }: Readonly<{ rows: 2 | 3 | 5; className?: string }>) {
   return (
     <div className={[styles.rows, className ?? ""].filter(Boolean).join(" ")} aria-hidden="true">
       {Array.from({ length: rows }, (_, index) => (

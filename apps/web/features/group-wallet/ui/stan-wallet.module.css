@@ -1,68 +1,48 @@
-/* 덕질 wallet (감독 2026-11-09 20:18). Two columns read the same way, top to bottom:
-   left  포인트 (the one big number) → gauge to the next ticket → 응모권 M장 → the exchange (same column);
-   right 스탬프 n/9 → nine-slot gauge → 하트 H. The top cells share the label · value · gauge tracks (subgrid), so the gauges and the results line up.
-   No third column; 안내 › sits at the card's top end, over the stamps label line. Every cell is one link. */
-.wallet {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  grid-template-rows: auto auto auto auto auto;
-  min-width: 0;
-  box-sizing: border-box;
-  border: 1px solid var(--color-line);
-  border-radius: var(--radius-control);
-  background: var(--color-surface);
-}
-.cell { display: grid; align-content: start; gap: var(--space-1); min-width: 0; padding: var(--space-3) var(--space-4) var(--space-2); color: inherit; text-decoration: none; }
-.cell:hover { background: var(--color-accent-soft); }
-.cell:focus-visible { outline: 2px solid var(--color-focus); outline-offset: -2px; }
-.cell[data-cell="points"], .cell[data-cell="stamps"] { grid-row: 1 / span 3; grid-template-rows: subgrid; align-content: stretch; padding-bottom: var(--space-1); }
-.cell[data-cell="points"] { grid-column: 1; border-start-start-radius: inherit; }
-.cell[data-cell="stamps"] { grid-column: 2; border-inline-start: 1px solid var(--color-line); border-start-end-radius: inherit; }
-.cell[data-cell="tickets"], .cell[data-cell="hearts"] { align-content: center; padding-block: var(--space-1) var(--space-2); }
-.cell[data-cell="tickets"] { grid-column: 1; grid-row: 4; }
-.cell[data-cell="hearts"] { grid-column: 2; grid-row: 4 / span 2; align-content: start; border-inline-start: 1px solid var(--color-line); border-end-end-radius: inherit; }
-.label { overflow: hidden; color: var(--color-muted); font-size: var(--fan-metadata-size); line-height: 20px; text-overflow: ellipsis; white-space: nowrap; }
-.cell[data-cell="stamps"] .label { max-width: 50%; }
-.value { display: flex; align-items: center; min-width: 0; min-height: 32px; white-space: nowrap; }
-.value img { display: block; }
-.heart { display: block; color: var(--color-accent); fill: currentColor; }
-.step { display: flex; flex-wrap: wrap; align-items: center; column-gap: var(--space-1); min-width: 0; min-height: 24px; font-size: var(--fan-item-title-size); font-weight: var(--fan-item-title-weight); line-height: 24px; }
-.next { flex: none; color: var(--color-muted); }
-.progress { display: block; min-width: 0; min-height: 30px; }
-/* .progress .gauge: same specificity as fan-number .gauge would let the CSS chunk order decide (the bar went to width 0). 390: the bar over its words (the cell is too narrow for both on one line in every language); 768+: one line. */
-.progress .gauge { flex-direction: column; align-items: stretch; gap: var(--space-1); }
-.progress .gauge > span:first-child { flex: none; }
-.progress .gauge > span:last-child { color: var(--color-muted); font-weight: 400; line-height: 20px; white-space: normal; overflow-wrap: anywhere; }
-.ready { display: inline-flex; align-items: center; color: var(--color-accent-ink, var(--color-ink)); font-weight: var(--fan-item-title-weight); }
-.guide { display: inline-flex; grid-column: 2; grid-row: 1; align-self: start; justify-self: end; align-items: center; gap: 0; z-index: 1; min-height: 44px; box-sizing: border-box; padding: var(--space-3) var(--space-4); color: var(--color-ink); font-size: var(--fan-metadata-size); font-weight: var(--fan-item-title-weight); line-height: 20px; text-decoration: none; white-space: nowrap; }
-.guide:hover { color: var(--color-accent-ink, var(--color-ink)); }
-.guide:focus-visible { outline: 2px solid var(--color-focus); outline-offset: -2px; border-radius: var(--space-2); }
-.guide > span { flex: none; color: var(--color-muted); }
-.action { display: grid; grid-column: 1; grid-row: 5; min-width: 0; padding: 0 var(--space-4) var(--space-4); }
-.action > * { white-space: nowrap; }
-/* B13: [− N +] and the exchange on one line (390); a label too long for that line (fr, ru, es…) moves the button to its own full row instead of wrapping
-   into three lines. Stacked in the 288px column (768+), where the label may wrap, never clip. */
-.exchange { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); min-width: 0; }
-.stepper { display: flex; flex: none; align-items: center; }
-.stepper output { min-width: var(--min-target); font-size: var(--fan-item-title-size); font-weight: var(--fan-item-title-weight); line-height: 24px; text-align: center; font-variant-numeric: tabular-nums; white-space: nowrap; }
-.stepper button:disabled { opacity: .4; color: var(--color-ink); }
-.stepperSlot { display: inline-grid; width: var(--min-target); height: var(--min-target); place-items: center; opacity: .4; }
-@media (hover: hover) and (pointer: fine) { .stepper button:hover:not(:disabled) { background: var(--color-accent-soft); } }
-.exchangeAction { flex: 1 1 auto; white-space: nowrap; }
-/* U-1 (회색 면 0): the shared secondary hover fills grey (--color-soft); inside this card it is the pink tint with the pink line instead. */
-@media (hover: hover) and (pointer: fine) { .exchange .exchangeAction:hover:not(:disabled) { border-color: var(--color-accent-line); background: var(--color-accent-soft); } }
-@media (min-width: 48rem) {
-  .cell { padding: var(--space-4) var(--space-5) var(--space-1); }
-  .cell[data-cell="stamps"] .label { max-width: none; }
-  .cell[data-cell="tickets"], .cell[data-cell="hearts"] { padding-block: var(--space-1) var(--space-3); }
-  .value { min-height: 40px; }
-  .progress { min-height: 20px; }
-  .progress .gauge { flex-direction: row; align-items: center; gap: var(--space-2); }
-  .progress .gauge > span:first-child { flex: 1; }
-  .progress .gauge > span:last-child { white-space: nowrap; }
-  .guide { padding-inline: var(--space-5); }
-  .action { padding: 0 var(--space-5) var(--space-5); }
+.wallet { min-width:0; font-variant-numeric:tabular-nums; font-feature-settings:"tnum"; }
+.head { display:flex; align-items:center; justify-content:space-between; gap:var(--space-3); margin-bottom:var(--space-3); }
+.guide { display:inline-flex; align-items:center; gap:var(--space-1); color:var(--color-muted); font-size:var(--fan-badge-size); font-weight:400; text-decoration:none; }
+.tiles { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:var(--space-3); }
+.cell { position:relative; display:grid; grid-template-columns:24px minmax(0,1fr); grid-template-rows:auto auto 1fr; column-gap:var(--space-3); box-sizing:border-box; min-width:0; min-height:125px; padding:var(--space-4); border:0; outline:1px solid var(--color-line); outline-offset:-1px; border-radius:var(--radius-control); background:var(--color-surface); }
+.glyph { position:absolute; width:40px; height:40px; object-fit:contain; left:6px; top:7.5px; }
+.glyph[data-glyph="ticket"] { left:10px; top:5px; }
+.glyph[data-glyph="heart"] { left:8px; top:6.5px; }
+.label { grid-column:2; min-height:24px; color:var(--color-muted); font-size:var(--fan-badge-size); line-height:17px; overflow-wrap:anywhere; }
+.value { display:flex; grid-column:1/-1; min-width:0; min-height:0; margin-top:var(--space-2); line-height:18px; }
+.value .number { font-size:var(--fan-section-size); font-weight:800; line-height:1; gap:var(--space-1); white-space:normal; overflow-wrap:anywhere; }
+.under { grid-column:1/-1; display:flex; flex-direction:column; justify-content:flex-end; align-items:stretch; gap:var(--space-2); min-width:0; min-height:0; margin-top:var(--space-2); }
+.under .gauge { width:100%; min-width:0; gap:0; }
+.under .gauge > span:first-child { height:4px; }
+.tileLink { color:var(--color-ink); font-size:var(--fan-action-emphasis-size); font-weight:700; line-height:23px; text-decoration:none; overflow-wrap:anywhere; }
+button.tileLink { display:inline; align-self:flex-start; width:auto; min-height:0; padding:0; border:0; border-radius:0; text-align:start; }
+.stampLabel { color:var(--color-muted); font-size:var(--fan-badge-size); line-height:17px; text-decoration:none; overflow-wrap:anywhere; }
+.guide:focus-visible,.tileLink:focus-visible,.stampLabel:focus-visible { outline:2px solid var(--color-focus); outline-offset:4px; }
+@media (hover:hover) and (pointer:fine) { .guide:hover,.tileLink:hover,.stampLabel:hover { text-decoration:underline; } }
+.backdrop { position:fixed; inset:0; z-index:var(--z-dialog); display:flex; align-items:flex-end; justify-content:center; background:var(--color-backdrop); }
+.sheet { position:relative; box-sizing:border-box; width:100%; padding:var(--space-8) var(--space-4); padding-bottom:calc(var(--space-8) + env(safe-area-inset-bottom)); border:0; outline:1px solid var(--color-line); outline-offset:-1px; border-radius:var(--radius-control) var(--radius-control) 0 0; background:var(--color-surface); color:var(--color-ink); font-family:var(--font-sans); font-variant-numeric:tabular-nums; font-feature-settings:"tnum"; }
+.handle { position:absolute; top:var(--space-2); left:calc(50% - var(--space-5)); width:40px; height:4px; border-radius:var(--radius-pill); background:var(--color-accent-line); }
+.sheetLabel { font-size:var(--fan-badge-size); color:var(--color-muted); line-height:17px; }
+.sheetValue { display:flex; margin-top:var(--space-1); margin-bottom:var(--space-6); }
+.sheetValue .number { font-size:var(--fan-number-size); font-weight:800; line-height:1; }
+.exchange { display:flex; flex-wrap:wrap; align-items:center; gap:var(--space-3); min-width:0; }
+.stepper { display:flex; flex:none; align-items:center; }
+.stepper output { min-width:56px; font-size:var(--fan-action-emphasis-size); font-weight:700; line-height:24px; text-align:center; font-variant-numeric:tabular-nums; font-feature-settings:"tnum"; white-space:nowrap; }
+.stepper button { border:1px solid var(--color-line); border-radius:var(--radius-action); }
+.stepper button:disabled { opacity:.4; color:var(--color-ink); }
+.stepperSlot { display:inline-grid; width:44px; height:44px; place-items:center; opacity:.4; }
+.exchangeAction { flex:1 1 auto; white-space:nowrap; }
+@media (hover:hover) and (pointer:fine) { .stepper button:hover:not(:disabled),.exchange .exchangeAction:hover:not(:disabled) { background:var(--color-accent-soft); } }
+@media (min-width:1024px) {
+ .cell { min-height:114px; padding:var(--space-5); grid-template-columns:28px minmax(0,1fr); grid-template-rows:18px 17px minmax(0,1fr); column-gap:var(--space-3); row-gap:var(--space-1); }
+ .glyph { left:10px; top:11.5px; }.glyph[data-glyph="ticket"] { left:14px; top:9px; }.glyph[data-glyph="heart"] { left:12px; top:10.5px; }
+ .value { grid-column:2; grid-row:1; margin:0; }.label { grid-column:2; grid-row:2; min-height:0; }
+ .under { grid-column:2; flex-direction:row; align-items:center; justify-content:flex-end; gap:var(--space-3); }
+ .under .gauge { flex:1; width:auto; }.tileLink,.stampLabel { flex-shrink:0; max-width:100%; }
+ .backdrop { align-items:center; }.sheet { max-width:440px; border-radius:var(--radius-control); }
+ .sheet .exchangeAction { min-height:44px; }
 }
 
-/* r6 visual review: "응모권 2 장", "스탬프 4 /9" read as split; the step number keeps its unit attached. */
-.step .stepNumber, .value .stepNumber { gap: 0; }
+.value .number > span:last-child:not(:first-child),.sheetValue .number > span:last-child:not(:first-child) { font-size:var(--fan-action-emphasis-size); }
+.backdrop .sheet[data-overlay-content] { padding-bottom:calc(var(--space-8) + env(safe-area-inset-bottom)); }
+
+.tileLink { position:relative; }
+.tileLink::after{position:absolute;inset:calc(-1 * var(--space-3)) 0;content:""}

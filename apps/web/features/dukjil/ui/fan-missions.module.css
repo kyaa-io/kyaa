@@ -37,3 +37,24 @@
 @media (prefers-reduced-motion:reduce){.todayChevron{transition:none}}
 /* Today's fold opens right under the card's top line: no second line there. */
 .folds>.fold:first-child .cards{border-top:0}
+
+/* Approved DS-D-DUO R2: one filled action belongs to the lucky draw. */
+.full { font-variant-numeric:tabular-nums; font-feature-settings:"tnum"; }
+.full .rowAction { background:var(--color-surface); color:var(--color-ink); border:1px solid var(--color-line); min-width:88px; }
+.full .progress { max-width:160px; }
+.full .gauge { gap:var(--space-2); }
+.full .gauge > span:first-child { height:4px; }
+.full .gauge > span:last-child { min-width:0; }
+@media(min-width:1024px){.full .progress{max-width:210px}.full .rowAction{min-width:96px}}
+
+.full [data-earn-badge="inline"] { font-size:var(--fan-action-emphasis-size); }
+.full [data-earn-badge="inline"] > img { display:none; }
+.full li[data-done="true"] a[data-fan-mission-row] { color:var(--color-ink); }
+.full .cards > li + li > a { min-height:63px; }
+
+.full .fold + .fold > button { min-height:63px; }
+.full .summary,.full .gauge > span:last-child { font-size:var(--fan-badge-size); font-weight:400; color:var(--color-muted); }
+
+.full .progress { flex:none; max-width:100%; }
+.full .gauge > span:first-child { flex:none; width:110px; }
+@media(min-width:1024px){.full .gauge > span:first-child{width:160px}}

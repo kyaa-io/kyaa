@@ -1,7 +1,7 @@
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { beforeEach, expect, it, vi } from 'vitest';
+import { StanExchange } from './stan-exchange';
 import { StanWallet } from './stan-wallet';
-import type { WalletCardState } from './wallet-card';
 
 const auth = vi.hoisted(() => ({ ready: true, authenticated: true, user: { id: 'owner-a' }, getAccessToken: vi.fn(async () => 'token') }));
 const session = vi.hoisted(() => ({ ready: true, ownerId: 'owner-a', generation: 0 }));
@@ -30,8 +30,7 @@ function serve(exchange: (body: Record<string, unknown>) => Response, sessionSta
   }));
 }
 const receipt = (body: Record<string, unknown>) => Response.json({ requestKey: body.requestKey, target: 'ticket', units: body.units, pointsSpent: Number(body.units) * 100, pointLedgerId: LEDGER, creditLedgerId: LEDGER, policyVersion: 'group-wallet-v1', createdAt: '2026-11-09T00:00:00Z', replayed: false });
-const ready = (points: number): WalletCardState => ({ kind: 'ready', points, tickets: 4, pointCost: 100 });
-const view = (points: number, locale: 'ko' | 'en' = 'ko') => render(<StanWallet locale={locale} state={ready(points)} stamps={0} hearts={0} links={{ hearts: '/passports' }} />);
+const view = (points: number, locale: 'ko' | 'en' = 'ko') => render(<StanExchange locale={locale} points={points} pointCost={100} />);
 const exchanges = () => calls.filter(call => call.url === '/api/me/wallet/exchange');
 const sessions = () => calls.filter(call => call.url === '/api/me/wallet/ad-session');
 beforeEach(() => { sessionStorage.clear(); toast.mockClear(); ad.unit = '/123/rewarded'; ad.outcome = 'earned'; ad.requests = 0; });
@@ -122,4 +121,39 @@ it('shows the saved quantity, not today\'s maximum, while a saved request waits 
   serve(receipt); view(900);
   expect(screen.getByRole('button', { name: '처리 결과 확인' })).toBeInTheDocument();
   expect(screen.getByRole('group', { name: '수량' }).querySelector('output')).toHaveTextContent('2장');
+});
+
+const walletView = (points: number) => render(<StanWallet locale="ko" state={{ kind: 'ready', points, tickets: 4, pointCost: 100 }} stamps={4} hearts={0} links={{ hearts: '/passports' }} />);
+it('reopens the wallet below cost and checks the same saved request after a lost exchange response', async () => {
+  let first = true;
+  serve(body => { if (first) { first = false; throw new TypeError('response lost after server commit'); } return receipt(body); });
+  const initial = walletView(149);
+  fireEvent.click(screen.getByRole('button', { name: '교환' }));
+  fireEvent.click(await screen.findByRole('button', { name: '광고 보고 교환하기' }));
+  await screen.findByRole('button', { name: '처리 결과 확인' });
+  const saved = JSON.parse(sessionStorage.getItem('kyaa-wallet-pending:owner-a')!);
+  expect(saved).toMatchObject({ units: 1, adSessionId: SESSION });
+  initial.unmount();
+
+  // Reconnecting sees the debit (49P) while the same request is still unresolved locally.
+  walletView(49);
+  expect(screen.queryByRole('dialog')).toBeNull();
+  expect(screen.getByRole('button', { name: '교환' })).toBeEnabled();
+  fireEvent.click(screen.getByRole('button', { name: '교환' }));
+  fireEvent.click(await screen.findByRole('button', { name: '처리 결과 확인' }));
+  await waitFor(() => expect(toast).toHaveBeenCalledWith({ title: '응모권 +1장', tone: 'success' }));
+  expect(exchanges()).toHaveLength(2);
+  expect(exchanges()[1].body).toEqual(exchanges()[0].body);
+  expect(exchanges()[1].body?.requestKey).toBe(saved.requestKey);
+  expect(sessions()).toHaveLength(1); expect(ad.requests).toBe(1);
+  expect(sessionStorage.getItem('kyaa-wallet-pending:owner-a')).toBeNull();
+  expect(screen.getByRole('button', { name: '광고 보고 교환하기' })).toBeDisabled();
+});
+
+it.each(['invalid', 'other-owner'])('does not unlock a low-balance wallet for %s pending data', kind => {
+  const saved = { operation: 'exchange', requestKey: '40000000-0000-4000-8000-000000000004', policyVersion: 'group-wallet-v1', target: 'ticket', units: 1, adSessionId: SESSION };
+  sessionStorage.setItem(kind === 'other-owner' ? 'kyaa-wallet-pending:owner-b' : 'kyaa-wallet-pending:owner-a', JSON.stringify(kind === 'invalid' ? { ...saved, requestKey: 'invalid' } : saved));
+  serve(receipt); walletView(49);
+  expect(screen.getByRole('button', { name: '교환' })).toBeDisabled();
+  expect(exchanges()).toHaveLength(0);
 });

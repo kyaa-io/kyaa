@@ -2,7 +2,7 @@
 import Link from "next/link";
 import type { Route } from "next";
 import { useEffect, useId, useState, type ReactNode } from "react";
-import { Check } from "lucide-react";
+import { CalendarCheck, Check, Heart, MessageSquare, PenLine, Send } from "lucide-react";
 import { FanIcon } from "@/components/fan-ui/fan-icon";
 import { ChevronDown } from "@/components/fan-ui/fan-icons";
 import { BadgeCheck, LayoutGrid } from "lucide-react";
@@ -104,11 +104,14 @@ export function FanMissions({ locale, slug, title, passportHref, proofHref, foot
         const onClick = !guest && mission.key === "checkin" ? (event: MouseEvent<HTMLAnchorElement>) => { if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return; event.preventDefault(); onAttendance(event.currentTarget); } : undefined;
         // D1 · F3: every row is the shared FanMissionRow (circle art · title · progress at the title's x · one fixed trailing column).
         // The trailing column holds one thing: the done tag, the check-in action, or the reward. A monthly cap (invite) is the reward alone.
+        const icons: Partial<Record<MissionKey, typeof Check>> = {checkin:CalendarCheck,comment:MessageSquare,share:Send,reaction:Heart,post:PenLine};
+        const Icon = icons[mission.key];
         return <FanMissionRow key={mission.key} dataMission={mission.key} done={finished} href={href} onClick={onClick}
-          art={<MissionArt src={`/images/stamps/ink-v1/${mission.art}.webp`} />}
+          plainArt={all && Boolean(Icon)}
+          art={all && Icon ? <Icon size={24} strokeWidth={1.5} /> : <MissionArt src={`/images/stamps/ink-v1/${mission.art}.webp`} />}
           title={mission.label}
           detail={progress || undefined}
-          trailing={finished ? <FanTag tone="fan" icon={<Check size={12} aria-hidden="true" />}>{dukjilText(locale, "missionDoneShort")}</FanTag>
+          trailing={finished ? all ? <Check size={20} strokeWidth={1.5} aria-label={dukjilText(locale,"missionDoneShort")}/> : <FanTag tone="fan" icon={<Check size={12} aria-hidden="true" />}>{dukjilText(locale, "missionDoneShort")}</FanTag>
             : checkinAction ? <span className={styles.rowAction} aria-hidden="true">{t("missionsCheckinAction")}</span>
             : on && points ? <EarnBadge variant="inline" className={styles.reward} locale={locale} points={points} remaining={guest ? null : remaining} remainingPer={period} /> : undefined} />;
       })}
@@ -136,13 +139,13 @@ export function FanMissions({ locale, slug, title, passportHref, proofHref, foot
     <div className={styles.folds} data-nudge={nudge ? "" : undefined}>
       <FanCollapsible open={todayOpen} trigger={() => null} className={styles.fold}><div id={todayId} data-missions-today="">{rowList(todayRows, true)}</div></FanCollapsible>
       {moreRows.length > 0 && <FanCollapsible persistKey="dukjil-missions:more" className={styles.fold}
-        trigger={({ triggerProps }) => <FanMissionFoldRow {...triggerProps} icon={<LayoutGrid strokeWidth={1.75} />}
-          title={<><span>{t("missionsGroupMore")}</span>{morePoints ? <EarnBadge variant="inline" locale={locale} points={morePoints} /> : null}</>} meta={moreRows.length.toLocaleString(locale)} />}>
+        trigger={({ triggerProps }) => <FanMissionFoldRow {...triggerProps} plainArt icon={<LayoutGrid size={24} strokeWidth={1.5} />}
+          title={t("missionsGroupMore")} reward={morePoints ? <EarnBadge variant="inline" locale={locale} points={morePoints} /> : null} meta={moreRows.length.toLocaleString(locale)} />}>
         {rowList(moreRows, true)}
       </FanCollapsible>}
       {state?.catalog?.rules.proof && <FanCollapsible persistKey="dukjil-missions:proof" className={styles.fold}
-        trigger={({ triggerProps }) => <FanMissionFoldRow {...triggerProps} icon={<BadgeCheck strokeWidth={1.75} />}
-          title={<><span>{t("missionsGroupProof")}</span>{proofPoints ? <EarnBadge variant="inline" locale={locale} points={proofPoints} /> : null}</>} />}>
+        trigger={({ triggerProps }) => <FanMissionFoldRow {...triggerProps} plainArt icon={<BadgeCheck size={24} strokeWidth={1.5} />}
+          title={t("missionsGroupProof")} reward={proofPoints ? <EarnBadge variant="inline" locale={locale} points={proofPoints} /> : null} />}>
         <div className={styles.proofRows}><CertificationGrid variant="rows" locale={locale} slug={noPage ? "" : slug} guest={guest} fallbackHref={guest ? `/benefits?locale=${locale}` : proof} /></div>
       </FanCollapsible>}
     </div>

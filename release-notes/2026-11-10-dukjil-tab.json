@@ -1,0 +1,13 @@
+{
+  "changes": [
+    "덕질 화면에서 최애와 럭키드로우를 먼저 보고, 포인트·응모권·스탬프·하트를 네 칸의 지갑에서 확인할 수 있어요.",
+    "포인트의 교환을 누르면 수량을 고르는 창이 열리고, 찐팬·팬 순위와 내역의 날짜·시각을 확인할 수 있어요.",
+    "첨부 이미지는 예시 데이터를 사용한 로컬 검증 화면이에요."
+  ],
+  "path": "/benefits",
+  "images": [
+    "release-notes/images/2026-11-10-dukjil-tab-1440.png",
+    "release-notes/images/2026-11-10-dukjil-tab-390.png",
+    "release-notes/images/2026-11-10-dukjil-tab-exchange.png"
+  ]
+}

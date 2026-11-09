@@ -1,6 +1,5 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
-import { z } from "zod";
 import { FanAction, fanActionClassName } from "@/components/fan-ui/fan-action";
 import { FanIcon } from "@/components/fan-ui/fan-icon";
 import { FanIconButton } from "@/components/fan-ui/fan-icon-button";
@@ -14,11 +13,9 @@ import { walletCopy } from "./copy";
 import { loadRewardedGpt, requestRewardedAd, rewardedAdUnit, type RewardedAdState } from "./google-rewarded-ad";
 import { rewardedExchangeCopy, rewardedQuantityCopy, rewardedStopMessage, type RewardedStopKind } from "./rewarded-copy";
 import { runRewardedSession } from "./rewarded-session";
+import { MAX_EXCHANGE_UNITS as MAX_UNITS, usePendingExchange, type PendingExchange as Pending, type PendingExchangeState } from "./use-pending-exchange";
 import styles from "./stan-wallet.module.css";
 
-const MAX_UNITS = 1000;
-const pendingSchema = z.object({ operation: z.literal("exchange"), requestKey: z.uuid(), policyVersion: z.literal("group-wallet-v1"), target: z.literal("ticket"), units: z.number().int().min(1).max(MAX_UNITS), adSessionId: z.uuid() });
-type Pending = z.infer<typeof pendingSchema>;
 const STOP_KIND_BY_CODE: Record<string, RewardedStopKind> = { GROUP_WALLET_AD_DAILY_LIMIT: "dailyLimit", GROUP_WALLET_AD_RATE_LIMITED: "rateLimited", GROUP_WALLET_AD_SESSION_INVALID: "sessionExpired", GROUP_WALLET_AD_GATE_CLOSED: "unavailable", GROUP_WALLET_AD_CONFIG_MISSING: "unavailable" };
 /** The server refused the request as a whole: nothing was spent, so the saved request is dropped. */
 const FINAL_CODES = new Set(["GROUP_WALLET_INVALID", "GROUP_WALLET_REQUEST_CONFLICT", "GROUP_WALLET_POLICY_CHANGED", "GROUP_WALLET_INSUFFICIENT_BALANCE", "GROUP_WALLET_REWARDS_NOT_STARTED", "GROUP_WALLET_TARGET_UNAVAILABLE", "GROUP_WALLET_AD_SESSION_INVALID", "GROUP_WALLET_AD_DAILY_LIMIT", "GROUP_WALLET_AD_RATE_LIMITED", "GROUP_WALLET_AD_CONFIG_MISSING", "GROUP_WALLET_AD_SESSION_REQUIRED", "GROUP_WALLET_AD_GATE_CLOSED", "GROUP_WALLET_WRITE_FENCED"]);
@@ -28,20 +25,25 @@ const unitsText = (locale: AppLocale, units: number) => `${units.toLocaleString(
 
 /** B13: the one place an exchange starts. [− N +] picks the tickets (default: as many as the points cover), one press runs one ad for all of them,
  *  and the result is a toast. The request is saved before it is sent, so a lost answer is checked with the same key instead of spending twice. */
-export function StanExchange({ locale, points, pointCost }: { locale: AppLocale; points: number; pointCost: number }) {
+type ExchangeProps = { locale: AppLocale; points: number; pointCost: number };
+export function StanExchange(props: ExchangeProps & { pendingRequest?: PendingExchangeState }) {
+  return props.pendingRequest ? <StanExchangeContent {...props} pendingRequest={props.pendingRequest} /> : <StandaloneExchange {...props} />;
+}
+function StandaloneExchange(props: ExchangeProps) {
+  const pendingRequest = usePendingExchange();
+  return <StanExchangeContent {...props} pendingRequest={pendingRequest} />;
+}
+function StanExchangeContent({ locale, points, pointCost, pendingRequest }: ExchangeProps & { pendingRequest: PendingExchangeState }) {
   const w = walletCopy(locale), rewarded = rewardedExchangeCopy(locale), q = rewardedQuantityCopy(locale);
-  const { request, ownerKey } = useGroupRequest();
-  const storageKey = `kyaa-wallet-pending:${ownerKey.split(":").slice(0, -1).join(":")}`;
+  const { request } = useGroupRequest();
+  const { storageKey, storageReady, pending, setPending } = pendingRequest;
   const maxQty = Math.max(0, Math.min(MAX_UNITS, Math.floor(points / pointCost)));
   const [picked, setPicked] = useState<number | null>(null);
   const qty = maxQty === 0 ? 0 : Math.min(Math.max(1, picked ?? maxQty), maxQty);
-  const [pending, setPending] = useState<Pending | null>(null), [storageReady, setStorageReady] = useState(false);
   const [ad, setAd] = useState<RewardedAdState | null>(null), [busy, setBusy] = useState(false);
   const alive = useRef(true), running = useRef(false), unsupported = useRef(false), control = useRef<{ show(): boolean; cancel(): void } | null>(null);
   useEffect(() => {
     alive.current = true;
-    try { const stored = sessionStorage.getItem(storageKey); setPending(stored ? pendingSchema.parse(JSON.parse(stored)) : null); } catch { setPending(null); }
-    setStorageReady(true);
     return () => { alive.current = false; control.current?.cancel(); };
   }, [storageKey]);
   // The press is the opt-in: the ad opens as soon as it is ready.

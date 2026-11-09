@@ -110,13 +110,13 @@ it("D1: today's rows, more missions and certifications are all the one FanMissio
   expect(document.querySelectorAll('button[data-fan-mission-row="fold"]')).toHaveLength(2);
 });
 
-it("B3: the head's n개 남음 folds today's rows (open by default, kept for the session); the stamp art stays in its circle (덕질 시안)", async () => {
+it("B3: the head's n개 남음 folds today's rows (open by default, kept for the session); daily actions use the approved plain lucide icons", async () => {
   ui();
   const toggle = await waitFor(() => { const el = document.querySelector("[data-missions-left]")?.closest("button"); expect(el).toBeTruthy(); return el!; });
   expect(toggle).toHaveAttribute("aria-expanded", "true");
   const panel = document.getElementById(toggle.getAttribute("aria-controls")!)!;
   expect(panel).toHaveAttribute("data-missions-today");
-  expect(panel.querySelectorAll("[data-mission-art] > img")).toHaveLength(5);
+  expect(panel.querySelectorAll("[data-mission-art] > svg")).toHaveLength(5);
   fireEvent.click(toggle);
   expect(toggle).toHaveAttribute("aria-expanded", "false");
   expect(panel.closest("[inert]")).not.toBeNull();

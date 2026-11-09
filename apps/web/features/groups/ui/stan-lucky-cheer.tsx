@@ -31,6 +31,7 @@ import { groupsCopy } from "./copy";
 import { useGroupResource } from "./use-group-resource";
 import { CapsuleMachineBlock } from "@/features/capsule-machine/capsule-machine-block";
 import styles from "./stan-lucky-cheer.module.css";
+import duoStyles from "./duo-lucky.module.css";
 
 type Raffle = RaffleList["raffles"][number];
 /** Tickets one entry takes (user decision 2026-11-08: set per lucky draw, 1 by default; the raffle read has no per-draw cost yet). */
@@ -42,6 +43,10 @@ const parseRaffles = (value: unknown) => raffleListSchema.parse(value);
 const parseCreators = (value: unknown) => homeCreatorRankingSchema.parse(value);
 const parseWallet = (value: unknown) => walletSchema.parse(value);
 const parseEntries = (value: unknown) => benefitListResponseSchema.parse(value);
+/** Both lucky draws and the wallet read entries for the selected celebrity. */
+export function useStanEntries(locale: AppLocale, slug: string | null) {
+  return useGroupResource(slug ? `/api/benefits?celebrity=${encodeURIComponent(slug)}&locale=${toContentLocale(locale)}` : null, parseEntries);
+}
 const t = (locale: AppLocale, key: Parameters<typeof dukjilText>[1], values?: unknown[]) => dukjilText(locale, key, values);
 const shortDate = (value: string, locale: AppLocale) => new Date(value).toLocaleString(locale, { month: "numeric", day: "numeric", hour: "2-digit", minute: "2-digit", hourCycle: "h23", timeZone: "Asia/Seoul" });
 const dayDate = (value: string, locale: AppLocale) => new Date(value).toLocaleDateString(locale, { month: "numeric", day: "numeric", timeZone: "Asia/Seoul" });
@@ -139,15 +144,35 @@ function RaffleCard({ raffle, status, slug, locale, entered, allowance }: { raff
 }
 
 /** 럭키드로우 (E4): the favorite's real lucky draws instead of placeholder cards. No disabled action; an upcoming draw opens its gift page. */
-export function StanLucky({ locale, bias, guest }: { locale: AppLocale; bias: SelectedBias; guest: boolean }) {
+export function StanLucky({ locale, bias, guest, presentation }: { locale: AppLocale; bias: SelectedBias; guest: boolean; presentation?: "duo" }) {
   const favorite = guest ? null : stanFavorite(bias), slug = favorite?.slug ?? null;
   const raffles = useStanRaffles(locale, slug), title = groupBenefitsCopy(locale).lucky;
   const wallet = useGroupResource(!guest && slug ? "/api/me/wallet" : null, parseWallet);
-  const entries = useGroupResource(!guest && slug ? `/api/benefits?celebrity=${encodeURIComponent(slug)}&locale=${toContentLocale(locale)}` : null, parseEntries);
+  const entries = useStanEntries(locale, !guest ? slug : null);
   // F5: open and upcoming draws take the first place; closed ones only fill a separate 지난 럭키드로우 list when none is live.
   const live = raffles.items.filter(item => item.status !== "closed"), past = live.length ? [] : raffles.items.filter(item => item.status === "closed");
   const shown = live.slice(0, LUCKY_CARDS), shownPast = past.slice(0, LUCKY_CARDS);
   const more = slug && raffles.items.length > shown.length + shownPast.length ? <FanSectionLink className={styles.headLink} href={creatorRafflesHref(slug, locale)}>{seeAllLabel[locale]}</FanSectionLink> : null;
+  if (presentation === "duo") {
+    const item = live.find(item => item.status === "open") ?? live[0];
+    const entry = entries.data ? entries.data.benefits.find(row => row.id === item?.raffle.benefitId)?.entry ?? null : undefined;
+    const allowance = item?.status === "open" ? raffleAllowance({ raffle:item.raffle, guest, hasPassport:bias.selected?.slug===slug, tickets:{ loading:wallet.loading,value:wallet.data?.tickets }, entries:{ loading:entries.loading,error:entries.error,entry } }) : null;
+    const passport = allowance?.kind === "passport";
+    const pastHref: string = slug ? creatorRafflesHref(slug, locale) : "/my/raffles?locale=" + locale;
+    const href = item && slug ? passport ? creatorRaffleVerificationHref(slug,locale,item.raffle.benefitId) : raffleHref(slug,item.raffle.benefitId,locale) : `/my/raffles?locale=${locale}`;
+    const amountToken = "__DUO_AMOUNT__";
+    const costParts = allowance?.kind === "count" ? t(locale,"luckyCost",[RAFFLE_TICKET_COST,amountToken]).split(amountToken) : null;
+    return <section className={duoStyles.card} id="stan-lucky" aria-label={title} data-duo-lucky data-raffle-status={item?.status}>
+      <img className={duoStyles.machine} src="/images/dukjil-duo/glyph-capsule-machine-512.webp" width={512} height={512} alt="" />
+      <img className={duoStyles.glyph} src="/images/dukjil-duo/glyph-illo-lucky-80.webp" width={40} height={40} alt="" />
+      {bias.status === "loading" || Boolean(slug && raffles.loading) ? <div className={duoStyles.pending} aria-busy="true"><FanSkeleton width="80%" height={22}/><FanSkeleton width="60%" height={17}/></div>
+        : raffles.error ? <div className={duoStyles.empty}><FanState inline compact kind="error" title={t(locale,"luckyLoadError")} actions={<FanAction variant="text" onClick={raffles.retry}>{groupsCopy(locale).retry}</FanAction>}/></div>
+        : !item || !slug ? <div className={duoStyles.empty}><p>{t(locale,slug ? "luckyEmpty" : "luckyNoFavorite")}</p><Link href={pastHref as Route}>{t(locale,"luckyPast")} <span aria-hidden="true">›</span></Link></div>
+        : <><div className={duoStyles.copy}><FanHeading>{item.raffle.title}</FanHeading><p className={duoStyles.meta}><RaffleDate raffle={item.raffle} status={item.status} locale={locale}/> · {t(locale,"luckyWinners",[item.raffle.winnerQuantity.toLocaleString(locale)])} · {deliveryLabel(item.raffle,locale)}</p>
+          <p className={duoStyles.cost} data-raffle-cost data-raffle-allowance={allowance?.kind}>{costParts && allowance?.kind === "count" ? <>{costParts[0]}<strong>{allowance.count.toLocaleString(locale)}</strong>{costParts[1]}</> : allowance?.kind === "loading" ? <FanSkeleton width={160} height={24}/> : allowance?.kind === "passport" ? t(locale,"luckyNeedPassport") : allowance?.kind === "policy" ? t(locale,"luckyNeedPolicy") : t(locale,"luckyCostGuest",[RAFFLE_TICKET_COST])}</p></div>
+          <FanAction className={duoStyles.action} variant="primary" href={href}>{passport ? t(locale,"luckyGetPassport") : item.status === "open" && allowance?.kind !== "policy" ? t(locale,"luckyEnter") : t(locale,"luckyDetails")}</FanAction></>}
+    </section>;
+  }
   // 게이트 D2: the empty state is one line; its next step is a row below it inside the same box, ending in ›.
   const empty = (title: string, action?: ReactNode, short = false) => <div className={short ? `${styles.empty} ${styles.emptyShort}` : styles.empty}><div className={styles.emptyLine}><FanState kind="empty" title={title} /></div>{action}</div>;
   const history = <Link className={styles.emptyRow} href={`/my/raffles?locale=${locale}` as Route}><span>{t(locale, "luckyHistory")}</span><ChevronRight size={16} aria-hidden="true" /></Link>;

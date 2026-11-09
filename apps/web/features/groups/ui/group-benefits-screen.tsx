@@ -1,5 +1,4 @@
 "use client";
-import {WalletHistoryPanel} from '@/features/group-wallet/ui/wallet-screen';
 import {WalletBalances,WalletCard} from '@/features/group-wallet/ui/wallet-card';
 import {StanWallet,type StanSlot} from '@/features/group-wallet/ui/stan-wallet';
 import {openingPage} from '@/features/passport/ui/passport-mission-book';
@@ -11,17 +10,13 @@ import type {Route} from 'next';
 import {ChevronRight,Ticket} from 'lucide-react';
 import {FanAppFrame,FanContentContainer} from '@/components/fan-shell/fan-app-shell';
 import {FanAction} from '@/components/fan-ui/fan-action';
-import {MyAttendanceList,GuestAttendanceList,AttendanceSkeleton} from '@/features/dukjil/ui/my-attendance-list';
 import {FanMissions} from '@/features/dukjil/ui/fan-missions';
 import {CreatorAttendanceEntry} from '@/features/dukjil/ui/creator-attendance-entry';
 import {groupListSchema} from '@/features/groups/domain/contracts';
 import {DukjilProvider,useDukjilStatus} from '@/features/dukjil/ui/dukjil-provider';
 import {dukjilText} from '@/features/dukjil/ui/dukjil-copy';
-import {messages as myMessages} from '@/i18n/catalogs/features__my__ui__my-screen';
-import {translate} from '@/i18n/messages';
 import {FanHeading} from '@/components/fan-ui/fan-heading';
 import {FanState} from '@/components/fan-ui/fan-state';
-import {FanLockedRows,FanLockedValue} from '@/components/fan-ui/fan-locked-value';
 import {fanLoginHref} from '@/components/login-href';
 import {type AppLocale} from '@/i18n/locales';
 import {groupBenefitsCatalogSchema,type GroupBenefitsCatalog} from '@/server/group-benefits/domain';
@@ -35,11 +30,11 @@ import {groupsCopy} from './copy';
 import {FanSkeletonRows} from '@/components/fan-ui/fan-skeleton';
 import {seeAllLabel} from './group-directory';
 import {groupBenefitsCopy,benefitsRaffleState} from './group-benefits-copy';
-import {StanCheer,StanLucky,stanFavorite} from './stan-lucky-cheer';
+import {StanLucky,stanFavorite,useStanEntries} from './stan-lucky-cheer';
+import {DuoProfile,DuoFanRail,DuoStreak,DuoHistory} from './duo-profile';
 import styles from './group-benefits.module.css';
 const parseWallet=(value:unknown)=>walletSchema.parse(value);
 const parseRaffles=(value:unknown)=>groupBenefitsCatalogSchema.options[0].parse(value);
-const TODAY_ROWS=5,HISTORY_ROWS=3;
 const parseJoined=(value:unknown)=>groupListSchema.parse(value);
 const parseRoadmap=(value:unknown)=>passportRoadmapSchema.parse(value);
 /** The favorite of this screen: while the browser signs in, the favorite the server read for this request (so the first HTML has it); a request the server saw signed out is a guest at once. */
@@ -47,7 +42,6 @@ function useStanBias(locale:AppLocale,initial:SelectedBiasOption|null,signedOut:
  const live=useSelectedBias(locale);
  return live.status==='loading'&&initial?{...live,status:'ready',selected:initial}:live.status==='loading'&&signedOut?{...live,status:'guest'}:live;
 }
-const lessLabel=(locale:AppLocale)=>locale==='ko'?'접기':translate(locale,myMessages.ma9d92b36cfae,'Show less');
 /** Section failures: when every mounted section failed, the screen shows one alert (in the wallet slot) with one retry instead of one error per section. */
 type SectionState={failed:boolean;retry:()=>void};
 type SectionRegistry={report:(id:string,state:SectionState|null)=>void;allFailed:boolean;retryAll:()=>void};
@@ -70,8 +64,7 @@ export function GroupBenefitsScreen({locale,initialHeart=null,signedOut=false}:{
  return <FanAppFrame locale={locale} currentPath='/benefits' groupsEnabled mainId='benefits-main'><FanContentContainer as='main' id='benefits-main' className={styles.page}>
  <header className={styles.srOnly}><FanHeading as='h1'>{c.title}</FanHeading></header>
  <BenefitsAlerts><BenefitsSections><BenefitsAlertList/>
- <div className={styles.top}><BenefitsWallet key={`${locale}:${auth.ownerKey}`} locale={locale} signedOut={signedOut} bias={bias}/></div>
- <div className={styles.main}><BenefitsDailyMissions locale={locale}/><BenefitsToday locale={locale} emphasise={false}/><BenefitsLucky locale={locale} bias={bias} signedOut={signedOut}/></div>
+ <div className={styles.main}><DuoProfile locale={locale} bias={bias} guest={bias.status==='guest'}/><BenefitsLucky locale={locale} bias={bias} signedOut={signedOut}/><BenefitsWallet key={`${locale}:${auth.ownerKey}`} locale={locale} signedOut={signedOut} bias={bias}/><BenefitsDailyMissions locale={locale}/><BenefitsToday locale={locale} bias={bias}/></div>
  <div className={styles.side}><BenefitsCheer locale={locale} bias={bias} signedOut={signedOut}/>{auth.ready?(auth.authenticated?<BenefitsHistory locale={locale}/>:<BenefitsGuestHistory locale={locale}/>):signedOut&&<BenefitsGuestHistory locale={locale}/>}</div></BenefitsSections></BenefitsAlerts>
  </FanContentContainer></FanAppFrame>;
 }
@@ -86,24 +79,23 @@ function useStanNumbers(bias:SelectedBias,signedOut:boolean){
  const hearts:StanSlot=guest?'locked':bias.status==='loading'?'loading':bias.selected?bias.selected.hearts??'missing':0;
  return {guest,stamps,hearts,passportId,claimable};
 }
-/** F2: the favorite's lucky draws, in the body under the missions (1024+: two cards in the 640 column; 390: a scroller). */
+/** F2: the favorite's lucky draws, in the spotlight above the wallet. */
 function BenefitsLucky({locale,bias,signedOut}:{locale:AppLocale;bias:SelectedBias;signedOut:boolean}){
  const allFailed=Boolean(useContext(SectionContext)?.allFailed),{guest}=useStanNumbers(bias,signedOut);
- return <div className={styles.pLucky} hidden={allFailed}><StanLucky locale={locale} bias={bias} guest={guest}/></div>;
+ return <div className={styles.pLucky} hidden={allFailed}><StanLucky locale={locale} bias={bias} guest={guest} presentation='duo'/></div>;
 }
-/** F2: the cheer card heads the right column from 1024px (390: under the lucky draws). */
+/** F2: the fan tabs head the right rail (390: after the streak). */
 function BenefitsCheer({locale,bias,signedOut}:{locale:AppLocale;bias:SelectedBias;signedOut:boolean}){
- const allFailed=Boolean(useContext(SectionContext)?.allFailed),{guest,hearts}=useStanNumbers(bias,signedOut);
- return <div className={styles.pCheer} hidden={allFailed}><StanCheer locale={locale} bias={bias} guest={guest} hearts={typeof hearts==='number'?hearts:null}/></div>;
+ const allFailed=Boolean(useContext(SectionContext)?.allFailed),{guest}=useStanNumbers(bias,signedOut);
+ return <div className={styles.pCheer} hidden={allFailed}><DuoFanRail key={bias.selected?.slug??'none'} locale={locale} bias={bias} guest={guest}/></div>;
 }
-/** 오늘의 덕질: one tile/row per joined fan page; guests see the spotlight pages with a login check-in (same outline). Hidden while the policy is off; the skeleton holds the height until both are known. Its first check-in is the emphasised action while the exchange is not usable. */
-function BenefitsToday({locale,emphasise}:{locale:AppLocale;emphasise:boolean}){
- const auth=useGroupRequest(),status=useDukjilStatus(locale),w=walletCopy(locale),title=dukjilText(locale,'dukjilTodayTitle'),hidden=auth.ready&&status==='off';
+/** 오늘의 덕질 keeps the streak only; the mission list owns the attendance action. */
+function BenefitsToday({locale,bias}:{locale:AppLocale;bias:SelectedBias}){
+ const auth=useGroupRequest(),status=useDukjilStatus(locale),hidden=auth.ready&&status==='off';
  const [today,setToday]=useState<{failed:boolean;retry:()=>void}>({failed:false,retry:()=>{}}),onFailure=(failed:boolean,retry:()=>void)=>setToday({failed,retry});
  const lifted=useSectionFailure('today',today.failed&&!hidden,()=>today.retry());
  if(hidden)return null;
- const explore={label:groupsCopy(locale).explore,href:`/pages/groups?locale=${locale}`};
- return <div className={styles.pToday} hidden={lifted}>{!auth.ready||status==='loading'?<AttendanceSkeleton title={title} label={w.loading}/>:auth.authenticated?<MyAttendanceList key={auth.ownerKey} locale={locale} section={{title,moreLabel:seeAllLabel[locale],lessLabel:lessLabel(locale),limit:TODAY_ROWS,emptyAction:explore,emphasise,streakBand:true,onFailure}}/>:<DukjilProvider locale={locale}><GuestAttendanceList locale={locale} title={title} loginHref={fanLoginHref(locale,`/benefits?locale=${locale}`)} guideHref={`/guide/dukjil?locale=${locale}`} emptyAction={explore} onFailure={onFailure}/></DukjilProvider>}</div>;
+ return <div className={styles.pToday} hidden={lifted}><DuoStreak key={auth.ownerKey} locale={locale} bias={bias} guest={auth.ready&&!auth.authenticated} onFailure={onFailure}/></div>;
 }
 /** 오늘의 미션: every catalog activity for the viewer's first joined fan page; its rows lead to that page. Guests and viewers without a page see the same list and go to the login or the page directory. */
 function BenefitsDailyMissions({locale}:{locale:AppLocale}){
@@ -121,21 +113,22 @@ function BenefitsDailyMissions({locale}:{locale:AppLocale}){
 function BenefitsHistory({locale}:{locale:AppLocale}){
  const [state,setState]=useState<{failed:boolean;retry:()=>void}>({failed:false,retry:()=>{}}),onFailure=(failed:boolean,retry:()=>void)=>setState({failed,retry});
  const lifted=useSectionFailure('history',state.failed,()=>state.retry());
- return <div className={styles.pHistoryWrap} id='stan-history' tabIndex={-1} hidden={lifted}><WalletHistoryPanel className={styles.pHistory} locale={locale} preview={{rows:HISTORY_ROWS,moreLabel:seeAllLabel[locale],lessLabel:lessLabel(locale),onFailure}}/></div>;
+ return <div className={styles.pHistoryWrap} hidden={lifted}><DuoHistory locale={locale} guest={false} onFailure={onFailure}/></div>;
 }
 /** Guests: the history heading with the lock the other locked values use, over three fixed grey rows in the same card outline; drawn in the first HTML when the server saw no session. */
 function BenefitsGuestHistory({locale}:{locale:AppLocale}){
- const c=groupBenefitsCopy(locale);
- return <div className={styles.pGuestHistory} id='stan-history' tabIndex={-1}><section className={styles.pGuestHistorySection} aria-label={c.historyLink}><div className={styles.guestHistoryHead}><FanHeading>{c.historyLink}</FanHeading><FanLockedValue locale={locale}/></div><div className={styles.guestHistoryCard}><FanLockedRows rows={3}/></div></section></div>;
+ return <div className={styles.pGuestHistory}><DuoHistory locale={locale} guest/></div>;
 }
-/** The wallet column's first piece: the shared wallet card. Guests keep the card and balances with the login action in the exchange slot. */
+/** Four wallet tiles; guests keep locked balances and use the profile login action. */
 function BenefitsWallet({locale,signedOut=false,bias}:{locale:AppLocale;signedOut?:boolean;bias:SelectedBias}){
  const auth=useGroupRequest(),w=walletCopy(locale),wallet=useGroupResource(auth.authenticated?'/api/me/wallet':null,parseWallet);
  const {guest,stamps,hearts,passportId,claimable}=useStanNumbers(bias,signedOut),favorite=guest?null:stanFavorite(bias),slug=favorite?.slug??null;
+ const entries=useStanEntries(locale,auth.authenticated?slug:null);
+ const entryCount=!auth.authenticated?undefined:bias.status==='loading'?'loading' as const:!slug?undefined:entries.error?'missing' as const:entries.loading||!entries.data?'loading' as const:entries.data.benefits.reduce((n,item)=>n+(item.entry?.enteredTickets??0),0);
  useEffect(()=>{window.addEventListener(GROUP_WALLET_CHANGED_EVENT,wallet.retry);return()=>window.removeEventListener(GROUP_WALLET_CHANGED_EVENT,wallet.retry);},[wallet.retry]);
  const sections=useContext(SectionContext),retryAll=()=>window.dispatchEvent(new Event(GROUP_WALLET_CHANGED_EVENT)),failed=auth.ready&&auth.authenticated&&!wallet.loading&&!wallet.data,allFailed=useSectionFailure('wallet',failed,retryAll),lifted=useLiftedAlert('wallet',{message:w.error,label:w.retry,retry:retryAll},failed&&!allFailed),walletAlert=lifted?null:<FanState inline kind='error' className={styles.inlineError} title={w.error} actions={<FanAction onClick={retryAll}>{w.retry}</FanAction>}/>;
  if(allFailed)return <div className={styles.pWallet}><FanState inline compact kind='error' title={w.error} actions={<FanAction variant='text' onClick={()=>sections?.retryAll()}>{w.retry}</FanAction>}/></div>;
- const card=(state:Parameters<typeof WalletCard>[0]['state'])=><StanWallet className={styles.pWallet} locale={locale} state={state} stamps={stamps} hearts={hearts} links={{hearts:slug?`/${encodeURIComponent(slug)}?tab=fans&locale=${locale}`:`/passports?locale=${locale}`,claim:passportId&&claimable?`/passports/${encodeURIComponent(passportId)}?locale=${locale}#mission-book`:undefined}}/>;
+ const card=(state:Parameters<typeof WalletCard>[0]['state'])=><StanWallet className={styles.pWallet} locale={locale} state={state} stamps={stamps} hearts={hearts} entries={entryCount} entriesRetry={entries.retry} links={{hearts:slug?`/${encodeURIComponent(slug)}?tab=fans&locale=${locale}`:`/passports?locale=${locale}`,claim:passportId&&claimable?`/passports/${encodeURIComponent(passportId)}?locale=${locale}#mission-book`:undefined}}/>;
  // The server saw no session: the signed-out card is drawn from the first HTML instead of a loading card of another height.
  if(!auth.ready&&signedOut||auth.ready&&!auth.authenticated)return card({kind:'guest',action:<FanAction variant='primary' fullWidth href={fanLoginHref(locale,`/benefits?locale=${locale}`)}>{w.login}</FanAction>});
  if(!auth.ready||wallet.loading)return card({kind:'loading'});
