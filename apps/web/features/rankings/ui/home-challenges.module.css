@@ -1,12 +1,13 @@
-/* 홈 찐팬 100 챌린지(5차 B4 ④): 카드 12·1px 선·그림자 0. 행 = 이름 15/700 · `37/100` 15/700 · 2px 막대 / 오른쪽 secondary 버튼. */
-.card { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-3); box-sizing: border-box; min-width: 0; padding: var(--space-5); border: 1px solid var(--color-line); border-radius: var(--radius-card, 12px); background: var(--color-surface); }
+/* 홈 찐팬 100 챌린지(5차 B4 ④): 카드 12·1px 선·그림자 0. 행 = 이름 15/700 · `37/100` 15/700 · 막대 / 오른쪽 secondary 버튼.
+ * L2(2026-11-09): 홈의 강조 판 하나 — 바탕 accent-soft·선 accent-line, 진행 수 accent-ink, 막대 4px(Mobbin Sweatcoin 챌린지 판). */
+.card { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-3); box-sizing: border-box; min-width: 0; padding: var(--space-5); border: 1px solid var(--color-accent-line); border-radius: var(--radius-card, 12px); background: var(--color-accent-soft); }
 .card h2 { margin: 0; }
 .rows { display: grid; gap: var(--space-4); margin: 0; padding: 0; list-style: none; }
 .row { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; column-gap: var(--space-6); min-width: 0; }
 .body { display: grid; grid-template-columns: minmax(0, 1fr) auto; row-gap: var(--space-2); min-width: 0; color: var(--color-ink); text-decoration: none; }
 .name { overflow: hidden; min-width: 0; font-size: var(--fan-item-title-size, 15px); font-weight: 700; text-overflow: ellipsis; white-space: nowrap; }
-.count { font-size: var(--fan-item-title-size, 15px); font-weight: 700; font-variant-numeric: tabular-nums; }
-.bar { grid-column: 1 / -1; display: block; height: 2px; overflow: hidden; background: var(--color-line); }
+.count { color: var(--color-accent-ink); font-size: var(--fan-item-title-size, 15px); font-weight: 700; font-variant-numeric: tabular-nums; }
+.bar { grid-column: 1 / -1; display: block; height: var(--space-1); overflow: hidden; background: var(--color-accent-line); }
 .bar > span { display: block; height: 100%; background: var(--color-accent); transition: width var(--motion-slow, 200ms) var(--motion-easing); }
 .cheer { flex: none; }
 .body:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
