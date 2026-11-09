@@ -1,5 +1,5 @@
 "use client";
-import { useCreateWallet, useLinkJwtAccount, useLoginWithOAuth, usePrivy, useUser } from "@privy-io/react-auth";
+import { useCreateWallet, useLinkJwtAccount, useLoginWithOAuth, usePrivy, useUser } from "@/features/auth/client/privy-backend";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useSearchParams,useRouter } from "next/navigation";
 import type { Route } from "next";

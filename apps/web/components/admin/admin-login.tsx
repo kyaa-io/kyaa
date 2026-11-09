@@ -1,6 +1,6 @@
 "use client";
 
-import { useLogin } from "@privy-io/react-auth";
+import { useLogin } from "@/features/auth/client/privy-backend";
 import { ArrowLeft, ArrowRight, LockKeyhole, ShieldCheck } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";

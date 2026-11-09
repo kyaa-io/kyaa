@@ -1,6 +1,6 @@
 "use client";
 
-import { useCreateWallet, useUser } from "@privy-io/react-auth";
+import { useCreateWallet, useUser } from "@/features/auth/client/privy-backend";
 import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import { rememberSession } from "@/features/auth/client/session-hint";
 import type { Route } from "next";
