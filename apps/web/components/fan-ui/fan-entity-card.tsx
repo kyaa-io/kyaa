@@ -68,11 +68,11 @@ function FanEntityTile({ href, image, name, kind, locale, memberCount, badge, cl
   const sizes = "(min-width: 1024px) 168px, (min-width: 768px) 140px, 34vw";
   const initials = Array.from(name.replace(/^[^\p{L}\p{N}]+/u, "") || name).slice(0, 2).join("");
   // Only fan pages show a creator's face; a brand or hobby page linked to a creator record still shows its own logo whole.
-  const creator = Boolean(image.slug) && (kind === "fan" || !image.src);
+  const creatorSlug = image.slug && (kind === "fan" || !image.src) ? image.slug : undefined;
   return <Link href={href as Route} className={[styles.tile, className ?? ""].filter(Boolean).join(" ")} data-fan-entity={kind}>
-    <span className={styles.tileMedia} data-tile-media={creator ? "creator" : image.src ? "page" : "initials"}>
-      {creator
-        ? <CreatorImage slug={image.slug} src={image.src} photos={undefined} presentation="portrait" alt="" width={336} height={336} sizes={sizes} fallback={<span className={styles.tileInitials} aria-hidden="true">{initials}</span>} />
+    <span className={styles.tileMedia} data-tile-media={creatorSlug ? "creator" : image.src ? "page" : "initials"}>
+      {creatorSlug
+        ? <CreatorImage slug={creatorSlug} src={image.src} photos={undefined} presentation="portrait" alt="" width={336} height={336} sizes={sizes} fallback={<span className={styles.tileInitials} aria-hidden="true">{initials}</span>} />
         : image.src ? <GroupImage locale={locale} src={image.src} alt="" width={336} height={336} className={styles.tileLogo} /> : <span className={styles.tileInitials} aria-hidden="true">{initials}</span>}
     </span>
     <strong className={styles.tileName}>{name}</strong>
