@@ -106,10 +106,13 @@ const count = z.number().int().min(0);
  * null when that exact day's build is missing; optional only for responses from an older server. */
 const dayGain = z.number().int().nullable().optional();
 /** Signed-in-only locator. rank is the immutable stored rank, not the viewer-filtered display rank. No member identifier. */
-export const homeFanProfileRefSchema = z.object({
+export const homeFanProfileLocatorSchema = z.object({
   kind: z.literal("home_ranking"), day: z.iso.date(), computedAt: z.iso.datetime({ offset: true }),
   metric: z.enum(HOME_FAN_METRICS), rank: z.number().int().positive(),
 }).strict();
+export type HomeFanProfileLocator = z.infer<typeof homeFanProfileLocatorSchema>;
+/** HMAC binds the coordinates to the authenticated viewer without exposing their identifier. */
+export const homeFanProfileRefSchema = homeFanProfileLocatorSchema.extend({ signature: z.string().max(128) }).strict();
 export type HomeFanProfileRef = z.infer<typeof homeFanProfileRefSchema>;
 export const homeFanRankingSchema = z.object({
   ...homeHead,

@@ -1,3 +1,4 @@
+import { randomBytes } from "node:crypto";
 import { describe, expect, it, vi } from "vitest";
 vi.mock("server-only", () => ({}));
 import { REFRESH_AFTER_MS, createRankingsHandlers } from "./routes";
@@ -11,7 +12,7 @@ function make(rpcImpl: (name: string, args: Record<string, unknown>) => unknown,
   const rpc = vi.fn(async (name: string, args: Record<string, unknown>) => rpcImpl(name, args));
   const authorize = vi.fn(async () => ({ appUserId: ME }));
   const resolveCreatorId = vi.fn(async (slug: string) => (slug === "star" ? CEL : null));
-  return { rpc, authorize, handlers: createRankingsHandlers({ rpc, authorize, resolveCreatorId, ...extra }) };
+  return { rpc, authorize, handlers: createRankingsHandlers({ profileRefSecret: randomBytes(32).toString("base64"), rpc, authorize, resolveCreatorId, ...extra }) };
 }
 
 describe("rankings routes", () => {
@@ -161,7 +162,7 @@ describe("rankings routes", () => {
     expect(rpc).toHaveBeenLastCalledWith("read_home_fan_ranking_v2", { p_viewer: ME, p_metric: "hearts", p_limit: 50 });
     expect(mine.rows[0].isMe).toBe(true);
     expect(mine.me).toEqual({ rank: 1, score: 7, hearts: 7, points: 35, inTop: true, delta: 2 });
-    expect(mine.rows[0].profileRef).toEqual(fanRef());
+    expect(mine.rows[0].profileRef).toEqual({ ...fanRef(), signature: expect.any(String) });
     expect(mine.rows[0]).not.toHaveProperty("subjectId");
   });
 
@@ -179,7 +180,7 @@ describe("rankings routes", () => {
       expect(body.rows[0]).toMatchObject({ hearts: 7, points: 42, delta: -2, weekGain: 35, isNew: true });
       expect(body.rows[0]).not.toHaveProperty("liveNow");
       expect(JSON.stringify(body)).not.toContain(ME);
-      if (authorization) expect(body.rows[0].profileRef).toEqual(fanRef(1, metric));
+      if (authorization) expect(body.rows[0].profileRef).toEqual({ ...fanRef(1, metric), signature: expect.any(String) });
       if (authorization) expect(body.me).toMatchObject({ hearts: 7, points: 42 });
       else expect(body.me).toBeNull();
     }

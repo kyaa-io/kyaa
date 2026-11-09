@@ -1,11 +1,12 @@
 import { beforeEach, expect, it, vi } from "vitest";
 vi.mock("server-only", () => ({}));
-const state = vi.hoisted(() => ({ rpc: vi.fn(), authorize: vi.fn() }));
+const state = vi.hoisted(() => ({ rpc: vi.fn(), authorize: vi.fn(), secret: crypto.randomUUID() }));
+vi.mock("@/server/config/env", () => ({ loadServerEnv: () => ({ PRIVY_APP_SECRET: state.secret }) }));
 vi.mock("@/server/fanpage/dependencies", () => ({ createFanpageDependencies: () => state }));
 vi.mock("@/server/dukjil/creator-id", () => ({ resolveCreatorId: vi.fn(async () => null) }));
 import { GET } from "./route";
-// Real answers of read_home_fan_ranking_v2 / read_home_creator_ranking_v2 after 20261220010000, from a disposable database with every
-// migration (supabase/tests/home_ranking_metrics_answers.sql, 2026-11-09): first built day, second day, empty day, late day; every metric.
+// Real DB answers regenerated after 20261220150000 with supabase/tests/home_ranking_metrics_answers.sql.
+// SQL emits coordinates; the HTTP route adds the viewer-bound signature.
 import answers from "./v2-answers.fixture.json";
 
 type Answer = Record<string, unknown> & { rows: Record<string, unknown>[] };
@@ -36,13 +37,13 @@ for (const label of ["first", "ready", "empty", "stale"]) {
   }
 }
 
-it("names the values: points only on the points metric, fans and hearts on both creator metrics", async () => {
+it("names both fan values under either metric, and fans and hearts under both creator metrics", async () => {
   serve("ready:fans:points");
   const points = await (await GET(new Request("https://byus.test/api/rankings/home?kind=fans&metric=points"))).json();
   for (const row of points.rows) expect(row.points).toBe(row.score);
   serve("ready:fans:hearts");
   const hearts = await (await GET(new Request("https://byus.test/api/rankings/home?kind=fans&metric=hearts"))).json();
-  for (const row of hearts.rows) { expect(row.hearts).toBe(row.score); expect(row.points).toBeNull(); }
+  for (const row of hearts.rows) { expect(row.hearts).toBe(row.score); expect(row.points).toBe(points.rows.find((other: { nickname: string }) => other.nickname === row.nickname)?.points ?? 0); }
   serve("ready:creators:hearts");
   const byHearts = await (await GET(new Request("https://byus.test/api/rankings/home?kind=creators&metric=hearts"))).json();
   serve("ready:creators:fans");
@@ -59,8 +60,14 @@ it("names the values: points only on the points metric, fans and hearts on both 
 it("passes my rank with its named values and movement for a signed-in viewer", async () => {
   serve("ready:fans:points:viewer");
   const res = await GET(new Request("https://byus.test/api/rankings/home?kind=fans&metric=points&limit=50", { headers: { authorization: "Bearer t" } }));
+  expect(res.status).toBe(200);
   expect(res.headers.get("cache-control")).toBe("private, no-store");
   const body = await res.json();
+  for (const row of body.rows) {
+    expect(Object.keys(row.profileRef).sort()).toEqual(["computedAt", "day", "kind", "metric", "rank", "signature"]);
+    expect(row.profileRef).toMatchObject({ kind: "home_ranking", day: body.day, computedAt: body.computedAt, metric: "points", signature: expect.stringMatching(/^[A-Za-z0-9_-]{43}$/) });
+    expect(row.profileRef).not.toHaveProperty("profileId");
+  }
   expect(body.me).toEqual({ rank: 2, score: 40, hearts: 3, points: 40, inTop: true, delta: 0 });
   expect(state.rpc).toHaveBeenCalledWith("read_home_fan_ranking_v2", { p_viewer: ME, p_metric: "points", p_limit: 50 });
 });

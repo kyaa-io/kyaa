@@ -1,4 +1,4 @@
--- Restore the preceding signed-in-only profile-id reference. No guest access is added.
+-- Restore the original immutable 140000: dayGain only, no home profile reference.
 begin;
 set local lock_timeout = '5s';
 do $patch$
@@ -6,9 +6,12 @@ declare p record; def text;
 begin
   for p in select * from (values
     ('public.read_home_fan_ranking_v2(uuid,text,integer)',
-     $a$'profileRef', pg_catalog.jsonb_build_object('kind', 'home_ranking', 'day', h.day,
-          'computedAt', h.computed_at, 'metric', p_metric, 'rank', v.stored_rank)$a$,
-     $b$'profileRef', pg_catalog.jsonb_build_object('kind', 'profile', 'profileId', v.subject_id)$b$),
+     $a$) || case when p_viewer is not null then pg_catalog.jsonb_build_object(
+        'profileRef', pg_catalog.jsonb_build_object('kind', 'home_ranking', 'day', h.day,
+          'computedAt', h.computed_at, 'metric', p_metric, 'rank', v.stored_rank)) else '{}'::jsonb end order by v.rn)
+      from moved v$a$,
+     $b$) order by v.rn)
+      from moved v$b$),
     ('public.social_profile_ref_subject(uuid,jsonb)',
      $a$elsif kind='home_ranking' then
   if p_viewer is null then raise exception 'SOCIAL_FORBIDDEN'; end if;

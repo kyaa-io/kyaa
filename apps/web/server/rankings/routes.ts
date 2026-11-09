@@ -4,11 +4,14 @@ import { z } from "zod";
 import { AuthError } from "@/features/auth/domain/auth-errors";
 import {
   HOME_CREATOR_METRICS, HOME_FAN_METRICS, HOME_GUEST_LIMIT, HOME_RANKING_DEFAULT_LIMIT, HOME_RANKING_LIMIT, PAGE_RANKING_METRICS, RANKING_PERIODS, activeJjinfanChallengesSchema, creatorRankingSchema, homeCreatorRankingSchema, homeFanRankingSchema,
-  jjinfanChallengeSchema, pageRankingSchema, platformFanRankingSchema, homeFanProfileRefSchema,
+  jjinfanChallengeSchema, pageRankingSchema, platformFanRankingSchema, homeFanProfileLocatorSchema,
 } from "@/features/rankings/domain/types";
 import { creatorSlugSchema } from "@/features/passport/domain/dukjil-types";
 
+import { signHomeProfileRef } from "./home-profile-ref";
+
 export interface RankingsDependencies {
+  profileRefSecret?: string;
   rpc(name: string, args: Record<string, unknown>): Promise<unknown>;
   authorize(authorization: string | null): Promise<{ appUserId: string }>;
   resolveCreatorId(slug: string): Promise<string | null>;
@@ -201,7 +204,7 @@ export function createRankingsHandlers(deps: RankingsDependencies) {
         const r = obj(row);
         return { rank: r.rank, score: r.score, hearts: r.hearts, points: r.points ?? null, fans: r.fans, isNew: r.isNew === true, nickname: r.nickname, characterId: r.characterId, tier: r.tier ?? null,
           isMe: appUserId !== null && r.isMe === true, delta: r.delta ?? null, favorite: favoriteIn(r.favorite, lang), weekGain: r.weekGain ?? null, dayGain: r.dayGain ?? null,
-          ...(appUserId ? { profileRef: checked(homeFanProfileRefSchema, r.profileRef) } : {}) };
+          ...(appUserId ? { profileRef: signHomeProfileRef(checked(homeFanProfileLocatorSchema, r.profileRef), appUserId, deps.profileRefSecret) } : {}) };
       });
       const body = checked(homeFanRankingSchema, {
         ...head(raw, metric), weekGainDays: raw.weekGainDays ?? null, rows,

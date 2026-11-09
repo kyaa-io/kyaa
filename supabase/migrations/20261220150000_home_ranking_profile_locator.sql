@@ -1,4 +1,5 @@
--- Signed-in home ranking references contain only snapshot coordinates, never a member id.
+-- DB emits signed-in-only snapshot coordinates; the trusted HTTP server signs them for the viewer.
+-- Client references are HMAC-verified before these coordinates reach the service-role RPC.
 -- The stored rank stays stable when read-time visibility closes the displayed rank gaps.
 -- Resolution must still match a current visible top-50 row in the same metric/snapshot.
 -- Rollback: supabase/rollback/20261220150000_home_ranking_profile_locator.sql
@@ -45,14 +46,33 @@ begin
   execute format('alter function public.home_ranking_profile_subject(uuid,jsonb) owner to %I', owner_name);
 end $owner$;
 
+-- Supports the immutable original 140000, the earlier local member-id variant, and reapplication.
+do $reader$
+declare def text;
+  original text := $a$) order by v.rn)
+      from moved v$a$;
+  intermediate text := $a$) || case when p_viewer is not null then pg_catalog.jsonb_build_object(
+        'profileRef', pg_catalog.jsonb_build_object('kind', 'profile', 'profileId', v.subject_id)) else '{}'::jsonb end order by v.rn)
+      from moved v$a$;
+  final_text text := $a$) || case when p_viewer is not null then pg_catalog.jsonb_build_object(
+        'profileRef', pg_catalog.jsonb_build_object('kind', 'home_ranking', 'day', h.day,
+          'computedAt', h.computed_at, 'metric', p_metric, 'rank', v.stored_rank)) else '{}'::jsonb end order by v.rn)
+      from moved v$a$;
+begin
+  def := pg_catalog.pg_get_functiondef('public.read_home_fan_ranking_v2(uuid,text,integer)'::regprocedure);
+  if (length(def) - length(replace(def, final_text, ''))) / length(final_text) = 1 then return; end if;
+  if (length(def) - length(replace(def, intermediate, ''))) / length(intermediate) = 1 then
+    def := replace(def, intermediate, final_text);
+  elsif (length(def) - length(replace(def, original, ''))) / length(original) = 1 then
+    def := replace(def, original, final_text);
+  else raise exception 'HOME_PROFILE_SHAPE: read_home_fan_ranking_v2'; end if;
+  execute def;
+end $reader$;
+
 do $patch$
 declare p record; def text;
 begin
   for p in select * from (values
-    ('public.read_home_fan_ranking_v2(uuid,text,integer)',
-     $a$'profileRef', pg_catalog.jsonb_build_object('kind', 'profile', 'profileId', v.subject_id)$a$,
-     $b$'profileRef', pg_catalog.jsonb_build_object('kind', 'home_ranking', 'day', h.day,
-          'computedAt', h.computed_at, 'metric', p_metric, 'rank', v.stored_rank)$b$),
     ('public.social_profile_ref_subject(uuid,jsonb)',
      $a$elsif kind in('fan_post','fan_post_comment') then$a$,
      $b$elsif kind='home_ranking' then
