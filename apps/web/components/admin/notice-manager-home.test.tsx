@@ -1,7 +1,7 @@
 import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import adminRows from "@/server/home-notice/fixtures/list_admin_home_notices.json";
-import { homeNoticeCategories, homeNoticeCategoryLabels } from "@/features/home/domain/home-notice";
+import { homeNoticeCategories, homeNoticeCategoryLabels, homeNoticeErrorCodes, homeNoticeErrorMessages } from "@/features/home/domain/home-notice";
 import { NoticeManager } from "./notice-manager";
 
 const getAccessToken = vi.fn(async () => "token");
@@ -127,6 +127,27 @@ describe("NoticeManager for home notices", () => {
     await waitFor(() => expect(setImage).toHaveBeenCalledTimes(1));
     expect(postBodies(fetchMock)[3]!.url).toBe(`/api/admin/home-notices/${draft.id}/assets`);
     expect(setImage).toHaveBeenCalledWith({ src: "https://cdn.example/storage/v1/object/public/cms-assets/public-image-assets/a.webp", alt: "공지 이미지" });
+  });
+});
+
+describe("NoticeManager shows the cause of a refused home notice request", () => {
+  afterEach(() => { vi.restoreAllMocks(); vi.unstubAllGlobals(); });
+  it.each([["SLUG_TAKEN", 409], ["NOT_FOUND", 404], ["UNAVAILABLE", 503]] as const)("shows the %s message", async (code, status) => {
+    vi.stubGlobal("fetch", vi.fn(async (_input: RequestInfo | URL, init?: RequestInit) => init?.method === "POST"
+      ? Response.json({ error: code, message: "raw SQL text" }, { status })
+      : Response.json({ role: "admin", notices: rows })));
+    render(<NoticeManager celebrityId="home" celebrityName="kyaa" role="admin" locale="ko" endpoint="/api/admin/home-notices" categories={homeNoticeCategories} categoryLabels={labels} errorMessages={homeNoticeErrorMessages.ko} />);
+    fireEvent.click(await screen.findByRole("button", { name: /초안 E/ }));
+    fireEvent.click(screen.getByRole("button", { name: "저장" }));
+    expect(await screen.findByRole("alert")).toHaveTextContent(homeNoticeErrorMessages.ko[code]);
+    expect(screen.queryByText("raw SQL text")).not.toBeInTheDocument();
+  });
+  it("has a message for every code in all 12 languages", () => {
+    for (const messages of Object.values(homeNoticeErrorMessages)) {
+      expect(Object.keys(messages).sort()).toEqual([...homeNoticeErrorCodes].sort());
+      for (const text of Object.values(messages)) expect(text.trim().length).toBeGreaterThan(8);
+    }
+    expect(Object.keys(homeNoticeErrorMessages)).toHaveLength(12);
   });
 });
 

@@ -60,6 +60,9 @@ expect_fail 3 'slug|violates check' "set role service_role; select public.save_a
 b="$(save null null r8data-b event true '안내 B' "$(doc 본문B)" 'Notice B' "$empty")"
 expect_fail 3 'complete ko and en' "set role service_role; select public.set_admin_home_notice_state('$actor','$allow',gen_random_uuid(),'$b',1,'publish',null)"
 # 4. revision conflict, publish, published notice is immutable.
+# Exact SQL texts the admin route maps (SLUG_TAKEN 409, NOT_FOUND 404).
+expect_fail 4 'duplicate key value violates unique constraint "home_notices_slug_key"' "set role service_role; select public.save_admin_home_notice('$actor','$allow',gen_random_uuid(),null,null,'r8data-a','guide',false,'t','$(doc x)','t','$(doc x)')"
+expect_fail 4 'home notice not found' "set role service_role; select public.set_admin_home_notice_state('$actor','$allow',gen_random_uuid(),gen_random_uuid(),1,'publish',null)"
 expect_fail 4 'revision conflict' "set role service_role; select public.save_admin_home_notice('$actor','$allow',gen_random_uuid(),'$a',7,'r8data-a','guide',false,'t','$(doc x)','t','$(doc x)')"
 state "$a" 1 publish null >/dev/null
 expect_fail 4 'immutable' "set role service_role; select public.save_admin_home_notice('$actor','$allow',gen_random_uuid(),'$a',2,'r8data-a','guide',false,'t','$(doc x)','t','$(doc x)')"

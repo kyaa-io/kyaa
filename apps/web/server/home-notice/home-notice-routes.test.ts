@@ -79,6 +79,29 @@ describe("home notice admin route", () => {
     expect((await anonymous.handlers.GET(new Request("https://kyaa.test/api/admin/home-notices"))).status).toBe(401);
   });
 
+  it.each([
+    ["a taken slug", { message: 'duplicate key value violates unique constraint "home_notices_slug_key"', code: "23505" }, 409, "SLUG_TAKEN"],
+    ["a missing notice", { message: "home notice not found", code: "P0001" }, 404, "NOT_FOUND"],
+    ["an incomplete publish", { message: "published home notice requires complete ko and en localizations", code: "P0001" }, 409, "INCOMPLETE"],
+    ["an archived notice", { message: "home notice archived", code: "P0001" }, 409, "STATE_CONFLICT"],
+    ["a database outage", { message: "connection terminated unexpectedly", code: "08006" }, 503, "UNAVAILABLE"],
+    ["an unknown SQL error", { message: "something else", code: "XX000" }, 503, "UNAVAILABLE"],
+  ])("answers %s with its own status and code, without invalidating", async (_name, sqlError, status, code) => {
+    const { deps, handlers } = setup({ data: null, error: sqlError });
+    const response = await handlers.POST(post(save({ id: "b0000000-0000-4000-8000-000000000001", expectedRevision: 1 })));
+    expect(response.status).toBe(status);
+    expect(await response.json()).toMatchObject({ error: code });
+    expect(deps.invalidatePublicContent).not.toHaveBeenCalled();
+  });
+
+  it("answers 503 when the list read fails and when the repository throws outside SQL", async () => {
+    const down = setup({ data: null, error: { message: "fetch failed" } });
+    expect((await down.handlers.GET(new Request("https://kyaa.test/api/admin/home-notices", { headers: { authorization: "Bearer t" } }))).status).toBe(503);
+    const thrown = setup();
+    thrown.deps.repository.state = vi.fn(async () => { throw new TypeError("network"); });
+    expect((await thrown.handlers.POST(post({ action: "publish", id: "b0000000-0000-4000-8000-000000000001", expectedRevision: 1 }))).status).toBe(503);
+  });
+
   it("registers an uploaded image as a public asset and returns only its URL", async () => {
     const { deps, handlers } = setup();
     // Server routes see undici's File; jsdom's globals would not pass `instanceof File` (same as certification-routes.test.ts).

@@ -26,7 +26,10 @@ export type HomeNoticeSaveInput = Readonly<{
 }>;
 export type HomeNoticeStateInput = Readonly<{ id: string; expectedRevision: number; action: "publish" | "unpublish" | "archive"; reason?: string }>;
 
-export class HomeNoticeRepositoryError extends Error {}
+export class HomeNoticeRepositoryError extends Error {
+  /** PostgreSQL SQLSTATE from PostgREST when the error came from SQL (23505 unique, 23514 check, …). */
+  constructor(message: string, readonly code?: string) { super(message); }
+}
 
 const detailSchema = homeNoticeSummarySchema.extend({ body: z.unknown() }).strict();
 
@@ -57,7 +60,7 @@ export class HomeNoticeRepository {
       p_before_id: before?.id ?? null,
       p_limit: input.limit,
     });
-    if (error) throw new HomeNoticeRepositoryError(error.message);
+    if (error) throw new HomeNoticeRepositoryError(error.message, error.code);
     const page = homeNoticePageSchema.parse(data);
     const last = page.items.at(-1);
     return { items: page.items, nextCursor: page.hasMore && last ? encodeHomeNoticeCursor(last) : null };
@@ -65,7 +68,7 @@ export class HomeNoticeRepository {
 
   async findPublished(locale: "ko" | "en", slug: string): Promise<HomeNoticeDetail | null> {
     const { data, error } = await this.db.rpc("read_public_home_notice", { p_locale: locale, p_slug: slug });
-    if (error) throw new HomeNoticeRepositoryError(error.message);
+    if (error) throw new HomeNoticeRepositoryError(error.message, error.code);
     if (data === null) return null;
     const row = detailSchema.parse(data);
     return { ...row, body: parseNoticeDocument(row.body, { privateImages: "reject" }) };
@@ -76,7 +79,7 @@ export class HomeNoticeRepository {
       p_actor_app_user_id: actor.appUserId,
       p_actor_admin_allowlist_id: actor.allowlistId,
     });
-    if (error) throw new HomeNoticeRepositoryError(error.message);
+    if (error) throw new HomeNoticeRepositoryError(error.message, error.code);
     return { role: actor.role, notices: z.array(z.record(z.string(), z.unknown())).parse(data) };
   }
 
@@ -99,7 +102,7 @@ export class HomeNoticeRepository {
       p_title_en: input.localizations.en.title.trim(),
       p_body_en: en,
     });
-    if (error) throw new HomeNoticeRepositoryError(error.message);
+    if (error) throw new HomeNoticeRepositoryError(error.message, error.code);
     return { id: z.uuid().parse(data) };
   }
 
@@ -114,7 +117,7 @@ export class HomeNoticeRepository {
       p_action: input.action,
       p_reason: input.reason ?? null,
     });
-    if (error) throw new HomeNoticeRepositoryError(error.message);
+    if (error) throw new HomeNoticeRepositoryError(error.message, error.code);
     return { ok: true as const };
   }
 }

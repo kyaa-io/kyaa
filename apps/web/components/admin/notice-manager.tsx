@@ -49,8 +49,9 @@ function normalize(row: any): Notice {
 /**
  * `endpoint` replaces `${apiBase}/${celebrityId}/notices` (attachments go to `${endpoint}/${id}/assets`).
  * `categories` shows a category field instead of post type and visibility and saves `category` (home notices).
+ * `errorMessages` maps the route's `error` code to the message shown to the admin.
  */
-export function NoticeManager({ celebrityId, celebrityName, role, locale, isBrand = false, apiBase = "/api/admin/celebrities", endpoint, categories, categoryLabels }: { celebrityId: string; celebrityName: string; role: string; locale: AdminLocale; isBrand?: boolean; apiBase?: string; endpoint?: string; categories?: readonly Category[]; categoryLabels?: Readonly<Record<Category, string>> }) {
+export function NoticeManager({ celebrityId, celebrityName, role, locale, isBrand = false, apiBase = "/api/admin/celebrities", endpoint, categories, categoryLabels, errorMessages }: { celebrityId: string; celebrityName: string; role: string; locale: AdminLocale; isBrand?: boolean; apiBase?: string; endpoint?: string; categories?: readonly Category[]; categoryLabels?: Readonly<Record<Category, string>>; errorMessages?: Readonly<Record<string, string>> }) {
   const { getAccessToken } = usePrivy();
   const operatorChannelId = apiBase.startsWith("/api/operator/") ? celebrityId : undefined;
   const noticesUrl = endpoint ?? `${apiBase}/${celebrityId}/notices`;
@@ -87,9 +88,9 @@ export function NoticeManager({ celebrityId, celebrityName, role, locale, isBran
       cache: "no-store",
     });
     const payload = await response.json().catch(() => ({}));
-    if (!response.ok) throw new Error(payload.message ?? "Notice request failed");
+    if (!response.ok) throw new Error((typeof payload.error === "string" ? errorMessages?.[payload.error] : undefined) ?? payload.message ?? "Notice request failed");
     return payload;
-  }, [noticesUrl, getAccessToken]);
+  }, [noticesUrl, getAccessToken, errorMessages]);
   const load = useCallback(async () => {
     setListState("loading");
     try {

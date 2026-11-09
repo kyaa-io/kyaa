@@ -1,6 +1,6 @@
 import "server-only";
 import { z } from "zod";
-import { homeNoticeCategories } from "@/features/home/domain/home-notice";
+import { homeNoticeCategories, type HomeNoticeErrorCode } from "@/features/home/domain/home-notice";
 import { AuthError } from "../../features/auth/domain/auth-errors";
 import type { AdminSession } from "../admin/admin-session-gate";
 import { publicContentCacheHeaders } from "../cache/public-content-cache";
@@ -41,14 +41,26 @@ function correlation(request: Request) {
   const value = request.headers.get("x-correlation-id");
   return value && z.uuid().safeParse(value).success ? value : crypto.randomUUID();
 }
-function failure(error: unknown, fallback: string) {
+/** SQL refusals the admin can act on. Anything else from SQL or the network is an outage (503). */
+const sqlRefusals: ReadonlyArray<readonly [RegExp, number, HomeNoticeErrorCode]> = [
+  [/home_notices_slug_key/, 409, "SLUG_TAKEN"],
+  [/home notice not found/, 404, "NOT_FOUND"],
+  [/revision conflict/, 409, "REVISION_CONFLICT"],
+  [/complete ko and en localizations/, 409, "INCOMPLETE"],
+  [/home notice is immutable|home notice archived|already published|archived home notice cannot be published/, 409, "STATE_CONFLICT"],
+];
+function failure(error: unknown) {
   if (error instanceof CertificationBodyError) return json({ error: error.code }, error.code === "BODY_TOO_LARGE" ? 413 : 400);
   if (error instanceof z.ZodError || error instanceof SyntaxError) return json({ error: "INVALID_REQUEST" }, 400);
   if (error instanceof AuthError) return json({ error: error.status === 401 ? "UNAUTHENTICATED" : "FORBIDDEN" }, error.status === 401 ? 401 : 403);
   // parseNoticeDocument refuses private images and unsupported nodes before any RPC.
   if (error instanceof Error && /^(Notice|Private Notice|Invalid Notice|Unsupported Notice|Only H2|External videos)/.test(error.message)) return json({ error: "INVALID_BODY", message: error.message }, 400);
-  if (error instanceof HomeNoticeRepositoryError && /revision conflict/.test(error.message)) return json({ error: "REVISION_CONFLICT", message: "Home notice changed; reload" }, 409);
-  return json({ error: fallback, message: "Home notice request failed" }, 409);
+  if (error instanceof HomeNoticeRepositoryError) {
+    const refusal = sqlRefusals.find(([pattern]) => pattern.test(error.message));
+    if (refusal) return json({ error: refusal[2], message: error.message }, refusal[1]);
+    if (error.code === "23514" || error.code === "22023") return json({ error: "INVALID_REQUEST" }, 400);
+  }
+  return json({ error: "UNAVAILABLE", message: "Home notice request failed" }, 503);
 }
 
 export function createHomeNoticeAdminHandlers(getDeps: () => HomeNoticeAdminDependencies) {
@@ -58,7 +70,7 @@ export function createHomeNoticeAdminHandlers(getDeps: () => HomeNoticeAdminDepe
         const deps = getDeps();
         const session = await deps.authorize({ authorization: request.headers.get("authorization") ?? "", correlationId: correlation(request) });
         return json(await deps.repository.listAdmin(session));
-      } catch (error) { return failure(error, "HOME_NOTICE_ADMIN_ERROR"); }
+      } catch (error) { return failure(error); }
     },
     async POST(request: Request) {
       try {
@@ -72,7 +84,7 @@ export function createHomeNoticeAdminHandlers(getDeps: () => HomeNoticeAdminDepe
           : await deps.repository.state(session, c, stateSchema.parse(value));
         deps.invalidatePublicContent();
         return json(result);
-      } catch (error) { return failure(error, "HOME_NOTICE_ADMIN_ERROR"); }
+      } catch (error) { return failure(error); }
     },
     async uploadAsset(request: Request, context: { params: Promise<{ id: string }> }) {
       try {

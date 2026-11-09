@@ -1,6 +1,6 @@
 "use client";
 import { useSearchParams } from "next/navigation";
-import { homeNoticeCategories, homeNoticeCategoryLabels } from "@/features/home/domain/home-notice";
+import { homeNoticeCategories, homeNoticeCategoryLabels, homeNoticeErrorMessages } from "@/features/home/domain/home-notice";
 import { AdminAccessState } from "./admin-access-state";
 import { NoticeManager } from "./notice-manager";
 import { AdminOperationsShell, type AdminLocale } from "./operations-shell";
@@ -13,6 +13,6 @@ export function AuthorizedHomeNoticeManager() {
   if (session.status !== "authorized") return <AdminAccessState locale={locale} status={session.status} />;
   return <AdminOperationsShell locale={locale} adminRole={session.admin.role}>
     <NoticeManager key={session.admin.email} celebrityId="home" celebrityName="kyaa" role={session.admin.role} locale={locale}
-      endpoint="/api/admin/home-notices" categories={homeNoticeCategories} categoryLabels={homeNoticeCategoryLabels[locale]} />
+      endpoint="/api/admin/home-notices" categories={homeNoticeCategories} categoryLabels={homeNoticeCategoryLabels[locale]} errorMessages={homeNoticeErrorMessages[locale]} />
   </AdminOperationsShell>;
 }
