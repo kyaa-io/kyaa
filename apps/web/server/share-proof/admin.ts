@@ -21,7 +21,8 @@ export function createShareProofAdminDependencies(): ShareProofAdminDependencies
     authorizeAdmin: createCertificationDependencies().authorizeAdmin,
   };
 }
-const STATUS: Record<string, number> = { ADMIN_REQUIRED: 403, REASON_REQUIRED: 400, SHARE_PROOF_NOT_FOUND: 404 };
+// B3: a repost is revoked through the same route; it must be accepted, within its 7 days, and not the operator's own.
+const STATUS: Record<string, number> = { ADMIN_REQUIRED: 403, REASON_REQUIRED: 400, SHARE_PROOF_NOT_FOUND: 404, SHARE_PROOF_NOT_ACCEPTED: 409, CLAWBACK_WINDOW_CLOSED: 409, SELF_REVIEW_FORBIDDEN: 403 };
 function mapError(error: unknown) {
   if (error instanceof AuthError) return json({ error: { code: error.code } }, error.status);
   if (error instanceof z.ZodError || error instanceof SyntaxError) return json({ error: { code: "INVALID_REQUEST" } }, 400);
