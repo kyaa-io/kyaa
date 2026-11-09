@@ -29,7 +29,11 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
   const bannerRepository = createHomeBannerRepository({ url: environment.SUPABASE_URL, serviceRoleKey: environment.SUPABASE_SERVICE_ROLE_KEY });
   const queries = {
     featuredLives: settleHomeQuery(measureHomeQuery("featuredLives", () => liveRepository.listFeaturedPublished({ locale: toContentLocale(locale), now: new Date() }))),
-    celebrities: settleHomeQuery(measureHomeQuery("celebrities", () => celebrityRepository.list(toContentLocale(locale)))),
+    // The home reads only Elina (raffle guide); the full list would put unlisted creators in the guest payload.
+    celebrities: settleHomeQuery(measureHomeQuery("celebrities", async () => {
+      const elina = await celebrityRepository.findBySlug(toContentLocale(locale), "elina");
+      return elina ? [elina] : [];
+    })),
     homeBanners: settleHomeQuery(measureHomeQuery("homeBanners", () => bannerRepository.list(toContentLocale(locale)))),
     homeSlots: settleHomeQuery(measureHomeQuery("homeSlots", () => bannerRepository.listSlots(toContentLocale(locale), "home"))),
     elinaRaffles: settleHomeQuery(measureHomeQuery("elinaRaffles", () => createRaffleDependencies().list({ celebritySlug: "elina", locale: toContentLocale(locale), now: new Date() }))),

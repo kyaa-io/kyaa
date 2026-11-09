@@ -5,7 +5,7 @@ vi.mock("server-only", () => ({}));
 const repositories = vi.hoisted(() => ({
   listFeaturedPublished: vi.fn(),
   homeBanners: vi.fn(),
-  list: vi.fn(),
+  findBySlug: vi.fn(),
   listSlots: vi.fn(),
   guidePhotos: vi.fn(),
   raffles: vi.fn(),
@@ -13,7 +13,7 @@ const repositories = vi.hoisted(() => ({
 
 vi.mock("../server/config/env", () => ({ loadServerEnv: () => ({ SUPABASE_URL: "https://db.test", SUPABASE_SERVICE_ROLE_KEY: "secret" }) }));
 vi.mock("../server/g3/live-event-repository", () => ({ createLiveEventRepositoryFromEnvironment: () => ({ listFeaturedPublished: repositories.listFeaturedPublished }) }));
-vi.mock("../server/content/published-content-repository", () => ({ createPublishedContentRepositoryFromEnvironment: () => ({ list: repositories.list }) }));
+vi.mock("../server/content/published-content-repository", () => ({ createPublishedContentRepositoryFromEnvironment: () => ({ findBySlug: repositories.findBySlug }) }));
 
 vi.mock("../server/content/home-banner-repository", () => ({ createHomeBannerRepository: () => ({ list: repositories.homeBanners, listSlots: repositories.listSlots }) }));
 
@@ -27,7 +27,7 @@ describe("Home server content isolation", () => {
     repositories.raffles.mockReset().mockResolvedValue({ raffles: [] });
     repositories.guidePhotos.mockReset().mockResolvedValue(undefined);
     repositories.listFeaturedPublished.mockReset().mockResolvedValue([]);
-    repositories.list.mockReset().mockResolvedValue([]);
+    repositories.findBySlug.mockReset().mockResolvedValue(null);
     repositories.listSlots.mockReset().mockResolvedValue({});
   });
 
@@ -66,6 +66,14 @@ describe("Home server content isolation", () => {
     expect(await props(failed).queries.celebrities).toEqual({ status: "fulfilled", value: [] });
   });
 
+  it("sends only Elina to the guest home, never the full creator list with unlisted creators", async () => {
+    const elina = { slug: "elina", name: "Elina" };
+    repositories.findBySlug.mockResolvedValue(elina);
+    const result = await HomePage({ searchParams: Promise.resolve({ locale: "en" }) });
+    expect(repositories.findBySlug).toHaveBeenCalledExactlyOnceWith("en", "elina");
+    expect(await props(result).queries.celebrities).toEqual({ status: "fulfilled", value: [elina] });
+  });
+
   it("no longer reads the creator LIVE metadata or the unlisted list that only the retired favorites row used", async () => {
     const result = await HomePage({ searchParams: Promise.resolve({}) });
     expect(Object.keys(props(result).queries).sort()).toEqual(["celebrities", "elinaRaffles", "featuredLives", "homeBanners", "homeSlots"]);
@@ -79,7 +87,7 @@ describe("Home server content isolation", () => {
 
   it("retains independent banners if live and creator lookups fail", async () => {
     repositories.listFeaturedPublished.mockRejectedValue(new Error("live unavailable"));
-    repositories.list.mockRejectedValue(new Error("creator unavailable"));
+    repositories.findBySlug.mockRejectedValue(new Error("creator unavailable"));
     repositories.homeBanners.mockResolvedValue([{ id: "independent" }]);
     const result = await HomePage({ searchParams: Promise.resolve({}) });
     expect(await props(result).queries.homeBanners).toEqual({ status: "fulfilled", value: [{ id: "independent" }] });
@@ -89,7 +97,7 @@ describe("Home server content isolation", () => {
 
   it("renders instead of throwing when every main content source fails; each section degrades on its own", async () => {
     repositories.listFeaturedPublished.mockRejectedValue(new Error("live unavailable"));
-    repositories.list.mockRejectedValue(new Error("creators unavailable"));
+    repositories.findBySlug.mockRejectedValue(new Error("creators unavailable"));
     repositories.homeBanners.mockRejectedValue(new Error("banners unavailable"));
     const result = await HomePage({ searchParams: Promise.resolve({}) });
     const { queries } = props(result);
