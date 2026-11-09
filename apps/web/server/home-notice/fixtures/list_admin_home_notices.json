@@ -1,15 +1,16 @@
 [
     {
-        "id": "52a82409-1a3c-4d59-85cc-ec7910889824",
+        "id": "3f0fb998-fd45-42a4-9008-2959e6843ca3",
         "slug": "r8data-e",
         "pinned": false,
         "category": "guide",
         "revision": 1,
-        "created_at": "2026-11-09T18:45:53.052217+09:00",
+        "created_at": "2026-11-09T21:08:24.5422+09:00",
         "archived_at": null,
         "published_at": null,
         "archive_reason": null,
         "publication_status": "draft",
+        "linked_group_page_id": null,
         "home_notice_localizations": [
             {
                 "title": "초안 E",
@@ -50,16 +51,17 @@
         ]
     },
     {
-        "id": "7ccfb37c-84eb-40dd-9172-10b4dae621f7",
+        "id": "5f34a7ba-f4c5-4eb3-a556-a7c0723a66c5",
         "slug": "r8data-d",
         "pinned": false,
         "category": "creator",
         "revision": 2,
-        "created_at": "2026-11-09T18:45:53.018762+09:00",
+        "created_at": "2026-11-09T21:08:24.497578+09:00",
         "archived_at": null,
-        "published_at": "2026-11-09T18:45:53.035254+09:00",
+        "published_at": "2026-11-09T21:08:24.519636+09:00",
         "archive_reason": null,
         "publication_status": "published",
+        "linked_group_page_id": null,
         "home_notice_localizations": [
             {
                 "title": "최신 D",
@@ -100,16 +102,17 @@
         ]
     },
     {
-        "id": "aa61d47a-28ca-43df-b6e4-f18537279aab",
+        "id": "1fadd11e-21d3-49f6-958d-6b04dbc0d70f",
         "slug": "r8data-c",
         "pinned": true,
         "category": "update",
         "revision": 2,
-        "created_at": "2026-11-09T18:45:52.98508+09:00",
+        "created_at": "2026-11-09T21:08:24.45879+09:00",
         "archived_at": null,
-        "published_at": "2026-11-09T18:45:53.001216+09:00",
+        "published_at": "2026-11-09T21:08:24.477133+09:00",
         "archive_reason": null,
         "publication_status": "published",
+        "linked_group_page_id": null,
         "home_notice_localizations": [
             {
                 "title": "고정 C",
@@ -150,16 +153,17 @@
         ]
     },
     {
-        "id": "071265cf-f618-4ede-b18c-afe36e3e9690",
+        "id": "02d7aa0e-4a8c-453a-96f9-7c62f5312bc1",
         "slug": "r8data-b",
         "pinned": true,
         "category": "event",
         "revision": 2,
-        "created_at": "2026-11-09T18:45:52.774198+09:00",
-        "archived_at": "2026-11-09T18:45:52.900139+09:00",
+        "created_at": "2026-11-09T21:08:24.162815+09:00",
+        "archived_at": "2026-11-09T21:08:24.363011+09:00",
         "published_at": null,
         "archive_reason": "r8data archive test",
         "publication_status": "draft",
+        "linked_group_page_id": null,
         "home_notice_localizations": [
             {
                 "title": "안내 B",
@@ -194,16 +198,17 @@
         ]
     },
     {
-        "id": "0b379746-7735-48ba-860a-c92603a9e13a",
+        "id": "186473ab-c3fa-419e-a462-3d354b1fe228",
         "slug": "r8data-a",
         "pinned": false,
         "category": "guide",
         "revision": 2,
-        "created_at": "2026-11-09T18:45:52.70871+09:00",
+        "created_at": "2026-11-09T21:08:24.097447+09:00",
         "archived_at": null,
-        "published_at": "2026-11-09T18:45:52.829939+09:00",
+        "published_at": "2026-11-09T21:08:24.270827+09:00",
         "archive_reason": null,
         "publication_status": "published",
+        "linked_group_page_id": null,
         "home_notice_localizations": [
             {
                 "title": "안내 A",

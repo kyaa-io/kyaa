@@ -1,5 +1,6 @@
 import { beforeEach, expect, it, vi } from "vitest";
 import adminRows from "@/server/home-notice/fixtures/list_admin_home_notices.json";
+import linkTargets from "@/server/home-notice/fixtures/list_admin_home_notice_link_targets.json";
 vi.mock("server-only", () => ({}));
 const state = vi.hoisted(() => ({ rpc: vi.fn(), invalidate: vi.fn(), role: "admin" as string }));
 vi.mock("@/server/home-notice/home-notice-dependencies", async () => {
@@ -17,13 +18,15 @@ beforeEach(() => { vi.clearAllMocks(); state.role = "admin"; });
 const post = (body: unknown) => new Request("https://byus.test/api/admin/home-notices", { method: "POST", headers: { authorization: "Bearer t", "content-type": "application/json" }, body: JSON.stringify(body) });
 
 it("lists the real admin rows privately", async () => {
-  state.rpc.mockResolvedValue({ data: adminRows, error: null });
+  state.rpc.mockImplementation(async (name: string) => ({ data: name === "list_admin_home_notice_link_targets" ? linkTargets : adminRows, error: null }));
   const res = await GET(new Request("https://byus.test/api/admin/home-notices", { headers: { authorization: "Bearer t" } }));
   expect(res.status).toBe(200);
   expect(res.headers.get("cache-control")).toBe("private, no-store");
   const body = await res.json();
   expect(body.notices).toHaveLength(adminRows.length);
   expect(body.notices[0]).toHaveProperty("home_notice_localizations");
+  expect(body.notices[0]).toHaveProperty("linked_group_page_id");
+  expect(body.linkTargets).toEqual(linkTargets);
   expect(state.rpc).toHaveBeenCalledWith("list_admin_home_notices", { p_actor_app_user_id: "a0000000-0000-4000-8000-000000000001", p_actor_admin_allowlist_id: "a0000000-0000-4000-8000-000000000002" });
 });
 

@@ -13,6 +13,6 @@ export function AuthorizedHomeNoticeManager() {
   if (session.status !== "authorized") return <AdminAccessState locale={locale} status={session.status} />;
   return <AdminOperationsShell locale={locale} adminRole={session.admin.role}>
     <NoticeManager key={session.admin.email} celebrityId="home" celebrityName="kyaa" role={session.admin.role} locale={locale}
-      endpoint="/api/admin/home-notices" categories={homeNoticeCategories} categoryLabels={homeNoticeCategoryLabels[locale]} errorMessages={homeNoticeErrorMessages[locale]} />
+      endpoint="/api/admin/home-notices" categories={homeNoticeCategories} categoryLabels={homeNoticeCategoryLabels[locale]} errorMessages={homeNoticeErrorMessages[locale]} linkable />
   </AdminOperationsShell>;
 }

@@ -1,20 +1,20 @@
 {
     "items": [
         {
-            "id": "aa61d47a-28ca-43df-b6e4-f18537279aab",
+            "id": "1fadd11e-21d3-49f6-958d-6b04dbc0d70f",
             "slug": "r8data-c",
             "title": "고정 C",
             "pinned": true,
             "category": "update",
-            "publishedAt": "2026-11-09T18:45:53.001216+09:00"
+            "publishedAt": "2026-11-09T21:08:24.477133+09:00"
         },
         {
-            "id": "7ccfb37c-84eb-40dd-9172-10b4dae621f7",
+            "id": "5f34a7ba-f4c5-4eb3-a556-a7c0723a66c5",
             "slug": "r8data-d",
             "title": "최신 D",
             "pinned": false,
             "category": "creator",
-            "publishedAt": "2026-11-09T18:45:53.035254+09:00"
+            "publishedAt": "2026-11-09T21:08:24.519636+09:00"
         }
     ],
     "hasMore": true

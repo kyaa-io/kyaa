@@ -17,6 +17,7 @@ type Document = Record<string, unknown>;
 type Category = string;
 type Notice = {
   category?: Category;
+  linkedGroupPageId?: string | null;
   id: string;
   slug: string;
   publicationStatus: "draft" | "published";
@@ -42,7 +43,7 @@ function normalize(row: any): Notice {
     id: row.id, slug: row.slug, publicationStatus: row.publication_status, pinned: row.pinned,
     postType: row.post_type ?? "notice", visibility: row.visibility ?? "public",
     publishedAt: row.published_at, archivedAt: row.archived_at, archiveReason: row.archive_reason,
-    revision: row.revision, localizations: { ko: loc("ko"), en: loc("en") }, category: row.category ?? undefined,
+    revision: row.revision, localizations: { ko: loc("ko"), en: loc("en") }, category: row.category ?? undefined, linkedGroupPageId: row.linked_group_page_id ?? null,
   };
 }
 
@@ -50,8 +51,9 @@ function normalize(row: any): Notice {
  * `endpoint` replaces `${apiBase}/${celebrityId}/notices` (attachments go to `${endpoint}/${id}/assets`).
  * `categories` shows a category field instead of post type and visibility and saves `category` (home notices).
  * `errorMessages` maps the route's `error` code to the message shown to the admin.
+ * `linkable` shows an optional linked fan page field filled from the list response's `linkTargets` and saves `linkedGroupPageId`.
  */
-export function NoticeManager({ celebrityId, celebrityName, role, locale, isBrand = false, apiBase = "/api/admin/celebrities", endpoint, categories, categoryLabels, errorMessages }: { celebrityId: string; celebrityName: string; role: string; locale: AdminLocale; isBrand?: boolean; apiBase?: string; endpoint?: string; categories?: readonly Category[]; categoryLabels?: Readonly<Record<Category, string>>; errorMessages?: Readonly<Record<string, string>> }) {
+export function NoticeManager({ celebrityId, celebrityName, role, locale, isBrand = false, apiBase = "/api/admin/celebrities", endpoint, categories, categoryLabels, errorMessages, linkable = false }: { celebrityId: string; celebrityName: string; role: string; locale: AdminLocale; isBrand?: boolean; apiBase?: string; endpoint?: string; categories?: readonly Category[]; categoryLabels?: Readonly<Record<Category, string>>; errorMessages?: Readonly<Record<string, string>>; linkable?: boolean }) {
   const { getAccessToken } = usePrivy();
   const operatorChannelId = apiBase.startsWith("/api/operator/") ? celebrityId : undefined;
   const noticesUrl = endpoint ?? `${apiBase}/${celebrityId}/notices`;
@@ -67,6 +69,8 @@ export function NoticeManager({ celebrityId, celebrityName, role, locale, isBran
   const [postType, setPostType] = useState<Notice["postType"]>("notice");
   const [visibility, setVisibility] = useState<Notice["visibility"]>("public");
   const [category, setCategory] = useState<Category | undefined>(defaultCategory);
+  const [linkTargets, setLinkTargets] = useState<{ id: string; name: string; slug: string }[]>([]);
+  const [linkedPageId, setLinkedPageId] = useState<string | null>(null);
   const [titles, setTitles] = useState({ ko: "", en: "" });
   const [bodies, setBodies] = useState<{ ko: Document; en: Document }>({ ko: emptyDocument, en: emptyDocument });
   const [message, setMessage] = useState("");
@@ -96,6 +100,7 @@ export function NoticeManager({ celebrityId, celebrityName, role, locale, isBran
     try {
       const payload = await request("GET");
       setItems((payload.notices ?? []).map(normalize));
+      if (linkable) setLinkTargets(payload.linkTargets ?? []);
       setListState("ready");
       return true;
     } catch (error) {
@@ -104,11 +109,11 @@ export function NoticeManager({ celebrityId, celebrityName, role, locale, isBran
       setListState("error");
       return false;
     }
-  }, [request]);
+  }, [request, linkable]);
   useEffect(() => { void load(); }, [load]);
   useEffect(() => {
     if (!current) return;
-    setSlug(current.slug); setPinned(current.pinned); setPostType(current.postType); setVisibility(current.visibility); setCategory(current.category ?? defaultCategory);
+    setSlug(current.slug); setPinned(current.pinned); setPostType(current.postType); setVisibility(current.visibility); setCategory(current.category ?? defaultCategory); setLinkedPageId(current.linkedGroupPageId ?? null);
     setTitles({ ko: current.localizations.ko.title, en: current.localizations.en.title });
     setBodies({ ko: current.localizations.ko.body, en: current.localizations.en.body });
   }, [current, defaultCategory]);
@@ -138,6 +143,7 @@ export function NoticeManager({ celebrityId, celebrityName, role, locale, isBran
   const dirty = slug !== (current?.slug ?? "") || pinned !== (current?.pinned ?? false)
     || postType !== (current?.postType ?? "notice") || visibility !== (current?.visibility ?? "public")
     || (categories ? category !== (current?.category ?? defaultCategory) : false)
+    || (linkable ? linkedPageId !== (current?.linkedGroupPageId ?? null) : false)
     || (["ko", "en"] as const).some(value => titles[value] !== (current?.localizations[value].title ?? "")
       || JSON.stringify(bodies[value]) !== JSON.stringify(current?.localizations[value].body ?? emptyDocument));
   useEffect(() => {
@@ -151,7 +157,7 @@ export function NoticeManager({ celebrityId, celebrityName, role, locale, isBran
   }
   function reset() {
     if (!confirmDiscard()) return;
-    setSelectedId(null); setSlug(""); setPinned(false); setPostType("notice"); setVisibility("public"); setCategory(defaultCategory); setTitles({ ko: "", en: "" });
+    setSelectedId(null); setSlug(""); setPinned(false); setPostType("notice"); setVisibility("public"); setCategory(defaultCategory); setLinkedPageId(null); setTitles({ ko: "", en: "" });
     setBodies({ ko: emptyDocument, en: emptyDocument }); setMessage("");
   }
   function beginOperation(label: string) {
@@ -173,6 +179,7 @@ export function NoticeManager({ celebrityId, celebrityName, role, locale, isBran
       const result = await request("POST", {
         action: "save", id: current?.id, expectedRevision: current?.revision, slug, pinned,
         ...(categories ? { category } : { postType, visibility: isBrand ? "public" : visibility }),
+        ...(linkable ? { linkedGroupPageId: linkedPageId } : {}),
         localizations: {
           ko: { title: titles.ko, body: bodies.ko },
           en: { title: titles.en, body: bodies.en },
@@ -265,6 +272,11 @@ export function NoticeManager({ celebrityId, celebrityName, role, locale, isBran
         <div className={styles.fields}><label><span>{locale === "ko" ? "주소 이름" : "URL name"}</span><input disabled={!canEdit || interactionLocked || !!current?.archivedAt || current?.publicationStatus === "published"} value={slug} pattern="[a-z0-9]+(-[a-z0-9]+)*" onChange={(event) => setSlug(event.target.value)} /></label><label><span>{locale === "ko" ? "제목" : "Title"}</span><input disabled={!canEdit || interactionLocked || !!current?.archivedAt || current?.publicationStatus === "published"} value={titles[language]} onChange={(event) => setTitles((value) => ({ ...value, [language]: event.target.value }))} /></label><label className={styles.pin}><input type="checkbox" disabled={!canEdit || interactionLocked || !!current?.archivedAt || current?.publicationStatus === "published"} checked={pinned} onChange={(event) => setPinned(event.target.checked)} /><Pin />{locale === "ko" ? "상단 고정" : "Pin Notice"}</label></div>
         {categories ? <div className={styles.fields}>
           <label><span>{locale === "ko" ? "구분" : "Category"}</span><select disabled={toolbarDisabled} value={category} onChange={event => setCategory(event.target.value)}>{categories.map(value => <option key={value} value={value}>{categoryLabels?.[value] ?? value}</option>)}</select></label>
+          {linkable && <label><span>{locale === "ko" ? "연결 팬페이지" : "Linked fan page"}</span><select disabled={toolbarDisabled} value={linkedPageId ?? ""} onChange={event => setLinkedPageId(event.target.value || null)}>
+            <option value="">{locale === "ko" ? "연결 안 함(공지 상세로 이동)" : "None (opens the notice)"}</option>
+            {linkedPageId && !linkTargets.some(target => target.id === linkedPageId) && <option value={linkedPageId}>{locale === "ko" ? "지금 연결할 수 없는 팬페이지" : "Fan page not linkable now"}</option>}
+            {linkTargets.map(target => <option key={target.id} value={target.id}>{target.name} (/{target.slug})</option>)}
+          </select></label>}
         </div> : <div className={styles.fields}>
           <label><span>{locale === "ko" ? "글 구분" : "Post type"}</span><select disabled={toolbarDisabled} value={postType} onChange={event => setPostType(event.target.value as Notice["postType"])}><option value="notice">{locale === "ko" ? "공지" : "Notice"}</option><option value="artist_post">{isBrand ? locale === "ko" ? "브랜드 소식" : "Brand update" : locale === "ko" ? "아티스트 글" : "Artist post"}</option></select></label>
           <label><span>{locale === "ko" ? "공개 범위" : "Visibility"}</span><select disabled={toolbarDisabled} value={isBrand ? "public" : visibility} onChange={event => setVisibility(event.target.value as Notice["visibility"])}><option value="public">{locale === "ko" ? "전체 공개" : "Public"}</option>{!isBrand && <option value="members">{locale === "ko" ? "회원 공개" : "Members only"}</option>}</select></label>

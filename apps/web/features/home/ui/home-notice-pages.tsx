@@ -32,7 +32,7 @@ export function HomeNoticeListScreen({ locale, items, nextCursor }: { locale: Ap
     <FanHeading as="h1">{copy.title}</FanHeading>
     {items.length === 0 ? <p className={styles.empty}>{copy.empty}</p> : <ul className={styles.list}>
       {items.map(item => <li key={item.id} className={styles.row} data-row="notice">
-        <Link className={styles.link} href={`/notices/${item.slug}?locale=${locale}` as Route}>
+        <Link className={styles.link} href={`${item.linkHref ?? `/notices/${item.slug}`}?locale=${locale}` as Route}>
           <span className={styles.category}>{homeNoticeCategoryLabels[locale][item.category]}</span>
           <span className={styles.title}>{item.title}</span>
           <time className={styles.date} dateTime={item.publishedAt}>{formatHomeNoticeDate(item.publishedAt, locale)}</time>

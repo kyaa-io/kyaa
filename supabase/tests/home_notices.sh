@@ -19,6 +19,9 @@ expect_fail() { # number, pattern, sql
   pass "$1" "refused: $2"
 }
 access_block() { awk '/^do \$access\$/{on=1} on{print} /^\$access\$;/{on=0}' "$MIGRATION"; }
+# 20261220021500 (linked fan page) replaces the reads with ones that call its helpers, so its block runs after the N1 block when present.
+LINK_MIGRATION="$ROOT_DIR/supabase/migrations/20261220021500_home_notice_linked_page.sql"
+link_block() { [[ -f "$LINK_MIGRATION" ]] && awk '/^do \$access\$/{on=1} on{print} /^\$access\$;/{on=0}' "$LINK_MIGRATION" || true; }
 check_only_block() { access_block | awk '/^begin$/&&!b{print;b=1;skip=1;next} /-- checks:/{skip=0} !skip{print}'; }
 
 actor='97000000-0000-4000-8000-000000000001'; allow='97000000-0000-4000-8000-000000000002'
@@ -115,8 +118,14 @@ alter function public.list_admin_home_notices(uuid,uuid) owner to r8data_n1_owne
 alter function public.read_public_home_notices(public.content_locale,boolean,timestamptz,uuid,integer) owner to r8data_n1_owner;
 alter function public.read_public_home_notice(public.content_locale,text) owner to r8data_n1_owner;
 SQL
+[[ -f "$LINK_MIGRATION" ]] && run <<'SQL'
+alter function public.home_notice_link_target_ok(uuid) owner to r8data_n1_owner;
+alter function public.home_notice_link_json(uuid) owner to r8data_n1_owner;
+alter function public.save_admin_home_notice(uuid,uuid,uuid,uuid,integer,text,text,boolean,text,jsonb,text,jsonb,uuid) owner to r8data_n1_owner;
+alter function public.list_admin_home_notice_link_targets(uuid,uuid) owner to r8data_n1_owner;
+SQL
 expect_fail 7 'permission denied|row-level security|HOME' "set role service_role; select public.list_admin_home_notices('$actor','$allow')"
-access_block | run
+access_block | run; link_block | run
 [[ "$(q "select count(*) from pg_policy where polname like 'home_n1_owner_r8data_n1_owner_%'")" == 7 ]]; pass 7 'access block made 7 owner policies'
 access_block | run; [[ "$(q "select count(*) from pg_policy where polname like 'home_n1_owner_r8data_n1_owner_%'")" == 7 ]]; pass 7 'access block re-run is idempotent'
 before="$(q "select count(*) from public.audit_logs where entity_type='home_notice'")"
@@ -152,6 +161,8 @@ def="$(q "select pg_get_constraintdef(oid) from pg_constraint where conname='cel
 grep -q "'notices'" <<<"$def" && grep -q "'gallery'" <<<"$def" && grep -q "'rankings'" <<<"$def"; pass 8 'constraint reserves notices and gallery'
 
 # 9. rollback: stops while rows exist, succeeds empty, leaves other policies, then the migrations re-apply.
+# Roll the linked-page migration back first when present (rollback order: newest first).
+[[ -f "$LINK_MIGRATION" ]] && run -f "$ROOT_DIR/supabase/rollback/20261220021500_home_notice_linked_page.sql"
 other_policies="$(q "select count(*) from pg_policy where polname not like 'home\_n1\_owner\_%'")"
 if out="$(psql -X -q -v ON_ERROR_STOP=1 -f "$ROOT_DIR/supabase/rollback/20261220021000_home_notices.sql" 2>&1)"; then echo 'FAIL N1-9 rollback ran with rows' >&2; exit 1; fi
 grep -q HOME_NOTICES_ROLLBACK_HAS_ROWS <<<"$out"; pass 9 'rollback with rows stops'
@@ -166,6 +177,7 @@ actual="$(q "select pg_get_constraintdef(oid) from pg_constraint where conname='
 [[ "$expected" == "$actual" ]] || { echo "FAIL N1-9 M-R rollback array differs" >&2; exit 1; }; pass 9 'M-R rollback equals the 20261211020000 array'
 run -f "$ROOT_DIR/supabase/migrations/20261220020000_reserve_notices_gallery_handles.sql"
 run -f "$MIGRATION"
+[[ -f "$LINK_MIGRATION" ]] && run -f "$LINK_MIGRATION"
 [[ "$(q "set role service_role; select public.read_public_home_notices('ko')::text")" == '{"items": [], "hasMore": false}' ]]; pass 9 're-apply after rollback; empty read'
 if [[ -n "${HOME_NOTICE_FIXTURE_DIR:-}" ]]; then
   q "set role service_role; select jsonb_pretty(public.read_public_home_notices('ko'))" > "$HOME_NOTICE_FIXTURE_DIR/read_public_home_notices_empty.json"

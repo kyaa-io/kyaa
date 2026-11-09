@@ -102,6 +102,21 @@ describe("home notice admin route", () => {
     expect((await thrown.handlers.POST(post({ action: "publish", id: "b0000000-0000-4000-8000-000000000001", expectedRevision: 1 }))).status).toBe(503);
   });
 
+  it("saves the linked fan page and answers LINK_INVALID 409 for a page SQL refuses", async () => {
+    const ok = setup();
+    expect((await ok.handlers.POST(post(save({ linkedGroupPageId: "c0000000-0000-4000-8000-000000000001" })))).status).toBe(200);
+    expect(ok.rpc).toHaveBeenCalledWith("save_admin_home_notice", expect.objectContaining({ p_linked_group_page_id: "c0000000-0000-4000-8000-000000000001" }));
+    const none = setup();
+    await none.handlers.POST(post(save()));
+    expect(none.rpc).toHaveBeenCalledWith("save_admin_home_notice", expect.objectContaining({ p_linked_group_page_id: null }));
+    expect((await none.handlers.POST(post(save({ linkedGroupPageId: "not-a-uuid" })))).status).toBe(400);
+    const refused = setup({ data: null, error: { message: "HOME_NOTICE_LINK_INVALID" } });
+    const response = await refused.handlers.POST(post(save({ linkedGroupPageId: "c0000000-0000-4000-8000-000000000001" })));
+    expect(response.status).toBe(409);
+    expect(await response.json()).toMatchObject({ error: "LINK_INVALID" });
+    expect(refused.deps.invalidatePublicContent).not.toHaveBeenCalled();
+  });
+
   it("registers an uploaded image as a public asset and returns only its URL", async () => {
     const { deps, handlers } = setup();
     // Server routes see undici's File; jsdom's globals would not pass `instanceof File` (same as certification-routes.test.ts).

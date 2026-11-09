@@ -1,0 +1,22 @@
+{
+    "items": [
+        {
+            "id": "454c3a18-92e9-4783-8749-b6f5219e4f18",
+            "slug": "r8-linked",
+            "title": "제목",
+            "pinned": false,
+            "category": "creator",
+            "linkHref": "/r8data-linked",
+            "publishedAt": "2026-11-09T21:05:45.58225+09:00"
+        },
+        {
+            "id": "761a9c9c-06a5-46ce-a10b-9a1c4adcc9cc",
+            "slug": "r8-plain",
+            "title": "제목 r8-plain",
+            "pinned": false,
+            "category": "creator",
+            "publishedAt": "2026-11-09T21:05:45.34616+09:00"
+        }
+    ],
+    "hasMore": false
+}

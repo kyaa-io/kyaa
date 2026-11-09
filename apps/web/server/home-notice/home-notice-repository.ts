@@ -22,6 +22,7 @@ export type HomeNoticeSaveInput = Readonly<{
   slug: string;
   category: HomeNoticeCategory;
   pinned: boolean;
+  linkedGroupPageId?: string | null;
   localizations: Readonly<{ ko: Readonly<{ title: string; body: unknown }>; en: Readonly<{ title: string; body: unknown }> }>;
 }>;
 export type HomeNoticeStateInput = Readonly<{ id: string; expectedRevision: number; action: "publish" | "unpublish" | "archive"; reason?: string }>;
@@ -75,12 +76,14 @@ export class HomeNoticeRepository {
   }
 
   async listAdmin(actor: HomeNoticeActor) {
-    const { data, error } = await this.db.rpc("list_admin_home_notices", {
-      p_actor_app_user_id: actor.appUserId,
-      p_actor_admin_allowlist_id: actor.allowlistId,
-    });
-    if (error) throw new HomeNoticeRepositoryError(error.message, error.code);
-    return { role: actor.role, notices: z.array(z.record(z.string(), z.unknown())).parse(data) };
+    const params = { p_actor_app_user_id: actor.appUserId, p_actor_admin_allowlist_id: actor.allowlistId };
+    const [notices, targets] = await Promise.all([this.db.rpc("list_admin_home_notices", params), this.db.rpc("list_admin_home_notice_link_targets", params)]);
+    for (const result of [notices, targets]) if (result.error) throw new HomeNoticeRepositoryError(result.error.message, result.error.code);
+    return {
+      role: actor.role,
+      notices: z.array(z.record(z.string(), z.unknown())).parse(notices.data),
+      linkTargets: z.array(z.object({ id: z.uuid(), name: z.string().min(1), slug: z.string().min(1) }).strict()).parse(targets.data),
+    };
   }
 
   async save(actor: HomeNoticeActor, correlationId: string, input: HomeNoticeSaveInput) {
@@ -101,6 +104,7 @@ export class HomeNoticeRepository {
       p_body_ko: ko,
       p_title_en: input.localizations.en.title.trim(),
       p_body_en: en,
+      p_linked_group_page_id: input.linkedGroupPageId ?? null,
     });
     if (error) throw new HomeNoticeRepositoryError(error.message, error.code);
     return { id: z.uuid().parse(data) };

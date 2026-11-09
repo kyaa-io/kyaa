@@ -48,7 +48,7 @@ export function HomeNotices({ locale, notices }: { locale: AppLocale; notices: r
     <FanSectionHeader variant="editorial" id="home-notices-heading" title={v[0]!} action={rows.length >= 5 ? { href: `/notices?locale=${locale}`, label: viewAll[locale] } : undefined} />
     <ul className={styles.notices}>
       {rows.map(item => <li key={item.id} className={styles.notice} data-row="notice">
-        <Link className={styles.noticeLink} href={`/notices/${item.slug}?locale=${locale}` as Route}>
+        <Link className={styles.noticeLink} href={`${item.linkHref ?? `/notices/${item.slug}`}?locale=${locale}` as Route}>
           <span className={styles.noticeCategory}>{homeNoticeCategoryLabels[locale][item.category]}</span>
           <span className={styles.noticeTitle}>{item.title}</span>
           <time className={styles.noticeDate} dateTime={item.publishedAt}>{formatHomeNoticeDate(item.publishedAt, locale)}</time>

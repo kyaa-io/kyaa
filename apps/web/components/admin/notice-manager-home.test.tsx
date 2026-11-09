@@ -151,6 +151,42 @@ describe("NoticeManager shows the cause of a refused home notice request", () =>
   });
 });
 
+describe("NoticeManager linked fan page (home notices)", () => {
+  afterEach(() => { vi.restoreAllMocks(); vi.unstubAllGlobals(); });
+  it("offers only the listed targets, restores a notice's link, treats a link change as unsaved, and saves linkedGroupPageId", async () => {
+    const targets = (await import("@/server/home-notice/fixtures/list_admin_home_notice_link_targets.json")).default;
+    const linkedRows = rows.map(row => row.slug === "r8data-d" ? { ...row, linked_group_page_id: targets[0]!.id } : row);
+    const fetchMock = vi.fn(async (_input: RequestInfo | URL, init?: RequestInit) => init?.method === "POST"
+      ? Response.json({ id: draft.id })
+      : Response.json({ role: "admin", notices: linkedRows, linkTargets: targets }));
+    vi.stubGlobal("fetch", fetchMock);
+    vi.spyOn(window, "confirm").mockReturnValue(true);
+    render(<NoticeManager celebrityId="home" celebrityName="kyaa" role="admin" locale="ko" endpoint="/api/admin/home-notices" categories={homeNoticeCategories} categoryLabels={labels} linkable />);
+    fireEvent.click(await screen.findByRole("button", { name: /최신 D/ }));
+    const field = screen.getByRole("combobox", { name: "연결 팬페이지" });
+    expect(field).toHaveValue(targets[0]!.id);
+    expect(within(field).getAllByRole("option")).toHaveLength(targets.length + 1);
+    fireEvent.click(screen.getByRole("button", { name: /초안 E/ }));
+    expect(screen.getByRole("combobox", { name: "연결 팬페이지" })).toHaveValue("");
+    fireEvent.change(screen.getByRole("combobox", { name: "연결 팬페이지" }), { target: { value: targets[1]!.id } });
+    const unload = new Event("beforeunload", { cancelable: true });
+    window.dispatchEvent(unload);
+    expect(unload.defaultPrevented).toBe(true);
+    fireEvent.click(screen.getByRole("button", { name: "저장" }));
+    await screen.findByText("공지를 저장했습니다.");
+    const body = JSON.parse(String(fetchMock.mock.calls.find(([, init]) => init?.method === "POST")![1]!.body));
+    expect(body).toMatchObject({ action: "save", linkedGroupPageId: targets[1]!.id });
+    fireEvent.click(screen.getByRole("button", { name: "새 공지" }));
+    expect(screen.getByRole("combobox", { name: "연결 팬페이지" })).toHaveValue("");
+  });
+  it("has no link field and sends no linkedGroupPageId without linkable", async () => {
+    vi.stubGlobal("fetch", vi.fn(async () => Response.json({ role: "admin", notices: rows })));
+    homeManager();
+    await screen.findByRole("button", { name: /초안 E/ });
+    expect(screen.queryByRole("combobox", { name: "연결 팬페이지" })).not.toBeInTheDocument();
+  });
+});
+
 describe("NoticeManager channel operator path stays as it was", () => {
   afterEach(() => { vi.restoreAllMocks(); vi.unstubAllGlobals(); });
   it("keeps operator URLs, has no category field, and saves postType and visibility without category", async () => {

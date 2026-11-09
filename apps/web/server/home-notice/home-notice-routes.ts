@@ -21,6 +21,7 @@ const saveSchema = z.object({
   slug: noticeSlugSchema,
   category: z.enum(homeNoticeCategories),
   pinned: z.boolean(),
+  linkedGroupPageId: z.uuid().nullable().optional(),
   localizations: z.object({ ko: localization, en: localization }).strict(),
 }).strict();
 const stateSchema = z.object({
@@ -47,6 +48,7 @@ const sqlRefusals: ReadonlyArray<readonly [RegExp, number, HomeNoticeErrorCode]>
   [/home notice not found/, 404, "NOT_FOUND"],
   [/revision conflict/, 409, "REVISION_CONFLICT"],
   [/complete ko and en localizations/, 409, "INCOMPLETE"],
+  [/HOME_NOTICE_LINK_INVALID/, 409, "LINK_INVALID"],
   [/home notice is immutable|home notice archived|already published|archived home notice cannot be published/, 409, "STATE_CONFLICT"],
 ];
 function failure(error: unknown) {
