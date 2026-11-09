@@ -22,7 +22,7 @@
 .image img { display: block; width: 100%; height: auto; }
 .source { margin-top: 12px; font-size: 13px; }
 .imageError { color: var(--color-muted); font-size: 13px; line-height: 1.6; }
-.section a:focus-visible, .section button:focus-visible, .body a:focus-visible { outline: 3px solid var(--color-ink); outline-offset: 3px; }
+.section a:focus-visible, .section button:focus-visible, .body a:focus-visible { outline: 3px solid var(--color-focus); outline-offset: 3px; }
 .row:focus-visible, .image:focus-visible { outline-offset: -3px !important; }
 @media (hover: hover) { .heading a:hover, .source:hover { text-decoration: underline; } .row:hover { background: var(--color-soft); } }
 @media (max-width: 47.99rem) { .heading h2 { font-size: 20px; } .row { gap: 12px; padding: 14px 16px; } .title { font-size: 14px; } .rowArrow { display: none; } .text { font-size: 15px; } }

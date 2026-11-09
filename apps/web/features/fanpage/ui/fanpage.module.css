@@ -164,7 +164,7 @@
 
 .officialVideos{display:grid;gap:16px;min-width:0}
 .officialVideoFrame{display:block;width:100%;aspect-ratio:16/9;min-height:200px;border:0;border-radius:12px;background:var(--color-soft)}
-.officialVideoFrame:focus-visible{outline:3px solid var(--color-ink);outline-offset:4px}
+.officialVideoFrame:focus-visible{outline:3px solid var(--color-focus);outline-offset:4px}
 
 .resultAnnouncement { margin-bottom:16px; }
 

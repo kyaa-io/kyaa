@@ -47,7 +47,7 @@
 .actions { position:sticky; bottom:0; display:grid; gap:10px; margin:10px -16px -16px; padding:16px; background:color-mix(in srgb, var(--color-surface) 97%, transparent); }
 .secondary { width:100%; min-height:52px; box-sizing:border-box; justify-content:center; border-radius:12px; font-size:15px; font-weight:800; }
 .secondary { border:1px solid var(--color-line); color:var(--color-ink); text-decoration:none; }
-.locale a:focus-visible,.form input:focus-visible,.secondary:focus-visible { outline:3px solid var(--color-ink); outline-offset:3px; }
+.locale a:focus-visible,.form input:focus-visible,.secondary:focus-visible { outline:3px solid var(--color-focus); outline-offset:3px; }
 @media (min-width:48rem) {
   .main { width:min(100% - 64px,1120px); padding-top:64px; }
   .intro { margin-bottom:40px; }

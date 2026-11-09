@@ -24,7 +24,7 @@
 .error p { max-width:48ch; margin:0; color:var(--color-muted); font-size:14px; line-height:1.5; }
 .error > a:not([data-fan-action-emphasis]) { display:flex; min-height:44px; align-items:center; margin-top:12px; color:var(--color-ink); font-weight:700; }
 .skeleton { width:min(calc(100% - 32px),600px); min-height:540px; margin:40px auto; border-radius:var(--radius-collection); background:var(--color-soft); }
-.page :is(a,button):focus-visible { outline:3px solid var(--color-ink); outline-offset:3px; }
+.page :is(a,button):focus-visible { outline:3px solid var(--color-focus); outline-offset:3px; }
 @media (max-width:767px) {
   .result,.error { margin:24px auto; padding:28px 20px; }
   .completion { margin-bottom:16px; }

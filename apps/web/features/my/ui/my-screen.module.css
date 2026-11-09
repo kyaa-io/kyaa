@@ -11,7 +11,7 @@
 .avatarLink { position:relative; display: inline-grid; width: 64px; height: 64px; border-radius: var(--radius-pill); }
 .avatarEdit { position:absolute; right:-3px; bottom:-3px; display:grid; width:24px; height:24px; place-items:center; border:2px solid var(--color-canvas); border-radius:var(--radius-pill); background: var(--color-accent); color:var(--color-canvas); }
 .avatarEdit svg { width:12px; height:12px; }
-.avatarLink:focus-visible { outline: 3px solid var(--color-ink); outline-offset: 3px; }
+.avatarLink:focus-visible { outline: 3px solid var(--color-focus); outline-offset: 3px; }
 .profileCopy { min-width:0; }
 .profileCopy>span { color:var(--color-muted); font-size:12px; font-weight:800; letter-spacing:.06em; }
 .profileCopy h1 { min-width:0; margin:var(--space-1) 0; overflow-wrap:anywhere; font-size:clamp(28px,5vw,40px); line-height:1.1; letter-spacing:-.04em; }
@@ -23,7 +23,7 @@
 .tierBadge[data-tier="Gold"] { color:oklch(43% .09 75); }
 .tierBadge[data-tier="Platinum"] { color:oklch(40% .08 195); }
 .tierBadge[data-tier="Diamond"] { color:var(--color-accent); }
-.tierBadge:focus-visible,.recentDisclosure summary:focus-visible { outline:3px solid var(--color-ink); outline-offset:3px; }
+.tierBadge:focus-visible,.recentDisclosure summary:focus-visible { outline:3px solid var(--color-focus); outline-offset:3px; }
 .notificationLink { display:inline-flex; min-height:var(--min-target); align-items:center; justify-content:center; gap:var(--space-2); padding-inline:var(--space-3); border:1px solid var(--color-line); border-radius:var(--radius-control); font-size:13px; font-weight:700; white-space:nowrap; }
 .notificationLink svg { width:18px; height:18px; }
 .notificationLink strong { min-width:20px; font-variant-numeric:tabular-nums; text-align:center; }
@@ -94,7 +94,7 @@
 .stat { display:flex; min-height:44px; align-items:center; gap:8px; padding:0; border:0!important; border-radius:var(--radius-control); transition:background-color var(--motion-control) var(--motion-easing); }
 .stat strong { font-size:18px; }
 .stat > span { font-size:13px; }
-.stat:focus-visible { outline:3px solid var(--color-ink); outline-offset:3px; }
+.stat:focus-visible { outline:3px solid var(--color-focus); outline-offset:3px; }
 .stat[data-kind="favorite"] .statIcon { color:var(--color-accent); }
 .stat[data-kind="passport"] .statIcon { color:var(--color-accent); }
 .stat[data-kind="stamp"] .statIcon { color:var(--color-accent); }
@@ -147,7 +147,7 @@
 /* Notifications and their preferences are one utility group, not a content section. */
 .profileActions { grid-column:1/-1; display:flex; flex-wrap:wrap; gap:var(--space-2); }
 .profileActions > a { flex:1 1 auto; }
-.profileActions > a:focus-visible { outline:3px solid var(--color-ink); outline-offset:3px; }
+.profileActions > a:focus-visible { outline:3px solid var(--color-focus); outline-offset:3px; }
 @media(min-width:48rem) {
  .profileActions { grid-column:3; grid-row:1; justify-content:flex-end; }
  .profileActions > a { flex:0 1 auto; }
@@ -170,7 +170,7 @@
 .destinationIcon[data-kind="requests"] { color:oklch(49% .14 150); }
 .ticketHistoryLink { display:flex; min-height:44px; align-items:center; justify-content:space-between; gap:var(--space-3); color:var(--my-accent-ink); font-size:12px; font-weight:700; }
 .ticketHistoryLink svg { width:16px; height:16px; }
-.destinations > a:focus-visible { outline:3px solid var(--color-ink); outline-offset:3px; }
+.destinations > a:focus-visible { outline:3px solid var(--color-focus); outline-offset:3px; }
 @media(min-width:40rem) { .destinations { grid-template-columns:repeat(2,minmax(0,1fr)); } }
 @media(min-width:64rem) { .destinations { grid-template-columns:repeat(5,minmax(0,1fr)); } }
 @media(hover:hover) and (pointer:fine) { .destinations > a:hover { background:var(--color-soft); } }
@@ -197,7 +197,7 @@
 .favoriteSelector { display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:var(--space-3); }
 .favoriteSelector button { scroll-margin-block:96px; display:grid; min-width:0; width:100%; min-height:72px; grid-template-columns:40px minmax(0,1fr); align-items:center; gap:var(--space-3); padding:var(--space-3); border:1px solid var(--color-line); border-radius:var(--radius-control); background:var(--color-canvas); color:var(--color-ink); font:inherit; text-align:start; cursor:pointer; }
 .favoriteSelector button[aria-pressed="true"] { border-color:var(--my-accent); box-shadow:inset 0 0 0 1px var(--my-accent); background:color-mix(in oklab,var(--my-accent) 5%,var(--color-canvas)); }
-.favoriteSelector button:focus-visible { outline:3px solid var(--color-ink); outline-offset:3px; }
+.favoriteSelector button:focus-visible { outline:3px solid var(--color-focus); outline-offset:3px; }
 .favoriteSelector :is(img,[data-creator-image-frame]) { width:40px; height:40px; border-radius:10px; object-fit:cover; }
 .favoritePortrait { position:relative; display:block; width:40px; height:40px; }
 .favoriteSelector strong { min-width:0; overflow-wrap:anywhere; }
@@ -218,7 +218,7 @@
 .gradeIdentity p { margin:0; color:var(--color-muted); font-size:13px; line-height:1.5; }
 .majorGoal { margin:2px 0 0; color:var(--color-muted); font-size:12px; line-height:1.45; text-align:right; overflow-wrap:anywhere; }
 .nextAction button { width:fit-content; min-height:44px; padding:0; border:0; background:transparent; color:var(--my-accent-ink); font:inherit; font-size:13px; font-weight:700; text-decoration:underline; cursor:pointer; }
-.nextAction button:focus-visible { outline:3px solid var(--color-ink); outline-offset:3px; }
+.nextAction button:focus-visible { outline:3px solid var(--color-focus); outline-offset:3px; }
 
 .ticketTotal>span { padding-bottom:5px; color:var(--color-muted); }
 .raffleEmpty,.panelState { margin-block-start:var(--space-4); }
@@ -253,7 +253,7 @@
 .sectionCount { margin-inline-start:4px; font-variant-numeric:tabular-nums; }
 .favoriteSelector .selectedCheck { position:absolute; inset-inline-end:-4px; bottom:-4px; width:18px; height:18px; padding:2px; border:2px solid var(--color-canvas); border-radius:var(--radius-pill); background:var(--my-accent-ink); color:var(--color-canvas); }
 .favoriteSelector strong { font-size:16px; line-height:1.5; }
-.allRaffles:focus-visible,.collectionTotal:focus-visible { outline:3px solid var(--color-ink); outline-offset:3px; }
+.allRaffles:focus-visible,.collectionTotal:focus-visible { outline:3px solid var(--color-focus); outline-offset:3px; }
 .selectedDetails[data-fan-surface-card] { display:grid; min-width:0; overflow:hidden; padding:0; }
 .corePanels { gap:0; }
 .growthPanel,.activityPanel { display:grid; min-width:0; }
@@ -304,7 +304,7 @@
 .panelAction > a { min-height:48px; }
 .fanActivityLink { display:flex; align-items:center; gap:8px; color:var(--my-accent-ink); font-size:14px; font-weight:700; }
 .fanActivityLink svg { width:18px; height:18px; }
-.fanActivityLink:focus-visible { outline:3px solid var(--color-ink); outline-offset:3px; }
+.fanActivityLink:focus-visible { outline:3px solid var(--color-focus); outline-offset:3px; }
 .activityPanel [data-fan-section-header] { display:grid; grid-template-columns:minmax(0,1fr) auto; align-items:center; gap:8px; }
 .activityPanel [data-fan-heading] { font-size:18px; }
 .activityPanel [data-fan-section-header] > a { font-size:12px; }
@@ -369,7 +369,7 @@
 .main.groupsMain{padding-top:32px;padding-bottom:48px}
 .pencilMy{display:flex;flex-direction:column;gap:var(--space-8);color:var(--color-ink)}
 .pencilMy h1,.pencilMy h2,.pencilMy h3,.pencilMy p{margin:0}
-.pencilMy a:focus-visible,.pencilMy button:focus-visible{outline:3px solid var(--color-ink);outline-offset:3px}
+.pencilMy a:focus-visible,.pencilMy button:focus-visible{outline:3px solid var(--color-focus);outline-offset:3px}
 .pencilProfile{display:flex;align-items:center;gap:16px;padding-bottom:var(--space-4)}
 .pencilProfile>a{flex:none;width:56px;height:56px}
 .pencilProfileCopy{flex:1;min-width:0;display:grid;gap:4px}

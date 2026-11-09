@@ -4,7 +4,7 @@
 .pagination { display:flex; flex:none; align-items:center; gap:4px; margin-left:auto; color:var(--color-muted); font-size:12px; font-variant-numeric:tabular-nums; white-space:nowrap; }
 .pagination button { display:grid; width:44px; height:44px; padding:0; place-items:center; border:0; border-radius:999px; background:transparent; color:var(--color-ink); cursor:pointer; }
 .pagination svg { width:20px; height:20px; stroke-width:2; }
-.pagination button:focus-visible { outline:3px solid var(--color-ink); outline-offset:2px; }
+.pagination button:focus-visible { outline:3px solid var(--color-focus); outline-offset:2px; }
 .pagination button:active { scale:.96; }
 .grid { display:grid; position:relative; grid-auto-flow:column; grid-auto-columns:100%; gap:16px; overflow-x:auto; padding:8px 8px 12px; margin-inline:-8px; scroll-padding-inline:8px; scroll-snap-type:x mandatory; scrollbar-width:none; }
 .grid::-webkit-scrollbar { display:none; }
@@ -17,7 +17,7 @@
 .body h3 { display:-webkit-box; overflow:hidden; margin:8px 0; font-size:17px; font-weight:700; line-height:1.4; letter-spacing:-.02em; -webkit-box-orient:vertical; -webkit-line-clamp:2; overflow-wrap:anywhere; }
 .watch { display:flex; width:100%; align-items:center; justify-content:space-between; gap:12px; min-height:44px; margin-top:auto; padding-top:8px; font-size:13px; font-weight:700; }
 .watch svg { width:32px; height:32px; flex:none; padding:8px; border-radius:50%; background:var(--color-soft); stroke-width:2; }
-.card:focus-visible { outline:3px solid var(--color-ink); outline-offset:4px; }
+.card:focus-visible { outline:3px solid var(--color-focus); outline-offset:4px; }
 button.card { padding:0; text-align:start; font:inherit; cursor:pointer; }
 @media (min-width:48rem) { .grid { grid-auto-flow:row; grid-template-columns:repeat(3,minmax(0,1fr)); overflow-x:visible; } .header { min-height:0; margin-bottom:16px; } .count { display:grid; } .pagination { display:none; } }
 @media (hover:hover) { .card:hover { box-shadow:0 2px 4px rgb(0 0 0 / 6%),0 8px 20px rgb(0 0 0 / 8%); } .card:hover .watch { text-decoration:underline; text-underline-offset:3px; } }

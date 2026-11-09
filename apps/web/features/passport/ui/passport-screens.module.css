@@ -17,7 +17,7 @@
   text-decoration: none;
 }
 .app :focus-visible {
-  outline: 3px solid var(--ink);
+  outline: 3px solid var(--color-focus);
   outline-offset: 3px;
 }
 .main { padding-top:56px; padding-bottom:96px; }
@@ -171,7 +171,7 @@
 .creatorLink:focus-visible,
 .heroFacts a:focus-visible {
   border-radius: 8px;
-  outline: 3px solid var(--ink);
+  outline: 3px solid var(--color-focus);
   outline-offset: 3px;
 }
 .cardFacts strong {
@@ -670,7 +670,7 @@
 }
 .transactionLink:focus-visible {
   border-radius: 4px;
-  outline: 3px solid var(--ink);
+  outline: 3px solid var(--color-focus);
   outline-offset: 3px;
 }
 .transactionLink strong {
@@ -940,7 +940,7 @@
 
 .firstLikeDate { margin-top: 4px; color: var(--muted); font-size: 12px; }
 .stampButton { width: 100%; background: transparent; color: inherit; font: inherit; cursor: pointer; }
-.stampButton:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
+.stampButton:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 3px; }
 @media (hover: hover) { .stampButton:hover { border-color: var(--line); } }
 
 /* 비로그인 카드: 로그인 카드와 같은 외곽, 아래에 로그인 행동 한 줄 */

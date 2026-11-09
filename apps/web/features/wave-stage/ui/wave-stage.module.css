@@ -3,8 +3,8 @@
 .screen h1, .screen h2, .screen h3, .screen p, .screen dl, .screen dd, .screen ol { margin: 0; }
 .screen button, .confirm button { font-family: inherit; cursor: pointer; }
 .screen button:disabled, .confirm button:disabled { cursor: default; opacity: .45; }
-.screen button:focus-visible, .confirm button:focus-visible, .confirm input:focus-visible { outline: 3px solid var(--color-ink); outline-offset: 3px; }
-.screen a:focus-visible { outline: 3px solid var(--color-ink); outline-offset: 3px; }
+.screen button:focus-visible, .confirm button:focus-visible, .confirm input:focus-visible { outline: 3px solid var(--color-focus); outline-offset: 3px; }
+.screen a:focus-visible { outline: 3px solid var(--color-focus); outline-offset: 3px; }
 .header { display: flex; flex: none; align-items: center; justify-content: space-between; gap: 24px; }
 .brand { display: flex; align-items: baseline; gap: 20px; }
 .brand h1 { font-size: clamp(24px, 2.1vw, 40px); font-weight: 800; letter-spacing: -.055em; }

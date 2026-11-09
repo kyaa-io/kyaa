@@ -115,14 +115,14 @@
 .field .registrationNumber .registrationSixDigits{width:6.5ch}
 .field .registrationNumber .registrationFirstDigit{width:44px;text-align:center}
 .registrationVisibility{display:grid;place-items:center;flex:none;width:44px;height:44px;margin-left:auto;padding:0;border:0;border-radius:6px;background:transparent;color:var(--event-ink);cursor:pointer}
-.page .registrationNumber :is(input,button):focus-visible{outline:3px solid var(--color-ink);outline-offset:0}
+.page .registrationNumber :is(input,button):focus-visible{outline:3px solid var(--color-focus);outline-offset:0}
 .privacyBackdrop{align-items:center;justify-content:center;padding:max(24px,env(safe-area-inset-top)) max(16px,env(safe-area-inset-right)) max(24px,env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left));background:color-mix(in srgb, var(--color-ink) 44%, transparent)}
 .privacyDialog{--event-ink:var(--color-accent-ink);--event-muted:var(--color-accent);display:flex;flex-direction:column;width:min(100%,560px);max-height:calc(100dvh - 48px - env(safe-area-inset-top) - env(safe-area-inset-bottom));border:1px solid #bbaa97;border-radius:16px;background:#fffaf2;color:var(--event-ink);font-family:inherit;box-shadow:0 20px 60px color-mix(in srgb, var(--color-ink) 19%, transparent);overflow:hidden}
 .privacyBackdrop [data-overlay-content].privacyDialog{max-height:calc(100dvh - 48px - env(safe-area-inset-top) - env(safe-area-inset-bottom))}
 .privacyDialogHeading{display:flex;align-items:center;justify-content:space-between;gap:12px;flex:none;padding:16px 16px 16px 24px;border-bottom:1px solid color-mix(in srgb, var(--color-accent-ink) 13%, transparent)}
 .privacyDialogHeading h2{margin:0;min-width:0;font-size:20px;font-weight:700;line-height:1.5;word-break:keep-all;overflow-wrap:anywhere}
 .privacyDialogHeading button{display:grid;place-items:center;flex:none;width:44px;height:44px;padding:0;border:0;border-radius:8px;background:transparent;color:var(--event-ink);cursor:pointer}
-.privacyDialog :is(button,a):focus-visible{outline:3px solid var(--color-ink);outline-offset:3px}
+.privacyDialog :is(button,a):focus-visible{outline:3px solid var(--color-focus);outline-offset:3px}
 .submit{margin-top:20px;min-height:54px!important;border:1px solid var(--event-ink)!important;border-radius:8px!important;background:var(--event-ink)!important;color:#fffaf2!important;font-size:16px!important}
 .submit:disabled{opacity:.65}
 .security{display:flex;align-items:flex-start;justify-content:center;gap:6px;margin:14px 0 0;font-size:13px;line-height:1.5;text-align:center;color:var(--event-muted)}

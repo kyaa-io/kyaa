@@ -21,7 +21,7 @@
 .action:active:not(:disabled) { scale:.96; }
 .action:hover:not(:disabled) { background:var(--color-line-subtle); }
 .action:disabled { cursor:default; opacity:.6; }
-.action:focus-visible,.codeInput:focus-visible,.close:focus-visible { outline:3px solid var(--color-ink); outline-offset:3px; }
+.action:focus-visible,.codeInput:focus-visible,.close:focus-visible { outline:3px solid var(--color-focus); outline-offset:3px; }
 .status { font-size:13px; line-height:1.6; margin:12px 0; }
 .error { color:var(--color-accent); }
 .invite { border-top:1px solid var(--color-line-subtle); margin-top:20px; padding-top:20px; display:grid; grid-template-columns:1fr 1fr; gap:24px; }
@@ -51,7 +51,7 @@
 .history button {display:flex;align-items:center;gap:12px;background:white;border:1px solid var(--color-line-subtle);border-radius:12px;padding:12px;width:100%;text-align:left;cursor:pointer;font:inherit;}
 .history strong,.history small {display:block;font-size:13px;}
 .history small {color:var(--color-muted);font-size:12px;margin-top:4px;}
-.history button:focus-visible,.history summary:focus-visible {outline:3px solid var(--color-ink);outline-offset:3px;}
+.history button:focus-visible,.history summary:focus-visible {outline:3px solid var(--color-focus);outline-offset:3px;}
 
 /* 행 안의 행동은 글자다. 회색 버튼을 행마다 늘어놓지 않는다. */
 .row .action { min-height:var(--min-target); padding:0 var(--space-1); background:transparent; color:var(--color-muted); font-size:var(--fan-metadata-size); font-weight:var(--fan-item-title-weight); white-space:nowrap; }

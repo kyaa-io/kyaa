@@ -55,7 +55,7 @@
 }
 @media (hover:hover) and (pointer:fine) { .action:hover { background:var(--color-accent-soft); border-color: var(--color-accent); color:var(--color-accent-ink); } .calendarLink:hover,.retry:hover,.pagination button:not(:disabled):hover { border-color:var(--color-muted); background:var(--color-soft); } .details:hover h3 { text-decoration:underline; text-underline-offset:3px; } }
 .action:active { background:var(--color-accent-soft); border-color: var(--color-accent); color:var(--color-accent-ink); }
-.details:focus-visible { outline:3px solid var(--color-ink); outline-offset:3px; }
-.action:focus-visible,.calendarLink:focus-visible,.retry:focus-visible,.pagination button:focus-visible { outline:3px solid var(--color-ink); outline-offset:3px; }
+.details:focus-visible { outline:3px solid var(--color-focus); outline-offset:3px; }
+.action:focus-visible,.calendarLink:focus-visible,.retry:focus-visible,.pagination button:focus-visible { outline:3px solid var(--color-focus); outline-offset:3px; }
 @keyframes reservation-shimmer { to { transform:translateX(100%); } }
 @media (prefers-reduced-motion:reduce) { .action { transition:none; } .actionSkeleton::after { animation:none; } }

@@ -93,7 +93,7 @@
 .field input:focus-visible,
 .consent input:focus-visible,
 .privacy a:focus-visible {
-  outline: 3px solid oklch(18% 0 0);
+  outline: 3px solid var(--color-focus);
   outline-offset: 3px;
 }
 .field input[aria-invalid="true"] {

@@ -29,9 +29,9 @@
 .grid > li[data-content-asset-card] > a::after { content:""; position:absolute; inset:0; }
 @supports selector(:has(*)) {
   .grid > li > a:only-child:focus-visible { outline:none; }
-  .grid > li:has(> a:only-child:focus-visible) { outline:3px solid var(--color-ink); outline-offset:3px; }
+  .grid > li:has(> a:only-child:focus-visible) { outline:3px solid var(--color-focus); outline-offset:3px; }
   .grid > li[data-content-asset-card] > a:focus-visible { outline:none; }
-  .grid > li[data-content-asset-card]:has(> a:focus-visible) { outline:3px solid var(--color-ink); outline-offset:3px; }
+  .grid > li[data-content-asset-card]:has(> a:focus-visible) { outline:3px solid var(--color-focus); outline-offset:3px; }
 }
 .grid > li[data-content-asset-card] [data-content-asset-placeholder] button { position:relative; z-index:1; }
 .grid > li img { display:block; width:100%; height:auto; aspect-ratio:16/9; object-fit:cover; border-radius:0; background:var(--color-soft); }
@@ -50,7 +50,7 @@
 
 .sourceStatus { display:flex; flex-wrap:wrap; align-items:center; gap:4px 12px; padding:8px 0; color:var(--color-muted); font-size:12px; line-height:1.6; }
 .sourceStatus strong { font-weight:700; }
-.channels a:focus-visible { outline:2px solid var(--color-ink); outline-offset:3px; }
+.channels a:focus-visible { outline:2px solid var(--color-focus); outline-offset:3px; }
 
 @media (min-width:640px) { .grid { grid-template-columns:repeat(2,minmax(0,1fr)); } }
 @media (min-width:1024px) { .grid { grid-template-columns:repeat(3,minmax(0,1fr)); } }
@@ -65,7 +65,7 @@
 .playIcon { position:absolute; inset:0; display:grid; place-items:center; color:white; background:color-mix(in srgb, var(--color-ink) 20%, transparent); }
 .playIcon svg { width:48px; height:48px; padding:12px; border-radius:50%; background:color-mix(in srgb, var(--color-ink) 85%, transparent); }
 .player { display:block; width:100%; aspect-ratio:16/9; border:0; background:var(--color-ink); }
-.preview :is(a,button,iframe):focus-visible { outline:3px solid var(--color-ink); outline-offset:3px; }
+.preview :is(a,button,iframe):focus-visible { outline:3px solid var(--color-focus); outline-offset:3px; }
 .previewGrid > li { overflow:visible; }
 .preview .previewGrid img,.play,.player { border-radius:16px 16px 0 0; }
 @media(max-width:767px) { .preview { gap:32px; } .previewGrid { grid-template-columns:minmax(0,1fr); } }
@@ -97,7 +97,7 @@
 .compactOverview .grid>li strong{min-height:0;line-height:22px}
 .compactOverview .playIcon svg{background:color-mix(in srgb, var(--color-ink) 40%, transparent);fill:none}
 .compactOverview .liveBadge{top:auto;bottom:12px}
-.compactOverview :is(a,button):focus-visible{outline:3px solid var(--color-ink);outline-offset:3px}
+.compactOverview :is(a,button):focus-visible{outline:3px solid var(--color-focus);outline-offset:3px}
 .compactPreview .previewGrid>li>a:not(.play),.compactOverview .previewGrid>li>a:not(.play){display:block;box-sizing:border-box;min-height:44px}
 
 
@@ -123,7 +123,7 @@
 .galleryRail .playIcon svg { width:36px; height:36px; padding:var(--space-2); border-radius:50%; background:var(--color-backdrop); }
 .galleryRail .liveBadge { top:auto; bottom:var(--space-2); left:var(--space-2); }
 .galleryRail .videoMark { top:var(--space-2); left:var(--space-2); }
-.galleryRail :is(a,button):focus-visible { outline:3px solid var(--color-ink); outline-offset:-3px; }
+.galleryRail :is(a,button):focus-visible { outline:3px solid var(--color-focus); outline-offset:-3px; }
 @media (min-width:1024px) {
   .galleryRail { grid-auto-columns:calc((100% - var(--space-3) * 3) / 4); overflow:visible; }
   .galleryRail > li:nth-child(n+5) { display:none; }

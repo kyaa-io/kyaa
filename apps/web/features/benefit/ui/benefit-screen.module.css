@@ -61,7 +61,7 @@
   text-decoration: none;
 }
 .rowLink:hover { border-color: var(--color-muted); }
-.rowLink:focus-visible { outline: 3px solid var(--color-ink); outline-offset: 3px; }
+.rowLink:focus-visible { outline: 3px solid var(--color-focus); outline-offset: 3px; }
 .rowLink > svg { width: 20px; height: 20px; color: var(--color-ink); }
 .rowContent { min-width: 0; }
 .rowContent h2 { margin: 8px 0; font-size: 20px; line-height: 1.35; letter-spacing: -.025em; overflow-wrap: anywhere; }
@@ -205,7 +205,7 @@
   width: 20px;
 }
 .overlayHeader button:focus-visible {
-  outline: 3px solid var(--color-ink);
+  outline: 3px solid var(--color-focus);
   outline-offset: 3px;
 }
 .detailMain.overlayMain {
@@ -518,7 +518,7 @@
   background: var(--color-surface);
 }
 .entryConfirmHeader button:focus-visible {
-  outline: 3px solid var(--color-ink);
+  outline: 3px solid var(--color-focus);
   outline-offset: 3px;
 }
 .entryConfirmHeader svg {
@@ -663,7 +663,7 @@
 .page a:focus-visible,
 .page button:focus-visible,
 .page select:focus-visible {
-  outline: 3px solid var(--color-ink);
+  outline: 3px solid var(--color-focus);
   outline-offset: 3px;
 }
 @media (hover: hover) {
