@@ -8,7 +8,7 @@ export type FanCursorScope = { actor: string | null; page: string; mode: string;
 function key(secret: string | undefined) {
   if (!secret || !/^[A-Za-z0-9+/]{43}=$/.test(secret)) throw new Error("GROUPS_UNAVAILABLE");
   // Domain separation: the existing session secret never encrypts a fan cursor directly.
-  return hkdfSync("sha256", Buffer.from(secret, "base64"), "kyaa", "fan-list-sort:v1", 32);
+  return Buffer.from(hkdfSync("sha256", Buffer.from(secret, "base64"), "kyaa", "fan-list-sort:v1", 32));
 }
 const aad = (scope: FanCursorScope) => Buffer.from(JSON.stringify(["fan-list-sort:v1", scope.actor, scope.page, scope.mode, scope.search, scope.locale]));
 export function sealFanCursor(position: Position, scope: FanCursorScope, secret: string | undefined) {

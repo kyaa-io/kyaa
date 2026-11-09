@@ -98,7 +98,7 @@ export function GroupMembers({ pageId, locale, member, presentation, inTab = fal
         : resource.loading ? <FanSkeletonRows rows={6} variant="member" className={styles.skeleton}/>
         : <div className={styles.state}>{mode === "ranking" ? <Trophy size={32} aria-hidden="true"/> : <UsersRound size={32} aria-hidden="true"/>}<p>{mode === "ranking" && ranking && !ranking.available ? t[ranking.reason === "creator_required" ? "creatorRequired" : "threshold"] : mode === "friends" && !search ? t.noFriends : t.empty}</p>{mode === "friends" && !search && <FanAction href={`/my/friends?locale=${locale}`} trailingIcon={<ArrowRight size={18}/>}>{t.manageFriends}</FanAction>}</div>}
       {mode === "ranking" && rankingsSlug && <MyRankRow slug={rankingsSlug} locale={locale} listed={shown.length > 0}/>}
-      {resource.data?.nextCursor && <FanAction className={styles.more} disabled={resource.loading} onClick={() => { setPrevious(rows); setCursor(resource.data!.nextCursor!); }}>{mode === "members" ? t.memberMore : t.more}</FanAction>}
+      {resource.data?.nextCursor && <FanAction className={styles.more} disabled={resource.loading} onClick={() => { setPrevious(rows); setCursor(resource.data!.nextCursor!); }}>{t.more}</FanAction>}
       {mode === "friends" && shown.length > 0 && <FanAction className={styles.more} variant="text" href={`/my/friends?locale=${locale}`} trailingIcon={<ArrowRight size={18}/>}>{t.manageFriends}</FanAction>}
       {mode === "ranking" && rankingsSlug && <FanAction className={styles.more} variant="text" trailingIcon={<ArrowRight size={18}/>} href={`/rankings/${encodeURIComponent(rankingsSlug)}?locale=${locale}`}>{rankingsText(locale, "rkFanTitle")}</FanAction>}
     </div>}

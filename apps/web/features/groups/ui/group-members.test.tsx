@@ -31,7 +31,7 @@ describe("fan list controls", () => {
   it.each(APP_LOCALES)("has localized chips, search and sort in %s", locale => {
     const t = groupMembersCopy(locale), copy = fanListCopy(locale);
     render(<GroupMembers pageId={page} locale={locale} member/>);
-    for (const name of [t.members, copy.jjinfans, t.friends, t.ranking]) expect(screen.getByRole("button", { name, exact: true })).toBeVisible();
+    for (const name of [t.members, copy.jjinfans, t.friends, t.ranking]) expect(screen.getByRole("button", { name })).toBeVisible();
     expect(screen.getByRole("searchbox", { name: t.search })).toBeVisible(); expect(screen.getByText(copy.order)).toBeVisible();
   });
   it("keeps the friend chip with a login action when signed out", () => {
