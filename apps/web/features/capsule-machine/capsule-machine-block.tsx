@@ -7,6 +7,7 @@ import { FanTag } from "@/components/fan-ui/fan-tag";
 import { FanHeading } from "@/components/fan-ui/fan-heading";
 import { FanLockedValue } from "@/components/fan-ui/fan-locked-value";
 import { FanState } from "@/components/fan-ui/fan-state";
+import { FanSkeleton } from "@/components/fan-ui/fan-skeleton";
 import { groupsCopy } from "@/features/groups/ui/copy";
 import { GroupRequestError, useGroupResource } from "@/features/groups/ui/use-group-resource";
 import { capsuleCopy } from "@/features/group-capsule/copy";
@@ -34,6 +35,14 @@ function subscribeReduced(listener: () => void) {
   query?.addEventListener("change", listener);
   return () => query?.removeEventListener("change", listener);
 }
+/** N2: whether the last capsule list this browser saw had a campaign, so the first paint before the list arrives already has the right height
+ * (one line or the whole machine). Server HTML and first-time visitors start with the one line, which matches the usual state (no public capsule). */
+const HINT_KEY = "kyaa-capsule-machine:has-campaign";
+function readHint() { try { return window.localStorage.getItem(HINT_KEY) === "1"; } catch { return false; } }
+function writeHint(value: boolean) { try { window.localStorage.setItem(HINT_KEY, value ? "1" : "0"); } catch { /* the hint is a convenience only */ } }
+const noSubscribe = () => () => {};
+function useCampaignHint() { return useSyncExternalStore(noSubscribe, readHint, () => false); }
+
 /** dev notes 9: follows the setting live. */
 function useReducedMotion() {
   return useSyncExternalStore(subscribeReduced, () => Boolean(window.matchMedia?.("(prefers-reduced-motion: reduce)").matches), () => false);
@@ -50,8 +59,11 @@ export function CapsuleMachineBlock({ locale, guest, drawOpen = CAPSULE_DRAW_OPE
   const campaign = list.data ? pickCampaign(list.data.items) : null;
   const tickets = wallet.data?.tickets ?? null;
   const reduced = useReducedMotion();
+  const hinted = useCampaignHint();
+  useEffect(() => { if (list.data) writeHint(Boolean(pickCampaign(list.data.items))); }, [list.data]);
 
-  const stageRef = useRef<HTMLDivElement>(null);
+  // A callback ref: the stage mounts only once the list says there is a campaign, after the pending line (N2).
+  const [stage, setStage] = useState<HTMLDivElement | null>(null);
   const [near, setNear] = useState(false), [onScreen, setOnScreen] = useState(false);
   const [engine, setEngine] = useState<CapsuleEngine | null>(null);
   const [gpu, setGpu] = useState<"unknown" | "ok">("unknown");
@@ -62,13 +74,12 @@ export function CapsuleMachineBlock({ locale, guest, drawOpen = CAPSULE_DRAW_OPE
   useEffect(() => { engineRef.current = engine; }, [engine]);
 
   useEffect(() => {
-    const stage = stageRef.current;
     if (!stage || typeof IntersectionObserver === "undefined") return;
     const preload = new IntersectionObserver(([entry]) => { if (entry?.isIntersecting) { setNear(true); preload.disconnect(); } }, { rootMargin: "300px 0px" });
     const visible = new IntersectionObserver(([entry]) => setOnScreen(Boolean(entry?.isIntersecting)));
     preload.observe(stage); visible.observe(stage);
     return () => { preload.disconnect(); visible.disconnect(); };
-  }, []);
+  }, [stage]);
 
   const wantsMachine = near && !reduced && !unavailable && Boolean(campaign);
   useEffect(() => {
@@ -112,12 +123,14 @@ export function CapsuleMachineBlock({ locale, guest, drawOpen = CAPSULE_DRAW_OPE
   const showCanvas = wantsMachine && gpu === "ok";
 
   // H1: no public capsule (or the list failed) — one line in the section frame (D2), not an empty machine.
-  if (list.error) return <FanState inline compact kind="error" className={styles.state} title={c.text("loadError")} actions={<FanAction variant="text" onClick={list.retry}>{groupsCopy(locale).retry}</FanAction>} />;
-  if (list.data && !campaign) return <FanState inline compact kind="empty" className={styles.state} title={base.empty} />;
+  // N1: the frame owns the border and the 16px sides; FanState compact keeps its own 12px rows (no specificity contest) — the same 12/16 as the 최애 럭키드로우 card below.
+  if (list.error) return <div className={styles.stateFrame}><FanState inline compact kind="error" title={c.text("loadError")} actions={<FanAction variant="text" onClick={list.retry}>{groupsCopy(locale).retry}</FanAction>} /></div>;
+  if (list.data && !campaign) return <div className={styles.stateFrame}><FanState inline compact kind="empty" title={base.empty} /></div>;
+  if (!list.data && !hinted) return <div className={styles.stateFrame} aria-busy="true" data-capsule-pending=""><FanSkeleton width="60%" height={16} /></div>;
   const title = campaign?.name ?? base.title;
 
   return <section className={styles.block} aria-labelledby="capsule-machine-title" data-lucky-module="" data-lucky-state={state} data-capsule-graphics={live ? "3d" : "still"}>
-    <div ref={stageRef} className={styles.stage}>
+    <div ref={setStage} className={styles.stage}>
       <img className={styles.still} src={still} alt="" width={1600} height={800} data-hidden={live && !shown ? "" : undefined} />
       {showCanvas ? <MachineCanvas key={canvasKey} visible={onScreen} onEngine={handleEngine} onUnavailable={handleUnavailable} onContextLost={handleLost} onContextRestored={handleRestored} /> : null}
       <span className={styles.sparkles} aria-hidden="true">{[0, 1, 2, 3, 4, 5].map((i) => <svg key={i} viewBox="0 0 20 20" width={14} height={14}><path d="M10 0C10.8 6 14 9.2 20 10 14 10.8 10.8 14 10 20 9.2 14 6 10.8 0 10 6 9.2 9.2 6 10 0Z" /></svg>)}</span>

@@ -38,7 +38,7 @@ function setReducedMotion(reduced: boolean) {
 }
 class VisibleObserver { constructor(private cb: IntersectionObserverCallback) {} observe(target: Element) { this.cb([{ isIntersecting: true, target } as IntersectionObserverEntry], this as unknown as IntersectionObserver); } disconnect() {} unobserve() {} takeRecords() { return []; } }
 
-beforeEach(() => { auth.authenticated = true; canvas.mounted = 0; gpu.ok = true; gpu.checks = 0; setReducedMotion(false); vi.stubGlobal("IntersectionObserver", VisibleObserver); });
+beforeEach(() => { localStorage.clear(); auth.authenticated = true; canvas.mounted = 0; gpu.ok = true; gpu.checks = 0; setReducedMotion(false); vi.stubGlobal("IntersectionObserver", VisibleObserver); });
 
 it("ships as 준비 중: the machine loads, both draw buttons stay disabled, and no draw can be sent", async () => {
   expect(CAPSULE_DRAW_OPEN).toBe(false);
@@ -94,7 +94,8 @@ it("shows one error line with 다시 시도 when the capsule list fails, and rec
   expect(await screen.findByRole("heading", { name: campaign.name })).toBeInTheDocument();
 });
 
-it("reserves the 남은 경품 row and four prize slots while loading, so the block does not grow when data arrives", async () => {
+it("before the list arrives a browser that last saw a campaign reserves the whole machine: 남은 경품 row and four prize slots", async () => {
+  localStorage.setItem("kyaa-capsule-machine:has-campaign", "1");
   let release!: () => void;
   const gate = new Promise<void>((resolve) => { release = resolve; });
   vi.stubGlobal("fetch", vi.fn(async (url: string) => { if (url.startsWith("/api/groups/capsules")) { await gate; return Response.json({ items: [campaign] }); } return Response.json(wallet); }));
@@ -184,4 +185,23 @@ it("has every capsule machine label in all 12 locales", () => {
     for (const key of ["soon", "open", "perDraw", "tickets", "prizes", "remaining", "myTickets", "won", "noPrize", "tenWon", "tally", "claim", "close", "again", "skip", "rare"] as const) expect(c.text(key)?.length).toBeGreaterThan(0);
     expect(c.fill("tickets", { n: 10 })).toContain("10");
   }
+});
+
+it("before the list arrives a first visit starts at the one-line height, so an empty list does not collapse a tall block", async () => {
+  let release!: () => void;
+  const gate = new Promise<void>((resolve) => { release = resolve; });
+  vi.stubGlobal("fetch", vi.fn(async (url: string) => { if (url.startsWith("/api/groups/capsules")) { await gate; return Response.json({ items: [] }); } return Response.json(wallet); }));
+  const view = render(<CapsuleMachineBlock locale="ko" guest={false} />);
+  expect(view.container.querySelector("[data-capsule-pending]")).not.toBeNull();
+  expect(view.container.querySelector("[data-lucky-module]")).toBeNull();
+  release();
+  expect(await screen.findByRole("status")).toHaveTextContent("진행 중인 캡슐이 없어요");
+  expect(localStorage.getItem("kyaa-capsule-machine:has-campaign")).toBe("0");
+});
+
+it("remembers a campaign for the next visit's first paint", async () => {
+  serve();
+  render(<CapsuleMachineBlock locale="ko" guest={false} />);
+  await screen.findByRole("heading", { name: campaign.name });
+  expect(localStorage.getItem("kyaa-capsule-machine:has-campaign")).toBe("1");
 });
