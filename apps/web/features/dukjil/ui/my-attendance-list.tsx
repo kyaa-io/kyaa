@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
-import { ChevronRight, ChevronUp, Compass } from "lucide-react";
+import { Compass } from "lucide-react";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import { FanHeading } from "@/components/fan-ui/fan-heading";
 import { FanSkeletonRows } from "@/components/fan-ui/fan-skeleton";
@@ -88,7 +88,7 @@ export function MyAttendanceList({ locale, section }: { locale: AppLocale; secti
       <section className={styles.todaySection} aria-label={section.title}>
         <div className={styles.todayHead}>
           <FanHeading>{section.title}</FanHeading>
-          {toggle && <FanAction variant="text" trailingIcon={expanded ? <ChevronUp /> : <ChevronRight />} aria-expanded={expanded} onClick={() => setExpanded(value => !value)}>{expanded ? section.lessLabel : section.moreLabel}</FanAction>}
+          {toggle && <FanAction variant="text" aria-expanded={expanded} onClick={() => setExpanded(value => !value)}>{expanded ? section.lessLabel : section.moreLabel}{" "}<span aria-hidden="true">›</span></FanAction>}
         </div>
         {bandPage && bandItem && <StreakBand locale={locale} href={groupHref(bandPage, locale)} name={bandPage.name} imageUrl={bandPage.imageUrl} streak={bandItem.streak} attendedToday={bandItem.attendedToday} nextBonusIn={bandItem.nextBonusIn} onOpen={() => setBandOpen(true)} />}
         {bandOpen && bandPage && <DukjilProvider slug={bandPage.slug} locale={locale} hasPassport={bandItem?.hasPassport}><CreatorAttendanceDialog open pageName={bandPage.name} reviewHref={verifyHref(bandPage, locale)} onClose={() => { setBandOpen(false); status.retry(); }} /></DukjilProvider>}

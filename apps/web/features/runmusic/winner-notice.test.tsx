@@ -11,6 +11,7 @@ describe("winner notice", () => {
  });
  it("resets pagination on prize and search changes", () => {
   render(<WinnerNotice/>);
+  expect(screen.getByRole('link',{name:'내 계정의 당첨 결과 ›'})).toHaveAttribute('href','/connect/runmusic/results');
   expect(screen.getAllByRole("listitem")).toHaveLength(24);
   fireEvent.click(screen.getByRole("button",{name:"다음 →"}));
   expect(screen.getByRole("status").textContent).toContain("2 / 5");
