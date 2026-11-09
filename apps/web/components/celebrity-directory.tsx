@@ -210,6 +210,7 @@ export function CelebrityDirectory({ celebrities, locale, initialQuery = "", ini
             <label className={styles.sortField} htmlFor="celebrity-sort"><span className={styles.srOnly}>{t.sort}</span><span className={styles.selectControl}><select id="celebrity-sort" value={sort} onChange={(event) => changeSort(event.target.value as SortOrder)}><option value="published">{t.defaultSort}</option><option value="name-asc">{t.nameSort}</option><option value="live-first">{t.liveSort}</option></select><ChevronDown aria-hidden="true" /></span></label>
           </form>
           <CreatorRoleFilterControl roles={availableCreatorRoles(celebrities)} value={role} onChange={changeRole} locale={locale} controls="directory-results" compact />
+          <div id="directory-results">
           {ownedRows.length > 0 ? <section className={styles.block} aria-labelledby="directory-owned-heading">
             {sectionHeader(locale === "ko" ? "내 최애" : translate(locale, roleMessages.mc53f55277fa2, "My favorites"), "directory-owned-heading")}
             <div className={styles.list}>{ownedRows.map(renderCreator)}</div>
@@ -217,13 +218,17 @@ export function CelebrityDirectory({ celebrities, locale, initialQuery = "", ini
           {ownedRows.length > 0 && listRows.length === 0 ? null : <section className={styles.block} aria-labelledby="directory-all-heading">
             {sectionHeader(creatorRoleFilterLabel("all", locale), "directory-all-heading", listRows.length)}
             {listRows.length === 0 ? (
-              <div id="directory-results" className={styles.empty} role="status"><p>{t.searchEmpty}</p>{filtersActive ? <FanAction variant="text" onClick={() => changeRole("all", true)}>{t.reset}</FanAction> : null}<FanAction variant="text" href={requestHref} leadingIcon={<Plus />}>{discovery.requestFavorite}</FanAction></div>
+              <>
+                <div className={styles.empty} role="status"><p>{t.searchEmpty}</p></div>
+                <div className={styles.emptyActions}>{filtersActive ? <FanAction variant="text" onClick={() => changeRole("all", true)}>{t.reset}</FanAction> : null}<FanAction variant="text" href={requestHref} leadingIcon={<Plus />}>{discovery.requestFavorite}</FanAction></div>
+              </>
             ) : (
-              <div id="directory-results" className={styles.list} aria-label={t.list}>
+              <div className={styles.list} aria-label={t.list}>
                 {listRows.map(renderCreator)}
               </div>
             )}
           </section>}
+          </div>
         </>}
       </section>
     </FanContentContainer>

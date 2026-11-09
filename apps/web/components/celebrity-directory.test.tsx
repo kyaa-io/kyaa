@@ -446,6 +446,28 @@ it("marks only the Wave listing as private and explains check-in access", () => 
   expect(within(screen.getByText("KARA", { selector: "strong" }).closest("article")!).queryByText("Private")).toBeNull();
 });
 
+it("keeps the chips' aria-controls target when every row is a favorite", async () => {
+  authenticated = true;
+  getAccessToken.mockResolvedValue("token");
+  vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: true, json: async () => ({ passports: [ownedPassport] }) }));
+  const { container } = render(<CelebrityDirectory celebrities={[publishedCelebrityFixtures[0]]} locale="ko" />);
+  await screen.findByRole("heading", { name: "내 최애" });
+  expect(screen.queryByRole("heading", { name: "전체" })).not.toBeInTheDocument();
+  const target = container.querySelector("#directory-results");
+  expect(target).not.toBeNull();
+  expect(screen.getByRole("button", { name: "전체" })).toHaveAttribute("aria-controls", "directory-results");
+});
+
+it("keeps the empty state to one sentence and puts reset and request in a row below it", () => {
+  render(<CelebrityDirectory celebrities={publishedCelebrityFixtures} locale="ko" initialQuery="없는 셀럽" />);
+  const empty = screen.getByRole("status");
+  expect(empty).toHaveTextContent("검색 결과가 없어요.");
+  expect(within(empty).queryByRole("button")).toBeNull();
+  expect(within(empty).queryByRole("link")).toBeNull();
+  expect(screen.getByRole("button", { name: "필터 초기화" })).toBeInTheDocument();
+  expect(empty.nextElementSibling).toContainElement(screen.getByRole("button", { name: "필터 초기화" }));
+});
+
 // Keep these domain-request tests independent of the separately tested translation transport.
 vi.mock("@/features/content-safety/ui/use-automatic-translation", () => ({
   TranslatedText: ({ text, children, className, as: Tag = "span" }: { text: string; children?: import("react").ReactNode; className?: string; as?: "span" | "p" | "div" }) => <Tag className={className}>{children ?? text}</Tag>,
