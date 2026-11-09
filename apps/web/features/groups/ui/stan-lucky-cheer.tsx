@@ -46,6 +46,8 @@ const dayDate = (value: string, locale: AppLocale) => new Date(value).toLocaleDa
 const statusOrder = { open: 0, preparing: 1, closed: 2, cancelled: 3 } as const;
 
 /** The stamp gauge's words (E4): 9 − (n mod 9) stamps to the next heart; a full page (n a positive multiple of 9) reads 하트 +1. */
+// 문구 확인 대기(감독 2026-11-09 20:33): a full page becomes a heart only when the fan presses 받기 on the passport mission book (claim API),
+// but `다음 하트까지 n칸` reads as automatic. The supervisor is confirming the wording with the user; the behavior is not changed here.
 export function nextHeartLabel(locale: AppLocale, stamps: number) {
   return stamps > 0 && stamps % STAMPS_PER_HEART === 0 ? t(locale, "cheerHeartReady") : t(locale, "cheerNextHeart", [STAMPS_PER_HEART - (stamps % STAMPS_PER_HEART)]);
 }

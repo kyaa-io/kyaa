@@ -71,7 +71,7 @@ export function GroupBenefitsScreen({locale,initialHeart=null,signedOut=false}:{
  <header className={styles.srOnly}><FanHeading as='h1'>{c.title}</FanHeading></header>
  <BenefitsAlerts><BenefitsSections><BenefitsAlertList/>
  <div className={styles.top}><BenefitsWallet key={`${locale}:${auth.ownerKey}`} locale={locale} signedOut={signedOut} bias={bias}/></div>
- <div className={styles.main}><BenefitsDailyMissions locale={locale}/><BenefitsLucky locale={locale} bias={bias} signedOut={signedOut}/><BenefitsToday locale={locale} emphasise={false}/></div>
+ <div className={styles.main}><BenefitsDailyMissions locale={locale}/><BenefitsToday locale={locale} emphasise={false}/><BenefitsLucky locale={locale} bias={bias} signedOut={signedOut}/></div>
  <div className={styles.side}><BenefitsCheer locale={locale} bias={bias} signedOut={signedOut}/>{auth.ready?(auth.authenticated?<BenefitsHistory locale={locale}/>:<BenefitsGuestHistory locale={locale}/>):signedOut&&<BenefitsGuestHistory locale={locale}/>}</div></BenefitsSections></BenefitsAlerts>
  </FanContentContainer></FanAppFrame>;
 }
