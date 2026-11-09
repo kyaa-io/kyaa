@@ -66,15 +66,15 @@ begin
     if detail is null or detail is distinct from summary or detail is distinct from collection then
       raise exception '% differs: detail % summary % collection %', c.k, detail, summary, collection;
     end if;
-    if detail #>> '{current,key}' <> c.st then raise exception '% current % is not %', c.k, detail #>> '{current,key}', c.st; end if;
-    if c.st = 'bronze-1' and (detail #>> '{next,key}' <> 'silver-1' or detail ->> 'unit' <> 'stamps' or (detail ->> 'remaining')::int <> 3 - c.slots) then raise exception 'bronze: %', detail; end if;
-    if c.st = 'silver-1' and (detail #>> '{next,key}' <> 'silver-2' or detail ->> 'unit' <> 'stamps' or (detail ->> 'remaining')::int <> greatest(6 - c.slots, 0)) then raise exception 'silver-1: %', detail; end if;
-    if c.st = 'silver-2' and (detail #>> '{next,key}' <> 'gold-1' or detail ->> 'unit' <> 'hearts' or (detail ->> 'remaining')::int <> 1 - c.h) then raise exception 'silver-2: %', detail; end if;
-    if c.st like 'gold-%' and (detail ->> 'unit' <> 'hearts' or (detail ->> 'remaining')::int <> (detail #>> '{next,minimumScore}')::int - c.h) then raise exception 'gold: %', detail; end if;
+    if detail #>> '{current,key}' is distinct from c.st then raise exception '% current % is not %', c.k, detail #>> '{current,key}', c.st; end if;
+    if c.st = 'bronze-1' and (detail #>> '{next,key}' is distinct from 'silver-1' or detail ->> 'unit' is distinct from 'stamps' or (detail ->> 'remaining')::int is distinct from 3 - c.slots) then raise exception 'bronze: %', detail; end if;
+    if c.st = 'silver-1' and (detail #>> '{next,key}' is distinct from 'silver-2' or detail ->> 'unit' is distinct from 'stamps' or (detail ->> 'remaining')::int is distinct from greatest(6 - c.slots, 0)) then raise exception 'silver-1: %', detail; end if;
+    if c.st = 'silver-2' and (detail #>> '{next,key}' is distinct from 'gold-1' or detail ->> 'unit' is distinct from 'hearts' or (detail ->> 'remaining')::int is distinct from 1 - c.h) then raise exception 'silver-2: %', detail; end if;
+    if c.st like 'gold-%' and (detail ->> 'unit' is distinct from 'hearts' or (detail ->> 'remaining')::int is distinct from (detail #>> '{next,minimumScore}')::int - c.h) then raise exception 'gold: %', detail; end if;
     raise notice 'case % passport % stage % slots % hearts % points % -> next % remaining % % (%%%)', c.k, c.id, c.st, c.slots, c.h, c.pts,
       detail #>> '{next,key}', detail ->> 'remaining', detail ->> 'unit', detail ->> 'progressPercent';
   end loop;
-  if picked <> 4 then raise exception 'expected 4 cases in the local copy, found %', picked; end if;
+  if picked is distinct from 4 then raise exception 'expected 4 cases in the local copy, found %', picked; end if;
 end \$\$;
 
 -- Policy 2: the earlier stage progress, now with unit points.
