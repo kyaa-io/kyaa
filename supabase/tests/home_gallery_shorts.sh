@@ -83,6 +83,9 @@ bind "$C2" landscape "$AH" '숨김 사진' 'hidden'
 q "select 1" >/dev/null
 items() { sq "select coalesce(string_agg(i->>'source' || '|' || (i->>'alt'), ',' order by o), '') from jsonb_array_elements(public.read_public_home_gallery_photos('$1',0,24)->'items') with ordinality x(i,o)"; }
 
+# Reuse only the source fixtures for the focused curation regression suite.
+if [[ "${HOME_GALLERY_SETUP_ONLY:-0}" == 1 ]]; then return 0; fi
+
 # P-1 permissions
 for role in anon authenticated; do
   expect_fail P-1 'permission denied' "set role $role; select public.read_public_home_gallery_photos('ko')"

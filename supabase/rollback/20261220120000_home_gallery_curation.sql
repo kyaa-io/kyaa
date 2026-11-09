@@ -21,6 +21,9 @@ end
 $patch$;
 drop function public.home_gallery_curation_rank(text);
 drop function public.home_gallery_curation_hidden(text);
+-- Dropping the migration-owned table removes FORCE RLS, its owner SELECT policies
+-- and all table grants together; dropping helpers removes their EXECUTE grants.
+-- Reapplying the forward migration rediscovers owners and restores all three.
 drop table public.home_gallery_curation;
 notify pgrst, 'reload schema';
 commit;

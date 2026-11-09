@@ -94,6 +94,8 @@ describe("Home server content isolation", () => {
     const result = await HomePage({ searchParams: Promise.resolve({ locale: "ko" }) });
     expect(repositories.homeGallery).toHaveBeenCalledWith("ko", { limit: 12 });
     expect(await props(result).queries.homeGallery).toEqual({ status: "fulfilled", value: page });
+    expect(props(result).galleryReservation).toEqual(page.items);
+    expect(repositories.homeGallery).toHaveBeenCalledTimes(1);
     repositories.homeGallery.mockRejectedValue(new Error("gallery unavailable"));
     const failed = await HomePage({ searchParams: Promise.resolve({}) });
     expect(await props(failed).queries.homeGallery).toEqual({ status: "rejected" });

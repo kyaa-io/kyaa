@@ -1921,3 +1921,9 @@ At the user's request, registered Changha identity and hero images use the unedi
 ### 안내·배너
 - 가이드 상세: 히어로 h1 clamp(34px,9vw,56px)/850, 구역 번호 clamp(36px,4vw,44px)·서비스 색, 구역 h2 clamp(24px,6vw,32px). 구역 머리는 삽화(88/144, `--radius-hero`)+번호+제목. `us-fanmeetings` 위계를 따른 큰 제목 예외다. 규칙 카드는 subgrid 3트랙(이름, 수치, 한도).
 - 홈 배너 `data-kind="art"`: 데스크톱은 그림이 슬라이드를 채우고 왼쪽 절반에 글(768~1199는 44%), 모바일은 그림 위·글 아래. 그림 오른쪽 기준 정렬. 배경 `color-mix(ink 88%, service-ink)`.
+
+### 2026-11-10 홈 갤러리 검토 수정
+
+- 홈 갤러리·숏츠의 loading/error/empty는 흰색 `--color-surface`와 `--color-line`을 사용한다. 기존 핑크 자리표시 규칙의 이 화면 예외이며 회색 채움은 쓰지 않는다.
+- 사진 구역은 서버가 읽은 사진의 원본 치수와 최종 열 배치를 로딩 예약에도 공유한다. 고정 570/712px 대신 동일 사진의 실제 반응형 높이를 예약한다. 치수를 아직 알 수 없는 초기 셸은 모바일 1230px(기존 570px), 데스크톱 712px를 사용한다.
+- 사진의 원본 비율, 정렬·순위·숨김 결과, 12개 언어 및 400/700/800 두께 계약은 유지한다.

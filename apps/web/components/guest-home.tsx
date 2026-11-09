@@ -4,6 +4,7 @@ import type { RaffleList } from "@/features/benefit/domain/raffle";
 import type { AppLocale } from "@/i18n/locales";
 import type { BannerSlotMap, HomeBanner } from "../features/home/domain/home-banner";
 import type { Route } from "next";
+import type { HomeGalleryPhoto } from "@/features/home/domain/home-gallery";
 import type { HomeQueries } from "./home-query-stream";
 import type { LiveEventResponse } from "../features/live/domain/live-event";
 import type { PublishedCelebrity, PublishedCelebrityLive } from "../server/content/content-domain";
@@ -169,15 +170,15 @@ function HomeUpcoming({ featuredLives, locale, contentErrors = {} }: GuestHomePr
           </section>
 </>);
 }
-type StreamingHomeProps = Pick<GuestHomeProps, "locale"> & { queries: HomeQueries };
+type StreamingHomeProps = Pick<GuestHomeProps, "locale"> & { queries: HomeQueries; galleryReservation?: readonly HomeGalleryPhoto[] };
 
-export function StreamingGuestHome({ queries, ...props }: StreamingHomeProps) {
+export function StreamingGuestHome({ queries, galleryReservation, ...props }: StreamingHomeProps) {
   const fallbackProps = { ...props, celebrities: [], featuredLives: [] };
   return <HomeLayout locale={props.locale}
     hero={<Suspense fallback={<HomeHero {...fallbackProps} homeBanners={[gggiHomeBanner(props.locale)]} elinaGuide={null} />}><StreamHomeHero {...props} queries={queries} /></Suspense>}
     thinBanner={<Suspense fallback={null}><StreamHomeThinBanner {...props} queries={queries} /></Suspense>}
     notices={<Suspense fallback={<HomeNoticesPlaceholder locale={props.locale} />}><StreamHomeNotices {...props} queries={queries} /></Suspense>}
-    gallery={<Suspense fallback={<HomeGalleryPlaceholder locale={props.locale} />}><StreamHomeGallery {...props} queries={queries} /></Suspense>}
+    gallery={<Suspense fallback={<HomeGalleryPlaceholder locale={props.locale} expectedPhotos={galleryReservation} />}><StreamHomeGallery {...props} queries={queries} /></Suspense>}
     upcoming={<Suspense fallback={<PersonalizationLoading quiet locale={props.locale} />}><StreamHomeUpcoming {...props} queries={queries} /></Suspense>} />;
 }
 

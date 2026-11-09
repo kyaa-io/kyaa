@@ -581,6 +581,20 @@ describe("streamed Home sections", () => {
     expect(screen.getAllByRole("link", { name: "엘리나와 함께 뱅크시 전시 보러 가요", hidden: true }).length).toBeGreaterThan(0);
   });
 
+  it("uses server photo geometry while Shorts is still pending", async () => {
+    const photos = (await import("@/server/home-gallery/fixtures/read_public_home_gallery_photos.json")).default.items;
+    const home = pendingHome();
+    const shorts = deferred<never[]>();
+    let view!: ReturnType<typeof render>;
+    await act(async () => { view = render(<StreamingGuestHome locale="ko" galleryReservation={photos as never} queries={{ ...home.queries,
+      homeGallery: Promise.resolve({ status: "fulfilled", value: { items: photos as never, nextCursor: null } }),
+      homeShorts: settleHomeQuery(shorts.promise) }} />); });
+    expect(view.container.querySelectorAll('[data-gallery-reservation="mobile"] li')).toHaveLength(photos.length);
+    await act(async () => { shorts.resolve([]); });
+    expect(view.container.querySelector('[data-gallery-reservation]')).toBeNull();
+    expect(view.container.querySelectorAll('[data-gallery-layout="mobile"] [data-row="photo"]')).toHaveLength(photos.length);
+  });
+
   it("puts the read gallery photos and LIVE videos on the home; a failed read keeps placeholders without the empty text, zero rows show it", async () => {
     const photos = (await import("@/server/home-gallery/fixtures/read_public_home_gallery_photos.json")).default.items;
     const shorts = (await import("@/server/home-gallery/fixtures/read_public_home_shorts.json")).default;
