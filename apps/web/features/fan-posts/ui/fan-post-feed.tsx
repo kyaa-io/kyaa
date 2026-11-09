@@ -51,7 +51,7 @@ function FeedForOwner({ pageImage, pinnedNotices, pinnedPending = false, filterH
     update(); media.addEventListener("change", update);
     return () => media.removeEventListener("change", update);
   }, [compact]);
-  const composeTrigger = useRef<HTMLButtonElement>(null), section = useRef<HTMLElement>(null);
+  const composeTrigger = useRef<HTMLButtonElement>(null), section = useRef<HTMLElement>(null), toolbar = useRef<HTMLDivElement>(null), [showListAfterSave, setShowListAfterSave] = useState(false);
   const closeComposer = () => { setComposing(false); setIntentDismissed(true); if (composeIntent) onComposeConsumed?.(); requestAnimationFrame(() => composeTrigger.current?.focus()); };
   const insightCopy = program === "live-insight" ? waveEngagementCopy(locale) : null;
   const introductionCopy = wavePrivacyCopy(locale);
@@ -74,11 +74,18 @@ function FeedForOwner({ pageImage, pinnedNotices, pinnedPending = false, filterH
   const holding = pinnedPending && compact && !cursor && selectedSource !== "fans";
   const state = holding && resource.state.status === "ready" ? ({ status: "loading" } as const) : resource.state;
   const refresh = () => { setCursors([null]); resource.retry(); };
-  const saved = (reward?: { points: number; stamps?: number }) => { if (reward) showMissionRewardToast(locale, "post", reward); refresh(); closeComposer(); onPosted?.(); };
+  const saved = (reward?: { points: number; stamps?: number }) => { if (reward) showMissionRewardToast(locale, "post", reward); refresh(); closeComposer(); if (compact) setShowListAfterSave(true); onPosted?.(); };
   const goToPage = (next: (string | null)[]) => { setCursors(next); section.current?.focus(); section.current?.scrollIntoView?.({ block: "start" }); };
   const filterLabel = newsFilter === "notice" ? copy.notice : newsFilter === "artist_post" ? officialPostLabel ?? copy.artistPost : "CHZZK";
   const sessionReady = auth.ready && session.ready;
   const composerOpen = composing || (composeIntent && !intentDismissed && sessionReady && auth.authenticated && selectedSource !== "official");
+  // A saved post lands in the list below "오늘의 인기글", not at the top of the board. Once the form has closed (and the compose link has left the address,
+  // whose replace scrolls to the page's hash), bring the list with the new row into view.
+  useEffect(() => {
+    if (!showListAfterSave || composerOpen || composeIntent) return;
+    const frame = requestAnimationFrame(() => requestAnimationFrame(() => { setShowListAfterSave(false); toolbar.current?.scrollIntoView?.({ block: "start" }); }));
+    return () => cancelAnimationFrame(frame);
+  }, [showListAfterSave, composerOpen, composeIntent]);
   const sourceFilterHref = (value: BoardFeedSource): Route => {
     if (filterHref) return filterHref(value);
     const options: NonNullable<Parameters<typeof boardHref>[2]> = { source: value };
@@ -89,8 +96,8 @@ function FeedForOwner({ pageImage, pinnedNotices, pinnedPending = false, filterH
   const writeAction = compact && !composerOpen && selectedSource !== "official" && sessionReady && <div className={feedStyles.writeRow}><EarnBadgeCorner action="post" locale={locale}>{auth.authenticated ? <button ref={composeTrigger} type="button" className={feedStyles.writeButton} onClick={() => setComposing(true)}>{locale === "ko" ? "글쓰기" : copy.writePost}<ArrowRight size={16} aria-hidden="true" /></button> : <Link className={feedStyles.writeButton} href={`/login?locale=${locale}&returnTo=${encodeURIComponent(loginReturnTo)}`}>{locale === "ko" ? "글쓰기" : copy.writePost}<ArrowRight size={16} aria-hidden="true" /></Link>}</EarnBadgeCorner></div>;
   return <section id="cheers" ref={section} tabIndex={-1} className={`${styles.section} ${feedStyles.feed} ${compact ? feedStyles.compact : ""}`} aria-labelledby={heading} data-unified-feed="">
     {compact && composerOpen ? null : introduction || program ? <FanSectionHeader id={heading} title={introduction ? waveNavigationCopy(locale).labels[1] : insightCopy?.insightTitle ?? waveProgramsCopy(locale).photos} description={introduction ? introductionCopy.introduction : undefined} /> : <header className={hideHeading && intro === "" ? feedStyles.visuallyHidden : `${feedStyles.heading} ${compact ? feedStyles.compactHeading : ""}`}><h2 id={heading} className={hideHeading ? feedStyles.visuallyHidden : undefined}>{compact && composerOpen ? locale === "ko" ? "글쓰기" : copy.writePost : headingTitle ?? (source ? feed.feed : feed.fanBoard)}</h2>{writeAction}</header>}
-    {(!compact || !composerOpen) && beforeFeed}
-    {source && !introduction && (!compact || !composerOpen) && <div className={feedStyles.toolbar}><nav className={feedStyles.filters} aria-label={feed.filters}>{(["all", "official", "fans"] as const).map(value => <Link key={value} scroll={false} href={sourceFilterHref(value)} aria-current={selectedSource === value ? "page" : undefined}>{compact ? value === "official" ? boardCopy(locale).notice : value === "fans" ? boardCopy(locale).free : feed.all : feed[value]}</Link>)}</nav>
+    {beforeFeed && <div hidden={compact && composerOpen} className={feedStyles.passThrough}>{beforeFeed}</div>}
+    {source && !introduction && (!compact || !composerOpen) && <div ref={toolbar} className={feedStyles.toolbar}><nav className={feedStyles.filters} aria-label={feed.filters}>{(["all", "official", "fans"] as const).map(value => <Link key={value} scroll={false} href={sourceFilterHref(value)} aria-current={selectedSource === value ? "page" : undefined}>{compact ? value === "official" ? boardCopy(locale).notice : value === "fans" ? boardCopy(locale).free : feed.all : feed[value]}</Link>)}</nav>
       {newsFilter !== "all" && !(compact && newsFilter === "notice") && <span className={feedStyles.topic}>{filterLabel}<Link scroll={false} href={boardHref(slug, locale, { source: "official" })} aria-label={feed.removeFilter}><X size={16} aria-hidden="true" /></Link></span>}
     </div>}
     {selectedSource !== "official" && sessionReady && (auth.authenticated ? (composerOpen ? <PostComposer board={compact} introduction={introduction} program={program} slug={slug} locale={locale} onSaved={saved} onCancel={closeComposer} featured autoFocus allowMembers={allowMembers} heading={compact ? managementCopy(locale).write : undefined} headingId={compact ? heading : undefined} /> : compact ? null : <button ref={composeTrigger} type="button" className={styles.composeTrigger} onClick={() => setComposing(true)} aria-label={introduction ? introductionCopy.writeIntroduction : insightCopy?.insightTitle ?? copy.writePost}><span className={styles.composeIcon}><PenLine size={20} aria-hidden="true" /></span><span>{introduction ? introductionCopy.introductionPrompt : insightCopy?.insightPrompt ?? discoveryCopy(locale).writePrompt}</span><strong>{introduction ? introductionCopy.writeIntroduction : insightCopy?.insightTitle ?? copy.writePost}</strong></button>) : compact ? null : <FanAction href={`/login?locale=${locale}&returnTo=${encodeURIComponent(loginReturnTo)}`}>{copy.login}</FanAction>)}
