@@ -1,7 +1,6 @@
 /* Same-row cards share a height (grid stretch); FanEntityCard fills its cell. */
 .cards { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); align-items: stretch; gap: var(--space-3); min-width: 0; }
 .refreshing { opacity: 0.6; transition: opacity 120ms linear; }
-.roleChip[aria-disabled="true"] { color: var(--color-muted); cursor: default; }
 .attendanceAction { display: block; }
 .attendanceAction > a { width: 100%; }
 .myApplication { display: flex; margin-top: var(--space-3); align-items: center; gap: var(--space-2); min-width: 0; padding: var(--space-3) var(--space-4); border: 1px solid var(--color-line); border-radius:var(--radius-collection); color: var(--color-ink); text-decoration: none; }
@@ -17,3 +16,35 @@
 .list { display: grid; grid-template-columns: minmax(0, 1fr); column-gap: var(--space-8); min-width: 0; }
 @media (min-width: 1024px) { .list { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 .helpTitle { display: flex; align-items: center; gap: var(--space-1); }
+/* L4 (2026-11-09, Weverse artist search on Mobbin): search and sort share one 44px row, every filter sits in one 36px chip row that scrolls sideways.
+   The role chips moved into one menu chip at the end of that row, like Weverse's trailing chevron chip. 1280+ puts the three on one row. */
+.controls { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: var(--space-2); align-items: center; margin-bottom: var(--space-4); }
+.search { position: relative; flex: none; min-width: 0; }
+.searchInput { height: 44px; min-height: 44px; padding-inline-end: calc(var(--space-10) + var(--space-1)); }
+.searchIcon { position: absolute; inset-inline-end: 0; top: 0; display: grid; place-items: center; width: 44px; height: 44px; border: 0; background: transparent; color: var(--color-muted); cursor: pointer; }
+.controls .sort { gap: var(--space-1); height: 44px; min-height: 44px; padding-inline: var(--space-3); border: 1px solid var(--color-muted); border-radius: var(--radius-control); background: var(--color-surface); color: var(--color-ink); font: inherit; font-size: var(--fan-action-label-size); font-weight: 700; white-space: nowrap; }
+.filterBar { grid-column: 1 / -1; display: flex; align-items: center; gap: var(--space-2); min-width: 0; margin-block: calc(-1 * var(--space-1)); padding-block: var(--space-1); overflow-x: auto; scrollbar-width: none; }
+.filterBar::-webkit-scrollbar { display: none; }
+.groupKinds { display: flex; flex: none; align-items: center; gap: var(--space-2); padding-inline-start: var(--space-2); border-inline-start: 1px solid var(--color-line); }
+/* Below 1024px the divider alone marks the group kinds so the five chips fit one 390 row; the group keeps its name for screen readers. */
+.groupLabel { display: none; color: var(--color-muted); font-size: var(--fan-metadata-size); white-space: nowrap; }
+.controls .chip { position: relative; flex: none; min-height: 36px; height: 36px; padding: 0 var(--space-3); font-size: var(--fan-action-label-size); font-weight: 700; white-space: nowrap; }
+/* Below 1024px the chips keep 8px sides so the five fit one 390 row. The chip is 36px tall; its touch area stays 44px. */
+@media (max-width: 1023px) { .controls .chip { padding-inline: var(--space-2); } .roleTrigger.roleTrigger { padding-inline-end: var(--space-1); } }
+.controls .chip::after { content: ""; position: absolute; inset: calc(-1 * var(--space-1)) 0; }
+.roleTrigger.roleTrigger { gap: var(--space-1); padding-inline-end: var(--space-2); }
+.roleTrigger[data-active] { color: var(--color-accent-ink); background: var(--color-accent-soft); border-color: var(--color-accent); }
+.roleTrigger:disabled { color: var(--color-muted); cursor: default; }
+.roleTrigger:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
+/* Approved contract (DESIGN.md, 2026-11-06): from 1024px the page-kind filters are underline tabs. */
+@media (min-width: 1024px) {
+  .filterBar > .chip:not(.roleTrigger), .groupKinds > .chip { height: 44px; min-height: 44px; padding-inline: var(--space-3); border: 0; border-bottom: 2px solid transparent; border-radius: 0; background: transparent; }
+  .filterBar > .chip:not(.roleTrigger)[aria-pressed="true"], .groupKinds > .chip[aria-pressed="true"] { border-bottom-color: var(--color-accent); color: var(--color-accent-ink); background: transparent; }
+  .groupKinds { gap: 0; padding-inline-start: var(--space-2); }
+  .groupLabel { display: inline; margin-inline-end: var(--space-1); }
+  .roleTrigger { margin-inline-start: var(--space-2); }
+}
+@media (min-width: 1280px) {
+  .controls { grid-template-columns: max-content minmax(200px, 1fr) auto; gap: var(--space-3); }
+  .filterBar { grid-column: 1; grid-row: 1; }
+}
