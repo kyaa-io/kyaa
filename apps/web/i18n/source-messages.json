@@ -1715,12 +1715,6 @@
     "source": "components/guest-home",
     "id": "components/guest-home:copy.liveSub"
   },
-  "m54dd85c7923f": {
-    "en": "All LIVE events",
-    "ko": "전체 라이브",
-    "source": "components/guest-home",
-    "id": "components/guest-home:copy.allLive"
-  },
   "mccde2af4a88b": {
     "en": "No LIVE events available",
     "ko": "공개된 LIVE 없음",
@@ -1780,12 +1774,6 @@
     "ko": "셀럽 목록",
     "source": "components/guest-home",
     "id": "components/guest-home:copy.celebrityList"
-  },
-  "m60da1bd22057": {
-    "en": "View details",
-    "ko": "상세 보기",
-    "source": "components/guest-home",
-    "id": "components/guest-home:copy.detail"
   },
   "me22245be7785": {
     "en": "Official channel",
@@ -1858,30 +1846,6 @@
     "ko": "로그인하기",
     "source": "components/guest-home",
     "id": "components/guest-home:copy.signIn"
-  },
-  "m51dfa5dd0f6f": {
-    "en": "Upcoming LIVE",
-    "ko": "다가오는 LIVE",
-    "source": "components/guest-home",
-    "id": "components/guest-home:copy.upcoming"
-  },
-  "mdf97b80344c5": {
-    "en": "Previous LIVE events",
-    "ko": "이전 LIVE 목록",
-    "source": "components/guest-home",
-    "id": "components/guest-home:copy.previousLivePage"
-  },
-  "m2eb9d49d3f74": {
-    "en": "Next LIVE events",
-    "ko": "다음 LIVE 목록",
-    "source": "components/guest-home",
-    "id": "components/guest-home:copy.nextLivePage"
-  },
-  "m35ff321a05aa": {
-    "en": "No LIVE events are available right now.",
-    "ko": "현재 공개된 LIVE가 없습니다.",
-    "source": "components/guest-home",
-    "id": "components/guest-home:copy.noLive"
   },
   "mda49bf52819f": {
     "en": "Fan activity preview",
@@ -2110,12 +2074,6 @@
     "ko": "다음 최애",
     "source": "components/guest-home",
     "id": "components/guest-home:inline.m6eff2fd9c769"
-  },
-  "mbbae831d75b7": {
-    "en": "View {0} details",
-    "ko": "{0} {1}",
-    "source": "components/guest-home",
-    "id": "components/guest-home:inline.m9a2c1189cdd3"
   },
   "mc91e6e2d8dcc": {
     "en": "Opened Fan Passport with nine empty Stamp circles",

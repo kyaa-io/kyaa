@@ -1,206 +1,120 @@
-/* GGGI 캠페인 배너: 바탕은 아트 색 토큰. 어두운 녹색 위 포커스 링은 흰색(잉크 1.4:1 → 흰 12.18:1). 홈 `.page :is(a, button):focus-visible`보다 특이도가 높다. */
-.banner[data-kind="campaign"] { --campaign-art: var(--color-campaign-art); }
-/* 768+에서만 버튼 주변이 녹색 바탕이다. 390은 버튼 밖이 흰 바탕이라 기본 잉크 링(17:1)을 둔다. */
-@media (min-width: 768px) { .banner[data-kind="campaign"] :is(a, button):focus-visible { outline-color: var(--color-surface); } }
-.banner { position:relative; width:100%; height:100%; overflow:hidden; background:var(--color-surface); color:var(--color-ink); }
-.banner:not([data-kind="campaign"])::after { content:""; position:absolute; inset:0; border:1px solid var(--color-line); border-radius:inherit; pointer-events:none; }
-.image { position:absolute; inset:0 0 0 auto; width:40%; overflow:hidden; }
-.desktopImage { position:absolute; inset:0; }
-.overlay { display:none; position:absolute; inset:0; background:transparent; }
-.copy { position:relative; display:flex; flex-direction:column; width:60%; height:100%; padding:clamp(24px, 3vw, 48px); gap:16px; }
-.eyebrow { display:flex; align-items:center; min-height:24px; color:var(--color-accent); font-size:clamp(11px, 1.3vw, 20px); font-weight:700; letter-spacing:.06em; }
-.eyebrow > span { display:inline-flex; align-items:center; gap:6px; }
-.eyebrow svg { width:16px; height:16px; }
-.copy h2 { margin:0; font-size:clamp(36px, 3vw, 40px); font-weight:800; line-height:1.2; letter-spacing:-.04em; text-wrap:balance; }
-.description { display:grid; justify-items:start; gap:8px; color:var(--color-muted); font-size:16px; line-height:1.4; }
-.description [data-tone="on-image"] { font-size:clamp(12px, 1.2vw, 16px); }
-.action { margin-top:auto; }
-.action > a { display:flex; align-items:center; justify-content:space-between; gap:8px; min-height:48px; color:var(--color-ink) !important; font-size:16px; font-weight:700; text-decoration:none; }
-.action > a > span { display:inline-flex; align-items:center; gap:6px; }
-.action svg { width:20px; height:20px; flex:none; }
-@media (min-width:768px) {
-  .banner[data-kind="guide"] .copy { justify-content:space-between; }
-  .banner[data-kind="guide"] .action { margin-top:0; }
+/*
+ * 홈 배너 한 칸의 규격(2026-11-09 사용자 피드백 "배너가 너무 크다", 벤치마크 Weverse 홈).
+ * 칸 크기는 캐러셀 틀이 정한다(guest-home.module.css .heroViewport: 390 높이 200, 768+ 폭의 28%·380 상한).
+ * 이 파일은 칸 안의 배치만 맡는다: 왼쪽 글, 오른쪽 안쪽에 둔 그림(사진으로 칸을 채우지 않는다).
+ * 종류(data-kind)는 바탕색과 그림 자르기만 다르다.
+ */
+.banner {
+  --pic-gap: var(--space-4);
+  --pic-w: 42%;
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: var(--color-surface);
+  color: var(--color-ink);
+}
+.banner:not([data-kind="campaign"])::after { content: ""; position: absolute; inset: 0; border: 1px solid var(--color-line); border-radius: inherit; pointer-events: none; }
+
+/* 그림: 칸 안쪽 오른쪽에 둔다. 위·아래·오른쪽 여백이 같다. */
+.image, .fullImage {
+  position: absolute;
+  inset: var(--pic-gap) var(--pic-gap) var(--pic-gap) auto;
+  width: calc(var(--pic-w) - var(--pic-gap));
+  overflow: hidden;
+  border-radius: var(--radius-card);
+}
+.desktopImage { position: absolute; inset: 0; }
+.overlay { display: none; }
+.banner:is([data-kind="live"], [data-kind="campaign"], [data-kind="art"]) .image { display: none; }
+
+/* 글: 왼쪽 열, 세로 가운데. */
+.copy {
+  position: absolute;
+  inset: 0 auto 0 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: var(--space-3);
+  width: calc(100% - var(--pic-w));
+  padding: var(--space-6) var(--space-4) var(--space-6) clamp(24px, 4vw, 56px);
+}
+.eyebrow { display: flex; align-items: center; min-height: 20px; color: var(--color-accent); font-size: var(--fan-metadata-size); font-weight: 700; }
+.eyebrow > span { display: inline-flex; align-items: center; gap: var(--space-2); }
+.eyebrow svg { width: 16px; height: 16px; }
+.copy h2 {
+  margin: 0;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  overflow: hidden;
+  font-size: clamp(26px, 2.5vw, 36px);
+  font-weight: 800;
+  line-height: 1.2;
+  letter-spacing: var(--fan-heading-tracking);
+  overflow-wrap: anywhere;
+  text-wrap: balance;
+}
+.description {
+  display: grid;
+  justify-items: start;
+  gap: var(--space-1);
+  color: var(--color-muted);
+  font-size: var(--fan-body-size);
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+.description [data-tone="on-image"] { font-size: var(--fan-metadata-size); }
+.action { margin-top: var(--space-2); }
+.action > a {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-3);
+  max-width: 100%;
+  min-height: 48px;
+  padding: 0 var(--space-6);
+  border-radius: var(--radius-pill);
+  background: var(--color-accent);
+  color: var(--color-surface) !important;
+  font-size: var(--fan-action-emphasis-size);
+  font-weight: 700;
+  text-decoration: none;
+}
+.action > a > span { display: inline-flex; align-items: center; gap: var(--space-2); }
+.action svg { width: 16px; height: 16px; flex: none; }
+
+/* 어두운 바탕 두 종류(GGGI 캠페인, 안내 그림). */
+.banner[data-kind="campaign"] { --campaign-art: var(--color-campaign-art); background: var(--campaign-art); color: var(--color-surface); }
+.banner[data-kind="art"] { background: color-mix(in oklab, var(--color-ink) 88%, var(--color-service-ink)); color: var(--color-canvas); }
+.banner:is([data-kind="campaign"], [data-kind="art"]) :is(.eyebrow, .description) { color: color-mix(in srgb, var(--color-surface) 92%, transparent); }
+.banner[data-kind="campaign"] .action > a { background: var(--color-surface); color: var(--campaign-art) !important; }
+/* 어두운 바탕 위 포커스 링은 흰색(잉크 1.4:1 → 흰 12.18:1). 홈 `.page :is(a, button):focus-visible`보다 특이도가 높다. */
+.banner:is([data-kind="campaign"], [data-kind="art"]) :is(a, button):focus-visible { outline-color: var(--color-surface); }
+
+/* 태블릿: 칸이 낮아져 글 열과 그림 비율을 조금 줄인다. */
+@media (max-width: 1023px) {
+  .banner { --pic-w: 40%; }
+  .description { font-size: var(--fan-description-size); }
 }
 
-.banner[data-kind="live"] .image { display:none; }
-.banner[data-kind="live"] .overlay { display:block; }
-.banner[data-kind="live"] .copy { position:absolute; inset:auto 0 0; width:100%; height:auto; color:var(--color-surface); }
-.banner[data-kind="live"] .eyebrow,
-.banner[data-kind="live"] .description { color:var(--color-surface); }
-.banner[data-kind="live"] .eyebrow { width:fit-content; padding:5px 12px; border:1px solid color-mix(in srgb, var(--color-accent) 60%, transparent); border-radius:999px; background:color-mix(in srgb, var(--color-ink) 75%, transparent); font-size:12px; }
-.banner[data-kind="live"] .action > a { width:min(320px, 100%); padding:0 20px; border-radius:999px; background:var(--spectrum); color:var(--color-surface) !important; font-size:15px; }
-@media (max-width:767px) {
-  .banner { background:var(--color-ink); color:var(--color-surface); }
-  .banner[data-kind] .image { display:block; inset:0; width:100%; }
-  .desktopImage { display:none; }
-  .overlay { display:block; }
-  .banner .copy { position:absolute; inset:auto 0 0; width:100%; height:auto; padding:24px; gap:12px; text-shadow:0 1px 3px color-mix(in srgb, var(--color-ink) 53%, transparent); }
-  .banner .eyebrow { width:fit-content; min-height:28px; padding:4px 12px; border:1px solid color-mix(in srgb, var(--color-accent) 60%, transparent); border-radius:999px; background:color-mix(in srgb, var(--color-ink) 75%, transparent); color:var(--color-surface); font-size:12px; }
-  .copy h2 { font-size:clamp(28px, 7.2vw, 36px); line-height:1.08; }
-  .banner .description { color:color-mix(in srgb, var(--color-surface) 92%, transparent); font-size:14px; }
-  .banner .action { margin-top:8px; }
-  .banner[data-kind] .action > a { width:100%; min-height:48px; padding:0 20px; border-radius:999px; background:var(--spectrum); color:var(--color-surface) !important; font-size:15px; text-shadow:none; }
-  .action svg { width:16px; height:16px; }
+/*
+ * 모바일(390 기준 칸 높이 200): 그림은 정사각에 가까운 칸(390에서 170×160)이다. 단체 사진의 얼굴 4명이 모두 남는 최소 비율이다.
+ * 설명은 한 줄, 버튼은 알약 대신 글자 링크(눌림 높이 44)로 줄여 글 열 폭 안에 담는다.
+ */
+@media (max-width: 767px) {
+  .banner { --pic-w: 52%; --pic-gap: var(--space-4); }
+  .image, .fullImage { inset: 20px var(--pic-gap) 20px auto; }
+  .copy { gap: var(--space-1); padding: var(--space-3) var(--space-3) var(--space-3) var(--space-4); }
+  .eyebrow { min-height: 18px; font-size: var(--fan-badge-size); }
+  .copy h2 { font-size: var(--fan-section-size); line-height: 1.25; -webkit-line-clamp: 3; }
+  .description { font-size: var(--fan-badge-size); line-height: 1.4; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 1; overflow: hidden; }
+  .action { margin-top: 0; }
+  .action > a { min-height: 44px; padding: 0; background: transparent; color: var(--color-accent) !important; font-size: var(--fan-description-size); }
+  .banner[data-kind="campaign"] .action > a { background: transparent; color: var(--color-surface) !important; }
+  .banner[data-kind="art"] .action > a { background: transparent; color: var(--color-canvas) !important; }
 }
 
-/* LIVE information follows a compact reading path below the artist's face. */
-.banner[data-kind="live"] { container-type:inline-size; }
-.banner[data-kind="live"] .copy {
-  padding:24px;
-  gap:12px;
-  text-shadow:0 1px 3px color-mix(in srgb, var(--color-ink) 62%, transparent);
-}
-.banner[data-kind="live"] .copy h2 {
-  min-width:0;
-  font-size:clamp(28px, 4.5cqi, 48px);
-  line-height:1.12;
-  overflow-wrap:anywhere;
-  text-wrap:pretty;
-}
-.banner[data-kind="live"] .eyebrow { min-height:28px; }
-.banner[data-kind="live"] .description {
-  display:flex;
-  flex-wrap:wrap;
-  align-items:center;
-  gap:8px 12px;
-  font-size:16px;
-  font-weight:400;
-}
-.banner[data-kind="live"] .description [data-tone="on-image"] {
-  flex:none;
-  font-size:12px;
-  font-variant-numeric:tabular-nums;
-}
-.banner[data-kind="live"] .action { margin-top:8px; }
-.banner[data-kind="live"] .action > a {
-  width:fit-content;
-  max-width:100%;
-  min-height:48px;
-  gap:24px;
-  padding:0 24px;
-  text-shadow:none;
-}
-.banner[data-kind="live"] .action svg { width:16px; height:16px; }
-@media (min-width:768px) {
-  .banner[data-kind="live"] .copy { padding:32px 48px; }
-}
-@media (min-width:768px) {
-@container (min-width:640px) {
-  .banner[data-kind="live"] .copy {
-    display:grid;
-    grid-template-columns:minmax(0, 1fr) auto;
-    grid-template-areas:"status ." "title ." "action schedule";
-    align-items:end;
-    gap:16px 32px;
-    padding:40px 48px 40px 64px;
-  }
-  .banner[data-kind="live"] .eyebrow { grid-area:status; }
-  .banner[data-kind="live"] .copy h2 { grid-area:title; }
-  .banner[data-kind="live"] .description {
-    grid-area:schedule;
-    max-width:280px;
-    justify-content:flex-end;
-  }
-  .banner[data-kind="live"] .action { grid-area:action; justify-self:start; margin-top:0; }
-}
-}
-@media (max-width:767px) {
-  .banner[data-kind="live"] .copy h2 { font-size:clamp(28px, 8cqi, 36px); }
-  .banner[data-kind="live"] .description { font-size:14px; }
-  .banner[data-kind="live"] .action > a { width:100%; }
-}
-
-.fullImage { position:absolute; inset:0; }
-
-/* Keep the invitation together; spare height belongs outside the reading group. */
-.banner[data-kind="welcome"] .copy { gap:0; }
-.banner[data-kind="welcome"] .eyebrow { margin-bottom:16px; }
-.banner[data-kind="welcome"] .description { margin-top:12px; }
-.banner[data-kind="welcome"] .action { margin-top:32px; }
-
-/* Match square artwork to the carousel height, including its tablet minimum. */
-@media (min-width:768px) {
-  .banner[data-kind="welcome"] { container-type:size; }
-  .banner[data-kind="welcome"] .image { width:100cqh; }
-  .banner[data-kind="welcome"] .copy { width:calc(100% - 100cqh); justify-content:center; padding-inline:64px 24px; }
-  .banner[data-kind="welcome"] .action > a {
-    width:fit-content;
-    max-width:100%;
-    min-height:48px;
-    gap:12px;
-    padding:10px 16px;
-    border-radius:999px;
-    background:var(--spectrum);
-    color:var(--color-surface) !important;
-  }
-}
-
-/* The activity sidebar narrows the hero on small laptops; use the mobile invitation. */
-@media (min-width:1024px) and (max-width:1199px) {
-  .banner[data-kind="welcome"] .image { width:100%; }
-  .banner[data-kind="welcome"] .overlay { display:block; }
-  /* VISUAL-K 낮음 6: a solid ink copy panel with a clean top edge instead of a see-through cover over the whole photo (the 4차 fade is a gradient). */
-  .banner[data-kind="welcome"] .copy { position:absolute; inset:auto 0 0; width:100%; height:auto; padding:24px; background:var(--color-ink); color:var(--color-surface); text-shadow:none; }
-  .banner[data-kind="welcome"] .eyebrow { width:fit-content; padding:4px 12px; border:1px solid color-mix(in srgb, var(--color-accent) 60%, transparent); border-radius:999px; background:color-mix(in srgb, var(--color-ink) 75%, transparent); color:var(--color-surface); font-size:12px; }
-  .banner[data-kind="welcome"] .copy h2 { font-size:32px; }
-  .banner[data-kind="welcome"] .description { color:var(--color-surface); font-size:14px; }
-}
-
-@media (max-width:767px), (min-width:1024px) and (max-width:1199px) {
-  .banner[data-kind="welcome"] .description { margin-top:8px; }
-  .banner[data-kind="welcome"] .action { margin-top:24px; }
-}
-
-.banner[data-kind="campaign"]{background:var(--campaign-art);color:var(--color-surface)}
-.banner[data-kind="campaign"] .image{display:none}
-.banner[data-kind="campaign"] .overlay{display:none}
-.banner[data-kind="campaign"] .copy{position:absolute;inset:0 auto 0 0;width:60%;height:100%;justify-content:center;gap:16px;padding:40px 48px}
-.banner[data-kind="campaign"] .eyebrow,.banner[data-kind="campaign"] .description{color:var(--color-surface)}
-.banner[data-kind="campaign"] .eyebrow{font-size:13px;letter-spacing:.08em}
-.banner[data-kind="campaign"] .copy h2{font-size:32px;line-height:1.3;overflow-wrap:anywhere}
-.banner[data-kind="campaign"] .description{font-size:16px;line-height:1.6;overflow-wrap:anywhere}
-.banner[data-kind="campaign"] .action{margin-top:8px}
-.banner[data-kind="campaign"] .action>a{width:fit-content;gap:16px;padding:10px 20px;border-radius:999px;background:var(--color-surface);color:var(--campaign-art)!important}
-@media(max-width:767px){
- .banner[data-kind="campaign"] .overlay{inset:50% 0 0;background:var(--campaign-art)}
- .banner[data-kind="campaign"] .copy{inset:auto 0 0;width:100%;height:auto;padding:24px;gap:8px}
- .banner[data-kind="campaign"] .copy h2{font-size:28px}
- .banner[data-kind="campaign"] .description{font-size:16px;line-height:1.5}
- .banner[data-kind="campaign"] .action{margin-top:8px}
-}
-
-@media (max-width:767px) {
-  .banner:is([data-kind="welcome"], [data-kind="campaign"]) { display:flex; flex-direction:column; background:var(--color-surface); color:var(--color-ink); }
-  .banner:is([data-kind="welcome"], [data-kind="campaign"]) :is(.image, .fullImage) { position:relative; inset:auto; width:100%; flex:none; }
-  .banner[data-kind="campaign"] .image { display:none; }
-  .banner:is([data-kind="welcome"], [data-kind="campaign"]) .overlay { display:none; }
-  .banner:is([data-kind="welcome"], [data-kind="campaign"]) .copy { position:relative; inset:auto; width:100%; height:auto; flex:1; justify-content:flex-start; padding:20px; gap:8px; text-shadow:none; }
-  .banner:is([data-kind="welcome"], [data-kind="campaign"]) .eyebrow { min-height:24px; margin:0; padding:0; border:0; border-radius:0; background:transparent; color:var(--color-muted); font-size:12px; }
-  .banner:is([data-kind="welcome"], [data-kind="campaign"]) .copy h2 { font-size:28px; line-height:1.2; overflow-wrap:anywhere; }
-  .banner:is([data-kind="welcome"], [data-kind="campaign"]) .description { margin:0; color:var(--color-muted); font-size:14px; line-height:1.5; }
-  .banner:is([data-kind="welcome"], [data-kind="campaign"]) .action { margin-top:8px; }
-  .banner[data-kind="campaign"] .action > a { width:100%; background:var(--campaign-art); color:var(--color-surface)!important; }
-}
-
-/* Approved guide art: the picture fills the slide and the copy sits on its empty half (desktop) or empty bottom (mobile). */
-.banner[data-kind="art"] { background:color-mix(in oklab, var(--color-ink) 88%, var(--color-service-ink)); color:var(--color-canvas); }
-.banner[data-kind="art"] .image { display:none; }
-.banner[data-kind="art"] .overlay { display:none; }
-.banner[data-kind="art"] .copy { position:absolute; inset:0 auto 0 0; width:50%; height:100%; justify-content:center; gap:var(--space-4); padding:var(--space-10) var(--space-6) var(--space-10) var(--space-16); color:var(--color-canvas); }
-.banner[data-kind="art"] .eyebrow { width:fit-content; min-height:28px; padding:var(--space-1) var(--space-3); border:1px solid color-mix(in srgb, var(--color-canvas) 40%, transparent); border-radius:var(--radius-pill); background:color-mix(in srgb, var(--color-ink) 75%, transparent); color:var(--color-canvas); font-size:var(--fan-metadata-size); letter-spacing:.06em; }
-.banner[data-kind="art"] .copy h2 { font-size:clamp(28px, 3.4vw, 44px); line-height:1.12; overflow-wrap:anywhere; text-wrap:balance; }
-.banner[data-kind="art"] .description { color:color-mix(in srgb, var(--color-canvas) 92%, transparent); font-size:var(--fan-body-size); line-height:1.5; font-weight:400; overflow-wrap:anywhere; }
-.banner[data-kind="art"] .action { margin-top:var(--space-2); }
-.banner[data-kind="art"] .action > a { width:fit-content; max-width:100%; min-height:48px; gap:var(--space-6); padding:0 var(--space-6); border-radius:var(--radius-pill); background:var(--color-accent); color:var(--color-canvas) !important; font-size:var(--fan-action-emphasis-size); }
-.banner[data-kind="art"] .action svg { width:16px; height:16px; }
-/* Tablet and the narrow laptop hero trim the picture's empty left side, so the copy column narrows with it. */
-@media (min-width:768px) and (max-width:1199px) {
-  .banner[data-kind="art"] .copy { width:44%; padding:var(--space-8) var(--space-4) var(--space-8) calc(var(--space-12) + var(--space-2)); }
-}
-@media (max-width:767px) {
-  .banner[data-kind="art"] .copy { inset:auto 0 0; width:100%; height:auto; justify-content:flex-start; gap:var(--space-2); padding:0 var(--space-5) var(--space-5); text-shadow:none; }
-  .banner[data-kind="art"] .copy h2 { font-size:clamp(26px, 7vw, 32px); }
-  .banner[data-kind="art"] .description { font-size:var(--fan-description-size); }
-  .banner[data-kind="art"] .action > a { width:100%; }
+/* 안내 그림의 데스크톱 원본은 2:1이다. 슬롯을 원본에 맞춰 빈 띠를 막는다. */
+@media (min-width: 768px) {
+  .banner[data-kind="art"] .fullImage { top: 50%; bottom: auto; aspect-ratio: 2 / 1; transform: translateY(-50%); }
 }

@@ -11,7 +11,6 @@ import "pretendard/dist/web/variable/pretendardvariable-dynamic-subset.css";
 const locale = parseAppLocale(new URLSearchParams(location.search).get("locale"));
 const settled = <T,>(value: T): Promise<HomeQueryResult<T>> => Promise.resolve({ status: "fulfilled", value });
 const queries = {
-  featuredLives: settled(homeQueryData.featuredLives),
   celebrities: settled(homeQueryData.celebrities),
   homeBanners: settled(homeQueryData.homeBanners),
   homeSlots: settled({}),

@@ -18,9 +18,9 @@ describe("home query timing", () => {
     vi.stubEnv("HOSTING_PROVIDER", "aws");
     vi.mocked(logHomeQuery).mockImplementation(() => { throw new Error("logger"); });
     const failure = new Error("private query error");
-    await expect(measureHomeQuery("featuredLives", () => Promise.reject(failure))).rejects.toBe(failure);
-    await expect(measureHomeQuery("featuredLives", () => { throw failure; })).rejects.toBe(failure);
-    expect(logHomeQuery).toHaveBeenLastCalledWith({ name: "featuredLives", durationMs: expect.any(Number), outcome: "error" });
+    await expect(measureHomeQuery("homeNotices", () => Promise.reject(failure))).rejects.toBe(failure);
+    await expect(measureHomeQuery("homeNotices", () => { throw failure; })).rejects.toBe(failure);
+    expect(logHomeQuery).toHaveBeenLastCalledWith({ name: "homeNotices", durationMs: expect.any(Number), outcome: "error" });
     expect(await measureHomeQuery("homeBanners", async () => "ok")).toBe("ok");
   });
 

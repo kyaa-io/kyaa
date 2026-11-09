@@ -41,6 +41,12 @@ const welcomeBanner = { ...bannerFixture, kind: "announcement" as const,
   desktopImage: { ...bannerFixture.desktopImage, width: 1890, height: 1890, url: "https://kyaa.io/public-assets/cms-assets/public-image-assets/3a7b1190beb9a0a49daad1f5fcab87e541512c4a98345f6051eee71df43fa132.webp" },
   mobileImage: { ...bannerFixture.mobileImage!, width: 2560, height: 1890, url: "https://kyaa.io/public-assets/cms-assets/public-image-assets/d28368aaf26a1ee76366cd647eb9f5807ddc0bae044f24c3186602c71c692232.webp" },
 };
+// 안내 그림(category guide) 슬라이드: 규격 확인용. 그림은 ?art-desktop=, ?art-mobile= 로 바꿀 수 있고 기본값은 저장소 공개 이미지다.
+const artBanner = { ...bannerFixture, category: "guide" as const,
+  title: ko ? "패스포트에 도장 모으기" : "Collect stamps in your passport", description: "", ctaLabel: ko ? "내 패스포트 보기" : "View my passport", href: "/passports", alt: ko ? "패스포트와 도장" : "Passport and stamps",
+  desktopImage: { ...bannerFixture.desktopImage, width: 1536, height: 768, url: query.get("art-desktop") ?? "/images/guest-home/kara-hero.png" },
+  mobileImage: { ...bannerFixture.mobileImage!, width: 1024, height: 1280, url: query.get("art-mobile") ?? "/images/celebrities/elina/guide-blue-beret-20260912.webp" },
+};
 const calendar = buildLiveCalendarMonth({ month: "2026-09", events: lives.map(({live}) => ({ id: live.id, slug: live.slug, startsAt: live.startsAt, effectiveStatus: live.effectiveStatus, title: live.title, celebrity: { name: creator.name, image: creator.image.url }, reservationState: null, hasBenefit: null })) });
 document.documentElement.lang = locale;
 const changhaImage = { url: "/images/guest-home/changha-card.jpg", alt: "창하", position: "center 32%" };
@@ -51,4 +57,4 @@ createRoot(document.getElementById("root")!).render(location.pathname === "/phot
   <EventsCatalogScreen locale={locale} homeBanners={[gggiHomeBanner(locale), banner]} elina={creator} elinaRaffles={[]} showElinaCampaign pagination={<EventsPagination locale={locale} page={2} pageCount={2} />} /> :
   location.pathname.startsWith("/admin") ? <HomeBannerManager locale={ko ? "ko" : "en"} role={query.get("role") ?? "admin"} /> : location.pathname === "/live/calendar" ?
   <LiveCalendarScreen initialCalendar={calendar} locale={locale} celebrities={[{ slug: "elina", name: creator.name, image: creator.image.url }]} eventMetadata={lives.map(({ live }) => ({ eventSlug: live.slug, celebritySlug: "elina", platforms: ["youtube"] }))} initialCelebritySlugs={["elina"]} /> :
-  <GuestHome celebrities={[creator]} featuredLives={lives} homeBanners={scenario === "unpublished" ? [] : [scenario === "home-polish" ? gggiHomeBanner(locale) : scenario === "welcome" ? welcomeBanner : banner]} locale={locale} />);
+  <GuestHome celebrities={[creator]} homeBanners={scenario === "unpublished" ? [] : [scenario === "home-polish" ? gggiHomeBanner(locale) : scenario === "welcome" ? welcomeBanner : scenario === "art" ? artBanner : banner]} locale={locale} />);

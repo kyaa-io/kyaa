@@ -16,7 +16,6 @@ export const homeCelebrities: readonly PublishedCelebrity[] = [
 ];
 
 export const homeQueryData = {
-  featuredLives: [],
   celebrities: homeCelebrities,
   celebrityLives: [],
   homeBanners: [],

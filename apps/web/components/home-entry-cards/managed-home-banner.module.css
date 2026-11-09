@@ -1,28 +1,21 @@
+/*
+ * 그림 자르기(2026-11-09 홈 배너 규격, docs/design/image-framing.md): 그림은 배너 오른쪽 안쪽 칸(home-hero-banner.module.css)을 cover로 채운다.
+ * 데스크톱 칸은 약 1.6:1, 모바일 칸은 약 1.04:1이다. 종류마다 얼굴·글자가 남는 위치만 정한다.
+ */
 .root { width:100%; height:100%; }
-.artwork, .unavailable { display:block; width:100%; height:100%; background:var(--color-ink); }
-/* Extra height belongs below the artwork, where the description and action sit. */
-.artwork img { display:block; width:100%; height:100%; object-fit:contain; object-position:center top; }
-.unavailable { background:var(--color-ink); }
-@media (min-width:1024px) and (max-width:1199px) {
-  .root[data-creator-welcome="true"] .artwork img { object-fit:cover; }
-}
+.artwork, .unavailable { display:block; width:100%; height:100%; background:var(--color-soft); }
+.artwork img { display:block; width:100%; height:100%; object-fit:cover; object-position:50% 35%; }
 
-.root[data-gggi-campaign] .artwork { width:46%; margin-left:auto; background:transparent; }
-.root[data-gggi-campaign] .artwork img { object-fit:cover; object-position:50% 28%; }
+/* 위나 환영(정사각 원본): 얼굴 네 명이 위쪽 15~40%에 있다. 모바일 4:3 원본은 가로 74%만 남아도 네 얼굴이 들어간다. */
+.root[data-creator-welcome="true"] .artwork img { object-position:50% 20%; }
 @media (max-width:767px) {
-  .root:is([data-creator-welcome="true"], [data-gggi-campaign]) .artwork { height:auto; background:transparent; }
-  .root:is([data-creator-welcome="true"], [data-gggi-campaign]) .artwork img { height:auto; object-fit:contain; }
+  .root[data-creator-welcome="true"] .artwork img { object-position:53% 25%; }
 }
 
-@media (max-width:767px) {
-  .root[data-gggi-campaign] .artwork { width:100%; }
-  .root[data-gggi-campaign] .artwork img { aspect-ratio:4/3; object-fit:cover; object-position:50% 28%; }
-}
+/* GGGI 캠페인(세로 인물 원본): 얼굴이 위쪽 28% 근처. */
+.root[data-gggi-campaign] .artwork { background:transparent; }
+.root[data-gggi-campaign] .artwork img { object-position:50% 28%; }
 
-/* Approved guide art: 2:1 desktop art is anchored right so a narrower slot trims only its empty left side; mobile art sits on top at its own ratio. */
+/* 안내 그림은 내장 글자를 보존한다. 모바일 대체 원본도 전체를 표시한다. */
 .root[data-guide-art] .artwork { background:color-mix(in oklab, var(--color-ink) 88%, var(--color-service-ink)); }
-.root[data-guide-art] .artwork img { object-fit:cover; object-position:right center; }
-@media (max-width:767px) {
-  .root[data-guide-art] .artwork { height:auto; }
-  .root[data-guide-art] .artwork img { height:auto; aspect-ratio:1374 / 1145; object-fit:cover; object-position:center top; }
-}
+.root[data-guide-art] .artwork img { object-fit:contain; object-position:center; }

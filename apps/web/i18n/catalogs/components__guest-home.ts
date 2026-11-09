@@ -65,19 +65,6 @@ export const messages = {
     ru: "Ваш следующий момент с любимыми людьми"
 
   },
-  "m54dd85c7923f": {
-    "ja": "すべてのLIVE",
-    "zh-Hans": "全部 LIVE",
-    "zh-Hant": "全部 LIVE",
-    "es": "Todos los LIVE",
-    "id": "Semua LIVE",
-    "vi": "Tất cả LIVE",
-    "th": "LIVE ทั้งหมด",
-    "pt": "Todas as LIVE",
-    "fr": "Tous les LIVE",
-    ru: "Все события LIVE"
-
-  },
   "mccde2af4a88b": {
     "ja": "公開中のLIVEはありません",
     "zh-Hans": "暂无可用 LIVE",
@@ -206,19 +193,6 @@ export const messages = {
     "pt": "Lista de celebridades",
     "fr": "Liste des célébrités",
     ru: "Список знаменитостей"
-
-  },
-  "m60da1bd22057": {
-    "ja": "詳細を見る",
-    "zh-Hans": "查看详情",
-    "zh-Hant": "查看詳情",
-    "es": "Ver detalles",
-    "id": "Lihat detail",
-    "vi": "Xem chi tiết",
-    "th": "ดูรายละเอียด",
-    "pt": "Ver detalhes",
-    "fr": "Voir les détails",
-    ru: "Просмотреть подробности"
 
   },
   "me22245be7785": {
@@ -375,58 +349,6 @@ export const messages = {
     "pt": "Entrar",
     "fr": "Se connecter",
     ru: "Войти"
-
-  },
-  "m51dfa5dd0f6f": {
-    "ja": "今後のLIVE",
-    "zh-Hans": "即将开始的 LIVE",
-    "zh-Hant": "即將開始的 LIVE",
-    "es": "Próximo LIVE",
-    "id": "LIVE mendatang",
-    "vi": "LIVE sắp tới",
-    "th": "LIVE ที่กำลังจะมาถึง",
-    "pt": "Próxima LIVE",
-    "fr": "LIVE à venir",
-    ru: "Предстоящий LIVE"
-
-  },
-  "mdf97b80344c5": {
-    "ja": "前のLIVE",
-    "zh-Hans": "上一批 LIVE",
-    "zh-Hant": "上一批 LIVE",
-    "es": "LIVE anteriores",
-    "id": "LIVE sebelumnya",
-    "vi": "Các LIVE trước",
-    "th": "LIVE ก่อนหน้า",
-    "pt": "LIVE anteriores",
-    "fr": "LIVE précédents",
-    ru: "Предыдущие события LIVE"
-
-  },
-  "m2eb9d49d3f74": {
-    "ja": "次のLIVE",
-    "zh-Hans": "下一批 LIVE",
-    "zh-Hant": "下一批 LIVE",
-    "es": "Siguientes LIVE",
-    "id": "LIVE berikutnya",
-    "vi": "Các LIVE tiếp theo",
-    "th": "LIVE ถัดไป",
-    "pt": "Próximas LIVE",
-    "fr": "Prochains LIVE",
-    ru: "Следующие события LIVE"
-
-  },
-  "m35ff321a05aa": {
-    "ja": "現在公開中のLIVEはありません。",
-    "zh-Hans": "目前没有可用的 LIVE。",
-    "zh-Hant": "目前沒有可用的 LIVE。",
-    "es": "No hay LIVE disponibles en este momento.",
-    "id": "Tidak ada LIVE yang tersedia saat ini.",
-    "vi": "Hiện không có LIVE khả dụng.",
-    "th": "ขณะนี้ไม่มี LIVE ที่พร้อมใช้งาน",
-    "pt": "Nenhuma LIVE está disponível no momento.",
-    "fr": "Aucun LIVE n’est disponible pour le moment.",
-    ru: "В настоящий момент нет доступных событий LIVE."
 
   },
   "mda49bf52819f": {
@@ -921,19 +843,6 @@ export const messages = {
     "pt": "Próximos criadores",
     "fr": "Créateurs suivants",
     ru: "Следующие создатели"
-
-  },
-  "mbbae831d75b7": {
-    "ja": "{0}の詳細を見る",
-    "zh-Hans": "查看 {0} 详情",
-    "zh-Hant": "查看 {0} 詳情",
-    "es": "Ver detalles de {0}",
-    "id": "Lihat detail {0}",
-    "vi": "Xem chi tiết {0}",
-    "th": "ดูรายละเอียด {0}",
-    "pt": "Ver detalhes de {0}",
-    "fr": "Voir les détails de {0}",
-    ru: "Просмотреть подробности {0}"
 
   },
   "mc91e6e2d8dcc": {

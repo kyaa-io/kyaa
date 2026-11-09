@@ -32,13 +32,12 @@ const event: LiveEventRecord = {
   overrides: [],
 };
 
-function source(overrides: Partial<LiveEventDataSource> = {}): LiveEventDataSource {
+function source({ publishedSlugs = async () => [{ slug: event.slug }], ...overrides }: Partial<LiveEventDataSource> & { publishedSlugs?: () => Promise<readonly { slug: string }[]> } = {}): LiveEventDataSource {
   const base: LiveEventDataSource = {
-    listPublishedSlugs: async () => [{ slug: event.slug, createdAt: "2026-07-20T00:00:00.000Z" }],
     findPublishedEvent: async () => event,
     findViewer: async () => ({ hasPassport: false, reservation: null }),
     // The catalog's one read answers what the per-slug read answers.
-    listPublishedEvents: async ({ locale }) => (await Promise.all((await merged.listPublishedSlugs()).map(({ slug }) => merged.findPublishedEvent(slug, locale)))).filter((record): record is LiveEventRecord => record !== null),
+    listPublishedEvents: async ({ locale }) => (await Promise.all((await publishedSlugs()).map(({ slug }) => merged.findPublishedEvent(slug, locale)))).filter((record): record is LiveEventRecord => record !== null),
     findViewers: async (appUserId, events) => new Map(await Promise.all(events.map(async (record) => [record.id, await merged.findViewer(appUserId, record)] as const))),
   };
   const merged: LiveEventDataSource = { ...base, ...overrides };
@@ -78,55 +77,6 @@ describe("DefaultLiveEventRepository", () => {
     expect(result?.live.missionsAvailable).toBeNull();
     expect(result?.live.title).toBe(event.title);
   });
-  it("uses all published slugs and the same effective projection for Home", async () => {
-    const findPublishedEvent = vi.fn().mockResolvedValue(event);
-    const repository = new DefaultLiveEventRepository(source({
-      findPublishedEvent,
-    }));
-
-    const result = await repository.listFeaturedPublished({ locale: "ko", now: new Date("2026-07-21T00:00:00Z") });
-
-    expect(findPublishedEvent).toHaveBeenCalledWith(event.slug, "ko");
-    expect(result[0]?.live.slug).toBe(event.slug);
-    expect(result[0]?.live.effectiveStatus).toBe("scheduled");
-    expect(result[0]?.primaryAction).toBe("sign_in_to_reserve");
-  });
-
-  it("does not expose a Wave LIVE body in the public Home projection", async () => {
-    const repository = new DefaultLiveEventRepository(source({ findPublishedEvent: async () => ({ ...event, celebrity: { ...event.celebrity, slug: "kyaa-wave-fanpage" } }) }));
-    expect(await repository.listFeaturedPublished({ locale: "ko", now: new Date("2026-07-21T00:00:00Z") })).toEqual([]);
-  });
-
-  it("returns a truthful empty Home state when no published Live exists", async () => {
-    const repository = new DefaultLiveEventRepository(source({ listPublishedSlugs: async () => [] }));
-    await expect(repository.listFeaturedPublished({ locale: "ko", now: new Date() })).resolves.toEqual([]);
-  });
-
-  it("orders live first, then scheduled by start time, creation time, and slug while excluding ended events", async () => {
-    const records = new Map<string, LiveEventRecord>([
-      ["kara", { ...event, slug: "kara", sourceStatus: "live", startsAt: "2026-07-01T00:00:00.000Z", endsAt: "2026-09-01T00:00:00.000Z" }],
-      ["elina", { ...event, slug: "elina", startsAt: "2026-09-15T11:00:00.000Z", endsAt: "2026-09-15T12:00:00.000Z" }],
-      ["changha", { ...event, slug: "changha", startsAt: "2026-09-15T11:00:00.000Z", endsAt: "2026-09-15T12:00:00.000Z" }],
-      ["ended", { ...event, slug: "ended", sourceStatus: "ended", startsAt: "2026-07-01T00:00:00.000Z", endsAt: "2026-07-01T01:00:00.000Z" }],
-    ]);
-    const repository = new DefaultLiveEventRepository(source({
-      listPublishedSlugs: async () => [
-        { slug: "changha", createdAt: "2026-07-22T00:00:00.000Z" },
-        { slug: "ended", createdAt: "2026-07-18T00:00:00.000Z" },
-        { slug: "elina", createdAt: "2026-07-21T00:00:00.000Z" },
-        { slug: "kara", createdAt: "2026-07-20T00:00:00.000Z" },
-      ],
-      findPublishedEvent: async (slug) => records.get(slug) ?? null,
-    }));
-
-    const result = await repository.listFeaturedPublished({
-      locale: "ko",
-      now: new Date("2026-07-24T00:00:00.000Z"),
-    });
-
-    expect(result.map(({ live }) => live.slug)).toEqual(["kara", "elina", "changha"]);
-  });
-
   it("groups the public LIVE catalog and sorts replay by latest end time", async () => {
     const records = new Map<string, LiveEventRecord>([
       ["wave-private", { ...event, slug: "wave-private", celebrity: { ...event.celebrity, slug: "kyaa-wave-fanpage" }, sourceStatus: "live", startsAt: "2026-07-24T00:00:00.000Z", endsAt: "2026-08-01T00:00:00.000Z" }],
@@ -139,7 +89,7 @@ describe("DefaultLiveEventRepository", () => {
       ["channel-only", { ...event, slug: "channel-only", startsAt: "2026-07-01T00:00:00Z", sourceStatus: "ended", endsAt: "2026-07-01T01:00:00Z", replayPublished: true, replayProvider: "youtube", replayUrl: "https://www.youtube.com/@channel" }],
     ]);
     const repository = new DefaultLiveEventRepository(source({
-      listPublishedSlugs: async () => [...records.keys()].map((slug) => ({ slug, createdAt: "2026-07-01T00:00:00.000Z" })),
+      publishedSlugs: async () => [...records.keys()].map((slug) => ({ slug })),
       findPublishedEvent: async (slug) => records.get(slug) ?? null,
     }));
 
@@ -197,15 +147,16 @@ describe("DefaultLiveEventRepository", () => {
       { readLivePhotoSetsBySlug, readCelebrityPhotoSetsBySlug },
     );
 
-    const result = await repository.listFeaturedPublished({
+    const { upcoming } = await repository.listPublishedCatalog({
       locale: "ko",
+      appUserId: null,
       now: new Date("2026-07-21T00:00:00Z"),
     });
 
     expect(readLivePhotoSetsBySlug).toHaveBeenCalledExactlyOnceWith([event.slug]);
     expect(readCelebrityPhotoSetsBySlug).toHaveBeenCalledExactlyOnceWith([event.celebrity.slug]);
-    expect(result[0]?.live.photos).toEqual({ landscape: null });
-    expect(result[0]?.live.celebrity.photos).toEqual({ portrait: null });
+    expect(upcoming[0]?.live.photos).toEqual({ landscape: null });
+    expect(upcoming[0]?.live.celebrity.photos).toEqual({ portrait: null });
   });
 
   it("returns only the public localized projection for a guest", async () => {
@@ -318,7 +269,6 @@ describe("reservable recurring LIVE", () => {
     const result = await repository.findPublishedBySlug({ ...input, slug: event.slug });
     expect(result?.live.effectiveStatus).toBe("scheduled"); expect(result?.primaryAction).toBe("reservation_closed");
     expect(await repository.listPublishedCatalog(input)).toEqual({liveNow: [], upcoming: [], replay: []});
-    expect(await repository.listFeaturedPublished(input)).toEqual([]);
   });
   it("preserves explicit status overrides but does not treat a recurring channel as a recording", async () => {
     const repository = new DefaultLiveEventRepository(source({ findPublishedEvent: async () => ({ ...recurring, overrides: [{ effectiveStatus: "ended", effectiveFrom: "2026-07-24T12:00:00Z", effectiveUntil: null, createdAt: "2026-07-24T12:00:00Z" }] }) }));
