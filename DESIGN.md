@@ -16,6 +16,19 @@ radius-scale: "12px / 8px / pill"
 
 # 에이전트용 핵심 규칙 (2026-11-09 기준, 브리프 v1.1)
 
+## 사용자 규칙 4개 (DS-SWEEP, 2026-11-09 — 모든 화면 작업의 전제)
+
+1. **4차 배치 유지.** 화면 구성(블록 순서·개수·문구, 홈·헤더/셸·390 탭바·덕질·패스포트·모임·MY·글 상세·팬페이지)은 4차 55f260fd7 배치를 따른다. 디자인 시스템 정리는 면 색·굵기(400/700/800)·반경·그림자·호버 게이트만 바꾼다. 묶음마다 390 세로 총 높이 전후 차 ≤ 8px(빈 상태 축소분 제외), 블록 제목 배열 동일.
+2. **회색 채움 0(예외 없음, 감독 결정 2026-11-09 11:34).** 칩·레일·띠·카드·아이콘 타일·자리표시·스켈레톤·게이지 바탕 어디에도 무채색 면을 쓰지 않는다. 면은 흰색(`--color-surface`) 또는 핑크 틴트(`--color-accent-soft`)만. 호버·눌림 = `--color-accent-soft` 틴트 또는 `scale(.97)`, 호버는 `@media (hover: hover) and (pointer: fine)` 안에서만. 메뉴·탭 하이라이트 = 핑크 틴트 면 + 핑크 글자. 비활성 = 불투명도만(면 색 불변). 자리표시·게이지 바탕·시트 손잡이 = 핑크 틴트(`--color-accent-soft`/`-line`) 또는 헤어라인 원. 선·테두리는 `--color-line`(oklch 90%) 헤어라인만(면이 아니다). 회색 측정은 `lab()`·`oklch()`·`color-mix()`를 rgb로 환산해 센다. `--color-soft`는 정적 면에 쓰지 않는다(치환 뒤 삭제 예정).
+3. **블록 높이 고정(사용자 2026-11-09 11:02).** 데이터가 없어도 UI가 달라지면 안 된다. 목록형 블록은 설계 행 수로 고정하고 빈 행은 흐린 자리표시로 채운다. 블록 높이는 보통·적음·0건에서 같다(측정 0px 차). 블록을 숨기는 것은 설계에서 명시한 경우만이다.
+4. **헤더 동결.** 헤더·390 탭바의 요소 구성(K3·L11)은 바꾸지 않는다. 색·면 채움·굵기만 바꿀 수 있고, 글자 잘림은 어느 폭에서도 금지(360~1440 7폭에서 `scrollWidth > clientWidth` 0).
+
+### 공통 부품 정리 문장 (C16·C17·C18, 2026-11-09)
+
+- **C16 가져오기 경로.** 화면은 `components/fan-ui`의 부품을 파일 경로로 직접 import해도 된다. `components/fan-ui/index.ts`는 이름 목록이며 배럴 import를 강제하지 않는다(번들 분할·tree-shaking 때문, 일관성은 lint가 지킨다).
+- **C17 문서 내부 정정.** `FanSurface` 반경은 12(`--radius-card`), `FanNumber md`는 16(`--fan-item-title-size`, 게이트 C 뒤 15), 토스트 z-index는 1100(옛 모달 z 정리 T8 뒤 58). 삭제 예정 토큰은 지금 globals에 **별칭**으로 남은 단계이고 사용처 치환 전이다.
+- **C18 칸 높이.** `card-layout.md`의 46px는 행동·준비 칸의 최소 높이이며 값은 `FanAction` primary 높이(390 44·1024+ 48)를 따른다. 칸은 그보다 작지 않다. 숫자 두 개를 한 역할에 따로 적지 않는다.
+
 이 절만 읽고 작업할 수 있다. 아래 "상세 이력"은 근거 기록이며 삭제하지 않는다. 값은 홈·모임·덕질에서 같은 역할이면 같아야 한다. 층 1(이 표) 기준과 층 2(실측: `apps/web/scripts/measure-tab-parity.mjs`)를 함께 본다. "승인"은 아래 상세 이력 줄 또는 공통 소유자에 근거가 있는 값, "후보"는 근거가 약해 사용자 확인이 필요한 값이다.
 
 | 역할 | 기준 값 | 공통 소유자 | 근거 / 상태 |
@@ -44,7 +57,7 @@ radius-scale: "12px / 8px / pill"
 | 다크 모드 | 없음(light-only) | front matter `theme` | 승인 |
 | 페이지 머리(팬페이지) | 팬페이지 히어로(6차 적용): 390 높이 ≤ 첫 화면 1/3, 이름 26 + `팬 1.2K · ✓ 가입` 1줄 + 버튼 1 + SNS 줄, 이미지 반경 12 | `fan-page-header` | 2026-11-09 8장 block ④(6차) |
 | 별 버튼 | 높이 36, 반경 8, 12/700 | `fan-star-action` | 2026-11-09 R14 |
-| 유형·공지·인증 태그 | 상태 배지 `FanTag` 높이 20 알약 11/700, 팬페이지·인증 태그는 `--color-accent-soft`/`-ink`(강조색 1 안), 모임·취미는 `--color-soft`/muted | `fan-tag` | 2026-11-09 R14 |
+| 유형·공지·인증 태그 | 상태 배지 `FanTag` 높이 20 알약 11/700(현재 코드 22·12/700, 크기는 이번에 안 바꿈), 팬페이지·인증 태그는 `--color-accent-soft`/`-ink`(강조색 1 안), 모임·취미(`neutral`)·공지는 흰 면 + 1px `--color-line` + muted 글자(회색 면 금지, DS-SWEEP 2026-11-09) | `fan-tag` | 2026-11-09 R14 |
 | 페이지 카드·행 | 목표: `FanRow notice`(78, 사실 ≥ 2). **5차 보류**, 현재 소유자 = `FanEntityCard` | `fan-entity-card`(현재) | 2026-11-09 R5·R18. `FanRow`는 아직 없다(C15) |
 | 게시판 목록 행 | 목표: `FanRow notice` 78. **5차 보류**, 현재 소유자 = `FanPostRow` | `fan-post-row`(현재) | 2026-11-09 R5. `FanRow`는 아직 없다(C15) |
 | 로딩 | `FanSkeleton`만 쓴다. `불러오는 중` 글자와 `FanState kind="loading"`을 쓰지 않는다. 비로그인의 내 값 자리는 로딩이 아니라 `FanLockedValue`·`FanLockedRows`다. 스켈레톤은 실제 내용과 같은 자리·크기(로딩 전후 높이 차 0), 150ms 안에 값이 오거나 캐시가 있으면 그리지 않는다. 구역 제목은 실제 글자로 둔다. 캘린더는 날짜 칸을 바로 그리고 일정만 채운다. 바탕 #f2f0f3, 띠 #f9f8fa, 1.2초, 움직임 줄이기에서 멈춤 | `components/fan-ui/fan-skeleton.tsx` | 2026-11-07 [15][33] |
@@ -163,7 +176,7 @@ radius-scale: "12px / 8px / pill"
 | `FanTabs` | `underline` 44 sticky top 56(페이지·보조 탭), `chip` 36 반경 8(필터), `segment` 40 반경 8(같은 자료 2~3개 보기) | 링크 탭(`href`)은 라우터가 그린다 |
 | `FanState` | 빈 상태(`empty`)는 한 문장 전용(`icon`·`actions`·`description` 없음, 타입에서 막음, 높이 78 14/400 회색, 2026-11-09 design-sync-1). 페이지 전체가 빈 6곳(`my-raffles-screen`·`benefit-recipient-screen`·`fan-history-screen`·`home-ranking-card`·`participation-requests`·`notification-center`)만 게이트 D 전까지 `scope="page"`로 옛 280 틀 유지, 오류(`error`)는 한 문장 + `다시 시도` 텍스트, 잠금(`auth`)은 로그인 primary 1 허용 | `kind=\"loading\"`은 쓰지 않는다(C6) |
 | `FanSkeleton` · `FanSkeletonRows` | 로딩. 실제 자리·크기와 같게, 구역 제목은 글자로 둔다. 변형 post·entity·member·plain | `불러오는 중` 글자(C5) |
-| `FanSurface` | 카드·면의 바탕(1px 선, 반경 목표 12. 현재 `--radius-collection` 16, C1 ② 치환 전) | `FanCard`는 만들지 않았다(아래 "설계와 다르게 한 것") |
+| `FanSurface` | 카드·면의 바탕(1px 선, 반경 `--radius-card` 12. C17 정정: 문서의 "12/16"은 12) | `FanCard`는 만들지 않았다(아래 "설계와 다르게 한 것") |
 | `FanRow` (**5차 보류, 아직 없음**) | 목록 행 템플릿. variant `menu` 48·`setting` 65/81·`notice` 78·`transaction` 100/72·`label-value` 56·`mission` 64. `data-row` 자동, 오른쪽 칸 `data-row-end`, 사실 `data-fact`, 메타 `data-meta` | `FanEntityCard`·`FanPostRow`는 `FanRow notice`로 대체 |
 | `FanIcon` (신설, B 담당) | lucide 래퍼: `strokeWidth` 1.5, size 16·20·24, `data-icon`·`data-icon-set="lucide"`. 화면은 lucide를 직접 import하지 않는다(N25). 코인·티켓·하트 = `Coins`·`Ticket`·`Heart` | 도장 아트는 아이콘이 아니다(`data-art="stamp"`) |
 | `FanDot` (신설, B 담당) | 8px `--color-error` 점(`data-dot`). 헤더·탭바의 새 소식 | 숫자 배지 → 알림함 안 `읽지 않음 N`만 |
