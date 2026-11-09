@@ -14,7 +14,7 @@ import { rememberOverlayTrigger } from "@/components/ui/overlay/focus-return";
 import { type TargetType } from "@/features/fan-posts/domain/content";
 import { type AppLocale } from "@/i18n/locales";
 import { contentCopy } from "@/i18n/catalogs/features__fan_posts__ui";
-import { TranslationControl, useAutomaticTranslation, type AutomaticTranslation } from "./use-automatic-translation";
+import { TranslationControl, useAutomaticTranslation, type AutomaticTranslationState } from "./use-automatic-translation";
 import { useContentMutation } from "./use-content-mutation";
 import { useByUsSession } from "@/components/byus-session-provider";
 import styles from "./content.module.css";
@@ -71,7 +71,7 @@ function ActionsForOwner({ targetType, targetId, locale, onChanged, canBlock = t
 }
 
 /** The display of a translated text and its toggle, for a caller that owns the translation (a post's title follows its body). */
-export function ContentTranslationView({ translation: { observeElement, ...translation }, locale, children }: { translation: AutomaticTranslation; locale: AppLocale; children: ReactNode }) {
+export function ContentTranslationView({ translation, observeElement, locale, children }: { translation: AutomaticTranslationState; observeElement: (node: HTMLElement | null) => void; locale: AppLocale; children: ReactNode }) {
   return <div ref={observeElement} className={styles.translation}>
     {translation.showing ? <p className={styles.body} lang={locale}>{translation.texts[0]}</p> : children}
     <TranslationControl locale={locale} translation={translation} />
@@ -83,6 +83,6 @@ export function ContentTranslation({ targetType, targetId, locale, children, sou
 }) {
   const texts = useMemo(() => [sourceText], [sourceText]);
   const target = useMemo(() => ({ targetType, targetId, sourceRevision }), [targetType, targetId, sourceRevision]);
-  const translation = useAutomaticTranslation({ texts, locale, target });
-  return <ContentTranslationView translation={translation} locale={locale}>{children}</ContentTranslationView>;
+  const { observeElement, ...translation } = useAutomaticTranslation({ texts, locale, target });
+  return <ContentTranslationView translation={translation} observeElement={observeElement} locale={locale}>{children}</ContentTranslationView>;
 }

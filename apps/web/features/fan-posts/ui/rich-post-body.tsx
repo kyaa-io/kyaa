@@ -6,13 +6,13 @@ import { RichBody, type RichAttachmentRenderer } from "@/components/editor/rich-
 import { editorText } from "@/components/editor/editor-copy";
 import { richDocumentAttachments, type RichDocument } from "@/components/editor/rich-document";
 import { AuthenticatedMedia } from "@/features/content-safety/ui/authenticated-media";
-import { TranslationControl, type AutomaticTranslation } from "@/features/content-safety/ui/use-automatic-translation";
+import { TranslationControl, type AutomaticTranslationState } from "@/features/content-safety/ui/use-automatic-translation";
 import type { AppLocale } from "@/i18n/locales";
 import contentStyles from "@/features/content-safety/ui/content.module.css";
 import styles from "./post-detail.module.css";
 
 /** Formatted source text, or its translation as plain text with the post's media kept. The stored document never changes. */
-export function TranslatedRichPostBody({ document, translation: { observeElement, ...translation }, locale, renderAttachment }: { document: RichDocument; translation: AutomaticTranslation; locale: AppLocale; renderAttachment: RichAttachmentRenderer }) {
+export function TranslatedRichPostBody({ document, translation, observeElement, locale, renderAttachment }: { document: RichDocument; translation: AutomaticTranslationState; observeElement: (node: HTMLElement | null) => void; locale: AppLocale; renderAttachment: RichAttachmentRenderer }) {
   const attachments = useMemo(() => richDocumentAttachments(document), [document]);
   return <div ref={observeElement}>
     {translation.showing
