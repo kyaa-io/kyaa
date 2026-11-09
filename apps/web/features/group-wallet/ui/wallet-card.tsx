@@ -4,8 +4,6 @@ import Link from "next/link";
 import type { Route } from "next";
 import type { ReactNode } from "react";
 import { FanHeading } from "@/components/fan-ui/fan-heading";
-import { FanIcon } from "@/components/fan-ui/fan-icon";
-import { ChevronRight } from "@/components/fan-ui/fan-icons";
 import { FanLockedValue } from "@/components/fan-ui/fan-locked-value";
 import { FanSkeleton } from "@/components/fan-ui/fan-skeleton";
 import { dukjilText } from "@/features/dukjil/ui/dukjil-copy";
@@ -56,7 +54,7 @@ export function WalletCard({ locale, state, hearts, title, href, className }: { 
   const tickets: Slot = state.kind === "ready" ? state.tickets : points;
   const cells: [string, Slot, string | undefined][] = [[w.points, points, "P"], [w.tickets, tickets, locale === "ko" ? "장" : undefined], [dukjilText(locale, "stanFlowHearts"), state.kind === "ready" ? hearts : points, undefined]];
   return <Link href={href as Route} className={[styles.my, className].filter(Boolean).join(" ")} data-wallet-card="my" aria-label={title}>
-    <span className={styles.myHead}><FanHeading as="h2">{title}</FanHeading><FanIcon icon={ChevronRight} /></span>
+    <span className={styles.myHead}><FanHeading as="h2">{title}</FanHeading><span aria-hidden="true">›</span></span>
     <dl className={styles.myBalances}>{cells.map(([label, slot, unit]) => <div key={label} className={styles.myCell}><dt className={styles.label}>{label}</dt><Value locale={locale} slot={slot} unit={unit} compact className={styles.myValue} /></div>)}</dl>
   </Link>;
 }

@@ -70,7 +70,7 @@ export function StanWallet({ locale, state, stamps, hearts, links, className }: 
     <Cell cell="hearts" href={links.hearts}>
       <span className={styles.step}><span>{s("stanFlowHearts")}</span><Value locale={locale} slot={hearts} size="md" icon={<Heart size={16} strokeWidth={1.75} className={styles.heart} />} /><ChevronRight className={styles.next} size={16} aria-hidden="true" /></span>
     </Cell>
-    <Link className={styles.guide} href={`/guide/dukjil?locale=${locale}` as Route}>{s("stanGuide")}<ChevronRight size={16} aria-hidden="true" /></Link>
+    <Link className={styles.guide} href={`/guide/dukjil?locale=${locale}` as Route}>{s("stanGuide")}<span aria-hidden="true">›</span></Link>
     <div className={styles.action}>
       {state.kind === "guest" ? state.action
         : state.kind === "loading" ? <StanExchangeLoading locale={locale} />
