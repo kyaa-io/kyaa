@@ -1,5 +1,5 @@
 import { beforeAll, describe, expect, it, vi } from "vitest";
-import { createLocalJWKSet, exportJWK, exportPKCS8, generateKeyPair, SignJWT, type CryptoKey } from "jose";
+import { createLocalJWKSet, exportJWK, exportPKCS8, generateKeyPair, SignJWT } from "jose";
 vi.mock("server-only", () => ({}));
 import { GooglePlayDeveloperClient, GoogleStoreVerificationError, verifyGooglePurchase, verifyGoogleWebhookAuthorization } from "./google-verifier";
 
