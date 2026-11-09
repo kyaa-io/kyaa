@@ -138,7 +138,7 @@ test('daily critical checks reuse all suites and fail on any missing result', ()
 
 test('Foundry install is pinned, cached by version and retried with 10, 20 and 40 second waits', () => {
   const steps = backend.jobs.blockchain.steps;
-  const installs = steps.filter(step => step.uses === 'foundry-rs/foundry-toolchain@v1');
+  const installs = steps.filter(step => /^foundry-rs\/foundry-toolchain@[a-f0-9]{40}$/.test(step.uses ?? ''));
   assert.equal(installs.length, 4);
   for (const step of installs) assert.equal(step.with.version, 'v1.9.0');
   assert.deepEqual(installs.map(step => step['continue-on-error']), [true, true, true, false]);

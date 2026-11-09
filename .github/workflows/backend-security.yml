@@ -367,7 +367,7 @@ jobs:
       - run: sudo apt-get update && sudo apt-get install -y postgresql ripgrep
       - name: Restore the pinned Foundry binaries
         id: foundry-cache
-        uses: actions/cache@v4
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
         with:
           path: |
             ~/.foundry/bin
@@ -380,7 +380,7 @@ jobs:
         id: foundry1
         if: steps.foundry-cache.outputs.cache-hit != 'true'
         continue-on-error: true
-        uses: foundry-rs/foundry-toolchain@v1
+        uses: foundry-rs/foundry-toolchain@dba66c27052e63476d886f22216e119ba7e615bf # v1.9.2
         with:
           version: v1.9.0
       - name: Wait 10s before retrying the Foundry download
@@ -390,7 +390,7 @@ jobs:
         id: foundry2
         if: steps.foundry-cache.outputs.cache-hit != 'true' && steps.foundry1.outcome == 'failure'
         continue-on-error: true
-        uses: foundry-rs/foundry-toolchain@v1
+        uses: foundry-rs/foundry-toolchain@dba66c27052e63476d886f22216e119ba7e615bf # v1.9.2
         with:
           version: v1.9.0
       - name: Wait 20s before retrying the Foundry download
@@ -400,7 +400,7 @@ jobs:
         id: foundry3
         if: steps.foundry-cache.outputs.cache-hit != 'true' && steps.foundry2.outcome == 'failure'
         continue-on-error: true
-        uses: foundry-rs/foundry-toolchain@v1
+        uses: foundry-rs/foundry-toolchain@dba66c27052e63476d886f22216e119ba7e615bf # v1.9.2
         with:
           version: v1.9.0
       - name: Wait 40s before retrying the Foundry download
@@ -410,7 +410,7 @@ jobs:
         id: foundry4
         if: steps.foundry-cache.outputs.cache-hit != 'true' && steps.foundry3.outcome == 'failure'
         continue-on-error: false
-        uses: foundry-rs/foundry-toolchain@v1
+        uses: foundry-rs/foundry-toolchain@dba66c27052e63476d886f22216e119ba7e615bf # v1.9.2
         with:
           version: v1.9.0
       - name: Require the pinned Foundry
