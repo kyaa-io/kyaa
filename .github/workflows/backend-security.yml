@@ -186,6 +186,14 @@ jobs:
           BYUS_CLEAN_DB_PORT=55551 \
           BYUS_CLEAN_DB_ASSERTION_FILE="$PWD/supabase/tests/passport/passport_proof_after_claim.sql" \
           bash scripts/verify-clean-migration-chain.sh
+      - name: Verify the B3 cheer, Instagram repost and tier bonus payouts
+        if: matrix.suite == 'core'
+        run: |
+          export PATH="$(pg_config --bindir):$PATH"
+          BYUS_CLEAN_DB_PORT=55552 \
+          BYUS_CLEAN_DB_ASSERTION_FILE="$PWD/supabase/tests/dukjil/dukjil_b3.sql" \
+          BYUS_CLEAN_DB_SHELL_ASSERTION_FILE="$PWD/supabase/tests/dukjil/dukjil_b3_concurrency.sh" \
+          bash scripts/verify-clean-migration-chain.sh
       - name: Verify creator raffle eligibility and ownership concurrency
         if: matrix.suite == 'events'
         run: |
