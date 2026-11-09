@@ -271,7 +271,7 @@
 .photograph img{display:block;width:100%;height:100%;object-fit:cover;object-position:center top}
 .slide .copy{grid-area:1/1;position:relative;align-self:end;min-width:0;width:100%;box-sizing:border-box;display:flex;align-items:end;justify-content:space-between;gap:16px;padding:32px;background:color-mix(in srgb, var(--color-ink) 80%, transparent)}
 .slide .copy h2,.slide .copy p,.slide .category{color:var(--color-surface)!important}
-@media(max-width:1023px){.track .slide::before{padding-top:83.333333%}.slide .copy{padding:12px;gap:8px;flex-wrap:wrap}.slide .copy h2{font-size:20px!important;line-height:24px}.slide .copy p{font-size:13px}:where(.copy) p{line-height:18px}.slide .copy a{min-height:44px}}
+@media(max-width:1023px){.track .slide::before{padding-top:83.333333%}.slide .copy{padding:12px;gap:8px;flex-wrap:wrap}.slide .copy h2{font-size:20px!important;line-height:24px}.slide .copy p{font-size:13px;line-height:18px}.slide .copy a{min-height:44px}}
 
 .track .slide{outline:1px solid var(--color-line);outline-offset:-1px}
 

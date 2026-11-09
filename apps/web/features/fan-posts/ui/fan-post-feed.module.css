@@ -35,7 +35,7 @@
 .pageNumbers{display:flex;justify-content:center;gap:4px;padding:12px 0;margin-top:12px}
 .pageNumbers button{display:grid;place-items:center;min-width:44px;height:44px;padding:0 10px;border:1px solid transparent;border-radius:10px;background:var(--color-surface);color:var(--color-muted);cursor:pointer}
 .pageNumbers button[aria-current=page]{border-color:var(--color-accent);background:var(--color-accent-soft);color:var(--color-accent-ink)}
-.pageNumbers button:disabled{cursor:default;color:var(--fan-action-disabled-ink)}
+.pageNumbers button:disabled{opacity:.4;cursor:default}
 
 .compact .filters a[aria-current=page]{background:var(--color-accent-soft);color:var(--color-accent-ink)}.compactHeading p{flex-basis:100%}
 

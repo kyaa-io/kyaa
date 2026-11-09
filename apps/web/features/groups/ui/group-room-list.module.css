@@ -33,7 +33,7 @@
 .cardMain { display: flex; flex: 1; align-items: center; gap: var(--space-3); box-sizing: border-box; min-width: 0; min-height: 72px; padding: var(--space-3) var(--space-4); border: 0; border-radius: inherit; background: transparent; color: inherit; font: inherit; text-align: left; text-decoration: none; cursor: pointer; }
 .cardMain[data-static="true"] { cursor: default; }
 .cardMain:focus-visible { outline: var(--focus-width) solid var(--color-focus); outline-offset: calc(var(--focus-offset) * -1); }
-.cardMain:disabled {cursor: default;color:var(--fan-action-disabled-ink)}
+.cardMain:disabled { cursor: default; opacity: .6; }
 .icon { display: grid; flex: none; width: 40px; height: 40px; place-items: center; border-radius: 50%; background: var(--color-surface-focus); color: var(--color-service-ink); }
 .card[data-locked="true"] .icon { background: var(--color-soft); color: var(--color-muted); }
 .content { display: grid; flex: 1; min-width: 0; gap: var(--space-1); }

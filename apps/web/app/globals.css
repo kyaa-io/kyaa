@@ -15,9 +15,6 @@
   --color-muted: oklch(48% 0 0);
   --color-line: oklch(90% 0 0);
   --color-line-subtle: oklch(93% 0 0);
-  --fan-action-disabled-bg: #fff;
-  --fan-action-disabled-ink: oklch(64% 0 0);
-  --fan-action-disabled-text-ink: #6b6b6b;
   /* 공통 부품의 비활성: 면·글자색은 그대로 두고 불투명도만 낮춘다(U-1 결정). */
   --fan-disabled-opacity: .4;
   /* 버튼 눌림(:active): 색만 바뀐다(DESIGN 3장 '버튼 누름', 이동 0). 흰 면 버튼의 눌림·호버는 회색이 아니라 핑크 틴트(U-1). */

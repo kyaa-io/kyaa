@@ -118,6 +118,11 @@ describe("FanAction icon layout contract", () => {
     expect(actionCss).not.toMatch(/:disabled[^{]*\{[^}]*background:\s*var\(--fan-action-disabled-bg\)/);
   });
 
+  it("keeps every disabled rule in the screens opacity-only and moves no button on hover", () => {
+    expect(readFileSync(resolve(process.cwd(), "app/globals.css"), "utf8")).not.toMatch(/--fan-action-disabled-/);
+    expect(actionCss).not.toMatch(/:hover[^{]*\{[^}]*translateY/);
+  });
+
   it("never paints grey: hover and press use the pink tint", () => {
     expect(actionCss).not.toMatch(/var\(--color-soft\)|var\(--color-line-subtle\)/);
     expect(actionCss).toMatch(/\.neutral:hover:not\(:disabled\),\s*\.text:hover:not\(:disabled\) \{\s*background: var\(--color-accent-soft\);/);

@@ -123,7 +123,7 @@ radius-scale: "12px / 8px / pill"
 | **강조 1색**(primary 채움·선택·활성 밑줄·링크·게이지 채움·하트) | #d11b62 / soft #fff0f6 / line #f4c3d7 / ink #ad1457 | `--color-accent`, `-soft`, `-line`, `-ink` |
 | 팬페이지 대표색 | 기본 = `--color-accent`. 페이지 설정값이 이 1토큰만 바꾼다(활성 밑줄·주 버튼·게이지) | `--color-page-accent` |
 | 상태색 | 빨강 1 #9f1239(오류·LIVE·알림 점). 성공은 체크 아이콘 + 잉크. 경고·순위 배지 글자 `--color-warning` #7a4206(2026-11-09, 옛 #8a4b08은 자기 30% 틴트 위 4.22:1이라 4.84:1로 어둡게) | `--color-error`, `--color-warning` |
-| 비활성 | 공통 부품은 면·글자색을 그대로 두고 불투명도만 `--fan-disabled-opacity`(.4)로 낮춘다(2026-11-09 U-1). 커서 `not-allowed`·`aria-disabled`는 유지. `--fan-action-disabled-*` 회색 값은 `FanAction` 호출부 호환용으로만 남는다 | `--fan-disabled-opacity` |
+| 비활성 | 공통 부품은 면·글자색을 그대로 두고 불투명도만 `--fan-disabled-opacity`(.4)로 낮춘다(2026-11-09 U-1). 커서 `not-allowed`·`aria-disabled`는 유지. 화면 CSS도 같다: 비활성 규칙에 회색 글자·흰 면·`--color-soft` 바탕을 쓰지 않고 `opacity`만 쓴다(옛 `--fan-action-disabled-*` 토큰은 삭제). 호버·눌림에 위치 이동 0 | `--fan-disabled-opacity` |
 | 백드롭 · 포커스 링 | rgb(23 23 26 / 42%) · `--color-ink` 3px/3px | `--color-backdrop`, `--color-focus`, `--focus-width`, `--focus-offset` |
 | 폐기 | 3색 그라데이션 `--color-primary-action`(로고 아트 제외), 코인 노랑 `--color-coin(-ink)`(→ lucide `Coins` 선 아이콘 + 잉크 글자), 금박 `--color-foil`(패스포트 삽화는 이미지 안에서만), 보라 `--color-service-ink`(→ `--color-page-accent`), `--color-surface-focus`(→ `--color-soft`), `--color-success`·`--color-warning`(→ 잉크) | 예정: 모두 globals에 남아 있다. `--color-primary-action`은 2026-11-09 design-sync-1에서 삭제(사용처 10파일을 `--color-accent`로 치환, 값 동일). `--color-service-ink`·`--color-surface-focus`는 별칭 단계(값이 accent 계열과 같음), 코인·금박·성공·경고는 원래 값. 사용처 치환 전 |
 
@@ -1644,7 +1644,7 @@ UI018 섹션 구분은 흰 배경과 기존 경계색을 유지하며 자산 요
 
 ## 2026-11-04 버튼·내역·MY 홈 갱신
 
-- 비활성 토큰(`app/globals.css :root`): `--fan-action-disabled-bg #e4e1e6`, `--fan-action-disabled-ink #5d5d5d`(배경 대비 5.1:1, 계산값), `--fan-action-disabled-text-ink #6b6b6b`(text 변형, 흰 배경 대비 약 5.3:1, 계산값·브라우저 실측 아님). 화면 모듈은 직접 색을 쓰지 않는다. 별도로 필요한 토큰은 아직 없다.
+- (2026-11-09 삭제: 비활성은 불투명도만, 아래 토큰은 더 쓰지 않는다) 비활성 토큰(`app/globals.css :root`): `--fan-action-disabled-bg #e4e1e6`, `--fan-action-disabled-ink #5d5d5d`(배경 대비 5.1:1, 계산값), `--fan-action-disabled-text-ink #6b6b6b`(text 변형, 흰 배경 대비 약 5.3:1, 계산값·브라우저 실측 아님). 화면 모듈은 직접 색을 쓰지 않는다. 별도로 필요한 토큰은 아직 없다.
 - FanAction 로딩 스피너는 절대 배치가 아니라 라벨 뒤 flex 자식이며 trailing 아이콘 자리를 대신한다(글자·아이콘과 겹치지 않는다). 패딩은 `8px 18px`, 최소 높이 44px이다. Link 분기는 비활성·로딩이 불가하다. 아이콘은 반드시 `leadingIcon`/`trailingIcon`으로 넘긴다(자식으로 넣으면 글자 위에 쌓인다).
 - 공통 오류 화면 "다시 시도"는 `leadingIcon`으로 글자 앞에 한 줄로 놓는다.
 - 덕질 홈 제목 행에 짧은 `내역` 링크 하나만 둔다(`/my/wallet#wallet-history`). 잔액 요약 카드에는 내역 버튼이 없다. 이동 링크는 text FanAction이며 화살표는 제목 행 오른쪽이다.

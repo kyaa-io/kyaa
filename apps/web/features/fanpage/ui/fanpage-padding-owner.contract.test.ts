@@ -26,3 +26,11 @@ describe("fan page main top padding owner", () => {
     expect(read("features/groups/ui/group-page-frame.tsx")).toMatch(/id="celebrity-detail-main" className=\{`\$\{fanpageStyles\.page\} \$\{brand \? styles\.page : styles\.creatorPage\}`\}/);
   });
 });
+
+// review-2 (2026-11-09): lowering `.slide .copy p` to :where(.copy) p let groups `.page p{line-height:1.5}` win, so the
+// carousel blurb became 19.5px instead of 18px below 1024px. The 18px rule keeps its own specificity.
+describe("groups discovery carousel blurb line height", () => {
+  it("keeps the below-1024 blurb at 18px on `.slide .copy p`", () => {
+    expect(read("features/groups/ui/discovery-carousel.module.css")).toMatch(/@media\(max-width:1023px\)\{[^@]*\.slide \.copy p\{font-size:13px;line-height:18px\}/);
+  });
+});

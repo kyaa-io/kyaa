@@ -204,7 +204,6 @@
 @media (hover: hover) and (pointer: fine) {
   .primary:hover:not(:disabled) {
     filter: brightness(0.92);
-    transform: translateY(-1px);
   }
 
   .neutral:hover:not(:disabled),
