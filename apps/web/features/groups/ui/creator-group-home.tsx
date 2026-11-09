@@ -24,7 +24,7 @@ import {CreatorGroupHomeAside} from './creator-group-home-aside';
 import {boardCopy} from './board-copy';
 import {managementCopy} from './management-copy';
 import type {Route} from 'next';
-import {BookOpen,Stamp,Pencil,ArrowRight,ChevronLeft,ChevronRight} from 'lucide-react';
+import {BookOpen,Pencil,ArrowRight,ChevronLeft,ChevronRight} from 'lucide-react';
 // The section 전체 보기 arrow is the shared FanSectionHeader one (갤러리 above uses it), not lucide's heavier arrow.
 import {ArrowRight as SectionArrow} from '@/components/icons';
 import {FanAction} from '@/components/fan-ui/fan-action';
@@ -76,7 +76,7 @@ export function CreatorGroupHome({celebrity,locale,channelId,passportId,owned,on
   </section>
   {!brand&&<BannerSlot slot='fanpage_second' locale={locale}/>}
   <div className={styles.mobileParticipation}>{compact&&<><JjinfanGauge slug={celebrity.slug} locale={locale}/><FanMissions locale={locale} slug={celebrity.slug} title={locale==='ko'?'팬 활동':t.activities} passportHref={passportHref} proofHref={proofHref} onAttendance={trigger=>{attendanceTrigger.current=trigger;setAttendanceOpen(true);}}/></>}<CreatorScheduleCard celebrity={celebrity} locale={locale} schedule={schedule}/></div>
-  <nav className={styles.creatorShortcuts} aria-label={c.activity}><FanAction href={`/my/wallet?view=attendance&locale=${locale}`} onClick={event=>{if(event.defaultPrevented||event.button!==0||event.metaKey||event.ctrlKey||event.shiftKey||event.altKey||event.currentTarget.target||event.currentTarget.hasAttribute('download'))return;event.preventDefault();attendanceTrigger.current=event.currentTarget;setAttendanceOpen(true);}} leadingIcon={<Stamp/>}>{c.stamps}</FanAction><FanAction href={passportHref} leadingIcon={<BookOpen/>}>{w.passport}</FanAction></nav>
+  <nav className={styles.creatorShortcuts} aria-label={c.activity}><FanAction href={`/my/wallet?view=attendance&locale=${locale}`} onClick={event=>{if(event.defaultPrevented||event.button!==0||event.metaKey||event.ctrlKey||event.shiftKey||event.altKey||event.currentTarget.target||event.currentTarget.hasAttribute('download'))return;event.preventDefault();attendanceTrigger.current=event.currentTarget;setAttendanceOpen(true);}} leadingIcon={<span className={styles.shortcutStamp} data-art="stamp"/>}>{c.stamps}</FanAction><FanAction href={passportHref} leadingIcon={<BookOpen/>}>{w.passport}</FanAction></nav>
  </div>{attendanceOpen&&<CreatorAttendanceEntry slug={celebrity.slug} pageName={celebrity.name} locale={locale} reviewHref={`/c/${encodeURIComponent(celebrity.slug)}/verify?locale=${locale}`} onClose={()=>{setAttendanceOpen(false);requestAnimationFrame(()=>attendanceTrigger.current?.focus());}}/>}<CreatorGroupHomeAside celebrity={celebrity} schedule={schedule} slug={celebrity.slug} locale={locale} passportId={passportId} owned={owned}/></div></DukjilProvider>;
 }
 
