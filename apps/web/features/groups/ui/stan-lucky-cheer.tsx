@@ -2,12 +2,13 @@
 import Link from "next/link";
 import type { Route } from "next";
 import { ArrowRight, Heart } from "lucide-react";
+import { FanIcon } from "@/components/fan-ui/fan-icon";
+import { UsersRound } from "@/components/fan-ui/fan-icons";
 import { useEffect, useState, type ReactNode } from "react";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import { FanCount } from "@/components/fan-ui/fan-count-chip";
 import { FanHeading } from "@/components/fan-ui/fan-heading";
 import { FanLockedValue } from "@/components/fan-ui/fan-locked-value";
-import { FanNumber } from "@/components/fan-ui/fan-number";
 import { FanSkeleton } from "@/components/fan-ui/fan-skeleton";
 import { FanState } from "@/components/fan-ui/fan-state";
 import { fanLoginHref } from "@/components/login-href";
@@ -172,7 +173,7 @@ export function StanLucky({ locale, bias, guest }: { locale: AppLocale; bias: Se
 
 /** 최애 응원 (E4, user decision: cheering spends nothing): my hearts already count toward the favorite's rank, so the card shows that rank,
  * my share and the way to the fan ranking. No send button. F2: the stamps to the next heart live in the wallet's stamp cell only (one value, one shape). */
-export function StanCheer({ locale, bias, guest, hearts }: { locale: AppLocale; bias: SelectedBias; guest: boolean; hearts: number | null }) {
+export function StanCheer({ locale, bias, guest }: { locale: AppLocale; bias: SelectedBias; guest: boolean }) {
   const favorite = guest ? null : stanFavorite(bias), slug = favorite?.slug ?? null, title = t(locale, "stanFlowCheer");
   const rank = useStanRank(locale, slug), selected = bias.selected && bias.selected.slug === slug ? bias.selected : null;
   const login = fanLoginHref(locale, `/benefits?locale=${locale}`);
@@ -190,10 +191,11 @@ export function StanCheer({ locale, bias, guest, hearts }: { locale: AppLocale; 
     <div className={`${styles.head} ${styles.plainHead}`}><FanHeading id="stan-cheer-title">{title}</FanHeading></div>
     <div className={styles.cheer} data-cheer={guest ? "guest" : favorite ? "favorite" : "pick"}>
       {head}
-      <dl className={styles.numbers}>
-        <div><dt>{t(locale, "cheerMyHearts")}</dt><dd>{guest ? <FanLockedValue locale={locale} /> : hearts === null ? <FanSkeleton width={48} height={24} /> : <FanNumber value={hearts} size="lg" countUp locale={locale} icon={heartIcon} />}</dd></div>
-        {rank.row ? <div><dt>{rankingsText(locale, "rkCumulativeFans")} · {rankingsText(locale, "rkCumulativeHearts")}</dt><dd className={styles.community}>{rank.row.score.toLocaleString(locale)} · {heartIcon}{rank.row.hearts.toLocaleString(locale)}</dd></div> : null}
-      </dl>
+      {/* jinny 5: the words give way to the icons; the names stay for assistive tech. */}
+      {rank.row ? <dl className={styles.numbers}>
+        <div><dt className={styles.srOnly}>{rankingsText(locale, "rkCumulativeFans")}</dt><dd className={styles.community}><FanIcon icon={UsersRound} size={16} />{rank.row.score.toLocaleString(locale)}</dd></div>
+        <div><dt className={styles.srOnly}>{rankingsText(locale, "rkCumulativeHearts")}</dt><dd className={styles.community}>{heartIcon}{rank.row.hearts.toLocaleString(locale)}</dd></div>
+      </dl> : null}
       <FanAction variant="secondary" size="sm" fullWidth className={styles.action} trailingIcon={<ArrowRight />} href={guest ? login : slug ? `/${encodeURIComponent(slug)}?tab=fans&locale=${locale}` : `/pages/groups?locale=${locale}`}>{guest || !slug ? t(locale, "heartPick") : t(locale, "cheerFanRanking")}</FanAction>
     </div>
   </section>;

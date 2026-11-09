@@ -41,15 +41,15 @@
 @keyframes todayPulse{0%,100%{opacity:1}50%{opacity:.55}}
 @media(prefers-reduced-motion:reduce){.todaySkeleton i{animation:none}}
 
-/* From 1024px the rows become two-column tiles (same card role as the wallet card, 12px apart); an odd count leaves the last cell empty. */
+/* From 1024px the rows sit in two columns (jinny 2, 2026-11-09: rows over a hairline, no tile cards); an odd count leaves the last cell empty. */
 @media(min-width:64rem){
- .todayRows{grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--space-3)}
- .todayRows .row{box-sizing:border-box;min-height:68px;gap:var(--space-2);padding:var(--space-3) var(--space-2);border:1px solid var(--color-line);border-radius:var(--radius-control);background:var(--color-surface)}
+ .todayRows{grid-template-columns:repeat(2,minmax(0,1fr));column-gap:var(--space-8)}
+ .todayRows .row{box-sizing:border-box;min-height:68px;gap:var(--space-2);padding:var(--space-3) 0}
  .todayRows .rowAction{min-width:0;padding-inline:var(--space-3)}
  .todaySkeleton>div{grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--space-3)}
- .todaySkeleton>div>div{height:70px;padding:var(--space-3);border:1px solid var(--color-line);border-radius:var(--radius-control)}
+ .todaySkeleton>div>div{height:70px;padding:var(--space-3) 0;border-bottom:1px solid var(--color-line-subtle)}
 }
-@media(min-width:80rem){.todayRows .row{gap:var(--space-3);padding:var(--space-3)}.todayRows .rowAction{min-width:96px;padding-inline:var(--space-4)}}
+@media(min-width:80rem){.todayRows .row{gap:var(--space-3);padding:var(--space-3) 0}.todayRows .rowAction{min-width:96px;padding-inline:var(--space-4)}}
 .todayRows .rowText strong{word-break:keep-all}
 @media(min-width:64rem){.todayRows:has(>li:only-child){grid-template-columns:minmax(0,1fr)}}
 
@@ -83,8 +83,8 @@
 .checkinDone{display:flex;align-items:center;gap:var(--space-2);margin:0;padding:var(--space-3) var(--space-4);border:1px solid var(--color-line);border-radius:var(--radius-control);background:var(--color-soft);color:var(--color-ink);font-size:var(--fan-action-emphasis-size);line-height:22px;font-weight:var(--fan-item-title-weight)}
 .checkinDone>svg{flex:none}.checkinDone>span:not([data-earn-badge]){flex:1;min-width:0}
 
-/* 연속 일수 띠 on the 덕질 tab (foundation 3.16 1). Same outline as the tiles below it. */
-.streakBand{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:var(--space-2) var(--space-4);width:100%;box-sizing:border-box;padding:var(--space-3) var(--space-4);border:1px solid var(--color-line);border-radius:var(--radius-control);background:var(--color-surface);color:inherit;font:inherit;text-align:start;cursor:pointer}
+/* 연속 일수 띠 on the 덕질 tab (foundation 3.16 1). A row between hairlines like the rows below it (jinny 2: no box). */
+.streakBand{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:var(--space-2) var(--space-4);width:100%;box-sizing:border-box;padding:var(--space-3) 0;border:0;border-block:1px solid var(--color-line);border-block-end-color:var(--color-line-subtle);background:var(--color-surface);color:inherit;font:inherit;text-align:start;cursor:pointer}
 .streakBand:focus-visible{outline:2px solid var(--dukjil-ink);outline-offset:2px}
 .streakBand{text-decoration:none}
 .streakOwner{display:flex;flex:1 1 auto;align-items:center;gap:var(--space-2);min-width:0}

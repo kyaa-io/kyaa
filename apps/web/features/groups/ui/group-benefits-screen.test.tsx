@@ -132,12 +132,12 @@ it('F5: with nothing open or upcoming, past draws sit under 지난 럭키드로�
  expect(within(cards[0]).getByRole('link',{name:/결과 보기/})).toBeInTheDocument();
  expect(within(section).queryByRole('link',{name:/전체 보기/})).toBeNull();
 });
-it('E4 · F2: the cheer card shows the favorite’s creator rank, my hearts (the header’s number) and the community numbers, with no send button and no stamp gauge (the wallet has it)',async()=>{
+it('E4 · F2 · jinny 5: the cheer block shows the favorite’s creator rank and the community numbers (icons, names for assistive tech); my hearts live in the wallet only; no send button, no stamp gauge',async()=>{
  withFavorite();roadmapBody={passportId:uid(900),celebrityId:uid(901),hearts:3,pages:[{pageNo:1,slots:Array.from({length:9},(_,i)=>({slotNo:i+1,kind:null,state:i<4?'filled':'empty',stampId:null,clearedAt:null})),filled:4,claimable:false,claimed:false,locked:false,lockedReason:null}]};
  const view=render(<GroupBenefitsScreen locale='ko'/>);
  const card=await screen.findByRole('region',{name:'최애 응원'});
  await within(card).findByText('크리에이터 순위 3위');
- expect(card).toHaveTextContent('내 하트');expect(card).toHaveTextContent('3');expect(card).toHaveTextContent('125');expect(card).toHaveTextContent('795');
+ expect(card).not.toHaveTextContent('내 하트');expect(card).toHaveTextContent('125');expect(card).toHaveTextContent('795');expect(within(card).getByText('찐팬 수')).toBeInTheDocument();
  expect(within(card).getByRole('link',{name:/팬 순위 보기/})).toHaveAttribute('href','/bias-x?tab=fans&locale=ko');
  expect(within(card).queryByRole('progressbar')).toBeNull();expect(card).not.toHaveTextContent('다음 하트까지');
  expect(within(card).queryByRole('button',{name:/보내기|응원하러/})).toBeNull();
@@ -327,13 +327,13 @@ it('shows guests a locked history block under the same heading with no tabs or l
  const section=await screen.findByRole('region',{name:'내역'});expect(within(section).getByRole('heading',{name:'내역'})).toBeInTheDocument();
  expect(section.querySelectorAll('[aria-hidden="true"] > div')).toHaveLength(3);expect(within(section).queryByRole('link')).toBeNull();expect(within(section).queryByText('아직 내역이 없어요')).toBeNull();
 });
-it('shows guests the spotlight pages as 오늘의 덕질 tiles with a login check-in and the public point policy',async()=>{
+it('shows guests the spotlight pages as 오늘의 덕질 tiles with a login check-in and the guide link (the points live on the mission rows, jinny 5)',async()=>{
  auth.authenticated=false;empty=true;spotlightCount=4;render(<GroupBenefitsScreen locale='ko'/>);
  await screen.findByText('Creator 4');const section=screen.getByRole('region',{name:'오늘의 덕질'});
  expect(within(section).getAllByRole('listitem')).toHaveLength(4);expect(within(section).getAllByText('팬 1,200,000')).toHaveLength(4);
  const checkIns=within(section).getAllByRole('link',{name:'출석체크'});expect(checkIns).toHaveLength(4);
  for(const link of checkIns){expect(link).toHaveAttribute('href','/login?returnTo=%2Fbenefits%3Flocale%3Dko&locale=ko');expect(link).not.toHaveAttribute('data-fan-action-emphasis','primary');}
- expect(within(section).getByText('출석 2P · 글쓰기 20P · 댓글 3P · 공유 10P')).toBeInTheDocument();
+ expect(section).not.toHaveTextContent('출석 2P · 글쓰기 20P');
  expect(within(section).getByRole('link',{name:'덕질하는 법 보기'})).toHaveAttribute('href','/guide/dukjil?locale=ko');
  expect(requests.some(url=>url.includes('/api/me/'))).toBe(false);
 });

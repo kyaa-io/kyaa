@@ -149,14 +149,13 @@ section.pWallet{position:relative;box-sizing:border-box;border:1px solid var(--c
 .main{order:3}
 .pMissions{order:3}.pLucky{order:4}.pCheer{order:5}.pToday{order:6}.pHistoryWrap,.pGuestHistory{order:7}
 .pLucky[hidden],.pCheer[hidden]{display:none}
-/* 내역: 머리(최애 응원과 같은 제목) 아래 카드 하나. 로그인 카드는 wallet.module.css .historyCard, 비로그인은 같은 외곽에 잠긴 행 3. */
+/* 내역: 머리(최애 응원과 같은 제목) 아래 구분선 사이 행(jinny 2, 카드 아님). 로그인은 wallet.module.css .historyCard, 비로그인은 같은 선 사이에 잠긴 행 3. */
 .pHistoryWrap,.pGuestHistory{min-width:0;scroll-margin-top:var(--space-16,64px)}
 .pHistoryWrap:focus,.pGuestHistory:focus{outline:none}
 .pHistoryWrap[hidden]{display:none}
 .pGuestHistorySection{display:grid;gap:var(--space-2)}
 .guestHistoryHead{display:flex;align-items:center;justify-content:space-between;gap:var(--space-3);min-height:var(--min-target)}
-.guestHistoryCard{box-sizing:border-box;min-width:0;padding:var(--space-3) var(--space-4);border:1px solid var(--color-line);border-radius:var(--radius-control);background:var(--color-surface)}
-@media(min-width:768px){.guestHistoryCard{padding-inline:var(--space-5)}}
+.guestHistoryCard{box-sizing:border-box;min-width:0;padding:var(--space-3) 0;border-block:1px solid var(--color-line)}
 @media(min-width:1024px){
  .page{display:grid;grid-template-columns:minmax(0,640px) 352px;justify-content:center;grid-template-areas:"alert alert" "top top" "main side";column-gap:var(--space-8);row-gap:var(--space-8);align-items:start}
  .page:not(:has(> .alertList)){grid-template-areas:"top top" "main side"}

@@ -145,10 +145,8 @@ export function GuestAttendanceList({ locale, title, loginHref, guideHref, empty
   useEffect(() => { if (!list.loading) callbacks.current?.(failed, () => retryRef.current()); }, [list.loading, failed]);
   if (list.loading && !list.data) return <AttendanceSkeleton title={title} label={c.loading} />;
   const pages = (list.data?.items ?? []).slice(0, GUEST_TILES);
-  const policy = POLICY_ACTIONS.flatMap(([action, label]) => {
-    const points = (catalog?.rules[action] as { points?: unknown } | undefined)?.points;
-    return typeof points === "number" ? [`${dukjilText(locale, label)} ${points.toLocaleString(locale)}P`] : [];
-  });
+  // jinny 5: the points per activity are on the mission rows above; this section keeps only the way to the guide while the policy is on.
+  const policyOn = POLICY_ACTIONS.some(([action]) => typeof (catalog?.rules[action] as { points?: unknown } | undefined)?.points === "number");
   return (
     <section className={styles.todaySection} aria-label={title}>
       <div className={styles.todayHead}><FanHeading>{title}</FanHeading></div>
@@ -164,9 +162,8 @@ export function GuestAttendanceList({ locale, title, loginHref, guideHref, empty
             <FanAction className={styles.rowAction} variant="neutral" href={loginHref}>{c.attendance}</FanAction>
           </li>
         ))}</ul>}
-      {!failed && policy.length > 0 && (
+      {!failed && policyOn && (
         <div className={styles.todayPolicy}>
-          <p>{policy.join(" · ")}</p>
           <FanAction variant="text" trailingIcon={<ArrowRight />} href={guideHref}>{guideText(locale, "dkgLinkDukjil")}</FanAction>
         </div>
       )}

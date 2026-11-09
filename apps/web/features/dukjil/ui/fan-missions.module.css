@@ -1,23 +1,29 @@
 /* 팬 활동·오늘의 미션 card. One outlined card, one FanMissionRow per activity (F3: row 64, circle 40, trailing 96/120). */
 .section{display:grid;gap:var(--space-3);min-width:0}
 .head{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:var(--space-1) var(--space-3);min-width:0}
-.head h2{margin:0;font-size:var(--fan-heading-size);line-height:28px;font-weight:var(--fan-heading-weight);letter-spacing:var(--fan-heading-tracking);overflow-wrap:anywhere}
+/* 게이트 C2: section titles are 18/700 at every width, like FanHeading beside it. */
+.head h2{margin:0;font-size:var(--fan-section-size);line-height:var(--fan-heading-leading);font-weight:var(--fan-section-weight);letter-spacing:var(--fan-heading-tracking);overflow-wrap:anywhere}
 .summary{display:flex;flex-wrap:wrap;align-items:center;gap:var(--space-1) var(--space-2);min-width:0;color:var(--color-muted);font-size:var(--fan-metadata-size);line-height:20px;font-weight:700;font-variant-numeric:tabular-nums}
 .cards{display:grid;margin:0;padding:0;list-style:none;border:1px solid var(--color-line);border-radius:var(--radius-control);overflow:hidden;background:var(--color-surface)}
 /* The line under a title: progress at the title's x, count on its right, inside the row's 64. */
 .progress{display:flex;flex:1;align-items:center;gap:var(--space-2);min-width:0;max-width:160px;min-height:18px}
-.bar{flex:1;min-width:0;height:6px;border-radius:var(--radius-pill);background:var(--color-line-subtle);overflow:hidden}
-.bar>i{display:block;height:100%;border-radius:inherit;background:var(--dukjil-ink);transition:width var(--motion-control) var(--motion-easing)}
+.bar{flex:1;min-width:0;height:6px;border-radius:var(--radius-pill);background:var(--color-surface);box-shadow:inset 0 0 0 1px var(--color-line);overflow:hidden}
+.bar>i{display:block;width:100%;height:100%;border-radius:inherit;background:var(--dukjil-ink);transform:scaleX(var(--mission-fill,0));transform-origin:left center;transition:transform var(--motion-control) var(--motion-easing)}
 .bar>i[data-done=true]{background:var(--dukjil-ink-deep)}
 .count{display:inline-flex;flex:none;align-items:center;gap:calc(var(--space-1) / 2);font-size:var(--fan-metadata-size);line-height:18px;font-weight:700;color:var(--color-muted);font-variant-numeric:tabular-nums}
 .gauge{flex:1;min-width:0}
 .gauge>span:last-child{line-height:18px}
-@media (min-width:1024px){.head h2{font-size:var(--fan-heading-size-wide);line-height:32px}.progress{max-width:240px}}
+@media (min-width:1024px){.progress{max-width:240px}}
 .footer{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:0 var(--space-3)}
 .footer>a{padding-inline:0}
 
 /* 덕질 탭(F3): today's rows first, then 그 밖의 미션·인증 folded behind heads drawn as mission rows, all in one card. */
-.folds{border:1px solid var(--color-line);border-radius:var(--radius-control);background:var(--color-surface);overflow:hidden}
+/* jinny 2·3 (2026-11-09): no island card. The groups are rows between hairlines at the section's edges; the rows start at x 0 like the heading.
+   Pink stays with the one action (출석하기) and the wallet above: the gauges here are ink on a white track, the done tag is neutral. */
+.folds{border-block:1px solid var(--color-line);background:var(--color-surface)}
+.folds [data-fan-mission-row]{padding-inline:0}
+.folds .gauge [role="progressbar"]{background:var(--color-surface)}
+.folds .gauge [role="progressbar"]>span{background:var(--color-ink)}
 .fold+.fold{border-top:1px solid var(--color-line)}
 .fold .cards{border:0;border-radius:0}
 .fold[data-state] .cards,.proofRows{border-top:1px solid var(--color-line-subtle)}
@@ -26,3 +32,9 @@
 @keyframes missionNudge{0%,100%{opacity:1}50%{opacity:.7}}
 .folds[data-nudge] li[data-done="false"] .reward{animation:missionNudge var(--motion-count, 400ms) var(--motion-easing, ease) 3}
 @media (prefers-reduced-motion:reduce){.folds[data-nudge] li .reward{animation:none}}
+/* B3: the head's "n개 남음" folds today's rows. 44 target, pulled into the title line so the head keeps the title's height (the rail title beside it stays level). */
+.todayToggle{min-height:var(--min-target);margin-block:calc((var(--fan-section-size) * var(--fan-heading-leading) - var(--min-target)) / 2);padding:0;border:0;background:none;font-family:inherit;cursor:pointer}
+.todayToggle:focus-visible{outline:2px solid var(--color-focus);outline-offset:2px;border-radius:var(--space-1)}
+.todayChevron{flex:none;transition:transform var(--motion-control) var(--motion-easing)}
+.todayToggle[aria-expanded="true"] .todayChevron{transform:rotate(180deg)}
+@media (prefers-reduced-motion:reduce){.todayChevron{transition:none}}
