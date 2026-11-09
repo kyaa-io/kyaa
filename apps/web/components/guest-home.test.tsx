@@ -561,6 +561,8 @@ describe("streamed Home sections", () => {
       featuredLives: settleHomeQuery(pending.featuredLives.promise),
       elinaRaffles: settleHomeQuery(pending.elinaRaffles.promise),
       homeNotices: settleHomeQuery(Promise.resolve({ items: [], nextCursor: null })),
+      homeGallery: settleHomeQuery(Promise.resolve({ items: [], nextCursor: null })),
+      homeShorts: settleHomeQuery(Promise.resolve([])),
     };
     return { pending, queries };
   }
@@ -576,6 +578,20 @@ describe("streamed Home sections", () => {
     expect(screen.queryByRole("link", { name: "엘리나와 함께 뱅크시 전시 보러 가요" })).not.toBeInTheDocument();
     await act(async () => { home.pending.homeBanners.resolve([bannerFixture]); home.pending.elinaRaffles.resolve({ raffles: elinaRaffles }); });
     expect(screen.getAllByRole("link", { name: "엘리나와 함께 뱅크시 전시 보러 가요", hidden: true }).length).toBeGreaterThan(0);
+  });
+
+  it("puts the read gallery photos and LIVE videos on the home, and keeps the empty states when those reads fail", async () => {
+    const photos = (await import("@/server/home-gallery/fixtures/read_public_home_gallery_photos.json")).default.items;
+    const shorts = (await import("@/server/home-gallery/fixtures/read_public_home_shorts.json")).default;
+    const home = pendingHome();
+    let view!: ReturnType<typeof render>;
+    await act(async () => { view = render(<StreamingGuestHome queries={{ ...home.queries, homeGallery: Promise.resolve({ status: "fulfilled", value: { items: photos as never, nextCursor: null } }), homeShorts: Promise.resolve({ status: "fulfilled", value: shorts as never }) }} locale="ko" />); });
+    expect(view.container.querySelectorAll('[data-gallery-layout="mobile"] [data-row="photo"]')).toHaveLength(photos.length);
+    expect(view.container.querySelectorAll('[data-row="short"]')).toHaveLength(shorts.length);
+    view.unmount();
+    await act(async () => { view = render(<StreamingGuestHome queries={{ ...pendingHome().queries, homeGallery: Promise.resolve({ status: "rejected" }), homeShorts: Promise.resolve({ status: "rejected" }) }} locale="ko" />); });
+    expect(view.container.querySelectorAll('[data-row="photo-placeholder"]')).toHaveLength(8);
+    expect(view.container.querySelectorAll('[data-row="short-placeholder"]')).toHaveLength(4);
   });
 
   it.each(["homeBanners", "featuredLives", "elinaRaffles"] as const)("isolates a failed %s query", async (failed) => {

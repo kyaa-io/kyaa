@@ -59,6 +59,11 @@ q "select r8test.notice('$C1','r8-size','크기 없음','https://www.instagram.c
 q "select r8test.notice('$C1','r8-host','다른 호스트','https://example.com/p/R8E/','[{\"src\":\"$(img 7)\",\"w\":10,\"h\":10}]')" >/dev/null
 q "select r8test.notice('$C1','r8-private','비공개 사진','https://www.instagram.com/p/R8F/','[{\"src\":\"/api/content-assets/99000000-0000-4000-8000-0000000000f1\",\"w\":10,\"h\":10}]')" >/dev/null
 q "select r8test.notice('$C1','r8-ratio','긴 사진','https://www.instagram.com/p/R8G/','[{\"src\":\"$(img 8)\",\"w\":1000,\"h\":2510}]')" >/dev/null
+# A last paragraph that is a plain SNS URL without link marks, and one whose marks is not an array: not collected, never an error.
+nomark="$(q "select r8test.notice('$C1','r8-nomark','링크 표시 없음','https://www.instagram.com/p/R8J/','[{\"src\":\"$(img 11)\",\"w\":10,\"h\":10}]')")"
+run -c "update public.celebrity_notice_localizations set body_json=jsonb_set(body_json,'{content,-1,content,0}',(body_json#>'{content,-1,content,0}')-'marks') where notice_id='$nomark'"
+badmark="$(q "select r8test.notice('$C1','r8-badmark','marks 문자열','https://www.instagram.com/p/R8K/','[{\"src\":\"$(img 12)\",\"w\":10,\"h\":10}]')")"
+run -c "update public.celebrity_notice_localizations set body_json=jsonb_set(body_json,'{content,-1,content,0,marks}','\"link\"') where notice_id='$badmark'"
 members="$(q "select r8test.notice('$C1','r8-members','회원 공개','https://www.instagram.com/p/R8H/','[{\"src\":\"$(img 9)\",\"w\":10,\"h\":10}]')")"
 run -c "update public.celebrity_notices set visibility='members' where id='$members'"
 q "select r8test.notice('$C2','r8-hidden','숨김 크리에이터','https://www.instagram.com/p/R8I/','[{\"src\":\"$(img 10)\",\"w\":10,\"h\":10}]')" >/dev/null
@@ -88,7 +93,8 @@ done
 got="$(items ko)"
 eq "$(sq "select count(*) from jsonb_array_elements(public.read_public_home_gallery_photos('ko',0,24)->'items') i where i->>'source'='official_sns'")" 3 G-1
 grep -q 'official_sns|공식 게시물 1' <<<"$got" && grep -q 'official_sns|공식 게시물 2' <<<"$got"; pass G-1 'both collected notices, original title as alt'
-for bad in '언어 다름' '장면 설명' '크기 없음' '다른 호스트' '비공개 사진' '긴 사진' '회원 공개' '숨김 크리에이터' 'R8 프로필' '숨김 사진'; do
+eq "$(q "select coalesce(public.home_gallery_source_shape('$nomark'),'null') || '|' || coalesce(public.home_gallery_source_shape('$badmark'),'null')")" 'null|null' G-0
+for bad in '링크 표시 없음' 'marks 문자열' '언어 다름' '장면 설명' '크기 없음' '다른 호스트' '비공개 사진' '긴 사진' '회원 공개' '숨김 크리에이터' 'R8 프로필' '숨김 사진'; do
   grep -q "|$bad" <<<"$got" && { echo "FAIL G-1 $bad leaked" >&2; exit 1; }
 done; pass G-1 'shape, host, private src, ratio, members, hidden creator, profile and hidden CMS photo excluded'
 grep -q 'cms_upload|R8 사진 무대 사진' <<<"$got" && grep -q 'cms_upload|R8 사진 세로 사진' <<<"$got"; pass G-1 'CMS photos with admin alt'
@@ -142,6 +148,7 @@ if [[ -n "${HOME_GALLERY_FIXTURE_DIR:-}" ]]; then
   sq "select jsonb_pretty(public.read_public_home_gallery_photos('ko',0,12))" > "$HOME_GALLERY_FIXTURE_DIR/read_public_home_gallery_photos.json"
   sq "select jsonb_pretty(public.read_public_home_gallery_photos('en',0,2))" > "$HOME_GALLERY_FIXTURE_DIR/read_public_home_gallery_photos_page.json"
   sq "select jsonb_pretty(jsonb_path_query_array(public.read_public_home_shorts('ko',12), '\$[*] ? (@.videoId starts with \"R8shorts\")'))" > "$HOME_GALLERY_FIXTURE_DIR/read_public_home_shorts.json"
+  sq "select jsonb_pretty(public.read_public_home_gallery_photos('ko',10000,24))" > "$HOME_GALLERY_FIXTURE_DIR/read_public_home_gallery_photos_empty.json"
 fi
 
 # O-1 ordinary owner without bypassrls: the access block gives the reads what they need, filters still apply

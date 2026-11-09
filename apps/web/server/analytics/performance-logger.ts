@@ -2,7 +2,7 @@ import "server-only";
 import { performanceMetricSchema, type PerformanceMetric } from "@/features/analytics/domain/performance-metric";
 import { z } from "zod";
 
-export const homeQueryLabels = ["featuredLives", "celebrities", "homeBanners", "homeSlots", "elinaRaffles", "homeNotices"] as const;
+export const homeQueryLabels = ["featuredLives", "celebrities", "homeBanners", "homeSlots", "elinaRaffles", "homeNotices", "homeGallery", "homeShorts"] as const;
 const homeQueryMetricSchema = z.object({
   name: z.enum(homeQueryLabels),
   durationMs: z.number().finite().min(0).max(3_600_000),

@@ -1,0 +1,35 @@
+[
+    {
+        "id": "4ad18ed1-9db6-4623-b840-8db272ab9f53",
+        "href": "https://www.youtube.com/watch?v=R8shortsAA1",
+        "title": "R8 라이브 r8-live-watch",
+        "creator": {
+            "name": "R8 사진",
+            "slug": "r8data-photo"
+        },
+        "videoId": "R8shortsAA1",
+        "liveHref": "/live/r8-live-watch"
+    },
+    {
+        "id": "90110fde-efa3-46e8-acc3-2e7fc3f91013",
+        "href": "https://www.youtube.com/watch?v=R8shortsBB2",
+        "title": "R8 라이브 r8-live-short",
+        "creator": {
+            "name": "R8 사진",
+            "slug": "r8data-photo"
+        },
+        "videoId": "R8shortsBB2",
+        "liveHref": "/live/r8-live-short"
+    },
+    {
+        "id": "196f8492-4af6-4d99-ad49-7ff5bed9d584",
+        "href": "https://www.youtube.com/watch?v=R8shortsCC3",
+        "title": "R8 라이브 r8-live-replay",
+        "creator": {
+            "name": "R8 사진",
+            "slug": "r8data-photo"
+        },
+        "videoId": "R8shortsCC3",
+        "liveHref": "/live/r8-live-replay"
+    }
+]

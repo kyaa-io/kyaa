@@ -38,7 +38,9 @@ begin
   href := node->>'text';
   if node->>'type' is distinct from 'text' or href is null
      or href !~ '^https://(www\.)?(instagram\.com|youtube\.com|tiktok\.com|chzzk\.naver\.com)/[^[:space:][:cntrl:]]*$'
-     or not jsonb_path_exists(node, 'strict $.marks[*] ? (@.type == "link" && @.attrs.href == $h)', jsonb_build_object('h', href)) then
+     -- lax: a text node without marks (or with a non-array marks value) is simply not a link, never an error for the whole read.
+     or jsonb_typeof(node->'marks') is distinct from 'array'
+     or not jsonb_path_exists(node, 'lax $.marks[*] ? (@.type == "link" && @.attrs.href == $h)', jsonb_build_object('h', href)) then
     return null;
   end if;
   select count(*), coalesce(bool_and(i.value->'attrs'->>'alt' = ko.title
