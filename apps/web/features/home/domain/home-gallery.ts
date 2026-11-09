@@ -6,10 +6,17 @@ import type { AppLocale } from "@/i18n/locales";
  * collected official SNS notice, or a CMS-uploaded image-role photo. `alt` is the notice's own image alt (original text) or the
  * alt the admin wrote; nothing is generated.
  */
+// SQL admits relative URLs only after read_content_asset(NULL, id) confirms anonymous access.
+// This schema validates URL shape, not authorization. Never accept arbitrary paths or query overrides.
+const homeGalleryImageUrlSchema = z.union([
+  z.url({ protocol: /^https$/ }),
+  z.string().length(56).regex(/^\/api\/content-assets\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/),
+]);
+
 export const homeGalleryPhotoSchema = z.object({
   id: z.string().min(1).max(200),
   source: z.enum(["official_sns", "cms_upload"]),
-  image: z.object({ url: z.url({ protocol: /^https$/ }), width: z.number().int().positive(), height: z.number().int().positive() }).strict(),
+  image: z.object({ url: homeGalleryImageUrlSchema, width: z.number().int().positive(), height: z.number().int().positive() }).strict(),
   alt: z.string().min(1).max(300),
   creator: z.object({ slug: z.string().min(1), name: z.string().min(1) }).strict().optional(),
   sourceHref: z.string().regex(/^\/(c\/[a-z0-9-]+\/notices\/[a-z0-9-]+|live\/[a-z0-9-]+)$/).optional(),

@@ -1,0 +1,140 @@
+{
+    "items": [
+        {
+            "id": "bdc851f2-b1de-4a0b-9214-936d0f3e147d:1",
+            "alt": "원문 1",
+            "image": {
+                "url": "/api/content-assets/3bede977-6201-49bd-959a-48448870de57",
+                "width": 3024,
+                "height": 4032
+            },
+            "source": "official_sns",
+            "creator": {
+                "name": "R8 사진",
+                "slug": "r8data-photo"
+            },
+            "sourceHref": "/c/r8data-photo/notices/relative-1"
+        },
+        {
+            "id": "02c2c36b-3389-42e1-8b60-e7d55f2c1e79:1",
+            "alt": "원문 7",
+            "image": {
+                "url": "/api/content-assets/da19b2b6-abc0-4e8c-aa46-dfee22ef8ee6",
+                "width": 3024,
+                "height": 4032
+            },
+            "source": "official_sns",
+            "creator": {
+                "name": "R8 사진",
+                "slug": "r8data-photo"
+            },
+            "sourceHref": "/c/r8data-photo/notices/relative-7"
+        },
+        {
+            "id": "0d175366-c198-4a16-a856-15447001b65d:1",
+            "alt": "원문 5",
+            "image": {
+                "url": "/api/content-assets/d9717a21-60d1-41e1-a04a-3a02c2161663",
+                "width": 3024,
+                "height": 4032
+            },
+            "source": "official_sns",
+            "creator": {
+                "name": "R8 사진",
+                "slug": "r8data-photo"
+            },
+            "sourceHref": "/c/r8data-photo/notices/relative-5"
+        },
+        {
+            "id": "668664ce-4f1d-4ab4-991a-877e58c8f57a:1",
+            "alt": "원문 4",
+            "image": {
+                "url": "/api/content-assets/f845e629-4a57-4f64-856d-d427b7c11100",
+                "width": 3024,
+                "height": 4032
+            },
+            "source": "official_sns",
+            "creator": {
+                "name": "R8 사진",
+                "slug": "r8data-photo"
+            },
+            "sourceHref": "/c/r8data-photo/notices/relative-4"
+        },
+        {
+            "id": "8455981d-5fdb-40ce-ad3f-6d978d093e3d:1",
+            "alt": "원문 8",
+            "image": {
+                "url": "/api/content-assets/16a2bfd0-2a16-49b9-aa47-8467ce34c426",
+                "width": 4032,
+                "height": 3024
+            },
+            "source": "official_sns",
+            "creator": {
+                "name": "R8 사진",
+                "slug": "r8data-photo"
+            },
+            "sourceHref": "/c/r8data-photo/notices/relative-8"
+        },
+        {
+            "id": "d4fc2b80-ca25-45f5-a4ed-afce4addea51:1",
+            "alt": "원문 2",
+            "image": {
+                "url": "/api/content-assets/1ba76d81-a0c7-41cf-8f6e-45e50ecc8390",
+                "width": 3024,
+                "height": 4032
+            },
+            "source": "official_sns",
+            "creator": {
+                "name": "R8 사진",
+                "slug": "r8data-photo"
+            },
+            "sourceHref": "/c/r8data-photo/notices/relative-2"
+        },
+        {
+            "id": "d4fc2b80-ca25-45f5-a4ed-afce4addea51:2",
+            "alt": "원문 2",
+            "image": {
+                "url": "/api/content-assets/21d4d883-4fe1-40d7-85fc-292c37045e13",
+                "width": 3024,
+                "height": 4032
+            },
+            "source": "official_sns",
+            "creator": {
+                "name": "R8 사진",
+                "slug": "r8data-photo"
+            },
+            "sourceHref": "/c/r8data-photo/notices/relative-2"
+        },
+        {
+            "id": "dea113eb-a6a4-4318-8098-556c7f0f8953:1",
+            "alt": "원문 3",
+            "image": {
+                "url": "/api/content-assets/5ac99565-4e32-417f-ac8d-dff7b1b4a9b2",
+                "width": 3024,
+                "height": 4032
+            },
+            "source": "official_sns",
+            "creator": {
+                "name": "R8 사진",
+                "slug": "r8data-photo"
+            },
+            "sourceHref": "/c/r8data-photo/notices/relative-3"
+        },
+        {
+            "id": "f2e976f5-dffd-4cba-9224-0ccf0fc344a5:1",
+            "alt": "원문 6",
+            "image": {
+                "url": "/api/content-assets/44c87f48-bd6c-4a76-adbf-f24236c354ab",
+                "width": 3024,
+                "height": 4032
+            },
+            "source": "official_sns",
+            "creator": {
+                "name": "R8 사진",
+                "slug": "r8data-photo"
+            },
+            "sourceHref": "/c/r8data-photo/notices/relative-6"
+        }
+    ],
+    "hasMore": false
+}
