@@ -190,7 +190,7 @@ function n31SectionAnalysis(code, file) {
   const bind = (scope, name, binding) => {
     if (!ts.isIdentifier(name)) {
       if (ts.isObjectBindingPattern(name) || ts.isArrayBindingPattern(name)) {
-        for (const element of name.elements) if (ts.isBindingElement(element)) bind(scope, element.name, { local: true });
+        for (const element of name.elements) if (ts.isBindingElement(element)) bind(scope, element.name, { ...binding, node: undefined });
       }
       return;
     }
@@ -200,7 +200,7 @@ function n31SectionAnalysis(code, file) {
   const index = (n) => {
     if (ts.isVariableDeclaration(n)) bind(scopeOf(n.parent), n.name, { local: true, node: n.initializer });
     if (ts.isFunctionDeclaration(n) && n.name) bind(scopeOf(n.parent), n.name, { local: true, node: n });
-    if (ts.isParameter(n)) bind(scopeOf(n.parent), n.name, { local: true });
+    if (ts.isParameter(n)) bind(scopeOf(n.parent), n.name, { local: true, opaque: true });
     if (ts.isImportSpecifier(n)) bind(source, n.name, { name: n.propertyName?.text ?? n.name.text, module: n.parent.parent.parent.moduleSpecifier.text });
     if (ts.isImportClause(n) && n.name) bind(source, n.name, { name: n.name.text, module: n.parent.moduleSpecifier.text });
     if (ts.isNamespaceImport(n)) bind(source, n.name, { namespace: true, module: n.parent.parent.moduleSpecifier.text });
@@ -332,11 +332,15 @@ function n31SectionAnalysis(code, file) {
     reference = unwrap(reference);
     if (!reference || seen.has(reference)) return false;
     seen.add(reference);
-    // Named close/back callbacks are control API references. Inspect wrapper
-    // bodies at onClick, rather than reclassifying their internal focus cleanup.
-    if (ts.isIdentifier(reference) && closeName.test(reference.text)) return true;
-    let fn = resolveLocal(reference);
-    if (!fn || ts.isIdentifier(fn)) return ts.isIdentifier(reference) && closeName.test((fn ?? reference).text);
+    // A local declaration takes precedence over its name. Follow aliases with
+    // cycle protection; false, missing initializers and recursive bodies fail.
+    // Only opaque props/imports/unbound API references may rely on a close name.
+    if (ts.isIdentifier(reference)) {
+      const binding = lookup(reference);
+      if (binding?.local && !binding.opaque) return closeOnlyHandler(binding.node, seen);
+      return closeName.test(binding?.name ?? reference.text);
+    }
+    let fn = reference;
     if (ts.isCallExpression(fn) && /^(useCallback|React\.useCallback)$/.test(fn.expression.getText(source))) fn = fn.arguments[0];
     if (!fn || !ts.isFunctionLike(fn) || !fn.body) return false;
     const onlyClose = (node) => {
@@ -361,7 +365,22 @@ function n31SectionAnalysis(code, file) {
     // Both conditions are mandatory: a close/back identity on this control and
     // a handler doing only that operation. A glyph or one matching call amid
     // other effects is not evidence of a close-only action.
-    const identifiedClose = attributes(n).some((a) => {
+    const visibleClose = (node) => {
+      const parts = [...children(node)].filter((child) => !(ts.isJsxText(child) && !child.text.trim()) && !(ts.isJsxExpression(child) && !child.expression));
+      let named = false;
+      const valid = parts.every((child) => {
+        if (ts.isJsxText(child)) { named = true; return /^(닫기|뒤로|Close|Back)$/i.test(child.text.trim()); }
+        if (ts.isJsxExpression(child)) { named = true; return closeIdentity(child.expression); }
+        if (ts.isJsxElement(child) || ts.isJsxSelfClosingElement(child)) {
+          if (/^(span|strong)$/.test(nameOf(child))) { named = true; return visibleClose(child); }
+          // Icons do not supply an accessible name or invalidate visible copy.
+          return /^(X|Arrow\w+|Chevron\w+|FanIcon)$/.test(nameOf(child));
+        }
+        return false;
+      });
+      return named && valid;
+    };
+    const identifiedClose = (!label && visibleClose(n)) || attributes(n).some((a) => {
       const name = a.name.getText(source);
       if (/^(aria-label|ariaLabel|role|data-action|data-control|data-intent|data-close|data-back|data-dismiss)$/.test(name)) {
         return closeIdentity(value(a)) || (/^data-(close|back|dismiss)$/.test(name) && (!a.initializer || value(a)?.kind === ts.SyntaxKind.TrueKeyword));
@@ -444,6 +463,15 @@ function n31SectionAnalysis(code, file) {
       if (isAction(node)) {
         if (isException(node) || excludedAction(node) || childRoots(node).some(hasTitle) || attr(node, 'key')) return;
         const offset = node.getStart(source), icons = iconsIn(node);
+        // An explicitly labelled X-only dismiss control in a dialog title bar
+        // is not a section view-all action. This scope boundary must never hide
+        // a forward arrow, even when its callback/name claims to close a dialog.
+        const dialogTitleBar = /dialog|modal|sheet/i.test(value(attr(header, 'className'))?.getText(source) ?? '');
+        const glyphOnly = [...children(node)].every((child) => (ts.isJsxText(child) && !child.text.trim())
+          || (ts.isJsxExpression(child) && !child.expression)
+          || (ts.isJsxSelfClosingElement(child) && nameOf(child) === 'X'));
+        if (dialogTitleBar && nameOf(node) === 'button' && closeIdentity(value(attr(node, 'aria-label')))
+          && glyphOnly && icons.length === 1 && icons[0].icon === 'X') return;
         actions.set(offset, { node, hasIcon: icons.length > 0 });
         for (const { node: iconNode, icon } of icons) if (/^(ChevronRight|ArrowRight|MoveRight)$/.test(icon)) {
           const iconOffset = iconNode.getStart(source);
