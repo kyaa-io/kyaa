@@ -69,3 +69,12 @@
   .toolbar .tabs { flex: 1; }
   .toolbar .searchField { flex: 0 0 240px; width: 240px; }
 }
+
+/* A short title + a nonshrinking date, followed by stamps, within the 64px fan row. */
+.fanMeta { display: grid; min-width: 0; }
+.fanSince { display: flex; align-items: baseline; gap: var(--space-1); min-width: 0; }
+.fanSinceLabel { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.fanSinceDate { flex-shrink: 0; white-space: nowrap; font-variant-numeric: tabular-nums; }
+
+/* Include the existing 1px divider in the sorted fan row's 64px minimum. */
+.body[data-sorted-fans] .person { min-height: 63px; }

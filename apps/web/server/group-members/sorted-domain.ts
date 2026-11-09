@@ -13,9 +13,12 @@ export const sortedFanRowSchema = z.object({
   nickname: z.string(), avatarUrl: z.string().nullable(), tier: z.string().nullable(),
   hearts: z.number().int().nonnegative().safe(), stamps: z.number().int().nonnegative().safe(),
   first_jjinfan_at: z.iso.datetime({ offset: true }).nullable(),
-  last_active_at: z.iso.datetime({ offset: true }),
 }).strict();
 export const sortedFansSchema = z.object({
   items: z.array(sortedFanRowSchema).max(30), nextCursor: z.string().max(2048).nullable(),
 }).strict();
-export const sortedFansRpcSchema = sortedFansSchema.extend({ nextCursor: fanSortPositionSchema.nullable() });
+// Internal SQL facts are parsed strictly, then projected to the public DTO in the route.
+export const sortedFansRpcSchema = sortedFansSchema.extend({
+  items: z.array(sortedFanRowSchema.extend({ last_active_at: z.iso.datetime({ offset: true }) })).max(30),
+  nextCursor: fanSortPositionSchema.nullable(),
+});

@@ -58,14 +58,14 @@ describe("sorted fan rows", () => {
     render(<GroupMembers pageId={page} locale="ko" member/>);
     expect(screen.getByText(fan.nickname)).toBeVisible(); expect(screen.getByLabelText("하트 2")).toBeVisible();
     expect(screen.getByRole("listitem")).toHaveTextContent("누적 스탬프 0");
-    expect(screen.getByText(`찐팬 된 시각 ${fanListTime(fan.first_jjinfan_at, "ko")}`)).toHaveAttribute("datetime", fan.first_jjinfan_at);
+    expect(screen.getByText(fanListTime(fan.first_jjinfan_at, "ko"))).toHaveAttribute("datetime", fan.first_jjinfan_at);
     expect(screen.queryByRole("button", { name: new RegExp(fan.nickname) })).toBeNull();
     expect(screen.queryByRole("dialog")).toBeNull();
   });
   it("keeps 0 hearts and omits a nonexistent first-heart date", () => {
     resource.data = { items: [{ ...fan, hearts: 0, first_jjinfan_at: null }], nextCursor: null };
     render(<GroupMembers pageId={page} locale="ko" member/>);
-    expect(screen.getByLabelText("하트 0")).toBeVisible(); expect(screen.queryByText(/찐팬 된 시각/)).toBeNull();
+    expect(screen.getByLabelText("하트 0")).toBeVisible(); expect(screen.getByRole("listitem").querySelector("time")).toBeNull();
   });
   it("appends the next page and resets its cursor on a new search", async () => {
     resource.data = { items: [fan], nextCursor: "opaque-next" };

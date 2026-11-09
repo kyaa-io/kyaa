@@ -22,5 +22,6 @@ export async function readSortedFans(deps: FanpageDependencies, request: Request
   const raw = await deps.rpc("read_group_fans", { p_actor: actor, p_page_id: page, p_mode: mode, p_search: search, p_cursor: cursor, p_limit: limit, p_locale: locale === "ko" ? "ko" : "en" });
   const parsed = sortedFansRpcSchema.safeParse(raw);
   if (!parsed.success) throw new Error("GROUPS_UNAVAILABLE");
-  return Response.json({ items: parsed.data.items, nextCursor: parsed.data.nextCursor ? sealFanCursor(parsed.data.nextCursor, scope, secret()) : null }, { headers: { "cache-control": "private, no-store", vary: "Authorization" } });
+  const items = parsed.data.items.map(({ nickname, avatarUrl, tier, hearts, stamps, first_jjinfan_at }) => ({ nickname, avatarUrl, tier, hearts, stamps, first_jjinfan_at }));
+  return Response.json({ items, nextCursor: parsed.data.nextCursor ? sealFanCursor(parsed.data.nextCursor, scope, secret()) : null }, { headers: { "cache-control": "private, no-store", vary: "Authorization" } });
 }

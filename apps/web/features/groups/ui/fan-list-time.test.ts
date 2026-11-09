@@ -20,9 +20,10 @@ describe("fan list title time", () => {
     expect(fanListTime("invalid", "ko", now)).toBe("");
     expect(fanListTime("2026-11-08T04:47:00Z", "ko", NaN)).toBe("");
   });
-  it.each(APP_LOCALES)("keeps localized labels and the same DESIGN date format in %s", locale => {
+  it.each(APP_LOCALES)("keeps a short localized label and locale date separators in %s", locale => {
     expect(Object.values(fanListCopy(locale))).toHaveLength(3);
-    expect(fanListCopy(locale).since).toContain("{0}");
-    expect(fanListTime("2026-11-08T04:47:00Z", locale, now)).toBe("11. 08. 13:47");
+    expect(fanListCopy(locale).since).not.toContain("{0}");
+    const dates = { ko: "11. 08.", en: "11/08", ja: "11/08", "zh-Hans": "11/08", "zh-Hant": "11/08", es: "8/11", id: "08/11", vi: "08-11", th: "08/11", pt: "08/11", fr: "08/11", ru: "08.11" };
+    expect(fanListTime("2026-11-08T04:47:00Z", locale, now)).toBe(`${dates[locale]} 13:47`);
   });
 });

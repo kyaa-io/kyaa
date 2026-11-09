@@ -102,6 +102,9 @@ jobs:
       - name: Install browser for card layout regression
         if: matrix.group != 'unit'
         run: npx playwright install --with-deps chromium
+      - name: Verify fan list dates at 390px across all locales
+        if: matrix.group == 'layout-and-recovery'
+        run: npm run test --workspace @byus/web -- --config e2e/fan-list-local/vitest.config.ts
       - name: Verify real card rows across languages and viewports
         if: matrix.group == 'layout-and-recovery'
         run: node apps/web/e2e/community-stamps-local/passport-run.mjs
