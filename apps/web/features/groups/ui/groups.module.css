@@ -285,10 +285,10 @@
 /* G17/G18: on narrow screens the page menu ('…') sits at the right end of the title row instead of alone on its own row. */
 @media(max-width:1023px){.groupIdentityHeader .creatorTitleRow{width:100%}.groupIdentityHeader .creatorTitleRow>h1{flex:1}.groupIdentityHeader .creatorTitleRow>:not(h1){flex:none;margin-inline-start:auto}.groupIdentityHeader .identityCopy{min-width:0}}
 
-/* 2026-11-04 FX-47: 1440 body column without an aside is one centered 720px column (G10 rooms, G19 event). */
+/* 2026-11-09 shell-width (replaces FX-47 centering): the 720px column without an aside starts at the shell's left edge (G10 rooms, G19 event). */
 @media(min-width:1024px){
-.eventPageHeading{max-width:720px;margin-inline:auto}
-.eventLayout{grid-template-columns:minmax(0,720px);justify-content:center}
+.eventPageHeading{max-width:720px}
+.eventLayout{grid-template-columns:minmax(0,720px);justify-content:start}
 .eventSummary{padding-inline:0}
 }
 
@@ -298,8 +298,8 @@
 @media(max-width:767px){.applicationIdentity{grid-template-columns:minmax(0,1fr);gap:12px}.applicationPhoto{min-width:0}}
 /* UI-R10 F14: the see-all link sits at the right end of the side title row. */
 .applicationAside header>h2{flex:1;min-width:0;margin:0}.applicationAside header>a{margin-inline-start:auto}
-/* UI-R10 F06: post reading column is 720 centered inside the post/aside grid cell. */
-.creatorPostRead{min-width:0;display:grid}.creatorPostRead.creatorPostRead>*{width:min(100%,720px);margin-inline:auto}
+/* 2026-11-09 shell-width: the post column fills the cell next to the fixed 288px rail; its left edge is the tab row's left edge. */
+.creatorPostRead{min-width:0;display:grid}
 /* UI-R10 F11: board story rows share the 16px page gutter; tabs and headings may wrap in long locales. */
 /* UI-R10 F06/D11: two results fill the row instead of clustering in two of three tracks. */
 

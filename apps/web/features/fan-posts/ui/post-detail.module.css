@@ -62,7 +62,7 @@
 .inlineVideo button svg { width: 24px; height: 24px; fill: currentColor; }
 .commentMeta > :last-child:not(time):not(strong) { margin-inline-start: auto; }
 .readColumn { width: min(100%, 720px); min-width: 0; }
-.skeleton { display: grid; gap: var(--space-4); width: min(100%, 720px); margin-inline: auto; }
+.skeleton { display: grid; gap: var(--space-4); width: 100%; }
 .skeletonComments { margin-top: var(--space-4); }
 .comments { scroll-margin-top: calc(var(--space-16) + var(--space-8)); }
 /* Group comment reply box sits under the comment it answers, indented like the reply rows. */
