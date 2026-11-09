@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { awsStorageContentSecurityPolicy, responseSecurityHeaders } from "./security-headers";
 import { unstable_getResponseFromNextConfig } from "next/experimental/testing/server";
 import nextConfig from "./next.config";
@@ -104,6 +104,24 @@ describe("response security headers", () => {
     const directives = header("Content-Security-Policy").split(";").map((value) => value.trim());
     expect(directives.find((value) => value.startsWith("frame-src "))).toContain("https://www.youtube.com");
     expect(directives.filter((value) => !value.startsWith("frame-src ")).join(";")).not.toContain("https://www.youtube.com");
+  });
+
+  it("pins HTTPS for one year on every page and API response, without subdomains or preload", async () => {
+    expect(header("Strict-Transport-Security")).toBe("max-age=31536000");
+    for (const path of ["/", "/my", "/login", "/api/groups", "/connect/instagram/start"]) {
+      const response = await unstable_getResponseFromNextConfig({ url: `https://kyaa.io${path}`, nextConfig });
+      expect(response.headers.get("strict-transport-security"), path).toBe("max-age=31536000");
+    }
+  });
+  it("leaves HSTS off local development, which runs on http", async () => {
+    vi.resetModules();
+    vi.stubEnv("NODE_ENV", "development");
+    try {
+      const development = await import("./security-headers");
+      expect(development.responseSecurityHeaders.some(({ key }) => key === "Strict-Transport-Security")).toBe(false);
+    } finally {
+      vi.unstubAllEnvs();
+    }
   });
 
   it("sets MIME, referrer, capability, and cross-origin isolation policies", () => {
