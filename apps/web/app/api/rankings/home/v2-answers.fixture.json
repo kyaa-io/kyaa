@@ -1,0 +1,702 @@
+{
+ "empty:creators:fans": {
+  "builtDay": "2026-11-09",
+  "comparable": true,
+  "computedAt": "2026-11-09T18:39:33.66129+09:00",
+  "day": "2026-11-09",
+  "failedAt": null,
+  "metric": "fans",
+  "previousDay": "2026-11-08",
+  "rows": [],
+  "state": "empty",
+  "today": "2026-11-09",
+  "weekGainDays": 1
+ },
+ "empty:creators:hearts": {
+  "builtDay": "2026-11-09",
+  "comparable": true,
+  "computedAt": "2026-11-09T18:39:33.66129+09:00",
+  "day": "2026-11-09",
+  "failedAt": null,
+  "metric": "hearts",
+  "previousDay": "2026-11-08",
+  "rows": [],
+  "state": "empty",
+  "today": "2026-11-09",
+  "weekGainDays": 1
+ },
+ "empty:fans:hearts": {
+  "builtDay": "2026-11-09",
+  "comparable": true,
+  "computedAt": "2026-11-09T18:39:33.66129+09:00",
+  "day": "2026-11-09",
+  "failedAt": null,
+  "me": null,
+  "metric": "hearts",
+  "previousDay": "2026-11-08",
+  "rows": [],
+  "state": "empty",
+  "today": "2026-11-09",
+  "weekGainDays": 1
+ },
+ "empty:fans:points": {
+  "builtDay": "2026-11-09",
+  "comparable": true,
+  "computedAt": "2026-11-09T18:39:33.66129+09:00",
+  "day": "2026-11-09",
+  "failedAt": null,
+  "me": null,
+  "metric": "points",
+  "previousDay": "2026-11-08",
+  "rows": [],
+  "state": "empty",
+  "today": "2026-11-09",
+  "weekGainDays": 1
+ },
+ "first:creators:fans": {
+  "builtDay": "2026-11-08",
+  "comparable": false,
+  "computedAt": "2026-11-08T18:39:33.66129+09:00",
+  "day": "2026-11-08",
+  "failedAt": null,
+  "metric": "fans",
+  "previousDay": null,
+  "rows": [
+   {
+    "challenge": false,
+    "delta": null,
+    "fans": 1,
+    "hearts": 3,
+    "imageUrl": "/images/groups/nchive-pencil.jpg",
+    "name": "계약 ca",
+    "rank": 1,
+    "score": 1,
+    "slug": "contract-ca",
+    "weekGain": null
+   },
+   {
+    "challenge": false,
+    "delta": null,
+    "fans": 1,
+    "hearts": 1,
+    "imageUrl": "/images/groups/nchive-pencil.jpg",
+    "name": "계약 cb",
+    "rank": 2,
+    "score": 1,
+    "slug": "contract-cb",
+    "weekGain": null
+   }
+  ],
+  "state": "stale",
+  "today": "2026-11-09",
+  "weekGainDays": null
+ },
+ "first:creators:hearts": {
+  "builtDay": "2026-11-08",
+  "comparable": false,
+  "computedAt": "2026-11-08T18:39:33.66129+09:00",
+  "day": "2026-11-08",
+  "failedAt": null,
+  "metric": "hearts",
+  "previousDay": null,
+  "rows": [
+   {
+    "challenge": false,
+    "delta": null,
+    "fans": 1,
+    "hearts": 3,
+    "imageUrl": "/images/groups/nchive-pencil.jpg",
+    "name": "계약 ca",
+    "rank": 1,
+    "score": 3,
+    "slug": "contract-ca",
+    "weekGain": null
+   },
+   {
+    "challenge": false,
+    "delta": null,
+    "fans": 1,
+    "hearts": 1,
+    "imageUrl": "/images/groups/nchive-pencil.jpg",
+    "name": "계약 cb",
+    "rank": 2,
+    "score": 1,
+    "slug": "contract-cb",
+    "weekGain": null
+   }
+  ],
+  "state": "stale",
+  "today": "2026-11-09",
+  "weekGainDays": null
+ },
+ "first:fans:hearts": {
+  "builtDay": "2026-11-08",
+  "comparable": false,
+  "computedAt": "2026-11-08T18:39:33.66129+09:00",
+  "day": "2026-11-08",
+  "failedAt": null,
+  "me": null,
+  "metric": "hearts",
+  "previousDay": null,
+  "rows": [
+   {
+    "characterId": "star-pink",
+    "delta": null,
+    "favorite": {
+     "names": {
+      "en": "Contract ca",
+      "ko": "계약 ca"
+     },
+     "slug": "contract-ca"
+    },
+    "hearts": 3,
+    "isMe": false,
+    "nickname": "계약팬f1",
+    "points": null,
+    "rank": 1,
+    "score": 3,
+    "tier": "Silver",
+    "weekGain": null
+   },
+   {
+    "characterId": "star-pink",
+    "delta": null,
+    "favorite": {
+     "names": {
+      "ko": "계약 cb"
+     },
+     "slug": "contract-cb"
+    },
+    "hearts": 1,
+    "isMe": false,
+    "nickname": "계약팬f2",
+    "points": null,
+    "rank": 2,
+    "score": 1,
+    "tier": "Bronze",
+    "weekGain": null
+   }
+  ],
+  "state": "stale",
+  "today": "2026-11-09",
+  "weekGainDays": null
+ },
+ "first:fans:points": {
+  "builtDay": "2026-11-08",
+  "comparable": false,
+  "computedAt": "2026-11-08T18:39:33.66129+09:00",
+  "day": "2026-11-08",
+  "failedAt": null,
+  "me": null,
+  "metric": "points",
+  "previousDay": null,
+  "rows": [
+   {
+    "characterId": "star-pink",
+    "delta": null,
+    "favorite": null,
+    "hearts": 0,
+    "isMe": false,
+    "nickname": "계약팬f3",
+    "points": 90,
+    "rank": 1,
+    "score": 90,
+    "tier": null,
+    "weekGain": null
+   },
+   {
+    "characterId": "star-pink",
+    "delta": null,
+    "favorite": {
+     "names": {
+      "en": "Contract ca",
+      "ko": "계약 ca"
+     },
+     "slug": "contract-ca"
+    },
+    "hearts": 3,
+    "isMe": false,
+    "nickname": "계약팬f1",
+    "points": 40,
+    "rank": 2,
+    "score": 40,
+    "tier": "Silver",
+    "weekGain": null
+   }
+  ],
+  "state": "stale",
+  "today": "2026-11-09",
+  "weekGainDays": null
+ },
+ "ready:creators:fans": {
+  "builtDay": "2026-11-09",
+  "comparable": true,
+  "computedAt": "2026-11-09T18:39:33.66129+09:00",
+  "day": "2026-11-09",
+  "failedAt": null,
+  "metric": "fans",
+  "previousDay": "2026-11-08",
+  "rows": [
+   {
+    "challenge": false,
+    "delta": 0,
+    "fans": 2,
+    "hearts": 4,
+    "imageUrl": "/images/groups/nchive-pencil.jpg",
+    "name": "계약 ca",
+    "rank": 1,
+    "score": 2,
+    "slug": "contract-ca",
+    "weekGain": 1
+   },
+   {
+    "challenge": false,
+    "delta": 0,
+    "fans": 1,
+    "hearts": 5,
+    "imageUrl": "/images/groups/nchive-pencil.jpg",
+    "name": "계약 cb",
+    "rank": 2,
+    "score": 1,
+    "slug": "contract-cb",
+    "weekGain": 0
+   }
+  ],
+  "state": "ready",
+  "today": "2026-11-09",
+  "weekGainDays": 1
+ },
+ "ready:creators:hearts": {
+  "builtDay": "2026-11-09",
+  "comparable": true,
+  "computedAt": "2026-11-09T18:39:33.66129+09:00",
+  "day": "2026-11-09",
+  "failedAt": null,
+  "metric": "hearts",
+  "previousDay": "2026-11-08",
+  "rows": [
+   {
+    "challenge": false,
+    "delta": 1,
+    "fans": 1,
+    "hearts": 5,
+    "imageUrl": "/images/groups/nchive-pencil.jpg",
+    "name": "계약 cb",
+    "rank": 1,
+    "score": 5,
+    "slug": "contract-cb",
+    "weekGain": 4
+   },
+   {
+    "challenge": false,
+    "delta": -1,
+    "fans": 2,
+    "hearts": 4,
+    "imageUrl": "/images/groups/nchive-pencil.jpg",
+    "name": "계약 ca",
+    "rank": 2,
+    "score": 4,
+    "slug": "contract-ca",
+    "weekGain": 1
+   }
+  ],
+  "state": "ready",
+  "today": "2026-11-09",
+  "weekGainDays": 1
+ },
+ "ready:fans:hearts": {
+  "builtDay": "2026-11-09",
+  "comparable": true,
+  "computedAt": "2026-11-09T18:39:33.66129+09:00",
+  "day": "2026-11-09",
+  "failedAt": null,
+  "me": null,
+  "metric": "hearts",
+  "previousDay": "2026-11-08",
+  "rows": [
+   {
+    "characterId": "star-pink",
+    "delta": 1,
+    "favorite": {
+     "names": {
+      "ko": "계약 cb"
+     },
+     "slug": "contract-cb"
+    },
+    "hearts": 5,
+    "isMe": false,
+    "nickname": "계약팬f2",
+    "points": null,
+    "rank": 1,
+    "score": 5,
+    "tier": "Silver",
+    "weekGain": 4
+   },
+   {
+    "characterId": "star-pink",
+    "delta": -1,
+    "favorite": {
+     "names": {
+      "en": "Contract ca",
+      "ko": "계약 ca"
+     },
+     "slug": "contract-ca"
+    },
+    "hearts": 3,
+    "isMe": false,
+    "nickname": "계약팬f1",
+    "points": null,
+    "rank": 2,
+    "score": 3,
+    "tier": "Silver",
+    "weekGain": 0
+   },
+   {
+    "characterId": "star-pink",
+    "delta": null,
+    "favorite": {
+     "names": {
+      "en": "Contract ca",
+      "ko": "계약 ca"
+     },
+     "slug": "contract-ca"
+    },
+    "hearts": 1,
+    "isMe": false,
+    "nickname": "계약팬f3",
+    "points": null,
+    "rank": 3,
+    "score": 1,
+    "tier": "Bronze",
+    "weekGain": 1
+   }
+  ],
+  "state": "ready",
+  "today": "2026-11-09",
+  "weekGainDays": 1
+ },
+ "ready:fans:points": {
+  "builtDay": "2026-11-09",
+  "comparable": true,
+  "computedAt": "2026-11-09T18:39:33.66129+09:00",
+  "day": "2026-11-09",
+  "failedAt": null,
+  "me": null,
+  "metric": "points",
+  "previousDay": "2026-11-08",
+  "rows": [
+   {
+    "characterId": "star-pink",
+    "delta": 0,
+    "favorite": {
+     "names": {
+      "en": "Contract ca",
+      "ko": "계약 ca"
+     },
+     "slug": "contract-ca"
+    },
+    "hearts": 1,
+    "isMe": false,
+    "nickname": "계약팬f3",
+    "points": 90,
+    "rank": 1,
+    "score": 90,
+    "tier": "Bronze",
+    "weekGain": 0
+   },
+   {
+    "characterId": "star-pink",
+    "delta": 0,
+    "favorite": {
+     "names": {
+      "en": "Contract ca",
+      "ko": "계약 ca"
+     },
+     "slug": "contract-ca"
+    },
+    "hearts": 3,
+    "isMe": false,
+    "nickname": "계약팬f1",
+    "points": 40,
+    "rank": 2,
+    "score": 40,
+    "tier": "Silver",
+    "weekGain": 0
+   },
+   {
+    "characterId": "star-pink",
+    "delta": null,
+    "favorite": {
+     "names": {
+      "ko": "계약 cb"
+     },
+     "slug": "contract-cb"
+    },
+    "hearts": 5,
+    "isMe": false,
+    "nickname": "계약팬f2",
+    "points": 20,
+    "rank": 3,
+    "score": 20,
+    "tier": "Silver",
+    "weekGain": 20
+   }
+  ],
+  "state": "ready",
+  "today": "2026-11-09",
+  "weekGainDays": 1
+ },
+ "ready:fans:points:viewer": {
+  "builtDay": "2026-11-09",
+  "comparable": true,
+  "computedAt": "2026-11-09T18:39:33.66129+09:00",
+  "day": "2026-11-09",
+  "failedAt": null,
+  "me": {
+   "delta": 0,
+   "hearts": 3,
+   "inTop": true,
+   "points": 40,
+   "rank": 2,
+   "score": 40
+  },
+  "metric": "points",
+  "previousDay": "2026-11-08",
+  "rows": [
+   {
+    "characterId": "star-pink",
+    "delta": 0,
+    "favorite": {
+     "names": {
+      "en": "Contract ca",
+      "ko": "계약 ca"
+     },
+     "slug": "contract-ca"
+    },
+    "hearts": 1,
+    "isMe": false,
+    "nickname": "계약팬f3",
+    "points": 90,
+    "rank": 1,
+    "score": 90,
+    "tier": "Bronze",
+    "weekGain": 0
+   },
+   {
+    "characterId": "star-pink",
+    "delta": 0,
+    "favorite": {
+     "names": {
+      "en": "Contract ca",
+      "ko": "계약 ca"
+     },
+     "slug": "contract-ca"
+    },
+    "hearts": 3,
+    "isMe": true,
+    "nickname": "계약팬f1",
+    "points": 40,
+    "rank": 2,
+    "score": 40,
+    "tier": "Silver",
+    "weekGain": 0
+   },
+   {
+    "characterId": "star-pink",
+    "delta": null,
+    "favorite": {
+     "names": {
+      "ko": "계약 cb"
+     },
+     "slug": "contract-cb"
+    },
+    "hearts": 5,
+    "isMe": false,
+    "nickname": "계약팬f2",
+    "points": 20,
+    "rank": 3,
+    "score": 20,
+    "tier": "Silver",
+    "weekGain": 20
+   }
+  ],
+  "state": "ready",
+  "today": "2026-11-09",
+  "weekGainDays": 1
+ },
+ "stale:creators:fans": {
+  "builtDay": "2026-11-08",
+  "comparable": false,
+  "computedAt": "2026-11-08T18:39:33.66129+09:00",
+  "day": "2026-11-08",
+  "failedAt": "2026-11-09T18:39:33.66129+09:00",
+  "metric": "fans",
+  "previousDay": null,
+  "rows": [
+   {
+    "challenge": false,
+    "delta": null,
+    "fans": 1,
+    "hearts": 3,
+    "imageUrl": "/images/groups/nchive-pencil.jpg",
+    "name": "계약 ca",
+    "rank": 1,
+    "score": 1,
+    "slug": "contract-ca",
+    "weekGain": null
+   },
+   {
+    "challenge": false,
+    "delta": null,
+    "fans": 1,
+    "hearts": 1,
+    "imageUrl": "/images/groups/nchive-pencil.jpg",
+    "name": "계약 cb",
+    "rank": 2,
+    "score": 1,
+    "slug": "contract-cb",
+    "weekGain": null
+   }
+  ],
+  "state": "stale",
+  "today": "2026-11-09",
+  "weekGainDays": null
+ },
+ "stale:creators:hearts": {
+  "builtDay": "2026-11-08",
+  "comparable": false,
+  "computedAt": "2026-11-08T18:39:33.66129+09:00",
+  "day": "2026-11-08",
+  "failedAt": "2026-11-09T18:39:33.66129+09:00",
+  "metric": "hearts",
+  "previousDay": null,
+  "rows": [
+   {
+    "challenge": false,
+    "delta": null,
+    "fans": 1,
+    "hearts": 3,
+    "imageUrl": "/images/groups/nchive-pencil.jpg",
+    "name": "계약 ca",
+    "rank": 1,
+    "score": 3,
+    "slug": "contract-ca",
+    "weekGain": null
+   },
+   {
+    "challenge": false,
+    "delta": null,
+    "fans": 1,
+    "hearts": 1,
+    "imageUrl": "/images/groups/nchive-pencil.jpg",
+    "name": "계약 cb",
+    "rank": 2,
+    "score": 1,
+    "slug": "contract-cb",
+    "weekGain": null
+   }
+  ],
+  "state": "stale",
+  "today": "2026-11-09",
+  "weekGainDays": null
+ },
+ "stale:fans:hearts": {
+  "builtDay": "2026-11-08",
+  "comparable": false,
+  "computedAt": "2026-11-08T18:39:33.66129+09:00",
+  "day": "2026-11-08",
+  "failedAt": "2026-11-09T18:39:33.66129+09:00",
+  "me": null,
+  "metric": "hearts",
+  "previousDay": null,
+  "rows": [
+   {
+    "characterId": "star-pink",
+    "delta": null,
+    "favorite": {
+     "names": {
+      "en": "Contract ca",
+      "ko": "계약 ca"
+     },
+     "slug": "contract-ca"
+    },
+    "hearts": 3,
+    "isMe": false,
+    "nickname": "계약팬f1",
+    "points": null,
+    "rank": 1,
+    "score": 3,
+    "tier": "Silver",
+    "weekGain": null
+   },
+   {
+    "characterId": "star-pink",
+    "delta": null,
+    "favorite": {
+     "names": {
+      "ko": "계약 cb"
+     },
+     "slug": "contract-cb"
+    },
+    "hearts": 1,
+    "isMe": false,
+    "nickname": "계약팬f2",
+    "points": null,
+    "rank": 2,
+    "score": 1,
+    "tier": "Bronze",
+    "weekGain": null
+   }
+  ],
+  "state": "stale",
+  "today": "2026-11-09",
+  "weekGainDays": null
+ },
+ "stale:fans:points": {
+  "builtDay": "2026-11-08",
+  "comparable": false,
+  "computedAt": "2026-11-08T18:39:33.66129+09:00",
+  "day": "2026-11-08",
+  "failedAt": "2026-11-09T18:39:33.66129+09:00",
+  "me": null,
+  "metric": "points",
+  "previousDay": null,
+  "rows": [
+   {
+    "characterId": "star-pink",
+    "delta": null,
+    "favorite": null,
+    "hearts": 0,
+    "isMe": false,
+    "nickname": "계약팬f3",
+    "points": 90,
+    "rank": 1,
+    "score": 90,
+    "tier": null,
+    "weekGain": null
+   },
+   {
+    "characterId": "star-pink",
+    "delta": null,
+    "favorite": {
+     "names": {
+      "en": "Contract ca",
+      "ko": "계약 ca"
+     },
+     "slug": "contract-ca"
+    },
+    "hearts": 3,
+    "isMe": false,
+    "nickname": "계약팬f1",
+    "points": 40,
+    "rank": 2,
+    "score": 40,
+    "tier": "Silver",
+    "weekGain": null
+   }
+  ],
+  "state": "stale",
+  "today": "2026-11-09",
+  "weekGainDays": null
+ }
+}

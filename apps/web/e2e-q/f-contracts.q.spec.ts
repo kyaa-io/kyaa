@@ -35,9 +35,20 @@ test("F1: 홈 랭킹 두 탭(팬·크리에이터)이 홈 랭킹 API(/api/rankin
   const [[fanDb]] = sql(`select read_home_fan_ranking(null, ${limit})::text`);
   const dbFans = (JSON.parse(fanDb).rows as any[]).map((r) => [r.rank, r.score, r.nickname, r.favorite?.slug ?? null]);
   expect(fans.json.rows.map((r: any) => [r.rank, r.score, r.nickname, r.favorite?.slug ?? null]), "홈 팬 랭킹 = read_home_fan_ranking").toEqual(dbFans);
-  const [[creatorDb]] = sql(`select read_home_creator_ranking('${creators.locale ?? "ko"}', ${creators.json.rows.length})::text`);
-  const dbCreators = (JSON.parse(creatorDb).rows as any[]).map((r) => [r.rank, r.slug, r.score, r.hearts]);
-  expect(creators.json.rows.map((r: any) => [r.rank, r.slug, r.score, r.hearts]), "홈 크리에이터 랭킹 = read_home_creator_ranking").toEqual(dbCreators);
+  // 랭킹 2단계: 화면은 두 탭 모두 하트로 연다(metric=hearts). 응답 metric 과 DB v2 함수 값이 같아야 한다.
+  expect([fans.json.metric, creators.json.metric], "홈 카드가 읽은 지표").toEqual(["hearts", "hearts"]);
+  const [[creatorDb]] = sql(`select read_home_creator_ranking_v2('${creators.locale ?? "ko"}', 'hearts', ${creators.json.rows.length})::text`);
+  const dbCreators = (JSON.parse(creatorDb).rows as any[]).map((r) => [r.rank, r.slug, r.score, r.hearts, r.fans]);
+  expect(creators.json.rows.map((r: any) => [r.rank, r.slug, r.score, r.hearts, r.fans]), "홈 크리에이터 랭킹 = read_home_creator_ranking_v2(hearts)").toEqual(dbCreators);
+  // 지표 2×2: 비로그인 API(5행) = DB v2 함수.
+  for (const [kind, metric] of [["fans", "hearts"], ["fans", "points"], ["creators", "fans"], ["creators", "hearts"]]) {
+    const api = (await get(page, `/api/rankings/home?kind=${kind}&metric=${metric}&locale=ko`)).json;
+    const [[db]] = sql(kind === "fans" ? `select read_home_fan_ranking_v2(null, '${metric}', 5)::text` : `select read_home_creator_ranking_v2('ko', '${metric}', 5)::text`);
+    const pick = (r: any) => [r.rank, r.score, r.nickname ?? r.slug];
+    expect(api.metric, `${kind}/${metric} 응답 지표`).toBe(metric);
+    expect(api.rows.length, `${kind}/${metric} 비로그인 행 수`).toBeLessThanOrEqual(5);
+    expect(api.rows.map(pick), `${kind}/${metric} = v2`).toEqual((JSON.parse(db).rows as any[]).map(pick));
+  }
   // 응답 1위가 화면에 실제로 보인다(크리에이터 탭을 누른 뒤).
   await expect(ranking).toContainText(creators.json.rows[0].name);
   await tab(/팬/).click();
@@ -61,7 +72,8 @@ test("F2: 인기글 10개, 추천·댓글·조회수와 랭킹이 DB 값과 일�
   expect(mism, mism.join("\n")).toEqual([]);
   const ranking = (await get(page, "/api/rankings/creators?period=all")).json;
   const [[n]] = sql("select jsonb_array_length(rows) from ranking_snapshots where kind='creator_hearts' and period='all' order by computed_at desc limit 1");
-  expect(ranking.rows.length, "랭킹 행 수가 최신 스냅샷과 다르다").toBe(Number(n));
+  // 비로그인 플랫폼 랭킹 목록은 5행까지다(랭킹 2단계, 결정 2026-11-09 15:52).
+  expect(ranking.rows.length, "랭킹 행 수가 최신 스냅샷(비로그인 5행 제한)과 다르다").toBe(Math.min(Number(n), 5));
 });
 
 test("F3: 글 상세에서 댓글 ⋯ 메뉴와 답글이 있고, 사진 업로드·대댓글 저장이 새로고침 뒤 유지된다", async ({ page, browser, baseURL }, info) => {

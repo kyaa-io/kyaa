@@ -18,7 +18,7 @@ describe("rankings routes", () => {
     const { handlers, rpc } = make(() => ({ period: "week", periodStart: "2026-11-02", computedAt: "2026-11-06T00:00:00Z", rows: [{ rank: 1, slug: "a", name: "A", imageUrl: null, score: 5, jjinfanCount: 3, myHearts: 9 }] }));
     const res = await handlers.creators(req("/api/rankings/creators"));
     const body = await res.json();
-    expect(res.headers.get("cache-control")).toContain("public");
+    expect(res.headers.get("cache-control")).toBe("private, max-age=60");
     expect(body.rows[0].myHearts).toBeNull();
     expect(rpc).toHaveBeenCalledWith("read_creator_ranking", { p_period: "week", p_viewer: null, p_locale: "ko" });
   });
@@ -101,7 +101,7 @@ describe("rankings routes", () => {
     }));
     const signedOut = await handlers.fans(req("/api/rankings/fans?limit=5"));
     const body = await signedOut.json();
-    expect(signedOut.headers.get("cache-control")).toContain("public");
+    expect(signedOut.headers.get("cache-control")).toBe("private, max-age=60");
     expect(rpc).toHaveBeenCalledWith("read_platform_fan_ranking", { p_period: "week", p_viewer: null, p_limit: 5 });
     expect(body.rows[0]).toEqual({ rank: 1, score: 7, nickname: "A", characterId: "star-pink", tier: "Gold", isMe: false });
     expect(body.me).toBeNull();
@@ -127,80 +127,136 @@ describe("rankings routes", () => {
     const res = await handlers.creators(req("/api/rankings/creators?metric=fans&limit=5&locale=en", { authorization: "Bearer t" }));
     const body = await res.json();
     expect(rpc).toHaveBeenCalledWith("read_creator_fan_ranking", { p_locale: "en", p_limit: 5 });
-    expect(authorize).not.toHaveBeenCalled();
-    expect(res.headers.get("cache-control")).toContain("public");
+    expect(authorize).toHaveBeenCalledTimes(1);
+    expect(res.headers.get("cache-control")).toBe("private, no-store");
     expect(body).toMatchObject({ metric: "fans", rows: [{ rank: 1, slug: "a", score: 136, myHearts: null }] });
     expect((await handlers.creators(req("/x?metric=money"))).status).toBe(400);
   });
 
-  it("answers the home fan ranking by day with movement, and no member id", async () => {
+  /** 09:05 KST on 2026-11-08, five minutes after the fixture snapshot: an ordinary read is one call. */
+  const fresh = { now: () => Date.parse("2026-11-08T00:05:00Z") };
+  const head = (extra: Record<string, unknown> = {}) => ({ state: "ready", day: "2026-11-08", today: "2026-11-08", previousDay: "2026-11-07", builtDay: "2026-11-08", computedAt: "2026-11-08T00:00:00Z", failedAt: null, comparable: true, weekGainDays: 7, ...extra });
+
+  it("answers the home fan ranking by day with named values and movement, and no member id", async () => {
     const { handlers, rpc } = make(() => ({
-      day: "2026-11-08", computedAt: "2026-11-08T00:00:00Z", comparable: true,
-      rows: [{ rank: 1, score: 7, nickname: "A", characterId: "star-pink", tier: "Gold", isMe: true, delta: 2, subjectId: ME }, { rank: 2, score: 3, nickname: "B", characterId: "x", tier: null, isMe: false, delta: null }],
-      me: { rank: 1, score: 7, inTop: true, subjectId: ME },
-    }));
+      ...head({ metric: "hearts" }),
+      rows: [{ rank: 1, score: 7, hearts: 7, points: null, nickname: "A", characterId: "star-pink", tier: "Gold", isMe: true, delta: 2, weekGain: 1, subjectId: ME }, { rank: 2, score: 3, hearts: 3, points: null, nickname: "B", characterId: "x", tier: null, isMe: false, delta: null, weekGain: null }],
+      me: { rank: 1, score: 7, hearts: 7, points: null, inTop: true, delta: 2, subjectId: ME },
+    }), fresh);
     const signedOut = await handlers.home(req("/api/rankings/home"));
     const body = await signedOut.json();
-    expect(signedOut.headers.get("cache-control")).toContain("public");
-    expect(rpc).toHaveBeenCalledWith("read_home_fan_ranking", { p_viewer: null, p_limit: 20 });
+    expect(signedOut.headers.get("cache-control")).toBe("private, max-age=60");
+    expect(signedOut.headers.get("vary")).toBe("Authorization");
+    expect(rpc).toHaveBeenCalledWith("read_home_fan_ranking_v2", { p_viewer: null, p_metric: "hearts", p_limit: 5 });
+    expect(body).toMatchObject({ state: "ready", metric: "hearts", previousDay: "2026-11-07", failedAt: null, period: "day", closesAt: "2026-11-09T00:00:00+09:00" });
     expect(body.rows.map((r: { delta: number | null }) => r.delta)).toEqual([2, null]);
-    expect(body.rows.map((r: { favorite: unknown }) => r.favorite)).toEqual([null, null]);
-    // r5: basis line values; an older database without the fan weekGain leaves the key out (optional), not null.
-    expect(body).toMatchObject({ period: "day", closesAt: "2026-11-09T00:00:00+09:00" });
-    expect(Number.isNaN(Date.parse(body.fetchedAt))).toBe(false);
-    expect("weekGain" in body.rows[0]).toBe(false);
-    expect("weekGainDays" in body).toBe(false);
-    expect(body.rows[0].isMe).toBe(false);
+    expect(body.rows[0]).toMatchObject({ hearts: 7, points: null, isMe: false });
     expect(body.me).toBeNull();
     expect(JSON.stringify(body)).not.toContain(ME);
-    const signedIn = await handlers.home(req("/api/rankings/home?kind=fans", { authorization: "Bearer t" }));
+    const signedIn = await handlers.home(req("/api/rankings/home?kind=fans&limit=50", { authorization: "Bearer t" }));
     const mine = await signedIn.json();
     expect(signedIn.headers.get("cache-control")).toBe("private, no-store");
+    expect(rpc).toHaveBeenLastCalledWith("read_home_fan_ranking_v2", { p_viewer: ME, p_metric: "hearts", p_limit: 50 });
     expect(mine.rows[0].isMe).toBe(true);
-    expect(mine.me).toEqual({ rank: 1, score: 7, inTop: true });
+    expect(mine.me).toEqual({ rank: 1, score: 7, hearts: 7, points: null, inTop: true, delta: 2 });
     expect(JSON.stringify(mine)).not.toContain(ME);
   });
 
-  it("passes the fan weekGain through once the database sends it (20261217010000)", async () => {
-    const { handlers } = make(() => ({
-      day: "2026-12-31", computedAt: null, comparable: false, weekGainDays: 7,
-      rows: [{ rank: 1, score: 7, nickname: "A", characterId: "x", tier: null, isMe: false, delta: null, weekGain: 5 }, { rank: 2, score: 3, nickname: "B", characterId: "x", tier: null, isMe: false, delta: null, weekGain: null }],
-      me: null,
-    }));
-    const body = await (await handlers.home(req("/api/rankings/home"))).json();
-    expect(body.weekGainDays).toBe(7);
-    expect(body.rows.map((r: { weekGain: number | null }) => r.weekGain)).toEqual([5, null]);
-    expect(body.closesAt).toBe("2027-01-01T00:00:00+09:00");
+  it("keeps each list's default metric when none is asked for, and passes the asked one (unit regression)", async () => {
+    const { handlers, rpc } = make((name, args) => ({ ...head(), metric: args.p_metric, rows: [], me: null }), fresh);
+    expect((await (await handlers.home(req("/x?kind=fans"))).json()).metric).toBe("hearts");
+    expect(rpc).toHaveBeenLastCalledWith("read_home_fan_ranking_v2", expect.objectContaining({ p_metric: "hearts" }));
+    expect((await (await handlers.home(req("/x?kind=creators"))).json()).metric).toBe("fans");
+    expect(rpc).toHaveBeenLastCalledWith("read_home_creator_ranking_v2", expect.objectContaining({ p_metric: "fans" }));
+    await handlers.creators(req("/api/rankings/creators"));
+    expect(rpc).toHaveBeenLastCalledWith("read_creator_ranking", expect.anything());
+    expect((await (await handlers.home(req("/x?kind=fans&metric=points"))).json()).metric).toBe("points");
+    expect((await (await handlers.home(req("/x?kind=creators&metric=hearts"))).json()).metric).toBe("hearts");
+    for (const bad of ["/x?kind=fans&metric=fans", "/x?kind=creators&metric=points", "/x?metric=hearts&metric=points", "/x?limit=51", "/x?kind=money"]) {
+      expect((await handlers.home(req(bad))).status, bad).toBe(400);
+    }
   });
 
-  it("answers the home creator ranking by fans holding hearts, and an empty first day", async () => {
+  it("answers the home creator ranking with fans and hearts by name, an empty day and a late day", async () => {
     const { handlers, rpc, authorize } = make(() => ({
-      day: "2026-11-08", computedAt: null, comparable: false,
-      rows: [{ rank: 1, slug: "a", name: "A", imageUrl: null, score: 125, hearts: 795, challenge: true, delta: null, id: "x" }],
+      ...head({ comparable: false, previousDay: null, weekGainDays: null }), metric: "hearts",
+      rows: [{ rank: 1, slug: "a", name: "A", imageUrl: null, score: 795, hearts: 795, fans: 125, challenge: true, delta: null, weekGain: null, id: "x" }],
     }));
-    const body = await (await handlers.home(req("/api/rankings/home?kind=creators&locale=en&limit=10", { authorization: "Bearer t" }))).json();
-    expect(rpc).toHaveBeenCalledWith("read_home_creator_ranking", { p_locale: "en", p_limit: 10 });
-    expect(authorize).not.toHaveBeenCalled();
-    // An older database without weekGain answers null for it, not a missing key.
-    expect(body).toEqual({ day: "2026-11-08", computedAt: null, comparable: false, period: "day", closesAt: "2026-11-09T00:00:00+09:00", fetchedAt: expect.any(String), weekGainDays: null, rows: [{ rank: 1, slug: "a", name: "A", imageUrl: null, score: 125, hearts: 795, challenge: true, delta: null, weekGain: null }] });
-    const empty = make(() => ({ day: null, computedAt: null, comparable: false, rows: [], me: null }));
-    expect(await (await empty.handlers.home(req("/x"))).json()).toEqual({ day: null, computedAt: null, comparable: false, period: "day", closesAt: null, fetchedAt: expect.any(String), rows: [], me: null });
-    expect((await handlers.home(req("/x?kind=money"))).status).toBe(400);
-    expect((await handlers.home(req("/x?limit=21"))).status).toBe(400);
+    const res = await handlers.home(req("/api/rankings/home?kind=creators&metric=hearts&locale=en&limit=10", { authorization: "Bearer t" }));
+    const body = await res.json();
+    expect(rpc).toHaveBeenCalledWith("read_home_creator_ranking_v2", { p_locale: "en", p_metric: "hearts", p_limit: 10 });
+    expect(authorize).toHaveBeenCalledTimes(1);
+    expect(res.headers.get("cache-control")).toBe("private, no-store");
+    expect(body.rows).toEqual([{ rank: 1, slug: "a", name: "A", imageUrl: null, score: 795, hearts: 795, fans: 125, challenge: true, delta: null, weekGain: null }]);
+    const empty = make(() => ({ ...head({ state: "empty", comparable: false, previousDay: null, weekGainDays: null }), rows: [] }));
+    expect(await (await empty.handlers.home(req("/x?kind=creators"))).json()).toMatchObject({ state: "empty", day: "2026-11-08", rows: [] });
+    const late = make(() => ({ ...head({ state: "stale", day: "2026-11-07", today: "2026-11-08", failedAt: "2026-11-08T00:01:00Z" }), rows: [], me: null }));
+    expect(await (await late.handlers.home(req("/x"))).json()).toMatchObject({ state: "stale", day: "2026-11-07", failedAt: "2026-11-08T00:01:00Z" });
   });
 
-  it("builds today's home table once on read when the answer is not from today, in every environment", async () => {
+  it("answers at most five rows signed out on every platform ranking list, also with a rejected token", async () => {
+    const { AuthError } = await import("@/features/auth/domain/auth-errors");
+    const rows = Array.from({ length: 9 }, (_, i) => ({ rank: i + 1, slug: `s${i}`, name: "N", imageUrl: null, score: 9 - i, jjinfanCount: 1, myHearts: null }));
+    const { handlers, rpc, authorize } = make((name) => name === "read_creator_ranking" ? { period: "all", periodStart: "2026-11-02", computedAt: null, rows }
+      : name === "read_creator_fan_ranking" ? { rows: [] } : { ...head(), periodStart: "2026-11-02", rows: [], me: null }, fresh);
+    await handlers.home(req("/x?kind=fans&limit=50"));
+    expect(rpc).toHaveBeenLastCalledWith("read_home_fan_ranking_v2", expect.objectContaining({ p_limit: 5 }));
+    await handlers.home(req("/x?kind=creators&limit=50"));
+    expect(rpc).toHaveBeenLastCalledWith("read_home_creator_ranking_v2", expect.objectContaining({ p_limit: 5 }));
+    await handlers.fans(req("/x?limit=50"));
+    expect(rpc).toHaveBeenLastCalledWith("read_platform_fan_ranking", expect.objectContaining({ p_limit: 5 }));
+    await handlers.creators(req("/x?metric=fans&limit=50"));
+    expect(rpc).toHaveBeenLastCalledWith("read_creator_fan_ranking", expect.objectContaining({ p_limit: 5 }));
+    const all = await handlers.creators(req("/x?period=all"));
+    expect((await all.json()).rows).toHaveLength(5);
+    for (const path of ["/x?kind=fans", "/x?kind=creators"]) expect((await handlers.home(req(path))).headers.get("cache-control")).toBe("private, max-age=60");
+    for (const res of [await handlers.fans(req("/x")), await handlers.creators(req("/x")), await handlers.creators(req("/x?metric=fans"))]) {
+      expect(res.headers.get("cache-control")).not.toContain("public");
+      expect(res.headers.get("vary")).toBe("Authorization");
+    }
+    authorize.mockRejectedValueOnce(new AuthError("AUTHENTICATION_REQUIRED", 401, "expired"));
+    await handlers.home(req("/x?kind=fans&limit=50", { authorization: "Bearer old" }));
+    expect(rpc).toHaveBeenLastCalledWith("read_home_fan_ranking_v2", { p_viewer: null, p_metric: "hearts", p_limit: 5 });
+    await handlers.home(req("/x?kind=fans&limit=50", { authorization: "Bearer t" }));
+    expect(rpc).toHaveBeenLastCalledWith("read_home_fan_ranking_v2", expect.objectContaining({ p_limit: 50 }));
+    const member = await handlers.creators(req("/x?period=all", { authorization: "Bearer t" }));
+    expect((await member.json()).rows).toHaveLength(9);
+  });
+
+  it("reads once while today's snapshot is under ten minutes old, and asks for a build after that (one call, then two or three)", async () => {
     const t = Date.parse("2026-11-08T15:30:00Z"); // 2026-11-09 00:30 KST
-    let built = "2026-11-08";
+    let computedAt = new Date(t - (9 * 60 + 59) * 1000).toISOString();
+    let builtDay = "2026-11-09";
+    let ensure: Record<string, unknown> = { built: true };
     const { handlers, rpc } = make((name) => {
-      if (name === "ensure_home_rankings") { built = "2026-11-09"; return { day: built, built: true }; }
-      return { day: built, builtDay: built, computedAt: null, comparable: false, rows: [], me: null };
+      if (name === "ensure_home_rankings") return ensure;
+      return { ...head(), builtDay, computedAt, rows: [], me: null };
     }, { now: () => t });
+    const calls = async (path: string) => { rpc.mockClear(); await handlers.home(req(path)); return rpc.mock.calls.map(([n]) => n); };
+    expect(await calls("/x")).toEqual(["read_home_fan_ranking_v2"]);
+    computedAt = new Date(t - (10 * 60 + 1) * 1000).toISOString();
+    expect(await calls("/x?kind=creators")).toEqual(["read_home_creator_ranking_v2", "ensure_home_rankings", "read_home_creator_ranking_v2"]);
+    for (const answer of [{ built: false, busy: true }, { built: false, waiting: true }, { built: false, failed: true }, { built: false }]) {
+      ensure = answer;
+      expect(await calls("/x"), JSON.stringify(answer)).toEqual(["read_home_fan_ranking_v2", "ensure_home_rankings"]);
+    }
+    // Midnight: yesterday's build. ensure builds today, or another reader did while this one waited: read again.
+    builtDay = "2026-11-08";
+    ensure = { built: false };
+    expect(await calls("/x")).toEqual(["read_home_fan_ranking_v2", "ensure_home_rankings", "read_home_fan_ranking_v2"]);
+    ensure = { built: true };
+    expect(await calls("/x")).toEqual(["read_home_fan_ranking_v2", "ensure_home_rankings", "read_home_fan_ranking_v2"]);
+  });
+
+  it("moves to the next KST day exactly at midnight", async () => {
+    let t = Date.parse("2026-11-08T14:59:59.999Z"); // 23:59:59.999 KST on 11-08
+    const { handlers, rpc } = make((name) => name === "ensure_home_rankings" ? { built: false } : { ...head(), builtDay: "2026-11-08", computedAt: new Date(t).toISOString(), rows: [], me: null }, { now: () => t });
     await handlers.home(req("/x"));
-    expect(rpc.mock.calls.map(([n]) => n)).toEqual(["read_home_fan_ranking", "ensure_home_rankings", "read_home_fan_ranking"]);
+    expect(rpc.mock.calls.map(([n]) => n)).toEqual(["read_home_fan_ranking_v2"]);
     rpc.mockClear();
-    await handlers.home(req("/x?kind=creators"));
-    expect(rpc.mock.calls.map(([n]) => n)).toEqual(["read_home_creator_ranking"]);
+    t += 1;
+    await handlers.home(req("/x"));
+    expect(rpc.mock.calls.map(([n]) => n)).toContain("ensure_home_rankings");
   });
 
   it("lists the challenges switched on, and fails closed on an odd answer", async () => {
