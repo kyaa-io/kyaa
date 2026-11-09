@@ -2,10 +2,10 @@ import {render,screen} from '@testing-library/react';
 import {beforeEach,expect,it,vi} from 'vitest';
 import {CreatorGroupHeader,CreatorGroupActivities,CreatorGroupRooms} from './creator-group-header';
 import {GroupPageProvider} from './group-page-context';
-const state=vi.hoisted(()=>({data:undefined as any,query:'',error:false,failure:undefined as any,loading:false,authenticated:false,ready:true,summary:{state:{status:'loading'},retry:()=>{}} as any,urls:[] as (string|null)[]}));
+const state=vi.hoisted(()=>({data:undefined as any,query:'',error:false,failure:undefined as any,loading:false,authenticated:false,ready:true,summary:{state:{status:'loading'},retry:()=>{}} as any,urls:[] as (string|null)[],preload:vi.fn()}));
 vi.mock('next/navigation',()=>({useSearchParams:()=>new URLSearchParams(state.query)}));
 vi.mock('./use-group-resource',()=>({GroupRequestError:class extends Error{},useGroupRequest:()=>({request:vi.fn(),authenticated:state.authenticated,ready:state.ready,ownerKey:'local'}),useGroupResource:(url:string|null)=>{state.urls.push(url);return {data:url?state.data:undefined,error:state.error,failure:state.failure,loading:state.loading,ownerKey:'local',authenticated:state.authenticated,ready:state.ready,request:vi.fn(),retry:vi.fn()};}}));
-vi.mock('./use-group-preload',()=>({usePreloadGroupResource:()=>vi.fn()}));
+vi.mock('./use-group-preload',()=>({usePreloadGroupResource:()=>state.preload}));
 vi.mock('./use-group-presence',async importOriginal=>({...await importOriginal<typeof import('./use-group-presence')>(),useOwnGroupPresence:()=>({error:false,retry:vi.fn()})}));
 vi.mock('./group-presence',()=>({GroupPresence:({memberCount}:any)=><div data-testid='presence'>{memberCount}</div>}));
 vi.mock('./group-page-menu',()=>({GroupPageMenu:()=><button>page-menu</button>,useCompactHeader:()=>false}));
@@ -20,7 +20,7 @@ vi.mock('@/features/content-safety/ui/use-automatic-translation',()=>({Translate
 const celebrity={slug:'elina',name:'엘리나',summary:'원문',roles:['creator'],image:{url:'/fixture.png'},socialLinks:[{platform:'youtube',url:'https://youtube.test/x'}]} as any;
 const brand={...celebrity,slug:'runmusic',name:'RUN&MUSIC',roles:['brand']};
 const page=(patch:object={})=>({id:'page-id',kind:'fan',slug:'elina',celebrityId:'c',name:'엘리나',description:'설명',memberCount:13,question:null,imageUrl:null,...patch});
-beforeEach(()=>{Object.assign(state,{data:undefined,query:'',error:false,failure:undefined,loading:false,authenticated:false,ready:true,summary:{state:{status:'loading'},retry:()=>{}},urls:[]});});
+beforeEach(()=>{Object.assign(state,{data:undefined,query:'',error:false,failure:undefined,loading:false,authenticated:false,ready:true,summary:{state:{status:'loading'},retry:()=>{}},urls:[],preload:vi.fn()});Object.assign(window,{requestIdleCallback:(run:()=>void)=>{run();return 1;},cancelIdleCallback:()=>{}});});
 
 it('renders one header without the old meta line, join button or text verification link',()=>{
  state.data={page:page(),membership:null};render(<CreatorGroupHeader celebrity={celebrity} locale='ko' tab='home'/>);
@@ -85,4 +85,26 @@ it('shows a skeleton while resolving and keeps the resolver error with a retry',
  expect(document.querySelector('[data-fan-skeleton]')).toHaveAttribute('aria-busy','true');expect(screen.queryByText('불러오는 중')).toBeNull();first.unmount();
  state.error=true;render(<GroupPageProvider slug='elina' celebrity={celebrity} locale='ko'><CreatorGroupActivities locale='ko'/></GroupPageProvider>);
  expect(screen.getByRole('alert')).toBeInTheDocument();expect(screen.getByRole('button',{name:'다시 시도'})).toBeInTheDocument();
+});
+
+it('reads the neighbouring rooms tab once the head is settled: public list signed out, own list for a member, nothing for a signed-in non-member',()=>{
+ state.data={page:page(),membership:null};const out=render(<CreatorGroupHeader celebrity={celebrity} locale='ko' tab='board'/>);
+ expect(state.preload).toHaveBeenCalledWith('/api/groups/page-id/public-rooms');out.unmount();
+ state.preload=vi.fn();state.authenticated=true;const nonMember=render(<CreatorGroupHeader celebrity={celebrity} locale='ko' tab='board'/>);
+ expect(state.preload).not.toHaveBeenCalled();nonMember.unmount();
+ state.data={page:page(),membership:{role:'member'}};render(<CreatorGroupHeader celebrity={celebrity} locale='ko' tab='board'/>);
+ expect(state.preload).toHaveBeenCalledWith('/api/groups/page-id/rooms');
+});
+
+it('keeps the same head and tab strip nodes when only the tab in the address changes',()=>{
+ state.data={page:page(),membership:null};state.query='locale=ko&tab=board';
+ const tree=()=><GroupPageProvider slug='elina' celebrity={celebrity} locale='ko'><CreatorGroupHeader celebrity={celebrity} locale='ko' tab='board'/></GroupPageProvider>;
+ const view=render(tree());
+ const h1=screen.getByRole('heading',{level:1,name:'엘리나'}),nav=document.querySelector('nav[data-fan-tabs]');
+ expect(nav?.querySelector('[aria-current="page"]')?.getAttribute('href')).toContain('tab=board');
+ state.query='locale=ko&tab=rooms';view.rerender(tree());
+ expect(nav?.querySelector('[aria-current="page"]')?.getAttribute('href')).toContain('tab=rooms');
+ expect(screen.getByRole('link',{name:'게시판'})).not.toHaveAttribute('aria-current');
+ expect(screen.getByRole('heading',{level:1,name:'엘리나'})).toBe(h1);
+ expect(document.querySelector('nav[data-fan-tabs]')).toBe(nav);
 });
