@@ -1,3 +1,4 @@
+-- Group comments have no edit path, so there is no editedAt.
 \set ON_ERROR_STOP on
 do $$begin if current_database()<>'byus_clean'or inet_server_addr()is not null then raise exception 'Disposable Unixsocket byus_clean required';end if;end $$;
 -- Synthetic data only. The first block rolls back; the last part runs the rollback file and applies the migration again.

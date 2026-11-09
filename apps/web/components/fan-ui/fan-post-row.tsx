@@ -4,6 +4,7 @@ import type { Route } from "next";
 import Link from "next/link";
 import { useState, type ReactNode } from "react";
 
+import { EditedMark } from "@/features/fan-posts/ui/edited-mark";
 import type { AppLocale } from "@/i18n/locales";
 import { FanTag } from "./fan-tag";
 import { fanUiText } from "./fan-ui-copy";
@@ -33,13 +34,14 @@ export type FanPostRowProps = Readonly<{
   /** 인증 아티스트가 쓴 글이면 작성자 이름 옆에 태그를 둔다. */
   authorArtist?: boolean;
   time?: string | Date;
+  edited?: boolean;
   views?: number | null;
   likes?: number | null;
   density?: "home" | "board";
 }>;
 
 /** 게시판 목록 한 줄. 값이 없는 열은 빼고 `—`를 쓰지 않는다. 사진이 없거나 깨지면 페이지 이미지를, 그것도 없으면 글 아이콘 칸을 둔다. */
-export function FanPostRow({ href, locale, title, thumbnail, pageImage, notice = false, commentCount, source, author, authorArtist = false, time, views, likes, density = "board" }: FanPostRowProps) {
+export function FanPostRow({ href, locale, title, thumbnail, pageImage, notice = false, commentCount, source, author, authorArtist = false, time, edited = false, views, likes, density = "board" }: FanPostRowProps) {
   const [broken, setBroken] = useState(false);
   const count = (value: number) => value.toLocaleString(locale);
   const timeLabel = time === undefined ? "" : fanPostTimeLabel(time);
@@ -57,6 +59,7 @@ export function FanPostRow({ href, locale, title, thumbnail, pageImage, notice =
       {source && <Link href={source.href as Route} className={styles.source}>{source.label}</Link>}
       {author && <span className={styles.authorCell}><span className={styles.author}>{author}</span>{authorArtist && <FanTag tone="artist">{fanUiText(locale, "artistTag")}</FanTag>}</span>}
       {timeLabel && <time className={styles.time} dateTime={isoTime} suppressHydrationWarning>{timeLabel}</time>}
+      {timeLabel && edited && <EditedMark locale={locale} />}
       {density === "board" && (typeof views === "number" ? <span className={styles.number}>{fanUiText(locale, "viewsLabel", [count(views)])}</span> : <span className={styles.number} data-blank aria-hidden="true" />)}
       {density === "board" && (typeof likes === "number" ? <span className={styles.number}>{fanUiText(locale, "likesLabel", [count(likes)])}</span> : <span className={styles.number} data-blank aria-hidden="true" />)}
     </div>
