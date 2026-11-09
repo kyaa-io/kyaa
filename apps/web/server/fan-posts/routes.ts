@@ -4,7 +4,8 @@ import { AuthError } from "@/features/auth/domain/auth-errors";
 import { celebritySlugSchema } from "@/features/fanpage/domain/community";
 import { prepareRichPostBody, richDocumentForPost, RICH_DOCUMENT_MAX_BYTES } from "@/components/editor/rich-document";
 import { WAVE_FANPAGE_SLUG } from "@/features/fanpage/domain/wave-programs";
-import { type FanPost, postReactionInputSchema, postReactionSchema, assetSchema, blocksSchema, commentSchema, createCommentSchema, boardCreatePostSchema, boardEditPostSchema, postAttachmentPolicySchema, noticeSchema, postSchema, reportInputSchema, adminReportSchema, adminReportSummarySchema, targetSchema, translationInputSchema, translationSchema } from "@/features/fan-posts/domain/content";
+import { postTitleSlots } from "@/features/fan-posts/domain/post-title-slots";
+import { type FanPost, slotTranslationSchema, postReactionInputSchema, postReactionSchema, assetSchema, blocksSchema, commentSchema, createCommentSchema, boardCreatePostSchema, boardEditPostSchema, postAttachmentPolicySchema, noticeSchema, postSchema, reportInputSchema, adminReportSchema, adminReportSummarySchema, targetSchema, translationInputSchema, translationSchema } from "@/features/fan-posts/domain/content";
 import { boundedJson, boundedMultipart, CertificationBodyError, json } from "@/server/certification/certification-http";
 import { MAX_PUBLIC_IMAGE_BYTES, MAX_PUBLIC_IMAGE_MULTIPART_BYTES, PublicImageError } from "@/server/media/public-image-processing";
 import type { FanpageDependencies } from "@/server/fanpage/routes";
@@ -17,6 +18,8 @@ export interface ContentDependencies extends FanpageDependencies {
   upload(owner: string, slug: string, bytes: Uint8Array): Promise<z.infer<typeof assetSchema>>;
   download(path: string, thumbnail?: boolean): Promise<Blob>;
   translate(text: string, locale: AppLocale): Promise<{ translatedText: string; detectedSourceLocale?: string }>;
+  /** One provider call for several texts; the answer has one entry per text, in order. */
+  translateTexts(texts: readonly string[], locale: AppLocale): Promise<Array<{ translatedText: string; detectedSourceLocale?: string }>>;
 }
 const cursorSchema = z.object({ at: z.iso.datetime({ offset: true }), id: z.uuid(), pinned: z.boolean().optional() }).strict();
 const postCursorSchema = z.union([
@@ -321,6 +324,26 @@ export function createContentHandlers(deps: ContentDependencies) {
     translate: (request: Request) => run(async () => {
       const p_app_user_id = await owner(request), value = translationInputSchema.parse(await boundedJson(request, 2048));
       const args = { p_app_user_id, p_target_type: value.targetType, p_target_id: value.targetId, p_target_locale: value.targetLocale, p_locale: value.locale };
+      if (value.slots) {
+        if (value.targetType !== "fan_post") throw new Error("FAN_WEB_INVALID_INPUT");
+        // The slots come from the source text, and the cache holds one row per slot. A whole-text row is never read here.
+        const raw = await deps.rpc("fan_web_content_target", { p_app_user_id, p_target_type: value.targetType, p_target_id: value.targetId, p_locale: value.locale });
+        if (raw === null) throw new Error("FAN_WEB_NOT_FOUND");
+        const target = checked(z.object({ body: z.string(), revision: z.number().int().positive(), sourceHash: z.string().regex(/^[a-f0-9]{64}$/) }), raw);
+        const slots = postTitleSlots(target.body), count = slots.reduce((sum, item) => sum + Array.from(item.text).length, 0);
+        if (slots.length === 0 || count > 20_000) throw new Error("TRANSLATION_INVALID_INPUT");
+        const cachedSlots = await deps.rpc("read_content_translation_slots", args);
+        if (cachedSlots !== null) return json(checked(slotTranslationSchema, cachedSlots));
+        await deps.rpc("reserve_content_translation_request", { p_app_user_id, p_character_count: count });
+        const results = await deps.translateTexts(slots.map(item => item.text), value.targetLocale);
+        if (results.length !== slots.length) throw new Error("TRANSLATION_FAILED");
+        await deps.rpc("save_content_translation_slots", { ...args, p_source_revision: target.revision, p_source_hash: target.sourceHash,
+          p_slots: Object.fromEntries(slots.map((item, index) => [item.slot, results[index].translatedText])), p_detected_source_locale: results[0].detectedSourceLocale ?? null });
+        // Recheck after provider latency, as the whole-text path does. Concurrent misses keep the first stored value, and every response reads it back.
+        const stored = await deps.rpc("read_content_translation_slots", args);
+        if (stored === null) throw new Error("FAN_WEB_CONFLICT");
+        return json({ ...checked(slotTranslationSchema, stored), cached: false });
+      }
       const cached = await deps.rpc("read_content_translation", args);
       if (cached !== null) return json(checked(translationSchema, cached));
       const raw = await deps.rpc("fan_web_content_target", { p_app_user_id, p_target_type: value.targetType, p_target_id: value.targetId, p_locale: value.locale });

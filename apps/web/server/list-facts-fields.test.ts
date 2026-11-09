@@ -69,7 +69,7 @@ describe("friend facts", () => {
 describe("comment reply counts", () => {
   it("fan post comments call the replies reader only when asked", async () => {
     const rpc = vi.fn().mockResolvedValue({ items: [{ id: post, postId: page, parentId: null, body: "b", revision: 1, author: { nickname: "팬", avatarUrl: "/images/avatars/star-pink.webp" }, createdAt: "2026-11-08T00:00:00Z", isOwner: false, reactions: [], replyCount: 2 }], hasMore: false });
-    const deps = { rpc, authorize: vi.fn().mockResolvedValue({ appUserId: me }), authorizeAdmin: vi.fn(), upload: vi.fn(), download: vi.fn(), translate: vi.fn() } satisfies ContentDependencies;
+    const deps = { rpc, authorize: vi.fn().mockResolvedValue({ appUserId: me }), authorizeAdmin: vi.fn(), upload: vi.fn(), download: vi.fn(), translate: vi.fn(), translateTexts: vi.fn() } satisfies ContentDependencies;
     const api = createContentHandlers(deps);
     const response = await api.comments(req(`/api/posts/${post}/comments?fields=replies`), post);
     expect(response.status).toBe(200);

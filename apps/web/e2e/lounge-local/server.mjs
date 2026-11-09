@@ -150,7 +150,7 @@ export async function startHarness({ communityMode = false, fanWebMode = false }
     "read_celebrity_notice_comments", "post_celebrity_notice_comment", "remove_owned_notice_comment", "read_celebrity_fan_community", "read_celebrity_fan_leaderboard", "read_celebrity_cheers", "post_celebrity_cheer",
     "read_public_home_feed", "read_public_home_feed_page", "read_unified_creator_feed", "read_fan_notices", "read_fan_notice", "read_fan_posts", "save_fan_post", "read_fan_post", "remove_fan_post", "read_fan_post_comments", "post_fan_post_comment", "remove_fan_post_comment", "set_fan_post_like",
     "reserve_content_asset", "finish_content_asset_upload", "abandon_content_asset_upload", "read_content_asset", "read_admin_content_asset", "post_content_report", "block_content_author", "read_content_blocks", "remove_content_block",
-    "read_content_translation", "fan_web_content_target", "reserve_content_translation_request", "save_content_translation", "read_admin_content_reports", "resolve_admin_content_report",
+    "read_content_translation", "fan_web_content_target", "reserve_content_translation_request", "save_content_translation", "read_content_translation_slots", "save_content_translation_slots", "read_admin_content_reports", "resolve_admin_content_report",
     "fan_web_list_schedules", "fan_web_get_schedule", "fan_web_set_schedule_subscription", "fan_web_list_owned_schedule_suggestions", "fan_web_submit_schedule_suggestion",
     "fan_web_list_owned_fanpage_requests", "fan_web_submit_fanpage_request", "fan_web_check_fanpage_request", "fan_web_list_live_submissions", "fan_web_submit_live_submission", "fan_web_delete_live_submission",
     "fan_web_admin_list_schedules", "fan_web_admin_save_schedule", "fan_web_admin_list_schedule_suggestions", "fan_web_admin_review_schedule_suggestion", "fan_web_admin_list_fanpage_requests", "fan_web_admin_review_fanpage_request",
@@ -180,6 +180,7 @@ export async function startHarness({ communityMode = false, fanWebMode = false }
     },
     async download(storagePath) { const value = localAssets.get(storagePath); if (!value) throw new Error("FAN_WEB_NOT_FOUND"); return value; },
     async translate() { throw new Error("TRANSLATION_UNAVAILABLE"); },
+    async translateTexts() { throw new Error("TRANSLATION_UNAVAILABLE"); },
   });
   const participation = createParticipationHandler(dependencies);
   const history = createFanHistoryHandler(dependencies);
