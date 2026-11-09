@@ -69,7 +69,7 @@ describe("FanSiteFooter", () => {
 
     const footer = screen.getByRole("contentinfo");
     expect(within(footer).getByRole("navigation").querySelectorAll("section")).toHaveLength(3);
-    expect(within(footer).getByRole("navigation").querySelectorAll("a")).toHaveLength(14);
+    expect(within(footer).getByRole("navigation").querySelectorAll("a")).toHaveLength(17);
     expect(footer.querySelectorAll('a[target="_blank"]')).toHaveLength(5);
     const wave = within(footer).getByRole("link", { name: "kyaa wave" });
     expect(wave).toHaveAttribute("href", "https://kyaawave.com/");
@@ -82,6 +82,40 @@ describe("FanSiteFooter", () => {
     expect(footer.querySelector('a[href*="x.com/kyaa_app"]')).toHaveAttribute("href", "https://x.com/kyaa_app");
     expect(footer.querySelector(`a[href="/privacy?locale=${locale}"]`)).toBeInTheDocument();
     expect(footer.querySelector("dl")).toBeInTheDocument();
+  });
+
+  it.each(APP_LOCALES)("lists the fan guides right under the service guide in %s", (locale) => {
+    render(<FanSiteFooter locale={locale} />);
+
+    const guideLinks = [...screen.getByRole("navigation").querySelectorAll("section")[2].querySelectorAll("a")];
+    const hrefs = guideLinks.map((link) => link.getAttribute("href"));
+    expect(hrefs.slice(0, 5)).toEqual([
+      `/guide?locale=${locale}`,
+      `/guide/jjinfan?locale=${locale}`,
+      `/guide/dukjil?locale=${locale}`,
+      `/bias/promotion?locale=${locale}`,
+      `/my/inquiries?locale=${locale}`,
+    ]);
+    for (const link of guideLinks.slice(1, 4)) {
+      expect(link.textContent).toMatch(/\S/);
+      expect(link.textContent).not.toContain("kyaa");
+      expect(link).not.toHaveAttribute("target");
+    }
+  });
+
+  it("uses each guide page's own title as the Korean and English link label", () => {
+    const labels = {
+      ko: ["찐팬 되는 법", "덕질하는 법", "팬페이지 홍보 안내"],
+      en: ["How to become a true fan", "How to earn as a fan", "Promote your fan page"],
+    } as const;
+    for (const locale of ["ko", "en"] as const) {
+      const { unmount } = render(<FanSiteFooter locale={locale} />);
+      const navigation = screen.getAllByRole("navigation")[0];
+      expect(within(navigation).getByRole("link", { name: labels[locale][0] })).toHaveAttribute("href", `/guide/jjinfan?locale=${locale}`);
+      expect(within(navigation).getByRole("link", { name: labels[locale][1] })).toHaveAttribute("href", `/guide/dukjil?locale=${locale}`);
+      expect(within(navigation).getByRole("link", { name: labels[locale][2] })).toHaveAttribute("href", `/bias/promotion?locale=${locale}`);
+      unmount();
+    }
   });
 
   it("keeps compact responsive groups and accessible controls", () => {
