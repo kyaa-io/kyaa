@@ -33,6 +33,16 @@ it("celebrates a rise once, marks it seen at once and opens the passport history
   expect(h.request).toHaveBeenCalledTimes(1);
 });
 
+it("adds the tier bonuses paid for the batch, and says nothing about a rise without one", async () => {
+  h.data = { changes: [{ ...rise("10000000-0000-4000-8000-000000000001", "Bronze", "Silver"), bonusPoints: 30 }, { ...rise("10000000-0000-4000-8000-000000000002", "Silver", "Gold"), bonusPoints: 100 }] };
+  render(<TierCelebration />);
+  expect(await screen.findByRole("dialog", { name: "골드 등급이 됐어요" })).toHaveTextContent("달성 보너스 +130P");
+  cleanup();
+  h.data = { changes: [rise("10000000-0000-4000-8000-000000000003", "Bronze", "Silver")] };
+  render(<TierCelebration />);
+  expect(await screen.findByRole("dialog", { name: "실버 등급이 됐어요" })).not.toHaveTextContent("보너스");
+});
+
 it("shows the highest of several rises and marks all of them", async () => {
   h.data = { changes: [rise("10000000-0000-4000-8000-000000000001", "Bronze", "Silver"), rise("10000000-0000-4000-8000-000000000002", "Silver", "Gold")] };
   render(<TierCelebration />);
