@@ -3,7 +3,7 @@ import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 const root = resolve(process.cwd(), "../..");
 const read = (path: string) => readFileSync(resolve(root, path), "utf8");
-const migration = read("supabase/migrations/20261220090000_fan_list_sort.sql");
+const migration = read("supabase/migrations/20261220130000_fan_list_sort.sql");
 describe("fan list sort migration contract", () => {
   it("patches the current reader with shape guards and preserves owner/RLS verification", () => {
     expect(migration).toContain("pg_catalog.pg_get_functiondef('public.read_group_public_people");
@@ -24,7 +24,7 @@ describe("fan list sort migration contract", () => {
     expect(migration).toContain("p_mode<>'jjinfans' or stats.hearts>0");
   });
   it("has a rollback without dropping legacy functions", () => {
-    const rollback = read("supabase/rollback/20261220090000_fan_list_sort.sql");
+    const rollback = read("supabase/rollback/20261220130000_fan_list_sort.sql");
     expect(rollback).toContain("drop function public.read_group_fans");
     expect(rollback).not.toContain("drop function public.read_group_public_people");
     expect(rollback).toContain("FAN_LIST_SORT_SHAPE");

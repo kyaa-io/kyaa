@@ -79,10 +79,10 @@ begin
  raise notice 'PASS fan_list_sort: order, tie-break, keyset, deleted anchor, filter, first heart, zeros, privacy, block, owner';
 end $$;
 rollback;
-\ir ../rollback/20261220090000_fan_list_sort.sql
+\ir ../rollback/20261220130000_fan_list_sort.sql
 do $$begin
  if to_regprocedure('public.read_group_fans(uuid,uuid,text,text,jsonb,integer,public.content_locale)') is not null then raise exception 'rollback left reader';end if;
  if to_regprocedure('public.read_group_public_people(uuid,uuid,integer,integer,public.content_locale)') is null then raise exception 'rollback removed legacy';end if;
  raise notice 'PASS fan_list_sort rollback';
 end $$;
-\ir ../migrations/20261220090000_fan_list_sort.sql
+\ir ../migrations/20261220130000_fan_list_sort.sql
