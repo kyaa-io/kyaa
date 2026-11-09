@@ -3,6 +3,7 @@
 import { ArrowRight, Lock } from "lucide-react";
 import { CreatorImage } from "@/components/fan-ui/creator-image";
 import { FanAction } from "@/components/fan-ui/fan-action";
+import { FanSectionLink } from "@/components/fan-ui/fan-section-link";
 import { FanSkeleton } from "@/components/fan-ui/fan-skeleton";
 import { creatorHomeHref } from "@/features/creator/domain/creator-navigation";
 import { activeToday, parseDukjilToday } from "@/features/dukjil/domain/dukjil-ui";
@@ -52,7 +53,7 @@ export function MyFavoritesSkeleton({ title }: { title: string }) {
 /** 내 최애: 사진을 크게 쓰고 연속 일수와 스탬프 진행을 한 줄로 붙인다. 값은 실제 응답이다. */
 export function MyFavorites({ creators, locale, labels }: { creators: Creator[]; locale: AppLocale; labels: MyFavoritesLabels }) {
   return <section className={styles.section} aria-labelledby="my-favorites-title">
-    <header><h2 id="my-favorites-title">{labels.title}</h2><FanAction variant="text" trailingIcon={<ArrowRight />} href={`/celebrities?locale=${locale}`}>{labels.find}</FanAction></header>
+    <header><h2 id="my-favorites-title">{labels.title}</h2><FanSectionLink href={`/celebrities?locale=${locale}`}>{labels.find}</FanSectionLink></header>
     {creators.length ? <ul>{creators.map((creator) => <Favorite key={creator.celebrity.slug} creator={creator} locale={locale} />)}</ul>
       : <div className={styles.empty}><p>{labels.empty}</p></div>}
   </section>;
@@ -61,7 +62,7 @@ export function MyFavorites({ creators, locale, labels }: { creators: Creator[];
 /** 비로그인 최애 자리. 움직이지 않는 점선 아바타와 잠금 표시 한 줄로 내 값이 들어올 자리임을 보이고, `최애 찾기`로 이어진다. 회색 막대는 로딩으로 읽혀 쓰지 않는다. */
 export function MyGuestFavorites({ locale, labels }: { locale: AppLocale; labels: MyFavoritesLabels }) {
   return <section className={styles.section} aria-labelledby="my-favorites-title">
-    <header><h2 id="my-favorites-title">{labels.title}</h2><FanAction variant="text" trailingIcon={<ArrowRight />} href={`/celebrities?locale=${locale}`}>{labels.find}</FanAction></header>
+    <header><h2 id="my-favorites-title">{labels.title}</h2><FanSectionLink href={`/celebrities?locale=${locale}`}>{labels.find}</FanSectionLink></header>
     <div className={styles.lockedRow}><span aria-hidden="true"><Lock /></span><p>{locale === "ko" ? "로그인 후 확인" : translate(locale, lockedMessages.m1dcdb3d77594, "Sign in to view")}</p></div>
   </section>;
 }

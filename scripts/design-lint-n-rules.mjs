@@ -30,6 +30,7 @@ export const RULES_N = {
   N28: { sev: 'count', note: '정적 글꼴 Pretendard UI 참조 금지. 굵기 토큰을 쓴다(8장 ③)' },
   // 2026-11-08 H6(사용자 지시): 강조색은 kyaa 핑크 1색, 보라는 로고 아트에만, 짙은 회색 채움 캡슐 금지.
   N29: { sev: 'fail', note: 'CSS·TSX 의 보라 색상값(hex·rgb·hsl·oklch, 색상 250~320°·채도 10% 이상) 금지. 강조색은 var(--color-accent*) 핑크 1색. 로고·그림 아트 파일만 허용(H6)' },
+  N31: { sev: 'fail', note: '섹션 머리(제목 바로 옆) 행동은 FanSectionLink/FanSectionHeader 의 글자 링크 + 글자 ›. 제목 바로 뒤의 FanAction 은 variant="text" 이고 아이콘이 없어야 하며, 클래스를 단 Link·a·button 이나 헤더 안 a·button 에 테두리·배경·반경을 주는 CSS 는 금지(알약·아이콘 버튼)' },
   N30: { sev: 'fail', note: '짙은 회색(또는 --color-ink) 채움 알약 금지. 캡슐·칩·배지는 흰 바탕 + 1px 테두리, 선택은 핑크 테두리/글자나 옅은 핑크 바탕 1단, 진행 막대·행동 버튼은 핑크 토큰(H6)' },
 };
 
@@ -110,6 +111,11 @@ export function scanNCss(code, file) {
   root.walkRules((r) => {
     if (/\[data-number-role/.test(r.selector) && !r.nodes.some((c) => c.type === 'decl' && c.prop === 'font-variant-numeric' && /tabular-nums/.test(c.value))) add(out, `N6|${short(r.selector, 60)} no tabular-nums`);
   });
+  root.walkRules((r) => {
+    if (!HEAD_ACTION_SELECTOR.test(r.selector) || DIALOG_HEAD.test(r.selector)) return;
+    const hit = r.nodes.some((c) => c.type === 'decl' && ((/^border(-color)?$/.test(c.prop) && !/^(0|none|transparent)\b/.test(c.value.trim())) || (c.prop === 'background' || c.prop === 'background-color') && !/^(none|transparent|inherit|initial|unset)\b/.test(c.value.trim()) || /^border(-[a-z-]+)?-radius$/.test(c.prop) && !/^(0|0px)$/.test(c.value.trim())));
+    if (hit) add(out, `N31|${short(r.selector, 70)}`);
+  });
   if (hasAnimation && !hasReduced) add(out, 'N7|animation without prefers-reduced-motion');
   return out;
 }
@@ -120,6 +126,12 @@ const MOTION_ALLOW = /^apps\/web\/(components\/fan-ui\/(fan-dialog|fan-route-tra
 const UI_LIB = /from\s+['"](@radix-ui\/[^'"]+|@base-ui\/[^'"]+|@base-ui-components\/[^'"]+)['"]/;
 const NOT_NEEDING_MOTION_CHECK = /useReducedMotion|MotionConfig|prefers-reduced-motion/;
 const MOCK = /\b(?:const|let|var)\s+((?:MOCK|DUMMY|SAMPLE|FIXTURE)_\w+|(?:mock|dummy|sample|fixture)[A-Z]\w*)\s*[=:]/g;
+
+// 머리 컨테이너(<header> 또는 className 에 head·Head 가 든 div) 안에서 제목 바로 뒤에 오는 행동 요소.
+const SECTION_HEAD_ACTION = /<(?:header\b[^>]*|div\b[^>]*\bclassName=\{[^}]*[Hh]ead[^}]*\}[^>]*)>\s*(?:<div\b[^>]*>\s*)?<(?:h[1-3]|FanHeading)\b[^>]*>[^]{0,260}?<\/(?:h[1-3]|FanHeading)>\s*(?:<\/(?:div|span)>\s*)?(?:\{[^{}]{0,80}&&\s*)?<(FanAction|Link|a)\b/g;
+// 섹션 머리 컨테이너(…Head|Heading|Header) 직계의 a·button 은 알약·테두리·배경을 갖지 못한다. 대화상자·시트·오버레이 머리의 닫기 버튼은 제외한다.
+const DIALOG_HEAD = /dialog|modal|sheet|overlay|drawer|popover|confirm|close|back|languages|valueRow|installButton|detailHeader/i;
+const HEAD_ACTION_SELECTOR = /(?:head|heading|header)[\w-]*\s*>\s*(?:a|button)\b|(?:head|heading|header)[\w-]*\s+(?:a|button)\b/i;
 
 export function scanNTs(code, file) {
   const out = new Map();
@@ -174,6 +186,19 @@ export function scanNTs(code, file) {
   for (const m of c.matchAll(/\b(formatRelativeTime|RelativeTime)\b|dateStyle:\s*["']medium["']/g)) add(out, `N23|${m[1] ?? 'dateStyle: "medium"'}`);
   // N24: 버튼 안 화살표
   for (const m of c.matchAll(/trailingIcon=\{\s*<(ArrowRight|ChevronRight|MoveRight)\b/g)) add(out, `N24|trailingIcon <${m[1]}>`);
+  // N31: 섹션 머리 알약·아이콘 행동 — 제목 닫는 태그 바로 뒤의 행동 요소
+  if (!fanUi) {
+    const tagsByName = {};
+    for (const m of c.matchAll(SECTION_HEAD_ACTION)) {
+      const name = m[1];
+      const start = m.index + m[0].length - name.length - 1;
+      const tag = (tagsByName[name] ??= jsxTags(c, name)).find((t) => t.index === start);
+      if (!tag) continue;
+      const attrs = tag.attrs;
+      if (name === 'FanAction') { if (/\bhref=/.test(attrs) && (/\b(leadingIcon|trailingIcon)=\{\s*<(?!ArrowLeft\b|ChevronLeft\b)/.test(attrs) || !/variant=\{?["']text["']/.test(attrs))) add(out, 'N31|<FanAction> after a heading'); }
+      else if ((/\bclassName=/.test(attrs) && !/\baria-label=/.test(attrs)) || /<(ArrowRight|ChevronRight|ArrowUpRight)\b/.test(tag.children)) add(out, `N31|<${name} className|icon> after a heading`);
+    }
+  }
   // N25: lucide 직접 import·strokeWidth
   if (!fanUi && /from\s+['"]lucide-react['"]/.test(c)) add(out, 'N25|import lucide-react');
   for (const m of c.matchAll(/strokeWidth=\{?\s*["']?([\d.]+)/g)) if (m[1] !== '1.5') add(out, `N25|strokeWidth ${m[1]}`);

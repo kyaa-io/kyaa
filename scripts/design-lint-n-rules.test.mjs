@@ -72,6 +72,10 @@ const CASES = {
     () => ts('export const A = () => <FanAction href="/a" trailingIcon={<ArrowRight/>}>x</FanAction>;'),
     () => ts('export const A = () => <FanAction href="/a">x</FanAction>;'),
   ],
+  N31: [
+    () => ts('export const A = () => <header><h2>x</h2><FanAction variant="text" trailingIcon={<ArrowRight/>} href="/a">전체</FanAction></header>;', 'apps/web/features/home/ui/list.tsx'),
+    () => ts('export const A = () => <header><h2>x</h2><FanSectionLink href="/a">전체</FanSectionLink></header>;', 'apps/web/features/home/ui/list.tsx'),
+  ],
   N25: [
     () => ts('import { Heart } from "lucide-react";\nexport const A = () => <Heart strokeWidth={2}/>;', 'apps/web/features/home/ui/list.tsx'),
     () => ts('import { Heart } from "lucide-react";\nexport const A = () => <Heart strokeWidth={1.5}/>;', 'apps/web/components/fan-ui/fan-icon.tsx'),
@@ -149,6 +153,21 @@ test('N19 N17 N18 N13 N5 N12 N2 are run by contract files that exist and carry t
     assert.ok(existsSync(p), `${id}: ${c.file} 없음`);
     assert.match(readFileSync(p, 'utf8'), new RegExp(`['"\`]${id}[ :]`), `${id}: 시험 이름에 규칙 ID 없음`);
   }
+});
+
+test('N31 flags pill, icon and styled-link actions beside a heading and leaves close buttons, rail rows and the shared link alone', () => {
+  const F = 'apps/web/features/home/ui/list.tsx';
+  assert.equal(hits(ts('export const A = () => <div className={styles.intro}><div><FanHeading>x</FanHeading></div><Link className={styles.calendarLink} href="/c"><CalendarDays/>일정</Link></div>;', F), 'N31').length, 0, 'container without head in its class name is out of scope');
+  assert.equal(hits(ts('export const A = () => <header className={styles.intro}><div><FanHeading>x</FanHeading></div><Link className={styles.calendarLink} href="/c"><CalendarDays/>일정</Link></header>;', F), 'N31').length, 1);
+  assert.equal(hits(ts('export const A = () => <div className={styles.sectionHeading}><h2>x</h2>{more && <Link href="/a">전체<ArrowRight/></Link>}</div>;', F), 'N31').length, 1);
+  assert.equal(hits(ts('export const A = () => <header><h2>x</h2><FanAction variant="neutral" href="/a">전체</FanAction></header>;', F), 'N31').length, 1);
+  assert.equal(hits(ts('export const A = () => <header><h2>x</h2><FanAction onClick={close}>닫기</FanAction></header>;', F), 'N31').length, 0);
+  assert.equal(hits(ts('export const A = () => <header><h1>x</h1><FanAction variant="text" leadingIcon={<ArrowLeft/>} href="/a">뒤로</FanAction></header>;', F), 'N31').length, 0);
+  assert.equal(hits(ts('export const A = () => <header><h2>x</h2><button className={styles.close} aria-label="닫기"><X/></button></header>;', F), 'N31').length, 0);
+  assert.equal(hits(ts('export const A = () => <header><h2>x</h2><FanAction variant="text" trailingIcon={<ArrowRight/>} href="/a">전체</FanAction></header>;', 'apps/web/components/fan-ui/fan-heading.tsx'), 'N31').length, 0);
+  assert.equal(hits(css('.sectionHeading>a{border:1px solid var(--color-line);border-radius:999px}'), 'N31').length, 1);
+  assert.equal(hits(css('.listHead a{background:var(--color-surface)}'), 'N31').length, 1);
+  assert.equal(hits(css('.sectionHeading>a{flex:none;color:var(--color-ink)} .sheetHeader button{border:1px solid var(--color-line)}'), 'N31').length, 0);
 });
 
 test('N29 reads purple in TSX strings and tinted grays, ignores comments, logo art files and pink', () => {

@@ -3,6 +3,7 @@ import {useEffect,useId,useState} from 'react';
 import type {Route} from 'next';
 import Link from 'next/link';
 import {FanAction} from '@/components/fan-ui/fan-action';
+import { FanSectionLink } from "@/components/fan-ui/fan-section-link";
 import {FanSkeleton,FanSkeletonStatus} from '@/components/fan-ui/fan-skeleton';
 import {CalendarDayNumber,CalendarMonthHeader} from '@/components/fan-calendar/calendar-parts';
 import {adjacentCalendarMonth,calendarWeekday,currentKstDate,formatMiniCalendarDate,MiniCalendarEventDay,miniCalendarCopy,miniCalendarMonthLabel} from '@/features/fanpage/ui/celebrity-calendar';
@@ -39,7 +40,7 @@ export function GroupScheduleCard({page,locale,calendarHref}:{page:GroupPage;loc
  const previous=adjacentCalendarMonth(month,-1),next=adjacentCalendarMonth(month,1);
  const move=(value:string)=>{setSelected(null);setMonth(value);};
  return <section className={styles.sourceHomeCard} data-group-schedule>
-  <header className={cardStyles.header}><h2>{card.schedule}</h2><FanAction className={cardStyles.action} variant='text' href={calendarHref}>{card.calendar}</FanAction></header>
+  <header className={cardStyles.header}><h2>{card.schedule}</h2><FanSectionLink className={cardStyles.action} href={calendarHref}>{card.calendar}</FanSectionLink></header>
   <section className={`${calendarStyles.heroCalendar} ${calendarStyles.embedded}`} aria-label={`${page.name} ${participation.schedules}`} aria-busy={!current||undefined}>
    <CalendarMonthHeader month={month} label={miniCalendarMonthLabel(month,locale)} density='compact' previous={{onClick:()=>move(previous),label:`${t.previousMonth}: ${miniCalendarMonthLabel(previous,locale)}`}} next={{onClick:()=>move(next),label:`${t.nextMonth}: ${miniCalendarMonthLabel(next,locale)}`}}/>
    <div className={calendarStyles.calendarWeekdays} aria-hidden='true'>{t.weekdays.map(weekday=><span key={weekday}>{weekday}</span>)}</div>

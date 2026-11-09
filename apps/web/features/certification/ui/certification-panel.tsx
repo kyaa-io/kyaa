@@ -36,6 +36,7 @@ import {
   type CertificationLocale,
 } from "../domain/certification";
 import { FanAction } from "@/components/fan-ui/fan-action";
+import { FanSectionLink } from "@/components/fan-ui/fan-section-link";
 import { proofsText } from "@/features/passport-proofs/ui/proofs-copy";
 import { certificationStampSrc } from "../domain/certification-stamp";
 import styles from "./certification.module.css";
@@ -227,7 +228,7 @@ export function CertificationPanel({
         <h2 id={`${panelId}-heading`}>
           {t.title}
         </h2>
-        <FanAction variant="text" href={`/c/${encodeURIComponent(slug)}/proofs?locale=${locale}`}>{proofsText(locale, "pfTitle")}</FanAction>
+        <FanSectionLink href={`/c/${encodeURIComponent(slug)}/proofs?locale=${locale}`}>{proofsText(locale, "pfTitle")}</FanSectionLink>
       </header>
       <div className={styles.tabs} role="tablist" aria-label={t.title}>
         <button

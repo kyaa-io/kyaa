@@ -1,8 +1,8 @@
 .section { min-width: 0; }
 .heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
 .heading h2 { margin: 0; font-size: 24px; line-height: 1.3; font-weight: 700; letter-spacing: -.04em; }
-.heading a, .source { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; color: var(--color-ink); font-size: 13px; text-decoration: none; }
-.heading a { flex-shrink: 0; }
+.source { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; color: var(--color-ink); font-size: 13px; text-decoration: none; }
+.heading a { flex: none; }
 .list { list-style: none; padding: 0; margin: 0; border: 1px solid var(--color-line-subtle); border-radius: 16px; overflow: hidden; }
 .list > li + li { border-top: 1px solid var(--color-line-subtle); }
 .row { display: flex; align-items: center; gap: 16px; min-height: 88px; padding: 14px 20px; background: var(--color-surface); color: var(--color-ink); text-decoration: none; }
@@ -24,7 +24,7 @@
 .imageError { color: var(--color-muted); font-size: 13px; line-height: 1.6; }
 .section a:focus-visible, .section button:focus-visible, .body a:focus-visible { outline: 3px solid var(--color-ink); outline-offset: 3px; }
 .row:focus-visible, .image:focus-visible { outline-offset: -3px !important; }
-@media (hover: hover) { .heading a:hover, .source:hover { text-decoration: underline; } .row:hover { background: var(--color-soft); } }
+@media (hover: hover) { .source:hover { text-decoration: underline; } .row:hover { background: var(--color-soft); } }
 @media (max-width: 47.99rem) { .heading h2 { font-size: 20px; } .row { gap: 12px; padding: 14px 16px; } .title { font-size: 14px; } .rowArrow { display: none; } .text { font-size: 15px; } }
 
 .filters { display: flex; gap: 4px; margin: -4px 0 12px; }

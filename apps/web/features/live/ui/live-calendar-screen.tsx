@@ -29,13 +29,13 @@ import { useCallback, useEffect, useMemo, useRef, useState, type SyntheticEvent 
 
 import { FanAppFrame, FanContentContainer, type FanLocale } from "@/components/fan-shell/fan-app-shell";
 import { CalendarDayNumber, CalendarMonthHeader } from "../../../components/fan-calendar/calendar-parts";
-import { FanMotionIcon } from "../../../components/fan-ui/fan-motion-icon";
 import { liveCalendarMonthSchema, type LiveCalendarMonth } from "../domain/live-calendar";
 import type { ExternalLiveProvider } from "../domain/live-event";
 import { liveTimeLabel, type LiveStartEvent } from "../domain/live-time-display";
 import { LiveReservationLegend, LiveReservationMark } from "./live-reservation-mark";
 import { LiveTimeIndicator } from "./live-time-indicator";
 import { FanHeading } from "../../../components/fan-ui/fan-heading";
+import { FanSectionLink } from "../../../components/fan-ui/fan-section-link";
 import styles from "./live-calendar-screen.module.css";
 
 function fitLowResolution(image: HTMLImageElement, target: HTMLElement = image) {
@@ -469,7 +469,7 @@ export function LiveCalendarScreen({
   };
   const previousControl = compact && onMonthChange ? { onClick: () => onMonthChange(previous), label: `${t.previous}: ${monthLabel(previous, locale)}` } : { href: monthHref(previous), label: `${t.previous}: ${monthLabel(previous, locale)}` };
   const nextControl = compact && onMonthChange ? { onClick: () => onMonthChange(next), label: `${t.next}: ${monthLabel(next, locale)}` } : { href: monthHref(next), label: `${t.next}: ${monthLabel(next, locale)}` };
-  const catalogLink = <Link className={styles.catalogLink} href={`/live?locale=${locale}` as Route}><FanMotionIcon name="calendar" size={18} />{t.catalog}</Link>;
+  const catalogLink = <FanSectionLink className={styles.catalogLink} href={`/live?locale=${locale}`}>{t.catalog}</FanSectionLink>;
   const content = (
     <>
       <FanContentContainer as={embedded ? "section" : "main"} className={`${styles.main} ${embedded ? styles.embedded : ""} ${compact ? styles.compact : ""}`} id="live-calendar-main" tabIndex={-1}>

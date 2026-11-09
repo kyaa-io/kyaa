@@ -6,6 +6,7 @@ import { translate } from "@/i18n/messages";
 import type { AppLocale } from "@/i18n/locales";
 import Image from "next/image";
 import Link from "next/link";
+import { FanSectionLink } from "@/components/fan-ui/fan-section-link";
 import type { Route } from "next";
 import { ArrowRight, ArrowUpRight, Pin } from "lucide-react";
 import { useId, useState } from "react";
@@ -50,7 +51,7 @@ export function CreatorNews({ slug, locale, full = false, initialFilter = "all",
   return <section className={styles.section} aria-labelledby={titleId}>
     <header className={styles.heading}>
       <h2 id={titleId}>{locale === "ko" ? "소식" : translate(locale, localizedMessages.m1672ef751316, "Updates")}</h2>
-      {!full && <Link href={`${creatorHomeHref(slug)}?tab=notice&locale=${locale}${filter === "all" ? "" : `&news=${filter}`}#celebrity-content`}>{locale === "ko" ? "전체 보기" : translate(locale, localizedMessages.m3e5383762d51, "View all")}<ArrowRight size={16} aria-hidden="true" /></Link>}
+      {!full && <FanSectionLink href={`${creatorHomeHref(slug)}?tab=notice&locale=${locale}${filter === "all" ? "" : `&news=${filter}`}#celebrity-content`}>{locale === "ko" ? "전체 보기" : translate(locale, localizedMessages.m3e5383762d51, "View all")}</FanSectionLink>}
     </header>
     <div className={styles.filters} role="group" aria-label={locale === "ko" ? "소식 분류" : translate(locale, localizedMessages.me557c4702ff6, "Update categories")}>
       {(["all", "notice", "artist_post", ...(channelId ? ["chzzk"] : [])] as NewsFilter[]).map((value) => <button key={value} type="button" aria-pressed={filter === value} onClick={() => setFilter(value)}>{value === "all" ? (locale === "ko" ? "전체" : translate(locale, localizedMessages.m1ca728a7e66c, "All")) : value === "notice" ? (locale === "ko" ? "공지" : translate(locale, localizedMessages.m237c0328b7ea, "Notices")) : value === "artist_post" ? postLabel : (locale === "ko" ? "치지직" : translate(locale, localizedMessages.m9fb648fbd0b4, "CHZZK"))}</button>)}

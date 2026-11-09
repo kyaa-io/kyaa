@@ -1,11 +1,11 @@
 "use client";
 
-import { ArrowRight } from "lucide-react";
 import { useEffect, useLayoutEffect, useState } from "react";
 import Image from "next/image";
 import type { Route } from "next";
 import Link from "next/link";
 import { FanAction } from "@/components/fan-ui/fan-action";
+import { FanSectionLink } from "@/components/fan-ui/fan-section-link";
 import { FanLockedValue } from "@/components/fan-ui/fan-locked-value";
 import { FanTabs } from "@/components/fan-ui/fan-tabs";
 import { FanSkeleton } from "@/components/fan-ui/fan-skeleton";
@@ -114,7 +114,7 @@ export function MyPassportCard({ creators, selectedSlug, onSelect, communityStam
   const total = book.page?.slots.length ?? 9;
   const filledArt = filledSlotArt(book.page);
   return <section className={styles.card} aria-label={labels.title}>
-    <header><h2>{labels.title}</h2><FanAction variant="text" trailingIcon={<ArrowRight />} href={href}>{labels.detail}</FanAction></header>
+    <header><h2>{labels.title}</h2><FanSectionLink href={href}>{labels.detail}</FanSectionLink></header>
     {!selected || !passport ? <div className={styles.empty}><p>{labels.noCreators}</p><FanAction href={`/celebrities?locale=${locale}`}>{labels.findCreator}</FanAction></div> : <>
       {eligible.length > 1 ? <div className={styles.selector}><FanTabs variant="chip" label={labels.creators} current={selected.celebrity.slug} items={eligible.map((creator) => ({ key: creator.celebrity.slug, label: creator.celebrity.name, onSelect: () => onSelect(creator.celebrity.slug) }))} /></div> : null}
       <div className={styles.body}>
@@ -165,7 +165,7 @@ export function MyPassportCardSkeleton({ title }: { title: string }) {
 /** 비로그인 패스포트 카드. 로그인 화면과 같은 외곽: 여권 표지, 잠긴 진행, 공개 미션북 9칸. 내 값은 잠근 칸으로 둔다. */
 export function MyGuestPassportCard({ locale, labels, compact = false }: { locale: AppLocale; labels: Pick<MyPassportLabels, "title" | "detail">; compact?: boolean }) {
   return <section className={`${styles.card} ${styles.guest} ${compact ? styles.compact : ""}`} aria-label={labels.title}>
-    <header><h2>{labels.title}</h2><FanAction variant="text" trailingIcon={<ArrowRight />} href={`/passports?locale=${locale}`}>{labels.detail}</FanAction></header>
+    <header><h2>{labels.title}</h2><FanSectionLink href={`/passports?locale=${locale}`}>{labels.detail}</FanSectionLink></header>
     <div className={styles.body}>
       <div className={styles.book}><Image src="/images/passport/passport-open-book.svg" alt="" width={1536} height={1024} unoptimized sizes="(max-width:767px) 280px, 360px" priority /></div>
       <div className={styles.facts}>

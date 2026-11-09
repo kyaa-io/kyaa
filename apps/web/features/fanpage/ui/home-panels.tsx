@@ -7,6 +7,7 @@ import { translate } from "@/i18n/messages";
 import { creatorHomeHref } from "@/features/creator/domain/creator-navigation";
 
 import { EventPhoto } from "@/components/fan-ui/event-photo";
+import { FanSectionLink } from "@/components/fan-ui/fan-section-link";
 import { FanSkeletonRows } from "@/components/fan-ui/fan-skeleton";
 import { useEffect, useState } from "react";
 import Image from "next/image";
@@ -50,7 +51,7 @@ export function RecentLive({ celebrity, locale, upcomingLive }: { celebrity: Pub
     <section>
       <div className={styles.sectionHeading}>
         <h2>{locale === "ko" ? "최근 활동" : translate(locale, localizedMessages.m43693f52f548, "Recent activity")}</h2>
-        <Link href={`/live?locale=${locale}`}>{locale === "ko" ? "LIVE 전체 보기" : translate(locale, localizedMessages.m1b1bd5b9acd8, "All LIVE")}<ArrowRight size={16} aria-hidden="true" /></Link>
+        <FanSectionLink href={`/live?locale=${locale}`}>{locale === "ko" ? "LIVE 전체 보기" : translate(locale, localizedMessages.m1b1bd5b9acd8, "All LIVE")}</FanSectionLink>
       </div>
       {upcomingLive ? (
         <Link className={panels.liveCard} data-has-artwork={hasArtwork} href={`/live/${upcomingLive.slug}?locale=${locale}`}>
@@ -80,7 +81,7 @@ export function NoticePanel({ slug, locale, full = false }: { slug: string; loca
     <section className={panels.notices}>
       <div className={styles.sectionHeading}>
         <h2>{locale === "ko" ? "공지와 댓글" : translate(locale, localizedMessages.mc06551416571, "Notices & comments")}</h2>
-        {!full && !empty && <Link href={`${creatorHomeHref(slug)}?tab=notice&locale=${locale}#celebrity-content`}>{locale === "ko" ? "공지 전체 보기" : translate(locale, localizedMessages.m8d2e50846134, "All notices")}<ArrowRight size={16} aria-hidden="true" /></Link>}
+        {!full && !empty && <FanSectionLink href={`${creatorHomeHref(slug)}?tab=notice&locale=${locale}#celebrity-content`}>{locale === "ko" ? "공지 전체 보기" : translate(locale, localizedMessages.m8d2e50846134, "All notices")}</FanSectionLink>}
       </div>
       {resource.state.status !== "ready" ? <div className={panels.noticeFeedback}><ResourceMessage locale={locale} error={resource.state.status === "error"} retry={resource.retry} /></div>
         : empty ? <div className={panels.emptyState} role="status">
