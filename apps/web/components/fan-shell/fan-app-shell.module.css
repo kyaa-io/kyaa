@@ -184,3 +184,11 @@
   .groupsNavigation .desktopNavItem { min-width: 0; padding: 0 var(--space-2); gap: var(--space-1); }
   .groupsNavigation .actions { min-width: 0; }
 }
+
+/* L10 (2026-11-09 05:17 "아이콘 크기가 서로 다름"): every mark in the header's right group is one size, 24×24, with one lucide stroke (1.5) —
+ * the Weverse header (measured 390·1440: 24px marks). Star, language, bell, menu, tier stamp, heart and point coin; the 44px targets and the
+ * capsule stay as they are (L11 freeze). The caret (chevron, a direction mark) stays 16 and the avatar keeps its size. Below 768px the
+ * signed-in capsule is held to 182px, where 24px marks left the favorite as `[…`; there every mark is 20 instead — still one size per screen. */
+.actions :global(:is(svg.lucide:not(.lucide-chevron-down):not(.lucide-rotate-cw), [data-account-trigger="menu"] > svg, img[src*="point-coin"], img[src*="/tiers/"])) { width: 24px; height: 24px; }
+.actions :global(svg.lucide:not(.lucide-chevron-down):not(.lucide-rotate-cw)) { stroke-width: 1.5; }
+@media (max-width: 47.999rem) { .actions :global(:is(svg.lucide:not(.lucide-chevron-down):not(.lucide-rotate-cw), [data-account-trigger="menu"] > svg, img[src*="point-coin"], img[src*="/tiers/"])) { width: 20px; height: 20px; } }
