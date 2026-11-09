@@ -170,7 +170,7 @@ describe("PassportMissionBook", () => {
     expect(container.querySelectorAll('[data-state="empty"] img')).toHaveLength(0);
     expect(screen.getByRole("link", { name: /글쓰기/ }).getAttribute("href")).toBe("/elina?tab=board&source=fans&compose=1&locale=ko");
     expect(screen.getByRole("link", { name: /친구 추천/ }).getAttribute("href")).toBe("/my/invitations?locale=ko");
-    expect(screen.getByRole("button", { name: "입국 심사 설명 보기" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "자세히 입국 심사 설명 보기" })).toBeTruthy();
   });
   it("shows the onboarding once, with up to three open missions that link to their place", () => {
     localStorage.removeItem("kyaa:passport:mission-onboarding:v1");

@@ -12,7 +12,8 @@ export function FanHeading({ as: Tag = "h2", variant = "standard", id, children 
   id?: string;
   children: ReactNode;
 }) {
-  return <Tag id={id} className={`${styles.heading} ${styles[variant]}`} data-fan-heading={variant}>{children}</Tag>;
+  const level = Tag === "h1" || variant === "personal-page" ? styles.page : styles.section;
+  return <Tag id={id} className={[styles.heading, level].join(" ")} data-fan-heading={variant}>{children}</Tag>;
 }
 
 /** Title and navigation share a row; supporting copy stays below both. */
@@ -26,7 +27,7 @@ export function FanSectionHeader({ title, description, action, extraAction, vari
   as?: "h1" | "h2" | "h3";
   id?: string;
 }) {
-  return <div className={`${styles.sectionHeader} ${styles[variant]}`} data-fan-section-header={variant}>
+  return <div className={variant === "personal" ? `${styles.sectionHeader} ${styles.personal}` : styles.sectionHeader} data-fan-section-header={variant}>
     <div className={styles.headingRow}>
       <div className={styles.copy}>
         <FanHeading as={as} id={id} variant={variant === "personal" ? "personal-section" : variant}>{title}</FanHeading>

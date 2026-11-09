@@ -25,10 +25,10 @@
 .message p { max-width:48ch; color:var(--color-muted); font-size:14px; line-height:1.6; }
 .message .secondaryAction { margin-top:8px; }
 .loading { display:grid; width:min(100%,520px); grid-template-columns:repeat(3,1fr); gap:8px; }
-.loading span { height:56px; border-radius:12px; background:var(--color-soft); animation:pulse 1.2s ease-in-out infinite alternate; }
+.loading span { height:56px; border-radius:12px; background:var(--color-accent-soft); animation:pulse 1.2s ease-in-out infinite alternate; }
 .loading p { grid-column:1/-1; margin-top:8px; color:var(--color-muted); font-size:14px; text-align:center; }
 .page :is(a,button):focus-visible { outline:3px solid var(--color-ink); outline-offset:3px; }
-@keyframes pulse { to { background:var(--color-line-subtle); } }
+@keyframes pulse { to { opacity:.5; } }
 @media (min-width:48rem) { .shell { padding-inline:32px; } .shellTopAligned { padding-top:64px; } .entry header h1 { font-size:44px; } }
 @media (hover:hover) and (pointer:fine) { .secondaryAction:hover { background:var(--color-soft); } }
 @media (prefers-reduced-motion:reduce) { .page * { animation-duration:.01ms !important; animation-iteration-count:1 !important; transition-duration:.01ms !important; } }

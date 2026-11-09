@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import { FanState } from "@/components/fan-ui/fan-state";
-import { ArrowLeft, CalendarDays, FileText } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { personalCopy } from "@/i18n/catalogs/features__my__ui__personal-copy";
 import { useFanpageResource } from "@/features/fanpage/ui/use-fanpage-resource";
 import { participationCopy } from "@/i18n/catalogs/features__schedules__ui__participation";
@@ -36,7 +36,7 @@ function History({ locale, tab, highlightId }: { locale: AppLocale; tab: "schedu
     <time dateTime={item.createdAt}>{new Intl.DateTimeFormat(locale, { dateStyle: "medium", timeZone: "Asia/Seoul" }).format(new Date(item.createdAt))}</time>
     {item.reviewReason && <p>{c.reason}: {item.reviewReason}</p>}
     {"scheduleHref" in item && item.scheduleHref ? <FanAction href={`${item.scheduleHref}?locale=${locale}`}>{c.view}</FanAction> : "artist" in item && item.artist ? <FanAction href={`${item.artist.href}?locale=${locale}`}>{item.artist.name}</FanAction> : null}
-  </li>)}</ul> : <FanState kind="empty" scope="page" title={c.empty} icon={tab === "schedules" ? <CalendarDays aria-hidden="true" /> : <FileText aria-hidden="true" />} actions={<FanAction href={`${tab === "schedules" ? "/live/calendar" : "/bias/requests"}?locale=${locale}`}>{tab === "schedules" ? c.schedules : c.fanpage}</FanAction>} />}
+  </li>)}</ul> : <FanState kind="empty" title={c.empty} />}
     <div className={styles.actions}>{cursor && <FanAction onClick={() => setCursor(null)}>{c.back}</FanAction>}{data.nextCursor && <FanAction onClick={() => setCursor(data.nextCursor)}>{c.more}</FanAction>}</div>
   </>;
 }

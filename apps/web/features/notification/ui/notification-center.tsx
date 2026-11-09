@@ -22,11 +22,10 @@ import {
   Bell,
   CheckCheck,
   ChevronRight,
-  Radio,
   Settings2,
 } from "lucide-react";
 import { FanAppFrame, FanContentContainer } from "@/components/fan-shell/fan-app-shell";
-import { FanAction, fanActionClassName } from "@/components/fan-ui/fan-action";
+import { FanAction } from "@/components/fan-ui/fan-action";
 import { FanHeading } from "@/components/fan-ui/fan-heading";
 import { FanState } from "@/components/fan-ui/fan-state";
 import { FanLockedRows } from "@/components/fan-ui/fan-locked-value";
@@ -417,14 +416,7 @@ export function NotificationCenter() {
         />
       )}
       {state.kind === "ready" && state.items.length === 0 && (
-        <FanState
-          kind="empty"
-          scope="page"
-          icon={<Radio aria-hidden="true" />}
-          title={c.empty}
-          description={c.emptyHelp}
-          actions={<Link className={fanActionClassName("neutral", { fullWidth: true })} href={`/live?locale=${locale}` as Route}>{c.upcoming}</Link>}
-        />
+        <FanState kind="empty" title={c.empty} />
       )}
       {state.kind === "ready" && state.items.length > 0 && (
         <>{readFailure && <div className={styles.readError} role="alert"><p>{c.readFailed}</p><div><FanAction onClick={() => void openNotification(readFailure)}>{c.retry}</FanAction><Link href={withLocalePath(readFailure.deepLink, locale) as Route}>{c.continueToNotification}</Link></div></div>}<div className={styles.layout}>

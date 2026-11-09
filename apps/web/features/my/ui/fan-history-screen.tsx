@@ -3,7 +3,6 @@ import { useCallback, useEffect, useRef, useState } from "react";
 
 import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import Link from "next/link";
-import { Inbox } from "lucide-react";
 import type { Route } from "next";
 import { type AppLocale, toContentLocale } from "@/i18n/locales";
 import { personalCopy } from "@/i18n/catalogs/features__my__ui__personal-copy";
@@ -57,7 +56,7 @@ function OwnerHistory({ locale, kind, auth }: { locale: AppLocale; kind: History
     {!auth.ready ? <FanSkeletonRows rows={3} variant="entity" ariaLabel={t.loading}/> : !auth.authenticated ? <FanAction href={`/login?locale=${locale}&returnTo=${encodeURIComponent(returnTo)}` as Route}>{t.login}</FanAction>
       : resource.state.status === "loading" ? <FanSkeletonRows rows={3} variant="entity" ariaLabel={t.loading}/>
       : resource.state.status === "error" ? <FanState kind="error" title={t.error} actions={<FanAction onClick={resource.retry}>{t.retry}</FanAction>}/>
-      : <><ul className={styles.rows}>{rows.map(row => <li key={row.id}><Link href={withLocalePath(row.href, locale) as Route}><strong>{locale === "ko" && row.status === "collected" ? koreanCollectionTitle(row.title) : row.title}</strong><span>{row.status in rewardStatusCopy ? rewardStatusCopy[row.status as keyof typeof rewardStatusCopy][locale] : t[row.status as "submitted" | "selected" | "cancelled" | "collected"]}</span><time dateTime={row.occurredAt}>{new Intl.DateTimeFormat(locale, { dateStyle: "medium" }).format(new Date(row.occurredAt))}</time></Link></li>)}</ul>{!rows.length ? <FanState kind="empty" scope="page" className={styles.empty} icon={<Inbox aria-hidden="true"/>} title={t.empty}/> : null}
+      : <><ul className={styles.rows}>{rows.map(row => <li key={row.id}><Link href={withLocalePath(row.href, locale) as Route}><strong>{locale === "ko" && row.status === "collected" ? koreanCollectionTitle(row.title) : row.title}</strong><span>{row.status in rewardStatusCopy ? rewardStatusCopy[row.status as keyof typeof rewardStatusCopy][locale] : t[row.status as "submitted" | "selected" | "cancelled" | "collected"]}</span><time dateTime={row.occurredAt}>{new Intl.DateTimeFormat(locale, { dateStyle: "medium" }).format(new Date(row.occurredAt))}</time></Link></li>)}</ul>{!rows.length ? <FanState kind="empty" className={styles.empty} title={t.empty}/> : null}
         {failed ? <p role="alert">{t.error}</p> : null}{next ? <FanAction disabled={busy} onClick={() => void more()}>{busy ? t.loading : failed ? t.retry : t.more}</FanAction> : null}</>}
   </FanContentContainer></FanAppFrame>;
 }

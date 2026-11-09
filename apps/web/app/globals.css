@@ -54,6 +54,8 @@
 
   --radius-card: 12px;
   --radius-control: 12px;
+  /* 게이트 A2(2026-11-09): 버튼·칩의 반경 8. 카드는 --radius-card 12. */
+  --radius-action: 8px;
   --radius-collection: 16px;
   --radius-hero: 20px;
   --radius-pill: 999rem;
@@ -81,6 +83,10 @@
   /* Fan UI owns these roles. Screens select variants, not ad-hoc sizes. */
   /* 폐기 예정 7종(--fan-heading-size-wide, --fan-heading-editorial-weight, --fan-personal-section-*, --fan-event-catalog-title-size,
    * --fan-aside-title-*, --fan-description-*, --fan-action-emphasis-size): 1단계는 별칭(크기 값 동일), 사용처 치환 뒤 삭제. 굵기는 400·700·800만. */
+  /* 게이트 C2(2026-11-09): FanHeading h1 26/800, 구역 제목 h2·h3 18/700. 아래 --fan-heading-size(-wide)는 화면 CSS가 직접 쓰는 옛 값이라 화면 치환 전까지 남는다. */
+  --fan-h1-size: 26px;
+  --fan-section-size: 18px;
+  --fan-section-weight: 700;
   --fan-heading-size: 20px;
   --fan-heading-size-wide: 24px;
   --fan-heading-weight: 800;
@@ -109,7 +115,11 @@
   --fan-description-leading: var(--fan-body-leading);
   --fan-description-weight: 400;
   --fan-section-heading-min-height: 56px;
-  --fan-action-primary-height: 48px;
+  /* 게이트 A2: 기본 버튼 높이 390 44, 1024 이상 48. */
+  --fan-action-primary-height: 44px;
+  /* 게이트 B2: 칩 36 · 14/700(누르는 영역은 ::after로 44). */
+  --fan-chip-height: 36px;
+  --fan-chip-size: 14px;
   --fan-action-service-height: 52px;
   --fan-action-max-width: 320px;
   --fan-action-icon-size: 18px;
@@ -178,6 +188,7 @@ img {
 }
 
 @media (min-width: 48rem) { :root { --fan-section-gap: 48px; } }
+@media (min-width: 64rem) { :root { --fan-action-primary-height: 48px; } }
 
 /* Pencil UI faces: the 3MB TTFs took 30s on 4G and starved scripts and images. Each weight is two WOFF files made by
  * scripts/subset-pencil-fonts.py: core (Latin, symbols, KS X 1001 Hangul) and rest (every other glyph), which is only

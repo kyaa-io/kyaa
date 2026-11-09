@@ -27,10 +27,10 @@
 .step { display: flex; flex-wrap: wrap; align-items: center; column-gap: var(--space-1); min-width: 0; min-height: 24px; font-size: var(--fan-item-title-size); font-weight: var(--fan-item-title-weight); line-height: 24px; }
 .next { flex: none; color: var(--color-muted); }
 .progress { display: block; min-width: 0; min-height: 30px; }
-/* 390: the bar over its words (the cell is too narrow for both on one line in every language); 768+: one line. */
-.gauge { flex-direction: column; align-items: stretch; gap: var(--space-1); }
-.gauge > span:first-child { flex: none; }
-.gauge > span:last-child { color: var(--color-muted); font-weight: 400; line-height: 20px; white-space: normal; overflow-wrap: anywhere; }
+/* .progress .gauge: same specificity as fan-number .gauge would let the CSS chunk order decide (the bar went to width 0). 390: the bar over its words (the cell is too narrow for both on one line in every language); 768+: one line. */
+.progress .gauge { flex-direction: column; align-items: stretch; gap: var(--space-1); }
+.progress .gauge > span:first-child { flex: none; }
+.progress .gauge > span:last-child { color: var(--color-muted); font-weight: 400; line-height: 20px; white-space: normal; overflow-wrap: anywhere; }
 .ready { color: var(--color-accent-ink, var(--color-ink)); font-weight: var(--fan-item-title-weight); }
 .guide { display: inline-flex; grid-area: hearts; align-self: start; justify-self: end; align-items: center; gap: 0; z-index: 1; min-height: 44px; box-sizing: border-box; padding: var(--space-3) var(--space-4); color: var(--color-ink); font-size: var(--fan-metadata-size); font-weight: var(--fan-item-title-weight); line-height: 20px; text-decoration: none; white-space: nowrap; }
 .guide:hover { color: var(--color-accent-ink, var(--color-ink)); }
@@ -46,9 +46,9 @@
   .cell[data-cell="tickets"], .cell[data-cell="stamps"] { gap: var(--space-1); padding: var(--space-2) var(--space-5) var(--space-4); }
   .value { min-height: 40px; }
   .progress { min-height: 20px; }
-  .gauge { flex-direction: row; align-items: center; gap: var(--space-2); }
-  .gauge > span:first-child { flex: 1; }
-  .gauge > span:last-child { white-space: nowrap; }
+  .progress .gauge { flex-direction: row; align-items: center; gap: var(--space-2); }
+  .progress .gauge > span:first-child { flex: 1; }
+  .progress .gauge > span:last-child { white-space: nowrap; }
   /* The action fills the whole column (its line runs the card's height) and centers the button; the guide link sits over its top end. */
   .guide { grid-area: action; padding-inline: var(--space-5); }
   .action { align-content: center; padding: 0 var(--space-4); border-top: 0; border-inline-start: 1px solid var(--color-line); }

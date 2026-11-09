@@ -15,25 +15,21 @@ type StateBase = Readonly<{
 type StateSlots = Readonly<{ description?: string; icon?: ReactNode; actions?: ReactNode }>;
 
 /**
- * 구역 안 빈 상태(DESIGN.md "빈 상태" 행, C6·C8): 높이 78 한 문장 14/400 회색. 아이콘·설명·행동을 받지 않는다.
+ * 빈 상태(DESIGN.md "빈 상태" 행, C6·C8, 게이트 D2 2026-11-09): 구역 안이든 페이지 전체든 높이 78 한 문장 14/400 회색. 아이콘·설명·행동을 받지 않는다.
  * 행동이 필요하면 FanState 밖, 같은 구역의 다음 행에 둔다.
  */
-type SectionEmptyProps = StateBase & Readonly<{ kind: "empty"; scope?: "section"; description?: never; icon?: never; actions?: never }>;
-
-/** 페이지 전체 빈 상태. 게이트 D(사용자 결정) 전까지 옛 280 틀을 그대로 둔다. 새 사용처를 만들지 않는다. */
-type PageEmptyProps = StateBase & StateSlots & Readonly<{ kind: "empty"; scope: "page" }>;
+type SectionEmptyProps = StateBase & Readonly<{ kind: "empty"; description?: never; icon?: never; actions?: never }>;
 
 type OtherStateProps = StateBase & StateSlots & Readonly<{
   /** `loading`은 폐기 예정(DESIGN.md 로딩 행, design-lint C6): 새 코드는 `FanSkeleton`·`FanSkeletonRows`. 남은 사용처는 로그인 세션 동기화 한 곳. */
   kind: "loading" | "error" | "auth";
-  scope?: never;
 }>;
 
-type FanStateProps = SectionEmptyProps | PageEmptyProps | OtherStateProps;
+type FanStateProps = SectionEmptyProps | OtherStateProps;
 
 export function FanState(props: FanStateProps) {
   const { kind, title, className } = props;
-  if (kind === "empty" && props.scope !== "page") {
+  if (kind === "empty") {
     return (
       <section className={[styles.state, styles.section, className ?? ""].filter(Boolean).join(" ")} role="status" aria-live="polite" data-empty-state="section">
         <p className={styles.title}>{title.replace(/[.。]$/, "")}</p>

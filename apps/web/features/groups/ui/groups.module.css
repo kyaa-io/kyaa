@@ -12,7 +12,7 @@
 .aside h2 { font-size:20px; margin:0; }
 .toolbar { display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-bottom:16px; }
 .filters { display:flex; gap:8px; overflow-x:auto; padding:2px; }
-.chip { border:1px solid var(--color-line); border-radius:12px; min-height:44px; padding:8px 12px; background:var(--color-surface); color:inherit; white-space:nowrap; font:inherit; font-size:var(--fan-metadata-size); line-height:18px; font-weight:var(--fan-tab-weight); text-decoration:none; display:inline-flex; justify-content:center; align-items:center; gap:8px; cursor:pointer; }
+.chip { position:relative; border:1px solid var(--color-line); border-radius:var(--radius-action); min-height:var(--fan-chip-height); padding:6px 12px; background:var(--color-surface); color:inherit; white-space:nowrap; font:inherit; font-size:var(--fan-chip-size); line-height:20px; font-weight:var(--fan-tab-weight); text-decoration:none; display:inline-flex; justify-content:center; align-items:center; gap:8px; cursor:pointer; }
 .chip[aria-pressed="true"], .chip[aria-current="page"] { color:var(--color-accent-ink); background:var(--color-accent-soft); border-color:var(--color-accent); }
 .search { display:flex; gap:8px; flex:1 1 240px; min-width:0; }
 .search>button { flex:none; white-space:nowrap; }
@@ -70,6 +70,7 @@
 .page input[type="checkbox"]{accent-color:var(--color-accent)}.page summary:focus-visible{outline:3px solid var(--color-ink);outline-offset:3px}
 
 .chip{min-width:44px}
+.chip::after{content:"";position:absolute;inset:-4px 0}
 
 .identityCopy>p{margin:0}
 

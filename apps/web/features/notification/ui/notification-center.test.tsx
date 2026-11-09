@@ -61,7 +61,7 @@ describe("FAN-019 Notification Center", () => {
     render(<NotificationCenter />);
     expect(enablePushNotifications).not.toHaveBeenCalled();
     expect(
-      await screen.findByText("아직 도착한 알림이 없습니다."),
+      await screen.findByText("아직 도착한 알림이 없습니다"),
     ).toBeInTheDocument();
     fireEvent.click(
       screen.getAllByRole("button", { name: "브라우저 알림 켜기" })[0],
@@ -178,8 +178,8 @@ describe("FAN-019 Notification Center", () => {
     authState.authenticated = true;
     vi.mocked(fetch).mockResolvedValueOnce(Response.json({ notifications: [], unreadCount: 0 }));
     view.rerender(<NotificationCenter />);
-    expect(await screen.findByRole("heading", { name: "No notifications yet." })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "View upcoming LIVE" })).toHaveAttribute("href", "/live?locale=en");
+    expect(await screen.findByText("No notifications yet")).toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: "View upcoming LIVE" })).toBeNull();
 
     vi.mocked(fetch).mockResolvedValueOnce(new Response(null, { status: 503 }));
     authState.user = { id: "owner-b" };
@@ -197,7 +197,7 @@ describe("FAN-019 Notification Center", () => {
     locale = "en";
     enablePushNotifications.mockResolvedValueOnce(result);
     render(<NotificationCenter />);
-    await screen.findByText("No notifications yet.");
+    await screen.findByText("No notifications yet");
     fireEvent.click(screen.getAllByRole("button", { name: "Enable browser notifications" })[0]);
     expect(await screen.findByText(message)).toBeInTheDocument();
     if (result === "denied" || result === "unsupported") {
@@ -225,7 +225,7 @@ describe("FAN-019 Notification Center", () => {
   it("renders a clear hierarchy without the repeated uppercase eyebrow", async () => {
     render(<NotificationCenter />);
     expect(
-      await screen.findByRole("heading", { name: "아직 도착한 알림이 없습니다." }),
+      await screen.findByText("아직 도착한 알림이 없습니다"),
     ).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "알림", level: 1 })).toBeInTheDocument();
     expect(screen.queryByText("Notification Center")).not.toBeInTheDocument();
@@ -233,10 +233,7 @@ describe("FAN-019 Notification Center", () => {
       "href",
       "/settings?locale=ko&section=notifications",
     );
-    expect(screen.getByRole("link", { name: "다가오는 LIVE 보기" })).toHaveAttribute(
-      "href",
-      "/live?locale=ko",
-    );
+    expect(screen.queryByRole("link", { name: "다가오는 LIVE 보기" })).toBeNull();
   });
 
   it("exposes a useful sign-in state without requesting notification data", async () => {
@@ -264,7 +261,7 @@ describe("FAN-019 Notification Center", () => {
     ).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "다시 시도" }));
     expect(
-      await screen.findByRole("heading", { name: "아직 도착한 알림이 없습니다." }),
+      await screen.findByText("아직 도착한 알림이 없습니다"),
     ).toBeInTheDocument();
     expect(fetch).toHaveBeenCalledTimes(2);
   });
@@ -276,7 +273,7 @@ describe("FAN-019 Notification Center", () => {
   ] as const)("announces the %s push result", async (result, message) => {
     enablePushNotifications.mockResolvedValueOnce(result);
     render(<NotificationCenter />);
-    await screen.findByText("아직 도착한 알림이 없습니다.");
+    await screen.findByText("아직 도착한 알림이 없습니다");
     fireEvent.click(
       screen.getAllByRole("button", { name: "브라우저 알림 켜기" })[0],
     );
@@ -354,7 +351,7 @@ describe("FAN-019 Notification Center", () => {
 
   it("guards push enablement, shows progress, and reports thrown failures", async () => {
     render(<NotificationCenter />);
-    await screen.findByText("아직 도착한 알림이 없습니다.");
+    await screen.findByText("아직 도착한 알림이 없습니다");
     let rejectEnable!: () => void;
     enablePushNotifications.mockImplementationOnce(() => new Promise((_, reject) => {
       rejectEnable = () => reject(new Error("offline"));
@@ -407,7 +404,7 @@ describe("FAN-019 Notification Center", () => {
       return new Promise((resolve) => { finishPush = resolve; });
     });
     const view = render(<NotificationCenter />);
-    await screen.findByText("아직 도착한 알림이 없습니다.");
+    await screen.findByText("아직 도착한 알림이 없습니다");
     fireEvent.click(screen.getByRole("button", { name: "브라우저 알림 켜기" }));
     await waitFor(() => expect(tokenProvider).toBeTypeOf("function"));
 

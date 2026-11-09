@@ -1,6 +1,6 @@
 "use client";
 
-import { CircleHelp } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { FanSheet } from "./fan-dialog";
@@ -11,8 +11,8 @@ const GAP = 8;
 const GUTTER = 12;
 const MAX_WIDTH = 280;
 
-/** 물음표 도움말. 마우스는 호버·포커스로 말풍선(최대 폭 280), 터치는 눌러서 바닥 시트. 설명 문장은 화면에 쓰지 않고 이 뒤로 보낸다. */
-export function FanHelpTip({ label, title, closeLabel, children }: { label: string; title: string; closeLabel: string; children: ReactNode }) {
+/** `자세히 ›` 도움말(게이트 E3, 2026-11-09). 마우스는 호버·포커스로 말풍선(최대 폭 280), 터치는 눌러서 바닥 시트. 설명 문장은 화면에 쓰지 않고 이 뒤로 보낸다. */
+export function FanHelpTip({ label, title, closeLabel, detailsLabel, children }: { label: string; title: string; closeLabel: string; detailsLabel: string; children: ReactNode }) {
   const fine = useFanFinePointer();
   const [hovering, setHovering] = useState(false);
   const [modal, setModal] = useState(false);
@@ -41,11 +41,11 @@ export function FanHelpTip({ label, title, closeLabel, children }: { label: stri
   }, [hovering, close]);
 
   return <>
-    <button ref={trigger} type="button" className={styles.trigger} aria-label={label} aria-describedby={hovering ? id : undefined} aria-haspopup={fine ? undefined : "dialog"}
+    <button ref={trigger} type="button" className={styles.trigger} aria-label={`${detailsLabel} ${label}`} aria-describedby={hovering ? id : undefined} aria-haspopup={fine ? undefined : "dialog"}
       onMouseEnter={() => { if (fine) setHovering(true); }} onMouseLeave={close}
       onFocus={() => { if (fine) setHovering(true); }} onBlur={close}
       onClick={() => { if (fine) setHovering(true); else setModal(true); }}>
-      <CircleHelp aria-hidden="true" />
+      <span>{detailsLabel}</span><ChevronRight aria-hidden="true" />
     </button>
     {hovering && typeof document !== "undefined" ? createPortal(
       <div ref={tip} id={id} role="tooltip" className={styles.tip} data-placed={position ? "true" : undefined} style={position ? { "--tip-left": `${position.left}px`, "--tip-top": `${position.top}px` } as React.CSSProperties : undefined}>
