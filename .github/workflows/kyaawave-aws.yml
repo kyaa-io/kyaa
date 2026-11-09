@@ -1,6 +1,7 @@
 name: kyaa wave AWS release
 # codex/kyaawave-homepage-20261018 -> prod (kyaawave.com), wave/dev -> dev (dev.kyaawave.com).
-# A manual run must pick the environment that matches its branch.
+# Manual runs default to auto (the branch's own environment); an explicit
+# environment that does not match the branch fails.
 on:
   push:
     branches: [codex/kyaawave-homepage-20261018, wave/dev]
@@ -8,8 +9,8 @@ on:
     inputs:
       environment:
         type: choice
-        options: [dev, prod]
-        default: dev
+        options: [auto, dev, prod]
+        default: auto
 permissions:
   contents: read
 concurrency:
@@ -18,13 +19,13 @@ concurrency:
   cancel-in-progress: false
 jobs:
   mismatched-dispatch:
-    if: github.event_name == 'workflow_dispatch' && !((github.ref == 'refs/heads/codex/kyaawave-homepage-20261018' && inputs.environment == 'prod') || (github.ref == 'refs/heads/wave/dev' && inputs.environment == 'dev'))
+    if: github.event_name == 'workflow_dispatch' && ((github.ref == 'refs/heads/codex/kyaawave-homepage-20261018' && inputs.environment == 'dev') || (github.ref == 'refs/heads/wave/dev' && inputs.environment == 'prod'))
     runs-on: ubuntu-latest
     timeout-minutes: 1
     steps:
       - run: echo "::error::prod runs only from codex/kyaawave-homepage-20261018, dev only from wave/dev" && exit 1
   release:
-    if: github.repository == 'kyaa-io/kyaa' && ((github.ref == 'refs/heads/codex/kyaawave-homepage-20261018' && (github.event_name == 'push' || inputs.environment == 'prod')) || (github.ref == 'refs/heads/wave/dev' && (github.event_name == 'push' || inputs.environment == 'dev')))
+    if: github.repository == 'kyaa-io/kyaa' && ((github.ref == 'refs/heads/codex/kyaawave-homepage-20261018' && (github.event_name == 'push' || inputs.environment != 'dev')) || (github.ref == 'refs/heads/wave/dev' && (github.event_name == 'push' || inputs.environment != 'prod')))
     runs-on: ubuntu-latest
     timeout-minutes: 20
     permissions:
