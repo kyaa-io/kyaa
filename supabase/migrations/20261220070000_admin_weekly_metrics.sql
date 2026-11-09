@@ -14,9 +14,24 @@
 -- The function belongs to the applying role. Where that role is not a superuser or BYPASSRLS (dev: byus_admin) it gets select and a
 -- select policy on the tables read here, only where row security applies to it, and the file stops with METRICS_WEEKLY_OWNER_GAP if a
 -- read would still be blocked.
+-- The existing indexes on the counted tables lead with member, page or post ids, so a query bounded only by date would walk the whole
+-- history; each table gets an index led by its time column (fan_product_events and app_users already have one). Plain CREATE INDEX in the
+-- file's transaction, as in 20261219010000; the tables are append-mostly and the lock is held for the build only.
 -- Rollback: supabase/rollback/20261220070000_admin_weekly_metrics.sql. Probe: supabase/tests/admin_weekly_metrics.sql.
 begin;
 set local lock_timeout = '5s';
+
+-- indexes-begin
+create index if not exists metrics_weekly_attendance_created_idx on public.group_creator_attendance (created_at);
+create index if not exists metrics_weekly_fan_posts_created_idx on public.fan_posts (created_at);
+create index if not exists metrics_weekly_fan_post_comments_created_idx on public.fan_post_comments (created_at);
+create index if not exists metrics_weekly_lounge_created_idx on public.fan_lounge_messages (created_at);
+create index if not exists metrics_weekly_group_posts_created_idx on public.group_posts (created_at);
+create index if not exists metrics_weekly_group_comments_created_idx on public.group_comments (created_at);
+create index if not exists metrics_weekly_points_created_idx on public.mobile_fan_economy_ledger (created_at) where asset = 'fan_point' and amount > 0;
+create index if not exists metrics_weekly_hearts_created_idx on public.creator_heart_ledger (created_at);
+create index if not exists metrics_weekly_conversions_converted_idx on public.fan_heart_conversions (converted_at);
+-- indexes-end
 
 create or replace function public.read_admin_weekly_metrics(
   p_actor_app_user_id uuid,

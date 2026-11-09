@@ -7,7 +7,7 @@
 #     are refused; clients cannot execute it and its owner can read every table it reads (has_table_privilege).
 #   Part 2: the migration applied by a role shaped like dev's byus_admin (no superuser, no BYPASSRLS, member of the local owner) gives the same
 #     answer as the superuser; a role that cannot read stops the file with METRICS_WEEKLY_OWNER_GAP; the rollback removes the function and the
-#     policy the migration made, and a second rollback is a no-op.
+#     policy and time-led indexes the migration made, and a second rollback is a no-op.
 # Uses the caller's PG* environment (local: PGHOST=127.0.0.1 PGPORT=55433 PGUSER=localsuper). Database: byus. Nothing is kept.
 set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
@@ -15,6 +15,8 @@ TMP="$(mktemp -d)"; trap 'rm -rf "$TMP"' EXIT
 strip() { grep -v -x -e 'begin;' -e 'commit;' -e "notify pgrst, 'reload schema';" "$1"; }
 strip "$ROOT/supabase/migrations/20261220070000_admin_weekly_metrics.sql" > "$TMP/migration.sql"
 strip "$ROOT/supabase/rollback/20261220070000_admin_weekly_metrics.sql" > "$TMP/rollback.sql"
+# The gap probe is a role that owns nothing, so it cannot build indexes either; the file without that block reaches the owner check.
+sed '/-- indexes-begin/,/-- indexes-end/d' "$TMP/migration.sql" > "$TMP/migration-no-indexes.sql"
 DB="${PGDATABASE:-byus}"
 
 # Fixtures shared by both parts: a function that inserts them and a function that checks the answer against the baseline taken before.
@@ -196,6 +198,12 @@ begin
     if not has_table_privilege((select pg_get_userbyid(proowner) from pg_proc where oid = 'public.read_admin_weekly_metrics(uuid,uuid)'::regprocedure), ('public.' || k)::regclass, 'select')
       then raise exception 'MW_OWNER_READ: owner cannot read %', k; end if;
   end loop;
+  -- Every history table the report counts has an index led by its time column.
+  foreach k in array array['group_creator_attendance','fan_posts','fan_post_comments','fan_lounge_messages','group_posts','group_comments',
+      'mobile_fan_economy_ledger','creator_heart_ledger','fan_heart_conversions','fan_product_events','app_users'] loop
+    if not exists (select 1 from pg_index ix join pg_class c on c.oid = ix.indrelid join pg_attribute a on a.attrelid = ix.indrelid and a.attnum = ix.indkey[0]
+      where c.oid = ('public.' || k)::regclass and a.attname in ('created_at', 'converted_at') and ix.indisvalid) then raise exception 'MW_INDEX: % has no time-led index', k; end if;
+  end loop;
   raise notice 'part 1 ok';
 end \$\$;
 rollback;
@@ -242,6 +250,7 @@ end \$\$;
 do \$\$ begin
   if to_regprocedure('public.read_admin_weekly_metrics(uuid,uuid)') is not null then raise exception 'MW_ROLLBACK2: function still there'; end if;
   if exists (select 1 from pg_policy where polname like 'metrics\_weekly\_owner\_%') then raise exception 'MW_ROLLBACK2: policy left'; end if;
+  if exists (select 1 from pg_indexes where schemaname = 'public' and indexname like 'metrics\\_weekly\\_%') then raise exception 'MW_ROLLBACK2: index left'; end if;
 end \$\$;
 \i $TMP/rollback.sql
 rollback;
@@ -256,7 +265,7 @@ grant usage on schema public, extensions to mw_gap;
 grant create on schema public to mw_gap;
 grant execute on function public.assert_active_admin(uuid,uuid,boolean) to mw_gap;
 set role mw_gap;
-\i $TMP/migration.sql
+\i $TMP/migration-no-indexes.sql
 rollback;
 SQL
 )"

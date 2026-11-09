@@ -5,6 +5,10 @@ begin;
 set local lock_timeout = '5s';
 
 drop function if exists public.read_admin_weekly_metrics(uuid, uuid);
+drop index if exists public.metrics_weekly_attendance_created_idx, public.metrics_weekly_fan_posts_created_idx,
+  public.metrics_weekly_fan_post_comments_created_idx, public.metrics_weekly_lounge_created_idx, public.metrics_weekly_group_posts_created_idx,
+  public.metrics_weekly_group_comments_created_idx, public.metrics_weekly_points_created_idx, public.metrics_weekly_hearts_created_idx,
+  public.metrics_weekly_conversions_converted_idx;
 
 do $policies$
 declare p record;
