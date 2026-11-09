@@ -52,12 +52,9 @@ export const editPostSchema = savePostSchema.safeExtend({ expectedRevision: z.nu
 export const createCommentSchema = z.object({ body: z.string().trim().min(1).max(1000), parentId: z.uuid().nullable().default(null), idempotencyKey: z.uuid() }).strict();
 export const targetSchema = z.object({ targetType: targetTypeSchema, targetId: z.uuid() }).strict();
 export const reportInputSchema = targetSchema.extend({ reason: z.string().trim().min(1).max(500), idempotencyKey: z.uuid() });
-/** `slots: "title-body"` asks for a board post to come back as its title and its article, translated separately (post-title-slots.ts). */
-export const translationInputSchema = targetSchema.extend({ targetLocale: z.enum(APP_LOCALES), locale: z.enum(["ko", "en"]).default("ko"), slots: z.literal("title-body").optional() }).refine(value => !value.slots || value.targetType === "fan_post");
+export const translationInputSchema = targetSchema.extend({ targetLocale: z.enum(APP_LOCALES), locale: z.enum(["ko", "en"]).default("ko") });
 export const translationSchema = z.object({
   targetType: targetTypeSchema, targetId: z.uuid(), targetLocale: z.enum(APP_LOCALES), translatedText: z.string().min(1).max(100_000), sourceRevision: z.number().int().positive(), cached: z.boolean(),
-  /** Only for a `slots` request: one translated text per slot, in the order of the request (a slot with nothing in it is not sent). */
-  slots: z.array(z.string().min(1).max(100_000)).min(1).max(2).optional(),
 }).strict();
 export const blockSchema = z.object({ id: z.uuid(), nickname: z.string(), avatarUrl: publicAvatarUrlSchema, createdAt: instant }).strict();
 export const blocksSchema = z.object({ items: z.array(blockSchema) }).strict();

@@ -4,7 +4,7 @@ const f = vi.hoisted(() => ({ rpc: vi.fn(), upload: vi.fn() }));
 vi.mock("@/server/data/client", () => ({ createClient: () => ({ storage: { from: () => ({ upload: f.upload }) } }) }));
 vi.mock("@/server/fanpage/dependencies", () => ({ createFanpageDependencies: () => ({ rpc: f.rpc }) }));
 vi.mock("@/server/config/env", () => ({ loadServerEnv: () => ({}) }));
-vi.mock("@/server/content-translation/google-translate", () => ({ translateText: vi.fn(), translateTexts: vi.fn() }));
+vi.mock("@/server/content-translation/google-translate", () => ({ translateText: vi.fn() }));
 vi.mock("@/server/media/public-image-processing", () => ({ normalizePublicImage: async () => ({ bytes: new Uint8Array([1]), width: 1, height: 1, sha256: "hash" }), createContentThumbnail: async () => new Uint8Array([2]) }));
 import { createContentDependencies } from "./dependencies";
 import { NoticeRepository } from "../notice/notice-repository";

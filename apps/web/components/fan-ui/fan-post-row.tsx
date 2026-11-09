@@ -7,7 +7,6 @@ import { useState, type ReactNode } from "react";
 import type { AppLocale } from "@/i18n/locales";
 import { FanTag } from "./fan-tag";
 import { fanUiText } from "./fan-ui-copy";
-import { TranslatedText } from "@/features/content-safety/ui/use-automatic-translation";
 import styles from "./fan-post-row.module.css";
 
 const pad = (value: number) => String(value).padStart(2, "0");
@@ -23,8 +22,6 @@ export type FanPostRowProps = Readonly<{
   href: string;
   locale: AppLocale;
   title: string;
-  /** 사람이 쓴 제목은 읽는 언어로 번역해 보인다(원문은 마우스를 올리면 나온다). */
-  translateTitle?: boolean;
   thumbnail?: string | null;
   /** 사진이 없거나 불러오지 못할 때 글 아이콘 대신 보이는 페이지 이미지. 없으면 글 아이콘. */
   pageImage?: ReactNode;
@@ -42,7 +39,7 @@ export type FanPostRowProps = Readonly<{
 }>;
 
 /** 게시판 목록 한 줄. 값이 없는 열은 빼고 `—`를 쓰지 않는다. 사진이 없거나 깨지면 페이지 이미지를, 그것도 없으면 글 아이콘 칸을 둔다. */
-export function FanPostRow({ href, locale, title, translateTitle = false, thumbnail, pageImage, notice = false, commentCount, source, author, authorArtist = false, time, views, likes, density = "board" }: FanPostRowProps) {
+export function FanPostRow({ href, locale, title, thumbnail, pageImage, notice = false, commentCount, source, author, authorArtist = false, time, views, likes, density = "board" }: FanPostRowProps) {
   const [broken, setBroken] = useState(false);
   const count = (value: number) => value.toLocaleString(locale);
   const timeLabel = time === undefined ? "" : fanPostTimeLabel(time);
@@ -53,7 +50,7 @@ export function FanPostRow({ href, locale, title, translateTitle = false, thumbn
       : pageImage ?? <FileText size={16} aria-hidden="true" />}</span>
     <div className={styles.head}>
       {notice && <FanTag tone="notice">{fanUiText(locale, "noticeTag")}</FanTag>}
-      <Link href={href as Route} className={styles.title}>{translateTitle ? <TranslatedText text={title} locale={locale} controls={false} /> : title}</Link>
+      <Link href={href as Route} className={styles.title}>{title}</Link>
       {commentCount !== undefined && commentCount > 0 && <span className={styles.comments} aria-label={fanUiText(locale, "commentsLabel", [count(commentCount)])}>[{count(commentCount)}]</span>}
     </div>
     <div className={styles.meta}>

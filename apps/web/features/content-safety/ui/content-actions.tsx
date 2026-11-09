@@ -14,7 +14,7 @@ import { rememberOverlayTrigger } from "@/components/ui/overlay/focus-return";
 import { type TargetType } from "@/features/fan-posts/domain/content";
 import { type AppLocale } from "@/i18n/locales";
 import { contentCopy } from "@/i18n/catalogs/features__fan_posts__ui";
-import { TranslationControl, useAutomaticTranslation, type AutomaticTranslationState } from "./use-automatic-translation";
+import { TranslationControl, useAutomaticTranslation } from "./use-automatic-translation";
 import { useContentMutation } from "./use-content-mutation";
 import { useByUsSession } from "@/components/byus-session-provider";
 import styles from "./content.module.css";
@@ -70,19 +70,14 @@ function ActionsForOwner({ targetType, targetId, locale, onChanged, canBlock = t
   </div>;
 }
 
-/** The display of a translated text and its toggle, for a caller that owns the translation (a post's title follows its body). */
-export function ContentTranslationView({ translation, observeElement, locale, children }: { translation: AutomaticTranslationState; observeElement: (node: HTMLElement | null) => void; locale: AppLocale; children: ReactNode }) {
-  return <div ref={observeElement} className={styles.translation}>
-    {translation.showing ? <p className={styles.body} lang={locale}>{translation.texts[0]}</p> : children}
-    <TranslationControl locale={locale} translation={translation} />
-  </div>;
-}
-
 export function ContentTranslation({ targetType, targetId, locale, children, sourceText, sourceRevision = 1 }: {
   targetType: TargetType; targetId: string; locale: AppLocale; children: ReactNode; sourceText: string; sourceRevision?: number;
 }) {
   const texts = useMemo(() => [sourceText], [sourceText]);
   const target = useMemo(() => ({ targetType, targetId, sourceRevision }), [targetType, targetId, sourceRevision]);
   const { observeElement, ...translation } = useAutomaticTranslation({ texts, locale, target });
-  return <ContentTranslationView translation={translation} observeElement={observeElement} locale={locale}>{children}</ContentTranslationView>;
+  return <div ref={observeElement} className={styles.translation}>
+    {translation.showing ? <p className={styles.body} lang={locale}>{translation.texts[0]}</p> : children}
+    <TranslationControl locale={locale} translation={translation} />
+  </div>;
 }

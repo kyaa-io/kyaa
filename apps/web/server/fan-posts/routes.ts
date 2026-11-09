@@ -8,7 +8,6 @@ import { type FanPost, postReactionInputSchema, postReactionSchema, assetSchema,
 import { boundedJson, boundedMultipart, CertificationBodyError, json } from "@/server/certification/certification-http";
 import { MAX_PUBLIC_IMAGE_BYTES, MAX_PUBLIC_IMAGE_MULTIPART_BYTES, PublicImageError } from "@/server/media/public-image-processing";
 import type { FanpageDependencies } from "@/server/fanpage/routes";
-import { joinTranslatedSlots, postTitleSlots, splitTranslatedSlots, type PostTitleSlots } from "@/features/fan-posts/domain/post-title-slots";
 import type { AppLocale } from "@/i18n/locales";
 import { parseNoticeDocument } from "@/server/notice/notice-domain";
 import { awardDukjilAction, awardDukjilActionDetailed, dukjilBodyParams, dukjilSkipReason, type DukjilSkip } from "@/server/dukjil/award";
@@ -18,7 +17,6 @@ export interface ContentDependencies extends FanpageDependencies {
   upload(owner: string, slug: string, bytes: Uint8Array): Promise<z.infer<typeof assetSchema>>;
   download(path: string, thumbnail?: boolean): Promise<Blob>;
   translate(text: string, locale: AppLocale): Promise<{ translatedText: string; detectedSourceLocale?: string }>;
-  translateTexts?(texts: readonly string[], locale: AppLocale): Promise<Array<{ translatedText: string; detectedSourceLocale?: string }>>;
 }
 const cursorSchema = z.object({ at: z.iso.datetime({ offset: true }), id: z.uuid(), pinned: z.boolean().optional() }).strict();
 const postCursorSchema = z.union([
@@ -323,25 +321,6 @@ export function createContentHandlers(deps: ContentDependencies) {
     translate: (request: Request) => run(async () => {
       const p_app_user_id = await owner(request), value = translationInputSchema.parse(await boundedJson(request, 2048));
       const args = { p_app_user_id, p_target_type: value.targetType, p_target_id: value.targetId, p_target_locale: value.targetLocale, p_locale: value.locale };
-      const withSlots = <T extends object>(translation: T & { translatedText: string }, slots: PostTitleSlots) => { const parts = splitTranslatedSlots(translation.translatedText, slots); return parts ? { ...translation, slots: parts } : translation; };
-      if (value.slots) {
-        // A board post comes back as its title and its article. The same shared cache and the same checks as a whole-body translation:
-        // the target is read (and the viewer's access to it checked) before the cache, again before saving, and the cache is read after the provider answers.
-        const raw = await deps.rpc("fan_web_content_target", { p_app_user_id, p_target_type: value.targetType, p_target_id: value.targetId, p_locale: value.locale });
-        if (raw === null) throw new Error("FAN_WEB_NOT_FOUND");
-        const target = checked(z.object({ body: z.string(), revision: z.number().int().positive(), sourceHash: z.string().regex(/^[a-f0-9]{64}$/) }), raw);
-        const slots = postTitleSlots(target.body), count = slots.texts.reduce((sum, text) => sum + Array.from(text).length, 0);
-        if (!slots.texts.length || count > 20_000) throw new Error("TRANSLATION_INVALID_INPUT");
-        const hit = await deps.rpc("read_content_translation", args);
-        if (hit !== null) return json(withSlots(checked(translationSchema, hit), slots));
-        await deps.rpc("reserve_content_translation_request", { p_app_user_id, p_character_count: count });
-        if (!deps.translateTexts) throw new Error("TRANSLATION_UNAVAILABLE");
-        const results = await deps.translateTexts(slots.texts, value.targetLocale);
-        await deps.rpc("save_content_translation", { ...args, p_source_revision: target.revision, p_source_hash: target.sourceHash, p_translated_text: joinTranslatedSlots(results.map(result => result.translatedText), slots), p_detected_source_locale: results[0]?.detectedSourceLocale ?? null });
-        const current = await deps.rpc("read_content_translation", args);
-        if (current === null) throw new Error("FAN_WEB_CONFLICT");
-        return json({ ...withSlots(checked(translationSchema, current), slots), cached: false });
-      }
       const cached = await deps.rpc("read_content_translation", args);
       if (cached !== null) return json(checked(translationSchema, cached));
       const raw = await deps.rpc("fan_web_content_target", { p_app_user_id, p_target_type: value.targetType, p_target_id: value.targetId, p_locale: value.locale });

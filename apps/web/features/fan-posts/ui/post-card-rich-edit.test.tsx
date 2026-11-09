@@ -8,7 +8,7 @@ const state = vi.hoisted(() => ({ request: vi.fn() }));
 vi.mock("@/features/auth/client/cognito-auth", () => ({ useByUsAuth: () => ({ ready: true, authenticated: true, user: { id: "me" }, getAccessToken: async () => "t" }) }));
 vi.mock("@/components/byus-session-provider", () => ({ useByUsSession: () => ({ ready: true, ownerId: "me", generation: 1 }) }));
 vi.mock("@/features/content-safety/ui/use-content-mutation", () => ({ useContentMutation: () => ({ busy: false, error: "", request: state.request }) }));
-vi.mock("@/features/content-safety/ui/content-actions", () => ({ ContentActions: () => null, ContentTranslation: ({ children }: { children: React.ReactNode }) => children, ContentTranslationView: ({ children }: { children: React.ReactNode }) => children }));
+vi.mock("@/features/content-safety/ui/content-actions", () => ({ ContentActions: () => null, ContentTranslation: ({ children }: { children: React.ReactNode }) => children }));
 vi.mock("@/features/content-safety/ui/content-asset", () => ({ ContentAssetImage: () => null }));
 vi.mock("@/features/content-safety/ui/authenticated-media", () => ({ AuthenticatedMedia: () => null }));
 vi.mock("@/features/groups/ui/use-group-resource", () => ({ useGroupRequest: () => ({ ownerKey: "me", ready: true, request: vi.fn() }), useGroupResource: () => ({ data: { photoLimit: 10, videoAllowed: true }, failure: null, error: false, loading: false, retry: vi.fn() }) }));
