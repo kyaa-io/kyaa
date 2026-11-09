@@ -18,6 +18,10 @@
 .item:first-child { color: var(--color-ink); font-weight: var(--fan-item-title-weight); }
 .artist { display: inline-flex; flex: 0 1 auto; align-items: center; gap: var(--space-1); min-width: 0; color: var(--color-ink); }
 .artist svg { flex: none; }
+/* 접속 공개를 켠 아티스트가 지금 들어와 있을 때만 아이콘이 깜박인다. 방문만 한 날은 정지. 모션을 줄인 설정이면 멈춘다. */
+.artist[data-online="true"] svg { animation: presenceBlink 1.6s ease-in-out infinite; }
+@keyframes presenceBlink { 50% { opacity: .35; } }
+@media (prefers-reduced-motion: reduce) { .artist[data-online="true"] svg { animation: none; } }
 .artistName { overflow: hidden; min-width: 48px; font-weight: var(--fan-item-title-weight); text-overflow: ellipsis; }
 .artistState { flex: none; color: var(--color-muted); font-weight: 400; }
 .error { display: inline-flex; flex: 0 1 auto; align-items: center; gap: var(--space-2); min-width: 0; }

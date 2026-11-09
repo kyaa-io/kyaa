@@ -1,4 +1,6 @@
 import {act,cleanup,render,renderHook,screen} from '@testing-library/react';
+import {readFileSync} from 'node:fs';
+import {join} from 'node:path';
 import {afterEach,beforeEach,expect,it,vi} from 'vitest';
 import {AuthError} from '@/features/auth/domain/auth-errors';
 import {createGroupHandler} from '@/server/groups/routes';
@@ -99,4 +101,10 @@ it('compact mode shows one artist cell only when an artist is online or visited,
  expect(screen.getByText('Artist').parentElement).toHaveAttribute('data-online','false');
  response={onlineCount:2,todayCount:3,artists:[{...base,online:false,visitedToday:false}]};await act(()=>vi.advanceTimersByTimeAsync(30000));await flush();
  expect(screen.queryByText('Artist')).toBeNull();view.unmount();
+});
+
+it('blinks the online artist icon and stops it under reduced motion',()=>{
+ const css=readFileSync(join(__dirname,'group-presence.module.css'),'utf8');
+ expect(css).toMatch(/\.artist\[data-online="true"\] svg \{ animation: presenceBlink/);
+ expect(css).toMatch(/@media \(prefers-reduced-motion: reduce\) \{ \.artist\[data-online="true"\] svg \{ animation: none; \} \}/);
 });
