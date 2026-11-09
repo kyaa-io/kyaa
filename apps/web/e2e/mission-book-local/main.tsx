@@ -53,9 +53,9 @@ const detailAvatar = { avatar: { initialCharacterId: "star-cream", characterId: 
 const fanName = params.get("name") ?? "아리가또";
 const creatorName = params.get("creator") ?? "엘리나";
 const stage = params.get("tier") === "top"
-  ? { policyVersion: 2, current: { key: "diamond-1", tier: "Diamond", subdivision: 1, rank: 11, minimumScore: 240 }, next: null, remaining: 0, progressPercent: 100 }
+  ? { policyVersion: 2, current: { key: "diamond-1", tier: "Diamond", subdivision: 1, rank: 11, minimumScore: 240 }, next: null, remaining: 0, progressPercent: 100, unit: "points" as const }
   : params.get("tier") === "gold"
-    ? { policyVersion: 2, current: { key: "gold-2", tier: "Gold", subdivision: 2, rank: 5, minimumScore: 70 }, next: { key: "gold-3", tier: "Gold", subdivision: 3, rank: 6, minimumScore: 95 }, remaining: 15, progressPercent: 40 }
+    ? { policyVersion: 2, current: { key: "gold-2", tier: "Gold", subdivision: 2, rank: 5, minimumScore: 70 }, next: { key: "gold-3", tier: "Gold", subdivision: 3, rank: 6, minimumScore: 95 }, remaining: 15, progressPercent: 40, unit: "points" as const }
     : null;
 const detailPassport = {
   id: "46ef95ab-e780-4afc-8b0b-537eb35e7c49", businessStatus: "issued", issuedAt: "2026-11-07T00:00:00.000Z",

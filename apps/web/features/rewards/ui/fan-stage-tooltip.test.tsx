@@ -8,7 +8,7 @@ const withinTierStage = {
   current: { key: "gold-1", tier: "Gold", subdivision: 1, rank: 4, minimumScore: 50 },
   next: { key: "gold-2", tier: "Gold", subdivision: 2, rank: 5, minimumScore: 70 },
   remaining: 8,
-  progressPercent: 60,
+  progressPercent: 60, unit: "points" as const,
 } satisfies FanStageProgress;
 
 const nextTierStage = {
@@ -16,7 +16,7 @@ const nextTierStage = {
   current: { key: "silver-2", tier: "Silver", subdivision: 2, rank: 3, minimumScore: 30 },
   next: { key: "gold-1", tier: "Gold", subdivision: 1, rank: 4, minimumScore: 50 },
   remaining: 12,
-  progressPercent: 40,
+  progressPercent: 40, unit: "points" as const,
 } satisfies FanStageProgress;
 
 const maxStage = {
@@ -24,7 +24,7 @@ const maxStage = {
   current: { key: "diamond-1", tier: "Diamond", subdivision: 1, rank: 11, minimumScore: 250 },
   next: null,
   remaining: 0,
-  progressPercent: 100,
+  progressPercent: 100, unit: "points" as const,
 } satisfies FanStageProgress;
 
 describe("FanStageTooltip", () => {
@@ -33,7 +33,7 @@ describe("FanStageTooltip", () => {
   });
 
   it.each(["floating", "compact"] as const)("opens and pins the %s trigger on click, then closes when clicked again", (variant) => {
-    render(<FanStageTooltip variant={variant} celebrityName="KARA" tier="Gold" points={62} stageProgress={withinTierStage} remainingToNextTier={58} locale="ko" />);
+    render(<FanStageTooltip variant={variant} celebrityName="KARA" tier="Gold" points={62} stageProgress={withinTierStage} locale="ko" />);
     const trigger = screen.getByRole("button", { name: /KARA · 골드 1/ });
 
     expect(screen.queryByRole("tooltip")).not.toBeInTheDocument();
@@ -101,7 +101,7 @@ describe("FanStageTooltip", () => {
   });
 
   it("shows a reached state at the maximum stage without inventing a next goal", () => {
-    render(<FanStageTooltip celebrityName="KARA" tier="Diamond" points={300} stageProgress={maxStage} remainingToNextTier={0} locale="ko" />);
+    render(<FanStageTooltip celebrityName="KARA" tier="Diamond" points={300} stageProgress={maxStage} locale="ko" />);
     fireEvent.click(screen.getByRole("button", { name: /최고 단계 도달/ }));
     const tooltip = screen.getByRole("tooltip");
 
@@ -111,7 +111,7 @@ describe("FanStageTooltip", () => {
   });
 
   it("uses only the authoritative tier and points when stage data is absent", () => {
-    const { container } = render(<FanStageTooltip celebrityName="KARA" tier="Silver" points={15} remainingToNextTier={35} locale="ko" />);
+    const { container } = render(<FanStageTooltip celebrityName="KARA" tier="Silver" points={15} locale="ko" />);
     fireEvent.click(screen.getByRole("button", { name: "KARA · 실버. 현재 15점" }));
     const tooltip = screen.getByRole("tooltip");
 
@@ -123,12 +123,12 @@ describe("FanStageTooltip", () => {
   });
 
   it("does not repeat a major-tier goal when the next stage is that tier", () => {
-    render(<FanStageTooltip celebrityName="KARA" tier="Silver" points={38} stageProgress={nextTierStage} remainingToNextTier={12} locale="ko" variant="inline" />);
-    fireEvent.click(screen.getByRole("button", { name: /골드 1까지 12점/ }));
+    render(<FanStageTooltip celebrityName="KARA" tier="Silver" points={38} stageProgress={nextTierStage} locale="ko" variant="inline" />);
+    fireEvent.click(screen.getByRole("button", { name: /골드까지 12점/ }));
     const tooltip = screen.getByRole("tooltip");
 
-    expect(tooltip).toHaveTextContent("골드 1까지 12점");
+    expect(tooltip).toHaveTextContent("골드까지 12점");
     expect(tooltip).not.toHaveTextContent("등급 목표");
-    expect(screen.getAllByText("골드 1까지 12점")).toHaveLength(1);
+    expect(screen.getAllByText("골드까지 12점")).toHaveLength(1);
   });
 });

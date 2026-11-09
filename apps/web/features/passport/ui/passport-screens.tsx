@@ -375,7 +375,6 @@ function PassportDetailView({ passport, locale, explorerBaseUrl }: { passport: P
   }));
   const stampDisplay = passportStampDisplay({ ...passport, stamps: stampRecords });
   const totalStamps = stampDisplay.totalCount + communityCount;
-  const nextLevel = passport.progress.nextLevel ? levelLabel(locale, passport.progress.nextLevel) : null;
   const stage = passport.score.stageProgress;
   const currentStageLabel = stage ? fanStageLabel(locale, stage.current) : passport.display.level;
   const nextStageLabel = stage?.next ? fanStageLabel(locale, stage.next) : null;
@@ -392,12 +391,10 @@ function PassportDetailView({ passport, locale, explorerBaseUrl }: { passport: P
       <PassportStampFace passport={passport} locale={locale} stamps={stampDisplay.stamps} community={communityStamps.state} />
     </PassportBook>
     <FanTierJourney locale={locale} tier={passport.score.level} stage={stage} creatorName={passport.celebrity.name} currentLabel={currentStageLabel}
-      topLabel={c.levelMax} nextAria={stage?.next ? `${c.nextLevel}: ${nextStageLabel}` : `${c.nextLevel}: ${nextLevel}`}
-      fallback={{ nextLevel: passport.progress.nextLevel, remaining: passport.progress.remainingPoints, percent: passport.progress.percent, maxed: passport.progress.maxed }}
+      topLabel={c.levelMax} nextAria={`${c.nextLevel}: ${nextStageLabel ?? ""}`}
       me={avatarResource.state.status === "ready" ? <Avatar avatar={avatarResource.state.avatar} imageUrl={avatarResource.state.imageUrl} label="" size={64} /> : <AvatarPlaceholder size={64} />}
       creator={<CreatorImage locale={locale} slug={passport.celebrity.slug} src={passport.celebrity.image.url} alt={passport.celebrity.image.alt} width={64} height={64} sizes="64px" presentation="avatar" position={passport.celebrity.image.position} photos={passport.celebrity.photos} />}>
       <div className={styles.heroFacts}><Link href="#activity"><strong>{passport.score.points}</strong><small>{c.score}</small></Link><HeroStampFact passportId={passport.id} fallback={totalStamps} locale={locale} /></div>
-      <DigitalStatus status={passport.mint.status} txHash={passport.mint.txHash} locale={locale} />
     </FanTierJourney>
     <section id="tier-history" className={styles.section}><div className={styles.sectionHeading}><FanHeading as="h2">{tierHistoryCopy(locale).title}</FanHeading></div><TierHistoryList passportId={passport.id} locale={locale} /></section>
     {passport.nextBenefit ? <section className={styles.nextBenefit} aria-labelledby="next-benefit-title"><div><span>{passport.nextBenefit.state === "eligible" ? passport.nextBenefit.allocationMode === "application_selection" ? c.participationReady : c.benefitReady : c.benefitLocked}</span><h2 id="next-benefit-title">{c.nextBenefit}: {passport.nextBenefit.title}</h2><p>{passport.nextBenefit.eligibilityLabel}</p>{passport.nextBenefit.missingConditions.length ? <ul>{passport.nextBenefit.missingConditions.map((condition, index) => <li key={`${condition.type}-${index}`}>{missingConditionText(condition, locale)}</li>)}</ul> : null}</div><Link href={withLocale(`/benefits/${passport.nextBenefit.id}`, locale)}>{c.viewBenefit}<ArrowRight aria-hidden="true" /></Link></section> : null}

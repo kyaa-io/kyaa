@@ -30,20 +30,6 @@ export function benefitScorePercent(score: number, minimumScore: number): number
   return minimumScore > 0 ? Math.min(100, Math.max(0, Math.round(score / minimumScore * 100))) : null;
 }
 
-export function fanTierProgress(passport: PassportCreator["passport"]) {
-  const tierIndex = FAN_TIERS.indexOf(passport.tier);
-  const nextTier = FAN_TIERS[tierIndex + 1] ?? null;
-  if (!nextTier) return { nextTier: null, nextThreshold: null, remaining: 0, percent: 100, maxed: true } as const;
-  const nextThreshold = passport.score + passport.remainingToNextTier;
-  return {
-    nextTier,
-    nextThreshold,
-    remaining: passport.remainingToNextTier,
-    percent: nextThreshold > 0 ? Math.min(100, Math.max(0, Math.round(passport.score / nextThreshold * 100))) : 0,
-    maxed: false,
-  } as const;
-}
-
 export function selectOpenRaffles(raffles: RaffleList["raffles"], now = new Date()) {
   const timestamp = now.getTime();
   return raffles.filter((raffle) => {

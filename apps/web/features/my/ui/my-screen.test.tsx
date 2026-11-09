@@ -219,7 +219,7 @@ describe("unified MY hub", () => {
       current: { key: "gold-2", tier: "Gold", subdivision: 2, rank: 5, minimumScore: 70 },
       next: { key: "gold-3", tier: "Gold", subdivision: 3, rank: 6, minimumScore: 95 },
       remaining: 15,
-      progressPercent: 40,
+      progressPercent: 40, unit: "points" as const,
     } as const;
     const second = {
       ...summary.creators[0],

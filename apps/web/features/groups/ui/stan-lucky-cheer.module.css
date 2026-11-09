@@ -21,15 +21,18 @@
 .facts { grid-column: 1 / -1; display: grid; align-content: start; gap: var(--space-1); min-width: 0; }
 .cost { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-1); color: var(--color-ink); font-size: var(--fan-metadata-size); font-weight: var(--fan-item-title-weight); line-height: 20px; font-variant-numeric: tabular-nums; }
 .action { grid-column: 1 / -1; align-self: end; white-space: nowrap; }
-.section .empty { box-sizing: border-box; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0 var(--space-3); min-height: 78px; padding: 0 var(--space-4); border: 1px solid var(--color-line); border-radius: var(--radius-control); background: var(--color-surface); }
-.section .empty > [data-empty-state] { width: auto; flex: 1 1 auto; }
-.emptyAction { display: flex; margin-inline-end: calc(var(--space-2) * -1); }
+/* 게이트 D2 · 시안: one empty line (78), then the next step as a row under a hairline in the same box. */
+.section .empty { box-sizing: border-box; display: grid; min-width: 0; border: 1px solid var(--color-line); border-radius: var(--radius-control); background: var(--color-surface); overflow: hidden; }
+.emptyLine { display: flex; align-items: center; min-height: 78px; padding: 0 var(--space-4); }
+.emptyLine > [data-empty-state] { width: auto; flex: 1 1 auto; }
+.emptyRow { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); min-height: var(--min-target); padding: var(--space-3) var(--space-4); border-top: 1px solid var(--color-line-subtle); color: var(--color-ink); font-size: var(--fan-item-title-size); font-weight: var(--fan-item-title-weight); line-height: 22px; text-decoration: none; }
+.emptyRow > svg { flex: none; color: var(--color-muted); }
+.emptyRow:focus-visible { outline: 2px solid var(--color-focus); outline-offset: -2px; }
 /* F5: no live draw but past ones below: the empty line stays short so the 지난 럭키드로우 cards keep the first screen. */
 .section .emptyShort { min-height: 0; }
 .pastHead { margin: var(--space-2) 0 0; color: var(--color-ink); font-size: var(--fan-item-title-size); font-weight: var(--fan-item-title-weight); line-height: var(--fan-body-leading); }
 .pending { min-height: 180px; }
 .pending > span { min-height: 180px; border-radius: var(--radius-control); }
-.pick { display: inline-flex; align-items: center; gap: var(--space-1); min-height: var(--min-target); padding: 0; border: 0; background: none; color: var(--color-accent-ink); font: inherit; font-size: var(--fan-metadata-size); font-weight: var(--fan-item-title-weight); cursor: pointer; }
 
 .cheer { box-sizing: border-box; display: grid; gap: var(--space-3); min-width: 0; padding: var(--space-3); border: 1px solid var(--color-line); border-radius: var(--radius-control); background: var(--color-surface); }
 .who { display: grid; grid-template-columns: 40px minmax(0, 1fr) auto; align-items: center; gap: var(--space-3); min-width: 0; min-height: var(--min-target); padding: 0; border: 0; background: none; color: inherit; font: inherit; text-align: start; text-decoration: none; cursor: pointer; }

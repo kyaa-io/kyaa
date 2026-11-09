@@ -7,7 +7,6 @@ export const myHomeSource = {
   viewWallet: { ko: "지갑 보기", en: "View wallet" },
   stampProgress: { ko: "이번 쪽 {0}/{1}", en: "This page {0}/{1}" },
   stampProgressFull: { ko: "패스포트 이번 쪽 스탬프 {0}/{1}칸", en: "Stamps on this passport page: {0} of {1}" },
-  nextTier: { ko: "{0}까지 {1}점", en: "{1} pts to {0}" },
   topTier: { ko: "최고 등급이에요", en: "Highest tier reached" },
   slotEarned: { ko: "{0}, 찍힘", en: "{0}, stamped" },
   slotLocked: { ko: "{0}, 아직 안 찍힘", en: "{0}, not stamped yet" },

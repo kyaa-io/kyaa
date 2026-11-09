@@ -141,13 +141,14 @@ section.pWallet{position:relative;box-sizing:border-box;border:1px solid var(--c
 @media(min-width:1024px){.rankSkeleton>div>div{grid-template-columns:44px minmax(0,1fr) clamp(112px,14vw,224px) 112px}.rankSkeleton{padding-bottom:var(--space-6)}}
 @media(min-width:1280px){.rankSkeleton>div>div{grid-template-columns:44px minmax(0,1fr) 224px 112px}}
 
-/* 피드백 F2·F3 (2026-11-08): 덕질 한 화면 구성. 390: 지갑 → 오늘의 미션 → 럭키드로우 → 최애 응원 → 오늘의 덕질 → 내역 (구역 간격 24).
-   1024+: 1,024 가운데(1440 좌우 208) — 지갑 전폭, 그 아래 본문 640(미션 → 럭키드로우 → 오늘의 덕질) + 32 + 레일 352(최애 응원 → 내역).
+/* 피드백 F2·F3 (2026-11-08), 감독 2026-11-09 20:33: 덕질 한 화면 구성. 390: 지갑 → 오늘의 미션 → 오늘의 덕질 → 럭키드로우 → 최애 응원 → 내역 (구역 간격 24).
+   1024+: 1,024 가운데(1440 좌우 208) — 지갑 전폭, 그 아래 본문 640(미션 → 오늘의 덕질 → 럭키드로우) + 32 + 레일 352(최애 응원 → 내역).
    1024~1199에서도 레일 352, 본문은 나머지. Duolingo 웹의 본문 + 오른쪽 레일. */
 .top,.pLucky,.pCheer{min-width:0}
 .top{order:2}
 .main{order:3}
-.pMissions{order:3}.pLucky{order:4}.pCheer{order:5}.pToday{order:6}.pHistoryWrap,.pGuestHistory{order:7}
+/* 감독 2026-11-09 20:33: 오늘의 덕질 is not in the 덕질 mockup, so it sits right under 오늘의 미션 (390 and the 1440 body). */
+.pMissions{order:3}.pToday{order:4}.pLucky{order:5}.pCheer{order:6}.pHistoryWrap,.pGuestHistory{order:7}
 .pLucky[hidden],.pCheer[hidden]{display:none}
 /* 내역: 머리(최애 응원과 같은 제목) 아래 카드 하나. 로그인 카드는 wallet.module.css .historyCard, 비로그인은 같은 외곽에 잠긴 행 3. */
 .pHistoryWrap,.pGuestHistory{min-width:0;scroll-margin-top:var(--space-16,64px)}

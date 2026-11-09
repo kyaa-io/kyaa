@@ -51,7 +51,7 @@ export const dukjilStanSource = {
   cheerRank: { ko: "크리에이터 순위 {0}위", en: "Creator rank #{0}" },
   cheerRankOut: { ko: "크리에이터 순위 20위 밖", en: "Outside the top 20" },
   cheerMyHearts: { ko: "내 하트", en: "My hearts" },
-  cheerNextHeart: { ko: "다음 하트까지 {0}칸", en: "{0} stamps to the next heart" },
-  cheerHeartReady: { ko: "하트 +1", en: "Heart +1" },
+  // 사용자 결정 B (2026-11-09 20:36): a full page becomes a heart only by 받기 on the mission book, so the wallet never reads as automatic.
+  cheerNextHeart: { ko: "{0}칸 더 모으면 받기", en: "{0} more to claim" },
   cheerFanRanking: { ko: "팬 순위 보기", en: "See fan ranking" },
 } as const;

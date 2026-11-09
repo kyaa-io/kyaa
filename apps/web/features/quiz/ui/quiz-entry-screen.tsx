@@ -3,8 +3,12 @@
 import { toContentLocale } from "@/i18n/locales";
 import { messages as localizedMessages } from "@/i18n/catalogs/features__quiz__ui__quiz-entry-screen";
 import { messages as certificationPanelMessages } from "@/i18n/catalogs/features__certification__ui__certification-panel";
+import { messages as quizResultMessages } from "@/i18n/catalogs/features__quiz__ui__quiz-result-screen";
+import { messages as passportScreenMessages } from "@/i18n/catalogs/features__passport__ui__passport-screens";
 import { additionalLocales, translate } from "@/i18n/messages";
 import { creatorHomeHref } from "@/features/creator/domain/creator-navigation";
+import { useOwnedFanResource } from "@/components/fan-ui/use-owned-fan-resource";
+import { mySummaryPath, mySummarySchema } from "@/features/my/domain/my-summary";
 
 import { getSessionStorage } from "@/features/reliability/client/session-storage";
 
@@ -23,6 +27,7 @@ import { consumeAuthIntent, readAuthIntent } from "@/components/auth-intent";
 import { AuthIntentLink } from "@/components/auth-intent-link";
 import { FanLanguageSwitch } from "@/components/fan-shell/fan-language-switch";
 import { FanAction, fanActionClassName } from "@/components/fan-ui/fan-action";
+import { FanHeading } from "@/components/fan-ui/fan-heading";
 import { FanAppFrame, type FanLocale } from "@/components/fan-shell/fan-app-shell";
 import { appendLoginContext, sanitizeAuthIntentId } from "@/components/login-intent";
 import styles from "./quiz-entry-screen.module.css";
@@ -71,6 +76,8 @@ const copy = {
     start: "팬 인증 시작하기",
     login: "로그인하고 시작하기",
     note: "이미 시작한 인증이 있다면 저장된 문항부터 이어서 진행됩니다.",
+    verified: (name: string) => `${name} 팬 인증 완료`,
+    openPassport: "패스포트 보기",
   },
   en: {
     sessionExpired: "Your sign-in expired. Sign in again to continue.",
@@ -103,6 +110,8 @@ const copy = {
     start: "Start fan verification",
     login: "Sign in to start",
     note: "If you already started, you'll continue from your saved questions.",
+    verified: (name: string) => `${name} fan verification complete`,
+    openPassport: "Open Passport",
   },
 
   ...additionalLocales((translationLocale) => ({
@@ -136,8 +145,12 @@ const copy = {
     start: localizedMessages.mb8716a66fc57[translationLocale],
     login: localizedMessages.m1fccdbe4af58[translationLocale],
     note: localizedMessages.ma3066d315e6f[translationLocale],
+    verified: (name: string) => translate(translationLocale, quizResultMessages.m7309a3343f60, "{0} fan verification complete", [name]),
+    openPassport: passportScreenMessages.mfc76989a61b9[translationLocale],
   }))
 } as const;
+
+const parseSummary = (body: unknown) => mySummarySchema.parse((body as { summary?: unknown } | null)?.summary);
 
 function withLocale(path: string, locale: FanLocale): Route {
   const separator = path.includes("?") ? "&" : "?";
@@ -172,7 +185,15 @@ export function QuizEntryScreen({
   returnTo?: string | null;
 }) {
   const router = useRouter();
-  const { ready, authenticated, getAccessToken } = usePrivy();
+  const auth = usePrivy();
+  const { ready, authenticated, getAccessToken } = auth;
+  // BUGS-1846 T8: a fan who already holds this creator's passport sees "verified" with the passport, not the start dialog.
+  const summary = useOwnedFanResource(authenticated ? mySummaryPath(toContentLocale(locale)) : null, parseSummary, auth);
+  const heldPassportId = summary.state.status === "ready"
+    ? summary.state.data.creators.find((creator) => creator.celebrity.slug === slug && creator.relationship === "passport")?.passport?.id ?? null
+    : null;
+  // Starting waits for the ownership read; a failed read falls back to the server start, which still answers "holder".
+  const ownershipChecking = authenticated && summary.state.status === "loading";
   const [screen, setScreen] = useState<ScreenState>({ kind: "loading" });
   const [starting, setStarting] = useState(false);
   const [profileState, setProfileState] = useState<"idle" | "checking" | "complete" | "error">("idle");
@@ -264,7 +285,16 @@ export function QuizEntryScreen({
   }, [authenticated, getAccessToken, liveReturnTo, locale, profileAttempt, ready, router, slug]);
 
   const start = useCallback(async () => {
-    if (!ready || !authenticated || profileState !== "complete" || starting) return;
+    if (!ready || !authenticated || profileState !== "complete" || starting || ownershipChecking) return;
+    if (heldPassportId) {
+      // Same landing as the server's "holder" answer, without opening an attempt.
+      const intent = readAuthIntent(getSessionStorage(), new URLSearchParams(window.location.search).get("authIntent"));
+      if (intent?.actionType === "START_FAN_VERIFICATION" && intent.targetType === "celebrity" && intent.targetId === slug) {
+        consumeAuthIntent(getSessionStorage(), intent.id);
+      }
+      router.push((liveReturnTo ?? withLocale(`/passports/${heldPassportId}`, locale)) as Route);
+      return;
+    }
     setStarting(true);
     setStartError(null);
     try {
@@ -307,20 +337,22 @@ export function QuizEntryScreen({
       setStartError(errorMessage(error, locale));
       setStarting(false);
     }
-  }, [authenticated, getAccessToken, liveReturnTo, locale, profileState, ready, router, slug, starting]);
+  }, [authenticated, getAccessToken, heldPassportId, liveReturnTo, locale, ownershipChecking, profileState, ready, router, slug, starting]);
 
   useEffect(() => {
-    if (!authenticated || profileState !== "complete" || screen.kind !== "ready" || screen.intro.quiz.availability !== "available") return;
+    if (!authenticated || profileState !== "complete" || ownershipChecking || screen.kind !== "ready") return;
+    if (!heldPassportId && screen.intro.quiz.availability !== "available") return;
     const intentId = new URLSearchParams(window.location.search).get("authIntent");
     if (!intentId || resumedIntentRef.current === intentId) return;
     const intent = readAuthIntent(getSessionStorage(), intentId);
     if (intent?.actionType !== "START_FAN_VERIFICATION" || intent.targetType !== "celebrity" || intent.targetId !== slug) return;
     resumedIntentRef.current = intentId;
     void start();
-  }, [authenticated, profileState, screen, slug, start]);
+  }, [authenticated, heldPassportId, ownershipChecking, profileState, screen, slug, start]);
 
   const dialogRef = useRef<HTMLElement | null>(null);
-  const dialogOpen = screen.kind === "ready" && screen.intro.quiz.availability === "available";
+  // A holder sees "verified" even when the quiz is closed or not offered.
+  const dialogOpen = screen.kind === "ready" && (heldPassportId !== null || screen.intro.quiz.availability === "available");
   // Read on mount (kept through a reload). Closing always lands on the certification list this dialog belongs to; the remembered click only adds its exact URL and the card to focus.
   const [closeOrigin, setCloseOrigin] = useState<QuizCloseReturn | null>(null);
   useEffect(() => { setCloseOrigin(readQuizCloseReturn(getSessionStorage(), slug)); }, [slug]);
@@ -354,9 +386,7 @@ export function QuizEntryScreen({
     else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
   }, [closeDialog]);
 
-  const topAligned =
-    screen.kind === "ready" &&
-    screen.intro.quiz.availability === "available";
+  const topAligned = dialogOpen;
 
   return (
     <FanAppFrame locale={locale} mainId="fan-verification-intro-main">
@@ -377,17 +407,20 @@ export function QuizEntryScreen({
             <Link className={styles.secondaryAction} href={listHref as Route}>{t.listBack}</Link>
           </section>
         )}
-        {screen.kind === "ready" && screen.intro.quiz.availability === "unavailable" && (
+        {screen.kind === "ready" && !dialogOpen && (
           <section className={styles.message}>
             <h1>{t.unavailableTitle}</h1>
             <p>{t.unavailableBody(screen.intro.celebrity.name)}</p>
             <Link className={styles.secondaryAction} href={listHref as Route}>{t.listBack}</Link>
           </section>
         )}
-        {screen.kind === "ready" && screen.intro.quiz.availability === "available" && (
+        {screen.kind === "ready" && dialogOpen && (
           <div className={styles.backdrop} onClick={(event) => { if (event.target === event.currentTarget) closeDialog(); }}>
           <section ref={dialogRef} className={styles.entry} role="dialog" aria-modal="true" aria-labelledby="quiz-entry-heading" tabIndex={-1} onKeyDown={onDialogKeyDown}>
             <div className={styles.dialogActions}><FanLanguageSwitch locale={locale} compact /><button type="button" className={styles.closeButton} aria-label={t.close} onClick={closeDialog}><X aria-hidden="true" /></button></div>
+            {heldPassportId ? (
+              <header><FanHeading as="h1" id="quiz-entry-heading">{t.verified(screen.intro.celebrity.name)}</FanHeading></header>
+            ) : <>
             <header>
               <p>{t.eyebrow}</p>
               <h1
@@ -405,6 +438,7 @@ export function QuizEntryScreen({
               <li><Check aria-hidden="true" /><span><strong>{t.passThreshold(screen.intro.quiz.passThreshold)}</strong>{t.passThresholdTail}</span></li>
               <li><Check aria-hidden="true" /><span>{t.saved}</span></li>
             </ul>
+            </>}
             {!ready ? (
               <p className={styles.actionStatus} role="status">{t.authChecking}</p>
             ) : authenticated && profileState === "checking" ? (
@@ -415,14 +449,17 @@ export function QuizEntryScreen({
                 <FanAction className={styles.entryAction} leadingIcon={<RotateCcw aria-hidden="true" />} onClick={() => setProfileAttempt((value) => value + 1)}>{t.retry}</FanAction>
               </>
             ) : authenticated ? (
-              <FanAction className={styles.entryAction} variant="primary" disabled={starting} ariaBusy={starting} onClick={() => void start()} trailingIcon={<ArrowRight />}>
-                {starting ? t.starting : t.start}
+              <FanAction className={styles.entryAction} variant="primary" trailingIcon={<ArrowRight />}
+                {...(heldPassportId
+                  ? { href: withLocale(`/passports/${heldPassportId}`, locale) }
+                  : { disabled: starting || ownershipChecking, ariaBusy: starting || ownershipChecking, onClick: () => void start() })}>
+                {heldPassportId ? t.openPassport : starting ? t.starting : t.start}
               </FanAction>
             ) : (
               <AuthIntentLink className={fanActionClassName("primary", { className: styles.entryAction })} emphasis="primary" locale={locale} input={{ sourcePath: `/c/${slug}/verify`, sourceQuery: entrySourceQuery, actionType: "START_FAN_VERIFICATION", targetType: "celebrity", targetId: slug }}>{t.login}</AuthIntentLink>
             )}
             {startError && <p className={styles.inlineError} role="alert" tabIndex={-1}>{startError}</p>}
-            <p className={styles.note}>{t.note}</p>
+            {heldPassportId ? null : <p className={styles.note}>{t.note}</p>}
             <Link className={styles.returnLink} href={withLocale(creatorHomeHref(slug), locale)}>{t.fanPage(screen.intro.celebrity.name)}</Link>
           </section>
           </div>

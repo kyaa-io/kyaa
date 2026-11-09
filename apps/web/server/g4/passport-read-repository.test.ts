@@ -27,7 +27,7 @@ describe("SupabasePassportReadRepository", () => {
 
   it("reads directory ownership and real stages without mint, reaction or image enrichment", async () => {
     replacementGuard.mockClear();
-    const stageProgress = { policyVersion: 2, current: { key: "silver-1", tier: "Silver", subdivision: 1, rank: 2, minimumScore: 15 }, next: { key: "silver-2", tier: "Silver", subdivision: 2, rank: 3, minimumScore: 30 }, remaining: 10, progressPercent: 33 };
+    const stageProgress = { policyVersion: 2, current: { key: "silver-1", tier: "Silver", subdivision: 1, rank: 2, minimumScore: 15 }, next: { key: "silver-2", tier: "Silver", subdivision: 2, rank: 3, minimumScore: 30 }, remaining: 10, progressPercent: 33, unit: "points" as const };
     const score = { points: 20, level: "Silver", stageProgress };
     const rpc = vi.fn().mockResolvedValue({ data: [{ ...base, score }], error: null });
     const images = { readCelebrityPhotoSetsBySlug: vi.fn(), readLivePhotoSetsBySlug: vi.fn() };
@@ -59,7 +59,7 @@ describe("SupabasePassportReadRepository", () => {
     await expect(new SupabasePassportReadRepository({ rpc }).findCollection({ appUserId: "owner", locale: "ko" })).rejects.toThrow("REACTION_UNAVAILABLE");
   });
   it("keeps major growth and benefits intact when requesting stage projections", async () => {
-    const stageProgress = { policyVersion: 2, current: { key: "gold-1", tier: "Gold", subdivision: 1, rank: 4, minimumScore: 50 }, next: { key: "gold-2", tier: "Gold", subdivision: 2, rank: 5, minimumScore: 70 }, remaining: 60, progressPercent: 0 };
+    const stageProgress = { policyVersion: 2, current: { key: "gold-1", tier: "Gold", subdivision: 1, rank: 4, minimumScore: 50 }, next: { key: "gold-2", tier: "Gold", subdivision: 2, rank: 5, minimumScore: 70 }, remaining: 60, progressPercent: 0, unit: "points" as const };
     const projected = { ...base, score: { points: 10, level: "Gold", stageProgress } };
     const rpc = vi.fn().mockResolvedValueOnce({ data: [projected], error: null }).mockResolvedValueOnce({ data: [{ slug: "kara", reacted: true }], error: null }).mockResolvedValueOnce({ data: [{ ...projected, nextBenefit: null, stamps: [], activities: [] }], error: null });
     const repository = new SupabasePassportReadRepository({ rpc });
@@ -69,7 +69,9 @@ describe("SupabasePassportReadRepository", () => {
     expect(collection[0].firstReactionRecorded).toBe(true);
     expect(collection[0].stampSummary.total).toBe(1);
     expect(collection[0].score.stageProgress).toEqual(stageProgress);
-    expect(detail).toMatchObject({ score: { stageProgress }, progress: { currentScore: 10, currentLevel: "Gold", nextLevel: "Platinum", remainingPoints: 110 }, nextBenefit: null });
+    expect(detail).toMatchObject({ score: { stageProgress }, nextBenefit: null });
+    // BUGS-1846: the next step is the stage projection only; no point-table progress is attached.
+    expect(detail).not.toHaveProperty("progress");
     expect(rpc.mock.calls.map(([name]) => name)).toEqual(["get_owned_passport_collection_with_stages", "get_owned_creator_reactions", "get_owned_passport_detail_with_stages"]);
   });
   it("uses only owner-scoped service RPCs and preserves RPC ordering", async () => {
@@ -83,7 +85,6 @@ describe("SupabasePassportReadRepository", () => {
     await expect(repository.findCollection({ appUserId: owner, locale: "ko" })).resolves.toMatchObject([{ id: passportId, display: { level: "브론즈", mintStatus: "발급 대기" } }]);
     await expect(repository.findPassport({ id: passportId, appUserId: owner, locale: "en" })).resolves.toMatchObject({
       stamps: [{ display: { type: "Fan Verification" }, context }],
-      progress: { currentScore: 1, currentLevel: "Bronze", nextLevel: "Silver", nextThreshold: 15, remainingPoints: 14, percent: 7, maxed: false },
       nextBenefit: null,
     });
     await expect(repository.findStamp({ id: stampId, appUserId: owner, locale: "ko" })).resolves.toMatchObject({ owner: { nickname: "FanOne" }, display: { type: "팬 인증" }, activity: { context } });
@@ -274,7 +275,7 @@ describe("SupabasePassportReadRepository", () => {
 });
 
 describe("stage projection fallback", () => {
-  const badStage = { policyVersion: 3, current: { key: "bronze-1", tier: "Bronze", subdivision: 1, rank: 1, minimumScore: 0 }, next: { key: "silver-1", tier: "Silver", subdivision: 1, rank: 2, minimumScore: 0 }, remaining: 0, progressPercent: 0 };
+  const badStage = { policyVersion: 3, current: { key: "bronze-1", tier: "Bronze", subdivision: 1, rank: 1, minimumScore: 0 }, next: { key: "silver-1", tier: "Silver", subdivision: 1, rank: 2, minimumScore: 0 }, remaining: 0, progressPercent: 0, unit: "points" as const };
   const warn = () => vi.spyOn(console, "warn").mockImplementation(() => {});
   it("collection: drops only the stage detail, logging a reason code", async () => {
     const spy = warn();

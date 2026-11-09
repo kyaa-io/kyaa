@@ -56,6 +56,8 @@ export const dukjilRuleSchema = z.object({
   dailyLimit: z.number().int().nonnegative().nullable().optional(),
   stamp: z.string().nullable().optional(),
   pageStamp: z.boolean().optional(),
+  /** Shortest body that pays (comment: 5). Shorter writes are kept but pay nothing (DUKJIL_CONTENT_TOO_SHORT). */
+  minChars: z.number().int().positive().optional(),
 }).passthrough();
 export const dukjilCatalogSchema = z.object({
   version: z.number().int().positive(),

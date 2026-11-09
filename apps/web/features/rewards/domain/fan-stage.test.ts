@@ -3,7 +3,7 @@ import { FAN_STAGE_KEYS, fanStageLabel, fanStageProgressSchema, fanStageSchema, 
 
 const silver1 = { key: "silver-1", tier: "Silver", subdivision: 1, rank: 2, minimumScore: 15 } as const;
 const silver2 = { key: "silver-2", tier: "Silver", subdivision: 2, rank: 3, minimumScore: 30 } as const;
-const progress = { policyVersion: 2, current: silver1, next: silver2, remaining: 8, progressPercent: 46 };
+const progress = { policyVersion: 2, current: silver1, next: silver2, remaining: 8, progressPercent: 46, unit: "points" as const };
 
 describe("server fan stage contract", () => {
   it("preserves server values and labels subdivisions without deriving score thresholds", () => {
@@ -26,7 +26,7 @@ describe("server fan stage contract", () => {
   });
 
   it.each([
-    { ...progress, progressPercent: 101 },
+    { ...progress, progressPercent: 101, unit: "points" as const },
     { ...progress, remaining: -1 },
     { ...progress, next: null },
     { ...progress, next: { ...silver2, minimumScore: 14 } },
@@ -41,7 +41,7 @@ describe("server fan stage contract", () => {
   });
 
   it("requires a complete maximum stage", () => {
-    const maximum = { ...progress, current: { key: "diamond-1", tier: "Diamond", subdivision: 1, rank: 11, minimumScore: 250 }, next: null, remaining: 0, progressPercent: 100 };
+    const maximum = { ...progress, current: { key: "diamond-1", tier: "Diamond", subdivision: 1, rank: 11, minimumScore: 250 }, next: null, remaining: 0, progressPercent: 100, unit: "points" as const };
     expect(fanStageProgressSchema.safeParse(maximum).success).toBe(true);
     expect(fanStageProgressSchema.safeParse({ ...maximum, remaining: 1 }).success).toBe(false);
   });

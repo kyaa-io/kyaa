@@ -18,9 +18,9 @@ import { levelLabel } from "@/features/passport/domain/passport-read-model";
 import { PassportIdentityArtwork } from "@/features/passport/ui/passport-identity-artwork";
 import { GuestMissionBook, SLOT, openingPage } from "@/features/passport/ui/passport-mission-book";
 import { fanStageLabel } from "@/features/rewards/domain/fan-stage";
+import { fanStageNextText } from "@/features/rewards/ui/fan-stage-next";
 import type { AppLocale } from "@/i18n/locales";
 import type { MySummary } from "../domain/my-summary";
-import { fanTierProgress } from "../domain/my-progress";
 import { myHomeText } from "./my-home-copy";
 import styles from "./my-passport-card.module.css";
 
@@ -39,12 +39,11 @@ export function usePassportBook(passportId: string | null | undefined) {
   return { status: !dukjil || dukjil.status === "off" ? "off" as const : roadmap.error && !roadmap.data ? "error" as const : page ? "ready" as const : "loading" as const, page, retry: roadmap.retry };
 }
 
-/** 다음 등급까지: 세부 단계가 있으면 단계, 없으면 큰 등급 기준. */
+/** 다음 단계까지: 서버의 단계 진행(stageProgress)만 읽는다(BUGS-1846). 없으면 다음 단계를 말하지 않는다. */
 export function nextTierStep(locale: AppLocale, passport: NonNullable<Creator["passport"]>) {
   const stage = passport.stageProgress;
-  if (stage) return { percent: stage.progressPercent, text: stage.next ? myHomeText(locale, "nextTier", [fanStageLabel(locale, stage.next), stage.remaining.toLocaleString(locale)]) : myHomeText(locale, "topTier") };
-  const step = fanTierProgress(passport);
-  return { percent: step.percent, text: step.nextTier ? myHomeText(locale, "nextTier", [levelLabel(locale, step.nextTier), step.remaining.toLocaleString(locale)]) : myHomeText(locale, "topTier") };
+  if (!stage) return null;
+  return { percent: stage.progressPercent, text: fanStageNextText(locale, stage) ?? myHomeText(locale, "topTier") };
 }
 
 /** 이름 옆 태그와 카드가 같은 등급 이름을 쓴다. */

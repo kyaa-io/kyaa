@@ -63,7 +63,7 @@
 .slotLink:focus-visible { outline: 0; }
 .slotLink:focus-visible::after { outline: var(--focus-width) solid var(--color-focus); outline-offset: var(--focus-offset); }
 @media (hover: hover) and (pointer: fine) { .slot:has(.slotLink):hover { border-color: var(--passport-muted); } }
-.help { position: absolute; top: var(--space-1); inset-inline-end: var(--space-1); z-index: 1; }
+.help { position: relative; z-index: 1; }
 .slotDate { color: var(--passport-muted); font-size: var(--passport-micro); font-variant-numeric: tabular-nums; }
 @media (min-width: 1024px) { [data-passport-book] .art { width: 88px; height: 88px; } }
 

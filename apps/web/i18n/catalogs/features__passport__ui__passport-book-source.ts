@@ -133,6 +133,30 @@ export const messages = {
     "fr": "Mon niveau de fan : {0}",
     "ru": "Мой уровень фаната: {0}"
   },
+  "tierToNextStamps": {
+    "ja": "{0}までスタンプあと{1}個",
+    "zh-Hans": "距{0}还差{1}个印章",
+    "zh-Hant": "距{0}還差{1}個印章",
+    "es": "Sellos para {0}: {1}",
+    "id": "Stempel menuju {0}: {1}",
+    "vi": "Còn {1} con dấu nữa để lên {0}",
+    "th": "อีก {1} ตราประทับถึง {0}",
+    "pt": "Selos para {0}: {1}",
+    "fr": "Tampons avant {0} : {1}",
+    "ru": "Штампов до уровня {0}: {1}"
+  },
+  "tierToNextHearts": {
+    "ja": "{0}までハートあと{1}個",
+    "zh-Hans": "距{0}还差{1}颗爱心",
+    "zh-Hant": "距{0}還差{1}顆愛心",
+    "es": "Corazones para {0}: {1}",
+    "id": "Hati menuju {0}: {1}",
+    "vi": "Còn {1} trái tim nữa để lên {0}",
+    "th": "อีก {1} หัวใจถึง {0}",
+    "pt": "Corações para {0}: {1}",
+    "fr": "Cœurs avant {0} : {1}",
+    "ru": "Сердец до уровня {0}: {1}"
+  },
   "tierToNext": {
     "ja": "{0}まで{1}点",
     "zh-Hans": "距{0}还差{1}分",

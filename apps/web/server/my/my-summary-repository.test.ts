@@ -8,7 +8,7 @@ const valid = { profile: { nickname: null }, creators: [], live: { upcoming: [],
 
 describe("MY summary repository", () => {
   it("opts into the stage RPC without rewriting authoritative progress", async () => {
-    const stageProgress = { policyVersion: 2, current: { key: "silver-1", tier: "Silver", subdivision: 1, rank: 2, minimumScore: 15 }, next: { key: "silver-2", tier: "Silver", subdivision: 2, rank: 3, minimumScore: 30 }, remaining: 8, progressPercent: 46 };
+    const stageProgress = { policyVersion: 2, current: { key: "silver-1", tier: "Silver", subdivision: 1, rank: 2, minimumScore: 15 }, next: { key: "silver-2", tier: "Silver", subdivision: 2, rank: 3, minimumScore: 30 }, remaining: 8, progressPercent: 46, unit: "points" as const };
     const data = { ...valid, creators: [{ celebrity: { slug: "kara", name: "KARA", image: "/kara.jpg" }, relationship: "passport", passport: { id, tier: "Silver", score: 22, remainingToNextTier: 28, stageProgress }, ticketBalance: 0, firstReaction: null }] };
     const rpc = vi.fn(async () => ({ data, error: null }));
     const result = await new SupabaseMySummaryRepository({ rpc }).get({ appUserId: id, locale: "en", asOf: new Date("2026-09-10T00:00:00Z"), includeStages: true });
@@ -16,7 +16,7 @@ describe("MY summary repository", () => {
     expect(rpc).toHaveBeenCalledExactlyOnceWith("get_owned_my_fan_activity_with_stages", { p_app_user_id: id, p_locale: "en", p_as_of: "2026-09-10T00:00:00.000Z" });
   });
   it("drops only stage detail when the stage projection is rejected", async () => {
-    const bad = { ...valid, creators: [{ celebrity: { slug: "kara", name: "KARA", image: "/kara.jpg" }, relationship: "passport", passport: { id, tier: "Bronze", score: 0, remainingToNextTier: 1, stageProgress: { policyVersion: 3, current: { key: "bronze-1", tier: "Bronze", subdivision: 1, rank: 1, minimumScore: 0 }, next: { key: "silver-1", tier: "Silver", subdivision: 1, rank: 2, minimumScore: 0 }, remaining: 0, progressPercent: 0 } }, ticketBalance: 0, firstReaction: null }] };
+    const bad = { ...valid, creators: [{ celebrity: { slug: "kara", name: "KARA", image: "/kara.jpg" }, relationship: "passport", passport: { id, tier: "Bronze", score: 0, remainingToNextTier: 1, stageProgress: { policyVersion: 3, current: { key: "bronze-1", tier: "Bronze", subdivision: 1, rank: 1, minimumScore: 0 }, next: { key: "silver-1", tier: "Silver", subdivision: 1, rank: 2, minimumScore: 0 }, remaining: 0, progressPercent: 0, unit: "points" as const } }, ticketBalance: 0, firstReaction: null }] };
     const plain = { ...bad, creators: [{ ...bad.creators[0], passport: { ...bad.creators[0].passport, stageProgress: undefined } }] };
     const rpc = vi.fn(async (name: string) => ({ data: name.endsWith("_with_stages") ? bad : plain, error: null }));
     const result = await new SupabaseMySummaryRepository({ rpc }).get({ appUserId: id, locale: "ko", asOf: new Date(), includeStages: true });

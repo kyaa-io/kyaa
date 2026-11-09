@@ -90,6 +90,18 @@ export function EarnActionBadge({ action, locale, variant = "inline", stamp = fa
   return <FanRewardPop trigger={pop ?? "open"} kind="complete"><EarnBadge variant={variant} locale={locale} points={points} stamp={stamp && typeof rule.stamp === "string"} remaining={item.remaining} remainingPer={capPeriod(rule)} className={className} /></FanRewardPop>;
 }
 
+/** The shortest body that pays, beside the point badge (BUGS-1846 T4: a 3-character comment paid nothing and looked like a bug).
+ * Shown when the badge is: for guests, and for members while today's count is not used up. */
+export function EarnMinLength({ action, locale }: { action: DukjilActionKey; locale: AppLocale }) {
+  const state = useDukjil();
+  const rule = state?.catalog?.rules[action] as { minChars?: unknown } | undefined;
+  const min = typeof rule?.minChars === "number" && rule.minChars > 0 ? rule.minChars : null;
+  if (!min) return null;
+  const item = todayItem(state?.today, action);
+  if (state?.authenticated && (!item || item.remaining === 0)) return null;
+  return <span className={styles.minChars}>{dukjilText(locale, "earnMinChars", [min.toLocaleString(locale)])}</span>;
+}
+
 /** 버튼 오른쪽 위에 `corner` 뱃지를 걸친다. 뱃지가 버튼 밖 형제라 버튼이 비활성이어도 색을 유지하고, 누름은 버튼으로 통과한다. */
 export function EarnBadgeCorner({ action, locale, className, children }: { action: DukjilActionKey; locale: AppLocale; className?: string; children: ReactNode }) {
   return <span className={[cornerStyles.host, className ?? ""].filter(Boolean).join(" ")}>{children}<EarnActionBadge action={action} locale={locale} variant="corner" /></span>;

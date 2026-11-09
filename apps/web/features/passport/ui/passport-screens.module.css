@@ -398,6 +398,10 @@
   grid-template-columns: 1fr 1fr;
   border-block: 1px solid var(--micro);
 }
+/* Below the wide layout the facts close the tier card, whose own edge follows: no second line under them. */
+@media (max-width: 1023px) {
+  .heroFacts:last-child { border-block-end: 0; }
+}
 .heroFacts a {
   display: grid;
   gap: 3px;
@@ -947,7 +951,6 @@
 .guestCard .guestCover { height: 88px; }
 .guestAction a { color: var(--color-surface); }
 
-.heroFacts + * { margin-top: var(--space-3); }
 /* 비로그인 상세: 넓은 화면에서는 로그인 화면의 책처럼 왼쪽 카드, 오른쪽 미션북 한 쪽으로 둔다. */
 @media (min-width: 1024px) {
   .guestDetail { display: grid; grid-template-columns: minmax(0, 380px) minmax(0, 1fr); align-items: start; gap: var(--space-8); }

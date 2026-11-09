@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import type { Route } from "next";
-import { ArrowRight, Heart } from "lucide-react";
+import { ChevronRight, Heart } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import { FanCount } from "@/components/fan-ui/fan-count-chip";
@@ -46,9 +46,10 @@ const shortDate = (value: string, locale: AppLocale) => new Date(value).toLocale
 const dayDate = (value: string, locale: AppLocale) => new Date(value).toLocaleDateString(locale, { month: "numeric", day: "numeric", timeZone: "Asia/Seoul" });
 const statusOrder = { open: 0, preparing: 1, closed: 2, cancelled: 3 } as const;
 
-/** The stamp gauge's words (E4): 9 − (n mod 9) stamps to the next heart; a full page (n a positive multiple of 9) reads 하트 +1. */
+/** The stamp gauge's words (사용자 결정 B, 2026-11-09 20:36): a page of 9 becomes a heart only when the fan presses 받기 on the mission book (claim API).
+ * Below 9: `N칸 더 모으면 받기`; a full page (n a positive multiple of 9): `하트 받기`, the same words as the mission book's button. */
 export function nextHeartLabel(locale: AppLocale, stamps: number) {
-  return stamps > 0 && stamps % STAMPS_PER_HEART === 0 ? t(locale, "cheerHeartReady") : t(locale, "cheerNextHeart", [STAMPS_PER_HEART - (stamps % STAMPS_PER_HEART)]);
+  return stamps > 0 && stamps % STAMPS_PER_HEART === 0 ? t(locale, "missionClaim") : t(locale, "cheerNextHeart", [STAMPS_PER_HEART - (stamps % STAMPS_PER_HEART)]);
 }
 
 /** The favorite whose lucky draws and rank the 덕질 tab shows: the one chosen in the header, else the followed one. */
@@ -132,7 +133,7 @@ function RaffleCard({ raffle, status, slug, locale, entered, allowance }: { raff
       <span className={styles.meta}>{t(locale, "luckyWinners", [raffle.winnerQuantity.toLocaleString(locale)])} · {deliveryLabel(raffle, locale)}{entered ? <> · {t(locale, "luckyMyEntries", [entered.toLocaleString(locale)])}</> : null}</span>
       {cost ? <span className={styles.cost} data-raffle-cost="">{cost}</span> : null}
     </span>
-    <FanAction variant="secondary" size="sm" fullWidth href={href} trailingIcon={<ArrowRight />} className={styles.action}>{label}</FanAction>
+    <FanAction variant="secondary" size="sm" fullWidth href={href} className={styles.action}>{label}</FanAction>
   </li>;
 }
 
@@ -145,12 +146,14 @@ export function StanLucky({ locale, bias, guest }: { locale: AppLocale; bias: Se
   // F5: open and upcoming draws take the first place; closed ones only fill a separate 지난 럭키드로우 list when none is live.
   const live = raffles.items.filter(item => item.status !== "closed"), past = live.length ? [] : raffles.items.filter(item => item.status === "closed");
   const shown = live.slice(0, LUCKY_CARDS), shownPast = past.slice(0, LUCKY_CARDS);
-  const more = slug && raffles.items.length > shown.length + shownPast.length ? <Link className={styles.headLink} href={creatorRafflesHref(slug, locale)}>{seeAllLabel[locale]}<ArrowRight size={16} aria-hidden="true" /></Link> : null;
-  const empty = (title: string, action?: ReactNode, short = false) => <div className={short ? `${styles.empty} ${styles.emptyShort}` : styles.empty}><FanState kind="empty" title={title} />{action ? <div className={styles.emptyAction}>{action}</div> : null}</div>;
-  const history = <FanAction variant="text" href={`/my/raffles?locale=${locale}`} trailingIcon={<ArrowRight />}>{t(locale, "luckyHistory")}</FanAction>;
+  const more = slug && raffles.items.length > shown.length + shownPast.length ? <Link className={styles.headLink} href={creatorRafflesHref(slug, locale)}>{seeAllLabel[locale]}<ChevronRight size={16} aria-hidden="true" /></Link> : null;
+  // 게이트 D2: the empty state is one line; its next step is a row below it inside the same box, ending in ›.
+  const empty = (title: string, action?: ReactNode, short = false) => <div className={short ? `${styles.empty} ${styles.emptyShort}` : styles.empty}><div className={styles.emptyLine}><FanState kind="empty" title={title} /></div>{action}</div>;
+  const history = <Link className={styles.emptyRow} href={`/my/raffles?locale=${locale}` as Route}><span>{t(locale, "luckyHistory")}</span><ChevronRight size={16} aria-hidden="true" /></Link>;
   const body = bias.status === "loading" || (slug && raffles.loading) ? <div className={styles.pending} aria-busy="true"><FanSkeleton shape="block" width="100%" height="100%" /></div>
     : guest ? empty(t(locale, "luckyNoFavorite"))
-    : !slug ? empty(t(locale, "luckyNoFavorite"), bias.options.length ? <FavoritePickMenu locale={locale} bias={bias} className={styles.pick}><span>{t(locale, "heartPick")}</span><ArrowRight size={16} aria-hidden="true" /></FavoritePickMenu> : <FanAction variant="text" href={`/pages/groups?locale=${locale}`} trailingIcon={<ArrowRight />}>{t(locale, "heartPick")}</FanAction>)
+    // H1 (DS-D review): picking a favorite is offered once, in the cheer block; here the line only says what will show.
+    : !slug ? empty(t(locale, "luckyNoFavorite"))
     : raffles.error ? <FanState inline compact kind="error" className={styles.empty} title={t(locale, "luckyLoadError")} actions={<FanAction variant="text" onClick={raffles.retry}>{groupsCopy(locale).retry}</FanAction>} />
     : shown.length === 0 && shownPast.length === 0 ? empty(t(locale, "luckyEmpty"), history)
     : shown.length === 0 ? <>{empty(t(locale, "luckyEmpty"), history, true)}
@@ -178,7 +181,7 @@ export function StanCheer({ locale, bias, guest, hearts }: { locale: AppLocale; 
   const favorite = guest ? null : stanFavorite(bias), slug = favorite?.slug ?? null, title = t(locale, "stanFlowCheer");
   const rank = useStanRank(locale, slug), selected = bias.selected && bias.selected.slug === slug ? bias.selected : null;
   const login = fanLoginHref(locale, `/benefits?locale=${locale}`);
-  const pickInner = <><span className={styles.avatarIcon}><Heart size={20} aria-hidden="true" /></span><span className={styles.name}>{t(locale, "heartPick")}</span><ArrowRight size={16} aria-hidden="true" /></>;
+  const pickInner = <><span className={styles.avatarIcon}><Heart size={20} aria-hidden="true" /></span><span className={styles.name}>{t(locale, "heartPick")}</span><ChevronRight size={16} aria-hidden="true" /></>;
   const head = bias.status === "loading" ? <span className={styles.who}><FanSkeleton shape="circle" width={40} height={40} /><FanSkeleton width={120} height={20} /></span>
     : guest ? <span className={styles.who}><span className={styles.avatarIcon}><Heart size={20} aria-hidden="true" /></span><span className={styles.whoText}><FanLockedValue locale={locale} /></span></span>
     : !favorite ? (bias.options.length ? <FavoritePickMenu locale={locale} bias={bias} className={styles.who}>{pickInner}</FavoritePickMenu> : <Link className={styles.who} href={`/pages/groups?locale=${locale}` as Route}>{pickInner}</Link>)
@@ -196,7 +199,8 @@ export function StanCheer({ locale, bias, guest, hearts }: { locale: AppLocale; 
         <div><dt>{t(locale, "cheerMyHearts")}</dt><dd>{guest ? <FanLockedValue locale={locale} /> : hearts === null ? <FanSkeleton width={48} height={24} /> : <FanNumber value={hearts} size="lg" countUp locale={locale} icon={heartIcon} />}</dd></div>
         {rank.row ? <div><dt>{rankingsText(locale, "rkCumulativeFans")} · {rankingsText(locale, "rkCumulativeHearts")}</dt><dd className={styles.community}>{rank.row.score.toLocaleString(locale)} · {heartIcon}{rank.row.hearts.toLocaleString(locale)}</dd></div> : null}
       </dl>
-      <FanAction variant="secondary" size="sm" fullWidth className={styles.action} trailingIcon={<ArrowRight />} href={guest ? login : slug ? `/${encodeURIComponent(slug)}?tab=fans&locale=${locale}` : `/pages/groups?locale=${locale}`}>{guest || !slug ? t(locale, "heartPick") : t(locale, "cheerFanRanking")}</FanAction>
+      {/* H1: without a favorite the pick row above is the one way to choose; the button stays for the fan ranking and the guest login. */}
+      {guest || slug ? <FanAction variant="secondary" size="sm" fullWidth className={styles.action} href={guest ? login : `/${encodeURIComponent(slug!)}?tab=fans&locale=${locale}`}>{guest ? t(locale, "heartPick") : t(locale, "cheerFanRanking")}</FanAction> : null}
     </div>
   </section>;
 }

@@ -12,6 +12,7 @@ const router = { push, replace };
 let privyState = { ready: true, authenticated: true };
 
 vi.mock("@/features/auth/client/cognito-auth", () => ({ useByUsAuth: () => ({ ...privyState, getAccessToken }) }));
+vi.mock("@/components/byus-session-provider", async (importOriginal) => ({ ...await importOriginal<typeof import("@/components/byus-session-provider")>(), useByUsSession: () => ({ ready: true, ownerId: "owner-1", generation: 0 }) }));
 vi.mock("next/navigation", () => ({ usePathname: () => "/", useSearchParams: () => new URLSearchParams(), useRouter: () => router }));
 
 const attemptId = "11111111-1111-4111-8111-111111111111";
@@ -25,6 +26,18 @@ const questions = [1, 2, 3].map((position) => ({
   selectedOptionId: null,
   options: [1, 2].map((optionPosition) => ({ id: `${position}${optionPosition}000000-0000-4000-8000-00000000000${optionPosition}`, position: optionPosition, label: `보기 ${optionPosition}` })),
 }));
+
+const passportId = "a11c7e00-28c9-4751-81f1-2f0263578e92";
+const summary = {
+  profile: { nickname: "아리가또" },
+  creators: [{ celebrity: { slug: "kara", name: "KARA", image: "/k.png", isPublic: true }, relationship: "passport", passport: { id: passportId, tier: "Bronze", score: 5, remainingToNextTier: 15 }, ticketBalance: 0, firstReaction: null }],
+  live: { upcoming: [], history: [] },
+  rewards: { availableCount: 0, entries: 0, items: [] },
+  collection: { passportCount: 1, stampCount: 0, collectibleCount: 0, recent: [] },
+  unreadNotificationCount: 0,
+};
+const openAttempt = () => Response.json({ result: { kind: "attempt", attempt: { id: attemptId, status: "open", score: null, submittedAt: null }, questions } });
+const attemptCalls = () => vi.mocked(fetch).mock.calls.filter(([input]) => String(input).includes("/quiz/attempts"));
 
 describe("QuizEntryScreen", () => {
   beforeEach(() => {
@@ -60,6 +73,93 @@ describe("QuizEntryScreen", () => {
     await waitFor(() => expect(push).toHaveBeenCalledWith(`/c/kara/verify/questions?attempt=${attemptId}&locale=ko`));
     expect(fetchMock).toHaveBeenCalledWith("/api/public/celebrities/kara/quiz?locale=ko", expect.objectContaining({ method: "GET", cache: "no-store" }));
     expect(fetchMock).toHaveBeenCalledWith("/api/celebrities/kara/quiz/attempts?locale=ko", expect.objectContaining({ method: "POST", headers: { authorization: "Bearer privy-token" } }));
+  });
+
+  it("BUGS-1846 T8: a fan who already holds this creator's passport sees it as verified instead of the start button", async () => {
+    const fetchMock = vi.spyOn(globalThis, "fetch").mockImplementation(async (input) => {
+      const url = String(input);
+      if (url === "/api/me/profile") return Response.json({ profile: { completed: true } });
+      if (url.startsWith("/api/me/summary")) return Response.json({ summary });
+      if (url.includes("/api/public/")) return Response.json({ intro });
+      throw new Error(`unexpected ${url}`);
+    });
+
+    render(<QuizEntryScreen locale="ko" slug="kara" />);
+    expect(await screen.findByRole("heading", { name: "KARA 팬 인증 완료" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "패스포트 보기" })).toHaveAttribute("href", `/passports/${passportId}?locale=ko`);
+    expect(screen.queryByRole("button", { name: "팬 인증 시작하기" })).toBeNull();
+    expect(fetchMock).not.toHaveBeenCalledWith(expect.stringContaining("/quiz/attempts"), expect.anything());
+  });
+
+  it("BUGS-1846 T8: holds the start while the ownership read is pending, for the button and the resumed sign-in action", async () => {
+    const intent = createAuthIntent({ sourcePath: "/c/kara/verify", sourceQuery: "", actionType: "START_FAN_VERIFICATION", targetType: "celebrity", targetId: "kara" });
+    persistAuthIntent(sessionStorage, intent);
+    window.history.replaceState({}, "", `/c/kara/verify?authIntent=${intent.id}`);
+    vi.spyOn(globalThis, "fetch").mockImplementation(async (input) => {
+      const url = String(input);
+      if (url === "/api/me/profile") return Response.json({ profile: { completed: true } });
+      if (url.startsWith("/api/me/summary")) return new Promise<Response>(() => {});
+      if (url.includes("/api/public/")) return Response.json({ intro });
+      return openAttempt();
+    });
+
+    render(<QuizEntryScreen locale="ko" slug="kara" />);
+    const button = await screen.findByRole("button", { name: "팬 인증 시작하기" });
+    await waitFor(() => expect(button).toBeDisabled());
+    fireEvent.click(button);
+    await new Promise((resolve) => setTimeout(resolve, 50));
+    expect(attemptCalls()).toHaveLength(0);
+    expect(push).not.toHaveBeenCalled();
+    expect(sessionStorage.getItem(`byus:auth-intent:v1:${intent.id}`)).not.toBeNull();
+  });
+
+  it("BUGS-1846 T8: a holder's resumed sign-in action lands on the passport without opening an attempt", async () => {
+    const intent = createAuthIntent({ sourcePath: "/c/kara/verify", sourceQuery: "", actionType: "START_FAN_VERIFICATION", targetType: "celebrity", targetId: "kara" });
+    persistAuthIntent(sessionStorage, intent);
+    window.history.replaceState({}, "", `/c/kara/verify?authIntent=${intent.id}`);
+    vi.spyOn(globalThis, "fetch").mockImplementation(async (input) => {
+      const url = String(input);
+      if (url === "/api/me/profile") return Response.json({ profile: { completed: true } });
+      if (url.startsWith("/api/me/summary")) return Response.json({ summary });
+      if (url.includes("/api/public/")) return Response.json({ intro });
+      return openAttempt();
+    });
+
+    render(<QuizEntryScreen locale="ko" slug="kara" />);
+    await waitFor(() => expect(push).toHaveBeenCalledWith(`/passports/${passportId}?locale=ko`));
+    expect(attemptCalls()).toHaveLength(0);
+    expect(sessionStorage.getItem(`byus:auth-intent:v1:${intent.id}`)).toBeNull();
+  });
+
+  it("BUGS-1846 T8: a failed ownership read falls back to the server start", async () => {
+    vi.spyOn(globalThis, "fetch").mockImplementation(async (input) => {
+      const url = String(input);
+      if (url === "/api/me/profile") return Response.json({ profile: { completed: true } });
+      if (url.startsWith("/api/me/summary")) return Response.json({ error: { code: "UNAVAILABLE" } }, { status: 503 });
+      if (url.includes("/api/public/")) return Response.json({ intro });
+      return openAttempt();
+    });
+
+    render(<QuizEntryScreen locale="ko" slug="kara" />);
+    const button = await screen.findByRole("button", { name: "팬 인증 시작하기" });
+    await waitFor(() => expect(button).toBeEnabled());
+    fireEvent.click(button);
+    await waitFor(() => expect(push).toHaveBeenCalledWith(`/c/kara/verify/questions?attempt=${attemptId}&locale=ko`));
+    expect(attemptCalls()).toHaveLength(1);
+  });
+
+  it("BUGS-1846 T8: a holder sees verified even when the quiz is closed", async () => {
+    vi.spyOn(globalThis, "fetch").mockImplementation(async (input) => {
+      const url = String(input);
+      if (url === "/api/me/profile") return Response.json({ profile: { completed: true } });
+      if (url.startsWith("/api/me/summary")) return Response.json({ summary });
+      if (url.includes("/api/public/")) return Response.json({ intro: { ...intro, quiz: { ...intro.quiz, availability: "unavailable" } } });
+      throw new Error(`unexpected ${url}`);
+    });
+
+    render(<QuizEntryScreen locale="ko" slug="kara" />);
+    expect(await screen.findByRole("heading", { name: "KARA 팬 인증 완료" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "패스포트 보기" })).toHaveAttribute("href", `/passports/${passportId}?locale=ko`);
   });
 
   it("carries a validated LIVE reservation return through a successful start", async () => {
@@ -156,7 +256,8 @@ describe("QuizEntryScreen", () => {
 
     await waitFor(() => expect(push).toHaveBeenCalledWith("/passports/22222222-2222-4222-8222-222222222222?locale=ko"));
     expect(sessionStorage.getItem(`byus:auth-intent:v1:${intent.id}`)).toBeNull();
-    expect(fetch).toHaveBeenCalledTimes(3);
+    // intro, profile, attempt (+ the shared MY summary read that decides the "already verified" state)
+    expect(vi.mocked(fetch).mock.calls.filter(([input]) => !String(input).startsWith("/api/me/summary"))).toHaveLength(3);
   });
 
   it("renders an honest unavailable state without starting an attempt", async () => {

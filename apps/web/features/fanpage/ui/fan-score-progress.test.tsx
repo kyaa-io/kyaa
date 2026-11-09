@@ -3,20 +3,36 @@ import { describe, expect, it } from "vitest";
 import { FanScoreProgress } from "./fan-score-progress";
 
 const passport = { id: "passport-one", tier: "Bronze", score: 2, remainingToNextTier: 13 } as const;
+const stage = (key: string, tier: string, subdivision: number, rank: number, minimumScore: number) => ({ key, tier, subdivision, rank, minimumScore }) as never;
+const bronze = { policyVersion: 3 as const, current: stage("bronze-1", "Bronze", 1, 1, 0), next: stage("silver-1", "Silver", 1, 2, 0), remaining: 1, progressPercent: 66, unit: "stamps" as const };
 
 describe("fan score details", () => {
-  it("keeps the current score in an on-demand tooltip with the next tier threshold", () => {
-    render(<FanScoreProgress passport={passport} locale="ko" />);
+  it("speaks of the next step only from the server stage: slots before Silver (BUGS-1846)", () => {
+    render(<FanScoreProgress passport={{ ...passport, stageProgress: bronze }} locale="ko" />);
     expect(screen.queryByRole("tooltip")).not.toBeInTheDocument();
-    expect(screen.getByText("2점")).toBeVisible();
-    expect(screen.getByText("현재 점수 / 실버 기준 · 2 / 15점")).toBeVisible();
+    expect(screen.getAllByText("2점")[0]).toBeVisible();
+    expect(screen.getAllByText("실버까지 도장 1칸")[0]).toBeVisible();
     const progress = screen.getByRole("progressbar", { name: "팬 등급 진행도" });
-    expect(progress).toHaveAttribute("value", "2");
-    expect(progress).toHaveAttribute("max", "15");
-    expect(progress).toHaveAttribute("aria-valuetext", "현재 점수 / 실버 기준: 2 / 15점");
+    expect(progress).toHaveAttribute("value", "66");
+    expect(progress).toHaveAttribute("max", "100");
+    expect(progress).toHaveAttribute("aria-valuetext", "실버까지 도장 1칸. 현재 점수: 2점");
     fireEvent.click(screen.getByRole("button", { name: "팬 점수 자세히 보기" }));
-    expect(screen.getByRole("tooltip")).toHaveTextContent("현재 점수 / 실버 기준");
-    expect(screen.getByRole("tooltip")).toHaveTextContent("2 / 15점");
+    expect(screen.getByRole("tooltip")).toHaveTextContent("실버까지 도장 1칸");
+    expect(screen.getByRole("tooltip")).toHaveTextContent("현재 점수2점");
+  });
+
+  it("counts hearts from Silver and names a stage inside a tier", () => {
+    const { rerender } = render(<FanScoreProgress passport={{ ...passport, tier: "Silver", score: 60, stageProgress: { ...bronze, current: stage("silver-2", "Silver", 2, 3, 0), next: stage("gold-1", "Gold", 1, 4, 1), remaining: 1, progressPercent: 0, unit: "hearts" as const } }} locale="ko" />);
+    expect(screen.getAllByText("골드까지 하트 1개")[0]).toBeVisible();
+    expect(screen.queryByText(/까지 \d+점/)).not.toBeInTheDocument();
+    rerender(<FanScoreProgress passport={{ ...passport, tier: "Gold", score: 60, stageProgress: { ...bronze, current: stage("gold-1", "Gold", 1, 4, 1), next: stage("gold-2", "Gold", 2, 5, 8), remaining: 5, progressPercent: 28, unit: "hearts" as const } }} locale="ko" />);
+    expect(screen.getAllByText("골드 2까지 하트 5개")[0]).toBeVisible();
+  });
+
+  it("draws no next step without a stage projection", () => {
+    render(<FanScoreProgress passport={passport} locale="ko" />);
+    expect(screen.queryByText(/까지/)).not.toBeInTheDocument();
+    expect(screen.getByRole("progressbar")).toHaveAttribute("value", "0");
   });
 
   it("toggles on tap and dismisses on outside press or Escape", () => {
@@ -33,65 +49,19 @@ describe("fan score details", () => {
     expect(screen.queryByRole("tooltip")).not.toBeInTheDocument();
   });
 
-  it("shows details on keyboard focus and dismisses when focus leaves", () => {
-    render(<FanScoreProgress passport={passport} locale="en" />);
+  it("shows details on keyboard focus in other locales and dismisses when focus leaves", () => {
+    render(<FanScoreProgress passport={{ ...passport, stageProgress: bronze }} locale="en" />);
     const trigger = screen.getByRole("button", { name: "View Fan Score details" });
     fireEvent.focus(trigger);
-    expect(screen.getByRole("tooltip")).toHaveTextContent("Current score / Silver target");
+    expect(screen.getByRole("tooltip")).toHaveTextContent("Stamps to Silver: 1");
     fireEvent.blur(trigger);
     expect(screen.queryByRole("tooltip")).not.toBeInTheDocument();
   });
 
-  it("does not invent a maximum score after Diamond", () => {
-    render(<FanScoreProgress passport={{ ...passport, tier: "Diamond", score: 250, remainingToNextTier: 0 }} locale="ko" />);
+  it("says every stage is reached at the top", () => {
+    render(<FanScoreProgress passport={{ ...passport, tier: "Diamond", score: 250, stageProgress: { ...bronze, current: stage("diamond-1", "Diamond", 1, 11, 28), next: null, remaining: 0, progressPercent: 100, unit: "hearts" as const } }} locale="ko" />);
     fireEvent.click(screen.getByRole("button"));
-    expect(screen.getByRole("tooltip")).toHaveTextContent("최고 등급 달성250점");
-    expect(screen.getByRole("tooltip")).not.toHaveTextContent("/");
-    expect(screen.getByRole("progressbar")).toHaveAttribute("value", "1");
-    expect(screen.getByRole("progressbar")).toHaveAttribute("max", "1");
-  });
-
-  it("uses the server stage segment while retaining the next major-tier goal in details", () => {
-    render(<FanScoreProgress passport={{
-      ...passport,
-      tier: "Gold",
-      score: 80,
-      remainingToNextTier: 40,
-      stageProgress: {
-        policyVersion: 2,
-        current: { key: "gold-2", tier: "Gold", subdivision: 2, rank: 5, minimumScore: 70 },
-        next: { key: "gold-3", tier: "Gold", subdivision: 3, rank: 6, minimumScore: 95 },
-        remaining: 15,
-        progressPercent: 40,
-      },
-    }} locale="ko" />);
-    const progress = screen.getByRole("progressbar", { name: "팬 등급 진행도" });
-    expect(progress).toHaveAttribute("value", "40");
-    expect(progress).toHaveAttribute("max", "100");
-    expect(progress).toHaveAttribute("aria-valuetext", "골드 3까지: 15점 남음. 현재 점수: 80점. 플래티넘까지 40점");
-    fireEvent.click(screen.getByRole("button"));
-    expect(screen.getByRole("tooltip")).toHaveTextContent("골드 3까지15점 남음");
-    expect(screen.getByRole("tooltip")).toHaveTextContent("현재 점수80점");
-    expect(screen.getByRole("tooltip")).toHaveTextContent("등급 목표플래티넘까지 40점");
-  });
-
-  it("omits a duplicate tier goal when the nearest stage is the next tier", () => {
-    render(<FanScoreProgress passport={{
-      ...passport,
-      tier: "Platinum",
-      score: 215,
-      remainingToNextTier: 35,
-      stageProgress: {
-        policyVersion: 2,
-        current: { key: "platinum-4", tier: "Platinum", subdivision: 4, rank: 10, minimumScore: 215 },
-        next: { key: "diamond-1", tier: "Diamond", subdivision: 1, rank: 11, minimumScore: 250 },
-        remaining: 35,
-        progressPercent: 0,
-      },
-    }} locale="ko" />);
-    fireEvent.click(screen.getByRole("button"));
-    expect(screen.getByRole("tooltip")).toHaveTextContent("다이아몬드까지35점 남음");
-    expect(screen.getByRole("tooltip")).toHaveTextContent("현재 점수215점");
-    expect(screen.queryByText("등급 목표")).not.toBeInTheDocument();
+    expect(screen.getByRole("tooltip")).toHaveTextContent("모든 단계를 달성했어요");
+    expect(screen.getByRole("progressbar")).toHaveAttribute("value", "100");
   });
 });
