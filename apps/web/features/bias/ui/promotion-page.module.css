@@ -122,7 +122,6 @@
   font-weight: 700;
   letter-spacing: -0.4px;
 }
-.searchTrigger,
 .searchInput {
   background: var(--color-soft);
   border: 1px solid transparent;
@@ -133,11 +132,6 @@
   align-items: center;
   color: var(--color-muted);
   padding: 0 16px;
-}
-.searchTrigger {
-  width: 340px;
-  text-align: left;
-  font-size: 14px !important;
 }
 .shortcuts {
   display: flex;
@@ -772,10 +766,6 @@
   }
   .selector h2 {
     font-size: 18px;
-  }
-  .searchTrigger {
-    width: 100%;
-    font-size: 13px !important;
   }
   .shortcuts {
     gap: 8px;

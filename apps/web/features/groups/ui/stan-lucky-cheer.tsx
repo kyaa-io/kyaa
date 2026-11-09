@@ -6,6 +6,7 @@ import { useEffect, useState, type ReactNode } from "react";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import { FanCount } from "@/components/fan-ui/fan-count-chip";
 import { FanHeading } from "@/components/fan-ui/fan-heading";
+import { FanSectionLink } from "@/components/fan-ui/fan-section-link";
 import { FanLockedValue } from "@/components/fan-ui/fan-locked-value";
 import { FanNumber } from "@/components/fan-ui/fan-number";
 import { FanSkeleton } from "@/components/fan-ui/fan-skeleton";
@@ -146,7 +147,7 @@ export function StanLucky({ locale, bias, guest }: { locale: AppLocale; bias: Se
   // F5: open and upcoming draws take the first place; closed ones only fill a separate 지난 럭키드로우 list when none is live.
   const live = raffles.items.filter(item => item.status !== "closed"), past = live.length ? [] : raffles.items.filter(item => item.status === "closed");
   const shown = live.slice(0, LUCKY_CARDS), shownPast = past.slice(0, LUCKY_CARDS);
-  const more = slug && raffles.items.length > shown.length + shownPast.length ? <Link className={styles.headLink} href={creatorRafflesHref(slug, locale)}>{seeAllLabel[locale]}<ChevronRight size={16} aria-hidden="true" /></Link> : null;
+  const more = slug && raffles.items.length > shown.length + shownPast.length ? <FanSectionLink className={styles.headLink} href={creatorRafflesHref(slug, locale)}>{seeAllLabel[locale]}</FanSectionLink> : null;
   // 게이트 D2: the empty state is one line; its next step is a row below it inside the same box, ending in ›.
   const empty = (title: string, action?: ReactNode, short = false) => <div className={short ? `${styles.empty} ${styles.emptyShort}` : styles.empty}><div className={styles.emptyLine}><FanState kind="empty" title={title} /></div>{action}</div>;
   const history = <Link className={styles.emptyRow} href={`/my/raffles?locale=${locale}` as Route}><span>{t(locale, "luckyHistory")}</span><ChevronRight size={16} aria-hidden="true" /></Link>;

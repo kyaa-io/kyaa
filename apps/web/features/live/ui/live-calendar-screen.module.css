@@ -1,7 +1,5 @@
 .main { min-width:0; padding-top:40px; padding-bottom:96px; overflow-x:clip; }
-.catalogLink { display:inline-flex; min-height:44px; align-items:center; justify-content:center; gap:8px; border-radius:12px; color:var(--color-ink); font-size:14px; font-weight:700; text-decoration:none; transition:background 160ms cubic-bezier(.2,0,0,1),border-color 160ms cubic-bezier(.2,0,0,1); }
-.catalogLink { flex:none; padding:0 14px; border:1px solid var(--color-muted); background:var(--color-surface); }
-.catalogLink svg { width:18px; height:18px; stroke-width:1.9; }
+.catalogLink { flex:none; }
 .filters { display:grid; min-width:0; grid-template-columns:minmax(0,1fr) auto; align-items:center; gap:12px; margin-bottom:24px; padding:12px; border:1px solid var(--color-line); border-radius:16px; background:var(--color-soft); }
 .filterHeading { display:flex; align-items:flex-start; justify-content:space-between; gap:16px; margin-bottom:0; }
 .filterHeading h2,.filterHeading p { margin:0; }
@@ -62,7 +60,7 @@
 .eventMeta .benefit::before { content:none; }
 .benefit { background:var(--color-accent-soft); color:var(--color-accent-ink); }
 .empty { display:none; margin:0; color:var(--color-muted); font-size:12px; }
-.catalogLink:focus-visible,.eventLink:focus-visible,.filterChip:focus-visible { outline:3px solid var(--color-ink); outline-offset:3px; }
+.eventLink:focus-visible,.filterChip:focus-visible { outline:3px solid var(--color-ink); outline-offset:3px; }
 @media (min-width:48rem) {
   .main { padding-top:64px; }
   .filters { grid-template-columns:minmax(190px,auto) minmax(0,1fr) 72px; gap:16px 24px; padding:12px 16px; }
@@ -99,13 +97,11 @@
   .benefit { min-height:18px; padding-inline:5px; font-size:var(--fan-calendar-meta-size); }
 }
 @media (hover:hover) and (pointer:fine) {
-  .catalogLink:hover { background:var(--color-soft); }
-  .catalogLink:hover { border-color:var(--color-muted); }
   .eventLink:hover strong { text-decoration:underline; text-underline-offset:3px; }
   .filterChip:hover { border-color:var(--color-muted); transform:translateY(-1px); }
   .filterChip[data-selected="true"]:hover { border-color:var(--color-accent); }
 }
-@media (prefers-reduced-motion:reduce) { .catalogLink,.filterChip { transition:none; } }
+@media (prefers-reduced-motion:reduce) { .filterChip { transition:none; } }
 
 /* Calendar hierarchy is shared through semantic type tokens, not tiny desktop overrides. */
 .weekdays span,.creator,.eventMeta { font-size:var(--fan-calendar-meta-size); }
@@ -118,7 +114,6 @@
 /* Mobile reference: Weverse / Blip month overview above readable day cards. */
 @media (max-width:63.99rem) {
   .main { padding-top:24px; }
-  .catalogLink { padding-inline:10px; font-size:12px; }
   .filters { display:block; margin-bottom:12px; padding:0; border:0; border-radius:0; background:transparent; }
   .filterHeading,.filterCount { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; }
   .filterScroller { gap:6px; padding:4px 2px 8px; }
@@ -154,7 +149,6 @@
 /* Approved paper calendar: desktop only; mobile retains its month/list flow. */
 @media (min-width:64rem) {
   .main { padding-top:16px; background:var(--color-soft); }
-  .catalogLink { border-color:var(--color-accent-line); background:transparent; font-weight:700; }
   .filters { display:flex; flex-wrap:wrap; gap:12px; padding:0; border:0; border-radius:0; background:transparent; }
   .filterHeading { position:absolute; width:1px; height:1px; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; }
   .filterScroller { flex:1; flex-wrap:wrap; overflow:visible; gap:8px; }
@@ -332,5 +326,6 @@
   .listHead { display:flex; align-items:center; gap:var(--space-3); margin-bottom:var(--space-3); }
   .listHead h1,.listHead h2 { margin:0; font-size:var(--fan-heading-size-wide); }
   .listCount { flex:none; }
+  .listHead .catalogLink { margin-inline-start:auto; }
   .monthEmpty { margin:var(--space-4) 0 0; font-size:var(--fan-description-size); font-weight:700; color:var(--color-muted); text-align:left; }
 }

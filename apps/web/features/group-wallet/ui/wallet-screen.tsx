@@ -1,11 +1,10 @@
 "use client";
 import {MyAttendanceList} from "@/features/dukjil/ui/my-attendance-list";
-import {ChevronRight as RowChevron} from "@/components/fan-ui/fan-icons";
 import {DukjilProvider,DukjilSwitch} from "@/features/dukjil/ui/dukjil-provider";
 import {dukjilText} from "@/features/dukjil/ui/dukjil-copy";
 import {HistoryTabs} from '@/features/groups/ui/history-tabs';
 import { useEffect, useRef, useState, useId } from "react";
-import { ChevronUp, BookOpen, CalendarCheck, Coins, Gift, Ticket, UsersRound, Stamp, WalletCards, CircleAlert, Clock3, Check } from "lucide-react";
+import { BookOpen, CalendarCheck, Coins, Gift, Ticket, UsersRound, Stamp, WalletCards, CircleAlert, Clock3, Check } from "lucide-react";
 import { z } from "zod";
 import {useRouter} from "next/navigation";
 import type {Route} from "next";
@@ -68,7 +67,7 @@ export function WalletHistoryPanel({locale,localRows,preview,className}:{locale:
  const entries=history.data?.entries??[],shown=preview&&!expanded?entries.slice(0,previewRows):entries,toggle=Boolean(preview&&!history.loading&&!history.error&&!localRows&&entries.length>previewRows);
  const title=locale==="ko"?"내역":c.history,errorTitle=locale==='ko'?'지급 내역을 확인할 수 없어요':c.error;
  const body=history.loading ? (preview?<div className={styles.historySkeleton} role="status" aria-busy="true" aria-label={c.loading}><div aria-hidden="true">{Array.from({length:previewRows},(_,item)=><i key={item}/>)}</div></div>:<WalletLoading label={c.loading} kind="history"/>) : history.error ? (preview?.hideError?null:preview?<FanState inline compact kind="error" title={locale==='ko'?'내역을 불러오지 못했어요':errorTitle} actions={<FanAction variant="text" onClick={history.retry}>{c.retry}</FanAction>}/>:<FanState inline kind="error" title={errorTitle} description={locale==='ko'?c.error:undefined} actions={<FanAction onClick={history.retry}>{c.retry}</FanAction>}/>) : localRows ? <ul>{localRows.map(row=><li key={row.label}><span>{row.label}</span><strong>{row.value}</strong></li>)}</ul> : !entries.length ? <FanState inline compact={Boolean(preview)} kind="empty" title={c.empty}/> : <ul>{shown.map(entry => <li key={entry.id}><span>{isTicketAsset(entry.asset) ? <Ticket aria-hidden="true" size={20}/> : <img src={POINT_COIN_SRC} alt="" width={20} height={20}/>}<span>{walletHistoryLabel(locale,entry.sourceType,entry)&&<span className={styles.historyReason}>{walletHistoryLabel(locale,entry.sourceType,entry)}</span>}<time dateTime={entry.createdAt}>{new Date(entry.createdAt).toLocaleDateString(locale, { timeZone: "Asia/Seoul" })}</time></span></span><strong>{entry.amount > 0 ? "+" : ""}{entry.amount.toLocaleString(locale)} {entry.asset === "fan_point" ? "P" : isTicketAsset(entry.asset) ? (Math.abs(entry.amount) === 1 ? ticketSingular[locale] ?? c.tickets : c.tickets) : ""}</strong></li>)}</ul>;
- if(preview)return <section className={`${styles.history} ${styles.historyPreview} ${className??""}`}><div className={styles.historyHead}><h2 id="wallet-history">{title}</h2>{toggle&&<FanAction variant="text" trailingIcon={expanded?<ChevronUp/>:<RowChevron/>} aria-expanded={expanded} onClick={()=>setExpanded(value=>!value)}>{expanded?preview.lessLabel:preview.moreLabel}</FanAction>}</div><div className={styles.historyCard}><HistoryTabs locale={locale} active="ledger"/><div className={styles.historyBody} data-history-rows={previewRows}>{body}</div></div></section>;
+ if(preview)return <section className={`${styles.history} ${styles.historyPreview} ${className??""}`}><div className={styles.historyHead}><h2 id="wallet-history">{title}</h2>{toggle&&<FanAction variant="text" aria-expanded={expanded} onClick={()=>setExpanded(value=>!value)}>{expanded?preview.lessLabel:preview.moreLabel}{" "}<span aria-hidden="true">›</span></FanAction>}</div><div className={styles.historyCard}><HistoryTabs locale={locale} active="ledger"/><div className={styles.historyBody} data-history-rows={previewRows}>{body}</div></div></section>;
  return <section className={`${styles.panel} ${styles.history}`}><h2 id="wallet-history">{title}</h2><HistoryTabs locale={locale} active="ledger"/>{body}</section>;
 }
 function WalletAttendanceRoute({locale}:{locale:AppLocale}) {

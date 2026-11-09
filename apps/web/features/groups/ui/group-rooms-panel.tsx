@@ -9,6 +9,7 @@ import type { Route } from "next";
 import { UsersRound, LockKeyhole, ArrowLeft, UserRound, BadgeCheck, MessagesSquare } from "lucide-react";
 import type { AppLocale } from "@/i18n/locales";
 import { FanAction } from "@/components/fan-ui/fan-action";
+import { FanSectionLink } from "@/components/fan-ui/fan-section-link";
 import { FanSkeleton } from "@/components/fan-ui/fan-skeleton";
 import { FanStarAction } from "@/components/fan-ui/fan-star-action";
 import { FanTabs } from "@/components/fan-ui/fan-tabs";
@@ -77,7 +78,7 @@ export function GroupRoomsPanel({pageId,locale,slug,imageUrl,initialRoomId,onJoi
  </section>;
  const count=nonMember?publicRooms.data?.roomCount:rooms.data?.items.length;
  const canManage=rooms.authenticated&&rooms.data?.canManage===true;
- const heading=<header className={roomStyles.roomHead}><h2><MessagesSquare aria-hidden size={28}/>{t.rooms}{count!==undefined&&<span className={roomStyles.roomCount} aria-hidden='true'>{count.toLocaleString(locale)}</span>}</h2>{canManage&&<FanAction className={roomStyles.createAction} variant='neutral' href={`/pages/groups/${pageId}/manage?locale=${locale}&section=rooms`}>{managementCopy(locale).createRoom}</FanAction>}</header>;
+ const heading=<header className={roomStyles.roomHead}><h2><MessagesSquare aria-hidden size={28}/>{t.rooms}{count!==undefined&&<span className={roomStyles.roomCount} aria-hidden='true'>{count.toLocaleString(locale)}</span>}</h2>{canManage&&<FanSectionLink className={roomStyles.createAction} href={`/pages/groups/${pageId}/manage?locale=${locale}&section=rooms`}>{managementCopy(locale).createRoom}</FanSectionLink>}</header>;
  if(nonMember){
   const rowHref=!auth.authenticated?loginHref:star?.href,rowClick=auth.authenticated&&!rowHref?(star?.onClick??onJoin):undefined;
   return <section className={roomStyles.roomsPanel} data-group-room-list>{heading}

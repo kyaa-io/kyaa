@@ -72,6 +72,10 @@ const CASES = {
     () => ts('export const A = () => <FanAction href="/a" trailingIcon={<ArrowRight/>}>x</FanAction>;'),
     () => ts('export const A = () => <FanAction href="/a">x</FanAction>;'),
   ],
+  N31: [
+    () => ts('export const A = () => <header><h2>x</h2><FanAction variant="text" trailingIcon={<ArrowRight/>} href="/a">전체</FanAction></header>;', 'apps/web/features/home/ui/list.tsx'),
+    () => ts('export const A = () => <header><h2>x</h2><FanSectionLink href="/a">전체</FanSectionLink></header>;', 'apps/web/features/home/ui/list.tsx'),
+  ],
   N25: [
     () => ts('import { Heart } from "lucide-react";\nexport const A = () => <Heart strokeWidth={2}/>;', 'apps/web/features/home/ui/list.tsx'),
     () => ts('import { Heart } from "lucide-react";\nexport const A = () => <Heart strokeWidth={1.5}/>;', 'apps/web/components/fan-ui/fan-icon.tsx'),
@@ -148,6 +152,83 @@ test('N19 N17 N18 N13 N5 N12 N2 are run by contract files that exist and carry t
     const p = resolve(dirname(new URL(import.meta.url).pathname), '..', c.file);
     assert.ok(existsSync(p), `${id}: ${c.file} 없음`);
     assert.match(readFileSync(p, 'utf8'), new RegExp(`['"\`]${id}[ :]`), `${id}: 시험 이름에 규칙 ID 없음`);
+  }
+});
+
+test('N31 flags pill, icon and styled-link actions beside a heading and leaves close buttons, rail rows and the shared link alone', () => {
+  const F = 'apps/web/features/home/ui/list.tsx';
+  assert.equal(hits(ts('export const A = () => <div className={styles.intro}><div><FanHeading>x</FanHeading></div><Link className={styles.calendarLink} href="/c"><CalendarDays/>일정</Link></div>;', F), 'N31').length, 0, 'container without head in its class name is out of scope');
+  assert.equal(hits(ts('export const A = () => <header className={styles.intro}><div><FanHeading>x</FanHeading></div><Link className={styles.calendarLink} href="/c"><CalendarDays/>일정</Link></header>;', F), 'N31').length, 1);
+  assert.equal(hits(ts('export const A = () => <div className={styles.sectionHeading}><h2>x</h2>{more && <Link href="/a">전체<ArrowRight/></Link>}</div>;', F), 'N31').length, 1);
+  assert.equal(hits(ts('export const A = () => <header><h2>x</h2><FanAction variant="neutral" href="/a">전체</FanAction></header>;', F), 'N31').length, 1);
+  assert.equal(hits(ts('export const A = () => <header><h2>x</h2><FanAction onClick={close}>닫기</FanAction></header>;', F), 'N31').length, 0);
+  assert.equal(hits(ts('export const A = () => <header><h1>x</h1><FanAction variant="text" leadingIcon={<ArrowLeft/>} href="/a">뒤로</FanAction></header>;', F), 'N31').length, 0);
+  assert.equal(hits(ts('export const A = () => <header><h2>x</h2><button className={styles.close} aria-label="닫기"><X/></button></header>;', F), 'N31').length, 0);
+  assert.equal(hits(ts('export const A = () => <header><h2>x</h2><FanAction variant="text" trailingIcon={<ArrowRight/>} href="/a">전체</FanAction></header>;', 'apps/web/components/fan-ui/fan-heading.tsx'), 'N31').length, 0);
+  assert.equal(hits(css('.sectionHeading>a{border:1px solid var(--color-line);border-radius:999px}'), 'N31').length, 1);
+  assert.equal(hits(css('.listHead a{background:var(--color-surface)}'), 'N31').length, 1);
+  assert.equal(hits(css('.sectionHeading>a{flex:none;color:var(--color-ink)} .sheetHeader button{border:1px solid var(--color-line)}'), 'N31').length, 0);
+});
+
+test('N31 judges CSS module styles, not class names or accessible names', () => {
+  for (const tag of ['Link', 'a', 'button']) for (const label of ['', ' aria-label="More"']) {
+    for (const [style, count] of [
+      ['min-height:44px;color:var(--color-ink);background:transparent;border:0;border-radius:0', 0],
+      ['border:1px solid transparent', 0],
+      ['border-radius:999px', 1],
+      ['background:var(--color-soft)', 1],
+    ]) {
+      const files = {
+        [SCREEN]: `import styles from './x.module.css'; export const A = () => <header><h2>Title</h2><${tag} className={styles.more}${label}>More ›</${tag}></header>;`,
+        'apps/web/features/home/ui/x.module.css': `.more{${style}}`,
+      };
+      assert.equal(hits(scanNAll(Object.keys(files), (f) => files[f]).get(SCREEN) ?? new Map(), 'N31').length, count, `${tag}${label}: ${style}`);
+    }
+    assert.equal(hits(ts(`export const A = () => <header><h2>Title</h2><${tag} className={styles.more}${label}>More ›</${tag}></header>`), 'N31').length, 0);
+    assert.equal(hits(ts(`export const A = () => <header><h2>Title</h2><${tag}${label}><ChevronRight/>More</${tag}></header>`), 'N31').length, 1);
+  }
+});
+
+test('N31 checks plain buttons and FanAction without href, including conditional icons', () => {
+  for (const action of [
+    '<button style={{borderRadius:999}}>More</button>',
+    '<button style={{backgroundColor:"var(--color-soft)"}} aria-label="More">More</button>',
+    '<button><svg/></button>',
+    '<FanAction onClick={expand}>More</FanAction>',
+    '<FanAction variant="neutral" onClick={expand} aria-label="More">More</FanAction>',
+    '<FanAction variant="text" onClick={expand} trailingIcon={expanded ? <ChevronUp/> : <RowChevron/>}>More</FanAction>',
+  ]) assert.equal(hits(ts(`export const A = () => <div className={styles.sectionHead}><h2>Title</h2>${action}</div>`), 'N31').length, 1, action);
+  for (const action of [
+    '<button onClick={expand}>More ›</button>',
+    '<button style={{background:"transparent",border:0,borderRadius:0}}>More ›</button>',
+    '<FanAction variant="text" onClick={expand}>More <span aria-hidden="true">›</span></FanAction>',
+    '<FanAction onClick={onClose}>Close</FanAction>',
+    '<button className={styles.close} aria-label="Close"><X/></button>',
+  ]) assert.equal(hits(ts(`export const A = () => <header><h2>Title</h2>${action}</header>`), 'N31').length, 0, action);
+  assert.equal(hits(ts('import { Plus as Add } from "lucide-react"; export const A = () => <header><h2>Title</h2><button aria-label="Add"><Add/></button></header>'), 'N31').length, 1);
+});
+
+test('N31 checks comma-separated selectors independently of sheet exceptions', () => {
+  for (const selector of ['.sheetHeader button, .sectionHead > a', '.sectionHead > button, .sheetHeader button']) {
+    assert.equal(hits(css(`${selector}{border-radius:999px;background:var(--color-soft)}`), 'N31').length, 1);
+    assert.equal(hits(css(`${selector}{min-height:44px;background:transparent;border:0;border-radius:0}`), 'N31').length, 0);
+  }
+  assert.equal(hits(css('.sheetHeader button, .dialogHeader button{border-radius:999px}'), 'N31').length, 0);
+  assert.equal(hits(css('.sectionHead > a, .listHead > button{background:var(--color-soft)}'), 'N31').length, 2);
+});
+
+test('N31 distinguishes close controls and app navigation from section actions', () => {
+  assert.equal(hits(ts('<header className={styles.modalHeader}><h2>Dialog</h2><button aria-label={copy.close} onClick={() => setOpen(false)}><X aria-hidden="true"/></button></header>'), 'N31').length, 0);
+  assert.equal(hits(ts('<header className={styles.modalHeader}><h2>Dialog</h2><FanAction onClick={add}>Add</FanAction></header>'), 'N31').length, 1);
+  for (const [markup, expected] of [
+    ['<span>kyaa.io</span><button aria-label="Share"><Share2/></button>', 0],
+    ['<h2>Section</h2><button aria-label="More">More ›</button>', 1],
+  ]) {
+    const files = {
+      [SCREEN]: `import styles from './x.module.css'; export const A = () => <header className={styles.header}>${markup}</header>;`,
+      'apps/web/features/home/ui/x.module.css': '.header button, .sheetHeading button{border-radius:999px;background:var(--color-soft)}',
+    };
+    assert.equal(hits(scanNAll(Object.keys(files), (f) => files[f]).get(SCREEN) ?? new Map(), 'N31').length, expected);
   }
 });
 

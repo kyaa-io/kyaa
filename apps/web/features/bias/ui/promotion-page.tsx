@@ -1,5 +1,6 @@
 "use client";
 
+import { FanAction } from "@/components/fan-ui/fan-action";
 import { useFanToast } from "@/components/fan-ui/fan-toast";
 import { messages as localizedMessages } from "@/i18n/catalogs/features__bias__ui__promotion-page";
 import { translate } from "@/i18n/messages";
@@ -243,13 +244,12 @@ export function PromotionPage({
               <h2 id="find-title">
                 {(locale === "ko" ? "01  내 팬페이지 찾기" : translate(locale, localizedMessages.m951260cc4c45, "01  Find your fan page"))}
               </h2>
-              <button
-                className={styles.searchTrigger}
+              <FanAction
+                variant="text"
                 onClick={() => openPicker()}
               >
-                <Search size={20} />
-                {(locale === "ko" ? "이름 또는 핸들로 검색" : translate(locale, localizedMessages.mb14545668fa7, "Search by name or handle"))}
-              </button>
+                {(locale === "ko" ? "이름 또는 핸들로 검색" : translate(locale, localizedMessages.mb14545668fa7, "Search by name or handle"))}{" "}<span aria-hidden="true">›</span>
+              </FanAction>
             </div>
             {unavailable ? (
               <p role="alert">

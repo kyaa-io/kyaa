@@ -18,6 +18,7 @@ import { FanAppFrame, FanContentContainer, type FanLocale } from "@/components/f
 import type { LiveEventResponse } from "../domain/live-event";
 import { nearestRecurringLives } from "../domain/nearest-recurring-lives";
 import { FanHeading } from "../../../components/fan-ui/fan-heading";
+import { FanSectionLink } from "../../../components/fan-ui/fan-section-link";
 import styles from "./live-catalog-screen.module.css";
 import { LiveStatusIndicator } from "@/components/live-status-indicator";
 import { ObservedLiveStrip } from "./observed-live-strip";
@@ -309,10 +310,7 @@ export function LiveCatalogScreen({
           <div>
             <FanHeading as="h1">{t.title}</FanHeading>
           </div>
-          <Link className={styles.calendarLink} href={`/live/calendar?locale=${locale}` as Route}>
-            <CalendarDays aria-hidden="true" />
-            {t.calendar}
-          </Link>
+          <FanSectionLink href={`/live/calendar?locale=${locale}`}>{t.calendar}</FanSectionLink>
         </header>
         <ObservedLiveStrip locale={locale} />
         {failed ? <button className={styles.retry} onClick={() => setRequestKey((value) => value + 1)}><RotateCcw />{t.retry}</button> : null}

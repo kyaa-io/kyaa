@@ -114,7 +114,13 @@ it('previews five history rows, expands from the title row, and opens expanded f
  const view=render(<WalletHistoryPanel locale='ko' preview={{rows:5,moreLabel:'전체 보기',lessLabel:'접기'}}/>);
  await screen.findAllByText('출석체크');expect(view.container.querySelectorAll('li')).toHaveLength(5);
  expect(document.getElementById('wallet-history')!.parentElement!.querySelector('button')).toHaveTextContent('전체 보기');
+ expect(screen.getByRole('button',{name:'전체 보기'})).toHaveAttribute('aria-expanded','false');
+ expect(screen.getByRole('button',{name:'전체 보기'}).querySelector('svg')).toBeNull();
+ expect(screen.getByRole('button',{name:'전체 보기'})).toHaveTextContent('›');
  fireEvent.click(screen.getByRole('button',{name:'전체 보기'}));expect(view.container.querySelectorAll('li')).toHaveLength(8);
+ expect(screen.getByRole('button',{name:'접기'})).toHaveAttribute('aria-expanded','true');
+ expect(screen.getByRole('button',{name:'접기'}).querySelector('svg')).toBeNull();
+ expect(screen.getByRole('button',{name:'접기'})).toHaveTextContent('›');
  fireEvent.click(screen.getByRole('button',{name:'접기'}));expect(view.container.querySelectorAll('li')).toHaveLength(5);fireEvent.click(screen.getByRole('button',{name:'전체 보기'}));
  view.unmount();
  window.location.hash='#wallet-history';
