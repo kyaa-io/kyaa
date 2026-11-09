@@ -50,3 +50,56 @@ test('publishing is bound to exact current Wave workflow run', () => {
   validateRun(run,sha,123);
   for (const diff of [{head_sha:'b'.repeat(40)},{head_branch:'main'},{path:'.github/workflows/evil.yml'},{repository:{id:1}},{event:'pull_request'},{status:'completed'}]) assert.throws(()=>validateRun({...run,...diff},sha,123),/UNTRUSTED/);
 });
+test('prod target keeps the original release constants; dev is separate and explicit', async () => {
+  const { waveTarget, WAVE_BRANCH } = await import('./aws-wave-release.mjs');
+  assert.deepEqual(waveTarget(), { environment: 'prod', branch: WAVE_BRANCH, bucket: 'kyaawave-prod-996702758024', region: 'ap-northeast-2', host: 'kyaawave.com', deploymentEnvironment: 'AWS wave production', production: true });
+  assert.deepEqual(waveTarget('dev'), { environment: 'dev', branch: 'wave/dev', bucket: 'kyaawave-dev-site', region: 'us-east-1', host: 'dev.kyaawave.com', deploymentEnvironment: 'AWS wave dev', production: false });
+  for (const bad of ['production', 'staging', '__proto__', 'toString']) assert.throws(() => waveTarget(bad), /INVALID_WAVE_ENVIRONMENT/);
+  const sha = 'a'.repeat(40), run = { id: 9, repository: { id: 1307387500, full_name: 'kyaa-io/kyaa' }, head_branch: 'wave/dev', head_sha: sha, path: '.github/workflows/kyaawave-aws.yml', event: 'push', status: 'in_progress' };
+  validateRun(run, sha, 9, 'wave/dev');
+  assert.throws(() => validateRun(run, sha, 9), /UNTRUSTED/);
+});
+test('dev template mirrors production hosting with only dev names, host, certificate, DNS and role', async () => {
+  const { load } = await import('js-yaml');
+  const dev = load(await readFile(new URL('../infrastructure/aws/wave/dev-site.yaml', import.meta.url), 'utf8')).Resources;
+  const prod = template.Resources;
+  const diffs = [];
+  const walk = (a, b, path) => {
+    if (a && b && typeof a === 'object' && typeof b === 'object') {
+      for (const k of new Set([...Object.keys(a), ...Object.keys(b)])) walk(a[k], b[k], `${path}.${k}`);
+    } else if (JSON.stringify(a) !== JSON.stringify(b)) diffs.push(path);
+  };
+  for (const name of Object.keys(prod)) walk(prod[name], dev[name], name);
+  assert.deepEqual(diffs.sort(), [
+    'Bucket.Properties.BucketName',
+    'Cache.Properties.CachePolicyConfig.Name',
+    'Distribution.Properties.DistributionConfig.Aliases.0',
+    'Distribution.Properties.DistributionConfig.Aliases.1',
+    'Distribution.Properties.DistributionConfig.Comment',
+    'Distribution.Properties.DistributionConfig.Origins.1.DomainName',
+    'Distribution.Properties.DistributionConfig.ViewerCertificate.AcmCertificateArn',
+    'EventsHeaders.Properties.OriginRequestPolicyConfig.Name',
+    'Headers.Properties.ResponseHeadersPolicyConfig.CustomHeadersConfig.Items.1',
+    'Headers.Properties.ResponseHeadersPolicyConfig.Name',
+    'OAC.Properties.OriginAccessControlConfig.Name',
+    'Routes.Properties.FunctionCode',
+    'Routes.Properties.Name',
+  ]);
+  assert.equal(dev.Routes.Properties.FunctionCode, prod.Routes.Properties.FunctionCode.replace("'https://kyaawave.com'", "'https://dev.kyaawave.com'"));
+  const devHandler = vm.runInNewContext(dev.Routes.Properties.FunctionCode + '; handler');
+  assert.equal(devHandler({ request: request('/en', {}, 'dev.kyaawave.com') }).headers.location.value, 'https://dev.kyaawave.com/en/');
+  const d = dev.Distribution.Properties.DistributionConfig;
+  assert.deepEqual(d.Aliases, ['dev.kyaawave.com']);
+  assert.equal(d.Origins[1].DomainName, 'dev.kyaa.io');
+  assert.deepEqual(dev.Headers.Properties.ResponseHeadersPolicyConfig.CustomHeadersConfig.Items[1], { Header: 'X-Robots-Tag', Value: 'noindex, nofollow', Override: true });
+  assert.deepEqual(dev.Certificate.Properties.DomainValidationOptions, [{ DomainName: 'dev.kyaawave.com', HostedZoneId: { Ref: 'HostedZoneId' } }]);
+  for (const r of [dev.AliasA, dev.AliasAAAA]) assert.equal(r.Properties.Name, 'dev.kyaawave.com.');
+  const role = dev.ReleaseRole.Properties;
+  assert.equal(role.RoleName, 'kyaawave-dev-github-release');
+  assert.equal(role.AssumeRolePolicyDocument.Statement[0].Condition.StringEquals['token.actions.githubusercontent.com:sub'], 'repo:kyaa-io@307444286/kyaa@1307387500:ref:refs/heads/wave/dev');
+  const text = JSON.stringify(dev);
+  for (const forbidden of ['kyaawave-prod', 'EU3SJQCAOAC29', 'ff4c832b-125d-4d92-beff-f46e68ce6f24']) assert.ok(!text.includes(forbidden), forbidden);
+  const actions = role.Policies.flatMap(p => p.PolicyDocument.Statement).flatMap(s => s.Action).sort();
+  assert.deepEqual(actions, ['cloudfront:CreateInvalidation', 'cloudfront:GetDistribution', 'cloudfront:GetInvalidation', 's3:DeleteObject', 's3:GetBucketLocation', 's3:GetObject', 's3:GetObject', 's3:ListBucket', 's3:PutObject', 's3:PutObject']);
+  for (const s of role.Policies[0].PolicyDocument.Statement) assert.notEqual(s.Resource, '*');
+});

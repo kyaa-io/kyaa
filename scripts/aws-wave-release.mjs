@@ -8,11 +8,19 @@ import { github, recordedDeploymentEvent } from './aws-release.mjs';
 export const WAVE_BRANCH = 'codex/kyaawave-homepage-20261018';
 export const WORKFLOW_PATH = '.github/workflows/kyaawave-aws.yml';
 const MARKER = '.well-known/kyaa-wave-release.json';
-const BUCKET = 'kyaawave-prod-996702758024';
+// prod is the unchanged default; dev is selected only by WAVE_ENVIRONMENT=dev from the wave/dev job.
+export const TARGETS = {
+  prod: { branch: WAVE_BRANCH, bucket: 'kyaawave-prod-996702758024', region: 'ap-northeast-2', host: 'kyaawave.com', deploymentEnvironment: 'AWS wave production', production: true },
+  dev: { branch: 'wave/dev', bucket: 'kyaawave-dev-site', region: 'us-east-1', host: 'dev.kyaawave.com', deploymentEnvironment: 'AWS wave dev', production: false },
+};
+export function waveTarget(environment = 'prod') {
+  if (!Object.hasOwn(TARGETS, environment)) throw new Error('INVALID_WAVE_ENVIRONMENT');
+  return { environment, ...TARGETS[environment] };
+}
 const shaPattern = /^[a-f0-9]{40}$/;
 const execute = (file, args) => execFileSync(file, args, { encoding: 'utf8', stdio: ['ignore', 'pipe', 'inherit'] }).trim();
-const aws = args => {
-  const output = execute('aws', ['--no-cli-pager', '--region', 'ap-northeast-2', ...args]);
+const awsIn = region => args => {
+  const output = execute('aws', ['--no-cli-pager', '--region', region, ...args]);
   return output ? JSON.parse(output) : {};
 };
 export async function files(root, relative = '') {
@@ -43,8 +51,8 @@ export async function prepare(root, sourceSha) {
   await writeFile(join(root, MARKER), JSON.stringify(marker) + '\n');
   return marker;
 }
-export function validateRun(run, sourceSha, runId) {
-  if (run.id !== runId || run.repository?.id !== 1307387500 || run.repository?.full_name !== 'kyaa-io/kyaa' || run.head_branch !== WAVE_BRANCH || run.head_sha !== sourceSha || run.path !== WORKFLOW_PATH || !['push', 'workflow_dispatch'].includes(run.event) || run.status !== 'in_progress') throw new Error('UNTRUSTED_WAVE_RUN');
+export function validateRun(run, sourceSha, runId, branch = WAVE_BRANCH) {
+  if (run.id !== runId || run.repository?.id !== 1307387500 || run.repository?.full_name !== 'kyaa-io/kyaa' || run.head_branch !== branch || run.head_sha !== sourceSha || run.path !== WORKFLOW_PATH || !['push', 'workflow_dispatch'].includes(run.event) || run.status !== 'in_progress') throw new Error('UNTRUSTED_WAVE_RUN');
 }
 export async function verifyFiles(root, origin, fetcher = fetch) {
   const marker = JSON.parse(await readFile(join(root, MARKER), 'utf8'));
@@ -59,16 +67,18 @@ async function main() {
   const root = resolve(directory || '');
   if (action === 'prepare') { await prepare(root, sourceSha); return; }
   if (action === 'verify') { await verifyFiles(root, sourceSha); return; }
-  if (action !== 'deploy' || process.env.GITHUB_ACTIONS !== 'true' || process.env.GITHUB_REPOSITORY !== 'kyaa-io/kyaa' || process.env.GITHUB_REF !== `refs/heads/${WAVE_BRANCH}` || !shaPattern.test(sourceSha) || sourceSha !== process.env.GITHUB_SHA) throw new Error('WAVE_ACTIONS_ONLY');
+  const target = waveTarget(process.env.WAVE_ENVIRONMENT || 'prod');
+  const { bucket: BUCKET } = target, aws = awsIn(target.region);
+  if (action !== 'deploy' || process.env.GITHUB_ACTIONS !== 'true' || process.env.GITHUB_REPOSITORY !== 'kyaa-io/kyaa' || process.env.GITHUB_REF !== `refs/heads/${target.branch}` || !shaPattern.test(sourceSha) || sourceSha !== process.env.GITHUB_SHA) throw new Error('WAVE_ACTIONS_ONLY');
   const runId = Number(process.env.GITHUB_RUN_ID);
-  validateRun(await github(`/actions/runs/${runId}`), sourceSha, runId);
-  const branch = await github(`/branches/${encodeURIComponent(WAVE_BRANCH)}`);
+  validateRun(await github(`/actions/runs/${runId}`), sourceSha, runId, target.branch);
+  const branch = await github(`/branches/${encodeURIComponent(target.branch)}`);
   if (branch.commit?.sha !== sourceSha) throw new Error('STALE_WAVE_RELEASE');
   if (aws(['sts', 'get-caller-identity', '--output', 'json']).Account !== '996702758024') throw new Error('WRONG_AWS_ACCOUNT');
   const distributionId = process.env.AWS_WAVE_DISTRIBUTION_ID;
   if (!/^[A-Z0-9]+$/.test(distributionId || '')) throw new Error('INVALID_DISTRIBUTION');
   const distribution = aws(['cloudfront', 'get-distribution', '--id', distributionId, '--output', 'json']).Distribution;
-  if (!distribution?.DistributionConfig?.Aliases?.Items?.includes('kyaawave.com') || !distribution.DistributionConfig.Origins.Items.some(o => o.DomainName === `${BUCKET}.s3.ap-northeast-2.amazonaws.com` && o.OriginPath === '/current')) throw new Error('WRONG_WAVE_DISTRIBUTION');
+  if (!distribution?.DistributionConfig?.Aliases?.Items?.includes(target.host) || !distribution.DistributionConfig.Origins.Items.some(o => o.DomainName === `${BUCKET}.s3.${target.region}.amazonaws.com` && o.OriginPath === '/current')) throw new Error('WRONG_WAVE_DISTRIBUTION');
   const marker = JSON.parse(await readFile(join(root, MARKER), 'utf8'));
   if (marker.schemaVersion !== 1 || marker.sourceSha !== sourceSha || marker.artifactDigest !== await artifactDigest(root)) throw new Error('ARTIFACT_CHANGED');
   // Publish the marker only after all bytes; invalidate every fixed-name file before verification.
@@ -84,10 +94,10 @@ async function main() {
   const invalidation = aws(['cloudfront', 'create-invalidation', '--distribution-id', distributionId, '--paths', '/*', '--output', 'json']).Invalidation.Id;
   execute('aws', ['cloudfront', 'wait', 'invalidation-completed', '--distribution-id', distributionId, '--id', invalidation]);
   await verifyFiles(root, 'https://' + distribution.DomainName);
-  await verifyFiles(root, 'https://kyaawave.com');
-  const payload = { provider: 'aws', schemaVersion: 1, environment: 'prod', site: 'wave', sourceSha, artifactDigest: marker.artifactDigest, workflowRunId: runId, workflowPath: WORKFLOW_PATH, publicLive: true };
-  const deployment = await github('/deployments', { method: 'POST', body: JSON.stringify({ ref: sourceSha, environment: 'AWS wave production', auto_merge: false, required_contexts: [], production_environment: true, payload }) });
-  await github(`/deployments/${deployment.id}/statuses`, { method: 'POST', body: JSON.stringify({ state: 'success', environment: 'AWS wave production', environment_url: 'https://kyaawave.com', log_url: `https://github.com/kyaa-io/kyaa/actions/runs/${runId}`, auto_inactive: false }) });
+  await verifyFiles(root, `https://${target.host}`);
+  const payload = { provider: 'aws', schemaVersion: 1, environment: target.environment, site: 'wave', sourceSha, artifactDigest: marker.artifactDigest, workflowRunId: runId, workflowPath: WORKFLOW_PATH, publicLive: true };
+  const deployment = await github('/deployments', { method: 'POST', body: JSON.stringify({ ref: sourceSha, environment: target.deploymentEnvironment, auto_merge: false, required_contexts: [], production_environment: target.production, payload }) });
+  await github(`/deployments/${deployment.id}/statuses`, { method: 'POST', body: JSON.stringify({ state: 'success', environment: target.deploymentEnvironment, environment_url: `https://${target.host}`, log_url: `https://github.com/kyaa-io/kyaa/actions/runs/${runId}`, auto_inactive: false }) });
   await mkdir('work/aws-wave', { recursive: true });
   await writeFile('work/aws-wave/deployment-event.json', JSON.stringify(await recordedDeploymentEvent(deployment.id), null, 2) + '\n');
 }

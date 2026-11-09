@@ -37,3 +37,63 @@ MIME text/javascript and asset Cache-Control max-age=86400), upload its marker l
 invalidate `/*`, wait and run `aws-wave-release.mjs verify DIST_DIR PUBLIC_ORIGIN`.
 Alternatively restore the saved Vercel DNS target. Neither rollback sends a notice
 or rewrites a receipt automatically.
+
+## dev.kyaawave.com
+
+`dev-site.yaml` is one stack, `kyaawave-dev-site`, in **us-east-1** (CloudFront needs
+its ACM certificate there; the dev bucket therefore lives there too). It holds bucket
+`kyaawave-dev-site`, the `dev.kyaawave.com` certificate (DNS-validated in zone
+Z014565610XXUC51BLYF2), CloudFront, Route 53 A/AAAA aliases and role
+`kyaawave-dev-github-release`. It does not reference the production stacks, bucket,
+distribution, certificate or role. Hosting matches `site.json` except for names, the
+host, `/api/events` going to dev.kyaa.io and an `X-Robots-Tag: noindex` header;
+`aws-wave-release.test.mjs` fails on any other difference.
+
+Release: a push to `wave/dev` (or a manual run on `wave/dev` with `environment=dev`)
+runs the same `kyaawave-aws.yml` job with `WAVE_ENVIRONMENT=dev`. Its GitHub
+deployment record is `AWS wave dev` (not production, so no Bug Report notice). The
+role trusts only `ref:refs/heads/wave/dev` and can only write the dev bucket's
+`current/` and `releases/` and invalidate the dev distribution. A run whose branch and
+environment do not match fails.
+
+Apply, with the write profile (example name `kyaa-admin`):
+
+    aws cloudformation create-change-set --profile kyaa-admin --region us-east-1 \
+      --stack-name kyaawave-dev-site --change-set-name initial --change-set-type CREATE \
+      --template-body file://infrastructure/aws/wave/dev-site.yaml --capabilities CAPABILITY_NAMED_IAM
+    aws cloudformation wait change-set-create-complete --profile kyaa-admin --region us-east-1 \
+      --stack-name kyaawave-dev-site --change-set-name initial
+    aws cloudformation describe-change-set --profile kyaa-admin --region us-east-1 \
+      --stack-name kyaawave-dev-site --change-set-name initial \
+      --query 'Changes[].ResourceChange.[Action,LogicalResourceId,ResourceType,Replacement]' --output table
+
+Expect exactly 12 `Add` rows: Certificate, Bucket, OAC, Routes, Cache, Headers,
+EventsHeaders, Distribution, BucketPolicy, AliasA, AliasAAAA, ReleaseRole. Any
+`Modify`/`Remove` or a production name means the wrong stack or region: stop.
+
+    aws cloudformation execute-change-set --profile kyaa-admin --region us-east-1 \
+      --stack-name kyaawave-dev-site --change-set-name initial
+    aws cloudformation wait stack-create-complete --profile kyaa-admin --region us-east-1 \
+      --stack-name kyaawave-dev-site
+    aws cloudformation describe-stacks --profile kyaa-readonly --region us-east-1 \
+      --stack-name kyaawave-dev-site --query 'Stacks[0].Outputs' --output table
+    gh variable set AWS_WAVE_DEV_DISTRIBUTION_ID --repo kyaa-io/kyaa --body <DistributionId output>
+
+Order and checks:
+1. Merge the `aws-wave-release.mjs` change into `main` first. Before that, a `wave/dev`
+   run stops at `WAVE_ACTIONS_ONLY` without touching AWS.
+2. Create the stack (above). ACM adds its own validation CNAME to the zone;
+   certificate issuance blocks stack completion (usually minutes).
+3. Check that `dig +short dev.kyaawave.com A` resolves and that
+   `kyaawave.com`/`www.kyaawave.com` records and the prod stacks are unchanged.
+4. Set `AWS_WAVE_DEV_DISTRIBUTION_ID`. Without it the job stops at
+   `INVALID_DISTRIBUTION`; a production ID stops at AccessDenied or
+   `WRONG_WAVE_DISTRIBUTION`.
+5. Create `wave/dev` from `codex/kyaawave-homepage-20261018` plus the workflow change
+   and push it. The `AWS wave dev` deployment environment is created by that first
+   record. The release verifies every file through CloudFront and dev.kyaawave.com.
+   Putting the workflow change on the production branch is a separate push that
+   releases production; do it together with the approved content.
+
+Removing dev: empty the bucket, delete the stack (the bucket is retained by policy;
+delete it afterwards), then delete the repository variable.

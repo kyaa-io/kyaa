@@ -1,0 +1,273 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: dev.kyaawave.com static preview (private S3, CloudFront, ACM, Route 53 alias, dev-only release role). Deploy in us-east-1.
+# One stack in us-east-1 because CloudFront certificates must live there. Production
+# stacks kyaawave-prod-site/kyaawave-prod-ci (ap-northeast-2) are not referenced.
+Parameters:
+  HostedZoneId:
+    Type: AWS::Route53::HostedZone::Id
+    Default: Z014565610XXUC51BLYF2
+Resources:
+  Certificate:
+    Type: AWS::CertificateManager::Certificate
+    Properties:
+      DomainName: dev.kyaawave.com
+      ValidationMethod: DNS
+      DomainValidationOptions:
+        - DomainName: dev.kyaawave.com
+          HostedZoneId: { Ref: HostedZoneId }
+  Bucket:
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      BucketName: kyaawave-dev-site
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        IgnorePublicAcls: true
+        BlockPublicPolicy: true
+        RestrictPublicBuckets: true
+      OwnershipControls:
+        Rules:
+          - ObjectOwnership: BucketOwnerEnforced
+      VersioningConfiguration:
+        Status: Enabled
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      LifecycleConfiguration:
+        Rules:
+          - Id: old-object-versions
+            Status: Enabled
+            NoncurrentVersionExpiration:
+              NoncurrentDays: 30
+  OAC:
+    Type: AWS::CloudFront::OriginAccessControl
+    Properties:
+      OriginAccessControlConfig:
+        Name: kyaawave-dev
+        OriginAccessControlOriginType: s3
+        SigningBehavior: always
+        SigningProtocol: sigv4
+  Routes:
+    Type: AWS::CloudFront::Function
+    Properties:
+      Name: kyaawave-dev-routes
+      AutoPublish: true
+      FunctionConfig:
+        Comment: Preserve Wave locale and canonical URLs
+        Runtime: cloudfront-js-2.0
+      # Same code as site.json Routes; only the canonical origin differs (checked by aws-wave-release.test.mjs).
+      FunctionCode: "function handler(event) {\n  var r = event.request;\n  var q = r.querystring || {};\n  var parts = [];\n  Object.keys(q).forEach(function(k) {\n    var values = q[k].multiValue || [q[k]];\n    values.forEach(function(v) { parts.push(k + '=' + v.value); });\n  });\n  var suffix = parts.length ? '?' + parts.join('&') : '';\n  var path = r.uri;\n  if (path === '/' && q.lang && q.lang.value === 'en') path = '/en/';\n  else if (path === '/en/' && q.lang && q.lang.value === 'ko') path = '/';\n  else if (path === '/en') path = '/en/';\n  if (r.headers.host.value === 'www.kyaawave.com' || path !== r.uri) {\n    return { statusCode: 308, statusDescription: 'Permanent Redirect', headers: { location: { value: 'https://dev.kyaawave.com' + path + suffix } } };\n  }\n  if (r.uri === '/') r.uri = '/index.html';\n  if (r.uri === '/en/') r.uri = '/en/index.html';\n  return r;\n}"
+  Cache:
+    Type: AWS::CloudFront::CachePolicy
+    Properties:
+      CachePolicyConfig:
+        Name: kyaawave-dev-static
+        MinTTL: 0
+        DefaultTTL: 0
+        MaxTTL: 86400
+        ParametersInCacheKeyAndForwardedToOrigin:
+          CookiesConfig:
+            CookieBehavior: none
+          HeadersConfig:
+            HeaderBehavior: none
+          QueryStringsConfig:
+            QueryStringBehavior: none
+          EnableAcceptEncodingGzip: true
+          EnableAcceptEncodingBrotli: true
+  Headers:
+    Type: AWS::CloudFront::ResponseHeadersPolicy
+    Properties:
+      ResponseHeadersPolicyConfig:
+        Name: kyaawave-dev-security
+        SecurityHeadersConfig:
+          ContentSecurityPolicy:
+            ContentSecurityPolicy: "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self'; connect-src 'self' https://kyaa.io; frame-ancestors 'none'; base-uri 'self'; form-action 'self' mailto:"
+            Override: true
+          ContentTypeOptions:
+            Override: true
+          FrameOptions:
+            FrameOption: DENY
+            Override: true
+          ReferrerPolicy:
+            ReferrerPolicy: strict-origin-when-cross-origin
+            Override: true
+          StrictTransportSecurity:
+            AccessControlMaxAgeSec: 63072000
+            Override: true
+        CustomHeadersConfig:
+          Items:
+            - Header: Permissions-Policy
+              Value: camera=(), microphone=(), geolocation=()
+              Override: true
+            # Preview host must stay out of search results.
+            - Header: X-Robots-Tag
+              Value: noindex, nofollow
+              Override: true
+  EventsHeaders:
+    Type: AWS::CloudFront::OriginRequestPolicy
+    Properties:
+      OriginRequestPolicyConfig:
+        Name: kyaawave-dev-events
+        CookiesConfig:
+          CookieBehavior: none
+        QueryStringsConfig:
+          QueryStringBehavior: all
+        HeadersConfig:
+          HeaderBehavior: whitelist
+          Headers:
+            - Content-Type
+            - Origin
+            - Referer
+            - Access-Control-Request-Method
+            - Access-Control-Request-Headers
+  Distribution:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        Enabled: true
+        Comment: dev.kyaawave.com static dev
+        Aliases:
+          - dev.kyaawave.com
+        HttpVersion: http2and3
+        IPV6Enabled: true
+        PriceClass: PriceClass_All
+        ViewerCertificate:
+          AcmCertificateArn: { Ref: Certificate }
+          SslSupportMethod: sni-only
+          MinimumProtocolVersion: TLSv1.2_2021
+        Origins:
+          - Id: site
+            DomainName: { 'Fn::GetAtt': [Bucket, RegionalDomainName] }
+            OriginPath: /current
+            S3OriginConfig:
+              OriginAccessIdentity: ''
+            OriginAccessControlId: { Ref: OAC }
+          # Dev page events go to the dev app, not kyaa.io production analytics.
+          - Id: events
+            DomainName: dev.kyaa.io
+            CustomOriginConfig:
+              OriginProtocolPolicy: https-only
+              OriginSSLProtocols:
+                - TLSv1.2
+        DefaultCacheBehavior:
+          TargetOriginId: site
+          ViewerProtocolPolicy: redirect-to-https
+          AllowedMethods: [GET, HEAD, OPTIONS]
+          CachedMethods: [GET, HEAD]
+          Compress: true
+          CachePolicyId: { Ref: Cache }
+          ResponseHeadersPolicyId: { Ref: Headers }
+          FunctionAssociations:
+            - EventType: viewer-request
+              FunctionARN: { 'Fn::GetAtt': [Routes, FunctionARN] }
+        CacheBehaviors:
+          - PathPattern: /api/events
+            TargetOriginId: events
+            ViewerProtocolPolicy: https-only
+            AllowedMethods: [GET, HEAD, OPTIONS, PUT, POST, PATCH, DELETE]
+            CachedMethods: [GET, HEAD]
+            CachePolicyId: 4135ea2d-6df8-44a3-9df3-4b5a84be39ad
+            OriginRequestPolicyId: { Ref: EventsHeaders }
+            Compress: true
+  BucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: { Ref: Bucket }
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Sid: CloudFrontOnly
+            Effect: Allow
+            Principal:
+              Service: cloudfront.amazonaws.com
+            Action: s3:GetObject
+            Resource: { 'Fn::Sub': '${Bucket.Arn}/current/*' }
+            Condition:
+              StringEquals:
+                'AWS:SourceArn': { 'Fn::Sub': 'arn:${AWS::Partition}:cloudfront::${AWS::AccountId}:distribution/${Distribution}' }
+          - Sid: MissingKeysReturn404
+            Effect: Allow
+            Principal:
+              Service: cloudfront.amazonaws.com
+            Action: s3:ListBucket
+            Resource: { 'Fn::GetAtt': [Bucket, Arn] }
+            Condition:
+              StringEquals:
+                'AWS:SourceArn': { 'Fn::Sub': 'arn:${AWS::Partition}:cloudfront::${AWS::AccountId}:distribution/${Distribution}' }
+          - Sid: TLSOnly
+            Effect: Deny
+            Principal: '*'
+            Action: s3:*
+            Resource:
+              - { 'Fn::GetAtt': [Bucket, Arn] }
+              - { 'Fn::Sub': '${Bucket.Arn}/*' }
+            Condition:
+              Bool:
+                'aws:SecureTransport': 'false'
+  AliasA:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      HostedZoneId: { Ref: HostedZoneId }
+      Name: dev.kyaawave.com.
+      Type: A
+      AliasTarget:
+        DNSName: { 'Fn::GetAtt': [Distribution, DomainName] }
+        HostedZoneId: Z2FDTNDATAQYW2
+        EvaluateTargetHealth: false
+  AliasAAAA:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      HostedZoneId: { Ref: HostedZoneId }
+      Name: dev.kyaawave.com.
+      Type: AAAA
+      AliasTarget:
+        DNSName: { 'Fn::GetAtt': [Distribution, DomainName] }
+        HostedZoneId: Z2FDTNDATAQYW2
+        EvaluateTargetHealth: false
+  ReleaseRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: kyaawave-dev-github-release
+      Description: wave/dev static release into kyaawave-dev-site only
+      MaxSessionDuration: 3600
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Federated: { 'Fn::Sub': 'arn:aws:iam::${AWS::AccountId}:oidc-provider/token.actions.githubusercontent.com' }
+            Action: sts:AssumeRoleWithWebIdentity
+            Condition:
+              StringEquals:
+                'token.actions.githubusercontent.com:aud': sts.amazonaws.com
+                'token.actions.githubusercontent.com:sub': 'repo:kyaa-io@307444286/kyaa@1307387500:ref:refs/heads/wave/dev'
+      Policies:
+        - PolicyName: DevStaticRelease
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action: [s3:ListBucket, s3:GetBucketLocation]
+                Resource: { 'Fn::GetAtt': [Bucket, Arn] }
+              - Effect: Allow
+                Action: [s3:GetObject, s3:PutObject, s3:DeleteObject]
+                Resource: { 'Fn::Sub': '${Bucket.Arn}/current/*' }
+              - Effect: Allow
+                Action: [s3:GetObject, s3:PutObject]
+                Resource: { 'Fn::Sub': '${Bucket.Arn}/releases/*' }
+              - Effect: Allow
+                Action: [cloudfront:GetDistribution, cloudfront:CreateInvalidation, cloudfront:GetInvalidation]
+                Resource: { 'Fn::Sub': 'arn:aws:cloudfront::${AWS::AccountId}:distribution/${Distribution}' }
+Outputs:
+  BucketName:
+    Value: { Ref: Bucket }
+  DistributionId:
+    Value: { Ref: Distribution }
+  DistributionDomain:
+    Value: { 'Fn::GetAtt': [Distribution, DomainName] }
+  CertificateArn:
+    Value: { Ref: Certificate }
+  RoleArn:
+    Value: { 'Fn::GetAtt': [ReleaseRole, Arn] }
