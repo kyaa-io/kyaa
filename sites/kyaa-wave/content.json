@@ -290,5 +290,85 @@
   "eventLabelNext": [
     "03 / NEXT GATHERING",
     "03 / NEXT GATHERING"
+  ],
+  "archive": [
+    "기록",
+    "Recap"
+  ],
+  "factDate": [
+    "날짜",
+    "Date"
+  ],
+  "factPlace": [
+    "장소",
+    "Venue"
+  ],
+  "factGuests": [
+    "참여 인원",
+    "Attendance"
+  ],
+  "factHost": [
+    "주최",
+    "Host"
+  ],
+  "factOrganizer": [
+    "주관",
+    "Organizer"
+  ],
+  "factSponsor": [
+    "스폰서",
+    "Sponsors"
+  ],
+  "unverified": [
+    "사용자 확인 필요",
+    "Needs confirmation"
+  ],
+  "people": [
+    "참여",
+    "With"
+  ],
+  "liveWho": [
+    "김보석",
+    "김보석"
+  ],
+  "insightCopy": [
+    "참석자들이 ‘나영석 PD님께 묻다’ 보드에 익명 포스트잇으로 질문을 남겼습니다.",
+    "Guests left anonymous questions on sticky notes on the “Questions for PD Na Young-seok” board."
+  ],
+  "insightWho": [
+    "나영석 PD",
+    "PD Na Young-seok"
+  ],
+  "altLive1": [
+    "KYAA WAVE LIVE가 진행된 연회장 전경",
+    "The banquet hall during KYAA WAVE LIVE"
+  ],
+  "altLive2": [
+    "FANS MAKE WAVES 배경 앞 연단과 원형 테이블의 참석자들",
+    "The lectern and guests at round tables in front of the FANS MAKE WAVES backdrop"
+  ],
+  "altLive3": [
+    "연회장 뒤쪽에서 본 무대와 객석",
+    "The stage and seating seen from the back of the hall"
+  ],
+  "altInsight1": [
+    "무대에서 이야기하는 나영석 PD와 객석",
+    "PD Na Young-seok speaking on stage, seen from the seats"
+  ],
+  "altInsight2": [
+    "‘나영석 PD님께 묻다’ 보드 옆에서 이야기하는 나영석 PD",
+    "PD Na Young-seok beside the “Questions for PD Na Young-seok” board"
+  ],
+  "altInsight3": [
+    "나영석 PD 세션 중 연회장 전경",
+    "The banquet hall during the session with PD Na Young-seok"
+  ],
+  "altInsight4": [
+    "원형 테이블에서 세션을 듣는 참석자들",
+    "Guests listening at round tables during the session"
+  ],
+  "altInsight5": [
+    "객석 뒤에서 본 나영석 PD 세션",
+    "The session with PD Na Young-seok seen from behind the audience"
   ]
 }

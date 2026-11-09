@@ -39,7 +39,7 @@ test('sitemap exposes both canonical language pages and crawl assets exist', () 
  assert.ok(xml.includes('<loc>https://kyaawave.com/en/</loc>'));
  assert.match(read('dist/robots.txt'),/Sitemap: https:\/\/kyaawave.com\/sitemap.xml/);
  assert.ok(!read('dist/robots.txt').includes('Disallow: /'));
- for (const path of ['assets/og-kyaa-wave-dhl-20261019.jpg','assets/icon-192.png','assets/icon-512.png','assets/apple-touch-icon.png','favicon.ico']) assert.ok(existsSync(new URL(`dist/${path}`,root)),path);
+ for (const path of ['assets/og-kyaa-wave-2026-20261109.jpg','assets/icon-192.png','assets/icon-512.png','assets/apple-touch-icon.png','favicon.ico']) assert.ok(existsSync(new URL(`dist/${path}`,root)),path);
 });
 
 test('legacy language queries redirect on the server and unknown paths stay 404', () => {
@@ -50,14 +50,33 @@ test('legacy language queries redirect on the server and unknown paths stay 404'
 });
 
 
-test('real DHL photographs replace generated scenes in both languages and sharing metadata', () => {
+test('real DHL and event photographs replace generated scenes in both languages and sharing metadata', () => {
  for (const [file,alt] of [['index.html','드래곤힐로지 호텔 야경'],['en/index.html','Dragon Hill Lodge exterior at night']]) {
   const html=read(`dist/${file}`);
   assert.match(html,/class="hero-photo" src="\/assets\/dhl-exterior-night-20261019.webp"/);
   assert.match(html,/class="venue" src="\/assets\/dhl-naija-ballroom-20261019.webp"/);
   assert.ok(html.includes(`alt="${alt}"`));
   assert.doesNotMatch(html,/community-ai|gathering-ai|AI-generated|AI로 표현/);
-  assert.equal((html.match(/https:\/\/kyaawave.com\/assets\/og-kyaa-wave-dhl-20261019.jpg/g)||[]).length,3);
+  assert.equal((html.match(/https:\/\/kyaawave.com\/assets\/og-kyaa-wave-2026-20261109.jpg/g)||[]).length,3);
  }
  for (const asset of ['dhl-exterior-night-20261019.webp','dhl-naija-ballroom-20261019.webp']) assert.ok(existsSync(new URL(`dist/assets/${asset}`,root)));
+});
+
+test('2026 recap shows both programs with localized photo alt text and existing assets', () => {
+ const copy=JSON.parse(read('content.json'));
+ for (const [file,index] of [['index.html',0],['en/index.html',1]]) {
+  const html=read(`dist/${file}`);
+  const section=html.match(/<section class="archive container" id="archive"[\s\S]*?<\/section>/)[0];
+  assert.ok(section.includes('<h3>KYAA WAVE LIVE</h3>'));
+  assert.ok(section.includes('<h3>Kyaa LIVE Insight with 나영석\u00a0PD님</h3>'));
+  assert.ok(section.includes(copy.insightWho[index]));
+  assert.equal((html.match(/href="#archive"/g)||[]).length,2);
+  const images=[...section.matchAll(/<img data-alt="([^"]+)" alt="([^"]*)" src="\/assets\/([^"]+)" srcset="([^"]+)"/g)];
+  assert.equal(images.length,8);
+  for (const [,key,alt,src,srcset] of images) {
+   assert.equal(alt,copy[key][index]);
+   assert.ok(alt.length>0);
+   for (const asset of [src,...srcset.split(', ').map(item=>item.split(' ')[0].replace('/assets/',''))]) assert.ok(existsSync(new URL(`dist/assets/${asset}`,root)),asset);
+  }
+ }
 });

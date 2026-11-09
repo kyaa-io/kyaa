@@ -7,8 +7,8 @@ const escape = value => value.replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt
 export function renderPage(template, copy, language) {
  const page = pages[language];
  const url = origin + page.path;
- const image = `${origin}/assets/og-kyaa-wave-dhl-20261019.jpg`;
- const imageAlt = language === 'en' ? 'kyaa wave — Dragon Hill Lodge at night.' : 'kyaa wave — 드래곤힐로지 야경.';
+ const image = `${origin}/assets/og-kyaa-wave-2026-20261109.jpg`;
+ const imageAlt = language === 'en' ? 'KYAA WAVE 2026 Fans Make Waves backdrop at Dragon Hill Lodge.' : 'KYAA WAVE 2026 Fans Make Waves 무대 배경, 드래곤힐로지.';
  const graph = {'@context':'https://schema.org','@graph':[
   {'@type':'Organization','@id':`${origin}/#publisher`,name:'kyaa wave',url:`${origin}/`,parentOrganization:{'@type':'Organization',name:'Sallylab Inc.'},email:'biz@kyaa.io',logo:{'@type':'ImageObject',url:`${origin}/assets/icon-512.png`,width:512,height:512}},
   {'@type':'WebSite','@id':`${origin}/#website`,url:`${origin}/`,name:'kyaa wave',alternateName:'KYAA WAVE',inLanguage:['ko','en'],publisher:{'@id':`${origin}/#publisher`}},
@@ -50,6 +50,10 @@ export function renderPage(template, copy, language) {
   .replace(/(<[a-z0-9-]+\b[^>]*\bdata-i18n="([^"]+)"[^>]*>)[^<]*/g,(_,tag,key)=>{
    if (!copy[key]) throw new Error(`Missing translation: ${key}`);
    return tag + escape(copy[key][language === 'en' ? 1 : 0]);
+  })
+  .replace(/data-alt="([^"]+)" alt=""/g,(_,key)=>{
+   if (!copy[key]) throw new Error(`Missing translation: ${key}`);
+   return `data-alt="${key}" alt="${escape(copy[key][language === 'en' ? 1 : 0])}"`;
   })
   .replace(/<a href="\?lang=(ko|en)" lang="\1" data-lang="\1"(?: aria-current="true")?>/g,(_,lang)=>`<a href="${pages[lang].path}" lang="${lang}" data-lang="${lang}"${lang === language ? ' aria-current="true"' : ''}>`);
  html=html.replace('alt="Dragon Hill Lodge exterior at night"', `alt="${language === 'ko' ? '드래곤힐로지 호텔 야경' : 'Dragon Hill Lodge exterior at night'}"`)
