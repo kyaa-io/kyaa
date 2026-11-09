@@ -95,3 +95,14 @@ it('reads the neighbouring rooms tab once the head is settled: public list signe
  state.data={page:page(),membership:{role:'member'}};render(<CreatorGroupHeader celebrity={celebrity} locale='ko' tab='board'/>);
  expect(state.preload).toHaveBeenCalledWith('/api/groups/page-id/rooms');
 });
+
+it('keeps the same head and tab strip nodes when only the tab in the address changes',()=>{
+ state.data={page:page(),membership:null};state.query='locale=ko&tab=board';
+ const tree=()=><GroupPageProvider slug='elina' celebrity={celebrity} locale='ko'><CreatorGroupHeader celebrity={celebrity} locale='ko' tab='board'/></GroupPageProvider>;
+ const view=render(tree());
+ const h1=screen.getByRole('heading',{level:1,name:'엘리나'}),nav=document.querySelector('nav[data-fan-tabs]');
+ expect(nav?.querySelector('[aria-current="page"]')?.getAttribute('href')).toContain('tab=board');
+ state.query='locale=ko&tab=rooms';view.rerender(tree());
+ expect(screen.getByRole('heading',{level:1,name:'엘리나'})).toBe(h1);
+ expect(document.querySelector('nav[data-fan-tabs]')).toBe(nav);
+});
