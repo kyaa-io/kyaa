@@ -187,7 +187,7 @@ declare r record; t record; gaps text[] := '{}';
 begin
   select o.oid, o.rolname, o.rolsuper, o.rolbypassrls into r from pg_proc f join pg_roles o on o.oid = f.proowner
     where f.oid = 'public.groups_dispatch(text,uuid,uuid,uuid,jsonb,uuid)'::regprocedure;
-  -- BYPASSRLS는 권한을 주지 않으므로 grant는 늘 하고, 정책만 BYPASSRLS가 없을 때 만든다.
+  -- BYPASSRLS는 권한을 주지 않으므로 grant는 늘 하고, 정책만 BYPASSRLS가 없을 때 만든다. grant 실패는 아래 권한 확인이 잡는다.
   if r.rolsuper then return; end if;
   for t in select * from (values
       ('group_operator_read_budgets','select, insert, update, delete','all'), ('group_role_audit','select, insert','all'),
@@ -205,6 +205,9 @@ begin
        and not exists (select 1 from pg_policy p where p.polrelid = ('public.' || t.tname)::regclass and r.oid = any(p.polroles) and p.polpermissive
          and (p.polcmd = '*' or (t.cmd = 'select' and p.polcmd = 'r'))) then
       gaps := gaps || format('%s has no %s policy on %s', r.rolname, t.cmd, t.tname);
+    end if;
+    if exists (select 1 from unnest(string_to_array(t.privs, ', ')) need where not has_table_privilege(r.oid, ('public.' || t.tname)::regclass, need)) then
+      gaps := gaps || format('%s lacks %s on %s', r.rolname, t.privs, t.tname);
     end if;
   end loop;
   if cardinality(gaps) > 0 then raise exception 'GROUP_OPERATOR_ACCESS_OWNER_GAP: %', array_to_string(gaps, '; '); end if;

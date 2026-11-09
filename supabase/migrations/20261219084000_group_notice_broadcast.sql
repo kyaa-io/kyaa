@@ -53,12 +53,14 @@ $$;
 
 -- K2: 웹 전용 kind(웹 받은편지함만, 앱 푸시 없음). source_shape도 같은 모양을 받는다.
 do $$
-declare previous text;
+declare previous text; was_valid boolean;
 begin
-  select pg_get_expr(conbin, conrelid) into strict previous from pg_constraint where conrelid = 'public.fan_notifications'::regclass and conname = 'fan_notifications_source_shape';
+  select pg_get_expr(conbin, conrelid), convalidated into strict previous, was_valid from pg_constraint where conrelid = 'public.fan_notifications'::regclass and conname = 'fan_notifications_source_shape';
   alter table public.fan_notifications drop constraint fan_notifications_source_shape;
   execute 'alter table public.fan_notifications add constraint fan_notifications_source_shape check ((' || previous
     || ') or (kind::text=''group_notice'' and live_event_id is null and benefit_id is null and web_only)) not valid';
+  -- 이전과 같은 검증 상태로 둔다(dev는 검증됨, 로컬 일부는 not valid). 넓히기만 했으므로 기존 행은 그대로 통과한다.
+  if was_valid then alter table public.fan_notifications validate constraint fan_notifications_source_shape; end if;
 end $$;
 alter function public.fan_web_notification_kind(text) rename to fan_web_notification_kind_before_group_notice;
 create function public.fan_web_notification_kind(p_kind text) returns boolean language sql immutable security definer set search_path = '' as $$
@@ -89,6 +91,11 @@ begin
   select * into post from public.group_posts where id = p_post;
   if not found or post.removed_at is not null then
     update public.group_notice_broadcasts set status = 'cancelled', finished_at = clock_timestamp(), last_worker = p_worker, last_batch_at = clock_timestamp() where post_id = p_post;
+    return 0;
+  end if;
+  -- 예약한 운영자가 그 뒤 역할을 잃었거나 계정이 정지되면 남은 발송을 멈춘다(이미 나간 알림은 그대로).
+  if public.group_operator_role(b.actor_id, b.page_id) is null then
+    update public.group_notice_broadcasts set status = 'cancelled', last_error = 'author_not_operator', finished_at = clock_timestamp(), last_worker = p_worker, last_batch_at = clock_timestamp() where post_id = p_post;
     return 0;
   end if;
   select * into strict v_page from public.group_pages where id = b.page_id;
@@ -201,7 +208,9 @@ begin
     perform public.group_operator_require(p_actor, p_page_id);
     if v_enabled then
       perform pg_catalog.pg_advisory_xact_lock(pg_catalog.hashtextextended('group-notice-broadcast:' || p_page_id::text, 0));
-      if exists (select 1 from public.group_notice_broadcasts b where b.page_id = p_page_id and b.kst_date = v_today) then raise exception 'GROUPS_RATE_LIMITED:notice_broadcast'; end if;
+      -- 같은 requestId 요청이 겹쳐 앞 요청이 잠금을 쥐고 있었다면, 그 요청이 커밋한 영수증이 이제 보인다. 그러면 재생이다.
+      v_replay := exists (select 1 from public.group_action_receipts r where r.actor_id = p_actor and r.request_id = (p_input->>'requestId')::uuid);
+      if not v_replay and exists (select 1 from public.group_notice_broadcasts b where b.page_id = p_page_id and b.kst_date = v_today) then raise exception 'GROUPS_RATE_LIMITED:notice_broadcast'; end if;
     end if;
   end if;
   result := public.groups_content_dispatch_before_notice_broadcast(p_operation, p_actor, p_page_id, p_item_id, p_input, p_admin_id);
@@ -259,10 +268,11 @@ begin
       where p.oid in ('public.groups_content_dispatch(text,uuid,uuid,uuid,jsonb,uuid)'::regprocedure, 'public.enqueue_due_notification_maintenance(timestamp with time zone)'::regprocedure) loop
     execute format('grant execute on function public.group_notice_broadcast_enabled(), public.run_group_notice_broadcasts(integer,text) to %I', g.rolname);
   end loop;
-  -- 작업자는 받는 화면과 같은 판정 함수 둘을 부른다(그룹 함수 소유자 소유, 공개 실행 권한 없음).
-  execute format('grant execute on function public.group_post_visible(uuid,uuid), public.group_notification_allowed(uuid,text,text,uuid) to %I', helper_owner);
+  -- 작업자는 받는 화면과 같은 판정 함수 둘과 운영자 판정을 부른다(그룹 함수 소유자 소유, 공개 실행 권한 없음).
+  execute format('grant execute on function public.group_post_visible(uuid,uuid), public.group_notification_allowed(uuid,text,text,uuid), public.group_operator_role(uuid,uuid) to %I', helper_owner);
   if not has_function_privilege(helper_owner, 'public.group_post_visible(uuid,uuid)', 'execute')
-     or not has_function_privilege(helper_owner, 'public.group_notification_allowed(uuid,text,text,uuid)', 'execute') then
+     or not has_function_privilege(helper_owner, 'public.group_notification_allowed(uuid,text,text,uuid)', 'execute')
+     or not has_function_privilege(helper_owner, 'public.group_operator_role(uuid,uuid)', 'execute') then
     raise exception 'GROUP_NOTICE_BROADCAST_OWNER_GAP: % cannot run the recipient checks', helper_owner;
   end if;
   -- 감싼 공지 쓰기는 방송 표를 직접 읽고 쓴다.
@@ -280,7 +290,7 @@ begin
       ('public.groups_content_dispatch(text,uuid,uuid,uuid,jsonb,uuid)'::regprocedure, array['group_notice_broadcasts:all','group_notice_broadcast_control:select','group_action_receipts:select','audit_logs:all']),
       ('public.fan_web_notification_path(uuid,uuid)'::regprocedure, array['fan_notifications:select','group_posts:select','app_users:select'])) x(sig, tables)
       join pg_proc f on f.oid = x.sig join pg_roles o on o.oid = f.proowner loop
-    -- BYPASSRLS는 권한을 주지 않으므로 grant는 늘 하고, 정책만 BYPASSRLS가 없을 때 만든다.
+    -- BYPASSRLS는 권한을 주지 않으므로 grant는 늘 하고, 정책만 BYPASSRLS가 없을 때 만든다. grant 실패는 아래 권한 확인이 잡는다.
     if r.rolsuper then continue; end if;
     for t in select split_part(v, ':', 1) tname, split_part(v, ':', 2) cmd from unnest(r.tables) v loop
       begin execute format('grant %s on table public.%I to %I', case when t.tname = 'audit_logs' then 'insert' when t.cmd = 'all' then 'select, insert, update' else 'select' end, t.tname, r.rolname);
@@ -297,8 +307,9 @@ begin
            and (p.polcmd = '*' or (t.cmd = 'select' and p.polcmd = 'r'))) then
         gaps := gaps || format('%s has no %s policy on %s', r.rolname, t.cmd, t.tname);
       end if;
-      if not has_table_privilege(r.oid, ('public.' || t.tname)::regclass, case when t.tname = 'audit_logs' then 'insert' else 'select' end) then
-        gaps := gaps || format('%s lacks %s on %s', r.rolname, case when t.tname = 'audit_logs' then 'insert' else 'select' end, t.tname);
+      if exists (select 1 from unnest(case when t.tname = 'audit_logs' then array['insert'] when t.cmd = 'all' then array['select','insert','update'] else array['select'] end) need
+          where not has_table_privilege(r.oid, ('public.' || t.tname)::regclass, need)) then
+        gaps := gaps || format('%s lacks %s on %s', r.rolname, case when t.tname = 'audit_logs' then 'insert' when t.cmd = 'all' then 'select/insert/update' else 'select' end, t.tname);
       end if;
     end loop;
   end loop;

@@ -3,5 +3,6 @@
 begin;
 set local lock_timeout = '5s';
 drop function public.group_operator_members_dispatch(text,uuid,uuid,jsonb);
+drop function public.group_operator_member_rows(uuid,uuid,text,text);
 notify pgrst, 'reload schema';
 commit;

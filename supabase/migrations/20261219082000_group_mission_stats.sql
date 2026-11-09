@@ -79,7 +79,7 @@ declare r record; t text; gaps text[] := '{}';
 begin
   select o.oid, o.rolname, o.rolsuper, o.rolbypassrls into r from pg_proc f join pg_roles o on o.oid = f.proowner
     where f.oid = 'public.group_mission_stats_read(uuid,uuid,jsonb)'::regprocedure;
-  -- BYPASSRLS는 권한을 주지 않으므로 grant는 늘 하고, 정책만 BYPASSRLS가 없을 때 만든다.
+  -- BYPASSRLS는 권한을 주지 않으므로 grant는 늘 하고, 정책만 BYPASSRLS가 없을 때 만든다. grant 실패는 아래 권한 확인이 잡는다.
   if r.rolsuper then return; end if;
   foreach t in array array['group_missions','group_mission_submissions','group_mission_submission_reviews','group_creator_attendance','group_memberships','group_pages','app_users'] loop
     begin execute format('grant select on table public.%I to %I', t, r.rolname); exception when insufficient_privilege then null; end;
@@ -92,6 +92,7 @@ begin
        and not exists (select 1 from pg_policy p where p.polrelid = ('public.' || t)::regclass and r.oid = any(p.polroles) and p.polpermissive and p.polcmd in ('r','*')) then
       gaps := gaps || format('%s has no read policy on %s', r.rolname, t);
     end if;
+    if not has_table_privilege(r.oid, ('public.' || t)::regclass, 'select') then gaps := gaps || format('%s lacks select on %s', r.rolname, t); end if;
   end loop;
   if cardinality(gaps) > 0 then raise exception 'GROUP_MISSION_STATS_OWNER_GAP: %', array_to_string(gaps, '; '); end if;
 end $access$;

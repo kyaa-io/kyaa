@@ -2,18 +2,26 @@
 # B8 1단계 B3 보강: dev와 같은 소유자 배치에서 20261219080000~084000을 적용하고 group_operator_tools.sql을 돌린다.
 #   b8_pg: postgres 모양(슈퍼유저 아님, BYPASSRLS) — fan_notifications·audit_logs·유지보수 함수 소유
 #   b8_ad: byus_admin 모양(슈퍼유저 아님, b8_pg 구성원) — 그룹 표·그룹 함수·fan_web_notification_path/kind 소유, 파일을 적용하는 역할
-# mode bypass(기본): b8_ad도 BYPASSRLS. mode strict: b8_ad는 BYPASSRLS 없음 -> 파일의 OWNER_GAP 블록이 정책을 만들어야 한다.
+# mode bypass(기본): b8_ad도 BYPASSRLS. 적용 전에 source_shape를 검증 상태로 만들어 그 상태가 유지되는지도 본다.
+# mode strict: b8_ad는 BYPASSRLS 없이 파일을 적용한다 -> 파일의 OWNER_GAP 블록이 정책을 만들어야 한다(새 함수가 읽는 표마다 b8_owner_b8_ad).
+#   기능 시험 전에는 BYPASSRLS를 돌려준다: 기존 그룹 코드(셀럽 공개 트리거 등)는 이 소유자에게 정책 없이 쓰므로, 엄격 모드에서는 B8과 무관하게 실패한다.
+# mode missing=<table>: 그 표를 관계없는 역할(b8_other) 소유로 옮겨 grant가 실패하게 한다 -> 그 표를 쓰는 첫 파일이 OWNER_GAP(lacks …)로 멈춰야 한다.
+#   (080 app_users, 081 user_profiles, 082 group_creator_attendance, 084 group_notification_settings)
 # 일회용 클러스터 전용. usage: group_operator_tools_nonsuper_apply.sh <socket-dir> <port> <fresh-database-with-chain> [bypass|strict]
 set -euo pipefail
 SOCKET_DIR="$1"; PORT="$2"; DB="$3"; MODE="${4:-bypass}"
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 sql() { psql -X -q -At -v ON_ERROR_STOP=1 -h "$SOCKET_DIR" -p "$PORT" -d "$DB" "$@"; }
 BYPASS=bypassrls; [ "$MODE" = strict ] && BYPASS=nobypassrls
+MISSING=""; case "$MODE" in missing=*) MISSING="${MODE#missing=}";; esac
 sql <<SQL
 do \$\$ begin
   if not exists (select 1 from pg_roles where rolname = 'b8_pg') then create role b8_pg nologin nosuperuser bypassrls; end if;
-  if not exists (select 1 from pg_roles where rolname = 'b8_ad') then create role b8_ad nologin nosuperuser $BYPASS; end if;
+  if not exists (select 1 from pg_roles where rolname = 'b8_ad') then create role b8_ad nologin nosuperuser; end if;
+  if not exists (select 1 from pg_roles where rolname = 'b8_other') then create role b8_other nologin nosuperuser nobypassrls; end if;
 end \$\$;
+-- 역할은 클러스터 전체에 남으므로 매번 모드에 맞게 다시 정한다.
+alter role b8_ad $BYPASS;
 -- 소유권으로 닿는 범위는 지금 소유자(부트스트랩 슈퍼유저)의 것을 물려받되, 두 역할 자체는 슈퍼유저가 아니다.
 do \$\$ begin execute format('grant %I to b8_pg', current_user); end \$\$;
 grant b8_pg to b8_ad;
@@ -226,6 +234,19 @@ do \$\$ declare r record; begin
   alter table public.audit_logs owner to b8_pg;
 end \$\$;
 SQL
+[ "$MODE" = bypass ] && sql -c "alter table public.fan_notifications validate constraint fan_notifications_source_shape"
+VALID_BEFORE="$(sql -c "select convalidated from pg_constraint where conname='fan_notifications_source_shape'")"
+if [ -n "$MISSING" ]; then
+  sql -c "alter table public.$MISSING owner to b8_other; revoke all on public.$MISSING from b8_pg, b8_ad;"
+  for f in 20261219080000_group_operator_access 20261219081000_group_operator_members 20261219082000_group_mission_stats 20261219083000_group_notice_kind 20261219084000_group_notice_broadcast; do
+    if ! out="$(sql -c "set role b8_ad" -f "$ROOT/supabase/migrations/$f.sql" 2>&1)"; then
+      echo "$out" | grep -q "OWNER_GAP: .*lacks [a-z/, ]* on $MISSING" || { echo "FAIL $f stopped for another reason: $out" >&2; exit 1; }
+      echo "PASS 중간1 $MISSING 권한이 없으면 $f 적용이 OWNER_GAP으로 멈춘다"
+      echo "GROUP_OPERATOR_TOOLS_NONSUPER_PASS ($MODE)"; exit 0
+    fi
+  done
+  echo "FAIL no migration stopped without privileges on $MISSING" >&2; exit 1
+fi
 for f in 20261219080000_group_operator_access 20261219081000_group_operator_members 20261219082000_group_mission_stats 20261219083000_group_notice_kind 20261219084000_group_notice_broadcast; do
   sql -c "set role b8_ad" -f "$ROOT/supabase/migrations/$f.sql" >/dev/null
   echo "applied as b8_ad: $f"
@@ -248,5 +269,12 @@ do $$ declare bad text; begin
   raise notice 'PASS B3 새 definer 함수 소유자 rolsuper=false (진입·헬퍼 b8_ad, 작업자·유지보수 b8_pg)';
 end $$;
 SQL
+[ "$(sql -c "select convalidated from pg_constraint where conname='fan_notifications_source_shape'")" = "$VALID_BEFORE" ] || { echo "FAIL source_shape validity changed" >&2; exit 1; }
+echo "PASS 낮음2 source_shape 검증 상태 유지($VALID_BEFORE)"
+if [ "$MODE" = strict ]; then
+  [ "$(sql -c "select count(*) from pg_policy where polname = 'b8_owner_b8_ad'")" -gt 0 ] || { echo "FAIL strict: no owner policies were created" >&2; exit 1; }
+  echo "PASS strict: BYPASSRLS 없이 적용, 소유자 정책 $(sql -c "select count(*) from pg_policy where polname = 'b8_owner_b8_ad'")개 생성"
+  sql -c "alter role b8_ad bypassrls"
+fi
 sql -f "$ROOT/supabase/tests/group_operator_tools.sql" | tail -1
 echo "GROUP_OPERATOR_TOOLS_NONSUPER_PASS ($MODE)"

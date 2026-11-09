@@ -20,14 +20,15 @@ drop function public.fan_web_notification_path(uuid,uuid);
 alter function public.fan_web_notification_path_before_group_notice(uuid,uuid) rename to fan_web_notification_path;
 
 do $$
-declare previous text; added constant text := ' OR (((kind)::text = ''group_notice''::text) AND (live_event_id IS NULL) AND (benefit_id IS NULL) AND web_only))';
+declare previous text; was_valid boolean; added constant text := ' OR (((kind)::text = ''group_notice''::text) AND (live_event_id IS NULL) AND (benefit_id IS NULL) AND web_only))';
 begin
-  select pg_get_expr(conbin, conrelid) into strict previous from pg_constraint where conrelid = 'public.fan_notifications'::regclass and conname = 'fan_notifications_source_shape';
+  select pg_get_expr(conbin, conrelid), convalidated into strict previous, was_valid from pg_constraint where conrelid = 'public.fan_notifications'::regclass and conname = 'fan_notifications_source_shape';
   if right(previous, length(added)) <> added then raise exception 'GROUP_NOTICE_BROADCAST_ROLLBACK_SHAPE: %', right(previous, 200); end if;
   alter table public.fan_notifications drop constraint fan_notifications_source_shape;
   -- pg_get_expr flattens the OR chain into one parenthesised list: drop our last term and close the list again.
   previous := left(previous, length(previous) - length(added));
   execute 'alter table public.fan_notifications add constraint fan_notifications_source_shape check (' || previous || ')) not valid';
+  if was_valid then alter table public.fan_notifications validate constraint fan_notifications_source_shape; end if;
 end $$;
 drop function public.fan_web_notification_kind(text);
 alter function public.fan_web_notification_kind_before_group_notice(text) rename to fan_web_notification_kind;

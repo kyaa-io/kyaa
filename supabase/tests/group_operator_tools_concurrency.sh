@@ -42,9 +42,20 @@ results="$(cat "$TMP/n3a" "$TMP/n3b" | sort | tr '\n' ' ')"
 [ "$(sql -c "select count(*) from public.group_notice_broadcasts where page_id='$N3PAGE'")" = 1 ] || fail "N3 동시 broadcasts"
 pass "N3 동시 2요청: 1건만, 두 번째 글 없음"
 
+# 중간 2: 같은 requestId 요청 두 개가 겹치면 둘 다 같은 응답(재생), 글·방송 1건. 409가 아니다.
+N3RPAGE=b8000000-0000-4000-8000-0000000000a7
+sql -c "insert into public.group_pages(id,kind,name,status) values ('$N3RPAGE','hobby','b8 재생 동시','published'); insert into public.group_memberships(page_id,app_user_id,role) values ('$N3RPAGE','$OWNER','owner');"
+n3r() { sql -c "select (public.groups_content_dispatch('post','$OWNER','$N3RPAGE',null,jsonb_build_object('title','재생','body','본문','visibility','members','category','notice','notifyMembers',true,'requestId','b8000000-0000-4000-8000-0000000000cb'),null))->>'id'" 2>&1; }
+n3r > "$TMP/n3ra" & a=$!; n3r > "$TMP/n3rb" & b=$!; wait $a; wait $b
+[ "$(cat "$TMP/n3ra")" = "$(cat "$TMP/n3rb")" ] && grep -qE '^[0-9a-f-]{36}$' "$TMP/n3ra" || fail "same requestId: $(cat "$TMP/n3ra") / $(cat "$TMP/n3rb")"
+[ "$(sql -c "select count(*) from public.group_posts where page_id='$N3RPAGE'")" = 1 ] || fail "same requestId posts"
+[ "$(sql -c "select count(*) from public.group_notice_broadcasts where page_id='$N3RPAGE'")" = 1 ] || fail "same requestId broadcasts"
+pass "중간2 같은 requestId 동시 2요청: 둘 다 같은 응답, 글·방송 1건"
+
 # 큰 방송 하나를 새로 만든다(HOBBY, 1,500명 픽스처). 오늘 몫은 앞선 시험이 썼으므로 날짜를 옮긴다.
 new_broadcast() {
-  sql -c "update public.group_notice_broadcasts set kst_date=kst_date-10 where page_id='$HOBBY'" >/dev/null
+  # 오늘 몫을 다시 쓰려고 이 페이지의 방송을 created_at 순으로 1900년대 날짜에 다시 매긴다. 이미 옮긴 행은 제자리, 오늘 행만 다음 칸으로 가서 PK가 겹치지 않는다.
+  sql -c "update public.group_notice_broadcasts b set kst_date = date '1900-01-01' + x.n from (select post_id, row_number() over (order by created_at)::int n from public.group_notice_broadcasts where page_id='$HOBBY') x where b.post_id = x.post_id" >/dev/null
   sql -c "select (public.groups_content_dispatch('post','$OWNER','$HOBBY',null,jsonb_build_object('title','큰 공지','body','본문','visibility','members','category','notice','notifyMembers',true,'requestId','$1'),null))->>'id'"
 }
 # 같은 커밋 안에서 멈출 표식: 지정한 회원의 알림 insert에서 잠든다(시험 DB 전용 트리거).

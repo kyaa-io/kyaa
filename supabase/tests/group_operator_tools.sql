@@ -144,6 +144,15 @@ begin
   perform pg_temp.expect(jsonb_array_length(r->'items') = 1 and r->'items'->0->>'profileId' = f.a::text, 'U2 찐팬 필터 yes');
   r := pg_temp.gd('operator-members', f.o, f.fan, '{"jjinfan":"no"}');
   perform pg_temp.expect(jsonb_array_length(r->'items') = 6, 'U2 찐팬 필터 no');
+  insert into public.fan_heart_conversions(app_user_id, celebrity_id, stamps_counted, hearts, remainder, cutoff_at) values (f.m, 'b8000000-0000-4000-8000-0000000000c1', 36, 4, 0, now());
+  insert into public.creator_heart_ledger(app_user_id, celebrity_id, source_type, source_id, amount)
+    values (f.m, 'b8000000-0000-4000-8000-0000000000c1', 'passport_page_claim', extensions.gen_random_uuid(), 1),
+           (f.m, 'b8000000-0000-4000-8000-0000000000c1', 'passport_page_claim', extensions.gen_random_uuid(), 1);
+  perform pg_temp.expect(not exists (
+      select 1 from jsonb_array_elements(pg_temp.gd('operator-members', f.o, f.fan, '{"limit":50}')->'items') e
+      where (e->>'hearts')::int is distinct from public.passport_hearts((e->>'profileId')::uuid, 'b8000000-0000-4000-8000-0000000000c1')),
+    'U2 집계 조인 하트 = passport_hearts(원장 + 전환)');
+  perform pg_temp.expect((select (e->>'hearts')::int from jsonb_array_elements(pg_temp.gd('operator-members', f.o, f.fan, '{"limit":50}')->'items') e where e->>'profileId' = f.m::text) = 6, 'U2 manager 하트 2+4=6');
   r := pg_temp.gd('operator-members', f.o, f.hobby, '{}');
   perform pg_temp.expect(r->'jjinfanTotal' = 'null'::jsonb and not exists (select 1 from jsonb_array_elements(r->'items') e where e->'hearts' <> 'null'::jsonb or e->'jjinfan' <> 'null'::jsonb), 'U3 모임 페이지 찐팬·하트 null', r::text);
   perform pg_temp.expect(not (pg_temp.gd('operator-members-export', f.o, f.hobby, '{}')->>'fan')::boolean, 'U3 모임 페이지 CSV fan=false');
@@ -411,6 +420,31 @@ do $$ declare f fx; r jsonb; post uuid; begin select * into f from fx;
   perform pg_temp.expect((select public.fan_web_notification_path(n2.app_user_id, n2.id) from public.fan_notifications n2 where n2.source_key = 'group_notice:' || post limit 1) is null, 'N6 받은편지함에서 빠짐(경로 null)');
 end $$;
 
+-- 낮음 3: 예약한 manager가 회수되면 남은 발송을 멈춘다
+do $$ declare f fx; r jsonb; post uuid; begin select * into f from fx;
+  update public.group_notice_broadcasts set kst_date = kst_date - 30 where page_id = f.hobby;
+  insert into public.group_memberships(page_id, app_user_id, role) values (f.hobby, f.m, 'manager') on conflict (page_id, app_user_id) do update set role = 'manager';
+  r := pg_temp.notice(f.m, f.hobby, 'b8000000-0000-4000-8000-0000000000f6', true);
+  post := (r->>'id')::uuid;
+  perform public.run_group_notice_broadcasts(2000, 'w1');
+  perform pg_temp.expect((select status from public.group_notice_broadcasts where post_id = post) = 'sending', '낮음3 회수 전 1틱 sending');
+  update public.group_memberships set role = 'member' where page_id = f.hobby and app_user_id = f.m;
+  perform public.run_group_notice_broadcasts(2000, 'w1');
+  perform pg_temp.expect((select status || ':' || last_error from public.group_notice_broadcasts where post_id = post) = 'cancelled:author_not_operator'
+    and (select count(*) from public.fan_notifications where source_key = 'group_notice:' || post) = 1000, '낮음3 회수 뒤 다음 틱 cancelled, 이미 간 1,000건은 그대로');
+end $$;
+
+-- 중간 3: 2만 행 초과 CSV는 행 계산 전에 거절, 기록 행 없음
+insert into public.group_pages(id, kind, name, status) values ('b8000000-0000-4000-8000-0000000000a6', 'hobby', 'b8 큰 페이지', 'published');
+insert into public.app_users(id, privy_user_id, verified_email, status) select ('b8000000-0000-4000-8003-' || lpad(to_hex(g), 12, '0'))::uuid, 'did:privy:b8-big-' || g, 'b8-big-' || g || '@example.test', 'active' from generate_series(1, 20001) g;
+insert into public.group_memberships(page_id, app_user_id, role) select 'b8000000-0000-4000-8000-0000000000a6', ('b8000000-0000-4000-8003-' || lpad(to_hex(g), 12, '0'))::uuid, case when g = 1 then 'owner' else 'member' end from generate_series(1, 20001) g;
+do $$ declare t0 timestamptz := clock_timestamp(); begin
+  perform pg_temp.expect(pg_temp.err(format('select pg_temp.gd(%L,%L,%L)', 'operator-members-export', 'b8000000-0000-4000-8003-000000000001', 'b8000000-0000-4000-8000-0000000000a6')) = 'GROUPS_EXPORT_TOO_LARGE', '중간3 20,001행 CSV 413');
+  perform pg_temp.expect((select count(*) from public.group_member_exports where page_id = 'b8000000-0000-4000-8000-0000000000a6') = 0, '중간3 거절은 기록·몫 없음');
+  perform pg_temp.expect(clock_timestamp() - t0 < interval '5 seconds', '중간3 행마다의 집계 전에 거절(5초 안)', (clock_timestamp() - t0)::text);
+  perform pg_temp.expect(jsonb_array_length(pg_temp.gd('operator-members-export', 'b8000000-0000-4000-8003-000000000001', 'b8000000-0000-4000-8000-0000000000a6', '{"search":"없는닉"}')->'items') = 0, '중간3 거른 결과가 상한 안이면 내보낸다');
+end $$;
+
 -- B1·B2·B3·B4: 권한 경계
 do $$
 declare t text; rl text; fn text;
@@ -424,7 +458,7 @@ begin
     perform pg_temp.expect((select relrowsecurity and relforcerowsecurity from pg_class where oid = ('public.' || t)::regclass), 'B1 enable+force RLS ' || t);
   end loop;
   foreach fn in array array['group_operator_role(uuid,uuid)','group_operator_require(uuid,uuid)','group_operator_consume_read(uuid,uuid,text)','group_operator_read_limit()',
-      'group_role_audit_capture()','group_operator_members_dispatch(text,uuid,uuid,jsonb)','group_mission_stats_read(uuid,uuid,jsonb)','run_group_notice_broadcasts(integer,text)',
+      'group_role_audit_capture()','group_operator_members_dispatch(text,uuid,uuid,jsonb)','group_operator_member_rows(uuid,uuid,text,text)','group_mission_stats_read(uuid,uuid,jsonb)','run_group_notice_broadcasts(integer,text)',
       'group_notice_broadcast_batch(uuid,integer,text)','group_notice_broadcast_enabled()','groups_dispatch_before_operator_access(text,uuid,uuid,uuid,jsonb,uuid)',
       'groups_content_dispatch_before_notice_broadcast(text,uuid,uuid,uuid,jsonb,uuid)','group_activities_dispatch_before_mission_stats(text,uuid,uuid,uuid,uuid,jsonb,uuid)'] loop
     foreach rl in array array['anon','authenticated','service_role'] loop
@@ -432,7 +466,7 @@ begin
     end loop;
   end loop;
   foreach fn in array array['group_operator_role(uuid,uuid)','group_operator_require(uuid,uuid)','group_operator_consume_read(uuid,uuid,text)','group_role_audit_capture()',
-      'group_operator_members_dispatch(text,uuid,uuid,jsonb)','group_mission_stats_read(uuid,uuid,jsonb)','run_group_notice_broadcasts(integer,text)','group_notice_broadcast_batch(uuid,integer,text)',
+      'group_operator_members_dispatch(text,uuid,uuid,jsonb)','group_operator_member_rows(uuid,uuid,text,text)','group_mission_stats_read(uuid,uuid,jsonb)','run_group_notice_broadcasts(integer,text)','group_notice_broadcast_batch(uuid,integer,text)',
       'group_notice_broadcast_enabled()','groups_dispatch(text,uuid,uuid,uuid,jsonb,uuid)','groups_content_dispatch(text,uuid,uuid,uuid,jsonb,uuid)',
       'group_activities_dispatch(text,uuid,uuid,uuid,uuid,jsonb,uuid)','fan_web_notification_path(uuid,uuid)','fan_web_notification_kind(text)',
       'enqueue_due_notification_maintenance(timestamp with time zone)','group_notice_broadcast_post_removed()'] loop
