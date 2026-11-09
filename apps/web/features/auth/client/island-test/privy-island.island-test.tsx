@@ -65,6 +65,7 @@ vi.mock("@privy-io/react-auth", async () => {
     useSubscribeToJwtAuthWithFlag: (options: unknown) => {
       fake.calls.jwtArgs.push(options);
       React.useEffect(() => { fake.counts.jwt += 1; return () => { fake.counts.jwt -= 1; }; }, []);
+      return { state: { status: "initial" } }; // UseSyncJwtBasedAuthStateInterface
     },
     useLinkEmail: () => ({ sendCode: vi.fn(), linkWithCode: vi.fn(), state: { status: "initial" } }),
     useLinkJwtAccount: () => ({ linkWithCustomJwt: vi.fn(), state: { status: "initial" } }),
@@ -143,6 +144,15 @@ describe("leases mirror the app's hook instances (plan-b §5.2, §5.3)", () => {
     mount("island", <Both />);
     const shapes = fake.calls.loginWithOAuthArgs.map(args => (args.length === 0 ? "none" : Object.keys(args[0] as object).join(",")));
     expect(new Set(shapes)).toEqual(new Set(["none", "onComplete"]));
+  });
+
+  it("returns the JWT hook's own { state } object, like the SDK (type contract of useSubscribeToJwtAuthWithFlag)", () => {
+    let seen: unknown;
+    function Reader() { seen = island.useSubscribeToJwtAuthWithFlag({ enabled: false, isAuthenticated: false, isLoading: true, getExternalJwt: async () => undefined }); return null; }
+    const { store } = mount("island", <Reader />);
+    const published = store.result(store.getIslandSnapshot().leases[0].id);
+    expect(published).toEqual({ state: { status: "initial" } });
+    expect(seen).toBe(published);
   });
 
   it("hands the app the SDK's own object once attached", () => {

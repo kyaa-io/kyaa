@@ -57,9 +57,11 @@ export class PrivyIslandStore {
     const lease = this.leases.get(id);
     if (!lease) return [];
     if (lease.forwarded?.version === lease.argsVersion) return lease.forwarded.args;
-    // Late-callback policy (plan-b §5.1): a callback the SDK already holds keeps calling the app's LAST callback for that
-    // key, also after the lease is released (in the direct tree the SDK holds the app's own function the same way). The
-    // forwarder keeps the app's ref object; a key the app no longer provides is a quiet no-op, never a TypeError.
+    // Late-callback policy (plan-b §5.1) — a CHOSEN policy, not a copy of one direct-tree behaviour: a callback the SDK
+    // already holds calls the app's LAST callback for that key, also after the lease is released. The direct tree differs
+    // by hook in SDK 3.35.1 (useLogin drops its event subscription on unmount; other hooks keep the closure from the call),
+    // so neither "always delivered" nor "never delivered" matches it in general. The forwarder keeps the app's ref object;
+    // a key the app no longer provides is a quiet no-op, never a TypeError.
     const appRef = lease.argsRef;
     const forward = (value: unknown, read: () => unknown): unknown => {
       if (typeof value === "function") return (...args: unknown[]) => {
@@ -147,7 +149,7 @@ export class PrivyIslandStore {
     this.leases.delete(id);
     this.rejectWaiting(lease);
     // Drop the references the store held for this generation (plan-b §0-7). The app's own args ref is not cleared:
-    // forwarders the SDK already holds still reach the app's last callbacks (late-callback policy, mirrorArgs).
+    // forwarders the SDK already holds still reach the app's last callbacks (the chosen late-callback policy, mirrorArgs).
     lease.result = undefined;
     lease.forwarded = undefined;
   }
@@ -232,7 +234,8 @@ function firstValue(kind: HookKind, call: (name: string) => (...args: unknown[])
     case "useLinkEmail": return { sendCode: call("sendCode"), linkWithCode: call("linkWithCode"), state: INITIAL };
     case "useLinkJwtAccount": return { linkWithCustomJwt: call("linkWithCustomJwt"), state: INITIAL };
     case "useOAuthTokens": return { reauthorize: call("reauthorize") };
-    case "useSubscribeToJwtAuthWithFlag": return undefined;
+    // SDK 3.35.1 returns { state } (UseSyncJwtBasedAuthStateInterface), starting from its own useState({ status: "initial" }).
+    case "useSubscribeToJwtAuthWithFlag": return { state: INITIAL };
   }
 }
 
@@ -267,4 +270,4 @@ export const useLinkWithOAuth: typeof Direct.useLinkWithOAuth = (...args) => use
 export const useLinkEmail: typeof Direct.useLinkEmail = (...args) => useLease("useLinkEmail", args) as ReturnType<typeof Direct.useLinkEmail>;
 export const useLinkJwtAccount: typeof Direct.useLinkJwtAccount = (...args) => useLease("useLinkJwtAccount", args) as ReturnType<typeof Direct.useLinkJwtAccount>;
 export const useOAuthTokens: typeof Direct.useOAuthTokens = (...args) => useLease("useOAuthTokens", args) as ReturnType<typeof Direct.useOAuthTokens>;
-export const useSubscribeToJwtAuthWithFlag: typeof Direct.useSubscribeToJwtAuthWithFlag = (...args) => { useLease("useSubscribeToJwtAuthWithFlag", args); };
+export const useSubscribeToJwtAuthWithFlag: typeof Direct.useSubscribeToJwtAuthWithFlag = (...args) => useLease("useSubscribeToJwtAuthWithFlag", args) as ReturnType<typeof Direct.useSubscribeToJwtAuthWithFlag>;
