@@ -15,7 +15,7 @@ strip "$ROOT/supabase/rollback/20261219010000_funnel_events.sql" > "$TMP/rollbac
 strip "$ROOT/supabase/migrations/20261219010000_funnel_events.sql" > "$TMP/migration.sql"
 EXPECT=1
 if [ "${STRIP_POLICY:-}" = 1 ]; then
-  sed -i '' '/-- owner-policy-begin/,/-- owner-policy-end/d' "$TMP/migration.sql"
+  sed '/-- owner-policy-begin/,/-- owner-policy-end/d' "$TMP/migration.sql" > "$TMP/migration.stripped" && mv "$TMP/migration.stripped" "$TMP/migration.sql"
   EXPECT=0
 fi
 psql -X -q -v ON_ERROR_STOP=1 -d byus <<SQL

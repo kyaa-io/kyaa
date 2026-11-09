@@ -13,11 +13,12 @@ P="psql -X -q -v ON_ERROR_STOP=1"
 DB=$($P -At -c "select current_database()")
 case "$DB" in byus_clean|b3*) ;; *) echo "disposable clean-chain database required (got $DB)"; exit 1;; esac
 TMP="$(mktemp -d)"; trap 'rm -rf "$TMP"' EXIT
-FILES="20261220030000_b3_policy_replace 20261220031000_b3_record_action 20261220032000_b3_cheer 20261220033000_b3_insta_repost 20261220034000_b3_tier_bonus 20261220035000_b3_reads"
+FILES=(20261220030000_b3_policy_replace 20261220031000_b3_record_action 20261220032000_b3_cheer 20261220033000_b3_insta_repost 20261220034000_b3_tier_bonus 20261220035000_b3_reads)
 strip() { grep -v -x -e 'begin;' -e 'commit;' -e "notify pgrst, 'reload schema';" "$1"; }
 : > "$TMP/rollback.sql"; : > "$TMP/apply.sql"
-for f in $(echo $FILES | tr ' ' '\n' | tail -r); do strip "$ROOT/supabase/rollback/$f.sql" >> "$TMP/rollback.sql"; done
-for f in $FILES; do strip "$ROOT/supabase/migrations/$f.sql" >> "$TMP/apply.sql"; done
+# rollbacks newest first (a plain index loop: tail -r is BSD only)
+for (( i = ${#FILES[@]} - 1; i >= 0; i-- )); do strip "$ROOT/supabase/rollback/${FILES[i]}.sql" >> "$TMP/rollback.sql"; done
+for f in "${FILES[@]}"; do strip "$ROOT/supabase/migrations/$f.sql" >> "$TMP/apply.sql"; done
 OWNER=$($P -At -c "select current_user")
 setup() { # $1: 'member' or 'outsider'
 cat <<SQL

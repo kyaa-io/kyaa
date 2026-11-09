@@ -50,9 +50,15 @@ export function InstaRepostAdminPanel({ locale, request, requestImage, canWrite 
   const [readAt, setReadAt] = useState(0);
   // Capture bytes live as object URLs only while their row is on screen: a reload of the list (filter, decision) and leaving the
   // screen release them (B3 review F5).
+  // A capture answer that arrives after the list was reloaded (generation moved) or the screen left (unmounted) makes no URL.
   const opened = useRef<string[]>([]);
-  const releaseCaptures = useCallback(() => { opened.current.forEach(url => URL.revokeObjectURL(url)); opened.current = []; setCaptures({}); }, []);
-  useEffect(() => () => { opened.current.forEach(url => URL.revokeObjectURL(url)); opened.current = []; }, []);
+  const generation = useRef(0);
+  const mounted = useRef(true);
+  const releaseCaptures = useCallback(() => { generation.current += 1; opened.current.forEach(url => URL.revokeObjectURL(url)); opened.current = []; setCaptures({}); }, []);
+  useEffect(() => {
+    mounted.current = true;
+    return () => { mounted.current = false; generation.current += 1; opened.current.forEach(url => URL.revokeObjectURL(url)); opened.current = []; };
+  }, []);
   const load = useCallback(async (after?: string) => {
     if (!after) { setRows(null); releaseCaptures(); }
     const res = await request(`/api/admin/insta-reposts?status=${filter}${after ? `&after=${encodeURIComponent(after)}` : ""}`);
@@ -87,7 +93,9 @@ export function InstaRepostAdminPanel({ locale, request, requestImage, canWrite 
     void load();
   }
   async function showCapture(row: InstaRepostQueueItem) {
+    const asked = generation.current;
     const blob = await requestImage(`/api/admin/insta-reposts/${row.id}/capture`);
+    if (!mounted.current || asked !== generation.current) return;
     if (!blob) { setMessage({ text: t.captureFailed, error: true }); return; }
     const url = URL.createObjectURL(blob);
     opened.current.push(url);

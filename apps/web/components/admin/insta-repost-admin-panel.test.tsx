@@ -76,3 +76,24 @@ it("releases an opened capture when the list reloads, and keeps two open capture
   view.unmount();
   expect(revoke).toHaveBeenCalledTimes(2);
 });
+
+it("makes no URL for a capture that answers after the list reloaded or the screen closed", async () => {
+  const create = vi.spyOn(URL, "createObjectURL").mockReturnValue("blob:late");
+  vi.spyOn(URL, "revokeObjectURL").mockImplementation(() => undefined);
+  const pending: ((blob: Blob) => void)[] = [];
+  const requestImage = vi.fn(() => new Promise<Blob | null>(resolve => { pending.push(resolve); }));
+  const request = vi.fn(async () => ({ ok: true, status: 200, data: { items: [row()], hasMore: false } }));
+  const view = render(<InstaRepostAdminPanel locale="ko" request={request} requestImage={requestImage} canWrite={false} />);
+  fireEvent.click(await screen.findByRole("button", { name: "캡처 보기" }));
+  fireEvent.click(screen.getByRole("button", { name: "전체" }));
+  await screen.findByRole("button", { name: "캡처 보기" });
+  pending[0](new Blob(["png"]));
+  await new Promise(resolve => setTimeout(resolve, 0));
+  expect(create).not.toHaveBeenCalled();
+  expect(screen.queryByAltText("캡처 보기")).toBeNull();
+  fireEvent.click(screen.getByRole("button", { name: "캡처 보기" }));
+  view.unmount();
+  pending[1](new Blob(["png"]));
+  await new Promise(resolve => setTimeout(resolve, 0));
+  expect(create).not.toHaveBeenCalled();
+});
