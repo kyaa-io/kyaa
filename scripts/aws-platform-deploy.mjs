@@ -3,6 +3,7 @@ import { readFile, writeFile, mkdir } from 'node:fs/promises';
 import { resolve, dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { spawnSync } from 'node:child_process';
+import { reportFailedStackEvents } from './aws-release-stack-failure.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const TEMPLATE_DIR = join(ROOT, 'infrastructure/aws/platform');
@@ -13,11 +14,13 @@ const RESERVED_ENV = ['PORT', 'HOSTNAME', 'NODE_ENV', 'APP_ENV', 'APP_URL', 'HOS
 const FORBIDDEN_ENV = /^(AWS_|NEXT_PUBLIC_|NODE_|LD_|PATH$|HOME$|SHELL$|SUPABASE_ANON_KEY$)/;
 // Google's public sample network; its units never earn real rewards.
 const GOOGLE_TEST_AD_NETWORK = '/22639388115/';
+// GA4 web streams of property 563191711: each environment may only report to its own stream.
+const GA4_STREAMS = { prod: 'G-HPXFR0PQP0', dev: 'G-WKSF9KP5QW' };
 const REWARDED_SESSION_ENV = ['KYAA_REWARDED_AD_SESSION_TTL_SECONDS', 'KYAA_REWARDED_AD_MIN_WATCH_SECONDS', 'KYAA_REWARDED_AD_ISSUE_LIMIT', 'KYAA_REWARDED_AD_ISSUE_WINDOW_SECONDS', 'KYAA_REWARDED_AD_DAILY_CAP'];
 const PUBLIC_RUNTIME_ENV = new Set([
   ...REWARDED_SESSION_ENV,
   'PRIVY_APP_ID', 'PRIVY_APP_ENVIRONMENT', 'BYUS_DATA_ENVIRONMENT', 'KYAA_GROUPS_ENABLED', 'KYAA_REWARDED_AD_UNIT', 'KYAA_REWARDED_TICKET_EXCHANGE_ENABLED',
-  'PRIVY_APPLE_LOGIN_ENABLED', 'PRIVY_KAKAO_LOGIN_ENABLED', 'PRIVY_WECHAT_LOGIN_ENABLED', 'PRIVY_LINE_LOGIN_ENABLED', 'PRIVY_FACEBOOK_LOGIN_ENABLED', 'PRIVY_NAVER_LOGIN_ENABLED', 'PRIVY_TEST_ACCOUNT_LOGIN_ENABLED', 'WEB_PUSH_VAPID_PUBLIC_KEY',
+  'PRIVY_APPLE_LOGIN_ENABLED', 'PRIVY_KAKAO_LOGIN_ENABLED', 'PRIVY_WECHAT_LOGIN_ENABLED', 'PRIVY_LINE_LOGIN_ENABLED', 'PRIVY_FACEBOOK_LOGIN_ENABLED', 'PRIVY_NAVER_LOGIN_ENABLED', 'PRIVY_TEST_ACCOUNT_LOGIN_ENABLED', 'WEB_PUSH_VAPID_PUBLIC_KEY', 'GA4_MEASUREMENT_ID',
   'GIWA_CHAIN_ID', 'GIWA_RPC_URL', 'GIWA_EXPLORER_URL', 'BYUS_PASSPORT_CONTRACT_ADDRESS',
   'BYUS_STAMP_CONTRACT_ADDRESS', 'BYUS_RELAYER_ADDRESS', 'KAKAO_OAUTH_MODE', 'KAKAO_CLIENT_ID',
   'KAKAO_REDIRECT_URI', 'KAKAO_ALIMTALK_ENROLLMENT_ENABLED', 'PHONE_SMS_ENROLLMENT_MODE',
@@ -98,6 +101,7 @@ export function validateConfig(config, template) {
     accountArn(values.AlbCertificateArn, config.accountId, config.region, 'acm', 'AlbCertificateArn');
   } else if (values.Environment !== config.environment) fail('Environment parameter must match environment');
   if (config.kind === 'environment') {
+    if (!values.AlarmEmail) console.warn(`WARNING: AlarmEmail is empty, so ${config.environment} infrastructure alarms (storage, replication slot lag, log usage) reach nobody. Set a monitored address.`);
     if (config.stackName.length > 48) fail('Environment stackName must be at most 48 characters for CloudFront resource names');
     accountArn(values.RuntimeConfigSecretArn, config.accountId, config.region, 'secretsmanager', 'RuntimeConfigSecretArn');
     accountArn(values.CloudFrontCertificateArn, config.accountId, 'us-east-1', 'acm', 'CloudFrontCertificateArn');
@@ -161,6 +165,12 @@ export function validateConfig(config, template) {
     if (sessionKeys.length && !rewardedOn) fail('Rewarded ad session settings require KYAA_REWARDED_TICKET_EXCHANGE_ENABLED=true');
     if (rewardedUnit && !rewardedOn) fail('KYAA_REWARDED_AD_UNIT requires KYAA_REWARDED_TICKET_EXCHANGE_ENABLED=true');
     if (prod && config.runtimeEnvironment.PRIVY_TEST_ACCOUNT_LOGIN_ENABLED === 'true') fail('Production forbids test account login');
+    const ga4 = config.runtimeEnvironment.GA4_MEASUREMENT_ID;
+    if (ga4 !== undefined) {
+      if (!/^G-[A-Z0-9]{6,12}$/.test(ga4)) fail('GA4_MEASUREMENT_ID must be a GA4 measurement ID (G-...)');
+      const other = Object.entries(GA4_STREAMS).find(([environment, id]) => id === ga4 && environment !== config.environment);
+      if (other) fail(`GA4_MEASUREMENT_ID ${ga4} is the ${other[0]} stream and cannot be used in ${config.environment}`);
+    }
   } else if (config.runtimeEnvironment || config.runtimeSecretKeys) fail('Runtime configuration only applies to environment stacks');
   return values;
 }
@@ -288,8 +298,10 @@ export async function main(argv = process.argv.slice(2)) {
   if (flags['--aws'] || (action === 'deploy' && flags['--execute'])) await validateAws(config, values, templatePath);
   const command = deploymentCommand(config, templatePath, parametersPath);
   if (action === 'deploy' && flags['--execute']) {
+    const startedAt = Date.now() - 60_000;
     const result = spawnSync('aws', ['--no-cli-pager', ...command], { stdio: 'inherit' });
     if (result.error) throw result.error;
+    if (result.status !== 0) reportFailedStackEvents({ stackName: config.stackName, since: startedAt, describeEvents: stackName => aws(config, ['cloudformation', 'describe-stack-events', '--stack-name', stackName, '--max-items', '60', '--output', 'json'], { timeout: 30_000 }) });
     if (result.status !== 0) fail(`CloudFormation deployment failed (${result.status})`);
     console.log(JSON.stringify({ deployed: true, accountId: config.accountId, region: config.region, stackName: config.stackName }));
   } else console.log(JSON.stringify({ executed: false, action, accountId: config.accountId, region: config.region, environment: config.environment, templatePath, parametersPath, deployCommand: ['aws', ...command], next: 'deploy --execute validates AWS identity and existing references before changing resources' }, null, 2));
