@@ -29,7 +29,7 @@ export type FanPostRowProps = Readonly<{
   commentCount?: number;
   /** 홈에서만 넘긴다. 누르면 그 페이지 게시판으로 간다. */
   source?: Readonly<{ label: string; href: string }>;
-  author?: string;
+  author?: ReactNode;
   /** 인증 아티스트가 쓴 글이면 작성자 이름 옆에 태그를 둔다. */
   authorArtist?: boolean;
   time?: string | Date;

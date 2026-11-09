@@ -71,11 +71,12 @@ export const reportSchema = z.object({
   target: z.object({ body: z.string().nullable(), celebritySlug: z.string() }).strict().nullable(),
 }).strict();
 export const adminReportSchema = reportSchema.extend({
-  targetType: z.enum([...targetTypeSchema.options, "dm_message", "user_block"]),
+  // "user_profile" and the "group_post" context come from B6 profile reports; this build ships before that migration.
+  targetType: z.enum([...targetTypeSchema.options, "dm_message", "user_block", "user_profile"]),
   target: z.object({
     body: z.string().nullable(), celebritySlug: z.string().nullable(),
     authorUserId: z.uuid().nullable().optional(), authorNickname: z.string().nullable().optional(),
-    contextTargetType: targetTypeSchema.nullable().optional(), contextTargetId: z.uuid().nullable().optional(),
+    contextTargetType: z.enum([...targetTypeSchema.options, "group_post"]).nullable().optional(), contextTargetId: z.uuid().nullable().optional(),
   }).strict().nullable(),
 });
 export const adminReportPageSchema = z.object({ items: z.array(adminReportSchema).max(50), nextCursor: z.string().nullable() }).strict();

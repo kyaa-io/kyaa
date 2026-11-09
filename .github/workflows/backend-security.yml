@@ -213,6 +213,18 @@ jobs:
           BYUS_CLEAN_DB_ASSERTION_FILE=supabase/tests/photocard_bundle_claims_all.sql \
           BYUS_CLEAN_DB_SHELL_ASSERTION_FILE=supabase/tests/photocard_bundle_claims_concurrency.sh \
           bash scripts/verify-clean-migration-chain.sh
+      - name: Verify B6 message request privacy, profile refs, profile reports, owner access and rollback
+        if: matrix.suite == 'core'
+        run: |
+          export PATH="$(pg_config --bindir):$PATH"
+          printf '\\i %s\n' "$PWD/supabase/tests/b6_dm_request_privacy.sql" "$PWD/supabase/tests/b6_profile_refs.sql" "$PWD/supabase/tests/b6_profile_report.sql" "$PWD/supabase/tests/b6_owner_probe.sql" "$PWD/supabase/tests/social_dm_same_page_condition.sql" "$PWD/supabase/tests/public_profile_request_limits.sql" > /tmp/b6-assertions.sql
+          BYUS_CLEAN_DB_PORT=55571 \
+          BYUS_CLEAN_DB_UPGRADE_MIGRATION=20261220040000_b6_dm_request_privacy.sql \
+          BYUS_CLEAN_DB_UPGRADE_BEFORE_FILE="$PWD/supabase/tests/b6_dm_request_privacy_upgrade_before.sql" \
+          BYUS_CLEAN_DB_UPGRADE_AFTER_FILE="$PWD/supabase/tests/b6_dm_request_privacy_upgrade_after.sql" \
+          BYUS_CLEAN_DB_ASSERTION_FILE=/tmp/b6-assertions.sql \
+          BYUS_CLEAN_DB_SHELL_ASSERTION_FILE="$PWD/supabase/tests/b6_profile_dm_ci.sh" \
+          bash scripts/verify-clean-migration-chain.sh
       - name: Verify presentation aggregates and verified chain snapshot isolation
         if: matrix.suite == 'events'
         run: |

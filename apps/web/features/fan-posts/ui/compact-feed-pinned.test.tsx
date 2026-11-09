@@ -8,6 +8,8 @@ const postId = "f1640000-0000-4000-8000-000000000009";
 const notice = { id: postId, pageId, title: "운영자 공지 제목", body: "본문", visibility: "public", anonymous: false, profileId: null, nickname: "운영자", avatarUrl: null, createdAt: "2026-11-05T01:00:00.000Z" };
 const resource = vi.hoisted(() => ({ state: { status: "ready", data: { items: [], nextCursor: null, unavailableSources: [] } } as { status: string; data?: unknown; code?: string }, retry: vi.fn(), refreshFailed: false }));
 const groupResource = vi.hoisted(() => ({ value: { data: undefined, error: false, loading: true } as { data?: unknown; error: boolean; loading: boolean }, url: undefined as string | null | undefined }));
+// B6: which author names open a profile is asked separately; these tests are about the rows.
+vi.mock("@/features/group-social/profile-window", () => ({ ProfileAuthor: ({ children }: { children: unknown }) => children }));
 vi.mock("@/features/fanpage/ui/use-community-resource", () => ({ useCommunityResource: () => resource }));
 vi.mock("@/features/auth/client/cognito-auth", () => ({ useByUsAuth: () => ({ ready: true, authenticated: false }) }));
 vi.mock("@/components/byus-session-provider", () => ({ useByUsSession: () => ({ ready: true, generation: 0 }) }));

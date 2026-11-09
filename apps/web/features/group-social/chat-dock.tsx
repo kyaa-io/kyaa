@@ -29,7 +29,6 @@ export function ChatDock({ locale, target }: { locale: AppLocale; target: ChatDo
   const owned = chats.ready && chats.authenticated && chatDockOwner(chats.ownerKey) === target.owner;
   useEffect(() => { if (chats.ready && !owned) closeChatDock(); }, [chats.ready, owned]);
   const [wantsFocus] = useState(takeChatDockFocus);
-  const [openedAt] = useState(() => Date.now());
   // The message box appears once the conversation list has answered. The profile modal hands focus back 250ms after it closes, so this has to come later.
   useEffect(() => {
     if (!wantsFocus || chats.loading) return;
@@ -67,8 +66,6 @@ export function ChatDock({ locale, target }: { locale: AppLocale; target: ChatDo
   }, [canSend]);
   if (!owned) return null;
 
-  // A declined or cancelled request cannot be sent again yet, so no box that would be refused. The wait is a day; if the window outlasts it, the server's answer covers the rest.
-  const waitToAsk = !live && chat?.retryAt && Date.parse(chat.retryAt) > openedAt;
   const close = () => { closeChatDock(); if (opener.current?.isConnected) opener.current.focus(); };
   const onKeyDown = (event: KeyboardEvent) => { if (event.key === "Escape" && !event.nativeEvent.isComposing) { event.stopPropagation(); close(); } };
   const expand = `/my/friends?${new URLSearchParams(live ? { locale, conversationId: live.id } : { locale, profileId: target.profileId })}`;
@@ -92,7 +89,6 @@ export function ChatDock({ locale, target }: { locale: AppLocale; target: ChatDo
       {chats.loading ? <FanSkeletonRows rows={3} variant="plain"/>
         : chats.error ? <div className={styles.state} role="alert"><p>{t.error}</p><FanAction onClick={chats.retry}>{t.retry}</FanAction></div>
         : live ? <Conversation embedded key={live.id} locale={locale} id={live.id} conversation={live} pending={pending} onBack={close} onResolve={action => void resolve(action)}/>
-        : waitToAsk ? <div className={styles.state} role="status"><p>{reachText(locale, "retryLater")}</p></div>
         : <FirstMessage locale={locale} target={target} request={chats.request} onSent={id => { setChatDockConversation(id); chats.retry(); }} cannotSend={s.cannotSend}/>}
       {failed && <p className={styles.error} role="alert">{t.error}</p>}
     </div>

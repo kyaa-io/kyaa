@@ -6,6 +6,8 @@ import { SESSION_HINT_KEY } from "@/features/auth/client/session-hint";
 
 const auth = vi.hoisted(() => ({ ready: true, authenticated: false, user: { id: "owner-a" }, getAccessToken: vi.fn(async () => "token-a" as string | null) }));
 const session = vi.hoisted(() => ({ ready: true, ownerId: "owner-a", generation: 0 }));
+// B6: which author names open a profile is asked separately; these tests are about the rows.
+vi.mock("@/features/group-social/profile-window", () => ({ ProfileAuthor: ({ children }: { children: unknown }) => children }));
 vi.mock("@privy-io/react-auth", () => ({ usePrivy: () => auth }));
 vi.mock("@/components/byus-session-provider", () => ({ useByUsSession: () => session }));
 const uuid = (n: number) => `11111111-1111-4111-8111-${String(n).padStart(12, "0")}`;
