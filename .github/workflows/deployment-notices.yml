@@ -8,9 +8,14 @@ on:
   workflow_dispatch:
     inputs:
       deployment_id:
-        description: 'Verified AWS deployment currently live on kyaa.io'
+        description: 'Verified AWS deployment currently live on kyaa.io (or dev.kyaa.io for environment dev)'
         required: true
         type: string
+      environment:
+        description: 'GitHub Environment of the deployment: prod (production and wave) or dev'
+        type: choice
+        options: [prod, dev]
+        default: prod
       unsent_receipt_id:
         description: 'Optional uncertain receipt confirmed absent from the Telegram room'
         type: string
@@ -86,13 +91,13 @@ jobs:
 # AWS notices run inside aws-platform.yml because GITHUB_TOKEN statuses do not retrigger workflows.
 
   recover:
-    name: Resume verified production notice
+    name: Resume verified deployment notice
     if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'
-    environment: prod
+    environment: ${{ inputs.environment == 'dev' && 'dev' || 'prod' }}
     runs-on: ubuntu-latest
     timeout-minutes: 10
     concurrency:
-      group: telegram-production-notices
+      group: ${{ inputs.environment == 'dev' && 'aws-release-dev' || 'telegram-production-notices' }}
       queue: max
       cancel-in-progress: false
     permissions:
@@ -114,6 +119,7 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
           TELEGRAM_BUG_REPORT_OPERATOR_SECRET: ${{ secrets.TELEGRAM_BUG_REPORT_OPERATOR_SECRET }}
           NOTICE_DEPLOYMENT_ID: ${{ inputs.deployment_id }}
+          NOTICE_ENVIRONMENT: ${{ inputs.environment }}
           NOTICE_UNSENT_RECEIPT_ID: ${{ inputs.unsent_receipt_id }}
           NOTICE_INSPECTION_EVIDENCE: ${{ inputs.inspection_evidence }}
         run: node scripts/recover-deployment-notice.mjs
