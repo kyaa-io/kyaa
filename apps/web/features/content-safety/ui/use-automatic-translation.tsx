@@ -4,12 +4,13 @@ import { useByUsAuth } from "@/features/auth/client/cognito-auth";
 import { useByUsSession } from "@/components/byus-session-provider";
 import { contentCopy } from "@/i18n/catalogs/features__fan_posts__ui";
 import { toContentLocale, type AppLocale } from "@/i18n/locales";
-import { translationSchema, type TargetType } from "@/features/fan-posts/domain/content";
+import { slotTranslationSchema, translationSchema, type TargetType } from "@/features/fan-posts/domain/content";
 import { shouldOfferTranslation } from "../domain/translation-eligibility";
 import styles from "./content.module.css";
 
-type Target = { targetType: TargetType; targetId: string; sourceRevision: number };
-type AutomaticTranslation = { observeElement: (node: HTMLElement | null) => void; eligible: boolean; showing: boolean; texts: readonly string[]; busy: boolean; error: string; toggle: () => void };
+/** `slots: "title-body"`: a board post read by a signed-in reader. `texts` are then [title, article] (an absent slot is ""), and the server answers each slot from its own cached translation. */
+type Target = { targetType: TargetType; targetId: string; sourceRevision: number; slots?: "title-body" };
+export type AutomaticTranslation = { observeElement: (node: HTMLElement | null) => void; eligible: boolean; showing: boolean; texts: readonly string[]; busy: boolean; error: string; toggle: () => void };
 type Result = { key: string; texts?: readonly string[]; error?: string; busy?: boolean };
 const requests = new Map<string, Promise<readonly string[]>>();
 /** After the display endpoint answers that it is unavailable (for example no translation key is set), automatic attempts stop for a while,
@@ -38,12 +39,13 @@ function requestTranslation(input: { force?: boolean; authenticated: boolean; ge
     pending = (async () => {
       const token = input.authenticated ? await input.getAccessToken() : null;
       if (input.authenticated && !token) throw new Error("AUTHENTICATION_REQUIRED");
+      if (input.target?.slots && !input.authenticated) throw new Error("AUTHENTICATION_REQUIRED");
       const objectTarget = input.target && input.authenticated;
       if (!objectTarget && !input.force && Date.now() < pausedUntil()) throw new Error("TRANSLATION_UNAVAILABLE");
       const response = await fetch(objectTarget ? "/api/content-translations" : "/api/display-translations", {
         method: "POST", cache: "no-store", signal: AbortSignal.timeout(20_000),
         headers: { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) },
-        body: JSON.stringify(objectTarget ? { targetType: input.target!.targetType, targetId: input.target!.targetId, targetLocale: input.locale, locale: toContentLocale(input.locale) }
+        body: JSON.stringify(objectTarget ? { targetType: input.target!.targetType, targetId: input.target!.targetId, targetLocale: input.locale, locale: toContentLocale(input.locale), ...(input.target!.slots ? { slots: input.target!.slots } : {}) }
           : input.texts.length === 1 ? { text: input.texts[0], targetLocale: input.locale } : { texts: input.texts, targetLocale: input.locale }),
       });
       const raw: unknown = await response.json();
@@ -51,6 +53,14 @@ function requestTranslation(input: { force?: boolean; authenticated: boolean; ge
         const code = raw && typeof raw === "object" && "error" in raw && raw.error && typeof raw.error === "object" && "code" in raw.error && typeof raw.error.code === "string" ? raw.error.code : "TRANSLATION_FAILED";
         if (!objectTarget && code === "TRANSLATION_UNAVAILABLE") pauseAutomaticTranslation();
         throw new Error(code);
+      }
+      if (objectTarget && input.target!.slots) {
+        const parsed = slotTranslationSchema.parse(raw);
+        if (parsed.targetId !== input.target!.targetId || parsed.targetType !== input.target!.targetType || parsed.targetLocale !== input.locale || parsed.sourceRevision !== input.target!.sourceRevision) throw new Error("TRANSLATION_FAILED");
+        // Exactly the slots that were asked for: a missing or extra slot keeps the original on screen.
+        const wanted = (["title", "article"] as const).filter((_, index) => input.texts[index]?.trim());
+        if (Object.keys(parsed.slots).length !== wanted.length || wanted.some(slot => parsed.slots[slot] === undefined)) throw new Error("TRANSLATION_FAILED");
+        return [parsed.slots.title ?? "", parsed.slots.article ?? ""];
       }
       if (objectTarget) {
         const parsed = translationSchema.parse(raw);

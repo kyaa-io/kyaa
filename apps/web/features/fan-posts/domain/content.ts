@@ -52,10 +52,17 @@ export const editPostSchema = savePostSchema.safeExtend({ expectedRevision: z.nu
 export const createCommentSchema = z.object({ body: z.string().trim().min(1).max(1000), parentId: z.uuid().nullable().default(null), idempotencyKey: z.uuid() }).strict();
 export const targetSchema = z.object({ targetType: targetTypeSchema, targetId: z.uuid() }).strict();
 export const reportInputSchema = targetSchema.extend({ reason: z.string().trim().min(1).max(500), idempotencyKey: z.uuid() });
-export const translationInputSchema = targetSchema.extend({ targetLocale: z.enum(APP_LOCALES), locale: z.enum(["ko", "en"]).default("ko") });
+/** `slots: "title-body"` asks for a board post's title and article as two separate cached translations (fan_post only); without it the whole text is translated as before. */
+export const translationInputSchema = targetSchema.extend({ targetLocale: z.enum(APP_LOCALES), locale: z.enum(["ko", "en"]).default("ko"), slots: z.literal("title-body").optional() });
 export const translationSchema = z.object({
   targetType: targetTypeSchema, targetId: z.uuid(), targetLocale: z.enum(APP_LOCALES), translatedText: z.string().min(1).max(100_000), sourceRevision: z.number().int().positive(), cached: z.boolean(),
 }).strict();
+export const slotTranslationSchema = z.object({
+  targetType: targetTypeSchema, targetId: z.uuid(), targetLocale: z.enum(APP_LOCALES), sourceRevision: z.number().int().positive(), cached: z.boolean(),
+  slots: z.object({ title: z.string().min(1).max(100_000).optional(), article: z.string().min(1).max(100_000).optional() }).strict()
+    .refine(slots => slots.title !== undefined || slots.article !== undefined),
+}).strict();
+export type SlotTranslation = z.infer<typeof slotTranslationSchema>;
 export const blockSchema = z.object({ id: z.uuid(), nickname: z.string(), avatarUrl: publicAvatarUrlSchema, createdAt: instant }).strict();
 export const blocksSchema = z.object({ items: z.array(blockSchema) }).strict();
 export const reportSchema = z.object({

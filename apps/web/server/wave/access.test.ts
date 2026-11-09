@@ -63,7 +63,7 @@ describe("Wave API access", () => {
   it("preserves asset admin previews only through the original verified admin handler", async () => {
     const { createContentHandlers } = await import("@/server/fan-posts/routes");
     const { deps } = setup();
-    const content = { ...deps, authorizeAdmin: vi.fn().mockRejectedValue(new AuthError("ADMIN_NOT_ALLOWLISTED", 403, "forbidden")), upload: vi.fn(), download: vi.fn(), translate: vi.fn() };
+    const content = { ...deps, authorizeAdmin: vi.fn().mockRejectedValue(new AuthError("ADMIN_NOT_ALLOWLISTED", 403, "forbidden")), upload: vi.fn(), download: vi.fn(), translate: vi.fn(), translateTexts: vi.fn() };
     const handler = (input: Request) => createContentHandlers(content).asset(input, user);
     const response = await withWaveAccess(handler, () => content)(request(`/api/content-assets/${user}?admin=1`));
     expect(response.status).toBe(403); expect(content.authorizeAdmin).toHaveBeenCalled();
@@ -125,6 +125,21 @@ describe("Wave API access", () => {
     const { deps, handler, run } = setup();
     expect((await run(request("/api/content-translations", "", "POST", { targetType: "notice", targetId: user, padding: "x".repeat(2048) }))).status).toBe(413);
     expect(deps.rpc).not.toHaveBeenCalled(); expect(handler).not.toHaveBeenCalled();
+  });
+  it("gates title/article translation of a Wave post before the translation handler runs", async () => {
+    const { createContentHandlers } = await import("@/server/fan-posts/routes");
+    const { deps } = setup();
+    const content = { ...deps, authorizeAdmin: vi.fn(), upload: vi.fn(), download: vi.fn(), translate: vi.fn(), translateTexts: vi.fn() };
+    const handler = vi.fn((input: Request) => createContentHandlers(content).translate(input));
+    const run = withWaveAccess(handler, () => content);
+    const body = { targetType: "fan_post", targetId: user, targetLocale: "en", slots: "title-body" };
+    expect((await run(request("/api/content-translations", "", "POST", body))).status).toBe(401);
+    expect(deps.rpc).toHaveBeenCalledWith("is_kyaa_wave_resource", { p_kind: "fan_post", p_resource_id: user });
+    deps.rpc.mockImplementation(async (name: string) => name === "is_kyaa_wave_resource" ? true : { participation: null });
+    const refused = await run(request("/api/content-translations", "Bearer verified", "POST", body));
+    expect(refused.status).toBe(403); expect(await refused.json()).toEqual({ error: { code: "WAVE_CHECKIN_REQUIRED" } });
+    expect(handler).not.toHaveBeenCalled(); expect(content.translateTexts).not.toHaveBeenCalled();
+    expect(deps.rpc.mock.calls.map(call => call[0])).not.toContain("read_content_translation_slots");
   });
   it("gates translations by actual body target and benefits by creator query", async () => {
     const { deps, run } = setup();

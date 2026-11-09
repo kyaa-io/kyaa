@@ -6,7 +6,7 @@ const id = "10000000-0000-4000-8000-000000000001", owner = "20000000-0000-4000-8
 const post = { id, celebritySlug: "artist", body: "제목\n본문", visibility: "public", revision: 1,
   author: { nickname: "Fan", avatarUrl: "/images/avatars/star-pink.webp" }, assets: [], createdAt: "2026-09-26T00:00:00Z", updatedAt: "2026-09-26T00:00:00Z", isOwner: false, likeCount: 3, liked: false, commentCount: 0 };
 function dependencies() {
-  return { rpc: vi.fn(), authorize: vi.fn().mockResolvedValue({ appUserId: owner }), authorizeAdmin: vi.fn(), upload: vi.fn(), download: vi.fn(), translate: vi.fn() } satisfies ContentDependencies;
+  return { rpc: vi.fn(), authorize: vi.fn().mockResolvedValue({ appUserId: owner }), authorizeAdmin: vi.fn(), upload: vi.fn(), download: vi.fn(), translate: vi.fn(), translateTexts: vi.fn() } satisfies ContentDependencies;
 }
 const read = (authenticated = true) => new Request(`https://byus.test/api/posts/${id}?locale=ko`, { headers: authenticated ? { authorization: "Bearer token" } : {} });
 const put = (body: unknown) => new Request(`https://byus.test/api/posts/${id}/like`, { method: "PUT", headers: { authorization: "Bearer token", "content-type": "application/json" }, body: JSON.stringify(body) });
