@@ -36,6 +36,9 @@
 }
 .filterBar { grid-column: 1 / -1; display: flex; align-items: center; gap: var(--space-2); min-width: 0; margin-block: calc(-1 * var(--space-1)); padding-block: var(--space-1); overflow-x: auto; scrollbar-width: none; }
 .filterBar::-webkit-scrollbar { display: none; }
+/* At 380px and below the chips sit 4px apart so the Korean row fits 360. A longer translated row scrolls: the cut chip at the edge is the hint, and the end keeps 16px after the last chip. */
+@media (max-width: 380px) { .filterBar, .groupKinds { gap: var(--space-1); } }
+.filterBar[data-scrolls] { padding-inline-end: var(--space-4); }
 .groupKinds { display: flex; flex: none; align-items: center; gap: var(--space-2); padding-inline-start: var(--space-2); border-inline-start: 1px solid var(--color-line); }
 /* Below 1024px the divider alone marks the group kinds so the five chips fit one 390 row; the group keeps its name for screen readers. */
 .groupLabel { display: none; color: var(--color-muted); font-size: var(--fan-metadata-size); white-space: nowrap; }

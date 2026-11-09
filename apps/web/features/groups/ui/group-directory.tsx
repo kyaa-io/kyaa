@@ -55,6 +55,15 @@ function CheckinCorner({locale,children}:{locale:AppLocale;children:ReactNode}){
  const {points}=checkinNumbers(useDukjil()?.catalog);
  return <span className={`${cornerStyles.host} ${directoryStyles.attendanceAction}`}>{children}{points!==undefined&&<EarnBadge variant="corner" locale={locale} points={points}/>}</span>;
 }
+// Marks a sideways-scrolling row with data-scrolls so its end keeps room after the last chip.
+function useOverflowHint(){
+ const ref=useRef<HTMLDivElement|null>(null);
+ useEffect(()=>{const node=ref.current;if(!node)return;
+  const update=()=>{node.removeAttribute('data-scrolls');node.toggleAttribute('data-scrolls',node.scrollWidth>node.clientWidth+1);};
+  update();const observer=typeof ResizeObserver==='undefined'?undefined:new ResizeObserver(update);observer?.observe(node);
+  return()=>observer?.disconnect();},[]);
+ return ref;
+}
 const parseStatus=(value:unknown)=>applicationStatusListSchema.parse(value);
 const statusLabel:Record<ApplicationStatus["status"],GroupApplyCopyKey>={submitted:"statusReviewing",reviewing:"statusReviewing",changes_requested:"statusChanges",approved:"statusApproved",rejected:"statusRejected"};
 const parseList = (value:unknown)=>groupListSchema.parse(value);
@@ -67,6 +76,7 @@ export function GroupDirectory({locale,initialOwned=false,banners=[]}:{locale:Ap
   const t=groupsCopy(locale),c=discoveryCopy(locale),w=walletCopy(locale);
  const [attendanceOpen,setAttendanceOpen]=useState(false);
  const attendanceTrigger=useRef<HTMLAnchorElement|null>(null);
+ const filterBar=useOverflowHint();
   const query=useSearchParams();
   const directoryLoginQuery=new URLSearchParams(query?.toString()??'');directoryLoginQuery.set('locale',locale);
   const directoryLogin=fanLoginHref(locale,`/pages/groups?${directoryLoginQuery}`);
@@ -137,7 +147,7 @@ export function GroupDirectory({locale,initialOwned=false,banners=[]}:{locale:Ap
       <div className={directoryStyles.controls}>
       <form className={`${styles.search} ${directoryStyles.search}`} onSubmit={submit}><input className={`${styles.input} ${directoryStyles.searchInput}`} aria-label={t.searchPlaceholder} placeholder={t.searchPlaceholder} value={draft} onChange={e=>setDraft(e.target.value)} onCompositionStart={()=>setComposing(true)} onCompositionEnd={()=>setComposing(false)} maxLength={100}/><button className={directoryStyles.searchIcon} aria-label={t.search}><Search size={18}/></button></form>
       <Menu.Root><Menu.Trigger className={`${sortStyles.trigger} ${directoryStyles.sort}`} data-active={sort==='popular'?'':undefined}><ArrowDownUp className={directoryStyles.sortIcon} size={18} aria-hidden/><span className={directoryStyles.sortLabel}>{sort==='popular'?t.popular:c.defaultSort}</span><ChevronDown className={directoryStyles.sortChevron} size={16} aria-hidden/></Menu.Trigger><Menu.Portal><Menu.Positioner align='end' sideOffset={4} className={sortStyles.positioner}><Menu.Popup className={sortStyles.popup} data-source-node='XnL4z' aria-label={t.popular}><Menu.RadioGroup className={sortStyles.group} value={sort} onValueChange={value=>{if(value==='recent'||value==='popular')setSort(value);}}><Menu.RadioItem className={sortStyles.item} value='recent'>{c.defaultSort}</Menu.RadioItem><Menu.RadioItem className={sortStyles.item} value='popular'>{t.popular}</Menu.RadioItem></Menu.RadioGroup></Menu.Popup></Menu.Positioner></Menu.Portal></Menu.Root>
-      <div className={directoryStyles.filterBar} aria-label={t.explore}><button className={`${styles.chip} ${directoryStyles.chip}`} aria-pressed={type==='all'} onClick={()=>setType('all')}>{t.all}</button><button className={`${styles.chip} ${directoryStyles.chip}`} aria-pressed={type==='fan'} onClick={()=>setType('fan')}>{fanpageLabel[locale]}</button><div className={directoryStyles.groupKinds} role="group" aria-label={t.groups}><span className={directoryStyles.groupLabel}>{t.groups}</span>{(['hobby','brand'] as const).map(value=><button className={`${styles.chip} ${directoryStyles.chip}`} aria-pressed={type===value} key={value} onClick={()=>{if(artistRole)updateQuery('artistRole',undefined);setType(value);}}>{t[value]}</button>)}</div>
+      <div ref={filterBar} className={directoryStyles.filterBar} aria-label={t.explore}><button className={`${styles.chip} ${directoryStyles.chip}`} aria-pressed={type==='all'} onClick={()=>setType('all')}>{t.all}</button><button className={`${styles.chip} ${directoryStyles.chip}`} aria-pressed={type==='fan'} onClick={()=>setType('fan')}>{fanpageLabel[locale]}</button><div className={directoryStyles.groupKinds} role="group" aria-label={t.groups}><span className={directoryStyles.groupLabel}>{t.groups}</span>{(['hobby','brand'] as const).map(value=><button className={`${styles.chip} ${directoryStyles.chip}`} aria-pressed={type===value} key={value} onClick={()=>{if(artistRole)updateQuery('artistRole',undefined);setType(value);}}>{t[value]}</button>)}</div>
       <Menu.Root><Menu.Trigger className={`${styles.chip} ${directoryStyles.chip} ${directoryStyles.roleTrigger}`} disabled={nonFanType} data-active={activeRole?'':undefined} aria-label={`${groupApplyText(locale,'roleFilter')}: ${creatorRoleFilterLabel(activeRole??'all',locale)}`}>{activeRole?creatorRoleFilterLabel(activeRole,locale):groupApplyText(locale,'roleFilter')}<ChevronDown size={16} aria-hidden/></Menu.Trigger><Menu.Portal><Menu.Positioner align='start' sideOffset={4} className={sortStyles.positioner}><Menu.Popup className={sortStyles.popup} aria-label={groupApplyText(locale,'roleFilter')}><Menu.RadioGroup className={sortStyles.group} value={activeRole??'all'} onValueChange={value=>updateQuery('artistRole',value==='all'?undefined:String(value))}>{ROLE_FILTERS.map(role=><Menu.RadioItem key={role} className={sortStyles.item} value={role}>{creatorRoleFilterLabel(role,locale)}</Menu.RadioItem>)}</Menu.RadioGroup></Menu.Popup></Menu.Positioner></Menu.Portal></Menu.Root></div>
       </div>
       {mineRow&&<div className={styles.toolbar}><button className={styles.chip} aria-pressed={mine==="joined"} onClick={()=>setMine(mine==="joined"?undefined:"joined")}>{t.joinedPages}</button><button className={styles.chip} aria-pressed={mine==="bookmarked"} onClick={()=>setMine(mine==="bookmarked"?undefined:"bookmarked")}>{t.bookmark}</button></div>}

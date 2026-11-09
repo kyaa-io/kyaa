@@ -25,18 +25,20 @@
 .list { position: relative; height: auto; min-height: 64px; padding: var(--space-2) 0; }
 .list::after { content: ""; position: absolute; inset-inline: calc(48px + var(--space-3)) 0; bottom: 0; height: 1px; background: var(--color-line-subtle); }
 .list:hover .name { text-decoration: underline; text-underline-offset: 3px; }
-/* Directory tile (L5): square photo, name and one fact on a dark fade at the photo's lower edge. Same-row tiles share one size, so the facts line up. */
-.tile { position: relative; display: block; aspect-ratio: 1; min-width: 0; overflow: hidden; border-radius: var(--radius-control); background: var(--color-soft); color: var(--color-surface); text-decoration: none; isolation: isolate; }
+/* Directory tile (L5): square photo, name and one fact on a dark band at the photo's lower edge. Same-row tiles share one size, so the facts line up. */
+.tile { position: relative; display: flex; flex-direction: column; justify-content: space-between; gap: var(--space-1); box-sizing: border-box; padding: var(--space-1); aspect-ratio: 1; min-width: 0; overflow: hidden; border-radius: var(--radius-control); background: var(--color-soft); color: var(--color-surface); text-decoration: none; isolation: isolate; }
 .tile:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 .tileMedia { position: absolute; inset: 0; display: block; }
 .tileMedia > img { display: block; width: 100%; height: 100%; object-fit: cover; }
 .tileMedia > span[role="img"] { color: var(--color-muted); }
 .tileInitials { display: flex; align-items: flex-start; justify-content: center; width: 100%; height: 100%; padding-top: 22%; color: var(--color-muted); font-size: var(--fan-heading-size); font-weight: 700; }
-.tile::after { content: ""; position: absolute; inset: 0; z-index: 1; background: linear-gradient(to top, color-mix(in srgb, var(--color-ink) 72%, transparent), transparent 62%); pointer-events: none; }
-.tileBadge { position: absolute; inset-block-start: var(--space-1); inset-inline-start: var(--space-1); z-index: 2; display: flex; max-width: calc(100% - var(--space-2)); }
+/* Badge on top, name and fact at the bottom of one column: the column gap keeps at least 4px between them however the tag wraps. */
+.tileBadge { position: relative; z-index: 1; display: flex; flex: none; max-width: 100%; }
 /* A long translated tag wraps inside the tile instead of running past its edge. */
-.tileBadge > * { flex: 0 1 auto; height: auto; min-height: 22px; padding: 2px var(--space-1); border-radius: var(--radius-control); white-space: normal; line-height: 1.35; overflow-wrap: anywhere; }
-.tileCopy { position: absolute; inset-inline: var(--space-2); inset-block-end: var(--space-2); z-index: 2; display: grid; gap: 2px; min-width: 0; }
+.tileBadge > * { flex: 0 1 auto; height: auto; min-height: 22px; padding: 2px var(--space-1); border-radius: var(--radius-control); white-space: normal; line-height: 1.2; overflow-wrap: anywhere; }
+/* Name and fact sit on one flat dark band at the bottom edge (no gradient, DESIGN S1). */
+.tileCopy { position: relative; z-index: 1; display: grid; flex: none; gap: 0; min-width: 0; margin: auto calc(-1 * var(--space-1)) calc(-1 * var(--space-1)); padding: var(--space-1) var(--space-2) var(--space-2); background: color-mix(in srgb, var(--color-ink) 64%, transparent); }
+.tile:has(.tileBadge) .tileName { -webkit-line-clamp: 2; }
 .tileName { display: -webkit-box; overflow: hidden; -webkit-box-orient: vertical; -webkit-line-clamp: 3; font-size: var(--fan-action-label-size); font-weight: 700; line-height: 1.35; overflow-wrap: anywhere; }
-.tileMeta { min-height: 1.35em; overflow: hidden; font-size: var(--fan-badge-size); line-height: 1.35; text-overflow: ellipsis; white-space: nowrap; opacity: 0.88; }
+.tileMeta { min-height: 1.35em; font-size: var(--fan-badge-size); line-height: 1.35; overflow-wrap: anywhere; opacity: 0.88; }
 .tile:hover .tileName { text-decoration: underline; text-underline-offset: 3px; }

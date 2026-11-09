@@ -59,7 +59,7 @@ export function FanEntityCard({ href, image, name, kind, locale, memberCount, tr
   </Link>;
 }
 
-/** L5 (2026-11-09, Weverse artist picker on Mobbin): a square photo tile with the name and one fact on the photo's lower edge.
+/** L5 (2026-11-09, Weverse artist picker on Mobbin): a square photo tile with the name and one fact on a dark band at the photo's lower edge.
  * Creator photos use the reviewed square crop (`portrait`); other pages use their own image or two letters of the name. */
 function FanEntityTile({ href, image, name, kind, locale, memberCount, badge, className }: Readonly<{ href: string; image: FanPageImage; name: string; kind: FanPageKind; locale: AppLocale; memberCount?: number; badge?: ReactNode; className?: string }>) {
   const count = memberCount ? fanUiText(locale, "fanCount", [memberCount.toLocaleString(locale)]) : undefined;
