@@ -67,13 +67,13 @@ beforeEach(() => {
   window.history.replaceState({}, "", "/");
 });
 
-it("renders owned filters and stages from the minimal directory projection", async () => {
+it("renders the My favorites block and stages from the minimal directory projection", async () => {
   authenticated = true;
   getAccessToken.mockResolvedValue("token");
   vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: true, json: async () => ({ passports: [{ celebrity: { slug: "kara" }, score: ownedPassport.score }] }) }));
   render(<CelebrityDirectory celebrities={publishedCelebrityFixtures} locale="ko" />);
-  await screen.findByText("패스포트 보유");
-  expect(screen.getAllByRole("article")).toHaveLength(1);
+  await screen.findByRole("heading", { name: "내 최애" });
+  expect(screen.getAllByRole("article")).toHaveLength(3);
   expect(screen.getByRole("button", { name: /KARA · 브론즈/ })).toBeInTheDocument();
 });
 
@@ -85,7 +85,7 @@ describe("directory initial loading", () => {
     vi.unstubAllGlobals();
   });
 
-  it.each([true, false])("reveals the resolved default filter once, with owned=%s", async (ownsPassport) => {
+  it.each([true, false])("reveals the rows and the My favorites block once, with owned=%s", async (ownsPassport) => {
     authReady = false;
     let resolve!: (value: unknown) => void;
     const pending = new Promise(done => { resolve = done; });
@@ -107,8 +107,10 @@ describe("directory initial loading", () => {
     expectLoading();
     await act(async () => resolve({ passports: ownsPassport ? [ownedPassport] : [] }));
     expect(screen.queryByRole("status")).not.toBeInTheDocument();
-    expect(screen.getByRole("button", { name: ownsPassport ? "내 최애" : "전체" })).toHaveAttribute("aria-pressed", "true");
-    expect(screen.getAllByRole("article")).toHaveLength(ownsPassport ? 1 : 3);
+    expect(screen.getByRole("button", { name: "전체" })).toHaveAttribute("aria-pressed", "true");
+    expect(screen.queryByRole("button", { name: "내 최애" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "내 최애" }) !== null).toBe(ownsPassport);
+    expect(screen.getAllByRole("article")).toHaveLength(3);
   });
 
   it("reveals All once auth resolves to guest without requesting Passports", () => {
@@ -126,36 +128,30 @@ describe("directory initial loading", () => {
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
-  it("leaves loading on failure and permits retry from My favorites", async () => {
-    const fetchMock = vi.fn().mockRejectedValueOnce(new Error("offline"))
-      .mockResolvedValue({ ok: true, json: async () => ({ passports: [ownedPassport] }) });
+  it("leaves loading on failure and shows every row without a My favorites block", async () => {
+    const fetchMock = vi.fn().mockRejectedValueOnce(new Error("offline"));
     vi.stubGlobal("fetch", fetchMock);
     render(<CelebrityDirectory celebrities={publishedCelebrityFixtures} locale="ko" />);
     expect(screen.getByRole("status")).toHaveAttribute("aria-busy", "true");
     await screen.findByRole("button", { name: "전체" });
     expect(screen.getAllByRole("article")).toHaveLength(3);
-    fireEvent.click(screen.getByRole("button", { name: "내 최애" }));
-    expect(screen.getByRole("alert")).toHaveTextContent("보유한 팬 패스포트를 확인하지 못했어요.");
-    fireEvent.click(screen.getByRole("button", { name: "다시 시도" }));
-    await screen.findByText("패스포트 보유");
-    expect(screen.getAllByRole("article")).toHaveLength(1);
+    expect(screen.queryByRole("heading", { name: "내 최애" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
   });
 
-  it("keeps visible results and a manual All choice during background refresh", async () => {
+  it("keeps visible rows during a background refresh", async () => {
     let resolve!: (value: unknown) => void;
     const pending = new Promise(done => { resolve = done; });
     const fetchMock = vi.fn().mockResolvedValueOnce({ ok: true, json: async () => ({ passports: [ownedPassport] }) })
       .mockResolvedValueOnce({ ok: true, json: () => pending });
     vi.stubGlobal("fetch", fetchMock);
     render(<CelebrityDirectory celebrities={publishedCelebrityFixtures} locale="ko" />);
-    await screen.findByText("패스포트 보유");
-    fireEvent.click(screen.getByRole("button", { name: "전체" }));
+    await screen.findByRole("heading", { name: "내 최애" });
     fireEvent.focus(window);
     await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2));
     expect(screen.queryByRole("status")).not.toBeInTheDocument();
     expect(screen.getAllByRole("article")).toHaveLength(3);
     await act(async () => resolve({ passports: [ownedPassport] }));
-    expect(screen.getByRole("button", { name: "전체" })).toHaveAttribute("aria-pressed", "true");
     expect(screen.getAllByRole("article")).toHaveLength(3);
   });
 });
@@ -172,18 +168,18 @@ describe("published celebrity directory", () => {
     expect(screen.getByText(/7월 24일/)).toBeInTheDocument();
     expect(screen.getByRole("searchbox", { name: "이름으로 찾기" })).toBeInTheDocument();
     expect(screen.getByRole("combobox", { name: "정렬" })).toHaveValue("published");
-    const karaCard = screen.getByRole("heading", { name: "KARA" }).closest("article");
-    expect(karaCard?.querySelector("h2")?.compareDocumentPosition(karaCard.querySelector("img")!)).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
+    const karaCard = screen.getByText("KARA", { selector: "strong" }).closest("article");
+    expect(karaCard?.querySelector("strong")?.compareDocumentPosition(karaCard.querySelector("img")!)).toBe(Node.DOCUMENT_POSITION_PRECEDING);
     expect(within(karaCard!).getByRole("link", { name: "KARA 만나보기" })).toContainElement(karaCard!.querySelector("img"));
     expect(within(karaCard!).queryByText("KARA 만나보기")).not.toBeInTheDocument();
-    expect(within(karaCard!).getAllByRole("heading", { name: "KARA" })).toHaveLength(1);
+    expect(within(karaCard!).getAllByText("KARA", { selector: "strong" })).toHaveLength(1);
   });
 
   it("filters by name and teaches recovery from a zero-result filter", () => {
     render(<CelebrityDirectory celebrities={publishedCelebrityFixtures} locale="ko" />);
     fireEvent.change(screen.getByRole("searchbox", { name: "이름으로 찾기" }), { target: { value: "Elina" } });
     expect(screen.getAllByRole("article")).toHaveLength(1);
-    expect(screen.getByRole("heading", { name: "Elina" })).toBeInTheDocument();
+    expect(screen.getByText("Elina", { selector: "strong" })).toBeInTheDocument();
     fireEvent.change(screen.getByRole("searchbox", { name: "이름으로 찾기" }), { target: { value: "없는 셀럽" } });
     expect(screen.getByRole("status")).toHaveTextContent("검색 결과가 없어요.");
     fireEvent.click(screen.getByRole("button", { name: "필터 초기화" }));
@@ -197,33 +193,23 @@ describe("published celebrity directory", () => {
     expect(publishedCelebrityFixtures[0]?.slug).toBe("kara");
   });
 
-  it("uses the authenticated Passport projection for filtering and ownership badges", async () => {
-    authenticated = true;
-    getAccessToken.mockResolvedValue("token");
-    vi.stubGlobal("fetch", vi.fn().mockResolvedValue({
-      ok: true,
-      json: async () => ({ passports: [ownedPassport] }),
-    }));
-    render(<CelebrityDirectory celebrities={publishedCelebrityFixtures} locale="ko" />);
-    await waitFor(() => expect(screen.getByText("패스포트 보유")).toBeInTheDocument());
-    const filter = screen.getByRole("button", { name: "내 최애" });
-    expect(filter).toBeEnabled();
-    expect(filter).toHaveAttribute("aria-pressed", "true");
-    fireEvent.click(filter);
-    expect(screen.getAllByRole("article")).toHaveLength(1);
-    expect(screen.getByRole("heading", { name: "KARA" })).toBeInTheDocument();
-    expect(fetch).toHaveBeenCalledWith("/api/passports?locale=ko&tierStages=1&view=directory", expect.objectContaining({ headers: { Authorization: "Bearer token" } }));
-  });
-
-  it("ranks owned creators first in All and exposes their real stage outside the card link", async () => {
+  it("puts creators with a Passport in a My favorites block above the full list", async () => {
     authenticated = true;
     getAccessToken.mockResolvedValue("token");
     const stageProgress = { policyVersion: 2, current: { key: "silver-1", tier: "Silver", subdivision: 1, rank: 2, minimumScore: 15 }, next: { key: "silver-2", tier: "Silver", subdivision: 2, rank: 3, minimumScore: 30 }, remaining: 10, progressPercent: 33, unit: "points" as const };
     vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: true, json: async () => ({ passports: [{ ...ownedPassport, score: { level: "Silver", points: 20, stageProgress } }] }) }));
-    render(<CelebrityDirectory celebrities={publishedCelebrityFixtures} locale="ko" initialOwnedOnly={false} />);
-    const trigger = await screen.findByRole("button", { name: /KARA.*20점/ });
+    render(<CelebrityDirectory celebrities={publishedCelebrityFixtures} locale="ko" />);
+    const mine = await screen.findByRole("heading", { name: "내 최애" });
+    expect(screen.queryByRole("button", { name: "내 최애" })).not.toBeInTheDocument();
+    const block = mine.closest("section")!;
+    expect(within(block).getAllByRole("article")).toHaveLength(1);
+    expect(within(block).getByText("KARA", { selector: "strong" })).toBeInTheDocument();
+    const rest = screen.getByRole("heading", { name: "전체" }).closest("section")!;
+    expect(within(rest).getAllByRole("article")).toHaveLength(2);
+    expect(within(rest).getByText("총 2개")).toBeInTheDocument();
+    expect(fetch).toHaveBeenCalledWith("/api/passports?locale=ko&tierStages=1&view=directory", expect.objectContaining({ headers: { Authorization: "Bearer token" } }));
+    const trigger = screen.getByRole("button", { name: /KARA.*20점/ });
     expect(trigger.closest("a")).toBeNull();
-    expect(screen.getAllByRole("article")[0]).toHaveTextContent("KARA");
     expect(screen.getAllByRole("article")[0]).toHaveAttribute("data-passport-owned", "true");
     expect(screen.getAllByRole("article")[1]).not.toHaveAttribute("data-passport-owned");
     fireEvent.click(trigger);
@@ -232,36 +218,36 @@ describe("published celebrity directory", () => {
     fireEvent.keyDown(document, { key: "Escape" });
     expect(screen.queryByRole("tooltip")).not.toBeInTheDocument();
     fireEvent.change(screen.getByRole("combobox", { name: "정렬" }), { target: { value: "name-asc" } });
-    expect(screen.getAllByRole("article")[0]).toHaveTextContent("Changha");
+    expect(screen.getAllByRole("article")[1]).toHaveTextContent("Changha");
     expect(publishedCelebrityFixtures[0].slug).toBe("kara");
   });
 
-  it("defaults to All when the signed-in user has no Passport", async () => {
+  it("shows only the full list when the signed-in user has no Passport", async () => {
     authenticated = true;
     getAccessToken.mockResolvedValue("token");
     vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: true, json: async () => ({ passports: [] }) }));
     render(<CelebrityDirectory celebrities={publishedCelebrityFixtures} locale="ko" />);
-    await waitFor(() => expect(screen.getByRole("button", { name: "내 최애" })).toBeEnabled());
+    await screen.findByRole("button", { name: "전체" });
     expect(screen.getByRole("button", { name: "전체" })).toHaveAttribute("aria-pressed", "true");
     expect(screen.getAllByRole("article")).toHaveLength(3);
-    expect(screen.queryByText("패스포트 보유")).not.toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "내 최애" })).not.toBeInTheDocument();
   });
 
-  it("preserves an explicit All choice when Passport data arrives", async () => {
+  it("shows My favorites only after Passport data arrives and keeps every row", async () => {
     authenticated = true;
     getAccessToken.mockResolvedValue("token");
     let resolve!: (value: unknown) => void;
     const pending = new Promise((done) => { resolve = done; });
     vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: true, json: () => pending }));
-    render(<CelebrityDirectory celebrities={publishedCelebrityFixtures} locale="ko" initialOwnedOnly={false} />);
+    render(<CelebrityDirectory celebrities={publishedCelebrityFixtures} locale="ko" />);
     expect(screen.queryByRole("button", { name: "전체" })).not.toBeInTheDocument();
     await act(async () => resolve({ passports: [ownedPassport] }));
-    await screen.findByText("패스포트 보유");
+    await screen.findByRole("heading", { name: "내 최애" });
     expect(screen.getByRole("button", { name: "전체" })).toHaveAttribute("aria-pressed", "true");
     expect(screen.getAllByRole("article")).toHaveLength(3);
   });
 
-  it("keeps the Passport filter unavailable when the API DTO is malformed", async () => {
+  it("shows no My favorites block when the API DTO is malformed", async () => {
     authenticated = true;
     getAccessToken.mockResolvedValue("token");
     vi.stubGlobal("fetch", vi.fn().mockResolvedValue({
@@ -270,21 +256,19 @@ describe("published celebrity directory", () => {
         passports: [{ ...ownedPassport, score: undefined }],
       }),
     }));
-
     render(<CelebrityDirectory celebrities={publishedCelebrityFixtures} locale="ko" />);
-
-    await waitFor(() => expect(screen.getByRole("button", { name: "내 최애" })).toBeEnabled());
-    fireEvent.click(screen.getByRole("button", { name: "내 최애" }));
-    expect(await screen.findByRole("alert")).toHaveTextContent("보유한 팬 패스포트를 확인하지 못했어요.");
+    await screen.findByRole("button", { name: "전체" });
+    expect(screen.queryByRole("heading", { name: "내 최애" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+    expect(screen.getAllByRole("article")).toHaveLength(3);
   });
 
-  it("sends guests to login with the selected filter and search context", () => {
+  it("gives guests no My favorites block and no My favorites chip", () => {
     render(<CelebrityDirectory celebrities={publishedCelebrityFixtures} locale="ko" />);
-    fireEvent.change(screen.getByRole("searchbox"), { target: { value: "KARA" } });
-    fireEvent.click(screen.getByRole("button", { name: "내 최애" }));
-    const login = new URL(routerPush.mock.calls[0]![0], "https://byus.test");
-    expect(login.pathname).toBe("/login");
-    expect(login.searchParams.get("returnTo")).toBe("/celebrities?locale=ko&owned=1&q=KARA&sort=published");
+    expect(screen.queryByRole("heading", { name: "내 최애" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "내 최애" })).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "전체" })).toHaveAttribute("aria-pressed", "true");
+    expect(routerPush).not.toHaveBeenCalled();
   });
 
   it("teaches the user what happens next when no published rows exist", () => {
@@ -303,11 +287,11 @@ describe("published celebrity directory", () => {
   });
 });
 
-it("uses one whole-card link and complete introductory sentence", () => {
+it("uses one whole-row link and complete introductory sentence", () => {
   render(<CelebrityDirectory celebrities={publishedCelebrityFixtures} locale="ko"/>);
   const link = screen.getByRole("link", { name:"KARA 만나보기" });
   expect(link.querySelector("img")).not.toBeNull();
-  expect(link.querySelector("h2")).toHaveTextContent("KARA");
+  expect(link.querySelector("strong")).toHaveTextContent("KARA");
   expect(link.querySelector("a")).toBeNull();
   expect(directoryIntroduction("엘리나는 노래와 뷰티를 공유합니다. 함께한 순간을 기록하세요.", "ko")).toBe("엘리나는 노래와 뷰티를 공유합니다.");
   expect(directoryIntroduction("A complete introduction without punctuation", "en")).toBe("A complete introduction without punctuation");
@@ -321,38 +305,40 @@ it("keeps identical card treatment in default and sorted discovery", () => {
   expect(container.querySelectorAll('[data-supporting="true"]')).toHaveLength(0);
 });
 
- it("restores the owned filter after login once Passports load", async () => {
-   authenticated = true;
-   getAccessToken.mockResolvedValue("token");
-   vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ok:true,json:async()=>({passports:[ownedPassport]})}));
-   render(<CelebrityDirectory celebrities={publishedCelebrityFixtures} locale="ko" initialOwnedOnly initialSort="name-asc" />);
-   await waitFor(()=>expect(screen.getAllByRole("article")).toHaveLength(1));
-   expect(screen.getByRole("button",{name:"내 최애"})).toHaveAttribute("aria-pressed", "true");
-   expect(screen.getByRole("heading",{name:"KARA"})).toBeInTheDocument();
- });
+it("keeps My favorites above the list when sorted by name", async () => {
+  authenticated = true;
+  getAccessToken.mockResolvedValue("token");
+  vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ok:true,json:async()=>({passports:[ownedPassport]})}));
+  render(<CelebrityDirectory celebrities={publishedCelebrityFixtures} locale="ko" initialSort="name-asc" />);
+  await screen.findByRole("heading", { name: "내 최애" });
+  expect(screen.getAllByRole("article")).toHaveLength(3);
+  expect(screen.getAllByRole("article")[0]).toHaveAttribute("data-passport-owned", "true");
+  expect(screen.getAllByRole("article")[0]).toHaveTextContent("KARA");
+});
 
- it("clears prior owner badges immediately and ignores late responses after switching accounts", async () => {
-   authenticated = true; ownerId = "owner-a";
-   getAccessToken.mockResolvedValue("token");
-   let resolveOld!: (value: unknown) => void;
-   const late = new Promise(resolve => { resolveOld = resolve; });
-   const fetchMock = vi.fn().mockResolvedValueOnce({ok:true,json:async()=>({passports:[ownedPassport]})})
-     .mockResolvedValueOnce({ok:true,json:()=>late})
-     .mockResolvedValue({ok:true,json:async()=>({passports:[]})});
-   vi.stubGlobal("fetch",fetchMock);
-   const view=render(<CelebrityDirectory celebrities={publishedCelebrityFixtures} locale="ko" />);
-   await screen.findByText("패스포트 보유");
-   fireEvent.focus(window);
-   await waitFor(()=>expect(fetchMock).toHaveBeenCalledTimes(2));
-   ownerId="owner-b";
-   view.rerender(<CelebrityDirectory celebrities={publishedCelebrityFixtures} locale="ko" />);
-   expect(screen.queryByText("패스포트 보유")).not.toBeInTheDocument();
-   await waitFor(()=>expect(fetchMock).toHaveBeenCalledTimes(3));
-   await act(async()=>resolveOld({passports:[ownedPassport]}));
-   expect(screen.queryByText("패스포트 보유")).not.toBeInTheDocument();
- });
+it("clears prior owner rows immediately and ignores late responses after switching accounts", async () => {
+  authenticated = true; ownerId = "owner-a";
+  getAccessToken.mockResolvedValue("token");
+  let resolveOld!: (value: unknown) => void;
+  const late = new Promise(resolve => { resolveOld = resolve; });
+  const fetchMock = vi.fn().mockResolvedValueOnce({ok:true,json:async()=>({passports:[ownedPassport]})})
+    .mockResolvedValueOnce({ok:true,json:()=>late})
+    .mockResolvedValue({ok:true,json:async()=>({passports:[]})});
+  vi.stubGlobal("fetch",fetchMock);
+  const view=render(<CelebrityDirectory celebrities={publishedCelebrityFixtures} locale="ko" />);
+  await screen.findByRole("heading", { name: "내 최애" });
+  fireEvent.focus(window);
+  await waitFor(()=>expect(fetchMock).toHaveBeenCalledTimes(2));
+  ownerId="owner-b";
+  view.rerender(<CelebrityDirectory celebrities={publishedCelebrityFixtures} locale="ko" />);
+  expect(screen.queryByRole("heading", { name: "내 최애" })).not.toBeInTheDocument();
+  await waitFor(()=>expect(fetchMock).toHaveBeenCalledTimes(3));
+  await act(async()=>resolveOld({passports:[ownedPassport]}));
+  expect(screen.queryByRole("heading", { name: "내 최애" })).not.toBeInTheDocument();
+});
 
-it("switches a role to the exclusive personal mode and preserves search on guest login", () => {
+
+it("shows the empty state with a reset for a name search and restores every row", () => {
   authenticated = false;
   getAccessToken.mockReset();
   vi.unstubAllGlobals();
@@ -360,25 +346,22 @@ it("switches a role to the exclusive personal mode and preserves search on guest
   expect(screen.getAllByRole("article")).toHaveLength(2);
   fireEvent.change(screen.getByRole("searchbox"), { target: { value: "Elina" } });
   expect(screen.getAllByRole("article")).toHaveLength(1);
-  fireEvent.click(screen.getByRole("button", { name: "My favorites" }));
-  const href = new URL(routerPush.mock.calls[0]![0], "https://byus.test");
-  expect(href.searchParams.get("returnTo")).toBe("/celebrities?locale=en&owned=1&q=Elina&sort=published");
   fireEvent.change(screen.getByRole("searchbox"), { target: { value: "KARA" } });
   expect(screen.queryByRole("article")).not.toBeInTheDocument();
   fireEvent.click(screen.getByRole("button", { name: "Clear filters" }));
   expect(screen.getAllByRole("article")).toHaveLength(3);
   expect(screen.getByRole("button", { name: "All" })).toHaveAttribute("aria-pressed", "true");
 });
-it("normalizes legacy owned plus role state to personal mode and makes role selection exclusive", async () => {
+
+it("hides My favorites once a role or name filter is active and keeps the role in the URL", async () => {
   authenticated = true;
   getAccessToken.mockResolvedValue("token");
   vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: true, json: async () => ({ passports: [ownedPassport] }) }));
-  render(<CelebrityDirectory celebrities={publishedCelebrityFixtures} locale="ko" initialRole="creator" initialOwnedOnly />);
-  await waitFor(() => expect(screen.getByRole("button", { name: "내 최애" })).toHaveAttribute("aria-pressed", "true"));
-  await waitFor(() => expect(screen.getAllByRole("article")).toHaveLength(1));
+  render(<CelebrityDirectory celebrities={publishedCelebrityFixtures} locale="ko" />);
+  await screen.findByRole("heading", { name: "내 최애" });
   fireEvent.click(screen.getByRole("button", { name: "크리에이터" }));
+  expect(screen.queryByRole("heading", { name: "내 최애" })).not.toBeInTheDocument();
   expect(screen.getAllByRole("article")).toHaveLength(2);
-  expect(screen.getByRole("button", { name: "내 최애" })).toHaveAttribute("aria-pressed", "false");
   expect(new URL(window.location.href).searchParams.get("owned")).toBeNull();
   expect(new URL(window.location.href).searchParams.get("role")).toBe("creator");
 });
@@ -401,7 +384,7 @@ it("clears deep-linked filters from the URL so reloading cannot restore an old r
   getAccessToken.mockResolvedValue("token");
   vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: true, json: async () => ({ passports: [ownedPassport] }) }));
   window.history.replaceState({}, "", "/celebrities?locale=ko&role=show_host&q=missing&owned=1&sort=name-asc");
-  render(<CelebrityDirectory celebrities={publishedCelebrityFixtures} locale="ko" initialRole="show_host" initialQuery="missing" initialOwnedOnly initialSort="name-asc" />);
+  render(<CelebrityDirectory celebrities={publishedCelebrityFixtures} locale="ko" initialRole="show_host" initialQuery="missing" initialSort="name-asc" />);
   fireEvent.click(await screen.findByRole("button", { name: "필터 초기화" }));
   expect(screen.getAllByRole("article")).toHaveLength(3);
   expect(screen.getByRole("searchbox")).toHaveValue("");
@@ -410,7 +393,7 @@ it("clears deep-linked filters from the URL so reloading cannot restore an old r
   window.history.replaceState({}, "", "/");
 });
 
-it("places My favorites before All and the five public roles", () => {
+it("places the five public roles after All and never offers My favorites as a filter", () => {
   const roles = (["idol", "singer", "actor", "creator", "show_host"] as const).map((role, index) => ({
     ...publishedCelebrityFixtures[0],
     slug: `role-${role}`,
@@ -421,30 +404,10 @@ it("places My favorites before All and the five public roles", () => {
   render(<CelebrityDirectory celebrities={roles} locale="en" />);
   const group = screen.getByRole("group", { name: "Browse by category" });
   expect(within(group).getAllByRole("button").map((button) => button.textContent)).toEqual([
-    "My favorites", "All", "Idols", "Singers", "Actors", "Creators", "Show hosts",
+    "All", "Idols", "Singers", "Actors", "Creators", "Show hosts",
   ]);
 });
 
-it("does not expose public results while a personal deep link is loading", async () => {
-  authenticated = true;
-  getAccessToken.mockResolvedValue("token");
-  vi.stubGlobal("fetch", vi.fn(() => new Promise(() => undefined)));
-  render(<CelebrityDirectory celebrities={publishedCelebrityFixtures} locale="ko" initialOwnedOnly />);
-  expect(screen.getByText("보유한 팬 패스포트를 확인하고 있어요.")).toBeInTheDocument();
-  expect(screen.queryByRole("article")).not.toBeInTheDocument();
-  expect(screen.queryByText("총 0개")).not.toBeInTheDocument();
-});
-
-it("offers all profiles when the authenticated owner has no Passports", async () => {
-  authenticated = true;
-  getAccessToken.mockResolvedValue("token");
-  vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: true, json: async () => ({ passports: [] }) }));
-  render(<CelebrityDirectory celebrities={publishedCelebrityFixtures} locale="ko" initialOwnedOnly />);
-  const showAll = await screen.findByRole("button", { name: "전체 보기" });
-  expect(screen.getByRole("status")).toHaveTextContent("아직 보유한 팬 패스포트가 없어요.");
-  fireEvent.click(showAll);
-  expect(screen.getAllByRole("article")).toHaveLength(3);
-});
 
 it("offers a favorite request at discovery and preserves an unmatched name", async () => {
   render(<CelebrityDirectory celebrities={publishedCelebrityFixtures} locale="ko" initialQuery=" 새 최애 & 이름 " />);
@@ -474,13 +437,13 @@ it("discovers brands separately from people without losing search or locale", ()
 
 it("marks only the Wave listing as private and explains check-in access", () => {
   const wave = { ...publishedCelebrityFixtures[1], slug: "kyaa-wave-fanpage", name: "Kyaa Wave", summary: "Event", upcomingLive: null };
-  render(<CelebrityDirectory celebrities={[wave, publishedCelebrityFixtures[0]]} locale="ko" initialOwnedOnly={false} />);
-  const card = screen.getByRole("heading", { name: "Kyaa Wave" }).closest("article")!;
+  render(<CelebrityDirectory celebrities={[wave, publishedCelebrityFixtures[0]]} locale="ko" />);
+  const card = screen.getByText("Kyaa Wave", { selector: "strong" }).closest("article")!;
   expect(within(card).getByText("Private")).toBeInTheDocument();
   expect(within(card).getByRole("img", { name: "Dragon Hill Lodge" })).toHaveAttribute("src", expect.stringContaining("dragon-hill-lodge-exterior.jpg"));
-  expect(card.querySelector("[data-portrait]")).toBeNull();
+  expect(card.querySelector("[data-creator-avatar]")).toBeNull();
   expect(within(card).getByText("체크인한 참가자 전용", { selector: "p" })).toBeInTheDocument();
-  expect(within(screen.getByRole("heading", { name: "KARA" }).closest("article")!).queryByText("Private")).toBeNull();
+  expect(within(screen.getByText("KARA", { selector: "strong" }).closest("article")!).queryByText("Private")).toBeNull();
 });
 
 // Keep these domain-request tests independent of the separately tested translation transport.
