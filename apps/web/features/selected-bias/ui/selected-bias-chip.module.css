@@ -81,3 +81,5 @@
 @media (min-width: 64rem) and (max-width: 74.999rem) { .chip[data-selected-bias] .pickLabel { display: none; } }
 /* L10: with the header's marks one size (20/24), the ♥ number centers on its mark like `P 106` instead of sitting on the 14px baseline at the top. */
 [data-header-status] .heartsValue { align-items: center; }
+/* Review H1: below 768px the dot before ♥ keeps the same 2px sides as the dot before P, so no wide blank follows the favorite's name. */
+@media (max-width: 47.999rem) { [data-header-status] .hearts::before { margin: 0 calc(var(--space-1) / 2); } }

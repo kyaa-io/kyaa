@@ -116,6 +116,8 @@
 .creatorShortcuts .shortcutStamp{display:block;width:40px;height:40px;background:var(--color-accent);-webkit-mask:url(/images/stamps/ink-v1/daily-checkin.webp) center/contain no-repeat;mask:url(/images/stamps/ink-v1/daily-checkin.webp) center/contain no-repeat}
 /* Both shortcut cells hold a 40px mark box, so the 24px book and the 40px stamp leave their labels on one line. */
 .creatorShortcuts a>span:first-child{display:grid;place-items:center;height:40px}
+/* L9 review M4: the passport cell matches the stamp — the same 40px round in the point color (1px line, no fill) with the book in the point color. */
+.creatorShortcuts a>span:first-child:has(>svg){box-sizing:border-box;width:40px;justify-self:center;border:1px solid var(--color-accent);border-radius:50%}.creatorShortcuts a>span:first-child>svg{width:20px;height:20px;color:var(--color-accent)}
 @media(max-width:1023px){.creatorHomeLayout{grid-template-columns:minmax(0,1fr)}.creatorHomeAside{display:none}.creatorHomeMain{gap:24px}.creatorHomeMain>.creatorShortcuts{display:grid}.creatorShortcuts a[data-has-leading=true]{padding:16px}.applicationFooter .actions>button{flex:1;min-width:0;width:auto}}
 
 .asidePassportBook{width:100%;justify-self:stretch}@media(max-width:1023px){.pageNavigation>.tabs{grid-template-columns:repeat(4,minmax(min-content,1fr))}}

@@ -100,7 +100,6 @@ export function HomeEntryCards({ locale, celebrities, elinaRaffles, elinaGuide }
       {elinaGuide !== undefined ? elinaGuide : <ElinaGuideCard locale={locale} elina={elina} raffles={elinaRaffles} />}
       <BannerSlot slot="home_between_events" locale={locale} />
       <Link className={styles.fanmeeting} href={`/pages/us-fanmeetings?locale=${locale}`} aria-label={t.fanmeeting}>
-        <span className={styles.flag} aria-hidden="true"><span>{Array.from({ length: 20 }, (_, i) => <span key={i}>☆</span>)}</span></span>
         <span className={styles.fanmeetingCopy}><strong>{t.fanmeeting}</strong><span>{t.explore}</span></span>
         <span className={styles.arrow}><ArrowUpRight size={16} aria-hidden="true" /></span>
       </Link>
