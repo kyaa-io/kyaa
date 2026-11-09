@@ -3,7 +3,6 @@ import { useEffect, useMemo, useState } from "react";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import { FanSkeletonRows } from "@/components/fan-ui/fan-skeleton";
 import type { AppLocale } from "@/i18n/locales";
-import { exactTimeLabel } from "@/i18n/relative-time";
 import { fanProfileText } from "@/features/fan-profile/fan-profile-copy";
 import { sortedFansSchema, type SortedFanMode } from "@/server/group-members/sorted-domain";
 import { GroupPersonHearts, GroupPersonRow, GroupPersonTier } from "./group-person-row";
@@ -34,7 +33,7 @@ export function SortedFans({ pageId, mode, search, locale }: { pageId: string; m
       : shown.length ? <ul className={styles.list} aria-busy={resource.loading || undefined}>{shown.map((row, index) => <GroupPersonRow
         key={index} nickname={row.nickname} avatarUrl={row.avatarUrl}
         badge={row.tier ? <GroupPersonTier tier={row.tier} locale={locale}/> : undefined}
-        meta={<>{fanProfileText(locale, "rowStamps", [row.stamps.toLocaleString(locale)])}{row.hearts > 0 && row.first_jjinfan_at && <> · <time dateTime={row.first_jjinfan_at} title={exactTimeLabel(row.first_jjinfan_at, locale)}>{copy.since.replace("{0}", fanListTime(row.first_jjinfan_at, locale))}</time></> }</>}
+        meta={<>{fanProfileText(locale, "rowStamps", [row.stamps.toLocaleString(locale)])}{row.hearts > 0 && row.first_jjinfan_at && <> · <time dateTime={row.first_jjinfan_at}>{copy.since.replace("{0}", fanListTime(row.first_jjinfan_at, locale))}</time></> }</>}
         score={<GroupPersonHearts hearts={row.hearts} locale={locale}/>}
       />)}</ul>
       : resource.loading ? <FanSkeletonRows rows={6} variant="member" className={styles.skeleton}/>

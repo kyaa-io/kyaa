@@ -2,19 +2,27 @@ import { describe, expect, it } from "vitest";
 import { APP_LOCALES } from "@/i18n/locales";
 import { fanListTime } from "./fan-list-time";
 import { fanListCopy } from "./fan-list-copy";
-const now = Date.parse("2026-11-09T12:00:00Z"), hour = 3_600_000;
+const now = Date.parse("2026-11-10T12:00:00Z");
 describe("fan list title time", () => {
-  it("uses hours before 24h, days before 7d, then Korean-time M. D.", () => {
-    expect(fanListTime(new Date(now - 0.5 * hour).toISOString(), "ko", now)).toBe("0시간 전");
-    expect(fanListTime(new Date(now - 23 * hour).toISOString(), "ko", now)).toBe("23시간 전");
-    expect(fanListTime(new Date(now - 24 * hour).toISOString(), "ko", now)).toBe("1일 전");
-    expect(fanListTime(new Date(now - 6 * 24 * hour).toISOString(), "ko", now)).toBe("6일 전");
-    expect(fanListTime(new Date(now - 7 * 24 * hour).toISOString(), "ko", now)).toBe("11. 2.");
-    expect(fanListTime("2026-10-01T23:00:00Z", "ko", now)).toBe("10. 2.");
+  it("uses the feed date format and omits this year's year", () => {
+    expect(fanListTime("2026-11-08T04:47:59Z", "ko", now)).toBe("11. 08. 13:47");
+    expect(fanListTime("2026-11-10T11:59:00Z", "ko", now)).toBe("11. 10. 20:59");
+    expect(fanListTime("2026-10-01T23:00:00Z", "ko", now)).toBe("10. 02. 08:00");
   });
-  it.each(APP_LOCALES)("supplies all new labels and relative time in %s", locale => {
+  it("includes the year for dates outside the current Seoul year", () => {
+    expect(fanListTime("2025-11-08T04:47:00Z", "ko", now)).toBe("2025. 11. 08. 13:47");
+    expect(fanListTime("2027-11-08T04:47:00Z", "ko", now)).toBe("2027. 11. 08. 13:47");
+    const newYear = Date.parse("2026-12-31T15:00:00Z");
+    expect(fanListTime("2026-12-31T15:00:00Z", "ko", newYear)).toBe("01. 01. 00:00");
+    expect(fanListTime("2026-12-31T14:59:00Z", "ko", newYear)).toBe("2026. 12. 31. 23:59");
+  });
+  it("does not render invalid dates", () => {
+    expect(fanListTime("invalid", "ko", now)).toBe("");
+    expect(fanListTime("2026-11-08T04:47:00Z", "ko", NaN)).toBe("");
+  });
+  it.each(APP_LOCALES)("keeps localized labels and the same DESIGN date format in %s", locale => {
     expect(Object.values(fanListCopy(locale))).toHaveLength(3);
     expect(fanListCopy(locale).since).toContain("{0}");
-    expect(fanListTime(new Date(now - 2 * hour).toISOString(), locale, now)).toContain("2");
+    expect(fanListTime("2026-11-08T04:47:00Z", locale, now)).toBe("11. 08. 13:47");
   });
 });

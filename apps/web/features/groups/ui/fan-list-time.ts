@@ -1,13 +1,11 @@
 import type { AppLocale } from "@/i18n/locales";
-import { formatRelativeTime } from "@/i18n/relative-time";
+import { localScheduleTime } from "@/features/schedules/domain/schedule-time";
 
-/** This list uses hours (including 0), days, then M. D.; exact time is available on the time element. */
-export function fanListTime(value: string, locale: AppLocale, now = Date.now()): string {
-  const date = new Date(value), elapsed = now - date.getTime();
-  if (!Number.isFinite(date.getTime())) return "";
-  if (elapsed >= -60_000 && elapsed < 3_600_000) return new Intl.RelativeTimeFormat(locale, { numeric: "always" }).format(-0, "hour");
-  const relative = formatRelativeTime(value, locale, now);
-  if (relative !== null) return relative;
-  const parts = new Intl.DateTimeFormat("en-US", { timeZone: "Asia/Seoul", month: "numeric", day: "numeric" }).formatToParts(date);
-  return `${parts.find(p => p.type === "month")!.value}. ${parts.find(p => p.type === "day")!.value}.`;
+/** DESIGN feed date format, using the shared absolute-time conversion in Seoul. */
+export function fanListTime(value: string, _locale: AppLocale, now = Date.now()): string {
+  if (!Number.isFinite(Date.parse(value)) || !Number.isFinite(now)) return "";
+  const at = localScheduleTime(value, "Asia/Seoul");
+  const currentYear = localScheduleTime(new Date(now).toISOString(), "Asia/Seoul").slice(0, 4);
+  const year = at.slice(0, 4);
+  return `${year === currentYear ? "" : `${year}. `}${at.slice(5, 7)}. ${at.slice(8, 10)}. ${at.slice(11, 16)}`;
 }

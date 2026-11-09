@@ -3,6 +3,7 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { APP_LOCALES } from "@/i18n/locales";
 import { groupMembersCopy } from "./group-members-copy";
 import { fanListCopy } from "./fan-list-copy";
+import { fanListTime } from "./fan-list-time";
 import { GroupMembers } from "./group-members";
 
 vi.mock("@/features/group-social/profile-modal", () => ({ ProfileModal: ({ person, onClose }: { person: { profileId: string; nickname: string }; onClose: () => void }) => <div role="dialog" aria-label={person.nickname} data-profile={person.profileId}><button onClick={onClose}>닫기</button></div> }));
@@ -57,7 +58,7 @@ describe("sorted fan rows", () => {
     render(<GroupMembers pageId={page} locale="ko" member/>);
     expect(screen.getByText(fan.nickname)).toBeVisible(); expect(screen.getByLabelText("하트 2")).toBeVisible();
     expect(screen.getByRole("listitem")).toHaveTextContent("누적 스탬프 0");
-    expect(screen.getByText("찐팬 된 시각 10. 1.")).toHaveAttribute("datetime", fan.first_jjinfan_at);
+    expect(screen.getByText(`찐팬 된 시각 ${fanListTime(fan.first_jjinfan_at, "ko")}`)).toHaveAttribute("datetime", fan.first_jjinfan_at);
     expect(screen.queryByRole("button", { name: new RegExp(fan.nickname) })).toBeNull();
     expect(screen.queryByRole("dialog")).toBeNull();
   });
