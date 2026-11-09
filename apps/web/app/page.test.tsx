@@ -88,13 +88,28 @@ describe("Home server content isolation", () => {
     expect(await props(failed).queries.homeSlots).toEqual({ status: "fulfilled", value: {} });
   });
 
+  it("returns the home shell and ready queries while the gallery is still pending", async () => {
+    const empty = { items: [], nextCursor: null };
+    let resolveGallery!: (value: typeof empty) => void;
+    repositories.homeGallery.mockReturnValue(new Promise(resolve => { resolveGallery = resolve; }));
+    let result: Awaited<ReturnType<typeof HomePage>> | undefined;
+    const rendering = HomePage({ searchParams: Promise.resolve({ locale: "ko" }) }).then(value => { result = value; });
+    try {
+      await vi.waitFor(() => expect(result).toBeDefined());
+      expect(await props(result!).queries.homeNotices).toEqual({ status: "fulfilled", value: empty });
+      expect(await props(result!).queries.homeBanners).toEqual({ status: "fulfilled", value: [] });
+    } finally {
+      resolveGallery(empty);
+      await rendering;
+    }
+  });
+
   it("reads up to 12 gallery photos with the page and settles to rejected when the read fails", async () => {
     const page = { items: [{ id: "p1" }], nextCursor: null };
     repositories.homeGallery.mockResolvedValue(page);
     const result = await HomePage({ searchParams: Promise.resolve({ locale: "ko" }) });
     expect(repositories.homeGallery).toHaveBeenCalledWith("ko", { limit: 12 });
     expect(await props(result).queries.homeGallery).toEqual({ status: "fulfilled", value: page });
-    expect(props(result).galleryReservation).toEqual(page.items);
     expect(repositories.homeGallery).toHaveBeenCalledTimes(1);
     repositories.homeGallery.mockRejectedValue(new Error("gallery unavailable"));
     const failed = await HomePage({ searchParams: Promise.resolve({}) });

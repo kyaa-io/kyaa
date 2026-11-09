@@ -4,7 +4,6 @@ import type { RaffleList } from "@/features/benefit/domain/raffle";
 import type { AppLocale } from "@/i18n/locales";
 import type { BannerSlotMap, HomeBanner } from "../features/home/domain/home-banner";
 import type { Route } from "next";
-import type { HomeGalleryPhoto } from "@/features/home/domain/home-gallery";
 import type { HomeQueries } from "./home-query-stream";
 import type { LiveEventResponse } from "../features/live/domain/live-event";
 import type { PublishedCelebrity, PublishedCelebrityLive } from "../server/content/content-domain";
@@ -170,15 +169,15 @@ function HomeUpcoming({ featuredLives, locale, contentErrors = {} }: GuestHomePr
           </section>
 </>);
 }
-type StreamingHomeProps = Pick<GuestHomeProps, "locale"> & { queries: HomeQueries; galleryReservation?: readonly HomeGalleryPhoto[] };
+type StreamingHomeProps = Pick<GuestHomeProps, "locale"> & { queries: HomeQueries };
 
-export function StreamingGuestHome({ queries, galleryReservation, ...props }: StreamingHomeProps) {
+export function StreamingGuestHome({ queries, ...props }: StreamingHomeProps) {
   const fallbackProps = { ...props, celebrities: [], featuredLives: [] };
   return <HomeLayout locale={props.locale}
     hero={<Suspense fallback={<HomeHero {...fallbackProps} homeBanners={[gggiHomeBanner(props.locale)]} elinaGuide={null} />}><StreamHomeHero {...props} queries={queries} /></Suspense>}
     thinBanner={<Suspense fallback={null}><StreamHomeThinBanner {...props} queries={queries} /></Suspense>}
     notices={<Suspense fallback={<HomeNoticesPlaceholder locale={props.locale} />}><StreamHomeNotices {...props} queries={queries} /></Suspense>}
-    gallery={<Suspense fallback={<HomeGalleryPlaceholder locale={props.locale} expectedPhotos={galleryReservation} />}><StreamHomeGallery {...props} queries={queries} /></Suspense>}
+    gallery={<Suspense fallback={<HomeGalleryPlaceholder locale={props.locale} />}><StreamHomeGallery {...props} queries={queries} /></Suspense>}
     upcoming={<Suspense fallback={<PersonalizationLoading quiet locale={props.locale} />}><StreamHomeUpcoming {...props} queries={queries} /></Suspense>} />;
 }
 
@@ -200,6 +199,14 @@ function StreamHomeNotices({ queries, locale }: Pick<StreamingHomeProps, "querie
 /** 정상 0건만 빈 상태 글을 보이고, 실패는 같은 자리표시를 글 없이 둔다(로딩도 같다). */
 function StreamHomeGallery({ queries, locale }: Pick<StreamingHomeProps, "queries" | "locale">) {
   const photos = use(queries.homeGallery);
+  // Resolve dimensions only inside the gallery boundary. Until then its outer
+  // fallback uses the existing fixed reservation; Shorts cannot block the shell.
+  return <Suspense fallback={<HomeGalleryPlaceholder locale={locale} expectedPhotos={photos.status === "fulfilled" ? photos.value.items : undefined} state={photos.status === "fulfilled" ? "loading" : "error"} />}>
+    <StreamHomeGalleryContent queries={queries} locale={locale} photos={photos} />
+  </Suspense>;
+}
+
+function StreamHomeGalleryContent({ queries, locale, photos }: Pick<StreamingHomeProps, "queries" | "locale"> & { photos: Awaited<HomeQueries["homeGallery"]> }) {
   const shorts = use(queries.homeShorts);
   return <HomeGallery locale={locale} photos={photos.status === "fulfilled" ? photos.value.items : "error"} hasMore={photos.status === "fulfilled" && photos.value.nextCursor !== null}
     shorts={shorts.status === "fulfilled" ? shorts.value : "error"} />;

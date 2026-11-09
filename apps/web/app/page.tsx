@@ -45,9 +45,6 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
     homeShorts: settleHomeQuery(measureHomeQuery("homeShorts", () => galleryRepository.listShorts(toContentLocale(locale), { limit: 6 }))),
     elinaRaffles: settleHomeQuery(measureHomeQuery("elinaRaffles", () => createRaffleDependencies().list({ celebritySlug: "elina", locale: toContentLocale(locale), now: new Date() }))),
   };
-  // Resolve the shared gallery read once so the streamed shell reserves the exact
-  // photo ratios, even if Shorts is still pending. No extra query or curated IDs.
-  const gallery = await queries.homeGallery;
   return <>
     <script
       id="byus-home-structured-data"
@@ -56,7 +53,6 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
     />
     <StreamingGuestHome
       queries={queries}
-      galleryReservation={gallery.status === "fulfilled" ? gallery.value.items : undefined}
       locale={locale}
     />
   </>;
