@@ -43,7 +43,7 @@
 .errorBox { display: grid; gap: var(--space-3); justify-items: start; }
 .errorBox p { margin: 0; font-size: var(--fan-description-size); }
 .skeleton { display: grid; gap: var(--space-4); }
-.skeleton i { display: block; height: 220px; border-radius: var(--radius-collection); background: var(--color-soft); }
+.skeleton i { display: block; height: 220px; border-radius: var(--radius-collection); background: var(--color-accent-soft); }
 @media (min-width: 768px) {
   .head h2 { font-size: var(--fan-heading-size-wide); }
 }

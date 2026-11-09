@@ -6,10 +6,10 @@
   border: 1px solid var(--color-line); border-radius: var(--radius-collection); box-shadow: 0 var(--space-2) var(--space-6) var(--color-line); overflow: hidden;
 }
 .header { display: flex; align-items: center; gap: var(--space-2); flex: none; min-height: 56px; box-sizing: border-box; padding: var(--space-1) var(--space-1) var(--space-1) var(--space-3); border-bottom: 1px solid var(--color-line-subtle); }
-.avatar { display: flex; align-items: center; justify-content: center; flex: none; width: 32px; height: 32px; border-radius: 50%; object-fit: contain; background: var(--color-soft); color: var(--color-muted); }
+.avatar { display: flex; align-items: center; justify-content: center; flex: none; width: 32px; height: 32px; border: 1px solid var(--color-line); border-radius: 50%; object-fit: contain; background: var(--color-surface); color: var(--color-muted); box-sizing: border-box; }
 .name { flex: 1; min-width: 0; margin: 0; padding: 0; font-size: var(--fan-item-title-size); font-weight: var(--fan-item-title-weight); line-height: 1.4; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .icon { display: flex; align-items: center; justify-content: center; flex: none; width: 44px; height: 44px; padding: 0; border: 0; border-radius: var(--radius-control); background: transparent; color: var(--color-ink); cursor: pointer; }
-.icon:hover { background: var(--color-soft); }
+.icon:hover { background: var(--color-accent-soft); }
 .icon:focus-visible, .compose textarea:focus-visible { outline: 2px solid var(--color-focus); outline-offset: -2px; }
 .body { display: flex; flex-direction: column; flex: 1; min-height: 0; }
 .state, .empty { display: grid; flex: 1; align-content: center; justify-items: center; gap: var(--space-3); padding: var(--space-4); text-align: center; font-size: var(--fan-description-size); color: var(--color-muted); }

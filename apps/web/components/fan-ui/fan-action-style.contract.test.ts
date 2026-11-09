@@ -121,10 +121,11 @@ describe("FanAction icon layout contract", () => {
   it("keeps every disabled rule in the screens opacity-only and moves no button on hover", () => {
     expect(readFileSync(resolve(process.cwd(), "app/globals.css"), "utf8")).not.toMatch(/--fan-action-disabled-/);
     expect(actionCss).not.toMatch(/:hover[^{]*\{[^}]*translateY/);
+    expect([...actionCss.matchAll(/(\.\w+:hover:not\([^)]*\))/g)].every((m) => m[1].includes('[aria-disabled="true"]'))).toBe(true);
   });
 
   it("never paints grey: hover and press use the pink tint", () => {
     expect(actionCss).not.toMatch(/var\(--color-soft\)|var\(--color-line-subtle\)/);
-    expect(actionCss).toMatch(/\.neutral:hover:not\(:disabled\),\s*\.text:hover:not\(:disabled\) \{\s*background: var\(--color-accent-soft\);/);
+    expect(actionCss).toMatch(/\.neutral:hover:not\(:disabled, \[aria-disabled="true"\]\),\s*\.text:hover:not\(:disabled, \[aria-disabled="true"\]\) \{\s*background: var\(--color-accent-soft\);/);
   });
 });

@@ -202,22 +202,22 @@
 }
 
 @media (hover: hover) and (pointer: fine) {
-  .primary:hover:not(:disabled) {
+  .primary:hover:not(:disabled, [aria-disabled="true"]) {
     filter: brightness(0.92);
   }
 
-  .neutral:hover:not(:disabled),
-  .text:hover:not(:disabled) {
+  .neutral:hover:not(:disabled, [aria-disabled="true"]),
+  .text:hover:not(:disabled, [aria-disabled="true"]) {
     background: var(--color-accent-soft);
   }
 
-  .service:hover:not(:disabled) {
+  .service:hover:not(:disabled, [aria-disabled="true"]) {
     background:
       linear-gradient(var(--color-accent-soft), var(--color-accent-soft)) padding-box,
       linear-gradient(125deg, var(--color-accent), var(--color-accent), var(--color-accent)) border-box;
   }
 
-  .passport:hover:not(:disabled) {
+  .passport:hover:not(:disabled, [aria-disabled="true"]) {
     background:
       linear-gradient(var(--color-accent-soft), var(--color-accent-soft)) padding-box,
       linear-gradient(125deg, var(--color-accent), var(--color-accent), var(--color-accent)) border-box;

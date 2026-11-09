@@ -8,7 +8,7 @@
   place-items: center;
   border: 1px solid oklch(90% 0 0);
   border-radius: 50%;
-  background: oklch(97.5% 0 0);
+  background: var(--color-accent-soft);
 }
 
 .avatar img {
@@ -17,14 +17,14 @@
   object-fit: cover;
 }
 
+/* 로딩 자리: 핑크 틴트 면이 불투명도로만 숨 쉰다(회색 shimmer 금지, U-1 2026-11-09). */
 .placeholder {
-  background: linear-gradient(110deg, oklch(97.5% 0 0) 20%, oklch(93% 0 0) 45%, oklch(97.5% 0 0) 70%);
-  background-size: 220% 100%;
+  background: var(--color-accent-soft);
   animation: avatar-loading 1.2s ease-in-out infinite;
 }
 
 @keyframes avatar-loading {
-  to { background-position: -120% 0; }
+  50% { opacity: .5; }
 }
 
 @media (prefers-reduced-motion: reduce) {
