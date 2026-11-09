@@ -1,6 +1,7 @@
 import "@testing-library/jest-dom/vitest";
+import { useState } from "react";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { MyLogout } from "./my-logout";
 
 const { logout, replace } = vi.hoisted(() => ({ logout: vi.fn(), replace: vi.fn() }));
@@ -14,6 +15,7 @@ beforeEach(() => {
   logout.mockReset().mockResolvedValue(undefined);
   replace.mockReset();
 });
+afterEach(() => vi.restoreAllMocks());
 
 describe("MY logout", () => {
   it("asks once before logging out, with focus on cancel", async () => {
@@ -55,5 +57,26 @@ describe("MY logout", () => {
     fireEvent.click(screen.getByRole("button", { name: "ログアウト" }));
     expect(await screen.findByRole("dialog", { name: "ログアウト" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "キャンセル" })).toBeInTheDocument();
+  });
+
+  it("does not call history.back when logging out unmounts MY before /login arrives", async () => {
+    window.history.replaceState(null, "", "/my");
+    const back = vi.spyOn(window.history, "back");
+    // Logout flips auth, which removes the whole MY (and the dialog) before the router has moved.
+    replace.mockImplementation((href: string) => { setTimeout(() => window.history.pushState(null, "", href.split("?")[0]), 30); });
+    function Host() {
+      const [authenticated, setAuthenticated] = useState(true);
+      logout.mockImplementation(async () => { setAuthenticated(false); });
+      return authenticated ? <MyLogout locale="ko" /> : null;
+    }
+    render(<Host />);
+    fireEvent.click(screen.getByRole("button", { name: "로그아웃" }));
+    const dialog = await screen.findByRole("dialog", { name: "로그아웃" });
+    fireEvent.click(dialog.querySelectorAll("button")[1]!);
+
+    await waitFor(() => expect(window.location.pathname).toBe("/login"));
+    await new Promise((resolve) => setTimeout(resolve, 60));
+    expect(back).toHaveBeenCalledTimes(0);
+    expect(window.location.pathname).toBe("/login");
   });
 });
