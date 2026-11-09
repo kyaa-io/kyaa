@@ -8,6 +8,8 @@ import { CAPSULE_DRAW_OPEN, canDrawCount, isRarePrize, pickCampaign, probability
 const auth = vi.hoisted(() => ({ ready: true, authenticated: true, user: { id: "owner-a" }, getAccessToken: vi.fn(async () => "token-a") }));
 const session = vi.hoisted(() => ({ ready: true, ownerId: "owner-a", generation: 0 }));
 const canvas = vi.hoisted(() => ({ mounted: 0 }));
+const gpu = vi.hoisted(() => ({ ok: true, checks: 0 }));
+vi.mock("./gpu", () => ({ canRunCapsuleMachine: async () => { gpu.checks++; return gpu.ok; } }));
 vi.mock("@/features/auth/client/cognito-auth", () => ({ useByUsAuth: () => auth }));
 vi.mock("@/components/byus-session-provider", () => ({ useByUsSession: () => session }));
 // The three.js chunk never loads in jsdom: the dynamic canvas stands in as a marker (no engine = the still-image path).
@@ -36,7 +38,7 @@ function setReducedMotion(reduced: boolean) {
 }
 class VisibleObserver { constructor(private cb: IntersectionObserverCallback) {} observe(target: Element) { this.cb([{ isIntersecting: true, target } as IntersectionObserverEntry], this as unknown as IntersectionObserver); } disconnect() {} unobserve() {} takeRecords() { return []; } }
 
-beforeEach(() => { auth.authenticated = true; canvas.mounted = 0; setReducedMotion(false); vi.stubGlobal("IntersectionObserver", VisibleObserver); });
+beforeEach(() => { auth.authenticated = true; canvas.mounted = 0; gpu.ok = true; gpu.checks = 0; setReducedMotion(false); vi.stubGlobal("IntersectionObserver", VisibleObserver); });
 
 it("ships as 준비 중: the machine loads, both draw buttons stay disabled, and no draw can be sent", async () => {
   expect(CAPSULE_DRAW_OPEN).toBe(false);
@@ -44,7 +46,7 @@ it("ships as 준비 중: the machine loads, both draw buttons stay disabled, and
   render(<CapsuleMachineBlock locale="ko" guest={false} />);
   await screen.findByRole("heading", { name: campaign.name });
   expect(screen.getByText("준비 중")).toBeInTheDocument();
-  expect(screen.getByTestId("machine-canvas")).toBeInTheDocument();
+  expect(await screen.findByTestId("machine-canvas")).toBeInTheDocument();
   const one = screen.getByRole("button", { name: /1회 뽑기/ }), ten = screen.getByRole("button", { name: /10회 뽑기/ });
   expect(one).toBeDisabled(); expect(ten).toBeDisabled();
   fireEvent.click(one); fireEvent.click(ten);
@@ -57,7 +59,7 @@ it("shows every prize and the blank with the server's exact probability", async 
   render(<CapsuleMachineBlock locale="ko" guest={false} />);
   const list = await screen.findByRole("list", { name: "경품" });
   const rows = within(list).getAllByRole("listitem");
-  expect(rows.map((row) => row.textContent)).toEqual(["포토카드5%", "키링10%", "꽝꽝85%"]) // the blank tile repeats 꽝 as its (aria-hidden) art;
+  expect(rows.map((row) => row.textContent)).toEqual(["포토카드5%", "키링10%", "꽝85%"]);
   expect(screen.getByText("22개")).toBeInTheDocument(); // 남은 경품 = stock sum
 });
 
@@ -70,12 +72,47 @@ it("keeps the frame and locks my tickets for a guest without reading the wallet"
   expect(screen.getByRole("button", { name: /1회 뽑기/ })).toBeDisabled();
 });
 
-it("keeps the machine and the prize slots when no capsule is running", async () => {
+it("collapses to one empty line when no capsule is public, without loading the GPU check or three.js", async () => {
   serve(undefined, []);
   render(<CapsuleMachineBlock locale="ko" guest={false} />);
-  expect(await screen.findByRole("heading", { name: "캡슐 럭키드로우" })).toBeInTheDocument();
+  expect(await screen.findByRole("status")).toHaveTextContent("진행 중인 캡슐이 없어요");
+  expect(screen.queryByRole("list", { name: "경품" })).toBeNull();
+  expect(screen.queryByRole("button", { name: /뽑기/ })).toBeNull();
+  expect(gpu.checks).toBe(0); expect(canvas.mounted).toBe(0);
+});
+
+it("shows one error line with 다시 시도 when the capsule list fails, and recovers", async () => {
+  let fail = true;
+  vi.stubGlobal("fetch", vi.fn(async (url: string) => {
+    if (url.startsWith("/api/groups/capsules")) return fail ? Response.json({ error: { code: "GROUP_WALLET_UNAVAILABLE" } }, { status: 503 }) : Response.json({ items: [campaign] });
+    return Response.json(wallet);
+  }));
+  render(<CapsuleMachineBlock locale="ko" guest={false} />);
+  expect(await screen.findByRole("alert")).toHaveTextContent("캡슐 뽑기를 불러오지 못했어요");
+  fail = false;
+  fireEvent.click(screen.getByRole("button", { name: "다시 시도" }));
+  expect(await screen.findByRole("heading", { name: campaign.name })).toBeInTheDocument();
+});
+
+it("reserves the 남은 경품 row and four prize slots while loading, so the block does not grow when data arrives", async () => {
+  let release!: () => void;
+  const gate = new Promise<void>((resolve) => { release = resolve; });
+  vi.stubGlobal("fetch", vi.fn(async (url: string) => { if (url.startsWith("/api/groups/capsules")) { await gate; return Response.json({ items: [campaign] }); } return Response.json(wallet); }));
+  render(<CapsuleMachineBlock locale="ko" guest={false} />);
+  expect(await screen.findByText("남은 경품")).toBeInTheDocument();
   expect(screen.getByRole("list", { name: "경품" }).querySelectorAll("li")).toHaveLength(4);
-  expect(screen.getByRole("button", { name: /10회 뽑기/ })).toBeDisabled();
+  release();
+  expect(await screen.findByText("22개")).toBeInTheDocument();
+});
+
+it("on a tier 0 GPU keeps the still render and never loads the three.js chunk", async () => {
+  gpu.ok = false;
+  serve();
+  render(<CapsuleMachineBlock locale="ko" guest={false} />);
+  await screen.findByRole("heading", { name: campaign.name });
+  await waitFor(() => expect(gpu.checks).toBe(1));
+  expect(canvas.mounted).toBe(0);
+  expect(screen.queryByTestId("machine-canvas")).toBeNull();
 });
 
 it("without graphics, a draw still ends in the result card with the server's result", async () => {

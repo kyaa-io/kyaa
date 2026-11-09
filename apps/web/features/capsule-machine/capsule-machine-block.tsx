@@ -6,6 +6,8 @@ import { FanAction } from "@/components/fan-ui/fan-action";
 import { FanTag } from "@/components/fan-ui/fan-tag";
 import { FanHeading } from "@/components/fan-ui/fan-heading";
 import { FanLockedValue } from "@/components/fan-ui/fan-locked-value";
+import { FanState } from "@/components/fan-ui/fan-state";
+import { groupsCopy } from "@/features/groups/ui/copy";
 import { GroupRequestError, useGroupResource } from "@/features/groups/ui/use-group-resource";
 import { capsuleCopy } from "@/features/group-capsule/copy";
 import { capsuleResultSchema, capsulesSchema } from "@/features/group-capsule/domain";
@@ -18,7 +20,8 @@ import type { CapsuleEngine } from "./machine-art";
 import { CapsuleResultCard } from "./capsule-result";
 import styles from "./capsule-machine.module.css";
 
-// dev notes 1: three.js loads only once the block is near the screen; the server HTML holds the same-size still render.
+// dev notes 1: three.js loads only once the block is near the screen and the GPU check (its own small chunk) passed;
+// the server HTML holds the same-size still render. A tier 0 device downloads detect-gpu only, never three.
 const MachineCanvas = dynamic(() => import("./machine-canvas"), { ssr: false });
 
 const parseList = (value: unknown) => capsulesSchema.parse(value);
@@ -51,6 +54,7 @@ export function CapsuleMachineBlock({ locale, guest, drawOpen = CAPSULE_DRAW_OPE
   const stageRef = useRef<HTMLDivElement>(null);
   const [near, setNear] = useState(false), [onScreen, setOnScreen] = useState(false);
   const [engine, setEngine] = useState<CapsuleEngine | null>(null);
+  const [gpu, setGpu] = useState<"unknown" | "ok">("unknown");
   const [unavailable, setUnavailable] = useState(false), [lost, setLost] = useState(false), [canvasKey, setCanvasKey] = useState(0);
   const [busy, setBusy] = useState(false), [playing, setPlaying] = useState(false);
   const [shown, setShown] = useState<Shown | null>(null), [error, setError] = useState<DrawError | null>(null);
@@ -65,6 +69,14 @@ export function CapsuleMachineBlock({ locale, guest, drawOpen = CAPSULE_DRAW_OPE
     preload.observe(stage); visible.observe(stage);
     return () => { preload.disconnect(); visible.disconnect(); };
   }, []);
+
+  const wantsMachine = near && !reduced && !unavailable && Boolean(campaign);
+  useEffect(() => {
+    if (!wantsMachine || gpu === "ok") return;
+    let cancelled = false;
+    void import("./gpu").then((module) => module.canRunCapsuleMachine()).then((ok) => { if (!cancelled) { if (ok) setGpu("ok"); else setUnavailable(true); } }, () => { if (!cancelled) setUnavailable(true); });
+    return () => { cancelled = true; };
+  }, [wantsMachine, gpu]);
 
   const live = Boolean(engine) && !reduced && !lost;
   const handleEngine = useCallback((next: CapsuleEngine | null) => setEngine(next), []);
@@ -97,7 +109,11 @@ export function CapsuleMachineBlock({ locale, guest, drawOpen = CAPSULE_DRAW_OPE
   const state = drawOpen && campaign?.status === "active" ? "open" : "soon";
   const topLevel = shown ? Math.max(...shown.outcomes.map((o) => o.level)) as 0 | 1 | 2 : null;
   const still = shown && !live && shown.result.count === 1 && topLevel !== null ? RESULT_STILL[topLevel] : STILL;
-  const showCanvas = near && !reduced && !unavailable;
+  const showCanvas = wantsMachine && gpu === "ok";
+
+  // H1: no public capsule (or the list failed) — one line in the section frame (D2), not an empty machine.
+  if (list.error) return <FanState inline compact kind="error" className={styles.state} title={c.text("loadError")} actions={<FanAction variant="text" onClick={list.retry}>{groupsCopy(locale).retry}</FanAction>} />;
+  if (list.data && !campaign) return <FanState inline compact kind="empty" className={styles.state} title={base.empty} />;
   const title = campaign?.name ?? base.title;
 
   return <section className={styles.block} aria-labelledby="capsule-machine-title" data-lucky-module="" data-lucky-state={state} data-capsule-graphics={live ? "3d" : "still"}>
@@ -118,12 +134,12 @@ export function CapsuleMachineBlock({ locale, guest, drawOpen = CAPSULE_DRAW_OPE
             <span className={styles.prizeArt}><img src={prize.imageUrl ?? "/images/capsule-machine/capsule-0-open.webp"} alt="" width={56} height={56} /></span>
             <strong>{prize.name}</strong><span>{probabilityLabel(prize.weight, campaign.weightTotal, locale)}</span>
           </li>)}
-          <li className={`${styles.prize} ${styles.blank}`} data-row="capsule-prize"><span className={styles.prizeArt} aria-hidden="true">{base.blank}</span><strong>{base.blank}</strong><span>{probabilityLabel(campaign.blankWeight, campaign.weightTotal, locale)}</span></li>
-        </> : [0, 1, 2, 3].map((slot) => <li key={slot} className={`${styles.prize} ${styles.prizeSlot}`} data-row="capsule-prize" aria-hidden="true" />)}
+          <li className={`${styles.prize} ${styles.blank}`} data-row="capsule-prize"><span className={styles.prizeArt}><img src="/images/capsule-machine/capsule-6-open.webp" alt="" width={56} height={56} /></span><strong>{base.blank}</strong><span>{probabilityLabel(campaign.blankWeight, campaign.weightTotal, locale)}</span></li>
+        </> : [0, 1, 2, 3].map((slot) => <li key={slot} className={`${styles.prize} ${styles.prizeSlot}`} data-row="capsule-prize" aria-hidden="true"><span className={styles.prizeArt} /></li>)}
       </ul>
       <dl className={styles.facts}>
         <div><dt>{c.text("perDraw")}</dt><dd>{c.fill("tickets", { n: 1 })}</dd></div>
-        {campaign ? <div><dt>{c.text("remaining")}</dt><dd>{c.fill("prizes", { n: remainingPrizes(campaign) })}</dd></div> : null}
+        <div><dt>{c.text("remaining")}</dt><dd>{campaign ? c.fill("prizes", { n: remainingPrizes(campaign) }) : null}</dd></div>
         <div><dt>{c.text("myTickets")}</dt><dd className={styles.mine}>{guest ? <FanLockedValue locale={locale} /> : tickets === null ? null : c.fill("tickets", { n: tickets })}</dd></div>
       </dl>
       {/* One emphasised action per screen (DESIGN.md): while 준비 중 the wallet keeps it, so both draws are secondary. */}

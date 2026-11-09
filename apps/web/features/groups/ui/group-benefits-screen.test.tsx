@@ -47,6 +47,7 @@ beforeEach(()=>{homeComparable=true;creatorRaffles=allRaffles();homeRows=[{rank:
   if(/^\/api\/celebrities\/[^/]+\/raffles/.test(url))return Response.json({raffles:creatorRaffles});
   if(url.startsWith('/api/rankings/home'))return Response.json({day:'2026-11-08',computedAt:'2026-11-08T00:00:00Z',comparable:homeComparable,weekGainDays:null,rows:homeRows});
   if(url.startsWith('/api/benefits?celebrity='))return Response.json({benefits:[]});
+  if(url.startsWith('/api/groups/capsules'))return Response.json({items:[],nextCursor:null}); // B2 capsule machine: none public
   if(/^\/api\/me\/passports\/[^/]+\/roadmap/.test(url))return Response.json(roadmapBody);
   if(url.startsWith('/api/rankings/creators'))return Response.json({period:'week',periodStart:'2026-11-02',computedAt:'2026-11-06T00:00:00Z',rows:rankRows(rankCount)});
   if(url.includes('/api/public/celebrities')&&failCreators)return Response.json({error:{code:'UNAVAILABLE'}},{status:503});

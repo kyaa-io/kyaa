@@ -1,21 +1,20 @@
 "use client";
 import { useEffect, useRef } from "react";
 import { createCapsuleEngine, type CapsuleEngine } from "./machine-art";
-import { canRunCapsuleMachine } from "./gpu";
 import styles from "./capsule-machine.module.css";
 
 export type MachineCanvasProps = {
   /** The stage is on screen (IntersectionObserver). With a hidden tab this stops the render loop (dev notes 7). */
   visible: boolean;
   onEngine: (engine: CapsuleEngine | null) => void;
-  /** WebGL 2 missing or GPU tier 0: the still image stays (dev notes 4·5). */
+  /** The scene could not be built (the block already ran the WebGL 2 / GPU tier check before loading this chunk): the still image stays. */
   onUnavailable: () => void;
   /** iOS context loss: the still image comes back; restore rebuilds the scene through a remount (dev notes 6). */
   onContextLost: () => void;
   onContextRestored: () => void;
 };
 
-/** Loaded only through next/dynamic(ssr:false) once the 럭키드로우 block is near the screen; three.js lives in this chunk. */
+/** Loaded only through next/dynamic(ssr:false) once the 럭키드로우 block is near the screen and the GPU check passed; three.js lives in this chunk. */
 export default function MachineCanvas({ visible, onEngine, onUnavailable, onContextLost, onContextRestored }: MachineCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const engineRef = useRef<CapsuleEngine | null>(null);
@@ -40,8 +39,6 @@ export default function MachineCanvas({ visible, onEngine, onUnavailable, onCont
     canvas.addEventListener("webglcontextrestored", handleRestored);
     document.addEventListener("visibilitychange", handleVisibility);
     void (async () => {
-      if (!(await canRunCapsuleMachine())) { if (!cancelled) callbacks.current.onUnavailable(); return; }
-      if (cancelled) return;
       let engine: CapsuleEngine;
       try { engine = await createCapsuleEngine(canvas, { wordmarkUrl: "/images/guest-home/kyaa-wordmark.svg" }); }
       catch { if (!cancelled) callbacks.current.onUnavailable(); return; }

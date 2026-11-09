@@ -6,10 +6,11 @@ vi.mock("./machine-art", () => ({ createCapsuleEngine: engine.create }));
 
 import MachineCanvas from "./machine-canvas";
 
-it("keeps the still image when WebGL 2 is missing and never builds the scene", async () => {
+it("keeps the still image when the scene cannot be built", async () => {
+  engine.create.mockRejectedValueOnce(new Error("Error creating WebGL context."));
   const onUnavailable = vi.fn(), onEngine = vi.fn();
   render(<MachineCanvas visible onEngine={onEngine} onUnavailable={onUnavailable} onContextLost={vi.fn()} onContextRestored={vi.fn()} />);
-  await waitFor(() => expect(onUnavailable).toHaveBeenCalledTimes(1)); // jsdom has no webgl2 context
-  expect(engine.create).not.toHaveBeenCalled();
+  await waitFor(() => expect(onUnavailable).toHaveBeenCalledTimes(1));
   expect(onEngine).not.toHaveBeenCalled();
 });
+
