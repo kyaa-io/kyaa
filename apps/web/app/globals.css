@@ -28,6 +28,8 @@
   --color-accent-soft: #fff0f6;
   --color-accent-line: #f4c3d7;
   --color-accent-ink: #ad1457;
+  /* GGGI 캠페인 배너 아트 색(4차 배너 원본, UI 강조색이 아님). */
+  --color-campaign-art: #073d33;
   --color-page-accent: var(--color-accent);
   --color-coin: #ffc83d;
   --color-coin-ink: #4a3500;
