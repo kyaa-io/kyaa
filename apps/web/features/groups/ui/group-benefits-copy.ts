@@ -8,13 +8,13 @@ const labels:Record<AppLocale,readonly [string,string,string,string,string,strin
  ja:['推し活','ラッキードロー','ポイントイベント','詳細を見る','公開された項目はまだありません。','参加履歴','履歴'],
  'zh-Hans':['追星','幸运抽奖','积分活动','查看详情','暂无已发布内容。','参与记录','记录'],
  'zh-Hant':['追星','幸運抽獎','點數活動','查看詳情','尚無已發布內容。','參與紀錄','紀錄'],
- es:['Actividades de fans','Sorteos','Eventos de puntos','Ver detalles','Aún no hay publicaciones.','Historial de participación','Historial'],
- id:['Aktivitas penggemar','Undian berhadiah','Acara poin','Lihat detail','Belum ada yang dipublikasikan.','Riwayat partisipasi','Riwayat'],
- vi:['Hoạt động người hâm mộ','Rút thăm may mắn','Sự kiện tích điểm','Xem chi tiết','Chưa có nội dung được công bố.','Lịch sử tham gia','Lịch sử'],
- th:['กิจกรรมแฟนคลับ','ลุ้นรางวัล','กิจกรรมสะสมแต้ม','ดูรายละเอียด','ยังไม่มีรายการเผยแพร่','ประวัติการเข้าร่วม','ประวัติ'],
- pt:['Atividades de fãs','Sorteios','Eventos de pontos','Ver detalhes','Ainda não há publicações.','Histórico de participação','Histórico'],
- fr:['Activités de fans','Tirages au sort','Événements à points','Voir les détails','Aucune publication pour le moment.','Historique de participation','Historique'],
- ru:['Фан-активности','Розыгрыши','События с баллами','Подробнее','Публикаций пока нет.','История участия','История']
+ es:['Stan','Sorteos','Eventos de puntos','Ver detalles','Aún no hay publicaciones.','Historial de participación','Historial'],
+ id:['Stan','Undian berhadiah','Acara poin','Lihat detail','Belum ada yang dipublikasikan.','Riwayat partisipasi','Riwayat'],
+ vi:['Stan','Rút thăm may mắn','Sự kiện tích điểm','Xem chi tiết','Chưa có nội dung được công bố.','Lịch sử tham gia','Lịch sử'],
+ th:['แฟนคลับ','ลุ้นรางวัล','กิจกรรมสะสมแต้ม','ดูรายละเอียด','ยังไม่มีรายการเผยแพร่','ประวัติการเข้าร่วม','ประวัติ'],
+ pt:['Stan','Sorteios','Eventos de pontos','Ver detalhes','Ainda não há publicações.','Histórico de participação','Histórico'],
+ fr:['Stan','Tirages au sort','Événements à points','Voir les détails','Aucune publication pour le moment.','Historique de participation','Historique'],
+ ru:['Стэн','Розыгрыши','События с баллами','Подробнее','Публикаций пока нет.','История участия','История']
 };
 export function groupBenefitsCopy(locale:AppLocale){const [,lucky,events,details,empty,history,historyLink]=labels[locale];return {title:stan[locale],lucky,events,details,empty,history,historyLink,listing:eventLists[locale],soon:comingSoon[locale]};}
 

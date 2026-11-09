@@ -1,8 +1,6 @@
 // F1~F12 기능 계약(실제 로컬 앱·로컬 DB 호출). 원문: board/reports/doc-261107-2-review-rules.md 4절.
 // 로그인이 필요한 부분은 Q_STATE 가 유효할 때만 돌고, 아니면 건너뛴다고 이유를 출력한다(통과로 세지 않는다).
 // 건너뛴 시험은 보고에 "못 봄"으로 적는다.
-import { readFileSync, existsSync } from "node:fs";
-import { resolve } from "node:path";
 import type { Page } from "@playwright/test";
 import { test, expect, sql, loggedInPage, mappedUrl, SKIP_AUTH, WRITE, ROUTES } from "./q-fixtures";
 import { APP_LOCALES } from "../i18n/locales";
@@ -279,9 +277,9 @@ test("F11: 팬페이지 소개가 수집 원문과 같고, 다른 언어에서�
   await expect(head.getByRole("button", { name: "翻訳を表示" }), "다시 번역으로 돌아갈 수 있다").toBeVisible();
 });
 
-test("F12: 12개 언어 전환 뒤 덕질 라벨이 영어는 Stan, 나머지는 기존 번역을 유지하고 새로고침 뒤에도 남는다", async ({ page }) => {
-  const projectName = test.info().project.name; // 390 은 아래 탭, 1440 은 위 탭이라 라벨이 다르다. 화면 폭마다 따로 기록한다.
-  const snapshotPath = resolve(__dirname, `f12-stan-labels.${projectName}.snapshot.json`);
+test("F12: 12개 언어 전환 뒤 덕질 탭 이름이 한 단어로 정해진 값이고 새로고침 뒤에도 남는다", async ({ page }) => {
+  // B17: 영어 Stan 유지, es·pt·fr·id·vi 는 Stan, ru 는 Стэн, th 는 แฟนคลับ, ko·ja·zh 는 기존 단어.
+  const expected: Record<string, string> = { ko: "덕질", en: "Stan", ja: "推し活", "zh-Hans": "追星", "zh-Hant": "追星", es: "Stan", id: "Stan", vi: "Stan", th: "แฟนคลับ", pt: "Stan", fr: "Stan", ru: "Стэн" };
   const labelOf = async (locale: string) => {
     await page.goto(`/?locale=${locale}`, { waitUntil: "domcontentloaded" }); await settle(page, 1500);
     // 덕질 탭 자체를 읽는다(바닥글의 /benefits 링크가 DOM 에서 먼저 나와 390 기준선이 바닥글 문구로 잡혔던 결함).
@@ -290,16 +288,7 @@ test("F12: 12개 언어 전환 뒤 덕질 라벨이 영어는 Stan, 나머지는
   };
   const labels: Record<string, string> = {};
   for (const l of APP_LOCALES) labels[l] = await labelOf(l);
-  if (process.env.Q_UPDATE_SNAPSHOT === "1" || !existsSync(snapshotPath)) {
-    const { writeFileSync } = await import("node:fs");
-    writeFileSync(snapshotPath, JSON.stringify(labels, null, 1) + "\n");
-    console.log("F12 스냅샷을 새로 썼다: 구현 전 화면의 덕질 라벨. 영어 Stan 변경 전에만 갱신한다.");
-  }
-  const base = JSON.parse(readFileSync(snapshotPath, "utf8")) as Record<string, string>;
-  expect(labels.en, "영어는 Stan").toBe("Stan");
-  expect(labels.ko, "한국어는 덕질").toBe("덕질");
-  const changed = APP_LOCALES.filter((l) => l !== "en" && labels[l] !== base[l]);
-  expect(changed.map((l) => `${l}: ${base[l]} → ${labels[l]}`), "영어 외 언어는 기존 번역을 유지").toEqual([]);
+  expect(labels, "12개 언어 탭 이름").toEqual(expected);
   await page.goto("/?locale=ja", { waitUntil: "domcontentloaded" }); await settle(page, 1000);
   await page.reload(); await settle(page, 1000);
   expect(await page.evaluate(() => document.documentElement.lang)).toBe("ja");
