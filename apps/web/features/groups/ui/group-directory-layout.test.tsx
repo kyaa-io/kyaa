@@ -75,11 +75,19 @@ it('offers the fan page application for an empty result, with no favorite reques
  expect(screen.getByRole('dialog')).toBeInTheDocument();
  expect(state.dialog.at(-1)).toMatchObject({initialKind:'fan',initialName:'Ru'});
 });
-it('keeps the hobby and brand explanation behind a help button beside the page application',()=>{
- render(<GroupDirectory locale='ko'/>);
- expect(screen.queryByText(/^취미: /)).toBeNull();expect(screen.queryByText(/^브랜드: /)).toBeNull();
- const help=screen.getByRole('button',{name:'자세히 취미·브랜드 페이지'});
- expect(help.closest('h3')?.textContent).toContain('취미·브랜드 페이지');
+it('offers two application rows without a question, a heading or an explanation',()=>{
+ const {container}=render(<GroupDirectory locale='ko'/>);
+ const area=container.querySelector('[class*=discoveryCreation]') as HTMLElement;
+ const rows=within(area).getAllByRole('link');
+ expect(rows.map(row=>row.textContent)).toEqual(['팬페이지 개설 신청','취미·브랜드 페이지 개설 신청']);
+ expect(rows[0]).toHaveAttribute('href','/pages/groups/apply?locale=ko&kind=fan');
+ expect(rows[1]).toHaveAttribute('href','/pages/groups/apply?locale=ko');
+ expect(area.textContent).toBe('팬페이지 개설 신청취미·브랜드 페이지 개설 신청');
+ expect(within(area).queryByRole('heading')).toBeNull();
+ expect(screen.queryByRole('button',{name:/^자세히/})).toBeNull();
+ expect(screen.queryByText(/만들고 싶나요/)).toBeNull();
+ fireEvent.click(rows[1]);
+ expect(state.dialog.at(-1)).toMatchObject({initialKind:'hobby'});
 });
 it('keeps the guest side area and its login paths',()=>{
  state.authenticated=false;render(<GroupDirectory locale='ko'/>);

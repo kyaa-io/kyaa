@@ -13,7 +13,6 @@
 @media (min-width: 600px) { .list { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
 @media (min-width: 768px) { .list { grid-template-columns: repeat(5, minmax(0, 1fr)); } }
 @media (min-width: 1024px) { .list { grid-template-columns: repeat(auto-fill, minmax(148px, 1fr)); } }
-.helpTitle { display: flex; align-items: center; gap: var(--space-1); }
 /* L4 (2026-11-09, Weverse artist search on Mobbin): search and sort share one 44px row, every filter sits in one 36px chip row that scrolls sideways.
    The role chips moved into one menu chip at the end of that row, like Weverse's trailing chevron chip. 1280+ puts the three on one row. */
 .controls { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: var(--space-2); align-items: center; margin-bottom: var(--space-4); }
