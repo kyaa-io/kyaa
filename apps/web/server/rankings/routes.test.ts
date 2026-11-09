@@ -140,8 +140,8 @@ describe("rankings routes", () => {
   it("answers the home fan ranking by day with named values and movement, and no member id", async () => {
     const { handlers, rpc } = make(() => ({
       ...head({ metric: "hearts" }),
-      rows: [{ rank: 1, score: 7, hearts: 7, points: null, nickname: "A", characterId: "star-pink", tier: "Gold", isMe: true, delta: 2, weekGain: 1, subjectId: ME }, { rank: 2, score: 3, hearts: 3, points: null, nickname: "B", characterId: "x", tier: null, isMe: false, delta: null, weekGain: null }],
-      me: { rank: 1, score: 7, hearts: 7, points: null, inTop: true, delta: 2, subjectId: ME },
+      rows: [{ rank: 1, score: 7, hearts: 7, points: 35, nickname: "A", characterId: "star-pink", tier: "Gold", fans: 2, liveNow: true, isNew: true, isMe: true, delta: 2, weekGain: 1, subjectId: ME }, { rank: 2, score: 3, hearts: 3, points: null, nickname: "B", characterId: "x", tier: null, isMe: false, delta: null, weekGain: null }],
+      me: { rank: 1, score: 7, hearts: 7, points: 35, inTop: true, delta: 2, subjectId: ME },
     }), fresh);
     const signedOut = await handlers.home(req("/api/rankings/home"));
     const body = await signedOut.json();
@@ -150,7 +150,8 @@ describe("rankings routes", () => {
     expect(rpc).toHaveBeenCalledWith("read_home_fan_ranking_v2", { p_viewer: null, p_metric: "hearts", p_limit: 5 });
     expect(body).toMatchObject({ state: "ready", metric: "hearts", previousDay: "2026-11-07", failedAt: null, period: "day", closesAt: "2026-11-09T00:00:00+09:00" });
     expect(body.rows.map((r: { delta: number | null }) => r.delta)).toEqual([2, null]);
-    expect(body.rows[0]).toMatchObject({ hearts: 7, points: null, isMe: false });
+    expect(body.rows[0]).toMatchObject({ hearts: 7, points: 35, fans: 2, isNew: true, isMe: false });
+    expect(body.rows[0]).not.toHaveProperty("liveNow");
     expect(body.me).toBeNull();
     expect(JSON.stringify(body)).not.toContain(ME);
     const signedIn = await handlers.home(req("/api/rankings/home?kind=fans&limit=50", { authorization: "Bearer t" }));
@@ -158,8 +159,38 @@ describe("rankings routes", () => {
     expect(signedIn.headers.get("cache-control")).toBe("private, no-store");
     expect(rpc).toHaveBeenLastCalledWith("read_home_fan_ranking_v2", { p_viewer: ME, p_metric: "hearts", p_limit: 50 });
     expect(mine.rows[0].isMe).toBe(true);
-    expect(mine.me).toEqual({ rank: 1, score: 7, hearts: 7, points: null, inTop: true, delta: 2 });
+    expect(mine.me).toEqual({ rank: 1, score: 7, hearts: 7, points: 35, inTop: true, delta: 2 });
     expect(JSON.stringify(mine)).not.toContain(ME);
+  });
+
+  it.each(["hearts", "points"])("returns both fan values and the actual comparison period when sorted by %s", async (metric) => {
+    const { handlers } = make(() => ({
+      ...head({ metric, weekGainDays: 3 }),
+      rows: [{ rank: 1, score: metric === "hearts" ? 7 : 42, hearts: 7, points: 42, fans: 2,
+        nickname: "A", characterId: "star-pink", tier: "Gold", isMe: true, isNew: true,
+        delta: -2, weekGain: 35, liveNow: true, subjectId: ME }],
+      me: { rank: 1, score: metric === "hearts" ? 7 : 42, hearts: 7, points: 42, inTop: true, delta: -2 },
+    }), fresh);
+    for (const authorization of [undefined, "Bearer t"]) {
+      const body = await (await handlers.home(req(`/x?kind=fans&metric=${metric}`, authorization ? { authorization } : {}))).json();
+      expect(body).toMatchObject({ metric, weekGainDays: 3, computedAt: "2026-11-08T00:00:00Z" });
+      expect(body.rows[0]).toMatchObject({ hearts: 7, points: 42, delta: -2, weekGain: 35, isNew: true });
+      expect(body.rows[0]).not.toHaveProperty("liveNow");
+      expect(JSON.stringify(body)).not.toContain(ME);
+      if (authorization) expect(body.me).toMatchObject({ hearts: 7, points: 42 });
+      else expect(body.me).toBeNull();
+    }
+  });
+
+  it.each(["fans", "hearts"])("keeps creator LIVE and unknown creator points for %s", async (metric) => {
+    const { handlers } = make(() => ({
+      ...head({ metric, weekGainDays: 1 }),
+      rows: [{ rank: 1, slug: "a", name: "A", imageUrl: null, score: metric === "fans" ? 2 : 7,
+        hearts: 7, points: null, fans: 2, liveNow: true, isNew: false, challenge: false, delta: 0, weekGain: 0 }],
+    }), fresh);
+    const body = await (await handlers.home(req(`/x?kind=creators&metric=${metric}`))).json();
+    expect(body).toMatchObject({ weekGainDays: 1, computedAt: "2026-11-08T00:00:00Z" });
+    expect(body.rows[0]).toMatchObject({ hearts: 7, points: null, fans: 2, liveNow: true, delta: 0, weekGain: 0, isNew: false });
   });
 
   it("keeps each list's default metric when none is asked for, and passes the asked one (unit regression)", async () => {
@@ -180,14 +211,14 @@ describe("rankings routes", () => {
   it("answers the home creator ranking with fans and hearts by name, an empty day and a late day", async () => {
     const { handlers, rpc, authorize } = make(() => ({
       ...head({ comparable: false, previousDay: null, weekGainDays: null }), metric: "hearts",
-      rows: [{ rank: 1, slug: "a", name: "A", imageUrl: null, score: 795, hearts: 795, fans: 125, challenge: true, delta: null, weekGain: null, id: "x" }],
+      rows: [{ rank: 1, slug: "a", name: "A", imageUrl: null, score: 795, hearts: 795, points: null, fans: 125, liveNow: false, isNew: false, challenge: true, delta: null, weekGain: null, id: "x" }],
     }));
     const res = await handlers.home(req("/api/rankings/home?kind=creators&metric=hearts&locale=en&limit=10", { authorization: "Bearer t" }));
     const body = await res.json();
     expect(rpc).toHaveBeenCalledWith("read_home_creator_ranking_v2", { p_locale: "en", p_metric: "hearts", p_limit: 10 });
     expect(authorize).toHaveBeenCalledTimes(1);
     expect(res.headers.get("cache-control")).toBe("private, no-store");
-    expect(body.rows).toEqual([{ rank: 1, slug: "a", name: "A", imageUrl: null, score: 795, hearts: 795, fans: 125, challenge: true, delta: null, weekGain: null }]);
+    expect(body.rows).toEqual([{ rank: 1, slug: "a", name: "A", imageUrl: null, score: 795, hearts: 795, points: null, fans: 125, liveNow: false, isNew: false, challenge: true, delta: null, weekGain: null }]);
     const empty = make(() => ({ ...head({ state: "empty", comparable: false, previousDay: null, weekGainDays: null }), rows: [] }));
     expect(await (await empty.handlers.home(req("/x?kind=creators"))).json()).toMatchObject({ state: "empty", day: "2026-11-08", rows: [] });
     const late = make(() => ({ ...head({ state: "stale", day: "2026-11-07", today: "2026-11-08", failedAt: "2026-11-08T00:01:00Z" }), rows: [], me: null }));
