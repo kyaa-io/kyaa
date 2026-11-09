@@ -192,6 +192,8 @@ export function QuizEntryScreen({
   const heldPassportId = summary.state.status === "ready"
     ? summary.state.data.creators.find((creator) => creator.celebrity.slug === slug && creator.relationship === "passport")?.passport?.id ?? null
     : null;
+  // Starting waits for the ownership read; a failed read falls back to the server start, which still answers "holder".
+  const ownershipChecking = authenticated && summary.state.status === "loading";
   const [screen, setScreen] = useState<ScreenState>({ kind: "loading" });
   const [starting, setStarting] = useState(false);
   const [profileState, setProfileState] = useState<"idle" | "checking" | "complete" | "error">("idle");
@@ -283,7 +285,16 @@ export function QuizEntryScreen({
   }, [authenticated, getAccessToken, liveReturnTo, locale, profileAttempt, ready, router, slug]);
 
   const start = useCallback(async () => {
-    if (!ready || !authenticated || profileState !== "complete" || starting) return;
+    if (!ready || !authenticated || profileState !== "complete" || starting || ownershipChecking) return;
+    if (heldPassportId) {
+      // Same landing as the server's "holder" answer, without opening an attempt.
+      const intent = readAuthIntent(getSessionStorage(), new URLSearchParams(window.location.search).get("authIntent"));
+      if (intent?.actionType === "START_FAN_VERIFICATION" && intent.targetType === "celebrity" && intent.targetId === slug) {
+        consumeAuthIntent(getSessionStorage(), intent.id);
+      }
+      router.push((liveReturnTo ?? withLocale(`/passports/${heldPassportId}`, locale)) as Route);
+      return;
+    }
     setStarting(true);
     setStartError(null);
     try {
@@ -326,20 +337,22 @@ export function QuizEntryScreen({
       setStartError(errorMessage(error, locale));
       setStarting(false);
     }
-  }, [authenticated, getAccessToken, liveReturnTo, locale, profileState, ready, router, slug, starting]);
+  }, [authenticated, getAccessToken, heldPassportId, liveReturnTo, locale, ownershipChecking, profileState, ready, router, slug, starting]);
 
   useEffect(() => {
-    if (!authenticated || profileState !== "complete" || screen.kind !== "ready" || screen.intro.quiz.availability !== "available") return;
+    if (!authenticated || profileState !== "complete" || ownershipChecking || screen.kind !== "ready") return;
+    if (!heldPassportId && screen.intro.quiz.availability !== "available") return;
     const intentId = new URLSearchParams(window.location.search).get("authIntent");
     if (!intentId || resumedIntentRef.current === intentId) return;
     const intent = readAuthIntent(getSessionStorage(), intentId);
     if (intent?.actionType !== "START_FAN_VERIFICATION" || intent.targetType !== "celebrity" || intent.targetId !== slug) return;
     resumedIntentRef.current = intentId;
     void start();
-  }, [authenticated, profileState, screen, slug, start]);
+  }, [authenticated, heldPassportId, ownershipChecking, profileState, screen, slug, start]);
 
   const dialogRef = useRef<HTMLElement | null>(null);
-  const dialogOpen = screen.kind === "ready" && screen.intro.quiz.availability === "available";
+  // A holder sees "verified" even when the quiz is closed or not offered.
+  const dialogOpen = screen.kind === "ready" && (heldPassportId !== null || screen.intro.quiz.availability === "available");
   // Read on mount (kept through a reload). Closing always lands on the certification list this dialog belongs to; the remembered click only adds its exact URL and the card to focus.
   const [closeOrigin, setCloseOrigin] = useState<QuizCloseReturn | null>(null);
   useEffect(() => { setCloseOrigin(readQuizCloseReturn(getSessionStorage(), slug)); }, [slug]);
@@ -373,9 +386,7 @@ export function QuizEntryScreen({
     else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
   }, [closeDialog]);
 
-  const topAligned =
-    screen.kind === "ready" &&
-    screen.intro.quiz.availability === "available";
+  const topAligned = dialogOpen;
 
   return (
     <FanAppFrame locale={locale} mainId="fan-verification-intro-main">
@@ -396,14 +407,14 @@ export function QuizEntryScreen({
             <Link className={styles.secondaryAction} href={listHref as Route}>{t.listBack}</Link>
           </section>
         )}
-        {screen.kind === "ready" && screen.intro.quiz.availability === "unavailable" && (
+        {screen.kind === "ready" && !dialogOpen && (
           <section className={styles.message}>
             <h1>{t.unavailableTitle}</h1>
             <p>{t.unavailableBody(screen.intro.celebrity.name)}</p>
             <Link className={styles.secondaryAction} href={listHref as Route}>{t.listBack}</Link>
           </section>
         )}
-        {screen.kind === "ready" && screen.intro.quiz.availability === "available" && (
+        {screen.kind === "ready" && dialogOpen && (
           <div className={styles.backdrop} onClick={(event) => { if (event.target === event.currentTarget) closeDialog(); }}>
           <section ref={dialogRef} className={styles.entry} role="dialog" aria-modal="true" aria-labelledby="quiz-entry-heading" tabIndex={-1} onKeyDown={onDialogKeyDown}>
             <div className={styles.dialogActions}><FanLanguageSwitch locale={locale} compact /><button type="button" className={styles.closeButton} aria-label={t.close} onClick={closeDialog}><X aria-hidden="true" /></button></div>
@@ -441,7 +452,7 @@ export function QuizEntryScreen({
               <FanAction className={styles.entryAction} variant="primary" trailingIcon={<ArrowRight />}
                 {...(heldPassportId
                   ? { href: withLocale(`/passports/${heldPassportId}`, locale) }
-                  : { disabled: starting, ariaBusy: starting, onClick: () => void start() })}>
+                  : { disabled: starting || ownershipChecking, ariaBusy: starting || ownershipChecking, onClick: () => void start() })}>
                 {heldPassportId ? t.openPassport : starting ? t.starting : t.start}
               </FanAction>
             ) : (
