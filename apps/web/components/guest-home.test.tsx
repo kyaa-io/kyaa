@@ -348,6 +348,30 @@ describe("streamed Home sections", () => {
     expect(screen.getAllByRole("link", { name: "엘리나와 함께 뱅크시 전시 보러 가요", hidden: true }).length).toBeGreaterThan(0);
   });
 
+  it("renders ready home sections before gallery data, then reserves photo geometry while Shorts is pending", async () => {
+    const photos = (await import("@/server/home-gallery/fixtures/read_public_home_gallery_photos.json")).default.items;
+    const home = pendingHome();
+    const gallery = deferred<{ items: never[]; nextCursor: null }>();
+    const shorts = deferred<never[]>();
+    let view!: ReturnType<typeof render>;
+    await act(async () => { view = render(<StreamingGuestHome locale="ko" queries={{ ...home.queries,
+      homeGallery: settleHomeQuery(gallery.promise),
+      homeShorts: settleHomeQuery(shorts.promise) }} />); });
+    // The gallery is unresolved, but independent queries may render immediately.
+    expect(view.container.querySelector('[data-home-measure="photos"][data-home-state="loading"]')).not.toBeNull();
+    expect(screen.getByText("아직 공지 없음")).toBeInTheDocument();
+    await act(async () => {
+      home.pending.homeBanners.resolve([bannerFixture]);
+    });
+    expect(view.container.querySelector(`[data-managed-home-banner="${bannerFixture.id}"]`)).not.toBeNull();
+    expect(view.container.querySelector('[data-gallery-layout]')).toBeNull();
+    await act(async () => { gallery.resolve({ items: photos as never, nextCursor: null }); });
+    expect(view.container.querySelectorAll('[data-gallery-reservation="mobile"] li')).toHaveLength(photos.length);
+    await act(async () => { shorts.resolve([]); });
+    expect(view.container.querySelector('[data-gallery-reservation]')).toBeNull();
+    expect(view.container.querySelectorAll('[data-gallery-layout="mobile"] [data-row="photo"]')).toHaveLength(photos.length);
+  });
+
   it("puts the read gallery photos and LIVE videos on the home; a failed read keeps placeholders without the empty text, zero rows show it", async () => {
     const photos = (await import("@/server/home-gallery/fixtures/read_public_home_gallery_photos.json")).default.items;
     const shorts = (await import("@/server/home-gallery/fixtures/read_public_home_shorts.json")).default;

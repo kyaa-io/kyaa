@@ -1,11 +1,11 @@
-/* 7차 임시 구성 자리표시. 면은 옅은 핑크 틴트(회색 면 없음, U-1), 선 없이 틴트만, 글자는 한 줄. */
+/* Neutral fallbacks: white surfaces, line-token outlines, no grey or pink fills. */
 .block { display: block; margin-top: var(--fan-section-gap); }
 .note { color: var(--color-muted); font-size: var(--fan-action-label-size); font-weight: 400; }
 .notices { margin: var(--space-4) 0 0; padding: 0; border-top: 1px solid var(--color-line); list-style: none; }
 .notice { display: flex; height: 64px; box-sizing: border-box; align-items: center; border-bottom: 1px solid var(--color-line); }
-.photos { display: grid; height: 570px; grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-rows: repeat(2, minmax(0, 1fr)); gap: var(--space-2); margin-top: var(--space-4); }
-.tile { display: grid; place-items: center; border-radius: var(--radius-card, 12px); background: var(--color-accent-soft); }
-.tile:nth-child(n + 5) { display: none; }
+.photos { display: grid; height: 1230px; grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-rows: repeat(2, minmax(0, 1fr)); gap: var(--space-2); margin-top: var(--space-4); }
+.tile { display: grid; place-items: center; border-radius: var(--radius-card, 12px); background: var(--color-surface); outline: 1px solid var(--color-line); outline-offset: -1px; }
+.photos > .tile:nth-child(n + 5) { display: none; }
 .shelf { margin-top: var(--fan-section-gap); }
 .rail { display: flex; gap: var(--space-2); margin: var(--space-2) 0 0; padding: 0; overflow-x: auto; overscroll-behavior-x: contain; scrollbar-width: none; list-style: none; }
 /* R8-DATA N2: 숏츠 선반은 LIVE의 가로 YouTube 영상이라 16:9 카드(MediaThumbnail 소유, image-framing). 빈 상태 카드도 같은 크기라 블록 높이가 같다. */
@@ -13,14 +13,14 @@
 .shortLink { display: grid; min-width: 0; gap: var(--space-2); color: inherit; text-decoration: none; }
 .shortLink:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 .shortLink:hover .shortTitle { color: var(--color-accent); }
-.card { display: grid; width: 100%; aspect-ratio: 16 / 9; place-items: center; overflow: hidden; box-sizing: border-box; border-radius: var(--radius-card, 12px); background: var(--color-accent-soft); text-align: center; }
+.card { display: grid; width: 100%; aspect-ratio: 16 / 9; place-items: center; overflow: hidden; box-sizing: border-box; border-radius: var(--radius-card, 12px); background: var(--color-surface); outline: 1px solid var(--color-line); outline-offset: -1px; text-align: center; }
 .card > img { display: block; width: 100%; height: 100%; object-fit: cover; }
 .shortTitle { overflow: hidden; color: var(--color-muted); font-size: var(--fan-action-label-size); line-height: 20px; text-overflow: ellipsis; white-space: nowrap; }
 .shortLink .shortTitle { color: var(--color-ink); }
 @media (min-width: 64rem) {
   .notice { height: 48px; }
   .photos { height: 712px; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--space-3); }
-  .tile:nth-child(n + 5) { display: grid; }
+  .photos > .tile:nth-child(n + 5) { display: grid; }
   .rail { gap: var(--space-3); }
   .short { width: 320px; }
 }
@@ -36,17 +36,17 @@
   .noticeLink { grid-template-areas: "category title date"; grid-template-columns: 88px minmax(0, 1fr) auto; }
 }
 
-/* R8-DATA N2: 사진 구역. 자리표시와 같은 높이(390 570px·1440 712px). 사진은 원본 비율 그대로(cover 없음), 남은 높이는 핑크 틴트 칸. */
-.photoColumns { display: grid; height: 570px; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-2); margin-top: var(--space-4); }
-.photoColumn { display: flex; min-height: 0; flex-direction: column; gap: var(--space-2); margin: 0; padding: 0; overflow: hidden; list-style: none; }
+/* R8-DATA N2: 사진 구역. 사진은 원본 비율 그대로(cover 없음)로 모두 쌓고 높이는 사진을 따른다. 자리표시는 흰색 면과 선 토큰만 쓴다. */
+.photoColumns { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-2); margin-top: var(--space-4); }
+.photoColumn { display: flex; min-width: 0; flex-direction: column; gap: var(--space-2); margin: 0; padding: 0; list-style: none; }
 .photo { flex: none; }
-.photoColumn > .tile { display: block; flex: 1 1 0; min-height: 0; }
+.reservationTile { aspect-ratio: var(--gallery-photo-ratio); }
 .photoLink { display: block; border-radius: var(--radius-card, 12px); }
 .photoLink:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 .photoImage { display: block; width: 100%; height: auto; border-radius: var(--radius-card, 12px); }
 .desktopOnly { display: none; }
 @media (min-width: 64rem) {
-  .photoColumns { height: 712px; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--space-3); }
+  .photoColumns { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--space-3); }
   .photoColumn { gap: var(--space-3); }
   .mobileOnly { display: none; }
   .desktopOnly { display: grid; }

@@ -1,0 +1,12 @@
+{
+  "changes": [
+    "홈 갤러리 로딩 화면이 사진의 원래 비율과 배치에 맞춰 공간을 확보해요.",
+    "로딩 중이거나 사진을 불러오지 못했거나 사진이 없을 때는 분홍색 대신 흰색 바탕과 테두리가 표시돼요.",
+    "개발 환경: Elina, Changha and Yuna are ranks 1–5 (5 photos on dev)",
+    "첨부 이미지는 개발 서버의 사진 치수로 확인한 로컬 로딩 화면이며 운영 화면이 아니에요."
+  ],
+  "path": "/",
+  "images": [
+    "release-notes/images/2026-11-10-home-gallery-neutral-loading-390.png"
+  ]
+}
