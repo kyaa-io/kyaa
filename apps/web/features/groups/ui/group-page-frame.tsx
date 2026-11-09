@@ -25,7 +25,7 @@ import styles from "./groups.module.css";
 function useTabs(): FanTabItem[] {
   const g = useGroupPage();
   const hideMembers = g.routeSlug !== null && g.error;
-  return groupTabItems(g.locale, !hideMembers).map((item) => ({ ...item, href: g.hrefFor(item.key), onSelect: () => g.selectTab(item.key), onPreload: () => g.preloadTab(item.key) }));
+  return groupTabItems(g.locale, !hideMembers).map((item) => ({ ...item, href: g.hrefFor(item.key), onSelect: () => g.selectTab(item.key), onPreload: () => g.preloadTab(item.key), prefetch: true }));
 }
 
 /** 머리·접속 띠·탭. 레이아웃 안에서 한 번만 마운트되어 탭을 바꿔도 같은 노드로 남는다. */

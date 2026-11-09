@@ -15,6 +15,8 @@ export type FanTabItem = Readonly<{
   onSelect?: () => void;
   /** 누르기 직전(포인터 진입·터치 시작)에 그 탭의 첫 호출을 미리 읽는다. */
   onPreload?: () => void;
+  /** 링크 탭의 다음 화면을 보이는 즉시 미리 받는다(동적 화면은 기본값이 틀만 받는다). */
+  prefetch?: boolean;
   /** 이름 옆 숫자 칩(알림·댓글 수). 0이면 그리지 않는다. */
   count?: number;
   /** `panels` 탭에서 이 탭이 선택됐을 때 그릴 내용. */
@@ -99,7 +101,7 @@ function FanNavTabs({ variant, label, current, items, id, className }: Readonly<
     {items.map((item) => {
       const preload = item.onPreload ? { onPointerEnter: item.onPreload, onTouchStart: item.onPreload } : {};
       return item.href
-        ? <Link key={item.key} className={styles.tab} href={item.href as Route} scroll={false} aria-current={selected === item.key ? "page" : undefined} onNavigate={() => choose(item)} {...preload}><TabLabel item={item} /></Link>
+        ? <Link key={item.key} className={styles.tab} href={item.href as Route} scroll={false} prefetch={item.prefetch ? true : undefined} aria-current={selected === item.key ? "page" : undefined} onNavigate={() => choose(item)} {...preload}><TabLabel item={item} /></Link>
         : <button key={item.key} type="button" className={styles.tab} aria-pressed={selected === item.key} onClick={() => choose(item)} {...preload}><TabLabel item={item} /></button>;
     })}
   </nav>;

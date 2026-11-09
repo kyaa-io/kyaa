@@ -140,6 +140,13 @@ export function GroupPageProvider({ pageId, slug, celebrity: serverCelebrity, ce
     if (tab === "rooms") preload(`/api/groups/${presencePageId}/${authenticated ? "rooms" : "public-rooms"}`);
   }, [authenticated, preload, presencePageId, ready]);
 
+  // 이웃 탭(방) 첫 호출은 머리가 자리 잡힌 뒤 한가할 때 미리 읽는다. 가입 전 로그인 회원은 방 목록이 403이라 건너뛴다.
+  useEffect(() => {
+    if (!presencePageId || !ready || (authenticated && !membership)) return;
+    const idle = typeof window.requestIdleCallback === "function" ? window.requestIdleCallback(() => preloadTab("rooms")) : window.setTimeout(() => preloadTab("rooms"), 800);
+    return () => { if (typeof window.requestIdleCallback === "function") window.cancelIdleCallback(idle); else window.clearTimeout(idle); };
+  }, [authenticated, membership, preloadTab, presencePageId, ready]);
+
   const queryString = query?.toString() ?? "";
   const hrefFor = useCallback((tab: string, extra?: Readonly<Record<string, string | undefined>>) => {
     const current = new URLSearchParams(queryString);
