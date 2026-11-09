@@ -1,5 +1,5 @@
 "use client";
-import { EarnActionBadge } from "@/features/dukjil/ui/earn-badge";
+import { EarnActionBadge, EarnMinLength } from "@/features/dukjil/ui/earn-badge";
 import { FanSkeleton, FanSkeletonRows, FanSkeletonStatus } from "@/components/fan-ui/fan-skeleton";
 import { fanLoginHref } from "@/components/login-href";
 import { boardCopy } from "@/features/groups/ui/board-copy";
@@ -172,7 +172,7 @@ export const CommentComposer = memo(function CommentComposer({ fieldId, locale, 
     <div className={detailStyles.commentTools}>
       <span className={detailStyles.commentCounter}>{draft.length.toLocaleString(locale)} / 1,000</span>
       {replyTarget && <FanAction type="button" variant="text" disabled={busy} onClick={onCancel}>{copy.cancel}</FanAction>}
-      <EarnActionBadge action="comment" locale={locale} /><FanAction type="submit" variant="neutral" size="sm" ariaBusy={busy} loading={busy} disabled={!gated && !draft.trim()}>{rc.post}</FanAction>
+      <EarnMinLength action="comment" locale={locale} /><EarnActionBadge action="comment" locale={locale} /><FanAction type="submit" variant="neutral" size="sm" ariaBusy={busy} loading={busy} disabled={!gated && !draft.trim()}>{rc.post}</FanAction>
     </div>
   </fieldset></form>;
 });

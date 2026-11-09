@@ -21,8 +21,8 @@ const reward = (id: string) => ({ rewardResultId: id, winnerId: null, benefitId:
 const makeSummary = () => ({
   profile: { nickname: '별빛' },
   creators: [
-    { celebrity: { slug: 'nchive', name: '엔카이브', image: '/nchive.jpg', isPublic: true }, relationship: 'passport', passport: { id: passportA, tier: 'Silver', score: 15, remainingToNextTier: 35, stageProgress: { policyVersion: 3, current: stage('silver-1', 'Silver', 1, 2, 10), next: stage('silver-2', 'Silver', 2, 3, 50), remaining: 35, progressPercent: 30 } }, ticketBalance: 12, firstReaction: null },
-    { celebrity: { slug: 'second', name: '두번째', image: '/second.jpg', isPublic: true }, relationship: 'passport', passport: { id: passportB, tier: 'Bronze', score: 3, remainingToNextTier: 7 }, ticketBalance: 0, firstReaction: null },
+    { celebrity: { slug: 'nchive', name: '엔카이브', image: '/nchive.jpg', isPublic: true }, relationship: 'passport', passport: { id: passportA, tier: 'Silver', score: 15, remainingToNextTier: 35, stageProgress: { policyVersion: 3, current: stage('silver-1', 'Silver', 1, 2, 0), next: stage('silver-2', 'Silver', 2, 3, 0), remaining: 3, progressPercent: 0, unit: "stamps" as const } }, ticketBalance: 12, firstReaction: null },
+    { celebrity: { slug: 'second', name: '두번째', image: '/second.jpg', isPublic: true }, relationship: 'passport', passport: { id: passportB, tier: 'Bronze', score: 3, remainingToNextTier: 7, stageProgress: { policyVersion: 3, current: stage('bronze-1', 'Bronze', 1, 1, 0), next: stage('silver-1', 'Silver', 1, 2, 0), remaining: 1, progressPercent: 66, unit: "stamps" as const } }, ticketBalance: 0, firstReaction: null },
     { celebrity: { slug: 'unverified', name: '미인증 최애', image: '/u.jpg', isPublic: true }, relationship: 'first_reaction_only', passport: null, ticketBalance: 0, firstReaction: null },
   ],
   live: { upcoming: [], history: [] },
@@ -87,7 +87,7 @@ it('shows stamp progress and the next tier with earned stamps in colour and the 
   const card = screen.getByRole('region', { name: '내 패스포트' });
   expect(within(card).getByText('이번 쪽 3/9')).toBeInTheDocument();
   expect(within(card).getByRole('progressbar', { name: '패스포트 이번 쪽 스탬프 3/9칸' })).toHaveAttribute('aria-valuenow', '33');
-  expect(within(card).getByText('실버 2까지 35점')).toBeInTheDocument();
+  expect(within(card).getByText('실버 2까지 도장 3칸')).toBeInTheDocument();
   expect(within(card).getAllByRole('listitem').filter(item => item.getAttribute('data-state') === 'filled')).toHaveLength(3);
   expect(within(card).getAllByRole('listitem').filter(item => item.getAttribute('data-state') === 'empty')).toHaveLength(6);
   expect(within(card).getByLabelText('출석, 찍힘')).toBeInTheDocument();
@@ -103,7 +103,7 @@ it('switches the passport card to the other favorite', () => {
   fireEvent.click(screen.getByRole('button', { name: /두번째/ }));
   const card = screen.getByRole('region', { name: '내 패스포트' });
   expect(within(card).getByText('이번 쪽 1/9')).toBeInTheDocument();
-  expect(within(card).getByText('실버까지 7점')).toBeInTheDocument();
+  expect(within(card).getByText('실버까지 도장 1칸')).toBeInTheDocument();
 });
 
 it('uses the same ad-based exchange wording as 덕질 and enables it only when the points cover the rate', () => {

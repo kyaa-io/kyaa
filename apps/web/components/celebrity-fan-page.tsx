@@ -1,4 +1,5 @@
 "use client";
+import { fanStageNextText } from "@/features/rewards/ui/fan-stage-next";
 import {PopularPosts} from '@/features/groups/ui/popular-posts';
 import {fanStories} from '@/features/groups/ui/home-copy';
 import { CreatorBoardAside, type CreatorBoardEvent } from "@/features/groups/ui/creator-board-aside";
@@ -202,7 +203,7 @@ function CelebrityFanPageBody({ celebrity, locale, upcomingLive, initialCheerEve
           <div className={styles.fanActions}><FanTicketGuide creatorSlug={celebrity.slug} creatorName={celebrity.name} locale={locale} compact checkinOnly /><span className={styles.tier} data-tier={passport.tier}><FanTierBadge tier={passport.tier} stageKey={stage?.current.key} locale={locale} size={32} />{stageName}</span></div>
           <div className={styles.fanProgress}>
             <div className={styles.progressHeading}>
-              <span>{stage ? stage.next ? <>{locale === "ko" ? `${fanStageLabel(locale, stage.next)}까지` : translate(locale, localizedMessages.m50ddf6278ab0, "To {0}", [fanStageLabel(locale, stage.next)])} <strong>{stage.remaining.toLocaleString(locale)}{locale === "ko" ? "점" : translate(locale, localizedMessages.m630bc8843593, " points")}</strong></> : (locale === "ko" ? "최고 단계 달성" : translate(locale, localizedMessages.m29ba29df317d, "Top stage reached")) : passport.tier === "Diamond" ? (locale === "ko" ? "최고 등급 달성" : translate(locale, localizedMessages.m499225dbee28, "Top tier reached")) : <>{locale === "ko" ? "다음 등급까지" : translate(locale, localizedMessages.mebc103264c9f, "To next tier")} <strong>{passport.remainingToNextTier.toLocaleString(locale)}{locale === "ko" ? "점" : translate(locale, localizedMessages.m630bc8843593, " points")}</strong></>}</span>
+              <span>{stage ? fanStageNextText(locale, stage) ?? (locale === "ko" ? "최고 단계 달성" : translate(locale, localizedMessages.m29ba29df317d, "Top stage reached")) : null}</span>
               <Link className={styles.passportLink} href={`/passports/${passport.id}?locale=${locale}`}><BookOpen aria-hidden="true" />{locale === "ko" ? "내 패스포트" : translate(locale, localizedMessages.m416360f1aadc, "My Passport")}<ArrowRight aria-hidden="true" /></Link>
             </div>
             <FanScoreProgress key={passport.id} passport={passport} locale={locale} />

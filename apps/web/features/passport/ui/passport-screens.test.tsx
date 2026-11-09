@@ -116,7 +116,7 @@ describe("passport fan screens", () => {
       current: { key: "silver-2", tier: "Silver", subdivision: 2, rank: 3, minimumScore: 30 },
       next: { key: "gold-1", tier: "Gold", subdivision: 1, rank: 4, minimumScore: 50 },
       remaining: 12,
-      progressPercent: 40,
+      progressPercent: 40, unit: "points" as const,
     } } };
     const fetcher = vi.fn(async () => Response.json({ passports: [staged] }));
     vi.stubGlobal("fetch", fetcher);
@@ -125,7 +125,7 @@ describe("passport fan screens", () => {
     const stageButton = await screen.findByRole("button", { name: /KARA · 실버 2/ });
     expect(stageButton.closest("a")).toBeNull();
     fireEvent.click(stageButton);
-    expect(screen.getByRole("tooltip")).toHaveTextContent("골드 1까지 12점");
+    expect(screen.getByRole("tooltip")).toHaveTextContent("골드까지 12점");
     expect([...container.querySelectorAll("img")].some((image) => decodeURIComponent(image.src).includes("/ink-v1/silver-2.webp"))).toBe(true);
     expect(fetcher).toHaveBeenCalledWith("/api/passports?locale=ko&tierStages=1&firstLikeStamp=1", expect.any(Object));
   });
@@ -406,7 +406,8 @@ describe("passport fan screens", () => {
     expect(await screen.findByRole("img", { name: "눈부신팬 프로필 아바타" })).toHaveAttribute("src", "/images/avatars/heart-pink.webp");
     expect(screen.getByRole("link", { name: "KARA 최애 페이지 보기" })).toHaveAttribute("href", "/kara?locale=ko");
     expect(fetcher).toHaveBeenCalledWith("/api/me/avatar", expect.objectContaining({ cache: "no-store" }));
-    expect(screen.getByRole("progressbar", { name: "다음 등급: 골드" })).toHaveAttribute("value", "30");
+    // No stage projection: the card names the tier only and draws no next-step bar (BUGS-1846: no point fallback).
+    expect(screen.queryByRole("progressbar", { name: /다음 등급/ })).toBeNull();
     expect(screen.getByRole("heading", { name: "다음 혜택: 스페셜 디지털 배경화면" })).toBeInTheDocument();
     expect(screen.getByText("팬 점수: 현재 15 / 필요 50")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /혜택 확인하기/ })).toHaveAttribute(
@@ -458,7 +459,7 @@ describe("passport fan screens", () => {
       current: { key: "gold-2", tier: "Gold", subdivision: 2, rank: 5, minimumScore: 70 },
       next: { key: "gold-3", tier: "Gold", subdivision: 3, rank: 6, minimumScore: 95 },
       remaining: 15,
-      progressPercent: 40,
+      progressPercent: 40, unit: "points" as const,
     };
     const fetcher = vi.fn(async (input: RequestInfo | URL) => String(input) === "/api/me/avatar"
       ? new Response(null, { status: 503 })

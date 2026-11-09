@@ -218,7 +218,7 @@ describe("published celebrity directory", () => {
   it("ranks owned creators first in All and exposes their real stage outside the card link", async () => {
     authenticated = true;
     getAccessToken.mockResolvedValue("token");
-    const stageProgress = { policyVersion: 2, current: { key: "silver-1", tier: "Silver", subdivision: 1, rank: 2, minimumScore: 15 }, next: { key: "silver-2", tier: "Silver", subdivision: 2, rank: 3, minimumScore: 30 }, remaining: 10, progressPercent: 33 };
+    const stageProgress = { policyVersion: 2, current: { key: "silver-1", tier: "Silver", subdivision: 1, rank: 2, minimumScore: 15 }, next: { key: "silver-2", tier: "Silver", subdivision: 2, rank: 3, minimumScore: 30 }, remaining: 10, progressPercent: 33, unit: "points" as const };
     vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: true, json: async () => ({ passports: [{ ...ownedPassport, score: { level: "Silver", points: 20, stageProgress } }] }) }));
     render(<CelebrityDirectory celebrities={publishedCelebrityFixtures} locale="ko" initialOwnedOnly={false} />);
     const trigger = await screen.findByRole("button", { name: /KARA.*20점/ });

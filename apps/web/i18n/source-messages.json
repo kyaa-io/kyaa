@@ -17728,5 +17728,11 @@
     "ko": "{0}부터",
     "source": "features/rankings/ui/rankings-copy",
     "id": "features/rankings/ui/rankings-copy:rkSince"
+  },
+  "earnMinChars": {
+    "en": "{0}+ characters",
+    "ko": "{0}자 이상",
+    "source": "features/dukjil/ui/dukjil-copy",
+    "id": "features/dukjil/ui/dukjil-copy:earnMinChars"
   }
 }
