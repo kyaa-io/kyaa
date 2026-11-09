@@ -45,11 +45,10 @@ const shortDate = (value: string, locale: AppLocale) => new Date(value).toLocale
 const dayDate = (value: string, locale: AppLocale) => new Date(value).toLocaleDateString(locale, { month: "numeric", day: "numeric", timeZone: "Asia/Seoul" });
 const statusOrder = { open: 0, preparing: 1, closed: 2, cancelled: 3 } as const;
 
-/** The stamp gauge's words (E4): 9 − (n mod 9) stamps to the next heart; a full page (n a positive multiple of 9) reads 하트 +1. */
-// 문구 확인 대기(감독 2026-11-09 20:33): a full page becomes a heart only when the fan presses 받기 on the passport mission book (claim API),
-// but `다음 하트까지 n칸` reads as automatic. The supervisor is confirming the wording with the user; the behavior is not changed here.
+/** The stamp gauge's words (사용자 결정 B, 2026-11-09 20:36): a page of 9 becomes a heart only when the fan presses 받기 on the mission book (claim API).
+ * Below 9: `N칸 더 모으면 받기`; a full page (n a positive multiple of 9): `하트 받기`, the same words as the mission book's button. */
 export function nextHeartLabel(locale: AppLocale, stamps: number) {
-  return stamps > 0 && stamps % STAMPS_PER_HEART === 0 ? t(locale, "cheerHeartReady") : t(locale, "cheerNextHeart", [STAMPS_PER_HEART - (stamps % STAMPS_PER_HEART)]);
+  return stamps > 0 && stamps % STAMPS_PER_HEART === 0 ? t(locale, "missionClaim") : t(locale, "cheerNextHeart", [STAMPS_PER_HEART - (stamps % STAMPS_PER_HEART)]);
 }
 
 /** The favorite whose lucky draws and rank the 덕질 tab shows: the one chosen in the header, else the followed one. */

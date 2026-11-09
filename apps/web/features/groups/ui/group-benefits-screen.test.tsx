@@ -144,9 +144,19 @@ it('E4 · F2: the cheer card shows the favorite’s creator rank, my hearts (the
  // F2: the rank lives on the cheer card only; the wallet has no cheer or lucky-draw cell.
  expect(view.container.querySelector('[data-cell="cheer"]')).toBeNull();expect(view.container.querySelector('[data-cell="lucky"]')).toBeNull();
 });
-it('E4: stamps to the next heart are 9 − (n mod 9), and a full page reads 하트 +1',async()=>{
+it('사용자 결정 B: the stamp words never read as automatic — 9 − (n mod 9) more to claim, a full page reads 하트 받기 (the mission book button)',async()=>{
  const {nextHeartLabel}=await import('./stan-lucky-cheer');
- expect(nextHeartLabel('ko',4)).toBe('다음 하트까지 5칸');expect(nextHeartLabel('ko',0)).toBe('다음 하트까지 9칸');expect(nextHeartLabel('ko',9)).toBe('하트 +1');expect(nextHeartLabel('ko',13)).toBe('다음 하트까지 5칸');
+ expect(nextHeartLabel('ko',4)).toBe('5칸 더 모으면 받기');expect(nextHeartLabel('ko',0)).toBe('9칸 더 모으면 받기');expect(nextHeartLabel('ko',9)).toBe('하트 받기');expect(nextHeartLabel('ko',13)).toBe('5칸 더 모으면 받기');
+ expect(nextHeartLabel('en',4)).toBe('5 more to claim');expect(nextHeartLabel('ja',9)).toBe('ハートを受け取る');
+});
+it('사용자 결정 B: at 9/9 the wallet stamps cell says 하트 받기 › and goes to the passport mission book',async()=>{
+ withFavorite();roadmapBody={passportId:uid(900),celebrityId:uid(901),hearts:3,pages:[{pageNo:1,slots:Array.from({length:9},(_,i)=>({slotNo:i+1,kind:null,state:'filled',stampId:null,clearedAt:null})),filled:9,claimable:true,claimed:false,locked:false,lockedReason:null}]};
+ render(<GroupBenefitsScreen locale='ko'/>);
+ const card=(await screen.findByRole('button',{name:'광고 보고 교환하기'})).closest('section')!;
+ await waitFor(()=>expect(card.querySelector('[data-cell="stamps"]')).toHaveTextContent('9/9'));
+ const cell=card.querySelector('[data-cell="stamps"]')!;
+ expect(cell).toHaveTextContent('하트 받기');expect(cell).not.toHaveTextContent('더 모으면');
+ expect(cell).toHaveAttribute('href',`/passports/${uid(900)}?locale=ko#mission-book`);
 });
 it('E4: a favorite outside the top 20 reads 20위 밖',async()=>{
  withFavorite();homeRows=[];render(<GroupBenefitsScreen locale='ko'/>);
@@ -319,7 +329,7 @@ it('keeps the wallet card for guests: locked balances, the public exchange rate 
  auth.authenticated=false;empty=true;render(<GroupBenefitsScreen locale='ko'/>);
  const login=await screen.findByRole('link',{name:'로그인'});const card=login.closest('section')!;
  expect(within(card).getAllByRole('img',{name:'로그인 후 확인'})).toHaveLength(4);expect(card.textContent).not.toContain('—');
- expect(card).toHaveTextContent('응모권까지 100P');expect(card).toHaveTextContent('다음 하트까지 9칸');
+ expect(card).toHaveTextContent('응모권까지 100P');expect(card).toHaveTextContent('9칸 더 모으면 받기');
  expect(login.getAttribute('href')).toBe('/login?returnTo=%2Fbenefits%3Flocale%3Dko&locale=ko');expect(login).toHaveAttribute('data-fan-action-emphasis','primary');
  expect(screen.queryByRole('button',{name:'광고 보고 교환하기'})).toBeNull();expect(document.getElementById('wallet-history')).toBeNull();
  expect(document.querySelectorAll('[data-fan-action-emphasis="primary"]')).toHaveLength(1);
