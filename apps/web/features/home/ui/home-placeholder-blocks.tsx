@@ -75,14 +75,14 @@ export function HomeGalleryPlaceholder({ locale, state = "loading" }: { locale: 
   return <HomeGallery locale={locale} photos={state} hasMore={false} shorts={state} />;
 }
 
-/** 사진 구역(R8-DATA N2) + 숏츠 선반. 정상 0건만 "아직 없음"을 보이고, 로딩·실패는 같은 자리표시를 글 없이 둔다. 사진은 원본 비율로 쌓고 남은 높이를 자리표시로 채운다. */
+/** 사진 구역(R8-DATA N2) + 숏츠 선반. 정상 0건만 "아직 없음"을 보이고, 로딩·실패는 같은 자리표시를 글 없이 둔다. 사진은 원본 비율로 모두 쌓고 열 끝을 맞춘다. 자리표시는 로딩·실패·0건일 때만 둔다. */
 export function HomeGallery({ locale, photos, hasMore, shorts }: { locale: AppLocale; photos: readonly HomeGalleryPhoto[] | HomeBlockPending; hasMore: boolean; shorts: readonly HomeShort[] | HomeBlockPending }) {
   const v = values[locale];
   const list = typeof photos === "string" ? null : photos;
   const shortList = typeof shorts === "string" ? null : shorts;
   const mobile = list?.length ? allocateGalleryColumns(list, homeGalleryLayouts.mobile) : null;
   const desktop = list?.length ? allocateGalleryColumns(list, homeGalleryLayouts.desktop) : null;
-  const more = !!list?.length && (hasMore || mobile!.placed < list.length || desktop!.placed < list.length);
+  const more = !!list?.length && hasMore;
   return <section className={styles.block} aria-labelledby="home-gallery-heading" data-home-block="gallery">
     <FanSectionHeader variant="editorial" id="home-gallery-heading" title={v[1]!} action={more ? { href: `/gallery?locale=${locale}`, label: homeGalleryCopy[locale].viewAll } : undefined} />
     {mobile && desktop ? <>
@@ -113,7 +113,6 @@ function GalleryColumns({ columns, layout }: { columns: readonly (readonly HomeG
   return <div className={`${styles.photoColumns} ${layout === "mobile" ? styles.mobileOnly : styles.desktopOnly}`} data-home-measure="photos" data-gallery-layout={layout}>
     {columns.map((photos, index) => <ul key={index} className={styles.photoColumn}>
       {photos.map(photo => <li key={photo.id} className={styles.photo} data-row="photo"><GalleryImage photo={photo} sizes={layout === "mobile" ? "calc(50vw - 20px)" : "340px"} /></li>)}
-      <li className={styles.tile} data-row="photo-placeholder" aria-hidden="true" />
     </ul>)}
   </div>;
 }

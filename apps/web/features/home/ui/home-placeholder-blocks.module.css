@@ -36,17 +36,16 @@
   .noticeLink { grid-template-areas: "category title date"; grid-template-columns: 88px minmax(0, 1fr) auto; }
 }
 
-/* R8-DATA N2: 사진 구역. 자리표시와 같은 높이(390 570px·1440 712px). 사진은 원본 비율 그대로(cover 없음), 남은 높이는 핑크 틴트 칸. */
-.photoColumns { display: grid; height: 570px; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-2); margin-top: var(--space-4); }
-.photoColumn { display: flex; min-height: 0; flex-direction: column; gap: var(--space-2); margin: 0; padding: 0; overflow: hidden; list-style: none; }
+/* R8-DATA N2: 사진 구역. 사진은 원본 비율 그대로(cover 없음)로 모두 쌓고 높이는 사진을 따른다. 핑크 칸은 자리표시 상태에만 있다. */
+.photoColumns { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-2); margin-top: var(--space-4); }
+.photoColumn { display: flex; min-width: 0; flex-direction: column; gap: var(--space-2); margin: 0; padding: 0; list-style: none; }
 .photo { flex: none; }
-.photoColumn > .tile { display: block; flex: 1 1 0; min-height: 0; }
 .photoLink { display: block; border-radius: var(--radius-card, 12px); }
 .photoLink:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 .photoImage { display: block; width: 100%; height: auto; border-radius: var(--radius-card, 12px); }
 .desktopOnly { display: none; }
 @media (min-width: 64rem) {
-  .photoColumns { height: 712px; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--space-3); }
+  .photoColumns { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--space-3); }
   .photoColumn { gap: var(--space-3); }
   .mobileOnly { display: none; }
   .desktopOnly { display: grid; }

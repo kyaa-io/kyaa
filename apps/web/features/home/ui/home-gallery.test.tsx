@@ -15,21 +15,32 @@ const shorts = homeShortsSchema.parse(shortsRows);
 const photo = (id: number, width: number, height: number): HomeGalleryPhoto => ({ ...photos[2]!, id: `p${id}`, image: { ...photos[2]!.image, width, height } });
 
 describe("gallery column allocation", () => {
-  it("never places more than a column holds and keeps every placed photo whole", () => {
-    const many = Array.from({ length: 12 }, (_, i) => photo(i, 1080, i % 3 === 0 ? 1350 : 1080));
+  // The twelve curated dev photos, in rank order (Elina, Changha, Yuna, Elina, Elina, then the rest).
+  const mixed = [[3024, 4032], [2075, 2766], [3072, 4096], [3024, 4032], [2730, 1820], [1440, 1920], [2560, 2034], [2048, 1536], [3024, 4032], [1537, 2048], [544, 544], [1439, 1440]]
+    .map(([width, height], i) => photo(i, width!, height!));
+  it("places every photo whole at its own ratio and levels the column bottoms to within a fraction of a photo", () => {
     for (const layout of Object.values(homeGalleryLayouts)) {
-      const { columns, placed } = allocateGalleryColumns(many, layout);
-      for (const column of columns) {
-        const used = column.reduce((sum, item, index) => sum + item.image.height / item.image.width + (index ? layout.gap : 0), 0);
-        expect(used).toBeLessThanOrEqual(layout.budget);
-      }
-      expect(placed).toBeLessThan(many.length);
-      expect(columns.flat()).toHaveLength(placed);
+      const { columns, placed, spread } = allocateGalleryColumns(mixed, layout);
+      expect(placed).toBe(mixed.length);
+      expect(columns.flat().map(item => item.id).sort()).toEqual(mixed.map(item => item.id).sort());
+      expect(columns).toHaveLength(layout.columns);
+      expect(spread).toBeLessThan(layout.columns === 2 ? 0.05 : 0.13);
     }
   });
-  it("fills the shortest column first and skips a photo too tall for every column", () => {
+  it("keeps the given order inside a column so the first photos stay on top", () => {
+    const order = mixed.map(item => item.id);
+    for (const layout of Object.values(homeGalleryLayouts)) {
+      for (const column of allocateGalleryColumns(mixed, layout).columns) {
+        const positions = column.map(item => order.indexOf(item.id));
+        expect(positions).toEqual([...positions].sort((a, b) => a - b));
+      }
+    }
+  });
+  it("starts with the shortest column and uses fewer columns than the layout when there are fewer photos", () => {
     const { columns } = allocateGalleryColumns([photo(1, 1000, 1000), photo(2, 1000, 3000), photo(3, 1000, 500)], homeGalleryLayouts.mobile);
-    expect(columns.map(column => column.map(item => item.id))).toEqual([["p1"], ["p3"]]);
+    expect(columns.map(column => column.map(item => item.id))).toEqual([["p1", "p3"], ["p2"]]);
+    expect(allocateGalleryColumns([photo(1, 1000, 1000)], homeGalleryLayouts.desktop).columns).toHaveLength(1);
+    expect(allocateGalleryColumns([], homeGalleryLayouts.desktop)).toEqual({ columns: [], placed: 0, spread: 0 });
   });
 });
 
@@ -54,10 +65,10 @@ describe("home gallery block", () => {
     expect(screen.queryByText("아직 사진 없음")).not.toBeInTheDocument();
     expect(screen.getByText("아직 숏츠 없음")).toBeInTheDocument();
   });
-  it("shows the real photos at their own ratio with the source alt, links official photos to the notice, and fills the rest", () => {
+  it("shows the real photos at their own ratio with the source alt, links official photos to the notice, with no pink tile among them", () => {
     const { container } = render(<HomeGallery locale="ko" photos={photos} hasMore={false} shorts={[]} />);
     for (const layout of ["mobile", "desktop"]) expect(container.querySelector(`[data-gallery-layout="${layout}"]`)!.querySelectorAll('[data-row="photo"]')).toHaveLength(4);
-    expect(container.querySelector('[data-gallery-layout="mobile"]')!.querySelectorAll('[data-row="photo-placeholder"]')).toHaveLength(2);
+    expect(container.querySelectorAll('[data-gallery-layout] [data-row="photo-placeholder"]')).toHaveLength(0);
     const official = screen.getAllByRole("img", { name: "공식 게시물 1" })[0]!;
     expect(official).toHaveAttribute("width", "1080");
     expect(official).toHaveAttribute("height", "1350");
