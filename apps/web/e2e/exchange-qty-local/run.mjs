@@ -1,4 +1,4 @@
-// 합성 fixture 촬영: 수량 선택·진행·중단. 사용: node run.mjs OUT_DIR
+// 합성 fixture 촬영(B13): 덕질 지갑 카드 안 [− N +]·광고 1회 교환·중단·0장·하루 한도. 사용: node run.mjs OUT_DIR
 import path from 'node:path';
 import { mkdir } from 'node:fs/promises';
 import { createRequire } from 'node:module';
@@ -16,27 +16,30 @@ const server = await createServer({ configFile: false, root: here, publicDir: pa
   server: { host: '127.0.0.1', port: 4192, strictPort: true, fs: { allow: [root] } } });
 await server.listen();
 const browser = await chromium.launch({ headless: true }); const log = [];
+const exchangeName = { ko: '광고 보고 교환하기', en: 'Watch an ad to exchange', ru: 'Посмотреть рекламу и обменять', th: 'ดูโฆษณาเพื่อแลก', fr: 'Regarder une publicité pour échanger', es: 'Ver un anuncio para canjear', pt: 'Assistir a um anúncio para trocar' };
 async function open(w, qs) { const ctx = await browser.newContext({ viewport: { width: w, height: 900 } }), page = await ctx.newPage(); const errs = []; page.on('pageerror', e => errs.push(e.message)); page.on('console', m => m.type() === 'error' && errs.push(m.text()));
-  await page.goto('http://127.0.0.1:4192/?' + qs); await page.locator('form button[type=submit]').waitFor({ timeout: 15000 }); await page.waitForTimeout(600); return { ctx, page, errs }; }
+  await page.goto('http://127.0.0.1:4192/?' + qs); await page.locator('[data-wallet-card="stan"] output').waitFor({ timeout: 15000 }); await page.waitForTimeout(400); return { ctx, page, errs }; }
 const shot = (page, w, name) => page.screenshot({ path: path.join(out, `${name}-${w}.png`) });
+const measure = page => page.evaluate(() => { const card = document.querySelector('[data-wallet-card="stan"]'), r = card.getBoundingClientRect();
+  const clipped = [...card.querySelectorAll('button, output, a')].filter(e => e.scrollWidth > e.clientWidth + 1 || e.scrollHeight > e.clientHeight + 1).map(e => e.textContent || e.getAttribute('aria-label'));
+  return { cardHeight: Math.round(r.height), hOverflow: document.documentElement.scrollWidth > innerWidth, clipped, output: card.querySelector('output').textContent,
+    buttons: [...card.querySelectorAll('button')].map(b => { const x = b.getBoundingClientRect(); return `${b.getAttribute('aria-label') ?? b.textContent}:${Math.round(x.width)}x${Math.round(x.height)}${b.disabled ? ':disabled' : ''}`; }) }; });
+const toast = page => page.locator('[data-fan-toast], [role="status"], [role="alert"]').allInnerTexts().catch(() => []);
 for (const w of [390, 1440]) {
-  { const { ctx, page, errs } = await open(w, 'remaining=5'); await shot(page, w, 'a1-default');
-    await page.getByRole('button', { name: '3', exact: true }).click(); await shot(page, w, 'a2-pick3');
-    log.push({ w, case: 'pick3', value: await page.locator('output').first().innerText(), errs, hOverflow: await page.evaluate(() => document.documentElement.scrollWidth > innerWidth),
-      targets: await page.locator('[role=group] button').evaluateAll(n => n.map(e => { const r = e.getBoundingClientRect(); return `${e.textContent || e.getAttribute('aria-label')}:${Math.round(r.width)}x${Math.round(r.height)}`; })) });
-    await ctx.close(); }
-  { const { ctx, page, errs } = await open(w, 'remaining=5&plan=earn,cancel,earn'); await page.getByRole('button', { name: '3', exact: true }).click();
-    await page.getByRole('button', { name: /교환/ }).click(); await page.waitForTimeout(500);
-    log.push({ w, case: 'buttons-after-start', buttons: await page.getByRole('button').allInnerTexts() });
-    await shot(page, w, 'b1-loading');
-    const show = page.getByRole('button', { name: /광고 보기|광고 시작|보기/ }); if (await show.count()) await show.first().click();
-    await page.waitForTimeout(1500); await shot(page, w, 'b2-second');
-    const bar = await page.locator('[role=progressbar]').first().getAttribute('aria-valuetext').catch(() => null); log.push({ w, case: 'progress', valuetext: bar });
-    const show2 = page.getByRole('button', { name: /광고 보기|광고 시작|보기/ }); if (await show2.count()) await show2.first().click();
-    await page.waitForTimeout(1500); await shot(page, w, 'b3-stopped');
-    log.push({ w, case: 'stopped', text: (await page.locator('body').innerText()).slice(0, 500), posts: await page.evaluate(() => window.__posts), errs }); await ctx.close(); }
-  for (const lc of ['ru', 'th']) { const { ctx, page } = await open(w, 'remaining=5&locale=' + lc); await page.getByRole('button').filter({ hasText: /^3$/ }).first().click(); await shot(page, w, 'd-' + lc + '-pick3'); await ctx.close(); }
-  { const { ctx, page } = await open(w, 'unit=none&remaining=5'); await page.getByRole('button', { name: /교환/ }).click(); await page.waitForTimeout(700); await shot(page, w, 'c1-nounit');
-    log.push({ w, case: 'nounit', posts: await page.evaluate(() => window.__posts), text: (await page.locator('[role=status],[role=alert]').allInnerTexts()) }); await ctx.close(); }
+  { const { ctx, page, errs } = await open(w, 'points=350'); await shot(page, w, 'a1-default-max3'); log.push({ w, case: 'default', ...await measure(page), errs });
+    await page.getByRole('button', { name: '수량 줄이기' }).click(); await shot(page, w, 'a2-minus'); log.push({ w, case: 'minus', output: (await measure(page)).output }); await ctx.close(); }
+  { const { ctx, page, errs } = await open(w, 'points=350'); await page.getByRole('button', { name: exchangeName.ko }).click(); await page.waitForTimeout(250); await shot(page, w, 'b1-ad-loading');
+    await page.waitForTimeout(1500); await shot(page, w, 'b2-done-toast');
+    log.push({ w, case: 'one-press', posts: await page.evaluate(() => window.__posts), bodies: await page.evaluate(() => window.__bodies), toast: await toast(page), after: await measure(page), dialogs: await page.locator('[role=dialog]').count(), errs }); await ctx.close(); }
+  { const { ctx, page } = await open(w, 'points=350&plan=cancel'); await page.getByRole('button', { name: exchangeName.ko }).click(); await page.waitForTimeout(1200); await shot(page, w, 'c1-cancelled');
+    log.push({ w, case: 'cancelled', posts: await page.evaluate(() => window.__posts), toast: await toast(page) }); await ctx.close(); }
+  { const { ctx, page } = await open(w, 'points=50'); await shot(page, w, 'd1-zero'); log.push({ w, case: 'zero', ...await measure(page) }); await ctx.close(); }
+  { const { ctx, page } = await open(w, 'points=350&remaining=0'); await page.getByRole('button', { name: exchangeName.ko }).click(); await page.waitForTimeout(800); await shot(page, w, 'e1-daily-limit');
+    log.push({ w, case: 'daily-limit', posts: await page.evaluate(() => window.__posts), toast: await toast(page) }); await ctx.close(); }
+  for (const lc of ['ko', 'ru']) { const ctx = await browser.newContext({ viewport: { width: w, height: 1000 } }), page = await ctx.newPage(); await page.goto('http://127.0.0.1:4192/?my=1&locale=' + lc); await page.locator('[data-my-cards]').waitFor(); await page.waitForTimeout(400);
+    await shot(page, w, 'h-my-' + lc); log.push({ w, case: 'my-' + lc, heights: await page.evaluate(() => [...document.querySelectorAll('[data-state]')].map(e => `${e.dataset.state}:${Math.round(e.firstElementChild.getBoundingClientRect().height)}:${[...e.querySelectorAll('dd,h2')].filter(x => x.scrollWidth > x.clientWidth + 1).map(x => `clipped ${x.textContent} ${x.scrollWidth}/${x.clientWidth}`).join(',') || 'ok'}`)) }); await ctx.close(); }
+  for (const lc of ['ko', 'en', 'fr']) { const ctx = await browser.newContext({ viewport: { width: w, height: 900 } }), page = await ctx.newPage(); await page.goto('http://127.0.0.1:4192/?hold=1&locale=' + lc); await page.locator('[data-wallet-card="stan"]').waitFor(); await page.waitForTimeout(400);
+    await shot(page, w, 'g-loading-' + lc); log.push({ w, case: 'loading-' + lc, cardHeight: await page.evaluate(() => Math.round(document.querySelector('[data-wallet-card="stan"]').getBoundingClientRect().height)) }); await ctx.close(); }
+  for (const lc of ['en', 'ru', 'th', 'fr', 'es', 'pt']) { const { ctx, page } = await open(w, 'points=350&locale=' + lc); await shot(page, w, 'f-' + lc); log.push({ w, case: 'locale-' + lc, ...await measure(page) }); await ctx.close(); }
 }
 console.log(JSON.stringify(log, null, 1)); await browser.close(); await server.close();

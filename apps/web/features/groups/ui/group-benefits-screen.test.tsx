@@ -250,17 +250,17 @@ it('shows geometry placeholders only during initial reads and replaces them with
 
 
 
-it('F2: the wallet is two assets, their next steps and one action, with the rules behind 안내 and no help button',async()=>{
+it('F2: the wallet is two assets, their next steps and one action row ([− N +] and the exchange), with the rules behind 안내 and no help button',async()=>{
  withFavorite();render(<GroupBenefitsScreen locale='ko'/>);const button=await screen.findByRole('button',{name:'광고 보고 교환하기'});
  expect(screen.queryByRole('radio')).toBeNull();expect(document.querySelector('fieldset')).toBeNull();
  const card=button.closest('section')!;expect(card).toHaveAttribute('data-wallet-card','stan');expect(card).toHaveTextContent('137P');expect(card).toHaveTextContent('응모권7장');expect(card).toHaveTextContent('교환 가능');
  const hrefs=Object.fromEntries([...card.querySelectorAll<HTMLElement>('[data-cell]')].map(cell=>[cell.dataset.cell,cell.getAttribute('href')]));
  expect(hrefs).toEqual({points:'#stan-history',hearts:'/bias-x?tab=fans&locale=ko',tickets:'/my/raffles?locale=ko',stamps:'/passports?locale=ko'});
  expect(within(card).getByRole('link',{name:'안내'})).toHaveAttribute('href','/guide/dukjil?locale=ko');
- expect(within(card).getAllByRole('button')).toHaveLength(1);expect(card.querySelectorAll('a button, a [role="button"]')).toHaveLength(0);expect(card.querySelectorAll('[aria-disabled="true"]')).toHaveLength(0);
+ expect(within(card).getAllByRole('button').map(b=>b.getAttribute('aria-label')??b.textContent)).toEqual(['수량 줄이기','수량 늘리기','광고 보고 교환하기']);expect(within(card).getByRole('group',{name:'수량'})).toHaveTextContent('1장');expect(card.querySelectorAll('a button, a [role="button"]')).toHaveLength(0);expect(card.querySelectorAll('[aria-disabled="true"]')).toHaveLength(0);
  expect(screen.queryByRole('button',{name:/도움말|설명/})).toBeNull();expect(document.querySelector('main')!.textContent).not.toContain('준비 중');
  expect(document.getElementById('stan-lucky')).not.toBeNull();expect(document.getElementById('stan-cheer')).not.toBeNull();expect(document.getElementById('stan-history')).not.toBeNull();
- fireEvent.click(button);expect(screen.getByRole('dialog',{name:'응모권 전환'})).toBeInTheDocument();fireEvent.click(screen.getByRole('button',{name:'전환 닫기'}));expect(screen.queryByRole('dialog')).toBeNull();
+ fireEvent.click(button);expect(screen.queryByRole('dialog')).toBeNull();
 });
 it('E5: zero values are written as numbers, never a dash',async()=>{
  const base=fetch;vi.stubGlobal('fetch',vi.fn((url:string,init?:RequestInit)=>url==='/api/me/wallet'?Promise.resolve(Response.json({...wallet,points:0,tickets:0})):base(url,init)));

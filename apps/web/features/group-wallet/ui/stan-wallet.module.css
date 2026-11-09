@@ -12,7 +12,7 @@
   background: var(--color-surface);
 }
 .cell { display: grid; align-content: start; gap: var(--space-1); min-width: 0; padding: var(--space-3) var(--space-4) var(--space-2); color: inherit; text-decoration: none; }
-.cell:hover { background: var(--color-soft); }
+.cell:hover { background: var(--color-accent-soft); }
 .cell:focus-visible { outline: 2px solid var(--color-focus); outline-offset: -2px; }
 .cell[data-cell="points"] { grid-area: points; border-start-start-radius: inherit; }
 .cell[data-cell="hearts"] { grid-area: hearts; border-inline-start: 1px solid var(--color-line); border-start-end-radius: inherit; }
@@ -38,6 +38,17 @@
 .guide > svg { flex: none; color: var(--color-muted); }
 .action { display: grid; grid-area: action; min-width: 0; padding: var(--space-3) var(--space-4); border-top: 1px solid var(--color-line); }
 .action > * { white-space: nowrap; }
+/* B13: [− N +] and the exchange on one line (390); a label too long for that line (fr, ru, es…) moves the button to its own full row instead of wrapping
+   into three lines. Stacked in the 288px column (768+), where the label may wrap, never clip. */
+.exchange { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); min-width: 0; }
+.stepper { display: flex; flex: none; align-items: center; }
+.stepper output { min-width: var(--min-target); font-size: var(--fan-item-title-size); font-weight: var(--fan-item-title-weight); line-height: 24px; text-align: center; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.stepper button:disabled { opacity: .4; color: var(--color-ink); }
+.stepperSlot { display: inline-grid; width: var(--min-target); height: var(--min-target); place-items: center; opacity: .4; }
+@media (hover: hover) and (pointer: fine) { .stepper button:hover:not(:disabled) { background: var(--color-accent-soft); } }
+.exchangeAction { flex: 1 1 auto; white-space: nowrap; }
+/* U-1 (회색 면 0): the shared secondary hover fills grey (--color-soft); inside this card it is the pink tint with the pink line instead. */
+@media (hover: hover) and (pointer: fine) { .exchange .exchangeAction:hover:not(:disabled) { border-color: var(--color-accent-line); background: var(--color-accent-soft); } }
 @media (min-width: 48rem) {
   .wallet { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 288px; grid-template-areas: "points hearts action" "tickets stamps action"; }
   .cell { padding: var(--space-4) var(--space-5) var(--space-1); }
@@ -52,6 +63,9 @@
   /* The action fills the whole column (its line runs the card's height) and centers the button; the guide link sits over its top end. */
   .guide { grid-area: action; padding-inline: var(--space-5); }
   .action { align-content: center; padding: 0 var(--space-4); border-top: 0; border-inline-start: 1px solid var(--color-line); }
+  .exchange { flex-direction: column; flex-wrap: nowrap; align-items: stretch; }
+  .exchangeAction { white-space: normal; }
+  .stepper { justify-content: center; }
 }
 
 /* r6 visual review: "응모권 2 장", "스탬프 4 /9" read as split; the step number keeps its unit attached. */

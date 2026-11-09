@@ -1,34 +1,37 @@
 "use client";
 
 import { useEffect } from "react";
-import { WalletCard } from "@/features/group-wallet/ui/wallet-card";
+import { fanLoginHref } from "@/components/login-href";
+import { WalletCard, type Slot } from "@/features/group-wallet/ui/wallet-card";
 import { GROUP_WALLET_CHANGED_EVENT, useGroupResource } from "@/features/groups/ui/use-group-resource";
+import { useSelectedBias } from "@/features/selected-bias/ui/use-selected-bias";
 import type { AppLocale } from "@/i18n/locales";
 import { walletSchema } from "@/server/group-wallet/domain";
 import { myHomeText } from "./my-home-copy";
-import { GuestLoginAction } from "./guest-login";
 
 const parseWallet = (value: unknown) => walletSchema.parse(value);
-const common = (locale: AppLocale) => ({ locale, framed: true, title: myHomeText(locale, "walletTitle"), viewLabel: myHomeText(locale, "viewWallet") });
+const title = (locale: AppLocale) => myHomeText(locale, "walletTitle");
+const walletHref = (locale: AppLocale) => `/benefits?locale=${locale}#wallet`;
 
-/** MY 지갑: 덕질과 같은 카드에 머리만 더한다. 내역은 넣지 않고 `지갑 보기`로 보낸다. */
+/** MY 내 지갑 (B13): the balances only, as one link to the 덕질 wallet where exchanging happens. Hearts are the favorite's, as in 덕질. */
 export function MyWalletCard({ locale }: { locale: AppLocale }) {
-  const wallet = useGroupResource("/api/me/wallet", parseWallet);
+  const wallet = useGroupResource("/api/me/wallet", parseWallet), bias = useSelectedBias(locale);
   const { retry } = wallet;
   useEffect(() => {
     window.addEventListener(GROUP_WALLET_CHANGED_EVENT, retry);
     return () => window.removeEventListener(GROUP_WALLET_CHANGED_EVENT, retry);
   }, [retry]);
   const data = wallet.data;
-  return <WalletCard {...common(locale)} viewHref={`/my/wallet?locale=${locale}`} state={data ? { kind: "ready", points: data.points, tickets: data.tickets, pointCost: data.pointCost } : wallet.loading ? { kind: "loading" } : { kind: "failed", retry }} />;
+  const hearts: Slot = bias.status === "loading" ? "loading" : bias.selected ? bias.selected.hearts ?? "missing" : 0;
+  return <WalletCard locale={locale} title={title(locale)} href={walletHref(locale)} hearts={hearts} state={data ? { kind: "ready", points: data.points, tickets: data.tickets, pointCost: data.pointCost } : wallet.loading ? { kind: "loading" } : { kind: "failed" }} />;
 }
 
-/** 지갑을 읽는 동안의 카드. */
+/** 지갑을 읽는 동안의 카드(같은 132px). */
 export function MyWalletCardSkeleton({ locale }: { locale: AppLocale }) {
-  return <WalletCard {...common(locale)} viewHref={`/my/wallet?locale=${locale}`} state={{ kind: "loading" }} />;
+  return <WalletCard locale={locale} title={title(locale)} href={walletHref(locale)} hearts="loading" state={{ kind: "loading" }} />;
 }
 
-/** 비로그인 지갑 카드. 같은 외곽에 잠긴 잔액과 비율 줄을 두고, 화면의 강조는 이 로그인 하나다. */
-export function MyGuestWalletCard({ locale, returnTo }: { locale: AppLocale; returnTo: string }) {
-  return <WalletCard {...common(locale)} viewHref={`/benefits?locale=${locale}`} state={{ kind: "guest", action: <GuestLoginAction locale={locale} returnTo={returnTo} variant="primary" fullWidth /> }} />;
+/** 비로그인 지갑 카드: 같은 외곽에 잠긴 숫자 3개, 카드 전체가 로그인으로 가고 로그인 뒤에는 로그인 카드와 같은 덕질 지갑으로 돌아온다. */
+export function MyGuestWalletCard({ locale }: { locale: AppLocale }) {
+  return <WalletCard locale={locale} title={title(locale)} href={fanLoginHref(locale, walletHref(locale))} hearts="locked" state={{ kind: "guest", action: null }} />;
 }

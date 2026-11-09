@@ -106,22 +106,16 @@ it('switches the passport card to the other favorite', () => {
   expect(within(card).getByText('실버까지 7점')).toBeInTheDocument();
 });
 
-it('uses the same ad-based exchange wording as 덕질 and enables it only when the points cover the rate', () => {
-  const { unmount } = renderMy();
-  const wallet = screen.getByRole('region', { name: '내 지갑' });
+it('B13: MY shows the wallet balances only, as one link to the 덕질 wallet, with no exchange or 모은 포인트 사용하기', () => {
+  renderMy();
+  const wallet = document.querySelector<HTMLAnchorElement>('[data-wallet-card="my"]')!;
+  expect(wallet).toHaveAttribute('href', '/benefits?locale=ko#wallet');
+  expect(wallet).toHaveAccessibleName('내 지갑');
   expect(wallet).toHaveTextContent('375P');
   expect(wallet).toHaveTextContent('9장');
-  expect(within(wallet).getByText('100 P')).toBeInTheDocument();
-  expect(within(wallet).getByText('1장')).toBeInTheDocument();
-  expect(screen.queryByText('포인트로 교환하기')).toBeNull();
-  const exchange = within(wallet).getByRole('button', { name: '광고 보고 교환하기' });
-  expect(exchange).toBeEnabled();
-  fireEvent.click(exchange);
-  expect(screen.getByRole('dialog', { name: '교환' })).toBeInTheDocument();
-  unmount();
-  data.wallet = { points: 40, hearts: 0, tickets: 0, pointCost: 100 };
-  renderMy();
-  expect(screen.getByRole('button', { name: '광고 보고 교환하기' })).toBeDisabled();
+  expect(wallet.querySelectorAll('dd')).toHaveLength(3);
+  for (const text of ['광고 보고 교환하기', '교환하기', '모은 포인트 사용하기', '모임 응모권']) expect(document.body.textContent).not.toContain(text);
+  expect(screen.queryByRole('button', { name: /교환/ })).toBeNull();
 });
 
 it('puts the raffle result above the passport and hides it once the result is opened, until a new result arrives', () => {

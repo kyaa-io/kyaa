@@ -58,7 +58,7 @@ do $$declare owner uuid:='e9000000-0000-4000-8000-000000000001';other uuid:='e90
  perform public.report_owned_group_wallet_ad_session(owner,ad,'shown',1);perform pg_sleep(1.2);
  perform pg_temp.wallet_assert(public.report_owned_group_wallet_ad_session(owner,ad,'granted',1)->>'status'='granted','granted after minimum interval is accepted');
  perform pg_temp.wallet_error(format('select public.exchange_owned_group_wallet(%L,%L,''group-wallet-v1'',''ticket'',1,%L,2)',other,extensions.gen_random_uuid(),ad),'AD_SESSION_INVALID');
- perform pg_temp.wallet_error(format('select public.exchange_owned_group_wallet(%L,%L,''group-wallet-v1'',''ticket'',2,%L,2)',owner,extensions.gen_random_uuid(),ad),'GROUP_WALLET_INVALID');
+ perform pg_temp.wallet_error(format('select public.exchange_owned_group_wallet(%L,%L,''group-wallet-v1'',''ticket'',4,%L,2)',owner,extensions.gen_random_uuid(),ad),'INSUFFICIENT_BALANCE');
  perform pg_temp.wallet_error(format('select public.exchange_owned_group_wallet(%L,%L,''group-wallet-v1'',''heart'',1,%L,2)',other,extensions.gen_random_uuid(),ad),'GROUP_WALLET_INVALID');
  perform pg_temp.wallet_error(format('select public.exchange_owned_group_wallet(%L,%L,''group-wallet-v1'',''heart'',2,%L,2)',owner,extensions.gen_random_uuid(),ad),'GROUP_WALLET_INVALID');
  perform pg_temp.wallet_error(format('select public.exchange_owned_group_wallet(%L,%L,''group-wallet-v1'',''ticket'',1,%L,null)',owner,extensions.gen_random_uuid(),ad),'AD_CONFIG_MISSING');

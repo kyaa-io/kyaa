@@ -49,7 +49,7 @@ A2 버튼 반경 8·높이 390 44 / 1024+ 48 · B2 칩 36·14/700·반경 8 · C
 | 오류 | 한 문장 + `다시 시도` 텍스트 1(버튼 모양 아님), 섹션 합산 규칙 유지 | `fan-state.tsx` | 2026-11-09 R7 |
 | 2열 화면 폭(덕질·홈) | 컨테이너 1,100 가운데, 본문 733 + 간격 24 + 보조 343(≈2:1). 보조 열 1단계 카드 ≤ 2(다음 행동 카드 1 + 고정 정보 1), 같은 화면군에서 같은 자리. 1열 화면 본문 ≤ 720. 1440 전폭 금지 | `fan-content-container.module.css`, 화면 그리드 | 2026-11-09 R4 |
 | 요소 간격 | 관련 4–8px, 하위 묶음 16px, 큰 구역 32/48px | 화면별 CSS | 승인: DESIGN.md 52행 |
-| 덕질 지갑 카드 | 잔액 카드 = 라벨 `포인트 적립·사용 ›` + 핵심 숫자 44/48 + `교환` 버튼 1(primary, 포인트 < 100 비활성) + 라벨-값 행 3(응모권 `100P = 응모권 1장`·스탬프 `9칸 = 하트 1`·하트 `하트 1 = 찐팬 1`). 교환은 덕질 한 곳, `광고 보고` 문구 0, MY에는 메뉴 행 `지갑 · P N ›`만 | `stan-wallet.tsx` | 2026-11-09 8장 plan ③, R19, G2 |
+| 덕질 지갑 카드 | **B13(사용자 확정 2026-11-09)으로 아래 값이 앞 계획을 대체한다.** 교환은 덕질 지갑 카드 한 곳. 카드 안 행동 줄 = `[− N장 +]`(FanIconButton 44, 기본값 = 지금 포인트로 바꿀 수 있는 최대 장수, 0장이면 조절·버튼 비활성) + `광고 보고 교환하기`(secondary, 문구 유지 — 감독 메모). 1탭 → 중간 창 없이 광고 1회 → N장 교환 1건 → 토스트 `응모권 +N장`(완료 [확인] 화면 0). 390은 한 줄, 그 줄에 문구가 다 들어가지 않는 언어(en·fr·ru·es·pt 등)는 버튼만 다음 줄 전폭(3줄 줄바꿈 금지), 768+는 288px 열 안에서 위아래. 로딩 칸은 같은 줄을 비활성으로 그려 언어마다 로딩·준비 높이가 같다. MY는 `내 지갑` 링크 카드 하나: 제목 + 포인트·응모권·하트 숫자 3칸(800, 1만 이상은 짧은 표기), 높이 132 고정(로그인·비로그인·0·로딩·실패 같음), 카드 전체 탭 → `/benefits#wallet`(비로그인은 로그인). MY의 교환 버튼·환율 줄·`모은 포인트 사용하기` 0. 예외: MY 카드 실패 상태는 숫자 자리 `—`만 두고 `다시 시도`를 두지 않는다(카드 전체가 링크라 안에 버튼을 넣지 않음. 회복은 덕질 지갑 카드의 `다시 시도`와 지갑 변경 이벤트가 맡는다, 오류 행 규칙의 예외) | `stan-wallet.tsx`, `stan-exchange.tsx`, `wallet-card.tsx` `WalletCard`, `my-wallet-card.tsx` | 2026-11-09 B13 장표(앞 값: 8장 plan ③, R19, G2 — `교환` 문구·MY 메뉴 행 계획은 B13이 대체. 이유: 사용자가 버튼 문구 유지·MY 잔액 카드를 확정) |
 | 안내 오버레이(곧 안내) | 16px/400, 12px 반경 상자 | `group-benefits.module.css` `.soonNotice` | 결정 2026-11-06: 본문이 아니라 흐린 미리보기 위 상태 표시라 상자는 유지, 굵기는 본문 400으로. 후보: FanState 전환은 이번에 안 함 |
 | 모임·덕질 제목 위 여백 | 상단 바 아래 390 16px / 1440 40px(홈은 히어로라 예외) | `group-benefits.module.css` `.page` padding-top, `groups.module.css` `.page` | 결정 2026-11-06: 모임 값을 기준으로 덕질을 맞춤. 로컬 화면 확인 전, dev 재측정으로 확인 |
 | 카드 사이 간격 | 12px | 화면별 CSS | 결정 2026-11-06: 덕질 요약 1440 16px → 12px |
@@ -357,7 +357,7 @@ node apps/web/scripts/measure-r3.mjs --base http://127.0.0.1:3001 --out <dir> [-
 | 글꼴 | `@font-face` `Pretendard UI 550/650/850`, `public/fonts/pencil/*.woff`, 모듈 `font-family` 선언 | `globals.css` body 1줄 | 부분: body 글꼴은 Variable 1줄이지만 `@font-face` 6개·`public/fonts/pencil/*.woff`와 e2e 하니스의 `Pretendard UI` 참조가 남아 있다 |
 | 컴포넌트 | `FanHelpTip`, `HelpHint`, `EarnBadge corner`, `EarnRemaining`, `EarnActionBadge`, `FanAction service/passport`, `FanEntityCard`·`FanPostRow`(→ `FanRow notice`), `SelectedBiasBar`·헤더 `SelectedBiasChip`(→ 메뉴 행), `GroupHeaderPoints`, `FanLanguageSwitch compact`(헤더), `PencilHeaderIcon`, `MissionArt`(미션 행), `StanLucky` 카드 목록(→ `LuckyDrawModule`), `WalletBalances`·`WalletExchange`(MY), `my-benefit-progress`, 오늘의 덕질 목록(`MyAttendanceList` 덕질 사용분), `relative-time.tsx`·`i18n/relative-time.ts`, 홈 `HomeCommunityPreview`·이벤트 배너·`HomeUpcoming`, 홈 브랜드 줄·배너 캐러셀 | §2 | 예정(A·B 화면 작업, 5차 보류). `FanAction service/passport`는 아직 알약 그라데이션 테두리(계약 시험 고정) |
 | CSS 패턴 | `linear-gradient`(로고 제외), `box-shadow`(오버레이 토큰 외), `border-radius` 10/16/20, `text-transform: uppercase`, `border-left` 액센트 바, 아이콘 뒤 채움 배경, `animation` 반복(모듈·스켈레톤 외), 개별 `keep-all`, `Pretendard UI` 참조 | 토큰·전역 | S1·N26·N27(집계)·N28로 추적. 목표 `Pretendard UI` 참조 0(현재 globals·e2e 하니스에 남음) |
-| 문구 키 | 도움말 키(`walletHelpCopy`·`stanHeartHelp` 등), `광고 보고 교환하기`, `오늘 N번 남음`·`N명까지`, `Kyaa. Every Fan Moment Counts.`(홈 본문), `모은 포인트 사용하기` | `/guide/dukjil` 사실 표, `교환`, `0/3` | A·B |
+| 문구 키 | 도움말 키(`walletHelpCopy`·`stanHeartHelp` 등), `오늘 N번 남음`·`N명까지`, `Kyaa. Every Fan Moment Counts.`(홈 본문), `모은 포인트 사용하기`(B13에서 삭제: 모임 홈은 `포인트·응모권` 제목 + `내 포인트 보기` 링크). `광고 보고 교환하기`는 B13(2026-11-09 사용자 확정)으로 유지, 폐기 대상 아님 | `/guide/dukjil` 사실 표, `0/3` | A·B |
 
 # 상세 이력 (기존 전체 내용, 삭제하지 않음)
 
@@ -1591,7 +1591,7 @@ UI018 섹션 구분은 흰 배경과 기존 경계색을 유지하며 자산 요
 
 교환·응원은 덕질로 모은다. `/my/wallet`은 잔액·내역과 덕질 이동만 제공하고, `view=support`는 `/benefits`로 이동한다. MY의 교환 행동과 응모권 부족 안내는 `/benefits`로 연결하고, 팬페이지 게시판 사이드의 하트·캡슐 항목은 덕질 링크 하나로 합친다. 모임 내부의 추첨 목록과 출석 다이얼로그는 유지한다.
 
-모임 응모권 전환은 보상형 광고 완료 후에만 진행한다(2026-11-04 사용자 결정). `NEXT_PUBLIC_REWARDED_AD_UNIT`이 없으면 덕질의 행동은 비활성에 `광고 준비 중이라 아직 교환할 수 없어요`(전용 문구, 12개 언어)를 표시한다. 후원·럭키드로우의 `곧 안내해 드릴게요`와 섞지 않는다. 다이얼로그에서 `광고 보고 교환하기` → `광고 보기`를 누르면 광고가 표시되고, 보상 이벤트 뒤에 기존 교환 요청을 한 번 보낸다. 취소·광고 없음·오류에는 차감하지 않고 그 사실을 안내한다. 교환 1회에 광고 1회이며 수량과 무관하다. 현재 서버 검증은 없어 브라우저 이벤트 기준이다.
+응모권 교환은 보상형 광고 완료 후에만 진행한다(2026-11-04 사용자 결정, 흐름은 2026-11-09 B13). 덕질 지갑 카드의 `[− N장 +]`로 장수를 고르고 `광고 보고 교환하기`를 1탭하면 중간 창 없이 서버가 광고 세션을 발급하고 광고가 1회 표시된다. 광고 시청이 서버에서 granted로 확인되면 교환 요청 1건을 보내고, 서버는 그 granted 세션 1개를 소비하며 같은 트랜잭션에서 N×100P를 차감하고 응모권 N장을 적립한다(`exchange_owned_group_wallet`, 1~1000장, 하루 한도는 소비된 세션 = 교환 횟수로 센다). 끝나면 토스트 `응모권 +N장`만 띄우고 완료 화면은 없다. 취소·광고 없음·오류·하루 한도에는 차감하지 않고 기존 문구를 토스트로 안내한다. 광고 단위(`NEXT_PUBLIC_REWARDED_AD_UNIT`)가 없거나 이 기기에서 광고를 볼 수 없으면 버튼은 눌리고, 누른 뒤 그 사유를 토스트로 알린다. 응답을 잃으면 같은 요청 키·같은 세션으로 다시 확인해 두 번 차감하지 않는다.
 
 ## 2026-11-04 수락 작업 통합 (checks, DESIGN-SYNC-20261104-01)
 

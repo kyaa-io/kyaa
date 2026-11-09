@@ -1,4 +1,4 @@
-import {BenefitsSummary,BenefitsCatalog,BenefitsComingSoon,BenefitsExchangeShop} from '@/features/groups/ui/group-benefits-screen';
+import {BenefitsSummary,BenefitsCatalog,BenefitsComingSoon} from '@/features/groups/ui/group-benefits-screen';
 import {useEffect,useState,type MouseEvent} from 'react';
 import {ChevronRight,Minus,Plus,RefreshCw} from 'lucide-react';
 import {FanAppHeader,FanAppBottomNavigation} from '@/components/fan-shell/fan-app-shell';
@@ -32,7 +32,6 @@ export function PencilBenefitsPreview({locale,nodeId='sX58m',onClose,onRetry,onN
  return <div className='pencilBenefitsPreview' data-fan-surface lang={locale} data-source-node={nodeId}><FanAppHeader locale={locale} currentPath='/benefits' groupsEnabled/>
  <main className='pencilBenefitsMain'><header className='pencilBenefitsHeading'><h1>{groupBenefitsCopy(locale).title}</h1><a className='pencilBenefitsHistoryChip' href='/?view=history' {...link('/?view=history')}>{groupBenefitsCopy(locale).history}<ChevronRight size={16} aria-hidden='true'/></a></header>
  <section className='pencilBenefitsWalletSection' aria-label={walletCopy(locale).wallet}><h2 className='pencilBenefitsSrOnly'>{walletCopy(locale).wallet}</h2><BenefitsSummary locale={locale} points={deliberate||!wallet?'— P':`${wallet.points.toLocaleString(locale)} P`} tickets={deliberate||!wallet?'—':wallet.tickets.toLocaleString(locale)}/>{!deliberate&&summary.state==='loading'&&<p role='status' className='pencilBenefitsSrOnly'>{walletCopy(locale).loading}</p>}{!deliberate&&summary.state==='guest'&&<FanAction href={`/login?locale=${locale}&returnTo=${encodeURIComponent(`/benefits?locale=${locale}`)}`}>{walletCopy(locale).login}</FanAction>}{!deliberate&&summary.state==='error'&&<div role='alert'><p>{walletCopy(locale).error}</p><FanAction onClick={summary.retry}>{walletCopy(locale).retry}</FanAction></div>}</section>
- <BenefitsExchangeShop locale={locale}/>
  <BenefitsComingSoon locale={locale} grouped>
  <section className='pencilBenefitsParticipation'><BenefitsCatalog kind='raffles' locale={locale} heading={groupBenefitsCopy(locale).lucky}/></section></BenefitsComingSoon>
  <a className='pencilBenefitsMobileHistory' href='/my/wallet?section=history' {...link('/my/wallet?section=history')}>{walletCopy(locale).history}</a></main><FanAppBottomNavigation locale={locale} currentPath='/benefits' groupsEnabled/>
