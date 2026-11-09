@@ -20,7 +20,7 @@
   border-radius: 12px;
   background: var(--color-ink);
   color: var(--color-surface);
-  font-weight: 750;
+  font-weight: 700;
   line-height: 44px;
   text-decoration: none;
   transform: translateY(-72px);
@@ -90,7 +90,7 @@
   margin: 8px 0 0;
   color: var(--color-muted);
   font-size: 14px;
-  font-weight: 550;
+  font-weight: 400;
   line-height: 1.5;
   text-wrap: pretty;
 }
@@ -171,7 +171,7 @@
 
 .permission .status {
   color: var(--color-ink);
-  font-weight: 750;
+  font-weight: 700;
 }
 
 .layout {
@@ -188,7 +188,7 @@
 
 .readError p { margin: 0; }
 .readError div { display: flex; gap: 8px; margin-top: 12px; }
-.readError a { color: inherit; font: inherit; font-weight: 750; }
+.readError a { color: inherit; font: inherit; font-weight: 700; }
 
 .list {
   overflow: hidden;
@@ -257,7 +257,7 @@
   grid-column: 2;
   overflow: hidden;
   font-size: 15px;
-  font-weight: 750;
+  font-weight: 700;
   letter-spacing: -0.02em;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -265,7 +265,7 @@
 
 .row[data-read-state="read"] .copy strong {
   color: var(--color-ink);
-  font-weight: 650;
+  font-weight: 700;
 }
 
 .copy span,
@@ -463,7 +463,7 @@
     gap: 4px;
     color: var(--color-muted);
     font-size: 11px;
-    font-weight: 650;
+    font-weight: 700;
     text-decoration: none;
   }
 

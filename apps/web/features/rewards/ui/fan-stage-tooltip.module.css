@@ -80,14 +80,14 @@
 .inlineCopy strong {
   overflow-wrap: anywhere;
   font-size: 18px;
-  font-weight: 850;
+  font-weight: 800;
   line-height: 1.15;
 }
 
 .inlineCopy small {
   color: var(--muted, #716d67);
   font-size: 12px;
-  font-weight: 650;
+  font-weight: 700;
   line-height: 1.15;
 }
 
@@ -103,7 +103,7 @@
   text-align: start;
 }
 .compactTrigger:hover { background: #f7f5f1; }
-.compactLabel { min-width: 0; overflow-wrap: anywhere; font-size: 11px; font-weight: 650; line-height: 1.4; }
+.compactLabel { min-width: 0; overflow-wrap: anywhere; font-size: 11px; font-weight: 700; line-height: 1.4; }
 
 .tooltip {
   position: fixed;
@@ -155,7 +155,7 @@
 
 .reached {
   color: #936d29;
-  font-weight: 750;
+  font-weight: 700;
 }
 
 @media (prefers-reduced-motion: no-preference) {

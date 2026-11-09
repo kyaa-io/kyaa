@@ -75,7 +75,7 @@
 .eyebrow {
   color: var(--fanmeeting-pink);
   font-size: 12px;
-  font-weight: 750;
+  font-weight: 700;
   letter-spacing: 1.5px;
   line-height: 1.4;
 }
@@ -131,7 +131,7 @@
   min-height: 44px;
   color: var(--fanmeeting-ink);
   font-size: 14px;
-  font-weight: 650;
+  font-weight: 700;
 }
 .supportLink:hover {
   text-decoration: underline;
@@ -189,7 +189,7 @@
 .stageBackdrop > span {
   color: var(--color-accent-line);
   font-size: 10px;
-  font-weight: 650;
+  font-weight: 700;
   letter-spacing: 1.5px;
 }
 .stageFloor {
@@ -243,7 +243,7 @@
   gap: 8px;
   color: var(--color-accent);
   font-size: 12px;
-  font-weight: 650;
+  font-weight: 700;
   line-height: 1.4;
   text-align: center;
 }
@@ -251,7 +251,7 @@
   padding-block: 22px;
   border-block: 1px solid var(--fanmeeting-line);
   font-size: 15px;
-  font-weight: 650;
+  font-weight: 700;
   letter-spacing: 0.7px;
   color: var(--fanmeeting-muted);
   line-height: 1.4;
@@ -270,7 +270,7 @@
 .sectionHeading h2 {
   font-size: 40px;
   line-height: 1.25;
-  font-weight: 750;
+  font-weight: 700;
   letter-spacing: -0.8px;
 }
 .partnerGrid,
@@ -305,7 +305,7 @@
 }
 .partnerCard h3 {
   font-size: 26px;
-  font-weight: 750;
+  font-weight: 700;
   line-height: 1.4;
 }
 .partnerCard ul {
@@ -377,7 +377,7 @@
 .passportBand h3 {
   font-size: 28px;
   line-height: 1.4;
-  font-weight: 750;
+  font-weight: 700;
   margin-bottom: 10px;
 }
 .passportBand p,
@@ -421,13 +421,13 @@
 .stepNumber {
   font-size: 36px;
   line-height: 1.4;
-  font-weight: 750;
+  font-weight: 700;
   color: var(--color-accent);
 }
 .processGrid h3 {
   font-size: 23px;
   line-height: 1.4;
-  font-weight: 750;
+  font-weight: 700;
 }
 .faq {
   display: flex;
@@ -462,7 +462,7 @@
 }
 .inquiry h2 {
   font-size: 42px;
-  font-weight: 750;
+  font-weight: 700;
   line-height: 1.2;
 }
 .email {
@@ -473,7 +473,7 @@
   font-family: inherit;
   font-size: 32px;
   line-height: 1.4;
-  font-weight: 750;
+  font-weight: 700;
   color: var(--fanmeeting-ink);
   overflow-wrap: anywhere;
   cursor: pointer;

@@ -30,10 +30,7 @@
 .root button {
   cursor: pointer;
 }
-.root button:disabled {
-  cursor: default;
-  opacity: 0.45;
-}
+.root button:disabled {cursor: default;border-color:var(--color-line);background:var(--fan-action-disabled-bg);color:var(--fan-action-disabled-ink)}
 .root :is(button, a, input):focus-visible {
   outline: 3px solid var(--color-accent);
   outline-offset: 4px;
@@ -66,7 +63,7 @@
   gap: 28px;
 }
 .header [aria-current] {
-  font-weight: 650;
+  font-weight: 700;
 }
 .header .mobileNav {
   display: none;
@@ -119,7 +116,7 @@
 .selector h2,
 .general h2 {
   font-size: 20px;
-  font-weight: 650;
+  font-weight: 700;
   letter-spacing: -0.4px;
 }
 .searchTrigger,
@@ -175,7 +172,7 @@
 }
 .person[aria-pressed="true"] {
   color: var(--color-accent);
-  font-weight: 600;
+  font-weight: 700;
 }
 .person[aria-pressed="true"] .avatarRing {
   border-color: var(--color-accent);
@@ -202,7 +199,7 @@
 }
 .url {
   font-size: 30px;
-  font-weight: 650;
+  font-weight: 700;
   letter-spacing: -0.8px;
   overflow-wrap: anywhere;
 }
@@ -224,7 +221,7 @@
   gap: 8px;
   color: var(--color-ink);
   font-size: 14px !important;
-  font-weight: 600;
+  font-weight: 700;
   line-height: 1.5 !important;
   text-align: center;
 }
@@ -270,7 +267,7 @@
 .events > h2 {
   font-size: 26px;
   letter-spacing: -0.7px;
-  font-weight: 650;
+  font-weight: 700;
   line-height: 1.5;
 }
 .intro {
@@ -289,7 +286,7 @@
 .letter {
   color: var(--color-accent);
   font-size: 14px;
-  font-weight: 650;
+  font-weight: 700;
   display: block;
   margin-bottom: 8px;
 }
@@ -297,7 +294,7 @@
   font-size: 24px;
   letter-spacing: -0.5px;
   line-height: 1.5;
-  font-weight: 650;
+  font-weight: 700;
 }
 .description {
   font-size: 16px;
@@ -374,7 +371,7 @@
   display: flex;
   gap: 8px;
   color: var(--color-accent);
-  font-weight: 600;
+  font-weight: 700;
   font-size: 14px;
   margin-top: 12px;
   overflow-wrap: anywhere;
@@ -414,7 +411,7 @@
   white-space: pre-line;
   color: var(--color-surface);
   font-size: 15px;
-  font-weight: 650;
+  font-weight: 700;
   line-height: 1.55;
 }
 .storyText > span {
@@ -513,7 +510,7 @@
 }
 .steps h3 {
   font-size: 16px;
-  font-weight: 650;
+  font-weight: 700;
 }
 .steps p {
   font-size: 14px;
@@ -530,7 +527,7 @@
 }
 .related h2 {
   font-size: 18px;
-  font-weight: 650;
+  font-weight: 700;
 }
 .related p {
   font-size: 14px;
@@ -595,10 +592,7 @@
   font: inherit;
   cursor: pointer;
 }
-.picker button:disabled {
-  opacity: 0.4;
-  cursor: default;
-}
+.picker button:disabled {cursor: default;color:var(--fan-action-disabled-ink)}
 .picker :is(button, input):focus-visible {
   outline: 3px solid var(--color-accent);
   outline-offset: 3px;

@@ -6,7 +6,7 @@
 .panel h2 { margin: 0 0 16px; font-size: 22px; }
 .form { display: grid; gap: 16px; }
 .form fieldset { display: grid; gap: 16px; border: 0; margin: 0; padding: 0; min-width: 0; }
-.form label { display: grid; gap: 8px; font-size: 14px; font-weight: 650; }
+.form label { display: grid; gap: 8px; font-size: 14px; font-weight: 700; }
 .form input, .form textarea, .form select { width: 100%; box-sizing: border-box; min-height: 44px; padding: 12px; border: 1px solid #ccc; border-radius: 12px; background: #fff; color: inherit; font: inherit; }
 .form textarea { resize: vertical; }
 .columns { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 16px; }

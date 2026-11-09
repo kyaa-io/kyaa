@@ -12,7 +12,7 @@
 .roleHeading small { display:block; margin-top:4px; color:#62636a; font-size:11px; }
 .roleHeading img { width:64px; height:48px; border-radius:8px; background:#eceef2; object-fit:contain; }
 .sourceActions { display:grid; gap:12px; }
-.uploadButton,.editor button { display:inline-flex; min-height:44px; box-sizing:border-box; align-items:center; justify-content:center; gap:7px; padding:0 13px; border:1px solid #c8c9cf; border-radius:10px; background:#fff; color:#17171a; cursor:pointer; font:inherit; font-size:13px; font-weight:750; }
+.uploadButton,.editor button { display:inline-flex; min-height:44px; box-sizing:border-box; align-items:center; justify-content:center; gap:7px; padding:0 13px; border:1px solid #c8c9cf; border-radius:10px; background:#fff; color:#17171a; cursor:pointer; font:inherit; font-size:13px; font-weight:700; }
 .uploadButton { justify-self:start; position:relative; }
 .uploadButton input { position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); clip-path:inset(50%); white-space:nowrap; }
 .uploadButton svg,.editor button svg { width:16px; }
@@ -25,7 +25,7 @@
 .altGrid,.frames { display:grid; gap:14px; }
 .frames fieldset { display:grid; min-width:0; gap:12px; margin:0; padding:14px; border:1px solid #e2e3e7; border-radius:12px; background:#fff; }
 .frames legend { width:100%; padding:0; font-size:13px; font-weight:800; }
-.frames legend small { float:right; margin-left:10px; color:#62636a; font-size:11px; font-weight:600; font-variant-numeric:tabular-nums; }
+.frames legend small { float:right; margin-left:10px; color:#62636a; font-size:11px; font-weight:700; font-variant-numeric:tabular-nums; }
 .framePreview { position:relative; display:grid; width:100%; overflow:hidden; place-items:center; border-radius:9px; background:#eceef2; }
 .framePreview img { position:absolute; inset:0; min-width:0; min-height:0; display:block; width:100%; height:100%; }
 .frameControls { display:grid; gap:12px; }

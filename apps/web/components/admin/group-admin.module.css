@@ -8,7 +8,7 @@
 .surface li > :is(a,button) { margin:8px 8px 12px 0; }
 .surface form { max-width:720px; margin-block:16px; }
 .surface fieldset { gap:16px; }
-.surface label:has(input[type="checkbox"]) { display:flex; align-items:center; gap:10px; min-height:44px; font-weight:500; }
+.surface label:has(input[type="checkbox"]) { display:flex; align-items:center; gap:10px; min-height:44px; font-weight:400; }
 .surface input[type="checkbox"] { flex:none; width:20px; height:20px; min-height:20px; margin:0; accent-color:var(--color-accent); }
 .surface :is(select,input,textarea):focus-visible { outline:2px solid var(--color-accent); outline-offset:3px; }
 .surface button[type="submit"] { justify-self:start; min-width:120px; width:auto; }
@@ -33,7 +33,7 @@
 .applicationTitle{display:flex;align-items:center;gap:12px;margin:0 0 16px;font-size:24px;line-height:34px;font-weight:700}
 .applicationTitle>span{display:grid;place-items:center;width:44px;height:44px;border-radius:12px;background:var(--color-soft);color:var(--color-muted)}
 .applicationTabs{display:flex;gap:8px;margin-bottom:16px}
-.applicationTabs button{flex:1;min-height:44px;padding:0 16px;border:1px solid var(--color-line);border-radius:12px;background:var(--color-surface);color:var(--color-ink);font:inherit;font-size:14px;font-weight:650;cursor:pointer}
+.applicationTabs button{flex:1;min-height:44px;padding:0 16px;border:1px solid var(--color-line);border-radius:12px;background:var(--color-surface);color:var(--color-ink);font:inherit;font-size:14px;font-weight:700;cursor:pointer}
 .applicationTabs button[aria-pressed=true]{border-color:var(--color-accent);background:var(--color-accent-soft);color:var(--color-accent-ink);font-weight:800}
 .applicationList,.applicationDetail{list-style:none;padding:0;margin:0;min-width:0}
 .applicationList{display:grid;gap:16px}

@@ -487,9 +487,9 @@ function BenefitRecipientOwnerScreen({
   if (!ready || view.kind === "loading")
     return main(<FanSkeletonRows rows={3} ariaLabel={t.loading} />);
   if (view.kind === "auth")
-    return main(<FanState kind="empty" title={t.session} description={t.sessionBody} actions={<FanAction variant="primary" href={loginUrl}>{t.login}</FanAction>} />);
+    return main(<FanState kind="empty" scope="page" title={t.session} description={t.sessionBody} actions={<FanAction variant="primary" href={loginUrl}>{t.login}</FanAction>} />);
   if (view.kind === "missing")
-    return main(<div className={styles.layout}>{stateHeading}<FanState kind="empty" title={t.missing} description={t.missingBody} actions={<FanAction href={withLocalePath("/my", locale)}>{t.backMy}</FanAction>} /></div>, true);
+    return main(<div className={styles.layout}>{stateHeading}<FanState kind="empty" scope="page" title={t.missing} description={t.missingBody} actions={<FanAction href={withLocalePath("/my", locale)}>{t.backMy}</FanAction>} /></div>, true);
   if (view.kind === "unavailable")
     return main(<div className={styles.layout}>{stateHeading}<FanState kind="error" title={t.unavailable} actions={<><FanAction onClick={() => void retryInitialRead()}>{t.retry}</FanAction><FanAction href={withLocalePath("/my", locale)}>{t.backMy}</FanAction></>} /></div>, true);
   if (!reward) return null;

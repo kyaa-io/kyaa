@@ -5,7 +5,7 @@
 .card p { margin: 0; font-size: 16px; line-height: 1.65; overflow-wrap: anywhere; }
 .icon { display: grid; place-items: center; width: 48px; height: 48px; border: 1px solid #e6e6ed; border-radius: 16px; background: #f8f8fb; }
 .icon svg { width: 24px; height: 24px; }
-.card .eyebrow { margin-bottom: -16px; color: #646571; font-size: 13px; font-weight: 600; }
+.card .eyebrow { margin-bottom: -16px; color: #646571; font-size: 13px; font-weight: 700; }
 .heading { border-radius: 4px; }
 .form, .field { display: flex; flex-direction: column; gap: 12px; }
 .form { gap: 24px; }

@@ -17,11 +17,12 @@ export function FanSkeletonStatus({ locale, label }: Readonly<{ locale: AppLocal
   return <span className={styles.srOnly} role="status">{label ?? fanUiText(locale, "loadingStatus")}</span>;
 }
 
-export type FanSkeletonRowsVariant = "post" | "entity" | "member" | "plain";
+export type FanSkeletonRowsVariant = "post" | "entity" | "member" | "tile" | "plain";
 
 function Row({ variant }: Readonly<{ variant: FanSkeletonRowsVariant }>) {
   if (variant === "post") return <div className={styles.postRow}><FanSkeleton shape="block" className={styles.postThumb} /><div className={styles.postCopy}><FanSkeleton className={styles.postTitle} /><FanSkeleton className={styles.postMeta} /></div></div>;
   if (variant === "entity") return <div className={styles.entityRow}><FanSkeleton shape="block" width={48} height={48} className={styles.entityImage} /><div className={styles.entityCopy}><FanSkeleton width="60%" height={22} /><FanSkeleton width={96} height={22} /></div></div>;
+  if (variant === "tile") return <div className={styles.tileRow}><FanSkeleton shape="block" className={styles.tile} /><FanSkeleton width="70%" height={19} /><FanSkeleton width="40%" height={16} /></div>;
   if (variant === "member") return <div className={styles.memberRow}><FanSkeleton shape="circle" width={40} height={40} /><div className={styles.entityCopy}><FanSkeleton width="40%" height={16} /><FanSkeleton width="24%" height={13} /></div></div>;
   return <div className={styles.plainRow}><FanSkeleton width="70%" height={16} /></div>;
 }

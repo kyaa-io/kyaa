@@ -43,7 +43,7 @@
 
 .content { display: grid; flex: 1; min-width: 0; gap: 2px; padding-block: var(--space-1); }
 .title { margin: 0; font-size: var(--fan-description-size); font-weight: 700; line-height: 1.4; overflow-wrap: anywhere; word-break: keep-all; }
-.description { margin: 0; color: var(--color-muted); font-size: var(--fan-metadata-size); font-weight: 500; line-height: 1.4; overflow-wrap: anywhere; word-break: keep-all; }
+.description { margin: 0; color: var(--color-muted); font-size: var(--fan-metadata-size); font-weight: 400; line-height: 1.4; overflow-wrap: anywhere; word-break: keep-all; }
 .action {
   flex: none;
   min-height: 36px;

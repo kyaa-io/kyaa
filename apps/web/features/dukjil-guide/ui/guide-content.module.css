@@ -620,7 +620,7 @@
 }
 
 .cta {
-  background: var(--color-primary-action);
+  background: var(--color-accent);
   color: var(--color-canvas) !important;
 }
 

@@ -21,7 +21,9 @@
 .facts { grid-column: 1 / -1; display: grid; align-content: start; gap: var(--space-1); min-width: 0; }
 .cost { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-1); color: var(--color-ink); font-size: var(--fan-metadata-size); font-weight: var(--fan-item-title-weight); line-height: 20px; font-variant-numeric: tabular-nums; }
 .action { grid-column: 1 / -1; align-self: end; white-space: nowrap; }
-.section .empty { box-sizing: border-box; min-height: 180px; align-content: center; padding: var(--space-3) var(--space-4); border: 1px solid var(--color-line); border-radius: var(--radius-control); background: var(--color-surface); }
+.section .empty { box-sizing: border-box; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0 var(--space-3); min-height: 78px; padding: 0 var(--space-4); border: 1px solid var(--color-line); border-radius: var(--radius-control); background: var(--color-surface); }
+.section .empty > [data-empty-state] { width: auto; flex: 1 1 auto; }
+.emptyAction { display: flex; margin-inline-end: calc(var(--space-2) * -1); }
 /* F5: no live draw but past ones below: the empty line stays short so the 지난 럭키드로우 cards keep the first screen. */
 .section .emptyShort { min-height: 0; }
 .pastHead { margin: var(--space-2) 0 0; color: var(--color-ink); font-size: var(--fan-item-title-size); font-weight: var(--fan-item-title-weight); line-height: var(--fan-body-leading); }

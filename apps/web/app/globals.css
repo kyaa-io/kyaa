@@ -17,17 +17,23 @@
   --fan-action-disabled-bg: #fff;
   --fan-action-disabled-ink: oklch(64% 0 0);
   --fan-action-disabled-text-ink: #6b6b6b;
+  /* 버튼 눌림(:active): 색만 바뀐다(DESIGN 3장 '버튼 누름', 이동 0). */
+  --fan-action-primary-active-bg: var(--color-accent-ink);
+  --fan-action-neutral-active-bg: var(--color-line-subtle);
+  --fan-action-danger-active-bg: color-mix(in srgb, var(--color-error) 80%, var(--color-ink));
   --color-error: #9f1239;
   --color-success: #17613f;
   --color-warning: #8a4b08;
   --color-backdrop: rgb(23 23 26 / 42%);
   --color-focus: var(--color-ink);
-  --color-primary-action: var(--color-accent);
   /* 261107-2 S1: 화면마다 직접 쓰던 값에 역할 이름만 붙인다(값 변경 없음). */
   --color-accent: #d11b62;
   --color-accent-soft: #fff0f6;
   --color-accent-line: #f4c3d7;
   --color-accent-ink: #ad1457;
+  /* GGGI 캠페인 배너 아트 색(4차 배너 원본, UI 강조색이 아님). */
+  --color-campaign-art: #073d33;
+  --color-page-accent: var(--color-accent);
   --color-coin: #ffc83d;
   --color-coin-ink: #4a3500;
   --color-foil: #b8975a;
@@ -45,11 +51,14 @@
   --space-12: 48px;
   --space-16: 64px;
 
+  --radius-card: 12px;
   --radius-control: 12px;
   --radius-collection: 16px;
   --radius-hero: 20px;
   --radius-pill: 999rem;
 
+  --motion-fast: 150ms;
+  --motion-slow: 200ms;
   --motion-control: 160ms;
   --motion-layout: 240ms;
   --motion-easing: cubic-bezier(.2, 0, 0, 1);
@@ -69,32 +78,35 @@
   --z-tooltip: 60;
 
   /* Fan UI owns these roles. Screens select variants, not ad-hoc sizes. */
+  /* 폐기 예정 7종(--fan-heading-size-wide, --fan-heading-editorial-weight, --fan-personal-section-*, --fan-event-catalog-title-size,
+   * --fan-aside-title-*, --fan-description-*, --fan-action-emphasis-size): 1단계는 별칭(크기 값 동일), 사용처 치환 뒤 삭제. 굵기는 400·700·800만. */
   --fan-heading-size: 20px;
   --fan-heading-size-wide: 24px;
-  --fan-heading-weight: 850;
+  --fan-heading-weight: 800;
   --fan-heading-editorial-weight: var(--fan-heading-weight);
   --fan-heading-tracking: -.03em;
   --fan-heading-leading: 1.2;
   --fan-personal-section-size: var(--fan-heading-size);
-  --fan-personal-section-weight: 700;
+  --fan-personal-section-weight: var(--fan-item-title-weight);
   --fan-item-title-size: 16px;
   --fan-item-title-weight: 700;
-  --fan-event-catalog-title-size: 20px;
+  --fan-event-catalog-title-size: var(--fan-heading-size);
   --fan-body-size: 16px;
+  --fan-body-size-wide: var(--fan-body-size);
   --fan-body-leading: 1.5;
-  --fan-tab-weight: 500;
+  --fan-tab-weight: 700;
   --fan-section-gap: 32px;
   --fan-metadata-size: 13px;
   --fan-badge-size: 12px;
-  --fan-aside-title-size: 16px;
-  --fan-aside-title-weight: 650;
+  --fan-aside-title-size: var(--fan-item-title-size);
+  --fan-aside-title-weight: var(--fan-item-title-weight);
   /* 지갑·온도 같은 큰 숫자. 1440 가로 카드에서 24px은 보조 정보와 구분되지 않아 768+만 32px(감독 결정 ②). */
   --fan-number-size: 24px;
   --fan-number-size-wide: 32px;
-  --fan-number-weight: 850;
+  --fan-number-weight: 800;
   --fan-description-size: 14px;
-  --fan-description-leading: 1.5;
-  --fan-description-weight: 550;
+  --fan-description-leading: var(--fan-body-leading);
+  --fan-description-weight: 400;
   --fan-section-heading-min-height: 56px;
   --fan-action-primary-height: 48px;
   --fan-action-service-height: 52px;
@@ -102,7 +114,7 @@
   --fan-action-icon-size: 18px;
   --fan-action-label-size: 14px;
   --fan-action-emphasis-size: 15px;
-  --fan-action-weight: 800;
+  --fan-action-weight: 700;
   --color-service-ink: var(--color-accent-ink);
 
   /* Full calendar and embedded widget share type; layout stays surface-specific. */

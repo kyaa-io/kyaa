@@ -44,7 +44,7 @@
 }
 .deadline time {
   color: oklch(20% 0 0);
-  font-weight: 750;
+  font-weight: 700;
   font-variant-numeric: tabular-nums;
 }
 .formSurface,
@@ -62,7 +62,7 @@
   gap: 8px;
   color: oklch(24% 0 0);
   font-size: 14px;
-  font-weight: 750;
+  font-weight: 700;
 }
 .field:nth-child(n + 4) {
   grid-column: 1 / -1;
@@ -76,7 +76,7 @@
 .field small {
   color: oklch(45% 0 0);
   font-size: 12px;
-  font-weight: 650;
+  font-weight: 700;
 }
 .field input {
   width: 100%;
@@ -105,7 +105,7 @@
   color: oklch(44% 0.18 25);
   font-size: 13px;
   font-style: normal;
-  font-weight: 650;
+  font-weight: 700;
 }
 .shippingCountry {
   grid-column: 1 / -1;
@@ -158,7 +158,7 @@
   margin: 0;
   overflow-wrap: anywhere;
   color: oklch(18% 0 0);
-  font-weight: 750;
+  font-weight: 700;
 }
 .privacy {
   display: flex;
@@ -188,7 +188,7 @@
   min-height: 44px;
   align-items: center;
   color: inherit;
-  font-weight: 750;
+  font-weight: 700;
   text-underline-offset: 3px;
 }
 .consent {
@@ -258,7 +258,7 @@
 }
 .result dd {
   margin: 0;
-  font-weight: 750;
+  font-weight: 700;
 }
 .result .actions {
   justify-content: center;

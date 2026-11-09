@@ -34,7 +34,7 @@
 .identity { display: flex; min-width: 0; align-items: center; gap: 12px; }
 .identity > div { min-width: 0; }
 .avatar { width: 44px; height: 44px; flex: none; border-radius: 50%; object-fit: cover; outline: 1px solid color-mix(in srgb, var(--color-surface) 10%, transparent); outline-offset: -1px; }
-.header h2 { overflow: hidden; margin: 0; font-size: 18px; font-weight: 750; line-height: 1.4; letter-spacing: -.02em; text-overflow: ellipsis; white-space: nowrap; }
+.header h2 { overflow: hidden; margin: 0; font-size: 18px; font-weight: 700; line-height: 1.4; letter-spacing: -.02em; text-overflow: ellipsis; white-space: nowrap; }
 .header p { overflow: hidden; margin: 2px 0 0; color: var(--color-muted); font-size: 12px; line-height: 1.5; text-overflow: ellipsis; white-space: nowrap; }
 .header p span { padding-inline: 3px; }
 .close, .framing { display: grid; width: 44px; height: 44px; flex: none; place-items: center; padding: 0; border: 0; border-radius: 50%; color: var(--color-soft); background: color-mix(in srgb, var(--color-surface) 8%, transparent); cursor: pointer; }
@@ -59,9 +59,9 @@
 .sound svg, .retry svg { width: 17px; height: 17px; stroke-width: 2; }
 
 .footer { display: flex; flex: none; align-items: center; justify-content: space-between; gap: 20px; padding: 20px; border-top: 1px solid color-mix(in srgb, var(--color-surface) 8%, transparent); }
-.title { display: -webkit-box; overflow: hidden; margin: 0; font-size: 17px; font-weight: 650; line-height: 1.5; letter-spacing: -.02em; overflow-wrap: anywhere; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+.title { display: -webkit-box; overflow: hidden; margin: 0; font-size: 17px; font-weight: 700; line-height: 1.5; letter-spacing: -.02em; overflow-wrap: anywhere; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
 .actions { display: flex; flex: none; align-items: center; gap: 8px; }
-.original { display: inline-flex; min-height: 44px; align-items: center; gap: 6px; padding-inline: 12px; border: 1px solid color-mix(in srgb, var(--color-surface) 18%, transparent); border-radius: var(--radius-control); color: var(--color-muted); font-size: 12px; font-weight: 600; line-height: 1.4; text-decoration: none; }
+.original { display: inline-flex; min-height: 44px; align-items: center; gap: 6px; padding-inline: 12px; border: 1px solid color-mix(in srgb, var(--color-surface) 18%, transparent); border-radius: var(--radius-control); color: var(--color-muted); font-size: 12px; font-weight: 700; line-height: 1.4; text-decoration: none; }
 .original svg { width: 16px; height: 16px; flex: none; stroke-width: 2; }
 .framing { background: transparent; color: var(--color-muted); }
 .framing svg { width: 20px; height: 20px; }

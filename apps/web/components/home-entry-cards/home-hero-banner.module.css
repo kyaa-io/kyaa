@@ -1,16 +1,19 @@
+/* GGGI 캠페인 배너: 바탕은 아트 색 토큰. 어두운 녹색 위 포커스 링은 흰색(잉크 1.4:1 → 흰 12.18:1). 홈 `.page :is(a, button):focus-visible`보다 특이도가 높다. */
+.banner[data-kind="campaign"] { --campaign-art: var(--color-campaign-art); }
+.banner[data-kind="campaign"] :is(a, button):focus-visible { outline-color: var(--color-surface); }
 .banner { position:relative; width:100%; height:100%; overflow:hidden; background:var(--color-soft); color:var(--color-ink); }
 .image { position:absolute; inset:0 0 0 auto; width:40%; overflow:hidden; }
 .desktopImage { position:absolute; inset:0; }
 .overlay { display:none; position:absolute; inset:0; background:transparent; }
 .copy { position:relative; display:flex; flex-direction:column; width:60%; height:100%; padding:clamp(24px, 3vw, 48px); gap:16px; }
-.eyebrow { display:flex; align-items:center; min-height:24px; color:var(--color-accent); font-size:clamp(11px, 1.3vw, 20px); font-weight:750; letter-spacing:.06em; }
+.eyebrow { display:flex; align-items:center; min-height:24px; color:var(--color-accent); font-size:clamp(11px, 1.3vw, 20px); font-weight:700; letter-spacing:.06em; }
 .eyebrow > span { display:inline-flex; align-items:center; gap:6px; }
 .eyebrow svg { width:16px; height:16px; }
 .copy h2 { margin:0; font-size:clamp(36px, 3vw, 40px); font-weight:800; line-height:1.2; letter-spacing:-.04em; text-wrap:balance; }
 .description { display:grid; justify-items:start; gap:8px; color:var(--color-muted); font-size:16px; line-height:1.4; }
 .description [data-tone="on-image"] { font-size:clamp(12px, 1.2vw, 16px); }
 .action { margin-top:auto; }
-.action > a { display:flex; align-items:center; justify-content:space-between; gap:8px; min-height:48px; color:var(--color-ink) !important; font-size:16px; font-weight:750; text-decoration:none; }
+.action > a { display:flex; align-items:center; justify-content:space-between; gap:8px; min-height:48px; color:var(--color-ink) !important; font-size:16px; font-weight:700; text-decoration:none; }
 .action > a > span { display:inline-flex; align-items:center; gap:6px; }
 .action svg { width:20px; height:20px; flex:none; }
 @media (min-width:768px) {
@@ -60,7 +63,7 @@
   align-items:center;
   gap:8px 12px;
   font-size:16px;
-  font-weight:550;
+  font-weight:400;
 }
 .banner[data-kind="live"] .description [data-tone="on-image"] {
   flex:none;
@@ -185,9 +188,9 @@
 .banner[data-kind="art"] .copy { position:absolute; inset:0 auto 0 0; width:50%; height:100%; justify-content:center; gap:var(--space-4); padding:var(--space-10) var(--space-6) var(--space-10) var(--space-16); color:var(--color-canvas); }
 .banner[data-kind="art"] .eyebrow { width:fit-content; min-height:28px; padding:var(--space-1) var(--space-3); border:1px solid color-mix(in srgb, var(--color-canvas) 40%, transparent); border-radius:var(--radius-pill); background:color-mix(in srgb, var(--color-ink) 75%, transparent); color:var(--color-canvas); font-size:var(--fan-metadata-size); letter-spacing:.06em; }
 .banner[data-kind="art"] .copy h2 { font-size:clamp(28px, 3.4vw, 44px); line-height:1.12; overflow-wrap:anywhere; text-wrap:balance; }
-.banner[data-kind="art"] .description { color:color-mix(in srgb, var(--color-canvas) 92%, transparent); font-size:var(--fan-body-size); line-height:1.5; font-weight:550; overflow-wrap:anywhere; }
+.banner[data-kind="art"] .description { color:color-mix(in srgb, var(--color-canvas) 92%, transparent); font-size:var(--fan-body-size); line-height:1.5; font-weight:400; overflow-wrap:anywhere; }
 .banner[data-kind="art"] .action { margin-top:var(--space-2); }
-.banner[data-kind="art"] .action > a { width:fit-content; max-width:100%; min-height:48px; gap:var(--space-6); padding:0 var(--space-6); border-radius:var(--radius-pill); background:var(--color-primary-action); color:var(--color-canvas) !important; font-size:var(--fan-action-emphasis-size); }
+.banner[data-kind="art"] .action > a { width:fit-content; max-width:100%; min-height:48px; gap:var(--space-6); padding:0 var(--space-6); border-radius:var(--radius-pill); background:var(--color-accent); color:var(--color-canvas) !important; font-size:var(--fan-action-emphasis-size); }
 .banner[data-kind="art"] .action svg { width:16px; height:16px; }
 /* Tablet and the narrow laptop hero trim the picture's empty left side, so the copy column narrows with it. */
 @media (min-width:768px) and (max-width:1199px) {

@@ -25,14 +25,14 @@
 .detailHeader { display: flex; flex-wrap: wrap; gap: 12px; justify-content: space-between; align-items: flex-start; padding-bottom: 20px; border-bottom: 1px solid var(--color-accent-soft); }
 .detailHeader h2 { margin: 6px 0; font-size: 22px; letter-spacing: -.03em; overflow-wrap: anywhere; }
 .detailHeader p, .detailHeader span:not(.badge) { margin: 0; font-size: 13px; color: var(--color-muted); overflow-wrap: anywhere; }
-.badge { display: inline-flex; align-items: center; min-height: 28px; padding: 0 10px; border-radius: 999px; background: var(--color-accent-soft); color: var(--color-accent); font-size: 12px; font-weight: 650; }
+.badge { display: inline-flex; align-items: center; min-height: 28px; padding: 0 10px; border-radius: 999px; background: var(--color-accent-soft); color: var(--color-accent); font-size: 12px; font-weight: 700; }
 .badge[data-status="approved"] { background: var(--color-soft); color: #21663c; }
 .badge[data-status="rejected"] { background: #fff3df; color: #815410; }
 .reviewBody { display: grid; grid-template-columns: minmax(0, 1fr) 288px; gap: 24px; padding-top: 20px; }
 .evidence { min-width: 0; }
 .evidenceHeading { display: flex; flex-wrap: wrap; gap: 8px; justify-content: space-between; align-items: center; margin-bottom: 12px; }
 .detail h3 { margin: 0; font-size: 14px; font-weight: 700; }
-.evidenceHeading h3 span { margin-left: 6px; color: var(--color-muted); font-weight: 450; }
+.evidenceHeading h3 span { margin-left: 6px; color: var(--color-muted); font-weight: 400; }
 .evidenceHeading button, .imageState button, .zoomToolbar button { display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 0 12px; border: 1px solid var(--color-line); border-radius: 10px; background: var(--color-surface); color: var(--color-ink); }
 .review button svg { width: 18px; height: 18px; flex: none; }
 .imageStage { display: flex; justify-content: center; align-items: center; height: 500px; padding: 12px; overflow: hidden; border-radius: 12px; background: var(--color-soft); }
@@ -53,13 +53,13 @@
 .criteria li { display: flex; gap: 8px; align-items: center; font-size: 13px; }
 .criteria li span { display: grid; place-content: center; width: 20px; height: 20px; flex: none; border-radius: 50%; background: var(--color-accent-soft); color: var(--color-accent); font-size: 11px; font-weight: 700; }
 .note { white-space: pre-wrap; }
-.reward { display: flex; flex-wrap: wrap; gap: 4px 12px; font-weight: 600; }
+.reward { display: flex; flex-wrap: wrap; gap: 4px 12px; font-weight: 700; }
 .decision { display: grid; gap: 8px; border-top: 1px solid var(--color-accent-soft); padding-top: 20px; }
-.decision label { display: grid; gap: 10px; font-size: 13px; font-weight: 650; }
+.decision label { display: grid; gap: 10px; font-size: 13px; font-weight: 700; }
 .decision textarea { width: 100%; min-height: 100px; resize: vertical; box-sizing: border-box; font-weight: 400; }
 .decision select { min-width: 0; width: 100%; font-size: 12px; font-weight: 400; }
 .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
-.actions button { display: inline-flex; flex: 1; align-items: center; justify-content: center; gap: 6px; min-height: 44px; padding: 10px 12px; border: 1px solid var(--color-accent-line); border-radius: 10px; background: var(--color-surface); color: var(--color-ink); font-weight: 650; }
+.actions button { display: inline-flex; flex: 1; align-items: center; justify-content: center; gap: 6px; min-height: 44px; padding: 10px 12px; border: 1px solid var(--color-accent-line); border-radius: 10px; background: var(--color-surface); color: var(--color-ink); font-weight: 700; }
 .actions .approve { border: 0; background: var(--color-accent); color: var(--color-surface); }
 .metadata { border-top: 1px solid var(--color-accent-soft); padding-top: 16px; color: var(--color-muted); font-size: 12px; }
 .metadata summary { cursor: pointer; min-height: 32px; }

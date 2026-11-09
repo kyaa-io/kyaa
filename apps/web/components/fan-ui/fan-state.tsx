@@ -3,13 +3,8 @@ import type { ReactNode } from "react";
 import { FanSkeleton } from "./fan-skeleton";
 import styles from "./fan-state.module.css";
 
-type FanStateProps = Readonly<{
-  /** `loading`은 폐기 예정(DESIGN.md 로딩 행, design-lint C6): 새 코드는 `FanSkeleton`·`FanSkeletonRows`. 남은 사용처는 로그인 세션 동기화 한 곳. */
-  kind: "loading" | "empty" | "error" | "auth";
+type StateBase = Readonly<{
   title: string;
-  description?: string;
-  icon?: ReactNode;
-  actions?: ReactNode;
   className?: string;
   /** 화면 일부 구역의 상태. 최소 높이·제목 수준 없이 문단으로 렌더한다. */
   inline?: boolean;
@@ -17,16 +12,35 @@ type FanStateProps = Readonly<{
   compact?: boolean;
 }>;
 
-export function FanState({
-  kind,
-  title,
-  description,
-  icon,
-  actions,
-  className,
-  inline = false,
-  compact = false,
-}: FanStateProps) {
+type StateSlots = Readonly<{ description?: string; icon?: ReactNode; actions?: ReactNode }>;
+
+/**
+ * 구역 안 빈 상태(DESIGN.md "빈 상태" 행, C6·C8): 높이 78 한 문장 14/400 회색. 아이콘·설명·행동을 받지 않는다.
+ * 행동이 필요하면 FanState 밖, 같은 구역의 다음 행에 둔다.
+ */
+type SectionEmptyProps = StateBase & Readonly<{ kind: "empty"; scope?: "section"; description?: never; icon?: never; actions?: never }>;
+
+/** 페이지 전체 빈 상태. 게이트 D(사용자 결정) 전까지 옛 280 틀을 그대로 둔다. 새 사용처를 만들지 않는다. */
+type PageEmptyProps = StateBase & StateSlots & Readonly<{ kind: "empty"; scope: "page" }>;
+
+type OtherStateProps = StateBase & StateSlots & Readonly<{
+  /** `loading`은 폐기 예정(DESIGN.md 로딩 행, design-lint C6): 새 코드는 `FanSkeleton`·`FanSkeletonRows`. 남은 사용처는 로그인 세션 동기화 한 곳. */
+  kind: "loading" | "error" | "auth";
+  scope?: never;
+}>;
+
+type FanStateProps = SectionEmptyProps | PageEmptyProps | OtherStateProps;
+
+export function FanState(props: FanStateProps) {
+  const { kind, title, className } = props;
+  if (kind === "empty" && props.scope !== "page") {
+    return (
+      <section className={[styles.state, styles.section, className ?? ""].filter(Boolean).join(" ")} role="status" aria-live="polite" data-empty-state="section">
+        <p className={styles.title}>{title.replace(/[.。]$/, "")}</p>
+      </section>
+    );
+  }
+  const { description, icon, actions, inline = false, compact = false } = props as StateBase & StateSlots;
   return (
     <section
       className={[styles.state, inline ? styles.inline : "", compact ? styles.compact : "", className ?? ""].filter(Boolean).join(" ")}

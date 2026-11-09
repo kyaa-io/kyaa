@@ -3,17 +3,17 @@
 .tableScroll { max-width: 100%; overflow: auto; border: 1px solid var(--line); border-radius: var(--radius-control); }
 .tableScroll:focus-visible { outline: 3px solid var(--ink); outline-offset: 3px; }
 .table { width: 100%; min-width: 1120px; border-collapse: collapse; text-align: left; }
-.table th { padding: var(--space-3) var(--space-4); background: var(--soft); color: var(--secondary-ink); font-size: var(--fan-metadata-size); font-weight: 650; }
+.table th { padding: var(--space-3) var(--space-4); background: var(--soft); color: var(--secondary-ink); font-size: var(--fan-metadata-size); font-weight: 700; }
 .table td { padding: var(--space-3) var(--space-4); border-top: 1px solid var(--line); font-size: var(--fan-description-size); vertical-align: top; overflow-wrap: anywhere; }
 .body { min-width: 160px; white-space: pre-wrap; }
-.warn { display: inline-block; margin: 0 var(--space-1) var(--space-1) 0; padding: var(--space-1) var(--space-2); border-radius: var(--radius-pill); background: var(--soft); color: var(--ink); font-size: var(--fan-metadata-size); font-weight: 650; border: 1px solid var(--ink); }
+.warn { display: inline-block; margin: 0 var(--space-1) var(--space-1) 0; padding: var(--space-1) var(--space-2); border-radius: var(--radius-pill); background: var(--soft); color: var(--ink); font-size: var(--fan-metadata-size); font-weight: 700; border: 1px solid var(--ink); }
 .imageBox { display: grid; gap: var(--space-2); justify-items: start; }
 .image { display: block; max-width: 220px; max-height: 280px; object-fit: contain; border: 1px solid var(--line); border-radius: var(--radius-control); }
 .actions { display: grid; gap: var(--space-2); min-width: 220px; }
 .actions textarea { box-sizing: border-box; width: 100%; min-height: 56px; padding: var(--space-2); border: 1px solid var(--line); border-radius: var(--radius-control); font: inherit; }
 .buttons { display: flex; flex-wrap: wrap; gap: var(--space-2); }
 .status { margin: 0; font-size: var(--fan-description-size); }
-.error { margin: 0; font-size: var(--fan-description-size); font-weight: 650; }
+.error { margin: 0; font-size: var(--fan-description-size); font-weight: 700; }
 .voidBox { display: grid; gap: var(--space-2); padding: var(--space-4); border: 1px solid var(--line); border-radius: var(--radius-control); }
 .voidBox input[type="text"] { min-height: 44px; padding: 0 var(--space-3); border: 1px solid var(--line); border-radius: var(--radius-control); font: inherit; }
 .pointsTable { min-width: 0; }

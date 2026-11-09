@@ -3,5 +3,7 @@
 .button:focus-visible { outline: var(--focus-width) solid var(--color-focus); outline-offset: calc(var(--focus-width) * -1); }
 .button:disabled { color: var(--color-muted); cursor: not-allowed; }
 .button[data-popup-open] { background: var(--color-soft); }
+.button:active:not(:disabled) { background: var(--fan-action-neutral-active-bg); }
+.button:disabled { background: transparent; }
 @media (hover: hover) and (pointer: fine) { .button:hover:not(:disabled) { background: var(--color-soft); } }
 @media (prefers-reduced-motion: reduce) { .button { transition-duration: .01ms; } }

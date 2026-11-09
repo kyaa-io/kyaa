@@ -2,8 +2,8 @@
 .adminPage { max-width: 100%; overflow-x: hidden; }
 .adminPage * { box-sizing: border-box; }
 .topbar { position: sticky; z-index: 20; top: 0; display: flex; min-height: 64px; align-items: center; justify-content: space-between; padding: 0 16px; border-bottom: 1px solid var(--line); background: color-mix(in srgb, var(--color-surface) 96%, transparent); backdrop-filter: blur(12px); }
-.brand { display: inline-flex; min-height: 44px; align-items: center; color: var(--ink); font-size: 23px; font-weight: 850; letter-spacing: -.035em; text-decoration: none; }
-.brand span { color: var(--muted); font-size: 13px; font-weight: 650; letter-spacing: 0; }
+.brand { display: inline-flex; min-height: 44px; align-items: center; color: var(--ink); font-size: 23px; font-weight: 800; letter-spacing: -.035em; text-decoration: none; }
+.brand span { color: var(--muted); font-size: 13px; font-weight: 700; letter-spacing: 0; }
 .topActions { display: flex; align-items: center; gap: 8px; }
 .environment { display: none; padding: 6px 10px; border-radius: 999px; background: var(--soft); color: var(--muted); font-size: 12px; font-weight: 700; }
 .serviceLink { display: none; min-height: 44px; align-items: center; gap: 6px; padding: 0 10px; color: var(--secondary-ink); font-size: 13px; font-weight: 700; text-decoration: none; }
@@ -15,16 +15,16 @@
 .mobileNav { position: sticky; z-index: 19; top: 64px; max-height: calc(100svh - 64px); padding: 12px 16px 20px; overflow-y: auto; border-bottom: 1px solid var(--line); background: var(--color-surface); box-shadow: 0 12px 24px color-mix(in srgb, var(--color-ink) 7%, transparent); }
 .adminNav { display: grid; gap: 20px; }
 .navGroup { display: grid; gap: 2px; }
-.navGroup > p { margin: 0 12px 6px; color: var(--muted); font-size: 11px; font-weight: 750; letter-spacing: .06em; text-transform: uppercase; }
-.mobileNav a, .sidebar a { display: flex; min-height: 44px; align-items: center; gap: 10px; padding: 0 12px; border-radius: 10px; color: var(--secondary-ink); font-size: 14px; font-weight: 620; text-decoration: none; transition: background-color 160ms cubic-bezier(.23, 1, .32, 1), color 160ms cubic-bezier(.23, 1, .32, 1), transform 120ms cubic-bezier(.23, 1, .32, 1); }
+.navGroup > p { margin: 0 12px 6px; color: var(--muted); font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
+.mobileNav a, .sidebar a { display: flex; min-height: 44px; align-items: center; gap: 10px; padding: 0 12px; border-radius: 10px; color: var(--secondary-ink); font-size: 14px; font-weight: 700; text-decoration: none; transition: background-color 160ms cubic-bezier(.23, 1, .32, 1), color 160ms cubic-bezier(.23, 1, .32, 1), transform 120ms cubic-bezier(.23, 1, .32, 1); }
 .mobileNav a svg, .sidebar a svg { width: 18px; height: 18px; flex: none; color: var(--color-muted); stroke-width: 1.8; }
-.mobileNav .activeNav, .sidebar .activeNav { background: var(--accent-soft); color: var(--color-accent); font-weight: 750; }
+.mobileNav .activeNav, .sidebar .activeNav { background: var(--accent-soft); color: var(--color-accent); font-weight: 700; }
 .mobileNav .activeNav svg, .sidebar .activeNav svg { color: var(--accent); }
 .mobileNav a:active, .sidebar a:active { transform: scale(.98); }
 .layout { display: grid; min-width: 0; min-height: calc(100svh - 65px); grid-template-columns: minmax(0, 1fr); }
 .sidebar { display: none; padding: 24px 12px 40px; border-right: 1px solid var(--line); background: var(--color-surface); }
 .workspace { min-width: 0; padding: 20px 16px 64px; background: var(--color-soft); }
-.breadcrumb { display: flex; min-height: 24px; align-items: center; gap: 4px; margin-bottom: 16px; color: var(--muted); font-size: 12px; font-weight: 650; }
+.breadcrumb { display: flex; min-height: 24px; align-items: center; gap: 4px; margin-bottom: 16px; color: var(--muted); font-size: 12px; font-weight: 700; }
 .breadcrumb a { color: inherit; text-decoration: none; }
 .breadcrumb svg { width: 14px; height: 14px; }
 .breadcrumb span { color: var(--secondary-ink); }
@@ -34,17 +34,17 @@
 .pageHeading span { display: block; max-width: 70ch; margin-top: 8px; color: var(--muted); font-size: 14px; line-height: 1.55; text-wrap: pretty; }
 .immutableNotice { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 16px; padding: 14px 16px; border: 1px solid var(--line); border-radius: 12px; background: var(--color-soft); }
 .immutableNotice svg { width: 19px; flex: none; }
-.immutableNotice p { margin: 0; color: var(--color-ink); font-size: 13px; font-weight: 650; line-height: 1.5; }
+.immutableNotice p { margin: 0; color: var(--color-ink); font-size: 13px; font-weight: 700; line-height: 1.5; }
 .summaryGrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-bottom: 16px; }
 .summaryGrid button { display: grid; min-width: 0; min-height: 72px; align-content: center; gap: 4px; padding: 12px 14px; border: 1px solid var(--line); border-radius: 12px; background: var(--color-surface); color: var(--ink); cursor: pointer; font: inherit; text-align: left; }
 .summaryGrid button[aria-pressed="true"] { border-color: var(--color-accent-line); background: var(--accent-soft); }
-.summaryGrid span { color: var(--muted); font-size: 11px; font-weight: 750; letter-spacing: .04em; text-transform: uppercase; }
+.summaryGrid span { color: var(--muted); font-size: 11px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; }
 .summaryGrid strong { font-size: 24px; font-variant-numeric: tabular-nums; line-height: 1; }
 .filterBar { display: flex; flex-wrap: wrap; align-items: end; gap: 12px; margin-bottom: 20px; padding: 16px; border: 1px solid var(--line); border-radius: 12px; }
 .filterBar label { display: grid; min-width: 150px; gap: 7px; color: var(--color-ink); font-size: 12px; font-weight: 700; }
 .filterBar input, .filterBar select { width: 100%; height: 44px; padding: 0 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--control); color: var(--ink); font: inherit; font-size: 14px; }
 .growField { flex: 1 1 300px; }
-.secondaryButton, .primaryButton, .dangerButton, .loadMore, .stateMessage button { min-height: 44px; padding: 0 16px; border-radius: 10px; cursor: pointer; font: inherit; font-size: 14px; font-weight: 750; }
+.secondaryButton, .primaryButton, .dangerButton, .loadMore, .stateMessage button { min-height: 44px; padding: 0 16px; border-radius: 10px; cursor: pointer; font: inherit; font-size: 14px; font-weight: 700; }
 .secondaryButton, .loadMore, .stateMessage button { border: 1px solid var(--strong-line); background: var(--color-surface); color: var(--ink); }
 .textButton { padding: 0 12px; color: var(--muted); }
 .primaryButton { display: inline-flex; align-items: center; justify-content: center; gap: 8px; border: 0; background: var(--ink); color: var(--color-surface); }
@@ -55,7 +55,7 @@
 .filterActions { display: flex; flex: 1 0 100%; justify-content: flex-end; gap: 8px; }
 .tableWrap { width: 100%; min-width: 0; max-width: 100%; contain: inline-size paint; overflow-x: auto; border: 1px solid var(--line); border-radius: 12px; }
 .tableWrap table { width: 100%; min-width: 760px; border-collapse: collapse; font-size: 13px; }
-.tableWrap th { height: 44px; padding: 0 14px; border-bottom: 1px solid var(--line); background: var(--soft); color: var(--muted); font-size: 12px; font-weight: 750; text-align: left; white-space: nowrap; }
+.tableWrap th { height: 44px; padding: 0 14px; border-bottom: 1px solid var(--line); background: var(--soft); color: var(--muted); font-size: 12px; font-weight: 700; text-align: left; white-space: nowrap; }
 .tableWrap td { height: 56px; padding: 8px 14px; border-bottom: 1px solid var(--line); vertical-align: middle; font-variant-numeric: tabular-nums; }
 .tableWrap tr:last-child td { border-bottom: 0; }
 .tableWrap td strong { display: block; max-width: 320px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -83,7 +83,7 @@
 .detailGrid { display: grid; gap: 16px; margin: 20px 0 0; }
 .detailGrid div { min-width: 0; padding-bottom: 14px; border-bottom: 1px solid var(--line); }
 .detailGrid dt { color: var(--muted); font-size: 12px; font-weight: 700; }
-.detailGrid dd { margin: 6px 0 0; overflow-wrap: anywhere; font-size: 14px; font-weight: 650; }
+.detailGrid dd { margin: 6px 0 0; overflow-wrap: anywhere; font-size: 14px; font-weight: 700; }
 .detailSection { margin-top: 28px; }
 .detailSection h3 { margin: 0 0 10px; font-size: 14px; }
 .detailSection > p, .errorBox p { margin: 0; color: var(--muted); font-size: 13px; line-height: 1.55; }
@@ -105,7 +105,7 @@
 .confirmDialog h2 { font-size: 19px; }
 .confirmDialog > p { margin-top: 10px; color: var(--muted); font-size: 14px; line-height: 1.55; }
 .confirmDialog > div { display: flex; justify-content: flex-end; gap: 8px; margin-top: 24px; }
-.inlineError { color: var(--error) !important; font-weight: 650; }
+.inlineError { color: var(--error) !important; font-weight: 700; }
 .summaryBlocks { display: grid; gap: 12px; }
 .summaryBlocks h4 { margin: 0 0 6px; color: var(--muted); font-size: 12px; }
 .summaryBlocks pre { margin: 0; max-height: 320px; }
@@ -114,7 +114,7 @@
 .accessPanel > svg { width: 32px; height: 32px; }
 .accessPanel h1, .accessPanel p { margin: 0; }
 .accessPanel p { color: var(--muted); line-height: 1.6; }
-.primaryLink { display: inline-flex; min-height: 48px; align-items: center; padding: 0 18px; border-radius: 10px; background: var(--ink); color: var(--color-surface); font-size: 14px; font-weight: 750; text-decoration: none; }
+.primaryLink { display: inline-flex; min-height: 48px; align-items: center; padding: 0 18px; border-radius: 10px; background: var(--ink); color: var(--color-surface); font-size: 14px; font-weight: 700; text-decoration: none; }
 .spin { animation: spin 1s linear infinite; }
 .srOnly { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap; }
 .adminPage :is(a, button, input, select):focus-visible, .accessPage a:focus-visible { outline: 3px solid var(--ink); outline-offset: 3px; }

@@ -28,7 +28,7 @@
 .content :is(h1, h2, h3) {
   margin: 0;
   font-size: 24px;
-  font-weight: 850;
+  font-weight: 800;
   letter-spacing: -.03em;
   line-height: 1.25;
   text-wrap: balance;
@@ -65,7 +65,7 @@
 .metrics dt {
   color: oklch(43% 0 0);
   font-size: 12px;
-  font-weight: 650;
+  font-weight: 700;
 }
 
 .metrics dd {

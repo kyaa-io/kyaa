@@ -24,29 +24,29 @@
 .closeButton { position: absolute; right: 0; display: inline-flex; width: 44px; height: 44px; flex: none; align-items: center; justify-content: center; border: 0; border-radius: 12px; background: transparent; color: var(--color-ink); cursor: pointer; transition: background-color 160ms cubic-bezier(.2,0,0,1); }
 .closeButton svg { width: 22px; height: 22px; }
 .copy { display: grid; justify-items: center; text-align: center; }
-.copy h1 { max-width: 13ch; margin: 0; font-size: 30px; font-weight: 850; letter-spacing: -.035em; line-height: 1.12; text-wrap: balance; }
+.copy h1 { max-width: 13ch; margin: 0; font-size: 30px; font-weight: 800; letter-spacing: -.035em; line-height: 1.12; text-wrap: balance; }
 .error { margin: 0; font-size: 14px; line-height: 1.6; text-wrap: pretty; }
-.googleButton { display: flex; width: 90%; min-height: 52px; align-items: center; justify-content: space-between; justify-self: center; gap: 12px; padding-inline: 20px; border: 1px solid transparent; border-radius: 999rem; background: var(--color-surface); border-color: var(--color-accent); color: var(--color-accent-ink); cursor: pointer; font-family: "Google Sans", Roboto, Arial, sans-serif; font-size: 15px; font-weight: 600; }
+.googleButton { display: flex; width: 90%; min-height: 52px; align-items: center; justify-content: space-between; justify-self: center; gap: 12px; padding-inline: 20px; border: 1px solid transparent; border-radius: 999rem; background: var(--color-surface); border-color: var(--color-accent); color: var(--color-accent-ink); cursor: pointer; font-family: "Google Sans", Roboto, Arial, sans-serif; font-size: 15px; font-weight: 700; }
 .googleButton span { flex: 1; text-align: center; }
 .googleButton svg { width: 18px; height: 18px; flex: none; }
 .appleButton { display: flex; width: 90%; min-height: 52px; align-items: center; justify-content: space-between; justify-self: center; gap: 12px; padding-inline: 20px; border: 1px solid #000; border-radius: 999rem; background: #000; color: var(--color-surface); cursor: pointer; font: inherit; font-size: 15px; font-weight: 700; }
 .appleButton span { flex: 1; text-align: center; }
 .appleButton svg { width: 18px; height: 18px; flex: none; }
-.googleButton:disabled, .appleButton:disabled, .emailButton:disabled { cursor: wait; opacity: .55; }
+.googleButton:disabled, .appleButton:disabled, .emailButton:disabled {cursor: wait;color:var(--fan-action-disabled-ink)}
 .googleButton:focus-visible, .appleButton:focus-visible, .emailButton:focus-visible, .brand:focus-visible, .closeButton:focus-visible, .footer a:focus-visible { outline: 3px solid var(--color-ink); outline-offset: 3px; }
 .testAccountGroup { display: grid; gap: 12px; }
 .divider { display: flex; align-items: center; gap: 12px; color: var(--color-muted); font-size: 12px; font-weight: 700; text-align: center; }
 .divider::before, .divider::after { height: 1px; flex: 1; background: var(--color-line); content: ""; }
-.emailButton { display: flex; width: 100%; min-height: 52px; align-items: center; justify-content: center; gap: 12px; padding-inline: 20px; border: 1px solid var(--color-line); border-radius: 12px; background: var(--color-surface); color: var(--color-ink); cursor: pointer; font: inherit; font-size: 15px; font-weight: 750; transition: background-color 160ms cubic-bezier(.2,0,0,1), border-color 160ms cubic-bezier(.2,0,0,1); }
+.emailButton { display: flex; width: 100%; min-height: 52px; align-items: center; justify-content: center; gap: 12px; padding-inline: 20px; border: 1px solid var(--color-line); border-radius: 12px; background: var(--color-surface); color: var(--color-ink); cursor: pointer; font: inherit; font-size: 15px; font-weight: 700; transition: background-color 160ms cubic-bezier(.2,0,0,1), border-color 160ms cubic-bezier(.2,0,0,1); }
 .emailButton span { flex: 1; text-align: center; }
 .restartLink { box-sizing: border-box; text-decoration: none; }
 .emailButton svg { width: 18px; height: 18px; flex: none; }
 .testAccountGroup p { margin: 0; color: var(--color-muted); font-size: 13px; line-height: 1.5; text-align: center; text-wrap: pretty; }
 @media (hover: hover) and (pointer: fine) { .emailButton:hover:not(:disabled) { border-color: var(--color-muted); background: var(--color-soft); } .closeButton:hover { background: var(--color-soft); } .footer a:hover { color: var(--color-ink); } }
-.error { padding: 12px; border-radius: 12px; background: var(--color-accent-soft); color: var(--color-accent-ink); font-weight: 650; }
-.footer { position: relative; display: flex; min-height: 44px; align-items: center; justify-content: center; gap: 24px; color: var(--color-ink); font-size: 13px; font-weight: 550; }
+.error { padding: 12px; border-radius: 12px; background: var(--color-accent-soft); color: var(--color-accent-ink); font-weight: 700; }
+.footer { position: relative; display: flex; min-height: 44px; align-items: center; justify-content: center; gap: 24px; color: var(--color-ink); font-size: 13px; font-weight: 400; }
 .footer nav { display: flex; align-items: center; gap: 10px; }
-.footer a { display: inline-flex; min-height: 44px; align-items: center; color: inherit; font-weight: 650; text-decoration: none; }
+.footer a { display: inline-flex; min-height: 44px; align-items: center; color: inherit; font-weight: 700; text-decoration: none; }
 @media (min-width: 48rem) { .panel { padding: 40px; } .copy h1 { font-size: 36px; } }
 .modalBackdrop { align-items: center; justify-content: center; padding: max(24px, env(safe-area-inset-top)) max(24px, env(safe-area-inset-right)) max(24px, env(safe-area-inset-bottom)) max(24px, env(safe-area-inset-left)); }
 .modalPanel { max-height: calc(100dvh - 48px); overflow-y: auto; background: var(--color-surface); }

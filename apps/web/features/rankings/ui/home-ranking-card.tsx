@@ -109,7 +109,7 @@ export function resetHomeRankingShape() { fansShape = null; }
 function Empty({ title, locale, matchFans = false }: { title: string; locale: AppLocale; matchFans?: boolean }) {
   const shape = useSyncExternalStore(subscribeShape, readShape, () => null);
   const style = matchFans && shape ? { "--rank-rows": Math.max(2, shape.rows), "--rank-foot": shape.foot ? 1 : 0 } as React.CSSProperties : undefined;
-  return <div className={styles.state} data-empty="" data-match-fans={style ? "" : undefined} style={style}><FanState inline kind="empty" title={title} actions={<FanAction variant="neutral" size="sm" href={`/celebrities?locale=${locale}`}>{rankingsText(locale, "rkBrowseFanPages")}</FanAction>} /></div>;
+  return <div className={styles.state} data-empty="" data-match-fans={style ? "" : undefined} style={style}><FanState inline kind="empty" scope="page" title={title} actions={<FanAction variant="neutral" size="sm" href={`/celebrities?locale=${locale}`}>{rankingsText(locale, "rkBrowseFanPages")}</FanAction>} /></div>;
 }
 
 const heartIcon = (size: number) => <img src="/images/economy/heart.svg" alt="" width={size} height={size} />;

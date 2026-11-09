@@ -4,7 +4,7 @@
   gap: 8px;
   color: oklch(24% 0 0);
   font-size: 14px;
-  font-weight: 750;
+  font-weight: 700;
 }
 .field > label {
   display: flex;
@@ -15,7 +15,7 @@
 .field > label small {
   color: oklch(45% 0 0);
   font-size: 12px;
-  font-weight: 650;
+  font-weight: 700;
 }
 .phoneInput {
   display: grid;
@@ -73,10 +73,7 @@
   width: 16px;
   height: 16px;
 }
-.countryTrigger:disabled {
-  cursor: default;
-  opacity: 0.58;
-}
+.countryTrigger:disabled {cursor: default;color:var(--fan-action-disabled-ink)}
 .countryPopup {
   position: absolute;
   z-index: var(--z-dropdown, 35);
@@ -163,7 +160,7 @@
   color: oklch(44% 0.18 25);
   font-size: 13px;
   font-style: normal;
-  font-weight: 650;
+  font-weight: 700;
 }
 .visuallyHidden {
   position: absolute;

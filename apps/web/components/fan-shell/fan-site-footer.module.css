@@ -40,7 +40,7 @@
   margin: 0;
   color: var(--footer-muted);
   font-size: 14px;
-  font-weight: 550;
+  font-weight: 400;
   line-height: 1.55;
   text-wrap: pretty;
 }
@@ -73,7 +73,7 @@
   align-items: center;
   color: var(--footer-muted);
   font-size: 13px;
-  font-weight: 550;
+  font-weight: 400;
   line-height: 1.35;
   text-decoration: none;
   overflow-wrap: anywhere;
@@ -132,7 +132,7 @@
   margin-top: var(--space-6);
   color: var(--footer-muted);
   font-size: 13px;
-  font-weight: 550;
+  font-weight: 400;
   line-height: 1.6;
 }
 
@@ -172,7 +172,7 @@
   padding-top: var(--space-3);
   color: var(--footer-muted);
   font-size: 13px;
-  font-weight: 550;
+  font-weight: 400;
 }
 
 .legalLinks {

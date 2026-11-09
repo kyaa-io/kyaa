@@ -1,6 +1,6 @@
 .section { margin-block:40px; color:var(--color-ink); }
 .header { display:flex; align-items:center; gap:8px; min-height:44px; margin-bottom:6px; --fan-heading-size:18px; --fan-heading-size-wide:20px; }
-.count { display:none; min-width:24px; height:24px; padding-inline:6px; place-items:center; border-radius:999px; background:var(--color-soft); color:var(--color-muted); font-size:12px; font-weight:650; font-variant-numeric:tabular-nums; }
+.count { display:none; min-width:24px; height:24px; padding-inline:6px; place-items:center; border-radius:999px; background:var(--color-soft); color:var(--color-muted); font-size:12px; font-weight:700; font-variant-numeric:tabular-nums; }
 .pagination { display:flex; flex:none; align-items:center; gap:4px; margin-left:auto; color:var(--color-muted); font-size:12px; font-variant-numeric:tabular-nums; white-space:nowrap; }
 .pagination button { display:grid; width:44px; height:44px; padding:0; place-items:center; border:0; border-radius:999px; background:transparent; color:var(--color-ink); cursor:pointer; }
 .pagination svg { width:20px; height:20px; stroke-width:2; }
@@ -14,8 +14,8 @@
 .badge { position:absolute; inset:12px auto auto 12px; box-shadow:0 1px 6px rgb(0 0 0 / 18%); }
 .body { display:flex; min-width:0; flex-direction:column; align-items:flex-start; padding:16px; }
 .creator { font-size:13px; line-height:1.4; color:var(--color-muted); }
-.body h3 { display:-webkit-box; overflow:hidden; margin:8px 0; font-size:17px; font-weight:750; line-height:1.4; letter-spacing:-.02em; -webkit-box-orient:vertical; -webkit-line-clamp:2; overflow-wrap:anywhere; }
-.watch { display:flex; width:100%; align-items:center; justify-content:space-between; gap:12px; min-height:44px; margin-top:auto; padding-top:8px; font-size:13px; font-weight:650; }
+.body h3 { display:-webkit-box; overflow:hidden; margin:8px 0; font-size:17px; font-weight:700; line-height:1.4; letter-spacing:-.02em; -webkit-box-orient:vertical; -webkit-line-clamp:2; overflow-wrap:anywhere; }
+.watch { display:flex; width:100%; align-items:center; justify-content:space-between; gap:12px; min-height:44px; margin-top:auto; padding-top:8px; font-size:13px; font-weight:700; }
 .watch svg { width:32px; height:32px; flex:none; padding:8px; border-radius:50%; background:var(--color-soft); stroke-width:2; }
 .card:focus-visible { outline:3px solid var(--color-ink); outline-offset:4px; }
 button.card { padding:0; text-align:start; font:inherit; cursor:pointer; }

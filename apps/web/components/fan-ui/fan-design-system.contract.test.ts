@@ -8,10 +8,16 @@ const heading = read("components/fan-ui/fan-heading.module.css");
 
 describe("fan design system ownership", () => {
   it("keeps the approved responsive and control dimensions in the central foundation", () => {
-    for (const token of ["--fan-heading-size: 20px", "--fan-heading-size-wide: 24px", "--fan-heading-weight: 850", "--fan-heading-editorial-weight: var(--fan-heading-weight)", "--fan-action-primary-height: 48px", "--fan-action-service-height: 52px", "--fan-action-icon-size: 18px"]) expect(tokens).toContain(token);
+    for (const token of ["--fan-heading-size: 20px", "--fan-heading-size-wide: 24px", "--fan-heading-weight: 800", "--fan-heading-editorial-weight: var(--fan-heading-weight)", "--fan-action-primary-height: 48px", "--fan-action-service-height: 52px", "--fan-action-icon-size: 18px"]) expect(tokens).toContain(token);
     expect(heading).toContain("@media (min-width: 40rem)");
     expect(heading).toContain("@media (min-width: 48rem)");
     expect(heading).not.toMatch(/font-size:\s*\d/);
+  });
+  it("uses only the 400·700·800 weights in CSS (design-sync-1 C5)", async () => {
+    const { execSync } = await import("node:child_process");
+    const hits = execSync("git grep -nE '(font-weight: *|font: *)(1[0-9]{2}|[2356][0-9]{2}|4[1-9][0-9]|7[1-9][0-9]|8[1-9][0-9]|9[0-9]{2})([^0-9]|$)' -- '*.css' || true", { encoding: "utf8" });
+    expect(hits).toBe("");
+    for (const token of ["--fan-heading-weight: 800", "--fan-number-weight: 800", "--fan-tab-weight: 700", "--fan-action-weight: 700", "--fan-description-weight: 400", "--fan-aside-title-weight: var(--fan-item-title-weight)"]) expect(tokens).toContain(token);
   });
   it("resolves every shared fan variable rather than silently falling back", () => {
     const css = heading + read("components/fan-ui/fan-action.module.css");
@@ -22,7 +28,8 @@ describe("fan design system ownership", () => {
     const title = catalog.match(/\.copy h2\s*\{([^}]*)\}/)?.[1];
     expect(read("../../DESIGN.md")).toContain("use 20px/700 event titles and 16px body copy");
     expect(tokens).toContain("--fan-item-title-size: 16px");
-    expect(tokens).toContain("--fan-event-catalog-title-size: 20px");
+    expect(tokens).toContain("--fan-event-catalog-title-size: var(--fan-heading-size)");
+    expect(tokens).toContain("--fan-heading-size: 20px");
     expect(title).toContain("font-size: var(--fan-event-catalog-title-size)");
     expect(title).toContain("font-weight: var(--fan-item-title-weight)");
   });

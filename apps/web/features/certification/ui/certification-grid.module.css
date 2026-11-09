@@ -5,7 +5,7 @@
 .tile > img, .tile > span:first-child { grid-row: 1 / span 2; width: 32px; height: 32px; object-fit: contain; }
 .tile > strong { min-width: 0; overflow: hidden; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; font-size: var(--fan-metadata-size); line-height: 18px; font-weight: var(--fan-item-title-weight); overflow-wrap: anywhere; word-break: keep-all; }
 .tile:not(:has(.state)) > strong { grid-row: 1 / span 2; }
-.state { justify-self: start; font-size: var(--fan-metadata-size); line-height: 16px; font-weight: 600; color: var(--color-accent-ink, var(--color-ink)); }
+.state { justify-self: start; font-size: var(--fan-metadata-size); line-height: 16px; font-weight: 700; color: var(--color-accent-ink, var(--color-ink)); }
 .state[data-status="preparing"], .state[data-status="closed"] { color: var(--color-muted); }
 .tile[data-status="closed"] { background: var(--color-soft); }
 @media (min-width: 1024px) { .grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }

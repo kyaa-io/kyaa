@@ -163,7 +163,7 @@ it('uses validated catalog values, real scoped links, zero rewards and independe
 });
 it('distinguishes errors from empty and retries the failing catalog',async()=>{
  fail=true;renderCatalog();await screen.findAllByRole('alert');
- expect(screen.queryByText(groupBenefitsCopy('ko').empty)).not.toBeInTheDocument();
+ expect(screen.queryByText(groupBenefitsCopy('ko').empty.replace(/[.。]$/,''))).not.toBeInTheDocument();
  fail=false;fireEvent.click(within(screen.getAllByRole('alert')[0]).getByRole('button'));await screen.findByText('First raffle');
 });
 it('shows one alert for a failing catalog and retries it from the alert',async()=>{
@@ -199,7 +199,7 @@ it('restarts a catalog whose cursor anchor is no longer available',async()=>{
  const section=screen.getByRole('region',{name:groupBenefitsCopy('ko').lucky});
  await within(section).findByRole('alert');empty=true;requests.length=0;
  fireEvent.click(within(section).getByRole('button',{name:'다시 시도'}));
- await within(section).findByText(groupBenefitsCopy('ko').empty);
+ await within(section).findByText(groupBenefitsCopy('ko').empty.replace(/[.。]$/,''));
  expect(screen.queryByText('First raffle')).toBeNull();expect(requests).toContain('/api/groups/benefits?kind=raffles');
  expect(requests.some(url=>url.includes('cursor='))).toBe(false);
 });
@@ -214,7 +214,7 @@ it('keeps the same cursor and accumulated entries on a transient error',async()=
 it('drops accumulated pages immediately when the owner changes',async()=>{
  const view=renderCatalog();await screen.findByText('First raffle');fireEvent.click(screen.getByRole('button',{name:'더 보기'}));await screen.findByText('Second raffle');
  empty=true;session.ownerId='owner-b';session.generation++;
- view.rerender(<LuckyCatalog locale='ko'/>);expect(screen.queryByText('First raffle')).not.toBeInTheDocument();expect(screen.queryByText('Second raffle')).not.toBeInTheDocument();await screen.findAllByText(groupBenefitsCopy('ko').empty);
+ view.rerender(<LuckyCatalog locale='ko'/>);expect(screen.queryByText('First raffle')).not.toBeInTheDocument();expect(screen.queryByText('Second raffle')).not.toBeInTheDocument();await screen.findAllByText(groupBenefitsCopy('ko').empty.replace(/[.。]$/,''));
 });
 it('refreshes balances after the shared wallet mutation event',async()=>{
  render(<GroupBenefitsScreen locale='ko'/>);await screen.findAllByText('137');requests.length=0;

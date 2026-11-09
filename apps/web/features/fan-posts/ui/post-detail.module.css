@@ -28,7 +28,7 @@
 .commentForm.commentForm:is(:focus-within, [data-filled], [data-expanded]) textarea { height: auto; min-height: 88px; max-height: 166px; field-sizing: content; }
 .commentForm.commentForm:is(:focus-within, [data-filled], [data-expanded]) .commentTools { grid-column: 1; }
 .commentForm.commentForm:is(:focus-within, [data-filled], [data-expanded]) .commentCounter { display: inline; }
-.commentLabel { color: var(--color-muted); font-size: var(--fan-metadata-size); font-weight: 600; line-height: 20px; }
+.commentLabel { color: var(--color-muted); font-size: var(--fan-metadata-size); font-weight: 700; line-height: 20px; }
 .commentTools { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: var(--space-2); }
 .commentCounter { margin-inline-end: auto; color: var(--color-muted); font-size: var(--fan-metadata-size); line-height: 20px; font-variant-numeric: tabular-nums; }
 .guestField { grid-column: 1; display: flex; align-items: center; min-width: 0; height: 42px; color: var(--color-muted); font-size: var(--fan-body-size); line-height: 26px; text-decoration: none; }
@@ -41,7 +41,7 @@
 .commentList > li[data-reply] { margin-inline-start: var(--space-12); padding-inline-start: var(--space-10); }
 .commentList > li[data-reply] > :first-child > img { width: 28px; height: 28px; }
 .commentList > li p { margin: 0; overflow-wrap: anywhere; white-space: pre-wrap; }
-.commentAction { display: inline-flex; align-items: center; min-height: 44px; padding: 0 var(--space-2); border: 0; background: transparent; color: var(--color-muted); font: 500 13px/20px "Pretendard Variable", system-ui, sans-serif; text-decoration: none; cursor: pointer; }
+.commentAction { display: inline-flex; align-items: center; min-height: 44px; padding: 0 var(--space-2); border: 0; background: transparent; color: var(--color-muted); font: 700 13px/20px "Pretendard Variable", system-ui, sans-serif; text-decoration: none; cursor: pointer; }
 .commentAction:focus-visible { outline: 3px solid var(--color-focus); outline-offset: -3px; }
 .commentActions { display: flex; flex-wrap: wrap; align-items: center; margin-inline-start: calc(var(--space-2) * -1); }
 .commentMeta { display: flex; flex-wrap: wrap; align-items: center; gap: 0 var(--space-2); min-height: 44px; min-width: 0; color: var(--color-muted); font-size: var(--fan-metadata-size); line-height: 20px; }

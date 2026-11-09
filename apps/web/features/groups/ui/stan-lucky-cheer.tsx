@@ -145,7 +145,7 @@ export function StanLucky({ locale, bias, guest }: { locale: AppLocale; bias: Se
   const live = raffles.items.filter(item => item.status !== "closed"), past = live.length ? [] : raffles.items.filter(item => item.status === "closed");
   const shown = live.slice(0, LUCKY_CARDS), shownPast = past.slice(0, LUCKY_CARDS);
   const more = slug && raffles.items.length > shown.length + shownPast.length ? <Link className={styles.headLink} href={creatorRafflesHref(slug, locale)}>{seeAllLabel[locale]}<ArrowRight size={16} aria-hidden="true" /></Link> : null;
-  const empty = (title: string, action?: ReactNode, short = false) => <FanState inline compact kind="empty" className={short ? `${styles.empty} ${styles.emptyShort}` : styles.empty} title={title} actions={action} />;
+  const empty = (title: string, action?: ReactNode, short = false) => <div className={short ? `${styles.empty} ${styles.emptyShort}` : styles.empty}><FanState kind="empty" title={title} />{action ? <div className={styles.emptyAction}>{action}</div> : null}</div>;
   const history = <FanAction variant="text" href={`/my/raffles?locale=${locale}`} trailingIcon={<ArrowRight />}>{t(locale, "luckyHistory")}</FanAction>;
   const body = bias.status === "loading" || (slug && raffles.loading) ? <div className={styles.pending} aria-busy="true"><FanSkeleton shape="block" width="100%" height="100%" /></div>
     : guest ? empty(t(locale, "luckyNoFavorite"))
