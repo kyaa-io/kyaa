@@ -7,6 +7,7 @@ import { FanAction } from "@/components/fan-ui/fan-action";
 import { FanHeading } from "@/components/fan-ui/fan-heading";
 import { FanHelpTip } from "@/components/fan-ui/fan-help-tip";
 import { fanLoginHref } from "@/components/login-href";
+import { fanUiText } from "@/components/fan-ui/fan-ui-copy";
 import { Dialog } from "@/components/ui/overlay/accessible-overlay";
 import { dukjilText, type DukjilCopyKey } from "@/features/dukjil/ui/dukjil-copy";
 import { useDukjil } from "@/features/dukjil/ui/dukjil-provider";
@@ -84,7 +85,7 @@ function Slot({ slot, locale, stampSrc, href }: { slot: PassportRoadmapSlot; loc
   // Read-only checkbox semantics: the screen reader says filled or empty in the reader's own language. The link beside it stretches over the whole card.
   return <li className={styles.slot} data-state={slot.state} data-kind={slot.kind} data-frame={meta?.frame ?? "round"} style={{ "--stamp-tilt": `${(slot.slotNo % 5 - 2) * 3}deg` } as CSSProperties}>
     {meta ? <span className={styles.number} aria-hidden="true">{number.padStart(2, "0")}</span> : null}
-    {slot.kind === "quiz" ? <span className={styles.help}><FanHelpTip label={passportBookText(locale, "entryReviewHelpLabel")} title={label} closeLabel={passportBookText(locale, "helpClose")}>{passportBookText(locale, "entryReviewHelp")}</FanHelpTip></span> : null}
+    {slot.kind === "quiz" ? <span className={styles.help}><FanHelpTip label={passportBookText(locale, "entryReviewHelpLabel")} title={label} closeLabel={passportBookText(locale, "helpClose")} detailsLabel={fanUiText(locale, "details")}>{passportBookText(locale, "entryReviewHelp")}</FanHelpTip></span> : null}
     <span className={styles.art} role="checkbox" aria-checked={filled} aria-disabled="true" aria-label={label}>
       {src ? <img src={src} alt="" width={88} height={88} loading="lazy" /> : !filled && !meta ? <span className={styles.emptyNumber} aria-hidden="true">{number}</span> : null}
       {filled ? <span className={styles.check}><Check aria-hidden="true" size={12} strokeWidth={3} /></span> : null}

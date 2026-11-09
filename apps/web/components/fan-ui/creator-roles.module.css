@@ -18,18 +18,19 @@
 .filters button {
   display: inline-flex;
   min-width: calc(5em + 26px);
-  min-height: 44px;
+  position: relative;
+  min-height: var(--fan-chip-height);
   align-items: center;
   justify-content: center;
-  padding: 8px 12px;
+  padding: 6px 12px;
   border: 1px solid var(--color-line);
-  border-radius: var(--radius-control);
+  border-radius: var(--radius-action);
   background: var(--color-canvas);
   color: var(--color-ink);
   font: inherit;
-  font-size: var(--fan-metadata-size); /* 탭/세그먼트(칩) 계약 13px(DESIGN.md 역할 표, FanTabs chip) */
+  font-size: var(--fan-chip-size); /* 칩 계약 14/700(게이트 B2, FanTabs chip과 같다) */
   font-weight: var(--fan-tab-weight);
-  line-height: 18px;
+  line-height: 20px;
   white-space: nowrap;
   cursor: pointer;
   transition: background-color var(--motion-fast) var(--motion-easing), color var(--motion-fast) var(--motion-easing), transform var(--motion-fast) var(--motion-easing);
@@ -42,6 +43,7 @@
   color: var(--color-accent-ink);
 }
 
+.filters button::after { position: absolute; inset: -4px 0; content: ""; }
 .filters button:disabled { cursor: wait; opacity: .5; }
 
 .filters button:active:not(:disabled) { transform: scale(0.97); }

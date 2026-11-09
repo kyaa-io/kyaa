@@ -1,7 +1,7 @@
-.trigger { position: relative; display: inline-grid; width: var(--space-6); height: var(--space-6); flex: none; place-items: center; padding: 0; border: 0; border-radius: var(--radius-pill); background: transparent; color: var(--color-muted); cursor: help; }
-/* 눈에 보이는 크기는 24, 누르는 영역은 44. */
-.trigger::after { position: absolute; inset: calc((var(--space-6) - var(--min-target)) / 2); content: ""; }
-.trigger svg { width: var(--space-4); height: var(--space-4); }
+.trigger { position: relative; display: inline-flex; flex: none; align-items: center; gap: 2px; padding: 0; border: 0; background: transparent; color: var(--color-accent-ink); font: inherit; font-size: 13px; font-weight: 700; line-height: 20px; white-space: nowrap; cursor: pointer; }
+/* 눈에 보이는 높이는 20, 누르는 영역은 44. */
+.trigger::after { position: absolute; inset: -12px -8px; content: ""; }
+.trigger svg { width: 14px; height: 14px; }
 .trigger:focus-visible { outline: var(--focus-width) solid var(--color-focus); outline-offset: var(--focus-offset); }
 .tip { position: fixed; top: var(--tip-top, 0); left: var(--tip-left, 0); z-index: var(--z-tooltip); box-sizing: border-box; width: min(280px, calc(100vw - var(--space-6))); padding: var(--space-3); visibility: hidden; border: 1px solid var(--color-line); border-radius: var(--radius-control); background: var(--color-surface); color: var(--color-ink); font-size: var(--fan-description-size); font-weight: var(--fan-description-weight); line-height: var(--fan-description-leading); overflow-wrap: anywhere; word-break: keep-all; pointer-events: none; }
 .tip[data-placed="true"] { visibility: visible; }

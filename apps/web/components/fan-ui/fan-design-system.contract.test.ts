@@ -8,9 +8,9 @@ const heading = read("components/fan-ui/fan-heading.module.css");
 
 describe("fan design system ownership", () => {
   it("keeps the approved responsive and control dimensions in the central foundation", () => {
-    for (const token of ["--fan-heading-size: 20px", "--fan-heading-size-wide: 24px", "--fan-heading-weight: 800", "--fan-heading-editorial-weight: var(--fan-heading-weight)", "--fan-action-primary-height: 48px", "--fan-action-service-height: 52px", "--fan-action-icon-size: 18px"]) expect(tokens).toContain(token);
-    expect(heading).toContain("@media (min-width: 40rem)");
-    expect(heading).toContain("@media (min-width: 48rem)");
+    for (const token of ["--fan-heading-size: 20px", "--fan-heading-size-wide: 24px", "--fan-heading-weight: 800", "--fan-heading-editorial-weight: var(--fan-heading-weight)", "--fan-action-primary-height: 44px", "--fan-h1-size: 26px", "--fan-section-size: 18px", "--fan-section-weight: 700", "--radius-action: 8px", "--fan-chip-height: 36px", "--fan-chip-size: 14px", "--fan-action-service-height: 52px", "--fan-action-icon-size: 18px"]) expect(tokens).toContain(token);
+    expect(tokens).toContain("@media (min-width: 64rem) { :root { --fan-action-primary-height: 48px; } }");
+    expect(heading).not.toContain("@media");
     expect(heading).not.toMatch(/font-size:\s*\d/);
   });
   it("uses only the 400·700·800 weights in CSS (design-sync-1 C5)", async () => {
@@ -66,5 +66,33 @@ describe("fan design system ownership", () => {
     const component = read("components/fan-ui/fan-heading.tsx");
     expect(component).not.toMatch(/(?:className|style)\?:/);
     expect(component).toContain('"personal-page"');
+  });
+});
+
+describe("gate A–E decisions (2026-11-09 15:52)", () => {
+  const css = (file: string) => read(file);
+  it("gives every FanAction variant and the star button the action radius, never a pill", () => {
+    const action = css("components/fan-ui/fan-action.module.css");
+    expect(action).not.toContain("var(--radius-pill)");
+    expect(css("components/fan-ui/fan-star-action.module.css")).toContain("border-radius: var(--radius-action)");
+  });
+  it("sizes chips 36 · 14/700 · radius 8 with a 44px hit area", () => {
+    for (const file of ["components/fan-ui/fan-tabs.module.css", "components/fan-ui/creator-roles.module.css"]) {
+      const source = css(file);
+      expect(source).toContain("min-height: var(--fan-chip-height)");
+      expect(source).toContain("var(--radius-action)");
+      expect(source).toContain("inset: -4px 0");
+    }
+    expect(css("features/groups/ui/groups.module.css")).toMatch(/\.chip \{ position:relative;[^}]*min-height:var\(--fan-chip-height\)/);
+  });
+  it("sets FanHeading by level: h1 26/800 and sections 18/700, no responsive size", () => {
+    expect(heading).toMatch(/\.heading\.page \{ font-size: var\(--fan-h1-size\); font-weight: var\(--fan-heading-weight\); \}/);
+    expect(heading).toMatch(/\.heading\.section \{ font-size: var\(--fan-section-size\); font-weight: var\(--fan-section-weight\); \}/);
+    expect(css("components/fan-ui/fan-heading.tsx")).toContain('Tag === "h1" || variant === "personal-page"');
+  });
+  it("shows the help tip as a text link with the details label, not a question mark", () => {
+    const tip = css("components/fan-ui/fan-help-tip.tsx");
+    expect(tip).toContain("detailsLabel");
+    expect(tip).not.toContain("CircleHelp");
   });
 });

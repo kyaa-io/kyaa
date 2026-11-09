@@ -71,7 +71,36 @@ function staticCss() {
 }
 
 // ---- in-page measurement ----
-function pageProbe({ exceptions, common }) {
+// ---- production class names: hash_cls -> source module (no source maps, so match each hash's class set to the CSS file that defines them) ----
+const moduleClasses = (() => {
+  const index = new Map();
+  for (const file of walkCss(webRoot).filter((f) => f.endsWith(".module.css"))) {
+    const css = fs.readFileSync(file, "utf8").replace(/\/\*[\s\S]*?\*\//g, "");
+    index.set(path.basename(file).replace(/\.module\.css$/, "-module"), new Set([...css.matchAll(/\.([A-Za-z_][\w-]*)/g)].map((m) => m[1])));
+  }
+  return index;
+})();
+function stylesheetClasses() {
+  const byHash = {};
+  const visit = (rules) => { for (const rule of rules) {
+    if (rule.cssRules && !rule.selectorText) { visit(rule.cssRules); continue; }
+    for (const m of (rule.selectorText || "").matchAll(/\.(_?[A-Za-z0-9_-]{6})_([A-Za-z_][\w-]*)/g)) (byHash[m[1]] ||= new Set()).add(m[2]);
+  } };
+  for (const sheet of document.styleSheets) { try { visit(sheet.cssRules); } catch { /* cross-origin */ } }
+  return Object.fromEntries(Object.entries(byHash).map(([h, set]) => [h, [...set]]));
+}
+// A hash belongs to the module whose class set matches best (Jaccard >= .8 and strictly better than the runner-up); otherwise it stays unresolved.
+function hashToModule(byHash, index) {
+  const map = {};
+  for (const [hash, classes] of Object.entries(byHash)) {
+    const seen = new Set(classes);
+    const scored = [...index].map(([name, set]) => { const inter = classes.filter((c) => set.has(c)).length; return [name, inter / (set.size + seen.size - inter)]; }).sort((a, b) => b[1] - a[1]);
+    if (scored[0] && scored[0][1] >= 0.8 && (!scored[1] || scored[0][1] > scored[1][1])) map[hash] = scored[0][0];
+  }
+  return map;
+}
+
+function pageProbe({ exceptions, common, hashToModule }) {
   const canvas = document.createElement("canvas"); canvas.width = canvas.height = 1;
   const ctx = canvas.getContext("2d", { willReadFrequently: true });
   const toRgb = (css) => {
@@ -90,7 +119,9 @@ function pageProbe({ exceptions, common }) {
     return { L, C: Math.hypot(A, Bb) };
   };
   const hex = ({ r, g, b }) => `#${[r, g, b].map((v) => v.toString(16).padStart(2, "0")).join("")}`;
-  const modulesOf = (el) => [...el.classList].map((c) => { const m = c.match(/^(.+-module)__[A-Za-z0-9_-]{6}__(.+)$/); return m ? { module: m[1], cls: m[2] } : null; }).filter(Boolean);
+  // dev: `name-module__hash__cls`. production: `hash_cls` (6-char hash); the hash is resolved to its source module through hashToModule.
+  const splitClass = (c) => { const m = c.match(/^(.+-module)__[A-Za-z0-9_-]{6}__(.+)$/); if (m) return { module: m[1], cls: m[2] }; const p = c.match(/^(_?[A-Za-z0-9_-]{6})_([A-Za-z_][\w-]*)$/); return p && hashToModule[p[1]] ? { module: hashToModule[p[1]], cls: p[2] } : null; };
+  const modulesOf = (el) => [...el.classList].map(splitClass).filter(Boolean);
   const isException = (el) => modulesOf(el).some(({ module, cls }) => exceptions.some((x) => x.module === module && (x.classes === "*" || x.classes.includes(cls))));
   const ruleOwners = (el) => {
     const owners = [];
@@ -100,7 +131,7 @@ function pageProbe({ exceptions, common }) {
         if (rule.cssRules && !rule.selectorText) { if (!rule.media || matchMedia(rule.media.mediaText).matches) visit(rule.cssRules); continue; }
         if (!rule.selectorText || !(rule.style.background || rule.style.backgroundColor)) continue;
         let hit = false; try { hit = el.matches(rule.selectorText); } catch {}
-        if (hit) owners.push(`${rule.selectorText.replace(/([a-z0-9-]+-module)__[A-Za-z0-9_-]{6}__/gi, "$1.")} { background: ${rule.style.backgroundColor || rule.style.background} }`);
+        if (hit) owners.push(`${rule.selectorText.replace(/([a-z0-9-]+-module)__[A-Za-z0-9_-]{6}__/gi, "$1.").replace(/\.(_?[A-Za-z0-9_-]{6})_(?=[A-Za-z_])/g, (all, h) => (hashToModule[h] ? `.${hashToModule[h]}.` : all))} { background: ${rule.style.backgroundColor || rule.style.background} }`);
       } };
       visit(rules);
     }
@@ -159,7 +190,7 @@ async function main() {
   const { chromium } = require("playwright");
   const browser = await chromium.launch();
   const out = { base: BASE, at: new Date().toISOString(), exceptions: GREY_EXCEPTIONS, static: staticCss(), pages: [], header: [] };
-  const probeArgs = { exceptions: GREY_EXCEPTIONS, common: [...commonModules] };
+  const probeArgs = { exceptions: GREY_EXCEPTIONS, common: [...commonModules], hashToModule: {} };
   try {
     for (const state of STATES) {
       const storage = state.file ? JSON.parse(fs.readFileSync(state.file, "utf8")) : undefined;
@@ -175,6 +206,7 @@ async function main() {
           // Measure the loaded page, not its skeleton: wait (max 45s) until no loading placeholder is left.
           await page.waitForFunction(() => !document.querySelector('[aria-busy="true"], [class*="fan-skeleton-module__"], [class*="Skeleton"], [class*="skeleton"]'), null, { timeout: 45000, polling: 500 }).catch(() => {});
           await page.waitForTimeout(1000);
+          probeArgs.hashToModule = hashToModule(await page.evaluate(stylesheetClasses), moduleClasses);
           const result = await page.evaluate(pageProbe, probeArgs);
           const greyFaces = result.grey.filter((g) => !g.exception);
           out.pages.push({

@@ -1,7 +1,7 @@
 .app {
   --ink: var(--color-ink);
   --muted: var(--color-ink);
-  --soft: var(--color-soft);
+  --soft: var(--color-accent-soft);
   --line: var(--color-line);
   --micro: var(--color-line-subtle);
   min-height: 100dvh;
@@ -337,7 +337,6 @@
   display: block;
   border-radius: 12px;
   background: var(--soft);
-  background-size: 300% 100%;
   animation: pulse 1.4s ease-in-out infinite;
 }
 .skeletonLine {
@@ -892,12 +891,7 @@
   }
 }
 @keyframes pulse {
-  0% {
-    background-position: 100% 0;
-  }
-  100% {
-    background-position: 0 0;
-  }
+  50% { opacity: .5; }
 }
 
 /* Owned passports pair a compact portrait with the fan's collected activity. */

@@ -59,9 +59,10 @@ describe("FanState", () => {
     render(<FanState kind="empty" title="비었어요" description="설명" />);
   });
 
-  it("keeps the page-level heading, icon and action only for scope page until gate D", () => {
-    render(<FanState kind="empty" scope="page" title="비었어요." actions={<button type="button">둘러보기</button>} />);
-    expect(screen.getByRole("heading", { name: "비었어요." })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "둘러보기" })).toBeInTheDocument();
+  it("has no page scope: an empty page is the same one 78px line (gate D2, 2026-11-09)", () => {
+    // @ts-expect-error scope 속성은 없다. 페이지 전체 빈 상태도 한 줄 한 문장이다.
+    render(<FanState kind="empty" scope="page" title="비었어요." />);
+    expect(screen.queryByRole("heading")).not.toBeInTheDocument();
+    expect(screen.getByRole("status")).toHaveAttribute("data-empty-state", "section");
   });
 });
