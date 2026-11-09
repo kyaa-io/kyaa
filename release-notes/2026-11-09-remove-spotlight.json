@@ -1,8 +1,12 @@
 {
   "changes": [
     "모임 화면에서 '지금 주목할 페이지' 구간을 없앴어요. 페이지 둘러보기 목록 아래가 바로 이어져요.",
+    "모임 화면 옆의 페이지 개설 안내에서 질문 문장과 '자세히' 링크를 없애고, '팬페이지 개설 신청'과 '취미·브랜드 페이지 개설 신청' 두 줄만 남겼어요.",
     "첨부한 화면은 예시 데이터를 넣은 로컬 확인 화면이에요."
   ],
   "path": "/pages/groups",
-  "images": ["release-notes/images/2026-11-09-remove-spotlight-after-1440.png"]
+  "images": [
+    "release-notes/images/2026-11-09-remove-spotlight-after-1440.png",
+    "release-notes/images/2026-11-09-remove-spotlight-page-open-after-1440.png"
+  ]
 }

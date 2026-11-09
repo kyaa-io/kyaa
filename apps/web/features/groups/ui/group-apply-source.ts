@@ -3,6 +3,7 @@ export const groupApplySource = {
   hobbyDescription: { ko: "취미: 러닝, 사진처럼 같은 취미를 즐기는 사람들이 모이는 페이지", en: "Hobby: people who share a hobby, like running or photography" },
   brandDescription: { ko: "브랜드: 소식과 행사를 브랜드가 직접 올리는 페이지", en: "Brand: a brand posts its own news and events" },
   fanPageApply: { ko: "팬페이지 개설 신청", en: "Request a fan page" },
+  hobbyBrandPageApply: { ko: "취미·브랜드 페이지 개설 신청", en: "Request a hobby or brand page" },
   existingPageQuestion: { ko: "기존에 운영하던 페이지가 있나요?", en: "Do you already run a page?" },
   existingPageLink: { ko: "운영하던 페이지 링크", en: "Page link" },
   existingPageCapture: { ko: "페이지 캡처", en: "Page screenshot" },

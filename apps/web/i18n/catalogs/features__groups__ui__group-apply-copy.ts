@@ -37,6 +37,18 @@ export const messages = {
     "fr": "Demander une page de fans",
     "ru": "Подать заявку на фан-страницу",
   },
+  "hobbyBrandPageApply": {
+    "ja": "趣味・ブランドページの開設を申請",
+    "zh-Hans": "申请开设爱好与品牌页面",
+    "zh-Hant": "申請開設興趣與品牌頁面",
+    "es": "Solicitar página de afición o marca",
+    "id": "Ajukan halaman hobi atau merek",
+    "vi": "Đăng ký trang sở thích hoặc thương hiệu",
+    "th": "ขอเปิดเพจงานอดิเรกหรือแบรนด์",
+    "pt": "Solicitar página de hobby ou marca",
+    "fr": "Demander une page loisir ou marque",
+    "ru": "Заявка на страницу увлечения или бренда",
+  },
   "existingPageQuestion": {
     "ja": "運営していたページはありますか？",
     "zh-Hans": "您是否运营过页面？",

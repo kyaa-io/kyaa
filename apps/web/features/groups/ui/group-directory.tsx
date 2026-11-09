@@ -17,8 +17,6 @@ import { FanHeading } from "@/components/fan-ui/fan-heading";
 import { FanLockedRows } from "@/components/fan-ui/fan-locked-value";
 import { FanSkeletonRows } from "@/components/fan-ui/fan-skeleton";
 import { FanTag } from "@/components/fan-ui/fan-tag";
-import { FanHelpTip } from "@/components/fan-ui/fan-help-tip";
-import { fanUiText } from "@/components/fan-ui/fan-ui-copy";
 import cornerStyles from "@/components/fan-ui/earn-corner.module.css";
 import { checkinNumbers } from "@/features/dukjil/domain/dukjil-ui";
 import { DukjilProvider, useDukjil } from "@/features/dukjil/ui/dukjil-provider";
@@ -156,8 +154,7 @@ export function GroupDirectory({locale,initialOwned=false,banners=[]}:{locale:Ap
       </section>
       <section className={styles.discoveryAttendance}><div><h3>{c.attendance}</h3></div><DukjilProvider locale={locale}><CheckinCorner locale={locale}>{attendanceAction}</CheckinCorner></DukjilProvider></section>
       {myApplication&&<Link className={directoryStyles.myApplication} href={`/pages/groups/apply?view=mine&locale=${locale}` as Route}><span className={directoryStyles.myApplicationCopy}><strong>{groupApplyText(locale,'mineTitle')}</strong><span>{myApplication.name}</span></span><FanTag tone={myApplication.status==='approved'?'fan':myApplication.status==='changes_requested'?'notice':'neutral'}>{groupApplyText(locale,statusLabel[myApplication.status])}</FanTag><ChevronRight size={16} aria-hidden="true"/></Link>}
-      <div className={styles.discoveryCreation}><section><h3>{c.fanTitle}</h3><FanAction href={`/pages/groups/apply?locale=${locale}&kind=fan`} onClick={event=>openApplication(event,'fan')} variant="text" trailingIcon={<ArrowRight/>}>{groupApplyText(locale,'fanPageApply')}</FanAction></section>
-      <section><h3 className={directoryStyles.helpTitle}>{c.otherTitle}<FanHelpTip label={c.otherTitle} title={c.otherTitle} closeLabel={fanUiText(locale,"close")} detailsLabel={fanUiText(locale,"details")}><p>{groupApplyText(locale,'hobbyDescription')}</p><p>{groupApplyText(locale,'brandDescription')}</p></FanHelpTip></h3><FanAction href={`/pages/groups/apply?locale=${locale}`} onClick={event=>openApplication(event,'hobby')} variant="text" trailingIcon={<ArrowRight/>}>{t.apply}</FanAction></section></div>
+      <div className={styles.discoveryCreation}><FanAction href={`/pages/groups/apply?locale=${locale}&kind=fan`} onClick={event=>openApplication(event,'fan')} variant="text" trailingIcon={<ArrowRight/>}>{groupApplyText(locale,'fanPageApply')}</FanAction><FanAction href={`/pages/groups/apply?locale=${locale}`} onClick={event=>openApplication(event,'hobby')} variant="text" trailingIcon={<ArrowRight/>}>{groupApplyText(locale,'hobbyBrandPageApply')}</FanAction></div>
     </aside></div>
     {application&&<GroupApplicationDialog locale={locale} initialKind={application.kind} initialName={application.name} onClose={()=>setApplication(null)}/>}
   {attendanceOpen&&<WalletAttendanceDialog locale={locale} open onClose={()=>{setAttendanceOpen(false);requestAnimationFrame(()=>attendanceTrigger.current?.focus());}}/>}
