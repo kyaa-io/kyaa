@@ -24,6 +24,11 @@ it.each(['?search=Ru','?type=fan','?type=hobby','?type=fan&artistRole=idol&searc
  expect(screen.getByRole('heading',{level:2,name:'페이지 둘러보기'})).toBeInTheDocument();
  expect(screen.getByRole('button',{name:/^활동 분야/})).toBeInTheDocument();
 });
+it('draws the h1 with FanHeading so the one page-title size (26/800) applies',()=>{
+ render(<GroupDirectory locale='ko'/>);
+ const h1=screen.getByRole('heading',{level:1,name:'팬페이지와 모임 찾기'});
+ expect(h1).toHaveAttribute('data-fan-heading','standard');
+});
 it('asks for the spotlight apart from the filters, so filtering re-reads the list only',()=>{
  render(<GroupDirectory locale='ko'/>);
  const spotlight=state.urls.find(url=>url.includes('sort=today'))!;expect(spotlight).toContain('type=fan');expect(spotlight).not.toContain('search');

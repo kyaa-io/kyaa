@@ -68,6 +68,18 @@ describe("MyRafflesScreen", () => {
     );
   });
 
+  it("empty history is one line plus one browse link, both inside the 760px column", async () => {
+    vi.spyOn(globalThis, "fetch").mockResolvedValue(Response.json({ items: [], nextCursor: null }));
+    const { container } = render(<MyRafflesScreen locale="ko" />);
+    const line = await screen.findByText("아직 응모 내역이 없어요");
+    const link = screen.getByRole("link", { name: "래플 둘러보기" });
+    expect(link).toHaveAttribute("href", "/benefits?locale=ko");
+    const column = line.closest("section")!.parentElement!;
+    expect(column.contains(link)).toBe(true);
+    expect(column.className).toMatch(/empty/);
+    expect(container.querySelector("main")!.contains(column)).toBe(true);
+  });
+
   it("keeps the way to earlier entries when a page came back without rows", async () => {
     vi.spyOn(globalThis, "fetch").mockImplementation((input) => {
       const url = String(input);

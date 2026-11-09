@@ -36,7 +36,7 @@ function History({ locale, tab, highlightId }: { locale: AppLocale; tab: "schedu
     <time dateTime={item.createdAt}>{new Intl.DateTimeFormat(locale, { dateStyle: "medium", timeZone: "Asia/Seoul" }).format(new Date(item.createdAt))}</time>
     {item.reviewReason && <p>{c.reason}: {item.reviewReason}</p>}
     {"scheduleHref" in item && item.scheduleHref ? <FanAction href={`${item.scheduleHref}?locale=${locale}`}>{c.view}</FanAction> : "artist" in item && item.artist ? <FanAction href={`${item.artist.href}?locale=${locale}`}>{item.artist.name}</FanAction> : null}
-  </li>)}</ul> : <FanState kind="empty" title={c.empty} />}
+  </li>)}</ul> : <div className={styles.empty}><FanState kind="empty" title={c.empty} /><FanAction href={`${tab === "schedules" ? "/live/calendar" : "/bias/requests"}?locale=${locale}`}>{tab === "schedules" ? c.schedules : c.fanpage}</FanAction></div>}
     <div className={styles.actions}>{cursor && <FanAction onClick={() => setCursor(null)}>{c.back}</FanAction>}{data.nextCursor && <FanAction onClick={() => setCursor(data.nextCursor)}>{c.more}</FanAction>}</div>
   </>;
 }

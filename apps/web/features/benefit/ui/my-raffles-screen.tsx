@@ -148,7 +148,7 @@ function MyRafflesOwnerScreen({ locale, auth }: { locale: FanLocale; auth: Retur
   else {
     const items = [...resource.state.data.items, ...extraPages.flatMap((page) => page.items)];
     content = items.length === 0 && !nextCursor
-      ? <FanState kind="empty" title={t.empty} />
+      ? <div className={styles.empty}><FanState kind="empty" title={t.empty} /><FanAction variant="neutral" href={withLocalePath("/benefits", locale)}>{t.browse}</FanAction></div>
       : <>
           <div className={styles.list}>{items.map((item) => <RaffleResultPanel key={`${item.campaignId}:${item.benefitId}`} result={item} locale={locale} ownerId={auth.user?.id} />)}</div>
           {moreError ? <p className={styles.moreError} role="alert">{t.moreError}</p> : null}

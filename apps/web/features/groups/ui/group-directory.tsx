@@ -13,6 +13,7 @@ import type { Route } from "next";
 import { ArrowDownUp, ArrowRight, ChevronRight, Search,ChevronDown,CircleAlert } from "lucide-react";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import { FanEntityCard } from "@/components/fan-ui/fan-entity-card";
+import { FanHeading } from "@/components/fan-ui/fan-heading";
 import { FanLockedRows } from "@/components/fan-ui/fan-locked-value";
 import { FanSkeletonRows } from "@/components/fan-ui/fan-skeleton";
 import { FanTag } from "@/components/fan-ui/fan-tag";
@@ -143,7 +144,7 @@ export function GroupDirectory({locale,initialOwned=false,banners=[]}:{locale:Ap
   const applyLabel=nonFanType?t.apply:groupApplyText(locale,'fanPageApply');
   const attendanceAction=!resource.authenticated?<FanAction className={styles.discoveryAttendanceGuest} variant="neutral" href={directoryLogin}>{w.attendance}</FanAction>:<FanAction href={`/my/wallet?view=attendance&locale=${locale}`} onClick={event=>{if(event.defaultPrevented||event.button!==0||event.metaKey||event.ctrlKey||event.shiftKey||event.altKey||event.currentTarget.target||event.currentTarget.hasAttribute('download'))return;event.preventDefault();attendanceTrigger.current=event.currentTarget;setAttendanceOpen(true);}} variant="primary">{w.attendance}</FanAction>;
   return <GroupShell locale={locale}>
-    <header className={styles.discoveryIntro}><h1>{c.title}</h1></header>
+    <header className={styles.discoveryIntro}><FanHeading as="h1">{c.title}</FanHeading></header>
     <MyArtists locale={locale} loginPath={`/pages/groups?${directoryLoginQuery}`}/>
     <ThinCarousel banners={banners} locale={locale}/>
     <div className={`${styles.layout} ${styles.discoveryLayout}`}><section className={styles.main} aria-label={t.explore} id="directory-explore" data-directory-explore="" data-filtered={holdHeight||undefined}>
