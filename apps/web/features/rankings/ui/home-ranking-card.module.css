@@ -7,7 +7,7 @@
 .panel { display: grid; gap: var(--space-3); min-width: 0; padding-top: var(--space-3); }
 .head { display: flex; min-height: var(--min-target); align-items: center; justify-content: space-between; gap: var(--space-3); min-width: 0; }
 .head h2 { min-width: 0; overflow-wrap: anywhere; }
-.all { display: inline-flex; flex: none; align-items: center; gap: var(--space-1); min-height: var(--min-target); color: var(--color-ink); font-size: var(--fan-metadata-size); font-weight: var(--fan-item-title-weight); text-decoration: none; }
+.all { display: inline-flex; flex: none; align-items: center; gap: var(--space-1); min-height: var(--min-target); color: var(--color-ink); font-size: var(--fan-action-label-size); font-weight: var(--fan-item-title-weight); text-decoration: none; }
 .all:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 @media (min-width: 64rem) {
   .narrow { display: none; }

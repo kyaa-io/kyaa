@@ -115,7 +115,7 @@ export function AdminOverviewContent({ data, locale = "ko" }: { data: AdminOverv
 
     <div className={styles.bottomGrid}>
       <section className={styles.panel} aria-labelledby="upcoming-title">
-        <div className={styles.panelHeading}><div><h2 id="upcoming-title">{ko ? "진행 중·다가오는 LIVE" : "Live now & coming up"}</h2><p>{ko ? "공개 중인 LIVE를 가까운 순서로 확인하세요." : "Published LIVE events, nearest first."}</p></div><Link href={href("/admin/lives", locale)}>{ko ? "전체 보기" : "View all"}<ArrowRight aria-hidden="true" /></Link></div>
+        <div className={styles.panelHeading}><div><h2 id="upcoming-title">{ko ? "진행 중·다가오는 LIVE" : "Live now & coming up"}</h2><p>{ko ? "공개 중인 LIVE를 가까운 순서로 확인하세요." : "Published LIVE events, nearest first."}</p></div><Link href={href("/admin/lives", locale)}><strong>{ko ? "전체 보기" : "View all"} <span aria-hidden="true">›</span></strong></Link></div>
         {data.upcoming.length === 0 ? <div className={styles.empty}><CalendarDays aria-hidden="true" /><p>{ko ? "진행 중이거나 예정된 공개 LIVE가 없습니다." : "No published LIVE events are active or scheduled."}</p><Link href={href("/admin/lives", locale)}>{ko ? "LIVE 관리로 이동" : "Manage LIVE events"}</Link></div> :
           <ul className={styles.liveList}>{data.upcoming.map((live) => <li key={live.id}><Link href={href(`/admin/lives/${live.id}/analytics`, locale)}>
             <div className={styles.dateTile}><CalendarDays aria-hidden="true" /><span>{date(live.startsAt, locale)}</span></div>

@@ -1,6 +1,6 @@
 "use client";
 import {useRef,useState} from 'react';
-import {ArrowRight,Heart,MessageCircle,MessagesSquare,Pencil,Star} from 'lucide-react';
+import {Heart,MessageCircle,MessagesSquare,Pencil,Star} from 'lucide-react';
 import {FanAction} from '@/components/fan-ui/fan-action';
 import {CreatorAttendanceEntry} from '@/features/dukjil/ui/creator-attendance-entry';
 import {dukjilText} from '@/features/dukjil/ui/dukjil-copy';
@@ -83,6 +83,6 @@ export function GroupSideRail({locale}:{locale:AppLocale;pageId:string}){
  if(!page||narrow)return null;
  return <aside className={railStyles.aside}>
   <GroupMissionCard page={page} locale={locale}/>
-  <section className={railStyles.events}><h2>{locale==='ko'?'응원과 이벤트':t.events}</h2><FanAction variant='text' href={`/benefits?locale=${locale}`} leadingIcon={<Heart/>} trailingIcon={<ArrowRight/>}>{groupBenefitsCopy(locale).title}</FanAction></section>
+  <section className={railStyles.events}><h2>{locale==='ko'?'응원과 이벤트':t.events}</h2><FanAction variant='text' href={`/benefits?locale=${locale}`} leadingIcon={<Heart/>} trailingIcon={<span aria-hidden="true">›</span>}>{groupBenefitsCopy(locale).title}</FanAction></section>
  </aside>;
 }
