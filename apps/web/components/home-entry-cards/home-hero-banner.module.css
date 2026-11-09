@@ -1,5 +1,6 @@
-/* GGGI 캠페인 배너: 바탕은 아트 색 토큰, 안의 포커스 링은 흰색(분홍 2.35:1 → 흰 12.18:1). */
-.banner[data-kind="campaign"] { --campaign-art: var(--color-campaign-art); --color-focus: var(--color-surface); }
+/* GGGI 캠페인 배너: 바탕은 아트 색 토큰. 어두운 녹색 위 포커스 링은 흰색(잉크 1.4:1 → 흰 12.18:1). 홈 `.page :is(a, button):focus-visible`보다 특이도가 높다. */
+.banner[data-kind="campaign"] { --campaign-art: var(--color-campaign-art); }
+.banner[data-kind="campaign"] :is(a, button):focus-visible { outline-color: var(--color-surface); }
 .banner { position:relative; width:100%; height:100%; overflow:hidden; background:var(--color-soft); color:var(--color-ink); }
 .image { position:absolute; inset:0 0 0 auto; width:40%; overflow:hidden; }
 .desktopImage { position:absolute; inset:0; }
