@@ -12,8 +12,8 @@ const person='10000000-0000-4000-8000-000000000001';
 beforeEach(()=>{mock.uploads.items=[];mock.uploads.ready=false;mock.uploads.invalid=false;mock.ownerKey='a';mock.authenticated=true;mock.request.mockReset().mockResolvedValue({});mock.resource.mockReset().mockImplementation((url:string|null)=>({data:url?.includes('/friends?')?{friendships:[]}:url?.endsWith('/conversations')?{conversations:[]}:undefined,loading:false,error:false}));});
 describe('web friend and message boundaries',()=>{
  it('says why friends and messages are closed to a restricted account instead of offering retries',()=>{const failure=new GroupRequestError(403,'AUTHENTICATION_REQUIRED');mock.resource.mockImplementation((url:string|null)=>url?.includes('/friends?')||url?.endsWith('/conversations')?{error:true,failure,loading:false}:{loading:false,error:false});render(<GroupSocialScreen locale="ko"/>);expect(screen.getByRole('alert')).toHaveTextContent('계정 이용이 제한되어 친구와 메시지를 쓸 수 없어요');expect(screen.queryByRole('button',{name:'다시 시도'})).toBeNull();});
- it('keeps retries when the read failed for another reason',()=>{mock.resource.mockImplementation((url:string|null)=>url?.includes('/friends?')||url?.endsWith('/conversations')?{error:true,failure:new GroupRequestError(503,'SOCIAL_UNAVAILABLE'),loading:false}:{loading:false,error:false});render(<GroupSocialScreen locale="ko"/>);expect(screen.getAllByRole('button',{name:'다시 시도'})).toHaveLength(2);});
- it('names the empty request tabs and an empty search for what they hold',()=>{const view=render(<GroupSocialScreen locale="ko" friendFilter='incoming'/>);expect(screen.getByText('받은 요청이 없어요')).toBeTruthy();view.rerender(<GroupSocialScreen locale="ko" friendFilter='outgoing'/>);expect(screen.getByText('보낸 요청이 없어요')).toBeTruthy();});
+ it('keeps retries when the read failed for another reason',()=>{mock.resource.mockImplementation((url:string|null)=>url?.includes('/friends?')||url?.endsWith('/conversations')?{error:true,failure:new GroupRequestError(503,'SOCIAL_UNAVAILABLE'),loading:false}:{loading:false,error:false});render(<GroupSocialScreen locale="ko"/>);expect(screen.getAllByRole('button',{name:'다시 시도'})).toHaveLength(1);fireEvent.click(screen.getByRole('button',{name:'메시지'}));expect(screen.getAllByRole('button',{name:'다시 시도'})).toHaveLength(1);});
+  it('names each empty tab and an empty search for what they hold',()=>{render(<GroupSocialScreen locale="ko"/>);expect(screen.getByText('아직 친구가 없어요')).toBeTruthy();fireEvent.click(screen.getByRole('button',{name:'메시지'}));expect(screen.getByText('아직 대화가 없어요')).toBeTruthy();fireEvent.click(screen.getByRole('button',{name:'요청'}));expect(screen.getByText('받은 메시지 요청이 없어요')).toBeTruthy();fireEvent.change(screen.getByRole('searchbox',{name:'친구·대화 검색'}),{target:{value:'없는 이름'}});expect(screen.getByText('검색 결과가 없어요')).toBeTruthy();});
  it('does not call an accepted conversation partner a friend without a friendship',async()=>{const chat={id:person,profileId:person,nickname:'Member',avatarUrl:null,status:'accepted',canSend:true,latestMessage:null};let friendships:unknown[]=[];mock.resource.mockImplementation((url:string|null)=>({data:url?.includes('/friends?')?{friendships}:url?.endsWith('/conversations')?{conversations:[chat]}:undefined,loading:false,error:false}));mock.request.mockResolvedValue({messages:[]});render(<GroupSocialScreen locale="ko" conversationId={person}/>);await waitFor(()=>expect(mock.request).toHaveBeenCalled());expect(within(screen.getByRole('heading',{name:'Member'}).parentElement!).queryByText('친구')).toBeNull();cleanup();friendships=[{id:person,profileId:person,nickname:'Member',avatarUrl:null,status:'friends'}];render(<GroupSocialScreen locale="ko" conversationId={person}/>);expect(within(screen.getByRole('heading',{name:'Member'}).parentElement!).getByText('친구')).toBeTruthy();});
  it('asks again only while a sent request waits',()=>{vi.useFakeTimers();try{const chat={id:person,profileId:person,nickname:'Member',avatarUrl:null,status:'outgoing_request',canSend:false,latestMessage:null};let conversations=[chat];mock.resource.mockImplementation((url:string|null)=>({data:url?.endsWith('/conversations')?{conversations}:url?.includes('/friends?')?{friendships:[]}:undefined,loading:false,error:false}));mock.request.mockResolvedValue({conversations:[chat]});const view=render(<GroupSocialScreen locale="ko"/>);act(()=>{vi.advanceTimersByTime(5000);});expect(mock.request).toHaveBeenCalledWith('/api/me/social/conversations');view.unmount();mock.request.mockClear();conversations=[{...chat,status:'accepted'}];render(<GroupSocialScreen locale="ko"/>);act(()=>{vi.advanceTimersByTime(5000);});expect(mock.request).not.toHaveBeenCalledWith('/api/me/social/conversations');}finally{vi.useRealTimers();}});
  it('offers login without inventing authenticated rows',()=>{mock.authenticated=false;render(<GroupSocialScreen locale="ko"/>);expect(screen.getByRole('link',{name:'로그인'})).toBeTruthy();expect(mock.request).not.toHaveBeenCalled();});
@@ -32,15 +32,17 @@ it('replaces a blocked profile with its blocked state and removes the request co
  render(<GroupSocialScreen locale='ko' profileId={person}/>);fireEvent.click(screen.getByRole('button',{name:'차단'}));await screen.findByRole('heading',{name:'차단한 사용자'});expect(screen.queryByRole('textbox')).toBeNull();expect(screen.queryByRole('button',{name:'친구 요청'})).toBeNull();
 });
 
-it('labels an incoming message request row only in the all filter',()=>{
- mock.resource.mockImplementation((url:string)=>({data:url?.includes('/friends?')?{friendships:[]}:url?.endsWith('/conversations')?{conversations:[{id:person,profileId:person,nickname:'Chat',avatarUrl:null,status:'incoming_request',canSend:false,latestMessage:null}]}:undefined,loading:false,error:false}));
- const all=render(<GroupSocialScreen locale='ko'/>);expect(screen.getByText('받은 대화 요청')).toBeInTheDocument();all.unmount();
- render(<GroupSocialScreen locale='ko' friendFilter='incoming'/>);expect(screen.queryByText('받은 대화 요청')).toBeNull();
+it('lists received message requests only under 요청, with the first message and the count (B6 D4)',()=>{
+ mock.resource.mockImplementation((url:string)=>({data:url?.includes('/friends?')?{friendships:[]}:url?.endsWith('/conversations')?{conversations:[{id:person,profileId:person,nickname:'Chat',avatarUrl:null,status:'incoming_request',canSend:false,latestMessage:'처음 보내는 말'}]}:undefined,loading:false,error:false}));
+ render(<GroupSocialScreen locale='ko'/>);
+ expect(screen.queryByText('Chat')).toBeNull();
+ fireEvent.click(screen.getByRole('button',{name:'메시지'}));expect(screen.queryByText('Chat')).toBeNull();
+ fireEvent.click(screen.getByRole('button',{name:'요청 1'}));expect(screen.getByText('Chat')).toBeInTheDocument();expect(screen.getByText('처음 보내는 말')).toBeInTheDocument();
 });
 
-it('distinguishes an incoming message request from an incoming friend request',()=>{
+it('keeps friend requests under 친구 and message requests under 요청',()=>{
  mock.resource.mockImplementation((url:string)=>({data:url?.includes('/friends?')?{friendships:[{id:person,profileId:person,nickname:'Friend',avatarUrl:null,status:'incoming'}]}:url?.endsWith('/conversations')?{conversations:[{id:person,profileId:person,nickname:'Chat',avatarUrl:null,status:'incoming_request',canSend:false,latestMessage:null}]}:undefined,loading:false,error:false}));
- render(<GroupSocialScreen locale='ko' friendFilter='incoming'/>);expect(screen.getByText('받은 친구 요청')).toBeInTheDocument();expect(screen.queryByText('받은 대화 요청')).toBeNull();expect(screen.getByRole('button',{name:/받은 요청 1/})).toBeInTheDocument();
+ render(<GroupSocialScreen locale='ko'/>);expect(screen.getByText('받은 친구 요청')).toBeInTheDocument();expect(screen.queryByText('Chat')).toBeNull();expect(screen.getByRole('button',{name:'요청 1'})).toBeInTheDocument();
 });
 
 it('blocks the selected conversation through the existing API and removes its composer',async()=>{
@@ -88,16 +90,14 @@ it('uploads DM media through the existing flow and sends its ready asset with a 
  mock.resource.mockImplementation((url:string)=>({data:url?.endsWith('/conversations')?{conversations:[{id:person,profileId:person,nickname:'Friend',avatarUrl:null,status:'accepted',canSend:true,latestMessage:null}]}:undefined,loading:false,error:false}));mock.request.mockImplementation((url:string)=>Promise.resolve(url.includes('/messages?')?{messages:[]}:{}));
  render(<GroupSocialScreen locale='ko' conversationId={person}/>);await screen.findByText('photo.jpg');fireEvent.click(screen.getByRole('button',{name:'보내기'}));await waitFor(()=>expect(mock.request).toHaveBeenCalledWith(`/api/me/social/conversations/${person}/messages`,expect.objectContaining({method:'POST'})));const call=mock.request.mock.calls.find(([,options])=>options?.method==='POST');expect(JSON.parse(call![1].body)).toMatchObject({text:'',assetId:asset,requestId:expect.any(String)});expect(mock.uploads.markUsed).toHaveBeenCalledWith('upload');
 });
-it('searches real conversation names and previews without making a new API',()=>{mock.resource.mockImplementation((url:string)=>({data:url?.endsWith('/conversations')?{conversations:[{id:person,profileId:person,nickname:'하늘',avatarUrl:null,status:'accepted',canSend:true,latestMessage:'오늘 무대'}, {id:'other',profileId:'other',nickname:'보라',avatarUrl:null,status:'incoming_request',canSend:false,latestMessage:null}]}:undefined,loading:false,error:false}));render(<GroupSocialScreen locale='ko'/>);fireEvent.change(screen.getByRole('searchbox',{name:'친구·대화 검색'}),{target:{value:'무대'}});expect(screen.getByText('하늘')).toBeInTheDocument();expect(screen.queryByText('보라')).toBeNull();expect(mock.request).not.toHaveBeenCalled();});
+it('searches real conversation names and previews without making a new API',()=>{mock.resource.mockImplementation((url:string)=>({data:url?.endsWith('/conversations')?{conversations:[{id:person,profileId:person,nickname:'하늘',avatarUrl:null,status:'accepted',canSend:true,latestMessage:'오늘 무대'}, {id:'other',profileId:'other',nickname:'보라',avatarUrl:null,status:'incoming_request',canSend:false,latestMessage:null}]}:undefined,loading:false,error:false}));render(<GroupSocialScreen locale='ko'/>);fireEvent.click(screen.getByRole('button',{name:'메시지'}));fireEvent.change(screen.getByRole('searchbox',{name:'친구·대화 검색'}),{target:{value:'무대'}});expect(screen.getByText('하늘')).toBeInTheDocument();expect(screen.queryByText('보라')).toBeNull();expect(mock.request).not.toHaveBeenCalled();});
 
-it('updates same-page friend query selection without clearing the current search',()=>{
- const view=render(<GroupSocialScreen locale='ko' friendFilter='friends'/>);
+it('keeps the current search when the tab changes',()=>{
+ render(<GroupSocialScreen locale='ko'/>);
  fireEvent.change(screen.getByRole('searchbox',{name:'친구·대화 검색'}),{target:{value:'하늘'}});
- view.rerender(<GroupSocialScreen locale='ko' friendFilter='incoming'/>);
- expect(screen.getByRole('button',{name:/받은 요청/})).toHaveAttribute('aria-pressed','true');
+ fireEvent.click(screen.getByRole('button',{name:'메시지'}));
+ expect(screen.getByRole('button',{name:'메시지'})).toHaveAttribute('aria-pressed','true');
  expect(screen.getByRole('searchbox',{name:'친구·대화 검색'})).toHaveValue('하늘');
- view.rerender(<GroupSocialScreen locale='ko' friendFilter='friends'/>);
- expect(screen.getByRole('button',{name:/받은 요청/})).toHaveAttribute('aria-pressed','false');
 });
 it('hides the top invite link only on the zero-friend empty state and keeps the empty-state invite',()=>{
  const view=render(<GroupSocialScreen locale='ko' friendFilter='friends'/>);
@@ -107,9 +107,8 @@ it('hides the top invite link only on the zero-friend empty state and keeps the 
  expect(within(empty).getByRole('link').getAttribute('href')).toContain('invite=1');
  fireEvent.change(screen.getByRole('searchbox',{name:'친구·대화 검색'}),{target:{value:'없는 이름'}});
  expect(within(top()).getByRole('link').getAttribute('href')).toContain('invite=1');
- view.rerender(<GroupSocialScreen locale='ko' friendFilter='incoming'/>);
  fireEvent.change(screen.getByRole('searchbox',{name:'친구·대화 검색'}),{target:{value:''}});
- fireEvent.click(screen.getByRole('button',{name:/받은 요청/}));
+ fireEvent.click(screen.getByRole('button',{name:'메시지'}));
  expect(within(top()).getByRole('link').getAttribute('href')).toContain('invite=1');
 });
 it('keeps the top invite link when friends exist',()=>{
@@ -118,12 +117,11 @@ it('keeps the top invite link when friends exist',()=>{
  expect(within(screen.getByRole('heading',{level:1}).parentElement!).getByRole('link').getAttribute('href')).toContain('invite=1');
 });
 
-it('counts and lists the same outgoing requests and hides ordinary conversations there',()=>{
- const other='00000000-0000-4000-8000-000000000009';
- mock.resource.mockImplementation((url:string)=>({data:url?.includes('/friends?')?{friendships:[{id:person,profileId:person,nickname:'Sent',avatarUrl:null,status:'outgoing'}]}:url?.endsWith('/conversations')?{conversations:[{id:person,profileId:person,nickname:'Sent',avatarUrl:null,status:'outgoing_request',canSend:false,latestMessage:null},{id:other,profileId:other,nickname:'Regular chat',avatarUrl:null,status:'active',canSend:true,latestMessage:'hi'}]}:undefined,loading:false,error:false}));
- render(<GroupSocialScreen locale='ko' friendFilter='outgoing'/>);
- expect(screen.getByRole('button',{name:/보낸 요청 1/})).toBeInTheDocument();
- expect(screen.getAllByText('Sent')).toHaveLength(1);expect(screen.queryByText('Regular chat')).toBeNull();
+it('lists a sent message request under 메시지 as waiting, and never counts it as a received request',()=>{
+ mock.resource.mockImplementation((url:string)=>({data:url?.includes('/friends?')?{friendships:[]}:url?.endsWith('/conversations')?{conversations:[{id:person,profileId:person,nickname:'Sent',avatarUrl:null,status:'outgoing_request',canSend:false,latestMessage:'hi'}]}:undefined,loading:false,error:false}));
+ render(<GroupSocialScreen locale='ko'/>);
+ expect(screen.getByRole('button',{name:'요청'})).toBeInTheDocument();
+ fireEvent.click(screen.getByRole('button',{name:'메시지'}));expect(screen.getByText('Sent')).toBeInTheDocument();expect(screen.getByText('수락 대기 중')).toBeInTheDocument();
 });
 
 it('explains the daily friend request limit instead of a generic error',async()=>{

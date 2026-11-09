@@ -16,7 +16,7 @@ export function PostDetailSkeleton() {
 }
 
 /** Top of a post, shared by the fan board and group boards: title, then author, date, views, likes and comments on one line. Two lines at 390. */
-export function PostDetailHeader({ as: Title = "h1", tag, title, author, avatarUrl, authorBadge, createdAt, viewCount, likeCount, commentCount, locale, menu }: { as?: "h1" | "h2"; tag?: ReactNode; title: string; author: string; avatarUrl?: string | null; authorBadge?: ReactNode; createdAt: string; viewCount?: number; likeCount: number; commentCount: number; locale: AppLocale; menu?: ReactNode }) {
+export function PostDetailHeader({ as: Title = "h1", tag, title, author, avatarUrl, authorBadge, createdAt, viewCount, likeCount, commentCount, locale, menu }: { as?: "h1" | "h2"; tag?: ReactNode; title: string; author: ReactNode; avatarUrl?: string | null; authorBadge?: ReactNode; createdAt: string; viewCount?: number; likeCount: number; commentCount: number; locale: AppLocale; menu?: ReactNode }) {
   const count = (value: number) => value.toLocaleString(locale);
   return <header className={styles.header} data-post-detail-header="">
     <Title className={styles.title}>{tag && <span className={styles.titleTag}>{tag}</span>}{title}</Title>

@@ -82,12 +82,15 @@ it("stops asking once the answer is in", async () => {
   expect(calls.filter(call => call.url.endsWith("/api/me/social/conversations") || call.url.includes("/conversations?")).length).toBeLessThanOrEqual(1);
 }, 8000);
 
-it("says when the other person declined instead of offering a box that will be refused", async () => {
+it("a declined request still reads as waiting to the sender, with no retry wording (B6 D2)", async () => {
   chat = row({});
   render(<ChatDock locale="ko" target={target} />);
   await screen.findByText("상대의 수락을 기다리고 있어요");
-  chat = row({ status: "rejected", canSend: false, retryAt: "2100-01-01T00:00:00Z" });
-  expect(await screen.findByText("아직 다시 요청할 수 없어요", undefined, { timeout: 7000 })).toBeVisible();
+  // The server keeps a declined request pending for the sender: the same row comes back.
+  chat = row({});
+  await new Promise(resolve => setTimeout(resolve, 3500));
+  expect(screen.getByText("상대의 수락을 기다리고 있어요")).toBeVisible();
+  expect(screen.queryByText("아직 다시 요청할 수 없어요")).toBeNull();
   expect(screen.queryByRole("textbox", { name: "메시지" })).toBeNull();
 }, 10000);
 

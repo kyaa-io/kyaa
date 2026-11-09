@@ -40,7 +40,7 @@ describe("real SQL answers for B6", () => {
   });
   it("issues a return ref, lists open refs and replays a report through the routes", async () => {
     expect((await api(cases.return_ref).issueReturnRef(signedOut("/api/profiles/return-ref", { method: "POST", body: JSON.stringify({ ref: { kind: "fan_post", id: "7d000000-0000-4000-8000-0000000000e1" } }) }))).status).toBe(200);
-    expect((await api(cases.refs_open).refsOpen(signedOut("/api/profiles/refs-open", { method: "POST", body: JSON.stringify({ refs: [{ kind: "fan_post", id: "7d000000-0000-4000-8000-0000000000e1" }, { kind: "fan_post", id: "7d000000-0000-4000-8000-0000000000e9" }] }) }))).status).toBe(200);
+    expect((await api(cases.refs_open).refsOpen(signedOut(`/api/profiles/refs-open?refs=${Buffer.from(JSON.stringify([{ kind: "fan_post", id: "7d000000-0000-4000-8000-0000000000e1" }, { kind: "fan_post", id: "7d000000-0000-4000-8000-0000000000e9" }])).toString("base64url")}`))).status).toBe(200);
     expect((await api(cases.report_replay).reportProfile(signedIn("/api/me/social/profiles/report", { method: "POST", body: JSON.stringify({ ref: { kind: "fan_post", id: "7d000000-0000-4000-8000-0000000000e1" }, reason: "spam", details: "응답 상세", requestId: "7d000000-0000-4000-8000-0000000000d2" }) }))).status).toBe(200);
   });
   it("lists a deleted account in the closed blocks list without its name or picture", async () => {

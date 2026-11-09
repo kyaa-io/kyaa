@@ -8,10 +8,10 @@ import { reachText, type ReachKey } from "./reach-copy";
 import { reachSource } from "./reach-source";
 import { ProfileModal } from "./profile-modal";
 
-const mock = vi.hoisted(() => ({ data: undefined as unknown, error: false, failure: undefined as { status: number } | undefined, loading: false, request: vi.fn(), retry: vi.fn() }));
+const mock = vi.hoisted(() => ({ data: undefined as unknown, error: false, failure: undefined as { status: number } | undefined, loading: false, request: vi.fn(), retry: vi.fn(), authenticated: true, url: "" }));
 vi.mock("@/features/groups/ui/use-group-resource", () => {
   class GroupRequestError extends Error { constructor(readonly status: number, readonly code: string) { super(code); } }
-  return { GroupRequestError, useGroupResource: (url: string, parse: (value: unknown) => unknown) => ({ ...mock, url, ownerKey: "did:privy:me:3", data: mock.data === undefined ? undefined : parse(mock.data) }) };
+  return { GroupRequestError, useGroupRequest: () => ({ request: mock.request, ready: true, authenticated: mock.authenticated, ownerKey: "did:privy:me:3" }), useGroupResource: (url: string, parse: (value: unknown) => unknown) => { mock.url = url; return { ...mock, url, ownerKey: "did:privy:me:3", data: mock.data === undefined ? undefined : parse(mock.data) }; } };
 });
 vi.mock("@/features/groups/ui/groups-release", () => ({ useGroupsRelease: () => true }));
 
@@ -27,7 +27,7 @@ const Target = () => { const target = useChatDockTarget(); return <output data-t
 const open = (onClose = vi.fn()) => { render(<><ProfileModal person={person} locale="ko" onClose={onClose}/><Target/></>); return onClose; };
 const dm = () => screen.getByRole("button", { name: "대화하기" });
 
-beforeEach(() => { resetChatDockStore(); vi.clearAllMocks(); mock.data = profile(); mock.error = false; mock.failure = undefined; mock.loading = false; mock.request.mockResolvedValue({}); });
+beforeEach(() => { resetChatDockStore(); vi.clearAllMocks(); mock.data = profile(); mock.error = false; mock.failure = undefined; mock.loading = false; mock.authenticated = true; mock.request.mockResolvedValue({}); });
 afterEach(cleanup);
 
 describe("what the modal shows", () => {
@@ -83,7 +83,8 @@ describe("the message button says why before it is pressed", () => {
   });
   it.each([404, 403])("a closed profile (%i) looks the same as a block, with no reason given", status => {
     mock.data = undefined; mock.error = true; mock.failure = { status }; open();
-    expect(dm()).toBeDisabled(); expect(screen.getByText("메시지를 보낼 수 없어요.")).toBeVisible();
+    // B6 §3.1: a closed profile has no menu and no buttons, only the same sentence.
+    expect(screen.queryByRole("button", { name: "대화하기" })).toBeNull(); expect(screen.queryByRole("button", { name: "더 보기" })).toBeNull(); expect(screen.getByText("메시지를 보낼 수 없어요.")).toBeVisible();
     expect(screen.queryByRole("button", { name: "친구 추가하기" })).toBeNull(); expect(screen.queryByRole("button", { name: "다시 시도" })).toBeNull();
   });
   it("a server failure offers a retry instead of a reason", () => {
@@ -183,5 +184,59 @@ describe("public card (261107-2 C2)", () => {
   it("hides everything from a closed profile", () => {
     mock.data = undefined; mock.error = true; mock.failure = { status: 404 }; open();
     expect(screen.queryByText("하트")).toBeNull(); expect(screen.queryByRole("list", { name: "SNS 링크" })).toBeNull();
+  });
+});
+
+describe("B6: opened from content, the menu, and signing in", () => {
+  const ref = { kind: "fan_post" as const, id: "20000000-0000-4000-8000-000000000002" };
+  it("reads the profile from the content ref, never from a member id", () => {
+    render(<ProfileModal person={{ ref, nickname: "별빛", avatarUrl: null }} locale="ko" onClose={vi.fn()}/>);
+    expect(mock.url).toMatch(/^\/api\/profiles\/by-ref\?ref=[A-Za-z0-9_-]+&locale=ko$/);
+    expect(JSON.parse(atob(mock.url.split("ref=")[1]!.split("&")[0]!.replaceAll("-", "+").replaceAll("_", "/")))).toEqual(ref);
+  });
+  it("blocks after a confirmation in the same window and reads again (the profile then answers closed)", async () => {
+    render(<ProfileModal person={{ ref, nickname: "별빛", avatarUrl: null }} locale="ko" onClose={vi.fn()}/>);
+    fireEvent.click(screen.getByRole("button", { name: "더 보기" }));
+    fireEvent.click(screen.getByRole("button", { name: "차단" }));
+    expect(screen.getByText("서로의 프로필과 메시지를 볼 수 없게 돼요. 차단할까요?")).toBeVisible();
+    fireEvent.click(screen.getAllByRole("button", { name: "차단" }).at(-1)!);
+    await waitFor(() => expect(mock.request).toHaveBeenCalledWith("/api/me/social/blocks", expect.objectContaining({ method: "POST" })));
+    expect(JSON.parse(mock.request.mock.calls[0]![1].body)).toMatchObject({ profileId: id });
+    await waitFor(() => expect(mock.retry).toHaveBeenCalled());
+  });
+  it("reports once with a reason and the ref it was opened from, then stays in the window", async () => {
+    render(<ProfileModal person={{ ref, nickname: "별빛", avatarUrl: null }} locale="ko" onClose={vi.fn()}/>);
+    fireEvent.click(screen.getByRole("button", { name: "더 보기" }));
+    fireEvent.click(screen.getByRole("button", { name: "신고" }));
+    const submit = screen.getByRole("button", { name: "신고" });
+    expect(submit).toBeDisabled();
+    fireEvent.click(screen.getByRole("radio", { name: "괴롭힘" }));
+    fireEvent.click(submit);
+    await waitFor(() => expect(mock.request).toHaveBeenCalledWith("/api/me/social/profiles/report", expect.objectContaining({ method: "POST" })));
+    expect(JSON.parse(mock.request.mock.calls[0]![1].body)).toMatchObject({ ref, reason: "harassment" });
+    expect(await screen.findByText("신고를 접수했어요.")).toBeVisible();
+    expect(screen.getByRole("dialog", { name: "별빛" })).toBeVisible();
+  });
+  it("has no menu on your own profile", () => {
+    mock.data = profile({ isSelf: true, reach: { dmState: "self", artist: false } }); open();
+    expect(screen.queryByRole("button", { name: "더 보기" })).toBeNull();
+  });
+  it("signed out: shows the public card, and Message asks for a return ref and goes to sign-in with it", async () => {
+    mock.authenticated = false;
+    mock.data = { profile: { nickname: "별빛", avatarUrl: null, accountLevel: { tier: "Gold" } }, card: { favorite: null, links: [], bio: "한 줄 소개", stats: null } };
+    mock.request.mockResolvedValue({ returnRef: "30000000-0000-4000-8000-000000000003" });
+    const assign = vi.fn(); const original = window.location;
+    Object.defineProperty(window, "location", { configurable: true, value: { ...original, href: "https://kyaa.test/c/x/community/1?locale=ko", assign } });
+    try {
+      render(<ProfileModal person={{ ref, nickname: "별빛", avatarUrl: null }} locale="ko" onClose={vi.fn()}/>);
+      expect(screen.getByText("한 줄 소개")).toBeVisible();
+      expect(screen.queryByRole("button", { name: "더 보기" })).toBeNull();
+      fireEvent.click(dm());
+      await waitFor(() => expect(assign).toHaveBeenCalled());
+      expect(mock.request).toHaveBeenCalledWith("/api/profiles/return-ref", expect.objectContaining({ method: "POST", body: JSON.stringify({ ref }) }));
+      const target = new URL(assign.mock.calls[0]![0], "https://kyaa.test");
+      expect(target.pathname).toBe("/login");
+      expect(decodeURIComponent(target.search)).toContain("profile=30000000-0000-4000-8000-000000000003");
+    } finally { Object.defineProperty(window, "location", { configurable: true, value: original }); }
   });
 });

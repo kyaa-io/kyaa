@@ -7,6 +7,7 @@ import { useChatDockTarget } from "@/features/group-social/chat-dock-store";
 // Root-layout pieces that draw nothing on the first screen. Their code is fetched after the page has loaded, so it does not
 // share the first screen's bandwidth with the CSS and the hero picture (PERF-r8 C).
 const ChatDockHost = dynamic(() => import("@/features/group-social/chat-dock-host").then(module => module.ChatDockHost), { ssr: false });
+const ProfileWindowHost = dynamic(() => import("@/features/group-social/profile-window-host").then(module => module.ProfileWindowHost), { ssr: false });
 const BanksyEntryPromotion = dynamic(() => import("./banksy-promotion/banksy-promotion").then(module => module.BanksyEntryPromotion), { ssr: false });
 const TierCelebration = dynamic(() => import("@/features/tier-history/ui/tier-celebration").then(module => module.TierCelebration), { ssr: false });
 const PwaRegistration = dynamic(() => import("./pwa-registration").then(module => module.PwaRegistration), { ssr: false });
@@ -37,7 +38,7 @@ export function DeferredRootClients({ slot }: { slot: "before" | "after" }) {
   const ready = useAfterPageLoad();
   // A chat asked for before the page has loaded (or restored from this tab's session) opens at once, not after load.
   const chatRequested = useChatDockTarget() !== null;
-  if (slot === "before") return <>{ready && <PwaRegistration />}{(ready || chatRequested) && <ChatDockHost />}</>;
+  if (slot === "before") return <>{ready && <PwaRegistration />}{(ready || chatRequested) && <ChatDockHost />}{ready && <ProfileWindowHost />}</>;
   if (!ready) return null;
   return <><Suspense fallback={null}><BanksyEntryPromotion /></Suspense><TierCelebration /></>;
 }
