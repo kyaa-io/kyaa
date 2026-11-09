@@ -1,0 +1,63 @@
+{
+    "items": [
+        {
+            "id": "celebrity:d7b6589c-8737-426c-937c-18ee4390b0d8:portrait",
+            "alt": "R8 사진 세로 사진",
+            "image": {
+                "url": "https://db.test/storage/v1/object/public/cms-assets/public-image-assets/901555fb06e346cb065ceb9808dcfc25901555fb06e346cb065ceb9808dcfc25.webp",
+                "width": 900,
+                "height": 1600
+            },
+            "source": "cms_upload",
+            "creator": {
+                "name": "R8 사진",
+                "slug": "r8data-photo"
+            }
+        },
+        {
+            "id": "celebrity:d7b6589c-8737-426c-937c-18ee4390b0d8:landscape",
+            "alt": "R8 사진 무대 사진",
+            "image": {
+                "url": "https://db.test/storage/v1/object/public/cms-assets/public-image-assets/87cf962b35146c21d0dd7f84594662b687cf962b35146c21d0dd7f84594662b6.webp",
+                "width": 1600,
+                "height": 900
+            },
+            "source": "cms_upload",
+            "creator": {
+                "name": "R8 사진",
+                "slug": "r8data-photo"
+            }
+        },
+        {
+            "id": "8bac6a20-b860-4d6a-ae6e-6be288feaad8:1",
+            "alt": "공식 게시물 1",
+            "image": {
+                "url": "https://dev.kyaa.io/public-assets/cms-assets/public-image-assets/0000000000000000000000000000000000000000000000000000000000000001.webp",
+                "width": 1080,
+                "height": 1350
+            },
+            "source": "official_sns",
+            "creator": {
+                "name": "R8 사진",
+                "slug": "r8data-photo"
+            },
+            "sourceHref": "/c/r8data-photo/notices/r8-ok1"
+        },
+        {
+            "id": "cbb67e59-64bf-44c6-b72d-06bff3c9b07a:1",
+            "alt": "공식 게시물 2",
+            "image": {
+                "url": "https://dev.kyaa.io/public-assets/cms-assets/public-image-assets/0000000000000000000000000000000000000000000000000000000000000003.webp",
+                "width": 1200,
+                "height": 800
+            },
+            "source": "official_sns",
+            "creator": {
+                "name": "R8 사진",
+                "slug": "r8data-photo"
+            },
+            "sourceHref": "/c/r8data-photo/notices/r8-ok2"
+        }
+    ],
+    "hasMore": false
+}

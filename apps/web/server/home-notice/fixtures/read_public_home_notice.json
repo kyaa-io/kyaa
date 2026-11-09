@@ -1,0 +1,22 @@
+{
+    "id": "5f34a7ba-f4c5-4eb3-a556-a7c0723a66c5",
+    "body": {
+        "type": "doc",
+        "content": [
+            {
+                "type": "paragraph",
+                "content": [
+                    {
+                        "text": "본문D",
+                        "type": "text"
+                    }
+                ]
+            }
+        ]
+    },
+    "slug": "r8data-d",
+    "title": "최신 D",
+    "pinned": false,
+    "category": "creator",
+    "publishedAt": "2026-11-09T21:08:24.519636+09:00"
+}

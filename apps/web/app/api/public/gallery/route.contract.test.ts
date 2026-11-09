@@ -1,0 +1,35 @@
+import { beforeEach, expect, it, vi } from "vitest";
+import page from "@/server/home-gallery/fixtures/read_public_home_gallery_photos_page.json";
+import empty from "@/server/home-gallery/fixtures/read_public_home_gallery_photos_empty.json";
+vi.mock("server-only", () => ({}));
+const state = vi.hoisted(() => ({ rpc: vi.fn() }));
+vi.mock("@/server/config/env", () => ({ loadServerEnv: () => ({ SUPABASE_URL: "https://db.test", SUPABASE_SERVICE_ROLE_KEY: "service" }) }));
+vi.mock("@/server/data/client", () => ({ createClient: () => ({ rpc: state.rpc }) }));
+vi.mock("@/server/wave/access", () => ({ withWaveAccess: (handler: unknown) => handler }));
+import { GET } from "./route";
+
+beforeEach(() => vi.clearAllMocks());
+
+// Fixtures are real read_public_home_gallery_photos responses from supabase/tests/home_gallery_shorts.sh.
+it("answers the real SQL page with a cursor and public keys only, and asks SQL with the content locale", async () => {
+  state.rpc.mockResolvedValue({ data: page, error: null });
+  const res = await GET(new Request("https://byus.test/api/public/gallery?locale=en"));
+  expect(res.status).toBe(200);
+  expect(res.headers.get("cache-control")).toMatch(/s-maxage=60/);
+  const body = await res.json();
+  expect(body.items).toHaveLength(2);
+  expect(body.nextCursor).toEqual(expect.any(String));
+  for (const item of body.items) expect(Object.keys(item).every(key => ["id", "source", "image", "alt", "creator", "sourceHref"].includes(key))).toBe(true);
+  expect(state.rpc).toHaveBeenCalledWith("read_public_home_gallery_photos", { p_locale: "en", p_offset: 0, p_limit: 24 });
+  state.rpc.mockResolvedValue({ data: empty, error: null });
+  await GET(new Request(`https://byus.test/api/public/gallery?cursor=${body.nextCursor}`));
+  expect(state.rpc).toHaveBeenLastCalledWith("read_public_home_gallery_photos", { p_locale: "ko", p_offset: 2, p_limit: 24 });
+});
+
+it("answers an empty page, refuses repeated, unknown or bad cursor keys, and says unavailable when SQL fails", async () => {
+  state.rpc.mockResolvedValue({ data: empty, error: null });
+  expect(await (await GET(new Request("https://byus.test/api/public/gallery"))).json()).toEqual({ items: [], nextCursor: null });
+  for (const query of ["locale=ko&locale=en", "limit=2", "cursor=bm9wZQ"]) expect((await GET(new Request(`https://byus.test/api/public/gallery?${query}`))).status, query).toBe(400);
+  state.rpc.mockResolvedValue({ data: null, error: { message: "down" } });
+  expect((await GET(new Request("https://byus.test/api/public/gallery"))).status).toBe(503);
+});

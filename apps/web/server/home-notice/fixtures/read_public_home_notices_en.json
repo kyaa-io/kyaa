@@ -1,0 +1,29 @@
+{
+    "items": [
+        {
+            "id": "1fadd11e-21d3-49f6-958d-6b04dbc0d70f",
+            "slug": "r8data-c",
+            "title": "Pinned C",
+            "pinned": true,
+            "category": "update",
+            "publishedAt": "2026-11-09T21:08:24.477133+09:00"
+        },
+        {
+            "id": "5f34a7ba-f4c5-4eb3-a556-a7c0723a66c5",
+            "slug": "r8data-d",
+            "title": "Latest D",
+            "pinned": false,
+            "category": "creator",
+            "publishedAt": "2026-11-09T21:08:24.519636+09:00"
+        },
+        {
+            "id": "186473ab-c3fa-419e-a462-3d354b1fe228",
+            "slug": "r8data-a",
+            "title": "Notice A",
+            "pinned": false,
+            "category": "guide",
+            "publishedAt": "2026-11-09T21:08:24.270827+09:00"
+        }
+    ],
+    "hasMore": false
+}

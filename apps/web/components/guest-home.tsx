@@ -36,7 +36,7 @@ import { FanAction } from "@/components/fan-ui/fan-action";
 import { FanSkeleton, FanSkeletonStatus } from "@/components/fan-ui/fan-skeleton";
 import { HomeRankingCard } from "@/features/rankings/ui/home-ranking-card";
 import { ThinBanner } from "@/features/home/ui/home-thin-banner";
-import { HomeGalleryPlaceholder, HomeNoticesPlaceholder } from "@/features/home/ui/home-placeholder-blocks";
+import { HomeGallery, HomeGalleryPlaceholder, HomeNotices, HomeNoticesPlaceholder } from "@/features/home/ui/home-placeholder-blocks";
 import { ObservedLiveStrip } from "@/features/live/ui/observed-live-strip";
 import styles from "./guest-home.module.css";
 import { ElinaGuideCard } from "./home-entry-cards/home-entry-cards";
@@ -91,11 +91,11 @@ function ContentLoadError({ locale }: { locale: AppLocale }) {
 type GuestHomeProps = { elinaRaffles?: RaffleList["raffles"]; homeBanners?: readonly HomeBanner[]; homeSlots?: BannerSlotMap; celebrities: readonly PublishedCelebrity[]; featuredLives: readonly LiveEventResponse[]; featuredLivesQuery?: HomeQueries["featuredLives"]; locale: AppLocale; contentErrors?: HomeContentErrors };
 
 export function GuestHome(props: GuestHomeProps) {
-  return <HomeLayout locale={props.locale} hero={<HomeHero {...props} />} thinBanner={<HomeThinBanner banner={props.homeSlots?.home_below_board} locale={props.locale} />} upcoming={<HomeUpcoming {...props} />} />;
+  return <HomeLayout locale={props.locale} hero={<HomeHero {...props} />} thinBanner={<HomeThinBanner banner={props.homeSlots?.home_below_board} locale={props.locale} />} notices={<HomeNoticesPlaceholder locale={props.locale} />} gallery={<HomeGalleryPlaceholder locale={props.locale} />} upcoming={<HomeUpcoming {...props} />} />;
 }
 
 /** 7차 홈(plan-ux-r8): 브랜드 줄·메인 배너 → 랭킹 → 얇은 배너 → 다가오는 LIVE. 한 열이고 옆 패널이 없다. */
-function HomeLayout({ locale, hero, thinBanner, upcoming }: { locale: AppLocale; hero: ReactNode; thinBanner: ReactNode; upcoming: ReactNode }) {
+function HomeLayout({ locale, hero, thinBanner, notices, gallery, upcoming }: { locale: AppLocale; hero: ReactNode; thinBanner: ReactNode; notices: ReactNode; gallery: ReactNode; upcoming: ReactNode }) {
   return (
     <FanAppFrame
       locale={locale}
@@ -108,8 +108,8 @@ function HomeLayout({ locale, hero, thinBanner, upcoming }: { locale: AppLocale;
           <div className={styles.contentSection}><HomeRankingCard locale={locale} /></div>
           {thinBanner}
           <ObservedLiveStrip locale={locale} />
-          <HomeNoticesPlaceholder locale={locale} />
-          <HomeGalleryPlaceholder locale={locale} />
+          {notices}
+          {gallery}
           {upcoming}
         </main>
       </div>
@@ -176,6 +176,8 @@ export function StreamingGuestHome({ queries, ...props }: StreamingHomeProps) {
   return <HomeLayout locale={props.locale}
     hero={<Suspense fallback={<HomeHero {...fallbackProps} homeBanners={[gggiHomeBanner(props.locale)]} elinaGuide={null} />}><StreamHomeHero {...props} queries={queries} /></Suspense>}
     thinBanner={<Suspense fallback={null}><StreamHomeThinBanner {...props} queries={queries} /></Suspense>}
+    notices={<Suspense fallback={<HomeNoticesPlaceholder locale={props.locale} />}><StreamHomeNotices {...props} queries={queries} /></Suspense>}
+    gallery={<Suspense fallback={<HomeGalleryPlaceholder locale={props.locale} />}><StreamHomeGallery {...props} queries={queries} /></Suspense>}
     upcoming={<Suspense fallback={<PersonalizationLoading quiet locale={props.locale} />}><StreamHomeUpcoming {...props} queries={queries} /></Suspense>} />;
 }
 
@@ -186,6 +188,20 @@ function HomeThinBanner({ banner, locale }: { banner: HomeBanner | undefined; lo
 function StreamHomeThinBanner({ queries, locale }: Pick<StreamingHomeProps, "queries" | "locale">) {
   const result = use(queries.homeSlots);
   return <HomeThinBanner banner={result.status === "fulfilled" ? result.value.home_below_board : undefined} locale={locale} />;
+}
+
+/** 정상 0건만 "아직 공지 없음", 실패는 글 없는 자리표시 5행(20:52 결정): 블록 높이가 같다. */
+function StreamHomeNotices({ queries, locale }: Pick<StreamingHomeProps, "queries" | "locale">) {
+  const result = use(queries.homeNotices);
+  return <HomeNotices locale={locale} notices={result.status === "fulfilled" ? result.value.items : "error"} />;
+}
+
+/** 정상 0건만 빈 상태 글을 보이고, 실패는 같은 자리표시를 글 없이 둔다(로딩도 같다). */
+function StreamHomeGallery({ queries, locale }: Pick<StreamingHomeProps, "queries" | "locale">) {
+  const photos = use(queries.homeGallery);
+  const shorts = use(queries.homeShorts);
+  return <HomeGallery locale={locale} photos={photos.status === "fulfilled" ? photos.value.items : "error"} hasMore={photos.status === "fulfilled" && photos.value.nextCursor !== null}
+    shorts={shorts.status === "fulfilled" ? shorts.value : "error"} />;
 }
 
 function StreamHomeHero({ queries, ...props }: Pick<StreamingHomeProps, "queries" | "locale">) {
