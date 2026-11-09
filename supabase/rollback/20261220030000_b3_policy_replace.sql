@@ -12,6 +12,8 @@ end $$;
 do $$ begin
   if exists (select 1 from public.b3_function_patches) then raise exception 'B3_ROLLBACK_BLOCKED: later B3 patches are still recorded'; end if;
 end $$;
+drop function public.b3_owner_access(text, text[]);
+drop function public.b3_owner_execute(text, text[]);
 drop function public.b3_patch_function(text, boolean, regprocedure);
 drop function public.b3_patch_count(text, text);
 drop table public.b3_function_patches, public.b3_function_patch_bases;

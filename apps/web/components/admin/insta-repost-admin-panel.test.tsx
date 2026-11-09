@@ -58,3 +58,21 @@ it("shows what an approval paid and lets an admin revoke it with a reason", asyn
   expect(await screen.findByRole("status")).toHaveTextContent("회수했습니다.");
   expect(request).toHaveBeenCalledWith(`/api/admin/share-proofs/${ID}/revoke`, "POST", { reason: "게시물 삭제 확인" });
 });
+
+it("releases an opened capture when the list reloads, and keeps two open captures alive together", async () => {
+  let n = 0;
+  vi.spyOn(URL, "createObjectURL").mockImplementation(() => `blob:capture-${++n}`);
+  const revoke = vi.spyOn(URL, "revokeObjectURL").mockImplementation(() => undefined);
+  const second = "44444444-4444-4444-8444-444444444444";
+  const request = vi.fn(async () => ({ ok: true, status: 200, data: { items: [row(), row({ id: second })], hasMore: false } }));
+  const view = render(<InstaRepostAdminPanel locale="ko" request={request} requestImage={async () => new Blob(["png"])} canWrite={false} />);
+  const buttons = await screen.findAllByRole("button", { name: "캡처 보기" });
+  fireEvent.click(buttons[0]); await screen.findByAltText("캡처 보기");
+  fireEvent.click(screen.getByRole("button", { name: "캡처 보기" }));
+  await waitFor(() => expect(screen.getAllByAltText("캡처 보기")).toHaveLength(2));
+  expect(revoke).not.toHaveBeenCalled();
+  fireEvent.click(screen.getByRole("button", { name: "전체" }));
+  await waitFor(() => expect(revoke).toHaveBeenCalledTimes(2));
+  view.unmount();
+  expect(revoke).toHaveBeenCalledTimes(2);
+});

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { z } from "zod";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import { FanHeading } from "@/components/fan-ui/fan-heading";
@@ -48,17 +48,21 @@ export function InstaRepostAdminPanel({ locale, request, requestImage, canWrite 
   const [busy, setBusy] = useState<string | null>(null);
   // when the list was read, for the waiting time of pending rows (reviewHours 48 is shown, not enforced)
   const [readAt, setReadAt] = useState(0);
+  // Capture bytes live as object URLs only while their row is on screen: a reload of the list (filter, decision) and leaving the
+  // screen release them (B3 review F5).
+  const opened = useRef<string[]>([]);
+  const releaseCaptures = useCallback(() => { opened.current.forEach(url => URL.revokeObjectURL(url)); opened.current = []; setCaptures({}); }, []);
+  useEffect(() => () => { opened.current.forEach(url => URL.revokeObjectURL(url)); opened.current = []; }, []);
   const load = useCallback(async (after?: string) => {
-    if (!after) setRows(null);
+    if (!after) { setRows(null); releaseCaptures(); }
     const res = await request(`/api/admin/insta-reposts?status=${filter}${after ? `&after=${encodeURIComponent(after)}` : ""}`);
     const parsed = instaRepostQueueSchema.extend({ hasMore: z.boolean() }).strict().safeParse(res.data);
     if (!res.ok || !parsed.success) { setRows(current => current ?? []); setMessage({ text: t.failed, error: true }); return; }
     setRows(current => after ? [...(current ?? []), ...parsed.data.items] : parsed.data.items);
     setHasMore(parsed.data.hasMore);
     setReadAt(Date.now());
-  }, [filter, request, t.failed]);
+  }, [filter, releaseCaptures, request, t.failed]);
   useEffect(() => { void load(); }, [load]);
-  useEffect(() => () => { Object.values(captures).forEach(url => URL.revokeObjectURL(url)); }, [captures]);
   const failure = (data: unknown) => {
     const code = (data as { error?: { code?: string } } | null)?.error?.code;
     return (code && (t as Record<string, unknown>)[code] as string) || t.failed;
@@ -85,7 +89,9 @@ export function InstaRepostAdminPanel({ locale, request, requestImage, canWrite 
   async function showCapture(row: InstaRepostQueueItem) {
     const blob = await requestImage(`/api/admin/insta-reposts/${row.id}/capture`);
     if (!blob) { setMessage({ text: t.captureFailed, error: true }); return; }
-    setCaptures(current => ({ ...current, [row.id]: URL.createObjectURL(blob) }));
+    const url = URL.createObjectURL(blob);
+    opened.current.push(url);
+    setCaptures(current => ({ ...current, [row.id]: url }));
   }
   function payText(result: InstaRepostQueueItem["payResult"], points: number | null) {
     if (result === "paid") return t.paid(points ?? 0);

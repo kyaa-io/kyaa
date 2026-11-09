@@ -228,6 +228,26 @@ begin
     and (x ->> 'id')::uuid = (select id from public.fan_tier_history where app_user_id = u9 and celebrity_id = c2 order by occurred_at desc, id desc limit 1)), 'S10 re-rise shows no bonus');
 end $$;
 
+-- ===== F2 under reward policy 2 a rise is recorded but pays no bonus (scenario rolled back) =====
+do $$
+declare u uuid := pg_temp.id('u7'); c2 uuid := pg_temp.id('c2'); b bigint;
+begin
+  begin
+    update public.reward_policy_activation set policy_version = 2 where singleton;
+    perform public.observe_fan_tiers(u);
+    b := pg_temp.bal(u);
+    set local session_replication_role = replica;
+    insert into public.fan_score_ledger(app_user_id, celebrity_id, points, activity_id) values (u, c2, 300, extensions.gen_random_uuid());
+    set local session_replication_role = origin;
+    perform pg_temp.heart(u, c2);
+    perform pg_temp.check(pg_temp.last_kind(u, c2) like 'up:%', 'F2 policy 2: the rise is recorded ' || coalesce(pg_temp.last_kind(u, c2), 'none'));
+    perform pg_temp.check(pg_temp.grants(u, c2) = '' and pg_temp.bal(u) = b, 'F2 policy 2: no bonus grant, no points ' || pg_temp.grants(u, c2));
+    perform pg_temp.check(public.read_dukjil_today(u, c2) -> 'nextTierBonus' = 'null'::jsonb, 'F2 policy 2: no next bonus shown');
+    raise exception 'B3_SCENARIO_DONE';
+  exception when others then if sqlerrm <> 'B3_SCENARIO_DONE' then raise; end if;
+  end;
+end $$;
+
 -- ===== S12 / S20 retries and fixed grants =====
 do $$
 declare u8 uuid := pg_temp.id('u8'); u11 uuid := pg_temp.id('u11'); c3 uuid := pg_temp.id('c3'); c1 uuid := pg_temp.id('c1'); g uuid; b bigint; r jsonb; n integer;

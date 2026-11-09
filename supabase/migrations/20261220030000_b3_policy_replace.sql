@@ -165,5 +165,62 @@ end $$;
 revoke all on function public.b3_patch_count(text, text), public.b3_patch_function(text, boolean, regprocedure)
   from public, anon, authenticated, service_role;
 
+-- B3 review F3: the access a SECURITY DEFINER function needs, for the role that owns it (not the applying role). For each
+-- 'table:priv,priv' entry the owner gets the missing privileges and, where row security would apply to it, one policy; then every
+-- privilege and policy is checked again and a gap raises B3_OWNER_GAP (an applier that cannot grant stops the migration instead of
+-- leaving a function that reads 0 rows). A superuser or BYPASSRLS owner needs no policy. Same rule as 20261219051000.
+create function public.b3_owner_access(p_fn text, p_access text[]) returns void
+language plpgsql set search_path = '' as $$
+declare
+  r record; c pg_catalog.pg_class; a text; t text; privs text[]; pv text; gaps text[] := '{}';
+  cmd_of constant jsonb := '{"select": "r", "insert": "a", "update": "w", "delete": "d"}';
+begin
+  select o.oid role_oid, o.rolname, o.rolsuper, o.rolbypassrls into r from pg_catalog.pg_proc f join pg_catalog.pg_roles o on o.oid = f.proowner
+   where f.oid = p_fn::regprocedure;
+  if r.role_oid is null then raise exception 'B3_OWNER_GAP: % not found', p_fn; end if;
+  if r.rolname in ('anon', 'authenticated', 'service_role', 'public') then raise exception 'B3_OWNER_GAP: % may not own %', r.rolname, p_fn; end if;
+  if r.rolsuper then return; end if;
+  foreach a in array p_access loop
+    t := pg_catalog.split_part(a, ':', 1);
+    privs := pg_catalog.string_to_array(pg_catalog.split_part(a, ':', 2), ',');
+    select * into c from pg_catalog.pg_class where oid = ('public.' || t)::regclass;
+    foreach pv in array privs loop
+      if not pg_catalog.has_table_privilege(r.role_oid, c.oid, pv) then
+        begin execute format('grant %s on table public.%I to %I', pv, t, r.rolname); exception when insufficient_privilege then null; end;
+      end if;
+    end loop;
+    if not r.rolbypassrls and c.relrowsecurity and (c.relforcerowsecurity or not pg_catalog.pg_has_role(r.role_oid, c.relowner, 'USAGE'))
+       and not exists (select 1 from pg_catalog.pg_policy p where p.polrelid = c.oid and r.role_oid = any (p.polroles) and p.polpermissive and p.polcmd = '*') then
+      begin execute format('create policy %I on public.%I for all to %I using (true) with check (true)', 'b3_fn_owner_' || r.rolname, t, r.rolname);
+      exception when insufficient_privilege or duplicate_object then null; end;
+    end if;
+    foreach pv in array privs loop
+      if not pg_catalog.has_table_privilege(r.role_oid, c.oid, pv) then gaps := gaps || format('%s lacks %s on %s', r.rolname, pv, t); end if;
+      if not r.rolbypassrls and c.relrowsecurity and (c.relforcerowsecurity or not pg_catalog.pg_has_role(r.role_oid, c.relowner, 'USAGE'))
+         and not exists (select 1 from pg_catalog.pg_policy p where p.polrelid = c.oid and r.role_oid = any (p.polroles) and p.polpermissive
+                         and p.polcmd in ('*', cmd_of ->> pv)) then
+        gaps := gaps || format('%s has no %s policy on %s', r.rolname, pv, t);
+      end if;
+    end loop;
+  end loop;
+  if pg_catalog.cardinality(gaps) > 0 then raise exception 'B3_OWNER_GAP: % (%)', pg_catalog.array_to_string(gaps, '; '), p_fn; end if;
+end $$;
+-- The functions a B3 definer calls may belong to another role than the caller's owner (same cause as 20261212030000).
+create function public.b3_owner_execute(p_fn text, p_targets text[]) returns void
+language plpgsql set search_path = '' as $$
+declare caller name; tgt text; target_owner name;
+begin
+  select pg_catalog.pg_get_userbyid(proowner) into caller from pg_catalog.pg_proc where oid = p_fn::regprocedure;
+  if caller in ('anon', 'authenticated', 'service_role') then raise exception 'B3_OWNER_GAP: % may not own %', caller, p_fn; end if;
+  foreach tgt in array p_targets loop
+    select pg_catalog.pg_get_userbyid(proowner) into target_owner from pg_catalog.pg_proc where oid = tgt::regprocedure;
+    if caller <> target_owner and not pg_catalog.has_function_privilege(caller, tgt, 'execute') then
+      begin execute format('grant execute on function %s to %I', tgt::regprocedure, caller); exception when insufficient_privilege then null; end;
+    end if;
+    if not pg_catalog.has_function_privilege(caller, tgt, 'execute') then raise exception 'B3_OWNER_GAP: % cannot execute % (%)', caller, tgt, p_fn; end if;
+  end loop;
+end $$;
+revoke all on function public.b3_owner_access(text, text[]), public.b3_owner_execute(text, text[]) from public, anon, authenticated, service_role;
+
 notify pgrst, 'reload schema';
 commit;

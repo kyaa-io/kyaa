@@ -6,7 +6,8 @@
 --     approvalsToday / approvalsMonth (repost log rows, 0P approvals included, the numbers the caps use) and paidMonth (paid ones);
 --   nextTierBonus: { tier, points, progress, target } for the creator: the first tier above the current one that has no grant and was
 --     not reached before the bonus started, with Silver counted in filled slots (of 3) and Gold / Platinum / Diamond in hearts (1, 14,
---     28); null when there is none left (Diamond reached included), no passport, or the account is not payable.
+--     28); null when there is none left (Diamond reached included), no passport, the account is not payable, or the reward
+--     policy is below 3 (no bonus is paid then).
 -- Today's cheer row is done when actions.cheer.count >= 1 (a cheer log row), never from actions.cheer.stamped: the day's first Claim
 -- stamps a cheer too, and the member must still be able to tap.
 -- read_owned_group_wallet_history: a tier bonus row carries tier (only on those rows), a repost take-back says
@@ -35,7 +36,8 @@ begin
       'paidMonth', (select count(*) from public.dukjil_action_log l where l.app_user_id = p_user and l.action_key = 'insta_repost' and l.kst_date >= month_start and l.points > 0)));
   end if;
   if p_policy.rules #> '{actions,tier_bonus}' is not null then
-    if p_celebrity is not null and public.dukjil_b3_payable(p_user) then
+    if p_celebrity is not null and public.dukjil_b3_payable(p_user)
+       and coalesce((select a.policy_version from public.reward_policy_activation a where a.singleton), 0) >= 3 then
       select id into pass from public.fan_passports where app_user_id = p_user and celebrity_id = p_celebrity;
     end if;
     if pass is not null then
@@ -93,36 +95,13 @@ do $$ begin
   perform public.b3_patch_function('public.read_owned_group_wallet_history(uuid,integer)', false);
 end $$;
 
-do $$ declare pair record; caller_owner name; target_owner name; begin
-  for pair in select * from (values
-    ('public.read_dukjil_today(uuid,uuid)', 'public.read_dukjil_b3_today(uuid,uuid,public.dukjil_policy_versions)'),
-    ('public.read_dukjil_b3_today(uuid,uuid,public.dukjil_policy_versions)', 'public.dukjil_b3_payable(uuid)'),
-    ('public.read_dukjil_b3_today(uuid,uuid,public.dukjil_policy_versions)', 'public.get_fan_effective_tier(uuid,uuid)'),
-    ('public.read_dukjil_b3_today(uuid,uuid,public.dukjil_policy_versions)', 'public.passport_hearts(uuid,uuid)')) v(caller, target) loop
-    select pg_get_userbyid(proowner) into caller_owner from pg_proc where oid = pair.caller::regprocedure;
-    select pg_get_userbyid(proowner) into target_owner from pg_proc where oid = pair.target::regprocedure;
-    if caller_owner in ('anon', 'authenticated', 'service_role') then raise exception 'Unexpected definer owner % for %', caller_owner, pair.caller; end if;
-    if caller_owner <> target_owner then execute format('grant execute on function %s to %I', pair.target, caller_owner); end if;
-  end loop;
+-- Access of the functions this file adds or patches, for the role that owns each (B3 review F3).
+do $$ begin
+  perform public.b3_owner_execute('public.read_dukjil_today(uuid,uuid)', array['public.read_dukjil_b3_today(uuid,uuid,public.dukjil_policy_versions)']);
+  perform public.b3_owner_execute('public.read_dukjil_b3_today(uuid,uuid,public.dukjil_policy_versions)', array['public.dukjil_b3_payable(uuid)', 'public.get_fan_effective_tier(uuid,uuid)', 'public.passport_hearts(uuid,uuid)']);
+  perform public.b3_owner_access('public.read_dukjil_b3_today(uuid,uuid,public.dukjil_policy_versions)', array['fan_share_proofs:select', 'dukjil_action_log:select', 'fan_passports:select', 'dukjil_policy_versions:select', 'fan_tier_bonus_grants:select', 'fan_tier_history:select', 'passport_page_slots:select', 'reward_policy_activation:select']);
+  perform public.b3_owner_access('public.read_owned_group_wallet_history(uuid,integer)', array['fan_tier_bonus_grants:select']);
 end $$;
-
--- owner-policy-begin: the wallet history now reads fan_tier_bonus_grants (created by this task with its own owner policy), the today
--- read reads share proofs, slots and grants. Same remedy as 20261215070000.
-do $$
-declare me record; t record;
-begin
-  select oid, rolname, rolsuper, rolbypassrls into me from pg_roles where rolname = current_user;
-  if me.rolsuper or me.rolbypassrls then return; end if;
-  for t in select * from (values ('fan_share_proofs','select'),('fan_tier_bonus_grants','select'),('passport_page_slots','select'),('fan_tier_history','select')) v(tname, privs) loop
-    execute format('grant %s on table public.%I to %I', t.privs, t.tname, me.rolname);
-    if exists (select 1 from pg_class c where c.oid = ('public.' || t.tname)::regclass and c.relrowsecurity
-        and (c.relforcerowsecurity or not pg_has_role(me.oid, c.relowner, 'USAGE')))
-      and not exists (select 1 from pg_policy pol where pol.polrelid = ('public.' || t.tname)::regclass and me.oid = any(pol.polroles)) then
-      execute format('create policy %I on public.%I for all to %I using (true) with check (true)', 'p3_fn_owner_' || me.rolname, t.tname, me.rolname);
-    end if;
-  end loop;
-end $$;
--- owner-policy-end
 
 notify pgrst, 'reload schema';
 commit;

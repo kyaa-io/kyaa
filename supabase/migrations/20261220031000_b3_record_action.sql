@@ -192,34 +192,12 @@ do $$ begin
   end if;
 end $$;
 
--- The patched record calls these as its owner; the owner may differ from the owner of the helpers (same cause as 20261212030000).
-do $$ declare target regprocedure; target_owner name;
-  me name := (select pg_get_userbyid(proowner) from pg_proc where oid = 'public.record_dukjil_action(uuid,uuid,text,text,uuid,jsonb)'::regprocedure);
-begin
-  foreach target in array array['public.dukjil_now()'::regprocedure, 'public.dukjil_b3_payable(uuid)'::regprocedure] loop
-    select pg_get_userbyid(proowner) into target_owner from pg_proc where oid = target;
-    if me in ('anon', 'authenticated', 'service_role') then raise exception 'Unexpected definer owner % for record_dukjil_action', me; end if;
-    if me <> target_owner then execute format('grant execute on function %s to %I', target, me); end if;
-  end loop;
+-- Access of the functions this file adds or patches, for the role that owns each (B3 review F3).
+do $$ begin
+  perform public.b3_owner_execute('public.record_dukjil_action(uuid,uuid,text,text,uuid,jsonb)', array['public.dukjil_now()', 'public.dukjil_b3_payable(uuid)']);
+  perform public.b3_owner_access('public.dukjil_b3_payable(uuid)', array['app_users:select', 'app_user_moderation_restrictions:select']);
+  perform public.b3_owner_access('public.record_dukjil_action(uuid,uuid,text,text,uuid,jsonb)', array['fan_profile_public_fields:select', 'dukjil_policy_versions:select']);
 end $$;
-
--- owner-policy-begin (same remedy as 20261215070000): the payable check reads app_users and the moderation restrictions, the favorite
--- check reads fan_profile_public_fields. A superuser or BYPASSRLS applier (local) needs nothing.
-do $$
-declare me record; t record;
-begin
-  select oid, rolname, rolsuper, rolbypassrls into me from pg_roles where rolname = current_user;
-  if me.rolsuper or me.rolbypassrls then return; end if;
-  for t in select * from (values ('app_users','select'),('app_user_moderation_restrictions','select'),('fan_profile_public_fields','select'),('dukjil_policy_versions','select')) v(tname, privs) loop
-    execute format('grant %s on table public.%I to %I', t.privs, t.tname, me.rolname);
-    if exists (select 1 from pg_class c where c.oid = ('public.' || t.tname)::regclass and c.relrowsecurity
-        and (c.relforcerowsecurity or not pg_has_role(me.oid, c.relowner, 'USAGE')))
-      and not exists (select 1 from pg_policy pol where pol.polrelid = ('public.' || t.tname)::regclass and me.oid = any(pol.polroles)) then
-      execute format('create policy %I on public.%I for all to %I using (true) with check (true)', 'p3_fn_owner_' || me.rolname, t.tname, me.rolname);
-    end if;
-  end loop;
-end $$;
--- owner-policy-end
 
 notify pgrst, 'reload schema';
 commit;

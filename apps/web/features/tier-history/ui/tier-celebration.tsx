@@ -40,8 +40,8 @@ export function TierCelebration() {
   // The highest rise of the batch speaks for all of them.
   const shown = batch.at(-1);
   if (!shown) return null;
-  // B3: the tier bonuses paid for the rises of this batch (absent on rises without a grant)
-  const bonus = batch.reduce((sum, change) => sum + (change.bonusPoints ?? 0), 0);
+  // B3: the tier bonuses paid for the rises of the shown passport only (the dialog names one creator's passport; review F4)
+  const bonus = batch.filter(change => change.passportId === shown.passportId).reduce((sum, change) => sum + (change.bonusPoints ?? 0), 0);
   return <TierRiseDialog change={shown} bonusPoints={bonus} onClose={() => setDismissed(current => new Set([...current, ...batch.map(change => change.id)]))} />;
 }
 

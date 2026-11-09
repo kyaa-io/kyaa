@@ -15,6 +15,7 @@
 -- Locks: the sync takes the wallet keys in the order of group_wallet_lock_target (campaign barrier shared, owner, fan-web-user) and then
 -- fan-tier-history, with no account or wallet state check (dukjil_tier_lock), so an admin's void on a restricted member and the
 -- multi-member heart conversion keep working. observe_fan_tiers keeps taking only fan-tier-history and never pays.
+-- Under a reward policy below 3 the triggers record history but create no grant (the bonus is defined on the hearts/slots tier).
 -- Install: every passport's history is brought to its current tier now (start/baseline for passports without history, a seen
 -- 'correction' where the last row differs). All of that is before v2 can take effect, so no tier reached so far earns a bonus.
 -- History rows take their time from dukjil_now() (the production clock; tests set it).
@@ -49,16 +50,10 @@ create table if not exists public.fan_tier_bonus_grants (
 create index if not exists fan_tier_bonus_grants_retry on public.fan_tier_bonus_grants (next_retry_at nulls first, created_at) where status = 'pending';
 create index if not exists fan_tier_bonus_grants_history on public.fan_tier_bonus_grants (tier_history_id);
 
-do $$ declare owner_role record; begin
-  select rolname, rolsuper, rolbypassrls into owner_role from pg_roles where rolname = current_user;
-  alter table public.fan_tier_bonus_grants enable row level security;
-  alter table public.fan_tier_bonus_grants force row level security;
-  revoke all on public.fan_tier_bonus_grants from public, anon, authenticated, service_role;
-  if not owner_role.rolsuper and not owner_role.rolbypassrls then
-    execute 'drop policy if exists fan_tier_bonus_grants_owner on public.fan_tier_bonus_grants';
-    execute format('create policy fan_tier_bonus_grants_owner on public.fan_tier_bonus_grants for all to %I using (true) with check (true)', owner_role.rolname);
-  end if;
-end $$;
+-- the functions' owners get their access through b3_owner_access at the end of this file
+alter table public.fan_tier_bonus_grants enable row level security;
+alter table public.fan_tier_bonus_grants force row level security;
+revoke all on public.fan_tier_bonus_grants from public, anon, authenticated, service_role;
 
 -- append + status updates of pending rows only
 create or replace function public.fan_tier_bonus_grants_guard() returns trigger language plpgsql set search_path = '' as $$
@@ -161,6 +156,8 @@ begin
     case when up then null else v_now end)
   returning id into hid;
   if not up or not p_pay then return hid; end if;
+  -- B3 review F2: the bonus is defined on the policy 3 tier (hearts and slots); under an older reward policy only the history is kept
+  if v_policy < 3 then return hid; end if;
 
   pol := public.dukjil_active_policy(v_now);
   if pol.version is null or pol.rules #> '{actions,tier_bonus}' is null then return hid; end if;
@@ -241,8 +238,10 @@ language plpgsql security definer set search_path = '' as $$
 declare p record; v_tier text; v_last public.fan_tier_history%rowtype; v_now timestamptz; n_start integer := 0; n_fix integer := 0;
 begin
   if (select policy_version from public.reward_policy_activation where singleton) is null then return jsonb_build_object('start', 0, 'correction', 0); end if;
+  -- B3 review F1: one table lock for the whole pass instead of advisory locks per member (5,000 passports ran out of shared lock
+  -- memory). It waits for writers already in flight and holds new history writers (the sync triggers, observe) until commit.
+  lock table public.fan_tier_history in share row exclusive mode;
   for p in select fp.id, fp.app_user_id, fp.celebrity_id, fp.issued_at from public.fan_passports fp order by fp.app_user_id, fp.id loop
-    perform public.dukjil_tier_lock(p.app_user_id);
     v_tier := public.get_fan_effective_tier(p.app_user_id, p.celebrity_id);
     continue when public.fan_tier_rank(v_tier) is null;
     v_now := public.dukjil_now();
@@ -298,6 +297,23 @@ begin
   end loop;
 end $$;
 -- owner-policy-end
+
+-- Access of the functions this file adds or patches, for the role that owns each (B3 review F3).
+do $$ begin
+  perform public.b3_owner_execute('public.dukjil_sync_fan_tier(uuid,uuid,boolean)', array['public.get_fan_effective_tier(uuid,uuid)', 'public.dukjil_b3_payable(uuid)', 'public.dukjil_now()', 'public.dukjil_tier_lock(uuid)', 'public.pay_fan_tier_bonus_grant(uuid)', 'public.dukjil_active_policy(timestamp with time zone)']);
+  perform public.b3_owner_execute('public.zzz_fan_tier_sync_row()', array['public.dukjil_sync_fan_tier(uuid,uuid,boolean)']);
+  perform public.b3_owner_execute('public.zzz_fan_tier_start_row()', array['public.dukjil_sync_fan_tier(uuid,uuid,boolean)']);
+  perform public.b3_owner_execute('public.pay_fan_tier_bonus_grant(uuid)', array['public.record_dukjil_action(uuid,uuid,text,text,uuid,jsonb)']);
+  perform public.b3_owner_execute('public.retry_fan_tier_bonus_grants(integer)', array['public.dukjil_b3_payable(uuid)', 'public.dukjil_tier_lock(uuid)', 'public.pay_fan_tier_bonus_grant(uuid)']);
+  perform public.b3_owner_execute('public.dukjil_tier_history_catch_up()', array['public.get_fan_effective_tier(uuid,uuid)', 'public.dukjil_now()']);
+  perform public.b3_owner_access('public.dukjil_sync_fan_tier(uuid,uuid,boolean)', array['reward_policy_activation:select', 'fan_passports:select', 'fan_tier_history:select,insert', 'dukjil_policy_versions:select', 'fan_tier_bonus_grants:select,insert,update']);
+  perform public.b3_owner_access('public.zzz_fan_tier_sync_row()', array['fan_passports:select']);
+  perform public.b3_owner_access('public.pay_fan_tier_bonus_grant(uuid)', array['fan_tier_bonus_grants:select,update']);
+  perform public.b3_owner_access('public.retry_fan_tier_bonus_grants(integer)', array['fan_tier_bonus_grants:select,update']);
+  perform public.b3_owner_access('public.dukjil_tier_history_catch_up()', array['reward_policy_activation:select', 'fan_passports:select', 'fan_tier_history:select,insert,update']);
+  perform public.b3_owner_access('public.record_dukjil_action(uuid,uuid,text,text,uuid,jsonb)', array['fan_tier_bonus_grants:select']);
+  perform public.b3_owner_access('public.observe_fan_tiers(uuid,public.content_locale)', array['fan_tier_bonus_grants:select']);
+end $$;
 
 do $$ declare pair record; caller_owner name; target_owner name; begin
   for pair in select * from (values

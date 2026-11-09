@@ -35,12 +35,9 @@ end $$;
 revoke all on function public.cheer_dukjil_favorite(uuid) from public, anon, authenticated, service_role;
 grant execute on function public.cheer_dukjil_favorite(uuid) to service_role;
 
-do $$ declare target_owner name;
-  me name := (select pg_get_userbyid(proowner) from pg_proc where oid = 'public.cheer_dukjil_favorite(uuid)'::regprocedure);
-begin
-  select pg_get_userbyid(proowner) into target_owner from pg_proc where oid = 'public.record_dukjil_action(uuid,uuid,text,text,uuid,jsonb)'::regprocedure;
-  if me in ('anon', 'authenticated', 'service_role') then raise exception 'Unexpected definer owner % for cheer_dukjil_favorite', me; end if;
-  if me <> target_owner then execute format('grant execute on function public.record_dukjil_action(uuid,uuid,text,text,uuid,jsonb) to %I', me); end if;
+do $$ begin
+  perform public.b3_owner_execute('public.cheer_dukjil_favorite(uuid)', array['public.record_dukjil_action(uuid,uuid,text,text,uuid,jsonb)']);
+  perform public.b3_owner_access('public.cheer_dukjil_favorite(uuid)', array['fan_profile_public_fields:select', 'celebrities:select']);
 end $$;
 
 notify pgrst, 'reload schema';

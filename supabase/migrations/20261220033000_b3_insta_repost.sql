@@ -419,6 +419,33 @@ begin
 end $$;
 -- owner-policy-end
 
+-- Access of the functions this file adds or patches, for the role that owns each (B3 review F3).
+do $$ begin
+  perform public.b3_owner_execute('public.can_review_insta_repost(uuid,uuid,uuid)', array['public.assert_active_admin(uuid,uuid,boolean)', 'public.dukjil_b3_payable(uuid)']);
+  perform public.b3_owner_execute('public.read_insta_repost_review_queue(uuid,uuid,uuid,text,timestamp with time zone,integer)', array['public.assert_active_admin(uuid,uuid,boolean)', 'public.can_review_insta_repost(uuid,uuid,uuid)']);
+  perform public.b3_owner_execute('public.read_page_insta_repost_queue(uuid,uuid,text,timestamp with time zone,integer)', array['public.read_insta_repost_review_queue(uuid,uuid,uuid,text,timestamp with time zone,integer)']);
+  perform public.b3_owner_execute('public.submit_fan_insta_repost(uuid,uuid,text,text,text,uuid,boolean)', array['public.dukjil_now()', 'public.dukjil_b3_payable(uuid)', 'public.dukjil_active_policy(timestamp with time zone)']);
+  perform public.b3_owner_execute('public.review_fan_insta_repost(uuid,uuid,uuid,integer,text,text)', array['public.record_dukjil_action(uuid,uuid,text,text,uuid,jsonb)', 'public.can_review_insta_repost(uuid,uuid,uuid)', 'public.dukjil_b3_payable(uuid)', 'public.dukjil_now()']);
+  perform public.b3_owner_execute('public.authorize_share_proof_image_read(uuid,uuid,uuid,text)', array['public.can_review_insta_repost(uuid,uuid,uuid)']);
+  perform public.b3_owner_execute('public.dukjil_correct_proof_grant(uuid,uuid,text,text)', array['public.void_passport_stamp(uuid,uuid,text,boolean,text)', 'public.group_wallet_post_correction(uuid,text,bigint,text,uuid)', 'public.group_wallet_balance(uuid,text)']);
+  perform public.b3_owner_execute('public.dukjil_correct_share_grant(uuid,uuid,text)', array['public.dukjil_correct_proof_grant(uuid,uuid,text,text)']);
+  perform public.b3_owner_execute('public.revoke_fan_share_proof(uuid,uuid,uuid,text)', array['public.dukjil_correct_proof_grant(uuid,uuid,text,text)', 'public.dukjil_now()']);
+  perform public.b3_owner_execute('public.request_share_proof_capture_cleanup()', array['public.dukjil_active_policy(timestamp with time zone)']);
+  perform public.b3_owner_access('public.can_review_insta_repost(uuid,uuid,uuid)', array['group_pages:select', 'group_memberships:select']);
+  perform public.b3_owner_access('public.read_page_insta_repost_queue(uuid,uuid,text,timestamp with time zone,integer)', array['group_pages:select', 'group_memberships:select']);
+  perform public.b3_owner_access('public.submit_fan_insta_repost(uuid,uuid,text,text,text,uuid,boolean)', array['fan_passports:select', 'fan_share_proofs:select,insert,update', 'mobile_media_assets:select,update']);
+  perform public.b3_owner_access('public.review_fan_insta_repost(uuid,uuid,uuid,integer,text,text)', array['fan_share_proofs:select,update', 'audit_logs:insert']);
+  perform public.b3_owner_access('public.read_insta_repost_review_queue(uuid,uuid,uuid,text,timestamp with time zone,integer)', array['fan_share_proofs:select', 'celebrities:select', 'celebrity_localizations:select', 'user_profiles:select', 'dukjil_point_corrections:select']);
+  perform public.b3_owner_access('public.list_fan_insta_reposts(uuid,uuid)', array['fan_share_proofs:select']);
+  perform public.b3_owner_access('public.authorize_share_proof_image_read(uuid,uuid,uuid,text)', array['fan_share_proofs:select', 'mobile_media_assets:select', 'audit_logs:insert']);
+  perform public.b3_owner_access('public.request_share_proof_capture_cleanup()', array['fan_share_proofs:select', 'mobile_media_assets:select,update']);
+  perform public.b3_owner_access('public.dukjil_correct_proof_grant(uuid,uuid,text,text)', array['dukjil_action_log:select', 'dukjil_point_corrections:select,insert', 'community_stamps:select', 'mobile_fan_economy_ledger:select']);
+  perform public.b3_owner_access('public.revoke_fan_share_proof(uuid,uuid,uuid,text)', array['fan_share_proofs:select,update', 'dukjil_action_log:select', 'dukjil_policy_versions:select']);
+  perform public.b3_owner_access('public.submit_fan_share_proof(uuid,uuid,text,text,text,boolean)', array['fan_share_proofs:select,insert']);
+  perform public.b3_owner_access('public.pay_fan_share_proof(uuid,uuid,uuid,jsonb)', array['fan_share_proofs:select,update']);
+  perform public.b3_owner_access('public.scrub_fan_share_proofs_on_deletion()', array['fan_share_proofs:select,update', 'mobile_media_assets:select,update']);
+end $$;
+
 do $$ declare pair record; caller_owner name; target_owner name; begin
   for pair in select * from (values
     ('public.can_review_insta_repost(uuid,uuid,uuid)', 'public.assert_active_admin(uuid,uuid,boolean)'),
