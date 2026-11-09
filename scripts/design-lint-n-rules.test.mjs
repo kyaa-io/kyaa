@@ -356,6 +356,48 @@ test('N31 detects More even when its callback also calls onClose', () => {
   assert.equal(n31ActionArrows(code, SCREEN).length, 1);
 });
 
+test('N31 resolves a local onClose body before granting an exemption', () => {
+  const code = 'const onClose = () => { closeDialog(); openAll(); }; ' + sectionHead('<button aria-label="Close" onClick={onClose}><ArrowRight/></button>');
+  assert.equal(hits(ts(code), 'N31').length, 1);
+});
+
+test('N31 rejects a non-function local onClose definition', () => {
+  const code = 'const onClose = false; ' + sectionHead('<button aria-label="Close" onClick={onClose}><ArrowRight/></button>');
+  assert.equal(hits(ts(code), 'N31').length, 1);
+});
+
+test('N31 accepts visible close/back text as the control identity', () => {
+  for (const label of ['닫기', '뒤로', 'Close', 'Back']) {
+    assert.equal(hits(ts(sectionHead('<FanAction onClick={onClose}>' + label + '</FanAction>')), 'N31').length, 0);
+  }
+  const code = 'function WalletAttendanceDialog({locale,onClose}) { return <header><h2><DukjilSwitch/></h2><FanAction onClick={onClose}>{locale === "ko" ? "닫기" : translate(locale, closeMessages.id, "Close")}</FanAction></header>; }';
+  assert.equal(hits(ts(code, 'apps/web/features/group-wallet/ui/wallet-screen.tsx'), 'N31').length, 0);
+});
+
+test('N31 checks local close aliases and cycles, while leaving identified opaque callbacks alone', () => {
+  for (const declaration of [
+    'const bad = () => {closeDialog(); openAll();}; const onClose = bad;',
+    'const onClose = alias; const alias = onClose;',
+    'const onClose = () => onClose();',
+    'let onClose;',
+  ]) assert.equal(hits(ts(declaration + sectionHead('<button aria-label="Close" onClick={onClose}><ArrowRight/></button>')), 'N31').length, 1, declaration);
+  for (const declaration of [
+    'const onClose = () => closeDialog();',
+    'const onClose = () => router.back();',
+    'const back = () => router.back(); const onClose = back;',
+    'import { onClose } from "./controls";',
+  ]) assert.equal(hits(ts(declaration + sectionHead('<button aria-label="Close" onClick={onClose}><ArrowRight/></button>')), 'N31').length, 0, declaration);
+});
+
+test('N31 distinguishes modal X dismissal from forward-arrow actions with local callbacks', () => {
+  const helper = 'const onClose = () => { closeDialog(); restoreFocus(); }; ';
+  const modal = (content) => '<header className={styles.dialogHeader}><h2>Title</h2><button aria-label="Close" onClick={onClose}>' + content + '</button></header>';
+  assert.equal(hits(ts(helper + modal('<X/>')), 'N31').length, 0);
+  assert.equal(hits(ts(helper + modal('<ArrowRight/>')), 'N31').length, 1);
+  assert.equal(hits(ts(helper + modal('<X/><ArrowRight/>')), 'N31').length, 1);
+  assert.equal(hits(ts('const onClose = false; ' + modal('<ArrowRight/>')), 'N31').length, 1);
+});
+
 test('N31 close/back exemption needs identifying attributes and a close-only handler', () => {
   for (const attrs of [
     'aria-label="More" onClick={onClose}',
