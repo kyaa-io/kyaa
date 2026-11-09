@@ -18,6 +18,10 @@
 .item:first-child { color: var(--color-ink); font-weight: var(--fan-item-title-weight); }
 .artist { display: inline-flex; flex: 0 1 auto; align-items: center; gap: var(--space-1); min-width: 0; color: var(--color-ink); }
 .artist svg { flex: none; }
+/* 접속 공개를 켠 아티스트가 지금 들어와 있을 때만 아이콘이 깜박인다. 방문만 한 날은 정지. 모션을 줄인 설정이면 멈춘다. */
+.artist[data-online="true"] svg { animation: presenceBlink 1.6s ease-in-out infinite; }
+@keyframes presenceBlink { 50% { opacity: .35; } }
+@media (prefers-reduced-motion: reduce) { .artist[data-online="true"] svg { animation: none; } }
 .artistName { overflow: hidden; min-width: 48px; font-weight: var(--fan-item-title-weight); text-overflow: ellipsis; }
 .artistState { flex: none; color: var(--color-muted); font-weight: 400; }
 .error { display: inline-flex; flex: 0 1 auto; align-items: center; gap: var(--space-2); min-width: 0; }
@@ -26,5 +30,8 @@
 .retry:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 @media (min-width: 48rem) { .line { font-size: var(--fan-description-size); line-height: 20px; } }
 
-/* VISUAL-K ②: 찐팬 100 항목이 붙는 팬페이지는 넘치면 줄 안에서 줄바꿈한다(이름 아래 별도 줄 없음). */
-.line[data-wrap] { flex-wrap: wrap; height: auto; min-height: 24px; overflow: visible; row-gap: var(--space-1); }
+/* VISUAL-K ②: 찐팬 100 항목이 붙는 팬페이지는 넘치면 줄 안에서 줄바꿈한다(이름 아래 별도 줄 없음).
+   가운뎃점은 항목 앞 간격 안에 걸어 두고 줄 왼쪽 끝 밖은 잘라, 줄이 바뀌어 맨 앞에 온 항목 앞에는 점이 남지 않는다. */
+.line[data-wrap] { --presence-gap: var(--space-5); flex-wrap: wrap; height: auto; min-height: 24px; overflow-x: clip; overflow-y: visible; column-gap: var(--presence-gap); row-gap: var(--space-1); }
+.line[data-wrap] > * { position: relative; }
+.line[data-wrap] > * + *::before { position: absolute; inset-inline-start: calc(-1 * var(--presence-gap)); width: var(--presence-gap); margin: 0; text-align: center; }

@@ -24,6 +24,7 @@ import { boardCopy } from "./board-copy";
 import { groupsCopy } from "./copy";
 import { groupCommentCopy } from "./group-comment-copy";
 import { GroupArtistMark } from "./group-artist-mark";
+import { GroupOperatorMark } from "./group-operator-mark";
 import { GroupPostAsset } from "./group-post-asset";
 import { interactionCopy } from "./interaction-copy";
 import { attachmentLabel, managementCopy, sendLabel } from "./management-copy";
@@ -31,7 +32,7 @@ import { SourceStatePanel } from "./source-state-panel";
 import { useGroupResource } from "./use-group-resource";
 
 const assetsSchema = z.array(z.object({ id: z.uuid(), kind: z.enum(["image", "video"]), width: z.number().nullable().optional(), height: z.number().nullable().optional() })).optional();
-const commentsSchema = z.object({ items: z.array(z.object({ id: z.uuid(), body: z.string(), profileId: z.string().nullable(), nickname: z.string(), avatarUrl: z.string().nullable(), anonymous: z.boolean(), artist: z.boolean().optional(), createdAt: z.string(), canDelete: z.boolean().optional(), parentId: z.uuid().nullable().optional(), assets: assetsSchema })), nextCursor: z.string().nullable() });
+const commentsSchema = z.object({ items: z.array(z.object({ id: z.uuid(), body: z.string(), profileId: z.string().nullable(), nickname: z.string(), avatarUrl: z.string().nullable(), anonymous: z.boolean(), artist: z.boolean().optional(), operator: z.boolean().optional(), createdAt: z.string(), canDelete: z.boolean().optional(), parentId: z.uuid().nullable().optional(), assets: assetsSchema })), nextCursor: z.string().nullable() });
 const parseComments = (value: unknown) => commentsSchema.parse(value);
 
 /** Comments of a group post, in the same tinted area as the fan board. The write box comes first and grows when focused. */
@@ -115,7 +116,7 @@ export function GroupPostComments({ pageId, postId, locale, commentCount, canWri
     {r.error ? <SourceStatePanel fill sourceId="CqipF" title={locale === "ko" ? "댓글을 불러오지 못했어요" : t.error} description={t.error} role="alert" actions={[{ label: t.retry, onClick: r.retry, variant: "primary" }]} />
       : r.loading && !comments.length ? <FanSkeletonRows rows={2} variant="member" />
       : ordered.length > 0 && <ul className={detailStyles.commentList}>{ordered.map(comment => <li key={comment.id} id={`comment-${comment.id}`} data-reply={comment.parentId ? "" : undefined}>
-        <div className={detailStyles.commentMeta}><img src={comment.avatarUrl ?? "/images/avatars/star-pink.webp"} alt="" width={32} height={32} /><strong>{comment.nickname}</strong>{comment.artist && <GroupArtistMark locale={locale} />}<RelativeTime value={comment.createdAt} locale={locale} absolute={(value, language) => new Date(value).toLocaleString(language, { dateStyle: "medium", timeStyle: "short" })} /></div>
+        <div className={detailStyles.commentMeta}><img src={comment.avatarUrl ?? "/images/avatars/star-pink.webp"} alt="" width={32} height={32} /><strong>{comment.nickname}</strong>{comment.artist ? <GroupArtistMark locale={locale} /> : comment.operator ? <GroupOperatorMark locale={locale} /> : null}<RelativeTime value={comment.createdAt} locale={locale} absolute={(value, language) => new Date(value).toLocaleString(language, { dateStyle: "medium", timeStyle: "short" })} /></div>
         <p>{comment.body}</p>
         {comment.assets?.map(asset => <GroupPostAsset className={detailStyles.commentAsset} key={asset.id} asset={asset} locale={locale} />)}
         <div className={detailStyles.commentActions}>

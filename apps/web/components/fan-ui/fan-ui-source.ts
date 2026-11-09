@@ -14,6 +14,7 @@ export const fanUiSource = {
   presenceToday: { ko: "오늘 방문 {0}", en: "Today {0}" },
   noticeTag: { ko: "공지", en: "Notice" },
   artistTag: { ko: "인증 아티스트", en: "Verified artist" },
+  operatorTag: { ko: "운영자", en: "Operator" },
   commentsLabel: { ko: "댓글 {0}", en: "{0} comments" },
   viewsLabel: { ko: "조회 {0}", en: "{0} views" },
   likesLabel: { ko: "추천 {0}", en: "{0} likes" },
