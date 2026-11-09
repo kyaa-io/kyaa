@@ -290,7 +290,8 @@
 .calendarLegend { display:flex; justify-content:flex-end; margin-top:16px; color:var(--color-muted); font-size:var(--fan-calendar-meta-size); }
 
 /* A group page owns its shell and gutters; calendar interaction stays shared. */
-.embedded{width:100%;max-width:none;padding-inline:0;padding-top:32px}
+/* 좌우 여백·최대 폭은 FanContentContainer가 소유한다(같은 특이도라 빌드 순서로 이기던 값, 기준 1ee53b4db 화면 = 컨테이너 값). */
+.embedded{width:100%;padding-top:32px}
 .compact { width:100%; max-width:none; padding:0; overflow:visible; }
 .compact .editorialHeader { display:block; margin:0; }
 .compact .calendar { padding:0; border:0; border-radius:0; box-shadow:none; }
