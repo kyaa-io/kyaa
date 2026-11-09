@@ -3,6 +3,7 @@
 .riseLine{display:grid;gap:var(--space-1);margin:0}
 .riseLine strong{font-size:var(--fan-item-title-size);line-height:22px;font-weight:var(--fan-item-title-weight);overflow-wrap:anywhere}
 .riseLine span{font-size:var(--fan-metadata-size);line-height:20px;color:var(--color-muted)}
+.riseLine .riseBonus{color:var(--color-ink);font-weight:var(--fan-item-title-weight)}
 
 .history{display:grid;gap:var(--space-3);scroll-margin-top:80px}
 .history h2{margin:0;font-size:var(--fan-aside-title-size);line-height:24px;font-weight:var(--fan-aside-title-weight)}

@@ -91,7 +91,8 @@ export const missionRewardSchema = z.object({
   skippedReason: z.enum(["too_short", "daily_limit", "same_body", "passport_required"]).optional(),
 }).strict();
 export type MissionReward = z.infer<typeof missionRewardSchema>;
-export const shareProofResultSchema = z.object({ id: z.uuid(), replayed: z.boolean(), reward: missionRewardSchema.optional() }).strict();
+/** duplicate: the post is already an Instagram repost of this member (B3); nothing was paid. */
+export const shareProofResultSchema = z.object({ id: z.uuid(), replayed: z.boolean(), duplicate: z.literal(true).optional(), reward: missionRewardSchema.optional() }).strict();
 export type ShareProofResult = z.infer<typeof shareProofResultSchema>;
 
 // Admin list (GET /api/admin/share-proofs) and cancel (POST /api/admin/share-proofs/{id}/revoke).

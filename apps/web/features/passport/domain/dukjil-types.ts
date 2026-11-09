@@ -50,6 +50,12 @@ export const dukjilActionResultSchema = z.object({
 }).strict();
 export type DukjilActionResult = z.infer<typeof dukjilActionResultSchema>;
 
+// POST /api/me/dukjil/cheer (B3 §5.1). earned is what this tap paid: 0 on a replay (already cheered today), so a past 3P never shows as new.
+export const dukjilCheerResultSchema = z.object({
+  earned: z.number().int().nonnegative(), stamped: z.boolean(), replayed: z.boolean(), celebrity: z.object({ slug: creatorSlugSchema }).strict(),
+}).strict();
+export type DukjilCheerResult = z.infer<typeof dukjilCheerResultSchema>;
+
 // GET /api/dukjil/catalog?locale=  (active policy rows; guide and badges share it)
 export const dukjilRuleSchema = z.object({
   points: z.number().int().nonnegative().optional(),
@@ -89,6 +95,17 @@ export const dukjilTodaySchema = z.object({
   actions: z.record(z.string(), dukjilTodayActionSchema).optional(),
   attendance: dukjilAttendanceStateSchema.nullable().optional(),
   hasPassport: z.boolean().nullable().optional(),
+  /** B3: present only while the policy in effect has insta_repost. approvals* count every approval (the caps), paidMonth the paid ones. */
+  instaRepost: z.object({
+    status: z.enum(["pending", "accepted", "rejected", "revoked"]).nullable(), rejectCode: z.enum(["no_hashtag", "private_account", "duplicate", "unrelated"]).nullable(),
+    payResult: z.enum(["paid", "point_cap", "month_cap", "account_inactive"]).nullable(),
+    approvalsToday: z.number().int().nonnegative(), approvalsMonth: z.number().int().nonnegative(), paidMonth: z.number().int().nonnegative(),
+  }).strict().optional(),
+  /** B3: present only while the policy in effect has tier_bonus; null when no bonus is left for this creator. */
+  nextTierBonus: z.object({
+    tier: z.enum(["Silver", "Gold", "Platinum", "Diamond"]), points: z.number().int().nonnegative(),
+    progress: z.number().int().nonnegative(), target: z.number().int().positive(),
+  }).strict().nullable().optional(),
   /** r5(R12): when today's counters reset — the KST midnight after kstDate. Added by the route; optional for older answers. */
   resetAt: z.iso.datetime({ offset: true }).optional(),
 }).strict();

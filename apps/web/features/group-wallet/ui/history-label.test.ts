@@ -29,9 +29,9 @@ it('names a dukjil row after its real activity in every locale, each activity di
  expect(walletHistoryLabel('en','dukjil_action',{actionKey:'comment'})).toBe('Comment');
  expect(walletHistoryLabel('ko','dukjil_proof')).toBe('찐팬 스탬프 인증');
 });
-it('keeps the generic name when the activity is unknown (older rows, cheer, unknown keys)',()=>{
+it('keeps the generic name when the activity is unknown (older rows, a tier bonus without its tier, unknown keys)',()=>{
  expect(walletHistoryLabel('ko','dukjil_action',{actionKey:null})).toBe('활동 참여');
- expect(walletHistoryLabel('ko','dukjil_action',{actionKey:'cheer'})).toBe('활동 참여');
+ expect(walletHistoryLabel('ko','dukjil_action',{actionKey:'tier_bonus'})).toBe('활동 참여');
  expect(walletHistoryLabel('ko','dukjil_action',{actionKey:'something_new'})).toBe('활동 참여');
  expect(walletHistoryLabel('ko','live_participation')).toBe('활동 참여');
 });
@@ -71,4 +71,17 @@ it('names a check-in row after its fan page when the history carries it (F5), an
  expect(walletHistoryLabel('ko','dukjil_action',{actionKey:'checkin'})).toBe('출석체크');
  expect(walletHistoryLabel('ko','dukjil_action',{actionKey:'post',pageName:'이퓨'})).toBe('글 쓰기');
  for(const locale of APP_LOCALES)expect(walletHistoryLabel(locale,'dukjil_action',{actionKey:'checkin',pageName:'P'}),locale).toContain('P');
+});
+it('names the B3 payouts and the repost take-back, in every locale',()=>{
+ expect(walletHistoryLabel('ko','dukjil_action',{actionKey:'cheer'})).toBe('오늘 응원');
+ expect(walletHistoryLabel('ko','dukjil_action',{actionKey:'insta_repost'})).toBe('인스타 리포스트');
+ expect(walletHistoryLabel('ko','dukjil_action',{actionKey:'tier_bonus',tier:'Gold'})).toBe('골드 달성 보너스');
+ expect(walletHistoryLabel('en','dukjil_action',{actionKey:'tier_bonus',tier:'Platinum'})).toBe('Platinum tier bonus');
+ expect(walletHistoryLabel('ko','dukjil_correction',{actionKey:'insta_repost',correctionReason:'insta_repost_revoked'})).toBe('리포스트 회수');
+ for(const locale of APP_LOCALES){
+  const labels=[walletHistoryLabel(locale,'dukjil_action',{actionKey:'cheer'}),walletHistoryLabel(locale,'dukjil_action',{actionKey:'insta_repost'}),
+   walletHistoryLabel(locale,'dukjil_action',{actionKey:'tier_bonus',tier:'Silver'}),walletHistoryLabel(locale,'dukjil_correction',{correctionReason:'insta_repost_revoked'})];
+  expect(labels.every(label=>typeof label==='string'&&label.length>0)).toBe(true);
+  expect(new Set(labels).size).toBe(4);
+ }
 });

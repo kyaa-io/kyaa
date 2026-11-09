@@ -29,7 +29,8 @@ function failure(error: unknown) {
   return code ? Response.json({ error: { code } }, { status: STATUS[code], headers }) : Response.json({ error: { code: "SHARE_PROOF_UNAVAILABLE" } }, { status: 503, headers });
 }
 const URL_CODE = { short: "SHARE_PROOF_URL_SHORT", unsupported: "SHARE_PROOF_URL_UNSUPPORTED", not_post: "SHARE_PROOF_URL_NOT_POST" } as const;
-const storedSchema = z.object({ id: z.uuid(), replayed: z.boolean(), points: z.number().int().nonnegative().nullable(), status: z.enum(["accepted", "revoked"]) });
+// duplicate: the same post was sent as an Instagram repost (B3); the database answers it as a closed replay and nothing is paid.
+const storedSchema = z.object({ id: z.uuid(), replayed: z.boolean(), points: z.number().int().nonnegative().nullable(), status: z.enum(["accepted", "revoked"]), duplicate: z.boolean().optional() });
 
 /** 261107-2 D12 (review r4 H2). The share mission pays for the fan's own post on one of five networks: the address is reduced to the
  * network's post id here, kept once per member in fan_share_proofs, then the unchanged dukjil payout decides (share rule). */
@@ -55,7 +56,7 @@ export function createShareProofHandlers(deps: ShareProofDependencies) {
       if (!checked.ok) throw new Error(URL_CODE[checked.problem]);
       const proof = checked.value, celebrity = await creator(body.creator);
       const stored = storedSchema.parse(await deps.rpc("submit_fan_share_proof", { p_app_user_id: appUserId, p_celebrity_id: celebrity, p_platform: proof.platform, p_url: proof.url, p_url_key: proof.key, p_own_post: body.ownPost }));
-      const written = { id: stored.id, replayed: stored.replayed };
+      const written = { id: stored.id, replayed: stored.replayed, ...(stored.duplicate ? { duplicate: true } : {}) };
       // A replay pays only when its payout never ran (the request died after the row was written); a cancelled proof never pays again.
       if (stored.replayed && (stored.points !== null || stored.status === "revoked")) return Response.json(shareProofResultSchema.parse(written), { status: 200, headers });
       // The payout runs inside pay_fan_share_proof: it locks the proof, refuses a cancelled one and pays with the proof's own creator,

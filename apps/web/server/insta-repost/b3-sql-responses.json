@@ -1,0 +1,736 @@
+{
+    "today_v2": {
+        "actions": {
+            "post": {
+                "count": 0,
+                "points": 0,
+                "stamped": true,
+                "remaining": 3
+            },
+            "quiz": {
+                "count": 0,
+                "points": 0,
+                "stamped": true,
+                "remaining": null
+            },
+            "cheer": {
+                "count": 1,
+                "points": 3,
+                "stamped": true,
+                "remaining": 0
+            },
+            "proof": {
+                "count": 0,
+                "points": 0,
+                "stamped": false,
+                "remaining": 2
+            },
+            "share": {
+                "count": 0,
+                "points": 0,
+                "stamped": true,
+                "remaining": 3
+            },
+            "invite": {
+                "count": 0,
+                "points": 0,
+                "stamped": false,
+                "remaining": 5
+            },
+            "survey": {
+                "count": 0,
+                "points": 0,
+                "stamped": false,
+                "remaining": null
+            },
+            "checkin": {
+                "count": 0,
+                "points": 0,
+                "stamped": false,
+                "remaining": 1
+            },
+            "comment": {
+                "count": 0,
+                "points": 0,
+                "stamped": false,
+                "remaining": 10
+            },
+            "mission": {
+                "count": 0,
+                "points": 0,
+                "stamped": false,
+                "remaining": null
+            },
+            "reaction": {
+                "count": 0,
+                "points": 0,
+                "stamped": false,
+                "remaining": 5
+            },
+            "tier_bonus": {
+                "count": 2,
+                "points": 130,
+                "stamped": false,
+                "remaining": null
+            },
+            "live_attend": {
+                "count": 0,
+                "points": 0,
+                "stamped": false,
+                "remaining": null
+            },
+            "event_review": {
+                "count": 0,
+                "points": 0,
+                "stamped": false,
+                "remaining": null
+            },
+            "insta_repost": {
+                "count": 1,
+                "points": 30,
+                "stamped": true,
+                "remaining": 0
+            },
+            "live_reserve": {
+                "count": 0,
+                "points": 0,
+                "stamped": false,
+                "remaining": null
+            },
+            "subscription": {
+                "count": 0,
+                "points": 0,
+                "stamped": false,
+                "remaining": null
+            },
+            "event_checkin": {
+                "count": 0,
+                "points": 0,
+                "stamped": false,
+                "remaining": null
+            },
+            "invite_friend": {
+                "count": 0,
+                "points": 0,
+                "stamped": false,
+                "remaining": null
+            }
+        },
+        "kstDate": "2026-11-09",
+        "attendance": {
+            "streak": 0,
+            "nextBonusIn": 7,
+            "attendedToday": false
+        },
+        "hasPassport": true,
+        "instaRepost": {
+            "status": "rejected",
+            "paidMonth": 1,
+            "payResult": null,
+            "rejectCode": "no_hashtag",
+            "approvalsMonth": 1,
+            "approvalsToday": 1
+        },
+        "totalPoints": 163,
+        "policyActive": true,
+        "nextTierBonus": {
+            "tier": "Platinum",
+            "points": 300,
+            "target": 14,
+            "progress": 1
+        }
+    },
+    "queue_all": {
+        "items": [
+            {
+                "id": "92c27368-e3c5-4de6-9e30-bcb31779e729",
+                "url": "https://www.instagram.com/p/B3answer01/",
+                "member": {
+                    "id": "b3d00000-0000-4000-8000-000000000011",
+                    "nickname": null
+                },
+                "points": 30,
+                "status": "accepted",
+                "creator": {
+                    "name": "응답",
+                    "slug": "b3-answer"
+                },
+                "postKind": "feed",
+                "revision": 0,
+                "payResult": "paid",
+                "revokedAt": null,
+                "approvedAt": "2026-11-09T19:08:15.600432+09:00",
+                "clawedBack": false,
+                "hasCapture": false,
+                "rejectCode": null,
+                "reviewedAt": "2026-11-09T19:08:15.603856+09:00",
+                "submittedAt": "2026-11-09T19:08:15.5973+09:00",
+                "reviewerRole": "admin",
+                "revokeResult": null,
+                "duplicateCount": 0
+            },
+            {
+                "id": "94a6ad38-969c-436b-bcb2-8ab64bb80eb7",
+                "url": "https://www.instagram.com/p/B3answer02/",
+                "member": {
+                    "id": "b3d00000-0000-4000-8000-000000000011",
+                    "nickname": null
+                },
+                "points": null,
+                "status": "rejected",
+                "creator": {
+                    "name": "응답",
+                    "slug": "b3-answer"
+                },
+                "postKind": "feed",
+                "revision": 0,
+                "payResult": null,
+                "revokedAt": null,
+                "approvedAt": null,
+                "clawedBack": false,
+                "hasCapture": false,
+                "rejectCode": "no_hashtag",
+                "reviewedAt": "2026-11-09T19:08:15.60478+09:00",
+                "submittedAt": "2026-11-09T19:08:15.604508+09:00",
+                "reviewerRole": "admin",
+                "revokeResult": null,
+                "duplicateCount": 0
+            }
+        ]
+    },
+    "cheer_first": {
+        "at": "2026-11-09T19:08:15.583278+09:00",
+        "earned": 3,
+        "stamped": true,
+        "replayed": false,
+        "celebrityId": "b3d00000-0000-4000-8000-000000000001",
+        "celebritySlug": "b3-answer"
+    },
+    "today_empty": {
+        "actions": {
+            "post": {
+                "count": 0,
+                "points": 0,
+                "stamped": false,
+                "remaining": 3
+            },
+            "quiz": {
+                "count": 0,
+                "points": 0,
+                "stamped": false,
+                "remaining": null
+            },
+            "cheer": {
+                "count": 0,
+                "points": 0,
+                "stamped": false,
+                "remaining": 1
+            },
+            "proof": {
+                "count": 0,
+                "points": 0,
+                "stamped": false,
+                "remaining": 2
+            },
+            "share": {
+                "count": 0,
+                "points": 0,
+                "stamped": false,
+                "remaining": 3
+            },
+            "invite": {
+                "count": 0,
+                "points": 0,
+                "stamped": false,
+                "remaining": 5
+            },
+            "survey": {
+                "count": 0,
+                "points": 0,
+                "stamped": false,
+                "remaining": null
+            },
+            "checkin": {
+                "count": 0,
+                "points": 0,
+                "stamped": false,
+                "remaining": null
+            },
+            "comment": {
+                "count": 0,
+                "points": 0,
+                "stamped": false,
+                "remaining": 10
+            },
+            "mission": {
+                "count": 0,
+                "points": 0,
+                "stamped": false,
+                "remaining": null
+            },
+            "reaction": {
+                "count": 0,
+                "points": 0,
+                "stamped": false,
+                "remaining": 5
+            },
+            "tier_bonus": {
+                "count": 0,
+                "points": 0,
+                "stamped": false,
+                "remaining": null
+            },
+            "live_attend": {
+                "count": 0,
+                "points": 0,
+                "stamped": false,
+                "remaining": null
+            },
+            "event_review": {
+                "count": 0,
+                "points": 0,
+                "stamped": false,
+                "remaining": null
+            },
+            "insta_repost": {
+                "count": 0,
+                "points": 0,
+                "stamped": false,
+                "remaining": 1
+            },
+            "live_reserve": {
+                "count": 0,
+                "points": 0,
+                "stamped": false,
+                "remaining": null
+            },
+            "subscription": {
+                "count": 0,
+                "points": 0,
+                "stamped": false,
+                "remaining": null
+            },
+            "event_checkin": {
+                "count": 0,
+                "points": 0,
+                "stamped": false,
+                "remaining": null
+            },
+            "invite_friend": {
+                "count": 0,
+                "points": 0,
+                "stamped": false,
+                "remaining": null
+            }
+        },
+        "kstDate": "2026-11-09",
+        "attendance": null,
+        "hasPassport": null,
+        "instaRepost": {
+            "status": null,
+            "paidMonth": 0,
+            "payResult": null,
+            "rejectCode": null,
+            "approvalsMonth": 0,
+            "approvalsToday": 0
+        },
+        "totalPoints": 0,
+        "policyActive": true,
+        "nextTierBonus": null
+    },
+    "cheer_replay": {
+        "at": "2026-11-09T19:08:15.583278+09:00",
+        "earned": 0,
+        "stamped": true,
+        "replayed": true,
+        "celebrityId": "b3d00000-0000-4000-8000-000000000001",
+        "celebritySlug": "b3-answer"
+    },
+    "reposts_list": {
+        "items": [
+            {
+                "id": "94a6ad38-969c-436b-bcb2-8ab64bb80eb7",
+                "url": "https://www.instagram.com/p/B3answer02/",
+                "points": null,
+                "status": "rejected",
+                "postKind": "feed",
+                "payResult": null,
+                "revokedAt": null,
+                "hasCapture": false,
+                "rejectCode": "no_hashtag",
+                "reviewedAt": "2026-11-09T19:08:15.60478+09:00",
+                "submittedAt": "2026-11-09T19:08:15.604508+09:00"
+            },
+            {
+                "id": "92c27368-e3c5-4de6-9e30-bcb31779e729",
+                "url": "https://www.instagram.com/p/B3answer01/",
+                "points": 30,
+                "status": "accepted",
+                "postKind": "feed",
+                "payResult": "paid",
+                "revokedAt": null,
+                "hasCapture": false,
+                "rejectCode": null,
+                "reviewedAt": "2026-11-09T19:08:15.603856+09:00",
+                "submittedAt": "2026-11-09T19:08:15.5973+09:00"
+            }
+        ]
+    },
+    "queue_pending": {
+        "items": [
+            {
+                "id": "92c27368-e3c5-4de6-9e30-bcb31779e729",
+                "url": "https://www.instagram.com/p/B3answer01/",
+                "member": {
+                    "id": "b3d00000-0000-4000-8000-000000000011",
+                    "nickname": null
+                },
+                "points": null,
+                "status": "pending",
+                "creator": {
+                    "name": "응답",
+                    "slug": "b3-answer"
+                },
+                "postKind": "feed",
+                "revision": 0,
+                "payResult": null,
+                "revokedAt": null,
+                "approvedAt": null,
+                "clawedBack": false,
+                "hasCapture": false,
+                "rejectCode": null,
+                "reviewedAt": null,
+                "submittedAt": "2026-11-09T19:08:15.5973+09:00",
+                "reviewerRole": null,
+                "revokeResult": null,
+                "duplicateCount": 0
+            }
+        ]
+    },
+    "repost_submit": {
+        "id": "92c27368-e3c5-4de6-9e30-bcb31779e729",
+        "status": "pending",
+        "replayed": false,
+        "duplicate": false
+    },
+    "reposts_empty": {
+        "items": [
+        ]
+    },
+    "review_accept": {
+        "id": "92c27368-e3c5-4de6-9e30-bcb31779e729",
+        "points": 30,
+        "status": "accepted",
+        "revision": 0,
+        "payResult": "paid"
+    },
+    "review_reject": {
+        "id": "94a6ad38-969c-436b-bcb2-8ab64bb80eb7",
+        "points": 0,
+        "status": "rejected",
+        "revision": 0,
+        "payResult": null
+    },
+    "revoke_repost": {
+        "id": "92c27368-e3c5-4de6-9e30-bcb31779e729",
+        "result": "corrected",
+        "replayed": false
+    },
+    "wallet_history": {
+        "entries": [
+            {
+                "id": "91d27eac-3bbe-4a61-b41f-3c7ef679604e",
+                "tier": "Gold",
+                "asset": "fan_point",
+                "amount": 100,
+                "pageName": null,
+                "sourceId": "9248cacc-72de-4874-9547-29d89b404bab",
+                "actionKey": "tier_bonus",
+                "createdAt": "2026-11-09T19:08:15.616723+09:00",
+                "sourceType": "dukjil_action",
+                "celebrityId": null,
+                "correctionReason": null
+            },
+            {
+                "id": "790de4b0-b8bd-41d0-90ba-39c15a814e9b",
+                "tier": "Silver",
+                "asset": "fan_point",
+                "amount": 30,
+                "pageName": null,
+                "sourceId": "0ebd0e9b-718a-48af-a8b1-1df2fb0b26ef",
+                "actionKey": "tier_bonus",
+                "createdAt": "2026-11-09T19:08:15.609436+09:00",
+                "sourceType": "dukjil_action",
+                "celebrityId": null,
+                "correctionReason": null
+            },
+            {
+                "id": "76b505cd-1f86-41af-8e52-806f1fca92c2",
+                "asset": "fan_point",
+                "amount": 30,
+                "pageName": null,
+                "sourceId": "d0dcccb9-d90d-4a3d-b629-fb2042ac2849",
+                "actionKey": "insta_repost",
+                "createdAt": "2026-11-09T19:08:15.60346+09:00",
+                "sourceType": "dukjil_action",
+                "celebrityId": null,
+                "correctionReason": null
+            },
+            {
+                "id": "f3e2a603-5e0c-4b16-a6eb-e81bd93b85c8",
+                "asset": "fan_point",
+                "amount": 3,
+                "pageName": null,
+                "sourceId": "42f94c14-84f2-4d3e-9d0b-7f7a8ca03bcd",
+                "actionKey": "cheer",
+                "createdAt": "2026-11-09T19:08:15.589599+09:00",
+                "sourceType": "dukjil_action",
+                "celebrityId": null,
+                "correctionReason": null
+            }
+        ]
+    },
+    "tier_changes_bonus": {
+        "changes": [
+            {
+                "id": "7fb5bac7-ca7d-4cb8-83f9-5eb263e9cf40",
+                "name": "응답",
+                "slug": "b3-answer",
+                "tier": "Silver",
+                "occurredAt": "2026-11-09T19:08:15.607629+09:00",
+                "passportId": "32617064-9bfd-45af-a97a-c76d0e4c9442",
+                "bonusPoints": 30,
+                "previousTier": "Bronze"
+            },
+            {
+                "id": "2e247e38-7ebb-4895-87c8-cb1ae7975a56",
+                "name": "응답",
+                "slug": "b3-answer",
+                "tier": "Gold",
+                "occurredAt": "2026-11-09T19:08:15.615937+09:00",
+                "passportId": "32617064-9bfd-45af-a97a-c76d0e4c9442",
+                "bonusPoints": 100,
+                "previousTier": "Silver"
+            }
+        ]
+    },
+    "tier_changes_empty": {
+        "changes": [
+        ]
+    },
+    "today_empty_creator": {
+        "actions": {
+            "post": {
+                "count": 0,
+                "points": 0,
+                "stamped": false,
+                "remaining": 3
+            },
+            "quiz": {
+                "count": 0,
+                "points": 0,
+                "stamped": false,
+                "remaining": null
+            },
+            "cheer": {
+                "count": 0,
+                "points": 0,
+                "stamped": false,
+                "remaining": 1
+            },
+            "proof": {
+                "count": 0,
+                "points": 0,
+                "stamped": false,
+                "remaining": 2
+            },
+            "share": {
+                "count": 0,
+                "points": 0,
+                "stamped": false,
+                "remaining": 3
+            },
+            "invite": {
+                "count": 0,
+                "points": 0,
+                "stamped": false,
+                "remaining": 5
+            },
+            "survey": {
+                "count": 0,
+                "points": 0,
+                "stamped": false,
+                "remaining": null
+            },
+            "checkin": {
+                "count": 0,
+                "points": 0,
+                "stamped": false,
+                "remaining": 1
+            },
+            "comment": {
+                "count": 0,
+                "points": 0,
+                "stamped": false,
+                "remaining": 10
+            },
+            "mission": {
+                "count": 0,
+                "points": 0,
+                "stamped": false,
+                "remaining": null
+            },
+            "reaction": {
+                "count": 0,
+                "points": 0,
+                "stamped": false,
+                "remaining": 5
+            },
+            "tier_bonus": {
+                "count": 0,
+                "points": 0,
+                "stamped": false,
+                "remaining": null
+            },
+            "live_attend": {
+                "count": 0,
+                "points": 0,
+                "stamped": false,
+                "remaining": null
+            },
+            "event_review": {
+                "count": 0,
+                "points": 0,
+                "stamped": false,
+                "remaining": null
+            },
+            "insta_repost": {
+                "count": 0,
+                "points": 0,
+                "stamped": false,
+                "remaining": 1
+            },
+            "live_reserve": {
+                "count": 0,
+                "points": 0,
+                "stamped": false,
+                "remaining": null
+            },
+            "subscription": {
+                "count": 0,
+                "points": 0,
+                "stamped": false,
+                "remaining": null
+            },
+            "event_checkin": {
+                "count": 0,
+                "points": 0,
+                "stamped": false,
+                "remaining": null
+            },
+            "invite_friend": {
+                "count": 0,
+                "points": 0,
+                "stamped": false,
+                "remaining": null
+            }
+        },
+        "kstDate": "2026-11-09",
+        "attendance": {
+            "streak": 0,
+            "nextBonusIn": 7,
+            "attendedToday": false
+        },
+        "hasPassport": false,
+        "instaRepost": {
+            "status": null,
+            "paidMonth": 0,
+            "payResult": null,
+            "rejectCode": null,
+            "approvalsMonth": 0,
+            "approvalsToday": 0
+        },
+        "totalPoints": 0,
+        "policyActive": true,
+        "nextTierBonus": null
+    },
+    "share_submit_duplicate": {
+        "id": "92c27368-e3c5-4de6-9e30-bcb31779e729",
+        "points": 0,
+        "status": "accepted",
+        "replayed": true,
+        "duplicate": true
+    },
+    "wallet_history_revoked": {
+        "entries": [
+            {
+                "id": "943f6961-1240-4976-83bb-5e7b22ea9604",
+                "asset": "fan_point",
+                "amount": -30,
+                "pageName": null,
+                "sourceId": "f805ce12-8082-410f-85c2-6b3df71a489c",
+                "actionKey": "insta_repost",
+                "createdAt": "2026-11-09T19:08:15.623742+09:00",
+                "sourceType": "dukjil_correction",
+                "celebrityId": null,
+                "correctionReason": "insta_repost_revoked"
+            },
+            {
+                "id": "91d27eac-3bbe-4a61-b41f-3c7ef679604e",
+                "tier": "Gold",
+                "asset": "fan_point",
+                "amount": 100,
+                "pageName": null,
+                "sourceId": "9248cacc-72de-4874-9547-29d89b404bab",
+                "actionKey": "tier_bonus",
+                "createdAt": "2026-11-09T19:08:15.616723+09:00",
+                "sourceType": "dukjil_action",
+                "celebrityId": null,
+                "correctionReason": null
+            },
+            {
+                "id": "790de4b0-b8bd-41d0-90ba-39c15a814e9b",
+                "tier": "Silver",
+                "asset": "fan_point",
+                "amount": 30,
+                "pageName": null,
+                "sourceId": "0ebd0e9b-718a-48af-a8b1-1df2fb0b26ef",
+                "actionKey": "tier_bonus",
+                "createdAt": "2026-11-09T19:08:15.609436+09:00",
+                "sourceType": "dukjil_action",
+                "celebrityId": null,
+                "correctionReason": null
+            },
+            {
+                "id": "76b505cd-1f86-41af-8e52-806f1fca92c2",
+                "asset": "fan_point",
+                "amount": 30,
+                "pageName": null,
+                "sourceId": "d0dcccb9-d90d-4a3d-b629-fb2042ac2849",
+                "actionKey": "insta_repost",
+                "createdAt": "2026-11-09T19:08:15.60346+09:00",
+                "sourceType": "dukjil_action",
+                "celebrityId": null,
+                "correctionReason": null
+            },
+            {
+                "id": "f3e2a603-5e0c-4b16-a6eb-e81bd93b85c8",
+                "asset": "fan_point",
+                "amount": 3,
+                "pageName": null,
+                "sourceId": "42f94c14-84f2-4d3e-9d0b-7f7a8ca03bcd",
+                "actionKey": "cheer",
+                "createdAt": "2026-11-09T19:08:15.589599+09:00",
+                "sourceType": "dukjil_action",
+                "celebrityId": null,
+                "correctionReason": null
+            }
+        ]
+    },
+    "repost_submit_duplicate": {
+        "id": "92c27368-e3c5-4de6-9e30-bcb31779e729",
+        "status": "pending",
+        "replayed": true,
+        "duplicate": true
+    }
+}

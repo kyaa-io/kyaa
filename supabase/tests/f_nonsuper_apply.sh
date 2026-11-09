@@ -22,7 +22,7 @@ grep -v -x -e 'begin;' -e 'commit;' -e "notify pgrst, 'reload schema';" "$ROOT/s
 APPLY90=""; [ "$HAS90" = 1 ] && APPLY90="\\i $TMP/supabase/migrations/20261215090000_tier_source_hearts.sql"
 if [ "${STRIP_POLICY:-}" = 1 ]; then
   for f in supabase/migrations/20261215060000_fan_tier_history.sql supabase/migrations/20261215070000_share_proofs.sql; do
-    sed -i '' '/-- owner-policy-begin/,/-- owner-policy-end/d' "$TMP/$f"
+    sed '/-- owner-policy-begin/,/-- owner-policy-end/d' "$TMP/$f" > "$TMP/$f.stripped" && mv "$TMP/$f.stripped" "$TMP/$f"
   done
 fi
 # The current rollback also removes what the older file added; always take it from the working tree.

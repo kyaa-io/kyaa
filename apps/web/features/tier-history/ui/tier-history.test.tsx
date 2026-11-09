@@ -33,6 +33,24 @@ it("celebrates a rise once, marks it seen at once and opens the passport history
   expect(h.request).toHaveBeenCalledTimes(1);
 });
 
+it("adds the tier bonuses paid for the batch, and says nothing about a rise without one", async () => {
+  h.data = { changes: [{ ...rise("10000000-0000-4000-8000-000000000001", "Bronze", "Silver"), bonusPoints: 30 }, { ...rise("10000000-0000-4000-8000-000000000002", "Silver", "Gold"), bonusPoints: 100 }] };
+  render(<TierCelebration />);
+  expect(await screen.findByRole("dialog", { name: "골드 등급이 됐어요" })).toHaveTextContent("달성 보너스 +130P");
+  cleanup();
+  h.data = { changes: [rise("10000000-0000-4000-8000-000000000003", "Bronze", "Silver")] };
+  render(<TierCelebration />);
+  expect(await screen.findByRole("dialog", { name: "실버 등급이 됐어요" })).not.toHaveTextContent("보너스");
+  cleanup();
+  // another creator's passport rose in the same batch: its bonus is not added to the passport the dialog names
+  h.data = { changes: [{ ...rise("10000000-0000-4000-8000-000000000004", "Bronze", "Silver"), passportId: "40adc677-31ab-4e68-8b2a-4a6b2af1f1d4", bonusPoints: 30 },
+    { ...rise("10000000-0000-4000-8000-000000000005", "Silver", "Gold"), bonusPoints: 100 }] };
+  render(<TierCelebration />);
+  const dialog = await screen.findByRole("dialog", { name: "골드 등급이 됐어요" });
+  expect(dialog).toHaveTextContent("달성 보너스 +100P");
+  expect(dialog).not.toHaveTextContent("+130P");
+});
+
 it("shows the highest of several rises and marks all of them", async () => {
   h.data = { changes: [rise("10000000-0000-4000-8000-000000000001", "Bronze", "Silver"), rise("10000000-0000-4000-8000-000000000002", "Silver", "Gold")] };
   render(<TierCelebration />);

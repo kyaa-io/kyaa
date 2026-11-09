@@ -40,10 +40,12 @@ export function TierCelebration() {
   // The highest rise of the batch speaks for all of them.
   const shown = batch.at(-1);
   if (!shown) return null;
-  return <TierRiseDialog change={shown} onClose={() => setDismissed(current => new Set([...current, ...batch.map(change => change.id)]))} />;
+  // B3: the tier bonuses paid for the rises of the shown passport only (the dialog names one creator's passport; review F4)
+  const bonus = batch.filter(change => change.passportId === shown.passportId).reduce((sum, change) => sum + (change.bonusPoints ?? 0), 0);
+  return <TierRiseDialog change={shown} bonusPoints={bonus} onClose={() => setDismissed(current => new Set([...current, ...batch.map(change => change.id)]))} />;
 }
 
-export function TierRiseDialog({ change, onClose }: { change: TierChange; onClose: () => void }) {
+export function TierRiseDialog({ change, bonusPoints = 0, onClose }: { change: TierChange; bonusPoints?: number; onClose: () => void }) {
   const { locale } = useAppLocale();
   const router = useRouter();
   const c = tierHistoryCopy(locale);
@@ -56,7 +58,7 @@ export function TierRiseDialog({ change, onClose }: { change: TierChange; onClos
     primary={{ label: c.history, onClick: open }} secondary={{ label: c.close, onClick: onClose }}>
     <div className={styles.rise} data-tier-rise={change.tier}>
       <FanRewardPop trigger={landed} kind="complete"><FanTierBadge tier={change.tier} locale={locale} size={112} adjacentLabel={false} className={styles.riseBadge} /></FanRewardPop>
-      <p className={styles.riseLine}><strong>{c.passport(change.name)}</strong><span>{fanTierName(locale, change.previousTier)} → {tier}</span></p>
+      <p className={styles.riseLine}><strong>{c.passport(change.name)}</strong><span>{fanTierName(locale, change.previousTier)} → {tier}</span>{bonusPoints > 0 && <span className={styles.riseBonus}>{c.bonus(bonusPoints.toLocaleString(locale))}</span>}</p>
     </div>
   </FanDialog>;
 }

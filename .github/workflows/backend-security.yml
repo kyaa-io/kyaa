@@ -186,6 +186,24 @@ jobs:
           BYUS_CLEAN_DB_PORT=55551 \
           BYUS_CLEAN_DB_ASSERTION_FILE="$PWD/supabase/tests/passport/passport_proof_after_claim.sql" \
           bash scripts/verify-clean-migration-chain.sh
+      - name: Verify the B3 cheer, Instagram repost and tier bonus payouts
+        if: matrix.suite == 'core'
+        run: |
+          export PATH="$(pg_config --bindir):$PATH"
+          BYUS_CLEAN_DB_PORT=55552 \
+          BYUS_CLEAN_DB_ASSERTION_FILE="$PWD/supabase/tests/dukjil/dukjil_b3.sql" \
+          BYUS_CLEAN_DB_SHELL_ASSERTION_FILE="$PWD/supabase/tests/dukjil/dukjil_b3_concurrency.sh" \
+          bash scripts/verify-clean-migration-chain.sh
+      - name: Verify the B3 tier install over 5,200 passports and a non-superuser apply
+        if: matrix.suite == 'core'
+        run: |
+          export PATH="$(pg_config --bindir):$PATH"
+          BYUS_CLEAN_DB_PORT=55553 \
+          BYUS_CLEAN_DB_UPGRADE_MIGRATION=20261220034000_b3_tier_bonus.sql \
+          BYUS_CLEAN_DB_UPGRADE_BEFORE_FILE="$PWD/supabase/tests/fixtures/b3_tier_install_before.sql" \
+          BYUS_CLEAN_DB_UPGRADE_AFTER_FILE="$PWD/supabase/tests/fixtures/b3_tier_install_after.sql" \
+          BYUS_CLEAN_DB_SHELL_ASSERTION_FILE="$PWD/supabase/tests/dukjil/dukjil_b3_nonsuper_apply.sh" \
+          bash scripts/verify-clean-migration-chain.sh
       - name: Verify creator raffle eligibility and ownership concurrency
         if: matrix.suite == 'events'
         run: |

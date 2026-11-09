@@ -1,0 +1,4 @@
+import { createInstaRepostRouteHandlers } from "@/server/insta-repost/dependencies";
+export const dynamic = "force-dynamic";
+const unavailable = () => Response.json({ error: { code: "INSTA_REPOST_UNAVAILABLE" } }, { status: 503, headers: { "cache-control": "private, no-store" } });
+export async function POST(request: Request, context: { params: Promise<{ id: string; itemId: string }> }) { try { return await createInstaRepostRouteHandlers().pageReview(request, (await context.params).itemId); } catch { return unavailable(); } }

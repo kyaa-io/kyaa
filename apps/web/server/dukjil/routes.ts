@@ -3,7 +3,7 @@ import { kstMidnightAfter } from "@/server/kst-midnight";
 import { z } from "zod";
 import { AuthError } from "@/features/auth/domain/auth-errors";
 import {
-  DUKJIL_ATTENDANCE_MAX_CREATORS, attendanceRequestSchema, attendanceResultSchema, dukjilAttendanceListSchema, creatorSlugSchema, dukjilCatalogResponseSchema, dukjilTodaySchema,
+  DUKJIL_ATTENDANCE_MAX_CREATORS, attendanceRequestSchema, attendanceResultSchema, dukjilAttendanceListSchema, creatorSlugSchema, dukjilCatalogResponseSchema, dukjilCheerResultSchema, dukjilTodaySchema,
 } from "@/features/passport/domain/dukjil-types";
 import { resolveCreatorId, resolveCreatorIds } from "./creator-id";
 import { boundedJson, CertificationBodyError } from "@/server/certification/certification-http";
@@ -23,6 +23,7 @@ const STATUS: Record<string, number> = {
   DUKJIL_DAILY_LIMIT: 429, UNKNOWN_ACTION: 400, POLICY_INACTIVE: 409, PASSPORT_REQUIRED: 403, SOURCE_REUSED: 409,
   DUKJIL_CONTENT_TOO_SHORT: 422, DUKJIL_DUPLICATE_BODY: 409, DUKJIL_REPEAT_TARGET: 409, FAN_WEB_ACTIVE_ACCOUNT_REQUIRED: 403, DUKJIL_PARAMS_INVALID: 400, DUKJIL_CELEBRITY_REQUIRED: 400, DUKJIL_ATTENDANCE_MOVED: 409,
   COMMUNITY_STAMP_WALLET_NOT_READY: 409, COMMUNITY_STAMP_NOT_FOUND: 404, GROUP_WALLET_REQUEST_CONFLICT: 409, GROUP_WALLET_INVALID: 400, CREATOR_NOT_FOUND: 404,
+  DUKJIL_FAVORITE_REQUIRED: 409, ACCOUNT_INACTIVE: 403,
   PASSPORT_NOT_FOUND: 404, PASSPORT_PAGE_NOT_COMPLETE: 409, PASSPORT_CLAIM_LOCKED_UNTIL_JJINFAN: 403, STAMP_KIND_UNKNOWN: 400, STAMP_NOT_FOUND: 404, ALREADY_REVOKED: 409, ADMIN_REQUIRED: 403, DUKJIL_EFFECTIVE_FROM_INVALID: 400,
 };
 
@@ -31,6 +32,9 @@ export function dukjilFailure(error: unknown) {
   if (error instanceof z.ZodError || error instanceof SyntaxError || error instanceof CertificationBodyError) return Response.json({ error: { code: "INVALID_REQUEST" } }, { status: 400, headers: privateHeaders });
   const message = error instanceof Error ? error.message : "";
   const code = Object.keys(STATUS).find((known) => message.includes(known));
+  // B3 §5.1: the cheer's two refusals the screen acts on (pick a favorite; the account cannot earn) keep plain names.
+  if (code === "DUKJIL_FAVORITE_REQUIRED") return Response.json({ error: { code: "favorite_required" } }, { status: 409, headers: privateHeaders });
+  if (code === "ACCOUNT_INACTIVE") return Response.json({ error: { code: "account_restricted" } }, { status: 403, headers: privateHeaders });
   if (code) return Response.json({ error: { code } }, { status: STATUS[code], headers: privateHeaders });
   return Response.json({ error: { code: "DUKJIL_UNAVAILABLE" } }, { status: 503, headers: privateHeaders });
 }
@@ -108,6 +112,13 @@ export function createDukjilHandlers(deps: DukjilDependencies) {
         return creatorSlug ? [{ ...row, creatorSlug }] : [];
       });
       return Response.json(checked(dukjilAttendanceListSchema, { kstDate: raw.kstDate, items }), { headers: privateHeaders });
+    }),
+    // POST /api/me/dukjil/cheer (B3 §5.1): today's cheer for the member's favorite. No body: the database picks the favorite and keys
+    // the cheer on the member and the KST day, so a second tap replays with earned 0.
+    cheer: (request: Request) => run(async () => {
+      const { appUserId } = await deps.authorize(request.headers.get("authorization"));
+      const raw = obj(await deps.rpc("cheer_dukjil_favorite", { p_user: appUserId }));
+      return Response.json(checked(dukjilCheerResultSchema, { earned: raw.earned, stamped: raw.stamped, replayed: raw.replayed, celebrity: { slug: raw.celebritySlug } }), { headers: privateHeaders });
     }),
     attend: (request: Request, creatorSlug: string) => run(async () => {
       const { appUserId } = await deps.authorize(request.headers.get("authorization"));
