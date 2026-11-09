@@ -102,13 +102,16 @@ export const HOME_GUEST_LIMIT = 5;
 /** The creator this fan named on MY (when that page can be named), else the one given the most hearts, named in the viewer's language. */
 const favorite = z.object({ slug: z.string(), name: z.string() }).nullable();
 const count = z.number().int().min(0);
+/** Counted hearts minus the preceding KST calendar day's snapshot, independent of the sort metric.
+ * null when that exact day's build is missing; optional only for responses from an older server. */
+const dayGain = z.number().int().nullable().optional();
 export const homeFanRankingSchema = z.object({
   ...homeHead,
   metric: z.enum(HOME_FAN_METRICS).optional(),
   /** Days the fan weekGain comparison spans (20261217010000). Optional: absent before that migration. */
   weekGainDays: z.number().int().min(1).max(7).nullable().optional(),
   /** score is the metric's value; hearts and points name the values (both values independent of the sort metric; points null only when that day has no points build). */
-  rows: z.array(platformFanRankingRowSchema.extend({ delta, favorite, fans: count.optional(), isNew: z.boolean().optional(), weekGain: z.number().int().nullable().optional(), hearts: count.optional(), points: count.nullable().optional() })).max(HOME_RANKING_LIMIT),
+  rows: z.array(platformFanRankingRowSchema.extend({ delta, favorite, fans: count.optional(), isNew: z.boolean().optional(), weekGain: z.number().int().nullable().optional(), dayGain, hearts: count.optional(), points: count.nullable().optional() })).max(HOME_RANKING_LIMIT),
   me: z.object({ rank: z.number().int().min(1), score: count, inTop: z.boolean(), hearts: count.optional(), points: count.nullable().optional(), delta: delta.optional() }).nullable(),
 });
 export type HomeFanRanking = z.infer<typeof homeFanRankingSchema>;
@@ -132,6 +135,7 @@ export const homeCreatorRankingRowSchema = z.object({
   delta,
   /** The metric gained over the rolling seven days (E2 ①). null on the first day of history. May be negative when fans left. */
   weekGain: z.number().int().nullable(),
+  dayGain,
 });
 export const homeCreatorRankingSchema = z.object({
   ...homeHead,

@@ -218,7 +218,7 @@ describe("rankings routes", () => {
     expect(rpc).toHaveBeenCalledWith("read_home_creator_ranking_v2", { p_locale: "en", p_metric: "hearts", p_limit: 10 });
     expect(authorize).toHaveBeenCalledTimes(1);
     expect(res.headers.get("cache-control")).toBe("private, no-store");
-    expect(body.rows).toEqual([{ rank: 1, slug: "a", name: "A", imageUrl: null, score: 795, hearts: 795, points: null, fans: 125, liveNow: false, isNew: false, challenge: true, delta: null, weekGain: null }]);
+    expect(body.rows).toEqual([{ rank: 1, slug: "a", name: "A", imageUrl: null, score: 795, hearts: 795, points: null, fans: 125, liveNow: false, isNew: false, challenge: true, delta: null, weekGain: null, dayGain: null }]);
     const empty = make(() => ({ ...head({ state: "empty", comparable: false, previousDay: null, weekGainDays: null }), rows: [] }));
     expect(await (await empty.handlers.home(req("/x?kind=creators"))).json()).toMatchObject({ state: "empty", day: "2026-11-08", rows: [] });
     const late = make(() => ({ ...head({ state: "stale", day: "2026-11-07", today: "2026-11-08", failedAt: "2026-11-08T00:01:00Z" }), rows: [], me: null }));
