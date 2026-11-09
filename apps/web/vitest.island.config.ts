@@ -23,6 +23,8 @@ export const ISLAND_FILES = [
   "features/profile/ui/use-avatar.test.tsx",
   "features/schedules/ui/participation-requests.test.tsx",
 ];
+// Runs in both projects with the same assertions: the real PrivyRoot + ByUsSessionProvider on each backend.
+export const BOTH_BACKEND_FILES = ["features/auth/client/privy-root.assembly.test.tsx"];
 
 const merged = mergeConfig(base, defineConfig({
   resolve: {
@@ -35,5 +37,5 @@ const merged = mergeConfig(base, defineConfig({
   },
 }));
 // mergeConfig concatenates arrays; the island project runs only its own list.
-merged.test = { ...merged.test, include: [...ISLAND_FILES, "**/*.island-test.tsx"], exclude: ["**/node_modules/**", "**/.next/**"] };
+merged.test = { ...merged.test, include: [...ISLAND_FILES, ...BOTH_BACKEND_FILES, "**/*.island-test.tsx"], exclude: ["**/node_modules/**", "**/.next/**"], env: { ...merged.test?.env, VITEST_ISLAND: "1" } };
 export default merged;

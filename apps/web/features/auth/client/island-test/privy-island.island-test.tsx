@@ -155,38 +155,8 @@ describe("leases mirror the app's hook instances (plan-b §5.2, §5.3)", () => {
   });
 });
 
-describe("callback order and identity on a self-updating SDK (plan-b §5.3, production store)", () => {
-  const log = { atCallback: [] as unknown[], users: [] as (string | null)[], callbacks: 0, walletEffect: 0 };
-  function Session({ hooks }: { hooks: Hooks }) {
-    const { user } = hooks.usePrivy();
-    const { createWallet } = hooks.useCreateWallet();
-    const latest = useRef(user);
-    const created = useRef(false);
-    useEffect(() => { latest.current = user; log.users.push(user?.id ?? null); });
-    hooks.useLogin({ onComplete: () => { log.callbacks += 1; log.atCallback.push(latest.current?.id ?? null); } });
-    useEffect(() => {
-      log.walletEffect += 1; // Runs whenever createWallet's identity changes (counts may differ: allowed diff ③).
-      if (user && !created.current) { created.current = true; void createWallet(); }
-    }, [createWallet, user]);
-    return <span>{user?.id ?? "guest"}</span>;
-  }
-
-  it.each(BACKENDS)("%s: the callback sees the old owner, the state arrives after, and the wallet is created once", async (name, hooks) => {
-    Object.assign(log, { atCallback: [], users: [], callbacks: 0, walletEffect: 0 });
-    mount(name, <Session hooks={hooks} />);
-    await act(async () => {
-      fake.emitLoginComplete({ id: "B" }); // SDK order: onComplete first,
-      await Promise.resolve();
-      fake.set({ authenticated: true, user: { id: "B" } }); // then its own state.
-    });
-    await screen.findByText("B");
-    expect(log.atCallback).toEqual([null]);
-    expect(log.callbacks).toBe(1);
-    expect(fake.counts.createWallet).toBe(1);
-    const firstB = log.users.indexOf("B");
-    expect(log.users.slice(firstB).every(id => id === "B")).toBe(true); // never back to null after B
-  });
-});
+// Callback order, transition, navigation and wallet synchronisation on the REAL PrivyRoot + ByUsSessionProvider with the
+// production store and mirrors: features/auth/client/privy-root.assembly.test.tsx (runs on both backends, same assertions).
 
 describe("lease generations (plan-b §0-7)", () => {
   it("rejects a call still waiting when its lease is released, and keeps nothing for it", async () => {
@@ -197,6 +167,25 @@ describe("lease generations (plan-b §0-7)", () => {
     store.unregister("lease-a", "useLoginWithOAuth", generation);
     await expect(waiting).rejects.toBeInstanceOf(PrivyLeaseReleasedError);
     expect(store.held("lease-a")).toEqual({ lease: false, waiting: 0, listeners: 0 });
+  });
+
+  it("delivers a late SDK callback to the app's last callback after release, and never throws (late-callback policy)", () => {
+    const store = new PrivyIslandStore();
+    const onComplete = vi.fn(), onError = vi.fn();
+    const appRef = { current: [{ onComplete, onError }] as unknown[] };
+    const generation = store.register("late", "useLogin", appRef);
+    const [forwarded] = store.mirrorArgs("late") as [{ onComplete: (value: unknown) => void; onError: (value: unknown) => void }];
+    store.unregister("late", "useLogin", generation);
+    expect(() => forwarded.onComplete({ user: { id: "B" } })).not.toThrow();
+    expect(onComplete).toHaveBeenCalledWith({ user: { id: "B" } });
+    // The app dropped the key before the SDK called back: a quiet no-op.
+    appRef.current = [{ onComplete }];
+    expect(() => forwarded.onError(new Error("late"))).not.toThrow();
+    expect(onError).not.toHaveBeenCalled();
+    appRef.current = [];
+    expect(() => forwarded.onComplete({ user: { id: "C" } })).not.toThrow();
+    expect(onComplete).toHaveBeenCalledTimes(1);
+    expect(store.held("late")).toEqual({ lease: false, waiting: 0, listeners: 0 });
   });
 
   it("decides attach-versus-release by which reaches the store first, every time", async () => {

@@ -57,14 +57,24 @@ export class PrivyIslandStore {
     const lease = this.leases.get(id);
     if (!lease) return [];
     if (lease.forwarded?.version === lease.argsVersion) return lease.forwarded.args;
+    // Late-callback policy (plan-b §5.1): a callback the SDK already holds keeps calling the app's LAST callback for that
+    // key, also after the lease is released (in the direct tree the SDK holds the app's own function the same way). The
+    // forwarder keeps the app's ref object; a key the app no longer provides is a quiet no-op, never a TypeError.
+    const appRef = lease.argsRef;
     const forward = (value: unknown, read: () => unknown): unknown => {
-      if (typeof value === "function") return (...args: unknown[]) => (read() as (...a: unknown[]) => unknown)(...args);
+      if (typeof value === "function") return (...args: unknown[]) => {
+        const latest = read();
+        return typeof latest === "function" ? (latest as (...a: unknown[]) => unknown)(...args) : undefined;
+      };
       if (value && typeof value === "object" && !Array.isArray(value) && Object.getPrototypeOf(value) === Object.prototype) {
-        return Object.fromEntries(Object.entries(value).map(([key, inner]) => [key, forward(inner, () => (read() as Record<string, unknown>)[key])]));
+        return Object.fromEntries(Object.entries(value).map(([key, inner]) => [key, forward(inner, () => {
+          const container = read();
+          return container && typeof container === "object" ? (container as Record<string, unknown>)[key] : undefined;
+        })]));
       }
       return value;
     };
-    const args = lease.argsRef.current.map((value, index) => forward(value, () => lease.argsRef.current[index]));
+    const args = appRef.current.map((value, index) => forward(value, () => appRef.current[index]));
     lease.forwarded = { version: lease.argsVersion, args };
     return args;
   }
@@ -136,10 +146,10 @@ export class PrivyIslandStore {
     if (!lease) return;
     this.leases.delete(id);
     this.rejectWaiting(lease);
-    // Drop every reference the generation held (plan-b §0-7).
+    // Drop the references the store held for this generation (plan-b §0-7). The app's own args ref is not cleared:
+    // forwarders the SDK already holds still reach the app's last callbacks (late-callback policy, mirrorArgs).
     lease.result = undefined;
     lease.forwarded = undefined;
-    lease.argsRef = { current: [] };
   }
 
   private rejectWaiting(slot: Slot) {
