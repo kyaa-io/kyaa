@@ -1172,16 +1172,16 @@ export const messages = {
 
   },
   "m6a69019aed6d": {
-    "ja": "5名に入場券を2枚ずつ、合計10枚進呈します。ifewの抽選券を使って抽選に応募します。",
-    "zh-Hans": "抽选5名得主，每人获得2张入场券，共10张。使用ifew抽奖券参与抽选。",
-    "zh-Hant": "抽選5名得主，每人獲得2張入場券，共10張。使用ifew抽獎券參與抽選。",
-    "es": "Cinco ganadores reciben dos entradas cada uno, 10 en total. Se usan boletos de ifew para participar en el sorteo.",
-    "id": "Lima pemenang masing-masing menerima dua tiket masuk, total 10 tiket. Tiket undian ifew digunakan untuk mengikuti undian.",
-    "vi": "Năm người thắng, mỗi người nhận hai vé vào cửa, tổng cộng 10 vé. Vé quay thưởng ifew được dùng để tham gia quay thưởng.",
-    "th": "ผู้ชนะ 5 คนได้รับบัตรเข้าชมคนละ 2 ใบ รวม 10 ใบ ใช้บัตรจับรางวัล ifew เพื่อเข้าร่วม",
-    "pt": "Cinco ganhadores recebem dois ingressos cada, totalizando dez ingressos. Os tickets ifew são usados para participar do sorteio.",
-    "fr": "Cinq gagnants reçoivent chacun deux billets d’entrée, soit dix billets au total. Les tickets ifew servent à participer au tirage au sort.",
-    ru: "Пять победителей получат по два входных билета, всего 10 билетов. Для участия в розыгрыше используются несколько лотерейных билетов."
+    "ja": "5名に入場券を2枚ずつ、合計10枚進呈します。応募券は抽選への応募に使います。",
+    "zh-Hans": "抽选5名得主，每人获得2张入场券，共10张。抽奖券用于参与抽选。",
+    "zh-Hant": "抽選5名得主，每人獲得2張入場券，共10張。抽獎票券用於參與抽選。",
+    "es": "Cinco ganadores reciben dos entradas cada uno, 10 en total. Los boletos se usan para participar en el sorteo.",
+    "id": "Lima pemenang masing-masing menerima dua tiket masuk, total 10 tiket. Tiket undian digunakan untuk mengikuti undian.",
+    "vi": "Năm người thắng, mỗi người nhận hai vé vào cửa, tổng cộng 10 vé. Vé quay thưởng được dùng để tham gia quay thưởng.",
+    "th": "ผู้ชนะ 5 คนได้รับบัตรเข้าชมคนละ 2 ใบ รวม 10 ใบ ใช้บัตรจับรางวัลเพื่อเข้าร่วม",
+    "pt": "Cinco ganhadores recebem dois ingressos cada, totalizando dez ingressos. Os bilhetes de sorteio são usados para participar do sorteio.",
+    "fr": "Cinq gagnants reçoivent chacun deux billets d’entrée, soit dix billets au total. Les tickets servent à participer au tirage au sort.",
+    ru: "Пять победителей получат по два входных билета, всего 10 билетов. Для участия в розыгрыше используются билеты розыгрыша."
 
   },
   "m8e1e4d734b51": {
@@ -1224,29 +1224,29 @@ export const messages = {
 
   },
   "m2b5088f52e34": {
-    "ja": "使用するifewの抽選券の枚数を選び、応募してください。ファン認証やLIVEへの参加だけでは自動的に応募されません。",
-    "zh-Hans": "选择要使用的ifew抽奖券数量并提交。粉丝验证或参与LIVE不会自动参与抽选。",
-    "zh-Hant": "選擇要使用的ifew抽獎券數量並提交。粉絲驗證或參與LIVE不會自動參與抽選。",
-    "es": "Elige cuántos boletos de ifew usar y envía tu participación. La verificación de fan o la participación en el LIVE no te inscriben automáticamente.",
-    "id": "Pilih jumlah tiket undian ifew yang akan digunakan dan kirim entrimu sendiri. Verifikasi fan atau partisipasi LIVE tidak membuatmu otomatis ikut.",
-    "vi": "Chọn số vé quay thưởng ifew sẽ dùng và tự gửi lượt tham gia. Xác minh fan hoặc tham gia LIVE không giúp bạn tự động tham gia quay thưởng.",
-    "th": "เลือกจำนวนบัตรจับรางวัล ifew ที่จะใช้แล้วส่งรายการด้วยตนเอง การยืนยันแฟนคลับหรือเข้าร่วม LIVE ไม่ทำให้เข้าร่วมอัตโนมัติ",
-    "pt": "Escolha quantos tickets ifew usar e envie sua participação. A verificação de fã ou a participação no LIVE não inscreve você automaticamente.",
-    "fr": "Choisissez le nombre de tickets ifew à utiliser et envoyez votre participation. La vérification de fan ou la participation au LIVE ne vous inscrit pas automatiquement.",
-    ru: "Выберите, сколько лотерейных билетов ifew вы хотите использовать, и отправьте свою заявку. Подтверждение статуса фаната или участие LIVE не дает вам права на автоматическое участие."
+    "ja": "使用する応募券の枚数を選び、応募してください。ファン認証やLIVEへの参加だけでは自動的に応募されません。",
+    "zh-Hans": "选择要使用的抽奖券数量并提交。粉丝验证或参与LIVE不会自动参与抽选。",
+    "zh-Hant": "選擇要使用的抽獎票券數量並提交。粉絲驗證或參與LIVE不會自動參與抽選。",
+    "es": "Elige cuántos boletos usar y envía tu participación. La verificación de fan o la participación en el LIVE no te inscriben automáticamente.",
+    "id": "Pilih jumlah tiket undian yang akan digunakan dan kirim entrimu sendiri. Verifikasi fan atau partisipasi LIVE tidak membuatmu otomatis ikut.",
+    "vi": "Chọn số vé quay thưởng sẽ dùng và tự gửi lượt tham gia. Xác minh fan hoặc tham gia LIVE không giúp bạn tự động tham gia quay thưởng.",
+    "th": "เลือกจำนวนบัตรจับรางวัลที่จะใช้แล้วส่งรายการด้วยตนเอง การยืนยันแฟนคลับหรือเข้าร่วม LIVE ไม่ทำให้เข้าร่วมอัตโนมัติ",
+    "pt": "Escolha quantos bilhetes de sorteio usar e envie sua participação. A verificação de fã ou a participação no LIVE não inscreve você automaticamente.",
+    "fr": "Choisissez le nombre de tickets à utiliser et envoyez votre participation. La vérification de fan ou la participation au LIVE ne vous inscrit pas automatiquement.",
+    ru: "Выберите, сколько билетов розыгрыша использовать, и отправьте свою заявку. Подтверждение статуса фаната или участие в LIVE не дает права на автоматическое участие."
 
   },
   "m13ed96cd2401": {
-    "ja": "このクリエイターの抽選券を使って、この特典に応募できます。",
-    "zh-Hans": "使用该创作者的抽奖券参与此福利。",
-    "zh-Hant": "使用該創作者的抽獎券參與此福利。",
-    "es": "Usa los boletos de este creador para participar por este beneficio.",
-    "id": "Gunakan tiket undian kreator ini untuk mengikuti undian benefit ini.",
-    "vi": "Dùng vé quay thưởng của nhà sáng tạo này để tham gia nhận quyền lợi.",
-    "th": "ใช้บัตรจับรางวัลของครีเอเตอร์นี้เพื่อเข้าร่วมรับสิทธิประโยชน์",
-    "pt": "Use os tickets de sorteio deste criador para concorrer a este benefício.",
-    "fr": "Utilisez les tickets de tirage au sort de ce créateur pour tenter de remporter cet avantage.",
-    ru: "Используйте лотерейные билеты этого автора, чтобы принять участие в розыгрыше призов."
+    "ja": "応募券を使って、この特典に応募できます。",
+    "zh-Hans": "使用抽奖券参与此福利。",
+    "zh-Hant": "使用抽獎票券參與此福利。",
+    "es": "Usa tus boletos para participar por este beneficio.",
+    "id": "Gunakan tiket undian untuk mengikuti undian benefit ini.",
+    "vi": "Dùng vé quay thưởng để tham gia nhận quyền lợi.",
+    "th": "ใช้บัตรจับรางวัลเพื่อเข้าร่วมรับสิทธิประโยชน์",
+    "pt": "Use seus bilhetes de sorteio para concorrer a este benefício.",
+    "fr": "Utilisez vos tickets de tirage au sort pour tenter de remporter cet avantage.",
+    ru: "Используйте билеты розыгрыша, чтобы принять участие в розыгрыше призов."
 
   },
   "m095fcfb8e291": {

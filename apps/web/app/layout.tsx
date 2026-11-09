@@ -1,5 +1,5 @@
 import { rewardedExchangeDecision } from "@/features/group-wallet/rewarded-config";
-import { DEFAULT_SHARE_IMAGE, SITE_URL, NO_INDEX, isPrivatePath, isRehearsalPath, openGraphLocale } from "@/seo/metadata";
+import { defaultShareImage, SITE_URL, NO_INDEX, isPrivatePath, isRehearsalPath, openGraphLocale } from "@/seo/metadata";
 import type { Metadata, Viewport } from "next";
 import { headers } from "next/headers";
 import { Suspense } from "react";
@@ -59,8 +59,8 @@ export async function generateMetadata(): Promise<Metadata> {
     manifest: `/manifest.webmanifest?locale=${locale}`,
     icons: BYUS_BRAND_ICONS,
     appleWebApp: { capable: true, title: "kyaa", statusBarStyle: "default" },
-    openGraph: { locale: openGraphLocale(locale), siteName: "kyaa", type: "website", images: [{ url: DEFAULT_SHARE_IMAGE, width: 1200, height: 630, alt: "Kyaa. Every Fan Moment Counts." }] },
-    twitter: { card: "summary_large_image", images: [{ url: DEFAULT_SHARE_IMAGE, alt: "Kyaa. Every Fan Moment Counts." }] },
+    openGraph: { locale: openGraphLocale(locale), siteName: "kyaa", type: "website", images: [{ url: defaultShareImage(), width: 1200, height: 630, alt: "Kyaa. Every Fan Moment Counts." }] },
+    twitter: { card: "summary_large_image", images: [{ url: defaultShareImage(), alt: "Kyaa. Every Fan Moment Counts." }] },
   };
 }
 

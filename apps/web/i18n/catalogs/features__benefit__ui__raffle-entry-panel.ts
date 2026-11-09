@@ -392,16 +392,16 @@ export const messages = {
 
   },
   "m0dc40d19d2b2": {
-    "ja": "{0}のファン認証を完了すると、応募券を1枚受け取って応募できます。",
-    "zh-Hans": "完成 {0} 粉丝认证即可获得1张抽奖券并参与。",
-    "zh-Hant": "完成 {0} 粉絲認證即可獲得1張抽獎票券並參與。",
-    "es": "Verifica tu condición de fan de {0} para recibir 1 boleto y participar.",
-    "id": "Verifikasi status penggemar {0} untuk menerima 1 tiket dan mengikuti.",
-    "vi": "Xác minh bạn là người hâm mộ {0} để nhận 1 vé và tham gia.",
-    "th": "ยืนยันสถานะแฟน {0} เพื่อรับตั๋ว 1 ใบและเข้าร่วม",
-    "pt": "Verifique seu status de fã de {0} para receber 1 bilhete e participar.",
-    "fr": "Confirmez votre statut de fan de {0} pour recevoir 1 ticket et participer.",
-    ru: "Подтвердите свой статус участника {0} , чтобы получить 1 билет и принять участие."
+    "ja": "{0}のファン認証が必要です。認証すると応募券を1枚追加で受け取れます。",
+    "zh-Hans": "需要完成 {0} 粉丝认证。认证后可再获得1张抽奖券。",
+    "zh-Hant": "需要完成 {0} 粉絲認證。認證後可再獲得1張抽獎票券。",
+    "es": "Se necesita la verificación de fan de {0}. Al verificarte recibes 1 boleto más.",
+    "id": "Verifikasi penggemar {0} diperlukan. Setelah verifikasi, Anda mendapat 1 tiket tambahan.",
+    "vi": "Cần xác minh người hâm mộ {0}. Xác minh xong bạn nhận thêm 1 vé.",
+    "th": "ต้องยืนยันสถานะแฟน {0} เมื่อยืนยันแล้วจะได้รับตั๋วเพิ่ม 1 ใบ",
+    "pt": "É necessária a verificação de fã de {0}. Ao verificar, você recebe mais 1 bilhete.",
+    "fr": "La vérification de fan de {0} est requise. Elle vous donne 1 ticket de plus.",
+    ru: "Нужно подтвердить статус фаната {0}. После подтверждения вы получите ещё 1 билет."
 
   },
   "m4348c066a51a": {
@@ -425,8 +425,8 @@ export const messages = {
     "id": "Tiket tersedia: {0}",
     "vi": "Vé khả dụng: {0}",
     "th": "ตั๋วที่ใช้ได้: {0} ใบ",
-    "pt": "bilhetes disponíveis: {0}",
-    "fr": "tickets disponibles : {0}",
+    "pt": "Bilhetes disponíveis: {0}",
+    "fr": "Tickets disponibles : {0}",
     ru: "Билеты в наличии: {0}"
 
   },
@@ -649,19 +649,6 @@ export const messages = {
     "pt": "Limite: {0} bilhetes",
     "fr": "Limite : {0} tickets",
     ru: "Лимит: {0} билетов"
-
-  },
-  "m03c9d1eac3c2": {
-    "ja": "応募券のみ",
-    "zh-Hans": "仅限抽奖券",
-    "zh-Hant": "僅限抽獎票券",
-    "es": "Solo boletos",
-    "id": "Khusus tiket",
-    "vi": "Chỉ dùng vé",
-    "th": "ตั๋วเท่านั้น",
-    "pt": "somente bilhetes",
-    "fr": "tickets uniquement",
-    ru: "только билеты"
 
   },
   "m6703bf407a9c": {
@@ -976,15 +963,16 @@ export const messages = {
     ru: "Заявка принята"
   },
   "raffleTicketOf": {
-    "ja": "{0} 応募券",
-    "zh-Hans": "{0} 抽奖券",
-    "zh-Hant": "{0} 抽獎票券",
-    "es": "Boleto de {0}",
-    "id": "Tiket {0}",
-    "vi": "Vé {0}",
-    "th": "ตั๋ว {0}",
-    "pt": "Bilhete de {0}",
-    "fr": "Ticket {0}",
-    ru: "Билет {0}"
+    "ja": "応募券",
+    "zh-Hans": "抽奖券",
+    "zh-Hant": "抽獎票券",
+    "es": "Boleto",
+    "id": "Tiket",
+    "vi": "Vé",
+    "th": "ตั๋ว",
+    "pt": "Bilhete",
+    "fr": "Ticket",
+    ru: "Билет"
+
   }
 } satisfies Record<string, TranslatedMessage>;

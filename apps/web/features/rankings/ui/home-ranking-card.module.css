@@ -38,6 +38,8 @@ a.row { border-radius: var(--radius-control); }
 /* 오류: 열 줄 높이를 지켜 탭을 바꿔도 카드가 줄지 않는다. 빈 탭은 행 세 줄 높이(한 줄 + 행동 하나). */
 .state { display: grid; align-items: center; min-height: calc((var(--min-target) + var(--space-3)) * 10); }
 .state[data-empty] { min-height: calc((var(--min-target) + var(--space-3)) * 3); }
+/* 찐팬 탭을 그린 뒤의 빈 탭: 그 탭의 행 수와 바닥 줄 높이를 따른다. 행은 --rank-rows줄, 바닥 줄은 --rank-foot(0 또는 1). */
+.state[data-empty][data-match-fans] { min-height: calc((var(--min-target) + var(--space-3)) * var(--rank-rows) + (var(--min-target) + var(--space-2)) * var(--rank-foot)); }
 /* VISUAL-K ④: the empty line is body text (size and weight), not an 18px bold heading. */
 .state[data-empty] p { color: var(--color-ink); font-size: var(--fan-body-size); font-weight: 400; letter-spacing: normal; }
 /* 바닥 줄은 내 순위·로그인·읽는 중 모두 같은 높이. */

@@ -379,16 +379,16 @@ export const messages = {
 
   },
   "mbac879409dfb": {
-    "ja": "{0}の抽選券{1}枚",
-    "zh-Hans": "{0} {1} 张抽奖券",
-    "zh-Hant": "{0} {1} 張抽獎券",
-    "es": "{1} boletos de {0}",
-    "id": "{1} tiket {0}",
-    "vi": "{1} vé {0}",
-    "th": "สิทธิ์ {0} {1} สิทธิ์",
-    "pt": "{0} {1} bilhetes",
-    "fr": "{0} {1} tickets",
-    ru: "{0} {1} билеты"
+    "ja": "所持応募券{0}枚",
+    "zh-Hans": "我的抽奖券：{0} 张",
+    "zh-Hant": "我的抽獎票券：{0} 張",
+    "es": "Mis boletos: {0}",
+    "id": "Tiket saya: {0}",
+    "vi": "Vé của tôi: {0}",
+    "th": "ตั๋วของฉัน: {0} ใบ",
+    "pt": "Meus bilhetes: {0}",
+    "fr": "Mes tickets : {0}",
+    ru: "Мои билеты: {0}"
 
   },
   "mc4f406571c84": {

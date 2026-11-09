@@ -5,7 +5,7 @@ import { toContentLocale } from "@/i18n/locales";
 import { parseAppLocale } from "@/i18n/locales";
 import { creatorHomeHref, isCreatorHandle } from "@/features/creator/domain/creator-navigation";
 import { GROUP_COLLECTIONS_VISIBLE } from "@/features/groups/domain/collection-visibility";
-import { SITE_URL, publicMetadata } from "@/seo/metadata";
+import { publicMetadata, shareOrigin } from "@/seo/metadata";
 import { loadSeoCreator } from "@/server/seo/public-content";
 import { resolvePhoto } from "@/features/media/domain/public-image";
 import { resolveCreatorHeroImage } from "@/components/fan-ui/creator-image-config";
@@ -35,7 +35,7 @@ export async function generateMetadata({ params, searchParams }: { params: Promi
   // A shared 찐팬 100 gauge link (C7) previews the live gauge while the challenge is on; otherwise, or if the read fails, the usual photo.
   const challenge = query.share === JJINFAN_SHARE_VALUE ? await readSharedJjinfanChallenge(slug).catch(() => null) : null;
   return publicMetadata({ path: creatorHomeHref(slug), locale, title: challenge ? `${challenge.campaign.title} · ${celebrity.name} | kyaa` : `${celebrity.name} | kyaa`, description: challenge?.campaign.description || celebrity.summary,
-    image: challenge ? new URL(jjinfanShareImagePath(slug, challenge.count, parseAppLocale(query.locale)), SITE_URL).href : photo.src, imageAlt: challenge ? challenge.campaign.title : photo.alt ?? celebrity.image.alt,
+    image: challenge ? new URL(jjinfanShareImagePath(slug, challenge.count, parseAppLocale(query.locale)), shareOrigin()).href : photo.src, imageAlt: challenge ? challenge.campaign.title : photo.alt ?? celebrity.image.alt,
     locales: translated ? ["ko", "en"] : [toContentLocale(locale)] });
 }
 

@@ -421,7 +421,7 @@ describe("benefit screens", () => {
     ).toBeInTheDocument();
     expect(
       screen.getByText(
-        "5명을 추첨해 관람권을 2장씩, 총 10장 드려요. 이퓨 응모권은 추첨에 참여할 때 사용합니다.",
+        "5명을 추첨해 관람권을 2장씩, 총 10장 드려요. 응모권은 추첨에 참여할 때 사용합니다.",
       ),
     ).toBeInTheDocument();
     expect(screen.getByText("현재 보유한 응모권이 없어요.")).toBeInTheDocument();

@@ -1160,7 +1160,7 @@ function BenefitDetailOwnerScreen({
   const isElinaRaffle = benefit.entry?.campaignId === elinaBanksyCampaignId;
   const detailTitle = isIfewRaffle ? ifewPrizeName[locale] : benefit.title;
   const detailSummary = isIfewRaffle
-    ? locale === "ko" ? "5명을 추첨해 관람권을 2장씩, 총 10장 드려요. 이퓨 응모권은 추첨에 참여할 때 사용합니다." : translate(locale, localizedMessages.m6a69019aed6d, "Five winners receive two admission tickets each, for 10 tickets in total. Ifew raffle tickets are used to enter the draw.")
+    ? locale === "ko" ? "5명을 추첨해 관람권을 2장씩, 총 10장 드려요. 응모권은 추첨에 참여할 때 사용합니다." : translate(locale, localizedMessages.m6a69019aed6d, "Five winners receive two admission tickets each, for 10 tickets in total. Raffle tickets are used to enter the draw.")
     : benefit.summary;
   const deliveredClaim = claim ?? ownedApplication?.claim ?? null;
   const unavailableCopy =
@@ -1281,8 +1281,8 @@ function BenefitDetailOwnerScreen({
               <h2 className={styles.entryHeading}><FanMotionIcon name="ticket" size={24} />{c.enter}</h2>
               <p>
                 {isIfewRaffle
-                  ? locale === "ko" ? "사용할 이퓨 응모권 수량을 선택하고 직접 응모해 주세요. 팬 인증이나 LIVE 참여만으로 자동 응모되지는 않아요." : translate(locale, localizedMessages.m2b5088f52e34, "Choose how many ifew raffle tickets to use and submit your entry. Fan verification or LIVE participation does not enter you automatically.")
-                  : locale === "ko" ? "이 크리에이터의 응모권을 사용해 혜택에 응모할 수 있어요." : translate(locale, localizedMessages.m13ed96cd2401, "Use this creator’s raffle tickets to enter for this benefit.")}
+                  ? locale === "ko" ? "사용할 응모권 수량을 선택하고 직접 응모해 주세요. 팬 인증이나 LIVE 참여만으로 자동 응모되지는 않아요." : translate(locale, localizedMessages.m2b5088f52e34, "Choose how many raffle tickets to use and submit your entry. Fan verification or LIVE participation does not enter you automatically.")
+                  : locale === "ko" ? "응모권을 사용해 혜택에 응모할 수 있어요." : translate(locale, localizedMessages.m13ed96cd2401, "Use your raffle tickets to enter for this benefit.")}
               </p>
               <dl className={`${styles.period} ${styles.entryStats}`}>
                 <div>

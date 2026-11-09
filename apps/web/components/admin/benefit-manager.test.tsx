@@ -57,3 +57,21 @@ it.each(["ko", "en"] as const)("identifies LIVE campaigns by creator in the list
  await waitFor(() => expect(confirm).toHaveBeenCalledWith(expect.stringContaining(`LIVE · ${names[1][locale]} · ${campaigns[1].liveEventId}`)));
  expect(request.mock.calls.some(([, init]) => init?.method === "POST")).toBe(false);
 });
+it("lets a benefit with no required stamp or activity be saved: only selects whose empty choice is a real answer drop `required`", async () => {
+ request.mockImplementation(async () => Response.json(data));
+ const { container } = render(<AuthorizedBenefitManager/>);
+ const stamp = await screen.findByLabelText("Required stamp") as HTMLSelectElement;
+ const activity = screen.getByLabelText("Required activity") as HTMLSelectElement;
+ for (const select of [stamp, activity]) {
+  expect([...select.options].some(option => option.value === "")).toBe(true);
+  expect(select.value).toBe("");
+  expect(select.required).toBe(false);
+  expect(select.validity.valueMissing).toBe(false);
+ }
+ // The rest of the form still requires an answer.
+ for (const label of ["Celebrity", "Allocation", "Delivery", "Minimum level"]) expect((screen.getByLabelText(label) as HTMLSelectElement).required).toBe(true);
+ // Rule: a select whose "" is a placeholder to be replaced keeps `required`; a "None" answer does not.
+ const noneSelects = [...container.querySelectorAll("select")].filter(select => [...select.options].some(option => option.value === "" && option.textContent === "None"));
+ expect(noneSelects).toHaveLength(2);
+ expect(noneSelects.every(select => !select.required)).toBe(true);
+});

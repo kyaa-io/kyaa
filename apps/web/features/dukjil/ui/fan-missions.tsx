@@ -78,14 +78,14 @@ export function FanMissions({ locale, slug, title, passportHref, proofHref, foot
   const view = missions
     .filter(mission => group ? true : on ? Boolean(state?.catalog?.rules[mission.key]) : state?.status === "off" ? LEGACY_KEYS.includes(mission.key) : true)
     .map(mission => {
-      if (group) return { mission, points: mission.key === "checkin" ? checkin.points : undefined, count: undefined, limit: null, remaining: null, done: false };
-      if (mission.key === "checkin") return { mission, points: checkin.points, count: checkinKnown ? Number(checkedIn) : undefined, limit: 1 as number | null, remaining: null as number | null, done: checkedIn };
+      if (group) return { mission, points: mission.key === "checkin" ? checkin.points : undefined, count: undefined, limit: null, remaining: null, done: false, period: "day" as const };
+      if (mission.key === "checkin") return { mission, points: checkin.points, count: checkinKnown ? Number(checkedIn) : undefined, limit: 1 as number | null, remaining: null as number | null, done: checkedIn, period: "day" as const };
       return { mission, ...missionProgress(state?.catalog, state?.today, mission.key) };
     })
     .sort((a, b) => Number(a.done) - Number(b.done));
   const rowList = (list: typeof view, compact: boolean) => (
     <FanMissionList className={styles.cards}>
-      {list.map(({ mission, points, count, limit, remaining, done }) => {
+      {list.map(({ mission, points, count, limit, remaining, done, period }) => {
         const finished = !guest && done;
         const progress = !guest && !group && (pending || count === undefined ? (on || pending) && !state?.todayFailure && <span className={styles.progress} aria-hidden="true"><FanSkeleton width="100%" height={6} /></span>
           : limit !== null && (compact
@@ -107,7 +107,7 @@ export function FanMissions({ locale, slug, title, passportHref, proofHref, foot
           detail={progress || undefined}
           trailing={finished ? <FanTag tone="fan" icon={<Check size={12} aria-hidden="true" />}>{dukjilText(locale, "missionDoneShort")}</FanTag>
             : checkinAction ? <span className={styles.rowAction} aria-hidden="true">{t("missionsCheckinAction")}</span>
-            : on && points ? <EarnBadge variant="inline" className={styles.reward} locale={locale} points={points} remaining={guest ? null : remaining} /> : undefined} />;
+            : on && points ? <EarnBadge variant="inline" className={styles.reward} locale={locale} points={points} remaining={guest ? null : remaining} remainingPer={period} /> : undefined} />;
       })}
     </FanMissionList>
   );

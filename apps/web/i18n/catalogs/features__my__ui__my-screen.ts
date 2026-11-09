@@ -80,16 +80,16 @@ export const messages = {
 
   },
   "m6c62da6f7772": {
-    "ja": "クリエイターごとのFan Passportと応募券残高を確認できます。",
-    "zh-Hans": "查看每位创作者的 Fan Passport 和抽奖券余额。",
-    "zh-Hant": "查看每位創作者的 Fan Passport 和抽獎票券餘額。",
-    "es": "Consulta el Fan Passport de cada creador y su saldo de boletos de sorteo.",
-    "id": "Periksa Fan Passport tiap kreator dan saldo tiket undiannya.",
-    "vi": "Xem Fan Passport của từng nhà sáng tạo và số dư vé rút thăm.",
-    "th": "ตรวจสอบ Fan Passport แต่ละใบและยอดตั๋วจับรางวัล",
-    "pt": "Confira cada Fan Passport e seu saldo de bilhetes de sorteio.",
-    "fr": "Consultez chaque Fan Passport et son solde de tickets de tirage.",
-    ru: "Проверьте каждый билет Fan Passport и баланс соответствующего лотерейного билета."
+    "ja": "クリエイターごとのFan Passportと、共通の応募券を確認できます。",
+    "zh-Hans": "查看每位创作者的 Fan Passport 和通用的抽奖券。",
+    "zh-Hant": "查看每位創作者的 Fan Passport 和通用的抽獎票券。",
+    "es": "Consulta el Fan Passport de cada creador y tus boletos de sorteo, que son los mismos para todos.",
+    "id": "Periksa Fan Passport tiap kreator dan tiket undianmu, yang berlaku untuk semua kreator.",
+    "vi": "Xem Fan Passport của từng nhà sáng tạo và vé rút thăm dùng chung cho tất cả.",
+    "th": "ตรวจสอบ Fan Passport แต่ละใบและตั๋วจับรางวัลที่ใช้ร่วมกันทุกครีเอเตอร์",
+    "pt": "Confira cada Fan Passport e seus bilhetes de sorteio, que valem para todos os criadores.",
+    "fr": "Consultez chaque Fan Passport et vos tickets de tirage, valables pour tous les créateurs.",
+    ru: "Проверьте Fan Passport каждого автора и свои билеты розыгрыша: они общие для всех авторов."
 
   },
   "mee9c567663d7": {
@@ -496,16 +496,16 @@ export const messages = {
 
   },
   "m7c96f7637dc5": {
-    "ja": "応募券{0}枚",
-    "zh-Hans": "{0} 张抽奖券",
-    "zh-Hant": "{0} 張抽獎票券",
-    "es": "{0} boletos de sorteo",
-    "id": "{0} tiket undian",
-    "vi": "{0} vé rút thăm",
-    "th": "ตั๋วจับรางวัล {0} ใบ",
-    "pt": "{0} bilhetes de sorteio",
-    "fr": "{0} tickets de tirage",
-    ru: "лотерейные билеты {0}"
+    "ja": "応募券",
+    "zh-Hans": "抽奖券",
+    "zh-Hant": "抽獎票券",
+    "es": "Boletos de sorteo",
+    "id": "Tiket undian",
+    "vi": "Vé rút thăm",
+    "th": "ตั๋วจับรางวัล",
+    "pt": "Bilhetes de sorteio",
+    "fr": "Tickets de tirage",
+    ru: "Билеты розыгрыша"
 
   },
   "mf0c1202ac4b6": {

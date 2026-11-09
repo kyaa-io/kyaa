@@ -91,9 +91,25 @@ function Loading() {
 function Failed({ locale, retry }: { locale: AppLocale; retry: () => void }) {
   return <div className={styles.state}><FanState inline compact kind="error" title={rankingsText(locale, "rkError")} actions={<FanAction variant="text" size="sm" onClick={retry}>{rankingsText(locale, "rkRetry")}</FanAction>} /></div>;
 }
-/** 빈 탭: 행 세 줄 높이 가운데에 한 줄과 행동 하나(팬페이지 목록). 하트는 팬페이지에서 보낸다. 탭을 바꿔도 카드가 크게 늘지 않는다. */
-function Empty({ title, locale }: { title: string; locale: AppLocale }) {
-  return <div className={styles.state} data-empty=""><FanState inline kind="empty" title={title} actions={<FanAction variant="neutral" size="sm" href={`/celebrities?locale=${locale}`}>{rankingsText(locale, "rkBrowseFanPages")}</FanAction>} /></div>;
+/** The shape of the 찐팬 tab as last drawn (rows shown, and whether it has a bottom line). An empty tab takes that height, so switching tabs does not move the card.
+ * The home draws this card twice, so the shape is shared like the tab choice. Unknown until the 찐팬 tab has drawn: then three rows. */
+type PanelShape = { rows: number; foot: boolean } | null;
+let fansShape: PanelShape = null;
+const shapeListeners = new Set<() => void>();
+const subscribeShape = (listener: () => void) => { shapeListeners.add(listener); return () => { shapeListeners.delete(listener); }; };
+const readShape = () => fansShape;
+function publishShape(next: { rows: number; foot: boolean }) {
+  if (fansShape && fansShape.rows === next.rows && fansShape.foot === next.foot) return;
+  fansShape = next; for (const listener of shapeListeners) listener();
+}
+/** Tests only. */
+export function resetHomeRankingShape() { fansShape = null; }
+
+/** 빈 탭: 한 줄과 행동 하나(팬페이지 목록). 하트는 팬페이지에서 보낸다. 높이는 찐팬 탭에 맞추고, 아직 모르면 행 세 줄이다. */
+function Empty({ title, locale, matchFans = false }: { title: string; locale: AppLocale; matchFans?: boolean }) {
+  const shape = useSyncExternalStore(subscribeShape, readShape, () => null);
+  const style = matchFans && shape ? { "--rank-rows": Math.max(2, shape.rows), "--rank-foot": shape.foot ? 1 : 0 } as React.CSSProperties : undefined;
+  return <div className={styles.state} data-empty="" data-match-fans={style ? "" : undefined} style={style}><FanState inline kind="empty" title={title} actions={<FanAction variant="neutral" size="sm" href={`/celebrities?locale=${locale}`}>{rankingsText(locale, "rkBrowseFanPages")}</FanAction>} /></div>;
 }
 
 const heartIcon = (size: number) => <img src="/images/economy/heart.svg" alt="" width={size} height={size} />;
@@ -144,6 +160,9 @@ function FanPanel({ locale, ranking, guestEnd }: { locale: AppLocale; ranking: H
   const shown = ranking.rows.slice(0, expanded ? ranking.rows.length : ROWS);
   const keys = shown.map((row, i) => fanKey(row, i, shown));
   const place = useRowMotion(keys);
+  const hasFoot = ranking.rows.length > ROWS || (ranking.me !== null && ranking.me !== undefined && ranking.me.rank > shown.length) || Boolean(guestEnd);
+  const shownRows = Math.min(shown.length, ROWS);
+  useEffect(() => { if (shownRows > 0 && !expanded) publishShape({ rows: shownRows, foot: hasFoot }); }, [shownRows, hasFoot, expanded]);
   if (ranking.rows.length === 0) return <Empty title={rankingsText(locale, "rkEmptyFans")} locale={locale} />;
   const me = ranking.me && ranking.me.rank > shown.length ? ranking.me : null;
   const end = me ? <p className={styles.me} role="status"><span>{rankingsText(locale, "rkMyRank")}</span><strong>{rankingsText(locale, "rkRank", [me.rank.toLocaleString(locale)])}</strong><span className={styles.meHearts} aria-label={rankingsText(locale, "rkHearts", [me.score.toLocaleString(locale)])}>{heartIcon(14)}<span aria-hidden="true">{me.score.toLocaleString(locale)}</span></span></p> : guestEnd;
@@ -173,7 +192,7 @@ function CreatorPanel({ locale, ranking }: { locale: AppLocale; ranking: HomeCre
   const [expanded, setExpanded] = useState(false);
   const shown = ranking.rows.slice(0, expanded ? ranking.rows.length : ROWS);
   const place = useRowMotion(shown.map((row) => row.slug));
-  if (ranking.rows.length === 0) return <Empty title={rankingsText(locale, "rkEmpty")} locale={locale} />;
+  if (ranking.rows.length === 0) return <Empty title={rankingsText(locale, "rkEmpty")} locale={locale} matchFans />;
   const template = rankingsText(locale, "rkJjinfanCount", ["\u0000"]);
   return <>
     <Rows>{shown.map((row) => <li key={row.slug} ref={place(row.slug)} id={`home-rank-creators-${row.rank}`}>

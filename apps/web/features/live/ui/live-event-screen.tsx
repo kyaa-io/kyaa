@@ -382,14 +382,14 @@ const ifewLiveCopy = {
       invalid:
         "출석 코드가 올바르지 않아요. LIVE 방송에서 알려준 코드를 다시 확인해 주세요.",
       successHelper:
-        "LIVE 출석이 기록되고 이퓨 응모권 2장을 받았어요.",
+        "LIVE 출석이 기록되고 응모권 2장을 받았어요.",
     },
     steps: ["팬 인증", "LIVE 예약", "LIVE 출석", "선물 응모"],
     stepHelpers: [
       "이퓨 패스포트를 발급받아요",
       "일정을 미리 저장해요. 예약은 선택이에요",
       "방송에서 공개된 출석 코드를 kyaa에 입력해요",
-      "이퓨 응모권으로 뱅크시 관람권 추첨에 응모해요",
+      "응모권으로 뱅크시 관람권 추첨에 응모해요",
     ],
     prizeAction: "뱅크시 관람권 추첨 응모하기",
     prizeHelper: `${ifewPrizeName.ko} 추첨 페이지로 이동해요.`,
@@ -405,14 +405,14 @@ const ifewLiveCopy = {
       invalid:
         "That attendance code isn’t valid. Check the code shared during the LIVE.",
       successHelper:
-        "Your LIVE attendance is recorded, and you received 2 ifew raffle tickets.",
+        "Your LIVE attendance is recorded, and you received 2 raffle tickets.",
     },
     steps: ["Fan verification", "Reserve", "LIVE attendance", "Enter the prize draw"],
     stepHelpers: [
       "Get your ifew Fan Passport",
       "Save the schedule. Reservation is optional",
       "Enter the broadcast’s attendance code on kyaa",
-      "Use your ifew raffle tickets to enter the Banksy ticket draw",
+      "Use your raffle tickets to enter the Banksy ticket draw",
     ],
     prizeAction: "Enter the Banksy ticket draw",
     prizeHelper: `Go to the draw for ${ifewPrizeName.en}.`,
@@ -1780,7 +1780,7 @@ export function LiveEventScreen({
               {isIfewLive ? (
                 <>
                   <p className={styles.prizeName}>{ifewPrizeName[locale]}</p>
-                  <p>{locale === "ko" ? "이퓨 응모권으로 추첨에 응모해 보세요. LIVE 예약이나 시청만으로 자동 응모되지는 않아요." : translate(locale, localizedMessages.mc834e986d105, "Use your ifew raffle tickets to enter the draw. Reserving or watching the LIVE does not enter you automatically.")}</p>
+                  <p>{locale === "ko" ? "응모권으로 추첨에 응모해 보세요. LIVE 예약이나 시청만으로 자동 응모되지는 않아요." : translate(locale, localizedMessages.mc834e986d105, "Use your raffle tickets to enter the draw. Reserving or watching the LIVE does not enter you automatically.")}</p>
                   {attendance.kind !== "success" ? <FanAction
                     href={ifewRafflesHref(locale)} variant="neutral" className={styles.benefitAction} trailingIcon={<ArrowRight />}
                   >{eventCopy?.prizeAction}</FanAction> : null}

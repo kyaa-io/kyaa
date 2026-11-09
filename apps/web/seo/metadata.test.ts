@@ -1,12 +1,47 @@
 import { APP_LOCALES } from "@/i18n/locales";
 import { communityCopy } from "@/i18n/catalogs/features__community";
-import { describe, expect, it } from "vitest";
-import { canonicalUrl, DEFAULT_SHARE_IMAGE, isPrivatePath, openGraphLocale, pageCopy, publicMetadata, shareImageUrl } from "./metadata";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { canonicalUrl, DEFAULT_SHARE_IMAGE, defaultShareImage, isPrivatePath, openGraphLocale, pageCopy, publicMetadata, shareImageUrl, shareOrigin } from "./metadata";
 import { buildSitemap } from "./sitemap";
 import robots from "@/app/robots";
 import { htmlLimitedBots } from "./bots";
 
 describe("public search and sharing metadata", () => {
+  describe("share picture origin per environment", () => {
+    afterEach(() => vi.unstubAllEnvs());
+    it.each([
+      ["https://kyaa.io", "https://kyaa.io"],
+      ["https://www.kyaa.io", "https://kyaa.io"],
+      ["", "https://kyaa.io"],
+      ["not a url", "https://kyaa.io"],
+      ["https://dev.kyaa.io", "https://dev.kyaa.io"],
+      ["https://staging.kyaa.io", "https://staging.kyaa.io"],
+      ["http://localhost:3000", "http://localhost:3000"],
+      ["http://dev.kyaa.io", "https://kyaa.io"],
+      ["https://evil.test", "https://kyaa.io"],
+      ["https://dev.kyaa.io.evil.test", "https://kyaa.io"],
+      ["https://user:pw@dev.kyaa.io", "https://kyaa.io"],
+    ])("reads %s as %s", (appUrl, expected) => {
+      expect(shareOrigin({ NEXT_PUBLIC_APP_URL: appUrl })).toBe(expected);
+    });
+    it("leaves production's og:image, twitter image and default picture exactly as they were", () => {
+      vi.stubEnv("NEXT_PUBLIC_APP_URL", "https://kyaa.io");
+      expect(defaultShareImage()).toBe(DEFAULT_SHARE_IMAGE);
+      const meta = publicMetadata({ path: "/live/ifew", locale: "en", title: "t", description: "d" });
+      expect(meta.openGraph).toMatchObject({ images: [{ url: "https://kyaa.io/share/default.png", width: 1200, height: 630 }] });
+      expect(shareImageUrl("https://kyaa.io/share/jjinfan/elina.png")).toBe("https://kyaa.io/share/jjinfan/elina.png");
+      expect(shareImageUrl("/public-assets/cms-assets/a.png")).toBe(`https://kyaa.io/_next/image?${new URLSearchParams({ url: "/public-assets/cms-assets/a.png", w: "1200", q: "75" })}`);
+      expect(new URL(shareImageUrl("https://kyaa.io/public-assets/a.png")).origin).toBe("https://kyaa.io");
+    });
+    it("points dev's og:image and twitter image at dev, while the canonical URL stays on the site", () => {
+      vi.stubEnv("NEXT_PUBLIC_APP_URL", "https://dev.kyaa.io");
+      const meta = publicMetadata({ path: "/elina", locale: "ko", title: "t", description: "d", image: new URL("/share/jjinfan/elina?locale=ko", shareOrigin()).href });
+      expect(meta.openGraph).toMatchObject({ url: "https://kyaa.io/elina?locale=ko", images: [{ url: "https://dev.kyaa.io/share/jjinfan/elina?locale=ko" }] });
+      expect(meta.twitter).toMatchObject({ images: [{ url: "https://dev.kyaa.io/share/jjinfan/elina?locale=ko" }] });
+      expect(publicMetadata({ path: "/live/ifew", locale: "en", title: "t", description: "d" }).openGraph).toMatchObject({ images: [{ url: "https://dev.kyaa.io/share/default.png", width: 1200, height: 630 }] });
+      expect(shareImageUrl("https://dev.kyaa.io/public-assets/cms-assets/a.png")).toContain("https://dev.kyaa.io/_next/image?");
+    });
+  });
   it.each(["facebookexternalhit/1.1", "Twitterbot", "kakaotalk-scrap/1.0", "TelegramBot", "Yeti", "OAI-SearchBot", "Daumoa/4.0", "Googlebot", "Bingbot", "PerplexityBot", "Claude-SearchBot"])("sends metadata in the head to %s", (agent) => {
     expect(htmlLimitedBots.test(agent)).toBe(true);
   });

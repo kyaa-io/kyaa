@@ -2,7 +2,7 @@ import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-libra
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { APP_LOCALES } from '@/i18n/locales';
 import { ProfileConnectionPanel } from './profile-connection';
-import { profileConnectionCopy } from './profile-copy';
+import { profileConnectionCopy,profileUnreachableCopy } from './profile-copy';
 import { parseSocialProfileLink, parseSocialLinkedProfile, socialFriendToken } from './profile-link';
 import { waveFriendsCopy } from '@/i18n/catalogs/features__fanpage__wave-friends';
 const mock=vi.hoisted(()=>({resource:vi.fn(),request:vi.fn(),retry:vi.fn(),canvas:vi.fn(),scan:undefined as undefined|((token:string)=>void)}));
@@ -43,6 +43,19 @@ describe('Pencil profile connection',()=>{
  it('accepts an incoming request with its existing friendship ID',async()=>{mock.resource.mockReturnValue({data:{...peer,relationship:{friendshipId:person,status:'incoming'},capabilities:{canRequestFriend:false}}});render(<ProfileConnectionPanel locale='ko' identity='나' initialToken={token} onClose={()=>{}}/>);fireEvent.click(await screen.findByRole('button',{name:copy.accept}));await screen.findByText(copy.alreadyFriends);expect(mock.request).toHaveBeenCalledWith(`/api/me/social/friends/${person}`,expect.objectContaining({method:'PATCH'}));expect(JSON.parse(mock.request.mock.calls[0][1].body)).toMatchObject({action:'accept'});});
  it('shows invalid or expired linked-profile errors without a request button',async()=>{
   mock.resource.mockReturnValue({error:true});render(<ProfileConnectionPanel locale='ko' identity='나' initialToken={token} onClose={()=>{}}/>);expect(await screen.findByRole('alert')).toHaveTextContent(copy.invalidQr);expect(screen.queryByRole('button',{name:copy.requestFriend})).toBeNull();fireEvent.click(screen.getByRole('button',{name:copy.retry}));expect(mock.retry).toHaveBeenCalledOnce();
+ });
+ it.each(APP_LOCALES)('names the real reason when the link resolves to nothing (404), not a new-QR retry, in %s',async locale=>{
+  mock.resource.mockReturnValue({error:true,failure:{status:404,code:'SOCIAL_NOT_FOUND'}});render(<ProfileConnectionPanel locale={locale} identity='나' initialToken={token} onClose={()=>{}}/>);
+  const alert=await screen.findByRole('alert');expect(alert).toHaveTextContent(profileUnreachableCopy(locale));expect(alert).not.toHaveTextContent(waveFriendsCopy(locale).invalidQr);expect(screen.queryByRole('button',{name:waveFriendsCopy(locale).retry})).toBeNull();expect(profileUnreachableCopy(locale).length).toBeGreaterThan(10);
+ });
+ it('hides the "friend once they accept" note while the profile cannot be opened, and shows it for a real profile',async()=>{
+  mock.resource.mockReturnValue({error:true,failure:{status:404,code:'SOCIAL_NOT_FOUND'}});const view=render(<ProfileConnectionPanel locale='ko' identity='나' initialToken={token} onClose={()=>{}}/>);
+  expect(await screen.findByRole('alert')).toHaveTextContent(profileUnreachableCopy('ko'));expect(screen.queryByText(profileConnectionCopy('ko').acceptance)).toBeNull();expect(screen.getByRole('button',{name:profileConnectionCopy('ko').again})).toBeInTheDocument();
+  view.unmount();mock.resource.mockReturnValue({data:peer});render(<ProfileConnectionPanel locale='ko' identity='나' initialToken={token} onClose={()=>{}}/>);
+  await screen.findByText('하늘');expect(screen.getByText(profileConnectionCopy('ko').acceptance)).toBeInTheDocument();
+ });
+ it('keeps the retry for failures that are not a missing link',async()=>{
+  mock.resource.mockReturnValue({error:true,failure:{status:500,code:'INTERNAL'}});render(<ProfileConnectionPanel locale='ko' identity='나' initialToken={token} onClose={()=>{}}/>);expect(await screen.findByRole('alert')).toHaveTextContent(copy.invalidQr);fireEvent.click(screen.getByRole('button',{name:copy.retry}));expect(mock.retry).toHaveBeenCalledOnce();
  });
  it('does not render or copy an already expired QR',async()=>{
   mock.resource.mockReturnValue({data:{token,expiresAt:new Date(Date.now()-1000).toISOString()}});render(<ProfileConnectionPanel locale='ko' identity='나' onClose={()=>{}}/>);expect(await screen.findByRole('alert')).toHaveTextContent(copy.invalidQr);expect(screen.getByRole('button',{name:'내 프로필 링크 복사'})).toBeDisabled();expect(screen.queryByRole('img')).toBeNull();

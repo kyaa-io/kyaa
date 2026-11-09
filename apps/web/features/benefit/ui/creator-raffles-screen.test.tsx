@@ -362,7 +362,7 @@ describe("creator raffle catalog and entry integration", () => {
     );
 
     await waitFor(() => expect(screen.getByLabelText("사용할 응모권")).toHaveValue(1));
-    expect(await screen.findByText("Creator 응모권 2장 보유")).toBeInTheDocument();
+    expect(await screen.findByText("응모권 2장 보유")).toBeInTheDocument();
     expect(screen.queryByText("확인할 요청:", { exact: false })).not.toBeInTheDocument();
   });
 
