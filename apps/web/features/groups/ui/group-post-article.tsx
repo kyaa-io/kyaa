@@ -23,7 +23,7 @@ import { managementCopy } from "./management-copy";
 import type { GroupPostAssetRef } from "./group-post-body";
 import styles from "./groups.module.css";
 
-export type GroupPostView = { id: string; title: string; body: string; bodyDoc?: unknown; bodyDocUnavailable?: boolean; nickname: string; avatarUrl: string | null; artist?: boolean; createdAt: string; visibility: string; category?: "notice" | "free"; viewCount?: number; likeCount?: number; commentCount?: number; liked?: boolean; disliked?: boolean; dislikeCount?: number | null; canEdit?: boolean; canDelete?: boolean; assets?: GroupPostAssetRef[] };
+export type GroupPostView = { id: string; title: string; body: string; bodyDoc?: unknown; bodyDocUnavailable?: boolean; nickname: string; avatarUrl: string | null; artist?: boolean; createdAt: string; editedAt?: string | null; visibility: string; category?: "notice" | "free"; viewCount?: number; likeCount?: number; commentCount?: number; liked?: boolean; disliked?: boolean; dislikeCount?: number | null; canEdit?: boolean; canDelete?: boolean; assets?: GroupPostAssetRef[] };
 
 export function GroupPostArticle({ pageId, post, locale, member, authenticated, busy, onReact, onEdit, onDelete, onReport, onRefresh, onJoin, joinPending, joinLabel }: { onRefresh?: () => void; pageId: string; post: GroupPostView; locale: AppLocale; member: boolean; authenticated: boolean; busy: boolean; onReact: (choice: PostReactionChoice, current: PostReactionState["reaction"]) => Promise<boolean> | void; onEdit: () => void; onDelete: () => void; onReport: () => void; onJoin?: () => void; joinPending?: boolean; joinLabel?: string }) {
   const b = boardCopy(locale), m = managementCopy(locale), t = groupsCopy(locale), [editBlocked, setEditBlocked] = useState(false);
@@ -61,7 +61,7 @@ export function GroupPostArticle({ pageId, post, locale, member, authenticated, 
     </Menu.Popup></Menu.Positioner></Menu.Portal>
   </Menu.Root> : undefined;
   return <article className={`${styles.boardDetail} ${detailStyles.readColumn}`}>
-    <PostDetailHeader as="h2" tag={post.category === "notice" ? <FanTag tone="notice">{fanUiText(locale, "noticeTag")}</FanTag> : undefined} title={post.title} author={post.nickname} avatarUrl={post.avatarUrl} authorBadge={post.artist ? <GroupArtistMark locale={locale} /> : undefined} createdAt={post.createdAt} viewCount={post.viewCount} likeCount={likes} commentCount={post.commentCount ?? 0} locale={locale} menu={menu} />
+    <PostDetailHeader as="h2" tag={post.category === "notice" ? <FanTag tone="notice">{fanUiText(locale, "noticeTag")}</FanTag> : undefined} title={post.title} author={post.nickname} avatarUrl={post.avatarUrl} authorBadge={post.artist ? <GroupArtistMark locale={locale} /> : undefined} createdAt={post.createdAt} edited={Boolean(post.editedAt)} viewCount={post.viewCount} likeCount={likes} commentCount={post.commentCount ?? 0} locale={locale} menu={menu} />
     <div style={{ paddingTop: 16 }} data-post-body="">
       {document ? <RichBody document={document} locale={locale} renderAttachment={renderAttachment} /> : <p className={styles.boardDetailBody} style={{ padding: 0 }}>{post.body}</p>}
     </div>
