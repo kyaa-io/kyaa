@@ -159,7 +159,7 @@ section.pWallet{position:relative;box-sizing:border-box;border:1px solid var(--c
 .guestHistoryCard{box-sizing:border-box;min-width:0;padding:var(--space-3) var(--space-4);border:1px solid var(--color-line);border-radius:var(--radius-control);background:var(--color-surface)}
 @media(min-width:768px){.guestHistoryCard{padding-inline:var(--space-5)}}
 @media(min-width:1024px){
- .page{display:grid;grid-template-columns:minmax(0,640px) 352px;justify-content:center;grid-template-areas:"alert alert" "top top" "main side";column-gap:var(--space-8);row-gap:var(--space-8);align-items:start}
+ .page{display:grid;grid-template-columns:minmax(0,1fr) 352px;grid-template-areas:"alert alert" "top top" "main side";column-gap:var(--space-8);row-gap:var(--space-8);align-items:start}
  .page:not(:has(> .alertList)){grid-template-areas:"top top" "main side"}
  .alertList{grid-area:alert}
  .top{grid-area:top}
