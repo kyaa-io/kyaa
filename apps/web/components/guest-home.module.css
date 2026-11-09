@@ -94,7 +94,7 @@
 .carouselControls .carouselDot { position: relative; display: grid; width: 44px; min-width: 44px; height: 44px; flex: 0 0 44px; padding: 0; place-items: center; border: 0; background: transparent; cursor: pointer; }
 /* 현재 점은 22px 막대: 폭 전이 대신 위에 겹친 막대의 transform·opacity만 움직인다(합성 단계, 배치 변화 0). 버튼이 44px라 이웃 점은 움직이지 않는다. */
 .carouselDot span { position: relative; width: 6px; height: 6px; border-radius: 999rem; background: var(--line); transition: background-color 160ms cubic-bezier(.2,0,0,1); }
-.carouselDot span::after { position: absolute; top: 0; left: -8px; width: 22px; height: 6px; border-radius: 999rem; background: var(--ink); content: ""; opacity: 0; transform: scaleX(.28); transition: transform 160ms cubic-bezier(.2,0,0,1), opacity 160ms cubic-bezier(.2,0,0,1); }
+.carouselDot span::after { position: absolute; top: 0; left: -8px; width: 22px; height: 6px; border-radius: var(--radius-pill); background: var(--ink); content: ""; opacity: 0; transform: scaleX(.28); transition: transform 160ms cubic-bezier(.2,0,0,1), opacity 160ms cubic-bezier(.2,0,0,1); }
 .carouselDot[aria-current="true"] span { background: var(--ink); }
 .carouselDot[aria-current="true"] span::after { opacity: 1; transform: scaleX(1); }
 @media (prefers-reduced-motion: reduce) { .carouselDot span, .carouselDot span::after { transition: none; } }
