@@ -295,18 +295,6 @@
     "기록",
     "Recap"
   ],
-  "factDate": [
-    "날짜",
-    "Date"
-  ],
-  "factPlace": [
-    "장소",
-    "Venue"
-  ],
-  "factGuests": [
-    "참여 인원",
-    "Attendance"
-  ],
   "factHost": [
     "주최",
     "Host"
@@ -319,17 +307,13 @@
     "스폰서",
     "Sponsors"
   ],
-  "unverified": [
-    "사용자 확인 필요",
-    "Needs confirmation"
-  ],
   "people": [
     "참여",
     "With"
   ],
   "liveWho": [
     "김보석",
-    "김보석"
+    "Kim Bo-seok"
   ],
   "insightCopy": [
     "참석자들이 ‘나영석 PD님께 묻다’ 보드에 익명 포스트잇으로 질문을 남겼습니다.",
@@ -340,16 +324,16 @@
     "PD Na Young-seok"
   ],
   "altLive1": [
-    "KYAA WAVE LIVE가 진행된 연회장 전경",
-    "The banquet hall during KYAA WAVE LIVE"
+    "화면 앞에서 마이크를 들고 발표하는 김보석",
+    "Kim Bo-seok presenting with a microphone in front of the screen"
   ],
   "altLive2": [
-    "FANS MAKE WAVES 배경 앞 연단과 원형 테이블의 참석자들",
-    "The lectern and guests at round tables in front of the FANS MAKE WAVES backdrop"
+    "FANS MAKE WAVES 배경 옆 연단과 원형 테이블의 참석자들",
+    "The lectern beside the FANS MAKE WAVES backdrop, with guests at round tables"
   ],
   "altLive3": [
-    "연회장 뒤쪽에서 본 무대와 객석",
-    "The stage and seating seen from the back of the hall"
+    "무대 공연을 휴대전화로 찍는 참석자들",
+    "Guests filming a stage performance on their phones"
   ],
   "altInsight1": [
     "무대에서 이야기하는 나영석 PD와 객석",
@@ -360,15 +344,27 @@
     "PD Na Young-seok beside the “Questions for PD Na Young-seok” board"
   ],
   "altInsight3": [
-    "나영석 PD 세션 중 연회장 전경",
-    "The banquet hall during the session with PD Na Young-seok"
-  ],
-  "altInsight4": [
-    "원형 테이블에서 세션을 듣는 참석자들",
-    "Guests listening at round tables during the session"
-  ],
-  "altInsight5": [
     "객석 뒤에서 본 나영석 PD 세션",
     "The session with PD Na Young-seok seen from behind the audience"
-  ]
+  ],
+  "archiveTitle": [
+    "10월 22일 모임 기록.",
+    "Recap of the 22 October gathering."
+  ],
+  "liveTitle": [
+    "KYAA WAVE LIVE",
+    "KYAA WAVE LIVE"
+  ],
+  "insightTitle": [
+    "Kyaa LIVE Insight with 나영석 PD님",
+    "Kyaa LIVE Insight with PD Na Young-seok"
+  ],
+  "_private": {
+    "note": "빌드에서 제외되는 작업 메모. 공개 화면·dist/content.json에 나가지 않는다.",
+    "unconfirmed": [
+      "참여 인원(04 섹션 사실 칸)",
+      "01 KYAA WAVE LIVE 한 줄 설명",
+      "김보석 영문 표기(EN 임시: Kim Bo-seok)"
+    ]
+  }
 }

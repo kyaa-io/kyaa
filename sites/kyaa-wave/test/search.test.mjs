@@ -62,21 +62,27 @@ test('real DHL and event photographs replace generated scenes in both languages 
  for (const asset of ['dhl-exterior-night-20261019.webp','dhl-naija-ballroom-20261019.webp']) assert.ok(existsSync(new URL(`dist/assets/${asset}`,root)));
 });
 
-test('2026 recap shows both programs with localized photo alt text and existing assets', () => {
+test('2026 recap shows both programs with localized titles, photo alt text and existing assets', () => {
  const copy=JSON.parse(read('content.json'));
  for (const [file,index] of [['index.html',0],['en/index.html',1]]) {
   const html=read(`dist/${file}`);
   const section=html.match(/<section class="archive container" id="archive"[\s\S]*?<\/section>/)[0];
-  assert.ok(section.includes('<h3>KYAA WAVE LIVE</h3>'));
-  assert.ok(section.includes('<h3>Kyaa LIVE Insight with 나영석\u00a0PD님</h3>'));
-  assert.ok(section.includes(copy.insightWho[index]));
+  for (const key of ['archiveTitle','liveTitle','insightTitle','insightCopy','liveWho','insightWho']) assert.ok(section.includes(copy[key][index]),key);
   assert.equal((html.match(/href="#archive"/g)||[]).length,2);
+  assert.doesNotMatch(html,/사용자 확인 필요|Needs confirmation|class="unverified"/);
+  if (index===1) assert.doesNotMatch(section.replace(/<img[^>]*>/g,''),/[가-힣]/);
   const images=[...section.matchAll(/<img data-alt="([^"]+)" alt="([^"]*)" src="\/assets\/([^"]+)" srcset="([^"]+)"/g)];
-  assert.equal(images.length,8);
+  assert.equal(images.length,6);
   for (const [,key,alt,src,srcset] of images) {
    assert.equal(alt,copy[key][index]);
-   assert.ok(alt.length>0);
    for (const asset of [src,...srcset.split(', ').map(item=>item.split(' ')[0].replace('/assets/',''))]) assert.ok(existsSync(new URL(`dist/assets/${asset}`,root)),asset);
   }
  }
+});
+
+test('private working notes in content.json never ship', () => {
+ const shipped=JSON.parse(read('dist/content.json'));
+ assert.ok(Object.keys(JSON.parse(read('content.json'))).some(key=>key.startsWith('_')));
+ assert.ok(!Object.keys(shipped).some(key=>key.startsWith('_')));
+ assert.ok(shipped.heroTitle);
 });
