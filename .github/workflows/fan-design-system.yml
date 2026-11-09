@@ -66,6 +66,8 @@ jobs:
           components/celebrity-fan-page.test.tsx
           components/live-status-indicator.test.tsx
           components/guest-home.test.tsx
+          components/deferred-root-clients.test.tsx
+          components/ui/overlay/accessible-overlay.test.tsx features/groups/ui/group-language-dialog.test.tsx
           app/events/page.test.tsx features/home/ui/events-catalog-screen.test.tsx features/home/ui/events-pagination.test.tsx
           features/my/ui/my-screen.test.tsx
           features/passport/ui/passport-screens.test.tsx features/passport/domain/passport-read-model.test.ts

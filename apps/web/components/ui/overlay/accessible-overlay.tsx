@@ -320,8 +320,9 @@ export function AccessibleOverlay({
         data-overlay-content=""
         data-variant={variant}
         onClickCapture={(event) => {
-          const link = (event.target as Element | null)?.closest?.("a[href]");
-          if (link instanceof HTMLAnchorElement && link.target !== "_blank" && !link.hasAttribute("download")) navigatingRef.current = true;
+          const link = (event.target as Element | null)?.closest?.("a[href], [data-overlay-navigates]");
+          // A button that moves to another address in code (data-overlay-navigates) counts as a link: going back would cancel it.
+          if (link instanceof HTMLAnchorElement ? link.target !== "_blank" && !link.hasAttribute("download") : link) navigatingRef.current = true;
         }}
       >
         {children}

@@ -6,10 +6,8 @@ import { Suspense } from "react";
 import { LocaleProvider } from "../components/locale-provider";
 import { GroupsReleaseProvider } from "@/features/groups/ui/groups-release";
 import { DocumentLocale } from "../components/document-locale";
-import { TierCelebration } from "@/features/tier-history/ui/tier-celebration";
 import { FanNavigationProgress } from "@/components/fan-ui/fan-navigation-progress";
 import { ByUsPrivyProvider } from "../components/privy-provider";
-import { PwaRegistration } from "../components/pwa-registration";
 import { publicRuntimeConfig } from "../server/config/public-runtime-config";
 import { isAwsHosting } from "../server/config/hosting";
 import { AcquisitionSessionTracker } from "../features/analytics/client/acquisition-session-tracker";
@@ -17,8 +15,7 @@ import { OutboundLinkTracker } from "../features/analytics/client/outbound-link-
 import { PageViewTracker } from "../features/analytics/client/page-view-tracker";
 import { GoogleAnalytics } from "../features/analytics/client/google-analytics";
 import { AwsPerformanceTelemetry } from "../features/analytics/client/aws-performance-telemetry";
-import { BanksyEntryPromotion } from "../components/banksy-promotion/banksy-promotion";
-import { ChatDockHost } from "../features/group-social/chat-dock-host";
+import { DeferredRootClients } from "../components/deferred-root-clients";
 import { BYUS_BRAND_ICONS } from "./brand-icons";
 import { AuthTransitionBoundary } from "../components/auth-transition-boundary";
 import { FanToastProvider } from "../components/fan-ui/fan-toast";
@@ -90,8 +87,7 @@ export default async function RootLayout({
           appleLoginEnabled={appleLoginEnabled}
           testAccountLoginEnabled={testAccountLoginEnabled}
         >
-          <PwaRegistration />
-          <ChatDockHost />
+          <DeferredRootClients slot="before" />
           {isAwsHosting() && <AwsPerformanceTelemetry />}
           <Suspense fallback={null}>
             <AcquisitionSessionTracker />
@@ -104,9 +100,8 @@ export default async function RootLayout({
           </Suspense>
           <Suspense fallback={null}><FanNavigationProgress /></Suspense>
           <AuthTransitionBoundary modal={modal}>{children}</AuthTransitionBoundary>
-          <Suspense fallback={null}><BanksyEntryPromotion /></Suspense>
           <FanToastProvider />
-          <TierCelebration />
+          <DeferredRootClients slot="after" />
         </ByUsPrivyProvider>
         </GroupsReleaseProvider>
         </LocaleProvider>
