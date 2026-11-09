@@ -5,7 +5,7 @@
 .page *,.page *::before,.page *::after{box-sizing:border-box}
 .page :where(a:not([data-fan-action-emphasis="primary"])){color:inherit;text-decoration:none}
 :where(.page button,.dialog button){font:inherit;cursor:pointer}
-.page button:disabled{cursor:default;opacity:.55}
+.page button:disabled{cursor:default;border-color:var(--color-line);background:var(--fan-action-disabled-bg);color:var(--fan-action-disabled-ink)}
 .page :is(a,button,input,textarea):focus-visible,.dialog :focus-visible{outline:3px solid var(--color-accent);outline-offset:4px}
 .headerIdentity{display:flex;align-items:center;gap:10px;min-height:44px;text-decoration:none;color:var(--color-ink);font-size:14px;font-weight:700;max-width:180px}
 .headerIdentity>span:last-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}

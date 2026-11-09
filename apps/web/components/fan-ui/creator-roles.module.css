@@ -42,10 +42,7 @@
   color: #ad1457;
 }
 
-.filters button:disabled {
-  cursor: wait;
-  opacity: .58;
-}
+.filters button:disabled {cursor: wait;color:var(--fan-action-disabled-ink)}
 
 .filters button:focus-visible {
   outline: var(--focus-width) solid var(--color-ink);

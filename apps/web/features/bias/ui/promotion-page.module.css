@@ -30,10 +30,7 @@
 .root button {
   cursor: pointer;
 }
-.root button:disabled {
-  cursor: default;
-  opacity: 0.45;
-}
+.root button:disabled {cursor: default;border-color:var(--color-line);background:var(--fan-action-disabled-bg);color:var(--fan-action-disabled-ink)}
 .root :is(button, a, input):focus-visible {
   outline: 3px solid var(--color-accent);
   outline-offset: 4px;
@@ -595,10 +592,7 @@
   font: inherit;
   cursor: pointer;
 }
-.picker button:disabled {
-  opacity: 0.4;
-  cursor: default;
-}
+.picker button:disabled {cursor: default;color:var(--fan-action-disabled-ink)}
 .picker :is(button, input):focus-visible {
   outline: 3px solid var(--color-accent);
   outline-offset: 3px;

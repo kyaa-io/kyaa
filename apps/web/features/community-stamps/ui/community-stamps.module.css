@@ -20,7 +20,7 @@
 .action svg { width:16px; height:16px; }
 .action:active:not(:disabled) { scale:.96; }
 .action:hover:not(:disabled) { background:var(--color-line-subtle); }
-.action:disabled { cursor:default; opacity:.6; }
+.action:disabled {cursor:default;color:var(--fan-action-disabled-ink)}
 .action:focus-visible,.codeInput:focus-visible,.close:focus-visible { outline:3px solid var(--color-ink); outline-offset:3px; }
 .status { font-size:13px; line-height:1.6; margin:12px 0; }
 .error { color:var(--color-accent); }

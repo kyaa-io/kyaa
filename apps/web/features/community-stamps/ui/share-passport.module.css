@@ -3,7 +3,7 @@
 .primary { min-height:44px; border:0; border-radius:12px; background:var(--color-accent-ink); color:var(--color-surface); font:inherit; font-size:13px; font-weight:700; padding:10px 14px; display:inline-flex; align-items:center; justify-content:center; gap:8px; text-decoration:none; cursor:pointer; box-shadow:0 8px 20px color-mix(in srgb, var(--color-accent-ink) 18%, transparent); transition:transform 160ms, background-color 160ms; }
 .primary:hover:not(:disabled) { background:var(--color-accent-ink); }
 .primary:active:not(:disabled) { transform:scale(.98); }
-.primary:disabled { cursor:default; opacity:.7; }
+.primary:disabled {cursor:default;border-color:var(--color-line);background:var(--fan-action-disabled-bg);color:var(--fan-action-disabled-ink)}
 .primary svg { width:17px; height:17px; }
 .primary:focus-visible,.secondary:focus-visible { outline:3px solid var(--color-ink); outline-offset:3px; }
 .status,.error { margin:0; font-size:12px; line-height:1.55; text-align:left; }
@@ -46,6 +46,6 @@
 .quiet { width:auto; }
 /* 페이지마다 강조 버튼은 하나: 스탬프 줄 안의 공유는 글자 버튼이다. */
 .quietAction { min-height:var(--min-target); border:0; border-radius:var(--radius-control); background:transparent; color:var(--color-ink); font:inherit; font-size:var(--fan-metadata-size); font-weight:var(--fan-item-title-weight); padding:0 var(--space-1); display:inline-flex; align-items:center; justify-content:center; gap:var(--space-2); cursor:pointer; white-space:nowrap; }
-.quietAction:disabled { cursor:default; opacity:.7; }
+.quietAction:disabled {cursor:default;color:var(--fan-action-disabled-ink)}
 .quietAction svg { width:17px; height:17px; }
 .quietAction:focus-visible { outline:3px solid var(--color-ink); outline-offset:3px; }
