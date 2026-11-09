@@ -1,17 +1,30 @@
 name: kyaa wave AWS release
+# codex/kyaawave-homepage-20261018 -> prod (kyaawave.com), wave/dev -> dev (dev.kyaawave.com).
+# A manual run must pick the environment that matches its branch.
 on:
   push:
-    branches: [codex/kyaawave-homepage-20261018]
+    branches: [codex/kyaawave-homepage-20261018, wave/dev]
   workflow_dispatch:
+    inputs:
+      environment:
+        type: choice
+        options: [dev, prod]
+        default: dev
 permissions:
   contents: read
 concurrency:
-  group: telegram-production-notices
+  group: ${{ github.ref == 'refs/heads/wave/dev' && 'kyaawave-dev-release' || 'telegram-production-notices' }}
   queue: max
   cancel-in-progress: false
 jobs:
+  mismatched-dispatch:
+    if: github.event_name == 'workflow_dispatch' && !((github.ref == 'refs/heads/codex/kyaawave-homepage-20261018' && inputs.environment == 'prod') || (github.ref == 'refs/heads/wave/dev' && inputs.environment == 'dev'))
+    runs-on: ubuntu-latest
+    timeout-minutes: 1
+    steps:
+      - run: echo "::error::prod runs only from codex/kyaawave-homepage-20261018, dev only from wave/dev" && exit 1
   release:
-    if: github.repository == 'kyaa-io/kyaa' && github.ref == 'refs/heads/codex/kyaawave-homepage-20261018'
+    if: github.repository == 'kyaa-io/kyaa' && ((github.ref == 'refs/heads/codex/kyaawave-homepage-20261018' && (github.event_name == 'push' || inputs.environment == 'prod')) || (github.ref == 'refs/heads/wave/dev' && (github.event_name == 'push' || inputs.environment == 'dev')))
     runs-on: ubuntu-latest
     timeout-minutes: 20
     permissions:
@@ -19,6 +32,8 @@ jobs:
       actions: read
       id-token: write
       deployments: write
+    env:
+      WAVE_ENVIRONMENT: ${{ github.ref == 'refs/heads/wave/dev' && 'dev' || 'prod' }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -43,15 +58,15 @@ jobs:
         run: node scripts/aws-wave-release.mjs prepare ../source/sites/kyaa-wave/dist "$SOURCE_SHA"
       - uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: arn:aws:iam::996702758024:role/kyaawave-prod-github-release
-          aws-region: ap-northeast-2
+          role-to-assume: ${{ github.ref == 'refs/heads/wave/dev' && 'arn:aws:iam::996702758024:role/kyaawave-dev-github-release' || 'arn:aws:iam::996702758024:role/kyaawave-prod-github-release' }}
+          aws-region: ${{ github.ref == 'refs/heads/wave/dev' && 'us-east-1' || 'ap-northeast-2' }}
           allowed-account-ids: '996702758024'
       - name: Publish and verify every public file
         working-directory: trusted
         env:
           GITHUB_TOKEN: ${{ github.token }}
           SOURCE_SHA: ${{ github.sha }}
-          AWS_WAVE_DISTRIBUTION_ID: ${{ vars.AWS_WAVE_DISTRIBUTION_ID }}
+          AWS_WAVE_DISTRIBUTION_ID: ${{ vars[github.ref == 'refs/heads/wave/dev' && 'AWS_WAVE_DEV_DISTRIBUTION_ID' || 'AWS_WAVE_DISTRIBUTION_ID'] }}
         run: node scripts/aws-wave-release.mjs deploy ../source/sites/kyaa-wave/dist "$SOURCE_SHA"
       - uses: actions/upload-artifact@v4
         with:
@@ -61,6 +76,7 @@ jobs:
   notice:
     name: kyaa wave deployment notice
     needs: release
+    if: github.ref == 'refs/heads/codex/kyaawave-homepage-20261018'
     runs-on: ubuntu-latest
     timeout-minutes: 5
     permissions:
