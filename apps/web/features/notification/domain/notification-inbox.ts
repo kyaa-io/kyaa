@@ -12,7 +12,7 @@ export function notificationChip(kind: NotificationItem["kind"]): Exclude<Notifi
   // 표에 없는 당첨·수령 상태(group_raffle_won·fulfillment_meaningful_update)는 보상이라 스탬프·포인트에 둔다.
   if (kind === "stamp_issued" || kind === "level_up" || kind.startsWith("benefit_") || kind.startsWith("collectible_") || kind === "group_raffle_won" || kind === "fulfillment_meaningful_update") return "stamp";
   if (kind.startsWith("fan_dm_") || kind === "fan_friend_request" || kind.startsWith("friend_") || kind === "content_reply") return "friend";
-  // support_reply·fanpage_request_reviewed·recipient_information_required·runmusic_result·survey_reminder, 표에 없는 group_event_reviewed·participation_deadline.
+  // support_reply·fanpage_request_reviewed·recipient_information_required·runmusic_result·survey_reminder, 표에 없는 group_event_reviewed·group_notice(페이지 운영진 공지)·participation_deadline.
   return "system";
 }
 

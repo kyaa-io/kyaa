@@ -95,6 +95,12 @@ export function projectNotificationRow(
 ): NotificationItem {
   const kind = String(row.kind) as NotificationItem["kind"];
   const directWeb = groupNotificationPathSchema.safeParse(row.deep_link).success;
+  if (kind === "group_notice") {
+    // B8: 페이지 이름과 공지 제목은 보낼 때 저장한다. 본문 발췌는 싣지 않는다. 경로는 지금 그 공지를 볼 수 있을 때만 온다(fan_web_notification_path).
+    const payload = one(row.payload) ?? {};
+    const page = text(payload.pageName, locale === "ko" ? "페이지" : "Page");
+    return { id: String(row.id), kind, title: locale === "ko" ? `${page} 공지` : `Notice from ${page}`, detail: text(payload.postTitle, locale === "ko" ? "새 공지" : "New notice"), createdAt: String(row.created_at), readAt: row.read_at == null ? null : String(row.read_at), deepLink: String(row.deep_link) };
+  }
   if (kind === "artist_comment" || kind === "artist_online") {
     const said = artistNotificationText(kind, one(row.payload) ?? {}, locale);
     return { id: String(row.id), kind, title: said.title, detail: said.detail, createdAt: String(row.created_at), readAt: row.read_at == null ? null : String(row.read_at), deepLink: String(row.deep_link) as NotificationItem["deepLink"] };

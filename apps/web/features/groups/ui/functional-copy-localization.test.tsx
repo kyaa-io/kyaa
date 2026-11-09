@@ -5,6 +5,7 @@ import {giftCopy} from './gift-copy';
 import {groupInvitationCopy} from './group-invitation-copy';
 import {activityEvidenceCopy} from './activity-evidence-copy';
 import {groupSurveyCopy} from './group-survey-copy';
+import {operatorToolsCopy} from './operator-tools-copy';
 import {ActivityEvidenceTask} from './activity-evidence-task';
 import {GroupSurveyForm} from './group-survey-form';
 const upload=vi.hoisted(()=>({items:[] as {key:string;assetId:string;failed?:boolean}[],ready:false,busy:false,invalid:false,markUsed:vi.fn(),remove:vi.fn(),add:vi.fn()}));
@@ -17,7 +18,7 @@ beforeAll(()=>{
 beforeEach(()=>{vi.clearAllMocks();upload.items=[];upload.ready=false;upload.busy=false;upload.invalid=false;});
 afterEach(cleanup);
 it.each(APP_LOCALES)('%s has complete, explicit functional translations and preserves the invitation token',locale=>{
- for(const getCopy of [giftCopy,groupInvitationCopy,activityEvidenceCopy,groupSurveyCopy]){
+ for(const getCopy of [giftCopy,groupInvitationCopy,activityEvidenceCopy,groupSurveyCopy,operatorToolsCopy]){
   const localized:Record<string,string>=getCopy(locale),english:Record<string,string>=getCopy('en');
   expect(Object.keys(localized).sort()).toEqual(Object.keys(english).sort());
   for(const [key,value] of Object.entries(localized)){

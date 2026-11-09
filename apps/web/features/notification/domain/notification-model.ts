@@ -4,6 +4,7 @@ export const notificationKindSchema = z.enum([
   "runmusic_result",
   "group_raffle_won",
   "group_event_reviewed",
+  "group_notice",
   "live_24h",
   "live_10m",
   "live_reserved",

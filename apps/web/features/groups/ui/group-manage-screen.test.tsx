@@ -1,7 +1,7 @@
 import { fireEvent,render,screen } from '@testing-library/react';
 import { expect,it,vi } from 'vitest';
 import { GroupManageScreen } from './group-manage-screen';
-import { groupsCopy } from './copy';
+import { operatorToolsCopy } from './operator-tools-copy';
 const auth=vi.hoisted(()=>({ready:true,authenticated:true,user:{id:'member'},getAccessToken:async()=>'token'}));
 const nav=vi.hoisted(()=>({search:new URLSearchParams()}));
 vi.mock('next/navigation',async importOriginal=>({...await importOriginal<typeof import('next/navigation')>(),useRouter:()=>({push:vi.fn(),replace:vi.fn()}),useSearchParams:()=>nav.search}));
@@ -29,5 +29,5 @@ it('follows the section in the address when a link changes it on the already ope
  nav.search=new URLSearchParams('section=members');
  view.rerender(<GroupManageScreen pageId={id} locale='ko' initialSection='members'/>);
  expect(screen.getByTestId('section')).toHaveTextContent('members');
- expect(screen.getByRole('link',{name:groupsCopy('ko').members})).toHaveAttribute('aria-current','page');
+ expect(screen.getByRole('link',{name:operatorToolsCopy('ko').tab})).toHaveAttribute('aria-current','page');
 });
