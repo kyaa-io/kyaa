@@ -1,7 +1,6 @@
 "use client";
 import type { Route } from "next";
 import Link from "next/link";
-import { ArrowRight } from "@/components/icons";
 import { useSyncExternalStore } from "react";
 
 import { FanHeading } from "@/components/fan-ui/fan-heading";
@@ -84,7 +83,7 @@ export function HomeRankingCard({ locale, headingId = "home-ranking-heading" }: 
   const fans = useLiveRanking(rankingUrl("fans", choice.fans, locale), parseFans);
   const creators = useLiveRanking(rankingUrl("creators", choice.creators, locale), parseCreators);
   const guest = auth.ready && !auth.authenticated;
-  const all = (tab: RankingsTab) => <Link className={styles.all} href={rankingsPageHref(locale, tab, tab === "fans" ? choice.fans : choice.creators, guest)}>{rankingsText(locale, "rkViewAll")}<ArrowRight aria-hidden="true" /></Link>;
+  const all = (tab: RankingsTab) => <Link className={styles.all} href={rankingsPageHref(locale, tab, tab === "fans" ? choice.fans : choice.creators, guest)}>{rankingsText(locale, "rkViewAll")}{" "}<span aria-hidden="true">›</span></Link>;
   const head = (id: string, text: string, tab: RankingsTab | null) => <div className={styles.head}><FanHeading id={id}>{text}</FanHeading>{tab ? all(tab) : null}</div>;
   return <section className={styles.block} aria-labelledby={headingId} data-home-ranking>
     <div className={`${styles.card} ${styles.narrow}`}>
