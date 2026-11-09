@@ -8,6 +8,8 @@ export type FanTier = z.infer<typeof fanTierSchema>;
 export const tierChangeSchema = z.object({
   id: z.uuid(), passportId: z.uuid(), slug: z.string().min(1), name: z.string().min(1),
   previousTier: fanTierSchema, tier: fanTierSchema, occurredAt: z.string(),
+  /** B3: the tier bonus paid for this rise; absent when the rise has no bonus grant (0 while a grant is still being paid). */
+  bonusPoints: z.number().int().nonnegative().optional(),
 }).strict();
 export type TierChange = z.infer<typeof tierChangeSchema>;
 export const tierChangesSchema = z.object({ changes: z.array(tierChangeSchema).max(50) }).strict();
