@@ -236,3 +236,14 @@ describe("group notifications stay on the web",()=>{
   const application=projectNotificationRow({id:target,kind:"fanpage_request_reviewed",created_at:"2026-11-01T00:00:00Z",read_at:null,deep_link:`/pages/groups/apply?applicationId=${target}`},"ko");expect(application.title).toContain("페이지 개설 신청");
  });
 });
+
+describe("B8 group notice notification", () => {
+  const post = "b8000000-0000-4000-8000-0000000000f1", page = "b8000000-0000-4000-8000-0000000000a1";
+  const row = { id: "b8000000-0000-4000-8000-0000000000e9", created_at: "2026-11-09T09:00:00.000Z", read_at: null, kind: "group_notice", deep_link: `/pages/groups/${page}?tab=board&postId=${post}`, payload: { schemaVersion: 1, targetType: "group_post", targetId: post, pageId: page, pageName: "b8 모임", postTitle: "정기 모임 안내" } };
+  it("shows the page name and notice title only, and opens the notice", () => {
+    const item = projectNotificationRow(row, "ko");
+    expect(notificationItemSchema.safeParse(item).success).toBe(true);
+    expect(item).toMatchObject({ kind: "group_notice", title: "b8 모임 공지", detail: "정기 모임 안내", deepLink: row.deep_link });
+    expect(projectNotificationRow(row, "en")).toMatchObject({ title: "Notice from b8 모임", detail: "정기 모임 안내" });
+  });
+});

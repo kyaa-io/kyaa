@@ -85,9 +85,9 @@ it.each([403,404])('offers exploration instead of permanent retry for unavailabl
  render(<GroupDetailScreen pageId={page.id} locale='ko'/>);expect(await screen.findByRole('heading',{name:'페이지를 열 수 없어요'})).toBeInTheDocument();expect(screen.getByRole('link',{name:'페이지 둘러보기'})).toHaveAttribute('href','/pages/groups?locale=ko');expect(screen.queryByRole('button',{name:'다시 시도'})).not.toBeInTheDocument();expect(screen.queryByText(page.name)).not.toBeInTheDocument();
 });
 
-it('renders actual management tier and detail values without borrowing sample statistics',async()=>{
- const member='30000000-0000-4000-8000-000000000001';vi.stubGlobal('fetch',vi.fn(async()=>Response.json({items:[{profileId:member,nickname:'하늘',avatarUrl:null,role:'member',answer:'무대 이야기를 나누고 싶어요',tier:'Gold',joinedAt:null,lastActiveAt:null,postCount:12,commentCount:36}],nextCursor:null})));
- render(<GroupManagementMembers detail={{page,membership:{role:'owner',joinedAt:'2026-11-01T00:00:00Z'},bookmarked:false}} locale='ko' refresh={()=>{}}/>);expect(await screen.findByRole('table')).toBeInTheDocument();expect(await screen.findByText('무대 이야기를 나누고 싶어요')).toBeInTheDocument();expect(screen.getByText('12')).toBeInTheDocument();expect(screen.getByText('36')).toBeInTheDocument();expect(screen.getByText('골드 · 변경 불가')).toBeInTheDocument();
+it('renders actual member values without borrowing sample statistics, and no join answer (B8 AC1)',async()=>{
+ const member='30000000-0000-4000-8000-000000000001';vi.stubGlobal('fetch',vi.fn(async()=>Response.json({total:1,jjinfanTotal:null,items:[{profileId:member,nickname:'하늘',avatarUrl:null,role:'member',joinedAt:'2026-11-01T00:00:00Z',jjinfan:null,hearts:null,missionCount:12,lastActiveAt:null}],nextCursor:null})));
+ render(<GroupManagementMembers detail={{page,membership:{role:'owner',joinedAt:'2026-11-01T00:00:00Z'},bookmarked:false}} locale='ko' refresh={()=>{}}/>);expect(await screen.findByRole('table')).toBeInTheDocument();expect(screen.getAllByText('12').length).toBeGreaterThan(0);expect(screen.getByRole('heading',{name:'회원 1명'})).toBeInTheDocument();expect(screen.queryByText('가입 답변')).toBeNull();
 });
 it('keeps home board preview compact while the full board retains filters and search',async()=>{
  vi.stubGlobal('fetch',vi.fn(async()=>Response.json({items:[],nextCursor:null})));const detail={page,membership:{role:'member' as const,joinedAt:'2026-11-01T00:00:00Z'},bookmarked:false};

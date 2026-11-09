@@ -3,6 +3,8 @@ import { z } from "zod";
 import { qualificationSchema } from "@/features/groups/domain/qualification";
 import { groupMessagesSchema, groupOwnReportsSchema } from "@/features/groups/domain/contracts";
 import { applicationStatusListSchema } from "@/features/groups/domain/application-status";
+import { groupMembersCsv, groupMissionStatsSchema, groupNoticeBroadcastStatusSchema, groupOperatorJjinfanFilter, groupOperatorMembersExportSchema, groupOperatorMembersSchema, groupOperatorSearch } from "@/features/groups/domain/operator-tools";
+import { operatorToolsCopy } from "@/features/groups/ui/operator-tools-copy";
 import { AuthError } from "@/features/auth/domain/auth-errors";
 import type { FanpageDependencies } from "@/server/fanpage/routes";
 import { APP_LOCALES } from "@/i18n/locales";
@@ -50,14 +52,19 @@ function decodeVisitedCursor(token:string,owner:string) {
 }
 const base = z.object({ qualification: qualificationSchema.optional(), expectedRevision: z.number().int().min(1).optional(), kind: z.enum(["fan", "hobby", "brand"]), name: z.string().trim().min(1).max(100), description: z.string().trim().min(1).max(1000), imageAssetId:uuid.nullable().optional(), imageUrl: z.string().max(2048).refine(v => /^https:\/\//.test(v) || /^\/[^/]/.test(v)).nullable().optional(), question: z.string().trim().max(300).nullable().optional(), requestId }).strict();
 /** `body` stays plain text for every older reader. With a document it is derived here, never taken from the client. */
-const groupPostInput = z.object({ title: z.string().trim().min(1).max(100), body: z.string().trim().min(1).max(20000).optional(), visibility: z.enum(["public", "members"]), category: z.enum(["notice","free"]).optional(), assetIds: z.array(uuid).max(5).optional(), bodyDoc: z.unknown().optional(), requestId }).strict().transform(value => {
+const groupPostFields = { title: z.string().trim().min(1).max(100), body: z.string().trim().min(1).max(20000).optional(), visibility: z.enum(["public", "members"]), category: z.enum(["notice","free"]).optional(), assetIds: z.array(uuid).max(5).optional(), bodyDoc: z.unknown().optional(), requestId };
+function preparedPost<T extends { body?: string; bodyDoc?: unknown; assetIds?: string[]; title: string }>(value: T) {
   if (value.bodyDoc === undefined) {
     if (value.body === undefined) throw new SyntaxError("body required");
     return value;
   }
   const prepared = prepareRichPostBody({ document: value.bodyDoc, assetIds: value.assetIds ?? [], maxPlainLength: 20000 });
   return { ...value, body: prepared.body || value.title, bodyDoc: prepared.document, assetIds: prepared.assetIds };
-});
+}
+const groupPostInput = z.object(groupPostFields).strict().transform(preparedPost);
+/** B8: a new notice may ask the worker to notify every member (once a KST day per page, decided in SQL). Edits never notify. */
+const groupNewPostInput = z.object({ ...groupPostFields, notifyMembers: z.boolean().optional() }).strict()
+  .refine(value => value.notifyMembers !== true || value.category === "notice").transform(preparedPost);
 /** The stored document, matched to the post's current text and attachments. A plain edit never removes it; a reader that did not ask never receives it. */
 function richGroupPost(result: unknown) {
   const post = z.object({ title: z.string(), body: z.string(), assets: z.array(z.object({ id: z.string() })).optional(), bodyDoc: z.unknown().optional() }).passthrough().safeParse(result);
@@ -81,7 +88,7 @@ const inputSchemas = {
   join: z.object({ answer: z.string().trim().max(1000).optional(), requestId }).strict(),
   role: z.object({ appUserId: uuid, role: z.enum(["manager", "member"]), requestId }).strict(),
   transfer: z.object({ appUserId: uuid, requestId }).strict(),
-  post: groupPostInput,
+  post: groupNewPostInput,
   room: z.object({ name: z.string().trim().min(1).max(100), minimumTier: z.enum(["Member", "Bronze", "Silver", "Gold", "Platinum", "Diamond"]).default("Gold"), requestId }).strict(),
   message: z.object({ body: z.string().trim().min(1).max(2000), requestId }).strict(),
   settings: z.object({ name: z.string().trim().min(1).max(100), description: z.string().trim().max(1000), question: z.string().trim().max(300).nullable(), anonymous: z.boolean(), imageAssetId:uuid.nullable().optional(), requestId }).strict(),
@@ -98,7 +105,7 @@ const inputSchemas = {
   "set-presence-setting":z.object({enabled:z.boolean()}).strict(),
   review: z.object({expectedRevision:z.number().int().min(1).optional(), action: z.enum(["approve", "reject", "request_changes", "start_review"]), reason: z.string().trim().max(1000).optional(), celebrityId: uuid.optional(), requestId }).strict(),
 };
-export type GroupOperation = "directory" | "resolve" | "detail" | "applications" | "application-status" | "apply" | "revise" | "post-edit" | "join" | "leave" | "bookmark" | "unbookmark" | "members" | "role" | "transfer" | "posts" | "post" | "post-detail" | "post-remove" | "rooms" | "room" | "messages" | "message" | "settings" | "admin-applications" | "review" | "comments" | "comment" | "comment-remove" | "reaction" | "dislike" | "room-state" | "report" | "admin-reports" | "resolve-report" | "report-evidence" | "artist-bind" | "artist-unbind" | "artist-bindings" | "presence" | "heartbeat" | "presence-setting" | "set-presence-setting" | "notifications" | "set-notifications" | "room-read" | "page-reports" | "page-resolve-report" | "own-reports";
+export type GroupOperation = "directory" | "resolve" | "detail" | "applications" | "application-status" | "apply" | "revise" | "post-edit" | "join" | "leave" | "bookmark" | "unbookmark" | "members" | "role" | "transfer" | "posts" | "post" | "post-detail" | "post-remove" | "rooms" | "room" | "messages" | "message" | "settings" | "admin-applications" | "review" | "comments" | "comment" | "comment-remove" | "reaction" | "dislike" | "room-state" | "report" | "admin-reports" | "resolve-report" | "report-evidence" | "artist-bind" | "artist-unbind" | "artist-bindings" | "presence" | "heartbeat" | "presence-setting" | "set-presence-setting" | "notifications" | "set-notifications" | "room-read" | "page-reports" | "page-resolve-report" | "own-reports" | "operator-members" | "operator-members-export" | "notice-broadcast-status" | "mission-stats";
 const headers = { "cache-control": "private, no-store", vary: "Authorization" };
 export const groupsUnavailable = () => Response.json({ error: { code: "GROUPS_UNAVAILABLE" } }, { status: 503, headers });
 const GROUP_POST_REQUEST_BYTES = RICH_DOCUMENT_MAX_BYTES + 32768;
@@ -127,6 +134,33 @@ export function createGroupHandler(deps: FanpageDependencies) {
         if (!read.success) return groupsUnavailable();
         if (!item) return Response.json(read.data, { headers });
         return read.data.items[0] ? Response.json(read.data.items[0], { headers }) : Response.json({ error: { code: "GROUPS_NOT_FOUND" } }, { status: 404, headers });
+      }
+      if (operation === "operator-members" || operation === "operator-members-export") {
+        const input = { search: groupOperatorSearch.parse(one("search") ?? ""), jjinfan: groupOperatorJjinfanFilter.parse(one("jjinfan") ?? "all") };
+        const pageId = uuid.parse(params.id);
+        if (operation === "operator-members") {
+          const read = groupOperatorMembersSchema.safeParse(await deps.rpc("groups_dispatch", { p_operation: operation, p_actor: owner, p_page_id: pageId, p_item_id: null, p_input: { ...input, cursor: uuid.optional().parse(one("cursor")), limit: z.coerce.number().int().min(1).max(50).parse(one("limit") ?? 30) }, p_admin_id: null }));
+          return read.success ? Response.json(read.data, { headers }) : groupsUnavailable();
+        }
+        const locale = z.enum(APP_LOCALES).parse(one("locale") ?? "ko");
+        const exported = await deps.rpc("groups_dispatch", { p_operation: operation, p_actor: owner, p_page_id: pageId, p_item_id: null, p_input: input, p_admin_id: null });
+        // Over 20,000 rows the RPC answers a value, not an exception, so the attempt and its 10-minute limit stay recorded.
+        if (z.object({ error: z.literal("GROUPS_EXPORT_TOO_LARGE") }).strict().safeParse(exported).success) return Response.json({ error: { code: "GROUPS_EXPORT_TOO_LARGE" } }, { status: 413, headers });
+        const read = groupOperatorMembersExportSchema.safeParse(exported);
+        if (!read.success) return groupsUnavailable();
+        const copy = operatorToolsCopy(locale);
+        const csv = groupMembersCsv(read.data, { nickname: copy.nickname, joinedAt: copy.joined, hearts: copy.hearts, missions: copy.missions, lastActive: copy.lastActive });
+        return new Response(csv, { headers: { ...headers, "content-type": "text/csv; charset=utf-8", "content-disposition": `attachment; filename="members-${pageId}.csv"` } });
+      }
+      if (operation === "notice-broadcast-status") {
+        const read = groupNoticeBroadcastStatusSchema.safeParse(await deps.rpc("groups_content_dispatch", { p_operation: operation, p_actor: owner, p_page_id: uuid.parse(params.id), p_item_id: null, p_input: {}, p_admin_id: null }));
+        return read.success ? Response.json(read.data, { headers }) : groupsUnavailable();
+      }
+      if (operation === "mission-stats") {
+        const date = z.iso.date();
+        const input = { from: date.optional().parse(one("from")), to: date.optional().parse(one("to")) };
+        const read = groupMissionStatsSchema.safeParse(await deps.rpc("group_activities_dispatch", { p_operation: operation, p_actor: owner, p_page_id: uuid.parse(params.id), p_item_id: null, p_sub_id: null, p_input: input, p_admin_id: null }));
+        return read.success ? Response.json(read.data, { headers }) : groupsUnavailable();
       }
       if (operation === "directory") {
         const sort=z.enum(["popular", "recent", "today", "visited"]).parse(one("sort") ?? "popular");
@@ -166,8 +200,9 @@ export function createGroupHandler(deps: FanpageDependencies) {
     } catch (error) {
       if (error instanceof AuthError) return Response.json({ error: { code: error.code } }, { status: error.status, headers });
       const raw = error instanceof Error ? error.message : "";
+      if (raw === "GROUPS_RATE_LIMITED:notice_broadcast") return Response.json({ error: { code: "GROUPS_RATE_LIMITED", reason: "notice_broadcast" } }, { status: 409, headers });
       const [code, entryReason] = raw.startsWith("GROUPS_FORBIDDEN:") ? ["GROUPS_FORBIDDEN", raw.slice(17)] : [raw, ""];
-      const status = ({ GROUPS_FORBIDDEN: 403, GROUPS_NOT_FOUND: 404, GROUPS_CONFLICT: 409, GROUPS_INVALID_REQUEST: 400, GROUPS_BODY_TOO_LARGE: 413 } as Record<string, number>)[code];
+      const status = ({ GROUPS_FORBIDDEN: 403, GROUPS_NOT_FOUND: 404, GROUPS_CONFLICT: 409, GROUPS_INVALID_REQUEST: 400, GROUPS_BODY_TOO_LARGE: 413, GROUPS_RATE_LIMITED: 429, GROUPS_EXPORT_TOO_LARGE: 413 } as Record<string, number>)[code];
       if (error instanceof z.ZodError || error instanceof SyntaxError) return Response.json({ error: { code: "GROUPS_INVALID_REQUEST" } }, { status: 400, headers });
       return status ? Response.json({ error: { code, ...(["stage_low", "jjinfan_required", "not_member"].includes(entryReason) ? { reason: entryReason } : {}) } }, { status, headers }) : groupsUnavailable();
     }

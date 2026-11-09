@@ -1,0 +1,158 @@
+{
+ "status": {
+  "noticeBroadcastEnabled": true,
+  "noticeBroadcastRemainingToday": 0
+ },
+ "fanList": {
+  "items": [
+   {
+    "role": "owner",
+    "hearts": 0,
+    "jjinfan": false,
+    "joinedAt": "2026-10-30T18:20:11.986686+09:00",
+    "nickname": "b8주인",
+    "avatarUrl": "/images/avatars/star-pink.webp",
+    "profileId": "b8000000-0000-4000-8000-000000000001",
+    "lastActiveAt": "2026-11-09T18:20:12.36795+09:00",
+    "missionCount": 0
+   },
+   {
+    "role": "member",
+    "hearts": 0,
+    "jjinfan": false,
+    "joinedAt": "2026-10-31T18:20:11.986686+09:00",
+    "nickname": "b8매니저",
+    "avatarUrl": "/images/avatars/star-pink.webp",
+    "profileId": "b8000000-0000-4000-8000-000000000002",
+    "lastActiveAt": null,
+    "missionCount": 0
+   },
+   {
+    "role": "manager",
+    "hearts": 1,
+    "jjinfan": true,
+    "joinedAt": "2026-11-01T18:20:11.986686+09:00",
+    "nickname": "b8에이",
+    "avatarUrl": "/images/avatars/star-pink.webp",
+    "profileId": "b8000000-0000-4000-8000-000000000003",
+    "lastActiveAt": null,
+    "missionCount": 0
+   },
+   {
+    "role": "member",
+    "hearts": 0,
+    "jjinfan": false,
+    "joinedAt": "2026-11-02T18:20:11.986686+09:00",
+    "nickname": "팬",
+    "avatarUrl": "/images/avatars/star-pink.webp",
+    "profileId": "b8000000-0000-4000-8000-000000000004",
+    "lastActiveAt": "2026-11-09T18:20:12.284766+09:00",
+    "missionCount": 1
+   },
+   {
+    "role": "member",
+    "hearts": 0,
+    "jjinfan": false,
+    "joinedAt": "2026-11-04T18:20:11.986686+09:00",
+    "nickname": "팬",
+    "avatarUrl": "/images/avatars/star-pink.webp",
+    "profileId": "b8000000-0000-4000-8000-000000000006",
+    "lastActiveAt": "2026-10-31T23:59:59+09:00",
+    "missionCount": 0
+   }
+  ],
+  "total": 66,
+  "nextCursor": "b8000000-0000-4000-8000-000000000006",
+  "jjinfanTotal": 1
+ },
+ "fanStats": {
+  "to": "2026-11-07",
+  "from": "2026-11-01",
+  "items": [
+   {
+    "state": "published",
+    "title": "b8 사진 미션",
+    "pending": 1,
+    "approved": 2,
+    "rejected": 1,
+    "missionId": "b8000000-0000-4000-8000-0000000000b1",
+    "participants": 2,
+    "submissionKind": "photo"
+   }
+  ],
+  "attendance": {
+   "participants": 2
+  }
+ },
+ "hobbyList": {
+  "items": [
+   {
+    "role": "owner",
+    "hearts": null,
+    "jjinfan": null,
+    "joinedAt": "2026-11-09T18:20:11.987708+09:00",
+    "nickname": "b8주인",
+    "avatarUrl": "/images/avatars/star-pink.webp",
+    "profileId": "b8000000-0000-4000-8000-000000000001",
+    "lastActiveAt": "2026-11-09T18:20:12.725328+09:00",
+    "missionCount": 0
+   },
+   {
+    "role": "member",
+    "hearts": null,
+    "jjinfan": null,
+    "joinedAt": "2026-11-09T18:20:12.710889+09:00",
+    "nickname": "팬",
+    "avatarUrl": "/images/avatars/star-pink.webp",
+    "profileId": "b8000000-0000-4000-8002-000000000001",
+    "lastActiveAt": null,
+    "missionCount": 0
+   },
+   {
+    "role": "member",
+    "hearts": null,
+    "jjinfan": null,
+    "joinedAt": "2026-11-09T18:20:12.710889+09:00",
+    "nickname": "팬",
+    "avatarUrl": "/images/avatars/star-pink.webp",
+    "profileId": "b8000000-0000-4000-8002-000000000002",
+    "lastActiveAt": null,
+    "missionCount": 0
+   }
+  ],
+  "total": 1499,
+  "nextCursor": "b8000000-0000-4000-8002-000000000002",
+  "jjinfanTotal": null
+ },
+ "emptyStats": {
+  "to": "2026-11-09",
+  "from": "2026-11-03",
+  "items": [],
+  "attendance": null
+ },
+ "emptySearch": {
+  "items": [],
+  "total": 66,
+  "nextCursor": null,
+  "jjinfanTotal": 1
+ },
+ "emptyOwnerList": {
+  "items": [
+   {
+    "role": "owner",
+    "hearts": null,
+    "jjinfan": null,
+    "joinedAt": "2026-11-09T18:20:23.896106+09:00",
+    "nickname": "팬",
+    "avatarUrl": "/images/avatars/star-pink.webp",
+    "profileId": "b8000000-0000-4000-8000-00000000000a",
+    "lastActiveAt": null,
+    "missionCount": 0
+   }
+  ],
+  "total": 1,
+  "nextCursor": null,
+  "jjinfanTotal": null
+ },
+ "_note": "Real responses of 20261219080000~084000 on the disposable cluster after supabase/tests/group_operator_tools.sql (synthetic accounts only), 2026-11-09."
+}

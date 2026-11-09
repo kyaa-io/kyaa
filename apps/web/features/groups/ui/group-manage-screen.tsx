@@ -17,6 +17,7 @@ import { groupReportTitle } from "./group-report-manager";
 import { GroupManagement } from './group-management';
 import { groupsCopy } from './copy';
 import { operatorCopy } from './group-operator-copy';
+import { operatorToolsCopy } from './operator-tools-copy';
 import { raffleCopy } from '@/features/group-raffle/copy';
 import type { GroupManagementPresentation } from './management-presentation';
 import styles from './group-manage.module.css';
@@ -36,7 +37,7 @@ function useTabStrip(current:string,shown:boolean){
 }
 export function GroupManageScreen({pageId,locale,initialSection,localPresentation,eventOperations,raffleCreate,initialGiftId}:{initialGiftId?:string;pageId:string;locale:AppLocale;initialSection?:string;localPresentation?:GroupManagementPresentation;eventOperations?:ReactNode;raffleCreate?:ReactNode}){
  const t=groupsCopy(locale),c=raffleCopy(locale),p=pageManagementCopy(locale),oc=operatorCopy(locale),r=useGroupResource(`/api/groups/${pageId}`,parse,{nameLocale:false}),allowed=r.data?.membership&&r.data.membership.role!=='member';
- const items=[['members',t.members],['reports',groupReportTitle(locale)],['missions',p.missions],['events',t.events],['gifts',manageText(locale,'giftsTab')],['raffles',c.title],['rooms',t.rooms],...(GROUP_COLLECTIONS_VISIBLE?[['collection',t.collection]] as const:[]),['stats',oc.statsTitle],['notices',oc.noticesTitle],['settings',p.settings]] as const;
+ const items=[['members',operatorToolsCopy(locale).tab],['missions',p.missions],['notices',oc.noticesTitle],['reports',groupReportTitle(locale)],['events',t.events],['gifts',manageText(locale,'giftsTab')],['raffles',c.title],['rooms',t.rooms],...(GROUP_COLLECTIONS_VISIBLE?[['collection',t.collection]] as const:[]),['stats',oc.statsTitle],['settings',p.settings]] as const;
  const [address,setAddress]=useAddressParam('section'),wanted=address??initialSection,section=wanted&&items.some(([id])=>id===wanted)?wanted:'members';
  const strip=useTabStrip(section,Boolean(allowed));
  return <div className={styles.shell} data-fan-surface lang={locale}><FanAppHeader locale={locale} currentPath="/pages/groups" groupsEnabled/>
