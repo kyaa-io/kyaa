@@ -29,7 +29,7 @@
   display: block;
   height: var(--space-3);
   border-radius: var(--radius-pill);
-  background: var(--color-line);
+  background: var(--color-accent-soft);
 }
 
 .barLabel {

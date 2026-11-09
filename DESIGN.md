@@ -37,7 +37,7 @@ radius-scale: "12px / 8px / pill"
 | 구역 제목(h2) | 구역 제목 h2 18/700/1.2 | `--fan-section-*`, `fan-heading.module.css`(h2·h3) | 2026-11-09 R1(첫 시선과 8px 차) |
 | 본문 | 본문 15(390)·14(768+)/400/1.5, 글 본문·댓글 15 고정 | `--fan-body-size(-wide)`, `--fan-post-body-size` | 2026-11-09 8장 ① |
 | 보조 정보 | 메타 12/400 `--color-muted` | `--fan-metadata-size` | 2026-11-09 R1 |
-| 카드 외곽 | 카드 12 반경(`--radius-card`), 1px `--color-line`, 그림자 0, 바탕 `--color-surface` 위 캔버스 `--color-soft` | `FanSurface` | 2026-11-09 8장 ⑦ R14 |
+| 카드 외곽 | 카드 12 반경(`--radius-card`), 1px `--color-line`, 그림자 0, 바탕 `--color-surface`(흰 면), 회색 캔버스 면 없음 | `FanSurface` | 2026-11-09 8장 ⑦ R14 |
 | 강조 버튼 | primary: 단색 `--color-accent`(`--color-page-accent`) 채움 + 흰 글자, 높이 44(390)/48(1024+), 반경 8, 15/700. 현재 코드: 단색 accent·그림자 0·15/700(2026-11-09 design-sync-1), 반경은 알약·높이 48 고정(게이트 A 전까지 유지). 화면당 1개(예외: 럭키드로우 응모 가능 상태에서는 `응모하기` primary·`교환` secondary — 8장 plan ③) | `fan-action.module.css` | 2026-11-09 8장 ②④⑤ |
 | 보조 버튼 | secondary: 높이 44, 반경 8, 1px `--color-ink` 선, 15/700 | `fan-action.module.css` | 2026-11-09 R14 |
 | 탭/세그먼트(칩) | 밑줄 탭(`underline`) 44 sticky top 56, 15/700, 활성 밑줄 2px accent / 칩 36 반경 8 14/700, 선택 `--color-accent-soft` + 1px accent / 세그먼트 40 반경 8 | `fan-tabs.tsx` | 2026-11-09 R3·R14 |
@@ -60,7 +60,7 @@ radius-scale: "12px / 8px / pill"
 | 유형·공지·인증 태그 | 상태 배지 `FanTag` 높이 20 알약 11/700(현재 코드 22·12/700, 크기는 이번에 안 바꿈), 팬페이지·인증 태그는 `--color-accent-soft`/`-ink`(강조색 1 안), 모임·취미(`neutral`)·공지는 흰 면 + 1px `--color-line` + muted 글자(회색 면 금지, DS-SWEEP 2026-11-09) | `fan-tag` | 2026-11-09 R14 |
 | 페이지 카드·행 | 목표: `FanRow notice`(78, 사실 ≥ 2). **5차 보류**, 현재 소유자 = `FanEntityCard` | `fan-entity-card`(현재) | 2026-11-09 R5·R18. `FanRow`는 아직 없다(C15) |
 | 게시판 목록 행 | 목표: `FanRow notice` 78. **5차 보류**, 현재 소유자 = `FanPostRow` | `fan-post-row`(현재) | 2026-11-09 R5. `FanRow`는 아직 없다(C15) |
-| 로딩 | `FanSkeleton`만 쓴다. `불러오는 중` 글자와 `FanState kind="loading"`을 쓰지 않는다. 비로그인의 내 값 자리는 로딩이 아니라 `FanLockedValue`·`FanLockedRows`다. 스켈레톤은 실제 내용과 같은 자리·크기(로딩 전후 높이 차 0), 150ms 안에 값이 오거나 캐시가 있으면 그리지 않는다. 구역 제목은 실제 글자로 둔다. 캘린더는 날짜 칸을 바로 그리고 일정만 채운다. 바탕 #f2f0f3, 띠 #f9f8fa, 1.2초, 움직임 줄이기에서 멈춤 | `components/fan-ui/fan-skeleton.tsx` | 2026-11-07 [15][33] |
+| 로딩 | `FanSkeleton`만 쓴다. `불러오는 중` 글자와 `FanState kind="loading"`을 쓰지 않는다. 비로그인의 내 값 자리는 로딩이 아니라 `FanLockedValue`·`FanLockedRows`다. 스켈레톤은 실제 내용과 같은 자리·크기(로딩 전후 높이 차 0), 150ms 안에 값이 오거나 캐시가 있으면 그리지 않는다. 구역 제목은 실제 글자로 둔다. 캘린더는 날짜 칸을 바로 그리고 일정만 채운다. 바탕 = 핑크 틴트 `--color-accent-soft`, 면은 고정하고 불투명도만 1 ↔ .5로 1.2초 숨 쉰다(회색 shimmer·`background-position` 이동 금지), 움직임 줄이기에서는 150ms 뒤 한 번 나타나고 멈춤 | `components/fan-ui/fan-skeleton.tsx` | 2026-11-07 [15][33] |
 | 상단 고정·캐시 | 페이지 머리·접속 띠·탭은 라우트 레이아웃의 `GroupPageFrame`이 그린다(재마운트·재요청 없음). 집계 응답은 60초 캐시 + `fetchedAt` 노출, 포커스 복귀 재조회 | `use-group-resource.ts` | 2026-11-09 R21 |
 | 화면 밀림 금지 | 검색·필터·정렬·탭은 자기보다 위의 영역을 없애거나 만들지 않는다. 다시 불러올 때 이전 목록 유지, 스켈레톤은 첫 로딩만. 빈 상태 높이 = 행 템플릿(78). 쿼리만 바뀌는 이동은 `scroll:false` | 화면별 | 2026-11-09 R7 |
 | 즉시 반응 | 탭·필터는 누른 즉시 선택 모양(100ms 이하), 본문 150ms 안. 좋아요·가입·댓글은 먼저 반영하고 실패하면 되돌린다. 포인트·스탬프·좋아요 변경은 응답 뒤 400ms 안에 같은 DOM 노드(`data-metric-id`) 숫자 카운트, 토스트 1줄 `+20P · 스탬프 1`(설명 줄 0), 문서 요청·라우트 재로딩·골격 0 | `reward-celebration`, `post-reactions` | 2026-11-09 R11 |
@@ -117,13 +117,13 @@ radius-scale: "12px / 8px / pill"
 ### 색 (강조 1색 — 2026-11-09 8장 ⑤⑥)
 | 역할 | 값 | 토큰 |
 |---|---|---|
-| 바탕·표면 | 페이지 바탕은 모든 화면 흰색 #fff(`--color-canvas`), 카드는 1px 선으로만 구획. 옅은 회색 1단 `--color-soft`는 칩·입력·비활성 같은 작은 요소 안쪽 채움에만 쓰고 **페이지 바탕에는 쓰지 않음**(사용자 2026-11-09 00:50 K2, 브리프 규칙 8 개정) | `--color-canvas`, `--color-surface`, `--color-soft` |
+| 바탕·표면 | 페이지 바탕은 모든 화면 흰색 #fff(`--color-canvas`), 카드는 1px 선으로만 구획. 회색 채움 면은 어디에도 없다(위 사용자 규칙 2). 칩·입력·세그먼트 레일·헤더 상태 캡슐은 흰 면 + 1px `--color-line`, 상태 표현은 `--color-accent-soft` 틴트. `--color-soft`는 `transparent` 별칭으로만 남고(화면 CSS 치환 전), 새로 쓰지 않는다(A1 2026-11-09, 사용자 2026-11-09 00:50 K2·11:16) | `--color-canvas`, `--color-surface`, `--color-accent-soft` |
 | 4차 기준선 복원 | 사용자 2026-11-09 00:49~01:05 피드백 K·K3·K4: 화면 구성(홈·헤더/셸·계정 메뉴·390 탭바·덕질·패스포트·모임·MY·글 상세·팬페이지)은 4차 55f260fd7 배치로 되돌린다. 5차에서 남긴 것은 H6 핑크(보라·그라데이션·짙은 회색 캡슐 제거), 흰 페이지 바탕, 화면 구성을 바꾸지 않는 토큰·공통 규칙뿐. 브리프 2.3·결정 ⑦·R2 "첫 뷰포트 블록 4개 이하"와 이 문서의 5차 화면별 배치(홈 5블록·56px 헤더·덕질 지갑 쌍 등)는 **보류** | 기준선 커밋 `t3/home-revert` |
 | 글자·보조·선 | oklch 18% / 48% / 90% / 93% | `--color-ink`, `--color-muted`, `--color-line`, `--color-line-subtle` |
 | **강조 1색**(primary 채움·선택·활성 밑줄·링크·게이지 채움·하트) | #d11b62 / soft #fff0f6 / line #f4c3d7 / ink #ad1457 | `--color-accent`, `-soft`, `-line`, `-ink` |
 | 팬페이지 대표색 | 기본 = `--color-accent`. 페이지 설정값이 이 1토큰만 바꾼다(활성 밑줄·주 버튼·게이지) | `--color-page-accent` |
-| 상태색 | 빨강 1 #9f1239(오류·LIVE·알림 점). 성공은 체크 아이콘 + 잉크 | `--color-error` |
-| 비활성 | #e5e5e5 / #5d5d5d (보랏빛 회색 #e4e1e6 폐기) | `--fan-action-disabled-bg/-ink` |
+| 상태색 | 빨강 1 #9f1239(오류·LIVE·알림 점). 성공은 체크 아이콘 + 잉크. 경고·순위 배지 글자 `--color-warning` #7a4206(2026-11-09, 옛 #8a4b08은 자기 30% 틴트 위 4.22:1이라 4.84:1로 어둡게) | `--color-error`, `--color-warning` |
+| 비활성 | 공통 부품은 면·글자색을 그대로 두고 불투명도만 `--fan-disabled-opacity`(.4)로 낮춘다(2026-11-09 U-1). 커서 `not-allowed`·`aria-disabled`는 유지. `--fan-action-disabled-*` 회색 값은 `FanAction` 호출부 호환용으로만 남는다 | `--fan-disabled-opacity` |
 | 백드롭 · 포커스 링 | rgb(23 23 26 / 42%) · `--color-ink` 3px/3px | `--color-backdrop`, `--color-focus`, `--focus-width`, `--focus-offset` |
 | 폐기 | 3색 그라데이션 `--color-primary-action`(로고 아트 제외), 코인 노랑 `--color-coin(-ink)`(→ lucide `Coins` 선 아이콘 + 잉크 글자), 금박 `--color-foil`(패스포트 삽화는 이미지 안에서만), 보라 `--color-service-ink`(→ `--color-page-accent`), `--color-surface-focus`(→ `--color-soft`), `--color-success`·`--color-warning`(→ 잉크) | 예정: 모두 globals에 남아 있다. `--color-primary-action`은 2026-11-09 design-sync-1에서 삭제(사용처 10파일을 `--color-accent`로 치환, 값 동일). `--color-service-ink`·`--color-surface-focus`는 별칭 단계(값이 accent 계열과 같음), 코인·금박·성공·경고는 원래 값. 사용처 치환 전 |
 
@@ -229,6 +229,7 @@ radius-scale: "12px / 8px / pill"
 | 도장 연출 (D3) | 도장이 실제로 찍힌 지급(출석·팬 인증 퀴즈 통과·도장 주는 미션)만 전체 화면 도장(Lottie 0.9초, 최대 360px, 입력 통과·`aria-hidden`)을 먼저 보이고, 끝나면 위 지급 연출을 부른다. 재요청(replay)에는 없음. reduced-motion은 도장 없이 바로 지급 연출 | `features/dukjil/ui/stamp-slam.tsx`(`celebrateStamp`) | 피드백 D3 |
 | 업로드 행 (D5) | 글·댓글 첨부 하나당 한 줄, 높이 44 이상, `--color-soft` 바탕, 반경 12. 왼쪽 16px 상태 아이콘(진행 스피너 → 완료 체크 `--color-accent` → 실패 `--color-error`), 파일 이름 한 줄 말줄임 + 진행률 숫자(tabular-nums), 행 아래 끝에 3px 진행 막대. 실패 문구만 줄바꿈해 다 보인다. reduced-motion은 스피너 감속·막대 고정 | `components/editor/upload-progress.tsx`, `rich-text.module.css .upload` | 피드백 D5 |
 | 최애 값 출처 | 최애는 `fan_profile_public_fields`(MY에서 고른 값) 하나만 읽고 쓴다. 헤더 메뉴의 선택도 `PUT /api/me/social/profile-fields`로 저장하고, 헤더·덕질 상단·홈 최애 카드·프로필 카드가 같은 값을 읽는다. 옛 브라우저 저장값(`kyaa:selected-bias:v1:`)은 최애가 비었을 때 한 번 옮긴 뒤 지운다 | `features/selected-bias/ui/use-selected-bias.ts`, `server/my/my-summary-repository.ts` | 감독 결정(합침 검토 1) |
+| 헤더 상태 캡슐 | 로그인 768+ 오른쪽 `[내 상태 캡슐]`은 흰 알약 + 안쪽 1px `--color-line` 헤어라인(회색 면 아님, DS-A1 2026-11-09 시안 31 A). 요소·순서·크기는 동결 | `fan-app-shell.module.css .statusCapsule` |
 | 헤더 최애 고르기 칩 | 비로그인 390(<768)은 칩을 그리지 않는다(종·언어만, 4차와 같다). 로그인 상태의 비어 있는 칩은 별만 남기고 aria-label을 둔다. 768~1023·1200 이상은 문구 전체, 1024~1199는 탭이 자리를 써서 별만. 이 문구는 말줄임 없이 온전하게 보이거나 아이콘만 남는다 | `features/selected-bias/ui/selected-bias-chip.module.css` | 2026-11-09 03:25 감독 지적 |
 | 미션 행 (D1·F3, 2026-11-09 갱신) | `FanMissionRow` 하나(접힌 머리 `FanMissionFoldRow`). 그리드 `40px │ 1fr │ 96px`(1024+ 120px), 간격 12, 안쪽 12·16, 높이 64. 선 원 40(1px) + lucide 20(`FanIcon`, 매핑은 §4 아이콘) · 제목 15/700 + 같은 줄 `0/3` 12 muted(간격 8) → 4px → 2px 막대(폭 160/240, 바탕 `--color-line`, 채움 accent) · 오른쪽 `+20P` 15/700 잉크 또는 `✓ 완료`(11/700 회색 알약 20). 접힌 행은 원 자리 없음(제목 x = 16), 오른쪽 `+465P ˅`. 출석도 행 전체 탭(버튼 0). `×N`·스탬프 상자·nudge 없음 | `features/dukjil/ui/fan-mission-row.tsx` | 브리프 v1.1 5장·G3·R5·R17 |
 | 모달 위 알림·줄바꿈 | 공통 토스트는 `--z-toast`(1100)로 z-index 모달(옛 화면 100~1000 포함) 위에 있고, 모달이 열려도 `inert`가 되지 않는다. 네이티브 `<dialog>`(showModal)가 열려 있으면 토스트를 그 dialog 안에 그린다. `<body>`로 그리는 모달(`AccessibleOverlay`)은 팬 화면에서 `data-fan-surface`를 받아 한국어 `keep-all` 줄바꿈을 따른다 | `components/fan-ui/fan-toast-viewport.tsx`, `top-layer.ts`, `components/ui/overlay/accessible-overlay.tsx` | 4회차 합침 QA |
@@ -291,7 +292,7 @@ node apps/web/scripts/measure-r3.mjs --base http://127.0.0.1:3001 --out <dir> [-
 | 큰 숫자 1440 32px(새 값, 승인 필요) | 768+에서 32px, 390은 24px | 1440 가운데 폭 720 카드에서 24px 숫자는 보조 정보와 구분되지 않는다. 감독 결정. `xl`만 32로 커지고 `lg`는 24 고정 |
 | Motion으로 페이지 전환·모달·메뉴·토스트·접기 | Motion은 보상·미션 완료만. 페이지 전환은 Web Animations, 나머지는 CSS | Motion을 첫 로드 JS에 넣지 않으려고(S 구현 기록). 값이 바뀐 뒤에만 내려받아 첫 로드 증가가 홈 +6.1KB로 끝남 |
 | 전역 `prefers-reduced-motion` 한 줄 | 모듈마다 분기 + N7 | 이유가 구현 기록에 없다. N7이 분기 없는 새 CSS를 막는다. `design-lint-rules.mjs`의 N7 설명("전역 분기가 있어 집계")은 현재 코드와 맞지 않는 옛 문구이고, 실제로는 `design-lint-n-rules.mjs`의 `fail`이 적용된다(`RULES_N`이 `RULES`를 덮어씀) |
-| 버튼 누름 scale .98 | 색만 바뀐다(2026-11-09 design-sync-1): primary `--fan-action-primary-active-bg`(accent-ink #ad1457), neutral·text·service·passport 안쪽 `--fan-action-neutral-active-bg`(line-subtle), danger `--fan-action-danger-active-bg`. 이동 0. 비활성·`aria-disabled`에는 그리지 않음 | 3장 '버튼 누름' 규칙에 맞춤. Weverse 공개 웹도 :active 이동이 없다(벤치마크) |
+| 버튼 누름 scale .98 | 색만 바뀐다(2026-11-09 design-sync-1): primary `--fan-action-primary-active-bg`(accent-ink #ad1457), neutral·text·service·passport 안쪽 `--fan-action-neutral-active-bg`(`--color-accent-soft` 핑크 틴트, 회색 아님), danger `--fan-action-danger-active-bg`. 이동 0. 비활성·`aria-disabled`에는 그리지 않음 | 3장 '버튼 누름' 규칙에 맞춤. Weverse 공개 웹도 :active 이동이 없다(벤치마크) |
 | `FanSheet` 드래그로 닫기(Motion drag) | 넣지 않음 | 버튼·ESC·백드롭으로 닫는다. 이유는 기록에 없다 |
 | `FanDialog`를 Base UI Dialog로 교체(2차) | 기존 `AccessibleOverlay`를 안에 유지 | 포커스 가둠·스크롤 잠금·중첩·포커스 복귀가 이미 맞다. 외부 API는 같아 나중에 바꿔도 화면은 그대로 |
 | `FanInput`·`FanTextarea`·`FanSelect`·`FanField`, `FanCard` 신설 | **만들지 않음** | 구현되지 않았고 이유 기록도 없다(미완). 원시 입력은 C3 집계로 남고 카드는 `FanSurface`를 쓴다 |

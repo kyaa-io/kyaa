@@ -6,10 +6,10 @@
   height: var(--avatar-size);
   overflow: hidden;
   border-radius: 50%;
-  background: #f6f6f5;
+  background: var(--color-accent-soft);
   vertical-align: middle;
   isolation: isolate;
 }
 .avatar > img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: center; }
-.avatar > svg { width: 100%; height: 100%; fill: #a3a3a3; padding: 12%; }
+.avatar > svg { width: 100%; height: 100%; fill: var(--color-accent-ink); padding: 12%; }
 @media (min-width: 48rem) { .avatar { width: var(--avatar-desktop-size); height: var(--avatar-desktop-size); } }
