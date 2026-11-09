@@ -30,13 +30,15 @@ export function useRankingResource<T>(url: string, parse: (value: unknown) => T)
     if (peekResource(cacheKey)?.fresh) return;
     // A re-read caused only by a write elsewhere keeps the value on screen if it fails.
     const behind = (last.cacheKey === cacheKey && last.attempt === attempt && last.epoch !== epoch) || quiet.current;
+    // A quiet re-read skips the browser's copy: a signed-out answer may be kept a minute, and the same answer would read as an old snapshot again.
+    const revalidate = quiet.current;
     quiet.current = false;
     const controller = new AbortController();
     (async () => {
       try {
         const body = await shareResourceRead(cacheKey, async (signal) => {
           const token = authenticated ? await getAccessToken() : null;
-          const response = await fetch(url, { headers: token ? { Authorization: `Bearer ${token}` } : undefined, signal });
+          const response = await fetch(url, { headers: token ? { Authorization: `Bearer ${token}` } : undefined, signal, ...(revalidate ? { cache: "no-cache" as const } : {}) });
           if (!response.ok) throw new Error("rankings unavailable");
           return (await response.json()) as unknown;
         }, controller.signal);

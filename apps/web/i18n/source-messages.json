@@ -17471,6 +17471,24 @@
     "source": "features/rankings/ui/rankings-copy",
     "id": "features/rankings/ui/rankings-copy:rkDeltaNew"
   },
+  "rkMetricPoints": {
+    "en": "Points",
+    "ko": "포인트",
+    "source": "features/rankings/ui/rankings-copy",
+    "id": "features/rankings/ui/rankings-copy:rkMetricPoints"
+  },
+  "rkPoints": {
+    "en": "{0}P",
+    "ko": "{0}P",
+    "source": "features/rankings/ui/rankings-copy",
+    "id": "features/rankings/ui/rankings-copy:rkPoints"
+  },
+  "rkPointsLabel": {
+    "en": "{0} points",
+    "ko": "포인트 {0}",
+    "source": "features/rankings/ui/rankings-copy",
+    "id": "features/rankings/ui/rankings-copy:rkPointsLabel"
+  },
   "jjTitle": {
     "en": "100 True Fans Challenge",
     "ko": "찐팬 100 챌린지",

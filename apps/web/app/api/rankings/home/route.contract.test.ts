@@ -4,67 +4,77 @@ const state = vi.hoisted(() => ({ rpc: vi.fn(), authorize: vi.fn() }));
 vi.mock("@/server/fanpage/dependencies", () => ({ createFanpageDependencies: () => state }));
 vi.mock("@/server/dukjil/creator-id", () => ({ resolveCreatorId: vi.fn(async () => null) }));
 import { GET } from "./route";
+// Real answers of read_home_fan_ranking_v2 / read_home_creator_ranking_v2 after 20261220010000, from a disposable database with every
+// migration (supabase/tests/home_ranking_metrics_answers.sql, 2026-11-09): first built day, second day, empty day, late day; every metric.
+import answers from "./v2-answers.fixture.json";
 
-// Answers copied from the local database after 20261216020000 (2026-11-08): read_home_fan_ranking(null, 20) cut to two rows,
-// read_home_creator_ranking('ko', 2) as stored (first day, nothing to compare), and the same read with a built day three days earlier
-// (a copy of today's first creator with 12 fewer 찐팬, inside a transaction that was rolled back).
-const today = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Seoul", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date());
-const favorite = { slug: "doc261107-test-ranking", names: { en: "[Test] Ranking page", ko: "[시험] 랭킹 확인 페이지" } };
-const fanAnswer = { me: null, day: today, rows: [
-  { isMe: false, rank: 1, tier: "Gold", delta: null, score: 12, favorite, nickname: "시험팬 001", characterId: "star-pink" },
-  { isMe: false, rank: 2, tier: "Gold", delta: null, score: 12, favorite: null, nickname: "시험팬 002", characterId: "fairy-lavender" },
-], builtDay: today, comparable: false, computedAt: "2026-11-08T13:03:15.230491+09:00" };
-const creatorRows = [
-  { name: "[시험] 랭킹 확인 페이지", rank: 1, slug: "doc261107-test-ranking", delta: null, score: 125, hearts: 795, imageUrl: "/images/groups/capsule-machine.png", weekGain: null, challenge: false },
-  { name: "[P1 시험] 시험 크리에이터", rank: 2, slug: "p1-smoke-creator", delta: null, score: 3, hearts: 3, imageUrl: "/images/groups/nchive-pencil.jpg", weekGain: null, challenge: false },
-];
-const creatorAnswer = { day: today, rows: creatorRows, builtDay: today, comparable: false, computedAt: "2026-11-08T13:03:15.230491+09:00", weekGainDays: null };
-const creatorWeekAnswer = { ...creatorAnswer, weekGainDays: 3, rows: [{ ...creatorRows[0], weekGain: 12 }, { ...creatorRows[1], weekGain: 3 }] };
+type Answer = Record<string, unknown> & { rows: Record<string, unknown>[] };
+const answer = (name: string) => (answers as Record<string, Answer>)[name]!;
+const ME = "11111111-1111-4111-8111-111111111111";
 
-beforeEach(() => { vi.clearAllMocks(); state.rpc.mockImplementation(async (name: string) => name === "read_home_creator_ranking" ? creatorAnswer : fanAnswer); });
+beforeEach(() => { vi.clearAllMocks(); state.authorize.mockResolvedValue({ appUserId: ME }); });
+/** The fixture's day is in the past by the time the test runs, so the route asks ensure_home_rankings; it answers "nothing built" here. */
+function serve(name: string) {
+  state.rpc.mockImplementation(async (fn: string) => fn === "ensure_home_rankings" ? { day: "2026-11-09", built: false } : answer(name));
+}
 
-it("passes the database's fan answer through the route schema without the build mark, naming the favorite in the viewer's language", async () => {
-  const res = await GET(new Request("https://byus.test/api/rankings/home"));
-  expect(res.status).toBe(200);
+for (const label of ["first", "ready", "empty", "stale"]) {
+  for (const [kind, metric] of [["fans", "hearts"], ["fans", "points"], ["creators", "fans"], ["creators", "hearts"]] as const) {
+    it(`passes the database's ${label} ${kind} answer by ${metric} through the route schema`, async () => {
+      serve(`${label}:${kind}:${metric}`);
+      const res = await GET(new Request(`https://byus.test/api/rankings/home?kind=${kind}&metric=${metric}&locale=ko`));
+      expect(res.status).toBe(200);
+      const body = await res.json();
+      const raw = answer(`${label}:${kind}:${metric}`);
+      expect(body).toMatchObject({ state: raw.state, metric, day: raw.day, previousDay: raw.previousDay, comparable: raw.comparable, period: "day" });
+      expect(body.rows).toHaveLength(raw.rows.length);
+      expect(state.rpc).toHaveBeenCalledWith(kind === "fans" ? "read_home_fan_ranking_v2" : "read_home_creator_ranking_v2", expect.objectContaining({ p_metric: metric, p_limit: 5 }));
+      if (label === "first") expect(body.rows.every((row: { delta: unknown }) => row.delta === null)).toBe(true);
+      if (label === "empty") expect(body.rows).toEqual([]);
+      if (label === "stale") expect(body.failedAt).not.toBeNull();
+    });
+  }
+}
+
+it("names the values: points only on the points metric, fans and hearts on both creator metrics", async () => {
+  serve("ready:fans:points");
+  const points = await (await GET(new Request("https://byus.test/api/rankings/home?kind=fans&metric=points"))).json();
+  for (const row of points.rows) expect(row.points).toBe(row.score);
+  serve("ready:fans:hearts");
+  const hearts = await (await GET(new Request("https://byus.test/api/rankings/home?kind=fans&metric=hearts"))).json();
+  for (const row of hearts.rows) { expect(row.hearts).toBe(row.score); expect(row.points).toBeNull(); }
+  serve("ready:creators:hearts");
+  const byHearts = await (await GET(new Request("https://byus.test/api/rankings/home?kind=creators&metric=hearts"))).json();
+  serve("ready:creators:fans");
+  const byFans = await (await GET(new Request("https://byus.test/api/rankings/home?kind=creators&metric=fans"))).json();
+  for (const row of byHearts.rows) {
+    expect(row.hearts).toBe(row.score);
+    expect(row.fans).toBe(byFans.rows.find((other: { slug: string }) => other.slug === row.slug).fans);
+  }
+  for (const row of byFans.rows) expect(row.fans).toBe(row.score);
+  // The second day compares with the first: numbers, not "new", for creators ranked on both days.
+  expect(byHearts.rows.map((row: { delta: number | null }) => typeof row.delta)).toEqual(["number", "number"]);
+});
+
+it("passes my rank with its named values and movement for a signed-in viewer", async () => {
+  serve("ready:fans:points:viewer");
+  const res = await GET(new Request("https://byus.test/api/rankings/home?kind=fans&metric=points&limit=50", { headers: { authorization: "Bearer t" } }));
+  expect(res.headers.get("cache-control")).toBe("private, no-store");
   const body = await res.json();
-  // r5: the route adds the basis line (period·closesAt·fetchedAt); an answer from before 20261217010000 has no fan weekGain keys.
-  expect(Object.keys(body).sort()).toEqual(["closesAt", "comparable", "computedAt", "day", "fetchedAt", "me", "period", "rows"]);
-  expect(body.rows[0]).toEqual({ rank: 1, score: 12, nickname: "시험팬 001", characterId: "star-pink", tier: "Gold", isMe: false, delta: null, favorite: { slug: "doc261107-test-ranking", name: "[시험] 랭킹 확인 페이지" } });
-  expect(body.rows[1].favorite).toBeNull();
-  expect(state.rpc).toHaveBeenCalledTimes(1);
-  const english = await (await GET(new Request("https://byus.test/api/rankings/home?kind=fans&locale=en"))).json();
-  expect(english.rows[0].favorite).toEqual({ slug: "doc261107-test-ranking", name: "[Test] Ranking page" });
-  // No stored Japanese name: Korean first.
-  const japanese = await (await GET(new Request("https://byus.test/api/rankings/home?kind=fans&locale=ja"))).json();
-  expect(japanese.rows[0].favorite.name).toBe("[시험] 랭킹 확인 페이지");
+  expect(body.me).toEqual({ rank: 2, score: 40, hearts: 3, points: 40, inTop: true, delta: 0 });
+  expect(state.rpc).toHaveBeenCalledWith("read_home_fan_ranking_v2", { p_viewer: ME, p_metric: "points", p_limit: 50 });
 });
 
-// read_home_fan_ranking(null, 1) from the local database after 20261217010000 (2026-11-08 20:xx KST), favorite trimmed to two names.
-it("passes the fan weekGain of 20261217010000 through the route schema", async () => {
-  state.rpc.mockImplementation(async () => ({ me: null, day: today, builtDay: today, comparable: true, computedAt: "2026-11-08T18:53:14.997554+09:00", weekGainDays: 7,
-    rows: [{ isMe: false, rank: 1, tier: "Diamond", delta: 0, score: 911, favorite, nickname: "시험팬 027", weekGain: 897, characterId: "ghost-cream" }] }));
-  const res = await GET(new Request("https://byus.test/api/rankings/home?kind=fans"));
-  expect(res.status).toBe(200);
-  const body = await res.json();
-  expect(body).toMatchObject({ period: "day", weekGainDays: 7, rows: [{ rank: 1, score: 911, delta: 0, weekGain: 897 }] });
-});
-
-it("passes the database's creator answer through the route schema, first day without a week gain", async () => {
-  const body = await (await GET(new Request("https://byus.test/api/rankings/home?kind=creators&locale=ko"))).json();
-  expect(body.rows.map((row: { slug: string; score: number; hearts: number; weekGain: number | null }) => [row.slug, row.score, row.hearts, row.weekGain]))
-    .toEqual([["doc261107-test-ranking", 125, 795, null], ["p1-smoke-creator", 3, 3, null]]);
-  expect(body.weekGainDays).toBeNull();
-  expect(state.rpc).toHaveBeenCalledWith("read_home_creator_ranking", { p_locale: "ko", p_limit: 20 });
-});
-
-it("carries the week gain and the days it spans once an earlier day is kept", async () => {
-  state.rpc.mockImplementation(async () => creatorWeekAnswer);
-  const body = await (await GET(new Request("https://byus.test/api/rankings/home?kind=creators&locale=ko"))).json();
-  expect(body.weekGainDays).toBe(3);
-  expect(body.rows.map((row: { weekGain: number }) => row.weekGain)).toEqual([12, 3]);
+it("keeps fan ids and e-mails out of every answer", async () => {
+  for (const name of Object.keys(answers)) {
+    serve(name);
+    const [kind, metric] = name.split(":").slice(1);
+    const text = await (await GET(new Request(`https://byus.test/api/rankings/home?kind=${kind}&metric=${metric}`))).text();
+    expect(text).not.toMatch(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-|@example\.test/);
+  }
 });
 
 it("answers 503 when the database is older than the route", async () => {
-  state.rpc.mockRejectedValue(Object.assign(new Error("Could not find the function public.read_home_fan_ranking"), { code: "PGRST202" }));
+  state.rpc.mockRejectedValue(Object.assign(new Error("Could not find the function public.read_home_fan_ranking_v2"), { code: "PGRST202" }));
   expect((await GET(new Request("https://byus.test/api/rankings/home"))).status).toBe(503);
 });

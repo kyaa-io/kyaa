@@ -20,6 +20,12 @@
   padding-block-start: var(--space-6);
 }
 
+/* /rankings 목록과 바닥 줄(내 순위·로그인): 행은 ranking-rows.module.css. */
+.board {
+  display: grid;
+  min-width: 0;
+}
+
 .controls {
   display: grid;
   gap: var(--space-3);
@@ -161,7 +167,6 @@
 }
 
 .soon.shortBadge { display: block; width: auto; overflow: hidden; max-width: 100%; box-sizing: border-box; padding-inline: var(--space-2); text-overflow: ellipsis; white-space: nowrap; }
-.nameBadge { flex: none; white-space: nowrap; }
 .soon {
   display: inline-flex;
   width: fit-content;
@@ -194,55 +199,3 @@
 .retry {
   margin-inline-start: var(--space-2);
 }
-
-/* Embedded lists (덕질 tab). Stacked below 1024px: long names wrap, the score may wrap, the meeting badge keeps its place under the bar. */
-.embedded .name { overflow: visible; text-overflow: clip; white-space: normal; overflow-wrap: anywhere; word-break: keep-all; }
-.embedded .score { min-width: 0; max-width: calc(var(--space-8) * 3); overflow-wrap: anywhere; }
-.embedded .nameLine { display: contents; }
-.embedded .names > .progress { order: 1; }
-.embedded .names > .nameBadge { order: 2; }
-.embedded .names > .myHearts { order: 3; }
-
-/* From 768px the row is columns that line up row to row: [rank on the image corner] image · name+badge · progress (fixed bar) · my hearts | hearts. */
-@media (min-width: 48rem) {
-  .embedded .row { position: relative; grid-template-columns: minmax(0, 1fr) 112px; min-height: 68px; box-sizing: border-box; padding-block: var(--space-3); }
-  .embedded .rank { position: absolute; z-index: 1; top: calc(50% - 26px); left: -4px; width: 22px; height: 22px; font-size: var(--fan-metadata-size); box-shadow: 0 0 0 2px var(--color-canvas); }
-  .embedded .rank:not([class*="medal"]) { background: var(--color-surface); }
-  .embedded .who { display: grid; grid-template-columns: 44px minmax(0, 1fr) clamp(140px, 24vw, 224px) 80px; align-items: center; column-gap: var(--space-3); }
-  .embedded .names { display: contents; }
-  .embedded .nameLine { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-1) var(--space-2); min-width: 0; }
-  .embedded .names > .progress { order: 0; }
-  .embedded .bar { height: 6px; }
-  .embedded .myHearts { order: 0; }
-  .embedded .score { width: 112px; max-width: none; text-align: end; }
-  .embedded .nameBadge { white-space: nowrap; }
-}
-@media (min-width: 64rem) { .embedded .who { grid-template-columns: 44px minmax(0, 1fr) clamp(112px, 14vw, 224px) 80px; } }
-@media (min-width: 80rem) { .embedded .who { grid-template-columns: 44px minmax(0, 1fr) 224px 96px; } }
-/* No row has "my hearts": drop that column so the bar sits beside the hearts count. */
-@media (min-width: 48rem) { .embedded.noMine .who { grid-template-columns: 44px minmax(0, 1fr) clamp(140px, 24vw, 224px); } }
-@media (min-width: 64rem) { .embedded.noMine .who { grid-template-columns: 44px minmax(0, 1fr) clamp(112px, 14vw, 224px); } }
-@media (min-width: 80rem) { .embedded.noMine .who { grid-template-columns: 44px minmax(0, 1fr) 224px; } }
-
-/* Top three (3 rows or more): first in the middle, 72px and raised 12px; second and third 56px. Fixed 96px columns so long names end in an ellipsis instead of moving the podium. */
-.ranking { display: grid; min-width: 0; }
-.podium { display: flex; justify-content: center; align-items: flex-end; gap: var(--space-4); margin: 0; padding: var(--space-3) 0 var(--space-4); border-bottom: 1px solid var(--color-line-subtle); list-style: none; }
-.podiumItem { flex: 0 0 96px; min-width: 0; }
-.podiumItem:nth-child(1) { order: 2; padding-bottom: var(--space-3); }
-.podiumItem:nth-child(2) { order: 1; }
-.podiumItem:nth-child(3) { order: 3; }
-.podiumLink { display: grid; justify-items: center; gap: var(--space-1); min-width: 0; color: inherit; text-align: center; text-decoration: none; }
-.podiumLink:focus-visible { outline: 3px solid var(--color-focus); outline-offset: 3px; }
-.podiumImage { position: relative; display: block; margin-bottom: var(--space-1); }
-.podiumRank { position: absolute; z-index: 1; top: -4px; left: -4px; display: grid; width: 22px; height: 22px; place-items: center; border-radius: var(--radius-pill); box-shadow: 0 0 0 2px var(--color-canvas); font-size: var(--fan-metadata-size); font-weight: var(--fan-action-weight); font-variant-numeric: tabular-nums; }
-.podiumRank:not([class*="medal"]) { background: var(--color-surface); }
-.podiumName { overflow: hidden; width: 100%; font-size: var(--fan-item-title-size); font-weight: var(--fan-item-title-weight); line-height: 1.5; text-overflow: ellipsis; white-space: nowrap; }
-.podiumScore { color: var(--color-muted); font-size: var(--fan-metadata-size); font-variant-numeric: tabular-nums; line-height: 20px; overflow-wrap: anywhere; }
-@media (min-width: 48rem) { .podium { gap: var(--space-6); } }
-/* The viewer's own row below the top rows: same row, a stronger line above it. */
-.row:has(+ .pinnedRow) { border-bottom: 0; }
-.pinnedRow { border-top: 1px solid var(--color-line); }
-
-/* The podium's 96px column: the same progress and goal badge, centred. */
-.podiumLink .progress { width: 100%; min-width: 0; justify-items: center; text-align: center; }
-.podiumLink .bar { width: 100%; }

@@ -7,7 +7,7 @@ import styles from "@/features/rankings/ui/rankings.module.css";
 import { parseAppLocale } from "@/i18n/locales";
 import { publicMetadata } from "@/seo/metadata";
 
-type Props = { searchParams: Promise<{ locale?: string | string[]; tab?: string | string[] }> };
+type Props = { searchParams: Promise<{ locale?: string | string[]; tab?: string | string[]; metric?: string | string[] }> };
 
 export async function generateMetadata({ searchParams }: Props): Promise<Metadata> {
   const locale = parseAppLocale((await searchParams).locale);
@@ -20,7 +20,7 @@ export default async function RankingsPage({ searchParams }: Props) {
   return (
     <FanAppFrame locale={locale} currentPath="/rankings" mainId="rankings-main">
       <FanContentContainer as="main" id="rankings-main" tabIndex={-1} className={styles.page}>
-        <CreatorRankingScreen locale={locale} initialTab={params.tab === "creators" ? "creators" : "fans"} />
+        <CreatorRankingScreen locale={locale} initialTab={params.tab === "creators" ? "creators" : "fans"} initialMetric={typeof params.metric === "string" ? params.metric : undefined} />
       </FanContentContainer>
     </FanAppFrame>
   );

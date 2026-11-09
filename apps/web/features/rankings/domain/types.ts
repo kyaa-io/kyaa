@@ -75,25 +75,41 @@ export const platformFanRankingSchema = z.object({
 export type PlatformFanRankingRow = z.infer<typeof platformFanRankingRowSchema>;
 export type PlatformFanRanking = z.infer<typeof platformFanRankingSchema>;
 
-/** Home ranking by day (feedback C3). delta = yesterday's rank minus today's: positive went up, null = no comparison (first seven days or new). */
+/** Home ranking by day (feedback C3). delta = the previous built day's rank minus today's: positive went up, null = new (no previous day, or
+ * not ranked then). Ranking stage 2 (20261220010000): movement shows from the second built day of the same metric. */
 const delta = z.number().int().nullable();
+/** Fans: hearts (default of the API) or fan score points. Creators: 찐팬 (default of the API) or hearts. The screens name the metric they show. */
+export const HOME_FAN_METRICS = ["hearts", "points"] as const;
+export const HOME_CREATOR_METRICS = ["fans", "hearts"] as const;
+export type HomeFanMetric = (typeof HOME_FAN_METRICS)[number];
+export type HomeCreatorMetric = (typeof HOME_CREATOR_METRICS)[number];
+/** ready: today's rows; empty: today is built and nobody is ranked; stale: today is not built yet (or its build failed), the rows are the last built
+ * day's; none: nothing built. */
+export const HOME_RANKING_STATES = ["ready", "empty", "stale", "none"] as const;
 /** r5(R12·R21): the route adds the basis line's values. period is always "day" (the list is today's KST standings, rebuilt every 10 minutes);
  * closesAt = the next KST midnight, when today's standings are kept and tomorrow's start; fetchedAt = when the server answered. Optional so an answer
- * from an older server still parses. */
+ * from an older server still parses. state, today, previousDay, failedAt and metric come with 20261220010000; the route always sets metric. */
 const homeHead = {
   day: z.string().nullable(), computedAt: timestamp, comparable: z.boolean(),
   period: z.literal("day").optional(), closesAt: z.iso.datetime({ offset: true }).nullable().optional(), fetchedAt: z.iso.datetime({ offset: true }).optional(),
+  state: z.enum(HOME_RANKING_STATES).optional(), today: z.string().nullable().optional(), previousDay: z.string().nullable().optional(), failedAt: timestamp.optional(),
 };
-export const HOME_RANKING_LIMIT = 20;
-/** The creator this fan gave the most hearts (E2 ②), named in the viewer's language. null: no listed public page qualifies. */
+/** Rows a signed-in reader may ask for (the full ranking page); the home card asks for the default. Signed out, every platform ranking list answers
+ * at most HOME_GUEST_LIMIT rows (decision 2026-11-09 15:52). */
+export const HOME_RANKING_LIMIT = 50;
+export const HOME_RANKING_DEFAULT_LIMIT = 20;
+export const HOME_GUEST_LIMIT = 5;
+/** The creator this fan named on MY (when that page can be named), else the one given the most hearts, named in the viewer's language. */
 const favorite = z.object({ slug: z.string(), name: z.string() }).nullable();
+const count = z.number().int().min(0);
 export const homeFanRankingSchema = z.object({
   ...homeHead,
+  metric: z.enum(HOME_FAN_METRICS).optional(),
   /** Days the fan weekGain comparison spans (20261217010000). Optional: absent before that migration. */
   weekGainDays: z.number().int().min(1).max(7).nullable().optional(),
-  /** weekGain: hearts gained over the rolling seven days (20261217010000); null on the first day, absent from an older database. */
-  rows: z.array(platformFanRankingRowSchema.extend({ delta, favorite, weekGain: z.number().int().nullable().optional() })).max(HOME_RANKING_LIMIT),
-  me: z.object({ rank: z.number().int().min(1), score: z.number().int().min(0), inTop: z.boolean() }).nullable(),
+  /** score is the metric's value; hearts and points name the values (points only on the points metric). */
+  rows: z.array(platformFanRankingRowSchema.extend({ delta, favorite, weekGain: z.number().int().nullable().optional(), hearts: count.optional(), points: count.nullable().optional() })).max(HOME_RANKING_LIMIT),
+  me: z.object({ rank: z.number().int().min(1), score: count, inTop: z.boolean(), hearts: count.optional(), points: count.nullable().optional(), delta: delta.optional() }).nullable(),
 });
 export type HomeFanRanking = z.infer<typeof homeFanRankingSchema>;
 export type HomeFanRankingRow = HomeFanRanking["rows"][number];
@@ -102,17 +118,20 @@ export const homeCreatorRankingRowSchema = z.object({
   slug: z.string(),
   name: z.string(),
   imageUrl: z.string().nullable(),
-  /** Fans holding at least one counted heart. */
-  score: z.number().int().min(0),
-  hearts: z.number().int().min(0),
+  /** The metric's value: 찐팬 on fans, hearts on hearts. Read fans and hearts by name. */
+  score: count,
+  hearts: count,
+  /** Fans holding at least one counted heart. Absent from an older database (there score is the 찐팬). */
+  fans: count.optional(),
   /** An administrator turned on the 찐팬 100 challenge for this creator. */
   challenge: z.boolean(),
   delta,
-  /** 찐팬 gained over the rolling seven days (E2 ①). null on the first day of history. May be negative when fans left. */
+  /** The metric gained over the rolling seven days (E2 ①). null on the first day of history. May be negative when fans left. */
   weekGain: z.number().int().nullable(),
 });
 export const homeCreatorRankingSchema = z.object({
   ...homeHead,
+  metric: z.enum(HOME_CREATOR_METRICS).optional(),
   /** Days the weekGain comparison spans: 7 once a week of days is kept, fewer in the first week, null when there is nothing to compare. */
   weekGainDays: z.number().int().min(1).max(7).nullable(),
   rows: z.array(homeCreatorRankingRowSchema).max(HOME_RANKING_LIMIT),
