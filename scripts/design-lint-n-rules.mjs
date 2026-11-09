@@ -153,8 +153,8 @@ function headActionHasStyle(attrs, code, file, read, head, name) {
   }
   if (!read) return false;
   for (const imported of code.matchAll(/import\s+(\w+)\s+from\s*["']([^"']+\.module\.css)["']/g)) {
-    const classes = [...attrs.matchAll(new RegExp(`\\b${imported[1]}\\.(\\w+)`, 'g'))].map((m) => m[1]);
-    const headClasses = [...head.matchAll(new RegExp(`\\b${imported[1]}\\.(\\w+)`, 'g'))].map((m) => m[1]);
+    const classes = [...attrs.matchAll(new RegExp(String.raw`\b${imported[1]}\.(\w+)`, 'g'))].map((m) => m[1]);
+    const headClasses = [...head.matchAll(new RegExp(String.raw`\b${imported[1]}\.(\w+)`, 'g'))].map((m) => m[1]);
     if (!classes.length && !headClasses.length) continue;
     const path = imported[2].startsWith('@/') ? `apps/web/${imported[2].slice(2)}` : posix.join(posix.dirname(file), imported[2]);
     const css = read(path);
@@ -167,8 +167,8 @@ function headActionHasStyle(attrs, code, file, read, head, name) {
         const ancestors = selector.slice(0, selector.lastIndexOf(target));
         const parentClasses = [...ancestors.matchAll(/\.([\w-]+)/g)].map((m) => m[1]);
         if (parentClasses.some((value) => !headClasses.includes(value))) return false;
-        return classes.some((value) => new RegExp(`\\.${value}(?![\\w-])`).test(target))
-          || (parentClasses.length > 0 && new RegExp(`^${name === 'Link' ? 'a' : name}(?:$|:)`).test(target));
+        return classes.some((value) => new RegExp(String.raw`\.${value}(?![\w-])`).test(target))
+          || (parentClasses.length > 0 && new RegExp(String.raw`^${name === 'Link' ? 'a' : name}(?:$|:)`).test(target));
       })) return;
       if (rule.nodes.some((decl) => decl.type === 'decl' && forbiddenHeadStyle(decl.prop, decl.value))) forbidden = true;
     });
