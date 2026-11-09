@@ -1,6 +1,6 @@
 import { TextEncoder as NodeTextEncoder } from "node:util";
 
-import type { CryptoKey, JWTPayload } from "jose";
+import type { JWTPayload } from "jose";
 import { beforeAll, describe, expect, it } from "vitest";
 
 import type { AppleNotificationType } from "./verify-apple-notification";
