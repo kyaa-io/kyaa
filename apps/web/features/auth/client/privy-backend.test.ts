@@ -66,21 +66,17 @@ describe("privy-backend (direct)", () => {
     }
   });
 
-  it("is, with the provider tree, the only app code that imports the SDK", () => {
-    const web = path.resolve(__dirname, "../../..");
-    const allowed = new Set(["components/privy-provider.tsx", "features/auth/client/privy-backend.ts"]);
-    const found: string[] = [];
-    let scanned = 0;
+  const web = path.resolve(__dirname, "../../..");
+  const sources = () => {
+    const files: { rel: string; text: string }[] = [];
     const walk = (dir: string) => {
       for (const entry of readdirSync(dir)) {
-        if (["node_modules", ".next", "e2e", "e2e-q", "q-contract", "test-results", "public"].includes(entry)) continue;
+        if (["node_modules", ".next", "e2e", "e2e-q", "q-contract", "test-results", "public", "island-test"].includes(entry)) continue;
         const full = path.join(dir, entry);
         if (statSync(full).isDirectory()) { walk(full); continue; }
-        if (!/\.(ts|tsx|js|jsx|mjs|cjs)$/.test(entry) || /\.(test|spec|qc)\.[cm]?[jt]sx?$/.test(entry)) continue;
-        const rel = path.relative(web, full);
-        scanned += 1;
+        if (!/\.(ts|tsx|js|jsx|mjs|cjs)$/.test(entry) || /\.(test|spec|qc|island-test)\.[cm]?[jt]sx?$/.test(entry) || /^vitest.*\.config\./.test(entry)) continue;
         // Read errors fail the test; they are not swallowed.
-        if (SDK_IMPORT.test(readFileSync(full, "utf8"))) found.push(rel);
+        files.push({ rel: path.relative(web, full), text: readFileSync(full, "utf8") });
       }
     };
     for (const root of ["app", "components", "features", "lib", "server", "i18n", "seo"]) {
@@ -88,8 +84,46 @@ describe("privy-backend (direct)", () => {
       if (!existsSync(dir)) continue; // Only a root that does not exist is skipped.
       walk(dir);
     }
-    expect(scanned).toBeGreaterThan(500);
-    // Exactly the provider tree and the backend: anything else is a direct SDK import to move behind the backend.
-    expect(found.sort()).toEqual([...allowed].sort());
+    // Files directly under apps/web (proxy.ts, next.config.ts, …).
+    for (const entry of readdirSync(web)) if (/\.(ts|tsx|js|mjs|cjs)$/.test(entry) && !/\.test\.|^vitest|^playwright/.test(entry)) files.push({ rel: entry, text: readFileSync(path.join(web, entry), "utf8") });
+    return files;
+  };
+
+  it("keeps SDK imports to the direct tree, the direct backend, the island mirrors and the island Provider boundary", () => {
+    const files = sources();
+    expect(files.length).toBeGreaterThan(500);
+    // Type-only imports and re-exports are erased at build time; only run-time reaches count.
+    const runtime = (text: string) => text.replace(/(?:import|export)\s+type\s*\{[^}]*\}\s*from\s*["'][^"']+["'];?/g, "").replace(/import\s+type\s+[\w*\s]+\s+from\s*["'][^"']+["'];?/g, "");
+    expect(files.filter(file => SDK_IMPORT.test(runtime(file.text))).map(file => file.rel).sort()).toEqual([
+      "components/privy-provider.tsx",
+      "features/auth/client/privy-backend.ts",
+      "features/auth/client/privy-mirrors.tsx",
+      "features/auth/client/privy-provider-boundary.tsx",
+    ]);
+    // Value imports of PrivyProvider: the direct tree and the boundary only (plan-b §7.3-6).
+    const PROVIDER_IMPORT = /import\s*\{[^}]*\bPrivyProvider\b[^}]*\}\s*from\s*["']@privy-io\/react-auth["']/;
+    expect(files.filter(file => PROVIDER_IMPORT.test(runtime(file.text))).map(file => file.rel).sort())
+      .toEqual(["components/privy-provider.tsx", "features/auth/client/privy-provider-boundary.tsx"]);
+  });
+
+  it("reaches the backends only by the path names the island build swaps (plan-b §7.3-4)", () => {
+    const backendFiles = new Set([
+      "features/auth/client/privy-backend.ts", "features/auth/client/privy-backend.island.tsx", "features/auth/client/privy-mirrors.tsx",
+      "features/auth/client/privy-root.tsx", "features/auth/client/privy-root.island.tsx",
+    ]);
+    const specifiers = /(?:\bfrom\s*|\bimport\s*\(\s*|\bimport\s+|\brequire\s*\(\s*)["']([^"']*privy-(?:backend|root|mirrors|provider-boundary)[^"']*)["']/g;
+    const allowed = new Set(["@/features/auth/client/privy-backend", "@/features/auth/client/privy-root", "@/features/auth/client/privy-provider-boundary"]);
+    const offenders: string[] = [];
+    for (const file of sources()) {
+      if (backendFiles.has(file.rel)) continue;
+      for (const match of file.text.matchAll(specifiers)) if (!allowed.has(match[1])) offenders.push(`${file.rel} → ${match[1]}`);
+    }
+    expect(offenders).toEqual([]);
+  });
+
+  it("keeps the shared Provider settings free of the SDK, the backends and the direct tree at run time", () => {
+    const text = readFileSync(path.join(__dirname, "privy-provider-config.ts"), "utf8");
+    const valueImports = [...text.matchAll(/^import\s+(?!type\b)[^;]*?from\s*["']([^"']+)["']/gm)].map(match => match[1]);
+    expect(valueImports.filter(name => /@privy-io|privy-backend|privy-root|privy-mirrors|components\/privy-provider/.test(name))).toEqual([]);
   });
 });

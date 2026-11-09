@@ -7,7 +7,7 @@ import { LocaleProvider } from "../components/locale-provider";
 import { GroupsReleaseProvider } from "@/features/groups/ui/groups-release";
 import { DocumentLocale } from "../components/document-locale";
 import { FanNavigationProgress } from "@/components/fan-ui/fan-navigation-progress";
-import { ByUsPrivyProvider } from "../components/privy-provider";
+import { PrivyRoot } from "@/features/auth/client/privy-root";
 import { publicRuntimeConfig } from "../server/config/public-runtime-config";
 import { isAwsHosting } from "../server/config/hosting";
 import { AcquisitionSessionTracker } from "../features/analytics/client/acquisition-session-tracker";
@@ -81,7 +81,7 @@ export default async function RootLayout({
         {rewardedExchange.enabled && <meta name="kyaa-rewarded-ad-unit" content={rewardedExchange.adUnit} />}
         <LocaleProvider initialLocale={locale}>
         <GroupsReleaseProvider enabled={process.env.KYAA_GROUPS_ENABLED === "true"}>
-        <ByUsPrivyProvider
+        <PrivyRoot
           appId={privyAppId}
           authProvider={authProvider}
           appleLoginEnabled={appleLoginEnabled}
@@ -102,7 +102,7 @@ export default async function RootLayout({
           <AuthTransitionBoundary modal={modal}>{children}</AuthTransitionBoundary>
           <FanToastProvider />
           <DeferredRootClients slot="after" />
-        </ByUsPrivyProvider>
+        </PrivyRoot>
         </GroupsReleaseProvider>
         </LocaleProvider>
       </body>
