@@ -65,3 +65,7 @@
 .funnelSince { display: block; color: var(--overview-muted); font-size: var(--fan-metadata-size); font-weight: 400; }
 /* Admin panel titles stay at the sibling panels' size; FanHeading's wide fan size does not apply here. */
 .funnelHeading h2[data-fan-heading] { font-size: var(--fan-item-title-size); line-height: normal; }
+.weeklyTable { min-width: 760px; }
+.weeklyTable th:first-child { position: sticky; left: 0; z-index: 1; width: auto; min-width: 120px; background: var(--color-surface); white-space: nowrap; }
+.weeklyTable thead th { white-space: nowrap; }
+.weeklyTable .funnelSince { white-space: nowrap; }

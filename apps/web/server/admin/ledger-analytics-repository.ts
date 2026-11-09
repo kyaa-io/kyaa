@@ -2,12 +2,15 @@ import "server-only";
 import type { z } from "zod";
 import { createClient } from "@/server/data/client";
 import { funnelAnalyticsSchema, type FunnelAnalyticsData } from "@/features/analytics/domain/funnel-analytics";
+import { weeklyMetricsSchema, type WeeklyMetricsData } from "@/features/analytics/domain/weekly-metrics";
 import { webAnalyticsSchema, type WebAnalyticsData, type WebAnalyticsDays } from "@/features/analytics/domain/web-analytics";
 
 export type AdminReportInput = { adminAppUserId: string; adminAllowlistId: string; days: WebAnalyticsDays };
+export type AdminWeeklyReportInput = Pick<AdminReportInput, "adminAppUserId" | "adminAllowlistId">;
 export interface LedgerAnalyticsRepository {
   webTraffic(input: AdminReportInput): Promise<WebAnalyticsData>;
   funnel(input: AdminReportInput): Promise<FunnelAnalyticsData>;
+  weekly(input: AdminWeeklyReportInput): Promise<WeeklyMetricsData>;
 }
 interface RpcClient { rpc(name: string, parameters: Record<string, unknown>): PromiseLike<{ data: unknown; error: unknown }> }
 
@@ -28,6 +31,16 @@ export class SupabaseLedgerAnalyticsRepository implements LedgerAnalyticsReposit
 
   webTraffic(input: AdminReportInput) { return this.read("read_admin_web_traffic", webAnalyticsSchema, input); }
   funnel(input: AdminReportInput) { return this.read("read_admin_funnel_analytics", funnelAnalyticsSchema, input); }
+
+  async weekly(input: AdminWeeklyReportInput) {
+    const { data, error } = await this.database.rpc("read_admin_weekly_metrics", {
+      p_actor_app_user_id: input.adminAppUserId,
+      p_actor_admin_allowlist_id: input.adminAllowlistId,
+    });
+    const parsed = weeklyMetricsSchema.safeParse(data);
+    if (error || !parsed.success) throw new Error("LEDGER_ANALYTICS_UNAVAILABLE");
+    return parsed.data;
+  }
 }
 
 export function createLedgerAnalyticsRepository(config: { url: string | undefined; serviceRoleKey: string | undefined }): LedgerAnalyticsRepository {
