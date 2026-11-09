@@ -385,11 +385,12 @@ declare
   rev jsonb; fails_before integer; n integer; k integer; pts integer;
 begin
   -- M4: a replacement is refused, the current policy stays untouched
+  -- version 99: version 2 is the B3 draft (20261220031000)
   insert into public.dukjil_policy_versions(version,status,rules,mission_book,note)
-    select 2,'draft',rules,mission_book,'replacement probe' from public.dukjil_policy_versions where version=1;
-  perform pg_temp.expect_error('select public.activate_dukjil_policy(2)','DUKJIL_REPLACEMENT_UNSUPPORTED');
+    select 99,'draft',rules,mission_book,'replacement probe' from public.dukjil_policy_versions where version=1;
+  perform pg_temp.expect_error('select public.activate_dukjil_policy(99)','DUKJIL_REPLACEMENT_UNSUPPORTED');
   if (select status from public.dukjil_policy_versions where version=1) <> 'active' then raise exception 'v1 must stay active'; end if;
-  if (select status from public.dukjil_policy_versions where version=2) <> 'draft' then raise exception 'v2 must stay draft'; end if;
+  if (select status from public.dukjil_policy_versions where version=99) <> 'draft' then raise exception 'v99 must stay draft'; end if;
 
   -- B1: with an active policy a mission reward outside 50..300 is refused on create and on edit; 0 is allowed
   select count(*) into fails_before from public.dukjil_wire_failures;
