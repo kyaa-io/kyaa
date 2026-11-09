@@ -45,5 +45,4 @@ jobs:
       - name: Verify admin UI, authorization and analytics contracts
         run: >-
           npm run test --workspace @byus/web -- --maxWorkers=3
-          components/admin features/analytics server/admin
-          server/g6/admin-overview server/g6/platform-analytics server/g6/live-analytics
+          components/admin features/analytics server/admin server/g6

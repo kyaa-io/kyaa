@@ -232,4 +232,16 @@ describe("events recorded twice at once", () => {
     await recordProductEventV1(input);
     expect(fetchMock).toHaveBeenCalledTimes(2);
   });
+
+  it("returns false instead of throwing when the measurement request is rejected or fails", async () => {
+    vi.spyOn(navigator, "userAgent", "get").mockReturnValue("Mozilla/5.0");
+    const input = { eventName: "creator_page_view" as const, celebrityId: null, liveEventId: null, missionId: null, benefitId: null, source: "acquisition.session_landing", idempotencyKey: "acquisition:anonymous:00000000-0000-4000-8000-000000000002", properties: { channel: "direct", landing: "/", attribution: "session_first_touch" } };
+    const fetchMock = vi.fn()
+      .mockResolvedValueOnce(new Response(null, { status: 500 }))
+      .mockRejectedValueOnce(new TypeError("network down"));
+    vi.stubGlobal("fetch", fetchMock);
+    await expect(recordProductEventV1(input)).resolves.toBe(false);
+    await expect(recordProductEventV1(input)).resolves.toBe(false);
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
 });
