@@ -75,7 +75,9 @@ it('E4: shows the favorite’s real lucky draws (open first, then upcoming), wit
  expect(cards[1]).toHaveTextContent(/응모 시작/);expect(cards[1].querySelector('[data-raffle-cost]')).toBeNull();
  expect(within(cards[1]).getByRole('link',{name:/선물 보기/})).toHaveAttribute('href',`/c/bias-x/raffles/${uid(402)}?locale=ko`);
  expect(within(section).getByRole('link',{name:/전체 보기/})).toHaveAttribute('href','/c/bias-x/raffles?locale=ko');
- expect(view.container.textContent).not.toMatch(/럭키드로우 [12]|준비 중|응원하러 가기/);
+ expect(view.container.textContent).not.toMatch(/럭키드로우 [12]|응원하러 가기/);
+ // B2 (user decision 2026-11-09): only the capsule machine carries 준비 중; the raffle cards never do.
+ expect([...view.container.querySelectorAll('#stan-lucky > :not([data-lucky-module])')].map(node=>node.textContent).join('')).not.toContain('준비 중');
  expect(view.container.querySelectorAll('[aria-disabled="true"]')).toHaveLength(0);
 });
 it('E4: when the server would refuse the entry the card says why instead of a count (no policy, no passport) and a failed read is an error with retry',async()=>{
@@ -258,7 +260,7 @@ it('F2: the wallet is two assets, their next steps and one action, with the rule
  expect(hrefs).toEqual({points:'#stan-history',hearts:'/bias-x?tab=fans&locale=ko',tickets:'/my/raffles?locale=ko',stamps:'/passports?locale=ko'});
  expect(within(card).getByRole('link',{name:'안내'})).toHaveAttribute('href','/guide/dukjil?locale=ko');
  expect(within(card).getAllByRole('button')).toHaveLength(1);expect(card.querySelectorAll('a button, a [role="button"]')).toHaveLength(0);expect(card.querySelectorAll('[aria-disabled="true"]')).toHaveLength(0);
- expect(screen.queryByRole('button',{name:/도움말|설명/})).toBeNull();expect(document.querySelector('main')!.textContent).not.toContain('준비 중');
+ expect(screen.queryByRole('button',{name:/도움말|설명/})).toBeNull();expect([...document.querySelectorAll('main *:not([data-lucky-module] *)')].filter(node=>!node.closest('[data-lucky-module]')&&node.childElementCount===0).map(node=>node.textContent).join('')).not.toContain('준비 중');
  expect(document.getElementById('stan-lucky')).not.toBeNull();expect(document.getElementById('stan-cheer')).not.toBeNull();expect(document.getElementById('stan-history')).not.toBeNull();
  fireEvent.click(button);expect(screen.getByRole('dialog',{name:'응모권 전환'})).toBeInTheDocument();fireEvent.click(screen.getByRole('button',{name:'전환 닫기'}));expect(screen.queryByRole('dialog')).toBeNull();
 });
