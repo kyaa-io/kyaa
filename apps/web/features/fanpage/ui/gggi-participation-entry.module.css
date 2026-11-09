@@ -4,7 +4,7 @@
 .copy p{margin:0;color:var(--color-text-muted,var(--color-muted));font-size:16px;line-height:1.65;overflow-wrap:anywhere}
 .copy a{display:inline-flex;align-items:center;gap:8px;justify-self:start;min-height:44px;color:var(--color-text,var(--color-ink));font-size:16px;font-weight:700;text-decoration:underline;text-underline-offset:4px}
 .copy a svg{flex-shrink:0}
-.copy a:focus-visible{outline:3px solid var(--color-focus);outline-offset:4px;border-radius:4px}
+.copy a:focus-visible{outline:3px solid var(--color-ink);outline-offset:4px;border-radius:4px}
 @media(min-width:768px){.entry{padding:32px;gap:24px}.copy h2{font-size:24px}}
 @media(max-width:480px){.entry{flex-direction:column}}
 
@@ -28,7 +28,7 @@
 .modalCopy p{margin:0;color:var(--color-text-muted,var(--color-muted));font-size:16px;line-height:1.65;overflow-wrap:anywhere}
 .modalCopy p+button,.modalCopy p+a{margin-top:8px}
 .close{position:absolute;top:12px;right:12px;z-index:1;display:grid;place-items:center;width:44px;height:44px;border:0;border-radius:50%;background:var(--color-surface);color:var(--color-ink);cursor:pointer}
-.close:focus-visible{outline:3px solid var(--color-focus);outline-offset:3px}
+.close:focus-visible{outline:3px solid var(--color-ink);outline-offset:3px}
 @media(min-width:768px){.eventHeader{grid-template-columns:minmax(0,1fr) 128px;gap:24px}.eventPortrait{width:128px;height:144px}.eventActions{grid-template-columns:auto auto;align-items:center;justify-content:space-between}.modalCopy{padding:28px}}
 
 .eventHelp{margin:0;color:var(--color-text-muted,var(--color-muted));font-size:16px;line-height:1.65;overflow-wrap:anywhere}

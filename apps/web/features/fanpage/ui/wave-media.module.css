@@ -43,6 +43,6 @@
 .uploadList li { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; overflow-wrap: anywhere; }
 .uploadList li span:first-child { flex: 1; min-width: 0; }
 .error { color: var(--color-accent); font-size: 13px; }
-.section button:focus-visible, .dialog button:focus-visible, .dialog textarea:focus-visible, .dialog input:focus-visible, .fullMedia:focus-visible { outline: 3px solid var(--color-focus); outline-offset: 3px; }
+.section button:focus-visible, .dialog button:focus-visible, .dialog textarea:focus-visible, .dialog input:focus-visible, .fullMedia:focus-visible { outline: 3px solid var(--color-ink); outline-offset: 3px; }
 @media(min-width:768px) { .detail { grid-template-columns: minmax(0,1.2fr) minmax(0,1fr); } .dialog h2 { font-size: 24px; } }
 @media(max-width:479px) { .dialog { padding: 16px; border-radius: 16px; } .backdrop { padding: 8px; } .author { flex-wrap: wrap; } .author time { font-size: 13px; } .uploadList li span:first-child, .uploadList li [role="status"] { flex: 0 0 100%; } }

@@ -12,7 +12,7 @@
 .order { display: grid; place-items: center; flex: 0 0 28px; height: 28px; border-radius: 50%; color: white; background: var(--color-ink); font-size: 13px; font-weight: 700; }
 .orderActions { display: flex; flex-shrink: 0; margin-left: auto; }
 .orderActions button { display: grid; place-items: center; width: 44px; height: 44px; border: 0; background: transparent; border-radius: 12px; cursor: pointer; color: var(--color-ink); }
-.orderActions button:focus-visible, .prize:focus-visible { outline: 3px solid var(--color-focus); outline-offset: 3px; }
+.orderActions button:focus-visible, .prize:focus-visible { outline: 3px solid var(--color-ink); outline-offset: 3px; }
 .saved { display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 13px; margin: 12px 0 0; }
 .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px 16px; }
 .prize { display: flex; flex-direction: column; align-items: stretch; gap: 8px; min-width: 0; padding: 0; border: 0; background: transparent; color: var(--color-ink); text-align: left; font: inherit; cursor: pointer; border-radius: 12px; }

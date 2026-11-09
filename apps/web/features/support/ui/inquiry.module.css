@@ -51,7 +51,7 @@
 .resolvedHelp { padding: 16px 0; border-top: 1px solid var(--color-line); color: var(--color-muted); font-size: 14px; line-height: 1.75; }
 .guest { padding: 48px 0; max-width: 580px; }
 .guest p { margin-bottom: 24px; }
-.main :is(input, textarea, select, a, button):focus-visible, .adminMain :is(input, textarea, select, a, button):focus-visible { outline: 3px solid var(--color-focus); outline-offset: 3px; }
+.main :is(input, textarea, select, a, button):focus-visible, .adminMain :is(input, textarea, select, a, button):focus-visible { outline: 3px solid var(--color-ink); outline-offset: 3px; }
 @media (hover: hover) { .inquiryRow:hover { background: var(--color-soft); } }
 @media (max-width: 640px) {
   .main { padding-block: 24px 36px; }

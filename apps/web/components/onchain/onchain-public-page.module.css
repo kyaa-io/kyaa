@@ -12,7 +12,7 @@
 .headerInner { max-width: 1440px; padding-inline: 16px; }
 .page * { box-sizing: border-box; }
 .page main:focus { outline: none; }
-.page :is(a, [tabindex="0"]):focus-visible { outline: 3px solid var(--color-focus); outline-offset: 3px; }
+.page :is(a, [tabindex="0"]):focus-visible { outline: 3px solid var(--ink); outline-offset: 3px; }
 
 .hero { padding: 72px 0 64px; border-bottom: 1px solid var(--line); }
 .eyebrow { margin: 0 0 20px; font-size: 12px; font-weight: 800; letter-spacing: .14em; }

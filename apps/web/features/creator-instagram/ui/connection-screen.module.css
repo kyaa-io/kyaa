@@ -14,7 +14,7 @@
 .main p { margin: 0; color: var(--color-muted); font-size: 14px; line-height: 1.65; white-space: pre-line; overflow-wrap: anywhere; }
 .main hr { width: 100%; border: 0; border-top: 1px solid var(--color-line-subtle); margin: 0; }
 .main button, .main a, .main select { -webkit-tap-highlight-color: transparent; }
-.page :is(button, a, select):focus-visible { outline: 3px solid var(--color-focus); outline-offset: 3px; }
+.page :is(button, a, select):focus-visible { outline: 3px solid var(--color-ink); outline-offset: 3px; }
 .main button:disabled { cursor: wait; opacity: .55; }
 .stack { display: flex; flex-direction: column; gap: 24px; }
 .main > .stack + .stack { margin-top: 24px; }

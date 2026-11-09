@@ -8,7 +8,7 @@
 .page :where(a, button):focus-visible,
 .page input:focus-visible,
 .fanCode:focus-visible {
-  outline: 3px solid var(--color-focus);
+  outline: 3px solid var(--color-ink);
   outline-offset: 3px;
 }
 
@@ -168,7 +168,7 @@
 .timeZone { margin:0; color:var(--color-muted); font-size:12px; line-height:1.5; }
 .reservationDetails { font-size:12px; color:var(--color-muted); }
 .reservationDetails summary { width:fit-content; min-height:var(--min-target); align-content:center; cursor:pointer; text-decoration:underline; text-underline-offset:3px; }
-.reservationDetails summary:focus-visible { outline:3px solid var(--color-focus); outline-offset:3px; }
+.reservationDetails summary:focus-visible { outline:3px solid var(--color-ink); outline-offset:3px; }
 .reservationDetails dl { display:grid; gap:var(--space-2); margin:0; padding-bottom:var(--space-3); }
 .reservationDetails dl > div { display:grid; grid-template-columns:44px minmax(0,1fr); gap:var(--space-2); line-height:1.6; }
 .reservationDetails dd { margin:0; color:var(--color-ink); overflow-wrap:anywhere; }
@@ -947,7 +947,7 @@
 }
 .collectible summary { display:flex; min-height:64px; align-items:center; justify-content:space-between; gap:12px; cursor:pointer; list-style:none; }
 .collectible summary::-webkit-details-marker { display:none; }
-.collectible summary:focus-visible { outline:3px solid var(--color-focus); outline-offset:3px; }
+.collectible summary:focus-visible { outline:3px solid var(--color-ink); outline-offset:3px; }
 .collectible h2 { margin:0; min-width:0; color:var(--color-ink); font-size:18px; font-weight:700; line-height:1.4; }
 .collectibleState { display:flex; flex:none; align-items:center; gap:6px; color:var(--color-muted); font-size:12px; }
 .collectibleState svg { width:16px; height:16px; flex:none; }

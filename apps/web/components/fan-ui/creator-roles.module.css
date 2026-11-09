@@ -48,7 +48,7 @@
 }
 
 .filters button:focus-visible {
-  outline: var(--focus-width) solid var(--color-focus);
+  outline: var(--focus-width) solid var(--color-ink);
   outline-offset: var(--focus-offset);
 }
 

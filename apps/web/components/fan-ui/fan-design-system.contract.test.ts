@@ -19,12 +19,6 @@ describe("fan design system ownership", () => {
     expect(hits).toBe("");
     for (const token of ["--fan-heading-weight: 800", "--fan-number-weight: 800", "--fan-tab-weight: 700", "--fan-action-weight: 700", "--fan-description-weight: 400", "--fan-aside-title-weight: var(--fan-item-title-weight)"]) expect(tokens).toContain(token);
   });
-  it("draws one keyboard-only focus ring in the accent token (design-sync-1 ①)", () => {
-    expect(tokens).toContain("--color-focus: var(--color-accent);");
-    expect(tokens).toContain(':where(a[href], button, input, select, textarea, summary, [tabindex]:not([tabindex="-1"]), [contenteditable="true"]):focus-visible {\n  outline: var(--focus-width) solid var(--color-focus);\n  outline-offset: var(--focus-offset);');
-    const action = read("components/fan-ui/fan-action.module.css");
-    expect(action).toContain(".action:focus-visible {\n  outline: var(--focus-width) solid var(--color-focus);");
-  });
   it("resolves every shared fan variable rather than silently falling back", () => {
     const css = heading + read("components/fan-ui/fan-action.module.css");
     for (const [, variable] of css.matchAll(/var\((--[\w-]+)\)/g)) expect(tokens, variable).toContain(`${variable}:`);

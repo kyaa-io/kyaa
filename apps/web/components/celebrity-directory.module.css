@@ -26,7 +26,7 @@
 .ownedState { display: grid; min-height: 220px; place-content: center; justify-items: center; gap: 12px; padding: 32px 20px; border: 1px solid var(--color-line-subtle); border-radius: 16px; color: var(--color-ink); text-align: center; }
 .ownedState p { margin: 0; font-size: 14px; line-height: 1.6; }
 .ownedState a { display: inline-flex; min-height: 44px; align-items: center; padding: 0 12px; border: 0; background: transparent; color: var(--color-accent-ink); font: inherit; font-size: 14px; font-weight: 700; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
-.page :is(a,button,input,select):focus-visible { outline: 3px solid var(--color-focus); outline-offset: 3px; }
+.page :is(a,button,input,select):focus-visible { outline: 3px solid var(--color-ink); outline-offset: 3px; }
 @media (hover:hover) and (pointer:fine) { .homeLink:hover { color: var(--color-accent-ink); } .searchField input:hover,.sortField select:hover { border-color: var(--color-muted); background: var(--color-soft); } }
 @media (prefers-reduced-motion:reduce) { .page * { transition-duration: .01ms !important; } }
 

@@ -430,7 +430,7 @@
 .page button:focus-visible,
 .page input:focus-visible,
 .center button:focus-visible {
-  outline: 3px solid var(--color-focus);
+  outline: 3px solid var(--color-ink);
   outline-offset: 3px;
 }
 .settingsRows > button:focus-visible { outline-offset: -3px; }

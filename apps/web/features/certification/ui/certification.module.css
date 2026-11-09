@@ -680,7 +680,7 @@ a.card:active {
 }
 
 .panel :is(button, a):focus-visible {
-  outline: 3px solid var(--color-focus);
+  outline: 3px solid var(--color-ink);
   outline-offset: 4px;
 }
 @media (max-width: 30rem) {

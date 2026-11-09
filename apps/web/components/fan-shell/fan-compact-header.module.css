@@ -15,7 +15,7 @@
 }
 
 .brand:focus-visible {
-  outline: 3px solid var(--color-focus);
+  outline: 3px solid oklch(18% 0 0);
   outline-offset: 3px;
 }
 

@@ -5,7 +5,7 @@
 .grid > a > span { display:grid; inline-size:40px; block-size:40px; place-items:center; border-radius:var(--radius-control); background:var(--color-soft); }
 .grid svg { inline-size:22px; block-size:22px; }
 .grid strong { font-size:var(--fan-description-size); font-weight:700; line-height:1.35; overflow-wrap:anywhere; }
-.grid > a:focus-visible { outline:3px solid var(--color-focus); outline-offset:3px; }
+.grid > a:focus-visible { outline:3px solid var(--color-ink); outline-offset:3px; }
 @media (hover:hover) and (pointer:fine) { .grid > a:hover { background:var(--color-soft); } }
 @media (max-width:767px) {
   .section h2 { font-size:var(--fan-heading-size); }

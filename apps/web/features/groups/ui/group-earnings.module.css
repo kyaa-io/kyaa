@@ -21,6 +21,6 @@
 .fact{box-sizing:border-box;display:flex;flex-direction:column;gap:6px;min-height:81px;min-width:0;padding:12px 0;box-shadow:inset 0 -.5px 0 var(--color-line)}
 .time{gap:8px;min-height:78px;padding:16px 0}
 .content .time h2,.content .time p{font:400 16px/normal "Pretendard Variable",system-ui,sans-serif}
-.content a:focus-visible,.content button:focus-visible{outline:3px solid var(--color-focus);outline-offset:3px}
+.content a:focus-visible,.content button:focus-visible{outline:3px solid var(--color-ink);outline-offset:3px}
 @media(max-width:1023px){.content{margin-bottom:calc(64px + env(safe-area-inset-bottom))}}
 @media(max-width:767px){.content{margin-top:16px}.content h1{font-size:24px;line-height:36px}.content .retry,.content .back{width:100%}}

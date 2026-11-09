@@ -23,7 +23,7 @@
 .recent a { display:grid; min-height:56px; align-content:center; gap:4px; border-top:1px solid var(--color-line-subtle); color:var(--color-ink); text-decoration:none; }
 .recent strong { font-size:14px; line-height:1.6; overflow-wrap:anywhere; }
 .recent small { color:var(--color-muted); font-size:12px; }
-.page :is(a,button,textarea):focus-visible { outline:3px solid var(--color-focus); outline-offset:3px; }
+.page :is(a,button,textarea):focus-visible { outline:3px solid var(--color-ink); outline-offset:3px; }
 .srOnly { position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; }
 @media (min-width:64rem) {
   .relatedLayout { grid-template-columns:minmax(0,720px) 264px; gap:48px; }

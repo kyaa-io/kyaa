@@ -5,19 +5,19 @@
 .primary:active:not(:disabled) { transform:scale(.98); }
 .primary:disabled { cursor:default; opacity:.7; }
 .primary svg { width:17px; height:17px; }
-.primary:focus-visible,.secondary:focus-visible { outline:3px solid var(--color-focus); outline-offset:3px; }
+.primary:focus-visible,.secondary:focus-visible { outline:3px solid var(--color-ink); outline-offset:3px; }
 .status,.error { margin:0; font-size:12px; line-height:1.55; text-align:left; }
 .status { color:var(--color-accent-ink); }
 .status svg { width:14px; height:14px; vertical-align:-2px; margin-right:4px; color:var(--color-accent); }
 .error { color:var(--color-accent); }
 .shareUrlLabel { display:block; width:100%; min-width:0; }
 .shareUrl { width:100%; min-width:0; min-height:44px; border:1px solid var(--color-accent-line); border-radius:12px; background:var(--color-soft); color:var(--color-accent-ink); font:inherit; font-size:12px; padding:10px 12px; }
-.shareUrl:focus-visible { outline:3px solid var(--color-focus); outline-offset:3px; }
+.shareUrl:focus-visible { outline:3px solid var(--color-ink); outline-offset:3px; }
 .shareActions { display:flex; flex-wrap:wrap; gap:8px; min-width:0; }
 .shareActions > * { flex:1; min-width:0; padding-inline:10px; }
 .secondaryButton { min-height:44px; border:1px solid var(--color-accent-line); border-radius:12px; background:var(--color-surface); color:var(--color-accent-ink); font:inherit; font-size:13px; font-weight:700; padding:10px 14px; display:inline-flex; align-items:center; justify-content:center; gap:8px; cursor:pointer; }
 .secondaryButton:hover { background:var(--color-soft); }
-.secondaryButton:focus-visible { outline:3px solid var(--color-focus); outline-offset:3px; }
+.secondaryButton:focus-visible { outline:3px solid var(--color-ink); outline-offset:3px; }
 .secondaryButton svg { width:17px; height:17px; }
 .srOnly { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
 .landing { font-family:inherit; min-height:100dvh; display:grid; place-items:center; padding:24px 16px; background:var(--color-soft); color:var(--color-ink); }
@@ -48,4 +48,4 @@
 .quietAction { min-height:var(--min-target); border:0; border-radius:var(--radius-control); background:transparent; color:var(--color-ink); font:inherit; font-size:var(--fan-metadata-size); font-weight:var(--fan-item-title-weight); padding:0 var(--space-1); display:inline-flex; align-items:center; justify-content:center; gap:var(--space-2); cursor:pointer; white-space:nowrap; }
 .quietAction:disabled { cursor:default; opacity:.7; }
 .quietAction svg { width:17px; height:17px; }
-.quietAction:focus-visible { outline:3px solid var(--color-focus); outline-offset:3px; }
+.quietAction:focus-visible { outline:3px solid var(--color-ink); outline-offset:3px; }

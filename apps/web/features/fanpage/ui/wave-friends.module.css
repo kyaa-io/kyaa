@@ -27,7 +27,7 @@
 .dialogHeader { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 20px; }
 .dialogHeader h2 { min-width: 0; margin: 6px 0 0; font-size: 20px; line-height: 1.5; font-weight: 700; overflow-wrap: anywhere; }
 .close { flex: none; display: grid; place-items: center; width: 44px; height: 44px; border: 0; border-radius: 50%; background: var(--color-soft); color: inherit; cursor: pointer; }
-.close:focus-visible { outline: 3px solid var(--color-focus); outline-offset: 3px; }
+.close:focus-visible { outline: 3px solid var(--color-ink); outline-offset: 3px; }
 .scanner, .qr, .profile { display: grid; gap: 16px; justify-items: center; text-align: center; }
 .viewfinder { position: relative; display: grid; place-items: center; width: 100%; aspect-ratio: 1; overflow: hidden; border-radius: 16px; background: var(--color-soft); color: var(--color-muted); }
 .viewfinder video { position: absolute; width: 100%; height: 100%; object-fit: cover; }
@@ -46,7 +46,7 @@
 .messageForm { display: grid; gap: 12px; }
 .messageForm label { font-size: 13px; font-weight: 700; }
 .messageForm textarea { width: 100%; padding: 12px; resize: vertical; min-height: 96px; border: 1px solid var(--color-line); border-radius: 12px; background: white; color: var(--color-ink); font: inherit; font-size: 16px; line-height: 1.6; }
-.messageForm textarea:focus-visible { outline: 3px solid var(--color-focus); outline-offset: 3px; }
+.messageForm textarea:focus-visible { outline: 3px solid var(--color-ink); outline-offset: 3px; }
 .messageForm button { justify-self: end; }
 .messageForm p { margin: 0; font-size: 13px; line-height: 1.5; }
 @media (min-width: 768px) { .actions { max-width: 640px; } .empty { padding-block: 56px; } .empty h3 { font-size: 24px; } }

@@ -67,7 +67,7 @@
 .revisitHint a { display:inline-flex; min-height:44px; align-items:center; color:var(--color-ink); font-weight:700; text-decoration:underline; text-underline-offset:3px; }
 .actionLinks .openPassport { position:relative; width:100%; min-height:var(--fan-action-primary-height); margin:0; padding:12px 44px; border-radius:var(--radius-pill); line-height:1.4; }
 .openPassport svg { position:absolute; right:16px; top:50%; width:18px; height:18px; transform:translateY(-50%); }
-.screen :is(button,a):focus-visible { outline:3px solid var(--color-focus); outline-offset:3px; }
+.screen :is(button,a):focus-visible { outline:3px solid var(--color-ink); outline-offset:3px; }
 .state { display:grid; width:min(calc(100% - 32px),560px); min-height:calc(100dvh - 68px); place-content:center; justify-items:center; gap:16px; margin:auto; text-align:center; }
 .state h1,.state p { margin:0; }
 .state p { color:var(--color-muted); line-height:1.6; }

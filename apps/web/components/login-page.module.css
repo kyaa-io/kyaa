@@ -33,7 +33,7 @@
 .appleButton span { flex: 1; text-align: center; }
 .appleButton svg { width: 18px; height: 18px; flex: none; }
 .googleButton:disabled, .appleButton:disabled, .emailButton:disabled { cursor: wait; opacity: .55; }
-.googleButton:focus-visible, .appleButton:focus-visible, .emailButton:focus-visible, .brand:focus-visible, .closeButton:focus-visible, .footer a:focus-visible { outline: 3px solid var(--color-focus); outline-offset: 3px; }
+.googleButton:focus-visible, .appleButton:focus-visible, .emailButton:focus-visible, .brand:focus-visible, .closeButton:focus-visible, .footer a:focus-visible { outline: 3px solid var(--color-ink); outline-offset: 3px; }
 .testAccountGroup { display: grid; gap: 12px; }
 .divider { display: flex; align-items: center; gap: 12px; color: var(--color-muted); font-size: 12px; font-weight: 700; text-align: center; }
 .divider::before, .divider::after { height: 1px; flex: 1; background: var(--color-line); content: ""; }
@@ -73,7 +73,7 @@
 .sessionContents .browserNotice { width: min(100%, 440px); justify-self: center; }
 .browserLink { display: grid; min-width: 0; gap: 8px; font-size: 14px; line-height: 1.6; }
 .browserLink input { width: 100%; min-width: 0; min-height: 44px; box-sizing: border-box; padding: 8px; border: 1px solid var(--color-muted); border-radius: 8px; background: var(--color-surface); color: inherit; font: inherit; }
-.browserLink input:focus-visible { outline: 3px solid var(--color-focus); outline-offset: 3px; }
+.browserLink input:focus-visible { outline: 3px solid var(--color-ink); outline-offset: 3px; }
 
 .otherMethods { display: grid; width: 90%; justify-self: center; gap: 16px; }
 .otherMethodButtons { display: grid; gap: 16px; }

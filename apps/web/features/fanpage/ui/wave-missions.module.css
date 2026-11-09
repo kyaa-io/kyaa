@@ -17,9 +17,9 @@
 .name { font-size: 16px; font-weight: 700; line-height: 1.5; overflow-wrap: anywhere; }
 .link::after { content: ""; position: absolute; inset: 0; border-radius: 12px; }
 .mission:has(.link):hover { background: var(--color-soft); }
-.link:focus-visible::after { outline: 3px solid var(--color-focus); outline-offset: -4px; }
+.link:focus-visible::after { outline: 3px solid var(--color-ink); outline-offset: -4px; }
 .name a { display: inline-flex; align-items: center; min-height: 44px; text-decoration: underline; text-underline-offset: 4px; }
-.name a:focus-visible { outline: 3px solid var(--color-focus); outline-offset: 4px; border-radius: 4px; }
+.name a:focus-visible { outline: 3px solid var(--color-ink); outline-offset: 4px; border-radius: 4px; }
 .description { margin: 0; color: var(--color-muted); font-size: 16px; line-height: 1.6; overflow-wrap: anywhere; }
 .state { color: var(--color-muted); font-size: 13px; line-height: 1.5; }
 .mission[data-status="completed"] .state { color: var(--color-ink); font-weight: 700; }

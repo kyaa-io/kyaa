@@ -62,7 +62,7 @@
 .eventMeta .benefit::before { content:none; }
 .benefit { background:var(--color-accent-soft); color:var(--color-accent-ink); }
 .empty { display:none; margin:0; color:var(--color-muted); font-size:12px; }
-.catalogLink:focus-visible,.eventLink:focus-visible,.filterChip:focus-visible { outline:3px solid var(--color-focus); outline-offset:3px; }
+.catalogLink:focus-visible,.eventLink:focus-visible,.filterChip:focus-visible { outline:3px solid var(--color-ink); outline-offset:3px; }
 @media (min-width:48rem) {
   .main { padding-top:64px; }
   .filters { grid-template-columns:minmax(190px,auto) minmax(0,1fr) 72px; gap:16px 24px; padding:12px 16px; }
@@ -266,7 +266,7 @@
   .carouselControls button:first-child { left:-8px; }
   .carouselControls button:last-child { right:-8px; }
   .carouselControls button:disabled { color:var(--color-muted); cursor:default; }
-  .carouselControls button:focus-visible,.viewAll:focus-visible { outline:3px solid var(--color-focus); outline-offset:-3px; border-radius:8px; }
+  .carouselControls button:focus-visible,.viewAll:focus-visible { outline:3px solid var(--color-ink); outline-offset:-3px; border-radius:8px; }
 }
 .modalBackdrop { display:grid; place-items:center; padding:24px; background:color-mix(in srgb, var(--color-ink) 38%, transparent); }
 .modal { font-family:inherit; width:min(100%,640px); max-height:calc(100dvh - 48px); display:flex; flex-direction:column; border-radius:16px; background:var(--color-surface); color:var(--color-ink); box-shadow:0 16px 48px color-mix(in srgb, var(--color-ink) 18%, transparent); overflow:hidden; }
@@ -282,7 +282,7 @@
 .modalEvents .eventTopline > .creator { display:inline; }
 .modalEvents .eventMeta time { font-size:13px; color:var(--color-accent); }
 .modalEvents .eventTopline { flex-wrap:wrap; }
-.modalHeader button:focus-visible,.modalEvents a:focus-visible { outline:3px solid var(--color-focus); outline-offset:-3px; }
+.modalHeader button:focus-visible,.modalEvents a:focus-visible { outline:3px solid var(--color-ink); outline-offset:-3px; }
 
 .modal,.modal *,.modal *::before,.modal *::after { box-sizing:border-box; }
 

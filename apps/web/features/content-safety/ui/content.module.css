@@ -43,7 +43,7 @@
 .pagination { display:flex; justify-content:space-between; gap:12px; }.reply { margin-left:20px; border-left:2px solid var(--color-line); padding-left:16px; }
 .empty { display:grid; place-items:center; min-height:120px; padding:24px; border:1px dashed var(--color-line); border-radius:16px; color:var(--color-muted); line-height:1.65; text-align:center; background:var(--color-soft); }.empty p { margin:0; }.link { color:var(--color-ink); text-decoration:none; }
 .translation { display:flex; flex-wrap:wrap; align-items:baseline; gap:4px 8px; }.translation>:first-child { flex:1 1 100%; }.translation>button { display:inline-flex; align-items:center; justify-content:center; gap:8px; }
-.section :is(button,a,input,textarea,select,summary):focus-visible,.reportDialog :is(button,a,input,textarea,select):focus-visible,.actions :is(button,a,textarea,summary):focus-visible,.translation button:focus-visible,.moreTrigger:focus-visible { outline:3px solid var(--color-focus); outline-offset:3px; }
+.section :is(button,a,input,textarea,select,summary):focus-visible,.reportDialog :is(button,a,input,textarea,select):focus-visible,.actions :is(button,a,textarea,summary):focus-visible,.translation button:focus-visible,.moreTrigger:focus-visible { outline:3px solid var(--color-ink); outline-offset:3px; }
 @media(hover:hover) { .button:hover,.actions button:not([data-fan-action]):hover,.moreTrigger:hover,.photoPicker button:hover,.visibilityTrigger:hover,.visibilityActions button:hover { background:var(--color-soft); } }
 @media(max-width:479px) { .composerFeatured { padding:16px; }.photos { grid-template-columns:1fr; }.reply { margin-left:8px;padding-left:12px; }.row { align-items:flex-start; } }
 

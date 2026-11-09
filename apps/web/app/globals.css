@@ -25,8 +25,7 @@
   --color-success: #17613f;
   --color-warning: #8a4b08;
   --color-backdrop: rgb(23 23 26 / 42%);
-  /* 포커스 링 = 포인트 색(감독 2026-11-09 09:53). 흰 바탕 5.19:1, --color-soft 4.93:1, --color-accent-soft 4.71:1. 어두운 면(GGGI 배너 등)은 그 모듈이 --color-surface로 바꾼다. */
-  --color-focus: var(--color-accent);
+  --color-focus: var(--color-ink);
   /* 261107-2 S1: 화면마다 직접 쓰던 값에 역할 이름만 붙인다(값 변경 없음). */
   --color-accent: #d11b62;
   --color-accent-soft: #fff0f6;
@@ -148,12 +147,6 @@ input,
 textarea,
 select {
   font: inherit;
-}
-
-/* 전역 포커스 링: 키보드 포커스(:focus-visible)에서만, 특이도 0이라 컴포넌트 규칙이 이긴다. */
-:where(a[href], button, input, select, textarea, summary, [tabindex]:not([tabindex="-1"]), [contenteditable="true"]):focus-visible {
-  outline: var(--focus-width) solid var(--color-focus);
-  outline-offset: var(--focus-offset);
 }
 
 img {
