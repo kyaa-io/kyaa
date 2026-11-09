@@ -89,6 +89,16 @@ jobs:
           features/benefit/ui/benefit-screen.test.tsx
           features/benefit/ui/raffle-result-panel.test.tsx
           components/admin/raffle-operations-panel.test.tsx
+      # Runs the Privy-mocking tests on the island backend that production builds use. The config arrives with the
+      # island change; until it is on the branch under test the step is a no-op, afterwards it always runs.
+      - name: Verify the Privy island backend tests
+        if: matrix.group == 'unit'
+        run: |
+          if [ -f apps/web/vitest.island.config.ts ]; then
+            npm run test --workspace @byus/web -- --config vitest.island.config.ts --maxWorkers=3
+          else
+            echo "apps/web/vitest.island.config.ts is not on this branch; skipping the island project"
+          fi
       - name: Install browser for card layout regression
         if: matrix.group != 'unit'
         run: npx playwright install --with-deps chromium
