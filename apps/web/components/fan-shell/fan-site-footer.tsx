@@ -3,6 +3,8 @@ import { useGroupsRelease } from "@/features/groups/ui/groups-release";
 import { groupsCopy } from "@/features/groups/ui/copy";
 import { groupBenefitsCopy } from "@/features/groups/ui/group-benefits-copy";
 import { messages as benefitMessages } from "@/i18n/catalogs/features__benefit__ui__benefit-screen";
+import { messages as guideMessages } from "@/i18n/catalogs/features__dukjil-guide__ui__guide-copy";
+import { messages as promotionMessages } from "@/i18n/catalogs/app__bias__promotion__page";
 import { messages as localizedMessages } from "@/i18n/catalogs/components__fan-shell__fan-site-footer";
 import { additionalLocales, translate } from "@/i18n/messages";
 import { communityCopy } from "@/i18n/catalogs/features__community";
@@ -55,6 +57,9 @@ const copy = {
     nav: "kyaa 하단 메뉴",
     fanmeetings: "팬미팅 협업 문의",
     serviceGuide: "이용 가이드",
+    jjinfanGuide: "찐팬 되는 법",
+    dukjilGuide: "덕질하는 법",
+    promotionGuide: "팬페이지 홍보 안내",
     support: "문의하기",
     creatorOnboarding: "팬이 있는 당신에게",
     partners: "파트너 협업 제안",
@@ -80,6 +85,9 @@ const copy = {
     nav: "kyaa footer navigation",
     fanmeetings: "Fanmeeting partnerships",
     serviceGuide: "Service guide",
+    jjinfanGuide: "How to become a true fan",
+    dukjilGuide: "How to earn as a fan",
+    promotionGuide: "Promote your fan page",
     support: "Contact support",
     creatorOnboarding: "For everyone with fans",
     partners: "Partnership proposals",
@@ -106,6 +114,10 @@ const copy = {
     nav: localizedMessages.m426ae2de78d1[translationLocale],
     fanmeetings: localizedMessages.m2c5ffc3483d2[translationLocale],
     serviceGuide: localizedMessages.m5ba596447d28[translationLocale],
+    jjinfanGuide: guideMessages.dkgJjMetaTitle[translationLocale],
+    dukjilGuide: guideMessages.dkgDkMetaTitle[translationLocale],
+    // The page's metadata title carries the " | kyaa" site suffix; the footer shows the page title alone.
+    promotionGuide: promotionMessages.mabdee7400079[translationLocale].replace(/ \| kyaa$/, ""),
     support: localizedMessages.m33db2981a0e6[translationLocale],
     creatorOnboarding: localizedMessages.mc926c97a41e6[translationLocale],
     partners: localizedMessages.m5b205e1c6048[translationLocale],
@@ -152,6 +164,9 @@ export function FanSiteFooter({ locale }: { locale: FanLocale }) {
           <section>
             <h2>{t.guide}</h2>
             <Link href={fanHref("/guide", locale)}>{t.serviceGuide}</Link>
+            <Link href={fanHref("/guide/jjinfan", locale)}>{t.jjinfanGuide}</Link>
+            <Link href={fanHref("/guide/dukjil", locale)}>{t.dukjilGuide}</Link>
+            <Link href={fanHref("/bias/promotion", locale)}>{t.promotionGuide}</Link>
             <Link href={fanHref("/my/inquiries", locale)}>{t.support}</Link>
             <Link href={fanHref("/pages/us-fanmeetings", locale)}>{t.fanmeetings}</Link>
             <Link href={fanHref("/pages/creator-onboarding", locale)}>{t.creatorOnboarding}</Link>
