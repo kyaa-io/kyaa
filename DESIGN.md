@@ -232,7 +232,7 @@ A2 버튼 반경 8·높이 390 44 / 1024+ 48 · B2 칩 36·14/700·반경 8 · C
 |---|---|---|---|
 | 지급 연출 (D8) | 서버가 지급을 확정한 뒤 `celebrateReward({ locale, points, stamps, anchor, label })` 하나만 부른다. 누른 요소 위에서 코인 뱃지(`+20`, 코인 20px)가 튀어오르고(앵커가 없으면 화면 가운데), `FanToast` success 제목 `+20P · 스탬프 1`(2026-11-09: 설명 줄 삭제, 제목 1줄만)(지급분만, 0인 쪽은 뺌), 설명은 무엇을 끝냈는지 한 줄(`댓글 미션 완료`)만. 1.2초 안의 지급은 뱃지 하나·토스트 하나로 합친다. reduced-motion은 이동 없이 제자리 표시 후 사라짐. 화면별 자체 토스트·자체 금액 연출을 만들지 않는다. `PointRewardBurst`·`usePointRewardBurst`(도장 수 포함)는 이 함수를 부르는 화면용 훅이다 | `components/fan-ui/reward-celebration.ts`, `point-reward-burst.tsx` | 피드백 D8. C8의 `포인트 +20 · 스탬프 +1` 표기는 토스트를 하나로 합치며 D8 표기와 앱 용어 `도장`으로 통일 |
 | 도장 연출 (D3) | 도장이 실제로 찍힌 지급(출석·팬 인증 퀴즈 통과·도장 주는 미션)만 전체 화면 도장(Lottie 0.9초, 최대 360px, 입력 통과·`aria-hidden`)을 먼저 보이고, 끝나면 위 지급 연출을 부른다. 재요청(replay)에는 없음. reduced-motion은 도장 없이 바로 지급 연출 | `features/dukjil/ui/stamp-slam.tsx`(`celebrateStamp`) | 피드백 D3 |
-| 업로드 행 (D5) | 글·댓글 첨부 하나당 한 줄, 높이 44 이상, `--color-soft` 바탕, 반경 12. 왼쪽 16px 상태 아이콘(진행 스피너 → 완료 체크 `--color-accent` → 실패 `--color-error`), 파일 이름 한 줄 말줄임 + 진행률 숫자(tabular-nums), 행 아래 끝에 3px 진행 막대. 실패 문구만 줄바꿈해 다 보인다. reduced-motion은 스피너 감속·막대 고정 | `components/editor/upload-progress.tsx`, `rich-text.module.css .upload` | 피드백 D5 |
+| 업로드 행 (D5) | 글·댓글 첨부 하나당 한 줄, 높이 44 이상, `--color-accent-soft` 바탕(2026-11-09 회색 면 0, U-1: 업로드 행·편집기 도구 호버·링크 입력줄은 회색 대신 옅은 핑크 틴트), 반경 12. 왼쪽 16px 상태 아이콘(진행 스피너 → 완료 체크 `--color-accent` → 실패 `--color-error`), 파일 이름 한 줄 말줄임 + 진행률 숫자(tabular-nums), 행 아래 끝에 3px 진행 막대. 실패 문구만 줄바꿈해 다 보인다. reduced-motion은 스피너 감속·막대 고정 | `components/editor/upload-progress.tsx`, `rich-text.module.css .upload` | 피드백 D5 |
 | 최애 값 출처 | 최애는 `fan_profile_public_fields`(MY에서 고른 값) 하나만 읽고 쓴다. 헤더 메뉴의 선택도 `PUT /api/me/social/profile-fields`로 저장하고, 헤더·덕질 상단·홈 최애 카드·프로필 카드가 같은 값을 읽는다. 옛 브라우저 저장값(`kyaa:selected-bias:v1:`)은 최애가 비었을 때 한 번 옮긴 뒤 지운다 | `features/selected-bias/ui/use-selected-bias.ts`, `server/my/my-summary-repository.ts` | 감독 결정(합침 검토 1) |
 | 헤더 상태 캡슐 | 로그인 768+ 오른쪽 `[내 상태 캡슐]`은 흰 알약 + 안쪽 1px `--color-line` 헤어라인(회색 면 아님, DS-A1 2026-11-09 시안 31 A). 요소·순서·크기는 동결 | `fan-app-shell.module.css .statusCapsule` |
 | 헤더 최애 고르기 칩 | 비로그인 390(<768)은 칩을 그리지 않는다(종·언어만, 4차와 같다). 로그인 상태의 비어 있는 칩은 별만 남기고 aria-label을 둔다. 768~1023·1200 이상은 문구 전체, 1024~1199는 탭이 자리를 써서 별만. 이 문구는 말줄임 없이 온전하게 보이거나 아이콘만 남는다 | `features/selected-bias/ui/selected-bias-chip.module.css` | 2026-11-09 03:25 감독 지적 |
@@ -1883,7 +1883,7 @@ At the user's request, registered Changha identity and hero images use the unedi
 
 ### 게시글·에디터
 - 게시글 상세: 제목 390 20/28, 768 이상 24/34, 700. 메타 13/20 `│` 구분. 아바타 32. 본문 16/26, 폭 최대 720. 댓글 구역 `--color-soft`, 위 32, 안쪽 16(768 이상 20), 반경 12. 입력 2줄 52px, 포커스나 입력 시 104px(`features/fan-posts/ui/post-detail.module.css`).
-- 리치 에디터: 도구 막대 44px, 390은 서식 한 줄 가로 스크롤과 미디어 한 줄. 본문 최소 184, 390 160. 첨부 미리보기 최대 320(`components/editor/rich-text.module.css`).
+- 리치 에디터: 도구 막대 44px(호버 바탕과 링크 입력줄 바탕은 `--color-accent-soft`), 390은 서식 한 줄 가로 스크롤과 미디어 한 줄. 본문 최소 184, 390 160. 첨부 미리보기 최대 320(`components/editor/rich-text.module.css`).
 - YouTube는 누르기 전에는 포스터(mqdefault, 16:9)만 읽고, 누르면 iframe을 연다.
 - 수정 폼은 열 때 서버에서 읽은 값으로만 시작한다. 저장소에 남은 값으로 폼을 채우지 않는다(`useGroupResource`의 `forEdit`).
 

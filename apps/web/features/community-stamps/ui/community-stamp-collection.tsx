@@ -13,6 +13,8 @@ import Link from "next/link";
 import type { Route } from "next";
 import { useEffect, useRef, useState } from "react";
 import { notifyFanActivityUpdated } from "@/components/fan-ui/fan-activity-updates";
+import { showFanToast } from "@/components/fan-ui/fan-toast";
+import { inviteRedeemFailure } from "@/features/groups/ui/group-referral-copy";
 import { AVAILABLE_COMMUNITY_STAMPS, COMMUNITY_STAMPS, communityStampLabel, communityAwardResultSchema, communityInviteSchema, type CommunityStamp, type CommunityStampKind } from "../domain/community-stamps";
 import { CommunityStampArtwork } from "./community-stamp-artwork";
 import { SharePassport } from "./share-passport";
@@ -23,6 +25,7 @@ type Locale = AppLocale;
 type Resource = ReturnType<typeof useCommunityStamps>;
 function errorCopy(error: unknown, locale: Locale) {
   const code = error instanceof Error ? error.message : "";
+  if (code === "COMMUNITY_STAMP_INVITE_INELIGIBLE") return inviteRedeemFailure(locale, code);
   const messages: Record<string, Record<AppLocale, string>> = {
     COMMUNITY_STAMP_SELF_INVITE: { ko: "내 코드는 입력할 수 없어요.", en: "You can’t use your own code." ,
   ...additionalLocales((translationLocale) => (localizedMessages.m4ea3e8203ad1[translationLocale]))
@@ -83,7 +86,7 @@ function OwnerCollection({ locale, creator, resource, creatorNames }: { locale: 
     finally { if (alive.current) setBusy(false); }
   }
   async function copyCode() {
-    try { await navigator.clipboard.writeText(invite!.code); if (alive.current) { setFailed(false); setMessage(locale === "ko" ? "초대코드를 복사했어요." : translate(locale, localizedMessages.m8e680bc0e71f, "Invite code copied.")); } }
+    try { await navigator.clipboard.writeText(invite!.code); if (alive.current) { setFailed(false); setMessage(""); showFanToast({ title: locale === "ko" ? "초대코드를 복사했어요." : translate(locale, localizedMessages.m8e680bc0e71f, "Invite code copied."), tone: "success" }); } }
     catch { if (alive.current) { setFailed(true); setMessage(locale === "ko" ? "코드를 선택해서 복사해 주세요." : translate(locale, localizedMessages.mc314a8314602, "Select the code to copy it.")); } }
   }
   return <section className={styles.section} id="community-stamps" aria-labelledby="community-stamps-title">

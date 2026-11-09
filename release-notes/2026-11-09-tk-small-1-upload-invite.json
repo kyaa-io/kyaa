@@ -1,0 +1,7 @@
+{
+  "changes": [
+    "글쓰기 화면에서 사진을 올리는 동안 보이는 진행 줄과 편집 도구 위에 올렸을 때의 바탕이 회색에서 옅은 분홍으로 바뀌었어요. 캡처는 로컬에서 시험한 화면이에요."
+  ],
+  "path": "/pages/groups",
+  "images": ["release-notes/images/2026-11-09-tk-small-1-upload-row.png"]
+}
