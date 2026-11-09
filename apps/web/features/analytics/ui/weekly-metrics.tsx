@@ -1,7 +1,7 @@
 "use client";
 
 import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
-import { CircleAlert, Download } from "@/components/fan-ui/fan-icons";
+import { CircleAlert } from "@/components/fan-ui/fan-icons";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import { FanIcon } from "@/components/fan-ui/fan-icon";
 import { FanHeading } from "@/components/fan-ui/fan-heading";
@@ -34,7 +34,7 @@ export function WeeklyMetricsContent({ data, locale }: { data: WeeklyMetricsData
   return <section className={`${base.panel} ${styles.outbound}`} aria-labelledby="weekly-title">
     <div className={`${base.panelHeading} ${styles.funnelHeading}`}>
       <FanHeading id="weekly-title">{ko ? "주간" : "Weekly"}</FanHeading>
-      <FanAction variant="secondary" size="sm" leadingIcon={<FanIcon icon={Download} />} onClick={download}>{ko ? "CSV 내려받기" : "Download CSV"}</FanAction>
+      <FanAction variant="text" size="sm" onClick={download}>{ko ? "CSV 내려받기" : "Download CSV"}<span aria-hidden="true">›</span></FanAction>
     </div>
     <div className={styles.tableScroll} tabIndex={0} role="region" aria-label={ko ? "주간 지표 최근 8주" : "Weekly metrics, last 8 weeks"}>
       <table className={`${styles.table} ${styles.weeklyTable}`}><thead><tr>

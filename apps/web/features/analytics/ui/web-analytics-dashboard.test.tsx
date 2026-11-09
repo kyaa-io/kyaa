@@ -110,8 +110,13 @@ describe("WebAnalyticsDashboard", () => {
     expect(rows[0]).toBe("주 (월~일)가입주간 활성글댓글포인트 지급하트 지급누적 가입");
     expect(rows[1]).toBe("10/26 – 11/01집계 중1710727378,00072,7003,000명 중 90.0%");
     expect(rows[8]).toBe("09/07 – 09/131010020301,00002,0003,000명 중 66.7%");
-    fireEvent.click(screen.getByRole("button", { name: "CSV 내려받기" }));
+    const download = screen.getByRole("button", { name: "CSV 내려받기" });
+    expect(within(download).getByText("›")).toHaveAttribute("aria-hidden", "true");
+    fireEvent.click(download);
     expect(click).toHaveBeenCalledTimes(1);
+    expect(click.mock.instances[0]).toHaveAttribute("download", "kyaa-weekly-2026-10-26.csv");
+    expect(click.mock.instances[0]).toHaveAttribute("href", "blob:weekly");
+    expect(URL.revokeObjectURL).toHaveBeenCalledWith("blob:weekly");
     expect(created).toHaveLength(1);
     const read = <T,>(load: (reader: FileReader) => void) => new Promise<T>((resolve) => { const reader = new FileReader(); reader.onload = () => resolve(reader.result as T); load(reader); });
     expect([...new Uint8Array(await read<ArrayBuffer>((reader) => reader.readAsArrayBuffer(created[0]!))).slice(0, 3)]).toEqual([0xef, 0xbb, 0xbf]);
