@@ -22,6 +22,31 @@ beforeEach(() => { localStorage.setItem("kyaa:passport:mission-onboarding:v1", "
 afterEach(cleanup);
 
 describe("PassportMissionBook", () => {
+  it("DS-D 9/9: arriving with #mission-book moves to the claim button once the pages are drawn and focuses it", () => {
+    const scroll = vi.fn(); const original = Element.prototype.scrollIntoView; Element.prototype.scrollIntoView = scroll;
+    window.history.replaceState(null, "", "/passports/p1?locale=ko#mission-book");
+    try {
+      state.resource = { loading: true, error: false, data: undefined, retry: vi.fn() };
+      const view = ui();
+      expect(scroll).not.toHaveBeenCalled();
+      state.resource = { loading: false, error: false, data: data([page({})]), retry: vi.fn() };
+      view.rerender(<PassportMissionBook passportId="p1" creatorSlug="c1" locale="ko" />);
+      const claim = screen.getByRole("button", { name: "하트 받기" });
+      expect(document.activeElement).toBe(claim);
+      expect(scroll).toHaveBeenCalledTimes(1);
+      view.rerender(<PassportMissionBook passportId="p1" creatorSlug="c1" locale="ko" />);
+      expect(scroll).toHaveBeenCalledTimes(1);
+    } finally { Element.prototype.scrollIntoView = original; window.history.replaceState(null, "", "/"); }
+  });
+  it("DS-D 9/9: with nothing to claim the hash lands on the book title, and without the hash nothing moves", () => {
+    const scroll = vi.fn(); const original = Element.prototype.scrollIntoView; Element.prototype.scrollIntoView = scroll;
+    try {
+      state.resource = { loading: false, error: false, data: data([page({ claimable: false, claimed: true })]), retry: vi.fn() };
+      ui(); expect(scroll).not.toHaveBeenCalled(); cleanup();
+      window.history.replaceState(null, "", "/passports/p1?locale=ko#mission-book");
+      ui(); expect(document.activeElement).toBe(document.getElementById("mission-book-title")); expect(scroll).toHaveBeenCalledTimes(1);
+    } finally { Element.prototype.scrollIntoView = original; window.history.replaceState(null, "", "/"); }
+  });
   it("renders nothing while the policy is off or undecided", () => {
     state.resource = { loading: false, error: false, data: data([page({})]), retry: vi.fn() };
     state.status = "off"; expect(ui().container.innerHTML).toBe("");

@@ -149,6 +149,14 @@ it('사용자 결정 B: the stamp words never read as automatic — 9 − (n mod
  expect(nextHeartLabel('ko',4)).toBe('5칸 더 모으면 받기');expect(nextHeartLabel('ko',0)).toBe('9칸 더 모으면 받기');expect(nextHeartLabel('ko',9)).toBe('하트 받기');expect(nextHeartLabel('ko',13)).toBe('5칸 더 모으면 받기');
  expect(nextHeartLabel('en',4)).toBe('5 more to claim');expect(nextHeartLabel('ja',9)).toBe('ハートを受け取る');
 });
+it('DS-D 9/9: a page already claimed (no next page yet) shows 0/9 and 9칸 더 모으면 받기, never 하트 받기',async()=>{
+ withFavorite();roadmapBody={passportId:uid(900),celebrityId:uid(901),hearts:3,pages:[{pageNo:1,slots:Array.from({length:9},(_,i)=>({slotNo:i+1,kind:null,state:'filled',stampId:null,clearedAt:null})),filled:9,claimable:false,claimed:true,locked:false,lockedReason:null}]};
+ render(<GroupBenefitsScreen locale='ko'/>);
+ const card=(await screen.findByRole('button',{name:'광고 보고 교환하기'})).closest('section')!;
+ await waitFor(()=>expect(card.querySelector('[data-cell="stamps"]')).toHaveTextContent('0/9'));
+ const cell=card.querySelector('[data-cell="stamps"]')!;
+ expect(cell).toHaveTextContent('9칸 더 모으면 받기');expect(cell).not.toHaveTextContent('하트 받기');expect(cell).toHaveAttribute('href','/passports?locale=ko');
+});
 it('사용자 결정 B: at 9/9 the wallet stamps cell says 하트 받기 › and goes to the passport mission book',async()=>{
  withFavorite();roadmapBody={passportId:uid(900),celebrityId:uid(901),hearts:3,pages:[{pageNo:1,slots:Array.from({length:9},(_,i)=>({slotNo:i+1,kind:null,state:'filled',stampId:null,clearedAt:null})),filled:9,claimable:true,claimed:false,locked:false,lockedReason:null}]};
  render(<GroupBenefitsScreen locale='ko'/>);

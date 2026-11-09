@@ -49,9 +49,10 @@ export function StanWallet({ locale, state, stamps, hearts, links, className }: 
   const ready = state.kind === "ready", affordable = ready && state.points >= pointCost;
   const toNext = ready ? pointCost - (state.points % pointCost) : pointCost;
   const ticketText = affordable ? <strong className={styles.ready}>{s("walletExchangeReady")}</strong> : s("walletNextTicket", [toNext.toLocaleString(locale)]);
-  const stampCount = typeof stamps === "number" ? stamps : 0, pageFull = stampCount > 0 && stampCount % STAMPS_PER_HEART === 0;
+  // 하트 받기 › only when a page can be claimed (the screen passes links.claim then); a full page that cannot be claimed says nothing more.
+  const stampCount = typeof stamps === "number" ? stamps : 0, full = stampCount > 0 && stampCount % STAMPS_PER_HEART === 0, pageFull = full && Boolean(links.claim);
   // 사용자 결정 B: a full page is claimed on the mission book; the cell says 하트 받기 › and goes there.
-  const stampText = pageFull ? <strong className={styles.ready}>{nextHeartLabel(locale, stampCount)}<ChevronRight size={16} aria-hidden="true" /></strong> : nextHeartLabel(locale, stampCount);
+  const stampText = pageFull ? <strong className={styles.ready}>{nextHeartLabel(locale, stampCount)}<ChevronRight size={16} aria-hidden="true" /></strong> : full ? "" : nextHeartLabel(locale, stampCount);
   const coin = <img src={POINT_COIN_SRC} width={20} height={20} alt="" />;
   const gaugeSlot = (slot: StanSlot, gauge: ReactNode) => slot === "loading" ? <FanSkeleton shape="block" width="100%" height={20} /> : slot === "missing" ? null : gauge;
   return <section className={[styles.wallet, className].filter(Boolean).join(" ")} aria-label={s("stanWalletFlows")} data-wallet-card="stan">
@@ -63,7 +64,7 @@ export function StanWallet({ locale, state, stamps, hearts, links, className }: 
     <Cell cell="stamps" href={pageFull && links.claim ? links.claim : `/passports?locale=${locale}`}>
       <span className={styles.label}>{s("stanFlowStamps")}</span>
       <span className={styles.value}><Value locale={locale} slot={stamps} size="md" unit={`/${STAMPS_PER_HEART}`} /></span>
-      <span className={styles.progress}>{gaugeSlot(stamps, <FanGauge size="sm" className={styles.gauge} segments={STAMPS_PER_HEART} value={pageFull ? STAMPS_PER_HEART : stampCount % STAMPS_PER_HEART} max={STAMPS_PER_HEART} label={nextHeartLabel(locale, stampCount)} valueText={stampText} />)}</span>
+      <span className={styles.progress}>{gaugeSlot(stamps, <FanGauge size="sm" className={styles.gauge} segments={STAMPS_PER_HEART} value={full ? STAMPS_PER_HEART : stampCount % STAMPS_PER_HEART} max={STAMPS_PER_HEART} label={full && !pageFull ? s("stanFlowStamps") : nextHeartLabel(locale, stampCount)} valueText={stampText} />)}</span>
     </Cell>
     <Cell cell="tickets" href={`/my/raffles?locale=${locale}`}>
       <span className={styles.step}><span>{w.tickets}</span><Value locale={locale} slot={tickets} size="md" unit={locale === "ko" ? "장" : undefined} /><ChevronRight className={styles.next} size={16} aria-hidden="true" /></span>
