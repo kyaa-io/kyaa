@@ -3,6 +3,7 @@
 // 정적으로 볼 수 있는 규칙(N1 N3 N4 N6 N7 N8 N9 N10 N11 N14 N15 N16)만 여기서 센다. 나머지는 실행 시험이 본다(N_CONTRACTS).
 // 오탐이 큰 부분은 RULES_N 의 countDecl 로 집계로 내린다(실패시키지 않고 경고로만 센다). 이유는 note 에 적었다.
 import postcss from 'postcss';
+import ts from 'typescript';
 import { posix } from 'node:path';
 import { jsxTags, stripComments } from './design-lint-rules.mjs';
 import { scanPurple, scanDarkCapsule } from './design-lint-color.mjs';
@@ -31,7 +32,7 @@ export const RULES_N = {
   N28: { sev: 'count', note: '정적 글꼴 Pretendard UI 참조 금지. 굵기 토큰을 쓴다(8장 ③)' },
   // 2026-11-08 H6(사용자 지시): 강조색은 kyaa 핑크 1색, 보라는 로고 아트에만, 짙은 회색 채움 캡슐 금지.
   N29: { sev: 'fail', note: 'CSS·TSX 의 보라 색상값(hex·rgb·hsl·oklch, 색상 250~320°·채도 10% 이상) 금지. 강조색은 var(--color-accent*) 핑크 1색. 로고·그림 아트 파일만 허용(H6)' },
-  N31: { sev: 'fail', note: '섹션 머리(제목 바로 옆) 행동은 글자 링크 + 글자 ›. FanAction 은 href 유무와 무관하게 variant="text" 이고 아이콘이 없어야 한다. Link·a·button 은 클래스·접근성 이름이 아니라 실제 CSS/인라인 테두리·배경·반경과 아이콘으로 판정한다. 닫기·뒤로 행동은 제외한다' },
+  N31: { sev: 'fail', note: '섹션 제목과 같은 헤더의 더보기·전체보기 행동은 글자 링크 + 글자 ›. 같은 파일의 함수·변수로 분리된 머리 행동도 검사한다. CTA·카드 전체 링크·목록 행·양식 단계·모달 열기는 제외한다' },
   N30: { sev: 'fail', note: '짙은 회색(또는 --color-ink) 채움 알약 금지. 캡슐·칩·배지는 흰 바탕 + 1px 테두리, 선택은 핑크 테두리/글자나 옅은 핑크 바탕 1단, 진행 막대·행동 버튼은 핑크 토큰(H6)' },
 };
 
@@ -177,24 +178,293 @@ function headActionHasStyle(attrs, code, file, read, head, name) {
   return false;
 }
 
-function headActionIsException(attrs, children) {
-  return /\bonClick=\{(?:close|onClose|handleClose|closeDialog|dismiss|onDismiss)\}/.test(attrs)
-    || /\bclassName=\{\w+\.(?:close|closeButton|backButton)\}/.test(attrs)
-    || /^(?:닫기|Close|뒤로|Back)$/.test(children.trim())
-    || (/^\s*<X\b[^>]*\/>\s*$/.test(children) && /\bonClick=/.test(attrs))
-    || /\bleadingIcon=\{\s*<(?:ArrowLeft|ChevronLeft)\b/.test(attrs);
+// N31 starts at section headers, never at arbitrary links. Resolve only rendered
+// local JSX; map callbacks/list rows and other files are deliberately not followed.
+function n31SectionAnalysis(code, file) {
+  const empty = { arrows: [], actions: new Map() };
+  if (GUIDE.test(file) || ADMIN.test(file) || FAN_UI.test(file)) return empty;
+  const source = ts.createSourceFile(file, code, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
+  const scopes = new Map(), elements = [];
+  const boundary = (n) => ts.isSourceFile(n) || ts.isBlock(n) || ts.isFunctionLike(n);
+  const scopeOf = (n) => { while (n && !boundary(n)) n = n.parent; return n; };
+  const bind = (scope, name, binding) => {
+    if (!ts.isIdentifier(name)) {
+      if (ts.isObjectBindingPattern(name) || ts.isArrayBindingPattern(name)) {
+        for (const element of name.elements) if (ts.isBindingElement(element)) bind(scope, element.name, { local: true });
+      }
+      return;
+    }
+    if (!scopes.has(scope)) scopes.set(scope, new Map());
+    scopes.get(scope).set(name.text, binding);
+  };
+  const index = (n) => {
+    if (ts.isVariableDeclaration(n)) bind(scopeOf(n.parent), n.name, { local: true, node: n.initializer });
+    if (ts.isFunctionDeclaration(n) && n.name) bind(scopeOf(n.parent), n.name, { local: true, node: n });
+    if (ts.isParameter(n)) bind(scopeOf(n.parent), n.name, { local: true });
+    if (ts.isImportSpecifier(n)) bind(source, n.name, { name: n.propertyName?.text ?? n.name.text, module: n.parent.parent.parent.moduleSpecifier.text });
+    if (ts.isImportClause(n) && n.name) bind(source, n.name, { name: n.name.text, module: n.parent.moduleSpecifier.text });
+    if (ts.isNamespaceImport(n)) bind(source, n.name, { namespace: true, module: n.parent.parent.moduleSpecifier.text });
+    if (ts.isJsxElement(n) || ts.isJsxSelfClosingElement(n)) elements.push(n);
+    ts.forEachChild(n, index);
+  };
+  index(source);
+  const lookup = (n) => {
+    if (!n || !ts.isIdentifier(n)) return undefined;
+    for (let scope = scopeOf(n); scope; scope = scopeOf(scope.parent)) {
+      if (scopes.get(scope)?.has(n.text)) return scopes.get(scope).get(n.text);
+    }
+  };
+  const unwrap = (n) => {
+    while (n && (ts.isParenthesizedExpression(n) || ts.isAsExpression(n) || ts.isNonNullExpression(n) || ts.isSatisfiesExpression(n))) n = n.expression;
+    return n;
+  };
+  const resolveLocal = (n, seen = new Set()) => {
+    n = unwrap(n);
+    if (!n || seen.has(n)) return undefined;
+    seen.add(n);
+    if (ts.isIdentifier(n)) {
+      const binding = lookup(n);
+      return binding?.local ? resolveLocal(binding.node, seen) : n;
+    }
+    return n;
+  };
+  const symbol = (n) => {
+    n = resolveLocal(n);
+    if (!n) return {};
+    if (ts.isIdentifier(n)) {
+      const binding = lookup(n);
+      // Check lexical bindings before spelling: even a parameter with no value
+      // must hide an imported ArrowRight, FanIcon, Link or namespace.
+      return binding ?? { name: n.text };
+    }
+    if (ts.isPropertyAccessExpression(n)) {
+      const base = resolveLocal(n.expression), binding = lookup(base);
+      if (binding?.namespace) return { name: n.name.text, module: binding.module };
+    }
+    return {};
+  };
+  const opening = (n) => ts.isJsxElement(n) ? n.openingElement : n;
+  const attributes = (n) => opening(n).attributes.properties.filter(ts.isJsxAttribute);
+  const attr = (n, name) => attributes(n).find((a) => a.name.getText(source) === name);
+  const value = (a) => a?.initializer && (ts.isJsxExpression(a.initializer) ? a.initializer.expression : a.initializer);
+  const nameOf = (n) => symbol(opening(n).tagName).name ?? '';
+  const children = (n) => ts.isJsxElement(n) || ts.isJsxFragment(n) ? n.children : [];
+  const returns = (fn) => {
+    fn = resolveLocal(fn);
+    if (!fn || !ts.isFunctionLike(fn) || !fn.body) return [];
+    if (!ts.isBlock(fn.body)) return [fn.body];
+    const result = [];
+    const visit = (n) => {
+      if (ts.isFunctionLike(n)) return;
+      if (ts.isReturnStatement(n) && n.expression) result.push(n.expression);
+      else ts.forEachChild(n, visit);
+    };
+    visit(fn.body);
+    return result;
+  };
+  const roots = (n, seen = new Set()) => {
+    n = unwrap(n);
+    if (!n || seen.has(n)) return [];
+    seen.add(n);
+    if (ts.isJsxElement(n) || ts.isJsxSelfClosingElement(n)) return [n];
+    if (ts.isJsxFragment(n)) return [...n.children].flatMap((c) => roots(c, new Set(seen)));
+    if (ts.isJsxExpression(n)) return roots(n.expression, seen);
+    if (ts.isIdentifier(n)) return roots(lookup(n)?.node, seen);
+    if (ts.isConditionalExpression(n)) return [...roots(n.whenTrue, new Set(seen)), ...roots(n.whenFalse, new Set(seen))];
+    if (ts.isBinaryExpression(n) && [ts.SyntaxKind.AmpersandAmpersandToken, ts.SyntaxKind.BarBarToken, ts.SyntaxKind.QuestionQuestionToken].includes(n.operatorToken.kind)) return roots(n.right, seen);
+    if (ts.isCallExpression(n)) return returns(n.expression).flatMap((body) => roots(body, new Set(seen)));
+    return [];
+  };
+  const childRoots = (n) => [...children(n)].flatMap((c) => roots(c));
+  const isAction = (n) => /^(a|Link|button|FanAction)$/.test(nameOf(n));
+  const isTitle = (n) => /^(h2|h3|FanHeading)$/.test(nameOf(n)) && value(attr(n, 'as'))?.text !== 'h1';
+  const isTransparent = (n) => /^(div|span)$/.test(nameOf(n));
+  const hasTitle = (n) => isTitle(n) || (isTransparent(n) && childRoots(n).some(hasTitle));
+  const hasInteractiveAncestor = (n) => {
+    for (let parent = n.parent; parent; parent = parent.parent) {
+      if ((ts.isJsxElement(parent) || ts.isJsxSelfClosingElement(parent)) && (isAction(parent) || attr(parent, 'href') || attr(parent, 'onClick'))) return true;
+    }
+    return false;
+  };
+  const handlerCalls = (n) => {
+    const reference = unwrap(n);
+    n = resolveLocal(n);
+    // A callback parameter is opaque, but the onClick identifier itself is
+    // still a control reference (unlike a shadowed icon/component name).
+    if (!n && reference && ts.isIdentifier(reference)) return [reference.text];
+    if (!n) return [];
+    if (ts.isIdentifier(n)) return [n.text];
+    if (ts.isCallExpression(n) && /^(useCallback|React\.useCallback)$/.test(n.expression.getText(source))) n = n.arguments[0];
+    if (!n) return [];
+    if (!ts.isFunctionLike(n) || !n.body) return [];
+    const calls = [];
+    const visit = (node) => {
+      if (ts.isFunctionLike(node)) return;
+      if (ts.isCallExpression(node)) calls.push(node.expression.getText(source));
+      ts.forEachChild(node, visit);
+    };
+    visit(n.body);
+    return calls;
+  };
+  const closeName = /^(close|onClose|handleClose|closeDialog|dismiss|onDismiss|goBack|onBack|handleBack)$/;
+  const closeIdentity = (n, seen = new Set()) => {
+    n = unwrap(n);
+    if (!n || seen.has(n)) return false;
+    seen.add(n);
+    if (ts.isStringLiteral(n)) return /^(close|back|dismiss)(?:\s|$)|(?:닫기|뒤로(?:가기)?)$/i.test(n.text.trim());
+    if (ts.isPropertyAccessExpression(n)) return /^(close(?:[A-Z]\w*)?|back|dismiss|cancel)$/.test(n.name.text);
+    if (ts.isIdentifier(n)) return /^(close|back|dismiss)$/.test(n.text) || closeIdentity(lookup(n)?.node, seen);
+    if (ts.isConditionalExpression(n)) return closeIdentity(n.whenTrue, new Set(seen)) && closeIdentity(n.whenFalse, new Set(seen));
+    // Translation helpers: a close key or the explicit fallback label identifies
+    // the control, but arbitrary expressions in data-* attributes do not.
+    if (ts.isCallExpression(n)) return n.arguments.some((a) => ts.isStringLiteral(a) && closeIdentity(a));
+    return false;
+  };
+  const passive = (n) => {
+    n = unwrap(n);
+    if (!n) return false;
+    if (ts.isIdentifier(n) || ts.isLiteralExpression(n) || [ts.SyntaxKind.TrueKeyword, ts.SyntaxKind.FalseKeyword, ts.SyntaxKind.NullKeyword].includes(n.kind)) return true;
+    if (ts.isPropertyAccessExpression(n)) return passive(n.expression);
+    if (ts.isPrefixUnaryExpression(n) && n.operator === ts.SyntaxKind.ExclamationToken) return passive(n.operand);
+    return false;
+  };
+  const closeOnlyHandler = (reference, seen = new Set()) => {
+    reference = unwrap(reference);
+    if (!reference || seen.has(reference)) return false;
+    seen.add(reference);
+    // Named close/back callbacks are control API references. Inspect wrapper
+    // bodies at onClick, rather than reclassifying their internal focus cleanup.
+    if (ts.isIdentifier(reference) && closeName.test(reference.text)) return true;
+    let fn = resolveLocal(reference);
+    if (!fn || ts.isIdentifier(fn)) return ts.isIdentifier(reference) && closeName.test((fn ?? reference).text);
+    if (ts.isCallExpression(fn) && /^(useCallback|React\.useCallback)$/.test(fn.expression.getText(source))) fn = fn.arguments[0];
+    if (!fn || !ts.isFunctionLike(fn) || !fn.body) return false;
+    const onlyClose = (node) => {
+      node = unwrap(node);
+      if (ts.isBlock(node)) return node.statements.length > 0 && node.statements.every(onlyClose);
+      if (ts.isExpressionStatement(node) || ts.isReturnStatement(node) || ts.isVoidExpression(node)) return Boolean(node.expression) && onlyClose(node.expression);
+      if (ts.isIfStatement(node)) return passive(node.expression) && onlyClose(node.thenStatement) && (!node.elseStatement || onlyClose(node.elseStatement));
+      if (!ts.isCallExpression(node) || !node.arguments.every(passive)) return false;
+      if (ts.isIdentifier(node.expression)) {
+        if (/^set(?:\w*Open|Open)$/.test(node.expression.text)) return node.arguments.length === 1 && node.arguments[0].kind === ts.SyntaxKind.FalseKeyword;
+        if (/^set\w*(?:Dialog|Modal|ModalDate)$/.test(node.expression.text)) return node.arguments.length === 1 && node.arguments[0].kind === ts.SyntaxKind.NullKeyword;
+        return closeOnlyHandler(node.expression, new Set(seen));
+      }
+      return ts.isPropertyAccessExpression(node.expression) && /^(router|history|navigation)\.back$/.test(node.expression.getText(source)) && node.arguments.length === 0;
+    };
+    return onlyClose(fn.body);
+  };
+  const isException = (n) => {
+    const label = unwrap(value(attr(n, 'aria-label') ?? attr(n, 'ariaLabel')));
+    const labelText = label?.text ?? '';
+    const calls = handlerCalls(value(attr(n, 'onClick')));
+    // Both conditions are mandatory: a close/back identity on this control and
+    // a handler doing only that operation. A glyph or one matching call amid
+    // other effects is not evidence of a close-only action.
+    const identifiedClose = attributes(n).some((a) => {
+      const name = a.name.getText(source);
+      if (/^(aria-label|ariaLabel|role|data-action|data-control|data-intent|data-close|data-back|data-dismiss)$/.test(name)) {
+        return closeIdentity(value(a)) || (/^data-(close|back|dismiss)$/.test(name) && (!a.initializer || value(a)?.kind === ts.SyntaxKind.TrueKeyword));
+      }
+      return false;
+    });
+    if (identifiedClose && closeOnlyHandler(value(attr(n, 'onClick')))) return true;
+    // Pagination/carousel: an identifying attribute AND the actual onClick AST
+    // must agree. data-debug, strings and other attributes cannot supply calls.
+    const labelProperty = label && ts.isPropertyAccessExpression(label) ? label.name.text : '';
+    const pager = /^(Next page|Previous page|다음 페이지|이전 페이지)$/i.test(labelText)
+      || /^(pageNext|pagePrev)$/.test(labelProperty)
+      || (label && ts.isPropertyAccessExpression(label) && /^(next|previous)$/.test(labelProperty) && /^(pagination|paginationCopy\([^)]*\))$/.test(label.expression.getText(source)));
+    const carousel = /^(Next slide|Previous slide|다음 슬라이드|이전 슬라이드)$/i.test(labelText)
+      || /^(nextSlide|previousSlide|nextBanner|previousBanner)$/.test(labelProperty);
+    return (pager && calls.some((c) => /^(nextPage|prevPage|previousPage|goToNextPage|goToPreviousPage|setPage|setCursors|goToPage|goPreview)$/.test(c)))
+      || (carousel && calls.some((c) => /^(scrollNext|scrollPrev|nextSlide|prevSlide|goToNextSlide|goToPreviousSlide|goTo|move|setActive)$/.test(c)))
+      // An identified controlled viewport plus an actual scroll call is a rail
+      // control. A data-* callback cannot satisfy the onClick call list.
+      || (Boolean(value(attr(n, 'aria-controls'))) && calls.some((c) => /\.(scrollTo|scrollBy)$/.test(c)));
+  };
+  const excludedAction = (n) => {
+    // These are not section-head browse actions, even if placed in a header.
+    return /^(primary|passport)$/.test(value(attr(n, 'variant'))?.text ?? '')
+      || value(attr(n, 'type'))?.text === 'submit'
+      || /^(dialog|true)$/.test(value(attr(n, 'aria-haspopup'))?.text ?? '')
+      || (/\.profileAction\b/.test(value(attr(n, 'className'))?.getText(source) ?? '')
+        && handlerCalls(value(attr(n, 'onClick'))).includes('onProfile'))
+      || /\.(primaryAction|primaryButton|submitButton)\b/.test(value(attr(n, 'className'))?.getText(source) ?? '');
+  };
+  const viewAllLike = (n) => {
+    // Only rendered copy participates, not URLs, classes or debug attributes.
+    const copy = (node) => {
+      if (ts.isJsxText(node)) return /^(전체(?:\s*보기)?|더\s*보기|모두\s*보기|view\s*all|see\s*all|more)\s*[›>]?$/i.test(node.text.trim());
+      if (ts.isJsxExpression(node)) {
+        const expression = unwrap(node.expression);
+        if (!expression) return false;
+        if (ts.isPropertyAccessExpression(expression)) return /^(more|all|viewAll|seeAll|rkViewAll)$/i.test(expression.name.text);
+        if (ts.isCallExpression(expression)) return expression.arguments.some((a) => ts.isStringLiteral(a) && /^(more|all|viewAll|seeAll|rkViewAll)$/i.test(a.text));
+      }
+      return [...children(node)].some(copy);
+    };
+    return [...children(n)].some(copy);
+  };
+  const found = new Map(), actions = new Map();
+  const iconsIn = (n, seen = new Set()) => {
+    if (!n || seen.has(n)) return [];
+    seen.add(n);
+    const result = [];
+    for (const node of roots(n)) {
+      const open = opening(node), info = symbol(open.tagName), name = info.name ?? '';
+      const icon = name === 'FanIcon' ? symbol(value(attr(node, 'icon'))).name : name;
+      const isIcon = /^(svg|FanIcon|CalendarDays|X|RowChevron|(?:Arrow|Chevron|Move)\w*)$/.test(name)
+        || /Icon$/.test(name) || /lucide|fan-icons|react-icons/.test(info.module ?? '');
+      if (isIcon && (name !== 'FanIcon' || icon)) result.push({ node, icon: icon || name });
+      else if (!isAction(node)) {
+        for (const body of returns(open.tagName)) result.push(...iconsIn(body, new Set(seen)));
+      }
+      for (const a of attributes(node)) if (!/^(on[A-Z]|href$|className$|style$|aria-|data-)/.test(a.name.getText(source))) result.push(...iconsIn(value(a), new Set(seen)));
+      for (const child of children(node)) result.push(...iconsIn(child, new Set(seen)));
+    }
+    return result;
+  };
+  for (const header of elements) {
+    const name = nameOf(header), parts = childRoots(header);
+    if (hasInteractiveAncestor(header) || isAction(header) || attr(header, 'data-calendar-header')) continue;
+    const explicit = name === 'header' || (/^(div|section)$/.test(name) && /[Hh]ead/.test(value(attr(header, 'className'))?.getText(source) ?? ''));
+    // A compact title + single action section acts as its own section header.
+    // A section containing rows, body text, forms, etc. is NOT a header.
+    const inlineContent = (node) => {
+      const tag = nameOf(node), info = symbol(opening(node).tagName);
+      return (/^(span|strong|small|em)$/.test(tag) && childRoots(node).every(inlineContent))
+        || /^(FanIcon|(?:Arrow|Chevron|Move)\w*)$/.test(tag) || /lucide|fan-icons|react-icons/.test(info.module ?? '');
+    };
+    const structural = parts.length === 2 && isTitle(parts[0]) && isAction(parts[1])
+      && (name === 'section' || (name === 'div' && viewAllLike(parts[1])))
+      && childRoots(parts[1]).every(inlineContent);
+    if (!(explicit && parts.some(hasTitle)) && !structural) continue;
+    const visit = (node) => {
+      if (isAction(node)) {
+        if (isException(node) || excludedAction(node) || childRoots(node).some(hasTitle) || attr(node, 'key')) return;
+        const offset = node.getStart(source), icons = iconsIn(node);
+        actions.set(offset, { node, hasIcon: icons.length > 0 });
+        for (const { node: iconNode, icon } of icons) if (/^(ChevronRight|ArrowRight|MoveRight)$/.test(icon)) {
+          const iconOffset = iconNode.getStart(source);
+          if (!found.has(iconOffset)) found.set(iconOffset, { offset: iconOffset, line: source.getLineAndCharacterOfPosition(iconOffset).line + 1,
+            actionOffset: offset, action: opening(node).tagName.getText(source), icon,
+            headerLine: source.getLineAndCharacterOfPosition(header.getStart(source)).line + 1 });
+        }
+      } else if (isTransparent(node) && !isTitle(node)) {
+        // An action-only wrapper is part of the header; wallet summaries, row
+        // content and paging status beside an action are separate controls.
+        const nested = childRoots(node);
+        if (nested.length && nested.every(isAction)) for (const child of nested) visit(child);
+      }
+    };
+    for (const part of parts) visit(part);
+  }
+  return { arrows: [...found.values()].sort((a, b) => a.offset - b.offset), actions };
 }
 
-function headActionHasIcon(attrs, children, code) {
-  if (/\b(?:leadingIcon|trailingIcon)=\{(?!\s*(?:null|undefined|false)\s*\})/.test(attrs)) return true;
-  if (/<(?:svg|FanIcon|CalendarDays|X|(?:Arrow|Chevron)\w*|\w+Icon|RowChevron)\b/.test(children)) return true;
-  for (const imported of code.matchAll(/import\s*\{([^}]+)\}\s*from\s*["'][^"']*(?:lucide|fan-icons|react-icons)[^"']*["']/g)) {
-    for (const specifier of imported[1].split(',')) {
-      const name = specifier.trim().split(/\s+as\s+/).at(-1);
-      if (name && new RegExp(`<${name}\\b`).test(children)) return true;
-    }
-  }
-  return false;
+export function n31ActionArrows(code, file) {
+  return n31SectionAnalysis(code, file).arrows;
 }
 
 export function scanNTs(code, file, read) {
@@ -253,15 +523,27 @@ export function scanNTs(code, file, read) {
   // N31: 섹션 머리 알약·아이콘 행동 — 제목 닫는 태그 바로 뒤의 행동 요소
   if (!fanUi) {
     const tagsByName = {};
+    const oldActions = [];
+    const analysis = n31SectionAnalysis(code, file);
+    const scopedActions = new Map([...analysis.actions].map(([offset, action]) => [stripComments(code.slice(0, offset)).length, action]));
     for (const m of c.matchAll(SECTION_HEAD_ACTION)) {
       const name = m[1];
       const start = m.index + m[0].length - name.length - 1;
       const tag = (tagsByName[name] ??= jsxTags(c, name)).find((t) => t.index === start);
       if (!tag) continue;
       const attrs = tag.attrs;
-      if (headActionIsException(attrs, tag.children)) continue;
+      const scoped = scopedActions.get(start);
+      if (!scoped) continue;
       if ((name === 'FanAction' && !/variant=\{?["']text["']/.test(attrs))
-        || headActionHasIcon(attrs, tag.children, c) || headActionHasStyle(attrs, c, file, read, m[0], name)) add(out, `N31|<${name}> after a heading`);
+        || scoped.hasIcon || headActionHasStyle(attrs, c, file, read, m[0], name)) {
+        add(out, `N31|<${name}> after a heading`);
+        oldActions.push(start);
+      }
+    }
+    // Preserve existing baseline keys and avoid counting the same inline action
+    // twice. The legacy regex scans stripped text; map the AST offset to it.
+    for (const hit of analysis.arrows) {
+      if (!oldActions.includes(stripComments(code.slice(0, hit.actionOffset)).length)) add(out, `N31|<${hit.action}> contains ${hit.icon}`);
     }
   }
   // N25: lucide 직접 import·strokeWidth

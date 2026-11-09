@@ -5,7 +5,7 @@ import { spawnSync, execFileSync } from 'node:child_process';
 import { mkdtempSync, mkdirSync, writeFileSync, rmSync, readFileSync, existsSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve, dirname } from 'node:path';
-import { RULES_N, N_CONTRACTS, scanNFile, scanNAll } from './design-lint-n-rules.mjs';
+import { RULES_N, N_CONTRACTS, scanNFile, scanNAll, n31ActionArrows } from './design-lint-n-rules.mjs';
 
 const SCREEN = 'apps/web/features/home/ui/home-screen.tsx';
 const PAGE = 'apps/web/app/pages/x/page.tsx';
@@ -161,9 +161,9 @@ test('N31 flags pill, icon and styled-link actions beside a heading and leaves c
   assert.equal(hits(ts('export const A = () => <header className={styles.intro}><div><FanHeading>x</FanHeading></div><Link className={styles.calendarLink} href="/c"><CalendarDays/>일정</Link></header>;', F), 'N31').length, 1);
   assert.equal(hits(ts('export const A = () => <div className={styles.sectionHeading}><h2>x</h2>{more && <Link href="/a">전체<ArrowRight/></Link>}</div>;', F), 'N31').length, 1);
   assert.equal(hits(ts('export const A = () => <header><h2>x</h2><FanAction variant="neutral" href="/a">전체</FanAction></header>;', F), 'N31').length, 1);
-  assert.equal(hits(ts('export const A = () => <header><h2>x</h2><FanAction onClick={close}>닫기</FanAction></header>;', F), 'N31').length, 0);
+  assert.equal(hits(ts('export const A = () => <header><h2>x</h2><FanAction ariaLabel="닫기" onClick={close}>닫기</FanAction></header>;', F), 'N31').length, 0);
   assert.equal(hits(ts('export const A = () => <header><h1>x</h1><FanAction variant="text" leadingIcon={<ArrowLeft/>} href="/a">뒤로</FanAction></header>;', F), 'N31').length, 0);
-  assert.equal(hits(ts('export const A = () => <header><h2>x</h2><button className={styles.close} aria-label="닫기"><X/></button></header>;', F), 'N31').length, 0);
+  assert.equal(hits(ts('export const A = () => <header><h2>x</h2><button className={styles.close} aria-label="닫기" onClick={onClose}><X/></button></header>;', F), 'N31').length, 0);
   assert.equal(hits(ts('export const A = () => <header><h2>x</h2><FanAction variant="text" trailingIcon={<ArrowRight/>} href="/a">전체</FanAction></header>;', 'apps/web/components/fan-ui/fan-heading.tsx'), 'N31').length, 0);
   assert.equal(hits(css('.sectionHeading>a{border:1px solid var(--color-line);border-radius:999px}'), 'N31').length, 1);
   assert.equal(hits(css('.listHead a{background:var(--color-surface)}'), 'N31').length, 1);
@@ -202,8 +202,8 @@ test('N31 checks plain buttons and FanAction without href, including conditional
     '<button onClick={expand}>More ›</button>',
     '<button style={{background:"transparent",border:0,borderRadius:0}}>More ›</button>',
     '<FanAction variant="text" onClick={expand}>More <span aria-hidden="true">›</span></FanAction>',
-    '<FanAction onClick={onClose}>Close</FanAction>',
-    '<button className={styles.close} aria-label="Close"><X/></button>',
+    '<FanAction ariaLabel="Close" onClick={onClose}>Close</FanAction>',
+    '<button className={styles.close} aria-label="Close" onClick={onClose}><X/></button>',
   ]) assert.equal(hits(ts(`export const A = () => <header><h2>Title</h2>${action}</header>`), 'N31').length, 0, action);
   assert.equal(hits(ts('import { Plus as Add } from "lucide-react"; export const A = () => <header><h2>Title</h2><button aria-label="Add"><Add/></button></header>'), 'N31').length, 1);
 });
@@ -230,6 +230,180 @@ test('N31 distinguishes close controls and app navigation from section actions',
     };
     assert.equal(hits(scanNAll(Object.keys(files), (f) => files[f]).get(SCREEN) ?? new Map(), 'N31').length, expected);
   }
+});
+
+const sectionHead = (action) => '<header><h2>Section</h2>' + action + '</header>';
+
+test('N31 follows home-ranking-card conditional function-separated header actions', () => {
+  const code = 'const all = (tab) => <Link href={tab}>전체<ArrowRight/></Link>; const head = (tab) => <div className={styles.head}><FanHeading>순위</FanHeading>{tab ? all(tab) : null}</div>;';
+  assert.equal(hits(ts(code), 'N31').length, 1);
+  assert.equal(n31ActionArrows(code, SCREEN).length, 1);
+  assert.equal(hits(ts('const all = (tab) => <Link href={tab}>전체<ArrowRight/></Link>; <section><p>Content</p>{all(tab)}</section>;'), 'N31').length, 0);
+});
+
+test('N31 keeps group-home:86 compact title/action section as a real violation', () => {
+  const code = '<section className={railStyles.events}><h2>{t.events}</h2><FanAction variant="text" href="/benefits" leadingIcon={<Heart/>} trailingIcon={<ArrowRight/>}>{copy.title}</FanAction></section>';
+  assert.equal(hits(ts(code, 'apps/web/features/groups/ui/group-home.tsx'), 'N31').length, 1);
+});
+
+test('N31 recognizes a plain title/view-all row without treating promotional copy as a header', () => {
+  assert.equal(hits(ts('<div><h2>News</h2><Link href="/news">View all<ArrowRight/></Link></div>'), 'N31').length, 1);
+  assert.equal(hits(ts('<div><h2>Join us</h2><Link href="/join">Join<ArrowRight/></Link></div>'), 'N31').length, 0);
+  assert.equal(hits(ts('<section><h2>Wallet</h2><Link><WalletRate/><span>Use<ArrowRight/></span></Link></section>'), 'N31').length, 0);
+});
+
+test('N31 handles opaque close callback parameters and real viewport scrolling', () => {
+  const close = 'function A({onClose}) { return ' + sectionHead('<FanAction ariaLabel={copy.close} leadingIcon={<X/>} onClick={onClose}/>') + '; }';
+  assert.equal(hits(ts(close), 'N31').length, 0);
+  const scroll = 'const next = () => grid.scrollTo({left:100}); ' + sectionHead('<button aria-controls="cards" onClick={next}><ChevronRight/></button>');
+  assert.equal(hits(ts(scroll), 'N31').length, 0);
+  assert.equal(hits(ts(sectionHead('<button aria-controls="cards" onClick={openAll} data-debug={() => grid.scrollTo({left:100})}><ChevronRight/></button>')), 'N31').length, 1);
+});
+
+// Reduced source fixtures from each reviewed false positive. Preserve the
+// enclosing structure so a regression cannot pass merely by omitting a title.
+const reviewedFalsePositives = [
+  ['banner-slot:38', 'const body = <><picture/><span><strong>{title}</strong><span>{cta}<ArrowRight/></span></span></>; <div data-banner-slot={slot}><Link href={href}>{body}</Link></div>;'],
+  ['home-entry-cards:80', '<Link className={styles.card} href={href}><div><h2>{title}</h2><small>ELINA</small><p>{description}</p><span>{action}<ArrowRight/></span></div><span>{image}</span></Link>'],
+  ['service-guide-page:31', '<section className={styles.hero}><h1>{title}</h1><p>{description}</p><div><Link className={styles.primaryAction} href={href}>{action}<ArrowRight/></Link></div></section>'],
+  ['benefit-screen:657', '<li><Link className={styles.rowLink} href={href}><BenefitArtwork/><div><h3>{title}</h3><p>{description}</p></div><ChevronRight/></Link></li>'],
+  ['raffle-results-notice:13', '<FanSurface><h2>{title}</h2><p>{body}</p><FanAction variant="primary" href="/my/raffles" trailingIcon={<ArrowRight/>}>{action}</FanAction></FanSurface>'],
+  ['connect-screen:172', '<nav><Link className={styles.linkCard} href="/event"><span>OCT</span><span><strong>{title}</strong><small>{detail}</small></span><ChevronRight/></Link></nav>'],
+  ['staff-rsvp-form:162', '<section><h2>{privacy}</h2><button aria-haspopup="dialog" onClick={() => setPrivacyDialog("general")}>{title}<ChevronRight/></button></section>'],
+  ['creator-home-highlights:14', '<div><CreatorMediaPanel/><div className={styles.community}><FanAction variant="neutral" href={boardHref} trailingIcon={<ArrowRight/>}>{fanBoard}</FanAction></div></div>'],
+  ['profile-modal:201', '<Dialog><header><h2>{name}</h2></header><p>{bio}</p>{self ? <FanAction href="/settings" trailingIcon={<ArrowRight/>}>{edit}</FanAction> : <div>{buttons}</div>}</Dialog>'],
+  ['creator-group-home:83', '<section className={styles.brandCreatorNews}><h2>{news}</h2>{items.map(item => <Link key={item.id} href={item.href}><strong>{item.title}</strong><ArrowRight/></Link>)}</section>'],
+  ['group-activity-frame:17', '<aside><h2>{activities}</h2><FanAction href="/wallet" onClick={() => setAttendanceOpen(true)} trailingIcon={<ArrowRight/>}>{attendance}</FanAction><FanAction href="/passports" trailingIcon={<ArrowRight/>}>{passport}</FanAction></aside>'],
+  ['group-room-list:130', '<div><RoomSearch/><ul>{rooms.map(room => { const body = <><strong>{room.name}</strong><ChevronRight/></>; return <li><RoomCardControl href={href} onClick={open}>{body}</RoomCardControl></li>; })}</ul></div>'],
+  ['live-event-screen:1366', '<section><h2>{attend}</h2><FanAction variant="primary" href={verificationHref} leadingIcon={<TicketCheck/>} trailingIcon={<ArrowRight/>}>{action}</FanAction></section>'],
+  ['live-event-screen:1833', '<FanContentContainer><div><section><h2>{title}</h2><p>{body}</p></section></div><FanAction href={suggestionsHref} trailingIcon={<ArrowRight/>}>{suggest}</FanAction><LiveFanSubmissions/></FanContentContainer>'],
+  ['my-screen:336', '<nav><Link href={reserved ? "#live" : "/live"}><CalendarDays/><span><strong>{title}</strong><small>{count}</small></span><ArrowRight/></Link></nav>'],
+  ['my-screen:497', 'function Empty({text,href,action}) { return <div className={styles.empty}><span>{text}</span><Link href={href}>{action}<ArrowRight/></Link></div>; }'],
+  ['passport-screens:218', '<section className={styles.empty}><h2>{title}</h2><p>{description}</p><Link className={styles.primaryButton} href="/celebrities">{action}<ArrowRight/></Link></section>'],
+  ['quiz-questions-screen:402', '<nav><FanAction variant="primary" onClick={() => setQuestionIndex(index => index + 1)} trailingIcon={<ArrowRight/>}>{next}</FanAction></nav>'],
+];
+for (const [location, code] of reviewedFalsePositives) test('N31 review false positive passes: ' + location, () => {
+  assert.equal(hits(ts(code), 'N31').length, 0);
+  assert.equal(n31ActionArrows(code, SCREEN).length, 0);
+});
+
+test('N31 excludes whole-card headers, body links, list rows and primary/modal controls', () => {
+  for (const code of [
+    '<Link href="/wallet"><span><FanHeading>지갑</FanHeading><FanIcon icon={ChevronRight}/></span></Link>',
+    '<section><h2>지갑</h2><dl>잔액</dl><Link href="/guide">안내<ChevronRight/></Link></section>',
+    '<Link><header><h2>Card</h2><button><ArrowRight/></button></header></Link>',
+    sectionHead('<FanAction variant="primary" trailingIcon={<ArrowRight/>}>Join</FanAction>'),
+    sectionHead('<button type="submit"><ArrowRight/></button>'),
+    sectionHead('<button aria-haspopup="dialog" onClick={open}>Open<ArrowRight/></button>'),
+    '<header><h2>Title</h2><ul><li><Link><ArrowRight/></Link></li></ul></header>',
+  ]) assert.equal(hits(ts(code), 'N31').length, 0, code);
+});
+
+test('N31 resolves same-file JSX, function aliases and local icon components from a header', () => {
+  for (const helper of [
+    'const arrow = <MoveRight/>; const body = <span>{arrow}</span>;',
+    'function icon() { return <MoveRight/>; } const body = <span>{icon()}</span>;',
+    'const icon = () => <MoveRight/>; const body = icon();',
+    'const icon = () => <MoveRight/>; const alias = icon; const body = alias();',
+    'function icon() { return <MoveRight/>; } const a = icon; const b = a; const body = b();',
+    'function Icon() { return <MoveRight/>; } const Alias = Icon; const body = <Alias/>;',
+  ]) {
+    const code = helper + sectionHead('<Link href="/all">{body}</Link>');
+    assert.equal(n31ActionArrows(code, SCREEN).length, 1, helper);
+    assert.equal(hits(ts(code), 'N31').length, 1, helper);
+  }
+  const actionAlias = 'const all = () => <Link>전체<ArrowRight/></Link>; const alias = all; ' + sectionHead('{alias()}');
+  assert.equal(hits(ts(actionAlias), 'N31').length, 1);
+  for (const helper of ['const a = b; const b = a;', 'const a = () => b(); const b = () => a();']) {
+    assert.equal(hits(ts(helper + sectionHead('<Link>{a()}</Link>')), 'N31').length, 0);
+  }
+});
+
+test('N31 resolves named/namespace FanIcon and icon imports', () => {
+  for (const [imports, icon] of [
+    ['import { ChevronRight as Next } from "lucide-react";', '<Next/>'],
+    ['import { FanIcon as Icon } from "@/components/fan-ui"; import { ArrowRight as Next } from "lucide-react";', '<Icon icon={Next}/>'],
+    ['import * as Icons from "lucide-react";', '<Icons.MoveRight/>'],
+    ['import * as UI from "@/components/fan-ui"; import * as Icons from "lucide-react";', '<UI.FanIcon icon={Icons.ArrowRight}/>'],
+  ]) assert.equal(n31ActionArrows(imports + sectionHead('<Link>' + icon + '</Link>'), SCREEN).length, 1);
+});
+
+test('N31 applies lexical shadowing before icon, wrapper and namespace names', () => {
+  for (const [imports, declaration, icon] of [
+    ['import { ArrowRight } from "lucide-react";', 'function A(ArrowRight) {', '<ArrowRight/>'],
+    ['import { ArrowRight } from "lucide-react";', 'function A({ArrowRight}) {', '<ArrowRight/>'],
+    ['import { ArrowRight } from "lucide-react";', 'function A() { const ArrowRight = () => <span/>;', '<ArrowRight/>'],
+    ['import { FanIcon, ArrowRight } from "@/components/fan-ui";', 'function A(FanIcon) {', '<FanIcon icon={ArrowRight}/>'],
+    ['import * as UI from "@/components/fan-ui"; import * as Icons from "lucide-react";', 'function A(UI) {', '<UI.FanIcon icon={Icons.ArrowRight}/>'],
+    ['import * as UI from "@/components/fan-ui"; import * as Icons from "lucide-react";', 'function A(Icons) {', '<UI.FanIcon icon={Icons.ArrowRight}/>'],
+  ]) {
+    const code = imports + declaration + 'return ' + sectionHead('<Link>' + icon + '</Link>') + '; }';
+    assert.equal(n31ActionArrows(code, SCREEN).length, 0, code);
+    assert.equal(hits(ts(code), 'N31').length, 0, code);
+  }
+});
+
+for (const [reason, label, callback] of [
+  ['close', 'Close', 'onClose'], ['back', 'Back', 'goBack'],
+  ['carousel', 'Next slide', 'scrollNext'], ['pagination', 'Next page', 'nextPage'],
+]) test('N31 allows the identified ' + reason + ' control with its actual callback', () => {
+  assert.equal(hits(ts(sectionHead('<button aria-label="' + label + '" onClick={' + callback + '}><ChevronRight/></button>')), 'N31').length, 0);
+});
+
+test('N31 detects More even when its callback also calls onClose', () => {
+  const code = '<header><h2>T</h2><button aria-label="More" onClick={() => {onClose(); openAll();}}><ArrowRight/></button></header>';
+  assert.equal(hits(ts(code), 'N31').length, 1);
+  assert.equal(n31ActionArrows(code, SCREEN).length, 1);
+});
+
+test('N31 close/back exemption needs identifying attributes and a close-only handler', () => {
+  for (const attrs of [
+    'aria-label="More" onClick={onClose}',
+    'onClick={goBack}',
+    'data-debug="close" onClick={onClose}',
+    'aria-label="Close" onClick={() => { onClose(); openAll(); }}',
+    'data-action="back" onClick={() => { goBack(); selected = true; }}',
+    'aria-label="Close" onClick={() => onClose(openAll())}',
+    'aria-label="Back" data-debug={() => goBack()} onClick={openAll}',
+    'aria-label="Close"',
+  ]) assert.equal(hits(ts(sectionHead('<button ' + attrs + '><ArrowRight/></button>')), 'N31').length, 1, attrs);
+  for (const attrs of [
+    'aria-label="Close" onClick={() => onClose()}',
+    'aria-label={copy.close} onClick={onClose}',
+    'data-action="back" onClick={() => router.back()}',
+    'data-close onClick={onClose}',
+    'aria-label="Close dialog" onClick={() => { if (!busy) onClose(); }}',
+  ]) assert.equal(hits(ts(sectionHead('<button ' + attrs + '><ArrowRight/></button>')), 'N31').length, 0, attrs);
+});
+
+test('N31 exceptions inspect identifying attributes and actual onClick AST only', () => {
+  for (const attrs of [
+    'aria-label="More" data-debug={() => setCursors([])} onClick={openAll}',
+    'aria-label="Next page" data-debug={() => setCursors([])} onClick={openAll}',
+    'aria-label="More" onClick={() => setCursors([])}',
+    'aria-label="Next page" onClick={() => "setCursors([])"}',
+    'aria-label="Next page" onClick={() => { const unused = () => setCursors([]); openAll(); }}',
+    'aria-label="Next slide" onClick={openAll}',
+  ]) {
+    const code = sectionHead('<button ' + attrs + '><ArrowRight/></button>');
+    assert.equal(hits(ts(code, 'apps/web/features/groups/ui/creator-group-home.tsx'), 'N31').length, 1, attrs);
+  }
+  assert.equal(hits(ts(sectionHead('<button aria-label="Next page" onClick={() => setCursors(next)}><ArrowRight/></button>')), 'N31').length, 0);
+});
+
+test('N31 ignores strings/comments, unrendered helpers and event callback JSX', () => {
+  for (const code of [
+    'const all = () => <Link><ArrowRight/></Link>; <header><h2>Title</h2></header>;',
+    'const arrow = <ArrowRight/>;' + sectionHead('<button onClick={() => arrow}>More ›</button>'),
+    '/* <header><h2>Title</h2><Link><ArrowRight/></Link></header> */',
+  ]) assert.equal(hits(ts(code), 'N31').length, 0);
+});
+
+test('N31 counts a helper icon once and preserves original source locations', () => {
+  const code = '// lead\nconst icon = <ArrowRight/>;\n' + sectionHead('<Link>{icon}{icon}</Link>');
+  assert.equal(n31ActionArrows(code, SCREEN).length, 1);
+  assert.equal(n31ActionArrows(code, SCREEN)[0].line, 2);
+  assert.equal([...ts(code)].filter(([key]) => key.startsWith('N31|')).reduce((sum, [, n]) => sum + n, 0), 1);
 });
 
 test('N29 reads purple in TSX strings and tinted grays, ignores comments, logo art files and pink', () => {
