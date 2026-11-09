@@ -56,6 +56,7 @@ psql -X -v ON_ERROR_STOP=1 -f "$root_dir/supabase/tests/public_lists_listed_filt
 psql -X -v ON_ERROR_STOP=1 -f "$root_dir/supabase/tests/schedules_listed_filter.sql"
 psql -X -v ON_ERROR_STOP=1 -f "$root_dir/supabase/tests/schedules_listed_keep_mine.sql"
 psql -X -v ON_ERROR_STOP=1 -f "$root_dir/supabase/tests/group_wallet_ticket_units.sql"
+bash "$root_dir/supabase/tests/group_wallet_ticket_units_reapply.sh"
 psql -X -v ON_ERROR_STOP=1 -f "$root_dir/supabase/tests/fan_web_participation.sql"
 bash "$root_dir/supabase/tests/fan_web_participation_concurrency.sh"
 psql -X -v ON_ERROR_STOP=1 -f "$root_dir/supabase/tests/fan_web_notifications.sql"

@@ -7,7 +7,8 @@
 --   * the receipt input still holds units, so the same request key with another quantity is GROUP_WALLET_REQUEST_CONFLICT.
 -- Signature, owner, security definer, search_path and grants are unchanged (create or replace of the same definition); the function
 -- reads no table it did not read before, so the owner needs no new access.
--- Rollback: supabase/rollback/20261219070000_group_wallet_ticket_units.sql.
+-- Rollback: supabase/rollback/20261219070000_group_wallet_ticket_units.sql. Re-applying after the rollback works (shell test
+-- supabase/tests/group_wallet_ticket_units_reapply.sh).
 begin;
 set local lock_timeout = '5s';
 
@@ -17,12 +18,17 @@ declare
   before_replay constant text := 'if p_target=''ticket''and p_units<>1 then raise exception ''GROUP_WALLET_INVALID'';end if;';
   before_debit constant text := 'if p_units<>1 then raise exception ''GROUP_WALLET_INVALID'';end if;';
   definition text := pg_catalog.pg_get_functiondef(sig);
+  replay_checks integer := (length(definition) - length(replace(definition, before_replay, ''))) / length(before_replay);
+  debit_checks integer := (length(definition) - length(replace(definition, before_debit, ''))) / length(before_debit);
 begin
-  if pg_catalog.strpos(definition, 'p_units<>1') = 0 then return; end if; -- already applied
-  if (length(definition) - length(replace(definition, before_replay, ''))) / length(before_replay) <> 1 then raise exception 'GROUP_WALLET_TICKET_UNITS_SHAPE: replay check'; end if;
-  if (length(definition) - length(replace(definition, before_debit, ''))) / length(before_debit) <> 1 then raise exception 'GROUP_WALLET_TICKET_UNITS_SHAPE: debit check'; end if;
-  execute replace(replace(definition, before_replay, ''), before_debit, '');
-  definition := pg_catalog.pg_get_functiondef(sig);
+  -- 0 or 1 of each: first apply (1,1), after the rollback (0,1; the rollback restores only the new-request check), already applied (0,0).
+  if replay_checks not in (0, 1) then raise exception 'GROUP_WALLET_TICKET_UNITS_SHAPE: replay check x%', replay_checks; end if;
+  if debit_checks not in (0, 1) then raise exception 'GROUP_WALLET_TICKET_UNITS_SHAPE: debit check x%', debit_checks; end if;
+  if replay_checks + debit_checks > 0 then
+    execute replace(replace(definition, before_replay, ''), before_debit, '');
+    definition := pg_catalog.pg_get_functiondef(sig);
+  end if;
+  -- Every path (first apply, re-apply after the rollback, already applied) ends with the same body check.
   if pg_catalog.strpos(definition, 'p_units<>1') > 0
      or pg_catalog.strpos(definition, 'p_units not between 1 and 1000') = 0
      or pg_catalog.strpos(definition, '-(p_units::bigint*100)') = 0

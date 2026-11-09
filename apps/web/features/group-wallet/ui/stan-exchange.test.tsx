@@ -97,6 +97,7 @@ it('a lost answer keeps the request; the check resends the same key and session 
   const check = await screen.findByRole('button', { name: '처리 결과 확인' });
   expect(JSON.parse(sessionStorage.getItem('kyaa-wallet-pending:owner-a')!)).toMatchObject({ units: 3, adSessionId: SESSION });
   expect(screen.getByRole('button', { name: '수량 줄이기' })).toBeDisabled();
+  expect(screen.getByRole('group', { name: '수량' }).querySelector('output')).toHaveTextContent('3장');
   await act(async () => { fireEvent.click(check); });
   await waitFor(() => expect(toast).toHaveBeenCalledWith({ title: '응모권 +3장', tone: 'success' }));
   expect(exchanges()).toHaveLength(2); expect(exchanges()[1].body).toEqual(exchanges()[0].body);
@@ -114,4 +115,11 @@ it('names the toast with the ticket word in other languages', async () => {
   serve(receipt); view(200, 'en');
   fireEvent.click(screen.getByRole('button', { name: 'Watch an ad to exchange' }));
   await waitFor(() => expect(toast).toHaveBeenCalledWith({ title: 'Tickets +2', tone: 'success' }));
+});
+
+it('shows the saved quantity, not today\'s maximum, while a saved request waits for its check', () => {
+  sessionStorage.setItem('kyaa-wallet-pending:owner-a', JSON.stringify({ operation: 'exchange', requestKey: '40000000-0000-4000-8000-000000000004', policyVersion: 'group-wallet-v1', target: 'ticket', units: 2, adSessionId: SESSION }));
+  serve(receipt); view(900);
+  expect(screen.getByRole('button', { name: '처리 결과 확인' })).toBeInTheDocument();
+  expect(screen.getByRole('group', { name: '수량' }).querySelector('output')).toHaveTextContent('2장');
 });

@@ -31,7 +31,7 @@ export function MyWalletCardSkeleton({ locale }: { locale: AppLocale }) {
   return <WalletCard locale={locale} title={title(locale)} href={walletHref(locale)} hearts="loading" state={{ kind: "loading" }} />;
 }
 
-/** 비로그인 지갑 카드: 같은 외곽에 잠긴 숫자 3개, 카드 전체가 로그인으로 간다. */
-export function MyGuestWalletCard({ locale, returnTo }: { locale: AppLocale; returnTo: string }) {
-  return <WalletCard locale={locale} title={title(locale)} href={fanLoginHref(locale, returnTo)} hearts="locked" state={{ kind: "guest", action: null }} />;
+/** 비로그인 지갑 카드: 같은 외곽에 잠긴 숫자 3개, 카드 전체가 로그인으로 가고 로그인 뒤에는 로그인 카드와 같은 덕질 지갑으로 돌아온다. */
+export function MyGuestWalletCard({ locale }: { locale: AppLocale }) {
+  return <WalletCard locale={locale} title={title(locale)} href={fanLoginHref(locale, walletHref(locale))} hearts="locked" state={{ kind: "guest", action: null }} />;
 }

@@ -538,7 +538,6 @@ const hrefWithLocale = (locale: FanLocale) => (path: string) => `${path}${path.i
 function MyGuest({ locale }: { locale: FanLocale }) {
   const t = copy[locale];
   const ko = locale === "ko";
-  const here = `/my?locale=${locale}`;
   const loginTo = (path: string) => fanLoginHref(locale, hrefWithLocale(locale)(path));
   return <div className={styles.pencilMy}>
     <header className={`${styles.pencilProfile} ${styles.guestProfile}`}>
@@ -548,7 +547,7 @@ function MyGuest({ locale }: { locale: FanLocale }) {
     </header>
     <div className={styles.homeRow}>
       <MyGuestPassportCard locale={locale} labels={{ title: t.myPassport, detail: myHomeText(locale, "viewDetails") }}/>
-      <MyGuestWalletCard locale={locale} returnTo={here}/>
+      <MyGuestWalletCard locale={locale}/>
     </div>
     <MyGuestFavorites locale={locale} labels={{ title: t.creators, find: t.findCreator, empty: t.noCreators }}/>
     <MyShortcuts locale={locale} {...myShortcutGroups(locale, loginTo)}/>

@@ -78,5 +78,6 @@ export function rewardedStopMessage(locale:AppLocale,kind:RewardedStopKind,done:
  return kind==='dailyLimit'?body:body+row[8]+row[9];
 }
 
-const pointsUse:Record<AppLocale,string>={ko:'모은 포인트 사용하기',en:'Use your points',ja:'貯めたポイントを使う','zh-Hans':'使用积分','zh-Hant':'使用點數',es:'Usa tus puntos',id:'Gunakan poinmu',vi:'Dùng điểm đã tích',th:'ใช้แต้มที่สะสม',pt:'Use seus pontos',fr:'Utilisez vos points',ru:'Потратить баллы'};
-export const pointsUseTitle=(locale:AppLocale)=>pointsUse[locale];
+/** B13: the 모임 home link to the 덕질 wallet. It only opens the wallet, so it never says exchange (교환 starts only in the 덕질 wallet card). */
+const pointsView:Record<AppLocale,string>={ko:'내 포인트 보기',en:'View my points',ja:'ポイントを見る','zh-Hans':'查看我的积分','zh-Hant':'查看我的點數',es:'Ver mis puntos',id:'Lihat poinku',vi:'Xem điểm của tôi',th:'ดูแต้มของฉัน',pt:'Ver meus pontos',fr:'Voir mes points',ru:'Мои баллы'};
+export const pointsViewLabel=(locale:AppLocale)=>pointsView[locale];

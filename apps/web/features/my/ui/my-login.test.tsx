@@ -12,11 +12,12 @@ const fetcher = vi.fn(async (url: string) => String(url).startsWith("/api/dukjil
 beforeEach(() => { fetcher.mockClear(); resetDukjilCatalogCache(); vi.stubGlobal("fetch", fetcher); });
 afterEach(() => vi.unstubAllGlobals());
 
-it.each(["ko", "en", "ja", "zh-Hans", "zh-Hant", "es", "id", "vi", "th", "pt", "fr"] as const)("keeps the MY sections signed out and sends the single login action back to MY in %s", (locale) => {
+it.each(["ko", "en", "ja", "zh-Hans", "zh-Hant", "es", "id", "vi", "th", "pt", "fr"] as const)("keeps the MY sections signed out and sends the wallet card login back to the 덕질 wallet in %s", (locale) => {
   render(<MyScreen locale={locale} />);
-  // B13: the signed-out wallet card is itself the way to log in (locked numbers, the whole card is the link).
+  // B13: the signed-out wallet card is itself the way to log in (locked numbers, the whole card is the link) and comes back to the 덕질 wallet.
   const login = document.querySelector('[data-wallet-card="my"]');
-  expect(login).toHaveAttribute("href", fanLoginHref(locale, `/my?locale=${locale}`));
+  expect(login).toHaveAttribute("href", fanLoginHref(locale, `/benefits?locale=${locale}#wallet`));
+  expect(new URL(login!.getAttribute("href")!, "https://kyaa.invalid").searchParams.get("returnTo")).toBe(`/benefits?locale=${locale}#wallet`);
   expect(screen.getAllByRole("heading").length).toBeGreaterThanOrEqual(5);
 });
 
@@ -42,7 +43,7 @@ it("keeps the signed-in order signed out: passport, wallet, favorites, shortcuts
   expect(screen.queryByRole("heading", { name: "함께 모은 스탬프" })).toBeNull();
   expect(screen.queryByRole("heading", { name: "래플 결과가 발표됐어요" })).toBeNull();
   const wallet = screen.getByRole("link", { name: "내 지갑" });
-  expect(wallet).toHaveAttribute("href", fanLoginHref("ko", "/my?locale=ko"));
+  expect(wallet).toHaveAttribute("href", fanLoginHref("ko", "/benefits?locale=ko#wallet"));
   expect(within(wallet).getAllByRole("img", { name: "로그인 후 확인" })).toHaveLength(3);
   expect(document.body.textContent).not.toContain("모은 포인트 사용하기");
   expect(screen.getByRole("link", { name: "내 응모 내역" })).toHaveAttribute("href", fanLoginHref("ko", "/my/raffles?locale=ko"));

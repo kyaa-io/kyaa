@@ -101,7 +101,8 @@ export function StanExchange({ locale, points, pointCost }: { locale: AppLocale;
   return <div className={styles.exchange}>
     <div className={styles.stepper} role="group" aria-label={q.quantity}>
       <FanIconButton aria-label={q.decrease} disabled={locked || Boolean(pending) || qty <= 1} onClick={() => pick(qty - 1)}><FanIcon icon={Minus} /></FanIconButton>
-      <output aria-live="polite" aria-label={`${q.quantity} ${qty}`}>{unitsText(locale, qty)}</output>
+      {/* A saved request is checked with its own quantity, so the card shows that one, not today's maximum. */}
+      <output aria-live="polite" aria-label={`${q.quantity} ${pending?.units ?? qty}`}>{unitsText(locale, pending?.units ?? qty)}</output>
       <FanIconButton aria-label={q.increase} disabled={locked || Boolean(pending) || qty >= maxQty} onClick={() => pick(qty + 1)}><FanIcon icon={Plus} /></FanIconButton>
     </div>
     {pending
