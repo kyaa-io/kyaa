@@ -1,18 +1,12 @@
 .heading {
   margin: 0;
-  font-size: var(--fan-heading-size);
-  font-weight: var(--fan-heading-weight);
   letter-spacing: var(--fan-heading-tracking);
   line-height: var(--fan-heading-leading);
   text-wrap: balance;
 }
-.heading.editorial { font-weight: var(--fan-heading-editorial-weight); }
-/* MY intentionally retains its earlier desktop breakpoint. */
-.heading.personal-section {
-  font-size: var(--fan-personal-section-size);
-  font-weight: var(--fan-personal-section-weight);
-  line-height: inherit;
-}
+/* 게이트 C2(2026-11-09): 페이지 제목(h1) 26/800 한 값, 구역 제목(h2·h3) 18/700 한 값. 폭에 따라 바뀌지 않는다. */
+.heading.page { font-size: var(--fan-h1-size); font-weight: var(--fan-heading-weight); }
+.heading.section { font-size: var(--fan-section-size); font-weight: var(--fan-section-weight); }
 .sectionHeader {
   display: grid;
   min-height: var(--fan-section-heading-min-height);
@@ -33,9 +27,3 @@
 }
 .sectionHeader.personal { min-height: 0; }
 .personal .description { font-weight: inherit; }
-@media (min-width: 40rem) {
-  .heading.personal-page { font-size: var(--fan-heading-size-wide); }
-}
-@media (min-width: 48rem) {
-  .heading.standard, .heading.editorial, .heading.personal-section { font-size: var(--fan-heading-size-wide); }
-}

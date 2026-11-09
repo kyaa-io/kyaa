@@ -208,5 +208,6 @@ export const messages = {
   },
   "earnRemainingToday": { "ja": "今日あと{0}回", "zh-Hans": "今日还剩 {0} 次", "zh-Hant": "今日還剩 {0} 次", "es": "Quedan {0} hoy", "id": "Sisa {0} hari ini", "vi": "Còn {0} lần hôm nay", "th": "วันนี้เหลือ {0} ครั้ง", "pt": "Restam {0} hoje", "fr": "Encore {0} aujourd’hui", "ru": "Осталось сегодня: {0}" },
   "earnUpTo": { "ja": "{0}人まで", "zh-Hans": "最多 {0} 人", "zh-Hant": "最多 {0} 人", "es": "hasta {0}", "id": "hingga {0}", "vi": "tối đa {0}", "th": "สูงสุด {0} คน", "pt": "até {0}", "fr": "jusqu’à {0}", "ru": "до {0}" },
-  "close": { "ja": "閉じる", "zh-Hans": "关闭", "zh-Hant": "關閉", "es": "Cerrar", "id": "Tutup", "vi": "Đóng", "th": "ปิด", "pt": "Fechar", "fr": "Fermer", "ru": "Закрыть" }
+  "close": { "ja": "閉じる", "zh-Hans": "关闭", "zh-Hant": "關閉", "es": "Cerrar", "id": "Tutup", "vi": "Đóng", "th": "ปิด", "pt": "Fechar", "fr": "Fermer", "ru": "Закрыть" },
+  "details": { "ja": "詳細", "zh-Hans": "详情", "zh-Hant": "詳情", "es": "Detalles", "id": "Detail", "vi": "Chi tiết", "th": "รายละเอียด", "pt": "Detalhes", "fr": "Détails", "ru": "Подробнее" }
 } as const satisfies Record<string, TranslatedMessage>;

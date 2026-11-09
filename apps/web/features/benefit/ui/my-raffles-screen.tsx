@@ -5,7 +5,7 @@ import { messages as localizedMessages } from "@/i18n/catalogs/features__benefit
 import { additionalLocales } from "@/i18n/messages";
 import { raffleDiscoveryCopy } from "@/i18n/catalogs/features__benefit__ui__raffle-discovery";
 import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
-import { RotateCcw, TicketCheck } from "lucide-react";
+import { RotateCcw } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import { FanAppFrame, FanContentContainer, type FanLocale } from "@/components/fan-shell/fan-app-shell";
@@ -148,7 +148,7 @@ function MyRafflesOwnerScreen({ locale, auth }: { locale: FanLocale; auth: Retur
   else {
     const items = [...resource.state.data.items, ...extraPages.flatMap((page) => page.items)];
     content = items.length === 0 && !nextCursor
-      ? <FanState kind="empty" scope="page" title={t.empty} description={t.emptyHelp} icon={<TicketCheck />} actions={<FanAction variant="primary" href={withLocalePath("/benefits", locale)}>{t.browse}</FanAction>} />
+      ? <FanState kind="empty" title={t.empty} />
       : <>
           <div className={styles.list}>{items.map((item) => <RaffleResultPanel key={`${item.campaignId}:${item.benefitId}`} result={item} locale={locale} ownerId={auth.user?.id} />)}</div>
           {moreError ? <p className={styles.moreError} role="alert">{t.moreError}</p> : null}

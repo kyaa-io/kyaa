@@ -16,6 +16,10 @@ radius-scale: "12px / 8px / pill"
 
 # 에이전트용 핵심 규칙 (2026-11-09 기준, 브리프 v1.1)
 
+## 게이트 A~E 확정 (사용자 "권장대로" 2026-11-09 15:52)
+
+A2 버튼 반경 8·높이 390 44 / 1024+ 48 · B2 칩 36·14/700·반경 8 · C2 h1 26/800·h2 18/700(`FanHeading`이 태그로 정함, 폭에 따라 바뀌지 않음) · D2 페이지 전체 빈 상태도 한 줄 78 · E3 도움말 물음표 → `자세히 ›`. 시안: `board/tasks/ds-sweep/a/gate-preview/`. 화면 CSS가 직접 쓰는 옛 값(`--fan-heading-size(-wide)` 20/24, 48 고정 버튼, 12 반경 칩)은 화면 치환 묶음에서 맞춘다.
+
 ## 사용자 규칙 4개 (DS-SWEEP, 2026-11-09 — 모든 화면 작업의 전제)
 
 1. **4차 배치 유지.** 화면 구성(블록 순서·개수·문구, 홈·헤더/셸·390 탭바·덕질·패스포트·모임·MY·글 상세·팬페이지)은 4차 55f260fd7 배치를 따른다. 디자인 시스템 정리는 면 색·굵기(400/700/800)·반경·그림자·호버 게이트만 바꾼다. 묶음마다 390 세로 총 높이 전후 차 ≤ 8px(빈 상태 축소분 제외), 블록 제목 배열 동일.
@@ -38,10 +42,10 @@ radius-scale: "12px / 8px / pill"
 | 본문 | 본문 15(390)·14(768+)/400/1.5, 글 본문·댓글 15 고정 | `--fan-body-size(-wide)`, `--fan-post-body-size` | 2026-11-09 8장 ① |
 | 보조 정보 | 메타 12/400 `--color-muted` | `--fan-metadata-size` | 2026-11-09 R1 |
 | 카드 외곽 | 카드 12 반경(`--radius-card`), 1px `--color-line`, 그림자 0, 바탕 `--color-surface`(흰 면), 회색 캔버스 면 없음 | `FanSurface` | 2026-11-09 8장 ⑦ R14 |
-| 강조 버튼 | primary: 단색 `--color-accent`(`--color-page-accent`) 채움 + 흰 글자, 높이 44(390)/48(1024+), 반경 8, 15/700. 현재 코드: 단색 accent·그림자 0·15/700(2026-11-09 design-sync-1), 반경은 알약·높이 48 고정(게이트 A 전까지 유지). 화면당 1개(예외: 럭키드로우 응모 가능 상태에서는 `응모하기` primary·`교환` secondary — 8장 plan ③) | `fan-action.module.css` | 2026-11-09 8장 ②④⑤ |
+| 강조 버튼 | primary: 단색 `--color-accent`(`--color-page-accent`) 채움 + 흰 글자, 높이 44(390)/48(1024+), 반경 8, 15/700. 게이트 A2 확정(사용자 2026-11-09 15:52): 반경 8(`--radius-action`)·높이 `--fan-action-primary-height`(390 44 / 1024+ 48), 단색 accent·그림자 0·15/700. 같은 반경 8이 neutral·text·danger·service·passport·별 버튼에도 적용된다. 화면 CSS가 직접 쓰는 48 고정·알약 값은 화면 치환 때 맞춘다. 화면당 1개(예외: 럭키드로우 응모 가능 상태에서는 `응모하기` primary·`교환` secondary — 8장 plan ③) | `fan-action.module.css` | 2026-11-09 8장 ②④⑤ |
 | 보조 버튼 | secondary: 높이 44, 반경 8, 1px `--color-ink` 선, 15/700 | `fan-action.module.css` | 2026-11-09 R14 |
-| 탭/세그먼트(칩) | 밑줄 탭(`underline`) 44 sticky top 56, 15/700, 활성 밑줄 2px accent / 칩 36 반경 8 14/700, 선택 `--color-accent-soft` + 1px accent / 세그먼트 40 반경 8 | `fan-tabs.tsx` | 2026-11-09 R3·R14 |
-| 빈 상태 | 섹션 틀 유지 + 회색 14/400 한 문장(`…이 없습니다`, 느낌표·권유 0), 높이 = 그 자리 행 템플릿(78), 아이콘·일러스트·버튼 0. 행동이 필요하면 아래 행 자체(`지난 럭키드로우 ›`, `+ 최애 고르기`). 비로그인은 빈 상태가 아니라 잠금(`FanLockedValue`, 화면당 로그인 primary 1) | `fan-state.tsx` | 2026-11-09 R7 + 5장 |
+| 탭/세그먼트(칩) | 밑줄 탭(`underline`) 44 sticky top 56, 15/700, 활성 밑줄 2px accent / 칩 36 반경 8 14/700(`--fan-chip-height`·`--fan-chip-size`, 누르는 영역은 ::after로 44, 게이트 B2 확정 — FanTabs chip·creator-roles 필터·모임 `.chip`), 선택 `--color-accent-soft` + 1px accent / 세그먼트 40 반경 8 | `fan-tabs.tsx` | 2026-11-09 R3·R14 |
+| 빈 상태 | 구역 안이든 페이지 전체든 같다(게이트 D2 확정, `scope="page"`·아이콘·설명·행동 슬롯 삭제): 섹션 틀 유지 + 회색 14/400 한 문장(`…이 없습니다`, 느낌표·권유 0), 높이 = 그 자리 행 템플릿(78), 아이콘·일러스트·버튼 0. 행동이 필요하면 아래 행 자체(`지난 럭키드로우 ›`, `+ 최애 고르기`). 비로그인은 빈 상태가 아니라 잠금(`FanLockedValue`, 화면당 로그인 primary 1) | `fan-state.tsx` | 2026-11-09 R7 + 5장 |
 | 오류 | 한 문장 + `다시 시도` 텍스트 1(버튼 모양 아님), 섹션 합산 규칙 유지 | `fan-state.tsx` | 2026-11-09 R7 |
 | 2열 화면 폭(덕질·홈) | 컨테이너 1,100 가운데, 본문 733 + 간격 24 + 보조 343(≈2:1). 보조 열 1단계 카드 ≤ 2(다음 행동 카드 1 + 고정 정보 1), 같은 화면군에서 같은 자리. 1열 화면 본문 ≤ 720. 1440 전폭 금지 | `fan-content-container.module.css`, 화면 그리드 | 2026-11-09 R4 |
 | 요소 간격 | 관련 4–8px, 하위 묶음 16px, 큰 구역 32/48px | 화면별 CSS | 승인: DESIGN.md 52행 |
@@ -71,7 +75,7 @@ radius-scale: "12px / 8px / pill"
 | 모달 `FanDialog` | 폭 360/480/640, 390은 전폭-32, 반경 12, `--shadow-overlay`, 백드롭 유지 | `fan-dialog.tsx` | 2026-11-09 R14·R15 |
 | 바텀시트 `FanSheet` | 390 바닥(위 모서리 12, 최대 85dvh, 안전 영역), 1024+ 오른쪽 서랍(폭 420) | `fan-dialog.tsx` | 2026-11-09 R14 |
 | 드롭다운 `FanMenu` | 항목 48, 15/700, 반경 12, 1px 선, `--shadow-overlay`, 열림·닫힘 150ms | `fan-menu` | 2026-11-09 R5 |
-| 툴팁·도움말 | `FanTooltip`은 아이콘 이름표만(문장 0). `FanHelpTip`·`HelpHint` 폐기. 설명이 필요하면 `data-explains` 회색 12px 한 문장(설정·알림·번역 화면만, ≤ 2/화면) 또는 `자세히 ›` → `FanDialog sm` 한 문장 / `/guide/dukjil` | `fan-tooltip` | 2026-11-09 R6 |
+| 툴팁·도움말 | `FanTooltip`은 아이콘 이름표만(문장 0). `HelpHint` 폐기. 물음표(?) 도움말은 쓰지 않는다 — `FanHelpTip`은 게이트 E3(2026-11-09)에 따라 `자세히 ›` 글자 13/700 accent-ink 트리거(터치는 바닥 시트, 마우스는 말풍선)로 남아 모임 디렉터리·패스포트 퀴즈 두 곳에 쓴다. 설명이 필요하면 `data-explains` 회색 12px 한 문장(설정·알림·번역 화면만, ≤ 2/화면) 또는 `자세히 ›` → `FanDialog sm` 한 문장 / `/guide/dukjil` | `fan-tooltip` | 2026-11-09 R6 |
 | 접기 `FanCollapsible` | 머리 = 64(미션) 또는 48(메뉴) 규격(`FanRow`는 5차 보류, 소유자 없음), 오른쪽 `9개 +465P ˅`, 체브론 150ms, 패널 200ms. 닫힌 내용은 `inert`·남겨 둠, `persistKey` 세션 유지 | `fan-collapsible` | 2026-11-09 R5·R15 |
 | 숫자 `FanNumber`·게이지 `FanGauge` | hero 44/48/800(화면당 1) · 2단계 24/800(카드 안, `lg`·`xl`) · 라벨-값 16/700(`md`, 지금 `--fan-item-title-size` 16. 15는 게이트 C 뒤). `tabular-nums`·폭 예약. 게이지 = 2px 막대(`size="line"`, 미션·챌린지, 폭 160/240·480) 또는 9칸 segments, 숫자는 막대 밖 12 | `fan-number.tsx` | 2026-11-09 R1 + 5장 |
 | 숫자 칩 `FanCount` | 헤더·탭바는 점 `FanDot`(8px 빨강, `FanRow`와 무관), 숫자는 알림함 안 `읽지 않음 N`만. 섹션 머리 카운터는 12 muted `9개` | `fan-count-chip`, `fan-dot` | 2026-11-09 8장 ⑩ R9 |
@@ -174,7 +178,7 @@ radius-scale: "12px / 8px / pill"
 | `EarnBadge inline` | `+20P` 글자 15/700 잉크, 행 오른쪽 열에만. `corner`·`EarnRemaining`·`EarnActionBadge`는 폐기(남은 횟수는 `0/3`) | 숫자를 화면에 직접 쓰지 않고 카탈로그 값을 읽는다(C9) |
 | `FanToast` (`useFanToast`·`showFanToast`) | 서버 응답이 화면에 안 보이는 곳의 결과: 댓글 저장, 업로드 실패, 교환 완료, 미션 지급 실패 | 포인트·도장 지급 성공은 `celebrateReward`(코인 뱃지 + 공통 토스트, 아래 §3-1)가 맡는다. 폼 안 오류는 입력 아래 |
 | `FanTabs` | `underline` 44 sticky top 56(페이지·보조 탭), `chip` 36 반경 8(필터), `segment` 40 반경 8(같은 자료 2~3개 보기) | 링크 탭(`href`)은 라우터가 그린다 |
-| `FanState` | 빈 상태(`empty`)는 한 문장 전용(`icon`·`actions`·`description` 없음, 타입에서 막음, 높이 78 14/400 회색, 2026-11-09 design-sync-1). 페이지 전체가 빈 6곳(`my-raffles-screen`·`benefit-recipient-screen`·`fan-history-screen`·`home-ranking-card`·`participation-requests`·`notification-center`)만 게이트 D 전까지 `scope="page"`로 옛 280 틀 유지, 오류(`error`)는 한 문장 + `다시 시도` 텍스트, 잠금(`auth`)은 로그인 primary 1 허용 | `kind=\"loading\"`은 쓰지 않는다(C6) |
+| `FanState` | 빈 상태(`empty`)는 한 문장 전용(`icon`·`actions`·`description` 없음, 타입에서 막음, 높이 78 14/400 회색, 2026-11-09 design-sync-1). 페이지 전체가 빈 화면도 같은 한 줄이다(게이트 D2 확정, `scope="page"` 삭제: `my-raffles-screen`·`fan-history-screen`·`participation-requests`·`notification-center`·`home-ranking-card`; `benefit-recipient-screen`의 세션 요구는 `auth`, 항목 없음은 `error`로 옮김), 오류(`error`)는 한 문장 + `다시 시도` 텍스트, 잠금(`auth`)은 로그인 primary 1 허용 | `kind=\"loading\"`은 쓰지 않는다(C6) |
 | `FanSkeleton` · `FanSkeletonRows` | 로딩. 실제 자리·크기와 같게, 구역 제목은 글자로 둔다. 변형 post·entity·member·plain | `불러오는 중` 글자(C5) |
 | `FanSurface` | 카드·면의 바탕(1px 선, 반경 `--radius-card` 12. C17 정정: 문서의 "12/16"은 12) | `FanCard`는 만들지 않았다(아래 "설계와 다르게 한 것") |
 | `FanRow` (**5차 보류, 아직 없음**) | 목록 행 템플릿. variant `menu` 48·`setting` 65/81·`notice` 78·`transaction` 100/72·`label-value` 56·`mission` 64. `data-row` 자동, 오른쪽 칸 `data-row-end`, 사실 `data-fact`, 메타 `data-meta` | `FanEntityCard`·`FanPostRow`는 `FanRow notice`로 대체 |

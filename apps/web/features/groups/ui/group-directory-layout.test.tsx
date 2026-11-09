@@ -67,7 +67,7 @@ it('offers the fan page application for an empty result, with no favorite reques
 it('keeps the hobby and brand explanation behind a help button beside the page application',()=>{
  render(<GroupDirectory locale='ko'/>);
  expect(screen.queryByText(/^취미: /)).toBeNull();expect(screen.queryByText(/^브랜드: /)).toBeNull();
- const help=screen.getByRole('button',{name:'취미·브랜드 페이지'});
+ const help=screen.getByRole('button',{name:'자세히 취미·브랜드 페이지'});
  expect(help.closest('h3')?.textContent).toContain('취미·브랜드 페이지');
 });
 it('keeps the guest side area and its login paths',()=>{

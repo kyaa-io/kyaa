@@ -9,7 +9,7 @@
   gap: var(--fan-action-icon-gap, 8px);
   padding: 8px 18px;
   border: 1px solid transparent;
-  border-radius: var(--radius-control);
+  border-radius: var(--radius-action);
   font: inherit;
   font-size: var(--fan-action-label-size);
   font-weight: var(--fan-action-weight);
@@ -62,7 +62,7 @@
   width: min(100%, var(--fan-action-max-width));
   min-height: var(--fan-action-primary-height);
   border-color: transparent;
-  border-radius: var(--radius-pill);
+  border-radius: var(--radius-action);
   /* 단색 강조 1색: #d11b62 위 흰 글자 5.19:1(AA). 그림자 0(DESIGN.md 깊이). */
   background: var(--color-accent);
   color: var(--color-surface);
@@ -105,7 +105,7 @@
 .service {
   min-height: var(--fan-action-service-height);
   border-color: transparent;
-  border-radius: var(--radius-pill);
+  border-radius: var(--radius-action);
   background:
     linear-gradient(var(--color-surface), var(--color-surface)) padding-box,
     var(--color-accent) border-box;
@@ -125,7 +125,7 @@
   min-height: var(--fan-action-service-height);
   padding-inline: 18px;
   border-color: transparent;
-  border-radius: var(--radius-pill);
+  border-radius: var(--radius-action);
   background:
     linear-gradient(var(--color-surface), var(--color-surface)) padding-box,
     var(--color-accent) border-box;
