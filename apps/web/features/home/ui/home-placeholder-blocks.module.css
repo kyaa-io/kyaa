@@ -24,7 +24,7 @@
 .noticeLink:hover .noticeTitle { color: var(--color-accent); }
 .noticeLink:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 .noticeCategory { grid-area: category; color: var(--color-accent); font-size: var(--fan-metadata-size); font-weight: 700; line-height: 18px; }
-.noticeTitle { grid-area: title; overflow: hidden; color: var(--color-ink); font-size: var(--fan-action-label-size); font-weight: 600; line-height: 22px; text-overflow: ellipsis; white-space: nowrap; }
+.noticeTitle { grid-area: title; overflow: hidden; color: var(--color-ink); font-size: var(--fan-action-label-size); font-weight: 700; line-height: 22px; text-overflow: ellipsis; white-space: nowrap; }
 .noticeDate { grid-area: date; color: var(--color-muted); font-size: var(--fan-metadata-size); font-variant-numeric: tabular-nums; line-height: 18px; }
 @media (min-width: 64rem) {
   .noticeLink { grid-template-areas: "category title date"; grid-template-columns: 88px minmax(0, 1fr) auto; }

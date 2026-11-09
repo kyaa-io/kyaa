@@ -6,7 +6,7 @@
 .link:hover .title { color: var(--color-accent); }
 .link:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 .category { grid-area: category; color: var(--color-accent); font-size: var(--fan-metadata-size); font-weight: 700; line-height: 18px; }
-.title { grid-area: title; overflow: hidden; color: var(--color-ink); font-size: var(--fan-body-size); font-weight: 600; line-height: 24px; text-overflow: ellipsis; white-space: nowrap; }
+.title { grid-area: title; overflow: hidden; color: var(--color-ink); font-size: var(--fan-body-size); font-weight: 700; line-height: 24px; text-overflow: ellipsis; white-space: nowrap; }
 .date { grid-area: date; color: var(--color-muted); font-size: var(--fan-metadata-size); font-variant-numeric: tabular-nums; line-height: 18px; }
 .empty { display: flex; min-height: 64px; align-items: center; margin: 0; border-bottom: 1px solid var(--color-line); color: var(--color-muted); font-size: var(--fan-action-label-size); }
 .more { justify-self: center; }
