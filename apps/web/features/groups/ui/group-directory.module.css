@@ -22,9 +22,18 @@
    The role chips moved into one menu chip at the end of that row, like Weverse's trailing chevron chip. 1280+ puts the three on one row. */
 .controls { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: var(--space-2); align-items: center; margin-bottom: var(--space-4); }
 .search { position: relative; flex: none; min-width: 0; }
-.searchInput { height: 44px; min-height: 44px; padding-inline-end: calc(var(--space-10) + var(--space-1)); }
+.search .searchInput { height: 44px; min-height: 44px; padding-inline-end: calc(var(--space-10) + var(--space-1)); }
 .searchIcon { position: absolute; inset-inline-end: 0; top: 0; display: grid; place-items: center; width: 44px; height: 44px; border: 0; background: transparent; color: var(--color-muted); cursor: pointer; }
 .controls .sort { gap: var(--space-1); height: 44px; min-height: 44px; padding-inline: var(--space-3); border: 1px solid var(--color-muted); border-radius: var(--radius-control); background: var(--color-surface); color: var(--color-ink); font: inherit; font-size: var(--fan-action-label-size); font-weight: 700; white-space: nowrap; }
+.sortIcon { display: none; flex: none; }
+.controls .sort[data-active] { color: var(--color-accent-ink); background: var(--color-accent-soft); border-color: var(--color-accent); }
+/* Below 600px the sort is a 44px icon button so long search placeholders (ru, fr, en) keep the row; its name stays the current order. */
+@media (max-width: 599px) {
+  .controls .sort { justify-content: center; width: 44px; padding: 0; }
+  .sortIcon { display: block; }
+  .sortChevron { display: none; }
+  .sortLabel { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+}
 .filterBar { grid-column: 1 / -1; display: flex; align-items: center; gap: var(--space-2); min-width: 0; margin-block: calc(-1 * var(--space-1)); padding-block: var(--space-1); overflow-x: auto; scrollbar-width: none; }
 .filterBar::-webkit-scrollbar { display: none; }
 .groupKinds { display: flex; flex: none; align-items: center; gap: var(--space-2); padding-inline-start: var(--space-2); border-inline-start: 1px solid var(--color-line); }
