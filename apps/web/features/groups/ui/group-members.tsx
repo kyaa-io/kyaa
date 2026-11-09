@@ -1,4 +1,6 @@
 "use client";
+import { SortedFans } from "./sorted-fans";
+import { fanListCopy } from "./fan-list-copy";
 import { rankingsText } from "@/features/rankings/ui/rankings-copy";
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { ArrowRight, Search, Trophy, UsersRound } from "lucide-react";
@@ -57,7 +59,7 @@ function MyRankRow({ slug, locale, listed }: { slug: string; locale: AppLocale; 
 }
 
 export function GroupMembers({ pageId, locale, member, presentation, inTab = false, onJoin, joinPending = false, joinLabel, rankingsSlug, gaugeAbove = false }: { rankingsSlug?: string | null; /** The caller draws the 찐팬 100 gauge above, outside its own loading state. */ gaugeAbove?: boolean; pageId: string; locale: AppLocale; member: boolean; presentation?: GroupMembersPresentation; inTab?: boolean; onJoin?: () => void; joinPending?: boolean; joinLabel?: string }) {
-  const t = groupMembersCopy(locale);
+  const t = { ...groupMembersCopy(locale), ...fanListCopy(locale) };
   const presence = useOptionalGroupPage()?.presence.data;
   const artistIds = useMemo(() => new Set(presence?.artists.map((artist) => artist.profileId) ?? []), [presence]);
   const [mode, setMode] = useState<GroupPeopleMode>("members"), [draft, setDraft] = useState(""), [search, setSearch] = useState(""), [cursor, setCursor] = useState<string>(), [previous, setPrevious] = useState<Row[]>([]);
@@ -66,26 +68,31 @@ export function GroupMembers({ pageId, locale, member, presentation, inTab = fal
   useEffect(() => { if (new URLSearchParams(window.location.search).get("people") === "ranking") setMode("ranking"); }, []);
   const query = new URLSearchParams({ mode, search, locale, limit: "30" });
   if (cursor) query.set("cursor", cursor);
-  const resource = useGroupResource(member ? `/api/groups/${pageId}/people?${query}` : null, parse);
+  const resource = useGroupResource(member && mode === "ranking" ? `/api/groups/${pageId}/people?${query}` : null, parse);
   const rows = useMemo(() => [...previous, ...(resource.data?.items ?? [])], [previous, resource.data]);
   useEffect(() => { if (resource.data) setSettled({ mode, rows }); }, [resource.data, mode, rows]);
   // Keep the list on screen while the next search or page loads. Only a first load shows the skeleton.
   const shown = resource.data ? rows : settled?.mode === mode ? settled.rows : previous;
   const reset = () => { setPrevious([]); setCursor(undefined); };
   const choose = (next: GroupPeopleMode) => { setMode(next); reset(); setDraft(""); setSearch(""); };
+  useEffect(() => {
+    const timer = setTimeout(() => { setSearch(draft.trim()); setPrevious([]); setCursor(undefined); }, 250);
+    return () => clearTimeout(timer);
+  }, [draft]);
   const ranking = resource.data?.ranking;
-  const hideSearch = mode === "ranking" || (mode === "friends" && !search && !resource.loading && shown.length === 0);
+  const hideSearch = mode === "ranking" || (mode === "friends" && !member);
   const modeTitle = mode === "ranking" ? `${presentation?.creatorName ?? ""} ${t.ranking}`.trim() : mode === "friends" ? t.friendsHere : null;
 
   return <section className={styles.section} data-member-mode={mode} aria-labelledby="group-people-title">
     <h2 id="group-people-title" className={inTab ? styles.visuallyHidden : styles.title}>{t.title}</h2>
     {presentation?.overview && mode !== "ranking" && <div className={styles.overview}>{presentation.overview}</div>}
     {rankingsSlug && !gaugeAbove && <JjinfanGauge slug={rankingsSlug} locale={locale} name={presentation?.creatorName}/>}
-    <FanTabs variant="chip" label={t.title} current={mode} className={styles.tabs} items={(["members", "friends", "ranking"] as const).map(key => ({ key, label: t[key], onSelect: () => choose(key) }))}/>
-    {!member ? <GroupPublicPeople mode={mode} pageId={pageId} slug={rankingsSlug} locale={locale} authenticated={resource.authenticated} onJoin={onJoin} joinPending={joinPending} joinLabel={joinLabel}/> : <div className={styles.body}>
-      {presentation && mode === "members" && <FanAction className={styles.incomingRequests} href={`/my/friends?locale=${locale}&filter=incoming`}>{t.incomingRequests}</FanAction>}
+    <div className={styles.toolbar}>
+      <FanTabs variant="chip" label={t.title} current={mode} className={styles.tabs} items={(["members", "jjinfans", "friends", "ranking"] as const).map(key => ({ key, label: t[key], onSelect: () => choose(key) }))}/>
+      {!hideSearch && <label className={styles.searchField}><Search size={18} aria-hidden="true"/><input className={styles.input} type="search" value={draft} onChange={event => setDraft(event.target.value)} maxLength={100} placeholder={t.search} aria-label={t.search}/></label>}
+    </div>
+    {mode !== "ranking" && (member || mode !== "friends") ? <SortedFans key={`${pageId}:${resource.ownerKey}`} pageId={pageId} mode={mode} search={search} locale={locale}/> : !member ? <GroupPublicPeople mode={mode} pageId={pageId} slug={rankingsSlug} locale={locale} authenticated={resource.authenticated} onJoin={onJoin} joinPending={joinPending} joinLabel={joinLabel}/> : <div className={styles.body}>
       {modeTitle && <div className={styles.modeHead}><h3 className={styles.modeTitle}>{modeTitle}</h3>{mode === "ranking" && <p className={styles.scope}>{t.topScope}</p>}</div>}
-      {!hideSearch && <form className={styles.search} onSubmit={event => { event.preventDefault(); setSearch(draft.trim()); reset(); }}><label className={styles.searchField}><Search size={18} aria-hidden="true"/><input className={styles.input} type="search" value={draft} onChange={event => setDraft(event.target.value)} maxLength={100} placeholder={t.search} aria-label={t.search}/></label><FanAction type="submit">{t.find}</FanAction></form>}
       {resource.error ? <div className={styles.state} role="alert"><p>{t.error}</p><FanAction onClick={resource.retry}>{t.retry}</FanAction></div>
         : shown.length ? <ul className={`${styles.list} ${mode === "ranking" ? styles.rankingList : ""}`} aria-busy={resource.loading || undefined}>{shown.map(row => <GroupPersonRow key={row.profileId} nickname={row.nickname} avatarUrl={row.avatarUrl} rank={row.rank} rankLabel={row.rank === null ? undefined : `${t.ranking} ${row.rank}`} badge={<RowBadges role={pageRoleOf(row, artistIds)} tier={row.tier} locale={locale}/>} meta={personMeta(row, t, locale)} score={mode === "ranking" && row.points !== null ? `${row.points.toLocaleString(locale)}${locale === "ko" ? " 점" : ""}` : row.hearts != null ? <GroupPersonHearts hearts={row.hearts} locale={locale}/> : undefined} selected={presentation?.selectedProfileId === row.profileId} onOpen={() => setOpened({ profileId: row.profileId, nickname: row.nickname, avatarUrl: row.avatarUrl, tier: row.tier, pageId })}/>)}</ul>
         : resource.loading ? <FanSkeletonRows rows={6} variant="member" className={styles.skeleton}/>

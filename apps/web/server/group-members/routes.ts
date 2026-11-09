@@ -1,4 +1,5 @@
 import "server-only";
+import { readSortedFans } from "./sorted-route";
 import { z } from "zod";
 import { APP_LOCALES } from "@/i18n/locales";
 import { AuthError } from "@/features/auth/domain/auth-errors";
@@ -23,8 +24,9 @@ export function createGroupPeopleHandler(deps:FanpageDependencies){return async(
  }catch(error){return groupPeopleFailure(error);}
 };}
 async function optionalActor(deps:FanpageDependencies,request:Request){const auth=request.headers.get("authorization");return auth===null?null:(await deps.authorize(auth)).appUserId;}
-export function createGroupPublicPeopleHandler(deps:FanpageDependencies){return async(request:Request,pageId:string)=>{
+export function createGroupPublicPeopleHandler(deps:FanpageDependencies,cursorSecret:()=>string|undefined=()=>process.env.AUTH_COOKIE_SECRET){return async(request:Request,pageId:string)=>{
  try{
+  if(new URL(request.url).searchParams.has("sort"))return await readSortedFans(deps,request,pageId,cursorSecret);
   const actor=await optionalActor(deps,request),query=new URL(request.url).searchParams;
   for(const key of query.keys())if(!["offset","limit","locale","hearts"].includes(key)||query.getAll(key).length>1)throw new SyntaxError("Invalid query");
   const hearts=query.has("hearts");if(hearts&&query.get("hearts")!=="1")throw new SyntaxError("Invalid query");
