@@ -1,5 +1,6 @@
 "use client";
-import { useCreateWallet, useLinkJwtAccount, useLoginWithOAuth, usePrivy, useUser } from "@privy-io/react-auth";
+import { useCreateWallet, useLinkJwtAccount, useLoginWithOAuth, usePrivy, useUser } from "@/features/auth/client/privy-backend";
+import { isPrivyLeaseReleased } from "./privy-lease";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useSearchParams,useRouter } from "next/navigation";
 import type { Route } from "next";
@@ -49,7 +50,7 @@ export function CognitoWalletLink({appleLoginEnabled}:{appleLoginEnabled:boolean
   const {ready,authenticated,getAccessToken,logout}=usePrivy();
   const {initOAuth}=useLoginWithOAuth();const {linkWithCustomJwt}=useLinkJwtAccount();
   const {createWallet}=useCreateWallet(),{refreshUser}=useUser();
-  const [busy,setBusy]=useState(false),[error,setError]=useState(false);const running=useRef(false);
+  const [busy,setBusy]=useState(false),[error,setError]=useState(false);const running=useRef(false);const enrollmentStarted=useRef(false);
   const connect=useCallback(async()=>{
     setBusy(true);
     const token=await getAccessToken();if(!token)throw new Error("Authentication required");
@@ -82,17 +83,25 @@ export function CognitoWalletLink({appleLoginEnabled}:{appleLoginEnabled:boolean
     let timestamp=0;try{timestamp=Number(sessionStorage.getItem(MARKER));}catch{return;}
     if(!timestamp || Date.now()-timestamp>600_000)return;
     running.current=true;
-    void connect().catch(()=>{setError(true);setBusy(false);try{sessionStorage.setItem(MARKER,"failed");}catch{}});
+    void connect().catch(caught=>{
+      // A lease released before Privy attached it (StrictMode remount, plan-b §0-7) is not a failure: free the guard so the next generation connects once.
+      if(isPrivyLeaseReleased(caught)){running.current=false;setBusy(false);return;}
+      setError(true);setBusy(false);try{sessionStorage.setItem(MARKER,"failed");}catch{}
+    });
   },[busy,ready,authenticated,auth.session,connect]);
   const begin=async(provider:"google"|"apple")=>{
     setBusy(true);setError(false);
-    try{sessionStorage.setItem(MARKER,String(Date.now()));if(authenticated)await logout();await initOAuth({provider,disableSignup:auth.session?.enrollment?.mode!=="new"});}
-    catch{setError(true);setBusy(false);sessionStorage.setItem(MARKER,"failed");}
+    const startedAt=String(Date.now());
+    try{sessionStorage.setItem(MARKER,startedAt);if(authenticated)await logout();await initOAuth({provider,disableSignup:auth.session?.enrollment?.mode!=="new"});}
+    catch(caught){
+      // Released before Privy attached it (plan-b §0-7): undo this attempt's marker and guard so the effect below starts the next generation once.
+      if(isPrivyLeaseReleased(caught)){try{if(sessionStorage.getItem(MARKER)===startedAt)sessionStorage.removeItem(MARKER);}catch{}enrollmentStarted.current=false;setBusy(false);return;}
+      setError(true);setBusy(false);sessionStorage.setItem(MARKER,"failed");
+    }
   };
   useEffect(()=>{
     if(auth.session?.walletLinked)router.replace(loginHref as Route);
   },[auth.session?.walletLinked,loginHref,router]);
-  const enrollmentStarted=useRef(false);
   useEffect(()=>{
     if(!ready || !auth.session || auth.session.walletLinked || busy || error || running.current || enrollmentStarted.current || auth.session.enrollment?.mode!=="new" || !auth.session.enrollment.provider)return;
     try{if(sessionStorage.getItem(MARKER)){enrollmentStarted.current=true;return;}}catch{return;}

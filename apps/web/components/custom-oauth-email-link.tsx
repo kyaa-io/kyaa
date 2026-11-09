@@ -1,6 +1,6 @@
 "use client";
 
-import { useLinkEmail, useUser } from "@privy-io/react-auth";
+import { useLinkEmail, useUser } from "@/features/auth/client/privy-backend";
 import { useEffect, useLayoutEffect, useRef, useState, type FormEvent } from "react";
 import type { AppLocale } from "@/i18n/locales";
 import { customSocialCopy } from "@/i18n/catalogs/components__custom-social-auth";

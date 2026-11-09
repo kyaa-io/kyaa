@@ -13,6 +13,14 @@ const experimental: NonNullable<NextConfig["experimental"]> = {
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
+  // PERF-r8 B 1b: Privy's SDK hooks run in a sibling island instead of above the page. Both path names move together
+  // (privy-alias.test.ts); removing these two lines returns the direct tree (plan-b §7.3).
+  turbopack: {
+    resolveAlias: {
+      "@/features/auth/client/privy-backend": "./features/auth/client/privy-backend.island.tsx",
+      "@/features/auth/client/privy-root": "./features/auth/client/privy-root.island.tsx",
+    },
+  },
   ...(Object.keys(experimental).length > 0 ? { experimental } : {}),
   ...(process.env.HOSTING_PROVIDER === "aws" ? { output: "standalone" as const, outputFileTracingRoot: path.resolve(__dirname, "../.."), cacheMaxMemorySize: 0, typescript: { tsconfigPath: "tsconfig.aws.json" } } : {}),
   htmlLimitedBots,

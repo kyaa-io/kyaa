@@ -1,5 +1,5 @@
 "use client";
-import { usePrivy, useSubscribeToJwtAuthWithFlag } from "@privy-io/react-auth";
+import { usePrivy, useSubscribeToJwtAuthWithFlag } from "@/features/auth/client/privy-backend";
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { withRequestDeadline } from "@/features/reliability/client/request-deadline";
 

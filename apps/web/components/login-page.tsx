@@ -7,7 +7,7 @@ import { messages as localizedMessages } from "@/i18n/catalogs/components__login
 import { additionalLocales, translate } from "@/i18n/messages";
 import { usePageLocale } from "@/components/locale-provider";
 
-import { useLogin, useLoginWithOAuth } from "@privy-io/react-auth";
+import { useLogin, useLoginWithOAuth } from "@/features/auth/client/privy-backend";
 import { useCognitoAuth } from "@/features/auth/client/cognito-auth";
 import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import Image, { getImageProps } from "next/image";
