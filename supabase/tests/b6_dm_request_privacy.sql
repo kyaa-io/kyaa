@@ -238,6 +238,37 @@ begin
  perform public.unblock_social_profile(n,a);
 end $test$;
 
+-- S9b (review 2026-11-09): a retry with the same request id after a block answers SOCIAL_BLOCKED, like a new request id,
+-- whichever side blocked. Before the fix the retry returned the row (status 'rejected'), telling a block from a quiet decline.
+do $retry$
+declare pub uuid:=extensions.gen_random_uuid();a uuid:=extensions.gen_random_uuid();b uuid:=extensions.gen_random_uuid();c uuid:=extensions.gen_random_uuid();
+ d uuid:=extensions.gen_random_uuid();u uuid;r jsonb;conv uuid;msg uuid;r1 uuid:=extensions.gen_random_uuid();r2 uuid:=extensions.gen_random_uuid();
+ r3 uuid:=extensions.gen_random_uuid();r4 uuid:=extensions.gen_random_uuid();e text;
+begin
+ insert into public.group_pages(id,kind,name)values(pub,'hobby','B6 retry page');
+ foreach u in array array[a,b,c,d] loop
+  insert into public.app_users(id,privy_user_id,verified_email)values(u,'did:privy:b6r9-'||u,u||'@example.test');
+  insert into public.group_memberships(page_id,app_user_id)values(pub,u);
+ end loop;
+ -- The other person blocks the sender; the sender blocks the other person.
+ perform public.request_social_dm(a,b,'to b',r1);
+ perform public.block_social_profile(b,a,extensions.gen_random_uuid());
+ perform public.request_social_dm(a,c,'to c',r2);
+ perform public.block_social_profile(a,c,extensions.gen_random_uuid());
+ foreach e in array array[format('select public.request_social_dm(%L,%L,''to b'',%L)',a,b,r1),format('select public.request_social_dm(%L,%L,''to b'',%L)',a,b,extensions.gen_random_uuid()),
+  format('select public.request_social_dm(%L,%L,''to c'',%L)',a,c,r2),format('select public.request_social_dm(%L,%L,''to c'',%L)',a,c,extensions.gen_random_uuid())] loop
+  if pg_temp.err(e)<>'SOCIAL_BLOCKED' then raise exception 'S9b retry after block: % gave %',e,pg_temp.err(e); end if;
+ end loop;
+ -- Resolve and react keep their stored answers too, so their retries are checked the same way.
+ r:=public.request_social_dm(a,d,'to d',extensions.gen_random_uuid());conv:=(r->>'id')::uuid;msg:=(r->>'firstMessageId')::uuid;
+ perform public.resolve_social_dm(d,conv,'accept',r3);
+ perform public.react_social_dm_message(d,msg,'heart',r4);
+ perform public.block_social_profile(a,d,extensions.gen_random_uuid());
+ foreach e in array array[format('select public.resolve_social_dm(%L,%L,''accept'',%L)',d,conv,r3),format('select public.react_social_dm_message(%L,%L,''heart'',%L)',d,msg,r4)] loop
+  if pg_temp.err(e)<>'SOCIAL_BLOCKED' then raise exception 'S9b retry after block: % gave %',e,pg_temp.err(e); end if;
+ end loop;
+end $retry$;
+
 -- S17: the daily limit counts the request log.
 do $limit$
 declare pub uuid:=extensions.gen_random_uuid();a uuid:=extensions.gen_random_uuid();b uuid:=extensions.gen_random_uuid();pal uuid:=extensions.gen_random_uuid();

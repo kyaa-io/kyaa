@@ -209,8 +209,12 @@ begin
 end $revoke$;
 
 -- Request: lock without the counterpart's state, the decliner takes the row over, the limit counts the log.
+-- A block is checked before a retry is answered: the replay reads the row's current status ('rejected' after a block), so a
+-- retry with the same request id would otherwise tell a block from a quiet decline (review 2026-11-09).
 select pg_temp.b6_patch('public.request_social_dm(uuid,uuid,text,uuid)',
- 'perform public.social_lock_pair(p_app_user_id,p_profile_id);','perform public.social_lock_pair_for(p_app_user_id,p_profile_id);');
+ 'perform public.social_lock_pair(p_app_user_id,p_profile_id);',
+ $a$perform public.social_lock_pair_for(p_app_user_id,p_profile_id);
+  if public.fan_web_blocked(p_app_user_id,p_profile_id) then raise exception 'SOCIAL_BLOCKED'; end if;$a$);
 select pg_temp.b6_patch('public.request_social_dm(uuid,uuid,text,uuid)',
  $a$if(select count(*)from public.social_dm_conversations cv join public.social_dm_messages fm on fm.conversation_id=cv.id and fm.sender_id=cv.requester_id and fm.request_id=cv.request_id where cv.requester_id=p_app_user_id and fm.created_at>now()-interval'24 hours')>=public.social_dm_request_daily_limit()then$a$,
  $a$if public.social_dm_request_count(p_app_user_id)>=public.social_dm_request_daily_limit()then$a$);
@@ -226,7 +230,12 @@ select pg_temp.b6_patch('public.request_social_dm(uuid,uuid,text,uuid)',
  $a$insert into public.social_dm_messages(conversation_id,sender_id,body,request_id,payload_hash) values(d.id,p_app_user_id,btrim(p_body),p_request_id,md5(btrim(p_body))) returning * into m;
   insert into public.social_dm_request_log(sender_id,conversation_id,message_id,counted) values(p_app_user_id,d.id,m.id,not friends);$a$);
 
--- Resolve: a decline only stamps declined_at; the decliner cannot act on the row afterwards.
+-- Resolve: a decline only stamps declined_at; the decliner cannot act on the row afterwards. As in the request, a block answers
+-- before a stored retry does, so the same request id and a new one give the same code. (fan_web_blocked is symmetric; the
+-- arguments are reversed only to keep this anchor apart from the later one.)
+select pg_temp.b6_patch('public.resolve_social_dm(uuid,uuid,text,uuid)',
+ $a$replay:=public.social_action_claim(p_app_user_id,p_request_id,operation,payload);$a$,
+ $a$if public.fan_web_blocked(other_id,p_app_user_id) then raise exception 'SOCIAL_BLOCKED'; end if; replay:=public.social_action_claim(p_app_user_id,p_request_id,operation,payload);$a$);
 select pg_temp.b6_patch('public.resolve_social_dm(uuid,uuid,text,uuid)',
  'perform public.social_lock_pair(p_app_user_id,other_id);','perform public.social_lock_pair_for(p_app_user_id,other_id);');
 select pg_temp.b6_patch('public.resolve_social_dm(uuid,uuid,text,uuid)',
@@ -247,6 +256,9 @@ select pg_temp.b6_patch('public.send_social_dm_message_before_groups_text(uuid,u
 select pg_temp.b6_patch('public.send_social_dm_message_before_groups_media(uuid,uuid,text,uuid,uuid)',
  $a$perform public.social_lock_pair(p_app_user_id,other_id);select*into d from public.social_dm_conversations where id=p_conversation_id for update;if public.fan_web_blocked(p_app_user_id,other_id)then raise exception'SOCIAL_BLOCKED';end if;$a$,
  $a$perform public.social_lock_pair_for(p_app_user_id,other_id);select*into d from public.social_dm_conversations where id=p_conversation_id for update;if public.fan_web_blocked(p_app_user_id,other_id)then raise exception'SOCIAL_BLOCKED';end if;if public.social_dm_hidden_for(p_app_user_id,d)then raise exception'SOCIAL_NOT_FOUND';end if;$a$);
+select pg_temp.b6_patch('public.react_social_dm_message(uuid,uuid,text,uuid)',
+ $a$replay:=public.social_action_claim(p_app_user_id,p_request_id,operation,payload);$a$,
+ $a$if public.fan_web_blocked(d.user_high_id,d.user_low_id) then raise exception 'SOCIAL_BLOCKED'; end if; replay:=public.social_action_claim(p_app_user_id,p_request_id,operation,payload);$a$);
 select pg_temp.b6_patch('public.react_social_dm_message(uuid,uuid,text,uuid)',
  'perform public.social_lock_pair(d.user_low_id,d.user_high_id);',
  'perform public.social_lock_pair_for(p_app_user_id,case when d.user_low_id=p_app_user_id then d.user_high_id else d.user_low_id end);');
