@@ -302,6 +302,7 @@ function Dashboard({ summary, locale, avatarResource, refreshSummary, selectedSl
       </div>
       <MyFavorites creators={passportCreators} locale={locale} labels={{ title: t.creators, find: t.findCreator, empty: t.noCreators }}/>
       <MyShortcuts locale={locale} {...myShortcutGroups(locale, hrefWithLocale(locale))}/>
+      <MyLogout locale={locale}/>
     </div></DukjilProvider>;
   }
 

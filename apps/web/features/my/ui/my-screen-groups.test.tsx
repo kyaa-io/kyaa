@@ -74,6 +74,14 @@ it('orders the screen profile, notice, passport, wallet, favorites, shortcuts an
   expect(screen.queryByText('미인증 최애')).toBeNull();
 });
 
+it('ends the screen with the logout row after the shortcuts', () => {
+  renderMy();
+  const shortcuts = screen.getByRole('heading', { name: '바로가기' });
+  const logout = screen.getByRole('button', { name: '로그아웃' });
+  expect(before(shortcuts, logout)).toBe(true);
+  expect(screen.queryByRole('dialog', { name: '로그아웃' })).toBeNull();
+});
+
 it('shows stamp progress and the next tier with earned stamps in colour and the rest locked', () => {
   renderMy();
   const card = screen.getByRole('region', { name: '내 패스포트' });
