@@ -29,8 +29,8 @@ describe("celebrity directory compact row layout", () => {
     expect(identity).toMatch(/\boverflow-wrap:\s*anywhere\b/);
   });
 
-  it("is one narrow column of hairline rows: no card outline, no grid, no filled surface", () => {
-    expect(declarationBlock(".content")).toMatch(/\bmax-width:\s*720px/);
+  it("uses the shell width with hairline rows: no card outline, no grid, no filled surface", () => {
+    expect(declarationBlock(".content")).not.toMatch(/\bmax-width:/);
     expect(declarationBlock(".row")).toMatch(/border-bottom:\s*1px solid var\(--color-line\)/);
     expect(css).not.toMatch(/\.grid\b/);
     expect(css).not.toMatch(/--color-soft\b/);
