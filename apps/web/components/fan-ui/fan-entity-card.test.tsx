@@ -29,5 +29,11 @@ describe("FanEntityCard list row", () => {
     rerender(<FanEntityCard size="tile" href="/a" image={{}} name="김민주" kind="fan" locale="ko" memberCount={0} />);
     expect(screen.getByRole("link").textContent).toBe("김민" + "김민주");
   });
+  it("tile size: a brand page linked to a creator record shows its own logo whole, a fan page shows the creator crop", () => {
+    const { container, rerender } = render(<FanEntityCard size="tile" href="/a" image={{ slug: "gggi", src: "/images/gggi/logo-green.png" }} name="GGGI" kind="brand" locale="ko" memberCount={3} />);
+    expect(container.querySelector("[data-tile-media]")?.getAttribute("data-tile-media")).toBe("page");
+    rerender(<FanEntityCard size="tile" href="/a" image={{ slug: "elina", src: "/images/guest-home/elina-card.jpg" }} name="엘리나" kind="fan" locale="ko" memberCount={3} />);
+    expect(container.querySelector("[data-tile-media]")?.getAttribute("data-tile-media")).toBe("creator");
+  });
 });
 

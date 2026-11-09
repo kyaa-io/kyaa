@@ -59,24 +59,26 @@ export function FanEntityCard({ href, image, name, kind, locale, memberCount, tr
   </Link>;
 }
 
-/** L5 (2026-11-09, Weverse artist picker on Mobbin): a square photo tile with the name and one fact on a dark band at the photo's lower edge.
- * Creator photos use the reviewed square crop (`portrait`); other pages use their own image or two letters of the name. */
+/** L5 (2026-11-09, Weverse artist picker on Mobbin): a square picture with the name, facts and challenge tag on white below it.
+ * Three subgrid rows (picture, name, facts) are shared with the other tiles of the row so names and facts line up.
+ * Fan pages use the creator's reviewed square crop (`portrait`). Brand and hobby images are logos or banners, so they are shown whole (contain). */
 function FanEntityTile({ href, image, name, kind, locale, memberCount, badge, className }: Readonly<{ href: string; image: FanPageImage; name: string; kind: FanPageKind; locale: AppLocale; memberCount?: number; badge?: ReactNode; className?: string }>) {
   const count = memberCount ? fanUiText(locale, "fanCount", [memberCount.toLocaleString(locale)]) : undefined;
   const facts = [kind === "fan" ? undefined : fanPageKindLabel(locale, kind), count].filter(Boolean).join(" · ");
   const sizes = "(min-width: 1024px) 168px, (min-width: 768px) 140px, 34vw";
   const initials = Array.from(name.replace(/^[^\p{L}\p{N}]+/u, "") || name).slice(0, 2).join("");
+  // Only fan pages show a creator's face; a brand or hobby page linked to a creator record still shows its own logo whole.
+  const creator = Boolean(image.slug) && (kind === "fan" || !image.src);
   return <Link href={href as Route} className={[styles.tile, className ?? ""].filter(Boolean).join(" ")} data-fan-entity={kind}>
-    <span className={styles.tileMedia} data-tile-media={image.slug ? "creator" : image.src ? "page" : "initials"}>
-      {image.slug
+    <span className={styles.tileMedia} data-tile-media={creator ? "creator" : image.src ? "page" : "initials"}>
+      {creator
         ? <CreatorImage slug={image.slug} src={image.src} photos={undefined} presentation="portrait" alt="" width={336} height={336} sizes={sizes} fallback={<span className={styles.tileInitials} aria-hidden="true">{initials}</span>} />
-        : image.src ? <GroupImage locale={locale} src={image.src} alt="" width={336} height={336} style={{ width: "100%", height: "100%" }} /> : <span className={styles.tileInitials} aria-hidden="true">{initials}</span>}
+        : image.src ? <GroupImage locale={locale} src={image.src} alt="" width={336} height={336} className={styles.tileLogo} /> : <span className={styles.tileInitials} aria-hidden="true">{initials}</span>}
     </span>
-    {badge && <span className={styles.tileBadge}>{badge}</span>}
-    <span className={styles.tileCopy}>
-      <strong className={styles.tileName}>{name}</strong>
-      {/* The fact line keeps its place when empty so names line up across a row. */}
-      <span className={styles.tileMeta} aria-hidden={facts ? undefined : true}>{facts}</span>
+    <strong className={styles.tileName}>{name}</strong>
+    <span className={styles.tileFacts}>
+      {facts && <span className={styles.tileMeta}>{facts}</span>}
+      {badge && <span className={styles.tileBadge}>{badge}</span>}
     </span>
   </Link>;
 }

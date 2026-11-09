@@ -113,6 +113,9 @@ export function GroupDirectory({locale,initialOwned=false,banners=[]}:{locale:Ap
   const myApplication=useGroupResource(resource.ready&&resource.authenticated?'/api/groups/applications/status?limit=1':null,parseStatus).data?.items[0];
   const pagination=waveFriendsCopy(locale);
   const filtersActive=Boolean(search||type!=='all'||mine||artistRole);
+  // Once a search, filter or order is used, the list keeps a screen of height for the rest of the visit, so narrowing it never pulls the page up.
+  const [holdHeight,setHoldHeight]=useState(filtersActive||sort!=='recent');
+  if(!holdHeight&&(filtersActive||sort!=='recent'))setHoldHeight(true);
   const showJoinedAll=resource.authenticated&&!(joined.data&&!joined.data.items.length);
   const joinedCount=joined.data?.totalCount??joined.data?.items.length;
   const submit=(event:FormEvent)=>{event.preventDefault();setSearch(draft.trim());};
@@ -142,7 +145,7 @@ export function GroupDirectory({locale,initialOwned=false,banners=[]}:{locale:Ap
     <header className={styles.discoveryIntro}><h1>{c.title}</h1></header>
     <DiscoveryCarousel locale={locale} banners={banners}/>
     <section className={styles.featured} aria-label={featuredTitle[locale]}><h2>{featuredTitle[locale]}</h2>{featured.error?<DirectoryAreaError fit locale={locale} title={featuredErrorLabel[locale]} retryLabel={t.retry} onRetry={featured.retry}/>:featured.loading&&!featured.data?<DirectorySkeleton kind="featured" label={t.loading}/>:featured.data?.items.length?<div className={directoryStyles.cards}>{featured.data.items.map(page=>pageCard(page,"card"))}</div>:featured.data?<p>{t.empty}</p>:null}</section>
-    <div className={`${styles.layout} ${styles.discoveryLayout}`}><section className={styles.main} aria-label={t.explore}>
+    <div className={`${styles.layout} ${styles.discoveryLayout}`}><section className={styles.main} aria-label={t.explore} data-filtered={holdHeight||undefined}>
       <div className={styles.discoveryHeading}><h2>{t.explore}</h2>{listData&&!resource.error&&<output aria-live="polite" className={styles.meta}>{t.all} {listedCount.toLocaleString(locale)}{listData.totalCount===undefined&&listData.nextCursor?'+':''}</output>}</div>
       <div className={directoryStyles.controls}>
       <form className={`${styles.search} ${directoryStyles.search}`} onSubmit={submit}><input className={`${styles.input} ${directoryStyles.searchInput}`} aria-label={t.searchPlaceholder} placeholder={t.searchPlaceholder} value={draft} onChange={e=>setDraft(e.target.value)} onCompositionStart={()=>setComposing(true)} onCompositionEnd={()=>setComposing(false)} maxLength={100}/><button className={directoryStyles.searchIcon} aria-label={t.search}><Search size={18}/></button></form>
