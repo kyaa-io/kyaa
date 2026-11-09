@@ -5,7 +5,7 @@ import { groupMembersCopy } from "./group-members-copy";
 import { fanListCopy } from "./fan-list-copy";
 import { GroupMembers } from "./group-members";
 
-vi.mock("@/features/group-social/profile-modal", () => ({ ProfileModal: ({ person, onClose }: { person: { nickname: string }; onClose: () => void }) => <div role="dialog" aria-label={person.nickname}><button onClick={onClose}>닫기</button></div> }));
+vi.mock("@/features/group-social/profile-modal", () => ({ ProfileModal: ({ person, onClose }: { person: { profileId: string; nickname: string }; onClose: () => void }) => <div role="dialog" aria-label={person.nickname} data-profile={person.profileId}><button onClick={onClose}>닫기</button></div> }));
 const resource = vi.hoisted(() => ({ data: undefined as Record<string, unknown> | undefined, error: false, loading: false, authenticated: true, ownerKey: "owner:1", retry: vi.fn() }));
 const ranked = vi.hoisted(() => ({ state: { status: "loading" } as Record<string, unknown> }));
 vi.mock("./use-group-resource", () => ({ useGroupResource: vi.fn(() => resource) }));
@@ -103,4 +103,33 @@ it("preserves the existing ranking and my rank behavior", () => {
   expect(screen.getByRole("heading", { level: 3, name: "아티스트 팬 랭킹" })).toBeVisible();
   expect(screen.getByText("120 점")).toBeVisible(); expect(screen.getByText("140")).toBeVisible(); expect(screen.getByText("12 점")).toBeVisible();
   expect(screen.getByRole("link", { name: "팬 랭킹" })).toHaveAttribute("href", "/rankings/nchive?locale=ko");
+});
+
+
+describe("ranking regression coverage", () => {
+  const profileId = "e9700000-0000-4000-8000-000000000002";
+  beforeEach(() => {
+    resource.data = { items: [{ ...fan, profileId, role: "member", rank: 17, points: 120 }], nextCursor: null, ranking: { available: true, reason: null, fanCount: 120, asOf: "2026-11-01T00:00:00Z" } };
+  });
+  it("opens and closes the ranking profile modal with the selected fan ID", () => {
+    render(<GroupMembers pageId={page} locale="ko" member/>);
+    fireEvent.click(screen.getByRole("button", { name: "팬 랭킹" }));
+    fireEvent.click(screen.getByRole("button", { name: new RegExp(fan.nickname) }));
+    expect(screen.getByRole("dialog", { name: fan.nickname })).toHaveAttribute("data-profile", profileId);
+    fireEvent.click(screen.getByRole("button", { name: "닫기" }));
+    expect(screen.queryByRole("dialog")).toBeNull();
+  });
+  it("hides my pinned rank when inTop is true", () => {
+    ranked.state = { status: "ready", data: { me: { rank: 17, score: 120, inTop: true } } };
+    render(<GroupMembers pageId={page} locale="ko" member rankingsSlug="nchive"/>);
+    fireEvent.click(screen.getByRole("button", { name: "팬 랭킹" }));
+    expect(screen.getByText("120 점")).toBeVisible();
+    expect(screen.queryByText("내 순위")).toBeNull();
+  });
+  it("hides the public ranking link when no slug is supplied", () => {
+    render(<GroupMembers pageId={page} locale="ko" member/>);
+    fireEvent.click(screen.getByRole("button", { name: "팬 랭킹" }));
+    expect(screen.getByText("120 점")).toBeVisible();
+    expect(screen.queryByRole("link", { name: "팬 랭킹" })).toBeNull();
+  });
 });
