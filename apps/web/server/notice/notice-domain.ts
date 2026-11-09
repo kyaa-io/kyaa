@@ -49,7 +49,10 @@ function isPublicOfficialMedia(value: unknown, thumbnail = false): boolean {
   return typeof value === "string" && new RegExp(`^/api/public/notice-media/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}${thumbnail ? "\\?variant=thumbnail" : ""}$`, "i").test(value);
 }
 
-function validateNode(value: unknown, depth = 0): boolean {
+/** Home notices are public pages, so a private content asset (`/api/content-assets/<id>`) is refused there. */
+export type NoticeDocumentOptions = Readonly<{ privateImages?: "allow" | "reject" }>;
+
+function validateNode(value: unknown, depth = 0, options: NoticeDocumentOptions = {}): boolean {
   if (!value || typeof value !== "object" || Array.isArray(value) || depth > 30) {
     throw new Error("Invalid Notice document");
   }
@@ -66,6 +69,7 @@ function validateNode(value: unknown, depth = 0): boolean {
     if ((!safeHttps(attrs?.src) && !isPrivateNoticeImage(attrs?.src) && !isPublicOfficialMedia(attrs?.src)) || typeof attrs?.alt !== "string" || !attrs.alt.trim()) {
       throw new Error("Notice images require an HTTPS source and alt text");
     }
+    if (options.privateImages === "reject" && isPrivateNoticeImage(attrs?.src)) throw new Error("Private Notice images are not allowed here");
   }
   if (node.type === "video") {
     const attrs = node.attrs as Record<string, unknown> | undefined;
@@ -111,13 +115,13 @@ function validateNode(value: unknown, depth = 0): boolean {
   }
   if (node.content !== undefined) {
     if (!Array.isArray(node.content)) throw new Error("Invalid Notice content");
-    meaningful = node.content.map((child) => validateNode(child, depth + 1)).some(Boolean) || meaningful;
+    meaningful = node.content.map((child) => validateNode(child, depth + 1, options)).some(Boolean) || meaningful;
   }
   return meaningful;
 }
 
-export function parseNoticeDocument(value: unknown): TiptapDocument {
-  const meaningful = validateNode(value);
+export function parseNoticeDocument(value: unknown, options: NoticeDocumentOptions = {}): TiptapDocument {
+  const meaningful = validateNode(value, 0, options);
   const document = value as Record<string, unknown>;
   if (document.type !== "doc" || !Array.isArray(document.content) || !meaningful) {
     throw new Error("Notice body is required");

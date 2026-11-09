@@ -49,5 +49,6 @@ assertSourceOnlyLocalizations(input, cmsReadbackLocalizations);
 | 모바일 공용 공지·피드 RPC | 저장된 제목·본문을 읽는다. 웹의 CMS 원문 저장 규칙을 함께 적용하며 원문 응답은 유지한다. 이 저장소에는 네이티브 클라이언트 소스가 없다. |
 | 매일 SNS 자동화 | `byus-ego-content-daily`의 ko/en 재작성 지시를 원문 복사·공통 함수 사용·재조회 대조로 교체했다. |
 | 주간 LIVE 자동화 | `byus-live`에도 수집한 제목·설명·근거의 번역·재작성 금지를 명시했다. 기존 일정 처리 계약은 유지한다. |
+| 홈 공지(`/admin/home-notices`) | kyaa가 쓰는 내부 글이 기본이다. 외부 원문을 옮길 때만 원문 URL·원제·캡션 원문·원문 화면이나 HTML·확보 시각을 `work/home-notice-source-<YYYYMMDD>-<slug>/`에 남기고, `buildSourceOnlyLocalizations` 결과를 그대로 초안 저장한 뒤 `/api/admin/home-notices` 재조회 본문을 `assertSourceOnlyLocalizations`로 대조해 통과한 경우에만 발행한다. 원문을 확보하지 못하면 싣지 않는다. |
 
 기존 LIVE 제목의 160자 저장 제한은 연속된 원문 발췌로 유지한다. 이미 저장된 생성 문구의 범위와 원문 확보 상태는 `work/source-only-content-20261018/`에 별도로 기록한다. 과거 증거 파일을 덮어쓰지 않는다.

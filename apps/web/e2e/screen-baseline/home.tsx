@@ -15,6 +15,7 @@ const queries = {
   celebrities: settled(homeQueryData.celebrities),
   homeBanners: settled(homeQueryData.homeBanners),
   homeSlots: settled({}),
+  homeNotices: settled({ items: [], nextCursor: null }),
   elinaRaffles: settled(homeQueryData.elinaRaffles),
 };
 window.fetch = (async (input: RequestInfo | URL) => {

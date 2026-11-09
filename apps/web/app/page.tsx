@@ -10,6 +10,7 @@ import { StreamingGuestHome } from "../components/guest-home";
 import { loadServerEnv } from "../server/config/env";
 import { createPublishedContentRepositoryFromEnvironment } from "../server/content/published-content-repository";
 import { createLiveEventRepositoryFromEnvironment } from "../server/g3/live-event-repository";
+import { createHomeNoticeRepository } from "../server/home-notice/home-notice-repository";
 
 export const dynamic = "force-dynamic";
 
@@ -27,6 +28,7 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
   });
   const celebrityRepository = createPublishedContentRepositoryFromEnvironment();
   const bannerRepository = createHomeBannerRepository({ url: environment.SUPABASE_URL, serviceRoleKey: environment.SUPABASE_SERVICE_ROLE_KEY });
+  const noticeRepository = createHomeNoticeRepository({ url: environment.SUPABASE_URL, serviceRoleKey: environment.SUPABASE_SERVICE_ROLE_KEY });
   const queries = {
     featuredLives: settleHomeQuery(measureHomeQuery("featuredLives", () => liveRepository.listFeaturedPublished({ locale: toContentLocale(locale), now: new Date() }))),
     // The home reads only Elina (raffle guide); the full list would put unlisted creators in the guest payload.
@@ -36,6 +38,7 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
     })),
     homeBanners: settleHomeQuery(measureHomeQuery("homeBanners", () => bannerRepository.list(toContentLocale(locale)))),
     homeSlots: settleHomeQuery(measureHomeQuery("homeSlots", () => bannerRepository.listSlots(toContentLocale(locale), "home"))),
+    homeNotices: settleHomeQuery(measureHomeQuery("homeNotices", () => noticeRepository.listPublished(toContentLocale(locale), { limit: 5 }))),
     elinaRaffles: settleHomeQuery(measureHomeQuery("elinaRaffles", () => createRaffleDependencies().list({ celebritySlug: "elina", locale: toContentLocale(locale), now: new Date() }))),
   };
   return <>

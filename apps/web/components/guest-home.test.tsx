@@ -560,6 +560,7 @@ describe("streamed Home sections", () => {
       homeSlots: settleHomeQuery(pending.homeSlots.promise),
       featuredLives: settleHomeQuery(pending.featuredLives.promise),
       elinaRaffles: settleHomeQuery(pending.elinaRaffles.promise),
+      homeNotices: settleHomeQuery(Promise.resolve({ items: [], nextCursor: null })),
     };
     return { pending, queries };
   }

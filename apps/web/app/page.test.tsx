@@ -9,6 +9,7 @@ const repositories = vi.hoisted(() => ({
   listSlots: vi.fn(),
   guidePhotos: vi.fn(),
   raffles: vi.fn(),
+  homeNotices: vi.fn(),
 }));
 
 vi.mock("../server/config/env", () => ({ loadServerEnv: () => ({ SUPABASE_URL: "https://db.test", SUPABASE_SERVICE_ROLE_KEY: "secret" }) }));
@@ -16,6 +17,8 @@ vi.mock("../server/g3/live-event-repository", () => ({ createLiveEventRepository
 vi.mock("../server/content/published-content-repository", () => ({ createPublishedContentRepositoryFromEnvironment: () => ({ findBySlug: repositories.findBySlug }) }));
 
 vi.mock("../server/content/home-banner-repository", () => ({ createHomeBannerRepository: () => ({ list: repositories.homeBanners, listSlots: repositories.listSlots }) }));
+
+vi.mock("../server/home-notice/home-notice-repository", () => ({ createHomeNoticeRepository: () => ({ listPublished: repositories.homeNotices }) }));
 
 vi.mock("../server/raffle/raffle-dependencies", () => ({ createRaffleDependencies: () => ({ list: repositories.raffles }) }));
 
@@ -29,10 +32,11 @@ describe("Home server content isolation", () => {
     repositories.listFeaturedPublished.mockReset().mockResolvedValue([]);
     repositories.findBySlug.mockReset().mockResolvedValue(null);
     repositories.listSlots.mockReset().mockResolvedValue({});
+    repositories.homeNotices.mockReset().mockResolvedValue({ items: [], nextCursor: null });
   });
 
   const props = (result: { props: { children: Array<{ props: Record<string, unknown> }> } }) => result.props.children[1].props as {
-    queries: Record<"featuredLives" | "celebrities" | "homeBanners" | "homeSlots" | "elinaRaffles", Promise<{ status: string; value?: unknown }>>;
+    queries: Record<"featuredLives" | "celebrities" | "homeBanners" | "homeSlots" | "elinaRaffles" | "homeNotices", Promise<{ status: string; value?: unknown }>>;
     [key: string]: unknown;
   };
 
@@ -66,6 +70,18 @@ describe("Home server content isolation", () => {
     expect(await props(failed).queries.celebrities).toEqual({ status: "fulfilled", value: [] });
   });
 
+  it("reads five home notices with the page and settles to rejected when the read fails", async () => {
+    const page = { items: [{ id: "n1", slug: "first" }], nextCursor: null };
+    repositories.homeNotices.mockResolvedValue(page);
+    const result = await HomePage({ searchParams: Promise.resolve({ locale: "ja" }) });
+    expect(repositories.homeNotices).toHaveBeenCalledWith("en", { limit: 5 });
+    expect(await props(result).queries.homeNotices).toEqual({ status: "fulfilled", value: page });
+    repositories.homeNotices.mockRejectedValue(new Error("notices unavailable"));
+    const failed = await HomePage({ searchParams: Promise.resolve({}) });
+    expect(await props(failed).queries.homeNotices).toEqual({ status: "rejected" });
+    expect(await props(failed).queries.homeSlots).toEqual({ status: "fulfilled", value: {} });
+  });
+
   it("sends only Elina to the guest home, never the full creator list with unlisted creators", async () => {
     const elina = { slug: "elina", name: "Elina" };
     repositories.findBySlug.mockResolvedValue(elina);
@@ -76,7 +92,7 @@ describe("Home server content isolation", () => {
 
   it("no longer reads the creator LIVE metadata or the unlisted list that only the retired favorites row used", async () => {
     const result = await HomePage({ searchParams: Promise.resolve({}) });
-    expect(Object.keys(props(result).queries).sort()).toEqual(["celebrities", "elinaRaffles", "featuredLives", "homeBanners", "homeSlots"]);
+    expect(Object.keys(props(result).queries).sort()).toEqual(["celebrities", "elinaRaffles", "featuredLives", "homeBanners", "homeNotices", "homeSlots"]);
   });
 
   it("no longer reads retired event artwork for the home page", async () => {

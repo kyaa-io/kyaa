@@ -1,4 +1,7 @@
 import { FanHeading, FanSectionHeader } from "@/components/fan-ui/fan-heading";
+import Link from "next/link";
+import type { Route } from "next";
+import { homeNoticeCategoryLabels, type HomeNoticeSummary } from "@/features/home/domain/home-notice";
 import type { AppLocale } from "@/i18n/locales";
 import styles from "./home-placeholder-blocks.module.css";
 
@@ -20,6 +23,35 @@ const values: Record<AppLocale, readonly string[]> = {
   fr: ["Annonces", "Galerie", "Shorts", "Aucune annonce pour l’instant", "Aucune photo pour l’instant", "Aucun Short pour l’instant"],
   ru: ["Объявления", "Галерея", "Shorts", "Пока нет объявлений", "Пока нет фото", "Пока нет Shorts"],
 };
+
+const viewAll: Record<AppLocale, string> = {
+  ko: "전체 보기", en: "View all", ja: "すべて見る", "zh-Hans": "查看全部", "zh-Hant": "查看全部", es: "Ver todo",
+  id: "Lihat semua", vi: "Xem tất cả", th: "ดูทั้งหมด", pt: "Ver tudo", fr: "Tout voir", ru: "Смотреть все",
+};
+
+export function formatHomeNoticeDate(value: string, locale: AppLocale) {
+  return new Intl.DateTimeFormat(locale, { calendar: "gregory", month: "2-digit", day: "2-digit", timeZone: "Asia/Seoul" }).format(new Date(value));
+}
+
+/** 공지 5행(R8-DATA N1). 0건·오류는 자리표시 그대로, 1~4건은 남은 행을 "—"로 채우고, 5건이면 전체 보기를 단다. */
+export function HomeNotices({ locale, notices }: { locale: AppLocale; notices: readonly HomeNoticeSummary[] | null }) {
+  if (!notices?.length) return <HomeNoticesPlaceholder locale={locale} />;
+  const v = values[locale];
+  const rows = notices.slice(0, 5);
+  return <section className={styles.block} aria-labelledby="home-notices-heading" data-home-block="notices">
+    <FanSectionHeader variant="editorial" id="home-notices-heading" title={v[0]!} action={rows.length >= 5 ? { href: `/notices?locale=${locale}`, label: viewAll[locale] } : undefined} />
+    <ul className={styles.notices}>
+      {rows.map(item => <li key={item.id} className={styles.notice} data-row="notice">
+        <Link className={styles.noticeLink} href={`/notices/${item.slug}?locale=${locale}` as Route}>
+          <span className={styles.noticeCategory}>{homeNoticeCategoryLabels[locale][item.category]}</span>
+          <span className={styles.noticeTitle}>{item.title}</span>
+          <time className={styles.noticeDate} dateTime={item.publishedAt}>{formatHomeNoticeDate(item.publishedAt, locale)}</time>
+        </Link>
+      </li>)}
+      {Array.from({ length: 5 - rows.length }, (_, i) => <li key={`empty-${i}`} className={styles.notice} data-row="notice-placeholder" aria-hidden="true"><span className={styles.note}>{"—"}</span></li>)}
+    </ul>
+  </section>;
+}
 
 export function HomeNoticesPlaceholder({ locale }: { locale: AppLocale }) {
   const v = values[locale];

@@ -14,7 +14,9 @@ import { AdminListSearch, AdminPagination, useAdminPagination } from "./admin-pa
 import styles from "./notice-manager.module.css";
 
 type Document = Record<string, unknown>;
+type Category = string;
 type Notice = {
+  category?: Category;
   id: string;
   slug: string;
   publicationStatus: "draft" | "published";
@@ -30,7 +32,8 @@ type Notice = {
 const emptyDocument: Document = { type: "doc", content: [{ type: "paragraph" }] };
 
 function normalize(row: any): Notice {
-  const localizations = Array.isArray(row.celebrity_notice_localizations) ? row.celebrity_notice_localizations : [];
+  const rows = row.celebrity_notice_localizations ?? row.home_notice_localizations;
+  const localizations = Array.isArray(rows) ? rows : [];
   const loc = (locale: "ko" | "en") => {
     const value = localizations.find((item: any) => item.locale === locale);
     return { title: value?.title ?? "", body: value?.body_json ?? emptyDocument };
@@ -39,13 +42,19 @@ function normalize(row: any): Notice {
     id: row.id, slug: row.slug, publicationStatus: row.publication_status, pinned: row.pinned,
     postType: row.post_type ?? "notice", visibility: row.visibility ?? "public",
     publishedAt: row.published_at, archivedAt: row.archived_at, archiveReason: row.archive_reason,
-    revision: row.revision, localizations: { ko: loc("ko"), en: loc("en") },
+    revision: row.revision, localizations: { ko: loc("ko"), en: loc("en") }, category: row.category ?? undefined,
   };
 }
 
-export function NoticeManager({ celebrityId, celebrityName, role, locale, isBrand = false, apiBase = "/api/admin/celebrities" }: { celebrityId: string; celebrityName: string; role: string; locale: AdminLocale; isBrand?: boolean; apiBase?: string }) {
+/**
+ * `endpoint` replaces `${apiBase}/${celebrityId}/notices` (attachments go to `${endpoint}/${id}/assets`).
+ * `categories` shows a category field instead of post type and visibility and saves `category` (home notices).
+ */
+export function NoticeManager({ celebrityId, celebrityName, role, locale, isBrand = false, apiBase = "/api/admin/celebrities", endpoint, categories, categoryLabels }: { celebrityId: string; celebrityName: string; role: string; locale: AdminLocale; isBrand?: boolean; apiBase?: string; endpoint?: string; categories?: readonly Category[]; categoryLabels?: Readonly<Record<Category, string>> }) {
   const { getAccessToken } = usePrivy();
   const operatorChannelId = apiBase.startsWith("/api/operator/") ? celebrityId : undefined;
+  const noticesUrl = endpoint ?? `${apiBase}/${celebrityId}/notices`;
+  const defaultCategory = categories?.[0];
   const canEdit = role !== "viewer";
   const [query, setQuery] = useState("");
   const [listState, setListState] = useState<"loading" | "ready" | "error">("loading");
@@ -56,6 +65,7 @@ export function NoticeManager({ celebrityId, celebrityName, role, locale, isBran
   const [pinned, setPinned] = useState(false);
   const [postType, setPostType] = useState<Notice["postType"]>("notice");
   const [visibility, setVisibility] = useState<Notice["visibility"]>("public");
+  const [category, setCategory] = useState<Category | undefined>(defaultCategory);
   const [titles, setTitles] = useState({ ko: "", en: "" });
   const [bodies, setBodies] = useState<{ ko: Document; en: Document }>({ ko: emptyDocument, en: emptyDocument });
   const [message, setMessage] = useState("");
@@ -70,7 +80,7 @@ export function NoticeManager({ celebrityId, celebrityName, role, locale, isBran
   const request = useCallback(async (method: string, body?: unknown) => {
     const token = await getAccessToken();
     if (!token) throw new Error("Missing access token");
-    const response = await fetch(`${apiBase}/${celebrityId}/notices`, {
+    const response = await fetch(noticesUrl, {
       method,
       headers: { Authorization: `Bearer ${token}`, "content-type": "application/json", "x-correlation-id": crypto.randomUUID() },
       body: body ? JSON.stringify(body) : undefined,
@@ -79,7 +89,7 @@ export function NoticeManager({ celebrityId, celebrityName, role, locale, isBran
     const payload = await response.json().catch(() => ({}));
     if (!response.ok) throw new Error(payload.message ?? "Notice request failed");
     return payload;
-  }, [celebrityId, getAccessToken]);
+  }, [noticesUrl, getAccessToken]);
   const load = useCallback(async () => {
     setListState("loading");
     try {
@@ -97,10 +107,10 @@ export function NoticeManager({ celebrityId, celebrityName, role, locale, isBran
   useEffect(() => { void load(); }, [load]);
   useEffect(() => {
     if (!current) return;
-    setSlug(current.slug); setPinned(current.pinned); setPostType(current.postType); setVisibility(current.visibility);
+    setSlug(current.slug); setPinned(current.pinned); setPostType(current.postType); setVisibility(current.visibility); setCategory(current.category ?? defaultCategory);
     setTitles({ ko: current.localizations.ko.title, en: current.localizations.en.title });
     setBodies({ ko: current.localizations.ko.body, en: current.localizations.en.body });
-  }, [current]);
+  }, [current, defaultCategory]);
   const extensions = useMemo(() => [...noticeExtensions.filter(extension => extension.name !== "image"), Image.extend({
     addNodeView() { return ReactNodeViewRenderer(({ node }) => <NodeViewWrapper>
       {isPrivateNoticeImage(node.attrs.src)
@@ -126,6 +136,7 @@ export function NoticeManager({ celebrityId, celebrityName, role, locale, isBran
 
   const dirty = slug !== (current?.slug ?? "") || pinned !== (current?.pinned ?? false)
     || postType !== (current?.postType ?? "notice") || visibility !== (current?.visibility ?? "public")
+    || (categories ? category !== (current?.category ?? defaultCategory) : false)
     || (["ko", "en"] as const).some(value => titles[value] !== (current?.localizations[value].title ?? "")
       || JSON.stringify(bodies[value]) !== JSON.stringify(current?.localizations[value].body ?? emptyDocument));
   useEffect(() => {
@@ -139,7 +150,7 @@ export function NoticeManager({ celebrityId, celebrityName, role, locale, isBran
   }
   function reset() {
     if (!confirmDiscard()) return;
-    setSelectedId(null); setSlug(""); setPinned(false); setPostType("notice"); setVisibility("public"); setTitles({ ko: "", en: "" });
+    setSelectedId(null); setSlug(""); setPinned(false); setPostType("notice"); setVisibility("public"); setCategory(defaultCategory); setTitles({ ko: "", en: "" });
     setBodies({ ko: emptyDocument, en: emptyDocument }); setMessage("");
   }
   function beginOperation(label: string) {
@@ -159,7 +170,8 @@ export function NoticeManager({ celebrityId, celebrityName, role, locale, isBran
     let postSucceeded = false;
     try {
       const result = await request("POST", {
-        action: "save", id: current?.id, expectedRevision: current?.revision, slug, pinned, postType, visibility: isBrand ? "public" : visibility,
+        action: "save", id: current?.id, expectedRevision: current?.revision, slug, pinned,
+        ...(categories ? { category } : { postType, visibility: isBrand ? "public" : visibility }),
         localizations: {
           ko: { title: titles.ko, body: bodies.ko },
           en: { title: titles.en, body: bodies.en },
@@ -198,7 +210,7 @@ export function NoticeManager({ celebrityId, celebrityName, role, locale, isBran
       const token = await getAccessToken();
       if (!token) throw new Error(locale === "ko" ? "로그인이 필요합니다." : "Authentication required.");
       const data = new FormData(); data.set("file", file);
-      const response = await fetch(`${apiBase}/${celebrityId}/notices/${current.id}/assets`, {
+      const response = await fetch(`${noticesUrl}/${current.id}/assets`, {
         method: "POST", headers: { Authorization: `Bearer ${token}`, "x-correlation-id": crypto.randomUUID() }, body: data,
       });
       const payload = await response.json();
@@ -250,10 +262,12 @@ export function NoticeManager({ celebrityId, celebrityName, role, locale, isBran
       <div className={styles.editor}>
         <div className={styles.language}><button type="button" disabled={interactionLocked} aria-pressed={language === "ko"} onClick={() => setLanguage("ko")}>KO</button><button type="button" disabled={interactionLocked} aria-pressed={language === "en"} onClick={() => setLanguage("en")}>EN</button></div>
         <div className={styles.fields}><label><span>{locale === "ko" ? "주소 이름" : "URL name"}</span><input disabled={!canEdit || interactionLocked || !!current?.archivedAt || current?.publicationStatus === "published"} value={slug} pattern="[a-z0-9]+(-[a-z0-9]+)*" onChange={(event) => setSlug(event.target.value)} /></label><label><span>{locale === "ko" ? "제목" : "Title"}</span><input disabled={!canEdit || interactionLocked || !!current?.archivedAt || current?.publicationStatus === "published"} value={titles[language]} onChange={(event) => setTitles((value) => ({ ...value, [language]: event.target.value }))} /></label><label className={styles.pin}><input type="checkbox" disabled={!canEdit || interactionLocked || !!current?.archivedAt || current?.publicationStatus === "published"} checked={pinned} onChange={(event) => setPinned(event.target.checked)} /><Pin />{locale === "ko" ? "상단 고정" : "Pin Notice"}</label></div>
-        <div className={styles.fields}>
+        {categories ? <div className={styles.fields}>
+          <label><span>{locale === "ko" ? "구분" : "Category"}</span><select disabled={toolbarDisabled} value={category} onChange={event => setCategory(event.target.value)}>{categories.map(value => <option key={value} value={value}>{categoryLabels?.[value] ?? value}</option>)}</select></label>
+        </div> : <div className={styles.fields}>
           <label><span>{locale === "ko" ? "글 구분" : "Post type"}</span><select disabled={toolbarDisabled} value={postType} onChange={event => setPostType(event.target.value as Notice["postType"])}><option value="notice">{locale === "ko" ? "공지" : "Notice"}</option><option value="artist_post">{isBrand ? locale === "ko" ? "브랜드 소식" : "Brand update" : locale === "ko" ? "아티스트 글" : "Artist post"}</option></select></label>
           <label><span>{locale === "ko" ? "공개 범위" : "Visibility"}</span><select disabled={toolbarDisabled} value={isBrand ? "public" : visibility} onChange={event => setVisibility(event.target.value as Notice["visibility"])}><option value="public">{locale === "ko" ? "전체 공개" : "Public"}</option>{!isBrand && <option value="members">{locale === "ko" ? "회원 공개" : "Members only"}</option>}</select></label>
-        </div>
+        </div>}
         <div className={styles.toolbar} aria-label={locale === "ko" ? "본문 서식" : "Body formatting"}>
           <button type="button" disabled={toolbarDisabled} onClick={() => editor?.chain().focus().toggleBold().run()} aria-label="Bold"><Bold /></button>
           <button type="button" disabled={toolbarDisabled} onClick={() => editor?.chain().focus().toggleItalic().run()} aria-label="Italic"><Italic /></button>

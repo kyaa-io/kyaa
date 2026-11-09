@@ -1,0 +1,246 @@
+[
+    {
+        "id": "52a82409-1a3c-4d59-85cc-ec7910889824",
+        "slug": "r8data-e",
+        "pinned": false,
+        "category": "guide",
+        "revision": 1,
+        "created_at": "2026-11-09T18:45:53.052217+09:00",
+        "archived_at": null,
+        "published_at": null,
+        "archive_reason": null,
+        "publication_status": "draft",
+        "home_notice_localizations": [
+            {
+                "title": "초안 E",
+                "locale": "ko",
+                "body_json": {
+                    "type": "doc",
+                    "content": [
+                        {
+                            "type": "paragraph",
+                            "content": [
+                                {
+                                    "text": "본문E",
+                                    "type": "text"
+                                }
+                            ]
+                        }
+                    ]
+                }
+            },
+            {
+                "title": "Draft E",
+                "locale": "en",
+                "body_json": {
+                    "type": "doc",
+                    "content": [
+                        {
+                            "type": "paragraph",
+                            "content": [
+                                {
+                                    "text": "bodyE",
+                                    "type": "text"
+                                }
+                            ]
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    {
+        "id": "7ccfb37c-84eb-40dd-9172-10b4dae621f7",
+        "slug": "r8data-d",
+        "pinned": false,
+        "category": "creator",
+        "revision": 2,
+        "created_at": "2026-11-09T18:45:53.018762+09:00",
+        "archived_at": null,
+        "published_at": "2026-11-09T18:45:53.035254+09:00",
+        "archive_reason": null,
+        "publication_status": "published",
+        "home_notice_localizations": [
+            {
+                "title": "최신 D",
+                "locale": "ko",
+                "body_json": {
+                    "type": "doc",
+                    "content": [
+                        {
+                            "type": "paragraph",
+                            "content": [
+                                {
+                                    "text": "본문D",
+                                    "type": "text"
+                                }
+                            ]
+                        }
+                    ]
+                }
+            },
+            {
+                "title": "Latest D",
+                "locale": "en",
+                "body_json": {
+                    "type": "doc",
+                    "content": [
+                        {
+                            "type": "paragraph",
+                            "content": [
+                                {
+                                    "text": "bodyD",
+                                    "type": "text"
+                                }
+                            ]
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    {
+        "id": "aa61d47a-28ca-43df-b6e4-f18537279aab",
+        "slug": "r8data-c",
+        "pinned": true,
+        "category": "update",
+        "revision": 2,
+        "created_at": "2026-11-09T18:45:52.98508+09:00",
+        "archived_at": null,
+        "published_at": "2026-11-09T18:45:53.001216+09:00",
+        "archive_reason": null,
+        "publication_status": "published",
+        "home_notice_localizations": [
+            {
+                "title": "고정 C",
+                "locale": "ko",
+                "body_json": {
+                    "type": "doc",
+                    "content": [
+                        {
+                            "type": "paragraph",
+                            "content": [
+                                {
+                                    "text": "본문C",
+                                    "type": "text"
+                                }
+                            ]
+                        }
+                    ]
+                }
+            },
+            {
+                "title": "Pinned C",
+                "locale": "en",
+                "body_json": {
+                    "type": "doc",
+                    "content": [
+                        {
+                            "type": "paragraph",
+                            "content": [
+                                {
+                                    "text": "bodyC",
+                                    "type": "text"
+                                }
+                            ]
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    {
+        "id": "071265cf-f618-4ede-b18c-afe36e3e9690",
+        "slug": "r8data-b",
+        "pinned": true,
+        "category": "event",
+        "revision": 2,
+        "created_at": "2026-11-09T18:45:52.774198+09:00",
+        "archived_at": "2026-11-09T18:45:52.900139+09:00",
+        "published_at": null,
+        "archive_reason": "r8data archive test",
+        "publication_status": "draft",
+        "home_notice_localizations": [
+            {
+                "title": "안내 B",
+                "locale": "ko",
+                "body_json": {
+                    "type": "doc",
+                    "content": [
+                        {
+                            "type": "paragraph",
+                            "content": [
+                                {
+                                    "text": "본문B",
+                                    "type": "text"
+                                }
+                            ]
+                        }
+                    ]
+                }
+            },
+            {
+                "title": "Notice B",
+                "locale": "en",
+                "body_json": {
+                    "type": "doc",
+                    "content": [
+                        {
+                            "type": "paragraph"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    {
+        "id": "0b379746-7735-48ba-860a-c92603a9e13a",
+        "slug": "r8data-a",
+        "pinned": false,
+        "category": "guide",
+        "revision": 2,
+        "created_at": "2026-11-09T18:45:52.70871+09:00",
+        "archived_at": null,
+        "published_at": "2026-11-09T18:45:52.829939+09:00",
+        "archive_reason": null,
+        "publication_status": "published",
+        "home_notice_localizations": [
+            {
+                "title": "안내 A",
+                "locale": "ko",
+                "body_json": {
+                    "type": "doc",
+                    "content": [
+                        {
+                            "type": "paragraph",
+                            "content": [
+                                {
+                                    "text": "본문A",
+                                    "type": "text"
+                                }
+                            ]
+                        }
+                    ]
+                }
+            },
+            {
+                "title": "Notice A",
+                "locale": "en",
+                "body_json": {
+                    "type": "doc",
+                    "content": [
+                        {
+                            "type": "paragraph",
+                            "content": [
+                                {
+                                    "text": "bodyA",
+                                    "type": "text"
+                                }
+                            ]
+                        }
+                    ]
+                }
+            }
+        ]
+    }
+]
