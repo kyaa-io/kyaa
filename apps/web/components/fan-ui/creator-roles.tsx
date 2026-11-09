@@ -13,30 +13,19 @@ import styles from "./creator-roles.module.css";
 
 type Locale = AppLocale;
 
-export function CreatorRoleFilterControl({ roles, value, onChange, locale, controls, ownedOnly = false, onSelectOwned, ownedDisabled = false, compact = false }: {
+export function CreatorRoleFilterControl({ roles, value, onChange, locale, controls, compact = false }: {
   roles: readonly CreatorRole[];
   value: CreatorRoleFilter;
   onChange: (role: CreatorRoleFilter) => void;
   locale: Locale;
   controls?: string;
-  ownedOnly?: boolean;
-  onSelectOwned?: () => void;
-  ownedDisabled?: boolean;
   compact?: boolean;
 }) {
   return <div className={styles.filterViewport}><div className={styles.filters} data-compact={compact || undefined} role="group" aria-label={locale === "ko" ? "분류로 찾기" : translate(locale, localizedMessages.m61fa7982f0ed, "Browse by category")}>
-    {onSelectOwned ? <button
-      type="button"
-      data-owned-filter="true"
-      aria-pressed={Boolean(ownedOnly)}
-      aria-controls={controls}
-      disabled={ownedDisabled}
-      onClick={onSelectOwned}
-    ><span>{locale === "ko" ? "내 최애" : translate(locale, localizedMessages.mc53f55277fa2, "My favorites")}</span></button> : null}
     {(["all", ...roles] as const).map((role) => <button
       key={role}
       type="button"
-      aria-pressed={!ownedOnly && value === role}
+      aria-pressed={value === role}
       aria-controls={controls}
       onClick={() => onChange(role)}
     ><span>{creatorRoleFilterLabel(role, locale)}</span></button>)}

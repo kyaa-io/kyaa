@@ -152,7 +152,7 @@ window.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
 function App() {
  if(location.pathname === "/connect/kyaa-wave/participate")return <KyaaWaveParticipationScreen/>;
  if(location.pathname === "/admin/kyaa-wave-draw") return <WaveDrawManager locale={locale === "ko" ? "ko" : "en"}/>;
- if (location.pathname === "/celebrities") return <CelebrityDirectory locale={locale} initialOwnedOnly={false} celebrities={[
+ if (location.pathname === "/celebrities") return <CelebrityDirectory locale={locale} celebrities={[
    {...creator,upcomingLive:null},
    {...creator,slug:"elina",name:"Elina",summary:"함께하는 일상의 이야기",roles:["creator"],image:{url:"/images/guest-home/elina-card.jpg",alt:"Elina",position:"center"},upcomingLive:null},
  ]} />;

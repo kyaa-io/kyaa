@@ -68,3 +68,7 @@
 @media (prefers-reduced-motion: reduce) {
   .filters button { transition: none; }
 }
+
+@media (min-width: 1024px) {
+  .filters[data-compact] { display: flex; flex-wrap: wrap; width: auto; }
+}
