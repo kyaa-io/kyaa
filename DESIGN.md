@@ -278,7 +278,7 @@ node apps/web/scripts/measure-r3.mjs --base http://127.0.0.1:3001 --out <dir> [-
 | 큰 숫자 1440 32px(새 값, 승인 필요) | 768+에서 32px, 390은 24px | 1440 가운데 폭 720 카드에서 24px 숫자는 보조 정보와 구분되지 않는다. 감독 결정. `xl`만 32로 커지고 `lg`는 24 고정 |
 | Motion으로 페이지 전환·모달·메뉴·토스트·접기 | Motion은 보상·미션 완료만. 페이지 전환은 Web Animations, 나머지는 CSS | Motion을 첫 로드 JS에 넣지 않으려고(S 구현 기록). 값이 바뀐 뒤에만 내려받아 첫 로드 증가가 홈 +6.1KB로 끝남 |
 | 전역 `prefers-reduced-motion` 한 줄 | 모듈마다 분기 + N7 | 이유가 구현 기록에 없다. N7이 분기 없는 새 CSS를 막는다. `design-lint-rules.mjs`의 N7 설명("전역 분기가 있어 집계")은 현재 코드와 맞지 않는 옛 문구이고, 실제로는 `design-lint-n-rules.mjs`의 `fail`이 적용된다(`RULES_N`이 `RULES`를 덮어씀) |
-| 버튼 누름 scale .98 | primary·passport는 `translateY(1px)` | 기존 `FanAction` 눌림 모양(`translateY(1px)`)을 바꾸지 않았다. 다른 변형에는 눌림 이동이 없다 |
+| 버튼 누름 scale .98 | 색만 바뀐다(2026-11-09 design-sync-1): primary `--fan-action-primary-active-bg`(accent-ink #ad1457), neutral·text·service·passport 안쪽 `--fan-action-neutral-active-bg`(line-subtle), danger `--fan-action-danger-active-bg`. 이동 0. 비활성·`aria-disabled`에는 그리지 않음 | 3장 '버튼 누름' 규칙에 맞춤. Weverse 공개 웹도 :active 이동이 없다(벤치마크) |
 | `FanSheet` 드래그로 닫기(Motion drag) | 넣지 않음 | 버튼·ESC·백드롭으로 닫는다. 이유는 기록에 없다 |
 | `FanDialog`를 Base UI Dialog로 교체(2차) | 기존 `AccessibleOverlay`를 안에 유지 | 포커스 가둠·스크롤 잠금·중첩·포커스 복귀가 이미 맞다. 외부 API는 같아 나중에 바꿔도 화면은 그대로 |
 | `FanInput`·`FanTextarea`·`FanSelect`·`FanField`, `FanCard` 신설 | **만들지 않음** | 구현되지 않았고 이유 기록도 없다(미완). 원시 입력은 C3 집계로 남고 카드는 `FanSurface`를 쓴다 |

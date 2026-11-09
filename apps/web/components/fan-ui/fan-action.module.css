@@ -240,9 +240,28 @@
   }
 }
 
-.primary:active:not(:disabled),
-.passport:active:not(:disabled) {
-  transform: translateY(1px);
+/* 눌림: 색만 바뀐다(이동 0). 비활성·aria-disabled에는 그리지 않는다. */
+.primary:active:not(:disabled, [aria-disabled="true"]) {
+  background: var(--fan-action-primary-active-bg);
+  filter: none;
+  transform: none;
+}
+
+.neutral:active:not(:disabled, [aria-disabled="true"]),
+.text:active:not(:disabled, [aria-disabled="true"]) {
+  background: var(--fan-action-neutral-active-bg);
+}
+
+/* 테두리가 바탕 그림인 변형은 안쪽만 바꾼다. */
+.service:active:not(:disabled, [aria-disabled="true"]),
+.passport:active:not(:disabled, [aria-disabled="true"]) {
+  background:
+    linear-gradient(var(--fan-action-neutral-active-bg), var(--fan-action-neutral-active-bg)) padding-box,
+    linear-gradient(var(--color-accent), var(--color-accent)) border-box;
+}
+
+.danger:active:not(:disabled, [aria-disabled="true"]) {
+  background: var(--fan-action-danger-active-bg);
 }
 
 @media (prefers-reduced-motion: reduce) {

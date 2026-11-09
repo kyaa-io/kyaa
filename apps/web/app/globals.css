@@ -17,6 +17,10 @@
   --fan-action-disabled-bg: #fff;
   --fan-action-disabled-ink: oklch(64% 0 0);
   --fan-action-disabled-text-ink: #6b6b6b;
+  /* 버튼 눌림(:active): 색만 바뀐다(DESIGN 3장 '버튼 누름', 이동 0). */
+  --fan-action-primary-active-bg: var(--color-accent-ink);
+  --fan-action-neutral-active-bg: var(--color-line-subtle);
+  --fan-action-danger-active-bg: color-mix(in srgb, var(--color-error) 80%, var(--color-ink));
   --color-error: #9f1239;
   --color-success: #17613f;
   --color-warning: #8a4b08;

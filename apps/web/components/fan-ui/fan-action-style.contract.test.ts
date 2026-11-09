@@ -84,6 +84,17 @@ describe("FanAction primary 1단계(design-sync-1)", () => {
   });
 });
 
+describe("FanAction pressed and disabled states (design-sync-1 ③)", () => {
+  it("changes only colour on press, from tokens, and never on disabled buttons", () => {
+    const tokens = readFileSync(resolve(process.cwd(), "app/globals.css"), "utf8");
+    for (const token of ["--fan-action-primary-active-bg: var(--color-accent-ink)", "--fan-action-neutral-active-bg: var(--color-line-subtle)", "--fan-action-danger-active-bg:"]) expect(tokens).toContain(token);
+    expect(actionCss).toMatch(/\.primary:active:not\(:disabled, \[aria-disabled="true"\]\) \{\s*background: var\(--fan-action-primary-active-bg\);/);
+    expect(actionCss).toMatch(/\.danger:active:not\(:disabled, \[aria-disabled="true"\]\) \{\s*background: var\(--fan-action-danger-active-bg\);/);
+    expect(actionCss).not.toMatch(/:active[^{]*\{[^}]*translateY/);
+    expect(actionCss).toMatch(/\.action\.action:disabled,\s*\.action\.action\[aria-disabled="true"\] \{[^}]*background: var\(--fan-action-disabled-bg\);[^}]*color: var\(--fan-action-disabled-ink\);/);
+  });
+});
+
 describe("FanAction icon layout contract", () => {
   it("keeps icon slots in flex flow, never absolute", () => {
     const css = actionCss;
