@@ -23,11 +23,12 @@ export function creatorCropScale(slug: string): number {
   return resolveCreatorImage({ slug, src: undefined }).crop.scale;
 }
 
+/** 홈 배너 그림 칸(2026-11-09 규격): 배너 안쪽 오른쪽, 1440+에서 약 572px, 768~1439에서 배너 폭의 40~42%, 모바일은 166px(home-hero-banner.module.css). */
 export function homeHeroSizes(): string {
-  return "(min-width: 1440px) 952px, (min-width: 1280px) calc(100vw - 488px), (min-width: 1024px) calc(100vw - 448px), (min-width: 768px) calc(100vw - 64px), calc(100vw - 32px)";
+  return "(min-width: 1440px) 572px, (min-width: 1024px) calc((100vw - 80px) * 0.42), (min-width: 768px) calc((100vw - 64px) * 0.4), 166px";
 }
 
-/** The GGGI campaign art fills 46% of the hero slot from 768px (managed-home-banner.module.css); below it, the full one column. */
+/** GGGI 캠페인 그림도 같은 칸이다. */
 export function homeHeroCampaignSizes(): string {
-  return "(min-width: 1440px) 438px, (min-width: 1280px) calc((100vw - 488px) * 0.46), (min-width: 1024px) calc((100vw - 448px) * 0.46), (min-width: 768px) calc((100vw - 64px) * 0.46), calc(100vw - 32px)";
+  return homeHeroSizes();
 }

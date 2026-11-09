@@ -20,7 +20,7 @@ try {
   await expect.poll(() => img.evaluate(i => i.complete && i.naturalWidth > 0)).toBe(true);
   const expected = width < 768 ? (locale === "ko" ? "elina-card.jpg" : "guide-blue-beret") : (locale === "ko" ? "hero-beach.jpg" : "hero-source.jpg");
   assert((await img.evaluate(i => i.currentSrc)).includes(expected));
-  assert.equal(await img.evaluate(i => getComputedStyle(i).objectFit), "contain");
+  assert.equal(await img.evaluate(i => getComputedStyle(i).objectFit), "cover");
   assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
   await expect(banner.getByRole("link")).toHaveAttribute("href", `/live/calendar?celebrity=elina&locale=${locale}`);
   const hidden = page.locator('article[aria-hidden="true"]'); await expect(hidden).toHaveAttribute("inert", "");
@@ -29,7 +29,7 @@ try {
   const file = path.join(output, `${locale}-${width}.png`); await page.screenshot({ path: file, fullPage: true }); result.screenshots.push(file);
   await page.getByRole("button", { name: locale === "ko" ? "다음 배너" : "Next banner", exact: true }).click();
   await expect(page.getByRole("heading", { name: locale === "ko" ? "엘리나와 함께 뱅크시 전시 보러 가요" : "See Banksy with Elina" })).toBeVisible();
-  assert.deepEqual(errors, []); result.checks.push(`${locale}/${width}: artwork, contain, locale CTA, inert, guide navigation, no overflow/errors`); await page.close();
+  assert.deepEqual(errors, []); result.checks.push(`${locale}/${width}: artwork, cover, locale CTA, inert, guide navigation, no overflow/errors`); await page.close();
  }
  const page = await browser.newPage({ viewport: { width: 360, height: 1000 }, reducedMotion: "reduce" });
  await page.goto(`${harness.baseURL}/?locale=en&scenario=fallback`);

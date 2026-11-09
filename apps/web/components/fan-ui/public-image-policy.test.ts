@@ -28,6 +28,6 @@ describe("public image delivery boundary", () => {
     expect(creatorCropScale("park-myungho")).toBe(2.3);
     expect(creatorCropScale("ifewknow")).toBe(2.45);
     expect(creatorCropScale("jenny-jeong")).toBe(1);
-    expect(homeHeroSizes()).toContain("952px");
+    expect(homeHeroSizes()).toContain("572px");
   });
 });

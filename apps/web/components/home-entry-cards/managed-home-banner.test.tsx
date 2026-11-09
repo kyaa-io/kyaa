@@ -23,7 +23,7 @@ describe("managed home banner", () => {
     expect(container.querySelector("[data-guide-art]")).toBeNull();
     expect(container.querySelector('[data-home-hero-banner][data-kind="live"]')).not.toBeNull();
   });
-  it("PERF-r5: the first slide hints its image from the head with the <picture>'s media, and the campaign art is sized to its 46% column", () => {
+  it("PERF-r5: the first slide hints its image from the head with the <picture>'s media, and the campaign art is sized to the banner picture slot", () => {
     const html = renderToString(<ManagedHomeBanner banner={gggiHomeBanner("ko")} locale="ko" priority />);
     const hints = [...html.matchAll(/<link rel="preload"[^>]*>/g)].map(match => match[0]);
     // One asset (no mobile original): one hint without media, its sizes covering every width.
@@ -32,7 +32,7 @@ describe("managed home banner", () => {
     const twoAssets = renderToString(<ManagedHomeBanner banner={guide({ category: "announcement", mobileImage: { ...bannerFixture.desktopImage, id: "99999999-0000-4000-8000-000000000001", url: "/images/groups/nchive-group.webp" } })} locale="ko" priority />);
     const media = [...twoAssets.matchAll(/<link rel="preload"[^>]*media="([^"]*)"/g)].map(match => match[1]);
     expect(media).toEqual(["(min-width: 768px)", "(max-width: 767px)"]);
-    expect(html).toContain("(min-width: 1440px) 438px");
+    expect(html).toContain("(min-width: 1440px) 572px");
     expect(renderToString(<ManagedHomeBanner banner={gggiHomeBanner("ko")} locale="ko" />)).not.toContain('rel="preload"');
   });
 });
