@@ -23,7 +23,8 @@ import {toContentLocale} from "@/i18n/locales";
 import type { FanPost } from "../domain/content";
 import { PostAttachmentViewer } from "./post-attachment-viewer";
 import { PostComposer } from "./post-composer";
-import { ContentActions, ContentTranslation } from "@/features/content-safety/ui/content-actions";
+import { ContentActions, ContentTranslation, ContentTranslationView } from "@/features/content-safety/ui/content-actions";
+import { useAutomaticTranslation } from "@/features/content-safety/ui/use-automatic-translation";
 import { AuthenticatedMedia } from "@/features/content-safety/ui/authenticated-media";
 import { waveMediaCopy } from "@/i18n/catalogs/features__fanpage__wave-media";
 import { ContentAssetImage } from "@/features/content-safety/ui/content-asset";
@@ -40,6 +41,12 @@ export function PostCard({ post, locale, onChanged, onDeleted, detail = false, r
   const initialReaction = useCallback((): PostReactionState => ({ reaction: post.reaction !== undefined ? post.reaction : post.liked ? "like" : null, likeCount: post.likeCount, dislikeCount: post.dislikeCount ?? null }), [post.reaction, post.liked, post.likeCount, post.dislikeCount]);
   const [reactionState, setReactionState] = useState(initialReaction);
   const liked = reactionState.reaction === "like", likeCount = reactionState.likeCount;
+  // A board post's title is the first line of its body, so title and body share one translation and one original toggle.
+  const bodyTexts = useMemo(() => [post.body], [post.body]);
+  const bodyTarget = useMemo(() => ({ targetType: "fan_post" as const, targetId: post.id, sourceRevision: post.revision }), [post.id, post.revision]);
+  const bodyTranslation = useAutomaticTranslation({ texts: bodyTexts, locale, target: bodyTarget, enabled: presentation === "board" });
+  // The header already shows the translated first line, so the translated article starts after it, as the source article does.
+  const bodyView = bodyTranslation.showing ? { ...bodyTranslation, texts: [bodyTranslation.texts[0]!.split("\n").slice(1).join("\n").replace(/^\n+/, "")] } : bodyTranslation;
   const href = `/c/${post.celebritySlug}/community/${post.id}?locale=${locale}${returnTo ? `&returnTo=${encodeURIComponent(returnTo)}` : ""}` as Route;
   // A server value read while a choice is still on its way is older than the choice; the read after it settles brings the answer.
   const reacting = useRef(false);
@@ -92,13 +99,13 @@ export function PostCard({ post, locale, onChanged, onDeleted, detail = false, r
   </Menu.Root> : <ContentActions targetType="fan_post" targetId={post.id} locale={locale} onChanged={onChanged} />;
   const loginHref = fanLoginHref(locale, `/c/${post.celebritySlug}/community/${post.id}?locale=${locale}${returnTo ? `&returnTo=${encodeURIComponent(returnTo)}` : ""}`);
   return <article ref={articleRef} className={`${styles.card} ${presentation === "board" ? boardStyles.article : ""}`} data-post-id={post.id}>
-    {boardDetail ? <PostDetailHeader title={post.body.split("\n")[0] || copy.community} author={post.author.nickname} avatarUrl={post.author.avatarUrl} authorBadge={<>{post.artist && <GroupArtistMark locale={locale} />}{post.celebritySlug === WAVE_FANPAGE_SLUG ? <WavePrivateBadge locale={locale} /> : post.visibility === "members" && <span className={styles.badge}>{copy.members}</span>}</>} createdAt={post.createdAt} viewCount={post.viewCount} likeCount={likeCount} commentCount={post.commentCount} locale={locale} menu={menu} /> : <header className={`${styles.meta} ${styles.postHeader}`}>{boardMetadata??<><img src={post.author.avatarUrl} alt="" width={32} height={32} /><div className={styles.postIdentity}><strong>{post.author.nickname}</strong>
+    {boardDetail ? <PostDetailHeader title={(bodyTranslation.showing ? bodyTranslation.texts[0]!.split("\n").find(line => line.trim()) : undefined) || post.body.split("\n")[0] || copy.community} titleLang={bodyTranslation.showing ? locale : undefined} author={post.author.nickname} avatarUrl={post.author.avatarUrl} authorBadge={<>{post.artist && <GroupArtistMark locale={locale} />}{post.celebritySlug === WAVE_FANPAGE_SLUG ? <WavePrivateBadge locale={locale} /> : post.visibility === "members" && <span className={styles.badge}>{copy.members}</span>}</>} createdAt={post.createdAt} viewCount={post.viewCount} likeCount={likeCount} commentCount={post.commentCount} locale={locale} menu={menu} /> : <header className={`${styles.meta} ${styles.postHeader}`}>{boardMetadata??<><img src={post.author.avatarUrl} alt="" width={32} height={32} /><div className={styles.postIdentity}><strong>{post.author.nickname}</strong>
       {post.celebritySlug === WAVE_FANPAGE_SLUG ? <WavePrivateBadge locale={locale} /> : <span className={styles.badge}>{post.visibility === "members" ? copy.members : copy.public}</span>}
       </div>
       {menu}
     </>} </header>}
-    {presentation === "board" && document && <div data-post-body><TranslatedRichPostBody document={document} sourceText={post.body} target={{ targetType: "fan_post", targetId: post.id, sourceRevision: post.revision }} locale={locale} renderAttachment={renderAttachment} /></div>}
-    {presentation === "board" && !document && displayedBody && <div data-post-body><ContentTranslation sourceText={post.body} targetType="fan_post" targetId={post.id} locale={locale} sourceRevision={post.revision}><p className={styles.body}>{displayedBody}</p></ContentTranslation></div>}
+    {presentation === "board" && document && <div data-post-body><TranslatedRichPostBody document={document} translation={bodyView} locale={locale} renderAttachment={renderAttachment} /></div>}
+    {presentation === "board" && !document && displayedBody && <div data-post-body><ContentTranslationView translation={bodyView} locale={locale}><p className={styles.body}>{displayedBody}</p></ContentTranslationView></div>}
     <div className={styles.postMedia} data-post-media="">
     {presentation === "board" && detail ? <PostAttachmentViewer key={[...looseAssets.map(asset=>asset.id),looseVideo?.id].join(":")} assets={looseAssets} video={looseVideo} publicFanPost={post.celebritySlug!==WAVE_FANPAGE_SLUG} locale={locale}/> : <>
     {post.assets.length > 0 && <div className={`${styles.photos} ${styles.postPhotos}`}>{post.assets.map(asset => <ContentAssetImage key={asset.id} asset={asset} locale={locale} alt={copy.photo} />)}</div>}

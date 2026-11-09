@@ -9,7 +9,7 @@ import { shouldOfferTranslation } from "../domain/translation-eligibility";
 import styles from "./content.module.css";
 
 type Target = { targetType: TargetType; targetId: string; sourceRevision: number };
-type AutomaticTranslation = { observeElement: (node: HTMLElement | null) => void; eligible: boolean; showing: boolean; texts: readonly string[]; busy: boolean; error: string; toggle: () => void };
+export type AutomaticTranslation = { observeElement: (node: HTMLElement | null) => void; eligible: boolean; showing: boolean; texts: readonly string[]; busy: boolean; error: string; toggle: () => void };
 type Result = { key: string; texts?: readonly string[]; error?: string; busy?: boolean };
 const requests = new Map<string, Promise<readonly string[]>>();
 /** After the display endpoint answers that it is unavailable (for example no translation key is set), automatic attempts stop for a while,

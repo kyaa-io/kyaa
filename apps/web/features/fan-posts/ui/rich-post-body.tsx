@@ -6,16 +6,13 @@ import { RichBody, type RichAttachmentRenderer } from "@/components/editor/rich-
 import { editorText } from "@/components/editor/editor-copy";
 import { richDocumentAttachments, type RichDocument } from "@/components/editor/rich-document";
 import { AuthenticatedMedia } from "@/features/content-safety/ui/authenticated-media";
-import { TranslationControl, useAutomaticTranslation } from "@/features/content-safety/ui/use-automatic-translation";
-import type { TargetType } from "../domain/content";
+import { TranslationControl, type AutomaticTranslation } from "@/features/content-safety/ui/use-automatic-translation";
 import type { AppLocale } from "@/i18n/locales";
 import contentStyles from "@/features/content-safety/ui/content.module.css";
 import styles from "./post-detail.module.css";
 
 /** Formatted source text, or its translation as plain text with the post's media kept. The stored document never changes. */
-export function TranslatedRichPostBody({ document, sourceText, target, locale, renderAttachment }: { document: RichDocument; sourceText: string; target: { targetType: TargetType; targetId: string; sourceRevision: number }; locale: AppLocale; renderAttachment: RichAttachmentRenderer }) {
-  const texts = useMemo(() => [sourceText], [sourceText]);
-  const { observeElement, ...translation } = useAutomaticTranslation({ texts, locale, target });
+export function TranslatedRichPostBody({ document, translation: { observeElement, ...translation }, locale, renderAttachment }: { document: RichDocument; translation: AutomaticTranslation; locale: AppLocale; renderAttachment: RichAttachmentRenderer }) {
   const attachments = useMemo(() => richDocumentAttachments(document), [document]);
   return <div ref={observeElement}>
     {translation.showing

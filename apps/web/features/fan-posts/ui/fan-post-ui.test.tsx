@@ -39,6 +39,7 @@ vi.mock("@/features/content-safety/ui/use-content-mutation", () => ({
 vi.mock("@/features/content-safety/ui/content-actions", () => ({
   ContentActions: () => null,
   ContentTranslation: ({ children }: { children: ReactNode }) => children,
+  ContentTranslationView: ({ children }: { children: ReactNode }) => children,
 }));
 vi.mock("@/features/fanpage/ui/use-community-resource", () => ({
   useCommunityResource: (url: string) => {
