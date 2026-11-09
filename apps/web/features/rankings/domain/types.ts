@@ -108,7 +108,7 @@ export const homeFanRankingSchema = z.object({
   /** Days the fan weekGain comparison spans (20261217010000). Optional: absent before that migration. */
   weekGainDays: z.number().int().min(1).max(7).nullable().optional(),
   /** score is the metric's value; hearts and points name the values (points only on the points metric). */
-  rows: z.array(platformFanRankingRowSchema.extend({ delta, favorite, weekGain: z.number().int().nullable().optional(), hearts: count.optional(), points: count.nullable().optional() })).max(HOME_RANKING_LIMIT),
+  rows: z.array(platformFanRankingRowSchema.extend({ delta, favorite, fans: count.optional(), liveNow: z.boolean().optional(), isNew: z.boolean().optional(), weekGain: z.number().int().nullable().optional(), hearts: count.optional(), points: count.nullable().optional() })).max(HOME_RANKING_LIMIT),
   me: z.object({ rank: z.number().int().min(1), score: count, inTop: z.boolean(), hearts: count.optional(), points: count.nullable().optional(), delta: delta.optional() }).nullable(),
 });
 export type HomeFanRanking = z.infer<typeof homeFanRankingSchema>;
@@ -125,6 +125,8 @@ export const homeCreatorRankingRowSchema = z.object({
   fans: count.optional(),
   /** An administrator turned on the 찐팬 100 challenge for this creator. */
   challenge: z.boolean(),
+  liveNow: z.boolean().optional(),
+  isNew: z.boolean().optional(),
   delta,
   /** The metric gained over the rolling seven days (E2 ①). null on the first day of history. May be negative when fans left. */
   weekGain: z.number().int().nullable(),

@@ -1,7 +1,6 @@
 "use client";
 import type { Route } from "next";
 import Link from "next/link";
-import { ArrowRight } from "@/components/icons";
 import { useSyncExternalStore } from "react";
 
 import { FanHeading } from "@/components/fan-ui/fan-heading";
@@ -54,7 +53,7 @@ function FanBlock({ locale, live, metric, guest, scope }: { locale: AppLocale; l
     <MetricLine locale={locale} tab="fans" metric={metric} computedAt={at(live)} onChange={(next: RankingMetric) => choose({ fans: next as HomeFanMetric })} />
     <Body locale={locale} live={live}>{(data) => <>
       {/* key: a metric change draws its rows afresh (no slide from the other metric's places). */}
-      <FanRows key={metric} locale={locale} ranking={data} metric={metric} show={ROWS} fill={ROWS} scope={scope} />
+      <FanRows compact key={metric} locale={locale} ranking={data} metric={metric} show={ROWS} fill={ROWS} scope={scope} />
       <Foot>{guest
         ? <FootLink href={fanLoginHref(locale, `/?locale=${locale}`) as Route}>{rankingsText(locale, "rkSeeMyRank")}</FootLink>
         : <MyRank locale={locale} ranking={data} metric={metric} />}</Foot>
@@ -66,7 +65,7 @@ function CreatorBlock({ locale, live, metric, guest, scope }: { locale: AppLocal
   return <>
     <MetricLine locale={locale} tab="creators" metric={metric} computedAt={at(live)} onChange={(next: RankingMetric) => choose({ creators: next as HomeCreatorMetric })} />
     <Body locale={locale} live={live}>{(data) => <>
-      <CreatorRows key={metric} locale={locale} ranking={data} metric={metric} show={ROWS} fill={ROWS} scope={scope} />
+      <CreatorRows compact key={metric} locale={locale} ranking={data} metric={metric} show={ROWS} fill={ROWS} scope={scope} />
       <Foot><FootLink href={rankingsPageHref(locale, "creators", metric, guest)}>{rankingsText(locale, "rkViewAll")}</FootLink></Foot>
     </>}</Body>
   </>;
@@ -84,7 +83,7 @@ export function HomeRankingCard({ locale, headingId = "home-ranking-heading" }: 
   const fans = useLiveRanking(rankingUrl("fans", choice.fans, locale), parseFans);
   const creators = useLiveRanking(rankingUrl("creators", choice.creators, locale), parseCreators);
   const guest = auth.ready && !auth.authenticated;
-  const all = (tab: RankingsTab) => <Link className={styles.all} href={rankingsPageHref(locale, tab, tab === "fans" ? choice.fans : choice.creators, guest)}>{rankingsText(locale, "rkViewAll")}<ArrowRight aria-hidden="true" /></Link>;
+  const all = (tab: RankingsTab) => <Link className={styles.all} href={rankingsPageHref(locale, tab, tab === "fans" ? choice.fans : choice.creators, guest)}>{rankingsText(locale, "rkViewAll")}<span aria-hidden="true">›</span></Link>;
   const head = (id: string, text: string, tab: RankingsTab | null) => <div className={styles.head}><FanHeading id={id}>{text}</FanHeading>{tab ? all(tab) : null}</div>;
   return <section className={styles.block} aria-labelledby={headingId} data-home-ranking>
     <div className={`${styles.card} ${styles.narrow}`}>

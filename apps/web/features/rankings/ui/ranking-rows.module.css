@@ -1,8 +1,8 @@
 /* 플랫폼 랭킹 행(홈 카드·/rankings 공용, 랭킹 2단계). 행 56px, 열 24·40·이름·값·등락 36 하나(등락 칸은 늘 그린다). 금액은 없다.
    회색 채움 없음(U-1): 호버·내 순위는 옅은 핑크, 자리표시는 흰 바탕과 헤어라인. */
-.metricLine { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); min-width: 0; }
-.metricTabs { flex: 0 1 15rem; min-width: 0; }
-.updated { flex: none; color: var(--color-muted); font-size: var(--fan-metadata-size); font-weight: 400; font-variant-numeric: tabular-nums; }
+.metricLine { display: grid; gap: var(--space-3); min-width: 0; }
+.metricTabs { min-width: 0; }
+.updated { grid-row: 1; white-space: nowrap; color: var(--color-muted); font-size: var(--fan-metadata-size); font-weight: 400; font-variant-numeric: tabular-nums; }
 .rows { display: grid; margin: 0; padding: 0; list-style: none; align-content: start; }
 .rows > li { min-width: 0; }
 .row { display: grid; grid-template-columns: 24px 40px minmax(0, 1fr) auto 36px; align-items: center; column-gap: var(--space-3); box-sizing: border-box; height: 56px; min-width: 0; color: var(--color-ink); text-decoration: none; }
@@ -46,3 +46,14 @@ a.row { border-radius: var(--radius-control); }
 .me strong { font-size: var(--fan-item-title-size); font-weight: 800; }
 .meNone { color: var(--color-muted); }
 @media (hover: hover) and (pointer: fine) { a.row:hover, .login:hover { background: var(--color-accent-soft); } }
+
+/* 홈만 한 줄: 순위·등락 / 사진·이름·LIVE / 찐팬·하트·최근 7일 증감. */
+.compactRow { grid-template-columns: 20px 32px 24px minmax(0, 1fr) auto; column-gap: var(--space-1); white-space: nowrap; }
+.compactRow .rank { width: 20px; }
+.compactRow .nameLine { gap: var(--space-1); }
+.compactDelta { color: var(--color-muted); font-size: var(--fan-metadata-size); font-weight: var(--fan-item-title-weight); font-variant-numeric: tabular-nums; text-align: center; }
+.compactDelta[data-direction="up"] { color: var(--color-accent-ink); }
+.compactValues { display: inline-flex; align-items: center; gap: var(--space-2); font-size: var(--fan-metadata-size); font-weight: var(--fan-item-title-weight); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.compactNew { flex: none; color: var(--color-accent-ink); font-size: var(--fan-badge-size); font-weight: var(--fan-item-title-weight); }
+.live { display: inline-flex; flex: none; align-items: center; }
+.liveDot { width: var(--space-2); height: var(--space-2); border-radius: 50%; background: var(--color-error); }

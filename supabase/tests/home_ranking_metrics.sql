@@ -196,8 +196,8 @@ begin
   r := public.read_home_fan_ranking_v2(pg_temp.id('viewer'), 'hearts', 50);
   if (select array_agg(k order by k) from jsonb_object_keys(r -> 'me') k) <> array['delta', 'hearts', 'inTop', 'points', 'rank', 'score'] then raise exception '11 me keys: %', r -> 'me'; end if;
   if (select array_agg(k order by k) from jsonb_object_keys(r) k) <> array['builtDay', 'comparable', 'computedAt', 'day', 'failedAt', 'me', 'metric', 'previousDay', 'rows', 'state', 'today', 'weekGainDays'] then raise exception '11 head keys: %', r; end if;
-  if (select array_agg(k order by k) from jsonb_object_keys(r -> 'rows' -> 0) k) <> array['characterId', 'delta', 'favorite', 'hearts', 'isMe', 'nickname', 'points', 'rank', 'score', 'tier', 'weekGain'] then raise exception '11 row keys: %', r -> 'rows' -> 0; end if;
-  if (select array_agg(k order by k) from jsonb_object_keys(public.read_home_creator_ranking_v2('ko', 'fans', 5) -> 'rows' -> 0) k) <> array['challenge', 'delta', 'fans', 'hearts', 'imageUrl', 'name', 'rank', 'score', 'slug', 'weekGain'] then raise exception '11 creator row keys'; end if;
+  if (select array_agg(k order by k) from jsonb_object_keys(r -> 'rows' -> 0) k) <> array['characterId', 'delta', 'fans', 'favorite', 'hearts', 'isMe', 'isNew', 'liveNow', 'nickname', 'points', 'rank', 'score', 'tier', 'weekGain'] then raise exception '11 row keys: %', r -> 'rows' -> 0; end if;
+  if (select array_agg(k order by k) from jsonb_object_keys(public.read_home_creator_ranking_v2('ko', 'fans', 5) -> 'rows' -> 0) k) <> array['challenge', 'delta', 'fans', 'hearts', 'imageUrl', 'isNew', 'liveNow', 'name', 'rank', 'score', 'slug', 'weekGain'] then raise exception '11 creator row keys'; end if;
 
   -- 14: a member with nothing (no hearts, points, friends or talks) as viewer: me null, rows as for anyone.
   r := public.read_home_fan_ranking_v2(pg_temp.id('empty'), 'points', 50);

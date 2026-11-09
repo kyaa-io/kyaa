@@ -189,7 +189,7 @@ export function createRankingsHandlers(deps: RankingsDependencies) {
         const raw = obj(await readHome("read_home_creator_ranking_v2", { p_locale: lang, p_metric: metric, p_limit: member ? limit : Math.min(limit, HOME_GUEST_LIMIT) }));
         const rows = arr(raw.rows).map((row) => {
           const r = obj(row);
-          return { rank: r.rank, slug: r.slug, name: r.name, imageUrl: r.imageUrl ?? null, score: r.score, hearts: r.hearts, fans: r.fans, challenge: r.challenge === true, delta: r.delta ?? null, weekGain: r.weekGain ?? null };
+          return { rank: r.rank, slug: r.slug, name: r.name, imageUrl: r.imageUrl ?? null, score: r.score, hearts: r.hearts, fans: r.fans, liveNow: r.liveNow === true, isNew: r.isNew === true, challenge: r.challenge === true, delta: r.delta ?? null, weekGain: r.weekGain ?? null };
         });
         return Response.json(checked(homeCreatorRankingSchema, { ...head(raw, metric), weekGainDays: raw.weekGainDays ?? null, rows }), { headers: listHeaders(request, member) });
       }
@@ -199,7 +199,7 @@ export function createRankingsHandlers(deps: RankingsDependencies) {
       const me = obj(raw.me);
       const rows = arr(raw.rows).map((row) => {
         const r = obj(row);
-        return { rank: r.rank, score: r.score, hearts: r.hearts, points: r.points ?? null, nickname: r.nickname, characterId: r.characterId, tier: r.tier ?? null,
+        return { rank: r.rank, score: r.score, hearts: r.hearts, points: r.points ?? null, fans: r.fans, liveNow: r.liveNow === true, isNew: r.isNew === true, nickname: r.nickname, characterId: r.characterId, tier: r.tier ?? null,
           isMe: appUserId !== null && r.isMe === true, delta: r.delta ?? null, favorite: favoriteIn(r.favorite, lang), weekGain: r.weekGain ?? null };
       });
       const body = checked(homeFanRankingSchema, {
