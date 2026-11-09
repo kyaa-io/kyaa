@@ -6,6 +6,7 @@ import type { HomeBanner } from "@/features/home/domain/home-banner";
 const state = vi.hoisted(() => ({ authenticated: false, joined: [] as unknown[], joinedFails: false, posts: [] as unknown[], postsFail: false, postsLoading: false }));
 vi.mock("@/features/auth/client/cognito-auth", () => ({ useByUsAuth: () => ({ ready: true, authenticated: state.authenticated, user: null, getAccessToken: async () => "t" }) }));
 vi.mock("./use-group-resource", () => ({
+  useGroupRequest: () => ({ ready: true, authenticated: state.authenticated, ownerKey: "o", request: vi.fn() }),
   useGroupResource: (url: string | null) => url === null ? { ready: true, authenticated: state.authenticated, loading: false, error: false, data: null }
     : { ready: true, authenticated: state.authenticated, loading: false, error: state.joinedFails, data: { items: state.joined, nextCursor: null } },
 }));
@@ -28,7 +29,10 @@ afterEach(cleanup);
 
 it("my artists: the add slot first; a guest sees three empty rings and the sign-in button, without a new-post dot", () => {
   const { container } = render(<MyArtists locale="ko" loginPath="/pages/groups" />);
-  expect(screen.getByRole("heading", { name: "내 아티스트" })).toBeInTheDocument();
+  const heading = screen.getByRole("heading", { name: "내 아티스트" });
+  // The sign-in button sits on the title row, so the four circles (add + three rings) fit one row without being cut.
+  expect(heading.parentElement).toContainElement(screen.getByRole("link", { name: "로그인" }));
+  expect(container.querySelector("ul")).toHaveAttribute("data-ghost");
   expect(screen.getByRole("link", { name: "모임 찾기" })).toBeInTheDocument();
   expect(container.querySelectorAll("li[aria-hidden='true']")).toHaveLength(3);
   expect(screen.getByRole("link", { name: "로그인" }).getAttribute("href")).toContain("/login");
@@ -59,6 +63,24 @@ it("hot posts: five rows from ten answers, 펼치기 shows all ten from the same
   expect(rows()).toHaveLength(10);
   fireEvent.click(screen.getByRole("button", { name: "접기" }));
   expect(rows()).toHaveLength(5);
+});
+
+it("hot posts: a row draws its page's picture, or a white ring with the first letter — never the grey figure", () => {
+  state.posts = [{ ...post(1), pageImageUrl: "https://x/p1.webp" }, post(2)];
+  const { container } = render(<HotPosts locale="ko" />);
+  const rows = container.querySelectorAll("ul > li[data-row=hot-post]");
+  expect(rows[0]!.querySelector("[data-creator-avatar] img")).toHaveAttribute("src", expect.stringContaining("p1.webp"));
+  expect(rows[1]!.querySelector("[data-creator-avatar]")).toBeNull();
+  expect(rows[1]!.querySelector("[aria-hidden=true]")).toHaveTextContent("아");
+});
+
+it("hot posts: six answers stay six real rows when closed and fill to ten rows when open, so the open block is as high as with ten", () => {
+  state.posts = Array.from({ length: 6 }, (_, i) => post(i + 1));
+  const { container } = render(<HotPosts locale="ko" />);
+  expect(container.querySelectorAll("ul > li")).toHaveLength(5);
+  fireEvent.click(screen.getByRole("button", { name: "펼치기" }));
+  expect(container.querySelectorAll("ul > li")).toHaveLength(10);
+  expect(container.querySelectorAll("ul > li[data-row=hot-post]")).toHaveLength(6);
 });
 
 it("hot posts: two answers keep five rows (R8-RULE-1), zero answers say so on the first row, and the expand button stays but is off", () => {

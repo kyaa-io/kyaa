@@ -12,6 +12,8 @@ export const popularPostSchema = z.object({
   commentCount: z.number().int().nonnegative(),
   viewCount: z.number().int().nonnegative().nullable(),
   asset: z.object({ id: z.string().uuid(), width: z.number().int().positive(), height: z.number().int().positive() }).nullable(),
+  /** The picture of the page the post is on; the server adds it to each row, absent when the page has none. */
+  pageImageUrl: z.string().nullable().optional(),
 }).strict();
 export type PopularPost = z.infer<typeof popularPostSchema>;
 

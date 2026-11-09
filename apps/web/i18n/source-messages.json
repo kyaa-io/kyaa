@@ -17381,6 +17381,18 @@
     "source": "features/rankings/ui/rankings-copy",
     "id": "features/rankings/ui/rankings-copy:rkFanTab"
   },
+  "rkFanTabShort": {
+    "en": "Fans",
+    "ko": "팬",
+    "source": "features/rankings/ui/rankings-copy",
+    "id": "features/rankings/ui/rankings-copy:rkFanTabShort"
+  },
+  "rkCreatorTabShort": {
+    "en": "Creators",
+    "ko": "크리에이터",
+    "source": "features/rankings/ui/rankings-copy",
+    "id": "features/rankings/ui/rankings-copy:rkCreatorTabShort"
+  },
   "rkCreatorRankTab": {
     "en": "Creator ranking",
     "ko": "크리에이터 순위",

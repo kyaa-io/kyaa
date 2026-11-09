@@ -192,7 +192,7 @@ function CreatorPanel({ locale, ranking, scope }: { locale: AppLocale; ranking: 
         {ranking.comparable ? <Delta locale={locale} delta={row.delta} /> : null}
       </Link>
     </li>)}<Placeholders from={shown.length} emptyText={rankingsText(locale, "rkEmpty")} /></Rows>
-    <Foot end={null} />
+    <Foot end={<Link className={styles.login} href={`/rankings?locale=${locale}&tab=creators` as Route}>{rankingsText(locale, "rkViewAll")}<ArrowRight aria-hidden="true" /></Link>} />
   </>;
 }
 
@@ -247,24 +247,25 @@ export function HomeRankingCard({ locale, headingId = "home-ranking-heading" }: 
     return <><span className={styles.period}>{rankingsText(locale, kind === "creators" ? "rkCumulativeFans" : "rkCumulativeHearts")}</span>{text ? <time className={styles.updated} dateTime={at!}>{text}</time> : null}</>;
   };
   const at = computedAt(tab === "creators" ? creators : fans);
+  const heading = (id: string, text: string, kind: "fans" | "creators", at: string | null) => <div className={styles.headGroup}>
+    <div className={styles.head}><FanHeading id={id}>{text}</FanHeading>{kind === "fans" ? all(kind) : null}</div>
+    <div className={styles.sub}>{sub(kind, at)}</div>
+  </div>;
   return <section className={styles.block} aria-labelledby={headingId} data-home-ranking>
     <div className={`${styles.card} ${styles.narrow}`}>
-      <div className={styles.head}>
-        <div className={styles.title}><FanHeading id={headingId}>{rankingsText(locale, "rkTitle")}</FanHeading>{sub(tab === "creators" ? "creators" : "fans", at)}</div>
-        {all(tab)}
-      </div>
+      {heading(headingId, rankingsText(locale, "rkTitle"), tab === "creators" ? "creators" : "fans", at)}
       <FanTabs variant="segment" panels label={rankingsText(locale, "rkTitle")} current={tab} items={[
-        { key: "fans", label: rankingsText(locale, "rkFanTab"), onSelect: () => chooseTab("fans"), panel: <FanBody locale={locale} live={fans} guest={guest} scope="n" /> },
-        { key: "creators", label: rankingsText(locale, "rkCreatorRankTab"), onSelect: () => chooseTab("creators"), panel: <CreatorBody locale={locale} live={creators} scope="n" /> },
+        { key: "fans", label: rankingsText(locale, "rkFanTabShort"), onSelect: () => chooseTab("fans"), panel: <FanBody locale={locale} live={fans} guest={guest} scope="n" /> },
+        { key: "creators", label: rankingsText(locale, "rkCreatorTabShort"), onSelect: () => chooseTab("creators"), panel: <CreatorBody locale={locale} live={creators} scope="n" /> },
       ]} />
     </div>
     <div className={styles.wide}>
       <section className={styles.card} aria-labelledby={`${headingId}-fans`}>
-        <div className={styles.head}><div className={styles.title}><FanHeading id={`${headingId}-fans`}>{rankingsText(locale, "rkFanTitle")}</FanHeading>{sub("fans", computedAt(fans))}</div>{all("fans")}</div>
+        {heading(`${headingId}-fans`, rankingsText(locale, "rkFanTitle"), "fans", computedAt(fans))}
         <FanBody locale={locale} live={fans} guest={guest} scope="w" />
       </section>
       <section className={styles.card} aria-labelledby={`${headingId}-creators`}>
-        <div className={styles.head}><div className={styles.title}><FanHeading id={`${headingId}-creators`}>{rankingsText(locale, "rkCreatorTab")}</FanHeading>{sub("creators", computedAt(creators))}</div>{all("creators")}</div>
+        {heading(`${headingId}-creators`, rankingsText(locale, "rkCreatorTab"), "creators", computedAt(creators))}
         <CreatorBody locale={locale} live={creators} scope="w" />
       </section>
     </div>

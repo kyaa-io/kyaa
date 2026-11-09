@@ -13,8 +13,8 @@ const settled = <T,>(value: T): Promise<HomeQueryResult<T>> => Promise.resolve({
 const queries = {
   featuredLives: settled(homeQueryData.featuredLives),
   celebrities: settled(homeQueryData.celebrities),
-  celebrityLives: settled(homeQueryData.celebrityLives),
   homeBanners: settled(homeQueryData.homeBanners),
+  homeSlots: settled({}),
   elinaRaffles: settled(homeQueryData.elinaRaffles),
 };
 window.fetch = (async (input: RequestInfo | URL) => {
@@ -25,6 +25,6 @@ window.fetch = (async (input: RequestInfo | URL) => {
 document.documentElement.lang = locale;
 createRoot(document.getElementById("root")!).render(
   <LocaleProvider initialLocale={locale}>
-    <StreamingGuestHome queries={queries} publishedCreatorSlugs={Promise.resolve(homeQueryData.celebrities.map(({ slug }) => slug))} locale={locale} initialOwnedOnly={undefined} initialRole="all" />
+    <StreamingGuestHome queries={queries} locale={locale} />
   </LocaleProvider>,
 );

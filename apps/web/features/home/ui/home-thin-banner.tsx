@@ -1,7 +1,5 @@
-"use client";
 import Link from "next/link";
 import type { Route } from "next";
-import { useBannerSlots } from "@/components/banner-slot/banner-slot-source";
 import { FanTag } from "@/components/fan-ui/fan-tag";
 import { bannerCategoryLabel } from "@/features/home/domain/banner-category";
 import { localizedBannerHref, type HomeBanner } from "@/features/home/domain/home-banner";
@@ -24,10 +22,4 @@ export function ThinBanner({ banner, locale }: { banner: HomeBanner; locale: App
       ? <a className={styles.link} href={href} target="_blank" rel={ad ? "sponsored noopener noreferrer" : "noopener noreferrer"} data-outbound-placement="content" data-outbound-kind="external">{picture}{mark}</a>
       : <Link className={styles.link} href={href as Route}>{picture}{mark}</Link>}
   </div>;
-}
-
-/** The managed `home_below_board` slot as a thin strip under the ranking. Nothing is drawn while it loads, when it is empty or when it fails (R8-RULE-1: the only block allowed to leave). */
-export function HomeThinBanner({ locale }: { locale: AppLocale }) {
-  const banner = useBannerSlots("home", locale).home_below_board;
-  return banner ? <ThinBanner key={banner.id} banner={banner} locale={locale} /> : null;
 }

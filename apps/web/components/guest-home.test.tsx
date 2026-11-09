@@ -1,6 +1,6 @@
-import type { HomeBanner } from "@/features/home/domain/home-banner";
+import type { BannerSlotMap, HomeBanner } from "@/features/home/domain/home-banner";
 import type { LiveEventResponse } from "@/features/live/domain/live-event";
-import type { PublishedCelebrity, PublishedCelebrityLive } from "@/server/content/content-domain";
+import type { PublishedCelebrity } from "@/server/content/content-domain";
 import type { RaffleList } from "@/features/benefit/domain/raffle";
 import { settleHomeQuery, type HomeQueries } from "./home-query-stream";
 import { APP_LOCALES } from "@/i18n/locales";
@@ -89,6 +89,33 @@ describe("canonical 03 guest home", () => {
     expect(screen.queryByTestId("home-community-preview")).toBeNull();
     expect(screen.queryByTestId("home-challenges")).toBeNull();
     expect(screen.getAllByTestId("home-ranking")).toHaveLength(1);
+  });
+
+  it("draws the thin banner from the slot read with the page, before the LIVE list, and nothing when the slot is empty", () => {
+    const thin = { ...bannerFixture, id: "44444444-4444-4444-8444-444444444444", title: "얇은 띠", placement: "home_below_board" as const };
+    const first = render(<GuestHome {...defaultProps} featuredLives={[]} homeSlots={{ home_below_board: thin }} />);
+    const strip = first.container.querySelector("[data-home-thin-banner]")!;
+    expect(strip).toBeTruthy();
+    expect(screen.getByTestId("home-ranking").compareDocumentPosition(strip) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(strip.compareDocumentPosition(first.container.querySelector("#upcoming")!) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    first.unmount();
+    const second = render(<GuestHome {...defaultProps} featuredLives={[]} />);
+    expect(second.container.querySelector("[data-home-thin-banner]")).toBeNull();
+  });
+
+  it("keeps the notice, gallery and shorts places at their fixed sizes with a quiet placeholder until their data exists (7차 임시 구성)", () => {
+    const { container } = render(<GuestHome {...defaultProps} featuredLives={[]} />);
+    const notices = container.querySelector("[data-home-block=notices]")!;
+    const gallery = container.querySelector("[data-home-block=gallery]")!;
+    expect(within(notices as HTMLElement).getByRole("heading", { name: "공지사항" })).toBeInTheDocument();
+    expect(within(notices as HTMLElement).getByText("아직 공지 없음")).toBeInTheDocument();
+    expect(notices.querySelectorAll("li")).toHaveLength(5);
+    expect(within(gallery as HTMLElement).getByRole("heading", { name: "갤러리" })).toBeInTheDocument();
+    expect(within(gallery as HTMLElement).getByRole("heading", { name: "숏츠" })).toBeInTheDocument();
+    expect(gallery.querySelectorAll("[data-row=photo-placeholder]")).toHaveLength(8);
+    expect(gallery.querySelectorAll("[data-row=short-placeholder]")).toHaveLength(4);
+    expect(notices.compareDocumentPosition(gallery) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(gallery.compareDocumentPosition(container.querySelector("#upcoming")!) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });
 
   it.each(APP_LOCALES)("shows the approved Kyaa slogan in %s", (locale) => {
@@ -523,19 +550,18 @@ describe("streamed Home sections", () => {
     const pending = {
       homeBanners: deferred<readonly HomeBanner[]>(),
       celebrities: deferred<readonly PublishedCelebrity[]>(),
-      celebrityLives: deferred<readonly PublishedCelebrityLive[]>(),
+      homeSlots: deferred<BannerSlotMap>(),
       featuredLives: deferred<readonly LiveEventResponse[]>(),
       elinaRaffles: deferred<RaffleList>(),
     };
     const queries: HomeQueries = {
       homeBanners: settleHomeQuery(pending.homeBanners.promise),
       celebrities: settleHomeQuery(pending.celebrities.promise),
-      celebrityLives: settleHomeQuery(pending.celebrityLives.promise),
+      homeSlots: settleHomeQuery(pending.homeSlots.promise),
       featuredLives: settleHomeQuery(pending.featuredLives.promise),
       elinaRaffles: settleHomeQuery(pending.elinaRaffles.promise),
     };
-    const publishedCreatorSlugs = queries.celebrities.then(result => result.status === "fulfilled" ? result.value.map(item => item.slug) : null);
-    return { pending, queries, publishedCreatorSlugs };
+    return { pending, queries };
   }
 
   it("shows the real GGGI banner immediately and releases each section without waiting for optional queries", async () => {
@@ -544,7 +570,7 @@ describe("streamed Home sections", () => {
     await act(async () => { view = render(<StreamingGuestHome {...home} locale="ko" />); });
     expect(view.container.querySelector("[data-managed-home-banner]")).toHaveTextContent("GGGI");
     expect(screen.queryByRole("link", { name: "엘리나와 함께 뱅크시 전시 보러 가요" })).not.toBeInTheDocument();
-    await act(async () => { home.pending.celebrities.resolve(celebrities); home.pending.celebrityLives.resolve([]); home.pending.featuredLives.resolve([featuredLive]); });
+    await act(async () => { home.pending.celebrities.resolve(celebrities); home.pending.homeSlots.resolve({}); home.pending.featuredLives.resolve([featuredLive]); });
     expect(await screen.findByText(featuredLive.live.title)).toBeInTheDocument();
     expect(screen.queryByRole("link", { name: "엘리나와 함께 뱅크시 전시 보러 가요" })).not.toBeInTheDocument();
     await act(async () => { home.pending.homeBanners.resolve([bannerFixture]); home.pending.elinaRaffles.resolve({ raffles: elinaRaffles }); });
@@ -560,7 +586,7 @@ describe("streamed Home sections", () => {
       if (failed !== "homeBanners") home.pending.homeBanners.resolve([bannerFixture]);
       home.pending.celebrities.resolve(celebrities);
       if (failed !== "featuredLives") home.pending.featuredLives.resolve([featuredLive]);
-      home.pending.celebrityLives.resolve([]);
+      home.pending.homeSlots.resolve({});
       if (failed !== "elinaRaffles") home.pending.elinaRaffles.resolve({ raffles: elinaRaffles });
     });
     expect(view.container.querySelector("[data-managed-home-banner]")).toHaveTextContent("GGGI");

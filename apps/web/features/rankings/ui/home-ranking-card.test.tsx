@@ -45,7 +45,7 @@ it("lists true fans by all-time hearts with the move since yesterday, and asks a
   expect(within(list).getByRole("img", { name: "2계단 올라감" })).toBeInTheDocument();
   expect(within(list).getByRole("img", { name: "1계단 내려감" })).toBeInTheDocument();
   expect(within(list).getByRole("img", { name: "변동 없음" })).toBeInTheDocument();
-  expect(screen.getByRole("tab", { name: "찐팬 순위" })).toHaveAttribute("aria-selected", "true");
+  expect(screen.getByRole("tab", { name: "팬" })).toHaveAttribute("aria-selected", "true");
   expect(within(narrow(container)).getByText("누적 하트")).toBeInTheDocument();
   expect(within(narrow(container)).getByRole("link", { name: /로그인하고 내 순위 보기/ })).toHaveAttribute("href", expect.stringContaining("/login"));
   expect(fetcher).toHaveBeenCalledWith("/api/rankings/home?kind=fans&locale=ko", expect.anything());
@@ -76,7 +76,7 @@ it("shows creators by true fans with the heart total, each row opening the fan p
   stub(fans());
   const { container } = render(<HomeRankingCard locale="ko" />);
   await within(narrow(container)).findByText("별빛");
-  fireEvent.click(screen.getByRole("tab", { name: "크리에이터 순위" }));
+  fireEvent.click(screen.getByRole("tab", { name: "크리에이터" }));
   const row = await within(narrow(container)).findByRole("link", { name: /엘리나/ });
   expect(row).toHaveAttribute("href", "/elina?locale=ko");
   expect(within(row).getByLabelText("찐팬 125")).toBeInTheDocument();
@@ -121,7 +121,7 @@ it("uses the same words in English", async () => {
   stub(fans());
   const { container } = render(<HomeRankingCard locale="en" />);
   await within(narrow(container)).findByText("별빛");
-  expect(screen.getByRole("tab", { name: "True fan ranking" })).toBeInTheDocument();
+  expect(screen.getByRole("tab", { name: "Fans" })).toBeInTheDocument();
   expect(within(narrow(container)).getByRole("img", { name: "Up 2" })).toBeInTheDocument();
   expect(within(wide(container)).getByRole("heading", { name: "Fan rankings" })).toBeInTheDocument();
 });
@@ -195,4 +195,18 @@ it("R6-EXTRACT ⑦: a fan row with no gain this week shows only the all-time ♥
   expect((await screen.findAllByLabelText("하트 911개")).length).toBeGreaterThan(0);
   expect(container.querySelector("[data-week-gain]")).toBeNull();
   expect(container.querySelector('[data-kind="fans"]')!.textContent).not.toMatch(/(^|[^\d])0$/);
+});
+
+it("puts the period and the written time on their own line under the title, so no language cuts them; the creators card ends on the same kind of bottom row as the fans card", async () => {
+  stub(fans());
+  const { container } = render(<HomeRankingCard locale="ja" />);
+  await within(narrow(container)).findByText("별빛");
+  const head = narrow(container).querySelector("h2")!.closest("div")!;
+  expect(head.nextElementSibling).toHaveTextContent(/.+/);
+  expect(head.nextElementSibling!.querySelector("time")).not.toBeNull();
+  const cards = wide(container).querySelectorAll("section");
+  const bottom = (card: Element) => card.querySelector("ol")!.nextElementSibling as HTMLElement;
+  expect(bottom(cards[0]!).textContent).not.toBe("");
+  expect(bottom(cards[1]!).querySelector("a")).toHaveAttribute("href", "/rankings?locale=ja&tab=creators");
+  expect(cards[1]!.querySelector("a[href*='tab=creators']")).toBe(bottom(cards[1]!).querySelector("a"));
 });

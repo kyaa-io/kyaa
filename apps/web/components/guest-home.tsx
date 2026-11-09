@@ -2,7 +2,7 @@
 
 import type { RaffleList } from "@/features/benefit/domain/raffle";
 import type { AppLocale } from "@/i18n/locales";
-import type { HomeBanner } from "../features/home/domain/home-banner";
+import type { BannerSlotMap, HomeBanner } from "../features/home/domain/home-banner";
 import type { Route } from "next";
 import type { HomeQueries } from "./home-query-stream";
 import type { LiveEventResponse } from "../features/live/domain/live-event";
@@ -35,14 +35,16 @@ import { FanSectionHeader } from "./fan-ui/fan-heading";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import { FanSkeleton, FanSkeletonStatus } from "@/components/fan-ui/fan-skeleton";
 import { HomeRankingCard } from "@/features/rankings/ui/home-ranking-card";
-import { HomeThinBanner } from "@/features/home/ui/home-thin-banner";
+import { ThinBanner } from "@/features/home/ui/home-thin-banner";
+import { HomeGalleryPlaceholder, HomeNoticesPlaceholder } from "@/features/home/ui/home-placeholder-blocks";
+import { ObservedLiveStrip } from "@/features/live/ui/observed-live-strip";
 import styles from "./guest-home.module.css";
 import { ElinaGuideCard } from "./home-entry-cards/home-entry-cards";
 
 const socialLabel = { youtube: "YouTube", tiktok: "TikTok", instagram: "Instagram", chzzk: "치지직" } as const;
 const UPCOMING_LIVE_PAGE_SIZE = 3;
 
-export type HomeContentErrors = { homeBanners?: boolean; celebrities?: boolean; celebrityLives?: boolean; featuredLives?: boolean };
+export type HomeContentErrors = { homeBanners?: boolean; featuredLives?: boolean };
 const allEvents = { ko: "전체 이벤트", en: "All events", ...localizedMessages.allEvents };
 
 const copy = {
@@ -86,14 +88,14 @@ function ContentLoadError({ locale }: { locale: AppLocale }) {
   return <div className={styles.personalizationState} role="alert"><strong>{copy[locale].retryTitle}</strong><span>{copy[locale].retryHelp}</span><FanAction onClick={() => router.refresh()}>{copy[locale].retry}</FanAction></div>;
 }
 
-type GuestHomeProps = { elinaRaffles?: RaffleList["raffles"]; homeBanners?: readonly HomeBanner[]; celebrities: readonly PublishedCelebrity[]; celebrityLives?: readonly PublishedCelebrityLive[]; featuredLives: readonly LiveEventResponse[]; featuredLivesQuery?: HomeQueries["featuredLives"]; locale: AppLocale; contentErrors?: HomeContentErrors; initialOwnedOnly?: boolean; initialRole?: CreatorRoleFilter };
+type GuestHomeProps = { elinaRaffles?: RaffleList["raffles"]; homeBanners?: readonly HomeBanner[]; homeSlots?: BannerSlotMap; celebrities: readonly PublishedCelebrity[]; featuredLives: readonly LiveEventResponse[]; featuredLivesQuery?: HomeQueries["featuredLives"]; locale: AppLocale; contentErrors?: HomeContentErrors };
 
 export function GuestHome(props: GuestHomeProps) {
-  return <HomeLayout locale={props.locale} hero={<HomeHero {...props} />} upcoming={<HomeUpcoming {...props} />} />;
+  return <HomeLayout locale={props.locale} hero={<HomeHero {...props} />} thinBanner={<HomeThinBanner banner={props.homeSlots?.home_below_board} locale={props.locale} />} upcoming={<HomeUpcoming {...props} />} />;
 }
 
 /** 7차 홈(plan-ux-r8): 브랜드 줄·메인 배너 → 랭킹 → 얇은 배너 → 다가오는 LIVE. 한 열이고 옆 패널이 없다. */
-function HomeLayout({ locale, hero, upcoming }: { locale: AppLocale; hero: ReactNode; upcoming: ReactNode }) {
+function HomeLayout({ locale, hero, thinBanner, upcoming }: { locale: AppLocale; hero: ReactNode; thinBanner: ReactNode; upcoming: ReactNode }) {
   return (
     <FanAppFrame
       locale={locale}
@@ -104,7 +106,10 @@ function HomeLayout({ locale, hero, upcoming }: { locale: AppLocale; hero: React
         <main id="main-content" className={styles.main}>
           {hero}
           <div className={styles.contentSection}><HomeRankingCard locale={locale} /></div>
-          <HomeThinBanner locale={locale} />
+          {thinBanner}
+          <ObservedLiveStrip locale={locale} />
+          <HomeNoticesPlaceholder locale={locale} />
+          <HomeGalleryPlaceholder locale={locale} />
           {upcoming}
         </main>
       </div>
@@ -164,16 +169,23 @@ function HomeUpcoming({ featuredLives, locale, contentErrors = {} }: GuestHomePr
           </section>
 </>);
 }
-type StreamingHomeProps = Pick<GuestHomeProps, "locale" | "initialOwnedOnly" | "initialRole"> & {
-  queries: HomeQueries;
-  publishedCreatorSlugs: Promise<readonly string[] | null>;
-};
+type StreamingHomeProps = Pick<GuestHomeProps, "locale"> & { queries: HomeQueries };
 
-export function StreamingGuestHome({ queries, publishedCreatorSlugs: _publishedCreatorSlugs, ...props }: StreamingHomeProps) {
+export function StreamingGuestHome({ queries, ...props }: StreamingHomeProps) {
   const fallbackProps = { ...props, celebrities: [], featuredLives: [] };
   return <HomeLayout locale={props.locale}
     hero={<Suspense fallback={<HomeHero {...fallbackProps} homeBanners={[gggiHomeBanner(props.locale)]} elinaGuide={null} />}><StreamHomeHero {...props} queries={queries} /></Suspense>}
+    thinBanner={<Suspense fallback={null}><StreamHomeThinBanner {...props} queries={queries} /></Suspense>}
     upcoming={<Suspense fallback={<PersonalizationLoading quiet locale={props.locale} />}><StreamHomeUpcoming {...props} queries={queries} /></Suspense>} />;
+}
+
+/** The strip is read on the server with the page, so it arrives in the page and never pushes the LIVE list down afterwards. */
+function HomeThinBanner({ banner, locale }: { banner: HomeBanner | undefined; locale: AppLocale }) {
+  return banner ? <ThinBanner banner={banner} locale={locale} /> : null;
+}
+function StreamHomeThinBanner({ queries, locale }: Pick<StreamingHomeProps, "queries" | "locale">) {
+  const result = use(queries.homeSlots);
+  return <HomeThinBanner banner={result.status === "fulfilled" ? result.value.home_below_board : undefined} locale={locale} />;
 }
 
 function StreamHomeHero({ queries, ...props }: Pick<StreamingHomeProps, "queries" | "locale">) {

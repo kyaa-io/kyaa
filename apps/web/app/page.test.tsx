@@ -6,16 +6,16 @@ const repositories = vi.hoisted(() => ({
   listFeaturedPublished: vi.fn(),
   homeBanners: vi.fn(),
   list: vi.fn(),
-  listPrimaryLives: vi.fn(),
+  listSlots: vi.fn(),
   guidePhotos: vi.fn(),
   raffles: vi.fn(),
 }));
 
 vi.mock("../server/config/env", () => ({ loadServerEnv: () => ({ SUPABASE_URL: "https://db.test", SUPABASE_SERVICE_ROLE_KEY: "secret" }) }));
 vi.mock("../server/g3/live-event-repository", () => ({ createLiveEventRepositoryFromEnvironment: () => ({ listFeaturedPublished: repositories.listFeaturedPublished }) }));
-vi.mock("../server/content/published-content-repository", () => ({ createPublishedContentRepositoryFromEnvironment: () => ({ list: repositories.list, listPrimaryLives: repositories.listPrimaryLives }) }));
+vi.mock("../server/content/published-content-repository", () => ({ createPublishedContentRepositoryFromEnvironment: () => ({ list: repositories.list }) }));
 
-vi.mock("../server/content/home-banner-repository", () => ({ createHomeBannerRepository: () => ({ list: repositories.homeBanners }) }));
+vi.mock("../server/content/home-banner-repository", () => ({ createHomeBannerRepository: () => ({ list: repositories.homeBanners, listSlots: repositories.listSlots }) }));
 
 vi.mock("../server/raffle/raffle-dependencies", () => ({ createRaffleDependencies: () => ({ list: repositories.raffles }) }));
 
@@ -28,12 +28,11 @@ describe("Home server content isolation", () => {
     repositories.guidePhotos.mockReset().mockResolvedValue(undefined);
     repositories.listFeaturedPublished.mockReset().mockResolvedValue([]);
     repositories.list.mockReset().mockResolvedValue([]);
-    repositories.listPrimaryLives.mockReset().mockResolvedValue([]);
+    repositories.listSlots.mockReset().mockResolvedValue({});
   });
 
   const props = (result: { props: { children: Array<{ props: Record<string, unknown> }> } }) => result.props.children[1].props as {
-    queries: Record<"featuredLives" | "celebrities" | "celebrityLives" | "homeBanners" | "elinaRaffles", Promise<{ status: string; value?: unknown }>>;
-    publishedCreatorSlugs: Promise<string[] | null>;
+    queries: Record<"featuredLives" | "celebrities" | "homeBanners" | "homeSlots" | "elinaRaffles", Promise<{ status: string; value?: unknown }>>;
     [key: string]: unknown;
   };
 
@@ -56,11 +55,20 @@ describe("Home server content isolation", () => {
     expect(await props(result).queries.celebrities).toEqual({ status: "fulfilled", value: [] });
   });
 
-  it("marks creator LIVE metadata failure separately from an empty metadata result", async () => {
-    repositories.listPrimaryLives.mockRejectedValue(new Error("metadata unavailable"));
+  it("reads the thin banner slot with the page and keeps the page when the slot read fails", async () => {
+    repositories.listSlots.mockResolvedValue({ home_below_board: { id: "thin" } });
+    const result = await HomePage({ searchParams: Promise.resolve({ locale: "en" }) });
+    expect(repositories.listSlots).toHaveBeenCalledWith("en", "home");
+    expect(await props(result).queries.homeSlots).toEqual({ status: "fulfilled", value: { home_below_board: { id: "thin" } } });
+    repositories.listSlots.mockRejectedValue(new Error("slots unavailable"));
+    const failed = await HomePage({ searchParams: Promise.resolve({}) });
+    expect(await props(failed).queries.homeSlots).toEqual({ status: "rejected" });
+    expect(await props(failed).queries.celebrities).toEqual({ status: "fulfilled", value: [] });
+  });
+
+  it("no longer reads the creator LIVE metadata or the unlisted list that only the retired favorites row used", async () => {
     const result = await HomePage({ searchParams: Promise.resolve({}) });
-    expect(await props(result).queries.celebrityLives).toEqual({ status: "rejected" });
-    expect(await props(result).queries.celebrities).toEqual({ status: "fulfilled", value: [] });
+    expect(Object.keys(props(result).queries).sort()).toEqual(["celebrities", "elinaRaffles", "featuredLives", "homeBanners", "homeSlots"]);
   });
 
   it("no longer reads retired event artwork for the home page", async () => {
@@ -77,18 +85,6 @@ describe("Home server content isolation", () => {
     expect(await props(result).queries.homeBanners).toEqual({ status: "fulfilled", value: [{ id: "independent" }] });
     expect(await props(result).queries.featuredLives).toEqual({ status: "rejected" });
     expect(await props(result).queries.celebrities).toEqual({ status: "rejected" });
-    expect(await props(result).publishedCreatorSlugs).toBeNull();
-  });
-
-  it.each([
-    [{}, undefined, "all"],
-    [{ role: "all" }, false, "all"],
-    [{ role: "creator" }, false, "creator"],
-    [{ owned: "1" }, true, "all"],
-    [{ owned: "0" }, false, "all"],
-  ] as const)("distinguishes automatic defaults from explicit URL filters %j", async (query, initialOwnedOnly, initialRole) => {
-    const result = await HomePage({ searchParams: Promise.resolve(query) });
-    expect(result.props.children[1].props).toMatchObject({ initialOwnedOnly, initialRole });
   });
 
   it("renders instead of throwing when every main content source fails; each section degrades on its own", async () => {

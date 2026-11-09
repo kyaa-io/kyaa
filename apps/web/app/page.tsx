@@ -7,11 +7,9 @@ import { createHomeBannerRepository } from "../server/content/home-banner-reposi
 import { publicMetadata, pageCopy } from "@/seo/metadata";
 import { homeStructuredData, serializeStructuredData } from "@/seo/structured-data";
 import { StreamingGuestHome } from "../components/guest-home";
-import { parseCreatorRoleFilter } from "../features/creator/domain/creator-role";
 import { loadServerEnv } from "../server/config/env";
 import { createPublishedContentRepositoryFromEnvironment } from "../server/content/published-content-repository";
 import { createLiveEventRepositoryFromEnvironment } from "../server/g3/live-event-repository";
-import { readUnlistedCreatorSlugs } from "../server/rankings/unlisted-creators";
 
 export const dynamic = "force-dynamic";
 
@@ -20,25 +18,22 @@ export async function generateMetadata({ searchParams }: { searchParams: Promise
   return publicMetadata({ path: "/", locale, ...pageCopy.home[locale] });
 }
 
-export default async function HomePage({ searchParams }: { searchParams: Promise<{ locale?: string | string[]; owned?: string | string[]; role?: string | string[] }> }) {
-  const { locale: requestedLocale, owned, role } = await searchParams;
-  const locale = parseAppLocale(requestedLocale);
-  const initialOwnedOnly = owned === "1" ? true : owned !== undefined || role !== undefined ? false : undefined;
+export default async function HomePage({ searchParams }: { searchParams: Promise<{ locale?: string | string[] }> }) {
+  const locale = parseAppLocale((await searchParams).locale);
   const environment = loadServerEnv();
   const liveRepository = createLiveEventRepositoryFromEnvironment({
     url: environment.SUPABASE_URL,
     serviceRoleKey: environment.SUPABASE_SERVICE_ROLE_KEY,
   });
   const celebrityRepository = createPublishedContentRepositoryFromEnvironment();
+  const bannerRepository = createHomeBannerRepository({ url: environment.SUPABASE_URL, serviceRoleKey: environment.SUPABASE_SERVICE_ROLE_KEY });
   const queries = {
     featuredLives: settleHomeQuery(measureHomeQuery("featuredLives", () => liveRepository.listFeaturedPublished({ locale: toContentLocale(locale), now: new Date() }))),
     celebrities: settleHomeQuery(measureHomeQuery("celebrities", () => celebrityRepository.list(toContentLocale(locale)))),
-    celebrityLives: settleHomeQuery(measureHomeQuery("celebrityLives", () => celebrityRepository.listPrimaryLives(toContentLocale(locale)))),
-    homeBanners: settleHomeQuery(measureHomeQuery("homeBanners", () => createHomeBannerRepository({ url: environment.SUPABASE_URL, serviceRoleKey: environment.SUPABASE_SERVICE_ROLE_KEY }).list(toContentLocale(locale)))),
-    unlistedCreators: settleHomeQuery(readUnlistedCreatorSlugs()),
+    homeBanners: settleHomeQuery(measureHomeQuery("homeBanners", () => bannerRepository.list(toContentLocale(locale)))),
+    homeSlots: settleHomeQuery(measureHomeQuery("homeSlots", () => bannerRepository.listSlots(toContentLocale(locale), "home"))),
     elinaRaffles: settleHomeQuery(measureHomeQuery("elinaRaffles", () => createRaffleDependencies().list({ celebritySlug: "elina", locale: toContentLocale(locale), now: new Date() }))),
   };
-  const publishedCreatorSlugs = queries.celebrities.then(result => result.status === "fulfilled" ? result.value.map(({ slug }) => slug) : null);
   return <>
     <script
       id="byus-home-structured-data"
@@ -47,10 +42,7 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
     />
     <StreamingGuestHome
       queries={queries}
-      publishedCreatorSlugs={publishedCreatorSlugs}
       locale={locale}
-      initialOwnedOnly={initialOwnedOnly}
-      initialRole={initialOwnedOnly ? "all" : parseCreatorRoleFilter(role)}
     />
   </>;
 }

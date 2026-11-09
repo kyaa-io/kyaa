@@ -28,6 +28,8 @@ export const rankingsSource = {
   rkSeeMyRank: { ko: "로그인하고 내 순위 보기", en: "Sign in to see your rank" },
   rkFanTab: { ko: "찐팬 순위", en: "True fan ranking" },
   rkCreatorRankTab: { ko: "크리에이터 순위", en: "Creator ranking" },
+  rkFanTabShort: { ko: "팬", en: "Fans" },
+  rkCreatorTabShort: { ko: "크리에이터", en: "Creators" },
   rkCumulativeHearts: { ko: "누적 하트", en: "All-time hearts" },
   rkCumulativeFans: { ko: "찐팬 수", en: "True fans" },
   rkMore1120: { ko: "11~20위", en: "#11–20" },

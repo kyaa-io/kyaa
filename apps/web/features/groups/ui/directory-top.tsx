@@ -24,7 +24,7 @@ import { popularPostsPageSchema, type PopularPost } from "@/features/popular-boa
 import { toContentLocale, type AppLocale } from "@/i18n/locales";
 import { groupApiQuery, groupHref, groupListSchema } from "../domain/contracts";
 import { directoryTopCopy } from "./directory-top-copy";
-import { useGroupResource } from "./use-group-resource";
+import { useGroupRequest, useGroupResource } from "./use-group-resource";
 import styles from "./directory-top.module.css";
 
 const parseList = (value: unknown) => groupListSchema.parse(value);
@@ -39,31 +39,40 @@ function focusDirectorySearch() {
   input?.focus({ preventScroll: true });
 }
 
-/** 첫 칸 `+`는 로그인 여부와 관계없이 모임 찾기. 가입한 모임이 없으면 흐린 원 세 개가 같은 자리를 채운다. */
+/** 첫 칸 `+`는 로그인 여부와 관계없이 모임 찾기. 가입한 모임이 없으면 흐린 원 세 개가 같은 자리를 채운다.
+ * 비로그인의 로그인 버튼은 제목 줄에 둔다: 원 네 개(+ 포함)가 390·360에서도 잘리지 않고 한 줄에 들어가야 한다. */
 export function MyArtists({ locale, loginPath }: { locale: AppLocale; loginPath: string }) {
   const c = directoryTopCopy(locale);
-  const resource = useGroupResource(groupApiQuery({ type: "all" }), parseList);
-  const joined = useGroupResource(resource.ready && resource.authenticated ? groupApiQuery({ mine: "joined", sort: "visited", limit: "10" }) : null, parseList);
-  const guest = resource.ready && !resource.authenticated;
+  const session = useGroupRequest();
+  const joined = useGroupResource(session.ready && session.authenticated ? groupApiQuery({ mine: "joined", sort: "visited", limit: "10" }) : null, parseList);
+  const guest = session.ready && !session.authenticated;
   const items = joined.data?.items ?? [];
-  const waiting = !resource.ready || (resource.authenticated && joined.loading && !joined.data);
+  const waiting = !session.ready || (session.authenticated && joined.loading && !joined.data);
+  const ghost = !waiting && (guest || joined.error || items.length === 0);
   return <section className={styles.card} aria-labelledby="directory-my-artists" data-directory-block="my-artists">
-    <FanHeading id="directory-my-artists" as="h2">{c.myArtists}</FanHeading>
-    <div className={styles.artistRow}>
-      <ul className={styles.rail}>
-        <li className={styles.slot} data-row="artist-add"><a className={styles.add} href="#directory-explore" onClick={(event) => { event.preventDefault(); focusDirectorySearch(); }} aria-label={c.findGroups}><FanIcon icon={Plus} size={24} /></a><span className={styles.slotName} aria-hidden="true" /></li>
-        {waiting ? Array.from({ length: SLOTS + 1 }, (_, i) => <li key={i} className={styles.slot} data-row="artist-loading" aria-hidden="true"><FanSkeleton shape="circle" width={64} height={64} /><FanSkeleton width={48} height={12} /></li>)
-          : guest || joined.error || items.length === 0 ? Array.from({ length: SLOTS }, (_, i) => <li key={i} className={styles.slot} data-row="artist-ghost" aria-hidden="true"><span className={styles.ghost} /><span className={styles.ghostName} /></li>)
-          : items.map((page) => <li key={page.id} className={styles.slot} data-row="artist">
-            <Link className={styles.artist} href={groupHref(page, locale) as Route}>
-              {page.slug ? <CreatorAvatar slug={page.slug} src={page.imageUrl} size={64} photos={undefined} /> : <span className={styles.ghost} />}
-              <span className={styles.slotName}>{page.name}</span>
-            </Link>
-          </li>)}
-      </ul>
-      {guest ? <FanAction className={styles.login} variant="neutral" href={fanLoginHref(locale, loginPath)}>{c.signIn}</FanAction> : null}
+    <div className={styles.cardHead}>
+      <FanHeading id="directory-my-artists" as="h2">{c.myArtists}</FanHeading>
+      {guest ? <FanAction className={styles.login} variant="neutral" size="sm" href={fanLoginHref(locale, loginPath)}>{c.signIn}</FanAction> : null}
     </div>
+    <ul className={styles.rail} data-ghost={ghost || undefined}>
+      <li className={styles.slot} data-row="artist-add"><a className={styles.add} href="#directory-explore" onClick={(event) => { event.preventDefault(); focusDirectorySearch(); }} aria-label={c.findGroups}><FanIcon icon={Plus} size={24} /></a><span className={styles.slotName} aria-hidden="true" /></li>
+      {waiting ? Array.from({ length: SLOTS + 1 }, (_, i) => <li key={i} className={styles.slot} data-row="artist-loading" aria-hidden="true"><FanSkeleton shape="circle" width={64} height={64} /><FanSkeleton width={48} height={12} /></li>)
+        : ghost ? Array.from({ length: SLOTS }, (_, i) => <li key={i} className={styles.slot} data-row="artist-ghost" aria-hidden="true"><span className={styles.ghost} /><span className={styles.ghostName} /></li>)
+        : items.map((page) => <li key={page.id} className={styles.slot} data-row="artist">
+          <Link className={styles.artist} href={groupHref(page, locale) as Route}>
+            {page.slug ? <CreatorAvatar slug={page.slug} src={page.imageUrl} size={64} photos={undefined} /> : <span className={styles.ghost} />}
+            <span className={styles.slotName}>{page.name}</span>
+          </Link>
+        </li>)}
+    </ul>
   </section>;
+}
+
+/** The page's picture, or a white ring with its first letter: the board never draws the grey fallback figure. */
+function PostAvatar({ post }: { post: PopularPost }) {
+  return post.pageImageUrl
+    ? <CreatorAvatar slug={post.pageRef} src={post.pageImageUrl} size={32} photos={undefined} />
+    : <span className={styles.initial} aria-hidden="true">{[...post.pageName][0]}</span>;
 }
 
 const postHref = (post: PopularPost, locale: AppLocale) => post.source === "fan" ? `/c/${post.pageRef}/community/${post.id}?locale=${locale}` : `/pages/groups/${post.pageRef}?locale=${locale}&tab=board&post=${post.id}`;
@@ -88,10 +97,10 @@ export function HotPosts({ locale }: { locale: AppLocale }) {
     {state.status === "error" ? <div className={styles.state}><FanState inline compact kind="error" title={c.hotError} actions={<FanAction variant="text" size="sm" onClick={retry}>{c.retry}</FanAction>} /></div>
       : <ul className={styles.posts}>{!ready ? Array.from({ length: ROWS }, (_, i) => <li key={i} className={styles.post} data-row="hot-loading" aria-hidden="true"><FanSkeleton shape="circle" width={32} height={32} /><FanSkeleton width="70%" height={16} /><FanSkeleton width="40%" height={12} /></li>)
         : <>{items.map((post) => <li key={`${post.source}:${post.id}`} className={styles.post} data-row="hot-post">
-          <CreatorAvatar slug={post.pageRef} src={null} size={32} photos={undefined} />
+          <PostAvatar post={post} />
           <Link className={styles.postTitle} href={postHref(post, locale) as Route}>{firstLine(post.title)}</Link>
           <span className={styles.postMeta}><Link href={pageHref(post, locale) as Route}>{post.pageName}</Link><span aria-hidden="true">·</span><span>{c.likes(post.likeCount)}</span><span aria-hidden="true">·</span><span>{c.comments(post.commentCount)}</span></span>
-        </li>)}{Array.from({ length: Math.max(0, ROWS - items.length) }, (_, i) => {
+        </li>)}{Array.from({ length: Math.max(0, (open ? 2 * ROWS : ROWS) - items.length) }, (_, i) => {
           const note = total === 0 && i === 0;
           return <li key={`p${i}`} className={styles.post} data-row="hot-placeholder" aria-hidden={note ? undefined : true}><span className={styles.ghostSmall} /><span className={styles.placeholderText}>{note ? c.hotEmpty : "—"}</span></li>;
         })}</>}</ul>}
