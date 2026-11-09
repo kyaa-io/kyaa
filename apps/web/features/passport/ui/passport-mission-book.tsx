@@ -173,6 +173,19 @@ export function PassportMissionBook({ passportId, creatorSlug, locale, stampSrc 
   const [failedPage, setFailedPage] = useState<number | null>(null);
   const [picked, setPicked] = useState<number | null>(null);
   const { retry } = roadmap;
+  const bookRef = useRef<HTMLElement>(null), jumped = useRef(false);
+  // DS-D 9/9: 덕질's 하트 받기 › arrives with #mission-book before the book is drawn, so the browser's own hash jump lands on nothing.
+  // Once the pages are drawn, move to the claim button of the open page (else the book title) and focus it, once per visit.
+  useEffect(() => {
+    if (jumped.current || !roadmap.data || window.location.hash !== "#mission-book") return;
+    const root = bookRef.current;
+    if (!root) return;
+    jumped.current = true;
+    const claimButton = [...root.querySelectorAll<HTMLButtonElement>(`button.${styles.claim}`)].find(button => !button.disabled && !button.closest("[inert],[hidden]"));
+    const target: HTMLElement | null = claimButton ?? root.querySelector<HTMLElement>("#mission-book-title");
+    target?.scrollIntoView?.({ block: "center" });
+    target?.focus({ preventScroll: true });
+  }, [roadmap.data]);
   /** One request key per page until the claim is settled, so a retry after a failure replays the same claim. */
   const keys = useRef(new Map<number, string>());
   const claim = useCallback(async (pageNo: number) => {
@@ -196,9 +209,9 @@ export function PassportMissionBook({ passportId, creatorSlug, locale, stampSrc 
   const index = Math.min(picked ?? openingPage(pages), Math.max(0, pages.length - 1));
   const page = pages[index];
   const hrefFor = (kind: string | null | undefined) => missionHref(kind, creatorSlug, passportId, locale);
-  return <section id="mission-book" className={`${paper.palette} ${styles.book}`} aria-labelledby="mission-book-title" aria-busy={roadmap.loading}>
+  return <section ref={bookRef} id="mission-book" className={`${paper.palette} ${styles.book}`} aria-labelledby="mission-book-title" aria-busy={roadmap.loading}>
     <div className={styles.head}>
-      <h2 id="mission-book-title">{dukjilText(locale, "missionBookTitle")}</h2>
+      <h2 id="mission-book-title" tabIndex={-1}>{dukjilText(locale, "missionBookTitle")}</h2>
       {roadmap.data ? <span className={styles.hearts}><Heart aria-hidden="true" size={18} />{dukjilText(locale, "missionHearts", [roadmap.data.hearts])}</span> : null}
     </div>
     {roadmap.loading ? <div className={styles.skeleton} aria-hidden="true"><i /><i /></div>
