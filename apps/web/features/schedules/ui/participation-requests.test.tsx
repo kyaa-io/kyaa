@@ -18,8 +18,9 @@ it("keeps request history inside fan navigation with one-line empty lists", asyn
   expect(within(main).getByRole("heading", { level: 1, name: "내 신청 내역" })).toBeInTheDocument();
   expect(screen.getByRole("navigation", { name: "모바일 주요 메뉴" })).toBeInTheDocument();
   expect(within(main).getByRole("link", { name: "MY로 돌아가기" })).toHaveAttribute("href", "/my?locale=ko");
-  expect(within(main).queryByRole("link", { name: /^일정$/ })).toBeNull();
   expect(within(main).getAllByRole("status")).not.toHaveLength(0);
+  expect(within(main).getByRole("link", { name: "일정" })).toHaveAttribute("href", "/live/calendar?locale=ko");
   fireEvent.click(within(main).getByRole("button", { name: "팬페이지 개설 신청" }));
   expect(within(main).getAllByRole("status")).not.toHaveLength(0);
+  expect(within(main).getByRole("link", { name: "팬페이지 개설 신청" })).toHaveAttribute("href", "/bias/requests?locale=ko");
 });
