@@ -167,6 +167,7 @@ describe("AccessibleOverlay history", () => {
         <h2 id="lang-title">Language</h2>
         <button type="button" onClick={() => setOpen(false)}>Done</button>
         <a href="/my">My</a>
+        <button type="button" data-overlay-navigates="" onClick={() => setOpen(false)}>Français</button>
       </AccessibleOverlay>
     </div>;
   }
@@ -213,6 +214,18 @@ describe("AccessibleOverlay history", () => {
     fireEvent.click(link);
     fireEvent.click(screen.getByRole("button", { name: "Done" }));
     await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
+    expect(back).not.toHaveBeenCalled();
+    expect(window.history.state).toEqual({ page: "base", __fanOverlays: [] });
+    back.mockRestore();
+  });
+  it("does not go back when a button that navigates in code closes it (language dialog)", async () => {
+    render(<Single />);
+    fireEvent.click(screen.getByRole("button", { name: "Open language" }));
+    await screen.findByRole("dialog", { name: "Language" });
+    const back = vi.spyOn(window.history, "back");
+    fireEvent.click(screen.getByRole("button", { name: "Français" }));
+    await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
+    await new Promise(resolve => setTimeout(resolve, 10));
     expect(back).not.toHaveBeenCalled();
     expect(window.history.state).toEqual({ page: "base", __fanOverlays: [] });
     back.mockRestore();
