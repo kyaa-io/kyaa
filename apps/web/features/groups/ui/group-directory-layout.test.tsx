@@ -4,7 +4,7 @@ const state=vi.hoisted(()=>({urls:[] as string[],loading:new Set<string>(),empty
 vi.mock('@/features/group-wallet/ui/wallet-screen',()=>({WalletAttendanceDialog:()=>null}));
 vi.mock('next/navigation',()=>import('../../../e2e/groups-local/navigation'));
 vi.mock('./group-shell',()=>({GroupShell:({children}:any)=><main>{children}</main>,GroupAvatar:()=>null}));
-vi.mock('./discovery-carousel',()=>({DiscoveryCarousel:()=><div data-testid='banners'/>}));
+vi.mock('./directory-top',()=>({MyArtists:()=><div data-testid='my-artists'/>,ThinCarousel:()=><div data-testid='banners'/>,HotPosts:()=><div data-testid='hot-posts'/>}));
 vi.mock('./group-application-dialog',()=>({GroupApplicationDialog:(props:unknown)=>{state.dialog.push(props);return <div role='dialog'/>;}}));
 vi.mock('@/features/dukjil/ui/dukjil-provider',()=>({DukjilProvider:({children}:any)=>children,useDukjil:()=>null}));
 const page=(n:number,kind='hobby')=>({id:`e9600000-0000-4000-8000-00000000000${n}`,kind,name:`Page ${n}`,description:'소개',imageUrl:null,slug:null,memberCount:n,status:'published',question:null,anonymous:false,celebrityId:null});
@@ -18,6 +18,9 @@ it.each(['?search=Ru','?type=fan','?type=hobby','?type=fan&artistRole=idol&searc
  expect(screen.getByRole('heading',{level:1,name:'팬페이지와 모임 찾기'})).toBeInTheDocument();
  expect(screen.getByTestId('banners')).toBeInTheDocument();
  expect(within(regions()).getAllByRole('link')).toHaveLength(3);
+ // 7차 순서: 내 아티스트 → 얇은 배너 → Hot 게시글 → 페이지 둘러보기 → 내 페이지 → 지금 주목할 페이지.
+ const order=[screen.getByTestId('my-artists'),screen.getByTestId('banners'),screen.getByTestId('hot-posts'),screen.getByRole('heading',{level:2,name:'페이지 둘러보기'}),screen.getByRole('heading',{level:2,name:'내 페이지'}),regions()];
+ order.slice(1).forEach((node,i)=>expect(order[i]!.compareDocumentPosition(node)&Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy());
  expect(screen.getByRole('heading',{level:2,name:'페이지 둘러보기'})).toBeInTheDocument();
  expect(screen.getByRole('button',{name:/^활동 분야/})).toBeInTheDocument();
 });

@@ -91,9 +91,11 @@ describe("guest home compact icon-only action spacing", () => {
     expect(declarationBlock(".carouselDot[aria-current=\"true\"] span")).toMatch(
       /\bbackground:\s*var\(--ink\)/,
     );
-    expect(declarationBlock(".carouselDot[aria-current=\"true\"] span")).toMatch(
-      /\bwidth:\s*22px\b/,
-    );
+    // 현재 점의 22px 막대는 폭 전이 대신 ::after 의 transform·opacity 로 커진다(hallmark 10a).
+    expect(declarationBlock(".carouselDot span::after")).toMatch(/\bwidth:\s*22px\b/);
+    expect(declarationBlock(".carouselDot span::after")).toMatch(/\btransition:\s*transform\b/);
+    expect(declarationBlock(".carouselDot span")).not.toMatch(/\btransition:[^;]*\bwidth\b/);
+    expect(declarationBlock(".carouselDot[aria-current=\"true\"] span::after")).toMatch(/\btransform:\s*scaleX\(1\)/);
     expect(declarationBlock(".heroViewport")).toMatch(/\btouch-action:\s*pan-y\s+pinch-zoom/);
     expect(declarationBlock(".heroTrack")).not.toMatch(/\btransition:\s*transform/);
     expect(heroCarouselSource).toContain('useEmblaCarousel({');

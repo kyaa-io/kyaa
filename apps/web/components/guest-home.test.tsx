@@ -1,6 +1,6 @@
-import type { HomeBanner } from "@/features/home/domain/home-banner";
+import type { BannerSlotMap, HomeBanner } from "@/features/home/domain/home-banner";
 import type { LiveEventResponse } from "@/features/live/domain/live-event";
-import type { PublishedCelebrity, PublishedCelebrityLive } from "@/server/content/content-domain";
+import type { PublishedCelebrity } from "@/server/content/content-domain";
 import type { RaffleList } from "@/features/benefit/domain/raffle";
 import { settleHomeQuery, type HomeQueries } from "./home-query-stream";
 import { APP_LOCALES } from "@/i18n/locales";
@@ -76,17 +76,47 @@ describe("canonical 03 guest home", () => {
     render(<GuestHome {...defaultProps} featuredLives={[]} />);
     expect(screen.getByRole("link", { name: /전체 이벤트/ })).toHaveAttribute("href", "/events?locale=ko");
   });
-  it.each(APP_LOCALES.flatMap(locale => [false, true].map(authenticated => ({ locale, authenticated }))))(
-    "keeps the home banner before the fan board in $locale (authenticated: $authenticated)",
-    ({ locale, authenticated }) => {
-      privy.authenticated = authenticated;
-      vi.stubGlobal("fetch", vi.fn(async () => Response.json({}, { status: 503 })));
-      render(<GuestHome {...defaultProps} featuredLives={[]} locale={locale} />);
-      const banner = document.querySelector("[data-managed-home-banner]")!;
-      const board = screen.getByTestId("home-community-preview");
-      expect(banner.compareDocumentPosition(board) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
-    },
-  );
+
+  it("draws the hero, the ranking, the thin banner slot and the upcoming LIVE in one column, without the fan board, favorites or side panel (7차)", () => {
+    const { container } = render(<GuestHome {...defaultProps} featuredLives={[featuredLive]} />);
+    const hero = container.querySelector("#live-heading")!;
+    const ranking = screen.getByTestId("home-ranking");
+    const live = container.querySelector("#upcoming")!;
+    expect(hero.compareDocumentPosition(ranking) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(ranking.compareDocumentPosition(live) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(container.querySelector("#celebrities")).toBeNull();
+    expect(container.querySelector("#guest-context-panel")).toBeNull();
+    expect(screen.queryByTestId("home-community-preview")).toBeNull();
+    expect(screen.queryByTestId("home-challenges")).toBeNull();
+    expect(screen.getAllByTestId("home-ranking")).toHaveLength(1);
+  });
+
+  it("draws the thin banner from the slot read with the page, before the LIVE list, and nothing when the slot is empty", () => {
+    const thin = { ...bannerFixture, id: "44444444-4444-4444-8444-444444444444", title: "얇은 띠", placement: "home_below_board" as const };
+    const first = render(<GuestHome {...defaultProps} featuredLives={[]} homeSlots={{ home_below_board: thin }} />);
+    const strip = first.container.querySelector("[data-home-thin-banner]")!;
+    expect(strip).toBeTruthy();
+    expect(screen.getByTestId("home-ranking").compareDocumentPosition(strip) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(strip.compareDocumentPosition(first.container.querySelector("#upcoming")!) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    first.unmount();
+    const second = render(<GuestHome {...defaultProps} featuredLives={[]} />);
+    expect(second.container.querySelector("[data-home-thin-banner]")).toBeNull();
+  });
+
+  it("keeps the notice, gallery and shorts places at their fixed sizes with a quiet placeholder until their data exists (7차 임시 구성)", () => {
+    const { container } = render(<GuestHome {...defaultProps} featuredLives={[]} />);
+    const notices = container.querySelector("[data-home-block=notices]")!;
+    const gallery = container.querySelector("[data-home-block=gallery]")!;
+    expect(within(notices as HTMLElement).getByRole("heading", { name: "공지사항" })).toBeInTheDocument();
+    expect(within(notices as HTMLElement).getByText("아직 공지 없음")).toBeInTheDocument();
+    expect(notices.querySelectorAll("li")).toHaveLength(5);
+    expect(within(gallery as HTMLElement).getByRole("heading", { name: "갤러리" })).toBeInTheDocument();
+    expect(within(gallery as HTMLElement).getByRole("heading", { name: "숏츠" })).toBeInTheDocument();
+    expect(gallery.querySelectorAll("[data-row=photo-placeholder]")).toHaveLength(8);
+    expect(gallery.querySelectorAll("[data-row=short-placeholder]")).toHaveLength(4);
+    expect(notices.compareDocumentPosition(gallery) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(gallery.compareDocumentPosition(container.querySelector("#upcoming")!) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
 
   it.each(APP_LOCALES)("shows the approved Kyaa slogan in %s", (locale) => {
     render(<GuestHome {...defaultProps} featuredLives={[]} locale={locale} />);
@@ -178,32 +208,6 @@ describe("canonical 03 guest home", () => {
     container.remove();
     consoleError.mockRestore();
     consoleWarn.mockRestore();
-  });
-
-  it.each([false, true])("places the ranking card under the hero and before the fan board on 390 (signed in: %s)", (authenticated) => {
-    privy.authenticated = authenticated;
-    if (authenticated) vi.stubGlobal("fetch", vi.fn(async () => new Promise<Response>(() => {})));
-    render(<GuestHome {...defaultProps} featuredLives={[featuredLive]} />);
-    const slot = document.querySelector('[class*="mobilePersonalization"] [data-testid="home-ranking"]')!;
-    const board = screen.getByTestId("home-community-preview");
-    expect(slot.compareDocumentPosition(board) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
-  });
-
-  it("keeps the mobile slot before the fan board while auth is loading, like guests", () => {
-    privy.ready = false;
-    render(<GuestHome {...defaultProps} featuredLives={[]} />);
-    const slot = document.querySelector('[class*="mobilePersonalization"]')!;
-    const board = screen.getByTestId("home-community-preview");
-    expect(slot.compareDocumentPosition(board) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
-  });
-
-  it("shows the ranking card in both places instead of the sign-in slot and the passport card (D3)", () => {
-    render(<GuestHome {...defaultProps} featuredLives={[featuredLive]} />);
-    expect(screen.getAllByTestId("home-ranking")).toHaveLength(2);
-    expect(screen.queryByRole("link", { name: "로그인하기" })).not.toBeInTheDocument();
-    expect(screen.queryByRole("region", { name: "내 패스포트" })).not.toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "방송 일정 보기" })).toHaveAttribute("href", "/live/calendar?celebrity=elina&locale=ko");
-    expect(screen.getByRole("link", { name: "관리자가 등록한 LIVE 상세 보기" })).toHaveAttribute("href", "/live/admin-created-live?locale=ko");
   });
 
   it("uses the Elina participation guide as the final LIVE hero slide", () => {
@@ -422,89 +426,6 @@ describe("canonical 03 guest home", () => {
     expect(next).toBeDisabled();
   });
 
-  it("renders two regular-weight metadata rows with compact fans, fan detail links, and icon-only social controls", () => {
-    render(<GuestHome {...defaultProps} featuredLives={[featuredLive]} celebrityLives={[
-      { slug: "kara-live", celebritySlug: "kara", locale: "ko", title: "KARA LIVE", startsAt: "2026-07-24T11:00:00.000Z", effectiveStatus: "live" },
-      { slug: "elina-live", celebritySlug: "elina", locale: "ko", title: "Elina LIVE", startsAt: "2026-07-25T11:00:00.000Z", effectiveStatus: "scheduled" },
-    ]} />);
-
-    const karaCard = screen.getByRole("heading", { name: "KARA", level: 3 }).closest("article");
-    expect(karaCard).not.toBeNull();
-    const card = within(karaCard!);
-    expect(card.getByRole("link", { name: "KARA YouTube 공식 채널" })).toHaveAttribute("href", "https://youtube.com/@kara");
-    expect(card.getByRole("link", { name: "KARA TikTok 공식 채널" })).toHaveAttribute("href", "https://tiktok.com/@kara");
-    expect(card.getByRole("link", { name: "KARA Instagram 공식 채널" })).toHaveAttribute("href", "https://instagram.com/kara");
-    expect(card.queryByText("YouTube")).not.toBeInTheDocument();
-    expect(card.queryByText("TikTok")).not.toBeInTheDocument();
-    expect(card.queryByText("Instagram")).not.toBeInTheDocument();
-    // D13: the card no longer shows SNS follower totals as "fans"; true fans and hearts come from the creator ranking.
-    expect(card.queryByText("팬 1280만")).not.toBeInTheDocument();
-    expect(card.getByRole("link", { name: "KARA 팬페이지 보기" })).toHaveAttribute("href", "/kara?locale=ko");
-    expect(screen.queryByText("팬 320만")).not.toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Elina 팬페이지 보기" })).toHaveAttribute("href", "/elina?locale=ko");
-    expect(screen.queryByText("팬 145만")).not.toBeInTheDocument();
-    const changhaCard = screen.getByRole("heading", { name: "Changha", level: 3 }).closest("article");
-    expect(within(changhaCard!).getByRole("link", { name: "Changha 팬페이지 보기" })).toHaveAttribute("href", "/changha?locale=ko");
-  });
-
-  it("uses a published square Preview only inside the matching favorite card", () => {
-    vi.spyOn(HTMLMediaElement.prototype, "play").mockResolvedValue();
-    vi.spyOn(HTMLMediaElement.prototype, "pause").mockImplementation(() => undefined);
-    vi.stubGlobal(
-      "matchMedia",
-      vi.fn().mockReturnValue({
-        matches: false,
-        addEventListener: vi.fn(),
-        removeEventListener: vi.fn(),
-      }),
-    );
-    render(<GuestHome {...defaultProps} featuredLives={[featuredLive]} celebrityLives={[
-      {
-        slug: "kara-live",
-        celebritySlug: "kara",
-        locale: "ko",
-        title: "KARA LIVE",
-        startsAt: "2026-07-24T11:00:00.000Z",
-        effectiveStatus: "scheduled",
-        preview: {
-          kind: "artist_teaser",
-          durationMs: 4_000,
-          square: {
-            videoUrl: "https://assets.example/kara-square.mp4",
-            posterUrl: "https://assets.example/kara-square.webp",
-          },
-        },
-      },
-    ]} />);
-
-    const videos = screen.getAllByTestId("active-preview-video");
-    expect(videos).toHaveLength(1);
-    expect(videos[0]).toHaveAttribute(
-      "poster",
-      "https://assets.example/kara-square.webp",
-    );
-    expect(videos[0]).toHaveAttribute(
-      "src",
-      "https://assets.example/kara-square.mp4",
-    );
-    expect(screen.getByRole("img", { name: "Elina portrait" })).toHaveAttribute("sizes", "(max-width: 767px) min(82vw, 288px), 240px");
-  });
-
-  it("keeps the desktop context panel available without a toggle and preserves mobile actions", () => {
-    render(<GuestHome {...defaultProps} featuredLives={[featuredLive]} />);
-
-    expect(screen.getByRole("complementary", { name: "랭킹" })).toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: /팬 활동/ })).not.toBeInTheDocument();
-    const guideCards = screen.getAllByRole("link", { name: "엘리나와 함께 뱅크시 전시 보러 가요" });
-    const fanmeetingCards = screen.getAllByRole("link", { name: "미국 팬미팅, kyaa와 함께 준비하세요" });
-    expect(guideCards).toHaveLength(2);
-    expect(fanmeetingCards).toHaveLength(2);
-    expect(screen.queryByRole("link", { name: /이퓨.*100일/ })).not.toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: "다음 가이드" })).not.toBeInTheDocument();
-    for (const card of guideCards) expect(card).toHaveAttribute("href", "/c/elina/raffles?locale=ko");
-    for (const card of fanmeetingCards) expect(card).toHaveAttribute("href", "/pages/us-fanmeetings?locale=ko");
-  });
-
   it("renders a truthful empty state without inventing a Live link", () => {
     render(<GuestHome {...defaultProps} featuredLives={[]} />);
     expect(screen.getByText("현재 공개된 LIVE가 없습니다.")).toBeInTheDocument();
@@ -525,9 +446,7 @@ describe("canonical 03 guest home", () => {
   it("renders English CMS content and preserves locale through public and auth links", () => {
     const englishCelebrities = celebrities.map((celebrity) => ({ ...celebrity, locale: "en" as const, name: celebrity.slug === "kara" ? "KARA EN" : celebrity.name }));
     render(<GuestHome celebrities={englishCelebrities} featuredLives={[featuredLive]} locale="en" />);
-    expect(screen.getByRole("heading", { name: "Your favorites" })).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: "KARA EN" })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "View KARA EN details" })).toHaveAttribute("href", "/kara?locale=en");
+    expect(screen.getByRole("heading", { name: "Upcoming LIVE" })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "View 관리자가 등록한 LIVE details" })).toHaveAttribute("href", expect.stringContaining("locale=en"));
   });
 
@@ -600,47 +519,6 @@ describe("canonical 03 guest home", () => {
 
     expect(screen.queryByRole("link", { name: "로그인하기" })).not.toBeInTheDocument();
     expect(screen.queryByRole("link", { name: /이퓨.*100일/ })).not.toBeInTheDocument();
-    expect(screen.getAllByRole("link", { name: "미국 팬미팅, kyaa와 함께 준비하세요" })).toHaveLength(2);
-  });
-
-  it("ignores a late summary from the previous owner", async () => {
-    privy.authenticated = true;
-    const empty = { profile: { nickname: null }, creators: [], live: { upcoming: [], history: [] }, rewards: { availableCount: 0, entries: 0, items: [] }, collection: { passportCount: 0, stampCount: 0, collectibleCount: 0, recent: [] }, unreadNotificationCount: 0 };
-    let resolveOld!: (response: Response) => void;
-    const oldSummary = new Promise<Response>((resolve) => { resolveOld = resolve; });
-    const fetcher = vi.fn().mockReturnValueOnce(oldSummary).mockResolvedValue(Response.json({ summary: empty }));
-    vi.stubGlobal("fetch", fetcher);
-    const view = render(<GuestHome {...defaultProps} featuredLives={[]} />);
-    await act(async () => {});
-    privy.user.id = "owner-b";
-    view.rerender(<GuestHome {...defaultProps} featuredLives={[]} />);
-    expect(await screen.findByRole("link", { name: "KARA 팬페이지 보기" })).not.toHaveAttribute("data-verified");
-    await act(async () => { resolveOld(Response.json({ summary: { ...empty, creators: [{ celebrity: { slug: "kara", name: "KARA", image: "/kara.jpg", isPublic: true }, relationship: "passport", passport: { id: "11111111-1111-4111-8111-111111111111", tier: "Gold", score: 50, remainingToNextTier: 70 }, ticketBalance: 0, firstReaction: null }] } })); });
-    expect(screen.getByRole("link", { name: "KARA 팬페이지 보기" })).not.toHaveAttribute("data-verified");
-  });
-
-  it("does not mark reaction-only creators complete and removes role text only inside cards", async () => {
-    privy.authenticated = true;
-    const summary = { profile: { nickname: null }, creators: [{ celebrity: { slug: "kara", name: "KARA", image: "/kara.jpg", isPublic: true }, relationship: "first_reaction_only", passport: null, ticketBalance: 0, firstReaction: { completedAt: "2026-09-01T00:00:00Z", txHash: null } }], live: { upcoming: [], history: [] }, rewards: { availableCount: 0, entries: 0, items: [] }, collection: { passportCount: 0, stampCount: 0, collectibleCount: 0, recent: [] }, unreadNotificationCount: 0 };
-    vi.stubGlobal("fetch", vi.fn(async () => Response.json({ summary })));
-    const { container } = render(<GuestHome {...defaultProps} featuredLives={[]} />);
-    expect(await screen.findByRole("link", { name: "KARA 팬페이지 보기" })).not.toHaveAttribute("data-verified");
-    expect(screen.getByRole("link", { name: "KARA 팬페이지 보기" })).not.toHaveAttribute("data-verified");
-    for (const card of container.querySelectorAll("#home-creator-rail article")) expect(card.textContent).not.toMatch(/크리에이터|아이돌/);
-    const filters = screen.getByRole("group", { name: "분류로 찾기" });
-    expect(within(filters).getByRole("button", { name: "아이돌" })).toBeInTheDocument();
-    expect(within(filters).getByRole("button", { name: "크리에이터" })).toBeInTheDocument();
-  });
-
-  it("does not fetch private Home state until an authenticated owner id is known", async () => {
-    privy.authenticated = true;
-    privy.user.id = "";
-    const fetcher = vi.fn();
-    vi.stubGlobal("fetch", fetcher);
-    render(<GuestHome {...defaultProps} featuredLives={[]} />);
-    await act(async () => {});
-    // Public reads (banner slots, the all-time creator ranking) may go out; nothing private does.
-    expect(fetcher.mock.calls.map(([input]) => String(input)).filter(url => !url.startsWith("/api/public/") && !url.startsWith("/api/rankings/creators"))).toEqual([]);
   });
 
   it("shows retry UI for failed LIVE data without presenting it as an empty LIVE list", () => {
@@ -650,255 +528,6 @@ describe("canonical 03 guest home", () => {
     fireEvent.click(buttons[0]);
     expect(routerRefresh).toHaveBeenCalledTimes(1);
   });
-});
-
-it("uses identical cards for all creators with editorial ordering only", () => {
-  const base = defaultProps.celebrities[0];
-  const roster = ["elina", "changha", "yuna", "aryeom", "park-myung-ho", "ifewknow", "jung-jenny", "xin"].map((slug, index) => ({ ...base, slug, name: slug, displayOrder:index, fanCount:index * 100 }));
-  const { container } = render(<GuestHome celebrities={roster} featuredLives={[]} locale="ko" />);
-  expect(screen.queryByRole("heading", { name:"함께 만날 크리에이터" })).not.toBeInTheDocument();
-  const section = container.querySelector("#celebrities")!;
-  expect(section.querySelectorAll("article")).toHaveLength(8);
-  expect([...section.querySelectorAll("article h3")].slice(0,3).map(h => h.textContent)).toEqual(["changha", "elina", "yuna"]);
-  expect(new Set([...section.querySelectorAll("article")].map(a => a.className)).size).toBe(1);
-  for (const slug of roster.slice(3).map(c => c.slug)) {
-    expect(section.querySelector(`a[href="/${slug}?locale=ko"]`)).not.toBeNull();
-  }
-  expect(section.textContent).not.toMatch(/인기순|팔로워순|순위/);
-});
-
-it("renders the verified CHZZK channel with its icon and keeps Instagram", () => {
- const socialLinks = [{platform:"instagram" as const,url:"https://www.instagram.com/jen2jen2_/"},{platform:"chzzk" as const,url:"https://chzzk.naver.com/0a3f97086cb81d3360c69fdf5d020045"}];
- render(<GuestHome {...defaultProps} featuredLives={[]} celebrities={[{...defaultProps.celebrities[0]!,slug:"jenny-jeong",name:"정제니",socialLinks}]} />);
- const link=screen.getByRole("link",{name:"정제니 치지직 공식 채널"});
- expect(link).toHaveAttribute("href",socialLinks[1]!.url);
- expect(link).toHaveAttribute("target","_blank");
- expect(link.querySelector("img")?.getAttribute("src")).toContain("chzzk.png");
- expect(screen.getByRole("link",{name:"정제니 Instagram 공식 채널"})).toBeInTheDocument();
- expect(screen.queryByRole("link",{name:/정제니 TikTok/})).not.toBeInTheDocument();
-});
-
-it("filters any assigned role and carries it into the directory without exposing empty roles", () => {
-  const { container } = render(<GuestHome {...defaultProps} featuredLives={[]} />);
-  const filters = screen.getByRole("group", { name: "분류로 찾기" });
-  expect(within(filters).queryByRole("button", { name: "쇼호스트" })).not.toBeInTheDocument();
-  fireEvent.click(within(filters).getByRole("button", { name: "크리에이터" }));
-  expect(container.querySelectorAll("#home-creator-rail article")).toHaveLength(2);
-  expect(within(container.querySelector("#celebrities") as HTMLElement).getByRole("link", { name: "전체 보기" })).toHaveAttribute("href", "/celebrities?locale=ko&role=creator");
-  expect(within(filters).getByRole("button", { name: "크리에이터" })).toHaveAttribute("aria-pressed", "true");
-  fireEvent.click(within(filters).getByRole("button", { name: "아이돌" }));
-  expect(container.querySelectorAll("#home-creator-rail article")).toHaveLength(1);
-  expect(container.querySelectorAll("[data-creator-roles]")).toHaveLength(0);
-});
-
-describe("Home favorites filter", () => {
-afterEach(() => {
-  privy.ready = true;
-  privy.authenticated = false;
-  privy.getAccessToken.mockReset().mockResolvedValue("token");
-  privy.user.id = "owner-a";
-  routerActions.push.mockReset();
-  window.history.replaceState({}, "", "/");
-  vi.unstubAllGlobals();
-});
-
-function favoriteSummary() {
-  return {
-    profile: { nickname: "Fan" },
-    creators: [
-      { celebrity: { slug: "kara", name: "KARA", image: "/kara.jpg", isPublic: true }, relationship: "passport", passport: { id: "11111111-1111-4111-8111-111111111111", tier: "Bronze", score: 1, remainingToNextTier: 14 }, ticketBalance: 1, firstReaction: null },
-      { celebrity: { slug: "elina", name: "Elina", image: "/elina.jpg", isPublic: true }, relationship: "first_reaction_only", passport: null, ticketBalance: 0, firstReaction: { completedAt: "2026-09-03T10:00:00.000Z", txHash: null } },
-    ],
-    live: { upcoming: [], history: [] }, rewards: { availableCount: 0, entries: 0, items: [] },
-    collection: { passportCount: 1, stampCount: 0, collectibleCount: 0, recent: [] }, unreadNotificationCount: 0,
-  };
-}
-
-/** Public reads every Home render may make (banner slots, all-time creator ranking for the favorite cards). They never take the private answer. */
-function publicRead(input: string | URL | Request) {
-  const url = String(input);
-  if (url.startsWith("/api/public/banner-slots")) return Response.json({ slots: {} });
-  if (url.startsWith("/api/rankings/creators")) return Response.json({ period: "all", periodStart: "1970-01-01", computedAt: null, rows: [] });
-  return null;
-}
-const privateCalls = (fetcher: { mock: { calls: unknown[][] } }) => fetcher.mock.calls.map(([input]) => String(input)).filter(url => !url.startsWith("/api/public/") && !url.startsWith("/api/rankings/creators"));
-
-it.each(["owned", "empty", "error", "guest"] as const)("hides intermediate filters until auth and personalization resolve: %s", async (mode) => {
-  privy.ready = false;
-  privy.authenticated = mode !== "guest";
-  let resolveSummary!: (response: Response) => void;
-  const pendingSummary = new Promise<Response>(resolve => { resolveSummary = resolve; });
-  const fetcher = vi.fn(async (input: string | URL | Request) => publicRead(input) ?? (String(input).startsWith("/api/passports/")
-    ? Response.json({ passport: { stamps: [], activities: [], stampSummary: { total: 0 } } }) : pendingSummary));
-  vi.stubGlobal("fetch", fetcher);
-  const view = render(<GuestHome {...defaultProps} featuredLives={[]} />);
-  const expectSkeleton = () => {
-    const section = screen.getByRole("region", { name: "당신의 최애" });
-    expect(within(section).getByRole("status")).toHaveAttribute("aria-busy", "true");
-    expect(within(section).queryByRole("group", { name: "분류로 찾기" })).not.toBeInTheDocument();
-    expect(within(section).queryByRole("article")).not.toBeInTheDocument();
-    expect(within(section).queryByRole("link")).not.toBeInTheDocument();
-  };
-  expectSkeleton();
-  expect(privateCalls(fetcher)).toEqual([]);
-  privy.ready = true;
-  view.rerender(<GuestHome {...defaultProps} featuredLives={[]} />);
-  if (mode !== "guest") {
-    await waitFor(() => expect(privateCalls(fetcher)).not.toEqual([]));
-    expectSkeleton();
-    const summary = favoriteSummary();
-    if (mode === "empty") { summary.creators = []; summary.collection.passportCount = 0; }
-    await act(async () => resolveSummary(mode === "error" ? Response.json({}, { status: 500 }) : Response.json({ summary })));
-  }
-  const section = screen.getByRole("region", { name: "당신의 최애" });
-  expect(within(section).queryByRole("status")).not.toBeInTheDocument();
-  expect(within(section).getByRole("button", { name: mode === "owned" ? "내 최애" : "전체" })).toHaveAttribute("aria-pressed", "true");
-  expect(within(section).getAllByRole("article")).toHaveLength(mode === "owned" ? 1 : 3);
-});
-
-it("keeps the chosen filter and cards visible during background personalization refresh", async () => {
-  privy.authenticated = true;
-  let resolveSummary!: (response: Response) => void;
-  const pending = new Promise<Response>(resolve => { resolveSummary = resolve; });
-  let summaryReads = 0;
-  vi.stubGlobal("fetch", vi.fn(async (input: string | URL | Request) => {
-    const shared = publicRead(input); if (shared) return shared;
-    if (String(input).startsWith("/api/passports/")) return Response.json({ passport: { stamps: [], activities: [], stampSummary: { total: 0 } } });
-    summaryReads += 1;
-    return summaryReads === 1 ? Response.json({ summary: favoriteSummary() }) : pending;
-  }));
-  render(<GuestHome {...defaultProps} featuredLives={[]} />);
-  const section = screen.getByRole("region", { name: "당신의 최애" });
-  fireEvent.click(await within(section).findByRole("button", { name: "전체" }));
-  fireEvent.focus(window);
-  await waitFor(() => expect(summaryReads).toBe(2));
-  expect(within(section).queryByRole("status")).not.toBeInTheDocument();
-  expect(within(section).getAllByRole("article")).toHaveLength(3);
-  await act(async () => resolveSummary(Response.json({ summary: favoriteSummary() })));
-  expect(within(section).getByRole("button", { name: "전체" })).toHaveAttribute("aria-pressed", "true");
-});
-
-it("tags a creator whose 찐팬 100 challenge is on, and no other", () => {
-  render(<GuestHome {...defaultProps} featuredLives={[]} initialOwnedOnly={false} />);
-  const rail = document.getElementById("home-creator-rail") as HTMLElement;
-  const kara = within(rail).getByRole("heading", { name: "KARA" }).closest("article") as HTMLElement;
-  expect(within(kara).getByText("찐팬 100 도전 중")).toBeInTheDocument();
-  expect(within(rail).getAllByText("찐팬 100 도전 중")).toHaveLength(1);
-});
-
-it("places My favorites first and sends guests to login with a restorable Home filter", () => {
-  render(<GuestHome {...defaultProps} featuredLives={[]} />);
-  const filters = screen.getByRole("group", { name: "분류로 찾기" });
-  expect(within(filters).getAllByRole("button").slice(0, 2).map((button) => button.textContent)).toEqual(["내 최애", "전체"]);
-  fireEvent.click(within(filters).getByRole("button", { name: "내 최애" }));
-  const login = new URL(routerActions.push.mock.calls[0]![0], "https://byus.test");
-  expect(login.pathname).toBe("/login");
-  expect(login.searchParams.get("returnTo")).toBe("/?locale=ko&owned=1");
-});
-
-it("defaults to My favorites after loading and excludes first-reaction-only creators", async () => {
-  privy.authenticated = true;
-  const summary = favoriteSummary();
-  vi.stubGlobal("fetch", vi.fn(async (input: string | URL | Request) => {
-    const url = String(input);
-    const shared = publicRead(input); if (shared) return shared;
-    if (url.startsWith("/api/me/creator-reactions")) return Response.json(reactionStates(celebrities.map(({ slug }) => slug)));
-    if (url.startsWith("/api/passports/")) return Response.json({ passport: { stamps: [], activities: [], stampSummary: { total: 0 } } });
-    return Response.json({ summary });
-  }));
-  const { container } = render(<GuestHome {...defaultProps} featuredLives={[]} />);
-  const filters = await screen.findByRole("group", { name: "분류로 찾기" });
-  await waitFor(() => expect(within(filters).getByRole("button", { name: "내 최애" })).toHaveAttribute("aria-pressed", "true"));
-  expect(container.querySelectorAll("#home-creator-rail article")).toHaveLength(1);
-  fireEvent.click(within(filters).getByRole("button", { name: "내 최애" }));
-  expect(container.querySelectorAll("#home-creator-rail article")).toHaveLength(1);
-  expect(within(container.querySelector("#celebrities") as HTMLElement).getByRole("heading", { name: "KARA" })).toBeInTheDocument();
-  expect(within(container.querySelector("#celebrities") as HTMLElement).queryByRole("heading", { name: "Elina" })).not.toBeInTheDocument();
-  expect(within(container.querySelector("#celebrities") as HTMLElement).getByRole("link", { name: "전체 보기" })).toHaveAttribute("href", "/celebrities?locale=ko&owned=1");
-  expect(new URL(window.location.href).searchParams.get("owned")).toBe("1");
-  expect(new URL(window.location.href).searchParams.get("role")).toBeNull();
-});
-
-it.each(["none", "explicit-all", "role"] as const)("keeps the appropriate default for %s", async (mode) => {
-  privy.authenticated = true;
-  const summary = favoriteSummary();
-  if (mode === "none") {
-    summary.creators = [];
-    summary.collection.passportCount = 0;
-  }
-  vi.stubGlobal("fetch", vi.fn(async (input: string | URL | Request) => {
-    const url = String(input);
-    const shared = publicRead(input); if (shared) return shared;
-    if (url.startsWith("/api/me/creator-reactions")) return Response.json(reactionStates(celebrities.map(({ slug }) => slug)));
-    if (url.startsWith("/api/passports/")) return Response.json({ passport: { stamps: [], activities: [], stampSummary: { total: 0 } } });
-    return Response.json({ summary });
-  }));
-  const { container } = render(<GuestHome {...defaultProps} featuredLives={[]}
-    initialOwnedOnly={mode === "explicit-all" ? false : undefined} initialRole={mode === "role" ? "creator" : "all"} />);
-  const filters = await screen.findByRole("group", { name: "분류로 찾기" });
-  await waitFor(() => expect(within(filters).getByRole("button", { name: "내 최애" })).toBeEnabled());
-  expect(within(filters).getByRole("button", { name: mode === "role" ? "크리에이터" : "전체" })).toHaveAttribute("aria-pressed", "true");
-  expect(container.querySelectorAll("#home-creator-rail article")).toHaveLength(mode === "role" ? 2 : 3);
-});
-
-it("preserves an explicit All choice once personal data resolves", async () => {
-  privy.authenticated = true;
-  let resolveSummary!: (response: Response) => void;
-  const pendingSummary = new Promise<Response>((resolve) => { resolveSummary = resolve; });
-  vi.stubGlobal("fetch", vi.fn(async (input: string | URL | Request) => {
-    const url = String(input);
-    const shared = publicRead(input); if (shared) return shared;
-    if (url.startsWith("/api/me/creator-reactions")) return Response.json(reactionStates(celebrities.map(({ slug }) => slug)));
-    if (url.startsWith("/api/passports/")) return Response.json({ passport: { stamps: [], activities: [], stampSummary: { total: 0 } } });
-    return pendingSummary;
-  }));
-  const { container } = render(<GuestHome {...defaultProps} featuredLives={[]} initialOwnedOnly={false} />);
-  expect(screen.queryByRole("group", { name: "분류로 찾기" })).not.toBeInTheDocument();
-  await act(async () => { resolveSummary(Response.json({ summary: favoriteSummary() })); });
-  const filters = await screen.findByRole("group", { name: "분류로 찾기" });
-  await waitFor(() => expect(within(filters).getByRole("button", { name: "내 최애" })).toBeEnabled());
-  expect(within(filters).getByRole("button", { name: "전체" })).toHaveAttribute("aria-pressed", "true");
-  expect(container.querySelectorAll("#home-creator-rail article")).toHaveLength(3);
-  fireEvent.click(within(filters).getByRole("button", { name: "내 최애" }));
-  expect(container.querySelectorAll("#home-creator-rail article")).toHaveLength(1);
-  fireEvent.click(within(filters).getByRole("button", { name: "전체" }));
-  expect(container.querySelectorAll("#home-creator-rail article")).toHaveLength(3);
-});
-
-it("shows honest loading and error states for a personal Home deep link", async () => {
-  privy.authenticated = true;
-  vi.stubGlobal("fetch", vi.fn(() => new Promise(() => undefined)));
-  const loading = render(<GuestHome {...defaultProps} featuredLives={[]} initialOwnedOnly />);
-  const loadingSection = loading.container.querySelector("#celebrities") as HTMLElement;
-  expect(within(loadingSection).getByText("보유한 팬 패스포트를 확인하고 있어요.")).toBeInTheDocument();
-  expect(loadingSection.querySelectorAll("article")).toHaveLength(0);
-  loading.unmount();
-
-  vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: false, status: 500, json: async () => ({}) }));
-  const failed = render(<GuestHome {...defaultProps} featuredLives={[]} initialOwnedOnly />);
-  const failedSection = failed.container.querySelector("#celebrities") as HTMLElement;
-  expect(await within(failedSection).findByRole("alert")).toHaveTextContent("보유한 팬 패스포트를 확인하지 못했어요.");
-  expect(within(failedSection).queryByText("아직 보유한 팬 패스포트가 없어요.")).not.toBeInTheDocument();
-  expect(failedSection.querySelectorAll("article")).toHaveLength(0);
-});
-
-it.each([0, 1])("offers the full roster when no owned profile is published and Passport count is %s", async (passportCount) => {
-  privy.authenticated = true;
-  const summary = {
-    profile: { nickname: null }, creators: [], live: { upcoming: [], history: [] },
-    rewards: { availableCount: 0, entries: 0, items: [] },
-    collection: { passportCount, stampCount: 0, collectibleCount: 0, recent: [] }, unreadNotificationCount: 0,
-  };
-  vi.stubGlobal("fetch", vi.fn(async (input: string | URL | Request) => String(input).startsWith("/api/me/creator-reactions")
-    ? Response.json(reactionStates(celebrities.map(({ slug }) => slug)))
-    : Response.json({ summary })));
-  const { container } = render(<GuestHome {...defaultProps} featuredLives={[]} initialOwnedOnly />);
-  const section = container.querySelector("#celebrities") as HTMLElement;
-  expect(await within(section).findByText(passportCount > 0 ? "지금 공개된 내 최애가 없어요." : "아직 보유한 팬 패스포트가 없어요.")).toBeInTheDocument();
-  fireEvent.click(within(section).getByRole("button", { name: "전체 보기" }));
-  expect(section.querySelectorAll("#home-creator-rail article")).toHaveLength(3);
-  expect(new URL(window.location.href).searchParams.get("owned")).toBeNull();
-});
 });
 vi.mock("@/features/live/ui/observed-live-strip", () => ({ ObservedLiveStrip: () => null }));
 
@@ -921,19 +550,18 @@ describe("streamed Home sections", () => {
     const pending = {
       homeBanners: deferred<readonly HomeBanner[]>(),
       celebrities: deferred<readonly PublishedCelebrity[]>(),
-      celebrityLives: deferred<readonly PublishedCelebrityLive[]>(),
+      homeSlots: deferred<BannerSlotMap>(),
       featuredLives: deferred<readonly LiveEventResponse[]>(),
       elinaRaffles: deferred<RaffleList>(),
     };
     const queries: HomeQueries = {
       homeBanners: settleHomeQuery(pending.homeBanners.promise),
       celebrities: settleHomeQuery(pending.celebrities.promise),
-      celebrityLives: settleHomeQuery(pending.celebrityLives.promise),
+      homeSlots: settleHomeQuery(pending.homeSlots.promise),
       featuredLives: settleHomeQuery(pending.featuredLives.promise),
       elinaRaffles: settleHomeQuery(pending.elinaRaffles.promise),
     };
-    const publishedCreatorSlugs = queries.celebrities.then(result => result.status === "fulfilled" ? result.value.map(item => item.slug) : null);
-    return { pending, queries, publishedCreatorSlugs };
+    return { pending, queries };
   }
 
   it("shows the real GGGI banner immediately and releases each section without waiting for optional queries", async () => {
@@ -942,128 +570,28 @@ describe("streamed Home sections", () => {
     await act(async () => { view = render(<StreamingGuestHome {...home} locale="ko" />); });
     expect(view.container.querySelector("[data-managed-home-banner]")).toHaveTextContent("GGGI");
     expect(screen.queryByRole("link", { name: "엘리나와 함께 뱅크시 전시 보러 가요" })).not.toBeInTheDocument();
-    await act(async () => { home.pending.celebrities.resolve(celebrities); });
-    const filters = await screen.findByRole("group", { name: "분류로 찾기" });
-    expect(view.container.querySelectorAll("#home-creator-rail article")).toHaveLength(3);
-    await act(async () => { fireEvent.click(within(filters).getByRole("button", { name: "크리에이터" })); });
-    await act(async () => { home.pending.celebrityLives.resolve([]); home.pending.featuredLives.resolve([featuredLive]); });
-    expect(within(filters).getByRole("button", { name: "크리에이터" })).toHaveAttribute("aria-pressed", "true");
-    expect(view.container.querySelectorAll("#home-creator-rail article")).toHaveLength(2);
+    await act(async () => { home.pending.celebrities.resolve(celebrities); home.pending.homeSlots.resolve({}); home.pending.featuredLives.resolve([featuredLive]); });
     expect(await screen.findByText(featuredLive.live.title)).toBeInTheDocument();
     expect(screen.queryByRole("link", { name: "엘리나와 함께 뱅크시 전시 보러 가요" })).not.toBeInTheDocument();
     await act(async () => { home.pending.homeBanners.resolve([bannerFixture]); home.pending.elinaRaffles.resolve({ raffles: elinaRaffles }); });
-    expect(screen.getAllByRole("link", { name: "엘리나와 함께 뱅크시 전시 보러 가요" }).length).toBeGreaterThan(0);
-    expect(within(filters).getByRole("button", { name: "크리에이터" })).toHaveAttribute("aria-pressed", "true");
+    expect(screen.getAllByRole("link", { name: "엘리나와 함께 뱅크시 전시 보러 가요", hidden: true }).length).toBeGreaterThan(0);
   });
 
-  it("preserves the owner, filters, LIVE page and carousel while optional data settles", async () => {
-    privy.authenticated = true;
-    const summary = {
-      profile: { nickname: "Fan" },
-      creators: ["kara", "elina"].map((slug, index) => ({
-        celebrity: { slug, name: slug === "kara" ? "KARA" : "Elina", image: `/${slug}.jpg`, isPublic: true },
-        relationship: "passport", passport: { id: index ? "22222222-2222-4222-8222-222222222222" : "11111111-1111-4111-8111-111111111111", tier: "Bronze", score: 1, remainingToNextTier: 14 }, ticketBalance: 0, firstReaction: null,
-      })),
-      live: { upcoming: [], history: [] }, rewards: { availableCount: 0, entries: 0, items: [] },
-      collection: { passportCount: 2, stampCount: 0, collectibleCount: 0, recent: [] }, unreadNotificationCount: 0,
-    };
-    const fetcher = vi.fn(async (input: string | URL | Request) => String(input).startsWith("/api/passports/")
-      ? Response.json({ passport: { stamps: [], activities: [], stampSummary: { total: 0 } } }) : Response.json({ summary }));
-    vi.stubGlobal("fetch", fetcher);
-    const home = pendingHome();
-    let view!: ReturnType<typeof render>;
-    await act(async () => { view = render(<StreamingGuestHome {...home} locale="ko" />); });
-    expect(screen.queryByText("아직 보유한 팬 패스포트가 없어요.")).not.toBeInTheDocument();
-    await act(async () => {
-      home.pending.celebrities.resolve(celebrities);
-      home.pending.homeBanners.resolve([]);
-      home.pending.featuredLives.resolve(Array.from({ length: 4 }, (_, index) => ({ ...featuredLive, live: { ...featuredLive.live, id: `live-${index}`, slug: `live-${index}`, title: `LIVE ${index}` } })));
-    });
-    await waitFor(() => expect(screen.getByRole("button", { name: "크리에이터" })).toBeEnabled());
-    await act(async () => {
-      fireEvent.click(screen.getByRole("button", { name: "크리에이터" }));
-      fireEvent.click(screen.getByRole("button", { name: "다음 LIVE 목록" }));
-      fireEvent.click(screen.getByRole("button", { name: "다음 배너" }));
-    });
-    const activeSlide = view.container.querySelector('[aria-roledescription="slide"][data-active="true"]');
-    await act(async () => {
-      home.pending.celebrityLives.reject();
-      home.pending.elinaRaffles.resolve({ raffles: elinaRaffles.map(raffle => ({ ...raffle, status: "closed" })) });
-    });
-    expect(screen.getByRole("button", { name: "크리에이터" })).toHaveAttribute("aria-pressed", "true");
-    expect(within(view.container.querySelector("#upcoming") as HTMLElement).getByText("2 / 2")).toBeInTheDocument();
-    expect(view.container.querySelector('[aria-roledescription="slide"][data-active="true"]')).toBe(activeSlide);
-    expect(fetcher.mock.calls.filter(([url]) => String(url).startsWith("/api/me/summary"))).toHaveLength(1);
-  });
-
-  it("keeps unlisted pages out of the discovery chips and in My favorites", async () => {
-    privy.authenticated = true;
-    const summary = {
-      profile: { nickname: "Fan" },
-      creators: ["kara", "elina"].map((slug, index) => ({
-        celebrity: { slug, name: slug === "kara" ? "KARA" : "Elina", image: `/${slug}.jpg`, isPublic: true },
-        relationship: "passport", passport: { id: index ? "22222222-2222-4222-8222-222222222222" : "11111111-1111-4111-8111-111111111111", tier: "Bronze", score: 1, remainingToNextTier: 14 }, ticketBalance: 0, firstReaction: null,
-      })),
-      live: { upcoming: [], history: [] }, rewards: { availableCount: 0, entries: 0, items: [] },
-      collection: { passportCount: 2, stampCount: 0, collectibleCount: 0, recent: [] }, unreadNotificationCount: 0,
-    };
-    vi.stubGlobal("fetch", vi.fn(async (input: string | URL | Request) => String(input).startsWith("/api/passports/")
-      ? Response.json({ passport: { stamps: [], activities: [], stampSummary: { total: 0 } } }) : Response.json({ summary })));
-    const home = pendingHome();
-    const queries: HomeQueries = { ...home.queries, unlistedCreators: Promise.resolve({ status: "fulfilled", value: ["kara", "changha"] }) };
-    let view!: ReturnType<typeof render>;
-    await act(async () => { view = render(<StreamingGuestHome queries={queries} publishedCreatorSlugs={home.publishedCreatorSlugs} locale="ko" />); });
-    await act(async () => { home.pending.celebrities.resolve(celebrities); });
-    const filters = await screen.findByRole("group", { name: "분류로 찾기" });
-    const rail = () => [...view.container.querySelectorAll("#home-creator-rail article h3")].map(heading => heading.textContent);
-    await act(async () => { fireEvent.click(within(filters).getByRole("button", { name: "전체" })); });
-    expect(rail()).toEqual(["Elina"]);
-    await act(async () => { fireEvent.click(within(filters).getByRole("button", { name: "내 최애" })); });
-    await waitFor(() => expect([...rail()].sort()).toEqual(["Elina", "KARA"]));
-    // The only idol is unlisted, so no idol chip offers an empty rail.
-    expect(within(filters).queryByRole("button", { name: "아이돌" })).not.toBeInTheDocument();
-  });
-
-  it("shows every creator when the unlisted list fails", async () => {
-    const home = pendingHome();
-    const queries: HomeQueries = { ...home.queries, unlistedCreators: Promise.resolve({ status: "rejected" }) };
-    let view!: ReturnType<typeof render>;
-    await act(async () => { view = render(<StreamingGuestHome queries={queries} publishedCreatorSlugs={home.publishedCreatorSlugs} locale="ko" />); });
-    await act(async () => { home.pending.celebrities.resolve(celebrities); });
-    await screen.findByRole("group", { name: "분류로 찾기" });
-    expect(view.container.querySelectorAll("#home-creator-rail article")).toHaveLength(3);
-  });
-
-  it.each(["homeBanners", "celebrities", "featuredLives", "celebrityLives", "elinaRaffles"] as const)("isolates a failed %s query", async (failed) => {
+  it.each(["homeBanners", "featuredLives", "elinaRaffles"] as const)("isolates a failed %s query", async (failed) => {
     const home = pendingHome();
     let view!: ReturnType<typeof render>;
     await act(async () => { view = render(<StreamingGuestHome {...home} locale="ko" />); });
     await act(async () => {
       home.pending[failed].reject();
       if (failed !== "homeBanners") home.pending.homeBanners.resolve([bannerFixture]);
-      if (failed !== "celebrities") home.pending.celebrities.resolve(celebrities);
+      home.pending.celebrities.resolve(celebrities);
       if (failed !== "featuredLives") home.pending.featuredLives.resolve([featuredLive]);
-      if (failed !== "celebrityLives") home.pending.celebrityLives.resolve([]);
+      home.pending.homeSlots.resolve({});
       if (failed !== "elinaRaffles") home.pending.elinaRaffles.resolve({ raffles: elinaRaffles });
     });
     expect(view.container.querySelector("[data-managed-home-banner]")).toHaveTextContent("GGGI");
-    if (failed !== "celebrities") expect(view.container.querySelectorAll("#home-creator-rail article")).toHaveLength(3);
     if (failed !== "featuredLives") expect(screen.getByText(featuredLive.live.title)).toBeInTheDocument();
-    if (failed === "elinaRaffles") expect(screen.queryByRole("link", { name: "엘리나와 함께 뱅크시 전시 보러 가요" })).not.toBeInTheDocument();
-    if (failed !== "celebrityLives") expect(screen.getAllByRole("alert").length).toBeGreaterThan(0);
+    if (failed === "elinaRaffles") expect(screen.queryByRole("link", { name: "엘리나와 함께 뱅크시 전시 보러 가요", hidden: true })).not.toBeInTheDocument();
+    expect(screen.getAllByRole("alert", { hidden: true }).length).toBeGreaterThan(0);
   });
-});
-
-it("shows true fans and hearts from the creator ranking on each favorite card (261107-2 D13)", async () => {
-  vi.stubGlobal("fetch", vi.fn(async (input: string | URL | Request) => String(input).startsWith("/api/rankings/creators")
-    ? Response.json({ period: "all", periodStart: "1970-01-01", computedAt: null, rows: [{ rank: 1, slug: "kara", name: "KARA", imageUrl: null, score: 1234, jjinfanCount: 56, myHearts: null }] })
-    : Response.json({}, { status: 503 })));
-  render(<GuestHome {...defaultProps} featuredLives={[]} />);
-  const kara = within(screen.getByRole("heading", { name: "KARA", level: 3 }).closest("article")!);
-  expect(await kara.findByText("찐팬 56")).toBeVisible();
-  expect(kara.getByLabelText("하트 1,234개")).toBeVisible();
-  // A creator not in the ranking yet shows 0, not a follower count.
-  const elina = within(screen.getByRole("heading", { name: "Elina", level: 3 }).closest("article")!);
-  expect(elina.getByText("찐팬 0")).toBeVisible();
-  expect(elina.queryByText(/팬 320만/)).toBeNull();
 });

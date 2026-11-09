@@ -30,3 +30,20 @@ describe("popular posts route", () => {
     expect(rpc).toHaveBeenCalledWith("read_public_popular_posts_page", { p_app_user_id: "11111111-1111-4111-8111-111111111111", p_locale: "en", p_page: 1, p_include_groups: false });
   });
 });
+
+describe("popular posts page pictures", () => {
+  const row = (source: "fan" | "group", pageRef: string) => ({ source, id: "a9600000-0000-4000-8000-000000000001", pageRef, pageName: pageRef, title: "글", nickname: "팬", createdAt: "2026-11-09T00:00:00Z", likeCount: 1, commentCount: 0, viewCount: null, asset: null });
+  it("adds each page's picture to its rows, once per page, and leaves rows of pages without one as they are", async () => {
+    const rpc = vi.fn(async () => ({ hasMore: false, items: [row("fan", "elina"), row("fan", "elina"), row("group", "g1")] }));
+    const pageImage = vi.fn(async (_source: string, ref: string) => ref === "elina" ? "https://x/elina.webp" : null);
+    const handler = createGetPublicPopularPosts({ rpc, authorize: vi.fn() } as never, { groupsEnabled: true, pageImage });
+    const body = await (await handler(new Request("http://x/api/public/popular-posts"))).json();
+    expect(pageImage).toHaveBeenCalledTimes(2);
+    expect(body.items.map((item: { pageImageUrl?: string }) => item.pageImageUrl)).toEqual(["https://x/elina.webp", "https://x/elina.webp", undefined]);
+  });
+  it("still answers when a page's picture cannot be read", async () => {
+    const rpc = vi.fn(async () => ({ hasMore: false, items: [row("fan", "elina")] }));
+    const handler = createGetPublicPopularPosts({ rpc, authorize: vi.fn() } as never, { groupsEnabled: true, pageImage: async () => { throw new Error("down"); } });
+    expect((await handler(new Request("http://x/api/public/popular-posts"))).status).toBe(200);
+  });
+});
