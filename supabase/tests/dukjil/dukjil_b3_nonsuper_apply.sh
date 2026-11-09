@@ -27,8 +27,8 @@ begin;
 create role b3_apply nologin nosuperuser nobypassrls;
 grant create, usage on schema public to b3_apply;
 grant usage on schema extensions, cron to b3_apply;
-grant execute on function cron.schedule(text, text, text) to b3_apply;
-grant select, insert on cron.job to b3_apply; -- the clean-chain shim of pg_cron (the real one checks its own rights)
+grant execute on function cron.schedule(text, text, text), cron.unschedule(bigint) to b3_apply;
+grant select, insert, delete on cron.job to b3_apply; -- the clean-chain shim of pg_cron (the real one checks its own rights)
 do \$\$ declare s text := pg_get_serial_sequence('cron.job', 'jobid'); begin if s is not null then execute format('grant usage on sequence %s to b3_apply', s); end if; end \$\$;
 $( [ "$1" = member ] && echo "grant \"$OWNER\" to b3_apply;" )
 -- dev's applier owns the functions B3 patches

@@ -4,7 +4,12 @@
 begin;
 set local lock_timeout = '5s';
 
-select cron.unschedule(jobid) from cron.job where jobname = 'fan-tier-bonus-retry';
+do $cron$
+begin
+  if exists (select 1 from pg_catalog.pg_namespace where nspname = 'cron') then
+    perform cron.unschedule(jobid) from cron.job where jobname = 'fan-tier-bonus-retry';
+  end if;
+end $cron$;
 drop trigger zzz_fan_tier_sync on public.creator_heart_ledger;
 drop trigger zzz_fan_tier_sync on public.fan_heart_conversions;
 drop trigger zzz_fan_tier_sync on public.passport_page_slots;

@@ -64,7 +64,12 @@ begin
   return correction;
 end $$;
 
-select cron.unschedule(jobid) from cron.job where jobname = 'share-proof-capture-cleanup';
+do $cron$
+begin
+  if exists (select 1 from pg_catalog.pg_namespace where nspname = 'cron') then
+    perform cron.unschedule(jobid) from cron.job where jobname = 'share-proof-capture-cleanup';
+  end if;
+end $cron$;
 drop function public.dukjil_correct_proof_grant(uuid, uuid, text, text);
 drop function public.request_share_proof_capture_cleanup();
 drop function public.authorize_share_proof_image_read(uuid, uuid, uuid, text);

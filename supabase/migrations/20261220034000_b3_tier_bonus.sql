@@ -229,7 +229,16 @@ begin
   end loop;
   return jsonb_build_object('paid', paid, 'void', voided, 'pending', pending);
 end $$;
-select cron.schedule('fan-tier-bonus-retry', '*/5 * * * *', $c$select public.retry_fan_tier_bonus_grants(50)$c$);
+-- Every 5 minutes where pg_cron is installed (same form as 20261215010000): a second run replaces the job instead of adding one.
+-- Where it is not (dev has no cron schema), a grant left pending (creator private, wallet closed) is paid only when an operator runs
+-- `select public.retry_fan_tier_bonus_grants(50);` (as the owner, in the SQL editor); the first payment still happens on the write.
+do $cron$
+begin
+  if exists (select 1 from pg_catalog.pg_namespace where nspname = 'cron') then
+    perform cron.unschedule(jobid) from cron.job where jobname = 'fan-tier-bonus-retry';
+    perform cron.schedule('fan-tier-bonus-retry', '*/5 * * * *', 'select public.retry_fan_tier_bonus_grants(50)');
+  end if;
+end $cron$;
 
 -- Install: every passport's history matches its current tier now (no bonus: all of it is before the bonus starts). A function so the
 -- same step can run outside a migration if a production run turns out long (it must finish before v2 takes effect).

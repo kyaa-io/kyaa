@@ -267,7 +267,16 @@ begin
   get diagnostics n = row_count;
   return n;
 end $$;
-select cron.schedule('share-proof-capture-cleanup', '17 4 * * *', $c$select public.request_share_proof_capture_cleanup()$c$);
+-- Daily where pg_cron is installed (same form as 20261215010000): a second run replaces the job instead of adding one.
+-- Where it is not (dev has no cron schema), nothing schedules this: decided captures stay until an operator runs
+-- `select public.request_share_proof_capture_cleanup();` (as the owner, in the SQL editor) or the account-deletion scrub queues them.
+do $cron$
+begin
+  if exists (select 1 from pg_catalog.pg_namespace where nspname = 'cron') then
+    perform cron.unschedule(jobid) from cron.job where jobname = 'share-proof-capture-cleanup';
+    perform cron.schedule('share-proof-capture-cleanup', '17 4 * * *', 'select public.request_share_proof_capture_cleanup()');
+  end if;
+end $cron$;
 
 -- B3 §5.2 회수: the share-grant correction with the action key as a parameter. The old function passes 'share'.
 create function public.dukjil_correct_proof_grant(p_actor uuid, p_owner uuid, p_action_key text, p_source_key text)
