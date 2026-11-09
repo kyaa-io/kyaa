@@ -227,6 +227,33 @@ it("re-reads by a timer while visible, skips the browser copy, and waits while h
   await waitFor(() => expect(fanReads()).toHaveLength(3));
 });
 
+it("keeps re-reading after a quiet re-read fails: the rows stay and the next try comes a minute later", async () => {
+  vi.useFakeTimers({ shouldAdvanceTime: true });
+  vi.spyOn(Math, "random").mockReturnValue(0);
+  vi.spyOn(document, "visibilityState", "get").mockReturnValue("visible");
+  let fail = false;
+  const body = fans(undefined, null, { computedAt: "2026-11-08T00:00:00Z", fetchedAt: "2026-11-08T00:09:59Z" });
+  const fetcher = vi.fn(async (input: string | URL | Request, _init?: RequestInit) => {
+    const url = new URL(String(input), "https://x");
+    if (url.searchParams.get("kind") === "creators") return Response.json(creators());
+    return fail ? new Response("{}", { status: 503 }) : Response.json(body);
+  });
+  vi.stubGlobal("fetch", fetcher);
+  const { container } = render(<HomeRankingCard locale="ko" />);
+  await within(narrow(container)).findByText("별빛");
+  const fanReads = () => fetcher.mock.calls.filter(([input]) => String(input).includes("kind=fans")).length;
+  fail = true;
+  await act(async () => { vi.advanceTimersByTime(61_000); });
+  await waitFor(() => expect(fanReads()).toBe(2));
+  expect(within(narrow(container)).getByText("별빛")).toBeInTheDocument();
+  // The failed try ran at 60s, so the next one is due at 120s (one minute later), not ten minutes later and not never.
+  await act(async () => { vi.advanceTimersByTime(57_000); });
+  expect(fanReads()).toBe(2);
+  fail = false;
+  await act(async () => { vi.advanceTimersByTime(3_000); });
+  await waitFor(() => expect(fanReads()).toBe(3));
+});
+
 it("moves only the rows whose rank changed on a re-read of the same metric, and not under reduced motion", async () => {
   const animate = vi.fn((_keyframes: unknown, _options?: unknown) => ({}) as Animation);
   const original = Object.getOwnPropertyDescriptor(HTMLElement.prototype, "offsetTop");

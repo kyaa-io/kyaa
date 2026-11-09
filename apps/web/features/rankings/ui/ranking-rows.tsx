@@ -57,7 +57,7 @@ export function nextReadDelay(fetchedAt: string | undefined, computedAt: string 
 }
 
 /** Reads the ranking and reads it again, quietly (rows stay on screen), when the snapshot it showed turns ten minutes old: by a timer while the
- * page is visible, or at once when the page comes back after that moment. Never more often than once a minute. */
+ * page is visible, or at once when the page comes back after that moment. A failed re-read tries again a minute later. Never more often than once a minute. */
 export function useLiveRanking<T extends { computedAt: string | null; fetchedAt?: string }>(url: string, parse: (value: unknown) => T) {
   const { state, retry, refresh } = useRankingResource(url, parse);
   const data = state.status === "ready" ? state.data : null;
@@ -66,12 +66,15 @@ export function useLiveRanking<T extends { computedAt: string | null; fetchedAt?
     if (!data) return;
     due.current = Date.now() + nextReadDelay(data.fetchedAt, data.computedAt);
     let timer: ReturnType<typeof setTimeout> | undefined;
-    const arm = () => {
+    // A quiet re-read that fails keeps the rows (the same answer object), so this effect would not run again: the next try is armed here,
+    // a minute later. A re-read that succeeds brings a new answer, and the effect starts over from its snapshot.
+    const read = () => { due.current = Date.now() + MIN_GAP_MS + Math.floor(Math.random() * JITTER_MS); refresh(); arm(); };
+    function arm() {
       clearTimeout(timer);
       if (document.visibilityState !== "visible") return;
-      timer = setTimeout(refresh, Math.max(0, due.current - Date.now()));
-    };
-    const back = () => { if (document.visibilityState === "visible" && Date.now() >= due.current) refresh(); else arm(); };
+      timer = setTimeout(read, Math.max(0, due.current - Date.now()));
+    }
+    const back = () => { if (document.visibilityState === "visible" && Date.now() >= due.current) read(); else arm(); };
     arm();
     document.addEventListener("visibilitychange", back);
     return () => { clearTimeout(timer); document.removeEventListener("visibilitychange", back); };
