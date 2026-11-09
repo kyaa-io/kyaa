@@ -4,10 +4,15 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 TMP="$(mktemp -d)"
 trap 'rm -rf "$TMP"' EXIT
-NAME=20261220110000_home_ranking_info.sql
+NAMES=(20261220110000_home_ranking_info.sql 20261220110001_home_ranking_response_fields.sql)
 for kind in migrations rollback; do
-  sed -e '/^begin;$/d' -e '/^commit;$/d' -e "/^notify pgrst, 'reload schema';$/d" "$ROOT/supabase/$kind/$NAME" > "$TMP/$kind.sql"
+  : > "$TMP/$kind.sql"
+  if [[ "$kind" == migrations ]]; then ORDER=("${NAMES[@]}"); else ORDER=("${NAMES[1]}" "${NAMES[0]}"); fi
+  for name in "${ORDER[@]}"; do
+    sed -e '/^begin;$/d' -e '/^commit;$/d' -e "/^notify pgrst, 'reload schema';$/d" "$ROOT/supabase/$kind/$name" >> "$TMP/$kind.sql"
+  done
 done
+sed -e '/^begin;$/d' -e '/^commit;$/d' -e "/^notify pgrst, 'reload schema';$/d" "$ROOT/supabase/migrations/${NAMES[1]}" > "$TMP/response.sql"
 psql -X -v ON_ERROR_STOP=1 <<SQL
 begin;
 create temporary table rank_info_before as
@@ -15,12 +20,12 @@ create temporary table rank_info_before as
  ('public.refresh_home_rankings(timestamptz)'::regprocedure,'public.read_home_fan_ranking_v2(uuid,text,integer)'::regprocedure,'public.read_home_creator_ranking_v2(text,text,integer)'::regprocedure);
 -- The new migration must neither reference cron nor need the platform stub.
 alter schema cron rename to rank_info_unused_cron;
-\i $TMP/migrations.sql
+\i $TMP/response.sql
 \i $TMP/rollback.sql
 \i $TMP/migrations.sql
 do \$\$ begin
  if exists(select 1 from rank_info_before b join pg_proc p on p.oid=b.oid where b.def<>pg_get_functiondef(p.oid) or b.proowner<>p.proowner or b.proacl is distinct from p.proacl) then raise exception 'INFO roundtrip changed function body/owner/ACL'; end if;
- raise notice 'PASS rank info: idempotent apply and rollback/reapply preserve function definitions/owners/ACLs; no cron schema';
+ raise notice 'PASS rank response: idempotent apply and both migrations rollback/reapply preserve definitions/owners/ACLs; no cron schema';
 end \$\$;
 rollback;
 
@@ -59,7 +64,7 @@ select public.read_home_fan_ranking_v2(null,'hearts',5);
 select public.read_home_creator_ranking_v2('ko','hearts',5);
 do \$\$ declare r jsonb; begin
  r:=public.read_home_fan_ranking_v2(null,'hearts',5)->'rows'->0;
- if r is null or r->>'nickname'<>'info_owner' or r->>'fans'<>'1' or r->>'hearts'<>'1' or r->>'liveNow'<>'false' then raise exception 'INFO ordinary owner missed fixture: %',r; end if;
+ if r is null or r->>'nickname'<>'info_owner' or r->>'fans'<>'1' or r->>'hearts'<>'1' or r->>'points' is distinct from '0' or r ? 'liveNow' then raise exception 'INFO ordinary owner missed fixture: %',r; end if;
  r:=public.read_home_creator_ranking_v2('ko','hearts',5)->'rows'->0;
  if r is null or r->>'slug'<>'info-owner-creator' or r->>'fans'<>'1' or r->>'hearts'<>'1' or r->>'isNew'<>'false' then raise exception 'INFO ordinary owner missed creator fixture: %',r; end if;
 end \$\$;

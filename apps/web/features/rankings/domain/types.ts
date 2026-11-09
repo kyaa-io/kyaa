@@ -75,8 +75,8 @@ export const platformFanRankingSchema = z.object({
 export type PlatformFanRankingRow = z.infer<typeof platformFanRankingRowSchema>;
 export type PlatformFanRanking = z.infer<typeof platformFanRankingSchema>;
 
-/** Home ranking by day (feedback C3). delta = the previous built day's rank minus today's: positive went up, null = new (no previous day, or
- * not ranked then). Ranking stage 2 (20261220010000): movement shows from the second built day of the same metric. */
+/** Home ranking by day (feedback C3). delta = the previous built day's rank minus today's: positive went up, zero = unchanged, null = no comparison (no previous day, or
+ * not ranked then). isNew is a separate recent-entry flag. Ranking stage 2 (20261220010000): movement shows from the second built day of the same metric. */
 const delta = z.number().int().nullable();
 /** Fans: hearts (default of the API) or fan score points. Creators: 찐팬 (default of the API) or hearts. The screens name the metric they show. */
 export const HOME_FAN_METRICS = ["hearts", "points"] as const;
@@ -107,8 +107,8 @@ export const homeFanRankingSchema = z.object({
   metric: z.enum(HOME_FAN_METRICS).optional(),
   /** Days the fan weekGain comparison spans (20261217010000). Optional: absent before that migration. */
   weekGainDays: z.number().int().min(1).max(7).nullable().optional(),
-  /** score is the metric's value; hearts and points name the values (points only on the points metric). */
-  rows: z.array(platformFanRankingRowSchema.extend({ delta, favorite, fans: count.optional(), liveNow: z.boolean().optional(), isNew: z.boolean().optional(), weekGain: z.number().int().nullable().optional(), hearts: count.optional(), points: count.nullable().optional() })).max(HOME_RANKING_LIMIT),
+  /** score is the metric's value; hearts and points name the values (both values independent of the sort metric; points null only when that day has no points build). */
+  rows: z.array(platformFanRankingRowSchema.extend({ delta, favorite, fans: count.optional(), isNew: z.boolean().optional(), weekGain: z.number().int().nullable().optional(), hearts: count.optional(), points: count.nullable().optional() })).max(HOME_RANKING_LIMIT),
   me: z.object({ rank: z.number().int().min(1), score: count, inTop: z.boolean(), hearts: count.optional(), points: count.nullable().optional(), delta: delta.optional() }).nullable(),
 });
 export type HomeFanRanking = z.infer<typeof homeFanRankingSchema>;
@@ -121,6 +121,8 @@ export const homeCreatorRankingRowSchema = z.object({
   /** The metric's value: 찐팬 on fans, hearts on hearts. Read fans and hearts by name. */
   score: count,
   hearts: count,
+  /** No creator point aggregate is defined; the home API returns null. */
+  points: count.nullable().optional(),
   /** Fans holding at least one counted heart. Absent from an older database (there score is the 찐팬). */
   fans: count.optional(),
   /** An administrator turned on the 찐팬 100 challenge for this creator. */

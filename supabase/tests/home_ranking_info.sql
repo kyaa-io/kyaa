@@ -17,8 +17,12 @@ create function pg_temp.info_heart(f text,c text,n int) returns void language sq
  insert into public.creator_heart_ledger(celebrity_id,app_user_id,amount,source_type,source_id,created_at)
  select pg_temp.info_id(c),pg_temp.info_id(f),1,'passport_page_claim',extensions.gen_random_uuid(),'2099-08-01 09:00+09' from generate_series(1,n)
 $$;
-create function pg_temp.info_fan(n text) returns jsonb language sql as $$
- select r from jsonb_array_elements(public.read_home_fan_ranking_v2(null,'hearts',50)->'rows') r where r->>'nickname'='info_'||n
+create function pg_temp.info_pts(who uuid, cel uuid, n int, at timestamptz) returns void language sql set session_replication_role=replica as $$
+ insert into public.fan_score_ledger(id,adjustment_id,app_user_id,celebrity_id,points,created_at)
+ values(extensions.gen_random_uuid(),extensions.gen_random_uuid(),who,cel,n,at)
+$$;
+create function pg_temp.info_fan(n text, metric text default 'hearts') returns jsonb language sql as $$
+ select r from jsonb_array_elements(public.read_home_fan_ranking_v2(null,metric,50)->'rows') r where r->>'nickname'='info_'||n
 $$;
 create function pg_temp.info_creator(n text) returns jsonb language sql as $$
  select r from jsonb_array_elements(public.read_home_creator_ranking_v2('ko','hearts',50)->'rows') r where r->>'slug'='info-'||n
@@ -34,13 +38,31 @@ do $$ declare t text; r jsonb; begin
   insert into public.user_profiles(app_user_id,nickname,nickname_normalized) values(pg_temp.info_id(t),'info_'||t,'info_'||t);
  end loop;
  perform pg_temp.info_heart('f1','ca',4),pg_temp.info_heart('f2','ca',2);
+ perform pg_temp.info_pts(pg_temp.info_id('f1'),pg_temp.info_id('ca'),90,'2099-08-01 10:00+09'),
+         pg_temp.info_pts(pg_temp.info_id('f2'),pg_temp.info_id('ca'),10,'2099-08-01 10:00+09');
  perform public.refresh_home_rankings('2099-08-01 12:00+09');
  r:=pg_temp.info_fan('f1');
  if r->>'fans'<>'1' or r->>'hearts'<>'4' or r->>'isNew'<>'false' or r->'delta'<>'null'::jsonb or r->'weekGain'<>'null'::jsonb then raise exception 'INFO first/unknown: %',r; end if;
  if pg_temp.info_creator('ca')->>'isNew'<>'false' then raise exception 'INFO initial creator cohort'; end if;
  if public.read_home_fan_ranking_v2(null,'hearts',50)->'weekGainDays' is distinct from 'null'::jsonb then raise exception 'INFO first period must be unknown'; end if;
  perform pg_temp.info_heart('f2','cb',4),pg_temp.info_heart('f3','cb',1);
+ perform pg_temp.info_pts(pg_temp.info_id('f2'),pg_temp.info_id('ca'),35,'2099-08-02 10:00+09');
  perform public.refresh_home_rankings('2099-08-02 12:00+09');
+ -- The values belong to the same build, while rank, score and gains follow the requested metric.
+ foreach t in array array['hearts','points'] loop
+  r:=pg_temp.info_fan('f2',t);
+  if r->>'hearts' is distinct from '6' or r->>'points' is distinct from '45' or r ? 'liveNow' then raise exception 'RESPONSE both fan metrics: %',r; end if;
+  if t='points' and (r->>'rank' is distinct from '2' or r->>'score' is distinct from '45' or r->>'weekGain' is distinct from '35') then raise exception 'RESPONSE points sort/gain: %',r; end if;
+  r:=public.read_home_fan_ranking_v2(pg_temp.info_id('f2'),t,50);
+  if r->'me'->>'points' is distinct from '45' or r->'me'->>'hearts' is distinct from '6' or r->>'weekGainDays' is distinct from '1'
+     or (r->>'computedAt')::timestamptz is distinct from '2099-08-02 12:00+09'::timestamptz then raise exception 'RESPONSE me/head: %',r; end if;
+ end loop;
+ if pg_temp.info_fan('f3')->>'points' is distinct from '0' then raise exception 'RESPONSE zero points'; end if;
+ foreach t in array array['fans','hearts'] loop
+  r:=public.read_home_creator_ranking_v2('ko',t,50)->'rows'->0;
+  if not (r ? 'points') or r->'points' is distinct from 'null'::jsonb or not (r ?& array['hearts','fans','liveNow','isNew','delta','weekGain']) then raise exception 'RESPONSE creator fields: %',r; end if;
+ end loop;
+ raise notice 'PASS rank response: hearts and points together under both fan sorts, same-day me, zero points, metric-specific gain, creator points explicitly unknown';
  r:=pg_temp.info_fan('f2');
  if r->>'fans'<>'2' or r->>'hearts'<>'6' or r->>'rank'<>'1' or r->>'delta'<>'1' or r->>'weekGain'<>'4' or r->>'isNew'<>'false' then raise exception 'INFO f2 sort/move/gain/count: %',r; end if;
  r:=pg_temp.info_fan('f1');
@@ -66,6 +88,12 @@ do $$ declare t text; r jsonb; begin
  r:=public.read_home_fan_ranking_v2(null,'hearts',50);
  if r::text ~ '(subject_id|subjectId|app_user_id|appUserId)' or r->'me'<>'null'::jsonb or r::text like '%'||pg_temp.info_id('f1')||'%' then raise exception 'INFO identifier exposure'; end if;
  raise notice 'PASS rank info: sorting, up/down/zero/null, weekly gain/zero/null, fan count, recent-entry window, no member identifiers';
+ -- A ledger update after the build must not mix current points with stored hearts/computedAt.
+ perform pg_temp.info_pts(pg_temp.info_id('f2'),pg_temp.info_id('ca'),100,'2099-08-09 13:00+09');
+ if pg_temp.info_fan('f2')->>'points' is distinct from '45' then raise exception 'RESPONSE mixed live ledger and snapshot'; end if;
+ delete from public.home_ranking_kind_builds where kind='fan_points' and day='2099-08-09';
+ if pg_temp.info_fan('f2')->'points' is distinct from 'null'::jsonb then raise exception 'RESPONSE missing build must stay unknown'; end if;
+ raise notice 'PASS rank response: snapshot-consistent points; missing historical build is null, not zero';
 end $$;
 -- Existing LIVE source: public event interval, effective override, cancellation and publication.
 insert into public.brands(id,slug,status,logo_url,logo_alt,published_at) values(pg_temp.info_id('brand'),'info-brand','published','/fixture.webp','brand',now());
@@ -75,8 +103,8 @@ values(pg_temp.info_id('live'),'info-live',pg_temp.info_id('ca'),pg_temp.info_id
 set local session_replication_role = origin;
 do $$ declare r jsonb; begin
  if not public.home_ranking_live_now(pg_temp.info_id('ca')) or pg_temp.info_creator('ca')->>'liveNow'<>'true' then raise exception 'INFO live interval'; end if;
- -- f1's fallback favorite is ca; no member presence or identifier is involved.
- if pg_temp.info_fan('f1')->>'liveNow'<>'true' then raise exception 'INFO favorite live'; end if;
+ -- A favorite's broadcast is not the fan's status, including in the raw RPC.
+ if pg_temp.info_fan('f1') ? 'liveNow' then raise exception 'INFO fan LIVE must be absent'; end if;
  set local session_replication_role=replica;
  update public.live_events set publication_status='draft',published_at=null where id=pg_temp.info_id('live');
  if public.home_ranking_live_now(pg_temp.info_id('ca')) then raise exception 'INFO draft event exposed'; end if;
@@ -93,7 +121,7 @@ do $$ declare r jsonb; begin
  update public.live_events set content_status='scheduled',archived_at=now(),archived_by_admin_allowlist_id=extensions.gen_random_uuid(),archive_reason='Archived test fixture' where id=pg_temp.info_id('live');
  if public.home_ranking_live_now(pg_temp.info_id('ca')) then raise exception 'INFO archived live'; end if;
  set local session_replication_role=origin;
- raise notice 'PASS rank info: existing public LIVE interval, fan favorite, draft/cancelled/ended excluded';
+ raise notice 'PASS rank info: creator-only public LIVE interval, no fan LIVE field, draft/cancelled/ended excluded';
 end $$;
 -- The client roles cannot use the helpers to probe identifiers.
 do $$ declare r text; begin
