@@ -92,8 +92,12 @@
 }
 .carouselDots { position: absolute; bottom: -42px; left: 50%; display: flex; width: min(var(--carousel-width), 100%); height: 44px; overflow-x: auto; overflow-y: hidden; align-items: center; justify-content: safe center; scrollbar-width: none; transform: translateX(-50%); pointer-events: auto; }
 .carouselControls .carouselDot { position: relative; display: grid; width: 44px; min-width: 44px; height: 44px; flex: 0 0 44px; padding: 0; place-items: center; border: 0; background: transparent; cursor: pointer; }
-.carouselDot span { position: relative; width: 6px; height: 6px; border-radius: 999rem; background: var(--line); transition: width 160ms cubic-bezier(.2,0,0,1), background-color 160ms cubic-bezier(.2,0,0,1); }
-.carouselDot[aria-current="true"] span { width: 22px; background: var(--ink); }
+/* 현재 점은 22px 막대: 폭 전이 대신 위에 겹친 막대의 transform·opacity만 움직인다(합성 단계, 배치 변화 0). 버튼이 44px라 이웃 점은 움직이지 않는다. */
+.carouselDot span { position: relative; width: 6px; height: 6px; border-radius: 999rem; background: var(--line); transition: background-color 160ms cubic-bezier(.2,0,0,1); }
+.carouselDot span::after { position: absolute; top: 0; left: -8px; width: 22px; height: 6px; border-radius: 999rem; background: var(--ink); content: ""; opacity: 0; transform: scaleX(.28); transition: transform 160ms cubic-bezier(.2,0,0,1), opacity 160ms cubic-bezier(.2,0,0,1); }
+.carouselDot[aria-current="true"] span { background: var(--ink); }
+.carouselDot[aria-current="true"] span::after { opacity: 1; transform: scaleX(1); }
+@media (prefers-reduced-motion: reduce) { .carouselDot span, .carouselDot span::after { transition: none; } }
 .carouselAnnouncement { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap; }
 
 
@@ -382,7 +386,7 @@
 .creatorControls button:first-child { left: 0; }
 .creatorControls button:last-child { right: 0; }
 .creatorControls button svg { position: relative; width: 18px; height: 18px; }
-.creatorControls button:disabled { opacity: .3; cursor: default; }
+.creatorControls button:disabled {cursor: default;color:var(--fan-action-disabled-ink)}
 .creatorControls button:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
 
 .celebrityFanLink[data-verified="true"] { color: var(--color-accent); }
@@ -394,7 +398,7 @@
 .personalizationLoading { min-height: 440px; grid-template-rows: 220px 80px; gap: 20px; align-content: start; justify-items: stretch; }
 .carouselDots .carouselPause { display: grid; place-items: center; flex: 0 0 44px; width: 44px; height: 44px; padding: 0; border: 0; border-radius: var(--radius-control); background: transparent; color: var(--color-ink); cursor: pointer; }
 .carouselPause svg { width: 16px; height: 16px; }
-.carouselPause:disabled { opacity: .5; cursor: default; }
+.carouselPause:disabled {cursor: default;color:var(--fan-action-disabled-ink)}
 @media (min-width: 64rem) { .personalizationLoading { min-height: 480px; grid-template-rows: 250px 90px; } }
 
 
