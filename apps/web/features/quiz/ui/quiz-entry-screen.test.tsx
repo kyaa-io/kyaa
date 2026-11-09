@@ -12,6 +12,7 @@ const router = { push, replace };
 let privyState = { ready: true, authenticated: true };
 
 vi.mock("@/features/auth/client/cognito-auth", () => ({ useByUsAuth: () => ({ ...privyState, getAccessToken }) }));
+vi.mock("@/components/byus-session-provider", async (importOriginal) => ({ ...await importOriginal<typeof import("@/components/byus-session-provider")>(), useByUsSession: () => ({ ready: true, ownerId: "owner-1", generation: 0 }) }));
 vi.mock("next/navigation", () => ({ usePathname: () => "/", useSearchParams: () => new URLSearchParams(), useRouter: () => router }));
 
 const attemptId = "11111111-1111-4111-8111-111111111111";
@@ -60,6 +61,31 @@ describe("QuizEntryScreen", () => {
     await waitFor(() => expect(push).toHaveBeenCalledWith(`/c/kara/verify/questions?attempt=${attemptId}&locale=ko`));
     expect(fetchMock).toHaveBeenCalledWith("/api/public/celebrities/kara/quiz?locale=ko", expect.objectContaining({ method: "GET", cache: "no-store" }));
     expect(fetchMock).toHaveBeenCalledWith("/api/celebrities/kara/quiz/attempts?locale=ko", expect.objectContaining({ method: "POST", headers: { authorization: "Bearer privy-token" } }));
+  });
+
+  it("BUGS-1846 T8: a fan who already holds this creator's passport sees it as verified instead of the start button", async () => {
+    const passportId = "a11c7e00-28c9-4751-81f1-2f0263578e92";
+    const summary = {
+      profile: { nickname: "아리가또" },
+      creators: [{ celebrity: { slug: "kara", name: "KARA", image: "/k.png", isPublic: true }, relationship: "passport", passport: { id: passportId, tier: "Bronze", score: 5, remainingToNextTier: 15 }, ticketBalance: 0, firstReaction: null }],
+      live: { upcoming: [], history: [] },
+      rewards: { availableCount: 0, entries: 0, items: [] },
+      collection: { passportCount: 1, stampCount: 0, collectibleCount: 0, recent: [] },
+      unreadNotificationCount: 0,
+    };
+    const fetchMock = vi.spyOn(globalThis, "fetch").mockImplementation(async (input) => {
+      const url = String(input);
+      if (url === "/api/me/profile") return Response.json({ profile: { completed: true } });
+      if (url.startsWith("/api/me/summary")) return Response.json({ summary });
+      if (url.includes("/api/public/")) return Response.json({ intro });
+      throw new Error(`unexpected ${url}`);
+    });
+
+    render(<QuizEntryScreen locale="ko" slug="kara" />);
+    expect(await screen.findByRole("heading", { name: "KARA 팬 인증 완료" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "패스포트 보기" })).toHaveAttribute("href", `/passports/${passportId}?locale=ko`);
+    expect(screen.queryByRole("button", { name: "팬 인증 시작하기" })).toBeNull();
+    expect(fetchMock).not.toHaveBeenCalledWith(expect.stringContaining("/quiz/attempts"), expect.anything());
   });
 
   it("carries a validated LIVE reservation return through a successful start", async () => {
@@ -156,7 +182,8 @@ describe("QuizEntryScreen", () => {
 
     await waitFor(() => expect(push).toHaveBeenCalledWith("/passports/22222222-2222-4222-8222-222222222222?locale=ko"));
     expect(sessionStorage.getItem(`byus:auth-intent:v1:${intent.id}`)).toBeNull();
-    expect(fetch).toHaveBeenCalledTimes(3);
+    // intro, profile, attempt (+ the shared MY summary read that decides the "already verified" state)
+    expect(vi.mocked(fetch).mock.calls.filter(([input]) => !String(input).startsWith("/api/me/summary"))).toHaveLength(3);
   });
 
   it("renders an honest unavailable state without starting an attempt", async () => {

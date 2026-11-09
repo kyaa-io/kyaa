@@ -1,0 +1,12 @@
+{
+  "changes": [
+    "패스포트 미션북 01 입국 심사 칸의 '자세히'가 도장 자리 위에 겹쳐 보이던 문제를 고쳤어요. 이제 포인트 아래에 따로 보여요.",
+    "이미 팬 인증을 받은 크리에이터의 팬 인증 화면을 열면 퀴즈 시작 대신 '팬 인증 완료'와 '패스포트 보기'가 보여요.",
+    "화면은 로컬 시험 계정으로 확인했고, 운영 화면 캡처가 아니에요."
+  ],
+  "path": "/my",
+  "images": [
+    "release-notes/images/2026-11-09-mission-book-entry-help-390.png",
+    "release-notes/images/2026-11-09-verified-fan-passport-390.png"
+  ]
+}

@@ -85,7 +85,6 @@ function Slot({ slot, locale, stampSrc, href }: { slot: PassportRoadmapSlot; loc
   // Read-only checkbox semantics: the screen reader says filled or empty in the reader's own language. The link beside it stretches over the whole card.
   return <li className={styles.slot} data-state={slot.state} data-kind={slot.kind} data-frame={meta?.frame ?? "round"} style={{ "--stamp-tilt": `${(slot.slotNo % 5 - 2) * 3}deg` } as CSSProperties}>
     {meta ? <span className={styles.number} aria-hidden="true">{number.padStart(2, "0")}</span> : null}
-    {slot.kind === "quiz" ? <span className={styles.help}><FanHelpTip label={passportBookText(locale, "entryReviewHelpLabel")} title={label} closeLabel={passportBookText(locale, "helpClose")} detailsLabel={fanUiText(locale, "details")}>{passportBookText(locale, "entryReviewHelp")}</FanHelpTip></span> : null}
     <span className={styles.art} role="checkbox" aria-checked={filled} aria-disabled="true" aria-label={label}>
       {src ? <img src={src} alt="" width={88} height={88} loading="lazy" /> : !filled && !meta ? <span className={styles.emptyNumber} aria-hidden="true">{number}</span> : null}
       {filled ? <span className={styles.check}><Check aria-hidden="true" size={12} strokeWidth={3} /></span> : null}
@@ -94,6 +93,8 @@ function Slot({ slot, locale, stampSrc, href }: { slot: PassportRoadmapSlot; loc
     {href ? <Link className={styles.slotLink} href={href as Route}>{text}</Link> : text}
     {filled && slot.clearedAt ? <time className={styles.slotDate} dateTime={slot.clearedAt}>{slotDate(slot.clearedAt, locale)}</time> : null}
     {meta && typeof rule?.points === "number" && rule.points > 0 && <EarnBadge variant="inline" locale={locale} points={rule.points} />}
+    {/* BUGS-1846 T1: the help sits in the flow under the points, never over the stamp frame; label, task and points line up with the other cards of the row. */}
+    {slot.kind === "quiz" ? <span className={styles.help}><FanHelpTip label={passportBookText(locale, "entryReviewHelpLabel")} title={label} closeLabel={passportBookText(locale, "helpClose")} detailsLabel={fanUiText(locale, "details")}>{passportBookText(locale, "entryReviewHelp")}</FanHelpTip></span> : null}
   </li>;
 }
 
