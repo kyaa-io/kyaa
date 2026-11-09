@@ -1,3 +1,4 @@
+/* 슬라이드 문장 줄 높이는 특이도 0: 모임 .page p(--fan-body-leading)가 함께 붙으면 빌드 순서와 상관없이 그쪽이 정한다(기준 1ee53b4db 화면). */
 /* Copied from Pencil html-css export, 2026-11-02. Only asset binding and responsive overrides are handwritten below. */
 /* Pencil pjusn */
 .carousel {
@@ -154,7 +155,7 @@
   padding: 0px 16px;
   width: 160px;
 }
-.carousel{min-width:0}.slide{background-image:var(--slide-image);color:white}.photograph{display:none}.copy h2{font-size:32px!important;font-weight:800;line-height:38px;margin:0!important;color:white}.copy p{font-size:16px;line-height:25px;color:white!important;margin:0}.copy a{color:var(--color-ink)!important;border:0;box-shadow:none;font-size:15px;font-weight:700;text-decoration:none}.dots button,.arrows button{border:0;cursor:pointer}.dots button{background:transparent}.dots span{width:8px;height:8px;border-radius:50%;background:var(--color-muted)}.dots [aria-pressed=true] span{background:var(--color-accent)}.controls{margin:0}.arrows button{color:var(--color-ink)}
+.carousel{min-width:0}.slide{background-image:var(--slide-image);color:white}.photograph{display:none}.copy h2{font-size:32px!important;font-weight:800;line-height:38px;margin:0!important;color:white}.copy p{font-size:16px;color:white!important;margin:0}:where(.copy) p{line-height:25px}.copy a{color:var(--color-ink)!important;border:0;box-shadow:none;font-size:15px;font-weight:700;text-decoration:none}.dots button,.arrows button{border:0;cursor:pointer}.dots button{background:transparent}.dots span{width:8px;height:8px;border-radius:50%;background:var(--color-muted)}.dots [aria-pressed=true] span{background:var(--color-accent)}.controls{margin:0}.arrows button{color:var(--color-ink)}
 @media(max-width:1023px){
 /* Pencil tbCyx */
 .carousel {
@@ -270,7 +271,7 @@
 .photograph img{display:block;width:100%;height:100%;object-fit:cover;object-position:center top}
 .slide .copy{grid-area:1/1;position:relative;align-self:end;min-width:0;width:100%;box-sizing:border-box;display:flex;align-items:end;justify-content:space-between;gap:16px;padding:32px;background:color-mix(in srgb, var(--color-ink) 80%, transparent)}
 .slide .copy h2,.slide .copy p,.slide .category{color:var(--color-surface)!important}
-@media(max-width:1023px){.track .slide::before{padding-top:83.333333%}.slide .copy{padding:12px;gap:8px;flex-wrap:wrap}.slide .copy h2{font-size:20px!important;line-height:24px}.slide .copy p{font-size:13px;line-height:18px}.slide .copy a{min-height:44px}}
+@media(max-width:1023px){.track .slide::before{padding-top:83.333333%}.slide .copy{padding:12px;gap:8px;flex-wrap:wrap}.slide .copy h2{font-size:20px!important;line-height:24px}.slide .copy p{font-size:13px}:where(.copy) p{line-height:18px}.slide .copy a{min-height:44px}}
 
 .track .slide{outline:1px solid var(--color-line);outline-offset:-1px}
 
