@@ -579,3 +579,30 @@ describe("from a feed card to the comment box", () => {
     expect(window.HTMLElement.prototype.scrollIntoView).toHaveBeenCalled();
   });
 });
+
+describe("edited mark", () => {
+  const comment = (id: string, revision: number) => ({ id, postId: "10000000-0000-4000-8000-000000000001", parentId: null, body: `Comment ${id}`, revision, author: { nickname: "Fan", avatarUrl: "/images/avatars/star-pink.webp" }, createdAt: "2026-09-26T00:00:00Z", isOwner: false, reactions: [] });
+  it("marks an edited board post beside its time and leaves an untouched one alone", () => {
+    state.post = { ...post("Edited title\nBody"), revision: 2, updatedAt: "2026-09-26T01:00:00Z" };
+    const { container, unmount } = render(<FanPostDetail postId={String(state.post.id)} locale="ko" presentation="board" />);
+    const header = container.querySelector("[data-post-detail-header]")!;
+    expect(within(header as HTMLElement).getByText("수정됨")).toBeInTheDocument();
+    expect(header.querySelector("time")!.parentElement).toContainElement(header.querySelector("[data-edited-mark]") as HTMLElement);
+    unmount();
+    state.post = post("Plain title\nBody");
+    render(<FanPostDetail postId={String(state.post.id)} locale="ko" presentation="board" />);
+    expect(screen.queryByText("수정됨")).toBeNull();
+  });
+  it("marks an edited post in the card footer by update time alone and translates the mark", () => {
+    const { container } = render(<PostCard post={{ ...post("Body"), updatedAt: "2026-09-26T00:05:00Z" } as never} locale="ja" returnTo="/c/artist/community" onChanged={vi.fn()} onDeleted={vi.fn()} />);
+    expect(container.querySelector("[data-edited-mark]")).toHaveTextContent("編集済み");
+  });
+  it("marks only the comment whose revision moved past the first save", () => {
+    state.comments = [comment("20000000-0000-4000-8000-000000000001", 1), comment("20000000-0000-4000-8000-000000000002", 2)];
+    const { container } = render(<FanPostDetail postId={String(state.post.id)} locale="en" />);
+    const marks = container.querySelectorAll("[data-post-comments] [data-edited-mark]");
+    expect(marks).toHaveLength(1);
+    expect(marks[0].closest("li")).toHaveTextContent("Comment 20000000-0000-4000-8000-000000000002");
+    expect(marks[0]).toHaveTextContent("Edited");
+  });
+});

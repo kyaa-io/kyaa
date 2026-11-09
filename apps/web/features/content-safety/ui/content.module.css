@@ -89,6 +89,7 @@
 .postIdentity strong { min-width:0; overflow-wrap:anywhere; }
 .postIdentity > span { max-width:100%; box-sizing:border-box; }
 .postFooter { min-height:44px; }
+.editedMark { flex:none; margin-inline-start:var(--space-1); color:var(--color-muted); font-size:13px; line-height:1.5; }
 .postDate { display:block; flex:none; max-width:100%; margin-inline-start:auto; color:var(--color-muted); font-size:13px; line-height:1.5; text-align:right; overflow-wrap:anywhere; }
 
 .postPhotos { margin-bottom:0; }

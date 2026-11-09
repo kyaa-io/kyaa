@@ -14,6 +14,8 @@ import { celebrateReward } from "@/components/fan-ui/reward-celebration";
 import { applyReaction, PostReactions, type PostReactionChoice, type PostReactionState } from "./post-reactions";
 import { PostInlineVideo, TranslatedRichPostBody } from "./rich-post-body";
 import detailStyles from "./post-detail.module.css";
+import { EditedMark } from "./edited-mark";
+import { isEdited } from "../domain/edited";
 import { Menu } from "@base-ui/react/menu";
 import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import { Ellipsis, Heart, MessageCircle } from "lucide-react";
@@ -92,7 +94,7 @@ export function PostCard({ post, locale, onChanged, onDeleted, detail = false, r
   </Menu.Root> : <ContentActions targetType="fan_post" targetId={post.id} locale={locale} onChanged={onChanged} />;
   const loginHref = fanLoginHref(locale, `/c/${post.celebritySlug}/community/${post.id}?locale=${locale}${returnTo ? `&returnTo=${encodeURIComponent(returnTo)}` : ""}`);
   return <article ref={articleRef} className={`${styles.card} ${presentation === "board" ? boardStyles.article : ""}`} data-post-id={post.id}>
-    {boardDetail ? <PostDetailHeader title={post.body.split("\n")[0] || copy.community} author={post.author.nickname} avatarUrl={post.author.avatarUrl} authorBadge={<>{post.artist && <GroupArtistMark locale={locale} />}{post.celebritySlug === WAVE_FANPAGE_SLUG ? <WavePrivateBadge locale={locale} /> : post.visibility === "members" && <span className={styles.badge}>{copy.members}</span>}</>} createdAt={post.createdAt} viewCount={post.viewCount} likeCount={likeCount} commentCount={post.commentCount} locale={locale} menu={menu} /> : <header className={`${styles.meta} ${styles.postHeader}`}>{boardMetadata??<><img src={post.author.avatarUrl} alt="" width={32} height={32} /><div className={styles.postIdentity}><strong>{post.author.nickname}</strong>
+    {boardDetail ? <PostDetailHeader title={post.body.split("\n")[0] || copy.community} author={post.author.nickname} avatarUrl={post.author.avatarUrl} authorBadge={<>{post.artist && <GroupArtistMark locale={locale} />}{post.celebritySlug === WAVE_FANPAGE_SLUG ? <WavePrivateBadge locale={locale} /> : post.visibility === "members" && <span className={styles.badge}>{copy.members}</span>}</>} createdAt={post.createdAt} edited={isEdited(post)} viewCount={post.viewCount} likeCount={likeCount} commentCount={post.commentCount} locale={locale} menu={menu} /> : <header className={`${styles.meta} ${styles.postHeader}`}>{boardMetadata??<><img src={post.author.avatarUrl} alt="" width={32} height={32} /><div className={styles.postIdentity}><strong>{post.author.nickname}</strong>
       {post.celebritySlug === WAVE_FANPAGE_SLUG ? <WavePrivateBadge locale={locale} /> : <span className={styles.badge}>{post.visibility === "members" ? copy.members : copy.public}</span>}
       </div>
       {menu}
@@ -112,7 +114,7 @@ export function PostCard({ post, locale, onChanged, onDeleted, detail = false, r
       <PostShareAction title={post.body.split("\n")[0] ?? ""} locale={locale} contentType="post" />
     </div> : <div className={`${styles.actions} ${styles.postFooter}`}><button type="button" className={styles.likeButton} onClick={() => void like()} disabled={!auth.ready || !auth.authenticated || mutation.busy} aria-pressed={liked}><Heart size={18} fill={liked ? "currentColor" : "none"} aria-hidden="true" /> {boardLikeLabel??copy.like} {likeCount.toLocaleString(locale)}{boardLikeReward}</button>
       {!detail && <Link href={`${href}#comments` as Route} className={styles.button}><MessageCircle size={16} aria-hidden="true" /> {copy.comments} {post.commentCount.toLocaleString(locale)}</Link>}
-      <RelativeTime className={styles.postDate} value={post.createdAt} locale={locale} />
+      <RelativeTime className={styles.postDate} value={post.createdAt} locale={locale} />{isEdited(post) && <EditedMark className={styles.editedMark} locale={locale} />}
     </div>}
     {deleting&&<SourceConfirmDialog sourceId={deleteUncertain?'jU13c':'fNe6I'} title={deleteUncertain?sourceDeleteResultCopy(locale).title:locale==='ko'?'게시글을 삭제할까요?':copy.deleteConfirm} cancelLabel={copy.cancel} confirmLabel={deleteUncertain?sourceDeleteResultCopy(locale).check:copy.delete} closeLabel={copy.cancel} pending={mutation.busy} danger={!deleteUncertain} onClose={()=>setDeleting(false)} onConfirm={()=>void remove()}><p>{post.body.split('\n')[0]}</p>{deleteUncertain&&<p>{sourceDeleteResultCopy(locale).body}</p>}</SourceConfirmDialog>}
     {editBlocked && <p className={styles.error} role="alert">{editorText(locale, "bodyDocUnavailable")}</p>}
