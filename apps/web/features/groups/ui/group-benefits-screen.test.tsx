@@ -8,6 +8,8 @@ import {useGroupRequest} from './use-group-resource';
 import type {AppLocale} from '@/i18n/locales';
 import {groupBenefitsCopy} from './group-benefits-copy';
 import {groupMembersCopy} from './group-members-copy';
+import duoStyles from './duo-profile.module.css';
+import lockedStyles from '@/components/fan-ui/fan-locked-value.module.css';
 import {walletCopy} from '@/features/group-wallet/ui/copy';
 import {rewardedExchangeCopy} from '@/features/group-wallet/ui/rewarded-copy';
 import {resetDukjilCatalogCache} from '@/features/dukjil/ui/dukjil-provider';// Blurred sections stay mounted as aria-hidden; their data contracts are still asserted here.
@@ -166,11 +168,36 @@ it('DUO: distinguishes identical ledger amounts by absolute KST date and minute'
 });
 it.each(APP_LOCALES)('DUO: keeps the signed-out layout and locks balances in %s without private reads',async(locale)=>{
  auth.authenticated=false;session.ownerId=null as any;bias.value={...bias.value,status:'guest'};
- const v=render(<GroupBenefitsScreen locale={locale}/>);await screen.findByRole('link',{name:walletCopy(locale).login});
+ const v=render(<GroupBenefitsScreen locale={locale}/>);await screen.findAllByRole('link',{name:walletCopy(locale).login});
  expect(v.container.querySelectorAll('[data-cell]')).toHaveLength(4);
  expect(v.container.querySelector('[data-wallet-card]')?.textContent).not.toContain('137');
  expect(v.container.querySelector('[data-wallet-card] button')).toBeDisabled();
  expect(requests.some(url=>url.startsWith('/api/me/'))).toBe(false);
+ for(const selector of ['[data-duo-rail]','[data-duo-history]']){
+  const section=v.container.querySelector(selector)!;
+  expect(within(section as HTMLElement).getByRole('link',{name:walletCopy(locale).login})).toHaveAttribute('href',expect.stringContaining('/login'));
+  expect(section.querySelector('[aria-busy="true"]')).toBeNull();
+  expect(section.querySelector('.'+lockedStyles.rows)).toBeNull();
+ }
+ fireEvent.click(screen.getByRole('tab',{name:locale==='ko'?'팬 순위':groupMembersCopy(locale).ranking}));
+ expect(within(v.container.querySelector('[data-duo-rail]') as HTMLElement).getByRole('link',{name:walletCopy(locale).login})).toBeVisible();
+ expect(v.container.querySelector('[data-duo-profile] .'+duoStyles.cover)).toBeNull();
+ expect(v.container.querySelector('[data-duo-profile] .'+duoStyles.avatar)).toBeNull();
+ expect(requests.some(url=>url.includes('mine=joined')||url.includes('/leaderboard')||url.includes('/public-people'))).toBe(false);
+});
+it('DUO: the server signed-out hint shows login prompts before client auth is ready',()=>{
+ auth.ready=false;auth.authenticated=false;session.ready=false;session.ownerId=null as any;
+ bias.value={...bias.value,status:'loading'};
+ const v=render(<GroupBenefitsScreen locale='ko' signedOut/>);
+ try{
+  for(const selector of ['[data-duo-profile]','[data-duo-rail]','[data-duo-history]']){
+   const section=v.container.querySelector(selector) as HTMLElement;
+   expect(within(section).getByRole('link',{name:walletCopy('ko').login})).toBeVisible();
+   expect(section.querySelector('[aria-busy="true"]')).toBeNull();
+   expect(section.querySelector('.'+lockedStyles.rows)).toBeNull();
+  }
+  expect(requests).toHaveLength(0);
+ }finally{v.unmount();auth.ready=true;session.ready=true;}
 });
 it('사용자 결정 B: the stamp words never read as automatic — 9 − (n mod 9) more to claim, a full page reads 하트 받기 (the mission book button)',async()=>{
  const {nextHeartLabel}=await import('./stan-lucky-cheer');

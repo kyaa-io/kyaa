@@ -1,0 +1,13 @@
+{
+  "changes": [
+    "로그인하지 않고 덕질 탭을 열면 찐팬·팬 순위와 내역에 불러오는 듯한 막대 대신 로그인 버튼이 보여요.",
+    "머리의 빈 상자는 없애고 최애 고르기 제목과 로그인 버튼을 표시해요. 공개 미션과 럭키드로우 안내는 그대로 볼 수 있어요.",
+    "첨부 이미지는 로컬 앱의 비로그인 화면이에요."
+  ],
+  "path": "/benefits",
+  "images": [
+    "release-notes/images/2026-11-10-duo-guest-390.png",
+    "release-notes/images/2026-11-10-duo-guest-390-rail.png",
+    "release-notes/images/2026-11-10-duo-guest-1440.png"
+  ]
+}
