@@ -580,7 +580,7 @@ describe("streamed Home sections", () => {
     expect(screen.getAllByRole("link", { name: "엘리나와 함께 뱅크시 전시 보러 가요", hidden: true }).length).toBeGreaterThan(0);
   });
 
-  it("puts the read gallery photos and LIVE videos on the home, and keeps the empty states when those reads fail", async () => {
+  it("puts the read gallery photos and LIVE videos on the home; a failed read keeps placeholders without the empty text, zero rows show it", async () => {
     const photos = (await import("@/server/home-gallery/fixtures/read_public_home_gallery_photos.json")).default.items;
     const shorts = (await import("@/server/home-gallery/fixtures/read_public_home_shorts.json")).default;
     const home = pendingHome();
@@ -592,6 +592,13 @@ describe("streamed Home sections", () => {
     await act(async () => { view = render(<StreamingGuestHome queries={{ ...pendingHome().queries, homeGallery: Promise.resolve({ status: "rejected" }), homeShorts: Promise.resolve({ status: "rejected" }) }} locale="ko" />); });
     expect(view.container.querySelectorAll('[data-row="photo-placeholder"]')).toHaveLength(8);
     expect(view.container.querySelectorAll('[data-row="short-placeholder"]')).toHaveLength(4);
+    // A failed read is not "none yet".
+    expect(screen.queryByText("아직 사진 없음")).not.toBeInTheDocument();
+    expect(screen.queryByText("아직 숏츠 없음")).not.toBeInTheDocument();
+    view.unmount();
+    await act(async () => { view = render(<StreamingGuestHome queries={{ ...pendingHome().queries, homeGallery: Promise.resolve({ status: "fulfilled", value: { items: [], nextCursor: null } }), homeShorts: Promise.resolve({ status: "fulfilled", value: [] }) }} locale="ko" />); });
+    expect(screen.getByText("아직 사진 없음")).toBeInTheDocument();
+    expect(screen.getByText("아직 숏츠 없음")).toBeInTheDocument();
   });
 
   it.each(["homeBanners", "featuredLives", "elinaRaffles"] as const)("isolates a failed %s query", async (failed) => {

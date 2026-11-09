@@ -196,12 +196,12 @@ function StreamHomeNotices({ queries, locale }: Pick<StreamingHomeProps, "querie
   return <HomeNotices locale={locale} notices={result.status === "fulfilled" ? result.value.items : null} />;
 }
 
-/** 0건·오류면 각 구역의 기존 빈 상태 그대로(사진 8칸·숏츠 4장). */
+/** 정상 0건만 빈 상태 글을 보이고, 실패는 같은 자리표시를 글 없이 둔다(로딩도 같다). */
 function StreamHomeGallery({ queries, locale }: Pick<StreamingHomeProps, "queries" | "locale">) {
   const photos = use(queries.homeGallery);
   const shorts = use(queries.homeShorts);
-  return <HomeGallery locale={locale} photos={photos.status === "fulfilled" ? photos.value.items : null} hasMore={photos.status === "fulfilled" && photos.value.nextCursor !== null}
-    shorts={shorts.status === "fulfilled" ? shorts.value : null} />;
+  return <HomeGallery locale={locale} photos={photos.status === "fulfilled" ? photos.value.items : "error"} hasMore={photos.status === "fulfilled" && photos.value.nextCursor !== null}
+    shorts={shorts.status === "fulfilled" ? shorts.value : "error"} />;
 }
 
 function StreamHomeHero({ queries, ...props }: Pick<StreamingHomeProps, "queries" | "locale">) {

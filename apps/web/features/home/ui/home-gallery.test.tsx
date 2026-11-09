@@ -34,18 +34,28 @@ describe("gallery column allocation", () => {
 });
 
 describe("home gallery block", () => {
-  it("keeps the existing empty states only for no data or a failed read", () => {
-    for (const value of [null, []]) {
-      const { container, unmount } = render(<HomeGallery locale="ko" photos={value} hasMore={false} shorts={value} />);
-      expect(container.querySelectorAll('[data-row="photo-placeholder"]')).toHaveLength(8);
-      expect(container.querySelectorAll('[data-row="short-placeholder"]')).toHaveLength(4);
-      expect(screen.getByText("아직 사진 없음")).toBeInTheDocument();
-      expect(screen.getByText("아직 숏츠 없음")).toBeInTheDocument();
-      unmount();
-    }
+  it("shows the empty text only when the read found nothing", () => {
+    const { container } = render(<HomeGallery locale="ko" photos={[]} hasMore={false} shorts={[]} />);
+    expect(container.querySelectorAll('[data-row="photo-placeholder"]')).toHaveLength(8);
+    expect(container.querySelectorAll('[data-row="short-placeholder"]')).toHaveLength(4);
+    expect(screen.getByText("아직 사진 없음")).toBeInTheDocument();
+    expect(screen.getByText("아직 숏츠 없음")).toBeInTheDocument();
+  });
+  it.each(["loading", "error"] as const)("keeps the same placeholders without any empty text while %s (a failure is never shown as zero)", (state) => {
+    const { container } = render(<HomeGallery locale="ko" photos={state} hasMore={false} shorts={state} />);
+    expect(container.querySelectorAll('[data-row="photo-placeholder"]')).toHaveLength(8);
+    expect(container.querySelectorAll('[data-row="short-placeholder"]')).toHaveLength(4);
+    expect(container.querySelector(`[data-home-state="${state}"]`)).not.toBeNull();
+    expect(screen.queryByText("아직 사진 없음")).not.toBeInTheDocument();
+    expect(screen.queryByText("아직 숏츠 없음")).not.toBeInTheDocument();
+  });
+  it("a failed photo read beside working Shorts keeps only the photo area pending", () => {
+    render(<HomeGallery locale="ko" photos="error" hasMore={false} shorts={[]} />);
+    expect(screen.queryByText("아직 사진 없음")).not.toBeInTheDocument();
+    expect(screen.getByText("아직 숏츠 없음")).toBeInTheDocument();
   });
   it("shows the real photos at their own ratio with the source alt, links official photos to the notice, and fills the rest", () => {
-    const { container } = render(<HomeGallery locale="ko" photos={photos} hasMore={false} shorts={null} />);
+    const { container } = render(<HomeGallery locale="ko" photos={photos} hasMore={false} shorts={[]} />);
     for (const layout of ["mobile", "desktop"]) expect(container.querySelector(`[data-gallery-layout="${layout}"]`)!.querySelectorAll('[data-row="photo"]')).toHaveLength(4);
     expect(container.querySelector('[data-gallery-layout="mobile"]')!.querySelectorAll('[data-row="photo-placeholder"]')).toHaveLength(2);
     const official = screen.getAllByRole("img", { name: "공식 게시물 1" })[0]!;
@@ -57,11 +67,11 @@ describe("home gallery block", () => {
     expect(screen.queryByRole("link", { name: /전체 보기/ })).not.toBeInTheDocument();
   });
   it("adds the view-all link when more photos exist", () => {
-    render(<HomeGallery locale="en" photos={photos} hasMore shorts={null} />);
+    render(<HomeGallery locale="en" photos={photos} hasMore shorts={[]} />);
     expect(screen.getByRole("link", { name: /View all/ })).toHaveAttribute("href", "/gallery?locale=en");
   });
   it("shows the LIVE YouTube videos with their LIVE titles and YouTube thumbnails, and fills the rest of the shelf", () => {
-    const { container } = render(<HomeGallery locale="ko" photos={null} hasMore={false} shorts={shorts} />);
+    const { container } = render(<HomeGallery locale="ko" photos={[]} hasMore={false} shorts={shorts} />);
     expect(container.querySelectorAll('[data-row="short"]')).toHaveLength(3);
     expect(container.querySelectorAll('[data-row="short-placeholder"]')).toHaveLength(1);
     const first = screen.getByRole("link", { name: /R8 라이브 r8-live-watch/ });

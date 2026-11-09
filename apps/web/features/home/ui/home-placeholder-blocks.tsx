@@ -66,36 +66,41 @@ export function HomeNoticesPlaceholder({ locale }: { locale: AppLocale }) {
   </section>;
 }
 
-export function HomeGalleryPlaceholder({ locale }: { locale: AppLocale }) {
-  return <HomeGallery locale={locale} photos={null} hasMore={false} shorts={null} />;
+/** Loading or a failed read: the same placeholder tiles, without the "none yet" text (that text is only for a read that found nothing). */
+export type HomeBlockPending = "loading" | "error";
+
+export function HomeGalleryPlaceholder({ locale, state = "loading" }: { locale: AppLocale; state?: HomeBlockPending }) {
+  return <HomeGallery locale={locale} photos={state} hasMore={false} shorts={state} />;
 }
 
-/** 사진 구역(R8-DATA N2) + 숏츠 선반(자리표시). 0건·오류는 자리표시 8칸 그대로이고, 사진이 있으면 원본 비율로 쌓은 뒤 남은 높이를 자리표시로 채운다. */
-export function HomeGallery({ locale, photos, hasMore, shorts }: { locale: AppLocale; photos: readonly HomeGalleryPhoto[] | null; hasMore: boolean; shorts: readonly HomeShort[] | null }) {
+/** 사진 구역(R8-DATA N2) + 숏츠 선반. 정상 0건만 "아직 없음"을 보이고, 로딩·실패는 같은 자리표시를 글 없이 둔다. 사진은 원본 비율로 쌓고 남은 높이를 자리표시로 채운다. */
+export function HomeGallery({ locale, photos, hasMore, shorts }: { locale: AppLocale; photos: readonly HomeGalleryPhoto[] | HomeBlockPending; hasMore: boolean; shorts: readonly HomeShort[] | HomeBlockPending }) {
   const v = values[locale];
-  const mobile = photos?.length ? allocateGalleryColumns(photos, homeGalleryLayouts.mobile) : null;
-  const desktop = photos?.length ? allocateGalleryColumns(photos, homeGalleryLayouts.desktop) : null;
-  const more = !!photos?.length && (hasMore || mobile!.placed < photos.length || desktop!.placed < photos.length);
+  const list = typeof photos === "string" ? null : photos;
+  const shortList = typeof shorts === "string" ? null : shorts;
+  const mobile = list?.length ? allocateGalleryColumns(list, homeGalleryLayouts.mobile) : null;
+  const desktop = list?.length ? allocateGalleryColumns(list, homeGalleryLayouts.desktop) : null;
+  const more = !!list?.length && (hasMore || mobile!.placed < list.length || desktop!.placed < list.length);
   return <section className={styles.block} aria-labelledby="home-gallery-heading" data-home-block="gallery">
     <FanSectionHeader variant="editorial" id="home-gallery-heading" title={v[1]!} action={more ? { href: `/gallery?locale=${locale}`, label: homeGalleryCopy[locale].viewAll } : undefined} />
     {mobile && desktop ? <>
       <GalleryColumns columns={mobile.columns} layout="mobile" />
       <GalleryColumns columns={desktop.columns} layout="desktop" />
-    </> : <div className={styles.photos} data-home-measure="photos">{Array.from({ length: 8 }, (_, i) => <span key={i} className={styles.tile} data-row="photo-placeholder" aria-hidden={i > 0 || undefined}>{i === 0 ? <span className={styles.note}>{v[4]}</span> : null}</span>)}</div>}
+    </> : <div className={styles.photos} data-home-measure="photos" data-home-state={typeof photos === "string" ? photos : "empty"}>{Array.from({ length: 8 }, (_, i) => <span key={i} className={styles.tile} data-row="photo-placeholder" aria-hidden={i > 0 || list === null || undefined}>{i === 0 && list ? <span className={styles.note}>{v[4]}</span> : null}</span>)}</div>}
     <div className={styles.shelf} data-home-measure="shorts">
       <FanHeading as="h3">{v[2]}</FanHeading>
-      {shorts?.length ? <ul className={styles.rail}>
-        {shorts.map(item => <li key={item.videoId} className={styles.short} data-row="short">
+      {shortList?.length ? <ul className={styles.rail}>
+        {shortList.map(item => <li key={item.videoId} className={styles.short} data-row="short">
           <Link className={styles.shortLink} href={item.liveHref as Route}>
             <span className={styles.card}><MediaThumbnail image={null} href={item.href} kind="videos" locale={locale} /></span>
             <span className={styles.shortTitle}>{item.title}</span>
           </Link>
         </li>)}
-        {Array.from({ length: Math.max(0, 4 - shorts.length) }, (_, i) => <li key={`empty-${i}`} className={styles.short} data-row="short-placeholder" aria-hidden="true">
+        {Array.from({ length: Math.max(0, 4 - shortList.length) }, (_, i) => <li key={`empty-${i}`} className={styles.short} data-row="short-placeholder" aria-hidden="true">
           <span className={styles.card} /><span className={styles.shortTitle}>{"—"}</span>
         </li>)}
-      </ul> : <ul className={styles.rail}>{Array.from({ length: 4 }, (_, i) => <li key={i} className={styles.short} data-row="short-placeholder" aria-hidden={i > 0 || undefined}>
-        <span className={styles.card}>{i === 0 ? <span className={styles.note}>{v[5]}</span> : null}</span>
+      </ul> : <ul className={styles.rail} data-home-state={typeof shorts === "string" ? shorts : "empty"}>{Array.from({ length: 4 }, (_, i) => <li key={i} className={styles.short} data-row="short-placeholder" aria-hidden={i > 0 || shortList === null || undefined}>
+        <span className={styles.card}>{i === 0 && shortList ? <span className={styles.note}>{v[5]}</span> : null}</span>
         <span className={styles.shortTitle}>{"—"}</span>
       </li>)}</ul>}
     </div>
