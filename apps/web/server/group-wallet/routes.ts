@@ -56,7 +56,6 @@ export function createGroupWalletHandlers(deps: GroupWalletDependencies) {
       const input = await body(r, exchangeInputSchema);
       // Closed or unconfigured ad settings refuse the exchange before the database is called.
       const open = openExchange();
-      if (input.units !== 1) throw new Error("GROUP_WALLET_INVALID");
       if (!input.adSessionId) throw new Error("GROUP_WALLET_AD_SESSION_REQUIRED");
       return { p_request_key: input.requestKey, p_policy_version: input.policyVersion, p_target: "ticket", p_units: input.units, p_ad_session_id: input.adSessionId, p_daily_cap: open.session.dailyCap };
     }),

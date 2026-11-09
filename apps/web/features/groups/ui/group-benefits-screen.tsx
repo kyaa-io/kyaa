@@ -1,6 +1,6 @@
 "use client";
 import {WalletHistoryPanel} from '@/features/group-wallet/ui/wallet-screen';
-import {WalletBalances,WalletCard,WalletExchange} from '@/features/group-wallet/ui/wallet-card';
+import {WalletBalances,WalletCard} from '@/features/group-wallet/ui/wallet-card';
 import {StanWallet,type StanSlot} from '@/features/group-wallet/ui/stan-wallet';
 import {openingPage} from '@/features/passport/ui/passport-mission-book';
 import {passportRoadmapSchema} from '@/features/passport/domain/dukjil-types';
@@ -139,12 +139,6 @@ function BenefitsWallet({locale,signedOut=false,bias}:{locale:AppLocale;signedOu
  if(!auth.ready||wallet.loading)return card({kind:'loading'});
  if(!wallet.data)return lifted?card({kind:'failed'}):<>{walletAlert}</>;
  return card({kind:'ready',points:wallet.data.points,tickets:wallet.data.tickets,pointCost:wallet.data.pointCost});
-}
-export function BenefitsExchangeShop({locale}:{locale:AppLocale}){
- const auth=useGroupRequest(),wallet=useGroupResource(auth.authenticated?'/api/me/wallet':null,parseWallet);
- useEffect(()=>{window.addEventListener(GROUP_WALLET_CHANGED_EVENT,wallet.retry);return()=>window.removeEventListener(GROUP_WALLET_CHANGED_EVENT,wallet.retry);},[wallet.retry]);
- if(!auth.ready||!auth.authenticated||wallet.loading||wallet.error||!wallet.data)return null;
- return <WalletExchange locale={locale} pointCost={wallet.data.pointCost} affordable={wallet.data.points>=wallet.data.pointCost}/>;
 }
 /** Keeps a prepared 덕질 section visible but not usable until its operation is announced. */
 type AlertEntry={message:string;label:string;retry:()=>void};

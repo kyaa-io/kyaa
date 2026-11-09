@@ -84,13 +84,17 @@ describe("global web wallet trust boundary", () => {
     vi.mocked(deps.rpc).mockResolvedValue(wallet);
     expect((await (await api.wallet(request("/wallet"))).json()).hearts).toBeUndefined();
   });
-  it("passes configured limits to the database and fixes the ticket at one unit with a session", async () => {
+  it("passes configured limits to the database and sends 1 to 1000 tickets with one session", async () => {
     vi.mocked(deps.rpc).mockResolvedValue(receipt);
     const open = createGroupWalletHandlers({ ...deps, rewardedExchange: openDecision });
     expect((await open.exchange(request("/exchange", ticket))).status).toBe(200);
     expect(deps.rpc).toHaveBeenCalledWith("exchange_owned_group_wallet", { p_app_user_id: owner, p_request_key: key, p_policy_version: "group-wallet-v1", p_target: "ticket", p_units: 1, p_ad_session_id: session, p_daily_cap: 7 });
     vi.mocked(deps.rpc).mockClear();
-    expect((await open.exchange(request("/exchange", { ...ticket, units: 2 }))).status).toBe(400);
+    vi.mocked(deps.rpc).mockResolvedValue({ ...receipt, units: 3, pointsSpent: 300 });
+    expect((await open.exchange(request("/exchange", { ...ticket, units: 3 }))).status).toBe(200);
+    expect(deps.rpc).toHaveBeenCalledWith("exchange_owned_group_wallet", expect.objectContaining({ p_units: 3, p_ad_session_id: session }));
+    vi.mocked(deps.rpc).mockClear();
+    for (const units of [0, 1001]) expect((await open.exchange(request("/exchange", { ...ticket, units }))).status).toBe(400);
     const { adSessionId: _drop, ...noSession } = ticket;
     const missing = await open.exchange(request("/exchange", noSession));
     expect(missing.status).toBe(400); expect(await missing.json()).toEqual({ error: { code: "GROUP_WALLET_AD_SESSION_REQUIRED" } });

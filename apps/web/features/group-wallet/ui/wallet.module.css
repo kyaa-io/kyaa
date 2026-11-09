@@ -11,7 +11,6 @@
 .panel fieldset { border: 0; padding: 0; margin: 0; min-width: 0; display: grid; gap: 16px; }.panel legend { position: absolute; width: 1px; height: 1px; clip-path: inset(50%); overflow: hidden; }
 .targets { display: flex; flex-wrap: wrap; gap: 12px; }.targets label { display: flex; gap: 8px; align-items: center; min-height: 44px; padding: 8px 12px; border: 1px solid var(--color-line-subtle); border-radius: 12px; }.targets label:has(input:checked) { color: var(--color-accent-ink); border-color: var(--color-accent); background: var(--color-accent-soft); }.targets input { accent-color: var(--color-accent); }
 .quantity { display: grid; gap: 8px; }.quantity input { width: 100%; min-height: 44px; border: 1px solid var(--color-muted); padding: 8px 12px; border-radius: 12px; font: inherit; }
-.calculation { margin: 0; display: grid; gap: 12px; }.calculation > div { display: flex; justify-content: space-between; gap: 16px; }.calculation dd { margin: 0; font-weight: 700; }
 
 .history, .pending { grid-column: 1/-1; }.history ul { list-style: none; padding: 0; margin: 0; }.history li { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding-block: 16px; border-top: 1px solid var(--color-line-subtle); }.history li > span { display: flex; align-items: center; gap: 12px; }.history time { font-size: 13px; }.history strong { text-align: right; }
 .page :is(button,a,input):focus-visible { outline: 3px solid var(--color-accent); outline-offset: 3px; }
@@ -81,7 +80,6 @@
 .attendanceDialog .loading_attendance{display:block}.attendanceDialog .loading_attendance:after{display:none}
 
 /* Rewarded exchange: ad action and outcome notes sit below the exchange summary. */
-.exchange form>button{margin-top:16px;width:100%}.exchange form>p{margin:12px 0 0;font-size:14px;line-height:20px;color:var(--color-muted)}
 
 /* Attendance dialog: one rule line, equal day cells, full-width action. */
 .attendanceDialog .attendance{display:flex;flex-direction:column;gap:0}
@@ -106,7 +104,6 @@
 .attendanceDialog .streak{margin-bottom:20px}
 
 /* Rubric r01 D02: exchange dialog action fills the dialog width like other dialogs. */
-.exchange form fieldset>.primary,.exchange form>.primary{grid-column:1/-1;display:flex;width:100%;min-height:52px;margin-top:16px;justify-content:center}
 
 
 /* Rubric r01 D03/D05: the dialog is the whole route, so the page h1 stays for assistive tech only and the dialog close is the single exit. */
@@ -115,18 +112,11 @@
 .supportDialog form fieldset>.primary{width:100%;max-width:none}
 .supportDialog.supportDialog form fieldset{grid-template-columns:minmax(0,1fr)}.supportDialog.supportDialog form fieldset>*{grid-column:1;grid-row:auto}
 /* FX-13: error reasons use the shared danger text color (#be123c). */
-.errorText.errorText{color:var(--color-accent)}
 
-.adCause{text-wrap:balance;word-break:keep-all;overflow-wrap:anywhere}
 
 .walletPage .benefitsRedirect>a{justify-content:flex-start;padding:0;min-height:44px;height:auto;width:auto;align-self:flex-start}
 
 /* Exchange quantity: stepper and quick picks above the cost summary; k/N progress below it. 44px targets. */
-.qtyGroup{display:grid;gap:12px;grid-column:1/-1}.qtyRow{display:flex;align-items:center;justify-content:space-between;gap:12px}.qtyLabel{font-weight:700}
-.qtyStepper{display:inline-flex;align-items:center;border:1px solid var(--color-line-subtle);border-radius:12px;overflow:hidden}.qtyStepper button{display:flex;align-items:center;justify-content:center;width:44px;height:44px;border:0;background:var(--color-surface);color:var(--color-ink)}.qtyStepper button:disabled{opacity:.4}.qtyStepper output{min-width:56px;text-align:center;font-weight:800;font-variant-numeric:tabular-nums}
-.qtyChips{display:flex;flex-wrap:wrap;gap:8px}.qtyChips button{min-height:44px;min-width:44px;padding:0 16px;border:1px solid var(--color-line-subtle);border-radius:999rem;background:var(--color-surface);color:var(--color-ink);font-weight:700}.qtyChips button[aria-pressed=true]{background:var(--color-ink);color:var(--color-surface);border-color:var(--color-ink)}
-.qtyGroup :is(button):focus-visible{outline:3px solid var(--color-ink);outline-offset:3px}
-.qtyProgress{display:flex;align-items:center;gap:12px;margin-top:16px}.qtyProgress>div{display:flex;flex:1;gap:6px}.qtyProgress i{flex:1;height:6px;border-radius:3px;background:var(--color-line-subtle)}.qtyProgress i[data-on=true]{background:var(--color-ink)}.qtyProgress strong{font-variant-numeric:tabular-nums;font-size:14px}
 
 /* 덕질 tab history: a plain section inside the wallet column (the column draws the card); title row carries the expand control. */
 .historyPreview{min-width:0}
@@ -142,13 +132,6 @@
 @media(prefers-reduced-motion:reduce){.historySkeleton i{animation:none}}
 
 /* While an ad is on its way the form stays in place (no height jump) and cannot be used. */
-.exchange[data-ad-busy]{position:relative}
-.exchange[data-ad-busy]>form{visibility:hidden}
-.adBusy{position:absolute;inset:0;display:grid;place-content:center;justify-items:center;gap:var(--space-3);background:var(--color-surface);color:var(--color-ink);font-size:var(--fan-item-title-size);line-height:24px}
-.adBusy strong{font-weight:var(--fan-item-title-weight)}
-.adBusy svg{animation:adSpin calc(var(--motion-layout) * 4) linear infinite;color:var(--color-muted)}
-@keyframes adSpin{to{transform:rotate(360deg)}}
-@media (prefers-reduced-motion:reduce){.adBusy svg{animation:none}}
 /* 피드백 F2 (2026-11-08): the 덕질 history preview is a section heading over one card (segment + rows), like the cheer card beside it.
    The rows keep one height, and the empty, loading and error states hold the same height, so the card does not jump. */
 .historyPreview .historyCard{display:grid;gap:var(--space-2);box-sizing:border-box;min-width:0;padding:var(--space-3) var(--space-4) var(--space-1);border:1px solid var(--color-line);border-radius:var(--radius-control);background:var(--color-surface)}

@@ -2,7 +2,7 @@
 import { ChevronRight, Heart } from "lucide-react";
 import Link from "next/link";
 import type { Route } from "next";
-import { useState, type ReactNode } from "react";
+import type { ReactNode } from "react";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import { FanLockedValue } from "@/components/fan-ui/fan-locked-value";
 import { FanGauge, FanNumber } from "@/components/fan-ui/fan-number";
@@ -13,9 +13,8 @@ import { nextHeartLabel, STAMPS_PER_HEART } from "@/features/groups/ui/stan-luck
 import type { AppLocale } from "@/i18n/locales";
 import { GROUP_WALLET_POINT_COST } from "@/server/group-wallet/domain";
 import { walletCopy } from "./copy";
-import { rewardedExchangeCopy } from "./rewarded-copy";
 import type { WalletCardState } from "./wallet-card";
-import { WalletExchangeDialog } from "./wallet-screen";
+import { StanExchange, StanExchangeLoading } from "./stan-exchange";
 import styles from "./stan-wallet.module.css";
 
 /** A number slot: loading holds the size of the number, locked is the signed-out lock, missing draws nothing (the failure is told elsewhere). */
@@ -38,11 +37,10 @@ function Value({ locale, slot, size, unit, icon }: { locale: AppLocale; slot: St
 
 /** 덕질 wallet (feedback F2): the two assets (points, hearts) as big numbers, under each the step it becomes next
  *  (tickets with the points still needed, stamps with the slots left to the next heart), and the one wallet action.
- *  390: two columns with the action row below; 768+: a third 288px column holds the action. The rules live on the guide page (안내 ›), not in help buttons.
+ *  390: two columns with the action row below ([− N +] and the exchange on one line); 768+: a third 288px column holds the same two, stacked. The rules live on the guide page (안내 ›), not in help buttons.
  *  Stamps are the stamped slots of the passport page being filled (n/9, the same number as MY); nine fill a page and a page is a heart. Numbers count up only when they change. */
 export function StanWallet({ locale, state, stamps, hearts, links, className }: { locale: AppLocale; state: WalletCardState; stamps: StanSlot; hearts: StanSlot; links: { hearts: string }; className?: string }) {
   const w = walletCopy(locale), s = (key: Parameters<typeof dukjilText>[1], values?: unknown[]) => dukjilText(locale, key, values);
-  const [open, setOpen] = useState(false);
   const pointCost = state.kind === "ready" ? state.pointCost : GROUP_WALLET_POINT_COST;
   const points: StanSlot = state.kind === "ready" ? state.points : state.kind === "guest" ? "locked" : state.kind === "loading" ? "loading" : "missing";
   const tickets: StanSlot = state.kind === "ready" ? state.tickets : points;
@@ -53,7 +51,7 @@ export function StanWallet({ locale, state, stamps, hearts, links, className }: 
   const stampText = pageFull ? <strong className={styles.ready}>{nextHeartLabel(locale, stampCount)}</strong> : nextHeartLabel(locale, stampCount);
   const coin = <img src={POINT_COIN_SRC} width={20} height={20} alt="" />;
   const gaugeSlot = (slot: StanSlot, gauge: ReactNode) => slot === "loading" ? <FanSkeleton shape="block" width="100%" height={20} /> : slot === "missing" ? null : gauge;
-  return <section className={[styles.wallet, className].filter(Boolean).join(" ")} aria-label={s("stanWalletFlows")} data-wallet-card="stan">
+  return <section className={[styles.wallet, className].filter(Boolean).join(" ")} id="wallet" aria-label={s("stanWalletFlows")} data-wallet-card="stan">
     <Cell cell="points" href="#stan-history">
       <span className={styles.label}>{w.points}</span>
       <span className={styles.value}><Value locale={locale} slot={points} size="xl" unit="P" icon={coin} /></span>
@@ -73,9 +71,9 @@ export function StanWallet({ locale, state, stamps, hearts, links, className }: 
     <Link className={styles.guide} href={`/guide/dukjil?locale=${locale}` as Route}>{s("stanGuide")}<ChevronRight size={16} aria-hidden="true" /></Link>
     <div className={styles.action}>
       {state.kind === "guest" ? state.action
-        : state.kind === "loading" ? <FanSkeleton shape="block" width="100%" height={44} />
+        : state.kind === "loading" ? <StanExchangeLoading locale={locale} />
         : state.kind === "failed" ? (state.retry ? <FanAction fullWidth onClick={state.retry}>{w.retry}</FanAction> : null)
-        : <><FanAction variant="secondary" fullWidth disabled={!affordable} onClick={() => setOpen(true)}>{rewardedExchangeCopy(locale).action}</FanAction><WalletExchangeDialog locale={locale} open={open} onClose={() => setOpen(false)} /></>}
+        : <StanExchange locale={locale} points={state.points} pointCost={pointCost} />}
     </div>
   </section>;
 }
