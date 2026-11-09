@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
-import { ArrowRight, ChevronUp, Compass } from "lucide-react";
+import { ChevronRight, ChevronUp, Compass } from "lucide-react";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import { FanHeading } from "@/components/fan-ui/fan-heading";
 import { FanSkeletonRows } from "@/components/fan-ui/fan-skeleton";
@@ -88,7 +88,7 @@ export function MyAttendanceList({ locale, section }: { locale: AppLocale; secti
       <section className={styles.todaySection} aria-label={section.title}>
         <div className={styles.todayHead}>
           <FanHeading>{section.title}</FanHeading>
-          {toggle && <FanAction variant="text" trailingIcon={expanded ? <ChevronUp /> : <ArrowRight />} aria-expanded={expanded} onClick={() => setExpanded(value => !value)}>{expanded ? section.lessLabel : section.moreLabel}</FanAction>}
+          {toggle && <FanAction variant="text" trailingIcon={expanded ? <ChevronUp /> : <ChevronRight />} aria-expanded={expanded} onClick={() => setExpanded(value => !value)}>{expanded ? section.lessLabel : section.moreLabel}</FanAction>}
         </div>
         {bandPage && bandItem && <StreakBand locale={locale} href={groupHref(bandPage, locale)} name={bandPage.name} imageUrl={bandPage.imageUrl} streak={bandItem.streak} attendedToday={bandItem.attendedToday} nextBonusIn={bandItem.nextBonusIn} onOpen={() => setBandOpen(true)} />}
         {bandOpen && bandPage && <DukjilProvider slug={bandPage.slug} locale={locale} hasPassport={bandItem?.hasPassport}><CreatorAttendanceDialog open pageName={bandPage.name} reviewHref={verifyHref(bandPage, locale)} onClose={() => { setBandOpen(false); status.retry(); }} /></DukjilProvider>}
@@ -145,10 +145,8 @@ export function GuestAttendanceList({ locale, title, loginHref, guideHref, empty
   useEffect(() => { if (!list.loading) callbacks.current?.(failed, () => retryRef.current()); }, [list.loading, failed]);
   if (list.loading && !list.data) return <AttendanceSkeleton title={title} label={c.loading} />;
   const pages = (list.data?.items ?? []).slice(0, GUEST_TILES);
-  const policy = POLICY_ACTIONS.flatMap(([action, label]) => {
-    const points = (catalog?.rules[action] as { points?: unknown } | undefined)?.points;
-    return typeof points === "number" ? [`${dukjilText(locale, label)} ${points.toLocaleString(locale)}P`] : [];
-  });
+  // jinny 5: the points per activity are on the mission rows above; this section keeps only the way to the guide while the policy is on.
+  const policyOn = POLICY_ACTIONS.some(([action]) => typeof (catalog?.rules[action] as { points?: unknown } | undefined)?.points === "number");
   return (
     <section className={styles.todaySection} aria-label={title}>
       <div className={styles.todayHead}><FanHeading>{title}</FanHeading></div>
@@ -164,10 +162,9 @@ export function GuestAttendanceList({ locale, title, loginHref, guideHref, empty
             <FanAction className={styles.rowAction} variant="neutral" href={loginHref}>{c.attendance}</FanAction>
           </li>
         ))}</ul>}
-      {!failed && policy.length > 0 && (
+      {!failed && policyOn && (
         <div className={styles.todayPolicy}>
-          <p>{policy.join(" · ")}</p>
-          <FanAction variant="text" trailingIcon={<ArrowRight />} href={guideHref}>{guideText(locale, "dkgLinkDukjil")}</FanAction>
+          <FanAction variant="text" href={guideHref}>{guideText(locale, "dkgLinkDukjil")}</FanAction>
         </div>
       )}
     </section>

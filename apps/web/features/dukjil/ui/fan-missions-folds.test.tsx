@@ -109,3 +109,26 @@ it("D1: today's rows, more missions and certifications are all the one FanMissio
   // F3: the folded heads are rows too.
   expect(document.querySelectorAll('button[data-fan-mission-row="fold"]')).toHaveLength(2);
 });
+
+it("B3: the head's n개 남음 folds today's rows (open by default, kept for the session); the stamp art stays in its circle (덕질 시안)", async () => {
+  ui();
+  const toggle = await waitFor(() => { const el = document.querySelector("[data-missions-left]")?.closest("button"); expect(el).toBeTruthy(); return el!; });
+  expect(toggle).toHaveAttribute("aria-expanded", "true");
+  const panel = document.getElementById(toggle.getAttribute("aria-controls")!)!;
+  expect(panel).toHaveAttribute("data-missions-today");
+  expect(panel.querySelectorAll("[data-mission-art] > img")).toHaveLength(5);
+  fireEvent.click(toggle);
+  expect(toggle).toHaveAttribute("aria-expanded", "false");
+  expect(panel.closest("[inert]")).not.toBeNull();
+  expect(window.sessionStorage.getItem("fan-collapsible:dukjil-missions:today")).toBe("0");
+  cleanup(); resetDukjilCatalogCache(); ui();
+  const again = await waitFor(() => { const el = document.querySelector("[data-missions-left]")?.closest("button"); expect(el).toBeTruthy(); return el!; });
+  await waitFor(() => expect(again).toHaveAttribute("aria-expanded", "false"));
+});
+
+it("B3: guests get no today toggle (the rows stay open)", async () => {
+  h.auth = false; ui();
+  await screen.findByText("글쓰기");
+  expect(document.querySelector("[data-missions-left]")).toBeNull();
+  expect(document.querySelector("[data-missions-today]")?.closest("[inert]")).toBeNull();
+});

@@ -71,7 +71,7 @@ export function GroupBenefitsScreen({locale,initialHeart=null,signedOut=false}:{
  <header className={styles.srOnly}><FanHeading as='h1'>{c.title}</FanHeading></header>
  <BenefitsAlerts><BenefitsSections><BenefitsAlertList/>
  <div className={styles.top}><BenefitsWallet key={`${locale}:${auth.ownerKey}`} locale={locale} signedOut={signedOut} bias={bias}/></div>
- <div className={styles.main}><BenefitsDailyMissions locale={locale}/><BenefitsLucky locale={locale} bias={bias} signedOut={signedOut}/><BenefitsToday locale={locale} emphasise={false}/></div>
+ <div className={styles.main}><BenefitsDailyMissions locale={locale}/><BenefitsToday locale={locale} emphasise={false}/><BenefitsLucky locale={locale} bias={bias} signedOut={signedOut}/></div>
  <div className={styles.side}><BenefitsCheer locale={locale} bias={bias} signedOut={signedOut}/>{auth.ready?(auth.authenticated?<BenefitsHistory locale={locale}/>:<BenefitsGuestHistory locale={locale}/>):signedOut&&<BenefitsGuestHistory locale={locale}/>}</div></BenefitsSections></BenefitsAlerts>
  </FanContentContainer></FanAppFrame>;
 }
@@ -82,7 +82,7 @@ function useStanNumbers(bias:SelectedBias,signedOut:boolean){
  const page=roadmap.data?roadmap.data.pages[openingPage(roadmap.data.pages)]:undefined;
  const stamps:StanSlot=guest?'locked':!bias.selected?(bias.status==='loading'?'loading':0):page?page.filled:roadmap.data?0:roadmap.error?'missing':'loading';
  const hearts:StanSlot=guest?'locked':bias.status==='loading'?'loading':bias.selected?bias.selected.hearts??'missing':0;
- return {guest,stamps,hearts};
+ return {guest,stamps,hearts,passportId};
 }
 /** F2: the favorite's lucky draws, in the body under the missions (1024+: two cards in the 640 column; 390: a scroller). */
 function BenefitsLucky({locale,bias,signedOut}:{locale:AppLocale;bias:SelectedBias;signedOut:boolean}){
@@ -129,11 +129,11 @@ function BenefitsGuestHistory({locale}:{locale:AppLocale}){
 /** The wallet column's first piece: the shared wallet card. Guests keep the card and balances with the login action in the exchange slot. */
 function BenefitsWallet({locale,signedOut=false,bias}:{locale:AppLocale;signedOut?:boolean;bias:SelectedBias}){
  const auth=useGroupRequest(),w=walletCopy(locale),wallet=useGroupResource(auth.authenticated?'/api/me/wallet':null,parseWallet);
- const {guest,stamps,hearts}=useStanNumbers(bias,signedOut),favorite=guest?null:stanFavorite(bias),slug=favorite?.slug??null;
+ const {guest,stamps,hearts,passportId}=useStanNumbers(bias,signedOut),favorite=guest?null:stanFavorite(bias),slug=favorite?.slug??null;
  useEffect(()=>{window.addEventListener(GROUP_WALLET_CHANGED_EVENT,wallet.retry);return()=>window.removeEventListener(GROUP_WALLET_CHANGED_EVENT,wallet.retry);},[wallet.retry]);
  const sections=useContext(SectionContext),retryAll=()=>window.dispatchEvent(new Event(GROUP_WALLET_CHANGED_EVENT)),failed=auth.ready&&auth.authenticated&&!wallet.loading&&!wallet.data,allFailed=useSectionFailure('wallet',failed,retryAll),lifted=useLiftedAlert('wallet',{message:w.error,label:w.retry,retry:retryAll},failed&&!allFailed),walletAlert=lifted?null:<FanState inline kind='error' className={styles.inlineError} title={w.error} actions={<FanAction onClick={retryAll}>{w.retry}</FanAction>}/>;
  if(allFailed)return <div className={styles.pWallet}><FanState inline compact kind='error' title={w.error} actions={<FanAction variant='text' onClick={()=>sections?.retryAll()}>{w.retry}</FanAction>}/></div>;
- const card=(state:Parameters<typeof WalletCard>[0]['state'])=><StanWallet className={styles.pWallet} locale={locale} state={state} stamps={stamps} hearts={hearts} links={{hearts:slug?`/${encodeURIComponent(slug)}?tab=fans&locale=${locale}`:`/passports?locale=${locale}`}}/>;
+ const card=(state:Parameters<typeof WalletCard>[0]['state'])=><StanWallet className={styles.pWallet} locale={locale} state={state} stamps={stamps} hearts={hearts} links={{hearts:slug?`/${encodeURIComponent(slug)}?tab=fans&locale=${locale}`:`/passports?locale=${locale}`,claim:passportId?`/passports/${encodeURIComponent(passportId)}?locale=${locale}#mission-book`:undefined}}/>;
  // The server saw no session: the signed-out card is drawn from the first HTML instead of a loading card of another height.
  if(!auth.ready&&signedOut||auth.ready&&!auth.authenticated)return card({kind:'guest',action:<FanAction variant='primary' fullWidth href={fanLoginHref(locale,`/benefits?locale=${locale}`)}>{w.login}</FanAction>});
  if(!auth.ready||wallet.loading)return card({kind:'loading'});
