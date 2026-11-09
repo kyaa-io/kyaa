@@ -6,6 +6,7 @@ import { celebritySlugSchema } from "@/features/fanpage/domain/community";
 import { publicAvatarUrlSchema } from "@/features/profile/domain/avatar";
 import { mobileAccountLevelSchema, mobileActivityCursorSchema, mobileActivitySchema } from "@/server/mobile-profile/domain";
 import { ownedFanProfilePublicInputSchema, ownedFanProfilePublicSchema, socialProfileCardSchema } from "@/features/fan-profile/domain";
+import { homeFanProfileRefSchema } from "@/features/rankings/domain/types";
 
 export interface SocialDependencies {
   authorize(authorization: string | null): Promise<{ appUserId: string }>;
@@ -33,6 +34,7 @@ const cursorSchema = z.object({ at: z.iso.datetime({ offset: true }), id: uuid }
 /** "The author of this content": a public reply never carries a member id, so a profile opens from what the viewer is looking at (B6). */
 export const profileRefSchema = z.discriminatedUnion("kind", [
   z.object({ kind: z.literal("profile"), profileId: uuid }).strict(),
+  homeFanProfileRefSchema,
   z.object({ kind: z.literal("fan_post"), id: uuid }).strict(),
   z.object({ kind: z.literal("fan_post_comment"), id: uuid }).strict(),
   z.object({ kind: z.literal("group_post"), id: uuid }).strict(),

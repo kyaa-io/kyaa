@@ -189,8 +189,8 @@ begin
   if pg_temp.fan('hm_blk', 'points') is null or pg_temp.fan('hm_blk', 'points', pg_temp.id('viewer')) is not null or pg_temp.fan('hm_blk', 'hearts', pg_temp.id('viewer')) is not null then raise exception '11 block'; end if;
   foreach t in array array['hearts', 'points'] loop
     r := public.read_home_fan_ranking_v2(pg_temp.id('viewer'), t, 50);
-    -- Only the approved signed-in profileRef may carry an identifier; all other fields stay private.
-    one := jsonb_set(r, '{rows}', (select jsonb_agg(e - 'profileRef') from jsonb_array_elements(r->'rows') e));
+    -- Neither signed-in locators nor signed-out responses may carry a member identifier.
+    one := r;
     if one::text ~ '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-' or one::text like '%@example.test%' or jsonb_path_exists(one, 'strict $.**.amount') or jsonb_path_exists(one, 'strict $.**.appUserId') or jsonb_path_exists(one, 'strict $.**.subjectId')
       then raise exception '11 keys: %', r; end if;
     one := public.read_home_fan_ranking_v2(null, t, 50);

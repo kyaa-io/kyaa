@@ -105,8 +105,12 @@ const count = z.number().int().min(0);
 /** Counted hearts minus the preceding KST calendar day's snapshot, independent of the sort metric.
  * null when that exact day's build is missing; optional only for responses from an older server. */
 const dayGain = z.number().int().nullable().optional();
-/** Existing ProfileModal reference, present only for an authenticated viewer. */
-export const homeFanProfileRefSchema = z.object({ kind: z.literal("profile"), profileId: z.uuid() }).strict();
+/** Signed-in-only locator. rank is the immutable stored rank, not the viewer-filtered display rank. No member identifier. */
+export const homeFanProfileRefSchema = z.object({
+  kind: z.literal("home_ranking"), day: z.iso.date(), computedAt: z.iso.datetime({ offset: true }),
+  metric: z.enum(HOME_FAN_METRICS), rank: z.number().int().positive(),
+}).strict();
+export type HomeFanProfileRef = z.infer<typeof homeFanProfileRefSchema>;
 export const homeFanRankingSchema = z.object({
   ...homeHead,
   metric: z.enum(HOME_FAN_METRICS).optional(),

@@ -4,6 +4,7 @@ import { REFRESH_AFTER_MS, createRankingsHandlers } from "./routes";
 
 const ME = "11111111-1111-4111-8111-111111111111";
 const CEL = "22222222-2222-4222-8222-222222222222";
+const fanRef = (rank = 1, metric = "hearts") => ({ kind: "home_ranking", day: "2026-11-08", computedAt: "2026-11-08T00:00:00Z", metric, rank });
 const req = (path: string, headers: Record<string, string> = {}) => new Request(`http://x${path}`, { headers });
 
 function make(rpcImpl: (name: string, args: Record<string, unknown>) => unknown, extra = {}) {
@@ -140,7 +141,7 @@ describe("rankings routes", () => {
   it("answers home fans with profile refs only for a verified member", async () => {
     const { handlers, rpc } = make(() => ({
       ...head({ metric: "hearts" }),
-      rows: [{ rank: 1, score: 7, hearts: 7, points: 35, nickname: "A", characterId: "star-pink", tier: "Gold", fans: 2, liveNow: true, isNew: true, isMe: true, delta: 2, weekGain: 1, subjectId: ME, profileRef: { kind: "profile", profileId: ME } }, { rank: 2, score: 3, hearts: 3, points: null, nickname: "B", characterId: "x", tier: null, isMe: false, delta: null, weekGain: null, profileRef: { kind: "profile", profileId: CEL } }],
+      rows: [{ rank: 1, score: 7, hearts: 7, points: 35, nickname: "A", characterId: "star-pink", tier: "Gold", fans: 2, liveNow: true, isNew: true, isMe: true, delta: 2, weekGain: 1, subjectId: ME, profileRef: fanRef() }, { rank: 2, score: 3, hearts: 3, points: null, nickname: "B", characterId: "x", tier: null, isMe: false, delta: null, weekGain: null, profileRef: fanRef(2) }],
       me: { rank: 1, score: 7, hearts: 7, points: 35, inTop: true, delta: 2, subjectId: ME },
     }), fresh);
     const signedOut = await handlers.home(req("/api/rankings/home"));
@@ -160,7 +161,7 @@ describe("rankings routes", () => {
     expect(rpc).toHaveBeenLastCalledWith("read_home_fan_ranking_v2", { p_viewer: ME, p_metric: "hearts", p_limit: 50 });
     expect(mine.rows[0].isMe).toBe(true);
     expect(mine.me).toEqual({ rank: 1, score: 7, hearts: 7, points: 35, inTop: true, delta: 2 });
-    expect(mine.rows[0].profileRef).toEqual({ kind: "profile", profileId: ME });
+    expect(mine.rows[0].profileRef).toEqual(fanRef());
     expect(mine.rows[0]).not.toHaveProperty("subjectId");
   });
 
@@ -169,7 +170,7 @@ describe("rankings routes", () => {
       ...head({ metric, weekGainDays: 3 }),
       rows: [{ rank: 1, score: metric === "hearts" ? 7 : 42, hearts: 7, points: 42, fans: 2,
         nickname: "A", characterId: "star-pink", tier: "Gold", isMe: true, isNew: true,
-        delta: -2, weekGain: 35, liveNow: true, subjectId: ME, profileRef: { kind: "profile", profileId: ME } }],
+        delta: -2, weekGain: 35, liveNow: true, subjectId: ME, profileRef: fanRef(1, metric) }],
       me: { rank: 1, score: metric === "hearts" ? 7 : 42, hearts: 7, points: 42, inTop: true, delta: -2 },
     }), fresh);
     for (const authorization of [undefined, "Bearer t"]) {
@@ -177,8 +178,8 @@ describe("rankings routes", () => {
       expect(body).toMatchObject({ metric, weekGainDays: 3, computedAt: "2026-11-08T00:00:00Z" });
       expect(body.rows[0]).toMatchObject({ hearts: 7, points: 42, delta: -2, weekGain: 35, isNew: true });
       expect(body.rows[0]).not.toHaveProperty("liveNow");
-      if (!authorization) expect(JSON.stringify(body)).not.toContain(ME);
-      else expect(body.rows[0].profileRef).toEqual({ kind: "profile", profileId: ME });
+      expect(JSON.stringify(body)).not.toContain(ME);
+      if (authorization) expect(body.rows[0].profileRef).toEqual(fanRef(1, metric));
       if (authorization) expect(body.me).toMatchObject({ hearts: 7, points: 42 });
       else expect(body.me).toBeNull();
     }
