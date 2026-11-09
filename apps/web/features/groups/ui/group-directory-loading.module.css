@@ -1,10 +1,12 @@
 /* Title row of the discovery sidebar "내 페이지": title, sort caption and see-all share one row.
    Pattern follows FanSectionHeader (title left, navigation right, 44px target); the sort caption is a
-   small muted caption instead of its own line. Doubled classes beat .discoveryAside h2 / .meta rules. */
-.head.head{display:flex;align-items:center;gap:0 8px;margin:0 0 4px;min-width:0}
+   small muted caption instead of its own line. Doubled classes beat .discoveryAside h2 / .meta rules.
+   Every value is a design token (DESIGN.md: section title 18/700, metadata 13, action label 14, target 44, spacing 4/8/12). */
+.head.head{display:flex;align-items:center;gap:0 var(--space-2);margin:0 0 var(--space-1);min-width:0;min-height:var(--min-target)}
 /* Title + sort caption share one wrapping group; the caption drops under the title only when the row is too narrow. */
-.titles.titles{flex:1 1 0;min-width:0;display:flex;flex-wrap:wrap;align-items:baseline;gap:0 8px}
-.head.head h2{margin:0;min-width:0;overflow-wrap:anywhere}
-.sort.sort{min-width:0;color:#5d5d5d;font-size:13px;line-height:20px;overflow-wrap:anywhere}
-.head.head .all{flex:none;width:auto;max-width:60%;min-height:44px;margin:0;padding-inline:0 0;font-size:14px;white-space:normal;text-align:end}
-
+.titles.titles{flex:1 1 0;min-width:0;display:flex;flex-wrap:wrap;align-items:baseline;gap:0 var(--space-2)}
+.head.head h2{margin:0;min-width:0;overflow-wrap:anywhere;font-size:var(--fan-section-size);font-weight:var(--fan-section-weight);line-height:var(--fan-heading-leading)}
+.sort.sort{min-width:0;color:var(--color-muted);font-size:var(--fan-metadata-size);line-height:1.4;overflow-wrap:anywhere}
+.head.head .all{flex:none;width:auto;max-width:60%;min-height:var(--min-target);margin:0;padding-inline:0 0;font-size:var(--fan-action-label-size);white-space:normal;text-align:end}
+/* Previous / next under the last row: two equal buttons on the row edges, one 12px step below the divider. */
+.pager{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--space-2);margin-top:var(--space-3)}

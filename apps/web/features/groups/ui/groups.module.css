@@ -125,7 +125,7 @@
 /* Pencil asmGM: discovery rail is 304px including its 32px inset. */
 @media(min-width:1024px){.discoveryLayout{grid-template-columns:minmax(0,1fr) 304px}}
 .discoveryAside{gap:0;border-color:var(--color-line-subtle)}
-.discoveryAside .discoveryJoined{gap:0}.discoveryJoined h2{font-size:20px;line-height:30px;margin-bottom:8px}
+.discoveryAside .discoveryJoined{gap:0}
 .discoveryAside .discoveryAttendance{margin-top:24px;padding:16px;gap:8px}.discoveryAttendance h3{margin:0;line-height:24px}.discoveryAttendance p{font-size:14px;line-height:21px}
 .discoveryAside .discoveryAttendance{border:1px solid var(--color-line);border-radius:16px}
 .discoveryAside .discoveryCreation{display:grid;gap:0;padding-top:28px}.discoveryCreation a{border-top:1px solid var(--color-line);border-radius:0;color:var(--color-accent-ink);padding-inline:0;font-size:14px;justify-content:space-between}.discoveryCreation a>span:first-child{text-align:start}
@@ -217,7 +217,7 @@
 
 /* Current Pencil title roles; sidebar labels retain their smaller body-title role. */
 :where(.page) h1,:where(.page) h2{font-weight:var(--fan-heading-weight)}
-:where(.page) h2{line-height:var(--fan-heading-leading)}.page .discoveryHeading h2{line-height:var(--fan-heading-leading)}.page .discoveryJoined h2{font:400 16px/24px "Pretendard UI 650",system-ui,sans-serif;font-synthesis:none}
+:where(.page) h2{line-height:var(--fan-heading-leading)}.page .discoveryHeading h2{line-height:var(--fan-heading-leading)}
 .page .nonFanIdentity .identityCopy h1{font:400 32px/40px "Pretendard UI 850",system-ui,sans-serif}
 .page .applicationAside h2{font:400 16px/24px "Pretendard UI 650",system-ui,sans-serif;font-synthesis:none}
 @media(max-width:1023px){:where(.page) h2{line-height:var(--fan-heading-leading)}.page .discoveryHeading h2{line-height:var(--fan-heading-leading)}.page .nonFanIdentity .identityCopy h1{font:700 20px/28px "Pretendard Variable",system-ui,sans-serif}}
@@ -278,7 +278,7 @@
 .creatorHomeAside>section>h2,.creatorHomeAside>section>header>h2,.mobileParticipation>section>h2,.mobileParticipation>section>header>h2{font:400 16px/24px "Pretendard UI 650",system-ui,sans-serif;font-synthesis:none}
 .mobileParticipation>.sourceHomeCard>h2,.mobileParticipation>.sourceHomeCard>header>h2{font:400 16px/24px "Pretendard UI 650",system-ui,sans-serif;font-synthesis:none}
 
-.roomCreateAction{min-height:44px}
+
 
 /* G17: keep the same 16px rhythm between the mobile verification card and the intro card that follows it. */
 @media(max-width:1023px){.mobileParticipation{margin-bottom:16px}}
