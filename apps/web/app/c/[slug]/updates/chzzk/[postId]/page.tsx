@@ -39,7 +39,8 @@ export default async function ChzzkDetailPage({ params, searchParams }: {
   try { post = await readChzzkPost(postId, undefined, channelId); } catch { unavailable = true; }
   if (!post && !unavailable) notFound();
   return <FanAppFrame locale={locale} mainId="chzzk-detail-main">
-    <FanContentContainer as="main" id="chzzk-detail-main" className={`${styles.page} ${styles.standalone}`} tabIndex={-1}>
+    <FanContentContainer as="main" id="chzzk-detail-main" tabIndex={-1}>
+     <div className={`${styles.page} ${styles.standalone}`}>
       <Link className={styles.back} href={returnTo as Route}><ArrowLeft aria-hidden="true" />{locale === "ko" ? "소식 목록" : translate(locale, localizedMessages.mafa93c1c71bf, "All updates")}</Link>
       <article className={styles.article}>
         <header className={styles.header}><h1>{post ? chzzkPostTitle(post, locale) || "CHZZK" : (locale === "ko" ? "소식을 불러오지 못했어요" : translate(locale, localizedMessages.m451dc28c270a, "Couldn't load this update"))}</h1>
@@ -47,6 +48,7 @@ export default async function ChzzkDetailPage({ params, searchParams }: {
         </header>
         {post ? <ChzzkPostBody post={post} name={creator.name} locale={locale} communityUrl={communityUrl} /> : <p>{locale === "ko" ? "잠시 후 다시 열어 주세요. " : translate(locale, localizedMessages.m5df212fc0241, "Please try again shortly. ")}<a href={communityUrl} target="_blank" rel="noopener noreferrer">{locale === "ko" ? "치지직에서 보기 (새 창)" : translate(locale, localizedMessages.me04e9ef06943, "View on CHZZK (new window)")}</a></p>}
       </article>
+     </div>
     </FanContentContainer>
   </FanAppFrame>;
 }

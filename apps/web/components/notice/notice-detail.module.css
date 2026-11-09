@@ -1,6 +1,5 @@
 .page { padding-block:32px 88px; color:var(--color-ink); font-family:inherit; }
 .page.standalone { max-width:840px; }
-.page.withRecent { max-width:1152px; }
 .back { display:inline-flex; min-height:44px; align-items:center; gap:8px; color:var(--color-ink); font-size:14px; font-weight:700; text-decoration:none; }
 .back svg { width:17px; height:17px; }
 .layout { display:grid; grid-template-columns:minmax(0,1fr); gap:40px; margin-top:24px; }
@@ -26,7 +25,8 @@
 .page :is(a,button,textarea):focus-visible { outline:3px solid var(--color-ink); outline-offset:3px; }
 .srOnly { position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; }
 @media (min-width:64rem) {
-  .relatedLayout { grid-template-columns:minmax(0,720px) 264px; gap:48px; }
+  .relatedLayout { grid-template-columns:minmax(0,1fr) 264px; gap:48px; }
+  .relatedLayout .article { max-width:none; }
   .recent { position:sticky; top:96px; }
 }
 @media (max-width:47.99rem) {
@@ -38,9 +38,7 @@
   .body { font-size:15px; line-height:1.75; }
 }
 
-/* 2026-11-04 FX-47: standalone notice column is centered, not flush left. */
-.page.standalone { margin-inline:auto; }
-.article { margin-inline:auto; }
+/* 2026-11-09 shell-width (replaces FX-47 centering): the notice column starts at the shell's left edge. */
 
 /* 2026-11-04 UI-RUBRIC G08: back link shares the article column; content actions sit in the meta row. */
 .page.standalone { max-width:720px; }

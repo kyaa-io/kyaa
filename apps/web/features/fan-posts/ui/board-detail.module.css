@@ -1,6 +1,8 @@
 /* doc-261107 D2: the header and comment rules moved to post-detail.module.css. */
 .detail { width:100%; margin:0; min-width:0; gap:16px; }
 .detail>a:first-child { margin-inline-start:-12px; }
+/* 2026-11-09 shell-width: the comment block starts at the column's left edge like the title, meta and body. */
+@media (min-width:1024px) { .detail [data-post-comments] { padding-inline:0; background:transparent; } }
 .article { display:flex; flex-direction:column; gap:16px; padding:0; border:0; border-radius:0; box-shadow:none; }
 .article>[data-post-media]:empty { display:none; }
 .article>[data-post-media]>div { margin:0; }

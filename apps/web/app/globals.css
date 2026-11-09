@@ -188,6 +188,10 @@ img {
 }
 
 @media (min-width: 48rem) { :root { --fan-section-gap: 48px; } }
+/* Shell width: the header, page body and footer all use this max width and side inset (DESIGN.md, Grid & Container). */
+:root { --shell-max-width: 1440px; --shell-inset: 16px; }
+@media (min-width: 48rem) { :root { --shell-inset: 32px; } }
+@media (min-width: 80rem) { :root { --shell-inset: 40px; } }
 @media (min-width: 64rem) { :root { --fan-action-primary-height: 48px; } }
 
 /* Pencil UI faces: the 3MB TTFs took 30s on 4G and starved scripts and images. Each weight is two WOFF files made by

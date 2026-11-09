@@ -6,7 +6,8 @@ import { messages as footerMessages } from "@/i18n/catalogs/components__fan-shel
 import { translate } from "@/i18n/messages";
 import { creatorSlugFromHomePath } from "@/features/creator/domain/creator-navigation";
 import { useGroupsRelease } from "@/features/groups/ui/groups-release";
-import { GroupHeaderAccount, GroupHeaderPoints } from "@/features/groups/ui/group-header-account";
+import { GroupHeaderAccount } from "@/features/groups/ui/group-header-account";
+import { FanHeaderStatus } from "./fan-header-status";
 import { SelectedBiasChip } from "@/features/selected-bias/ui/selected-bias-chip";
 import { useGroupRequest } from "@/features/groups/ui/use-group-resource";
 import { HeaderNotificationLink } from "@/features/notification/ui/header-notification-link";
@@ -119,7 +120,7 @@ function mobileLabel(section: FanSection, locale: FanLocale, groupsEnabled = fal
   return "MY";
 }
 
-/** Feedback F: signed in, the right side is three things — one status capsule (tier · favorite · ♥N · P N, each cell its own destination),
+/** Feedback F: signed in, the right side is three things — one collapsible status capsule (tier · ♥N · P N),
  * the bell, and the avatar that opens the account menu. The language moves into that menu from 768px; below 768px (no account menu) and
  * signed out it stays in the header. */
 export function GroupHeaderActions({ locale, languageHref, notificationsLabel, actions, actionsAreIdentity }: {
@@ -130,7 +131,7 @@ export function GroupHeaderActions({ locale, languageHref, notificationsLabel, a
   // turns into the guest chip or fills with values.
   const status = owner.startsWith("pending:") ? <span className={styles.statusPending} data-header-status-pending="" aria-hidden="true" />
     : guest ? <SelectedBiasChip locale={locale} />
-    : <span className={styles.statusCapsule} data-header-status=""><SelectedBiasChip locale={locale} /><GroupHeaderPoints locale={locale} /></span>;
+    : <FanHeaderStatus locale={locale} />;
   return <>
     {status}
     <span className={styles.headerLanguage} data-signed-in={guest ? undefined : ""}><FanLanguageSwitch locale={locale} href={languageHref} compact /></span>

@@ -23,14 +23,14 @@
 .page svg { flex: none; width: 20px; height: 20px; stroke-width: 1.8; }
 
 .header { position: sticky; z-index: 40; top: 0; height: var(--header-height); padding-block: 12px; background: var(--canvas); }
-.headerInner { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; width: min(100%, 1440px); height: 100%; margin-inline: auto; padding-inline: 16px; }
+.headerInner { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; width: min(100%, var(--shell-max-width)); height: 100%; margin-inline: auto; padding-inline: var(--shell-inset); }
 .brand { display: inline-flex; width: 88px; min-height: 44px; align-items: center; }
 .brand img { display: block; width: 80px; height: auto; }
 .desktopNav { display: none; }
 .headerActions { display: flex; align-items: center; gap: 0; }
 .languageButton { display: inline-grid; width: 44px; height: 44px; padding: 0; place-items: center; border: 0; border-radius: 12px; background: transparent; color: var(--ink); cursor: pointer; }
 
-.shell { display: grid; width: min(100%, 1440px); margin-inline: auto; padding: 24px 16px var(--fan-section-gap); }
+.shell { display: grid; width: min(100%, var(--shell-max-width)); margin-inline: auto; padding: 24px 16px var(--fan-section-gap); padding-inline: var(--shell-inset); }
 .main { min-width: 0; }
 .heroSection, .contentSection { scroll-margin-top: calc(var(--header-height) + 16px); }
 .contentSection { margin-top: var(--fan-section-gap); }
@@ -328,7 +328,6 @@
 .bottomNav .bottomNavActive::before { position: absolute; top: 0; right: 28%; left: 28%; height: 2px; background: var(--ink); content: ""; }
 
 @media (min-width: 48rem) {
-  .headerInner, .shell { padding-inline: 32px; }
   .headerInner { grid-template-columns: auto minmax(0,1fr) auto; column-gap: 8px; }
   .desktopNav { display: flex; justify-self: start; height: 44px; padding-inline: 4px; border: 1px solid var(--line); border-radius: 999rem; transform: translateY(-1px); }
   .desktopNav a { position: relative; display: inline-flex; align-items: center; height: 100%; padding-inline: 16px; color: var(--muted); font-size: 15px; font-weight: 700; }
@@ -354,7 +353,6 @@
 }
 
 @media (min-width: 80rem) {
-  .headerInner, .shell { padding-inline: 40px; }
   .heroContent { padding: 48px 48px 48px 64px; }
 }
 

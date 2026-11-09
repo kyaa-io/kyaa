@@ -32,8 +32,8 @@
 }
 
 .headerInner {
-  max-width: 1440px;
-  padding-inline: 16px;
+  max-width: var(--shell-max-width);
+  padding-inline: var(--shell-inset);
 }
 
 .skipLink {
@@ -56,18 +56,6 @@
   transform: translateY(0);
   outline: 3px solid var(--color-surface);
   outline-offset: 2px;
-}
-
-@media (min-width: 48rem) {
-  .headerInner {
-    padding-inline: 32px;
-  }
-}
-
-@media (min-width: 80rem) {
-  .headerInner {
-    padding-inline: 40px;
-  }
 }
 
 @media (min-width: 64rem) {

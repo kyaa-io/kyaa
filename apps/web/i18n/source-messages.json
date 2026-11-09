@@ -17752,5 +17752,35 @@
     "ko": "{0}자 이상",
     "source": "features/dukjil/ui/dukjil-copy",
     "id": "features/dukjil/ui/dukjil-copy:earnMinChars"
+  },
+  "headerStatusStatus": {
+    "ko": "내 팬 활동",
+    "en": "My fan activity",
+    "source": "components/fan-shell/fan-header-status",
+    "id": "components/fan-shell/fan-header-status:headerStatusStatus"
+  },
+  "headerStatusChangeFavorite": {
+    "ko": "최애 바꾸기",
+    "en": "Change favorite",
+    "source": "components/fan-shell/fan-header-status",
+    "id": "components/fan-shell/fan-header-status:headerStatusChangeFavorite"
+  },
+  "headerStatusTierGuide": {
+    "ko": "등급 안내",
+    "en": "Tier guide",
+    "source": "components/fan-shell/fan-header-status",
+    "id": "components/fan-shell/fan-header-status:headerStatusTierGuide"
+  },
+  "headerStatusHearts": {
+    "ko": "하트",
+    "en": "Hearts",
+    "source": "components/fan-shell/fan-header-status",
+    "id": "components/fan-shell/fan-header-status:headerStatusHearts"
+  },
+  "headerStatusFindFavorite": {
+    "ko": "다른 최애 찾기",
+    "en": "Find more favorites",
+    "source": "components/fan-shell/fan-header-status",
+    "id": "components/fan-shell/fan-header-status:headerStatusFindFavorite"
   }
 }
