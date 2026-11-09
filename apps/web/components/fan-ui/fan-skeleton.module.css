@@ -39,3 +39,5 @@
   .postCopy { grid-template-columns: minmax(0, 1fr) 200px; align-items: center; gap: var(--space-4); }
   .postMeta { width: 100%; }
 }
+/* Directory tile (L5): the same square as FanEntityCard size="tile"; the grid comes from the caller. */
+.tile { display: block; width: 100%; height: auto; aspect-ratio: 1; border-radius: var(--radius-control); }

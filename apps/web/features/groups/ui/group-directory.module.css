@@ -12,9 +12,11 @@
 .myApplicationCopy span { overflow: hidden; color: var(--color-muted); text-overflow: ellipsis; white-space: nowrap; }
 @media (max-width: 1023px) { .cards { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 600px) { .cards { grid-template-columns: minmax(0, 1fr); } }
-/* U6 directory list: divider rows, 2 columns from 1024px, 1 column below. No outlines. */
-.list { display: grid; grid-template-columns: minmax(0, 1fr); column-gap: var(--space-8); min-width: 0; }
-@media (min-width: 1024px) { .list { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+/* L5 directory grid (2026-11-09, Weverse artist picker on Mobbin: 3 square tiles a row, 12px apart). 4 from 600px, 5 from 768px, about 168px tiles beside the side column from 1024px. */
+.list { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-3); min-width: 0; }
+@media (min-width: 600px) { .list { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+@media (min-width: 768px) { .list { grid-template-columns: repeat(5, minmax(0, 1fr)); } }
+@media (min-width: 1024px) { .list { grid-template-columns: repeat(auto-fill, minmax(148px, 1fr)); } }
 .helpTitle { display: flex; align-items: center; gap: var(--space-1); }
 /* L4 (2026-11-09, Weverse artist search on Mobbin): search and sort share one 44px row, every filter sits in one 36px chip row that scrolls sideways.
    The role chips moved into one menu chip at the end of that row, like Weverse's trailing chevron chip. 1280+ puts the three on one row. */

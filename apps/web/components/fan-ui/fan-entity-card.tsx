@@ -7,6 +7,7 @@ import type { ReactNode } from "react";
 import { GroupImage } from "@/features/groups/ui/group-image";
 import type { AppLocale } from "@/i18n/locales";
 import { CreatorAvatar } from "./creator-avatar";
+import { CreatorImage } from "./creator-image";
 import { FanTag } from "./fan-tag";
 import { fanUiText, type FanUiCopyKey } from "./fan-ui-copy";
 import styles from "./fan-entity-card.module.css";
@@ -39,10 +40,11 @@ export function FanEntityCard({ href, image, name, kind, locale, memberCount, tr
   trailing?: ReactNode;
   /** One highlight tag after the kind (the 찐팬 100 challenge, C7). */
   badge?: ReactNode;
-  /** `card`는 1px 외곽선이 있는 칸, `row`는 목록 안에서 아래 선으로 나뉘는 행, `list`는 이름 시작선부터 선이 그어지는 목록 행이다. */
-  size?: "row" | "card" | "list";
+  /** `card`는 1px 외곽선이 있는 칸, `row`는 목록 안에서 아래 선으로 나뉘는 행, `list`는 이름 시작선부터 선이 그어지는 목록 행, `tile`은 모임 디렉터리 격자의 정사각 사진 칸이다. */
+  size?: "row" | "card" | "list" | "tile";
   className?: string;
 }>) {
+  if (size === "tile") return <FanEntityTile href={href} image={image} name={name} kind={kind} locale={locale} memberCount={memberCount} badge={badge} className={className} />;
   const list = size === "list";
   const showKind = !list || kind !== "fan";
   // S4: no `팬 0` on any size; a zero count is left out like everywhere else in the directory.
@@ -54,5 +56,27 @@ export function FanEntityCard({ href, image, name, kind, locale, memberCount, tr
       {(showKind || badge || count !== undefined) && <span className={styles.meta}>{showKind && <FanTag tone={fanPageKindTone(kind)}>{fanPageKindLabel(locale, kind)}</FanTag>}{badge}{count !== undefined && <span>{fanUiText(locale, "fanCount", [count.toLocaleString(locale)])}</span>}</span>}
     </span>
     {list ? trailing && <span className={styles.trailing}>{trailing}</span> : <span className={styles.trailing}>{trailing ?? <ChevronRight size={16} aria-hidden="true" />}</span>}
+  </Link>;
+}
+
+/** L5 (2026-11-09, Weverse artist picker on Mobbin): a square photo tile with the name and one fact on the photo's lower edge.
+ * Creator photos use the reviewed square crop (`portrait`); other pages use their own image or two letters of the name. */
+function FanEntityTile({ href, image, name, kind, locale, memberCount, badge, className }: Readonly<{ href: string; image: FanPageImage; name: string; kind: FanPageKind; locale: AppLocale; memberCount?: number; badge?: ReactNode; className?: string }>) {
+  const count = memberCount ? fanUiText(locale, "fanCount", [memberCount.toLocaleString(locale)]) : undefined;
+  const facts = [kind === "fan" ? undefined : fanPageKindLabel(locale, kind), count].filter(Boolean).join(" · ");
+  const sizes = "(min-width: 1024px) 168px, (min-width: 768px) 140px, 34vw";
+  const initials = Array.from(name.replace(/^[^\p{L}\p{N}]+/u, "") || name).slice(0, 2).join("");
+  return <Link href={href as Route} className={[styles.tile, className ?? ""].filter(Boolean).join(" ")} data-fan-entity={kind}>
+    <span className={styles.tileMedia} data-tile-media={image.slug ? "creator" : image.src ? "page" : "initials"}>
+      {image.slug
+        ? <CreatorImage slug={image.slug} src={image.src} photos={undefined} presentation="portrait" alt="" width={336} height={336} sizes={sizes} fallback={<span className={styles.tileInitials} aria-hidden="true">{initials}</span>} />
+        : image.src ? <GroupImage locale={locale} src={image.src} alt="" width={336} height={336} style={{ width: "100%", height: "100%" }} /> : <span className={styles.tileInitials} aria-hidden="true">{initials}</span>}
+    </span>
+    {badge && <span className={styles.tileBadge}>{badge}</span>}
+    <span className={styles.tileCopy}>
+      <strong className={styles.tileName}>{name}</strong>
+      {/* The fact line keeps its place when empty so names line up across a row. */}
+      <span className={styles.tileMeta} aria-hidden={facts ? undefined : true}>{facts}</span>
+    </span>
   </Link>;
 }

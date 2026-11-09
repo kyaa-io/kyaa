@@ -25,3 +25,16 @@
 .list { position: relative; height: auto; min-height: 64px; padding: var(--space-2) 0; }
 .list::after { content: ""; position: absolute; inset-inline: calc(48px + var(--space-3)) 0; bottom: 0; height: 1px; background: var(--color-line-subtle); }
 .list:hover .name { text-decoration: underline; text-underline-offset: 3px; }
+/* Directory tile (L5): square photo, name and one fact on a dark fade at the photo's lower edge. Same-row tiles share one size, so the facts line up. */
+.tile { position: relative; display: block; aspect-ratio: 1; min-width: 0; overflow: hidden; border-radius: var(--radius-control); background: var(--color-soft); color: var(--color-surface); text-decoration: none; isolation: isolate; }
+.tile:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
+.tileMedia { position: absolute; inset: 0; display: block; }
+.tileMedia > img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.tileMedia > span[role="img"] { color: var(--color-muted); }
+.tileInitials { display: flex; align-items: flex-start; justify-content: center; width: 100%; height: 100%; padding-top: 22%; color: var(--color-muted); font-size: var(--fan-heading-size); font-weight: 700; }
+.tile::after { content: ""; position: absolute; inset: 0; z-index: 1; background: linear-gradient(to top, color-mix(in srgb, var(--color-ink) 72%, transparent), transparent 62%); pointer-events: none; }
+.tileBadge { position: absolute; inset-block-start: var(--space-2); inset-inline-start: var(--space-2); z-index: 2; display: flex; max-width: calc(100% - var(--space-4)); }
+.tileCopy { position: absolute; inset-inline: var(--space-2); inset-block-end: var(--space-2); z-index: 2; display: grid; gap: 2px; min-width: 0; }
+.tileName { display: -webkit-box; overflow: hidden; -webkit-box-orient: vertical; -webkit-line-clamp: 3; font-size: var(--fan-action-label-size); font-weight: 700; line-height: 1.35; overflow-wrap: anywhere; }
+.tileMeta { min-height: 1.35em; overflow: hidden; font-size: var(--fan-badge-size); line-height: 1.35; text-overflow: ellipsis; white-space: nowrap; opacity: 0.88; }
+.tile:hover .tileName { text-decoration: underline; text-underline-offset: 3px; }
