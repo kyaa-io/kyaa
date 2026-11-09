@@ -87,11 +87,11 @@ describe("FanAction primary 1단계(design-sync-1)", () => {
 describe("FanAction pressed and disabled states (design-sync-1 ③)", () => {
   it("changes only colour on press, from tokens, and never on disabled buttons", () => {
     const tokens = readFileSync(resolve(process.cwd(), "app/globals.css"), "utf8");
-    for (const token of ["--fan-action-primary-active-bg: var(--color-accent-ink)", "--fan-action-neutral-active-bg: var(--color-line-subtle)", "--fan-action-danger-active-bg:"]) expect(tokens).toContain(token);
+    for (const token of ["--fan-action-primary-active-bg: var(--color-accent-ink)", "--fan-action-neutral-active-bg: var(--color-accent-soft)", "--fan-action-danger-active-bg:"]) expect(tokens).toContain(token);
     expect(actionCss).toMatch(/\.primary:active:not\(:disabled, \[aria-disabled="true"\]\) \{\s*background: var\(--fan-action-primary-active-bg\);/);
     expect(actionCss).toMatch(/\.danger:active:not\(:disabled, \[aria-disabled="true"\]\) \{\s*background: var\(--fan-action-danger-active-bg\);/);
     expect(actionCss).not.toMatch(/:active[^{]*\{[^}]*translateY/);
-    expect(actionCss).toMatch(/\.action\.action:disabled,\s*\.action\.action\[aria-disabled="true"\] \{[^}]*background: var\(--fan-action-disabled-bg\);[^}]*color: var\(--fan-action-disabled-ink\);/);
+    expect(actionCss).toMatch(/\.action\.action:disabled,\s*\.action\.action\[aria-disabled="true"\] \{[^}]*opacity: var\(--fan-disabled-opacity\);/);
   });
 });
 
@@ -111,9 +111,15 @@ describe("FanAction icon layout contract", () => {
     expect(actionCss).not.toMatch(/data-loading[^{]*::after/);
   });
 
-  it("keeps disabled colors on the documented tokens", () => {
-    expect(readFileSync(resolve(process.cwd(), "app/globals.css"), "utf8")).toMatch(/--fan-action-disabled-bg:\s*#fff/);
-    expect(actionCss).toMatch(/background:\s*var\(--fan-action-disabled-bg\)/);
-    expect(actionCss).toMatch(/color:\s*var\(--fan-action-disabled-ink\)/);
+  it("dims a disabled button with opacity only: its face and ink stay the variant's own (U-1, 2026-11-09)", () => {
+    expect(readFileSync(resolve(process.cwd(), "app/globals.css"), "utf8")).toMatch(/--fan-disabled-opacity:\s*\.4;/);
+    const disabled = actionCss.match(/\.action\.action:disabled,\s*\.action\.action\[aria-disabled="true"\] \{[^}]*\}/)?.[0] ?? "";
+    expect(disabled).not.toMatch(/background|color:/);
+    expect(actionCss).not.toMatch(/:disabled[^{]*\{[^}]*background:\s*var\(--fan-action-disabled-bg\)/);
+  });
+
+  it("never paints grey: hover and press use the pink tint", () => {
+    expect(actionCss).not.toMatch(/var\(--color-soft\)|var\(--color-line-subtle\)/);
+    expect(actionCss).toMatch(/\.neutral:hover:not\(:disabled\),\s*\.text:hover:not\(:disabled\) \{\s*background: var\(--color-accent-soft\);/);
   });
 });

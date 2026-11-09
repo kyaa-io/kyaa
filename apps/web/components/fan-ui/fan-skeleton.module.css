@@ -1,23 +1,20 @@
-.srOnly { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
-
+/* 핑크 틴트 면이 불투명도로만 숨 쉰다(U-1 2026-11-09: 회색 shimmer·background-position 이동 금지). */
 .bar {
   display: block;
   max-width: 100%;
-  background-color: var(--color-soft);
-  background-image: linear-gradient(90deg, var(--color-soft) 0%, var(--color-soft) 50%, var(--color-soft) 100%);
-  background-size: 200% 100%;
+  background-color: var(--color-accent-soft);
   opacity: 0;
-  /* 150ms 안에 값이 오면 그리지 않는다(L3). 자리는 먼저 차지해서 밀리지 않는다. */
-  animation: fanSkeletonAppear 1ms linear 150ms forwards, fanSkeletonFlow 1.2s linear 150ms infinite;
+  /* 150ms 안에 값이 오면 그리지 않는다(L3). 자리는 먼저 차지해서 밀리지 않는다. 지연 동안은 기본 opacity 0. */
+  animation: fanSkeletonPulse 1.2s ease-in-out 150ms infinite;
 }
 .text { height: 16px; border-radius: 4px; }
 .block { border-radius: 12px; }
 .circle { border-radius: 999px; flex: none; }
 
 @keyframes fanSkeletonAppear { to { opacity: 1; } }
-@keyframes fanSkeletonFlow { from { background-position: 200% 0; } to { background-position: -200% 0; } }
+@keyframes fanSkeletonPulse { 0%, 100% { opacity: 1; } 50% { opacity: .5; } }
 @media (prefers-reduced-motion: reduce) {
-  .bar { background-image: none; animation: fanSkeletonAppear 1ms linear 150ms forwards; }
+  .bar { animation: fanSkeletonAppear 1ms linear 150ms forwards; }
 }
 
 .rows { display: grid; min-width: 0; }

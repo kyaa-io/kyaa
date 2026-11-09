@@ -1,9 +1,10 @@
 .button { display: inline-grid; box-sizing: border-box; width: var(--min-target); height: var(--min-target); flex: none; place-items: center; padding: 0; border: 0; border-radius: var(--radius-control); background: transparent; color: var(--color-ink); cursor: pointer; transition: background-color var(--motion-control) var(--motion-easing); }
 .button svg { width: var(--space-5); height: var(--space-5); }
 .button:focus-visible { outline: var(--focus-width) solid var(--color-focus); outline-offset: calc(var(--focus-width) * -1); }
-.button:disabled { color: var(--color-muted); cursor: not-allowed; }
-.button[data-popup-open] { background: var(--color-soft); }
+/* 열림·호버·눌림 = 핑크 틴트, 비활성 = 불투명도만(U-1 2026-11-09, 회색 면 0). */
+.button:disabled { opacity: var(--fan-disabled-opacity); cursor: not-allowed; }
+.button[data-popup-open] { background: var(--color-accent-soft); color: var(--color-accent-ink); }
 .button:active:not(:disabled) { background: var(--fan-action-neutral-active-bg); }
 .button:disabled { background: transparent; }
-@media (hover: hover) and (pointer: fine) { .button:hover:not(:disabled) { background: var(--color-soft); } }
+@media (hover: hover) and (pointer: fine) { .button:hover:not(:disabled) { background: var(--color-accent-soft); } }
 @media (prefers-reduced-motion: reduce) { .button { transition-duration: .01ms; } }
