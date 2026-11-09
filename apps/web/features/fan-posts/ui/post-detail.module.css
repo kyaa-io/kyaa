@@ -46,6 +46,7 @@
 .commentActions { display: flex; flex-wrap: wrap; align-items: center; margin-inline-start: calc(var(--space-2) * -1); }
 .commentMeta { display: flex; flex-wrap: wrap; align-items: center; gap: 0 var(--space-2); min-height: 44px; min-width: 0; color: var(--color-muted); font-size: var(--fan-metadata-size); line-height: 20px; }
 .commentMeta strong { min-width: 0; overflow: hidden; color: var(--color-ink); font-size: var(--fan-description-size); font-weight: 700; text-overflow: ellipsis; white-space: nowrap; }
+.editedMark { flex: none; }
 .commentAsset { display: block; margin-top: var(--space-2); }
 .commentAsset img, .commentAsset video { max-width: 240px !important; max-height: 240px; width: auto; height: auto; border-radius: var(--radius-control); }
 .commentsEmpty { margin: 0; color: var(--color-muted); font-size: var(--fan-description-size); line-height: 20px; }
@@ -60,7 +61,7 @@
 .inlineVideo video, .inlineVideo img { display: block; max-width: 100%; max-height: 640px; width: auto; height: auto; border-radius: var(--radius-control); }
 .inlineVideo button { position: absolute; top: 50%; left: 50%; display: grid; place-items: center; width: 56px; height: 56px; padding: 0; border: 0; border-radius: 50%; background: var(--color-backdrop); color: var(--color-surface); cursor: pointer; transform: translate(-50%, -50%); }
 .inlineVideo button svg { width: 24px; height: 24px; fill: currentColor; }
-.commentMeta > :last-child:not(time):not(strong) { margin-inline-start: auto; }
+.commentMeta > :last-child:not(time):not(strong):not(.editedMark) { margin-inline-start: auto; }
 .readColumn { width: min(100%, 720px); min-width: 0; }
 .skeleton { display: grid; gap: var(--space-4); width: min(100%, 720px); margin-inline: auto; }
 .skeletonComments { margin-top: var(--space-4); }

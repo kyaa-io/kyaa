@@ -7,7 +7,7 @@ vi.mock('./use-group-resource',()=>({useGroupResource:(url:string|null,parse:(va
  if(!url)return common;
  state.urls.push(url);
  const query=new URL(url,'https://local.test').searchParams,limit=Number(query.get('limit')),offset=Number(query.get('cursor')?.slice(-12)??0);
- const items=Array.from({length:Math.min(limit,21-offset)},(_,index)=>({id:`10000000-0000-4000-8000-${String(offset+index+1).padStart(12,'0')}`,pageId:'20000000-0000-4000-8000-000000000001',title:`Story ${offset+index+1}`,body:'Original body',visibility:'public',anonymous:false,profileId:null,nickname:'Writer',avatarUrl:null,createdAt:'2026-11-01T10:00:00Z'}));
+ const items=Array.from({length:Math.min(limit,21-offset)},(_,index)=>({id:`10000000-0000-4000-8000-${String(offset+index+1).padStart(12,'0')}`,pageId:'20000000-0000-4000-8000-000000000001',title:`Story ${offset+index+1}`,body:'Original body',visibility:'public',anonymous:false,profileId:null,nickname:'Writer',avatarUrl:null,createdAt:'2026-11-01T10:00:00Z',editedAt:offset+index===0?'2026-11-02T10:00:00Z':null}));
  return {...common,data:parse({items,nextCursor:offset+limit<21?items.at(-1)!.id:null})};
 }}));
 vi.mock('@/features/content-safety/ui/use-wave-media-upload',()=>({useWaveMediaUpload:()=>({items:[],busy:false,ready:true})}));
@@ -52,4 +52,16 @@ it('keeps the write action for a visitor who has not joined and sends it to the 
  render(<GroupBoard detail={detail} locale='ko' preview onJoin={onJoin}/>);
  fireEvent.click(screen.getByRole('button',{name:'글쓰기'}));
  expect(onJoin).toHaveBeenCalledTimes(1);
+});
+
+it('shows the edited mark beside the time in preview and board rows only for edited posts',()=>{
+ const view=render(<GroupBoard detail={detail} locale='ko' preview/>);
+ for (const preview of [true,false]) {
+  if (!preview) view.rerender(<GroupBoard detail={detail} locale='ko'/>);
+  const rows=view.container.querySelectorAll('[data-fan-post-row]');
+  const mark=rows[0].querySelector('[data-edited-mark]');
+  expect(mark).toHaveTextContent('수정됨');
+  expect(rows[0].querySelector('time')?.nextElementSibling).toBe(mark);
+  expect(rows[1].querySelector('[data-edited-mark]')).toBeNull();
+ }
 });

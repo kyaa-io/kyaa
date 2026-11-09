@@ -194,6 +194,18 @@ export const messages = {
     "fr": "{0} vues",
     "ru": "Просмотры: {0}"
   },
+  "editedMark": {
+    "ja": "編集済み",
+    "zh-Hans": "已编辑",
+    "zh-Hant": "已編輯",
+    "es": "Editado",
+    "id": "Diedit",
+    "vi": "Đã chỉnh sửa",
+    "th": "แก้ไขแล้ว",
+    "pt": "Editado",
+    "fr": "Modifié",
+    "ru": "Изменено"
+  },
   "likesLabel": {
     "ja": "いいね {0}",
     "zh-Hans": "点赞 {0}",

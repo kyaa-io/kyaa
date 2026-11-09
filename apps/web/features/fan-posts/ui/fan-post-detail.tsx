@@ -6,6 +6,8 @@ import { fanLoginHref } from "@/components/login-href";
 import { boardCopy } from "@/features/groups/ui/board-copy";
 import { PostDetailSkeleton } from "./post-detail-header";
 import detailStyles from "./post-detail.module.css";
+import { EditedMark } from "./edited-mark";
+import { isEdited } from "../domain/edited";
 import {z} from 'zod';
 import { GroupArtistMark } from "@/features/groups/ui/group-artist-mark";
 import {CheerReplies} from './cheer-replies';
@@ -135,7 +137,7 @@ function DetailForOwner({ postId, locale, presentation: requestedPresentation }:
       {comments.state.status === "ready" ? <>
         {comments.refreshFailed && online && <p role="status" className={styles.status}>{copy.failed}<button type="button" className={styles.button} onClick={comments.retry}>{copy.retry}</button></p>}
         {!comments.state.data.items.length ? null : <ul className={`${commentStyles.list} ${detailStyles.commentList}`}>{threadComments(comments.state.data.items).map(comment => <li key={comment.id} id={`comment-${comment.id}`} data-reply={comment.parentId ? "" : undefined}>
-          <div className={detailStyles.commentMeta}><img src={comment.author.avatarUrl} alt="" width={32} height={32} /><strong><ProfileAuthor contentRef={{ kind: "fan_post_comment", id: comment.id }} nickname={comment.author.nickname} avatarUrl={comment.author.avatarUrl}>{comment.author.nickname}</ProfileAuthor></strong>{comment.artist && <GroupArtistMark locale={locale} />}<RelativeTime value={comment.createdAt} locale={locale} />{!comment.isOwner && <ContentActions targetType="fan_post_comment" targetId={comment.id} locale={locale} onChanged={refresh} />}</div>
+          <div className={detailStyles.commentMeta}><img src={comment.author.avatarUrl} alt="" width={32} height={32} /><strong><ProfileAuthor contentRef={{ kind: "fan_post_comment", id: comment.id }} nickname={comment.author.nickname} avatarUrl={comment.author.avatarUrl}>{comment.author.nickname}</ProfileAuthor></strong>{comment.artist && <GroupArtistMark locale={locale} />}<RelativeTime value={comment.createdAt} locale={locale} />{isEdited(comment) && <EditedMark className={detailStyles.editedMark} locale={locale} />}{!comment.isOwner && <ContentActions targetType="fan_post_comment" targetId={comment.id} locale={locale} onChanged={refresh} />}</div>
           <ContentTranslation sourceText={comment.body} targetType="fan_post_comment" targetId={comment.id} sourceRevision={comment.revision} locale={locale}><p className={styles.body}>{comment.body}</p></ContentTranslation>
           <div className={detailStyles.commentActions}>{auth.authenticated ? <CommentLike commentId={comment.id} locale={locale} reactions={comment.reactions ?? []} /> : auth.ready && <CommentLike commentId={comment.id} locale={locale} reactions={comment.reactions ?? []} loginHref={loginHref} />}{auth.ready && !comment.parentId && (auth.authenticated ? <FanAction variant="text" disabled={mutation.busy} onClick={event => { replyTrigger.current = event.currentTarget; openReply({ id: comment.id, nickname: comment.author.nickname, body: comment.body }); }}>{copy.reply}</FanAction> : <Link className={detailStyles.commentAction} href={loginHref}>{copy.reply}</Link>)}{comment.isOwner && <FanAction variant="text" disabled={mutation.busy} onClick={() => void remove(comment.id)}>{copy.delete}</FanAction>}</div>
           {replyTarget?.id === comment.id && <div className={commentStyles.inlineReply}>{composer}</div>}
