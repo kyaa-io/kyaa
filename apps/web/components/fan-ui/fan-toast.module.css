@@ -27,16 +27,16 @@
   min-height: var(--min-target);
   padding: var(--space-2) var(--space-2) var(--space-2) var(--space-4);
   border: 1px solid var(--color-line);
-  border-radius: var(--radius-control);
+  border-radius: var(--radius-card);
   background: var(--color-surface);
   color: var(--color-ink);
-  box-shadow: var(--shadow-dialog);
+  box-shadow: var(--shadow-overlay);
   pointer-events: auto;
   transform: translateX(var(--toast-swipe-movement-x, 0)) translateY(var(--toast-swipe-movement-y, 0));
-  transition: opacity var(--motion-layout) var(--motion-easing), transform var(--motion-layout) var(--motion-easing);
+  transition: opacity var(--motion-slow) var(--motion-easing), transform var(--motion-slow) var(--motion-easing);
 }
 .toast[data-starting-style] { opacity: 0; transform: translateY(8px); }
-.toast[data-ending-style] { opacity: 0; transition-duration: var(--motion-exit); transition-timing-function: ease-in; }
+.toast[data-ending-style] { opacity: 0; transition-duration: var(--motion-fast); }
 .toast[data-tone="error"] { border-color: color-mix(in oklch, var(--color-error) 40%, var(--color-line)); }
 .toast[data-tone="error"] .title { color: var(--color-error); }
 .toast[data-tone="success"] .title { color: var(--color-success); }
@@ -46,7 +46,7 @@
 .description { margin: 0; color: var(--color-muted); font-size: var(--fan-metadata-size); font-weight: 400; line-height: 1.4; overflow-wrap: anywhere; word-break: keep-all; }
 .action {
   flex: none;
-  min-height: 36px;
+  min-height: var(--min-target);
   padding: 0 var(--space-3);
   border: 1px solid var(--color-line);
   border-radius: var(--radius-control);
@@ -57,8 +57,13 @@
   font-weight: var(--fan-action-weight);
   cursor: pointer;
 }
-.close { display: grid; flex: none; width: 36px; height: 36px; place-items: center; padding: 0; border: 0; border-radius: var(--radius-pill); background: transparent; color: var(--color-muted); cursor: pointer; }
+.close { position: relative; display: grid; flex: none; width: 36px; height: 36px; place-items: center; padding: 0; border: 0; border-radius: var(--radius-pill); background: transparent; color: var(--color-muted); cursor: pointer; }
+.close::before { position: absolute; inset: -4px; content: ""; }
 .close svg { width: 18px; height: 18px; }
+.action:active, .close:active { transform: scale(0.97); }
+@media (hover: hover) and (pointer: fine) {
+  .action:hover, .close:hover { background: var(--color-accent-soft); }
+}
 .action:focus-visible, .close:focus-visible { outline: var(--focus-width) solid var(--color-focus); outline-offset: 1px; }
 
 @media (prefers-reduced-motion: reduce) {

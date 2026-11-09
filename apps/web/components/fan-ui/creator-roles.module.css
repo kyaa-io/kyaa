@@ -32,17 +32,19 @@
   line-height: 18px;
   white-space: nowrap;
   cursor: pointer;
-  transition: background-color var(--motion-control) var(--motion-easing), color var(--motion-control) var(--motion-easing);
+  transition: background-color var(--motion-fast) var(--motion-easing), color var(--motion-fast) var(--motion-easing), transform var(--motion-fast) var(--motion-easing);
 }
 
 /* 선택 상태는 모임·덕질 칩(groups.module.css .chip[aria-pressed])과 같은 분홍 값. 굵기는 바꾸지 않는다. */
 .filters button[aria-pressed="true"] {
-  border-color: #d11b62;
-  background: #fff0f6;
-  color: #ad1457;
+  border-color: var(--color-accent);
+  background: var(--color-accent-soft);
+  color: var(--color-accent-ink);
 }
 
-.filters button:disabled {cursor: wait;color:var(--fan-action-disabled-ink)}
+.filters button:disabled { cursor: wait; opacity: .5; }
+
+.filters button:active:not(:disabled) { transform: scale(0.97); }
 
 .filters button:focus-visible {
   outline: var(--focus-width) solid var(--color-ink);
@@ -58,7 +60,7 @@
 }
 
 @media (hover: hover) and (pointer: fine) {
-  .filters button:hover:not([aria-pressed="true"]):not(:disabled) { background: var(--color-soft); }
+  .filters button:hover:not([aria-pressed="true"]):not(:disabled) { background: var(--color-accent-soft); }
 }
 
 @media (prefers-reduced-motion: reduce) {
