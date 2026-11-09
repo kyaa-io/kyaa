@@ -31,6 +31,7 @@ const kara = { slug: "kara", locale: "ko", name: "KARA", summary: "KARA summary"
 const katseye = { slug: "katseye", locale: "ko", name: "KATSEYE", summary: "KATSEYE summary", image: { url: "/images/celebrities/katseye/card.webp", alt: "KATSEYE portrait", position: "center" }, roles: ["idol"] as const, themes: [], socialLinks: [], displayOrder: 0, fanCount: 0 } as const;
 const runmusic = { slug: "runmusic", locale: "ko", name: "런뮤직", summary: "음악과 사람을 연결하는 공식 브랜드입니다.", image: { url: "/images/runmusic/logo.webp", alt: "런뮤직 로고", position: "center" }, roles: ["brand"] as const, websiteUrl: "https://runmusic.example", themes: [], socialLinks: [{ platform: "instagram" as const, url: "https://instagram.com/runmusic" }], displayOrder: 0, fanCount: 0 } as const;
 const upcomingLive = { slug: "kara-nualeaf", celebritySlug: "kara", locale: "ko", title: "KARA × NUALEAF LIVE", startsAt: "2026-07-24T11:00:00.000Z", effectiveStatus: "scheduled" } as const;
+const nchiveOfficialVideoId = "latest00001";
 const ownedPassport = {
   id: "8a6c0050-4c52-4e0f-b73a-e2f4aab48b85",
   owner: { nickname: "Jewel_KAT" },
@@ -102,6 +103,7 @@ function stubHubFetch({ notices = [], passports = [], calendarEvents = [], raffl
       { id: "wena-photo", kind: "photos", title: "위나 단체 사진", image: "/photo.webp", asset: null, href: "/c/wena/notices/welcome-to-wena", date: "2026-10-14T00:00:00Z" },
       { id: "wena-video", kind: "videos", title: "We;Na · Baby Step", image: null, asset: null, href: "https://www.youtube.com/watch?v=172bEkNPqqs", date: "2026-10-14T00:00:00Z" },
     ] : [], nextCursor: null });
+    if (url === "/api/celebrities/nchive/youtube/embed") return ok({ videoId: nchiveOfficialVideoId });
     if (url.includes("/youtube") || url.includes("/instagram")) return ok({ items: [], nextCursor: null });
     if (url.includes("/api/live-events?")) return ok({ catalog: { replay: [] } });
     if (url.includes("/raffles")) return ok({ raffles });
@@ -173,15 +175,22 @@ describe("approved fanpage", () => {
     const nchive = { ...kara, slug: "nchive", name: "NCHIVE", locale: toContentLocale(locale) };
     const live = { ...upcomingLive, slug: "nchive-live", celebritySlug: "nchive", title: "NCHIVE LIVE", locale: toContentLocale(locale) };
     const view = render(<CelebrityFanPage celebrity={nchive} locale={locale} upcomingLive={live} initialTab="media" instagramEnabled />);
-    const player = screen.getByTitle(/^NCHIVE · /);
+    const player = await screen.findByTitle(/^NCHIVE · /);
+    expect(fetch).toHaveBeenCalledWith("/api/celebrities/nchive/youtube/embed", expect.anything());
+    expect(view.container.querySelectorAll('[aria-labelledby="official-videos-heading"] iframe')).toHaveLength(1);
+    expect(view.container.querySelectorAll("iframe")).toHaveLength(1);
     const source = new URL(player.getAttribute("src")!);
     expect(source.origin).toBe("https://www.youtube.com");
-    expect(source.searchParams.get("list")).toBe("UUO-svEJBdWiaViuy0TxVFFg");
+    expect(source.pathname).toBe(`/embed/${nchiveOfficialVideoId}`);
+    expect(source.searchParams.has("list")).toBe(false);
     expect(source.searchParams.get("autoplay")).toBe("0");
     expect(source.searchParams.get("hl")).toBe(locale);
     expect(screen.getByRole("link", { name: "LIVE" })).toHaveAttribute("href", `/nchive?tab=board&section=live&locale=${locale}#celebrity-content`);
     expect(screen.getByRole("link", { name: "YouTube" })).toHaveAttribute("href", "https://www.youtube.com/channel/UCO-svEJBdWiaViuy0TxVFFg");
     await waitFor(() => expect(fetch).toHaveBeenCalledWith(expect.stringContaining("/nchive/raffles"), expect.anything()));
+    view.rerender(<CelebrityFanPage celebrity={nchive} locale={locale} upcomingLive={live} initialTab="events" instagramEnabled />);
+    expect(screen.queryByTitle(/^NCHIVE · /)).not.toBeInTheDocument();
+    expect(view.container.querySelector('[aria-labelledby="official-videos-heading"]')).not.toBeInTheDocument();
     view.rerender(<CelebrityFanPage celebrity={kara} locale={locale} upcomingLive={null} initialTab="media" />);
     expect(view.container.querySelector("iframe")).not.toBeInTheDocument();
   });
