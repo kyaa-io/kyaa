@@ -1,10 +1,11 @@
 "use client";
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { LogOut } from "lucide-react";
+import { LogOut } from "@/components/icons";
 import { useByUsAuth } from "@/features/auth/client/cognito-auth";
 import { AccessibleOverlay } from "@/components/ui/overlay/accessible-overlay";
 import { FanAction } from "@/components/fan-ui/fan-action";
+import { FanHeading } from "@/components/fan-ui/fan-heading";
 import { messages } from "@/i18n/catalogs/features__profile__ui__settings-screen";
 import { translate } from "@/i18n/messages";
 import type { FanLocale } from "@/components/fan-shell/fan-app-shell";
@@ -46,9 +47,9 @@ export function MyLogout({ locale }: { locale: FanLocale }) {
   }
 
   return <div className={styles.logout}>
-    <button type="button" className={styles.row} onClick={() => setConfirming(true)}><LogOut aria-hidden="true"/><span>{t.logout}</span></button>
+    <FanAction variant="text" className={styles.row} onClick={() => setConfirming(true)}><span className={styles.rowLabel}><LogOut strokeWidth={1.5}/>{t.logout}</span></FanAction>
     {confirming ? <AccessibleOverlay open onClose={() => { if (!pending.current) { setConfirming(false); setError(""); } }} labelledBy="my-logout-title" busy={busy} backdropClassName={styles.backdrop} contentClassName={styles.dialog} contentAs="section">
-      <h2 id="my-logout-title">{t.logout}</h2>
+      <div className={styles.title}><FanHeading id="my-logout-title">{t.logout}</FanHeading></div>
       {error ? <p role="alert">{error}</p> : null}
       <div className={styles.actions}>
         <FanAction variant="neutral" disabled={busy} onClick={() => { setConfirming(false); setError(""); }}>{t.cancel}</FanAction>

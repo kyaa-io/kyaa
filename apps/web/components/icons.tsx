@@ -24,6 +24,7 @@ export function Languages(props: IconProps) {
     </Icon>
   );
 }
+export function LogOut(props: IconProps) { return <Icon {...props}><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9" /></Icon>; }
 export function Menu(props: IconProps) { return <Icon {...props}><path d="M4 7h16M4 12h16M4 17h16" /></Icon>; }
 export function Pause(props: IconProps) { return <Icon {...props}><path d="M8 5v14M16 5v14" /></Icon>; }
 export function Play(props: IconProps) { return <Icon {...props}><path fill="currentColor" stroke="none" d="m8 5 11 7-11 7z" /></Icon>; }
