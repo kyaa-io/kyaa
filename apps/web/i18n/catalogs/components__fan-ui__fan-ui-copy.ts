@@ -158,6 +158,18 @@ export const messages = {
     "fr": "Artiste vérifié",
     "ru": "Подтверждённый артист"
   },
+  "operatorTag": {
+    "ja": "運営",
+    "zh-Hans": "运营",
+    "zh-Hant": "營運",
+    "es": "Equipo",
+    "id": "Pengelola",
+    "vi": "Quản lý",
+    "th": "ผู้ดูแล",
+    "pt": "Equipe",
+    "fr": "Équipe",
+    "ru": "Команда"
+  },
   "commentsLabel": {
     "ja": "コメント {0}",
     "zh-Hans": "评论 {0}",

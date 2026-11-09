@@ -108,3 +108,9 @@ it('blinks the online artist icon and stops it under reduced motion',()=>{
  expect(css).toMatch(/\.artist\[data-online="true"\] svg \{ animation: presenceBlink/);
  expect(css).toMatch(/@media \(prefers-reduced-motion: reduce\) \{ \.artist\[data-online="true"\] svg \{ animation: none; \} \}/);
 });
+
+it('hangs the separator dots in the gap and clips them at the left edge so a wrapped line never starts with one',()=>{
+ const css=readFileSync(join(__dirname,'group-presence.module.css'),'utf8');
+ expect(css).toMatch(/\.line\[data-wrap\] \{[^}]*overflow-x: clip[^}]*column-gap: var\(--presence-gap\)/);
+ expect(css).toMatch(/\.line\[data-wrap\] > \* \+ \*::before \{ position: absolute; inset-inline-start: calc\(-1 \* var\(--presence-gap\)\)/);
+});
