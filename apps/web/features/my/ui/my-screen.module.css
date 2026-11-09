@@ -400,6 +400,6 @@
 .loadingDashboard section { display:grid; gap:var(--space-4); }
 .loadingDashboard h2 { margin:0; font-size:18px; font-weight:700; }
 .loadingTiles { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:var(--space-4); }
-.loadingTiles>span,.loadingRow { display:block; height:140px; border:1px solid var(--color-line); border-radius:var(--radius-card,16px); background:var(--color-accent-soft); }
+.loadingTiles>span,.loadingRow { display:block; height:140px; border:1px solid var(--color-line); border-radius:var(--radius-collection); background:var(--color-accent-soft); }
 .loadingRow { height:88px; }
 
