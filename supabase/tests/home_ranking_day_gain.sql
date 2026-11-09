@@ -23,7 +23,7 @@ $$;
 create function pg_temp.dg_creator(metric text) returns jsonb language sql as $$
   select r from jsonb_array_elements(public.read_home_creator_ranking_v2('ko',metric,50)->'rows') r where r->>'slug'='day-gain-fixture'
 $$;
-do $$ declare f text; metric text; r jsonb; begin
+do $$ declare f text; metric text; r jsonb; ref jsonb; opened jsonb; begin
   insert into public.celebrities(id,slug,status,image_url,published_at,roles,primary_role) values(pg_temp.dg_id('creator'),'day-gain-fixture','published','/fixture.webp',now(),'{creator}','creator');
   insert into public.celebrity_localizations(celebrity_id,locale,name,summary,image_alt) values(pg_temp.dg_id('creator'),'ko','Day gain fixture','fixture','fixture');
   insert into public.group_pages(kind,celebrity_id,name) values('fan',pg_temp.dg_id('creator'),'Day gain fixture');
@@ -70,6 +70,26 @@ do $$ declare f text; metric text; r jsonb; begin
   perform public.refresh_home_rankings('2099-11-13 15:00:00+00');
   if pg_temp.dg_fan('fan','hearts')->'dayGain' is distinct from 'null'::jsonb
      or pg_temp.dg_creator('fans')->'dayGain' is distinct from 'null'::jsonb then raise exception 'DAY_GAIN missing exact previous day'; end if;
+  foreach metric in array array['hearts','points'] loop
+    r:=pg_temp.dg_fan('fan',metric);
+    if (select array_agg(k order by k) from jsonb_object_keys(r) k) is distinct from
+      array['characterId','dayGain','delta','fans','favorite','hearts','isMe','isNew','nickname','points','rank','score','tier','weekGain'] then
+      raise exception 'PROFILE_REF guest row keys: %',r;
+    end if;
+    select e into r from jsonb_array_elements(public.read_home_fan_ranking_v2(pg_temp.dg_id('newfan'),metric,50)->'rows') e
+      where e->>'nickname'='day_gain_fan';
+    ref:=r->'profileRef';
+    if ref is distinct from jsonb_build_object('kind','profile','profileId',pg_temp.dg_id('fan')) then raise exception 'PROFILE_REF signed-in format'; end if;
+    opened:=public.read_social_profile_by_ref(pg_temp.dg_id('newfan'),ref,'ko');
+    if opened->'profile'->>'id' is distinct from pg_temp.dg_id('fan')::text then raise exception 'PROFILE_REF existing endpoint did not resolve'; end if;
+    begin
+      perform public.read_social_profile_by_ref(null,ref,'ko');
+      raise exception 'PROFILE_REF guest was allowed';
+    exception when raise_exception then
+      if sqlerrm <> 'SOCIAL_FORBIDDEN' then raise; end if;
+    end;
+  end loop;
+  raise notice 'PASS profileRef: signed-in resolution through existing endpoint; guest full-key whitelist and SOCIAL_FORBIDDEN';
   raise notice 'PASS dayGain: first day, KST midnight, zero, new fan, all metrics, negative, missing yesterday, ten-minute TTL';
 end $$;
 rollback;

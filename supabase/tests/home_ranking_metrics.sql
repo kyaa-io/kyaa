@@ -189,14 +189,18 @@ begin
   if pg_temp.fan('hm_blk', 'points') is null or pg_temp.fan('hm_blk', 'points', pg_temp.id('viewer')) is not null or pg_temp.fan('hm_blk', 'hearts', pg_temp.id('viewer')) is not null then raise exception '11 block'; end if;
   foreach t in array array['hearts', 'points'] loop
     r := public.read_home_fan_ranking_v2(pg_temp.id('viewer'), t, 50);
-    if r::text ~ '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-' or r::text like '%@example.test%' or jsonb_path_exists(r, 'strict $.**.amount') or jsonb_path_exists(r, 'strict $.**.appUserId') or jsonb_path_exists(r, 'strict $.**.subjectId')
+    -- Only the approved signed-in profileRef may carry an identifier; all other fields stay private.
+    one := jsonb_set(r, '{rows}', (select jsonb_agg(e - 'profileRef') from jsonb_array_elements(r->'rows') e));
+    if one::text ~ '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-' or one::text like '%@example.test%' or jsonb_path_exists(one, 'strict $.**.amount') or jsonb_path_exists(one, 'strict $.**.appUserId') or jsonb_path_exists(one, 'strict $.**.subjectId')
       then raise exception '11 keys: %', r; end if;
+    one := public.read_home_fan_ranking_v2(null, t, 50);
+    if one::text ~ '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-' or jsonb_path_exists(one, 'strict $.**.profileRef') or jsonb_path_exists(one, 'strict $.**.profileId') then raise exception '11 guest keys'; end if;
     if (r -> 'me' ->> 'rank') is null and t = 'hearts' then raise exception '11 viewer me: %', r; end if;
   end loop;
   r := public.read_home_fan_ranking_v2(pg_temp.id('viewer'), 'hearts', 50);
   if (select array_agg(k order by k) from jsonb_object_keys(r -> 'me') k) <> array['delta', 'hearts', 'inTop', 'points', 'rank', 'score'] then raise exception '11 me keys: %', r -> 'me'; end if;
   if (select array_agg(k order by k) from jsonb_object_keys(r) k) <> array['builtDay', 'comparable', 'computedAt', 'day', 'failedAt', 'me', 'metric', 'previousDay', 'rows', 'state', 'today', 'weekGainDays'] then raise exception '11 head keys: %', r; end if;
-  if (select array_agg(k order by k) from jsonb_object_keys(r -> 'rows' -> 0) k) <> array['characterId', 'dayGain', 'delta', 'fans', 'favorite', 'hearts', 'isMe', 'isNew', 'nickname', 'points', 'rank', 'score', 'tier', 'weekGain'] then raise exception '11 row keys: %', r -> 'rows' -> 0; end if;
+  if (select array_agg(k order by k) from jsonb_object_keys(r -> 'rows' -> 0) k) <> array['characterId', 'dayGain', 'delta', 'fans', 'favorite', 'hearts', 'isMe', 'isNew', 'nickname', 'points', 'profileRef', 'rank', 'score', 'tier', 'weekGain'] then raise exception '11 row keys: %', r -> 'rows' -> 0; end if;
   if (select array_agg(k order by k) from jsonb_object_keys(public.read_home_creator_ranking_v2('ko', 'fans', 5) -> 'rows' -> 0) k) <> array['challenge', 'dayGain', 'delta', 'fans', 'hearts', 'imageUrl', 'isNew', 'liveNow', 'name', 'points', 'rank', 'score', 'slug', 'weekGain'] then raise exception '11 creator row keys'; end if;
 
   -- 14: a member with nothing (no hearts, points, friends or talks) as viewer: me null, rows as for anyone.

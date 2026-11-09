@@ -4,7 +4,7 @@ import { z } from "zod";
 import { AuthError } from "@/features/auth/domain/auth-errors";
 import {
   HOME_CREATOR_METRICS, HOME_FAN_METRICS, HOME_GUEST_LIMIT, HOME_RANKING_DEFAULT_LIMIT, HOME_RANKING_LIMIT, PAGE_RANKING_METRICS, RANKING_PERIODS, activeJjinfanChallengesSchema, creatorRankingSchema, homeCreatorRankingSchema, homeFanRankingSchema,
-  jjinfanChallengeSchema, pageRankingSchema, platformFanRankingSchema,
+  jjinfanChallengeSchema, pageRankingSchema, platformFanRankingSchema, homeFanProfileRefSchema,
 } from "@/features/rankings/domain/types";
 import { creatorSlugSchema } from "@/features/passport/domain/dukjil-types";
 
@@ -173,7 +173,7 @@ export function createRankingsHandlers(deps: RankingsDependencies) {
       return Response.json(body, { headers: appUserId || request.headers.has("authorization") ? privateHeaders : publicHeaders });
     }),
     // Home card and the full ranking page by day (C3, ranking stage 2). fans: hearts (default) or points; creators: 찐팬 (default) or hearts.
-    // Movement against the previous built day of the metric. Up to 50 rows for a member, five signed out. Member ids stay on the server.
+    // Movement against the previous built day. Up to 50 rows for a member, five signed out. Profile refs are signed-in only.
     home: (request: Request) => run(async () => {
       const basis = (day: unknown) => ({ period: "day" as const, closesAt: typeof day === "string" ? kstMidnightAfter(day) : null, fetchedAt: new Date().toISOString() });
       const head = (raw: Json, metric: string) => ({
@@ -200,7 +200,8 @@ export function createRankingsHandlers(deps: RankingsDependencies) {
       const rows = arr(raw.rows).map((row) => {
         const r = obj(row);
         return { rank: r.rank, score: r.score, hearts: r.hearts, points: r.points ?? null, fans: r.fans, isNew: r.isNew === true, nickname: r.nickname, characterId: r.characterId, tier: r.tier ?? null,
-          isMe: appUserId !== null && r.isMe === true, delta: r.delta ?? null, favorite: favoriteIn(r.favorite, lang), weekGain: r.weekGain ?? null, dayGain: r.dayGain ?? null };
+          isMe: appUserId !== null && r.isMe === true, delta: r.delta ?? null, favorite: favoriteIn(r.favorite, lang), weekGain: r.weekGain ?? null, dayGain: r.dayGain ?? null,
+          ...(appUserId ? { profileRef: checked(homeFanProfileRefSchema, r.profileRef) } : {}) };
       });
       const body = checked(homeFanRankingSchema, {
         ...head(raw, metric), weekGainDays: raw.weekGainDays ?? null, rows,
