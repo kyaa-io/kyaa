@@ -43,6 +43,7 @@ export const rankingsSource = {
   rkCreatorLive: {"ko": "{0} LIVE 중", "en": "{0} is LIVE"},
   rkFavoriteLive: {"ko": "최애 {0} LIVE 중", "en": "Favorite {0} is LIVE"},
   rkUpdatedAt: {"ko": "{0} 기준", "en": "As of {0}"},
+  rkGainDays: { ko: "{0}일", en: "{0}d" },
   rkWeekGain: { ko: "이번 주 {0}", en: "This week {0}" },
   rkBrowseFanPages: { ko: "팬페이지 둘러보기", en: "Browse fan pages" },
   rkSince: { ko: "{0}부터", en: "from {0}" },

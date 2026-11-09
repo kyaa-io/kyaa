@@ -14,3 +14,7 @@
   .wide { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-6); align-items: stretch; }
   .card { padding: var(--space-5) var(--space-6); }
 }
+
+/* 진입 링크·내 순위는 중립 면. 홈 강조는 선택한 탭에만 둔다. */
+.block [data-ranking-foot] { --color-accent-soft: var(--color-surface); --color-accent-ink: var(--color-ink); }
+.block [data-metric-line] { --color-accent-line: var(--color-line); --color-accent-soft: var(--color-surface); --color-accent-ink: var(--color-ink); }

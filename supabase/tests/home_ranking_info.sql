@@ -38,6 +38,7 @@ do $$ declare t text; r jsonb; begin
  r:=pg_temp.info_fan('f1');
  if r->>'fans'<>'1' or r->>'hearts'<>'4' or r->>'isNew'<>'false' or r->'delta'<>'null'::jsonb or r->'weekGain'<>'null'::jsonb then raise exception 'INFO first/unknown: %',r; end if;
  if pg_temp.info_creator('ca')->>'isNew'<>'false' then raise exception 'INFO initial creator cohort'; end if;
+ if public.read_home_fan_ranking_v2(null,'hearts',50)->'weekGainDays' is distinct from 'null'::jsonb then raise exception 'INFO first period must be unknown'; end if;
  perform pg_temp.info_heart('f2','cb',4),pg_temp.info_heart('f3','cb',1);
  perform public.refresh_home_rankings('2099-08-02 12:00+09');
  r:=pg_temp.info_fan('f2');
@@ -47,12 +48,20 @@ do $$ declare t text; r jsonb; begin
  r:=pg_temp.info_fan('f3');
  if r->>'isNew'<>'true' or r->'delta'<>'null'::jsonb or r->>'weekGain'<>'1' then raise exception 'INFO new fan: %',r; end if;
  if pg_temp.info_creator('cb')->>'isNew'<>'true' then raise exception 'INFO new creator'; end if;
+ if public.read_home_fan_ranking_v2(null,'hearts',50)->>'weekGainDays' is distinct from '1' then raise exception 'INFO one-day period'; end if;
  perform public.refresh_home_rankings('2099-08-03 12:00+09');
  r:=pg_temp.info_fan('f2');
  if r->>'delta'<>'0' then raise exception 'INFO unchanged rank: %',r; end if;
  -- Retain NEW across subsequent daily snapshots, then expire it after seven days.
  if pg_temp.info_fan('f3')->>'isNew'<>'true' then raise exception 'INFO new expires too soon'; end if;
+ perform public.refresh_home_rankings('2099-08-04 12:00+09');
+ if public.read_home_fan_ranking_v2(null,'hearts',50)->>'weekGainDays' is distinct from '3'
+    or public.read_home_creator_ranking_v2('ko','hearts',50)->>'weekGainDays' is distinct from '3'
+    or pg_temp.info_fan('f2')->>'weekGain' is distinct from '4' then raise exception 'INFO actual three-day comparison'; end if;
  perform public.refresh_home_rankings('2099-08-09 12:00+09');
+ if public.read_home_fan_ranking_v2(null,'hearts',50)->>'weekGainDays' is distinct from '7'
+    or public.read_home_creator_ranking_v2('ko','fans',50)->>'weekGainDays' is distinct from '7' then raise exception 'INFO full seven-day comparison'; end if;
+ raise notice 'PASS rank info: actual comparison periods null/1/3/7 days';
  if pg_temp.info_fan('f3')->>'isNew'<>'false' then raise exception 'INFO new did not expire'; end if;
  r:=public.read_home_fan_ranking_v2(null,'hearts',50);
  if r::text ~ '(subject_id|subjectId|app_user_id|appUserId)' or r->'me'<>'null'::jsonb or r::text like '%'||pg_temp.info_id('f1')||'%' then raise exception 'INFO identifier exposure'; end if;

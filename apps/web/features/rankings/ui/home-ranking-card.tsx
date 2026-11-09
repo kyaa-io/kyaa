@@ -61,12 +61,12 @@ function FanBlock({ locale, live, metric, guest, scope }: { locale: AppLocale; l
   </>;
 }
 
-function CreatorBlock({ locale, live, metric, guest, scope }: { locale: AppLocale; live: Live<HomeCreatorRanking>; metric: HomeCreatorMetric; guest: boolean; scope: string }) {
+function CreatorBlock({ locale, live, metric, guest, scope, showFooterLink = true }: { locale: AppLocale; live: Live<HomeCreatorRanking>; metric: HomeCreatorMetric; guest: boolean; scope: string; showFooterLink?: boolean }) {
   return <>
     <MetricLine locale={locale} tab="creators" metric={metric} computedAt={at(live)} onChange={(next: RankingMetric) => choose({ creators: next as HomeCreatorMetric })} />
     <Body locale={locale} live={live}>{(data) => <>
       <CreatorRows compact key={metric} locale={locale} ranking={data} metric={metric} show={ROWS} fill={ROWS} scope={scope} />
-      <Foot><FootLink href={rankingsPageHref(locale, "creators", metric, guest)}>{rankingsText(locale, "rkViewAll")}</FootLink></Foot>
+      <Foot>{showFooterLink ? <FootLink href={rankingsPageHref(locale, "creators", metric, guest)}>{rankingsText(locale, "rkViewAll")}</FootLink> : null}</Foot>
     </>}</Body>
   </>;
 }
@@ -99,8 +99,8 @@ export function HomeRankingCard({ locale, headingId = "home-ranking-heading" }: 
         <FanBlock locale={locale} live={fans} metric={choice.fans} guest={guest} scope="w" />
       </section>
       <section className={styles.card} aria-labelledby={`${headingId}-creators`}>
-        {head(`${headingId}-creators`, rankingsText(locale, "rkCreatorTab"), null)}
-        <CreatorBlock locale={locale} live={creators} metric={choice.creators} guest={guest} scope="w" />
+        {head(`${headingId}-creators`, rankingsText(locale, "rkCreatorTab"), "creators")}
+        <CreatorBlock locale={locale} live={creators} metric={choice.creators} guest={guest} scope="w" showFooterLink={false} />
       </section>
     </div>
   </section>;
