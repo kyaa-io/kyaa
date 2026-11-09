@@ -1,9 +1,9 @@
-.tabs { display: flex; min-width: 0; overflow-x: auto; scrollbar-width: none; }
+.tabs { display: flex; min-width: 0; overflow-x: auto; overscroll-behavior-x: contain; scrollbar-width: none; }
 .tabs::-webkit-scrollbar { display: none; }
 .tab { flex: none; box-sizing: border-box; font: inherit; text-decoration: none; white-space: nowrap; cursor: pointer; }
-.tab:focus-visible { outline: 2px solid #d11b62; outline-offset: -2px; }
+.tab:focus-visible { outline: 2px solid var(--color-accent); outline-offset: -2px; }
 
-.underline { gap: 0; border-bottom: 1px solid #e4e1e6; }
+.underline { gap: 0; border-bottom: 1px solid var(--color-line); }
 /* 옆으로 넘긴 탭이 더 있다는 표시. 칸이 반 토막으로 잘려 끝처럼 보이지 않게 오른쪽 끝을 흐린다. */
 .underline[data-more="true"] { -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 48px), transparent); mask-image: linear-gradient(to right, #000 calc(100% - 48px), transparent); }
 .underline .tab {
@@ -14,12 +14,12 @@
   border: 0;
   border-bottom: 2px solid transparent;
   background: none;
-  color: #5d5d5d;
+  color: var(--color-muted);
   font-size: 13px;
   font-weight: var(--fan-tab-weight);
   line-height: 20px;
 }
-.underline .tab[aria-current="page"], .underline .tab[aria-pressed="true"] { border-bottom-color: #d11b62; color: #ad1457; }
+.underline .tab[aria-current="page"], .underline .tab[aria-pressed="true"] { border-bottom-color: var(--color-accent); color: var(--color-accent-ink); }
 
 .chip { flex-wrap: wrap; gap: var(--space-2); overflow: visible; }
 .chip .tab {
@@ -28,14 +28,14 @@
   min-height: 44px;
   padding: 0 var(--space-3);
   border: 1px solid var(--color-line);
-  border-radius: 12px;
-  background: #fff;
+  border-radius: var(--radius-control);
+  background: var(--color-surface);
   color: var(--color-ink);
   font-size: 13px;
   font-weight: 700;
   line-height: 18px;
 }
-.chip .tab[aria-current="page"], .chip .tab[aria-pressed="true"] { border-color: #f4c3d7; background: #fff0f6; color: #ad1457; }
+.chip .tab[aria-current="page"], .chip .tab[aria-pressed="true"] { border-color: var(--color-accent-line); background: var(--color-accent-soft); color: var(--color-accent-ink); }
 
 @media (min-width: 48rem) {
   .underline .tab { font-size: 15px; line-height: 22px; }
@@ -48,7 +48,7 @@
 .panel { outline: none; }
 .panel:focus-visible { outline: var(--focus-width) solid var(--color-focus); outline-offset: var(--focus-offset); }
 
-/* segment: 한 틀 안 2~3칸 균등, 높이 40, 바깥 반경 12·안 8, 선택 칸은 흰 바탕 + 1px 선(그림자 없음). */
+/* segment: 한 틀 안 2~3칸 균등, 높이 40, 바깥 반경 12·안 8. 레일은 흰 면 + 1px 선, 선택 칸은 핑크 틴트 + 핑크 글자(회색 면 0, U-1 2026-11-09). */
 .segment {
   gap: 2px;
   height: 40px;
@@ -56,8 +56,8 @@
   overflow: visible;
   box-sizing: border-box;
   border-radius: var(--radius-control);
-  background: var(--color-soft);
-  border: 1px solid var(--color-line-subtle);
+  background: var(--color-surface);
+  border: 1px solid var(--color-line);
 }
 .segment .tab {
   display: inline-flex;
@@ -78,7 +78,7 @@
 /* 보이는 칸은 34, 누르는 영역은 44. */
 .segment .tab { position: relative; }
 .segment .tab::after { position: absolute; inset: -5px 0; content: ""; }
-.segment .tab[aria-current="page"], .segment .tab[aria-pressed="true"], .segment .tab[aria-selected="true"] { border-color: var(--color-line); background: var(--color-surface); color: var(--color-ink); }
+.segment .tab[aria-current="page"], .segment .tab[aria-pressed="true"], .segment .tab[aria-selected="true"] { border-color: var(--color-accent-line); background: var(--color-accent-soft); color: var(--color-accent-ink); }
 @media (prefers-reduced-motion: reduce) {
   .segment .tab { transition-duration: .01ms; }
 }

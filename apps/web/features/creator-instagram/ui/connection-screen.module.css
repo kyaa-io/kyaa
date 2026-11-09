@@ -15,7 +15,7 @@
 .main hr { width: 100%; border: 0; border-top: 1px solid var(--color-line-subtle); margin: 0; }
 .main button, .main a, .main select { -webkit-tap-highlight-color: transparent; }
 .page :is(button, a, select):focus-visible { outline: 3px solid var(--color-ink); outline-offset: 3px; }
-.main button:disabled {cursor: wait;border-color:var(--color-line);background:var(--fan-action-disabled-bg);color:var(--fan-action-disabled-ink)}
+.main button:disabled { cursor: wait; opacity: .55; }
 .stack { display: flex; flex-direction: column; gap: 24px; }
 .main > .stack + .stack { margin-top: 24px; }
 .stack section > p, .stack div > h2 + p { margin-top: 8px; }

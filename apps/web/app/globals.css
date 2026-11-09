@@ -9,21 +9,22 @@
   /* Opt-in collection / personal utility surfaces, not the editorial shell. */
   --color-utility-canvas: var(--color-canvas);
   --color-surface-focus: var(--color-accent-soft);
-  --color-soft: oklch(97.5% 0 0);
+  /* U-2 ③(감독 2026-11-09 11:34): 회색 채움 폐기. 공통 층은 쓰지 않고, 화면 CSS가 치환될 때까지 투명 별칭으로만 남긴다. 새로 쓰지 않는다. */
+  --color-soft: transparent;
   --color-ink: oklch(18% 0 0);
   --color-muted: oklch(48% 0 0);
   --color-line: oklch(90% 0 0);
   --color-line-subtle: oklch(93% 0 0);
-  --fan-action-disabled-bg: #fff;
-  --fan-action-disabled-ink: oklch(64% 0 0);
-  --fan-action-disabled-text-ink: #6b6b6b;
-  /* 버튼 눌림(:active): 색만 바뀐다(DESIGN 3장 '버튼 누름', 이동 0). */
+  /* 공통 부품의 비활성: 면·글자색은 그대로 두고 불투명도만 낮춘다(U-1 결정). */
+  --fan-disabled-opacity: .4;
+  /* 버튼 눌림(:active): 색만 바뀐다(DESIGN 3장 '버튼 누름', 이동 0). 흰 면 버튼의 눌림·호버는 회색이 아니라 핑크 틴트(U-1). */
   --fan-action-primary-active-bg: var(--color-accent-ink);
-  --fan-action-neutral-active-bg: var(--color-line-subtle);
+  --fan-action-neutral-active-bg: var(--color-accent-soft);
   --fan-action-danger-active-bg: color-mix(in srgb, var(--color-error) 80%, var(--color-ink));
   --color-error: #9f1239;
   --color-success: #17613f;
-  --color-warning: #8a4b08;
+  /* #8a4b08 → #7a4206: 자기 30% 틴트(홈 랭킹 1위 배지) 위 글자 4.22 → 4.84:1. 흰 바탕 위 8.05:1. */
+  --color-warning: #7a4206;
   --color-backdrop: rgb(23 23 26 / 42%);
   --color-focus: var(--color-ink);
   /* 261107-2 S1: 화면마다 직접 쓰던 값에 역할 이름만 붙인다(값 변경 없음). */

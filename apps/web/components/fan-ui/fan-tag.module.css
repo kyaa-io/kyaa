@@ -6,7 +6,7 @@
   box-sizing: border-box;
   height: 22px;
   padding: 0 var(--space-2);
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   font-size: 12px;
   font-weight: 700;
   line-height: 22px;
@@ -14,5 +14,5 @@
 }
 .tag svg { flex: none; }
 .fan, .artist { background: var(--color-accent-soft); color: var(--color-accent-ink); }
-.neutral { background: var(--color-soft); color: var(--color-muted); }
-.notice { border: 1px solid var(--color-line); background: transparent; color: var(--color-ink); line-height: 20px; }
+.neutral, .notice { border: 1px solid var(--color-line); background: var(--color-surface); color: var(--color-muted); line-height: 20px; }
+.notice { color: var(--color-ink); }

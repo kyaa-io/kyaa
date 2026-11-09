@@ -114,7 +114,7 @@
 .photocardMembers input { flex:none; width:18px; height:18px; margin:0; accent-color:var(--color-ink); }
 .photocardMembers label:has(:focus-visible) { outline:3px solid var(--color-ink); outline-offset:2px; }
 .photocardMembers input:focus-visible { outline:0; }
-.photocardMembers:disabled label {cursor:default;color:var(--fan-action-disabled-ink)}
+.photocardMembers:disabled label { cursor:default; opacity:.65; }
 :is(.sidebar,.modal) .compactPrizes > .prize:nth-child(3):last-child { grid-column:1 / -1; display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); align-items:center; gap:12px; }
 @media(min-width:1024px) { .banner .compactPrizes:has(> .prize:nth-child(3):last-child) { grid-template-columns:repeat(3,minmax(0,1fr)); } }
 @media(max-width:767px) { .banner .compactPrizes > .prize:nth-child(3):last-child { grid-column:1 / -1; display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); align-items:center; gap:12px; } }

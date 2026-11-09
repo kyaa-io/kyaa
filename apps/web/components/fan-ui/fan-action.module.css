@@ -170,30 +170,15 @@
   text-wrap: pretty;
 }
 
-/* Disabled/loading: one readable rule for every variant, no hover, no lift. Tokens are recorded in DESIGN.md "Button owner and states". */
-
-/* Doubled class: screen modules that paint their own primary background must not beat the disabled look. */
+/* Disabled/loading: one rule for every variant, no hover, no lift. U-1 (2026-11-09): the face and ink stay the variant's own;
+ * only the opacity drops. Doubled class: a screen module's hover or transform must not show on a disabled button. */
 .action.action:disabled,
 .action.action[aria-disabled="true"] {
-  border-color: transparent;
-  background: var(--fan-action-disabled-bg);
-  color: var(--fan-action-disabled-ink);
   box-shadow: none;
   filter: none;
-  opacity: 1;
+  opacity: var(--fan-disabled-opacity);
   transform: none;
   cursor: not-allowed;
-}
-
-.text.text:disabled,
-.text.text[aria-disabled="true"] {
-  background: transparent;
-  color: var(--fan-action-disabled-text-ink);
-}
-
-.neutral.neutral:disabled,
-.neutral.neutral[aria-disabled="true"] {
-  border-color: var(--color-line);
 }
 
 /* Loading keeps the label (so the width does not jump) and shows an in-flow spinner after it; it takes the trailing icon's place. */
@@ -219,23 +204,22 @@
 @media (hover: hover) and (pointer: fine) {
   .primary:hover:not(:disabled) {
     filter: brightness(0.92);
-    transform: translateY(-1px);
   }
 
   .neutral:hover:not(:disabled),
   .text:hover:not(:disabled) {
-    background: var(--color-soft);
+    background: var(--color-accent-soft);
   }
 
   .service:hover:not(:disabled) {
     background:
-      linear-gradient(var(--color-soft), var(--color-soft)) padding-box,
+      linear-gradient(var(--color-accent-soft), var(--color-accent-soft)) padding-box,
       linear-gradient(125deg, var(--color-accent), var(--color-accent), var(--color-accent)) border-box;
   }
 
   .passport:hover:not(:disabled) {
     background:
-      linear-gradient(var(--color-soft), var(--color-soft)) padding-box,
+      linear-gradient(var(--color-accent-soft), var(--color-accent-soft)) padding-box,
       linear-gradient(125deg, var(--color-accent), var(--color-accent), var(--color-accent)) border-box;
   }
 }

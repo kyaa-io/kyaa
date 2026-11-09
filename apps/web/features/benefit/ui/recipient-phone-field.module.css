@@ -73,7 +73,10 @@
   width: 16px;
   height: 16px;
 }
-.countryTrigger:disabled {cursor: default;color:var(--fan-action-disabled-ink)}
+.countryTrigger:disabled {
+  cursor: default;
+  opacity: 0.58;
+}
 .countryPopup {
   position: absolute;
   z-index: var(--z-dropdown, 35);

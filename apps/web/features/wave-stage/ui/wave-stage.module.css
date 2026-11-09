@@ -2,7 +2,7 @@
 .screen *, .confirm * { box-sizing: border-box; }
 .screen h1, .screen h2, .screen h3, .screen p, .screen dl, .screen dd, .screen ol { margin: 0; }
 .screen button, .confirm button { font-family: inherit; cursor: pointer; }
-.screen button:disabled, .confirm button:disabled {cursor: default;border-color:var(--color-line);background:var(--fan-action-disabled-bg);color:var(--fan-action-disabled-ink)}
+.screen button:disabled, .confirm button:disabled { cursor: default; opacity: .45; }
 .screen button:focus-visible, .confirm button:focus-visible, .confirm input:focus-visible { outline: 3px solid var(--color-ink); outline-offset: 3px; }
 .screen a:focus-visible { outline: 3px solid var(--color-ink); outline-offset: 3px; }
 .header { display: flex; flex: none; align-items: center; justify-content: space-between; gap: 24px; }

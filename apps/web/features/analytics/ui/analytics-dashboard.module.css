@@ -274,7 +274,7 @@
 .pagination button:active,
 .metricTabs button:active { transform: scale(.97); }
 .exportButton:disabled,
-.pagination button:disabled {cursor: not-allowed;color:var(--fan-action-disabled-ink)}
+.pagination button:disabled { cursor: not-allowed; opacity: .42; }
 .resultCount {
   margin: 0 0 8px;
   color: var(--color-muted);

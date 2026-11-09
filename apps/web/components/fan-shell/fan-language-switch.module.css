@@ -89,7 +89,8 @@
 }
 
 .item[data-highlighted] {
-  background: #f4f4f5;
+  background: var(--color-accent-soft);
+  color: var(--color-accent-ink);
 }
 
 .item[data-selected] {
@@ -110,8 +111,8 @@
 
 @media (hover: hover) and (pointer: fine) {
   .trigger:hover {
-    background: #f8f8f8;
-    color: #19191e;
+    background: var(--color-accent-soft);
+    color: var(--color-accent-ink);
   }
 }
 
@@ -129,4 +130,4 @@
 .compact:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 .code { display: none; font-variant-numeric: tabular-nums; }
 @media (min-width: 48rem) { .code { display: inline; } }
-@media (hover: hover) and (pointer: fine) { .compact:hover { background: var(--color-soft); } }
+@media (hover: hover) and (pointer: fine) { .compact:hover { background: var(--color-accent-soft); } }

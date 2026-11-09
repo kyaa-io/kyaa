@@ -209,7 +209,6 @@ export function FanSiteFooter({ locale }: { locale: FanLocale }) {
         <span>© 2026 kyaa. All rights reserved.</span>
         <div className={styles.legalLinks}>
           <Link className={styles.privacyLink} href={fanHref("/privacy", locale)} aria-label={locale === "ko" ? "개인정보처리방침 열기" : translate(locale, localizedMessages.mc2da954c6e18, "Open Privacy Policy")}>{t.privacy}</Link>
-          <span aria-hidden="true">·</span>
           <Link href={fanHref("/terms", locale)} aria-label={locale === "ko" ? "이용약관 열기" : translate(locale, localizedMessages.m9083a379799f, "Open Terms of Use")}>{t.terms}</Link>
           <AnalyticsConsentLink locale={locale} />
         </div>

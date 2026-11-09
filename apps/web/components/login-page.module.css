@@ -32,7 +32,7 @@
 .appleButton { display: flex; width: 90%; min-height: 52px; align-items: center; justify-content: space-between; justify-self: center; gap: 12px; padding-inline: 20px; border: 1px solid #000; border-radius: 999rem; background: #000; color: var(--color-surface); cursor: pointer; font: inherit; font-size: 15px; font-weight: 700; }
 .appleButton span { flex: 1; text-align: center; }
 .appleButton svg { width: 18px; height: 18px; flex: none; }
-.googleButton:disabled, .appleButton:disabled, .emailButton:disabled {cursor: wait;color:var(--fan-action-disabled-ink)}
+.googleButton:disabled, .appleButton:disabled, .emailButton:disabled { cursor: wait; opacity: .55; }
 .googleButton:focus-visible, .appleButton:focus-visible, .emailButton:focus-visible, .brand:focus-visible, .closeButton:focus-visible, .footer a:focus-visible { outline: 3px solid var(--color-ink); outline-offset: 3px; }
 .testAccountGroup { display: grid; gap: 12px; }
 .divider { display: flex; align-items: center; gap: 12px; color: var(--color-muted); font-size: 12px; font-weight: 700; text-align: center; }

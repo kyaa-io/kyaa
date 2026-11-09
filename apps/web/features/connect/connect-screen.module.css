@@ -28,7 +28,7 @@
 .immersive .skip { padding:0 16px; border-radius:24px; background:color-mix(in srgb, var(--color-surface) 92%, transparent); color:var(--connect-ink); }
 .introActions { display:flex; align-items:center; gap:8px; }
 .playback { display:grid; place-items:center; flex:none; width:44px; height:44px; padding:0; border:0; border-radius:50%; background:color-mix(in srgb, var(--color-surface) 92%, transparent); color:var(--connect-ink); }
-.playback:disabled {cursor:wait;color:var(--fan-action-disabled-ink)}
+.playback:disabled { cursor:wait; opacity:.65; }
 .intro .copy { position:absolute; z-index:1; top:calc(108px + env(safe-area-inset-top)); inset-inline:var(--intro-gutter); }
 .intro .copy h1 { font-size:30px; line-height:1.2; letter-spacing:-.7px; }
 .intro .eyebrow { display:none; }
