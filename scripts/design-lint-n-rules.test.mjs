@@ -161,9 +161,9 @@ test('N31 flags pill, icon and styled-link actions beside a heading and leaves c
   assert.equal(hits(ts('export const A = () => <header className={styles.intro}><div><FanHeading>x</FanHeading></div><Link className={styles.calendarLink} href="/c"><CalendarDays/>일정</Link></header>;', F), 'N31').length, 1);
   assert.equal(hits(ts('export const A = () => <div className={styles.sectionHeading}><h2>x</h2>{more && <Link href="/a">전체<ArrowRight/></Link>}</div>;', F), 'N31').length, 1);
   assert.equal(hits(ts('export const A = () => <header><h2>x</h2><FanAction variant="neutral" href="/a">전체</FanAction></header>;', F), 'N31').length, 1);
-  assert.equal(hits(ts('export const A = () => <header><h2>x</h2><FanAction onClick={close}>닫기</FanAction></header>;', F), 'N31').length, 0);
+  assert.equal(hits(ts('export const A = () => <header><h2>x</h2><FanAction ariaLabel="닫기" onClick={close}>닫기</FanAction></header>;', F), 'N31').length, 0);
   assert.equal(hits(ts('export const A = () => <header><h1>x</h1><FanAction variant="text" leadingIcon={<ArrowLeft/>} href="/a">뒤로</FanAction></header>;', F), 'N31').length, 0);
-  assert.equal(hits(ts('export const A = () => <header><h2>x</h2><button className={styles.close} aria-label="닫기"><X/></button></header>;', F), 'N31').length, 0);
+  assert.equal(hits(ts('export const A = () => <header><h2>x</h2><button className={styles.close} aria-label="닫기" onClick={onClose}><X/></button></header>;', F), 'N31').length, 0);
   assert.equal(hits(ts('export const A = () => <header><h2>x</h2><FanAction variant="text" trailingIcon={<ArrowRight/>} href="/a">전체</FanAction></header>;', 'apps/web/components/fan-ui/fan-heading.tsx'), 'N31').length, 0);
   assert.equal(hits(css('.sectionHeading>a{border:1px solid var(--color-line);border-radius:999px}'), 'N31').length, 1);
   assert.equal(hits(css('.listHead a{background:var(--color-surface)}'), 'N31').length, 1);
@@ -202,8 +202,8 @@ test('N31 checks plain buttons and FanAction without href, including conditional
     '<button onClick={expand}>More ›</button>',
     '<button style={{background:"transparent",border:0,borderRadius:0}}>More ›</button>',
     '<FanAction variant="text" onClick={expand}>More <span aria-hidden="true">›</span></FanAction>',
-    '<FanAction onClick={onClose}>Close</FanAction>',
-    '<button className={styles.close} aria-label="Close"><X/></button>',
+    '<FanAction ariaLabel="Close" onClick={onClose}>Close</FanAction>',
+    '<button className={styles.close} aria-label="Close" onClick={onClose}><X/></button>',
   ]) assert.equal(hits(ts(`export const A = () => <header><h2>Title</h2>${action}</header>`), 'N31').length, 0, action);
   assert.equal(hits(ts('import { Plus as Add } from "lucide-react"; export const A = () => <header><h2>Title</h2><button aria-label="Add"><Add/></button></header>'), 'N31').length, 1);
 });
@@ -348,6 +348,32 @@ for (const [reason, label, callback] of [
   ['carousel', 'Next slide', 'scrollNext'], ['pagination', 'Next page', 'nextPage'],
 ]) test('N31 allows the identified ' + reason + ' control with its actual callback', () => {
   assert.equal(hits(ts(sectionHead('<button aria-label="' + label + '" onClick={' + callback + '}><ChevronRight/></button>')), 'N31').length, 0);
+});
+
+test('N31 detects More even when its callback also calls onClose', () => {
+  const code = '<header><h2>T</h2><button aria-label="More" onClick={() => {onClose(); openAll();}}><ArrowRight/></button></header>';
+  assert.equal(hits(ts(code), 'N31').length, 1);
+  assert.equal(n31ActionArrows(code, SCREEN).length, 1);
+});
+
+test('N31 close/back exemption needs identifying attributes and a close-only handler', () => {
+  for (const attrs of [
+    'aria-label="More" onClick={onClose}',
+    'onClick={goBack}',
+    'data-debug="close" onClick={onClose}',
+    'aria-label="Close" onClick={() => { onClose(); openAll(); }}',
+    'data-action="back" onClick={() => { goBack(); selected = true; }}',
+    'aria-label="Close" onClick={() => onClose(openAll())}',
+    'aria-label="Back" data-debug={() => goBack()} onClick={openAll}',
+    'aria-label="Close"',
+  ]) assert.equal(hits(ts(sectionHead('<button ' + attrs + '><ArrowRight/></button>')), 'N31').length, 1, attrs);
+  for (const attrs of [
+    'aria-label="Close" onClick={() => onClose()}',
+    'aria-label={copy.close} onClick={onClose}',
+    'data-action="back" onClick={() => router.back()}',
+    'data-close onClick={onClose}',
+    'aria-label="Close dialog" onClick={() => { if (!busy) onClose(); }}',
+  ]) assert.equal(hits(ts(sectionHead('<button ' + attrs + '><ArrowRight/></button>')), 'N31').length, 0, attrs);
 });
 
 test('N31 exceptions inspect identifying attributes and actual onClick AST only', () => {

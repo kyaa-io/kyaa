@@ -306,18 +306,69 @@ function n31SectionAnalysis(code, file) {
     visit(n.body);
     return calls;
   };
+  const closeName = /^(close|onClose|handleClose|closeDialog|dismiss|onDismiss|goBack|onBack|handleBack)$/;
+  const closeIdentity = (n, seen = new Set()) => {
+    n = unwrap(n);
+    if (!n || seen.has(n)) return false;
+    seen.add(n);
+    if (ts.isStringLiteral(n)) return /^(close|back|dismiss)(?:\s|$)|(?:닫기|뒤로(?:가기)?)$/i.test(n.text.trim());
+    if (ts.isPropertyAccessExpression(n)) return /^(close(?:[A-Z]\w*)?|back|dismiss|cancel)$/.test(n.name.text);
+    if (ts.isIdentifier(n)) return /^(close|back|dismiss)$/.test(n.text) || closeIdentity(lookup(n)?.node, seen);
+    if (ts.isConditionalExpression(n)) return closeIdentity(n.whenTrue, new Set(seen)) && closeIdentity(n.whenFalse, new Set(seen));
+    // Translation helpers: a close key or the explicit fallback label identifies
+    // the control, but arbitrary expressions in data-* attributes do not.
+    if (ts.isCallExpression(n)) return n.arguments.some((a) => ts.isStringLiteral(a) && closeIdentity(a));
+    return false;
+  };
+  const passive = (n) => {
+    n = unwrap(n);
+    if (!n) return false;
+    if (ts.isIdentifier(n) || ts.isLiteralExpression(n) || [ts.SyntaxKind.TrueKeyword, ts.SyntaxKind.FalseKeyword, ts.SyntaxKind.NullKeyword].includes(n.kind)) return true;
+    if (ts.isPropertyAccessExpression(n)) return passive(n.expression);
+    if (ts.isPrefixUnaryExpression(n) && n.operator === ts.SyntaxKind.ExclamationToken) return passive(n.operand);
+    return false;
+  };
+  const closeOnlyHandler = (reference, seen = new Set()) => {
+    reference = unwrap(reference);
+    if (!reference || seen.has(reference)) return false;
+    seen.add(reference);
+    // Named close/back callbacks are control API references. Inspect wrapper
+    // bodies at onClick, rather than reclassifying their internal focus cleanup.
+    if (ts.isIdentifier(reference) && closeName.test(reference.text)) return true;
+    let fn = resolveLocal(reference);
+    if (!fn || ts.isIdentifier(fn)) return ts.isIdentifier(reference) && closeName.test((fn ?? reference).text);
+    if (ts.isCallExpression(fn) && /^(useCallback|React\.useCallback)$/.test(fn.expression.getText(source))) fn = fn.arguments[0];
+    if (!fn || !ts.isFunctionLike(fn) || !fn.body) return false;
+    const onlyClose = (node) => {
+      node = unwrap(node);
+      if (ts.isBlock(node)) return node.statements.length > 0 && node.statements.every(onlyClose);
+      if (ts.isExpressionStatement(node) || ts.isReturnStatement(node) || ts.isVoidExpression(node)) return Boolean(node.expression) && onlyClose(node.expression);
+      if (ts.isIfStatement(node)) return passive(node.expression) && onlyClose(node.thenStatement) && (!node.elseStatement || onlyClose(node.elseStatement));
+      if (!ts.isCallExpression(node) || !node.arguments.every(passive)) return false;
+      if (ts.isIdentifier(node.expression)) {
+        if (/^set(?:\w*Open|Open)$/.test(node.expression.text)) return node.arguments.length === 1 && node.arguments[0].kind === ts.SyntaxKind.FalseKeyword;
+        if (/^set\w*(?:Dialog|Modal|ModalDate)$/.test(node.expression.text)) return node.arguments.length === 1 && node.arguments[0].kind === ts.SyntaxKind.NullKeyword;
+        return closeOnlyHandler(node.expression, new Set(seen));
+      }
+      return ts.isPropertyAccessExpression(node.expression) && /^(router|history|navigation)\.back$/.test(node.expression.getText(source)) && node.arguments.length === 0;
+    };
+    return onlyClose(fn.body);
+  };
   const isException = (n) => {
     const label = unwrap(value(attr(n, 'aria-label') ?? attr(n, 'ariaLabel')));
     const labelText = label?.text ?? '';
-    const classText = value(attr(n, 'className'))?.getText(source) ?? '';
     const calls = handlerCalls(value(attr(n, 'onClick')));
-    // Dismiss/back: explicit callback, or an identified close glyph. This keeps
-    // existing close-only header controls out without exempting forward actions.
-    if (calls.some((c) => /^(close|onClose|handleClose|closeDialog|dismiss|onDismiss|goBack|onBack|handleBack)$/.test(c))) return true;
-    const tags = [...childRoots(n), ...roots(value(attr(n, 'leadingIcon')))].map(nameOf);
-    if ((/^(닫기|Close|뒤로|Back)$/.test(labelText) || /\.(close|closeButton|backButton)$/.test(classText))
-      && tags.length > 0 && tags.every((tag) => /^(X|ArrowLeft|ChevronLeft)$/.test(tag))) return true;
-    if (tags.length === 1 && tags[0] === 'X' && calls.length > 0) return true;
+    // Both conditions are mandatory: a close/back identity on this control and
+    // a handler doing only that operation. A glyph or one matching call amid
+    // other effects is not evidence of a close-only action.
+    const identifiedClose = attributes(n).some((a) => {
+      const name = a.name.getText(source);
+      if (/^(aria-label|ariaLabel|role|data-action|data-control|data-intent|data-close|data-back|data-dismiss)$/.test(name)) {
+        return closeIdentity(value(a)) || (/^data-(close|back|dismiss)$/.test(name) && (!a.initializer || value(a)?.kind === ts.SyntaxKind.TrueKeyword));
+      }
+      return false;
+    });
+    if (identifiedClose && closeOnlyHandler(value(attr(n, 'onClick')))) return true;
     // Pagination/carousel: an identifying attribute AND the actual onClick AST
     // must agree. data-debug, strings and other attributes cannot supply calls.
     const labelProperty = label && ts.isPropertyAccessExpression(label) ? label.name.text : '';
