@@ -27,6 +27,11 @@ describe("gallery column allocation", () => {
       expect(spread).toBeLessThan(layout.columns === 2 ? 0.05 : 0.13);
     }
   });
+  it("puts the best-ranked photos in the top row", () => {
+    for (const layout of Object.values(homeGalleryLayouts)) {
+      expect(allocateGalleryColumns(mixed, layout).columns.map(column => column[0]!.id)).toEqual(mixed.slice(0, layout.columns).map(item => item.id));
+    }
+  });
   it("keeps the given order inside a column so the first photos stay on top", () => {
     const order = mixed.map(item => item.id);
     for (const layout of Object.values(homeGalleryLayouts)) {

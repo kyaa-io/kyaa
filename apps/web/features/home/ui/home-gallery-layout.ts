@@ -18,7 +18,8 @@ const columnHeight = (heights: readonly number[], gap: number) => heights.reduce
 
 /**
  * Shortest column first, then moves and swaps between columns until the tallest and shortest column differ as little as possible.
- * Order inside a column follows the given order (rank first), so the first photos stay at the top.
+ * The first photo of each column is the first `columns` photos in the given order (rank first) and never moves, so the top row is always
+ * the best-ranked photos; order inside a column follows the given order.
  */
 export function allocateGalleryColumns(photos: readonly HomeGalleryPhoto[], layout: Layout) {
   const count = Math.min(layout.columns, photos.length);
@@ -39,7 +40,7 @@ export function allocateGalleryColumns(photos: readonly HomeGalleryPhoto[], layo
       change(); const value = spread(); undo();
       if (value < best - 1e-9) { best = value; move = mark; }
     };
-    for (let a = 0; a < photos.length; a += 1) {
+    for (let a = count; a < photos.length; a += 1) {
       for (let to = 0; to < count; to += 1) {
         const from = owner[a]!; if (from === to || sizes[from]! < 2) continue;
         trial(() => { sums[from]! -= heights[a]!; sizes[from]! -= 1; sums[to]! += heights[a]!; sizes[to]! += 1; },
