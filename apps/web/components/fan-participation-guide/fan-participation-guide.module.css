@@ -24,7 +24,7 @@
 .page > a[href^="#"] { color: var(--color-surface); }
 .page a:focus-visible { outline: 3px solid var(--guide-ink); outline-offset: 4px; }
 .headerInner,
-.main { width: min(100%, 1440px); margin-inline: auto; padding-inline: 100px; }
+.main { width: min(100%, var(--shell-max-width)); margin-inline: auto; padding-inline: var(--shell-inset); }
 .headerInner { position: relative; height: 88px; }
 .page > header { height: 88px; }
 .navigation {
@@ -129,7 +129,6 @@
 .closing { display: flex; flex-direction: column; align-items: center; gap: 20px; padding-block: 24px; }
 .closing h2 { font-size: 32px; font-weight: 800; line-height: 1.35; text-align: center; }
 @media (max-width: 1199px) {
-  .headerInner, .main { padding-inline: 48px; }
   .hero { grid-template-columns: minmax(0, 1fr) minmax(380px, 48%); }
   .heroImage { width: 100%; }
   .step { grid-template-columns: minmax(380px, 48%) minmax(0, 1fr); gap: 48px; }
