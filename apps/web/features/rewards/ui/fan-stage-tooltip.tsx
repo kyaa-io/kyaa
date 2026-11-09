@@ -5,7 +5,7 @@ import { translate } from "@/i18n/messages";
 import type { AppLocale } from "@/i18n/locales";
 import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { fanTierProgress } from "@/features/my/domain/my-progress";
+import { fanStageNextText } from "./fan-stage-next";
 import { levelLabel } from "@/features/passport/domain/passport-read-model";
 import { fanStageLabel, type FanStageProgress } from "../domain/fan-stage";
 import type { FanTier } from "../domain/reward-policy";
@@ -17,7 +17,6 @@ export type FanStageTooltipProps = {
   tier: FanTier;
   points: number;
   stageProgress?: FanStageProgress | null;
-  remainingToNextTier?: number;
   locale: AppLocale;
   variant?: "floating" | "inline" | "compact";
   className?: string;
@@ -37,7 +36,6 @@ export function FanStageTooltip({
   tier,
   points,
   stageProgress = null,
-  remainingToNextTier,
   locale,
   variant = "floating",
   className,
@@ -53,27 +51,12 @@ export function FanStageTooltip({
   const [open, setOpen] = useState(false);
   const [position, setPosition] = useState<Position | null>(null);
   const currentStage = stageProgress ? fanStageLabel(locale, stageProgress.current) : levelLabel(locale, tier);
-  const nextStage = stageProgress?.next ? fanStageLabel(locale, stageProgress.next) : null;
   const numberLocale = locale;
   const pointText = `${points.toLocaleString(numberLocale)}${locale === "ko" ? "점" : translate(locale, localizedMessages.m4a7f9877b120, " points")}`;
 
-  const majorProgress = remainingToNextTier === undefined ? null : fanTierProgress({
-    id: "fan-stage-tooltip",
-    tier,
-    score: points,
-    remainingToNextTier,
-    stageProgress,
-  });
-  const hasLaterMajorGoal = stageProgress !== null
-    && stageProgress.next !== null
-    && stageProgress.next.tier === stageProgress.current.tier;
-  const majorGoal = hasLaterMajorGoal && majorProgress?.nextTier
-    ? (locale === "ko" ? `${levelLabel(locale, majorProgress.nextTier)}까지 ${majorProgress.remaining.toLocaleString(numberLocale)}점` : translate(locale, localizedMessages.me73dc615c203, "{0} points to {1}", [majorProgress.remaining.toLocaleString(numberLocale), majorProgress.nextTier]))
-    : null;
+  const nextText = stageProgress ? fanStageNextText(locale, stageProgress) : null;
   const summary = stageProgress
-    ? `${celebrityName} · ${currentStage}. ${locale === "ko" ? "현재" : translate(locale, localizedMessages.m4e8de5c8493c, "Current")} ${pointText}. ${stageProgress.next && nextStage
-      ? (locale === "ko" ? `${nextStage}까지 ${stageProgress.remaining.toLocaleString(numberLocale)}점` : translate(locale, localizedMessages.mbd7cbf79c9c6, "{0} points to {1}", [stageProgress.remaining.toLocaleString(numberLocale), nextStage]))
-      : (locale === "ko" ? "최고 단계 도달" : translate(locale, localizedMessages.m31dac39631a1, "Top stage reached"))}${majorGoal ? `. ${majorGoal}` : ""}`
+    ? `${celebrityName} · ${currentStage}. ${locale === "ko" ? "현재" : translate(locale, localizedMessages.m4e8de5c8493c, "Current")} ${pointText}. ${nextText ?? (locale === "ko" ? "최고 단계 도달" : translate(locale, localizedMessages.m31dac39631a1, "Top stage reached"))}`
     : `${celebrityName} · ${currentStage}. ${locale === "ko" ? "현재" : translate(locale, localizedMessages.m4e8de5c8493c, "Current")} ${pointText}`;
 
   const cancelScheduledClose = useCallback(() => {
@@ -206,8 +189,7 @@ export function FanStageTooltip({
   >
     <div className={styles.identity}><strong>{celebrityName}</strong><span aria-hidden="true">·</span><strong>{currentStage}</strong></div>
     <div className={styles.detail}><span>{locale === "ko" ? "현재 점수" : translate(locale, localizedMessages.mc0c42bba1461, "Current points")}</span><strong>{pointText}</strong></div>
-    {stageProgress ? stageProgress.next && nextStage ? <div className={styles.detail}><span>{locale === "ko" ? "다음 단계" : translate(locale, localizedMessages.m8be1f7227bc4, "Next stage")}</span><strong>{locale === "ko" ? `${nextStage}까지 ${stageProgress.remaining.toLocaleString(numberLocale)}점` : translate(locale, localizedMessages.mbd7cbf79c9c6, "{0} points to {1}", [stageProgress.remaining.toLocaleString(numberLocale), nextStage])}</strong></div> : <div className={styles.reached}>{locale === "ko" ? "최고 단계에 도달했어요" : translate(locale, localizedMessages.m71ff5792a413, "Top stage reached")}</div> : null}
-    {majorGoal ? <div className={joinClassNames(styles.detail, styles.majorGoal)}><span>{locale === "ko" ? "등급 목표" : translate(locale, localizedMessages.maeb3ac6aeaec, "Tier goal")}</span><strong>{majorGoal}</strong></div> : null}
+    {stageProgress ? nextText ? <div className={styles.detail}><span>{locale === "ko" ? "다음 단계" : translate(locale, localizedMessages.m8be1f7227bc4, "Next stage")}</span><strong>{nextText}</strong></div> : <div className={styles.reached}>{locale === "ko" ? "최고 단계에 도달했어요" : translate(locale, localizedMessages.m71ff5792a413, "Top stage reached")}</div> : null}
   </div>, document.body) : null;
 
   return <span ref={rootRef} className={joinClassNames(styles.root, variant === "inline" && styles.inlineRoot, className)}>{trigger}{tooltip}</span>;

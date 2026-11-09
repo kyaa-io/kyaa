@@ -148,11 +148,6 @@
 .detail > span { color: #7b746a; }
 .detail > strong { color: #332d26; text-align: end; font-size: 13px; font-variant-numeric: tabular-nums; }
 
-.majorGoal {
-  padding-top: 8px;
-  border-top: 1px solid #eee8dd;
-}
-
 .reached {
   color: #936d29;
   font-weight: 700;

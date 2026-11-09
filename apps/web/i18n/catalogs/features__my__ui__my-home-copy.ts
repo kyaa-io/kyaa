@@ -85,18 +85,6 @@ export const messages = {
     "fr": "Tampons sur cette page du passeport : {0} sur {1}",
     "ru": "Штампы на этой странице паспорта: {0} из {1}"
   },
-  "nextTier": {
-    "ja": "{0}まであと{1}ポイント",
-    "zh-Hans": "距{0}还差{1}分",
-    "zh-Hant": "距{0}還差{1}分",
-    "es": "{1} puntos para {0}",
-    "id": "{1} poin lagi ke {0}",
-    "vi": "Còn {1} điểm đến {0}",
-    "th": "อีก {1} คะแนนถึง {0}",
-    "pt": "{1} pontos para {0}",
-    "fr": "{1} points pour {0}",
-    "ru": "{1} баллов до {0}"
-  },
   "topTier": {
     "ja": "最高ランクです",
     "zh-Hans": "已是最高等级",

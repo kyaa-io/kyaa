@@ -49,15 +49,6 @@ export function parsePassportDetailRecord(value: unknown, locale: PassportLocale
   };
 }
 
-export const passportProgressSchema = z.object({
-  currentScore: z.number().int().nonnegative(),
-  currentLevel: z.enum(["Bronze", "Silver", "Gold", "Platinum", "Diamond"]),
-  nextLevel: z.enum(["Silver", "Gold", "Platinum", "Diamond"]).nullable(),
-  nextThreshold: z.number().int().positive().nullable(),
-  remainingPoints: z.number().int().nonnegative(),
-  percent: z.number().min(0).max(100),
-  maxed: z.boolean(),
-}).strict();
 
 const missingBenefitConditionSchema = z.discriminatedUnion("type", [
   z.object({ type: z.literal("score"), current: z.number().int().nonnegative(), required: z.number().int().nonnegative() }).strict(),
@@ -83,8 +74,6 @@ export const nextPassportBenefitSchema = z.object({
 }).strict();
 
 export type PassportDetailRecord = ReturnType<typeof parsePassportDetailRecord>;
-export type PassportProgress = z.infer<typeof passportProgressSchema>;
 export type NextPassportBenefit = z.infer<typeof nextPassportBenefitSchema>;
-export type PassportDetail = PassportDetailRecord & {
-  progress: PassportProgress;
-};
+/** The next step is the server's stage progress (score.stageProgress); there is no separate point-based progress (BUGS-1846). */
+export type PassportDetail = PassportDetailRecord;

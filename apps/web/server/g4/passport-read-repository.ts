@@ -6,7 +6,6 @@ import { parsePassportCollection, type PassportCollection, type PassportDirector
 import { parsePassportDetailRecord, type PassportDetail } from "../../features/passport/domain/passport-detail";
 import { passportLocaleSchema, type PassportLocale } from "../../features/passport/domain/passport-read-model";
 import { parseStampDetail, type StampDetail } from "../../features/passport/domain/stamp-detail";
-import { attachPassportGrowth } from "./passport-growth";
 import { createPublicImageRoleReader, type PublicImageRoleReader } from "../media/public-image-reader";
 import { SupabaseCreatorReactionBatchRepository } from "../reaction/creator-reaction-batch-repository";
 import { validateOwnerMintReplacements } from "../onchain/owner-mint-replacement";
@@ -88,7 +87,7 @@ export class SupabasePassportReadRepository implements PassportReadRepository {
     const row = oneRow(data);
     if (row === null) return null;
     try {
-      const passport = attachPassportGrowth(parsePassportDetailRecord(row, locale));
+      const passport = parsePassportDetailRecord(row, locale);
       const mints = [passport.mint, ...passport.stamps.map((stamp) => stamp.mint), ...(passport.firstReaction?.mint ? [passport.firstReaction.mint] : [])];
       const guarded = await validateOwnerMintReplacements(mints);
       let index = 0;

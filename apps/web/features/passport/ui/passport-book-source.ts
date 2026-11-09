@@ -18,6 +18,8 @@ export const passportBookSource = {
   tierJourneyTitle: { ko: "나와 {0}", en: "You and {0}" },
   tierNow: { ko: "내 팬 등급 {0}", en: "My fan tier: {0}" },
   tierToNext: { ko: "{0}까지 {1}점", en: "{1} pts to {0}" },
+  tierToNextStamps: { ko: "{0}까지 도장 {1}칸", en: "Stamps to {0}: {1}" },
+  tierToNextHearts: { ko: "{0}까지 하트 {1}개", en: "Hearts to {0}: {1}" },
   pagePrev: { ko: "이전 쪽", en: "Previous page" },
   pageNext: { ko: "다음 쪽", en: "Next page" },
   quizPassedHelper: { ko: "첫 스탬프가 패스포트에 찍혔어요.", en: "Your first stamp is in your Passport." },

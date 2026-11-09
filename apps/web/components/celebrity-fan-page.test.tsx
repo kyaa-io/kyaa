@@ -382,9 +382,9 @@ describe("approved fanpage", () => {
     const fetcher = stubHubFetch({ passports: [ownedPassport] });
     render(<CelebrityFanPage celebrity={kara} locale="ko" upcomingLive={null} />);
     expect(await screen.findByRole("link", { name: "내 패스포트" })).toHaveAttribute("href", `/passports/${ownedPassport.id}?locale=ko`);
-    expect(screen.getByRole("progressbar", { name: "팬 등급 진행도" })).toHaveAttribute("value", "8");
-    expect(screen.getByText("2점")).toBeInTheDocument();
-    expect(screen.queryByText("87점")).not.toBeInTheDocument();
+    // Without a stage projection the bar has no next step to fill (BUGS-1846: no point thresholds on the client).
+    expect(screen.getByRole("progressbar", { name: "팬 등급 진행도" })).toHaveAttribute("value", "0");
+    expect(screen.queryByText(/다음 등급까지/)).not.toBeInTheDocument();
     expect(fetcher.mock.calls.filter(([url]) => String(url).includes("/api/me/summary"))).toHaveLength(1);
     expect(fetcher.mock.calls.some(([url]) => String(url) === "/api/me/summary?locale=ko&tierStages=1&hearts=1")).toBe(true);
     expect(fetcher.mock.calls.filter(([url]) => String(url).includes("/api/passports"))).toHaveLength(0);
@@ -418,13 +418,12 @@ describe("approved fanpage", () => {
       current: { key: "silver-1", tier: "Silver", subdivision: 1, rank: 2, minimumScore: 15 },
       next: { key: "silver-2", tier: "Silver", subdivision: 2, rank: 3, minimumScore: 30 },
       remaining: 7,
-      progressPercent: 53,
+      progressPercent: 53, unit: "points" as const,
     };
     stubHubFetch({ passports: [{ ...ownedPassport, stageProgress }] });
     const view = render(<CelebrityFanPage celebrity={kara} locale="ko" upcomingLive={null} />);
     expect(await screen.findByText("실버 1")).toBeInTheDocument();
-    expect(screen.getAllByText("실버 2까지").length).toBeGreaterThan(0);
-    expect(screen.getByText("7점")).toBeInTheDocument();
+    expect(screen.getAllByText("실버 2까지 7점").length).toBeGreaterThan(0);
     expect([...view.container.querySelectorAll("img")].some((image) => decodeURIComponent(image.src).includes("/ink-v1/silver-1.webp"))).toBe(true);
     expect(screen.getByRole("progressbar", { name: "팬 등급 진행도" })).toHaveAttribute("value", "53");
   });

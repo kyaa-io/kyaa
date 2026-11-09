@@ -2,7 +2,6 @@ import {toContentLocale,type AppLocale} from '../../i18n/locales';
 import {feedbackSummary} from '../lounge-local/feedback-fixture';
 import {parsePassportCollection} from '../../features/passport/domain/passport-collection';
 import {parsePassportDetailRecord} from '../../features/passport/domain/passport-detail';
-import {derivePassportProgress} from '../../server/g4/passport-growth';
 export function utilityFixture(path:string,locale:AppLocale):Response|undefined{
  if(path==='/api/me/social/profile-link')return Response.json({token:'e9200000-0000-4000-8000-000000000003',expiresAt:new Date(Date.now()+86400000).toISOString()});
  if(path.startsWith('/api/me/social/profile-links/'))return Response.json({profile:{id:'e9200000-0000-4000-8000-000000000002',nickname:'팬 A',avatarUrl:'/images/avatars/star-pink.webp'},relationship:{friendshipId:null,status:'none'},capabilities:{canRequestFriend:true},isSelf:false});
@@ -13,5 +12,5 @@ export function utilityFixture(path:string,locale:AppLocale):Response|undefined{
  const row=passports.find(p=>p.id===path.split('/')[3]);
  if(!row)return Response.json({error:{code:'NOT_FOUND'}},{status:404});
  const passport=parsePassportDetailRecord({...row,stamps:[],activities:[],nextBenefit:null,firstReaction:null},toContentLocale(locale));
- return Response.json({passport:{...passport,progress:derivePassportProgress(passport.score.points,passport.score.level)}});
+ return Response.json({passport});
 }

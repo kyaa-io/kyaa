@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { benefitScorePercent, fanTierProgress, latestCertificationHistory, localizedPath, nextRaffleBoundary, rankedPassportCreators, recommendCertification, selectOpenRaffle, type MyCreator } from "./my-progress";
+import { benefitScorePercent, latestCertificationHistory, localizedPath, nextRaffleBoundary, rankedPassportCreators, recommendCertification, selectOpenRaffle, type MyCreator } from "./my-progress";
 
 function creator(slug: string, tier: "Bronze" | "Silver" | "Gold", score: number): MyCreator {
   return { celebrity: { slug, name: slug, image: "/test.jpg", isPublic: true }, relationship: "passport", passport: { id: slug, tier, score, remainingToNextTier: 0 }, ticketBalance: 0, firstReaction: null };
@@ -22,12 +22,6 @@ describe("MY representative and benefit score", () => {
 });
 
 describe("MY selected favorite panels", () => {
-  it("uses the attained tier and server remaining points for the next threshold and terminates Diamond", () => {
-    expect(fanTierProgress(creator("kara", "Silver", 15).passport!)).toMatchObject({ nextTier: "Gold", nextThreshold: 15, remaining: 0, maxed: false });
-    expect(fanTierProgress({ id: "x", tier: "Bronze", score: 2, remainingToNextTier: 13 })).toEqual({ nextTier: "Silver", nextThreshold: 15, remaining: 13, percent: 13, maxed: false });
-    expect(fanTierProgress({ id: "x", tier: "Diamond", score: 251, remainingToNextTier: 99 })).toEqual({ nextTier: null, nextThreshold: null, remaining: 0, percent: 100, maxed: true });
-  });
-
   it("selects only a currently open raffle with a benefit and stable earliest closing order", () => {
     const base = { title: "Prize", summary: "Summary", imageUrl: null, winnerQuantity: 1, status: "open" as const, entryOpensAt: "2026-09-10T00:00:00Z", entryClosesAt: "2026-09-10T12:00:00Z", fulfillmentMethod: "digital" as const, perFanTicketLimit: null };
     const raffles = [

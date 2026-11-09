@@ -99,3 +99,6 @@
 
 /* D1: the empty 오늘의 덕질 row (FanMissionRow) shows a compass in the art slot. */
 .emptyArt { color: var(--color-muted); }
+
+/* The shortest paying body beside a point badge ("5자 이상"). */
+.minChars { flex: 0 0 auto; color: var(--color-muted); font-size: var(--fan-metadata-size); font-weight: 600; white-space: nowrap; }

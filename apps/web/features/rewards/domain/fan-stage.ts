@@ -27,9 +27,13 @@ export const fanStageProgressSchema = z.object({
   next: fanStageSchema.nullable(),
   remaining: z.number().int().nonnegative(),
   progressPercent: z.number().int().min(0).max(100),
+  /** What `remaining` counts (20261220050000): filled mission slots up to Silver 2, hearts from Gold, points under policy 1 and 2. */
+  unit: z.enum(["stamps", "hearts", "points"]),
 }).strict().superRefine((progress, context) => {
+  // Slot-reached stages (Silver 1, Silver 2) share the heart minimum 0 with the stage before them.
   if (progress.next
-    ? progress.next.rank !== progress.current.rank + 1 || progress.next.minimumScore <= progress.current.minimumScore
+    ? progress.next.rank !== progress.current.rank + 1
+      || (progress.unit === "stamps" ? progress.next.minimumScore < progress.current.minimumScore : progress.next.minimumScore <= progress.current.minimumScore)
     : progress.current.key !== "diamond-1" || progress.remaining !== 0 || progress.progressPercent !== 100) {
     context.addIssue({ code: "custom", message: "Fan stage progress is inconsistent" });
   }
