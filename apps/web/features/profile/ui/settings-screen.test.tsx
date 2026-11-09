@@ -177,6 +177,15 @@ describe("FAN-020 settings", () => {
     expect(fetch).not.toHaveBeenCalled();
   });
 
+  it("shows the signed-out state, not an endless loading state, after logout", () => {
+    authState.authenticated = false;
+    render(<SettingsScreen locale="ko" initialSection="account" />);
+
+    expect(screen.queryByText("설정을 불러오는 중")).not.toBeInTheDocument();
+    expect(screen.getByRole("main")).not.toHaveAttribute("aria-busy");
+    expect(screen.queryByRole("button", { name: "로그아웃" })).not.toBeInTheDocument();
+  });
+
   it("opens one query-driven detail, returns focus, and follows popstate", async () => {
     window.history.replaceState(null, "", "/settings?locale=ko");
     render(<SettingsScreen locale="ko" initialSection={null} />);

@@ -59,6 +59,7 @@ import { withLocalePath } from "../../../components/locale-path";
 import { nextRaffleBoundary, selectOpenRaffles, type MyCreator, type PassportCreator } from "../domain/my-progress";
 import { collectionGroupTitle, groupRecentCollection } from "../domain/recent-collection";
 import { MyLiveCountdown } from "./my-live-countdown";
+import { MyLogout } from "./my-logout";
 import styles from "./my-screen.module.css";
 import { participationCopy } from "@/i18n/catalogs/features__schedules__ui__participation";
 import { personalCopy } from "@/i18n/catalogs/features__my__ui__personal-copy";
@@ -392,6 +393,8 @@ function Dashboard({ summary, locale, avatarResource, refreshSummary, selectedSl
         return <Link href={withLocalePath(recipientHref ?? reward.benefitHref, locale) as Route} key={reward.rewardResultId}><span className={styles.activityMark} data-kind="collectible" aria-hidden="true"><FanMotionIcon name="gift" size={20}/></span><div><strong>{reward.title}</strong><span>{status}</span></div><ArrowRight/></Link>;
       })}</div>
     </FanSurface> : null}
+
+    <MyLogout locale={locale}/>
   </div>;
 }
 
