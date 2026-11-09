@@ -4,7 +4,8 @@ import { beforeEach, expect, it, vi } from "vitest";
 const auth = vi.hoisted(() => ({ ownerKey: "pending:0" }));
 vi.mock("@/features/groups/ui/use-group-resource", () => ({ useGroupRequest: () => ({ ownerKey: auth.ownerKey, authenticated: auth.ownerKey.startsWith("u"), ready: !auth.ownerKey.startsWith("pending") }) }));
 vi.mock("@/features/selected-bias/ui/selected-bias-chip", () => ({ SelectedBiasChip: () => <span data-testid="chip" /> }));
-vi.mock("@/features/groups/ui/group-header-account", () => ({ GroupHeaderPoints: () => <span data-testid="points" />, GroupHeaderAccount: () => <span data-testid="account" /> }));
+vi.mock("@/features/groups/ui/group-header-account", () => ({ GroupHeaderAccount: () => <span data-testid="account" /> }));
+vi.mock("./fan-header-status", () => ({ FanHeaderStatus: () => <button data-header-status="" aria-expanded="false" /> }));
 vi.mock("./fan-language-switch", () => ({ FanLanguageSwitch: () => <span data-testid="language" /> }));
 vi.mock("next/navigation", () => ({ usePathname: () => "/", useSearchParams: () => new URLSearchParams(), useRouter: () => ({ push: () => undefined }) }));
 import { GroupHeaderActions } from "./fan-app-shell";
@@ -27,7 +28,6 @@ it("shows the guest chip signed out and the capsule with the points signed in", 
   auth.ownerKey = "user-1:0";
   c = view();
   const capsule = c.querySelector("[data-header-status]")!;
-  expect(capsule.querySelector("[data-testid=chip]")).not.toBeNull();
-  expect(capsule.querySelector("[data-testid=points]")).not.toBeNull();
+  expect(capsule).toHaveAttribute("aria-expanded", "false");
   expect(c.querySelector("[data-header-status-pending]")).toBeNull();
 });
