@@ -113,3 +113,8 @@
   .banner[data-kind="campaign"] .action > a { background: transparent; color: var(--color-surface) !important; }
   .banner[data-kind="art"] .action > a { background: transparent; color: var(--color-canvas) !important; }
 }
+
+/* 안내 그림의 데스크톱 원본은 2:1이다. 슬롯을 원본에 맞춰 빈 띠를 막는다. */
+@media (min-width: 768px) {
+  .banner[data-kind="art"] .fullImage { top: 50%; bottom: auto; aspect-ratio: 2 / 1; transform: translateY(-50%); }
+}

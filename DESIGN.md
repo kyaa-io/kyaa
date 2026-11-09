@@ -1939,3 +1939,5 @@ At the user's request, registered Changha identity and hero images use the unedi
 - **홈 블록 순서(2026-11-09 사용자 결정, TK-REMOVE-UPCOMING-LIVE)**: 브랜드 줄·메인 배너 → 랭킹(팬·크리에이터) → 얇은 배너 → 공지·갤러리·숏츠. 홈의 '다가오는 LIVE' 블록(제목·`전체 라이브` 링크·LIVE 행 3개·쪽 넘김)은 숨기지 않고 지웠다: `HomeUpcoming`·`StreamHomeUpcoming`, 홈 조회 `featuredLives`(와 저장소 `listFeaturedPublished`·`listPublishedSlugs`), `GuestHome`의 `featuredLives` 속성, 문구 키 6개(`upcoming`·`previousLivePage`·`nextLivePage`·`noLive`·`allLive`·`detail`) 및 번역, 행·쪽 넘김 스타일(`.liveList` 등), 시험.
 - 남긴 것과 이유: `nearestRecurringLives`와 `listPublishedCatalog`는 LIVE 목록 화면(`/live`)이 그대로 쓴다. `/live`·LIVE 캘린더·팬페이지 LIVE(`다가오는 일정` 사이드)는 이 결정과 무관하다. DB·API 경로는 바꾸지 않았다.
 
+
+- 홈 안내 배너 그림(2026-11-09): 내장 문구 보존을 위해 안내 이미지는 `contain`으로 표시하고, 768px 이상 그림 칸은 데스크톱 원본의 2:1 비율로 맞춘다. 사진 배너는 기존 `cover`와 초점을 유지한다. 시각 검수는 별도 작업자가 수행한다.

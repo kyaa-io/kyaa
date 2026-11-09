@@ -16,9 +16,6 @@
 .root[data-gggi-campaign] .artwork { background:transparent; }
 .root[data-gggi-campaign] .artwork img { object-position:50% 28%; }
 
-/* 안내 그림(2:1 데스크톱 원본): 오른쪽 기준으로 두고 좁은 칸은 빈 왼쪽만 줄인다. 모바일 원본은 위쪽 기준. */
+/* 안내 그림은 내장 글자를 보존한다. 모바일 대체 원본도 전체를 표시한다. */
 .root[data-guide-art] .artwork { background:color-mix(in oklab, var(--color-ink) 88%, var(--color-service-ink)); }
-.root[data-guide-art] .artwork img { object-position:right center; }
-@media (max-width:767px) {
-  .root[data-guide-art] .artwork img { object-position:center top; }
-}
+.root[data-guide-art] .artwork img { object-fit:contain; object-position:center; }
