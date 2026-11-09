@@ -132,12 +132,12 @@ it('F5: with nothing open or upcoming, past draws sit under 지난 럭키드로�
  expect(within(cards[0]).getByRole('link',{name:/결과 보기/})).toBeInTheDocument();
  expect(within(section).queryByRole('link',{name:/전체 보기/})).toBeNull();
 });
-it('E4 · F2 · jinny 5: the cheer block shows the favorite’s creator rank and the community numbers (icons, names for assistive tech); my hearts live in the wallet only; no send button, no stamp gauge',async()=>{
+it('E4 · F2: the cheer card shows the favorite’s creator rank, my hearts (the header’s number) and the community numbers, with no send button and no stamp gauge (the wallet has it)',async()=>{
  withFavorite();roadmapBody={passportId:uid(900),celebrityId:uid(901),hearts:3,pages:[{pageNo:1,slots:Array.from({length:9},(_,i)=>({slotNo:i+1,kind:null,state:i<4?'filled':'empty',stampId:null,clearedAt:null})),filled:4,claimable:false,claimed:false,locked:false,lockedReason:null}]};
  const view=render(<GroupBenefitsScreen locale='ko'/>);
  const card=await screen.findByRole('region',{name:'최애 응원'});
  await within(card).findByText('크리에이터 순위 3위');
- expect(card).not.toHaveTextContent('내 하트');expect(card).toHaveTextContent('125');expect(card).toHaveTextContent('795');expect(within(card).getByText('찐팬 수')).toBeInTheDocument();
+ expect(card).toHaveTextContent('내 하트');expect(card).toHaveTextContent('3');expect(card).toHaveTextContent('125');expect(card).toHaveTextContent('795');
  expect(within(card).getByRole('link',{name:/팬 순위 보기/})).toHaveAttribute('href','/bias-x?tab=fans&locale=ko');
  expect(within(card).queryByRole('progressbar')).toBeNull();expect(card).not.toHaveTextContent('다음 하트까지');
  expect(within(card).queryByRole('button',{name:/보내기|응원하러/})).toBeNull();
@@ -250,10 +250,12 @@ it('shows geometry placeholders only during initial reads and replaces them with
 
 
 
-it('F2: the wallet is two assets, their next steps and one action, with the rules behind 안내 and no help button',async()=>{
+it('감독 20:18: the wallet reads in two columns (points → ticket gauge → tickets + exchange; stamps → gauge → hearts), one big number, the rules behind 안내, no help button',async()=>{
  withFavorite();render(<GroupBenefitsScreen locale='ko'/>);const button=await screen.findByRole('button',{name:'광고 보고 교환하기'});
  expect(screen.queryByRole('radio')).toBeNull();expect(document.querySelector('fieldset')).toBeNull();
  const card=button.closest('section')!;expect(card).toHaveAttribute('data-wallet-card','stan');expect(card).toHaveTextContent('137P');expect(card).toHaveTextContent('응모권7장');expect(card).toHaveTextContent('교환 가능');
+ const order=[...card.querySelectorAll<HTMLElement>('[data-cell]')].map(cell=>cell.dataset.cell);expect(order).toEqual(['points','stamps','tickets','hearts']);
+ expect(card.querySelector('[data-cell="points"] [role="progressbar"]')).not.toBeNull();
  const hrefs=Object.fromEntries([...card.querySelectorAll<HTMLElement>('[data-cell]')].map(cell=>[cell.dataset.cell,cell.getAttribute('href')]));
  expect(hrefs).toEqual({points:'#stan-history',hearts:'/bias-x?tab=fans&locale=ko',tickets:'/my/raffles?locale=ko',stamps:'/passports?locale=ko'});
  expect(within(card).getByRole('link',{name:'안내'})).toHaveAttribute('href','/guide/dukjil?locale=ko');
@@ -411,8 +413,9 @@ it('H6: sends the mission rows and the heart cheer to the favorite chosen in the
 it('asks a viewer without a favorite to pick one in the heart cheer card, and guests to log in',async()=>{
  bias.value={status:'empty',options:[],selected:null,unverified:null,select:()=>{},retry:()=>{}};
  const view=render(<GroupBenefitsScreen locale='ko'/>);const picks=await screen.findAllByRole('link',{name:'최애 고르기'});
- // D2: every "choose" (status bar, wallet cheer cell, heart card) leads to choosing; none is a dead end.
- expect(picks.length).toBeGreaterThanOrEqual(3);for(const pick of picks)expect(pick).toHaveAttribute('href','/pages/groups?locale=ko');view.unmount();
+ // DS-D H1: choosing is offered once, in the cheer block (the lucky-draw empty line has no action); it leads to choosing.
+ expect(picks).toHaveLength(1);expect(picks[0].closest('#stan-cheer')).not.toBeNull();expect(picks[0]).toHaveAttribute('href','/pages/groups?locale=ko');
+ expect(document.getElementById('stan-lucky')!.querySelector('a,button')).toBeNull();view.unmount();
  bias.value={...bias.value,status:'guest'};auth.authenticated=false;render(<GroupBenefitsScreen locale='ko'/>);
  const guestPicks=await screen.findAllByRole('link',{name:'최애 고르기'});for(const pick of guestPicks)expect(pick.getAttribute('href')).toMatch(/^\/login\?/);
 });

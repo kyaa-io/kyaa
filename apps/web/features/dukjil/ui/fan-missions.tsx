@@ -4,10 +4,11 @@ import type { Route } from "next";
 import { useEffect, useId, useState, type ReactNode } from "react";
 import { Check } from "lucide-react";
 import { FanIcon } from "@/components/fan-ui/fan-icon";
-import { BadgeCheck, BellRing, CalendarCheck, CalendarClock, ChevronDown, CircleHelp, ClipboardList, Flag, Heart, LayoutGrid, MapPin, MessageCircle, PenLine, Radio, Send, Star, UserPlus } from "@/components/fan-ui/fan-icons";
+import { ChevronDown } from "@/components/fan-ui/fan-icons";
+import { BadgeCheck, LayoutGrid } from "lucide-react";
 import { FanTag } from "@/components/fan-ui/fan-tag";
-import type { ComponentProps, CSSProperties, MouseEvent } from "react";
-import { FanMissionFoldRow, FanMissionList, FanMissionRow } from "./fan-mission-row";
+import type { CSSProperties, MouseEvent } from "react";
+import { FanMissionFoldRow, FanMissionList, FanMissionRow, MissionArt } from "./fan-mission-row";
 import { activityLabel } from "@/features/dukjil-guide/ui/guide-copy";
 import { FanLockedValue } from "@/components/fan-ui/fan-locked-value";
 import { FanSkeleton } from "@/components/fan-ui/fan-skeleton";
@@ -29,7 +30,7 @@ import styles from "./fan-missions.module.css";
 import inkStyles from "@/components/fan-ui/fan-ink.module.css";
 
 type MissionKey = "checkin" | DukjilActionKey;
-type Mission = { key: MissionKey; label: string; art: ComponentProps<typeof FanIcon>["icon"]; href: string };
+type Mission = { key: MissionKey; label: string; art: string; href: string };
 
 const LEGACY_KEYS: readonly MissionKey[] = ["checkin", "post", "comment"];
 
@@ -47,30 +48,30 @@ export function FanMissions({ locale, slug, title, passportHref, proofHref, foot
   const pending = !guest && (state?.status === "loading" || (on && !state?.today && !state?.todayFailure));
   const t = (key: Parameters<typeof dukjilText>[1], values?: readonly unknown[]) => dukjilText(locale, key, values);
   const board = noPage ?? `/${slug}?tab=board&source=fans&locale=${locale}`, compose = noPage ?? `/${slug}?tab=board&source=fans&compose=1&locale=${locale}`, proof = noPage ?? proofHref, live = `/live?locale=${locale}`;
-  const checkinMission: Mission = { key: "checkin", label: t("dukjilTileAttendance"), art: CalendarCheck, href: `/my/wallet?view=attendance&locale=${locale}` };
+  const checkinMission: Mission = { key: "checkin", label: t("dukjilTileAttendance"), art: "daily-checkin", href: `/my/wallet?view=attendance&locale=${locale}` };
   const main: Mission[] = group ? [
     checkinMission,
-    { key: "post", label: t("dukjilTilePost"), art: PenLine, href: group.write },
-    { key: "comment", label: t("dukjilTileComment"), art: MessageCircle, href: group.comment },
-    { key: "proof", label: t("dukjilTileProof"), art: BadgeCheck, href: proofHref },
+    { key: "post", label: t("dukjilTilePost"), art: "post", href: group.write },
+    { key: "comment", label: t("dukjilTileComment"), art: "first-comment", href: group.comment },
+    { key: "proof", label: t("dukjilTileProof"), art: "proof", href: proofHref },
   ] : [
     checkinMission,
-    { key: "post", label: t("dukjilTilePost"), art: PenLine, href: compose },
-    { key: "comment", label: t("dukjilTileComment"), art: MessageCircle, href: board },
-    { key: "share", label: t("dukjilTileShare"), art: Send, href: noPage ?? `/${slug}?tab=certifications&share=1&locale=${locale}` },
-    { key: "invite", label: t("dukjilTileInvite"), art: UserPlus, href: `/my/invitations?locale=${locale}` },
-    { key: "proof", label: t("dukjilTileProof"), art: BadgeCheck, href: proof },
+    { key: "post", label: t("dukjilTilePost"), art: "post", href: compose },
+    { key: "comment", label: t("dukjilTileComment"), art: "first-comment", href: board },
+    { key: "share", label: t("dukjilTileShare"), art: "share", href: noPage ?? `/${slug}?tab=certifications&share=1&locale=${locale}` },
+    { key: "invite", label: t("dukjilTileInvite"), art: "invite", href: `/my/invitations?locale=${locale}` },
+    { key: "proof", label: t("dukjilTileProof"), art: "proof", href: proof },
   ];
   const more: Mission[] = all && !group ? [
-    { key: "reaction", label: activityLabel(locale, "reaction"), art: Heart, href: board },
-    { key: "quiz", label: activityLabel(locale, "quiz"), art: CircleHelp, href: noPage ?? `/c/${encodeURIComponent(slug)}/verify?locale=${locale}` },
-    { key: "subscription", label: activityLabel(locale, "subscription"), art: BellRing, href: proof },
-    { key: "live_reserve", label: activityLabel(locale, "live_reserve"), art: CalendarClock, href: live },
-    { key: "live_attend", label: activityLabel(locale, "live_attend"), art: Radio, href: live },
-    { key: "survey", label: activityLabel(locale, "survey"), art: ClipboardList, href: live },
-    { key: "mission", label: activityLabel(locale, "mission"), art: Flag, href: live },
-    { key: "event_checkin", label: activityLabel(locale, "event_checkin"), art: MapPin, href: noPage ?? `/${slug}?locale=${locale}` },
-    { key: "event_review", label: activityLabel(locale, "event_review"), art: Star, href: noPage ?? `/${slug}?locale=${locale}` },
+    { key: "reaction", label: activityLabel(locale, "reaction"), art: "first-like", href: board },
+    { key: "quiz", label: activityLabel(locale, "quiz"), art: "welcome", href: noPage ?? `/c/${encodeURIComponent(slug)}/verify?locale=${locale}` },
+    { key: "subscription", label: activityLabel(locale, "subscription"), art: "subscription", href: proof },
+    { key: "live_reserve", label: activityLabel(locale, "live_reserve"), art: "reservation", href: live },
+    { key: "live_attend", label: activityLabel(locale, "live_attend"), art: "attendance", href: live },
+    { key: "survey", label: activityLabel(locale, "survey"), art: "survey", href: live },
+    { key: "mission", label: activityLabel(locale, "mission"), art: "mission", href: live },
+    { key: "event_checkin", label: activityLabel(locale, "event_checkin"), art: "event-checkin", href: noPage ?? `/${slug}?locale=${locale}` },
+    { key: "event_review", label: activityLabel(locale, "event_review"), art: "event-review", href: noPage ?? `/${slug}?locale=${locale}` },
   ] : [];
   const missions = [...main, ...more];
   const checkin = checkinNumbers(state?.catalog);
@@ -104,10 +105,10 @@ export function FanMissions({ locale, slug, title, passportHref, proofHref, foot
         // D1 · F3: every row is the shared FanMissionRow (circle art · title · progress at the title's x · one fixed trailing column).
         // The trailing column holds one thing: the done tag, the check-in action, or the reward. A monthly cap (invite) is the reward alone.
         return <FanMissionRow key={mission.key} dataMission={mission.key} done={finished} href={href} onClick={onClick}
-          art={<FanIcon icon={mission.art} />}
+          art={<MissionArt src={`/images/stamps/ink-v1/${mission.art}.webp`} />}
           title={mission.label}
           detail={progress || undefined}
-          trailing={finished ? <FanTag tone="neutral" icon={<Check size={12} aria-hidden="true" />}>{dukjilText(locale, "missionDoneShort")}</FanTag>
+          trailing={finished ? <FanTag tone="fan" icon={<Check size={12} aria-hidden="true" />}>{dukjilText(locale, "missionDoneShort")}</FanTag>
             : checkinAction ? <span className={styles.rowAction} aria-hidden="true">{t("missionsCheckinAction")}</span>
             : on && points ? <EarnBadge variant="inline" className={styles.reward} locale={locale} points={points} remaining={guest ? null : remaining} remainingPer={period} /> : undefined} />;
       })}
@@ -135,12 +136,12 @@ export function FanMissions({ locale, slug, title, passportHref, proofHref, foot
     <div className={styles.folds} data-nudge={nudge ? "" : undefined}>
       <FanCollapsible open={todayOpen} trigger={() => null} className={styles.fold}><div id={todayId} data-missions-today="">{rowList(todayRows, true)}</div></FanCollapsible>
       {moreRows.length > 0 && <FanCollapsible persistKey="dukjil-missions:more" className={styles.fold}
-        trigger={({ triggerProps }) => <FanMissionFoldRow {...triggerProps} icon={<FanIcon icon={LayoutGrid} />}
+        trigger={({ triggerProps }) => <FanMissionFoldRow {...triggerProps} icon={<LayoutGrid strokeWidth={1.75} />}
           title={<><span>{t("missionsGroupMore")}</span>{morePoints ? <EarnBadge variant="inline" locale={locale} points={morePoints} /> : null}</>} meta={moreRows.length.toLocaleString(locale)} />}>
         {rowList(moreRows, true)}
       </FanCollapsible>}
       {state?.catalog?.rules.proof && <FanCollapsible persistKey="dukjil-missions:proof" className={styles.fold}
-        trigger={({ triggerProps }) => <FanMissionFoldRow {...triggerProps} icon={<FanIcon icon={BadgeCheck} />}
+        trigger={({ triggerProps }) => <FanMissionFoldRow {...triggerProps} icon={<BadgeCheck strokeWidth={1.75} />}
           title={<><span>{t("missionsGroupProof")}</span>{proofPoints ? <EarnBadge variant="inline" locale={locale} points={proofPoints} /> : null}</>} />}>
         <div className={styles.proofRows}><CertificationGrid variant="rows" locale={locale} slug={noPage ? "" : slug} guest={guest} fallbackHref={guest ? `/benefits?locale=${locale}` : proof} /></div>
       </FanCollapsible>}

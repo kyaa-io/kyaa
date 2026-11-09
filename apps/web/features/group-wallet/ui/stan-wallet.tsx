@@ -36,10 +36,10 @@ function Value({ locale, slot, size, unit, icon }: { locale: AppLocale; slot: St
   return <FanNumber value={slot} size={size} countUp locale={locale} unit={unit} icon={icon} className={size === "md" ? styles.stepNumber : undefined} />;
 }
 
-/** 덕질 wallet (feedback F2): the two assets (points, hearts) as big numbers, under each the step it becomes next
- *  (tickets with the points still needed, stamps with the slots left to the next heart), and the one wallet action.
- *  390: two columns with the action row below; 768+: a third 288px column holds the action. The rules live on the guide page (안내 ›), not in help buttons.
- *  Stamps are the stamped slots of the passport page being filled (n/9, the same number as MY); nine fill a page and a page is a heart. Numbers count up only when they change. */
+/** 덕질 wallet (감독 2026-11-09 20:18, 덕질 시안): two columns read the same way, top to bottom.
+ *  Left: points (the one big number) → the gauge to the next ticket → tickets, with the exchange (ad once, B13) in the same column.
+ *  Right: stamps n/9 → the nine-slot gauge → hearts (a full page becomes a heart by itself). No third column; 안내 › sits at the card's top end.
+ *  Stamps are the stamped slots of the passport page being filled (n/9, the same number as MY). Numbers count up only when they change. */
 export function StanWallet({ locale, state, stamps, hearts, links, className }: { locale: AppLocale; state: WalletCardState; stamps: StanSlot; hearts: StanSlot; links: { hearts: string }; className?: string }) {
   const w = walletCopy(locale), s = (key: Parameters<typeof dukjilText>[1], values?: unknown[]) => dukjilText(locale, key, values);
   const [open, setOpen] = useState(false);
@@ -57,25 +57,25 @@ export function StanWallet({ locale, state, stamps, hearts, links, className }: 
     <Cell cell="points" href="#stan-history">
       <span className={styles.label}>{w.points}</span>
       <span className={styles.value}><Value locale={locale} slot={points} size="xl" unit="P" icon={coin} /></span>
-    </Cell>
-    <Cell cell="hearts" href={links.hearts}>
-      <span className={styles.label}>{s("stanFlowHearts")}</span>
-      <span className={styles.value}><Value locale={locale} slot={hearts} size="xl" icon={<Heart size={20} strokeWidth={1.75} className={styles.heart} />} /></span>
-    </Cell>
-    <Cell cell="tickets" href={`/my/raffles?locale=${locale}`}>
-      <span className={styles.step}><span>{w.tickets}</span><Value locale={locale} slot={tickets} size="md" unit={locale === "ko" ? "장" : undefined} /><ChevronRight className={styles.next} size={16} aria-hidden="true" /></span>
       <span className={styles.progress}>{gaugeSlot(tickets, <FanGauge size="sm" className={styles.gauge} value={ready ? (affordable ? pointCost : state.points % pointCost) : 0} max={pointCost} label={s("walletNextTicket", [toNext.toLocaleString(locale)])} valueText={ticketText} />)}</span>
     </Cell>
     <Cell cell="stamps" href={`/passports?locale=${locale}`}>
-      <span className={styles.step}><span>{s("stanFlowStamps")}</span><Value locale={locale} slot={stamps} size="md" unit={`/${STAMPS_PER_HEART}`} /><ChevronRight className={styles.next} size={16} aria-hidden="true" /></span>
+      <span className={styles.label}>{s("stanFlowStamps")}</span>
+      <span className={styles.value}><Value locale={locale} slot={stamps} size="md" unit={`/${STAMPS_PER_HEART}`} /></span>
       <span className={styles.progress}>{gaugeSlot(stamps, <FanGauge size="sm" className={styles.gauge} segments={STAMPS_PER_HEART} value={pageFull ? STAMPS_PER_HEART : stampCount % STAMPS_PER_HEART} max={STAMPS_PER_HEART} label={nextHeartLabel(locale, stampCount)} valueText={stampText} />)}</span>
+    </Cell>
+    <Cell cell="tickets" href={`/my/raffles?locale=${locale}`}>
+      <span className={styles.step}><span>{w.tickets}</span><Value locale={locale} slot={tickets} size="md" unit={locale === "ko" ? "장" : undefined} /><ChevronRight className={styles.next} size={16} aria-hidden="true" /></span>
+    </Cell>
+    <Cell cell="hearts" href={links.hearts}>
+      <span className={styles.step}><span>{s("stanFlowHearts")}</span><Value locale={locale} slot={hearts} size="md" icon={<Heart size={16} strokeWidth={1.75} className={styles.heart} />} /><ChevronRight className={styles.next} size={16} aria-hidden="true" /></span>
     </Cell>
     <Link className={styles.guide} href={`/guide/dukjil?locale=${locale}` as Route}>{s("stanGuide")}<ChevronRight size={16} aria-hidden="true" /></Link>
     <div className={styles.action}>
       {state.kind === "guest" ? state.action
         : state.kind === "loading" ? <FanSkeleton shape="block" width="100%" height={44} />
         : state.kind === "failed" ? (state.retry ? <FanAction fullWidth onClick={state.retry}>{w.retry}</FanAction> : null)
-        : <><FanAction variant="secondary" fullWidth disabled={!affordable} onClick={() => setOpen(true)}>{rewardedExchangeCopy(locale).action}</FanAction><WalletExchangeDialog locale={locale} open={open} onClose={() => setOpen(false)} /></>}
+        : <><FanAction variant="secondary" fullWidth disabled={!affordable} onClick={() => setOpen(true)} ariaLabel={rewardedExchangeCopy(locale).action}><span className={styles.longLabel}>{rewardedExchangeCopy(locale).action}</span><span className={styles.shortLabel} aria-hidden="true">{locale === "ko" ? "광고 보고 교환" : rewardedExchangeCopy(locale).action}</span></FanAction><WalletExchangeDialog locale={locale} open={open} onClose={() => setOpen(false)} /></>}
     </div>
   </section>;
 }

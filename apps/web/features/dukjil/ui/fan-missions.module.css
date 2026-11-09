@@ -12,23 +12,20 @@
 .bar>i[data-done=true]{background:var(--dukjil-ink-deep)}
 .count{display:inline-flex;flex:none;align-items:center;gap:calc(var(--space-1) / 2);font-size:var(--fan-metadata-size);line-height:18px;font-weight:700;color:var(--color-muted);font-variant-numeric:tabular-nums}
 .gauge{flex:1;min-width:0}
-.gauge>span:last-child{line-height:18px}
+.gauge>span:last-child{line-height:18px;min-width:5ch;text-align:end}
 @media (min-width:1024px){.progress{max-width:240px}}
 .footer{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:0 var(--space-3)}
 .footer>a{padding-inline:0}
 
 /* 덕질 탭(F3): today's rows first, then 그 밖의 미션·인증 folded behind heads drawn as mission rows, all in one card. */
-/* jinny 2·3 (2026-11-09): no island card. The groups are rows between hairlines at the section's edges; the rows start at x 0 like the heading.
-   Pink stays with the one action (출석하기) and the wallet above: the gauges here are ink on a white track, the done tag is neutral. */
-.folds{border-block:1px solid var(--color-line);background:var(--color-surface)}
-.folds [data-fan-mission-row]{padding-inline:0}
-.folds .gauge [role="progressbar"]{background:var(--color-surface)}
-.folds .gauge [role="progressbar"]>span{background:var(--color-ink)}
+.folds{border:1px solid var(--color-line);border-radius:var(--radius-control);background:var(--color-surface);overflow:hidden}
 .fold+.fold{border-top:1px solid var(--color-line)}
 .fold .cards{border:0;border-radius:0}
 .fold[data-state] .cards,.proofRows{border-top:1px solid var(--color-line-subtle)}
-/* The check-in action: the one primary pill on the screen, inside the trailing column (32 high). */
-.rowAction{display:inline-flex;align-items:center;justify-content:center;box-sizing:border-box;max-width:100%;min-height:32px;padding:0 var(--space-3);border-radius:var(--radius-pill);background:var(--color-accent);color:var(--color-surface);font-size:var(--fan-metadata-size);line-height:16px;font-weight:var(--fan-item-title-weight);text-align:center;overflow-wrap:anywhere}
+/* The check-in action: the one primary action on the screen, inside the trailing column. */
+.rowAction{display:inline-flex;align-items:center;justify-content:center;box-sizing:border-box;max-width:100%;min-height:var(--fan-action-primary-height);padding:0 var(--space-3);border-radius:var(--radius-action);background:var(--color-accent);color:var(--color-surface);font-size:var(--fan-action-emphasis-size);line-height:20px;font-weight:var(--fan-item-title-weight);text-align:center;overflow-wrap:anywhere}
+/* 게이트 A2: the action is 44 (390) / 48 (1024+); the rows keep 64 by giving the padding what the action takes. */
+.folds [data-fan-mission-row]{padding-block:calc((var(--space-16) - var(--fan-action-primary-height)) / 2)}
 @keyframes missionNudge{0%,100%{opacity:1}50%{opacity:.7}}
 .folds[data-nudge] li[data-done="false"] .reward{animation:missionNudge var(--motion-count, 400ms) var(--motion-easing, ease) 3}
 @media (prefers-reduced-motion:reduce){.folds[data-nudge] li .reward{animation:none}}
@@ -38,3 +35,5 @@
 .todayChevron{flex:none;transition:transform var(--motion-control) var(--motion-easing)}
 .todayToggle[aria-expanded="true"] .todayChevron{transform:rotate(180deg)}
 @media (prefers-reduced-motion:reduce){.todayChevron{transition:none}}
+/* Today's fold opens right under the card's top line: no second line there. */
+.folds>.fold:first-child .cards{border-top:0}

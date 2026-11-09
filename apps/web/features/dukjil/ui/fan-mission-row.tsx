@@ -7,7 +7,7 @@ import { FanCollapsibleTrigger, type FanCollapsibleTriggerProps } from "@/compon
 import styles from "./fan-mission-row.module.css";
 
 /** feedback D1 · F3: the one row of every 덕질 list — today's missions, more missions, certifications, the folded heads and the 오늘의 덕질 empty row.
- * Same box everywhere: a 40 column with one line icon (20, no circle behind it, jinny 1) · title (one line 22) with an optional line below at the same x (progress or state) ·
+ * Same box everywhere: a 40 circle with the art (28) · title (one line 22) with an optional line below at the same x (progress or state) ·
  * one fixed trailing column (96, 120 from 1024px) holding one thing: `+NP`, a short action or the done tag. No arrow. Height 64, padding 12. */
 export function FanMissionRow({ href, art, title, detail, trailing, onClick, status, dataMission, done }: {
   href: string; art?: ReactNode; title: ReactNode; detail?: ReactNode; trailing?: ReactNode;
@@ -44,3 +44,7 @@ export function FanMissionList({ framed = false, children, className, ...data }:
   return <ul className={[styles.list, framed ? styles.framed : "", className ?? ""].filter(Boolean).join(" ")} {...data}>{children}</ul>;
 }
 
+/** Stamp art image for a row (decorative), 28 inside the 40 circle. */
+export function MissionArt({ src }: { src: string }) {
+  return <img src={src} alt="" width={28} height={28} loading="lazy" />;
+}

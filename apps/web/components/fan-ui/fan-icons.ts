@@ -1,2 +1,2 @@
 // 5차 아이콘 세트(8장 ⑫, N25): 화면은 lucide 를 직접 가져오지 않고 여기서 받아 FanIcon 에 넘긴다. 쓰는 아이콘만 이름 그대로 다시 내보낸다.
-export { BadgeCheck, Bell, BellRing, BookOpen, CalendarCheck, CalendarClock, ChevronDown, ChevronRight, ChevronUp, CircleAlert, CircleHelp, CircleUserRound, ClipboardList, Coins, Flag, Heart, Home, House, LayoutGrid, MapPin, MessageCircle, Minus, PenLine, Plus, Radio, Send, Star, UserPlus, UsersRound } from "lucide-react";
+export { Bell, BookOpen, ChevronDown, ChevronRight, ChevronUp, CircleAlert, CircleUserRound, Coins, Heart, Home, House, Minus, Plus, Star, UsersRound } from "lucide-react";
