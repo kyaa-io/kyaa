@@ -54,7 +54,10 @@ export function CommunityStampCollection({ locale, creator, resource, creatorNam
 }
 function OwnerCollection({ locale, creator, resource, creatorNames }: { locale: Locale; creator?: string; resource: Resource; creatorNames?: Readonly<Record<string, string>> }) {
   const auth = usePrivy();
-  const [selected, setSelected] = useState<CommunityStamp | null>(null);
+  const [selected, setSelected] = useState<{ stamp: CommunityStamp; from: "card" | "history" } | null>(null);
+  const [historyOpen, setHistoryOpen] = useState(false);
+  const [historyFocus, setHistoryFocus] = useState(0);
+  const history = useRef<HTMLDetailsElement>(null);
   const [inviteOpen, setInviteOpen] = useState(false);
   const [invite, setInvite] = useState<{ code: string; redeemed: boolean } | null>(null);
   const [code, setCode] = useState("");
@@ -63,6 +66,11 @@ function OwnerCollection({ locale, creator, resource, creatorNames }: { locale: 
   const [failed, setFailed] = useState(false);
   const alive = useRef(true);
   useEffect(() => { alive.current = true; return () => { alive.current = false; }; }, []);
+  useEffect(() => {
+    if (!historyFocus) return;
+    history.current?.scrollIntoView({ block: "start" });
+    history.current?.querySelector("summary")?.focus();
+  }, [historyFocus]);
   const stamps = resource.state.status === "ready" ? resource.state.data.stamps : [];
   const visible = stamps.filter(stamp => !creator || stamp.celebritySlug === creator);
   const kinds = AVAILABLE_COMMUNITY_STAMPS.filter(kind => !creator || COMMUNITY_STAMPS[kind].scope === "creator");
@@ -99,7 +107,7 @@ function OwnerCollection({ locale, creator, resource, creatorNames }: { locale: 
         return <li className={styles.row} data-earned={!!stamp} key={kind}>
           <CommunityStampArtwork kind={kind} locale={locale} className={styles.art} decorative/>
           <span className={styles.rowName}><strong>{info[locale]}</strong>{stamp && <span className={styles.state}><Check aria-hidden="true"/>{locale === "ko" ? "획득" : translate(locale, localizedMessages.ma5f24c183a36, "Earned")}</span>}</span>
-          {stamp ? <div className={styles.cardActions}><button className={styles.action} onClick={() => setSelected(stamp)}>{locale === "ko" ? "스탬프 보기" : translate(locale, localizedMessages.mc4481ae2313e, "View Stamp")}</button>{kind === "share" && creator && <SharePassport quiet creator={{ slug: creator, name: creator }} locale={locale}/>}</div> : kind === "welcome" ? <button className={styles.action} disabled={busy} onClick={() => void run("welcome")}>{locale === "ko" ? "가입 스탬프 받기" : translate(locale, localizedMessages.m41ade7763a1c, "Get welcome Stamp")}</button> : kind === "invite" ? <button className={styles.action} disabled={busy} onClick={() => { setInviteOpen(true); void run("invite-code"); }}>{locale === "ko" ? "친구 초대하기" : translate(locale, localizedMessages.ma5023c1cc581, "Invite a friend")}</button> : kind === "share" && creator ? <SharePassport quiet creator={{ slug: creator, name: creator }} locale={locale}/> : <Link className={styles.action} href={href as Route}>{kind === "daily_checkin" ? (locale === "ko" ? "출석하러 가기" : translate(locale, localizedMessages.md29cb19a1b1d, "Check in")) : kind === "share" ? (locale === "ko" ? "패스포트 고르기" : translate(locale, localizedMessages.m3442db55dbf6, "Choose a Passport")) : (locale === "ko" ? "댓글 남기기" : translate(locale, localizedMessages.m2e60da1bfeff, "Leave a comment"))}</Link>}
+          {stamp ? <div className={styles.cardActions}><button className={styles.action} onClick={() => setSelected({ stamp, from: "card" })}>{locale === "ko" ? "스탬프 보기" : translate(locale, localizedMessages.mc4481ae2313e, "View Stamp")}</button>{kind === "share" && creator && <SharePassport quiet creator={{ slug: creator, name: creator }} locale={locale}/>}</div> : kind === "welcome" ? <button className={styles.action} disabled={busy} onClick={() => void run("welcome")}>{locale === "ko" ? "가입 스탬프 받기" : translate(locale, localizedMessages.m41ade7763a1c, "Get welcome Stamp")}</button> : kind === "invite" ? <button className={styles.action} disabled={busy} onClick={() => { setInviteOpen(true); void run("invite-code"); }}>{locale === "ko" ? "친구 초대하기" : translate(locale, localizedMessages.ma5023c1cc581, "Invite a friend")}</button> : kind === "share" && creator ? <SharePassport quiet creator={{ slug: creator, name: creator }} locale={locale}/> : <Link className={styles.action} href={href as Route}>{kind === "daily_checkin" ? (locale === "ko" ? "출석하러 가기" : translate(locale, localizedMessages.md29cb19a1b1d, "Check in")) : kind === "share" ? (locale === "ko" ? "패스포트 고르기" : translate(locale, localizedMessages.m3442db55dbf6, "Choose a Passport")) : (locale === "ko" ? "댓글 남기기" : translate(locale, localizedMessages.m2e60da1bfeff, "Leave a comment"))}</Link>}
         </li>;
       })}</ul>
       {!creator && earned("invite") && !inviteOpen && <button className={styles.action} onClick={() => { setInviteOpen(true); void run("invite-code"); }}>{locale === "ko" ? "내 초대코드" : translate(locale, localizedMessages.me2bf91513187, "My invite code")}</button>}
@@ -109,11 +117,18 @@ function OwnerCollection({ locale, creator, resource, creatorNames }: { locale: 
       </div>}
     </>}
     {message && <p role={failed ? "alert" : "status"} className={`${styles.status} ${failed ? styles.error : ""}`}>{message}</p>}
-    {visible.length > 0 && <details className={styles.history}><summary>{passportBookText(locale, "communityHistory")} · {visible.length}</summary><ul>{visible.map(stamp => <li key={stamp.id}><button onClick={() => setSelected(stamp)}><CommunityStampArtwork kind={stamp.kind} locale={locale} size={48} decorative/><span><strong>{communityStampLabel(stamp.kind, locale)}</strong><small>{stamp.celebritySlug && creatorNames?.[stamp.celebritySlug] ? `${creatorNames[stamp.celebritySlug]} · ` : ""}{new Intl.DateTimeFormat(locale, { calendar: "gregory", timeZone:"Asia/Seoul", year:"numeric",month:"short",day:"numeric" }).format(new Date(stamp.issuedAt))}</small></span></button></li>)}</ul></details>}
-    {selected && <StampDialog stamp={visible.find(stamp => stamp.id === selected.id) ?? selected} locale={locale} close={() => setSelected(null)}/>}
+    {visible.length > 0 && <details ref={history} className={styles.history} open={historyOpen} onToggle={event => setHistoryOpen(event.currentTarget.open)}><summary>{passportBookText(locale, "communityHistory")} · {visible.length}</summary><ul>{visible.map(stamp => <li key={stamp.id}><button onClick={() => setSelected({ stamp, from: "history" })}><CommunityStampArtwork kind={stamp.kind} locale={locale} size={48} decorative/><span><strong>{communityStampLabel(stamp.kind, locale)}</strong><small>{stamp.celebritySlug && creatorNames?.[stamp.celebritySlug] ? `${creatorNames[stamp.celebritySlug]} · ` : ""}{new Intl.DateTimeFormat(locale, { calendar: "gregory", timeZone:"Asia/Seoul", year:"numeric",month:"short",day:"numeric" }).format(new Date(stamp.issuedAt))}</small><small>{mintLabel(stamp, locale)}</small></span></button></li>)}</ul></details>}
+    {selected && <StampDialog stamp={visible.find(stamp => stamp.id === selected.stamp.id) ?? selected.stamp} locale={locale} close={() => setSelected(null)} showHistory={selected.from === "card" ? () => { setSelected(null); setHistoryOpen(true); setHistoryFocus(count => count + 1); } : undefined}/>}
   </section>;
 }
-function StampDialog({ stamp, locale, close }: { stamp: CommunityStamp; locale: Locale; close: () => void }) {
+function mintPhase(stamp: CommunityStamp) {
+  return stamp.mint.status === "minted" && stamp.mint.txHash ? "done" : stamp.mint.status === "permanent_failure" || stamp.mint.status === "minted" ? "check" : "pending";
+}
+function mintLabel(stamp: CommunityStamp, locale: Locale) {
+  const phase = mintPhase(stamp);
+  return phase === "done" ? (locale === "ko" ? "등록 완료" : translate(locale, localizedMessages.m5b1e0c7a9d31, "Registered")) : phase === "check" ? (locale === "ko" ? "확인 필요" : translate(locale, localizedMessages.m7c2d4f8e1a65, "Needs review")) : (locale === "ko" ? "등록 중" : translate(locale, localizedMessages.m9e3a6b1d5f42, "Registering"));
+}
+function StampDialog({ stamp, locale, close, showHistory }: { stamp: CommunityStamp; locale: Locale; close: () => void; showHistory?: () => void }) {
   const dialog = useRef<HTMLDialogElement>(null);
   useEffect(() => {
     const node = dialog.current;
@@ -121,7 +136,7 @@ function StampDialog({ stamp, locale, close }: { stamp: CommunityStamp; locale: 
     node?.showModal();
     return () => { node?.close(); if (trigger instanceof HTMLElement && trigger.isConnected) trigger.focus(); };
   }, []);
-  const registrationComplete = stamp.mint.status === "minted" && !!stamp.mint.txHash;
-  const mintText = registrationComplete ? (locale === "ko" ? "기록 등록이 완료됐어요." : translate(locale, localizedMessages.mb2d78c607ac6, "Record registration is complete.")) : stamp.mint.status === "permanent_failure" || stamp.mint.status === "minted" ? (locale === "ko" ? "기록 등록 상태를 확인해 주세요." : translate(locale, localizedMessages.ma9cc402faf99, "Check the record registration status.")) : (locale === "ko" ? "기록을 등록하고 있어요." : translate(locale, localizedMessages.mb7d9b53a9daa, "Registering your record."));
-  return <dialog ref={dialog} className={styles.dialog} onCancel={close} onClose={close} aria-labelledby="community-stamp-detail-title"><button className={styles.close} onClick={close} aria-label={locale === "ko" ? "닫기" : translate(locale, localizedMessages.m3fe0e05ee0cd, "Close")}><X aria-hidden="true"/></button><CommunityStampArtwork kind={stamp.kind} locale={locale} className={styles.art} size={168} decorative/><h2 id="community-stamp-detail-title">{communityStampLabel(stamp.kind, locale)}</h2><p>{locale === "ko" ? "받은 날" : translate(locale, localizedMessages.m73886047197c, "Earned on")} · <time dateTime={stamp.issuedAt}>{new Intl.DateTimeFormat(locale, { calendar: "gregory", year:"numeric",month:"long",day:"numeric",timeZone:"Asia/Seoul" }).format(new Date(stamp.issuedAt))}</time></p><p>{mintText}</p>{registrationComplete && <a className={styles.action} href={`https://sepolia-explorer.giwa.io/tx/${stamp.mint.txHash}`} target="_blank" rel="noopener noreferrer">{locale === "ko" ? "등록 기록 보기" : translate(locale, localizedMessages.ma33046b6d7ff, "View registration record")}</a>}</dialog>;
+  const phase = mintPhase(stamp);
+  const mintText = phase === "done" ? (locale === "ko" ? "기록 등록이 완료됐어요." : translate(locale, localizedMessages.mb2d78c607ac6, "Record registration is complete.")) : phase === "check" ? (locale === "ko" ? "기록 등록 상태를 확인해 주세요." : translate(locale, localizedMessages.ma9cc402faf99, "Check the record registration status.")) : (locale === "ko" ? "기록을 등록하고 있어요." : translate(locale, localizedMessages.mb7d9b53a9daa, "Registering your record."));
+  return <dialog ref={dialog} className={styles.dialog} onCancel={close} onClose={close} aria-labelledby="community-stamp-detail-title"><button className={styles.close} onClick={close} aria-label={locale === "ko" ? "닫기" : translate(locale, localizedMessages.m3fe0e05ee0cd, "Close")}><X aria-hidden="true"/></button><CommunityStampArtwork kind={stamp.kind} locale={locale} className={styles.art} size={168} decorative/><h2 id="community-stamp-detail-title">{communityStampLabel(stamp.kind, locale)}</h2><p>{locale === "ko" ? "받은 날" : translate(locale, localizedMessages.m73886047197c, "Earned on")} · <time dateTime={stamp.issuedAt}>{new Intl.DateTimeFormat(locale, { calendar: "gregory", year:"numeric",month:"long",day:"numeric",timeZone:"Asia/Seoul" }).format(new Date(stamp.issuedAt))}</time></p><p>{mintText}</p>{showHistory && <button className={styles.action} onClick={showHistory}>{locale === "ko" ? "등록 기록 보기" : translate(locale, localizedMessages.ma33046b6d7ff, "View registration record")}</button>}{phase === "done" && <a className={styles.quietLink} href={`https://sepolia-explorer.giwa.io/tx/${stamp.mint.txHash}`} target="_blank" rel="noopener noreferrer">{locale === "ko" ? "탐색기에서 확인" : translate(locale, localizedMessages.mb4f8a2c6e903, "View on explorer")}</a>}</dialog>;
 }

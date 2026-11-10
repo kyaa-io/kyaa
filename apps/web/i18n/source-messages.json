@@ -13931,6 +13931,30 @@
     "source": "features/community-stamps/ui/community-stamp-collection",
     "id": "features/community-stamps/ui/community-stamp-collection:inline.mf2fbd77ceb3c"
   },
+  "m5b1e0c7a9d31": {
+    "en": "Registered",
+    "ko": "등록 완료",
+    "source": "features/community-stamps/ui/community-stamp-collection",
+    "id": "features/community-stamps/ui/community-stamp-collection:inline.m5b1e0c7a9d31"
+  },
+  "m7c2d4f8e1a65": {
+    "en": "Needs review",
+    "ko": "확인 필요",
+    "source": "features/community-stamps/ui/community-stamp-collection",
+    "id": "features/community-stamps/ui/community-stamp-collection:inline.m7c2d4f8e1a65"
+  },
+  "m9e3a6b1d5f42": {
+    "en": "Registering",
+    "ko": "등록 중",
+    "source": "features/community-stamps/ui/community-stamp-collection",
+    "id": "features/community-stamps/ui/community-stamp-collection:inline.m9e3a6b1d5f42"
+  },
+  "mb4f8a2c6e903": {
+    "en": "View on explorer",
+    "ko": "탐색기에서 확인",
+    "source": "features/community-stamps/ui/community-stamp-collection",
+    "id": "features/community-stamps/ui/community-stamp-collection:inline.mb4f8a2c6e903"
+  },
   "m4ea3e8203ad1": {
     "en": "You can’t use your own code.",
     "ko": "내 코드는 입력할 수 없어요.",

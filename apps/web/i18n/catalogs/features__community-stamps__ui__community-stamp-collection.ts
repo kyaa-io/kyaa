@@ -469,6 +469,54 @@ export const messages = {
     ru: "Просмотреть запись о выдаче"
 
   },
+  "m5b1e0c7a9d31": {
+    "ja": "登録済み",
+    "zh-Hans": "已登记",
+    "zh-Hant": "已登記",
+    "es": "Registrado",
+    "id": "Terdaftar",
+    "vi": "Đã đăng ký",
+    "th": "ลงทะเบียนแล้ว",
+    "pt": "Registrado",
+    "fr": "Enregistré",
+    ru: "Зарегистрировано"
+  },
+  "m7c2d4f8e1a65": {
+    "ja": "要確認",
+    "zh-Hans": "需要确认",
+    "zh-Hant": "需要確認",
+    "es": "Requiere revisión",
+    "id": "Perlu dicek",
+    "vi": "Cần kiểm tra",
+    "th": "ต้องตรวจสอบ",
+    "pt": "Requer verificação",
+    "fr": "À vérifier",
+    ru: "Требует проверки"
+  },
+  "m9e3a6b1d5f42": {
+    "ja": "登録中",
+    "zh-Hans": "登记中",
+    "zh-Hant": "登記中",
+    "es": "Registrando",
+    "id": "Sedang didaftarkan",
+    "vi": "Đang đăng ký",
+    "th": "กำลังลงทะเบียน",
+    "pt": "Registrando",
+    "fr": "Enregistrement en cours",
+    ru: "Регистрируется"
+  },
+  "mb4f8a2c6e903": {
+    "ja": "エクスプローラーで確認",
+    "zh-Hans": "在浏览器中查看",
+    "zh-Hant": "在瀏覽器中查看",
+    "es": "Ver en el explorador",
+    "id": "Lihat di explorer",
+    "vi": "Xem trên trình khám phá",
+    "th": "ดูใน Explorer",
+    "pt": "Ver no explorador",
+    "fr": "Voir sur l’explorateur",
+    ru: "Посмотреть в обозревателе"
+  },
   "m4ea3e8203ad1": {
     "ja": "自分のコードは使用できません。",
     "zh-Hans": "不能使用自己的代码。",

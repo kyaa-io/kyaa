@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, within } from "@testing-library/react";
 import { beforeEach, expect, it, vi } from "vitest";
 import { APP_LOCALES } from "@/i18n/locales";
 import { AVAILABLE_COMMUNITY_STAMPS, COMMUNITY_STAMPS } from "../domain/community-stamps";
@@ -9,6 +9,7 @@ vi.mock("@privy-io/react-auth", () => ({ usePrivy: () => ({ ready: true, authent
 beforeEach(() => {
   HTMLDialogElement.prototype.showModal = vi.fn();
   HTMLDialogElement.prototype.close = vi.fn();
+  Element.prototype.scrollIntoView = vi.fn();
 });
 
 it("offers owned Stamps instead of an endless retry for an unavailable creator, while retaining network retry", () => {
@@ -51,16 +52,17 @@ it("keeps one stamp number on the page by leaving the count to the earned histor
 });
 
 it.each([
-  ["queued", "기록을 등록하고 있어요."],
-  ["processing", "기록을 등록하고 있어요."],
-  ["retryable", "기록을 등록하고 있어요."],
-  ["permanent_failure", "기록 등록 상태를 확인해 주세요."],
-  ["minted", "기록 등록이 완료됐어요."],
-] as const)("distinguishes the %s registration status from the earned Stamp", (status, expected) => {
+  ["queued", "기록을 등록하고 있어요.", "등록 중"],
+  ["processing", "기록을 등록하고 있어요.", "등록 중"],
+  ["retryable", "기록을 등록하고 있어요.", "등록 중"],
+  ["permanent_failure", "기록 등록 상태를 확인해 주세요.", "확인 필요"],
+  ["minted", "기록 등록이 완료됐어요.", "등록 완료"],
+] as const)("distinguishes the %s registration status from the earned Stamp", (status, expected, label) => {
   const txHash = status === "minted" ? `0x${"a".repeat(64)}` : null;
   const stamp = { id: "11111111-1111-4111-8111-111111111111", kind: "first_comment" as const, celebritySlug: "elina", issuedAt: "2026-10-09T00:00:00.000Z", mint: { status, txHash, tokenId: status === "minted" ? "42" : null } };
   render(<CommunityStampCollection locale="ko" creator="elina" resource={{ state: { status: "ready", data: { stamps: [stamp], today: "2026-10-09" } }, retry: vi.fn(), replaceData: vi.fn(), refreshFailed: false }} />);
 
+  expect(screen.getByText(label)).toBeInTheDocument();
   fireEvent.click(screen.getByRole("button", { name: "스탬프 보기" }));
   expect(screen.getByText(expected)).toBeInTheDocument();
 });
@@ -72,7 +74,42 @@ it("does not claim registration is complete when a minted Stamp has no transacti
   fireEvent.click(screen.getByRole("button", { name: "스탬프 보기" }));
   expect(screen.getByText("기록 등록 상태를 확인해 주세요.")).toBeInTheDocument();
   expect(screen.queryByText("기록 등록이 완료됐어요.")).not.toBeInTheDocument();
+  expect(screen.getByText("확인 필요")).toBeInTheDocument();
+  expect(screen.queryByRole("link", { name: "탐색기에서 확인" })).not.toBeInTheDocument();
+});
+
+const mintedStamp = { id: "11111111-1111-4111-8111-111111111111", kind: "first_comment" as const, celebritySlug: "elina", issuedAt: "2026-10-09T00:00:00.000Z", mint: { status: "minted" as const, txHash: `0x${"a".repeat(64)}`, tokenId: "42" } };
+const mintedResource = { state: { status: "ready" as const, data: { stamps: [mintedStamp], today: "2026-10-09" } }, retry: vi.fn(), replaceData: vi.fn(), refreshFailed: false };
+
+it("opens the in-page record list from the Stamp detail without leaving the app", () => {
+  const view = render(<CommunityStampCollection locale="ko" creator="elina" resource={mintedResource}/>);
+  const details = view.container.querySelector("details")!;
+  expect(details.open).toBe(false);
+
+  fireEvent.click(screen.getByRole("button", { name: "스탬프 보기" }));
   expect(screen.queryByRole("link", { name: "등록 기록 보기" })).not.toBeInTheDocument();
+  fireEvent.click(screen.getByRole("button", { name: "등록 기록 보기", hidden: true }));
+
+  expect(screen.queryByRole("button", { name: "등록 기록 보기" })).not.toBeInTheDocument();
+  expect(details.open).toBe(true);
+  expect(Element.prototype.scrollIntoView).toHaveBeenCalled();
+  expect(document.activeElement).toBe(details.querySelector("summary"));
+  expect(within(details).getByText("등록 완료")).toBeInTheDocument();
+});
+
+it("keeps the explorer as a secondary link only for a registered Stamp and hides the shortcut when opened from the list", () => {
+  const view = render(<CommunityStampCollection locale="ko" creator="elina" resource={mintedResource}/>);
+  fireEvent.click(screen.getByRole("button", { name: "스탬프 보기" }));
+  const link = screen.getByRole("link", { name: "탐색기에서 확인", hidden: true });
+  expect(link).toHaveAttribute("href", `https://sepolia-explorer.giwa.io/tx/${mintedStamp.mint.txHash}`);
+  expect(link).toHaveAttribute("target", "_blank");
+  expect(link).toHaveAttribute("rel", "noopener noreferrer");
+
+  fireEvent.click(screen.getByRole("button", { name: "닫기", hidden: true }));
+  const details = view.container.querySelector("details")!;
+  fireEvent.click(within(details).getByRole("button"));
+  expect(screen.queryByRole("button", { name: "등록 기록 보기" })).not.toBeInTheDocument();
+  expect(screen.getByRole("link", { name: "탐색기에서 확인", hidden: true })).toBeInTheDocument();
 });
 
 it("shows the creator display name, not the slug, in the earned history and omits it when no name is known", () => {
