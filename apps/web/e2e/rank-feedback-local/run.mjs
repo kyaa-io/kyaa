@@ -60,7 +60,7 @@ try {
 
   // Sign in through the normal development Test Account UI, without exporting auth storage.
   await card().locator('[data-row="fan-rank"] a').first().click();
-  await page.getByRole('button', { name: 'Test Account 이메일로 계속하기' }).click();
+  await page.getByRole('button', { name: /^(?:Test Account 이메일로 계속하기|Continue with Test Account email)$/ }).click();
   const accounts = JSON.parse(await fs.readFile(path.join(os.homedir(), '.kyaa-dev-test-accounts/accounts.json'), 'utf8'));
   await page.getByRole('textbox', { name: 'Submit', exact: true }).fill(accounts['dev-fan-3'].email);
   await page.getByRole('textbox', { name: 'Submit', exact: true }).press('Enter');
