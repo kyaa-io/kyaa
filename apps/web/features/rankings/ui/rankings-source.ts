@@ -81,6 +81,7 @@ export const rankingsSource = {
   rkToFirst: { ko: "1위까지 {0}", en: "{0} to #1" },
   rkIsFirst: { ko: "현재 1위", en: "Now #1" },
   rkTiedFirst: { ko: "1위와 동점", en: "Tied for #1" },
+  rkPanelGap: { ko: "1위까지", en: "To #1" },
   rkPanelToday: { ko: "오늘", en: "Today" },
   rkPanelJjinfan: { ko: "찐팬", en: "True fans" },
   rkPanelFavorite: { ko: "최애", en: "Favorite" },

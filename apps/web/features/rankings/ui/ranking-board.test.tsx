@@ -72,7 +72,7 @@ it("keeps the 찐팬 100 tag on the creator row and counts hearts", async () => 
   expect(row.textContent).toContain("찐팬 100 도전 중");
 });
 
-it("a row reads movement, today's gain and the way to first place; the first row says so", async () => {
+it("a row is one line: movement beside the name, LIVE, the value; today's gain and the way to first place are left to the opened row", async () => {
   stubRows(
     [], [
       creatorRow(1, { name: "일등", hearts: 12345, delta: 2, dayGain: 125, liveNow: true }),
@@ -85,21 +85,21 @@ it("a row reads movement, today's gain and the way to first place; the first row
   await inRow("일등");
   const row = (name: string) => view.container.querySelector(`li[data-row='creator-rank']:has([title='${name}'])`) as HTMLElement;
   expect(within(row("일등")).getByLabelText("2계단 올라감")).toBeInTheDocument();
-  expect(row("일등").textContent).toContain("오늘 +125");
   expect(within(row("일등")).getByRole("img", { name: "일등 LIVE 중" })).toBeInTheDocument();
-  expect(within(row("일등")).getByText("현재 1위")).toBeInTheDocument();
   expect(within(row("일등")).getByLabelText("하트 12,345개").textContent).toContain("1.2만");
   expect(within(row("이등")).getByLabelText("1계단 내려감")).toBeInTheDocument();
-  expect(within(row("이등")).getByText("1위와 동점")).toBeInTheDocument();
+  expect([...view.container.querySelectorAll("[data-row]")].map((row) => row.textContent).join(" ")).not.toMatch(/오늘|1위까지|현재 1위|1위와 동점/);
   expect(row("삼등").querySelector("[data-delta-cell]")).toBeNull();
-  expect(row("삼등").textContent).not.toContain("오늘");
   expect(row("이등").textContent).not.toContain("오늘");
   expect(row("일등").querySelector("[data-icon='heart']")).not.toBeNull();
-  expect(within(row("삼등")).getByText(/1위까지/)).toBeInTheDocument();
+  fireEvent.click(row("삼등").querySelector("button")!);
+  expect(row("삼등").querySelector("[data-rank-panel]")!.textContent).toContain("1위까지12,245");
+  expect(row("삼등").querySelector("[data-rank-panel]")!.textContent).not.toContain("오늘");
   expect(row("새얼굴").textContent).not.toContain("신규");
   expect(row("새얼굴").querySelector("[data-direction='new']")).toBeNull();
   expect(row("새얼굴").querySelector("[data-direction]")).toBeNull();
-  expect(row("새얼굴").textContent).toContain("오늘 −2");
+  fireEvent.click(row("새얼굴").querySelector("button")!);
+  expect(row("새얼굴").querySelector("[data-rank-panel]")!.textContent).toContain("오늘−2");
 });
 
 it("opens one row at a time with the action to the page, and closes it with the same row", async () => {
@@ -299,11 +299,11 @@ it("movement stands right after the name: ▲ green and ▼ red, hidden when the
   expect(line("하트팬1").firstElementChild).toBe(container.querySelector("li [title='하트팬1']"));
 });
 
-it("draws no gauge bar on any row: the way to first place is only the small text", async () => {
+it("draws no gauge bar on any row, and no way-to-first text in the line", async () => {
   stub();
   const { container } = render(<RankingBoard locale="ko" />);
   await screen.findByText("하트팬1");
   expect(container.querySelector("[class*='share']")).toBeNull();
   expect(container.querySelector("[role='progressbar'], progress, meter")).toBeNull();
-  expect(container.querySelectorAll("li[data-row='fan-rank'] [class*='gap']").length).toBeGreaterThan(0);
+  expect(container.querySelector("li[data-row='fan-rank'] [class*='gap']")).toBeNull();
 });

@@ -186,7 +186,7 @@ A2 버튼 반경 알약·높이 390 44 / 1024+ 48 · B2 칩 36·14/700·반경 �
 | `--motion-fast` | 150ms(2026-11-09 design-sync-1 신설) | 색·투명도·체브론·탭 선택·메뉴·툴팁 열림·닫힘(나갈 때도 150) |
 | `--motion-slow` | 200ms(같은 날 신설) | 접기 패널·시트·다이얼로그·토스트 이동·게이지 채움·페이지 전환 |
 | `--motion-easing` | cubic-bezier(.2, 0, 0, 1) | 전부(들어올 때·나갈 때 같은 이징) |
-| 연출 예외(`data-motion`) | 랭킹 행 FLIP 240(`--motion-reorder`), 숫자 카운트 400(`--motion-count`), 스탬프 연출 `stamp-slam` 0.9초 + 보상 팝 600(`--motion-reward`), 럭키드로우 idle 8초 주기(응모권 투입 3.3초 + 캡슐 휘돎 1.5초 + 쉼, `[data-lucky-module]` 안만, 사용자 2026-11-10 C4) | 8장 ⑧ + R18·R20 |
+| 연출 예외(`data-motion`) | 랭킹 행 FLIP 240(`--motion-reorder`), 랭킹 행 테두리 핑크 링 600(값이 실제로 바뀐 행만 1회, `ringPulse`, opacity·transform만. 움직임 줄이기: 300ms 색 강조만. 반복 없음, 사용자 대표 11/11 01:55), 숫자 카운트 400(`--motion-count`), 스탬프 연출 `stamp-slam` 0.9초 + 보상 팝 600(`--motion-reward`), 럭키드로우 idle 8초 주기(응모권 투입 3.3초 + 캡슐 휘돎 1.5초 + 쉼, `[data-lucky-module]` 안만, 사용자 2026-11-10 C4) | 8장 ⑧ + R18·R20 |
 | 선물 안 읽음 빛(`.icon[data-gift-glow]`, 2026-11-10 사용자 요청 "안 읽은 선물 있을 때 뒤에서 빛나게, animation으로 shine shine") | 화면: MY 프로필 줄 선물 아이콘(안 읽은 선물이 있을 때만 그림), 선물 상세 이미지 뒤. 빛은 CSS 글로가 아니라 래스터 애셋(`public/images/gift/gift-halo.png`·`gift-shine.png`)을 `opacity`·`transform`으로만 움직인다. 등장 400ms(빛) + 띠 500ms(100ms 뒤) ≤ 600ms, 이어서 숨쉬기 2.4s × 3 · 띠 4.0s 간격 × 3(무한 반복 없음), 약 12초 뒤 정지한 빛(opacity .85)만 남는다. 한 화면에서 움직이는 빛은 이 아이콘 하나. 상세 이미지 뒤 빛은 `--motion-reward`로 한 번. `prefers-reduced-motion`은 정적 빛, `forced-colors`는 `FanDot`으로 대신 | `features/gifts/ui/gift-glow.module.css`, `gift-detail-screen.module.css` |
 | 폐기 | `--motion-control`(→ fast)·`--motion-layout`(→ slow)·`--motion-exit`(→ fast), 미션 nudge 깜빡임, 숫자 펄스 1.06 | 예정: 세 토큰은 globals에 원래 값(160·240·120ms)으로 남아 있고 사용처 치환 전 |
 
@@ -2243,3 +2243,8 @@ At the user's request, registered Changha identity and hero images use the unedi
 - 글 반응 아이콘(2026-11-10 [운영] "좋아요·댓글 아이콘은 색을 넣어 주고 채워 줘"): 공통 `components/fan-ui/reaction-count.tsx`(`ReactionIcon`은 `FanIcon filled`, 16·20). 좋아요는 채운 하트 `--color-reaction-like`(= `--color-accent`), 누를 수 있는 좋아요 중 아직 누르지 않은 것은 `--color-reaction-like-soft`(#e05a97, 3.45:1), 댓글은 채운 말풍선 `--color-reaction-comment`(oklch 56% .09 230, 약 4:1). 숫자는 아이콘과 같은 세로 중심·tabular, 0이면 `--color-muted`. 적용: 게시판 글 카드 목록(`post-card`), 공지·아티스트 글 카드의 댓글과 응원 글의 좋아요·댓글(`feed-item-card`).
 - 목록 전환 로딩(2026-11-10 [운영] "페이지네이션 누르면 화면이 싹 줄었다가 다시 생김"): 쪽·탭·필터를 바꿔 다시 읽는 목록은 `useFanpageResource`/`useCommunityResource`의 마지막 인자 `keepAcrossUrls`로 같은 사용자의 이전 목록을 제자리에 두고(`pending`, 목록 `aria-busy`), 새 목록이 오면 한 번에 바꾼다(`anonymous` 인자 뒤). 사용자가 바뀌면 이전 목록을 들고 있지 않는다. 대기 중에는 쪽 넘김을 막는다. 첫 로딩 골격은 main의 `FanSkeletonRows`. 적용: 홈 팬게시판(인기글 쪽), 팬게시판 피드 쪽, 크리에이터 모임 홈 게시판 쪽, 응원 댓글·공지 댓글·글 상세 댓글·응원 답글, 팬 순위 분류 탭, 인기글 기간 탭, kyaa wave 앨범·클립 댓글·멤버.
 - 가로 영상 썸네일(2026-11-10 감독, 사용자 규칙 R5 검은 띠 금지): 글자 없는 썸네일·`backdrop` 칸의 YouTube 영상은 위아래 검은 띠가 박힌 4:3 표지(`hqdefault`·`sddefault`·`default`·`0~3.jpg`)를 쓰지 않고 16:9 표지(`hq720` → `mqdefault`, 120×90 회색 대체 이미지는 실패로 본다)를 쓴다(`features/media/ui/media-thumbnail.tsx`). 칸 비율·흐린 배경은 main의 `MediaBackdrop`/정사각 칸 규칙을 따른다.
+
+### 홈 랭킹 행 한 줄·52 (2026-11-11 RANK-COMPACT, 대표 01:55 "한 줄로 맞추고 셀 높이를 조금 줄여도 … 너무 큼직큼직")
+- 행(찐팬·크리에이터, 390·1440 동일)은 한 줄 52px(이전 64): 순위 28 · 아바타 32 · 이름(+등락 ▲N 초록/▼N 빨강, 변동 없으면 숨김 · LIVE · 1024부터 찐팬 100 태그) · 하트 수 · 화살표. 둘째 줄과 `1위까지 N`·`현재 1위`·오늘 +♥는 행에서 뺐다.
+- `1위까지`(값 N, 동점은 0, 1위 행은 칸 없음)와 오늘·최근 N일은 펼친 행의 칸에 둔다(순위 칸은 행에 이미 있어 `1위까지`로 대체).
+- 값이 바뀐 행만 테두리를 브랜드 핑크 호가 한 바퀴(600ms, 한 번). 첫 응답·값이 같은 행·새 행은 없음. 이전 설계 "큰 행 64·1위까지 행 안 표시(11/10 19:13)"는 대표 피드백으로 대체.

@@ -324,6 +324,7 @@ export const messages = {
   "rkPeriodAll": {"ja": "累計", "zh-Hans": "累计", "zh-Hant": "累計", "es": "Total", "id": "Total", "vi": "Tổng", "th": "สะสม", "pt": "Total", "fr": "Cumul", "ru": "Всего"},
   "rkGainDay": {"ja": "今日もらったハート", "zh-Hans": "今日收到的爱心", "zh-Hant": "今日收到的愛心", "es": "Corazones de hoy", "id": "Hati hari ini", "vi": "Tim hôm nay", "th": "หัวใจวันนี้", "pt": "Corações de hoje", "fr": "Cœurs du jour", "ru": "Сердца за сегодня"},
   "rkGainWeek": {"ja": "7日間のハート", "zh-Hans": "7天内的爱心", "zh-Hant": "7天內的愛心", "es": "Corazones en 7 días", "id": "Hati dalam 7 hari", "vi": "Tim trong 7 ngày", "th": "หัวใจใน 7 วัน", "pt": "Corações em 7 dias", "fr": "Cœurs sur 7 jours", "ru": "Сердца за 7 дней"},
+  "rkPanelGap": {"ja": "1位まで", "zh-Hans": "距第1名", "zh-Hant": "距第1名", "es": "Para el n.º 1", "id": "Ke #1", "vi": "Đến #1", "th": "ถึงอันดับ 1", "pt": "Para o 1º", "fr": "Pour le n°1", "ru": "До 1-го места"},
   "rkPanelRank": {"ja": "現在の順位", "zh-Hans": "当前排名", "zh-Hant": "目前排名", "es": "Puesto actual", "id": "Peringkat", "vi": "Hạng hiện tại", "th": "อันดับตอนนี้", "pt": "Posição atual", "fr": "Rang actuel", "ru": "Текущее место"},
   "rkPanelToday": {"ja": "今日", "zh-Hans": "今日", "zh-Hant": "今日", "es": "Hoy", "id": "Hari ini", "vi": "Hôm nay", "th": "วันนี้", "pt": "Hoje", "fr": "Aujourd'hui", "ru": "Сегодня"},
   "rkPanelJjinfan": {"ja": "ガチ勢", "zh-Hans": "真粉", "zh-Hant": "真粉", "es": "Fans fieles", "id": "Fan sejati", "vi": "Fan ruột", "th": "แฟนตัวจริง", "pt": "Fãs fiéis", "fr": "Vrais fans", "ru": "Преданные фанаты"},

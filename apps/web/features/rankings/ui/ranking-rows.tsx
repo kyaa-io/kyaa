@@ -1,6 +1,6 @@
 "use client";
 import type { Route } from "next";
-import { Fragment, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
+import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 
 import { ChevronDown, ChevronUp, Heart } from "@/components/fan-ui/fan-icons";
 import { FanIcon } from "@/components/fan-ui/fan-icon";
@@ -24,7 +24,7 @@ import { useRankExpand } from "./use-rank-expand";
 import { useRankingResource } from "./use-ranking-resource";
 import styles from "./ranking-rows.module.css";
 
-/** Rows of the platform rankings on the home page: rank, picture, name, second line (movement, today's gain), the metric's value and the way to first place. */
+/** Rows of the platform rankings on the home page: rank, picture, name, movement and the metric's value on one 52px line; today's gain and the way to first place are in the opened row. */
 
 export type RankingsTab = "fans" | "creators";
 export type RankingMetric = HomeFanMetric | HomeCreatorMetric;
@@ -69,11 +69,37 @@ export type Live<T extends { computedAt: string | null }> = ReturnType<typeof us
 const MOVE_MS = 240;
 const reducedMotion = () => typeof window !== "undefined" && typeof window.matchMedia === "function" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 const inView = (node: HTMLElement) => { const box = node.getBoundingClientRect(); return box.height === 0 || (box.bottom > 0 && box.top < window.innerHeight); };
+const RING_MS = 600;
+/** The pink ring runs once around the row's border (a rotating arc seen through a 2px ring mask: transform and opacity only, 600ms). Reduced motion: the whole ring shows for 300ms and goes. */
+function ringPulse(node: HTMLElement) {
+  const ring = node.querySelector<HTMLElement>("[data-pulse]");
+  const sweep = ring?.firstElementChild as HTMLElement | null | undefined;
+  if (!ring || !sweep || typeof ring.animate !== "function") return;
+  if (reducedMotion()) {
+    ring.dataset.still = "";
+    ring.animate([{ opacity: 0 }, { opacity: 1, offset: 0.3 }, { opacity: 1, offset: 0.7 }, { opacity: 0 }], { duration: 300 }).onfinish = () => { delete ring.dataset.still; };
+    return;
+  }
+  ring.animate([{ opacity: 0 }, { opacity: 1, offset: 0.12 }, { opacity: 1, offset: 0.8 }, { opacity: 0 }], { duration: RING_MS, easing: "linear" });
+  sweep.animate([{ transform: "rotate(0deg)" }, { transform: "rotate(360deg)" }], { duration: RING_MS, easing: "cubic-bezier(.4, 0, .2, 1)" });
+}
 /** A row whose rank changed between two answers of the same metric slides from its old place (transform only, 240ms) and its movement mark fades in (160ms) from
  * the same frame; only rows on screen move. Nothing moves on the first answer, on a row whose place did not change, or under reduced motion. Tops are read on every commit,
  * so opening a row's panel never counts as a move. A metric change remounts the rows. */
-function useRowMotion(order: readonly string[]) {
+function useRowMotion(order: readonly string[], values: readonly number[]) {
   const nodes = useRef(new Map<string, HTMLElement>());
+  const seen = useRef(new Map<string, number>());
+  // A row whose value really changed since the previous answer gets the pink ring once. Nothing on the first answer; a new row has no earlier value.
+  useLayoutEffect(() => {
+    const before = seen.current;
+    seen.current = new Map(order.map((key, i) => [key, values[i]!]));
+    if (before.size === 0) return;
+    for (const [key, value] of seen.current) {
+      const was = before.get(key);
+      const node = nodes.current.get(key);
+      if (was !== undefined && was !== value && node && inView(node)) ringPulse(node);
+    }
+  });
   const tops = useRef(new Map<string, number>());
   const sorted = useRef(order.join("\n"));
   useLayoutEffect(() => {
@@ -144,9 +170,9 @@ function Rank({ rank }: { rank: number }) {
 /** Rows at the live height while the first answer is read; only while a request is running. */
 export function LoadingRows({ count }: { count: number }) {
   return <ol className={styles.rows} aria-busy="true">{Array.from({ length: count }, (_, i) => <li key={i} className={styles.item} data-row="fan-rank-loading" aria-hidden="true">
-    <span className={styles.rowFace} data-loading=""><FanSkeleton width={20} height={18} /><FanSkeleton shape="circle" width={40} height={40} />
-      <span className={styles.body}><FanSkeleton width="55%" height={15} /><FanSkeleton width="35%" height={12} /></span>
-      <span className={styles.value}><FanSkeleton width={48} height={15} /><FanSkeleton width={64} height={12} /></span></span>
+    <span className={styles.rowFace} data-loading=""><FanSkeleton width={20} height={18} /><FanSkeleton shape="circle" width={32} height={32} />
+      <span className={styles.body}><FanSkeleton width="45%" height={15} /></span>
+      <span className={styles.value}><FanSkeleton width={48} height={15} /></span></span>
   </li>)}</ol>;
 }
 /** The error holds the block's height; the retry keeps a 44px target. The highlight above it is not drawn. */
@@ -166,16 +192,6 @@ function Placeholders({ from, to }: { from: number; to: number }) {
 
 const heartIcon = (size: 16) => <FanIcon icon={Heart} size={size} filled className={styles.heart} />;
 const short = (locale: AppLocale, n: number) => n >= 10000 ? n.toLocaleString(locale, { notation: "compact", maximumFractionDigits: 1 }) : n.toLocaleString(locale);
-
-/** Second line: the items that have a value, one dot between them. An item without a value (null) leaves with its dot, so items are built by calling, never as elements that render nothing.
- * `wide` is one more item that only stands from 1024px, where a column has the room for it; narrower, it leaves with its dot. */
-function Meta({ items, wide }: { items: ReactNode[]; wide?: ReactNode }) {
-  const shown = items.filter(Boolean);
-  return <span className={styles.meta}>
-    {shown.map((item, i) => <Fragment key={i}>{i > 0 ? <span className={styles.dot} aria-hidden="true">·</span> : null}{item}</Fragment>)}
-    {wide ? <span className={styles.wide}>{shown.length ? <span className={styles.dot} aria-hidden="true">·</span> : null}{wide}</span> : null}
-  </span>;
-}
 
 /** The right-hand number of a row: the metric's value, read by name (hearts, points, fans), never from score alone. Counts up only when a later answer changes it; from 10,000 it is short (12.3K), the full number stays in the label. */
 function Main({ locale, metric, value }: { locale: AppLocale; metric: RankingMetric; value: number }) {
@@ -200,20 +216,13 @@ function rowDelta(locale: AppLocale, delta: number | null, comparable: boolean) 
   </span>;
 }
 
-/** Today's hearts gained (counted hearts, whatever the list is ranked by): +N with a pink heart, − below 0. Nothing at 0 and nothing when that day is not built. */
-function todayGain(locale: AppLocale, metric: RankingMetric, value: number | null | undefined) {
-  if (typeof value !== "number" || value === 0) return null;
-  const text = `${value < 0 ? "−" : "+"}${Math.abs(value).toLocaleString(locale)}`;
-  return <span className={styles.today}>{rankingsText(locale, metric === "hearts" ? "rkDayPlus" : "rkDayGain", [text])}{metric === "hearts" ? <FanIcon icon={Heart} size={16} filled className={styles.todayHeart} /> : null}</span>;
-}
+/** The way to first place, computed from the list itself: null on the first row (nothing to reach); 0 when tied. It opens with the row, never in the line. */
+const gapToFirst = (first: boolean, value: number, top: number) => first ? null : Math.max(0, top - value);
 
-/** Under the value: the way to the first place, computed from the list itself. */
-function FirstGap({ locale, first, accent, value, top }: { locale: AppLocale; first: boolean; accent: boolean; value: number; top: number }) {
-  if (first) return <span className={styles.gap} data-first="" data-accent={accent || undefined}>{rankingsText(locale, "rkIsFirst")}</span>;
-  return <span className={styles.gap}>{top - value <= 0 ? rankingsText(locale, "rkTiedFirst") : rankingsText(locale, "rkToFirst", [short(locale, top - value)])}</span>;
-}
+/** One mark that rings once around the row's border when its value changes (see ringPulse); invisible otherwise. */
+const Pulse = () => <span className={styles.pulse} data-pulse="" aria-hidden="true"><span className={styles.sweep} /></span>;
 
-/** The row: one button over the whole 64px line, so the touch target is the row. The panel (if open) follows it inside the same item. */
+/** The row: one button over the whole 52px line, so the touch target is the row. The panel (if open) follows it inside the same item. */
 function RowButton({ panelId, open, onToggle, me, kind, children }: { panelId: string; open: boolean; onToggle: () => void; me?: boolean; kind: RankingsTab; children: ReactNode }) {
   return <FanAction variant="text" className={styles.listRow} aria-expanded={open} aria-controls={open ? panelId : undefined} onClick={onToggle}>
     <span className={styles.rowFace} data-kind={kind} data-me={me || undefined}>
@@ -229,13 +238,13 @@ const fanValue = (row: HomeFanRankingRow, metric: RankingMetric) => metric === "
 const fanKey = (row: HomeFanRankingRow, index: number, rows: readonly HomeFanRankingRow[]) =>
   rows.findIndex((other) => other.nickname === row.nickname) === index ? `n:${row.nickname}` : `r:${row.rank}`;
 
-/** Fans: nickname, movement · today's gain, the metric's value and the way to first place; the row opens a panel. `fill` keeps the block at that many rows with placeholders. */
-export function FanRows({ locale, ranking, metric, show, fill, scope, guest = false, period = "all" }: { locale: AppLocale; ranking: HomeFanRanking; guest?: boolean; period?: HomeRankingPeriod; metric: HomeFanMetric; show?: number; fill?: number; scope: string }) {
+/** Fans: nickname, movement and the metric's value on one line; the row opens a panel. `fill` keeps the block at that many rows with placeholders. */
+export function FanRows({ locale, ranking, metric, show, fill, scope, guest = false }: { locale: AppLocale; ranking: HomeFanRanking; guest?: boolean; metric: HomeFanMetric; show?: number; fill?: number; scope: string }) {
   const [person, setPerson] = useState<ProfileModalPerson | null>(null);
   const { openKey, toggle } = useRankExpand();
   const shown = show === undefined ? ranking.rows : ranking.rows.slice(0, show);
   const keys = shown.map((row, i) => fanKey(row, i, shown));
-  const place = useRowMotion(keys);
+  const place = useRowMotion(keys, shown.map((row) => fanValue(row, metric)));
   const top = ranking.rows[0] ? fanValue(ranking.rows[0], metric) : 0;
   const accentFirst = !guest && !ranking.me;
   const days = ranking.weekGainDays ?? 0;
@@ -246,17 +255,14 @@ export function FanRows({ locale, ranking, metric, show, fill, scope, guest = fa
     return <li key={keys[i]} ref={place(keys[i]!)} id={id} className={styles.item} data-row="fan-rank" data-kind="fans" data-tint={((accentFirst && i === 0) || row.isMe || open) || undefined} data-me={row.isMe || undefined} aria-current={row.isMe || undefined}>
       <RowButton panelId={`${id}-panel`} open={open} onToggle={() => toggle(keys[i]!)} me={row.isMe} kind="fans">
         <Rank rank={row.rank} />
-        <span className={styles.avatar} data-first={(accentFirst && i === 0) || undefined}><Avatar avatar={fanAvatar(row.characterId)} imageUrl={null} label="" size={40} /></span>
+        <span className={styles.avatar} data-first={(accentFirst && i === 0) || undefined}><Avatar avatar={fanAvatar(row.characterId)} imageUrl={null} label="" size={32} /></span>
         <span className={styles.body}>
           <span className={styles.nameLine}><span className={styles.name} title={row.nickname}>{row.nickname}</span>{rowDelta(locale, row.delta, ranking.comparable)}</span>
-          <Meta items={[period === "day" ? null : todayGain(locale, metric, row.dayGain)]} />
         </span>
-        <span className={styles.value}>
-          <Main locale={locale} metric={metric} value={value} />
-          <FirstGap locale={locale} first={i === 0 && ranking.rows[0] === row} accent={accentFirst} value={value} top={top} />
-        </span>
+        <span className={styles.value}><Main locale={locale} metric={metric} value={value} /></span>
       </RowButton>
-      {open ? <RankRowPanel id={`${id}-panel`} kind="fan" row={row} days={days} guest={guest} locale={locale}
+      <Pulse />
+      {open ? <RankRowPanel id={`${id}-panel`} kind="fan" row={row} days={days} guest={guest} locale={locale} gap={gapToFirst(i === 0 && ranking.rows[0] === row, value, top)}
         onOpenProfile={() => { if (row.profileRef) setPerson({ ref: row.profileRef, nickname: row.nickname, avatarUrl: null, tier: row.tier }); }}
         loginHref={fanLoginHref(locale, `/?locale=${locale}`)} /> : null}
     </li>;
@@ -265,11 +271,11 @@ export function FanRows({ locale, ranking, metric, show, fill, scope, guest = fa
 
 const creatorValue = (row: HomeCreatorRankingRow, metric: RankingMetric) => metric === "fans" ? row.fans ?? row.score : row.hearts;
 
-/** Creators: name, movement · today's gain (and the 찐팬 100 challenge tag and LIVE where they apply), the metric's value and the way to first place; the row opens a panel whose action goes to the page. */
-export function CreatorRows({ locale, ranking, metric, show, fill, scope, challengeTag = false, guest = false, period = "all" }: { locale: AppLocale; ranking: HomeCreatorRanking; guest?: boolean; period?: HomeRankingPeriod; metric: HomeCreatorMetric; show?: number; fill?: number; scope: string; challengeTag?: boolean }) {
+/** Creators: name, movement (and LIVE and the 찐팬 100 challenge tag where they apply) and the metric's value on one line; the row opens a panel whose action goes to the page. */
+export function CreatorRows({ locale, ranking, metric, show, fill, scope, challengeTag = false, guest = false }: { locale: AppLocale; ranking: HomeCreatorRanking; guest?: boolean; metric: HomeCreatorMetric; show?: number; fill?: number; scope: string; challengeTag?: boolean }) {
   const { openKey, toggle } = useRankExpand();
   const shown = show === undefined ? ranking.rows : ranking.rows.slice(0, show);
-  const place = useRowMotion(shown.map((row) => row.slug));
+  const place = useRowMotion(shown.map((row) => row.slug), shown.map((row) => creatorValue(row, metric)));
   const top = ranking.rows[0] ? creatorValue(ranking.rows[0], metric) : 0;
   const accentFirst = !guest;
   const days = ranking.weekGainDays ?? 0;
@@ -280,20 +286,16 @@ export function CreatorRows({ locale, ranking, metric, show, fill, scope, challe
     return <li key={row.slug} ref={place(row.slug)} id={id} className={styles.item} data-row="creator-rank" data-kind="creators" data-tint={((accentFirst && i === 0) || open) || undefined}>
       <RowButton panelId={`${id}-panel`} open={open} onToggle={() => toggle(row.slug)} kind="creators">
         <Rank rank={row.rank} />
-        <span className={styles.avatar} data-first={(accentFirst && i === 0) || undefined}><CreatorAvatar slug={row.slug} src={row.imageUrl} size={40} photos={undefined} /></span>
+        <span className={styles.avatar} data-first={(accentFirst && i === 0) || undefined}><CreatorAvatar slug={row.slug} src={row.imageUrl} size={32} photos={undefined} /></span>
         <span className={styles.body}>
-          <span className={styles.nameLine}><span className={styles.name} title={row.name}>{row.name}</span>{rowDelta(locale, row.delta, ranking.comparable)}</span>
-          <Meta items={[
-            period === "day" ? null : todayGain(locale, metric, row.dayGain),
-            row.liveNow ? <LiveMark key="l" locale={locale} name={row.name} /> : null,
-          ]} wide={challengeTag && row.challenge ? <FanTag tone="fan" className={styles.challenge}>{rankingsText(locale, "jjTag")}</FanTag> : null} />
+          <span className={styles.nameLine}><span className={styles.name} title={row.name}>{row.name}</span>{rowDelta(locale, row.delta, ranking.comparable)}
+            {row.liveNow ? <LiveMark locale={locale} name={row.name} /> : null}
+            {challengeTag && row.challenge ? <FanTag tone="fan" className={styles.challenge}>{rankingsText(locale, "jjTag")}</FanTag> : null}</span>
         </span>
-        <span className={styles.value}>
-          <Main locale={locale} metric={metric} value={value} />
-          <FirstGap locale={locale} first={i === 0 && ranking.rows[0] === row} accent={accentFirst} value={value} top={top} />
-        </span>
+        <span className={styles.value}><Main locale={locale} metric={metric} value={value} /></span>
       </RowButton>
-      {open ? <RankRowPanel id={`${id}-panel`} kind="creator" row={row} days={days} guest={guest} locale={locale} /> : null}
+      <Pulse />
+      {open ? <RankRowPanel id={`${id}-panel`} kind="creator" row={row} days={days} guest={guest} locale={locale} gap={gapToFirst(i === 0 && ranking.rows[0] === row, value, top)} /> : null}
     </li>;
   })}{fill ? <Placeholders from={shown.length} to={fill} /> : null}</ol>;
 }

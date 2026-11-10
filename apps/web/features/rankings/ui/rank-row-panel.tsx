@@ -7,7 +7,7 @@ import type { HomeCreatorRankingRow, HomeFanRankingRow } from "../domain/types";
 import { rankingsText } from "./rankings-copy";
 import styles from "./rank-row-panel.module.css";
 
-/** What opens under a ranking row: up to three cells (today's gain, the recent-days gain, the current rank; the value that belongs to the kind — creator: true fans, fan: favorite creator — when one of those is missing), then one action to the place the row already led to. Values come from the row itself; a value the answer does not have leaves its cell.
+/** What opens under a ranking row: up to three cells (today's gain, the recent-days gain, the way to first place; the value that belongs to the kind — creator: true fans, fan: favorite creator — when one of those is missing), then one action to the place the row already led to. Values come from the row itself; a value the answer does not have leaves its cell.
  * The list mounts this only while the row is open and owns the profile window (a fan row's action only calls `onOpenProfile`). */
 type PanelBase = {
   id: string;
@@ -15,6 +15,8 @@ type PanelBase = {
   /** The answer's weekGainDays. Zero or less (no comparison) leaves the recent-days cell out. */
   days: number;
   guest: boolean;
+  /** Hearts (or points) to the first place; 0 when tied, null on the first row (no cell). */
+  gap?: number | null;
 };
 export type RankRowPanelProps = PanelBase & (
   | { kind: "creator"; row: HomeCreatorRankingRow }
@@ -32,11 +34,11 @@ function Stat({ label, value }: { label: string; value: string }) {
 export function RankRowPanel(props: RankRowPanelProps) {
   const { id, locale, days, guest } = props;
   const { row } = props;
-  // At most three cells, in this order: today's gain, the recent days' gain, the current rank, then the value that belongs to the kind. A cell without a value is left out.
+  // At most three cells, in this order: today's gain, the recent days' gain, the way to first place (the rank is already on the row), then the value that belongs to the kind. A cell without a value is left out.
   const cells: ReactNode[] = [];
   if (isCount(row.dayGain)) cells.push(<Stat key="today" label={rankingsText(locale, "rkPanelToday")} value={signed(locale, row.dayGain)} />);
   if (isCount(row.weekGain) && days > 0) cells.push(<Stat key="recent" label={rankingsText(locale, "rkPanelRecent", [days])} value={signed(locale, row.weekGain)} />);
-  cells.push(<Stat key="rank" label={rankingsText(locale, "rkPanelRank")} value={rankingsText(locale, "rkRank", [row.rank.toLocaleString(locale)])} />);
+  if (typeof props.gap === "number") cells.push(<Stat key="gap" label={rankingsText(locale, "rkPanelGap")} value={props.gap.toLocaleString(locale)} />);
   if (props.kind === "creator" && isCount(props.row.fans)) cells.push(<Stat key="fans" label={rankingsText(locale, "rkPanelJjinfan")} value={rankingsText(locale, "rkPanelFanCount", [props.row.fans.toLocaleString(locale)])} />);
   if (props.kind === "fan" && props.row.favorite) cells.push(<Stat key="favorite" label={rankingsText(locale, "rkPanelFavorite")} value={props.row.favorite.name} />);
   const stats = cells.slice(0, 3);

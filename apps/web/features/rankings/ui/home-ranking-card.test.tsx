@@ -60,17 +60,20 @@ it("signed out: ten rows per group, rows open in place with a sign-in action, on
   expect(screen.queryByRole("dialog")).toBeNull();
 });
 
-it("shows movement and today's gain under the name, no 신규 mark, and no weekly column", async () => {
+it("shows movement beside the name on one line, no 신규 mark, no weekly column; today's gain and the way to first place only in the opened row", async () => {
   stub(fans([fanRow(1, { dayGain: 0, weekGain: 999, delta: 2 }), fanRow(2, { dayGain: -3 }), fanRow(3, { dayGain: null, isNew: true })]));
   const { container } = render(<HomeRankingCard locale="ko" />);
   await screen.findAllByText("팬1");
   const rows = container.querySelectorAll("[data-row='fan-rank']");
-  expect(rows[0]!.textContent).not.toContain("오늘");
-  expect(rows[1]!.textContent).toContain("오늘 −3");
   expect(rows[0]!.querySelector("[data-delta-cell]")).toHaveAttribute("data-direction", "up");
+  expect(rows[0]!.querySelector("[data-delta-cell]")!.parentElement).toBe(rows[0]!.querySelector("[title='팬1']")!.parentElement);
+  expect([...container.querySelectorAll("[data-row]")].map((row) => row.textContent).join(" ")).not.toMatch(/1위까지|현재 1위|1위와 동점|오늘/);
   expect(container.textContent).not.toContain("신규");
   expect(rows[2]!.querySelector("[data-delta-cell]")).toBeNull();
   expect(rows[0]!.textContent).not.toContain("999");
+  fireEvent.click(rows[1]!.querySelector("button")!);
+  expect(rows[1]!.querySelector("[data-rank-panel]")!.textContent).toContain("오늘−3");
+  expect(rows[1]!.querySelector("[data-rank-panel]")!.textContent).toContain("1위까지1");
 });
 
 it("passes the original signed profile reference without replacing its stored rank", async () => {
@@ -131,6 +134,9 @@ it("moves only changed rows on refresh and respects reduced motion", async () =>
       document.dispatchEvent(new Event("visibilitychange"));
       await waitFor(() => expect(view.container.querySelector("ol > li")!.textContent).toContain("나"));
       expect(animate.mock.calls.filter(call => JSON.stringify(call).includes("translateY"))).toHaveLength(reduced ? 0 : 2);
+      // The two rows whose value changed ring once (rotating arc + ring fade, 600ms); reduced motion: the whole ring for 300ms, nothing rotates.
+      expect(animate.mock.calls.filter(call => JSON.stringify(call).includes("rotate"))).toHaveLength(reduced ? 0 : 2);
+      expect(animate.mock.calls.filter(call => JSON.stringify(call).includes("opacity") && JSON.stringify(call).includes(reduced ? '"duration":300' : '"duration":600'))).toHaveLength(2);
       view.unmount();
     }
   } finally {
@@ -150,4 +156,28 @@ it("does not claim hidden ranks or draw login rows for short/empty answers", asy
   await screen.findByText("팬1");
   expect(screen.queryByRole("link", { name: "로그인하고 보기" })).toBeNull();
   expect(screen.queryByText(/6~10/)).toBeNull();
+});
+
+it("rings only the rows whose value changed, never on the first answer", async () => {
+  auth.value = { ...auth.value, authenticated: true, user: { id: "viewer" } };
+  const animate = vi.fn(() => ({}) as Animation);
+  Element.prototype.animate = animate;
+  const now = vi.spyOn(Date, "now");
+  let clock = Date.parse("2026-11-08T03:00:00Z"); now.mockImplementation(() => clock);
+  try {
+    vi.stubGlobal("matchMedia", () => ({ matches: false, addEventListener() {}, removeEventListener() {} }));
+    let answer = fans([fanRow(1, { nickname: "가" }), fanRow(2, { nickname: "나" })]);
+    vi.stubGlobal("fetch", vi.fn(async (url: RequestInfo | URL) => Response.json(String(url).includes("kind=fans") ? answer : creators())));
+    const view = render(<HomeRankingCard locale="ko" />);
+    await screen.findByText("가");
+    expect(animate).not.toHaveBeenCalled();
+    answer = fans([fanRow(1, { nickname: "가" }), fanRow(2, { nickname: "나", hearts: 99, score: 99 })]);
+    clock += 11 * 60 * 1000;
+    document.dispatchEvent(new Event("visibilitychange"));
+    await waitFor(() => expect(animate.mock.calls.filter(call => JSON.stringify(call).includes("rotate"))).toHaveLength(1));
+    view.unmount();
+  } finally {
+    now.mockRestore();
+    delete (Element.prototype as Partial<Element>).animate;
+  }
 });
