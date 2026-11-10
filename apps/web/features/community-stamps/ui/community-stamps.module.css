@@ -68,3 +68,6 @@
 .history button > span { min-width:0; }
 .history .historyState { display:flex; align-items:center; gap:var(--space-1); }
 .historyState svg { width:var(--space-3); height:var(--space-3); flex-shrink:0; }
+
+.historyLink { border:0; padding:8px 0; background:transparent; color:var(--color-text-secondary, var(--color-muted)); font:inherit; font-size:13px; cursor:pointer; }
+.history[hidden] { display:none; }

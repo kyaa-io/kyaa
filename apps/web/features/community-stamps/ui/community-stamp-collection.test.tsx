@@ -45,7 +45,7 @@ it("keeps one stamp number on the page by leaving the count to the earned histor
   const view = render(<CommunityStampCollection locale="ko" creator="elina" resource={{ state: { status: "ready", data: { stamps: [creatorStamp], today: "2026-10-09" } }, retry: vi.fn(), replaceData: vi.fn(), refreshFailed: false }} />);
 
   expect(screen.queryByText("1개 수집")).not.toBeInTheDocument();
-  expect(screen.getByText("스탬프 모으기 기록 보기 · 1")).toBeInTheDocument();
+  expect(within(screen.getByRole("heading", { name: "스탬프 모으기" }).parentElement!).getByRole("button", { name: "스탬프 모으기 기록 보기 · 1" })).toBeInTheDocument();
 
   view.rerender(<CommunityStampCollection locale="ko" resource={{ state: { status: "ready", data: { stamps: [accountStamp], today: "2026-10-09" } }, retry: vi.fn(), replaceData: vi.fn(), refreshFailed: false }} />);
   expect(screen.queryByText("1개 수집")).not.toBeInTheDocument();
@@ -62,6 +62,7 @@ it.each([
   const stamp = { id: "11111111-1111-4111-8111-111111111111", kind: "first_comment" as const, celebritySlug: "elina", issuedAt: "2026-10-09T00:00:00.000Z", mint: { status, txHash, tokenId: status === "minted" ? "42" : null } };
   render(<CommunityStampCollection locale="ko" creator="elina" resource={{ state: { status: "ready", data: { stamps: [stamp], today: "2026-10-09" } }, retry: vi.fn(), replaceData: vi.fn(), refreshFailed: false }} />);
 
+  fireEvent.click(screen.getByRole("button", { name: /스탬프 모으기 기록 보기/ }));
   expect(screen.getByText(label)).toBeInTheDocument();
   fireEvent.click(screen.getByRole("button", { name: "스탬프 보기" }));
   expect(screen.getByText(expected)).toBeInTheDocument();
@@ -83,17 +84,17 @@ const mintedResource = { state: { status: "ready" as const, data: { stamps: [min
 
 it("opens the in-page record list from the Stamp detail without leaving the app", () => {
   const view = render(<CommunityStampCollection locale="ko" creator="elina" resource={mintedResource}/>);
-  const details = view.container.querySelector("details")!;
-  expect(details.open).toBe(false);
+  const details = view.container.querySelector("#community-stamp-history")!;
+  expect(details).not.toBeVisible();
 
   fireEvent.click(screen.getByRole("button", { name: "스탬프 보기" }));
   expect(screen.queryByRole("link", { name: "등록 기록 보기" })).not.toBeInTheDocument();
   fireEvent.click(screen.getByRole("button", { name: "등록 기록 보기", hidden: true }));
 
   expect(screen.queryByRole("button", { name: "등록 기록 보기" })).not.toBeInTheDocument();
-  expect(details.open).toBe(true);
+  expect(details).toBeVisible();
   expect(Element.prototype.scrollIntoView).toHaveBeenCalled();
-  expect(document.activeElement).toBe(details.querySelector("summary"));
+  expect(document.activeElement).toBe(details);
   expect(within(details).getByText("등록 완료")).toBeInTheDocument();
 });
 
@@ -106,7 +107,8 @@ it("keeps the explorer as a secondary link only for a registered Stamp and hides
   expect(link).toHaveAttribute("rel", "noopener noreferrer");
 
   fireEvent.click(screen.getByRole("button", { name: "닫기", hidden: true }));
-  const details = view.container.querySelector("details")!;
+  const details = view.container.querySelector("#community-stamp-history")!;
+  fireEvent.click(screen.getByRole("button", { name: /스탬프 모으기 기록 보기/ }));
   fireEvent.click(within(details).getByRole("button"));
   expect(screen.queryByRole("button", { name: "등록 기록 보기" })).not.toBeInTheDocument();
   expect(screen.getByRole("link", { name: "탐색기에서 확인", hidden: true })).toBeInTheDocument();
@@ -116,16 +118,22 @@ it("shows the creator display name, not the slug, in the earned history and omit
   const stamp = { id: "11111111-1111-4111-8111-111111111111", kind: "quiz" as const, celebritySlug: "p1-smoke-creator", issuedAt: "2026-10-09T00:00:00.000Z", mint: { status: "queued" as const, txHash: null, tokenId: null } };
   const resource = { state: { status: "ready" as const, data: { stamps: [stamp], today: "2026-10-09" } }, retry: vi.fn(), replaceData: vi.fn(), refreshFailed: false };
   const view = render(<CommunityStampCollection locale="ko" creator="p1-smoke-creator" resource={resource} creatorNames={{ "p1-smoke-creator": "시험 크리에이터" }} />);
-  expect(view.container.querySelector("details small")?.textContent).toMatch(/^시험 크리에이터 · /);
+  expect(view.container.querySelector("#community-stamp-history small")?.textContent).toMatch(/^시험 크리에이터 · /);
   view.rerender(<CommunityStampCollection locale="ko" creator="p1-smoke-creator" resource={resource} />);
-  expect(view.container.querySelector("details small")?.textContent).not.toContain("p1-smoke-creator");
+  expect(view.container.querySelector("#community-stamp-history small")?.textContent).not.toContain("p1-smoke-creator");
 });
 
 it("keeps the registration state readable by assistive tech when the record row shows only its icon", () => {
   const view = render(<CommunityStampCollection locale="ko" creator="elina" resource={mintedResource}/>);
-  const row = within(view.container.querySelector("details")!).getByRole("button", { name: /등록 완료/ });
+  fireEvent.click(screen.getByRole("button", { name: /스탬프 모으기 기록 보기/ }));
+  const row = within(view.container.querySelector("#community-stamp-history")!).getByRole("button", { name: /등록 완료/ });
   const state = row.querySelector("small[title]")!;
   expect(state).toHaveAttribute("title", "등록 완료");
   expect(state.querySelector("svg")).toHaveAttribute("aria-hidden", "true");
   expect(state).toHaveTextContent("등록 완료");
+});
+
+it.each([["ko", "공유"], ["en", "Share"]] as const)("labels the passport sharing action in %s", (locale, label) => {
+  render(<CommunityStampCollection locale={locale} resource={{ state: { status: "ready", data: { stamps: [], today: "2026-10-09" } }, retry: vi.fn(), replaceData: vi.fn(), refreshFailed: false }} />);
+  expect(screen.getByRole("link", { name: label })).toHaveAttribute("href", `/passports?locale=${locale}`);
 });

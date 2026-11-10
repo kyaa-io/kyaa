@@ -218,9 +218,9 @@ describe("passport fan screens", () => {
     expect(hero).toHaveAttribute("href", "#mission-book");
     const section = container.querySelector("#stamp-book") as HTMLElement;
     expect(within(section).getByRole("heading", { name: "스탬프 모음" }).parentElement).toHaveTextContent(/^스탬프 모음$/);
-    const details = section.querySelector("details") as HTMLElement;
+    const details = section.querySelector("#community-stamp-history") as HTMLElement;
     expect(details).toBeTruthy();
-    fireEvent.click(within(details).getByText(/스탬프 모으기 기록 보기/));
+    fireEvent.click(within(section).getByRole("button", { name: /스탬프 모으기 기록 보기/ }));
     expect(details).toHaveTextContent("KARA");
     expect(details).not.toHaveTextContent("kara ·");
     // 모으기 스탬프는 있는데 머리 수와 어긋나는 빈 문구를 함께 내지 않는다.

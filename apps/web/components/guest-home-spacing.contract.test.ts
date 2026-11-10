@@ -79,23 +79,9 @@ describe("guest home compact icon-only action spacing", () => {
     expect(controls).toMatch(/\bwidth:\s*44px\b/);
     expect(controls).toMatch(/\bmin-width:\s*44px\b/);
     expect(controls).toMatch(/\bheight:\s*44px\b/);
-    expect(declarationBlock(".carouselDots")).toMatch(/\bbottom:\s*-42px\b/);
-    expect(declarationBlock(".carouselDots")).toMatch(
-      /\bwidth:\s*min\(var\(--carousel-width\),\s*100%\)/,
-    );
-    expect(declarationBlock(".carouselControls .carouselDot")).toMatch(
-      /\bmin-width:\s*44px\b/,
-    );
-    expect(declarationBlock(".carouselPrevious")).toMatch(/\bleft:\s*8px\b/);
-    expect(declarationBlock(".carouselNext")).toMatch(/\bright:\s*8px\b/);
-    expect(declarationBlock(".carouselDot[aria-current=\"true\"] span")).toMatch(
-      /\bbackground:\s*var\(--ink\)/,
-    );
-    // 현재 점의 22px 막대는 폭 전이 대신 ::after 의 transform·opacity 로 커진다(hallmark 10a).
-    expect(declarationBlock(".carouselDot span::after")).toMatch(/\bwidth:\s*22px\b/);
-    expect(declarationBlock(".carouselDot span::after")).toMatch(/\btransition:\s*transform\b/);
-    expect(declarationBlock(".carouselDot span")).not.toMatch(/\btransition:[^;]*\bwidth\b/);
-    expect(declarationBlock(".carouselDot[aria-current=\"true\"] span::after")).toMatch(/\btransform:\s*scaleX\(1\)/);
+    expect(declarationBlock(".carouselPrevious")).toMatch(/\bleft:\s*-44px\b/);
+    expect(declarationBlock(".carouselNext")).toMatch(/\bright:\s*-44px\b/);
+    expect(declarationBlock(".carouselProgress")).toMatch(/\bbottom:\s*-22px\b/);
     expect(declarationBlock(".heroViewport")).toMatch(/\btouch-action:\s*pan-y\s+pinch-zoom/);
     expect(declarationBlock(".heroTrack")).not.toMatch(/\btransition:\s*transform/);
     expect(heroCarouselSource).toContain('useEmblaCarousel({');

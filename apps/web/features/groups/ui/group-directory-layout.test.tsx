@@ -1,4 +1,4 @@
-import {cleanup,fireEvent,render,screen,within} from '@testing-library/react';
+import {cleanup,fireEvent,render,screen,within,waitFor} from '@testing-library/react';
 import {afterEach,beforeEach,expect,it,vi} from 'vitest';
 const state=vi.hoisted(()=>({urls:[] as string[],loading:new Set<string>(),empty:false,authenticated:true,dialog:[] as unknown[]}));
 vi.mock('@/features/group-wallet/ui/wallet-screen',()=>({WalletAttendanceDialog:()=>null}));
@@ -52,6 +52,7 @@ it('filters by role from the all tab through the role menu, and disables it for 
  render(<GroupDirectory locale='ko'/>);
  fireEvent.click(screen.getByRole('button',{name:'활동 분야: 전체'}));
  fireEvent.click(await screen.findByRole('menuitemradio',{name:'아이돌'}));
+ await waitFor(()=>expect(screen.queryByRole('menuitemradio',{name:'아이돌'})).not.toBeInTheDocument());
  expect(new URLSearchParams(location.search).get('artistRole')).toBe('idol');
  expect(state.urls.some(url=>url.includes('type=fan')&&url.includes('artistRole=idol')&&url.includes('limit=20'))).toBe(true);
  const trigger=screen.getByRole('button',{name:'활동 분야: 아이돌'});expect(trigger).toHaveTextContent('아이돌');expect(trigger).toHaveAttribute('data-active');
