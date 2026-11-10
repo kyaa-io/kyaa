@@ -88,7 +88,7 @@ test('SQL groups are disjoint, retain setup, and do not wait for unrelated API o
     'unified_feed_first_post_rewards', 'mission_reward_score_suite', 'mobile_benefits', 'cognito_identity_bridge']) {
     assert.match(replays, new RegExp(`[ \\n]${name}[ \\n]`), name);
   }
-  assert.match(replays, /awk '\{ print \$1, 55549 \+ NR \}' \|\n\s*xargs -P 4 -L 1 bash -c '/);
+  assert.match(replays, /awk '\{ print \$1, 55600 \+ NR \}' \|\n\s*xargs -P 4 -L 1 bash -c '/);
   assert.match(replays, /BYUS_CLEAN_DB_PORT=\$1 BYUS_CLEAN_DB_ASSERTION_FILE=supabase\/tests\/\$0\.sql/);
   assert.match(replays, /bash scripts\/verify-clean-migration-chain\.sh >"\$log" 2>&1 \|\| status=\$\?/);
   assert.match(replays, /exit "\$status"'\n?$/);
