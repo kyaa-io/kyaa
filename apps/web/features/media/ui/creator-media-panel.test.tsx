@@ -100,12 +100,16 @@ it("shows verified video attribution and keeps true empty distinct from source f
 it("recovers a broken YouTube image in the full board and preserves the destination if every image fails", () => {
   render(<CreatorMediaPanel slug="elina" locale="ko" socialLinks={officialChannel} />);
   const card = screen.getByRole("link", { name: /공식 채널 영상/ });
-  fireEvent.error(card.querySelector("img")!);
-  expect(card.querySelector("img")).toHaveAttribute("src", "https://i.ytimg.com/vi/abcdefghijk/hqdefault.jpg");
-  fireEvent.error(card.querySelector("img")!);
-  expect(card.querySelector("img")).toHaveAttribute("src", "https://i.ytimg.com/vi/abcdefghijk/mqdefault.jpg");
-  fireEvent.error(card.querySelector("img")!);
+  // Thumbnail-only YouTube tiles skip the letterboxed 4:3 covers and show the frame over its own blur (no black bands).
+  const front = () => card.querySelector('[data-media-fill="blur"] > img:last-child');
+  expect(card.querySelector('[data-media-fill="blur"] > img:first-child')).toHaveAttribute("src", "/youtube.jpg");
+  fireEvent.error(front()!);
+  expect(front()).toHaveAttribute("src", "https://i.ytimg.com/vi/abcdefghijk/hq720.jpg");
+  fireEvent.error(front()!);
+  expect(front()).toHaveAttribute("src", "https://i.ytimg.com/vi/abcdefghijk/mqdefault.jpg");
+  fireEvent.error(front()!);
   expect(card.querySelector("img")).toBeNull();
+  expect(card.innerHTML).not.toContain("hqdefault");
   expect(card).toHaveAttribute("href", "https://www.youtube.com/watch?v=abcdefghijk");
   expect(card.querySelector("svg")).not.toBeNull();
   expect(card).toHaveTextContent("");
@@ -130,7 +134,7 @@ it("previews current media independently of board filters as thumbnail-only link
   expect(video).toHaveAttribute("target", "_blank");
   expect(video).toHaveAttribute("data-outbound-kind", "external");
   expect(video).toHaveTextContent("");
-  expect(video.closest("li")).toHaveAttribute("data-media-tile", "square");
+  expect(video.closest("li")).toHaveAttribute("data-media-tile", "portrait");
 });
 
 it("omits successful empty home sections but keeps failures recoverable", () => {

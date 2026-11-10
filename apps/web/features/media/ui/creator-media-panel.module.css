@@ -93,3 +93,8 @@
 .grid[data-thumbnail-only] :is(a,button):focus-visible { outline:3px solid var(--color-ink); outline-offset:-3px; }
 @media(min-width:768px) { .grid[data-thumbnail-only] { grid-template-columns:repeat(4,minmax(0,1fr)); } }
 @media(min-width:1024px) { .grid[data-thumbnail-only] { grid-template-columns:repeat(6,minmax(0,1fr)); } }
+/* Landscape video covers in thumbnail-only tiles: the whole frame over a blurred, enlarged copy, never black bands (R5). */
+.blurFill { position:relative; display:block; width:100%; height:100%; overflow:hidden; background:var(--color-soft); }
+.grid[data-thumbnail-only] [data-media-fill="blur"] > img { position:absolute; inset:0; width:100%; height:100%; border-radius:0; }
+.grid[data-thumbnail-only] [data-media-fill="blur"] > img.blurBack { object-fit:cover; filter:blur(16px) saturate(1.1); transform:scale(1.2); }
+.grid[data-thumbnail-only] [data-media-fill="blur"] > img.blurFront { object-fit:contain; background:transparent; }

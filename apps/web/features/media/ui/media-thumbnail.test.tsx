@@ -35,3 +35,16 @@ it("keeps an icon-only failed thumbnail without provider text for the thumbnail-
   expect(container.querySelector("svg")).toBeInTheDocument();
   expect(container.textContent).toBe("");
 });
+
+it("never uses a letterboxed YouTube cover in a thumbnail-only tile and blurs the frame behind itself", async () => {
+  const { container } = render(<MediaThumbnail image="https://i.ytimg.com/vi/abcdefghijk/hqdefault.jpg" href="https://www.youtube.com/watch?v=abcdefghijk" kind="videos" source="kyaa" locale="ko" iconOnly />);
+  const fill = container.querySelector('[data-media-fill="blur"]')!;
+  const [back, front] = [...fill.querySelectorAll("img")];
+  expect(back).toHaveAttribute("src", "https://i.ytimg.com/vi/abcdefghijk/hq720.jpg");
+  expect(front).toHaveAttribute("src", "https://i.ytimg.com/vi/abcdefghijk/hq720.jpg");
+  expect(back).toHaveAttribute("aria-hidden", "true");
+  Object.defineProperty(front, "naturalWidth", { configurable: true, value: 120 });
+  fireEvent.load(front);
+  // next/image reports the load after decoding, so the fallback lands a tick later.
+  await waitFor(() => expect(container.querySelector('[data-media-fill="blur"] > img:last-child')).toHaveAttribute("src", "https://i.ytimg.com/vi/abcdefghijk/mqdefault.jpg"));
+});
