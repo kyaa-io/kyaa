@@ -533,3 +533,9 @@ test('N29 approved toast exception leaves other selectors and rule IDs checked',
   assert.equal(css('.toast{/* design-lint-disable S1 -- only gradient approved */background:#6042d5}').get('N29|#6042d5'), 1);
   assert.equal(css('.toast{/* design-lint-disable N290 -- unrelated */background:#6042d5}').get('N29|#6042d5'), 1);
 });
+
+test('N11 accepts an explicitly disabled preview with a reason, while unexplained or active actions still need a handler', () => {
+  assert.equal(hits(ts('<FanAction disabled title="Preview">Enter</FanAction>'), 'N11').length, 0);
+  assert.ok(hits(ts('<FanAction title="Preview">Enter</FanAction>'), 'N11').length > 0);
+  assert.ok(hits(ts('<FanAction disabled>Enter</FanAction>'), 'N11').length > 0);
+});

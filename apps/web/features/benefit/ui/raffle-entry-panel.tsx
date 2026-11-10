@@ -13,6 +13,7 @@ import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import { ArrowRight, Check, Minus, Plus, Ticket } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { AuthIntentLink } from "@/components/auth-intent-link";
+import { FanHeading } from "@/components/fan-ui/fan-heading";
 import { FanAction, fanActionClassName } from "@/components/fan-ui/fan-action";
 import { AlertDialog } from "@/components/ui/overlay/accessible-overlay";
 import type { PublishedCelebrity } from "@/server/content/content-domain";
@@ -128,11 +129,11 @@ export function RaffleEntryPanel(props: Props) {
   const copy = luckyDrawPreviewCopy(props.locale);
   return <>
     <section className={styles.entryPanel} aria-labelledby="raffle-entry-title" data-lucky-draw-preview>
-      <div className={styles.entryHeading}><h2 id="raffle-entry-title" tabIndex={-1}>{copy.title}</h2></div>
-      <FanAction fullWidth variant="primary" disabled trailingIcon={<ArrowRight />}>{copy.enter}</FanAction>
+      <div className={styles.entryHeading}><FanHeading id="raffle-entry-title">{copy.title}</FanHeading></div>
+      <FanAction fullWidth variant="neutral" disabled title={copy.title}>{copy.enter}</FanAction>
     </section>
-    <section className={styles.afterEntry}><h2>{props.locale === "ko" ? "응모 후에는 이렇게 진행돼요" : translate(props.locale, localizedMessages.m971f555fb08c, "What happens after you enter")}</h2><div>
-      {copy.steps.map((step, index) => <article key={index}><span>{String(index + 1).padStart(2, "0")}</span><h3>{step.title}</h3><p>{step.body}</p></article>)}
+    <section className={styles.afterEntry}><FanHeading>{props.locale === "ko" ? "응모 후에는 이렇게 진행돼요" : translate(props.locale, localizedMessages.m971f555fb08c, "What happens after you enter")}</FanHeading><div>
+      {copy.steps.map((step, index) => <article key={index}><span>{String(index + 1).padStart(2, "0")}</span><FanHeading as="h3">{step.title}</FanHeading><p>{step.body}</p></article>)}
     </div></section>
   </>;
 }
