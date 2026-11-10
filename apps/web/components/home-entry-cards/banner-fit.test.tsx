@@ -29,3 +29,21 @@ describe("home banner artwork fit", () => {
     expect(picture.querySelector("img")!.matches(guide ? `[data-guide-art] .${styles.artwork} img` : `.${styles.artwork} img`)).toBe(true);
   });
 });
+
+describe("home banner fills its frame", () => {
+  const heroCss = readFileSync("components/home-entry-cards/home-hero-banner.module.css", "utf8");
+  const frameCss = readFileSync("components/guest-home.module.css", "utf8");
+
+  it("sets the picture slot flush to the frame edge with no inner gap or box radius", () => {
+    const rule = heroCss.split("}").find((part) => part.includes(".image, .fullImage {") && part.includes("position: absolute"))!;
+    expect(rule).toContain("inset: 0 0 0 auto");
+    expect(rule).not.toMatch(/border-radius|--pic-gap/);
+  });
+
+  it("draws one neutral hairline instead of the accent ring", () => {
+    const shine = frameCss.split("\n").find((line) => line.startsWith(".heroShine {"))!;
+    expect(shine).toContain("var(--color-line)");
+    expect(shine).not.toContain("--color-accent");
+    expect(heroCss).not.toMatch(/\.banner:not\(\[data-kind="campaign"\]\)::after/);
+  });
+});

@@ -1,0 +1,12 @@
+{
+  "changes": [
+    "내 페이지 출석 현황 창의 간격을 줄였어요. 아바타가 390 너비에서 한 줄에 4개씩 들어가요.",
+    "아바타와 ‘연속 N일’, ‘출석하기’ 버튼 사이도 가까워졌어요. 버튼은 해당 아바타 바로 아래에 있어요.",
+    "첨부한 화면은 로컬에서 예시 페이지 7개로 확인한 390 너비의 수정 전과 후이며, 운영 회원 정보가 아니에요."
+  ],
+  "path": "/my/wallet",
+  "images": [
+    "release-notes/images/2026-11-10-attendance-gap-before-390.png",
+    "release-notes/images/2026-11-10-attendance-gap-after-390.png"
+  ]
+}

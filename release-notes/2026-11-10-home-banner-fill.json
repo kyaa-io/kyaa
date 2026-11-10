@@ -1,0 +1,13 @@
+{
+  "changes": [
+    "홈 배너의 사진이 카드 높이 전체와 오른쪽 가장자리까지 꽉 차도록 바꿨어요. 카드 안쪽의 흰 여백과 사진 둘레의 박스가 없어졌어요.",
+    "배너를 두르던 분홍색 테두리를 옅은 회색 실선으로 바꿨어요.",
+    "첨부한 화면은 로컬에서 확인한 홈 배너이고, 1440 너비의 수정 전과 후, 390 너비의 수정 후예요."
+  ],
+  "path": "/",
+  "images": [
+    "release-notes/images/2026-11-10-home-banner-fill-before-1440.png",
+    "release-notes/images/2026-11-10-home-banner-fill-after-1440.png",
+    "release-notes/images/2026-11-10-home-banner-fill-after-390.png"
+  ]
+}
