@@ -35,6 +35,16 @@ describe("RankRowPanel", () => {
     expect(screen.getByRole("link", { name: "팬페이지 가기" }).getAttribute("href")).toBe("/iphyu?locale=ko");
   });
 
+  it("draws the cells the list passes after the built-in ones, and none when it passes none", () => {
+    const view = render(<RankRowPanel id="p" kind="creator" row={creator({ dayGain: 125, weekGain: 310 })} days={7} guest={false} locale="ko" gap={4} extra={[{ key: "sns", label: "SNS", value: "1.2만" }]} />);
+    expect(stat("SNS")).toBe("1.2만");
+    expect(document.querySelectorAll("dt")).toHaveLength(4);
+    view.unmount();
+    render(<RankRowPanel id="p" kind="creator" row={creator({ dayGain: 125, weekGain: 310 })} days={7} guest={false} locale="ko" gap={4} />);
+    expect(screen.queryByText("SNS")).toBeNull();
+    expect(document.querySelectorAll("dt")).toHaveLength(3);
+  });
+
   it("uses the answer's days as they are, not a fixed week", () => {
     render(<RankRowPanel id="p" kind="creator" row={creator({ weekGain: 4 })} days={1} guest={false} locale="ko" />);
     expect(stat("최근 1일")).toBe("+4");

@@ -17,6 +17,8 @@ type PanelBase = {
   guest: boolean;
   /** Hearts (or points) to the first place; 0 when tied, null on the first row (no cell). */
   gap?: number | null;
+  /** Cells the list adds after the built-in ones (label and an already formatted value). A cell is passed only when its value exists; none passed, none drawn. */
+  extra?: readonly { key: string; label: string; value: string }[];
 };
 export type RankRowPanelProps = PanelBase & (
   | { kind: "creator"; row: HomeCreatorRankingRow }
@@ -41,7 +43,7 @@ export function RankRowPanel(props: RankRowPanelProps) {
   if (typeof props.gap === "number") cells.push(<Stat key="gap" label={rankingsText(locale, "rkPanelGap")} value={props.gap.toLocaleString(locale)} />);
   if (props.kind === "creator" && isCount(props.row.fans)) cells.push(<Stat key="fans" label={rankingsText(locale, "rkPanelJjinfan")} value={rankingsText(locale, "rkPanelFanCount", [props.row.fans.toLocaleString(locale)])} />);
   if (props.kind === "fan" && props.row.favorite) cells.push(<Stat key="favorite" label={rankingsText(locale, "rkPanelFavorite")} value={props.row.favorite.name} />);
-  const stats = cells.slice(0, 3);
+  const stats = [...cells.slice(0, 3), ...(props.extra ?? []).map((cell) => <Stat key={cell.key} label={cell.label} value={cell.value} />)];
 
   let action: ReactNode = null;
   if (props.kind === "creator") {
