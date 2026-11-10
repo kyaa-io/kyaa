@@ -8,7 +8,7 @@ do $guard$ begin
   end if;
 end $guard$;
 
--- Fans: admin (active allowlist entry; app_users stores emails normalized, so the allowlist side carries the other letter case), idle_admin (allowlist
+-- Fans: admin (active allowlist entry; both app_users and admin_allowlist store emails normalized to lower case, so the SQL's lower() is only a safeguard), idle_admin (allowlist
 -- entry that is not active), tester (test-*@privy.io), plain (an ordinary fan), fan1, fan2. (app_users.verified_email is NOT NULL and normalized, so a missing email cannot occur; the migration still uses coalesce so a NULL would never drop a fan.) The operator and test accounts hold the most hearts.
 begin;
 set local session_replication_role = replica;
@@ -56,12 +56,12 @@ do $$ begin
   if pg_temp.ex_rank('admin','hearts') <> 1 then raise exception 'precondition: admin should lead before allowlisting'; end if;
 end $$;
 
-insert into public.admin_allowlist(email,role,active) values ('Admin@Ex-Rank.Example.Test','admin',true), ('idle_admin@ex-rank.example.test','admin',false);
+insert into public.admin_allowlist(email,role,active) values ('admin@ex-rank.example.test','admin',true), ('idle_admin@ex-rank.example.test','admin',false);
 
 -- After: the active, differently-cased admin and the test account are out of every reader; the rest rank up without gaps; the inactive allowlist entry and the no-email fan stay.
 do $$ declare m text; p text; begin
   foreach m in array array['hearts'] loop
-    if pg_temp.ex_rank('admin',m) is not null then raise exception 'allowlisted admin (allowlist stored in another letter case) is listed in %', m; end if;
+    if pg_temp.ex_rank('admin',m) is not null then raise exception 'allowlisted admin is listed in %', m; end if;
     if pg_temp.ex_rank('tester',m) is not null then raise exception 'test account is listed in %', m; end if;
     if pg_temp.ex_rank('plain',m) <> 1 or pg_temp.ex_rank('idle_admin',m) <> 2 or pg_temp.ex_rank('fan1',m) <> 3 or pg_temp.ex_rank('fan2',m) <> 4 then
       raise exception 'cumulative ranks did not close up: plain %, idle_admin %, fan1 %, fan2 %', pg_temp.ex_rank('plain',m), pg_temp.ex_rank('idle_admin',m), pg_temp.ex_rank('fan1',m), pg_temp.ex_rank('fan2',m);
