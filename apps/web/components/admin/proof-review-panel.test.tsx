@@ -26,6 +26,14 @@ describe("ProofReviewPanel", () => {
     await waitFor(() => expect(request).toHaveBeenCalledWith(`/api/admin/proof-submissions/${id}/review`, "POST", { expectedRevision: 2, decision: "approved" }));
   });
 
+  it("names an SNS post row and shows the paid points after approval (BUGS-261110 B6)", async () => {
+    setup((url) => url.includes("/review") ? { ok: true, status: 200, data: { submission: { replayed: false, points: 30 } } }
+      : url.includes("proof-submissions") ? { ok: true, status: 200, data: { submissions: [{ ...row, proofType: "sns_post", publishConsent: false, duplicateOf: [] }] } } : null);
+    expect(await screen.findByText("SNS post")).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Approve" }));
+    expect(await screen.findByText("Done. Amount 30P")).toBeTruthy();
+  });
+
   it("requires a reason to reject and shows conflict and stamp errors", async () => {
     setup((url) => url.includes("/review") ? { ok: false, status: 409, data: { error: { code: "PROOF_STAMP_UNAVAILABLE" } } } : null);
     await screen.findByText(/Possible duplicate/);

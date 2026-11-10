@@ -158,8 +158,161 @@ begin
   perform public.register_owned_certification_upload(o,mid,up,o||'/'||mid||'/'||up||'.webp',100,10,10,repeat('a',64));
   sub := public.submit_owned_certification(o,mid,extensions.gen_random_uuid(),jsonb_build_array(up),null,null);
   perform public.review_admin_certification_submission(pg_temp.uuid(10),pg_temp.uuid(11),extensions.gen_random_uuid(),(sub->>'id')::uuid,extensions.gen_random_uuid(),1,'approve',null);
-  select count(*) into n from public.dukjil_action_log where app_user_id=o and action_key='subscription' and source_key=pg_temp.uuid(1)::text||':youtube';
-  perform pg_temp.assert(n = 1, 'real approval RPC must pay the subscription once: '||n||'; failures '||(select coalesce(jsonb_agg(error_message),'[]')::text from public.dukjil_wire_failures where action_key='subscription'));
+  -- BUGS-261110 B1: the membership approval records the proof action (slot 09, source = submission), never subscription (slot 07)
+  select count(*) into n from public.dukjil_action_log where app_user_id=o and action_key='proof' and source_key=sub->>'id';
+  perform pg_temp.assert(n = 1, 'real approval RPC must record the membership proof once: '||n||'; failures '||(select coalesce(jsonb_agg(error_message),'[]')::text from public.dukjil_wire_failures where action_key='proof'));
+  perform pg_temp.assert(not exists(select 1 from public.dukjil_action_log where app_user_id=o and action_key='subscription'), 'membership approval must not pay subscription');
+  perform pg_temp.assert(exists(select 1 from public.dukjil_action_log a join public.passport_page_slots s on s.stamp_id=a.stamp_id
+      join public.fan_passports fp on fp.id=s.passport_id and fp.app_user_id=o
+    where a.app_user_id=o and a.action_key='proof' and a.source_key=sub->>'id' and s.slot_no=9), 'membership approval must fill slot 09');
+  perform pg_temp.assert(not exists(select 1 from public.passport_page_slots s join public.fan_passports fp on fp.id=s.passport_id and fp.app_user_id=o
+    join public.community_stamps cs on cs.id=s.stamp_id where s.slot_no=7), 'membership approval must leave slot 07 empty');
   perform pg_temp.assert(not exists(select 1 from public.dukjil_wire_failures where resolved_at is null and gave_up_at is null), 'wire failures left open');
+end $$;
+
+-- BUGS-261110 B6: slot 07 is an operator-approved screenshot of the fan's own SNS post (proof type sns_post), through the same
+-- submit_certification_proof / review_certification_proof path as the slot 09 proofs. Real RPCs, every trigger on.
+create function pg_temp.sns_mission(key text, ptype text, platform text) returns uuid language plpgsql as $f$
+declare saved jsonb;
+begin
+  saved := public.save_admin_certification_mission_v3(pg_temp.uuid(10),pg_temp.uuid(11),extensions.gen_random_uuid(),null,pg_temp.uuid(1),key,null,
+    '인증','인증 미션','Proof mission','설명','Description','지침','Instructions',now()-interval '1 hour',now()+interval '1 day',0::smallint,0::bigint,null,ptype,platform);
+  perform public.set_admin_certification_mission_status(pg_temp.uuid(10),pg_temp.uuid(11),extensions.gen_random_uuid(),(saved->>'id')::uuid,1,'active');
+  return (saved->>'id')::uuid;
+end $f$;
+create function pg_temp.proof_submit(u uuid, mid uuid, ptype text, consent boolean default false) returns uuid language plpgsql as $f$
+declare up uuid := extensions.gen_random_uuid(); r jsonb;
+begin
+  perform public.register_owned_certification_upload(u,mid,up,u||'/'||mid||'/'||up||'.webp',100,10,10,repeat('a',64));
+  r := public.submit_certification_proof(u,pg_temp.uuid(1),ptype,up,consent,null,array[substr(md5(up::text),1,16)],extensions.gen_random_uuid(),
+    md5(up::text)||md5(up::text),false,case when consent then '올렸어요' end);
+  return (r->>'id')::uuid;
+end $f$;
+create function pg_temp.approve(sub uuid, actor uuid default null) returns jsonb language sql as $f$
+  select public.review_certification_proof(coalesce(actor, pg_temp.uuid(10)), s.id, s.review_revision, 'approved') from public.certification_submissions s where s.id = sub $f$;
+create function pg_temp.slot_stamp(u uuid, slot integer) returns uuid language sql as $f$
+  select s.stamp_id from public.passport_page_slots s join public.fan_passports fp on fp.id = s.passport_id and fp.app_user_id = u and fp.celebrity_id = pg_temp.uuid(1)
+   where s.page_no = 1 and s.slot_no = slot $f$;
+create function pg_temp.bal(u uuid) returns bigint language sql as $f$ select public.group_wallet_balance(u, 'fan_point') $f$;
+
+do $$
+declare
+  ua uuid := pg_temp.uuid(102); ub uuid := pg_temp.uuid(103); uc uuid := pg_temp.uuid(104); ud uuid := pg_temp.uuid(105);
+  c uuid := pg_temp.uuid(1); m_ig uuid; m_ig2 uuid; m_tt uuid; m_x uuid; m_mem uuid; m_rc uuid;
+  sa uuid; sb uuid; sb2 uuid; s2 uuid; r jsonb; r2 jsonb; b0 bigint; n integer; st uuid; old_stamp uuid; jobs uuid; vr jsonb; k integer := 0;
+begin
+  m_ig := pg_temp.sns_mission('sns-instagram','sns_post','instagram');
+  m_ig2 := pg_temp.sns_mission('sns-instagram-2','sns_post','instagram');
+  m_tt := pg_temp.sns_mission('sns-tiktok','sns_post','tiktok');
+  m_x := pg_temp.sns_mission('sns-x','sns_post','x');
+  m_mem := pg_temp.sns_mission('proof-membership','membership',null);
+  m_rc := pg_temp.sns_mission('proof-receipt','receipt',null);
+  -- an sns_post mission names one of the five networks
+  perform pg_temp.expect_error(format($q$select public.save_admin_certification_mission_v3(%L,%L,%L,null,%L,'sns-none',null,'인증','t','t','d','d','i','i',now(),now()+interval '1 day',0::smallint,0::bigint,null,'sns_post',null)$q$,
+    pg_temp.uuid(10),pg_temp.uuid(11),extensions.gen_random_uuid(),c),'PROOF_INVALID');
+  perform pg_temp.expect_error(format($q$select public.save_admin_certification_mission_v3(%L,%L,%L,null,%L,'sns-blog',null,'인증','t','t','d','d','i','i',now(),now()+interval '1 day',0::smallint,0::bigint,null,'sns_post','blog')$q$,
+    pg_temp.uuid(10),pg_temp.uuid(11),extensions.gen_random_uuid(),c),'PROOF_INVALID');
+
+  -- 1. one approval: subscription action with the sns source, 30P once, slot 07; no proof action, no slot 09, no title, no public post
+  b0 := pg_temp.bal(ua);
+  sa := pg_temp.proof_submit(ua,m_ig,'sns_post');
+  r := pg_temp.approve(sa);
+  perform pg_temp.assert(r->>'status' = 'approved' and (r->>'points')::int = 30 and (r->>'slotNo')::int = 7 and not (r->>'titleIssued')::boolean and r->>'postId' is null,
+    'sns approval result '||r::text);
+  select count(*) into n from public.dukjil_action_log where app_user_id=ua and action_key='subscription' and source_key='sns:'||c||':instagram' and points=30 and ledger_id is not null;
+  perform pg_temp.assert(n = 1, 'sns approval must write one subscription row with a ledger entry: '||n);
+  perform pg_temp.assert(pg_temp.bal(ua) - b0 = 30, 'sns approval must pay 30P once: '||(pg_temp.bal(ua) - b0));
+  perform pg_temp.assert(pg_temp.slot_stamp(ua,7) = (r->>'stampId')::uuid and pg_temp.slot_stamp(ua,9) is null, 'sns approval must fill 07 only');
+  perform pg_temp.assert(not exists(select 1 from public.dukjil_action_log where app_user_id=ua and action_key='proof'), 'sns approval must not pay the proof action');
+  perform pg_temp.assert(not exists(select 1 from public.jjinfan_titles where app_user_id=ua), 'sns approval must not issue the title');
+  perform pg_temp.assert(not exists(select 1 from public.fan_posts where source_type='certification_submission' and source_id=sa), 'sns approval must not publish');
+  k := k + 1;
+
+  -- 2. the same decision sent again from the same revision replays; nothing more is paid
+  r2 := public.review_certification_proof(pg_temp.uuid(10),sa,(r->>'revision')::bigint - 1,'approved');
+  perform pg_temp.assert((r2->>'replayed')::boolean, 'sns replay must replay: '||r2::text);
+  perform pg_temp.assert(pg_temp.bal(ua) - b0 = 30 and (select count(*) from public.dukjil_action_log where app_user_id=ua and action_key='subscription') = 1, 'sns replay paid again');
+  k := k + 1;
+
+  -- 3. same creator and network again: refused at submit; a second open one is refused at review, with no payout
+  perform pg_temp.expect_error(format('select pg_temp.proof_submit(%L,%L,%L)',ua,m_ig2,'sns_post'),'PROOF_ALREADY_APPROVED');
+  sb := pg_temp.proof_submit(ub,m_ig,'sns_post'); sb2 := pg_temp.proof_submit(ub,m_ig2,'sns_post');
+  perform pg_temp.approve(sb);
+  b0 := pg_temp.bal(ub);
+  perform pg_temp.expect_error(format('select pg_temp.approve(%L)',sb2),'PROOF_ALREADY_APPROVED');
+  perform pg_temp.assert(pg_temp.bal(ub) = b0 and (select status::text from public.certification_submissions where id=sb2) = 'pending'
+    and (select count(*) from public.dukjil_action_log where app_user_id=ub and action_key='subscription') = 1, 'second same-network approval must change nothing');
+  -- the mission list shows the approved network as done
+  perform pg_temp.assert((public.list_proof_missions(ua,c,date_trunc('month',now())) -> 'approvedMissionIds') @> jsonb_build_array(m_ig, m_ig2)
+    and not (public.list_proof_missions(ua,c,date_trunc('month',now())) -> 'approvedMissionIds') @> jsonb_build_array(m_tt), 'approved network must be listed as done');
+  k := k + 1;
+
+  -- 4. another network pays 30P once more; slot 07 keeps the first stamp
+  b0 := pg_temp.bal(ua); old_stamp := pg_temp.slot_stamp(ua,7);
+  r := pg_temp.approve(pg_temp.proof_submit(ua,m_tt,'sns_post'));
+  perform pg_temp.assert((r->>'points')::int = 30 and pg_temp.bal(ua) - b0 = 30 and r->>'stampId' is not null and (r->>'stampId')::uuid <> old_stamp, 'second network must pay 30P with its own stamp: '||r::text);
+  perform pg_temp.assert(pg_temp.slot_stamp(ua,7) = old_stamp, 'slot 07 must keep its first stamp');
+  k := k + 1;
+
+  -- 5. SNS posts neither count toward nor wait for the two proofs a month (slot 09)
+  perform pg_temp.assert((public.list_proof_missions(ua,c,date_trunc('month',now()) - interval '1 day') ->> 'monthCount')::int = 0, 'sns posts must not count toward the month');
+  perform pg_temp.proof_submit(ua,m_mem,'membership');
+  perform pg_temp.proof_submit(ua,m_rc,'receipt');
+  perform pg_temp.assert((public.list_proof_missions(ua,c,date_trunc('month',now()) - interval '1 day') ->> 'monthCount')::int = 2, 'two proofs must count');
+  s2 := pg_temp.proof_submit(ua,m_x,'sns_post');
+  perform pg_temp.assert(s2 is not null, 'an sns post must be accepted after two proofs this month');
+  k := k + 1;
+
+  -- 6. an sns post is never published on the proof board
+  perform pg_temp.expect_error(format('select pg_temp.proof_submit(%L,%L,%L,true)',uc,m_ig,'sns_post'),'PROOF_INVALID');
+  perform pg_temp.assert(not exists(select 1 from public.certification_submissions where app_user_id=uc and proof_type is not null), 'refused consent left a row');
+  k := k + 1;
+
+  -- 7. only an active non-viewer admin approves; the screenshot opens for its owner only
+  insert into public.app_users(id,privy_user_id,verified_email,status) values(pg_temp.uuid(12),'did:privy:sns-viewer','sns-viewer@byus.test','active');
+  insert into public.admin_allowlist(id,email,role,active) values(pg_temp.uuid(13),'sns-viewer@byus.test','viewer',true);
+  s2 := pg_temp.proof_submit(ud,m_ig,'sns_post');
+  perform pg_temp.expect_error(format('select pg_temp.approve(%L,%L)',s2,pg_temp.uuid(12)),'ADMIN_REQUIRED');
+  perform pg_temp.expect_error(format('select pg_temp.approve(%L,%L)',s2,ud),'ADMIN_REQUIRED');
+  perform pg_temp.assert(public.get_owned_certification_proof_source(ud,s2,(select id from public.certification_uploads where consumed_submission_id=s2)) is not null
+    and public.get_owned_certification_proof_source(ua,s2,(select id from public.certification_uploads where consumed_submission_id=s2)) is null, 'screenshot must open for its owner only');
+  -- rejection and changes requested pay nothing
+  perform public.review_certification_proof(pg_temp.uuid(10),s2,(select review_revision from public.certification_submissions where id=s2),'rejected','다른 사람의 글입니다');
+  perform pg_temp.assert(not exists(select 1 from public.dukjil_action_log where app_user_id=ud and action_key in ('subscription','proof')), 'rejected sns post paid');
+  k := k + 1;
+
+  -- 9. a legacy membership subscription stamp voided by the B1 correction does not come back: the sns approval fills 07 with a new stamp
+  r := public.record_dukjil_action(uc,c,'subscription',c||':instagram',extensions.gen_random_uuid(),jsonb_build_object('platform','instagram'));
+  old_stamp := (r->>'stampId')::uuid;
+  perform pg_temp.assert(pg_temp.slot_stamp(uc,7) = old_stamp, 'legacy subscription stamp must sit in 07');
+  vr := public.void_passport_stamp(pg_temp.uuid(10),old_stamp,'멤버십 인증이 구독 칸에 잘못 기록됨(BUGS-261110 B1)',false,'b1-261110-'||old_stamp);
+  perform pg_temp.assert(pg_temp.slot_stamp(uc,7) is null, 'void must clear 07: '||vr::text);
+  perform pg_temp.assert(public.void_passport_stamp(pg_temp.uuid(10),old_stamp,'멤버십 인증이 구독 칸에 잘못 기록됨(BUGS-261110 B1)',false,'b1-261110-'||old_stamp) is not null, 'void replay');
+  r := pg_temp.approve(pg_temp.proof_submit(uc,m_ig,'sns_post'));
+  perform pg_temp.assert((r->>'stampId')::uuid <> old_stamp and pg_temp.slot_stamp(uc,7) = (r->>'stampId')::uuid, 'sns approval must fill 07 with a new stamp after the void: '||r::text);
+  k := k + 1;
+
+  -- 10. one passport fills 01-09 and claims page 1: 07 by an sns post, 09 by a membership proof
+  set local session_replication_role = replica;
+  for n in 1..8 loop
+    continue when n = 7;
+    st := extensions.gen_random_uuid(); jobs := extensions.gen_random_uuid();
+    insert into public.blockchain_jobs(id,entity_type,entity_id,operation_key,payload_version,payload) values(jobs,'community_stamp',st,'sns-fill-'||st,1,'{}'::jsonb);
+    insert into public.community_stamps(id,app_user_id,celebrity_id,kind,source_key,issued_at,blockchain_job_id,policy_version)
+      values(st,ud,c,(array['quiz','daily_checkin','post','comment','share','invite',null,'steady_checkin'])[n]::public.community_stamp_kind,'sns-fill-'||n,now()-interval '3 days',jobs,1);
+    insert into public.passport_page_slots(passport_id,page_no,slot_no,stamp_id,assigned_at)
+      values((select id from public.fan_passports where app_user_id=ud and celebrity_id=c),1,n,st,now());
+  end loop;
+  set local session_replication_role = origin;
+  perform pg_temp.expect_error(format('select public.claim_passport_page(%L,%L,1,%L)',ud,c,'sns-claim-0'),'PASSPORT_PAGE_NOT_COMPLETE');
+  perform pg_temp.approve(pg_temp.proof_submit(ud,m_tt,'sns_post'));
+  perform pg_temp.approve(pg_temp.proof_submit(ud,m_mem,'membership'));
+  perform pg_temp.assert(pg_temp.slot_stamp(ud,7) is not null and pg_temp.slot_stamp(ud,9) is not null, '07 and 09 must be filled');
+  r := public.claim_passport_page(ud,c,1,'sns-claim-1');
+  perform pg_temp.assert(not coalesce((r->>'replayed')::boolean, false), 'page 1 claim: '||r::text);
+  k := k + 1;
+
+  perform pg_temp.assert(not exists(select 1 from public.dukjil_wire_failures where resolved_at is null and gave_up_at is null), 'wire failures left open');
+  raise notice 'sns_post slot 07: % assertion groups passed', k;
 end $$;
 rollback;

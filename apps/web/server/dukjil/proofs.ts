@@ -4,7 +4,7 @@ import { z } from "zod";
 import { AuthError } from "@/features/auth/domain/auth-errors";
 import { creatorSlugSchema } from "@/features/passport/domain/dukjil-types";
 import {
-  PROOF_BOARD_MAX, myProofsSchema, proofMissionListSchema, proofBoardSchema, proofCommandResultSchema, proofResubmitBodySchema, proofSubmitBodySchema,
+  PROOF_BOARD_MAX, SNS_POST_PROOF, myProofsSchema, proofMissionListSchema, proofBoardSchema, proofCommandResultSchema, proofResubmitBodySchema, proofSubmitBodySchema,
   type ProofErrorCode,
 } from "@/features/passport/domain/proof-types";
 import { boundedJson, CertificationBodyError } from "@/server/certification/certification-http";
@@ -18,6 +18,7 @@ export type ProofDependencies = DukjilDependencies & {
   stream?: (objectPath: string) => Promise<Response>;
   readMissions?: (celebrityId: string, appUserId: string) => Promise<ProofMissionRows>;
 };
+// Slot 09 proofs only: an SNS post (slot 07) neither counts toward nor waits for it (list_proof_missions leaves it out of monthCount).
 const MONTHLY_LIMIT = 2;
 
 // Contract §3.6 / §4. Uploads reuse POST /api/certifications/{missionId}/uploads (webp, 3MB, 24h). The proof image stays in the private
@@ -132,7 +133,7 @@ export function createProofHandlers(deps: ProofDependencies) {
       const celebrity = await creatorId(slug);
       const rows = await deps.readMissions(celebrity, appUserId);
       const items = rows.missions.map((m) => {
-        const reason = rows.approvedMissionIds.includes(m.id) ? "PROOF_ALREADY_APPROVED" : rows.openMissionIds.includes(m.id) ? "PROOF_ALREADY_OPEN" : rows.monthCount >= MONTHLY_LIMIT ? "PROOF_MONTHLY_LIMIT" : null;
+        const reason = rows.approvedMissionIds.includes(m.id) ? "PROOF_ALREADY_APPROVED" : rows.openMissionIds.includes(m.id) ? "PROOF_ALREADY_OPEN" : m.proofType !== SNS_POST_PROOF && rows.monthCount >= MONTHLY_LIMIT ? "PROOF_MONTHLY_LIMIT" : null;
         return { missionId: m.id, proofType: m.proofType, platform: m.platform, submittable: reason === null, unavailableReason: reason, closesAt: m.closesAt };
       });
       return Response.json(checked(proofMissionListSchema, { items }), { headers: privateHeaders });

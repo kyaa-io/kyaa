@@ -302,16 +302,16 @@ export const messages = {
     "ru": "Пригласить друга"
   },
   "dkgActSubscription": {
-    "ja": "チャンネル登録",
-    "zh-Hans": "订阅频道",
-    "zh-Hant": "訂閱頻道",
-    "es": "Suscripción al canal",
-    "id": "Berlangganan kanal",
-    "vi": "Đăng ký kênh",
-    "th": "สมัครสมาชิกช่อง",
-    "pt": "Inscrição no canal",
-    "fr": "Abonnement à la chaîne",
-    "ru": "Подписка на канал"
+    "ja": "SNS投稿",
+    "zh-Hans": "社交平台发帖",
+    "zh-Hant": "社群發文",
+    "es": "Publicar en redes",
+    "id": "Unggah di medsos",
+    "vi": "Đăng mạng xã hội",
+    "th": "โพสต์โซเชียล",
+    "pt": "Postar nas redes",
+    "fr": "Publier sur les réseaux",
+    "ru": "Пост в соцсети"
   },
   "dkgActSteady": {
     "ja": "出席{0}日を達成",
@@ -1070,28 +1070,28 @@ export const messages = {
     "ru": "Частые вопросы"
   },
   "dkgFaqSubQ": {
-    "ja": "チャンネル登録も認証になりますか？",
-    "zh-Hans": "订阅频道也算认证吗？",
-    "zh-Hant": "訂閱頻道也算認證嗎？",
-    "es": "¿Cuenta una suscripción a un canal como prueba?",
-    "id": "Apakah langganan kanal termasuk bukti?",
-    "vi": "Đăng ký kênh có được tính là xác minh không?",
-    "th": "การสมัครสมาชิกช่องนับเป็นการยืนยันไหม",
-    "pt": "Uma inscrição em canal conta como comprovação?",
-    "fr": "Un abonnement à une chaîne compte-t-il comme preuve ?",
-    "ru": "Считается ли подписка на канал подтверждением?"
+    "ja": "SNSへの投稿も認証になりますか？",
+    "zh-Hans": "在社交媒体发帖也算认证吗？",
+    "zh-Hant": "在社群媒體發文也算認證嗎？",
+    "es": "¿Cuenta una publicación en redes como prueba?",
+    "id": "Apakah postingan media sosial termasuk bukti?",
+    "vi": "Bài đăng mạng xã hội có được tính là xác minh không?",
+    "th": "โพสต์โซเชียลนับเป็นการยืนยันไหม",
+    "pt": "Um post nas redes conta como comprovação?",
+    "fr": "Une publication sur les réseaux compte-t-elle comme preuve ?",
+    "ru": "Считается ли пост в соцсети подтверждением?"
   },
   "dkgFaqSubA": {
-    "ja": "チャンネル登録は「チャンネル登録」という別のファン活動です。活動ごとのポイントはファン活動ガイドで確認できます。",
-    "zh-Hans": "订阅频道是名为“频道订阅”的另一项粉丝活动。各活动的积分可在粉丝活动指南中查看。",
-    "zh-Hant": "訂閱頻道是名為「頻道訂閱」的另一項粉絲活動。各活動的積分可在粉絲活動指南中查看。",
-    "es": "La suscripción a un canal es una actividad aparte llamada «Suscripción al canal». Los puntos por actividad están en la guía de actividades.",
-    "id": "Langganan kanal adalah aktivitas terpisah bernama \"Langganan kanal\". Poin tiap aktivitas ada di panduan aktivitas fan.",
-    "vi": "Đăng ký kênh là một hoạt động riêng có tên \"Đăng ký kênh\". Bạn có thể xem điểm của từng hoạt động trong hướng dẫn hoạt động fan.",
-    "th": "การสมัครสมาชิกช่องเป็นกิจกรรมแยกต่างหากชื่อ \"สมัครสมาชิกช่อง\" ดูคะแนนของแต่ละกิจกรรมได้ในคู่มือกิจกรรมแฟน",
-    "pt": "A inscrição em canal é uma atividade separada chamada \"Inscrição no canal\". Veja os pontos por atividade no guia de atividades.",
-    "fr": "L'abonnement à une chaîne est une activité distincte appelée « Abonnement à la chaîne ». Les points par activité sont dans le guide des activités.",
-    "ru": "Подписка на канал — отдельная активность «Подписка на канал». Очки за каждую активность смотрите в руководстве по активностям фаната."
+    "ja": "SNSへの投稿は「SNS投稿」という別のファン活動です。スクリーンショットを提出し、運営者が確認すると7番目の枠が埋まります。",
+    "zh-Hans": "社交媒体发帖是名为“社交平台发帖”的另一项粉丝活动。提交截图并经运营方确认后，第7格会被填上。",
+    "zh-Hant": "社群媒體發文是名為「社群發文」的另一項粉絲活動。提交截圖並經營運方確認後，第7格就會填上。",
+    "es": "Publicar en redes es una actividad aparte llamada «Publicar en redes». Envía una captura y la casilla 7 se completa cuando un operador la aprueba.",
+    "id": "Postingan media sosial adalah aktivitas terpisah bernama \"Unggah di medsos\". Kirim tangkapan layarnya, dan kotak 7 terisi setelah operator menyetujuinya.",
+    "vi": "Đăng mạng xã hội là một hoạt động riêng có tên \"Đăng mạng xã hội\". Hãy gửi ảnh chụp, ô số 7 sẽ được lấp sau khi quản trị viên duyệt.",
+    "th": "การโพสต์โซเชียลเป็นกิจกรรมแยกต่างหากชื่อ \"โพสต์โซเชียล\" ส่งภาพหน้าจอ แล้วช่องที่ 7 จะถูกเติมเมื่อผู้ดูแลอนุมัติ",
+    "pt": "Postar nas redes é uma atividade separada chamada \"Postar nas redes\". Envie um print e o espaço 7 é preenchido quando um operador aprovar.",
+    "fr": "Publier sur les réseaux est une activité distincte appelée « Publier sur les réseaux ». Envoyez une capture : la case 7 se remplit quand un opérateur l'approuve.",
+    "ru": "Пост в соцсети — отдельная активность «Пост в соцсети». Отправьте скриншот, и ячейка 7 заполнится после одобрения оператором."
   },
   "dkgFaqAmountQ": {
     "ja": "金額も掲示板に表示されますか？",

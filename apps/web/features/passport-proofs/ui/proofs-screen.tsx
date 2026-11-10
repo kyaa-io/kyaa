@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { ImagePlus } from "lucide-react";
 
 import { FanAction } from "@/components/fan-ui/fan-action";
@@ -8,7 +9,7 @@ import { FanLockedRows } from "@/components/fan-ui/fan-locked-value";
 import { GuestLoginAction } from "@/features/my/ui/guest-login";
 import { useByUsAuth } from "@/features/auth/client/cognito-auth";
 import { ContentActions } from "@/features/content-safety/ui/content-actions";
-import { PROOF_NOTE_MAX, PROOF_TYPES, type MyProofItem, type ProofBoardItem, type ProofType } from "@/features/passport/domain/proof-types";
+import { PROOF_NOTE_MAX, SNS_POST_PROOF, SUBMITTABLE_PROOF_TYPES, proofTypeSchema, type MyProofItem, type ProofBoardItem, type ProofType } from "@/features/passport/domain/proof-types";
 import type { AppLocale } from "@/i18n/locales";
 import { ProofImageMask } from "./proof-image-mask";
 import { maskAndEncode, PROOF_MAX_IMAGES, type MaskRect } from "./proof-image";
@@ -18,7 +19,7 @@ import styles from "./proofs.module.css";
 
 const TYPE_KEY: Record<ProofType, ProofsCopyKey> = {
   membership: "pfTypeMembership", purchase: "pfTypePurchase", receipt: "pfTypeReceipt", ticket: "pfTypeTicket",
-  donation: "pfTypeDonation", funding: "pfTypeFunding", kyaa_payment: "pfTypeKyaaPayment",
+  donation: "pfTypeDonation", funding: "pfTypeFunding", kyaa_payment: "pfTypeKyaaPayment", sns_post: "pfTypeSns",
 };
 const STATUS_KEY: Record<MyProofItem["status"], ProofsCopyKey> = {
   pending: "pfStatusPending", in_review: "pfStatusPending", approved: "pfStatusApproved",
@@ -115,7 +116,9 @@ export function ProofsScreen({ locale, slug }: Props) {
     return listProofBoard(slug, undefined, token);
   }, [slug, auth.ready, auth.authenticated]);
   const missions = useResource(() => (auth.ready ? listProofMissions(getToken, slug) : new Promise<never>(() => {})), [slug, auth.ready, getToken]);
-  const [chosenType, setChosenType] = useState<ProofType | null>(null);
+  // The passport 07 card links here with ?type=sns_post; an unknown value falls back to the first listed type.
+  const linkedType = proofTypeSchema.safeParse(useSearchParams()?.get("type")).data ?? null;
+  const [chosenType, setChosenType] = useState<ProofType | null>(linkedType);
   const [picked, setPicked] = useState<Picked[]>([]);
   const [note, setNote] = useState("");
   const [publish, setPublish] = useState(false);
@@ -139,11 +142,13 @@ export function ProofsScreen({ locale, slug }: Props) {
     setPicked((current) => [...current, ...next]);
   };
   const missionList = missions.state.status === "ready" ? missions.state.data : [];
-  const types = PROOF_TYPES.filter((type) => missionList.some((item) => item.proofType === type));
+  const types = SUBMITTABLE_PROOF_TYPES.filter((type) => missionList.some((item) => item.proofType === type));
   const proofType = (resubmitting?.proofType ?? (chosenType && types.includes(chosenType) ? chosenType : types[0])) as ProofType | undefined;
   const ofType = missionList.filter((item) => item.proofType === proofType);
   const mission = ofType.find((item) => item.submittable) ?? ofType[0];
   const blocked = !resubmitting && mission && !mission.submittable ? mission.unavailableReason : null;
+  // An SNS post screenshot fills slot 07 only; it is never shown on the verified board.
+  const publishable = proofType !== SNS_POST_PROOF;
   const canSubmit = !busy && Boolean(mission) && !blocked && picked.length > 0 && (resubmitting || privacy);
 
   const submit = async () => {
@@ -156,7 +161,7 @@ export function ProofsScreen({ locale, slug }: Props) {
       const imagePhash = encoded.map((item) => item.phash);
       const trimmed = note.trim() ? note.trim().slice(0, PROOF_NOTE_MAX) : undefined;
       if (resubmitting) await resubmitProof(getToken, resubmitting.submissionId, { expectedRevision: resubmitting.revision, uploadId, imagePhash, note: trimmed, locale });
-      else await submitProof(getToken, { creator: slug, proofType, uploadId, publishConsent: publish, amountVisible: publish ? amountVisible : null, imagePhash, note: trimmed, locale });
+      else await submitProof(getToken, { creator: slug, proofType, uploadId, publishConsent: publishable && publish, amountVisible: publishable && publish ? amountVisible : null, imagePhash, note: trimmed, locale });
       setPicked([]); setNote(""); setPrivacy(false); setResubmitting(null);
       history.retry();
     } catch (error) {
@@ -207,8 +212,8 @@ export function ProofsScreen({ locale, slug }: Props) {
         </label>
         {!resubmitting ? (
           <>
-            <label className={styles.check}><input type="checkbox" checked={publish} onChange={(event) => setPublish(event.target.checked)} />{proofsText(locale, "pfPublish")}</label>
-            {publish ? <label className={styles.check}><input type="checkbox" checked={amountVisible} onChange={(event) => setAmountVisible(event.target.checked)} />{proofsText(locale, "pfAmountVisible")}</label> : null}
+            {publishable ? <label className={styles.check}><input type="checkbox" checked={publish} onChange={(event) => setPublish(event.target.checked)} />{proofsText(locale, "pfPublish")}</label> : null}
+            {publishable && publish ? <label className={styles.check}><input type="checkbox" checked={amountVisible} onChange={(event) => setAmountVisible(event.target.checked)} />{proofsText(locale, "pfAmountVisible")}</label> : null}
             <label className={styles.check}><input type="checkbox" checked={privacy} onChange={(event) => setPrivacy(event.target.checked)} required />{proofsText(locale, "pfPrivacy")}</label>
           </>
         ) : null}

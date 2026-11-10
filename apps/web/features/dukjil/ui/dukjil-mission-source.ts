@@ -10,7 +10,7 @@ export const dukjilMissionSource = {
   missionTaskInvite: { ko: "초대 링크로 친구를 데려와요", en: "Bring a friend with your invite link" },
   missionTaskProof: { ko: "조건을 확인하고 인증을 제출해요", en: "Check the conditions and submit proof" },
   missionTaskQuiz: { ko: "입국 심사 문제를 풀어요", en: "Answer the entry review questions" },
-  missionTaskSubscription: { ko: "크리에이터 채널을 구독하고 인증해요", en: "Subscribe to the creator's channel and verify" },
+  missionTaskSubscription: { ko: "SNS에 올린 글을 캡처해 제출해요", en: "Submit a screenshot of your social post" },
   missionTaskSteady: { ko: "{0}일 연속으로 출석해요", en: "Check in {0} days in a row" },
   missionTaskSteadyPlain: { ko: "며칠 연속으로 출석해요", en: "Check in several days in a row" },
   missionClaimHint: { ko: "{0}칸을 모두 채우면 하트를 받아요", en: "Fill all {0} slots to get a heart" },

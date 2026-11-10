@@ -113,16 +113,16 @@ export const messages = {
     "ru": "Ответьте на вопросы проверки"
   },
   "missionTaskSubscription": {
-    "ja": "クリエイターのチャンネルを登録して認証します",
-    "zh-Hans": "订阅创作者频道并认证",
-    "zh-Hant": "訂閱創作者頻道並認證",
-    "es": "Suscríbete al canal del creador y verifica",
-    "id": "Langganan kanal kreator lalu verifikasi",
-    "vi": "Đăng ký kênh của nhà sáng tạo rồi xác nhận",
-    "th": "ติดตามช่องครีเอเตอร์แล้วยืนยัน",
-    "pt": "Assine o canal do criador e verifique",
-    "fr": "Abonnez-vous à la chaîne et validez",
-    "ru": "Подпишитесь на канал автора и подтвердите"
+    "ja": "SNSに投稿した内容のスクリーンショットを提出します",
+    "zh-Hans": "提交你在社交媒体发布内容的截图",
+    "zh-Hant": "提交你在社群媒體發布內容的截圖",
+    "es": "Envía una captura de tu publicación en redes",
+    "id": "Kirim tangkapan layar postingan media sosialmu",
+    "vi": "Gửi ảnh chụp bài đăng mạng xã hội của bạn",
+    "th": "ส่งภาพหน้าจอโพสต์โซเชียลของคุณ",
+    "pt": "Envie um print do seu post nas redes",
+    "fr": "Envoyez une capture de votre publication sur les réseaux",
+    "ru": "Отправьте скриншот своей публикации в соцсети"
   },
   "missionTaskSteady": {
     "ja": "{0}日連続で出席します",

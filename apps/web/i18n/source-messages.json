@@ -16182,8 +16182,8 @@
     "id": "features/dukjil/ui/dukjil-copy:missionClaimFailed"
   },
   "missionSlotSubscription": {
-    "en": "Subscribe",
-    "ko": "구독",
+    "en": "SNS post",
+    "ko": "SNS 올리기",
     "source": "features/dukjil/ui/dukjil-copy",
     "id": "features/dukjil/ui/dukjil-copy:missionSlotSubscription"
   },
@@ -16356,8 +16356,8 @@
     "id": "features/dukjil-guide/ui/guide-copy:dkgActInvite"
   },
   "dkgActSubscription": {
-    "en": "Channel subscription",
-    "ko": "채널 구독",
+    "en": "SNS post",
+    "ko": "SNS 올리기",
     "source": "features/dukjil-guide/ui/guide-copy",
     "id": "features/dukjil-guide/ui/guide-copy:dkgActSubscription"
   },
@@ -16702,6 +16702,12 @@
     "ko": "kyaa 결제",
     "source": "features/passport-proofs/ui/proofs-copy",
     "id": "features/passport-proofs/ui/proofs-copy:pfTypeKyaaPayment"
+  },
+  "pfTypeSns": {
+    "en": "SNS post",
+    "ko": "SNS 올리기",
+    "source": "features/passport-proofs/ui/proofs-copy",
+    "id": "features/passport-proofs/ui/proofs-copy:pfTypeSns"
   },
   "pfImages": {
     "en": "Images (up to 3)",
@@ -17136,14 +17142,14 @@
     "id": "features/dukjil-guide/ui/guide-copy:dkgFaqTitle"
   },
   "dkgFaqSubQ": {
-    "en": "Does a channel subscription count as proof?",
-    "ko": "채널 구독도 인증이 되나요?",
+    "en": "Does a social post count as proof?",
+    "ko": "SNS에 올린 글도 인증이 되나요?",
     "source": "features/dukjil-guide/ui/guide-copy",
     "id": "features/dukjil-guide/ui/guide-copy:dkgFaqSubQ"
   },
   "dkgFaqSubA": {
-    "en": "A channel subscription is a separate activity called \"Channel subscription\". See points per activity in the fan activity guide.",
-    "ko": "채널 구독은 \"채널 구독\"이라는 별도 덕질이에요. 덕질별 포인트는 덕질 가이드에서 볼 수 있어요.",
+    "en": "A social post is a separate activity called \"SNS post\". Submit a screenshot of it, and slot 7 fills once an operator approves it.",
+    "ko": "SNS에 올린 글은 \"SNS 올리기\"라는 별도 덕질이에요. 글을 캡처해 제출하고 운영자가 확인하면 7번 칸이 채워져요.",
     "source": "features/dukjil-guide/ui/guide-copy",
     "id": "features/dukjil-guide/ui/guide-copy:dkgFaqSubA"
   },

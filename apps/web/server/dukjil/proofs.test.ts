@@ -19,6 +19,13 @@ const dbResult = { id: sub, status: "pending", revision: 0, replayed: false };
 beforeEach(() => { vi.clearAllMocks(); vi.mocked(deps.authorize).mockResolvedValue({ appUserId: owner }); });
 
 describe("submit", () => {
+  it("refuses to publish an SNS post on the proof board before reaching the database", async () => {
+    expect((await h.submit(send({ ...valid, proofType: "sns_post", publishConsent: true }))).status).toBe(400);
+    expect(deps.rpc).not.toHaveBeenCalled();
+    vi.mocked(deps.rpc).mockResolvedValue(dbResult);
+    expect((await h.submit(send({ ...valid, proofType: "sns_post", publishConsent: false, amountVisible: null }))).status).toBe(200);
+    expect(vi.mocked(deps.rpc).mock.calls[0][1]).toMatchObject({ p_proof_type: "sns_post", p_publish_consent: false, p_post_body: null });
+  });
   it("sends server-owned identity, the creator id and a request hash to the database", async () => {
     vi.mocked(deps.rpc).mockResolvedValue(dbResult);
     const res = await h.submit(send(valid));
@@ -180,6 +187,12 @@ describe("proof missions", () => {
     expect((await (await list()).json()).items.map((i: { submittable: boolean; unavailableReason: string | null }) => [i.submittable, i.unavailableReason])).toEqual([[false, "PROOF_ALREADY_APPROVED"], [true, null]]);
     readMissions.mockResolvedValue(rows({ monthCount: 2 }));
     expect((await (await list()).json()).items.every((i: { submittable: boolean; unavailableReason: string }) => !i.submittable && i.unavailableReason === "PROOF_MONTHLY_LIMIT")).toBe(true);
+  });
+  it("keeps an SNS post (slot 07) submittable at the monthly proof limit (BUGS-261110 B6)", async () => {
+    const m3 = "77777777-7777-4777-8777-777777777777";
+    readMissions.mockResolvedValue(rows({ monthCount: 2, missions: [...rows().missions, { id: m3, proofType: "sns_post", platform: "instagram", closesAt: "2026-12-03T00:00:00Z" }] }));
+    expect((await (await list()).json()).items.map((i: { proofType: string; unavailableReason: string | null }) => [i.proofType, i.unavailableReason]))
+      .toEqual([["membership", "PROOF_MONTHLY_LIMIT"], ["purchase", "PROOF_MONTHLY_LIMIT"], ["sns_post", null]]);
   });
   it("needs login and the creator, and returns an empty list when there is no mission", async () => {
     vi.mocked(deps.authorize).mockRejectedValue(new AuthError("AUTHENTICATION_REQUIRED", 401, "x"));

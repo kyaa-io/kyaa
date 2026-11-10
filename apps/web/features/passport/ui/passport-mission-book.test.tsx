@@ -218,4 +218,8 @@ describe("missionHref", () => {
   it("sends the entry review slot to the quiz, not the certification table", () => {
     expect(missionHref("quiz", "elina", "p", "ko")).toBe("/c/elina/verify?locale=ko");
   });
+  it("opens the proof form on the SNS post type for 07 and on the proof form for 09 (BUGS-261110 B1·B6)", () => {
+    expect(missionHref("subscription", "elina", "p", "ko")).toBe("/c/elina/proofs?type=sns_post&locale=ko");
+    expect(missionHref("proof", "elina", "p", "en")).toBe("/c/elina/proofs?locale=en");
+  });
 });

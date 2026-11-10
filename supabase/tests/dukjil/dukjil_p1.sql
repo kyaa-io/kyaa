@@ -335,7 +335,7 @@ begin
   select count(*) into n from public.mobile_fan_economy_ledger l join public.dukjil_action_log a on a.ledger_id=l.id where a.app_user_id=u1 and a.action_key='survey';
   if n <> 1 then raise exception 'survey ledger rows %', n; end if;
 
-  -- subscription: approval of a membership proof pays once per creator/platform
+  -- membership: approval of a legacy membership certification records the proof action (slot 09) once, keyed by the submission (BUGS-261110 B1)
   set local session_replication_role = replica;
   insert into public.admin_allowlist(id,email,role) values(adm,'dukjil-admin@byus.test',(enum_range(null::public.admin_role))[1]);
   insert into public.certification_submissions(id,app_user_id,celebrity_id,mission_id,mission_revision,reward_revision_id,reward_revision,
@@ -344,11 +344,12 @@ begin
   set local session_replication_role = origin;
   alter table public.certification_submissions disable trigger all;
   alter table public.certification_submissions enable trigger zzz_dukjil_wire;
-  if (select count(*) from public.dukjil_action_log where app_user_id=u1 and action_key='subscription') <> 0 then raise exception 'pending must not pay'; end if;
+  if (select count(*) from public.dukjil_action_log where app_user_id=u1 and action_key in ('proof','subscription')) <> 0 then raise exception 'pending must not pay'; end if;
   update public.certification_submissions set status='approved', reviewed_by_app_user_id=u4, reviewed_by_admin_allowlist_id=adm, reviewed_at=now() where id=csub;
   update public.certification_submissions set updated_at=now() where id=csub;
-  select count(*) into n from public.dukjil_action_log where app_user_id=u1 and action_key='subscription' and source_key=c1::text||':youtube';
-  if n <> 1 then raise exception 'subscription rows %; failures %', n, (select coalesce(jsonb_agg(error_message),'[]') from public.dukjil_wire_failures where action_key='subscription'); end if;
+  select count(*) into n from public.dukjil_action_log where app_user_id=u1 and action_key='proof' and source_key=csub::text;
+  if n <> 1 then raise exception 'membership proof rows %; failures %', n, (select coalesce(jsonb_agg(error_message),'[]') from public.dukjil_wire_failures where action_key='proof'); end if;
+  if exists (select 1 from public.dukjil_action_log where app_user_id=u1 and action_key='subscription') then raise exception 'membership must not pay the subscription action'; end if;
 
   -- event review needs a check-in; the owner opening their own share link pays nothing
   if exists(select 1 from public.dukjil_action_log where action_key='event_review' and app_user_id not in (select app_user_id from public.group_event_registrations where checked_in_at is not null)) then
@@ -461,8 +462,9 @@ begin
       reward_policy_version,reward_score_points,reward_ticket_amount,attempt_number,idempotency_key,request_hash,status,membership_platform,
       reviewed_by_app_user_id,reviewed_by_admin_allowlist_id,reviewed_at)
     values(csub2,u2,c1,extensions.gen_random_uuid(),1,extensions.gen_random_uuid(),1,1,1,0,1,extensions.gen_random_uuid(),repeat('d',64),'approved','instagram',u4,adm,now());
-  select count(*) into n from public.dukjil_action_log where app_user_id=u2 and action_key='subscription' and source_key=c1::text||':instagram';
-  if n <> 1 then raise exception 'direct approved subscription rows %', n; end if;
+  select count(*) into n from public.dukjil_action_log where app_user_id=u2 and action_key='proof' and source_key=csub2::text;
+  if n <> 1 then raise exception 'direct approved membership proof rows %', n; end if;
+  if exists (select 1 from public.dukjil_action_log where app_user_id=u2 and action_key='subscription') then raise exception 'direct approved membership paid subscription'; end if;
   select count(*) into n from public.dukjil_wire_failures;
   if n <> fails_before then raise exception 'direct inserts must not add failure rows'; end if;
 end $$;

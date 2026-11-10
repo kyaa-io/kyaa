@@ -303,4 +303,23 @@ describe("certification review workspace integration", () => {
     expect(bodies[1]).not.toHaveProperty("proofType");
     expect(bodies[1]).not.toHaveProperty("proofPlatform");
   });
+
+  it("saves an SNS post mission with one of the five networks (BUGS-261110 B6)", async () => {
+    const bodies: Record<string, unknown>[] = [];
+    setup({ get: url => url.includes("certification-missions") ? Response.json({ missions: [] }) : Response.json({ submissions: [] }), post: (_url, body) => { bodies.push(body); return Response.json({ id: "m-new" }); } });
+    render(<AuthorizedCertificationManager />);
+    await screen.findByText("표시할 제출이 없습니다");
+    fireEvent.click(screen.getByRole("tab", { name: "미션 설정" }));
+    await screen.findByRole("option", { name: /크리에이터 · @star/ });
+    fireEvent.change(screen.getByLabelText("크리에이터"), { target: { value: "creator-1" } });
+    fireEvent.change(screen.getByLabelText("증빙 종류"), { target: { value: "sns_post" } });
+    expect(screen.getByRole("option", { name: "SNS 올리기" })).toBeTruthy();
+    expect(Array.from((screen.getByLabelText("증빙 플랫폼") as HTMLSelectElement).options).map(option => option.value)).toEqual(["", "instagram", "tiktok", "x", "threads", "youtube"]);
+    fireEvent.change(screen.getByLabelText("증빙 플랫폼"), { target: { value: "threads" } });
+    fireEvent.change(screen.getByLabelText("시작 일시"), { target: { value: "2026-09-10T00:00" } });
+    fireEvent.change(screen.getByLabelText("종료 일시"), { target: { value: "2026-10-10T00:00" } });
+    fireEvent.submit(screen.getByRole("button", { name: "초안 저장" }).closest("form")!);
+    await waitFor(() => expect(bodies).toHaveLength(1));
+    expect(bodies[0]).toMatchObject({ command: "save", proofType: "sns_post", proofPlatform: "threads" });
+  });
 });

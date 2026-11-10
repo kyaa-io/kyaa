@@ -2,8 +2,13 @@ import { z } from "zod";
 import { APP_LOCALES } from "@/i18n/locales";
 
 // Contract §3.6 / §4 (PASSPORT-RENEWAL P3). Shared by the proof API (server/dukjil/proofs.ts) and the proof screens.
+// Slot 09 proof kinds (the guide lists these). sns_post is the slot 07 screenshot of the fan's own SNS post: same submit and review path,
+// paid as the subscription action, never published on the proof board.
 export const PROOF_TYPES = ["membership", "purchase", "receipt", "ticket", "donation", "funding", "kyaa_payment"] as const;
-export const proofTypeSchema = z.enum(PROOF_TYPES);
+export const SNS_POST_PROOF = "sns_post";
+export const SUBMITTABLE_PROOF_TYPES = [...PROOF_TYPES, SNS_POST_PROOF] as const;
+export const SNS_POST_PLATFORMS = ["instagram", "tiktok", "x", "threads", "youtube"] as const;
+export const proofTypeSchema = z.enum(SUBMITTABLE_PROOF_TYPES);
 export type ProofType = z.infer<typeof proofTypeSchema>;
 
 export const PROOF_STATUSES = ["pending", "in_review", "approved", "changes_requested", "rejected"] as const;
@@ -26,7 +31,7 @@ export const proofSubmitBodySchema = z.object({
   imagePhash: proofPhashSchema,
   note: z.string().trim().max(PROOF_NOTE_MAX).optional(),
   locale: z.enum(APP_LOCALES).optional(),
-}).strict();
+}).strict().refine((body) => body.proofType !== SNS_POST_PROOF || !body.publishConsent, { message: "an SNS post is not published on the proof board", path: ["publishConsent"] });
 export type ProofSubmitBody = z.infer<typeof proofSubmitBodySchema>;
 
 export const proofResubmitBodySchema = z.object({

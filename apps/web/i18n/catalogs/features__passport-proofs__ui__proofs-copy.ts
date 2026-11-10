@@ -109,6 +109,18 @@ export const messages = {
     "fr": "Paiement kyaa",
     "ru": "Оплата kyaa"
   },
+  "pfTypeSns": {
+    "ja": "SNS投稿",
+    "zh-Hans": "社交平台发帖",
+    "zh-Hant": "社群發文",
+    "es": "Publicar en redes",
+    "id": "Unggah di medsos",
+    "vi": "Đăng mạng xã hội",
+    "th": "โพสต์โซเชียล",
+    "pt": "Postar nas redes",
+    "fr": "Publier sur les réseaux",
+    "ru": "Пост в соцсети"
+  },
   "pfImages": {
     "ja": "画像(最大3枚)",
     "zh-Hans": "图片(最多3张)",
