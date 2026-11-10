@@ -16,6 +16,14 @@ describe("global web wallet trust boundary", () => {
     expect(deps.rpc).toHaveBeenCalledWith("read_owned_group_wallet", { p_app_user_id: owner });
     expect(response.headers.get("cache-control")).toBe("private, no-store");
   });
+  // Production keeps group_wallet_release.rewards_start_on = 'infinity' (rewards never started); jsonb renders it as "infinity".
+  it("reads a wallet whose rewards start date is infinity", async () => {
+    const wallet = { sequence: 0, points: 0, tickets: 0, policyVersion: "group-wallet-v1", pointCost: 100, rewardsStartOn: "infinity", writeFenced: false, attendance: { date: "2026-11-11", checkedIn: false, streak: 0, nextBonusIn: 7, days: [] } };
+    vi.mocked(deps.rpc).mockResolvedValue(wallet);
+    const response = await api.wallet(request("/wallet"));
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual(wallet);
+  });
   describe("exchangesRemainingToday", () => {
     const wallet = { sequence: 1, points: 100, tickets: 3, policyVersion: "group-wallet-v1", pointCost: 100, writeFenced: false, attendance: { date: "2026-11-01", checkedIn: false, streak: 6, nextBonusIn: 1, days: [] } };
     const reply = (left: unknown) => vi.mocked(deps.rpc).mockImplementation(async (name: string) => (name === "read_owned_group_wallet" ? wallet : left));

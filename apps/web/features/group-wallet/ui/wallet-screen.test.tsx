@@ -45,6 +45,12 @@ it('disables attendance before the configured reward start date',async()=>{
  expect(await screen.findByRole('button',{name:/부터 출석/})).toBeDisabled();
  expect(screen.queryByRole('button',{name:'교환하기'})).not.toBeInTheDocument();
 });
+it('renders the balance and a disabled check-in when rewards never start (infinity)',async()=>{
+ vi.stubGlobal('fetch',vi.fn(async(url:string)=>Response.json(url.endsWith('/history')?{entries:[]}: {...wallet,rewardsStartOn:'infinity'})));
+ render(<WalletScreen locale='ko' attendance/>);
+ expect(await screen.findByRole('button',{name:/출석하고 포인트 받기/})).toBeDisabled();
+ expect(screen.queryByText('요청을 완료하지 못했어요.')).not.toBeInTheDocument();
+});
 
 
 it('keeps source wallet balances on the shared wallet card',async()=>{
