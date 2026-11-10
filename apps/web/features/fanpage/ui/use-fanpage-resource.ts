@@ -9,8 +9,10 @@ import { withRequestDeadline } from "@/features/reliability/client/request-deadl
 class FanpageReadFailure extends Error { constructor(readonly status: number, readonly body: { error?: { code?: string }; membershipCount?: number; fanCount?: number }) { super("FANPAGE_READ_FAILED"); } }
 type State<T> = { status: "loading" } | { status: "ready"; data: T } | { status: "error"; code: string; membershipCount?: number; fanCount?: number };
 /** Public reads may include owner context; a changed owner never sees an old snapshot.
- * `anonymous` starts at once without a token. A caller whose answer changes for a signed-in viewer (blocks) must pass url=null while the viewer may be signed in; see `mayHaveSession`. */
-export function useFanpageResource<T>(url: string | null, parse: (value: unknown) => T, keepPreviousData = false, anonymous = false) {
+ * `anonymous` starts at once without a token. A caller whose answer changes for a signed-in viewer (blocks) must pass url=null while the viewer may be signed in; see `mayHaveSession`.
+ * `keepAcrossUrls` (paged or tabbed lists): while the next page, tab or filter loads, the same viewer keeps seeing the
+ * previous list in place (`pending` is true) so the list never collapses; it is then replaced in one step. */
+export function useFanpageResource<T>(url: string | null, parse: (value: unknown) => T, keepPreviousData = false, anonymous = false, keepAcrossUrls = false) {
   const { ready, authenticated, user, getAccessToken } = usePrivy();
   const tokenProvider = useRef(getAccessToken);
   useEffect(() => { tokenProvider.current = getAccessToken; }, [getAccessToken]);
@@ -23,9 +25,10 @@ export function useFanpageResource<T>(url: string | null, parse: (value: unknown
   const ownerKey = anonymous ? `${url}:anonymous` : `${url}:${sessionReady}:${requestAuthenticated}:${ownerId ?? "guest"}:${session.generation}`;
   const cacheKey = anonymous ? `anonymous:${url}` : `${ownerId ?? "guest"}:${session.generation}:${url}`;
   const ownerScope = `${ownerId ?? "guest"}:${session.generation}`;
+  const identityKey = anonymous ? "anonymous" : `${sessionReady}:${requestAuthenticated}:${ownerId ?? "guest"}:${session.generation}`;
   useEffect(() => { if (canRead && !anonymous) syncResourceOwner(ownerScope); }, [anonymous, canRead, ownerScope]);
   const key = `${ownerKey}:${revision}`;
-  const [snapshot, setSnapshot] = useState<{ key: string; ownerKey: string; state: State<T>; refreshFailed?: boolean }>();
+  const [snapshot, setSnapshot] = useState<{ key: string; ownerKey: string; identityKey?: string; state: State<T>; refreshFailed?: boolean }>();
   const epoch = useResourceEpoch(cacheKey);
   const handled = useRef({ key, epoch });
   const shown = useRef<State<T> | undefined>(undefined);
@@ -53,7 +56,7 @@ export function useFanpageResource<T>(url: string | null, parse: (value: unknown
         }, { signal: flight }), controller.signal);
         if (controller.signal.aborted) return;
         const data = parse(body);
-        setSnapshot({ key, ownerKey, state: { status: "ready", data } });
+        setSnapshot({ key, ownerKey, identityKey, state: { status: "ready", data } });
       } catch (failure) {
         if (controller.signal.aborted) return;
         dropResource(cacheKey);
@@ -72,12 +75,13 @@ export function useFanpageResource<T>(url: string | null, parse: (value: unknown
       }
     })();
     return () => controller.abort();
-  }, [url, key, ownerKey, cacheKey, canRead, requestAuthenticated, parse, keepPreviousData, epoch]);
+  }, [url, key, ownerKey, identityKey, cacheKey, canRead, requestAuthenticated, parse, keepPreviousData, epoch]);
   const hasCurrentData = canRead && (snapshot?.key === key || (keepPreviousData && snapshot?.ownerKey === ownerKey && snapshot.state.status === "ready"));
+  const heldAcrossUrl = canRead && !hasCurrentData && !cached && keepAcrossUrls && Boolean(url) && snapshot?.identityKey === identityKey && snapshot.state.status === "ready";
   const state: State<T> = !canRead && authenticated && session.error ? { status: "error", code: session.error }
-    : hasCurrentData ? snapshot!.state : cached ?? { status: "loading" };
+    : hasCurrentData ? snapshot!.state : cached ?? (heldAcrossUrl ? snapshot!.state : { status: "loading" });
   useLayoutEffect(() => { shown.current = state; });
-  return { state, refreshFailed: canRead && snapshot?.ownerKey === ownerKey && snapshot.refreshFailed, invalidate: () => { dropResource(cacheKey); setSnapshot(undefined); setRevision(value => value + 1); }, retry: () => {
+  return { state, pending: heldAcrossUrl, refreshFailed: canRead && snapshot?.ownerKey === ownerKey && snapshot.refreshFailed, invalidate: () => { dropResource(cacheKey); setSnapshot(undefined); setRevision(value => value + 1); }, retry: () => {
     dropResource(cacheKey);
     if (authenticated && !session.ready && session.error) void session.retryTransition();
     setRevision((value) => value + 1);

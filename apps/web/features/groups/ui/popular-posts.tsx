@@ -29,7 +29,7 @@ const SHOWN=10;
 const parse=(value:unknown)=>z.object({items:z.array(fanPostFeedItemSchema.omit({kind:true})).max(10)}).parse(value);
 export function PopularPosts({slug,locale,pageImage}:{slug:string;locale:AppLocale;pageImage?:ReactNode}){
  const [period,setPeriod]=useState<'day'|'week'|'month'>('day');
- const result=useCommunityResource(`/api/celebrities/${encodeURIComponent(slug)}/popular-posts?period=${period}&locale=${toContentLocale(locale)}`,parse);
+ const result=useCommunityResource(`/api/celebrities/${encodeURIComponent(slug)}/popular-posts?period=${period}&locale=${toContentLocale(locale)}`,parse,false,false,false,true);
  const [title,...text]=labels[locale],copy=contentCopy(locale);
  // The ranking always lists the latest posts when nothing has counts. It is empty only for a page with no readable post, and then the board below speaks for itself.
  if(result.state.status==='ready'&&result.state.data.items.length===0)return null;

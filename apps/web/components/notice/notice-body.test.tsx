@@ -33,6 +33,16 @@ describe("NoticeBody", () => {
     );
     expect(screen.getByRole("link")).toHaveAttribute("target", "_blank");
   });
+  it("shows a bare web address as a link and keeps its text", () => {
+    const url = "https://www.instagram.com/p/DfJw9D7ha--/";
+    const { container } = render(<NoticeBody locale="ko" document={{ type: "doc", content: [{ type: "paragraph", content: [{ type: "text", text: `영상은 ${url} 에서 봐요` }] }] }} />);
+    const link = screen.getByRole("link", { name: `${url}, 새 창` });
+    expect(link).toHaveAttribute("href", url);
+    expect(link).toHaveAttribute("target", "_blank");
+    expect(link).toHaveAttribute("rel", "noopener noreferrer");
+    expect(link.querySelector("svg")).toHaveAttribute("aria-hidden", "true");
+    expect(container.textContent).toBe(`영상은 ${url}, 새 창 에서 봐요`);
+  });
   it("translates text runs in one batch while preserving media, links and formatting", async () => {
     const fetcher = vi.fn().mockImplementation(async () => Response.json({ translatedTexts: ["News", "Read the announcement"], cached: false }));
     vi.stubGlobal("fetch", fetcher);

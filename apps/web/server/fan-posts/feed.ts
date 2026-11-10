@@ -77,6 +77,12 @@ type Candidate = {
 
 function compare(left: Candidate, right: Candidate) {
   if (left.pinRank !== right.pinRank) return right.pinRank - left.pinRank;
+  return compareByTime(left, right);
+}
+
+/** Display order: notices are no longer held at the top, every item reads newest first.
+ * Paging still follows the database order (`compare`) so cursors never skip or repeat an item. */
+function compareByTime(left: Candidate, right: Candidate) {
   const time = Date.parse(itemTime(right.item)) - Date.parse(itemTime(left.item));
   if (time) return time;
   if (left.source === right.source) return left.sourceOrder - right.sourceOrder;
@@ -181,7 +187,7 @@ export function createFeedHandler(dependencies: FeedDependencies) {
         v: 1, slug, source, news, locale, mediaOnly, search, db: nextDbCursor, dbDone,
         chzzk: nextChzzkCursor, chzzkDone,
       });
-      return response(checked(feedPageSchema, { items: selected.map(entry => entry.item), nextCursor, unavailableSources }));
+      return response(checked(feedPageSchema, { items: [...selected].sort(compareByTime).map(entry => entry.item), nextCursor, unavailableSources }));
     } catch (error) {
       return feedFailure(error);
     }

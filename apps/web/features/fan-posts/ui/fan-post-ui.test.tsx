@@ -108,7 +108,7 @@ describe("fan post UI navigation and context", () => {
     expect(screen.getByText("See you at the next show.")).toBeInTheDocument();
     expect(screen.getByText("A fan’s story")).toBeInTheDocument();
     expect(screen.getByText("An older cheer remains here.")).toBeInTheDocument();
-    expect(screen.getAllByRole("button", { name: "Write a post" })).toHaveLength(1);
+    expect(screen.getAllByRole("textbox", { name: "Write a post" })).toHaveLength(1);
     expect(screen.getAllByRole("button", { name: /^Like/ })).toHaveLength(2);
     expect(screen.getByRole("link", { name: "Comments 3" })).toHaveAttribute("href", `/c/artist/notices/artist-update?locale=en&returnTo=${encodeURIComponent(returnTo)}#comments`);
     expect(screen.getByRole("link", { name: "Fan posts" })).toHaveAttribute("href", "/artist?tab=board&source=fans&locale=en#celebrity-content");
@@ -128,12 +128,13 @@ describe("fan post UI navigation and context", () => {
     await waitFor(() => expect(screen.getByRole("button", { name: "Like 3" })).toHaveAttribute("aria-pressed", "true"));
     fireEvent.click(screen.getByRole("button", { name: "Comments 0" }));
     expect(state.replyReads[0]).toBe(`/api/cheers/${cheerId}/replies?locale=en`);
-    const field = screen.getByRole("textbox");
+    // The board composer stays open above the feed; the reply field is the last textbox.
+    const field = screen.getAllByRole("textbox").at(-1)!;
     fireEvent.change(field, { target: { value: "Keep this reply" } });
     fireEvent.click(screen.getByRole("button", { name: "Comments 0" }));
-    expect(screen.queryByRole("textbox")).not.toBeInTheDocument();
+    expect(screen.getAllByRole("textbox")).toHaveLength(1);
     fireEvent.click(screen.getByRole("button", { name: "Comments 0" }));
-    expect(screen.getByRole("textbox")).toHaveValue("Keep this reply");
+    expect(screen.getAllByRole("textbox").at(-1)).toHaveValue("Keep this reply");
     state.request.mockClear().mockResolvedValueOnce(null);
     fireEvent.submit(field.closest("form")!);
     await waitFor(() => expect(state.request).toHaveBeenCalledOnce());
@@ -153,7 +154,6 @@ describe("fan post UI navigation and context", () => {
 
     expect(screen.getByText("Brand updates")).toBeInTheDocument();
     expect(screen.queryByText("Artist update")).not.toBeInTheDocument();
-    fireEvent.click(screen.getByRole("button", { name: "Write a post" }));
     expect(screen.queryByRole("button", { name: /Visibility/ })).not.toBeInTheDocument();
     fireEvent.change(screen.getByRole("textbox", { name: "Write a post" }), { target: { value: "Public brand conversation" } });
     await waitFor(()=>expect(screen.getByRole("button",{name:"Publish"})).toBeEnabled());
@@ -166,10 +166,26 @@ describe("fan post UI navigation and context", () => {
     ));
   });
 
+  it("focuses the open composer from the creator home 글쓰기 link and offers one login action when signed out", () => {
+    state.pages = { first: { items: [], nextCursor: null } };
+    window.history.replaceState(null, "", "/artist?tab=board&source=fans&locale=en&compose=1");
+    try {
+      const view = render(<FanPostFeed slug="artist" locale="en" source="fans" />);
+      expect(screen.getByRole("textbox", { name: "Write a post" })).toHaveFocus();
+      view.unmount();
+      state.authenticated = false;
+      const { container } = render(<FanPostFeed slug="artist" locale="en" source="fans" />);
+      expect(screen.queryByRole("textbox", { name: "Write a post" })).not.toBeInTheDocument();
+      const guest = container.querySelector("[data-composer-guest]")!;
+      expect(guest.querySelectorAll("a")).toHaveLength(1);
+      expect(guest.querySelector("a")).toHaveAttribute("href", expect.stringContaining("/login?locale=en"));
+    } finally {
+      window.history.replaceState(null, "", "/");
+    }
+  });
   it("does not present a fan composer in the official filter and resets drafts on source changes", () => {
     state.pages = { first: { items: [], nextCursor: null } };
     const view = render(<FanPostFeed slug="artist" locale="en" source="all" />);
-    fireEvent.click(screen.getByRole("button", { name: "Write a post" }));
     fireEvent.change(screen.getByRole("textbox"), { target: { value: "Unpublished draft" } });
     view.rerender(<FanPostFeed slug="artist" locale="en" source="official" />);
     expect(screen.queryByRole("textbox")).not.toBeInTheDocument();
@@ -208,9 +224,9 @@ describe("fan post UI navigation and context", () => {
     state.pages = { first: { items: [], nextCursor: null } };
     render(<FanPostFeed slug="artist" locale="en" />);
 
-    expect(screen.queryByRole("textbox", { name: "Write a post" })).not.toBeInTheDocument();
-    fireEvent.click(screen.getByRole("button", { name: "Write a post" }));
-    expect(screen.getByRole("textbox", { name: "Write a post" })).toHaveFocus();
+    // The board composer is open without a 글쓰기 step and shows no standing attachment hints.
+    expect(screen.getByRole("textbox", { name: "Write a post" })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Cancel" })).not.toBeInTheDocument();
     const photoInput = screen.getByLabelText("Add photos") as HTMLInputElement;
     expect(photoInput).toHaveAttribute("tabindex", "-1");
     expect(screen.getByRole("button", { name: "Add photos" })).toHaveAccessibleDescription("");
@@ -233,7 +249,8 @@ describe("fan post UI navigation and context", () => {
     fireEvent.click(screen.getByRole("button", { name: "Cancel" }));
     expect(screen.getByRole("dialog",{name:"Stop writing?"})).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button",{name:"Discard draft"}));
-    expect(screen.queryByRole("textbox")).not.toBeInTheDocument();
+    expect(screen.getByRole("textbox", { name: "Write a post" })).toHaveValue("");
+    expect(screen.getByRole("button", { name: "Visibility: Public" })).toBeInTheDocument();
     expect(screen.getByRole("status")).toHaveTextContent("No posts yet");
   });
 
@@ -241,7 +258,6 @@ describe("fan post UI navigation and context", () => {
     vi.stubGlobal("matchMedia", vi.fn(() => ({ matches: true, addEventListener: vi.fn(), removeEventListener: vi.fn() })));
     state.pages = { first: { items: [], nextCursor: null } };
     render(<FanPostFeed slug="artist" locale="en" />);
-    fireEvent.click(screen.getByRole("button", { name: "Write a post" }));
     fireEvent.click(screen.getByRole("button", { name: "Visibility: Public" }));
     expect(await screen.findByRole("dialog", { name: "Visibility" })).toHaveAttribute("data-variant", "bottom-sheet");
   });
@@ -270,7 +286,6 @@ describe("fan post UI navigation and context", () => {
     for (const [response, shown] of [[{ id: "p", reward: { points: 30 } }, true], [{ id: "p" }, false]] as const) {
       cleanup(); toast.show.mockReset(); state.request.mockReset().mockResolvedValue(response);
       render(<FanPostFeed slug="artist" locale="en" />);
-      fireEvent.click(screen.getByRole("button", { name: "Write a post" }));
       fireEvent.change(screen.getByRole("textbox", { name: "Write a post" }), { target: { value: "hello" } });
       await waitFor(() => expect(screen.getByRole("button", { name: "Publish" })).toBeEnabled());
       fireEvent.click(screen.getByRole("button", { name: "Publish" }));

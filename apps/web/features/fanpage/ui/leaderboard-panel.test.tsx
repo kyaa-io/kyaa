@@ -32,7 +32,8 @@ it("uses server-ranked category results and keeps the filter focused through loa
   filter.focus(); fireEvent.click(filter);
   await waitFor(() => expect(fetcher).toHaveBeenCalledWith(expect.stringContaining("category=mission"), expect.anything()));
   expect(filter).toHaveFocus(); expect(filter).toHaveAttribute("aria-pressed", "true");
-  expect(screen.queryByRole("table")).not.toBeInTheDocument();
+  // The previous ranking stays in place (no collapse) and is marked busy until the new one replaces it.
+  expect(screen.getByRole("table").closest("[aria-busy]")).toHaveAttribute("aria-busy", "true");
   await act(async () => resolve(Response.json({ ...data, rows: [{ ...rows[2], rank: 1, points: 2 }], me: null })));
   const table = await screen.findByRole("table");
   expect(within(table).getByText("달빛")).toBeInTheDocument();

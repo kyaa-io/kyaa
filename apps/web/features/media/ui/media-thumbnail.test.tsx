@@ -36,3 +36,14 @@ it("keeps an icon-only failed thumbnail without provider text for the compact ga
   expect(container.querySelector("svg")).toBeInTheDocument();
   expect(container.textContent).toBe("");
 });
+
+it("never uses a letterboxed YouTube cover in a text-free tile (R5: no black bands)", async () => {
+  const { container } = render(<MediaThumbnail image="https://i.ytimg.com/vi/abcdefghijk/hqdefault.jpg" href="https://www.youtube.com/watch?v=abcdefghijk" kind="videos" source="kyaa" locale="ko" iconOnly />);
+  const img = container.querySelector("img")!;
+  expect(img).toHaveAttribute("src", "https://i.ytimg.com/vi/abcdefghijk/hq720.jpg");
+  // YouTube's 120×90 placeholder for a missing size counts as a failure; next/image reports the load after decoding.
+  Object.defineProperty(img, "naturalWidth", { configurable: true, value: 120 });
+  fireEvent.load(img);
+  await waitFor(() => expect(container.querySelector("img")).toHaveAttribute("src", "https://i.ytimg.com/vi/abcdefghijk/mqdefault.jpg"));
+  expect(container.innerHTML).not.toContain("hqdefault");
+});

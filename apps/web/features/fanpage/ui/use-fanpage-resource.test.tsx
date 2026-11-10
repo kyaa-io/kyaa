@@ -151,3 +151,31 @@ it.each([401, 403, 404])("clears retained data when refresh revokes access with 
   act(() => result.current.retry());
   await waitFor(() => expect(result.current.state).toEqual({ status: "error", code: "ACCESS_REVOKED" }));
 });
+
+it("keeps the previous page in place while the next URL loads, then replaces it, only when asked", async () => {
+  let release!: (response: Response) => void;
+  const fetcher = vi.fn(async (url: string) => url === "/list?page=2" ? new Promise<Response>(done => { release = done; }) : Response.json({ name: url }));
+  vi.stubGlobal("fetch", fetcher);
+  const { result, rerender } = renderHook(({ url, hold }) => useFanpageResource(url, parse, true, false, hold), { initialProps: { url: "/list?page=1", hold: true } });
+  await waitFor(() => expect(result.current.state).toEqual({ status: "ready", data: { name: "/list?page=1" } }));
+  expect(result.current.pending).toBe(false);
+  rerender({ url: "/list?page=2", hold: true });
+  expect(result.current.state).toEqual({ status: "ready", data: { name: "/list?page=1" } });
+  expect(result.current.pending).toBe(true);
+  await waitFor(() => expect(fetcher).toHaveBeenCalledWith("/list?page=2", expect.anything()));
+  await act(async () => release(Response.json({ name: "/list?page=2" })));
+  await waitFor(() => expect(result.current.state).toEqual({ status: "ready", data: { name: "/list?page=2" } }));
+  expect(result.current.pending).toBe(false);
+  rerender({ url: "/list?page=3", hold: false });
+  expect(result.current.state).toEqual({ status: "loading" });
+});
+
+it("never holds a previous owner's page across a URL change", async () => {
+  vi.stubGlobal("fetch", vi.fn(async (url: string) => url === "/list?page=2" ? new Promise<Response>(() => {}) : Response.json({ name: url })));
+  const { result, rerender } = renderHook(({ url }) => useFanpageResource(url, parse, true, false, true), { initialProps: { url: "/list?page=1" } });
+  await waitFor(() => expect(result.current.state.status).toBe("ready"));
+  owner = "b";
+  rerender({ url: "/list?page=2" });
+  expect(result.current.state).toEqual({ status: "loading" });
+  expect(result.current.pending).toBe(false);
+});

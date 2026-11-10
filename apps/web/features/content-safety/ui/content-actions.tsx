@@ -15,6 +15,7 @@ import { type TargetType } from "@/features/fan-posts/domain/content";
 import { type AppLocale } from "@/i18n/locales";
 import { contentCopy } from "@/i18n/catalogs/features__fan_posts__ui";
 import { TranslationControl, useAutomaticTranslation } from "./use-automatic-translation";
+import { LinkifiedText } from "./linkified-text";
 import { useContentMutation } from "./use-content-mutation";
 import { useByUsSession } from "@/components/byus-session-provider";
 import styles from "./content.module.css";
@@ -77,7 +78,7 @@ export function ContentTranslation({ targetType, targetId, locale, children, sou
   const target = useMemo(() => ({ targetType, targetId, sourceRevision }), [targetType, targetId, sourceRevision]);
   const { observeElement, ...translation } = useAutomaticTranslation({ texts, locale, target });
   return <div ref={observeElement} className={styles.translation}>
-    {translation.showing ? <p className={styles.body} lang={locale}>{translation.texts[0]}</p> : children}
+    {translation.showing ? <p className={styles.body} lang={locale}><LinkifiedText text={translation.texts[0]} locale={locale} /></p> : children}
     <TranslationControl locale={locale} translation={translation} />
   </div>;
 }

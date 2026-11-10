@@ -6,7 +6,8 @@ import Link from "next/link";
 import type { Route } from "next";
 import { Menu } from "@base-ui/react/menu";
 import { generateText, type JSONContent } from "@tiptap/core";
-import { BadgeCheck, Ellipsis, Heart, MessageCircle, Pin } from "lucide-react";
+import { BadgeCheck, Ellipsis } from "lucide-react";
+import { ReactionCount, ReactionIcon } from "@/components/fan-ui/reaction-count";
 import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import { useByUsSession } from "@/components/byus-session-provider";
 import { AlertDialog } from "@/components/ui/overlay/accessible-overlay";
@@ -16,6 +17,7 @@ import { notifyFanActivityUpdated } from "@/components/fan-ui/fan-activity-updat
 import { noticeExtensions } from "@/components/notice/tiptap-extensions";
 import { ContentActions, ContentTranslation } from "@/features/content-safety/ui/content-actions";
 import { TranslatedText, TranslationControl, useAutomaticTranslation } from "@/features/content-safety/ui/use-automatic-translation";
+import { LinkifiedText } from "@/features/content-safety/ui/linkified-text";
 import { ContentAssetImage } from "@/features/content-safety/ui/content-asset";
 import { useContentMutation } from "@/features/content-safety/ui/use-content-mutation";
 import { noticeMedia } from "@/features/media/domain/official-media";
@@ -41,7 +43,7 @@ export function FeedItemCard(props: Props) {
     const href = `/c/${slug}/updates/chzzk/${item.id}?locale=${locale}&returnTo=${encodeURIComponent(returnTo)}` as Route;
     return <article className={feedStyles.card} data-feed-kind="chzzk">
       <header className={styles.meta}><span className={feedStyles.officialMark}><BadgeCheck size={20} aria-hidden="true" /></span><strong>{creatorName ?? feed.official}</strong><span>CHZZK</span><time dateTime={item.date}>{dateLabel(item.date, locale)}</time></header>
-      {item.text && <p translate="no" className={`${styles.body} ${feedStyles.excerpt}`}>{item.text}</p>}
+      {item.text && <p translate="no" className={`${styles.body} ${feedStyles.excerpt}`}><LinkifiedText text={item.text} locale={locale} official /></p>}
       {item.images[0] && <Link href={href} className={feedStyles.media} aria-label={feed.readPost}><img src={item.images[0].url} alt="" loading="lazy" referrerPolicy="no-referrer" /></Link>}
       <div className={styles.actions}><Link href={href} className={styles.button}>{feed.readPost}</Link></div>
     </article>;
@@ -54,7 +56,7 @@ export function FeedItemCard(props: Props) {
     <header className={styles.meta}>
       <span className={feedStyles.officialMark}><BadgeCheck size={20} aria-hidden="true" /></span>
       <strong>{item.postType === "artist_post" ? creatorName ?? feed.official : "kyaa"}</strong>
-      <span className={feedStyles.officialLabel}>{item.pinned && <Pin size={14} aria-hidden="true" />}{item.postType === "artist_post" ? officialPostLabel ?? copy.artistPost : copy.notice}</span>
+      <span className={feedStyles.officialLabel}>{item.postType === "artist_post" ? officialPostLabel ?? copy.artistPost : copy.notice}</span>
       <time dateTime={item.publishedAt}>{dateLabel(item.publishedAt, locale)}</time>
       {item.visibility === "members" && <span className={styles.badge}>{copy.members}</span>}
       <ContentActions targetType="notice" targetId={item.id} locale={locale} canBlock={false} onChanged={onChanged} />
@@ -62,14 +64,14 @@ export function FeedItemCard(props: Props) {
     <Link className={feedStyles.title} href={href}><TranslatedText text={item.title} locale={locale} controls={false} /></Link>
     {text && <FeedExcerpt text={text} locale={locale} />}
     {media && (media.asset ? <div className={feedStyles.media}><ContentAssetImage asset={media.asset} locale={locale} alt={media.title} href={href} /></div> : media.image ? <Link href={href} className={feedStyles.media} aria-label={feed.readPost}><img src={media.image} alt={media.title} loading="lazy" /></Link> : null)}
-    <div className={styles.actions}><Link href={href} className={styles.button}>{feed.readPost}</Link><Link href={`${href}#comments` as Route} className={styles.button}><MessageCircle size={16} aria-hidden="true" />{copy.comments} {item.commentCount.toLocaleString(locale)}</Link></div>
+    <div className={styles.actions}><Link href={href} className={styles.button}>{feed.readPost}</Link><Link href={`${href}#comments` as Route} className={styles.button}><ReactionIcon kind="comment" />{copy.comments} <ReactionCount value={item.commentCount} locale={locale} /></Link></div>
   </article>;
 }
 
 function FeedExcerpt({ text, locale }: { text: string; locale: AppLocale }) {
   const { observeElement, ...translation } = useAutomaticTranslation({ texts: [text], locale });
   return <div ref={observeElement}>
-    <p className={`${styles.body} ${feedStyles.excerpt}`} lang={translation.showing ? locale : undefined}>{translation.texts[0]}</p>
+    <p className={`${styles.body} ${feedStyles.excerpt}`} lang={translation.showing ? locale : undefined}><LinkifiedText text={translation.texts[0]} locale={locale} official /></p>
     <TranslationControl locale={locale} translation={translation} />
   </div>;
 }
@@ -97,8 +99,8 @@ function CheerCard({ item, slug, locale, returnTo, onChanged }: Omit<Props, "ite
     </header>
     <ContentTranslation sourceText={item.body} targetType="cheer" targetId={item.id} locale={locale}><p className={styles.body}>{item.body}</p></ContentTranslation>
     <div className={`${styles.actions} ${styles.postFooter}`}>
-      <button type="button" className={styles.likeButton} aria-pressed={liked} disabled={!auth.ready || !auth.authenticated || mutation.busy} onClick={() => void toggleLike()}><Heart size={18} fill={liked ? "currentColor" : "none"} aria-hidden="true" />{copy.like} {count.toLocaleString(locale)}{!liked && <EarnActionBadge action="reaction" locale={locale} />}</button>
-      <button type="button" aria-expanded={expanded} aria-controls={`${id}-replies`} onClick={() => { setOpened(true); setExpanded(value => !value); }}><MessageCircle size={16} aria-hidden="true" />{copy.comments} {item.replyCount.toLocaleString(locale)}</button>
+      <button type="button" className={styles.likeButton} aria-pressed={liked} disabled={!auth.ready || !auth.authenticated || mutation.busy} onClick={() => void toggleLike()}><ReactionIcon kind="like" size={18} pressed={liked} />{copy.like} <ReactionCount value={count} locale={locale} />{!liked && <EarnActionBadge action="reaction" locale={locale} />}</button>
+      <button type="button" aria-expanded={expanded} aria-controls={`${id}-replies`} onClick={() => { setOpened(true); setExpanded(value => !value); }}><ReactionIcon kind="comment" />{copy.comments} <ReactionCount value={item.replyCount} locale={locale} /></button>
       <RelativeTime className={styles.postDate} value={item.createdAt} locale={locale} absolute={dateLabel} />
     </div>
     {mutation.error && !confirming && <p className={styles.error} role="alert">{mutation.error}</p>}

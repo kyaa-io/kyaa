@@ -41,6 +41,11 @@ export function FanPostFeed(props: Props) {
 }
 function FeedForOwner({ pageImage, pinnedNotices, pinnedPending = false, filterHref, composeIntent = false, composeReturnTo, onComposeConsumed, compact, beforeFeed, headingTitle, introduction = false, slug, locale, program, onPosted, creatorName, returnTo = boardHref(slug, locale, { source: "fans" }), source, newsFilter = "all", hideHeading = false, mediaOnly = false, intro, officialPostLabel, allowMembers = true }: Props) {
   const auth = usePrivy(), session = useByUsSession(), copy = contentCopy(locale), feed = feedCopy(locale), heading = useId();
+  // [운영] 11/10 19:38: the fan board composer stays open; the creator home 글쓰기 link (`compose=1`) also focuses it. The feed remounts on sign-in.
+  const [focusComposer] = useState(() => !compact && typeof window !== "undefined" && new URLSearchParams(window.location.search).get("compose") === "1");
+  const [composerKey, setComposerKey] = useState(0);
+  // kyaa wave introductions and programs keep their opener; the compact (groups) board keeps its own editor.
+  const alwaysOpen = !compact && !introduction && !program;
   const [cursors, setCursors] = useState<(string | null)[]>([null]), [composing, setComposing] = useState(false), [intentDismissed, setIntentDismissed] = useState(false);
   const [lastIntent, setLastIntent] = useState(composeIntent);
   if (lastIntent !== composeIntent) { setLastIntent(composeIntent); if (!composeIntent) setIntentDismissed(false); }
@@ -62,7 +67,7 @@ function FeedForOwner({ pageImage, pinnedNotices, pinnedPending = false, filterH
   if (cursor) query.set("cursor", cursor);
   if (mediaOnly) query.set("media", "1");
   if (newsFilter !== "all" && !introduction) query.set("news", newsFilter);
-  const resource = useCommunityResource(program ? `/api/celebrities/${slug}/programs/${program}/posts?${query}` : `/api/celebrities/${slug}/feed?${query}`, program ? parseProgram : parse);
+  const resource = useCommunityResource(program ? `/api/celebrities/${slug}/programs/${program}/posts?${query}` : `/api/celebrities/${slug}/feed?${query}`, program ? parseProgram : parse, true, false, false, true);
   useEffect(() => {
     if (resource.state.status !== "ready" || !window.location.hash.startsWith("#cheer-")) return;
     const id = window.location.hash.slice(1);
@@ -76,7 +81,8 @@ function FeedForOwner({ pageImage, pinnedNotices, pinnedPending = false, filterH
   const state = holding && resource.state.status === "ready" ? ({ status: "loading" } as const) : resource.state;
   const refresh = () => { setCursors([null]); resource.retry(); };
   const saved = (reward?: { points: number; stamps?: number }) => { if (reward) showMissionRewardToast(locale, "post", reward); refresh(); closeComposer(); if (compact) setShowListAfterSave(true); onPosted?.(); };
-  const goToPage = (next: (string | null)[]) => { setCursors(next); section.current?.focus(); section.current?.scrollIntoView?.({ block: "start" }); };
+  // A held page stays on screen while the next one loads; ignore repeat clicks until it arrives.
+  const goToPage = (next: (string | null)[]) => { if (resource.pending) return; setCursors(next); section.current?.focus(); section.current?.scrollIntoView?.({ block: "start" }); };
   const filterLabel = newsFilter === "notice" ? copy.notice : newsFilter === "artist_post" ? officialPostLabel ?? copy.artistPost : "CHZZK";
   const sessionReady = auth.ready && session.ready;
   const composerOpen = composing || (composeIntent && !intentDismissed && sessionReady && auth.authenticated && selectedSource !== "official");
@@ -101,7 +107,9 @@ function FeedForOwner({ pageImage, pinnedNotices, pinnedPending = false, filterH
     {source && !introduction && (!compact || !composerOpen) && <div ref={toolbar} className={feedStyles.toolbar}><nav className={feedStyles.filters} aria-label={feed.filters}>{(["all", "official", "fans"] as const).map(value => <Link key={value} scroll={false} href={sourceFilterHref(value)} aria-current={selectedSource === value ? "page" : undefined}>{compact ? value === "official" ? boardCopy(locale).notice : value === "fans" ? boardCopy(locale).free : feed.all : feed[value]}</Link>)}</nav>
       {newsFilter !== "all" && !(compact && newsFilter === "notice") && <span className={feedStyles.topic}>{filterLabel}<Link scroll={false} href={boardHref(slug, locale, { source: "official" })} aria-label={feed.removeFilter}><X size={16} aria-hidden="true" /></Link></span>}
     </div>}
-    {selectedSource !== "official" && sessionReady && (auth.authenticated ? (composerOpen ? <PostComposer board={compact} introduction={introduction} program={program} slug={slug} locale={locale} onSaved={saved} onCancel={closeComposer} featured autoFocus allowMembers={allowMembers} heading={compact ? managementCopy(locale).write : undefined} headingId={compact ? heading : undefined} /> : compact ? null : <button ref={composeTrigger} type="button" className={styles.composeTrigger} onClick={() => setComposing(true)} aria-label={introduction ? introductionCopy.writeIntroduction : insightCopy?.insightTitle ?? copy.writePost}><span className={styles.composeIcon}><PenLine size={20} aria-hidden="true" /></span><span>{introduction ? introductionCopy.introductionPrompt : insightCopy?.insightPrompt ?? discoveryCopy(locale).writePrompt}</span><strong>{introduction ? introductionCopy.writeIntroduction : insightCopy?.insightTitle ?? copy.writePost}</strong></button>) : compact ? null : <FanAction href={`/login?locale=${locale}&returnTo=${encodeURIComponent(loginReturnTo)}`}>{copy.login}</FanAction>)}
+    {selectedSource !== "official" && sessionReady && alwaysOpen && (auth.authenticated ? <PostComposer key={composerKey} slug={slug} locale={locale} onSaved={reward => { setComposerKey(value => value + 1); saved(reward); }} onCancel={() => setComposerKey(value => value + 1)} featured autoFocus={focusComposer} allowMembers={allowMembers} />
+      : <div className={`${styles.composer} ${styles.composerFeatured}`} data-composer-guest=""><span className={styles.guestPrompt}>{discoveryCopy(locale).writePrompt}</span><div className={styles.composerTools}><FanAction className={styles.guestLogin} variant="primary" href={`/login?locale=${locale}&returnTo=${encodeURIComponent(loginReturnTo)}`}>{copy.login}</FanAction></div></div>)}
+    {selectedSource !== "official" && sessionReady && !alwaysOpen && (auth.authenticated ? (composerOpen ? <PostComposer board={compact} introduction={introduction} program={program} slug={slug} locale={locale} onSaved={saved} onCancel={closeComposer} featured autoFocus allowMembers={allowMembers} heading={compact ? managementCopy(locale).write : undefined} headingId={compact ? heading : undefined} /> : compact ? null : <button ref={composeTrigger} type="button" className={styles.composeTrigger} onClick={() => setComposing(true)} aria-label={introduction ? introductionCopy.writeIntroduction : insightCopy?.insightTitle ?? copy.writePost}><span className={styles.composeIcon}><PenLine size={20} aria-hidden="true" /></span><span>{introduction ? introductionCopy.introductionPrompt : insightCopy?.insightPrompt ?? discoveryCopy(locale).writePrompt}</span><strong>{introduction ? introductionCopy.writeIntroduction : insightCopy?.insightTitle ?? copy.writePost}</strong></button>) : compact ? null : <FanAction href={`/login?locale=${locale}&returnTo=${encodeURIComponent(loginReturnTo)}`}>{copy.login}</FanAction>)}
     {compact && composerOpen ? null : state.status === "ready" ? <>
       {resource.refreshFailed && <div className={feedStyles.sourceStatus} role="status"><p>{copy.failed}</p><FanAction variant="text" onClick={resource.retry}>{copy.retry}</FanAction></div>}
       {state.data.unavailableSources.length > 0 && <div className={feedStyles.sourceStatus} role="status"><p>{feed.sourceError}</p><FanAction variant="text" onClick={refresh}>{copy.retry}</FanAction></div>}

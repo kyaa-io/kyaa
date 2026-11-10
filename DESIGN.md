@@ -559,6 +559,55 @@ The Home hero viewport has a 1.5px Spectrum outline with a pink-white-violet hig
 Scheduled LIVE countdowns share a vivid pink accent (`#be185d`), with a pale pink fill (`#fff1f7`) and fine pink border on MY and badge variants. Calendar text variants keep their compact unboxed layout. On Home photography, use pale pink text (`#ffd0e6`) on a dark translucent pill. A 7px dot and expanding halo pulse every 1.8s while a future LIVE is visible and active; the time text stays steady. Hidden/inactive countdowns and elapsed scheduled starts do not pulse, and reduced-motion disables both dot and halo animation. Keep existing KST date/countdown semantics and server-confirmed LIVE status.
 
 
+## 운영 통일 체계 (2026-11-10, PROD-DS-1958)
+
+사용자 [운영] 요청 "gap·글자·margin·padding·layout·component 체계 통일"에 따라 운영 트리 기준으로 숫자를 고정한다. 아래 값은 `apps/web/app/globals.css` 토큰이 소유하며, 새 CSS는 토큰만 쓴다(일회성 px·hex·radius 금지). 이 절이 아래 옛 서술과 충돌하면 이 절이 이긴다. 전수 감사표: `~/.local/share/kyaa-t3/board/tasks/prod-ds-1958/audit.md`.
+
+### 글자 역할표
+| 역할 | 크기 (390 / ≥768) | 굵기 | 행간 | 토큰 |
+| --- | --- | --- | --- | --- |
+| 화면 제목(h1) | 20 / 24 | 850 (editorial 800) | 1.2 | `--fan-heading-size`, `--fan-heading-size-wide` |
+| 섹션 제목(h2) | 20 / 24 | 850 (editorial 800, MY 700) | 1.2 | 같은 토큰. 화면 제목과 같은 크기, 위계는 위치·여백으로 |
+| 카드 제목·이름 | 16 | 700 | 1.5 | `--fan-item-title-size/weight` |
+| 본문 | 16 | 400 | 1.5 | `--fan-body-size` |
+| 보조(메타·팬 수·날짜) | 13 | 400–550 | 1.5 | `--fan-metadata-size` |
+| 숫자 | 역할 크기 그대로 + `tabular-nums` | 역할 굵기 | 역할 행간 | — |
+| 라벨(칩·링크·버튼 글자) | 14 | 500 / 선택 650 | 1.4 | `--fan-action-label-size` |
+| 상태 배지 | 12 | 800 | normal | — |
+
+한 컴포넌트 안 글자 크기는 3단 이하(예: 카드 = 16 / 13 / 13).
+
+### 간격 단계 (4/8)
+- 단계: 4·8·12·16·20·24·32·40·48·64만 (`--space-1`…`--space-16`). 20은 부품 안쪽만.
+- 섹션 사이: 32 (390) / 48 (≥768) — `--fan-section-gap`·셸 소유.
+- 섹션 제목 → 내용: 16 (`.sectionHeader` margin-bottom). 칩 줄 → 목록: 16.
+- 섹션 안 목록 간격: 카드 레일 16, 칩 8, 행 목록 8~12.
+- 카드 안: 미디어 → 이름 12, 이름 → 보조 4, 보조 → 행동 줄 4(행동 줄 자체가 44 높이라 눈에 보이는 간격 ≈16).
+
+### radius 단계
+0 · 12(`--radius-control`: 입력·작은 카드·행) · 16(`--radius-collection`: 카드·카드 미디어) · 20(`--radius-hero`: 배너) · pill(`--radius-pill`: 칩·주 행동·아이콘 버튼). 그 밖의 값(4·6·10·14 등)은 신규 금지.
+
+### 폭·여백·열 수
+| 화면 폭 | 바깥 여백 | 본문 열 | 보조 레일 | 카드 레일 보이는 장 수 | 카드 격자 열 |
+| --- | --- | --- | --- | --- | --- |
+| 390 | 16 | 358 | 없음 | 1장 + 다음 장 일부(288) | 1 |
+| 768 | 32 | 704 | 없음 | 3 (최소 240) | 2 |
+| 1024 | 32 | 576 | 360 | 2장 + 일부 (최소 240, `--fan-rail-card-min`) | 3 |
+| 1440 | 40 | 944 | 384 | 3 (304) | 3 |
+최대 폭 1440. 읽기 밴드 720, 목록 밴드 920(board/research/responsive-system.md).
+
+### 공통 컴포넌트
+- **섹션 헤더** `FanSectionHeader`: 제목 왼쪽, 같은 줄 오른쪽 끝에 보조 링크(14/650, 쉐브론 16). 화살표는 헤더에 두지 않는다(아래 캐러셀). 설명 문장(`description`)은 쓰지 않는다. 남은 호출은 kyaa wave 행사 화면의 상태·규칙 문구뿐이며 감사표에 후속으로 기록.
+- **캐러셀(2026-11-10 19:28 [운영] 추가)** `FanCarouselFrame` + `FanCarouselIndicator`(apps/web/components/fan-ui/fan-carousel.tsx) 하나로 홈 배너·내 패스포트·최애 카드에 적용.
+  - 좌우 화살표: 콘텐츠 양옆의 자기 열(44 + 간격 8)에 세로 중앙으로 두고, 사진·배너 위에 겹치지 않는다. 44 원형, `--color-soft` 바탕, 아이콘 20. 카드 레일은 사진 높이의 가운데에 맞춘다(`--fan-carousel-arrow-offset`). 배너·최애 카드는 768 미만에서 화살표를 숨기고 밀어서 넘긴다(동작 줄이기 사용자는 화살표 유지). 패스포트는 모든 폭에서 화살표를 보인다.
+  - 인디케이터: 콘텐츠 바로 아래 가운데, 높이 44 줄. 각 칸 8×8, 현재 칸만 24(약 3배), 칸 사이 4, 색 `--color-line`/현재 `--color-ink`. 위치 표시 전용(aria-hidden)이며, 이동은 화살표와 스와이프가 맡는다. 폭 애니메이션 없음(배경색만 전환).
+  - 일시정지 등 보조 컨트롤은 인디케이터와 같은 44 줄에 간격 8, 아이콘 16.
+  - '전체 보기'류 링크는 아래 줄에 두지 않고 섹션 제목 줄 오른쪽 끝 작은 링크(13/550, 회색, 쉐브론 16). 개수는 제목 바로 뒤 회색 숫자(배지 상자 없음).
+- **카드**: 바깥 테두리·회색 상자 없이 미디어 하나가 프레임(radius 16, 빈 동안 `--color-soft`). 미디어 안에 다시 상자를 넣지 않는다(이중 프레임 금지). 섹션 자체를 카드로 감싸지 않는다(홈의 다른 섹션과 같은 왼쪽 끝선).
+- **칩** `CreatorRoleFilterControl`: pill, 높이 44(`--fan-chip-height`), 좌우 16, 같은 줄 칩은 같은 폭(가장 긴 칩 기준), 간격 8. 선택 = 잉크 채움.
+- **아이콘**: 기본 20(`--fan-icon-size`), 링크 쉐브론만 16. 한 줄의 아이콘은 같은 크기·같은 색(`--color-muted`). SNS 마크는 원본 모양을 마스크로 써서 단색 20. 하트는 미인증 = 회색 선, 패스포트 보유 = `--color-heart` 채움. 글자 색은 항상 잉크.
+- **스켈레톤**: 실제 카드와 같은 높이(미디어 + 이름 24 + 보조 20 + 행동 44).
+
 ## 1. Visual Theme & Atmosphere
 
 Fan Pulse Spectrum is a bright, image-first fan utility interface. A full-color KARA hero supplies nearly all of the page's visual intensity; the surrounding product UI stays white, neutral, and deliberately quiet. The composition pairs editorial entertainment imagery with disciplined product surfaces: generous whitespace, black display type, hairline borders, short micro-shadows, and one pink-to-violet conversion accent. The result should feel like a polished global fan platform rather than a promotional microsite or a dense dashboard.
@@ -591,6 +640,7 @@ The page uses asymmetry only at desktop scale. The main content owns the visual 
 | Status accent | Live Pink Line | `rgb(255 95 191 / 78%)` | UPCOMING status outline only |
 | Highlight outline | Spectrum Relay | Same gradient as Primary action | 1px border on Google, Passport, and repeated LIVE-row context actions |
 | Highlight action text | Spectrum Ink | `oklch(45% 0.22 315)` | Solid accessible label, icon, and arrow on outlined highlight actions |
+| Body link | Brand Link | `#AD1457` (`--color-brand-link`, 6.96:1 on white) | Web addresses and links inside post, notice and CHZZK bodies: inherited size, 550 weight, 1px underline, Lucide Link2 16px; the icon stays with the first character when an address wraps |
 
 ### Primary
 
@@ -662,7 +712,6 @@ The page uses asymmetry only at desktop scale. The main content owns the visual 
 | Body copy | Pretendard Variable | `16px` | `400` | Shared body leading | `0` | Preserve readable translated content |
 | Metadata | Pretendard Variable | `13px` | Role-specific `400–550` | Shared metadata leading | `0` | Quieter than the item name |
 | Live-row title | Pretendard Variable | `16px` | `700` | Shared item leading | Shared role tracking | Allow wrapping without clipping the title |
-| Section subtitle | Pretendard Variable | `14px` | `550` | `1.5` | `0` | Muted Ink, sentence-style Korean |
 | Primary CTA | Pretendard Variable | `15px` | `800` | Normal | `0` | Compact, direct verb phrase |
 | Status label | Pretendard Variable | `12px` | `800` | Normal | `0.04em` | Uppercase only for UPCOMING |
 | Passport value line | Pretendard Variable | `14px` | `750` | `1.45` | `0` | Centered and concise |
@@ -686,7 +735,7 @@ The page uses asymmetry only at desktop scale. The main content owns the visual 
 - Passport CTA: label `Fan Passport 발급받기`; 90% of card width, 52px minimum height, full pill radius, White fill, 1px Spectrum Relay outline, solid Spectrum Ink label, centered label and right arrow.
 - Creator summaries: inset 12px below the media field, then show a wrapping 16px/700 name, quieter 13px audience metadata, and a separate action group. Use a 4–8px gap within related copy and allow actions to wrap without shrinking their 44px targets.
 - LIVE state: show a blinking red dot plus `LIVE 진행중` / `LIVE NOW` only for an active LIVE, a static muted dot plus `LIVE 예정` / `UPCOMING LIVE` for a scheduled LIVE, on LIVE surfaces. Home creator cards instead show an outlined heart with `입덕하기` / `Become a fan` in the action group, linking to the existing creator fan-verification detail page (`/c/{slug}`) with the current locale; this is navigation, not a saved-favorite toggle. Disable dot animation for reduced-motion users.
-- Celebrity social controls: keep the icon group together in the action area after identity and audience metadata; allow the group to wrap. Use optically centered 20×20px brand marks inside separate 44×44px targets and `0px` gap between adjacent targets. Do not render visible YouTube, TikTok, or Instagram labels. Preserve accessible names in the links.
+- Celebrity social controls: keep the icon group together in the action area after identity and audience metadata; allow the group to wrap. Use optically centered 20×20px one-ink (Muted Ink) brand-mark masks inside separate 44×44px targets and `0px` gap between adjacent targets. Do not render visible YouTube, TikTok, or Instagram labels. Preserve accessible names in the links.
 - Mobile/tablet context actions: below 1024px, keep the existing state-appropriate activity summary and authentication or Passport action in the normal content flow. Reuse the service/passport action roles; do not force duplicate CTAs or invent a destination for unavailable content.
 - Button owner and states (2026-11-04): `FanAction` (components/fan-ui/fan-action) is the only owner of button/link-button state. Always pass an explicit `variant` (`primary|neutral|text|service|passport`); a missing variant falls back to `neutral`, whose hover must never sit under white text. Hover/lift only under `(hover:hover) and (pointer:fine)`; primary hover is `brightness(.92)` with a 1px lift; `:active` presses back; `:focus-visible` is a 2px outline; `disabled`/`aria-disabled`/`loading` use #e4e1e6 fill with #5d5d5d text (5.08:1), `cursor:not-allowed` (`progress` while loading), no hover, no gradient. Screen modules must not restyle disabled colors (the base uses doubled-class selectors to win). `loading` disables, sets `aria-busy`, keeps width and shows a 16px spinner. Minimum height 44px.
 - Skip link (2026-11-05): `.skipLink` in fan-app-shell.module.css is the only bypass link. `position:fixed`, off screen at `translateY(-200px)` until `:focus-visible`, then `translateY(0)`; 44px height (min 44px), `padding:0 16px`, `inline-flex` with centered text, 14px/750, 12px radius, no underline, #121212 fill with white text (18.73:1). Focus ring is 3px #121212 with 3px offset. Position top 76px/left 16px below 1024px; top 10px/left 144px at 1024px and up. `z-index:var(--z-tooltip)`.
@@ -702,7 +751,7 @@ The page uses asymmetry only at desktop scale. The main content owns the visual 
 
 - Collection card: White, 16px radius, 24px desktop padding / 20px mobile padding, Micro Hairline, card micro-shadow.
 - Utility card and live row: White, 12px radius, Micro Hairline, card micro-shadow.
-- Hero: 20px radius, no card shadow; depth comes from the photograph and internal scrim. Home's shared carousel viewport has a 1px Spectrum Relay perimeter (2026-10-27 banner-boundary feedback), overlaid without changing artwork geometry or blocking controls and swipe gestures.
+- Hero: 20px radius, no card shadow; depth comes from the photograph and internal scrim. Home's shared carousel viewport has a 1px neutral (`--color-line-subtle`) perimeter without gradient or sheen (2026-11-10 [운영] 19:45 replaces the 2026-10-27 Spectrum Relay perimeter), overlaid without changing artwork geometry or blocking controls and swipe gestures.
 - Desktop context cards stack with a 16px gap and remain visually quieter than the hero.
 - Nested colored cards are prohibited. Inner separation should use a media field, spacing, or a hairline.
 
@@ -726,7 +775,7 @@ The page uses asymmetry only at desktop scale. The main content owns the visual 
 ### Image Treatment
 
 - Hero uses full-bleed high-resolution KARA photography with `object-fit: cover` and a slightly right-shifted focal position.
-- Home favorite cards use a nested gallery composition from 768px: a square `#F6F6F5` field contains the shared `min(84%, 240px)` square portrait. Below 768px, the portrait and preview fill the square frame, retaining the same registered crop. The `/celebrities` directory fills its entire media area, 5:4 below 768px and square from 768px. Both use the shared per-creator framing. Mobile directory images requiring `contain` use a content-sized frame instead of 5:4 letterboxing; never promote an unapproved crop to cover.
+- Home favorite cards fill one square 16px-radius media frame with the shared full-bleed portrait or preview at every width (2026-11-10 PROD-DS-1958; the earlier nested `#F6F6F5` gallery field is retired). The `/celebrities` directory fills its entire media area, 5:4 below 768px and square from 768px. Both use the shared per-creator framing. Mobile directory images requiring `contain` use a content-sized frame instead of 5:4 letterboxing; never promote an unapproved crop to cover.
 - Favorite portraits are direct, colorful, face-legible editorial crops: blue KARA group styling, warm gold Elina close-up, cool dark Changha close-up.
 - Upcoming LIVE avatars reuse the corresponding artist imagery in circular 64px desktop / 56px mobile crops. (Home no longer has this block since 2026-11-09; the LIVE list, calendar and fan pages keep their own.)
 - Passport uses the fully opened identity-and-stamp-book image `passport-open-book.svg` with `object-fit: contain` in small places and a CSS book with page turns on the detail screen. It is never shown as a closed burgundy cover; the detail screen keeps only a cover band.
@@ -734,7 +783,7 @@ The page uses asymmetry only at desktop scale. The main content owns the visual 
 ### Distinctive Components
 
 - Status Rail: UPCOMING outline pill plus date on one horizontal rail; the countdown sits below in monospace. Scheduled LIVE events use `D-{days} HH:MM:SS`, omitting the day prefix when less than 24 hours remain, and update once per second. Active events and countdowns that reach zero show `LIVE NOW`.
-- Favorite Gallery Collection: one rounded outer collection with image-led items; each item reads portrait → emphasized name → fan count → fan-detail and social actions. Keep real YouTube, TikTok, and Instagram marks in full-size targets.
+- Favorite Gallery Collection: an unboxed section (same left edge as other Home sections, 2026-11-10) with image-led items; each item reads portrait → emphasized name → fan count → fan-detail and social actions. Keep the YouTube, TikTok, and Instagram mark shapes as one-ink 20px masks in full-size targets (2026-11-10).
 - Logged-out Live Card: heading and subtitle at the top, centered calendar-heart line icon, centered explanatory copy, Google login CTA at the bottom.
 - Fan Passport Card: title/subtitle, opened Passport asset, lifecycle value copy, and login CTA in one quiet vertical composition.
 - Upcoming LIVE Row: circular avatar, identity/title/date block, right-aligned reservation metadata on tablet/desktop, and a 44px chevron action. (Removed from Home 2026-11-09; see "홈 블록 순서" in 안내·배너.)
@@ -2187,3 +2236,10 @@ At the user's request, registered Changha identity and hero images use the unedi
 - 펼친 행은 최대 3칸이다: `오늘`(오늘 증가, 0이면 없음) · `최근 N일`(0이면 없음) · `현재 순위`, 앞 칸이 비면 그 종류의 값(크리에이터 `찐팬 N명`, 팬 `최애`)이 들어온다. 칸의 값은 `--color-accent-ink` tabular다. `연속 활동`은 응답에 값이 없어 만들지 않았다(가짜 값 금지). 크리에이터 집계 기준(하트 vs 찐팬)은 사용자 결정 대기라 하트 합계 그대로다.
 - 시험 데이터: 로컬·개발의 등락·증가는 `board/tasks/rank-redesign/fix-1906/seed-activity-history.sql`(원장 `passport_page_claim` + 날짜별 `refresh_home_rankings`, 실제 집계 경로, 운영 금지)로 만든 시험 이력이다.
 
+- 팬게시판 미리보기(`features/fanpage/ui/creator-board-preview`): 크리에이터 홈 미디어 아래의 안내 문장과 `팬게시판 →` 줄을 대신한다. 제목 줄 오른쪽에 44px `글쓰기`(13/700, 1px 선)와 `전체 보기`(13/700 muted). 카드(1px 선, 반경 16, 좌우 16) 안 최신 팬 글 최대 5행: main `FanPostRow` home 밀도 — 390은 썸네일 48 + 제목 15/700 한 줄 + 아래 작성자·시간 13(행 60), 768부터 썸네일 56 · 제목 · 오른쪽 작성자│시간(행 52). 시간은 오늘이면 KST `HH:mm`, 아니면 `MM. DD.`. 글이 없으면 같은 카드 안 아이콘과 primary `글쓰기` 하나만 두고 머리의 글쓰기는 숨긴다. `글쓰기`는 `compose=1`로 게시판을 열어 로그인한 팬에게 작성 창을 바로 연다.
+- 팬게시판 글쓰기(`features/fan-posts/ui/fan-post-feed`·`post-composer`, 게시판 탭, 모임 기능 꺼짐): 글쓰기 칸은 처음부터 열려 있다(접힌 `글쓰기` 단계 없음, kyaa wave 자기소개·프로그램은 기존 열기 버튼 유지). 위 설명 문장(`최애의 소식과 팬들의 이야기를 함께 나눠요.`)은 두지 않는다. 비로그인은 같은 칸 모양(입력칸 모양 상자 + primary `로그인하고 참여하기` 하나). 입력칸 아래 툴바 한 줄: 왼쪽 44×44 사진·영상 아이콘 버튼(1px 선, `--radius-control`)과 공개 범위 칩(값+▾, 44 높이), 오른쪽 끝 `게시`. `취소`는 입력이 있거나 수정 중일 때만 게시 왼쪽. 간격 `--space-2`(390은 도구 사이 `--space-1`, 게시 최소 64). 첨부 제한(사진 10장/영상 1개·50MB·60초·혼합 불가)은 평소 숨기고, 어긴 선택에서만 오류로 보인다. 사진 수는 아이콘 위 18px 배지.
+- 게시판 공지 정렬: kyaa 공지도 고정 없이 시간순으로 보인다. 서버(`server/fan-posts/feed.ts`)가 한 페이지 안의 항목을 시간순으로 내보내고, 쪽 넘김 커서는 DB 순서를 그대로 쓴다. 공지 카드의 고정 핀 아이콘은 두지 않는다.
+- 카드 테두리(2026-11-10 [운영] "붉은색 테두리가 너무 과함"): main에 합칠 때 main의 홈 배너(`.heroShine` 1px `--color-line` inset)와 패스포트 카드 표면을 그대로 쓴다(main에 같은 결정이 이미 반영됨).
+- 글 반응 아이콘(2026-11-10 [운영] "좋아요·댓글 아이콘은 색을 넣어 주고 채워 줘"): 공통 `components/fan-ui/reaction-count.tsx`(`ReactionIcon`·`ReactionCount`). 좋아요는 채운 하트 `--color-reaction-like`(#ce0066, 흰 바탕 5.5:1), 누를 수 있는 좋아요 중 아직 누르지 않은 것은 `--color-reaction-like-soft`(#e05a97, 3.45:1). 댓글은 채운 말풍선 `--color-reaction-comment`(oklch 56% .09 230, 약 4:1). 숫자는 아이콘과 같은 세로 중심·tabular, 0이면 `--color-muted`. 적용: 홈 팬게시판 미리보기 카드, 게시판 팬 글 카드(`post-card`), 게시판 공지·아티스트 글 카드의 댓글과 응원 글의 좋아요·댓글(`feed-item-card`).
+- 목록 전환 로딩(2026-11-10 [운영] "페이지네이션 누르면 화면이 싹 줄었다가 다시 생김"): 쪽·탭·필터를 바꿔 다시 읽는 목록은 `useFanpageResource`/`useCommunityResource`의 마지막 인자 `keepAcrossUrls`로 같은 사용자의 이전 목록을 제자리에 두고(`pending`, 목록 `aria-busy`), 새 목록이 오면 한 번에 바꾼다(`anonymous` 인자 뒤). 사용자가 바뀌면 이전 목록을 들고 있지 않는다. 대기 중에는 쪽 넘김을 막는다. 첫 로딩 골격은 main의 `FanSkeletonRows`. 적용: 홈 팬게시판(인기글 쪽), 팬게시판 피드 쪽, 크리에이터 모임 홈 게시판 쪽, 응원 댓글·공지 댓글·글 상세 댓글·응원 답글, 팬 순위 분류 탭, 인기글 기간 탭, kyaa wave 앨범·클립 댓글·멤버.
+- 가로 영상 썸네일(2026-11-10 감독, 사용자 규칙 R5 검은 띠 금지): 글자 없는 썸네일·`backdrop` 칸의 YouTube 영상은 위아래 검은 띠가 박힌 4:3 표지(`hqdefault`·`sddefault`·`default`·`0~3.jpg`)를 쓰지 않고 16:9 표지(`hq720` → `mqdefault`, 120×90 회색 대체 이미지는 실패로 본다)를 쓴다(`features/media/ui/media-thumbnail.tsx`). 칸 비율·흐린 배경은 main의 `MediaBackdrop`/정사각 칸 규칙을 따른다.

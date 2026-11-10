@@ -136,8 +136,9 @@ describe("unified creator feed", () => {
     const handler = createFeedHandler(deps);
     const first = await handler(request("?limit=2"), "artist");
     const firstBody = await first.json();
-    expect(firstBody.items.map((item: { kind: string }) => item.kind)).toEqual(["notice", "chzzk"]);
-    expect(firstBody.items[0].body).toEqual(body);
+    // The page still holds the pinned notice (database paging), but it reads in time order.
+    expect(firstBody.items.map((item: { kind: string }) => item.kind)).toEqual(["chzzk", "notice"]);
+    expect(firstBody.items[1].body).toEqual(body);
     expect(firstBody.nextCursor).toEqual(expect.any(String));
     expect(JSON.parse(Buffer.from(firstBody.nextCursor, "base64url").toString())).not.toHaveProperty("mediaOnly");
     expect(first.headers.get("cache-control")).toBe("private, no-store");
@@ -150,6 +151,15 @@ describe("unified creator feed", () => {
       p_before_kind: "notice", p_before_id: noticeId,
     }));
     expect(deps.readChzzk).toHaveBeenCalledTimes(1);
+  });
+
+  it("lists a pinned notice by its date instead of holding it at the top", async () => {
+    const deps = dependencies();
+    vi.mocked(deps.rpc).mockResolvedValue({ entries: [{ pinRank: 2, item: notice }, { pinRank: 0, item: post }], hasMore: false });
+    const response = await createFeedHandler(deps)(request("?source=fans"), "artist");
+    const page = await response.json();
+    expect(page.items.map((item: { kind: string }) => item.kind)).toEqual(["fan_post", "notice"]);
+    expect(page.nextCursor).toBeNull();
   });
 
   it("returns database content and marks CHZZK unavailable without exposing provider errors", async () => {

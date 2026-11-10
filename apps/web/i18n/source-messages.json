@@ -17770,5 +17770,11 @@
     "en": "Find more favorites",
     "source": "components/fan-shell/fan-header-status",
     "id": "components/fan-shell/fan-header-status:headerStatusFindFavorite"
+  },
+  "m3c1a7e0d52b4": {
+    "en": "Check-in",
+    "ko": "출석",
+    "source": "features/fanpage/ui/celebrity-calendar",
+    "id": "features/fanpage/ui/celebrity-calendar:inline.calendarKeyCheckin"
   }
 }

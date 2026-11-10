@@ -63,7 +63,7 @@ function DetailForOwner({ postId, locale, presentation: requestedPresentation }:
   const attempt = useRef<{ snapshot: string; key: string } | null>(null);
   const replyTrigger = useRef<HTMLButtonElement | null>(null), restoreReplyFocus = useRef(false);
   const post = useCommunityResource(`/api/posts/${postId}?locale=${toContentLocale(locale)}&format=rich`, parsePost);
-  const comments = useCommunityResource(`/api/posts/${postId}/comments?locale=${toContentLocale(locale)}${cursor ? `&cursor=${encodeURIComponent(cursor)}` : ""}`, parseComments);
+  const comments = useCommunityResource(`/api/posts/${postId}/comments?locale=${toContentLocale(locale)}${cursor ? `&cursor=${encodeURIComponent(cursor)}` : ""}`, parseComments, true, false, false, true);
   // M4-2: a refresh that failed while offline is not shown (the action's own line already says to reconnect); it runs again once online.
   const retryPost = post.retry, retryComments = comments.retry, postStale = post.refreshFailed, commentsStale = comments.refreshFailed;
   useEffect(() => { if (!online) return; if (postStale) retryPost(); if (commentsStale) retryComments(); }, [online]); // eslint-disable-line react-hooks/exhaustive-deps

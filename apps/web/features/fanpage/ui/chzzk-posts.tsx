@@ -21,6 +21,7 @@ import styles from "./chzzk-posts.module.css";
 import { TranslatedText } from "@/features/content-safety/ui/use-automatic-translation";
 
 import { useNewsSource } from "./use-news-source";
+import { LinkifiedText } from "@/features/content-safety/ui/linkified-text";
 const parsePosts = (body: unknown) => chzzkFeedSchema.parse(body);
 const parseNotices = (body: unknown) => { const page = newsNoticesSchema.parse(body); return {items:page.notices,nextCursor:page.nextCursor}; };
 const postKey = (post: ChzzkPost) => post.id;
@@ -92,7 +93,7 @@ function NewsThumbnail({ url }: { url: string }) {
 export function ChzzkPostBody({ post, name, locale, communityUrl = CHZZK_COMMUNITY_URL }: { post: ChzzkPost; name: string; locale: AppLocale; communityUrl?: string }) {
   const ko = locale === "ko";
   return <div className={styles.body}>
-    {post.text && <p translate="no" className={styles.text}>{post.text}</p>}
+    {post.text && <p translate="no" className={styles.text}><LinkifiedText text={post.text} locale={locale} official /></p>}
     {post.images.map((image, index) => <PostImage key={image.url} url={image.url} label={locale === "ko" ? `${name}의 ${post.date} 게시글 이미지 ${index + 1}` : translate(locale, localizedMessages.m0a04b73a06e4, "{0}'s post image {1}, {2}", [name, index + 1, post.date])} locale={locale} />)}
     <a className={styles.source} href={communityUrl} target="_blank" rel="noopener noreferrer" aria-label={locale === "ko" ? "치지직 원문 커뮤니티, 새 창" : translate(locale, localizedMessages.mfb4459d72d21, "Original CHZZK community, new window")}>
       <Image src="/images/guest-home/chzzk.png" width={16} height={16} alt="" />{locale === "ko" ? "치지직에서 보기" : translate(locale, localizedMessages.m9a1ae798634c, "View on CHZZK")}<ArrowUpRight size={14} aria-hidden="true" />

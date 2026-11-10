@@ -39,7 +39,7 @@ function CommentsForOwner({ slug, name, locale, eventPresentation = false, submi
   const session = useByUsSession();
   const ko = locale === "ko";
   const [cursor, setCursor] = useState<string | null>(null);
-  const resource = useCommunityResource(`/api/celebrities/${slug}/cheers?locale=${toContentLocale(locale)}&limit=5${cursor ? `&cursor=${encodeURIComponent(cursor)}` : ""}`, parse);
+  const resource = useCommunityResource(`/api/celebrities/${slug}/cheers?locale=${toContentLocale(locale)}&limit=5${cursor ? `&cursor=${encodeURIComponent(cursor)}` : ""}`, parse, true, false, false, true);
   const refresh = resource.retry;
   useEffect(() => {
     if (!liveRefresh) return;

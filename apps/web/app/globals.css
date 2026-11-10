@@ -33,6 +33,10 @@
   --fan-action-danger-active-bg: color-mix(in srgb, var(--color-error) 80%, var(--color-ink));
   --color-error: #9f1239;
   --color-success: #17613f;
+  /* Post reactions ([운영] 11/10 19:50): filled heart in the accent (soft until the viewer likes it), filled speech bubble in a muted blue. */
+  --color-reaction-like: var(--color-accent);
+  --color-reaction-like-soft: #e05a97;
+  --color-reaction-comment: oklch(56% 0.09 230);
   /* #8a4b08 → #7a4206: 자기 30% 틴트(홈 랭킹 1위 배지) 위 글자 4.22 → 4.84:1. 흰 바탕 위 8.05:1. */
   --color-warning: #7a4206;
   --color-backdrop: rgb(23 23 26 / 42%);
@@ -137,6 +141,8 @@
   --fan-action-emphasis-size: 15px;
   --fan-action-weight: 700;
   --color-service-ink: var(--color-accent-ink);
+  /* Body links in posts and notices ([운영] 11/11 00:15, Weverse-style). */
+  --color-brand-link: var(--color-accent-ink);
 
   /* Full calendar and embedded widget share type; layout stays surface-specific. */
   --fan-calendar-month-size: 20px;
@@ -146,6 +152,13 @@
   --fan-calendar-event-size: 14px;
 
   --min-target: 44px;
+  /* PROD-DS-1958 shared parts: one icon size, one chip height, one heart color. */
+  --fan-icon-size: 20px;
+  --fan-chip-height: var(--min-target);
+  --fan-rail-card-min: 240px;
+  --fan-rail-card-mobile: 288px;
+  --fan-icon-inline-size: 16px;
+  --color-heart: oklch(60% 0.21 2);
   --focus-width: 3px;
   --focus-offset: 3px;
 }
