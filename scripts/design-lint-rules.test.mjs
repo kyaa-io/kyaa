@@ -91,11 +91,11 @@ test('comments do not count', () => {
   assert.equal(scanTsx('// <h2>\n/* <button> */\nexport const A = 1;', TSX).size, 0);
 });
 
-test('severity table: 23 rules fail on a new violation, 11 are counted only (34 new in total)', () => {
+test('severity table: 24 rules fail on a new violation, 11 are counted only (35 new in total)', () => {
   const isNew = (id) => /^[TCS]\d+$/.test(id) && id !== 'C1';
   const ids = Object.keys(RULES).filter(isNew);
-  assert.equal(ids.length, 34); // C1 은 기존 규칙이라 제외
-  assert.equal(ids.filter((id) => RULES[id].sev === 'fail').length, 23);
+  assert.equal(ids.length, 35); // C1 은 기존 규칙이라 제외
+  assert.equal(ids.filter((id) => RULES[id].sev === 'fail').length, 24);
   assert.equal(ids.filter((id) => RULES[id].sev === 'count').length, 11);
 });
 
