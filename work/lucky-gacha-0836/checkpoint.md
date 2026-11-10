@@ -27,3 +27,9 @@
 before-390/1440은 위 기준 커밋의 실제 StanLucky/LuckyStage 소스를 같은 로컬 환경에서 렌더링했다. 초기 손작성 before fixture를 대체했다. after는 현재 실제 카드, modal은 원본 확대, playing/dispense는 3D 연출, reduced는 움직임 줄이기 화면이다. 모두 원본/실제 슬롯을 직접 확인했으며 로고·필수 내용 잘림·왜곡·의도치 않은 띠가 없다. release-notes/images/에는 공개 가능한 수정 후 카드/모달 4장을 연결했다.
 
 독립 Claude 검토의 초기 차단점은 위 회귀로 수정·확인했다. 수정 후 독립 재승인이나 전체 화면 루브릭 점수로 보고하지 않는다. 최종 통합·운영 승인은 감독 범위다.
+
+## 인계 상태
+
+구현 커밋 `6eb7b661e60272805b45aa37aa81634e614890a8`을 만들었다. 수정 안내는 정확한 기준/구현 SHA로 `deployment-notices.mjs check` 검사를 통과했다(검사 문구만 출력, 발송·배포 아님).
+
+`git push -u origin t3/lucky-gacha-0836`은 공유 `.git/hooks/pre-push`에서 `only main is pushed through the gate (refs/heads/t3/lucky-gacha-0836)`로 거절됐다. 해당 훅은 main만 영수증을 확인해 허용하고, 운영 브랜치는 감독 승인 SHA와 영수증을 요구한다. 훅을 우회하거나 main/운영으로 합치지 않았다. 감독이 이 로컬 브랜치 커밋을 통합 게이트로 인계할 수 있다. 원격 푸시·PR·dev 배포·운영 배포는 완료되지 않았다.
