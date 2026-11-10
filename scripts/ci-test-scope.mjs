@@ -2,9 +2,12 @@ import { execFileSync } from 'node:child_process';
 import { appendFileSync, readFileSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
 
+// The content translation replay runs the real translate route against the database, so the files it loads still select the DB suites.
+const DATABASE_READS_WEB = /^apps\/web\/(server\/fan-posts\/(routes|content-translation-(slots|lease)\.db\.test)|server\/content-translation\/lease|features\/fan-posts\/domain\/(content|post-title-slots))\.ts$/;
+
 // SQL suites consume supabase/, scripts/ and worker output; unknown inputs run all suites.
 export function databaseRequired(paths) {
-  return paths.length === 0 || paths.some(path => !(
+  return paths.length === 0 || paths.some(path => DATABASE_READS_WEB.test(path) || !(
     /^apps\/web\/(app|components|features|server|hooks|lib|public|types|e2e)\/.+\.(ts|tsx|js|jsx|mjs|css|png|jpg|jpeg|webp|svg|ico|woff2?)$/.test(path)
     || /^docs\/.+\.md$/.test(path)
     || /^release-notes\/.+\.(json|md|png)$/.test(path)

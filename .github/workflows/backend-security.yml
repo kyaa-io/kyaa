@@ -384,6 +384,13 @@ jobs:
           BYUS_CLEAN_DB_ASSERTION_FILE=supabase/tests/kyaa_wave_mission_stamps.sql \
           BYUS_CLEAN_DB_SHELL_ASSERTION_FILE=supabase/tests/kyaa_wave_mission_stamps_concurrency.sh \
           bash scripts/verify-clean-migration-chain.sh
+      - name: Verify content translation cache, title slots and single provider call per key
+        if: matrix.suite == 'events'
+        run: |
+          export PATH="$(pg_config --bindir):$PATH"
+          BYUS_CLEAN_DB_PORT=55681 \
+          BYUS_CLEAN_DB_SHELL_ASSERTION_FILE=supabase/tests/content_translation_cache.sh \
+          bash scripts/verify-clean-migration-chain.sh
       - name: Verify group wallet, raffle and gift rules with concurrent entries
         if: matrix.suite == 'economy-2'
         run: |
