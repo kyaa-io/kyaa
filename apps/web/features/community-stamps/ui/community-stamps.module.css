@@ -59,7 +59,7 @@
 .row:not([data-earned=true]) .action { color:var(--color-ink); }
 .rows .cardActions { flex-wrap:nowrap; justify-content:flex-end; }
 
-.dialog .action { margin-top:8px; }
+.dialog .action { margin-top:var(--space-2); }
 .quietLink { display:flex; align-items:center; justify-content:center; min-height:var(--min-target); color:var(--color-muted); font-size:var(--fan-metadata-size); text-decoration:underline; text-underline-offset:3px; }
 .quietLink:hover { color:var(--color-ink); }
 .quietLink:focus-visible { outline:3px solid var(--color-ink); outline-offset:3px; }
@@ -68,4 +68,3 @@
 .history button > span { min-width:0; }
 .history .historyState { display:flex; align-items:center; gap:var(--space-1); }
 .historyState svg { width:var(--space-3); height:var(--space-3); flex-shrink:0; }
-
