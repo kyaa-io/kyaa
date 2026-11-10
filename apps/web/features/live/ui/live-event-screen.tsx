@@ -1580,7 +1580,7 @@ export function LiveEventScreen({
             <CreatorAvatar slug={live.celebrity.slug} src={live.celebrity.image} photos={live.celebrity.photos} position={live.celebrity.imagePosition} size={{ mobile: 48, desktop: 64 }} />
             <div>
               <span>{live.celebrity.name}</span>
-              <strong>{formatFanCount(live.celebrity.fanCount)}</strong>
+              {formatFanCount(live.celebrity.fanCount, locale) ? <strong>{formatFanCount(live.celebrity.fanCount, locale)}</strong> : null}
             </div>
             <Link
               href={withLocalePath(creatorHomeHref(live.celebrity.slug), locale) as Route}

@@ -194,7 +194,7 @@ describe("canonical 03 guest home", () => {
 
   it("uses the Elina participation guide as the final LIVE hero slide", () => {
     render(<GuestHome {...defaultProps} featuredLives={[featuredLive]} />);
-    fireEvent.click(screen.getByRole("button", { name: "2번째 배너 보기" }));
+    fireEvent.click(screen.getByRole("button", { name: "다음 배너" }));
     const hero = screen.getByRole("region", { name: "홈 배너" });
     expect(within(hero).getByRole("heading", { name: "엘리나와 함께 뱅크시 전시 보러 가요" })).toBeInTheDocument();
     expect(within(hero).getByText("팬 인증하고 응모권을 받아 원하는 선물에 응모하세요.")).toBeInTheDocument();
@@ -443,11 +443,12 @@ describe("canonical 03 guest home", () => {
     expect(card.queryByText("YouTube")).not.toBeInTheDocument();
     expect(card.queryByText("TikTok")).not.toBeInTheDocument();
     expect(card.queryByText("Instagram")).not.toBeInTheDocument();
-    expect(card.queryByText("12.8M Fans")).toBeInTheDocument();
+    expect(card.queryByText("팬 1280만명")).toBeInTheDocument();
     expect(card.getByRole("link", { name: "KARA 팬페이지 보기" })).toHaveAttribute("href", "/kara?locale=ko");
-    expect(screen.queryByText("3.2M Fans")).toBeInTheDocument();
+    expect(screen.queryByText("팬 320만명")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Elina 팬페이지 보기" })).toHaveAttribute("href", "/elina?locale=ko");
-    expect(screen.queryByText("1.5M Fans")).toBeInTheDocument();
+    expect(screen.queryByText("팬 145만명")).toBeInTheDocument();
+    expect(screen.queryByText(/\b0 Fans\b|팬 0명/)).not.toBeInTheDocument();
     const changhaCard = screen.getByRole("heading", { name: "Changha", level: 3 }).closest("article");
     expect(within(changhaCard!).getByRole("link", { name: "Changha 팬페이지 보기" })).toHaveAttribute("href", "/changha?locale=ko");
   });
@@ -492,7 +493,7 @@ describe("canonical 03 guest home", () => {
       "src",
       "https://assets.example/kara-square.mp4",
     );
-    expect(screen.getByRole("img", { name: "Elina portrait" })).toHaveAttribute("sizes", "(max-width: 767px) min(82vw, 288px), 240px");
+    expect(screen.getByRole("img", { name: "Elina portrait" })).toHaveAttribute("sizes", "(max-width: 767px) 288px, 304px");
   });
 
   it("keeps the desktop context panel available without a toggle and preserves mobile actions", () => {
@@ -569,7 +570,9 @@ describe("canonical 03 guest home", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "이전 배너" }));
     expect(screen.getByRole("heading", { name: "엘리나의 정기 LIVE", level: 2 })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "1번째 배너 보기" })).toHaveAttribute("aria-current", "true");
+    const heroSegments = screen.getByRole("region", { name: "홈 배너" }).querySelectorAll("[data-fan-carousel-indicator] [aria-hidden] > span");
+    expect(heroSegments[0]).toHaveAttribute("data-current", "true");
+    expect(heroSegments[1]).not.toHaveAttribute("data-current");
     expect(within(screen.getByRole("region", { name: "홈 배너" })).getByRole("button", { name: "자동 재생 정지" }))
       .toHaveAttribute("aria-pressed", "false");
   });
@@ -734,7 +737,11 @@ describe("canonical 03 guest home", () => {
     expect(carousels).toHaveLength(2);
     carousels.forEach((carousel) => {
       expect(carousel.querySelector("img")).toHaveAttribute("src", expect.stringContaining("passport-open-blank-9-transparent.png"));
-      expect(within(carousel).getByRole("button", { name: "KATSEYE 패스포트" })).not.toHaveAttribute("aria-current");
+      const segments = carousel.querySelectorAll("[data-fan-carousel-indicator] [aria-hidden] > span");
+      expect(segments).toHaveLength(2);
+      expect(segments[0]).toHaveAttribute("data-current", "true");
+      expect(segments[1]).not.toHaveAttribute("data-current");
+      expect(within(carousel).queryByRole("button", { name: "KATSEYE 패스포트" })).not.toBeInTheDocument();
     });
     expect(screen.queryByRole("heading", { name: "Reaction Only Fan Passport" })).not.toBeInTheDocument();
 
@@ -932,6 +939,9 @@ it("uses identical cards for all creators with editorial ordering only", () => {
   expect(section.querySelectorAll("article")).toHaveLength(8);
   expect([...section.querySelectorAll("article h3")].slice(0,3).map(h => h.textContent)).toEqual(["changha", "elina", "yuna"]);
   expect(new Set([...section.querySelectorAll("article")].map(a => a.className)).size).toBe(1);
+  const elinaCard = [...section.querySelectorAll("article")].find(a => a.querySelector("h3")?.textContent === "elina")!;
+  expect(elinaCard.textContent).not.toMatch(/Fans|팬 0/);
+  expect(within(section as HTMLElement).getByText("팬 100명")).toBeInTheDocument();
   for (const slug of roster.slice(3).map(c => c.slug)) {
     expect(section.querySelector(`a[href="/${slug}?locale=ko"]`)).not.toBeNull();
   }
@@ -944,7 +954,7 @@ it("renders the verified CHZZK channel with its icon and keeps Instagram", () =>
  const link=screen.getByRole("link",{name:"정제니 치지직 공식 채널"});
  expect(link).toHaveAttribute("href",socialLinks[1]!.url);
  expect(link).toHaveAttribute("target","_blank");
- expect(link.querySelector("img")?.getAttribute("src")).toContain("chzzk.png");
+ expect(link.querySelector("span")?.getAttribute("style")).toContain("chzzk-mark.svg");
  expect(screen.getByRole("link",{name:"정제니 Instagram 공식 채널"})).toBeInTheDocument();
  expect(screen.queryByRole("link",{name:/정제니 TikTok/})).not.toBeInTheDocument();
 });

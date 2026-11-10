@@ -115,7 +115,7 @@ export function CreatorMediaPanel({ slug, locale, channelId = slug === CHZZK_CRE
     </div>;
   }
   return <section className={mediaStyles.panel} data-creator-media={slug} data-outbound-campaign={slug} data-outbound-placement="content" aria-label={`${c.photos} · ${c.videos}`}>
-    <div className={mediaStyles.heading}><FanSectionHeader title={`${c.photos} · ${c.videos}`} description={discovery.mediaIntro} /></div>
+    <div className={mediaStyles.heading}><FanSectionHeader title={`${c.photos} · ${c.videos}`} /></div>
     {socialLinks.length > 0 && <nav className={mediaStyles.channels} aria-label={discovery.officialChannels}><span>{discovery.officialChannels}</span>{socialLinks.map(link => <a key={link.platform} href={link.url} target="_blank" rel="noopener noreferrer" data-outbound-kind="social">{({ youtube: "YouTube", instagram: "Instagram", tiktok: "TikTok", chzzk: "CHZZK" })[link.platform]}<ArrowUpRight size={14} aria-hidden="true" /></a>)}</nav>}
     <div className={`${styles.tabs} ${mediaStyles.filters}`}>{(["all", "photos", "videos", "replays"] as const).map(value => <button type="button" key={value} aria-pressed={filter === value} onClick={() => setFilter(value)}>{c[value]}</button>)}</div>
     {sourceStatus}

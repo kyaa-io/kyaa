@@ -16,7 +16,7 @@ export function FanHeading({ as: Tag = "h2", variant = "standard", id, children 
   return <Tag id={id} className={`${styles.heading} ${styles[variant]}`} data-fan-heading={variant}>{children}</Tag>;
 }
 
-/** Title and navigation share a row; supporting copy stays below both. */
+/** Title and navigation share a row; status copy (never explanatory copy) stays below both. */
 export function FanSectionHeader({ title, description, action, variant = "standard", as = "h2", id }: {
   title: ReactNode;
   description?: ReactNode;

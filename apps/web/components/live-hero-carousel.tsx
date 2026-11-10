@@ -5,12 +5,13 @@ import type { AppLocale } from "@/i18n/locales";
 import { messages as localizedMessages } from "@/i18n/catalogs/components__live-hero-carousel";
 import { additionalLocales, translate } from "@/i18n/messages";
 import useEmblaCarousel from "embla-carousel-react";
-import type { CSSProperties, ReactNode } from "react";
+import type { ReactNode } from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { LiveEventResponse } from "../features/live/domain/live-event";
 import type { ContentLocale, PublishedCelebrity } from "../server/content/content-domain";
 import { Pause } from "lucide-react";
-import { ChevronLeft, ChevronRight, Play } from "./icons";
+import { Play } from "./icons";
+import { FanCarouselFrame, FanCarouselIndicator } from "./fan-ui/fan-carousel";
 import styles from "./guest-home.module.css";
 import { ElinaGuideCard } from "./home-entry-cards/home-entry-cards";
 import { formatDetailedLiveCountdown, type LiveStartEvent } from "@/features/live/domain/live-time-display";
@@ -222,51 +223,31 @@ export function LiveHeroCarousel({
       onPointerUp={() => setPointerActive(false)}
       onPointerCancel={() => setPointerActive(false)}
     >
-      <div className={styles.heroViewport} ref={viewportRef}>
-        <div className={styles.heroTrack}>
-          {slides.map((banner, index) => (
-            <article className={`${styles.heroCard} ${banner ? "" : styles.campaignHeroCard}`} key={banner?.id ?? "elina-guide"}
-              aria-hidden={index !== activeIndex} aria-roledescription="slide"
-              aria-label={t.position(index + 1, total)} inert={index !== activeIndex}
-              data-active={index === activeIndex ? "true" : "false"}>
-              {banner ? <ManagedHomeBanner banner={banner} locale={locale} priority={index === 0} />
-                : elinaGuide !== undefined ? elinaGuide : <ElinaGuideCard locale={locale} elina={elina} raffles={elinaRaffles} hero priority={index === 0} />}
-            </article>
-          ))}
-        </div>
-        <span className={styles.heroShine} aria-hidden="true" />
-      </div>
-
-      {hasControls ? (
-        <div className={styles.carouselControls}>
-          <button className={styles.carouselPrevious} type="button" aria-label={t.previous} onClick={() => goTo(activeIndex - 1, true)}>
-            <ChevronLeft />
-          </button>
-          <div
-            className={styles.carouselDots}
-            style={{ "--carousel-width": `${total * 44 + 44}px` } as CSSProperties}
-          >
+      <FanCarouselFrame touch={reducedMotion ? "arrows" : "swipe"}
+        previous={hasControls ? { label: t.previous, onClick: () => goTo(activeIndex - 1, true) } : undefined}
+        next={hasControls ? { label: t.next, onClick: () => goTo(activeIndex + 1, true) } : undefined}>
+        <div className={styles.heroViewport} ref={viewportRef}>
+          <div className={styles.heroTrack}>
             {slides.map((banner, index) => (
-              <button
-                type="button"
-                className={styles.carouselDot}
-                aria-label={t.goTo(index + 1)}
-                aria-current={index === activeIndex ? "true" : undefined}
-                onClick={() => goTo(index, true)}
-                key={banner?.id ?? "elina-guide"}
-              >
-                <span aria-hidden="true" />
-              </button>
+              <article className={`${styles.heroCard} ${banner ? "" : styles.campaignHeroCard}`} key={banner?.id ?? "elina-guide"}
+                aria-hidden={index !== activeIndex} aria-roledescription="slide"
+                aria-label={t.position(index + 1, total)} inert={index !== activeIndex}
+                data-active={index === activeIndex ? "true" : "false"}>
+                {banner ? <ManagedHomeBanner banner={banner} locale={locale} priority={index === 0} />
+                  : elinaGuide !== undefined ? elinaGuide : <ElinaGuideCard locale={locale} elina={elina} raffles={elinaRaffles} hero priority={index === 0} />}
+              </article>
             ))}
-            <button className={styles.carouselPause} type="button" aria-label={userPaused ? t.resume : t.pause}
-              aria-pressed={userPaused} disabled={reducedMotion} onClick={() => setUserPaused((value) => !value)}>
-              {userPaused || reducedMotion ? <Play aria-hidden="true" /> : <Pause aria-hidden="true" />}
-            </button>
           </div>
-          <button className={styles.carouselNext} type="button" aria-label={t.next} onClick={() => goTo(activeIndex + 1, true)}>
-            <ChevronRight />
-          </button>
+          <span className={styles.heroShine} aria-hidden="true" />
         </div>
+      </FanCarouselFrame>
+      {hasControls ? (
+        <FanCarouselIndicator count={total} current={activeIndex}>
+          <button type="button" aria-label={userPaused ? t.resume : t.pause}
+            aria-pressed={userPaused} disabled={reducedMotion} onClick={() => setUserPaused((value) => !value)}>
+            {userPaused || reducedMotion ? <Play aria-hidden="true" /> : <Pause aria-hidden="true" />}
+          </button>
+        </FanCarouselIndicator>
       ) : null}
       <p className={styles.carouselAnnouncement} aria-live="polite" aria-atomic="true">{announcement}</p>
     </div>

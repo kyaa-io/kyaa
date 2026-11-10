@@ -35,7 +35,7 @@
   line-height: 1.5;
 }
 .action span { min-width: 0; overflow-wrap: anywhere; }
-.action svg { flex: none; width: 16px; height: 16px; }
+.action svg { flex: none; width: var(--fan-icon-inline-size); height: var(--fan-icon-inline-size); }
 .action:focus-visible { outline: var(--focus-width) solid var(--color-focus); outline-offset: var(--focus-offset); }
 .description {
   margin: 0;

@@ -52,7 +52,7 @@ export function EventsCatalogScreen({ locale, homeBanners, elina, elinaRaffles, 
   const elinaCard = showElinaCampaign ? <li key="elina-guide" className={styles.campaign}><ElinaGuideCard locale={locale} elina={elina} raffles={elinaRaffles} variant="catalog" /></li> : null;
   return <FanAppFrame locale={locale} mainId="events-content" currentPath="/events">
     <FanContentContainer as="main" id="events-content" className={styles.main}>
-      <FanSectionHeader as="h1" title={t.title} description={t.intro} />
+      <FanSectionHeader as="h1" title={t.title} />
       {contentUnavailable ? <div className={styles.state} role="alert"><p>{t.error}</p><button type="button" onClick={() => router.refresh()}>{t.retry}</button></div> : null}
       {homeBanners.length || showElinaCampaign ? <ul className={styles.list}>
         {homeBanners.map((banner, index) => <li key={banner.id} className={styles.item}>

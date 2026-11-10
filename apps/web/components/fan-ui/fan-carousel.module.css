@@ -1,0 +1,67 @@
+/* Shared carousel parts (PROD-DS-1958). Values come from globals.css tokens only. */
+.frame {
+  display: grid;
+  grid-template-columns: var(--min-target) minmax(0, 1fr) var(--min-target);
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+}
+.content { min-width: 0; }
+.arrow {
+  display: grid;
+  width: var(--min-target);
+  height: var(--min-target);
+  align-self: var(--fan-carousel-arrow-align, center);
+  margin-top: var(--fan-carousel-arrow-offset, 0);
+  padding: 0;
+  place-items: center;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: var(--color-soft);
+  color: var(--color-ink);
+  cursor: pointer;
+  transition: background-color var(--motion-control) var(--motion-easing);
+}
+.arrow svg { width: var(--fan-icon-size); height: var(--fan-icon-size); }
+.arrow:disabled { color: var(--color-line); cursor: default; }
+.arrow:focus-visible { outline: var(--focus-width) solid var(--color-focus); outline-offset: var(--focus-offset); }
+@media (hover: hover) { .arrow:not(:disabled):hover { background: var(--color-line-subtle); } }
+@media (width < 48rem) {
+  .frame[data-touch="swipe"] { grid-template-columns: minmax(0, 1fr); }
+  .frame[data-touch="swipe"] > .arrow { display: none; }
+}
+
+.indicatorRow {
+  display: flex;
+  min-width: 0;
+  height: var(--min-target);
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+}
+.indicator { display: flex; min-width: 0; align-items: center; gap: var(--space-1); }
+.indicator > span {
+  flex: none;
+  width: var(--space-2);
+  height: var(--space-2);
+  border-radius: var(--radius-pill);
+  background: var(--color-line);
+  transition: background-color var(--motion-control) var(--motion-easing);
+}
+.indicator > span[data-current] { width: var(--space-6); background: var(--color-ink); }
+.indicatorRow > button {
+  display: grid;
+  width: var(--min-target);
+  height: var(--min-target);
+  padding: 0;
+  place-items: center;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--color-ink);
+  cursor: pointer;
+}
+.indicatorRow > button svg { width: var(--fan-icon-inline-size); height: var(--fan-icon-inline-size); }
+.indicatorRow > button:disabled { color: var(--color-muted); cursor: default; }
+.indicatorRow > button:focus-visible { outline: var(--focus-width) solid var(--color-focus); outline-offset: calc(-1 * var(--focus-width)); }
+@media (hover: hover) { .indicatorRow > button:not(:disabled):hover { background: var(--color-soft); } }

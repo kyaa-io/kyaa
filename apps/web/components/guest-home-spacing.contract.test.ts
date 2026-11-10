@@ -28,23 +28,27 @@ describe("guest home compact icon-only action spacing", () => {
     expect(declarationBlock(".socialLinks")).toMatch(/\bgap:\s*0\b/);
   });
 
-  it("keeps social actions accessible while using quiet 20px brand marks", () => {
+  it("keeps social actions accessible while using one 20px ink for every brand mark", () => {
     const target = declarationBlock(".socialLink");
-    const icon = declarationBlock(".socialLink img");
+    const icon = declarationBlock(".socialIcon");
+    const globals = readFileSync(resolve(process.cwd(), "app/globals.css"), "utf8");
 
-    expect(target).toMatch(/\bwidth:\s*44px\b/);
-    expect(target).toMatch(/\bmin-width:\s*44px\b/);
-    expect(target).toMatch(/\bheight:\s*44px\b/);
-    expect(target).toMatch(/\bmin-height:\s*44px\b/);
-    expect(icon).toMatch(/\bwidth:\s*20px\b/);
-    expect(icon).toMatch(/\bheight:\s*20px\b/);
+    expect(globals).toMatch(/--min-target:\s*44px/);
+    expect(globals).toMatch(/--fan-icon-size:\s*20px/);
+    expect(target).toMatch(/\bwidth:\s*var\(--min-target\)/);
+    expect(target).toMatch(/\bheight:\s*var\(--min-target\)/);
+    expect(target).toContain("color: var(--muted)");
+    expect(icon).toMatch(/\bwidth:\s*var\(--fan-icon-size\)/);
+    expect(icon).toMatch(/\bheight:\s*var\(--fan-icon-size\)/);
+    expect(icon).toContain("background: currentColor");
+    expect(declarationBlock(".celebrityFanLink svg")).toMatch(/width:\s*var\(--fan-icon-size\)/);
   });
 
   it("keeps identity readable and actions in their own wrapping row", () => {
     expect(declarationBlock(".celebrityInfo h3")).toContain("var(--fan-item-title-size)");
     expect(declarationBlock(".celebrityInfo h3")).not.toContain("nowrap");
     expect(declarationBlock(".celebrityActions")).toContain("flex-wrap: wrap");
-    expect(declarationBlock(".celebrityFanLink")).toMatch(/min-height:\s*44px/);
+    expect(declarationBlock(".celebrityFanLink")).toMatch(/min-height:\s*var\(--min-target\)/);
     expect(declarationBlock(".fanCount")).toContain("var(--muted)");
     expect(liveStatusCss).toContain("prefers-reduced-motion: reduce");
   });
@@ -75,25 +79,23 @@ describe("guest home compact icon-only action spacing", () => {
   });
 
   it("keeps carousel controls touch-safe and removes large sliding motion for reduced motion", () => {
-    const controls = declarationBlock(".carouselControls > button");
-    expect(controls).toMatch(/\bwidth:\s*44px\b/);
-    expect(controls).toMatch(/\bmin-width:\s*44px\b/);
-    expect(controls).toMatch(/\bheight:\s*44px\b/);
-    expect(declarationBlock(".carouselDots")).toMatch(/\bbottom:\s*-42px\b/);
-    expect(declarationBlock(".carouselDots")).toMatch(
-      /\bwidth:\s*min\(var\(--carousel-width\),\s*100%\)/,
-    );
-    expect(declarationBlock(".carouselControls .carouselDot")).toMatch(
-      /\bmin-width:\s*44px\b/,
-    );
-    expect(declarationBlock(".carouselPrevious")).toMatch(/\bleft:\s*8px\b/);
-    expect(declarationBlock(".carouselNext")).toMatch(/\bright:\s*8px\b/);
-    expect(declarationBlock(".carouselDot[aria-current=\"true\"] span")).toMatch(
-      /\bbackground:\s*var\(--ink\)/,
-    );
-    expect(declarationBlock(".carouselDot[aria-current=\"true\"] span")).toMatch(
-      /\bwidth:\s*22px\b/,
-    );
+    const carouselCss = readFileSync(resolve(process.cwd(), "components/fan-ui/fan-carousel.module.css"), "utf8");
+    const block = (selector: string) => {
+      const escaped = selector.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      const match = carouselCss.match(new RegExp(`(?:^|\\n)${escaped}\\s*\\{([^}]+)\\}`));
+      if (!match) throw new Error(`Missing CSS selector: ${selector}`);
+      return match[1].replace(/\s+/g, " ");
+    };
+    // Arrows sit in their own columns beside the content, never over it.
+    expect(block(".frame")).toMatch(/grid-template-columns:\s*var\(--min-target\) minmax\(0, 1fr\) var\(--min-target\)/);
+    expect(block(".arrow")).toMatch(/\bwidth:\s*var\(--min-target\)/);
+    expect(block(".arrow")).toMatch(/\bheight:\s*var\(--min-target\)/);
+    expect(block(".arrow")).not.toMatch(/position:\s*absolute/);
+    // Indicator: short pills, the current one three times as long; controls share its 44px row.
+    expect(block(".indicator > span")).toMatch(/\bwidth:\s*var\(--space-2\)/);
+    expect(block(".indicator > span[data-current]")).toMatch(/\bwidth:\s*var\(--space-6\)/);
+    expect(block(".indicatorRow")).toMatch(/\bheight:\s*var\(--min-target\)/);
+    expect(block(".indicatorRow > button")).toMatch(/\bheight:\s*var\(--min-target\)/);
     expect(declarationBlock(".heroViewport")).toMatch(/\btouch-action:\s*pan-y\s+pinch-zoom/);
     expect(declarationBlock(".heroTrack")).not.toMatch(/\btransition:\s*transform/);
     expect(heroCarouselSource).toContain('useEmblaCarousel({');
