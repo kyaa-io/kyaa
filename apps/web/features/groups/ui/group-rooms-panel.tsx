@@ -3,7 +3,7 @@ import {GroupPublicRoomList,GroupRoomEmpty,GroupRoomHub,GroupRoomHubSkeleton,pic
 import {groupPublicRoomsSchema} from "@/server/group-members/domain";
 import {managementCopy,sendLabel} from "./management-copy";
 import { GroupImage } from "./group-image";
-import { useEffect, useRef, useState, type FormEvent, type ReactNode } from "react";
+import { useEffect, useRef, useState, type CSSProperties, type FormEvent, type ReactNode } from "react";
 import Link from "next/link";
 import type { Route } from "next";
 import { UsersRound, LockKeyhole, ChevronLeft, UserRound, BadgeCheck, MessagesSquare, ImagePlus, X } from "lucide-react";
@@ -53,7 +53,7 @@ function RoomMessages({pageId,roomId,locale,readonly=false}:{pageId:string;roomI
       {visible&&!visible.failed&&!visible.items.length&&<p>{roomEntryCopy(locale).empty}</p>}
       {visible?.items.map(item=><div className={roomStyles.roomMessage} data-mine={item.mine||undefined} data-artist={item.artist||undefined} key={item.id}>
         {!item.mine&&(item.avatarUrl?<GroupImage locale={locale} src={item.avatarUrl} alt='' className={roomStyles.roomMessageAvatar} width={40} height={40}/>:<span className={roomStyles.roomMessageAvatar} aria-hidden='true'><UserRound size={22}/></span>)}
-        <div className={roomStyles.roomMessageCopy}>{!item.mine&&<strong>{item.nickname}{item.artist&&<span className={roomStyles.roomArtist}><BadgeCheck size={16} aria-hidden='true'/>{roomContextCopy[locale][1]}</span>}</strong>}{item.body&&<p>{item.body}</p>}{item.asset&&<div className={roomStyles.roomPhoto} style={{maxWidth:item.asset.width}}><AuthenticatedMedia asset={item.asset} original locale={locale} alt={mediaCopy[locale][1]}/></div>}<time className={styles.meta} dateTime={item.createdAt}>{new Date(item.createdAt).toLocaleTimeString(locale,{hour:'2-digit',minute:'2-digit'})}</time></div>
+        <div className={roomStyles.roomMessageCopy}>{!item.mine&&<strong>{item.nickname}{item.artist&&<span className={roomStyles.roomArtist}><BadgeCheck size={16} aria-hidden='true'/>{roomContextCopy[locale][1]}</span>}</strong>}{item.body&&<p>{item.body}</p>}{item.asset&&<div className={roomStyles.roomPhoto} style={{'--room-photo-max':`${item.asset.width}px`} as CSSProperties}><AuthenticatedMedia asset={item.asset} original locale={locale} alt={mediaCopy[locale][1]}/></div>}<time className={styles.meta} dateTime={item.createdAt}>{new Date(item.createdAt).toLocaleTimeString(locale,{hour:'2-digit',minute:'2-digit'})}</time></div>
       </div>)}
     </div>
     {uploads.invalid&&<p role="alert" className={styles.error}>{t.error}</p>}

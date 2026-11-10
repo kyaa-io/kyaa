@@ -29,4 +29,4 @@
 .roomMessagesLoading{display:grid;gap:var(--space-5)}
 @media(max-width:767px){.roomNotice{flex-direction:column;align-items:stretch;gap:var(--space-3)}}
 
-.roomComposer{flex-wrap:wrap}.roomUpload{display:flex;align-items:center;gap:var(--space-2);width:100%;min-width:0}.roomUpload>span{flex:1;overflow-wrap:anywhere;min-width:0}.roomPhoto{width:100%;max-width:100%}.roomPhoto img{display:block;width:100%;height:auto;object-fit:contain}
+.roomComposer{flex-wrap:wrap}.roomUpload{display:flex;align-items:center;gap:var(--space-2);width:100%;min-width:0}.roomUpload>span{flex:1;overflow-wrap:anywhere;min-width:0}.roomPhoto{width:100%;max-width:min(100%,var(--room-photo-max,100%))}.roomPhoto img{display:block;width:100%;height:auto;object-fit:contain}
