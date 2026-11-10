@@ -241,8 +241,10 @@ it('opens the compact video overview with scoped LIVE and recordings, without se
  const {container}=render(<GroupsReleaseProvider enabled><CreatorMediaPanel slug='elina' locale='ko' socialLinks={officialChannel} onVideoSelect={selected}/></GroupsReleaseProvider>);
  expect(state.sources).toHaveBeenCalledWith('/api/live-events?locale=ko&creator=elina');
  expect(screen.queryByRole('button',{name:'영상 · LIVE'})).not.toBeInTheDocument();
- expect(container.querySelector('[data-media-kind]')).toHaveTextContent('함께하는 생방송');
- expect(container.querySelector('[data-media-kind="replays"]')).toHaveTextContent('함께한 LIVE');
+ expect(container.querySelector('[data-media-kind]')).toHaveTextContent('');
+ expect(screen.getByRole('button',{name:'재생 · 함께하는 생방송'})).toBeInTheDocument();
+ expect(container.querySelector('[data-media-kind="replays"]')).toHaveTextContent('');
+ expect(container.querySelector('[data-media-kind="replays"] a')).toHaveAttribute('aria-label','함께한 LIVE');
  expect(screen.queryByText('공식 채널 영상')).not.toBeInTheDocument();
  expect(container.querySelector('iframe')).toBeNull();expect(selected).not.toHaveBeenCalled();
  fireEvent.click(screen.getByRole('button',{name:'재생 · 등록한 대표 영상'}));

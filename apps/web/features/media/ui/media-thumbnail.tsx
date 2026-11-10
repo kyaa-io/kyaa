@@ -9,13 +9,13 @@ import { videoThumbnailUrl, youtubeVideoId } from "../domain/video-thumbnail";
 import { isRecordedReplayUrl } from "@/features/live/domain/live-watch-link";
 import styles from "./creator-media-panel.module.css";
 
-export function MediaThumbnail({ image, href, kind, source, locale, priority = false }: { image: string | null; href: string; kind: "photos" | "videos" | "replays"; source?: string; locale: AppLocale; priority?: boolean }) {
+export function MediaThumbnail({ image, href, kind, source, locale, priority = false, iconOnly = false }: { image: string | null; href: string; kind: "photos" | "videos" | "replays"; source?: string; locale: AppLocale; priority?: boolean; iconOnly?: boolean }) {
   const [failed, setFailed] = useState<string[]>([]);
   const [dimensions, setDimensions] = useState<{ width: number; height: number }>();
   const id = kind !== "photos" ? youtubeVideoId(href) : null;
   const src = [image, videoThumbnailUrl(href), ...(id ? [`https://i.ytimg.com/vi/${id}/mqdefault.jpg`] : [])].find((value): value is string => typeof value === "string" && value.length > 0 && !failed.includes(value));
   const provider = id ? "YouTube" : isRecordedReplayUrl("instagram", href) ? "Instagram" : isRecordedReplayUrl("tiktok", href) ? "TikTok" : source;
-  if (!src) return <span className={styles.thumbnailFallback} aria-hidden="true">{kind === "photos" ? <ImageOff size={28} /> : <Play size={28} />}<span>{[provider, participationCopy(locale)[kind]].filter(Boolean).join(" · ")}</span></span>;
+  if (!src) return <span className={styles.thumbnailFallback} aria-hidden="true">{kind === "photos" ? <ImageOff size={28} /> : <Play size={28} />}{!iconOnly && <span>{[provider, participationCopy(locale)[kind]].filter(Boolean).join(" · ")}</span>}</span>;
   // Own files (/images/…) go through the image optimizer at the tile width; other hosts stay as they are.
   const local = src.startsWith("/") && !src.startsWith("//");
   return <Image src={src} width={640} height={360} alt="" unoptimized={!local} sizes={local ? "(max-width: 767px) 50vw, 320px" : undefined} referrerPolicy="no-referrer" loading={priority ? "eager" : undefined} fetchPriority={priority ? "high" : undefined}

@@ -17,3 +17,7 @@
 @media (min-width: 64rem) {
   .link { min-height: 56px; grid-template-areas: "category title date"; grid-template-columns: 88px minmax(0, 1fr) auto; }
 }
+
+.guideBody { display:grid; grid-template-columns:minmax(0,1fr) 100px; align-items:start; gap:var(--space-4); }
+.artwork { display:block; width:100%; height:auto; }
+@media(min-width:768px) { .guideBody { grid-template-columns:minmax(0,1fr) 160px; } }
