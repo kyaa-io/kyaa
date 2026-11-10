@@ -34,7 +34,6 @@ import { MyFavorites, MyFavoritesSkeleton, MyGuestFavorites } from "./my-favorit
 import { MyGuestPassportCard, MyPassportCard, MyPassportCardSkeleton, passportTierName } from "./my-passport-card";
 import { MyRaffleNotice } from "./my-raffle-notice";
 import { MyShortcuts, type MyShortcut } from "./my-shortcuts";
-import { MyGuestWalletCard, MyWalletCard, MyWalletCardSkeleton } from "./my-wallet-card";
 import { DukjilProvider } from "@/features/dukjil/ui/dukjil-provider";
 import { CreatorImage } from "@/components/fan-ui/creator-image";
 import { FanAppFrame, FanContentContainer, type FanLocale } from "@/components/fan-shell/fan-app-shell";
@@ -83,7 +82,7 @@ const copy = {
     allLive: "전체 LIVE 보기", fanTier: (name: string) => `${name} 팬등급`, myPassport: "내 패스포트",
     ticketPanel: () => "응모권", allRaffles: "전체 래플", raffleOpen: "응모 진행 중", raffleDraw: "추첨", raffleView: "래플 자세히 보기",
     raffleEmpty: "현재 열려 있는 래플이 없어요.",
-    nextAction: "다음 팬 활동", noMission: "새 인증 미션을 기다리고 있어요.", viewLive: "LIVE 일정 보기", startPassport: "팬 인증 시작하기",
+    nextAction: "다음 팬 활동", noMission: "새 인증 덕질을 기다리고 있어요.", viewLive: "LIVE 일정 보기", startPassport: "팬 인증 시작하기",
     missionLoading: "다음 활동을 확인하는 중이에요.", missionError: "다음 활동을 불러오지 못했어요.", manualReward: "승인 후 지급",
     tierHelp: "함께한 활동이 나의 등급이 돼요.", highestTier: "최고 등급을 달성했어요.", toNextTier: "까지",
   },
@@ -181,7 +180,7 @@ function LegacyDashboardSkeleton({ locale }: { locale: FanLocale }) {
   </div>;
 }
 
-/** 첫 로드 골격. 실제 화면의 순서(프로필 → 패스포트·지갑 → 최애 → 바로가기)와 카드 크기를 그대로 쓰고, 값 자리만 비운다. */
+/** 첫 로드 골격. 실제 화면의 순서(프로필 → 패스포트 → 최애 → 바로가기)와 카드 크기를 그대로 쓰고, 값 자리만 비운다. */
 function MyDashboardSkeleton({ locale }: { locale: FanLocale }) {
   const t = copy[locale];
   return <div className={styles.pencilMy} aria-busy="true">
@@ -193,7 +192,6 @@ function MyDashboardSkeleton({ locale }: { locale: FanLocale }) {
     </header>
     <div className={styles.homeRow}>
       <MyPassportCardSkeleton title={t.myPassport} />
-      <MyWalletCardSkeleton locale={locale} />
     </div>
     <MyFavoritesSkeleton title={t.creators} />
     <MyShortcuts locale={locale} {...myShortcutGroups(locale, hrefWithLocale(locale))}/>
@@ -297,7 +295,6 @@ function Dashboard({ summary, locale, avatarResource, refreshSummary, selectedSl
       <MyRaffleNotice locale={locale} ownerKey={ownerKey} resultIds={summary.rewards.items.map(reward => reward.rewardResultId)}/>
       <div className={styles.homeRow}>
         <MyPassportCard creators={visibleCreators} selectedSlug={selectedSlug} onSelect={onSelectSlug} communityStamps={stamps} stampsError={communityStamps.state.status === "error"} retryStamps={communityStamps.retry} locale={locale} labels={labels}/>
-        <MyWalletCard locale={locale}/>
       </div>
       <MyFavorites creators={passportCreators} locale={locale} labels={{ title: t.creators, find: t.findCreator, empty: t.noCreators }}/>
       <MyShortcuts locale={locale} {...myShortcutGroups(locale, hrefWithLocale(locale))}/>
@@ -535,7 +532,7 @@ function myShortcutGroups(locale: FanLocale, hrefFor: (path: string) => string):
 }
 const hrefWithLocale = (locale: FanLocale) => (path: string) => `${path}${path.includes("?") ? "&" : "?"}locale=${locale}`;
 
-/** 비로그인 MY. 로그인 화면과 같은 구역·순서(프로필 → 패스포트 → 지갑 → 최애 → 바로가기)를 두고, 내 값은 잠근 칸으로, 공개 구성(미션북 9칸)은 실제로 보여 준다. */
+/** 비로그인 MY. 로그인 화면과 같은 구역·순서(프로필 → 패스포트 → 최애 → 바로가기)를 두고, 내 값은 잠근 칸으로, 공개 구성(미션북 9칸)은 실제로 보여 준다. */
 function MyGuest({ locale }: { locale: FanLocale }) {
   const t = copy[locale];
   const ko = locale === "ko";
@@ -548,7 +545,6 @@ function MyGuest({ locale }: { locale: FanLocale }) {
     </header>
     <div className={styles.homeRow}>
       <MyGuestPassportCard locale={locale} labels={{ title: t.myPassport, detail: myHomeText(locale, "viewDetails") }}/>
-      <MyGuestWalletCard locale={locale}/>
     </div>
     <MyGuestFavorites locale={locale} labels={{ title: t.creators, find: t.findCreator, empty: t.noCreators }}/>
     <MyShortcuts locale={locale} {...myShortcutGroups(locale, loginTo)}/>

@@ -95,7 +95,7 @@ const homeHead = {
   state: z.enum(HOME_RANKING_STATES).optional(), today: z.string().nullable().optional(), previousDay: z.string().nullable().optional(), failedAt: timestamp.optional(),
 };
 /** Rows a signed-in reader may ask for (the full ranking page); the home card asks for the default. Signed out, every platform ranking list answers
- * at most HOME_GUEST_LIMIT rows (decision 2026-11-09 15:52). */
+ * at most five rows on legacy lists; the home list allows ten. */
 export const HOME_RANKING_LIMIT = 50;
 export const HOME_RANKING_DEFAULT_LIMIT = 20;
 export const HOME_GUEST_LIMIT = 5;

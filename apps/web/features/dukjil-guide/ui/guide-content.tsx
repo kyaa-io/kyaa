@@ -14,6 +14,7 @@ import { GuideCta, GuideFansLink, GuideProgress } from "./guide-live";
 import { GROUP_WALLET_POINT_COST } from "@/server/group-wallet/domain";
 import { activityLabel, guideDetailText, guideText, limitText, pointsText } from "./guide-copy";
 import styles from "./guide-content.module.css";
+import { DukjilStory } from "./dukjil-story";
 
 // Hearts per claimed mission book page: the claim result in dukjil-types is `hearts: z.literal(1)`, so this mirrors that contract.
 export const HEARTS_PER_PAGE = 1;
@@ -327,14 +328,9 @@ export function JjinfanGuideContent({ locale, model }: { locale: AppLocale; mode
 export function DukjilGuideContent({ locale, model }: { locale: AppLocale; model: GuideModel }) {
   return (
     <>
-      <GuideHero
-        id="dukjil-guide-title"
-        head="dukjil"
-        title={guideText(locale, "dkgDkTitle")}
-        lead={model ? guideDetailText(locale, "dkgDkLead") : undefined}
-        actions={<><GuideCta locale={locale} target="fan-page" returnPath="/guide/dukjil" /><Link className={styles.secondary} href={localeHref("/guide/jjinfan", locale)}>{guideText(locale, "dkgLinkJjinfan")}</Link></>}
-      />
+      <DukjilStory locale={locale} />
 
+      <details className={styles.dukjilDetails}><summary>{guideText(locale, "dkgDkTableTitle")}</summary>
       {model ? <GuideFacts items={[
         { value: model.activities.length, label: guideDetailText(locale, "dkgFactActivities") },
         { value: model.slots.length, label: guideDetailText(locale, "dkgFactSlots") },
@@ -378,6 +374,8 @@ export function DukjilGuideContent({ locale, model }: { locale: AppLocale; model
           { q: guideDetailText(locale, "dkgFaqDkWhereQ"), a: guideDetailText(locale, "dkgFaqDkWhereA") },
         ]} />
       ) : null}
+
+      </details>
 
       <GuideClosing title={model ? guideDetailText(locale, "dkgDkCloseTitle", [model.activities.length]) : guideText(locale, "dkgDkMetaTitle")}>
         <GuideCta locale={locale} target="fan-page" returnPath="/guide/dukjil" />

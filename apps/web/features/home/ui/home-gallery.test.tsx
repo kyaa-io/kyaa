@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, within } from "@testing-library/react";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
@@ -77,22 +77,22 @@ describe("home gallery block", () => {
   it("shows the empty text only when the read found nothing", () => {
     const { container } = render(<HomeGallery locale="ko" photos={[]} hasMore={false} shorts={[]} />);
     expect(container.querySelectorAll('[data-row="photo-placeholder"]')).toHaveLength(8);
-    expect(container.querySelectorAll('[data-row="short-placeholder"]')).toHaveLength(4);
+    expect(container.querySelectorAll('[data-row="short-placeholder"]')).toHaveLength(0);
     expect(screen.getByText("아직 사진 없음")).toBeInTheDocument();
-    expect(screen.getByText("아직 숏츠 없음")).toBeInTheDocument();
+    expect(screen.getByText("아직 숏폼 없음")).toBeInTheDocument();
   });
   it.each(["loading", "error"] as const)("keeps the same placeholders without any empty text while %s (a failure is never shown as zero)", (state) => {
     const { container } = render(<HomeGallery locale="ko" photos={state} hasMore={false} shorts={state} />);
     expect(container.querySelectorAll('[data-row="photo-placeholder"]')).toHaveLength(8);
-    expect(container.querySelectorAll('[data-row="short-placeholder"]')).toHaveLength(4);
+    expect(container.querySelectorAll('[data-row="short-placeholder"]')).toHaveLength(0);
     expect(container.querySelector(`[data-home-state="${state}"]`)).not.toBeNull();
     expect(screen.queryByText("아직 사진 없음")).not.toBeInTheDocument();
-    expect(screen.queryByText("아직 숏츠 없음")).not.toBeInTheDocument();
+    expect(screen.queryByText("아직 숏폼 없음")).not.toBeInTheDocument();
   });
   it("a failed photo read beside working Shorts keeps only the photo area pending", () => {
     render(<HomeGallery locale="ko" photos="error" hasMore={false} shorts={[]} />);
     expect(screen.queryByText("아직 사진 없음")).not.toBeInTheDocument();
-    expect(screen.getByText("아직 숏츠 없음")).toBeInTheDocument();
+    expect(screen.getByText("아직 숏폼 없음")).toBeInTheDocument();
   });
   it("shows the real photos at their own ratio with the source alt, links official photos to the notice, with no pink tile among them", () => {
     const { container } = render(<HomeGallery locale="ko" photos={photos} hasMore={false} shorts={[]} />);
@@ -110,18 +110,25 @@ describe("home gallery block", () => {
     render(<HomeGallery locale="en" photos={photos} hasMore shorts={[]} />);
     expect(screen.getByRole("link", { name: /View all/ })).toHaveAttribute("href", "/gallery?locale=en");
   });
-  it("shows the LIVE YouTube videos with their LIVE titles and YouTube thumbnails, and fills the rest of the shelf", () => {
+  it("shows YouTube videos with their original titles and thumbnails without empty cards", () => {
     const { container } = render(<HomeGallery locale="ko" photos={[]} hasMore={false} shorts={shorts} />);
     expect(container.querySelectorAll('[data-row="short"]')).toHaveLength(3);
-    expect(container.querySelectorAll('[data-row="short-placeholder"]')).toHaveLength(1);
-    const first = screen.getByRole("link", { name: /R8 라이브 r8-live-watch/ });
-    expect(first).toHaveAttribute("href", "/live/r8-live-watch");
-    expect(first.querySelector("img")!.getAttribute("src")).toContain("R8shortsAA1");
-    expect(screen.queryByText("아직 숏츠 없음")).not.toBeInTheDocument();
+    expect(container.querySelectorAll('[data-row="short-placeholder"]')).toHaveLength(0);
+    const first = screen.getByRole("button", { name: /R8 라이브 r8-live-watch/ });
+    expect(first.querySelector("img")!.getAttribute("src")).toContain("R8shortsAA1/oardefault.jpg");
+    expect(screen.getByRole("link", { name: /전체 보기/ })).toHaveAttribute("href", "/shorts?locale=ko");
+    fireEvent.click(first);
+    const dialog = screen.getByRole("dialog");
+    expect(within(dialog).getByTitle("R8 라이브 r8-live-watch")).toHaveAttribute("src", "https://www.youtube.com/embed/R8shortsAA1?rel=0");
+    expect(within(dialog).queryByRole("link", { name: /YouTube/ })).not.toBeInTheDocument();
+    fireEvent.click(within(dialog).getByRole("button", { name: "더 보기" }));
+    expect(within(dialog).getByRole("link", { name: /YouTube/ })).toHaveAttribute("href", "https://www.youtube.com/watch?v=R8shortsAA1");
+    expect(screen.queryByText("아직 숏폼 없음")).not.toBeInTheDocument();
   });
-  it("never crops gallery photos with object-fit cover (only the 16:9 video card trims YouTube letterboxing)", () => {
+  it("preserves images within the portrait shortform card", () => {
     const css = readFileSync(resolve(__dirname, "home-placeholder-blocks.module.css"), "utf8").split("\n").filter(line => /object-fit:\s*cover/.test(line));
-    expect(css).toEqual([".card > img { display: block; width: 100%; height: 100%; object-fit: cover; }"]);
+    expect(css).toEqual([]);
+    expect(readFileSync(resolve(__dirname, "home-shorts.module.css"), "utf8")).toContain("aspect-ratio:9/16");
     expect(readFileSync(resolve(__dirname, "home-gallery-page.module.css"), "utf8")).not.toMatch(/object-fit:\s*cover/);
   });
 });

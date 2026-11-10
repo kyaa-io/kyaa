@@ -3,7 +3,7 @@ import type { AppLocale } from "@/i18n/locales";
 const ko = {
   title: "받고 싶은 경품 Top 3", intro: "원하는 순서대로 경품 3개를 선택해 주세요. 선택한 경품은 순서를 바꿀 수 있어요.",
   tickets: "내 응모권", quantity: "{n}명", selection: "내가 고른 Top 3", save: "Top 3 저장하고 응모하기", saved: "응모했어요", change: "변경 저장하기",
-  rules: "완료한 미션 스탬프 1개가 응모권 1장이 돼요. 추첨 시 모은 응모권 전체로 순번을 정하고, 남은 경품 중 가장 높은 선호부터 1개를 배정해요. 선택한 3개가 모두 소진되면 미당첨이에요.",
+  rules: "완료한 덕질 스탬프 1개가 응모권 1장이 돼요. 추첨 시 모은 응모권 전체로 순번을 정하고, 남은 경품 중 가장 높은 선호부터 1개를 배정해요. 선택한 3개가 모두 소진되면 미당첨이에요.",
   pending: "경품 결과를 순서대로 공개하고 있어요", waiting: "추첨을 기다리고 있어요", won: "당첨을 축하해요!", notWon: "이번에는 당첨되지 않았어요", notEntered: "응모가 마감되었어요", results: "공개된 당첨 결과", noWinners: "당첨자 없음", remove: "선택 취소", earlier: "선호 순위 올리기", closed: "응모를 마감했어요. 공개된 결과를 확인해 주세요.",
 };
 type Copy = typeof ko;

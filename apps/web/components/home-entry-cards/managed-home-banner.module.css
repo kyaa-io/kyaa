@@ -19,3 +19,7 @@
 /* 안내 그림은 내장 글자를 보존한다. 모바일 대체 원본도 전체를 표시한다. */
 .root[data-guide-art] .artwork { background:color-mix(in oklab, var(--color-ink) 88%, var(--color-service-ink)); }
 .root[data-guide-art] .artwork img { object-fit:contain; object-position:center; }
+
+@media (max-width: 767px) {
+  .root .artwork img { object-fit: contain; object-position: center; }
+}

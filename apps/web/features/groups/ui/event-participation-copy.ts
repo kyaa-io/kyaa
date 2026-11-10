@@ -7,7 +7,7 @@ export const eventParticipationCopy:Record<AppLocale,readonly [string,string]>={
 };
 
 export const eventActionCopy:Record<AppLocale,readonly [string,string,string,string,string,string,string,string,string,string]>={
- ko:['입장할 때','내 티켓을 현장에 보여주세요.','내 QR 티켓 보기','현장에서','현장 미션','현장에 있는 QR을 스캔해요.','현장 QR 스캔','행사 후','후기','함께한 이야기를 남겨요.'],
+ ko:['입장할 때','내 티켓을 현장에 보여주세요.','내 QR 티켓 보기','현장에서','현장 덕질','현장에 있는 QR을 스캔해요.','현장 QR 스캔','행사 후','후기','함께한 이야기를 남겨요.'],
  en:['At entry','Show your ticket at the venue.','View my QR ticket','At the venue','On-site mission','Scan the QR code at the venue.','Scan venue QR','After the event','Review','Share your experience.'],
  ja:['入場時','会場でチケットを提示してください。','マイQRチケットを見る','会場で','会場ミッション','会場のQRコードを読み取ります。','会場QRを読み取る','イベント後','感想','参加した感想を残しましょう。'],
  'zh-Hans':['入场时','请在现场出示票券。','查看我的二维码票','在现场','现场任务','扫描现场的二维码。','扫描现场二维码','活动后','评价','分享你的活动体验。'],
@@ -37,7 +37,7 @@ export const eventStateCopy:Record<AppLocale,readonly [string,string,string,stri
 };
 
 export const eventCheckInCopy:Record<AppLocale,readonly [string,string,string]>={
- ko:['현장 참여 완료','체크인이 완료됐어요. 현장 미션을 확인해 보세요.','미션 보기'],
+ ko:['현장 참여 완료','체크인이 완료됐어요. 현장 덕질을 확인해 보세요.','덕질 보기'],
  en:['Checked in','You’re checked in. Explore the on-site missions.','View missions'],
  ja:['チェックイン完了','チェックインが完了しました。会場ミッションを確認しましょう。','ミッションを見る'],
  'zh-Hans':['现场签到完成','签到成功。查看现场任务吧。','查看任务'],

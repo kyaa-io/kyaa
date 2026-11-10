@@ -1552,7 +1552,7 @@ export function LiveEventScreen({
               )}
             {!isIfewLive && (live.missionsAvailable === false ? (
               <p className={styles.missionEmpty}>
-                {locale === "ko" ? "현재 참여 가능한 미션이 없어요." : translate(locale, localizedMessages.m0f87b18f0c16, "No missions are available right now.")}
+                {locale === "ko" ? "현재 참여 가능한 덕질이 없어요." : translate(locale, localizedMessages.m0f87b18f0c16, "No missions are available right now.")}
               </p>
             ) : (
               <FanAction
@@ -1560,9 +1560,9 @@ export function LiveEventScreen({
                 className={styles.missionLink}
                 fullWidth
                 href={`/live/${slug}/missions?locale=${locale}` as Route}
-                helperText={live.missionsAvailable == null ? (locale === "ko" ? "미션 목록에서 참여 가능 여부를 확인해 주세요." : translate(locale, localizedMessages.m74fb6f427790, "Check the mission list for availability.")) : undefined}
+                helperText={live.missionsAvailable == null ? (locale === "ko" ? "덕질 목록에서 참여 가능 여부를 확인해 주세요." : translate(locale, localizedMessages.m74fb6f427790, "Check the mission list for availability.")) : undefined}
               >
-                <span className={styles.missionLinkContent}><span>{locale === "ko" ? "LIVE 미션 보기" : translate(locale, localizedMessages.ma66aa523b5a6, "View LIVE missions")}</span><ArrowRight aria-hidden="true" /></span>
+                <span className={styles.missionLinkContent}><span>{locale === "ko" ? "LIVE 덕질 보기" : translate(locale, localizedMessages.ma66aa523b5a6, "View LIVE missions")}</span><ArrowRight aria-hidden="true" /></span>
               </FanAction>
             ))}
             {actionError && (

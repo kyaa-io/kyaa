@@ -26,17 +26,18 @@ export type HomeGalleryPhoto = z.infer<typeof homeGalleryPhotoSchema>;
 export const homeGalleryPageSchema = z.object({ items: z.array(homeGalleryPhotoSchema).max(24), hasMore: z.boolean() }).strict();
 export type HomeGalleryPage = Readonly<{ items: readonly HomeGalleryPhoto[]; nextCursor: string | null }>;
 
-/** YouTube videos of published LIVE records (7th-round decision: the cover is that video's YouTube thumbnail). */
+/** Public short-form videos from registered creators. */
 export const homeShortSchema = z.object({
   id: z.uuid(),
   videoId: z.string().regex(/^[A-Za-z0-9_-]{11}$/),
   title: z.string().min(1).max(300),
   creator: z.object({ slug: z.string().min(1), name: z.string().min(1) }).strict(),
   href: z.string().regex(/^https:\/\/www\.youtube\.com\/watch\?v=[A-Za-z0-9_-]{11}$/),
-  liveHref: z.string().regex(/^\/live\/[a-z0-9-]+$/),
+  liveHref: z.string().regex(/^\/live\/[a-z0-9-]+$/).optional(),
 }).strict();
 export type HomeShort = z.infer<typeof homeShortSchema>;
 export const homeShortsSchema = z.array(homeShortSchema).max(12);
+export const homeShortsPageSchema = z.object({ items: homeShortsSchema, hasMore: z.boolean() }).strict();
 
 export const homeGalleryCopy: Record<AppLocale, { title: string; empty: string; viewAll: string; more: string }> = {
   ko: { title: "갤러리", empty: "아직 사진 없음", viewAll: "전체 보기", more: "더 보기" },

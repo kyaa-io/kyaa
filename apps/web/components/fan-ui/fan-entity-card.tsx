@@ -6,6 +6,7 @@ import type { ReactNode } from "react";
 
 import { GroupImage } from "@/features/groups/ui/group-image";
 import type { AppLocale } from "@/i18n/locales";
+import type { PhotoSet } from "@/features/media/domain/public-image";
 import { CreatorAvatar } from "./creator-avatar";
 import { CreatorImage } from "./creator-image";
 import { FanTag } from "./fan-tag";
@@ -17,7 +18,7 @@ const KIND_LABEL: Record<FanPageKind, FanUiCopyKey> = { fan: "kindFan", group: "
 export const fanPageKindLabel = (locale: AppLocale, kind: FanPageKind) => fanUiText(locale, KIND_LABEL[kind]);
 export const fanPageKindTone = (kind: FanPageKind) => (kind === "fan" ? "fan" : "neutral") as "fan" | "neutral";
 
-export type FanPageImage = Readonly<{ src?: string | null; slug?: string | null; alt?: string }>;
+export type FanPageImage = Readonly<{ src?: string | null; slug?: string | null; alt?: string; photos?: PhotoSet; position?: string }>;
 
 /** 페이지 이미지 하나: 크리에이터 사진은 CreatorAvatar, 그 밖은 GroupImage, 사진이 없으면 이름 앞 두 글자. */
 /** `priority`: the page head's image, usually the largest thing on first paint, is fetched ahead of scripts. */
@@ -30,7 +31,7 @@ export function FanPageImageSlot({ image, name, locale, size, className, priorit
 
 /** 페이지 한 개를 나타내는 칸. 한 칸은 2줄이다: 이름 / 유형 태그 + 팬 수.
  * `list`는 모임 목록의 구분선 행이다: 외곽선·화살표가 없고, 팬페이지면 유형 태그를 빼며, 팬 수가 0이면 숫자를 쓰지 않는다. */
-export function FanEntityCard({ href, image, name, kind, locale, memberCount, trailing, badge, size = "card", className }: Readonly<{
+export function FanEntityCard({ href, image, name, kind, locale, memberCount, trailing, badge, newBadge = false, size = "card", className, disabled = false }: Readonly<{
   href: string;
   image: FanPageImage;
   name: string;
@@ -40,11 +41,13 @@ export function FanEntityCard({ href, image, name, kind, locale, memberCount, tr
   trailing?: ReactNode;
   /** One highlight tag after the kind (the 찐팬 100 challenge, C7). */
   badge?: ReactNode;
+  newBadge?: boolean;
   /** `card`는 1px 외곽선이 있는 칸, `row`는 목록 안에서 아래 선으로 나뉘는 행, `list`는 이름 시작선부터 선이 그어지는 목록 행, `tile`은 모임 디렉터리 격자의 정사각 사진 칸이다. */
   size?: "row" | "card" | "list" | "tile";
   className?: string;
+  disabled?: boolean;
 }>) {
-  if (size === "tile") return <FanEntityTile href={href} image={image} name={name} kind={kind} locale={locale} memberCount={memberCount} badge={badge} className={className} />;
+  if (size === "tile") return <FanEntityTile href={href} image={image} name={name} kind={kind} locale={locale} badge={badge} newBadge={newBadge} className={className} disabled={disabled} />;
   const list = size === "list";
   const showKind = !list || kind !== "fan";
   // S4: no `팬 0` on any size; a zero count is left out like everywhere else in the directory.
@@ -59,26 +62,24 @@ export function FanEntityCard({ href, image, name, kind, locale, memberCount, tr
   </Link>;
 }
 
-/** L5 (2026-11-09, Weverse artist picker on Mobbin): a square picture with the name, facts and challenge tag on white below it.
- * Three subgrid rows (picture, name, facts) are shared with the other tiles of the row so names and facts line up.
+/** L5: a square picture with the name and applicable kind below it, and a challenge tag over the picture.
+ * Two subgrid rows (picture, name) are shared with the other tiles of the row.
  * Fan pages use the creator's reviewed square crop (`portrait`). Brand and hobby images are logos or banners, so they are shown whole (contain). */
-function FanEntityTile({ href, image, name, kind, locale, memberCount, badge, className }: Readonly<{ href: string; image: FanPageImage; name: string; kind: FanPageKind; locale: AppLocale; memberCount?: number; badge?: ReactNode; className?: string }>) {
-  const count = memberCount ? fanUiText(locale, "fanCount", [memberCount.toLocaleString(locale)]) : undefined;
-  const facts = [kind === "fan" ? undefined : fanPageKindLabel(locale, kind), count].filter(Boolean).join(" · ");
+function FanEntityTile({ href, image, name, kind, locale, badge, newBadge, className, disabled }: Readonly<{ href: string; image: FanPageImage; name: string; kind: FanPageKind; locale: AppLocale; badge?: ReactNode; newBadge: boolean; className?: string; disabled: boolean }>) {
   const sizes = "(min-width: 1024px) 168px, (min-width: 768px) 140px, 34vw";
   const initials = Array.from(name.replace(/^[^\p{L}\p{N}]+/u, "") || name).slice(0, 2).join("");
   // Only fan pages show a creator's face; a brand or hobby page linked to a creator record still shows its own logo whole.
   const creatorSlug = image.slug && (kind === "fan" || !image.src) ? image.slug : undefined;
-  return <Link href={href as Route} className={[styles.tile, className ?? ""].filter(Boolean).join(" ")} data-fan-entity={kind}>
+  const content = <>
     <span className={styles.tileMedia} data-tile-media={creatorSlug ? "creator" : image.src ? "page" : "initials"}>
       {creatorSlug
-        ? <CreatorImage slug={creatorSlug} src={image.src} photos={undefined} presentation="portrait" alt="" width={336} height={336} sizes={sizes} fallback={<span className={styles.tileInitials} aria-hidden="true">{initials}</span>} />
+        ? <CreatorImage slug={creatorSlug} src={image.src} photos={image.photos} position={image.position} presentation="portrait" alt="" width={336} height={336} sizes={sizes} fallback={<span className={styles.tileInitials} aria-hidden="true">{initials}</span>} />
         : image.src ? <GroupImage locale={locale} src={image.src} alt="" width={336} height={336} className={styles.tileLogo} /> : <span className={styles.tileInitials} aria-hidden="true">{initials}</span>}
-    </span>
-    <strong className={styles.tileName}>{name}</strong>
-    <span className={styles.tileFacts}>
-      {facts && <span className={styles.tileMeta}>{facts}</span>}
       {badge && <span className={styles.tileBadge}>{badge}</span>}
+      {newBadge && <span className={styles.tileNew}>NEW</span>}
     </span>
-  </Link>;
+    <span className={styles.tileInfo}><strong className={styles.tileName}>{name}</strong>{kind !== "fan" && kind !== "brand" && <span className={styles.tileMeta}>{fanPageKindLabel(locale, kind)}</span>}</span>
+  </>;
+  const tileProps = { className: [styles.tile, className ?? ""].filter(Boolean).join(" "), "data-fan-entity": kind };
+  return disabled ? <span {...tileProps}>{content}</span> : <Link href={href as Route} {...tileProps}>{content}</Link>;
 }

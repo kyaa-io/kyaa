@@ -29,6 +29,14 @@ it('retains the structured server rejection',async()=>{vi.stubGlobal('fetch',vi.
 it('shows request received rather than implying the page already exists',async()=>{const requests:Record<string,unknown>[]=[];vi.stubGlobal('fetch',vi.fn(async(_url:string,input:RequestInit)=>{requests.push(JSON.parse(input.body as string));return Response.json({id:page.id,status:'submitted',pageId:null});}));render(<GroupApplication locale='ko'/>);fireEvent.change(screen.getByLabelText('페이지 이름'),{target:{value:'한강 러닝'}});fireEvent.change(screen.getByLabelText('페이지 소개'),{target:{value:'함께 달려요'}});fireEvent.click(screen.getByRole('button',{name:'페이지 개설 신청'}));expect(await screen.findByRole('heading',{name:'신청 접수'})).toBeInTheDocument();expect(requests[0]).toMatchObject({kind:'hobby',name:'한강 러닝'});expect(requests[0].requestId).toEqual(expect.any(String));expect(screen.queryByText('가입하기')).not.toBeInTheDocument();});
 it('loads actual discovery cards and performs a submitted search',async()=>{const urls:string[]=[];vi.stubGlobal('fetch',vi.fn(async(url:string)=>{urls.push(url);return Response.json({items:[page],nextCursor:null});}));render(<GroupDirectory locale='ko'/>);await waitFor(()=>expect(screen.getAllByText('한강 러닝').length).toBeGreaterThan(0));fireEvent.change(screen.getByRole('textbox',{name:'페이지 이름이나 관심사 검색'}),{target:{value:'사진'}});fireEvent.click(screen.getByRole('button',{name:'검색'}));await waitFor(()=>expect(urls.some(url=>url.includes('search=%EC%82%AC%EC%A7%84'))).toBe(true));expect(new URLSearchParams(window.location.search).get('search')).toBe('사진');});
 
+it('shows NEW only on new creator cards without an active challenge',async()=>{
+ const creators=[{...page,kind:'fan',celebrityId:page.id,slug:'new-creator',name:'새 크리에이터',isNew:true,challenge:false},{...page,id:'10000000-0000-4000-8000-000000000002',kind:'fan',celebrityId:page.id,slug:'challenge-creator',name:'챌린지 크리에이터',isNew:true,challenge:true}];
+ const urls:string[]=[];vi.stubGlobal('fetch',vi.fn(async(url:string)=>{urls.push(url);return Response.json({items:creators,nextCursor:null});}));
+ render(<GroupDirectory locale='ko'/>);
+ const section=screen.getByRole('region',{name:'페이지 둘러보기'});const fresh=await within(section).findByRole('link',{name:/새 크리에이터/});const challenge=await within(section).findByRole('link',{name:/챌린지 크리에이터/});
+ expect(within(fresh).getByText('NEW')).toBeInTheDocument();expect(within(challenge).queryByText('NEW')).not.toBeInTheDocument();expect(urls.some(url=>url.includes('sort=discovery'))).toBe(true);
+});
+
 it('continues room history after the first page instead of polling the same first 50 messages',async()=>{
  const roomId='20000000-0000-4000-8000-000000000001';const profileId='30000000-0000-4000-8000-000000000001';
  const messages=Array.from({length:51},(_,i)=>({id:`40000000-0000-4000-8000-${String(i+1).padStart(12,'0')}`,body:`메시지 ${i+1}`,profileId,nickname:'팬',createdAt:'2026-11-01T10:00:00Z'}));

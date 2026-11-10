@@ -5,9 +5,12 @@
  * 새 글 점은 응답에 마지막 방문 뒤 새 글 정보가 없어 그리지 않는다.
  */
 import type { Route } from "next";
+import { Menu } from "@base-ui/react/menu";
+import sortStyles from "./group-directory-sort.module.css";
 import Link from "next/link";
-import { useState, useSyncExternalStore } from "react";
+import { useRef, useState, useSyncExternalStore, type PointerEvent, type MouseEvent, type DragEvent } from "react";
 import { ChevronLeft, ChevronRight } from "@/components/icons";
+import { ChevronDown } from "lucide-react";
 import { FanIcon } from "@/components/fan-ui/fan-icon";
 import { Plus } from "@/components/fan-ui/fan-icons";
 import { CreatorAvatar } from "@/components/fan-ui/creator-avatar";
@@ -33,6 +36,38 @@ const noSubscribe = () => () => {};
 const ROWS = 5;
 const SLOTS = 3;
 
+function useHorizontalDrag<T extends HTMLElement>(mode: "rail" | "banner", onSwipe?: (step: number) => void) {
+  const drag = useRef<{ x: number; y: number; left: number; moved: boolean } | null>(null);
+  const suppressClick = useRef(false);
+  return {
+    onPointerDown: (event: PointerEvent<T>) => {
+      if (event.button !== 0 || (mode === "rail" && event.pointerType !== "mouse")) return;
+      suppressClick.current = false;
+      drag.current = { x: event.clientX, y: event.clientY, left: event.currentTarget.scrollLeft, moved: false };
+    },
+    onPointerMove: (event: PointerEvent<T>) => {
+      const state = drag.current;
+      if (!state) return;
+      const dx = event.clientX - state.x, dy = event.clientY - state.y;
+      if (!state.moved && (Math.abs(dx) <= 8 || Math.abs(dx) <= Math.abs(dy))) return;
+      if (!state.moved) event.currentTarget.setPointerCapture?.(event.pointerId);
+      state.moved = true;
+      if (mode === "rail") { event.preventDefault(); event.currentTarget.scrollLeft = state.left - dx; }
+    },
+    onPointerUp: (event: PointerEvent<T>) => {
+      const state = drag.current;
+      if (!state) return;
+      const dx = event.clientX - state.x;
+      suppressClick.current = state.moved;
+      if (mode === "banner" && state.moved && Math.abs(dx) >= 40) onSwipe?.(dx < 0 ? 1 : -1);
+      drag.current = null;
+    },
+    onPointerCancel: () => { drag.current = null; },
+    onClickCapture: (event: MouseEvent<T>) => { if (suppressClick.current && event.detail !== 0) { event.preventDefault(); event.stopPropagation(); } suppressClick.current = false; },
+    onDragStart: (event: DragEvent<T>) => event.preventDefault(),
+  };
+}
+
 function focusDirectorySearch() {
   const input = document.querySelector<HTMLInputElement>("[data-directory-explore] input");
   input?.scrollIntoView({ block: "center", behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
@@ -43,6 +78,7 @@ function focusDirectorySearch() {
  * 비로그인의 로그인 버튼은 제목 줄에 둔다: 원 네 개(+ 포함)가 390·360에서도 잘리지 않고 한 줄에 들어가야 한다. */
 export function MyArtists({ locale, loginPath }: { locale: AppLocale; loginPath: string }) {
   const c = directoryTopCopy(locale);
+  const drag = useHorizontalDrag<HTMLUListElement>("rail");
   const session = useGroupRequest();
   const joined = useGroupResource(session.ready && session.authenticated ? groupApiQuery({ mine: "joined", sort: "visited", limit: "10" }) : null, parseList);
   const guest = session.ready && !session.authenticated;
@@ -54,7 +90,7 @@ export function MyArtists({ locale, loginPath }: { locale: AppLocale; loginPath:
       <FanHeading id="directory-my-artists" as="h2">{c.myArtists}</FanHeading>
       {guest ? <FanAction className={styles.login} variant="neutral" size="sm" href={fanLoginHref(locale, loginPath)}>{c.signIn}</FanAction> : null}
     </div>
-    <ul className={styles.rail} data-ghost={ghost || undefined}>
+    <ul className={styles.rail} data-ghost={ghost || undefined} {...drag}>
       <li className={styles.slot} data-row="artist-add"><a className={styles.add} href="#directory-explore" onClick={(event) => { event.preventDefault(); focusDirectorySearch(); }} aria-label={c.findGroups}><FanIcon icon={Plus} size={24} /></a><span className={styles.slotName} aria-hidden="true" /></li>
       {waiting ? Array.from({ length: SLOTS + 1 }, (_, i) => <li key={i} className={styles.slot} data-row="artist-loading" aria-hidden="true"><FanSkeleton shape="circle" width={64} height={64} /><FanSkeleton width={48} height={12} /></li>)
         : ghost ? Array.from({ length: SLOTS }, (_, i) => <li key={i} className={styles.slot} data-row="artist-ghost" aria-hidden="true"><span className={styles.ghost} /><span className={styles.ghostName} /></li>)
@@ -83,23 +119,31 @@ const firstLine = (title: string) => title.split("\n").map((line) => line.trim()
 export function HotPosts({ locale }: { locale: AppLocale }) {
   const c = directoryTopCopy(locale);
   const [open, setOpen] = useState(false);
-  const url = `/api/public/popular-posts?locale=${toContentLocale(locale)}&page=1`;
+  const [sort, setSort] = useState<"likes" | "comments" | "views">("likes");
+  const url = `/api/public/popular-posts?locale=${toContentLocale(locale)}&page=1&sort=${sort}`;
   const auth = useByUsAuth(), signedIn = auth.ready && auth.authenticated;
   const hinted = useSyncExternalStore(noSubscribe, mayHaveSession, () => false);
   const publicAllowed = auth.ready ? !auth.authenticated : !hinted;
-  const anonymous = useCommunityResource(publicAllowed ? url : null, parsePosts, true, true, true), viewer = useCommunityResource(signedIn ? url : null, parsePosts, true, true);
+  const anonymous = useCommunityResource(publicAllowed ? url : null, parsePosts, false, true, true), viewer = useCommunityResource(signedIn ? url : null, parsePosts, false, true);
   const { state, retry } = signedIn ? viewer : anonymous;
   const ready = state.status === "ready";
   const total = ready ? state.data.items.length : 0;
   const items = ready ? state.data.items.slice(0, open ? 10 : ROWS) : [];
   return <section className={styles.hot} aria-labelledby="directory-hot-posts" data-directory-block="hot-posts">
-    <div className={styles.hotHead}><FanHeading id="directory-hot-posts">{c.hotTitle}</FanHeading><span className={styles.hotSub}>{c.hotSub}</span></div>
+    <div className={styles.hotHead}><FanHeading id="directory-hot-posts">{c.hotTitle}</FanHeading>
+      <Menu.Root><Menu.Trigger className={styles.hotSort}>{c.hotSort[sort]}<ChevronDown aria-hidden="true" size={16} /></Menu.Trigger>
+        <Menu.Portal><Menu.Positioner align="end" sideOffset={4} className={sortStyles.positioner}><Menu.Popup className={sortStyles.popup} aria-label={c.hotTitle}>
+          <Menu.RadioGroup className={sortStyles.group} value={sort} onValueChange={value => { if (value === "likes" || value === "comments" || value === "views") { setSort(value); setOpen(false); } }}>
+            {(["likes", "comments", "views"] as const).map(value => <Menu.RadioItem className={sortStyles.item} key={value} value={value}>{c.hotSort[value]}</Menu.RadioItem>)}
+          </Menu.RadioGroup>
+        </Menu.Popup></Menu.Positioner></Menu.Portal>
+      </Menu.Root></div>
     {state.status === "error" ? <div className={styles.state}><FanState inline compact kind="error" title={c.hotError} actions={<FanAction variant="text" size="sm" onClick={retry}>{c.retry}</FanAction>} /></div>
       : <ul className={styles.posts}>{!ready ? Array.from({ length: ROWS }, (_, i) => <li key={i} className={styles.post} data-row="hot-loading" aria-hidden="true"><FanSkeleton shape="circle" width={32} height={32} /><FanSkeleton width="70%" height={16} /><FanSkeleton width="40%" height={12} /></li>)
         : <>{items.map((post) => <li key={`${post.source}:${post.id}`} className={styles.post} data-row="hot-post">
           <PostAvatar post={post} />
           <Link className={styles.postTitle} href={postHref(post, locale) as Route}>{firstLine(post.title)}</Link>
-          <span className={styles.postMeta}><Link href={pageHref(post, locale) as Route}>{post.pageName}</Link><span aria-hidden="true">·</span><span>{c.likes(post.likeCount)}</span><span aria-hidden="true">·</span><span>{c.comments(post.commentCount)}</span></span>
+          <span className={styles.postMeta}><Link href={pageHref(post, locale) as Route}>{post.pageName}</Link><span aria-hidden="true">·</span><span>{c.likes(post.likeCount)}</span><span aria-hidden="true">·</span><span>{c.comments(post.commentCount)}</span>{sort === "views" && post.viewCount !== null && <><span aria-hidden="true">·</span><span>{c.views(post.viewCount)}</span></>}</span>
         </li>)}{Array.from({ length: Math.max(0, (open ? 2 * ROWS : ROWS) - items.length) }, (_, i) => {
           const note = total === 0 && i === 0;
           return <li key={`p${i}`} className={styles.post} data-row="hot-placeholder" aria-hidden={note ? undefined : true}><span className={styles.ghostSmall} /><span className={styles.placeholderText}>{note ? c.hotEmpty : "—"}</span></li>;
@@ -114,6 +158,7 @@ const isStrip = (banner: HomeBanner) => banner.desktopImage.width / banner.deskt
 export function ThinCarousel({ banners, locale }: { banners: readonly HomeBanner[]; locale: AppLocale }) {
   const c = directoryTopCopy(locale);
   const [index, setIndex] = useState(0);
+  const drag = useHorizontalDrag<HTMLAnchorElement>("banner", (step) => setIndex((value) => (value + step + banners.length) % banners.length));
   if (!banners.length) return null;
   const banner = banners[index % banners.length]!;
   const mobile = banner.mobileImage ?? banner.desktopImage;
@@ -122,10 +167,10 @@ export function ThinCarousel({ banners, locale }: { banners: readonly HomeBanner
   const move = (step: number) => setIndex((value) => (value + step + banners.length) % banners.length);
   return <section className={styles.thin} data-fill={fill || undefined} aria-roledescription="carousel" aria-label={c.bannerLabel} data-directory-block="thin-banner">
     {fill
-      ? <a className={styles.thinFull} href={href} aria-label={banner.title}>
+      ? <a className={styles.thinFull} href={href} aria-label={banner.title} {...drag}>
         <picture><source media="(min-width: 64rem)" srcSet={banner.desktopImage.url} width={banner.desktopImage.width} height={banner.desktopImage.height} /><img src={mobile.url} width={mobile.width} height={mobile.height} alt="" /></picture>
       </a>
-      : <a className={styles.thinSlide} href={href}>
+      : <a className={styles.thinSlide} href={href} {...drag}>
         <picture className={styles.thinImage}><source media="(min-width: 64rem)" srcSet={banner.desktopImage.url} width={banner.desktopImage.width} height={banner.desktopImage.height} /><img src={mobile.url} width={mobile.width} height={mobile.height} alt="" /></picture>
         <span className={styles.thinCopy}><span className={styles.thinTitle}>{banner.title}</span><span className={styles.thinAction}>{banner.ctaLabel}</span></span>
       </a>}

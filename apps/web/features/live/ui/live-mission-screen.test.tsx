@@ -36,25 +36,25 @@ it("guards token and POST waits, locks answers and confirms completion without a
  const token=deferred<string>();const post=deferred<Response>();
  const fetcher=vi.fn((url:string,init?:RequestInit)=>init?.method==="POST"?post.promise:Promise.resolve(url.includes("/missions?")?Response.json([mission]):new Response(null,{status:404})));
  vi.stubGlobal("fetch",fetcher);await readyMission();getAccessToken.mockReturnValueOnce(token.promise);
- const button=screen.getByRole("button",{name:"미션 완료"});fireEvent.click(button);fireEvent.click(button);
+ const button=screen.getByRole("button",{name:"덕질 완료"});fireEvent.click(button);fireEvent.click(button);
  expect(screen.getByRole("button",{name:"제출 중…"})).toBeDisabled();expect(screen.getByRole("radio",{name:"파랑"})).toBeDisabled();
  expect(fetcher.mock.calls.filter(([,init])=>init?.method==="POST")).toHaveLength(0);
  await act(async()=>{token.resolve("token");});await waitFor(()=>expect(fetcher.mock.calls.filter(([,init])=>init?.method==="POST")).toHaveLength(1));
  await act(async()=>{post.resolve(Response.json(completion));});
- expect(screen.getByRole("button",{name:"완료됨"})).toBeDisabled();expect(screen.getByRole("status")).toHaveTextContent("미션을 완료했어요");
+ expect(screen.getByRole("button",{name:"완료됨"})).toBeDisabled();expect(screen.getByRole("status")).toHaveTextContent("덕질을 완료했어요");
 });
 it("reuses uncertain request keys for identical answers and replaces keys after changing answers",async()=>{
  const bodies: Array<{idempotencyKey:string}>=[];
  vi.stubGlobal("fetch",vi.fn(async(url:string,init?:RequestInit)=>{if(init?.method==="POST"){bodies.push(JSON.parse(String(init.body)));throw new Error("offline");}return url.includes("/missions?")?Response.json([mission]):new Response(null,{status:404});}));
- await readyMission();fireEvent.click(screen.getByRole("button",{name:"미션 완료"}));await screen.findByRole("alert");
- fireEvent.click(screen.getByRole("button",{name:"미션 완료"}));await waitFor(()=>expect(bodies).toHaveLength(2));await waitFor(()=>expect(screen.getByRole("button",{name:"미션 완료"})).toBeEnabled());
+ await readyMission();fireEvent.click(screen.getByRole("button",{name:"덕질 완료"}));await screen.findByRole("alert");
+ fireEvent.click(screen.getByRole("button",{name:"덕질 완료"}));await waitFor(()=>expect(bodies).toHaveLength(2));await waitFor(()=>expect(screen.getByRole("button",{name:"덕질 완료"})).toBeEnabled());
  expect(bodies[0].idempotencyKey).toBe(bodies[1].idempotencyKey);
- fireEvent.click(screen.getByRole("radio",{name:"파랑"}));fireEvent.click(screen.getByRole("button",{name:"미션 완료"}));await waitFor(()=>expect(bodies).toHaveLength(3));
+ fireEvent.click(screen.getByRole("radio",{name:"파랑"}));fireEvent.click(screen.getByRole("button",{name:"덕질 완료"}));await waitFor(()=>expect(bodies).toHaveLength(3));
  expect(bodies[2].idempotencyKey).not.toBe(bodies[1].idempotencyKey);
 });
 it("does not submit an old owner's answers with the next owner's token",async()=>{
  const token=deferred<string>();const fetcher=vi.fn(async(url:string,_init?:RequestInit)=>url.includes("/missions?")?Response.json([mission]):new Response(null,{status:404}));
- vi.stubGlobal("fetch",fetcher);const view=await readyMission();getAccessToken.mockReturnValueOnce(token.promise);fireEvent.click(screen.getByRole("button",{name:"미션 완료"}));
+ vi.stubGlobal("fetch",fetcher);const view=await readyMission();getAccessToken.mockReturnValueOnce(token.promise);fireEvent.click(screen.getByRole("button",{name:"덕질 완료"}));
  owner="owner-b";view.rerender(<LiveMissionScreen slug="test-live" locale="ko"/>);await screen.findByRole("radio",{name:"분홍"});
  await act(async()=>{token.resolve("owner-b-token");});
  expect(fetcher.mock.calls.every(([,init])=>init?.method!=="POST")).toBe(true);expect(screen.getByRole("radio",{name:"분홍"})).not.toBeChecked();
@@ -64,10 +64,10 @@ it("distinguishes failed load from empty and retries without submitting",async()
  const fetcher=vi.fn(async(url:string)=>url.includes("/missions?") ? (failed?new Response(null,{status:500}):Response.json([])) : new Response(null,{status:404}));
  vi.stubGlobal("fetch",fetcher);
  render(<LiveMissionScreen slug="test-live" locale="ko"/>);
- expect(await screen.findByText("미션을 불러오지 못했어요.")).toBeInTheDocument();
- expect(screen.queryByText("지금 참여할 수 있는 미션이 없어요.")).not.toBeInTheDocument();
+ expect(await screen.findByText("덕질을 불러오지 못했어요.")).toBeInTheDocument();
+ expect(screen.queryByText("지금 참여할 수 있는 덕질이 없어요.")).not.toBeInTheDocument();
  failed=false;fireEvent.click(screen.getByRole("button",{name:"다시 시도"}));
- expect(await screen.findByText("지금 참여할 수 있는 미션이 없어요.")).toBeInTheDocument();
+ expect(await screen.findByText("지금 참여할 수 있는 덕질이 없어요.")).toBeInTheDocument();
  expect(fetcher.mock.calls.every(([url])=>!url.includes("/submit"))).toBe(true);
 });
 
@@ -102,7 +102,7 @@ it("runs the image vote then quiz, using server reward values on the final resul
  expect(screen.getByRole("button", { name: "취향 고르기 완료" })).toBeDisabled();
  fireEvent.click(screen.getByRole("radio", { name: "하트" }));
  fireEvent.click(screen.getByRole("button", { name: "정답 확인하기" }));
- expect(await screen.findByRole("heading", { name: /두 미션.*모두 완료/ })).toHaveFocus();
+ expect(await screen.findByRole("heading", { name: /덕질 두 가지.*모두 완료/ })).toHaveFocus();
  expect(screen.getByRole("status")).toHaveTextContent("정답이에요");
  expect([...document.querySelectorAll("img")].some(image => decodeURIComponent(image.src).includes("/images/credentials/v2/mission.png"))).toBe(true);
  expect(screen.getByText("+3")).toBeInTheDocument();
@@ -116,7 +116,7 @@ it("completes an incorrect quiz without claiming a correct answer or offering re
  render(<LiveMissionScreen slug={elinaLiveSlug} locale="ko" />);
  fireEvent.click(await screen.findByRole("radio", { name: "별" }));
  fireEvent.click(screen.getByRole("button", { name: "정답 확인하기" }));
- expect(await screen.findByRole("status")).toHaveTextContent("정답은 아니지만, 미션 참여는 완료됐어요");
+ expect(await screen.findByRole("status")).toHaveTextContent("정답은 아니지만, 덕질 참여는 완료됐어요");
  expect(screen.queryByText("팬 점수")).not.toBeInTheDocument();
  expect(screen.getAllByText("+0")).toHaveLength(1);
  expect(screen.getByText("응모권")).toBeInTheDocument();

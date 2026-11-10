@@ -101,6 +101,7 @@ function StanExchangeContent({ locale, points, pointCost, pendingRequest }: Exch
   const locked = working;
   const pick = (n: number) => setPicked(Math.min(Math.max(1, n), maxQty));
   return <div className={styles.exchange}>
+    <span className={styles.quantityLabel}>{q.quantity}</span>
     <div className={styles.stepper} role="group" aria-label={q.quantity}>
       <FanIconButton aria-label={q.decrease} disabled={locked || Boolean(pending) || qty <= 1} onClick={() => pick(qty - 1)}><FanIcon icon={Minus} /></FanIconButton>
       {/* A saved request is checked with its own quantity, so the card shows that one, not today's maximum. */}
@@ -108,8 +109,8 @@ function StanExchangeContent({ locale, points, pointCost, pendingRequest }: Exch
       <FanIconButton aria-label={q.increase} disabled={locked || Boolean(pending) || qty >= maxQty} onClick={() => pick(qty + 1)}><FanIcon icon={Plus} /></FanIconButton>
     </div>
     {pending
-      ? <FanAction variant="secondary" className={styles.exchangeAction} loading={working} disabled={locked} onClick={() => void submit(pending)}>{w.recover}</FanAction>
-      : <FanAction variant="secondary" className={styles.exchangeAction} loading={working} disabled={locked || qty < 1} onClick={() => void start(qty)}>{rewarded.action}</FanAction>}
+      ? <FanAction variant="primary" className={styles.exchangeAction} loading={working} disabled={locked} onClick={() => void submit(pending)}>{w.recover}</FanAction>
+      : <FanAction variant="primary" className={styles.exchangeAction} loading={working} disabled={locked || qty < 1} onClick={() => void start(qty)}>{rewarded.action}</FanAction>}
   </div>;
 }
 

@@ -2,7 +2,7 @@
 import Link from "next/link";
 import type { Route } from "next";
 import { useEffect, useId, useState, type ReactNode } from "react";
-import { CalendarCheck, Check, Heart, MessageSquare, PenLine, Send } from "lucide-react";
+import { Check } from "lucide-react";
 import { FanIcon } from "@/components/fan-ui/fan-icon";
 import { ChevronDown } from "@/components/fan-ui/fan-icons";
 import { BadgeCheck, LayoutGrid } from "lucide-react";
@@ -15,7 +15,6 @@ import { FanSkeleton } from "@/components/fan-ui/fan-skeleton";
 import { FanState } from "@/components/fan-ui/fan-state";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import { FanCollapsible, FanCollapsibleTrigger } from "@/components/fan-ui/fan-collapsible";
-import { FanGauge } from "@/components/fan-ui/fan-number";
 import { CertificationGrid } from "@/features/certification/ui/certification-grid";
 import { fanLoginHref } from "@/components/login-href";
 import { walletCopy } from "@/features/group-wallet/ui/copy";
@@ -38,7 +37,7 @@ const LEGACY_KEYS: readonly MissionKey[] = ["checkin", "post", "comment"];
 export type GroupMissionLinks = { write: string; comment: string };
 
 /** One row per fan activity: what to do, the points, today's count against the daily limit, a stamp when done. Pressing a row goes to where that activity happens. `all` lists every catalog activity with an all-clear row on top (the 덕질 tab); without it a page shows its six main ones. */
-export function FanMissions({ locale, slug, title, passportHref, proofHref, footer, onAttendance, group, all = false, noPage }: { locale: AppLocale; slug: string; title: string; passportHref: string; proofHref: string; footer?: ReactNode; onAttendance: (trigger: HTMLElement) => void; group?: GroupMissionLinks; all?: boolean; /** Where the activity rows go while the viewer has no page to do them on. */ noPage?: string }) {
+export function FanMissions({ locale, slug, title, titleSuffix, passportHref, proofHref, footer, onAttendance, group, all = false, noPage }: { locale: AppLocale; slug: string; title: string; titleSuffix?: ReactNode; passportHref: string; proofHref: string; footer?: ReactNode; onAttendance: (trigger: HTMLElement) => void; group?: GroupMissionLinks; all?: boolean; /** Where the activity rows go while the viewer has no page to do them on. */ noPage?: string }) {
   const state = useDukjil();
   const anywhere = useAttendedAnywhereToday(!group && state?.authenticated === true);
   const headingId = useId();
@@ -86,38 +85,31 @@ export function FanMissions({ locale, slug, title, passportHref, proofHref, foot
       return { mission, ...missionProgress(state?.catalog, state?.today, mission.key) };
     })
     .sort((a, b) => Number(a.done) - Number(b.done));
-  const rowList = (list: typeof view, compact: boolean) => (
+  const rowList = (list: typeof view) => (
     <FanMissionList className={styles.cards}>
       {list.map(({ mission, points, count, limit, remaining, done, period }) => {
         const finished = !guest && done;
         const progress = !guest && !group && (pending || count === undefined ? (on || pending) && !state?.todayFailure && <span className={styles.progress} aria-hidden="true"><FanSkeleton width="100%" height={6} /></span>
-          : limit !== null && (compact
-            ? <span className={styles.progress}><FanGauge size="sm" className={styles.gauge} value={Math.min(count, limit)} max={limit} label={mission.label} valueText={`${count.toLocaleString(locale)}/${limit.toLocaleString(locale)}`} /></span>
-            : (
+          : limit !== null && (
             <span className={styles.progress}>
               <span className={styles.bar} role="progressbar" aria-label={mission.label} aria-valuemin={0} aria-valuemax={limit} aria-valuenow={Math.min(count, limit)}><i style={{ "--mission-fill": Math.min(1, count / limit) } as CSSProperties} data-done={done} /></span>
               <span className={styles.count}>{done && <Check size={12} aria-hidden="true" />}{count.toLocaleString(locale)}/{limit.toLocaleString(locale)}</span>
             </span>
-          )));
-        const checkinAction = compact && mission.key === "checkin" && !finished && !guest && state?.attendanceKnown;
+          ));
         const href = guest ? fanLoginHref(locale, mission.href) : mission.href;
         const onClick = !guest && mission.key === "checkin" ? (event: MouseEvent<HTMLAnchorElement>) => { if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return; event.preventDefault(); onAttendance(event.currentTarget); } : undefined;
         // D1 · F3: every row is the shared FanMissionRow (circle art · title · progress at the title's x · one fixed trailing column).
-        // The trailing column holds one thing: the done tag, the check-in action, or the reward. A monthly cap (invite) is the reward alone.
-        const icons: Partial<Record<MissionKey, typeof Check>> = {checkin:CalendarCheck,comment:MessageSquare,share:Send,reaction:Heart,post:PenLine};
-        const Icon = icons[mission.key];
+        // The trailing column holds the done tag or the reward.
         return <FanMissionRow key={mission.key} dataMission={mission.key} done={finished} href={href} onClick={onClick}
-          plainArt={all && Boolean(Icon)}
-          art={all && Icon ? <Icon size={24} strokeWidth={1.5} /> : <MissionArt src={`/images/stamps/ink-v1/${mission.art}.webp`} />}
+          art={<MissionArt src={`/images/stamps/ink-v1/${mission.art}.webp`} />}
           title={mission.label}
           detail={progress || undefined}
-          trailing={finished ? all ? <Check size={20} strokeWidth={1.5} aria-label={dukjilText(locale,"missionDoneShort")}/> : <FanTag tone="fan" icon={<Check size={12} aria-hidden="true" />}>{dukjilText(locale, "missionDoneShort")}</FanTag>
-            : checkinAction ? <span className={styles.rowAction} aria-hidden="true">{t("missionsCheckinAction")}</span>
+          trailing={finished ? <FanTag tone="fan" icon={<Check size={12} aria-hidden="true" />}>{dukjilText(locale, "missionDoneShort")}</FanTag>
             : on && points ? <EarnBadge variant="inline" className={styles.reward} locale={locale} points={points} remaining={guest ? null : remaining} remainingPer={period} /> : undefined} />;
       })}
     </FanMissionList>
   );
-  const rows = rowList(view, false);
+  const rows = rowList(view);
   // 덕질 tab: three folds. Today = check-in and every activity with a daily limit; the rest wait in "more"; proof is the certification grid.
   const isDaily = (key: MissionKey) => key === "checkin" || Boolean(ruleDailyLimit(state?.catalog?.rules[key]));
   const todayRows = view.filter(row => isDaily(row.mission.key));
@@ -137,14 +129,14 @@ export function FanMissions({ locale, slug, title, passportHref, proofHref, foot
   // F3: today's rows open the card under the section head (which says how many are left); the other two groups fold behind heads drawn as rows.
   const folds = (
     <div className={styles.folds} data-nudge={nudge ? "" : undefined}>
-      <FanCollapsible open={todayOpen} trigger={() => null} className={styles.fold}><div id={todayId} data-missions-today="">{rowList(todayRows, true)}</div></FanCollapsible>
+      <FanCollapsible open={todayOpen} trigger={() => null} className={styles.fold}><div id={todayId} data-missions-today="">{rowList(todayRows)}</div></FanCollapsible>
       {moreRows.length > 0 && <FanCollapsible persistKey="dukjil-missions:more" className={styles.fold}
-        trigger={({ triggerProps }) => <FanMissionFoldRow {...triggerProps} plainArt icon={<LayoutGrid size={24} strokeWidth={1.5} />}
+        trigger={({ triggerProps }) => <FanMissionFoldRow {...triggerProps} icon={<LayoutGrid size={24} strokeWidth={1.5} />}
           title={t("missionsGroupMore")} reward={morePoints ? <EarnBadge variant="inline" locale={locale} points={morePoints} /> : null} meta={moreRows.length.toLocaleString(locale)} />}>
-        {rowList(moreRows, true)}
+        {rowList(moreRows)}
       </FanCollapsible>}
       {state?.catalog?.rules.proof && <FanCollapsible persistKey="dukjil-missions:proof" className={styles.fold}
-        trigger={({ triggerProps }) => <FanMissionFoldRow {...triggerProps} plainArt icon={<BadgeCheck size={24} strokeWidth={1.5} />}
+        trigger={({ triggerProps }) => <FanMissionFoldRow {...triggerProps} icon={<BadgeCheck size={24} strokeWidth={1.5} />}
           title={t("missionsGroupProof")} reward={proofPoints ? <EarnBadge variant="inline" locale={locale} points={proofPoints} /> : null} />}>
         <div className={styles.proofRows}><CertificationGrid variant="rows" locale={locale} slug={noPage ? "" : slug} guest={guest} fallbackHref={guest ? `/benefits?locale=${locale}` : proof} /></div>
       </FanCollapsible>}
@@ -154,7 +146,7 @@ export function FanMissions({ locale, slug, title, passportHref, proofHref, foot
   return (
     <section className={`${styles.section} ${all ? styles.full : ""} ${inkStyles.palette}`} aria-labelledby={headingId} data-fan-missions>
       <div className={styles.head}>
-        <h2 id={headingId}>{title}</h2>
+        <div className={styles.headingGroup}><h2 id={headingId}>{title}</h2>{titleSuffix}</div>
         {folded && todayToggle && <FanCollapsibleTrigger className={`${styles.summary} ${styles.todayToggle}`} aria-expanded={todayOpen} aria-controls={todayId} onClick={() => setTodayStored(!todayOpen)}>
           <span data-missions-left="">{todayAllDone ? t("missionsGroupAllDone") : t("missionsGroupLeft", [todayLeft.toLocaleString(locale)])}</span><FanIcon icon={ChevronDown} size={16} className={styles.todayChevron} />
         </FanCollapsibleTrigger>}

@@ -3,7 +3,7 @@ import "@testing-library/jest-dom/vitest";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import type { HomeBanner } from "@/features/home/domain/home-banner";
 
-const state = vi.hoisted(() => ({ authenticated: false, joined: [] as unknown[], joinedFails: false, posts: [] as unknown[], postsFail: false, postsLoading: false }));
+const state = vi.hoisted(() => ({ authenticated: false, joined: [] as unknown[], joinedFails: false, posts: [] as unknown[], postsFail: false, postsLoading: false, urls: [] as string[] }));
 vi.mock("@/features/auth/client/cognito-auth", () => ({ useByUsAuth: () => ({ ready: true, authenticated: state.authenticated, user: null, getAccessToken: async () => "t" }) }));
 vi.mock("./use-group-resource", () => ({
   useGroupRequest: () => ({ ready: true, authenticated: state.authenticated, ownerKey: "o", request: vi.fn() }),
@@ -11,10 +11,10 @@ vi.mock("./use-group-resource", () => ({
     : { ready: true, authenticated: state.authenticated, loading: false, error: state.joinedFails, data: { items: state.joined, nextCursor: null } },
 }));
 vi.mock("@/features/fanpage/ui/use-community-resource", () => ({
-  useCommunityResource: (url: string | null) => url === null ? { state: { status: "loading" }, retry: vi.fn() }
+  useCommunityResource: (url: string | null) => { if (url) state.urls.push(url); return url === null ? { state: { status: "loading" }, retry: vi.fn() }
     : state.postsFail ? { state: { status: "error" }, retry: vi.fn() }
     : state.postsLoading ? { state: { status: "loading" }, retry: vi.fn() }
-    : { state: { status: "ready", data: { hasMore: false, items: state.posts } }, retry: vi.fn() },
+    : { state: { status: "ready", data: { hasMore: false, items: state.posts } }, retry: vi.fn() }; },
 }));
 import { HotPosts, MyArtists, ThinCarousel } from "./directory-top";
 
@@ -52,6 +52,31 @@ it("my artists: joined pages follow the add slot and open their page; no pages k
   expect(second.container.querySelectorAll("li[aria-hidden='true']")).toHaveLength(3);
 });
 
+it("drags the artist rail with a mouse and swipes banners without following their links", () => {
+  class TestPointerEvent extends MouseEvent {
+    pointerType: string; pointerId: number;
+    constructor(type: string, init: PointerEventInit) { super(type, init); this.pointerType = init.pointerType ?? ""; this.pointerId = init.pointerId ?? 1; }
+  }
+  vi.stubGlobal("PointerEvent", TestPointerEvent);
+  try {
+    state.authenticated = true; state.joined = [page(1), page(2)];
+    const artists = render(<MyArtists locale="ko" loginPath="/pages/groups" />);
+    const rail = artists.container.querySelector("ul")!;
+    fireEvent.pointerDown(rail, { pointerType: "mouse", button: 0, clientX: 100 });
+    fireEvent.pointerMove(rail, { pointerType: "mouse", clientX: 50 });
+    fireEvent.pointerUp(rail, { pointerType: "mouse", clientX: 50 });
+    expect(rail.scrollLeft).toBe(50);
+    artists.unmount();
+    render(<ThinCarousel locale="ko" banners={[banner(false), banner(false, "22222222-2222-4222-8222-222222222222")]} />);
+    const link = screen.getByRole("link", { name: /배너 제목/ });
+    fireEvent.pointerDown(link, { pointerType: "touch", button: 0, clientX: 100 });
+    fireEvent.pointerMove(link, { pointerType: "touch", clientX: 40 });
+    fireEvent.pointerUp(link, { pointerType: "touch", clientX: 40 });
+    expect(screen.getByText("2/2")).toBeInTheDocument();
+    expect(fireEvent.click(link, { detail: 1 })).toBe(false);
+  } finally { vi.unstubAllGlobals(); }
+});
+
 it("hot posts: five rows from ten answers, 펼치기 shows all ten from the same answer and 접기 goes back", () => {
   state.posts = Array.from({ length: 10 }, (_, i) => post(i + 1));
   const { container } = render(<HotPosts locale="ko" />);
@@ -63,6 +88,21 @@ it("hot posts: five rows from ten answers, 펼치기 shows all ten from the same
   expect(rows()).toHaveLength(10);
   fireEvent.click(screen.getByRole("button", { name: "접기" }));
   expect(rows()).toHaveLength(5);
+});
+
+it("hot sort requests the selected ordering from the server", async () => {
+  state.urls = [];
+  state.posts = [{ ...post(1), viewCount: 7 }];
+  const first = render(<HotPosts locale="ko" />);
+  fireEvent.click(screen.getByRole("button", { name: /좋아요 많은 순/ }));
+  fireEvent.click(await screen.findByRole("menuitemradio", { name: "댓글 많은 순" }));
+  expect(state.urls.at(-1)).toContain("sort=comments");
+  first.unmount();
+  render(<HotPosts locale="ko" />);
+  fireEvent.click(screen.getByRole("button", { name: /좋아요 많은 순/ }));
+  fireEvent.click(await screen.findByRole("menuitemradio", { name: "조회수 많은 순" }));
+  expect(state.urls.at(-1)).toContain("sort=views");
+  expect(screen.getByText("조회 7")).toBeInTheDocument();
 });
 
 it("hot posts: a row draws its page's picture, or a white ring with the first letter — never the grey figure", () => {

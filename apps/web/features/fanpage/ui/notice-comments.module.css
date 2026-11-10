@@ -5,26 +5,26 @@
   color: var(--color-ink);
   scroll-margin-top: 96px;
 }
-.sectionHeading { margin-bottom: 20px; }
+.sectionHeading { margin-bottom: 16px; }
 .sectionHeading h2 { margin: 0; font-size: 18px; line-height: 1.5; font-weight: 700; }
 .muted { margin: 0; font-size: 14px; line-height: 1.7; color: var(--color-muted); }
 .commentList { display: grid; gap: 24px; margin: 0; padding: 0; list-style: none; }
 .commentList > li { display: flex; align-items: flex-start; gap: 12px; min-width: 0; }
-.commentList > li > img { flex: none; border-radius: var(--radius-control); }
+.commentList > li > img { flex: none; margin-top: 2px; border-radius: var(--radius-control); }
 .commentList > li > div { flex: 1; min-width: 0; }
-.commentMeta { display: flex; flex-wrap: nowrap; align-items: center; gap: 4px 12px; min-height: 24px; }
+.commentMeta { display: flex; flex-wrap: nowrap; align-items: center; gap: 4px 12px; min-width: 0; min-height: 44px; }
 .commentMeta > * { flex: none; }
 .commentMeta strong { flex: 0 1 auto; min-width: 0; font-size: 14px; line-height: 1.5; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .commentMeta time { flex: none; font-size: 12px; color: var(--color-muted); font-variant-numeric: tabular-nums; }
 .commentList p { margin: 4px 0 0; font-size: 15px; line-height: 1.7; color: var(--color-ink); white-space: pre-wrap; overflow-wrap: anywhere; }
 .comments button:not(.darkButton) { min-width: 44px; min-height: 44px; padding: 8px; border: 0; border-radius: var(--radius-control); background: transparent; color: var(--color-muted); font: inherit; font-size: 13px; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
 .commentMeta button { margin-left: auto; }
-.commentForm { display: grid; gap: 12px; margin-top: 28px; }
+.commentForm { display: grid; gap: 8px; margin-top: 24px; }
 .commentForm label { font-size: 14px; font-weight: 700; line-height: 1.5; }
 .commentForm textarea { box-sizing: border-box; width: 100%; min-height: 112px; padding: 16px; border: 1px solid var(--color-line); border-radius: var(--radius-control); background: var(--color-canvas); color: var(--color-ink); font: inherit; font-size: 16px; line-height: 1.6; resize: vertical; }
 .commentForm textarea::placeholder { color: var(--color-muted); opacity: 1; }
 .commentForm > div { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
-.commentForm small { max-width: 46ch; font-size: 12px; line-height: 1.6; color: var(--color-muted); }
+.commentForm small { flex: 1; min-width: 0; font-size: 12px; line-height: 1.6; color: var(--color-muted); }
 .darkButton { flex: none; display: inline-flex; align-items: center; justify-content: center; min-width: 80px; min-height: 44px; padding: 10px 20px; border: 0; border-radius: var(--radius-control); background: var(--color-ink); color: var(--color-canvas); font: inherit; font-size: 14px; font-weight: 700; cursor: pointer; }
 .darkButton:disabled { opacity: var(--fan-disabled-opacity); cursor: not-allowed; }
 .comments button:not(.darkButton):disabled { opacity: var(--fan-disabled-opacity); cursor: not-allowed; }
@@ -40,6 +40,5 @@
 }
 @media (max-width: 47.99rem) {
   .comments { margin-top: 28px; }
-  .commentForm > div { align-items: flex-start; gap: 12px; }
-  .commentForm small { max-width: 24ch; }
+  .commentForm > div { gap: 12px; }
 }

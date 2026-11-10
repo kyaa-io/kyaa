@@ -44,7 +44,7 @@ const sourceNames: Record<string, Record<AppLocale, string>> = {
   ...additionalLocales((translationLocale) => (localizedMessages.m09bcaad5a36b[translationLocale]))
 }, live_attendance: { ko: "LIVE 출석", en: "LIVE attendance" ,
   ...additionalLocales((translationLocale) => (localizedMessages.m7ec41b9e944f[translationLocale]))
-}, mission_completion: { ko: "미션 완료", en: "Mission completed" ,
+}, mission_completion: { ko: "덕질 완료", en: "Mission completed" ,
   ...additionalLocales((translationLocale) => (localizedMessages.maa10a34c3969[translationLocale]))
 }, journey_completion: { ko: "여정 완료", en: "Journey completed" ,
   ...additionalLocales((translationLocale) => (localizedMessages.m3f0d9491846e[translationLocale]))

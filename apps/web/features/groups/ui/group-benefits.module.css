@@ -177,3 +177,10 @@ section.pWallet{position:relative;box-sizing:border-box}
 .main,.side{order:initial}
 
 .alertList{order:-1}
+
+@media(min-width:1024px){.page{grid-template-columns:minmax(0,1fr);grid-template-areas:"alert" "main"}.page:not(:has(> .alertList)){grid-template-areas:"main"}}
+.favorite{display:flex;align-items:center;gap:4px;min-width:0;max-width:100%;font-size:var(--fan-description-size);font-weight:600}.favoritePick{display:flex;align-items:center;gap:4px;min-width:0;max-width:100%;min-height:44px;padding:0;border:0;background:transparent;color:inherit;font:inherit;cursor:pointer}.favoriteName{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.favoritePick>span:last-child{flex:none}.favoritePick:focus-visible{outline:2px solid var(--color-focus);outline-offset:2px}
+
+.pLucky { position: relative; }
+.luckyDisabled { filter: blur(4px); pointer-events: none; user-select: none; }
+.luckyComingSoon { position: absolute; inset: 0; display: grid; place-items: center; font-weight: 700; pointer-events: none; }

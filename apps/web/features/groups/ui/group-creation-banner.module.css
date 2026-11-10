@@ -1,0 +1,35 @@
+.creation.creation {
+  gap: 16px;
+  padding-top: 28px;
+  padding-left: 16px;
+}
+
+.creation.creation .banner {
+  display: grid;
+  grid-template-columns: 72px minmax(0, 1fr) 40px;
+  align-items: center;
+  gap: 8px;
+  min-height: 100px;
+  padding: 12px 12px 12px 0;
+  border: 0;
+  border-radius: var(--radius-collection);
+  background: var(--color-accent-soft);
+  color: var(--color-ink);
+  text-decoration: none;
+}
+
+.creation.creation .banner:nth-child(2) {
+  background: color-mix(in srgb, var(--color-accent-soft) 65%, var(--color-surface));
+}
+
+.art {
+  width: 88px;
+  height: 88px;
+  margin-left: -16px;
+  object-fit: contain;
+}
+
+.copy { display: grid; min-width: 0; gap: 4px; text-align: left; }
+.copy strong { font-size: 14px; line-height: 1.35; overflow-wrap: anywhere; word-break: keep-all; }
+.copy > span { color: var(--color-muted); font-size: 12px; line-height: 1.4; overflow-wrap: anywhere; word-break: keep-all; }
+.arrow { display: grid; width: 40px; height: 40px; place-items: center; border-radius: 50%; background: var(--color-surface); }

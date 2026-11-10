@@ -3,7 +3,7 @@ import type { Route } from "next";
 import Link from "next/link";
 import { Fragment, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 
-import { ChevronDown, ChevronUp, Heart, Minus, UsersRound as Users } from "@/components/fan-ui/fan-icons";
+import { ChevronDown, ChevronUp, Heart, Minus } from "@/components/fan-ui/fan-icons";
 import { FanIcon } from "@/components/fan-ui/fan-icon";
 import { ProfileModal, type ProfileModalPerson } from "@/features/group-social/profile-modal";
 import { CreatorAvatar } from "@/components/fan-ui/creator-avatar";
@@ -179,9 +179,7 @@ function Main({ locale, metric, value }: { locale: AppLocale; metric: RankingMet
 
 /** Movement against the previous built day of this metric. A row not ranked then (or the metric's first day) reads 신규. */
 function Delta({ locale, delta }: { locale: AppLocale; delta: number | null }) {
-  return <span className={styles.deltaCell} data-delta-cell>{delta === null
-    ? <FanTag tone="neutral" className={styles.newTag}><span data-direction="new">{rankingsText(locale, "rkDeltaNew")}</span></FanTag>
-    : <RankDelta delta={delta} locale={locale} />}</span>;
+  return delta === null ? null : <span className={styles.deltaCell} data-delta-cell><RankDelta delta={delta} locale={locale} /></span>;
 }
 
 const gain = (locale: AppLocale, value: number | null | undefined) => typeof value === "number" && value > 0 ? `+${value.toLocaleString(locale)}` : null;
@@ -189,7 +187,7 @@ const gain = (locale: AppLocale, value: number | null | undefined) => typeof val
 /** Keep movement eight pixels after the visible name; only the name truncates. */
 function CompactIdentity({ locale, rank, delta, avatar, name, liveNow, liveLabel, isNew }: { locale: AppLocale; rank: number; delta: number | null; avatar: ReactNode; name: string; liveNow?: boolean; liveLabel?: string; isNew?: boolean }) {
   const direction = delta === null ? "unknown" : delta > 0 ? "up" : delta < 0 ? "down" : "same";
-  const label = delta === null ? (isNew ? rankingsText(locale, "rkDeltaNew") : "—") : delta > 0 ? rankingsText(locale, "rkDeltaUp", [delta]) : delta < 0 ? rankingsText(locale, "rkDeltaDown", [-delta]) : rankingsText(locale, "rkDeltaSame");
+  const label = delta === null ? "—" : delta > 0 ? rankingsText(locale, "rkDeltaUp", [delta]) : delta < 0 ? rankingsText(locale, "rkDeltaDown", [-delta]) : rankingsText(locale, "rkDeltaSame");
   const Icon = delta !== null && delta > 0 ? ChevronUp : delta !== null && delta < 0 ? ChevronDown : Minus;
   return <>
     <Rank rank={rank} />
@@ -197,21 +195,17 @@ function CompactIdentity({ locale, rank, delta, avatar, name, liveNow, liveLabel
     <span className={styles.compactPerson}><span className={styles.name} title={name}>{name}</span>
     <span className={styles.compactDelta} data-delta-cell>
       {liveNow ? <span className={styles.live} role="img" aria-label={liveLabel}><span className={styles.liveDot} /></span> : null}
-      <span className={styles.movement} data-direction={direction} role="img" aria-label={label}>
-        {delta === null && isNew ? <span data-direction="new">{rankingsText(locale, "rkDeltaNew")}</span> : <><FanIcon icon={Icon} size={16} />{delta ? <span aria-hidden="true">{Math.abs(delta).toLocaleString(locale)}</span> : null}</>}
-      </span>
+      {delta === null && isNew ? null : <span className={styles.movement} data-direction={direction} role="img" aria-label={label}>
+        <FanIcon icon={Icon} size={16} />{delta ? <span aria-hidden="true">{Math.abs(delta).toLocaleString(locale)}</span> : null}
+      </span>}
     </span></span>
   </>;
 }
-function CompactValues({ locale, fans, hearts, dayGain, fan = false }: { locale: AppLocale; fans: number | null | undefined; hearts: number | undefined; dayGain: number | null | undefined; fan?: boolean }) {
+function CompactValues({ locale, hearts }: { locale: AppLocale; hearts: number | undefined }) {
   const full = (n: number | null | undefined) => typeof n === "number" ? n.toLocaleString(locale) : "—";
   const short = (n: number | null | undefined) => typeof n === "number" ? n.toLocaleString(locale, { notation: n >= 10000 ? "compact" : "standard", maximumFractionDigits: 1 }) : "—";
-  const change = typeof dayGain === "number" ? `${dayGain >= 0 ? "+" : "−"}${short(Math.abs(dayGain))}` : "—";
-  const changeLabel = typeof dayGain === "number" ? `${dayGain >= 0 ? "+" : "−"}${full(Math.abs(dayGain))}` : "—";
   return <>
     <span className={styles.compactHearts} data-metric="hearts" aria-label={rankingsText(locale, "rkHearts", [full(hearts)])} title={full(hearts)}><FanIcon icon={Heart} size={16} filled /><span aria-hidden="true">{short(hearts)}</span></span>
-    <span className={styles.compactGain} data-day-gain aria-label={rankingsText(locale, "rkDayGain", [changeLabel])} title={changeLabel}>{change}</span>
-    {!fan ? <span className={styles.compactFans} data-metric="fans" aria-label={rankingsText(locale, "rkJjinfanCount", [full(fans)])} title={full(fans)}><FanIcon icon={Users} size={16} /><span aria-hidden="true">{short(fans)}</span></span> : null}
   </>;
 }
 
@@ -230,7 +224,7 @@ export function FanRows({ locale, ranking, metric, show, fill, scope, compact = 
     if (compact) {
       const content = <>
         <CompactIdentity locale={locale} rank={row.rank} delta={row.delta} name={row.nickname} isNew={row.isNew} avatar={<Avatar avatar={fanAvatar(row.characterId)} imageUrl={null} label="" size={28} />} />
-        <CompactValues locale={locale} fans={row.fans} hearts={row.hearts ?? row.score} dayGain={row.dayGain} fan />
+        <CompactValues locale={locale} hearts={row.hearts ?? row.score} />
       </>;
       return <li key={keys[i]} ref={place(keys[i]!)} id={`rank-${scope}-fans-${row.rank}`} data-row="fan-rank" data-kind="fans" data-me={row.isMe || undefined} aria-current={row.isMe || undefined}>
         {guest ? <Link aria-label={row.nickname} className={`${styles.row} ${styles.compactRow}`} href={fanLoginHref(locale, `/?locale=${locale}`) as Route}>{content}</Link>
@@ -241,7 +235,7 @@ export function FanRows({ locale, ranking, metric, show, fill, scope, compact = 
       <Rank rank={row.rank} />
       <Avatar avatar={fanAvatar(row.characterId)} imageUrl={null} label="" size={40} />
       <span className={styles.body}>
-        <span className={styles.name}>{row.nickname}</span>
+        <span className={styles.nameLine}><span className={styles.name}>{row.nickname}</span><Delta locale={locale} delta={row.delta} /></span>
         <Meta items={[
           row.tier ? <span key="tier" className={styles.tier}><FanTierBadge tier={row.tier} locale={locale} size={16} /><span>{levelLabel(locale, row.tier)}</span></span> : null,
           row.favorite ? <span key="fav" className={styles.favorite}>{rankingsText(locale, "rkFavorite", [row.favorite.name])}</span> : null,
@@ -251,7 +245,6 @@ export function FanRows({ locale, ranking, metric, show, fill, scope, compact = 
         <Main locale={locale} metric={metric} value={fanValue(row, metric)} />
         {plus ? <span className={styles.gain} data-tone="up" data-week-gain="" aria-label={rankingsText(locale, "rkWeekGain", [plus])}><span aria-hidden="true">{plus}</span></span> : null}
       </span>
-      <Delta locale={locale} delta={row.delta} />
     </li>;
   })}{fill ? <Placeholders from={shown.length} to={fill} emptyText={rankingsText(locale, metric === "points" ? "rkEmpty" : "rkEmptyFans")} /> : null}</ol>{person && !guest ? <ProfileModal person={person} locale={locale} onClose={() => setPerson(null)} /> : null}</>;
 }
@@ -268,7 +261,7 @@ export function CreatorRows({ locale, ranking, metric, show, fill, scope, challe
     if (compact) return <li key={row.slug} ref={place(row.slug)} id={`rank-${scope}-creators-${row.rank}`} data-row="creator-rank">
       <Link className={`${styles.row} ${styles.compactRow}`} data-kind="creators" href={`/${row.slug}?locale=${locale}` as Route}>
         <CompactIdentity locale={locale} rank={row.rank} delta={row.delta} name={row.name} liveNow={row.liveNow} isNew={row.isNew} liveLabel={rankingsText(locale, "rkCreatorLive", [row.name])} avatar={<CreatorAvatar slug={row.slug} src={row.imageUrl} size={28} photos={undefined} />} />
-        <CompactValues locale={locale} fans={fans} hearts={row.hearts} dayGain={row.dayGain} />
+        <CompactValues locale={locale} hearts={row.hearts} />
       </Link>
     </li>;
     return <li key={row.slug} ref={place(row.slug)} id={`rank-${scope}-creators-${row.rank}`} data-row="creator-rank">
@@ -276,7 +269,7 @@ export function CreatorRows({ locale, ranking, metric, show, fill, scope, challe
         <Rank rank={row.rank} />
         <CreatorAvatar slug={row.slug} src={row.imageUrl} size={40} photos={undefined} />
         <span className={styles.body}>
-          <span className={styles.nameLine}><span className={styles.name}>{row.name}</span>{challengeTag && row.challenge ? <FanTag tone="fan" className={styles.challenge}>{rankingsText(locale, "jjTag")}</FanTag> : null}</span>
+          <span className={styles.nameLine}><span className={styles.name}>{row.name}</span><Delta locale={locale} delta={row.delta} />{challengeTag && row.challenge ? <FanTag tone="fan" className={styles.challenge}>{rankingsText(locale, "jjTag")}</FanTag> : null}</span>
           <Meta items={[
             metric === "fans"
               ? <span key="hearts" className={styles.hearts} aria-label={rankingsText(locale, "rkHearts", [row.hearts.toLocaleString(locale)])}>{heartIcon(12)}<span aria-hidden="true">{row.hearts.toLocaleString(locale)}</span></span>
@@ -285,7 +278,6 @@ export function CreatorRows({ locale, ranking, metric, show, fill, scope, challe
           ]} />
         </span>
         <Main locale={locale} metric={metric} value={creatorValue(row, metric)} />
-        <Delta locale={locale} delta={row.delta} />
       </Link>
     </li>;
   })}{fill ? <Placeholders from={shown.length} to={fill} emptyText={rankingsText(locale, "rkEmpty")} /> : null}</ol>;

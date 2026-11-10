@@ -1,7 +1,7 @@
 // ko/en live here; the other locales are in i18n/catalogs/features__groups__ui__manage-source.ts.
 export const manageSource = {
   eventsEmpty: { ko: "아직 행사가 없어요", en: "No events yet" },
-  missionsEmpty: { ko: "아직 미션이 없어요", en: "No missions yet" },
+  missionsEmpty: { ko: "아직 덕질이 없어요", en: "No missions yet" },
   giftsTab: { ko: "선물 신청", en: "Gift applications" },
   reportsEmpty: { ko: "들어온 신고가 없어요", en: "No reports yet" },
   eventName: { ko: "행사 이름", en: "Event name" },

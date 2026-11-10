@@ -1,6 +1,6 @@
 import type {AppLocale} from '@/i18n/locales';
 const values:Record<AppLocale,readonly string[]>={
- ko:['비밀방 입장 조건을 확인해요.','참여 일정과 내 티켓을 확인해요.','사진 인증과 현장 미션에 참여해요.','응모권 추첨과 캡슐을 만나보세요.'],
+ ko:['비밀방 입장 조건을 확인해요.','참여 일정과 내 티켓을 확인해요.','사진 인증과 현장 덕질에 참여해요.','응모권 추첨과 캡슐을 만나보세요.'],
  en:['Check private-room entry requirements.','See event dates and your tickets.','Join photo and on-site missions.','Explore ticket draws and capsules.'],
  ja:['秘密ルームの入室条件を確認。','参加日程とチケットを確認。','写真認証や会場ミッションに参加。','抽選とカプセルをチェック。'],
  'zh-Hans':['查看私密房间的进入条件。','查看活动日程和门票。','参与照片验证及现场任务。','查看抽奖和扭蛋。'],

@@ -25,7 +25,7 @@
   border-radius: var(--radius-card);
 }
 .desktopImage { position: absolute; inset: 0; }
-.overlay { display: none; }
+.overlay, .mobileBackdrop { display: none; }
 .banner:is([data-kind="live"], [data-kind="campaign"], [data-kind="art"]) .image { display: none; }
 
 /* 글: 왼쪽 열, 세로 가운데. */
@@ -97,21 +97,22 @@
   .description { font-size: var(--fan-description-size); }
 }
 
-/*
- * 모바일(390 기준 칸 높이 200): 그림은 정사각에 가까운 칸(390에서 170×160)이다. 단체 사진의 얼굴 4명이 모두 남는 최소 비율이다.
- * 설명은 한 줄, 버튼은 알약 대신 글자 링크(눌림 높이 44)로 줄여 글 열 폭 안에 담는다.
- */
+/* 모바일은 이미지를 온전히 보여 주고 문구를 하단에 겹친다. */
 @media (max-width: 767px) {
-  .banner { --pic-w: 52%; --pic-gap: var(--space-4); }
-  .image, .fullImage { inset: 20px var(--pic-gap) 20px auto; }
-  .copy { gap: var(--space-1); padding: var(--space-3) var(--space-3) var(--space-3) var(--space-4); }
-  .eyebrow { min-height: 18px; font-size: var(--fan-badge-size); }
-  .copy h2 { font-size: var(--fan-section-size); line-height: 1.25; -webkit-line-clamp: 3; }
-  .description { font-size: var(--fan-badge-size); line-height: 1.4; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 1; overflow: hidden; }
+  .banner { color: var(--color-surface); }
+  .mobileBackdrop { position: absolute; inset: 0; display: block; overflow: hidden; pointer-events: none; }
+  .mobileBackdrop :is(picture, img) { display: block; width: 100%; height: 100%; }
+  .mobileBackdrop img { object-fit: cover !important; object-position: center !important; filter: blur(18px); transform: scale(1.1); }
+  .image, .fullImage { inset: 0; width: 100%; border-radius: 0; }
+  .image img, .fullImage img { object-fit: contain; object-position: center; }
+  .overlay { position: absolute; inset: 0; display: block; background: linear-gradient(180deg, transparent 30%, rgb(0 0 0 / 88%) 100%); pointer-events: none; }
+  .copy { inset: auto 0 0; width: 100%; align-items: center; gap: var(--space-1); padding: var(--space-4); text-align: center; }
+  .eyebrow, .banner:is([data-kind="campaign"], [data-kind="art"]) .eyebrow { min-height: 18px; justify-content: center; color: var(--color-surface); font-size: var(--fan-metadata-size); }
+  .copy h2 { display: block; overflow: visible; font-size: var(--fan-section-size); line-height: 1.25; }
+  .description, .banner:is([data-kind="campaign"], [data-kind="art"]) .description { display: block; overflow: visible; color: var(--color-surface); font-size: var(--fan-description-size); line-height: 1.4; }
   .action { margin-top: 0; }
-  .action > a { min-height: 44px; padding: 0; background: transparent; color: var(--color-accent) !important; font-size: var(--fan-description-size); }
-  .banner[data-kind="campaign"] .action > a { background: transparent; color: var(--color-surface) !important; }
-  .banner[data-kind="art"] .action > a { background: transparent; color: var(--color-canvas) !important; }
+  .action > a, .banner:is([data-kind="campaign"], [data-kind="art"]) .action > a { min-height: 44px; padding: 0; background: transparent; color: var(--color-surface) !important; font-size: var(--fan-description-size); }
+  .banner :is(a, button):focus-visible { outline-color: var(--color-surface); }
 }
 
 /* 안내 그림의 데스크톱 원본은 2:1이다. 슬롯을 원본에 맞춰 빈 띠를 막는다. */

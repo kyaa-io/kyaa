@@ -9,8 +9,7 @@ import type { CSSProperties, ReactNode } from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { LiveEventResponse } from "../features/live/domain/live-event";
 import type { ContentLocale, PublishedCelebrity } from "../server/content/content-domain";
-import { Pause } from "lucide-react";
-import { ChevronLeft, ChevronRight, Play } from "./icons";
+import { ChevronLeft, ChevronRight } from "./icons";
 import styles from "./guest-home.module.css";
 import { ElinaGuideCard } from "./home-entry-cards/home-entry-cards";
 import { formatDetailedLiveCountdown, type LiveStartEvent } from "@/features/live/domain/live-time-display";
@@ -59,7 +58,7 @@ function whenFirstScreenSettled(onSettled: () => void) {
 }
 
 function pendingImages(slide: Element | null | undefined) {
-  return slide ? [...slide.querySelectorAll("img")].filter((image) => !image.complete) : [];
+  return slide ? [...slide.querySelectorAll("img")].filter((image) => !image.closest("[data-hero-backdrop]") && !image.complete) : [];
 }
 
 // A fully clipped next slide (1440, no peek) never starts its lazy picture, so autoplay would sit out the fallback.
@@ -71,30 +70,21 @@ function fetchAhead(slide: Element | null | undefined) {
 const carouselCopy = {
   ko: {
     label: "홈 배너",
-    pause: "자동 재생 정지",
-    resume: "자동 재생 시작",
     previous: "이전 배너",
     next: "다음 배너",
-    goTo: (index: number) => `${index}번째 배너 보기`,
     position: (index: number, total: number) => `${index} / ${total}`,
   },
   en: {
     label: "Home banners",
-    pause: "Pause autoplay",
-    resume: "Start autoplay",
     previous: "Previous banner",
     next: "Next banner",
-    goTo: (index: number) => `View banner ${index}`,
     position: (index: number, total: number) => `${index} of ${total}`,
   },
 
   ...additionalLocales((translationLocale) => ({
     label: localizedMessages.md9901b1ddbd2[translationLocale],
-    pause: localizedMessages.m0389db05acd4[translationLocale],
-    resume: localizedMessages.m45b7c4707cdd[translationLocale],
     previous: localizedMessages.mdab6c9431b74[translationLocale],
     next: localizedMessages.m679b450a65d7[translationLocale],
-    goTo: (index: number) => translate(translationLocale, localizedMessages.me7dbdaa8ca43, "View banner {0}", [index]),
     position: (index: number, total: number) => translate(translationLocale, localizedMessages.me955757b0bb0, "{0} of {1}", [index, total]),
   }))
 } as const;
@@ -159,6 +149,7 @@ export function LiveHeroCarousel({
   const [firstScreenSettled, setFirstScreenSettled] = useState(documentLoaded);
   const [activeIndex, setActiveIndex] = useState(0);
   const [userPaused, setUserPaused] = useState(false);
+  const [mobile, setMobile] = useState(false);
   const [hovered, setHovered] = useState(false);
   const [focusWithin, setFocusWithin] = useState(false);
   const [pointerActive, setPointerActive] = useState(false);
@@ -172,6 +163,14 @@ export function LiveHeroCarousel({
     duration: 24,
     watchDrag: hasControls && !reducedMotion,
   });
+
+  useEffect(() => {
+    if (typeof window.matchMedia !== "function") return;
+    const media = window.matchMedia("(max-width: 767px)");
+    const sync = () => setMobile(media.matches);
+    sync(); media.addEventListener("change", sync);
+    return () => media.removeEventListener("change", sync);
+  }, []);
 
   useEffect(() => {
     if (typeof window.matchMedia !== "function") return;
@@ -238,6 +237,7 @@ export function LiveHeroCarousel({
     if (emblaApi) emblaApi.scrollTo(nextIndex, reducedMotion);
     else setActiveIndex(nextIndex);
     if (manual) {
+      setUserPaused(true);
       setFirstScreenSettled(true);
       setTimerRevision((value) => value + 1);
       setAnnouncement(t.position(nextIndex + 1, total));
@@ -245,7 +245,7 @@ export function LiveHeroCarousel({
   }, [emblaApi, reducedMotion, t, total]);
 
   const visible = inView && documentVisible;
-  const autoplayPaused = userPaused || hovered || focusWithin || pointerActive || !visible || reducedMotion;
+  const autoplayPaused = mobile || userPaused || hovered || focusWithin || pointerActive || !visible || reducedMotion;
 
   useEffect(() => {
     if (total <= 1 || autoplayPaused || !firstScreenSettled) return;
@@ -320,31 +320,14 @@ export function LiveHeroCarousel({
         <span className={styles.heroShine} aria-hidden="true" />
       </div>
 
+      <span className={styles.carouselCounter} aria-hidden="true">{String(activeIndex + 1).padStart(2, "0")} | {String(total).padStart(2, "0")}</span>
       {hasControls ? (
         <div className={styles.carouselControls}>
           <button className={styles.carouselPrevious} type="button" aria-label={t.previous} onClick={() => goTo(activeIndex - 1, true)}>
             <ChevronLeft />
           </button>
-          <div
-            className={styles.carouselDots}
-            style={{ "--carousel-width": `${total * 44 + 44}px` } as CSSProperties}
-          >
-            {slides.map((banner, index) => (
-              <button
-                type="button"
-                className={styles.carouselDot}
-                aria-label={t.goTo(index + 1)}
-                aria-current={index === activeIndex ? "true" : undefined}
-                onClick={() => goTo(index, true)}
-                key={banner?.id ?? "elina-guide"}
-              >
-                <span aria-hidden="true" />
-              </button>
-            ))}
-            <button className={styles.carouselPause} type="button" aria-label={userPaused ? t.resume : t.pause}
-              aria-pressed={userPaused} disabled={reducedMotion} onClick={() => setUserPaused((value) => !value)}>
-              {userPaused || reducedMotion ? <Play aria-hidden="true" /> : <Pause aria-hidden="true" />}
-            </button>
+          <div className={styles.carouselProgress} aria-hidden="true">
+            <span style={{ "--progress-width": `${100 / total}%`, "--progress-offset": `${activeIndex * 100}%` } as CSSProperties} />
           </div>
           <button className={styles.carouselNext} type="button" aria-label={t.next} onClick={() => goTo(activeIndex + 1, true)}>
             <ChevronRight />

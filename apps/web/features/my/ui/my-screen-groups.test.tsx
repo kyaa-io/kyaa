@@ -60,16 +60,15 @@ it('puts the selected passport tier next to the name', () => {
   expect(within(name.parentElement as HTMLElement).getByText(/실버|Silver/)).toBeInTheDocument();
 });
 
-it('orders the screen profile, notice, passport, wallet, favorites, shortcuts and shows stamps in one place', () => {
+it('orders the screen profile, notice, passport, favorites, shortcuts and shows stamps in one place', () => {
   data.rewards = [reward('50000000-0000-4000-8000-000000000001')];
   renderMy();
   const name = screen.getByRole('heading', { level: 1, name: '별빛님' });
   const notice = screen.getByRole('heading', { name: '래플 결과가 발표됐어요' });
   const passport = screen.getByRole('heading', { name: '내 패스포트' });
-  const wallet = screen.getByRole('heading', { name: '내 지갑' });
   const favorites = screen.getByRole('heading', { name: '내 최애' });
   const shortcuts = screen.getByRole('heading', { name: '바로가기' });
-  [name, notice, passport, wallet, favorites, shortcuts].reduce((previous, current) => { expect(before(previous, current)).toBe(true); return current; });
+  [name, notice, passport, favorites, shortcuts].reduce((previous, current) => { expect(before(previous, current)).toBe(true); return current; });
   expect(screen.queryByRole('heading', { name: '함께 모은 스탬프' })).toBeNull();
   expect(screen.queryByText('미인증 최애')).toBeNull();
 });
@@ -106,16 +105,10 @@ it('switches the passport card to the other favorite', () => {
   expect(within(card).getByText('실버까지 도장 1칸')).toBeInTheDocument();
 });
 
-it('B13: MY shows the wallet balances only, as one link to the 덕질 wallet, with no exchange or 모은 포인트 사용하기', () => {
+it('does not duplicate the wallet on MY', () => {
   renderMy();
-  const wallet = document.querySelector<HTMLAnchorElement>('[data-wallet-card="my"]')!;
-  expect(wallet).toHaveAttribute('href', '/benefits?locale=ko#wallet');
-  expect(wallet).toHaveAccessibleName('내 지갑');
-  expect(wallet).toHaveTextContent('375P');
-  expect(wallet).toHaveTextContent('9장');
-  expect(wallet.querySelectorAll('dd')).toHaveLength(3);
-  for (const text of ['광고 보고 교환하기', '교환하기', '모은 포인트 사용하기', '모임 응모권']) expect(document.body.textContent).not.toContain(text);
-  expect(screen.queryByRole('button', { name: /교환/ })).toBeNull();
+  expect(screen.queryByRole('heading', { name: '내 지갑' })).toBeNull();
+  expect(document.querySelector('[data-wallet-card="my"]')).toBeNull();
 });
 
 it('puts the raffle result above the passport and hides it once the result is opened, until a new result arrives', () => {
@@ -142,12 +135,12 @@ it('shows no notice when there is no result', () => {
   expect(screen.queryByRole('heading', { name: '래플 결과가 발표됐어요' })).toBeNull();
 });
 
-it('adds streak and stamp progress to each favorite with a fan page link', () => {
+it('shows favorite photos and names as fan page links without progress rows', () => {
   renderMy();
   const favorites = screen.getByRole('region', { name: '내 최애' });
-  expect(within(favorites).getByText('연속 3일 · 이번 쪽 3/9')).toBeInTheDocument();
-  expect(within(favorites).getByText('이번 쪽 1/9')).toBeInTheDocument();
-  expect(within(favorites).getAllByRole('link', { name: '팬페이지 보기' })[0]).toHaveAttribute('href', '/nchive?locale=ko');
+  expect(within(favorites).queryByText(/이번 쪽/)).toBeNull();
+  expect(within(favorites).queryByText('팬페이지 보기')).toBeNull();
+  expect(within(favorites).getByRole('link', { name: '엔카이브' })).toHaveAttribute('href', '/nchive?locale=ko');
 });
 
 it('puts every shortcut in one grid', () => {
@@ -157,7 +150,7 @@ it('puts every shortcut in one grid', () => {
   expect(within(grid).getByRole('link', { name: '내 응모 내역' })).toHaveAttribute('href', '/my/raffles?locale=ko');
 });
 
-it.each([['en', 'View fan page'], ['ru', 'Посмотреть страницу фанатов'], ['ja', 'ファンページを見る']] as const)('names the favorite row link as the fan page action in %s, not as the favorites heading', (locale, label) => {
+it.each(['en', 'ru', 'ja'] as const)('names the favorite link for its creator in %s', (locale) => {
   renderMy(locale);
-  expect(screen.getAllByRole('link', { name: label })[0]).toHaveAttribute('href', '/nchive?locale=' + locale);
+  expect(screen.getByRole('link', { name: '엔카이브' })).toHaveAttribute('href', '/nchive?locale=' + locale);
 });

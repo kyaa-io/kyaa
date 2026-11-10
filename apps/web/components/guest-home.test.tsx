@@ -98,18 +98,18 @@ describe("canonical 03 guest home", () => {
     expect(second.container.querySelector("[data-home-thin-banner]")).toBeNull();
   });
 
-  it("keeps the notice, gallery and shorts places at their fixed sizes with a quiet placeholder until their data exists (7차 임시 구성)", () => {
+  it("keeps loading notice and shortform states free of empty rows", () => {
     const { container } = render(<GuestHome {...defaultProps} />);
     const notices = container.querySelector("[data-home-block=notices]")!;
     const gallery = container.querySelector("[data-home-block=gallery]")!;
     expect(within(notices as HTMLElement).getByRole("heading", { name: "공지사항" })).toBeInTheDocument();
     // No notice read happened here, so it is not "none yet" (20:52: the empty text is only for a read that found nothing).
     expect(within(notices as HTMLElement).queryByText("아직 공지 없음")).not.toBeInTheDocument();
-    expect(notices.querySelectorAll("li")).toHaveLength(5);
+    expect(notices.querySelectorAll("li")).toHaveLength(0);
     expect(within(gallery as HTMLElement).getByRole("heading", { name: "갤러리" })).toBeInTheDocument();
-    expect(within(gallery as HTMLElement).getByRole("heading", { name: "숏츠" })).toBeInTheDocument();
+    expect(within(gallery as HTMLElement).getByRole("heading", { name: "숏폼" })).toBeInTheDocument();
     expect(gallery.querySelectorAll("[data-row=photo-placeholder]")).toHaveLength(8);
-    expect(gallery.querySelectorAll("[data-row=short-placeholder]")).toHaveLength(4);
+    expect(gallery.querySelectorAll("[data-row=short-placeholder]")).toHaveLength(0);
     expect(notices.compareDocumentPosition(gallery) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });
 
@@ -383,14 +383,14 @@ describe("streamed Home sections", () => {
     view.unmount();
     await act(async () => { view = render(<StreamingGuestHome queries={{ ...pendingHome().queries, homeGallery: Promise.resolve({ status: "rejected" }), homeShorts: Promise.resolve({ status: "rejected" }) }} locale="ko" />); });
     expect(view.container.querySelectorAll('[data-row="photo-placeholder"]')).toHaveLength(8);
-    expect(view.container.querySelectorAll('[data-row="short-placeholder"]')).toHaveLength(4);
+    expect(view.container.querySelectorAll('[data-row="short-placeholder"]')).toHaveLength(0);
     // A failed read is not "none yet".
     expect(screen.queryByText("아직 사진 없음")).not.toBeInTheDocument();
-    expect(screen.queryByText("아직 숏츠 없음")).not.toBeInTheDocument();
+    expect(screen.queryByText("아직 숏폼 없음")).not.toBeInTheDocument();
     view.unmount();
     await act(async () => { view = render(<StreamingGuestHome queries={{ ...pendingHome().queries, homeGallery: Promise.resolve({ status: "fulfilled", value: { items: [], nextCursor: null } }), homeShorts: Promise.resolve({ status: "fulfilled", value: [] }) }} locale="ko" />); });
     expect(screen.getByText("아직 사진 없음")).toBeInTheDocument();
-    expect(screen.getByText("아직 숏츠 없음")).toBeInTheDocument();
+    expect(screen.getByText("아직 숏폼 없음")).toBeInTheDocument();
   });
 
   it.each(["homeBanners", "elinaRaffles"] as const)("isolates a failed %s query", async (failed) => {

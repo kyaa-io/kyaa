@@ -201,7 +201,7 @@ describe("PassportMissionBook", () => {
     localStorage.removeItem("kyaa:passport:mission-onboarding:v1");
     state.resource = { loading: false, error: false, data: data([page({ slots: slots(0), filled: 0, claimable: false })]), retry: vi.fn() };
     const first = render(<PassportMissionBook passportId="p" creatorSlug="elina" locale="ko" />);
-    const dialog = screen.getByRole("dialog", { name: "미션을 누르면 바로 할 수 있어요" });
+    const dialog = screen.getByRole("dialog", { name: "덕질을 누르면 바로 할 수 있어요" });
     expect(dialog.querySelectorAll("a")).toHaveLength(3);
     fireEvent.click(screen.getByRole("button", { name: "확인" }));
     expect(screen.queryByRole("dialog")).toBeNull();

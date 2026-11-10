@@ -253,9 +253,9 @@ describe("passport fan screens", () => {
     expect(await screen.findByRole("button", { name: "첫 좋아요" })).toBeInTheDocument();
     expect(screen.getByLabelText("첫 좋아요를 남긴 날")).toBeInTheDocument();
     expect(screen.queryByText("기록을 등록하고 있어요")).not.toBeInTheDocument();
-    expect(await screen.findByRole("link", { name: /^1\s*스탬프$/ })).toHaveAttribute("href", "#mission-book");
     fireEvent.click(screen.getByRole("button", { name: "첫 좋아요" }));
     expect(screen.getByText("기록을 등록하고 있어요")).toBeInTheDocument();
+    expect(screen.getByText("스탬프").previousSibling).toHaveTextContent("1");
     expect(screen.queryByRole("link", { name: /첫 좋아요 등록 기록/ })).not.toBeInTheDocument();
   });
 

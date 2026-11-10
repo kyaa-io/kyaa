@@ -126,7 +126,7 @@ describe("dukjil guide figures match /api/dukjil/catalog", () => {
     const model = buildGuideModel(catalog);
     expect(model?.slots).toHaveLength(5);
     const ko = renderToStaticMarkup(<JjinfanGuideContent locale="ko" model={model} />);
-    expect(ko).toContain("미션북 5칸");
+    expect(ko).toContain("덕질 기록 5칸");
     expect(ko).toContain("인증 칸을 뺀 4칸");
     expect(ko).toContain("출석 4일 달성");
     expect(ko).toContain("필수");
@@ -161,7 +161,7 @@ describe("dukjil guide figures match /api/dukjil/catalog", () => {
   it("shows the heart, ranking and challenge figures from the catalog and shared constants", async () => {
     const model = buildGuideModel(await fetchCatalog(rawPolicy()));
     const ko = renderToStaticMarkup(<DukjilGuideContent locale="ko" model={model} />);
-    expect(ko).toContain("미션북 한 장의 5칸을 모두 채우고 받으면 하트 1개가 쌓여요.");
+    expect(ko).toContain("덕질 기록 한 장의 5칸을 모두 채우고 받으면 하트 1개가 쌓여요.");
     expect(ko).toContain(`찐팬 ${JJINFAN_CHALLENGE_TARGET}명`);
     expect(ko).toContain('href="/rankings?locale=ko"');
     for (const locale of APP_LOCALES) {
@@ -199,15 +199,15 @@ describe("dukjil guide figures match /api/dukjil/catalog", () => {
     expect(cta("jjinfan")).toContain('data-guide-cta="mission-book" href="/celebrities?locale=ko"');
     viewerState.current = { status: "member", creator: { slug: "kyaa-star", name: "카야", passportId: id }, progress: { filled: 6, total: 9 } };
     const jj = cta("jjinfan");
-    expect(jj).toContain("내 미션북 보기");
+    expect(jj).toContain("내 덕질 기록 보기");
     expect(jj).toContain(`/passports/${id}?locale=ko#mission-book`);
-    expect(jj).toContain("미션북 6/9");
-    expect(jj).not.toContain("카야 미션북");
+    expect(jj).toContain("덕질 기록 6/9");
+    expect(jj).not.toContain("카야 덕질 기록");
     const dk = cta("dukjil");
     expect(dk).toContain("오늘의 덕질 시작하기");
     expect(dk).toContain('href="/kyaa-star?locale=ko"');
     viewerState.current = { status: "member", creator: { slug: "kyaa-star", name: "카야", passportId: id }, progress: null };
-    expect(cta("jjinfan")).not.toContain("미션북 6/9");
+    expect(cta("jjinfan")).not.toContain("덕질 기록 6/9");
     viewerState.current = { status: "guest" };
   });
 
@@ -305,8 +305,8 @@ describe("dukjil guide figures match /api/dukjil/catalog", () => {
       expect(html).toContain("<details");
     }
     const ko = renderToStaticMarkup(<JjinfanGuideContent locale="ko" model={model} />);
-    expect(ko).toContain("팬페이지에서 팬 인증을 마치고 미션북 5칸을 채우면 찐팬 스탬프를 받아요.");
-    expect(ko).toContain("미션북 5칸으로 받는 찐팬 스탬프");
+    expect(ko).toContain("팬페이지에서 팬 인증을 마치고 덕질 기록 5칸을 채우면 찐팬 스탬프를 받아요.");
+    expect(ko).toContain("덕질 기록 5칸으로 받는 찐팬 스탬프");
     for (const name of ["jjinfan-head", "step-passport", "step-calendar", "step-stamp", "step-ticket", "step-gift"]) {
       expect(existsSync(join(process.cwd(), "public/images/home-banners/261107", `${name}.webp`)), name).toBe(true);
     }

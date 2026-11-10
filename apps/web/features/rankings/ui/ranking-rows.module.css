@@ -5,7 +5,7 @@
 .updated { grid-row: 1; white-space: nowrap; color: var(--color-muted); font-size: var(--fan-metadata-size); font-weight: 400; font-variant-numeric: tabular-nums; }
 .rows { display: grid; margin: 0; padding: 0; list-style: none; align-content: start; }
 .rows > li { min-width: 0; }
-.row { display: grid; grid-template-columns: 24px 40px minmax(0, 1fr) auto 36px; align-items: center; column-gap: var(--space-3); box-sizing: border-box; height: 56px; min-width: 0; color: var(--color-ink); text-decoration: none; }
+.row { display: grid; grid-template-columns: 24px 40px minmax(0, 1fr) auto; align-items: center; column-gap: var(--space-3); box-sizing: border-box; height: 56px; min-width: 0; color: var(--color-ink); text-decoration: none; }
 .row[data-placeholder] { grid-template-columns: 24px 40px minmax(0, 1fr); }
 .row:focus-visible, .login:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 a.row { border-radius: var(--radius-control); }
@@ -30,7 +30,7 @@ a.row { border-radius: var(--radius-control); }
 .mainInner { display: inline-flex; align-items: center; gap: var(--space-1); color: var(--color-ink); font-size: var(--fan-item-title-size); font-weight: 800; white-space: nowrap; }
 .mainInner img { flex: none; }
 .main .mainNumber { font-size: inherit; font-weight: inherit; }
-.deltaCell { display: inline-flex; justify-content: flex-end; width: 36px; }
+.deltaCell { display: inline-flex; flex: none; justify-content: flex-start; }
 .deltaCell .newTag { height: 18px; padding: 0 var(--space-1); font-size: var(--fan-badge-size); line-height: 1; }
 .tier { display: inline-flex; align-items: center; gap: var(--space-1); }
 .ghost { display: block; width: 40px; height: 40px; border: 1px solid var(--color-line); border-radius: 50%; background: var(--color-canvas); }
@@ -48,8 +48,7 @@ a.row { border-radius: var(--radius-control); }
 @media (hover: hover) and (pointer: fine) { a.row:hover, .login:hover { background: var(--color-accent-soft); } }
 
 /* Approved feedback-r1 home grid; /rankings retains its existing rows. */
-.compactRow { --fan-ranking-meta-size: 11px; grid-template-columns: 16px 4px 28px 4px minmax(72px, 1fr) 8px 44px 8px 50px 8px 38px; column-gap: 0; height: 34px; width: 100%; margin: 0; padding: 0 var(--space-1); border: 0; border-radius: 0; background: transparent; font-family: inherit; text-align: start; white-space: nowrap; cursor: pointer; }
-.compactRow[data-kind="creators"] { grid-template-columns: 16px 4px 28px 4px minmax(72px, 1fr) 8px 44px 8px 50px 8px 38px 8px 62px; }
+.compactRow { --fan-ranking-meta-size: 11px; grid-template-columns: 16px 4px 28px 4px minmax(72px, 1fr) 8px 44px 8px 50px; column-gap: 0; height: 34px; width: 100%; margin: 0; padding: 0 var(--space-2); border: 0; border-radius: 0; background: transparent; font-family: inherit; text-align: start; white-space: nowrap; cursor: pointer; }
 .compactRow .rank { width: 16px; color: var(--color-ink); font-size: var(--fan-badge-size); font-weight: 700; }
 .compactRow .name { font-size: var(--fan-badge-size); font-weight: 700; }
 .compactDelta { display: flex; flex: none; gap: var(--space-2); align-items: center; }
@@ -57,10 +56,8 @@ a.row { border-radius: var(--radius-control); }
 .movement[data-direction="up"] { color: var(--color-accent-ink); }
 .movement [data-direction="new"] { color: var(--color-warning); font-size: var(--fan-ranking-meta-size); }
 .movement svg { flex: none; }
-.compactHearts, .compactFans { display: flex; justify-content: flex-end; align-items: center; gap: var(--space-1); font-size: var(--fan-badge-size); font-weight: 400; font-variant-numeric: tabular-nums; }
+.compactHearts { display: flex; justify-content: flex-end; align-items: center; gap: var(--space-1); font-size: var(--fan-badge-size); font-weight: 400; font-variant-numeric: tabular-nums; }
 .compactHearts svg { flex: none; color: var(--color-accent-ink); }
-.compactFans, .compactGain { font-size: var(--fan-ranking-meta-size); font-weight: 400; text-align: right; font-variant-numeric: tabular-nums; }
-.compactFans svg { flex: none; color: var(--color-muted); }
 .live { display: inline-flex; }
 .liveDot { width: 6px; height: 6px; border-radius: 50%; background: var(--color-error); }
 .compactRows > li + li { position: relative; }
@@ -71,13 +68,11 @@ a.row { border-radius: var(--radius-control); }
 
 .compactRows .compactRow { display: grid; min-height: 34px; border-radius: 0; background: transparent; }
 .compactRow .movement svg { width: 12px; height: 12px; stroke-width: 2.5; }
-.compactHearts svg, .compactFans svg { width: 12px; height: 12px; }
+.compactHearts svg { width: 12px; height: 12px; }
 
 button.compactRow > span { display: contents; }
 .compactRow .rank { grid-column: 1; }
 .compactAvatar { grid-column: 3; }
 .compactPerson { grid-column: 5 / 8; display: flex; align-items: center; gap: var(--space-2); min-width: 0; }
-.compactPerson .name { flex: 0 1 auto; min-width: 0; max-width: calc(100% - var(--space-10) - var(--space-3)); }
+.compactPerson .name { flex: 0 1 auto; min-width: 0; max-width: min(8em, calc(100% - var(--space-10) - var(--space-3))); }
 .compactHearts { grid-column: 9; }
-.compactGain { grid-column: 11; }
-.compactFans { grid-column: 13; }

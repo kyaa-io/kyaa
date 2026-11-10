@@ -15,19 +15,27 @@ describe("popular posts route", () => {
   it("asks for group posts when the groups feature is on", async () => {
     const { rpc, handler } = make(true);
     expect((await handler(new Request("http://x/api/public/popular-posts?locale=ko&page=2"))).status).toBe(200);
-    expect(rpc).toHaveBeenCalledExactlyOnceWith("read_public_popular_posts_page", { p_app_user_id: null, p_locale: "ko", p_page: 2, p_include_groups: true });
+    expect(rpc).toHaveBeenCalledExactlyOnceWith("read_public_popular_posts_sorted", { p_app_user_id: null, p_locale: "ko", p_page: 2, p_include_groups: true, p_sort: "likes" });
   });
 
   it("excludes group posts in the query itself when the groups feature is off", async () => {
     const { rpc, handler } = make(false);
     expect((await handler(new Request("http://x/api/public/popular-posts"))).status).toBe(200);
-    expect(rpc).toHaveBeenCalledExactlyOnceWith("read_public_popular_posts_page", { p_app_user_id: null, p_locale: "ko", p_page: 1, p_include_groups: false });
+    expect(rpc).toHaveBeenCalledExactlyOnceWith("read_public_popular_posts_sorted", { p_app_user_id: null, p_locale: "ko", p_page: 1, p_include_groups: false, p_sort: "likes" });
+  });
+
+  it("passes the selected sort to the database and rejects invalid sorts", async () => {
+    const { rpc, handler } = make(true);
+    expect((await handler(new Request("http://x/api/public/popular-posts?sort=views"))).status).toBe(200);
+    expect(rpc).toHaveBeenCalledWith("read_public_popular_posts_sorted", expect.objectContaining({ p_sort: "views" }));
+    expect((await handler(new Request("http://x/api/public/popular-posts?sort=unknown"))).status).toBe(400);
+    expect((await handler(new Request("http://x/api/public/popular-posts?sort=views&sort=likes"))).status).toBe(400);
   });
 
   it("keeps the viewer id and the flag together for signed-in readers", async () => {
     const { rpc, handler } = make(false);
     await handler(new Request("http://x/api/public/popular-posts?locale=en", { headers: { authorization: "Bearer t" } }));
-    expect(rpc).toHaveBeenCalledWith("read_public_popular_posts_page", { p_app_user_id: "11111111-1111-4111-8111-111111111111", p_locale: "en", p_page: 1, p_include_groups: false });
+    expect(rpc).toHaveBeenCalledWith("read_public_popular_posts_sorted", { p_app_user_id: "11111111-1111-4111-8111-111111111111", p_locale: "en", p_page: 1, p_include_groups: false, p_sort: "likes" });
   });
 });
 

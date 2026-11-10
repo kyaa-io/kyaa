@@ -29,7 +29,7 @@ for (const label of ["first", "ready", "empty", "stale"]) {
       const raw = answer(`${label}:${kind}:${metric}`);
       expect(body).toMatchObject({ state: raw.state, metric, day: raw.day, previousDay: raw.previousDay, comparable: raw.comparable, period: "day" });
       expect(body.rows).toHaveLength(raw.rows.length);
-      expect(state.rpc).toHaveBeenCalledWith(kind === "fans" ? "read_home_fan_ranking_v2" : "read_home_creator_ranking_v2", expect.objectContaining({ p_metric: metric, p_limit: 5 }));
+      expect(state.rpc).toHaveBeenCalledWith(kind === "fans" ? "read_home_fan_ranking_v2" : "read_home_creator_ranking_v2", expect.objectContaining({ p_metric: metric, p_limit: 10 }));
       if (label === "first") expect(body.rows.every((row: { delta: unknown }) => row.delta === null)).toBe(true);
       if (label === "empty") expect(body.rows).toEqual([]);
       if (label === "stale") expect(body.failedAt).not.toBeNull();

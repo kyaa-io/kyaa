@@ -233,11 +233,15 @@ describe("FanToast", () => {
     render(<FanToastProvider />);
     await waitFor(() => expect(document.querySelector("[data-fan-toast-viewport]")).not.toBeNull());
     act(() => { showFanToast({ title: "댓글을 저장하지 못했어요", tone: "error" }); });
-    act(() => { showFanToast({ title: "댓글을 저장하지 못했어요", tone: "error", action: { label: "다시 시도", onClick: vi.fn() } }); });
+    const retry = vi.fn();
+    act(() => { showFanToast({ title: "댓글을 저장하지 못했어요", description: "연결을 확인해 주세요", tone: "error", action: { label: "다시 시도", onClick: retry } }); });
     const viewport = () => document.querySelector("[data-fan-toast-viewport]")!;
     await waitFor(() => expect(viewport().textContent).toContain("댓글을 저장하지 못했어요"));
     expect(viewport().querySelectorAll("[data-tone='error']")).toHaveLength(1);
+    expect(viewport().textContent).toContain("연결을 확인해 주세요");
     expect(viewport().textContent).toContain("다시 시도");
+    fireEvent.click([...viewport().querySelectorAll("button")].find(button => button.textContent === "다시 시도")!);
+    expect(retry).toHaveBeenCalledOnce();
     act(() => closeFanToast());
     await waitFor(() => expect(viewport().querySelectorAll("[data-tone]")).toHaveLength(0));
   });

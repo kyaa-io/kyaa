@@ -1,7 +1,7 @@
 "use client";
 
 import { Toast } from "@base-ui/react/toast";
-import { X } from "lucide-react";
+import { CircleAlert, CircleCheck, Info, X } from "lucide-react";
 import { useEffect } from "react";
 import { useOpenNativeModal } from "./top-layer";
 import { useAppLocale } from "@/components/locale-provider";
@@ -40,6 +40,7 @@ function FanToastList({ closeLabel }: { closeLabel: string }) {
   useEffect(() => { registerFanToastHandler({ show, close: (id) => manager.close(id) }); return () => registerFanToastHandler(null); }, []);
   const { toasts } = Toast.useToastManager<FanToastData>();
   return toasts.map((toast) => <Toast.Root key={toast.id} toast={toast} className={styles.toast} data-tone={toast.data?.tone ?? "neutral"} swipeDirection={["down", "right"]}>
+    {toast.data?.tone === "error" ? <CircleAlert className={styles.icon} aria-hidden="true" /> : toast.data?.tone === "success" ? <CircleCheck className={styles.icon} aria-hidden="true" /> : <Info className={styles.icon} aria-hidden="true" />}
     <Toast.Content className={styles.content}>
       <Toast.Title className={styles.title} />
       {toast.description ? <Toast.Description className={styles.description} /> : null}

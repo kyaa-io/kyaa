@@ -176,7 +176,7 @@ export function createRankingsHandlers(deps: RankingsDependencies) {
       return Response.json(body, { headers: appUserId || request.headers.has("authorization") ? privateHeaders : publicHeaders });
     }),
     // Home card and the full ranking page by day (C3, ranking stage 2). fans: hearts (default) or points; creators: 찐팬 (default) or hearts.
-    // Movement against the previous built day. Up to 50 rows for a member, five signed out. Profile refs are signed-in only.
+    // Movement against the previous built day. Up to 50 rows for a member, ten signed out. Profile refs are signed-in only.
     home: (request: Request) => run(async () => {
       const basis = (day: unknown) => ({ period: "day" as const, closesAt: typeof day === "string" ? kstMidnightAfter(day) : null, fetchedAt: new Date().toISOString() });
       const head = (raw: Json, metric: string) => ({
@@ -189,7 +189,7 @@ export function createRankingsHandlers(deps: RankingsDependencies) {
       if (kind === "creators") {
         const metric = z.enum(HOME_CREATOR_METRICS).parse(one(request, "metric") ?? "fans");
         const member = await viewer(request);
-        const raw = obj(await readHome("read_home_creator_ranking_v2", { p_locale: lang, p_metric: metric, p_limit: member ? limit : Math.min(limit, HOME_GUEST_LIMIT) }));
+        const raw = obj(await readHome("read_home_creator_ranking_v2", { p_locale: lang, p_metric: metric, p_limit: member ? limit : Math.min(limit, 10) }));
         const rows = arr(raw.rows).map((row) => {
           const r = obj(row);
           return { rank: r.rank, slug: r.slug, name: r.name, imageUrl: r.imageUrl ?? null, score: r.score, hearts: r.hearts, points: r.points ?? null, fans: r.fans, liveNow: r.liveNow === true, isNew: r.isNew === true, challenge: r.challenge === true, delta: r.delta ?? null, weekGain: r.weekGain ?? null, dayGain: r.dayGain ?? null };
@@ -198,7 +198,7 @@ export function createRankingsHandlers(deps: RankingsDependencies) {
       }
       const metric = z.enum(HOME_FAN_METRICS).parse(one(request, "metric") ?? "hearts");
       const appUserId = await viewer(request);
-      const raw = obj(await readHome("read_home_fan_ranking_v2", { p_viewer: appUserId, p_metric: metric, p_limit: appUserId ? limit : Math.min(limit, HOME_GUEST_LIMIT) }));
+      const raw = obj(await readHome("read_home_fan_ranking_v2", { p_viewer: appUserId, p_metric: metric, p_limit: appUserId ? limit : Math.min(limit, 10) }));
       const me = obj(raw.me);
       const rows = arr(raw.rows).map((row) => {
         const r = obj(row);

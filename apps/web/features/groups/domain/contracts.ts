@@ -6,6 +6,7 @@ export const groupPageSchema = z.object({
   slug: z.string().nullable(), anonymous:z.boolean().optional(), name: z.string(), description: z.string(),
   imageUrl: z.string().nullable(), question: z.string().nullable(), memberCount: z.number().int().nonnegative(),
   lastSeenAt: z.iso.datetime({offset:true}).nullable().optional(),
+  isNew: z.boolean().optional(), challenge: z.boolean().optional(), fanCount: z.number().int().nonnegative().optional(),
   // Only with ?fields=facts (groupApiQuery({ fields: "facts" })). Absent on older servers and without the parameter.
   weeklyJoined: z.number().int().nonnegative().nullable().optional(),
   newPostCount: z.number().int().nonnegative().nullable().optional(),

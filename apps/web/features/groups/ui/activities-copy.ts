@@ -1,7 +1,7 @@
 import type { AppLocale } from '@/i18n/locales';
 const keys=['missions','starts','ends','opens','closes','location','capacity','approval','apply','cancel','ticket','review','confirmed','pending','rejected','completed','createEvent','createCollection','createMission','buy','reward','checkIn','draft','published','closed','official','source','soldOut','hidden','active'] as const;
 const values:Record<AppLocale,readonly string[]>={
- ko:['미션','시작','종료','신청 시작','신청 마감','장소','정원','참가 승인 필요','참가 신청','참가 취소','내 QR 티켓','후기 쓰기','참가 확정','검토 중','반려','완료','행사 만들기','컬렉션 추가','미션 만들기','구매처로 이동','포인트 보상','현장 체크인','임시 저장','공개','종료','공식 행사 신청','참고 링크','판매 종료','숨김','판매 중'],
+ ko:['덕질','시작','종료','신청 시작','신청 마감','장소','정원','참가 승인 필요','참가 신청','참가 취소','내 QR 티켓','후기 쓰기','참가 확정','검토 중','반려','완료','행사 만들기','컬렉션 추가','덕질 만들기','구매처로 이동','포인트 보상','현장 체크인','임시 저장','공개','종료','공식 행사 신청','참고 링크','판매 종료','숨김','판매 중'],
  en:['Missions','Starts','Ends','Applications open','Applications close','Location','Capacity','Approval required','Apply','Cancel participation','My QR ticket','Write review','Confirmed','Under review','Rejected','Completed','Create event','Add collection item','Create mission','Visit store','Point reward','Check in','Draft','Published','Closed','Request official event','Source link','Sold out','Hidden','Available'],
  ja:['ミッション','開始','終了','申請開始','申請締切','場所','定員','参加承認が必要','参加申請','参加を取消','マイQRチケット','感想を書く','参加確定','審査中','差戻し','完了','イベント作成','コレクション追加','ミッション作成','購入先へ','ポイント報酬','会場チェックイン','下書き','公開','終了','公式イベント申請','参照リンク','販売終了','非公開','販売中'],
  'zh-Hans':['任务','开始','结束','报名开始','报名截止','地点','名额','需要批准','报名','取消报名','我的二维码票','写评价','已确认','审核中','未通过','已完成','创建活动','添加商品','创建任务','前往购买','积分奖励','现场签到','草稿','公开','结束','申请官方活动','参考链接','售罄','隐藏','在售'],

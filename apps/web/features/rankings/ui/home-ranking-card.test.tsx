@@ -46,16 +46,15 @@ it("requests ten heart ranks per group, keeps full leaderboard choices out of ho
   expect(screen.getAllByRole("link", { name: "전체 보기" })).toHaveLength(1);
 });
 
-it("limits guest rendering to five per group, sends fan and hidden ranks to login", async () => {
+it("shows ten guest ranks and sends fan profiles to login", async () => {
   stub(fans(Array.from({ length: 10 }, (_, i) => fanRow(i + 1))), creators({ rows: Array.from({ length: 10 }, (_, i) => creatorRow(i + 1)) }));
   const { container } = render(<HomeRankingCard locale="ko" />);
   await screen.findByText("팬1");
-  expect(container.querySelectorAll("[data-row='fan-rank']")).toHaveLength(5);
-  expect(container.querySelectorAll("[data-row='creator-rank']")).toHaveLength(5);
-  expect(screen.queryByText("팬6")).toBeNull();
-  expect(screen.getAllByRole("link", { name: "로그인하고 보기" })).toHaveLength(2);
-  expect(screen.getByRole("link", { name: /팬1/ }).getAttribute("href")).toContain("/login");
-  expect(screen.getByRole("link", { name: /크리에이터1/ })).toHaveAttribute("href", "/c1?locale=ko");
+  expect(container.querySelectorAll("[data-row='fan-rank']")).toHaveLength(10);
+  expect(container.querySelectorAll("[data-row='creator-rank']")).toHaveLength(10);
+  expect(screen.getByText("팬6")).toBeInTheDocument();
+  expect(screen.getByRole("link", { name: "팬1" }).getAttribute("href")).toContain("/login");
+  expect(container.querySelector("[data-row='creator-rank'] a")).toHaveAttribute("href", "/c1?locale=ko");
   expect(screen.queryByRole("dialog")).toBeNull();
 });
 
@@ -68,9 +67,9 @@ it("places movement after the name, preserves measured daily values and no fan p
   expect(first.children[2]?.querySelector("[title]")?.textContent).toBe("팬1");
   expect(first.children[2]?.querySelector("[data-delta-cell] svg")).toHaveAttribute("data-icon-set", "lucide");
 
-  expect(first.querySelector("[data-metric='fans']")).toBeNull();
-  expect([...rows].map(row => row.querySelector("[data-day-gain]")?.textContent)).toEqual(["+0", "−3", "—"]);
-  expect(rows[2]!.querySelector("[data-direction='new']")).not.toBeNull();
+  expect(container.querySelector("[data-metric='fans']")).toBeNull();
+  expect(container.querySelector("[data-day-gain]")).toBeNull();
+  expect(rows[2]!.querySelector("[data-delta-cell] [role=img]")).toBeNull();
   expect(rows[1]!.querySelector("[data-direction='new']")).toBeNull();
   expect(first.textContent).not.toContain("999");
 });
@@ -80,7 +79,7 @@ it("passes the original signed profile reference without replacing its stored ra
   const ref = { kind: "home_ranking", day: "2026-11-08", computedAt: "2026-11-08T00:00:00Z", metric: "hearts", rank: 7, signature: "a".repeat(64) };
   stub(fans([fanRow(1, { profileRef: ref })]));
   render(<HomeRankingCard locale="ko" />);
-  fireEvent.click(await screen.findByRole("button", { name: /팬1/ }));
+  fireEvent.click(await screen.findByRole("button", { name: "팬1" }));
   expect(await screen.findByTestId("ranking-profile")).toHaveTextContent(JSON.stringify(ref));
   fireEvent.click(screen.getByRole("button", { name: "close profile" }));
   expect(screen.queryByTestId("ranking-profile")).toBeNull();
@@ -104,7 +103,7 @@ it.each(APP_LOCALES)("renders the home contract in %s", async locale => {
   render(<HomeRankingCard locale={locale} />);
   expect(await screen.findByText("팬1")).toBeInTheDocument();
   expect(screen.getByRole("heading", { name: rankingsText(locale, "rkHomeTitle") })).toBeInTheDocument();
-  expect(screen.getByLabelText(rankingsText(locale, "rkDayGain", ["+0"]))).toBeInTheDocument();
+  expect(screen.queryByLabelText(rankingsText(locale, "rkDayGain", ["+0"]))).toBeNull();
   for (const key of ["rkHomeTitle", "rkHomeFans", "rkHomeLocked", "rkDayGain"] as const) {
     if (locale !== "ko" && locale !== "en") expect(messages[key][locale]).toBeTruthy();
   }

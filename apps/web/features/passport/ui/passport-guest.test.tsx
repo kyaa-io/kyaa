@@ -25,7 +25,7 @@ it("shows the public mission book as empty slots on the detail and never reads t
   const id = "11111111-1111-4111-8111-111111111111";
   render(<PassportDetailScreen id={id} explorerBaseUrl="https://example.invalid" />);
   expect(screen.getByRole("link", { name: "로그인" })).toHaveAttribute("href", fanLoginHref("ko", `/passports/${id}?locale=ko`));
-  expect(await screen.findByRole("heading", { name: "미션북" })).toBeInTheDocument();
+  expect(await screen.findByRole("heading", { name: "덕질 기록" })).toBeInTheDocument();
   await waitFor(() => expect(screen.getAllByRole("checkbox")).toHaveLength(3));
   expect(screen.getAllByRole("checkbox").every(box => box.getAttribute("aria-checked") === "false")).toBe(true);
   expect(fetcher.mock.calls.map(([url]) => String(url)).filter(url => url.includes("/api/passports") || url.includes("/api/me/"))).toEqual([]);

@@ -19,7 +19,7 @@ function stub(rowsFor: (kind: string, limit: number) => number = (_, limit) => l
     const kind = url.searchParams.get("kind")!, metric = url.searchParams.get("metric");
     const n = rowsFor(kind, Number(url.searchParams.get("limit")));
     return Response.json(kind === "creators"
-      ? { ...head, metric, rows: Array.from({ length: n }, (_, i) => creatorRow(i + 1, i === 0 ? { slug: "elina", name: "엘리나", challenge: true, score: metric === "fans" ? 3 : 40 } : {})) }
+      ? { ...head, metric, rows: Array.from({ length: n }, (_, i) => creatorRow(i + 1, i === 0 ? { slug: "elina", name: "엘리나", challenge: true, delta: 1, score: metric === "fans" ? 3 : 40 } : {})) }
       : { ...head, metric, rows: Array.from({ length: n }, (_, i) => fanRow(i + 1)), me: auth.value.authenticated ? { rank: 12, score: 3, hearts: 3, points: null, inTop: true, delta: 1 } : null });
   });
   vi.stubGlobal("fetch", fetcher);
@@ -61,6 +61,15 @@ it("opens on ?tab=creators&metric=fans, and falls back to hearts for a metric th
   render(<CreatorRankingScreen locale="ko" initialTab="creators" initialMetric="points" />);
   await screen.findByRole("link", { name: /엘리나/ });
   expect(urls(fetcher)).toContain("/api/rankings/home?kind=creators&metric=hearts&locale=ko&limit=50");
+});
+
+it("shows creator rank movement beside the name", async () => {
+  stub();
+  const view = render(<CreatorRankingScreen locale="ko" initialTab="creators" />);
+  await screen.findByRole("link", { name: /엘리나/ });
+  const row = view.container.querySelector('[data-row="creator-rank"]')!;
+  expect(row.querySelector('[data-delta-cell]')?.parentElement).toContainElement(within(row as HTMLElement).getByText("엘리나"));
+  expect(row.querySelector('[data-delta-cell]')).not.toBeNull();
 });
 
 it("writes the tab and metric to the address without scrolling; a tab change goes to that tab's hearts", async () => {

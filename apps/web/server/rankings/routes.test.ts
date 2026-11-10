@@ -149,7 +149,7 @@ describe("rankings routes", () => {
     const body = await signedOut.json();
     expect(signedOut.headers.get("cache-control")).toBe("private, max-age=60");
     expect(signedOut.headers.get("vary")).toBe("Authorization");
-    expect(rpc).toHaveBeenCalledWith("read_home_fan_ranking_v2", { p_viewer: null, p_metric: "hearts", p_limit: 5 });
+    expect(rpc).toHaveBeenCalledWith("read_home_fan_ranking_v2", { p_viewer: null, p_metric: "hearts", p_limit: 10 });
     expect(body).toMatchObject({ state: "ready", metric: "hearts", previousDay: "2026-11-07", failedAt: null, period: "day", closesAt: "2026-11-09T00:00:00+09:00" });
     expect(body.rows.map((r: { delta: number | null }) => r.delta)).toEqual([2, null]);
     expect(body.rows[0]).toMatchObject({ hearts: 7, points: 35, fans: 2, isNew: true, isMe: false });
@@ -235,9 +235,9 @@ describe("rankings routes", () => {
     const { handlers, rpc, authorize } = make((name) => name === "read_creator_ranking" ? { period: "all", periodStart: "2026-11-02", computedAt: null, rows }
       : name === "read_creator_fan_ranking" ? { rows: [] } : { ...head(), periodStart: "2026-11-02", rows: [], me: null }, fresh);
     await handlers.home(req("/x?kind=fans&limit=50"));
-    expect(rpc).toHaveBeenLastCalledWith("read_home_fan_ranking_v2", expect.objectContaining({ p_limit: 5 }));
+    expect(rpc).toHaveBeenLastCalledWith("read_home_fan_ranking_v2", expect.objectContaining({ p_limit: 10 }));
     await handlers.home(req("/x?kind=creators&limit=50"));
-    expect(rpc).toHaveBeenLastCalledWith("read_home_creator_ranking_v2", expect.objectContaining({ p_limit: 5 }));
+    expect(rpc).toHaveBeenLastCalledWith("read_home_creator_ranking_v2", expect.objectContaining({ p_limit: 10 }));
     await handlers.fans(req("/x?limit=50"));
     expect(rpc).toHaveBeenLastCalledWith("read_platform_fan_ranking", expect.objectContaining({ p_limit: 5 }));
     await handlers.creators(req("/x?metric=fans&limit=50"));
@@ -251,7 +251,7 @@ describe("rankings routes", () => {
     }
     authorize.mockRejectedValueOnce(new AuthError("AUTHENTICATION_REQUIRED", 401, "expired"));
     await handlers.home(req("/x?kind=fans&limit=50", { authorization: "Bearer old" }));
-    expect(rpc).toHaveBeenLastCalledWith("read_home_fan_ranking_v2", { p_viewer: null, p_metric: "hearts", p_limit: 5 });
+    expect(rpc).toHaveBeenLastCalledWith("read_home_fan_ranking_v2", { p_viewer: null, p_metric: "hearts", p_limit: 10 });
     await handlers.home(req("/x?kind=fans&limit=50", { authorization: "Bearer t" }));
     expect(rpc).toHaveBeenLastCalledWith("read_home_fan_ranking_v2", expect.objectContaining({ p_limit: 50 }));
     const member = await handlers.creators(req("/x?period=all", { authorization: "Bearer t" }));

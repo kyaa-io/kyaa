@@ -3,7 +3,7 @@ import type {GroupEarningEntry} from '../domain/earnings';
 
 type Labels = readonly [title:string,result:string,scope:string,currentGroup:string,all:string,activity:string,processed:string,unknown:string,back:string,empty:string,unavailable:string,noReason:string,correctionNoReason:string,detail:string,tickets:string,legacyTickets:string,mission:string,participation:string,legacyActivity:string,raffle:string];
 const labels:Record<AppLocale,Labels>={
- ko:['모임 적립 내역','참여·적립 결과','조회 범위','현재 모임','전체 활동','활동 상세','처리 시각','정보 없음','적립 내역으로','아직 적립 내역이 없어요. 모임 덕질에서 참여할 활동을 찾아보세요.','이 내역을 확인할 수 없어요.','사유 미제공','정정 사유 미제공','상세','응모권','기존 무료 응모권','미션 참여','활동 참여','이전 활동','추첨 응모'],
+ ko:['모임 적립 내역','참여·적립 결과','조회 범위','현재 모임','전체 활동','활동 상세','처리 시각','정보 없음','적립 내역으로','아직 적립 내역이 없어요. 모임 덕질에서 참여할 활동을 찾아보세요.','이 내역을 확인할 수 없어요.','사유 미제공','정정 사유 미제공','상세','응모권','기존 무료 응모권','덕질 참여','활동 참여','이전 활동','추첨 응모'],
  en:['Group earnings','Participation & earnings result','Scope','Current group','All activities','Activity details','Processed at','No information','Back to earnings','No earnings yet. Find activities to join in this group.','This record is unavailable.','No reason provided','No correction reason provided','Details','tickets','legacy free tickets','Mission participation','Activity participation','Previous activity','Raffle entry'],
  ja:['グループの獲得履歴','参加・獲得結果','表示範囲','現在のグループ','すべての活動','活動の詳細','処理日時','情報なし','獲得履歴へ','獲得履歴はまだありません。グループで参加できる活動を探してみましょう。','この履歴は確認できません。','理由の記載なし','訂正理由の記載なし','詳細','応募券','従来の無料応募券','ミッション参加','活動参加','過去の活動','抽選応募'],
  'zh-Hans':['群组奖励记录','参与及奖励结果','查看范围','当前群组','全部活动','活动详情','处理时间','暂无信息','返回奖励记录','暂无奖励记录。去群组活动中寻找想参与的活动吧。','无法查看此记录。','未提供原因','未提供更正原因','详情','抽奖券','原有免费抽奖券','任务参与','活动参与','历史活动','抽奖报名'],

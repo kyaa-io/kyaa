@@ -11,12 +11,12 @@ type Copy = {
 export const leaderboardActivityCopy: Record<AppLocale, Copy> = {
   ko: {
     filters: "활동별 순위",
-    categories: { all: "전체", knowledge: "퀴즈", live: "LIVE", mission: "미션", certification: "인증" },
+    categories: { all: "전체", knowledge: "퀴즈", live: "LIVE", mission: "덕질", certification: "인증" },
     descriptions: {
-      all: "퀴즈·LIVE·미션·인증에서 받은 누적 점수예요. 운영 조정 점수는 전체에만 반영돼요.",
+      all: "퀴즈·LIVE·덕질·인증에서 받은 누적 점수예요. 운영 조정 점수는 전체에만 반영돼요.",
       knowledge: "팬 인증 퀴즈를 처음 통과하면 1점을 받아요.",
       live: "LIVE 예약은 1점, 출석은 3점을 받아요.",
-      mission: "미션을 완료하면 안내된 점수를 받아요. 미션마다 보상이 달라요.",
+      mission: "덕질을 완료하면 안내된 점수를 받아요. 덕질마다 보상이 달라요.",
       certification: "인증 활동은 승인 후 안내된 점수가 반영돼요.",
     },
     guide: "팬 점수는 어떻게 쌓이나요?", equalScores: "같은 활동을 완료했다면 점수도 같을 수 있어요. 활동별 순위에는 해당 활동으로 점수를 받은 팬이 표시돼요.",

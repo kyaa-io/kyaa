@@ -1,6 +1,6 @@
 import type {AppLocale} from '@/i18n/locales';
 const values:Record<AppLocale,readonly [string,string,string,string,string,string,string]>={
- ko:['일정 취소','취소 사유','참여자가 확인할 수 있는 사유를 입력해 주세요.','취소 전 참가 신청·예약 처리와 알림 범위를 확인해야 합니다. 확정 전 지급·환불을 약속하지 않습니다.','일정 취소 확인','연결할 적립 미션','연결 안 함'],
+ ko:['일정 취소','취소 사유','참여자가 확인할 수 있는 사유를 입력해 주세요.','취소 전 참가 신청·예약 처리와 알림 범위를 확인해야 합니다. 확정 전 지급·환불을 약속하지 않습니다.','일정 취소 확인','연결할 적립 활동','연결 안 함'],
  en:['Cancel event','Cancellation reason','Enter a reason participants can read.','Before cancelling, check participation, reservations and notification scope. Payments or refunds are not promised before confirmation.','Confirm event cancellation','Linked reward mission','No linked mission'],
  ja:['イベント中止','中止理由','参加者に表示する理由を入力してください。','中止前に参加申請・予約の扱いと通知範囲を確認してください。確定前に支払いや返金は約束しません。','イベント中止を確認','連携するポイントミッション','連携なし'],
  'zh-Hans':['取消活动','取消原因','请输入参与者可查看的原因。','取消前请确认报名、预约处理和通知范围。确认前不承诺付款或退款。','确认取消活动','关联积分任务','不关联'],

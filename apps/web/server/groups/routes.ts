@@ -163,13 +163,14 @@ export function createGroupHandler(deps: FanpageDependencies) {
         return read.success ? Response.json(read.data, { headers }) : groupsUnavailable();
       }
       if (operation === "directory") {
-        const sort=z.enum(["popular", "recent", "today", "visited"]).parse(one("sort") ?? "popular");
+        const sort=z.enum(["popular", "recent", "today", "visited", "discovery"]).parse(one("sort") ?? "popular");
         const mine=z.enum(["joined", "bookmarked"]).optional().parse(one("mine"));
         const type=z.enum(["all", "fan", "hobby", "brand", "nonfan"]).parse(one("type") ?? "all");
         const search=z.string().max(100).parse(one("search") ?? "");
         const owned=z.enum(["1"]).optional().parse(one("owned")) === "1";
         const artistRole=z.enum(["idol","singer","actor","creator","show_host"]).optional().parse(one("artistRole"));
         const cursor=one("cursor");
+        if(sort==="discovery" && (mine || owned)) throw new SyntaxError("invalid discovery scope");
         if(sort==="visited" && (mine!=="joined" || !owner || type!=="all" || search!=="" || owned || artistRole)) throw new SyntaxError("invalid visited scope");
         Object.assign(payload,{owned,artistRole,type,search,sort,mine,cursor:sort==="visited"?(cursor?decodeVisitedCursor(cursor,owner!):undefined):uuid.optional().parse(cursor),limit:z.coerce.number().int().min(1).max(50).parse(one("limit") ?? 8)});
       }

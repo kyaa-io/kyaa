@@ -20,7 +20,7 @@ const certs = { certifications: [
   { id: "10000000-0000-4000-8000-000000000001", kind: "manual", category: "c", title: "구매 영수증 인증", description: "", status: "available", reward: null, actionHref: "/c/bias-x/certifications/1" },
   { id: "10000000-0000-4000-8000-000000000002", kind: "live_mission", category: "c", title: "LIVE", description: "", status: "available", reward: null, actionHref: "/live/x" },
 ] };
-const ui = (slug = "bias-x") => render(<DukjilProvider slug={slug || undefined} accountToday={!slug} locale="ko"><FanMissions all locale="ko" slug={slug} title="오늘의 미션" passportHref="/passports?locale=ko" proofHref={`/${slug}?tab=certifications&locale=ko`} noPage={slug ? undefined : "/pages/groups?locale=ko"} onAttendance={() => {}} /></DukjilProvider>);
+const ui = (slug = "bias-x") => render(<DukjilProvider slug={slug || undefined} accountToday={!slug} locale="ko"><FanMissions all locale="ko" slug={slug} title="오늘의 덕질" passportHref="/passports?locale=ko" proofHref={`/${slug}?tab=certifications&locale=ko`} noPage={slug ? undefined : "/pages/groups?locale=ko"} onAttendance={() => {}} /></DukjilProvider>);
 
 beforeEach(() => {
   resetDukjilCatalogCache(); h.auth = true; h.catalog = { version: 1, rules, missionBook: {} }; h.today = todayWith(open, false);
@@ -37,16 +37,16 @@ it("F3: lists today's rows (check-in and the daily-limit activities) under the s
   expect(screen.queryByRole("button", { name: /오늘 할 것/ })).toBeNull();
   const panel = document.querySelector("[data-missions-today]")!;
   expect([...panel.querySelectorAll("li[data-mission]")].map(li => li.getAttribute("data-mission"))).toEqual(["checkin", "post", "comment", "share", "reaction"]);
-  expect(screen.getByRole("button", { name: /그 밖의 미션/ })).toHaveAttribute("aria-expanded", "false");
-  expect(screen.getByRole("button", { name: /그 밖의 미션/ })).toHaveTextContent("+220P");
+  expect(screen.getByRole("button", { name: /그 밖의 덕질/ })).toHaveAttribute("aria-expanded", "false");
+  expect(screen.getByRole("button", { name: /그 밖의 덕질/ })).toHaveTextContent("+220P");
   expect(screen.getByRole("button", { name: /인증/ })).toHaveAttribute("aria-expanded", "false");
-  const more = document.getElementById(screen.getByRole("button", { name: /그 밖의 미션/ }).getAttribute("aria-controls")!)!;
+  const more = document.getElementById(screen.getByRole("button", { name: /그 밖의 덕질/ }).getAttribute("aria-controls")!)!;
   expect([...more.querySelectorAll("li[data-mission]")].map(li => li.getAttribute("data-mission"))).toEqual(["invite", "quiz"]);
 });
 
-it("shows S4 numbers in the F3 row: the reward is the amount only in the trailing column, the gauge says the count, invite is its reward alone, check-in has its action", async () => {
+it("shows S4 numbers in the F3 row: the reward and count use the shared fan activity row", async () => {
   ui();
-  await screen.findByRole("button", { name: /그 밖의 미션/ });
+  await screen.findByRole("button", { name: /그 밖의 덕질/ });
   const post = (await screen.findByText("글쓰기")).closest("li")!;
   expect(post).toHaveTextContent("+20P");
   expect(post).not.toHaveTextContent("×");
@@ -54,21 +54,23 @@ it("shows S4 numbers in the F3 row: the reward is the amount only in the trailin
   expect(post).toHaveTextContent("1/3");
   expect(post).not.toHaveTextContent("팬게시판에 글을 올려요");
   expect(post.querySelector("[data-mission-trailing]")).toHaveTextContent("+20P");
+  expect(post.querySelector('[data-earn-badge="inline"] img')).toHaveAttribute("src", "/images/economy/point-coin.svg");
+  expect(document.querySelector('[data-mission="reaction"] [data-mission-trailing]')).toHaveTextContent("완료");
   expect(document.querySelector('[data-mission="invite"]')).not.toHaveTextContent("5명까지");
   expect(document.querySelector('[data-mission="invite"] [data-mission-trailing]')).toHaveTextContent("+200P");
-  expect(document.querySelector('[data-mission="checkin"] [data-mission-trailing]')).toHaveTextContent("출석하기");
+  expect(document.querySelector('[data-mission="checkin"] [data-mission-trailing] [data-earn-badge="inline"]')).not.toBeNull();
   // No arrow anywhere in a row: the trailing column holds one thing.
   expect(document.querySelectorAll("[data-fan-missions] .lucide-arrow-right")).toHaveLength(0);
 });
 
 it("nudges the open reward badges on the first visit of a session only", async () => {
   const first = ui();
-  await screen.findByRole("button", { name: /그 밖의 미션/ });
+  await screen.findByRole("button", { name: /그 밖의 덕질/ });
   await waitFor(() => expect(window.sessionStorage.getItem("dukjil-missions:nudged")).toBe("1"));
   expect(document.querySelector("[data-nudge]")).not.toBeNull();
   first.unmount();
   ui();
-  await screen.findByRole("button", { name: /그 밖의 미션/ });
+  await screen.findByRole("button", { name: /그 밖의 덕질/ });
   expect(document.querySelector("[data-nudge]")).toBeNull();
 });
 
@@ -101,7 +103,7 @@ it("shows the six requested kinds to a guest without a page, each leading to the
 
 it("D1: today's rows, more missions and certifications are all the one FanMissionRow", async () => {
   ui();
-  for (const name of [/그 밖의 미션/, /인증/]) fireEvent.click(await screen.findByRole("button", { name }));
+  for (const name of [/그 밖의 덕질/, /인증/]) fireEvent.click(await screen.findByRole("button", { name }));
   await waitFor(() => expect(document.querySelector('[data-certification-grid="items"]')).not.toBeNull());
   const items = [...document.querySelectorAll("[data-fan-missions] li")].filter(li => !li.hasAttribute("aria-busy"));
   expect(items.length).toBeGreaterThan(5);
@@ -110,13 +112,13 @@ it("D1: today's rows, more missions and certifications are all the one FanMissio
   expect(document.querySelectorAll('button[data-fan-mission-row="fold"]')).toHaveLength(2);
 });
 
-it("B3: the head's n개 남음 folds today's rows (open by default, kept for the session); daily actions use the approved plain lucide icons", async () => {
+it("B3: the head's n개 남음 folds today's rows (open by default, kept for the session); daily actions use the fan activity stamp art", async () => {
   ui();
   const toggle = await waitFor(() => { const el = document.querySelector("[data-missions-left]")?.closest("button"); expect(el).toBeTruthy(); return el!; });
   expect(toggle).toHaveAttribute("aria-expanded", "true");
   const panel = document.getElementById(toggle.getAttribute("aria-controls")!)!;
   expect(panel).toHaveAttribute("data-missions-today");
-  expect(panel.querySelectorAll("[data-mission-art] > svg")).toHaveLength(5);
+  expect(panel.querySelectorAll("[data-mission-art] > img")).toHaveLength(5);
   fireEvent.click(toggle);
   expect(toggle).toHaveAttribute("aria-expanded", "false");
   expect(panel.closest("[inert]")).not.toBeNull();

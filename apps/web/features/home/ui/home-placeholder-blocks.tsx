@@ -5,7 +5,8 @@ import Link from "next/link";
 import type { Route } from "next";
 import { bypassImageOptimization } from "@/components/fan-ui/public-image-policy";
 import { homeGalleryCopy, type HomeGalleryPhoto, type HomeShort } from "@/features/home/domain/home-gallery";
-import { MediaThumbnail } from "@/features/media/ui/media-thumbnail";
+import { FanSectionLink } from "@/components/fan-ui/fan-section-link";
+import { HomeShorts } from "./home-shorts";
 import { homeNoticeCategoryLabels, type HomeNoticeSummary } from "@/features/home/domain/home-notice";
 import { allocateGalleryColumns, homeGalleryLayouts } from "./home-gallery-layout";
 import type { AppLocale } from "@/i18n/locales";
@@ -13,7 +14,7 @@ import styles from "./home-placeholder-blocks.module.css";
 
 /** Home fallbacks use white surfaces and line tokens. Photo reservations reuse the final column allocation and image ratios. */
 const values: Record<AppLocale, readonly string[]> = {
-  ko: ["공지사항", "갤러리", "숏츠", "아직 공지 없음", "아직 사진 없음", "아직 숏츠 없음"],
+  ko: ["공지사항", "갤러리", "숏폼", "아직 공지 없음", "아직 사진 없음", "아직 숏폼 없음"],
   en: ["Notices", "Gallery", "Shorts", "No notices yet", "No photos yet", "No Shorts yet"],
   ja: ["お知らせ", "ギャラリー", "ショート", "お知らせはまだありません", "写真はまだありません", "ショートはまだありません"],
   "zh-Hans": ["公告", "图库", "短视频", "暂无公告", "暂无照片", "暂无短视频"],
@@ -33,17 +34,18 @@ const viewAll: Record<AppLocale, string> = {
 };
 
 export function formatHomeNoticeDate(value: string, locale: AppLocale) {
-  return new Intl.DateTimeFormat(locale, { calendar: "gregory", month: "2-digit", day: "2-digit", timeZone: "Asia/Seoul" }).format(new Date(value));
+  const parts = new Intl.DateTimeFormat(locale, { calendar: "gregory", year: "numeric", month: "2-digit", day: "2-digit", timeZone: "Asia/Seoul" }).formatToParts(new Date(value));
+  return ["year", "month", "day"].map(type => parts.find(part => part.type === type)?.value).join(".");
 }
 
-/** 공지 5행(R8-DATA N1). 정상 0건만 "아직 공지 없음", 로딩·실패는 글 없는 자리표시, 1~4건은 남은 행을 "—"로 채우고, 5건이면 전체 보기를 단다. */
+/** 최대 5개의 공지를 표시한다. */
 export function HomeNotices({ locale, notices }: { locale: AppLocale; notices: readonly HomeNoticeSummary[] | "loading" | "error" }) {
   if (typeof notices === "string") return <HomeNoticesPlaceholder locale={locale} state={notices} />;
   if (!notices.length) return <HomeNoticesPlaceholder locale={locale} state="empty" />;
   const v = values[locale];
   const rows = notices.slice(0, 5);
   return <section className={styles.block} aria-labelledby="home-notices-heading" data-home-block="notices">
-    <FanSectionHeader variant="editorial" id="home-notices-heading" title={v[0]!} action={rows.length >= 5 ? { href: `/notices?locale=${locale}`, label: viewAll[locale] } : undefined} />
+    <FanSectionHeader variant="editorial" id="home-notices-heading" title={v[0]!} action={{ href: `/notices?locale=${locale}`, label: viewAll[locale] }} />
     <ul className={styles.notices}>
       {rows.map(item => <li key={item.id} className={styles.notice} data-row="notice">
         <Link className={styles.noticeLink} href={`${item.linkHref ?? `/notices/${item.slug}`}?locale=${locale}` as Route}>
@@ -52,17 +54,16 @@ export function HomeNotices({ locale, notices }: { locale: AppLocale; notices: r
           <time className={styles.noticeDate} dateTime={item.publishedAt}>{formatHomeNoticeDate(item.publishedAt, locale)}</time>
         </Link>
       </li>)}
-      {Array.from({ length: 5 - rows.length }, (_, i) => <li key={`empty-${i}`} className={styles.notice} data-row="notice-placeholder" aria-hidden="true"><span className={styles.note}>{"—"}</span></li>)}
     </ul>
   </section>;
 }
 
-/** 5 placeholder rows. Only a read that found nothing says "아직 공지 없음"; loading and a failed read keep the rows without it (20:52). */
+/** Only a read that found nothing says "아직 공지 없음". */
 export function HomeNoticesPlaceholder({ locale, state = "loading" }: { locale: AppLocale; state?: "loading" | "error" | "empty" }) {
   const v = values[locale];
   return <section className={styles.block} aria-labelledby="home-notices-heading" data-home-block="notices" data-home-state={state}>
-    <FanSectionHeader variant="editorial" id="home-notices-heading" title={v[0]!} />
-    <ul className={styles.notices}>{Array.from({ length: 5 }, (_, i) => <li key={i} className={styles.notice} data-row="notice-placeholder" aria-hidden={i > 0 || state !== "empty" || undefined}><span className={styles.note}>{i === 0 && state === "empty" ? v[3] : "—"}</span></li>)}</ul>
+    <FanSectionHeader variant="editorial" id="home-notices-heading" title={v[0]!} action={state === "empty" ? { href: `/notices?locale=${locale}`, label: viewAll[locale] } : undefined} />
+    {state === "empty" && <p className={styles.note}>{v[3]}</p>}
   </section>;
 }
 
@@ -92,21 +93,8 @@ export function HomeGallery({ locale, photos, hasMore, shorts, expectedPhotos }:
       <GalleryReservation photos={reservation} layout="desktop" />
     </> : <div className={styles.photos} data-home-measure="photos" data-home-state={typeof photos === "string" ? photos : "empty"}>{Array.from({ length: 8 }, (_, i) => <span key={i} className={styles.tile} data-row="photo-placeholder" aria-hidden={i > 0 || list === null || undefined}>{i === 0 && list ? <span className={styles.note}>{v[4]}</span> : null}</span>)}</div>}
     <div className={styles.shelf} data-home-measure="shorts">
-      <FanHeading as="h3">{v[2]}</FanHeading>
-      {shortList?.length ? <ul className={styles.rail}>
-        {shortList.map(item => <li key={item.videoId} className={styles.short} data-row="short">
-          <Link className={styles.shortLink} href={item.liveHref as Route}>
-            <span className={styles.card}><MediaThumbnail image={null} href={item.href} kind="videos" locale={locale} /></span>
-            <span className={styles.shortTitle}>{item.title}</span>
-          </Link>
-        </li>)}
-        {Array.from({ length: Math.max(0, 4 - shortList.length) }, (_, i) => <li key={`empty-${i}`} className={styles.short} data-row="short-placeholder" aria-hidden="true">
-          <span className={styles.card} /><span className={styles.shortTitle}>{"—"}</span>
-        </li>)}
-      </ul> : <ul className={styles.rail} data-home-state={typeof shorts === "string" ? shorts : "empty"}>{Array.from({ length: 4 }, (_, i) => <li key={i} className={styles.short} data-row="short-placeholder" aria-hidden={i > 0 || shortList === null || undefined}>
-        <span className={styles.card}>{i === 0 && shortList ? <span className={styles.note}>{v[5]}</span> : null}</span>
-        <span className={styles.shortTitle}>{"—"}</span>
-      </li>)}</ul>}
+      <div className={styles.shortHead}><FanHeading as="h3">{v[2]}</FanHeading>{shortList?.length ? <FanSectionLink href={`/shorts?locale=${locale}`}>{homeGalleryCopy[locale].viewAll}</FanSectionLink> : null}</div>
+      {shortList?.length ? <HomeShorts items={shortList} locale={locale} /> : shortList ? <p className={styles.note} data-home-state="empty">{v[5]}</p> : <div data-home-state={typeof shorts === "string" ? shorts : undefined} />}
     </div>
   </section>;
 }

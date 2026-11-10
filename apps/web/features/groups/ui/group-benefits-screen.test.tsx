@@ -7,9 +7,6 @@ import {GroupBenefitsScreen,BenefitsCatalog,BenefitsComingSoon} from './group-be
 import {useGroupRequest} from './use-group-resource';
 import type {AppLocale} from '@/i18n/locales';
 import {groupBenefitsCopy} from './group-benefits-copy';
-import {groupMembersCopy} from './group-members-copy';
-import duoStyles from './duo-profile.module.css';
-import lockedStyles from '@/components/fan-ui/fan-locked-value.module.css';
 import {walletCopy} from '@/features/group-wallet/ui/copy';
 import {rewardedExchangeCopy} from '@/features/group-wallet/ui/rewarded-copy';
 import {resetDukjilCatalogCache} from '@/features/dukjil/ui/dukjil-provider';// Blurred sections stay mounted as aria-hidden; their data contracts are still asserted here.
@@ -101,7 +98,7 @@ it('R2: distinguishes loading and failure from a real zero and retries the scope
   if(url.startsWith('/api/benefits?')){paths.push(url);return next();}
   return base(url,init);
  }));
- render(<GroupBenefitsScreen locale='ko'/>);await screen.findByText('Fan 1');
+ render(<GroupBenefitsScreen locale='ko'/>);await screen.findByText('137');
  const cell=document.querySelector('[data-cell="tickets"]')!;
  expect(cell.querySelector('[aria-busy="true"]')).not.toBeNull();
  expect(within(cell as HTMLElement).queryByRole('link',{name:'내 응모 0장'})).toBeNull();
@@ -114,12 +111,14 @@ it('R2: distinguishes loading and failure from a real zero and retries the scope
 });
 it('DUO: preserves the approved block order, four tiles and a single check-in action',async()=>{
  duoData(); const v=render(<GroupBenefitsScreen locale='ko'/>);
- await screen.findByText('Fan 1'); await screen.findByText('글쓰기');
+ await screen.findByText('글쓰기');
  const blocks=v.container.querySelectorAll('[data-duo-profile],[data-duo-lucky],[data-wallet-card],[data-fan-missions],[data-duo-today],[data-duo-rail],[data-duo-history]');
- expect([...blocks].map(el=>el.getAttributeNames().find(n=>n.startsWith('data-duo-')||n==='data-wallet-card'||n==='data-fan-missions'))).toEqual(['data-duo-profile','data-duo-lucky','data-wallet-card','data-fan-missions','data-duo-today','data-duo-rail','data-duo-history']);
+ expect([...blocks].map(el=>el.getAttributeNames().find(n=>n.startsWith('data-duo-')||n==='data-wallet-card'||n==='data-fan-missions'))).toEqual(['data-wallet-card','data-duo-lucky','data-fan-missions']);
  expect([...v.container.querySelectorAll('[data-cell]')].map(n=>n.getAttribute('data-cell'))).toEqual(['points','tickets','stamps','hearts']);
+ expect(v.container.querySelector('[data-duo-lucky]')?.parentElement).toHaveAttribute('inert');
+ expect(screen.getByRole('status')).toHaveTextContent('준비 중');
  expect(v.container.querySelectorAll('[data-mission="checkin"]')).toHaveLength(1);
- expect(v.container.querySelector('[data-duo-today]')?.querySelector('a,button')).toBeNull();
+ expect(v.container.querySelector('[data-duo-today]')).toBeNull();
  expect(v.container.querySelector('[data-cell="hearts"]')?.querySelector('a')).toBeNull();
  expect(v.container.querySelector('[data-wallet-card]')?.querySelector('.lucide-chevron-right')).toBeNull();
 });
@@ -142,7 +141,7 @@ it('DUO: opens exchange only from its tile, restores focus on Escape and makes n
  expect(screen.queryByRole('dialog')).toBeNull();trigger.focus();fireEvent.click(trigger);
  const dialog=await screen.findByRole('dialog',{name:'포인트'});
  expect(within(dialog).getByRole('group',{name:'수량'})).toHaveTextContent('1장');
- expect(within(dialog).getByRole('button',{name:'광고 보고 교환하기'})).toBeInTheDocument();
+ expect(within(dialog).getByRole('button',{name:'교환하기'})).toBeInTheDocument();
  fireEvent.keyDown(dialog,{key:'Escape'});await waitFor(()=>expect(screen.queryByRole('dialog')).toBeNull());
  expect(trigger).toHaveFocus();expect(requests.some(p=>p.includes('/exchange')||p.includes('/ad-session'))).toBe(false);
 });
@@ -153,19 +152,6 @@ it('DUO: keeps unaffordable exchange disabled and enables it after the shared wa
  points=100;act(()=>window.dispatchEvent(new Event('kyaa:group-wallet-changed')));
  await waitFor(()=>expect(screen.getByRole('button',{name:'교환'})).toBeEnabled());
 });
-it('DUO: presents five actual heart rows and the existing leaderboard threshold in an accessible tab panel',async()=>{
- duoData();render(<GroupBenefitsScreen locale='ko'/>);await screen.findByText('Fan 1');
- expect(document.querySelectorAll('[data-duo-fan-row]')).toHaveLength(5);expect(screen.getByText('3,280')).toBeInTheDocument();
- const tab=screen.getByRole('tab',{name:'팬 순위'});fireEvent.click(tab);
- expect(tab).toHaveAttribute('aria-selected','true');await screen.findByText(/활동한 팬 100명/);
- expect(screen.queryByText('Fan 1')).toBeNull();fireEvent.click(screen.getByRole('tab',{name:'찐팬'}));await screen.findByText('Fan 1');
-});
-it('DUO: distinguishes identical ledger amounts by absolute KST date and minute',async()=>{
- duoData();render(<GroupBenefitsScreen locale='ko'/>);
- await screen.findByText('2026.11.09 19:34');expect(screen.getByText('2026.11.09 19:33')).toBeInTheDocument();
- expect([...document.querySelectorAll('[data-duo-history] time')].every(el=>/^\d{4}\.\d{2}\.\d{2} \d{2}:\d{2}$/.test(el.textContent??''))).toBe(true);
- expect(document.querySelectorAll('[data-duo-history] time')).toHaveLength(3);
-});
 it.each(APP_LOCALES)('DUO: keeps the signed-out layout and locks balances in %s without private reads',async(locale)=>{
  auth.authenticated=false;session.ownerId=null as any;bias.value={...bias.value,status:'guest'};
  const v=render(<GroupBenefitsScreen locale={locale}/>);await screen.findAllByRole('link',{name:walletCopy(locale).login});
@@ -173,16 +159,6 @@ it.each(APP_LOCALES)('DUO: keeps the signed-out layout and locks balances in %s 
  expect(v.container.querySelector('[data-wallet-card]')?.textContent).not.toContain('137');
  expect(v.container.querySelector('[data-wallet-card] button')).toBeDisabled();
  expect(requests.some(url=>url.startsWith('/api/me/'))).toBe(false);
- for(const selector of ['[data-duo-rail]','[data-duo-history]']){
-  const section=v.container.querySelector(selector)!;
-  expect(within(section as HTMLElement).getByRole('link',{name:walletCopy(locale).login})).toHaveAttribute('href',expect.stringContaining('/login'));
-  expect(section.querySelector('[aria-busy="true"]')).toBeNull();
-  expect(section.querySelector('.'+lockedStyles.rows)).toBeNull();
- }
- fireEvent.click(screen.getByRole('tab',{name:locale==='ko'?'팬 순위':groupMembersCopy(locale).ranking}));
- expect(within(v.container.querySelector('[data-duo-rail]') as HTMLElement).getByRole('link',{name:walletCopy(locale).login})).toBeVisible();
- expect(v.container.querySelector('[data-duo-profile] .'+duoStyles.cover)).toBeNull();
- expect(v.container.querySelector('[data-duo-profile] .'+duoStyles.avatar)).toBeNull();
  expect(requests.some(url=>url.includes('mine=joined')||url.includes('/leaderboard')||url.includes('/public-people'))).toBe(false);
 });
 it('DUO: the server signed-out hint shows login prompts before client auth is ready',()=>{
@@ -190,12 +166,7 @@ it('DUO: the server signed-out hint shows login prompts before client auth is re
  bias.value={...bias.value,status:'loading'};
  const v=render(<GroupBenefitsScreen locale='ko' signedOut/>);
  try{
-  for(const selector of ['[data-duo-profile]','[data-duo-rail]','[data-duo-history]']){
-   const section=v.container.querySelector(selector) as HTMLElement;
-   expect(within(section).getByRole('link',{name:walletCopy('ko').login})).toBeVisible();
-   expect(section.querySelector('[aria-busy="true"]')).toBeNull();
-   expect(section.querySelector('.'+lockedStyles.rows)).toBeNull();
-  }
+  expect(v.container.querySelector('[data-duo-profile]')).toBeNull();
   expect(requests).toHaveLength(0);
  }finally{v.unmount();auth.ready=true;session.ready=true;}
 });
@@ -301,5 +272,16 @@ it('V12: holds the missions section in place while the policy is still loading',
  render(<GroupBenefitsScreen locale='ko'/>);
  const pending=document.querySelector('[data-missions-pending]');
  expect(pending).not.toBeNull();
- expect(pending).toHaveTextContent('오늘의 미션');
+ expect(pending).toHaveTextContent('오늘의 덕질');
+});
+it('shows one favorite selector beside the daily missions title and preserves the selected page',async()=>{
+ duoData();render(<GroupBenefitsScreen locale='ko'/>);
+ const section=await screen.findByRole('region',{name:'오늘의 덕질'});
+ const selector=within(section).getByRole('button',{name:/Bias X/});
+ expect(selector).toHaveAttribute('data-favorite-pick');
+ expect(selector.querySelector('[data-creator-avatar] img')).toHaveAttribute('alt','');
+ expect(selector.querySelector('[data-creator-avatar]')).toHaveStyle('--avatar-size: 24px');
+ expect(document.querySelectorAll('[data-favorite-pick]')).toHaveLength(1);
+ expect(within(section).getByRole('heading',{name:'오늘의 덕질'}).parentElement).toContainElement(selector);
+ expect(requests).toContain('/api/benefits?celebrity=bias-x&locale=ko');
 });

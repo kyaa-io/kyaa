@@ -37,7 +37,7 @@ import {walletCopy} from '@/features/group-wallet/ui/copy';
 import {groupDetailSchema,groupHref} from '../domain/contracts';
 const parseMission=(v:unknown)=>groupMissionDetailSchema.parse(v),parseSubmissions=(v:unknown)=>groupSubmissionsSchema.parse(v);
 /** The empty line of "내 참여 내역" (it used to reuse the page list's "no page to show yet"). */
-const noMissionHistory:Record<AppLocale,string>={ko:'아직 참여한 미션이 없어요.',en:'No missions joined yet.',ja:'まだ参加したミッションがありません。','zh-Hans':'还没有参与过任务。','zh-Hant':'還沒有參與過任務。',es:'Aún no has participado en misiones.',id:'Belum ada misi yang diikuti.',vi:'Bạn chưa tham gia nhiệm vụ nào.',th:'ยังไม่ได้เข้าร่วมภารกิจ',pt:'Você ainda não participou de missões.',fr:'Vous n’avez encore participé à aucune mission.',ru:'Вы ещё не участвовали в заданиях.'};
+const noMissionHistory:Record<AppLocale,string>={ko:'아직 참여한 덕질이 없어요.',en:'No missions joined yet.',ja:'まだ参加したミッションがありません。','zh-Hans':'还没有参与过任务。','zh-Hant':'還沒有參與過任務。',es:'Aún no has participado en misiones.',id:'Belum ada misi yang diikuti.',vi:'Bạn chưa tham gia nhiệm vụ nào.',th:'ยังไม่ได้เข้าร่วมภารกิจ',pt:'Você ainda não participou de missões.',fr:'Vous n’avez encore participé à aucune mission.',ru:'Вы ещё не участвовали в заданиях.'};
 
 export function GroupMissionScreen({pageId,missionId,locale,view='conditions'}:{pageId:string;missionId:string;locale:AppLocale;view?:'conditions'|'submission'}){
  const router=useRouter(),search=useSearchParams();

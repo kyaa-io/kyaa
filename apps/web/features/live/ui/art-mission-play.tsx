@@ -99,9 +99,9 @@ function submissionMessage(code: string | undefined, locale: Locale) {
   if (code === "MISSION_PASSPORT_REQUIRED") return locale === "ko" ? "팬 인증으로 패스포트를 만든 뒤 참여해 주세요." : translate(locale, localizedMessages.m99a9e3f19eb0, "Create your Passport through fan verification to join.");
   if (code === "MISSION_ATTENDANCE_REQUIRED") return locale === "ko" ? "LIVE 출석을 인증한 뒤 참여해 주세요." : translate(locale, localizedMessages.m37d0e5deb221, "Check in to the LIVE before joining.");
   if (code === "MISSION_WALLET_NOT_READY") return locale === "ko" ? "패스포트 참여 준비 중이에요. 잠시 후 다시 시도해 주세요." : translate(locale, localizedMessages.m6a12791f678a, "Your account is getting ready. Please try again shortly.");
-  if (code === "MISSION_NOT_VISIBLE") return locale === "ko" ? "이 미션의 참여 기간이 지났어요." : translate(locale, localizedMessages.mf1a1def43f0c, "This mission is no longer open.");
-  if (code === "MISSION_ALREADY_COMPLETED") return locale === "ko" ? "이미 완료한 미션이에요. 새로고침하면 참여 기록을 확인할 수 있어요." : translate(locale, localizedMessages.mb9de9991981d, "This mission is already complete. Refresh to see your participation record.");
-  return locale === "ko" ? "미션을 완료하지 못했어요. 선택한 답은 그대로예요. 다시 시도해 주세요." : translate(locale, localizedMessages.m200f105b17ed, "We couldn't complete the mission. Your answer is saved here. Please try again.");
+  if (code === "MISSION_NOT_VISIBLE") return locale === "ko" ? "이 덕질의 참여 기간이 지났어요." : translate(locale, localizedMessages.mf1a1def43f0c, "This mission is no longer open.");
+  if (code === "MISSION_ALREADY_COMPLETED") return locale === "ko" ? "이미 완료한 덕질이에요. 새로고침하면 참여 기록을 확인할 수 있어요." : translate(locale, localizedMessages.mb9de9991981d, "This mission is already complete. Refresh to see your participation record.");
+  return locale === "ko" ? "덕질을 완료하지 못했어요. 선택한 답은 그대로예요. 다시 시도해 주세요." : translate(locale, localizedMessages.m200f105b17ed, "We couldn't complete the mission. Your answer is saved here. Please try again.");
 }
 
 export function ArtMissionPlay({ missions, locale, answers, submissions, errors, onAnswer, onSubmit }: Props) {
@@ -135,11 +135,11 @@ export function ArtMissionPlay({ missions, locale, answers, submissions, errors,
 
   if (!current) return <main className={styles.complete} data-celebrate={Boolean(result)} id="live-mission-main" tabIndex={-1}>
     {result && <CompletionConfetti />}
-    <h1 ref={heading} tabIndex={-1}>{ko ? <>두 미션<br />모두 완료!</> : translate(locale, localizedMessages.m57e2240c992b, "Both missions complete!")}</h1>
+    <h1 ref={heading} tabIndex={-1}>{ko ? <>덕질 두 가지<br />모두 완료!</> : translate(locale, localizedMessages.m57e2240c992b, "Both missions complete!")}</h1>
     <p role="status">{result?.correctness === true ? (locale === "ko" ? "정답이에요! 스탬프를 남겼어요." : translate(locale, localizedMessages.m54078a49fc9e, "That's right! Your Stamp is recorded."))
-      : result?.correctness === false ? (locale === "ko" ? "정답은 아니지만, 미션 참여는 완료됐어요." : translate(locale, localizedMessages.m99d80911332b, "Not the right answer, but your mission is complete."))
+      : result?.correctness === false ? (locale === "ko" ? "정답은 아니지만, 덕질 참여는 완료됐어요." : translate(locale, localizedMessages.m99d80911332b, "Not the right answer, but your mission is complete."))
       : result ? (locale === "ko" ? "취향을 남겼어요! 스탬프도 기록됐어요." : translate(locale, localizedMessages.m91bc1fc2355c, "Your pick and Stamp are recorded."))
-      : (locale === "ko" ? "이미 참여한 미션이에요. 패스포트에서 기록을 확인해 보세요." : translate(locale, localizedMessages.m9d161f6f675b, "You've already completed these missions. View your record in your Passports."))}</p>
+      : (locale === "ko" ? "이미 참여한 덕질이에요. 패스포트에서 기록을 확인해 보세요." : translate(locale, localizedMessages.m9d161f6f675b, "You've already completed these missions. View your record in your Passports."))}</p>
     <div className={styles.collectibleScene} aria-hidden="true">
       <div className={styles.artworkPrint}>
         <span className={styles.printEdition}>ELINA × BANKSY <span>ART PLAY</span></span>
@@ -148,7 +148,7 @@ export function ArtMissionPlay({ missions, locale, answers, submissions, errors,
       </div>
       <Image className={styles.completionSeal} src={credentialArtworkAsset("mission")} alt="" width={1254} height={1254} />
     </div>
-    {result && <section className={styles.rewardSection} aria-label={locale === "ko" ? "이번 미션 보상" : translate(locale, localizedMessages.m64265bca10e8, "Rewards from this mission")}>
+    {result && <section className={styles.rewardSection} aria-label={locale === "ko" ? "이번 덕질 보상" : translate(locale, localizedMessages.m64265bca10e8, "Rewards from this mission")}>
       <p>{result.type === "quiz" ? (locale === "ko" ? "이번 퀴즈 참여로 기록됐어요" : translate(locale, localizedMessages.m33b6e0464945, "Recorded for this quiz")) : (locale === "ko" ? "이번 투표 참여로 기록됐어요" : translate(locale, localizedMessages.mfa977f62286e, "Recorded for this vote"))}</p>
       <dl className={styles.rewards}>
         {result.scorePoints > 0 ? <div><dt>{locale === "ko" ? "팬 점수" : translate(locale, localizedMessages.mbf64078cd769, "Fan score")}</dt><dd><span>+{result.scorePoints}</span></dd></div> : null}
@@ -169,7 +169,7 @@ export function ArtMissionPlay({ missions, locale, answers, submissions, errors,
   const label = pending ? (locale === "ko" ? "제출 중…" : translate(locale, localizedMessages.m2130a69e7ac1, "Submitting…")) : vote ? (locale === "ko" ? "이 작품으로 결정" : translate(locale, localizedMessages.mdacb0c25f549, "Confirm my pick")) : (locale === "ko" ? "정답 확인하기" : translate(locale, localizedMessages.m76200ce78d35, "Check my answer"));
 
   return <main className={styles.play} id="live-mission-main" tabIndex={-1}>
-    <nav className={styles.progress} aria-label={locale === "ko" ? "미션 진행" : translate(locale, localizedMessages.m7c583c6a0709, "Mission progress")}>
+    <nav className={styles.progress} aria-label={locale === "ko" ? "덕질 진행" : translate(locale, localizedMessages.m7c583c6a0709, "Mission progress")}>
       <ol>{ordered.map((mission, index) => <li key={mission.id}>
         <button type="button" aria-label={mission.completed ? `${stageName(mission, locale)} ${locale === "ko" ? "완료" : translate(locale, localizedMessages.mf2f58e450b66, "completed")}` : undefined} aria-current={mission.id === current.id ? "step" : undefined} disabled={busy || mission.completed} onClick={() => setSelectedId(mission.id)}>
           {mission.completed ? <Check aria-hidden="true" /> : <span aria-hidden="true">{String(index + 1).padStart(2, "0")}</span>}

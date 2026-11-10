@@ -1,0 +1,5 @@
+{
+  "changes": ["홈과 공지 목록에서 분류, 제목, 날짜를 차례로 표시하고 공지가 적을 때 빈 줄을 없앴어요. 첨부 화면은 로컬 확인 화면이에요."],
+  "path": "/notices",
+  "images": ["release-notes/images/2026-11-10-home-notice-390.png", "release-notes/images/2026-11-10-home-notice-1440.png"]
+}

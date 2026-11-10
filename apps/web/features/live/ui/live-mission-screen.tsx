@@ -149,16 +149,16 @@ function MissionContent({ slug, locale, auth }: Props & { auth: ReturnType<typeo
 
   const back = <Link className={styles.back} href={`/live/${slug}?locale=${locale}`}><ArrowLeft aria-hidden="true" />{locale === "ko" ? "LIVE로 돌아가기" : translate(locale, localizedMessages.m0fd55b295f20, "Back to LIVE")}</Link>;
   if (!ready) return <main className={styles.page} id="live-mission-main" tabIndex={-1}>{back}<FanSkeletonRows rows={3} ariaLabel={locale === "ko" ? "참여 정보를 확인하고 있어요." : translate(locale, localizedMessages.m25d053f465c8, "Checking participation.")} /></main>;
-  if (!authenticated) return <main className={styles.page} id="live-mission-main" tabIndex={-1}>{back}<header>{title ? <TranslatedText as="p" text={title} locale={locale} controls="after" /> : <p>{locale === "ko" ? "LIVE 참여 미션" : translate(locale, localizedMessages.maef244b8cb1d, "LIVE participation")}</p>}{startsAt ? <p><time dateTime={startsAt}>{new Intl.DateTimeFormat(locale, { calendar: "gregory", dateStyle: "medium", timeStyle: "short", timeZone: "Asia/Seoul" }).format(new Date(startsAt))} KST</time></p> : null}<h1>{locale === "ko" ? "LIVE 미션" : translate(locale, localizedMessages.m9e1272e7e694, "LIVE Missions")}</h1></header><FanLockedRows rows={3} /><GuestLoginAction locale={locale} returnTo={`/live/${slug}/missions?locale=${locale}`} variant="primary" /></main>;
+  if (!authenticated) return <main className={styles.page} id="live-mission-main" tabIndex={-1}>{back}<header>{title ? <TranslatedText as="p" text={title} locale={locale} controls="after" /> : <p>{locale === "ko" ? "LIVE 참여 덕질" : translate(locale, localizedMessages.maef244b8cb1d, "LIVE participation")}</p>}{startsAt ? <p><time dateTime={startsAt}>{new Intl.DateTimeFormat(locale, { calendar: "gregory", dateStyle: "medium", timeStyle: "short", timeZone: "Asia/Seoul" }).format(new Date(startsAt))} KST</time></p> : null}<h1>{locale === "ko" ? "LIVE 덕질" : translate(locale, localizedMessages.m9e1272e7e694, "LIVE Missions")}</h1></header><FanLockedRows rows={3} /><GuestLoginAction locale={locale} returnTo={`/live/${slug}/missions?locale=${locale}`} variant="primary" /></main>;
   if (loadState === "ready" && slug === elinaLiveSlug && supportsArtMissionPlay(missions) && missions.every(mission => !mission.eligibility || ["available", "completed"].includes(mission.eligibility))) {
     return <ArtMissionPlay missions={missions} locale={locale} answers={answers} submissions={submissions} errors={errors}
       onAnswer={(questionId, optionId) => setAnswers(current => ({ ...current, [questionId]: optionId }))} onSubmit={submit} />;
   }
   return <main className={styles.page} id="live-mission-main" tabIndex={-1}>
-    {back}<header>{title ? <TranslatedText as="p" text={title} locale={locale} controls="after" /> : <p>{locale === "ko" ? "LIVE 참여 미션" : translate(locale, localizedMessages.maef244b8cb1d, "LIVE participation")}</p>}<h1>{locale === "ko" ? "미션" : translate(locale, localizedMessages.m33fa9338bae8, "Missions")}</h1></header>
-    {loadState === "loading" ? <FanSkeletonRows rows={3} ariaLabel={locale === "ko" ? "미션을 불러오고 있어요." : translate(locale, localizedMessages.mcabe043759ae, "Loading missions.")} />
-      : loadState === "error" ? <FanState kind="error" title={locale === "ko" ? "미션을 불러오지 못했어요." : translate(locale, localizedMessages.mddfe2c1fc9f7, "Could not load missions.")} actions={<FanAction onClick={() => setRetry(value => value + 1)}>{locale === "ko" ? "다시 시도" : translate(locale, localizedMessages.m323140c34cfd, "Try again")}</FanAction>} />
-      : missions.length === 0 ? <p>{locale === "ko" ? "지금 참여할 수 있는 미션이 없어요." : translate(locale, localizedMessages.m5a132c3337b9, "No missions are available right now.")}</p>
+    {back}<header>{title ? <TranslatedText as="p" text={title} locale={locale} controls="after" /> : <p>{locale === "ko" ? "LIVE 참여 덕질" : translate(locale, localizedMessages.maef244b8cb1d, "LIVE participation")}</p>}<h1>{locale === "ko" ? "덕질" : translate(locale, localizedMessages.m33fa9338bae8, "Missions")}</h1></header>
+    {loadState === "loading" ? <FanSkeletonRows rows={3} ariaLabel={locale === "ko" ? "덕질을 불러오고 있어요." : translate(locale, localizedMessages.mcabe043759ae, "Loading missions.")} />
+      : loadState === "error" ? <FanState kind="error" title={locale === "ko" ? "덕질을 불러오지 못했어요." : translate(locale, localizedMessages.mddfe2c1fc9f7, "Could not load missions.")} actions={<FanAction onClick={() => setRetry(value => value + 1)}>{locale === "ko" ? "다시 시도" : translate(locale, localizedMessages.m323140c34cfd, "Try again")}</FanAction>} />
+      : missions.length === 0 ? <p>{locale === "ko" ? "지금 참여할 수 있는 덕질이 없어요." : translate(locale, localizedMessages.m5a132c3337b9, "No missions are available right now.")}</p>
       : missions.map(mission => {
         const pending = submissions[mission.id] === "pending";
         const blocked = Boolean(mission.eligibility && !["available", "completed"].includes(mission.eligibility));
@@ -178,10 +178,10 @@ function MissionContent({ slug, locale, auth }: Props & { auth: ReturnType<typeo
             </label>)}
           </fieldset>)}
           <FanAction variant="primary" disabled={pending || mission.completed || blocked || mission.questions.some(question => !answers[question.id])} onClick={() => void submit(mission)}>
-            {pending ? (locale === "ko" ? "제출 중…" : translate(locale, localizedMessages.m4ea9a49f362b, "Submitting…")) : mission.completed ? (locale === "ko" ? "완료됨" : translate(locale, localizedMessages.m4c70b81bb0c3, "Completed")) : (locale === "ko" ? "미션 완료" : translate(locale, localizedMessages.me1b43e38ddba, "Complete mission"))}
+            {pending ? (locale === "ko" ? "제출 중…" : translate(locale, localizedMessages.m4ea9a49f362b, "Submitting…")) : mission.completed ? (locale === "ko" ? "완료됨" : translate(locale, localizedMessages.m4c70b81bb0c3, "Completed")) : (locale === "ko" ? "덕질 완료" : translate(locale, localizedMessages.me1b43e38ddba, "Complete mission"))}
           </FanAction>
-          {submissions[mission.id] === "complete" && <p role="status" className={styles.notice}>{locale === "ko" ? "미션을 완료했어요. 보상과 스탬프가 기록되었습니다." : translate(locale, localizedMessages.m69b94777d35b, "Mission complete. Your rewards and Stamp were recorded.")}</p>}
-          {submissions[mission.id] === "error" && <p role="alert" className={styles.notice}>{locale === "ko" ? "미션을 완료하지 못했어요. 다시 시도해 주세요." : translate(locale, localizedMessages.m7e12c8224787, "Mission could not be completed. Please try again.")}</p>}
+          {submissions[mission.id] === "complete" && <p role="status" className={styles.notice}>{locale === "ko" ? "덕질을 완료했어요. 보상과 스탬프가 기록되었습니다." : translate(locale, localizedMessages.m69b94777d35b, "Mission complete. Your rewards and Stamp were recorded.")}</p>}
+          {submissions[mission.id] === "error" && <p role="alert" className={styles.notice}>{locale === "ko" ? "덕질을 완료하지 못했어요. 다시 시도해 주세요." : translate(locale, localizedMessages.m7e12c8224787, "Mission could not be completed. Please try again.")}</p>}
         </article>;
       })}
   </main>;

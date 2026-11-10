@@ -11,10 +11,10 @@ it("C8·D8: names the mission under the shared reward toast; a stamped mission l
   showMissionRewardToast("ko", "post", { points: 20 });
   showMissionRewardToast("en", "comment", { points: 3, stamps: 1 });
   expect(slam.calls).toEqual([
-    { locale: "ko", points: 3, stamps: 1, label: "댓글 미션 완료" },
+    { locale: "ko", points: 3, stamps: 1, label: "댓글 덕질 완료" },
     { locale: "en", points: 3, stamps: 1, label: "Comment mission done" },
   ]);
-  expect(shown.calls).toEqual([{ locale: "ko", points: 20, label: "글쓰기 미션 완료" }]);
+  expect(shown.calls).toEqual([{ locale: "ko", points: 20, label: "글쓰기 덕질 완료" }]);
 });
 it("says nothing when nothing was paid, and still lands a stamp issued while the points were capped", () => {
   showMissionRewardToast("ko", "comment", { points: 0 });
@@ -22,5 +22,5 @@ it("says nothing when nothing was paid, and still lands a stamp issued while the
   expect(shown.calls).toEqual([]);
   expect(slam.calls).toEqual([]);
   showMissionRewardToast("ko", "comment", { points: 0, stamps: 1 });
-  expect(slam.calls).toEqual([{ locale: "ko", points: 0, stamps: 1, label: "댓글 미션 완료" }]);
+  expect(slam.calls).toEqual([{ locale: "ko", points: 0, stamps: 1, label: "댓글 덕질 완료" }]);
 });

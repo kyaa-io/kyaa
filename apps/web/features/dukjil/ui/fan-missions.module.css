@@ -2,7 +2,8 @@
 .section{display:grid;gap:var(--space-3);min-width:0}
 .head{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:var(--space-1) var(--space-3);min-width:0}
 /* 게이트 C2: section titles are 18/700 at every width, like FanHeading beside it. */
-.head h2{margin:0;font-size:var(--fan-section-size);line-height:var(--fan-heading-leading);font-weight:var(--fan-section-weight);letter-spacing:var(--fan-heading-tracking);overflow-wrap:anywhere}
+.headingGroup{display:flex;align-items:center;gap:var(--space-2);min-width:0;flex:1 1 180px}
+.head h2{flex:none;margin:0;font-size:var(--fan-section-size);line-height:var(--fan-heading-leading);font-weight:var(--fan-section-weight);letter-spacing:var(--fan-heading-tracking);overflow-wrap:anywhere}
 .summary{display:flex;flex-wrap:wrap;align-items:center;gap:var(--space-1) var(--space-2);min-width:0;color:var(--color-muted);font-size:var(--fan-metadata-size);line-height:20px;font-weight:700;font-variant-numeric:tabular-nums}
 .cards{display:grid;margin:0;padding:0;list-style:none;border:1px solid var(--color-line);border-radius:var(--radius-control);overflow:hidden;background:var(--color-surface)}
 /* The line under a title: progress at the title's x, count on its right, inside the row's 64. */
@@ -11,8 +12,6 @@
 .bar>i{display:block;width:100%;height:100%;border-radius:inherit;background:var(--dukjil-ink);transform:scaleX(var(--mission-fill,0));transform-origin:left center;transition:transform var(--motion-control) var(--motion-easing)}
 .bar>i[data-done=true]{background:var(--dukjil-ink-deep)}
 .count{display:inline-flex;flex:none;align-items:center;gap:calc(var(--space-1) / 2);font-size:var(--fan-metadata-size);line-height:18px;font-weight:700;color:var(--color-muted);font-variant-numeric:tabular-nums}
-.gauge{flex:1;min-width:0}
-.gauge>span:last-child{line-height:18px;min-width:5ch;text-align:end}
 @media (min-width:1024px){.progress{max-width:240px}}
 .footer{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:0 var(--space-3)}
 .footer>a{padding-inline:0}
@@ -22,10 +21,6 @@
 .fold+.fold{border-top:1px solid var(--color-line)}
 .fold .cards{border:0;border-radius:0}
 .fold[data-state] .cards,.proofRows{border-top:1px solid var(--color-line-subtle)}
-/* The check-in action: the one primary action on the screen, inside the trailing column. */
-.rowAction{display:inline-flex;align-items:center;justify-content:center;box-sizing:border-box;max-width:100%;min-height:var(--fan-action-primary-height);padding:0 var(--space-3);border-radius:var(--radius-action);background:var(--color-accent);color:var(--color-surface);font-size:var(--fan-action-emphasis-size);line-height:20px;font-weight:var(--fan-item-title-weight);text-align:center;overflow-wrap:anywhere}
-/* 게이트 A2: the action is 44 (390) / 48 (1024+); the rows keep 64 by giving the padding what the action takes. */
-.folds [data-fan-mission-row]{padding-block:calc((var(--space-16) - var(--fan-action-primary-height)) / 2)}
 @keyframes missionNudge{0%,100%{opacity:1}50%{opacity:.7}}
 .folds[data-nudge] li[data-done="false"] .reward{animation:missionNudge var(--motion-count, 400ms) var(--motion-easing, ease) 3}
 @media (prefers-reduced-motion:reduce){.folds[data-nudge] li .reward{animation:none}}
@@ -38,23 +33,5 @@
 /* Today's fold opens right under the card's top line: no second line there. */
 .folds>.fold:first-child .cards{border-top:0}
 
-/* Approved DS-D-DUO R2: one filled action belongs to the lucky draw. */
 .full { font-variant-numeric:tabular-nums; font-feature-settings:"tnum"; }
-.full .rowAction { background:var(--color-surface); color:var(--color-ink); border:1px solid var(--color-line); min-width:88px; }
-.full .progress { max-width:160px; }
-.full .gauge { gap:var(--space-2); }
-.full .gauge > span:first-child { height:4px; }
-.full .gauge > span:last-child { min-width:0; }
-@media(min-width:1024px){.full .progress{max-width:210px}.full .rowAction{min-width:96px}}
-
-.full [data-earn-badge="inline"] { font-size:var(--fan-action-emphasis-size); }
-.full [data-earn-badge="inline"] > img { display:none; }
-.full li[data-done="true"] a[data-fan-mission-row] { color:var(--color-ink); }
-.full .cards > li + li > a { min-height:63px; }
-
-.full .fold + .fold > button { min-height:63px; }
-.full .summary,.full .gauge > span:last-child { font-size:var(--fan-badge-size); font-weight:400; color:var(--color-muted); }
-
-.full .progress { flex:none; max-width:100%; }
-.full .gauge > span:first-child { flex:none; width:110px; }
-@media(min-width:1024px){.full .gauge > span:first-child{width:160px}}
+.full .summary { font-size:var(--fan-badge-size); font-weight:400; color:var(--color-muted); }

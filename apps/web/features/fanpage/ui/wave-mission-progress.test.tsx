@@ -23,7 +23,7 @@ describe("Wave mission progress integration", () => {
     expect(screen.getByRole("status")).toHaveTextContent("1 / 10 · 완료");
     expect(screen.getByRole("region", { name: "프로그램" })).toHaveAttribute("id", "wave-missions");
     expect(screen.getByRole("region", { name: "프로그램" })).toHaveAttribute("tabindex", "-1");
-    expect(screen.getByRole("heading", { name: "미션 진행" }).compareDocumentPosition(screen.getByRole("heading", { name: "프로그램" })) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(screen.getByRole("heading", { name: "덕질 진행" }).compareDocumentPosition(screen.getByRole("heading", { name: "프로그램" })) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     expect(screen.queryByText("프로그램 참여 스탬프")).toBeNull();
     expect(screen.getAllByRole("link")).toHaveLength(12);
   });

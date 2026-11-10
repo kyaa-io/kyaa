@@ -1,0 +1,36 @@
+.page {
+  gap: var(--space-6);
+  padding-block: var(--space-6) var(--space-12);
+}
+
+.page > section {
+  padding: var(--space-6);
+  border-radius: var(--radius-collection);
+  background: var(--color-surface);
+}
+
+.page > section:first-child {
+  gap: var(--space-6);
+  padding: var(--space-6);
+  background: var(--color-accent-soft);
+}
+
+.page > section:first-child > div:last-child {
+  width: 100%;
+  aspect-ratio: 1;
+  background: var(--color-accent-soft) url('/images/guide/jjinfan-hero.webp') center / contain no-repeat;
+}
+
+.page > section:first-child > div:last-child img {
+  visibility: hidden;
+}
+
+.page > section:nth-of-type(even) {
+  background: var(--color-accent-soft);
+}
+
+@media (min-width: 64rem) {
+  .page { gap: var(--space-8); }
+  .page > section { padding: var(--space-12); }
+  .page > section:first-child { padding: var(--space-12); }
+}

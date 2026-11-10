@@ -226,16 +226,16 @@ describe("LiveEventScreen", () => {
     render(<LiveEventScreen slug="kara-nualeaf" locale="ko" />);
     await screen.findByRole("heading", { name: "KARA × NUALEAF LIVE" });
     if (available === false) {
-      expect(screen.queryByRole("button", { name: "LIVE 미션 보기" })).not.toBeInTheDocument();
-      expect(screen.getByText("현재 참여 가능한 미션이 없어요.")).toBeVisible();
-      expect(screen.queryByRole("link", { name: "LIVE 미션 보기" })).not.toBeInTheDocument();
+      expect(screen.queryByRole("button", { name: "LIVE 덕질 보기" })).not.toBeInTheDocument();
+      expect(screen.getByText("현재 참여 가능한 덕질이 없어요.")).toBeVisible();
+      expect(screen.queryByRole("link", { name: "LIVE 덕질 보기" })).not.toBeInTheDocument();
     } else {
-      const mission = screen.getByRole("link", { name: "LIVE 미션 보기" });
+      const mission = screen.getByRole("link", { name: "LIVE 덕질 보기" });
       expect(mission).toHaveAttribute("href", "/live/kara-nualeaf/missions?locale=ko");
-      expect(screen.queryByText("현재 참여 가능한 미션이 없어요.")).not.toBeInTheDocument();
+      expect(screen.queryByText("현재 참여 가능한 덕질이 없어요.")).not.toBeInTheDocument();
       if (available === null) {
-        expect(screen.getByText("미션 목록에서 참여 가능 여부를 확인해 주세요.")).toBeVisible();
-        expect(mission).toHaveAccessibleDescription("미션 목록에서 참여 가능 여부를 확인해 주세요.");
+        expect(screen.getByText("덕질 목록에서 참여 가능 여부를 확인해 주세요.")).toBeVisible();
+        expect(mission).toHaveAccessibleDescription("덕질 목록에서 참여 가능 여부를 확인해 주세요.");
       }
     }
   });
@@ -254,7 +254,7 @@ describe("LiveEventScreen", () => {
     expect(screen.getByText("선물 응모", { selector: "strong" })).toBeVisible();
     expect(screen.queryByText("설문", { selector: "strong" })).not.toBeInTheDocument();
     expect(screen.queryByText("Stamp", { selector: "strong" })).not.toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: "LIVE 미션 보기" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "LIVE 덕질 보기" })).not.toBeInTheDocument();
     expect(screen.getByRole("link", { name: "뱅크시 관람권 추첨 응모하기" }))
       .toHaveAttribute("href", "/c/ifewknow/raffles?locale=ko");
   });
@@ -423,7 +423,7 @@ describe("LiveEventScreen", () => {
     const disclosure = within(schedule).getByText("예약 전체 기간").closest("details");
     expect(disclosure).not.toHaveAttribute("open");
     expect(disclosure?.querySelector('time[datetime="2026-07-20T00:00:00.000Z"]')).not.toBeNull();
-    expect(within(schedule).getByRole("link", { name:"LIVE 미션 보기" })).toHaveAttribute("href", "/live/kara-nualeaf/missions?locale=ko");
+    expect(within(schedule).getByRole("link", { name:"LIVE 덕질 보기" })).toHaveAttribute("href", "/live/kara-nualeaf/missions?locale=ko");
     expect(within(schedule).getAllByText(/GMT\+9/)).toHaveLength(1);
     expect(within(schedule).queryByText("NUALEAF", { selector: "p" })).not.toBeInTheDocument();
   });

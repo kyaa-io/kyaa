@@ -1,0 +1,66 @@
+"use client";
+
+import { useEffect, useRef, useState } from "react";
+import { ChevronDown, ChevronUp, MoreHorizontal, Play } from "lucide-react";
+import { FanDialog } from "@/components/fan-ui/fan-dialog";
+import { fanUiText } from "@/components/fan-ui/fan-ui-copy";
+import { MediaThumbnail } from "@/features/media/ui/media-thumbnail";
+import type { HomeShort } from "@/features/home/domain/home-gallery";
+import type { AppLocale } from "@/i18n/locales";
+import { ShortsEngagement } from "./shorts-engagement";
+import styles from "./home-shorts.module.css";
+
+const navigation: Record<AppLocale, [string, string, string]> = {
+  ko: ["이전 영상", "다음 영상", "더 보기"], en: ["Previous video", "Next video", "More"], ja: ["前の動画", "次の動画", "その他"],
+  "zh-Hans": ["上一个视频", "下一个视频", "更多"], "zh-Hant": ["上一個影片", "下一個影片", "更多"],
+  es: ["Vídeo anterior", "Siguiente vídeo", "Más"], id: ["Video sebelumnya", "Video berikutnya", "Lainnya"], vi: ["Video trước", "Video tiếp theo", "Thêm"], th: ["วิดีโอก่อนหน้า", "วิดีโอถัดไป", "เพิ่มเติม"], pt: ["Vídeo anterior", "Próximo vídeo", "Mais"], fr: ["Vidéo précédente", "Vidéo suivante", "Plus"], ru: ["Предыдущее видео", "Следующее видео", "Ещё"],
+};
+
+export function HomeShorts({ items, locale, layout = "rail", initialVideo, offset = 0 }: { items: readonly HomeShort[]; locale: AppLocale; layout?: "rail" | "grid"; initialVideo?: string; offset?: number }) {
+  const [index, setIndex] = useState<number | null>(() => { const i = items.findIndex(item => item.videoId === initialVideo); return i < 0 ? null : i; });
+  const [more, setMore] = useState(false);
+  const startY = useRef<number | null>(null);
+  const wheelAt = useRef(0);
+  const selected = index === null ? null : items[index];
+  const move = (delta: number) => { setIndex(i => i === null ? null : Math.max(0, Math.min(items.length - 1, i + delta))); setMore(false); };
+  useEffect(() => {
+    if (index === null) return;
+    const onKey = (event: KeyboardEvent) => {
+      if (event.target instanceof HTMLElement && (event.target.closest("input, textarea, select, [contenteditable=true]") || (event.target.closest("[data-overlay-content]") && !event.target.closest(`.${styles.viewer}`)))) return;
+      if (event.key === "ArrowDown" || event.key === "ArrowUp") { event.preventDefault(); move(event.key === "ArrowDown" ? 1 : -1); }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [index, items.length]);
+  const swipe = {
+    onTouchStart: (e: React.TouchEvent) => { startY.current = e.touches[0]?.clientY ?? null; },
+    onTouchEnd: (e: React.TouchEvent) => { if (startY.current !== null) { const difference = startY.current - (e.changedTouches[0]?.clientY ?? startY.current); if (Math.abs(difference) >= 45) move(difference > 0 ? 1 : -1); } startY.current = null; },
+  };
+  return <>
+    <ul className={layout === "rail" ? styles.rail : styles.grid}>
+      {(layout === "rail" ? items.slice(0, 6) : items).map((item, i) => <li key={item.id} className={styles.item} data-row="short">
+        <button type="button" className={styles.card} onClick={() => setIndex(i)}>
+          <span className={styles.cover}><MediaThumbnail image={`https://i.ytimg.com/vi/${item.videoId}/oardefault.jpg`} href={item.href} kind="videos" locale={locale} /><span className={styles.play} aria-hidden="true"><Play size={22} fill="currentColor" /></span></span>
+          <span className={styles.title}>{item.title}</span>
+        </button>
+      </li>)}
+    </ul>
+    <FanDialog className={styles.viewer} open={!!selected} onOpenChange={open => { if (!open) { setIndex(null); setMore(false); } }} title={selected?.title ?? ""} closeLabel={fanUiText(locale, "close")}>
+      {selected && <div className={styles.player} data-outbound-placement="shorts-player" onWheel={e => { if (Math.abs(e.deltaY) > 20 && Date.now() - wheelAt.current > 600) { wheelAt.current = Date.now(); move(e.deltaY > 0 ? 1 : -1); } }}>
+        <div className={styles.stage}>
+          <div className={styles.swipeZone} {...swipe} aria-hidden="true" />
+          <iframe key={selected.videoId} src={`https://www.youtube.com/embed/${selected.videoId}?rel=0`} title={selected.title} allow="encrypted-media; picture-in-picture; fullscreen" allowFullScreen referrerPolicy="strict-origin-when-cross-origin" />
+          <div className={styles.swipeZone} {...swipe} aria-hidden="true" />
+        </div>
+        <ShortsEngagement key={selected.videoId} videoId={selected.videoId} locale={locale} offset={offset} />
+        <div className={styles.controls} {...swipe}>
+          <button type="button" onClick={() => move(-1)} disabled={index === 0} aria-label={navigation[locale][0]}><ChevronUp aria-hidden="true" /></button>
+          <button type="button" onClick={() => move(1)} disabled={index === items.length - 1} aria-label={navigation[locale][1]}><ChevronDown aria-hidden="true" /></button>
+          <span>{(index ?? 0) + 1} / {items.length}</span>
+          <button type="button" aria-label={navigation[locale][2]} aria-expanded={more} onClick={() => setMore(value => !value)}><MoreHorizontal aria-hidden="true" /></button>
+          {more && <a href={selected.href} target="_blank" rel="noopener noreferrer" data-outbound-kind="external">YouTube ↗</a>}
+        </div>
+      </div>}
+    </FanDialog>
+  </>;
+}

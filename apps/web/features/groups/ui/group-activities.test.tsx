@@ -72,7 +72,7 @@ it('labels the opened ticket with its event and authenticated participant',async
 });
 it('shows actual checked-in completion without enabling a premature review',async()=>{
  vi.stubGlobal('fetch',vi.fn(async(url:string)=>Response.json(activityFixture(url,'GET','checked-in'))));render(<GroupEventScreen pageId={fixtureId} eventId={fixtureId} locale='ko'/>);
- expect(await screen.findByRole('heading',{name:'현장 참여 완료'})).toBeInTheDocument();expect(screen.getByRole('link',{name:'미션 보기'})).toHaveAttribute('href',`/pages/groups/${fixtureId}?locale=ko&tab=activities&activity=missions`);for(const button of screen.getAllByRole('button',{name:/후기 쓰기/}))expect(button).toBeDisabled();
+ expect(await screen.findByRole('heading',{name:'현장 참여 완료'})).toBeInTheDocument();expect(screen.getByRole('link',{name:'덕질 보기'})).toHaveAttribute('href',`/pages/groups/${fixtureId}?locale=ko&tab=activities&activity=missions`);for(const button of screen.getAllByRole('button',{name:/후기 쓰기/}))expect(button).toBeDisabled();
 });
 
 it('selects actual collection products and source presentation categories while honoring sold-out state',async()=>{

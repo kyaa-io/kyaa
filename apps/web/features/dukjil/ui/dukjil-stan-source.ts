@@ -1,6 +1,6 @@
 // Words of the 덕질 (Stan) tab renewal (261107-2 U4·U5); ko/en live here, the other locales in i18n/catalogs/features__dukjil__ui__dukjil-stan-source.ts.
 export const dukjilStanSource = {
-  missionsGroupMore: { ko: "그 밖의 미션", en: "More missions" },
+  missionsGroupMore: { ko: "그 밖의 덕질", en: "More missions" },
   missionsGroupProof: { ko: "인증", en: "Certifications" },
   missionsGroupLeft: { ko: "{0}개 남음", en: "{0} left" },
   missionsGroupAllDone: { ko: "모두 완료", en: "All done" },

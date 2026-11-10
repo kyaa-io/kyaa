@@ -1,7 +1,7 @@
 import type { AppLocale } from "@/i18n/locales";
 
 const rows = {
-  ko: ["미션 진행", "체크인과 9개 미션의 진행 상태를 확인하세요.", "완료", "미완료", "확인 전"],
+  ko: ["덕질 진행", "체크인과 덕질 9가지의 진행 상태를 확인하세요.", "완료", "미완료", "확인 전"],
   en: ["Mission progress", "View your check-in and 9 mission statuses.", "Completed", "Not completed", "Not verified"],
   ja: ["ミッションの進捗", "チェックインと9個のミッションの進捗を確認できます。", "完了", "未完了", "未確認"],
   "zh-Hans": ["任务进度", "查看签到和9项任务的进度。", "已完成", "未完成", "未确认"],
@@ -17,7 +17,7 @@ const rows = {
 } satisfies Record<AppLocale, readonly [string, string, string, string, string]>;
 
 const details = {
-  ko: ["이 진행 상태는 스탬프 발급이나 응모권 교환을 뜻하지 않아요.", "미션 진행 상태를 불러오지 못했어요.", "행사 참여를 완료한 뒤 미션 진행 상태를 확인할 수 있어요."],
+  ko: ["이 진행 상태는 스탬프 발급이나 응모권 교환을 뜻하지 않아요.", "덕질 진행 상태를 불러오지 못했어요.", "행사 참여를 완료한 뒤 덕질 진행 상태를 확인할 수 있어요."],
   en: ["This progress does not confirm stamp issuance or prize-draw entry exchange.", "Couldn't load mission progress.", "Complete event check-in to view your mission progress."],
   ja: ["この進捗はスタンプの発行や抽選券への交換を示すものではありません。", "ミッションの進捗を読み込めませんでした。", "イベントのチェックイン完了後に進捗を確認できます。"],
   "zh-Hans": ["此进度不代表已发放印章或兑换抽奖券。", "无法加载任务进度。", "完成活动签到后可查看任务进度。"],

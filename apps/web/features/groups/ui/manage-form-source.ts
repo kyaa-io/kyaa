@@ -1,7 +1,7 @@
 // ko/en live here; the other locales are in i18n/catalogs/features__groups__ui__manage-form-source.ts.
 export const manageFormSource = {
   options: { ko: "옵션", en: "Options" },
-  missionName: { ko: "미션 이름", en: "Mission name" },
+  missionName: { ko: "덕질 이름", en: "Mission name" },
   missionBody: { ko: "할 일", en: "What to do" },
   missionBodyAdd: { ko: "할 일 적기", en: "Describe what to do" },
   missionKind: { ko: "제출 방식", en: "Submission type" },
@@ -10,7 +10,7 @@ export const manageFormSource = {
   kindSurvey: { ko: "설문", en: "Survey" },
   surveyQuestion: { ko: "질문", en: "Question" },
   surveyOption: { ko: "선택지 {0}", en: "Option {0}" },
-  missionsNone: { ko: "아직 만든 미션이 없어요", en: "No missions created yet" },
+  missionsNone: { ko: "아직 만든 덕질이 없어요", en: "No missions created yet" },
   raffleName: { ko: "추첨 이름", en: "Raffle name" },
   raffleDescription: { ko: "추첨 설명", en: "Raffle description" },
   raffleDescriptionAdd: { ko: "추첨 설명 적기", en: "Describe the raffle" },

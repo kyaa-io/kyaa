@@ -78,25 +78,15 @@
 .primaryButton span { display: inline-flex; align-items: center; gap: 8px; }
 .primaryButton svg { width: 16px; height: 16px; }
 .carouselControls { position: absolute; z-index: 3; inset: 0; pointer-events: none; }
-.carouselControls > button { position: absolute; top: calc(50% - 22px); display: grid; width: 44px; min-width: 44px; height: 44px; padding: 0; place-items: center; border: 0; background: transparent; color: var(--color-surface); cursor: pointer; pointer-events: auto; }
+.carouselControls > button { position: absolute; top: 50%; transform: translateY(-50%); display: grid; width: 44px; min-width: 44px; height: 44px; padding: 0; place-items: center; border: 0; background: transparent; color: var(--color-surface); cursor: pointer; pointer-events: auto; }
 .carouselControls > button::before { position: absolute; width: 32px; height: 32px; border: 1px solid color-mix(in srgb, var(--color-surface) 24%, transparent); border-radius: 50%; background: color-mix(in srgb, var(--color-ink) 44%, transparent); content: ""; transition: background-color 160ms cubic-bezier(.2,0,0,1); }
 .carouselControls > button svg { position: relative; z-index: 1; width: 16px; height: 16px; }
+.carouselCounter { display: none; }
 .carouselPrevious { left: 8px; }
 .carouselNext { right: 8px; }
-/* 화살표는 배너 위가 아니라 점 줄 양끝에 둔다(모든 폭, 2026-11-09 홈 배너 규격: 배너 높이가 낮아 글·그림을 가리지 않게). */
-.carouselControls > .carouselPrevious, .carouselControls > .carouselNext { top: auto; bottom: -42px; color: var(--ink); }
-.carouselControls > .carouselPrevious { left: 0; }
-.carouselControls > .carouselNext { right: 0; }
-.carouselControls > .carouselPrevious::before, .carouselControls > .carouselNext::before { border-color: var(--line); background: var(--color-soft); }
-.carouselControls > .carouselPrevious:hover::before, .carouselControls > .carouselNext:hover::before { background: var(--fan-action-neutral-active-bg); }
-.carouselDots { position: absolute; bottom: -42px; left: 50%; display: flex; width: min(var(--carousel-width), 100%); height: 44px; overflow-x: auto; overflow-y: hidden; align-items: center; justify-content: safe center; scrollbar-width: none; transform: translateX(-50%); pointer-events: auto; }
-.carouselControls .carouselDot { position: relative; display: grid; width: 44px; min-width: 44px; height: 44px; flex: 0 0 44px; padding: 0; place-items: center; border: 0; background: transparent; cursor: pointer; }
-/* 현재 점은 22px 막대: 폭 전이 대신 위에 겹친 막대의 transform·opacity만 움직인다(합성 단계, 배치 변화 0). 버튼이 44px라 이웃 점은 움직이지 않는다. */
-.carouselDot span { position: relative; width: 6px; height: 6px; border-radius: 999rem; background: var(--line); transition: background-color 160ms cubic-bezier(.2,0,0,1); }
-.carouselDot span::after { position: absolute; top: 0; left: -8px; width: 22px; height: 6px; border-radius: var(--radius-pill); background: var(--ink); content: ""; opacity: 0; transform: scaleX(.28); transition: transform 160ms cubic-bezier(.2,0,0,1), opacity 160ms cubic-bezier(.2,0,0,1); }
-.carouselDot[aria-current="true"] span { background: var(--ink); }
-.carouselDot[aria-current="true"] span::after { opacity: 1; transform: scaleX(1); }
-@media (prefers-reduced-motion: reduce) { .carouselDot span, .carouselDot span::after { transition: none; } }
+.carouselProgress { position: absolute; bottom: -22px; left: 50%; width: 40px; height: 3px; border-radius: 999rem; background: var(--line); transform: translateX(-50%); }
+.carouselProgress span { display: block; width: var(--progress-width); height: 100%; border-radius: inherit; background: var(--ink); transform: translateX(var(--progress-offset)); transition: transform 160ms cubic-bezier(.2,0,0,1); }
+@media (prefers-reduced-motion: reduce) { .carouselProgress span { transition: none; } }
 .carouselAnnouncement { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap; }
 
 .mobileContextActions { display: grid; margin-top: 16px; }
@@ -368,9 +358,6 @@
 .celebrityFanLink { min-inline-size: 6.25rem; }
 .personalizationLoading > span { max-width: none; }
 .personalizationLoading { min-height: 440px; grid-template-rows: 220px 80px; gap: 20px; align-content: start; justify-items: stretch; }
-.carouselDots .carouselPause { display: grid; place-items: center; flex: 0 0 44px; width: 44px; height: 44px; padding: 0; border: 0; border-radius: var(--radius-control); background: transparent; color: var(--color-ink); cursor: pointer; }
-.carouselPause svg { width: 16px; height: 16px; }
-.carouselPause:disabled { opacity: .5; cursor: default; }
 @media (min-width: 64rem) { .personalizationLoading { min-height: 480px; grid-template-rows: 250px 90px; } }
 
 .srOnly { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip-path:inset(50%); white-space:nowrap; border:0; }
@@ -402,3 +389,13 @@
 .favoriteSection [data-fan-section-header] > div > div:first-child { flex-basis: auto; }
 /* 찐팬 100 챌린지 진행 중인 크리에이터 카드(C7): 사진 왼쪽 위 태그 하나. */
 .challengeTag { position: absolute; z-index: 1; top: var(--space-2); left: var(--space-2); }
+
+/* 모바일 배너는 정사각 이미지와 순번을 사용한다. */
+@media (max-width: 767px) {
+  .heroCarousel[data-has-controls="true"] { margin-bottom: 0; }
+  .heroViewport { height: auto; aspect-ratio: 1; }
+  .carouselControls > .carouselPrevious, .carouselControls > .carouselNext { width: 1px; min-width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+  .carouselControls > .carouselPrevious:focus-visible, .carouselControls > .carouselNext:focus-visible { width: 44px; min-width: 44px; height: 44px; overflow: visible; clip-path: none; }
+  .carouselProgress { display: none; }
+  .carouselCounter { position: absolute; z-index: 4; top: 12px; right: 12px; display: block; pointer-events: none; padding: 4px 8px; border-radius: var(--radius-pill); background: rgb(0 0 0 / 60%); color: white; font-size: 12px; font-variant-numeric: tabular-nums; }
+}

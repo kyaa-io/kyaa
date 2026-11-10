@@ -91,17 +91,3 @@ it("sends a guest to login once and returns to the page it left", () => {
   expect(checkin.pathname).toBe("/connect/kyaa-wave/participate");
   expect(checkin.searchParams.get("returnTo")).toBe("/kyaa-wave-fanpage");
 });
-
-it("shows the check-in action inline without redirecting from community", () => {
-  state.path = "/community"; state.query = "creator=kyaa-wave-fanpage&tab=fans&locale=ko";
-  state.authenticated = true;
-  const view = render(<WaveAccessBoundary locale="ko" inline><div>PRIVATE CONTENT</div></WaveAccessBoundary>);
-  expect(state.replace).not.toHaveBeenCalled();
-  expect(screen.queryByText("PRIVATE CONTENT")).toBeNull();
-  const checkin = new URL(screen.getByRole("link").getAttribute("href")!, "https://kyaa.test");
-  expect(checkin.pathname).toBe("/connect/kyaa-wave/participate");
-  expect(checkin.searchParams.get("returnTo")).toBe("/community?creator=kyaa-wave-fanpage&tab=fans&locale=ko");
-  state.participation = { id: "receipt", createdAt: "2026-10-22T00:00:00Z" };
-  view.rerender(<WaveAccessBoundary locale="ko" inline><div>PRIVATE CONTENT</div></WaveAccessBoundary>);
-  expect(screen.getByText("PRIVATE CONTENT")).toBeInTheDocument();
-});

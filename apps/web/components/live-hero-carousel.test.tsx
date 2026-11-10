@@ -20,19 +20,23 @@ beforeEach(() => {
 afterEach(() => { cleanup(); vi.useRealTimers(); vi.restoreAllMocks(); vi.unstubAllGlobals(); });
 
 describe("hero visibility and independent pause reasons", () => {
-  it("keeps user pause through hover, pointer release and blur", () => {
+  it("stops autoplay after manual navigation", () => {
     render(<LiveHeroCarousel homeBanners={[banner]} locale="ko" />);
-    const root = screen.getByRole("region");
-    expect(root).toHaveAttribute("data-shine-paused", "false");
-    fireEvent.click(screen.getByRole("button", { name: "자동 재생 정지" }));
-    fireEvent.mouseEnter(root); fireEvent.pointerDown(root);
-    fireEvent.mouseLeave(root); fireEvent.pointerUp(window); fireEvent.blur(root);
+    fireEvent.click(screen.getByRole("button", { name: "다음 배너" }));
+    advance(12_000);
+    expect(activeSlide()).toBe("2 / 2");
+    expect(screen.getByRole("region")).toHaveAttribute("data-shine-paused", "true");
+    expect(screen.queryByRole("button", { name: /자동 재생/ })).toBeNull();
+  });
+
+  it("does not autoplay on mobile and keeps manual navigation", () => {
+    vi.stubGlobal("matchMedia", vi.fn((query: string) => ({ matches: query === "(max-width: 767px)", addEventListener: vi.fn(), removeEventListener: vi.fn() })));
+    render(<LiveHeroCarousel homeBanners={[banner]} locale="ko" />);
     advance(12_000);
     expect(activeSlide()).toBe("1 / 2");
-    expect(root).toHaveAttribute("data-shine-paused", "true");
-    fireEvent.click(screen.getByRole("button", { name: "자동 재생 시작" }));
-    expect(root).toHaveAttribute("data-shine-paused", "false");
-    advance();
+    expect(screen.getByText("01 | 02")).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /자동 재생/ })).toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: "다음 배너" }));
     expect(activeSlide()).toBe("2 / 2");
   });
 
@@ -109,7 +113,7 @@ describe("hero visibility and independent pause reasons", () => {
     render(<LiveHeroCarousel homeBanners={[banner]} locale="en" />);
     fireEvent.click(screen.getByRole("button", { name: "Next banner" }));
     expect(activeSlide()).toBe("2 of 2");
-    advance(); expect(activeSlide()).toBe("1 of 2");
+    advance(); expect(activeSlide()).toBe("2 of 2");
   });
 });
 
@@ -123,7 +127,7 @@ describe("autoplay waits for the next slide's picture", () => {
       return !this.src.includes("kara-second") || ready.has(this);
     });
     const view = render(<LiveHeroCarousel homeBanners={[banner, second]} elinaGuide={null} locale="en" />);
-    const picture = [...view.container.querySelectorAll("img")].find((image) => image.src.includes("kara-second"))!;
+    const picture = [...view.container.querySelectorAll("img")].find((image) => !image.closest("[data-hero-backdrop]") && image.src.includes("kara-second"))!;
     return { view, picture, finish: (event: "load" | "error") => { ready.add(picture); act(() => { fireEvent[event](picture); }); } };
   };
 
@@ -148,7 +152,7 @@ describe("autoplay waits for the next slide's picture", () => {
       return !/kara-(second|third)/.test(this.src) || this.dataset.ready === "1";
     });
     const { container } = render(<LiveHeroCarousel homeBanners={[banner, second, third]} elinaGuide={null} locale="en" />);
-    const [next, later] = ["kara-second", "kara-third"].map((name) => [...container.querySelectorAll("img")].find((image) => image.src.includes(name))!);
+    const [next, later] = ["kara-second", "kara-third"].map((name) => [...container.querySelectorAll("img")].find((image) => !image.closest("[data-hero-backdrop]") && image.src.includes(name))!);
     expect(next).toHaveAttribute("loading", "eager");
     expect(later).toHaveAttribute("loading", "lazy");
     advance(); expect(activeSlide()).toBe("1 of 3");
@@ -199,10 +203,10 @@ describe("reduced motion", () => {
     render(<LiveHeroCarousel homeBanners={[banner]} locale="en" />);
     advance(12_000); expect(activeSlide()).toBe("1 of 2");
     expect(screen.getByRole("region")).toHaveAttribute("data-shine-paused", "true");
-    expect(screen.getByRole("button", { name: "Pause autoplay" })).toBeDisabled();
+    expect(screen.queryByRole("button", { name: "Start autoplay" })).toBeNull();
     fireEvent.click(screen.getByRole("button", { name: "Next banner" }));
     expect(activeSlide()).toBe("2 of 2");
-    expect(document.querySelectorAll('img[fetchpriority="high"]')).toHaveLength(1);
+    expect(document.querySelectorAll(':not([data-hero-backdrop]) > picture img[fetchpriority="high"]')).toHaveLength(1);
   });
 });
 

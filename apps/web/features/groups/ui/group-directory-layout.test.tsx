@@ -16,8 +16,8 @@ it.each(['?search=Ru','?type=fan','?type=hobby','?type=fan&artistRole=idol&searc
  history.replaceState(null,'',`/pages/groups${query}`);render(<GroupDirectory locale='ko'/>);
  expect(screen.getByRole('heading',{level:1,name:'팬페이지와 모임 찾기'})).toBeInTheDocument();
  expect(screen.getByTestId('banners')).toBeInTheDocument();
- // 순서: 내 아티스트 → 얇은 배너 → Hot 게시글 → 페이지 둘러보기 → 내 페이지.
- const order=[screen.getByTestId('my-artists'),screen.getByTestId('banners'),screen.getByTestId('hot-posts'),screen.getByRole('heading',{level:2,name:'페이지 둘러보기'}),screen.getByRole('heading',{level:2,name:'내 페이지'})];
+ // 순서: 내 아티스트 → 얇은 배너 → Hot 게시글 → 페이지 둘러보기.
+ const order=[screen.getByTestId('my-artists'),screen.getByTestId('banners'),screen.getByTestId('hot-posts'),screen.getByRole('heading',{level:2,name:'페이지 둘러보기'})];
  order.slice(1).forEach((node,i)=>expect(order[i]!.compareDocumentPosition(node)&Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy());
  expect(screen.getByRole('heading',{level:2,name:'페이지 둘러보기'})).toBeInTheDocument();
  expect(screen.getByRole('button',{name:/^활동 분야/})).toBeInTheDocument();
@@ -63,7 +63,7 @@ it('uses the common card with a kind tag and two lines',()=>{
  const {container}=render(<GroupDirectory locale='ko'/>);
  const cards=container.querySelectorAll('[data-directory-list] [data-fan-entity]');
  expect(cards).toHaveLength(3);
- expect(cards[0]).toHaveTextContent('Page 1');expect(cards[0]).toHaveTextContent('취미');expect(cards[0]).toHaveTextContent('팬 1');
+ expect(cards[0]).toHaveTextContent('Page 1');expect(cards[0]).toHaveTextContent('취미');expect(cards[0]).not.toHaveTextContent('팬 1');
  expect(cards[0]).not.toHaveTextContent('모임 ·');expect(cards[0]).not.toHaveTextContent('소개');
 });
 it('offers the fan page application for an empty result, with no favorite request',()=>{
@@ -75,16 +75,16 @@ it('offers the fan page application for an empty result, with no favorite reques
  expect(screen.getByRole('dialog')).toBeInTheDocument();
  expect(state.dialog.at(-1)).toMatchObject({initialKind:'fan',initialName:'Ru'});
 });
-it('offers two application rows without a question, a heading or an explanation',()=>{
+it('offers two illustrated application banners with their existing destinations',()=>{
  const {container}=render(<GroupDirectory locale='ko'/>);
  const area=container.querySelector('[class*=discoveryCreation]') as HTMLElement;
  const rows=within(area).getAllByRole('link');
- expect(rows.map(row=>row.textContent)).toEqual(['팬페이지 개설 신청 ›','취미·브랜드 페이지 개설 신청 ›']);
- expect(rows.map(row=>row.querySelector('svg'))).toEqual([null,null]);
+ expect(rows.map(row=>row.querySelector('img')?.getAttribute('src'))).toEqual(['/images/groups/create-fan.webp','/images/groups/create-hobby.webp']);
  expect(within(area).getByRole('link',{name:'팬페이지 개설 신청'})).toBe(rows[0]);expect(within(area).getByRole('link',{name:'취미·브랜드 페이지 개설 신청'})).toBe(rows[1]);
  expect(rows[0]).toHaveAttribute('href','/pages/groups/apply?locale=ko&kind=fan');
  expect(rows[1]).toHaveAttribute('href','/pages/groups/apply?locale=ko');
- expect(area.textContent).toBe('팬페이지 개설 신청 ›취미·브랜드 페이지 개설 신청 ›');
+ expect(area.textContent).toContain('좋아하는 크리에이터의 팬페이지를 신청해요');
+ expect(area.textContent).toContain('함께할 취미나 브랜드 페이지를 신청해요');
  expect(within(area).queryByRole('heading')).toBeNull();
  expect(screen.queryByRole('button',{name:/^자세히/})).toBeNull();
  expect(screen.queryByText(/만들고 싶나요/)).toBeNull();
@@ -93,7 +93,6 @@ it('offers two application rows without a question, a heading or an explanation'
 });
 it('keeps the guest side area and its login paths',()=>{
  state.authenticated=false;render(<GroupDirectory locale='ko'/>);
- expect(screen.getByRole('heading',{level:2,name:'내 페이지'})).toBeInTheDocument();
- expect(screen.getByRole('link',{name:'로그인'}).getAttribute('href')).toContain('/login');
+ expect(screen.queryByRole('heading',{level:2,name:'내 페이지'})).toBeNull();
  expect(screen.getByRole('link',{name:'출석체크'}).getAttribute('href')).toContain('/login');
 });

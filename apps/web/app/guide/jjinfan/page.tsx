@@ -5,6 +5,7 @@ import { guideText } from "@/features/dukjil-guide/ui/guide-copy";
 import { JjinfanGuideContent } from "@/features/dukjil-guide/ui/guide-content";
 import { loadGuideModel } from "@/features/dukjil-guide/server/load-guide-model";
 import styles from "@/features/dukjil-guide/ui/guide-content.module.css";
+import jjinfanStyles from "@/features/dukjil-guide/ui/jjinfan-guide.module.css";
 import { parseAppLocale } from "@/i18n/locales";
 import { publicMetadata } from "@/seo/metadata";
 
@@ -25,7 +26,7 @@ export default async function JjinfanGuidePage({ searchParams }: Props) {
   const model = await loadGuideModel(locale);
   return (
     <FanAppFrame locale={locale} currentPath="/guide/jjinfan" mainId="jjinfan-guide-main">
-      <FanContentContainer as="main" id="jjinfan-guide-main" tabIndex={-1} className={styles.page}>
+      <FanContentContainer as="main" id="jjinfan-guide-main" tabIndex={-1} className={`${styles.page} ${jjinfanStyles.page}`}>
         <JjinfanGuideContent locale={locale} model={model} />
       </FanContentContainer>
     </FanAppFrame>

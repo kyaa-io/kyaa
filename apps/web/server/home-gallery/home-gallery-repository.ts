@@ -2,7 +2,7 @@ import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { z } from "zod";
 import { createClient } from "@/server/data/client";
-import { homeGalleryPageSchema, homeShortsSchema, type HomeGalleryPage, type HomeShort } from "@/features/home/domain/home-gallery";
+import { homeGalleryPageSchema, homeShortsPageSchema, homeShortsSchema, type HomeGalleryPage, type HomeShort } from "@/features/home/domain/home-gallery";
 
 type Db = Pick<SupabaseClient, "rpc">;
 export class HomeGalleryRepositoryError extends Error {}
@@ -30,9 +30,15 @@ export class HomeGalleryRepository {
   }
 
   async listShorts(locale: "ko" | "en", input: { limit: number }): Promise<readonly HomeShort[]> {
-    const { data, error } = await this.db.rpc("read_public_home_shorts", { p_locale: locale, p_limit: input.limit });
+    const { data, error } = await this.db.rpc("read_public_home_shortform", { p_locale: locale, p_limit: input.limit });
     if (error) throw new HomeGalleryRepositoryError(error.message);
     return homeShortsSchema.parse(data);
+  }
+
+  async listShortsPage(locale: "ko" | "en", input: { offset: number; limit: number }) {
+    const { data, error } = await this.db.rpc("read_public_home_shortform_page", { p_locale: locale, p_offset: input.offset, p_limit: input.limit });
+    if (error) throw new HomeGalleryRepositoryError(error.message);
+    return homeShortsPageSchema.parse(data);
   }
 }
 

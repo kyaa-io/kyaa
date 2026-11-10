@@ -32,24 +32,12 @@ it('opens attendance only for an ordinary click and keeps the original link',()=
  fireEvent.click(screen.getByRole('button',{name:'닫기'})); expect(screen.queryByRole('dialog')).toBeNull();
 });
 
-it('pages the personal list and resets its cursor when the account changes',()=>{
- state.pagination=true; state.owner='first-owner';
- const view=render(<GroupDirectory locale='ko'/>);
- const nav=screen.getByRole('navigation',{name:'내 페이지'});
- expect(screen.getByText('First page')).toBeInTheDocument();
- expect(screen.getByText('최근 방문순')).toBeInTheDocument();
- expect(state.urls.some(url=>url?.includes('mine=joined')&&url.includes('sort=visited')&&url.includes('limit=3'))).toBe(true);
- expect(within(nav).getByRole('button',{name:'이전'})).toBeDisabled();
- fireEvent.click(within(nav).getByRole('button',{name:'다음'}));
- expect(screen.getByText('Next page')).toBeInTheDocument();
- expect(state.urls.some(url=>url?.includes('cursor=eyJ2IjoxLCJzb3J0IjoidmlzaXRlZCJ9'))).toBe(true);
- expect(within(nav).getByRole('button',{name:'다음'})).toBeDisabled();
- fireEvent.click(within(nav).getByRole('button',{name:'이전'}));
- expect(screen.getByText('First page')).toBeInTheDocument();
- fireEvent.click(within(nav).getByRole('button',{name:'다음'}));
- state.owner='second-owner'; view.rerender(<GroupDirectory locale='ko'/>);
- expect(screen.getByText('First page')).toBeInTheDocument();
- state.pagination=false; state.owner='owner';
+it('omits the duplicate personal-pages section and its dedicated query',()=>{
+ history.replaceState(null,'','/pages/groups?type=all');state.urls.length=0;
+ render(<GroupDirectory locale='ko'/>);
+ expect(screen.queryByRole('heading',{name:'내 페이지'})).toBeNull();
+ expect(screen.queryByRole('navigation',{name:'내 페이지'})).toBeNull();
+ expect(state.urls.some(url=>url?.includes('mine=joined')&&url.includes('sort=visited')&&url.includes('limit=3'))).toBe(false);
 });
 
 it('offers no favorite request anywhere',()=>{
@@ -67,7 +55,7 @@ it('renders initial geometry as busy status without exposing decorative shapes',
  history.replaceState(null,'','/pages/groups?type=all');state.allLoading=true;
  render(<GroupDirectory locale='ko'/>);
  const skeletons=screen.getAllByRole('status',{name:'불러오는 중'});
- expect(skeletons).toHaveLength(2);
+ expect(skeletons).toHaveLength(1);
  for(const skeleton of skeletons){expect(skeleton).toHaveAttribute('aria-busy','true');expect(skeleton.querySelector('[aria-hidden=true]')).toBeInTheDocument();}
  state.allLoading=false;
 });
@@ -77,37 +65,6 @@ it('keeps existing same-key data visible while refreshing',()=>{
  render(<GroupDirectory locale='ko'/>);
  expect(screen.queryAllByRole('status',{name:'불러오는 중'})).toHaveLength(0);
  state.withDataLoading=false;
-});
-
-it('names the failed area in the error and omits an unknown personal-page count',()=>{
- history.replaceState(null,'','/pages/groups?type=all');
- state.joinedMode='error';state.retry.mockClear();
- const view=render(<GroupDirectory locale='ko'/>);
- const joinedAlert=screen.getAllByRole('alert').find(node=>node.textContent?.includes('내 페이지를 불러오지 못했어요'))!;
- expect(joinedAlert).toHaveTextContent('잠시 뒤 다시 시도해 주세요.');
- expect(within(joinedAlert).getByRole('button',{name:'다시 시도'})).toBeInTheDocument();
- expect(screen.queryByText('최근 방문순')).toBeNull();
- const all=screen.getByRole('link',{name:/내 페이지 전체 보기/});
- expect(all).toHaveTextContent(/^전체 보기$/);
- state.joinedMode='nodata';view.rerender(<GroupDirectory locale='ko'/>);
- expect(screen.getByRole('link',{name:/내 페이지 전체 보기/})).toHaveTextContent(/^전체 보기$/);
- state.joinedMode='ready';state.pagination=true;view.rerender(<GroupDirectory locale='ko'/>);
- expect(screen.getByRole('link',{name:/내 페이지 전체 보기/})).toHaveTextContent('전체 보기 · 4');
- state.pagination=false;
-});
-
-it('keeps see-all and the sort caption in the joined-pages title row, not below the list',()=>{
- history.replaceState(null,'','/pages/groups?type=all');
- render(<GroupDirectory locale='ko'/>);
- const heading=screen.getByRole('heading',{level:2,name:'내 페이지'});
- const row=heading.closest('header')!;
- expect(row.tagName).toBe('HEADER');
- expect(within(row).getByText('최근 방문순')).toBeInTheDocument();
- const all=within(row).getByRole('link',{name:'내 페이지 전체 보기'});
- expect(all.getAttribute('href')).toContain('mine=joined');
- const section=row.parentElement!;
- expect(section.lastElementChild).not.toBe(all);
- expect(Array.from(section.children).filter(node=>node.tagName==='A'&&node.getAttribute('href')?.includes('mine=joined')&&!node.className.includes('joinedRow')).length).toBe(0);
 });
 
 it('shows an illustrated status empty state for zero joined pages, apart from alert errors',()=>{
@@ -163,7 +120,9 @@ it('tags a fan page whose 찐팬 100 challenge is on, and not the group pages',(
  history.replaceState(null,'','/pages/groups?type=all');
  render(<GroupDirectory locale='ko'/>);
  const list=screen.getByRole('region',{name:'페이지 둘러보기'});
- expect(within(list).getByRole('link',{name:/Original artist/})).toHaveTextContent('찐팬 100 도전 중');
- expect(within(list).getAllByText('찐팬 100 도전 중')).toHaveLength(1);
+ const artist=within(list).getByRole('link',{name:/Original artist/});
+ expect(artist.querySelector('[data-tile-media]')).toHaveTextContent('찐팬 100');
+ expect(artist).toHaveAccessibleName(/찐팬 100 도전 중/);
+ expect(within(list).getAllByText('찐팬 100')).toHaveLength(1);
  state.challenges=[];
 });

@@ -16,6 +16,7 @@ import {groupListSchema} from '@/features/groups/domain/contracts';
 import {DukjilProvider,useDukjilStatus} from '@/features/dukjil/ui/dukjil-provider';
 import {dukjilText} from '@/features/dukjil/ui/dukjil-copy';
 import {FanHeading} from '@/components/fan-ui/fan-heading';
+import {CreatorAvatar} from '@/components/fan-ui/creator-avatar';
 import {FanState} from '@/components/fan-ui/fan-state';
 import {fanLoginHref} from '@/components/login-href';
 import {type AppLocale} from '@/i18n/locales';
@@ -31,7 +32,7 @@ import {FanSkeletonRows} from '@/components/fan-ui/fan-skeleton';
 import {seeAllLabel} from './group-directory';
 import {groupBenefitsCopy,benefitsRaffleState} from './group-benefits-copy';
 import {StanLucky,stanFavorite,useStanEntries} from './stan-lucky-cheer';
-import {DuoProfile,DuoFanRail,DuoStreak,DuoHistory} from './duo-profile';
+import {FavoritePickMenu} from '@/features/selected-bias/ui/selected-bias-chip';
 import styles from './group-benefits.module.css';
 const parseWallet=(value:unknown)=>walletSchema.parse(value);
 const parseRaffles=(value:unknown)=>groupBenefitsCatalogSchema.options[0].parse(value);
@@ -64,8 +65,8 @@ export function GroupBenefitsScreen({locale,initialHeart=null,signedOut=false}:{
  return <FanAppFrame locale={locale} currentPath='/benefits' groupsEnabled mainId='benefits-main'><FanContentContainer as='main' id='benefits-main' className={styles.page}>
  <header className={styles.srOnly}><FanHeading as='h1'>{c.title}</FanHeading></header>
  <BenefitsAlerts><BenefitsSections><BenefitsAlertList/>
- <div className={styles.main}><DuoProfile locale={locale} bias={bias} guest={bias.status==='guest'}/><BenefitsLucky locale={locale} bias={bias} signedOut={signedOut}/><BenefitsWallet key={`${locale}:${auth.ownerKey}`} locale={locale} signedOut={signedOut} bias={bias}/><BenefitsDailyMissions locale={locale}/><BenefitsToday locale={locale} bias={bias}/></div>
- <div className={styles.side}><BenefitsCheer locale={locale} bias={bias} signedOut={signedOut}/>{auth.ready?(auth.authenticated?<BenefitsHistory locale={locale}/>:<BenefitsGuestHistory locale={locale}/>):signedOut&&<BenefitsGuestHistory locale={locale}/>}</div></BenefitsSections></BenefitsAlerts>
+ <div className={styles.main}>{bias.status==='guest'&&<FanAction variant="secondary" href={fanLoginHref(locale, `/benefits?locale=${locale}`)}>{walletCopy(locale).login}</FanAction>}<BenefitsWallet key={`${locale}:${auth.ownerKey}`} locale={locale} signedOut={signedOut} bias={bias}/><BenefitsLucky locale={locale} bias={bias} signedOut={signedOut}/><BenefitsDailyMissions locale={locale} bias={bias}/></div>
+ </BenefitsSections></BenefitsAlerts>
  </FanContentContainer></FanAppFrame>;
 }
 /** The numbers the wallet and the cheer card share (C9): stamps are the stamped slots of the passport page being filled (the MY card's number), hearts come with the summary. */
@@ -82,24 +83,11 @@ function useStanNumbers(bias:SelectedBias,signedOut:boolean){
 /** F2: the favorite's lucky draws, in the spotlight above the wallet. */
 function BenefitsLucky({locale,bias,signedOut}:{locale:AppLocale;bias:SelectedBias;signedOut:boolean}){
  const allFailed=Boolean(useContext(SectionContext)?.allFailed),{guest}=useStanNumbers(bias,signedOut);
- return <div className={styles.pLucky} hidden={allFailed}><StanLucky locale={locale} bias={bias} guest={guest} presentation='duo'/></div>;
-}
-/** F2: the fan tabs head the right rail (390: after the streak). */
-function BenefitsCheer({locale,bias,signedOut}:{locale:AppLocale;bias:SelectedBias;signedOut:boolean}){
- const allFailed=Boolean(useContext(SectionContext)?.allFailed),{guest}=useStanNumbers(bias,signedOut);
- return <div className={styles.pCheer} hidden={allFailed}><DuoFanRail key={bias.selected?.slug??'none'} locale={locale} bias={bias} guest={guest}/></div>;
-}
-/** 오늘의 덕질 keeps the streak only; the mission list owns the attendance action. */
-function BenefitsToday({locale,bias}:{locale:AppLocale;bias:SelectedBias}){
- const auth=useGroupRequest(),status=useDukjilStatus(locale),hidden=auth.ready&&status==='off';
- const [today,setToday]=useState<{failed:boolean;retry:()=>void}>({failed:false,retry:()=>{}}),onFailure=(failed:boolean,retry:()=>void)=>setToday({failed,retry});
- const lifted=useSectionFailure('today',today.failed&&!hidden,()=>today.retry());
- if(hidden)return null;
- return <div className={styles.pToday} hidden={lifted}><DuoStreak key={auth.ownerKey} locale={locale} bias={bias} guest={auth.ready&&!auth.authenticated} onFailure={onFailure}/></div>;
+ return <div className={styles.pLucky} hidden={allFailed} aria-disabled="true"><div className={styles.luckyDisabled} inert aria-hidden="true"><StanLucky locale={locale} bias={bias} guest={guest} presentation='duo'/></div><span className={styles.luckyComingSoon} role="status">{benefitsRaffleState(locale,"preparing")}</span></div>;
 }
 /** 오늘의 미션: every catalog activity for the viewer's first joined fan page; its rows lead to that page. Guests and viewers without a page see the same list and go to the login or the page directory. */
-function BenefitsDailyMissions({locale}:{locale:AppLocale}){
- const auth=useGroupRequest(),status=useDukjilStatus(locale),bias=useSelectedBias(locale),joined=useGroupResource(auth.authenticated?'/api/groups?mine=joined&limit=50':null,parseJoined),[attendance,setAttendance]=useState(false),allFailed=Boolean(useContext(SectionContext)?.allFailed);
+function BenefitsDailyMissions({locale,bias}:{locale:AppLocale;bias:SelectedBias}){
+ const auth=useGroupRequest(),status=useDukjilStatus(locale),joined=useGroupResource(auth.authenticated?'/api/groups?mine=joined&limit=50':null,parseJoined),[attendance,setAttendance]=useState(false),allFailed=Boolean(useContext(SectionContext)?.allFailed);
  if(status==='off')return null;
  // Hold the section's place, at the height the loaded section takes (no jump below), until the policy, the favorite and the joined pages are known, so it does not appear late and push the page (V12).
  if(status==='loading'||!auth.ready||(auth.authenticated&&(joined.loading||bias.status==='loading')))return <section className={`${styles.pMissions} ${styles.missionsPending}`} hidden={allFailed} aria-busy='true' data-missions-pending=''><FanHeading>{dukjilText(locale,'missionsTitle')}</FanHeading><FanSkeletonRows rows={5}/></section>;
@@ -107,17 +95,9 @@ function BenefitsDailyMissions({locale}:{locale:AppLocale}){
  // H6: the rows lead to the favorite chosen in the header (its passport first), then a followed creator, then the first joined creator page.
  const first=(joined.data?.items??[]).find(item=>item.celebrityId&&item.slug),chosen=bias.selected??bias.unverified;
  const page=chosen?{slug:chosen.slug,name:chosen.name}:first?{slug:first.slug,name:first.name}:null,slug=page?.slug??'',title=dukjilText(locale,'missionsTitle'),directory=`/pages/groups?locale=${locale}`;
- return <div className={styles.pMissions} hidden={allFailed}><DukjilProvider key={slug} slug={slug||undefined} accountToday={!slug} locale={locale}><FanMissions all locale={locale} slug={slug} title={title} passportHref={`/passports?locale=${locale}`} proofHref={`/${slug}?tab=certifications&locale=${locale}`} noPage={slug?undefined:directory} onAttendance={()=>setAttendance(true)}/>{attendance&&page&&<CreatorAttendanceEntry slug={slug} pageName={page.name} locale={locale} reviewHref={`/c/${encodeURIComponent(slug)}/verify?locale=${locale}`} onClose={()=>setAttendance(false)}/>}</DukjilProvider></div>;
-}
-/** The last three history rows (1024+: the right column under the cheer card); its failure joins the section failures. */
-function BenefitsHistory({locale}:{locale:AppLocale}){
- const [state,setState]=useState<{failed:boolean;retry:()=>void}>({failed:false,retry:()=>{}}),onFailure=(failed:boolean,retry:()=>void)=>setState({failed,retry});
- const lifted=useSectionFailure('history',state.failed,()=>state.retry());
- return <div className={styles.pHistoryWrap} hidden={lifted}><DuoHistory locale={locale} guest={false} onFailure={onFailure}/></div>;
-}
-/** Guests: the history heading with the lock the other locked values use, over three fixed grey rows in the same card outline; drawn in the first HTML when the server saw no session. */
-function BenefitsGuestHistory({locale}:{locale:AppLocale}){
- return <div className={styles.pGuestHistory}><DuoHistory locale={locale} guest/></div>;
+ const favoriteAvatar=chosen?<CreatorAvatar slug={chosen.slug} src={bias.selected?.image??null} photos={undefined} size={24}/>:null;
+ const favorite=bias.status!=='guest'&&(stanFavorite(bias)||bias.options.length>0)?<span className={styles.favorite}><span aria-hidden="true">·</span>{bias.options.length?<FavoritePickMenu locale={locale} bias={bias} className={styles.favoritePick}>{favoriteAvatar}<span className={styles.favoriteName}>{stanFavorite(bias)?.name??dukjilText(locale,'heartPick')}</span><span aria-hidden="true">▾</span></FavoritePickMenu>:<>{favoriteAvatar}<span className={styles.favoriteName}>{stanFavorite(bias)?.name}</span></>}</span>:null;
+ return <div className={styles.pMissions} hidden={allFailed}><DukjilProvider key={slug} slug={slug||undefined} accountToday={!slug} locale={locale}><FanMissions all locale={locale} slug={slug} title={title} titleSuffix={favorite} passportHref={`/passports?locale=${locale}`} proofHref={`/${slug}?tab=certifications&locale=${locale}`} noPage={slug?undefined:directory} onAttendance={()=>setAttendance(true)}/>{attendance&&page&&<CreatorAttendanceEntry slug={slug} pageName={page.name} locale={locale} reviewHref={`/c/${encodeURIComponent(slug)}/verify?locale=${locale}`} onClose={()=>setAttendance(false)}/>}</DukjilProvider></div>;
 }
 /** Four wallet tiles; guests keep locked balances and use the profile login action. */
 function BenefitsWallet({locale,signedOut=false,bias}:{locale:AppLocale;signedOut?:boolean;bias:SelectedBias}){

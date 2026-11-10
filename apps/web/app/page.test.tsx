@@ -106,10 +106,10 @@ describe("Home server content isolation", () => {
     expect(await props(failed).queries.homeNotices).toEqual({ status: "fulfilled", value: { items: [], nextCursor: null } });
   });
 
-  it("reads six LIVE YouTube videos for the Shorts shelf and settles to rejected when the read fails", async () => {
+  it("reads up to twelve LIVE YouTube videos for the Shorts shelf and settles to rejected when the read fails", async () => {
     repositories.homeShorts.mockResolvedValue([{ id: "s1" }]);
     const result = await HomePage({ searchParams: Promise.resolve({ locale: "en" }) });
-    expect(repositories.homeShorts).toHaveBeenCalledWith("en", { limit: 6 });
+    expect(repositories.homeShorts).toHaveBeenCalledWith("en", { limit: 12 });
     expect(await props(result).queries.homeShorts).toEqual({ status: "fulfilled", value: [{ id: "s1" }] });
     repositories.homeShorts.mockRejectedValue(new Error("shorts unavailable"));
     expect(await props(await HomePage({ searchParams: Promise.resolve({}) })).queries.homeShorts).toEqual({ status: "rejected" });

@@ -44,14 +44,14 @@ it('disables attendance before the configured reward start date',async()=>{
  vi.stubGlobal('fetch',vi.fn(async(url:string)=>Response.json(url.endsWith('/history')?{entries:[]}: {...wallet,rewardsStartOn:'2026-11-03'})));
  render(<WalletScreen locale='ko' attendance/>);
  expect(await screen.findByRole('button',{name:/부터 출석/})).toBeDisabled();
- expect(screen.queryByRole('button',{name:'광고 보고 교환하기'})).not.toBeInTheDocument();
+ expect(screen.queryByRole('button',{name:'교환하기'})).not.toBeInTheDocument();
 });
 
 
 it('keeps source wallet balances on the shared wallet card',async()=>{
  vi.stubGlobal('fetch',vi.fn(async(url:string)=>Response.json(url.endsWith('/history')?{entries:[]}:wallet)));
  render(<WalletScreen locale='ko' localProfile={{nickname:'스타벅스라이프',avatarUrl:'/images/avatars/star-pink.webp'}} localPresentation={{benefitsHref:'/benefits',historyRows:[{label:'출석체크 · 오늘',value:'포인트 적립'}]}}/>);
- expect(await screen.findByText('240')).toBeInTheDocument();expect(document.querySelector('[data-wallet-card="my"]')).toHaveAttribute('href','/benefits');expect(await screen.findByText('포인트 적립')).toBeInTheDocument();expect(screen.getAllByText('응모권')).toHaveLength(1);expect(screen.queryByRole('button',{name:'광고 보고 교환하기'})).toBeNull();
+ expect(await screen.findByText('240')).toBeInTheDocument();expect(document.querySelector('[data-wallet-card="my"]')).toHaveAttribute('href','/benefits');expect(await screen.findByText('포인트 적립')).toBeInTheDocument();expect(screen.getAllByText('응모권')).toHaveLength(1);expect(screen.queryByRole('button',{name:'교환하기'})).toBeNull();
 });
 it('renders source balance failure from the real resource and retries the same read',async()=>{
  let reads=0;vi.stubGlobal('fetch',vi.fn(async(url:string)=>{if(url==='/api/me/wallet'){reads++;return reads===1?Response.json({error:{code:'UNAVAILABLE'}},{status:503}):Response.json(wallet);}return Response.json({entries:[]});}));
@@ -105,7 +105,7 @@ it('wallet page shows the balance card without any exchange',async()=>{
  vi.stubGlobal('fetch',vi.fn(async(url:string)=>Response.json(url.endsWith('/history')?{entries:[]}:wallet)));
  render(<WalletScreen locale='ko'/>);
  expect(await screen.findByText('240')).toBeInTheDocument();expect(document.querySelector('[data-wallet-card="my"]')).toHaveAttribute('href','/benefits?locale=ko#wallet');
- expect(screen.queryByRole('button',{name:'광고 보고 교환하기'})).toBeNull();
+ expect(screen.queryByRole('button',{name:'교환하기'})).toBeNull();
 });
 const historyRows=(count:number)=>Array.from({length:count},(_,i)=>({id:`60000000-0000-4000-8000-${String(i+1).padStart(12,'0')}`,asset:'fan_point',amount:i+1,sourceType:'group_check_in',sourceId:id,celebrityId:null,createdAt:`2026-11-0${(i%5)+1}T01:00:00.000Z`}));
 it('previews five history rows, expands from the title row, and opens expanded from #wallet-history',async()=>{

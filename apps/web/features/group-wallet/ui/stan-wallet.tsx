@@ -16,6 +16,7 @@ import { GROUP_WALLET_POINT_COST } from "@/server/group-wallet/domain";
 import { walletCopy } from "./copy";
 import type { WalletCardState } from "./wallet-card";
 import { StanExchange } from "./stan-exchange";
+import { rewardedExchangeCopy } from "./rewarded-copy";
 import { usePendingExchange } from "./use-pending-exchange";
 import styles from "./stan-wallet.module.css";
 
@@ -60,7 +61,7 @@ export function StanWallet({ locale, state, stamps, hearts, links, entries, entr
     {state.kind === "failed" && state.retry ? <FanAction onClick={state.retry}>{w.retry}</FanAction> : null}
     <Overlay open={open && ready} onClose={() => setOpen(false)} labelledBy={titleId} backdropClassName={styles.backdrop} contentClassName={styles.sheet}>
       {!wide && <span className={styles.handle} aria-hidden="true" />}
-      <div className={styles.sheetLabel} id={titleId}>{w.points}</div><div className={styles.sheetValue}><Value locale={locale} slot={points} unit="P" /></div>
+      <h2 className={styles.sheetTitle} id={titleId}>{rewardedExchangeCopy(locale).action}</h2><div className={styles.sheetBalance}><div className={styles.sheetLabel}>{w.points}</div><div className={styles.sheetValue}><Value locale={locale} slot={points} unit="P" /></div></div>
       {ready && <StanExchange locale={locale} points={state.points} pointCost={pointCost} pendingRequest={pendingRequest} />}
     </Overlay>
   </section>;

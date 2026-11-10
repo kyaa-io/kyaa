@@ -27,7 +27,7 @@ export const passportBookSource = {
   entryReviewHelpLabel: { ko: "입국 심사 설명 보기", en: "About the entry review" },
   entryReviewHelp: { ko: "크리에이터에 관한 문제를 풀면 팬 인증이 끝나요. 통과하면 패스포트를 받고, 이 팬페이지에 바로 글과 댓글을 쓰고 자유 소통방에 들어갈 수 있어요.", en: "Answer questions about the creator to verify as a fan. Pass and you get a Passport, and you can post, comment and join the open chat room on this fan page right away." },
   helpClose: { ko: "닫기", en: "Close" },
-  missionOnboardTitle: { ko: "미션을 누르면 바로 할 수 있어요", en: "Tap a mission to do it right away" },
+  missionOnboardTitle: { ko: "덕질을 누르면 바로 할 수 있어요", en: "Tap a mission to do it right away" },
   missionOnboardConfirm: { ko: "확인", en: "Got it" },
   switcherLabel: { ko: "내 최애 패스포트", en: "My favorites’ Passports" },
 } as const;

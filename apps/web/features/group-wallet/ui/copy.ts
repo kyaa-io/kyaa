@@ -29,7 +29,7 @@ export function attendanceStreakLabel(locale:AppLocale,days:number){
 /** ? 도움말 문구(WALLET-HELP-IMPL). 하트는 지갑 자산이 아니므로 포인트 문구에서 하트 경로는 약속하지 않는다. */
 export function walletHelpCopy(locale:AppLocale){
  const v:Record<AppLocale,readonly[string,string,string]>={
-  ko:['도움말','출석체크·모임 미션·댓글 같은 활동으로 모아요. 광고를 본 뒤 100P를 응모권 1장으로 바꿀 수 있어요.','크리에이터·모임 럭키드로우에 응모하거나 캡슐을 열 때 써요.'],
+  ko:['도움말','출석체크·모임 덕질·댓글 같은 활동으로 모아요. 광고를 본 뒤 100P를 응모권 1장으로 바꿀 수 있어요.','크리에이터·모임 럭키드로우에 응모하거나 캡슐을 열 때 써요.'],
   en:['Help','Earn them through activities such as check-ins, group missions and comments. After watching an ad, 100P can be exchanged for 1 raffle ticket.','Use them to enter creator and group raffles or open capsules.'],
   ja:['ヘルプ','出席チェック・グループミッション・コメントなどの活動で貯まります。広告を見たあと、100Pで応募券1枚と交換できます。','クリエイター・グループのラッキードローへの応募やカプセルを開けるときに使います。'],
   'zh-Hans':['帮助','通过签到、小组任务、评论等活动获得。观看广告后,100P可兑换1张抽奖券。','用于报名创作者和小组的抽奖或开启胶囊。'],

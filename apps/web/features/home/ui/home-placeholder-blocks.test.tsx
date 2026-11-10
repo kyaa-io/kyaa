@@ -25,7 +25,7 @@ describe("home-placeholder-blocks", () => {
   });
   it("uses white and line tokens for gallery and Shorts fallbacks, including error and empty", () => {
     const css = readFileSync(resolve(__dirname, "home-placeholder-blocks.module.css"), "utf8");
-    for (const name of ["tile", "card"]) {
+    for (const name of ["tile"]) {
       const rule = css.match(new RegExp(`\\.${name} \\{([^}]+)\\}`))![1]!;
       expect(rule).toContain("background: var(--color-surface)");
       expect(rule).toContain("var(--color-line)");

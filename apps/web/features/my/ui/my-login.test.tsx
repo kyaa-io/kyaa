@@ -24,7 +24,7 @@ it.each(["ko", "en", "ja", "zh-Hans", "zh-Hant", "es", "id", "vi", "th", "pt", "
 it("shows locked balance cells and the public mission book, and never reads personal APIs", async () => {
   render(<MyScreen locale="ko" />);
   expect(screen.getAllByRole("img", { name: "로그인 후 확인" })).toHaveLength(5);
-  expect(await screen.findByRole("heading", { name: "미션북", hidden: true })).toBeInTheDocument();
+  expect(await screen.findByRole("heading", { name: "덕질 기록", hidden: true })).toBeInTheDocument();
   await waitFor(() => expect(screen.getAllByRole("checkbox")).toHaveLength(2));
   expect(screen.getAllByRole("checkbox").every(box => box.getAttribute("aria-checked") === "false")).toBe(true);
   expect(fetcher.mock.calls.map(([url]) => String(url)).filter(url => url.startsWith("/api/me/") || url.includes("/api/passports"))).toEqual([]);

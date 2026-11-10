@@ -14,6 +14,7 @@ export function HomeHeroBanner({ image, eyebrow, title, description, action, des
   action: ReactNode;
 }) {
   return <div className={styles.banner} data-home-hero-banner data-kind={kind}>
+    <div className={styles.mobileBackdrop} data-hero-backdrop aria-hidden="true">{fullImage ?? image}</div>
     <div className={styles.image} data-hero-mobile-image>{image}</div>
     {desktopImage ? <div className={styles.desktopImage}>{desktopImage}</div> : null}
     {fullImage ? <div className={styles.fullImage}>{fullImage}</div> : null}

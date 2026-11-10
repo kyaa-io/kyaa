@@ -21,11 +21,11 @@ const ARTWORKS = [
 
 const copy = {
   ko: {
-    eyebrow: "지금 참여할 미션",
+    eyebrow: "지금 참여할 덕질",
     title: "엘리나와 뱅크시 한 작품",
     invitation: "마음에 드는 작품을 고르고, 그림 속 디테일도 찾아봐요.",
     count: "투표 1개 · 퀴즈 1개",
-    action: "미션 시작하기",
+    action: "덕질 시작하기",
     hint: "작품을 고르고 스탬프를 남겨요.",
   },
   en: {

@@ -14,7 +14,7 @@ export const dukjilMissionSource = {
   missionTaskSteady: { ko: "{0}일 연속으로 출석해요", en: "Check in {0} days in a row" },
   missionTaskSteadyPlain: { ko: "며칠 연속으로 출석해요", en: "Check in several days in a row" },
   missionClaimHint: { ko: "{0}칸을 모두 채우면 하트를 받아요", en: "Fill all {0} slots to get a heart" },
-  missionsTitle: { ko: "오늘의 미션", en: "Today's missions" },
+  missionsTitle: { ko: "오늘의 덕질", en: "Today's missions" },
   missionsAllClear: { ko: "전체 완료", en: "All clear" },
   missionDoneShort: { ko: "완료", en: "Done" },
   missionsTodayEarned: { ko: "오늘 +{0}P", en: "Today +{0}P" },

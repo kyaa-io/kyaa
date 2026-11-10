@@ -1,0 +1,5 @@
+{
+  "changes": ["홈 공지에서 전체 공지로 이동할 수 있고, 공지 목록은 한 페이지에 10개씩 볼 수 있어요. 첨부 화면은 확인용 공지를 사용한 로컬 화면이에요."],
+  "path": "/notices",
+  "images": ["release-notes/images/2026-11-10-notices-pages-390.png", "release-notes/images/2026-11-10-notices-pages-1440.png"]
+}

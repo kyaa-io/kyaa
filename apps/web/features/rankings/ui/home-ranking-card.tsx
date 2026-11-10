@@ -1,10 +1,8 @@
 "use client";
-import type { Route } from "next";
 import Link from "next/link";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import { FanHeading } from "@/components/fan-ui/fan-heading";
 import { FanState } from "@/components/fan-ui/fan-state";
-import { fanLoginHref } from "@/components/login-href";
 import { useByUsAuth } from "@/features/auth/client/cognito-auth";
 import type { AppLocale } from "@/i18n/locales";
 import { homeCreatorRankingSchema, homeFanRankingSchema } from "../domain/types";
@@ -29,21 +27,17 @@ export function HomeRankingCard({ locale, headingId = "home-ranking-heading" }: 
   const fans = useLiveRanking(rankingUrl("fans", "hearts", locale, 10), parseFans);
   const creators = useLiveRanking(rankingUrl("creators", "hearts", locale, 10), parseCreators);
   const guest = !auth.authenticated;
-  const login = fanLoginHref(locale, `/?locale=${locale}`) as Route;
   const computedAt = fans.state.status === "ready" ? fans.state.data.computedAt : null;
   const updated = computedAt ? updatedLabel(locale, computedAt, new Date(), "rkHomeUpdated") : null;
-  const more = (count: number) => guest && count >= 5 ? <Link className={styles.more} href={login}>{rankingsText(locale, "rkHomeLocked")} <span aria-hidden="true">›</span></Link> : null;
   return <section className={styles.card} aria-labelledby={headingId} data-home-ranking>
     <header className={styles.head}><FanHeading id={headingId}>{rankingsText(locale, "rkHomeTitle")}</FanHeading>{updated ? <time dateTime={computedAt!}>{updated}</time> : null}</header>
     <section aria-labelledby={`${headingId}-fans`}>
       <div className={styles.label}><FanHeading as="h3" id={`${headingId}-fans`}>{rankingsText(locale, "rkHomeFans")}</FanHeading></div>
-      <Body locale={locale} live={fans}>{data => <FanRows compact locale={locale} ranking={data} metric="hearts" show={guest ? 5 : 10} scope={headingId} guest={guest} />}</Body>
-      {fans.state.status === "ready" ? more(fans.state.data.rows.length) : null}
+      <Body locale={locale} live={fans}>{data => <FanRows compact locale={locale} ranking={data} metric="hearts" show={10} scope={headingId} guest={guest} />}</Body>
     </section>
     <section className={styles.creators} aria-labelledby={`${headingId}-creators`}>
       <div className={styles.label}><FanHeading as="h3" id={`${headingId}-creators`}>{rankingsText(locale, "rkCreatorTabShort")}</FanHeading></div>
-      <Body locale={locale} live={creators}>{data => <CreatorRows compact locale={locale} ranking={data} metric="hearts" show={guest ? 5 : 10} scope={headingId} />}</Body>
-      {creators.state.status === "ready" ? more(creators.state.data.rows.length) : null}
+      <Body locale={locale} live={creators}>{data => <CreatorRows compact locale={locale} ranking={data} metric="hearts" show={10} scope={headingId} />}</Body>
     </section>
     <Link className={styles.all} href={rankingsPageHref(locale, "fans", "hearts", guest)}>{rankingsText(locale, "rkViewAll")} <span aria-hidden="true">›</span></Link>
   </section>;
