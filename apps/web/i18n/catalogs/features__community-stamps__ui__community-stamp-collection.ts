@@ -460,11 +460,11 @@ export const messages = {
     "ja": "登録記録を見る",
     "zh-Hans": "查看登记记录",
     "zh-Hant": "查看登記記錄",
-    "es": "Ver el comprobante de registro",
-    "id": "Lihat bukti pendaftaran",
+    "es": "Ver el registro",
+    "id": "Lihat riwayat pendaftaran",
     "vi": "Xem bản ghi đăng ký",
     "th": "ดูบันทึกการลงทะเบียน",
-    "pt": "Ver comprovante de registro",
+    "pt": "Ver registro",
     "fr": "Voir la preuve d’enregistrement",
     ru: "Просмотреть запись о выдаче"
 
@@ -507,8 +507,8 @@ export const messages = {
   },
   "mb4f8a2c6e903": {
     "ja": "エクスプローラーで確認",
-    "zh-Hans": "在浏览器中查看",
-    "zh-Hant": "在瀏覽器中查看",
+    "zh-Hans": "在区块链浏览器中查看",
+    "zh-Hant": "在區塊鏈瀏覽器中查看",
     "es": "Ver en el explorador",
     "id": "Lihat di explorer",
     "vi": "Xem trên trình khám phá",

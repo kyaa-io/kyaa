@@ -47,8 +47,8 @@
 
 .history {scroll-margin-top:96px;margin-top:20px;border-top:1px solid var(--color-line-subtle);padding-top:12px;}
 .history summary {width:fit-content;min-height:44px;padding:12px 0;font-size:13px;cursor:pointer;}
-.history ul {list-style:none;margin:var(--space-2) 0 0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:8px;}
-.history button {display:flex;align-items:center;gap:12px;background:white;border:1px solid var(--color-line-subtle);border-radius:12px;padding:12px;width:100%;text-align:left;cursor:pointer;font:inherit;}
+.history ul {list-style:none;margin:var(--space-2) 0 0;padding:0;display:grid;gap:0;}
+.history button {display:flex;align-items:center;gap:12px;background:transparent;border:0;border-radius:0;padding:12px;width:100%;text-align:left;cursor:pointer;font:inherit;}
 .history strong,.history small {display:block;font-size:13px;}
 .history small {color:var(--color-muted);font-size:12px;margin-top:4px;}
 .history button:focus-visible,.history summary:focus-visible {outline:3px solid var(--color-ink);outline-offset:3px;}
@@ -63,3 +63,8 @@
 .quietLink { display:flex; align-items:center; justify-content:center; min-height:var(--min-target); color:var(--color-muted); font-size:var(--fan-metadata-size); text-decoration:underline; text-underline-offset:3px; }
 .quietLink:hover { color:var(--color-ink); }
 .quietLink:focus-visible { outline:3px solid var(--color-ink); outline-offset:3px; }
+
+.history li + li { border-top:1px solid var(--color-line-subtle); }
+.history button > span { min-width:0; }
+.history .historyState { display:flex; align-items:center; gap:var(--space-1); }
+.historyState svg { width:var(--space-3); height:var(--space-3); flex-shrink:0; }
