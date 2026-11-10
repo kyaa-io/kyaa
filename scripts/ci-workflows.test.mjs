@@ -1,8 +1,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { load } from 'js-yaml';
+import { verifyInstalledModules } from './verify-installed-node-modules.mjs';
 
 const backend = load(readFileSync('.github/workflows/backend-security.yml', 'utf8'));
 const fan = load(readFileSync('.github/workflows/fan-design-system.yml', 'utf8'));
@@ -38,18 +41,45 @@ test('SQL groups are disjoint, retain setup, and do not wait for unrelated API o
   assert.equal(jobs.database.needs, 'scope');
   assert.equal(jobs.database.if, "needs.scope.outputs.database != 'false'");
   assert.equal(jobs.database.strategy['fail-fast'], false);
-  assert.deepEqual(jobs.database.strategy.matrix.suite, ['core', 'live', 'events', 'economy']);
-  const dependencySetup = jobs.database.steps.filter(step => step.uses?.startsWith('actions/setup-node@') ||
+  assert.deepEqual(jobs.database.strategy.matrix.suite, ['core', 'live', 'events', 'economy-1', 'economy-2']);
+  const dependencySetup = jobs.database.steps.filter(step => step.uses?.startsWith('actions/setup-node@') || step.uses?.startsWith('actions/cache/') ||
+    ['node_modules_key', 'node_modules'].includes(step.id) || /node_modules/.test(step.name ?? '') ||
     ['npm ci --ignore-scripts', 'npm run security:patch', 'npm run build --workspace @byus/worker'].includes(step.run));
+  // The live suite installs no dependencies: every Node setup, cache, install and patch step skips it; only core builds the worker.
+  for (const step of dependencySetup) {
+    if (step.run === 'npm run build --workspace @byus/worker') assert.equal(step.if, "matrix.suite == 'core'");
+    else assert.match(step.if ?? '', /^matrix\.suite != 'live'/, step.name ?? step.run ?? step.uses);
+  }
   const grouped = jobs.database.steps.filter(step => step.if && !dependencySetup.includes(step));
   assert.equal(grouped.length, 33);
-  const counts = { core: 0, live: 0, events: 0, economy: 0 };
+  const counts = { core: 0, live: 0, events: 0, 'economy-1': 0, 'economy-2': 0 };
   for (const step of grouped) {
-    const group = /^matrix\.suite == '(core|live|events|economy)'$/.exec(step.if)?.[1];
+    const group = /^matrix\.suite == '(core|live|events|economy-1|economy-2)'$/.exec(step.if)?.[1];
     assert.ok(group, step.name);
     counts[group]++;
   }
-  assert.deepEqual(counts, { core: 13, live: 1, events: 10, economy: 9 });
+  assert.deepEqual(counts, { core: 13, live: 1, events: 10, 'economy-1': 2, 'economy-2': 7 });
+  // The former single economy suite is split in two runners; each of its nine steps appears once, and each listed SQL file is named by exactly one step. Replays that already repeated an SQL file inside a step are unchanged.
+  const economySteps = grouped.filter(step => /^matrix\.suite == 'economy-[12]'$/.test(step.if));
+  assert.deepEqual(economySteps.map(step => step.name).sort(), [
+    'Verify fan economy, reward sources and concurrent earning',
+    'Verify group application duplicate and review reason rules',
+    'Verify group event approval rules with the real rule on',
+    'Verify group wallet cross-feature races on the disabled release baseline',
+    'Verify group wallet cutover on the disabled release baseline',
+    'Verify group wallet, raffle and gift rules with concurrent entries',
+    'Verify post and comment point result read',
+    'Verify public popular board read rules',
+    'Verify wallet, reward, benefit and owner-grant SQL tests (one clean replay each)',
+  ].sort());
+  const economyRuns = economySteps.map(step => step.run).join('\n');
+  for (const file of ['group_economy_ci.sql', 'group_economy_ci_concurrency.sh', 'group_event_approval_upgrade_before.sql', 'group_event_approval_upgrade_after.sql',
+    'group_event_approval.sql', 'group_event_approval_concurrency.sh', 'group_event_approval_owner.sql', 'group_application_integrity.sql', 'post_reward_result.sql',
+    'public_popular_posts.sql', 'group_wallet_cross_feature_concurrency.sh', 'group_wallet_cutover_verify.sh', 'mobile_fan_economy_ci.sql', 'mobile_fan_economy_ci_concurrency.sh']) {
+    assert.equal(economyRuns.split(`supabase/tests/${file}`).length - 1, 1, file);
+  }
+  for (const name of ['definer_owner_grants', 'groups_celebrity_directory', 'group_people_hearts', 'passport_issuance_joins_fan_page', 'r6_server_facts']) assert.match(economyRuns, new RegExp(`[ \\n]${name}[ \\n]`), name);
+  for (const shard of ['economy-1', 'economy-2']) assert.ok(economySteps.some(step => step.if === `matrix.suite == '${shard}'`), shard);
   assert.match(grouped.find(step => step.if === "matrix.suite == 'live'").run, /bash scripts\/verify-live-participation.sh/);
   // The economy replays run four at a time; all twelve stay listed, each on its own port, and a failing one fails the step.
   const replays = grouped.find(step => /one clean replay each/.test(step.name)).run;
@@ -58,7 +88,7 @@ test('SQL groups are disjoint, retain setup, and do not wait for unrelated API o
     'unified_feed_first_post_rewards', 'mission_reward_score_suite', 'mobile_benefits', 'cognito_identity_bridge']) {
     assert.match(replays, new RegExp(`[ \\n]${name}[ \\n]`), name);
   }
-  assert.match(replays, /awk '\{ print \$1, 55549 \+ NR \}' \|\n\s*xargs -P 4 -L 1 bash -c '/);
+  assert.match(replays, /awk '\{ print \$1, 55600 \+ NR \}' \|\n\s*xargs -P 4 -L 1 bash -c '/);
   assert.match(replays, /BYUS_CLEAN_DB_PORT=\$1 BYUS_CLEAN_DB_ASSERTION_FILE=supabase\/tests\/\$0\.sql/);
   assert.match(replays, /bash scripts\/verify-clean-migration-chain\.sh >"\$log" 2>&1 \|\| status=\$\?/);
   assert.match(replays, /exit "\$status"'\n?$/);
@@ -66,7 +96,10 @@ test('SQL groups are disjoint, retain setup, and do not wait for unrelated API o
   for (const job of [jobs.database, jobs.blockchain]) {
     const run = job.steps.map(step => step.run).filter(Boolean);
     for (const command of ['npm ci --ignore-scripts', 'npm run security:patch', 'npm run build --workspace @byus/worker', 'sudo apt-get update && sudo apt-get install -y postgresql ripgrep']) assert.ok(run.includes(command), command);
-    assert.ok(job.steps.slice(0, 6).some(step => step.run === 'npm run build --workspace @byus/worker'));
+    // The cache steps lengthen the shared setup, so the worker build must still precede every suite-specific step.
+    const setup = job.steps.findIndex(step => step.run === 'npm run build --workspace @byus/worker');
+    assert.ok(setup >= 0 && setup < job.steps.findIndex((step, index) => index !== setup && (/^matrix\.suite == /.test(step.if ?? '') || step.uses?.startsWith('foundry-rs/'))));
+    assert.ok(job.steps.findIndex(step => step.run === 'npm run security:patch') < setup);
   }
   const chain = jobs.blockchain.steps.map(step => step.run || '').join('\n');
   assert.match(chain, /RUN_DIRECT_LEGACY_DB_TEST=1/);
@@ -94,11 +127,11 @@ test('live DB suite skips Node and package setup while other suites retain it', 
   const setup = backend.jobs.database.steps.filter(step => step.uses?.startsWith('actions/setup-node@') ||
     ['npm ci --ignore-scripts', 'npm run security:patch'].includes(step.run));
   assert.equal(setup.length, 3);
-  for (const step of setup) assert.equal(step.if, "matrix.suite != 'live'");
+  for (const step of setup) assert.match(step.if, /^matrix\.suite != 'live'/);
   assert.equal(setup[0].with['node-version'], 24);
   assert.equal(setup[0].with.cache, 'npm');
   for (const suite of backend.jobs.database.strategy.matrix.suite) {
-    const active = setup.filter(step => !step.if || (step.if === "matrix.suite != 'live'" && suite !== 'live'));
+    const active = setup.filter(step => !step.if || (/^matrix\.suite != 'live'/.test(step.if) && suite !== 'live'));
     assert.equal(active.length, suite === 'live' ? 0 : 3, suite);
   }
 });
@@ -176,4 +209,84 @@ test('Foundry install is pinned, cached by version and retried with 10, 20 and 4
   assert.match(cache.with.key, /v1\.9\.0/);
   assert.deepEqual(steps.filter(step => /^sleep \d+$/.test(step.run ?? '')).map(step => step.run), ['sleep 10', 'sleep 20', 'sleep 40']);
   assert.ok(steps.findIndex(step => step.run === 'forge test --root contracts') > steps.findIndex(step => step.name === 'Require the pinned Foundry'));
+});
+
+const cached = [
+  ['aws-platform', 'release'], ['backend-security', 'api-runtime'], ['backend-security', 'database'], ['backend-security', 'blockchain'],
+  ['admin-ui', 'admin-contracts'], ['fan-design-system', 'ui-contracts'], ['cs-inquiries', 'cs-inquiries'], ['deployment-notices', 'validate-notice'],
+];
+const lockInputs = "hashFiles('package-lock.json', 'package.json', 'apps/*/package.json', 'scripts/apply-security-patches.mjs')";
+
+test('every root npm ci restores an exact, environment-bound node_modules cache before the security patch', () => {
+  for (const [file, name] of cached) {
+    const workflow = file === 'backend-security' ? backend : file === 'fan-design-system' ? fan : load(readFileSync(`.github/workflows/${file}.yml`, 'utf8'));
+    const steps = workflow.jobs[name].steps;
+    const at = predicate => { const index = steps.findIndex(predicate); assert.ok(index >= 0, `${file}/${name}`); return index; };
+    const node = at(step => step.uses?.startsWith('actions/setup-node@'));
+    const keyStep = at(step => step.id === 'node_modules_key');
+    const restore = at(step => step.id === 'node_modules');
+    const check = at(step => step.name === 'Reinstall when restored node_modules is unusable');
+    const install = at(step => step.run === 'npm ci --ignore-scripts');
+    const save = at(step => step.name === 'Save locked node_modules');
+    const patch = at(step => step.run === 'npm run security:patch');
+    assert.ok(node < keyStep && keyStep < restore && restore < check && check < install && install < save && save < patch, `${file}/${name} order`);
+    const prefix = steps[keyStep].run;
+    for (const part of ['$RUNNER_OS', '$RUNNER_ARCH', '/etc/os-release', 'process.versions.node', 'npm -v']) assert.ok(prefix.includes(part), `${file}/${name} ${part}`);
+    const key = '${{ steps.node_modules_key.outputs.prefix }}-${{ ' + lockInputs + ' }}';
+    assert.match(steps[restore].uses, /^actions\/cache\/restore@[a-f0-9]{40}$/);
+    assert.match(steps[save].uses, /^actions\/cache\/save@[a-f0-9]{40}$/);
+    for (const step of [steps[restore], steps[save]]) {
+      assert.equal(step.with.key, key);
+      assert.equal(step.with['restore-keys'], undefined);
+      assert.equal(step.with.path, 'node_modules\napps/*/node_modules\n');
+    }
+    assert.equal(steps[restore]['continue-on-error'], true);
+    // The database job's live suite installs no dependencies, so every cache step also skips it.
+    const live = file === 'backend-security' && name === 'database' ? "matrix.suite != 'live' && " : '';
+    assert.equal(steps[keyStep].if, live ? "matrix.suite != 'live'" : undefined);
+    assert.equal(steps[restore].if, live ? "matrix.suite != 'live'" : undefined);
+    assert.equal(steps[check].if, live + "steps.node_modules.outputs.cache-hit == 'true'");
+    assert.match(steps[check].run, /if ! node scripts\/verify-installed-node-modules\.mjs; then[\s\S]*rm -rf node_modules apps\/\*\/node_modules\n\s+npm ci --ignore-scripts\n\s*fi/);
+    assert.equal(steps[install].if, live + "steps.node_modules.outputs.cache-hit != 'true'");
+    assert.equal(steps[save].if, live + "steps.node_modules.outputs.cache-hit != 'true'");
+  }
+});
+
+test('the dependency audit and stage host installs stay uncached', () => {
+  const audit = readFileSync('.github/workflows/dependency-audit.yml', 'utf8');
+  assert.doesNotMatch(audit, /actions\/cache|node_modules/);
+  assert.match(audit, /run: npm ci --ignore-scripts/);
+  const stage = backend.jobs['api-runtime'].steps.find(step => step.run?.includes('--prefix apps/stage-console'));
+  assert.equal(stage.run, 'npm ci --prefix apps/stage-console --omit=dev --ignore-scripts');
+  assert.equal(stage.if, undefined);
+});
+
+test('a restored node_modules is accepted only when it matches the lockfile install record and files', () => {
+  const root = mkdtempSync(join(tmpdir(), 'node-modules-check-'));
+  try {
+    const entry = (version, extra = {}) => ({ version, ...extra });
+    writeFileSync(join(root, 'package-lock.json'), JSON.stringify({ packages: {
+      '': { name: 'root' },
+      'apps/web': { name: 'web' },
+      'node_modules/@byus/web': { resolved: 'apps/web', link: true },
+      'node_modules/a': entry('1.0.0'),
+      'node_modules/a/node_modules/b': entry('2.0.0'),
+      'node_modules/skipped': entry('3.0.0', { optional: true }),
+    } }));
+    const place = (key, version) => { mkdirSync(join(root, key), { recursive: true }); writeFileSync(join(root, key, 'package.json'), JSON.stringify({ version })); };
+    mkdirSync(join(root, 'node_modules'));
+    writeFileSync(join(root, 'node_modules', '.package-lock.json'), JSON.stringify({ packages: { 'node_modules/a': entry('1.0.0'), 'node_modules/a/node_modules/b': entry('2.0.0') } }));
+    place('node_modules/a', '1.0.0');
+    place('node_modules/a/node_modules/b', '2.0.0');
+    assert.deepEqual(verifyInstalledModules(root), []);
+    place('node_modules/a/node_modules/b', '2.0.1');
+    assert.equal(verifyInstalledModules(root).length, 1);
+    rmSync(join(root, 'node_modules/a/node_modules'), { recursive: true });
+    assert.match(verifyInstalledModules(root)[0], /node_modules\/a\/node_modules\/b: lock 2\.0\.0, on disk missing/);
+    place('node_modules/a/node_modules/b', '2.0.0');
+    writeFileSync(join(root, 'node_modules', '.package-lock.json'), JSON.stringify({ packages: { 'node_modules/a': entry('0.9.0'), 'node_modules/a/node_modules/b': entry('2.0.0') } }));
+    assert.match(verifyInstalledModules(root)[0], /node_modules\/a: lock 1\.0\.0, install record 0\.9\.0/);
+    rmSync(join(root, 'node_modules', '.package-lock.json'));
+    assert.throws(() => verifyInstalledModules(root));
+  } finally { rmSync(root, { recursive: true, force: true }); }
 });

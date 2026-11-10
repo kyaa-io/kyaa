@@ -1183,6 +1183,10 @@
         "Protocol": "HTTP",
         "TargetType": "ip",
         "HealthCheckPath": "/api/health/live",
+        "HealthCheckIntervalSeconds": 10,
+        "HealthCheckTimeoutSeconds": 5,
+        "HealthyThresholdCount": 2,
+        "UnhealthyThresholdCount": 3,
         "Matcher": {
           "HttpCode": "200"
         },
@@ -1248,6 +1252,10 @@
         "Protocol": "HTTP",
         "TargetType": "ip",
         "HealthCheckPath": "/ready",
+        "HealthCheckIntervalSeconds": 10,
+        "HealthCheckTimeoutSeconds": 5,
+        "HealthyThresholdCount": 2,
+        "UnhealthyThresholdCount": 3,
         "Matcher": {
           "HttpCode": "200"
         },

@@ -116,9 +116,9 @@ test('DEV runner cleanup and builder teardown stay off the critical path without
 
 test('the ordinary build reuses typecheck build info while the full typecheck stays a required check', () => {
   const cs = load(readFileSync('.github/workflows/cs-inquiries.yml', 'utf8')).jobs['cs-inquiries'].steps;
-  const restore = cs.findIndex(step => /actions\/cache\/restore@[a-f0-9]{40}$/.test(step.uses ?? ''));
+  const restore = cs.findIndex(step => /actions\/cache\/restore@[a-f0-9]{40}$/.test(step.uses ?? '') && step.with?.path === 'apps/web/.next/cache/.tsbuildinfo');
   const build = cs.findIndex(step => step.name === 'Build ordinary application');
-  const save = cs.findIndex(step => /actions\/cache\/save@[a-f0-9]{40}$/.test(step.uses ?? ''));
+  const save = cs.findIndex(step => /actions\/cache\/save@[a-f0-9]{40}$/.test(step.uses ?? '') && step.with?.path === 'apps/web/.next/cache/.tsbuildinfo');
   assert.ok(restore >= 0 && restore < build && build < save);
   for (const index of [restore, save]) {
     assert.equal(cs[index]['continue-on-error'], true);

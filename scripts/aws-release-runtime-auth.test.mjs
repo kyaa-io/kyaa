@@ -104,7 +104,7 @@ test('build, smoke, authentication and tag-proof failures cannot reach push or d
   const stubs={
    jq:'#!/bin/sh\necho 111111111111.dkr.ecr.ap-northeast-2.amazonaws.com/web\n',
    aws:'#!/bin/sh\necho "aws $*" >> "$CALLS"\ncase "$*" in *get-login-password*) echo invalid;; *) echo sha256:3333333333333333333333333333333333333333333333333333333333333333;; esac\n',
-   docker:'#!/bin/sh\necho "docker $*" >> "$CALLS"\ncase "$*" in "buildx build"*) [ "$FAIL_STAGE" != build ] || exit 1;; "image inspect"*) echo sha256:1111111111111111111111111111111111111111111111111111111111111111;; "run "*) [ "$FAIL_STAGE" != smoke ] || exit 1;; esac\nexit 0\n',
+   docker:'#!/bin/sh\necho "docker $*" >> "$CALLS"\ncase "$*" in "login "*) cat >/dev/null;; "buildx build"*) [ "$FAIL_STAGE" != build ] || exit 1;; "image inspect"*) echo sha256:1111111111111111111111111111111111111111111111111111111111111111;; "run "*) [ "$FAIL_STAGE" != smoke ] || exit 1;; esac\nexit 0\n',
    node:'#!/bin/sh\necho "node $*" >> "$CALLS"\ncase "$*" in *production-auth.mjs*) [ "$FAIL_STAGE" != auth ] || exit 1;; *before-push*) [ "$FAIL_STAGE" != tag ] || exit 1;; esac\nexit 0\n',
   };
   for(const [name,text]of Object.entries(stubs)){const f=join(bin,name);await writeFile(f,text);await chmod(f,0o755);}
