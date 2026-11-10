@@ -9,7 +9,7 @@ do $guard$ begin
 end $guard$;
 
 -- Fans: admin (active allowlist entry; app_users stores emails normalized, so the allowlist side carries the other letter case), idle_admin (allowlist
--- entry that is not active), tester (test-*@privy.io), noemail (no verified email: a normal fan), fan1, fan2. The operator and test accounts hold the most hearts.
+-- entry that is not active), tester (test-*@privy.io), plain (an ordinary fan), fan1, fan2. (app_users.verified_email is NOT NULL and normalized, so a missing email cannot occur; the migration still uses coalesce so a NULL would never drop a fan.) The operator and test accounts hold the most hearts.
 begin;
 set local session_replication_role = replica;
 delete from public.creator_heart_ledger;
@@ -19,7 +19,7 @@ delete from public.home_ranking_kind_builds;
 delete from public.home_ranking_build_failures;
 set local session_replication_role = origin;
 create temporary table ex_ids(tag text primary key, id uuid default extensions.gen_random_uuid());
-insert into ex_ids(tag) values ('creator'),('admin'),('idle_admin'),('tester'),('noemail'),('fan1'),('fan2');
+insert into ex_ids(tag) values ('creator'),('admin'),('idle_admin'),('tester'),('plain'),('fan1'),('fan2');
 create function pg_temp.ex_id(t text) returns uuid language sql as $$ select id from ex_ids where tag=t $$;
 create function pg_temp.ex_rank(f text, metric text) returns int language sql as $$
   select (r->>'rank')::int from jsonb_array_elements(public.read_home_fan_ranking_v2(null,metric,50)->'rows') r where r->>'nickname'='ex_'||f
@@ -31,9 +31,9 @@ do $$ declare f text; begin
   insert into public.celebrities(id,slug,status,image_url,published_at,roles,primary_role) values(pg_temp.ex_id('creator'),'ex-fixture','published','/fixture.webp',now(),'{creator}','creator');
   insert into public.celebrity_localizations(celebrity_id,locale,name,summary,image_alt) values(pg_temp.ex_id('creator'),'ko','Ex fixture','fixture','fixture');
   insert into public.group_pages(kind,celebrity_id,name) values('fan',pg_temp.ex_id('creator'),'Ex fixture');
-  foreach f in array array['admin','idle_admin','tester','noemail','fan1','fan2'] loop
+  foreach f in array array['admin','idle_admin','tester','plain','fan1','fan2'] loop
     insert into public.app_users(id,privy_user_id,verified_email) values(pg_temp.ex_id(f),'did:privy:ex-'||f,
-      case f when 'tester' then 'test-qa@privy.io' when 'noemail' then null else f||'@ex-rank.example.test' end);
+      case f when 'tester' then 'test-qa@privy.io' else f||'@ex-rank.example.test' end);
     insert into public.user_profiles(app_user_id,nickname,nickname_normalized) values(pg_temp.ex_id(f),'ex_'||f,'ex_'||f);
   end loop;
   set local session_replication_role = replica;
@@ -43,7 +43,7 @@ do $$ declare f text; begin
   -- today
   insert into public.creator_heart_ledger(celebrity_id,app_user_id,amount,source_type,source_id,created_at)
   select pg_temp.ex_id('creator'),pg_temp.ex_id(f),n,'passport_page_claim',extensions.gen_random_uuid(),'2099-11-10 23:59:00+09'
-    from (values ('admin',60),('tester',50),('noemail',40),('idle_admin',30),('fan1',20),('fan2',10)) v(f,n);
+    from (values ('admin',60),('tester',50),('plain',40),('idle_admin',30),('fan1',20),('fan2',10)) v(f,n);
   set local session_replication_role = origin;
   perform public.refresh_home_rankings('2099-11-09 14:59:59+00');
   perform public.refresh_home_rankings('2099-11-10 14:59:59+00');
@@ -52,7 +52,7 @@ end $$;
 -- Before the allowlist entry: only the test account is out (rule 2). A fan with no email is listed.
 do $$ begin
   if pg_temp.ex_rank('tester','hearts') is not null then raise exception 'test-*@privy.io account is listed'; end if;
-  if pg_temp.ex_rank('noemail','hearts') is null then raise exception 'a fan with no verified email vanished from the cumulative list'; end if;
+  if pg_temp.ex_rank('plain','hearts') is null then raise exception 'an ordinary fan vanished from the cumulative list'; end if;
   if pg_temp.ex_rank('admin','hearts') <> 1 then raise exception 'precondition: admin should lead before allowlisting'; end if;
 end $$;
 
@@ -63,14 +63,14 @@ do $$ declare m text; p text; begin
   foreach m in array array['hearts'] loop
     if pg_temp.ex_rank('admin',m) is not null then raise exception 'allowlisted admin (allowlist stored in another letter case) is listed in %', m; end if;
     if pg_temp.ex_rank('tester',m) is not null then raise exception 'test account is listed in %', m; end if;
-    if pg_temp.ex_rank('noemail',m) <> 1 or pg_temp.ex_rank('idle_admin',m) <> 2 or pg_temp.ex_rank('fan1',m) <> 3 or pg_temp.ex_rank('fan2',m) <> 4 then
-      raise exception 'cumulative ranks did not close up: noemail %, idle_admin %, fan1 %, fan2 %', pg_temp.ex_rank('noemail',m), pg_temp.ex_rank('idle_admin',m), pg_temp.ex_rank('fan1',m), pg_temp.ex_rank('fan2',m);
+    if pg_temp.ex_rank('plain',m) <> 1 or pg_temp.ex_rank('idle_admin',m) <> 2 or pg_temp.ex_rank('fan1',m) <> 3 or pg_temp.ex_rank('fan2',m) <> 4 then
+      raise exception 'cumulative ranks did not close up: plain %, idle_admin %, fan1 %, fan2 %', pg_temp.ex_rank('plain',m), pg_temp.ex_rank('idle_admin',m), pg_temp.ex_rank('fan1',m), pg_temp.ex_rank('fan2',m);
     end if;
   end loop;
   foreach p in array array['day','week'] loop
     if pg_temp.ex_period_rank('admin',p) is not null or pg_temp.ex_period_rank('tester',p) is not null then raise exception 'operator or test account is listed in the % list', p; end if;
-    if pg_temp.ex_period_rank('noemail',p) <> 1 or pg_temp.ex_period_rank('idle_admin',p) <> 2 or pg_temp.ex_period_rank('fan1',p) <> 3 then
-      raise exception '% gain ranks did not close up: noemail %, idle_admin %, fan1 %', p, pg_temp.ex_period_rank('noemail',p), pg_temp.ex_period_rank('idle_admin',p), pg_temp.ex_period_rank('fan1',p);
+    if pg_temp.ex_period_rank('plain',p) <> 1 or pg_temp.ex_period_rank('idle_admin',p) <> 2 or pg_temp.ex_period_rank('fan1',p) <> 3 then
+      raise exception '% gain ranks did not close up: plain %, idle_admin %, fan1 %', p, pg_temp.ex_period_rank('plain',p), pg_temp.ex_period_rank('idle_admin',p), pg_temp.ex_period_rank('fan1',p);
     end if;
   end loop;
 end $$;
