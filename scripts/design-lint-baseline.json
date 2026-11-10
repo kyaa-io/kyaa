@@ -3,7 +3,7 @@
  "rules": {
   "C1": 592,
   "C10": 7,
-  "C2": 731,
+  "C2": 730,
   "C3": 422,
   "C4": 59,
   "C5": 47,
@@ -11,7 +11,7 @@
   "C8": 1192,
   "N1": 16,
   "N10": 566,
-  "N11": 263,
+  "N11": 262,
   "N15": 27,
   "N15b": 23,
   "N21": 109,
@@ -20,12 +20,12 @@
   "N24": 46,
   "N25": 237,
   "N26": 108,
-  "N27": 1126,
+  "N27": 1128,
   "N28": 58,
   "N3": 49,
   "N30": 2,
   "N32": 4,
-  "N33": 6013,
+  "N33": 5995,
   "N34": 291,
   "N4": 126,
   "S1": 3,
@@ -34,14 +34,14 @@
   "S12": 39,
   "S14": 2,
   "S2": 7,
-  "S4": 13,
+  "S4": 12,
   "S5": 18,
   "S6": 5,
   "S7": 13,
   "S8": 105,
   "T1": 505,
   "T10": 21,
-  "T11": 159,
+  "T11": 152,
   "T2": 1180,
   "T3": 285,
   "T4": 177,
@@ -49,7 +49,7 @@
   "T6": 11,
   "T7": 199,
   "T8": 58,
-  "T9": 1153,
+  "T9": 1151,
   "color-named": 96,
   "color-no-hex": 822,
   "function-disallowed-list": 149,
@@ -14810,13 +14810,6 @@
   "apps/web/features/rankings/ui/home-challenges.tsx": {
    "N22|<li> without data-row": 1
   },
-  "apps/web/features/rankings/ui/home-ranking-card.module.css": {
-   "N33|font-size/weight/line-height declarations": 8,
-   "T11|font-size: var(--fan-action-emphasis-size)": 1,
-   "T11|font-size: var(--fan-badge-size)": 1,
-   "T2|line-height: 20px": 1,
-   "T9|min-height: 44px": 1
-  },
   "apps/web/features/rankings/ui/jjinfan-gauge.module.css": {
    "N33|font-size/weight/line-height declarations": 11,
    "T1|: font-weight:800": 1,
@@ -14836,14 +14829,12 @@
    "N33|font-size/weight/line-height declarations": 3
   },
   "apps/web/features/rankings/ui/rank-highlight.module.css": {
+   "N27|border-radius: var(--radius-collection)": 1,
    "N33|font-size/weight/line-height declarations": 8,
    "T11|font-size: var(--fan-action-emphasis-size)": 2,
    "T11|font-size: var(--fan-badge-size)": 1,
    "T2|line-height: 16px": 1,
    "T2|line-height: 20px": 1
-  },
-  "apps/web/features/rankings/ui/rank-highlight.tsx": {
-   "S4|styles.card x3": 1
   },
   "apps/web/features/rankings/ui/rank-row-panel.module.css": {
    "N33|font-size/weight/line-height declarations": 5,
@@ -14852,30 +14843,31 @@
   "apps/web/features/rankings/ui/rank-row-panel.tsx": {
    "N11|disabled without reason": 1
   },
+  "apps/web/features/rankings/ui/ranking-board.module.css": {
+   "N33|font-size/weight/line-height declarations": 3,
+   "T11|font-size: var(--fan-action-emphasis-size)": 1,
+   "T2|line-height: 20px": 1,
+   "T9|height: 48px": 1
+  },
   "apps/web/features/rankings/ui/ranking-rows.module.css": {
-   "N27|border-radius: var(--radius-action)": 1,
-   "N33|font-size/weight/line-height declarations": 45,
-   "T11|--fan-section-size + --fan-item-title-weight": 2,
-   "T11|font-size: var(--fan-action-emphasis-size)": 3,
-   "T11|font-size: var(--fan-action-label-size)": 2,
-   "T11|font-size: var(--fan-badge-size)": 7,
+   "N27|border-radius: var(--radius-collection)": 2,
+   "N33|font-size/weight/line-height declarations": 32,
+   "T11|--fan-section-size + --fan-item-title-weight": 3,
+   "T11|font-size: var(--fan-action-emphasis-size)": 2,
+   "T11|font-size: var(--fan-action-label-size)": 1,
+   "T11|font-size: var(--fan-badge-size)": 2,
    "T1|: font-weight: 800": 1,
    "T2|line-height: 16px": 2,
-   "T2|line-height: 20px": 2,
-   "T2|line-height: 24px": 1,
-   "T9|min-height: 44px": 1,
-   "T9|min-height: 48px": 2,
-   "T9|min-width: 44px": 1
-  },
-  "apps/web/features/rankings/ui/ranking-rows.tsx": {
-   "N11|disabled without reason": 1
+   "T2|line-height: 20px": 1,
+   "T2|line-height: 24px": 2,
+   "T9|min-height: 48px": 2
   },
   "apps/web/features/rankings/ui/rankings-content.tsx": {
    "N22|<li> without data-row": 1,
    "N23|dateStyle: \"medium\"": 1
   },
   "apps/web/features/rankings/ui/rankings-screens.tsx": {
-   "C2|<h1>": 2
+   "C2|<h1>": 1
   },
   "apps/web/features/rankings/ui/rankings.module.css": {
    "N27|border-radius: var(--radius-collection)": 1,
