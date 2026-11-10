@@ -97,6 +97,14 @@ const CASES = {
     () => css('.a{color:#7c3aed;background:rgb(124 58 237 / .2);border-color:hsl(270 60% 50%);outline-color:oklch(60% .2 300)}'),
     () => css('.a{color:var(--color-accent);background:#fff0f6;border-color:#f4c3d7;outline-color:oklch(62% .2 5);fill:#d11b62}'),
   ],
+  N32: [
+    () => ts('export const A = () => <ul>{rows.map(r => <li key={r.id} data-row="hot-post"><Link href={r.href}>{r.title}</Link></li>)}</ul>;'),
+    () => ts('export const A = () => <ul>{rows.map(r => <li key={r.id} data-row="hot-post"><FanPostRow href={r.href} title={r.title} locale="ko" /></li>)}<li data-row="artist"><a>x</a></li></ul>;'),
+  ],
+  N33: [
+    () => css('.a{font-size:13px;font-weight:700} .b{line-height:1.5}'),
+    () => css('.a{color:var(--color-ink)}'),
+  ],
   N30: [
     () => css('.chip{border-radius:999px;background:var(--color-ink);color:#fff} .dot{border-radius:var(--radius-pill);background:#17171b}'),
     () => css('.chip{border-radius:999px;background:var(--color-surface);border:1px solid var(--color-line)} .on{border-radius:999px;background:var(--color-accent-soft)} .btn{border-radius:8px;background:var(--color-ink)} .veil{border-radius:999px;background:rgb(0 0 0 / .5)}'),
@@ -539,4 +547,35 @@ test('N11 accepts an explicitly disabled preview with a reason, while unexplaine
   assert.equal(hits(ts('<FanAction disabled ariaDescribedBy="preview-title">Enter</FanAction>'), 'N11').length, 0);
   assert.ok(hits(ts('<FanAction title="Preview">Enter</FanAction>'), 'N11').length > 0);
   assert.ok(hits(ts('<FanAction disabled>Enter</FanAction>'), 'N11').length > 0);
+});
+
+test('N33 counts type declarations in screen CSS only; fan-ui and globals are exempt and the count follows the file', () => {
+  assert.equal(css('.a{font-size:13px;font-weight:700} .b{line-height:1.5}').get('N33|font-size/weight/line-height declarations'), 3);
+  assert.equal(hits(css('.a{font-size:13px}', 'apps/web/components/fan-ui/fan-text.module.css'), 'N33').length, 0);
+  assert.equal(hits(css(':root{--x:1;} body{font-size:16px}', 'apps/web/app/globals.css'), 'N33').length, 0);
+});
+
+test('N33 fails only when a file goes above its baseline; going down passes', () => {
+  const { dir, g } = repo();
+  try {
+    const file = 'apps/web/features/home/x.module.css';
+    writeFileSync(join(dir, file), '.a{font-size:13px;font-weight:700}\n');
+    g('add', '-A'); g('commit', '-qm', 'base');
+    assert.equal(run(dir, ['--update-baseline']).status, 0);
+    writeFileSync(join(dir, file), '.a{font-size:var(--fan-metadata-size)}\n');
+    assert.equal(run(dir).status, 0);
+    writeFileSync(join(dir, file), '.a{font-size:13px;font-weight:700;line-height:1}\n');
+    const r = run(dir);
+    assert.equal(r.status, 1, r.stderr);
+    assert.match(r.stderr, /N33/);
+    writeFileSync(join(dir, 'apps/web/features/home/new.module.css'), '.a{font-size:var(--fan-metadata-size)}\n');
+    writeFileSync(join(dir, file), '.a{font-size:var(--fan-metadata-size)}\n');
+    assert.match(run(dir).stderr, /N33/);
+  } finally { rmSync(dir, { recursive: true, force: true }); }
+});
+
+test('N32 flags a post row in a screen but not inside fan-ui', () => {
+  assert.ok(hits(ts('<li data-row="notice">x</li>'), 'N32').length > 0);
+  assert.equal(hits(ts('<li data-row="notice"><FanPostRow href="/a" locale="ko" title="t" /></li>'), 'N32').length, 0);
+  assert.equal(hits(ts('<li data-row="notice">x</li>', 'apps/web/components/fan-ui/fan-post-row.tsx'), 'N32').length, 0);
 });

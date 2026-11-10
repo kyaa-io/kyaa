@@ -7,7 +7,7 @@
   gap:5px;
   box-sizing:border-box;
   font-size:12px;
-  font-weight:700;
+  font-weight:var(--fan-item-title-weight);
   font-variant-numeric:tabular-nums;
   line-height:1.4;
   white-space:nowrap;

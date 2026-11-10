@@ -17,6 +17,7 @@ import { CreatorAvatar } from "@/components/fan-ui/creator-avatar";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import { FanHeading } from "@/components/fan-ui/fan-heading";
 import { FanSkeleton } from "@/components/fan-ui/fan-skeleton";
+import { FanPostRow } from "@/components/fan-ui/fan-post-row";
 import { FanState } from "@/components/fan-ui/fan-state";
 import { fanLoginHref } from "@/components/login-href";
 import { useByUsAuth } from "@/features/auth/client/cognito-auth";
@@ -136,10 +137,9 @@ export function HotPosts({ locale }: { locale: AppLocale }) {
       </FanMenu></div>
     {state.status === "error" ? <div className={styles.state}><FanState inline compact kind="error" title={c.hotError} actions={<FanAction variant="text" size="sm" onClick={retry}>{c.retry}</FanAction>} /></div>
       : <ul className={styles.posts}>{!ready ? Array.from({ length: ROWS }, (_, i) => <li key={i} className={styles.post} data-row="hot-loading" aria-hidden="true"><FanSkeleton shape="circle" width={32} height={32} /><FanSkeleton width="70%" height={16} /><FanSkeleton width="40%" height={12} /></li>)
-        : <>{items.map((post) => <li key={`${post.source}:${post.id}`} className={styles.post} data-row="hot-post">
-          <PostAvatar post={post} />
-          <Link className={styles.postTitle} href={postHref(post, locale) as Route}>{firstLine(post.title)}</Link>
-          <span className={styles.postMeta}><Link href={pageHref(post, locale) as Route}>{post.pageName}</Link><span aria-hidden="true">·</span><span>{c.likes(post.likeCount)}</span><span aria-hidden="true">·</span><span>{c.comments(post.commentCount)}</span>{sort === "views" && post.viewCount !== null && <><span aria-hidden="true">·</span><span>{c.views(post.viewCount)}</span></>}</span>
+        : <>{items.map((post) => <li key={`${post.source}:${post.id}`} className={styles.postItem} data-row="hot-post">
+          <FanPostRow locale={locale} href={postHref(post, locale)} title={firstLine(post.title)} pageImage={<PostAvatar post={post} />} commentCount={post.commentCount}
+            source={{ label: post.pageName, href: pageHref(post, locale) }} author={post.nickname} time={post.createdAt} views={post.viewCount} likes={post.likeCount} />
         </li>)}{Array.from({ length: Math.max(0, (open ? 2 * ROWS : ROWS) - items.length) }, (_, i) => {
           const note = total === 0 && i === 0;
           return <li key={`p${i}`} className={styles.post} data-row="hot-placeholder" aria-hidden={note ? undefined : true}><span className={styles.ghostSmall} /><span className={styles.placeholderText}>{note ? c.hotEmpty : "—"}</span></li>;

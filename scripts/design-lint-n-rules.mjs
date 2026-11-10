@@ -33,6 +33,8 @@ export const RULES_N = {
   // 2026-11-08 H6(사용자 지시): 강조색은 kyaa 핑크 1색, 보라는 로고 아트에만, 짙은 회색 채움 캡슐 금지.
   N29: { sev: 'fail', note: 'CSS·TSX 의 보라 색상값(hex·rgb·hsl·oklch, 색상 250~320°·채도 10% 이상) 금지. 강조색은 var(--color-accent*) 핑크 1색. 로고·그림 아트 파일만 허용(H6)' },
   N31: { sev: 'fail', note: '섹션 제목과 같은 헤더의 더보기·전체보기 행동은 글자 링크 + 글자 ›. 같은 파일의 함수·변수로 분리된 머리 행동도 검사한다. CTA·카드 전체 링크·목록 행·양식 단계·모달 열기는 제외한다' },
+  N32: { sev: 'fail', note: '화면의 글·공지·기사·스레드 목록 행(<li data-row="…post|notice|article|thread…">)은 FanPostRow 를 감싼다(제목 400·공지 행만 700·메타 13/400 를 부품이 소유)' },
+  N33: { sev: 'fail', note: '화면 CSS(fan-ui·globals 밖)의 font-size·font-weight·line-height 선언 수는 기준선보다 늘 수 없다. 새 파일은 0. 글자는 FanText·FanHeading·FanNumber·FanTag·FanPostRow 로' },
   N30: { sev: 'fail', note: '짙은 회색(또는 --color-ink) 채움 알약 금지. 캡슐·칩·배지는 흰 바탕 + 1px 테두리, 선택은 핑크 테두리/글자나 옅은 핑크 바탕 1단, 진행 막대·행동 버튼은 핑크 토큰(H6)' },
 };
 
@@ -96,6 +98,11 @@ export function scanNCss(code, file) {
       if (prop === 'font-weight' && !/^var\(--fan-number-weight\)$/.test(value.trim())) add(out, `N6|${short(sel, 40)} ${where}`);
     }
   });
+  if (!FAN_UI.test(file) && !/^apps\/web\/app\/globals\.css$/.test(file)) {
+    let typeDecls = 0;
+    root.walkDecls(/^(font-size|font-weight|line-height)$/i, () => { typeDecls += 1; });
+    add(out, 'N33|font-size/weight/line-height declarations', typeDecls);
+  }
   root.walkDecls((d) => {
     const prop = d.prop.toLowerCase(); const v = d.value.trim(); const where = `${prop}: ${short(v)}`;
     if (prop === 'box-shadow' && !/^(none|var\(--shadow-overlay\)|inherit|initial|unset)$/.test(v) && !boxShadowIsRing(v)) add(out, `N26|${where}`);
@@ -596,10 +603,27 @@ export function scanNTreeFiles(files) {
   }
   return out;
 }
+// N32: 화면 TSX 의 <li data-row="…post|notice|article|thread…"> 는 자식에 FanPostRow 가 있어야 한다.
+const POST_ROW = /post|notice|article|thread/i;
+export function n32PostRows(code, file) {
+  const out = new Map();
+  if (FAN_UI.test(file) || ADMIN.test(file) || GUIDE.test(file) || !/\.tsx$/.test(file)) return out;
+  const c = stripComments(code);
+  for (const m of c.matchAll(/<li\b([^>]*?)data-row=(?:"([^"]*)"|\{\s*["']([^"']*)["']\s*\})/g)) {
+    const kind = m[2] ?? m[3] ?? '';
+    if (!POST_ROW.test(kind)) continue;
+    const rest = c.slice(m.index);
+    const end = rest.search(/<\/li>/);
+    const body = end === -1 ? rest : rest.slice(0, end);
+    if (!/<FanPostRow\b/.test(body)) add(out, `N32|<li data-row="${kind}"> without FanPostRow`);
+  }
+  return out;
+}
+
 export function scanNFile(file, text, read) {
   let m = new Map();
   if (/\.css$/.test(file)) m = scanNCss(text, file);
-  else if (/\.tsx?$/.test(file)) m = scanNTs(text, file, read);
+  else if (/\.tsx?$/.test(file)) { m = scanNTs(text, file, read); for (const [k, n] of n32PostRows(text, file)) add(m, k, n); }
   else return m;
   let colorText = text;
   if (/\.css$/.test(file)) {

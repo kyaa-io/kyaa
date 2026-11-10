@@ -13,7 +13,7 @@
 .lockedRow { display:grid; min-width:0; grid-template-columns:88px minmax(0,1fr); align-items:center; gap:var(--space-4); padding:var(--space-4); border:1px dashed var(--color-line); border-radius:var(--radius-collection); color:var(--color-muted); }
 .lockedRow > span { display:grid; inline-size:88px; block-size:88px; place-items:center; border:1px dashed var(--color-line); border-radius:var(--radius-control); }
 .lockedRow svg { inline-size:24px; block-size:24px; }
-.lockedRow p { margin:0; font-size:var(--fan-item-title-size); font-weight:700; }
+.lockedRow p { margin:0; font-size:var(--fan-item-title-size); font-weight:var(--fan-item-title-weight); }
 @media (max-width:767px) {
   .section h2 { font-size:var(--fan-heading-size); }
   .lockedRow { grid-template-columns:72px minmax(0,1fr); padding:var(--space-3); gap:var(--space-3); }

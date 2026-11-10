@@ -3,14 +3,14 @@
 .bannerImage { z-index: -2; object-fit: cover; object-position: 70% 55%; }
 .banner::after { content: ""; position: absolute; inset: 0; z-index: -1; background: transparent; }
 .bannerCopy { min-width: 0; }
-.eyebrow { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; font-size: 12px; font-weight: 700; letter-spacing: .04em; }
+.eyebrow { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; font-size: 12px; font-weight: var(--fan-item-title-weight); letter-spacing: .04em; }
 .status { padding: 6px 8px; border: 1px solid currentColor; border-radius: 4px; }
-.banner h2, .dialog h2 { margin: 16px 0 12px; font-size: 36px; line-height: 1.15; font-weight: 700; letter-spacing: -.045em; text-wrap: balance; word-break: keep-all; }
+.banner h2, .dialog h2 { margin: 16px 0 12px; font-size: 36px; line-height: 1.15; font-weight: var(--fan-item-title-weight); letter-spacing: -.045em; text-wrap: balance; word-break: keep-all; }
 .banner h2 br { display: none; }
 .description { margin: 0; font-size: 14px; line-height: 1.6; }
-.description strong { font-weight: 700; }
-.deadline { margin: 12px 0 0; font-size: 12px; line-height: 1.5; font-variant-numeric: tabular-nums; }
-.bannerAction, .primaryAction { display: flex; align-items: center; justify-content: center; gap: 12px; min-height: 56px; padding: 16px 24px; border-radius: 12px; text-decoration: none; font-size: 16px; font-weight: 700; line-height: 1.5; transition: background .15s ease; }
+.description strong { font-weight: var(--fan-item-title-weight); }
+.deadline { margin: 12px 0 0; font-size: 12px; line-height: var(--fan-body-leading); font-variant-numeric: tabular-nums; }
+.bannerAction, .primaryAction { display: flex; align-items: center; justify-content: center; gap: 12px; min-height: 56px; padding: 16px 24px; border-radius: 12px; text-decoration: none; font-size: 16px; font-weight: var(--fan-item-title-weight); line-height: var(--fan-body-leading); transition: background .15s ease; }
 .bannerAction { flex-shrink: 0; align-self: flex-end; background: var(--campaign-paper); color: var(--campaign-ink); }
 .bannerAction:hover { background: hsl(38 30% 88%); }
 .bannerAction svg, .primaryAction svg { width: 20px; height: 20px; flex-shrink: 0; }
@@ -30,7 +30,7 @@
 .dialog .deadline { color: hsl(30 8% 36%); }
 .primaryAction { margin-top: 24px; background: var(--campaign-accent); color: white; }
 .primaryAction:hover { background: hsl(336 100% 35%); }
-.entryNote { margin: 12px 0 0; color: hsl(30 8% 36%); font-size: 12px; line-height: 1.5; text-align: center; }
+.entryNote { margin: 12px 0 0; color: hsl(30 8% 36%); font-size: 12px; line-height: var(--fan-body-leading); text-align: center; }
 .later { align-self: center; min-height: 44px; margin-top: 8px; padding: 8px 16px; border: 0; background: transparent; color: hsl(30 8% 30%); font-size: 12px; cursor: pointer; text-decoration: underline; text-underline-offset: 4px; }
 .copyFocus:focus { outline: none; }
 .bannerAction:focus-visible, .primaryAction:focus-visible, .close:focus-visible, .later:focus-visible { outline: 3px solid hsl(336 100% 42%); outline-offset: 4px; }

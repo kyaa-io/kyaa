@@ -6,7 +6,7 @@
 .myApplication:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 .myApplication > svg { flex: none; color: var(--color-muted); }
 .myApplicationCopy { display: grid; flex: 1; min-width: 0; font-size:var(--fan-description-size); line-height: 20px; }
-.myApplicationCopy strong { font-weight: 700; }
+.myApplicationCopy strong { font-weight: var(--fan-item-title-weight); }
 .myApplicationCopy span { overflow: hidden; color: var(--color-muted); text-overflow: ellipsis; white-space: nowrap; }
 /* L5 directory grid (2026-11-09, Weverse artist picker on Mobbin: 3 square tiles a row, 12px apart). 4 from 600px, 5 from 768px, about 168px tiles beside the side column from 1024px. */
 .list { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); column-gap: var(--space-3); row-gap: var(--space-5); min-width: 0; }
@@ -19,7 +19,7 @@
 .search { position: relative; flex: none; min-width: 0; }
 .search .searchInput { height: 44px; min-height: 44px; padding-inline-end: calc(var(--space-10) + var(--space-1)); }
 .searchIcon { position: absolute; inset-inline-end: 0; top: 0; display: grid; place-items: center; width: 44px; height: 44px; border: 0; background: transparent; color: var(--color-muted); cursor: pointer; }
-.controls .sort { gap: var(--space-1); height: 44px; min-height: 44px; padding-inline: var(--space-3); border: 1px solid var(--color-muted); border-radius: var(--radius-control); background: var(--color-surface); color: var(--color-ink); font: inherit; font-size: var(--fan-action-label-size); font-weight: 700; white-space: nowrap; }
+.controls .sort { gap: var(--space-1); height: 44px; min-height: 44px; padding-inline: var(--space-3); border: 1px solid var(--color-muted); border-radius: var(--radius-control); background: var(--color-surface); color: var(--color-ink); font: inherit; font-size: var(--fan-action-label-size); font-weight: var(--fan-item-title-weight); white-space: nowrap; }
 .sortIcon { display: none; flex: none; }
 .controls .sort[data-active] { color: var(--color-accent-ink); background: var(--color-accent-soft); border-color: var(--color-accent); }
 /* Below 600px the sort is a 44px icon button so long search placeholders (ru, fr, en) keep the row; its name stays the current order. */
@@ -37,7 +37,7 @@
 .groupKinds { display: flex; flex: none; align-items: center; gap: var(--space-2); padding-inline-start: var(--space-2); border-inline-start: 1px solid var(--color-line); }
 /* Below 1024px the divider alone marks the group kinds so the five chips fit one 390 row; the group keeps its name for screen readers. */
 .groupLabel { display: none; color: var(--color-muted); font-size: var(--fan-metadata-size); white-space: nowrap; }
-.controls .chip { position: relative; flex: none; min-height: 36px; height: 36px; padding: 0 var(--space-3); font-size: var(--fan-action-label-size); font-weight: 700; white-space: nowrap; }
+.controls .chip { position: relative; flex: none; min-height: 36px; height: 36px; padding: 0 var(--space-3); font-size: var(--fan-action-label-size); font-weight: var(--fan-item-title-weight); white-space: nowrap; }
 /* Below 1024px the chips keep 8px sides so the five fit one 390 row. The chip is 36px tall; its touch area stays 44px. */
 @media (max-width: 1023px) { .controls .chip { padding-inline: var(--space-2); } .roleTrigger.roleTrigger { padding-inline-end: var(--space-1); } }
 .controls .chip::after { content: ""; position: absolute; inset: calc(-1 * var(--space-1)) 0; }

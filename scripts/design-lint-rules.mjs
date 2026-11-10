@@ -22,8 +22,8 @@ export const RULES = {
   'scale-unlimited/declaration-strict-value': { sev: 'fail', note: 'use a design token' },
   C1: { sev: 'fail', note: 'use FanAction (components/fan-ui/fan-action.tsx) instead of <button>' },
   // 토큰
-  T1: { sev: 'count', note: 'font-weight 는 var(--fan-*-weight) 만. 650·750 같은 일반 강조 굵기 토큰이 globals.css 에 없어 새 코드가 따를 수 없으므로 집계(토큰을 만든 뒤 fail 로 승격)' },
-  T2: { sev: 'count', note: 'line-height 는 var(--fan-*-leading)·normal·1 만. 숫자 직접 지정이 많아 집계(다음 묶음에서 승격)' },
+  T1: { sev: 'fail', note: 'font-weight 는 var(--fan-*-weight) 만(400 은 --fan-body-weight). 2026-11-10 --fan-body-weight 신설로 fail 승격' },
+  T2: { sev: 'fail', note: 'line-height 는 var(--fan-*-leading)·normal·1 만(메타는 --fan-metadata-leading). 2026-11-10 fail 승격' },
   T3: { sev: 'fail', note: 'letter-spacing 은 var(--fan-heading-tracking)·0·normal 만' },
   T4: { sev: 'fail', note: 'calc() 안에 원시 px 금지(1px 헤어라인 제외). 토큰 var() 로 계산' },
   T5: { sev: 'fail', note: '모듈 안 --지역변수에 원시 숫자·px 를 두어 토큰을 우회하지 않는다' },
@@ -31,6 +31,7 @@ export const RULES = {
   T7: { sev: 'count', note: 'transition·animation 시간은 var(--motion-*). 애니메이션 전용 값이 많아 집계' },
   T8: { sev: 'fail', note: 'z-index 는 var(--z-*), 0, 1, -1, auto 만' },
   T9: { sev: 'count', note: '44·48·52px 높이·너비는 --min-target·--fan-action-*-height. 이미지 크기와 겹쳐 집계' },
+  T11: { sev: 'fail', note: '글자 크기·굵기 토큰은 역할 표(DESIGN.md 글자 역할별 짝)대로만 묶는다. 부품 소유 토큰 --fan-action-*·--fan-chip-*·--fan-tab-*·--fan-badge-*·--fan-calendar-* 는 화면 CSS 금지' },
   T10: { sev: 'fail', note: 'font-family 직접 지정 금지(globals.css 와 패스포트 MRZ 제외). inherit·var() 는 허용' },
   // 공통 컴포넌트
   C2: { sev: 'fail', note: '<h1>~<h3> 대신 FanHeading (app/guide 제외)' },
@@ -103,6 +104,20 @@ function shadowLayers(value) {
 
 const rawTime = (v) => [...v.replace(/var\([^)]*\)/g, '').matchAll(/(^|[\s,])(\d*\.?\d+)(ms|s)\b/g)].filter((m) => parseFloat(m[2]) !== 0);
 
+// T11: 글자 역할 표의 크기 토큰 -> 허용 굵기 토큰. 같은 규칙 안에서 둘 다 var(--fan-*) 일 때만 짝을 본다.
+const BODY_W = new Set(['--fan-body-weight', '--fan-item-title-weight']);
+export const TYPE_PAIRS = {
+  '--fan-h1-size': new Set(['--fan-heading-weight']),
+  '--fan-section-size': new Set(['--fan-section-weight']),
+  '--fan-item-title-size': BODY_W,
+  '--fan-body-size': BODY_W,
+  '--fan-metadata-size': BODY_W,
+  '--fan-number-size': new Set(['--fan-number-weight']),
+  '--fan-number-size-wide': new Set(['--fan-number-weight']),
+};
+const OWNED_TOKEN = /var\(\s*--fan-(action|chip|tab|badge|calendar)-[\w-]+/;
+const varName = (v) => (v.trim().match(/^var\(\s*(--[\w-]+)\s*[,)]/) ?? [])[1];
+
 export function scanCss(code, file) {
   const out = new Map();
   const root = postcss.parse(code, { from: file });
@@ -117,6 +132,10 @@ export function scanCss(code, file) {
     const rule = d.parent;
     if (!perRule.has(rule)) perRule.set(rule, new Map());
     perRule.get(rule).set(prop, value);
+    if (!/--fan-calendar-/.test(file) && !/components\/fan-calendar\//.test(file) && !disabledByComment(d, 'T11')) {
+      const owned = value.match(OWNED_TOKEN);
+      if (owned && !prop.startsWith('--')) add(out, `T11|${where}`);
+    }
     if (prop === 'line-height' && !/^(var\(--[^)]*\)|normal|1|inherit|initial|unset)$/i.test(value.trim())) add(out, `T2|${where}`);
     if (/^calc\(/i.test(value) || /calc\(/i.test(value)) {
       const inner = value.replace(/var\([^)]*\)/g, '');
@@ -151,6 +170,8 @@ export function scanCss(code, file) {
   });
   for (const [rule, decls] of perRule) {
     const sel = rule.selector ?? '';
+    const sizeVar = varName(decls.get('font-size') ?? ''); const weightVar = varName(decls.get('font-weight') ?? '');
+    if (sizeVar && weightVar && TYPE_PAIRS[sizeVar] && /^--fan-[\w-]*weight$/.test(weightVar) && !TYPE_PAIRS[sizeVar].has(weightVar) && !disabledByComment(rule, 'T11')) add(out, `T11|${sizeVar} + ${weightVar}`);
     if (decls.get('text-align')?.trim() === 'center' && /column/.test(decls.get('flex-direction') ?? '') && decls.get('align-items')?.trim() === 'center') add(out, `S5|${short(sel, 60)}`);
     const op = decls.get('opacity');
     if (op && parseFloat(op) < 0.5 && /(^|[\s>+~,])img\b|\[data-art\]/.test(sel)) add(out, `S6|opacity: ${short(sel, 60)} ${op}`);

@@ -3,21 +3,21 @@
 .identityLeaf { display: grid; grid-template-columns: minmax(0, 1fr); min-width: 0; }
 .stampLeaf { min-width: 0; padding: var(--space-4) var(--space-3); border-top: 1px dashed var(--passport-line); }
 .cover { display: flex; align-items: center; gap: var(--space-2); min-height: 40px; padding: var(--space-1) var(--space-4); background: var(--passport-cover); color: var(--passport-cover-ink); }
-.cover span { font-size: var(--passport-micro); font-weight: 700; letter-spacing: .18em; }
+.cover span { font-size: var(--passport-micro); font-weight: var(--fan-item-title-weight); letter-spacing: .18em; }
 /* kyaa 워드마크를 표지의 금박 한 색으로 찍는다. */
 .logo { display: block; flex: none; width: 56px; height: var(--space-6); background: currentColor; mask: url("/images/guest-home/kyaa-wordmark.svg") center / contain no-repeat; }
 .identityPage { position: relative; display: grid; min-width: 0; gap: var(--space-3); padding: var(--space-3) var(--space-4) var(--space-4); overflow: hidden; }
 .watermark { display: none; }
 .identityHead { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: var(--space-1) var(--space-3); }
 .identityHead strong { display: none; }
-.identityHead span { color: var(--passport-muted); font-size: var(--passport-small); font-weight: 700; font-variant-numeric: tabular-nums; letter-spacing: .04em; }
+.identityHead span { color: var(--passport-muted); font-size: var(--passport-small); font-weight: var(--fan-item-title-weight); font-variant-numeric: tabular-nums; letter-spacing: .04em; }
 .identityBody { position: relative; display: grid; grid-template-columns: 72px minmax(0, 1fr); align-items: start; gap: var(--space-3); }
 .photo { display: grid; width: 72px; height: 88px; place-items: center; overflow: hidden; border: 1px solid var(--passport-line); border-radius: var(--passport-radius); background: var(--passport-paper-deep); }
 .photo > * { --avatar-size: 60px !important; max-width: 100%; }
 .fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); min-width: 0; margin: 0; gap: var(--space-2) var(--space-3); }
 .fields > div { min-width: 0; padding-bottom: var(--space-1); border-bottom: 1px solid var(--passport-line); }
-.fields dt { color: var(--passport-muted); font-size: var(--passport-micro); font-weight: 700; letter-spacing: .06em; }
-.fields dd { margin: 0; overflow-wrap: anywhere; font-size: var(--fan-description-size); font-weight: 700; line-height: 1.35; }
+.fields dt { color: var(--passport-muted); font-size: var(--passport-micro); font-weight: var(--fan-item-title-weight); letter-spacing: .06em; }
+.fields dd { margin: 0; overflow-wrap: anywhere; font-size: var(--fan-description-size); font-weight: var(--fan-item-title-weight); line-height: 1.35; }
 .fields dd[data-long-name="true"] { font-size: var(--fan-metadata-size); }
 .fields dd a { min-height: 0; }
 .fields a { max-width: 100%; }

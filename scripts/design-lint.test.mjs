@@ -48,7 +48,7 @@ test('raw spacing, radius and font-size values fail; tokens, 0, auto and percent
     const bad = run(dir, ['--base', base]);
     assert.equal(bad.status, 1);
     assert.match(bad.stderr, /declaration-strict-value/);
-    write(dir, 'apps/web/features/home/new.module.css', '.c { margin: 0 auto; width: 50%; padding: var(--space-3); font-size: var(--fan-body-size); }\n');
+    write(dir, 'apps/web/features/home/new.module.css', '.c { margin: 0 auto; width: 50%; padding: var(--space-3); }\n');
     assert.equal(run(dir, ['--base', base]).status, 0);
   } finally { rmSync(dir, { recursive: true, force: true }); }
 });
@@ -201,10 +201,10 @@ test('baseline mode: only violations beyond the baseline fail, count-only rules 
     assert.equal(bad.status, 1, bad.stderr);
     assert.match(bad.stderr, /T8/);
     // a count-only rule warns but passes
-    write(dir, 'apps/web/features/home/new.module.css', '.n { line-height: 1.41; }\n');
+    write(dir, 'apps/web/features/home/new.module.css', '.n { transition: opacity 180ms ease; }\n');
     const warn = run(dir, []);
     assert.equal(warn.status, 0, warn.stderr);
-    assert.match(warn.stderr, /warning.*T2/);
+    assert.match(warn.stderr, /warning.*T7/);
     // regenerating accepts the new file; fixing a violation lowers the baseline
     write(dir, 'apps/web/features/home/new.module.css', '.n { z-index: 777; }\n');
     assert.equal(run(dir, ['--update-baseline']).status, 0);

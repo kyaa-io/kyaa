@@ -31,6 +31,6 @@ describe("fan page main top padding owner", () => {
 // carousel blurb became 19.5px instead of 18px below 1024px. The 18px rule keeps its own specificity.
 describe("groups discovery carousel blurb line height", () => {
   it("keeps the below-1024 blurb at 18px on `.slide .copy p`", () => {
-    expect(read("features/groups/ui/discovery-carousel.module.css")).toMatch(/@media\(max-width:1023px\)\{[^@]*\.slide \.copy p\{font-size:13px;line-height:18px\}/);
+    expect(read("features/groups/ui/discovery-carousel.module.css")).toMatch(/@media\(max-width:1023px\)\{[^@]*\.slide \.copy p\{font-size:var\(--fan-metadata-size\);line-height:18px\}/);
   });
 });

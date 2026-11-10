@@ -4,11 +4,11 @@
 .machine { position:absolute; right:0; top:1px; width:108px; height:108px; max-width:none; object-fit:contain; pointer-events:none; }
 .glyph { position:absolute; left:10.5px; top:38px; width:40px; height:40px; object-fit:contain; pointer-events:none; }
 .meta { margin:var(--space-1) 0 0; font-size:var(--fan-badge-size); color:var(--color-muted); line-height:17px; }
-.cost { margin:var(--space-2) 0 0; color:var(--color-ink); font-size:var(--fan-action-emphasis-size); font-weight:700; line-height:1; }
+.cost { margin:var(--space-2) 0 0; color:var(--color-ink); font-size:var(--fan-action-emphasis-size); font-weight:var(--fan-item-title-weight); line-height:1; }
 .cost strong { line-height:1; font-size:var(--fan-number-size); font-weight:800; }
 .action { grid-column:1/-1; width:100%; min-height:44px; max-width:none; align-self:end; }
 .empty,.pending { grid-column:1; display:flex; flex-direction:column; justify-content:center; gap:var(--space-4); min-width:0; padding-left:calc(var(--space-10) - var(--space-1) / 2); font-size:var(--fan-action-emphasis-size); }
-.empty a { color:var(--color-ink); text-decoration:none; font-weight:700; }
+.empty a { color:var(--color-ink); text-decoration:none; font-weight:var(--fan-item-title-weight); }
 .empty a:focus-visible { outline:2px solid var(--color-focus); outline-offset:4px; }
 @media (min-width:1024px) {
  .card { min-height:215px; grid-template-columns:minmax(0,1fr) 200px; row-gap:var(--space-6); }

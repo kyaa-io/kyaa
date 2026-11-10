@@ -10,4 +10,4 @@
 .play svg { width:48px; height:48px; padding:12px; border-radius:50%; color:white; fill:white; background:rgb(0 0 0 / .6); }
 @media(max-width:560px) { .grid { gap:12px; grid-template-columns:repeat(3,minmax(148px,1fr)); overflow-x:auto; padding:4px 4px 12px; margin:-4px; scroll-snap-type:x proximity; } .card { scroll-snap-align:start; } }
 
-.caption { margin-top:8px; font-size:13px; line-height:1.5; white-space:pre-wrap; overflow-wrap:anywhere; }
+.caption { margin-top:8px; font-size:var(--fan-metadata-size); line-height:var(--fan-body-leading); white-space:pre-wrap; overflow-wrap:anywhere; }

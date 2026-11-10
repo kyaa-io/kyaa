@@ -19,7 +19,7 @@ describe("LIVE detail information hierarchy contract", () => {
     expect(declarations(".titleGroup")).toMatchObject({ "margin-top": "var(--space-3)" });
     expect(declarations(".scheduleGroup")).toMatchObject({ "margin-top": "var(--space-5)", "padding-top": "var(--space-4)" });
     expect(declarations(".primaryActionSlot")).toMatchObject({ "margin-top": "var(--space-6)", "padding-top": "var(--space-2)" });
-    expect(declarations(".actionHelper")).toMatchObject({ "margin-top": "var(--space-3)", "font-weight": "400", "text-align": "start", "margin-bottom": "0" });
+    expect(declarations(".actionHelper")).toMatchObject({ "margin-top": "var(--space-3)", "font-weight": "var(--fan-body-weight)", "text-align": "start", "margin-bottom": "0" });
     expect(css).toContain("--fan-action-max-width:100%");
   });
 
@@ -27,8 +27,8 @@ describe("LIVE detail information hierarchy contract", () => {
     expect(declarations(".schedule")).toMatchObject({ display: "grid", gap: "var(--space-3)" });
     expect(declarations(".schedule > div")).toMatchObject({ display: "grid", gap: "var(--space-1)", "min-width": "0" });
     expect(declarations(".schedule dt")).toMatchObject({ "font-size": "12px", "align-items": "center" });
-    expect(declarations(".schedule dd")).toMatchObject({ "font-size": "14px", "font-weight": "700", "overflow-wrap": "anywhere", "font-variant-numeric": "tabular-nums" });
-    expect(declarations(".schedule .eventSchedule dd")).toMatchObject({ "font-size": "16px", "font-weight": "700" });
+    expect(declarations(".schedule dd")).toMatchObject({ "font-size": "14px", "font-weight": "var(--fan-item-title-weight)", "overflow-wrap": "anywhere", "font-variant-numeric": "tabular-nums" });
+    expect(declarations(".schedule .eventSchedule dd")).toMatchObject({ "font-size": "16px", "font-weight": "var(--fan-item-title-weight)" });
     expect(declarations(".reservationDetails summary")).toMatchObject({ "min-height": "var(--min-target)" });
     expect(declarations(".timeZone")).toMatchObject({ margin: "0", "font-size": "12px" });
   });
@@ -49,7 +49,7 @@ describe("LIVE detail information hierarchy contract", () => {
   it("keeps the Fan Code card padded and its notice quiet", () => {
     expect(declarations(".fanCode")).toMatchObject({ padding: "20px" });
     expect(declarations(".fanCodeIntro")).toMatchObject({ "align-items": "flex-start", "justify-content": "space-between" });
-    expect(declarations('.attendanceNotice[data-before-live]')).toMatchObject({ color: "var(--color-muted)", "font-size": "12px !important", "font-weight": "400 !important", "line-height": "1.5" });
+    expect(declarations('.attendanceNotice[data-before-live]')).toMatchObject({ color: "var(--color-muted)", "font-size": "12px !important", "font-weight": "400 !important", "line-height": "var(--fan-body-leading)" });
     expect(css).not.toContain(".fanCode:has([data-before-live]) { padding:");
   });
 });

@@ -1,0 +1,6 @@
+/* 글자 역할 표(DESIGN.md "글자 역할"). 크기·굵기·행간은 토큰 짝으로만 정한다. */
+.item { font-size: var(--fan-item-title-size); font-weight: var(--fan-item-title-weight); line-height: var(--fan-body-leading); }
+.row-title { font-size: var(--fan-item-title-size); font-weight: var(--fan-body-weight); line-height: var(--fan-body-leading); }
+.body { font-size: var(--fan-body-size); font-weight: var(--fan-body-weight); line-height: var(--fan-body-leading); }
+.meta { color: var(--color-muted); font-size: var(--fan-metadata-size); font-weight: var(--fan-body-weight); line-height: var(--fan-metadata-leading); }
+.label { font-size: var(--fan-metadata-size); font-weight: var(--fan-item-title-weight); line-height: var(--fan-metadata-leading); }

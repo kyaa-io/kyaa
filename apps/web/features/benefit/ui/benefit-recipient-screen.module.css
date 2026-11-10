@@ -44,7 +44,7 @@
 }
 .deadline time {
   color: oklch(20% 0 0);
-  font-weight: 700;
+  font-weight: var(--fan-item-title-weight);
   font-variant-numeric: tabular-nums;
 }
 .formSurface,
@@ -62,7 +62,7 @@
   gap: 8px;
   color: oklch(24% 0 0);
   font-size: 14px;
-  font-weight: 700;
+  font-weight: var(--fan-item-title-weight);
 }
 .field:nth-child(n + 4) {
   grid-column: 1 / -1;
@@ -76,7 +76,7 @@
 .field small {
   color: oklch(45% 0 0);
   font-size: 12px;
-  font-weight: 700;
+  font-weight: var(--fan-item-title-weight);
 }
 .field input {
   width: 100%;
@@ -103,9 +103,9 @@
 .error {
   margin: 0;
   color: oklch(44% 0.18 25);
-  font-size: 13px;
+  font-size: var(--fan-metadata-size);
   font-style: normal;
-  font-weight: 700;
+  font-weight: var(--fan-item-title-weight);
 }
 .shippingCountry {
   grid-column: 1 / -1;
@@ -125,8 +125,8 @@
 .shippingCountry small {
   grid-column: 1 / -1;
   color: oklch(42% 0 0);
-  font-size: 13px;
-  line-height: 1.5;
+  font-size: var(--fan-metadata-size);
+  line-height: var(--fan-body-leading);
 }
 .review {
   margin-top: 24px;
@@ -158,7 +158,7 @@
   margin: 0;
   overflow-wrap: anywhere;
   color: oklch(18% 0 0);
-  font-weight: 700;
+  font-weight: var(--fan-item-title-weight);
 }
 .privacy {
   display: flex;
@@ -188,7 +188,7 @@
   min-height: 44px;
   align-items: center;
   color: inherit;
-  font-weight: 700;
+  font-weight: var(--fan-item-title-weight);
   text-underline-offset: 3px;
 }
 .consent {
@@ -219,7 +219,7 @@
   background: oklch(96% 0.02 150);
   color: oklch(30% 0.08 150);
   font-size: 14px;
-  line-height: 1.5;
+  line-height: var(--fan-body-leading);
 }
 .warning {
   display: grid;
@@ -258,7 +258,7 @@
 }
 .result dd {
   margin: 0;
-  font-weight: 700;
+  font-weight: var(--fan-item-title-weight);
 }
 .result .actions {
   justify-content: center;

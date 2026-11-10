@@ -87,7 +87,7 @@
 .inlineCopy small {
   color: var(--muted, #716d67);
   font-size: 12px;
-  font-weight: 700;
+  font-weight: var(--fan-item-title-weight);
   line-height: 1.15;
 }
 
@@ -103,7 +103,7 @@
   text-align: start;
 }
 .compactTrigger:hover { background: #f7f5f1; }
-.compactLabel { min-width: 0; overflow-wrap: anywhere; font-size: 11px; font-weight: 700; line-height: 1.4; }
+.compactLabel { min-width: 0; overflow-wrap: anywhere; font-size: 11px; font-weight: var(--fan-item-title-weight); line-height: 1.4; }
 
 .tooltip {
   position: fixed;
@@ -146,11 +146,11 @@
 }
 
 .detail > span { color: #7b746a; }
-.detail > strong { color: #332d26; text-align: end; font-size: 13px; font-variant-numeric: tabular-nums; }
+.detail > strong { color: #332d26; text-align: end; font-size: var(--fan-metadata-size); font-variant-numeric: tabular-nums; }
 
 .reached {
   color: #936d29;
-  font-weight: 700;
+  font-weight: var(--fan-item-title-weight);
 }
 
 @media (prefers-reduced-motion: no-preference) {

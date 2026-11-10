@@ -11,7 +11,7 @@
   gap: 6px;
   color: var(--color-ink);
   font-size: 14px;
-  font-weight: 700;
+  font-weight: var(--fan-item-title-weight);
   text-decoration: none;
 }
 
@@ -39,8 +39,8 @@
 .intro > p:first-child {
   margin: 0 0 12px;
   color: var(--color-ink);
-  font-size: 13px;
-  font-weight: 700;
+  font-size: var(--fan-metadata-size);
+  font-weight: var(--fan-item-title-weight);
 }
 
 .intro h1 {
@@ -55,7 +55,7 @@
   display: block;
   margin-top: 12px;
   color: var(--color-ink);
-  font-size: 13px;
+  font-size: var(--fan-metadata-size);
 }
 
 .intro > p:last-child {
@@ -109,7 +109,7 @@
 
 .document a {
   color: var(--color-accent-ink);
-  font-weight: 700;
+  font-weight: var(--fan-item-title-weight);
   text-underline-offset: 3px;
 }
 

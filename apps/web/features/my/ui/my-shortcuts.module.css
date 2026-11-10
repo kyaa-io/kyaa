@@ -4,7 +4,7 @@
 .grid > a { display:grid; min-width:0; min-block-size:96px; justify-items:center; align-content:center; gap:var(--space-2); padding:var(--space-4) var(--space-2); border:1px solid var(--color-line); border-radius:var(--radius-collection); background:var(--color-canvas); color:var(--color-ink); text-align:center; }
 .grid > a > span { display:grid; inline-size:40px; block-size:40px; place-items:center; border-radius:var(--radius-control); background:var(--color-soft); }
 .grid svg { inline-size:22px; block-size:22px; }
-.grid strong { font-size:var(--fan-description-size); font-weight:700; line-height:1.35; overflow-wrap:anywhere; }
+.grid strong { font-size:var(--fan-description-size); font-weight:var(--fan-item-title-weight); line-height:1.35; overflow-wrap:anywhere; }
 .grid > a:focus-visible { outline:3px solid var(--color-ink); outline-offset:3px; }
 @media (hover:hover) and (pointer:fine) { .grid > a:hover { background:var(--color-soft); } }
 @media (max-width:767px) {

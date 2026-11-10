@@ -6,7 +6,7 @@
 .control { display:grid; width:var(--min-target); height:var(--min-target); place-items:center; padding:0; border:1px solid var(--color-line); border-radius:var(--radius-control); background:var(--color-surface); color:var(--color-ink); text-decoration:none; cursor:pointer; transition:background var(--motion-control) var(--motion-easing); }
 .control svg { width:18px; height:18px; }
 .control:focus-visible { outline:var(--focus-width) solid var(--color-focus); outline-offset:var(--focus-offset); }
-.dayNumber { display:inline-grid; width:28px; height:28px; flex:none; place-items:center; border:1px solid transparent; border-radius:50%; color:var(--color-ink); font-size:var(--fan-calendar-day-size); line-height:1; font-weight:700; font-variant-numeric:tabular-nums; }
+.dayNumber { display:inline-grid; width:28px; height:28px; flex:none; place-items:center; border:1px solid transparent; border-radius:50%; color:var(--color-ink); font-size:var(--fan-calendar-day-size); line-height:1; font-weight:var(--fan-item-title-weight); font-variant-numeric:tabular-nums; }
 .dayNumber[data-calendar-today="true"] { border-color:var(--color-ink); font-weight:800; }
 @media (hover:hover) and (pointer:fine) { .control:hover { background:var(--color-soft); } }
 @media (prefers-reduced-motion:reduce) { .control { transition:none; } }

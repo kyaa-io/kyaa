@@ -1,31 +1,31 @@
 .section{--operator-accent:#d11b62;display:grid;gap:16px;min-width:0}
 .head{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px 16px}
-.head h2{margin:0;font-size:20px;font-weight:700;line-height:28px}
+.head h2{margin:0;font-size:20px;font-weight:var(--fan-item-title-weight);line-height:28px}
 .toggle{display:flex;gap:8px;flex-wrap:wrap}
 .toggle button{min-height:44px;padding:0 16px;border:1px solid var(--color-line);border-radius:var(--radius-control);background:var(--color-surface);color:var(--color-ink);font-size:14px;cursor:pointer}
-.toggle button[aria-pressed=true]{border-color:var(--operator-accent);color:var(--operator-accent);font-weight:700}
+.toggle button[aria-pressed=true]{border-color:var(--operator-accent);color:var(--operator-accent);font-weight:var(--fan-item-title-weight)}
 .cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:0;padding:0;list-style:none}
 .cards li{display:grid;gap:4px;min-width:0;padding:16px;border:1px solid var(--color-line);border-radius:var(--radius-control)}
-.cards span{color:var(--color-muted);font-size:13px;line-height:18px;overflow-wrap:anywhere}
-.cards strong{font-size:24px;font-weight:700;line-height:32px;overflow-wrap:anywhere;font-variant-numeric:tabular-nums}
+.cards span{color:var(--color-muted);font-size:var(--fan-metadata-size);line-height:18px;overflow-wrap:anywhere}
+.cards strong{font-size:24px;font-weight:var(--fan-item-title-weight);line-height:32px;overflow-wrap:anywhere;font-variant-numeric:tabular-nums}
 .daily{display:grid;gap:8px}
-.daily h3{margin:0;font-size:16px;font-weight:700;line-height:24px}
+.daily h3{margin:0;font-size:16px;font-weight:var(--fan-item-title-weight);line-height:24px}
 .bars{display:flex;align-items:flex-end;gap:2px;height:96px;margin:0;padding:0;list-style:none}
 .bars li{position:relative;flex:1 1 0;min-width:0;display:flex;align-items:flex-end;height:100%}
 .srOnly{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
 .bars i{display:block;width:100%;min-height:2px;background:var(--operator-accent);border-radius:2px 2px 0 0}
-.axis{display:flex;justify-content:space-between;color:var(--color-muted);font-size:13px}
+.axis{display:flex;justify-content:space-between;color:var(--color-muted);font-size:var(--fan-metadata-size)}
 .status{padding:16px 0;color:var(--color-muted);display:grid;gap:8px;justify-items:start}
 .list{display:grid;gap:8px;margin:0;padding:0;list-style:none}
 .item{display:grid;gap:8px;padding:16px;border:1px solid var(--color-line);border-radius:var(--radius-control);min-width:0}
-.item h3{margin:0;font-size:16px;font-weight:700;line-height:24px;overflow-wrap:anywhere}
+.item h3{margin:0;font-size:16px;font-weight:var(--fan-item-title-weight);line-height:24px;overflow-wrap:anywhere}
 .item p{margin:0;font-size:16px;line-height:24px;white-space:pre-wrap;overflow-wrap:anywhere;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
-.meta{color:var(--color-muted);font-size:13px}
+.meta{color:var(--color-muted);font-size:var(--fan-metadata-size)}
 .row{display:flex;flex-wrap:wrap;gap:8px}
 .btn{min-height:44px;padding:0 16px;border:1px solid var(--color-line);border-radius:var(--radius-control);background:var(--color-surface);color:var(--color-ink);font-size:14px;cursor:pointer}
-.btn.primary{background:var(--operator-accent);border-color:var(--operator-accent);color:var(--color-surface);font-weight:700}
+.btn.primary{background:var(--operator-accent);border-color:var(--operator-accent);color:var(--color-surface);font-weight:var(--fan-item-title-weight)}
 .form{display:grid;gap:16px;padding:16px;border:1px solid var(--color-line);border-radius:var(--radius-control)}
-.field{display:grid;gap:4px;font-size:13px;color:var(--color-muted)}
+.field{display:grid;gap:4px;font-size:var(--fan-metadata-size);color:var(--color-muted)}
 .field>input,.field>textarea,.field>select{min-height:44px;padding:8px 12px;border:1px solid var(--color-line);border-radius:var(--radius-control);font-size:16px;color:var(--color-ink);background:var(--color-surface);width:100%;box-sizing:border-box}
 .field>textarea{min-height:120px;resize:vertical}
 .error{color:var(--color-error);font-size:14px}

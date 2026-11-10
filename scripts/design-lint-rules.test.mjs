@@ -15,6 +15,8 @@ const tsx = (c) => scanTsx(c, TSX);
 // [규칙, 걸리는 입력, 안 걸리는 입력] 을 만드는 함수. scan 결과 Map 을 돌려준다.
 const CASES = {
   T2: [() => css('.a{line-height:1.37}'), () => css('.a{line-height:var(--fan-body-leading)} .b{line-height:1} .c{line-height:normal}')],
+  T11: [() => css('.a{font-size:var(--fan-metadata-size);font-weight:var(--fan-section-weight)} .b{font-size:var(--fan-h1-size);font-weight:var(--fan-item-title-weight)}'),
+    () => css('.a{font-size:var(--fan-metadata-size);font-weight:var(--fan-body-weight)} .b{font-size:var(--fan-item-title-size);font-weight:var(--fan-item-title-weight)} .c{font-size:var(--fan-h1-size);font-weight:var(--fan-heading-weight)} .d{font-size:var(--fan-section-size);font-weight:var(--fan-section-weight)} .e{font-size:var(--fan-number-size);font-weight:var(--fan-number-weight)}')],
   T4: [() => css('.a{width:calc(100% - 13px)}'), () => css('.a{width:calc(100% - var(--space-4))} .b{width:calc(100% - 1px)}')],
   T5: [() => css('.a{--thumb:64px}'), () => css('.a{--thumb:var(--space-6);--p:0;--fill:50%;--fan-x:12px}')],
   T6: [() => css('.a{box-shadow:0 4px 12px #d11b62}'), () => css('.a{box-shadow:0 1px 2px rgb(0 0 0 / 8%);outline:0} .b{box-shadow:0 0 0 3px #d11b62} .c{box-shadow:0 1px 2px var(--color-line)}')],
@@ -88,12 +90,12 @@ test('comments do not count', () => {
   assert.equal(scanTsx('// <h2>\n/* <button> */\nexport const A = 1;', TSX).size, 0);
 });
 
-test('severity table: 20 rules fail on a new violation, 13 are counted only (33 new in total)', () => {
+test('severity table: 23 rules fail on a new violation, 11 are counted only (34 new in total)', () => {
   const isNew = (id) => /^[TCS]\d+$/.test(id) && id !== 'C1';
   const ids = Object.keys(RULES).filter(isNew);
-  assert.equal(ids.length, 33); // C1 은 기존 규칙이라 제외
-  assert.equal(ids.filter((id) => RULES[id].sev === 'fail').length, 20);
-  assert.equal(ids.filter((id) => RULES[id].sev === 'count').length, 13);
+  assert.equal(ids.length, 34); // C1 은 기존 규칙이라 제외
+  assert.equal(ids.filter((id) => RULES[id].sev === 'fail').length, 23);
+  assert.equal(ids.filter((id) => RULES[id].sev === 'count').length, 11);
 });
 
 test('261107-2 N rules: red and green', () => {
@@ -119,4 +121,18 @@ test('approved CSS exceptions stay on their selector and exact rule ID', () => {
   assert.equal(css(code).get('S2|filter: blur(4px)'), 2);
   assert.equal(hits(css('.approved{/* design-lint-disable S2 -- user approved */filter:blur(4px)} .other{filter:blur(4px)}'), 'S2').length, 1);
   assert.equal(hits(css('.a{/* design-lint-disable S10 -- unrelated */background:linear-gradient(red,blue)}'), 'S1').length, 1);
+});
+
+test('T11 forbids component-owned tokens in screen CSS and allows them in the owner', () => {
+  for (const t of ['--fan-action-primary-bg', '--fan-chip-height', '--fan-tab-weight', '--fan-badge-size', '--fan-calendar-cell']) {
+    assert.ok(hits(css(`.a{color:var(${t})}`), 'T11').length > 0, t);
+  }
+  assert.equal(hits(css('.a{color:var(--fan-body-size)}'), 'T11').length, 0);
+  assert.equal(hits(scanCss('.a{height:var(--fan-calendar-cell)}', 'apps/web/components/fan-calendar/x.module.css'), 'T11').length, 0);
+});
+
+test('T1 and T2 are fail-level now', async () => {
+  const { RULES } = await import('./design-lint-rules.mjs');
+  assert.equal(RULES.T1.sev, 'fail');
+  assert.equal(RULES.T2.sev, 'fail');
 });

@@ -1,4 +1,4 @@
 /* 등락(5차 R18): ▲N 강조 잉크 · ▼N 회색 · — 회색. 폭 40 고정·오른쪽 정렬, 아이콘은 lucide 1.5. */
-.delta { display: inline-flex; align-items: center; justify-content: flex-end; gap: 0; box-sizing: border-box; width: 40px; color: var(--color-muted); font-size: var(--fan-metadata-size); font-weight: 700; font-variant-numeric: tabular-nums; line-height: 1; white-space: nowrap; }
+.delta { display: inline-flex; align-items: center; justify-content: flex-end; gap: 0; box-sizing: border-box; width: 40px; color: var(--color-muted); font-size: var(--fan-metadata-size); font-weight: var(--fan-item-title-weight); font-variant-numeric: tabular-nums; line-height: 1; white-space: nowrap; }
 .delta[data-direction="up"] { color: var(--color-accent-ink); }
 .delta svg { flex: none; }

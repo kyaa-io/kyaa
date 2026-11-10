@@ -21,7 +21,7 @@
   max-width: 65ch;
   color: var(--color-muted);
   font-size: 14px;
-  line-height: 1.5;
+  line-height: var(--fan-body-leading);
   text-wrap: pretty;
 }
 .detailHeader {
@@ -78,7 +78,7 @@
 .rowIcon svg { width: 20px; height: 20px; }
 .rowCopy { display: contents; }
 .rowCopy strong { grid-column:2; min-width:0; font-size:16px; line-height:1.4; }
-.rowCopy small { grid-column:3; max-width:240px; overflow:hidden; color:var(--color-muted); font-size:13px; line-height:1.45; text-align:right; text-overflow:ellipsis; white-space:nowrap; unicode-bidi:plaintext; }
+.rowCopy small { grid-column:3; max-width:240px; overflow:hidden; color:var(--color-muted); font-size:var(--fan-metadata-size); line-height:1.45; text-align:right; text-overflow:ellipsis; white-space:nowrap; unicode-bidi:plaintext; }
 .settingsRows > button > svg { grid-column:4; width:18px; height:18px; justify-self:end; color:var(--color-muted); }
 .section {
   padding: 24px 0;
@@ -104,8 +104,8 @@
 .sectionTitle p {
   margin-top: 4px;
   color: var(--color-muted);
-  font-size: 13px;
-  line-height: 1.5;
+  font-size: var(--fan-metadata-size);
+  line-height: var(--fan-body-leading);
 }
 .icon {
   width: 44px;
@@ -156,8 +156,8 @@
   gap: 8px;
 }
 .renameForm label {
-  font-size: 13px;
-  font-weight: 700;
+  font-size: var(--fan-metadata-size);
+  font-weight: var(--fan-item-title-weight);
 }
 .renameForm input {
   height: 50px;
@@ -182,7 +182,7 @@
 .support {
   color: var(--color-muted);
   font-size: 12px;
-  line-height: 1.5;
+  line-height: var(--fan-body-leading);
 }
 .nicknameRule {
   display: flex;
@@ -199,7 +199,7 @@
 }
 .nicknameMessage {
   min-height: 18px;
-  font-weight: 700;
+  font-weight: var(--fan-item-title-weight);
 }
 .nicknameMessage[data-tone="error"] {
   color: var(--color-accent-ink);
@@ -210,9 +210,9 @@
 .nicknameResult {
   margin: 10px 0 0 58px;
   color: oklch(42% 0.14 145);
-  font-size: 13px;
-  font-weight: 700;
-  line-height: 1.5;
+  font-size: var(--fan-metadata-size);
+  font-weight: var(--fan-item-title-weight);
+  line-height: var(--fan-body-leading);
 }
 .renameForm > div {
   display: flex;
@@ -235,8 +235,8 @@
 .languageError {
   margin: 10px 0 0 58px;
   color: var(--color-error);
-  font-size: 13px;
-  line-height: 1.5;
+  font-size: var(--fan-metadata-size);
+  line-height: var(--fan-body-leading);
 }
 .segmented button {
   min-height: 44px;
@@ -244,7 +244,7 @@
   border-radius: 9px;
   background: transparent;
   color: var(--color-muted);
-  font-weight: 700;
+  font-weight: var(--fan-item-title-weight);
   cursor: pointer;
 }
 .segmented button[aria-pressed="true"] {
@@ -263,7 +263,7 @@
   gap: 16px;
   border-bottom: 1px solid var(--color-line-subtle);
   font-size: 14px;
-  font-weight: 700;
+  font-weight: var(--fan-item-title-weight);
 }
 .toggles input {
   width: 46px;
@@ -300,8 +300,8 @@
   margin: 10px 0 0 58px;
   color: var(--color-muted);
   font-size: 12px;
-  font-weight: 700;
-  line-height: 1.5;
+  font-weight: var(--fan-item-title-weight);
+  line-height: var(--fan-body-leading);
 }
 .support,
 .installState {
@@ -315,7 +315,7 @@
 .walletValue code {
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
   font-size: 15px;
-  font-weight: 700;
+  font-weight: var(--fan-item-title-weight);
 }
 .walletValue span {
   color: var(--color-muted);
@@ -340,15 +340,15 @@
 }
 .installState {
   color: oklch(37% 0.12 145);
-  font-size: 13px;
-  font-weight: 700;
+  font-size: var(--fan-metadata-size);
+  font-weight: var(--fan-item-title-weight);
 }
 .message {
   min-height: 24px;
   margin: 12px 0 0 58px;
   color: oklch(40% 0.16 145);
-  font-size: 13px;
-  font-weight: 700;
+  font-size: var(--fan-metadata-size);
+  font-weight: var(--fan-item-title-weight);
 }
 .message[data-tone="error"] {
   color: var(--color-error);
@@ -373,15 +373,15 @@
 .stateList dd {
   margin: 0;
   font-size: 12px;
-  line-height: 1.5;
+  line-height: var(--fan-body-leading);
 }
 .stateList dt {
   color: var(--color-muted);
-  font-weight: 700;
+  font-weight: var(--fan-item-title-weight);
 }
 .stateList dd {
   color: var(--color-ink);
-  font-weight: 700;
+  font-weight: var(--fan-item-title-weight);
 }
 .stateList dd[data-state="denied"],
 .stateList dd[data-state="insecure"],
@@ -495,10 +495,10 @@
   }
 }
 .channelControls{margin:24px 0 0}
-.channelControls h3{margin:0 0 10px;font-size:14px}.channelControls>p{margin:0 0 8px;color:var(--color-muted);font-size:13px}.channelControls>button{min-height:44px;margin-bottom:8px;padding:0 14px;border:1px solid var(--color-muted);border-radius:10px;background:var(--color-surface);font-weight:700}.channelControls>button:disabled{cursor:wait;opacity:.6}.channelControls>label{display:flex;min-height:56px;align-items:center;justify-content:space-between;gap:16px;border-top:1px solid var(--color-line-subtle)}.channelControls>label span{display:grid;gap:3px;font-size:14px}.channelControls small{color:var(--color-muted);font-size:12px}.channelControls>label>input{width:46px;height:26px;appearance:none;border-radius:999px;background:var(--color-muted)}.channelControls>label>input:before{content:"";display:block;width:20px;height:20px;margin:3px;border-radius:50%;background:var(--color-surface);box-shadow:0 1px 3px color-mix(in srgb, var(--color-ink) 22%, transparent)}.channelControls>label>input:checked{background:var(--color-ink)}.channelControls>label>input:checked:before{transform:translateX(20px)}
+.channelControls h3{margin:0 0 10px;font-size:14px}.channelControls>p{margin:0 0 8px;color:var(--color-muted);font-size:var(--fan-metadata-size)}.channelControls>button{min-height:44px;margin-bottom:8px;padding:0 14px;border:1px solid var(--color-muted);border-radius:10px;background:var(--color-surface);font-weight:var(--fan-item-title-weight)}.channelControls>button:disabled{cursor:wait;opacity:.6}.channelControls>label{display:flex;min-height:56px;align-items:center;justify-content:space-between;gap:16px;border-top:1px solid var(--color-line-subtle)}.channelControls>label span{display:grid;gap:3px;font-size:14px}.channelControls small{color:var(--color-muted);font-size:12px}.channelControls>label>input{width:46px;height:26px;appearance:none;border-radius:999px;background:var(--color-muted)}.channelControls>label>input:before{content:"";display:block;width:20px;height:20px;margin:3px;border-radius:50%;background:var(--color-surface);box-shadow:0 1px 3px color-mix(in srgb, var(--color-ink) 22%, transparent)}.channelControls>label>input:checked{background:var(--color-ink)}.channelControls>label>input:checked:before{transform:translateX(20px)}
 .kakaoEnrollment{display:grid;gap:10px;margin-top:14px;padding:14px;border:1px solid var(--color-line);border-radius:12px;background:var(--color-soft)}
-.kakaoEnrollment>small{line-height:1.5}.kakaoEnrollment>p{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0;font-size:13px}.kakaoEnrollment>div{display:flex;flex-wrap:wrap;gap:8px}
-.channelControls .consentCheck{min-height:auto;align-items:flex-start;border:0;font-size:13px;font-weight:700;line-height:1.5}.channelControls .consentCheck input{flex:0 0 auto;width:20px;height:20px;margin:1px 0 0;appearance:auto;accent-color:var(--color-ink)}.channelControls .consentCheck input:before{content:none}
+.kakaoEnrollment>small{line-height:var(--fan-body-leading)}.kakaoEnrollment>p{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0;font-size:var(--fan-metadata-size)}.kakaoEnrollment>div{display:flex;flex-wrap:wrap;gap:8px}
+.channelControls .consentCheck{min-height:auto;align-items:flex-start;border:0;font-size:var(--fan-metadata-size);font-weight:var(--fan-item-title-weight);line-height:var(--fan-body-leading)}.channelControls .consentCheck input{flex:0 0 auto;width:20px;height:20px;margin:1px 0 0;appearance:auto;accent-color:var(--color-ink)}.channelControls .consentCheck input:before{content:none}
 
 .logout {
   margin-top: 20px;

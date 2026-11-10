@@ -130,6 +130,23 @@ A2 버튼 반경 8·높이 390 44 / 1024+ 48 · B2 칩 36·14/700·반경 8 · C
 
 굵기는 **400·700·800** 세 값만. 글꼴은 `Pretendard Variable` 1벌(`globals.css` body 한 줄)이며 정적 `Pretendard UI 550/650/850` 웹 글꼴은 폐기했다(TTF는 공유 이미지 서버 렌더에만 남음). 모듈 CSS의 `font-family` 선언은 0이 기준이고, 예외는 온체인 주소 표시의 `ui-monospace`. 전역 `body { word-break: keep-all; overflow-wrap: anywhere }`. 영문·숫자도 같은 벌, 숫자는 `tabular-nums`만. 삭제 예정 토큰(1단계는 globals에 별칭으로 남김, 값 동일, 사용처 치환 전): `--fan-description-*`, `--fan-aside-title-*`(사이드 제목 = h2 18/700), `--fan-heading-editorial-weight`, `--fan-personal-section-*`, `--fan-event-catalog-title-size`, `--fan-action-emphasis-size`, `--fan-heading-size-wide`.
 
+### 글자 역할별 짝 (2026-11-10 C2 T0, 제품 책임자 "글자 크기/굵기마다 역할이 있다")
+굵기는 역할이 정한다. 700은 구역 제목·카드/행의 주체인 고유 이름·라벨-값의 값·작은 라벨과 글자 링크·버튼/탭/칩/배지(부품이 소유)·섞인 목록 안 공지/고정 행의 제목에만, 800은 화면 제목과 숫자에만 쓴다. 나머지는 400이다. 사람이 쓴 글(팬 글·공식 글·공지·댓글·메시지)의 목록 제목과 본문은 400이며 위계는 크기(행 제목 16 > 메타 13)와 색(ink > muted)으로 만든다. 메타줄은 13/400 muted, 작성자·페이지 링크는 400에 호버 밑줄. 한 행의 700은 최대 하나(글 행 0, 공지 행 제목 1, 항목 행은 이름). 화면 코드는 글자 원시값을 쓰지 않고 `FanText`·`FanHeading`·`FanNumber`·`FanTag`·`FanPostRow`를 쓴다.
+
+| # | 역할 | 크기 | 굵기 | 행간 | 소유 |
+|---|---|---|---|---|---|
+| 1 | 화면 제목 | `--fan-h1-size` | `--fan-heading-weight`(800) | `--fan-heading-leading` | `FanHeading` h1 |
+| 2 | 구역 제목 | `--fan-section-size` | `--fan-section-weight`(700) | `--fan-heading-leading` | `FanHeading` h2·h3 |
+| 3 | 항목 이름 | `--fan-item-title-size` | `--fan-item-title-weight`(700) | `--fan-body-leading` | `FanText role="item"` |
+| 4 | 글 행 제목 | `--fan-item-title-size` | `--fan-body-weight`(400, 공지 행 700) | `--fan-body-leading` | `FanPostRow`, `FanText role="row-title"` |
+| 5 | 본문 | `--fan-body-size` | `--fan-body-weight`(400) | `--fan-body-leading` | `FanText role="body"` |
+| 6 | 메타 | `--fan-metadata-size` | `--fan-body-weight`(400) | `--fan-metadata-leading`(1.4) | `FanText role="meta"` |
+| 7 | 라벨 | `--fan-metadata-size` | `--fan-item-title-weight`(700) | `--fan-metadata-leading` | `FanText role="label"` |
+| 8 | 숫자 | `--fan-number-size` | `--fan-number-weight`(800) | 1 | `FanNumber` |
+| 9 | 배지 | `--fan-badge-size` | 부품 소유 | 1 | `FanTag` |
+
+새 토큰은 `--fan-body-weight: 400`과 `--fan-metadata-leading: 1.4` 둘뿐이다. 화면 CSS는 크기·굵기를 위 짝으로만 묶고(T11), 부품 소유 토큰 `--fan-action-*`·`--fan-chip-*`·`--fan-tab-*`·`--fan-badge-*`·`--fan-calendar-*`를 쓰지 않는다. 화면 CSS의 font-size·font-weight·line-height 선언 수는 기준선보다 늘 수 없고 새 파일은 0이다(N33). 글·공지·기사·스레드 목록 행(`<li data-row>`)은 `FanPostRow`로 그린다(N32). T1(원시 font-weight)·T2(원시 line-height)는 이제 새 위반을 실패시킨다.
+
 ### 색 (강조 1색 — 2026-11-09 8장 ⑤⑥)
 | 역할 | 값 | 토큰 |
 |---|---|---|
@@ -297,7 +314,7 @@ node apps/web/scripts/measure-r3.mjs --base http://127.0.0.1:3001 --out <dir> [-
 
 **새 위반이면 즉시 실패(`fail`)**: 색 hex·이름·함수·토큰 강제(`color-no-hex`, `color-named`, `function-disallowed-list`, `declaration-strict-value`) · C1 원시 `<button>` · C2 `<h1>`~`<h3>` · C4 인라인 style · C5 로딩 글자 · C6 `FanState loading` · C9 포인트 숫자 하드코딩 · C10 이모지 아이콘 · T3 자간 · T4 calc 안 px · T5 모듈 지역 변수 우회 · T6 그림자 색 · T8 z-index · T10 font-family · S1 새 그라데이션 · S2 흐림 · S3 글로 · S6 grayscale 도장 · S8 한 파일 primary 둘 이상 · S9 태그에 설명 · S12 상투 문구 · S13 근거 없는 숫자 홍보 · N1 화면 파일의 직접 카드·버튼 스타일 · N3 `GroupIdentityHeader` 등 · N4 큰 세로 간격(64px 이상, `min-height` 280 이상) · N6 숫자 역할 토큰 · N7 reduced-motion 분기 없는 `animation` · N8 제목 아래 설명 문장 · N9 모의 데이터 상수 · N10 계약 시험 없는 새 `route.ts` · N11 동작 없는 `FanAction`·`Link` · N14 작은 흐름 라우트 · N15 `@radix-ui`(Base UI로 통일) · N16 허용 파일 밖 `motion`·`lottie-web` · N20 `×N`.
 
-**집계만(`count`, 경고)**: T1·T2·T7·T9 글자·시간·크기 직접값 · C3 원시 입력 · C7 외부 링크 · C8 로케일 하드코딩 · S4·S5 모양 반복 · S7 소개 문장 키 · S10·S11·S14 · N3 원시 `<header>` · N11 `disabled` 사유 · N15b 화면 쪽 `@base-ui/react`·수동 `role="dialog"`(치환 진행 중).
+**집계만(`count`, 경고)**: T7·T9 시간·크기 직접값(T1·T2는 2026-11-10부터 실패) · C3 원시 입력 · C7 외부 링크 · C8 로케일 하드코딩 · S4·S5 모양 반복 · S7 소개 문장 키 · S10·S11·S14 · N3 원시 `<header>` · N11 `disabled` 사유 · N15b 화면 쪽 `@base-ui/react`·수동 `role="dialog"`(치환 진행 중).
 
 정규식 규칙은 파일 단위라 화면 단위 결함(구역을 합친 강조 버튼 수, 한 화면의 카드 무게)을 모른다. 통과해도 V 목록과 실제 화면 확인을 대신하지 못한다.
 
