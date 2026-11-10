@@ -4,9 +4,9 @@ import { fileURLToPath } from 'node:url';
 import sharp from 'sharp';
 
 /** MY 바로가기 아이콘 시트(imagegen, 3x3, 마젠타 배경)를 칸마다 잘라 배경을 투명하게 만들고 160px WebP로 저장한다.
- * 사용: node scripts/prepare-my-shortcut-icons.mjs <시트.png> — 시트 원본은 docs/design/assets/my-shortcuts/sheet.png. */
+ * 사용: node scripts/prepare-my-shortcut-icons.mjs <시트.png> — 시트 원본(imagegen 결과)은 저장소 밖에 둔다. 인자로 경로를 넘긴다. */
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
-const sheet=process.argv[2]??path.join(root,'docs/design/assets/my-shortcuts/sheet.png');
+const sheet=process.argv[2];
 const destination=path.join(root,'apps/web/public/images/my/shortcuts');
 const names=['activity','raffles','rewards','live','requests','friends','reports','inquiries','favorites'];
 const SIZE=160, BG=[255,0,255];
