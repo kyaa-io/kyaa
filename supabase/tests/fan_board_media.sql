@@ -4,7 +4,7 @@ create function pg_temp.expect_failure(p_sql text,p_error text)returns void lang
 do $$declare
  owner uuid:='92820000-0000-4000-8000-000000000001';peer uuid:='92820000-0000-4000-8000-000000000002';outsider uuid:='92820000-0000-4000-8000-000000000003';
  creator uuid:='92820000-0000-4000-8000-000000000010';legacy uuid:='92820000-0000-4000-8000-000000000011';page uuid:='92820000-0000-4000-8000-000000000020';legacy_page uuid:='92820000-0000-4000-8000-000000000021';
- ids uuid[]:='{}';legacy_ids uuid[]:='{}';a uuid;video uuid;other_video uuid;pending_video uuid;result jsonb;photo_post_id uuid;video_post uuid;key uuid:=extensions.gen_random_uuid();i integer;
+ ids uuid[]:='{}';legacy_ids uuid[]:='{}';a uuid;video uuid;brand_video uuid;brand_post uuid;other_video uuid;pending_video uuid;result jsonb;photo_post_id uuid;video_post uuid;key uuid:=extensions.gen_random_uuid();i integer;
 begin
  insert into public.app_users(id,privy_user_id,verified_email)values(owner,'did:privy:fanboard-owner','fanboard-owner@example.test'),(peer,'did:privy:fanboard-peer','fanboard-peer@example.test'),(outsider,'did:privy:fanboard-outsider','fanboard-outsider@example.test');
  insert into public.celebrities(id,slug,status,image_url,published_at,roles,primary_role)values(creator,'fanboard-media-qa','published','/test.webp',now(),'{creator}','creator'),(legacy,'legacy-media-qa','published','/test.webp',now(),'{brand}','brand');
@@ -12,7 +12,8 @@ begin
  insert into public.group_pages(id,kind,celebrity_id,name)values(page,'fan',creator,'Fan media test'),(legacy_page,'brand',legacy,'Legacy media test');
  insert into public.group_memberships(page_id,app_user_id,role)values(page,owner,'owner'),(page,peer,'member'),(legacy_page,owner,'owner');
  assert public.read_fan_post_attachment_policy(owner,'fanboard-media-qa')='{"photoLimit":10,"videoAllowed":true}'::jsonb;
- assert public.read_fan_post_attachment_policy(owner,'legacy-media-qa')='{"photoLimit":4,"videoAllowed":false}'::jsonb;
+ assert public.read_fan_post_attachment_policy(owner,'legacy-media-qa')='{"photoLimit":10,"videoAllowed":true}'::jsonb;
+ assert not public.fan_board_media_allowed(null);assert not public.fan_board_media_allowed(extensions.gen_random_uuid());
  perform pg_temp.expect_failure(format('select public.read_fan_post_attachment_policy(%L,%L)',outsider,'fanboard-media-qa'),'FAN_WEB_FORBIDDEN');
  assert not has_function_privilege('authenticated','public.read_fan_post_attachment_policy(uuid,text)','execute');assert has_function_privilege('service_role','public.read_fan_post_attachment_policy(uuid,text)','execute');assert not has_function_privilege('service_role','public.fan_board_media_allowed(uuid)','execute');
  for i in 1..11 loop a:=extensions.gen_random_uuid();insert into public.content_assets(id,app_user_id,celebrity_id,storage_path,byte_size,width,height,sha256,uploaded_at)values(a,owner,creator,owner||'/'||a||'.webp',128,20,10,repeat('a',64),now());ids:=array_append(ids,a);end loop;
@@ -24,8 +25,7 @@ begin
  assert(public.save_fan_post(owner,'fanboard-media-qa',null,'Ten photos','public',ids[1:10],null,key)->>'replayed')::boolean;
  perform pg_temp.expect_failure(format('select public.save_fan_post(%L,%L,%L,%L,%L,%L::uuid[],2,null)',owner,'fanboard-media-qa',photo_post_id,'Stale','public',ids[1:10]),'FAN_WEB_CONFLICT');
  for i in 1..5 loop a:=extensions.gen_random_uuid();insert into public.content_assets(id,app_user_id,celebrity_id,storage_path,byte_size,width,height,sha256,uploaded_at)values(a,owner,legacy,owner||'/'||a||'.webp',128,20,10,repeat('b',64),now());legacy_ids:=array_append(legacy_ids,a);end loop;
- perform pg_temp.expect_failure(format('select public.save_fan_post(%L,%L,null,%L,%L,%L::uuid[],null,%L)',owner,'legacy-media-qa','Five legacy','public',legacy_ids,extensions.gen_random_uuid()),'FAN_WEB_INVALID_INPUT');
- perform public.save_fan_post(owner,'legacy-media-qa',null,'Four legacy','public',legacy_ids[1:4],null,extensions.gen_random_uuid());
+ perform public.save_fan_post(owner,'legacy-media-qa',null,'Five brand','public',legacy_ids,null,extensions.gen_random_uuid());
  result:=public.reserve_owned_mobile_media(owner,'video','fan_post','video/mp4',128,extensions.gen_random_uuid());video:=(result->>'assetId')::uuid;
  result:=public.reserve_owned_mobile_media(owner,'video','fan_post','video/quicktime',128,extensions.gen_random_uuid());other_video:=(result->>'assetId')::uuid;
  result:=public.reserve_owned_mobile_media(owner,'video','fan_post','video/mp4',128,extensions.gen_random_uuid());pending_video:=(result->>'assetId')::uuid;
@@ -34,7 +34,12 @@ begin
  perform pg_temp.expect_failure(format('select public.save_fan_post(%L,%L,null,%L,%L,%L::uuid[],null,%L)',owner,'fanboard-media-qa','Two videos','public',array[video,other_video],extensions.gen_random_uuid()),'MEDIA_INVALID_ASSET');
  perform pg_temp.expect_failure(format('select public.save_fan_post(%L,%L,null,%L,%L,%L::uuid[],null,%L)',owner,'fanboard-media-qa','Pending','public',array[pending_video],extensions.gen_random_uuid()),'MEDIA_INVALID_ASSET');
  perform pg_temp.expect_failure(format('select public.save_fan_post(%L,%L,null,%L,%L,%L::uuid[],null,%L)',peer,'fanboard-media-qa','Other owner','public',array[video],extensions.gen_random_uuid()),'MEDIA_INVALID_ASSET');
- perform pg_temp.expect_failure(format('select public.save_fan_post(%L,%L,null,%L,%L,%L::uuid[],null,%L)',owner,'legacy-media-qa','Legacy video','public',array[video],extensions.gen_random_uuid()),'MEDIA_INVALID_ASSET');
+ a:=extensions.gen_random_uuid();insert into public.content_assets(id,app_user_id,celebrity_id,storage_path,byte_size,width,height,sha256,uploaded_at)values(a,owner,legacy,owner||'/'||a||'.webp',128,20,10,repeat('c',64),now());
+ result:=public.reserve_owned_mobile_media(owner,'video','fan_post','video/mp4',128,extensions.gen_random_uuid());brand_video:=(result->>'assetId')::uuid;update public.mobile_media_assets set state='ready',actual_byte_size=128,width=20,height=10,duration_seconds=1 where id=brand_video;
+ perform pg_temp.expect_failure(format('select public.save_fan_post(%L,%L,null,%L,%L,%L::uuid[],null,%L)',owner,'legacy-media-qa','Brand mixed','public',array[a,brand_video],extensions.gen_random_uuid()),'MEDIA_INVALID_ASSET');
+ result:=public.save_fan_post(owner,'legacy-media-qa',null,'Brand video','public',array[brand_video],null,extensions.gen_random_uuid());brand_post:=(result->>'id')::uuid;
+ assert public.fan_web_post_json(owner,brand_post)#>>'{video,id}'=brand_video::text;assert public.authorize_fan_post_media_read(null,brand_video,'original')->>'contentType'='video/mp4';
+ update public.group_pages set status='hidden'where id=legacy_page;assert public.authorize_fan_post_media_read(null,brand_video,'original')is null;update public.group_pages set status='published'where id=legacy_page;
  result:=public.save_fan_post(owner,'fanboard-media-qa',null,'Native video','public',array[video],null,extensions.gen_random_uuid());video_post:=(result->>'id')::uuid;
  assert public.fan_web_post_json(peer,video_post)#>>'{video,id}'=video::text;assert jsonb_array_length(public.fan_web_post_json(peer,video_post)->'assets')=0;
  assert public.authorize_mobile_media_read(peer,video,'thumbnail')is not null;
@@ -55,6 +60,6 @@ begin
  perform public.cancel_owned_mobile_media(owner,pending_video);
  perform pg_temp.expect_failure(format('select public.save_fan_post(%L,%L,null,%L,%L,%L::uuid[],null,%L)',owner,'fanboard-media-qa','Cancelled','public',array[pending_video],extensions.gen_random_uuid()),'MEDIA_INVALID_ASSET');
  update public.group_pages set status='hidden'where id=page;perform pg_temp.expect_failure(format('select public.read_fan_post_attachment_policy(%L,%L)',owner,'fanboard-media-qa'),'FAN_WEB_FORBIDDEN');
- raise notice 'FAN_BOARD_MEDIA target10/legacy4/video1/mixed/owner/ready/target/replay/stale/visibility/cleanup/ACL PASS';
+ raise notice 'FAN_BOARD_MEDIA target10/brand10/video1/mixed/owner/ready/target/replay/stale/visibility/cleanup/ACL PASS';
 end$$;
 rollback;

@@ -1,0 +1,7 @@
+{
+  "changes": [
+    "브랜드·취미를 포함한 모든 커뮤니티 페이지의 팬 게시판에서 영상 1개를 올릴 수 있어요. 사진은 페이지와 관계없이 최대 10장까지 올릴 수 있어요."
+  ],
+  "path": "/community",
+  "images": ["release-notes/images/2026-11-10-fan-board-video-brand.png"]
+}
