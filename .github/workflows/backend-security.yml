@@ -111,6 +111,7 @@ jobs:
       - run: npm ci --ignore-scripts
       - run: npm run security:patch
       - run: npm run build --workspace @byus/worker
+        if: matrix.suite == 'core'
       - run: sudo apt-get update && sudo apt-get install -y postgresql ripgrep
       - name: Verify automatic registration permissions, recovery and nonce concurrency
         if: matrix.suite == 'core'

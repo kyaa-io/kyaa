@@ -39,7 +39,7 @@ test('SQL groups are disjoint, retain setup, and do not wait for unrelated API o
   assert.equal(jobs.database.if, "needs.scope.outputs.database != 'false'");
   assert.equal(jobs.database.strategy['fail-fast'], false);
   assert.deepEqual(jobs.database.strategy.matrix.suite, ['core', 'live', 'events', 'economy']);
-  const grouped = jobs.database.steps.filter(step => step.if);
+  const grouped = jobs.database.steps.filter(step => step.if && step.run !== 'npm run build --workspace @byus/worker');
   assert.equal(grouped.length, 33);
   const counts = { core: 0, live: 0, events: 0, economy: 0 };
   for (const step of grouped) {
@@ -71,6 +71,21 @@ test('SQL groups are disjoint, retain setup, and do not wait for unrelated API o
   assert.match(chain, /RUN_ACTION_ANVIL_INTEGRATION=1/);
   assert.ok(chain.indexOf('forge test') < chain.indexOf('RUN_ACTION_ANVIL_INTEGRATION'));
   assert.ok(chain.indexOf('RUN_ACTION_ANVIL_INTEGRATION') < chain.indexOf('bash scripts/verify-storage.sh'));
+});
+
+test('DB matrix builds the worker only for the core snapshot consumer', () => {
+  const command = 'npm run build --workspace @byus/worker';
+  const builds = backend.jobs.database.steps.filter(step => step.run === command);
+  assert.equal(builds.length, 1);
+  assert.equal(builds[0].if, "matrix.suite == 'core'");
+  for (const suite of backend.jobs.database.strategy.matrix.suite) {
+    const active = builds.filter(step => !step.if || step.if === `matrix.suite == '${suite}'`);
+    assert.equal(active.length, suite === 'core' ? 1 : 0, suite);
+  }
+  assert.match(JSON.parse(readFileSync('package.json', 'utf8')).scripts['security:backend-db'], /verify-backend-security\.sh/);
+  assert.match(readFileSync('scripts/verify-backend-security.sh', 'utf8'), /BYUS_CLEAN_DB_SHELL_ASSERTION_FILE=.*verify-backend-security-behavior\.sh/);
+  assert.match(readFileSync('scripts/verify-backend-security-behavior.sh', 'utf8'), /bash .*verify-fan-action-snapshots\.sh/);
+  assert.match(readFileSync('scripts/verify-fan-action-snapshots.sh', 'utf8'), /from '\.\/apps\/worker\/dist\/action-domain\.js'/);
 });
 
 test('UI check requires every group and preserves evidence on producing runners', () => {
