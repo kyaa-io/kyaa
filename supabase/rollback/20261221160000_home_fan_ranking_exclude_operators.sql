@@ -4,7 +4,7 @@ declare f text; def text; owner_name name;
   old_text constant text := $a$join public.app_users au on au.id = t.subject_id and au.status = 'active'$a$;
   new_text constant text := $b$join public.app_users au on au.id = t.subject_id and au.status = 'active'
         and not exists (select 1 from public.admin_allowlist aa where aa.active and pg_catalog.lower(aa.email) = pg_catalog.lower(au.verified_email))
-        and au.verified_email not like 'test-%@privy.io'$b$;
+        and coalesce(pg_catalog.lower(au.verified_email), '') not like 'test-%@privy.io'$b$;
 begin
   foreach f in array array['public.read_home_fan_ranking_v2(uuid,text,integer)', 'public.read_home_fan_ranking_period(uuid,text,integer)'] loop
     select pg_catalog.pg_get_userbyid(proowner) into owner_name from pg_catalog.pg_proc where oid = f::regprocedure;
