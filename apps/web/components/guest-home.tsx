@@ -355,7 +355,7 @@ function HomeCreators({ celebrities, celebrityLives = [], locale, contentErrors 
                   </Link>
                   <div className={styles.celebrityInfo}>
                     <h3>{celebrity.name}</h3>
-                    <p className={styles.fanCount}>{formatFanCount(celebrity.fanCount)}</p>
+                    <p className={styles.fanCount}>{formatFanCount(celebrity.fanCount, locale)}</p>
                     <div className={styles.celebrityActions}>
                       <CreatorFanLink slug={celebrity.slug} name={celebrity.name} locale={locale} />
                       <div className={styles.socialLinks} role="group" aria-label={`${celebrity.name} ${locale === "ko" ? "소셜 채널" : translate(locale, localizedMessages.m81fb78c7ebd5, "social channels")}`}>

@@ -443,11 +443,12 @@ describe("canonical 03 guest home", () => {
     expect(card.queryByText("YouTube")).not.toBeInTheDocument();
     expect(card.queryByText("TikTok")).not.toBeInTheDocument();
     expect(card.queryByText("Instagram")).not.toBeInTheDocument();
-    expect(card.queryByText("12.8M Fans")).toBeInTheDocument();
+    expect(card.queryByText("팬 1280만명")).toBeInTheDocument();
     expect(card.getByRole("link", { name: "KARA 팬페이지 보기" })).toHaveAttribute("href", "/kara?locale=ko");
-    expect(screen.queryByText("3.2M Fans")).toBeInTheDocument();
+    expect(screen.queryByText("팬 320만명")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Elina 팬페이지 보기" })).toHaveAttribute("href", "/elina?locale=ko");
-    expect(screen.queryByText("1.5M Fans")).toBeInTheDocument();
+    expect(screen.queryByText("팬 145만명")).toBeInTheDocument();
+    expect(screen.queryByText(/\b0 Fans\b|팬 0명/)).not.toBeInTheDocument();
     const changhaCard = screen.getByRole("heading", { name: "Changha", level: 3 }).closest("article");
     expect(within(changhaCard!).getByRole("link", { name: "Changha 팬페이지 보기" })).toHaveAttribute("href", "/changha?locale=ko");
   });
@@ -938,6 +939,9 @@ it("uses identical cards for all creators with editorial ordering only", () => {
   expect(section.querySelectorAll("article")).toHaveLength(8);
   expect([...section.querySelectorAll("article h3")].slice(0,3).map(h => h.textContent)).toEqual(["changha", "elina", "yuna"]);
   expect(new Set([...section.querySelectorAll("article")].map(a => a.className)).size).toBe(1);
+  const elinaCard = [...section.querySelectorAll("article")].find(a => a.querySelector("h3")?.textContent === "elina")!;
+  expect(elinaCard.textContent).not.toMatch(/Fans|팬 0/);
+  expect(within(section as HTMLElement).getByText("팬 100명")).toBeInTheDocument();
   for (const slug of roster.slice(3).map(c => c.slug)) {
     expect(section.querySelector(`a[href="/${slug}?locale=ko"]`)).not.toBeNull();
   }
