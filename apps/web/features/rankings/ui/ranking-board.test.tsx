@@ -42,8 +42,8 @@ it("reads both lists with ten heart rows each, one under the other: no tabs, no 
   const fetcher = stub();
   const { container } = render(<RankingBoard locale="ko" />);
   await screen.findByText("하트팬1");
-  expect(urls(fetcher)).toContain("/api/rankings/home?kind=fans&metric=hearts&locale=ko&limit=10");
-  expect(urls(fetcher)).toContain("/api/rankings/home?kind=creators&metric=hearts&locale=ko&limit=10");
+  expect(urls(fetcher)).toContain("/api/rankings/home?kind=fans&metric=points&locale=ko&limit=10");
+  expect(urls(fetcher)).toContain("/api/rankings/home?kind=creators&metric=likes&locale=ko&limit=10");
   expect(urls(fetcher).some((url) => url.includes("/api/rankings/fans") || url.includes("period="))).toBe(false);
   expect(container.querySelectorAll("li[data-row='fan-rank']")).toHaveLength(10);
   expect(container.querySelectorAll("li[data-row='creator-rank']")).toHaveLength(10);
@@ -55,7 +55,8 @@ it("reads both lists with ten heart rows each, one under the other: no tabs, no 
   expect(screen.queryByRole("button", { name: "찐팬 수" })).toBeNull();
   expect(screen.queryByRole("group", { name: "기간" })).toBeNull();
   expect(container.querySelector("[class*='podium']")).toBeNull();
-  expect(container.querySelector("[data-metric='points']")).toBeNull();
+  // 대표 11/11 01:55: fans by points, creators by page likes; no heart value on a row.
+  expect(container.querySelector("[data-metric='hearts']")).toBeNull();
   expect(container.querySelector("[data-metric='fans']")).toBeNull();
   expect(container.querySelector("a[href*='/rankings']")).toBeNull();
   // Numbers first: ranks 1-3 read as numbers (the medal artwork is not here yet).
@@ -64,21 +65,21 @@ it("reads both lists with ten heart rows each, one under the other: no tabs, no 
   expect(screen.getByRole("status").textContent).toContain("12위");
 });
 
-it("keeps the 찐팬 100 tag on the creator row and counts hearts", async () => {
+it("keeps the 찐팬 100 tag on the creator row and counts page likes", async () => {
   stub();
   render(<RankingBoard locale="ko" />);
   const row = (await inRow("엘리나")).closest("li")!;
-  expect(row.querySelector("[data-metric='hearts']")).toHaveAttribute("aria-label", "하트 40개");
+  expect(row.querySelector("[data-metric='likes']")).toHaveAttribute("aria-label", "좋아요 40");
   expect(row.textContent).toContain("찐팬 100 도전 중");
 });
 
 it("a row is one line: movement beside the name, LIVE, the value; today's gain and the way to first place are left to the opened row", async () => {
   stubRows(
     [], [
-      creatorRow(1, { name: "일등", hearts: 12345, delta: 2, dayGain: 125, liveNow: true }),
-      creatorRow(2, { name: "이등", hearts: 12345, delta: -1, dayGain: 0 }),
-      creatorRow(3, { name: "삼등", hearts: 100, delta: 0, dayGain: null }),
-      creatorRow(4, { name: "새얼굴", hearts: 7, delta: null, isNew: true, dayGain: -2 }),
+      creatorRow(1, { name: "일등", likes: 12345, delta: 2, dayGain: 125, liveNow: true }),
+      creatorRow(2, { name: "이등", likes: 12345, delta: -1, dayGain: 0 }),
+      creatorRow(3, { name: "삼등", likes: 100, delta: 0, dayGain: null }),
+      creatorRow(4, { name: "새얼굴", likes: 7, delta: null, isNew: true, dayGain: -2 }),
     ],
   );
   const view = render(<RankingBoard locale="ko" />);
@@ -86,12 +87,12 @@ it("a row is one line: movement beside the name, LIVE, the value; today's gain a
   const row = (name: string) => view.container.querySelector(`li[data-row='creator-rank']:has([title='${name}'])`) as HTMLElement;
   expect(within(row("일등")).getByLabelText("2계단 올라감")).toBeInTheDocument();
   expect(within(row("일등")).getByRole("img", { name: "일등 LIVE 중" })).toBeInTheDocument();
-  expect(within(row("일등")).getByLabelText("하트 12,345개").textContent).toContain("1.2만");
+  expect(within(row("일등")).getByLabelText("좋아요 12,345").textContent).toContain("1.2만");
   expect(within(row("이등")).getByLabelText("1계단 내려감")).toBeInTheDocument();
   expect([...view.container.querySelectorAll("[data-row]")].map((row) => row.textContent).join(" ")).not.toMatch(/오늘|1위까지|현재 1위|1위와 동점/);
   expect(row("삼등").querySelector("[data-delta-cell]")).toBeNull();
   expect(row("이등").textContent).not.toContain("오늘");
-  expect(row("일등").querySelector("[data-icon='heart']")).not.toBeNull();
+  expect(row("일등").querySelector("[data-icon='heart']")).toBeNull();
   fireEvent.click(row("삼등").querySelector("button")!);
   expect(row("삼등").querySelector("[data-rank-panel]")!.textContent).toContain("1위까지12,245");
   expect(row("삼등").querySelector("[data-rank-panel]")!.textContent).not.toContain("오늘");
@@ -192,7 +193,7 @@ it("counts the update line from the server time every ten seconds, stops hidden,
     stubRows([fanRow(1)], [creatorRow(1)]);
     const view = render(<RankingBoard locale="ko" />);
     await vi.waitFor(() => expect(screen.getAllByText("30초 전 업데이트").length).toBeGreaterThan(0));
-    expect(view.container.querySelector("[data-column='fans'] [data-metric-line]")!.textContent).toContain("누적 하트");
+    expect(view.container.querySelector("[data-column='fans'] [data-metric-line]")!.textContent).toContain("누적 포인트");
     act(() => { vi.advanceTimersByTime(10_000); });
     expect(screen.getAllByText("40초 전 업데이트").length).toBeGreaterThan(0);
     act(() => { vi.advanceTimersByTime(60_000); });
@@ -249,19 +250,20 @@ it("period pills: 누적 is the default; 오늘 and 7일 read the period list, d
   expect(urls(fetcher).some((u) => u.includes("period="))).toBe(false);
   expect(container.querySelector("[data-rank-highlight]")).not.toBeNull();
   fireEvent.click(pill("오늘"));
-  await waitFor(() => expect(urls(fetcher)).toContain("/api/rankings/home?kind=fans&metric=hearts&locale=ko&limit=10&period=day"));
-  expect(urls(fetcher)).toContain("/api/rankings/home?kind=creators&metric=hearts&locale=ko&limit=10&period=day");
+  await waitFor(() => expect(urls(fetcher)).toContain("/api/rankings/home?kind=fans&metric=points&locale=ko&limit=10&period=day"));
+  expect(urls(fetcher)).toContain("/api/rankings/home?kind=creators&metric=likes&locale=ko&limit=10&period=day");
   await screen.findByText("하트팬1");
   expect(pill("오늘").getAttribute("aria-pressed")).toBe("true");
-  expect(container.querySelector("[data-column='fans'] [data-metric-line]")!.textContent).toContain("오늘 받은 하트");
+  expect(container.querySelector("[data-column='fans'] [data-metric-line]")!.textContent).toContain("오늘 모은 포인트");
+  expect(container.querySelector("[data-column='creators'] [data-metric-line]")!.textContent).toContain("오늘 받은 좋아요");
   expect(container.querySelector("[data-rank-highlight]")).toBeNull();
   expect(container.querySelector("li[data-placeholder]")).toBeNull();
   expect(container.textContent).not.toContain("오늘 +");
   fireEvent.click(pill("7일"));
-  await waitFor(() => expect(urls(fetcher)).toContain("/api/rankings/home?kind=fans&metric=hearts&locale=ko&limit=10&period=week"));
-  await waitFor(() => expect(container.querySelector("[data-column='fans'] [data-metric-line]")!.textContent).toContain("7일간 받은 하트"));
+  await waitFor(() => expect(urls(fetcher)).toContain("/api/rankings/home?kind=fans&metric=points&locale=ko&limit=10&period=week"));
+  await waitFor(() => expect(container.querySelector("[data-column='fans'] [data-metric-line]")!.textContent).toContain("7일간 모은 포인트"));
   fireEvent.click(pill("누적"));
-  await waitFor(() => expect(container.querySelector("[data-column='fans'] [data-metric-line]")!.textContent).toContain("누적 하트"));
+  await waitFor(() => expect(container.querySelector("[data-column='fans'] [data-metric-line]")!.textContent).toContain("누적 포인트"));
 });
 
 it("a period with nobody gaining shows the empty line and no pill is lost", async () => {
@@ -306,4 +308,28 @@ it("draws no gauge bar on any row, and no way-to-first text in the line", async 
   expect(container.querySelector("[class*='share']")).toBeNull();
   expect(container.querySelector("[role='progressbar'], progress, meter")).toBeNull();
   expect(container.querySelector("li[data-row='fan-rank'] [class*='gap']")).toBeNull();
+});
+
+it("opens a fan row with hearts and entry tickets, a creator row with 찐팬 and hearts; zero stays out and no follower count is made up", async () => {
+  stubRows(
+    [fanRow(1, { points: 900, score: 900, hearts: 12, tickets: 3, totalPoints: 900 }), fanRow(2, { nickname: "빈팬", points: 400, score: 400, hearts: 0, tickets: 0, totalPoints: 400 })],
+    [creatorRow(1, { name: "좋아요일등", likes: 50, score: 50, hearts: 77, fans: 9, totalLikes: 50 })],
+  );
+  const view = render(<RankingBoard locale="ko" />);
+  await inRow("좋아요일등");
+  const fan = view.container.querySelector("li[data-row='fan-rank']:has([title='하트팬1'])") as HTMLElement;
+  fireEvent.click(fan.querySelector("button")!);
+  const fanPanel = fan.querySelector("[data-rank-panel]")!.textContent!;
+  expect(fanPanel).toContain("하트12");
+  expect(fanPanel).toContain("응모권3");
+  const empty = view.container.querySelector("li[data-row='fan-rank']:has([title='빈팬'])") as HTMLElement;
+  fireEvent.click(empty.querySelector("button")!);
+  expect(empty.querySelector("[data-rank-panel]")!.textContent).not.toMatch(/하트|응모권/);
+  const creator = view.container.querySelector("li[data-row='creator-rank']:has([title='좋아요일등'])") as HTMLElement;
+  expect(creator.querySelector("[data-metric='likes']")).toHaveAttribute("aria-label", "좋아요 50");
+  fireEvent.click(creator.querySelector("button")!);
+  const creatorPanel = creator.querySelector("[data-rank-panel]")!.textContent!;
+  expect(creatorPanel).toContain("찐팬9명");
+  expect(creatorPanel).toContain("하트77");
+  expect(creatorPanel).not.toMatch(/팔로워/);
 });

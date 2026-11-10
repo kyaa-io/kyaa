@@ -153,12 +153,14 @@ export function useNow(intervalMs = AGO_TICK_MS) {
 }
 
 const CAPTION = { all: "rkCumulativeHearts", day: "rkGainDay", week: "rkGainWeek" } as const;
+/** The list's caption by what it counts: points earned by fans, page likes of creators (20261222140000), else hearts. */
+const CAPTIONS = { points: { all: "rkCumulativePoints", day: "rkPointsDay", week: "rkPointsWeek" }, likes: { all: "rkCumulativeLikes", day: "rkLikesDay", week: "rkLikesWeek" } } as const;
 /** What the list counts (cumulative hearts, or hearts gained today / in seven days), then how old the snapshot is. */
-export function MetricLine({ locale, computedAt, stale = false, period = "all" }: { locale: AppLocale; computedAt: string | null; stale?: boolean; period?: HomeRankingPeriod }) {
+export function MetricLine({ locale, computedAt, stale = false, period = "all", metric }: { locale: AppLocale; computedAt: string | null; stale?: boolean; period?: HomeRankingPeriod; metric?: RankingMetric }) {
   const now = useNow();
   const text = computedAt ? updatedAgoLabel(locale, computedAt, now, stale) : null;
   return <div className={styles.metricLine} data-metric-line="">
-    <p className={styles.caption}><span>{rankingsText(locale, CAPTION[period])}</span>{text ? <><span aria-hidden="true">·</span><time dateTime={computedAt!}>{text}</time></> : null}</p>
+    <p className={styles.caption}><span>{rankingsText(locale, metric === "points" || metric === "likes" ? CAPTIONS[metric][period] : CAPTION[period])}</span>{text ? <><span aria-hidden="true">·</span><time dateTime={computedAt!}>{text}</time></> : null}</p>
   </div>;
 }
 
@@ -196,8 +198,8 @@ const short = (locale: AppLocale, n: number) => n >= 10000 ? n.toLocaleString(lo
 /** The right-hand number of a row: the metric's value, read by name (hearts, points, fans), never from score alone. Counts up only when a later answer changes it; from 10,000 it is short (12.3K), the full number stays in the label. */
 function Main({ locale, metric, value }: { locale: AppLocale; metric: RankingMetric; value: number }) {
   const n = value.toLocaleString(locale);
-  const label = metric === "hearts" ? rankingsText(locale, "rkHearts", [n]) : metric === "points" ? rankingsText(locale, "rkPointsLabel", [n]) : rankingsText(locale, "rkJjinfanCount", [n]);
-  const template = metric === "points" ? rankingsText(locale, "rkPoints", ["\u0000"]) : metric === "fans" ? rankingsText(locale, "rkJjinfanCount", ["\u0000"]) : "\u0000";
+  const label = metric === "hearts" ? rankingsText(locale, "rkHearts", [n]) : metric === "points" ? rankingsText(locale, "rkPointsLabel", [n]) : metric === "likes" ? rankingsText(locale, "rkLikesCount", [n]) : rankingsText(locale, "rkJjinfanCount", [n]);
+  const template = metric === "points" ? rankingsText(locale, "rkPoints", ["\u0000"]) : metric === "fans" ? rankingsText(locale, "rkJjinfanCount", ["\u0000"]) : metric === "likes" ? rankingsText(locale, "rkLikesCount", ["\u0000"]) : "\u0000";
   const [before, after] = template.split("\u0000");
   return <span className={styles.main} aria-label={label} title={n} data-metric={metric}>
     <span aria-hidden="true" className={styles.mainInner}>
@@ -262,17 +264,26 @@ export function FanRows({ locale, ranking, metric, show, fill, scope, guest = fa
         <span className={styles.value}><Main locale={locale} metric={metric} value={value} /></span>
       </RowButton>
       <Pulse />
-      {open ? <RankRowPanel id={`${id}-panel`} kind="fan" row={row} days={days} guest={guest} locale={locale} gap={gapToFirst(i === 0 && ranking.rows[0] === row, value, top)}
+      {open ? <RankRowPanel id={`${id}-panel`} kind="fan" row={row} days={days} guest={guest} locale={locale} gap={gapToFirst(i === 0 && ranking.rows[0] === row, value, top)} extra={fanStats(locale, row, metric)}
         onOpenProfile={() => { if (row.profileRef) setPerson({ ref: row.profileRef, nickname: row.nickname, avatarUrl: null, tier: row.tier }); }}
         loginHref={fanLoginHref(locale, `/?locale=${locale}`)} /> : null}
     </li>;
   })}{fill ? <Placeholders from={shown.length} to={fill} /> : null}</ol>{person && !guest ? <ProfileModal person={person} locale={locale} onClose={() => setPerson(null)} /> : null}</>;
 }
 
-const creatorValue = (row: HomeCreatorRankingRow, metric: RankingMetric) => metric === "fans" ? row.fans ?? row.score : row.hearts;
+const creatorValue = (row: HomeCreatorRankingRow, metric: RankingMetric) => metric === "fans" ? row.fans ?? row.score : metric === "likes" ? row.likes ?? row.score : row.hearts;
+/** A stat the opened row adds (대표 11/11 01:55): only a real, non-zero count; zero and a missing value leave the cell out. */
+const statCell = (locale: AppLocale, key: string, label: string, value: number | null | undefined) =>
+  typeof value === "number" && value > 0 ? [{ key, label, value: value.toLocaleString(locale) }] : [];
+/** Fans by points: hearts and entry tickets held. */
+const fanStats = (locale: AppLocale, row: HomeFanRankingRow, metric: RankingMetric) => metric === "points"
+  ? [...statCell(locale, "hearts", rankingsText(locale, "rkPanelHearts"), row.hearts), ...statCell(locale, "tickets", rankingsText(locale, "rkPanelTickets"), row.tickets)] : [];
+/** Creators by likes: hearts (찐팬 is a built-in cell), and all-time likes when the list counts a period. No SNS follower count is stored, so none is shown. */
+const creatorStats = (locale: AppLocale, row: HomeCreatorRankingRow, metric: RankingMetric, period: HomeRankingPeriod) => metric === "likes"
+  ? [...statCell(locale, "hearts", rankingsText(locale, "rkPanelHearts"), row.hearts), ...(period === "all" ? [] : statCell(locale, "totalLikes", rankingsText(locale, "rkPanelTotalLikes"), row.totalLikes))] : [];
 
 /** Creators: name, movement (and LIVE and the 찐팬 100 challenge tag where they apply) and the metric's value on one line; the row opens a panel whose action goes to the page. */
-export function CreatorRows({ locale, ranking, metric, show, fill, scope, challengeTag = false, guest = false }: { locale: AppLocale; ranking: HomeCreatorRanking; guest?: boolean; metric: HomeCreatorMetric; show?: number; fill?: number; scope: string; challengeTag?: boolean }) {
+export function CreatorRows({ locale, ranking, metric, show, fill, scope, challengeTag = false, guest = false, period = "all" }: { locale: AppLocale; ranking: HomeCreatorRanking; guest?: boolean; metric: HomeCreatorMetric; show?: number; fill?: number; scope: string; challengeTag?: boolean; period?: HomeRankingPeriod }) {
   const { openKey, toggle } = useRankExpand();
   const shown = show === undefined ? ranking.rows : ranking.rows.slice(0, show);
   const place = useRowMotion(shown.map((row) => row.slug), shown.map((row) => creatorValue(row, metric)));
@@ -295,7 +306,7 @@ export function CreatorRows({ locale, ranking, metric, show, fill, scope, challe
         <span className={styles.value}><Main locale={locale} metric={metric} value={value} /></span>
       </RowButton>
       <Pulse />
-      {open ? <RankRowPanel id={`${id}-panel`} kind="creator" row={row} days={days} guest={guest} locale={locale} gap={gapToFirst(i === 0 && ranking.rows[0] === row, value, top)} /> : null}
+      {open ? <RankRowPanel id={`${id}-panel`} kind="creator" row={row} days={days} guest={guest} locale={locale} gap={gapToFirst(i === 0 && ranking.rows[0] === row, value, top)} extra={creatorStats(locale, row, metric, period)} /> : null}
     </li>;
   })}{fill ? <Placeholders from={shown.length} to={fill} /> : null}</ol>;
 }
