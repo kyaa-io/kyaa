@@ -256,3 +256,36 @@ it("sends DEV-tagged notices only for exact dev workflow, live SHA and separate 
   expect(fetcher.mock.calls.some(([url])=>String(url).includes("api.telegram.org")),scenario).toBe(scenario==="valid");
  }
 });
+
+it("sends DEV screenshots under the production path, count and caption rules", async () => {
+ const devText="[DEV 반영] kyaa 수정사항이 반영됐어요\n\n• 버튼 간격을 디자인과 맞췄어요.\n\n확인하기\nhttps://dev.kyaa.io/nchive";
+ const payload={provider:"aws",schemaVersion:1,environment:"dev",sourceSha:deployment.sha,imageDigest:"sha256:"+"b".repeat(64),sourceRunId:123,workflowRunId:123,workflowPath:".github/workflows/aws-platform.yml",publicLive:false};
+ const run=async(images: unknown, text=devText)=>{
+  const fetcher=vi.fn(async(url: string | URL | Request)=>{const path=String(url);
+   if(path.includes("api.telegram.org"))return Response.json({ok:true,result:Array.isArray(images)&&images.length>1?images.map((_,i)=>({message_id:321+i,chat:{id:-5187701508}})):{message_id:321,chat:{id:-5187701508}}});
+   if(path.includes("/repositories/"))return Response.json(repository);
+   if(path.includes("/statuses?"))return Response.json([{state:"success",environment:"AWS dev",creator:{login:"github-actions[bot]"},environment_url:"https://dev.kyaa.io",log_url:"https://github.com/kyaa-io/kyaa/actions/runs/123"}]);
+   if(path.includes("/check-runs/"))return Response.json({...receipt,name:"Telegram deployment notice · DEV"});
+   if(path.includes("/actions/runs/"))return Response.json({id:123,repository,head_sha:deployment.sha,head_branch:"main",path:payload.workflowPath,event:"push",status:"completed",conclusion:"success"});
+   if(path.includes("/api/health/live"))return Response.json({status:"ok",revision:deployment.sha});
+   return Response.json({...deployment,environment:"AWS dev",creator:{login:"github-actions[bot]"},payload});
+  });
+  const handler=createDeploymentNoticeHandler({secret:"operator",botToken:"test-token",fetcher:fetcher as typeof fetch});
+  const result=await handler(new Request("https://dev.kyaa.io/api/internal/telegram/deployment-notices",{method:"POST",headers:{authorization:"Bearer operator","content-type":"application/json"},body:JSON.stringify({...input,site:"dev",text,images})}));
+  const telegram=fetcher.mock.calls.find(([url])=>String(url).includes("api.telegram.org"));
+  return {status:result.status,body:await result.json(),telegram:telegram&&{url:String(telegram[0]),body:JSON.parse(String((telegram[1] as RequestInit).body))}};
+ };
+ const one=await run(["release-notes/images/after.png"]);
+ expect(one.status).toBe(200);
+ expect(one.telegram?.url).toMatch(/\/sendPhoto$/);
+ expect(one.telegram?.body).toEqual({chat_id:-5187701508,photo:`https://raw.githubusercontent.com/kyaa-io/kyaa/${deployment.sha}/release-notes/images/after.png`,caption:devText,show_caption_above_media:true});
+ const many=await run(["release-notes/images/before.png","release-notes/images/after.png"]);
+ expect(many.status).toBe(200);
+ expect(many.telegram?.url).toMatch(/\/sendMediaGroup$/);
+ expect(many.body.messageIds).toEqual([321,322]);
+ for(const [images,text] of [[[]],[["https://evil.test/a.png"]],[["release-notes/images/../a.png"]],[["release-notes/images/a.svg"]],[Array(11).fill("release-notes/images/a.png")],[["release-notes/images/a.png"],`${devText}\n${"가".repeat(1024)}`]] as [unknown,string?][]){
+  const rejected=await run(images,text);
+  expect(rejected.status).toBe(400);
+  expect(rejected.telegram).toBeUndefined();
+ }
+});

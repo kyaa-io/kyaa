@@ -82,21 +82,22 @@ export function formatNotice(notes, completedAt, site = 'kyaa') {
 }
 
 // Each batch is validated before any send; an uncertain partial delivery still stops the queue.
-export function noticeBatches(notes, completedAt, site = 'kyaa') {
+// `format` must throw TOO_MANY_RELEASE_IMAGES or RELEASE_NOTICE_TOO_LONG for a batch that does not fit.
+export function noticeBatches(notes, completedAt, site = 'kyaa', format = batch => formatNotice(batch, completedAt, site)) {
   const batches = [];
   let current = [];
   for (const note of notes) {
-    try { formatNotice([...current, note], completedAt, site); }
+    try { format([...current, note]); }
     catch (error) {
       if (!current.length || !['TOO_MANY_RELEASE_IMAGES', 'RELEASE_NOTICE_TOO_LONG'].includes(error.message)) throw error;
       batches.push(current);
       current = [];
-      formatNotice([note], completedAt, site);
+      format([note]);
     }
     current.push(note);
   }
   if (current.length) batches.push(current);
-  return batches.map(batch => ({ text: formatNotice(batch, completedAt, site), images: noticeImages(batch) }));
+  return batches.map(batch => ({ text: format(batch), images: noticeImages(batch) }));
 }
 
 export async function sendNoticeRequest(body, secret, fetcher = fetch, origin = 'https://kyaa.io') {
