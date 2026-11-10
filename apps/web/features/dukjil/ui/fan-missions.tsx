@@ -82,8 +82,8 @@ export function FanMissions({ locale, slug, title, titleSuffix, passportHref, pr
       if (group) return { mission, points: mission.key === "checkin" ? checkin.points : undefined, count: undefined, limit: null, remaining: null, done: false, period: "day" as const };
       if (mission.key === "checkin") return { mission, points: checkin.points, count: checkinKnown ? Number(checkedIn) : undefined, limit: 1 as number | null, remaining: null as number | null, done: checkedIn, period: "day" as const };
       return { mission, ...missionProgress(state?.catalog, state?.today, mission.key) };
-    })
-    .sort((a, b) => Number(a.done) - Number(b.done));
+    });
+  // Catalog order stays put when a mission is done; completion only tints the row.
   const rowList = (list: typeof view) => (
     <FanMissionList className={styles.cards}>
       {list.map(({ mission, points, count, limit, remaining, done, period }) => {
@@ -92,7 +92,7 @@ export function FanMissions({ locale, slug, title, titleSuffix, passportHref, pr
           : limit !== null && (
             <span className={styles.progress}>
               <span className={styles.bar} role="progressbar" aria-label={mission.label} aria-valuemin={0} aria-valuemax={limit} aria-valuenow={Math.min(count, limit)}><i style={{ "--mission-fill": Math.min(1, count / limit) } as CSSProperties} data-done={done} /></span>
-              <span className={styles.count}>{done && <Check size={12} aria-hidden="true" />}{count.toLocaleString(locale)}/{limit.toLocaleString(locale)}</span>
+              <span className={styles.count} data-mission-count=""><span className={styles.countCheck} aria-hidden="true">{done && <Check size={12} />}</span><span className={styles.countValue}>{count.toLocaleString(locale)}/{limit.toLocaleString(locale)}</span></span>
             </span>
           ));
         const href = guest ? fanLoginHref(locale, mission.href) : mission.href;
