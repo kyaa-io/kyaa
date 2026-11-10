@@ -16,7 +16,8 @@ export const bucketPolicies = {
   "fan-avatars": { public: false, maxBytes: 4194304, types: ["image/webp"] },
   "certification-proofs": { public: false, maxBytes: 3145728, types: ["image/webp"] },
   "fan-content-assets": { public: false, maxBytes: 8388608, types: ["image/webp"] },
-  "mobile-media": { public: false, maxBytes: 52428800, types: ["image/jpeg", "image/png", "image/webp", "video/mp4", "video/quicktime"] },
+  /* The bucket ceiling is the largest purpose (a fan-board video, 200 MiB); each reservation is still capped per purpose by reserve_owned_mobile_media (other purposes 50 MiB) and signed with its exact ContentLength. */
+  "mobile-media": { public: false, maxBytes: 209715200, types: ["image/jpeg", "image/png", "image/webp", "video/mp4", "video/quicktime"] },
   "cheer-photocards": { public: false, maxBytes: 8388608, types: ["image/webp", "image/png", "image/jpeg"] },
 } as const;
 export function objectKey(bucket: string, path: string) {

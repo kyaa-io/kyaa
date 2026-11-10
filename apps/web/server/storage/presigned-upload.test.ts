@@ -18,3 +18,15 @@ it("produces an actual PUT signature bound to the reserved content and no-overwr
     expect(result.data!.token).toMatch(/^s3\./);
   } finally { s3.destroy(); }
 });
+
+it("signs a 200 MiB fan-board video upload and refuses one byte more (the bucket ceiling follows the DB reservation limit)", async () => {
+  const config = { AWS_REGION: "ap-northeast-2", S3_PUBLIC_BUCKET: "public-assets", S3_PRIVATE_BUCKET: "private-assets", ASSET_PUBLIC_BASE_URL: "https://assets.example.test/public-assets" };
+  const s3 = new S3Client({ region: config.AWS_REGION, requestChecksumCalculation: "WHEN_REQUIRED", credentials: { accessKeyId: "local-fixture", secretAccessKey: "local-fixture" } });
+  try {
+    const sign = async (byteSize: number) => new S3Storage(config, { rpc: vi.fn(async () => ({ data: { contentType: "video/mp4", byteSize }, error: null })) } as never, s3).from("mobile-media").createSignedUploadUrl("owner/big.mp4");
+    const ok = await sign(200 * 1024 * 1024);
+    expect(ok.error).toBeNull();
+    expect(new URL(ok.data!.signedUrl).searchParams.get("X-Amz-SignedHeaders")).toContain("content-length");
+    expect((await sign(200 * 1024 * 1024 + 1)).error).not.toBeNull();
+  } finally { s3.destroy(); }
+});
