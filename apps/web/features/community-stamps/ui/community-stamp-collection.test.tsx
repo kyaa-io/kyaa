@@ -120,3 +120,12 @@ it("shows the creator display name, not the slug, in the earned history and omit
   view.rerender(<CommunityStampCollection locale="ko" creator="p1-smoke-creator" resource={resource} />);
   expect(view.container.querySelector("details small")?.textContent).not.toContain("p1-smoke-creator");
 });
+
+it("keeps the registration state readable by assistive tech when the record row shows only its icon", () => {
+  const view = render(<CommunityStampCollection locale="ko" creator="elina" resource={mintedResource}/>);
+  const row = within(view.container.querySelector("details")!).getByRole("button", { name: /등록 완료/ });
+  const state = row.querySelector("small[title]")!;
+  expect(state).toHaveAttribute("title", "등록 완료");
+  expect(state.querySelector("svg")).toHaveAttribute("aria-hidden", "true");
+  expect(state).toHaveTextContent("등록 완료");
+});

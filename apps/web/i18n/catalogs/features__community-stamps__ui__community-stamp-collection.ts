@@ -465,8 +465,8 @@ export const messages = {
     "vi": "Xem bản ghi đăng ký",
     "th": "ดูบันทึกการลงทะเบียน",
     "pt": "Ver registro",
-    "fr": "Voir la preuve d’enregistrement",
-    ru: "Просмотреть запись о выдаче"
+    "fr": "Voir l’historique d’enregistrement",
+    ru: "Посмотреть запись о регистрации"
 
   },
   "m5b1e0c7a9d31": {
