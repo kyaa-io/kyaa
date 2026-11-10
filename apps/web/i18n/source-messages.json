@@ -16288,5 +16288,11 @@
     "ko": "당첨이 확인됐어요. 경품 전달 방법은 별도로 안내해 드려요.",
     "source": "features/benefit/ui/raffle-result-panel",
     "id": "features/benefit/ui/raffle-result-panel:copy.digitalReadyHelp"
+  },
+  "m3c1a7e0d52b4": {
+    "en": "Check-in",
+    "ko": "출석",
+    "source": "features/fanpage/ui/celebrity-calendar",
+    "id": "features/fanpage/ui/celebrity-calendar:inline.calendarKeyCheckin"
   }
 }

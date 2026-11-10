@@ -11,6 +11,8 @@ import type { TiptapDocument } from "../../server/notice/notice-domain";
 import { noticeExtensions } from "./tiptap-extensions";
 import { ContentAssetImage } from "@/features/content-safety/ui/content-asset";
 import { isPrivateNoticeImage } from "@/server/notice/notice-domain";
+import { BodyLink } from "@/features/content-safety/ui/linkified-text";
+import { linkifyDocument } from "@/features/content-safety/domain/linkify";
 import styles from "./notice-detail.module.css";
 
 export function NoticeBody(props: { document: TiptapDocument; locale: AppLocale; adminPreview?: boolean }) {
@@ -48,7 +50,7 @@ function RenderedNoticeBody({ document, locale, adminPreview = false }: { docume
   return (
     <div className={styles.body}>
       {renderToReactElement({
-        content: document as JSONContent,
+        content: linkifyDocument(document as JSONContent),
         extensions: noticeExtensions,
         options: {
           nodeMapping: {
@@ -58,12 +60,7 @@ function RenderedNoticeBody({ document, locale, adminPreview = false }: { docume
               : <img src={node.attrs.src} alt={node.attrs.alt || ""} />,
           },
           markMapping: {
-            link: ({ mark, children }) => React.createElement(
-              "a",
-              { href: mark.attrs.href, target: "_blank", rel: "noreferrer" },
-              children,
-              React.createElement("span", { className: styles.srOnly }, `, ${newWindowLabel}`),
-            ),
+            link: ({ mark, children }) => <BodyLink official href={mark.attrs.href} newWindowLabel={newWindowLabel}>{children}</BodyLink>,
           },
         },
       })}

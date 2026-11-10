@@ -203,6 +203,7 @@ The page uses asymmetry only at desktop scale. The main content owns the visual 
 | Status accent | Live Pink Line | `rgb(255 95 191 / 78%)` | UPCOMING status outline only |
 | Highlight outline | Spectrum Relay | Same gradient as Primary action | 1px border on Google, Passport, and repeated LIVE-row context actions |
 | Highlight action text | Spectrum Ink | `oklch(45% 0.22 315)` | Solid accessible label, icon, and arrow on outlined highlight actions |
+| Body link | Brand Link | `#AD1457` (`--color-brand-link`, 6.96:1 on white) | Web addresses and links inside post, notice and CHZZK bodies: inherited size, 550 weight, 1px underline, Lucide Link2 16px; the icon stays with the first character when an address wraps |
 
 ### Primary
 
