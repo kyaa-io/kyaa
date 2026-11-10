@@ -248,8 +248,8 @@ begin
     if need is distinct from 3 then raise exception 'plan value for steady_checkin must stay 3, got %', need; end if;
     perform pg_temp.mkuser(usteady,60); perform pg_temp.mkuser(ushort,61);
     pst := pg_temp.mkpass(usteady,c1); psh := pg_temp.mkpass(ushort,c1);
-    -- two earlier, NON consecutive attendance days (fixtures: the KST date helper cannot be moved; update/delete are blocked)
-    foreach i in array array[3,5] loop
+    -- two earlier consecutive attendance days (fixtures: the KST date helper cannot be moved; update/delete are blocked)
+    foreach i in array array[1,2] loop
       sid := pg_temp.mkstamp(usteady,c1,'daily_checkin','daily-checkin:'||c1::text||':'||(d - i)::text, now() - (i||' days')::interval);
       insert into public.group_creator_attendance(app_user_id,celebrity_id,attendance_date,streak,points,stamp_id,request_key,policy_version)
         values(usteady,c1,d - i,1,10,sid,extensions.gen_random_uuid(),1);
@@ -259,8 +259,14 @@ begin
       values(ushort,c1,d - 4,1,10,sid,extensions.gen_random_uuid(),1);
     -- below the plan value: 1 earlier day + today = 2 days, no steady stamp
     r := public.attend_creator(ushort,c1,extensions.gen_random_uuid());
-    if exists(select 1 from public.community_stamps where app_user_id=ushort and kind='steady_checkin') then raise exception 'steady stamp issued at 2 days'; end if;
-    -- 3rd cumulative day through the real RPC
+    if exists(select 1 from public.community_stamps where app_user_id=ushort and kind='steady_checkin') then raise exception 'steady stamp issued after a gap'; end if;
+    sid := pg_temp.mkstamp(ushort,c1,'daily_checkin','daily-checkin:'||c1::text||':'||(d - 2)::text, now() - interval '2 days');
+    insert into public.group_creator_attendance(app_user_id,celebrity_id,attendance_date,streak,points,stamp_id,request_key,policy_version)
+      values(ushort,c1,d - 2,1,10,sid,extensions.gen_random_uuid(),1);
+    if public.passport_issue_steady_checkin(ushort,c1) is not null then raise exception 'nonconsecutive 3 days issued a steady stamp'; end if;
+    sid := pg_temp.mkstamp(ushort,c1,'steady_checkin','steady-checkin:'||c1::text||':page1',now() - interval '10 days');
+    if public.passport_issue_steady_checkin(ushort,c1) is distinct from sid then raise exception 'previously issued steady stamp was not preserved'; end if;
+    -- 3rd consecutive day through the real RPC
     r := public.attend_creator(usteady,c1,extensions.gen_random_uuid());
     select count(*) into n from public.community_stamps where app_user_id=usteady and kind='steady_checkin';
     if n <> 1 then raise exception 'steady stamp count after the 3rd day: %', n; end if;

@@ -60,7 +60,7 @@ describe("real SQL answers of the B3 payouts", () => {
     const rpc = answering({ submit_fan_share_proof: cases.share_submit_duplicate });
     const res = await createShareProofHandlers({ ...base, rpc }).submit(request("/api/me/share-proofs", { creator: "b3-answer", url: "https://www.instagram.com/p/B3answer01/", ownPost: true }));
     expect(res.status).toBe(200);
-    expect(await res.json()).toEqual({ id: cases.share_submit_duplicate.id, replayed: true, duplicate: true });
+    expect(await res.json()).toEqual({ id: cases.share_submit_duplicate.id, replayed: true, status: "accepted", duplicate: true });
     expect(rpc.mock.calls.map(([name]) => name)).toEqual(["submit_fan_share_proof"]);
   });
   it("queue and decisions pass the review routes", async () => {

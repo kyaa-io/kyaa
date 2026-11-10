@@ -8,6 +8,16 @@ export const SHARE_PLATFORMS = ["instagram", "tiktok", "x", "threads", "youtube"
 export type SharePlatform = typeof SHARE_PLATFORMS[number];
 
 /**
+ * DUKJIL-POLICY ④ (2026-11-11): a share proof pays only after an operator sees the post tag the official account. These are the
+ * accounts the site itself links (footer, structured data). TikTok and YouTube have no confirmed official account yet, so a proof on
+ * them stays pending and cannot be accepted; add the handle here only once the account is confirmed, never from a guess.
+ */
+export const SHARE_OFFICIAL_TAGS: Readonly<Record<SharePlatform, string | null>> = { instagram: "@kyaa_app", x: "@kyaa_app", threads: "@kyaa_app", tiktok: null, youtube: null };
+export const SHARE_TAG_PLATFORMS: readonly SharePlatform[] = SHARE_PLATFORMS.filter(platform => SHARE_OFFICIAL_TAGS[platform] !== null);
+export const SHARE_PROOF_STATUSES = ["pending", "accepted", "rejected", "revoked"] as const;
+export const SHARE_REJECT_CODES = ["no_hashtag", "private_account", "duplicate", "unrelated"] as const;
+
+/**
  * Hosts, after lower-casing and dropping a trailing dot. Only the listed names are accepted: the bare domain, `www.`, and the
  * mobile names each network really serves (`m.` for Instagram, TikTok, YouTube and Twitter, `mobile.` for X and Twitter).
  * Any other sub-domain (l.instagram.com, music.youtube.com) is refused. youtu.be is YouTube's own address for one video id.
@@ -81,29 +91,34 @@ export const shareProofSubmitSchema = z.object({
 }).strict();
 export const shareProofItemSchema = z.object({
   id: z.uuid(), platform: z.enum(SHARE_PLATFORMS), url: z.string(), points: z.number().int().nonnegative().nullable(), createdAt: z.string(),
-  status: z.enum(["accepted", "revoked"]),
+  status: z.enum(SHARE_PROOF_STATUSES),
 }).strict();
 export type ShareProofItem = z.infer<typeof shareProofItemSchema>;
 export const shareProofListSchema = z.object({ items: z.array(shareProofItemSchema).max(50) }).strict();
-/** The one reward shape of a mission write (post, comment, like, share proof): what was paid, and why nothing was when the fan can act on it. */
-export const missionRewardSchema = z.object({
-  points: z.number().int().nonnegative(), stamps: z.number().int().nonnegative(),
-  skippedReason: z.enum(["too_short", "daily_limit", "same_body", "passport_required"]).optional(),
-}).strict();
-export type MissionReward = z.infer<typeof missionRewardSchema>;
-/** duplicate: the post is already an Instagram repost of this member (B3); nothing was paid. */
-export const shareProofResultSchema = z.object({ id: z.uuid(), replayed: z.boolean(), duplicate: z.literal(true).optional(), reward: missionRewardSchema.optional() }).strict();
+/** A submission only records the proof (status "pending"); nothing is paid before an operator accepts it. duplicate: the post is already an Instagram repost of this member (B3). */
+export const shareProofResultSchema = z.object({ id: z.uuid(), replayed: z.boolean(), status: z.enum(SHARE_PROOF_STATUSES), duplicate: z.literal(true).optional() }).strict();
 export type ShareProofResult = z.infer<typeof shareProofResultSchema>;
 
 // Admin list (GET /api/admin/share-proofs) and cancel (POST /api/admin/share-proofs/{id}/revoke).
 export const adminShareProofSchema = z.object({
-  id: z.uuid(), createdAt: z.string(), status: z.enum(["accepted", "revoked"]), platform: z.enum(SHARE_PLATFORMS), url: z.string().nullable(), postId: z.string(),
+  id: z.uuid(), createdAt: z.string(), status: z.enum(SHARE_PROOF_STATUSES), platform: z.enum(SHARE_PLATFORMS), url: z.string().nullable(), postId: z.string(),
+  revision: z.number().int().nonnegative(), rejectCode: z.enum(SHARE_REJECT_CODES).nullable(),
   points: z.number().int().nonnegative().nullable(), creator: z.object({ slug: z.string(), name: z.string() }).strict(), member: z.object({ id: z.uuid(), nickname: z.string().nullable() }).strict(),
   /** Other members who submitted the same post: the cue that one of them may not be its author. */
   duplicateCount: z.number().int().nonnegative(),
   revokedAt: z.string().nullable(), revokeResult: z.string().nullable(),
 }).strict();
 export type AdminShareProof = z.infer<typeof adminShareProofSchema>;
-export const adminShareProofListSchema = z.object({ items: z.array(adminShareProofSchema).max(100) }).strict();
+/** hasMore is added by the route; the panel parses the route's answer with this same schema. */
+export const adminShareProofListSchema = z.object({ items: z.array(adminShareProofSchema).max(100), hasMore: z.boolean().optional() }).strict();
+/** POST /api/admin/share-proofs/{id}/review. An accepted proof is paid by the same request; reward answers what the payout did (paid points, or why nothing was paid). */
+export const adminShareReviewBodySchema = z.discriminatedUnion("decision", [
+  z.object({ decision: z.literal("accept"), revision: z.number().int().nonnegative() }).strict(),
+  z.object({ decision: z.literal("reject"), revision: z.number().int().nonnegative(), rejectCode: z.enum(SHARE_REJECT_CODES) }).strict(),
+]);
+export const adminShareReviewResultSchema = z.object({
+  id: z.uuid(), status: z.enum(["accepted", "rejected"]), replayed: z.boolean(),
+  reward: z.object({ points: z.number().int().nonnegative(), skippedReason: z.enum(["too_short", "daily_limit", "same_body", "passport_required"]).optional() }).strict().optional(),
+}).strict();
 export const adminShareRevokeBodySchema = z.object({ reason: z.string().trim().min(3).max(300) }).strict();
 export const adminShareRevokeResultSchema = z.object({ id: z.uuid(), replayed: z.boolean(), result: z.enum(["corrected", "review", "stamp_voided", "none", "replayed"]) }).strict();
