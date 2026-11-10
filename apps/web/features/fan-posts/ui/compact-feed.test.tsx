@@ -13,7 +13,7 @@ it('keeps notice links and links the original cheer ID to detail',async()=>{
  const link=screen.getByRole('link',{name:/오늘 같이 본 영상 이야기해요/});
  expect(link).toHaveAttribute('href','/c/elina/community/e9600000-0000-4000-8000-000000000002?source=cheer&locale=ko&returnTo=%2Felina%3Ftab%3Dboard');
  expect(container.querySelector('[data-fan-post-row]')).not.toBeNull();
- const row=link.closest('[data-fan-post-row]')!;expect(row).toHaveTextContent('[3]');expect(row.querySelector('.lucide-chevron-down')).toBeNull();expect(container.querySelector('details')).toBeNull();
+ const row=link.closest('[data-fan-post-row]')!;expect(row.querySelector('[aria-label="댓글 3"]')).toHaveTextContent('3');expect(row.querySelector('.lucide-chevron-down')).toBeNull();expect(container.querySelector('details')).toBeNull();
 });
 
 it('keeps fixture detail and replies attached to the original cheer IDs on both pages',async()=>{

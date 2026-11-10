@@ -1,5 +1,5 @@
 "use client";
-import { FileText } from "lucide-react";
+import { FileText, MessageCircle } from "lucide-react";
 import type { Route } from "next";
 import Link from "next/link";
 import { useState, type ReactNode } from "react";
@@ -53,7 +53,7 @@ export function FanPostRow({ href, locale, title, thumbnail, pageImage, notice =
     <div className={styles.head}>
       {notice && <FanTag tone="notice">{fanUiText(locale, "noticeTag")}</FanTag>}
       <Link href={href as Route} className={styles.title}>{title}</Link>
-      {commentCount !== undefined && commentCount > 0 && <span className={styles.comments} aria-label={fanUiText(locale, "commentsLabel", [count(commentCount)])}>[{count(commentCount)}]</span>}
+      {commentCount !== undefined && commentCount > 0 && <span className={styles.comments} aria-label={fanUiText(locale, "commentsLabel", [count(commentCount)])}><MessageCircle size={13} fill="currentColor" aria-hidden="true" />{count(commentCount)}</span>}
     </div>
     <div className={styles.meta}>
       {source && <Link href={source.href as Route} className={styles.source}>{source.label}</Link>}

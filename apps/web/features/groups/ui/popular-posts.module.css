@@ -2,7 +2,9 @@
 .panel{display:flex;flex-direction:column;gap:8px;box-sizing:border-box;width:100%;padding:20px;border:1px solid var(--color-line);border-radius:12px;background:var(--color-surface)}
 .panel header{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;width:100%}
 .panel h2{margin:0;color:var(--color-ink);font-family:inherit;font-weight:800;font-size:24px;font-weight:var(--fan-body-weight);line-height:var(--fan-heading-leading);font-synthesis:none}
-.panel header>div{display:flex}
-.panel button{display:flex;align-items:center;justify-content:center;min-width:44px;height:44px;padding:0 8px;border:0;border-radius:12px;background:transparent;color:var(--color-muted);font-family:inherit;font-weight:var(--fan-item-title-weight);font-size:14px;line-height:20px;white-space:nowrap;cursor:pointer;font-weight:var(--fan-body-weight);font-synthesis:none}
-.panel button[aria-pressed=true]{background:var(--color-accent-soft);color:var(--color-accent-ink)}
+.tabs{display:flex}
+.tabs button{display:flex;align-items:center;justify-content:center;min-width:44px;height:44px;padding:0 8px;border:0;border-radius:12px;background:transparent;color:var(--color-muted);font-family:inherit;font-weight:var(--fan-item-title-weight);font-size:14px;line-height:20px;white-space:nowrap;cursor:pointer;font-weight:var(--fan-body-weight);font-synthesis:none}
+.tabs button[aria-pressed=true]{background:var(--color-accent-soft);color:var(--color-accent-ink)}
+/* 바깥 카드 하나만 테두리를 가진다. 안쪽 목록은 행 구분선만 쓴다. */
+.panel [data-fan-surface-card][data-appearance]{border:0;border-radius:0;background:transparent}
 @media(max-width:767px){.panel{padding:16px}.panel h2{font-size:20px;line-height:var(--fan-heading-leading)}}

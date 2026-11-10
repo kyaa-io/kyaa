@@ -1,0 +1,11 @@
+{
+  "changes": [
+    "팬페이지 ‘오늘의 인기글’ 목록에서 제목과 작성자·시각 줄 사이가 벌어져 있던 간격을 글 목록과 같은 간격으로 줄였어요. 썸네일도 두 줄 글 묶음 가운데에 맞았어요.",
+    "인기글 카드 안에 한 번 더 있던 테두리를 없애고 바깥 카드 하나만 남겼어요. 댓글 수는 [1] 대신 말풍선 아이콘과 숫자로 보여요."
+  ],
+  "path": "/elina",
+  "images": [
+    "release-notes/images/popular-posts-gap-390-local.png",
+    "release-notes/images/popular-posts-gap-1440-local.png"
+  ]
+}
