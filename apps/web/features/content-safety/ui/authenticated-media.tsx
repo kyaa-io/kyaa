@@ -30,6 +30,42 @@ function useVideoGate(enabled: boolean) {
   return { ref: setTarget, requested, request: () => setRequested(true), allowed: requested || (auto && near) };
 }
 
+
+/**
+ * The whole video file is large, and the same video is mounted again whenever the page re-keys itself (auth settling, session generation), so
+ * its blob is shared per asset and owner: one download, one object URL, released a few seconds after the last viewer is gone.
+ */
+const videoBlobs = new Map<string, { promise: Promise<string>; url?: string; refs: number; timer?: ReturnType<typeof setTimeout>; controller: AbortController }>();
+const revokeEntry = (entry: { promise: Promise<string>; url?: string }) => { if (entry.url) URL.revokeObjectURL(entry.url); else entry.promise.then(url => URL.revokeObjectURL(url), () => undefined); };
+const VIDEO_BLOB_KEEP_MS = 15_000;
+function acquireVideoBlob(key: string, load: (signal: AbortSignal) => Promise<string>) {
+  let entry = videoBlobs.get(key);
+  if (!entry) {
+    const controller = new AbortController();
+    const created = { promise: load(controller.signal), refs: 0, controller } as NonNullable<typeof entry>;
+    created.promise.then(url => { created.url = url; }, () => { if (videoBlobs.get(key) === created) videoBlobs.delete(key); });
+    videoBlobs.set(key, created); entry = created;
+  }
+  if (entry.timer) { clearTimeout(entry.timer); entry.timer = undefined; }
+  entry.refs += 1;
+  return entry.promise;
+}
+/** The owner changed or signed out: the blob must not outlive it, so it is aborted and revoked at once. */
+function dropVideoBlob(key: string) {
+  const entry = videoBlobs.get(key); if (!entry) return;
+  if (entry.timer) clearTimeout(entry.timer);
+  videoBlobs.delete(key); entry.controller.abort(); revokeEntry(entry);
+}
+function releaseVideoBlob(key: string) {
+  const entry = videoBlobs.get(key); if (!entry) return;
+  entry.refs -= 1;
+  if (entry.refs > 0) return;
+  entry.timer = setTimeout(() => {
+    if (videoBlobs.get(key) !== entry || entry.refs > 0) return;
+    videoBlobs.delete(key); entry.controller.abort(); revokeEntry(entry);
+  }, VIDEO_BLOB_KEEP_MS);
+}
+
 /** Private media is never assigned to a browser src before authorization. */
 export function AuthenticatedMedia({ asset, locale, alt, play = false, original = false, retryable = true, publicFanPost = false }: { asset: { id: string; width: number; height: number; kind?: "image" | "video" }; locale: AppLocale; alt: string; play?: boolean; original?: boolean; retryable?: boolean; publicFanPost?: boolean }) {
   const auth = usePrivy(), session = useByUsSession(), copy = contentCopy(locale);
@@ -39,22 +75,30 @@ export function AuthenticatedMedia({ asset, locale, alt, play = false, original 
   const [retry, setRetry] = useState(0), [snapshot, setSnapshot] = useState<{ key: string; url?: string; failed?: boolean }>();
   const wantVideo = asset.kind === "video" && play, gate = useVideoGate(wantVideo), video = wantVideo && gate.allowed;
   const key = `${asset.id}:${video}:${original}:${publicFanPost}:${auth.ready}:${auth.authenticated}:${session.ready}:${session.ownerId ?? auth.user?.id}:${session.generation}:${retry}`;
+  const owner = session.ownerId ?? auth.user?.id ?? "guest", ownerNow = useRef(owner), generationNow = useRef(session.generation), signedInNow = useRef(auth.authenticated);
+  ownerNow.current = owner; generationNow.current = session.generation; signedInNow.current = auth.authenticated;
   useEffect(() => {
     if (!auth.ready || (!auth.authenticated&&!publicFanPost) || !session.ready) return;
     const controller = new AbortController(); let objectUrl: string | undefined;
+    const download = async (signal: AbortSignal) => {
+      const token = auth.authenticated?await provider.current():null; throwIfAborted(signal);
+      if(auth.authenticated&&!token)throw new Error();
+      const response = await fetch(`${publicFanPost?"/api/fan-posts/media":"/api/media"}/${asset.id}?variant=${video || original ? "original" : "thumbnail"}`, { cache: "no-store", credentials: "omit", signal, headers: token?{ Authorization: `Bearer ${token}` }:{} });
+      if (!response.ok) throw new Error();
+      const blob = await response.blob(); throwIfAborted(signal);
+      return URL.createObjectURL(blob);
+    };
+    if (video) {
+      const cacheKey = `${asset.id}:${publicFanPost}:${owner}:${session.generation}:${retry}`, generation = session.generation; let live = true;
+      acquireVideoBlob(cacheKey, download).then(url => { if (live) setSnapshot({ key, url }); }, () => { if (live) setSnapshot({ key, failed: true }); });
+      return () => { live = false; if (ownerNow.current !== owner || generationNow.current !== generation || (!signedInNow.current && !publicFanPost)) dropVideoBlob(cacheKey); else releaseVideoBlob(cacheKey); };
+    }
     void (async () => {
-      try {
-        const token = auth.authenticated?await provider.current():null; throwIfAborted(controller.signal);
-        if(auth.authenticated&&!token)throw new Error();
-        const response = await fetch(`${publicFanPost?"/api/fan-posts/media":"/api/media"}/${asset.id}?variant=${video || original ? "original" : "thumbnail"}`, { cache: "no-store", credentials: "omit", signal: controller.signal, headers: token?{ Authorization: `Bearer ${token}` }:{} });
-
-        if (!response.ok) throw new Error();
-        const blob = await response.blob(); throwIfAborted(controller.signal);
-        objectUrl = URL.createObjectURL(blob); setSnapshot({ key, url: objectUrl });
-      } catch { if (!controller.signal.aborted) setSnapshot({ key, failed: true }); }
+      try { objectUrl = await download(controller.signal); setSnapshot({ key, url: objectUrl }); }
+      catch { if (!controller.signal.aborted) setSnapshot({ key, failed: true }); }
     })();
     return () => { controller.abort(); if (objectUrl) URL.revokeObjectURL(objectUrl); };
-  }, [key, asset.id, video, original, auth.ready, auth.authenticated, session.ready,publicFanPost]);
+  }, [key, asset.id, video, original, auth.ready, auth.authenticated, session.ready, session.generation, publicFanPost, owner, retry]);
   const current = snapshot?.key === key ? snapshot : null;
   if (current?.url && video) return <FeedVideo src={current.url} width={asset.width} height={asset.height} label={alt} locale={locale} startManual={gate.requested} onError={() => setSnapshot({ key, failed: true })} />;
   if (current?.url) {

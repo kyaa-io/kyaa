@@ -1,11 +1,16 @@
 import { cleanup, render, screen, waitFor } from "@testing-library/react";
-import { afterEach, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import {contentCopy} from '@/i18n/catalogs/features__fan_posts__ui';
 import { AuthenticatedMedia } from "./authenticated-media";
 const auth = vi.hoisted(() => ({ ready: true, authenticated: true, user: { id: "owner" }, getAccessToken: vi.fn(async () => "secret") }));
 const session = vi.hoisted(() => ({ ready: true, ownerId: "owner", generation: 0 }));
 vi.mock("@privy-io/react-auth", () => ({ usePrivy: () => auth }));
 vi.mock("@/components/byus-session-provider", () => ({ useByUsSession: () => session }));
+// A video is downloaded whole only when it is near the screen and autoplay is allowed: the screen is "near" and motion is allowed here.
+beforeEach(() => {
+  vi.stubGlobal("IntersectionObserver", class { callback: IntersectionObserverCallback; constructor(callback: IntersectionObserverCallback) { this.callback = callback; } observe() { this.callback([{ isIntersecting: true, intersectionRatio: 1 } as IntersectionObserverEntry], this as unknown as IntersectionObserver); } disconnect() {} });
+  vi.stubGlobal("matchMedia", () => ({ matches: false, addEventListener() {}, removeEventListener() {} }));
+});
 afterEach(() => { cleanup(); vi.unstubAllGlobals(); vi.restoreAllMocks(); auth.authenticated = true; session.generation = 0; });
 const asset = { id: "asset", kind: "video" as const, width: 1280, height: 720 };
 it("uses only a thumbnail before detail playback and revokes both blobs across logout", async () => {

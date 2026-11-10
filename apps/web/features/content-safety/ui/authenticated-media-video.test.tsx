@@ -27,10 +27,11 @@ afterEach(() => { cleanup(); vi.unstubAllGlobals(); });
 
 const variants = () => fetcher.mock.calls.map(([url]) => new URL(String(url), "http://x").searchParams.get("variant"));
 const intersect = () => act(() => { for (const { callback } of observers) callback([{ isIntersecting: true, intersectionRatio: 1 } as IntersectionObserverEntry], {} as IntersectionObserver); });
-const media = <AuthenticatedMedia asset={{ id: "v1", width: 720, height: 1280, kind: "video" }} locale="ko" alt="영상" play />;
+let seq = 0;
+const nextMedia = () => <AuthenticatedMedia asset={{ id: `v${++seq}`, width: 720, height: 1280, kind: "video" }} locale="ko" alt="영상" play />;
 
 it("downloads only the poster until the video is near the screen, then the whole file", async () => {
-  render(media);
+  render(nextMedia());
   await waitFor(() => expect(variants()).toEqual(["thumbnail"]));
   expect(screen.getByRole("button", { name: "재생" })).toBeInTheDocument();
   intersect();
@@ -41,7 +42,7 @@ it("downloads only the poster until the video is near the screen, then the whole
 it("never downloads the whole file for Save-Data or reduced motion until the viewer presses play", async () => {
   for (const mode of ["saveData", "reduced"] as const) {
     saveData = mode === "saveData"; reduced = mode === "reduced"; fetcher.mockClear();
-    const view = render(media);
+    const view = render(nextMedia());
     await waitFor(() => expect(variants()).toEqual(["thumbnail"]));
     intersect();
     await act(async () => { await Promise.resolve(); });
@@ -57,4 +58,16 @@ it("a photo is not touched by the video gate", async () => {
   render(<AuthenticatedMedia asset={{ id: "p1", width: 100, height: 100 }} locale="ko" alt="사진" />);
   await waitFor(() => expect(variants()).toEqual(["thumbnail"]));
   expect(screen.queryByRole("button", { name: "재생" })).toBeNull();
+});
+
+it("mounts of the same video (page re-keys) share one whole-file download", async () => {
+  const same = <AuthenticatedMedia asset={{ id: "shared", width: 720, height: 1280, kind: "video" }} locale="ko" alt="영상" play />;
+  const first = render(same);
+  intersect();
+  await waitFor(() => expect(variants()).toContain("original"));
+  first.unmount();
+  render(same);
+  intersect();
+  await waitFor(() => expect(document.querySelector("video")).not.toBeNull());
+  expect(variants().filter(variant => variant === "original")).toHaveLength(1);
 });
