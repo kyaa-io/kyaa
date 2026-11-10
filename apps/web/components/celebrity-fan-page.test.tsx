@@ -394,7 +394,7 @@ describe("approved fanpage", () => {
     expect(screen.getByRole("progressbar", { name: "팬 등급 진행도" })).toHaveAttribute("value", "0");
     expect(screen.queryByText(/다음 등급까지/)).not.toBeInTheDocument();
     expect(fetcher.mock.calls.filter(([url]) => String(url).includes("/api/me/summary"))).toHaveLength(1);
-    expect(fetcher.mock.calls.some(([url]) => String(url) === "/api/me/summary?locale=ko&tierStages=1&hearts=1")).toBe(true);
+    expect(fetcher.mock.calls.some(([url]) => String(url) === "/api/me/summary?locale=ko&tierStages=1&hearts=1&gifts=1")).toBe(true);
     expect(fetcher.mock.calls.filter(([url]) => String(url).includes("/api/passports"))).toHaveLength(0);
   });
   it("keeps the complete fan name on home and removes the fan card from content tabs", async () => {
