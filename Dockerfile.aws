@@ -20,11 +20,23 @@ ENV HOSTING_PROVIDER=aws NEXT_BUILD_CACHE=1
 # It holds turbopack/ and typecheck/buildinfo; with the latter Next re-checks only what changed instead of every file (4.5-7 min).
 COPY --from=nextcache / apps/web/.next/cache/
 RUN if [ -f apps/web/.next/cache/typecheck/buildinfo ]; then mv apps/web/.next/cache/typecheck/buildinfo apps/web/.next/cache/.tsbuildinfo; fi
-RUN NODE_OPTIONS=--max-old-space-size=6144 npm run build --workspace @byus/web
+# Separate containers share the exact source/config/cache snapshot without sharing writable .next outputs.
+FROM build AS typecheck
+ENV NODE_ENV=production
+RUN cd apps/web && NODE_OPTIONS=--max-old-space-size=6144 npx next typegen && NODE_OPTIONS=--max-old-space-size=6144 npx tsc --noEmit -p tsconfig.aws.json --tsBuildInfoFile .next/cache/.tsbuildinfo
+RUN touch /tmp/kyaa-web-typecheck-passed
+
+FROM build AS bundle
+RUN KYAA_AWS_BUILD_PHASE=bundle NODE_OPTIONS=--max-old-space-size=6144 npm run build --workspace @byus/web
+
+# Every published image and cache export requires both successful branches.
+FROM bundle AS verified
+COPY --from=typecheck /tmp/kyaa-web-typecheck-passed /tmp/kyaa-web-typecheck-passed
+COPY --from=typecheck /app/apps/web/.next/cache/.tsbuildinfo /app/apps/web/.next/cache/.tsbuildinfo
 
 FROM scratch AS next-cache-export
-COPY --from=build /app/apps/web/.next/cache/turbopack/ /turbopack/
-COPY --from=build /app/apps/web/.next/cache/.tsbuildinfo /typecheck/buildinfo
+COPY --from=verified /app/apps/web/.next/cache/turbopack/ /turbopack/
+COPY --from=verified /app/apps/web/.next/cache/.tsbuildinfo /typecheck/buildinfo
 
 FROM --platform=linux/amd64 ${NODE_BUILD_BASE} AS runtime
 WORKDIR /app
@@ -32,9 +44,9 @@ RUN groupadd --gid 1001 app && useradd --uid 1001 --gid app --home-dir /app app
 # Node closes idle sockets after 5s by default, while the ALB reuses them for up to its 60s idle timeout;
 # the race surfaces as sporadic 502s. Keep the app's keep-alive longer than the ALB's.
 ENV NODE_ENV=production HOSTING_PROVIDER=aws NEXT_TELEMETRY_DISABLED=1 HOSTNAME=0.0.0.0 PORT=3000 KEEP_ALIVE_TIMEOUT=65000
-COPY --from=build --chown=app:app /app/apps/web/.next/standalone ./
-COPY --from=build --chown=app:app /app/apps/web/.next/static ./apps/web/.next/static
-COPY --from=build --chown=app:app /app/apps/web/public ./apps/web/public
+COPY --from=verified --chown=app:app /app/apps/web/.next/standalone ./
+COPY --from=verified --chown=app:app /app/apps/web/.next/static ./apps/web/.next/static
+COPY --from=verified --chown=app:app /app/apps/web/public ./apps/web/public
 RUN mkdir -p apps/web/.next/cache && chown app:app apps/web/.next/cache
 USER app
 EXPOSE 3000

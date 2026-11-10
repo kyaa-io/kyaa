@@ -22,7 +22,7 @@ const nextConfig: NextConfig = {
     },
   },
   ...(Object.keys(experimental).length > 0 ? { experimental } : {}),
-  ...(process.env.HOSTING_PROVIDER === "aws" ? { output: "standalone" as const, outputFileTracingRoot: path.resolve(__dirname, "../.."), cacheMaxMemorySize: 0, typescript: { tsconfigPath: "tsconfig.aws.json" } } : {}),
+  ...(process.env.HOSTING_PROVIDER === "aws" ? { output: "standalone" as const, outputFileTracingRoot: path.resolve(__dirname, "../.."), cacheMaxMemorySize: 0, typescript: { tsconfigPath: "tsconfig.aws.json", ignoreBuildErrors: process.env.KYAA_AWS_BUILD_PHASE === "bundle" } } : {}),
   htmlLimitedBots,
   images: { remotePatterns: publicImageRemotePatterns, qualities: [75, 90] },
   poweredByHeader: false,
