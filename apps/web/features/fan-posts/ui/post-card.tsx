@@ -16,6 +16,7 @@ import { PostComposer } from "./post-composer";
 import { ContentActions, ContentTranslation } from "@/features/content-safety/ui/content-actions";
 import { AuthenticatedMedia } from "@/features/content-safety/ui/authenticated-media";
 import { waveMediaCopy } from "@/i18n/catalogs/features__fanpage__wave-media";
+import { LinkifiedText } from "@/features/content-safety/ui/linkified-text";
 import { ContentAssetImage } from "@/features/content-safety/ui/content-asset";
 import { useContentMutation } from "@/features/content-safety/ui/use-content-mutation";
 import { contentCopy } from "@/i18n/catalogs/features__fan_posts__ui";
@@ -50,7 +51,7 @@ export function PostCard({ post, locale, onChanged, onDeleted, detail = false, r
       </Menu.Root> : <ContentActions targetType="fan_post" targetId={post.id} locale={locale} onChanged={onChanged} />}
       {presentation === "board" && <time dateTime={post.createdAt}>{new Intl.DateTimeFormat(locale, {calendar:"gregory",dateStyle:"medium",timeStyle:"short",timeZone:"Asia/Seoul"}).format(new Date(post.createdAt))}</time>}
     </>} </header>
-    {presentation === "board" && displayedBody && <div data-post-body><ContentTranslation sourceText={post.body} targetType="fan_post" targetId={post.id} locale={locale} sourceRevision={post.revision}><p className={styles.body}>{displayedBody}</p></ContentTranslation></div>}
+    {presentation === "board" && displayedBody && <div data-post-body><ContentTranslation sourceText={post.body} targetType="fan_post" targetId={post.id} locale={locale} sourceRevision={post.revision}><p className={styles.body}><LinkifiedText text={displayedBody} locale={locale} /></p></ContentTranslation></div>}
     <div className={styles.postMedia} data-post-media="">
     {presentation === "board" && detail ? <PostAttachmentViewer key={[...post.assets.map(asset=>asset.id),post.video?.id].join(":")} assets={post.assets} video={post.video} publicFanPost={post.celebritySlug!==WAVE_FANPAGE_SLUG} locale={locale}/> : <>
     {post.assets.length > 0 && <div className={`${styles.photos} ${styles.postPhotos}`}>{post.assets.map(asset => <ContentAssetImage key={asset.id} asset={asset} locale={locale} alt={copy.photo} />)}</div>}
@@ -58,7 +59,7 @@ export function PostCard({ post, locale, onChanged, onDeleted, detail = false, r
     </>}
     </div>
 
-    {presentation !== "board" && displayedBody && <ContentTranslation sourceText={post.body} targetType="fan_post" targetId={post.id} locale={locale} sourceRevision={post.revision}><p className={styles.body}>{displayedBody}</p></ContentTranslation>}
+    {presentation !== "board" && displayedBody && <ContentTranslation sourceText={post.body} targetType="fan_post" targetId={post.id} locale={locale} sourceRevision={post.revision}><p className={styles.body}><LinkifiedText text={displayedBody} locale={locale} /></p></ContentTranslation>}
     <div className={`${styles.actions} ${styles.postFooter}`}><button type="button" className={styles.likeButton} onClick={() => void like()} disabled={!auth.ready || !auth.authenticated || mutation.busy} aria-pressed={liked}><Heart size={18} fill={liked ? "currentColor" : "none"} aria-hidden="true" /> {boardLikeLabel??copy.like} {likeCount.toLocaleString(locale)}{boardLikeReward}</button>
       {!detail && <Link href={href} className={styles.button}><MessageCircle size={16} aria-hidden="true" /> {copy.comments} {post.commentCount.toLocaleString(locale)}</Link>}
       <time className={styles.postDate} dateTime={post.createdAt}>{new Intl.DateTimeFormat(locale, { calendar: "gregory", dateStyle: "medium", timeStyle: "short", timeZone: "Asia/Seoul" }).format(new Date(post.createdAt))}</time>
