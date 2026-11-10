@@ -4,7 +4,7 @@ import Link from "next/link";
 import type { Route } from "next";
 import { Menu } from "@base-ui/react/menu";
 import { generateText, type JSONContent } from "@tiptap/core";
-import { BadgeCheck, Ellipsis, Heart, MessageCircle, Pin } from "lucide-react";
+import { BadgeCheck, Ellipsis, Heart, MessageCircle } from "lucide-react";
 import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import { useByUsSession } from "@/components/byus-session-provider";
 import { AlertDialog } from "@/components/ui/overlay/accessible-overlay";
@@ -52,7 +52,7 @@ export function FeedItemCard(props: Props) {
     <header className={styles.meta}>
       <span className={feedStyles.officialMark}><BadgeCheck size={20} aria-hidden="true" /></span>
       <strong>{item.postType === "artist_post" ? creatorName ?? feed.official : "kyaa"}</strong>
-      <span className={feedStyles.officialLabel}>{item.pinned && <Pin size={14} aria-hidden="true" />}{item.postType === "artist_post" ? officialPostLabel ?? copy.artistPost : copy.notice}</span>
+      <span className={feedStyles.officialLabel}>{item.postType === "artist_post" ? officialPostLabel ?? copy.artistPost : copy.notice}</span>
       <time dateTime={item.publishedAt}>{dateLabel(item.publishedAt, locale)}</time>
       {item.visibility === "members" && <span className={styles.badge}>{copy.members}</span>}
       <ContentActions targetType="notice" targetId={item.id} locale={locale} canBlock={false} onChanged={onChanged} />

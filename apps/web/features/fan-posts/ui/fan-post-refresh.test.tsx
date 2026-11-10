@@ -5,7 +5,9 @@ import { FanPostDetail } from "./fan-post-detail";
 import { NoticeDetail } from "@/components/notice/notice-detail";
 import { notifyFanActivityUpdated } from "@/components/fan-ui/fan-activity-updates";
 
-vi.mock("@privy-io/react-auth", () => ({ usePrivy: () => ({ ready: true, authenticated: true, user: { id: "viewer" }, getAccessToken: async () => "token" }) }));
+// One token getter for every render, as in the real SDK; a new one per render re-runs every keyed request forever.
+const getAccessToken = async () => "token";
+vi.mock("@privy-io/react-auth", () => ({ usePrivy: () => ({ ready: true, authenticated: true, user: { id: "viewer" }, getAccessToken }) }));
 vi.mock("@/components/byus-session-provider", () => ({ useByUsSession: () => ({ ready: true, ownerId: "viewer", generation: 0 }) }));
 vi.mock("next/navigation", () => ({ useRouter: () => ({ replace: vi.fn() }), useSearchParams: () => new URLSearchParams() }));
 
@@ -22,6 +24,8 @@ beforeEach(() => {
   vi.stubGlobal("fetch", vi.fn(async (input: string, init?: RequestInit) => {
     if (input === "/api/content-translations" || input === "/api/display-translations") return Response.json({ error: { code: "TRANSLATION_UNAVAILABLE" } }, { status: 503 });
     if (init?.method) { writes++; return Response.json({ ok: true }); }
+    // The composer's attachment policy is not a community data read.
+    if (input.endsWith("/attachment-policy")) return Response.json({ photoLimit: 4, videoAllowed: false });
     reads++;
     if (refresh) return refresh();
     if (input.includes("/comments?")) return Response.json({ items: [], nextCursor: null });
@@ -59,7 +63,6 @@ it("keeps an edit draft mounted on return to the window", async () => {
 it("keeps existing posts visible after publishing while the feed refresh is pending", async () => {
   render(<FanPostFeed slug="artist" locale="en" />);
   const original = await screen.findByText("A fan story");
-  fireEvent.click(screen.getByRole("button", { name: "Write a post" }));
   fireEvent.change(screen.getByRole("textbox", { name: "Write a post" }), { target: { value: "New story" } });
   refresh = () => new Promise(() => {});
   fireEvent.click(screen.getByRole("button", { name: "Publish" }));

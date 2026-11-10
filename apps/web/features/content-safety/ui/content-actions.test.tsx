@@ -153,7 +153,8 @@ describe("content ownership and retries", () => {
 
     expect(input).toHaveAttribute("aria-invalid", "true");
     const descriptions = input.getAttribute("aria-describedby")!.split(" ").map(value => document.getElementById(value)?.textContent);
-    expect(descriptions).toEqual(["JPEG, PNG or WebP, up to 20MB each, 4 photos maximum Large photos are resized automatically.", "JPEG, PNG or WebP, up to 20MB each, 4 photos maximum"]);
+    // Limits are shown only once a choice breaks them.
+    expect(descriptions).toEqual(["JPEG, PNG or WebP, up to 20MB each, 4 photos maximum"]);
   });
   it("retries a failed photo without selecting it again or losing the draft", async () => {
     const fetcher = vi.fn().mockResolvedValueOnce(Response.json({ error: { code: "UNAVAILABLE" } }, { status: 503 }))

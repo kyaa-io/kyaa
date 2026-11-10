@@ -97,3 +97,20 @@
 .postMedia { display:grid; width:fit-content; max-width:100%; }
 .failedIcon { display:grid; place-items:center; width:100%; height:100%; background:var(--color-soft); color:var(--color-muted); }
 .failedIcon > svg { width:20px; height:20px; }
+
+/* 2026-11-10 hotfix: one composer toolbar — attach icons and the visibility chip on the left, 게시 at the right end. */
+.composerTools { flex-wrap:wrap; align-items:center; gap:var(--space-2); }
+.composerAttach { display:flex; min-width:0; align-items:center; gap:var(--space-2); }
+.composer .composerTools .actions { margin:0 0 0 auto; gap:var(--space-2); }
+.attachButton { position:relative; justify-content:center; width:var(--min-target); padding:0; border:1px solid var(--color-line); border-radius:var(--radius-control); background:var(--color-surface); color:var(--color-ink); }
+.photoPicker .attachButton { width:var(--min-target); padding:0; border:1px solid var(--color-line); border-radius:var(--radius-control); background:var(--color-surface); }
+.attachButton svg { width:20px; height:20px; }
+.attachButton:disabled { opacity:.5; cursor:not-allowed; }
+.attachCount { position:absolute; top:calc(var(--space-1) * -1); right:calc(var(--space-1) * -1); display:grid; min-width:18px; height:18px; place-items:center; padding:0 var(--space-1); border-radius:9px; background:var(--fanpage-action-solid,var(--color-ink)); color:#fff; font-size:11px; font-weight:700; font-variant-numeric:tabular-nums; }
+.composerAttach .visibilityTrigger { grid-template-columns:auto 16px; gap:var(--space-1); margin:0; padding:0 var(--space-3); border:1px solid var(--color-line); border-radius:var(--radius-control); background:var(--color-surface); color:var(--color-ink); }
+.composerAttach .visibilityTrigger strong { font-size:13px; font-weight:700; }
+@media(max-width:479px) { .composerAttach { gap:var(--space-1); } .composerAttach .visibilityTrigger { margin-left:0; padding:0 var(--space-2); } .composer .composerTools .actions > button { flex:none; } .composer .composerTools .actions button[data-fan-action-emphasis="primary"] { min-width:64px; } }
+/* Signed-out board: the same composer box with one login action. */
+.guestPrompt { display:block; box-sizing:border-box; min-height:96px; padding:var(--space-3); border:1px solid var(--color-line); border-radius:var(--radius-control); color:var(--color-muted); font-size:var(--fan-body-size,16px); line-height:1.65; }
+.composerTools .guestLogin { margin-left:auto; }
+.srOnly { position:absolute; width:1px; height:1px; overflow:hidden; clip-path:inset(50%); white-space:nowrap; }
