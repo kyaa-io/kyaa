@@ -82,7 +82,7 @@ export function CreatorRankingScreen({ locale, initialTab = "fans", initialMetri
           <div className={styles.columnTitle}><FanHeading as="h2" id="rank-col-fans">{rankingsText(locale, "rkHomeFans")}</FanHeading></div>
           <FanPanel locale={locale} url={rankingUrl("fans", view.metrics.fans, locale, HOME_RANKING_LIMIT)} metric={view.metrics.fans} guest={guest} onMetric={(m) => showMetric("fans", m)} />
         </section>
-        <section className={styles.column} data-column="creators" data-active={view.tab === "creators"} aria-labelledby="rank-col-creators">
+        <section className={styles.column} data-column="creators" data-guest={guest ? "" : undefined} data-active={view.tab === "creators"} aria-labelledby="rank-col-creators">
           <div className={styles.columnTitle}><FanHeading as="h2" id="rank-col-creators">{rankingsText(locale, "rkCreatorTabShort")}</FanHeading></div>
           <CreatorPanel locale={locale} url={rankingUrl("creators", view.metrics.creators, locale, HOME_RANKING_LIMIT)} metric={view.metrics.creators} guest={guest} onMetric={(m) => showMetric("creators", m)} />
         </section>
