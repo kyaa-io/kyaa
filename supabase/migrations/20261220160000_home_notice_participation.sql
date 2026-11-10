@@ -64,8 +64,8 @@ begin
   select jsonb_build_object('items',coalesce((select jsonb_agg(jsonb_build_object(
     'id',c.id,'body',c.body,'revision',c.revision,'createdAt',c.created_at,'isOwner',coalesce(c.app_user_id=p_app_user_id,false),
     'author',jsonb_build_object('nickname',coalesce(nullif(btrim(p.nickname),''),case when p_locale='ko' then '팬' else 'Fan' end),
-      'avatarUrl','/images/avatars/'||coalesce(a.selected_character_id,'star-pink')||'.webp')) order by c.created_at desc,c.id desc)
-    from page c left join public.user_profiles p on p.app_user_id=c.app_user_id left join public.app_user_avatars a on a.app_user_id=c.app_user_id),'[]'::jsonb),
+      'avatarUrl',public.public_fan_avatar_url(c.app_user_id))) order by c.created_at desc,c.id desc)
+    from page c left join public.user_profiles p on p.app_user_id=c.app_user_id),'[]'::jsonb),
     'hasMore',(select count(*)>20 from candidates)) into v_result;
   return v_result;
 end $$;
@@ -142,20 +142,30 @@ grant execute on function public.read_home_notice_participation(text,uuid),publi
 
 -- A non-superuser migration owner still needs table ACLs and FORCE RLS policies (home_n1 / post_dislikes precedent).
 do $access$
-declare me name:=current_user; t record; helper regprocedure;
+declare me name:=current_user; t record; helper regprocedure; definition text;
+  avatar_edge text:=$edge$('public.read_home_notice_comments(text,uuid,text,timestamptz,uuid)','public.public_fan_avatar_url(uuid)')$edge$;
 begin
   if me in ('anon','authenticated','service_role') then raise exception 'Unsafe home notice participation owner'; end if;
   for t in select * from (values
     ('home_notice_comments','select,insert,update'),('home_notice_reactions','select,insert,update,delete'),
-    ('home_notices','select'),('app_users','select'),('user_profiles','select'),('app_user_avatars','select'),
+    ('home_notices','select'),('app_users','select'),('user_profiles','select'),
     ('content_write_events','select,insert'),('account_deletion_requests','select')) as permissions(tname,privileges) loop
     execute format('grant %s on public.%I to %I',t.privileges,t.tname,me);
     execute format('create policy %I on public.%I for all to %I using (true) with check (true)','home_participation_owner_'||me,t.tname,me);
   end loop;
   grant usage on sequence public.content_write_events_id_seq to current_user;
-  foreach helper in array array['public.fan_web_lock_active_user(uuid)'::regprocedure,'public.fan_web_blocked(uuid,uuid)'::regprocedure] loop
+  foreach helper in array array['public.fan_web_lock_active_user(uuid)'::regprocedure,'public.fan_web_blocked(uuid,uuid)'::regprocedure,'public.public_fan_avatar_url(uuid)'::regprocedure] loop
     execute format('grant execute on function %s to %I',helper,me);
   end loop;
+  -- Keep this caller in the existing owner-aware helper registry for later owner transitions.
+  definition:=pg_catalog.pg_get_functiondef('public.list_facts_wrapper_access()'::regprocedure);
+  if position(avatar_edge in definition)=0 then
+    if (length(definition)-length(replace(definition,'from (values','')))/length('from (values')<>1 then
+      raise exception 'HOME_NOTICE_AVATAR_REGISTRY_SHAPE';
+    end if;
+    execute replace(definition,'from (values','from (values'||chr(10)||'   '||avatar_edge||',');
+  end if;
+  perform public.list_facts_wrapper_access();
 end $access$;
 notify pgrst, 'reload schema';
 commit;

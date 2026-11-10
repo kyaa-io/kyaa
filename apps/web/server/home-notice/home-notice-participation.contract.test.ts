@@ -36,3 +36,13 @@ it("sets explicit owner access, rate limits and account deletion handling withou
   expect(sql).toContain("create trigger app_users_scrub_home_notice_participation");
   expect(sql).not.toMatch(/award_|issue_.*stamp|grant.*points/);
 });
+
+it("uses the common public avatar projection and its existing owner-aware access registry", () => {
+  const reader = sql.split("create function public.read_home_notice_comments")[1]!.split("end $$;")[0]!;
+  expect(reader).toContain("public.public_fan_avatar_url(c.app_user_id)");
+  expect(reader).not.toContain("selected_character_id");
+  expect(reader).not.toContain("/images/avatars/");
+  expect(sql).toContain("'public.public_fan_avatar_url(uuid)'::regprocedure");
+  expect(sql).toContain("('public.read_home_notice_comments(text,uuid,text,timestamptz,uuid)','public.public_fan_avatar_url(uuid)')");
+  expect(sql).toContain("perform public.list_facts_wrapper_access()");
+});
