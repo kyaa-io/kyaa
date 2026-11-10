@@ -176,7 +176,7 @@ describe("canonical 03 guest home", () => {
 
   it("uses the Elina participation guide as the final LIVE hero slide", () => {
     render(<GuestHome {...defaultProps} />);
-    fireEvent.click(screen.getByRole("button", { name: "2번째 배너 보기" }));
+    fireEvent.click(screen.getByRole("button", { name: "다음 배너" }));
     const hero = screen.getByRole("region", { name: "홈 배너" });
     expect(within(hero).getByRole("heading", { name: "엘리나와 함께 뱅크시 전시 보러 가요" })).toBeInTheDocument();
     expect(within(hero).getByText("팬 인증하고 응모권을 받아 원하는 선물에 응모하세요.")).toBeInTheDocument();
@@ -254,7 +254,7 @@ describe("canonical 03 guest home", () => {
     expect(screen.getByRole("combobox", { name: "Choose language, currently English" })).toHaveValue("en");
   });
 
-  it("auto-advances every six seconds and supports clean previous, next, and indicator controls", () => {
+  it("auto-advances on desktop and stays manual after arrow navigation", () => {
     vi.useFakeTimers();
     // jsdom never finishes loading pictures; the carousel waits for the next slide's picture in a browser.
     vi.spyOn(HTMLImageElement.prototype, "complete", "get").mockReturnValue(true);
@@ -266,9 +266,15 @@ describe("canonical 03 guest home", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "이전 배너" }));
     expect(screen.getByRole("heading", { name: "엘리나의 정기 LIVE", level: 2 })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "1번째 배너 보기" })).toHaveAttribute("aria-current", "true");
-    expect(within(screen.getByRole("region", { name: "홈 배너" })).getByRole("button", { name: "자동 재생 정지" }))
-      .toHaveAttribute("aria-pressed", "false");
+    const carousel = screen.getByRole("region", { name: "홈 배너" });
+    expect(within(carousel).getByText("01 | 03")).toBeInTheDocument();
+    expect(carousel).toHaveAttribute("data-shine-paused", "true");
+    expect(within(carousel).queryByRole("button", { name: /번째 배너 보기|자동 재생 정지/ })).not.toBeInTheDocument();
+    act(() => vi.advanceTimersByTime(12_000));
+    expect(within(carousel).getByRole("heading", { name: "엘리나의 정기 LIVE", level: 2 })).toBeInTheDocument();
+    fireEvent.click(within(carousel).getByRole("button", { name: "다음 배너" }));
+    expect(within(carousel).getByText("02 | 03")).toBeInTheDocument();
+    expect(within(carousel).getByRole("heading", { name: "다음 정기 방송", level: 2 })).toBeInTheDocument();
   });
 
   it("pauses automatic playback during hover and disables it for reduced motion", () => {

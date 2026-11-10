@@ -2076,3 +2076,5 @@ At the user's request, registered Changha identity and hero images use the unedi
 | shorts 어두운 영상 바탕·컨트롤 | `#111` / `#333` / `#ddd`, 재생 표식 검정 65%, 반경 22px | 원본과 같은 값의 `--color-shortform-*`·`--radius-shortform-control` 토큰으로 이동했다. 카드 비율 9:16·전체화면 높이·댓글/반응 상태는 보존한다. |
 
 공통 FanAction·FanIcon·FanHeading·FanMenu를 사용하고 리스트에 data-row를 단다. raw 값만 동일 계산값으로 치환하며 새 제품 시안·추가 콘텐츠는 만들지 않는다. 기준선 파일과 룰 목록은 완화하지 않는다. 기존 N4의 선택자별 `design-lint-disable <정확 rule ID>` 처리를 공유해 S1·S2·N29의 승인 범위만 표시한다. 회귀 시험은 이 선택자 밖 gradient·blur·purple, 다른 rule ID 주석이 계속 실패하는지 검사한다. API contract 시험은 실제 route export를 거쳐 인증 401/403과 소유자 삭제 거절을 검사한다.
+
+- 2026-11-10 정식 UI gate의 후속 보정: 오늘의 덕질 최애 선택 문구는 본문 보조 14px를 유지하고, 공통 400·700·800 굵기 계약에 따라 원본의 600 대신 `--fan-item-title-weight`(700)를 사용한다. 배너 개별 점·정지 버튼을 복원하지 않고 이전/다음·선형 진행 표시·수동 이동 후 자동 재생 중지, 모바일 자동 재생 금지를 검증한다. 한국어 Elina 진입은 승인된 “덕질 시작하기”를 유지한다.
