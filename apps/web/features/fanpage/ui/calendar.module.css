@@ -58,6 +58,21 @@
 
 .heroCalendar{gap:10px}.calendarHeading{min-height:44px}.calendarFooter{padding-top:8px;min-height:44px}.calendarFooter>a{min-height:44px}.calendarEventDay[data-upcoming="true"] time{background:var(--fanpage-action-solid,var(--color-accent));color:var(--color-surface)}.calendarEventDay>span{background:var(--color-accent)}
 
+/* Filled circle = the selected day only. LIVE = pink dot under the numeral; check-in = green ring with a check badge; today = ink ring (CalendarDayNumber). */
+.calendarDay { grid-template-rows:1fr 7px; min-height:48px; padding:calc(var(--space-1) + 1px) calc(var(--space-1) / 2) calc(var(--space-1) - 1px); }
+.calendarDay time,.calendarEventDay time { width:32px; height:32px; }
+.calendarEventDay time,.calendarEventDay[data-upcoming="true"] time { background:transparent; color:var(--color-ink); }
+.calendarEventDay[aria-pressed="true"] time { background:var(--fanpage-action-solid,#ce0066); color:#fff; }
+.calendarDay[data-checked-in="true"] time,.calendarEventDay[data-checked-in="true"] time { box-shadow:inset 0 0 0 2px var(--color-success); color:var(--color-success); }
+.calendarEventDay[data-checked-in="true"][aria-pressed="true"] time { color:var(--color-surface); }
+.checkinMark { position:absolute; top:2px; left:calc(50% + var(--space-2) - 1px); display:grid; width:16px; height:16px; place-items:center; border:2px solid var(--color-surface); border-radius:50%; background:var(--color-success); color:var(--color-surface); font-style:normal; }
+.checkinMark svg,.calendarKey i svg { width:10px; height:10px; stroke-width:3.5; }
+.calendarKey { display:flex; justify-content:flex-end; align-items:center; gap:var(--space-3); margin-bottom:calc(var(--space-1) * -1.5); color:var(--color-muted); font-size:var(--fan-calendar-meta-size); font-weight:700; line-height:1; }
+.calendarKey span { display:inline-flex; align-items:center; gap:var(--space-1); }
+.calendarKey i { display:grid; place-items:center; font-style:normal; }
+.calendarKey i[data-key="checkin"] { width:14px; height:14px; border-radius:50%; background:var(--color-success); color:var(--color-surface); }
+.calendarKey i[data-key="live"] { width:6px; height:6px; border-radius:50%; background:#ff0080; }
+
 @media (max-width: 389px) {
   .heroCalendar { padding-inline: 8px; }
 }

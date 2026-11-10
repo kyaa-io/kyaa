@@ -2163,3 +2163,11 @@ At the user's request, registered Changha identity and hero images use the unedi
 - 바로가기 9칸은 한 카드(1px `--color-line`, 반경 `--radius-collection`) 안에 두 열로 늘어선다. 행은 컬러 일러스트 아이콘 40(390은 32) · 이름 · 화살표(390은 생략)이고 행 사이는 헤어라인이다(위버스 2열 메뉴 기준). 아이콘은 imagegen 시트(저장소 밖 보관)에서 `scripts/prepare-my-shortcut-icons.mjs`로 잘라 `public/images/my/shortcuts/*.webp`로 둔다. 하트·동전·응모권과 같은 광택 3D 재질이다. 무채색 선 아이콘을 다시 쓰지 않는다.
 - 패스포트 스탬프 줄(`my-passport-card`, 미션북 `Slot`)의 아직 받지 않은 칸은 점선 원 대신 받은 칸과 같은 그림의 흐린 회색 스탬프(`public/images/stamps/ghost-v1`, `scripts/prepare-ghost-stamps.mjs`가 ink-v1에서 회색 한 색·알파 50%로 만든다)를 놓는다. 그림이 없는 칸은 회색 틀(`frame.webp`)이다. 받은 칸은 같은 그림에 `saturate(1.25) contrast(1.12)`로 더 진하게 보인다. 이전의 "회색 스탬프를 늘어놓지 않는다"는 이 요청으로 바꿨다.
 - 헤더 상태 캡슐(`fan-header-status`)의 하트와 포인트는 `economy/heart.svg`, `economy/point-coin.svg` 애셋 그림이다(`P` 글자·단색 선 하트 폐기). 크기는 기존 L10 규칙(24, 390 캡슐 안 16)을 따른다.
+
+### 2026-11-10 운영 핫픽스 — 크리에이터 미디어·일정 달력
+
+사용자 [운영] 지시(PROD-HOTFIX-1920)에 따라 모임 기능이 꺼진 운영 화면에 적용한다. 소유자는 `features/media/ui/creator-media-panel`(비 compact 분기)와 `features/fanpage/ui/celebrity-calendar`·`calendar.module.css`다.
+
+- 크리에이터 홈 `영상`·`사진`·`다시보기` 미리보기와 게시판 미디어(`?tab=board&section=media`)는 글자 없는 썸네일 격자다. 768px 미만 3열, 768px부터 4열, 1024px부터 6열, 간격 `--space-1`, 모서리 `--radius-control`. 제목·URL·출처·날짜는 화면에 쓰지 않고 접근 이름에만 원문으로 둔다. 원문 데이터는 바꾸지 않는다.
+- 사진·게시판 미디어 칸은 정사각 크롭. 크리에이터 홈 `영상` 줄의 세로 클립(YouTube 외)은 9:16을 유지한다. 영상 칸은 왼쪽 위 28px 재생 표시(얼굴을 가리지 않게)와 원문 링크(새 창)를 둔다. 사진 실패는 아이콘만 표시한다.
+- 일정 달력: 꽉 찬 원은 선택한 날 하나(`--fanpage-action-solid`). LIVE는 숫자 아래 6px 분홍 점, 출석은 숫자에 2px `--color-success` 링과 오른쪽 위 16px 초록 체크 배지, 오늘은 1px 잉크 테두리. 달력 위 오른쪽에 범례 칩 2개(✓ 출석 · ● LIVE). 일정이 없는 날도 일정 있는 날과 같은 칸 구조(48px, 아래 7px 줄)로 숫자 높이를 맞춘다.

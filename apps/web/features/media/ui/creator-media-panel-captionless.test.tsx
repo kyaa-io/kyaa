@@ -41,13 +41,17 @@ it("still opens the post from a photo without a caption, under a link with a nam
   }
 });
 
-it("keeps the original caption and the meta line on other cards", () => {
+// 2026-11-10 production hotfix: the groups-off gallery is thumbnail-only; captions stay in the accessible name.
+it("keeps the original caption as the link name without drawing it on other cards", () => {
   panel();
-  expect(card("/notices/kept").querySelector("strong")).toHaveTextContent("진짜 연말 •• ♥");
-  expect(card("/notices/kept").querySelector("time")).not.toBeNull();
+  const link = screen.getAllByRole("link").find(item => item.getAttribute("href")?.includes("/notices/kept"))!;
+  expect(link).toHaveAccessibleName("진짜 연말 •• ♥");
+  expect(card("/notices/kept")).toHaveTextContent("");
 });
 
-it("keeps the account name on a video without a caption", () => {
+it("draws a video without a caption as a thumbnail with a named play link", () => {
   panel();
-  expect(card("/reel/ig2/")).toHaveTextContent("@mmnoo.s");
+  const link = screen.getAllByRole("link").find(item => item.getAttribute("href")?.includes("/reel/ig2/"))!;
+  expect(link).toHaveAccessibleName(expect.stringMatching(/^재생 · /));
+  expect(card("/reel/ig2/")).toHaveTextContent("");
 });
