@@ -8,8 +8,8 @@ do $guard$ begin
   end if;
 end $guard$;
 
--- Fans: admin (active allowlist entry, stored in another letter case), idle_admin (allowlist entry that is not active), tester (test-*@privy.io,
--- upper-case), noemail (no verified email: a normal fan), fan1, fan2. The operator and test accounts hold the most hearts.
+-- Fans: admin (active allowlist entry; app_users stores emails normalized, so the allowlist side carries the other letter case), idle_admin (allowlist
+-- entry that is not active), tester (test-*@privy.io), noemail (no verified email: a normal fan), fan1, fan2. The operator and test accounts hold the most hearts.
 begin;
 set local session_replication_role = replica;
 delete from public.creator_heart_ledger;
@@ -33,7 +33,7 @@ do $$ declare f text; begin
   insert into public.group_pages(kind,celebrity_id,name) values('fan',pg_temp.ex_id('creator'),'Ex fixture');
   foreach f in array array['admin','idle_admin','tester','noemail','fan1','fan2'] loop
     insert into public.app_users(id,privy_user_id,verified_email) values(pg_temp.ex_id(f),'did:privy:ex-'||f,
-      case f when 'admin' then 'Admin@Ex-Rank.Example.Test' when 'tester' then 'Test-QA@Privy.IO' when 'noemail' then null else f||'@ex-rank.example.test' end);
+      case f when 'tester' then 'test-qa@privy.io' when 'noemail' then null else f||'@ex-rank.example.test' end);
     insert into public.user_profiles(app_user_id,nickname,nickname_normalized) values(pg_temp.ex_id(f),'ex_'||f,'ex_'||f);
   end loop;
   set local session_replication_role = replica;
@@ -51,17 +51,17 @@ end $$;
 
 -- Before the allowlist entry: only the test account is out (rule 2). A fan with no email is listed.
 do $$ begin
-  if pg_temp.ex_rank('tester','hearts') is not null then raise exception 'upper-case test-*@privy.io account is listed'; end if;
+  if pg_temp.ex_rank('tester','hearts') is not null then raise exception 'test-*@privy.io account is listed'; end if;
   if pg_temp.ex_rank('noemail','hearts') is null then raise exception 'a fan with no verified email vanished from the cumulative list'; end if;
   if pg_temp.ex_rank('admin','hearts') <> 1 then raise exception 'precondition: admin should lead before allowlisting'; end if;
 end $$;
 
-insert into public.admin_allowlist(email,role,active) values ('admin@ex-rank.example.test','admin',true), ('idle_admin@ex-rank.example.test','admin',false);
+insert into public.admin_allowlist(email,role,active) values ('Admin@Ex-Rank.Example.Test','admin',true), ('idle_admin@ex-rank.example.test','admin',false);
 
 -- After: the active, differently-cased admin and the test account are out of every reader; the rest rank up without gaps; the inactive allowlist entry and the no-email fan stay.
 do $$ declare m text; p text; begin
   foreach m in array array['hearts'] loop
-    if pg_temp.ex_rank('admin',m) is not null then raise exception 'allowlisted admin (other letter case) is listed in %', m; end if;
+    if pg_temp.ex_rank('admin',m) is not null then raise exception 'allowlisted admin (allowlist stored in another letter case) is listed in %', m; end if;
     if pg_temp.ex_rank('tester',m) is not null then raise exception 'test account is listed in %', m; end if;
     if pg_temp.ex_rank('noemail',m) <> 1 or pg_temp.ex_rank('idle_admin',m) <> 2 or pg_temp.ex_rank('fan1',m) <> 3 or pg_temp.ex_rank('fan2',m) <> 4 then
       raise exception 'cumulative ranks did not close up: noemail %, idle_admin %, fan1 %, fan2 %', pg_temp.ex_rank('noemail',m), pg_temp.ex_rank('idle_admin',m), pg_temp.ex_rank('fan1',m), pg_temp.ex_rank('fan2',m);
