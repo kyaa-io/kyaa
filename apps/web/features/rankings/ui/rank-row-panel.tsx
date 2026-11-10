@@ -22,7 +22,8 @@ export type RankRowPanelProps = PanelBase & (
   | { kind: "fan"; row: HomeFanRankingRow; onOpenProfile?: () => void; loginHref?: string }
 );
 
-const isCount = (value: number | null | undefined): value is number => typeof value === "number" && Number.isFinite(value);
+/** A gain worth a cell: a real, non-zero count. Zero and a missing day leave the cell out (no "+0"). */
+const isCount = (value: number | null | undefined): value is number => typeof value === "number" && Number.isFinite(value) && value !== 0;
 const signed = (locale: AppLocale, value: number) => `${value < 0 ? "−" : "+"}${Math.abs(value).toLocaleString(locale)}`;
 
 function Stat({ label, value }: { label: string; value: string }) {

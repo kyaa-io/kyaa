@@ -1,14 +1,12 @@
 import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
-import { afterEach, beforeEach, expect, it, vi } from "vitest";
+import { afterEach, expect, it, vi } from "vitest";
 
 const auth = vi.hoisted(() => ({ value: { ready: true, authenticated: true, user: { id: "me" } as null | { id: string }, getAccessToken: async () => "t" } }));
 vi.mock("@/features/auth/client/cognito-auth", () => ({ useByUsAuth: () => auth.value }));
-const router = vi.hoisted(() => ({ replace: vi.fn() }));
-vi.mock("next/navigation", () => ({ useRouter: () => router }));
 vi.mock("@/features/group-social/profile-modal", () => ({ ProfileModal: ({ person }: { person: { nickname: string } }) => <div role="dialog" aria-label={person.nickname} /> }));
 
 import { clearResources } from "@/components/fan-ui/resource-cache";
-import { CreatorRankingScreen } from "./rankings-screens";
+import { RankingBoard } from "./ranking-board";
 
 const fanRow = (rank: number, extra: Record<string, unknown> = {}) => ({ rank, score: 60 - rank, hearts: 60 - rank, points: null, nickname: `하트팬${rank}`, characterId: "c1", tier: null, isMe: false, delta: null, favorite: null, weekGain: null, dayGain: 0, ...extra });
 const creatorRow = (rank: number, extra: Record<string, unknown> = {}) => ({ rank, slug: `c${rank}`, name: `크리에이터${rank}`, imageUrl: null, score: 3, hearts: 40, fans: 3, challenge: false, delta: null, weekGain: null, dayGain: 0, ...extra });
@@ -29,7 +27,6 @@ function stub(rowsFor: (kind: string, limit: number) => number = (_, limit) => l
 const inRow = async (name: string) => (await screen.findAllByText(name)).find((n) => n.closest("li"))!;
 const urls = (fetcher: ReturnType<typeof stub>) => fetcher.mock.calls.map(([input]) => String(input));
 
-beforeEach(() => { router.replace.mockClear(); });
 afterEach(() => { vi.unstubAllGlobals(); clearResources(); auth.value = { ...auth.value, authenticated: true, user: { id: "me" } }; });
 
 function stubRows(fans: unknown[], creators: unknown[], me: unknown = null) {
@@ -41,38 +38,38 @@ function stubRows(fans: unknown[], creators: unknown[], me: unknown = null) {
   return fetcher;
 }
 
-it("reads both lists with 50 rows each, the same rows as the home card, with no period chips and no podium", async () => {
+it("reads both lists with ten heart rows each, one under the other: no tabs, no metric choice, no period chips, no podium", async () => {
   const fetcher = stub();
-  const { container } = render(<CreatorRankingScreen locale="ko" />);
-  expect(await screen.findByRole("button", { name: "찐팬" })).toHaveAttribute("aria-pressed", "true");
+  const { container } = render(<RankingBoard locale="ko" />);
   await screen.findByText("하트팬1");
-  expect(urls(fetcher)).toContain("/api/rankings/home?kind=fans&metric=hearts&locale=ko&limit=50");
-  expect(urls(fetcher)).toContain("/api/rankings/home?kind=creators&metric=hearts&locale=ko&limit=50");
+  expect(urls(fetcher)).toContain("/api/rankings/home?kind=fans&metric=hearts&locale=ko&limit=10");
+  expect(urls(fetcher)).toContain("/api/rankings/home?kind=creators&metric=hearts&locale=ko&limit=10");
   expect(urls(fetcher).some((url) => url.includes("/api/rankings/fans") || url.includes("period="))).toBe(false);
-  expect(container.querySelectorAll("li[data-row='fan-rank']")).toHaveLength(50);
-  expect(container.querySelector("[class*='podium']")).toBeNull();
+  expect(container.querySelectorAll("li[data-row='fan-rank']")).toHaveLength(10);
+  expect(container.querySelectorAll("li[data-row='creator-rank']")).toHaveLength(10);
+  expect([...container.querySelectorAll("[data-column]")].map((n) => n.getAttribute("data-column"))).toEqual(["fans", "creators"]);
+  expect(screen.getByRole("heading", { name: "찐팬" })).toBeInTheDocument();
+  expect(screen.getByRole("heading", { name: "크리에이터" })).toBeInTheDocument();
+  expect(screen.queryByRole("tab")).toBeNull();
+  expect(screen.queryByRole("button", { name: "포인트" })).toBeNull();
+  expect(screen.queryByRole("button", { name: "찐팬 수" })).toBeNull();
   expect(screen.queryByRole("group", { name: "기간" })).toBeNull();
+  expect(container.querySelector("[class*='podium']")).toBeNull();
+  expect(container.querySelector("[data-metric='points']")).toBeNull();
+  expect(container.querySelector("[data-metric='fans']")).toBeNull();
+  expect(container.querySelector("a[href*='/rankings']")).toBeNull();
   // Numbers first: ranks 1-3 read as numbers (the medal artwork is not here yet).
   expect([...container.querySelectorAll("li[data-row='fan-rank'] [data-medal]")].map((n) => n.textContent)).toEqual(["1", "2", "3"]);
-  // The metric stays reachable by touch and keyboard: the other metric is one press away.
-  expect(screen.getAllByRole("button", { name: "하트" })[0]).toHaveAttribute("aria-pressed", "true");
-  expect(screen.getByRole("button", { name: "포인트" })).toBeInTheDocument();
-  // Signed in: my rank under the list.
+  // Signed in: my rank under the fan list.
   expect(screen.getByRole("status").textContent).toContain("12위");
 });
 
-it("opens on ?tab=creators&metric=fans, keeps the 찐팬 100 tag, and falls back to hearts for a metric the tab does not have", async () => {
-  const fetcher = stub();
-  const first = render(<CreatorRankingScreen locale="ko" initialTab="creators" initialMetric="fans" />);
-  expect(await screen.findByRole("button", { name: "크리에이터" })).toHaveAttribute("aria-pressed", "true");
+it("keeps the 찐팬 100 tag on the creator row and counts hearts", async () => {
+  stub();
+  render(<RankingBoard locale="ko" />);
   const row = (await inRow("엘리나")).closest("li")!;
-  expect(urls(fetcher)).toContain("/api/rankings/home?kind=creators&metric=fans&locale=ko&limit=50");
-  expect(row.querySelector("[data-metric='fans']")).toHaveAttribute("aria-label", "찐팬 3");
+  expect(row.querySelector("[data-metric='hearts']")).toHaveAttribute("aria-label", "하트 40개");
   expect(row.textContent).toContain("찐팬 100 도전 중");
-  first.unmount(); clearResources(); fetcher.mockClear();
-  render(<CreatorRankingScreen locale="ko" initialTab="creators" initialMetric="points" />);
-  await inRow("엘리나");
-  expect(urls(fetcher)).toContain("/api/rankings/home?kind=creators&metric=hearts&locale=ko&limit=50");
 });
 
 it("a row reads movement, today's gain and the way to first place; the first row says so", async () => {
@@ -81,10 +78,10 @@ it("a row reads movement, today's gain and the way to first place; the first row
       creatorRow(1, { name: "일등", hearts: 12345, delta: 2, dayGain: 125, liveNow: true }),
       creatorRow(2, { name: "이등", hearts: 12345, delta: -1, dayGain: 0 }),
       creatorRow(3, { name: "삼등", hearts: 100, delta: 0, dayGain: null }),
-      creatorRow(4, { name: "신규", hearts: 7, delta: null, isNew: true, dayGain: -2 }),
+      creatorRow(4, { name: "새얼굴", hearts: 7, delta: null, isNew: true, dayGain: -2 }),
     ],
   );
-  const view = render(<CreatorRankingScreen locale="ko" initialTab="creators" />);
+  const view = render(<RankingBoard locale="ko" />);
   await inRow("일등");
   const row = (name: string) => view.container.querySelector(`li[data-row='creator-rank']:has([title='${name}'])`) as HTMLElement;
   expect(within(row("일등")).getByLabelText("2계단 올라감")).toBeInTheDocument();
@@ -94,16 +91,20 @@ it("a row reads movement, today's gain and the way to first place; the first row
   expect(within(row("일등")).getByLabelText("하트 12,345개").textContent).toContain("1.2만");
   expect(within(row("이등")).getByLabelText("1계단 내려감")).toBeInTheDocument();
   expect(within(row("이등")).getByText("1위와 동점")).toBeInTheDocument();
-  expect(within(row("삼등")).getByLabelText("변동 없음")).toBeInTheDocument();
+  expect(row("삼등").querySelector("[data-delta-cell]")).toBeNull();
   expect(row("삼등").textContent).not.toContain("오늘");
+  expect(row("이등").textContent).not.toContain("오늘");
+  expect(row("일등").querySelector("[data-icon='heart']")).not.toBeNull();
   expect(within(row("삼등")).getByText(/1위까지/)).toBeInTheDocument();
-  expect(row("신규").querySelector("[data-direction='new']")?.textContent).toBe("신규");
-  expect(row("신규").textContent).toContain("오늘 −2");
+  expect(row("새얼굴").textContent).not.toContain("신규");
+  expect(row("새얼굴").querySelector("[data-direction='new']")).toBeNull();
+  expect(row("새얼굴").querySelector("[data-direction]")).toBeNull();
+  expect(row("새얼굴").textContent).toContain("오늘 −2");
 });
 
 it("opens one row at a time with the action to the page, and closes it with the same row", async () => {
   stub();
-  const view = render(<CreatorRankingScreen locale="ko" initialTab="creators" />);
+  const view = render(<RankingBoard locale="ko" />);
   await inRow("엘리나");
   const rows = () => [...view.container.querySelectorAll("li[data-row='creator-rank'] > button")] as HTMLButtonElement[];
   expect(rows()[0]).toHaveAttribute("aria-expanded", "false");
@@ -122,50 +123,40 @@ it("opens one row at a time with the action to the page, and closes it with the 
 
 it("a signed-in fan row opens the profile window; a signed-out one leads to sign-in", async () => {
   stubRows([fanRow(1, { profileRef: { kind: "home_ranking", day: "2026-11-09", computedAt: "2026-11-09T00:00:00Z", metric: "hearts", rank: 1, signature: "s" } })], []);
-  const view = render(<CreatorRankingScreen locale="ko" />);
+  const view = render(<RankingBoard locale="ko" />);
   await screen.findByText("하트팬1");
   fireEvent.click(view.container.querySelector("li[data-row='fan-rank'] > button")!);
   fireEvent.click(screen.getByRole("button", { name: "프로필 보기" }));
   expect(await screen.findByRole("dialog", { name: "하트팬1" })).toBeInTheDocument();
   view.unmount(); clearResources();
   auth.value = { ...auth.value, authenticated: false, user: null };
-  const guest = render(<CreatorRankingScreen locale="ko" />);
+  const guest = render(<RankingBoard locale="ko" />);
   await screen.findByText("하트팬1");
   fireEvent.click(guest.container.querySelector("li[data-row='fan-rank'] > button")!);
   const login = screen.getByRole("link", { name: "로그인하고 프로필 보기" });
-  expect(decodeURIComponent(login.getAttribute("href")!)).toContain("/rankings?locale=ko&tab=fans&metric=hearts");
+  expect(decodeURIComponent(login.getAttribute("href")!)).toContain("/?locale=ko");
 });
 
-it("writes the tab and metric to the address without scrolling; a tab change goes to that tab's hearts", async () => {
-  const fetcher = stub();
-  render(<CreatorRankingScreen locale="ko" />);
-  await screen.findByText("하트팬1");
-  fireEvent.click(screen.getByRole("button", { name: "포인트" }));
-  expect(router.replace).toHaveBeenLastCalledWith("/rankings?locale=ko&tab=fans&metric=points", { scroll: false });
-  await waitFor(() => expect(urls(fetcher)).toContain("/api/rankings/home?kind=fans&metric=points&locale=ko&limit=50"));
-  fireEvent.click(screen.getByRole("button", { name: "크리에이터" }));
-  expect(router.replace).toHaveBeenLastCalledWith("/rankings?locale=ko&tab=creators&metric=hearts", { scroll: false });
-  await inRow("엘리나");
-});
-
-it("signed out: the rows the API gives, no placeholders, and the one way to sign in back to the same tab and metric", async () => {
+it("signed out: the rows the API gives, no placeholders, and one way to sign in back to the home page", async () => {
   auth.value = { ...auth.value, authenticated: false, user: null };
   stub((_, limit) => Math.min(limit, 5));
-  const { container } = render(<CreatorRankingScreen locale="ko" initialTab="fans" initialMetric="points" />);
+  const { container } = render(<RankingBoard locale="ko" />);
   await screen.findByText("하트팬1");
   expect(container.querySelectorAll("li[data-row='fan-rank']")).toHaveLength(5);
-  const login = screen.getAllByRole("link", { name: "로그인하고 내 순위 보기" })[0]!;
-  expect(login.getAttribute("href")).toContain("/login");
-  expect(decodeURIComponent(login.getAttribute("href")!)).toContain("/rankings?locale=ko&tab=fans&metric=points");
+  const logins = screen.getAllByRole("link", { name: "로그인하고 내 순위 보기" });
+  expect(logins).toHaveLength(1);
+  expect(logins[0]!.getAttribute("href")).toContain("/login");
+  expect(decodeURIComponent(logins[0]!.getAttribute("href")!)).toContain("/?locale=ko");
+  expect(container.querySelector("[data-column='creators'] [data-ranking-foot]")).toBeNull();
   expect(container.querySelector("[data-placeholder]")).toBeNull();
 });
 
 it("a short list keeps its place with rank numbers and empty rings only, and a first-place highlight of what really changed", async () => {
   stubRows([fanRow(1, { dayGain: 3, delta: 5 }), fanRow(2, { dayGain: 9 }), fanRow(3)], [creatorRow(1, { dayGain: 1 })]);
-  const { container } = render(<CreatorRankingScreen locale="ko" />);
+  const { container } = render(<RankingBoard locale="ko" />);
   await inRow("하트팬1");
   const placeholders = [...container.querySelectorAll("[data-column='fans'] li[data-placeholder]")];
-  expect(placeholders.map((n) => n.textContent)).toEqual(["4—", "5—", "6—", "7—", "8—", "9—", "10—"]);
+  expect(placeholders.map((n) => n.textContent)).toEqual(["4", "5", "6", "7", "8", "9", "10"]);
   expect(container.querySelector("[data-column='fans'] [data-loading]")).toBeNull();
   const highlight = container.querySelector("[data-column='fans'] [data-rank-highlight]")!;
   expect(highlight.getAttribute("data-rank-highlight")).toBe("rise");
@@ -175,7 +166,7 @@ it("a short list keeps its place with rank numbers and empty rings only, and a f
 
 it("while the first answer is read it shows loading rows and an empty frame, never placeholders or a highlight", async () => {
   vi.stubGlobal("fetch", vi.fn(() => new Promise(() => {})));
-  const { container } = render(<CreatorRankingScreen locale="ko" />);
+  const { container } = render(<RankingBoard locale="ko" />);
   expect(container.querySelectorAll("[data-column='fans'] li[data-row='fan-rank-loading']")).toHaveLength(10);
   expect(container.querySelector("[data-column='fans'] [data-placeholder]")).toBeNull();
   expect(container.querySelector("[data-column='fans'] [data-rank-highlight='loading']")).not.toBeNull();
@@ -184,7 +175,7 @@ it("while the first answer is read it shows loading rows and an empty frame, nev
 it("an error draws no highlight and offers a retry that reads again", async () => {
   const fetcher = vi.fn(async () => new Response("no", { status: 503 }));
   vi.stubGlobal("fetch", fetcher);
-  const { container } = render(<CreatorRankingScreen locale="ko" />);
+  const { container } = render(<RankingBoard locale="ko" />);
   const retry = (await screen.findAllByRole("button", { name: "다시 시도" }))[0]!;
   expect(container.querySelector("[data-rank-highlight]")).toBeNull();
   const calls = fetcher.mock.calls.length;
@@ -197,7 +188,7 @@ it("counts the update line from the server time every ten seconds, stops hidden,
   try {
     vi.setSystemTime(new Date("2026-11-09T00:00:30Z"));
     stubRows([fanRow(1)], [creatorRow(1)]);
-    const view = render(<CreatorRankingScreen locale="ko" />);
+    const view = render(<RankingBoard locale="ko" />);
     await vi.waitFor(() => expect(screen.getAllByText("30초 전 업데이트").length).toBeGreaterThan(0));
     expect(view.container.querySelector("[data-column='fans'] [data-metric-line]")!.textContent).toContain("누적 하트");
     act(() => { vi.advanceTimersByTime(10_000); });
@@ -216,9 +207,33 @@ it("counts the update line from the server time every ten seconds, stops hidden,
   } finally { vi.useRealTimers(); Object.defineProperty(document, "visibilityState", { configurable: true, get: () => "visible" }); }
 });
 
-it("shows the empty line, with the highlight saying nothing changed, when the day has no rows", async () => {
+it("shows the empty line and no highlight when the day has no rows", async () => {
   stub(() => 0);
-  const { container } = render(<CreatorRankingScreen locale="ko" />);
+  const { container } = render(<RankingBoard locale="ko" />);
   expect((await screen.findAllByText("아직 순위가 없어요")).length).toBe(2);
-  expect(container.querySelector("[data-column='fans'] [data-rank-highlight='none']")).not.toBeNull();
+  expect(container.querySelector("[data-rank-highlight]")).toBeNull();
+});
+
+it("a day where nothing moved and nobody gained hearts draws no highlight, and no 변동 없음 line", async () => {
+  stubRows([fanRow(1), fanRow(2)], [creatorRow(1)]);
+  const { container } = render(<RankingBoard locale="ko" />);
+  await inRow("하트팬1");
+  expect(container.querySelector("[data-rank-highlight]")).toBeNull();
+  expect(container.textContent).not.toContain("변동 없음 ·");
+  expect(screen.queryByText("오늘 가장 많이 오름")).toBeNull();
+});
+
+it("draws no dead value anywhere: no 신규, no — mark, no +0, no 변동 없음, and no my-rank line without a rank", async () => {
+  stubRows(
+    [fanRow(1, { dayGain: 0, delta: 0 }), fanRow(2, { dayGain: null, delta: null, isNew: true }), fanRow(3, { dayGain: 0 })],
+    [creatorRow(1, { dayGain: 0, delta: 0 }), creatorRow(2, { dayGain: 0, delta: null, isNew: true })],
+    null,
+  );
+  const { container } = render(<RankingBoard locale="ko" />);
+  await inRow("하트팬1");
+  const text = container.textContent!;
+  for (const dead of ["신규", "—", "+0", "변동 없음"]) expect(text).not.toContain(dead);
+  expect(container.querySelector("[data-delta-cell]")).toBeNull();
+  expect(container.querySelector("[data-ranking-foot]")).toBeNull();
+  expect(container.querySelector("[data-rank-highlight]")).toBeNull();
 });

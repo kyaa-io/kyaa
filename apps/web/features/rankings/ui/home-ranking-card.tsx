@@ -1,44 +1,14 @@
 "use client";
-import Link from "next/link";
-import { FanAction } from "@/components/fan-ui/fan-action";
 import { FanHeading } from "@/components/fan-ui/fan-heading";
-import { FanState } from "@/components/fan-ui/fan-state";
-import { useByUsAuth } from "@/features/auth/client/cognito-auth";
 import type { AppLocale } from "@/i18n/locales";
-import { homeCreatorRankingSchema, homeFanRankingSchema } from "../domain/types";
+import { RankingBoard } from "./ranking-board";
 import { rankingsText } from "./rankings-copy";
-import { CreatorRows, FanRows, rankingUrl, rankingsPageHref, updatedLabel, useLiveRanking, type Live } from "./ranking-rows";
 import styles from "./home-ranking-card.module.css";
 
-export { updatedLabel } from "./ranking-rows";
-const parseFans = (value: unknown) => homeFanRankingSchema.parse(value);
-const parseCreators = (value: unknown) => homeCreatorRankingSchema.parse(value);
-
-function Body<T extends { computedAt: string | null; rows: unknown[] }>({ locale, live, children }: { locale: AppLocale; live: Live<T>; children: (data: T) => React.ReactNode }) {
-  if (live.state.status === "loading") return <div className={styles.loading} aria-busy="true" />;
-  if (live.state.status === "error") return <FanState kind="error" title={rankingsText(locale, "rkError")} actions={<FanAction variant="text" onClick={live.retry}>{rankingsText(locale, "rkRetry")}</FanAction>} />;
-  if (!live.state.data.rows.length) return <FanState kind="empty" title={rankingsText(locale, "rkEmpty")} />;
-  return children(live.state.data);
-}
-
-/** Hearts-only home card. The full leaderboard retains its independent metric choices. */
+/** 홈의 오늘의 랭킹: 제목 하나 아래에 랭킹 본문(`RankingBoard`)을 그대로 놓는다. 따로 펼치는 전체 화면은 없다. */
 export function HomeRankingCard({ locale, headingId = "home-ranking-heading" }: { locale: AppLocale; headingId?: string }) {
-  const auth = useByUsAuth();
-  const fans = useLiveRanking(rankingUrl("fans", "hearts", locale, 10), parseFans);
-  const creators = useLiveRanking(rankingUrl("creators", "hearts", locale, 10), parseCreators);
-  const guest = !auth.authenticated;
-  const computedAt = fans.state.status === "ready" ? fans.state.data.computedAt : null;
-  const updated = computedAt ? updatedLabel(locale, computedAt, new Date(), "rkHomeUpdated") : null;
   return <section className={styles.card} aria-labelledby={headingId} data-home-ranking>
-    <header className={styles.head}><FanHeading id={headingId}>{rankingsText(locale, "rkHomeTitle")}</FanHeading>{updated ? <time dateTime={computedAt!}>{updated}</time> : null}</header>
-    <section aria-labelledby={`${headingId}-fans`}>
-      <div className={styles.label}><FanHeading as="h3" id={`${headingId}-fans`}>{rankingsText(locale, "rkHomeFans")}</FanHeading></div>
-      <Body locale={locale} live={fans}>{data => <FanRows compact locale={locale} ranking={data} metric="hearts" show={10} scope={headingId} guest={guest} />}</Body>
-    </section>
-    <section className={styles.creators} aria-labelledby={`${headingId}-creators`}>
-      <div className={styles.label}><FanHeading as="h3" id={`${headingId}-creators`}>{rankingsText(locale, "rkCreatorTabShort")}</FanHeading></div>
-      <Body locale={locale} live={creators}>{data => <CreatorRows compact locale={locale} ranking={data} metric="hearts" show={10} scope={headingId} />}</Body>
-    </section>
-    <Link className={styles.all} href={rankingsPageHref(locale, "fans", "hearts", guest)}>{rankingsText(locale, "rkViewAll")} <span aria-hidden="true">›</span></Link>
+    <FanHeading id={headingId}>{rankingsText(locale, "rkHomeTitle")}</FanHeading>
+    <RankingBoard locale={locale} scope={headingId} />
   </section>;
 }

@@ -82,7 +82,7 @@ function HomeLayout({ locale, hero, thinBanner, notices, gallery }: { locale: Ap
       <div className={styles.shell}>
         <main id="main-content" className={styles.main}>
           {hero}
-          <div className={styles.contentSection}><HomeRankingCard locale={locale} /></div>
+          <div id="home-ranking" className={styles.contentSection}><HomeRankingCard locale={locale} /></div>
           {thinBanner}
           <ObservedLiveStrip locale={locale} />
           {notices}

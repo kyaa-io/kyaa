@@ -12,7 +12,7 @@ it("picks the biggest real climb first, then the most hearts gained today, then 
   expect(pickHighlight([])).toEqual({ kind: "none" });
 });
 
-it("names the person and the real value, or says nothing changed", () => {
+it("names the person and the real value, and draws nothing when nothing changed", () => {
   const view = render(<RankHighlight locale="ko" rows={[row("a", 99, 210)]} />);
   expect(screen.getByText("오늘 가장 많이 오름")).toBeInTheDocument();
   expect(screen.getByText("이름a")).toBeInTheDocument();
@@ -21,8 +21,8 @@ it("names the person and the real value, or says nothing changed", () => {
   expect(screen.getByText("오늘 하트 최다")).toBeInTheDocument();
   expect(screen.getByText("+3")).toBeInTheDocument();
   view.rerender(<RankHighlight locale="ko" rows={[row("a", 0, 0)]} />);
-  expect(screen.getByText("변동 없음")).toBeInTheDocument();
-  expect(screen.queryByTestId("avatar-a")).toBeNull();
+  expect(view.container.querySelector("[data-rank-highlight]")).toBeNull();
+  expect(view.container.textContent).toBe("");
 });
 
 it("while loading it holds the frame without a word or a name", () => {

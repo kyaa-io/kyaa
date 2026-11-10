@@ -1,0 +1,9 @@
+/* 홈 오늘의 랭킹 본문: 390은 찐팬 → 크리에이터 세로, 1024부터 두 단이 카드 안쪽 폭을 반씩 채운다(단 사이 40). 행(64)·열은 ranking-rows.module.css. */
+.columns { display: grid; gap: var(--space-8); min-width: 0; }
+.column > h3[data-fan-heading] { margin: 0; font-size: var(--fan-action-emphasis-size); font-weight: 700; line-height: 20px; }
+.column { display: grid; gap: var(--space-3); align-content: start; min-width: 0; }
+.board { display: grid; min-width: 0; }
+
+@media (min-width: 64rem) {
+  .columns { grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: var(--space-10); }
+}

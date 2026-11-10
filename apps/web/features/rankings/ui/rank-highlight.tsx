@@ -23,14 +23,12 @@ export function pickHighlight(rows: readonly HighlightRow[]): Highlight {
   return rise.kind !== "none" ? rise : day;
 }
 
-/** Card under the list header. `loading` keeps the empty frame at the same height; an error renders no card at all (the caller does not mount it). */
+/** Card under the list header. `loading` keeps the empty frame at the same height; an error renders no card at all (the caller does not mount it), and a day with nothing to name draws none. */
 export function RankHighlight({ locale, rows, loading = false }: { locale: AppLocale; rows: readonly HighlightRow[]; loading?: boolean }) {
   if (loading) return <div className={styles.card} data-rank-highlight="loading" aria-hidden="true" />;
   const pick = pickHighlight(rows);
+  if (pick.kind === "none") return null;
   const label = rankingsText(locale, pick.kind === "day" ? "rkDayTop" : "rkRiseTop");
-  if (pick.kind === "none") return <section className={styles.card} data-rank-highlight="none" aria-label={rankingsText(locale, "rkRiseTop")}>
-    <span className={styles.text}><span className={styles.label}>{rankingsText(locale, "rkRiseTop")}</span><span className={`${styles.name} ${styles.quiet}`}>{rankingsText(locale, "rkDeltaSame")}</span></span>
-  </section>;
   const value = pick.value.toLocaleString(locale);
   return <section className={styles.card} data-rank-highlight={pick.kind} aria-label={label}>
     <span className={styles.avatar}>{pick.row.avatar}</span>

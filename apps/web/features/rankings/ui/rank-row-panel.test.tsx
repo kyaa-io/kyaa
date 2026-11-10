@@ -33,9 +33,16 @@ describe("RankRowPanel", () => {
   });
 
   it("uses the answer's days as they are, not a fixed week", () => {
-    render(<RankRowPanel id="p" kind="creator" row={creator()} days={1} guest={false} locale="ko" />);
-    expect(stat("최근 1일")).toBe("+0");
+    render(<RankRowPanel id="p" kind="creator" row={creator({ weekGain: 4 })} days={1} guest={false} locale="ko" />);
+    expect(stat("최근 1일")).toBe("+4");
     expect(screen.queryByText("최근 7일")).toBeNull();
+  });
+
+  it("leaves a zero gain out instead of showing +0", () => {
+    render(<RankRowPanel id="p" kind="creator" row={creator({ dayGain: 0, weekGain: 0 })} days={7} guest={false} locale="ko" />);
+    expect(screen.queryByText("+0")).toBeNull();
+    expect(screen.queryByText("오늘")).toBeNull();
+    expect(screen.queryByText(/최근/)).toBeNull();
   });
 
   it("leaves out a cell the answer has no value for: no fans, no weekGain, no dayGain, no days", () => {
