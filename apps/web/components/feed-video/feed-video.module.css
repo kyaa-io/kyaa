@@ -1,0 +1,7 @@
+/* Post video: keeps its own ratio, capped in height; vertical videos stay narrow and left-aligned with the text. */
+.frame { --feed-video-cap: min(70vh, 640px); position: relative; display: block; box-sizing: border-box; max-width: 100%; max-height: var(--feed-video-cap); width: min(100%, calc(var(--feed-video-cap) * var(--feed-video-ratio, 1.7778))); aspect-ratio: var(--feed-video-ratio, 16 / 9); overflow: hidden; border-radius: var(--radius-media); background: var(--color-soft); }
+.video { display: block; width: 100%; height: 100%; object-fit: cover; }
+.control { position: absolute; right: 8px; bottom: 8px; display: grid; place-items: center; width: 44px; height: 44px; padding: 0; border: 0; border-radius: 50%; color: var(--color-surface, #fff); background: rgb(18 18 18 / 0.6); cursor: pointer; }
+.control svg { width: 20px; height: 20px; }
+.play { top: 50%; right: auto; bottom: auto; left: 50%; width: 56px; height: 56px; transform: translate(-50%, -50%); }
+@media (max-width: 767px) { .frame { --feed-video-cap: min(70vh, 520px); } }

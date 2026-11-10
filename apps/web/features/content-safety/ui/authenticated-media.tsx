@@ -7,6 +7,7 @@ import { contentCopy } from "@/i18n/catalogs/features__fan_posts__ui";
 import type { AppLocale } from "@/i18n/locales";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import { FanSkeleton } from "@/components/fan-ui/fan-skeleton";
+import { FeedVideo } from "@/components/feed-video/feed-video";
 import styles from "./content.module.css";
 
 /** Private media is never assigned to a browser src before authorization. */
@@ -35,7 +36,7 @@ export function AuthenticatedMedia({ asset, locale, alt, play = false, original 
     return () => { controller.abort(); if (objectUrl) URL.revokeObjectURL(objectUrl); };
   }, [key, asset.id, video, original, auth.ready, auth.authenticated, session.ready,publicFanPost]);
   const current = snapshot?.key === key ? snapshot : null;
-  if (current?.url) return video ? <video className={styles.photo} src={current.url} controls playsInline preload="metadata" aria-label={alt} width={asset.width} height={asset.height} onError={() => setSnapshot({ key, failed: true })} /> : <img className={styles.photo} src={current.url} alt={alt} width={asset.width} height={asset.height} onError={() => setSnapshot({ key, failed: true })} />;
-  if (!current?.failed) return <span className={styles.mediaLoading} aria-busy="true" style={{ aspectRatio: `${asset.width}/${asset.height}` }}><FanSkeleton shape="block" width="100%" height="100%" /></span>;
+  if (current?.url) return video ? <FeedVideo src={current.url} width={asset.width} height={asset.height} label={alt} onError={() => setSnapshot({ key, failed: true })} /> : <img className={asset.kind === "video" ? `${styles.photo} ${styles.videoThumb}` : styles.photo} src={current.url} alt={alt} width={asset.width} height={asset.height} onError={() => setSnapshot({ key, failed: true })} />;
+  if (!current?.failed) return <span className={asset.kind === "video" ? `${styles.mediaLoading} ${styles.videoThumb}` : styles.mediaLoading} aria-busy="true" style={{ aspectRatio: `${asset.width}/${asset.height}` }}><FanSkeleton shape="block" width="100%" height="100%" /></span>;
   return <span className={styles.status} role="status">{copy.photoFailed}{retryable && <FanAction variant="neutral" type="button" onClick={() => setRetry(value => value + 1)}>{copy.retry}</FanAction>}</span>;
 }

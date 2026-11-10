@@ -1,6 +1,4 @@
 "use client";
-import { Button as BaseButton } from "@base-ui/react/button";
-import { Play } from "lucide-react";
 import { useMemo, useState } from "react";
 import { RichBody, type RichAttachmentRenderer } from "@/components/editor/rich-body";
 import { editorText } from "@/components/editor/editor-copy";
@@ -39,11 +37,10 @@ export function SlotPostBody({ document, plainText, translated, translation, obs
   return <div ref={observeElement} data-post-body="">{content}<TranslationControl locale={locale} translation={translation} /></div>;
 }
 
-/** Inline video of a fan post: the poster first, the file only after a press. */
+/** Inline video of a fan post: the shared feed video loads and autoplays (muted) when visible. */
 export function PostInlineVideo({ video, locale, publicFanPost }: { video: { id: string; width: number; height: number }; locale: AppLocale; publicFanPost: boolean }) {
-  const [playing, setPlaying] = useState(false), label = editorText(locale, "playVideo");
+  const label = editorText(locale, "playVideo");
   return <div className={styles.inlineVideo}>
-    <AuthenticatedMedia asset={{ ...video, kind: "video" }} locale={locale} publicFanPost={publicFanPost} alt={label} play={playing} />
-    {!playing && <BaseButton aria-label={label} onClick={() => setPlaying(true)}><Play aria-hidden="true" /></BaseButton>}
+    <AuthenticatedMedia asset={{ ...video, kind: "video" }} locale={locale} publicFanPost={publicFanPost} alt={label} play />
   </div>;
 }
