@@ -396,7 +396,7 @@ describe("streamed Home sections", () => {
     view.unmount();
     await act(async () => { view = render(<StreamingGuestHome queries={{ ...pendingHome().queries, homeGallery: Promise.resolve({ status: "fulfilled", value: { items: [], nextCursor: null } }), homeShorts: Promise.resolve({ status: "fulfilled", value: [] }) }} locale="ko" />); });
     expect(screen.getByText("아직 사진 없음")).toBeInTheDocument();
-    expect(screen.getByText("아직 숏폼 없음")).toBeInTheDocument();
+    expect(screen.queryByText("아직 숏폼 없음")).not.toBeInTheDocument();
   });
 
   it.each(["homeBanners", "elinaRaffles"] as const)("isolates a failed %s query", async (failed) => {
