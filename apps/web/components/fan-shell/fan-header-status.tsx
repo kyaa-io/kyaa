@@ -4,8 +4,6 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import type { Route } from "next";
 import { usePathname, useSearchParams } from "next/navigation";
-import { FanIcon } from "@/components/fan-ui/fan-icon";
-import { Heart } from "@/components/fan-ui/fan-icons";
 import { HeaderPopover } from "@/components/fan-ui/header-popover";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import { fanLoginHref } from "@/components/login-href";
@@ -70,8 +68,8 @@ function OwnedHeaderStatus({ locale }: { locale: AppLocale }) {
   return <HeaderPopover.Root open={open} onOpenChange={onOpenChange}>
     <HeaderPopover.Trigger className={styles.trigger} data-header-status="" aria-label={summary}>
       {current && <><FanTierBadge tier={current.tier} stageKey={current.stage?.key} locale={locale} size={16} />{dot}</>}
-      {hearts !== undefined && <><span className={styles.value}><FanIcon icon={Heart} size={16} />{compactNumber(hearts, locale)}</span>{dot}</>}
-      <span className={styles.value}>P {points === undefined ? "—" : compactNumber(points, locale)}</span>
+      {hearts !== undefined && <><span className={styles.value}><img src="/images/economy/heart.svg" alt="" width={16} height={16} />{compactNumber(hearts, locale)}</span>{dot}</>}
+      <span className={styles.value}><img src="/images/economy/point-coin.svg" alt="" width={16} height={16} />{points === undefined ? "—" : compactNumber(points, locale)}</span>
     </HeaderPopover.Trigger>
     <HeaderPopover.Content ref={panel} label={picking ? c.changeFavorite : c.status} data-header-status-panel="">
       {picking ? <>

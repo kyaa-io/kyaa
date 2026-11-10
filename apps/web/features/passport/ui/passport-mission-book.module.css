@@ -26,9 +26,9 @@
 .number { position: absolute; top: var(--space-1); inset-inline-start: var(--space-2); color: var(--passport-muted); font-size: var(--passport-micro); font-weight: 700; font-variant-numeric: tabular-nums; }
 .art { position: relative; display: grid; box-sizing: border-box; width: 64px; height: 64px; place-items: center; pointer-events: none; }
 .art img { width: 100%; height: 100%; object-fit: contain; }
-.slot[data-state="empty"] .art { border: 1.5px dashed var(--passport-muted); border-radius: 50%; }
-.slot[data-state="empty"][data-frame="square"] .art { border-radius: var(--radius-control); }
-.emptyNumber { color: var(--passport-muted); font-size: var(--fan-item-title-size); font-weight: 700; font-variant-numeric: tabular-nums; }
+/* 아직 받지 않은 칸: 같은 그림의 흐린 회색 스탬프(ghost-v1). 받은 칸은 진한 잉크 색으로 찍힌다. */
+.slot[data-state="filled"] .art img { filter: saturate(1.25) contrast(1.12); }
+.emptyNumber { position: absolute; inset: 0; display: grid; place-items: center; color: var(--passport-muted); font-size: var(--fan-item-title-size); font-weight: 700; font-variant-numeric: tabular-nums; }
 .check { position: absolute; right: 0; bottom: 0; z-index: 1; display: grid; width: 20px; height: 20px; place-items: center; border-radius: 50%; background: var(--passport-ink-pink); color: var(--color-surface); }
 .pressed { position: absolute; inset: 0; }
 .slotTask { max-width: 100%; color: var(--passport-muted); font-size: var(--fan-metadata-size); line-height: 1.35; overflow-wrap: anywhere; word-break: keep-all; }

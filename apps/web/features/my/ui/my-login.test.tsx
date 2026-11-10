@@ -36,9 +36,9 @@ it("sends each activity row to login with its own destination", () => {
   expect(row).toHaveAttribute("href", fanLoginHref("ko", "/my/activity?locale=ko"));
 });
 
-it("keeps the signed-in order signed out: passport, wallet, favorites, shortcuts, with the locked wallet card as the login link", () => {
+it("keeps the signed-in order signed out: passport, wallet, shortcuts, with the locked wallet card as the login link", () => {
   render(<MyScreen locale="ko" />);
-  const sections = ["내 패스포트", "내 지갑", "내 최애", "바로가기"].map(name => screen.getByRole("heading", { name }));
+  const sections = ["내 패스포트", "내 지갑", "바로가기"].map(name => screen.getByRole("heading", { name }));
   sections.reduce((previous, current) => { expect(Boolean(previous.compareDocumentPosition(current) & Node.DOCUMENT_POSITION_FOLLOWING)).toBe(true); return current; });
   expect(screen.queryByRole("heading", { name: "함께 모은 스탬프" })).toBeNull();
   expect(screen.queryByRole("heading", { name: "래플 결과가 발표됐어요" })).toBeNull();
@@ -48,5 +48,5 @@ it("keeps the signed-in order signed out: passport, wallet, favorites, shortcuts
   expect(document.body.textContent).not.toContain("모은 포인트 사용하기");
   expect(screen.getByRole("link", { name: "내 응모 내역" })).toHaveAttribute("href", fanLoginHref("ko", "/my/raffles?locale=ko"));
   expect(screen.getByRole("link", { name: "문의 내역" })).toHaveAttribute("href", fanLoginHref("ko", "/my/inquiries?locale=ko"));
-  expect(screen.getByRole("region", { name: "내 최애" })).toHaveTextContent("로그인 후 확인");
+  expect(screen.getByRole("link", { name: "내 최애" })).toHaveAttribute("href", fanLoginHref("ko", "/celebrities?locale=ko"));
 });

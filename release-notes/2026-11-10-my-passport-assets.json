@@ -1,0 +1,13 @@
+{
+  "changes": [
+    "MY의 바로가기를 색이 들어간 일러스트 아이콘으로 바꾸고, 모임 상단과 겹치던 내 최애 구역은 바로가기 첫 칸으로 옮겼어요.",
+    "패스포트에서 아직 받지 않은 스탬프 칸이 점선 원 대신 흐린 회색 스탬프로 보이고, 이미 모은 스탬프는 더 진하게 보여요.",
+    "화면 위쪽 상태 표시의 하트와 포인트가 글자와 선 아이콘 대신 kyaa 하트·동전 그림으로 바뀌었어요."
+  ],
+  "path": "/my",
+  "images": [
+    "release-notes/images/2026-11-10-my-shortcuts-after.png",
+    "release-notes/images/2026-11-10-passport-stamp-row-after.png",
+    "release-notes/images/2026-11-10-header-assets-after.png"
+  ]
+}

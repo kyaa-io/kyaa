@@ -72,8 +72,8 @@ function Slot({ slot, locale, stampSrc, href }: { slot: PassportRoadmapSlot; loc
   const days = model?.slots.find(item => item.action === "steady_checkin")?.days ?? null;
   const task = !meta ? null : slot.kind === "quiz" ? passportBookText(locale, "entryReviewTask") : days ? dukjilText(locale, "missionTaskSteady", [days]) : dukjilText(locale, meta.task);
   const rule = slot.kind ? dukjil?.catalog?.rules[slot.kind] as { points?: unknown } | undefined : undefined;
-  // 받지 않은 칸은 틀 모양 점선만 그린다. 회색 스탬프를 늘어놓지 않는다.
-  const src = !filled ? undefined : meta ? `/images/stamps/ink-v1/${meta.art}.webp` : stampSrc;
+  // 받지 않은 칸은 받은 칸과 같은 그림을 흐린 회색으로 놓는다(ghost-v1). 그림이 없는 옛 칸은 회색 틀만 놓는다.
+  const src = filled ? meta ? `/images/stamps/ink-v1/${meta.art}.webp` : stampSrc : `/images/stamps/ghost-v1/${meta ? meta.art : "frame"}.webp`;
   // A slot that fills while the page is open gets the stamp press once; a slot already filled on arrival stays still.
   const before = useRef(filled);
   const [pressing, setPressing] = useState(false);
@@ -86,7 +86,8 @@ function Slot({ slot, locale, stampSrc, href }: { slot: PassportRoadmapSlot; loc
   return <li className={styles.slot} data-state={slot.state} data-kind={slot.kind} data-frame={meta?.frame ?? "round"} style={{ "--stamp-tilt": `${(slot.slotNo % 5 - 2) * 3}deg` } as CSSProperties}>
     {meta ? <span className={styles.number} aria-hidden="true">{number.padStart(2, "0")}</span> : null}
     <span className={styles.art} role="checkbox" aria-checked={filled} aria-disabled="true" aria-label={label}>
-      {src ? <img src={src} alt="" width={88} height={88} loading="lazy" /> : !filled && !meta ? <span className={styles.emptyNumber} aria-hidden="true">{number}</span> : null}
+      {src ? <img src={src} alt="" width={88} height={88} loading="lazy" /> : null}
+      {!filled && !meta ? <span className={styles.emptyNumber} aria-hidden="true">{number}</span> : null}
       {filled ? <span className={styles.check}><Check aria-hidden="true" size={12} strokeWidth={3} /></span> : null}
       {pressing && <StampPress state="press" size={64} className={styles.pressed} onDone={() => setPressing(false)} />}
     </span>

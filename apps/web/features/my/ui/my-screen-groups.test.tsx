@@ -60,15 +60,15 @@ it('puts the selected passport tier next to the name', () => {
   expect(within(name.parentElement as HTMLElement).getByText(/실버|Silver/)).toBeInTheDocument();
 });
 
-it('orders the screen profile, notice, passport, favorites, shortcuts and shows stamps in one place', () => {
+it('orders the screen profile, notice, passport, shortcuts and shows stamps in one place', () => {
   data.rewards = [reward('50000000-0000-4000-8000-000000000001')];
   renderMy();
   const name = screen.getByRole('heading', { level: 1, name: '별빛님' });
   const notice = screen.getByRole('heading', { name: '래플 결과가 발표됐어요' });
   const passport = screen.getByRole('heading', { name: '내 패스포트' });
-  const favorites = screen.getByRole('heading', { name: '내 최애' });
   const shortcuts = screen.getByRole('heading', { name: '바로가기' });
-  [name, notice, passport, favorites, shortcuts].reduce((previous, current) => { expect(before(previous, current)).toBe(true); return current; });
+  expect(screen.queryByRole('heading', { name: '내 최애' })).toBeNull();
+  [name, notice, passport, shortcuts].reduce((previous, current) => { expect(before(previous, current)).toBe(true); return current; });
   expect(screen.queryByRole('heading', { name: '함께 모은 스탬프' })).toBeNull();
   expect(screen.queryByText('미인증 최애')).toBeNull();
 });
@@ -135,22 +135,12 @@ it('shows no notice when there is no result', () => {
   expect(screen.queryByRole('heading', { name: '래플 결과가 발표됐어요' })).toBeNull();
 });
 
-it('shows favorite photos and names as fan page links without progress rows', () => {
-  renderMy();
-  const favorites = screen.getByRole('region', { name: '내 최애' });
-  expect(within(favorites).queryByText(/이번 쪽/)).toBeNull();
-  expect(within(favorites).queryByText('팬페이지 보기')).toBeNull();
-  expect(within(favorites).getByRole('link', { name: '엔카이브' })).toHaveAttribute('href', '/nchive?locale=ko');
-});
-
 it('puts every shortcut in one grid', () => {
   renderMy();
   const grid = screen.getByRole('navigation', { name: '바로가기' });
-  expect(within(grid).getAllByRole('link').map(link => link.textContent)).toEqual(['활동 내역', '내 응모 내역', '받은 혜택', '예약한 LIVE', '신청 내역', '친구와 메시지', '접수한 신고', '문의 내역']);
+  expect(within(grid).getAllByRole('link').map(link => link.textContent)).toEqual(['내 최애', '활동 내역', '내 응모 내역', '받은 혜택', '예약한 LIVE', '신청 내역', '친구와 메시지', '접수한 신고', '문의 내역']);
   expect(within(grid).getByRole('link', { name: '내 응모 내역' })).toHaveAttribute('href', '/my/raffles?locale=ko');
+  expect(within(grid).getByRole('link', { name: '내 최애' })).toHaveAttribute('href', '/celebrities?locale=ko');
+  expect(grid.querySelectorAll('img[src^="/images/my/shortcuts/"]')).toHaveLength(9);
 });
 
-it.each(['en', 'ru', 'ja'] as const)('names the favorite link for its creator in %s', (locale) => {
-  renderMy(locale);
-  expect(screen.getByRole('link', { name: '엔카이브' })).toHaveAttribute('href', '/nchive?locale=' + locale);
-});

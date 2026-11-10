@@ -31,7 +31,9 @@ describe("header capsule", () => {
     render(<FanHeaderStatus locale="ko" />);
     const button = toggle();
     expect(button).toHaveAttribute("aria-expanded", "false");
-    expect(button).toHaveTextContent("P 1,260");
+    expect(button).toHaveTextContent("1,260");
+    expect(button.querySelector('img[src="/images/economy/point-coin.svg"]')).not.toBeNull();
+    expect(button.querySelector('img[src="/images/economy/heart.svg"]')).not.toBeNull();
     expect(button).not.toHaveTextContent("Current favorite");
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
     fireEvent.click(button);
@@ -141,7 +143,8 @@ describe("header capsule", () => {
     state.bias = { ...state.bias, selected: { ...selected, hearts: undefined }, status: "error" };
     state.wallet = { ...state.wallet, data: undefined, error: true };
     render(<FanHeaderStatus locale="ko" />);
-    expect(toggle()).toHaveTextContent("P —");
+    expect(toggle()).toHaveTextContent("—");
+    expect(toggle().querySelector('img[src="/images/economy/heart.svg"]')).toBeNull();
     expect(toggle()).not.toHaveAccessibleName(/하트 0/);
     fireEvent.click(toggle());
     fireEvent.click(screen.getByRole("button", { name: /최애 바꾸기 ·/ }));

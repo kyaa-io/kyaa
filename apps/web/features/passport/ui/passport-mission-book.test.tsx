@@ -192,7 +192,10 @@ describe("PassportMissionBook", () => {
     const open = slots(0);
     state.resource = { loading: false, error: false, data: data([page({ slots: open, filled: 0, claimable: false })]), retry: vi.fn() };
     const { container } = render(<PassportMissionBook passportId="p" creatorSlug="elina" locale="ko" />);
-    expect(container.querySelectorAll('[data-state="empty"] img')).toHaveLength(0);
+    // 받지 않은 칸은 받은 칸과 같은 그림을 흐린 회색(ghost-v1)으로 놓는다.
+    const ghosts = container.querySelectorAll<HTMLImageElement>('[data-state="empty"] img');
+    expect(ghosts.length).toBeGreaterThan(0);
+    ghosts.forEach(image => expect(image.getAttribute("src")).toMatch(/^\/images\/stamps\/ghost-v1\/[a-z-]+\.webp$/));
     expect(screen.getByRole("link", { name: /글쓰기/ }).getAttribute("href")).toBe("/elina?tab=board&source=fans&compose=1&locale=ko");
     expect(screen.getByRole("link", { name: /친구 추천/ }).getAttribute("href")).toBe("/my/invitations?locale=ko");
     expect(screen.getByRole("button", { name: "자세히 입국 심사 설명 보기" })).toBeTruthy();

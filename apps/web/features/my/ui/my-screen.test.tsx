@@ -90,7 +90,7 @@ describe("unified MY hub", () => {
     expect(link).not.toHaveTextContent("카");
   });
 
-  it("keeps the Stamp collection and its record list in the groups MY, before the favorites", async () => {
+  it("keeps the Stamp collection and its record list in the groups MY, before the shortcuts", async () => {
     const stamp = { id, kind: "first_comment", celebritySlug: "kara", issuedAt: "2026-10-09T00:00:00.000Z", mint: { status: "queued", txHash: null, tokenId: null } };
     const fetcher = vi.fn(async (input: RequestInfo | URL) => {
       const url = String(input);
@@ -101,8 +101,8 @@ describe("unified MY hub", () => {
     const { container } = render(<GroupsReleaseProvider enabled><MyScreen locale="ko" /></GroupsReleaseProvider>);
 
     const stamps = await screen.findByRole("heading", { name: "스탬프 모으기" });
-    const favorites = screen.getByRole("heading", { name: "내 최애" });
-    expect(stamps.compareDocumentPosition(favorites) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    const shortcuts = screen.getByRole("heading", { name: "바로가기" });
+    expect(stamps.compareDocumentPosition(shortcuts) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     const history = await waitFor(() => { const node = container.querySelector("#community-stamps details"); expect(node).not.toBeNull(); return node as HTMLDetailsElement; });
     expect(within(history).getByText("KARA · 2026년 10월 9일")).toBeInTheDocument();
     expect(within(history).getByText("등록 중")).toBeInTheDocument();

@@ -17,7 +17,7 @@ describe("MY headings follow the fan heading tokens", () => {
   it("uses the shared size, weight and leading for the profile title and section titles", () => {
     expect(css).toMatch(/\.pencilProfileCopy h1\{font-size:var\(--fan-heading-size-wide\);font-weight:var\(--fan-heading-weight\);line-height:var\(--fan-heading-leading\)/);
     expect(css).toContain(".pencilProfileCopy h1{font-size:var(--fan-heading-size)}");
-    for (const file of ["my-passport-card.module.css", "my-shortcuts.module.css", "my-favorites.module.css"]) {
+    for (const file of ["my-passport-card.module.css", "my-shortcuts.module.css"]) {
       const source = read(file);
       expect(source).not.toMatch(/h2 \{[^}]*font-weight:700/);
       expect(source).toMatch(/h2 \{[^}]*font-weight:var\(--fan-heading-weight\); line-height:var\(--fan-heading-leading\)/);
