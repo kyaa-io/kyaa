@@ -13,6 +13,8 @@
 .toolbar { display:flex; align-items:center; justify-content:space-between; gap:var(--space-4); min-width:0; }
 .toolbar > :first-child { min-width:0; }
 .rows { display:grid; min-width:0; }
+.rows > * { padding-inline: var(--space-4); }
+.rows > :last-child { border-bottom: 0; }
 @media (max-width:1023px) { .storiesHeader h2 { font:700 20px/var(--fan-heading-leading) "Pretendard Variable",system-ui,sans-serif; } }
 @media (max-width:767px) { .rows > :nth-child(n+6) { display:none; } }
 .infoAside.infoAside { padding:0; }

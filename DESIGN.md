@@ -49,6 +49,7 @@ A2 버튼 반경 8·높이 390 44 / 1024+ 48 · B2 칩 36·14/700·반경 8 · C
 | 본문 | 본문 15(390)·14(768+)/400/1.5, 글 본문·댓글 15 고정 | `--fan-body-size(-wide)`, `--fan-post-body-size` | 2026-11-09 8장 ① |
 | 보조 정보 | 메타 12/400 `--color-muted` | `--fan-metadata-size` | 2026-11-09 R1 |
 | 카드 외곽 | 카드 12 반경(`--radius-card`), 1px `--color-line`, 그림자 0, 바탕 `--color-surface`(흰 면), 회색 캔버스 면 없음 | `FanSurface` | 2026-11-09 8장 ⑦ R14 |
+| 구역 컨테이너(R2) | 한 화면의 같은 역할 구역은 같은 컨테이너를 쓴다. 행 목록(공지·게시글·랭킹·알림)은 `FanSurface appearance="list"` 카드 안에 두고 행이 좌우 16과 구분선을 갖는다(마지막 행 구분선은 카드 선). 사진 격자는 타일이 컨테이너다. 카드 없는 구분선 목록과 카드를 한 화면에 섞지 않는다. 화면별 감사표는 `docs/design/card-consistency-audit.md` | `fan-surface.tsx` | 2026-11-10 사용자 제보 "app 전반 통일성 검토" |
 | 강조 버튼 | primary: 단색 `--color-accent`(`--color-page-accent`) 채움 + 흰 글자, 높이 44(390)/48(1024+), 반경 8, 15/700. 게이트 A2 확정(사용자 2026-11-09 15:52): 반경 8(`--radius-action`)·높이 `--fan-action-primary-height`(390 44 / 1024+ 48), 단색 accent·그림자 0·15/700. 같은 반경 8이 neutral·text·danger·service·passport·별 버튼에도 적용된다. 화면 CSS가 직접 쓰는 48 고정·알약 값은 화면 치환 때 맞춘다. 화면당 1개(예외: 럭키드로우 응모 가능 상태에서는 `응모하기` primary·`교환` secondary — 8장 plan ③) | `fan-action.module.css` | 2026-11-09 8장 ②④⑤ |
 | 보조 버튼 | secondary: 높이 44, 반경 8, 1px `--color-ink` 선, 15/700 | `fan-action.module.css` | 2026-11-09 R14 |
 | 탭/세그먼트(칩) | 밑줄 탭(`underline`) 44 sticky top 56, 15/700, 활성 밑줄 2px accent / 칩 36 반경 8 14/700(`--fan-chip-height`·`--fan-chip-size`, 누르는 영역은 ::after로 44, 게이트 B2 확정 — FanTabs chip·creator-roles 필터·모임 `.chip`), 선택 `--color-accent-soft` + 1px accent / 세그먼트 40 반경 8 | `fan-tabs.tsx` | 2026-11-09 R3·R14 |
