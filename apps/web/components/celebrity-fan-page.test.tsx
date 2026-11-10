@@ -153,8 +153,7 @@ describe("approved fanpage", () => {
     const view = render(<CelebrityFanPage celebrity={wena} locale={locale} upcomingLive={null} />);
     expect(screen.getByRole("heading", { level: 1, name: /We;Na/ })).toHaveTextContent("위나");
     expect(view.container.querySelector('img[src*="official-logo"]')).toBeInTheDocument();
-    fireEvent.click(await screen.findByRole("button", { name: /We;Na · Baby Step/ }));
-    expect(view.container.querySelector("iframe")).toHaveAttribute("src", expect.stringContaining("/embed/172bEkNPqqs?"));
+    expect(await screen.findByRole("link", { name: /We;Na · Baby Step/ })).toHaveAttribute("href", "https://www.youtube.com/watch?v=172bEkNPqqs");
     expect([...view.container.querySelectorAll("a")].map(link => link.getAttribute("href"))).toContain(`/wena?tab=board&section=media&locale=${locale}&media=photos#celebrity-content`);
     expect([...view.container.querySelectorAll("a")].map(link => link.getAttribute("href"))).toContain(`/wena?tab=board&source=fans&locale=${locale}#celebrity-content`);
     expect(view.container.querySelector('a[href*="verify"]')).toBeInTheDocument();

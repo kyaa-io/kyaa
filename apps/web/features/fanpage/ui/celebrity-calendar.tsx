@@ -25,7 +25,7 @@ import { LiveTimeIndicator } from "@/features/live/ui/live-time-indicator";
 import { DailyCheckin } from "@/features/community-stamps/ui/daily-checkin";
 import type { PublishedCelebrity, PublishedCelebrityLive, ContentLocale } from "@/server/content/content-domain";
 import styles from "./calendar.module.css";
-import dailyStyles from "@/features/community-stamps/ui/daily-checkin.module.css";
+import { Check } from "lucide-react";
 type AsyncState<T> = { status: "idle" | "loading" } | { status: "ready"; data:T } | {status:"error"};
 export const miniCalendarCopy = {
 ko: { calendarTitle:"LIVE 일정", calendarOpen:"캘린더 크게 보기", calendarLoading:"LIVE 일정을 확인하고 있어요", calendarError:"일정을 불러오지 못했어요.", calendarUpcoming:"다가오는 일정", calendarUpcomingEmpty:"이번 달에는 예정된 LIVE가 없어요.", previousMonth:"이전 달", nextMonth:"다음 달", weekdays:["일","월","화","수","목","금","토"] },
@@ -98,7 +98,7 @@ export function MiniCalendarEventDay({ date, today, count, upcoming, checkedIn =
     >
       <CalendarDayNumber date={date} today={today} />
       <span aria-hidden="true">{count > 1 ? count : ""}</span>
-      {checkedIn ? <i className={dailyStyles.checkinMark} aria-hidden="true">✓</i> : null}
+      {checkedIn ? <i className={styles.checkinMark} aria-hidden="true"><Check /></i> : null}
     </button>
   );
 }
@@ -229,6 +229,10 @@ export function CelebrityMiniCalendar({
         previous={{ onClick: () => setMonth(previousMonth), label: `${t.previousMonth}: ${miniCalendarMonthLabel(previousMonth, locale)}` }}
         next={{ onClick: () => setMonth(nextMonth), label: `${t.nextMonth}: ${miniCalendarMonthLabel(nextMonth, locale)}` }}
       />
+      <div className={styles.calendarKey} aria-hidden="true">
+        <span><i data-key="checkin"><Check /></i>{locale === "ko" ? "출석" : translate(locale, localizedMessages.m3c1a7e0d52b4, "Check-in")}</span>
+        <span><i data-key="live" />LIVE</span>
+      </div>
       <div className={styles.calendarWeekdays} aria-hidden="true">
         {t.weekdays.map((weekday) => <span key={weekday}>{weekday}</span>)}
       </div>
@@ -259,7 +263,7 @@ export function CelebrityMiniCalendar({
           return (
             <span className={styles.calendarDay} data-today={day.date === today ? "true" : undefined} data-checked-in={checkedIn ? "true" : undefined} key={day.date} style={style} aria-label={checkedIn ? (locale === "ko" ? `${dayNumber}일, 출석 완료` : translate(locale, localizedMessages.mdfeb64d2c67d, "{0}, checked in", [dayNumber])) : undefined}>
               <CalendarDayNumber date={day.date} today={today} />
-              {checkedIn ? <i className={dailyStyles.checkinMark} aria-hidden="true">✓</i> : null}
+              {checkedIn ? <i className={styles.checkinMark} aria-hidden="true"><Check /></i> : null}
             </span>
           );
         })}

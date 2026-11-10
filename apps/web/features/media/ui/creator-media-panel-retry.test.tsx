@@ -1,4 +1,4 @@
-import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { cleanup, render, screen } from "@testing-library/react";
 import { afterEach, expect, it, vi } from "vitest";
 import { CreatorMediaPanel } from "./creator-media-panel";
 
@@ -12,13 +12,12 @@ vi.mock("@/features/fanpage/ui/use-news-source", () => ({ useNewsSource: (url: s
 }) }));
 afterEach(() => { cleanup(); vi.unstubAllGlobals(); });
 
-it("keeps the failed-image retry button outside the card link and retries on click", async () => {
-  const fetchMock = vi.fn(async () => new Response("", { status: 500 }));
-  vi.stubGlobal("fetch", fetchMock);
+it("shows a failed uploaded photo as an icon-only status outside the tile link", async () => {
+  vi.stubGlobal("fetch", vi.fn(async () => new Response("", { status: 500 })));
   render(<CreatorMediaPanel slug="elina" locale="ko" />);
-  const retry = await screen.findByRole("button", { name: "다시 시도" });
-  expect(retry.closest("a")).toBeNull();
-  const calls = fetchMock.mock.calls.length;
-  fireEvent.click(retry);
-  await waitFor(() => expect(fetchMock.mock.calls.length).toBeGreaterThan(calls));
+  // 2026-11-10 production hotfix: the groups-off gallery tile shows the icon alone and names the failure.
+  const failed = await screen.findByRole("status", { name: "사진을 불러오지 못했어요." });
+  expect(failed.closest("a")).toBeNull();
+  expect(failed).toHaveTextContent("");
+  expect(screen.getByRole("link", { name: "쿠킹 클래스" })).toBeInTheDocument();
 });

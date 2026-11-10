@@ -12,10 +12,12 @@ vi.mock("@/features/fanpage/ui/use-news-source", () => ({ useNewsSource: (url: s
 }) }));
 afterEach(cleanup);
 
-it("gives an uploaded-photo card one link named by its text, not a second image-only link", () => {
+it("gives an uploaded-photo tile one link named by its title, not a second image-only link", () => {
   render(<CreatorMediaPanel slug="elina" locale="ko" />);
   const links = screen.getAllByRole("link").filter(link => link.getAttribute("href")?.includes("/c/elina/notices/photo"));
   expect(links).toHaveLength(1);
-  expect(links[0]).toHaveTextContent("쿠킹 클래스");
+  // 2026-11-10 production hotfix: the groups-off gallery is thumbnail-only, so the title is the accessible name only.
+  expect(links[0]).toHaveAccessibleName("쿠킹 클래스");
+  expect(links[0]).toHaveTextContent("");
   expect(links[0].querySelector("img")).toBeNull();
 });
