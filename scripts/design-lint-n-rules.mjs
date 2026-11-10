@@ -522,9 +522,9 @@ export function scanNTs(code, file, read) {
         const a = t.attrs;
         if (name === 'Link') { if (!/\bhref\b|\{\.\.\./.test(a)) add(out, `N11|<Link> without href`); continue; }
         const live = /\bhref\b|\bonClick\b|type=["']submit["']|\bform=|\{\.\.\./.test(a);
-        const explainedDisabled = /\bdisabled\b/.test(a) && /data-disabled-reason|\btitle=|aria-describedby/.test(a);
+        const explainedDisabled = /\bdisabled\b/.test(a) && /data-disabled-reason|\btitle=|aria-describedby|ariaDescribedBy|helperText/.test(a);
         if (!live && !explainedDisabled) add(out, `N11|<FanAction> without href/onClick`);
-        if (/\bdisabled\b/.test(a) && !/data-disabled-reason|\btitle=|aria-describedby/.test(a)) add(out, 'N11|disabled without reason');
+        if (/\bdisabled\b/.test(a) && !/data-disabled-reason|\btitle=|aria-describedby|ariaDescribedBy|helperText/.test(a)) add(out, 'N11|disabled without reason');
       }
     }
   }

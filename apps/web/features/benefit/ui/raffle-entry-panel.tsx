@@ -130,7 +130,7 @@ export function RaffleEntryPanel(props: Props) {
   return <>
     <section className={styles.entryPanel} aria-labelledby="raffle-entry-title" data-lucky-draw-preview>
       <div className={styles.entryHeading}><FanHeading id="raffle-entry-title">{copy.title}</FanHeading></div>
-      <FanAction fullWidth variant="neutral" disabled title={copy.title}>{copy.enter}</FanAction>
+      <FanAction fullWidth variant="neutral" disabled ariaDescribedBy="raffle-entry-title">{copy.enter}</FanAction>
     </section>
     <section className={styles.afterEntry}><FanHeading>{props.locale === "ko" ? "응모 후에는 이렇게 진행돼요" : translate(props.locale, localizedMessages.m971f555fb08c, "What happens after you enter")}</FanHeading><div>
       {copy.steps.map((step, index) => <article key={index}><span>{String(index + 1).padStart(2, "0")}</span><FanHeading as="h3">{step.title}</FanHeading><p>{step.body}</p></article>)}

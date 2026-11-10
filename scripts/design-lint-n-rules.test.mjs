@@ -536,6 +536,7 @@ test('N29 approved toast exception leaves other selectors and rule IDs checked',
 
 test('N11 accepts an explicitly disabled preview with a reason, while unexplained or active actions still need a handler', () => {
   assert.equal(hits(ts('<FanAction disabled title="Preview">Enter</FanAction>'), 'N11').length, 0);
+  assert.equal(hits(ts('<FanAction disabled ariaDescribedBy="preview-title">Enter</FanAction>'), 'N11').length, 0);
   assert.ok(hits(ts('<FanAction title="Preview">Enter</FanAction>'), 'N11').length > 0);
   assert.ok(hits(ts('<FanAction disabled>Enter</FanAction>'), 'N11').length > 0);
 });
