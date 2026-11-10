@@ -44,7 +44,7 @@
 .delta[data-direction="down"] { color: var(--color-error); }
 .item .delta svg { flex: none; width: 8px; height: 7px; }
 .today { display: inline-flex; align-items: center; gap: var(--space-1); color: var(--color-accent-ink); font-weight: var(--fan-item-title-weight); font-variant-numeric: tabular-nums; }
-.todayHeart { flex: none; color: var(--color-accent); }
+.item .todayHeart { flex: none; width: 12px; height: 12px; color: var(--color-accent); }
 .item .live { display: inline-flex; align-items: center; gap: var(--space-1); color: var(--color-ink); font-weight: var(--fan-item-title-weight); }
 .item .challenge { vertical-align: middle; }
 .wide { display: none; }

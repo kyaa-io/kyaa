@@ -5,10 +5,9 @@ import { RankingBoard } from "./ranking-board";
 import { rankingsText } from "./rankings-copy";
 import styles from "./home-ranking-card.module.css";
 
-/** 홈의 오늘의 랭킹: 제목 하나 아래에 랭킹 본문(`RankingBoard`)을 그대로 놓는다. 따로 펼치는 전체 화면은 없다. */
+/** 홈의 오늘의 랭킹: 제목과 기간 선택 아래에 랭킹 본문(`RankingBoard`)을 그대로 놓는다. 따로 펼치는 전체 화면은 없다. */
 export function HomeRankingCard({ locale, headingId = "home-ranking-heading" }: { locale: AppLocale; headingId?: string }) {
   return <section className={styles.card} aria-labelledby={headingId} data-home-ranking>
-    <FanHeading id={headingId}>{rankingsText(locale, "rkHomeTitle")}</FanHeading>
-    <RankingBoard locale={locale} scope={headingId} />
+    <RankingBoard locale={locale} scope={headingId} heading={<FanHeading id={headingId}>{rankingsText(locale, "rkHomeTitle")}</FanHeading>} />
   </section>;
 }

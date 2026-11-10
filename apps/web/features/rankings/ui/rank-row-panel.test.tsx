@@ -5,7 +5,7 @@ vi.mock("next/link", () => ({ default: ({ href, children, ...rest }: { href: str
 // The panel's keys (rkPanel*, rkGoFanpage, rkViewProfile, rkLoginProfile) are added to rankings-source.ts by the list owner; the strings here are the agreed Korean copy.
 vi.mock("./rankings-copy", () => {
   const ko: Record<string, string> = {
-    rkPanelToday: "오늘", rkPanelJjinfan: "찐팬", rkPanelFavorite: "최애", rkPanelRecent: "최근 {0}일", rkPanelFanCount: "{0}명",
+    rkPanelToday: "오늘", rkPanelRank: "현재 순위", rkRank: "{0}위", rkPanelJjinfan: "찐팬", rkPanelFavorite: "최애", rkPanelRecent: "최근 {0}일", rkPanelFanCount: "{0}명",
     rkGoFanpage: "팬페이지 가기", rkViewProfile: "프로필 보기", rkLoginProfile: "로그인하고 프로필 보기",
   };
   return { rankingsText: (_locale: string, key: string, values: readonly unknown[] = []) => (ko[key] ?? key).replace(/\{(\d+)\}/g, (_m, i) => String(values[Number(i)])) };
@@ -23,12 +23,14 @@ const fan = (over: Partial<HomeFanRankingRow> = {}): HomeFanRankingRow => ({
 const stat = (label: string) => screen.getByText(label).nextElementSibling?.textContent;
 
 describe("RankRowPanel", () => {
-  it("creator: today, true fans and the recent days, and the way to the fan page", () => {
+  it("creator: three cells (today, the recent days, the rank) and the way to the fan page", () => {
     render(<RankRowPanel id="p" kind="creator" row={creator({ dayGain: 125, fans: 1234, weekGain: 310 })} days={7} guest={false} locale="ko" />);
     expect(document.getElementById("p")).toBeTruthy();
     expect(stat("오늘")).toBe("+125");
-    expect(stat("찐팬")).toBe("1,234명");
     expect(stat("최근 7일")).toBe("+310");
+    expect(stat("현재 순위")).toBe("2위");
+    expect(screen.queryByText("찐팬")).toBeNull();
+    expect(document.querySelectorAll("dt")).toHaveLength(3);
     expect(screen.getByRole("link", { name: "팬페이지 가기" }).getAttribute("href")).toBe("/iphyu?locale=ko");
   });
 
@@ -61,10 +63,16 @@ describe("RankRowPanel", () => {
     expect(stat("최근 2일")).toBe("−3");
   });
 
-  it("signed-in fan: favorite replaces true fans, and the button only calls the list's callback", () => {
+  it("a cell with no value gives its place to the kind's own value: creator true fans, fan favorite; the button only calls the list's callback", () => {
     const open = vi.fn();
-    render(<RankRowPanel id="p" kind="fan" row={fan()} days={7} guest={false} locale="ko" onOpenProfile={open} />);
+    render(<RankRowPanel id="p" kind="creator" row={creator({ dayGain: 0, weekGain: 0, fans: 9 })} days={7} guest={false} locale="ko" />);
+    expect(stat("현재 순위")).toBe("2위");
+    expect(stat("찐팬")).toBe("9명");
+    expect(document.querySelectorAll("dt")).toHaveLength(2);
+    document.body.innerHTML = "";
+    render(<RankRowPanel id="p" kind="fan" row={fan({ dayGain: 0, weekGain: 0 })} days={7} guest={false} locale="ko" onOpenProfile={open} />);
     expect(stat("최애")).toBe("이퓨");
+    expect(stat("현재 순위")).toBe("3위");
     expect(screen.queryByText("찐팬")).toBeNull();
     fireEvent.click(screen.getByRole("button", { name: "프로필 보기" }));
     expect(open).toHaveBeenCalledTimes(1);

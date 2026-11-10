@@ -237,3 +237,35 @@ it("draws no dead value anywhere: no 신규, no — mark, no +0, no 변동 없�
   expect(container.querySelector("[data-ranking-foot]")).toBeNull();
   expect(container.querySelector("[data-rank-highlight]")).toBeNull();
 });
+
+it("period pills: 누적 is the default; 오늘 and 7일 read the period list, drop the highlight, the placeholders and the day gain under the name", async () => {
+  const fetcher = stub();
+  const { container } = render(<RankingBoard locale="ko" />);
+  await screen.findByText("하트팬1");
+  const pill = (name: string) => screen.getByRole("button", { name });
+  expect(["오늘", "7일", "누적"].map((n) => pill(n).getAttribute("aria-pressed"))).toEqual(["false", "false", "true"]);
+  expect(urls(fetcher).some((u) => u.includes("period="))).toBe(false);
+  expect(container.querySelector("[data-rank-highlight]")).not.toBeNull();
+  fireEvent.click(pill("오늘"));
+  await waitFor(() => expect(urls(fetcher)).toContain("/api/rankings/home?kind=fans&metric=hearts&locale=ko&limit=10&period=day"));
+  expect(urls(fetcher)).toContain("/api/rankings/home?kind=creators&metric=hearts&locale=ko&limit=10&period=day");
+  await screen.findByText("하트팬1");
+  expect(pill("오늘").getAttribute("aria-pressed")).toBe("true");
+  expect(container.querySelector("[data-column='fans'] [data-metric-line]")!.textContent).toContain("오늘 받은 하트");
+  expect(container.querySelector("[data-rank-highlight]")).toBeNull();
+  expect(container.querySelector("li[data-placeholder]")).toBeNull();
+  expect(container.textContent).not.toContain("오늘 +");
+  fireEvent.click(pill("7일"));
+  await waitFor(() => expect(urls(fetcher)).toContain("/api/rankings/home?kind=fans&metric=hearts&locale=ko&limit=10&period=week"));
+  await waitFor(() => expect(container.querySelector("[data-column='fans'] [data-metric-line]")!.textContent).toContain("7일간 받은 하트"));
+  fireEvent.click(pill("누적"));
+  await waitFor(() => expect(container.querySelector("[data-column='fans'] [data-metric-line]")!.textContent).toContain("누적 하트"));
+});
+
+it("a period with nobody gaining shows the empty line and no pill is lost", async () => {
+  stubRows([], [], null);
+  render(<RankingBoard locale="ko" />);
+  fireEvent.click(screen.getByRole("button", { name: "오늘" }));
+  expect((await screen.findAllByText("아직 순위가 없어요")).length).toBe(2);
+  expect(screen.getByRole("button", { name: "누적" })).toBeInTheDocument();
+});

@@ -81,6 +81,9 @@ const delta = z.number().int().nullable();
 /** Fans: hearts (default of the API) or fan score points. Creators: 찐팬 (default of the API) or hearts. The screens name the metric they show. */
 export const HOME_FAN_METRICS = ["hearts", "points"] as const;
 export const HOME_CREATOR_METRICS = ["fans", "hearts"] as const;
+/** Home ranking list periods: all = cumulative hearts (default), day = hearts gained today, week = hearts gained over the last seven days. */
+export const HOME_RANKING_PERIODS = ["all", "day", "week"] as const;
+export type HomeRankingPeriod = (typeof HOME_RANKING_PERIODS)[number];
 export type HomeFanMetric = (typeof HOME_FAN_METRICS)[number];
 export type HomeCreatorMetric = (typeof HOME_CREATOR_METRICS)[number];
 /** ready: today's rows; empty: today is built and nobody is ranked; stale: today is not built yet (or its build failed), the rows are the last built
