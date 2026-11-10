@@ -1,7 +1,7 @@
 /* Settings › profile: same inset and field look as the nickname form above it (settings-screen.module.css .renameForm). */
 .fields { display: grid; gap: var(--space-4); margin: var(--space-5) 0 0 calc(var(--space-12) + var(--space-2)); min-width: 0; }
 .field { display: grid; gap: var(--space-2); min-width: 0; margin: 0; padding: 0; border: 0; }
-.label { padding: 0; font-size: var(--fan-metadata-size); font-weight: 700; }
+.label { padding: 0; font-size: var(--fan-metadata-size); font-weight: var(--fan-item-title-weight); }
 .labelRow { display: flex; align-items: baseline; justify-content: space-between; gap: var(--space-3); }
 .count { color: var(--color-muted); font-size: var(--fan-badge-size); font-variant-numeric: tabular-nums; }
 .count[data-over] { color: var(--color-error); }
@@ -12,5 +12,5 @@
 .linkRow .control { flex: 1; min-width: 0; }
 .remove { flex: none; }
 .add { justify-self: start; }
-.error { margin: 0; color: var(--color-error); font-size: var(--fan-badge-size); line-height: 1.5; }
+.error { margin: 0; color: var(--color-error); font-size: var(--fan-badge-size); line-height: var(--fan-body-leading); }
 .save { justify-self: end; }

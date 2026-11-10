@@ -3,8 +3,8 @@
 .body > :first-child, .editable > :first-child { margin-top: 0; }
 .body > :last-child, .editable > :last-child { margin-bottom: 0; }
 .body :is(p, ul, ol, blockquote), .editable :is(p, ul, ol, blockquote) { margin: 0 0 var(--space-3); }
-.body h2, .editable h2 { margin: var(--space-6) 0 var(--space-2); font-size: var(--fan-heading-size); font-weight: 700; line-height: 28px; }
-.body h3, .editable h3 { margin: var(--space-4) 0 var(--space-2); font-size: var(--fan-item-title-size); font-weight: 700; line-height: 26px; }
+.body h2, .editable h2 { margin: var(--space-6) 0 var(--space-2); font-size: var(--fan-heading-size); font-weight: var(--fan-item-title-weight); line-height: 28px; }
+.body h3, .editable h3 { margin: var(--space-4) 0 var(--space-2); font-size: var(--fan-item-title-size); font-weight: var(--fan-item-title-weight); line-height: 26px; }
 .body :is(ul, ol), .editable :is(ul, ol) { padding-inline-start: var(--space-6); }
 .body li > p, .editable li > p { margin: 0; }
 .body blockquote, .editable blockquote { padding-inline-start: var(--space-3); border-inline-start: 2px solid var(--color-line); color: var(--color-muted); }
@@ -12,7 +12,7 @@
 /* 261107-2 D4: Pretendard has no italic face and :root sets font-synthesis: none, so italic showed upright. Allow a slanted
    face for emphasis only; marks keep their meaning in the editor and in the post. */
 .body :is(em, i), .editable :is(em, i) { font-style: italic; font-synthesis: style; }
-.body :is(strong, b), .editable :is(strong, b) { font-weight: 700; }
+.body :is(strong, b), .editable :is(strong, b) { font-weight: var(--fan-item-title-weight); }
 .body u, .editable u { text-decoration: underline; text-underline-offset: 2px; }
 .body a, .editable a { color: var(--color-service-ink); text-decoration: underline; text-underline-offset: 2px; }
 .media { margin: var(--space-4) 0; min-width: 0; }
@@ -47,7 +47,7 @@
 .editable :global(.ProseMirror-selectednode) > * { outline: 2px solid var(--color-focus); outline-offset: 2px; border-radius: var(--radius-control); }
 .placeholder { position: absolute; top: var(--space-4); left: var(--space-4); right: var(--space-4); color: var(--color-muted); font-size: var(--fan-body-size); line-height: 26px; pointer-events: none; }
 .foot { display: flex; align-items: center; justify-content: flex-end; gap: var(--space-2); min-height: 28px; padding: 0 var(--space-3) var(--space-2); color: var(--color-muted); font-size: var(--fan-metadata-size); line-height: 20px; }
-.foot[data-over] { color: var(--color-error); font-weight: 700; }
+.foot[data-over] { color: var(--color-error); font-weight: var(--fan-item-title-weight); }
 .nodeView { position: relative; width: fit-content; max-width: 100%; margin: var(--space-4) 0; }
 .nodeView[data-kind="youtube"] { width: 100%; }
 .nodeView .youtube { margin: 0; }
@@ -63,7 +63,7 @@
 .upload > .uploadIcon { flex: none; display: inline-flex; align-items: center; justify-content: center; width: 16px; height: 16px; }
 .upload > .uploadText { flex: 1 1 120px; display: flex; align-items: baseline; gap: var(--space-2); min-width: 0; }
 .uploadName { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.uploadPercent { flex: none; color: var(--color-ink); font-weight: 700; font-variant-numeric: tabular-nums; }
+.uploadPercent { flex: none; color: var(--color-ink); font-weight: var(--fan-item-title-weight); font-variant-numeric: tabular-nums; }
 .upload[data-state="done"] { color: var(--color-ink); }
 .upload[data-state="done"] .uploadIcon { color: var(--color-accent); }
 .upload[data-state="failed"] { color: var(--color-error); }

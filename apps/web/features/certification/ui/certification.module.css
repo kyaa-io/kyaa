@@ -16,7 +16,7 @@
   gap: 8px;
   margin: 0;
   font-size: 24px;
-  font-weight: 700;
+  font-weight: var(--fan-item-title-weight);
   line-height: 1.3;
   letter-spacing: -0.035em;
 }
@@ -43,12 +43,12 @@
   color: var(--color-muted);
   font: inherit;
   font-size: 14px;
-  font-weight: 700;
+  font-weight: var(--fan-item-title-weight);
   cursor: pointer;
 }
 .tabs button[aria-selected="true"] {
   color: var(--color-ink);
-  font-weight: 700;
+  font-weight: var(--fan-item-title-weight);
 }
 .tabs button[aria-selected="true"]::after {
   content: "";
@@ -87,7 +87,7 @@
   color: var(--color-muted);
   font: inherit;
   font-size: 14px;
-  font-weight: 700;
+  font-weight: var(--fan-item-title-weight);
   cursor: pointer;
 }
 .categories button[aria-pressed="true"] {
@@ -181,13 +181,13 @@ a.card:active {
 .cardCategory {
   color: var(--color-muted);
   font-size: 12px;
-  font-weight: 400;
-  line-height: 1.5;
+  font-weight: var(--fan-body-weight);
+  line-height: var(--fan-body-leading);
 }
 .cardIdentity strong {
   font-size: 16px;
-  font-weight: 700;
-  line-height: 1.5;
+  font-weight: var(--fan-item-title-weight);
+  line-height: var(--fan-body-leading);
   letter-spacing: -0.02em;
   overflow-wrap: anywhere;
 }
@@ -214,8 +214,8 @@ a.card:active {
   align-items: center;
   gap: 4px;
   font-size: 14px;
-  font-weight: 700;
-  line-height: 1.5;
+  font-weight: var(--fan-item-title-weight);
+  line-height: var(--fan-body-leading);
   white-space: nowrap;
 }
 .cardAction svg {
@@ -224,7 +224,7 @@ a.card:active {
 }
 .cardAction:not([data-status="available"]) {
   color: var(--color-muted);
-  font-weight: 700;
+  font-weight: var(--fan-item-title-weight);
 }
 .srOnly {
   position: absolute;
@@ -247,7 +247,7 @@ a.card:active {
 .rowCopy small {
   overflow: hidden;
   color: var(--color-muted);
-  font-size: 13px;
+  font-size: var(--fan-metadata-size);
   line-height: 1.4;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -259,13 +259,13 @@ a.card:active {
   min-width: 0;
   color: var(--color-service-ink, var(--color-accent));
   font-size: 12px;
-  font-weight: 700;
+  font-weight: var(--fan-item-title-weight);
 }
 .reward > span {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  line-height: 1.5;
+  line-height: var(--fan-body-leading);
 }
 .reward svg {
   width: 16px;
@@ -275,7 +275,7 @@ a.card:active {
 .reason {
   color: var(--color-accent-ink);
   font-size: 12px;
-  line-height: 1.5;
+  line-height: var(--fan-body-leading);
   overflow-wrap: anywhere;
 }
 .status {
@@ -322,7 +322,7 @@ a.card:active {
   gap: 8px;
   color: var(--color-muted);
   font-size: 14px;
-  font-weight: 700;
+  font-weight: var(--fan-item-title-weight);
   text-decoration: none;
 }
 .back svg {
@@ -334,7 +334,7 @@ a.card:active {
 }
 .hero > span {
   color: var(--color-service-ink);
-  font-size: 13px;
+  font-size: var(--fan-metadata-size);
   font-weight: 800;
 }
 .hero h1 {
@@ -441,7 +441,7 @@ a.card:active {
   grid-template-columns: 72px minmax(0, 1fr);
   gap: 12px;
   font-size: 14px;
-  line-height: 1.5;
+  line-height: var(--fan-body-leading);
 }
 .submissionDetail dt {
   color: var(--color-muted);
@@ -453,7 +453,7 @@ a.card:active {
   margin-top: 20px;
 }
 .submissionCopy strong {
-  font-size: 13px;
+  font-size: var(--fan-metadata-size);
 }
 .submissionCopy p {
   margin: 7px 0 0;
@@ -484,8 +484,8 @@ a.card:active {
 .requiredFieldHeading span,
 .fileHint {
   color: var(--color-muted);
-  font-size: 13px;
-  line-height: 1.5;
+  font-size: var(--fan-metadata-size);
+  line-height: var(--fan-body-leading);
 }
 .filePicker {
   display: grid;
@@ -526,7 +526,7 @@ a.card:active {
   padding: 8px 10px;
   border-radius: 9px;
   background: var(--color-soft);
-  font-size: 13px;
+  font-size: var(--fan-metadata-size);
 }
 .fileList img {
   width: 64px;
@@ -567,16 +567,16 @@ a.card:active {
   min-height: 20px;
   margin: 4px 0 0;
   color: var(--color-accent-ink);
-  font-size: 13px;
-  font-weight: 700;
-  line-height: 1.5;
+  font-size: var(--fan-metadata-size);
+  font-weight: var(--fan-item-title-weight);
+  line-height: var(--fan-body-leading);
 }
 .note {
   display: grid;
   gap: 8px;
   margin: 18px 0;
-  font-size: 13px;
-  font-weight: 700;
+  font-size: var(--fan-metadata-size);
+  font-weight: var(--fan-item-title-weight);
 }
 .note textarea {
   min-height: 92px;
@@ -627,7 +627,7 @@ a.card:active {
 .message {
   min-height: 24px;
   color: var(--color-accent-ink);
-  font-size: 13px;
+  font-size: var(--fan-metadata-size);
 }
 .panel :is(button, a, input, textarea):focus-visible,
 .detail :is(button, a, input, textarea):focus-visible {
@@ -720,8 +720,8 @@ a.tile:focus-visible { outline: 3px solid var(--color-accent); outline-offset: 3
 .stamp img { display: block; width: 100%; height: 100%; object-fit: contain; }
 /* R5: only an approved certification keeps color; every other state stays gray so an unclaimed item never reads as completed. */
 .stamp:not([data-state="approved"]) { filter: grayscale(1); opacity: .55; }
-.tileTitle { display: -webkit-box; min-width: 0; max-width: 100%; overflow: hidden; font-size: 14px; font-weight: 700; letter-spacing: -.02em; line-height: 1.4; overflow-wrap: anywhere; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
-.tileMeta { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px 8px; min-width: 0; color: var(--color-service-ink, var(--color-accent)); font-size: 12px; font-weight: 700; line-height: 1.5; }
+.tileTitle { display: -webkit-box; min-width: 0; max-width: 100%; overflow: hidden; font-size: 14px; font-weight: var(--fan-item-title-weight); letter-spacing: -.02em; line-height: 1.4; overflow-wrap: anywhere; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+.tileMeta { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px 8px; min-width: 0; color: var(--color-service-ink, var(--color-accent)); font-size: 12px; font-weight: var(--fan-item-title-weight); line-height: var(--fan-body-leading); }
 .tileMeta > span { display: inline-flex; align-items: center; gap: 4px; }
 .tileMeta svg { width: 14px; height: 14px; flex: none; }
 .tile .cardAction, .tile .status { margin-top: auto; }

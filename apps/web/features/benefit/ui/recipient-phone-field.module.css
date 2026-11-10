@@ -4,7 +4,7 @@
   gap: 8px;
   color: oklch(24% 0 0);
   font-size: 14px;
-  font-weight: 700;
+  font-weight: var(--fan-item-title-weight);
 }
 .field > label {
   display: flex;
@@ -15,7 +15,7 @@
 .field > label small {
   color: oklch(45% 0 0);
   font-size: 12px;
-  font-weight: 700;
+  font-weight: var(--fan-item-title-weight);
 }
 .phoneInput {
   display: grid;
@@ -66,7 +66,7 @@
   cursor: pointer;
 }
 .countryTrigger strong {
-  font-size: 13px;
+  font-size: var(--fan-metadata-size);
   font-variant-numeric: tabular-nums;
 }
 .countryTrigger svg {
@@ -161,9 +161,9 @@
 .field em {
   margin: 0;
   color: oklch(44% 0.18 25);
-  font-size: 13px;
+  font-size: var(--fan-metadata-size);
   font-style: normal;
-  font-weight: 700;
+  font-weight: var(--fan-item-title-weight);
 }
 .visuallyHidden {
   position: absolute;

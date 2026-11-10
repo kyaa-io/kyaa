@@ -63,14 +63,14 @@ describe("guest home compact icon-only action spacing", () => {
       /\bfont-weight:\s*var\(--fan-heading-weight\)/,
     );
     expect(declarationBlock(".summarySectionHeader > span")).toMatch(
-      /\bfont-weight:\s*700\b/,
+      /\bfont-weight:\s*var\(--fan-item-title-weight\)/,
     );
 
     expect(declarationBlock(".ownedPassportPreview")).toMatch(/\bwidth:\s*min\(100%,\s*320px\)/);
     expect(declarationBlock(".ownedPassportLink")).toMatch(/\bwidth:\s*100%/);
 
     expect(declarationBlock(".summaryTextLink")).toMatch(
-      /\bfont-weight:\s*700\b/,
+      /\bfont-weight:\s*var\(--fan-item-title-weight\)/,
     );
   });
 

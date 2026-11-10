@@ -5,8 +5,8 @@
 .rows { display: grid; gap: var(--space-4); margin: 0; padding: 0; list-style: none; }
 .row { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; column-gap: var(--space-6); min-width: 0; }
 .body { display: grid; grid-template-columns: minmax(0, 1fr) auto; row-gap: var(--space-2); min-width: 0; color: var(--color-ink); text-decoration: none; }
-.name { overflow: hidden; min-width: 0; font-size: var(--fan-item-title-size, 15px); font-weight: 700; text-overflow: ellipsis; white-space: nowrap; }
-.count { color: var(--color-accent-ink); font-size: var(--fan-item-title-size, 15px); font-weight: 700; font-variant-numeric: tabular-nums; }
+.name { overflow: hidden; min-width: 0; font-size: var(--fan-item-title-size, 15px); font-weight: var(--fan-item-title-weight); text-overflow: ellipsis; white-space: nowrap; }
+.count { color: var(--color-accent-ink); font-size: var(--fan-item-title-size, 15px); font-weight: var(--fan-item-title-weight); font-variant-numeric: tabular-nums; }
 .bar { grid-column: 1 / -1; display: block; height: var(--space-1); overflow: hidden; background: var(--color-accent-line); }
 .bar > span { display: block; height: 100%; background: var(--color-accent); transition: width var(--motion-slow, 200ms) var(--motion-easing); }
 .cheer { flex: none; }

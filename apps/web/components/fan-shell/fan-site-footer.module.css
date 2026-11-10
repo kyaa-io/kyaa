@@ -40,7 +40,7 @@
   margin: 0;
   color: var(--footer-muted);
   font-size: 14px;
-  font-weight: 400;
+  font-weight: var(--fan-body-weight);
   line-height: 1.55;
   text-wrap: pretty;
 }
@@ -60,8 +60,8 @@
 
 .navigation h2 {
   margin: 0 0 4px;
-  font-size: 13px;
-  font-weight: 700;
+  font-size: var(--fan-metadata-size);
+  font-weight: var(--fan-item-title-weight);
   line-height: 1.35;
   letter-spacing: -.01em;
 }
@@ -72,8 +72,8 @@
   min-height: 44px;
   align-items: center;
   color: var(--footer-muted);
-  font-size: 13px;
-  font-weight: 400;
+  font-size: var(--fan-metadata-size);
+  font-weight: var(--fan-body-weight);
   line-height: 1.35;
   text-decoration: none;
   overflow-wrap: anywhere;
@@ -97,8 +97,8 @@
 
 .social h2 {
   margin: 0 0 var(--space-1);
-  font-size: 13px;
-  font-weight: 700;
+  font-size: var(--fan-metadata-size);
+  font-weight: var(--fan-item-title-weight);
   line-height: 1.35;
 }
 
@@ -131,8 +131,8 @@
 .business {
   margin-top: var(--space-6);
   color: var(--footer-muted);
-  font-size: 13px;
-  font-weight: 400;
+  font-size: var(--fan-metadata-size);
+  font-weight: var(--fan-body-weight);
   line-height: 1.6;
 }
 
@@ -171,8 +171,8 @@
   margin-top: var(--space-6);
   padding-top: var(--space-3);
   color: var(--footer-muted);
-  font-size: 13px;
-  font-weight: 400;
+  font-size: var(--fan-metadata-size);
+  font-weight: var(--fan-body-weight);
 }
 
 .legalLinks {
@@ -191,7 +191,7 @@
 }
 
 .legalLinks .privacyLink {
-  font-weight: 700;
+  font-weight: var(--fan-item-title-weight);
 }
 
 .footer a:focus-visible {

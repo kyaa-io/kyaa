@@ -56,7 +56,7 @@
   padding-inline: 22px;
   border-radius: 999rem;
   font-size: 15px;
-  font-weight: 700;
+  font-weight: var(--fan-item-title-weight);
 }
 
 .primaryAction {
@@ -142,9 +142,9 @@
 
 .steps li > span {
   color: var(--color-accent);
-  font-size: 13px;
+  font-size: var(--fan-metadata-size);
   font-weight: 800;
-  line-height: 1.5;
+  line-height: var(--fan-body-leading);
 }
 
 .steps h3,

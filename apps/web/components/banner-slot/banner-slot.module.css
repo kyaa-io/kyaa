@@ -7,9 +7,9 @@
 .artwork img { display: block; width: 100%; height: auto; max-height: 200px; object-fit: cover; object-position: center; }
 .copy { display: flex; flex-direction: column; gap: var(--space-1); min-width: 0; padding: var(--space-3) var(--space-4); }
 .tag { align-self: flex-start; }
-.title { overflow: hidden; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; font-size: var(--fan-item-title-size); font-weight: 700; line-height: 1.35; overflow-wrap: anywhere; }
+.title { overflow: hidden; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; font-size: var(--fan-item-title-size); font-weight: var(--fan-item-title-weight); line-height: 1.35; overflow-wrap: anywhere; }
 .description { overflow: hidden; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; color: var(--color-muted); font-size: var(--fan-metadata-size); line-height: 1.4; overflow-wrap: anywhere; }
-.action { display: inline-flex; align-items: center; gap: var(--space-1); margin-top: auto; padding-top: var(--space-1); font-size: var(--fan-metadata-size); font-weight: 700; line-height: 1.35; }
+.action { display: inline-flex; align-items: center; gap: var(--space-1); margin-top: auto; padding-top: var(--space-1); font-size: var(--fan-metadata-size); font-weight: var(--fan-item-title-weight); line-height: 1.35; }
 .action svg { flex: none; }
 /* Wide (the 980 body column): picture 240×120 on the left, words beside it, card height = picture height. */
 @container (min-width: 560px) {

@@ -7,22 +7,22 @@
 .close:disabled { cursor: wait; opacity: .55; }
 .close:focus-visible, .dialog input:focus-visible, .dialog textarea:focus-visible, .dialog select:focus-visible, .submit:focus-visible { outline: 3px solid var(--color-ink); outline-offset: 3px; }
 .heading { display: flex; flex-direction: column; gap: 12px; padding-right: 52px; }
-.eyebrow { color: var(--color-accent); font-size: 12px; font-weight: 700; letter-spacing: 1.4px; }
+.eyebrow { color: var(--color-accent); font-size: 12px; font-weight: var(--fan-item-title-weight); letter-spacing: 1.4px; }
 .heading h2, .success h2 { font-size: 32px; font-weight: 800; letter-spacing: -.6px; line-height: 1.25; }
 .heading > p:last-child, .success p { color: var(--color-muted); font-size: 16px; line-height: 1.55; }
 .form { display: flex; flex-direction: column; gap: 20px; margin-top: 28px; }
 .twoColumns { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
-.form label:not(.consent) { display: flex; flex-direction: column; gap: 8px; color: var(--color-ink); font-size: 14px; font-weight: 700; }
-.form input:not([type="checkbox"]), .form textarea, .form select { width: 100%; border: 1px solid var(--color-muted); border-radius: 12px; background: var(--color-surface); color: var(--color-ink); font: inherit; font-weight: 400; }
+.form label:not(.consent) { display: flex; flex-direction: column; gap: 8px; color: var(--color-ink); font-size: 14px; font-weight: var(--fan-item-title-weight); }
+.form input:not([type="checkbox"]), .form textarea, .form select { width: 100%; border: 1px solid var(--color-muted); border-radius: 12px; background: var(--color-surface); color: var(--color-ink); font: inherit; font-weight: var(--fan-body-weight); }
 .form input:not([type="checkbox"]), .form select { min-height: 48px; padding: 12px 14px; }
 .form select { height: 48px; }
-.form textarea { min-height: 140px; resize: vertical; padding: 14px; line-height: 1.5; }
+.form textarea { min-height: 140px; resize: vertical; padding: 14px; line-height: var(--fan-body-leading); }
 .form input::placeholder, .form textarea::placeholder { color: var(--color-muted); opacity: 1; }
 .form input:disabled, .form textarea:disabled, .form select:disabled { background: var(--color-soft); cursor: wait; }
-.consent { display: flex; align-items: flex-start; gap: 10px; color: var(--color-ink); font-size: 13px; font-weight: 400; line-height: 1.5; }
+.consent { display: flex; align-items: flex-start; gap: 10px; color: var(--color-ink); font-size: var(--fan-metadata-size); font-weight: var(--fan-body-weight); line-height: var(--fan-body-leading); }
 .consent input { width: 20px; height: 20px; flex: 0 0 20px; margin: 0; accent-color: var(--color-accent); }
-.error { padding: 12px 14px; border-radius: 10px; background: var(--color-accent-soft); color: var(--color-accent-ink); font-size: 14px; font-weight: 700; line-height: 1.45; }
-.submit { display: inline-flex; min-height: 52px; align-items: center; justify-content: center; gap: 10px; padding: 14px 22px; border: 0; border-radius: 12px; background: var(--color-accent); color: var(--color-surface); font-size: 15px; font-weight: 700; cursor: pointer; }
+.error { padding: 12px 14px; border-radius: 10px; background: var(--color-accent-soft); color: var(--color-accent-ink); font-size: 14px; font-weight: var(--fan-item-title-weight); line-height: 1.45; }
+.submit { display: inline-flex; min-height: 52px; align-items: center; justify-content: center; gap: 10px; padding: 14px 22px; border: 0; border-radius: 12px; background: var(--color-accent); color: var(--color-surface); font-size: 15px; font-weight: var(--fan-item-title-weight); cursor: pointer; }
 .submit:hover { background: var(--color-accent-ink); }
 .submit:disabled { cursor: wait; background: var(--color-accent); }
 .spinner { animation: spin .8s linear infinite; }

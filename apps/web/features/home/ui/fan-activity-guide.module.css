@@ -5,10 +5,10 @@
 .steps { display:grid; margin:0; padding:0; list-style:none; }
 .steps li { display:grid; grid-template-columns:48px minmax(0,1fr); gap:var(--space-5); padding:var(--space-8); background:var(--color-canvas); }
 .steps li:nth-child(even) { background:var(--color-accent-soft); }
-.number { color:var(--color-accent-ink); font-size:var(--fan-metadata-size); font-weight:700; line-height:1.5; }
+.number { color:var(--color-accent-ink); font-size:var(--fan-metadata-size); font-weight:var(--fan-item-title-weight); line-height:var(--fan-body-leading); }
 .steps h2 { margin:0; font-size:var(--fan-heading-size-wide); line-height:var(--fan-heading-leading); }
 .steps p { margin:var(--space-3) 0 0; font-size:var(--fan-body-size); line-height:1.7; }
-.steps a { display:inline-flex; min-height:44px; align-items:center; margin:var(--space-3) var(--space-4) 0 0; color:var(--color-accent-ink); font-weight:700; text-decoration:none; }
+.steps a { display:inline-flex; min-height:44px; align-items:center; margin:var(--space-3) var(--space-4) 0 0; color:var(--color-accent-ink); font-weight:var(--fan-item-title-weight); text-decoration:none; }
 .steps a:focus-visible { outline:var(--focus-width) solid var(--color-focus); outline-offset:var(--focus-offset); }
 @media (min-width:1024px) { .heroImage { aspect-ratio:16 / 9; object-fit:cover; object-position:center 74%; } }
 @media (max-width:767px) {

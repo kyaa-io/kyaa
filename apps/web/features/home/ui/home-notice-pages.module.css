@@ -6,7 +6,7 @@
 /* 공지 그림은 PC에서 화면 폭을 채우되 21:9로 잘라 글보다 커지지 않게 한다. */
 @media (min-width: 64rem) { .article img[src^="/images/notices/notice-"] { aspect-ratio: 21 / 9; object-fit: cover; } }
 .meta { display: flex; gap: var(--space-2); color: var(--color-muted); font-size: var(--fan-metadata-size); line-height: 18px; }
-.meta strong { color: var(--color-accent); font-weight: 700; }
+.meta strong { color: var(--color-accent); font-weight: var(--fan-item-title-weight); }
 
 .guideBody { display:grid; grid-template-columns:minmax(0,1fr) 100px; align-items:start; gap:var(--space-4); }
 .artwork { display:block; width:100%; height:auto; }
@@ -21,7 +21,7 @@
 .empty { margin: 0; padding: var(--space-6) var(--space-4); }
 .listPagination { display: flex; align-items: center; justify-content: center; padding-block: var(--space-2); }
 .listPagination > a, .listPagination > span { display: inline-flex; width: 44px; min-height: 44px; align-items: center; justify-content: center; color: var(--color-muted); font-size: var(--fan-metadata-size); text-decoration: none; }
-.listPagination > [aria-current="page"] { color: var(--color-ink); font-weight: 700; }
+.listPagination > [aria-current="page"] { color: var(--color-ink); font-weight: var(--fan-item-title-weight); }
 .listPagination > [aria-disabled="true"] { opacity: .4; }
 .listPagination svg { width: 16px; height: 16px; }
 .listPagination a:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }

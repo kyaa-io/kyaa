@@ -4,15 +4,15 @@
 .trigger progress::-webkit-progress-bar { background: #f6daea; }
 .trigger progress::-webkit-progress-value { background: #ff0080; border-radius: 20px; }
 .trigger progress::-moz-progress-bar { background: #ff0080; border-radius: 20px; }
-.tooltip { position: absolute; z-index: var(--z-tooltip); bottom: calc(100% - 4px); left: 50%; display: grid; width: max-content; max-width: 100%; gap: 4px; padding: 12px 16px; border: 1px solid #eee5eb; border-radius: 12px; background: #fff; color: #77616c; box-shadow: 0 4px 16px #47233414; text-align: center; font-size: 11px; line-height: 1.5; transform: translateX(-50%); }
+.tooltip { position: absolute; z-index: var(--z-tooltip); bottom: calc(100% - 4px); left: 50%; display: grid; width: max-content; max-width: 100%; gap: 4px; padding: 12px 16px; border: 1px solid #eee5eb; border-radius: 12px; background: #fff; color: #77616c; box-shadow: 0 4px 16px #47233414; text-align: center; font-size: 11px; line-height: var(--fan-body-leading); transform: translateX(-50%); }
 .tooltip[hidden] { display: none; }
 .tooltip::after { position: absolute; top: 100%; left: calc(50% - 5px); width: 10px; height: 10px; border-right: 1px solid #eee5eb; border-bottom: 1px solid #eee5eb; background: #fff; content: ""; transform: translateY(-5px) rotate(45deg); }
-.tooltip strong { color: #d90065; font-size: 18px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.tooltip strong { color: #d90065; font-size: 18px; font-weight: var(--fan-item-title-weight); font-variant-numeric: tabular-nums; }
 .stageDetail,.currentDetail { display: grid; gap: 2px; }
 .stageDetail { padding-bottom: 8px; border-bottom: 1px solid #eee5eb; }
 .stageDetail strong,.currentDetail strong { font-size: 15px; }
 
-.summary { display:flex; align-items:baseline; justify-content:space-between; flex-wrap:wrap; gap:4px 12px; font-size:13px; line-height:1.5; color:var(--color-muted); }
-.summary strong { color:var(--color-ink); font-size:16px; font-weight:700; font-variant-numeric:tabular-nums; }
+.summary { display:flex; align-items:baseline; justify-content:space-between; flex-wrap:wrap; gap:4px 12px; font-size:var(--fan-metadata-size); line-height:var(--fan-body-leading); color:var(--color-muted); }
+.summary strong { color:var(--color-ink); font-size:16px; font-weight:var(--fan-item-title-weight); font-variant-numeric:tabular-nums; }
 .summary span { overflow-wrap:anywhere; }
 .trigger:focus-visible { outline:var(--focus-width) solid var(--color-focus); outline-offset:var(--focus-offset); }

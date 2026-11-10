@@ -1,4 +1,4 @@
 /* Home favorite card numbers (261107-2 D13): 13px metadata, tabular so cards line up. */
-.stats { display: flex; flex-wrap: wrap; align-items: center; gap: 0 var(--space-1); min-height: calc(var(--fan-metadata-size) * 1.5); margin: 0; color: var(--color-muted); font-size: var(--fan-metadata-size); line-height: 1.5; font-variant-numeric: tabular-nums; }
-.hearts { display: inline-flex; align-items: center; gap: var(--space-1); color: var(--color-ink); font-weight: 700; }
+.stats { display: flex; flex-wrap: wrap; align-items: center; gap: 0 var(--space-1); min-height: calc(var(--fan-metadata-size) * 1.5); margin: 0; color: var(--color-muted); font-size: var(--fan-metadata-size); line-height: var(--fan-body-leading); font-variant-numeric: tabular-nums; }
+.hearts { display: inline-flex; align-items: center; gap: var(--space-1); color: var(--color-ink); font-weight: var(--fan-item-title-weight); }
 .placeholder { display: block; width: 96px; height: 12px; border-radius: var(--radius-pill); background: var(--color-line-subtle); }

@@ -112,9 +112,11 @@
   --fan-body-size: 16px;
   --fan-body-size-wide: var(--fan-body-size);
   --fan-body-leading: 1.5;
+  --fan-body-weight: 400;
   --fan-tab-weight: 700;
   --fan-section-gap: 32px;
   --fan-metadata-size: 13px;
+  --fan-metadata-leading: 1.4;
   --fan-badge-size: 12px;
   --fan-aside-title-size: var(--fan-item-title-size);
   --fan-aside-title-weight: var(--fan-item-title-weight);

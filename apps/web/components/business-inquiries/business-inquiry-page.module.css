@@ -30,7 +30,7 @@
   color: var(--color-accent);
   font-size: 15px;
   line-height: 1.4;
-  font-weight: 700;
+  font-weight: var(--fan-item-title-weight);
 }
 
 .partnerVisual {
@@ -60,7 +60,7 @@
   text-align: center;
   font-size: 14px;
   line-height: 1.4;
-  font-weight: 700;
+  font-weight: var(--fan-item-title-weight);
 }
 
 .partnerVisual li svg { color: var(--fanmeeting-pink); }
@@ -97,7 +97,7 @@
   align-items: flex-start;
   gap: 12px;
   font-size: 16px;
-  line-height: 1.5;
+  line-height: var(--fan-body-leading);
 }
 
 .prepare li svg {
@@ -114,8 +114,8 @@
   width: fit-content;
   color: var(--fanmeeting-ink);
   font-size: 15px;
-  font-weight: 700;
-  line-height: 1.5;
+  font-weight: var(--fan-item-title-weight);
+  line-height: var(--fan-body-leading);
 }
 
 .related { align-self: center; }
@@ -135,7 +135,7 @@
   color: var(--color-accent);
   font-family: inherit;
   font-size: 16px;
-  font-weight: 700;
+  font-weight: var(--fan-item-title-weight);
   line-height: 1.4;
   cursor: pointer;
 }

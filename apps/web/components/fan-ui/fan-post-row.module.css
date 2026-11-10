@@ -38,8 +38,8 @@
   overflow: hidden;
   min-width: 0;
   color: var(--color-ink);
-  font-size: 15px;
-  font-weight: 700;
+  font-size: var(--fan-item-title-size);
+  font-weight: var(--fan-body-weight);
   line-height: 22px;
   text-decoration: none;
   text-overflow: ellipsis;
@@ -49,8 +49,8 @@
 .title::after { content: ""; position: absolute; inset: 0; }
 .title:focus-visible { outline: none; }
 .title:focus-visible::after { outline: 2px solid var(--color-accent); outline-offset: -2px; }
-.row[data-notice] .title { font-weight: 700; }
-.comments { flex: none; color: var(--color-accent-ink); font-size: 13px; line-height: 22px; font-variant-numeric: tabular-nums; }
+.row[data-notice] .title { font-weight: var(--fan-item-title-weight); }
+.comments { flex: none; color: var(--color-accent-ink); font-size: var(--fan-metadata-size); font-weight: var(--fan-body-weight); line-height: 22px; font-variant-numeric: tabular-nums; }
 .meta {
   grid-area: meta;
   display: flex;
@@ -58,8 +58,9 @@
   gap: var(--space-1);
   min-width: 0;
   color: var(--color-muted);
-  font-size: 13px;
-  line-height: 18px;
+  font-size: var(--fan-metadata-size);
+  font-weight: var(--fan-body-weight);
+  line-height: var(--fan-metadata-leading);
   white-space: nowrap;
 }
 .meta > * + *::before { content: "·"; margin-right: var(--space-1); }

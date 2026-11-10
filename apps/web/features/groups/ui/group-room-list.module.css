@@ -1,6 +1,6 @@
 /* 비밀방 목록: 아바타 줄, 큰 진행 중 카드, 다음 방 목록. 간격은 4·8·12·16·20·24 토큰만 쓴다. */
 .hub { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-6); min-width: 0; }
-.sectionTitle { display: flex; align-items: center; gap: var(--space-2); margin: 0 0 var(--space-3); color: var(--color-muted); font-size: var(--fan-metadata-size); font-weight: 700; line-height: 20px; }
+.sectionTitle { display: flex; align-items: center; gap: var(--space-2); margin: 0 0 var(--space-3); color: var(--color-muted); font-size: var(--fan-metadata-size); font-weight: var(--fan-item-title-weight); line-height: 20px; }
 .count { color: var(--color-muted); font-variant-numeric: tabular-nums; }
 .srOnly { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 
@@ -16,7 +16,7 @@
 .featuredBody { display: grid; align-content: start; gap: var(--space-2); min-width: 0; }
 .featuredTop { display: flex; align-items: center; gap: var(--space-2); min-height: 24px; }
 .featuredImage { flex: none; width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
-.live { display: inline-flex; align-items: center; gap: var(--space-2); min-height: 24px; padding: 0 var(--space-2); border-radius: var(--radius-pill); background: var(--color-surface); color: var(--color-service-ink); font-size: var(--fan-metadata-size); font-weight: 700; }
+.live { display: inline-flex; align-items: center; gap: var(--space-2); min-height: 24px; padding: 0 var(--space-2); border-radius: var(--radius-pill); background: var(--color-surface); color: var(--color-service-ink); font-size: var(--fan-metadata-size); font-weight: var(--fan-item-title-weight); }
 .live i { width: 8px; height: 8px; border-radius: 50%; background: var(--color-service-ink); }
 .live[data-status="readonly"] { color: var(--color-muted); }
 .live[data-status="readonly"] i { background: var(--color-muted); }
@@ -37,9 +37,9 @@
 .icon { display: grid; flex: none; width: 40px; height: 40px; place-items: center; border-radius: 50%; background: var(--color-surface-focus); color: var(--color-service-ink); }
 .card[data-locked="true"] .icon { background: var(--color-soft); color: var(--color-muted); }
 .content { display: grid; flex: 1; min-width: 0; gap: var(--space-1); }
-.content strong { overflow: hidden; color: var(--color-ink); font-size: var(--fan-item-title-size); font-weight: 700; line-height: 22px; text-overflow: ellipsis; white-space: nowrap; }
+.content strong { overflow: hidden; color: var(--color-ink); font-size: var(--fan-item-title-size); font-weight: var(--fan-item-title-weight); line-height: 22px; text-overflow: ellipsis; white-space: nowrap; }
 .preview { overflow: hidden; color: var(--color-muted); font-size: var(--fan-metadata-size); line-height: 20px; text-overflow: ellipsis; white-space: nowrap; }
-.trailing { display: inline-flex; flex: none; align-items: center; gap: var(--space-1); color: var(--color-muted); font-size: var(--fan-metadata-size); font-weight: 700; white-space: nowrap; }
+.trailing { display: inline-flex; flex: none; align-items: center; gap: var(--space-1); color: var(--color-muted); font-size: var(--fan-metadata-size); font-weight: var(--fan-item-title-weight); white-space: nowrap; }
 .unread { display: grid; flex: none; min-width: 24px; min-height: 24px; padding: 0 6px; box-sizing: border-box; place-items: center; border-radius: var(--radius-pill); background: var(--color-accent); color: var(--color-canvas); font-size: var(--fan-metadata-size); font-variant-numeric: tabular-nums; }
 .proofLink { flex: none; align-self: center; margin-right: var(--space-3); }
 

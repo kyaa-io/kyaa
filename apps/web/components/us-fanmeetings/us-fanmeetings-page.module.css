@@ -75,12 +75,12 @@
 .eyebrow {
   color: var(--fanmeeting-pink);
   font-size: 12px;
-  font-weight: 700;
+  font-weight: var(--fan-item-title-weight);
   letter-spacing: 1.5px;
   line-height: 1.4;
 }
 .heroCopy > .eyebrow {
-  font-size: 13px;
+  font-size: var(--fan-metadata-size);
   letter-spacing: 1px;
 }
 .heroCopy > .eyebrow span {
@@ -117,7 +117,7 @@
   font-size: 16px;
   font-family: inherit;
   line-height: 1.4;
-  font-weight: 700;
+  font-weight: var(--fan-item-title-weight);
   cursor: pointer;
   transition: background 150ms ease;
 }
@@ -131,7 +131,7 @@
   min-height: 44px;
   color: var(--fanmeeting-ink);
   font-size: 14px;
-  font-weight: 700;
+  font-weight: var(--fan-item-title-weight);
 }
 .supportLink:hover {
   text-decoration: underline;
@@ -189,7 +189,7 @@
 .stageBackdrop > span {
   color: var(--color-accent-line);
   font-size: 10px;
-  font-weight: 700;
+  font-weight: var(--fan-item-title-weight);
   letter-spacing: 1.5px;
 }
 .stageFloor {
@@ -243,7 +243,7 @@
   gap: 8px;
   color: var(--color-accent);
   font-size: 12px;
-  font-weight: 700;
+  font-weight: var(--fan-item-title-weight);
   line-height: 1.4;
   text-align: center;
 }
@@ -251,7 +251,7 @@
   padding-block: 22px;
   border-block: 1px solid var(--fanmeeting-line);
   font-size: 15px;
-  font-weight: 700;
+  font-weight: var(--fan-item-title-weight);
   letter-spacing: 0.7px;
   color: var(--fanmeeting-muted);
   line-height: 1.4;
@@ -270,7 +270,7 @@
 .sectionHeading h2 {
   font-size: 40px;
   line-height: 1.25;
-  font-weight: 700;
+  font-weight: var(--fan-item-title-weight);
   letter-spacing: -0.8px;
 }
 .partnerGrid,
@@ -301,11 +301,11 @@
 .partnerHeading p {
   color: var(--fanmeeting-muted);
   font-size: 16px;
-  line-height: 1.5;
+  line-height: var(--fan-body-leading);
 }
 .partnerCard h3 {
   font-size: 26px;
-  font-weight: 700;
+  font-weight: var(--fan-item-title-weight);
   line-height: 1.4;
 }
 .partnerCard ul {
@@ -321,7 +321,7 @@
   gap: 12px;
   color: var(--fanmeeting-muted);
   font-size: 17px;
-  line-height: 1.5;
+  line-height: var(--fan-body-leading);
 }
 .partnerCard li svg {
   color: var(--fanmeeting-pink);
@@ -353,11 +353,11 @@
 }
 .stage h3 {
   font-size: 24px;
-  font-weight: 700;
+  font-weight: var(--fan-item-title-weight);
   line-height: 1.4;
 }
 .stage > p:last-child {
-  font-size: 13px;
+  font-size: var(--fan-metadata-size);
   line-height: 1.4;
   color: var(--fanmeeting-muted);
 }
@@ -377,7 +377,7 @@
 .passportBand h3 {
   font-size: 28px;
   line-height: 1.4;
-  font-weight: 700;
+  font-weight: var(--fan-item-title-weight);
   margin-bottom: 10px;
 }
 .passportBand p,
@@ -404,7 +404,7 @@
 .service h3 {
   font-size: 26px;
   line-height: 1.4;
-  font-weight: 700;
+  font-weight: var(--fan-item-title-weight);
 }
 .processGrid {
   display: grid;
@@ -421,13 +421,13 @@
 .stepNumber {
   font-size: 36px;
   line-height: 1.4;
-  font-weight: 700;
+  font-weight: var(--fan-item-title-weight);
   color: var(--color-accent);
 }
 .processGrid h3 {
   font-size: 23px;
   line-height: 1.4;
-  font-weight: 700;
+  font-weight: var(--fan-item-title-weight);
 }
 .faq {
   display: flex;
@@ -439,7 +439,7 @@
 .faq h3 {
   font-size: 21px;
   line-height: 1.4;
-  font-weight: 700;
+  font-weight: var(--fan-item-title-weight);
 }
 .inquiry {
   display: grid;
@@ -462,7 +462,7 @@
 }
 .inquiry h2 {
   font-size: 42px;
-  font-weight: 700;
+  font-weight: var(--fan-item-title-weight);
   line-height: 1.2;
 }
 .email {
@@ -473,7 +473,7 @@
   font-family: inherit;
   font-size: 32px;
   line-height: 1.4;
-  font-weight: 700;
+  font-weight: var(--fan-item-title-weight);
   color: var(--fanmeeting-ink);
   overflow-wrap: anywhere;
   cursor: pointer;
@@ -482,8 +482,8 @@
 .email svg { display: none; }
 .contact > p {
   color: var(--fanmeeting-muted);
-  font-size: 13px;
-  line-height: 1.5;
+  font-size: var(--fan-metadata-size);
+  line-height: var(--fan-body-leading);
 }
 @media (max-width: 1199px) {
   .hero {
@@ -536,7 +536,7 @@
     font-size: 30px;
   }
   .audience {
-    font-size: 13px;
+    font-size: var(--fan-metadata-size);
     letter-spacing: 0;
   }
   .section {

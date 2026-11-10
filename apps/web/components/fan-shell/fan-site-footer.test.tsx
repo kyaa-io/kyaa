@@ -126,7 +126,7 @@ describe("FanSiteFooter", () => {
     const socialIconRule = footerCss.match(/\.socialLink svg\s*\{([^}]*)\}/)?.[1];
 
     expect(linkRule).toContain("min-height: 44px");
-    expect(linkRule).toContain("font-size: 13px");
+    expect(linkRule).toContain("font-size: var(--fan-metadata-size)");
     expect(linkRule).toContain("overflow-wrap: anywhere");
     expect(navigationRule).toContain("grid-template-columns: repeat(2, minmax(0, 1fr))");
     expect(serviceGroupRule).toContain("grid-template-columns: repeat(2, minmax(0, 1fr))");

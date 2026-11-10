@@ -44,7 +44,7 @@
   gap: 8px;
   color: var(--muted);
   font-size: 14px;
-  font-weight: 700;
+  font-weight: var(--fan-item-title-weight);
   border: 0;
   padding: 0;
   background: transparent;
@@ -138,7 +138,7 @@
 .cardTop p {
   margin-top: 5px;
   color: var(--muted);
-  font-size: 13px;
+  font-size: var(--fan-metadata-size);
 }
 .cardTop svg {
   width: 20px;
@@ -181,7 +181,7 @@
 .cardFacts small {
   color: var(--muted);
   font-size: 11px;
-  font-weight: 700;
+  font-weight: var(--fan-item-title-weight);
 }
 .digitalStatus {
   display: flex;
@@ -189,8 +189,8 @@
   align-items: center;
   gap: 8px;
   color: var(--muted);
-  font-size: 13px;
-  font-weight: 700;
+  font-size: var(--fan-metadata-size);
+  font-weight: var(--fan-item-title-weight);
 }
 .digitalStatus > span {
   display: grid;
@@ -246,7 +246,7 @@
   background: var(--color-surface);
   white-space: nowrap;
   font-size: 14px;
-  font-weight: 700;
+  font-weight: var(--fan-item-title-weight);
 }
 .discoverLink:hover {
   background: var(--soft);
@@ -380,8 +380,8 @@
   gap: 5px;
   overflow: hidden;
   color: var(--muted);
-  font-size: 13px;
-  font-weight: 700;
+  font-size: var(--fan-metadata-size);
+  font-weight: var(--fan-item-title-weight);
 }
 .creatorLink span {
   overflow: hidden;
@@ -438,7 +438,7 @@
 .nextBenefit span {
   color: var(--muted);
   font-size: 12px;
-  font-weight: 700;
+  font-weight: var(--fan-item-title-weight);
 }
 .nextBenefit h2,
 .nextBenefit p {
@@ -455,8 +455,8 @@
 .nextBenefit p {
   margin-top: 6px;
   color: var(--muted);
-  font-size: 13px;
-  line-height: 1.5;
+  font-size: var(--fan-metadata-size);
+  line-height: var(--fan-body-leading);
 }
 .nextBenefit ul {
   display: flex;
@@ -501,7 +501,7 @@
 }
 .sectionHeading p {
   color: var(--muted);
-  font-size: 13px;
+  font-size: var(--fan-metadata-size);
 }
 .stampGrid {
   display: grid;
@@ -543,7 +543,7 @@
   color: var(--ink);
   font-size: 12px;
   font-style: normal;
-  font-weight: 700;
+  font-weight: var(--fan-item-title-weight);
 }
 .stampSlot[data-empty="true"] {
   color: var(--muted);
@@ -585,7 +585,7 @@
   font-size: 12px;
 }
 .timeline b {
-  font-size: 13px;
+  font-size: var(--fan-metadata-size);
 }
 .inlineEmpty {
   display: flex;
@@ -608,8 +608,8 @@
 .inlineEmpty p {
   margin-top: 5px;
   color: var(--muted);
-  font-size: 13px;
-  line-height: 1.5;
+  font-size: var(--fan-metadata-size);
+  line-height: var(--fan-body-leading);
 }
 .disclosure {
   margin-top: 48px;
@@ -622,7 +622,7 @@
   justify-content: space-between;
   cursor: pointer;
   font-size: 14px;
-  font-weight: 700;
+  font-weight: var(--fan-item-title-weight);
   list-style: none;
 }
 .disclosure summary::-webkit-details-marker {
@@ -631,7 +631,7 @@
 .disclosure summary:after {
   content: "+";
   font-size: 20px;
-  font-weight: 400;
+  font-weight: var(--fan-body-weight);
 }
 .disclosure[open] summary:after {
   content: "−";
@@ -650,7 +650,7 @@
   margin: 0;
   border-top: 1px solid var(--micro);
   color: var(--muted);
-  font-size: 13px;
+  font-size: var(--fan-metadata-size);
 }
 .disclosure strong {
   max-width: 60%;
@@ -665,8 +665,8 @@
   justify-content: flex-end;
   gap: 8px;
   color: var(--ink);
-  font-size: 13px;
-  font-weight: 700;
+  font-size: var(--fan-metadata-size);
+  font-weight: var(--fan-item-title-weight);
   text-decoration: underline;
   text-decoration-thickness: 1px;
   text-underline-offset: 3px;
@@ -729,7 +729,7 @@
   margin-top: 20px;
 }
 .momentLabel {
-  font-size: 13px;
+  font-size: var(--fan-metadata-size);
   font-weight: 800;
 }
 .stampFacts {
@@ -760,13 +760,13 @@
 }
 .stampFacts dt {
   color: var(--muted);
-  font-size: 13px;
+  font-size: var(--fan-metadata-size);
 }
 .stampFacts dd {
   margin: 0;
   text-align: right;
-  font-size: 13px;
-  font-weight: 700;
+  font-size: var(--fan-metadata-size);
+  font-weight: var(--fan-item-title-weight);
 }
 .stampFacts dd a {
   text-decoration: underline;
@@ -909,9 +909,9 @@
 .collection { grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr)); align-items:stretch; gap:var(--space-4); }
 /* Share content-driven tracks within each visual row, including optional issuance. */
 .passportCard { display:grid; grid-template-rows:subgrid; grid-row:span 4; row-gap:0; min-height:0; padding:0; overflow:hidden; background:var(--color-surface); box-shadow:none; border-color:var(--color-accent-line); }
-.collectionCardLabel { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:15px 16px 0; color:var(--color-accent); font-size:10px; font-weight:700; line-height:1.3; }
+.collectionCardLabel { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:15px 16px 0; color:var(--color-accent); font-size:10px; font-weight:var(--fan-item-title-weight); line-height:1.3; }
 .collectionCardLabel > :first-child { letter-spacing:.12em; }
-.collectionCardLabel > :last-child { font-size:13px; font-weight:800; }
+.collectionCardLabel > :last-child { font-size:var(--fan-metadata-size); font-weight:800; }
 .collectionCardMain { grid-row:2; display:grid; grid-template-columns:92px minmax(0,1fr); align-items:center; gap:16px; padding:12px 16px 14px; }
 .cardMedia { height:108px; aspect-ratio:auto; border-radius:12px; }
 .collectionCardBody { display:flex; min-width:0; align-self:stretch; flex-direction:column; justify-content:space-between; gap:12px; }
@@ -922,8 +922,8 @@
 .cardFacts > a:first-child { padding-left:0; }
 .cardFacts > a:last-child { padding-right:0; }
 .cardFacts strong { font-size:22px; font-variant-numeric:tabular-nums; line-height:1.2; white-space:nowrap; }
-.cardFacts small { order:-1; font-size:11px; font-weight:400; line-height:1.4; }
-.openLabel { grid-row:4; min-height:44px; gap:8px; margin-top:0; padding:0 16px; border:0; border-top:1px solid var(--color-accent-soft); border-radius:0; font-size:13px; font-weight:700; }
+.cardFacts small { order:-1; font-size:11px; font-weight:var(--fan-body-weight); line-height:1.4; }
+.openLabel { grid-row:4; min-height:44px; gap:8px; margin-top:0; padding:0 16px; border:0; border-top:1px solid var(--color-accent-soft); border-radius:0; font-size:var(--fan-metadata-size); font-weight:var(--fan-item-title-weight); }
 .openLabel span { flex:1; }
 .openLabel:focus-visible { outline-offset:-3px; border-radius:0; }
 .collectionIssuance { grid-row:3; padding:0 16px 12px; }

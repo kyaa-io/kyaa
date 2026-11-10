@@ -12,7 +12,7 @@
   color: #686873;
   font: inherit;
   font-size: 14px;
-  font-weight: 700;
+  font-weight: var(--fan-item-title-weight);
   line-height: 1.4;
   cursor: pointer;
 }
@@ -82,7 +82,7 @@
   padding: 9px 10px;
   border-radius: 9px;
   font-size: 14px;
-  font-weight: 700;
+  font-weight: var(--fan-item-title-weight);
   line-height: 1.35;
   cursor: default;
   outline: 0;
@@ -95,7 +95,7 @@
 
 .item[data-selected] {
   color: #171719;
-  font-weight: 700;
+  font-weight: var(--fan-item-title-weight);
 }
 
 .indicator {

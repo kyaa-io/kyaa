@@ -10,8 +10,8 @@
 .copy { display: flex; flex-direction: column; min-width: 0; gap: 8px; }
 .copy h2 { margin: 0; font-size: var(--fan-event-catalog-title-size); font-weight: var(--fan-item-title-weight); line-height: 1.4; overflow-wrap: anywhere; text-wrap: pretty; }
 .copy p { margin: 0; color: var(--fan-muted); font-size: 16px; line-height: 1.6; white-space: pre-line; overflow-wrap: anywhere; }
-.eyebrow { color: var(--fan-muted); font-size: 13px; font-weight: 700; line-height: 1.5; }
-.action { display: flex; align-items: center; gap: 8px; min-height: 44px; margin-top: 4px; color: var(--fan-ink); font-size: 16px; font-weight: 700; line-height: 1.5; }
+.eyebrow { color: var(--fan-muted); font-size: var(--fan-metadata-size); font-weight: var(--fan-item-title-weight); line-height: var(--fan-body-leading); }
+.action { display: flex; align-items: center; gap: 8px; min-height: 44px; margin-top: 4px; color: var(--fan-ink); font-size: 16px; font-weight: var(--fan-item-title-weight); line-height: var(--fan-body-leading); }
 .action svg { flex-shrink: 0; width: 16px; height: 16px; }
 .state { margin: 24px 0 0; padding: 20px; border-radius: 12px; background: #f7f7f8; font-size: 16px; line-height: 1.6; }
 .state p { margin: 0 0 8px; }

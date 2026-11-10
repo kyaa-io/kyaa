@@ -2,7 +2,7 @@
 @font-face { font-family:'ByUs Calendar Bodoni'; src:url('/fonts/bodoni-moda-regular.ttf') format('truetype'); font-weight:400; font-style:normal; font-display:swap; }
 
 .month { --number: clamp(64px, 9cqw, 120px); position:relative; display:inline-flex; align-items:center; height:calc(var(--number) * 1.1); pointer-events:none; user-select:none; }
-.number { font-family:'ByUs Calendar Bodoni',Didot,Georgia,serif; font-size:var(--number); font-weight:400; line-height:1; letter-spacing:-.04em; color:var(--color-ink); }
+.number { font-family:'ByUs Calendar Bodoni',Didot,Georgia,serif; font-size:var(--number); font-weight:var(--fan-body-weight); line-height:1; letter-spacing:-.04em; color:var(--color-ink); }
 .letter { width:calc(var(--number) * 1.9); height:auto; margin-left:calc(var(--number) * -.08); transform:translateY(calc(var(--number) * .22)) rotate(-4deg); }
 
 .stack { --stack: clamp(168px, 24cqw, 300px); position:relative; width:var(--stack); height:calc(var(--stack) * .68); pointer-events:none; user-select:none; animation:stack-arrive 220ms ease-out; }

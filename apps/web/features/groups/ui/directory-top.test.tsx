@@ -87,7 +87,7 @@ it("hot posts: five rows from ten answers, 펼치기 shows all ten from the same
   const rows = () => container.querySelectorAll("ul > li");
   expect(rows()).toHaveLength(5);
   expect(screen.getByRole("link", { name: "글 1" })).toBeInTheDocument();
-  expect(screen.getByText("좋아요 19")).toBeInTheDocument();
+  expect(screen.getByText("추천 19")).toBeInTheDocument();
   fireEvent.click(screen.getByRole("button", { name: "펼치기" }));
   expect(rows()).toHaveLength(10);
   fireEvent.click(screen.getByRole("button", { name: "접기" }));

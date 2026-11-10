@@ -1,5 +1,5 @@
 .logout { min-width:0; border-top:1px solid var(--color-line); padding-top:var(--space-2); }
-.logout .row { justify-content:flex-start; margin-inline:calc(var(--space-3) * -1); padding:0 var(--space-3); color:var(--color-muted); font-size:var(--fan-action-emphasis-size); font-weight:400; }
+.logout .row { justify-content:flex-start; margin-inline:calc(var(--space-3) * -1); padding:0 var(--space-3); color:var(--color-muted); font-size:var(--fan-action-emphasis-size); font-weight:var(--fan-body-weight); }
 .logout .row:hover:not(:disabled) { color:var(--color-ink); }
 .logout .row:is(:hover,:active):not(:disabled,[aria-disabled="true"]) { background:var(--color-accent-soft); }
 .logout .row:active:not(:disabled,[aria-disabled="true"]) { color:var(--color-ink); }

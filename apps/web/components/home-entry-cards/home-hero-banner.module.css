@@ -39,7 +39,7 @@
   width: calc(100% - var(--pic-w));
   padding: var(--space-6) var(--space-4) var(--space-6) clamp(24px, 4vw, 56px);
 }
-.eyebrow { display: flex; align-items: center; min-height: 20px; color: var(--color-accent); font-size: var(--fan-metadata-size); font-weight: 700; }
+.eyebrow { display: flex; align-items: center; min-height: 20px; color: var(--color-accent); font-size: var(--fan-metadata-size); font-weight: var(--fan-item-title-weight); }
 .eyebrow > span { display: inline-flex; align-items: center; gap: var(--space-2); }
 .eyebrow svg { width: 16px; height: 16px; }
 .copy h2 {
@@ -77,7 +77,7 @@
   background: var(--color-accent);
   color: var(--color-surface) !important;
   font-size: var(--fan-action-emphasis-size);
-  font-weight: 700;
+  font-weight: var(--fan-item-title-weight);
   text-decoration: none;
 }
 .action > a > span { display: inline-flex; align-items: center; gap: var(--space-2); }

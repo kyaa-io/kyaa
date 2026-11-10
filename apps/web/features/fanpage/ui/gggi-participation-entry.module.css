@@ -1,8 +1,8 @@
 .entry{display:flex;align-items:flex-start;gap:16px;padding:24px;border:1px solid var(--color-border,var(--color-line));border-radius:16px;background:var(--color-surface)}
 .copy{min-width:0;display:grid;gap:8px}
-.copy h2{margin:0;color:var(--color-text,var(--color-ink));font-size:20px;line-height:1.4;letter-spacing:-.02em;font-weight:700;overflow-wrap:anywhere}
+.copy h2{margin:0;color:var(--color-text,var(--color-ink));font-size:20px;line-height:1.4;letter-spacing:-.02em;font-weight:var(--fan-item-title-weight);overflow-wrap:anywhere}
 .copy p{margin:0;color:var(--color-text-muted,var(--color-muted));font-size:16px;line-height:1.65;overflow-wrap:anywhere}
-.copy a{display:inline-flex;align-items:center;gap:8px;justify-self:start;min-height:44px;color:var(--color-text,var(--color-ink));font-size:16px;font-weight:700;text-decoration:underline;text-underline-offset:4px}
+.copy a{display:inline-flex;align-items:center;gap:8px;justify-self:start;min-height:44px;color:var(--color-text,var(--color-ink));font-size:16px;font-weight:var(--fan-item-title-weight);text-decoration:underline;text-underline-offset:4px}
 .copy a svg{flex-shrink:0}
 .copy a:focus-visible{outline:3px solid var(--color-ink);outline-offset:4px;border-radius:4px}
 @media(min-width:768px){.entry{padding:32px;gap:24px}.copy h2{font-size:24px}}
@@ -11,14 +11,14 @@
 .event{display:grid;gap:20px;scroll-margin-top:96px}
 .eventActions{display:grid;gap:12px;justify-items:start}
 .eventActions p{margin:0;font-size:16px;line-height:1.65;overflow-wrap:anywhere}
-.entered{display:flex;align-items:center;gap:8px;color:var(--color-success);font-weight:700}
+.entered{display:flex;align-items:center;gap:8px;color:var(--color-success);font-weight:var(--fan-item-title-weight)}
 .entered svg{flex-shrink:0}
 
 .stack{display:grid;gap:24px;margin-bottom:32px}
 
 .eventHeader{display:grid;grid-template-columns:minmax(0,1fr) 104px;align-items:center;gap:16px}
 .eventPortrait{width:104px;height:128px;border-radius:12px;object-fit:cover}
-.eyebrow{color:var(--color-text-muted,var(--color-muted));font-size:13px;font-weight:700;letter-spacing:.06em}
+.eyebrow{color:var(--color-text-muted,var(--color-muted));font-size:var(--fan-metadata-size);font-weight:var(--fan-item-title-weight);letter-spacing:.06em}
 .eventActions{grid-template-columns:1fr;gap:4px}
 .backdrop{position:fixed;inset:0;z-index:var(--z-backdrop);display:grid;place-items:center;padding:24px;background:color-mix(in srgb, var(--color-ink) 48%, transparent)}
 .modal{position:relative;width:min(440px,100%);max-height:calc(100dvh - 48px);overflow:auto;border-radius:20px;background:var(--color-surface);color:var(--color-text,var(--color-ink));box-shadow:0 16px 64px color-mix(in srgb, var(--color-ink) 20%, transparent);font-family:inherit}
