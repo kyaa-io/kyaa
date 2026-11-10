@@ -39,7 +39,9 @@ test('SQL groups are disjoint, retain setup, and do not wait for unrelated API o
   assert.equal(jobs.database.if, "needs.scope.outputs.database != 'false'");
   assert.equal(jobs.database.strategy['fail-fast'], false);
   assert.deepEqual(jobs.database.strategy.matrix.suite, ['core', 'live', 'events', 'economy']);
-  const grouped = jobs.database.steps.filter(step => step.if && step.run !== 'npm run build --workspace @byus/worker');
+  const dependencySetup = jobs.database.steps.filter(step => step.uses?.startsWith('actions/setup-node@') ||
+    ['npm ci --ignore-scripts', 'npm run security:patch', 'npm run build --workspace @byus/worker'].includes(step.run));
+  const grouped = jobs.database.steps.filter(step => step.if && !dependencySetup.includes(step));
   assert.equal(grouped.length, 33);
   const counts = { core: 0, live: 0, events: 0, economy: 0 };
   for (const step of grouped) {
@@ -86,6 +88,19 @@ test('DB matrix builds the worker only for the core snapshot consumer', () => {
   assert.match(readFileSync('scripts/verify-backend-security.sh', 'utf8'), /BYUS_CLEAN_DB_SHELL_ASSERTION_FILE=.*verify-backend-security-behavior\.sh/);
   assert.match(readFileSync('scripts/verify-backend-security-behavior.sh', 'utf8'), /bash .*verify-fan-action-snapshots\.sh/);
   assert.match(readFileSync('scripts/verify-fan-action-snapshots.sh', 'utf8'), /from '\.\/apps\/worker\/dist\/action-domain\.js'/);
+});
+
+test('live DB suite skips Node and package setup while other suites retain it', () => {
+  const setup = backend.jobs.database.steps.filter(step => step.uses?.startsWith('actions/setup-node@') ||
+    ['npm ci --ignore-scripts', 'npm run security:patch'].includes(step.run));
+  assert.equal(setup.length, 3);
+  for (const step of setup) assert.equal(step.if, "matrix.suite != 'live'");
+  assert.equal(setup[0].with['node-version'], 24);
+  assert.equal(setup[0].with.cache, 'npm');
+  for (const suite of backend.jobs.database.strategy.matrix.suite) {
+    const active = setup.filter(step => !step.if || (step.if === "matrix.suite != 'live'" && suite !== 'live'));
+    assert.equal(active.length, suite === 'live' ? 0 : 3, suite);
+  }
 });
 
 test('UI check requires every group and preserves evidence on producing runners', () => {

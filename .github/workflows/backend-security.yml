@@ -105,11 +105,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
+        if: matrix.suite != 'live'
         with:
           node-version: 24
           cache: npm
       - run: npm ci --ignore-scripts
+        if: matrix.suite != 'live'
       - run: npm run security:patch
+        if: matrix.suite != 'live'
       - run: npm run build --workspace @byus/worker
         if: matrix.suite == 'core'
       - run: sudo apt-get update && sudo apt-get install -y postgresql ripgrep
