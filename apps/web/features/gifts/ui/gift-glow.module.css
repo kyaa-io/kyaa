@@ -5,7 +5,7 @@
 .clip, .forcedDot { z-index: 1; }
 .halo, .clip, .forcedDot { position: absolute; pointer-events: none; }
 .halo { z-index: 0; top: 50%; left: 50%; width: 56px; height: 56px; translate: -50% -50%; max-width: none; opacity: .85; }
-.clip { inset: calc(var(--space-2) * -1); overflow: hidden; border-radius: var(--radius-action); }
+.clip { inset: calc(var(--space-2) * -1); overflow: hidden; border-radius: var(--radius-pill); }
 .shine { position: absolute; top: 0; left: 0; width: var(--space-6); height: 100%; max-width: none; opacity: 0; transform: translateX(-32px); }
 .forcedDot { display: none; top: calc(var(--space-1) * -1); right: calc(var(--space-1) * -1); }
 

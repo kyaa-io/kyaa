@@ -1,6 +1,6 @@
 /* Managed banner slot (261107-2 design-r4 4절). The slot has no margin of its own; the parent's gap spaces it. */
 .slot { container-type: inline-size; min-width: 0; }
-.card { display: grid; grid-template-columns: minmax(0, 1fr); overflow: hidden; border: 1px solid var(--color-line); border-radius: var(--radius-control); background: var(--color-surface); color: var(--color-ink); text-decoration: none; }
+.card { display: grid; grid-template-columns: minmax(0, 1fr); overflow: hidden; border: 1px solid var(--color-line); border-radius: var(--radius-card); background: var(--color-surface); color: var(--color-ink); text-decoration: none; }
 .card:focus-visible { outline: 3px solid var(--color-accent-ink); outline-offset: 2px; }
 /* Narrow (390, the 360 side column): the picture on top at its own ratio, never taller than 200. */
 .artwork { display: block; min-width: 0; background: var(--color-soft); }

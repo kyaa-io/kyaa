@@ -8,7 +8,7 @@ const heading = read("components/fan-ui/fan-heading.module.css");
 
 describe("fan design system ownership", () => {
   it("keeps the approved responsive and control dimensions in the central foundation", () => {
-    for (const token of ["--fan-heading-size: 20px", "--fan-heading-size-wide: 24px", "--fan-heading-weight: 800", "--fan-heading-editorial-weight: var(--fan-heading-weight)", "--fan-action-primary-height: 44px", "--fan-h1-size: 26px", "--fan-section-size: 18px", "--fan-section-weight: 700", "--radius-action: 8px", "--fan-chip-height: 36px", "--fan-chip-size: 14px", "--fan-action-service-height: 52px", "--fan-action-icon-size: 18px"]) expect(tokens).toContain(token);
+    for (const token of ["--fan-heading-size: 20px", "--fan-heading-size-wide: 24px", "--fan-heading-weight: 800", "--fan-heading-editorial-weight: var(--fan-heading-weight)", "--fan-action-primary-height: 44px", "--fan-h1-size: 26px", "--fan-section-size: 18px", "--fan-section-weight: 700", "--radius-pill: 999px", "--radius-card: 16px", "--radius-media: 12px", "--radius-small: 8px", "--fan-chip-height: 36px", "--fan-chip-size: 14px", "--fan-action-service-height: 52px", "--fan-action-icon-size: 18px"]) expect(tokens).toContain(token);
     expect(tokens).toContain("@media (min-width: 64rem) { :root { --fan-action-primary-height: 48px; } }");
     expect(heading).not.toContain("@media");
     expect(heading).not.toMatch(/font-size:\s*\d/);
@@ -71,16 +71,16 @@ describe("fan design system ownership", () => {
 
 describe("gate A–E decisions (2026-11-09 15:52)", () => {
   const css = (file: string) => read(file);
-  it("gives every FanAction variant and the star button the action radius, never a pill", () => {
+  it("gives every FanAction variant and the star button the pill radius", () => {
     const action = css("components/fan-ui/fan-action.module.css");
-    expect(action).not.toContain("var(--radius-pill)");
-    expect(css("components/fan-ui/fan-star-action.module.css")).toContain("border-radius: var(--radius-action)");
+    expect(action).toContain("var(--radius-pill)");
+    expect(css("components/fan-ui/fan-star-action.module.css")).toContain("border-radius: var(--radius-pill)");
   });
-  it("sizes chips 36 · 14/700 · radius 8 with a 44px hit area", () => {
+  it("sizes chips 36 · 14/700 · pill radius with a 44px hit area", () => {
     for (const file of ["components/fan-ui/fan-tabs.module.css", "components/fan-ui/creator-roles.module.css"]) {
       const source = css(file);
       expect(source).toContain("min-height: var(--fan-chip-height)");
-      expect(source).toContain("var(--radius-action)");
+      expect(source).toContain("var(--radius-pill)");
       expect(source).toContain("inset: -4px 0");
     }
     expect(css("features/groups/ui/groups.module.css")).toMatch(/\.chip \{ position:relative;[^}]*min-height:var\(--fan-chip-height\)/);

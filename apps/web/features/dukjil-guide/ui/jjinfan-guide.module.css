@@ -5,7 +5,7 @@
 
 .page > section {
   padding: var(--space-6);
-  border-radius: var(--radius-collection);
+  border-radius: var(--radius-card);
   background: var(--color-surface);
 }
 

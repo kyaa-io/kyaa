@@ -1,11 +1,11 @@
 .lead{margin:0 0 var(--space-4);font-size:var(--fan-description-size);line-height:1.5;color:var(--color-muted)}
 .list{display:grid;gap:var(--space-3);margin:0;padding:0;list-style:none}
-.row{padding:var(--space-4);border:1px solid var(--color-line);border-radius:var(--radius-control);background:var(--color-surface)}
+.row{padding:var(--space-4);border:1px solid var(--color-line);border-radius:var(--radius-card);background:var(--color-surface)}
 .row form{display:grid;gap:var(--space-3)}
 .rowHead{display:flex;flex-wrap:wrap;align-items:center;gap:var(--space-2) var(--space-3)}
 .rowHead strong{font-size:var(--fan-item-title-size)}
 .count{margin-inline-start:auto;font-size:var(--fan-metadata-size);color:var(--color-muted);font-variant-numeric:tabular-nums}
 .toggle{display:inline-flex;align-items:center;gap:var(--space-2);min-height:44px;font-size:var(--fan-description-size);font-weight:700}
 .field{display:grid;gap:var(--space-1);font-size:var(--fan-metadata-size);font-weight:700}
-.field input,.field textarea{box-sizing:border-box;width:100%;padding:var(--space-2) var(--space-3);border:1px solid var(--color-line);border-radius:var(--radius-control);font:inherit;font-weight:400;font-size:var(--fan-description-size)}
+.field input,.field textarea{box-sizing:border-box;width:100%;padding:var(--space-2) var(--space-3);border:1px solid var(--color-line);border-radius:var(--radius-pill);font:inherit;font-weight:400;font-size:var(--fan-description-size)}.field textarea{border-radius:var(--radius-media)}
 .actions{display:flex;flex-wrap:wrap;align-items:center;justify-content:flex-end;gap:var(--space-2) var(--space-3)}

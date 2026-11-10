@@ -27,7 +27,7 @@
   min-height: var(--min-target);
   padding: var(--space-2) var(--space-2) var(--space-2) var(--space-4);
   border: 0;
-  border-radius: var(--radius-card);
+  border-radius: var(--radius-media);
   /* design-lint-disable S1 -- User 2026-11-10: pink/purple toast gradient, fixed dd737 source. */
   /* design-lint-disable N29 -- User 2026-11-10: only this toast background may use #6042d5. */
   background: linear-gradient(105deg, var(--color-accent), #6042d5);
@@ -49,7 +49,7 @@
   min-height: var(--min-target);
   padding: 0 var(--space-3);
   border: 1px solid currentColor;
-  border-radius: var(--radius-control);
+  border-radius: var(--radius-pill);
   background: transparent;
   color: inherit;
   font: inherit;

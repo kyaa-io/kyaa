@@ -1,4 +1,4 @@
-.button { display: inline-grid; box-sizing: border-box; width: var(--min-target); height: var(--min-target); flex: none; place-items: center; padding: 0; border: 0; border-radius: var(--radius-control); background: transparent; color: var(--color-ink); cursor: pointer; transition: background-color var(--motion-control) var(--motion-easing); }
+.button { display: inline-grid; box-sizing: border-box; width: var(--min-target); height: var(--min-target); flex: none; place-items: center; padding: 0; border: 0; border-radius: var(--radius-pill); background: transparent; color: var(--color-ink); cursor: pointer; transition: background-color var(--motion-control) var(--motion-easing); }
 .button svg { width: var(--space-5); height: var(--space-5); }
 .button:focus-visible { outline: var(--focus-width) solid var(--color-focus); outline-offset: calc(var(--focus-width) * -1); }
 /* 열림·호버·눌림 = 핑크 틴트, 비활성 = 불투명도만(U-1 2026-11-09, 회색 면 0). */

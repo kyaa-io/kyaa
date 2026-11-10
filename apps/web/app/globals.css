@@ -63,13 +63,10 @@
   --space-12: 48px;
   --space-16: 64px;
 
-  --radius-card: 12px;
-  --radius-control: 12px;
-  /* 게이트 A2(2026-11-09): 버튼·칩의 반경 8. 카드는 --radius-card 12. */
-  --radius-action: 8px;
-  --radius-collection: 16px;
-  --radius-hero: 20px;
-  --radius-pill: 999rem;
+  --radius-pill: 999px;
+  --radius-card: 16px;
+  --radius-media: 12px;
+  --radius-small: 8px;
 
   --motion-fast: 150ms;
   --motion-slow: 200ms;

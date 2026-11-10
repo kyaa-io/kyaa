@@ -15,10 +15,10 @@
   width: 96px;
   height: 96px;
   overflow: hidden;
-  border-radius: var(--radius-collection);
+  border-radius: var(--radius-card);
   object-fit: cover;
 }
-.image [data-creator-avatar] { border-radius: var(--radius-collection); }
+.image [data-creator-avatar] { border-radius: var(--radius-card); }
 .headline { grid-area: headline; display: grid; gap: var(--space-2); min-width: 0; position: relative; }
 .titleRow { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); min-width: 0; padding-right: var(--menu-space, 0); }
 .name {
@@ -37,7 +37,7 @@
 .actions { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); min-width: 0; }
 .star { flex: none; }
 .links { display: flex; align-items: center; margin-left: calc(var(--space-3) * -1 + var(--space-2)); }
-.links a { display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: var(--radius-control); }
+.links a { display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: 50%; }
 .links a:focus-visible { outline: 2px solid var(--color-focus); outline-offset: -2px; }
 .links img { display: block; width: 20px; height: 20px; object-fit: contain; }
 .headline:has(.menu) { --menu-space: 44px; }

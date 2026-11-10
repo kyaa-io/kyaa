@@ -12,7 +12,7 @@
   min-height: 100px;
   padding:var(--space-3) var(--space-3) var(--space-3) 0;
   border: 0;
-  border-radius: var(--radius-collection);
+  border-radius: var(--radius-card);
   background: var(--color-accent-soft);
   color: var(--color-ink);
   text-decoration: none;

@@ -20,7 +20,7 @@
   "N24": 46,
   "N25": 237,
   "N26": 108,
-  "N27": 1128,
+  "N27": 1051,
   "N28": 58,
   "N3": 49,
   "N30": 2,
@@ -29,7 +29,6 @@
   "N34": 291,
   "N4": 126,
   "S1": 3,
-  "S10": 1,
   "S11": 14,
   "S12": 39,
   "S14": 2,
@@ -52,8 +51,8 @@
   "T9": 1151,
   "color-named": 96,
   "color-no-hex": 822,
-  "function-disallowed-list": 149,
-  "scale-unlimited/declaration-strict-value": 9951
+  "function-disallowed-list": 148,
+  "scale-unlimited/declaration-strict-value": 9948
  },
  "files": {
   "apps/web/app/account-deletion/page.module.css": {
@@ -3834,7 +3833,6 @@
   "apps/web/components/celebrity-directory.module.css": {
    "N27|border-radius: 12px": 2,
    "N27|border-radius: 8px": 1,
-   "N27|border-radius: var(--radius-action)": 1,
    "N33|font-size/weight/line-height declarations": 18,
    "T11|height: var(--fan-action-primary-height)": 2,
    "T11|height: var(--fan-chip-height)": 1,
@@ -4264,7 +4262,6 @@
    "function-disallowed-list|outline: oklch": 1
   },
   "apps/web/components/fan-shell/fan-header-status.module.css": {
-   "N27|border-radius: var(--radius-action)": 1,
    "N33|font-size/weight/line-height declarations": 5,
    "T11|font-size: var(--fan-action-label-size)": 1,
    "T11|font-size: var(--fan-chip-size)": 1,
@@ -4273,9 +4270,6 @@
   },
   "apps/web/components/fan-shell/fan-language-switch.module.css": {
    "N26|box-shadow: 0 12px 32px rgb(23 23 25 / 14%)": 1,
-   "N27|border-radius: 12px": 1,
-   "N27|border-radius: 14px": 1,
-   "N27|border-radius: 9px": 1,
    "N33|font-size/weight/line-height declarations": 10,
    "T2|line-height: 1.35": 1,
    "T2|line-height: 1.4": 1,
@@ -4288,9 +4282,6 @@
    "color-no-hex|color: #686873": 1,
    "color-no-hex|outline: #19191e": 1,
    "function-disallowed-list|box-shadow: rgb": 1,
-   "scale-unlimited/declaration-strict-value|: border-radius: 12px": 1,
-   "scale-unlimited/declaration-strict-value|: border-radius: 14px": 1,
-   "scale-unlimited/declaration-strict-value|: border-radius: 9px": 1,
    "scale-unlimited/declaration-strict-value|: font-size: 14px": 2,
    "scale-unlimited/declaration-strict-value|: gap: 12px": 1,
    "scale-unlimited/declaration-strict-value|: gap: 8px": 1,
@@ -4367,17 +4358,8 @@
   "apps/web/components/fan-ui/creator-portrait.module.css": {
    "N27|border-radius: 4px": 1
   },
-  "apps/web/components/fan-ui/creator-roles.module.css": {
-   "N27|border-radius: var(--radius-action)": 1
-  },
   "apps/web/components/fan-ui/earn-corner.module.css": {
    "N27|border-radius: 999px": 1
-  },
-  "apps/web/components/fan-ui/fan-action.module.css": {
-   "N27|border-radius: var(--radius-action)": 4
-  },
-  "apps/web/components/fan-ui/fan-page-header.module.css": {
-   "N27|border-radius: var(--radius-collection)": 2
   },
   "apps/web/components/fan-ui/fan-post-row.module.css": {
    "N27|border-radius: 6px": 1
@@ -4386,23 +4368,13 @@
    "N27|border-radius: 12px": 1
   },
   "apps/web/components/fan-ui/fan-skeleton.module.css": {
-   "N27|border-radius: 12px": 2,
+   "N27|border-radius: 12px": 1,
    "N27|border-radius: 4px": 1,
    "N27|border-radius: 6px": 1,
    "N27|border-radius: 999px": 1
   },
-  "apps/web/components/fan-ui/fan-star-action.module.css": {
-   "N27|border-radius: var(--radius-action)": 1
-  },
   "apps/web/components/fan-ui/fan-state.module.css": {
    "N27|border-radius: 999rem": 1
-  },
-  "apps/web/components/fan-ui/fan-tabs.module.css": {
-   "N27|border-radius: 8px": 1,
-   "N27|border-radius: var(--radius-action)": 1
-  },
-  "apps/web/components/fan-ui/header-popover.module.css": {
-   "N27|border-radius: var(--radius-action)": 1
   },
   "apps/web/components/fan-ui/reward-celebration.module.css": {
    "N27|border-radius: 999px": 1
@@ -4432,7 +4404,6 @@
    "N27|border-radius: 20px": 2,
    "N27|border-radius: 4px": 1,
    "N27|border-radius: 999rem": 10,
-   "N27|border-radius: var(--radius-collection)": 1,
    "N33|font-size/weight/line-height declarations": 75,
    "N34|max-width:767px": 2,
    "N4|min-height: 440px": 1,
@@ -4630,7 +4601,6 @@
    "N25|import lucide-react": 1
   },
   "apps/web/components/instagram-recent-activity.module.css": {
-   "N27|border-radius: var(--radius-collection,16px)": 2,
    "N33|font-size/weight/line-height declarations": 5,
    "T1|: font-weight:800": 1,
    "T2|line-height: 1.2": 1,
@@ -6883,7 +6853,6 @@
    "N26|box-shadow: 0 12px 48px color-mix(in srgb, var(--color-ink) 12%, transparent)": 1,
    "N27|border-radius: 12px": 3,
    "N27|border-radius: 20px": 1,
-   "N27|border-radius: var(--radius-collection)": 1,
    "N33|font-size/weight/line-height declarations": 32,
    "T10|font-family: monospace": 1,
    "T2|line-height: 1.4": 1,
@@ -7726,14 +7695,12 @@
    "S8|primary FanAction": 6
   },
   "apps/web/features/dukjil-guide/ui/dukjil-story.module.css": {
-   "N27|border-radius: var(--radius-collection)": 1,
    "N33|font-size/weight/line-height declarations": 10,
    "N34|max-width:767px": 1,
    "T2|line-height: 1.7": 2,
    "T9|min-height: 44px": 1
   },
   "apps/web/features/dukjil-guide/ui/guide-content.module.css": {
-   "N27|border-radius: var(--radius-collection)": 7,
    "N33|font-size/weight/line-height declarations": 72,
    "N4|padding-block: var(--space-12) var(--space-16)": 1,
    "T11|--fan-body-size + --fan-action-weight": 1,
@@ -7766,9 +7733,6 @@
    "S7|dkgHeartLead": 1,
    "S7|dkgRankLead": 1,
    "S7|dkgStampLead": 1
-  },
-  "apps/web/features/dukjil-guide/ui/jjinfan-guide.module.css": {
-   "N27|border-radius: var(--radius-collection)": 1
   },
   "apps/web/features/dukjil/ui/attendance-avatars.module.css": {
    "N33|font-size/weight/line-height declarations": 2,
@@ -8837,7 +8801,6 @@
   },
   "apps/web/features/fanpage/ui/leaderboard-panel.module.css": {
    "N26|box-shadow: inset 0 0 0 3px color-mix(in srgb, var(--color-surface) 50%, transparent)": 1,
-   "N27|border-radius: var(--radius-collection)": 1,
    "N33|font-size/weight/line-height declarations": 26,
    "N34|max-width:767px": 1,
    "T11|font-size: var(--fan-badge-size)": 1,
@@ -8891,7 +8854,6 @@
    "T9|min-height: 44px": 3,
    "T9|min-height: 48px": 1,
    "T9|min-width: 44px": 1,
-   "function-disallowed-list|background: oklch": 1,
    "scale-unlimited/declaration-strict-value|: font-size: 12px": 2,
    "scale-unlimited/declaration-strict-value|: font-size: 14px": 6,
    "scale-unlimited/declaration-strict-value|: font-size: 15px": 1,
@@ -9226,7 +9188,6 @@
    "N3|<header>": 1
   },
   "apps/web/features/gifts/ui/gift-glow.module.css": {
-   "N27|border-radius: var(--radius-action)": 1,
    "T7|animation: gift-halo-in 400ms var(--motion-easing) both, gift-halo-breathe 2400ms ease-in-out 400ms 3": 1,
    "T7|animation: gift-shine 4000ms var(--motion-easing) 100ms 3": 1
   },
@@ -9240,7 +9201,6 @@
    "T11|font-weight: var(--fan-tab-weight)": 2
   },
   "apps/web/features/gifts/ui/gifts-screen.module.css": {
-   "N27|border-radius: var(--radius-action)": 1,
    "N33|font-size/weight/line-height declarations": 4,
    "T11|font-size: var(--fan-badge-size)": 1
   },
@@ -9267,7 +9227,6 @@
    "N27|border-radius: 20px": 1,
    "N27|border-radius: 8px": 1,
    "N27|border-radius: 999px": 3,
-   "N27|border-radius: var(--radius-hero)": 1,
    "N28|font: 400 14px/20px \"Pretendard UI 650\",sans-serif": 2,
    "N28|font: 400 24px/36px \"Pretendard UI 850\",sans-serif": 1,
    "N33|font-size/weight/line-height declarations": 75,
@@ -9429,7 +9388,6 @@
   },
   "apps/web/features/group-social/chat-dock.module.css": {
    "N26|box-shadow: 0 var(--space-2) var(--space-6) var(--color-line)": 1,
-   "N27|border-radius: var(--radius-collection)": 1,
    "N33|font-size/weight/line-height declarations": 7,
    "N34|max-width:767px": 1,
    "T2|line-height: 1.4": 2,
@@ -9517,11 +9475,8 @@
    "S8|primary FanAction": 5
   },
   "apps/web/features/group-social/profile-modal.module.css": {
-   "N27|border-radius: var(--radius-collection)": 1,
-   "N27|border-radius: var(--radius-hero) var(--radius-hero) 0 0": 1,
    "N33|font-size/weight/line-height declarations": 19,
    "N34|max-width:767px": 1,
-   "S10|collection+control+hero": 1,
    "T2|line-height: 1.4": 4,
    "T9|height: 44px": 1,
    "T9|min-height: 44px": 1,
@@ -9733,7 +9688,6 @@
    "N25|import lucide-react": 1
   },
   "apps/web/features/group-wallet/ui/wallet-card.module.css": {
-   "N27|border-radius: var(--radius-collection)": 1,
    "N33|font-size/weight/line-height declarations": 15,
    "N34|max-width:767px": 1,
    "T1|: font-weight: 800": 1,
@@ -10235,7 +10189,6 @@
    "T2|line-height: 22px": 3
   },
   "apps/web/features/groups/ui/duo-profile.module.css": {
-   "N27|border-radius: var(--radius-action)": 1,
    "N27|border-radius: var(--space-1)": 1,
    "N33|font-size/weight/line-height declarations": 26,
    "T11|font-size: var(--fan-action-emphasis-size)": 8,
@@ -10610,7 +10563,6 @@
    "scale-unlimited/declaration-strict-value|: padding:9px 13px": 1
   },
   "apps/web/features/groups/ui/group-creation-banner.module.css": {
-   "N27|border-radius: var(--radius-collection)": 1,
    "N33|font-size/weight/line-height declarations": 4,
    "T11|font-size: var(--fan-badge-size)": 1,
    "T2|line-height: 1.35": 1,
@@ -10647,7 +10599,6 @@
    "N4|min-height: 320px": 1
   },
   "apps/web/features/groups/ui/group-directory.module.css": {
-   "N27|border-radius: var(--radius-collection)": 1,
    "N33|font-size/weight/line-height declarations": 8,
    "N34|max-width:1023px": 1,
    "T11|font-size: var(--fan-action-label-size)": 2,
@@ -10713,7 +10664,6 @@
    "scale-unlimited/declaration-strict-value|: padding:16px 0": 2
   },
   "apps/web/features/groups/ui/group-event-form.module.css": {
-   "N27|border-radius: var(--radius-collection)": 1,
    "N33|font-size/weight/line-height declarations": 34,
    "N34|max-width:767px": 1,
    "S5|.coverEmpty": 1,
@@ -11121,8 +11071,6 @@
    "N11|disabled without reason": 2
   },
   "apps/web/features/groups/ui/group-members.module.css": {
-   "N27|border-radius: var(--radius-action)": 2,
-   "N27|border-radius: var(--radius-collection)": 1,
    "N33|font-size/weight/line-height declarations": 31,
    "N34|max-width:767px": 1,
    "T11|font-size: var(--fan-chip-size)": 1,
@@ -11573,7 +11521,6 @@
    "N25|import lucide-react": 1
   },
   "apps/web/features/groups/ui/group-room-list.module.css": {
-   "N27|border-radius: var(--radius-collection)": 1,
    "N33|font-size/weight/line-height declarations": 22,
    "T1|: font-weight: 800": 1,
    "T2|line-height: 1.2": 1,
@@ -11726,7 +11673,6 @@
    "N27|border-radius: 16px": 13,
    "N27|border-radius: 20px": 7,
    "N27|border-radius: 8px": 2,
-   "N27|border-radius: var(--radius-action)": 1,
    "N28|font: 400 16px/21px \"Pretendard UI 850\",system-ui,sans-serif": 1,
    "N28|font: 400 16px/24px \"Pretendard UI 650\",system-ui,sans-serif": 3,
    "N28|font: 400 16px/normal \"Pretendard UI 650\",sans-serif": 1,
@@ -11987,7 +11933,6 @@
    "N22|<li> without data-row": 2
   },
   "apps/web/features/groups/ui/page-notice-modal.module.css": {
-   "N27|border-radius: var(--radius-collection)": 1,
    "N33|font-size/weight/line-height declarations": 3
   },
   "apps/web/features/groups/ui/page-notice-modal.tsx": {
@@ -12232,7 +12177,6 @@
    "N25|import lucide-react": 1
   },
   "apps/web/features/home/ui/fan-activity-guide.module.css": {
-   "N27|border-radius: var(--radius-collection)": 1,
    "N33|font-size/weight/line-height declarations": 11,
    "N34|max-width:767px": 1,
    "T2|line-height: 1.7": 2,
@@ -12862,7 +12806,6 @@
    "N27|border-radius: 16px": 5,
    "N27|border-radius: 20px": 2,
    "N27|border-radius: 999rem": 2,
-   "N27|border-radius: var(--radius-collection)": 1,
    "N33|font-size/weight/line-height declarations": 120,
    "N34|max-width:1023px": 1,
    "N34|max-width:767px": 3,
@@ -13285,7 +13228,6 @@
    "N26|box-shadow: 0 24px 80px color-mix(in srgb, var(--color-ink) 40%, transparent)": 1,
    "N26|box-shadow: 0 2px 12px color-mix(in srgb, var(--color-ink) 20%, transparent)": 1,
    "N27|border-radius: 6px": 1,
-   "N27|border-radius: var(--radius-hero)": 2,
    "N33|font-size/weight/line-height declarations": 21,
    "S5|.status": 1,
    "T1|: font-weight: 800": 1,
@@ -13672,7 +13614,6 @@
    "N11|disabled without reason": 2
   },
   "apps/web/features/my/ui/my-passport-card.module.css": {
-   "N27|border-radius: var(--radius-collection)": 1,
    "N33|font-size/weight/line-height declarations": 19,
    "N34|max-width:767px": 1,
    "T11|font-size: var(--fan-calendar-meta-size)": 1,
@@ -13693,7 +13634,6 @@
    "N27|border-radius: 10px": 3,
    "N27|border-radius: 12px": 3,
    "N27|border-radius: 4px": 1,
-   "N27|border-radius: var(--radius-collection)": 8,
    "N33|font-size/weight/line-height declarations": 108,
    "N34|max-width:1023px": 1,
    "N34|max-width:767px": 3,
@@ -13799,7 +13739,6 @@
    "N3|pageHeading": 1
   },
   "apps/web/features/my/ui/my-shortcuts.module.css": {
-   "N27|border-radius: var(--radius-collection)": 1,
    "N33|font-size/weight/line-height declarations": 8,
    "N34|max-width:767px": 1,
    "T2|line-height: 1.35": 1
@@ -13854,7 +13793,6 @@
    "N27|border-radius: 12px": 4,
    "N27|border-radius: 14px": 1,
    "N27|border-radius: 16px": 1,
-   "N27|border-radius: var(--radius-collection)": 1,
    "N33|font-size/weight/line-height declarations": 36,
    "N34|max-width:767px": 1,
    "N4|min-height: 280px": 1,
@@ -13960,7 +13898,6 @@
   "apps/web/features/passport/ui/passport-book.module.css": {
    "N26|box-shadow: var(--passport-shadow)": 1,
    "N27|border-radius: var(--passport-radius)": 1,
-   "N27|border-radius: var(--radius-collection)": 1,
    "N33|font-size/weight/line-height declarations": 15,
    "S1|background: linear-gradient(90deg, var(--passport-paper-deep), var(--passport-paper) 28px)": 1,
    "T10|font-family: ui-monospace, SFMono-Regular, Menlo, monospace": 1,
@@ -13994,7 +13931,6 @@
    "N27|border-radius: 10px": 1,
    "N27|border-radius: 16px": 1,
    "N27|border-radius: 999rem": 4,
-   "N27|border-radius: var(--radius-collection)": 1,
    "N33|font-size/weight/line-height declarations": 42,
    "T11|min-height: var(--fan-action-primary-height)": 1,
    "T11|width: min(100%,var(--fan-action-max-width))": 1,
@@ -14061,8 +13997,6 @@
   },
   "apps/web/features/passport/ui/passport-mission-book.module.css": {
    "N27|border-radius: var(--passport-radius)": 1,
-   "N27|border-radius: var(--radius-collection)": 2,
-   "N27|border-radius: var(--radius-hero)": 1,
    "N33|font-size/weight/line-height declarations": 28,
    "N4|margin-top: var(--space-16)": 1,
    "T11|min-height: var(--fan-action-primary-height)": 1,
@@ -14092,7 +14026,6 @@
    "N27|border-radius: 8px": 1,
    "N27|border-radius: 999px": 1,
    "N27|border-radius: 999rem": 1,
-   "N27|border-radius: var(--radius-collection)": 1,
    "N33|font-size/weight/line-height declarations": 96,
    "N34|max-width:1023px": 1,
    "N34|max-width:767px": 1,
@@ -14747,7 +14680,6 @@
    "S8|primary FanAction": 3
   },
   "apps/web/features/quiz/ui/quiz-result-screen.module.css": {
-   "N27|border-radius: var(--radius-collection)": 2,
    "N33|font-size/weight/line-height declarations": 27,
    "N34|max-width:767px": 1,
    "N4|min-height: 540px": 1,
@@ -14829,7 +14761,6 @@
    "N33|font-size/weight/line-height declarations": 3
   },
   "apps/web/features/rankings/ui/rank-highlight.module.css": {
-   "N27|border-radius: var(--radius-collection)": 1,
    "N33|font-size/weight/line-height declarations": 8,
    "T11|font-size: var(--fan-action-emphasis-size)": 2,
    "T11|font-size: var(--fan-badge-size)": 1,
@@ -14850,7 +14781,6 @@
    "T9|height: 48px": 1
   },
   "apps/web/features/rankings/ui/ranking-rows.module.css": {
-   "N27|border-radius: var(--radius-collection)": 2,
    "N33|font-size/weight/line-height declarations": 32,
    "T11|--fan-section-size + --fan-item-title-weight": 3,
    "T11|font-size: var(--fan-action-emphasis-size)": 2,
@@ -14870,7 +14800,6 @@
    "C2|<h1>": 1
   },
   "apps/web/features/rankings/ui/rankings.module.css": {
-   "N27|border-radius: var(--radius-collection)": 1,
    "N33|font-size/weight/line-height declarations": 14,
    "N4|padding-block: var(--space-8) var(--space-16)": 1,
    "T11|--fan-metadata-size + --fan-action-weight": 1,
@@ -14994,7 +14923,6 @@
    "C8|locale === \"ko\" ? \"현재 점수": 1
   },
   "apps/web/features/rewards/ui/fan-tier-journey.module.css": {
-   "N27|border-radius: var(--radius-collection)": 1,
    "N33|font-size/weight/line-height declarations": 15,
    "S6|filter: grayscale(1)": 1,
    "S6|opacity: .stops li[data-state=\"ahead\"] img .35": 1,
@@ -15151,7 +15079,6 @@
    "N11|disabled without reason": 1
   },
   "apps/web/features/selected-bias/ui/selected-bias-chip.module.css": {
-   "N27|border-radius: var(--radius-collection)": 1,
    "N33|font-size/weight/line-height declarations": 25,
    "T11|font-size: var(--fan-action-label-size)": 7,
    "T11|min-height: var(--fan-action-primary-height)": 2,

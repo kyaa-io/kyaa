@@ -85,8 +85,8 @@ const CASES = {
     () => css('.a{box-shadow:none} .b{box-shadow:var(--shadow-overlay)} .c{box-shadow:0 0 0 1px var(--color-line)} .d{box-shadow:inset 0 -2px 0 var(--color-accent)}'),
   ],
   N27: [
-    () => css('.a{border-radius:16px} .b{border-radius:var(--radius-collection)}'),
-    () => css('.a{border-radius:var(--radius-card)} .b{border-radius:var(--radius-control)} .c{border-radius:50%} .d{border-radius:0}'),
+    () => css('.a{border-radius:16px} .b{border-radius:var(--radius-collection)} .c{border-radius:var(--radius-control)}'),
+    () => css('.a{border-radius:var(--radius-card)} .b{border-radius:var(--radius-pill)} .c{border-radius:50%} .d{border-radius:0} .e{border-radius:var(--radius-media)} .f{border-radius:var(--radius-small)}'),
   ],
   N28: [
     () => css('.a{font-family:"Pretendard UI 850",sans-serif}'),

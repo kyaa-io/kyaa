@@ -110,7 +110,7 @@
 .gallery .previewHeading [data-fan-section-header] { margin-bottom:0; }
 .galleryRail { display:grid; grid-auto-flow:column; grid-auto-columns:calc((100% - var(--space-3)) / 2.2); gap:var(--space-3); margin:0; padding:0; overflow-x:auto; list-style:none; scroll-snap-type:x proximity; scrollbar-width:none; }
 .galleryRail::-webkit-scrollbar { display:none; }
-.galleryRail > li { position:relative; aspect-ratio:1; overflow:hidden; border-radius:var(--radius-control); background:var(--color-soft); scroll-snap-align:start; }
+.galleryRail > li { position:relative; aspect-ratio:1; overflow:hidden; border-radius:var(--radius-media); background:var(--color-soft); scroll-snap-align:start; }
 .galleryRail > li > a, .galleryRail > li > .play { display:block; width:100%; height:100%; padding:0; }
 .galleryRail > li img { display:block; width:100%; height:100%; aspect-ratio:1 / 1 !important; object-fit:cover; object-position:50% 30%; border-radius:0; }
 .galleryRail .thumbnailFallback { height:100%; aspect-ratio:auto; }
@@ -132,7 +132,7 @@
 
 /* C feedback: compact gallery thumbnails only; the detail keeps the original image. */
 .compactOverview .grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:var(--space-1); }
-.compactOverview .grid>li { position:relative; min-width:0; aspect-ratio:1; overflow:hidden; border-radius:var(--radius-control); background:var(--color-soft); }
+.compactOverview .grid>li { position:relative; min-width:0; aspect-ratio:1; overflow:hidden; border-radius:var(--radius-media); background:var(--color-soft); }
 .compactOverview .grid>li>a,.compactOverview .grid>li>.play { display:block; width:100%; height:100%; padding:0; }
 .compactOverview .grid>li img { width:100%; height:100%; aspect-ratio:1!important; object-fit:cover; object-position:center; border-radius:0; }
 .compactOverview .grid [data-content-asset-placeholder],.compactOverview .thumbnailFallback { width:100%; height:100%; aspect-ratio:1; }
@@ -152,7 +152,7 @@
 
 /* Thumbnail-only creator galleries (2026-11-10 production hotfix): dense square tiles, 3/4/6 columns with a 4px gap; the creator home 영상 row keeps 9:16 for portrait clips. */
 .grid[data-thumbnail-only] { grid-template-columns:repeat(3,minmax(0,1fr)); gap:var(--space-1); align-items:start; }
-.grid[data-thumbnail-only] > li { position:relative; min-width:0; aspect-ratio:1; overflow:hidden; border:0; border-radius:var(--radius-control); background:var(--color-soft); }
+.grid[data-thumbnail-only] > li { position:relative; min-width:0; aspect-ratio:1; overflow:hidden; border:0; border-radius:var(--radius-media); background:var(--color-soft); }
 .grid[data-thumbnail-only] > li[data-media-tile="portrait"] { aspect-ratio:9/16; }
 .grid[data-thumbnail-only] > li > a { position:absolute; inset:0; display:block; height:100%; padding:0; }
 .grid[data-thumbnail-only] > li img,.grid[data-thumbnail-only] [data-media-kind="photos"] img { width:100%; height:100%; aspect-ratio:auto!important; object-fit:cover; object-position:center; border-radius:0; }

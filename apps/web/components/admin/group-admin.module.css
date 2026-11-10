@@ -90,4 +90,4 @@
 .reportDetail .applicationDetailTitle{font-size:16px;line-height:22px}
 /* jzqEs / kITlr: queue filters and review action rows. */
 .applicationTabs,.applicationActions{align-items:center}
-.applicationMissingCreator{display:grid;gap:var(--space-2);padding:var(--space-3);border:1px solid var(--color-line);border-radius:var(--radius-control);font-size:var(--fan-description-size);line-height:22px}.applicationMissingCreator p{margin:0}.applicationMissingCreator>div{display:flex;flex-wrap:wrap;gap:var(--space-2)}
+.applicationMissingCreator{display:grid;gap:var(--space-2);padding:var(--space-3);border:1px solid var(--color-line);border-radius:var(--radius-card);font-size:var(--fan-description-size);line-height:22px}.applicationMissingCreator p{margin:0}.applicationMissingCreator>div{display:flex;flex-wrap:wrap;gap:var(--space-2)}

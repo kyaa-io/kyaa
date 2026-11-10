@@ -35,7 +35,7 @@
 .brand img { display: block; transform: translateY(2px); }
 .desktopNav { display: none; }
 .actions { display: flex; min-height: 44px; align-items: center; gap: 0; }
-.utilityLink { display: inline-flex; flex: 0 0 44px; width: 44px; height: 44px; align-items: center; justify-content: center; border-radius: var(--radius-control); color: var(--fan-ink); }
+.utilityLink { display: inline-flex; flex: 0 0 44px; width: 44px; height: 44px; align-items: center; justify-content: center; border-radius: 50%; color: var(--fan-ink); }
 .utilityLink svg { width: 20px; height: 20px; stroke-width: 1.8; }
 .bottomNavigation {
   position: fixed; z-index: var(--z-bottom-nav); right: 0; bottom: 0; left: 0;

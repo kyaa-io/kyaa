@@ -11,9 +11,9 @@
 .facts > * + *::before { content: "│"; margin-inline-end: var(--space-2); color: var(--color-line); }
 .menu { grid-area: menu; display: flex; align-items: center; justify-content: flex-end; min-height: 44px; }
 .bodyEnd { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); padding-top: var(--space-4); }
-.comments { display: grid; gap: var(--space-4); margin-top: var(--space-8); padding: var(--space-4); border-radius: var(--radius-control); background: var(--color-soft); min-width: 0; }
+.comments { display: grid; gap: var(--space-4); margin-top: var(--space-8); padding: var(--space-4); border-radius: var(--radius-card); background: var(--color-soft); min-width: 0; }
 .comments > h2, .comments > h3 { margin: 0; color: var(--color-ink); font: 700 18px/26px "Pretendard Variable", system-ui, sans-serif; letter-spacing: -.02em; }
-.commentForm { position: relative; display: grid; gap: var(--space-2); min-width: 0; padding: var(--space-3); border: 1px solid var(--color-line); border-radius: var(--radius-control); background: var(--color-surface); }
+.commentForm { position: relative; display: grid; gap: var(--space-2); min-width: 0; padding: var(--space-3); border: 1px solid var(--color-line); border-radius: var(--radius-pill); background: var(--color-surface); }
 .commentForm:focus-within { border-color: var(--color-ink); box-shadow: 0 0 0 1px var(--color-ink); }
 /* 261107-2 C5: one line (44 with the border) until the fan writes; focus, a draft or a reply opens three lines and the counter.
    Doubled class: the older composer rule in post-comments.module.css must not bring back its border and 88px height. */
@@ -24,7 +24,7 @@
 .commentForm.commentForm > .guestField { grid-column: 1; }
 .commentForm.commentForm :is(.commentTools) { grid-column: 2; }
 .commentForm.commentForm .commentCounter { display: none; }
-.commentForm.commentForm:is(:focus-within, [data-filled], [data-expanded]) { grid-template-columns: minmax(0, 1fr); padding: var(--space-3); }
+.commentForm.commentForm:is(:focus-within, [data-filled], [data-expanded]) { grid-template-columns: minmax(0, 1fr); padding: var(--space-3); border-radius: var(--radius-media); }
 .commentForm.commentForm:is(:focus-within, [data-filled], [data-expanded]) textarea { height: auto; min-height: 88px; max-height: 166px; field-sizing: content; }
 .commentForm.commentForm:is(:focus-within, [data-filled], [data-expanded]) .commentTools { grid-column: 1; }
 .commentForm.commentForm:is(:focus-within, [data-filled], [data-expanded]) .commentCounter { display: inline; }
@@ -48,7 +48,7 @@
 .commentMeta strong { min-width: 0; overflow: hidden; color: var(--color-ink); font-size: var(--fan-description-size); font-weight: var(--fan-item-title-weight); text-overflow: ellipsis; white-space: nowrap; }
 .editedMark { flex: none; }
 .commentAsset { display: block; margin-top: var(--space-2); }
-.commentAsset img, .commentAsset video { max-width: 240px !important; max-height: 240px; width: auto; height: auto; border-radius: var(--radius-control); }
+.commentAsset img, .commentAsset video { max-width: 240px !important; max-height: 240px; width: auto; height: auto; border-radius: var(--radius-media); }
 .commentsEmpty { margin: 0; color: var(--color-muted); font-size: var(--fan-description-size); line-height: 20px; }
 @media (min-width: 768px) {
   .title { font-size: var(--fan-heading-size-wide); line-height: 34px; }
@@ -58,7 +58,7 @@
 }
 .translatedMedia { margin-top: var(--space-4); min-width: 0; }
 .inlineVideo { position: relative; width: fit-content; max-width: 100%; }
-.inlineVideo video, .inlineVideo img { display: block; max-width: 100%; max-height: 640px; width: auto; height: auto; border-radius: var(--radius-control); }
+.inlineVideo video, .inlineVideo img { display: block; max-width: 100%; max-height: 640px; width: auto; height: auto; border-radius: var(--radius-media); }
 .inlineVideo button { position: absolute; top: 50%; left: 50%; display: grid; place-items: center; width: 56px; height: 56px; padding: 0; border: 0; border-radius: 50%; background: var(--color-backdrop); color: var(--color-surface); cursor: pointer; transform: translate(-50%, -50%); }
 .inlineVideo button svg { width: 24px; height: 24px; fill: currentColor; }
 .commentMeta > :last-child:not(time):not(strong):not(.editedMark) { margin-inline-start: auto; }
@@ -69,7 +69,7 @@
 /* Group comment reply box sits under the comment it answers, indented like the reply rows. */
 .replyForm { margin-top: var(--space-2); margin-inline-start: var(--space-10); }
 .commentUploadError { color: var(--color-error); font-size: var(--fan-metadata-size); }
-.reportReason { box-sizing: border-box; width: 100%; margin-top: var(--space-2); padding: var(--space-2) var(--space-3); border: 1px solid var(--color-line); border-radius: var(--radius-control); font: inherit; resize: vertical; }
+.reportReason { box-sizing: border-box; width: 100%; margin-top: var(--space-2); padding: var(--space-2) var(--space-3); border: 1px solid var(--color-line); border-radius: var(--radius-media); font: inherit; resize: vertical; }
 /* Post like (fan board and group board detail): the heart pops when it turns on, like the comment like. */
 :is(.reactionLike, .reactionDislike) svg { transition: transform 0.16s ease; }
 @media (prefers-reduced-motion: no-preference) {

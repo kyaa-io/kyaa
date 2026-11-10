@@ -7,7 +7,7 @@
   gap: 8px;
   padding-inline: 10px;
   border: 0;
-  border-radius: 12px;
+  border-radius: var(--radius-pill);
   background: transparent;
   color: #686873;
   font: inherit;
@@ -60,7 +60,7 @@
   max-height: min(420px, var(--available-height));
   overflow: hidden;
   border: 1px solid #e4e4e7;
-  border-radius: 14px;
+  border-radius: var(--radius-card);
   background: #fff;
   box-shadow: 0 12px 32px rgb(23 23 25 / 14%);
   color: #19191e;
@@ -80,7 +80,7 @@
   align-items: center;
   gap: 12px;
   padding: 9px 10px;
-  border-radius: 9px;
+  border-radius: var(--radius-small);
   font-size: 14px;
   font-weight: var(--fan-item-title-weight);
   line-height: 1.35;
@@ -125,7 +125,7 @@
 @media (max-width: 360px) { .trigger > svg { display: none; } .value { font-size: var(--fan-metadata-size); } }
 
 /* Header icon form: 44px target, the code shows from 768px. */
-.compact { display: inline-flex; flex: none; align-items: center; justify-content: center; gap: var(--space-1); min-width: var(--min-target); height: var(--min-target); padding: 0 var(--space-2); border: 0; border-radius: var(--radius-control); background: transparent; color: var(--color-ink); font: inherit; font-size: var(--fan-metadata-size); font-weight: var(--fan-item-title-weight); cursor: pointer; }
+.compact { display: inline-flex; flex: none; align-items: center; justify-content: center; gap: var(--space-1); min-width: var(--min-target); height: var(--min-target); padding: 0 var(--space-2); border: 0; border-radius: 50%; background: transparent; color: var(--color-ink); font: inherit; font-size: var(--fan-metadata-size); font-weight: var(--fan-item-title-weight); cursor: pointer; }
 .compact > svg { width: 20px; height: 20px; flex: none; }
 .compact:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 .code { display: none; font-variant-numeric: tabular-nums; }

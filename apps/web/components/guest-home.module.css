@@ -108,7 +108,7 @@
 /* N7: 최애가 하나나 둘이면 큰 정사각 카드 옆이 비지 않게 가로 카드로 그린다. */
 .celebrityRail[data-count="1"] { grid-auto-columns: 100%; }
 .celebrityRail[data-count="2"] { grid-auto-columns: calc((100% - var(--space-4)) / 2); }
-.celebrityRail[data-count="1"] .celebrityCard { display: grid; grid-template-columns: calc(var(--space-12) * 2) minmax(0, 1fr); align-items: center; column-gap: var(--space-4); padding: var(--space-3); border: 1px solid var(--card-line); border-radius: var(--radius-collection); }
+.celebrityRail[data-count="1"] .celebrityCard { display: grid; grid-template-columns: calc(var(--space-12) * 2) minmax(0, 1fr); align-items: center; column-gap: var(--space-4); padding: var(--space-3); border: 1px solid var(--card-line); border-radius: var(--radius-card); }
 .celebrityRail[data-count="1"] .celebrityInfo { padding: 0; }
 .celebrityRail[data-count="1"] .celebrityIdentity { min-height: 0; }
 @media (min-width: 48rem) {
@@ -120,7 +120,7 @@
 .celebrityInfo h3 { color: var(--ink); font-size: var(--fan-item-title-size); font-weight: var(--fan-item-title-weight); overflow-wrap: anywhere; }
 .celebrityInfo p { font-size: var(--fan-metadata-size); font-weight: var(--fan-body-weight); }
 .celebrityActions { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 4px 8px; margin-top: 8px; }
-.celebrityFanLink { display: inline-flex; max-width: 100%; min-width: 44px; min-height: 44px; align-items: center; gap: 4px; border-radius: var(--radius-control); color: var(--ink); font-size: var(--fan-metadata-size); font-weight: var(--fan-body-weight); line-height: var(--fan-body-leading); text-decoration: none; overflow-wrap: anywhere; }
+.celebrityFanLink { display: inline-flex; max-width: 100%; min-width: 44px; min-height: 44px; align-items: center; gap: 4px; border-radius: var(--radius-pill); color: var(--ink); font-size: var(--fan-metadata-size); font-weight: var(--fan-body-weight); line-height: var(--fan-body-leading); text-decoration: none; overflow-wrap: anywhere; }
 .celebrityFanLink svg { width: 16px; height: 16px; flex: none; }
 .celebrityFanLink:hover { color: var(--muted); }
 .celebrityFanLink:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
@@ -362,7 +362,7 @@
 
 .srOnly { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip-path:inset(50%); white-space:nowrap; border:0; }
 .favoriteSkeletonFilters { display:flex; gap:8px; margin-bottom:16px; }
-.favoriteSkeletonChip { flex:0 1 80px; min-width:0; height:44px; border-radius:var(--radius-control); }
+.favoriteSkeletonChip { flex:0 1 80px; min-width:0; height:44px; border-radius:var(--radius-pill); }
 .favoriteSkeletonMedia { width:100%; height:auto; border-radius:12px; }
 .favoriteSkeletonName { width:72%; height:18px; }
 .favoriteSkeletonCount { width:55%; height:18px; }

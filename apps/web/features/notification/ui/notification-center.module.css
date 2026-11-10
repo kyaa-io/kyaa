@@ -135,7 +135,7 @@
   margin-bottom: 28px;
   padding: 14px 16px;
   border: 1px solid var(--color-line-subtle);
-  border-radius: var(--radius-collection);
+  border-radius: var(--radius-card);
   background: var(--color-canvas);
 }
 

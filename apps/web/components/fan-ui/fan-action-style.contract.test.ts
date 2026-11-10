@@ -29,7 +29,7 @@ describe("shared fan action style contract", () => {
     const serviceRule = actionCss.match(/\.service\s*\{([\s\S]*?)\n\}/)?.[1];
 
     expect(passportRule).toContain("min-height: var(--fan-action-service-height)");
-    expect(passportRule).toContain("border-radius: var(--radius-action)");
+    expect(passportRule).toContain("border-radius: var(--radius-pill)");
     expect(passportRule).toContain("linear-gradient(var(--color-surface), var(--color-surface)) padding-box");
     expect(passportRule).toContain("color: var(--color-service-ink)");
     expect(passportRule).toContain('"Pretendard Variable"');
@@ -70,13 +70,13 @@ describe("shared fan action style contract", () => {
 });
 
 describe("FanAction primary 1단계(design-sync-1)", () => {
-  it("fills primary with the single accent, no shadow, weight 700, radius 8 and height 44 (390) / 48 (1024+) from gate A2", () => {
+  it("fills primary with the single accent, no shadow, weight 700, pill radius and height 44 (390) / 48 (1024+) from gate A2", () => {
     const primaryRule = actionCss.match(/\.primary\s*\{([\s\S]*?)\n\}/)?.[1] ?? "";
     const tokens = readFileSync(resolve(process.cwd(), "app/globals.css"), "utf8");
     expect(primaryRule).toContain("background: var(--color-accent);");
     expect(primaryRule).toContain("box-shadow: none;");
     expect(primaryRule).not.toMatch(/gradient|color-mix/);
-    expect(primaryRule).toContain("border-radius: var(--radius-action)");
+    expect(primaryRule).toContain("border-radius: var(--radius-pill)");
     expect(tokens).toContain("--fan-action-weight: 700;");
     expect(tokens).toContain("--fan-action-primary-height: 44px;");
     expect(tokens).toContain("@media (min-width: 64rem) { :root { --fan-action-primary-height: 48px; } }");
