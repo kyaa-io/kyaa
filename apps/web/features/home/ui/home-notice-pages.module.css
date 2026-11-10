@@ -1,17 +1,10 @@
 /* /notices · /notices/[slug] (R8-DATA N1). 행은 홈 공지와 같은 구성, 면 채움 없음(U-1). */
 .page { display: grid; gap: var(--space-4); padding-block: var(--space-6); }
-.list { margin: 0; padding: 0; border-top: 1px solid var(--color-line); list-style: none; }
-.row { border-bottom: 1px solid var(--color-line); }
-.link { display: grid; min-width: 0; min-height: 88px; box-sizing: border-box; grid-template-areas: "category" "title" "date"; grid-template-columns: minmax(0, 1fr); align-content: center; padding-block: var(--space-2); color: inherit; text-decoration: none; }
-.link:hover .title { color: var(--color-accent); }
-.link:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
-.category { grid-area: category; color: var(--color-accent); font-size: var(--fan-metadata-size); font-weight: 700; line-height: 18px; }
-.title { grid-area: title; color: var(--color-ink); font-size: var(--fan-body-size); font-weight: 700; line-height: 24px; overflow-wrap: anywhere; }
-.date { grid-area: date; color: var(--color-muted); font-size: var(--fan-metadata-size); font-variant-numeric: tabular-nums; line-height: 18px; }
-.empty { display: flex; min-height: 64px; align-items: center; margin: 0; border-bottom: 1px solid var(--color-line); color: var(--color-muted); font-size: var(--fan-action-label-size); }
 .more { justify-self: center; }
 .back { justify-self: start; }
-.article { display: grid; gap: var(--space-4); max-width: 720px; }
+.article { display: grid; gap: var(--space-4); min-width: 0; }
+/* 공지 그림은 PC에서 화면 폭을 채우되 21:9로 잘라 글보다 커지지 않게 한다. */
+@media (min-width: 64rem) { .article img[src^="/images/notices/notice-"] { aspect-ratio: 21 / 9; object-fit: cover; } }
 .meta { display: flex; gap: var(--space-2); color: var(--color-muted); font-size: var(--fan-metadata-size); line-height: 18px; }
 .meta strong { color: var(--color-accent); font-weight: 700; }
 
@@ -19,17 +12,13 @@
 .artwork { display:block; width:100%; height:auto; }
 @media(min-width:768px) { .guideBody { grid-template-columns:minmax(0,1fr) 160px; } }
 
-/* 공지 목록에만 배경·카드와 콘텐츠 높이를 적용한다. */
-.listFrame { background: color-mix(in srgb, var(--color-ink) 4%, var(--color-surface)); }
+/* 공지 목록: 흰 바탕에 카드(notice-card)만 둔다. 콘텐츠 높이를 적용한다. */
 .listFrame > main[data-fan-content-container] { min-height: 0; }
 .listFrame > [data-fan-site-footer] { margin-top: var(--space-6); }
 .listHeading { display: flex; align-items: center; gap: var(--space-2); }
 .listBack { width: 44px; min-width: 44px; padding: 0; }
 .listBack > span:last-child { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
-.listCard { padding: 0 var(--space-4); border-radius: var(--radius-card); background: var(--color-surface); }
-.listCard .list { border-top: 0; }
-.listCard .row:last-child { border-bottom: 0; }
-.listCard .empty { border-bottom: 0; }
+.empty { margin: 0; padding: var(--space-6) var(--space-4); }
 .listPagination { display: flex; align-items: center; justify-content: center; padding-block: var(--space-2); }
 .listPagination > a, .listPagination > span { display: inline-flex; width: 44px; min-height: 44px; align-items: center; justify-content: center; color: var(--color-muted); font-size: var(--fan-metadata-size); text-decoration: none; }
 .listPagination > [aria-current="page"] { color: var(--color-ink); font-weight: 700; }
@@ -41,3 +30,4 @@
   .listFrame > [data-fan-site-footer] > [data-fan-content-container]:not(:last-child) { display: none; }
   .listFrame > [data-fan-site-footer] > [data-fan-content-container]:last-child { margin-top: 0; }
 }
+.article li > p { margin: 0 0 var(--space-2); }

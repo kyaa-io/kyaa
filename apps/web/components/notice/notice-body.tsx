@@ -84,7 +84,7 @@ function RenderedNoticeBody({ document, locale, adminPreview = false, operatorCh
             image: ({ node }) => isPrivateNoticeImage(node.attrs.src)
               ? <ContentAssetImage asset={{ id: node.attrs.src.slice("/api/content-assets/".length), width: node.attrs.width || 960, height: node.attrs.height || 640 }} locale={locale} alt={node.attrs.alt || ""} adminPreview={adminPreview} operatorChannelId={operatorChannelId} />
               : node.attrs.src.startsWith("/api/public/notice-media/") ? <ContentAssetImage noticeMedia adminPreview={adminPreview} asset={{ id: node.attrs.src.slice("/api/public/notice-media/".length), width: node.attrs.width || 960, height: node.attrs.height || 640 }} locale={locale} alt={node.attrs.alt || ""} />
-              : <img src={node.attrs.src} alt={node.attrs.alt || ""} />,
+              : <img src={node.attrs.src} alt={node.attrs.alt || ""} width={node.attrs.width || undefined} height={node.attrs.height || undefined} loading="lazy" />,
           },
           markMapping: {
             link: ({ mark, children }) => React.createElement(

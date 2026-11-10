@@ -45,6 +45,11 @@ export function isPrivateNoticeImage(value: unknown): value is string {
   return typeof value === "string" && /^\/api\/content-assets\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value);
 }
 
+/** kyaa's own notice art shipped with the app (public/images/notices). */
+export function isStaticNoticeImage(value: unknown): value is string {
+  return typeof value === "string" && /^\/images\/notices\/[a-z0-9]+(?:-[a-z0-9]+)*\.webp$/.test(value);
+}
+
 function isPublicOfficialMedia(value: unknown, thumbnail = false): boolean {
   return typeof value === "string" && new RegExp(`^/api/public/notice-media/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}${thumbnail ? "\\?variant=thumbnail" : ""}$`, "i").test(value);
 }
@@ -66,7 +71,7 @@ function validateNode(value: unknown, depth = 0, options: NoticeDocumentOptions 
   }
   if (node.type === "image") {
     const attrs = node.attrs as Record<string, unknown> | undefined;
-    if ((!safeHttps(attrs?.src) && !isPrivateNoticeImage(attrs?.src) && !isPublicOfficialMedia(attrs?.src)) || typeof attrs?.alt !== "string" || !attrs.alt.trim()) {
+    if ((!safeHttps(attrs?.src) && !isPrivateNoticeImage(attrs?.src) && !isStaticNoticeImage(attrs?.src) && !isPublicOfficialMedia(attrs?.src)) || typeof attrs?.alt !== "string" || !attrs.alt.trim()) {
       throw new Error("Notice images require an HTTPS source and alt text");
     }
     if (options.privateImages === "reject" && isPrivateNoticeImage(attrs?.src)) throw new Error("Private Notice images are not allowed here");
