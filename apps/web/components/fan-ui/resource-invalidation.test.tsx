@@ -250,8 +250,11 @@ describe("writes outside useGroupRequest", () => {
   });
   it("wakes mounted hooks after a block, so the blocked author leaves the list", async () => {
     let blocked = false;
+    let releaseRead!: () => void;
+    const readGate = new Promise<void>((resolve) => { releaseRead = resolve; });
     vi.stubGlobal("fetch", vi.fn(async (_input: RequestInfo | URL, init?: RequestInit) => {
       if (init?.method) { blocked = true; return Response.json({ ok: true }); }
+      if (blocked) await readGate;
       return Response.json({ n: blocked ? 2 : 1 });
     }));
     const uninstall = installResourceWriteWatch();
@@ -259,6 +262,7 @@ describe("writes outside useGroupRequest", () => {
     await waitFor(() => expect(screen.getByTestId("group")).toHaveTextContent("n=1"));
     await act(async () => { await window.fetch("/api/content-blocks", { method: "POST", body: "{}" }); });
     expect(peekResource(`${ownerKey()}:ko:true:/api/groups/1/posts`)).toBeUndefined();
+    releaseRead();
     await flushNotify();
     await waitFor(() => expect(screen.getByTestId("group")).toHaveTextContent("n=2"));
     uninstall();
