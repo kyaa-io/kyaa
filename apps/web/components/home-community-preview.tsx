@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { ChevronLeft, ChevronRight, Heart, MessageCircle } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ReactionCount, ReactionIcon } from "./fan-ui/reaction-count";
 import { paginationCopy } from "@/i18n/catalogs/common__pagination";
 import { useByUsAuth } from "@/features/auth/client/cognito-auth";
 import { AuthenticatedMedia } from "@/features/content-safety/ui/authenticated-media";
@@ -41,7 +42,7 @@ export function HomeCommunityPreview({ locale }: { locale: AppLocale }) {
       <Link className={styles.postLink} href={communityHref(creatorSlug, locale)}>
         <span className={styles.board}>{creatorName} · {feed.fanBoard}</span>
         <p>{item.body || feed.fanBoard}</p>
-        <div className={styles.meta}><span>{item.kind === "cheer" ? item.nickname : item.author.nickname}</span><time dateTime={item.createdAt}>{new Intl.DateTimeFormat(locale, { month: "short", day: "numeric", timeZone: "Asia/Seoul" }).format(new Date(item.createdAt))}</time><span className={styles.reactions}><span role="img" aria-label={`${copy.like} ${(item.kind === "cheer" ? item.clapCount : item.likeCount).toLocaleString(locale)}`}><Heart size={14} aria-hidden="true" />{(item.kind === "cheer" ? item.clapCount : item.likeCount).toLocaleString(locale)}</span><span role="img" aria-label={`${copy.comments} ${(item.kind === "cheer" ? item.replyCount : item.commentCount).toLocaleString(locale)}`}><MessageCircle size={14} aria-hidden="true" />{(item.kind === "cheer" ? item.replyCount : item.commentCount).toLocaleString(locale)}</span></span></div>
+        <div className={styles.meta}><span>{item.kind === "cheer" ? item.nickname : item.author.nickname}</span><time dateTime={item.createdAt}>{new Intl.DateTimeFormat(locale, { month: "short", day: "numeric", timeZone: "Asia/Seoul" }).format(new Date(item.createdAt))}</time><span className={styles.reactions}><span role="img" aria-label={`${copy.like} ${(item.kind === "cheer" ? item.clapCount : item.likeCount).toLocaleString(locale)}`}><ReactionIcon kind="like" size={14} /><ReactionCount value={item.kind === "cheer" ? item.clapCount : item.likeCount} locale={locale} /></span><span role="img" aria-label={`${copy.comments} ${(item.kind === "cheer" ? item.replyCount : item.commentCount).toLocaleString(locale)}`}><ReactionIcon kind="comment" size={14} /><ReactionCount value={item.kind === "cheer" ? item.replyCount : item.commentCount} locale={locale} /></span></span></div>
       </Link></div>
     </li>)}</ul> : <p className={styles.status} role={state.status === "error" ? "alert" : "status"}>{state.status === "loading" ? copy.loading : state.status === "error" ? copy.failed : copy.empty}</p>}
     {(page > 1 || (state.status === "ready" && state.data.hasMore)) && <nav className={styles.pagination} aria-label={feed.fanBoard}>

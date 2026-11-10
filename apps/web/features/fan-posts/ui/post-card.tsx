@@ -6,7 +6,8 @@ import type { Route } from "next";
 import { useEffect, useState, type ReactNode } from "react";
 import { Menu } from "@base-ui/react/menu";
 import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
-import { Ellipsis, Heart, MessageCircle } from "lucide-react";
+import { Ellipsis } from "lucide-react";
+import { ReactionCount, ReactionIcon } from "@/components/fan-ui/reaction-count";
 import {SourceConfirmDialog,sourceDeleteResultCopy} from "@/features/groups/ui/source-confirm-dialog";
 import {postSchema} from "../domain/content";
 import {toContentLocale} from "@/i18n/locales";
@@ -59,8 +60,8 @@ export function PostCard({ post, locale, onChanged, onDeleted, detail = false, r
     </div>
 
     {presentation !== "board" && displayedBody && <ContentTranslation sourceText={post.body} targetType="fan_post" targetId={post.id} locale={locale} sourceRevision={post.revision}><p className={styles.body}>{displayedBody}</p></ContentTranslation>}
-    <div className={`${styles.actions} ${styles.postFooter}`}><button type="button" className={styles.likeButton} onClick={() => void like()} disabled={!auth.ready || !auth.authenticated || mutation.busy} aria-pressed={liked}><Heart size={18} fill={liked ? "currentColor" : "none"} aria-hidden="true" /> {boardLikeLabel??copy.like} {likeCount.toLocaleString(locale)}{boardLikeReward}</button>
-      {!detail && <Link href={href} className={styles.button}><MessageCircle size={16} aria-hidden="true" /> {copy.comments} {post.commentCount.toLocaleString(locale)}</Link>}
+    <div className={`${styles.actions} ${styles.postFooter}`}><button type="button" className={styles.likeButton} onClick={() => void like()} disabled={!auth.ready || !auth.authenticated || mutation.busy} aria-pressed={liked}><ReactionIcon kind="like" size={18} pressed={liked} /> {boardLikeLabel??copy.like} <ReactionCount value={likeCount} locale={locale} />{boardLikeReward}</button>
+      {!detail && <Link href={href} className={styles.button}><ReactionIcon kind="comment" /> {copy.comments} <ReactionCount value={post.commentCount} locale={locale} /></Link>}
       <time className={styles.postDate} dateTime={post.createdAt}>{new Intl.DateTimeFormat(locale, { calendar: "gregory", dateStyle: "medium", timeStyle: "short", timeZone: "Asia/Seoul" }).format(new Date(post.createdAt))}</time>
     </div>
     {deleting&&<SourceConfirmDialog sourceId={deleteUncertain?'jU13c':'fNe6I'} title={deleteUncertain?sourceDeleteResultCopy(locale).title:locale==='ko'?'게시글을 삭제할까요?':copy.deleteConfirm} cancelLabel={copy.cancel} confirmLabel={deleteUncertain?sourceDeleteResultCopy(locale).check:copy.delete} closeLabel={copy.cancel} pending={mutation.busy} danger={!deleteUncertain} onClose={()=>setDeleting(false)} onConfirm={()=>void remove()}><p>{post.body.split('\n')[0]}</p>{deleteUncertain&&<p>{sourceDeleteResultCopy(locale).body}</p>}</SourceConfirmDialog>}

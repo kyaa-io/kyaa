@@ -16,6 +16,10 @@
   --color-line-subtle: oklch(93% 0 0);
   --color-error: #9f1239;
   --color-success: #17613f;
+  /* Post reactions: filled heart in brand pink (soft until the viewer likes it), filled speech bubble in a muted blue. */
+  --color-reaction-like: #ce0066;
+  --color-reaction-like-soft: #e05a97;
+  --color-reaction-comment: oklch(56% 0.09 230);
   --color-warning: #8a4b08;
   --color-backdrop: rgb(23 23 26 / 42%);
   --color-focus: var(--color-ink);

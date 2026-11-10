@@ -4,7 +4,8 @@ import Link from "next/link";
 import type { Route } from "next";
 import { Menu } from "@base-ui/react/menu";
 import { generateText, type JSONContent } from "@tiptap/core";
-import { BadgeCheck, Ellipsis, Heart, MessageCircle } from "lucide-react";
+import { BadgeCheck, Ellipsis } from "lucide-react";
+import { ReactionCount, ReactionIcon } from "@/components/fan-ui/reaction-count";
 import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import { useByUsSession } from "@/components/byus-session-provider";
 import { AlertDialog } from "@/components/ui/overlay/accessible-overlay";
@@ -60,7 +61,7 @@ export function FeedItemCard(props: Props) {
     <Link className={feedStyles.title} href={href}><TranslatedText text={item.title} locale={locale} controls={false} /></Link>
     {text && <FeedExcerpt text={text} locale={locale} />}
     {media && (media.asset ? <div className={feedStyles.media}><ContentAssetImage asset={media.asset} locale={locale} alt={media.title} href={href} /></div> : media.image ? <Link href={href} className={feedStyles.media} aria-label={feed.readPost}><img src={media.image} alt={media.title} loading="lazy" /></Link> : null)}
-    <div className={styles.actions}><Link href={href} className={styles.button}>{feed.readPost}</Link><Link href={`${href}#comments` as Route} className={styles.button}><MessageCircle size={16} aria-hidden="true" />{copy.comments} {item.commentCount.toLocaleString(locale)}</Link></div>
+    <div className={styles.actions}><Link href={href} className={styles.button}>{feed.readPost}</Link><Link href={`${href}#comments` as Route} className={styles.button}><ReactionIcon kind="comment" />{copy.comments} <ReactionCount value={item.commentCount} locale={locale} /></Link></div>
   </article>;
 }
 
@@ -95,8 +96,8 @@ function CheerCard({ item, slug, locale, returnTo, onChanged }: Omit<Props, "ite
     </header>
     <ContentTranslation sourceText={item.body} targetType="cheer" targetId={item.id} locale={locale}><p className={styles.body}>{item.body}</p></ContentTranslation>
     <div className={`${styles.actions} ${styles.postFooter}`}>
-      <button type="button" className={styles.likeButton} aria-pressed={liked} disabled={!auth.ready || !auth.authenticated || mutation.busy} onClick={() => void toggleLike()}><Heart size={18} fill={liked ? "currentColor" : "none"} aria-hidden="true" />{copy.like} {count.toLocaleString(locale)}</button>
-      <button type="button" aria-expanded={expanded} aria-controls={`${id}-replies`} onClick={() => { setOpened(true); setExpanded(value => !value); }}><MessageCircle size={16} aria-hidden="true" />{copy.comments} {item.replyCount.toLocaleString(locale)}</button>
+      <button type="button" className={styles.likeButton} aria-pressed={liked} disabled={!auth.ready || !auth.authenticated || mutation.busy} onClick={() => void toggleLike()}><ReactionIcon kind="like" size={18} pressed={liked} />{copy.like} <ReactionCount value={count} locale={locale} /></button>
+      <button type="button" aria-expanded={expanded} aria-controls={`${id}-replies`} onClick={() => { setOpened(true); setExpanded(value => !value); }}><ReactionIcon kind="comment" />{copy.comments} <ReactionCount value={item.replyCount} locale={locale} /></button>
       <time className={styles.postDate} dateTime={item.createdAt}>{dateLabel(item.createdAt, locale)}</time>
     </div>
     {mutation.error && !confirming && <p className={styles.error} role="alert">{mutation.error}</p>}

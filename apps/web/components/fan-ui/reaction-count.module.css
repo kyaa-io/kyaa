@@ -1,0 +1,6 @@
+.icon { flex:none; vertical-align:middle; }
+.icon[data-reaction="like"] { color:var(--color-reaction-like); }
+.icon[data-reaction="like"][data-pressed="false"] { color:var(--color-reaction-like-soft); }
+.icon[data-reaction="comment"] { color:var(--color-reaction-comment); }
+.count { color:var(--color-ink); font-variant-numeric:tabular-nums; }
+.count[data-zero] { color:var(--color-muted); }
