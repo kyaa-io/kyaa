@@ -1,13 +1,21 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 vi.mock("server-only", () => ({}));
 import { AuthError } from "@/features/auth/domain/auth-errors";
-import { createDisplayTranslationHandler, type DisplayTranslationDependencies } from "./display-route";
+import { createDisplayTranslationHandler, sourceHash, TRANSLATOR_VERSION, type DisplayTranslationDependencies } from "./display-route";
 
 const owner = "2b8fd044-643e-46e2-83e0-090f50bab563";
-const cached = { translatedText: JSON.stringify(["Привет"]), cached: true };
 afterEach(() => vi.unstubAllEnvs());
+/** In-memory stand-in for the shared cache table: first stored value wins, keyed by hash + locale + translator version. */
+function fakeRpc() {
+  const rows = new Map<string, { sourceHash: string; translatedText: string; detectedSourceLocale: string | null }>();
+  return vi.fn(async (name: string, args: Record<string, unknown>) => {
+    if (name === "read_shared_translations") return (args.p_source_hashes as string[]).flatMap(h => rows.get(`${h}|${args.p_target_locale}|${args.p_translator_version}`) ?? []);
+    if (name === "save_shared_translations") { for (const item of args.p_items as typeof rows extends Map<string, infer V> ? V[] : never) { const k = `${item.sourceHash}|${args.p_target_locale}|${args.p_translator_version}`; if (!rows.has(k)) rows.set(k, item); } return null; }
+    return null;
+  });
+}
 function dependencies() {
-  return { authorize: vi.fn().mockResolvedValue({ appUserId: owner }), rpc: vi.fn().mockResolvedValue(cached),
+  return { authorize: vi.fn().mockResolvedValue({ appUserId: owner }), rpc: fakeRpc(),
     translate: vi.fn().mockResolvedValue([{ translatedText: "Привет" }]), secret: "local-display-translation-secret", appOrigin: "https://kyaa.test",
     aws: true, vercel: false, localDevelopment: false, now: () => new Date("2026-10-26T00:00:00Z"),
   } satisfies DisplayTranslationDependencies;
@@ -33,12 +41,68 @@ describe("bounded display translation", () => {
     expect((await handle(aliasRequest("http://web:3000/api/display-translations", "https://www.kyaa.io", { "x-forwarded-proto": "https", "x-forwarded-host": "www.kyaa.io" }))).status).toBe(200);
     expect((await handle(aliasRequest("http://web:3000/api/display-translations", "https://evil.test", { "x-forwarded-proto": "https", "x-forwarded-host": "evil.test" }))).status).toBe(400);
   });
-  it("serves a guest cache hit without provider/quota calls and never forwards source text to the database", async () => {
-    const d = dependencies(); const res = await createDisplayTranslationHandler(d)(request());
-    expect(res.status).toBe(200); expect(await res.json()).toEqual({ translatedText: "Привет", cached: true });
-    expect(d.authorize).not.toHaveBeenCalled(); expect(d.translate).not.toHaveBeenCalled();
-    expect(d.rpc).toHaveBeenCalledOnce(); expect(d.rpc.mock.calls[0][1]).toMatchObject({ p_app_user_id: null, p_target_locale: "ru", p_source_hash: expect.stringMatching(/^[a-f0-9]{64}$/) });
-    expect(JSON.stringify(d.rpc.mock.calls)).not.toContain("Hello");
+  it("translates the same text once across two requests and never sends source text to the database", async () => {
+    const d = dependencies(); const handle = createDisplayTranslationHandler(d);
+    const first = await handle(request()); expect(await first.json()).toEqual({ translatedText: "Привет", cached: false });
+    const second = await handle(request(undefined, { "x-byus-client-ip": "192.0.2.77" }));
+    expect(await second.json()).toEqual({ translatedText: "Привет", cached: true });
+    expect(d.translate).toHaveBeenCalledTimes(1);
+    expect(d.rpc.mock.calls.filter(c => c[0] === "reserve_display_translation_request")).toHaveLength(1);
+    expect(JSON.stringify(d.rpc.mock.calls.filter(c => c[0] === "read_shared_translations"))).not.toContain("Hello");
+    expect(d.rpc.mock.calls[0][1]).toMatchObject({ p_target_locale: "ru", p_source_hashes: [expect.stringMatching(/^[a-f0-9]{64}$/)] });
+  });
+  it("retranslates edited text and treats whitespace/line-ending differences as the same text", async () => {
+    const d = dependencies(); const handle = createDisplayTranslationHandler(d);
+    await handle(request({ text: "Hello", targetLocale: "ru" })); await handle(request({ text: "  Hello \r\n", targetLocale: "ru" }));
+    expect(d.translate).toHaveBeenCalledTimes(1);
+    await handle(request({ text: "Hello there", targetLocale: "ru" })); expect(d.translate).toHaveBeenCalledTimes(2);
+    await handle(request({ text: "Hello", targetLocale: "en" })); expect(sourceHash("Hello")).toBe(sourceHash(" Hello\n"));
+    expect(d.rpc.mock.calls.find(c => c[0] === "save_shared_translations")![1]).toMatchObject({ p_translator_version: TRANSLATOR_VERSION });
+  });
+  it("skips the provider for same-language, emoji, number, URL and very short text", async () => {
+    const d = dependencies(); const handle = createDisplayTranslationHandler(d);
+    const skipped = ["안녕하세요 반가워요", "😀🎉", "12345", "https://example.com/a", "a", "o👍"];
+    const res = await handle(request({ texts: skipped, targetLocale: "ko" }));
+    expect(await res.json()).toEqual({ translatedTexts: skipped, cached: true });
+    expect(d.translate).not.toHaveBeenCalled(); expect(d.rpc).not.toHaveBeenCalled();
+  });
+  it("remembers text the provider detects as already in the target language and keeps the original", async () => {
+    const d = dependencies(); d.translate.mockResolvedValue([{ translatedText: "Hola amigos", detectedSourceLocale: "ru" }]);
+    const handle = createDisplayTranslationHandler(d);
+    expect(await (await handle(request({ text: "Hello", targetLocale: "ru" }))).json()).toEqual({ translatedText: "Hello", cached: false });
+    expect(await (await handle(request({ text: "Hello", targetLocale: "ru" }))).json()).toEqual({ translatedText: "Hello", cached: true });
+    expect(d.translate).toHaveBeenCalledTimes(1);
+  });
+  it("sends only the uncached texts of a page in one provider request and keeps order", async () => {
+    const d = dependencies(); const handle = createDisplayTranslationHandler(d);
+    d.translate.mockResolvedValueOnce([{ translatedText: "Привет" }]); await handle(request({ text: "Hello", targetLocale: "ru" }));
+    d.translate.mockResolvedValueOnce([{ translatedText: "До свидания" }]);
+    const res = await handle(request({ texts: ["Hello", "😀", "Goodbye", "Goodbye"], targetLocale: "ru" }));
+    expect(await res.json()).toEqual({ translatedTexts: ["Привет", "😀", "До свидания", "До свидания"], cached: false });
+    expect(d.translate).toHaveBeenLastCalledWith(["Goodbye"], "ru"); expect(d.translate).toHaveBeenCalledTimes(2);
+    expect(d.rpc.mock.calls.filter(c => c[0] === "reserve_display_translation_request").at(-1)![1]).toMatchObject({ p_character_count: 7 });
+  });
+  it("derives the quota identity from the trusted edge IP, rotates it daily and isolates owners", async () => {
+    const d = dependencies(), handler = createDisplayTranslationHandler(d);
+    const hash = () => d.rpc.mock.calls.filter(c => c[0] === "reserve_display_translation_request").at(-1)![1].p_requester_hash;
+    await handler(request({ text: "One", targetLocale: "ru" }, { "x-forwarded-for": "203.0.113.1" })); const guest = hash();
+    await handler(request({ text: "Two", targetLocale: "ru" }, { "x-forwarded-for": "203.0.113.2" })); expect(hash()).toBe(guest);
+    await handler(request({ text: "Three", targetLocale: "ru" }, { authorization: "Bearer valid" })); const user = hash(); expect(user).not.toBe(guest);
+    d.authorize.mockResolvedValue({ appUserId: "45ea47a7-7604-47b2-bec8-f4f3674c706c" });
+    await handler(request({ text: "Four", targetLocale: "ru" }, { authorization: "Bearer another" })); expect(hash()).not.toBe(user);
+    d.now = () => new Date("2026-10-27T00:00:00Z"); await handler(request({ text: "Five", targetLocale: "ru" })); expect(hash()).not.toBe(guest);
+  });
+  it("falls back to the original text on quota/provider/storage failure and does not cache the failure", async () => {
+    const d = dependencies(); const handle = createDisplayTranslationHandler(d);
+    d.translate.mockRejectedValueOnce(new Error("secret original text"));
+    const failed = await handle(request()); expect(failed.status).toBe(200);
+    const body = await failed.text(); expect(JSON.parse(body)).toEqual({ translatedText: "Hello", cached: false, fallback: true }); expect(body).not.toContain("secret");
+    expect(await (await handle(request())).json()).toEqual({ translatedText: "Привет", cached: false });
+    const base = d.rpc.getMockImplementation()!;
+    d.rpc.mockImplementation(async (name, args) => { if (name === "reserve_display_translation_request") throw new Error("TRANSLATION_RATE_LIMITED"); return base(name, args); });
+    const limited = await handle(request({ text: "Another", targetLocale: "ru" })); expect(await limited.json()).toMatchObject({ translatedText: "Another", fallback: true });
+    d.rpc.mockImplementation(async () => { throw new Error("db down"); });
+    expect(await (await handle(request({ text: "Third", targetLocale: "ru" }))).json()).toMatchObject({ translatedText: "Third", fallback: true });
   });
   it("does not downgrade invalid supplied credentials to guest", async () => {
     const d = dependencies(); d.authorize.mockRejectedValue(new AuthError("AUTHENTICATION_REQUIRED", 401, "invalid"));
@@ -56,30 +120,5 @@ describe("bounded display translation", () => {
     const d = dependencies(); expect((await createDisplayTranslationHandler(d)(request({ text: "x".repeat(96_001), targetLocale: "ru" }))).status).toBe(413);
     expect((await createDisplayTranslationHandler(d)(request(undefined, { "x-byus-client-ip": "", "x-forwarded-for": "192.0.2.1" }))).status).toBe(503);
     expect(d.rpc).not.toHaveBeenCalled();
-  });
-  it("ignores spoofed XFF, rotates anonymous identity daily and isolates authenticated owners", async () => {
-    const d = dependencies(), handler = createDisplayTranslationHandler(d);
-    await handler(request(undefined, { "x-forwarded-for": "203.0.113.1" }));
-    const guest = d.rpc.mock.calls.at(-1)![1].p_requester_hash;
-    await handler(request(undefined, { "x-forwarded-for": "203.0.113.2" })); expect(d.rpc.mock.calls.at(-1)![1].p_requester_hash).toBe(guest);
-    await handler(request(undefined, { authorization: "Bearer valid" })); const user = d.rpc.mock.calls.at(-1)![1].p_requester_hash; expect(user).not.toBe(guest);
-    d.authorize.mockResolvedValue({ appUserId: "45ea47a7-7604-47b2-bec8-f4f3674c706c" });
-    await handler(request(undefined, { authorization: "Bearer another" })); expect(d.rpc.mock.calls.at(-1)![1].p_requester_hash).not.toBe(user);
-    d.now = () => new Date("2026-10-27T00:00:00Z"); await handler(request()); expect(d.rpc.mock.calls.at(-1)![1].p_requester_hash).not.toBe(guest);
-  });
-  it("reserves a whole ordered text batch once before translating and preserves slot order", async () => {
-    const d = dependencies(); const batch = ["Hello", "Goodbye"];
-    d.translate.mockResolvedValue([{ translatedText: "Привет" }, { translatedText: "До свидания" }]);
-    d.rpc.mockImplementation(async name => name === "read_display_translation" ? (d.rpc.mock.calls.length === 1 ? null : { translatedText: JSON.stringify(["Привет", "До свидания"]), cached: true }) : null);
-    const res = await createDisplayTranslationHandler(d)(request({ texts: batch, targetLocale: "ru" }));
-    expect(res.status).toBe(200); expect(await res.json()).toEqual({ translatedTexts: ["Привет", "До свидания"], cached: false });
-    expect(d.rpc.mock.calls.map(call => call[0])).toEqual(["read_display_translation", "reserve_display_translation_request", "save_display_translation", "read_display_translation"]);
-    expect(d.rpc.mock.calls[1][1]).toMatchObject({ p_character_count: 12 }); expect(d.translate).toHaveBeenCalledWith(batch, "ru");
-  });
-  it("returns only fixed errors when quota/provider fails", async () => {
-    const d = dependencies(); d.rpc.mockImplementation(async name => { if(name === "reserve_display_translation_request") throw new Error("TRANSLATION_RATE_LIMITED"); return null; });
-    const res = await createDisplayTranslationHandler(d)(request()); expect(res.status).toBe(429); expect(d.translate).not.toHaveBeenCalled();
-    d.rpc.mockResolvedValue(null); d.translate.mockRejectedValue(new Error("secret original text"));
-    const failed = await createDisplayTranslationHandler(d)(request()); expect(failed.status).toBe(503); expect(await failed.text()).not.toContain("secret");
   });
 });
