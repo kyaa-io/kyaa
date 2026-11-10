@@ -1,0 +1,16 @@
+{
+  "changes": [
+    "준비 중인 럭키드로우의 기계 그림을 더 선명하게 바꾸고, 누르면 크게 볼 수 있게 했어요.",
+    "확대된 기계를 누르면 손잡이가 돌아가고 캡슐이 나오며, 실제 응모나 보상 지급은 발생하지 않아요.",
+    "움직임 줄이기를 사용하면 짧은 반응으로 대신해요.",
+    "카드의 응모권 장식은 빼고 기계 그림을 보여 줘요.",
+    "첨부 이미지는 로컬에서 확인한 비회원 카드와 팝업 화면이에요."
+  ],
+  "path": "/benefits",
+  "images": [
+    "release-notes/images/2026-11-11-lucky-gacha-390.png",
+    "release-notes/images/2026-11-11-lucky-gacha-1440.png",
+    "release-notes/images/2026-11-11-lucky-gacha-modal-390.png",
+    "release-notes/images/2026-11-11-lucky-gacha-modal-1440.png"
+  ]
+}

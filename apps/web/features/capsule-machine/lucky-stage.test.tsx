@@ -1,4 +1,4 @@
-import { act, render, screen, waitFor } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, expect, it, vi } from "vitest";
 import { LuckyStage } from "./lucky-stage";
 
@@ -73,4 +73,59 @@ it("returns to the still image when the scene stalls", async () => {
   await screen.findByTestId("machine-canvas");
   act(() => (canvas.props.at(-1)!.onStall as () => void)());
   await waitFor(() => expect(screen.queryByTestId("machine-canvas")).toBeNull());
+});
+
+it("offers image enlargement only while paused", async () => {
+  const view = render(<LuckyStage paused locale="en" />);
+  expect(screen.getByRole("button", { name: "Coming soon" })).toBeInTheDocument();
+  view.rerender(<LuckyStage locale="en" />);
+  expect(screen.queryByRole("button", { name: "Coming soon" })).toBeNull();
+});
+
+it("plays a reward-free preview without submitting an entry", async () => {
+  render(<LuckyStage paused locale="en" />);
+  await waitFor(() => expect(gpu.checks).toBe(1));
+  fireEvent.click(screen.getByRole("button", {name:"Coming soon"}));
+  await screen.findByTestId("machine-canvas");
+  const play = vi.fn().mockResolvedValue([]), clear = vi.fn();
+  act(() => (canvas.props.at(-1)!.onEngine as (value: unknown) => void)({play,clear}));
+  fireEvent.click(screen.getByRole("dialog").querySelector('button[aria-label="Coming soon"]')!);
+  await waitFor(() => expect(play).toHaveBeenCalledWith(1, [], true));
+  await waitFor(() => expect(clear).toHaveBeenCalled());
+});
+
+it("unlocks on close and ignores the previous play when reopened", async () => {
+  render(<LuckyStage paused locale="en" />);
+  await waitFor(() => expect(gpu.checks).toBe(1));
+  fireEvent.click(screen.getByRole("button", {name:"Coming soon"}));
+  await screen.findByTestId("machine-canvas");
+  let finishOld!: () => void;
+  const oldPlay = new Promise<string[]>(resolve => { finishOld = () => resolve([]); });
+  const clear = vi.fn();
+  act(() => (canvas.props.at(-1)!.onEngine as (value: unknown) => void)({play: () => oldPlay,clear}));
+  fireEvent.click(screen.getByRole("dialog").querySelector('button[aria-label="Coming soon"]')!);
+  fireEvent.click(screen.getByRole("button", {name:"Close"}));
+  fireEvent.click(screen.getByRole("button", {name:"Coming soon"}));
+  await screen.findByTestId("machine-canvas");
+  expect(screen.getByRole("dialog").querySelector('button[aria-label="Coming soon"]')).not.toBeDisabled();
+  let finishNew!: () => void;
+  const newPlay = new Promise<string[]>(resolve => { finishNew = () => resolve([]); });
+  act(() => (canvas.props.at(-1)!.onEngine as (value: unknown) => void)({play: () => newPlay,clear}));
+  fireEvent.click(screen.getByRole("dialog").querySelector('button[aria-label="Coming soon"]')!);
+  await act(async () => { finishOld(); await oldPlay; });
+  expect(screen.getByRole("dialog").querySelector('button[aria-label="Coming soon"]')).toBeDisabled();
+  await act(async () => { finishNew(); await newPlay; });
+  expect(screen.getByRole("dialog").querySelector('button[aria-label="Coming soon"]')).not.toBeDisabled();
+});
+
+it("uses a short still reaction in the reduced-motion modal", async () => {
+  media(true);
+  render(<LuckyStage paused locale="en" />);
+  fireEvent.click(screen.getByRole("button", {name:"Coming soon"}));
+  expect(screen.queryByTestId("machine-canvas")).toBeNull();
+  const machine = screen.getByRole("dialog").querySelector('button[aria-label="Coming soon"]')!;
+  fireEvent.click(machine);
+  expect(machine).toBeDisabled();
+  await waitFor(() => expect(machine).not.toBeDisabled());
+  expect(gpu.checks).toBe(0);
 });
