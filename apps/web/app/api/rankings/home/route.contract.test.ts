@@ -8,6 +8,7 @@ import { GET } from "./route";
 // Real DB answers regenerated after 20261220150000 with supabase/tests/home_ranking_metrics_answers.sql.
 // SQL emits coordinates; the HTTP route adds the viewer-bound signature.
 import answers from "./v2-answers.fixture.json";
+import v3 from "./v3-answers.fixture.json";
 
 type Answer = Record<string, unknown> & { rows: Record<string, unknown>[] };
 const answer = (name: string) => (answers as Record<string, Answer>)[name]!;
@@ -20,7 +21,8 @@ function serve(name: string) {
 }
 
 for (const label of ["first", "ready", "empty", "stale"]) {
-  for (const [kind, metric] of [["fans", "hearts"], ["fans", "points"], ["creators", "fans"], ["creators", "hearts"]] as const) {
+  // fans by points reads read_home_fan_ranking_v3 since 20261222140000 (v3 answers below).
+  for (const [kind, metric] of [["fans", "hearts"], ["creators", "fans"], ["creators", "hearts"]] as const) {
     it(`passes the database's ${label} ${kind} answer by ${metric} through the route schema`, async () => {
       serve(`${label}:${kind}:${metric}`);
       const res = await GET(new Request(`https://byus.test/api/rankings/home?kind=${kind}&metric=${metric}&locale=ko`));
@@ -69,8 +71,34 @@ it("passes my rank with its named values and movement for a signed-in viewer", a
     expect(row.profileRef).not.toHaveProperty("profileId");
   }
   expect(body.me).toEqual({ rank: 2, score: 40, hearts: 3, points: 40, inTop: true, delta: 0 });
-  expect(state.rpc).toHaveBeenCalledWith("read_home_fan_ranking_v2", { p_viewer: ME, p_metric: "points", p_limit: 50 });
+  expect(state.rpc).toHaveBeenCalledWith("read_home_fan_ranking_v3", { p_viewer: ME, p_period: "all", p_limit: 50 });
 });
+
+// Real answers of read_home_fan_ranking_v3 / read_home_creator_ranking_v3 on the local database after 20261222140000.
+for (const name of Object.keys(v3) as (keyof typeof v3)[]) {
+  const [kind, period, viewer] = name.split(":") as ["fans" | "creators", "all" | "day" | "week", string | undefined];
+  it(`passes the database's v3 ${name} answer (points / likes) through the route schema with its stats`, async () => {
+    const raw = v3[name] as unknown as Answer;
+    state.rpc.mockImplementation(async (fn: string) => fn === "ensure_home_rankings" ? { day: raw.day, built: false } : raw);
+    const metric = kind === "fans" ? "points" : "likes";
+    const res = await GET(new Request(`https://byus.test/api/rankings/home?kind=${kind}&metric=${metric}&period=${period}&limit=50`, viewer ? { headers: { authorization: "Bearer t" } } : undefined));
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.metric).toBe(metric);
+    expect(body.rows).toHaveLength(Math.min(raw.rows.length, viewer ? 50 : 10));
+    expect(state.rpc).toHaveBeenCalledWith(kind === "fans" ? "read_home_fan_ranking_v3" : "read_home_creator_ranking_v3", expect.objectContaining({ p_period: period }));
+    for (const row of body.rows) {
+      if (kind === "fans") { expect(row.points).toBe(row.score); expect(row.hearts).toEqual(expect.any(Number)); expect(row.tickets).toEqual(expect.any(Number)); expect(row.totalPoints).toBeGreaterThanOrEqual(row.points); }
+      else { expect(row.likes).toBe(row.score); expect(row.hearts).toEqual(expect.any(Number)); expect(row.fans).toEqual(expect.any(Number)); expect(row.totalLikes).toBeGreaterThanOrEqual(row.likes); expect(row).not.toHaveProperty("followers"); }
+    }
+    if (viewer) {
+      expect(body.me).toMatchObject({ rank: expect.any(Number), inTop: true });
+      for (const row of body.rows) expect(row.profileRef).toMatchObject({ kind: "home_ranking", metric: "points", signature: expect.any(String) });
+    }
+    const values = body.rows.map((row: { score: number }) => row.score);
+    expect(values).toEqual([...values].sort((a, b) => b - a));
+  });
+}
 
 it("keeps fan ids and e-mails out of every answer", async () => {
   for (const name of Object.keys(answers)) {

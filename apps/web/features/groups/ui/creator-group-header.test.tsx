@@ -12,6 +12,7 @@ vi.mock('./group-page-menu',()=>({GroupPageMenu:()=><button>page-menu</button>,u
 vi.mock('./group-activities',()=>({GroupActivitiesPanel:({pageId}:any)=><div>activities:{pageId}</div>,GroupEventsList:()=>null,GroupCollections:()=>null}));
 vi.mock('./group-rooms-panel',()=>({GroupRoomsPanel:({pageId,slug}:any)=><div>rooms:{pageId}:{slug}</div>}));
 vi.mock('./group-members',()=>({GroupMembers:()=>null}));
+vi.mock('@/features/reaction/ui/reaction-action',()=>({ReactionAction:({slug,variant}:any)=><button data-testid='page-like' data-variant={variant}>like:{slug}</button>}));
 vi.mock('./creator-group-home',()=>({CreatorBrandNewsPreview:()=>null}));
 vi.mock('./group-home-panels',()=>({GroupBrandHomeEvent:()=>null}));
 vi.mock('@/features/auth/client/cognito-auth',()=>({useByUsAuth:()=>({ready:state.ready,authenticated:state.authenticated,user:null,getAccessToken:async()=>null})}));
@@ -29,6 +30,9 @@ it('renders one header without the old meta line, join button or text verificati
  expect(screen.getByText('팬페이지')).toHaveAttribute('data-fan-tag','fan');
  expect(screen.queryByText(/팬페이지 · /)).toBeNull();expect(screen.queryByRole('link',{name:'가입하기'})).toBeNull();
  expect(screen.getByTestId('presence')).toHaveTextContent('13');
+ // RANK-METRIC-0520: the page like (old hero 'Leave a like') sits in the header actions, once.
+ expect(screen.getAllByTestId('page-like')).toHaveLength(1);expect(screen.getByTestId('page-like')).toHaveAttribute('data-variant','header');
+ expect(screen.getByTestId('page-like').closest('[data-fan-page-header="fan"]')).not.toBeNull();
 });
 it('Q1 fan page: signed out goes to login with verify as returnTo and keeps the same label',()=>{
  render(<CreatorGroupHeader celebrity={celebrity} locale='ko' tab='home'/>);

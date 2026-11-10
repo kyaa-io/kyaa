@@ -78,9 +78,10 @@ export type PlatformFanRanking = z.infer<typeof platformFanRankingSchema>;
 /** Home ranking by day (feedback C3). delta = the previous built day's rank minus today's: positive went up, zero = unchanged, null = no comparison (no previous day, or
  * not ranked then). isNew is a separate recent-entry flag. Ranking stage 2 (20261220010000): movement shows from the second built day of the same metric. */
 const delta = z.number().int().nullable();
-/** Fans: hearts (default of the API) or fan score points. Creators: 찐팬 (default of the API) or hearts. The screens name the metric they show. */
+/** Fans: hearts (default of the API) or points earned (20261222140000, any period). Creators: 찐팬 (default of the API), hearts or page likes (any period).
+ * The home board asks for points and likes (대표 11/11 01:55). The screens name the metric they show. */
 export const HOME_FAN_METRICS = ["hearts", "points"] as const;
-export const HOME_CREATOR_METRICS = ["fans", "hearts"] as const;
+export const HOME_CREATOR_METRICS = ["fans", "hearts", "likes"] as const;
 /** Home ranking list periods: all = cumulative hearts (default), day = hearts gained today, week = hearts gained over the last seven days. */
 export const HOME_RANKING_PERIODS = ["all", "day", "week"] as const;
 export type HomeRankingPeriod = (typeof HOME_RANKING_PERIODS)[number];
@@ -123,7 +124,9 @@ export const homeFanRankingSchema = z.object({
   /** Days the fan weekGain comparison spans (20261217010000). Optional: absent before that migration. */
   weekGainDays: z.number().int().min(1).max(7).nullable().optional(),
   /** score is the metric's value; hearts and points name the values (both values independent of the sort metric; points null only when that day has no points build). */
-  rows: z.array(platformFanRankingRowSchema.extend({ delta, favorite, fans: count.optional(), isNew: z.boolean().optional(), weekGain: z.number().int().nullable().optional(), dayGain, profileRef: homeFanProfileRefSchema.optional(), hearts: count.optional(), points: count.nullable().optional() })).max(HOME_RANKING_LIMIT),
+  rows: z.array(platformFanRankingRowSchema.extend({ delta, favorite, fans: count.optional(), isNew: z.boolean().optional(), weekGain: z.number().int().nullable().optional(), dayGain, profileRef: homeFanProfileRefSchema.optional(), hearts: count.optional(), points: count.nullable().optional(),
+    /** points list only: tickets held now and points earned all time (the row's points are the period's). */
+    tickets: count.optional(), totalPoints: count.optional() })).max(HOME_RANKING_LIMIT),
   me: z.object({ rank: z.number().int().min(1), score: count, inTop: z.boolean(), hearts: count.optional(), points: count.nullable().optional(), delta: delta.optional() }).nullable(),
 });
 export type HomeFanRanking = z.infer<typeof homeFanRankingSchema>;
@@ -148,6 +151,9 @@ export const homeCreatorRankingRowSchema = z.object({
   /** The metric gained over the rolling seven days (E2 ①). null on the first day of history. May be negative when fans left. */
   weekGain: z.number().int().nullable(),
   dayGain,
+  /** likes list only: page likes in the period and all time. */
+  likes: count.optional(),
+  totalLikes: count.optional(),
 });
 export const homeCreatorRankingSchema = z.object({
   ...homeHead,

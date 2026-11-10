@@ -21,7 +21,7 @@ const req = (path: string, headers: Record<string, string> = {}) => new Request(
 describe("home ranking by period", () => {
   it("asks the period reader for fans, with the viewer, and passes the real answer through the schema: gain as the value, no movement", async () => {
     const { rpc, handlers } = make(() => sql.fans_day_viewer);
-    const res = await handlers.home(req("/api/rankings/home?kind=fans&period=day&limit=10&metric=points", { authorization: "Bearer t" }));
+    const res = await handlers.home(req("/api/rankings/home?kind=fans&period=day&limit=10&metric=hearts", { authorization: "Bearer t" }));
     expect(res.status).toBe(200);
     expect(rpc).toHaveBeenCalledWith("read_home_fan_ranking_period", { p_viewer: ME, p_period: "day", p_limit: 10 });
     const body = homeFanRankingSchema.parse(await res.json());

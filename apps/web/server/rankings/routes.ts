@@ -175,7 +175,7 @@ export function createRankingsHandlers(deps: RankingsDependencies) {
       });
       return Response.json(body, { headers: appUserId || request.headers.has("authorization") ? privateHeaders : publicHeaders });
     }),
-    // Home card and the full ranking page by day (C3, ranking stage 2). fans: hearts (default) or points; creators: 찐팬 (default) or hearts.
+    // Home card and the full ranking page by day (C3, ranking stage 2). fans: hearts (default) or points earned; creators: 찐팬 (default), hearts or page likes.
     // Movement against the previous built day. Up to 50 rows for a member, ten signed out. Profile refs are signed-in only.
     home: (request: Request) => run(async () => {
       const basis = (day: unknown) => ({ period: "day" as const, closesAt: typeof day === "string" ? kstMidnightAfter(day) : null, fetchedAt: new Date().toISOString() });
@@ -189,22 +189,31 @@ export function createRankingsHandlers(deps: RankingsDependencies) {
       // period=day|week ranks hearts gained today or over the last seven days (20261221010000); the default is the cumulative list. A period list is by hearts only.
       const period = z.enum(HOME_RANKING_PERIODS).parse(one(request, "period") ?? "all");
       if (kind === "creators") {
-        const metric = z.enum(HOME_CREATOR_METRICS).parse(period === "all" ? one(request, "metric") ?? "fans" : "hearts");
+        // likes (20261222140000): page likes in the period, any period. fans (default) and hearts are the older lists (hearts only for a period).
+        const asked = z.enum(HOME_CREATOR_METRICS).parse(one(request, "metric") ?? "fans");
+        const metric = asked === "likes" || period === "all" ? asked : "hearts";
         const member = await viewer(request);
         const creatorLimit = member ? limit : Math.min(limit, 10);
-        const raw = obj(period === "all"
+        const raw = obj(metric === "likes"
+          ? await readHome("read_home_creator_ranking_v3", { p_locale: lang, p_period: period, p_limit: creatorLimit })
+          : period === "all"
           ? await readHome("read_home_creator_ranking_v2", { p_locale: lang, p_metric: metric, p_limit: creatorLimit })
           : await readHome("read_home_creator_ranking_period", { p_locale: lang, p_period: period, p_limit: creatorLimit }));
         const rows = arr(raw.rows).map((row) => {
           const r = obj(row);
-          return { rank: r.rank, slug: r.slug, name: r.name, imageUrl: r.imageUrl ?? null, score: r.score, hearts: r.hearts, points: r.points ?? null, fans: r.fans, liveNow: r.liveNow === true, isNew: r.isNew === true, challenge: r.challenge === true, delta: r.delta ?? null, weekGain: r.weekGain ?? null, dayGain: r.dayGain ?? null };
+          return { rank: r.rank, slug: r.slug, name: r.name, imageUrl: r.imageUrl ?? null, score: r.score, hearts: r.hearts, points: r.points ?? null, fans: r.fans, liveNow: r.liveNow === true, isNew: r.isNew === true, challenge: r.challenge === true, delta: r.delta ?? null, weekGain: r.weekGain ?? null, dayGain: r.dayGain ?? null,
+            ...(metric === "likes" ? { likes: r.likes, totalLikes: r.totalLikes } : {}) };
         });
         return Response.json(checked(homeCreatorRankingSchema, { ...head(raw, metric), weekGainDays: raw.weekGainDays ?? null, rows }), { headers: listHeaders(request, member) });
       }
-      const metric = z.enum(HOME_FAN_METRICS).parse(period === "all" ? one(request, "metric") ?? "hearts" : "hearts");
+      // points (20261222140000): points earned in the period, any period. hearts (default) is the older list; a period list asked without points is by hearts.
+      const asked = z.enum(HOME_FAN_METRICS).parse(one(request, "metric") ?? "hearts");
+      const metric = asked === "points" || period === "all" ? asked : "hearts";
       const appUserId = await viewer(request);
       const fanLimit = appUserId ? limit : Math.min(limit, 10);
-      const raw = obj(period === "all"
+      const raw = obj(metric === "points"
+        ? await readHome("read_home_fan_ranking_v3", { p_viewer: appUserId, p_period: period, p_limit: fanLimit })
+        : period === "all"
         ? await readHome("read_home_fan_ranking_v2", { p_viewer: appUserId, p_metric: metric, p_limit: fanLimit })
         : await readHome("read_home_fan_ranking_period", { p_viewer: appUserId, p_period: period, p_limit: fanLimit }));
       const me = obj(raw.me);
@@ -212,6 +221,7 @@ export function createRankingsHandlers(deps: RankingsDependencies) {
         const r = obj(row);
         return { rank: r.rank, score: r.score, hearts: r.hearts, points: r.points ?? null, fans: r.fans, isNew: r.isNew === true, nickname: r.nickname, characterId: r.characterId, tier: r.tier ?? null,
           isMe: appUserId !== null && r.isMe === true, delta: r.delta ?? null, favorite: favoriteIn(r.favorite, lang), weekGain: r.weekGain ?? null, dayGain: r.dayGain ?? null,
+          ...(metric === "points" ? { tickets: r.tickets, totalPoints: r.totalPoints } : {}),
           ...(appUserId ? { profileRef: signHomeProfileRef(checked(homeFanProfileLocatorSchema, r.profileRef), appUserId, deps.profileRefSecret) } : {}) };
       });
       const body = checked(homeFanRankingSchema, {

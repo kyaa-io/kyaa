@@ -36,7 +36,7 @@ type ActionState = "idle" | "working" | "done" | "error";
  * Each Privy owner and creator gets a separate stateful instance. This prevents
  * a completed CTA or an in-flight response from a prior account being reused.
  */
-export function ReactionAction({ slug, locale, variant = "card", showRewardDialog = true }: { slug: string; locale: AppLocale; variant?: "card" | "compact"; showRewardDialog?: boolean }) {
+export function ReactionAction({ slug, locale, variant = "card", showRewardDialog = true }: { slug: string; locale: AppLocale; variant?: "card" | "compact" | "header"; showRewardDialog?: boolean }) {
   const { ready, authenticated, getAccessToken, user } = usePrivy();
   const ownerId = user?.id;
   return <ReactionActionForOwner key={`${ready ? "ready" : "loading"}:${authenticated ? "authenticated" : "guest"}:${ownerId ?? "unknown"}:${slug}`} slug={slug} locale={locale} variant={variant} showRewardDialog={showRewardDialog} ready={ready} authenticated={authenticated} ownerId={ownerId} getAccessToken={getAccessToken} />;
@@ -44,7 +44,7 @@ export function ReactionAction({ slug, locale, variant = "card", showRewardDialo
 
 function ReactionActionForOwner({ slug, locale, variant, showRewardDialog, ready, authenticated, ownerId, getAccessToken }: {
   showRewardDialog: boolean;
-  variant: "card" | "compact";
+  variant: "card" | "compact" | "header";
   slug: string;
   locale: AppLocale;
   ready: boolean;
@@ -178,13 +178,13 @@ function ReactionActionForOwner({ slug, locale, variant, showRewardDialog, ready
 
   const verificationHref = result ? `/c/${slug}/verify?locale=${locale}&source=reaction&reactionId=${result.reactionId}` : `/c/${slug}/verify?locale=${locale}`;
   const checking = authenticated && checkState === "checking";
-  return <section className={variant === "compact" ? styles.compact : styles.card} id="first-reaction" aria-label={variant === "compact" ? t.title : undefined} aria-labelledby={variant === "card" ? "first-reaction-title" : undefined} data-reaction-complete={actionState === "done" ? "true" : undefined}>
+  return <section className={variant === "card" ? styles.card : variant === "header" ? styles.header : styles.compact} id="first-reaction" aria-label={variant !== "card" ? t.title : undefined} aria-labelledby={variant === "card" ? "first-reaction-title" : undefined} data-reaction-complete={actionState === "done" ? "true" : undefined}>
     {variant === "card" && <><span className={styles.icon} aria-hidden="true"><Heart /></span>
     <div className={styles.copy}><h2 id="first-reaction-title">{t.title}</h2><span>{t.body}</span></div></>}
     {!ready ? <button disabled><Heart />{t.working}</button>
       : !authenticated ? <AuthIntentLink focusKey="first-reaction" locale={locale} input={{ sourcePath: creatorHomeHref(slug), sourceQuery: `?locale=${locale}`, actionType: "CREATE_REACTION", targetType: "celebrity", targetId: slug, returnAnchor: "#first-reaction" }}><Heart />{t.action}<ArrowRight /></AuthIntentLink>
       : checkState === "error" ? <button type="button" onClick={() => void readExisting()}><Heart />{t.retry}<ArrowRight /></button>
-      : <button type="button" onClick={() => void postReaction()} disabled={checking || actionState === "working" || actionState === "done"}><Heart />{checking ? t.checking : actionState === "working" ? t.working : actionState === "done" ? (variant === "compact" && locale === "ko" ? "좋아요 완료" : t.done) : t.action}<ArrowRight /></button>}
+      : <button type="button" onClick={() => void postReaction()} disabled={checking || actionState === "working" || actionState === "done"}><Heart />{checking ? t.checking : actionState === "working" ? t.working : actionState === "done" ? (variant !== "card" && locale === "ko" ? "좋아요 완료" : t.done) : t.action}<ArrowRight /></button>}
     {!showRewardDialog && <span role="status">{actionState === "done" ? t.done : ""}</span>}
     {checkState === "error" ? <p role="alert" className={styles.error}>{t.statusError}</p> : null}
     {actionState === "error" && checkState !== "error" ? <p role="alert" className={styles.error}>{t.error}</p> : null}
