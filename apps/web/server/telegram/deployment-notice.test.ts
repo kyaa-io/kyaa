@@ -272,8 +272,8 @@ it("sends DEV screenshots under the production path, count and caption rules", a
   });
   const handler=createDeploymentNoticeHandler({secret:"operator",botToken:"test-token",fetcher:fetcher as typeof fetch});
   const result=await handler(new Request("https://dev.kyaa.io/api/internal/telegram/deployment-notices",{method:"POST",headers:{authorization:"Bearer operator","content-type":"application/json"},body:JSON.stringify({...input,site:"dev",text,images})}));
-  const telegram=fetcher.mock.calls.find(([url])=>String(url).includes("api.telegram.org"));
-  return {status:result.status,body:await result.json(),telegram:telegram&&{url:String(telegram[0]),body:JSON.parse(String((telegram[1] as RequestInit).body))}};
+  const telegram=fetcher.mock.calls.find(([url])=>String(url).includes("api.telegram.org")) as unknown as [string, RequestInit] | undefined;
+  return {status:result.status,body:await result.json(),telegram:telegram&&{url:String(telegram[0]),body:JSON.parse(String(telegram[1].body))}};
  };
  const one=await run(["release-notes/images/after.png"]);
  expect(one.status).toBe(200);
