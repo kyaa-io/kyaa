@@ -32,8 +32,8 @@ describe("real SQL answers of the share tag review", () => {
     }
   });
   it("the operator list and both decisions pass the admin routes; accepting pays through the proof's lock", async () => {
-    for (const name of ["admin_list_pending", "admin_list_rejected"]) {
-      const res = await shareProofAdminRoutes.list(admin(answering({ read_admin_share_proofs: cases[name] })))(json("/api/admin/share-proofs"));
+    for (const [name, status] of [["admin_list_pending", "pending"], ["admin_list_rejected", "rejected"], ["admin_list_accepted", "accepted"], ["admin_list_all", "all"]] as const) {
+      const res = await shareProofAdminRoutes.list(admin(answering({ read_admin_share_proofs: cases[name] })))(json(`/api/admin/share-proofs?status=${status}`));
       expect(res.status).toBe(200);
       expect((await res.json()).items).toEqual(cases[name].items);
     }

@@ -2,37 +2,37 @@
     "list_after": {
         "items": [
             {
-                "id": "1b8416e2-833c-4fc7-83dd-3ad714b84ab1",
+                "id": "ecc489d9-7d46-452c-a290-b1b8666107eb",
                 "url": "https://x.com/fan/status/1850000000000000888",
                 "points": null,
                 "status": "rejected",
                 "platform": "x",
-                "createdAt": "2026-11-11T00:38:28.962798+09:00"
+                "createdAt": "2026-11-11T02:33:17.044472+09:00"
             },
             {
-                "id": "16552114-6416-43ca-b760-6502f55aa27e",
+                "id": "b67d590d-e2ca-459e-89ef-0937e5426978",
                 "url": "https://www.instagram.com/p/ShareTag01/",
                 "points": null,
                 "status": "accepted",
                 "platform": "instagram",
-                "createdAt": "2026-11-11T00:38:28.957806+09:00"
+                "createdAt": "2026-11-11T02:33:17.039086+09:00"
             }
         ]
     },
     "list_pending": {
         "items": [
             {
-                "id": "16552114-6416-43ca-b760-6502f55aa27e",
+                "id": "b67d590d-e2ca-459e-89ef-0937e5426978",
                 "url": "https://www.instagram.com/p/ShareTag01/",
                 "points": null,
                 "status": "pending",
                 "platform": "instagram",
-                "createdAt": "2026-11-11T00:38:28.957806+09:00"
+                "createdAt": "2026-11-11T02:33:17.039086+09:00"
             }
         ]
     },
     "review_accept": {
-        "id": "16552114-6416-43ca-b760-6502f55aa27e",
+        "id": "b67d590d-e2ca-459e-89ef-0937e5426978",
         "status": "accepted",
         "platform": "instagram",
         "replayed": false,
@@ -42,7 +42,7 @@
         "creatorSlug": "s15-test-creator"
     },
     "review_reject": {
-        "id": "1b8416e2-833c-4fc7-83dd-3ad714b84ab1",
+        "id": "ecc489d9-7d46-452c-a290-b1b8666107eb",
         "status": "rejected",
         "platform": "x",
         "replayed": false,
@@ -52,47 +52,37 @@
         "creatorSlug": "s15-test-creator"
     },
     "submit_replay": {
-        "id": "16552114-6416-43ca-b760-6502f55aa27e",
+        "id": "b67d590d-e2ca-459e-89ef-0937e5426978",
         "points": null,
         "status": "pending",
         "replayed": true
     },
-    "submit_pending": {
-        "id": "16552114-6416-43ca-b760-6502f55aa27e",
-        "points": null,
-        "status": "pending",
-        "replayed": false
-    },
-    "admin_list_pending": {
+    "admin_list_all": {
         "items": [
             {
-                "id": "16552114-6416-43ca-b760-6502f55aa27e",
-                "url": "https://www.instagram.com/p/ShareTag01/",
+                "id": "23ecc71f-4482-41d3-bf36-0ae4cab51fed",
+                "url": null,
                 "member": {
                     "id": "6a816a12-3d1b-48fd-a191-0f164e2f2f0c",
                     "nickname": "S15 팬 1"
                 },
-                "points": null,
-                "postId": "ShareTag01",
-                "status": "pending",
+                "points": 10,
+                "postId": "ShareTag02",
+                "status": "accepted",
                 "creator": {
                     "name": "S15 합성 크리에이터",
                     "slug": "s15-test-creator"
                 },
-                "platform": "instagram",
+                "platform": "tiktok",
                 "revision": 0,
-                "createdAt": "2026-11-11T00:38:28.957806+09:00",
+                "createdAt": "2026-11-11T02:33:17.045612+09:00",
                 "revokedAt": null,
                 "rejectCode": null,
                 "revokeResult": null,
                 "duplicateCount": 0
-            }
-        ]
-    },
-    "admin_list_rejected": {
-        "items": [
+            },
             {
-                "id": "1b8416e2-833c-4fc7-83dd-3ad714b84ab1",
+                "id": "ecc489d9-7d46-452c-a290-b1b8666107eb",
                 "url": "https://x.com/fan/status/1850000000000000888",
                 "member": {
                     "id": "6a816a12-3d1b-48fd-a191-0f164e2f2f0c",
@@ -107,7 +97,135 @@
                 },
                 "platform": "x",
                 "revision": 0,
-                "createdAt": "2026-11-11T00:38:28.962798+09:00",
+                "createdAt": "2026-11-11T02:33:17.044472+09:00",
+                "revokedAt": null,
+                "rejectCode": "no_hashtag",
+                "revokeResult": null,
+                "duplicateCount": 0
+            },
+            {
+                "id": "b67d590d-e2ca-459e-89ef-0937e5426978",
+                "url": "https://www.instagram.com/p/ShareTag01/",
+                "member": {
+                    "id": "6a816a12-3d1b-48fd-a191-0f164e2f2f0c",
+                    "nickname": "S15 팬 1"
+                },
+                "points": null,
+                "postId": "ShareTag01",
+                "status": "accepted",
+                "creator": {
+                    "name": "S15 합성 크리에이터",
+                    "slug": "s15-test-creator"
+                },
+                "platform": "instagram",
+                "revision": 0,
+                "createdAt": "2026-11-11T02:33:17.039086+09:00",
+                "revokedAt": null,
+                "rejectCode": null,
+                "revokeResult": null,
+                "duplicateCount": 0
+            }
+        ]
+    },
+    "submit_pending": {
+        "id": "b67d590d-e2ca-459e-89ef-0937e5426978",
+        "points": null,
+        "status": "pending",
+        "replayed": false
+    },
+    "admin_list_pending": {
+        "items": [
+            {
+                "id": "b67d590d-e2ca-459e-89ef-0937e5426978",
+                "url": "https://www.instagram.com/p/ShareTag01/",
+                "member": {
+                    "id": "6a816a12-3d1b-48fd-a191-0f164e2f2f0c",
+                    "nickname": "S15 팬 1"
+                },
+                "points": null,
+                "postId": "ShareTag01",
+                "status": "pending",
+                "creator": {
+                    "name": "S15 합성 크리에이터",
+                    "slug": "s15-test-creator"
+                },
+                "platform": "instagram",
+                "revision": 0,
+                "createdAt": "2026-11-11T02:33:17.039086+09:00",
+                "revokedAt": null,
+                "rejectCode": null,
+                "revokeResult": null,
+                "duplicateCount": 0
+            }
+        ]
+    },
+    "admin_list_accepted": {
+        "items": [
+            {
+                "id": "23ecc71f-4482-41d3-bf36-0ae4cab51fed",
+                "url": null,
+                "member": {
+                    "id": "6a816a12-3d1b-48fd-a191-0f164e2f2f0c",
+                    "nickname": "S15 팬 1"
+                },
+                "points": 10,
+                "postId": "ShareTag02",
+                "status": "accepted",
+                "creator": {
+                    "name": "S15 합성 크리에이터",
+                    "slug": "s15-test-creator"
+                },
+                "platform": "tiktok",
+                "revision": 0,
+                "createdAt": "2026-11-11T02:33:17.045612+09:00",
+                "revokedAt": null,
+                "rejectCode": null,
+                "revokeResult": null,
+                "duplicateCount": 0
+            },
+            {
+                "id": "b67d590d-e2ca-459e-89ef-0937e5426978",
+                "url": "https://www.instagram.com/p/ShareTag01/",
+                "member": {
+                    "id": "6a816a12-3d1b-48fd-a191-0f164e2f2f0c",
+                    "nickname": "S15 팬 1"
+                },
+                "points": null,
+                "postId": "ShareTag01",
+                "status": "accepted",
+                "creator": {
+                    "name": "S15 합성 크리에이터",
+                    "slug": "s15-test-creator"
+                },
+                "platform": "instagram",
+                "revision": 0,
+                "createdAt": "2026-11-11T02:33:17.039086+09:00",
+                "revokedAt": null,
+                "rejectCode": null,
+                "revokeResult": null,
+                "duplicateCount": 0
+            }
+        ]
+    },
+    "admin_list_rejected": {
+        "items": [
+            {
+                "id": "ecc489d9-7d46-452c-a290-b1b8666107eb",
+                "url": "https://x.com/fan/status/1850000000000000888",
+                "member": {
+                    "id": "6a816a12-3d1b-48fd-a191-0f164e2f2f0c",
+                    "nickname": "S15 팬 1"
+                },
+                "points": null,
+                "postId": "1850000000000000888",
+                "status": "rejected",
+                "creator": {
+                    "name": "S15 합성 크리에이터",
+                    "slug": "s15-test-creator"
+                },
+                "platform": "x",
+                "revision": 0,
+                "createdAt": "2026-11-11T02:33:17.044472+09:00",
                 "revokedAt": null,
                 "rejectCode": "no_hashtag",
                 "revokeResult": null,
@@ -116,7 +234,7 @@
         ]
     },
     "review_accept_replay": {
-        "id": "16552114-6416-43ca-b760-6502f55aa27e",
+        "id": "b67d590d-e2ca-459e-89ef-0937e5426978",
         "status": "accepted",
         "platform": "instagram",
         "replayed": true,

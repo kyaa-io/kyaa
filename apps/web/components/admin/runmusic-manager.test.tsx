@@ -37,6 +37,12 @@ describe("RUN&MUSIC administration", () => {
     expect(fetchMock.mock.calls[1][1].method).toBe("PATCH");
     expect(JSON.parse(fetchMock.mock.calls[1][1].body)).toEqual({ expectedRevision: 3, published: true, autoPublishEnabled: true });
   });
+  it("says there is no event to manage, without an error alert, when the campaign is gone", async () => {
+    fetchMock.mockImplementation(async () => Response.json({ error: { code: "RUNMUSIC_NOT_FOUND" } }, { status: 404 }));
+    render(<RunmusicManager locale="ko" />);
+    expect(await screen.findByText("관리할 RUN&MUSIC 이벤트가 없어요.")).toBeInTheDocument();
+    expect(screen.queryByRole("alert")).toBeNull(); expect(screen.queryByText("불러오는 중…")).toBeNull();
+  });
   it("explains settings conflicts without claiming a save", async () => {
     render(<RunmusicManager locale="ko" />); await screen.findByRole("heading", { name: "운영 설정" });
     fetchMock.mockResolvedValueOnce(Response.json({ error: { code: "RUNMUSIC_CONFLICT" } }, { status: 409 }));

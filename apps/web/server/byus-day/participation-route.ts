@@ -76,9 +76,11 @@ export function createParticipationAdminHandler(deps: Pick<FanpageDependencies, 
         p_actor_app_user_id: actor.appUserId, p_actor_admin_allowlist_id: actor.allowlistId,
         p_before_at: cursor?.at ?? null, p_before_id: cursor?.id ?? null,
       }));
-      const key = getKey(), page = rows.slice(0, 50), last = page.at(-1);
+      const page = rows.slice(0, 50), last = page.at(-1);
+      // The name key is needed only to read names: an empty list answers without it.
+      const key = page.length ? getKey() : null;
       const result = participationAdminPageSchema.parse({
-        participants: page.map(row => ({ id: row.id, createdAt: row.createdAt, quizCorrectAt: row.quizCorrectAt, bingoCompletedAt: row.bingoCompletedAt, stamps: row.stamps, name: decryptParticipationName(row.nameEncrypted, row.appUserId, key) })),
+        participants: page.map(row => ({ id: row.id, createdAt: row.createdAt, quizCorrectAt: row.quizCorrectAt, bingoCompletedAt: row.bingoCompletedAt, stamps: row.stamps, name: decryptParticipationName(row.nameEncrypted, row.appUserId, key!) })),
         nextCursor: rows.length > 50 && last ? Buffer.from(JSON.stringify({ at: last.createdAt, id: last.id })).toString("base64url") : null,
       });
       return Response.json(result, { headers });

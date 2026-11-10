@@ -23,6 +23,11 @@ begin
   insert into share_answers values ('review_reject', public.review_fan_share_proof(adm.actor, adm.allowlist, (r->>'id')::uuid, 0, 'reject', 'no_hashtag', array['instagram']));
   insert into share_answers values ('list_after', public.list_fan_share_proofs(fp.app_user_id, fp.celebrity_id));
   insert into share_answers values ('admin_list_rejected', public.read_admin_share_proofs(adm.actor, adm.allowlist, 'rejected', null, 100));
+  -- The accepted and all lists carry unpaid (just accepted), paid and address-scrubbed proofs: the shapes the review screen's default and "accepted" tabs read.
+  insert into public.fan_share_proofs (app_user_id, celebrity_id, platform, url, url_key, own_post_confirmed, status, points, pay_result, approved_at)
+  values (fp.app_user_id, fp.celebrity_id, 'tiktok', null, 'tiktok:ShareTag02', true, 'accepted', 10, 'paid', clock_timestamp());
+  insert into share_answers values ('admin_list_accepted', public.read_admin_share_proofs(adm.actor, adm.allowlist, 'accepted', null, 50));
+  insert into share_answers values ('admin_list_all', public.read_admin_share_proofs(adm.actor, adm.allowlist, 'all', null, 50));
 end $$;
 select jsonb_pretty(jsonb_object_agg(name, value)) from share_answers;
 rollback;

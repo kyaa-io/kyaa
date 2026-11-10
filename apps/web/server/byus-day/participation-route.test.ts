@@ -68,6 +68,15 @@ describe("participation boundaries", () => {
   expect(deps.rpc).toHaveBeenCalledWith("list_admin_kyaa_wave_participants", { p_actor_app_user_id: id, p_actor_admin_allowlist_id: id, p_before_at: null, p_before_id: null });
   expect(response.headers.get("cache-control")).toBe("private, no-store");
  });
+ it("answers an empty list without the name key, and still refuses to read names without it", async () => {
+  const noKey = createParticipationAdminHandler(deps, () => { throw new Error("PARTICIPATION_UNAVAILABLE"); });
+  deps.rpc.mockResolvedValue([]);
+  const empty = await noKey(new Request("https://byus.kr/api/admin/kyaa-wave-participants"));
+  expect(empty.status).toBe(200);
+  expect(await empty.json()).toEqual({ participants: [], nextCursor: null });
+  deps.rpc.mockResolvedValue([{ ...receipt, appUserId: id, nameEncrypted: encryptParticipationName("김가온", id, key) }]);
+  expect((await noKey(new Request("https://byus.kr/api/admin/kyaa-wave-participants"))).status).toBe(503);
+ });
  it("rejects caller actor/cursor injection and DB-revoked admin", async () => {
   expect((await admin(new Request("https://byus.kr/api/admin/kyaa-wave-participants?cursor=bad"))).status).toBe(400);
   expect(deps.rpc).not.toHaveBeenCalled();
