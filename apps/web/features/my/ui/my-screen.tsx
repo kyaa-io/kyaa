@@ -27,7 +27,7 @@ import type { Route } from "next";
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { useOwnedFanResource } from "../../../components/fan-ui/use-owned-fan-resource";
 import { fanLoginHref } from "@/components/login-href";
-import { FanSkeleton, FanSkeletonStatus } from "@/components/fan-ui/fan-skeleton";
+import { FanSkeleton, FanSkeletonRows, FanSkeletonStatus } from "@/components/fan-ui/fan-skeleton";
 import { FanTag } from "@/components/fan-ui/fan-tag";
 import { myHomeText } from "./my-home-copy";
 import { MyFavorites, MyFavoritesSkeleton, MyGuestFavorites } from "./my-favorites";
@@ -429,7 +429,7 @@ function SelectedFavoritePanels({ creator, locale }: { creator: MyCreator; local
         <div className={styles.panelContent}>
           <SectionTitle title={locale === "ko" ? `${creator.celebrity.name} 이벤트` : translate(locale, localizedMessages.m11202455f80b, "{0} events", [creator.celebrity.name])} href={`/my/raffles?locale=${locale}`} action={locale === "ko" ? "내 응모 내역" : translate(locale, localizedMessages.m59a59a47cffd, "My entries")}/>
           {!creator.celebrity.isPublic ? <p className={styles.panelState}>{locale === "ko" ? "현재 진행 중인 이벤트가 없어요." : translate(locale, localizedMessages.m0fca25890c94, "No events are open right now.")}</p>
-            : raffleState.status === "loading" ? <p className={styles.panelState} role="status">{locale === "ko" ? "이벤트를 불러오는 중이에요." : translate(locale, localizedMessages.mf4c9eb491dff, "Loading events.")}</p>
+            : raffleState.status === "loading" ? <FanSkeletonRows rows={1} variant="entity" ariaLabel={locale === "ko" ? "이벤트를 불러오는 중이에요." : translate(locale, localizedMessages.mf4c9eb491dff, "Loading events.")} />
             : raffleState.status === "error" ? <div className={styles.panelState} role="alert"><p>{locale === "ko" ? "이벤트를 불러오지 못했어요." : translate(locale, localizedMessages.mdd8573a9baf2, "We couldn’t load events.")}</p><FanAction variant="text" onClick={retryRaffles}>{t.retry}</FanAction></div>
             : openRaffles.length > 0 ? <div className={styles.eventSummary}>
               <div className={styles.eventTitle}><span className={styles.eventIcon}><Gift aria-hidden="true"/></span><h3>{ko ? <>응모할 수 있는 선물 <em>{openRaffles.length}종</em></> : locale === "en" ? <>{openRaffles.length} {openRaffles.length === 1 ? "gift" : "gifts"} to enter for</> : translate(locale, localizedMessages.mb3e721bb6234, "{0} gifts to enter for", [openRaffles.length])}</h3></div>

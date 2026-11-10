@@ -397,7 +397,7 @@ export function QuizEntryScreen({
       >
         {screen.kind === "loading" && (
           <div className={styles.loading} role="status" aria-label={t.loadingAria}>
-            <span /><span /><span /><p>{t.loading}</p>
+            <span /><span /><span />
           </div>
         )}
         {screen.kind === "error" && (

@@ -1,5 +1,6 @@
 "use client";
 
+import { FanSkeletonRows } from "@/components/fan-ui/fan-skeleton";
 import { toContentLocale } from "@/i18n/locales";
 import { messages as localizedMessages } from "@/i18n/catalogs/features__fanpage__ui__chzzk-posts";
 import { translate } from "@/i18n/messages";
@@ -72,7 +73,7 @@ export function CreatorNews({ slug, locale, full = false, initialFilter = "all",
         </Link>
       </li>)}
     </ul>}
-    {!items.length && loading && <p className={styles.feedback} role="status">{locale === "ko" ? "소식을 불러오고 있어요." : translate(locale, localizedMessages.m761de726ce49, "Loading updates.")}</p>}
+    {!items.length && loading && <FanSkeletonRows rows={4} variant="post" ariaLabel={locale === "ko" ? "소식을 불러오고 있어요." : translate(locale, localizedMessages.m761de726ce49, "Loading updates.")} />}
     {failed && <div className={styles.feedback}><span role="status">{items.length ? (locale === "ko" ? "일부 소식을 불러오지 못했어요." : translate(locale, localizedMessages.me4b4e8ab66f1, "Some updates couldn't be loaded.")) : (locale === "ko" ? "소식을 불러오지 못했어요." : translate(locale, localizedMessages.m410455f09dcc, "Couldn't load updates."))}</span><button onClick={() => { sources.forEach((source) => { if (source.state.status === "error") source.retry(); }); }}>{locale === "ko" ? "다시 시도" : translate(locale, localizedMessages.m158760d5a4ca, "Retry")}</button></div>}
     {!items.length && !loading && !failed && <p className={styles.feedback}>{hasMore ? (locale === "ko" ? "더 보기를 눌러 이 분류의 소식을 확인해 보세요." : locale === "en" ? "Load more to check for updates in this category." : categoryMoreCopy[locale]) : filter === "notice" ? (locale === "ko" ? "아직 공개된 공지가 없어요." : translate(locale, localizedMessages.m25d5632ac746, "No public notices yet.")) : filter === "chzzk" ? (locale === "ko" ? "아직 공개된 치지직 소식이 없어요." : translate(locale, localizedMessages.mfacc92ea1b06, "No public CHZZK updates yet.")) : (locale === "ko" ? "아직 공개된 소식이 없어요." : translate(locale, localizedMessages.m7850d3d1cee2, "No public updates yet."))}</p>}
     {(full || !items.length) && hasMore && <div className={styles.pagination}>

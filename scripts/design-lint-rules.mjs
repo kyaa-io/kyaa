@@ -38,6 +38,7 @@ export const RULES = {
   C4: { sev: 'fail', note: '인라인 style={{}} 은 width 진행 막대와 CSS 변수 주입만' },
   C5: { sev: 'fail', note: '로딩 글자 대신 FanSkeleton' },
   C6: { sev: 'fail', note: 'FanState kind="loading" 금지, FanSkeleton' },
+  C11: { sev: 'fail', note: '사용자 경로(app·features, admin 제외)의 쪽·구역 스피너(LoaderCircle·Loader2·animate-spin·styles.spinner) 금지. 쪽·구역 로딩은 FanSkeleton·FanSkeletonPage·FanSkeletonRows. 버튼 안 진행 표시는 FanAction loading' },
   C7: { sev: 'count', note: '외부 링크 <a>. 공통 OutboundLink 판별이 정규식으로 불확실해 집계' },
   C8: { sev: 'count', note: 'locale === "ko" ? "..." 하드코딩. 카탈로그 함수 사용. 집계' },
   C9: { sev: 'fail', note: '포인트 숫자(+20P)를 화면 코드에 직접 쓰지 않는다. API 값을 쓴다' },
@@ -217,6 +218,9 @@ export function scanTsx(code, file) {
     const before = c.slice(Math.max(0, m.index - 40), m.index);
     if (/aria-label=/.test(before)) continue;
     add(out, `C5|${m[0]}`);
+  }
+  if (!/^apps\/web\/(app|features)\/(admin\/|.*\/admin[^/]*\/)|^apps\/web\/app\/admin\//.test(file) && /^apps\/web\/(app|features)\//.test(file)) {
+    for (const m of c.matchAll(/<(LoaderCircle|Loader2|Loader)\b|animate-spin|styles\.spinner\b/g)) add(out, `C11|${m[0]}`);
   }
   if (/kind=["']loading["']/.test(c)) add(out, 'C6|kind="loading"', (c.match(/kind=["']loading["']/g) ?? []).length);
   for (const m of c.matchAll(/<a\b([^>]*)>/g)) {

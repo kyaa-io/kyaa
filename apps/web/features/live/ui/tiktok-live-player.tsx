@@ -2,11 +2,12 @@
 
 import { useEffect, useId, useRef, useState } from "react";
 import type Mpegts from "mpegts.js";
-import { ArrowUpRight, CircleAlert, LoaderCircle, Maximize, Minimize, Radio, RotateCcw, Volume2, X } from "lucide-react";
+import { ArrowUpRight, CircleAlert, Maximize, Minimize, Radio, RotateCcw, Volume2, X } from "lucide-react";
 import { AccessibleOverlay } from "@/components/ui/overlay/accessible-overlay";
 import { toContentLocale, type AppLocale } from "@/i18n/locales";
 import { OBSERVED_LIVE_FUTURE_SKEW_MS, type ObservedLiveCard } from "../domain/observed-live";
 import { tiktokPlaybackResponseSchema } from "../domain/tiktok-playback";
+import { FanSkeleton } from "@/components/fan-ui/fan-skeleton";
 import styles from "./tiktok-live-player.module.css";
 
 const copy = {
@@ -147,7 +148,7 @@ export function LiveVideo({ item, locale, status, setStatus, inline = false }: {
         data-fill={fill} tabIndex={0} aria-label="TikTok LIVE" onVolumeChange={() => setMuted(videoRef.current?.muted ?? true)} />
       {active ? <span className={styles.liveBadge}><span />LIVE</span> : null}
       <div className={styles.status} hidden={active}>
-        {status === "loading" ? <LoaderCircle className={styles.spinner} aria-hidden="true" /> : status === "ended" ? <Radio aria-hidden="true" /> : <CircleAlert aria-hidden="true" />}
+        {status === "loading" ? <FanSkeleton shape="circle" width={32} height={32} /> : status === "ended" ? <Radio aria-hidden="true" /> : <CircleAlert aria-hidden="true" />}
         <p role="status">{status === "loading" ? t.loading : status === "ended" ? t.ended : status === "error" ? t.error : status === "unsupported" ? t.unsupported : ""}</p>
         {externalFallback ? <div className={styles.fallbackActions}>
           <a className={styles.fallbackOriginal} href={item.watchUrl} target="_blank" rel="noopener noreferrer">{t.original}<ArrowUpRight aria-hidden="true" /></a>

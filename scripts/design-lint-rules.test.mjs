@@ -35,6 +35,7 @@ const CASES = {
   C4: [() => tsx('export const A = () => <div style={{ margin: 0 }} />;'), () => tsx('export const A = () => <div style={{ width: `${p}%` }} /><i style={{ "--x": 1 }} />;')],
   C5: [() => tsx('export const A = () => <p>불러오는 중</p>;'), () => tsx('export const A = () => <p aria-label="불러오는 중" />;')],
   C6: [() => tsx('export const A = () => <FanState kind="loading" />;'), () => tsx('export const A = () => <FanState kind="empty" />;')],
+  C11: [() => tsx('export const A = () => <LoaderCircle className={styles.spin} />;'), () => tsx('export const A = () => <FanSkeletonRows rows={3} />;')],
   C7: [() => tsx('export const A = () => <a href="https://example.com">x</a>;'), () => tsx('export const A = () => <a href="/x">x</a><a href="https://a.b" data-outbound-tracking="off">y</a>;')],
   C8: [() => tsx('const t = locale === "ko" ? "안녕" : "hi";'), () => tsx('const t = copy.hello;')],
   C9: [() => tsx('export const A = () => <p>+20P 적립</p>;'), () => tsx('export const A = () => <p>{points}P 적립</p>;')],
@@ -88,11 +89,11 @@ test('comments do not count', () => {
   assert.equal(scanTsx('// <h2>\n/* <button> */\nexport const A = 1;', TSX).size, 0);
 });
 
-test('severity table: 20 rules fail on a new violation, 13 are counted only (33 new in total)', () => {
+test('severity table: 21 rules fail on a new violation, 13 are counted only (34 new in total)', () => {
   const isNew = (id) => /^[TCS]\d+$/.test(id) && id !== 'C1';
   const ids = Object.keys(RULES).filter(isNew);
-  assert.equal(ids.length, 33); // C1 은 기존 규칙이라 제외
-  assert.equal(ids.filter((id) => RULES[id].sev === 'fail').length, 20);
+  assert.equal(ids.length, 34); // C1 은 기존 규칙이라 제외
+  assert.equal(ids.filter((id) => RULES[id].sev === 'fail').length, 21);
   assert.equal(ids.filter((id) => RULES[id].sev === 'count').length, 13);
 });
 

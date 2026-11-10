@@ -33,3 +33,19 @@ export function FanSkeletonRows({ rows = 5, variant = "plain", className, ariaLa
     {Array.from({ length: rows }, (_, index) => <Row key={index} variant={variant} />)}
   </div>;
 }
+
+export type FanSkeletonPageLayout = "list" | "detail" | "form" | "center";
+
+/** 쪽 전체 자리의 골격. 제목 막대 아래에 화면 형태의 면을 둔다. list=행 목록, detail=큰 면+글줄, form=입력 칸+행동, center=가운데 카드(콜백·전환). 상태 문구는 숨은 role=status 하나. */
+export function FanSkeletonPage({ locale, layout = "list", label, className }: Readonly<{ locale: AppLocale; layout?: FanSkeletonPageLayout; label?: string; className?: string }>) {
+  return <div className={[styles.page, styles[`${layout}Page`] ?? "", className ?? ""].filter(Boolean).join(" ")} aria-busy="true" data-fan-skeleton-page={layout}>
+    <FanSkeletonStatus locale={locale} label={label} />
+    <div className={styles.pageBody} aria-hidden="true">
+      <FanSkeleton width={layout === "center" ? 160 : "40%"} height={layout === "center" ? 20 : 28} className={styles.pageTitle} />
+      {layout === "list" ? <FanSkeletonRows rows={6} variant="post" /> : null}
+      {layout === "detail" ? <><FanSkeleton shape="block" height={200} /><FanSkeleton width="80%" height={18} /><FanSkeleton width="60%" height={18} /><FanSkeleton width="70%" height={18} /></> : null}
+      {layout === "form" ? <><FanSkeleton shape="block" height={48} /><FanSkeleton shape="block" height={48} /><FanSkeleton shape="block" height={48} /><FanSkeleton shape="block" height={48} className={styles.pageAction} /></> : null}
+      {layout === "center" ? <><FanSkeleton width="70%" height={14} /><FanSkeleton shape="block" height={48} /></> : null}
+    </div>
+  </div>;
+}

@@ -1,5 +1,6 @@
 "use client";
 
+import { FanSkeletonPage } from "@/components/fan-ui/fan-skeleton";
 import { messages as localizedMessages } from "@/i18n/catalogs/components__auth-transition-boundary";
 import { translate } from "@/i18n/messages";
 import { isCreatorHandle } from "@/features/creator/domain/creator-navigation";
@@ -61,10 +62,9 @@ export function AuthTransitionBoundary({ children, modal }: { children: ReactNod
   return (
     <main className={styles.fallback} aria-busy="true">
       <div className={styles.fallbackCard}>
-        {session.pending ? <span className={styles.spinner} aria-hidden="true" /> : null}
-        <p role="status">{session.error
+        {session.pending && !session.error ? <FanSkeletonPage locale={locale} layout="center" label={locale === "ko" ? "로그인을 마무리하고 있어요." : translate(locale, localizedMessages.m4851f6cbdcd0, "Finishing sign-in.")} /> : <p role="status">{session.error
           ? locale === "ko" ? "로그인 연결을 마치지 못했어요." : translate(locale, localizedMessages.mba7f1533e68f, "We couldn't finish sign-in.")
-          : locale === "ko" ? "로그인을 마무리하고 있어요." : translate(locale, localizedMessages.m4851f6cbdcd0, "Finishing sign-in.")}</p>
+          : locale === "ko" ? "로그인을 마무리하고 있어요." : translate(locale, localizedMessages.m4851f6cbdcd0, "Finishing sign-in.")}</p>}
         {session.error && session.recoveryPath ? <Link href={session.recoveryPath as Route}>{locale === "ko" ? "로그인 화면에서 다시 시도" : translate(locale, localizedMessages.meee354602b88, "Try again from sign-in")}</Link> : null}
       </div>
     </main>

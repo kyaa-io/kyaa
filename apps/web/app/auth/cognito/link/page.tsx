@@ -1,3 +1,4 @@
+import { FanRouteSkeleton } from "@/components/fan-ui/fan-route-skeleton";
 import { redirect } from "next/navigation";
 import type { Route } from "next";
 import { sanitizeLocale, sanitizeReturnTo } from "../../../../components/login-intent";
@@ -13,5 +14,5 @@ export default async function Page({searchParams}:{searchParams:Promise<Record<s
     const params=new URLSearchParams({returnTo:/^\/(?:api\/)?auth\/cognito(?:[/?#]|$)/i.test(returnTo)?"/":returnTo,locale:sanitizeLocale(typeof query.locale==="string"?query.locale:undefined)});
     redirect(`/login?${params}` as Route);
   }
-  return <Suspense fallback={null}><CognitoWalletLink appleLoginEnabled={readPublicPrivyAppleLoginPolicy()}/></Suspense>;
+  return <Suspense fallback={<FanRouteSkeleton layout="center" />}><CognitoWalletLink appleLoginEnabled={readPublicPrivyAppleLoginPolicy()}/></Suspense>;
 }

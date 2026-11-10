@@ -1,3 +1,4 @@
+import { FanRouteSkeleton } from "@/components/fan-ui/fan-route-skeleton";
 import { parseAppLocale } from "@/i18n/locales";
 import { messages as localizedMessages } from "@/i18n/catalogs/app__settings__kakao__callback__page";
 import { translate } from "@/i18n/messages";
@@ -18,5 +19,5 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function KakaoCallbackPage() {
   const locale = parseAppLocale((await headers()).get("x-byus-locale"));
-  return <Suspense fallback={null}><KakaoCallbackScreen locale={locale} /></Suspense>;
+  return <Suspense fallback={<FanRouteSkeleton layout="center" />}><KakaoCallbackScreen locale={locale} /></Suspense>;
 }

@@ -1,3 +1,4 @@
+import { FanRouteSkeleton } from "@/components/fan-ui/fan-route-skeleton";
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { KyaaWaveParticipationScreen } from "@/features/connect/kyaa-wave-participation-screen";
@@ -8,5 +9,5 @@ export const metadata: Metadata = {
 };
 
 export default function KyaaWaveParticipationPage() {
-  return <Suspense><KyaaWaveParticipationScreen /></Suspense>;
+  return <Suspense fallback={<FanRouteSkeleton layout="form" />}><KyaaWaveParticipationScreen /></Suspense>;
 }

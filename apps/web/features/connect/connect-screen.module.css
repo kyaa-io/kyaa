@@ -35,7 +35,7 @@
 .intro:has(.videoNotice) .copy, .intro[data-outro=true] .copy { visibility:hidden; }
 .film { position:absolute; z-index:0; inset:0; overflow:hidden; background:#ead6bf; }
 .film video { display:block; width:100%; height:100%; object-fit:contain; }
-.loading { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; gap:8px; font-size:13px; background:color-mix(in srgb, var(--color-ink) 15%, transparent); color:var(--color-surface); text-shadow:0 1px 4px var(--color-ink); }
+.loading { position:absolute; inset:0; display:block; }
 .loading svg { animation:spin 1.2s linear infinite; }
 .videoNotice { z-index:1; position:absolute; inset:0; padding:24px; display:flex; flex-direction:column; justify-content:center; align-items:center; gap:16px; background:var(--color-soft); text-align:center; }
 .videoNotice>svg { color:var(--connect-pink); }
@@ -132,3 +132,4 @@
 }
 @keyframes spin { to { transform:rotate(360deg); } }
 @media (prefers-reduced-motion:reduce) { .loading svg { animation:none; } }
+.loadingSkeleton { width:100%; height:100%; border-radius:0; }
