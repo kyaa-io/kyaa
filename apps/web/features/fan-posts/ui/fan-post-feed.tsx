@@ -36,7 +36,9 @@ export function FanPostFeed(props: Props) {
 }
 function FeedForOwner({ compact, beforeFeed, headingTitle, introduction = false, slug, locale, program, onPosted, creatorName, returnTo = boardHref(slug, locale, { source: "fans" }), source, newsFilter = "all", hideHeading = false, mediaOnly = false, intro, officialPostLabel, allowMembers = true }: Props) {
   const auth = usePrivy(), session = useByUsSession(), copy = contentCopy(locale), feed = feedCopy(locale), heading = useId();
-  const [cursors, setCursors] = useState<(string | null)[]>([null]), [composing, setComposing] = useState(false);
+  // The creator home 글쓰기 link (`compose=1`) opens the composer once the fan is signed in; the feed remounts on sign-in.
+  const openComposer = () => !compact && source !== "official" && auth.authenticated && typeof window !== "undefined" && new URLSearchParams(window.location.search).get("compose") === "1";
+  const [cursors, setCursors] = useState<(string | null)[]>([null]), [composing, setComposing] = useState(openComposer);
   const [compactLimit, setCompactLimit] = useState(20);
   useEffect(() => {
     if (!compact) return;

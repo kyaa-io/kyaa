@@ -158,6 +158,20 @@ describe("fan post UI navigation and context", () => {
     ));
   });
 
+  it("opens the composer from the creator home 글쓰기 link only for a signed-in fan", () => {
+    state.pages = { first: { items: [], nextCursor: null } };
+    window.history.replaceState(null, "", "/artist?tab=board&source=fans&locale=en&compose=1");
+    try {
+      const view = render(<FanPostFeed slug="artist" locale="en" source="fans" />);
+      expect(screen.getByRole("textbox", { name: "Write a post" })).toBeInTheDocument();
+      view.unmount();
+      state.authenticated = false;
+      render(<FanPostFeed slug="artist" locale="en" source="fans" />);
+      expect(screen.queryByRole("textbox", { name: "Write a post" })).not.toBeInTheDocument();
+    } finally {
+      window.history.replaceState(null, "", "/");
+    }
+  });
   it("does not present a fan composer in the official filter and resets drafts on source changes", () => {
     state.pages = { first: { items: [], nextCursor: null } };
     const view = render(<FanPostFeed slug="artist" locale="en" source="all" />);
