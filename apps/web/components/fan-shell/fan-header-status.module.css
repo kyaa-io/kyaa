@@ -70,8 +70,8 @@
   background: var(--color-surface);
   color: var(--color-muted);
   font: inherit;
-  font-size: var(--fan-chip-size);
-  font-weight: 400;
+  font-size: var(--fan-description-size);
+  font-weight: var(--fan-body-weight);
   text-decoration: none;
   cursor: pointer;
 }
