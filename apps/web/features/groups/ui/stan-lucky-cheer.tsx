@@ -30,6 +30,8 @@ import { seeAllLabel } from "./group-directory";
 import { groupsCopy } from "./copy";
 import { useGroupResource } from "./use-group-resource";
 import { CapsuleMachineBlock } from "@/features/capsule-machine/capsule-machine-block";
+import { LuckyStage } from "@/features/capsule-machine/lucky-stage";
+import { capsuleMachineCopy } from "@/features/capsule-machine/copy";
 import styles from "./stan-lucky-cheer.module.css";
 import duoStyles from "./duo-lucky.module.css";
 
@@ -144,7 +146,8 @@ function RaffleCard({ raffle, status, slug, locale, entered, allowance }: { raff
 }
 
 /** 럭키드로우 (E4): the favorite's real lucky draws instead of placeholder cards. No disabled action; an upcoming draw opens its gift page. */
-export function StanLucky({ locale, bias, guest, presentation }: { locale: AppLocale; bias: SelectedBias; guest: boolean; presentation?: "duo" }) {
+/** `paused`: the draw is resting (CAPSULE_DRAW_OPEN false). Only the duo card reads it: its enter button stays disabled with the reason; everything else on the card is live. */
+export function StanLucky({ locale, bias, guest, presentation, paused = false }: { locale: AppLocale; bias: SelectedBias; guest: boolean; presentation?: "duo"; paused?: boolean }) {
   const favorite = guest ? null : stanFavorite(bias), slug = favorite?.slug ?? null;
   const raffles = useStanRaffles(locale, slug), title = groupBenefitsCopy(locale).lucky;
   const wallet = useGroupResource(!guest && slug ? "/api/me/wallet" : null, parseWallet);
@@ -162,15 +165,22 @@ export function StanLucky({ locale, bias, guest, presentation }: { locale: AppLo
     const href = item && slug ? passport ? creatorRaffleVerificationHref(slug,locale,item.raffle.benefitId) : raffleHref(slug,item.raffle.benefitId,locale) : `/my/raffles?locale=${locale}`;
     const amountToken = "__DUO_AMOUNT__";
     const costParts = allowance?.kind === "count" ? t(locale,"luckyCost",[RAFFLE_TICKET_COST,amountToken]).split(amountToken) : null;
-    return <section className={duoStyles.card} id="stan-lucky" aria-label={title} data-duo-lucky data-raffle-status={item?.status}>
-      <img className={duoStyles.machine} src="/images/dukjil-duo/glyph-capsule-machine-512.webp" width={512} height={512} alt="" />
-      <img className={duoStyles.glyph} src="/images/dukjil-duo/glyph-illo-lucky-80.webp" width={40} height={40} alt="" />
-      {bias.status === "loading" || Boolean(slug && raffles.loading) ? <div className={duoStyles.pending} aria-busy="true"><FanSkeleton width="80%" height={22}/><FanSkeleton width="60%" height={17}/></div>
-        : raffles.error ? <div className={duoStyles.empty}><FanState inline compact kind="error" title={t(locale,"luckyLoadError")} actions={<FanAction variant="text" onClick={raffles.retry}>{groupsCopy(locale).retry}</FanAction>}/></div>
-        : !item || !slug ? <div className={duoStyles.empty}><p>{t(locale,slug ? "luckyEmpty" : "luckyNoFavorite")}</p><Link href={pastHref as Route}>{t(locale,"luckyPast")} <span aria-hidden="true">›</span></Link></div>
-        : <><div className={duoStyles.copy}><FanHeading>{item.raffle.title}</FanHeading><p className={duoStyles.meta}><RaffleDate raffle={item.raffle} status={item.status} locale={locale}/> · {t(locale,"luckyWinners",[item.raffle.winnerQuantity.toLocaleString(locale)])} · {deliveryLabel(item.raffle,locale)}</p>
-          <p className={duoStyles.cost} data-raffle-cost data-raffle-allowance={allowance?.kind}>{costParts && allowance?.kind === "count" ? <>{costParts[0]}<strong>{allowance.count.toLocaleString(locale)}</strong>{costParts[1]}</> : allowance?.kind === "loading" ? <FanSkeleton width={160} height={24}/> : allowance?.kind === "passport" ? t(locale,"luckyNeedPassport") : allowance?.kind === "policy" ? t(locale,"luckyNeedPolicy") : t(locale,"luckyCostGuest",[RAFFLE_TICKET_COST])}</p></div>
-          <FanAction className={duoStyles.action} variant="primary" href={href}>{passport ? t(locale,"luckyGetPassport") : item.status === "open" && allowance?.kind !== "policy" ? t(locale,"luckyEnter") : t(locale,"luckyDetails")}</FanAction></>}
+    const pending = bias.status === "loading" || Boolean(slug && raffles.loading), empty = !pending && !raffles.error && (!item || !slug);
+    const ready = !pending && !raffles.error && !empty;
+    // C4: 쉬는 동안(paused)에는 상태와 상관없이 응모 버튼 하나만 비활성으로 두고 이유를 붙인다. href·onClick이 없어 요청을 만들지 않는다.
+    const action = paused || (ready && item) ? <FanAction className={duoStyles.action} variant="primary" {...(paused ? { disabled: true, helperText: capsuleMachineCopy(locale).text("soon") } : { href })}>
+      {paused || (item?.status === "open" && allowance?.kind !== "policy" && !passport) ? t(locale,"luckyEnter") : passport ? t(locale,"luckyGetPassport") : t(locale,"luckyDetails")}</FanAction> : null;
+    return <section className={duoStyles.card} id="stan-lucky" aria-label={title} data-duo-lucky data-lucky-module="" data-lucky-paused={paused ? "" : undefined} data-raffle-status={item?.status}>
+      <LuckyStage className={duoStyles.stage} />
+      <div className={duoStyles.copy}>
+        <img className={duoStyles.glyph} src="/images/dukjil-duo/glyph-illo-lucky-80.webp" width={40} height={40} alt="" />
+        {pending ? <div aria-busy="true"><FanSkeleton width="80%" height={22}/><FanSkeleton width="60%" height={17}/></div>
+          : raffles.error ? <FanState inline compact kind="error" title={t(locale,"luckyLoadError")} actions={<FanAction variant="text" onClick={raffles.retry}>{groupsCopy(locale).retry}</FanAction>}/>
+          : empty || !item ? <><p className={duoStyles.emptyText}>{t(locale,slug ? "luckyEmpty" : "luckyNoFavorite")}</p><Link className={duoStyles.past} href={pastHref as Route}>{t(locale,"luckyPast")} <span aria-hidden="true">›</span></Link></>
+          : <><FanHeading>{item.raffle.title}</FanHeading><p className={duoStyles.meta}><RaffleDate raffle={item.raffle} status={item.status} locale={locale}/> · {t(locale,"luckyWinners",[item.raffle.winnerQuantity.toLocaleString(locale)])} · {deliveryLabel(item.raffle,locale)}</p>
+            <p className={duoStyles.cost} data-raffle-cost data-raffle-allowance={allowance?.kind}>{costParts && allowance?.kind === "count" ? <>{costParts[0]}<strong>{allowance.count.toLocaleString(locale)}</strong>{costParts[1]}</> : allowance?.kind === "loading" ? <FanSkeleton width={160} height={24}/> : allowance?.kind === "passport" ? t(locale,"luckyNeedPassport") : allowance?.kind === "policy" ? t(locale,"luckyNeedPolicy") : t(locale,"luckyCostGuest",[RAFFLE_TICKET_COST])}</p></>}
+      </div>
+      {action ? <div className={duoStyles.actionBlock}>{action}</div> : null}
     </section>;
   }
   // 게이트 D2: the empty state is one line; its next step is a row below it inside the same box, ending in ›.

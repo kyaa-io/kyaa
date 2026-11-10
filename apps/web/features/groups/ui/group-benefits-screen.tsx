@@ -32,6 +32,7 @@ import {FanSkeletonRows} from '@/components/fan-ui/fan-skeleton';
 import {seeAllLabel} from './group-directory';
 import {groupBenefitsCopy,benefitsRaffleState} from './group-benefits-copy';
 import {StanLucky,stanFavorite,useStanEntries} from './stan-lucky-cheer';
+import {CAPSULE_DRAW_OPEN} from '@/features/capsule-machine/domain';
 import {FavoritePickMenu} from '@/features/selected-bias/ui/selected-bias-chip';
 import {WalletHistoryPanel} from '@/features/group-wallet/ui/wallet-screen';
 import styles from './group-benefits.module.css';
@@ -84,7 +85,7 @@ function useStanNumbers(bias:SelectedBias,signedOut:boolean){
 /** F2: the favorite's lucky draws, in the spotlight above the wallet. */
 function BenefitsLucky({locale,bias,signedOut}:{locale:AppLocale;bias:SelectedBias;signedOut:boolean}){
  const allFailed=Boolean(useContext(SectionContext)?.allFailed),{guest}=useStanNumbers(bias,signedOut);
- return <div className={styles.pLucky} hidden={allFailed} aria-disabled="true"><div className={styles.luckyDisabled} inert aria-hidden="true"><StanLucky locale={locale} bias={bias} guest={guest} presentation='duo'/></div><span className={styles.luckyComingSoon} role="status">{benefitsRaffleState(locale,"preparing")}</span></div>;
+ return <div className={styles.pLucky} hidden={allFailed}><StanLucky locale={locale} bias={bias} guest={guest} presentation='duo' paused={!CAPSULE_DRAW_OPEN}/></div>;
 }
 /** 오늘의 미션: every catalog activity for the viewer's first joined fan page; its rows lead to that page. Guests and viewers without a page see the same list and go to the login or the page directory. */
 function BenefitsDailyMissions({locale,bias}:{locale:AppLocale;bias:SelectedBias}){

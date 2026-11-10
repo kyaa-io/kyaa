@@ -8,7 +8,7 @@ import {
   Group, HemisphereLight, LatheGeometry, Mesh, MeshBasicMaterial, MeshPhysicalMaterial, MeshStandardMaterial, NeutralToneMapping,
   OctahedronGeometry, PCFSoftShadowMap, PMREMGenerator, PerspectiveCamera, PlaneGeometry, PointLight, Quaternion, RingGeometry,
   SRGBColorSpace, Scene, Shape, ShaderMaterial, SphereGeometry, Sprite, SpriteMaterial, Texture, TextureLoader, TorusGeometry, BackSide,
-  Vector2, Vector3, WebGLRenderer, type BufferGeometry, type Material, type Object3D,
+  Vector2, Vector3, WebGLRenderer, Matrix4, type BufferGeometry, type Material, type Object3D,
 } from "three";
 import { RoundedBoxGeometry } from "three/addons/geometries/RoundedBoxGeometry.js";
 
@@ -25,6 +25,17 @@ export type CapsuleEngine = {
   setSize(width: number, height: number): void;
   memory(): { geometries: number; textures: number };
   dispose(): void;
+};
+
+/** 럭키드로우 카드(C4)의 구도: 카메라와 응모권이 머무는 자리. 폭마다 기계가 무대 오른쪽에 오도록 옮긴다. */
+export type CapsuleFraming = { fov: number; x: number; y: number; z: number; lookX: number; lookY: number; hover: readonly [number, number, number] };
+export type CapsuleEngineOptions = {
+  wordmarkUrl: string;
+  /** 쉬는 동안의 장면(C4): 응모권이 투입구로 들어가는 8초 주기와 캡슐 구름. 주지 않으면 B2 장면 그대로다. */
+  idle?: boolean;
+  framing?: CapsuleFraming;
+  /** idle에서 프레임을 건너뛰어도 4초 평균 24fps 미만이면 불린다. 부른 쪽이 캔버스를 내리고 정지 그림으로 돌아간다. */
+  onStall?: () => void;
 };
 
 const R = 1.0, CR = 0.2, DOME = new Vector3(0, 2.05, 0), FLOOR_Y = 1.26, N = 26, CAM_Z = 7.6;
@@ -91,7 +102,7 @@ function labelTexture(url: string) {
 type Cap = { g: Group; p: Vector3; v: Vector3; out: boolean };
 type Task = (dt: number) => boolean;
 
-export async function createCapsuleEngine(canvas: HTMLCanvasElement, options: { wordmarkUrl: string }): Promise<CapsuleEngine> {
+export async function createCapsuleEngine(canvas: HTMLCanvasElement, options: CapsuleEngineOptions): Promise<CapsuleEngine> {
   const renderer = new WebGLRenderer({ canvas, antialias: true, alpha: true });
   // Quality floor (dev notes 3): every device keeps twice the CSS resolution.
   renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
@@ -101,7 +112,9 @@ export async function createCapsuleEngine(canvas: HTMLCanvasElement, options: { 
   renderer.setClearColor(0xffffff, 0);
 
   const scene = new Scene();
-  const camera = new PerspectiveCamera(32, 1, .1, 50); camera.position.set(0, 2.15, CAM_Z); camera.lookAt(0, 1.68, 0); // a touch wider than the prototype so the heart keeps a margin at 340–420px stage heights
+  const camera = new PerspectiveCamera(32, 1, .1, 50); camera.position.set(0, 2.15, CAM_Z); camera.lookAt(0, 1.68, 0);
+  if (options.framing) { const f = options.framing; camera.fov = f.fov; camera.position.set(f.x, f.y, f.z); camera.lookAt(f.lookX, f.lookY, 0); camera.updateProjectionMatrix(); }
+  // a touch wider than the prototype so the heart keeps a margin at 340–420px stage heights
   const keep = new Set<object>(); // shared capsule parts that effects reuse; disposed once at the end
   const extras: Object3D[] = [];
   const caps: Cap[] = [];
@@ -221,7 +234,8 @@ export async function createCapsuleEngine(canvas: HTMLCanvasElement, options: { 
   hs.moveTo(5, 5); hs.bezierCurveTo(5, 5, 4, 0, 0, 0); hs.bezierCurveTo(-6, 0, -6, 7, -6, 7); hs.bezierCurveTo(-6, 11, -3, 15.4, 5, 19);
   hs.bezierCurveTo(12, 15.4, 16, 11, 16, 7); hs.bezierCurveTo(16, 7, 16, 0, 10, 0); hs.bezierCurveTo(7, 0, 5, 5, 5, 5);
   const hg = new ExtrudeGeometry(hs, { depth: 5, bevelEnabled: true, bevelThickness: 2.2, bevelSize: 1.8, bevelSegments: 8, curveSegments: 32 }); hg.center();
-  const heart = new Mesh(hg, mats.hot); heart.scale.setScalar(.0125); heart.rotation.z = Math.PI; heart.position.y = 3.5; heart.castShadow = true; root.add(heart);
+  const heartMat = options.idle ? mats.hot.clone() : mats.hot; if (options.idle) { heartMat.emissive = new Color("#ff5c9d"); heartMat.emissiveIntensity = 0; }
+  const heart = new Mesh(hg, heartMat); heart.scale.setScalar(.0125); heart.rotation.z = Math.PI; heart.position.y = 3.5; heart.castShadow = true; root.add(heart);
 
   // Floor: the pink glow under the machine.
   const fc = document.createElement("canvas"); fc.width = fc.height = 256; const fx = fc.getContext("2d")!;
@@ -245,10 +259,10 @@ export async function createCapsuleEngine(canvas: HTMLCanvasElement, options: { 
   const flash = new PointLight("#ffd0e4", 0, 6); flash.position.set(0, 1.9, 5); scene.add(flash);
 
   // ---- physics (the prototype's, unchanged) ----
-  const tmp = new Vector3(), n = new Vector3(), axis = new Vector3();
+  const tmp = new Vector3(), n = new Vector3(), axis = new Vector3(), grav = new Vector3(0, -6.5, 0);
   function physics(h: number) {
     const act = caps.filter((c) => !c.out);
-    for (const c of act) { c.v.y -= 6.5 * h; c.p.addScaledVector(c.v, h); }
+    for (const c of act) { c.v.addScaledVector(grav, h); c.p.addScaledVector(c.v, h); }
     const lim = R - CR - .03, e = .35;
     for (let it = 0; it < 3; it++) {
       for (let i = 0; i < act.length; i++) for (let j = i + 1; j < act.length; j++) {
@@ -488,19 +502,93 @@ export async function createCapsuleEngine(canvas: HTMLCanvasElement, options: { 
     if (level === 2) { await wait(350); await tween(450, (k) => { dimMat.color.lerpColors(dimTo, new Color("#fff7fb"), k); }); }
   }
 
+  // ---- C4 idle: 응모권 투입구와 응모권, 8초 주기 장면 (idle 옵션일 때만 만든다. 없으면 B2 장면에 아무것도 더해지지 않는다) ----
+  const idleStep = options.idle ? buildIdle(options.framing?.hover ?? [-.86, 1.52, 3.5]) : null;
+  function buildIdle(hover: readonly [number, number, number]) {
+    const SLOT_A = -0.70, SLOT_Y = 0.70, SLOT_R = 0.915;
+    const slotN = new Vector3(Math.sin(SLOT_A), 0, Math.cos(SLOT_A)), slotT = new Vector3(Math.cos(SLOT_A), 0, -Math.sin(SLOT_A));
+    const slotPos = new Vector3().copy(slotN).multiplyScalar(SLOT_R).setY(SLOT_Y);
+    const slotFrame = new Mesh(new RoundedBoxGeometry(.47, .14, .09, 5, .035), mats.chrome); slotFrame.position.copy(slotPos); slotFrame.rotation.y = SLOT_A; slotFrame.castShadow = true; root.add(slotFrame);
+    const slotHole = new Mesh(new RoundedBoxGeometry(.38, .046, .06, 4, .018), mats.hole); slotHole.position.copy(slotPos).addScaledVector(slotN, .022); slotHole.rotation.y = SLOT_A; root.add(slotHole);
+    const TW = .36, TH = .2;
+    const ticketShape = (w: number, h: number, r: number, notch: number) => {
+      const s = new Shape(), x = w / 2, y = h / 2;
+      s.moveTo(-x + r, -y); s.lineTo(x - r, -y); s.quadraticCurveTo(x, -y, x, -y + r);
+      s.lineTo(x, -notch); s.absarc(x, 0, notch, -Math.PI / 2, Math.PI / 2, true); s.lineTo(x, y - r); s.quadraticCurveTo(x, y, x - r, y);
+      s.lineTo(-x + r, y); s.quadraticCurveTo(-x, y, -x, y - r);
+      s.lineTo(-x, notch); s.absarc(-x, 0, notch, Math.PI / 2, -Math.PI / 2, true); s.lineTo(-x, -y + r); s.quadraticCurveTo(-x, -y, -x + r, -y);
+      return s;
+    };
+    const ticket = new Group();
+    const ticketBody = new Mesh(new ExtrudeGeometry(ticketShape(TW, TH, .022, .026), { depth: .014, bevelEnabled: true, bevelThickness: .005, bevelSize: .005, bevelSegments: 4, curveSegments: 16 }), mat("#e8478a", { roughness: .18, clearcoatRoughness: .03 }));
+    ticketBody.geometry.center(); ticketBody.castShadow = true; ticket.add(ticketBody);
+    const plateGeo = new ExtrudeGeometry(ticketShape(TW * .74, TH * .62, .016, .0001), { depth: .004, bevelEnabled: false, curveSegments: 12 }); plateGeo.center();
+    const plateMat = mat("#f0649f", { roughness: .2, clearcoatRoughness: .03 });
+    for (const z of [.0115, -.0115]) { const plate = new Mesh(plateGeo, plateMat); plate.position.z = z; ticket.add(plate); }
+    ticket.visible = false; root.add(ticket);
+    // 투입구 앞 자세: 응모권의 긴 변이 투입구와 나란하고, 짧은 변 방향으로 밀려 들어간다.
+    const qSlot = new Quaternion().setFromRotationMatrix(new Matrix4().makeBasis(slotT, slotN, new Vector3().crossVectors(slotT, slotN)));
+    const mouth = new Vector3().copy(slotPos).addScaledVector(slotN, TH / 2 + .06), inside = new Vector3().copy(slotPos).addScaledVector(slotN, -TH / 2 - .02);
+    const hoverAt = new Vector3(...hover), qHover = new Quaternion().setFromEuler(new Euler(-.12, .38, -.22));
+    const approach = new Vector3().copy(mouth).addScaledVector(slotN, .55).add(new Vector3(0, .22, 0));
+    const ctrl1 = new Vector3().lerpVectors(hoverAt, approach, .4); ctrl1.y += .28;
+    const wobble = new Quaternion(), wobbleEuler = new Euler();
+
+    const CYCLE = 8, T_APPEAR = .4, T_HOVER = 1.7, T_FLY = 2.9, T_SLIDE = 3.3, T_REACT = 4.8, TILT = 4 * Math.PI / 180, TILT_PERIOD = 12;
+    const bez = (a: Vector3, b: Vector3, c: Vector3, d: Vector3, t: number, out: Vector3) => { const u = 1 - t; return out.set(0, 0, 0).addScaledVector(a, u * u * u).addScaledVector(b, 3 * u * u * t).addScaledVector(c, 3 * u * t * t).addScaledVector(d, t * t * t); };
+    let idleT = 0, stirred = false, shadowTick = 0;
+    renderer.shadowMap.autoUpdate = false; // 그림자는 3프레임에 한 번만 다시 그린다(캡슐이 느리게 움직인다)
+    return function step(dt: number) {
+      idleT += dt;
+      const w = idleT * Math.PI * 2 / TILT_PERIOD;
+      grav.set(Math.sin(TILT) * Math.cos(w) * 6.5, -Math.cos(TILT) * 6.5, Math.sin(TILT) * Math.sin(w) * 6.5);
+      const c = idleT % CYCLE;
+      if (c < T_APPEAR) { // 나타남: 크기만 0→1(넘침 없음)
+        ticket.visible = true; ticket.scale.setScalar(Math.max(.001, ease.outCubic(c / T_APPEAR))); ticket.position.copy(hoverAt); ticket.quaternion.copy(qHover); stirred = false;
+      } else if (c < T_HOVER) { // 머묾: ±4px 안팎의 오르내림, ±3° 기울임
+        const s = Math.sin((c - T_APPEAR) * Math.PI * 2 / 2.6); ticket.scale.setScalar(1);
+        ticket.position.copy(hoverAt); ticket.position.y += s * .02; ticket.quaternion.copy(qHover).multiply(wobble.setFromEuler(wobbleEuler.set(0, 0, s * .052)));
+      } else if (c < T_FLY) { // 투입구로 미끄러져 간다
+        const k = ease.inOutCubic((c - T_HOVER) / (T_FLY - T_HOVER));
+        bez(hoverAt, ctrl1, approach, mouth, k, ticket.position); ticket.quaternion.slerpQuaternions(qHover, qSlot, ease.inOutCubic(Math.max(0, (k - .5) / .5))); // 앞면을 보인 채 날다가 마지막 절반에서 눕는다
+      } else if (c < T_SLIDE) { // 들어간다
+        ticket.position.lerpVectors(mouth, inside, ease.inOutQuad((c - T_FLY) / (T_SLIDE - T_FLY))); ticket.quaternion.copy(qSlot);
+      } else {
+        ticket.visible = false;
+        if (!stirred) { stirred = true; for (const cap of caps) { if (cap.out) continue; const r = Math.hypot(cap.p.x, cap.p.z) || .01; cap.v.x += (-cap.p.z / r) * .55; cap.v.z += (cap.p.x / r) * .55; } }
+      }
+      heartMat.emissiveIntensity = .55 * (c >= T_SLIDE && c < T_REACT ? Math.sin((c - T_SLIDE) / (T_REACT - T_SLIDE) * Math.PI) : 0);
+      if (shadowTick++ % 3 === 0) renderer.shadowMap.needsUpdate = true;
+    };
+  }
+
   // ---- loop: stops entirely while hidden (dev notes 7) ----
   let rafId = 0, prev = 0, acc = 0, running = false, fpsFrames = 0, fpsTime = 0;
+  // idle 전용 낮춤(plan-ux P3 ③④): 그림자 1024로도 4초 평균 30fps 미만이면 한 프레임씩 건너뛰고, 그래도 24fps 미만이면 부른 쪽에 알린다. 첫 4초는 셰이더 컴파일 때문에 재지 않는다.
+  let halfRate = false, halfTick = 0, stallFrames = 0, stallTime = 0, settled = 0;
   function loop(now: number) {
     if (!running) return;
+    if (halfRate && ++halfTick % 2 === 0) { rafId = requestAnimationFrame(loop); return; }
     const dt = prev ? Math.min(.05, (now - prev) / 1000) : 0; prev = now; acc += dt;
     while (acc > 1 / 120) { physics(1 / 120); acc -= 1 / 120; }
     highlight.rotation.y = Math.sin(now / 1000 * .6) * .12; // only the light on the glass moves; the machine stays put
+    idleStep?.(dt);
     const current = tasks; tasks = [];
     for (const task of current) if (task(dt)) tasks.push(task);
     renderer.render(scene, camera);
     fpsFrames++; fpsTime += dt;
     // Under 30 fps on average: only the shadow map drops to 1024; resolution and staging stay (dev notes 4).
     if (fpsTime >= 2) { if (fpsFrames / fpsTime < 30 && key.shadow.mapSize.x > 1024) { key.shadow.mapSize.set(1024, 1024); key.shadow.map?.dispose(); key.shadow.map = null; } fpsFrames = 0; fpsTime = 0; }
+    if (idleStep) {
+      if (settled < 4) settled += dt; else {
+        stallFrames++; stallTime += dt;
+        if (stallTime >= 4) {
+          const avg = stallFrames / stallTime;
+          if (avg < 30 && key.shadow.mapSize.x <= 1024) { if (halfRate && avg < 24) { running = false; options.onStall?.(); return; } halfRate = true; }
+          stallFrames = 0; stallTime = 0;
+        }
+      }
+    }
     rafId = requestAnimationFrame(loop);
   }
 
