@@ -56,6 +56,7 @@ it("shows S4 numbers in the F3 row: the reward and count use the shared fan acti
   expect(post.querySelector("[data-mission-trailing]")).toHaveTextContent("+20P");
   expect(post.querySelector('[data-earn-badge="inline"] img')).toHaveAttribute("src", "/images/economy/point-coin.svg");
   expect(document.querySelector('[data-mission="reaction"] [data-mission-trailing]')).toHaveTextContent("완료");
+  expect(document.querySelector('[data-mission="reaction"] [data-mission-stamp]')).not.toBeNull();
   expect(document.querySelector('[data-mission="invite"]')).not.toHaveTextContent("5명까지");
   expect(document.querySelector('[data-mission="invite"] [data-mission-trailing]')).toHaveTextContent("+200P");
   expect(document.querySelector('[data-mission="checkin"] [data-mission-trailing] [data-earn-badge="inline"]')).not.toBeNull();

@@ -86,6 +86,24 @@ describe("FanTooltip", () => {
     expect(screen.getByRole("button", { name: "알림" })).toBeTruthy();
     expect(document.querySelector("[data-fan-tooltip]")).toBeNull();
   });
+
+  it("shows the name after a 450ms touch hold, and not after a shorter press", () => {
+    vi.useFakeTimers();
+    try {
+      render(<FanTooltip content="엘리나" longPress><span role="img" aria-label="엘리나" tabIndex={0} /></FanTooltip>);
+      const target = screen.getByRole("img", { name: "엘리나" });
+      fireEvent.pointerDown(target, { pointerType: "touch" });
+      act(() => { vi.advanceTimersByTime(300); });
+      fireEvent.pointerUp(target, { pointerType: "touch" });
+      act(() => { vi.advanceTimersByTime(300); });
+      expect(document.querySelector("[data-fan-tooltip]")).toBeNull();
+      fireEvent.pointerDown(target, { pointerType: "touch" });
+      act(() => { vi.advanceTimersByTime(460); });
+      expect(document.querySelector("[data-fan-tooltip]")?.textContent).toBe("엘리나");
+      act(() => { vi.advanceTimersByTime(1900); });
+      expect(document.querySelector("[data-fan-tooltip]")?.hasAttribute("data-closed") ?? true).toBe(true);
+    } finally { vi.useRealTimers(); }
+  });
 });
 
 describe("FanCollapsible", () => {

@@ -6,9 +6,8 @@ import { Check } from "lucide-react";
 import { FanIcon } from "@/components/fan-ui/fan-icon";
 import { ChevronDown } from "@/components/fan-ui/fan-icons";
 import { BadgeCheck, LayoutGrid } from "lucide-react";
-import { FanTag } from "@/components/fan-ui/fan-tag";
 import type { CSSProperties, MouseEvent } from "react";
-import { FanMissionFoldRow, FanMissionList, FanMissionRow, MissionArt } from "./fan-mission-row";
+import { FanMissionFoldRow, FanMissionList, FanMissionRow, MissionArt, MissionDoneStamp } from "./fan-mission-row";
 import { activityLabel } from "@/features/dukjil-guide/ui/guide-copy";
 import { FanLockedValue } from "@/components/fan-ui/fan-locked-value";
 import { FanSkeleton } from "@/components/fan-ui/fan-skeleton";
@@ -104,7 +103,7 @@ export function FanMissions({ locale, slug, title, titleSuffix, passportHref, pr
           art={<MissionArt src={`/images/stamps/ink-v1/${mission.art}.webp`} />}
           title={mission.label}
           detail={progress || undefined}
-          trailing={finished ? <FanTag tone="fan" icon={<Check size={12} aria-hidden="true" />}>{dukjilText(locale, "missionDoneShort")}</FanTag>
+          trailing={finished ? <MissionDoneStamp label={dukjilText(locale, "missionDoneShort")} />
             : on && points ? <EarnBadge variant="inline" className={styles.reward} locale={locale} points={points} remaining={guest ? null : remaining} remainingPer={period} /> : undefined} />;
       })}
     </FanMissionList>

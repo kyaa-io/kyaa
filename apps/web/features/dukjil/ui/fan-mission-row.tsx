@@ -4,6 +4,9 @@ import Link from "next/link";
 import type { Route } from "next";
 import type { MouseEvent, ReactNode } from "react";
 import { FanCollapsibleTrigger, type FanCollapsibleTriggerProps } from "@/components/fan-ui/fan-collapsible";
+import { FanIcon } from "@/components/fan-ui/fan-icon";
+import { Check } from "@/components/fan-ui/fan-icons";
+import dukjilStyles from "./dukjil.module.css";
 import styles from "./fan-mission-row.module.css";
 
 /** feedback D1 · F3: the one row of every 덕질 list — today's missions, more missions, certifications, the folded heads and the 오늘의 덕질 empty row.
@@ -47,4 +50,10 @@ export function FanMissionList({ framed = false, children, className, ...data }:
 /** Stamp art image for a row (decorative), 28 inside the 40 circle. */
 export function MissionArt({ src }: { src: string }) {
   return <img src={src} alt="" width={28} height={28} loading="lazy" />;
+}
+
+/** A finished row's trailing mark (feedback #18, Daily-mission reference): the seal frame asset inked in the page colour with a check, pressed slightly crooked.
+ * The text is for screen readers; the seal carries no words so every language fits. */
+export function MissionDoneStamp({ label }: { label: string }) {
+  return <span className={styles.stamp} data-mission-stamp=""><FanIcon icon={Check} size={20} /><span className={dukjilStyles.srOnly}>{label}</span></span>;
 }

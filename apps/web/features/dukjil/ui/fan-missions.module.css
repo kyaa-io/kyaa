@@ -1,5 +1,5 @@
 /* 팬 활동·오늘의 미션 card. One outlined card, one FanMissionRow per activity (F3: row 64, circle 40, trailing 96/120). */
-.section{display:grid;gap:var(--space-3);min-width:0}
+.section{display:grid;gap:var(--space-3);min-width:0;container-type:inline-size}
 .head{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:var(--space-1) var(--space-3);min-width:0}
 /* 게이트 C2: section titles are 18/700 at every width, like FanHeading beside it. */
 .headingGroup{display:flex;align-items:center;gap:var(--space-2);min-width:0;flex:1 1 180px}
@@ -7,12 +7,19 @@
 .summary{display:flex;flex-wrap:wrap;align-items:center;gap:var(--space-1) var(--space-2);min-width:0;color:var(--color-muted);font-size:var(--fan-metadata-size);line-height:20px;font-weight:700;font-variant-numeric:tabular-nums}
 .cards{display:grid;margin:0;padding:0;list-style:none;border:1px solid var(--color-line);border-radius:var(--radius-control);overflow:hidden;background:var(--color-surface)}
 /* The line under a title: progress at the title's x, count on its right, inside the row's 64. */
-.progress{display:flex;flex:1;align-items:center;gap:var(--space-2);min-width:0;max-width:160px;min-height:18px}
+.progress{display:flex;flex:1;align-items:center;gap:var(--space-2);min-width:0;min-height:18px}
 .bar{flex:1;min-width:0;height:6px;border-radius:var(--radius-pill);background:var(--color-surface);box-shadow:inset 0 0 0 1px var(--color-line);overflow:hidden}
 .bar>i{display:block;width:100%;height:100%;border-radius:inherit;background:var(--dukjil-ink);transform:scaleX(var(--mission-fill,0));transform-origin:left center;transition:transform var(--motion-control) var(--motion-easing)}
 .bar>i[data-done=true]{background:var(--dukjil-ink-deep)}
-.count{display:inline-flex;flex:none;align-items:center;gap:calc(var(--space-1) / 2);font-size:var(--fan-metadata-size);line-height:18px;font-weight:700;color:var(--color-muted);font-variant-numeric:tabular-nums}
-@media (min-width:1024px){.progress{max-width:240px}}
+.count{display:inline-flex;flex:none;align-items:center;gap:calc(var(--space-1) / 2);min-width:var(--space-10);font-size:var(--fan-metadata-size);line-height:18px;font-weight:700;color:var(--color-muted);font-variant-numeric:tabular-nums}
+/* feedback #18 (R4): the bar fills what the name leaves, so the row has no empty middle. A list of four or more rows splits into two columns once the section is 704 wide (each column 352+); an odd last row leaves its right cell empty. */
+@container (min-width:44rem){
+ .cards:has(>li:nth-child(4)){grid-template-columns:repeat(2,minmax(0,1fr))}
+ .cards:has(>li:nth-child(4)) [data-fan-mission-row]{grid-template-columns:40px minmax(0,1fr) 96px}
+ .cards:has(>li:nth-child(4))>li+li{border-top:0}
+ .cards:has(>li:nth-child(4))>li:nth-child(n+3){border-top:1px solid var(--color-line-subtle)}
+ .cards:has(>li:nth-child(4))>li:nth-child(even){border-left:1px solid var(--color-line-subtle)}
+}
 .footer{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:0 var(--space-3)}
 .footer>a{padding-inline:0}
 
