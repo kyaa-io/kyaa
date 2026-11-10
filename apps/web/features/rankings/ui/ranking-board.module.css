@@ -9,3 +9,5 @@
 @media (min-width: 64rem) {
   .columns { grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: var(--space-10); }
 }
+/* 기간 알약: 틀 높이 48(칸 40 + 누르는 영역 위아래 5씩 = 50). FanTabs segment 기본 틀은 40이라 누르는 영역이 42였다. */
+.head nav { height: 48px; }
