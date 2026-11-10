@@ -13,19 +13,19 @@ import { NoticeCard, formatHomeNoticeDate } from "./notice-card";
 import { FanActivityGuide } from "./fan-activity-guide";
 import styles from "./home-notice-pages.module.css";
 
-export const homeNoticePageCopy: Record<AppLocale, { title: string; empty: string; more: string; recent: string }> = {
-  ko: { title: "공지사항", empty: "아직 공지 없음", more: "더 보기", recent: "최근 공지사항" },
-  en: { title: "Notices", empty: "No notices yet", more: "Show more", recent: "Recent notices" },
-  ja: { title: "お知らせ", empty: "お知らせはまだありません", more: "もっと見る", recent: "最近のお知らせ" },
-  "zh-Hans": { title: "公告", empty: "暂无公告", more: "查看更多", recent: "最新公告" },
-  "zh-Hant": { title: "公告", empty: "目前沒有公告", more: "查看更多", recent: "最新公告" },
-  es: { title: "Avisos", empty: "Aún no hay avisos", more: "Ver más", recent: "Avisos recientes" },
-  id: { title: "Pengumuman", empty: "Belum ada pengumuman", more: "Lihat lainnya", recent: "Pengumuman terbaru" },
-  vi: { title: "Thông báo", empty: "Chưa có thông báo", more: "Xem thêm", recent: "Thông báo gần đây" },
-  th: { title: "ประกาศ", empty: "ยังไม่มีประกาศ", more: "ดูเพิ่มเติม", recent: "ประกาศล่าสุด" },
-  pt: { title: "Avisos", empty: "Ainda não há avisos", more: "Ver mais", recent: "Avisos recentes" },
-  fr: { title: "Annonces", empty: "Aucune annonce pour l’instant", more: "Voir plus", recent: "Annonces récentes" },
-  ru: { title: "Объявления", empty: "Пока нет объявлений", more: "Показать ещё", recent: "Последние объявления" },
+export const homeNoticePageCopy: Record<AppLocale, { title: string; empty: string; more: string; recent: string; others: string }> = {
+  ko: { title: "공지사항", empty: "아직 공지 없음", more: "더 보기", recent: "최근 공지사항", others: "다른 공지" },
+  en: { title: "Notices", empty: "No notices yet", more: "Show more", recent: "Recent notices", others: "Other notices" },
+  ja: { title: "お知らせ", empty: "お知らせはまだありません", more: "もっと見る", recent: "最近のお知らせ", others: "ほかのお知らせ" },
+  "zh-Hans": { title: "公告", empty: "暂无公告", more: "查看更多", recent: "最新公告", others: "其他公告" },
+  "zh-Hant": { title: "公告", empty: "目前沒有公告", more: "查看更多", recent: "最新公告", others: "其他公告" },
+  es: { title: "Avisos", empty: "Aún no hay avisos", more: "Ver más", recent: "Avisos recientes", others: "Otros avisos" },
+  id: { title: "Pengumuman", empty: "Belum ada pengumuman", more: "Lihat lainnya", recent: "Pengumuman terbaru", others: "Pengumuman lain" },
+  vi: { title: "Thông báo", empty: "Chưa có thông báo", more: "Xem thêm", recent: "Thông báo gần đây", others: "Thông báo khác" },
+  th: { title: "ประกาศ", empty: "ยังไม่มีประกาศ", more: "ดูเพิ่มเติม", recent: "ประกาศล่าสุด", others: "ประกาศอื่น ๆ" },
+  pt: { title: "Avisos", empty: "Ainda não há avisos", more: "Ver mais", recent: "Avisos recentes", others: "Outros avisos" },
+  fr: { title: "Annonces", empty: "Aucune annonce pour l’instant", more: "Voir plus", recent: "Annonces récentes", others: "Autres annonces" },
+  ru: { title: "Объявления", empty: "Пока нет объявлений", more: "Показать ещё", recent: "Последние объявления", others: "Другие объявления" },
 };
 
 /** 10개씩 표시하고 이전·다음 페이지로 이동한다. */
@@ -57,6 +57,6 @@ export function HomeNoticeDetailScreen({ locale, notice, others }: { locale: App
       <FanHeading as="h1">{notice.title}</FanHeading>
       {notice.slug === "service-guide" ? <FanActivityGuide locale={locale} /> : <NoticeBody document={notice.body} locale={locale} />}
     </article>
-    {others.length > 0 && <NoticeCard locale={locale} items={others} headingId="notice-others-heading" title={copy.title} headAction={{ href: `/notices?locale=${locale}`, label: copy.recent }} />}
+    {others.length > 0 && <div className={styles.related} data-block="notice-related"><NoticeCard locale={locale} items={others} headingId="notice-others-heading" title={copy.others} headAction={{ href: `/notices?locale=${locale}`, label: copy.recent }} /></div>}
   </div>;
 }

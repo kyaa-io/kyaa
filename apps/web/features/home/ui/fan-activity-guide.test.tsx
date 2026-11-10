@@ -30,6 +30,11 @@ it("shows the guide on the special notice, the body on other notices, and no rea
   expect(screen.getByRole("heading", { name: "퀴즈로 팬 인증" })).toBeInTheDocument();
   expect(screen.getByRole("link", { name: /다른 공지/ })).toHaveAttribute("href", "/notices/other-one?locale=ko");
   expect(screen.getByRole("link", { name: /최근 공지사항/ })).toHaveAttribute("href", "/notices?locale=ko");
+  const related = screen.getByRole("region", { name: "다른 공지" });
+  expect(related).toHaveAttribute("aria-labelledby", "notice-others-heading");
+  expect(related.closest("article")).toBeNull();
+  expect(document.querySelector("article")?.contains(related)).toBe(false);
+  expect(related.parentElement).toHaveAttribute("data-block", "notice-related");
   rerender(<HomeNoticeDetailScreen locale="ko" notice={{ ...notice, slug: "another-notice" }} others={[]} />);
   expect(screen.getByText("원문 본문")).toBeInTheDocument();
   expect(screen.queryByRole("link", { name: /최근 공지사항/ })).not.toBeInTheDocument();
