@@ -34,7 +34,7 @@ export function GroupHeaderAccount({locale,actions,actionsAreIdentity=false,lang
  const [profileOwner,setProfileOwner]=useState<string|null>(null);
  const openProfile=()=>{if(trigger.current)rememberOverlayTrigger(trigger.current);setProfileOwner(auth.ownerKey);};
  const profileLabel=profileConnectionCopy(locale).profile;
- const identity=<>{avatar.state.status==='ready'?<Avatar avatar={avatar.state.avatar} imageUrl={avatar.state.imageUrl} label='' size={48}/>:<AvatarPlaceholder size={48}/>}<span dir="auto" style={{minWidth:0,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{profile.data?.profile.nickname ?? profileLabel}</span></>;
+ const identity=<>{avatar.state.status==='ready'?<Avatar avatar={avatar.state.avatar} imageUrl={avatar.state.imageUrl} label='' size={48}/>:<AvatarPlaceholder size={48}/>}<span dir="auto" className={styles.menuName}>{profile.data?.profile.nickname ?? profileLabel}</span></>;
  const refreshWallet=wallet.retry;
  const ko=locale==='ko',dukjilStatus=useDukjilStatus(locale),dukjilOn=dukjilStatus==='on';
  // The attendance item names the fan's own favorite page ("{page} 출석체크"), or the plain 출석체크 without one — never a fixed page.
