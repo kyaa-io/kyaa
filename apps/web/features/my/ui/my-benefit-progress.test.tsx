@@ -91,7 +91,7 @@ describe("MY next benefit", () => {
     owner.id = "owner-b";
     view.rerender(<MyBenefitProgress creator={creators[0]} locale="en"/>);
     expect(screen.queryByRole("heading", { name: benefit.title })).not.toBeInTheDocument();
-    expect(screen.getByText("Loading your next benefit.")).toBeInTheDocument();
+    expect(screen.getByRole("status", { name: "Loading your next benefit." })).toBeInTheDocument();
     await waitFor(() => expect(pending).toBeDefined());
     await act(async () => pending(Response.json(payload(0, null))));
     expect(await screen.findByText("No next benefit for this favorite right now.")).toBeInTheDocument();

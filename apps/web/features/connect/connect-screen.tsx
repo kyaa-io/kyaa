@@ -1,9 +1,10 @@
 "use client";
 
+import { FanSkeleton } from "@/components/fan-ui/fan-skeleton";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
-import { ArrowRight, ArrowUpRight, ChevronRight, LoaderCircle, Mail, Pause, Play, RotateCcw, VideoOff, X } from "lucide-react";
+import { ArrowRight, ArrowUpRight, ChevronRight, Mail, Pause, Play, RotateCcw, VideoOff, X } from "lucide-react";
 import { useAppLocale } from "@/components/locale-provider";
 import { BottomSheet } from "@/components/ui/overlay/accessible-overlay";
 import { rememberOverlayTrigger } from "@/components/ui/overlay/focus-return";
@@ -156,7 +157,7 @@ export function ConnectScreen() {
             <VideoOff size={32} aria-hidden="true" /><strong>{t.failed}</strong><p>{t.failedDetail}</p>
             <button type="button" onClick={replay} className={styles.retry}><RotateCcw size={16} aria-hidden="true" />{t.retry}</button>
           </div> : <>
-            {status === "loading" && <div className={styles.loading} role="status"><LoaderCircle size={20} aria-hidden="true" />{t.loading}</div>}
+            {status === "loading" && <div className={styles.loading} role="status" aria-label={t.loading}><FanSkeleton shape="block" className={styles.loadingSkeleton} /></div>}
           </>}
         </div>
       </> : <>

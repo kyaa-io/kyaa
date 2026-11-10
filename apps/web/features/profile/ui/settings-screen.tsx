@@ -1,5 +1,6 @@
 "use client";
 
+import { FanSkeletonPage } from "@/components/fan-ui/fan-skeleton";
 import { useGroupsRelease } from "@/features/groups/ui/groups-release";
 import { GroupSettingsMenu } from "./group-settings-menu";
 import { CustomOAuthAccountLinks } from "@/components/custom-oauth-account-links";
@@ -1020,8 +1021,7 @@ export function SettingsScreen({ locale, initialSection = null, kakaoLoginEnable
   if (!ready || !session.ready || state === "loading")
     return (
       <FanAppFrame locale={locale} mainId="settings-content"><FanContentContainer as="main" className={styles.center} id="settings-content" tabIndex={-1} aria-busy="true">
-        <span className={styles.spinner} />
-        {t.loading}
+        <FanSkeletonPage locale={locale} layout="form" label={t.loading} />
       </FanContentContainer></FanAppFrame>
     );
   if (state === "profile_required")

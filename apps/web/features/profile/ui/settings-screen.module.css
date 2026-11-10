@@ -406,14 +406,6 @@
   font-family:inherit;
   text-align: center;
 }
-.spinner {
-  width: 30px;
-  height: 30px;
-  border: 2px solid var(--color-line);
-  border-top-color: var(--color-ink);
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
-}
 @keyframes spin {
   to {
     transform: rotate(1turn);

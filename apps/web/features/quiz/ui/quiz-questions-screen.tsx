@@ -340,7 +340,7 @@ export function QuizQuestionsScreen({
   }, [projection, reconcileSubmission, submitPending]);
 
   if (!ready || (authenticated && screen.kind === "loading")) {
-    return <QuizFrame locale={locale} topAligned><section className={styles.quiz} aria-label={t.loadingAria}><Link className={styles.exitLink} href={withLocale(creatorHomeHref(slug), locale)}><ArrowLeft aria-hidden="true" />{t.exit}</Link><div className={styles.loading} role="status" aria-label={t.loadingAria}><span /><span /><span /><p>{t.loading}</p></div></section></QuizFrame>;
+    return <QuizFrame locale={locale} topAligned><section className={styles.quiz} aria-label={t.loadingAria}><Link className={styles.exitLink} href={withLocale(creatorHomeHref(slug), locale)}><ArrowLeft aria-hidden="true" />{t.exit}</Link><div className={styles.loading} role="status" aria-label={t.loadingAria}><span /><span /><span /></div></section></QuizFrame>;
   }
 
   if (!authenticated) {

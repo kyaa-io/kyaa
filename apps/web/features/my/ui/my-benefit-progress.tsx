@@ -1,4 +1,5 @@
 "use client";
+import { FanSkeletonRows } from "@/components/fan-ui/fan-skeleton";
 import { TranslatedText } from "@/features/content-safety/ui/use-automatic-translation";
 
 import { toContentLocale } from "@/i18n/locales";
@@ -85,7 +86,7 @@ function SelectedBenefit({ creator, locale, compact }: { creator: PassportCreato
   const resource = useOwnedFanResource(`/api/passports/${encodeURIComponent(creator.passport.id)}?locale=${toContentLocale(locale)}`, parse, auth);
   const t = copy[locale];
   const allHref = `/benefits?locale=${locale}&celebrity=${encodeURIComponent(creator.celebrity.slug)}` as const;
-  if (resource.state.status === "loading") return <div className={styles.loading} role="status"><span className={styles.skeleton}/><p>{t.loading}</p></div>;
+  if (resource.state.status === "loading") return <FanSkeletonRows rows={2} variant="plain" ariaLabel={t.loading} />;
   if (resource.state.status === "error") return <div className={styles.message} role="status"><p>{t.error}</p><FanAction variant="neutral" onClick={resource.retry} leadingIcon={<RotateCcw/>}>{t.retry}</FanAction></div>;
   const passport = resource.state.data;
   const benefit = passport.nextBenefit;

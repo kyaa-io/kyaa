@@ -1,5 +1,6 @@
 "use client";
 
+import { FanSkeleton, FanSkeletonStatus } from "@/components/fan-ui/fan-skeleton";
 import type { AppLocale } from "@/i18n/locales";
 import { messages as localizedMessages } from "@/i18n/catalogs/features__notification__ui__kakao-callback-screen";
 import { additionalLocales } from "@/i18n/messages";
@@ -211,8 +212,7 @@ export function KakaoCallbackScreen({ locale }: { locale: Locale }) {
     <FanAppFrame locale={locale} currentPath="/settings" mainId="kakao-callback" className={styles.page}>
       <FanContentContainer as="main" id="kakao-callback" className={styles.main}>
         <section className={styles.card} aria-live="polite">
-          {view === "loading" ? <span className={styles.spinner} aria-hidden="true" /> : null}
-          <h1>{t[view]}</h1>
+          {view === "loading" ? <><FanSkeletonStatus locale={locale} label={t.loading} /><FanSkeleton width={200} height={24} /><FanSkeleton width={140} height={16} /></> : <h1>{t[view]}</h1>}
           {view !== "loading" && view !== "success" ? (
             <div className={styles.actions}>
               <FanAction href={settingsHref} variant="primary">{view === "provider_error" ? t.settings : t.retry}</FanAction>

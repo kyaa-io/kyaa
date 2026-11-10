@@ -1,5 +1,6 @@
 "use client";
 
+import { FanSkeleton, FanSkeletonStatus } from "@/components/fan-ui/fan-skeleton";
 import { toContentLocale } from "@/i18n/locales";
 import type { AppLocale } from "@/i18n/locales";
 import { messages as localizedMessages } from "@/i18n/catalogs/features__passport__ui__passport-issuance-dialog";
@@ -419,7 +420,7 @@ export function PassportIssuanceScreen({ passportId }: { passportId: string }) {
       <main className={styles.screen} id="passport-issuance-state-main" tabIndex={-1}>
         <div className={styles.state} role="status" aria-live="polite" aria-busy={state.kind === "loading"}>
         {state.kind === "loading" || state.kind === "ready" ? (
-          <><h1>{t.loadingTitle}</h1><p>{t.loadingBody}</p></>
+          <><FanSkeletonStatus locale={locale} label={t.loadingTitle} /><FanSkeleton width="60%" height={28} /><FanSkeleton width="80%" height={16} /></>
         ) : state.kind === "auth" ? (
           <>
             <h1>{t.authTitle}</h1>

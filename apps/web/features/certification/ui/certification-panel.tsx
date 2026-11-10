@@ -1,4 +1,5 @@
 "use client";
+import { FanSkeletonRows } from "@/components/fan-ui/fan-skeleton";
 import { knownCertificationTitle } from "../domain/certification-title";
 import { TranslatedText } from "@/features/content-safety/ui/use-automatic-translation";
 import { toContentLocale } from "@/i18n/locales";
@@ -264,9 +265,7 @@ export function CertificationPanel({
         aria-labelledby={`${panelId}-${tab}`}
       >
         {state === "loading" ? (
-          <p className={styles.state} role="status">
-            {t.loading}
-          </p>
+          <FanSkeletonRows rows={4} variant="entity" ariaLabel={t.loading} />
         ) : state === "error" ? (
           <div className={styles.state} role="alert">
             <p>{t.error}</p>
@@ -276,7 +275,7 @@ export function CertificationPanel({
           </div>
         ) : tab === "missions" ? (
           <div className={styles.missions}>
-            {ready && authenticated && ownerKey && ownedStatus?.key !== identityKey && <p className={styles.state} role="status">{t.loading}</p>}
+            {ready && authenticated && ownerKey && ownedStatus?.key !== identityKey && <FanSkeletonRows rows={2} variant="entity" ariaLabel={t.loading} />}
             {ownedStatus?.key === identityKey && ownedStatus.error && <div className={styles.state} role="alert"><p>{t.history} · {t.error}</p><FanAction onClick={() => {setOwnedStatus(undefined);setOwnedRetry(value=>value+1);}}>{locale === "ko" ? "다시 시도" : translate(locale, localizedMessages.m31610d1a288d, "Try again")}</FanAction></div>}
             {items.length ? (
               <div
@@ -348,7 +347,7 @@ export function CertificationPanel({
             )}
           </div>
         ) : !ready ? (
-          <p className={styles.state}>{t.loading}</p>
+          <FanSkeletonRows rows={3} variant="entity" ariaLabel={t.loading} />
         ) : !authenticated ? (
           <div className={styles.guestStack}>
             <FanLockedRows rows={3} />
