@@ -74,6 +74,9 @@ begin
   c2:=pg_temp.claim(viewer_id,q);
   if c2->>'status'<>'claimed' or c2->>'token'=c1->>'token' then raise exception 'L4 takeover: %',c2; end if;
   if (select count(*) from public.content_translation_leases where target_id=q)<>1 then raise exception 'L4 lease rows'; end if;
+  -- The previous holder giving its token back must not remove the new holder's lease.
+  perform public.release_content_translation_lease((c1->>'token')::uuid);
+  if (select count(*) from public.content_translation_leases where target_id=q and lease_token=(c2->>'token')::uuid)<>1 then raise exception 'L4 stale release removed the new holder'; end if;
   perform pg_temp.expect_error(format('select pg_temp.save_whole(%L,%L,%L,%L)',c1->>'token',viewer_id,q,'Late'),'FAN_WEB_CONFLICT');
   if public.read_content_translation(viewer_id,'fan_post',q,'en') is not null then raise exception 'L4 stale owner wrote'; end if;
   perform pg_temp.save_whole((c2->>'token')::uuid,viewer_id,q,'Fresh');

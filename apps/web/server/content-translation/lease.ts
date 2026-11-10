@@ -2,7 +2,11 @@ import { z } from "zod";
 
 const claimSchema = z.union([z.object({ status: z.literal("busy") }).strict(), z.object({ status: z.literal("claimed"), token: z.uuid() }).strict()]);
 
-/** A holder that has not saved within the database lease (20 s) loses it; a waiter gives up a little after that. */
+/**
+ * Wait budget, not a response limit: a waiter starts no new claim, and keeps no lease it wins, once 22 s have passed since it first asked. A holder
+ * that has not saved within the database lease (20 s) loses it. Each RPC can itself take up to the 60 s fetch limit of the service client, so the
+ * whole request can still last longer than 22 s; the budget only guarantees that no lease obtained after it is used (no quota, no provider call).
+ */
 export const TRANSLATION_WAIT_MS = 22_000;
 const POLL_MS = 750;
 
@@ -19,11 +23,17 @@ const realClock: LeaseClock = { now: () => Date.now(), sleep: ms => new Promise(
 export async function withTranslationLease<T>(rpc: Rpc, claimArgs: Record<string, unknown>, read: () => Promise<T | null>,
   work: (token: string) => Promise<T>, clock: LeaseClock = realClock): Promise<{ value: T; cached: boolean }> {
   const deadline = clock.now() + TRANSLATION_WAIT_MS;
-  for (;;) {
+  for (let attempt = 0; ; attempt++) {
+    if (attempt > 0 && clock.now() >= deadline) throw new Error("TRANSLATION_UNAVAILABLE");
     const claim = claimSchema.safeParse(await rpc("claim_content_translation_lease", claimArgs));
     if (!claim.success) throw new Error("FAN_WEB_UNAVAILABLE");
     if (claim.data.status === "claimed") {
       const { token } = claim.data;
+      if (clock.now() >= deadline) {
+        // The answer arrived after the budget: give the lease back and do nothing with it.
+        await rpc("release_content_translation_lease", { p_lease_token: token }).catch(() => undefined);
+        throw new Error("TRANSLATION_UNAVAILABLE");
+      }
       try {
         const hit = await read();
         if (hit !== null) { await rpc("release_content_translation_lease", { p_lease_token: token }); return { value: hit, cached: true }; }
