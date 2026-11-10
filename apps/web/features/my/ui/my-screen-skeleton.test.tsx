@@ -13,7 +13,7 @@ const before = (a: Element, b: Element) => Boolean(a.compareDocumentPosition(b) 
 
 it.each(["ko", "en"] as const)("loads in the real card order with no painted loading text (%s)", (locale) => {
   const { container } = render(<GroupsReleaseProvider enabled><MyScreen locale={locale} /></GroupsReleaseProvider>);
-  const titles = locale === "ko" ? ["내 패스포트", "내 최애", "바로가기"] : ["My Passport", "My favorites", "Shortcuts"];
+  const titles = locale === "ko" ? ["내 패스포트", "바로가기"] : ["My Passport", "Shortcuts"];
   const headings = titles.map((name) => screen.getByRole("heading", { name }));
   headings.slice(1).forEach((heading, index) => expect(before(headings[index], heading)).toBe(true));
   const status = screen.getByRole("status");

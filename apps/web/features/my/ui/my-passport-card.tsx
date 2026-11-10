@@ -74,7 +74,7 @@ function SlotItem({ slot, locale }: { slot: PassportRoadmapSlot; locale: AppLoca
   const earned = slot.state === "filled";
   return <li className={styles.slot} data-state={slot.state} aria-label={myHomeText(locale, earned ? "slotEarned" : "slotLocked", [name])}>
     <span className={styles.slotArt} aria-hidden="true">
-      {earned ? <img src={slotArtSrc(slot)} alt="" width={56} height={56} loading="lazy" /> : null}
+      <img src={earned ? slotArtSrc(slot) : `/images/stamps/ghost-v1/${(slot.kind ? SLOT[slot.kind]?.art : undefined) ?? "frame"}.webp`} alt="" width={56} height={56} loading="lazy" />
     </span>
     <span className={styles.slotName} aria-hidden="true">{name}</span>
   </li>;

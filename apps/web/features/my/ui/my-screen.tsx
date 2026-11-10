@@ -21,7 +21,7 @@ import { raffleDiscoveryCopy } from "@/i18n/catalogs/features__benefit__ui__raff
 import { boundFirstLikeCount } from "../../passport/domain/first-like-stamp";
 
 import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
-import { ArrowRight, Bell, BookOpen, CalendarDays, Check, Gift, History, ListChecks, MessageSquare, MessagesSquare, Pencil, RotateCcw, Settings, Sparkles, Ticket } from "lucide-react";
+import { ArrowRight, Bell, BookOpen, CalendarDays, Check, Gift, History, ListChecks, MessageSquare, Pencil, RotateCcw, Settings, Sparkles, Ticket } from "lucide-react";
 import Link from "next/link";
 import type { Route } from "next";
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
@@ -30,7 +30,6 @@ import { fanLoginHref } from "@/components/login-href";
 import { FanSkeleton, FanSkeletonRows, FanSkeletonStatus } from "@/components/fan-ui/fan-skeleton";
 import { FanTag } from "@/components/fan-ui/fan-tag";
 import { myHomeText } from "./my-home-copy";
-import { MyFavorites, MyFavoritesSkeleton, MyGuestFavorites } from "./my-favorites";
 import { MyGuestPassportCard, MyPassportCard, MyPassportCardSkeleton, passportTierName } from "./my-passport-card";
 import { MyRaffleNotice } from "./my-raffle-notice";
 import { MyShortcuts, type MyShortcut } from "./my-shortcuts";
@@ -193,8 +192,7 @@ function MyDashboardSkeleton({ locale }: { locale: FanLocale }) {
     <div className={styles.homeRow}>
       <MyPassportCardSkeleton title={t.myPassport} />
     </div>
-    <MyFavoritesSkeleton title={t.creators} />
-    <MyShortcuts locale={locale} {...myShortcutGroups(locale, hrefWithLocale(locale))}/>
+    <MyShortcuts locale={locale} items={myShortcutItems(locale, hrefWithLocale(locale))}/>
   </div>;
 }
 
@@ -297,8 +295,7 @@ function Dashboard({ summary, locale, avatarResource, refreshSummary, selectedSl
         <MyPassportCard creators={visibleCreators} selectedSlug={selectedSlug} onSelect={onSelectSlug} communityStamps={stamps} stampsError={communityStamps.state.status === "error"} retryStamps={communityStamps.retry} locale={locale} labels={labels}/>
       </div>
       <CommunityStampCollection locale={locale} resource={communityStamps} creatorNames={Object.fromEntries(summary.creators.map((creator) => [creator.celebrity.slug, creator.celebrity.name]))}/>
-      <MyFavorites creators={passportCreators} locale={locale} labels={{ title: t.creators, find: t.findCreator, empty: t.noCreators }}/>
-      <MyShortcuts locale={locale} {...myShortcutGroups(locale, hrefWithLocale(locale))}/>
+      <MyShortcuts locale={locale} items={myShortcutItems(locale, hrefWithLocale(locale))}/>
       <MyLogout locale={locale}/>
     </div></DukjilProvider>;
   }
@@ -512,24 +509,21 @@ function ReservedLiveSection({events,history,locale,onStartReached}:{events:MySu
  </FanSurface>;
 }
 
-/** 바로가기 묶음. 자주 쓰는 넷은 격자, 드물게 쓰는 것은 목록. 로그인·비로그인이 같은 목록을 쓰고 주소만 다르다. */
-function myShortcutGroups(locale: FanLocale, hrefFor: (path: string) => string): { frequent: MyShortcut[]; rest: MyShortcut[] } {
+/** 바로가기. 로그인·비로그인이 같은 목록을 쓰고 주소만 다르다. 아이콘은 우리 애셋 그림(public/images/my/shortcuts)이다. */
+function myShortcutItems(locale: FanLocale, hrefFor: (path: string) => string): MyShortcut[] {
   const t = copy[locale];
   const ko = locale === "ko";
-  return {
-    frequent: [
-      { key: "activity", href: hrefFor("/my/activity"), label: ko ? "활동 내역" : personalCopy[locale].title, Icon: History },
-      { key: "raffles", href: hrefFor("/my/raffles"), label: ko ? "내 응모 내역" : personalCopy[locale].raffles, Icon: Ticket },
-      { key: "rewards", href: hrefFor("/my/activity?kind=rewards"), label: t.rewards, Icon: Gift },
-      { key: "live", href: hrefFor("/live/calendar"), label: ko ? "예약한 LIVE" : t.reservedLive, Icon: CalendarDays },
-    ],
-    rest: [
-      { key: "requests", href: hrefFor("/my/requests"), label: personalCopy[locale].applications, Icon: ListChecks },
-      { key: "friends", href: hrefFor("/my/friends"), label: ko ? "친구와 메시지" : socialCopy(locale).title, Icon: MessagesSquare },
-      { key: "reports", href: hrefFor("/my/groups/reports"), label: groupOwnReportsCopy(locale)[0], Icon: MessageSquare },
-      { key: "inquiries", href: hrefFor("/my/inquiries"), label: supportCopy[locale].title, Icon: MessageSquare },
-    ],
-  };
+  return [
+    { key: "favorites", href: hrefFor("/celebrities"), label: t.creators, art: "favorites" },
+    { key: "activity", href: hrefFor("/my/activity"), label: ko ? "활동 내역" : personalCopy[locale].title, art: "activity" },
+    { key: "raffles", href: hrefFor("/my/raffles"), label: ko ? "내 응모 내역" : personalCopy[locale].raffles, art: "raffles" },
+    { key: "rewards", href: hrefFor("/my/activity?kind=rewards"), label: t.rewards, art: "rewards" },
+    { key: "live", href: hrefFor("/live/calendar"), label: ko ? "예약한 LIVE" : t.reservedLive, art: "live" },
+    { key: "requests", href: hrefFor("/my/requests"), label: personalCopy[locale].applications, art: "requests" },
+    { key: "friends", href: hrefFor("/my/friends"), label: ko ? "친구와 메시지" : socialCopy(locale).title, art: "friends" },
+    { key: "reports", href: hrefFor("/my/groups/reports"), label: groupOwnReportsCopy(locale)[0], art: "reports" },
+    { key: "inquiries", href: hrefFor("/my/inquiries"), label: supportCopy[locale].title, art: "inquiries" },
+  ];
 }
 const hrefWithLocale = (locale: FanLocale) => (path: string) => `${path}${path.includes("?") ? "&" : "?"}locale=${locale}`;
 
@@ -547,7 +541,6 @@ function MyGuest({ locale }: { locale: FanLocale }) {
     <div className={styles.homeRow}>
       <MyGuestPassportCard locale={locale} labels={{ title: t.myPassport, detail: myHomeText(locale, "viewDetails") }}/>
     </div>
-    <MyGuestFavorites locale={locale} labels={{ title: t.creators, find: t.findCreator, empty: t.noCreators }}/>
-    <MyShortcuts locale={locale} {...myShortcutGroups(locale, loginTo)}/>
+    <MyShortcuts locale={locale} items={myShortcutItems(locale, loginTo)}/>
   </div>;
 }
