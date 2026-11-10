@@ -1,4 +1,5 @@
 "use client";
+import { GroupImage } from "./group-image";
 /**
  * 모임 디렉터리 상단 세 블록(plan-ux-r8 G1·G2·얇은 배너, 사용자 2026-11-09 11:02 순서).
  * 내 아티스트: /api/groups?mine=joined&sort=visited&limit=10. Hot 게시글: /api/public/popular-posts?page=1(좋아요 → 댓글 → 최신).
@@ -96,7 +97,7 @@ export function MyArtists({ locale, loginPath }: { locale: AppLocale; loginPath:
         : ghost ? Array.from({ length: SLOTS }, (_, i) => <li key={i} className={styles.slot} data-row="artist-ghost" aria-hidden="true"><span className={styles.ghost} /><span className={styles.ghostName} /></li>)
         : items.map((page) => <li key={page.id} className={styles.slot} data-row="artist">
           <Link className={styles.artist} href={groupHref(page, locale) as Route}>
-            {page.slug ? <CreatorAvatar slug={page.slug} src={page.imageUrl} size={64} photos={undefined} /> : <span className={styles.ghost} />}
+            {page.slug ? <CreatorAvatar slug={page.slug} src={page.imageUrl} size={64} photos={undefined} /> : <GroupImage locale={locale} className={styles.ghost} src={page.imageUrl ?? "/images/groups/music-placeholder.svg"} alt="" width={64} height={64} />}
             <span className={styles.slotName}>{page.name}</span>
           </Link>
         </li>)}
