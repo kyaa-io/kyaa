@@ -5,6 +5,8 @@
 #  3. the same with a different request key per call (the web's key is fixed, the retry job's differs): still one grant
 #  4. two accepts of one pending proof at once, each followed by the payout like the server: one grant
 #  5. an accept and a reject of one pending proof at once: one decision wins, a rejected proof is never paid
+#  7. the same post sent at once as a share proof by one member and as a repost by another (each twice): one live proof
+#  8. the same post reposted by two members at once: one live proof
 #  6. a payout whose request failed (accepted, points null) paid by the five-minute retry and the web's retry at once: one grant
 set -euo pipefail
 P="psql -X -q -v ON_ERROR_STOP=1"
@@ -106,6 +108,29 @@ $P -c "select public.pay_fan_share_proof('$U6','$P6','$RK','{\"platform\":\"x\"}
 $P -c "select public.pay_fan_share_proof('$U6','$P6',gen_random_uuid(),'{\"platform\":\"x\"}')" >/dev/null 2>&1 &
 wait
 [ "$(logs "$P6")" = "1" ] && [ "$(ledger "$P6")" = "1" ] || fail "6 grants $(logs "$P6") ledger $(ledger "$P6")"
+
+# 7. one post, a share proof and a repost at once (both directions of the global rule meet on one lock)
+A=$(U 17); B=$(U 18); KP=CrossConc01
+SH() { echo "select public.submit_fan_share_proof('$1','$C','instagram','https://www.instagram.com/p/$KP/','instagram:$KP',true)"; }
+RP() { echo "select public.submit_fan_insta_repost('$1','$C','feed','https://www.instagram.com/p/$KP/','instagram:$KP',null,true)"; }
+OUT=$(mktemp -d)
+for q in "$(SH "$A")" "$(RP "$B")" "$(SH "$A")" "$(RP "$B")"; do ($P -At -c "$q" >/dev/null 2>"$OUT/err.$RANDOM" || true) & done
+wait
+rows=$($P -At -c "select count(*) from public.fan_share_proofs where url_key='instagram:$KP' and status<>'rejected'")
+owners=$($P -At -c "select count(distinct app_user_id) from public.fan_share_proofs where url_key='instagram:$KP'")
+[ "$rows" = "1" ] && [ "$owners" = "1" ] || fail "7 live rows $rows owners $owners"
+[ "$(cat "$OUT"/err.* | grep -c SHARE_PROOF_URL_REUSED || true)" -ge 1 ] || fail "7 no refusal for the second member"
+rm -rf "$OUT"
+
+# 8. two members repost one post at once
+A=$(U 19); B=$(U 20); KP=CrossConc02
+OUT=$(mktemp -d)
+for q in "$(RP "$A")" "$(RP "$B")" "$(RP "$A")" "$(RP "$B")"; do ($P -At -c "$q" >/dev/null 2>"$OUT/err.$RANDOM" || true) & done
+wait
+rows=$($P -At -c "select count(*) from public.fan_share_proofs where url_key='instagram:$KP' and status<>'rejected'")
+owners=$($P -At -c "select count(distinct app_user_id) from public.fan_share_proofs where url_key='instagram:$KP'")
+[ "$rows" = "1" ] && [ "$owners" = "1" ] || fail "8 live rows $rows owners $owners"
+rm -rf "$OUT"
 
 $P -c "update public.reward_policy_activation set policy_version = 2 where singleton" >/dev/null
 echo "share tag concurrency ok"

@@ -1,8 +1,10 @@
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 vi.mock("server-only", () => ({}));
+// @ts-expect-error the repo carries no @types/pg; this file only runs in the isolated database suite
 import { Client } from "pg";
 import { createShareProofHandlers } from "./routes";
 import { shareProofAdminRoutes } from "./admin";
+import { createInstaRepostHandlers } from "@/server/insta-repost/routes";
 
 /**
  * Real handlers against a real database. Skipped unless BYUS_SHARE_TAG_DB=1 (and the PG* environment points at a disposable clean-chain
@@ -28,6 +30,9 @@ const admin = { rpc, authorizeAdmin: async () => ADMIN as never };
 const req = (path: string, body?: unknown) => new Request(`https://byus.test${path}`, { method: body === undefined ? "GET" : "POST", headers: { authorization: "Bearer t", "content-type": "application/json" }, ...(body === undefined ? {} : { body: JSON.stringify(body) }) });
 const submit = (who: string, url: string) => member(who).submit(req("/api/me/share-proofs", { creator: SLUG, url, ownPost: true }));
 const grants = async (id: string) => Number((await db.query("select count(*) from public.dukjil_action_log where action_key = 'share' and source_key = $1", [`share-proof:${id}`])).rows[0].count);
+
+const repost = (appUserId: string, url: string) => createInstaRepostHandlers({ rpc, authorize: async () => ({ appUserId }), authorizeAdmin: async () => ADMIN as never, stream: async () => new Response(null), resolveCreatorId: creatorId })
+  .submit(req("/api/me/insta-reposts", { creator: SLUG, postKind: "feed", url, ownPost: true }));
 
 describe.skipIf(!enabled)("share tag review through the real routes and database", () => {
   it("submit pays nothing, a second member is refused, accept pays once, a repeat accept is stale", async () => {
@@ -82,5 +87,18 @@ describe.skipIf(!enabled)("share tag review through the real routes and database
     const res = await shareProofAdminRoutes.review(outsider)(req("/x", { decision: "accept", revision: 0 }), { id: proof.id });
     expect(res.status).toBe(403);
     expect((await db.query("select status from public.fan_share_proofs where id = $1", [proof.id])).rows[0].status).toBe("pending");
+  });
+  it("a post held as a share proof cannot be reposted by another member, and is free again after a rejection", async () => {
+    const post = "https://www.instagram.com/p/IntegCross01/";
+    const held = await (await submit(MEMBER, post)).json();
+    const refused = await repost(OTHER, post);
+    expect(refused.status).toBe(409);
+    expect(await refused.json()).toEqual({ error: { code: "SHARE_PROOF_URL_REUSED" } });
+    await shareProofAdminRoutes.review(admin)(req("/x", { decision: "reject", revision: 0, rejectCode: "no_hashtag" }), { id: held.id });
+    const taken = await repost(OTHER, post);
+    expect(taken.status).toBe(201);
+    expect(await taken.json()).toMatchObject({ status: "pending", duplicate: false });
+    const back = await submit(MEMBER, post);
+    expect(back.status).toBe(409);
   });
 });

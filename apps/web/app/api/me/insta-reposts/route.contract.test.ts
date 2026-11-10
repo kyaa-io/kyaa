@@ -36,3 +36,9 @@ it("lists the member's reposts of a creator", async () => {
   expect(await res.json()).toEqual({ items: [] });
   expect((await GET(req("/api/me/insta-reposts?creator=nobody"))).status).toBe(404);
 });
+it("answers a post another member already holds with 409", async () => {
+  state.rpc.mockRejectedValueOnce(new Error("SHARE_PROOF_URL_REUSED"));
+  const res = await POST(req("/api/me/insta-reposts", { creator: "elina", postKind: "feed", url: "https://www.instagram.com/p/C1aBc_D-2xY/", ownPost: true }));
+  expect(res.status).toBe(409);
+  expect(await res.json()).toEqual({ error: { code: "SHARE_PROOF_URL_REUSED" } });
+});
