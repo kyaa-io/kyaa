@@ -9,10 +9,9 @@ for (const route of ["/", "/live", "/live/calendar", "/my"]) {
     const heading = page.locator("h1[data-fan-heading]");
     await expect(heading).toBeVisible();
     const variant = await heading.getAttribute("data-fan-heading");
-    const width = page.viewportSize()!.width;
-    const breakpoint = variant === "personal-page" ? 640 : 768;
-    await expect(heading).toHaveCSS("font-size", width >= breakpoint ? "24px" : "20px");
-    await expect(heading).toHaveCSS("font-weight", variant === "editorial" ? "800" : "850");
+    expect(["standard", "editorial", "personal-page"]).toContain(variant);
+    await expect(heading).toHaveCSS("font-size", "26px");
+    await expect(heading).toHaveCSS("font-weight", "800");
     if (route === "/") {
       await expect(page.locator('[data-fan-section-header="editorial"]')).toHaveCount(3);
       await expect(page.locator('[data-fan-section-header="editorial"]').first()).toHaveCSS("margin-bottom", "16px");

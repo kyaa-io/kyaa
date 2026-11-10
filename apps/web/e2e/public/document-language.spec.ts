@@ -5,7 +5,7 @@ test("document language follows direct load, client navigation, reload, and hist
   expect(response?.status()).toBe(200);
   await expect(page).toHaveURL(/\/\?owned=1#fans$/);
   await expect(page.locator("html")).toHaveAttribute("lang", "ko");
-  await expect(page).toHaveTitle("kyaa | 최애의 LIVE와 팬 패스포트");
+  await expect(page).toHaveTitle("Kyaa. Every Fan Moment Counts.");
   await expect(page.locator('link[rel="manifest"]')).toHaveAttribute("href", "/manifest.webmanifest?locale=ko");
   await expect(page.locator('meta[property="og:locale"]')).toHaveAttribute("content", "ko_KR");
 
@@ -14,28 +14,28 @@ test("document language follows direct load, client navigation, reload, and hist
   await expect(page).not.toHaveURL(/[?&]locale=/);
   await expect(page).toHaveURL(/\/\?owned=1#fans$/);
   await expect(page.locator("html")).toHaveAttribute("lang", "en");
-  await expect(page).toHaveTitle("kyaa | LIVE moments and your Fan Passport");
+  await expect(page).toHaveTitle("Kyaa. Every Fan Moment Counts.");
   await expect(page.locator('link[rel="manifest"]')).toHaveAttribute("href", "/manifest.webmanifest?locale=en");
   await expect(page.locator('meta[property="og:locale"][content="en_US"]')).toHaveCount(1);
 
   await page.goBack({ waitUntil: "domcontentloaded" });
   await expect(page).toHaveURL(/\/\?owned=1#fans$/);
   await expect(page.locator("html")).toHaveAttribute("lang", "ko");
-  await expect(page).toHaveTitle("kyaa | 최애의 LIVE와 팬 패스포트");
+  await expect(page).toHaveTitle("Kyaa. Every Fan Moment Counts.");
 
   await page.goForward({ waitUntil: "domcontentloaded" });
   await expect(page).toHaveURL(/\/\?owned=1#fans$/);
   await expect(page.locator("html")).toHaveAttribute("lang", "en");
-  await expect(page).toHaveTitle("kyaa | LIVE moments and your Fan Passport");
+  await expect(page).toHaveTitle("Kyaa. Every Fan Moment Counts.");
 
   await page.reload({ waitUntil: "domcontentloaded" });
   await expect(page.locator("html")).toHaveAttribute("lang", "en");
-  await expect(page).toHaveTitle("kyaa | LIVE moments and your Fan Passport");
+  await expect(page).toHaveTitle("Kyaa. Every Fan Moment Counts.");
 });
 
 test("primary page titles use the selected app language", async ({ page }) => {
   for (const [path, title] of [
-    ["/", "kyaa | LIVEの瞬間とFan Passport"],
+    ["/", "Kyaa. Every Fan Moment Counts."],
     ["/community", "コミュニティ | kyaa"],
     ["/celebrities", "著名人とクリエイター | kyaa"],
     ["/live", "LIVEイベントと予定 | kyaa"],
