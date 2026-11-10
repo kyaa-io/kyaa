@@ -101,6 +101,10 @@ function StanExchangeContent({ locale, points, pointCost, pendingRequest }: Exch
   const locked = working;
   const pick = (n: number) => setPicked(Math.min(Math.max(1, n), maxQty));
   return <div className={styles.exchange}>
+    <div className={styles.exchangeRate}>
+      <span>{pointCost.toLocaleString(locale)} P</span><span aria-hidden="true">→</span>
+      <span className={styles.exchangeTicket}><img src="/images/dukjil-duo/glyph-ticket-80.webp" width={32} height={32} alt={w.tickets} />{unitsText(locale, 1)}</span>
+    </div>
     <span className={styles.quantityLabel}>{q.quantity}</span>
     <div className={styles.stepper} role="group" aria-label={q.quantity}>
       <FanIconButton aria-label={q.decrease} disabled={locked || Boolean(pending) || qty <= 1} onClick={() => pick(qty - 1)}><FanIcon icon={Minus} /></FanIconButton>

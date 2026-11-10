@@ -2,7 +2,6 @@ import { act, fireEvent, render, screen } from '@testing-library/react';
 import { beforeEach, expect, it, vi } from 'vitest';
 import { WalletHistoryPanel, WalletScreen } from './wallet-screen';
 import { clearResources } from '@/components/fan-ui/resource-cache';
-import {CreatorBoardAside} from '@/features/groups/ui/creator-board-aside';
 const auth=vi.hoisted(()=>({ready:true,authenticated:true,user:{id:'owner-a'},getAccessToken:vi.fn(async()=> 'token')}));
 const session=vi.hoisted(()=>({ready:true,ownerId:'owner-a',generation:0}));
 vi.mock('@/features/auth/client/cognito-auth',()=>({useByUsAuth:()=>auth}));
@@ -60,12 +59,6 @@ it('renders source balance failure from the real resource and retries the same r
 it('shows only returned attendance points rather than the source example bonus',async()=>{
  vi.stubGlobal('fetch',vi.fn(async(url:string)=>Response.json(url.endsWith('/history')?{entries:[]}:{...wallet,attendance:{...wallet.attendance,checkedIn:true,days:[{date:wallet.attendance.date,points:10}]}})));
  const view=render(<WalletScreen locale='ko' attendance/>);const state=(await screen.findByText('오늘 출석 완료')).closest('p')!;expect(state).toHaveTextContent('10P');expect(state).not.toHaveTextContent('20P');expect(state).not.toHaveTextContent('30P');
-});
-it('board aside sends support and capsule entries to one benefits link',async()=>{
- vi.stubGlobal('fetch',vi.fn(async()=>Response.json({error:{code:'UNAVAILABLE'}},{status:503})));
- render(<CreatorBoardAside slug='nchive' locale='ko'/>);
- expect(screen.getByRole('link',{name:'덕질'})).toHaveAttribute('href','/benefits?locale=ko');
- expect(screen.queryByRole('link',{name:'하트 보내기'})).toBeNull();
 });
 it('UI021 initial wallet load announces skeleton then shows real balance',async()=>{
  let finish!:(response:Response)=>void;const delayed=new Promise<Response>(resolve=>{finish=resolve;});

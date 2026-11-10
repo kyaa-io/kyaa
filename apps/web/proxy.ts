@@ -85,7 +85,7 @@ export function proxy(request: NextRequest): NextResponse {
     const response = resolve
       ? isAdminPage ? NextResponse.redirect(destination, 307) : NextResponse.rewrite(destination, { request: { headers: requestHeaders } })
       : NextResponse.next({ request: { headers: requestHeaders } });
-    if (isAwsHosting() && process.env.AWS_STORAGE_ENABLED === "true"
+    if (process.env.AWS_STORAGE_ENABLED === "true"
       && !request.nextUrl.pathname.startsWith("/connect/instagram/")) {
       response.headers.set("Content-Security-Policy", awsStorageContentSecurityPolicy({
         rewardedAds: rewardedExchangeDecision(process.env).enabled,

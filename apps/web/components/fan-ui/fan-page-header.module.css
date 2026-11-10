@@ -70,7 +70,7 @@
 }
 .descriptionActions { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-3); min-width: 0; }
 /* 원문 보기는 펼침 버튼과 같은 줄·같은 크기다(번역 공용 버튼의 44px 높이를 이 줄에서만 맞춘다). */
-.descriptionActions > button { min-height: 32px; padding: 0; font-weight: 700; }
+.descriptionActions > button:not([data-translation-control]) { min-height: 32px; padding: 0; font-weight: 700; }
 .more:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 .stats { grid-area: stats; min-width: 0; min-height: 24px; }
 .tabs { min-width: 0; }

@@ -2,7 +2,7 @@ import type { AppLocale } from "@/i18n/locales";
 
 /** 모임 상단 세 블록(내 아티스트·Hot 게시글·얇은 배너) 문구. 번호 자리표시는 {0}. */
 const values: Record<AppLocale, readonly string[]> = {
-  ko: ["내 아티스트", "모임 찾기", "로그인", "Hot 게시글", "좋아요 많은 순", "펼치기", "접기", "아직 Hot 게시글 없음", "게시글을 불러오지 못했어요", "다시 시도", "좋아요 {0}", "댓글 {0}", "모임 배너", "이전 배너", "다음 배너"],
+  ko: ["내 아티스트", "모임 찾기", "로그인", "Hot 게시글", "좋아요순", "펼치기", "접기", "아직 Hot 게시글 없음", "게시글을 불러오지 못했어요", "다시 시도", "좋아요 {0}", "댓글 {0}", "모임 배너", "이전 배너", "다음 배너"],
   en: ["My artists", "Find groups", "Sign in", "Hot posts", "Most liked", "Show more", "Show less", "No hot posts yet", "Couldn’t load posts", "Retry", "{0} likes", "{0} comments", "Group banners", "Previous banner", "Next banner"],
   ja: ["マイアーティスト", "グループを探す", "ログイン", "Hot投稿", "いいね順", "もっと見る", "閉じる", "Hot投稿はまだありません", "投稿を読み込めませんでした", "再試行", "いいね {0}", "コメント {0}", "グループのバナー", "前のバナー", "次のバナー"],
   "zh-Hans": ["我的艺人", "查找群组", "登录", "热门帖子", "按点赞数排序", "展开", "收起", "暂无热门帖子", "无法加载帖子", "重试", "点赞 {0}", "评论 {0}", "群组横幅", "上一个横幅", "下一个横幅"],
@@ -17,7 +17,7 @@ const values: Record<AppLocale, readonly string[]> = {
 };
 
 const hotSort: Record<AppLocale, readonly [string, string]> = {
-  ko: ["댓글 많은 순", "조회수 많은 순"], en: ["Most commented", "Most viewed"], ja: ["コメント順", "閲覧数順"],
+  ko: ["댓글순", "조회수순"], en: ["Most commented", "Most viewed"], ja: ["コメント順", "閲覧数順"],
   "zh-Hans": ["按评论数排序", "按浏览量排序"], "zh-Hant": ["依留言數排序", "依瀏覽數排序"],
   es: ["Más comentarios", "Más vistas"], id: ["Komentar terbanyak", "Penayangan terbanyak"],
   vi: ["Nhiều bình luận nhất", "Nhiều lượt xem nhất"], th: ["ความคิดเห็นมากที่สุด", "ยอดดูมากที่สุด"],

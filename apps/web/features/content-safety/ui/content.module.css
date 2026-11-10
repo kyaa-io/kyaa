@@ -79,9 +79,9 @@
 .composer .actions button[data-fan-action-emphasis="primary"] { width:auto; min-width:104px; min-height:44px; border-radius:12px; background:var(--fanpage-action-solid,var(--color-ink)); color:var(--color-surface); box-shadow:none; }
 
 .translation:has(> .translationButton) > p:first-child { margin-bottom:0; }
-.translationButton { display:inline-flex; align-items:center; min-width:44px; min-height:44px; padding:4px 0; border:0; border-radius:4px; background:transparent; color:var(--color-muted); font:inherit; font-size:13px; text-align:start; cursor:pointer; }
+.translationButton { display:inline-flex; align-items:center; min-width:44px; min-height:44px; padding:4px 0; border:0; border-radius:4px; background:transparent; color:var(--color-translation-link); font:inherit; font-size:13px; font-weight:400; text-align:start; cursor:pointer; }
 .translationButton:disabled { opacity:.5; cursor:wait; }
-@media(hover:hover) { .translationButton:hover { color:var(--color-ink); text-decoration:underline; text-underline-offset:3px; } }
+@media(hover:hover) { .translationButton:hover { color:var(--color-translation-link); text-decoration:underline; text-underline-offset:3px; } }
 
 .postHeader { display:grid; grid-template-columns:32px minmax(0,1fr) auto; align-items:start; gap:12px; }
 .postHeader > img { margin-top:6px; }

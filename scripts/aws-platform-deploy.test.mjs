@@ -147,6 +147,7 @@ test('production HA, private routing and nonproduction NAT sharing remain explic
   assert.deepEqual(t.Resources.Service.Properties.DesiredCount['Fn::If'], ['IsProduction', 2, 1]);
   assert.deepEqual(t.Resources.Service.Properties.DeploymentConfiguration, { MinimumHealthyPercent: 100, MaximumPercent: 200, DeploymentCircuitBreaker: { Enable: true, Rollback: true } });
   assert.deepEqual(t.Resources.TaskDefinition.Properties.Cpu['Fn::If'], ['IsProduction', '1024', '512']);
+  assert.equal(t.Resources.TaskDefinition.Properties.Memory, '2048');
   assert.deepEqual(t.Resources.Database.Properties.MultiAZ['Fn::If'], ['IsProduction', true, false]);
   assert.deepEqual(t.Resources.Database.Properties.BackupRetentionPeriod['Fn::If'], ['IsProduction', 14, 7]);
   assert.equal(t.Resources.Database.Properties.PubliclyAccessible, false);
@@ -297,6 +298,9 @@ test('task identity cleanup and browser uploads stay limited to the environment'
   assert.deepEqual(cors.AllowedMethods, ['PUT','GET','HEAD']);
   assert.deepEqual(cors.AllowedHeaders, ['content-type','x-upsert','if-none-match']);
   assert.equal(JSON.stringify(cors.AllowedOrigins).includes('*'), false);
+  assert.deepEqual(t.Conditions.IsDevelopment, {'Fn::Equals': [{Ref: 'Environment'}, 'dev']});
+  assert.deepEqual(cors.AllowedOrigins['Fn::If'][2][1], {'Fn::If': ['IsDevelopment', 'http://localhost:3000', {Ref: 'AWS::NoValue'}]});
+  assert.equal(cors.AllowedOrigins['Fn::If'][1].some(origin => origin.includes('localhost')), false);
   assert.match(t.Resources.ViewerHostFunction.Properties.FunctionCode, /x-byus-client-ip.*event.viewer.ip/);
 });
 

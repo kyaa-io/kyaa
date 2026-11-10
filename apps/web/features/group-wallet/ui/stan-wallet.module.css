@@ -26,6 +26,9 @@ button.tileLink { display:inline; align-self:flex-start; width:auto; min-height:
 .sheetValue { display:flex; margin-top:var(--space-1); }
 .sheetValue .number { font-size:var(--fan-number-size); font-weight:800; line-height:1; }
 .exchange { display:flex; flex-direction:column; align-items:stretch; gap:var(--space-3); min-width:0; }
+.exchangeRate { display:flex; align-items:center; justify-content:center; gap:var(--space-3); margin-bottom:var(--space-2); font-size:var(--fan-description-size); font-weight:400; }
+.exchangeTicket { display:inline-flex; align-items:center; gap:var(--space-1); }
+.exchangeTicket img { object-fit:contain; }
 .quantityLabel { font-size:var(--fan-description-size); font-weight:700; line-height:1.4; }
 .stepper { display:flex; flex:none; align-items:center; width:100%; min-height:52px; padding:var(--space-1); border:1px solid var(--color-line); border-radius:var(--radius-pill); }
 .stepper output { flex:1; min-width:56px; font-size:var(--fan-action-emphasis-size); font-weight:700; line-height:24px; text-align:center; font-variant-numeric:tabular-nums; font-feature-settings:"tnum"; white-space:nowrap; }
@@ -41,7 +44,7 @@ button.tileLink { display:inline; align-self:flex-start; width:auto; min-height:
  .value { grid-column:2; grid-row:1; margin:0; }.label { grid-column:2; grid-row:2; min-height:0; }
  .under { grid-column:2; flex-direction:row; align-items:center; justify-content:flex-end; gap:var(--space-3); }
  .under .gauge { flex:1; width:auto; }.tileLink,.stampLabel { flex-shrink:0; max-width:100%; }
- .backdrop { align-items:center; }.sheet { max-width:440px; border-radius:var(--radius-control); }
+ .backdrop { align-items:center; }.backdrop .sheet[data-overlay-content] { max-width:440px; border-radius:var(--radius-control); }
  .sheet .exchangeAction { min-height:48px; }
 }
 

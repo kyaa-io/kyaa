@@ -282,3 +282,5 @@ describe("K6: a group board post pays the 글쓰기 mission", () => {
   expect(s.rpc.mock.calls.some(([name]) => name === "record_dukjil_action")).toBe(false);
  });
 });
+
+it("accepts an authenticated photo-only room message and rejects empty or injected messages", async()=>{const s=setup();const input={body:"",assetId:other,requestId:me};expect((await s.handler("message",req("/api",input),{id:me,itemId:other})).status).toBe(200);expect(s.rpc).toHaveBeenLastCalledWith("groups_content_dispatch",expect.objectContaining({p_actor:me,p_input:input}));s.rpc.mockClear();for(const invalid of [{body:"",requestId:me},{...input,assetId:"bad"},{...input,actorId:other}])expect((await s.handler("message",req("/api",invalid),{id:me,itemId:other})).status).toBe(400);expect((await s.handler("message",req("/api",input,null),{id:me,itemId:other})).status).toBe(401);expect(s.rpc).not.toHaveBeenCalled();});

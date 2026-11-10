@@ -1,0 +1,16 @@
+{
+  "changes": [
+    "비밀방에서 사진만 골라 바로 보낼 수 있고, 방 안에서는 뒤로가기와 방 제목만 남겨 대화 화면이 넓어졌어요.",
+    "교환하기 창에 포인트 몇 P가 응모권 몇 장이 되는지 보여 주고, 데스크톱에서는 창 폭을 440px로 맞췄어요.",
+    "팬 활동과 오늘의 덕질이 같은 행 모양으로 보이고 공감 누르기도 목록에 들어갔어요. 출석 도장 보상은 도장이 찍힐 때 함께 보이고, 알림은 4초 뒤 닫혀요.",
+    "게시판에서는 글 목록과 상세만 보이고, 원문·번역 전환 버튼은 파란색 13px로 통일했어요.",
+    "화면은 시험 계정으로 로컬에서 확인한 사진이에요."
+  ],
+  "path": "/benefits",
+  "images": [
+    "release-notes/images/2026-11-10-slides-room-photo-390.png",
+    "release-notes/images/2026-11-10-slides-room-photo-1440.png",
+    "release-notes/images/2026-11-10-slides-exchange-1440.png",
+    "release-notes/images/2026-11-10-slides-activity-390.png"
+  ]
+}

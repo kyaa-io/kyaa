@@ -94,13 +94,13 @@ it("hot sort requests the selected ordering from the server", async () => {
   state.urls = [];
   state.posts = [{ ...post(1), viewCount: 7 }];
   const first = render(<HotPosts locale="ko" />);
-  fireEvent.click(screen.getByRole("button", { name: /좋아요 많은 순/ }));
-  fireEvent.click(await screen.findByRole("menuitemradio", { name: "댓글 많은 순" }));
+  fireEvent.click(screen.getByRole("button", { name: /좋아요순/ }));
+  fireEvent.click(await screen.findByRole("menuitemradio", { name: "댓글순" }));
   expect(state.urls.at(-1)).toContain("sort=comments");
   first.unmount();
   render(<HotPosts locale="ko" />);
-  fireEvent.click(screen.getByRole("button", { name: /좋아요 많은 순/ }));
-  fireEvent.click(await screen.findByRole("menuitemradio", { name: "조회수 많은 순" }));
+  fireEvent.click(screen.getByRole("button", { name: /좋아요순/ }));
+  fireEvent.click(await screen.findByRole("menuitemradio", { name: "조회수순" }));
   expect(state.urls.at(-1)).toContain("sort=views");
   expect(screen.getByText("조회 7")).toBeInTheDocument();
 });

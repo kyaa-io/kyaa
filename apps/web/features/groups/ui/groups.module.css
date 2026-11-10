@@ -311,3 +311,7 @@
 
 @media(max-width:1023px){.discoveryAside .discoveryAttendance{position:fixed;right:16px;bottom:calc(var(--space-16) + var(--space-4) + env(safe-area-inset-bottom));z-index:var(--z-bottom-nav);display:block;margin:0;padding:0;border:0;background:transparent}.discoveryAttendance>div:first-child{display:none}.discoveryLayout{/* design-lint-disable N4 -- User 2026-11-10: mobile bottom navigation clearance. */ padding-bottom:var(--space-16)}}
 @media(max-width:1023px){.discoveryAttendance [data-fan-action]{width:calc(var(--space-16) + var(--space-2));height:calc(var(--space-16) + var(--space-2));padding:var(--space-2);border-radius:50%;font-size:var(--fan-metadata-size);line-height:1.2}.discoveryAttendance [data-fan-action]>span{overflow-wrap:anywhere}}
+
+.creatorPostLayout:not(:has(>aside)),.boardOnlyLayout{grid-template-columns:minmax(0,1fr)}
+
+.creatorPostLayout:not(:has(>aside)),.boardOnlyLayout { width:100%; max-width:720px; margin-inline:auto; }

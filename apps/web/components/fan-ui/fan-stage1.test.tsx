@@ -222,6 +222,30 @@ describe("FanTabs segment / panels / count", () => {
 });
 
 describe("FanToast", () => {
+  it("keeps a reward while its close button has keyboard focus", async () => {
+    render(<FanToastProvider />);
+    await waitFor(() => expect(document.querySelector("[data-fan-toast-viewport]")).not.toBeNull());
+    act(() => { showFanToast({ title: "키보드 출석 완료", tone: "success", duration: 80 }); });
+    const viewport = document.querySelector("[data-fan-toast-viewport]")!;
+    await waitFor(() => expect(viewport.textContent).toContain("키보드 출석 완료"));
+    const close = viewport.querySelector("button")!;
+    act(() => close.focus());
+    await act(async () => { await new Promise(resolve => setTimeout(resolve, 100)); });
+    expect(viewport.textContent).toContain("키보드 출석 완료");
+    act(() => close.blur());
+    await waitFor(() => expect(viewport.textContent).not.toContain("키보드 출석 완료"));
+  });
+
+  it("expires a reward toast even when window blur pauses library timers", async () => {
+    render(<FanToastProvider />);
+    await waitFor(() => expect(document.querySelector("[data-fan-toast-viewport]")).not.toBeNull());
+    fireEvent.blur(window);
+    act(() => { showFanToast({ title: "출석 완료", tone: "success", duration: 40 }); });
+    await waitFor(() => expect(document.querySelector("[data-fan-toast-viewport]")?.textContent).toContain("출석 완료"));
+    await waitFor(() => expect(document.querySelector("[data-fan-toast-viewport]")?.textContent).not.toContain("출석 완료"));
+    fireEvent.focus(window);
+  });
+
   it("queues a toast raised before the lazy viewport mounts", async () => {
     act(() => { showFanToast({ title: "먼저 온 알림" }); });
     render(<FanToastProvider />);

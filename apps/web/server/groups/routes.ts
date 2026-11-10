@@ -90,7 +90,7 @@ const inputSchemas = {
   transfer: z.object({ appUserId: uuid, requestId }).strict(),
   post: groupNewPostInput,
   room: z.object({ name: z.string().trim().min(1).max(100), minimumTier: z.enum(["Member", "Bronze", "Silver", "Gold", "Platinum", "Diamond"]).default("Gold"), requestId }).strict(),
-  message: z.object({ body: z.string().trim().min(1).max(2000), requestId }).strict(),
+  message: z.object({ body: z.string().trim().max(2000), assetId: uuid.optional(), requestId }).strict().refine(value => Boolean(value.body || value.assetId)),
   settings: z.object({ name: z.string().trim().min(1).max(100), description: z.string().trim().max(1000), question: z.string().trim().max(300).nullable(), anonymous: z.boolean(), imageAssetId:uuid.nullable().optional(), requestId }).strict(),
   comment: z.object({body:z.string().trim().min(1).max(2000),parentId:uuid.nullable().optional(),assetIds:z.array(uuid).max(5).optional(),requestId}).strict(),
   reaction: z.object({liked:z.boolean(),requestId}).strict(),

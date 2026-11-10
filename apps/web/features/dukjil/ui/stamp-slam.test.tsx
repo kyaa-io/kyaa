@@ -27,11 +27,11 @@ it("draws nothing with reduced motion and runs the shared reward (D8) right away
   expect(reward.calls).toEqual([{ locale: "ko", points: 2, stamps: 1, anchor: undefined, label: undefined }]);
   expect(document.querySelector("[data-stamp-slam]")).toBeNull();
 });
-it("runs the shared reward after the stamp, not before; a stamp-only grant still says one stamp", async () => {
+it("shows the confirmed reward before the animation finishes; a stamp-only grant still says one stamp", async () => {
   motion(false);
   let done!: Promise<void>;
   await act(async () => { done = celebrateStamp({ locale: "ko", label: "퀴즈 통과" }); });
-  expect(reward.calls).toHaveLength(0);
+  expect(reward.calls).toHaveLength(1);
   await act(async () => { vi.advanceTimersByTime(1700); });
   await done;
   expect(reward.calls).toEqual([{ locale: "ko", points: 0, stamps: 1, anchor: undefined, label: "퀴즈 통과" }]);

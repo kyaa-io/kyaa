@@ -292,3 +292,20 @@ describe("open-app before the native app exists", () => {
     expect(proxy(new NextRequest("https://kyaa.io/live")).status).not.toBe(302);
   });
 });
+
+describe("storage upload CSP outside AWS hosting", () => {
+  it("permits only the configured upload bucket when local S3 storage is enabled", () => {
+    vi.stubEnv("HOSTING_PROVIDER", "");
+    vi.stubEnv("AWS_STORAGE_ENABLED", "true");
+    vi.stubEnv("S3_PRIVATE_BUCKET", "byus-dev-private");
+    vi.stubEnv("AWS_REGION", "ap-northeast-2");
+    const response = proxy(new NextRequest("http://localhost:3000/benefits?locale=ko"));
+    expect(response.headers.get("Content-Security-Policy")).toContain("https://byus-dev-private.s3.ap-northeast-2.amazonaws.com/mobile-media/");
+    expect(response.headers.get("Content-Security-Policy")).not.toContain("https://*.s3");
+  });
+  it("keeps storage origins closed when storage is disabled", () => {
+    vi.stubEnv("HOSTING_PROVIDER", "");
+    vi.stubEnv("AWS_STORAGE_ENABLED", "false");
+    expect(proxy(new NextRequest("http://localhost:3000/benefits?locale=ko")).headers.get("Content-Security-Policy")).toBeNull();
+  });
+});

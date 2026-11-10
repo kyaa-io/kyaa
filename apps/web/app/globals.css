@@ -21,6 +21,7 @@
   --color-shortform-play: rgb(0 0 0 / 65%);
   --radius-shortform-control: 22px;
   --z-home-live: 4;
+  --color-translation-link: #2876ad;
   --color-muted: oklch(48% 0 0);
   --color-line: oklch(90% 0 0);
   --color-line-subtle: oklch(93% 0 0);

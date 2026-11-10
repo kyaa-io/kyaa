@@ -36,7 +36,7 @@ const LEGACY_KEYS: readonly MissionKey[] = ["checkin", "post", "comment"];
 /** A page with no creator (모임·취미·브랜드): where its activities happen. Its posts and comments pay no points and have no daily count on the server, so these rows carry neither. */
 export type GroupMissionLinks = { write: string; comment: string };
 
-/** One row per fan activity: what to do, the points, today's count against the daily limit, a stamp when done. Pressing a row goes to where that activity happens. `all` lists every catalog activity with an all-clear row on top (the 덕질 tab); without it a page shows its six main ones. */
+/** One row per fan activity: what to do, the points, today's count against the daily limit, a stamp when done. Pressing a row goes to where that activity happens. `all` lists every catalog activity with an all-clear row on top (the 덕질 tab); without it a page shows its main activities. */
 export function FanMissions({ locale, slug, title, titleSuffix, passportHref, proofHref, footer, onAttendance, group, all = false, noPage }: { locale: AppLocale; slug: string; title: string; titleSuffix?: ReactNode; passportHref: string; proofHref: string; footer?: ReactNode; onAttendance: (trigger: HTMLElement) => void; group?: GroupMissionLinks; all?: boolean; /** Where the activity rows go while the viewer has no page to do them on. */ noPage?: string }) {
   const state = useDukjil();
   const anywhere = useAttendedAnywhereToday(!group && state?.authenticated === true);
@@ -57,12 +57,12 @@ export function FanMissions({ locale, slug, title, titleSuffix, passportHref, pr
     checkinMission,
     { key: "post", label: t("dukjilTilePost"), art: "post", href: compose },
     { key: "comment", label: t("dukjilTileComment"), art: "first-comment", href: board },
+    { key: "reaction", label: activityLabel(locale, "reaction"), art: "first-like", href: board },
     { key: "share", label: t("dukjilTileShare"), art: "share", href: noPage ?? `/${slug}?tab=certifications&share=1&locale=${locale}` },
     { key: "invite", label: t("dukjilTileInvite"), art: "invite", href: `/my/invitations?locale=${locale}` },
     { key: "proof", label: t("dukjilTileProof"), art: "proof", href: proof },
   ];
   const more: Mission[] = all && !group ? [
-    { key: "reaction", label: activityLabel(locale, "reaction"), art: "first-like", href: board },
     { key: "quiz", label: activityLabel(locale, "quiz"), art: "welcome", href: noPage ?? `/c/${encodeURIComponent(slug)}/verify?locale=${locale}` },
     { key: "subscription", label: activityLabel(locale, "subscription"), art: "subscription", href: proof },
     { key: "live_reserve", label: activityLabel(locale, "live_reserve"), art: "reservation", href: live },

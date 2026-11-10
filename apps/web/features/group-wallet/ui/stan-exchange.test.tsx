@@ -157,3 +157,9 @@ it.each(['invalid', 'other-owner'])('does not unlock a low-balance wallet for %s
   expect(screen.getByRole('button', { name: '교환' })).toBeDisabled();
   expect(exchanges()).toHaveLength(0);
 });
+
+it('shows the policy exchange rate with the ticket asset', () => {
+  render(<StanExchange locale="ko" points={250} pointCost={100} />);
+  expect(screen.getByText('100 P')).toBeInTheDocument();
+  expect(screen.getByRole('img', { name: '응모권' })).toHaveAttribute('src', '/images/dukjil-duo/glyph-ticket-80.webp');
+});

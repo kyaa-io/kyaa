@@ -36,9 +36,9 @@ export function playStampSlam(): Promise<void> {
   return running;
 }
 
-/** The stamp first, then the common reward (coin badge + toast, feedback D8) — the one place the two meet.
+/** Show the confirmed reward immediately while the stamp animation plays.
  * Callers pass server-confirmed grants only; `celebrateReward` merges grants within 1.2s and handles reduced motion. */
 export async function celebrateStamp(reward: StampReward) {
-  await playStampSlam();
   celebrateReward({ locale: reward.locale, points: reward.points ?? 0, stamps: reward.stamps ?? 1, anchor: reward.anchor ?? undefined, label: reward.label });
+  await playStampSlam();
 }

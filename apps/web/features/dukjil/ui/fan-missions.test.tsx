@@ -1,7 +1,7 @@
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 
-const rules = { checkin: { points: 2, streakBonus: 10, streakEvery: 7 }, post: { points: 20, dailyLimit: 3 }, comment: { points: 3, dailyLimit: 10 }, share: { points: 10, dailyLimit: 3 }, invite: { points: 200, dailyLimit: null }, proof: { points: 100, dailyLimit: null } };
+const rules = { checkin: { points: 2, streakBonus: 10, streakEvery: 7 }, post: { points: 20, dailyLimit: 3 }, comment: { points: 3, dailyLimit: 10 }, reaction: { points: 1, dailyLimit: 10 }, share: { points: 10, dailyLimit: 3 }, invite: { points: 200, dailyLimit: null }, proof: { points: 100, dailyLimit: null } };
 const h = vi.hoisted(() => ({ auth: true, ready: true, catalog: undefined as unknown, today: undefined as unknown, failure: undefined as unknown, urls: [] as (string | null)[], byUrl: {} as Record<string, unknown> }));
 vi.mock("@/features/groups/ui/use-group-resource", () => ({
   GroupRequestError: class extends Error {},
@@ -12,9 +12,9 @@ import { DukjilProvider, resetDukjilCatalogCache } from "./dukjil-provider";
 import { FanMissions } from "./fan-missions";
 
 const action = (count: number, remaining: number | null, stamped = false) => ({ count, points: count, remaining, stamped });
-const today = { kstDate: "2026-11-07", policyActive: true, totalPoints: 22, hasPassport: true, attendance: { attendedToday: true, streak: 3, nextBonusIn: 4 }, actions: { post: action(1, 2, true), comment: action(0, 10), share: action(3, 0, true), invite: action(0, null), proof: action(0, 2) } };
+const today = { kstDate: "2026-11-07", policyActive: true, totalPoints: 22, hasPassport: true, attendance: { attendedToday: true, streak: 3, nextBonusIn: 4 }, actions: { post: action(1, 2, true), comment: action(0, 10), reaction: action(2, 8), share: action(3, 0, true), invite: action(0, null), proof: action(0, 2) } };
 const onAttendance = vi.fn();
-const ui = () => render(<DukjilProvider slug="elina" locale="ko"><FanMissions locale="ko" slug="elina" title="팬 활동" passportHref="/passports/p?locale=ko" proofHref="/elina?tab=certifications&locale=ko" onAttendance={onAttendance} /></DukjilProvider>);
+const ui = (all = false) => render(<DukjilProvider slug="elina" locale="ko"><FanMissions locale="ko" slug="elina" title="팬 활동" all={all} passportHref="/passports/p?locale=ko" proofHref="/elina?tab=certifications&locale=ko" onAttendance={onAttendance} /></DukjilProvider>);
 
 beforeEach(() => { resetDukjilCatalogCache(); h.auth = true; h.ready = true; h.catalog = { version: 1, rules, missionBook: {} }; h.today = today; h.failure = undefined; h.urls = []; h.byUrl = {}; onAttendance.mockReset(); });
 afterEach(cleanup);
@@ -52,7 +52,7 @@ it("marks a finished activity and sends it after the open ones", async () => {
   const rows = await screen.findAllByRole("listitem");
   await waitFor(() => expect(rowNow("share")).toHaveAttribute("data-done", "true"));
   const keys = screen.getAllByRole("listitem").map(row => row.getAttribute("data-mission"));
-  expect(rows.length).toBe(6);
+  expect(rows.length).toBe(7);
   expect(keys.indexOf("share")).toBeGreaterThan(keys.indexOf("post"));
   expect(rowNow("share")).toHaveTextContent("완료");
 });
@@ -107,4 +107,19 @@ it("M4-3: stays 0/1 when no joined page was checked in today", async () => {
   ui();
   await waitFor(() => expect(rowNow("checkin")).toHaveTextContent("0/1"));
   expect(rowNow("checkin")).toHaveAttribute("data-done", "false");
+});
+
+it.each([false,true])('shows supported reaction once with shared progress and reward (all=%s)',async all=>{
+ const view=ui(all);
+ await row('reaction');
+ await waitFor(()=>expect(rowNow('reaction')).toHaveTextContent('2/10'));
+ const reaction=rowNow('reaction');
+ expect(reaction).toHaveTextContent('+1P');
+ expect(reaction.querySelector('[role=progressbar]')).toHaveAttribute('aria-valuenow','2');
+ expect(reaction.querySelector('a')).toHaveAttribute('href','/elina?tab=board&source=fans&locale=ko');
+ expect(view.container.querySelectorAll('[data-mission="reaction"]')).toHaveLength(1);
+});
+it('omits reaction when the catalog does not support it',async()=>{
+ const {reaction,...supported}=rules;h.catalog={version:1,rules:supported,missionBook:{}};
+ ui();await row('post');await waitFor(()=>expect(rowNow('reaction')).toBeNull());
 });

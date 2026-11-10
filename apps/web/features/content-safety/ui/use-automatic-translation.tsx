@@ -129,7 +129,7 @@ export function useAutomaticTranslation({ texts, locale, target, enabled = true 
 
 export function TranslationControl({ locale, translation }: { locale: AppLocale; translation: Omit<AutomaticTranslation, "observeElement" | "texts"> }) {
   const copy = contentCopy(locale);
-  return <>{translation.eligible && <button type="button" className={styles.translationButton} disabled={translation.busy} onClick={translation.toggle} aria-pressed={translation.showing}>
+  return <>{translation.eligible && <button type="button" className={styles.translationButton} data-translation-control="" disabled={translation.busy} onClick={translation.toggle} aria-pressed={translation.showing}>
     {translation.busy ? copy.translating : translation.showing ? copy.original : copy.translate}
   </button>}{translation.error && <span role="alert" className={styles.error}>{translation.error}</span>}</>;
 }

@@ -4,9 +4,9 @@ import {afterEach,beforeEach,expect,it,vi} from 'vitest';
 
 const rules={checkin:{points:2,streakBonus:10,streakEvery:7},post:{points:20,dailyLimit:3},comment:{points:3,dailyLimit:10},proof:{points:100,dailyLimit:null}};
 const pageId='e9200000-0000-4000-8000-000000000003';
-const h=vi.hoisted(()=>({auth:false,ready:true,member:false as boolean,compact:false,today:undefined as unknown,urls:[] as string[],events:[] as unknown[]}));
+const h=vi.hoisted(()=>({auth:false,ready:true,member:false as boolean,compact:false,activeTab:'members',today:undefined as unknown,urls:[] as string[],events:[] as unknown[]}));
 const page={id:pageId,kind:'brand',slug:'run-and-music',name:'RUN&MUSIC',celebrityId:null,imageUrl:null,description:'',memberCount:13,question:null};
-vi.mock('./group-page-context',()=>({useGroupPage:()=>({page,detail:{page,membership:h.member?{role:'member'}:null},ownerKey:'u',startJoin:vi.fn(),joinPending:false,hrefFor:(tab:string,extra?:Record<string,string>)=>`/pages/groups/${pageId}?${new URLSearchParams({locale:'ko',tab,...extra})}`,star:h.member?{state:'filled',label:'가입함'}:h.auth?{state:'empty',label:'가입',onClick:vi.fn()}:{state:'empty',label:'가입',href:'/login?locale=ko'}}),useOptionalGroupPage:()=>null}));
+vi.mock('./group-page-context',()=>({useGroupPage:()=>({page,activeTab:h.activeTab,detail:{page,membership:h.member?{role:'member'}:null},ownerKey:'u',startJoin:vi.fn(),joinPending:false,hrefFor:(tab:string,extra?:Record<string,string>)=>`/pages/groups/${pageId}?${new URLSearchParams({locale:'ko',tab,...extra})}`,star:h.member?{state:'filled',label:'가입함'}:h.auth?{state:'empty',label:'가입',onClick:vi.fn()}:{state:'empty',label:'가입',href:'/login?locale=ko'}}),useOptionalGroupPage:()=>null}));
 vi.mock('./group-page-menu',()=>({useCompactHeader:()=>h.compact}));
 vi.mock('./group-board',()=>({GroupBoard:()=><section data-testid='board'/>,parseGroupPosts:(v:unknown)=>v}));
 vi.mock('./group-home-panels',()=>({GroupBrandHomeEvent:()=>null,GroupHomeGallery:()=>null}));
@@ -22,7 +22,7 @@ import {resetDukjilCatalogCache} from '@/features/dukjil/ui/dukjil-provider';
 import {GroupHome,GroupSideRail} from './group-home';
 
 const activeToday={kstDate:'2026-11-07',policyActive:true,totalPoints:22,hasPassport:null,attendance:null,actions:{post:{count:1,points:20,remaining:2,stamped:true}}};
-beforeEach(()=>{resetDukjilCatalogCache();h.auth=false;h.ready=true;h.member=false;h.compact=false;h.today=activeToday;h.urls=[];h.events=[];});
+beforeEach(()=>{resetDukjilCatalogCache();h.auth=false;h.ready=true;h.member=false;h.compact=false;h.activeTab='members';h.today=activeToday;h.urls=[];h.events=[];});
 afterEach(cleanup);
 const home=()=>render(<GroupHome locale='ko' pageId={pageId}/>);
 const missions=(root:HTMLElement)=>[...root.querySelectorAll('[data-mission]')].map(row=>row.getAttribute('data-mission'));
@@ -110,3 +110,5 @@ it('keeps the mission card in the side rail of the other tabs',async()=>{
  await waitFor(()=>expect(missions(view.container)).toHaveLength(4));
  expect(screen.queryByText('모임 활동 인증')).not.toBeInTheDocument();
 });
+
+for(const tab of ['board','news'])it(`keeps ${tab} focused on posts without activity or event rail`,()=>{h.activeTab=tab;const view=render(<GroupSideRail locale='ko' pageId={pageId}/>);expect(view.container).toBeEmptyDOMElement();});

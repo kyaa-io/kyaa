@@ -1,6 +1,6 @@
 "use client";
 import {useRef,useState} from 'react';
-import {Heart,MessageCircle,MessagesSquare,Pencil,Star} from 'lucide-react';
+import {MessageCircle,MessagesSquare,Pencil,Star} from 'lucide-react';
 import {FanAction} from '@/components/fan-ui/fan-action';
 import {CreatorAttendanceEntry} from '@/features/dukjil/ui/creator-attendance-entry';
 import {dukjilText} from '@/features/dukjil/ui/dukjil-copy';
@@ -12,7 +12,6 @@ import {WalletAttendanceDialog} from '@/features/group-wallet/ui/wallet-screen';
 import type {AppLocale} from '@/i18n/locales';
 import type {GroupPage} from '../domain/contracts';
 import {creatorHomeCardCopy} from './creator-home-card-copy';
-import {groupBenefitsCopy} from './group-benefits-copy';
 import {GroupBoard} from './group-board';
 import {GroupBrandHomeEvent,GroupHomeGallery} from './group-home-panels';
 import {useGroupPage} from './group-page-context';
@@ -77,12 +76,11 @@ export function GroupHome({locale,pageId,heading}:{locale:AppLocale;pageId:strin
  </div>;
 }
 
-/** 홈이 아닌 탭의 사이드. 팬페이지의 게시판 사이드와 같은 구성이다. */
+/** 게시판에는 글만 남기고, 다른 탭에서는 활동 이동을 유지한다. */
 export function GroupSideRail({locale}:{locale:AppLocale;pageId:string}){
- const g=useGroupPage(),narrow=useCompactHeader(),page=g.page,t=groupsCopy(locale);
- if(!page||narrow)return null;
+ const g=useGroupPage(),narrow=useCompactHeader(),page=g.page;
+ if(!page||narrow||g.activeTab==='board'||g.activeTab==='news')return null;
  return <aside className={railStyles.aside}>
   <GroupMissionCard page={page} locale={locale}/>
-  <section className={railStyles.events}><h2>{locale==='ko'?'응원과 이벤트':t.events}</h2><FanAction variant='text' href={`/benefits?locale=${locale}`} leadingIcon={<Heart/>} trailingIcon={<span aria-hidden="true">›</span>}>{groupBenefitsCopy(locale).title}</FanAction></section>
  </aside>;
 }

@@ -434,6 +434,14 @@
           ]
         }
       ]
+    },
+    "IsDevelopment": {
+      "Fn::Equals": [
+        {
+          "Ref": "Environment"
+        },
+        "dev"
+      ]
     }
   },
   "Resources": {
@@ -964,13 +972,7 @@
             "512"
           ]
         },
-        "Memory": {
-          "Fn::If": [
-            "IsProduction",
-            "2048",
-            "1024"
-          ]
-        },
+        "Memory": "2048",
         "NetworkMode": "awsvpc",
         "RequiresCompatibilities": [
           "FARGATE"
@@ -1618,6 +1620,15 @@
                   [
                     {
                       "Fn::Sub": "https://${WebDomainName}"
+                    },
+                    {
+                      "Fn::If": [
+                        "IsDevelopment",
+                        "http://localhost:3000",
+                        {
+                          "Ref": "AWS::NoValue"
+                        }
+                      ]
                     }
                   ]
                 ]
