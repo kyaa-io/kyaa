@@ -1,3 +1,4 @@
+-- ORDER: roll back 20261221171000_fan_board_video_limit_s3.sql first, then this file.
 -- Rollback of 20261221170000_fan_board_video_limit.sql: the 50 MiB ceiling again for every purpose.
 -- Roll the web back first. Refuses while a fan-post video above 50 MiB exists (the old check would reject it).
 begin;
