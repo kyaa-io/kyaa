@@ -8,6 +8,7 @@ import type { AppLocale } from "@/i18n/locales";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import { FanSkeleton } from "@/components/fan-ui/fan-skeleton";
 import { FeedVideo, feedAutoplayAllowed } from "@/components/feed-video/feed-video";
+import { acquireVideoBlob, dropVideoBlob, releaseVideoBlob } from "./video-blob-cache";
 import { feedVideoCopy } from "@/components/feed-video/feed-video-copy";
 import { FanIcon } from "@/components/fan-ui/fan-icon";
 import { FanIconButton } from "@/components/fan-ui/fan-icon-button";
@@ -30,41 +31,6 @@ function useVideoGate(enabled: boolean) {
   return { ref: setTarget, requested, request: () => setRequested(true), allowed: requested || (auto && near) };
 }
 
-
-/**
- * The whole video file is large, and the same video is mounted again whenever the page re-keys itself (auth settling, session generation), so
- * its blob is shared per asset and owner: one download, one object URL, released a few seconds after the last viewer is gone.
- */
-const videoBlobs = new Map<string, { promise: Promise<string>; url?: string; refs: number; timer?: ReturnType<typeof setTimeout>; controller: AbortController }>();
-const revokeEntry = (entry: { promise: Promise<string>; url?: string }) => { if (entry.url) URL.revokeObjectURL(entry.url); else entry.promise.then(url => URL.revokeObjectURL(url), () => undefined); };
-const VIDEO_BLOB_KEEP_MS = 15_000;
-function acquireVideoBlob(key: string, load: (signal: AbortSignal) => Promise<string>) {
-  let entry = videoBlobs.get(key);
-  if (!entry) {
-    const controller = new AbortController();
-    const created = { promise: load(controller.signal), refs: 0, controller } as NonNullable<typeof entry>;
-    created.promise.then(url => { created.url = url; }, () => { if (videoBlobs.get(key) === created) videoBlobs.delete(key); });
-    videoBlobs.set(key, created); entry = created;
-  }
-  if (entry.timer) { clearTimeout(entry.timer); entry.timer = undefined; }
-  entry.refs += 1;
-  return entry.promise;
-}
-/** The owner changed or signed out: the blob must not outlive it, so it is aborted and revoked at once. */
-function dropVideoBlob(key: string) {
-  const entry = videoBlobs.get(key); if (!entry) return;
-  if (entry.timer) clearTimeout(entry.timer);
-  videoBlobs.delete(key); entry.controller.abort(); revokeEntry(entry);
-}
-function releaseVideoBlob(key: string) {
-  const entry = videoBlobs.get(key); if (!entry) return;
-  entry.refs -= 1;
-  if (entry.refs > 0) return;
-  entry.timer = setTimeout(() => {
-    if (videoBlobs.get(key) !== entry || entry.refs > 0) return;
-    videoBlobs.delete(key); entry.controller.abort(); revokeEntry(entry);
-  }, VIDEO_BLOB_KEEP_MS);
-}
 
 /** Private media is never assigned to a browser src before authorization. */
 export function AuthenticatedMedia({ asset, locale, alt, play = false, original = false, retryable = true, publicFanPost = false }: { asset: { id: string; width: number; height: number; kind?: "image" | "video" }; locale: AppLocale; alt: string; play?: boolean; original?: boolean; retryable?: boolean; publicFanPost?: boolean }) {

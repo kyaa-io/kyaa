@@ -3,6 +3,7 @@
 import { useCreateWallet, useUser } from "@/features/auth/client/privy-backend";
 import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import { rememberSession } from "@/features/auth/client/session-hint";
+import { purgeVideoBlobs } from "@/features/content-safety/ui/video-blob-cache";
 import type { Route } from "next";
 import { useRouter } from "next/navigation";
 import { createContext, useCallback, useContext, useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from "react";
@@ -83,6 +84,8 @@ export function ByUsSessionProvider({ children }: { children: ReactNode }) {
   const resetAvatarSession = useAvatarSessionReset();
   const [snapshot, setSnapshot] = useState<ByUsSessionSnapshot>(DEFAULT_SESSION);
   useEffect(() => { if (sdkReady) rememberSession(authenticated); }, [sdkReady, authenticated]);
+  // Downloaded private video blobs belong to one owner and one session generation: none survives a change of either or a sign-out.
+  useEffect(() => { purgeVideoBlobs(); }, [authenticated, snapshot.ownerId, snapshot.generation]);
   const [error, setError] = useState<string | null>(null);
   const [recoveryPath, setRecoveryPath] = useState<string | null>(null);
   const [reauthenticationProviders, setReauthenticationProviders] = useState<Array<"google" | "apple">>([]);
