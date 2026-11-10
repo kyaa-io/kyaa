@@ -16,12 +16,10 @@ export function FanHeading({ as: Tag = "h2", variant = "standard", id, children 
   return <Tag id={id} className={`${styles.heading} ${styles[variant]}`} data-fan-heading={variant}>{children}</Tag>;
 }
 
-/** Title, rail controls and navigation share one row; status copy (never explanatory copy) stays below. */
-export function FanSectionHeader({ title, description, action, controls, controlsLabel, variant = "standard", as = "h2", id }: {
+/** Title and navigation share a row; status copy (never explanatory copy) stays below both. */
+export function FanSectionHeader({ title, description, action, variant = "standard", as = "h2", id }: {
   title: ReactNode;
   description?: ReactNode;
-  controls?: ReactNode;
-  controlsLabel?: string;
   action?: { label: string; href: string };
   variant?: "standard" | "editorial" | "personal";
   as?: "h1" | "h2" | "h3";
@@ -33,7 +31,6 @@ export function FanSectionHeader({ title, description, action, controls, control
         <FanHeading as={as} id={id} variant={variant === "personal" ? "personal-section" : variant}>{title}</FanHeading>
       </div>
       {action ? <Link className={styles.action} href={action.href as Route}><span>{action.label}</span><ChevronRight aria-hidden="true" /></Link> : null}
-      {controls ? <div className={styles.controls} role="group" aria-label={controlsLabel}>{controls}</div> : null}
     </div>
     {description != null ? <p className={styles.description}>{description}</p> : null}
   </div>;

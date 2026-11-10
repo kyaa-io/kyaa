@@ -79,25 +79,23 @@ describe("guest home compact icon-only action spacing", () => {
   });
 
   it("keeps carousel controls touch-safe and removes large sliding motion for reduced motion", () => {
-    const controls = declarationBlock(".carouselControls > button");
-    expect(controls).toMatch(/\bwidth:\s*44px\b/);
-    expect(controls).toMatch(/\bmin-width:\s*44px\b/);
-    expect(controls).toMatch(/\bheight:\s*44px\b/);
-    expect(declarationBlock(".carouselDots")).toMatch(/\bbottom:\s*-42px\b/);
-    expect(declarationBlock(".carouselDots")).toMatch(
-      /\bwidth:\s*min\(var\(--carousel-width\),\s*100%\)/,
-    );
-    expect(declarationBlock(".carouselControls .carouselDot")).toMatch(
-      /\bmin-width:\s*44px\b/,
-    );
-    expect(declarationBlock(".carouselPrevious")).toMatch(/\bleft:\s*8px\b/);
-    expect(declarationBlock(".carouselNext")).toMatch(/\bright:\s*8px\b/);
-    expect(declarationBlock(".carouselDot[aria-current=\"true\"] span")).toMatch(
-      /\bbackground:\s*var\(--ink\)/,
-    );
-    expect(declarationBlock(".carouselDot[aria-current=\"true\"] span")).toMatch(
-      /\bwidth:\s*22px\b/,
-    );
+    const carouselCss = readFileSync(resolve(process.cwd(), "components/fan-ui/fan-carousel.module.css"), "utf8");
+    const block = (selector: string) => {
+      const escaped = selector.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      const match = carouselCss.match(new RegExp(`(?:^|\\n)${escaped}\\s*\\{([^}]+)\\}`));
+      if (!match) throw new Error(`Missing CSS selector: ${selector}`);
+      return match[1].replace(/\s+/g, " ");
+    };
+    // Arrows sit in their own columns beside the content, never over it.
+    expect(block(".frame")).toMatch(/grid-template-columns:\s*var\(--min-target\) minmax\(0, 1fr\) var\(--min-target\)/);
+    expect(block(".arrow")).toMatch(/\bwidth:\s*var\(--min-target\)/);
+    expect(block(".arrow")).toMatch(/\bheight:\s*var\(--min-target\)/);
+    expect(block(".arrow")).not.toMatch(/position:\s*absolute/);
+    // Indicator: short pills, the current one three times as long; controls share its 44px row.
+    expect(block(".indicator > span")).toMatch(/\bwidth:\s*var\(--space-2\)/);
+    expect(block(".indicator > span[data-current]")).toMatch(/\bwidth:\s*var\(--space-6\)/);
+    expect(block(".indicatorRow")).toMatch(/\bheight:\s*var\(--min-target\)/);
+    expect(block(".indicatorRow > button")).toMatch(/\bheight:\s*var\(--min-target\)/);
     expect(declarationBlock(".heroViewport")).toMatch(/\btouch-action:\s*pan-y\s+pinch-zoom/);
     expect(declarationBlock(".heroTrack")).not.toMatch(/\btransition:\s*transform/);
     expect(heroCarouselSource).toContain('useEmblaCarousel({');

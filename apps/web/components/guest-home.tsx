@@ -43,6 +43,7 @@ import { type PassportStampRecord } from "../features/passport/ui/passport-stamp
 import { PassportIdentityArtwork } from "../features/passport/ui/passport-identity-artwork";
 import { levelLabel, type PassportLevel } from "../features/passport/domain/passport-read-model";
 import { FanSectionHeader } from "./fan-ui/fan-heading";
+import { FanCarouselFrame, FanCarouselIndicator } from "./fan-ui/fan-carousel";
 import { FanStageTooltip } from "../features/rewards/ui/fan-stage-tooltip";
 import { fanStageLabel } from "../features/rewards/domain/fan-stage";
 import styles from "./guest-home.module.css";
@@ -126,36 +127,33 @@ function AuthenticatedHomeSummary({ locale, summary, placement, featuredLives, f
     <section className={styles.signedInSummary} aria-labelledby={headingId}>
       <div className={styles.signedInGreeting}><h2 id={headingId}>{t.signedInPanel}</h2><p>{summary.profile.nickname ? `${summary.profile.nickname}${locale === "ko" ? "님, " : ", "}${t.welcome}` : t.welcome}</p></div>
       <div className={styles.summarySection}>
-        <div className={styles.summarySectionHeader}><span>{t.myPassport}</span>{passportCount > 0 ? <small>{locale === "ko" ? `패스포트 ${passportCount}개` : locale === "en" ? `${passportCount} ${passportCount === 1 ? "Passport" : "Passports"}` : translate(locale, localizedMessages.visiblePassportCount, "Passports: {0}", [passportCount])}</small> : null}</div>
-        {creatorsUnavailable ? <><ContentLoadError locale={locale} /><Link className={styles.passportCollectionLink} href={`/passports${localeQuery}` as Route}>{t.allPassports}<ChevronRight /></Link></> : creator?.passport ? <><div className={styles.passportCarousel} role="group" aria-roledescription={locale === "ko" ? "Passport 슬라이드" : translate(locale, localizedMessages.mfa3f5fc72bf9, "Passport carousel")} aria-label={t.myPassport}>
-          <div className={styles.ownedPassportPreview}>
-            <Link className={styles.ownedPassportLink} href={`/passports/${creator.passport.id}${localeQuery}` as Route} aria-label={`${passportTitle}, ${passportValue}`}>
-              <PassportIdentityArtwork
-                key={creator.passport.id}
-                celebrity={creator.celebrity}
-                level={creator.passport.tier}
-                stamps={passportPreview.stamps}
-                totalCount={passportPreview.totalCount}
-                locale={locale}
-                priority={placement === "desktop"}
-                loading={passportPreview.status === "loading"}
-              />
-            </Link>
-            <div className={styles.passportGrade}>
-              <FanStageTooltip key={creator.passport.id} celebrityName={creator.celebrity.name}
-                tier={creator.passport.tier} points={creator.passport.score}
-                stageProgress={creator.passport.stageProgress} remainingToNextTier={creator.passport.remainingToNextTier}
-                locale={locale} />
+        <div className={styles.summarySectionHeader}><span className={styles.summaryTitle}>{t.myPassport}{passportCount > 0 ? <small><span aria-hidden="true">{passportCount}</span><span className={styles.srOnly}>{locale === "ko" ? `패스포트 ${passportCount}개` : locale === "en" ? `${passportCount} ${passportCount === 1 ? "Passport" : "Passports"}` : translate(locale, localizedMessages.visiblePassportCount, "Passports: {0}", [passportCount])}</span></small> : null}</span>{creatorsUnavailable || creator?.passport ? <Link className={styles.summaryHeaderLink} href={`/passports${localeQuery}` as Route} aria-label={t.allPassports}>{t.all}<ChevronRight aria-hidden="true" /></Link> : null}</div>
+        {creatorsUnavailable ? <ContentLoadError locale={locale} /> : creator?.passport ? <><div className={styles.passportCarousel} role="group" aria-roledescription={locale === "ko" ? "Passport 슬라이드" : translate(locale, localizedMessages.mfa3f5fc72bf9, "Passport carousel")} aria-label={t.myPassport}>
+          <FanCarouselFrame
+            previous={passportCount > 1 ? { label: locale === "ko" ? "이전 패스포트" : translate(locale, localizedMessages.mc5c4c5e69231, "Previous Fan Passport"), onClick: () => selectPassport(activePassportIndex - 1) } : undefined}
+            next={passportCount > 1 ? { label: locale === "ko" ? "다음 패스포트" : translate(locale, localizedMessages.m13b5b1e2975d, "Next Fan Passport"), onClick: () => selectPassport(activePassportIndex + 1) } : undefined}>
+            <div className={styles.ownedPassportPreview}>
+              <Link className={styles.ownedPassportLink} href={`/passports/${creator.passport.id}${localeQuery}` as Route} aria-label={`${passportTitle}, ${passportValue}`}>
+                <PassportIdentityArtwork
+                  key={creator.passport.id}
+                  celebrity={creator.celebrity}
+                  level={creator.passport.tier}
+                  stamps={passportPreview.stamps}
+                  totalCount={passportPreview.totalCount}
+                  locale={locale}
+                  priority={placement === "desktop"}
+                  loading={passportPreview.status === "loading"}
+                />
+              </Link>
+              <div className={styles.passportGrade}>
+                <FanStageTooltip key={creator.passport.id} celebrityName={creator.celebrity.name}
+                  tier={creator.passport.tier} points={creator.passport.score}
+                  stageProgress={creator.passport.stageProgress} remainingToNextTier={creator.passport.remainingToNextTier}
+                  locale={locale} />
+              </div>
             </div>
-          </div>
-          <div className={`${styles.passportUtilityRow} ${passportCount === 1 ? styles.passportUtilityRowSingle : ""}`}>
-          {passportCount > 1 ? <div className={styles.passportControls} aria-label={locale === "ko" ? "패스포트 선택" : translate(locale, localizedMessages.m67cfe9d200e6, "Choose a Fan Passport")}>
-            <button type="button" onClick={() => selectPassport(activePassportIndex - 1)} aria-label={locale === "ko" ? "이전 패스포트" : translate(locale, localizedMessages.mc5c4c5e69231, "Previous Fan Passport")}><ChevronLeft /></button>
-            <div className={styles.passportDots}>{passportCreators.map((item, index) => <button key={item.passport?.id ?? item.celebrity.slug} type="button" aria-current={index === activePassportIndex ? "true" : undefined} aria-label={formatPassportTitle(item.celebrity.name, locale)} onClick={() => selectPassport(index)}><span /></button>)}</div>
-            <button type="button" onClick={() => selectPassport(activePassportIndex + 1)} aria-label={locale === "ko" ? "다음 패스포트" : translate(locale, localizedMessages.m13b5b1e2975d, "Next Fan Passport")}><ChevronRight /></button>
-          </div> : null}
-            <Link className={styles.passportCollectionLink} href={`/passports${localeQuery}` as Route}>{t.allPassports}<ChevronRight /></Link>
-          </div>
+          </FanCarouselFrame>
+          {passportCount > 1 ? <FanCarouselIndicator count={passportCount} current={activePassportIndex} /> : null}
         </div></> : <div className={styles.summaryEmpty}><Image className={styles.emptyPassportPreview} src="/images/guest-home/passport-open-blank-9-transparent.png" alt={t.passportPreview} width={1536} height={1024}/><p>{hasHiddenPassports ? t.myFavoritesUnavailable : t.noPassport}</p>{!hasHiddenPassports && <span className={styles.emptyPassportHint}>{t.passportPreviewHint}</span>}<Link className={styles.summaryOutlineAction} href={`${hasHiddenPassports ? "/passports" : "/celebrities"}${localeQuery}` as Route}>{hasHiddenPassports ? t.allPassports : t.findFavorite}<ArrowRight /></Link></div>}
       </div>
       <div className={styles.summarySection}>
@@ -322,9 +320,8 @@ function HomeCreators({ celebrities, celebrityLives = [], locale, contentErrors 
     rail.scrollBy({ left: direction * stride * count, behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
   };
 
-  const creatorControls = creatorScroll.previous || creatorScroll.next ? <><button type="button" aria-label={locale === "ko" ? "이전 최애" : translate(locale, localizedMessages.me65af7523189, "Previous creators")} aria-controls="home-creator-rail" disabled={!creatorScroll.previous} onClick={() => moveCreators(-1)}><ChevronLeft /></button><button type="button" aria-label={locale === "ko" ? "다음 최애" : translate(locale, localizedMessages.m0aab33b2d3dc, "Next creators")} aria-controls="home-creator-rail" disabled={!creatorScroll.next} onClick={() => moveCreators(1)}><ChevronRight /></button></> : undefined;
   return (<>          <section id="celebrities" className={`${styles.contentSection} ${styles.favoriteSection}`} aria-labelledby="celebrities-heading">
-            <FanSectionHeader variant="editorial" id="celebrities-heading" title={t.favorites} controls={favoritesLoading ? undefined : creatorControls} controlsLabel={locale === "ko" ? "최애 목록 이동" : translate(locale, localizedMessages.mdcf61c1a1ca5, "Browse creators")} action={favoritesLoading ? undefined : { href: directoryHref, label: locale === "ko" ? "최애 전체 보기" : translate(locale, localizedMessages.meba9f13bd74e, "View all favorites") }} />
+            <FanSectionHeader variant="editorial" id="celebrities-heading" title={t.favorites} action={favoritesLoading ? undefined : { href: directoryHref, label: locale === "ko" ? "최애 전체 보기" : translate(locale, localizedMessages.meba9f13bd74e, "View all favorites") }} />
             {!contentErrors.celebrities && celebrities.length > 0 && favoritesLoading ? (
               <div role="status" aria-label={t.myFavoritesLoading} aria-busy="true">
                 <span className={styles.srOnly}>{t.myFavoritesLoading}</span>
@@ -344,6 +341,9 @@ function HomeCreators({ celebrities, celebrityLives = [], locale, contentErrors 
             {!contentErrors.celebrities && ownedOnly && personalization.state.status === "authenticated-error" ? <div className={styles.favoriteFilterState} role="alert"><p>{t.myFavoritesError}</p><button type="button" onClick={personalization.retry}>{t.retry}</button></div> : null}
             {!contentErrors.celebrities && ownedOnly && personalization.state.status === "authenticated-ready" && visibleCreators.length === 0 ? <div className={styles.favoriteFilterState} role="status"><strong>{hasOwnedPassport ? t.myFavoritesUnavailable : t.myFavoritesEmpty}</strong><p>{hasOwnedPassport ? t.myFavoritesUnavailableHelp : t.myFavoritesHelp}</p><button type="button" onClick={() => changeRole("all")}>{t.all}</button></div> : null}
             {!contentErrors.celebrities && (!favoritesLoading || celebrities.length === 0) && (!ownedOnly || (personalization.state.status === "authenticated-ready" && visibleCreators.length > 0)) ? <div className={styles.celebrityCarousel}>
+            <FanCarouselFrame touch="swipe"
+              previous={creatorScroll.previous || creatorScroll.next ? { label: locale === "ko" ? "이전 최애" : translate(locale, localizedMessages.me65af7523189, "Previous creators"), onClick: () => moveCreators(-1), disabled: !creatorScroll.previous, controls: "home-creator-rail" } : undefined}
+              next={creatorScroll.previous || creatorScroll.next ? { label: locale === "ko" ? "다음 최애" : translate(locale, localizedMessages.m0aab33b2d3dc, "Next creators"), onClick: () => moveCreators(1), disabled: !creatorScroll.next, controls: "home-creator-rail" } : undefined}>
             <div id="home-creator-rail" ref={creatorRailRef} className={styles.celebrityRail} aria-label={t.celebrityList} onScroll={updateCreatorScroll}>
               {visibleCreators.map((celebrity) => {
                 return (
@@ -359,7 +359,7 @@ function HomeCreators({ celebrities, celebrityLives = [], locale, contentErrors 
                     <div className={styles.celebrityActions}>
                       <CreatorFanLink slug={celebrity.slug} name={celebrity.name} locale={locale} />
                       <div className={styles.socialLinks} role="group" aria-label={`${celebrity.name} ${locale === "ko" ? "소셜 채널" : translate(locale, localizedMessages.m81fb78c7ebd5, "social channels")}`}>
-                        {celebrity.socialLinks.map((social) => <a className={styles.socialLink} href={social.url} target="_blank" rel="noreferrer" aria-label={`${celebrity.name} ${social.platform === "chzzk" && locale !== "ko" ? "CHZZK" : socialLabel[social.platform]} ${t.social}`} data-social-icon-only="true" data-platform={social.platform} key={social.platform}><span className={styles.socialIcon} style={{ "--social-mark": `url(${social.platform === "chzzk" ? "/images/guest-home/chzzk.png" : `/images/guest-home/${social.platform}.svg`})` } as CSSProperties} aria-hidden="true" /></a>)}
+                        {celebrity.socialLinks.map((social) => <a className={styles.socialLink} href={social.url} target="_blank" rel="noreferrer" aria-label={`${celebrity.name} ${social.platform === "chzzk" && locale !== "ko" ? "CHZZK" : socialLabel[social.platform]} ${t.social}`} data-social-icon-only="true" data-platform={social.platform} key={social.platform}><span className={styles.socialIcon} style={{ "--social-mark": `url(${social.platform === "chzzk" ? "/images/guest-home/chzzk-mark.svg" : `/images/guest-home/${social.platform}.svg`})` } as CSSProperties} aria-hidden="true" /></a>)}
                       </div>
                     </div>
                   </div>
@@ -367,6 +367,7 @@ function HomeCreators({ celebrities, celebrityLives = [], locale, contentErrors 
               )})}
               {celebrities.length === 0 ? <p role="status">{t.noCelebrities}</p> : null}
             </div>
+            </FanCarouselFrame>
             </div> : null}
             </ActivePreviewCoordinator>
 

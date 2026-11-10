@@ -194,7 +194,7 @@ describe("canonical 03 guest home", () => {
 
   it("uses the Elina participation guide as the final LIVE hero slide", () => {
     render(<GuestHome {...defaultProps} featuredLives={[featuredLive]} />);
-    fireEvent.click(screen.getByRole("button", { name: "2번째 배너 보기" }));
+    fireEvent.click(screen.getByRole("button", { name: "다음 배너" }));
     const hero = screen.getByRole("region", { name: "홈 배너" });
     expect(within(hero).getByRole("heading", { name: "엘리나와 함께 뱅크시 전시 보러 가요" })).toBeInTheDocument();
     expect(within(hero).getByText("팬 인증하고 응모권을 받아 원하는 선물에 응모하세요.")).toBeInTheDocument();
@@ -569,7 +569,9 @@ describe("canonical 03 guest home", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "이전 배너" }));
     expect(screen.getByRole("heading", { name: "엘리나의 정기 LIVE", level: 2 })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "1번째 배너 보기" })).toHaveAttribute("aria-current", "true");
+    const heroSegments = screen.getByRole("region", { name: "홈 배너" }).querySelectorAll("[data-fan-carousel-indicator] [aria-hidden] > span");
+    expect(heroSegments[0]).toHaveAttribute("data-current", "true");
+    expect(heroSegments[1]).not.toHaveAttribute("data-current");
     expect(within(screen.getByRole("region", { name: "홈 배너" })).getByRole("button", { name: "자동 재생 정지" }))
       .toHaveAttribute("aria-pressed", "false");
   });
@@ -734,7 +736,11 @@ describe("canonical 03 guest home", () => {
     expect(carousels).toHaveLength(2);
     carousels.forEach((carousel) => {
       expect(carousel.querySelector("img")).toHaveAttribute("src", expect.stringContaining("passport-open-blank-9-transparent.png"));
-      expect(within(carousel).getByRole("button", { name: "KATSEYE 패스포트" })).not.toHaveAttribute("aria-current");
+      const segments = carousel.querySelectorAll("[data-fan-carousel-indicator] [aria-hidden] > span");
+      expect(segments).toHaveLength(2);
+      expect(segments[0]).toHaveAttribute("data-current", "true");
+      expect(segments[1]).not.toHaveAttribute("data-current");
+      expect(within(carousel).queryByRole("button", { name: "KATSEYE 패스포트" })).not.toBeInTheDocument();
     });
     expect(screen.queryByRole("heading", { name: "Reaction Only Fan Passport" })).not.toBeInTheDocument();
 
@@ -944,7 +950,7 @@ it("renders the verified CHZZK channel with its icon and keeps Instagram", () =>
  const link=screen.getByRole("link",{name:"정제니 치지직 공식 채널"});
  expect(link).toHaveAttribute("href",socialLinks[1]!.url);
  expect(link).toHaveAttribute("target","_blank");
- expect(link.querySelector("span")?.getAttribute("style")).toContain("chzzk.png");
+ expect(link.querySelector("span")?.getAttribute("style")).toContain("chzzk-mark.svg");
  expect(screen.getByRole("link",{name:"정제니 Instagram 공식 채널"})).toBeInTheDocument();
  expect(screen.queryByRole("link",{name:/정제니 TikTok/})).not.toBeInTheDocument();
 });

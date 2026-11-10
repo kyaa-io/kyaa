@@ -37,7 +37,6 @@
 .brandTitle { display:flex; flex-wrap:wrap; align-items:baseline; gap:4px 8px; }
 .brandSlogan { color:var(--muted); font-size:13px; font-weight:500; line-height:1.4; letter-spacing:normal; text-wrap:pretty; }
 .heroCarousel { position: relative; color: #fff; }
-.heroCarousel[data-has-controls="true"] { margin-bottom: 44px; }
 .heroViewport { position: relative; width: 100%; overflow: hidden; aspect-ratio: 4 / 5; border-radius: 20px; background: var(--ink); touch-action: pan-y pinch-zoom; }
 .heroShine { position: absolute; inset: 0; z-index: 2; overflow: hidden; padding: 1.5px; border-radius: inherit; background: var(--spectrum); pointer-events: none; -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0); -webkit-mask-composite: xor; mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0); mask-composite: exclude; }
 .heroShine::before { content: ""; position: absolute; inset: -100%; background: conic-gradient(transparent 0deg 335deg, #ffc5e5 345deg, #fff 350deg, #decaff 355deg, transparent 360deg); animation: heroShineSpin 8s linear infinite paused; }
@@ -76,16 +75,6 @@
 .primaryButton { display: flex; width: min(320px, 100%); min-height: 48px; align-items: center; justify-content: space-between; margin-top: 20px; padding-inline: 20px; border-radius: 999rem; background: linear-gradient(rgb(0 0 0 / 18%), rgb(0 0 0 / 18%)), var(--spectrum); box-shadow: 0 5px 8px rgb(58 18 55 / 22%); color: #fff !important; font-size: 15px; font-weight: 800; text-shadow: none; transition: background 160ms cubic-bezier(.2, 0, 0, 1); }
 .primaryButton span { display: inline-flex; align-items: center; gap: 8px; }
 .primaryButton svg { width: 16px; height: 16px; }
-.carouselControls { position: absolute; z-index: 3; inset: 0; pointer-events: none; }
-.carouselControls > button { position: absolute; top: calc(50% - 22px); display: grid; width: 44px; min-width: 44px; height: 44px; padding: 0; place-items: center; border: 0; background: transparent; color: #fff; cursor: pointer; pointer-events: auto; }
-.carouselControls > button::before { position: absolute; width: 32px; height: 32px; border: 1px solid rgb(255 255 255 / 24%); border-radius: 50%; background: rgb(10 10 12 / 44%); content: ""; transition: background-color 160ms cubic-bezier(.2,0,0,1); }
-.carouselControls > button svg { position: relative; z-index: 1; width: 16px; height: 16px; }
-.carouselPrevious { left: 8px; }
-.carouselNext { right: 8px; }
-.carouselDots { position: absolute; bottom: -42px; left: 50%; display: flex; width: min(var(--carousel-width), 100%); height: 44px; overflow-x: auto; overflow-y: hidden; align-items: center; justify-content: safe center; scrollbar-width: none; transform: translateX(-50%); pointer-events: auto; }
-.carouselControls .carouselDot { position: relative; display: grid; width: 44px; min-width: 44px; height: 44px; flex: 0 0 44px; padding: 0; place-items: center; border: 0; background: transparent; cursor: pointer; }
-.carouselDot span { position: relative; width: 6px; height: 6px; border-radius: 999rem; background: var(--line); transition: width 160ms cubic-bezier(.2,0,0,1), background-color 160ms cubic-bezier(.2,0,0,1); }
-.carouselDot[aria-current="true"] span { width: 22px; background: var(--ink); }
 .carouselAnnouncement { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap; }
 
 
@@ -179,33 +168,17 @@
 .summarySection + .summarySection { border-top: 1px solid var(--card-line); }
 .summarySectionHeader { display: flex; min-height: 28px; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
 .summarySectionHeader > span { font-size: 14px; font-weight: 650; }
-.summarySectionHeader > small { display: grid; min-width: 30px; height: 24px; padding-inline: 8px; place-items: center; border-radius: 999rem; background: var(--surface-soft); color: var(--muted); font-size: 11px; font-weight: 750; }
+.summaryTitle { display: inline-flex; min-width: 0; align-items: baseline; gap: var(--space-1); }
+.summaryTitle > small { color: var(--muted); font-size: var(--fan-metadata-size); font-weight: 650; font-variant-numeric: tabular-nums; }
+/* Secondary link at the right end of the section title row (R1). */
+.summaryHeaderLink { display: inline-flex; min-height: var(--min-target); align-items: center; gap: var(--space-1); margin-block: calc(-1 * var(--space-2)); margin-inline-start: auto; color: var(--muted) !important; font-size: var(--fan-metadata-size); font-weight: 550; white-space: nowrap; }
+.summaryHeaderLink svg { width: var(--fan-icon-inline-size); height: var(--fan-icon-inline-size); }
+.summaryHeaderLink:focus-visible { outline: var(--focus-width) solid var(--ink); outline-offset: calc(-1 * var(--focus-width)); }
+@media (hover: hover) { .summaryHeaderLink:hover { color: var(--ink) !important; } }
 .passportCarousel { display: grid; min-width: 0; }
-.ownedPassportPreview { position: relative; width: min(100%, 320px); margin: 14px auto 0; }
+.ownedPassportPreview { position: relative; width: min(100%, 320px); margin: var(--space-3) auto 0; }
 .ownedPassportLink { display: block; width: 100%; border-radius: 12px; transition: transform 240ms cubic-bezier(.2,0,0,1); }
 .passportGrade { position: absolute; top: 7.5%; right: 4.4%; z-index: 2; transform: translate(35%, -50%); }
-.passportUtilityRow { display: flex; flex-wrap: wrap; min-width: 0; align-items: center; justify-content: space-between; gap: 8px; margin-top: 8px; }
-.passportUtilityRowSingle { justify-content: flex-end; }
-.passportControls { display: grid; width: min(176px, 100%); min-width: 0; grid-template-columns: 44px minmax(0,1fr) 44px; align-items: center; }
-.passportControls > button, .passportDots button { display: grid; width: 44px; height: 44px; padding: 0; place-items: center; border: 0; border-radius: 12px; background: transparent; color: var(--muted); cursor: pointer; transition: background-color 160ms cubic-bezier(.2,0,0,1), color 160ms cubic-bezier(.2,0,0,1); }
-.passportControls > button svg { width: 18px; height: 18px; }
-.passportDots { display: flex; min-width: 0; align-items: center; justify-content: center; overflow-x: auto; scrollbar-width: none; }
-.passportDots::-webkit-scrollbar { display: none; }
-.passportDots button { flex: 0 0 44px; width: 44px; }
-.passportDots button span { width: 22px; height: 7px; border-radius: 999rem; background: var(--line); transform: scaleX(.32); transition: transform 160ms cubic-bezier(.2,0,0,1), background-color 160ms cubic-bezier(.2,0,0,1); }
-.passportDots button[aria-current="true"] span { background: var(--ink); transform: scaleX(1); }
-.passportCollectionLink {
-  display: flex;
-  min-height: 44px;
-  max-width: 100%;
-  align-items: center;
-  gap: 4px;
-  color: var(--muted) !important;
-  font-size: var(--fan-metadata-size);
-  font-weight: 550;
-  overflow-wrap: anywhere;
-}
-.passportCollectionLink svg { width: 15px; height: 15px; }
 .summaryTextLink {
   display: flex;
   width: max-content;
@@ -347,13 +320,12 @@
 
 @media (hover: hover) and (pointer: fine) {
   .desktopNav a:hover, .languageButton:hover, .rowAction:hover, .socialLink:hover { background: var(--surface-soft); color: var(--ink) !important; }
-  .carouselControls > button:hover::before { background: rgb(10 10 12 / 68%); }
   .primaryButton:hover { background: linear-gradient(rgb(0 0 0 / 18%), rgb(0 0 0 / 18%)), var(--spectrum-hover); }
   .celebrityMediaBox:hover { transform: translateY(calc(-1 * var(--space-1) / 2)); }
   .mobileContextActions a:hover, .signInButton:hover, .passportFooter > a:hover { background: linear-gradient(var(--surface-soft), var(--surface-soft)) padding-box, var(--spectrum-hover) border-box; }
   .passportReferenceCard:hover .passportAsset img { transform: translateY(-6px); }
   .ownedPassportLink:hover { transform: translateY(-3px); }
-  .summaryOutlineAction:hover, .personalizationState button:hover, .passportControls > button:hover, .passportDots button:hover { background: var(--surface-soft); color: var(--ink); }
+  .summaryOutlineAction:hover, .personalizationState button:hover { background: var(--surface-soft); color: var(--ink); }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -366,16 +338,20 @@
 .fanCount { color: var(--muted); white-space: nowrap; }
 
 .celebrityCarousel { position: relative; container-type: inline-size; --creator-card-size: min(80cqw, var(--fan-rail-card-mobile)); }
-@media (min-width: 48rem) { .celebrityCarousel { --creator-card-size: max(var(--fan-rail-card-min), calc((100cqw - 2 * var(--space-4)) / 3)); } }
+/* From 768px the shared carousel frame takes an arrow column plus gap on each side; arrows centre on the photo. */
+@media (min-width: 48rem) {
+  .celebrityCarousel {
+    --creator-card-size: max(var(--fan-rail-card-min), calc((100cqw - 2 * (var(--min-target) + var(--space-2)) - 2 * var(--space-4)) / 3));
+    --fan-carousel-arrow-align: start;
+    --fan-carousel-arrow-offset: calc((var(--creator-card-size) - var(--min-target)) / 2);
+  }
+}
 
 .celebrityFanLink[data-verified="true"] svg { color: var(--color-heart); fill: currentColor; }
 
 .personalizationLoading { min-height: 440px; grid-template-rows: 220px 80px auto; gap: 20px; align-content: start; }
 .personalizationLoading .stateSkeleton { width: 100%; height: 100%; border-radius: var(--radius-control); }
 .stateSkeletonShort { display: block; width: 100%; height: 80px; border-radius: var(--radius-control); background: var(--color-soft); }
-.carouselDots .carouselPause { display: grid; place-items: center; flex: 0 0 44px; width: 44px; height: 44px; padding: 0; border: 0; border-radius: var(--radius-control); background: transparent; color: var(--color-ink); cursor: pointer; }
-.carouselPause svg { width: 16px; height: 16px; }
-.carouselPause:disabled { opacity: .5; cursor: default; }
 @media (min-width: 64rem) { .personalizationLoading { min-height: 480px; grid-template-rows: 250px 90px auto; } }
 
 
@@ -392,7 +368,6 @@
 @media (max-width:767px) {
   .heroViewport { aspect-ratio:4 / 5; min-height:400px; }
   .heroCarousel .heroCard { height:100%; aspect-ratio:auto; }
-  .carouselControls > button { top:calc(28% - 22px); }
   /* Share the tallest slide's height so natural artwork and translated copy remain visible. */
   .heroCarousel:has([data-kind="welcome"], [data-kind="campaign"]) .heroViewport { aspect-ratio:auto; }
   .heroCarousel:has([data-kind="welcome"], [data-kind="campaign"]) .heroTrack { height:auto; }
