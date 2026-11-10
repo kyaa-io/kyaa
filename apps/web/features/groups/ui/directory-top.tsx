@@ -33,6 +33,7 @@ import styles from "./directory-top.module.css";
 const parseList = (value: unknown) => groupListSchema.parse(value);
 const parsePosts = (value: unknown) => popularPostsPageSchema.parse(value);
 const noSubscribe = () => () => {};
+const DEFAULT_AVATAR = "/images/avatars/star-pink.webp";
 const ROWS = 5;
 const SLOTS = 3;
 
@@ -91,12 +92,12 @@ export function MyArtists({ locale, loginPath }: { locale: AppLocale; loginPath:
       {guest ? <FanAction className={styles.login} variant="neutral" size="sm" href={fanLoginHref(locale, loginPath)}>{c.signIn}</FanAction> : null}
     </div>
     <ul className={styles.rail} data-ghost={ghost || undefined} {...drag}>
-      <li className={styles.slot} data-row="artist-add"><a className={styles.add} href="#directory-explore" onClick={(event) => { event.preventDefault(); focusDirectorySearch(); }} aria-label={c.findGroups}><FanIcon icon={Plus} size={24} /></a><span className={styles.slotName} aria-hidden="true" /></li>
+      <li className={styles.slot} data-row="artist-add"><a className={styles.add} href="#directory-explore" onClick={(event) => { event.preventDefault(); focusDirectorySearch(); }} aria-label={c.findGroups}><FanIcon icon={Plus} size={24} /></a><span className={styles.slotName} aria-hidden={ghost ? undefined : true}>{ghost ? c.findGroups : null}</span></li>
       {waiting ? Array.from({ length: SLOTS + 1 }, (_, i) => <li key={i} className={styles.slot} data-row="artist-loading" aria-hidden="true"><FanSkeleton shape="circle" width={64} height={64} /><FanSkeleton width={48} height={12} /></li>)
-        : ghost ? Array.from({ length: SLOTS }, (_, i) => <li key={i} className={styles.slot} data-row="artist-ghost" aria-hidden="true"><span className={styles.ghost} /><span className={styles.ghostName} /></li>)
+        : ghost ? Array.from({ length: SLOTS }, (_, i) => <li key={i} className={styles.slot} data-row="artist-ghost" aria-hidden="true"><img className={styles.ghost} src={DEFAULT_AVATAR} alt="" width={64} height={64} /><span className={styles.ghostName} /></li>)
         : items.map((page) => <li key={page.id} className={styles.slot} data-row="artist">
           <Link className={styles.artist} href={groupHref(page, locale) as Route}>
-            {page.slug ? <CreatorAvatar slug={page.slug} src={page.imageUrl} size={64} photos={undefined} /> : <span className={styles.ghost} />}
+            {page.slug ? <CreatorAvatar slug={page.slug} src={page.imageUrl} size={64} photos={undefined} /> : <img className={styles.ghost} src={DEFAULT_AVATAR} alt="" width={64} height={64} />}
             <span className={styles.slotName}>{page.name}</span>
           </Link>
         </li>)}
@@ -104,11 +105,11 @@ export function MyArtists({ locale, loginPath }: { locale: AppLocale; loginPath:
   </section>;
 }
 
-/** The page's picture, or a white ring with its first letter: the board never draws the grey fallback figure. */
+/** The page's picture, or the default avatar asset: never an empty white ring. */
 function PostAvatar({ post }: { post: PopularPost }) {
   return post.pageImageUrl
     ? <CreatorAvatar slug={post.pageRef} src={post.pageImageUrl} size={32} photos={undefined} />
-    : <span className={styles.initial} aria-hidden="true">{[...post.pageName][0]}</span>;
+    : <img className={styles.ghostSmall} src={DEFAULT_AVATAR} alt="" width={32} height={32} />;
 }
 
 const postHref = (post: PopularPost, locale: AppLocale) => post.source === "fan" ? `/c/${post.pageRef}/community/${post.id}?locale=${locale}` : `/pages/groups/${post.pageRef}?locale=${locale}&tab=board&post=${post.id}`;
@@ -142,7 +143,7 @@ export function HotPosts({ locale }: { locale: AppLocale }) {
           <span className={styles.postMeta}><Link href={pageHref(post, locale) as Route}>{post.pageName}</Link><span aria-hidden="true">·</span><span>{c.likes(post.likeCount)}</span><span aria-hidden="true">·</span><span>{c.comments(post.commentCount)}</span>{sort === "views" && post.viewCount !== null && <><span aria-hidden="true">·</span><span>{c.views(post.viewCount)}</span></>}</span>
         </li>)}{Array.from({ length: Math.max(0, (open ? 2 * ROWS : ROWS) - items.length) }, (_, i) => {
           const note = total === 0 && i === 0;
-          return <li key={`p${i}`} className={styles.post} data-row="hot-placeholder" aria-hidden={note ? undefined : true}><span className={styles.ghostSmall} /><span className={styles.placeholderText}>{note ? c.hotEmpty : "—"}</span></li>;
+          return <li key={`p${i}`} className={styles.post} data-row="hot-placeholder" aria-hidden={note ? undefined : true}><img className={styles.ghostSmall} src={DEFAULT_AVATAR} alt="" width={32} height={32} /><span className={styles.placeholderText}>{note ? c.hotEmpty : "—"}</span></li>;
         })}</>}</ul>}
     {state.status === "error" ? null : <div className={styles.more}><FanAction variant="neutral" disabled={total <= ROWS} aria-expanded={open} onClick={() => setOpen((value) => !value)}>{open ? c.collapse : c.expand}</FanAction></div>}
   </section>;

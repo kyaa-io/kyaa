@@ -74,10 +74,11 @@ describe("MyRafflesScreen", () => {
     const line = await screen.findByText("아직 응모 내역이 없어요");
     const link = screen.getByRole("link", { name: "래플 둘러보기" });
     expect(link).toHaveAttribute("href", "/benefits?locale=ko");
-    const column = line.closest("section")!.parentElement!;
-    expect(column.contains(link)).toBe(true);
-    expect(column.className).toMatch(/empty/);
-    expect(container.querySelector("main")!.contains(column)).toBe(true);
+    const section = line.closest("section")!;
+    expect(section).toHaveAttribute("data-empty-state", "section");
+    expect(section.contains(link)).toBe(true);
+    expect(section.querySelectorAll("a, button")).toHaveLength(1);
+    expect(container.querySelector("main")!.contains(section)).toBe(true);
   });
 
   it("keeps the way to earlier entries when a page came back without rows", async () => {
