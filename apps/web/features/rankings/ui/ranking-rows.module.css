@@ -47,18 +47,37 @@ a.row { border-radius: var(--radius-control); }
 .meNone { color: var(--color-muted); }
 @media (hover: hover) and (pointer: fine) { a.row:hover, .login:hover { background: var(--color-accent-soft); } }
 
-/* 홈만 한 줄: 순위·등락 / 사진·이름·LIVE / 찐팬·하트·최근 7일 증감. */
-.compactRow { grid-template-columns: 20px 32px 24px minmax(0, 1fr) auto; column-gap: var(--space-1); white-space: nowrap; }
-.compactRow .rank { width: 20px; color: var(--color-ink); }
-.compactRow .nameLine { gap: var(--space-1); }
-.compactDelta { color: var(--color-ink); font-size: var(--fan-metadata-size); font-weight: var(--fan-item-title-weight); font-variant-numeric: tabular-nums; text-align: center; }
-
-.compactValues { display: inline-flex; align-items: center; gap: var(--space-2); font-size: var(--fan-metadata-size); font-weight: var(--fan-item-title-weight); font-variant-numeric: tabular-nums; white-space: nowrap; }
-.compactNew { flex: none; color: var(--color-ink); font-size: var(--fan-badge-size); font-weight: var(--fan-item-title-weight); }
-.live { display: inline-flex; flex: none; align-items: center; }
-.liveDot { width: var(--space-2); height: var(--space-2); border-radius: 50%; background: var(--color-error); }
-
+/* Approved feedback-r1 home grid; /rankings retains its existing rows. */
+.compactRow { --fan-ranking-meta-size: 11px; grid-template-columns: 16px 4px 28px 4px minmax(72px, 1fr) 8px 44px 8px 50px 8px 38px; column-gap: 0; height: 34px; width: 100%; margin: 0; padding: 0 var(--space-1); border: 0; border-radius: 0; background: transparent; font-family: inherit; text-align: start; white-space: nowrap; cursor: pointer; }
+.compactRow[data-kind="creators"] { grid-template-columns: 16px 4px 28px 4px minmax(72px, 1fr) 8px 44px 8px 50px 8px 38px 8px 62px; }
+.compactRow .rank { width: 16px; color: var(--color-ink); font-size: var(--fan-badge-size); font-weight: 700; }
+.compactRow .name { font-size: var(--fan-badge-size); font-weight: 700; }
+.compactDelta { display: flex; flex: none; gap: var(--space-2); align-items: center; }
+.movement { display: flex; justify-content: flex-start; align-items: center; gap: var(--space-1); color: var(--color-muted); font-size: var(--fan-badge-size); font-weight: 700; font-variant-numeric: tabular-nums; }
+.movement[data-direction="up"] { color: var(--color-accent-ink); }
+.movement [data-direction="new"] { color: var(--color-warning); font-size: var(--fan-ranking-meta-size); }
+.movement svg { flex: none; }
+.compactHearts, .compactFans { display: flex; justify-content: flex-end; align-items: center; gap: var(--space-1); font-size: var(--fan-badge-size); font-weight: 400; font-variant-numeric: tabular-nums; }
+.compactHearts svg { flex: none; color: var(--color-accent-ink); }
+.compactFans, .compactGain { font-size: var(--fan-ranking-meta-size); font-weight: 400; text-align: right; font-variant-numeric: tabular-nums; }
+.compactFans svg { flex: none; color: var(--color-muted); }
+.live { display: inline-flex; }
+.liveDot { width: 6px; height: 6px; border-radius: 50%; background: var(--color-error); }
 .compactRows > li + li { position: relative; }
 .compactRows > li + li::before { content: ""; position: absolute; inset: 0 0 auto; height: 1px; background: var(--color-line); pointer-events: none; }
-.compactRow[data-me] { background: var(--color-surface); }
-@media (hover: hover) and (pointer: fine) { a.compactRow:hover { background: var(--color-surface); } }
+.compactRows > li { box-sizing: border-box; }
+.compactRow:disabled { cursor: default; }
+@media (hover: hover) and (pointer: fine) { .compactRow:hover { background: var(--color-surface); } }
+
+.compactRows .compactRow { display: grid; min-height: 34px; border-radius: 0; background: transparent; }
+.compactRow .movement svg { width: 12px; height: 12px; stroke-width: 2.5; }
+.compactHearts svg, .compactFans svg { width: 12px; height: 12px; }
+
+button.compactRow > span { display: contents; }
+.compactRow .rank { grid-column: 1; }
+.compactAvatar { grid-column: 3; }
+.compactPerson { grid-column: 5 / 8; display: flex; align-items: center; gap: var(--space-2); min-width: 0; }
+.compactPerson .name { flex: 0 1 auto; min-width: 0; max-width: calc(100% - var(--space-10) - var(--space-3)); }
+.compactHearts { grid-column: 9; }
+.compactGain { grid-column: 11; }
+.compactFans { grid-column: 13; }

@@ -12,6 +12,7 @@ export function createSocialRouteHandlers() {
   const verifier = createPrivyNodeAccessVerifier({ appId: env.PRIVY_APP_ID, appSecret: env.PRIVY_APP_SECRET, appEnvironment: env.PRIVY_APP_ENVIRONMENT, testAccountLoginEnabled: env.PRIVY_TEST_ACCOUNT_LOGIN_ENABLED, appleLoginEnabled: env.PRIVY_APPLE_LOGIN_ENABLED });
   const repository = createSupabaseFanAuthRepository({ url: env.SUPABASE_URL, serviceRoleKey: env.SUPABASE_SERVICE_ROLE_KEY }, database);
   return createSocialHandlers({
+    profileRefSecret: env.PRIVY_APP_SECRET,
     authorize: authorization => authorizeFanRequest({ authorization, verifier, repository }),
     async rpc(name, args) { const { data, error } = await database.rpc(name, args); if (error) throw new Error(error.message); return data; },
   });

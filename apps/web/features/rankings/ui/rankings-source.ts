@@ -1,5 +1,10 @@
 // ko/en live here; the other locales live in i18n/catalogs/features__rankings__ui__rankings-copy.ts.
 export const rankingsSource = {
+  rkHomeUpdated: { ko: "업데이트 {0}", en: "Updated {0}" },
+  rkHomeTitle: { ko: "오늘의 랭킹", en: "Today's rankings" },
+  rkHomeFans: { ko: "찐팬", en: "True fans" },
+  rkHomeLocked: { ko: "로그인하고 보기", en: "Sign in to view" },
+  rkDayGain: { ko: "오늘 하트 {0}", en: "Today's hearts {0}" },
   rkTitle: { ko: "랭킹", en: "Rankings" },
   rkFanTitle: { ko: "팬 랭킹", en: "Fan rankings" },
   rkPeriodLabel: { ko: "기간", en: "Period" },

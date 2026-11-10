@@ -1,4 +1,4 @@
--- 20261220010000: the real v2 answers the home route contract test reads (apps/web/app/api/rankings/home/v2-answers.fixture.json).
+-- 20261220150000: the real v2 answers the home route contract test reads (apps/web/app/api/rankings/home/v2-answers.fixture.json).
 -- First built day, a second day, an empty day and a late day (today's build missing, a failure mark), every metric. Rolled back.
 -- Run on a disposable database with every migration: psql -v out=<file> -f supabase/tests/home_ranking_metrics_answers.sql
 begin;

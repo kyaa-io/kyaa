@@ -1,6 +1,12 @@
 import type { TranslatedMessage } from "../messages";
 
 export const messages = {
+  "rkHomeUpdated": {"ja": "更新 {0}", "zh-Hans": "更新于 {0}", "zh-Hant": "更新於 {0}", "es": "Actualizado {0}", "id": "Diperbarui {0}", "vi": "Cập nhật {0}", "th": "อัปเดต {0}", "pt": "Atualizado {0}", "fr": "Mis à jour {0}", "ru": "Обновлено {0}"},
+  "rkHomeTitle": {"ja": "今日のランキング", "zh-Hans": "今日排行榜", "zh-Hant": "今日排行榜", "es": "Clasificación de hoy", "id": "Peringkat hari ini", "vi": "Xếp hạng hôm nay", "th": "อันดับวันนี้", "pt": "Ranking de hoje", "fr": "Classement du jour", "ru": "Рейтинг сегодня"},
+  "rkHomeFans": {"ja": "熱烈ファン", "zh-Hans": "铁粉", "zh-Hant": "鐵粉", "es": "Fans fieles", "id": "Penggemar setia", "vi": "Fan trung thành", "th": "แฟนพันธุ์แท้", "pt": "Fãs fiéis", "fr": "Fans fidèles", "ru": "Преданные фанаты"},
+  "rkHomeLocked": {"ja": "ログインして見る", "zh-Hans": "登录查看", "zh-Hant": "登入查看", "es": "Inicia sesión para ver", "id": "Masuk untuk melihat", "vi": "Đăng nhập để xem", "th": "เข้าสู่ระบบเพื่อดู", "pt": "Entre para ver", "fr": "Se connecter pour voir", "ru": "Войдите для просмотра"},
+  "rkDayGain": {"ja": "今日のハート {0}", "zh-Hans": "今日爱心 {0}", "zh-Hant": "今日愛心 {0}", "es": "Corazones de hoy {0}", "id": "Hati hari ini {0}", "vi": "Tim hôm nay {0}", "th": "หัวใจวันนี้ {0}", "pt": "Corações de hoje {0}", "fr": "Cœurs du jour {0}", "ru": "Сердца сегодня {0}"},
+
   "rkTitle": {
     "ja": "ランキング",
     "zh-Hans": "排行榜",

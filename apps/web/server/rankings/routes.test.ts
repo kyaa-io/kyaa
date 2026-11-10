@@ -1,16 +1,18 @@
+import { randomBytes } from "node:crypto";
 import { describe, expect, it, vi } from "vitest";
 vi.mock("server-only", () => ({}));
 import { REFRESH_AFTER_MS, createRankingsHandlers } from "./routes";
 
 const ME = "11111111-1111-4111-8111-111111111111";
 const CEL = "22222222-2222-4222-8222-222222222222";
+const fanRef = (rank = 1, metric = "hearts") => ({ kind: "home_ranking", day: "2026-11-08", computedAt: "2026-11-08T00:00:00Z", metric, rank });
 const req = (path: string, headers: Record<string, string> = {}) => new Request(`http://x${path}`, { headers });
 
 function make(rpcImpl: (name: string, args: Record<string, unknown>) => unknown, extra = {}) {
   const rpc = vi.fn(async (name: string, args: Record<string, unknown>) => rpcImpl(name, args));
   const authorize = vi.fn(async () => ({ appUserId: ME }));
   const resolveCreatorId = vi.fn(async (slug: string) => (slug === "star" ? CEL : null));
-  return { rpc, authorize, handlers: createRankingsHandlers({ rpc, authorize, resolveCreatorId, ...extra }) };
+  return { rpc, authorize, handlers: createRankingsHandlers({ profileRefSecret: randomBytes(32).toString("base64"), rpc, authorize, resolveCreatorId, ...extra }) };
 }
 
 describe("rankings routes", () => {
@@ -137,10 +139,10 @@ describe("rankings routes", () => {
   const fresh = { now: () => Date.parse("2026-11-08T00:05:00Z") };
   const head = (extra: Record<string, unknown> = {}) => ({ state: "ready", day: "2026-11-08", today: "2026-11-08", previousDay: "2026-11-07", builtDay: "2026-11-08", computedAt: "2026-11-08T00:00:00Z", failedAt: null, comparable: true, weekGainDays: 7, ...extra });
 
-  it("answers the home fan ranking by day with named values and movement, and no member id", async () => {
+  it("answers home fans with profile refs only for a verified member", async () => {
     const { handlers, rpc } = make(() => ({
       ...head({ metric: "hearts" }),
-      rows: [{ rank: 1, score: 7, hearts: 7, points: 35, nickname: "A", characterId: "star-pink", tier: "Gold", fans: 2, liveNow: true, isNew: true, isMe: true, delta: 2, weekGain: 1, subjectId: ME }, { rank: 2, score: 3, hearts: 3, points: null, nickname: "B", characterId: "x", tier: null, isMe: false, delta: null, weekGain: null }],
+      rows: [{ rank: 1, score: 7, hearts: 7, points: 35, nickname: "A", characterId: "star-pink", tier: "Gold", fans: 2, liveNow: true, isNew: true, isMe: true, delta: 2, weekGain: 1, subjectId: ME, profileRef: fanRef() }, { rank: 2, score: 3, hearts: 3, points: null, nickname: "B", characterId: "x", tier: null, isMe: false, delta: null, weekGain: null, profileRef: fanRef(2) }],
       me: { rank: 1, score: 7, hearts: 7, points: 35, inTop: true, delta: 2, subjectId: ME },
     }), fresh);
     const signedOut = await handlers.home(req("/api/rankings/home"));
@@ -160,7 +162,8 @@ describe("rankings routes", () => {
     expect(rpc).toHaveBeenLastCalledWith("read_home_fan_ranking_v2", { p_viewer: ME, p_metric: "hearts", p_limit: 50 });
     expect(mine.rows[0].isMe).toBe(true);
     expect(mine.me).toEqual({ rank: 1, score: 7, hearts: 7, points: 35, inTop: true, delta: 2 });
-    expect(JSON.stringify(mine)).not.toContain(ME);
+    expect(mine.rows[0].profileRef).toEqual({ ...fanRef(), signature: expect.any(String) });
+    expect(mine.rows[0]).not.toHaveProperty("subjectId");
   });
 
   it.each(["hearts", "points"])("returns both fan values and the actual comparison period when sorted by %s", async (metric) => {
@@ -168,7 +171,7 @@ describe("rankings routes", () => {
       ...head({ metric, weekGainDays: 3 }),
       rows: [{ rank: 1, score: metric === "hearts" ? 7 : 42, hearts: 7, points: 42, fans: 2,
         nickname: "A", characterId: "star-pink", tier: "Gold", isMe: true, isNew: true,
-        delta: -2, weekGain: 35, liveNow: true, subjectId: ME }],
+        delta: -2, weekGain: 35, liveNow: true, subjectId: ME, profileRef: fanRef(1, metric) }],
       me: { rank: 1, score: metric === "hearts" ? 7 : 42, hearts: 7, points: 42, inTop: true, delta: -2 },
     }), fresh);
     for (const authorization of [undefined, "Bearer t"]) {
@@ -177,6 +180,7 @@ describe("rankings routes", () => {
       expect(body.rows[0]).toMatchObject({ hearts: 7, points: 42, delta: -2, weekGain: 35, isNew: true });
       expect(body.rows[0]).not.toHaveProperty("liveNow");
       expect(JSON.stringify(body)).not.toContain(ME);
+      if (authorization) expect(body.rows[0].profileRef).toEqual({ ...fanRef(1, metric), signature: expect.any(String) });
       if (authorization) expect(body.me).toMatchObject({ hearts: 7, points: 42 });
       else expect(body.me).toBeNull();
     }
@@ -218,7 +222,7 @@ describe("rankings routes", () => {
     expect(rpc).toHaveBeenCalledWith("read_home_creator_ranking_v2", { p_locale: "en", p_metric: "hearts", p_limit: 10 });
     expect(authorize).toHaveBeenCalledTimes(1);
     expect(res.headers.get("cache-control")).toBe("private, no-store");
-    expect(body.rows).toEqual([{ rank: 1, slug: "a", name: "A", imageUrl: null, score: 795, hearts: 795, points: null, fans: 125, liveNow: false, isNew: false, challenge: true, delta: null, weekGain: null }]);
+    expect(body.rows).toEqual([{ rank: 1, slug: "a", name: "A", imageUrl: null, score: 795, hearts: 795, points: null, fans: 125, liveNow: false, isNew: false, challenge: true, delta: null, weekGain: null, dayGain: null }]);
     const empty = make(() => ({ ...head({ state: "empty", comparable: false, previousDay: null, weekGainDays: null }), rows: [] }));
     expect(await (await empty.handlers.home(req("/x?kind=creators"))).json()).toMatchObject({ state: "empty", day: "2026-11-08", rows: [] });
     const late = make(() => ({ ...head({ state: "stale", day: "2026-11-07", today: "2026-11-08", failedAt: "2026-11-08T00:01:00Z" }), rows: [], me: null }));
