@@ -8,7 +8,8 @@ import { useByUsSession } from "@/components/byus-session-provider";
 import { fanLoginHref } from "@/components/login-href";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import { FanSkeletonRows } from "@/components/fan-ui/fan-skeleton";
-import { RelativeTime } from "@/components/relative-time";
+import { FanHeading } from "@/components/fan-ui/fan-heading";
+import { fanListTime } from "@/features/groups/ui/fan-list-time";
 import { useCommunityResource } from "@/features/fanpage/ui/use-community-resource";
 import { useContentMutation } from "@/features/content-safety/ui/use-content-mutation";
 import { CommentComposer } from "@/features/fan-posts/ui/fan-post-detail";
@@ -79,15 +80,15 @@ function Participation({ slug, title, locale }: Props) {
     {participation.state.status === "loading" ? <FanSkeletonRows rows={1} /> : participation.state.status === "error" || participation.refreshFailed ? <p role="status">{copy.failed} <FanAction variant="text" onClick={participation.retry}>{copy.retry}</FanAction></p> : null}
     {error && <p role="alert">{error}{mutation.failure === "auth" && <FanAction href={loginHref} variant="text">{copy.login}</FanAction>}</p>}
     <section id="comments" className={styles.comments} aria-labelledby={`${fieldId}-heading`}>
-      <h2 id={`${fieldId}-heading`}>{copy.comments}{data ? ` ${data.commentCount.toLocaleString(locale)}` : ""}</h2>
+      <FanHeading as="h2" id={`${fieldId}-heading`}>{copy.comments}{data ? ` ${data.commentCount.toLocaleString(locale)}` : ""}</FanHeading>
       {auth.ready && (auth.authenticated ? <CommentComposer fieldId={fieldId} locale={locale} readDraft={() => draft.current} onDraft={(_, value) => { draft.current = value; }} replyTarget={null} gated={false} gate={null} busy={mutation.busy} error={null} onGate={() => {}} onSubmit={submit} onCancel={() => {}} showRewards={false} /> : <div className={detailStyles.commentForm}>
         <Link className={detailStyles.guestField} href={loginHref as Route}>{rc.placeholder}</Link>
         <div className={detailStyles.commentTools}><FanAction href={loginHref} variant="neutral" size="sm">{copy.login}</FanAction></div>
       </div>)}
       {comments.state.status === "loading" ? <FanSkeletonRows rows={2} variant="member" /> : comments.state.status === "error" ? <p role="status">{copy.failed} <FanAction variant="text" onClick={comments.retry}>{copy.retry}</FanAction></p> : <>
         {comments.refreshFailed && <p role="status">{copy.failed} <FanAction variant="text" onClick={comments.retry}>{copy.retry}</FanAction></p>}
-        <ul className={styles.list}>{comments.state.data.items.map(comment => <li key={comment.id}>
-          <div className={styles.meta}><img src={comment.author.avatarUrl} alt="" width={32} height={32} /><strong>{comment.author.nickname}</strong><RelativeTime value={comment.createdAt} locale={locale} />{comment.isOwner && <FanAction variant="text" disabled={mutation.busy} onClick={() => void remove(comment.id)}>{copy.delete}</FanAction>}</div>
+        <ul className={styles.list}>{comments.state.data.items.map(comment => <li key={comment.id} data-row="comment">
+          <div className={styles.meta}><img src={comment.author.avatarUrl} alt="" width={32} height={32} /><strong>{comment.author.nickname}</strong><time dateTime={comment.createdAt}>{fanListTime(comment.createdAt, locale)}</time>{comment.isOwner && <FanAction variant="text" disabled={mutation.busy} onClick={() => void remove(comment.id)}>{copy.delete}</FanAction>}</div>
           <p className={styles.body}>{comment.body}</p>
         </li>)}</ul>
         {(cursor || comments.state.data.nextCursor) && <nav className={styles.pagination} aria-label={copy.comments}>{cursor && <FanAction variant="text" onClick={() => setCursor(null)}>{copy.newest}</FanAction>}{comments.state.data.nextCursor && <FanAction variant="text" onClick={() => setCursor(comments.state.status === "ready" ? comments.state.data.nextCursor : null)}>{copy.older}</FanAction>}</nav>}

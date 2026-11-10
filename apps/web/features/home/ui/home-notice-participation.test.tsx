@@ -72,3 +72,14 @@ it("shows retry for an unavailable read while keeping the existing share action"
   expect(screen.getAllByRole("button", { name: /다시/ }).length).toBeGreaterThan(0);
   expect(screen.queryByRole("button", { name: /좋아요/ })).toBeNull();
 });
+it("uses the shared heading, row marker and absolute Seoul timestamp for a comment", () => {
+  vi.spyOn(Date, "now").mockReturnValue(Date.parse("2026-11-10T00:00:00Z"));
+  state.participation = { ...state.participation, commentCount: 1 };
+  state.comments = [{ id: "b0000000-0000-4000-8000-000000000001", body: "감사합니다.", revision: 1, createdAt: "2026-11-10T00:00:00Z", isOwner: false, author: { nickname: "팬", avatarUrl: "/images/avatars/star-pink.webp" } }];
+  render(<HomeNoticeParticipation {...props} />);
+  expect(screen.getByRole("heading", { name: "댓글 1" })).toHaveAttribute("data-fan-heading", "standard");
+  const row = screen.getByText("감사합니다.").closest("li")!;
+  expect(row).toHaveAttribute("data-row", "comment");
+  expect(row.querySelector("time")).toHaveAttribute("dateTime", "2026-11-10T00:00:00Z");
+  expect(row.querySelector("time")).toHaveTextContent("11. 10. 09:00");
+});
