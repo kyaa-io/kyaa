@@ -2,30 +2,30 @@
  "version": 1,
  "rules": {
   "C1": 592,
-  "C10": 9,
+  "C10": 7,
   "C2": 731,
   "C3": 422,
   "C4": 59,
   "C5": 47,
   "C7": 5,
-  "C8": 1190,
+  "C8": 1192,
   "N1": 16,
   "N10": 566,
   "N11": 263,
   "N15": 27,
   "N15b": 23,
-  "N21": 107,
+  "N21": 109,
   "N22": 174,
   "N23": 45,
-  "N24": 47,
-  "N25": 238,
+  "N24": 46,
+  "N25": 237,
   "N26": 108,
-  "N27": 1125,
+  "N27": 1126,
   "N28": 58,
-  "N3": 47,
+  "N3": 49,
   "N30": 2,
   "N32": 4,
-  "N33": 6003,
+  "N33": 6011,
   "N34": 291,
   "N4": 126,
   "S1": 3,
@@ -39,21 +39,21 @@
   "S6": 5,
   "S7": 13,
   "S8": 105,
-  "T1": 504,
+  "T1": 505,
   "T10": 21,
-  "T11": 151,
-  "T2": 1178,
+  "T11": 157,
+  "T2": 1177,
   "T3": 285,
-  "T4": 178,
+  "T4": 177,
   "T5": 20,
   "T6": 11,
-  "T7": 197,
+  "T7": 199,
   "T8": 58,
   "T9": 1155,
   "color-named": 96,
-  "color-no-hex": 820,
+  "color-no-hex": 822,
   "function-disallowed-list": 149,
-  "scale-unlimited/declaration-strict-value": 9957
+  "scale-unlimited/declaration-strict-value": 9951
  },
  "files": {
   "apps/web/app/account-deletion/page.module.css": {
@@ -6339,28 +6339,6 @@
    "N24|trailingIcon <ArrowRight>": 1,
    "N25|import lucide-react": 1
   },
-  "apps/web/features/benefit/ui/raffle-results-notice.module.css": {
-   "N27|border-radius: 16px": 1,
-   "N33|font-size/weight/line-height declarations": 6,
-   "T2|line-height: 1.35": 1,
-   "T4|flex-basis: calc(100% - 60px)": 1,
-   "T9|height: 44px": 1,
-   "T9|height: 48px": 1,
-   "T9|width: 44px": 1,
-   "T9|width: 48px": 1,
-   "color-no-hex|color: #fff": 1,
-   "scale-unlimited/declaration-strict-value|: border-radius:16px": 1,
-   "scale-unlimited/declaration-strict-value|: font-size:16px": 1,
-   "scale-unlimited/declaration-strict-value|: font-size:20px": 1,
-   "scale-unlimited/declaration-strict-value|: font-size:24px": 1,
-   "scale-unlimited/declaration-strict-value|: gap:16px": 1,
-   "scale-unlimited/declaration-strict-value|: margin:8px 0 0": 1
-  },
-  "apps/web/features/benefit/ui/raffle-results-notice.tsx": {
-   "C2|<h2>": 1,
-   "N24|trailingIcon <ArrowRight>": 1,
-   "N25|import lucide-react": 1
-  },
   "apps/web/features/benefit/ui/recipient-phone-field.module.css": {
    "N26|box-shadow: 0 12px 32px rgb(0 0 0 / 14%)": 1,
    "N27|border-radius: 0 0 11px 11px": 1,
@@ -8149,9 +8127,10 @@
    "N27|border-radius: 16px": 1,
    "N27|border-radius: 18px": 1,
    "N27|border-radius: 8px": 1,
-   "N33|font-size/weight/line-height declarations": 37,
+   "N33|font-size/weight/line-height declarations": 40,
    "N34|max-width:767px": 1,
-   "T11|font-size: var(--fan-calendar-meta-size)": 4,
+   "T11|font-size: var(--fan-calendar-meta-size)": 5,
+   "T1|: font-weight:700": 1,
    "T1|: font-weight:800": 4,
    "T2|line-height: 1.35": 2,
    "T2|line-height: 1.45": 1,
@@ -8159,8 +8138,11 @@
    "T3|: letter-spacing:.02em": 1,
    "T7|animation: calendar-upcoming-pulse 2.8s ease-in-out infinite": 1,
    "T9|min-height: 44px": 8,
-   "T9|min-height: 48px": 1,
+   "T9|min-height: 48px": 2,
    "T9|min-height: 52px": 1,
+   "color-no-hex|background: #ce0066": 1,
+   "color-no-hex|background: #ff0080": 1,
+   "color-no-hex|color: #fff": 1,
    "scale-unlimited/declaration-strict-value|: border-radius:10px": 2,
    "scale-unlimited/declaration-strict-value|: border-radius:16px": 1,
    "scale-unlimited/declaration-strict-value|: border-radius:18px": 1,
@@ -8193,11 +8175,11 @@
    "scale-unlimited/declaration-strict-value|: row-gap:6px": 1
   },
   "apps/web/features/fanpage/ui/celebrity-calendar.tsx": {
-   "C10|✓": 2,
    "C1|<button>": 2,
    "C2|<h2>": 1,
    "C2|<h3>": 1,
    "C8|locale === \"ko\" ? \"전체 보기": 1,
+   "C8|locale === \"ko\" ? \"출석": 1,
    "N22|<li> without data-row": 1
   },
   "apps/web/features/fanpage/ui/cheer-comments.tsx": {
@@ -9240,6 +9222,31 @@
    "N22|<li> without data-row": 2,
    "N25|import lucide-react": 1
   },
+  "apps/web/features/gifts/ui/gift-detail-screen.tsx": {
+   "N3|<header>": 1
+  },
+  "apps/web/features/gifts/ui/gift-glow.module.css": {
+   "N27|border-radius: var(--radius-action)": 1,
+   "T7|animation: gift-halo-in 400ms var(--motion-easing) both, gift-halo-breathe 2400ms ease-in-out 400ms 3": 1,
+   "T7|animation: gift-shine 4000ms var(--motion-easing) 100ms 3": 1
+  },
+  "apps/web/features/gifts/ui/gift-notice.module.css": {
+   "T9|height: 44px": 1,
+   "T9|width: 44px": 1
+  },
+  "apps/web/features/gifts/ui/gift-stages.module.css": {
+   "N33|font-size/weight/line-height declarations": 5,
+   "T11|font-size: var(--fan-badge-size)": 2,
+   "T11|font-weight: var(--fan-tab-weight)": 2
+  },
+  "apps/web/features/gifts/ui/gifts-screen.module.css": {
+   "N27|border-radius: var(--radius-action)": 1,
+   "N33|font-size/weight/line-height declarations": 4,
+   "T11|font-size: var(--fan-badge-size)": 1
+  },
+  "apps/web/features/gifts/ui/gifts-screen.tsx": {
+   "N3|<header>": 1
+  },
   "apps/web/features/group-capsule/capsule-reveal.tsx": {
    "C2|<h2>": 2,
    "C2|<h3>": 2,
@@ -9742,7 +9749,7 @@
   },
   "apps/web/features/group-wallet/ui/wallet-screen.tsx": {
    "C2|<h2>": 4,
-   "C2|<h3>": 2,
+   "C2|<h3>": 3,
    "C4|style={{ display:'flex',justifyContent:'space-bet…": 1,
    "N11|disabled without reason": 1,
    "N1|import ./wallet-card": 1,
@@ -9760,7 +9767,7 @@
    "N27|border-radius: 999px": 2,
    "N27|border-radius: var(--space-1)": 1,
    "N28|font: 400 14px/20px \"Pretendard UI 650\",sans-serif": 1,
-   "N33|font-size/weight/line-height declarations": 166,
+   "N33|font-size/weight/line-height declarations": 168,
    "N34|max-width:1023px": 7,
    "N34|max-width:767px": 8,
    "N4|min-height: 720px": 1,
@@ -10379,7 +10386,7 @@
   },
   "apps/web/features/groups/ui/group-benefits-screen.tsx": {
    "N1|import @/features/group-wallet/ui/wallet-card": 1,
-   "N21|<section> without data-block": 2,
+   "N21|<section> without data-block": 4,
    "N25|import lucide-react": 1,
    "N3|<header>": 1
   },
@@ -13710,6 +13717,7 @@
    "T9|height: 48px": 3,
    "T9|min-height: 44px": 5,
    "T9|min-height: 48px": 1,
+   "T9|min-width: 44px": 1,
    "T9|width: 44px": 2,
    "T9|width: 48px": 3,
    "function-disallowed-list|background: oklch": 1,
@@ -13773,7 +13781,7 @@
    "C8|locale === \"ko\" ? \"문의 내역": 1,
    "C8|locale === \"ko\" ? \"보유 응모권": 1,
    "C8|locale === \"ko\" ? \"수령 정보 입력": 1,
-   "C8|locale === \"ko\" ? \"알림": 1,
+   "C8|locale === \"ko\" ? \"알림": 2,
    "C8|locale === \"ko\" ? \"응모권 내역 보기": 1,
    "C8|locale === \"ko\" ? \"응모권 모으기 · 내역 보기": 1,
    "C8|locale === \"ko\" ? \"이벤트 보러 가기": 1,
