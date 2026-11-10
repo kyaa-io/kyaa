@@ -81,3 +81,10 @@ it("reports byte progress through the PUT and fails the upload on a rejected PUT
   await expect(uploadWaveMedia({ key: id, file: image() }, "wave_album", async () => "access", new AbortController().signal, sent => refused.push(sent))).rejects.toThrow("MEDIA_UPLOAD_FAILED");
   expect(refused).not.toContain(1);
 });
+
+it("limits larger videos to fan posts", () => {
+ const file = (size: number) => ({ size, type: "video/mp4" }) as File;
+ expect(validWaveFiles([file(200 * 1024 * 1024)], [], 30, "fan_post")).toBe(true);
+ expect(validWaveFiles([file(200 * 1024 * 1024 + 1)], [], 30, "fan_post")).toBe(false);
+ expect(validWaveFiles([file(50 * 1024 * 1024 + 1)], [], 30, "dm")).toBe(false);
+});
