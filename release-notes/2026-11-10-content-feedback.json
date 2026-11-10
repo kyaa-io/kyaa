@@ -1,0 +1,12 @@
+{
+  "changes": [
+    "갤러리를 글자 없는 정사각 썸네일로 촘촘하게 정리했어요.",
+    "안내 글에서 좋아요·싫어요, 댓글 작성과 내 댓글 삭제, 공유를 할 수 있어요.",
+    "첨부는 로컬 검증 화면이며, 갤러리 사진은 기존 공개 원본을 넣은 예시 화면이에요."
+  ],
+  "path": "/notices/service-guide",
+  "images": [
+    "release-notes/images/2026-11-10-content-feedback-gallery-390.png",
+    "release-notes/images/2026-11-10-content-feedback-notice-390.png"
+  ]
+}
