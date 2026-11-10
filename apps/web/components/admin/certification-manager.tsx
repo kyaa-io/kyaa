@@ -15,6 +15,7 @@ import { useAdminSession } from "./use-admin-session";
 import { membershipPlatformLabel, type MembershipPlatform } from "@/features/certification/domain/certification";
 import { AdminListSearch, AdminPagination, useAdminPagination } from "./admin-pagination";
 import styles from "./certification-manager.module.css";
+import { PROOF_TYPE_LABEL } from "./proof-type-label";
 import { CertificationReviewWorkspace, reviewStatusLabel, type CertificationReviewSubmission as Submission, type ReviewStatus } from "./certification-review-workspace";
 
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -44,16 +45,7 @@ const PROOF_TYPES = ["membership", "purchase", "receipt", "ticket", "donation", 
 // sns_post fills passport slot 07 and names one of these networks (save_admin_certification_mission_v3 refuses anything else).
 const SNS_PLATFORMS = [["instagram", "Instagram"], ["tiktok", "TikTok"], ["x", "X"], ["threads", "Threads"], ["youtube", "YouTube"]] as const;
 type ProofType = (typeof PROOF_TYPES)[number];
-const PROOF_TYPE_LABEL: Record<ProofType, { ko: string; en: string }> = {
-  membership: { ko: "멤버십", en: "Membership" },
-  purchase: { ko: "구매", en: "Purchase" },
-  receipt: { ko: "영수증", en: "Receipt" },
-  ticket: { ko: "티켓", en: "Ticket" },
-  donation: { ko: "후원", en: "Donation" },
-  funding: { ko: "펀딩", en: "Funding" },
-  kyaa_payment: { ko: "kyaa 결제", en: "kyaa payment" },
-  sns_post: { ko: "SNS 올리기", en: "SNS post" },
-};
+
 const blank = {
   id: "",
   celebrityId: "",

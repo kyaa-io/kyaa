@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import styles from "./proof-review-panel.module.css";
+import { proofTypeLabel } from "./proof-type-label";
 
 type Locale = "ko" | "en";
 export type ProofRequest = (url: string, method?: string, body?: unknown) => Promise<{ ok: boolean; status: number; data: unknown }>;
@@ -22,7 +23,7 @@ const TEXT = {
     done: "처리했습니다.", replayed: "이미 처리된 요청입니다. 이전 결과를 보여줍니다.",
     REVISION_CONFLICT: "다른 관리자가 먼저 처리했습니다. 새로고침하세요.", INVALID_TRANSITION: "이 상태에서는 처리할 수 없습니다.",
     PROOF_STAMP_UNAVAILABLE: "스탬프를 발급할 수 없어 승인하지 못했습니다.", FAN_WEB_ACTIVE_ACCOUNT_REQUIRED: "이용이 제한된 회원이라 승인할 수 없어요.", GROUP_WALLET_UNAVAILABLE: "지갑 기능이 꺼져 있어 처리하지 못했어요.", GROUP_WALLET_WRITE_FENCED: "지갑 쓰기가 잠시 막혀 있어 처리하지 못했어요.", REASON_REQUIRED: "사유를 3자 이상 적어 주세요.",
-    ADMIN_REQUIRED: "관리자 권한이 필요합니다.", failed: "처리하지 못했습니다.", PROOF_ALREADY_APPROVED: "같은 플랫폼으로 이미 승인된 인증이 있습니다.", sns_post: "SNS 올리기",
+    ADMIN_REQUIRED: "관리자 권한이 필요합니다.", failed: "처리하지 못했습니다.", PROOF_ALREADY_APPROVED: "같은 플랫폼으로 이미 승인된 인증이 있습니다.",
     voidTitle: "스탬프 무효 처리", stampId: "스탬프 ID", sanction: "제재 포함", voidRun: "무효 처리", voided: "무효 처리했습니다.", titleRevoked: "찐팬 칭호를 해제했습니다.", noTitle: "해제할 찐팬 칭호가 없습니다.",
     STAMP_NOT_FOUND: "스탬프를 찾을 수 없습니다.", correction: "포인트 정정", review: "포인트 정정은 검토가 필요합니다.", corrected: "포인트를 정정했습니다.", none: "정정할 포인트가 없습니다.",
   },
@@ -34,7 +35,7 @@ const TEXT = {
     done: "Done.", replayed: "Already handled. Showing the earlier result.",
     REVISION_CONFLICT: "Another admin handled this first. Refresh.", INVALID_TRANSITION: "Not allowed in this state.",
     PROOF_STAMP_UNAVAILABLE: "No stamp could be issued, so approval was not applied.", FAN_WEB_ACTIVE_ACCOUNT_REQUIRED: "This member is restricted, so this can't be approved.", GROUP_WALLET_UNAVAILABLE: "The wallet is turned off, so this couldn't be processed.", GROUP_WALLET_WRITE_FENCED: "Wallet changes are paused, so this couldn't be processed.", REASON_REQUIRED: "Enter a reason of at least 3 characters.",
-    ADMIN_REQUIRED: "Admin rights are required.", failed: "Could not complete.", PROOF_ALREADY_APPROVED: "A proof for the same network is already approved.", sns_post: "SNS post",
+    ADMIN_REQUIRED: "Admin rights are required.", failed: "Could not complete.", PROOF_ALREADY_APPROVED: "A proof for the same network is already approved.",
     voidTitle: "Void a stamp", stampId: "Stamp ID", sanction: "Include sanction", voidRun: "Void", voided: "Stamp voided.", titleRevoked: "Jjinfan title revoked.", noTitle: "No active jjinfan title to revoke.",
     STAMP_NOT_FOUND: "Stamp not found.", correction: "Point correction", review: "Point correction needs review.", corrected: "Points corrected.", none: "No points to correct.",
   },
@@ -165,7 +166,7 @@ export function ProofReviewPanel({ locale, request, canWrite }: { locale: Locale
                   <td>{row.applicantName ?? "-"}</td>
                   <td>{row.creatorName ?? "-"}</td>
                   <td>
-                    <div>{row.proofType === "sns_post" ? t.sns_post : row.proofType}</div>
+                    <div>{proofTypeLabel(row.proofType, locale)}</div>
                     {(row.uploadIds ?? []).map((uid, i) => (
                       <div key={uid} className={styles.imageBox}>
                         <FanAction variant="text" onClick={() => void toggleImage(row, uid)}>{images[uid] ? t.hideImage : `${t.viewImage} ${i + 1}`}</FanAction>
