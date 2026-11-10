@@ -1,0 +1,9 @@
+{
+  "changes": [
+    "홈 랭킹 각 행의 진행 막대를 없앴어요. 모두가 함께 채우는 목표처럼 보여 헷갈린다는 의견을 반영했어요.",
+    "‘1위까지 N’은 작은 글자로만 남겼고, PC에서는 이름과 하트 수 사이에 놓아 빈 공간이 생기지 않게 했어요.",
+    "캡처는 개발용 시험 데이터로 로컬에서 찍은 화면이에요."
+  ],
+  "path": "/",
+  "images": ["release-notes/images/2026-11-11-home-ranking-no-gauge-pc.png", "release-notes/images/2026-11-11-home-ranking-no-gauge-mobile.png"]
+}

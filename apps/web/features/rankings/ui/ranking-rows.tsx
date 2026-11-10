@@ -1,6 +1,6 @@
 "use client";
 import type { Route } from "next";
-import { Fragment, useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
+import { Fragment, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 
 import { ChevronDown, ChevronUp, Heart } from "@/components/fan-ui/fan-icons";
 import { FanIcon } from "@/components/fan-ui/fan-icon";
@@ -207,11 +207,6 @@ function todayGain(locale: AppLocale, metric: RankingMetric, value: number | nul
   return <span className={styles.today}>{rankingsText(locale, metric === "hearts" ? "rkDayPlus" : "rkDayGain", [text])}{metric === "hearts" ? <FanIcon icon={Heart} size={16} filled className={styles.todayHeart} /> : null}</span>;
 }
 
-/** From 1024px: this row's value as a share of the first place's, between the name and the value (the same numbers the "1위까지" line is made of). */
-function Share({ value, top }: { value: number; top: number }) {
-  return <span className={styles.share} aria-hidden="true"><span className={styles.shareFill} style={{ "--share": top > 0 ? Math.min(1, Math.max(0, value / top)) : 0 } as CSSProperties} /></span>;
-}
-
 /** Under the value: the way to the first place, computed from the list itself. */
 function FirstGap({ locale, first, accent, value, top }: { locale: AppLocale; first: boolean; accent: boolean; value: number; top: number }) {
   if (first) return <span className={styles.gap} data-first="" data-accent={accent || undefined}>{rankingsText(locale, "rkIsFirst")}</span>;
@@ -256,7 +251,6 @@ export function FanRows({ locale, ranking, metric, show, fill, scope, guest = fa
           <span className={styles.nameLine}><span className={styles.name} title={row.nickname}>{row.nickname}</span>{rowDelta(locale, row.delta, ranking.comparable)}</span>
           <Meta items={[period === "day" ? null : todayGain(locale, metric, row.dayGain)]} />
         </span>
-        <Share value={value} top={top} />
         <span className={styles.value}>
           <Main locale={locale} metric={metric} value={value} />
           <FirstGap locale={locale} first={i === 0 && ranking.rows[0] === row} accent={accentFirst} value={value} top={top} />
@@ -294,7 +288,6 @@ export function CreatorRows({ locale, ranking, metric, show, fill, scope, challe
             row.liveNow ? <LiveMark key="l" locale={locale} name={row.name} /> : null,
           ]} wide={challengeTag && row.challenge ? <FanTag tone="fan" className={styles.challenge}>{rankingsText(locale, "jjTag")}</FanTag> : null} />
         </span>
-        <Share value={value} top={top} />
         <span className={styles.value}>
           <Main locale={locale} metric={metric} value={value} />
           <FirstGap locale={locale} first={i === 0 && ranking.rows[0] === row} accent={accentFirst} value={value} top={top} />

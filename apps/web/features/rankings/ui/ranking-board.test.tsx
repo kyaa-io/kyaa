@@ -298,3 +298,12 @@ it("movement stands right after the name: ▲ green and ▼ red, hidden when the
   expect(line("하트팬4").querySelector("[data-delta-cell]")).toBeNull();
   expect(line("하트팬1").firstElementChild).toBe(container.querySelector("li [title='하트팬1']"));
 });
+
+it("draws no gauge bar on any row: the way to first place is only the small text", async () => {
+  stub();
+  const { container } = render(<RankingBoard locale="ko" />);
+  await screen.findByText("하트팬1");
+  expect(container.querySelector("[class*='share']")).toBeNull();
+  expect(container.querySelector("[role='progressbar'], progress, meter")).toBeNull();
+  expect(container.querySelectorAll("li[data-row='fan-rank'] [class*='gap']").length).toBeGreaterThan(0);
+});
