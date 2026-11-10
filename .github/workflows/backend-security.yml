@@ -50,7 +50,39 @@ jobs:
         with:
           node-version: 24
           cache: npm
+      - name: Compute the node_modules cache key
+        id: node_modules_key
+        shell: bash
+        run: echo "prefix=node-modules-v1-$RUNNER_OS-$RUNNER_ARCH-$(. /etc/os-release && echo "$ID$VERSION_ID")-node$(node -p process.versions.node)-npm$(npm -v)" >> "$GITHUB_OUTPUT"
+      - name: Restore locked node_modules
+        id: node_modules
+        continue-on-error: true
+        uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+        with:
+          path: |
+            node_modules
+            apps/*/node_modules
+          key: ${{ steps.node_modules_key.outputs.prefix }}-${{ hashFiles('package-lock.json', 'package.json', 'apps/*/package.json', 'scripts/apply-security-patches.mjs') }}
+      - name: Reinstall when restored node_modules is unusable
+        if: steps.node_modules.outputs.cache-hit == 'true'
+        shell: bash
+        run: |
+          if ! node scripts/verify-installed-node-modules.mjs; then
+            echo '::warning::Restored node_modules is unusable; reinstalling from the lockfile'
+            rm -rf node_modules apps/*/node_modules
+            npm ci --ignore-scripts
+          fi
       - run: npm ci --ignore-scripts
+        if: steps.node_modules.outputs.cache-hit != 'true'
+      - name: Save locked node_modules
+        if: steps.node_modules.outputs.cache-hit != 'true'
+        continue-on-error: true
+        uses: actions/cache/save@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+        with:
+          path: |
+            node_modules
+            apps/*/node_modules
+          key: ${{ steps.node_modules_key.outputs.prefix }}-${{ hashFiles('package-lock.json', 'package.json', 'apps/*/package.json', 'scripts/apply-security-patches.mjs') }}
       - run: npm run security:patch
       - name: Verify parallel CI contracts
         run: node --test scripts/ci-workflows.test.mjs
@@ -101,7 +133,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        suite: [core, live, events, economy]
+        suite: [core, live, events, economy-1, economy-2]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -109,8 +141,41 @@ jobs:
         with:
           node-version: 24
           cache: npm
-      - run: npm ci --ignore-scripts
+      - name: Compute the node_modules cache key
+        id: node_modules_key
         if: matrix.suite != 'live'
+        shell: bash
+        run: echo "prefix=node-modules-v1-$RUNNER_OS-$RUNNER_ARCH-$(. /etc/os-release && echo "$ID$VERSION_ID")-node$(node -p process.versions.node)-npm$(npm -v)" >> "$GITHUB_OUTPUT"
+      - name: Restore locked node_modules
+        id: node_modules
+        if: matrix.suite != 'live'
+        continue-on-error: true
+        uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+        with:
+          path: |
+            node_modules
+            apps/*/node_modules
+          key: ${{ steps.node_modules_key.outputs.prefix }}-${{ hashFiles('package-lock.json', 'package.json', 'apps/*/package.json', 'scripts/apply-security-patches.mjs') }}
+      - name: Reinstall when restored node_modules is unusable
+        if: matrix.suite != 'live' && steps.node_modules.outputs.cache-hit == 'true'
+        shell: bash
+        run: |
+          if ! node scripts/verify-installed-node-modules.mjs; then
+            echo '::warning::Restored node_modules is unusable; reinstalling from the lockfile'
+            rm -rf node_modules apps/*/node_modules
+            npm ci --ignore-scripts
+          fi
+      - run: npm ci --ignore-scripts
+        if: matrix.suite != 'live' && steps.node_modules.outputs.cache-hit != 'true'
+      - name: Save locked node_modules
+        if: matrix.suite != 'live' && steps.node_modules.outputs.cache-hit != 'true'
+        continue-on-error: true
+        uses: actions/cache/save@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+        with:
+          path: |
+            node_modules
+            apps/*/node_modules
+          key: ${{ steps.node_modules_key.outputs.prefix }}-${{ hashFiles('package-lock.json', 'package.json', 'apps/*/package.json', 'scripts/apply-security-patches.mjs') }}
       - run: npm run security:patch
         if: matrix.suite != 'live'
       - run: npm run build --workspace @byus/worker
@@ -306,7 +371,7 @@ jobs:
           BYUS_CLEAN_DB_SHELL_ASSERTION_FILE=supabase/tests/kyaa_wave_mission_stamps_concurrency.sh \
           bash scripts/verify-clean-migration-chain.sh
       - name: Verify group wallet, raffle and gift rules with concurrent entries
-        if: matrix.suite == 'economy'
+        if: matrix.suite == 'economy-2'
         run: |
           export PATH="$(pg_config --bindir):$PATH"
           BYUS_CLEAN_DB_PORT=55541 \
@@ -314,7 +379,7 @@ jobs:
           BYUS_CLEAN_DB_SHELL_ASSERTION_FILE=supabase/tests/group_economy_ci_concurrency.sh \
           bash scripts/verify-clean-migration-chain.sh
       - name: Verify group event approval rules with the real rule on
-        if: matrix.suite == 'economy'
+        if: matrix.suite == 'economy-2'
         run: |
           export PATH="$(pg_config --bindir):$PATH"
           BYUS_CLEAN_DB_PORT=55548 \
@@ -328,42 +393,42 @@ jobs:
           BYUS_CLEAN_DB_ASSERTION_FILE=supabase/tests/group_event_approval_owner.sql \
           bash scripts/verify-clean-migration-chain.sh
       - name: Verify group application duplicate and review reason rules
-        if: matrix.suite == 'economy'
+        if: matrix.suite == 'economy-2'
         run: |
           export PATH="$(pg_config --bindir):$PATH"
           BYUS_CLEAN_DB_PORT=55545 \
           BYUS_CLEAN_DB_ASSERTION_FILE=supabase/tests/group_application_integrity.sql \
           bash scripts/verify-clean-migration-chain.sh
       - name: Verify post and comment point result read
-        if: matrix.suite == 'economy'
+        if: matrix.suite == 'economy-2'
         run: |
           export PATH="$(pg_config --bindir):$PATH"
           BYUS_CLEAN_DB_PORT=55546 \
           BYUS_CLEAN_DB_ASSERTION_FILE=supabase/tests/post_reward_result.sql \
           bash scripts/verify-clean-migration-chain.sh
       - name: Verify public popular board read rules
-        if: matrix.suite == 'economy'
+        if: matrix.suite == 'economy-2'
         run: |
           export PATH="$(pg_config --bindir):$PATH"
           BYUS_CLEAN_DB_PORT=55547 \
           BYUS_CLEAN_DB_ASSERTION_FILE=supabase/tests/public_popular_posts.sql \
           bash scripts/verify-clean-migration-chain.sh
       - name: Verify group wallet cross-feature races on the disabled release baseline
-        if: matrix.suite == 'economy'
+        if: matrix.suite == 'economy-2'
         run: |
           export PATH="$(pg_config --bindir):$PATH"
           BYUS_CLEAN_DB_PORT=55542 \
           BYUS_CLEAN_DB_SHELL_ASSERTION_FILE=supabase/tests/group_wallet_cross_feature_concurrency.sh \
           bash scripts/verify-clean-migration-chain.sh
       - name: Verify group wallet cutover on the disabled release baseline
-        if: matrix.suite == 'economy'
+        if: matrix.suite == 'economy-2'
         run: |
           export PATH="$(pg_config --bindir):$PATH"
           BYUS_CLEAN_DB_PORT=55543 \
           BYUS_CLEAN_DB_SHELL_ASSERTION_FILE=supabase/tests/group_wallet_cutover_verify.sh \
           bash scripts/verify-clean-migration-chain.sh
       - name: Verify fan economy, reward sources and concurrent earning
-        if: matrix.suite == 'economy'
+        if: matrix.suite == 'economy-1'
         run: |
           export PATH="$(pg_config --bindir):$PATH"
           BYUS_CLEAN_DB_PORT=55544 \
@@ -371,7 +436,7 @@ jobs:
           BYUS_CLEAN_DB_SHELL_ASSERTION_FILE=supabase/tests/mobile_fan_economy_ci_concurrency.sh \
           bash scripts/verify-clean-migration-chain.sh
       - name: Verify wallet, reward, benefit and owner-grant SQL tests (one clean replay each)
-        if: matrix.suite == 'economy'
+        if: matrix.suite == 'economy-1'
         run: |
           export PATH="$(pg_config --bindir):$PATH"
           # Each replay owns a temporary cluster and port, so four run at once; one after another they took 272-309 s.
@@ -395,7 +460,39 @@ jobs:
         with:
           node-version: 24
           cache: npm
+      - name: Compute the node_modules cache key
+        id: node_modules_key
+        shell: bash
+        run: echo "prefix=node-modules-v1-$RUNNER_OS-$RUNNER_ARCH-$(. /etc/os-release && echo "$ID$VERSION_ID")-node$(node -p process.versions.node)-npm$(npm -v)" >> "$GITHUB_OUTPUT"
+      - name: Restore locked node_modules
+        id: node_modules
+        continue-on-error: true
+        uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+        with:
+          path: |
+            node_modules
+            apps/*/node_modules
+          key: ${{ steps.node_modules_key.outputs.prefix }}-${{ hashFiles('package-lock.json', 'package.json', 'apps/*/package.json', 'scripts/apply-security-patches.mjs') }}
+      - name: Reinstall when restored node_modules is unusable
+        if: steps.node_modules.outputs.cache-hit == 'true'
+        shell: bash
+        run: |
+          if ! node scripts/verify-installed-node-modules.mjs; then
+            echo '::warning::Restored node_modules is unusable; reinstalling from the lockfile'
+            rm -rf node_modules apps/*/node_modules
+            npm ci --ignore-scripts
+          fi
       - run: npm ci --ignore-scripts
+        if: steps.node_modules.outputs.cache-hit != 'true'
+      - name: Save locked node_modules
+        if: steps.node_modules.outputs.cache-hit != 'true'
+        continue-on-error: true
+        uses: actions/cache/save@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+        with:
+          path: |
+            node_modules
+            apps/*/node_modules
+          key: ${{ steps.node_modules_key.outputs.prefix }}-${{ hashFiles('package-lock.json', 'package.json', 'apps/*/package.json', 'scripts/apply-security-patches.mjs') }}
       - run: npm run security:patch
       - run: npm run build --workspace @byus/worker
       - run: sudo apt-get update && sudo apt-get install -y postgresql ripgrep

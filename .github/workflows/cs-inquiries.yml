@@ -35,7 +35,39 @@ jobs:
         with:
           node-version: 24
           cache: npm
+      - name: Compute the node_modules cache key
+        id: node_modules_key
+        shell: bash
+        run: echo "prefix=node-modules-v1-$RUNNER_OS-$RUNNER_ARCH-$(. /etc/os-release && echo "$ID$VERSION_ID")-node$(node -p process.versions.node)-npm$(npm -v)" >> "$GITHUB_OUTPUT"
+      - name: Restore locked node_modules
+        id: node_modules
+        continue-on-error: true
+        uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+        with:
+          path: |
+            node_modules
+            apps/*/node_modules
+          key: ${{ steps.node_modules_key.outputs.prefix }}-${{ hashFiles('package-lock.json', 'package.json', 'apps/*/package.json', 'scripts/apply-security-patches.mjs') }}
+      - name: Reinstall when restored node_modules is unusable
+        if: steps.node_modules.outputs.cache-hit == 'true'
+        shell: bash
+        run: |
+          if ! node scripts/verify-installed-node-modules.mjs; then
+            echo '::warning::Restored node_modules is unusable; reinstalling from the lockfile'
+            rm -rf node_modules apps/*/node_modules
+            npm ci --ignore-scripts
+          fi
       - run: npm ci --ignore-scripts
+        if: steps.node_modules.outputs.cache-hit != 'true'
+      - name: Save locked node_modules
+        if: steps.node_modules.outputs.cache-hit != 'true'
+        continue-on-error: true
+        uses: actions/cache/save@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+        with:
+          path: |
+            node_modules
+            apps/*/node_modules
+          key: ${{ steps.node_modules_key.outputs.prefix }}-${{ hashFiles('package-lock.json', 'package.json', 'apps/*/package.json', 'scripts/apply-security-patches.mjs') }}
       - run: npm run security:patch
       - run: npm run test --workspace @byus/web -- features/support server/support --maxWorkers=3
       - run: npx playwright install --with-deps chromium
