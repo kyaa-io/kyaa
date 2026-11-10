@@ -6,7 +6,7 @@
 --    accepted proof), 'reject' keeps one of the existing reject codes. A rejected proof can be sent again (back to pending, next
 --    revision) unless it was rejected as a duplicate. Nothing outside the proof's own review pays it: an outside check that fails or
 --    cannot run leaves the proof pending.
--- 2. One post, one member: submit_fan_share_proof refuses a post address another member already holds (any kind, any status except
+-- 2. One post, one member: submit_fan_share_proof (a B3 text-pair patch, see below) refuses a post address another member already holds (any kind, any status except
 --    rejected) with SHARE_PROOF_URL_REUSED. Rows written before this migration are left as they are (accepted rows keep their grant);
 --    the admin list still marks old duplicates. Nobody else's row is touched.
 -- 3. The admin list also answers the review revision and the reject code.
@@ -22,25 +22,38 @@ alter table public.fan_share_proofs add constraint fan_share_proofs_kind_shape c
   or (kind = 'insta_repost' and platform = 'instagram' and post_kind is not null and submitted_at is not null
       and (post_kind = 'story' or asset_id is null) and (url_key !~ '^image:' or post_kind = 'story')));
 
-create or replace function public.submit_fan_share_proof(p_app_user_id uuid, p_celebrity_id uuid, p_platform text, p_url text, p_url_key text, p_own_post boolean)
-returns jsonb language plpgsql security definer set search_path = '' as $$
-declare v_row public.fan_share_proofs%rowtype;
-begin
-  if not exists (select 1 from public.app_users u where u.id = p_app_user_id and u.status = 'active') then raise exception 'FAN_WEB_ACTIVE_ACCOUNT_REQUIRED'; end if;
-  if p_own_post is not true then raise exception 'SHARE_PROOF_OWN_POST_REQUIRED'; end if;
-  if not exists (select 1 from public.fan_passports p where p.app_user_id = p_app_user_id and p.celebrity_id = p_celebrity_id) then raise exception 'PASSPORT_REQUIRED'; end if;
-  -- the lock is per post, not per member: two members sending one post at once meet here
+-- submit_fan_share_proof and read_admin_share_proofs carry the B3 text pairs (20261220033000 b3_function_patches, md5-checked,
+-- reverted by its rollback and checked by dukjil_b3.sql S19). Replacing them whole would break that bookkeeping, so the same mechanism
+-- is used: revert to the base text, add pairs 2 and 3 for the submit and pair 2 for the list, apply all pairs again. The pairs keep
+-- pair 1's text untouched.
+do $$ declare f text; begin
+  foreach f in array array['public.submit_fan_share_proof(uuid,uuid,text,text,text,boolean)', 'public.read_admin_share_proofs(uuid,uuid,text,timestamp with time zone,integer)'] loop
+    perform public.b3_patch_function(f, true);
+  end loop;
+end $$;
+insert into public.b3_function_patches (fn, pair_no, original, patched) values
+('public.submit_fan_share_proof(uuid,uuid,text,text,text,boolean)', 2,
+$o$  perform pg_catalog.pg_advisory_xact_lock(pg_catalog.hashtextextended('fan-share-proof:' || p_app_user_id::text || ':' || p_url_key, 0));
+  select * into v_row from public.fan_share_proofs where app_user_id = p_app_user_id and url_key = p_url_key;
+$o$,
+$p$  -- the lock is per post, not per member: two members sending one post at once meet here /* b3-share-tag-lock */
   perform pg_catalog.pg_advisory_xact_lock(pg_catalog.hashtextextended('fan-share-proof:' || p_url_key, 0));
-  select * into v_row from public.fan_share_proofs where app_user_id = p_app_user_id and url_key = p_url_key for update;
-  if found and v_row.kind <> 'share' then
-    -- a repost of the same post: answered as a closed replay, marked duplicate
-    return jsonb_build_object('id', v_row.id, 'replayed', true, 'points', 0, 'status', 'accepted', 'duplicate', true);
-  elsif found and not (v_row.status = 'rejected' and v_row.reject_code <> 'duplicate') then
-    return jsonb_build_object('id', v_row.id, 'replayed', true, 'points', v_row.points, 'status', v_row.status);
-  end if;
+  -- a share proof rejected for a fixable reason (not 'duplicate') is not a replay: it is reopened below
+  select * into v_row from public.fan_share_proofs where app_user_id = p_app_user_id and url_key = p_url_key
+     and not (kind = 'share' and status = 'rejected' and reject_code <> 'duplicate') for update;
+$p$),
+('public.submit_fan_share_proof(uuid,uuid,text,text,text,boolean)', 3,
+$o$  end if;
+  insert into public.fan_share_proofs (app_user_id, celebrity_id, platform, url, url_key, own_post_confirmed)
+  values (p_app_user_id, p_celebrity_id, p_platform, p_url, p_url_key, true) returning * into v_row;
+$o$,
+$p$  end if;
+  /* b3-share-tag-reuse */
+  -- one post, one member: another member's proof of it (any kind, any status but rejected) refuses this one
   if exists (select 1 from public.fan_share_proofs o where o.url_key = p_url_key and o.app_user_id <> p_app_user_id and o.status <> 'rejected') then
     raise exception 'SHARE_PROOF_URL_REUSED';
   end if;
+  select * into v_row from public.fan_share_proofs where app_user_id = p_app_user_id and url_key = p_url_key and kind = 'share' and status = 'rejected' and reject_code <> 'duplicate' for update;
   if v_row.id is not null then
     -- rejected for a reason the member can fix (the tag): back to pending, next revision
     update public.fan_share_proofs set status = 'pending', url = coalesce(p_url, url), celebrity_id = p_celebrity_id, review_revision = review_revision + 1,
@@ -49,7 +62,14 @@ begin
     insert into public.fan_share_proofs (app_user_id, celebrity_id, platform, url, url_key, own_post_confirmed, status)
     values (p_app_user_id, p_celebrity_id, p_platform, p_url, p_url_key, true, 'pending') returning * into v_row;
   end if;
-  return jsonb_build_object('id', v_row.id, 'replayed', false, 'points', null, 'status', v_row.status);
+$p$),
+('public.read_admin_share_proofs(uuid,uuid,text,timestamp with time zone,integer)', 2,
+$o$      'revokedAt', s.revoked_at, 'revokeResult', s.revoke_result) order by s.created_at desc, s.id desc)$o$,
+$p$      'revokedAt', s.revoked_at, 'revokeResult', s.revoke_result, 'revision', s.review_revision, 'rejectCode', s.reject_code /* b3-share-tag-list */) order by s.created_at desc, s.id desc)$p$);
+do $$ declare f text; begin
+  foreach f in array array['public.submit_fan_share_proof(uuid,uuid,text,text,text,boolean)', 'public.read_admin_share_proofs(uuid,uuid,text,timestamp with time zone,integer)'] loop
+    perform public.b3_patch_function(f, false);
+  end loop;
 end $$;
 
 -- An operator decides one pending share proof. p_decision 'accept' | 'reject'. Answers what the server needs to pay an accepted proof.
@@ -86,27 +106,6 @@ begin
   select c.slug into v_slug from public.celebrities c where c.id = v_row.celebrity_id;
   return jsonb_build_object('id', v_row.id, 'status', v_row.status, 'replayed', v_replayed, 'revision', v_row.review_revision,
     'appUserId', v_row.app_user_id, 'platform', v_row.platform, 'creatorId', v_row.celebrity_id, 'creatorSlug', v_slug);
-end $$;
-
-create or replace function public.read_admin_share_proofs(p_actor uuid, p_allowlist uuid, p_status text, p_before timestamptz, p_limit integer)
-returns jsonb language plpgsql stable security definer set search_path = '' as $$
-begin
-  begin perform public.assert_active_admin(p_actor, p_allowlist, false);
-  exception when others then raise exception 'ADMIN_REQUIRED' using errcode = 'P0001'; end;
-  return jsonb_build_object('items', coalesce((
-    select jsonb_agg(jsonb_build_object('id', s.id, 'createdAt', s.created_at, 'status', s.status, 'platform', s.platform, 'url', s.url,
-      'postId', split_part(s.url_key, ':', 2), 'points', s.points,
-      'creator', jsonb_build_object('slug', c.slug, 'name', coalesce(l.name, c.slug)),
-      'member', jsonb_build_object('id', s.app_user_id, 'nickname', p.nickname),
-      'duplicateCount', (select count(*) from public.fan_share_proofs o where o.url_key = s.url_key and o.app_user_id <> s.app_user_id),
-      'revision', s.review_revision, 'rejectCode', s.reject_code,
-      'revokedAt', s.revoked_at, 'revokeResult', s.revoke_result) order by s.created_at desc, s.id desc)
-    from (select * from public.fan_share_proofs f
-          where f.kind = 'share' and (p_status is null or p_status = 'all' or f.status = p_status) and (p_before is null or f.created_at < p_before)
-          order by f.created_at desc, f.id desc limit least(greatest(coalesce(p_limit, 50), 1), 100)) s
-    join public.celebrities c on c.id = s.celebrity_id
-    left join public.celebrity_localizations l on l.celebrity_id = c.id and l.locale = 'ko'
-    left join public.user_profiles p on p.app_user_id = s.app_user_id), '[]'::jsonb));
 end $$;
 
 revoke all on function public.review_fan_share_proof(uuid, uuid, uuid, integer, text, text, text[]) from public, anon, authenticated, service_role;

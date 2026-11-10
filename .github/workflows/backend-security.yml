@@ -263,6 +263,20 @@ jobs:
           BYUS_CLEAN_DB_ASSERTION_FILE="$PWD/supabase/tests/dukjil/dukjil_b3.sql" \
           BYUS_CLEAN_DB_SHELL_ASSERTION_FILE="$PWD/supabase/tests/dukjil/dukjil_b3_concurrency.sh" \
           bash scripts/verify-clean-migration-chain.sh
+      - name: Verify steady check-in needs consecutive attendance days and keeps earlier stamps
+        if: matrix.suite == 'core'
+        run: |
+          export PATH="$(pg_config --bindir):$PATH"
+          BYUS_CLEAN_DB_PORT=55674 \
+          BYUS_CLEAN_DB_ASSERTION_FILE="$PWD/supabase/tests/passport/passport_steady_consecutive.sql" \
+          bash scripts/verify-clean-migration-chain.sh
+      - name: Verify share proofs are paid only after the official tag review, once per post
+        if: matrix.suite == 'core'
+        run: |
+          export PATH="$(pg_config --bindir):$PATH"
+          BYUS_CLEAN_DB_PORT=55675 \
+          BYUS_CLEAN_DB_SHELL_ASSERTION_FILE="$PWD/supabase/tests/share_tag_suite.sh" \
+          bash scripts/verify-clean-migration-chain.sh
       - name: Verify the B3 tier install over 5,200 passports and a non-superuser apply
         if: matrix.suite == 'core'
         run: |
