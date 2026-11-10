@@ -13,7 +13,7 @@
   overflow-wrap: anywhere;
 }
 
-/* /rankings: 390은 탭으로 한 목록, 1024부터 찐팬|크리에이터 두 단(RANK-V3 C1). 한 단은 최대 600, 단 사이 40. 행 높이·간격·숫자 열은 두 폭이 같다. */
+/* /rankings: 390은 탭으로 한 목록, 1024부터 찐팬|크리에이터 두 단(RANK-V3 C1). 한 단은 최대 400, 단 사이 40. 행 높이·간격·숫자 열은 두 폭이 같다. */
 .mobileTabs { display: block; }
 
 .columns {
@@ -33,10 +33,12 @@
 .columnTitle { display: none; }
 
 @media (min-width: 64rem) {
+  .page { width: 100%; max-width: 920px; margin-inline: auto; box-sizing: border-box; }
   .mobileTabs { display: none; }
-  .columns { grid-template-columns: repeat(2, minmax(0, 560px)); column-gap: var(--space-10); }
+  .columns { grid-template-columns: repeat(2, minmax(0, 400px)); column-gap: var(--space-10); justify-content: center; }
   .column[data-active="false"] { display: grid; }
   .columnTitle { display: block; }
+  .column[data-column="creators"] [data-ranking-foot] { display: none; }
 }
 
 /* 목록과 바닥 줄(내 순위·로그인): 행은 ranking-rows.module.css. */
