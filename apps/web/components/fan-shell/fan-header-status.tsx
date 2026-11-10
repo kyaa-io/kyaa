@@ -5,6 +5,7 @@ import Link from "next/link";
 import type { Route } from "next";
 import { usePathname, useSearchParams } from "next/navigation";
 import { HeaderPopover } from "@/components/fan-ui/header-popover";
+import { CreatorAvatar } from "@/components/fan-ui/creator-avatar";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import { fanLoginHref } from "@/components/login-href";
 import { GROUP_WALLET_CHANGED_EVENT, useGroupRequest, useGroupResource } from "@/features/groups/ui/use-group-resource";
@@ -74,8 +75,8 @@ function OwnedHeaderStatus({ locale }: { locale: AppLocale }) {
     <HeaderPopover.Content ref={panel} label={picking ? c.changeFavorite : c.status} data-header-status-panel="">
       {picking ? <>
         {bias.options.map(option => <HeaderPopover.Close key={option.slug} className={styles.row} aria-pressed={current?.slug === option.slug}
-          onClick={() => bias.select(option.slug)}><span>{option.name}</span>{arrow}</HeaderPopover.Close>)}
-        <HeaderPopover.Close asChild><Link className={styles.row} href={`/pages/groups?locale=${locale}`}><span>{c.findFavorite}</span>{arrow}</Link></HeaderPopover.Close>
+          onClick={() => bias.select(option.slug)}><span className={styles.identity}><CreatorAvatar slug={option.slug} src={option.image} photos={option.photos} position={option.imagePosition} size={32} /><span>{option.name}</span></span>{arrow}</HeaderPopover.Close>)}
+        <HeaderPopover.Close asChild><Link className={styles.secondaryRow} href={`/pages/groups?locale=${locale}`}>{c.findFavorite}</Link></HeaderPopover.Close>
       </> : <>
         {bias.status === "error" ? <FanAction variant="text" type="button" className={styles.row} onClick={bias.retry}><span>{c.changeFavorite} · {w.retry}</span>{arrow}</FanAction>
           : bias.options.length ? <FanAction variant="text" type="button" className={styles.row} onClick={() => setPicking(true)}><span>{c.changeFavorite}</span>{arrow}</FanAction>

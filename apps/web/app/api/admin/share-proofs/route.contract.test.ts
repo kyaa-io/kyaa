@@ -9,7 +9,7 @@ beforeEach(() => { vi.clearAllMocks(); state.authorizeAdmin.mockResolvedValue(AD
 
 import { GET } from "./route";
 const row = { id: PROOF, createdAt: "2026-11-08T10:00:00+09:00", status: "accepted", platform: "x", url: "https://x.com/fan/status/1850000000000000001", postId: "1850000000000000001", points: 10,
-  creator: { slug: "elina", name: "엘리나" }, member: { id: "11111111-1111-4111-8111-111111111111", nickname: "팬" }, duplicateCount: 1, revokedAt: null, revokeResult: null };
+  creator: { slug: "elina", name: "엘리나" }, member: { id: "11111111-1111-4111-8111-111111111111", nickname: "팬" }, duplicateCount: 1, revision: 0, rejectCode: null, revokedAt: null, revokeResult: null };
 it("lists share proofs for an operator with the duplicate mark", async () => {
   state.rpc.mockResolvedValue({ items: [row] });
   const res = await GET(new Request("https://byus.test/api/admin/share-proofs?status=all", auth));
@@ -19,7 +19,12 @@ it("lists share proofs for an operator with the duplicate mark", async () => {
 });
 it("refuses without a token, a bad filter, or a member who is not an operator", async () => {
   expect((await GET(new Request("https://byus.test/api/admin/share-proofs"))).status).toBe(401);
-  expect((await GET(new Request("https://byus.test/api/admin/share-proofs?status=pending", auth))).status).toBe(400);
+  expect((await GET(new Request("https://byus.test/api/admin/share-proofs?status=bogus", auth))).status).toBe(400);
   state.rpc.mockRejectedValue(new Error("ADMIN_REQUIRED"));
   expect((await GET(new Request("https://byus.test/api/admin/share-proofs", auth))).status).toBe(403);
+});
+it("shows the proofs waiting for a decision unless another filter is asked for", async () => {
+  state.rpc.mockResolvedValue({ items: [{ ...row, status: "pending", points: null }] });
+  expect((await GET(new Request("https://byus.test/api/admin/share-proofs", auth))).status).toBe(200);
+  expect(state.rpc).toHaveBeenCalledWith("read_admin_share_proofs", expect.objectContaining({ p_status: "pending" }));
 });

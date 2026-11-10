@@ -8,7 +8,7 @@ import type { AppLocale } from "@/i18n/locales";
 import { useNetworkOnline } from "./use-network-online";
 
 /** Why a mutation failed when the person can act on it: sign in again, or reconnect. */
-export type MutationFailure = "auth" | "offline" | null;
+export type MutationFailure = "auth" | "offline" | "passport" | null;
 const OFFLINE = "NETWORK_OFFLINE";
 const AUTH_CODES = new Set(["AUTHENTICATION_REQUIRED", "UNAUTHENTICATED"]);
 
@@ -39,7 +39,7 @@ export function useContentMutation(locale: AppLocale) {
     } catch (error) {
       if (!controller.signal.aborted) {
         const code = error instanceof Error ? error.message : "";
-        const failure: MutationFailure = AUTH_CODES.has(code) ? "auth" : code === OFFLINE ? "offline" : null;
+        const failure: MutationFailure = AUTH_CODES.has(code) ? "auth" : code === OFFLINE ? "offline" : code === "FAN_WEB_FORBIDDEN" ? "passport" : null;
         setState({ key, busy: false, failure, error: failure === "auth" ? copy.sessionExpired : failure === "offline" ? copy.offline
           : code === "TRANSLATION_RATE_LIMITED" ? copy.translationLimit
           : code.startsWith("TRANSLATION_") ? copy.translationFailed
@@ -54,5 +54,6 @@ export function useContentMutation(locale: AppLocale) {
   // An offline failure says to reconnect; when the browser comes back online the line is stale, so it goes (M4-2: it stayed beside
   // the next failure). Only on that change: a failed fetch while the browser still reports online keeps its line.
   useEffect(() => { if (online) setState(previous => previous.failure === "offline" ? { ...previous, error: "", failure: null } : previous); }, [online]);
-  return { request, busy: state.key === key && state.busy, error: state.key === key ? state.error : "", failure: state.key === key ? state.failure : null };
+  const dismiss = () => setState(previous => ({ ...previous, error: "", failure: null }));
+  return { request, dismiss, busy: state.key === key && state.busy, error: state.key === key ? state.error : "", failure: state.key === key ? state.failure : null };
 }

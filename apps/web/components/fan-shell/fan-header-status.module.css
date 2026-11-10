@@ -56,3 +56,26 @@
 .row > span:only-child { display: flex; width: 100%; align-items: center; justify-content: space-between; gap: var(--space-3); text-align: start; }
 .row > span:only-child > span:first-child { min-width: 0; overflow-wrap: anywhere; }
 .row > span:only-child > span:last-child { flex-shrink: 0; }
+.identity { display: flex; min-width: 0; align-items: center; gap: var(--space-3); }
+.identity > span:last-child { min-width: 0; overflow-wrap: anywhere; }
+.secondaryRow.secondaryRow {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-height: 44px;
+  box-sizing: border-box;
+  padding: var(--space-2) var(--space-4);
+  border: 0;
+  border-top: 1px solid var(--color-line);
+  background: var(--color-surface);
+  color: var(--color-muted);
+  font: inherit;
+  font-size: var(--fan-description-size);
+  font-weight: var(--fan-body-weight);
+  text-decoration: none;
+  cursor: pointer;
+}
+.secondaryRow:focus-visible { outline: 2px solid var(--color-accent-ink); outline-offset: -2px; }
+@media (hover: hover) and (pointer: fine) {
+  .secondaryRow:hover { background: var(--color-accent-soft); color: var(--color-accent-ink); }
+}

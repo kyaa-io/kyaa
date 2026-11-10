@@ -51,17 +51,19 @@ it("asks for the own-post confirmation before sending", async () => {
   expect(h.request).not.toHaveBeenCalled();
 });
 
-it("submits a confirmed post address and celebrates the server's grant", async () => {
-  h.request.mockResolvedValue({ id: "33333333-3333-4333-8333-333333333333", replayed: false, reward: { points: 10, stamps: 1 } });
+it("submits a confirmed post address, asks for the official tag and says the request is waiting for confirmation instead of showing points", async () => {
+  h.request.mockResolvedValue({ id: "33333333-3333-4333-8333-333333333333", replayed: false, status: "pending" });
   render(<ShareProofTile slug="elina" locale="ko" />);
+  expect(screen.getByText("게시물에 @kyaa_app을 태그해 주세요.")).toBeInTheDocument();
   fireEvent.change(field(), { target: { value: XURL } }); own();
   fireEvent.click(screen.getByRole("button", { name: "인증하기" }));
-  await waitFor(() => expect(h.burst).toHaveBeenCalledWith(10));
+  await waitFor(() => expect(h.toast).toHaveBeenCalledWith({ title: "인증을 요청했어요. 확인되면 포인트가 들어와요.", tone: "success" }));
   expect(h.request).toHaveBeenCalledWith("/api/me/share-proofs", { method: "POST", body: JSON.stringify({ creator: "elina", url: XURL, ownPost: true }) });
+  expect(h.burst).not.toHaveBeenCalled();
   expect(field()).toHaveValue("");
 });
 
-it.each([["SHARE_PROOF_URL_SHORT", "단축 주소는 받지 않아요"], ["PASSPORT_REQUIRED", "패스포트가 있어야"], ["SHARE_PROOF_UNAVAILABLE", "인증하지 못했어요"]])("explains %s", async (code, line) => {
+it.each([["SHARE_PROOF_URL_SHORT", "단축 주소는 받지 않아요"], ["SHARE_PROOF_URL_REUSED", "다른 회원이 이미 인증을 요청한 게시물이에요."], ["PASSPORT_REQUIRED", "패스포트가 있어야"], ["SHARE_PROOF_UNAVAILABLE", "인증하지 못했어요"]])("explains %s", async (code, line) => {
   const { GroupRequestError } = await import("@/features/groups/ui/use-group-resource");
   h.request.mockRejectedValue(new GroupRequestError(409, code));
   render(<ShareProofTile slug="elina" locale="ko" />);
@@ -70,13 +72,12 @@ it.each([["SHARE_PROOF_URL_SHORT", "단축 주소는 받지 않아요"], ["PASSP
   expect(await screen.findByRole("alert")).toHaveTextContent(line);
 });
 
-it("says the daily cap in the shared toast when the proof paid nothing", async () => {
-  h.request.mockResolvedValue({ id: "33333333-3333-4333-8333-333333333333", replayed: false, reward: { points: 0, stamps: 0, skippedReason: "daily_limit" } });
+it("says a repeated own post was already sent", async () => {
+  h.request.mockResolvedValue({ id: "33333333-3333-4333-8333-333333333333", replayed: true, status: "pending" });
   render(<ShareProofTile slug="elina" locale="ko" />);
   fireEvent.change(field(), { target: { value: XURL } }); own();
   fireEvent.click(screen.getByRole("button", { name: "인증하기" }));
-  await waitFor(() => expect(h.toast).toHaveBeenCalledWith({ title: "인증은 됐어요. 오늘 공유 포인트는 모두 받았어요.", tone: "neutral" }));
-  expect(h.burst).not.toHaveBeenCalled();
+  await waitFor(() => expect(h.toast).toHaveBeenCalledWith({ title: "이미 인증한 게시물이에요.", tone: "neutral" }));
 });
 
 it("keeps the dialog for a signed-out fan with a sign-in action and no list read", () => {
@@ -91,11 +92,15 @@ it("keeps the dialog for a signed-out fan with a sign-in action and no list read
 
 it("lists own proofs in the dialog and as rows of the 인증 history", () => {
   h.list = { items: [{ id: "33333333-3333-4333-8333-333333333333", platform: "instagram", url: "https://www.instagram.com/p/C1aBc_D-2xY/", points: 10, createdAt: "2026-11-08T09:48:11+09:00", status: "accepted" },
-    { id: "44444444-4444-4444-8444-444444444444", platform: "x", url: XURL, points: 10, createdAt: "2026-11-07T09:48:11+09:00", status: "revoked" }] };
+    { id: "44444444-4444-4444-8444-444444444444", platform: "x", url: XURL, points: 10, createdAt: "2026-11-07T09:48:11+09:00", status: "revoked" },
+    { id: "55555555-5555-4555-8555-555555555555", platform: "tiktok", url: "https://www.tiktok.com/@fan/video/7430000000000000555", points: null, createdAt: "2026-11-06T09:48:11+09:00", status: "pending" },
+    { id: "66666666-6666-4666-8666-666666666666", platform: "threads", url: "https://www.threads.net/@fan/post/DAbC12xYz9", points: null, createdAt: "2026-11-05T09:48:11+09:00", status: "rejected" }] };
   render(<ShareProofTile slug="elina" locale="ko" />);
   const link = screen.getByRole("link", { name: "인스타그램" });
   expect(link).toHaveAttribute("href", "https://www.instagram.com/p/C1aBc_D-2xY/");
   expect(screen.getByRole("link", { name: "X" }).closest("li")).toHaveTextContent("운영자 취소");
+  expect(screen.getByRole("link", { name: "틱톡" }).closest("li")).toHaveTextContent("확인 중");
+  expect(screen.getByRole("link", { name: "스레드" }).closest("li")).toHaveTextContent("인증 안 됨");
   expect(link).toHaveAttribute("data-outbound-tracking", "off");
   cleanup();
   h.search = "tab=certifications&locale=ko";
@@ -103,6 +108,8 @@ it("lists own proofs in the dialog and as rows of the 인증 history", () => {
   const rows = screen.getAllByRole("link", { name: /SNS 공유 인증/ });
   expect(rows[0]).toHaveTextContent("+10P");
   expect(rows[1]).toHaveTextContent("운영자 취소");
+  expect(rows[2]).toHaveTextContent("확인 중");
+  expect(rows[2].querySelector("span:last-child")).toHaveAttribute("data-status", "pending");
   expect(screen.queryByText("없음")).toBeNull();
 });
 

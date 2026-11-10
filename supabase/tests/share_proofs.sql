@@ -55,9 +55,13 @@ begin
   if (r->>'replayed')::boolean then raise exception 'First proof replayed'; end if;
   r := public.submit_fan_share_proof(fp.app_user_id, fp.celebrity_id, 'x', 'https://twitter.com/Other/status/1850000000000000099', 'x:1850000000000000099', true);
   if not (r->>'replayed')::boolean or (r->>'id')::uuid <> v_id then raise exception 'Same member, same post written twice: %', r; end if;
-  r := public.submit_fan_share_proof(other.id, fp.celebrity_id, 'x', 'https://x.com/fan/status/1850000000000000099', 'x:1850000000000000099', true);
-  v_other := (r->>'id')::uuid;
-  if (r->>'replayed')::boolean or v_other = v_id then raise exception 'Another member could not submit the same post: %', r; end if;
+  -- Since 20261221140000 another member cannot take a post that is held; a row from before that migration is written directly.
+  begin
+    perform public.submit_fan_share_proof(other.id, fp.celebrity_id, 'x', 'https://x.com/fan/status/1850000000000000099', 'x:1850000000000000099', true);
+    raise exception 'Another member took a held post';
+  exception when others then if sqlerrm <> 'SHARE_PROOF_URL_REUSED' then raise; end if; end;
+  insert into public.fan_share_proofs (app_user_id, celebrity_id, platform, url, url_key, own_post_confirmed, status, points)
+    values (other.id, fp.celebrity_id, 'x', 'https://x.com/fan/status/1850000000000000099', 'x:1850000000000000099', true, 'accepted', 0) returning id into v_other;
   -- Ids keep their letter case: these are two posts.
   perform public.submit_fan_share_proof(fp.app_user_id, fp.celebrity_id, 'youtube', 'https://youtu.be/dQw4w9WgXcQ', 'youtube:dQw4w9WgXcQ', true);
   r := public.submit_fan_share_proof(fp.app_user_id, fp.celebrity_id, 'youtube', 'https://youtu.be/dqw4w9wgxcq', 'youtube:dqw4w9wgxcq', true);
@@ -75,7 +79,8 @@ begin
     raise exception 'Duplicate mark missing: %', r;
   end if;
 
-  -- 3. Pay the proof the way the server does, then cancel it: points and stamp come back once.
+  -- 3. Accept the proof, pay it the way the server does, then cancel it: points and stamp come back once.
+  perform public.review_fan_share_proof(adm.actor, adm.allowlist, v_id, 0, 'accept', null, array['instagram','x']);
   bal_before := public.group_wallet_balance(fp.app_user_id, 'fan_point');
   award := public.record_dukjil_action(fp.app_user_id, fp.celebrity_id, 'share', 'share-proof:' || v_id::text, extensions.gen_random_uuid(), '{}'::jsonb);
   bal_paid := public.group_wallet_balance(fp.app_user_id, 'fan_point');
@@ -149,6 +154,7 @@ begin
   exception when others then if sqlerrm <> 'SHARE_PROOF_REVOKED' then raise; end if; end;
   -- The locked payout pays with the proof's own creator and keeps the amount, replays included.
   r := public.submit_fan_share_proof(fp.app_user_id, fp.celebrity_id, 'threads', 'https://www.threads.net/@fan/post/DAbC12xYz9', 'threads:DAbC12xYz9', true);
+  perform public.review_fan_share_proof(adm.actor, adm.allowlist, (r->>'id')::uuid, 0, 'accept', null, array['instagram','x','threads']);
   begin
     award := public.pay_fan_share_proof(fp.app_user_id, (r->>'id')::uuid, extensions.gen_random_uuid(), '{}'::jsonb);
     if (select points from public.fan_share_proofs where id = (r->>'id')::uuid) is distinct from coalesce((award->>'points')::int, 0) then raise exception 'Locked payout did not keep the amount'; end if;

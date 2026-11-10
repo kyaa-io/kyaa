@@ -4,7 +4,7 @@
   "C1": 592,
   "C10": 7,
   "C2": 730,
-  "C3": 422,
+  "C3": 423,
   "C4": 59,
   "C5": 47,
   "C7": 5,
@@ -25,7 +25,7 @@
   "N3": 49,
   "N30": 2,
   "N32": 4,
-  "N33": 5995,
+  "N33": 5997,
   "N34": 291,
   "N4": 126,
   "S1": 3,
@@ -41,7 +41,7 @@
   "T1": 505,
   "T10": 21,
   "T11": 152,
-  "T2": 1180,
+  "T2": 1179,
   "T3": 285,
   "T4": 177,
   "T5": 20,
@@ -3557,7 +3557,8 @@
    "C8|locale === \"ko\" ? \"팬이 제안한 일정과 공식 출처를 확인하고 승인하거나 반려합니다.": 1
   },
   "apps/web/components/admin/share-proof-admin-panel.tsx": {
-   "C3|<input>": 1
+   "C3|<input>": 1,
+   "C3|<select>": 1
   },
   "apps/web/components/admin/survey-builder.module.css": {
    "N30|.question legend span { background: #17171a }": 1,
@@ -4262,11 +4263,12 @@
    "function-disallowed-list|outline: oklch": 1
   },
   "apps/web/components/fan-shell/fan-header-status.module.css": {
-   "N33|font-size/weight/line-height declarations": 5,
+   "N33|font-size/weight/line-height declarations": 7,
    "T11|font-size: var(--fan-action-label-size)": 1,
    "T11|font-size: var(--fan-chip-size)": 1,
    "T11|font-weight: var(--fan-action-weight)": 2,
-   "T11|min-height: var(--fan-action-primary-height)": 1
+   "T11|min-height: var(--fan-action-primary-height)": 1,
+   "T9|min-height: 44px": 1
   },
   "apps/web/components/fan-shell/fan-language-switch.module.css": {
    "N26|box-shadow: 0 12px 32px rgb(23 23 25 / 14%)": 1,
@@ -6864,10 +6866,9 @@
    "T4|width: min(400px,calc(100vw - 32px))": 1,
    "T7|transition: background-color 160ms,scale 160ms": 1,
    "T9|height: 44px": 2,
-   "T9|height: 48px": 1,
    "T9|min-height: 44px": 3,
+   "T9|min-height: 52px": 1,
    "T9|width: 44px": 2,
-   "T9|width: 48px": 1,
    "scale-unlimited/declaration-strict-value|: border-radius:12px": 3,
    "scale-unlimited/declaration-strict-value|: border-radius:20px": 1,
    "scale-unlimited/declaration-strict-value|: font-size:10px": 1,
@@ -7735,8 +7736,7 @@
    "S7|dkgStampLead": 1
   },
   "apps/web/features/dukjil/ui/attendance-avatars.module.css": {
-   "N33|font-size/weight/line-height declarations": 2,
-   "T2|line-height: 18px": 1
+   "N33|font-size/weight/line-height declarations": 2
   },
   "apps/web/features/dukjil/ui/creator-attendance-dialog.tsx": {
    "C2|<h2>": 1,

@@ -1,3 +1,4 @@
+import type { PhotoSet } from "@/features/media/domain/public-image";
 import type { MySummary } from "@/features/my/domain/my-summary";
 import { FAN_STAGE_KEYS, fanTierEntryKey, type FanStage, type FanStageKey } from "@/features/rewards/domain/fan-stage";
 
@@ -6,6 +7,7 @@ export type SelectedBiasOption = {
   name: string;
   image: string;
   imagePosition?: string;
+  photos?: PhotoSet;
   passportId: string;
   tier: FanStage["tier"];
   stage: { key: FanStageKey; tier: FanStage["tier"]; subdivision: number } | null;
@@ -19,6 +21,7 @@ export function selectedBiasOptions(summary: MySummary | undefined): SelectedBia
     const current = creator.passport.stageProgress?.current;
     return [{
       slug: creator.celebrity.slug, name: creator.celebrity.name, image: creator.celebrity.image, imagePosition: creator.celebrity.imagePosition,
+      ...(creator.celebrity.photos ? { photos: creator.celebrity.photos } : {}),
       passportId: creator.passport.id, tier: creator.passport.tier,
       stage: current ? { key: current.key, tier: current.tier, subdivision: current.subdivision } : null,
       ...(creator.passport.hearts === undefined ? {} : { hearts: creator.passport.hearts }),

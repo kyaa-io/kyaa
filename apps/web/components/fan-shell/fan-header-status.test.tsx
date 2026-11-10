@@ -27,6 +27,14 @@ beforeEach(() => {
 });
 
 describe("header capsule", () => {
+  it("shows each favorite with an avatar and a lower-hierarchy find-favorite link", () => {
+    const { container } = render(<FanHeaderStatus locale="ko" />);
+    fireEvent.click(toggle());
+    fireEvent.click(screen.getByRole("button", { name: /최애 바꾸기/ }));
+    expect(container.ownerDocument.querySelectorAll("[data-creator-avatar]").length).toBe(2);
+    const find = screen.getByRole("link", { name: "다른 최애 찾기" });
+    expect(find.className).toMatch(/secondaryRow/);
+  });
   it("starts collapsed, expands into three text rows, and toggles closed", () => {
     render(<FanHeaderStatus locale="ko" />);
     const button = toggle();

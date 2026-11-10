@@ -38,6 +38,7 @@ import { PostCard } from "./post-card";
 import { CommentLike } from "./comment-like";
 import { ContentActions, ContentTranslation } from "@/features/content-safety/ui/content-actions";
 import { useContentMutation } from "@/features/content-safety/ui/use-content-mutation";
+import { PassportRequiredDialog, usePassportRequired } from "@/features/content-safety/ui/passport-required-dialog";
 import { useNetworkOnline } from "@/features/content-safety/ui/use-network-online";
 import { contentCopy } from "@/i18n/catalogs/features__fan_posts__ui";
 import { toContentLocale, type AppLocale } from "@/i18n/locales";
@@ -63,6 +64,7 @@ function DetailForOwner({ postId, locale, presentation: requestedPresentation }:
   const attempt = useRef<{ snapshot: string; key: string } | null>(null);
   const replyTrigger = useRef<HTMLButtonElement | null>(null), restoreReplyFocus = useRef(false);
   const post = useCommunityResource(`/api/posts/${postId}?locale=${toContentLocale(locale)}&format=rich`, parsePost);
+  const passportRequired = usePassportRequired(mutation.failure, post.state.status === "ready" ? post.state.data.celebritySlug : undefined, locale);
   const comments = useCommunityResource(`/api/posts/${postId}/comments?locale=${toContentLocale(locale)}${cursor ? `&cursor=${encodeURIComponent(cursor)}` : ""}`, parseComments, true, false, false, true);
   // M4-2: a refresh that failed while offline is not shown (the action's own line already says to reconnect); it runs again once online.
   const retryPost = post.retry, retryComments = comments.retry, postStale = post.refreshFailed, commentsStale = comments.refreshFailed;
@@ -124,13 +126,14 @@ function DetailForOwner({ postId, locale, presentation: requestedPresentation }:
   const communityHref = (requestedReturn && (safeReturn !== "/" || requestedReturn === "/") ? safeReturn : hubHref(data.celebritySlug, locale)) as Route;
   const returnTo = `/c/${data.celebritySlug}/community/${postId}?locale=${locale}&returnTo=${encodeURIComponent(communityHref)}`;
   const loginHref = fanLoginHref(locale, returnTo);
-  const mutationError = mutation.error && <p role="alert" className={styles.error}>{mutation.error}{mutation.failure === "auth" && <FanAction href={loginHref} variant="text">{copy.signInAgain}</FanAction>}</p>;
+  const mutationError = mutation.error && !passportRequired && <p role="alert" className={styles.error}>{mutation.error}{mutation.failure === "auth" && <FanAction href={loginHref} variant="text">{copy.signInAgain}</FanAction>}</p>;
   const composer = <CommentComposer key={parentId ?? ""} fieldId={fieldId} locale={locale} readDraft={readDraft} onDraft={keepDraft} replyTarget={replyTarget} gated={gated} gate={gated && gateOpen ? <MemberGate slug={data.celebritySlug} locale={locale} inline /> : null}
     busy={mutation.busy} error={replyTarget ? mutationError : null} onGate={setGateOpen} onSubmit={submit} onCancel={cancelReply} />;
   return <section className={`${styles.section} ${styles.postDetail} ${presentation === "board" ? boardStyles.detail : ""}`}>
     <FanAction href={communityHref} variant="text" leadingIcon={<ArrowLeft />}>{presentation === "board" ? boardCopy(locale).back : copy.back}</FanAction>
     {presentation !== "board" && <FanHeading as="h1" variant="personal-page">{copy.community}</FanHeading>}{data.celebritySlug === WAVE_FANPAGE_SLUG && <WavePrivacyNotice locale={locale} />}<PostCard presentation={presentation} post={data} locale={locale} returnTo={communityHref} onChanged={refresh} onDeleted={() => router.replace(communityHref)} detail />
     {post.refreshFailed && online && <p role="status" className={styles.status}>{copy.failed}<button type="button" className={styles.button} onClick={post.retry}>{copy.retry}</button></p>}
+    <PassportRequiredDialog failure={mutation.failure} slug={data.celebritySlug} locale={locale} onClose={mutation.dismiss} />
     <section id="comments" className={detailStyles.comments} aria-labelledby={`${fieldId}-heading`} data-post-comments=""><h2 id={`${fieldId}-heading`}>{copy.comments} {data.commentCount.toLocaleString(locale)}</h2>
       {auth.ready && (auth.authenticated ? !replyTarget && composer : <div className={detailStyles.commentForm}><Link className={detailStyles.guestField} href={loginHref as Route}>{rc.placeholder}</Link><div className={detailStyles.commentTools}><FanAction href={loginHref} variant="neutral" size="sm">{copy.login}</FanAction></div></div>)}
       {!replyTarget && mutationError}
