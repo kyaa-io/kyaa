@@ -35,5 +35,5 @@ it('draws the home board as post rows: bold notice with a tag, no table, no dash
  resource.data=feedPageSchema.parse({items:[{kind:'notice',noticeKind:'standard',id:'10000000-0000-4000-8000-000000000001',slug:'first',title:'공지 제목',postType:'notice',visibility:'public',revision:1,publishedAt:'2026-11-01T10:00:00Z',body:{},commentCount:2,likeCount:0,liked:false,pinned:false}],nextCursor:null});
  const view=render(<CreatorGroupHome celebrity={legacyVisualCreator('ko')} locale='ko' channelId={null}/>);
  expect(view.container.querySelector('table')).toBeNull();expect(view.container.textContent).not.toContain('—');
- const row=view.container.querySelector('[data-fan-post-row]')!;expect(row).toHaveAttribute('data-notice');expect(row.querySelector('[data-fan-tag="notice"]')).toHaveTextContent('공지');expect(row.textContent).toContain('[2]');
+ const row=view.container.querySelector('[data-fan-post-row]')!;expect(row).toHaveAttribute('data-notice');expect(row.querySelector('[data-fan-tag="notice"]')).toHaveTextContent('공지');expect(row.querySelector('[aria-label="댓글 2"]')).toHaveTextContent('2');
 });
