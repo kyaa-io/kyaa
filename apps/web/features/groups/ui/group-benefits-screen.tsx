@@ -33,6 +33,7 @@ import {seeAllLabel} from './group-directory';
 import {groupBenefitsCopy,benefitsRaffleState} from './group-benefits-copy';
 import {StanLucky,stanFavorite,useStanEntries} from './stan-lucky-cheer';
 import {FavoritePickMenu} from '@/features/selected-bias/ui/selected-bias-chip';
+import {WalletHistoryPanel} from '@/features/group-wallet/ui/wallet-screen';
 import styles from './group-benefits.module.css';
 const parseWallet=(value:unknown)=>walletSchema.parse(value);
 const parseRaffles=(value:unknown)=>groupBenefitsCatalogSchema.options[0].parse(value);
@@ -65,7 +66,7 @@ export function GroupBenefitsScreen({locale,initialHeart=null,signedOut=false}:{
  return <FanAppFrame locale={locale} currentPath='/benefits' groupsEnabled mainId='benefits-main'><FanContentContainer as='main' id='benefits-main' className={styles.page}>
  <header className={styles.srOnly}><FanHeading as='h1'>{c.title}</FanHeading></header>
  <BenefitsAlerts><BenefitsSections><BenefitsAlertList/>
- <div className={styles.main}>{bias.status==='guest'&&<FanAction variant="secondary" href={fanLoginHref(locale, `/benefits?locale=${locale}`)}>{walletCopy(locale).login}</FanAction>}<BenefitsWallet key={`${locale}:${auth.ownerKey}`} locale={locale} signedOut={signedOut} bias={bias}/><BenefitsLucky locale={locale} bias={bias} signedOut={signedOut}/><BenefitsDailyMissions locale={locale} bias={bias}/></div>
+ <div className={styles.main}>{bias.status==='guest'&&<FanAction variant="secondary" href={fanLoginHref(locale, `/benefits?locale=${locale}`)}>{walletCopy(locale).login}</FanAction>}<BenefitsWallet key={`${locale}:${auth.ownerKey}`} locale={locale} signedOut={signedOut} bias={bias}/><BenefitsLucky locale={locale} bias={bias} signedOut={signedOut}/><BenefitsDailyMissions locale={locale} bias={bias}/><BenefitsHistory locale={locale} signedOut={signedOut}/></div>
  </BenefitsSections></BenefitsAlerts>
  </FanContentContainer></FanAppFrame>;
 }
@@ -98,6 +99,13 @@ function BenefitsDailyMissions({locale,bias}:{locale:AppLocale;bias:SelectedBias
  const favoriteAvatar=chosen?<CreatorAvatar slug={chosen.slug} src={bias.selected?.image??null} photos={undefined} size={24}/>:null;
  const favorite=bias.status!=='guest'&&(stanFavorite(bias)||bias.options.length>0)?<span className={styles.favorite}><span aria-hidden="true">·</span>{bias.options.length?<FavoritePickMenu locale={locale} bias={bias} className={styles.favoritePick}>{favoriteAvatar}<span className={styles.favoriteName}>{stanFavorite(bias)?.name??dukjilText(locale,'heartPick')}</span><span aria-hidden="true">▾</span></FavoritePickMenu>:<>{favoriteAvatar}<span className={styles.favoriteName}>{stanFavorite(bias)?.name}</span></>}</span>:null;
  return <div className={styles.pMissions} hidden={allFailed}><DukjilProvider key={slug} slug={slug||undefined} accountToday={!slug} locale={locale}><FanMissions all locale={locale} slug={slug} title={title} titleSuffix={favorite} passportHref={`/passports?locale=${locale}`} proofHref={`/${slug}?tab=certifications&locale=${locale}`} noPage={slug?undefined:directory} onAttendance={()=>setAttendance(true)}/>{attendance&&page&&<CreatorAttendanceEntry slug={slug} pageName={page.name} locale={locale} reviewHref={`/c/${encodeURIComponent(slug)}/verify?locale=${locale}`} onClose={()=>setAttendance(false)}/>}</DukjilProvider></div>;
+}
+/** 내역 (#wallet-history): the signed-in member's own point/ticket ledger; a guest gets the sign-in action and no request is made. */
+function BenefitsHistory({locale,signedOut}:{locale:AppLocale;signedOut:boolean}){
+ const auth=useGroupRequest(),w=walletCopy(locale),allFailed=Boolean(useContext(SectionContext)?.allFailed),guest=(!auth.ready&&signedOut)||(auth.ready&&!auth.authenticated);
+ if(guest)return <section className={styles.pHistory} hidden={allFailed}><FanHeading><span id='wallet-history'>{locale==='ko'?'내역':w.history}</span></FanHeading><FanState inline compact kind='empty' title={locale==='ko'?'로그인하면 내 적립·사용 내역을 볼 수 있어요':w.login} action={{label:w.login,href:fanLoginHref(locale,`/benefits?locale=${locale}#wallet-history`)}}/></section>;
+ if(!auth.ready)return <section className={styles.pHistory} aria-busy='true'><FanHeading><span id='wallet-history'>{locale==='ko'?'내역':w.history}</span></FanHeading><FanSkeletonRows rows={3}/></section>;
+ return <div className={styles.pHistory} hidden={allFailed}><WalletHistoryPanel key={auth.ownerKey} locale={locale} preview={{rows:5,moreLabel:seeAllLabel[locale],lessLabel:locale==='ko'?'접기':'Show less'}}/></div>;
 }
 /** Four wallet tiles; guests keep locked balances and use the profile login action. */
 function BenefitsWallet({locale,signedOut=false,bias}:{locale:AppLocale;signedOut?:boolean;bias:SelectedBias}){
