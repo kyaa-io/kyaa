@@ -14,6 +14,7 @@ import type { Route } from "next";
 import { useEffect, useRef, useState } from "react";
 import { notifyFanActivityUpdated } from "@/components/fan-ui/fan-activity-updates";
 import { FanAction } from "@/components/fan-ui/fan-action";
+import { FanSectionLink } from "@/components/fan-ui/fan-section-link";
 import { showFanToast } from "@/components/fan-ui/fan-toast";
 import { inviteRedeemFailure } from "@/features/groups/ui/group-referral-copy";
 import { AVAILABLE_COMMUNITY_STAMPS, COMMUNITY_STAMPS, communityStampLabel, communityAwardResultSchema, communityInviteSchema, type CommunityStamp, type CommunityStampKind } from "../domain/community-stamps";
@@ -58,7 +59,7 @@ function OwnerCollection({ locale, creator, resource, creatorNames }: { locale: 
   const [selected, setSelected] = useState<{ stamp: CommunityStamp; from: "card" | "history" } | null>(null);
   const [historyOpen, setHistoryOpen] = useState(false);
   const [historyFocus, setHistoryFocus] = useState(0);
-  const history = useRef<HTMLDetailsElement>(null);
+  const history = useRef<HTMLDivElement>(null);
   const [inviteOpen, setInviteOpen] = useState(false);
   const [invite, setInvite] = useState<{ code: string; redeemed: boolean } | null>(null);
   const [code, setCode] = useState("");
@@ -70,7 +71,7 @@ function OwnerCollection({ locale, creator, resource, creatorNames }: { locale: 
   useEffect(() => {
     if (!historyFocus) return;
     history.current?.scrollIntoView({ block: "start" });
-    history.current?.querySelector("summary")?.focus();
+    history.current?.parentElement?.querySelector<HTMLElement>("[aria-controls=\"community-stamp-history\"]")?.focus();
   }, [historyFocus]);
   const stamps = resource.state.status === "ready" ? resource.state.data.stamps : [];
   const visible = stamps.filter(stamp => !creator || stamp.celebritySlug === creator);
@@ -99,7 +100,7 @@ function OwnerCollection({ locale, creator, resource, creatorNames }: { locale: 
     catch { if (alive.current) { setFailed(true); setMessage(locale === "ko" ? "코드를 선택해서 복사해 주세요." : translate(locale, localizedMessages.mc314a8314602, "Select the code to copy it.")); } }
   }
   return <section className={styles.section} id="community-stamps" aria-labelledby="community-stamps-title">
-    <div className={styles.heading}><h2 id="community-stamps-title">{locale === "ko" ? "스탬프 모으기" : translate(locale, localizedMessages.m7a8ba5792eaa, "Collect Stamps")}</h2></div>
+    <div className={styles.heading}><h2 id="community-stamps-title">{locale === "ko" ? "스탬프 모으기" : translate(locale, localizedMessages.m7a8ba5792eaa, "Collect Stamps")}</h2>{visible.length > 0 && <FanSectionLink onClick={() => setHistoryOpen(open => !open)} expanded={historyOpen} controls="community-stamp-history">{passportBookText(locale, "communityHistory")} · {visible.length}</FanSectionLink>}</div>
     {resource.state.status === "loading" ? <p className={styles.status} role="status">{locale === "ko" ? "스탬프를 불러오고 있어요." : translate(locale, localizedMessages.m14ba0b095bf9, "Loading your Stamps.")}</p>  : resource.state.status === "error" && resource.state.kind === "missing" && creator ? <div className={styles.status} role="status"><p>{locale === "ko" ? "현재 이 최애의 스탬프 활동을 이용할 수 없어요." : translate(locale, localizedMessages.m3f3e69fa36eb, "Stamp activities for this artist are currently unavailable.")}</p><Link className={styles.action} href={`/my?locale=${locale}#community-stamps` as Route}>{locale === "ko" ? "내 스탬프 보기" : translate(locale, localizedMessages.mb43cbc171691, "View my Stamps")}</Link></div> : resource.state.status === "error" ? <p className={styles.status} role="alert">{locale === "ko" ? "스탬프를 불러오지 못했어요." : translate(locale, localizedMessages.m6f4e687b2a1d, "Couldn’t load your Stamps.")} <button className={styles.action} onClick={resource.retry}><RotateCcw aria-hidden="true"/>{locale === "ko" ? "다시 시도" : translate(locale, localizedMessages.mf721ef255caa, "Try again")}</button></p> : <>
       {resource.refreshFailed && <p role="alert" className={styles.status}>{locale === "ko" ? "최신 기록을 확인하지 못했어요." : translate(locale, localizedMessages.m4bdba754452a, "Couldn’t refresh your Stamps.")} <button className={styles.action} onClick={resource.retry}>{locale === "ko" ? "다시 시도" : translate(locale, localizedMessages.m11bce3427a8f, "Retry")}</button></p>}
       <ul className={styles.rows}>{kinds.map(kind => {
@@ -118,7 +119,7 @@ function OwnerCollection({ locale, creator, resource, creatorNames }: { locale: 
       </div>}
     </>}
     {message && <p role={failed ? "alert" : "status"} className={`${styles.status} ${failed ? styles.error : ""}`}>{message}</p>}
-    {visible.length > 0 && <details ref={history} className={styles.history} open={historyOpen} onToggle={event => setHistoryOpen(event.currentTarget.open)}><summary>{passportBookText(locale, "communityHistory")} · {visible.length}</summary><ul>{visible.map(stamp => <li key={stamp.id}><button onClick={() => setSelected({ stamp, from: "history" })}><CommunityStampArtwork kind={stamp.kind} locale={locale} size={48} decorative/><span><strong>{communityStampLabel(stamp.kind, locale)}</strong><small>{stamp.celebritySlug && creatorNames?.[stamp.celebritySlug] ? `${creatorNames[stamp.celebritySlug]} · ` : ""}{new Intl.DateTimeFormat(locale, { calendar: "gregory", timeZone:"Asia/Seoul", year:"numeric",month:"short",day:"numeric" }).format(new Date(stamp.issuedAt))}</small><small className={styles.historyState} title={mintLabel(stamp, locale)}>{mintPhase(stamp) === "done" ? <Check aria-hidden="true"/> : mintPhase(stamp) === "check" ? <CircleAlert aria-hidden="true"/> : <Clock aria-hidden="true"/>}<span>{mintLabel(stamp, locale)}</span></small></span></button></li>)}</ul></details>}
+    {visible.length > 0 && <div ref={history} id="community-stamp-history" className={styles.history} data-stamp-history hidden={!historyOpen}><ul>{visible.map(stamp => <li key={stamp.id}><button onClick={() => setSelected({ stamp, from: "history" })}><CommunityStampArtwork kind={stamp.kind} locale={locale} size={48} decorative/><span><strong>{communityStampLabel(stamp.kind, locale)}</strong><small>{stamp.celebritySlug && creatorNames?.[stamp.celebritySlug] ? `${creatorNames[stamp.celebritySlug]} · ` : ""}{new Intl.DateTimeFormat(locale, { calendar: "gregory", timeZone:"Asia/Seoul", year:"numeric",month:"short",day:"numeric" }).format(new Date(stamp.issuedAt))}</small><small className={styles.historyState} title={mintLabel(stamp, locale)}>{mintPhase(stamp) === "done" ? <Check aria-hidden="true"/> : mintPhase(stamp) === "check" ? <CircleAlert aria-hidden="true"/> : <Clock aria-hidden="true"/>}<span>{mintLabel(stamp, locale)}</span></small></span></button></li>)}</ul></div>}
     {selected && <StampDialog stamp={visible.find(stamp => stamp.id === selected.stamp.id) ?? selected.stamp} locale={locale} close={() => setSelected(null)} showHistory={selected.from === "card" ? () => { setSelected(null); setHistoryOpen(true); setHistoryFocus(count => count + 1); } : undefined}/>}
   </section>;
 }

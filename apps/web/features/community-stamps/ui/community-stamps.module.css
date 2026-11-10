@@ -46,12 +46,11 @@
 @media(prefers-reduced-motion:reduce) { .action { transition:none; } .action:active:not(:disabled) { scale:1; } }
 
 .history {scroll-margin-top:96px;margin-top:20px;border-top:1px solid var(--color-line-subtle);padding-top:12px;}
-.history summary {width:fit-content;min-height:44px;padding:var(--space-3) 0;font-size:var(--fan-section-size);font-weight:var(--fan-section-weight);color:var(--color-ink);cursor:pointer;}
 .history ul {list-style:none;margin:var(--space-2) 0 0;padding:0;display:grid;gap:0;}
 .history button {display:flex;align-items:center;gap:12px;background:transparent;border:0;border-radius:0;padding:12px;width:100%;text-align:left;cursor:pointer;font:inherit;}
 .history strong,.history small {display:block;font-size:13px;}
 .history small {color:var(--color-muted);font-size:12px;margin-top:4px;}
-.history button:focus-visible,.history summary:focus-visible {outline:3px solid var(--color-ink);outline-offset:3px;}
+.history button:focus-visible {outline:3px solid var(--color-ink);outline-offset:3px;}
 
 /* 행 안의 행동은 글자다. 회색 버튼을 행마다 늘어놓지 않는다. */
 .row .action { min-height:var(--min-target); padding:0 var(--space-1); background:transparent; color:var(--color-muted); font-size:var(--fan-metadata-size); font-weight:var(--fan-item-title-weight); white-space:nowrap; }

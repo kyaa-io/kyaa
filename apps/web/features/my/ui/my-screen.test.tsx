@@ -103,7 +103,8 @@ describe("unified MY hub", () => {
     const stamps = await screen.findByRole("heading", { name: "스탬프 모으기" });
     const favorites = screen.getByRole("heading", { name: "내 최애" });
     expect(stamps.compareDocumentPosition(favorites) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
-    const history = await waitFor(() => { const node = container.querySelector("#community-stamps details"); expect(node).not.toBeNull(); return node as HTMLDetailsElement; });
+    const history = await waitFor(() => { const node = container.querySelector("#community-stamps [data-stamp-history]"); expect(node).not.toBeNull(); return node as HTMLElement; });
+    expect(within(container.querySelector("#community-stamps")!).getByRole("button", { name: /기록 보기 · 1/ })).toHaveAttribute("aria-expanded", "false");
     expect(within(history).getByText("KARA · 2026년 10월 9일")).toBeInTheDocument();
     expect(within(history).getByText("등록 중")).toBeInTheDocument();
     expect(container.querySelectorAll("#community-stamps")).toHaveLength(1);

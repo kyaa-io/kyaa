@@ -1,7 +1,7 @@
 "use client";
-import Link from "next/link";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import { FanHeading } from "@/components/fan-ui/fan-heading";
+import { FanSectionLink } from "@/components/fan-ui/fan-section-link";
 import { FanState } from "@/components/fan-ui/fan-state";
 import { useByUsAuth } from "@/features/auth/client/cognito-auth";
 import type { AppLocale } from "@/i18n/locales";
@@ -30,7 +30,7 @@ export function HomeRankingCard({ locale, headingId = "home-ranking-heading" }: 
   const computedAt = fans.state.status === "ready" ? fans.state.data.computedAt : null;
   const updated = computedAt ? updatedLabel(locale, computedAt, new Date(), "rkHomeUpdated") : null;
   return <section className={styles.card} aria-labelledby={headingId} data-home-ranking>
-    <header className={styles.head}><FanHeading id={headingId}>{rankingsText(locale, "rkHomeTitle")}</FanHeading>{updated ? <time dateTime={computedAt!}>{updated}</time> : null}</header>
+    <header className={styles.head}><FanHeading id={headingId}>{rankingsText(locale, "rkHomeTitle")}</FanHeading>{updated ? <time dateTime={computedAt!}>{updated}</time> : null}<FanSectionLink className={styles.all} href={rankingsPageHref(locale, "fans", "hearts", guest)}>{rankingsText(locale, "rkViewAll")}</FanSectionLink></header>
     <section aria-labelledby={`${headingId}-fans`}>
       <div className={styles.label}><FanHeading as="h3" id={`${headingId}-fans`}>{rankingsText(locale, "rkHomeFans")}</FanHeading></div>
       <Body locale={locale} live={fans}>{data => <FanRows compact locale={locale} ranking={data} metric="hearts" show={10} scope={headingId} guest={guest} />}</Body>
@@ -39,6 +39,5 @@ export function HomeRankingCard({ locale, headingId = "home-ranking-heading" }: 
       <div className={styles.label}><FanHeading as="h3" id={`${headingId}-creators`}>{rankingsText(locale, "rkCreatorTabShort")}</FanHeading></div>
       <Body locale={locale} live={creators}>{data => <CreatorRows compact locale={locale} ranking={data} metric="hearts" show={10} scope={headingId} />}</Body>
     </section>
-    <Link className={styles.all} href={rankingsPageHref(locale, "fans", "hearts", guest)}>{rankingsText(locale, "rkViewAll")} <span aria-hidden="true">›</span></Link>
   </section>;
 }

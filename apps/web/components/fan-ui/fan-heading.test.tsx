@@ -1,5 +1,5 @@
-import { render, screen } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { fireEvent, render, screen } from "@testing-library/react";
+import { describe, expect, it, vi } from "vitest";
 import { FanHeading, FanSectionHeader } from "./fan-heading";
 
 describe("shared fan headings", () => {
@@ -18,6 +18,17 @@ describe("shared fan headings", () => {
     render(<FanSectionHeader title="최애" action={{ href: "/a", label: "전체" }} extraAction={{ href: "/rankings", label: "랭킹" }} />);
     expect(screen.getByRole("link", { name: "전체" }).getAttribute("href")).toBe("/a");
     expect(screen.getByRole("link", { name: "랭킹" }).getAttribute("href")).toBe("/rankings");
+  });
+  it("renders an in-place action as a small text button on the title row, not a link", () => {
+    const onClick = vi.fn();
+    const { container } = render(<FanSectionHeader title="스탬프 모으기" action={{ label: "기록 보기 · 3", onClick, expanded: false, controls: "history" }} />);
+    const button = screen.getByRole("button", { name: /기록 보기 · 3/ });
+    expect(screen.queryByRole("link")).toBeNull();
+    expect(button).toHaveAttribute("aria-expanded", "false");
+    expect(button).toHaveAttribute("aria-controls", "history");
+    expect(container.querySelector("[data-fan-section-header] > div")).toContainElement(button);
+    fireEvent.click(button);
+    expect(onClick).toHaveBeenCalledTimes(1);
   });
   it("does not create empty description or action placeholders", () => {
     const { container } = render(<FanSectionHeader title="혜택" />);

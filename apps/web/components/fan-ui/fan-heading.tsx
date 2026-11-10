@@ -15,13 +15,19 @@ export function FanHeading({ as: Tag = "h2", variant = "standard", id, children 
   return <Tag id={id} className={[styles.heading, level].join(" ")} data-fan-heading={variant}>{children}</Tag>;
 }
 
+/** 제목 행 오른쪽 보조 행동. 이동은 `href`, 같은 화면의 펼침은 `onClick`(+`expanded`·`controls`). */
+export type SectionAction = { label: string; href: string; onClick?: never; expanded?: never; controls?: never }
+  | { label: string; href?: never; onClick: () => void; expanded?: boolean; controls?: string };
+
+const renderAction = (action: SectionAction, extra?: string) => <FanSectionLink className={extra} href={action.href} onClick={action.onClick} expanded={action.expanded} controls={action.controls}>{action.label}</FanSectionLink>;
+
 /** Title and navigation share a row; supporting copy stays below both. */
 export function FanSectionHeader({ title, description, action, extraAction, variant = "standard", as = "h2", id }: {
   title: ReactNode;
   description?: ReactNode;
-  action?: { label: string; href: string };
+  action?: SectionAction;
   /** Optional second text link beside `action` (same row, same style). */
-  extraAction?: { label: string; href: string };
+  extraAction?: SectionAction;
   variant?: "standard" | "editorial" | "personal";
   as?: "h1" | "h2" | "h3";
   id?: string;
@@ -32,9 +38,9 @@ export function FanSectionHeader({ title, description, action, extraAction, vari
         <FanHeading as={as} id={id} variant={variant === "personal" ? "personal-section" : variant}>{title}</FanHeading>
       </div>
       {action && extraAction ? <div className={styles.actions}>
-        <FanSectionLink href={action.href}>{action.label}</FanSectionLink>
-        <FanSectionLink href={extraAction.href}>{extraAction.label}</FanSectionLink>
-      </div> : action ? <FanSectionLink className={styles.action} href={action.href}>{action.label}</FanSectionLink> : null}
+        {renderAction(action)}
+        {renderAction(extraAction)}
+      </div> : action ? renderAction(action, styles.action) : null}
     </div>
     {description != null ? <p className={styles.description}>{description}</p> : null}
   </div>;
