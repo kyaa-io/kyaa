@@ -37,6 +37,10 @@ it("my artists: the add slot first; a guest sees three empty rings and the sign-
   expect(container.querySelectorAll("li[aria-hidden='true']")).toHaveLength(3);
   expect(screen.getByRole("link", { name: "로그인" }).getAttribute("href")).toContain("/login");
   expect(container.querySelector("[role='img']")).toBeNull();
+  // 빈 상태의 원은 기본 아바타 이미지를 쓰고 빈 흰 원을 그리지 않는다.
+  const ghosts = container.querySelectorAll("li[data-row='artist-ghost'] img");
+  expect(ghosts).toHaveLength(3);
+  ghosts.forEach((img) => expect(img.getAttribute("src")).toBe("/images/avatars/star-pink.webp"));
 });
 
 it("my artists: joined pages follow the add slot and open their page; no pages keeps the three rings; a signed-in viewer has no sign-in button", () => {
@@ -105,13 +109,13 @@ it("hot sort requests the selected ordering from the server", async () => {
   expect(screen.getByText("조회 7")).toBeInTheDocument();
 });
 
-it("hot posts: a row draws its page's picture, or a white ring with the first letter — never the grey figure", () => {
+it("hot posts: a row draws its page's picture, or the default avatar image — never an empty ring or the grey figure", () => {
   state.posts = [{ ...post(1), pageImageUrl: "https://x/p1.webp" }, post(2)];
   const { container } = render(<HotPosts locale="ko" />);
   const rows = container.querySelectorAll("ul > li[data-row=hot-post]");
   expect(rows[0]!.querySelector("[data-creator-avatar] img")).toHaveAttribute("src", expect.stringContaining("p1.webp"));
   expect(rows[1]!.querySelector("[data-creator-avatar]")).toBeNull();
-  expect(rows[1]!.querySelector("[aria-hidden=true]")).toHaveTextContent("아");
+  expect(rows[1]!.querySelector("img")).toHaveAttribute("src", "/images/avatars/star-pink.webp");
 });
 
 it("hot posts: six answers stay six real rows when closed and fill to ten rows when open, so the open block is as high as with ten", () => {

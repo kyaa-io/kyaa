@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 
+import { FanAction } from "./fan-action";
 import { FanSkeleton } from "./fan-skeleton";
 import styles from "./fan-state.module.css";
 
@@ -15,10 +16,10 @@ type StateBase = Readonly<{
 type StateSlots = Readonly<{ description?: string; icon?: ReactNode; actions?: ReactNode }>;
 
 /**
- * 빈 상태(DESIGN.md "빈 상태" 행, C6·C8, 게이트 D2 2026-11-09): 구역 안이든 페이지 전체든 높이 78 한 문장 14/400 회색. 아이콘·설명·행동을 받지 않는다.
- * 행동이 필요하면 FanState 밖, 같은 구역의 다음 행에 둔다.
+ * 빈 상태(DESIGN.md "빈 상태" 행, C6·C8, 게이트 D2 2026-11-09, 2026-11-10 R7 개정): 구역 안이든 페이지 전체든 한 문장 14/400 회색. 아이콘·설명·임의 행동 슬롯은 받지 않는다.
+ * 다음 행동은 `action` 하나(실제 이동 경로 링크 1개)만 받는다. 채운 상태와 같은 카드 구조를 유지하고 행동 2개 이상은 만들지 않는다.
  */
-type SectionEmptyProps = StateBase & Readonly<{ kind: "empty"; description?: never; icon?: never; actions?: never }>;
+type SectionEmptyProps = StateBase & Readonly<{ kind: "empty"; action?: Readonly<{ label: string; href: string }>; description?: never; icon?: never; actions?: never }>;
 
 type OtherStateProps = StateBase & StateSlots & Readonly<{
   /** `loading`은 폐기 예정(DESIGN.md 로딩 행, design-lint C6): 새 코드는 `FanSkeleton`·`FanSkeletonRows`. 남은 사용처는 로그인 세션 동기화 한 곳. */
@@ -33,6 +34,7 @@ export function FanState(props: FanStateProps) {
     return (
       <section className={[styles.state, styles.section, className ?? ""].filter(Boolean).join(" ")} role="status" aria-live="polite" data-empty-state="section">
         <p className={styles.title}>{title.replace(/[.。]$/, "")}</p>
+        {props.action ? <FanAction variant="primary" href={props.action.href}>{props.action.label}</FanAction> : null}
       </section>
     );
   }

@@ -50,6 +50,25 @@ describe("FanState", () => {
     expect(container.querySelectorAll("svg, button, a")).toHaveLength(0);
   });
 
+  it("renders exactly one link action in a section empty state and keeps the one-sentence structure", () => {
+    const { container } = render(<FanState kind="empty" title="응모 내역이 없습니다" action={{ label: "혜택 둘러보기", href: "/benefits" }} />);
+    const state = screen.getByRole("status");
+    expect(state).toHaveAttribute("data-empty-state", "section");
+    expect(screen.queryByRole("heading")).not.toBeInTheDocument();
+    expect(container.querySelectorAll("a, button")).toHaveLength(1);
+    expect(screen.getByRole("link", { name: "혜택 둘러보기" })).toHaveAttribute("href", "/benefits");
+    expect(container.querySelectorAll("svg")).toHaveLength(0);
+  });
+
+  it("renders exactly one link action in a section empty state and keeps the one-sentence structure", () => {
+    const { container } = render(<FanState kind="empty" title="응모 내역이 없습니다" action={{ label: "혜택 둘러보기", href: "/benefits" }} />);
+    expect(screen.getByRole("status")).toHaveAttribute("data-empty-state", "section");
+    expect(screen.queryByRole("heading")).not.toBeInTheDocument();
+    expect(container.querySelectorAll("a, button")).toHaveLength(1);
+    expect(screen.getByRole("link", { name: "혜택 둘러보기" })).toHaveAttribute("href", "/benefits");
+    expect(container.querySelectorAll("svg")).toHaveLength(0);
+  });
+
   it("rejects icon, description and actions on a section empty state at the type level", () => {
     // @ts-expect-error 구역 안 빈 상태는 행동을 받지 않는다.
     render(<FanState kind="empty" title="비었어요" actions={<button type="button">x</button>} />);
