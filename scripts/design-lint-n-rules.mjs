@@ -33,6 +33,7 @@ export const RULES_N = {
   // 2026-11-08 H6(사용자 지시): 강조색은 kyaa 핑크 1색, 보라는 로고 아트에만, 짙은 회색 채움 캡슐 금지.
   N29: { sev: 'fail', note: 'CSS·TSX 의 보라 색상값(hex·rgb·hsl·oklch, 색상 250~320°·채도 10% 이상) 금지. 강조색은 var(--color-accent*) 핑크 1색. 로고·그림 아트 파일만 허용(H6)' },
   N31: { sev: 'fail', note: '섹션 제목과 같은 헤더의 더보기·전체보기 행동은 글자 링크 + 글자 ›. 같은 파일의 함수·변수로 분리된 머리 행동도 검사한다. CTA·카드 전체 링크·목록 행·양식 단계·모달 열기는 제외한다' },
+  N32: { sev: 'fail', note: '새 max-width:767px/1023px 미디어 쿼리 금지(기존은 기준선, 줄이기만). 반응형은 48rem·64rem·80rem 와 범위 문법 @media (width >= 48rem)을 쓴다(DESIGN.md "Responsive system" R1)' },
   N30: { sev: 'fail', note: '짙은 회색(또는 --color-ink) 채움 알약 금지. 캡슐·칩·배지는 흰 바탕 + 1px 테두리, 선택은 핑크 테두리/글자나 옅은 핑크 바탕 1단, 진행 막대·행동 버튼은 핑크 토큰(H6)' },
 };
 
@@ -596,9 +597,18 @@ export function scanNTreeFiles(files) {
   }
   return out;
 }
+// N32: max-width 767px/1023px 미디어 쿼리(@media 조건 안만 센다. 선언의 max-width:767px 는 대상 아님).
+export function scanLegacyMaxWidth(text) {
+  const m = new Map();
+  const body = text.replace(/\/\*[\s\S]*?\*\//g, '');
+  for (const q of body.matchAll(/@media([^{]*)\{/g)) {
+    for (const x of q[1].matchAll(/max-width\s*:\s*(767|1023)px/g)) add(m, `N32|max-width:${x[1]}px`, 1);
+  }
+  return m;
+}
 export function scanNFile(file, text, read) {
   let m = new Map();
-  if (/\.css$/.test(file)) m = scanNCss(text, file);
+  if (/\.css$/.test(file)) { m = scanNCss(text, file); for (const [k, n] of scanLegacyMaxWidth(text)) add(m, k, n); }
   else if (/\.tsx?$/.test(file)) m = scanNTs(text, file, read);
   else return m;
   let colorText = text;

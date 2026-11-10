@@ -6,3 +6,11 @@
   margin-inline: auto;
   padding-inline: var(--shell-inset);
 }
+
+.container[data-band="read"] {
+  max-width: min(var(--band-read), var(--shell-max-width));
+}
+
+.container[data-band="list"] {
+  max-width: min(var(--band-list), var(--shell-max-width));
+}

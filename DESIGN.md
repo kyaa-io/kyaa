@@ -370,6 +370,33 @@ node apps/web/scripts/measure-r3.mjs --base http://127.0.0.1:3001 --out <dir> [-
 | CSS 패턴 | `linear-gradient`(로고 제외), `box-shadow`(오버레이 토큰 외), `border-radius` 10/16/20, `text-transform: uppercase`, `border-left` 액센트 바, 아이콘 뒤 채움 배경, `animation` 반복(모듈·스켈레톤 외), 개별 `keep-all`, `Pretendard UI` 참조 | 토큰·전역 | S1·N26·N27(집계)·N28로 추적. 목표 `Pretendard UI` 참조 0(현재 globals·e2e 하니스에 남음) |
 | 문구 키 | 도움말 키(`walletHelpCopy`·`stanHeartHelp` 등), `오늘 N번 남음`·`N명까지`, `Kyaa. Every Fan Moment Counts.`(홈 본문), `모은 포인트 사용하기`(B13에서 삭제: 모임 홈은 `포인트·응모권` 제목 + `내 포인트 보기` 링크). `광고 보고 교환하기`는 B13(2026-11-09 사용자 확정)으로 유지, 폐기 대상 아님 | `/guide/dukjil` 사실 표, `0/3` | A·B |
 
+## 9. Responsive system (2026-11-10, C5 — 일관되고 규칙적이고 객관적이고 계산된 PC↔모바일)
+
+근거: Tailwind·Primer·Android 창 크기 클래스·Every Layout·NN/g·Baymard·WCAG·GOV.UK·Carbon 등 17개 출처와 Weverse·YouTube·Threads·Billboard 실측. 아래 표가 새 작업의 기준이며 기존 값 중 맞는 것은 유지했다. 측정은 `apps/web/scripts/measure-responsive.mjs`(R12).
+
+| # | 규칙 | 값 | 토큰·구현 |
+|---|---|---|---|
+| R1 | 구간 | <768 / 768–1023 / 1024–1279 / ≥1280, 기준 폭 390 / 768 / 1024 / 1440. 새 CSS는 `48rem`·`64rem`·`80rem`과 범위 문법(`@media (width >= 48rem)`)만 쓴다. 새 `max-width:767px`·`1023px` 쌍 금지 | design-lint **N32**(기존 292곳은 기준선, 줄이기만) |
+| R2 | 셸 | 최대 1440(콘텐츠 1360), 바깥 여백 16 / 32 / 32 / 40 | `--shell-max-width`, `--shell-inset`(`globals.css`, 기존 값 유지) |
+| R3 | 안쪽 띠 | 읽기 720 · 목록 920 · 전체 1440, 가운데 정렬 | `--band-read/list/full`, `FanContentContainer band="read|list|full"` |
+| R4 | 레일 폭 | 288 / 360(≥1024) / 384(≥1280) 셋뿐 | `--rail-narrow/--rail-md/--rail-wide` |
+| R5 | 본문+레일 간격 | 24, ≥1280에서 32 | `--col-gap` |
+| R6 | 구역 간격 | 32, ≥768에서 48. 카드 간격 12–16 | `--section-gap` |
+| R7 | 간격 단계 | 4 8 12 16 20 24 32 40 48 64. 레이아웃 간격은 16 24 32 40 48 64만 | `--space-*` |
+| R8 | 본문 줄 길이 | 한국어 경고 >45자·실패 >60자, 라틴 경고 >75·실패 >100(한 줄 제목·행 제외) | R12 측정 |
+| R9 | 배치 유형 | ① 본문+레일 ② 같은 무게 목록 쌍: ≥1024에서만 2열, 열 안쪽 폭 ≥320·각 열 ≥5행·DOM 순서=시각 순서·열 최대 400·쌍 ≤840을 목록 띠 안 가운데·머리/첫/끝 행 y 차 ≤1px ③ 카드 격자: 390 1열, 768–1023 2열, ≥1024 3열, 4열은 이미지 카드 ≥1280만, `repeat(auto-fill,minmax(min,1fr))` ④ 단일 목록은 1열 ⑤ 상세 본문 ≤720 + 선택 레일 ⑥ 포커스 흐름 440/760/1120 가운데 | 신규 공통 컴포넌트는 같은 패턴이 3곳 이상일 때만 |
+| R10 | 좌우 여백 | 같은 화면의 바깥 좌우 여백 차 ≤2px | R12 측정 |
+| R11 | 목록 행 | 이름과 값 사이 빈 간격이 행 폭의 40%를 넘지 않는다(≥1024) | R12 측정 |
+| R12 | 측정 | `BASE_URL=https://dev.kyaa.io node apps/web/scripts/measure-responsive.mjs --routes /,/rankings` — 390·1024·1440에서 가로 넘침(scrollWidth>clientWidth)·줄 길이 실패·행 간격·여백 차를 재고 JSON과 요약을 낸다. 공개 경로는 로그인 없이 돈다. 판정 함수는 `responsive-metrics.mjs`(단위 시험 `responsive-metrics.test.ts`) | 종료 코드 1 실패, 2 측정 오류 |
+
+### 현재 코드와 충돌하는 곳 (2026-11-10 조사, 이번 작업에서 고치지 않음)
+- **레일 폭 밖의 값**: `components/fan-participation-guide/fan-participation-guide.module.css:53`(580) · `components/us-fanmeetings/us-fanmeetings-page.module.css:446`(400) · `features/benefit/ui/creator-raffles-screen.module.css:9`(350) · `components/admin/group-admin.module.css:60`(320) · `features/group-capsule/capsule.module.css:45,49`(304·320) · `features/group-raffle/raffle.module.css:1`(304) · `features/groups/ui/group-activity-frame.module.css:1`(304) · `features/groups/ui/groups.module.css:147`(312) · `features/community/ui/community.module.css:25,48`(280·260) · `components/notice/notice-detail.module.css:28`(264) · `features/group-wallet/ui/wallet.module.css:33,37`(248·264). 288·360은 R4와 일치(`celebrity-fan-page.module.css:148,152`, `wave-programs.module.css:37`, `groups.module.css:101,114,202`, `wallet.module.css:43,47`).
+- **레이아웃 간격이 단계 밖**: `features/group-wallet/ui/wallet.module.css:37`(`gap:56px`), `features/groups/ui/group-mission-screen.module.css:2`(`gap:20px`).
+- **띠 폭 밖의 max-width**: `components/service-guide/service-guide-page.module.css:9,84`(760) · `components/notice/notice-detail.module.css:2`(840; 같은 파일 :44는 720) · `components/onchain/onchain-public-page.module.css:21`(820) · `components/admin/runmusic-manager.module.css:1`(1100, 관리자).
+- **바깥 여백이 셸과 다름**: `features/group-social/social.module.css:1,8`(`padding … 40px` 고정, 390은 :9에서만 16/24).
+- **구간 경계 불일치**: `components/us-fanmeetings/us-fanmeetings-page.module.css:488`(`max-width:1199px`, 경계 1280 아님). 767·1023 쿼리 292곳(N32 기준선 `scripts/design-lint-baseline.json`) 전부가 R1 전환 대상.
+- 셸 1440·여백 16/32/40(`globals.css` `--shell-max-width`·`--shell-inset`)은 R2와 일치.
+
 # 상세 이력 (기존 전체 내용, 삭제하지 않음)
 
 ## 2026-11-09 핵심 표에서 내린 행 (브리프 v1.1 8장으로 대체됨, 원문 보존)
