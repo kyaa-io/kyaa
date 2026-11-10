@@ -77,3 +77,10 @@ it("shows fan-count-ranked hot communities and omits an empty ranking", () => {
   view.rerender(<CommunityScreen creators={creators} creator={creators[0]} locale="ko" />);
   expect(screen.queryByRole("region", { name: "핫한 커뮤니티" })).not.toBeInTheDocument();
 });
+
+it("identifies Wave as private in the community selector", async () => {
+  const wave = { ...creators[0], slug: "kyaa-wave-fanpage", name: "Kyaa Wave" };
+  render(<CommunityScreen creators={[creators[0], wave]} creator={creators[0]} locale="ko" />);
+  fireEvent.click(screen.getByRole("combobox", { name: "최애 선택" }));
+  expect(await screen.findByRole("option", { name: "Kyaa Wave · 체크인한 참가자 전용" })).toBeInTheDocument();
+});

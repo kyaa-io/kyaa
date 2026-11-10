@@ -1,0 +1,5 @@
+{
+  "changes": ["Kyaa Wave 커뮤니티에 비공개 표시와 참여자 인증 안내를 추가했어요. 게시판과 함께하는 팬을 보려면 행사 참여자 인증을 진행할 수 있어요. 이미지는 로컬 검증 화면이에요."],
+  "path": "/community",
+  "images": ["release-notes/images/2026-11-10-wave-community-access.png"]
+}

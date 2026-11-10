@@ -11,6 +11,10 @@ import { communityCopy } from "@/i18n/catalogs/features__community";
 import { participationCopy } from "@/i18n/catalogs/features__schedules__ui__participation";
 import { FanAppFrame, FanContentContainer } from "@/components/fan-shell/fan-app-shell";
 import { CreatorAvatar } from "@/components/fan-ui/creator-avatar";
+import { WAVE_FANPAGE_SLUG } from "@/features/fanpage/domain/wave-programs";
+import { WaveAccessBoundary } from "@/features/fanpage/ui/wave-access-boundary";
+import { wavePrivacyCopy } from "@/i18n/catalogs/features__fanpage__wave-privacy";
+import { WavePrivateBadge } from "@/features/fanpage/ui/wave-privacy";
 import { FanPostFeed } from "@/features/fan-posts/ui/fan-post-feed";
 import { CertificationPanel } from "@/features/certification/ui/certification-panel";
 import { LeaderboardPanel } from "@/features/fanpage/ui/leaderboard-panel";
@@ -48,8 +52,7 @@ function CommunityFans({ slug, locale, compact = false, mediaOnly = false }: { s
 export function CommunityScreen({ creators, creator, locale, tab = "posts", mediaOnly = false }: {
   creators: readonly PublishedCelebrity[]; creator?: PublishedCelebrity; locale: AppLocale; tab?: CommunityTab; mediaOnly?: boolean;
 }) {
-  const copy = communityCopy(locale), participation = participationCopy(locale), router = useRouter();
-  const hot = hotCommunities(creators);
+  const copy = communityCopy(locale), router = useRouter();
   return <FanAppFrame locale={locale} currentPath="/community" mainId="community-main">
     <FanContentContainer as="main" id="community-main" className={styles.page} tabIndex={-1}>
       <header className={styles.creatorBar}>
@@ -58,10 +61,10 @@ export function CommunityScreen({ creators, creator, locale, tab = "posts", medi
           {creator && <><ChevronRight className={styles.separator} size={18} aria-hidden="true" />
           <div className={styles.selector}>
             <Select.Root value={creator.slug} onValueChange={value => { if (value && value !== creator.slug) router.push(communityHref(value, locale, tab, mediaOnly)); }}>
-              <Select.Trigger className={styles.creatorSelect} aria-label={copy.choose}><Select.Value>{creator.name}</Select.Value><Select.Icon><ChevronDown size={18} aria-hidden="true" /></Select.Icon></Select.Trigger>
+              <Select.Trigger className={styles.creatorSelect} aria-label={copy.choose}><Select.Value>{creator.name}</Select.Value>{creator.slug === WAVE_FANPAGE_SLUG && <WavePrivateBadge locale={locale} />}<Select.Icon><ChevronDown size={18} aria-hidden="true" /></Select.Icon></Select.Trigger>
               <Select.Portal><Select.Positioner className={styles.selectPositioner} sideOffset={8} align="start" alignItemWithTrigger={false}>
                 <Select.Popup className={styles.selectPopup}><Select.List className={styles.selectList}>
-                  {creators.map(item => <Select.Item className={styles.selectItem} value={item.slug} key={item.slug}><Select.ItemText>{item.name}</Select.ItemText><Select.ItemIndicator><Check size={18} aria-hidden="true" /></Select.ItemIndicator></Select.Item>)}
+                  {creators.map(item => <Select.Item className={styles.selectItem} value={item.slug} key={item.slug} aria-label={item.slug === WAVE_FANPAGE_SLUG ? `${item.name} · ${wavePrivacyCopy(locale).audience}` : undefined}><Select.ItemText>{item.name}</Select.ItemText>{item.slug === WAVE_FANPAGE_SLUG && <WavePrivateBadge locale={locale} />}<Select.ItemIndicator><Check size={18} aria-hidden="true" /></Select.ItemIndicator></Select.Item>)}
                 </Select.List></Select.Popup>
               </Select.Positioner></Select.Portal>
             </Select.Root>
@@ -74,7 +77,15 @@ export function CommunityScreen({ creators, creator, locale, tab = "posts", medi
       </header>
       {creator ? <>
         <nav className={styles.tabs} aria-label={copy.title}>{COMMUNITY_TABS.map(value => <Link key={value} href={communityHref(creator.slug, locale, value, mediaOnly)} aria-current={tab === value ? "page" : undefined}>{copy[value]}</Link>)}</nav>
-        <div className={styles.layout}>
+        {creator.slug === WAVE_FANPAGE_SLUG ? <WaveAccessBoundary locale={locale} inline><CommunityContent creator={creator} creators={creators} locale={locale} tab={tab} mediaOnly={mediaOnly} /></WaveAccessBoundary> : <CommunityContent creator={creator} creators={creators} locale={locale} tab={tab} mediaOnly={mediaOnly} />}
+      </> : <p className={styles.empty} role="status">{copy.empty}</p>}
+    </FanContentContainer>
+  </FanAppFrame>;
+}
+
+function CommunityContent({ creator, creators, locale, tab, mediaOnly }: { creator: PublishedCelebrity; creators: readonly PublishedCelebrity[]; locale: AppLocale; tab: CommunityTab; mediaOnly: boolean }) {
+  const copy = communityCopy(locale), participation = participationCopy(locale), hot = hotCommunities(creators);
+  return <div className={styles.layout}>
           {hot.length > 0 && <section className={styles.hot} aria-labelledby="hot-community-heading">
             <header><FanHeading as="h2" id="hot-community-heading">{copy.hot}</FanHeading><p>{copy.hotBasis}</p></header>
             <ol>{hot.map((item, index) => <li key={item.slug}>
@@ -105,8 +116,5 @@ export function CommunityScreen({ creators, creator, locale, tab = "posts", medi
             {tab !== "fans" && <CommunityFans slug={creator.slug} locale={locale} mediaOnly={mediaOnly} compact />}
             {tab !== "certifications" && <section className={styles.verify}><BadgeCheck size={24} aria-hidden="true" /><h2>{copy.certifications}</h2><p>{copy.verifyIntro}</p><Link className={styles.textLink} href={communityHref(creator.slug, locale, "certifications", mediaOnly)}>{copy.certifications}<ArrowRight size={16} aria-hidden="true" /></Link></section>}
           </aside>
-        </div>
-      </> : <p className={styles.empty} role="status">{copy.empty}</p>}
-    </FanContentContainer>
-  </FanAppFrame>;
+        </div>;
 }
