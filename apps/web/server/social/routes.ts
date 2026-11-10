@@ -6,8 +6,13 @@ import { celebritySlugSchema } from "@/features/fanpage/domain/community";
 import { publicAvatarUrlSchema } from "@/features/profile/domain/avatar";
 import { mobileAccountLevelSchema, mobileActivityCursorSchema, mobileActivitySchema } from "@/server/mobile-profile/domain";
 import { ownedFanProfilePublicInputSchema, ownedFanProfilePublicSchema, socialProfileCardSchema } from "@/features/fan-profile/domain";
+import { homeFanProfileRefSchema } from "@/features/rankings/domain/types";
+
+import { openHomeProfileRef } from "@/server/rankings/home-profile-ref";
 
 export interface SocialDependencies {
+  profileRefSecret?: string;
+  now?: () => number;
   authorize(authorization: string | null): Promise<{ appUserId: string }>;
   rpc(name: string, args: Record<string, unknown>): Promise<unknown>;
 }
@@ -33,6 +38,7 @@ const cursorSchema = z.object({ at: z.iso.datetime({ offset: true }), id: uuid }
 /** "The author of this content": a public reply never carries a member id, so a profile opens from what the viewer is looking at (B6). */
 export const profileRefSchema = z.discriminatedUnion("kind", [
   z.object({ kind: z.literal("profile"), profileId: uuid }).strict(),
+  homeFanProfileRefSchema,
   z.object({ kind: z.literal("fan_post"), id: uuid }).strict(),
   z.object({ kind: z.literal("fan_post_comment"), id: uuid }).strict(),
   z.object({ kind: z.literal("group_post"), id: uuid }).strict(),
@@ -40,6 +46,9 @@ export const profileRefSchema = z.discriminatedUnion("kind", [
   z.object({ kind: z.literal("return"), token: uuid }).strict(),
 ]);
 export type ProfileRef = z.infer<typeof profileRefSchema>;
+function verifiedRef(ref: ProfileRef, viewer: string | null, deps: SocialDependencies) {
+  return ref.kind === "home_ranking" ? openHomeProfileRef(ref, viewer, deps.profileRefSecret, (deps.now ?? Date.now)()) : ref;
+}
 const contentRefSchema = z.discriminatedUnion("kind", [
   z.object({ kind: z.literal("fan_post"), id: uuid }).strict(),
   z.object({ kind: z.literal("fan_post_comment"), id: uuid }).strict(),
@@ -141,17 +150,17 @@ export function createSocialHandlers(deps: SocialDependencies) {
     async profileByRef(request: Request) { try {
       const url = new URL(request.url); const ref = decodeRef(one(url, "ref")); const profileLocale = locale.parse(one(url, "locale") ?? "ko");
       const viewer = await optionalOwner(request, deps);
-      const result = await deps.rpc("read_social_profile_by_ref", { p_viewer: viewer, p_ref: ref, p_locale: profileLocale });
+      const result = await deps.rpc("read_social_profile_by_ref", { p_viewer: viewer, p_ref: verifiedRef(ref, viewer, deps), p_locale: profileLocale });
       if (result === null) return json({ error: { code: "SOCIAL_NOT_FOUND" } }, 404);
       if (viewer === null) return json(checked(publicProfileByRefSchema, result));
       const parsed = checked(signedInByRefSchema, result);
       return json({ ...parsed, activityNextCursor: parsed.activityNextCursor ? Buffer.from(JSON.stringify(parsed.activityNextCursor)).toString("base64url") : null });
     } catch (error) { return failure(error); } },
     /** POST /api/profiles/return-ref: signed out, before sign-in, so the same window opens afterwards. */
-    async issueReturnRef(request: Request) { try { const input = returnRefInput.parse(await body(request)); return json(checked(returnRefSchema, await deps.rpc("issue_social_profile_return_ref", { p_ref: input.ref }))); } catch (error) { return failure(error); } },
+    async issueReturnRef(request: Request) { try { const input = returnRefInput.parse(await body(request)); if (input.ref.kind === "home_ranking") throw new Error("SOCIAL_FORBIDDEN"); return json(checked(returnRefSchema, await deps.rpc("issue_social_profile_return_ref", { p_ref: input.ref }))); } catch (error) { return failure(error); } },
     /** GET /api/profiles/refs-open?refs=<base64url JSON>: a read, so it never counts as a write in the client cache. Which authors on screen can be opened, so the rest stay plain text. */
     async refsOpen(request: Request) { try { const raw = one(new URL(request.url), "refs"); if (!raw) throw new SyntaxError("missing refs"); let decoded: unknown; try { decoded = JSON.parse(Buffer.from(z.string().max(6000).parse(raw), "base64url").toString("utf8")); } catch { throw new SyntaxError("invalid refs"); } const input = refsOpenInput.parse({ refs: decoded }); const viewer = await optionalOwner(request, deps); return json(checked(refsOpenSchema, await deps.rpc("read_social_profile_refs_open", { p_viewer: viewer, p_refs: input.refs }))); } catch (error) { return failure(error); } },
-    async reportProfile(request: Request) { try { const input = profileReportInput.parse(await body(request)); return json(checked(profileReportSchema, await deps.rpc("report_social_profile", { p_viewer: await owner(request, deps), p_ref: input.ref, p_reason: input.reason, p_details: input.details ?? null, p_request_id: input.requestId }))); } catch (error) { return failure(error); } },
+    async reportProfile(request: Request) { try { const input = profileReportInput.parse(await body(request)); const viewer = await owner(request, deps); return json(checked(profileReportSchema, await deps.rpc("report_social_profile", { p_viewer: viewer, p_ref: verifiedRef(input.ref, viewer, deps), p_reason: input.reason, p_details: input.details ?? null, p_request_id: input.requestId }))); } catch (error) { return failure(error); } },
     async block(request: Request) { try { const input = blockInput.parse(await body(request)); return json(await deps.rpc("block_social_profile", { p_app_user_id: await owner(request, deps), p_profile_id: input.profileId, p_request_id: input.requestId })); } catch (error) { return failure(error); } },
     async unblock(request: Request, profileId: string) { try { return json(await deps.rpc("unblock_social_profile", { p_app_user_id: await owner(request, deps), p_profile_id: uuid.parse(profileId) })); } catch (error) { return failure(error); } },
     async listConversations(request: Request) { try { return json(await deps.rpc("read_owned_dm_conversations", { p_app_user_id: await owner(request, deps) })); } catch (error) { return failure(error); } },

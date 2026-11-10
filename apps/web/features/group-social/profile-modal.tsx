@@ -1,4 +1,6 @@
 "use client";
+import Link from "next/link";
+import { creatorHomeHref } from "@/features/creator/domain/creator-navigation";
 import { useEffect, useId, useRef, useState } from "react";
 import { ArrowRight, Ellipsis, Link2, UserRound, X } from "lucide-react";
 import { z } from "zod";
@@ -157,7 +159,7 @@ export function ProfileModal({ person, locale, onClose }: { person: ProfileModal
     return d.capabilities.canRequestFriend ? <FanAction disabled={pending} ariaBusy={pending} onClick={() => void friendAction()}>{t.add}</FanAction> : null;
   };
 
-  return <AccessibleOverlay open onClose={onClose} labelledBy={title} backdropClassName={styles.backdrop} contentClassName={styles.panel} contentAs="section" initialFocusRef={closeRef}>
+  return <AccessibleOverlay open onClose={onClose} labelledBy={title} backdropClassName={styles.backdrop} contentClassName={`${styles.panel}${person.ref?.kind === "home_ranking" ? ` ${styles.rankingPanel}` : ""}`} contentAs="section" initialFocusRef={closeRef}>
     <div className={styles.handle} aria-hidden="true"/>
     <header className={styles.header}>
       {avatarUrl ? <img src={avatarUrl} alt="" width={72} height={72} className={styles.avatar}/> : <span className={styles.avatar}><UserRound size={36} aria-hidden="true"/></span>}
@@ -195,6 +197,7 @@ export function ProfileModal({ person, locale, onClose }: { person: ProfileModal
       const icon = fanSnsIcon(link), label = fanSnsLabel(link);
       return <li key={link}><a href={link} target="_blank" rel="noopener noreferrer nofollow ugc" aria-label={label} title={label} data-outbound-placement="content" data-outbound-kind="social">{icon ? <img src={icon} width={20} height={20} alt=""/> : <Link2 size={20} aria-hidden="true"/>}</a></li>;
     })}</ul>}
+    {person.ref?.kind === "home_ranking" && card?.stats?.creator ? <Link className={styles.grade} href={creatorHomeHref(card.stats.creator.slug, locale)}>{card.stats.creator.name} <span aria-hidden="true">›</span></Link> : null}
     {card?.bio && <p className={styles.bio}>{card.bio}</p>}
     {closed ? <p className={styles.reason} role="status">{s.cannotSend}</p>
       : r.error ? <div className={styles.failure} role="alert"><p>{t.error}</p><FanAction onClick={r.retry}>{t.retry}</FanAction></div>

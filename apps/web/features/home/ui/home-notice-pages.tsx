@@ -8,6 +8,7 @@ import { homeNoticeCategoryLabels, type HomeNoticeSummary } from "@/features/hom
 import type { AppLocale } from "@/i18n/locales";
 import type { TiptapDocument } from "@/server/notice/notice-domain";
 import { formatHomeNoticeDate } from "./home-placeholder-blocks";
+import { HomeNoticeParticipation } from "./home-notice-participation";
 import styles from "./home-notice-pages.module.css";
 
 export const homeNoticePageCopy: Record<AppLocale, { title: string; empty: string; more: string }> = {
@@ -50,7 +51,8 @@ export function HomeNoticeDetailScreen({ locale, notice }: { locale: AppLocale; 
     <article className={styles.article}>
       <div className={styles.meta}><strong>{homeNoticeCategoryLabels[locale][notice.category]}</strong><time dateTime={notice.publishedAt}>{formatHomeNoticeDate(notice.publishedAt, locale)}</time></div>
       <FanHeading as="h1">{notice.title}</FanHeading>
-      <NoticeBody document={notice.body} locale={locale} />
+      <div className={notice.slug === "service-guide" ? styles.guideBody : undefined}><NoticeBody document={notice.body} locale={locale} />{notice.slug === "service-guide" && <img className={styles.artwork} src="/images/notices/fan-record.webp" alt="" aria-hidden="true" width={240} height={240} />}</div>
     </article>
+    <HomeNoticeParticipation slug={notice.slug} title={notice.title} locale={locale} />
   </div>;
 }

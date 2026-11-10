@@ -1,8 +1,11 @@
+import type { HomeFanProfileRef } from "@/features/rankings/domain/types";
+
 export const PROFILE_RETURN_PARAM = "profile";
 
 /** "The author of this content". Public replies carry no member id, so the server finds the person from what the viewer sees (B6). */
 export type ProfileRef =
   | { kind: "profile"; profileId: string }
+  | HomeFanProfileRef
   | { kind: "fan_post" | "fan_post_comment" | "group_post"; id: string }
   | { kind: "page_ranking"; slug: string; metric: "fan_contribution" | "dukjil"; period: "week" | "month" | "all"; periodStart: string; computedAt: string; rank: number }
   | { kind: "return"; token: string };

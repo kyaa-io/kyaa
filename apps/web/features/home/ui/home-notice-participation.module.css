@@ -1,0 +1,11 @@
+.participation { display:grid; gap:var(--space-4); min-width:0; max-width:720px; }
+.actions { display:flex; flex-wrap:wrap; align-items:center; gap:var(--space-2); }
+.comments { display:grid; gap:var(--space-4); min-width:0; }
+.list { display:grid; gap:var(--space-4); margin:0; padding:0; list-style:none; }
+.list>li { min-width:0; border-bottom:1px solid var(--color-line); padding-block:var(--space-4); }
+.meta { display:flex; flex-wrap:wrap; align-items:center; gap:var(--space-2); font-size:var(--fan-metadata-size); }
+.meta img { border-radius:50%; }
+.meta time { color:var(--color-muted); }
+.meta button { margin-inline-start:auto; }
+.body { margin:var(--space-2) 0 0; font-size:var(--fan-body-size); line-height:1.6; white-space:pre-wrap; overflow-wrap:anywhere; }
+.pagination { display:flex; justify-content:space-between; gap:var(--space-4); }

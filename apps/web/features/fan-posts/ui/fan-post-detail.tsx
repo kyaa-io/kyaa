@@ -149,12 +149,12 @@ function DetailForOwner({ postId, locale, presentation: requestedPresentation }:
   </section>;
 }
 
-type ComposerProps = { fieldId: string; locale: AppLocale; readDraft: (target: string) => string; onDraft: (target: string, value: string) => void; replyTarget: { id: string; nickname: string; body: string } | null; gated: boolean; gate: ReactNode;
+type ComposerProps = { showRewards?: boolean; fieldId: string; locale: AppLocale; readDraft: (target: string) => string; onDraft: (target: string, value: string) => void; replyTarget: { id: string; nickname: string; body: string } | null; gated: boolean; gate: ReactNode;
   busy: boolean; error: ReactNode; onGate: (open: boolean) => void; onSubmit: (draft: string) => Promise<boolean>; onCancel: () => void };
 /** K5: the draft is this component's own state, so a keystroke renders only the field, its counter and the send button. The post above
  * and the comment list are not rendered again (they flickered on every letter). The parent keeps the text per target (`onDraft`)
  * without rendering, so moving between the new-comment box and a reply box keeps what was typed. */
-export const CommentComposer = memo(function CommentComposer({ fieldId, locale, readDraft, onDraft, replyTarget, gated, gate, busy, error, onGate, onSubmit, onCancel }: ComposerProps) {
+export const CommentComposer = memo(function CommentComposer({ showRewards = true, fieldId, locale, readDraft, onDraft, replyTarget, gated, gate, busy, error, onGate, onSubmit, onCancel }: ComposerProps) {
   const copy = contentCopy(locale), rc = postReactionCopy(locale), target = replyTarget?.id ?? "";
   const [draft, setDraft] = useState(() => readDraft(target));
   return <form className={`${commentStyles.composer} ${detailStyles.commentForm}`} data-filled={draft.length > 0 || undefined} data-expanded={replyTarget ? "" : undefined} aria-busy={busy} onSubmit={event => { event.preventDefault(); void onSubmit(draft).then(sent => { if (sent) setDraft(""); }); }}>
@@ -175,7 +175,7 @@ export const CommentComposer = memo(function CommentComposer({ fieldId, locale, 
     <div className={detailStyles.commentTools}>
       <span className={detailStyles.commentCounter}>{draft.length.toLocaleString(locale)} / 1,000</span>
       {replyTarget && <FanAction type="button" variant="text" disabled={busy} onClick={onCancel}>{copy.cancel}</FanAction>}
-      <EarnMinLength action="comment" locale={locale} /><EarnActionBadge action="comment" locale={locale} /><FanAction type="submit" variant="neutral" size="sm" ariaBusy={busy} loading={busy} disabled={!gated && !draft.trim()}>{rc.post}</FanAction>
+      {showRewards && <><EarnMinLength action="comment" locale={locale} /><EarnActionBadge action="comment" locale={locale} /></>}<FanAction type="submit" variant="neutral" size="sm" ariaBusy={busy} loading={busy} disabled={!gated && !draft.trim()}>{rc.post}</FanAction>
     </div>
   </fieldset></form>;
 });

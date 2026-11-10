@@ -29,3 +29,10 @@ it("does not invent a cover for a channel or untrusted video host", () => {
   const { container } = render(<MediaThumbnail image={null} href="https://www.youtube.com.evil.test/watch?v=abcdefghijk" kind="videos" source="kyaa" locale="ko" />);
   expect(container.querySelector("img")).toBeNull();
 });
+
+it("keeps an icon-only failed thumbnail without provider text for the compact gallery", () => {
+  const { container } = render(<MediaThumbnail image="/cover.jpg" href="https://www.instagram.com/p/DfEtowlgX1j/" kind="videos" source="kyaa" locale="ko" iconOnly />);
+  fireEvent.error(container.querySelector("img")!);
+  expect(container.querySelector("svg")).toBeInTheDocument();
+  expect(container.textContent).toBe("");
+});
