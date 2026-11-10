@@ -122,6 +122,51 @@ The Home hero viewport has a 1.5px Spectrum outline with a pink-white-violet hig
 Scheduled LIVE countdowns share a vivid pink accent (`#be185d`), with a pale pink fill (`#fff1f7`) and fine pink border on MY and badge variants. Calendar text variants keep their compact unboxed layout. On Home photography, use pale pink text (`#ffd0e6`) on a dark translucent pill. A 7px dot and expanding halo pulse every 1.8s while a future LIVE is visible and active; the time text stays steady. Hidden/inactive countdowns and elapsed scheduled starts do not pulse, and reduced-motion disables both dot and halo animation. Keep existing KST date/countdown semantics and server-confirmed LIVE status.
 
 
+## 운영 통일 체계 (2026-11-10, PROD-DS-1958)
+
+사용자 [운영] 요청 "gap·글자·margin·padding·layout·component 체계 통일"에 따라 운영 트리 기준으로 숫자를 고정한다. 아래 값은 `apps/web/app/globals.css` 토큰이 소유하며, 새 CSS는 토큰만 쓴다(일회성 px·hex·radius 금지). 이 절이 아래 옛 서술과 충돌하면 이 절이 이긴다. 전수 감사표: `~/.local/share/kyaa-t3/board/tasks/prod-ds-1958/audit.md`.
+
+### 글자 역할표
+| 역할 | 크기 (390 / ≥768) | 굵기 | 행간 | 토큰 |
+| --- | --- | --- | --- | --- |
+| 화면 제목(h1) | 20 / 24 | 850 (editorial 800) | 1.2 | `--fan-heading-size`, `--fan-heading-size-wide` |
+| 섹션 제목(h2) | 20 / 24 | 850 (editorial 800, MY 700) | 1.2 | 같은 토큰. 화면 제목과 같은 크기, 위계는 위치·여백으로 |
+| 카드 제목·이름 | 16 | 700 | 1.5 | `--fan-item-title-size/weight` |
+| 본문 | 16 | 400 | 1.5 | `--fan-body-size` |
+| 보조(메타·팬 수·날짜) | 13 | 400–550 | 1.5 | `--fan-metadata-size` |
+| 숫자 | 역할 크기 그대로 + `tabular-nums` | 역할 굵기 | 역할 행간 | — |
+| 라벨(칩·링크·버튼 글자) | 14 | 500 / 선택 650 | 1.4 | `--fan-action-label-size` |
+| 상태 배지 | 12 | 800 | normal | — |
+
+한 컴포넌트 안 글자 크기는 3단 이하(예: 카드 = 16 / 13 / 13).
+
+### 간격 단계 (4/8)
+- 단계: 4·8·12·16·20·24·32·40·48·64만 (`--space-1`…`--space-16`). 20은 부품 안쪽만.
+- 섹션 사이: 32 (390) / 48 (≥768) — `--fan-section-gap`·셸 소유.
+- 섹션 제목 → 내용: 16 (`.sectionHeader` margin-bottom). 칩 줄 → 목록: 16.
+- 섹션 안 목록 간격: 카드 레일 16, 칩 8, 행 목록 8~12.
+- 카드 안: 미디어 → 이름 12, 이름 → 보조 4, 보조 → 행동 줄 4(행동 줄 자체가 44 높이라 눈에 보이는 간격 ≈16).
+
+### radius 단계
+0 · 12(`--radius-control`: 입력·작은 카드·행) · 16(`--radius-collection`: 카드·카드 미디어) · 20(`--radius-hero`: 배너) · pill(`--radius-pill`: 칩·주 행동·아이콘 버튼). 그 밖의 값(4·6·10·14 등)은 신규 금지.
+
+### 폭·여백·열 수
+| 화면 폭 | 바깥 여백 | 본문 열 | 보조 레일 | 카드 레일 보이는 장 수 | 카드 격자 열 |
+| --- | --- | --- | --- | --- | --- |
+| 390 | 16 | 358 | 없음 | 1장 + 다음 장 일부(288) | 1 |
+| 768 | 32 | 704 | 없음 | 3 (최소 240) | 2 |
+| 1024 | 32 | 576 | 360 | 2장 + 일부 (최소 240, `--fan-rail-card-min`) | 3 |
+| 1440 | 40 | 944 | 384 | 3 (304) | 3 |
+최대 폭 1440. 읽기 밴드 720, 목록 밴드 920(board/research/responsive-system.md).
+
+### 공통 컴포넌트
+- **섹션 헤더** `FanSectionHeader`: 제목 왼쪽, 같은 줄 오른쪽에 보조 링크(14/650, 쉐브론 16) → 레일 화살표(`controls`) 순서. 설명 문장(`description`)은 쓰지 않는다. 남은 호출은 kyaa wave 행사 화면의 상태·규칙 문구뿐이며 감사표에 후속으로 기록.
+- **레일 화살표**: 사진·카드 위에 겹치지 않는다. 섹션 헤더 줄 오른쪽 끝, 44 원형 대상, 아이콘 20, 테두리·배경 없음, 비활성은 `--color-line`. 390(터치)에서는 숨기고 스와이프.
+- **카드**: 바깥 테두리·회색 상자 없이 미디어 하나가 프레임(radius 16, 빈 동안 `--color-soft`). 미디어 안에 다시 상자를 넣지 않는다(이중 프레임 금지). 섹션 자체를 카드로 감싸지 않는다(홈의 다른 섹션과 같은 왼쪽 끝선).
+- **칩** `CreatorRoleFilterControl`: pill, 높이 44(`--fan-chip-height`), 좌우 16, 같은 줄 칩은 같은 폭(가장 긴 칩 기준), 간격 8. 선택 = 잉크 채움.
+- **아이콘**: 기본 20(`--fan-icon-size`), 링크 쉐브론만 16. 한 줄의 아이콘은 같은 크기·같은 색(`--color-muted`). SNS 마크는 원본 모양을 마스크로 써서 단색 20. 하트는 미인증 = 회색 선, 패스포트 보유 = `--color-heart` 채움. 글자 색은 항상 잉크.
+- **스켈레톤**: 실제 카드와 같은 높이(미디어 + 이름 24 + 보조 20 + 행동 44).
+
 ## 1. Visual Theme & Atmosphere
 
 Fan Pulse Spectrum is a bright, image-first fan utility interface. A full-color KARA hero supplies nearly all of the page's visual intensity; the surrounding product UI stays white, neutral, and deliberately quiet. The composition pairs editorial entertainment imagery with disciplined product surfaces: generous whitespace, black display type, hairline borders, short micro-shadows, and one pink-to-violet conversion accent. The result should feel like a polished global fan platform rather than a promotional microsite or a dense dashboard.
@@ -225,7 +270,6 @@ The page uses asymmetry only at desktop scale. The main content owns the visual 
 | Body copy | Pretendard Variable | `16px` | `400` | Shared body leading | `0` | Preserve readable translated content |
 | Metadata | Pretendard Variable | `13px` | Role-specific `400–550` | Shared metadata leading | `0` | Quieter than the item name |
 | Live-row title | Pretendard Variable | `16px` | `700` | Shared item leading | Shared role tracking | Allow wrapping without clipping the title |
-| Section subtitle | Pretendard Variable | `14px` | `550` | `1.5` | `0` | Muted Ink, sentence-style Korean |
 | Primary CTA | Pretendard Variable | `15px` | `800` | Normal | `0` | Compact, direct verb phrase |
 | Status label | Pretendard Variable | `12px` | `800` | Normal | `0.04em` | Uppercase only for UPCOMING |
 | Passport value line | Pretendard Variable | `14px` | `750` | `1.45` | `0` | Centered and concise |
@@ -249,7 +293,7 @@ The page uses asymmetry only at desktop scale. The main content owns the visual 
 - Passport CTA: label `Fan Passport 발급받기`; 90% of card width, 52px minimum height, full pill radius, White fill, 1px Spectrum Relay outline, solid Spectrum Ink label, centered label and right arrow.
 - Creator summaries: inset 12px below the media field, then show a wrapping 16px/700 name, quieter 13px audience metadata, and a separate action group. Use a 4–8px gap within related copy and allow actions to wrap without shrinking their 44px targets.
 - LIVE state: show a blinking red dot plus `LIVE 진행중` / `LIVE NOW` only for an active LIVE, a static muted dot plus `LIVE 예정` / `UPCOMING LIVE` for a scheduled LIVE, on LIVE surfaces. Home creator cards instead show an outlined heart with `입덕하기` / `Become a fan` in the action group, linking to the existing creator fan-verification detail page (`/c/{slug}`) with the current locale; this is navigation, not a saved-favorite toggle. Disable dot animation for reduced-motion users.
-- Celebrity social controls: keep the icon group together in the action area after identity and audience metadata; allow the group to wrap. Use optically centered 20×20px brand marks inside separate 44×44px targets and `0px` gap between adjacent targets. Do not render visible YouTube, TikTok, or Instagram labels. Preserve accessible names in the links.
+- Celebrity social controls: keep the icon group together in the action area after identity and audience metadata; allow the group to wrap. Use optically centered 20×20px one-ink (Muted Ink) brand-mark masks inside separate 44×44px targets and `0px` gap between adjacent targets. Do not render visible YouTube, TikTok, or Instagram labels. Preserve accessible names in the links.
 - Mobile/tablet context actions: below 1024px, keep the existing state-appropriate activity summary and authentication or Passport action in the normal content flow. Reuse the service/passport action roles; do not force duplicate CTAs or invent a destination for unavailable content.
 - Section secondary links: minimum 44px interaction height, 13px/550, Muted Ink, unboxed chevron treatment. Other text-action roles retain their shared typography.
 - Icon-only controls: use 20×20px visible icons inside 44×44px targets with Lucide-style 1.75–2px strokes. The Header language switch is the deliberate exception: use a 24×24px visible glyph inside the same 44×44px target. Adjacent icon-only controls use `0px` group gap while each target remains distinct and non-overlapping. Do not apply this compact rule to controls with visible text.
@@ -285,7 +329,7 @@ The page uses asymmetry only at desktop scale. The main content owns the visual 
 ### Image Treatment
 
 - Hero uses full-bleed high-resolution KARA photography with `object-fit: cover` and a slightly right-shifted focal position.
-- Home favorite cards use a nested gallery composition from 768px: a square `#F6F6F5` field contains the shared `min(84%, 240px)` square portrait. Below 768px, the portrait and preview fill the square frame, retaining the same registered crop. The `/celebrities` directory fills its entire media area, 5:4 below 768px and square from 768px. Both use the shared per-creator framing. Mobile directory images requiring `contain` use a content-sized frame instead of 5:4 letterboxing; never promote an unapproved crop to cover.
+- Home favorite cards fill one square 16px-radius media frame with the shared full-bleed portrait or preview at every width (2026-11-10 PROD-DS-1958; the earlier nested `#F6F6F5` gallery field is retired). The `/celebrities` directory fills its entire media area, 5:4 below 768px and square from 768px. Both use the shared per-creator framing. Mobile directory images requiring `contain` use a content-sized frame instead of 5:4 letterboxing; never promote an unapproved crop to cover.
 - Favorite portraits are direct, colorful, face-legible editorial crops: blue KARA group styling, warm gold Elina close-up, cool dark Changha close-up.
 - Upcoming LIVE avatars reuse the corresponding artist imagery in circular 64px desktop / 56px mobile crops.
 - Passport uses a transparent, fully opened identity-and-stamp-book asset with `object-fit: contain`; it is never shown as a closed burgundy cover.
@@ -293,7 +337,7 @@ The page uses asymmetry only at desktop scale. The main content owns the visual 
 ### Distinctive Components
 
 - Status Rail: UPCOMING outline pill plus date on one horizontal rail; the countdown sits below in monospace. Scheduled LIVE events use `D-{days} HH:MM:SS`, omitting the day prefix when less than 24 hours remain, and update once per second. Active events and countdowns that reach zero show `LIVE NOW`.
-- Favorite Gallery Collection: one rounded outer collection with image-led items; each item reads portrait → emphasized name → fan count → fan-detail and social actions. Keep real YouTube, TikTok, and Instagram marks in full-size targets.
+- Favorite Gallery Collection: an unboxed section (same left edge as other Home sections, 2026-11-10) with image-led items; each item reads portrait → emphasized name → fan count → fan-detail and social actions. Keep the YouTube, TikTok, and Instagram mark shapes as one-ink 20px masks in full-size targets (2026-11-10).
 - Logged-out Live Card: heading and subtitle at the top, centered calendar-heart line icon, centered explanatory copy, Google login CTA at the bottom.
 - Fan Passport Card: title/subtitle, opened Passport asset, lifecycle value copy, and login CTA in one quiet vertical composition.
 - Upcoming LIVE Row: circular avatar, identity/title/date block, right-aligned reservation metadata on tablet/desktop, and a 44px chevron action.

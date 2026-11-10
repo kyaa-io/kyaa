@@ -34,8 +34,29 @@
   font-weight: 650;
   line-height: 1.5;
 }
+.controls { display: flex; flex: none; align-items: center; gap: 0; margin-inline-start: auto; }
+.action + .controls { margin-inline-start: 0; }
+/* Rail arrows live in the title row, never over media. */
+.controls button {
+  display: grid;
+  width: var(--min-target);
+  height: var(--min-target);
+  padding: 0;
+  place-items: center;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--color-ink);
+  cursor: pointer;
+  transition: background-color var(--motion-control) var(--motion-easing);
+}
+.controls button svg { width: var(--fan-icon-size); height: var(--fan-icon-size); }
+.controls button:disabled { color: var(--color-line); cursor: default; }
+.controls button:focus-visible { outline: var(--focus-width) solid var(--color-focus); outline-offset: calc(-1 * var(--focus-width)); }
+@media (hover: hover) { .controls button:not(:disabled):hover { background: var(--color-soft); } }
+@media (max-width: 47.999rem) { .controls { display: none; } }
 .action span { min-width: 0; overflow-wrap: anywhere; }
-.action svg { flex: none; width: 16px; height: 16px; }
+.action svg { flex: none; width: var(--fan-icon-inline-size); height: var(--fan-icon-inline-size); }
 .action:focus-visible { outline: var(--focus-width) solid var(--color-focus); outline-offset: var(--focus-offset); }
 .description {
   margin: 0;

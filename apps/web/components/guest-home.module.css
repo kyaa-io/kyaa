@@ -94,30 +94,31 @@
 .mobileContextActions a > svg:first-child, .signInButton svg { width: 16px; height: 16px; }
 .passportAction span { flex: 1; text-align: center; }
 
-.favoriteSection { padding: 20px; border: 1px solid var(--card-line); border-radius: 16px; background: var(--canvas); box-shadow: var(--card-shadow); }
 .favoriteFilterState { display: grid; min-height: 220px; place-content: center; justify-items: center; gap: 10px; padding: 28px 16px; color: var(--muted); text-align: center; }
 .favoriteFilterState :is(strong,p) { margin: 0; }
 .favoriteFilterState strong { color: var(--ink); font-size: 18px; }
 .favoriteFilterState p { max-width: 34ch; font-size: 14px; line-height: 1.6; }
 .favoriteFilterState :is(a,button) { display: inline-flex; min-height: 44px; align-items: center; padding: 0 12px; border: 0; background: transparent; color: var(--ink); font: inherit; font-size: 14px; font-weight: 750; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
-.celebrityRail { display: grid; grid-auto-columns: var(--creator-card-size, min(82vw, 288px, 100%)); grid-auto-flow: column; gap: 16px; overflow-x: auto; padding-bottom: 0; scroll-snap-type: inline mandatory; scrollbar-width: none; }
+.celebrityRail { display: grid; grid-auto-columns: var(--creator-card-size, min(80vw, var(--fan-rail-card-mobile))); grid-auto-flow: column; gap: var(--space-4); overflow-x: auto; scroll-snap-type: inline mandatory; scrollbar-width: none; }
 .celebrityRail::-webkit-scrollbar { display: none; }
-.celebrityCard { min-width: 0; scroll-snap-align: start; container-type: inline-size; }
-.celebrityMediaBox { position: relative; display: grid; aspect-ratio: 1; overflow: hidden; place-items: center; border: 1px solid var(--card-line); border-radius: 12px; background: #f6f6f5; transition: transform 160ms cubic-bezier(.2,0,0,1), border-color 160ms cubic-bezier(.2,0,0,1); }
-.celebrityMediaBox > [data-preview-mode="card"] { inset: 8%; border-radius: 4px; }
-.celebrityInfo { display: grid; min-width: 0; gap: 4px; padding: 16px 0 0; align-content: start; }
-.celebrityIdentity { display: grid; min-width: 0; min-height: 100px; align-content: start; gap: 8px; }
+.celebrityCard { display: grid; min-width: 0; align-content: start; gap: var(--space-3); scroll-snap-align: start; container-type: inline-size; }
+/* One frame: the photo or preview fills the rounded media field (PROD-DS-1958). */
+.celebrityMediaBox { position: relative; display: block; aspect-ratio: 1; overflow: hidden; border-radius: var(--radius-collection); background: var(--surface-soft); transition: transform var(--motion-control) var(--motion-easing); }
+.celebrityMediaBox > [data-preview-mode="card"] { inset: 0; border-radius: inherit; }
+.celebrityInfo { display: grid; min-width: 0; gap: var(--space-1); align-content: start; }
+.celebrityIdentity { display: grid; min-width: 0; gap: var(--space-1); }
 .celebrityInfo h3, .celebrityInfo p { min-width: 0; margin: 0; line-height: 1.5; }
 .celebrityInfo h3 { color: var(--ink); font-size: var(--fan-item-title-size); font-weight: var(--fan-item-title-weight); overflow-wrap: anywhere; }
 .celebrityInfo p { font-size: var(--fan-metadata-size); font-weight: 400; }
-.celebrityActions { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 4px 8px; margin-top: 8px; }
-.celebrityFanLink { display: inline-flex; max-width: 100%; min-width: 44px; min-height: 44px; align-items: center; gap: 4px; border-radius: var(--radius-control); color: var(--ink); font-size: var(--fan-metadata-size); font-weight: 550; line-height: 1.5; text-decoration: none; overflow-wrap: anywhere; }
-.celebrityFanLink svg { width: 16px; height: 16px; flex: none; }
-.celebrityFanLink:hover { color: var(--muted); }
-.celebrityFanLink:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
-.socialLinks { display: flex; min-width:0; flex-wrap: wrap; min-height: 44px; align-items: center; justify-content: flex-end; gap: 0; }
-.socialLink { display: inline-flex; flex:0 0 44px; width: 44px; min-width: 44px; height: 44px; min-height: 44px; align-items: center; justify-content: center; border-radius: 999rem; color: var(--muted) !important; transition: background 160ms cubic-bezier(.2,0,0,1); }
-.socialLink img { display: block; width: 20px; height: 20px; object-fit: contain; }
+.celebrityActions { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0 var(--space-2); }
+.celebrityFanLink { display: inline-flex; max-width: 100%; min-width: var(--min-target); min-height: var(--min-target); align-items: center; gap: var(--space-1); border-radius: var(--radius-control); color: var(--ink); font-size: var(--fan-metadata-size); font-weight: 550; line-height: 1.5; text-decoration: none; overflow-wrap: anywhere; }
+.celebrityFanLink svg { width: var(--fan-icon-size); height: var(--fan-icon-size); flex: none; color: var(--muted); }
+.celebrityFanLink:focus-visible { outline: var(--focus-width) solid var(--ink); outline-offset: var(--focus-offset); }
+@media (hover: hover) { .celebrityFanLink:hover { color: var(--muted); } }
+.socialLinks { display: flex; min-width: 0; flex-wrap: wrap; min-height: var(--min-target); align-items: center; justify-content: flex-end; gap: 0; }
+.socialLink { display: inline-flex; flex: 0 0 var(--min-target); width: var(--min-target); height: var(--min-target); align-items: center; justify-content: center; border-radius: var(--radius-pill); color: var(--muted) !important; transition: background-color var(--motion-control) var(--motion-easing), color var(--motion-control) var(--motion-easing); }
+/* Brand marks share one size and one ink; the mark's shape comes from its file. */
+.socialIcon { display: block; width: var(--fan-icon-size); height: var(--fan-icon-size); background: currentColor; mask: var(--social-mark) center / contain no-repeat; }
 
 
 .liveList { display: grid; gap: 12px; }
@@ -326,8 +327,6 @@
   .heroContent { padding: 40px; }
   .heroContent h2 { font-size: 48px; }
   .mobileContextActions { max-width: 400px; }
-  .favoriteSection { padding: 24px; }
-  .celebrityRail { grid-auto-columns: var(--creator-card-size, max(240px, calc((100% - 32px) / 3))); padding-bottom: 0; }
   .liveList[data-paginated="true"] { min-height: calc(112px * 3 + 24px); }
   .liveRow { grid-template-columns: 64px minmax(0,1fr) 128px 44px; grid-template-areas:"portrait details time action"; min-height: 112px; padding: 20px; }
 
@@ -350,7 +349,7 @@
   .desktopNav a:hover, .languageButton:hover, .rowAction:hover, .socialLink:hover { background: var(--surface-soft); color: var(--ink) !important; }
   .carouselControls > button:hover::before { background: rgb(10 10 12 / 68%); }
   .primaryButton:hover { background: linear-gradient(rgb(0 0 0 / 18%), rgb(0 0 0 / 18%)), var(--spectrum-hover); }
-  .celebrityMediaBox:hover { transform: translateY(-2px); border-color: color-mix(in srgb, var(--ink) 18%, transparent); }
+  .celebrityMediaBox:hover { transform: translateY(calc(-1 * var(--space-1) / 2)); }
   .mobileContextActions a:hover, .signInButton:hover, .passportFooter > a:hover { background: linear-gradient(var(--surface-soft), var(--surface-soft)) padding-box, var(--spectrum-hover) border-box; }
   .passportReferenceCard:hover .passportAsset img { transform: translateY(-6px); }
   .ownedPassportLink:hover { transform: translateY(-3px); }
@@ -366,22 +365,11 @@
 
 .fanCount { color: var(--muted); white-space: nowrap; }
 
-.celebrityCarousel { position: relative; container-type: inline-size; --creator-card-size: min(82vw, 288px, 100cqw); }
-@media (min-width: 48rem) { .celebrityCarousel { --creator-card-size: max(240px, calc((100cqw - 32px) / 3)); } }
-.creatorControls { position: absolute; inset: 0 0 auto; height: var(--creator-card-size); pointer-events: none; }
-.creatorControls button { position: absolute; top: 50%; display: grid; width: 44px; height: 44px; padding: 6px; place-items: center; transform: translateY(-50%); border: none; border-radius: 50%; background: transparent; color: #fff; cursor: pointer; pointer-events: auto; }
-.creatorControls button::before { content: ""; position: absolute; inset: 6px; border: 1px solid rgb(255 255 255 / 40%); border-radius: 50%; background: rgb(17 17 17 / 72%); }
-.creatorControls button:first-child { left: 0; }
-.creatorControls button:last-child { right: 0; }
-.creatorControls button svg { position: relative; width: 18px; height: 18px; }
-.creatorControls button:disabled { opacity: .3; cursor: default; }
-.creatorControls button:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+.celebrityCarousel { position: relative; container-type: inline-size; --creator-card-size: min(80cqw, var(--fan-rail-card-mobile)); }
+@media (min-width: 48rem) { .celebrityCarousel { --creator-card-size: max(var(--fan-rail-card-min), calc((100cqw - 2 * var(--space-4)) / 3)); } }
 
-.celebrityFanLink[data-verified="true"] { color: #dc2626; }
-.celebrityFanLink[data-verified="true"] svg { fill: currentColor; }
+.celebrityFanLink[data-verified="true"] svg { color: var(--color-heart); fill: currentColor; }
 
-/* Stable owner-state slots; the two responsive views share their data. */
-.celebrityFanLink { min-inline-size: 6.25rem; }
 .personalizationLoading { min-height: 440px; grid-template-rows: 220px 80px auto; gap: 20px; align-content: start; }
 .personalizationLoading .stateSkeleton { width: 100%; height: 100%; border-radius: var(--radius-control); }
 .stateSkeletonShort { display: block; width: 100%; height: 80px; border-radius: var(--radius-control); background: var(--color-soft); }
@@ -392,11 +380,12 @@
 
 
 .srOnly { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip-path:inset(50%); white-space:nowrap; border:0; }
-.favoriteSkeletonFilters { display:flex; gap:8px; margin-bottom:16px; }
-.favoriteSkeletonChip { flex:0 1 80px; min-width:0; height:44px; border-radius:var(--radius-control); }
-.favoriteSkeletonMedia { width:100%; height:auto; border-radius:12px; }
-.favoriteSkeletonName { width:72%; height:18px; }
-.favoriteSkeletonCount { width:55%; height:18px; }
+.favoriteSkeletonFilters { display:flex; gap:var(--space-2); margin-bottom:var(--space-4); }
+.favoriteSkeletonChip { flex:0 1 calc(5em + 2 * var(--space-4)); min-width:0; height:var(--fan-chip-height); border-radius:var(--radius-pill); }
+.favoriteSkeletonMedia { width:100%; height:auto; border-radius:var(--radius-collection); }
+.favoriteSkeletonName { width:72%; height:var(--space-6); }
+.favoriteSkeletonCount { width:55%; height:var(--space-5); }
+.favoriteSkeletonActions { width:100%; height:var(--min-target); border-radius:var(--radius-control); }
 
 /* Mobile slides share one portrait canvas with information over the photo. */
 .heroCarousel .heroCard { display:block; }
@@ -410,10 +399,6 @@
   .heroCarousel:has([data-kind="welcome"], [data-kind="campaign"]) .heroCard { height:auto; min-height:400px; }
 }
 
-@media (max-width: 767px) {
-  .celebrityMediaBox [data-portrait] { width: 100%; border-radius: 0; }
-  .celebrityMediaBox > [data-preview-mode="card"] { inset: 0; border-radius: inherit; }
-}
 
 .reservationEmpty { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:4px 12px; }
 .reservationEmpty p { margin:0; color:var(--muted); font-size:13px; line-height:1.5; }

@@ -23,7 +23,7 @@ import Image from "next/image";
 import { orderCreatorsForDiscovery } from "../server/content/creator-discovery";
 import Link from "next/link";
 import type { Route } from "next";
-import { Suspense, use, useCallback, useEffect, useRef, useState, type ReactNode } from "react";
+import { Suspense, use, useCallback, useEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import type { HomeQueries } from "./home-query-stream";
 import { gggiHomeBanner } from "../features/home/domain/gggi-home-banner";
 import { useRouter } from "next/navigation";
@@ -322,16 +322,17 @@ function HomeCreators({ celebrities, celebrityLives = [], locale, contentErrors 
     rail.scrollBy({ left: direction * stride * count, behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
   };
 
+  const creatorControls = creatorScroll.previous || creatorScroll.next ? <><button type="button" aria-label={locale === "ko" ? "이전 최애" : translate(locale, localizedMessages.me65af7523189, "Previous creators")} aria-controls="home-creator-rail" disabled={!creatorScroll.previous} onClick={() => moveCreators(-1)}><ChevronLeft /></button><button type="button" aria-label={locale === "ko" ? "다음 최애" : translate(locale, localizedMessages.m0aab33b2d3dc, "Next creators")} aria-controls="home-creator-rail" disabled={!creatorScroll.next} onClick={() => moveCreators(1)}><ChevronRight /></button></> : undefined;
   return (<>          <section id="celebrities" className={`${styles.contentSection} ${styles.favoriteSection}`} aria-labelledby="celebrities-heading">
-            <FanSectionHeader variant="editorial" id="celebrities-heading" title={t.favorites} description={t.favoritesSub} action={favoritesLoading ? undefined : { href: directoryHref, label: locale === "ko" ? "최애 전체 보기" : translate(locale, localizedMessages.meba9f13bd74e, "View all favorites") }} />
+            <FanSectionHeader variant="editorial" id="celebrities-heading" title={t.favorites} controls={favoritesLoading ? undefined : creatorControls} controlsLabel={locale === "ko" ? "최애 목록 이동" : translate(locale, localizedMessages.mdcf61c1a1ca5, "Browse creators")} action={favoritesLoading ? undefined : { href: directoryHref, label: locale === "ko" ? "최애 전체 보기" : translate(locale, localizedMessages.meba9f13bd74e, "View all favorites") }} />
             {!contentErrors.celebrities && celebrities.length > 0 && favoritesLoading ? (
               <div role="status" aria-label={t.myFavoritesLoading} aria-busy="true">
                 <span className={styles.srOnly}>{t.myFavoritesLoading}</span>
-                <div aria-hidden="true">
+                <div aria-hidden="true" className={styles.celebrityCarousel}>
                   <div className={styles.favoriteSkeletonFilters}>{[0, 1, 2, 3].map(index => <span key={index} className={`${styles.stateSkeleton} ${styles.favoriteSkeletonChip}`} />)}</div>
                   <div className={styles.celebrityRail}>{[0, 1, 2].map(index => <div key={index} className={styles.celebrityCard}>
                     <div className={`${styles.celebrityMediaBox} ${styles.stateSkeleton} ${styles.favoriteSkeletonMedia}`} />
-                    <div className={styles.celebrityInfo}><div className={styles.celebrityIdentity}><span className={`${styles.stateSkeleton} ${styles.favoriteSkeletonName}`} /><span className={`${styles.stateSkeleton} ${styles.favoriteSkeletonCount}`} /></div></div>
+                    <div className={styles.celebrityInfo}><div className={styles.celebrityIdentity}><span className={`${styles.stateSkeleton} ${styles.favoriteSkeletonName}`} /><span className={`${styles.stateSkeleton} ${styles.favoriteSkeletonCount}`} /></div><span className={`${styles.stateSkeleton} ${styles.favoriteSkeletonActions}`} /></div>
                   </div>)}</div>
                 </div>
               </div>
@@ -348,7 +349,7 @@ function HomeCreators({ celebrities, celebrityLives = [], locale, contentErrors 
                 return (
                 <article className={styles.celebrityCard} key={celebrity.slug}>
                   <Link className={styles.celebrityMediaBox} href={`${creatorHomeHref(celebrity.slug)}${localeQuery}` as Route} aria-label={locale === "ko" ? `${celebrity.name} ${t.detail}` : translate(locale, localizedMessages.m7c3e6608522c, "View {0} details", [celebrity.name])}>
-                    <Suspense fallback={<CreatorPortrait locale={locale} slug={celebrity.slug} image={celebrity.image} sizes="(max-width: 767px) min(82vw, 288px), 240px" />}>
+                    <Suspense fallback={<CreatorPortrait locale={locale} slug={celebrity.slug} image={celebrity.image} variant="full-bleed" sizes="(max-width: 767px) 288px, 304px" />}>
                       <HomeCreatorPreview celebrity={celebrity} locale={locale} celebrityLives={celebrityLives} previewQuery={previewQuery} />
                     </Suspense>
                   </Link>
@@ -358,7 +359,7 @@ function HomeCreators({ celebrities, celebrityLives = [], locale, contentErrors 
                     <div className={styles.celebrityActions}>
                       <CreatorFanLink slug={celebrity.slug} name={celebrity.name} locale={locale} />
                       <div className={styles.socialLinks} role="group" aria-label={`${celebrity.name} ${locale === "ko" ? "소셜 채널" : translate(locale, localizedMessages.m81fb78c7ebd5, "social channels")}`}>
-                        {celebrity.socialLinks.map((social) => <a className={styles.socialLink} href={social.url} target="_blank" rel="noreferrer" aria-label={`${celebrity.name} ${social.platform === "chzzk" && locale !== "ko" ? "CHZZK" : socialLabel[social.platform]} ${t.social}`} data-social-icon-only="true" data-platform={social.platform} key={social.platform}><Image src={social.platform === "chzzk" ? "/images/guest-home/chzzk.png" : `/images/guest-home/${social.platform}.svg`} alt="" width={20} height={20} aria-hidden="true" /></a>)}
+                        {celebrity.socialLinks.map((social) => <a className={styles.socialLink} href={social.url} target="_blank" rel="noreferrer" aria-label={`${celebrity.name} ${social.platform === "chzzk" && locale !== "ko" ? "CHZZK" : socialLabel[social.platform]} ${t.social}`} data-social-icon-only="true" data-platform={social.platform} key={social.platform}><span className={styles.socialIcon} style={{ "--social-mark": `url(${social.platform === "chzzk" ? "/images/guest-home/chzzk.png" : `/images/guest-home/${social.platform}.svg`})` } as CSSProperties} aria-hidden="true" /></a>)}
                       </div>
                     </div>
                   </div>
@@ -366,12 +367,6 @@ function HomeCreators({ celebrities, celebrityLives = [], locale, contentErrors 
               )})}
               {celebrities.length === 0 ? <p role="status">{t.noCelebrities}</p> : null}
             </div>
-            {creatorScroll.previous || creatorScroll.next ? (
-              <nav className={styles.creatorControls} aria-label={locale === "ko" ? "최애 목록 이동" : translate(locale, localizedMessages.mdcf61c1a1ca5, "Browse creators")}>
-                <button type="button" aria-label={locale === "ko" ? "이전 최애" : translate(locale, localizedMessages.me65af7523189, "Previous creators")} aria-controls="home-creator-rail" disabled={!creatorScroll.previous} onClick={() => moveCreators(-1)}><ChevronLeft /></button>
-                <button type="button" aria-label={locale === "ko" ? "다음 최애" : translate(locale, localizedMessages.m0aab33b2d3dc, "Next creators")} aria-controls="home-creator-rail" disabled={!creatorScroll.next} onClick={() => moveCreators(1)}><ChevronRight /></button>
-              </nav>
-            ) : null}
             </div> : null}
             </ActivePreviewCoordinator>
 
@@ -394,7 +389,7 @@ function HomeCreatorPreview({ celebrity, locale, celebrityLives, previewQuery }:
                         }}
                       />
                     ) : (
-                      <CreatorPortrait locale={locale} slug={celebrity.slug} image={celebrity.image} sizes="(max-width: 767px) min(82vw, 288px), 240px" />
+                      <CreatorPortrait locale={locale} slug={celebrity.slug} image={celebrity.image} variant="full-bleed" sizes="(max-width: 767px) 288px, 304px" />
                     )}</>);
 }
 function HomeUpcoming({ featuredLives, locale, contentErrors = {} }: GuestHomeProps) {
@@ -414,7 +409,7 @@ function HomeUpcoming({ featuredLives, locale, contentErrors = {} }: GuestHomePr
   }, [upcomingPageCount]);
 
   return (<>          <section id="upcoming" className={styles.contentSection} aria-labelledby="upcoming-heading">
-            <FanSectionHeader variant="editorial" id="upcoming-heading" title={t.upcoming} description={t.upcomingSub} action={{ href: `/live${localeQuery}`, label: t.allLive }} />
+            <FanSectionHeader variant="editorial" id="upcoming-heading" title={t.upcoming} action={{ href: `/live${localeQuery}`, label: t.allLive }} />
             {contentErrors.featuredLives ? <ContentLoadError locale={locale} /> : <div className={styles.liveList} data-paginated={upcomingPageCount > 1 ? "true" : undefined}>
               {featuredLives.length > 0 ? visibleFeaturedLives.map((featuredLive) => {
                 return (

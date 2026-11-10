@@ -28,23 +28,27 @@ describe("guest home compact icon-only action spacing", () => {
     expect(declarationBlock(".socialLinks")).toMatch(/\bgap:\s*0\b/);
   });
 
-  it("keeps social actions accessible while using quiet 20px brand marks", () => {
+  it("keeps social actions accessible while using one 20px ink for every brand mark", () => {
     const target = declarationBlock(".socialLink");
-    const icon = declarationBlock(".socialLink img");
+    const icon = declarationBlock(".socialIcon");
+    const globals = readFileSync(resolve(process.cwd(), "app/globals.css"), "utf8");
 
-    expect(target).toMatch(/\bwidth:\s*44px\b/);
-    expect(target).toMatch(/\bmin-width:\s*44px\b/);
-    expect(target).toMatch(/\bheight:\s*44px\b/);
-    expect(target).toMatch(/\bmin-height:\s*44px\b/);
-    expect(icon).toMatch(/\bwidth:\s*20px\b/);
-    expect(icon).toMatch(/\bheight:\s*20px\b/);
+    expect(globals).toMatch(/--min-target:\s*44px/);
+    expect(globals).toMatch(/--fan-icon-size:\s*20px/);
+    expect(target).toMatch(/\bwidth:\s*var\(--min-target\)/);
+    expect(target).toMatch(/\bheight:\s*var\(--min-target\)/);
+    expect(target).toContain("color: var(--muted)");
+    expect(icon).toMatch(/\bwidth:\s*var\(--fan-icon-size\)/);
+    expect(icon).toMatch(/\bheight:\s*var\(--fan-icon-size\)/);
+    expect(icon).toContain("background: currentColor");
+    expect(declarationBlock(".celebrityFanLink svg")).toMatch(/width:\s*var\(--fan-icon-size\)/);
   });
 
   it("keeps identity readable and actions in their own wrapping row", () => {
     expect(declarationBlock(".celebrityInfo h3")).toContain("var(--fan-item-title-size)");
     expect(declarationBlock(".celebrityInfo h3")).not.toContain("nowrap");
     expect(declarationBlock(".celebrityActions")).toContain("flex-wrap: wrap");
-    expect(declarationBlock(".celebrityFanLink")).toMatch(/min-height:\s*44px/);
+    expect(declarationBlock(".celebrityFanLink")).toMatch(/min-height:\s*var\(--min-target\)/);
     expect(declarationBlock(".fanCount")).toContain("var(--muted)");
     expect(liveStatusCss).toContain("prefers-reduced-motion: reduce");
   });

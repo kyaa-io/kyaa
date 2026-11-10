@@ -86,6 +86,13 @@
   --fan-calendar-event-size: 14px;
 
   --min-target: 44px;
+  /* PROD-DS-1958 shared parts: one icon size, one chip height, one heart color. */
+  --fan-icon-size: 20px;
+  --fan-chip-height: var(--min-target);
+  --fan-rail-card-min: 240px;
+  --fan-rail-card-mobile: 288px;
+  --fan-icon-inline-size: 16px;
+  --color-heart: oklch(60% 0.21 2);
   --focus-width: 3px;
   --focus-offset: 3px;
 }

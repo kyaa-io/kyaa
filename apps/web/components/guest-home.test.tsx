@@ -492,7 +492,7 @@ describe("canonical 03 guest home", () => {
       "src",
       "https://assets.example/kara-square.mp4",
     );
-    expect(screen.getByRole("img", { name: "Elina portrait" })).toHaveAttribute("sizes", "(max-width: 767px) min(82vw, 288px), 240px");
+    expect(screen.getByRole("img", { name: "Elina portrait" })).toHaveAttribute("sizes", "(max-width: 767px) 288px, 304px");
   });
 
   it("keeps the desktop context panel available without a toggle and preserves mobile actions", () => {
@@ -944,7 +944,7 @@ it("renders the verified CHZZK channel with its icon and keeps Instagram", () =>
  const link=screen.getByRole("link",{name:"정제니 치지직 공식 채널"});
  expect(link).toHaveAttribute("href",socialLinks[1]!.url);
  expect(link).toHaveAttribute("target","_blank");
- expect(link.querySelector("img")?.getAttribute("src")).toContain("chzzk.png");
+ expect(link.querySelector("span")?.getAttribute("style")).toContain("chzzk.png");
  expect(screen.getByRole("link",{name:"정제니 Instagram 공식 채널"})).toBeInTheDocument();
  expect(screen.queryByRole("link",{name:/정제니 TikTok/})).not.toBeInTheDocument();
 });

@@ -19,4 +19,11 @@ describe("shared fan headings", () => {
     expect(container.querySelector("p")).toBeNull();
     expect(screen.queryByRole("link")).toBeNull();
   });
+  it("puts rail controls in the title row after the action, outside the content", () => {
+    const { container } = render(<FanSectionHeader title="당신의 최애" action={{ href: "/celebrities", label: "최애 전체 보기" }} controlsLabel="최애 목록 이동" controls={<><button type="button">이전 최애</button><button type="button">다음 최애</button></>} />);
+    const group = screen.getByRole("group", { name: "최애 목록 이동" });
+    expect(group.parentElement).toBe(screen.getByRole("link", { name: "최애 전체 보기" }).parentElement);
+    expect(group.previousElementSibling).toBe(screen.getByRole("link", { name: "최애 전체 보기" }));
+    expect(container.querySelectorAll("button")).toHaveLength(2);
+  });
 });
