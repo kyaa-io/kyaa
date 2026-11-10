@@ -11,3 +11,14 @@
 .loading { min-height: 170px; }
 
 .label { padding-inline: var(--space-2); }
+
+/* PC(≥1024): 찐팬·크리에이터를 양옆 두 단으로 놓는다. 카드는 주변 홈 콘텐츠와 같은 폭을 지키고, 각 단은 읽기 폭 360px(390 카드와 같은 행 폭)에서 멈춘다.
+   머리·전체 보기 줄은 두 단을 합친 폭(머리)과 카드 전폭(전체 보기 위 선)을 쓴다. 390 이하는 이 규칙에 닿지 않는다. */
+@media (min-width: 64rem) {
+  .card { grid-template-columns: minmax(0, 1fr) minmax(0, 360px) var(--space-12) minmax(0, 360px) minmax(0, 1fr); }
+  .head { grid-column: 2 / 5; padding-inline: var(--space-2); }
+  .card > section:nth-of-type(1) { grid-column: 2; }
+  .card > section:nth-of-type(2) { grid-column: 4; }
+  .creators { margin-top: 0; }
+  .all { grid-column: 1 / -1; }
+}
