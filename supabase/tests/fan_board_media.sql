@@ -24,8 +24,9 @@ begin
  assert(select array_agg(id order by position)from public.content_assets where post_id=photo_post_id and id=any(ids[1:10]))=ids[1:10];
  assert(public.save_fan_post(owner,'fanboard-media-qa',null,'Ten photos','public',ids[1:10],null,key)->>'replayed')::boolean;
  perform pg_temp.expect_failure(format('select public.save_fan_post(%L,%L,%L,%L,%L,%L::uuid[],2,null)',owner,'fanboard-media-qa',photo_post_id,'Stale','public',ids[1:10]),'FAN_WEB_CONFLICT');
- for i in 1..5 loop a:=extensions.gen_random_uuid();insert into public.content_assets(id,app_user_id,celebrity_id,storage_path,byte_size,width,height,sha256,uploaded_at)values(a,owner,legacy,owner||'/'||a||'.webp',128,20,10,repeat('b',64),now());legacy_ids:=array_append(legacy_ids,a);end loop;
- perform public.save_fan_post(owner,'legacy-media-qa',null,'Five brand','public',legacy_ids,null,extensions.gen_random_uuid());
+ for i in 1..11 loop a:=extensions.gen_random_uuid();insert into public.content_assets(id,app_user_id,celebrity_id,storage_path,byte_size,width,height,sha256,uploaded_at)values(a,owner,legacy,owner||'/'||a||'.webp',128,20,10,repeat('b',64),now());legacy_ids:=array_append(legacy_ids,a);end loop;
+ perform pg_temp.expect_failure(format('select public.save_fan_post(%L,%L,null,%L,%L,%L::uuid[],null,%L)',owner,'legacy-media-qa','Eleven brand','public',legacy_ids,extensions.gen_random_uuid()),'FAN_WEB_INVALID_INPUT');
+ perform public.save_fan_post(owner,'legacy-media-qa',null,'Ten brand','public',legacy_ids[1:10],null,extensions.gen_random_uuid());
  result:=public.reserve_owned_mobile_media(owner,'video','fan_post','video/mp4',128,extensions.gen_random_uuid());video:=(result->>'assetId')::uuid;
  result:=public.reserve_owned_mobile_media(owner,'video','fan_post','video/quicktime',128,extensions.gen_random_uuid());other_video:=(result->>'assetId')::uuid;
  result:=public.reserve_owned_mobile_media(owner,'video','fan_post','video/mp4',128,extensions.gen_random_uuid());pending_video:=(result->>'assetId')::uuid;
