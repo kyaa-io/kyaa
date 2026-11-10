@@ -86,7 +86,7 @@ it('r6 H1: the attendance item names the fan\'s own favorite page, and no fixed 
 
 it('shows the full nickname accessibly in the truncated account menu and profile', async()=>{
  state.wallet=wallet(true);render(<GroupHeaderAccount locale='ko' languageHref='/'/>);open();
- const item=await screen.findByRole('menuitem',{name:'아리가또아리가또아리가또아리가또'});
+ const item=await screen.findByRole('menuitem',{name:'내 프로필 · 아리가또아리가또아리가또아리가또'});
  expect(item.querySelector('span:last-child')).toHaveStyle({textOverflow:'ellipsis',whiteSpace:'nowrap'});
  fireEvent.click(item);
  expect(await screen.findByRole('dialog')).toHaveTextContent('아리가또아리가또아리가또아리가또');
