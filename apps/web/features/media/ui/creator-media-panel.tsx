@@ -101,7 +101,7 @@ export function CreatorMediaPanel({ slug, locale, channelId = slug === CHZZK_CRE
       const label = item.title ? item.title.slice(0, 120) : `${c[item.kind]} · ${new Date(item.date).toLocaleDateString(locale)}`;
       const external = { target: internal ? undefined : "_blank", rel: internal ? undefined : "noopener noreferrer", "data-outbound-kind": internal ? undefined : "external" };
       const portrait = item.kind !== "photos" && !youtubeVideoId(item.href);
-      return <li key={item.id} onClickCapture={onVideoSelect&&item.kind!=="photos"?event=>{event.preventDefault();event.stopPropagation();onVideoSelect(item);}:undefined} data-media-kind={item.kind} data-media-tile={preview && item.kind === "videos" && portrait ? "portrait" : "square"} data-content-asset-card={item.asset ? true : undefined}>
+      return <li key={item.id} data-row onClickCapture={onVideoSelect&&item.kind!=="photos"?event=>{event.preventDefault();event.stopPropagation();onVideoSelect(item);}:undefined} data-media-kind={item.kind} data-media-tile={preview && item.kind === "videos" && portrait ? "portrait" : "square"} data-content-asset-card={item.asset ? true : undefined}>
         {item.asset ? <>{thumbnail}<a href={href} aria-label={label} {...external} /></> : <a href={href} aria-label={item.kind === "photos" ? label : `${playLabels[locale]} · ${label}`} {...external}>{thumbnail}{item.kind !== "photos" && <span className={mediaStyles.playIcon}><Play size={24} fill="currentColor" aria-hidden="true" /></span>}</a>}
       </li>;
     }

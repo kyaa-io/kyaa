@@ -25,7 +25,7 @@ import { LiveTimeIndicator } from "@/features/live/ui/live-time-indicator";
 import { DailyCheckin } from "@/features/community-stamps/ui/daily-checkin";
 import type { PublishedCelebrity, PublishedCelebrityLive, ContentLocale } from "@/server/content/content-domain";
 import styles from "./calendar.module.css";
-import { Check } from "lucide-react";
+import { Check } from "@/components/fan-ui/fan-icons";
 type AsyncState<T> = { status: "idle" | "loading" } | { status: "ready"; data:T } | {status:"error"};
 export const miniCalendarCopy = {
 ko: { calendarTitle:"LIVE 일정", calendarOpen:"캘린더 크게 보기", calendarLoading:"LIVE 일정을 확인하고 있어요", calendarError:"일정을 불러오지 못했어요.", calendarUpcoming:"다가오는 일정", calendarUpcomingEmpty:"이번 달에는 예정된 LIVE가 없어요.", previousMonth:"이전 달", nextMonth:"다음 달", weekdays:["일","월","화","수","목","금","토"] },
