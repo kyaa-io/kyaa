@@ -178,7 +178,9 @@ function ReactionActionForOwner({ slug, locale, variant, showRewardDialog, ready
 
   const verificationHref = result ? `/c/${slug}/verify?locale=${locale}&source=reaction&reactionId=${result.reactionId}` : `/c/${slug}/verify?locale=${locale}`;
   const checking = authenticated && checkState === "checking";
-  return <section className={variant === "card" ? styles.card : variant === "header" ? styles.header : styles.compact} id="first-reaction" aria-label={variant !== "card" ? t.title : undefined} aria-labelledby={variant === "card" ? "first-reaction-title" : undefined} data-reaction-complete={actionState === "done" ? "true" : undefined}>
+  const sectionClass = variant === "compact" ? styles.compact : variant === "header" ? styles.pill : styles.card;
+  const sectionLabel = variant === "compact" || variant === "header" ? t.title : undefined;
+  return <section className={sectionClass} id="first-reaction" aria-label={sectionLabel} aria-labelledby={variant === "card" ? "first-reaction-title" : undefined} data-reaction-complete={actionState === "done" ? "true" : undefined}>
     {variant === "card" && <><span className={styles.icon} aria-hidden="true"><Heart /></span>
     <div className={styles.copy}><h2 id="first-reaction-title">{t.title}</h2><span>{t.body}</span></div></>}
     {!ready ? <button disabled><Heart />{t.working}</button>
