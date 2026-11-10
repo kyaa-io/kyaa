@@ -40,7 +40,7 @@
 .heroCarousel[data-has-controls="true"] { margin-bottom: 44px; }
 /* 홈 배너 규격(2026-11-09 사용자 피드백): 본문 폭 안, 390 높이 200, 768+ 폭의 28%(380 상한). 왼쪽 글·오른쪽 그림은 home-hero-banner.module.css. */
 .heroViewport { position: relative; width: 100%; overflow: hidden; height: 200px; border-radius: 20px; background: var(--ink); touch-action: pan-y pinch-zoom; }
-.heroShine { position: absolute; inset: 0; z-index: 2; border-radius: inherit; box-shadow: inset 0 0 0 1.5px var(--color-accent); pointer-events: none; }
+.heroShine { position: absolute; inset: 0; z-index: 2; border-radius: inherit; box-shadow: inset 0 0 0 1px var(--color-line); pointer-events: none; }
 .heroShine::before { content: none; }
 .heroCarousel[data-motion-visible="true"][data-shine-paused="false"] .heroShine::before { animation-play-state: running; }
 @keyframes heroShineSpin { to { transform: rotate(1turn); } }

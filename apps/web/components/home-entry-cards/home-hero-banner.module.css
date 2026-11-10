@@ -1,12 +1,11 @@
 /*
  * 홈 배너 한 칸의 규격(2026-11-09 사용자 피드백 "배너가 너무 크다", 벤치마크 Weverse 홈).
  * 칸 크기는 캐러셀 틀이 정한다(guest-home.module.css .heroViewport: 390 높이 200, 768+ 폭의 28%·380 상한).
- * 이 파일은 칸 안의 배치만 맡는다: 왼쪽 글, 오른쪽 안쪽에 둔 그림(사진으로 칸을 채우지 않는다).
+ * 이 파일은 칸 안의 배치만 맡는다: 왼쪽 글, 오른쪽 그림. 그림은 칸 높이 전체·오른쪽 가장자리까지 채운다(2026-11-10 22:47 "배너가 꽉 안 참").
  * 종류(data-kind)는 바탕색과 그림 자르기만 다르다.
  */
 .banner {
-  --pic-gap: var(--space-4);
-  --pic-w: 42%;
+  --pic-w: 50%;
   position: relative;
   width: 100%;
   height: 100%;
@@ -14,15 +13,14 @@
   background: var(--color-surface);
   color: var(--color-ink);
 }
-.banner:not([data-kind="campaign"])::after { content: ""; position: absolute; inset: 0; border: 1px solid var(--color-line); border-radius: inherit; pointer-events: none; }
+/* 테두리는 캐러셀 틀의 옅은 중립 선 하나뿐이다(guest-home.module.css .heroShine). 여기서 한 번 더 두르지 않는다. */
 
-/* 그림: 칸 안쪽 오른쪽에 둔다. 위·아래·오른쪽 여백이 같다. */
+/* 그림: 칸 높이 전체, 오른쪽 가장자리까지(여백·안쪽 박스 없음). 모서리는 틀이 자른다. */
 .image, .fullImage {
   position: absolute;
-  inset: var(--pic-gap) var(--pic-gap) var(--pic-gap) auto;
-  width: calc(var(--pic-w) - var(--pic-gap));
+  inset: 0 0 0 auto;
+  width: var(--pic-w);
   overflow: hidden;
-  border-radius: var(--radius-card);
 }
 .desktopImage { position: absolute; inset: 0; }
 .overlay, .mobileBackdrop { display: none; }
@@ -37,7 +35,7 @@
   justify-content: center;
   gap: var(--space-3);
   width: calc(100% - var(--pic-w));
-  padding: var(--space-6) var(--space-4) var(--space-6) clamp(24px, 4vw, 56px);
+  padding: var(--space-6) var(--space-4) var(--space-6) clamp(24px, 3vw, 40px);
 }
 .eyebrow { display: flex; align-items: center; min-height: 20px; color: var(--color-accent); font-size: var(--fan-metadata-size); font-weight: var(--fan-item-title-weight); }
 .eyebrow > span { display: inline-flex; align-items: center; gap: var(--space-2); }
@@ -93,7 +91,7 @@
 
 /* 태블릿: 칸이 낮아져 글 열과 그림 비율을 조금 줄인다. */
 @media (max-width: 1023px) {
-  .banner { --pic-w: 40%; }
+  .banner { --pic-w: 46%; }
   .description { font-size: var(--fan-description-size); }
 }
 
@@ -103,7 +101,7 @@
   .mobileBackdrop { position: absolute; inset: 0; display: block; overflow: hidden; pointer-events: none; }
   .mobileBackdrop :is(picture, img) { display: block; width: 100%; height: 100%; }
   .mobileBackdrop img { object-fit: cover !important; object-position: center !important; /* design-lint-disable S2 -- User 2026-11-10: extend the photo backdrop; DESIGN approved source dd737. */ filter: blur(18px); transform: scale(1.1); }
-  .image, .fullImage { inset: 0; width: 100%; border-radius: 0; }
+  .image, .fullImage { inset: 0; width: 100%; }
   .image img, .fullImage img { object-fit: contain; object-position: center; }
   .overlay { position: absolute; inset: 0; display: block; /* design-lint-disable S1 -- User 2026-11-10: preserve photo text readability. */ background: linear-gradient(180deg, transparent 30%, var(--color-home-hero-shade) 100%); pointer-events: none; }
   .copy { inset: auto 0 0; width: 100%; align-items: center; gap: var(--space-1); padding: var(--space-4); text-align: center; }

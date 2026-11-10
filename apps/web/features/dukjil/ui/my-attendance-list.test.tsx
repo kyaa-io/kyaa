@@ -126,3 +126,10 @@ it("sends a joined page without a passport straight to its entry review", () => 
   const link = screen.getByRole("link", { name: "입국 심사" });
   expect(link.getAttribute("href")).toBe("/c/ive/verify?locale=ko");
 });
+
+it("modal grid keeps a fixed 72px track so avatars sit close together", async () => {
+  const { readFileSync } = await import("node:fs");
+  const css = readFileSync("features/dukjil/ui/attendance-avatars.module.css", "utf8");
+  expect(css).toMatch(/\.list \{[^}]*grid-template-columns: repeat\(auto-fill, 72px\)/);
+  expect(css).toMatch(/\.list \{[^}]*gap: var\(--space-4\) var\(--space-2\)/);
+});
