@@ -33,6 +33,7 @@ import { AuthenticatedMedia } from "@/features/content-safety/ui/authenticated-m
 import { waveMediaCopy } from "@/i18n/catalogs/features__fanpage__wave-media";
 import { ContentAssetImage } from "@/features/content-safety/ui/content-asset";
 import { useContentMutation } from "@/features/content-safety/ui/use-content-mutation";
+import { PassportRequiredDialog } from "@/features/content-safety/ui/passport-required-dialog";
 import { contentCopy } from "@/i18n/catalogs/features__fan_posts__ui";
 import type { AppLocale } from "@/i18n/locales";
 import boardStyles from "./board-detail.module.css";
@@ -127,6 +128,6 @@ export function PostCard({ post, locale, onChanged, onDeleted, detail = false, r
     </div>}
     {deleting&&<SourceConfirmDialog sourceId={deleteUncertain?'jU13c':'fNe6I'} title={deleteUncertain?sourceDeleteResultCopy(locale).title:locale==='ko'?'게시글을 삭제할까요?':copy.deleteConfirm} cancelLabel={copy.cancel} confirmLabel={deleteUncertain?sourceDeleteResultCopy(locale).check:copy.delete} closeLabel={copy.cancel} pending={mutation.busy} danger={!deleteUncertain} onClose={()=>setDeleting(false)} onConfirm={()=>void remove()}><p>{post.body.split('\n')[0]}</p>{deleteUncertain&&<p>{sourceDeleteResultCopy(locale).body}</p>}</SourceConfirmDialog>}
     {editBlocked && <p className={styles.error} role="alert">{editorText(locale, "bodyDocUnavailable")}</p>}
-    {mutation.error && <p className={styles.error} role="alert">{mutation.error}</p>}
+    {mutation.error && mutation.failure !== "passport" && <p className={styles.error} role="alert">{mutation.error}</p>}<PassportRequiredDialog failure={mutation.failure} slug={post.celebritySlug} locale={locale} onClose={mutation.dismiss} />
   </article>;
 }
