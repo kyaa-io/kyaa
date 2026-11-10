@@ -154,7 +154,7 @@ it('DUO: opens exchange only from its tile, restores focus on Escape and makes n
  duoData();render(<GroupBenefitsScreen locale='ko'/>);
  const trigger=await screen.findByRole('button',{name:'교환'});await waitFor(()=>expect(trigger).toBeEnabled());
  expect(screen.queryByRole('dialog')).toBeNull();trigger.focus();fireEvent.click(trigger);
- const dialog=await screen.findByRole('dialog',{name:'포인트'});
+ const dialog=await screen.findByRole('dialog',{name:'교환하기'});
  expect(within(dialog).getByRole('group',{name:'수량'})).toHaveTextContent('1장');
  expect(within(dialog).getByRole('button',{name:'교환하기'})).toBeInTheDocument();
  fireEvent.keyDown(dialog,{key:'Escape'});await waitFor(()=>expect(screen.queryByRole('dialog')).toBeNull());
