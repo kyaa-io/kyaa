@@ -22,7 +22,7 @@ const requestSchema = z.object({
 }).strict().refine(input => !input.images?.length || input.text.length <= 1024 * input.images.length)
   .refine(input => {
     const wave = input.site === "wave";
-    if (input.site === "dev") return input.text.startsWith("[DEV 반영] kyaa ") && !input.images?.length && (input.text.match(/https?:\/\/\S+/g) ?? []).every(link => link.startsWith("https://dev.kyaa.io/"));
+    if (input.site === "dev") return input.text.startsWith("[DEV 반영] kyaa ") && (input.text.match(/https?:\/\/\S+/g) ?? []).every(link => link.startsWith("https://dev.kyaa.io/"));
     if (input.text.startsWith("[DEV 반영]") || input.text.includes("https://dev.kyaa.io/")) return false;
     return input.text.startsWith("✅ kyaa wave ") === wave &&
       (input.text.match(/https?:\/\/\S+/g) ?? []).every(link => link.startsWith("https://kyaawave.com/") === wave);

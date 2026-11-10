@@ -71,7 +71,7 @@ full-file verification replace Vercel status as the release evidence. See
 
 ## DEV 자동 안내
 
-AWS dev 배포의 `release` 작업이 성공하면 같은 실행의 `DEV deployment notice` 작업이 `[DEV 반영]` 제목과 `https://dev.kyaa.io` 확인 링크를 Kyaa_Bug_Report 방에 전송한다. 전송 전에 GitHub의 `AWS dev` 성공 기록·정확한 실행/커밋·실제 dev health revision을 다시 확인한다. DEV 알림은 직전 성공한 DEV 배포부터 현재 배포 커밋까지 추가된 변경 안내를 모아 사용하며 안내가 없는 재배포는 현재 버전 반영 문구로 표시한다. 운영의 누적 안내 기준은 바꾸지 않는다.
+AWS dev 배포의 `release` 작업이 성공하면 같은 실행의 `DEV deployment notice` 작업이 `[DEV 반영]` 제목과 `https://dev.kyaa.io` 확인 링크를 Kyaa_Bug_Report 방에 전송한다. 전송 전에 GitHub의 `AWS dev` 성공 기록·정확한 실행/커밋·실제 dev health revision을 다시 확인한다. DEV 알림은 직전 성공한 DEV 배포부터 현재 배포 커밋까지 추가된 변경 안내를 모아 사용하며 안내가 없는 재배포는 현재 버전 반영 문구로 표시한다. 운영의 누적 안내 기준은 바꾸지 않는다. 안내의 `images`도 운영과 같은 경로·장수·캡션 규칙으로 함께 보내며, 사진이 10장을 넘거나 사진당 1,024자를 넘으면 안내 단위로 나눠 보낸다. 안내 하나만으로도 넘치면 그 안내의 변경을 앞에서부터 담고 나머지를 `외 N건`으로 줄인다. 앞선 메시지가 전송된 뒤 다음 메시지가 실패하면 결과 불명으로 남기고 다시 보내지 않는다.
 
 전송 예약과 결과는 `Telegram deployment notice · DEV` check에 별도로 남는다. 같은 deployment의 성공 receipt는 재전송하지 않으며, 결과 불명은 `action_required`로 남기고 자동 재시도를 막는다. 해당 방과 check를 확인하지 않고 receipt를 삭제하거나 재실행하지 않는다. 전송 실패는 서비스 배포 성공과 별개로 표시한다.
 
