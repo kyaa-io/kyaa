@@ -203,6 +203,10 @@ img {
 :root { --shell-max-width: 1440px; --shell-inset: 16px; }
 @media (min-width: 48rem) { :root { --shell-inset: 32px; } }
 @media (min-width: 80rem) { :root { --shell-inset: 40px; } }
+/* Responsive system(DESIGN.md "Responsive system" R1~R12): 구간 <768 / 768~1023 / 1024~1279 / >=1280, 새 CSS 는 48rem·64rem·80rem 범위 문법만. */
+:root { --rail-narrow: 288px; --rail-md: 360px; --rail-wide: 384px; --band-read: 720px; --band-list: 920px; --band-full: 1440px; --col-gap: 24px; --section-gap: 32px; }
+@media (width >= 48rem) { :root { --section-gap: 48px; } }
+@media (width >= 80rem) { :root { --col-gap: 32px; } }
 @media (min-width: 64rem) { :root { --fan-action-primary-height: 48px; } }
 
 /* Pencil UI faces: the 3MB TTFs took 30s on 4G and starved scripts and images. Each weight is two WOFF files made by

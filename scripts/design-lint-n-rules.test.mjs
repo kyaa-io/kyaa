@@ -97,6 +97,10 @@ const CASES = {
     () => css('.a{color:#7c3aed;background:rgb(124 58 237 / .2);border-color:hsl(270 60% 50%);outline-color:oklch(60% .2 300)}'),
     () => css('.a{color:var(--color-accent);background:#fff0f6;border-color:#f4c3d7;outline-color:oklch(62% .2 5);fill:#d11b62}'),
   ],
+  N32: [
+    () => css('@media (max-width: 767px){.a{gap:8px}} @media(max-width:1023px){.b{gap:8px}}'),
+    () => css('.a{max-width:767px} @media (width >= 48rem){.b{gap:8px}} @media (min-width:1024px){.c{gap:8px}}'),
+  ],
   N30: [
     () => css('.chip{border-radius:999px;background:var(--color-ink);color:#fff} .dot{border-radius:var(--radius-pill);background:#17171b}'),
     () => css('.chip{border-radius:999px;background:var(--color-surface);border:1px solid var(--color-line)} .on{border-radius:999px;background:var(--color-accent-soft)} .btn{border-radius:8px;background:var(--color-ink)} .veil{border-radius:999px;background:rgb(0 0 0 / .5)}'),
