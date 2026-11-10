@@ -26,6 +26,9 @@ describe("Notice rich-text contract", () => {
     expect(() => parseNoticeDocument(doc("/api/content-assets/../secret"))).toThrow();
     expect(parseNoticeDocument(doc("/api/public/notice-media/11111111-1111-4111-8111-111111111111"))).toBeTruthy();
     expect(() => parseNoticeDocument(doc("/api/public/notice-media/../secret"))).toThrow();
+    expect(parseNoticeDocument(doc("/images/notices/notice-update-name.webp"))).toBeTruthy();
+    expect(() => parseNoticeDocument(doc("/images/notices/../secret.webp"))).toThrow();
+    expect(() => parseNoticeDocument(doc("/images/other/a.webp"))).toThrow();
   });
   it("accepts the supported Tiptap document set", () => {
     expect(parseNoticeDocument({

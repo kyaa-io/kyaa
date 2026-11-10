@@ -7,7 +7,8 @@ import { bypassImageOptimization } from "@/components/fan-ui/public-image-policy
 import { homeGalleryCopy, type HomeGalleryPhoto, type HomeShort } from "@/features/home/domain/home-gallery";
 import { FanSectionLink } from "@/components/fan-ui/fan-section-link";
 import { HomeShorts } from "./home-shorts";
-import { homeNoticeCategoryLabels, type HomeNoticeSummary } from "@/features/home/domain/home-notice";
+import type { HomeNoticeSummary } from "@/features/home/domain/home-notice";
+import { NoticeCard, formatHomeNoticeDate } from "./notice-card";
 import { allocateGalleryColumns, homeGalleryLayouts } from "./home-gallery-layout";
 import type { AppLocale } from "@/i18n/locales";
 import styles from "./home-placeholder-blocks.module.css";
@@ -33,10 +34,7 @@ const viewAll: Record<AppLocale, string> = {
   id: "Lihat semua", vi: "Xem tất cả", th: "ดูทั้งหมด", pt: "Ver tudo", fr: "Tout voir", ru: "Смотреть все",
 };
 
-export function formatHomeNoticeDate(value: string, locale: AppLocale) {
-  const parts = new Intl.DateTimeFormat(locale, { calendar: "gregory", year: "numeric", month: "2-digit", day: "2-digit", timeZone: "Asia/Seoul" }).formatToParts(new Date(value));
-  return ["year", "month", "day"].map(type => parts.find(part => part.type === type)?.value).join(".");
-}
+export { formatHomeNoticeDate };
 
 /** 최대 5개의 공지를 표시한다. */
 export function HomeNotices({ locale, notices }: { locale: AppLocale; notices: readonly HomeNoticeSummary[] | "loading" | "error" }) {
@@ -44,18 +42,9 @@ export function HomeNotices({ locale, notices }: { locale: AppLocale; notices: r
   if (!notices.length) return <HomeNoticesPlaceholder locale={locale} state="empty" />;
   const v = values[locale];
   const rows = notices.slice(0, 5);
-  return <section className={styles.block} aria-labelledby="home-notices-heading" data-home-block="notices">
-    <FanSectionHeader variant="editorial" id="home-notices-heading" title={v[0]!} action={{ href: `/notices?locale=${locale}`, label: viewAll[locale] }} />
-    <ul className={styles.notices}>
-      {rows.map(item => <li key={item.id} className={styles.notice} data-row="notice">
-        <Link className={styles.noticeLink} href={`${item.linkHref ?? `/notices/${item.slug}`}?locale=${locale}` as Route}>
-          <span className={styles.noticeCategory}>{homeNoticeCategoryLabels[locale][item.category]}</span>
-          <span className={styles.noticeTitle}>{item.title}</span>
-          <time className={styles.noticeDate} dateTime={item.publishedAt}>{formatHomeNoticeDate(item.publishedAt, locale)}</time>
-        </Link>
-      </li>)}
-    </ul>
-  </section>;
+  return <div className={styles.block}>
+    <NoticeCard locale={locale} items={rows} blockName="notices" headingId="home-notices-heading" title={v[0]!} footer={{ href: `/notices?locale=${locale}`, label: viewAll[locale] }} />
+  </div>;
 }
 
 /** Only a read that found nothing says "아직 공지 없음". */

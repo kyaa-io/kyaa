@@ -11,7 +11,7 @@ const rows = homeNoticePageSchema.parse(linked).items;
 describe("home notice linked fan page", () => {
   it("opens the linked fan page from the home row, and the notice detail without a link", () => {
     render(<HomeNotices locale="ko" notices={rows} />);
-    expect(screen.getAllByRole("link").map(link => link.getAttribute("href"))).toEqual(["/notices?locale=ko", "/r8data-linked?locale=ko", "/notices/r8-plain?locale=ko"]);
+    expect(screen.getAllByRole("link").map(link => link.getAttribute("href"))).toEqual(["/r8data-linked?locale=ko", "/notices/r8-plain?locale=ko", "/notices?locale=ko"]);
   });
   it("does the same on /notices", () => {
     render(<HomeNoticeListScreen locale="en" items={rows} nextCursor={null} />);
