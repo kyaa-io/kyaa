@@ -3,7 +3,7 @@ import { kstMidnightAfter } from "@/server/kst-midnight";
 import { z } from "zod";
 import { AuthError } from "@/features/auth/domain/auth-errors";
 import {
-  HOME_CREATOR_METRICS, HOME_FAN_METRICS, HOME_GUEST_LIMIT, HOME_RANKING_DEFAULT_LIMIT, HOME_RANKING_LIMIT, PAGE_RANKING_METRICS, RANKING_PERIODS, activeJjinfanChallengesSchema, creatorRankingSchema, homeCreatorRankingSchema, homeFanRankingSchema,
+  HOME_CREATOR_METRICS, HOME_FAN_METRICS, HOME_GUEST_LIMIT, HOME_RANKING_PERIODS, HOME_RANKING_DEFAULT_LIMIT, HOME_RANKING_LIMIT, PAGE_RANKING_METRICS, RANKING_PERIODS, activeJjinfanChallengesSchema, creatorRankingSchema, homeCreatorRankingSchema, homeFanRankingSchema,
   jjinfanChallengeSchema, pageRankingSchema, platformFanRankingSchema, homeFanProfileLocatorSchema,
 } from "@/features/rankings/domain/types";
 import { creatorSlugSchema } from "@/features/passport/domain/dukjil-types";
@@ -186,19 +186,27 @@ export function createRankingsHandlers(deps: RankingsDependencies) {
       const kind = z.enum(["fans", "creators"]).parse(one(request, "kind") ?? "fans");
       const limit = z.coerce.number().int().min(1).max(HOME_RANKING_LIMIT).parse(one(request, "limit") ?? String(HOME_RANKING_DEFAULT_LIMIT));
       const lang = locale(request);
+      // period=day|week ranks hearts gained today or over the last seven days (20261221010000); the default is the cumulative list. A period list is by hearts only.
+      const period = z.enum(HOME_RANKING_PERIODS).parse(one(request, "period") ?? "all");
       if (kind === "creators") {
-        const metric = z.enum(HOME_CREATOR_METRICS).parse(one(request, "metric") ?? "fans");
+        const metric = z.enum(HOME_CREATOR_METRICS).parse(period === "all" ? one(request, "metric") ?? "fans" : "hearts");
         const member = await viewer(request);
-        const raw = obj(await readHome("read_home_creator_ranking_v2", { p_locale: lang, p_metric: metric, p_limit: member ? limit : Math.min(limit, 10) }));
+        const creatorLimit = member ? limit : Math.min(limit, 10);
+        const raw = obj(period === "all"
+          ? await readHome("read_home_creator_ranking_v2", { p_locale: lang, p_metric: metric, p_limit: creatorLimit })
+          : await readHome("read_home_creator_ranking_period", { p_locale: lang, p_period: period, p_limit: creatorLimit }));
         const rows = arr(raw.rows).map((row) => {
           const r = obj(row);
           return { rank: r.rank, slug: r.slug, name: r.name, imageUrl: r.imageUrl ?? null, score: r.score, hearts: r.hearts, points: r.points ?? null, fans: r.fans, liveNow: r.liveNow === true, isNew: r.isNew === true, challenge: r.challenge === true, delta: r.delta ?? null, weekGain: r.weekGain ?? null, dayGain: r.dayGain ?? null };
         });
         return Response.json(checked(homeCreatorRankingSchema, { ...head(raw, metric), weekGainDays: raw.weekGainDays ?? null, rows }), { headers: listHeaders(request, member) });
       }
-      const metric = z.enum(HOME_FAN_METRICS).parse(one(request, "metric") ?? "hearts");
+      const metric = z.enum(HOME_FAN_METRICS).parse(period === "all" ? one(request, "metric") ?? "hearts" : "hearts");
       const appUserId = await viewer(request);
-      const raw = obj(await readHome("read_home_fan_ranking_v2", { p_viewer: appUserId, p_metric: metric, p_limit: appUserId ? limit : Math.min(limit, 10) }));
+      const fanLimit = appUserId ? limit : Math.min(limit, 10);
+      const raw = obj(period === "all"
+        ? await readHome("read_home_fan_ranking_v2", { p_viewer: appUserId, p_metric: metric, p_limit: fanLimit })
+        : await readHome("read_home_fan_ranking_period", { p_viewer: appUserId, p_period: period, p_limit: fanLimit }));
       const me = obj(raw.me);
       const rows = arr(raw.rows).map((row) => {
         const r = obj(row);

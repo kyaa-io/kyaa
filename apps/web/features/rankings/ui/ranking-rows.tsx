@@ -1,9 +1,8 @@
 "use client";
 import type { Route } from "next";
-import Link from "next/link";
-import { Fragment, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
+import { Fragment, useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
 
-import { ChevronDown, ChevronUp, Heart, Minus } from "@/components/fan-ui/fan-icons";
+import { ChevronDown, ChevronUp, Heart } from "@/components/fan-ui/fan-icons";
 import { FanIcon } from "@/components/fan-ui/fan-icon";
 import { ProfileModal, type ProfileModalPerson } from "@/features/group-social/profile-modal";
 import { CreatorAvatar } from "@/components/fan-ui/creator-avatar";
@@ -16,8 +15,7 @@ import { fanLoginHref } from "@/components/login-href";
 import { Avatar } from "@/features/profile/ui/avatar";
 import type { AppLocale } from "@/i18n/locales";
 import {
-  HOME_CREATOR_METRICS, HOME_FAN_METRICS,
-  type HomeCreatorMetric, type HomeCreatorRanking, type HomeCreatorRankingRow, type HomeFanMetric, type HomeFanRanking, type HomeFanRankingRow,
+  type HomeRankingPeriod, type HomeCreatorMetric, type HomeCreatorRanking, type HomeCreatorRankingRow, type HomeFanMetric, type HomeFanRanking, type HomeFanRankingRow,
 } from "../domain/types";
 import { fanAvatar } from "./rankings-content";
 import { rankingsText } from "./rankings-copy";
@@ -26,27 +24,12 @@ import { useRankExpand } from "./use-rank-expand";
 import { useRankingResource } from "./use-ranking-resource";
 import styles from "./ranking-rows.module.css";
 
-/** Rows of the platform rankings, shared by the home card (five rows and placeholders) and /rankings (every row the API gives): rank, picture,
- * name, second line, the metric's value, this week's gain and the movement column (always 36px; 신규 when there is no previous built day). */
+/** Rows of the platform rankings on the home page: rank, picture, name, second line (movement, today's gain), the metric's value and the way to first place. */
 
 export type RankingsTab = "fans" | "creators";
 export type RankingMetric = HomeFanMetric | HomeCreatorMetric;
-/** The screens open on hearts for both tabs (decision 2026-11-09 15:52); the API keeps its own defaults, so the screens always name the metric. */
-export const DEFAULT_METRIC: Record<RankingsTab, RankingMetric> = { fans: "hearts", creators: "hearts" };
-/** Segment order: the screens' default first (fans 하트|포인트, creators 하트|찐팬 수). */
-const SEGMENTS: Record<RankingsTab, readonly RankingMetric[]> = { fans: ["hearts", "points"], creators: ["hearts", "fans"] };
-export function metricFor(tab: RankingsTab, value: unknown): RankingMetric {
-  const allowed: readonly string[] = tab === "fans" ? HOME_FAN_METRICS : HOME_CREATOR_METRICS;
-  return typeof value === "string" && allowed.includes(value) ? (value as RankingMetric) : DEFAULT_METRIC[tab];
-}
-export const rankingUrl = (tab: RankingsTab, metric: RankingMetric, locale: AppLocale, limit?: number) =>
-  `/api/rankings/home?kind=${tab}&metric=${metric}&locale=${locale}${limit ? `&limit=${limit}` : ""}`;
-/** The full ranking with this tab and metric; signed out, the way through sign-in back to it. */
-export function rankingsPageHref(locale: AppLocale, tab: RankingsTab, metric: RankingMetric, guest: boolean) {
-  const path = `/rankings?locale=${locale}&tab=${tab}&metric=${metric}`;
-  return (guest ? fanLoginHref(locale, path) : path) as Route;
-}
-
+export const rankingUrl = (tab: RankingsTab, metric: RankingMetric, locale: AppLocale, limit?: number, period: HomeRankingPeriod = "all") =>
+  `/api/rankings/home?kind=${tab}&metric=${metric}&locale=${locale}${limit ? `&limit=${limit}` : ""}${period === "all" ? "" : `&period=${period}`}`;
 /** A snapshot is rewritten on read once it is ten minutes old. The next read is due when this one turns ten minutes, measured on the server clock. */
 const SNAPSHOT_MS = 10 * 60 * 1000;
 const MIN_GAP_MS = 60 * 1000;
@@ -113,16 +96,6 @@ function useRowMotion(order: readonly string[]) {
   return (key: string) => (node: HTMLElement | null) => { if (node) nodes.current.set(key, node); else nodes.current.delete(key); };
 }
 
-/** The snapshot time in the viewer's locale; an older snapshot also keeps its date. */
-export function updatedLabel(locale: AppLocale, at: string, now = new Date(), key: "rkUpdatedAt" | "rkHomeUpdated" = "rkUpdatedAt") {
-  const when = new Date(at);
-  if (Number.isNaN(when.getTime())) return null;
-  const sameDay = when.toDateString() === now.toDateString();
-  const time = when.toLocaleTimeString(locale, { hour: "numeric", minute: "2-digit" });
-  const text = sameDay ? time : `${when.toLocaleDateString(locale, { month: "numeric", day: "numeric" })} ${time}`;
-  return rankingsText(locale, key, [text]);
-}
-
 /** /rankings' update line counts from the server's computedAt: seconds in tens below a minute, minutes below an hour, then (and for a stale day) the
  * Korean-time stamp `11. 09. 23:50`. The only relative time on the app; recorded as an exception in DESIGN.md. */
 export function updatedAgoLabel(locale: AppLocale, computedAt: string, nowMs: number, stale = false) {
@@ -153,17 +126,13 @@ export function useNow(intervalMs = AGO_TICK_MS) {
   return now;
 }
 
-const METRIC_LABEL = { hearts: "rkHeartsTab", points: "rkMetricPoints", fans: "rkCumulativeFans" } as const;
-const CAPTION = { hearts: "rkCumulativeHearts", points: "rkMetricPoints", fans: "rkCumulativeFans" } as const;
-/** What the list counts, then how old the snapshot is; the other metrics stay one press away at the right edge (keyboard and touch, 44px hit area). */
-export function MetricLine({ locale, tab, metric, onChange, computedAt, stale = false }: { locale: AppLocale; tab: RankingsTab; metric: RankingMetric; onChange: (metric: RankingMetric) => void; computedAt: string | null; stale?: boolean }) {
+const CAPTION = { all: "rkCumulativeHearts", day: "rkGainDay", week: "rkGainWeek" } as const;
+/** What the list counts (cumulative hearts, or hearts gained today / in seven days), then how old the snapshot is. */
+export function MetricLine({ locale, computedAt, stale = false, period = "all" }: { locale: AppLocale; computedAt: string | null; stale?: boolean; period?: HomeRankingPeriod }) {
   const now = useNow();
   const text = computedAt ? updatedAgoLabel(locale, computedAt, now, stale) : null;
   return <div className={styles.metricLine} data-metric-line="">
-    <p className={styles.caption}><span>{rankingsText(locale, CAPTION[metric])}</span>{text ? <><span aria-hidden="true">·</span><time dateTime={computedAt!}>{text}</time></> : null}</p>
-    <div className={styles.metricSwitch} role="group" aria-label={rankingsText(locale, "rkMetricLabel")}>
-      {SEGMENTS[tab].map((key) => <FanAction key={key} variant="text" size="sm" className={styles.metricButton} aria-pressed={key === metric} onClick={() => onChange(key)}>{rankingsText(locale, METRIC_LABEL[key])}</FanAction>)}
-    </div>
+    <p className={styles.caption}><span>{rankingsText(locale, CAPTION[period])}</span>{text ? <><span aria-hidden="true">·</span><time dateTime={computedAt!}>{text}</time></> : null}</p>
   </div>;
 }
 
@@ -188,20 +157,24 @@ export function FailedRows({ locale, retry, rows }: { locale: AppLocale; retry: 
 export function EmptyRows({ locale, text }: { locale: AppLocale; text?: string }) {
   return <div className={styles.state}><p className={styles.emptyLine} role="status">{text ?? rankingsText(locale, "rkEmpty")}</p></div>;
 }
-/** A missing row keeps its rank number, a ring where the picture goes and a dash: no names, no values, no hidden ranks. */
+/** A missing row keeps its rank number and a ring where the picture goes: no names, no values, no marks, no hidden ranks. */
 function Placeholders({ from, to }: { from: number; to: number }) {
   return <>{Array.from({ length: Math.max(0, to - from) }, (_, i) => <li key={`p${i}`} className={styles.item} data-row="rank-placeholder" data-placeholder="" aria-hidden="true">
-    <span className={styles.rowFace} data-placeholder=""><span className={styles.rank}>{from + i + 1}</span><span className={styles.ghost} /><span className={styles.body}><span className={styles.ghostText}>{"—"}</span></span></span>
+    <span className={styles.rowFace} data-placeholder=""><span className={styles.rank}>{from + i + 1}</span><span className={styles.ghost} /></span>
   </li>)}</>;
 }
 
-const heartIcon = (size: 16) => <FanIcon icon={Heart} size={size} className={styles.heart} />;
+const heartIcon = (size: 16) => <FanIcon icon={Heart} size={size} filled className={styles.heart} />;
 const short = (locale: AppLocale, n: number) => n >= 10000 ? n.toLocaleString(locale, { notation: "compact", maximumFractionDigits: 1 }) : n.toLocaleString(locale);
 
-/** Second line: the items that have a value, one dot between them. An item without a value leaves with its dot. */
-function Meta({ items }: { items: ReactNode[] }) {
+/** Second line: the items that have a value, one dot between them. An item without a value (null) leaves with its dot, so items are built by calling, never as elements that render nothing.
+ * `wide` is one more item that only stands from 1024px, where a column has the room for it; narrower, it leaves with its dot. */
+function Meta({ items, wide }: { items: ReactNode[]; wide?: ReactNode }) {
   const shown = items.filter(Boolean);
-  return <span className={styles.meta}>{shown.map((item, i) => <Fragment key={i}>{i > 0 ? <span className={styles.dot} aria-hidden="true">·</span> : null}{item}</Fragment>)}</span>;
+  return <span className={styles.meta}>
+    {shown.map((item, i) => <Fragment key={i}>{i > 0 ? <span className={styles.dot} aria-hidden="true">·</span> : null}{item}</Fragment>)}
+    {wide ? <span className={styles.wide}>{shown.length ? <span className={styles.dot} aria-hidden="true">·</span> : null}{wide}</span> : null}
+  </span>;
 }
 
 /** The right-hand number of a row: the metric's value, read by name (hearts, points, fans), never from score alone. Counts up only when a later answer changes it; from 10,000 it is short (12.3K), the full number stays in the label. */
@@ -218,22 +191,25 @@ function Main({ locale, metric, value }: { locale: AppLocale; metric: RankingMet
   </span>;
 }
 
-/** Rank movement against the previous built day: ▲N ink, ▼N grey, — for no change, 신규 for a row the day before did not rank. Nothing when the day has no comparison. */
-function RowDelta({ locale, delta, isNew, comparable }: { locale: AppLocale; delta: number | null; isNew?: boolean; comparable: boolean }) {
-  if (!comparable) return null;
-  if (delta === null) return isNew ? <span className={styles.delta} data-direction="new" data-delta-cell>{rankingsText(locale, "rkDeltaNew")}</span> : null;
-  const direction = delta > 0 ? "up" : delta < 0 ? "down" : "same";
-  const label = delta > 0 ? rankingsText(locale, "rkDeltaUp", [delta]) : delta < 0 ? rankingsText(locale, "rkDeltaDown", [-delta]) : rankingsText(locale, "rkDeltaSame");
-  return <span className={styles.delta} data-direction={direction} data-delta-cell role="img" aria-label={label}>
-    {delta === 0 ? <span aria-hidden="true">{"—"}</span> : <><svg aria-hidden="true" width="8" height="7" viewBox="0 0 10 8"><path d={delta > 0 ? "M5 0 10 8H0z" : "M5 8 0 0h10z"} fill="currentColor" /></svg><span aria-hidden="true">{Math.abs(delta).toLocaleString(locale)}</span></>}
+/** Rank movement against the previous built day: ▲N green, ▼N red. Nothing when the day has no comparison, the row was not ranked then, or it did not move (no mark for "no change"). */
+function rowDelta(locale: AppLocale, delta: number | null, comparable: boolean) {
+  if (!comparable || !delta) return null;
+  const label = delta > 0 ? rankingsText(locale, "rkDeltaUp", [delta]) : rankingsText(locale, "rkDeltaDown", [-delta]);
+  return <span className={styles.delta} data-direction={delta > 0 ? "up" : "down"} data-delta-cell role="img" aria-label={label}>
+    <svg aria-hidden="true" width="8" height="7" viewBox="0 0 10 8"><path d={delta > 0 ? "M5 0 10 8H0z" : "M5 8 0 0h10z"} fill="currentColor" /></svg><span aria-hidden="true">{Math.abs(delta).toLocaleString(locale)}</span>
   </span>;
 }
 
-/** Today's hearts gained (counted hearts, whatever the list is ranked by): +N, grey at 0, − below 0; nothing when that day is not built. */
-function TodayGain({ locale, metric, value }: { locale: AppLocale; metric: RankingMetric; value: number | null | undefined }) {
-  if (typeof value !== "number") return null;
+/** Today's hearts gained (counted hearts, whatever the list is ranked by): +N with a pink heart, − below 0. Nothing at 0 and nothing when that day is not built. */
+function todayGain(locale: AppLocale, metric: RankingMetric, value: number | null | undefined) {
+  if (typeof value !== "number" || value === 0) return null;
   const text = `${value < 0 ? "−" : "+"}${Math.abs(value).toLocaleString(locale)}`;
-  return <span className={styles.today} data-zero={value === 0 || undefined}>{rankingsText(locale, metric === "hearts" ? "rkDayPlus" : "rkDayGain", [text])}</span>;
+  return <span className={styles.today}>{rankingsText(locale, metric === "hearts" ? "rkDayPlus" : "rkDayGain", [text])}{metric === "hearts" ? <FanIcon icon={Heart} size={16} filled className={styles.todayHeart} /> : null}</span>;
+}
+
+/** From 1024px: this row's value as a share of the first place's, between the name and the value (the same numbers the "1위까지" line is made of). */
+function Share({ value, top }: { value: number; top: number }) {
+  return <span className={styles.share} aria-hidden="true"><span className={styles.shareFill} style={{ "--share": top > 0 ? Math.min(1, Math.max(0, value / top)) : 0 } as CSSProperties} /></span>;
 }
 
 /** Under the value: the way to the first place, computed from the list itself. */
@@ -254,38 +230,12 @@ function RowButton({ panelId, open, onToggle, me, kind, children }: { panelId: s
 const LiveMark = ({ locale, name }: { locale: AppLocale; name: string }) => <span className={styles.live} role="img" aria-label={rankingsText(locale, "rkCreatorLive", [name])}><span className={styles.liveDot} aria-hidden="true" />LIVE</span>;
 
 
-/** Keep movement eight pixels after the visible name; only the name truncates. */
-function CompactIdentity({ locale, rank, delta, avatar, name, liveNow, liveLabel, isNew }: { locale: AppLocale; rank: number; delta: number | null; avatar: ReactNode; name: string; liveNow?: boolean; liveLabel?: string; isNew?: boolean }) {
-  const direction = delta === null ? "unknown" : delta > 0 ? "up" : delta < 0 ? "down" : "same";
-  const label = delta === null ? "—" : delta > 0 ? rankingsText(locale, "rkDeltaUp", [delta]) : delta < 0 ? rankingsText(locale, "rkDeltaDown", [-delta]) : rankingsText(locale, "rkDeltaSame");
-  const Icon = delta !== null && delta > 0 ? ChevronUp : delta !== null && delta < 0 ? ChevronDown : Minus;
-  return <>
-    <Rank rank={rank} />
-    <span className={styles.compactAvatar}>{avatar}</span>
-    <span className={styles.compactPerson}><span className={styles.name} title={name}>{name}</span>
-    <span className={styles.compactDelta} data-delta-cell>
-      {liveNow ? <span className={styles.live} role="img" aria-label={liveLabel}><span className={styles.liveDot} /></span> : null}
-      {delta === null && isNew ? null : <span className={styles.movement} data-direction={direction} role="img" aria-label={label}>
-        <FanIcon icon={Icon} size={16} />{delta ? <span aria-hidden="true">{Math.abs(delta).toLocaleString(locale)}</span> : null}
-      </span>}
-    </span></span>
-  </>;
-}
-function CompactValues({ locale, hearts }: { locale: AppLocale; hearts: number | undefined }) {
-  const full = (n: number | null | undefined) => typeof n === "number" ? n.toLocaleString(locale) : "—";
-  const short = (n: number | null | undefined) => typeof n === "number" ? n.toLocaleString(locale, { notation: n >= 10000 ? "compact" : "standard", maximumFractionDigits: 1 }) : "—";
-  return <>
-    <span className={styles.compactHearts} data-metric="hearts" aria-label={rankingsText(locale, "rkHearts", [full(hearts)])} title={full(hearts)}><FanIcon icon={Heart} size={16} filled /><span aria-hidden="true">{short(hearts)}</span></span>
-  </>;
-}
-
-
 const fanValue = (row: HomeFanRankingRow, metric: RankingMetric) => metric === "points" ? row.points ?? row.score : row.hearts ?? row.score;
 const fanKey = (row: HomeFanRankingRow, index: number, rows: readonly HomeFanRankingRow[]) =>
   rows.findIndex((other) => other.nickname === row.nickname) === index ? `n:${row.nickname}` : `r:${row.rank}`;
 
 /** Fans: nickname, movement · today's gain, the metric's value and the way to first place; the row opens a panel. `fill` keeps the block at that many rows with placeholders. */
-export function FanRows({ locale, ranking, metric, show, fill, scope, compact = false, guest = false }: { locale: AppLocale; ranking: HomeFanRanking; compact?: boolean; guest?: boolean; metric: HomeFanMetric; show?: number; fill?: number; scope: string }) {
+export function FanRows({ locale, ranking, metric, show, fill, scope, guest = false, period = "all" }: { locale: AppLocale; ranking: HomeFanRanking; guest?: boolean; period?: HomeRankingPeriod; metric: HomeFanMetric; show?: number; fill?: number; scope: string }) {
   const [person, setPerson] = useState<ProfileModalPerson | null>(null);
   const { openKey, toggle } = useRankExpand();
   const shown = show === undefined ? ranking.rows : ranking.rows.slice(0, show);
@@ -294,28 +244,19 @@ export function FanRows({ locale, ranking, metric, show, fill, scope, compact = 
   const top = ranking.rows[0] ? fanValue(ranking.rows[0], metric) : 0;
   const accentFirst = !guest && !ranking.me;
   const days = ranking.weekGainDays ?? 0;
-  return <><ol className={`${styles.rows}${compact ? ` ${styles.compactRows}` : ""}`}>{shown.map((row, i) => {
+  return <><ol className={styles.rows}>{shown.map((row, i) => {
     const id = `rank-${scope}-fans-${row.rank}`;
-    if (compact) {
-      const content = <>
-        <CompactIdentity locale={locale} rank={row.rank} delta={row.delta} name={row.nickname} isNew={row.isNew} avatar={<Avatar avatar={fanAvatar(row.characterId)} imageUrl={null} label="" size={28} />} />
-        <CompactValues locale={locale} hearts={row.hearts ?? row.score} />
-      </>;
-      return <li key={keys[i]} ref={place(keys[i]!)} id={id} data-row="fan-rank" data-kind="fans" data-me={row.isMe || undefined} aria-current={row.isMe || undefined}>
-        {guest ? <Link aria-label={row.nickname} className={`${styles.row} ${styles.compactRow}`} href={fanLoginHref(locale, `/?locale=${locale}`) as Route}>{content}</Link>
-          : <FanAction variant="text" ariaLabel={row.nickname} className={`${styles.row} ${styles.compactRow}`} disabled={!row.profileRef} onClick={() => { if (row.profileRef) setPerson({ ref: row.profileRef, nickname: row.nickname, avatarUrl: null, tier: row.tier }); }}>{content}</FanAction>}
-      </li>;
-    }
     const open = openKey === keys[i];
     const value = fanValue(row, metric);
-    return <li key={keys[i]} ref={place(keys[i]!)} id={id} className={styles.item} data-row="fan-rank" data-kind="fans" data-me={row.isMe || undefined} aria-current={row.isMe || undefined}>
+    return <li key={keys[i]} ref={place(keys[i]!)} id={id} className={styles.item} data-row="fan-rank" data-kind="fans" data-tint={((accentFirst && i === 0) || row.isMe || open) || undefined} data-me={row.isMe || undefined} aria-current={row.isMe || undefined}>
       <RowButton panelId={`${id}-panel`} open={open} onToggle={() => toggle(keys[i]!)} me={row.isMe} kind="fans">
         <Rank rank={row.rank} />
         <span className={styles.avatar} data-first={(accentFirst && i === 0) || undefined}><Avatar avatar={fanAvatar(row.characterId)} imageUrl={null} label="" size={40} /></span>
         <span className={styles.body}>
-          <span className={styles.name} title={row.nickname}>{row.nickname}</span>
-          <Meta items={[<RowDelta key="d" locale={locale} delta={row.delta} isNew={row.isNew} comparable={ranking.comparable} />, <TodayGain key="t" locale={locale} metric={metric} value={row.dayGain} />]} />
+          <span className={styles.nameLine}><span className={styles.name} title={row.nickname}>{row.nickname}</span>{rowDelta(locale, row.delta, ranking.comparable)}</span>
+          <Meta items={[period === "day" ? null : todayGain(locale, metric, row.dayGain)]} />
         </span>
+        <Share value={value} top={top} />
         <span className={styles.value}>
           <Main locale={locale} metric={metric} value={value} />
           <FirstGap locale={locale} first={i === 0 && ranking.rows[0] === row} accent={accentFirst} value={value} top={top} />
@@ -323,7 +264,7 @@ export function FanRows({ locale, ranking, metric, show, fill, scope, compact = 
       </RowButton>
       {open ? <RankRowPanel id={`${id}-panel`} kind="fan" row={row} days={days} guest={guest} locale={locale}
         onOpenProfile={() => { if (row.profileRef) setPerson({ ref: row.profileRef, nickname: row.nickname, avatarUrl: null, tier: row.tier }); }}
-        loginHref={fanLoginHref(locale, `/rankings?locale=${locale}&tab=fans&metric=${metric}`)} /> : null}
+        loginHref={fanLoginHref(locale, `/?locale=${locale}`)} /> : null}
     </li>;
   })}{fill ? <Placeholders from={shown.length} to={fill} /> : null}</ol>{person && !guest ? <ProfileModal person={person} locale={locale} onClose={() => setPerson(null)} /> : null}</>;
 }
@@ -331,36 +272,29 @@ export function FanRows({ locale, ranking, metric, show, fill, scope, compact = 
 const creatorValue = (row: HomeCreatorRankingRow, metric: RankingMetric) => metric === "fans" ? row.fans ?? row.score : row.hearts;
 
 /** Creators: name, movement · today's gain (and the 찐팬 100 challenge tag and LIVE where they apply), the metric's value and the way to first place; the row opens a panel whose action goes to the page. */
-export function CreatorRows({ locale, ranking, metric, show, fill, scope, challengeTag = false, compact = false, guest = false }: { locale: AppLocale; ranking: HomeCreatorRanking; compact?: boolean; guest?: boolean; metric: HomeCreatorMetric; show?: number; fill?: number; scope: string; challengeTag?: boolean }) {
+export function CreatorRows({ locale, ranking, metric, show, fill, scope, challengeTag = false, guest = false, period = "all" }: { locale: AppLocale; ranking: HomeCreatorRanking; guest?: boolean; period?: HomeRankingPeriod; metric: HomeCreatorMetric; show?: number; fill?: number; scope: string; challengeTag?: boolean }) {
   const { openKey, toggle } = useRankExpand();
   const shown = show === undefined ? ranking.rows : ranking.rows.slice(0, show);
   const place = useRowMotion(shown.map((row) => row.slug));
   const top = ranking.rows[0] ? creatorValue(ranking.rows[0], metric) : 0;
   const accentFirst = !guest;
   const days = ranking.weekGainDays ?? 0;
-  return <ol className={`${styles.rows}${compact ? ` ${styles.compactRows}` : ""}`}>{shown.map((row, i) => {
+  return <ol className={styles.rows}>{shown.map((row, i) => {
     const id = `rank-${scope}-creators-${row.rank}`;
-    if (compact) return <li key={row.slug} ref={place(row.slug)} id={id} data-row="creator-rank">
-      <Link className={`${styles.row} ${styles.compactRow}`} data-kind="creators" href={`/${row.slug}?locale=${locale}` as Route}>
-        <CompactIdentity locale={locale} rank={row.rank} delta={row.delta} name={row.name} liveNow={row.liveNow} isNew={row.isNew} liveLabel={rankingsText(locale, "rkCreatorLive", [row.name])} avatar={<CreatorAvatar slug={row.slug} src={row.imageUrl} size={28} photos={undefined} />} />
-        <CompactValues locale={locale} hearts={row.hearts} />
-      </Link>
-    </li>;
     const open = openKey === row.slug;
     const value = creatorValue(row, metric);
-    return <li key={row.slug} ref={place(row.slug)} id={id} className={styles.item} data-row="creator-rank" data-kind="creators">
+    return <li key={row.slug} ref={place(row.slug)} id={id} className={styles.item} data-row="creator-rank" data-kind="creators" data-tint={((accentFirst && i === 0) || open) || undefined}>
       <RowButton panelId={`${id}-panel`} open={open} onToggle={() => toggle(row.slug)} kind="creators">
         <Rank rank={row.rank} />
         <span className={styles.avatar} data-first={(accentFirst && i === 0) || undefined}><CreatorAvatar slug={row.slug} src={row.imageUrl} size={40} photos={undefined} /></span>
         <span className={styles.body}>
-          <span className={styles.name} title={row.name}>{row.name}</span>
+          <span className={styles.nameLine}><span className={styles.name} title={row.name}>{row.name}</span>{rowDelta(locale, row.delta, ranking.comparable)}</span>
           <Meta items={[
-            <RowDelta key="d" locale={locale} delta={row.delta} isNew={row.isNew} comparable={ranking.comparable} />,
-            <TodayGain key="t" locale={locale} metric={metric} value={row.dayGain} />,
+            period === "day" ? null : todayGain(locale, metric, row.dayGain),
             row.liveNow ? <LiveMark key="l" locale={locale} name={row.name} /> : null,
-            challengeTag && row.challenge ? <FanTag key="c" tone="fan" className={styles.challenge}>{rankingsText(locale, "jjTag")}</FanTag> : null,
-          ]} />
+          ]} wide={challengeTag && row.challenge ? <FanTag tone="fan" className={styles.challenge}>{rankingsText(locale, "jjTag")}</FanTag> : null} />
         </span>
+        <Share value={value} top={top} />
         <span className={styles.value}>
           <Main locale={locale} metric={metric} value={value} />
           <FirstGap locale={locale} first={i === 0 && ranking.rows[0] === row} accent={accentFirst} value={value} top={top} />
@@ -372,16 +306,17 @@ export function CreatorRows({ locale, ranking, metric, show, fill, scope, challe
 }
 
 /** Bottom bar above the tab bar, one height on every state: my rank in the chosen metric, or (signed out) the way to sign in. */
-export function Foot({ children }: { children?: ReactNode }) {
-  return <div className={styles.foot} data-ranking-foot="" data-empty={children ? undefined : ""}>{children}</div>;
+export function Foot({ children }: { children: ReactNode }) {
+  return <div className={styles.foot} data-ranking-foot="">{children}</div>;
 }
 export function MyRank({ locale, ranking, metric }: { locale: AppLocale; ranking: HomeFanRanking; metric: HomeFanMetric }) {
-  const me = ranking.me ?? null;
-  const value = me ? (metric === "points" ? me.points ?? me.score : me.hearts ?? me.score) : 0;
+  const me = ranking.me;
+  if (!me) return null;
+  const value = metric === "points" ? me.points ?? me.score : me.hearts ?? me.score;
   const first = ranking.rows[0];
-  const gap = me && first ? fanValue(first, metric) - value : 0;
+  const gap = first ? fanValue(first, metric) - value : 0;
   return <p className={styles.me} role="status"><span className={styles.meLabel}>{rankingsText(locale, "rkMyRank")}</span>
-    {me ? <>
+    <>
       <strong className={styles.meRank}>{rankingsText(locale, "rkRank", [me.rank.toLocaleString(locale)])}</strong>
       <span className={styles.meValue}>
         {metric === "points"
@@ -390,7 +325,7 @@ export function MyRank({ locale, ranking, metric }: { locale: AppLocale; ranking
         <span className={styles.dot} aria-hidden="true">·</span>
         <span className={styles.meGap}>{me.rank === 1 ? rankingsText(locale, "rkIsFirst") : gap <= 0 ? rankingsText(locale, "rkTiedFirst") : rankingsText(locale, "rkToFirst", [short(locale, gap)])}</span>
       </span>
-    </> : <span className={styles.meNone}>{"—"}</span>}</p>;
+    </></p>;
 }
 /** Signed out: the one primary action of the screen, in the bottom bar. */
 export function FootLink({ href, children }: { href: Route; children: ReactNode }) {

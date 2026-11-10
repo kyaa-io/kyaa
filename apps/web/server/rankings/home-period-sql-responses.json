@@ -1,0 +1,456 @@
+{
+    "creators_day": {
+        "day": "2026-11-10",
+        "rows": [
+            {
+                "fans": 3,
+                "name": "엘리나",
+                "rank": 1,
+                "slug": "elina",
+                "delta": null,
+                "score": 3,
+                "hearts": 3,
+                "points": null,
+                "dayGain": 3,
+                "liveNow": false,
+                "imageUrl": "/images/guest-home/elina-card.jpg",
+                "weekGain": 5,
+                "challenge": true
+            },
+            {
+                "fans": 1,
+                "name": "유나",
+                "rank": 2,
+                "slug": "yuna",
+                "delta": null,
+                "score": 3,
+                "hearts": 3,
+                "points": null,
+                "dayGain": 3,
+                "liveNow": false,
+                "imageUrl": "https://kyaa.io/public-assets/cms-assets/celebrities/yuna/profile-f6180ad3a36ea5c1.webp",
+                "weekGain": 6,
+                "challenge": false
+            },
+            {
+                "fans": 2,
+                "name": "정제니",
+                "rank": 3,
+                "slug": "jenny-jeong",
+                "delta": null,
+                "score": 1,
+                "hearts": 1,
+                "points": null,
+                "dayGain": 1,
+                "liveNow": false,
+                "imageUrl": "https://kyaa.io/public-assets/cms-assets/celebrities/jenny-jeong/profile-a9daf680da1fe99b.jpg",
+                "weekGain": 2,
+                "challenge": false
+            }
+        ],
+        "state": "ready",
+        "today": "2026-11-10",
+        "metric": "hearts",
+        "period": "day",
+        "builtDay": "2026-11-10",
+        "failedAt": null,
+        "comparable": false,
+        "computedAt": "2026-11-10T19:39:48.404253+09:00",
+        "previousDay": "2026-11-09",
+        "weekGainDays": 1
+    },
+    "creators_week": {
+        "day": "2026-11-10",
+        "rows": [
+            {
+                "fans": 1,
+                "name": "유나",
+                "rank": 1,
+                "slug": "yuna",
+                "delta": null,
+                "score": 6,
+                "hearts": 6,
+                "points": null,
+                "dayGain": 3,
+                "liveNow": false,
+                "imageUrl": "https://kyaa.io/public-assets/cms-assets/celebrities/yuna/profile-f6180ad3a36ea5c1.webp",
+                "weekGain": 6,
+                "challenge": false
+            },
+            {
+                "fans": 3,
+                "name": "엘리나",
+                "rank": 2,
+                "slug": "elina",
+                "delta": null,
+                "score": 5,
+                "hearts": 5,
+                "points": null,
+                "dayGain": 3,
+                "liveNow": false,
+                "imageUrl": "/images/guest-home/elina-card.jpg",
+                "weekGain": 5,
+                "challenge": true
+            },
+            {
+                "fans": 3,
+                "name": "창하",
+                "rank": 3,
+                "slug": "changha",
+                "delta": null,
+                "score": 4,
+                "hearts": 4,
+                "points": null,
+                "dayGain": 0,
+                "liveNow": false,
+                "imageUrl": "/images/guest-home/changha-card.jpg",
+                "weekGain": 4,
+                "challenge": false
+            },
+            {
+                "fans": 2,
+                "name": "정제니",
+                "rank": 4,
+                "slug": "jenny-jeong",
+                "delta": null,
+                "score": 2,
+                "hearts": 2,
+                "points": null,
+                "dayGain": 1,
+                "liveNow": false,
+                "imageUrl": "https://kyaa.io/public-assets/cms-assets/celebrities/jenny-jeong/profile-a9daf680da1fe99b.jpg",
+                "weekGain": 2,
+                "challenge": false
+            }
+        ],
+        "state": "ready",
+        "today": "2026-11-10",
+        "metric": "hearts",
+        "period": "week",
+        "builtDay": "2026-11-10",
+        "failedAt": null,
+        "comparable": false,
+        "computedAt": "2026-11-10T19:39:48.404253+09:00",
+        "previousDay": "2026-11-09",
+        "weekGainDays": 6
+    },
+    "fans_day_viewer": {
+        "me": {
+            "rank": 2,
+            "delta": null,
+            "inTop": true,
+            "score": 2,
+            "hearts": 2,
+            "points": null
+        },
+        "day": "2026-11-10",
+        "rows": [
+            {
+                "fans": 1,
+                "isMe": false,
+                "rank": 1,
+                "tier": "Gold",
+                "delta": null,
+                "score": 3,
+                "hearts": 3,
+                "points": null,
+                "dayGain": 3,
+                "favorite": {
+                    "slug": "yuna",
+                    "names": {
+                        "en": "Yuna",
+                        "ko": "유나"
+                    }
+                },
+                "nickname": "시험팬 이름이 아주 길어서 줄바꿈과 말줄임을 함께 확인하는 회원",
+                "weekGain": 6,
+                "profileRef": {
+                    "day": "2026-11-10",
+                    "kind": "home_ranking",
+                    "rank": 2,
+                    "metric": "hearts",
+                    "computedAt": "2026-11-10T19:39:48.404253+09:00"
+                },
+                "characterId": "ghost-cream"
+            },
+            {
+                "fans": 2,
+                "isMe": true,
+                "rank": 2,
+                "tier": "Gold",
+                "delta": null,
+                "score": 2,
+                "hearts": 2,
+                "points": null,
+                "dayGain": 2,
+                "favorite": {
+                    "slug": "changha",
+                    "names": {
+                        "en": "Changha",
+                        "ko": "창하"
+                    }
+                },
+                "nickname": "시험팬 002",
+                "weekGain": 4,
+                "profileRef": {
+                    "day": "2026-11-10",
+                    "kind": "home_ranking",
+                    "rank": 3,
+                    "metric": "hearts",
+                    "computedAt": "2026-11-10T19:39:48.404253+09:00"
+                },
+                "characterId": "fairy-lavender"
+            },
+            {
+                "fans": 2,
+                "isMe": false,
+                "rank": 3,
+                "tier": "Gold",
+                "delta": null,
+                "score": 1,
+                "hearts": 1,
+                "points": null,
+                "dayGain": 1,
+                "favorite": {
+                    "slug": "elina",
+                    "names": {
+                        "en": "Elina",
+                        "ko": "엘리나"
+                    }
+                },
+                "nickname": "아리가또",
+                "weekGain": 3,
+                "profileRef": {
+                    "day": "2026-11-10",
+                    "kind": "home_ranking",
+                    "rank": 1,
+                    "metric": "hearts",
+                    "computedAt": "2026-11-10T19:39:48.404253+09:00"
+                },
+                "characterId": "heart-lavender"
+            },
+            {
+                "fans": 1,
+                "isMe": false,
+                "rank": 4,
+                "tier": "Gold",
+                "delta": null,
+                "score": 1,
+                "hearts": 1,
+                "points": null,
+                "dayGain": 1,
+                "favorite": {
+                    "slug": "jenny-jeong",
+                    "names": {
+                        "en": "Jenny Jeong",
+                        "ko": "정제니"
+                    }
+                },
+                "nickname": "시험팬 006",
+                "weekGain": 1,
+                "profileRef": {
+                    "day": "2026-11-10",
+                    "kind": "home_ranking",
+                    "rank": 8,
+                    "metric": "hearts",
+                    "computedAt": "2026-11-10T19:39:48.404253+09:00"
+                },
+                "characterId": "ghost-lavender"
+            }
+        ],
+        "state": "ready",
+        "today": "2026-11-10",
+        "metric": "hearts",
+        "period": "day",
+        "builtDay": "2026-11-10",
+        "failedAt": null,
+        "comparable": false,
+        "computedAt": "2026-11-10T19:39:48.404253+09:00",
+        "previousDay": "2026-11-09",
+        "weekGainDays": 1
+    },
+    "fans_week_guest": {
+        "me": null,
+        "day": "2026-11-10",
+        "rows": [
+            {
+                "fans": 1,
+                "isMe": false,
+                "rank": 1,
+                "tier": "Gold",
+                "delta": null,
+                "score": 6,
+                "hearts": 6,
+                "points": null,
+                "dayGain": 3,
+                "favorite": {
+                    "slug": "yuna",
+                    "names": {
+                        "en": "Yuna",
+                        "ko": "유나"
+                    }
+                },
+                "nickname": "시험팬 이름이 아주 길어서 줄바꿈과 말줄임을 함께 확인하는 회원",
+                "weekGain": 6,
+                "characterId": "ghost-cream"
+            },
+            {
+                "fans": 2,
+                "isMe": false,
+                "rank": 2,
+                "tier": "Gold",
+                "delta": null,
+                "score": 4,
+                "hearts": 4,
+                "points": null,
+                "dayGain": 2,
+                "favorite": {
+                    "slug": "changha",
+                    "names": {
+                        "en": "Changha",
+                        "ko": "창하"
+                    }
+                },
+                "nickname": "시험팬 002",
+                "weekGain": 4,
+                "characterId": "fairy-lavender"
+            },
+            {
+                "fans": 2,
+                "isMe": false,
+                "rank": 3,
+                "tier": "Gold",
+                "delta": null,
+                "score": 3,
+                "hearts": 3,
+                "points": null,
+                "dayGain": 1,
+                "favorite": {
+                    "slug": "elina",
+                    "names": {
+                        "en": "Elina",
+                        "ko": "엘리나"
+                    }
+                },
+                "nickname": "아리가또",
+                "weekGain": 3,
+                "characterId": "heart-lavender"
+            },
+            {
+                "fans": 1,
+                "isMe": false,
+                "rank": 4,
+                "tier": "Gold",
+                "delta": null,
+                "score": 2,
+                "hearts": 2,
+                "points": null,
+                "dayGain": 0,
+                "favorite": {
+                    "slug": "elina",
+                    "names": {
+                        "en": "Elina",
+                        "ko": "엘리나"
+                    }
+                },
+                "nickname": "별빛",
+                "weekGain": 2,
+                "characterId": "star-pink"
+            },
+            {
+                "fans": 1,
+                "isMe": false,
+                "rank": 5,
+                "tier": "Gold",
+                "delta": null,
+                "score": 1,
+                "hearts": 1,
+                "points": null,
+                "dayGain": 0,
+                "favorite": {
+                    "slug": "changha",
+                    "names": {
+                        "en": "Changha",
+                        "ko": "창하"
+                    }
+                },
+                "nickname": "시험팬 001",
+                "weekGain": 1,
+                "characterId": "star-pink"
+            },
+            {
+                "fans": 1,
+                "isMe": false,
+                "rank": 6,
+                "tier": "Gold",
+                "delta": null,
+                "score": 1,
+                "hearts": 1,
+                "points": null,
+                "dayGain": 0,
+                "favorite": {
+                    "slug": "changha",
+                    "names": {
+                        "en": "Changha",
+                        "ko": "창하"
+                    }
+                },
+                "nickname": "시험팬 004",
+                "weekGain": 1,
+                "characterId": "fairy-pink"
+            },
+            {
+                "fans": 1,
+                "isMe": false,
+                "rank": 7,
+                "tier": "Gold",
+                "delta": null,
+                "score": 1,
+                "hearts": 1,
+                "points": null,
+                "dayGain": 0,
+                "favorite": {
+                    "slug": "jenny-jeong",
+                    "names": {
+                        "en": "Jenny Jeong",
+                        "ko": "정제니"
+                    }
+                },
+                "nickname": "시험팬 005",
+                "weekGain": 1,
+                "characterId": "fairy-cream"
+            },
+            {
+                "fans": 1,
+                "isMe": false,
+                "rank": 8,
+                "tier": "Gold",
+                "delta": null,
+                "score": 1,
+                "hearts": 1,
+                "points": null,
+                "dayGain": 1,
+                "favorite": {
+                    "slug": "jenny-jeong",
+                    "names": {
+                        "en": "Jenny Jeong",
+                        "ko": "정제니"
+                    }
+                },
+                "nickname": "시험팬 006",
+                "weekGain": 1,
+                "characterId": "ghost-lavender"
+            }
+        ],
+        "state": "ready",
+        "today": "2026-11-10",
+        "metric": "hearts",
+        "period": "week",
+        "builtDay": "2026-11-10",
+        "failedAt": null,
+        "comparable": false,
+        "computedAt": "2026-11-10T19:39:48.404253+09:00",
+        "previousDay": "2026-11-09",
+        "weekGainDays": 7
+    }
+}

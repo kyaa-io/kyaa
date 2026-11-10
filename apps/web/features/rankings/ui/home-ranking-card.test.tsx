@@ -7,7 +7,7 @@ vi.mock("@/features/auth/client/cognito-auth", () => ({ useByUsAuth: () => auth.
 vi.mock("@/features/group-social/profile-modal", () => ({ ProfileModal: ({ person, onClose }: { person: { ref: unknown }; onClose: () => void }) => <div data-testid="ranking-profile">{JSON.stringify(person.ref)}<button onClick={onClose}>close profile</button></div> }));
 
 import { clearResources } from "@/components/fan-ui/resource-cache";
-import { HomeRankingCard, updatedLabel } from "./home-ranking-card";
+import { HomeRankingCard } from "./home-ranking-card";
 import { APP_LOCALES } from "@/i18n/locales";
 import { messages } from "@/i18n/catalogs/features__rankings__ui__rankings-copy";
 import { rankingsText } from "./rankings-copy";
@@ -33,45 +33,44 @@ function stub(fanBody: Record<string, unknown> = fans(), creatorBody: Record<str
   return fetcher;
 }
 
-it("requests ten heart ranks per group, keeps full leaderboard choices out of home", async () => {
+it("is the shared ranking board under one heading: ten heart rows per group, no full-list link", async () => {
   auth.value = { ...auth.value, authenticated: true, user: { id: "viewer" } };
   const fetcher = stub(fans(Array.from({ length: 10 }, (_, i) => fanRow(i + 1))), creators({ rows: Array.from({ length: 10 }, (_, i) => creatorRow(i + 1)) }));
   const { container } = render(<HomeRankingCard locale="ko" />);
   await screen.findByText("팬10");
   expect(container.querySelectorAll("[data-row='fan-rank']")).toHaveLength(10);
   expect(container.querySelectorAll("[data-row='creator-rank']")).toHaveLength(10);
+  expect(screen.getByRole("heading", { level: 2, name: "오늘의 랭킹" })).toBeInTheDocument();
   expect(screen.queryByRole("tab")).toBeNull();
   expect(screen.queryByText("포인트")).toBeNull();
+  expect(screen.queryByText("전체 보기")).toBeNull();
+  expect(container.querySelector("a[href*='/rankings']")).toBeNull();
   for (const [url] of fetcher.mock.calls) expect(String(url)).toMatch(/metric=hearts.*limit=10/);
-  expect(screen.getAllByRole("link", { name: "전체 보기" })).toHaveLength(1);
 });
 
-it("shows ten guest ranks and sends fan profiles to login", async () => {
+it("signed out: ten rows per group, rows open in place with a sign-in action, one sign-in button", async () => {
   stub(fans(Array.from({ length: 10 }, (_, i) => fanRow(i + 1))), creators({ rows: Array.from({ length: 10 }, (_, i) => creatorRow(i + 1)) }));
   const { container } = render(<HomeRankingCard locale="ko" />);
   await screen.findByText("팬1");
   expect(container.querySelectorAll("[data-row='fan-rank']")).toHaveLength(10);
   expect(container.querySelectorAll("[data-row='creator-rank']")).toHaveLength(10);
-  expect(screen.getByText("팬6")).toBeInTheDocument();
-  expect(screen.getByRole("link", { name: "팬1" }).getAttribute("href")).toContain("/login");
-  expect(container.querySelector("[data-row='creator-rank'] a")).toHaveAttribute("href", "/c1?locale=ko");
+  expect(container.querySelectorAll("[data-column='fans'] a[href*='/login']:not(li a)")).toHaveLength(1);
+  fireEvent.click(container.querySelector("li[data-row='fan-rank'] > button")!);
+  expect(screen.getByRole("link", { name: "로그인하고 프로필 보기" }).getAttribute("href")).toContain("/login");
   expect(screen.queryByRole("dialog")).toBeNull();
 });
 
-it("places movement after the name, preserves measured daily values and no fan point column", async () => {
+it("shows movement and today's gain under the name, no 신규 mark, and no weekly column", async () => {
   stub(fans([fanRow(1, { dayGain: 0, weekGain: 999, delta: 2 }), fanRow(2, { dayGain: -3 }), fanRow(3, { dayGain: null, isNew: true })]));
   const { container } = render(<HomeRankingCard locale="ko" />);
-  await screen.findByText("팬1");
+  await screen.findAllByText("팬1");
   const rows = container.querySelectorAll("[data-row='fan-rank']");
-  const first = rows[0]!.querySelector("a,button")!;
-  expect(first.children[2]?.querySelector("[title]")?.textContent).toBe("팬1");
-  expect(first.children[2]?.querySelector("[data-delta-cell] svg")).toHaveAttribute("data-icon-set", "lucide");
-
-  expect(container.querySelector("[data-metric='fans']")).toBeNull();
-  expect(container.querySelector("[data-day-gain]")).toBeNull();
-  expect(rows[2]!.querySelector("[data-delta-cell] [role=img]")).toBeNull();
-  expect(rows[1]!.querySelector("[data-direction='new']")).toBeNull();
-  expect(first.textContent).not.toContain("999");
+  expect(rows[0]!.textContent).not.toContain("오늘");
+  expect(rows[1]!.textContent).toContain("오늘 −3");
+  expect(rows[0]!.querySelector("[data-delta-cell]")).toHaveAttribute("data-direction", "up");
+  expect(container.textContent).not.toContain("신규");
+  expect(rows[2]!.querySelector("[data-delta-cell]")).toBeNull();
+  expect(rows[0]!.textContent).not.toContain("999");
 });
 
 it("passes the original signed profile reference without replacing its stored rank", async () => {
@@ -79,7 +78,8 @@ it("passes the original signed profile reference without replacing its stored ra
   const ref = { kind: "home_ranking", day: "2026-11-08", computedAt: "2026-11-08T00:00:00Z", metric: "hearts", rank: 7, signature: "a".repeat(64) };
   stub(fans([fanRow(1, { profileRef: ref })]));
   render(<HomeRankingCard locale="ko" />);
-  fireEvent.click(await screen.findByRole("button", { name: "팬1" }));
+  fireEvent.click(await screen.findByRole("button", { name: /팬1/ }));
+  fireEvent.click(await screen.findByRole("button", { name: "프로필 보기" }));
   expect(await screen.findByTestId("ranking-profile")).toHaveTextContent(JSON.stringify(ref));
   fireEvent.click(screen.getByRole("button", { name: "close profile" }));
   expect(screen.queryByTestId("ranking-profile")).toBeNull();
@@ -140,10 +140,7 @@ it("moves only changed rows on refresh and respects reduced motion", async () =>
   }
 });
 
-it("retains snapshot dates and server-clock refresh timing", () => {
-  const now = new Date(2026, 10, 8, 15, 0);
-  expect(updatedLabel("ko", new Date(2026, 10, 7, 23, 50).toISOString(), now)).toContain("11. 7.");
-  expect(updatedLabel("ko", "bad", now)).toBeNull();
+it("keeps the server-clock refresh timing", () => {
   expect(nextReadDelay("2026-11-08T00:09:00Z", "2026-11-08T00:00:00Z", () => 0)).toBe(60000);
 });
 

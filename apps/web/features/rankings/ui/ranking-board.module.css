@@ -1,0 +1,19 @@
+/* 홈 오늘의 랭킹 본문: 390은 찐팬|크리에이터 세그먼트로 한 목록씩, 1024부터 두 단이 카드 안쪽 폭을 반씩 채운다(단 사이 40). 행(64)·열은 ranking-rows.module.css. */
+.head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-3); min-width: 0; }
+.head h2[data-fan-heading] { margin: 0; }
+.tabs { display: block; min-width: 0; }
+.columns { display: grid; gap: var(--space-8); min-width: 0; }
+.column[data-active="false"] { display: none; }
+.mobileOnly { display: contents; }
+.column > h3[data-fan-heading] { display: none; margin: 0; font-size: var(--fan-action-emphasis-size); font-weight: var(--fan-item-title-weight); line-height: 20px; }
+.column { display: grid; gap: var(--space-3); align-content: start; min-width: 0; }
+.board { display: grid; min-width: 0; }
+
+@media (min-width: 64rem) {
+  .column > h3[data-fan-heading] { display: block; }
+  .tabs, .mobileOnly { display: none; }
+  .column[data-active="false"] { display: grid; }
+  .columns { grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: var(--space-10); }
+}
+/* 기간 알약: 틀 높이 48(칸 40 + 누르는 영역 위아래 5씩 = 50). FanTabs segment 기본 틀은 40이라 누르는 영역이 42였다. */
+.head nav, .tabs nav { height: 48px; }

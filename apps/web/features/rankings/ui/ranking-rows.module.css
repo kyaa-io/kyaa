@@ -1,11 +1,7 @@
-/* 플랫폼 랭킹 행. 홈 압축 행(.compactRow)은 아래 구역, /rankings 행(RANK-V3 A r3)은 .item 아래 규칙이다.
-   회색 채움 없음(U-1): 호버·내 순위는 옅은 핑크, 자리표시는 흰 바탕과 헤어라인. 금액은 없다. */
-.rows { display: grid; margin: 0; padding: 0; list-style: none; align-content: start; }
+/* 플랫폼 랭킹 행(홈 오늘의 랭킹, RANK-V3 A r3): 행은 .item 아래 규칙이다.
+   회색 채움 없음(U-1): 옅은 핑크 면은 1위·내 행·열린 행만, 자리표시는 흰 바탕과 헤어라인 링. 금액은 없다. */
+.rows { display: grid; gap: var(--space-2); margin: 0; padding: 0; list-style: none; align-content: start; }
 .rows > li { min-width: 0; }
-.row { display: grid; grid-template-columns: 24px 40px minmax(0, 1fr) auto; align-items: center; column-gap: var(--space-3); box-sizing: border-box; height: 56px; min-width: 0; color: var(--color-ink); text-decoration: none; }
-.row:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
-a.row { border-radius: var(--radius-control); }
-.row[data-me] { background: var(--color-accent-soft); border-radius: var(--radius-control); }
 .rank { display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; color: var(--color-muted); font-size: var(--fan-action-emphasis-size); font-weight: 800; font-variant-numeric: tabular-nums; }
 .rank[data-medal] { color: var(--color-accent-ink); }
 .body { display: grid; gap: var(--space-1); min-width: 0; }
@@ -13,27 +9,24 @@ a.row { border-radius: var(--radius-control); }
 .challenge { flex: none; }
 .dot { margin: 0 var(--space-1); }
 .ghost { display: block; width: 40px; height: 40px; border: 1px solid var(--color-line); border-radius: 50%; background: var(--color-canvas); }
-.ghostText { color: var(--color-muted); font-size: var(--fan-action-label-size); font-weight: var(--fan-body-weight); }
-@media (hover: hover) and (pointer: fine) { a.row:hover { background: var(--color-accent-soft); } }
 
-/* 머리 줄: 기준·갱신 시각(왼쪽)과 기준 전환(오른쪽). 줄 높이 36, 전환 글자의 누르는 영역은 44. */
-.metricLine { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); box-sizing: border-box; min-height: 36px; min-width: 0; }
+/* 머리 줄: 기준과 갱신 시각. 줄 높이 20. */
+.metricLine { display: flex; align-items: center; gap: var(--space-3); box-sizing: border-box; min-height: 20px; min-width: 0; }
 .caption { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-1); min-width: 0; margin: 0; color: var(--color-muted); font-size: var(--fan-metadata-size); font-weight: var(--fan-body-weight); font-variant-numeric: tabular-nums; }
-.metricSwitch { display: flex; flex: none; align-items: center; }
-.metricLine .metricButton { min-width: 44px; min-height: 44px; padding-inline: var(--space-2); color: var(--color-muted); font-size: var(--fan-badge-size); font-weight: var(--fan-body-weight); }
-.metricLine .metricButton[aria-pressed="true"] { color: var(--color-ink); font-weight: var(--fan-item-title-weight); text-decoration: underline; text-underline-offset: 4px; }
 
-/* /rankings 행: 한 항목 = 행 버튼(64) + 열린 패널. 열 28·8·40·8·이름·8·88·8·16, 안쪽 12·0, 항목 사이 헤어라인. */
-.item { position: relative; border-bottom: 1px solid var(--color-line); }
-.item .listRow { display: flex; width: 100%; min-height: 64px; padding: 0; border: 0; border-radius: 0; background: transparent; color: var(--color-ink); font: inherit; text-align: start; }
+/* 행 카드(RANK-V3, 2026-11-10 19:13·21:03): 한 항목 = 행 버튼(64) + 열린 패널, 반경 16, 항목 사이 8. 모든 행이 같은 카드(흰 면 + 아주 옅은 1px 선)이고, 1위(내 순위가 없을 때)·내 행·열린 행만 옅은 분홍 면(--color-accent-soft + 분홍 선).
+   열 28·8·40·8·이름·(1024부터 막대)·값·8·16, 카드 안쪽 12. 1024부터 이름과 값 사이를 1위 대비 막대가 채운다(같은 값에서 계산, 숫자 없음). */
+.item { --rank-name-start: calc(var(--space-3) + var(--space-10) + var(--space-6) + var(--space-5)); position: relative; border-radius: var(--radius-collection); background: var(--color-surface); box-shadow: inset 0 0 0 1px var(--color-line-subtle); }
+.item[data-tint] { background: var(--color-accent-soft); box-shadow: inset 0 0 0 1px var(--color-accent-line); }
+.item .listRow { display: flex; width: 100%; min-height: 64px; padding: 0; border: 0; border-radius: var(--radius-collection); background: transparent; color: var(--color-ink); font: inherit; text-align: start; }
 .item button.listRow > span { display: contents; }
-.rowFace { position: relative; display: grid; grid-template-columns: 28px 40px minmax(0, 1fr) 88px 16px; align-items: center; column-gap: var(--space-2); flex: 1 1 auto; box-sizing: border-box; width: 100%; min-width: 0; height: 64px; padding: var(--space-3) 0; }
-.rowFace[data-loading] { grid-template-columns: 28px 40px minmax(0, 1fr) 88px; }
+.rowFace { position: relative; display: grid; grid-template-columns: 28px 40px minmax(0, 1fr) auto 16px; align-items: center; column-gap: var(--space-2); flex: 1 1 auto; box-sizing: border-box; width: 100%; min-width: 0; height: 64px; padding: var(--space-3); text-align: start; text-wrap: wrap; }
+.rowFace[data-loading] { grid-template-columns: 28px 40px minmax(0, 1fr) auto; }
 .rowFace[data-placeholder] { grid-template-columns: 28px 40px minmax(0, 1fr); }
-.rowFace { text-align: start; text-wrap: wrap; }
-.rowFace > * { position: relative; }
-.rowFace::before { content: ""; position: absolute; inset: var(--space-1) calc(var(--space-2) * -1); border-radius: var(--radius-action); background: transparent; pointer-events: none; }
-.rowFace[data-me]::before { background: var(--color-accent-soft); }
+@media (min-width: 64rem) {
+  .rowFace { grid-template-columns: 28px 40px minmax(0, 1.2fr) minmax(0, 1fr) auto 16px; }
+  .rowFace[data-loading] { grid-template-columns: 28px 40px minmax(0, 1.2fr) minmax(0, 1fr) auto; }
+}
 
 .item .rank { width: 28px; height: 24px; color: var(--color-ink); font-size: var(--fan-section-size); font-weight: var(--fan-item-title-weight); line-height: 24px; }
 .rowFace[data-me] .rank { color: var(--color-accent-ink); }
@@ -45,18 +38,30 @@ a.row { border-radius: var(--radius-control); }
 /* 둘째 줄: 값이 있는 항목만, 사이에 점 하나. 넘치면 줄바꿈 없이 말줄임. */
 .meta { display: block; overflow: hidden; min-width: 0; color: var(--color-muted); font-size: var(--fan-badge-size); font-weight: var(--fan-body-weight); line-height: 16px; text-overflow: ellipsis; white-space: nowrap; }
 .meta > * { vertical-align: middle; }
-.delta { display: inline-flex; align-items: center; gap: var(--space-1); color: var(--color-muted); font-weight: var(--fan-item-title-weight); font-variant-numeric: tabular-nums; }
-.delta[data-direction="up"] { color: var(--color-ink); }
-.delta svg { flex: none; }
-.today { font-variant-numeric: tabular-nums; }
-.today:not([data-zero]) { color: var(--color-ink); }
+/* 등락: ▲ 초록 / ▼ 빨강(둘 다 채도 낮은 토큰), 모양과 숫자가 함께 말한다. */
+.nameLine { display: flex; align-items: center; gap: var(--space-2); min-width: 0; max-width: 100%; }
+.nameLine .name { flex: 0 1 auto; }
+.delta { display: inline-flex; flex: none; align-items: center; gap: var(--space-1); color: var(--color-muted); font-weight: var(--fan-item-title-weight); font-variant-numeric: tabular-nums; }
+.delta[data-direction="up"] { color: var(--color-success); }
+.delta[data-direction="down"] { color: var(--color-error); }
+.item .delta svg { flex: none; width: 8px; height: 7px; }
+.today { display: inline-flex; align-items: center; gap: var(--space-1); color: var(--color-accent-ink); font-weight: var(--fan-item-title-weight); font-variant-numeric: tabular-nums; }
+.item .todayHeart { flex: none; width: 12px; height: 12px; color: var(--color-accent); }
 .item .live { display: inline-flex; align-items: center; gap: var(--space-1); color: var(--color-ink); font-weight: var(--fan-item-title-weight); }
 .item .challenge { vertical-align: middle; }
+.wide { display: none; }
+@media (min-width: 64rem) { .wide { display: inline; } }
+/* 1위 대비 막대(1024부터): 칸 폭 안에서 값 ÷ 1위 값. 빈 틀은 옅은 선, 채움은 브랜드 분홍. */
+.share { display: none; }
+@media (min-width: 64rem) {
+  .share { display: block; height: var(--space-1); overflow: hidden; border-radius: var(--radius-pill); background: var(--color-line-subtle); }
+  .shareFill { display: block; width: calc(var(--share, 0) * 100%); height: 100%; border-radius: var(--radius-pill); background: var(--color-accent); }
+}
 .item .value { display: grid; justify-items: end; gap: 0; min-width: 0; white-space: nowrap; }
 .main { display: inline-flex; justify-content: flex-end; max-width: 100%; }
-.mainInner { display: inline-flex; align-items: center; gap: var(--space-1); color: var(--color-ink); font-size: var(--fan-action-emphasis-size); font-weight: var(--fan-item-title-weight); line-height: 20px; white-space: nowrap; }
+.mainInner { display: inline-flex; align-items: center; gap: var(--space-1); color: var(--color-ink); font-size: var(--fan-section-size); font-weight: var(--fan-item-title-weight); line-height: 24px; white-space: nowrap; }
 .main .mainNumber { font-size: inherit; font-weight: inherit; font-variant-numeric: tabular-nums; }
-.heart { flex: none; color: var(--color-muted); }
+.heart { flex: none; color: var(--color-accent); }
 .gap { overflow: hidden; max-width: 100%; color: var(--color-muted); font-size: var(--fan-badge-size); font-variant-numeric: tabular-nums; line-height: 16px; text-overflow: ellipsis; white-space: nowrap; }
 .gap[data-first] { color: var(--color-ink); font-weight: var(--fan-item-title-weight); }
 .gap[data-accent] { color: var(--color-accent-ink); }
@@ -67,45 +72,17 @@ a.row { border-radius: var(--radius-control); }
 .emptyLine { margin: 0; color: var(--color-muted); font-size: var(--fan-description-size); }
 .retry { min-width: var(--min-target); min-height: var(--min-target); }
 
-/* 바닥 줄(탭 바 위에 붙음): 내 순위 48, 비로그인은 주 버튼 하나. */
-.foot { position: sticky; z-index: 1; bottom: calc(var(--fan-bottom-nav-height) + env(safe-area-inset-bottom)); display: flex; align-items: center; box-sizing: border-box; min-height: 48px; background: var(--color-canvas); border-top: 1px solid var(--color-line); }
-.foot[data-empty] { border-top: 0; }
-@media (min-width: 64rem) { .foot { bottom: 0; } }
-.me { display: flex; align-items: center; gap: var(--space-2); box-sizing: border-box; width: 100%; min-height: 48px; min-width: 0; margin: 0; color: var(--color-ink); font-size: var(--fan-action-label-size); }
+/* 목록 바닥 줄: 내 순위 48, 비로그인은 주 버튼 하나. */
+.foot { display: flex; align-items: center; box-sizing: border-box; min-height: 48px; margin-top: var(--space-2); }
+.me { display: flex; align-items: center; gap: var(--space-2); box-sizing: border-box; width: 100%; padding-inline: var(--space-3); min-height: 48px; min-width: 0; margin: 0; color: var(--color-ink); font-size: var(--fan-action-label-size); }
 .meLabel { color: var(--color-muted); font-weight: var(--fan-body-weight); }
 .meRank { color: var(--color-accent-ink); font-size: var(--fan-section-size); font-weight: var(--fan-item-title-weight); font-variant-numeric: tabular-nums; }
 .meValue { display: inline-flex; align-items: center; gap: var(--space-1); min-width: 0; margin-inline-start: auto; font-variant-numeric: tabular-nums; white-space: nowrap; }
 .meHearts { display: inline-flex; align-items: center; gap: var(--space-1); font-weight: var(--fan-item-title-weight); }
 .meGap { color: var(--color-muted); }
-.meNone { margin-inline-start: auto; color: var(--color-muted); }
 .foot .login { width: 100%; max-width: none; margin-block: var(--space-2); }
 
-/* Approved feedback-r1 home grid; /rankings retains its existing rows. */
-.compactRow { --fan-ranking-meta-size: 11px; grid-template-columns: 16px 4px 28px 4px minmax(72px, 1fr) 8px 44px 8px 50px; column-gap: 0; height: 34px; width: 100%; margin: 0; padding: 0 var(--space-2); border: 0; border-radius: 0; background: transparent; font-family: inherit; text-align: start; white-space: nowrap; cursor: pointer; }
-.compactRow .rank { width: 16px; color: var(--color-ink); font-size: var(--fan-badge-size); font-weight: var(--fan-item-title-weight); }
-.compactRow .name { font-size: var(--fan-badge-size); font-weight: var(--fan-item-title-weight); }
-.compactDelta { display: flex; flex: none; gap: var(--space-2); align-items: center; }
-.movement { display: flex; justify-content: flex-start; align-items: center; gap: var(--space-1); color: var(--color-muted); font-size: var(--fan-badge-size); font-weight: var(--fan-item-title-weight); font-variant-numeric: tabular-nums; }
-.movement[data-direction="up"] { color: var(--color-accent-ink); }
-.movement [data-direction="new"] { color: var(--color-warning); font-size: var(--fan-ranking-meta-size); }
-.movement svg { flex: none; }
-.compactHearts { display: flex; justify-content: flex-end; align-items: center; gap: var(--space-1); font-size: var(--fan-badge-size); font-weight: var(--fan-body-weight); font-variant-numeric: tabular-nums; }
-.compactHearts svg { flex: none; color: var(--color-accent-ink); }
 .live { display: inline-flex; }
 .liveDot { width: 6px; height: 6px; border-radius: 50%; background: var(--color-error); }
-.compactRows > li + li { position: relative; }
-.compactRows > li + li::before { content: ""; position: absolute; inset: 0 0 auto; height: 1px; background: var(--color-line); pointer-events: none; }
-.compactRows > li { box-sizing: border-box; }
-.compactRow:disabled { cursor: default; }
-@media (hover: hover) and (pointer: fine) { .compactRow:hover { background: var(--color-surface); } }
 
-.compactRows .compactRow { display: grid; min-height: 34px; border-radius: 0; background: transparent; }
-.compactRow .movement svg { width: 12px; height: 12px; stroke-width: 2.5; }
-.compactHearts svg { width: 12px; height: 12px; }
 
-button.compactRow > span { display: contents; }
-.compactRow .rank { grid-column: 1; }
-.compactAvatar { grid-column: 3; }
-.compactPerson { grid-column: 5 / 8; display: flex; align-items: center; gap: var(--space-2); min-width: 0; }
-.compactPerson .name { flex: 0 1 auto; min-width: 0; max-width: min(8em, calc(100% - var(--space-10) - var(--space-3))); }
-.compactHearts { grid-column: 9; }
