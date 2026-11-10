@@ -234,5 +234,18 @@ export const messages = {
     "fr": "Tout afficher",
     ru: "Показать все"
 
+  },
+  "m3c1a7e0d52b4": {
+    "ja": "出席",
+    "zh-Hans": "签到",
+    "zh-Hant": "簽到",
+    "es": "Asistencia",
+    "id": "Check-in",
+    "vi": "Điểm danh",
+    "th": "เช็กอิน",
+    "pt": "Check-in",
+    "fr": "Présence",
+    ru: "Отметка"
+
   }
 } satisfies Record<string, TranslatedMessage>;

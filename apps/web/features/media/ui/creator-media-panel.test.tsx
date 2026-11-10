@@ -4,7 +4,7 @@ import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import { CreatorMediaPanel } from "./creator-media-panel";
 import { APP_LOCALES } from "@/i18n/locales";
 
-const state = vi.hoisted(() => ({ query: "tab=board&section=media&locale=ko", failure: "", allEmpty: false, manyVideos: false, liveVideo:false, channelLive:false, sdkReady: true, sessionReady: true, officialAuth: undefined as undefined | { ready: boolean; getToken: () => Promise<string | null> }, replace: vi.fn(), more: vi.fn(), sources: vi.fn() }));
+const state = vi.hoisted(() => ({ query: "tab=board&section=media&locale=ko", failure: "", allEmpty: false, manyVideos: false, liveVideo:false, channelLive:false, tiktok:false, sdkReady: true, sessionReady: true, officialAuth: undefined as undefined | { ready: boolean; getToken: () => Promise<string | null> }, replace: vi.fn(), more: vi.fn(), sources: vi.fn() }));
 vi.mock("next/navigation", () => ({ usePathname: () => "/elina", useSearchParams: () => new URLSearchParams(state.query), useRouter: () => ({ replace: state.replace }) }));
 vi.mock("@privy-io/react-auth", () => ({ usePrivy: () => ({ ready: state.sdkReady, authenticated: false }) }));
 vi.mock("@/components/byus-session-provider", () => ({ useByUsSession: () => ({ ready: state.sessionReady, generation: 0 }) }));
@@ -17,13 +17,13 @@ vi.mock("@/features/fanpage/ui/use-news-source", () => ({ useNewsSource: (url: s
   if (official) state.officialAuth = auth;
   const videos = Array.from({ length: state.manyVideos ? 6 : 1 }, (_, i) => ({ id: `yt${i}`, kind: "videos", title: i ? `영상 ${i}` : "공식 채널 영상", image: "/youtube.jpg", asset: null, href: `https://www.youtube.com/watch?v=${i ? `abcdefghij${i}` : "abcdefghijk"}`, date: "2026-09-27T00:00:00Z" }));
   return {
-    state: { status: failed ? "error" : "ready", data: failed || state.allEmpty ? [] : live ? [{id:"live",live:true,kind:"videos",title:"함께하는 생방송",image:"/live.jpg",href:state.channelLive?"https://www.youtube.com/@NCHIVE/live":"https://www.youtube.com/watch?v=liveabcdefg",date:"2026-11-02T00:00:00Z",slug:"elina"}] : youtube ? videos : official ? [{ id: "photo", kind: "photos", title: "함께한 사진", image: "/photo.jpg", asset: null, href: "/c/elina/notices/photo", date: "2026-09-26T00:00:00Z" }, ...(state.manyVideos ? [{ ...videos[0], id: "curated", title: "등록한 대표 영상", href: "https://youtu.be/abcdefghijk" }] : [])]
+    state: { status: failed ? "error" : "ready", data: failed || state.allEmpty ? [] : live ? [{id:"live",live:true,kind:"videos",title:"함께하는 생방송",image:"/live.jpg",href:state.channelLive?"https://www.youtube.com/@NCHIVE/live":"https://www.youtube.com/watch?v=liveabcdefg",date:"2026-11-02T00:00:00Z",slug:"elina"}] : youtube ? videos : official ? [{ id: "photo", kind: "photos", title: "함께한 사진", image: "/photo.jpg", asset: null, href: "/c/elina/notices/photo", date: "2026-09-26T00:00:00Z" }, ...(state.manyVideos ? [{ ...videos[0], id: "curated", title: "등록한 대표 영상", href: "https://youtu.be/abcdefghijk" }] : []), ...(state.tiktok ? [{ id: "tt", kind: "videos", title: "https://www.tiktok.com/@ifewknow/video/7690854938997558549", image: "/tiktok.jpg", asset: null, href: "https://www.tiktok.com/@ifewknow/video/7690854938997558549", date: "2026-10-18T00:00:00Z" }] : [])]
       : replay ? [{ id: "replay", kind: "replays", title: "함께한 LIVE", image: "/replay.jpg", href: "https://youtube.com/watch?v=recorded", date: "2026-09-26T00:00:00Z", slug: "elina" }] : [],
       nextCursor: official || url?.includes("/chzzk") ? "older" : null, moreLoading: false, moreError: false },
     retry: vi.fn(), loadMore: state.more,
   };
 } }));
-beforeEach(() => { state.query = "tab=board&section=media&locale=ko"; state.replace.mockClear(); state.sources.mockClear(); state.failure = ""; state.allEmpty = false; state.manyVideos = false;state.liveVideo=false;state.channelLive=false; state.sdkReady = true; state.sessionReady = true; state.officialAuth = undefined; });
+beforeEach(() => { state.query = "tab=board&section=media&locale=ko"; state.replace.mockClear(); state.sources.mockClear(); state.failure = ""; state.allEmpty = false; state.manyVideos = false;state.liveVideo=false;state.channelLive=false;state.tiktok=false; state.sdkReady = true; state.sessionReady = true; state.officialAuth = undefined; });
 afterEach(cleanup);
 
 it("reads only the anonymous public media while the login SDK is unavailable", async () => {
@@ -78,14 +78,14 @@ const officialChannel = [{ platform: "youtube" as const, url: "https://www.youtu
 it("labels official sources and keeps successful media visible when YouTube fails", () => {
   state.failure = "youtube";
   render(<CreatorMediaPanel slug="elina" locale="ko" socialLinks={officialChannel} />);
-  expect(screen.getByRole("link", { name: /함께한 사진/ })).toHaveTextContent("kyaa");
+  expect(screen.getByRole("link", { name: /함께한 사진/ })).toHaveTextContent("");
   expect(screen.getByRole("link", { name: /함께한 LIVE/ })).toBeInTheDocument();
   expect(screen.getByRole("link", { name: "YouTube" })).toHaveAttribute("target", "_blank");
   expect(screen.queryByText(/아직 모아둔 미디어/)).not.toBeInTheDocument();
 });
 it("shows verified video attribution and keeps true empty distinct from source failure", () => {
   const { rerender } = render(<CreatorMediaPanel slug="elina" locale="ko" socialLinks={officialChannel} />);
-  expect(screen.getByRole("link", { name: /공식 채널 영상/ })).toHaveTextContent("YouTube");
+  expect(screen.getByRole("link", { name: "재생 · 공식 채널 영상" })).toHaveTextContent("");
   expect(screen.getByRole("link", { name: /공식 채널 영상/ })).toHaveAttribute("href", "https://www.youtube.com/watch?v=abcdefghijk");
   state.allEmpty = true;
   rerender(<CreatorMediaPanel slug="elina" locale="ko" socialLinks={officialChannel} />);
@@ -107,7 +107,8 @@ it("recovers a broken YouTube image in the full board and preserves the destinat
   fireEvent.error(card.querySelector("img")!);
   expect(card.querySelector("img")).toBeNull();
   expect(card).toHaveAttribute("href", "https://www.youtube.com/watch?v=abcdefghijk");
-  expect(card).toHaveTextContent("YouTube");
+  expect(card.querySelector("svg")).not.toBeNull();
+  expect(card).toHaveTextContent("");
 });
 
 it("links an all-empty creator without official channels back to the board feed", () => {
@@ -117,18 +118,19 @@ it("links an all-empty creator without official channels back to the board feed"
   expect(screen.getByRole("link", { name: "피드" })).toHaveAttribute("href", "/elina?tab=board&locale=ko#celebrity-content");
 });
 
-it("previews current media independently of board filters and starts a video only on request", () => {
+it("previews current media independently of board filters as thumbnail-only links to the original", () => {
   state.query = "locale=ko&media=photos";
   const { container } = render(<CreatorMediaPanel slug="elina" locale="ko" socialLinks={officialChannel} preview />);
   expect(container.querySelector("iframe")).toBeNull();
   expect(state.sources).not.toHaveBeenCalledWith("/api/celebrities/elina/instagram");
   expect(screen.getByRole("link", { name: /함께한 사진/ })).toHaveAttribute("href", expect.stringContaining("returnTo=%2Felina%3Flocale%3Dko"));
   expect(screen.queryByRole("button", { name: "전체" })).not.toBeInTheDocument();
-  fireEvent.click(screen.getByRole("button", { name: "재생 · 공식 채널 영상" }));
-  const player = screen.getByTitle("재생 · 공식 채널 영상");
-  expect(player).toHaveAttribute("src", "https://www.youtube.com/embed/abcdefghijk?autoplay=1&playsinline=1&hl=ko");
-  expect(player).toHaveFocus();
-  expect(screen.getByRole("link", { name: /공식 채널 영상/ })).toHaveAttribute("data-outbound-kind", "external");
+  const video = screen.getByRole("link", { name: "재생 · 공식 채널 영상" });
+  expect(video).toHaveAttribute("href", "https://www.youtube.com/watch?v=abcdefghijk");
+  expect(video).toHaveAttribute("target", "_blank");
+  expect(video).toHaveAttribute("data-outbound-kind", "external");
+  expect(video).toHaveTextContent("");
+  expect(video.closest("li")).toHaveAttribute("data-media-tile", "square");
 });
 
 it("omits successful empty home sections but keeps failures recoverable", () => {
@@ -147,8 +149,8 @@ it("keeps a curated video first, deduplicates its YouTube upload and bounds each
   const { container } = render(<CreatorMediaPanel slug="elina" locale="ko" socialLinks={officialChannel} preview />);
   const videos = container.querySelectorAll('[data-media-kind="videos"]');
   expect(videos).toHaveLength(3);
-  expect(videos[0]).toHaveTextContent("등록한 대표 영상");
-  expect(screen.queryByRole("button", { name: /공식 채널 영상/ })).not.toBeInTheDocument();
+  expect(videos[0].querySelector("a")).toHaveAttribute("aria-label", "재생 · 등록한 대표 영상");
+  expect(screen.queryByRole("link", { name: /공식 채널 영상/ })).not.toBeInTheDocument();
   expect(screen.getByRole("link", { name: /함께한 사진/ })).toBeInTheDocument();
 });
 
@@ -157,19 +159,30 @@ it.each(APP_LOCALES)("preserves preview navigation and accessible video controls
   const destinations = [...container.querySelectorAll('a[href*="section=media"]')].map(a => a.getAttribute("href"));
   expect(destinations).toContain(`/elina?tab=board&section=media&locale=${locale}&media=videos#celebrity-content`);
   expect(destinations).toContain(`/elina?tab=board&section=media&locale=${locale}&media=photos#celebrity-content`);
-  expect(screen.getByRole("button", { name: /공식 채널 영상/ })).toBeInTheDocument();
+  expect(screen.getByRole("link", { name: /공식 채널 영상/ })).toBeInTheDocument();
 });
 
-it("keeps external media captions out of automatic translation while translating internal copy", async () => {
-  const fetcher = vi.fn().mockResolvedValue(Response.json({ translatedText: "Translated internal title", cached: false }));
+it("keeps a portrait short as a 9:16 thumbnail-only tile in the home 영상 row", () => {
+  state.tiktok = true;
+  const { container } = render(<CreatorMediaPanel slug="elina" locale="ko" preview />);
+  const short = container.querySelector('[data-media-preview-kind="videos"] li')!;
+  expect(short).toHaveAttribute("data-media-tile", "portrait");
+  expect(short).toHaveTextContent("");
+  const link = short.querySelector("a")!;
+  expect(link).toHaveAttribute("href", "https://www.tiktok.com/@ifewknow/video/7690854938997558549");
+  expect(link).toHaveAttribute("aria-label", "재생 · https://www.tiktok.com/@ifewknow/video/7690854938997558549");
+  expect(link.querySelector("svg")).not.toBeNull();
+  expect(container.querySelector('[data-media-preview-kind="photos"] li')).toHaveAttribute("data-media-tile", "square");
+});
+
+it("keeps original captions only in the accessible names of thumbnail-only tiles", () => {
+  const fetcher = vi.fn();
   vi.stubGlobal("fetch", fetcher);
   try {
     render(<CreatorMediaPanel slug="elina" locale="en" socialLinks={officialChannel} />);
-    await waitFor(() => expect(fetcher).toHaveBeenCalled());
-    expect(screen.getByText("공식 채널 영상")).toHaveAttribute("translate", "no");
-    const requestedTexts = fetcher.mock.calls.map(([, init]) => JSON.parse(init.body as string).text);
-    expect(requestedTexts).toContain("함께한 사진");
-    expect(requestedTexts).not.toContain("공식 채널 영상");
+    expect(screen.getByRole("link", { name: "Play · 공식 채널 영상" })).toHaveTextContent("");
+    expect(screen.getByRole("link", { name: "함께한 사진" })).toHaveTextContent("");
+    expect(fetcher).not.toHaveBeenCalled();
   } finally {
     vi.unstubAllGlobals();
   }

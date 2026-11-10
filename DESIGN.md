@@ -982,3 +982,11 @@ The home fan-board preview keeps its compact thumbnail cards and shows localized
 ### Changha GGGI photography — 2026-11-03
 
 At the user's request, registered Changha identity and hero images use the unedited first photograph from his own Instagram post `DfHkOu8mQkn` (2026-10-30), stored at `/images/celebrities/changha/gggi-20261030.jpg` (1883×2510). Old registered URLs resolve to the new image; future CMS uploads and explicit role removals remain authoritative. Identity and hero crops focus at 50% 28%; square/avatar/passport identity crops use 1.5x about that focus for legible faces; calendar retains its near-top portrait focus. The GGGI campaign keeps green copy on the left and the portrait in the right 46% on desktop; mobile uses a 4:3 face-preserving crop above the existing white information panel. The campaign dialog uses a 3:2 crop at the same focus. Background event lettering is photographic context, not a complete text banner; the person's face and campaign UI copy remain visible. Original social posts and historical event artwork are not rewritten.
+
+### 2026-11-10 운영 핫픽스 — 크리에이터 미디어·일정 달력
+
+사용자 [운영] 지시(PROD-HOTFIX-1920)에 따라 모임 기능이 꺼진 운영 화면에 적용한다. 소유자는 `features/media/ui/creator-media-panel`(비 compact 분기)와 `features/fanpage/ui/celebrity-calendar`·`calendar.module.css`다.
+
+- 크리에이터 홈 `영상`·`사진`·`다시보기` 미리보기와 게시판 미디어(`?tab=board&section=media`)는 글자 없는 썸네일 격자다. 768px 미만 3열, 768px부터 4열, 1024px부터 6열, 간격 `--space-1`, 모서리 `--radius-control`. 제목·URL·출처·날짜는 화면에 쓰지 않고 접근 이름에만 원문으로 둔다. 원문 데이터는 바꾸지 않는다.
+- 사진·게시판 미디어 칸은 정사각 크롭. 크리에이터 홈 `영상` 줄의 세로 클립(YouTube 외)은 9:16을 유지한다. 영상 칸은 왼쪽 위 28px 재생 표시(얼굴을 가리지 않게)와 원문 링크(새 창)를 둔다. 사진 실패는 아이콘만 표시한다.
+- 일정 달력: 꽉 찬 원은 선택한 날 하나(`--fanpage-action-solid`). LIVE는 숫자 아래 6px 분홍 점, 출석은 숫자에 2px `--color-success` 링과 오른쪽 위 16px 초록 체크 배지, 오늘은 1px 잉크 테두리. 달력 위 오른쪽에 범례 칩 2개(✓ 출석 · ● LIVE). 일정이 없는 날도 일정 있는 날과 같은 칸 구조(48px, 아래 7px 줄)로 숫자 높이를 맞춘다.

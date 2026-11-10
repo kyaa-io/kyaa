@@ -1,6 +1,7 @@
 "use client";
 import { throwIfAborted } from "@/features/reliability/client/throw-if-aborted";
 import { useEffect, useRef, useState, type CSSProperties } from "react";
+import { ImageOff } from "lucide-react";
 import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import { useByUsSession } from "@/components/byus-session-provider";
 import type { ContentAsset } from "@/features/fan-posts/domain/content";
@@ -8,7 +9,7 @@ import type { AppLocale } from "@/i18n/locales";
 import { contentCopy } from "@/i18n/catalogs/features__fan_posts__ui";
 import styles from "./content.module.css";
 
-export function ContentAssetImage({ asset, locale, alt, adminPreview = false, href, loading = "eager", anonymousPreview = false, noticeMedia = false, thumbnail = false }: { asset: ContentAsset; locale: AppLocale; alt: string; adminPreview?: boolean; href?: string; loading?: "eager" | "lazy"; anonymousPreview?: boolean; noticeMedia?: boolean; thumbnail?: boolean }) {
+export function ContentAssetImage({ asset, locale, alt, adminPreview = false, href, loading = "eager", anonymousPreview = false, noticeMedia = false, thumbnail = false, failure = "text" }: { asset: ContentAsset; locale: AppLocale; alt: string; adminPreview?: boolean; href?: string; loading?: "eager" | "lazy"; anonymousPreview?: boolean; noticeMedia?: boolean; thumbnail?: boolean; failure?: "text" | "icon" }) {
   const auth = usePrivy(), session = useByUsSession(), copy = contentCopy(locale);
   const { ready, authenticated, getAccessToken } = auth;
   const tokenProvider = useRef(getAccessToken);
@@ -49,5 +50,7 @@ export function ContentAssetImage({ asset, locale, alt, adminPreview = false, hr
     const image = <img className={styles.photo} src={current.url} alt={alt} width={asset.width} height={asset.height} onError={() => setSnapshot({ key, failed: true })} />;
     return href ? <a href={href}>{image}</a> : image;
   }
+  // A thumbnail tile shows the icon alone and names the failure for screen readers.
+  if (current?.failed && failure === "icon") return <span ref={placeholder} className={styles.failedIcon} role="status" aria-label={copy.photoFailed}><ImageOff size={24} strokeWidth={1.75} aria-hidden="true" /></span>;
   return <span ref={placeholder} className={styles.status} role="status" data-content-asset-placeholder={loading === "lazy" || undefined} style={{ "--content-asset-ratio": `${asset.width}/${asset.height}` } as CSSProperties}>{current?.failed ? copy.photoFailed : copy.loading}{current?.failed && <button type="button" className={styles.button} onClick={() => setRetry(value => value + 1)}>{copy.retry}</button>}</span>;
 }

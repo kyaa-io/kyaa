@@ -9,13 +9,13 @@ import { videoThumbnailUrl, youtubeVideoId } from "../domain/video-thumbnail";
 import { isRecordedReplayUrl } from "@/features/live/domain/live-watch-link";
 import styles from "./creator-media-panel.module.css";
 
-export function MediaThumbnail({ image, href, kind, source, locale }: { image: string | null; href: string; kind: "photos" | "videos" | "replays"; source?: string; locale: AppLocale }) {
+export function MediaThumbnail({ image, href, kind, source, locale, iconOnly = false }: { image: string | null; href: string; kind: "photos" | "videos" | "replays"; source?: string; locale: AppLocale; iconOnly?: boolean }) {
   const [failed, setFailed] = useState<string[]>([]);
   const [dimensions, setDimensions] = useState<{ width: number; height: number }>();
   const id = kind !== "photos" ? youtubeVideoId(href) : null;
   const src = [image, videoThumbnailUrl(href), ...(id ? [`https://i.ytimg.com/vi/${id}/mqdefault.jpg`] : [])].find((value): value is string => typeof value === "string" && value.length > 0 && !failed.includes(value));
   const provider = id ? "YouTube" : isRecordedReplayUrl("instagram", href) ? "Instagram" : isRecordedReplayUrl("tiktok", href) ? "TikTok" : source;
-  if (!src) return <span className={styles.thumbnailFallback} aria-hidden="true">{kind === "photos" ? <ImageOff size={28} /> : <Play size={28} />}<span>{[provider, participationCopy(locale)[kind]].filter(Boolean).join(" · ")}</span></span>;
+  if (!src) return <span className={styles.thumbnailFallback} aria-hidden="true">{kind === "photos" ? <ImageOff size={28} /> : <Play size={28} />}{!iconOnly && <span>{[provider, participationCopy(locale)[kind]].filter(Boolean).join(" · ")}</span>}</span>;
   return <Image src={src} width={640} height={360} alt="" unoptimized referrerPolicy="no-referrer"
     data-media-portrait={dimensions && dimensions.height > dimensions.width || undefined}
     style={dimensions ? { aspectRatio: `${dimensions.width} / ${dimensions.height}` } : undefined}
