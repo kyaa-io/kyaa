@@ -25,7 +25,7 @@ const tabNames: Record<AppLocale, readonly [string, string]> = {
 export function HistoryTabs({ locale, active }: { locale: AppLocale; active: HistoryTab }) {
   const [ledger, participation] = tabNames[locale] ?? tabNames.en;
   return <FanTabs variant="segment" className={styles.tabs} label={walletCopy(locale).history} current={active} items={[
-    { key: "ledger", label: ledger, href: `/benefits?locale=${locale}#wallet-history` },
+    { key: "ledger", label: ledger, href: `/my/wallet?locale=${locale}` },
     { key: "participation", label: participation, href: `/my/raffles?locale=${locale}` },
   ]} />;
 }
