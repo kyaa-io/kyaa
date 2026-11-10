@@ -144,10 +144,12 @@ it("signed out: the rows the API gives, no placeholders, and one way to sign in 
   await screen.findByText("하트팬1");
   expect(container.querySelectorAll("li[data-row='fan-rank']")).toHaveLength(5);
   const logins = screen.getAllByRole("link", { name: "로그인하고 내 순위 보기" });
-  expect(logins).toHaveLength(1);
+  // One under the 찐팬 list; the 크리에이터 tab has its own on a phone (hidden from 1024px, where the pair has one).
+  expect(logins).toHaveLength(2);
+  expect(container.querySelectorAll("[data-column='fans'] [data-ranking-foot]")).toHaveLength(1);
+  expect(container.querySelectorAll("[data-column='creators'] [data-ranking-foot]")).toHaveLength(1);
   expect(logins[0]!.getAttribute("href")).toContain("/login");
   expect(decodeURIComponent(logins[0]!.getAttribute("href")!)).toContain("/?locale=ko");
-  expect(container.querySelector("[data-column='creators'] [data-ranking-foot]")).toBeNull();
   expect(container.querySelector("[data-placeholder]")).toBeNull();
 });
 
@@ -268,4 +270,31 @@ it("a period with nobody gaining shows the empty line and no pill is lost", asyn
   fireEvent.click(screen.getByRole("button", { name: "오늘" }));
   expect((await screen.findAllByText("아직 순위가 없어요")).length).toBe(2);
   expect(screen.getByRole("button", { name: "누적" })).toBeInTheDocument();
+});
+
+it("a phone reads one list at a time behind the 찐팬 | 크리에이터 segment; both stay in the page for the two-column desktop", async () => {
+  stub();
+  const { container } = render(<RankingBoard locale="ko" />);
+  await screen.findByText("하트팬1");
+  const column = (name: string) => container.querySelector(`[data-column='${name}']`)!;
+  expect(column("fans").getAttribute("data-active")).toBe("true");
+  expect(column("creators").getAttribute("data-active")).toBe("false");
+  const tab = (name: string) => screen.getAllByRole("button", { name }).find((b) => b.hasAttribute("aria-pressed") && !b.closest("li"))!;
+  expect(tab("찐팬").getAttribute("aria-pressed")).toBe("true");
+  fireEvent.click(tab("크리에이터"));
+  expect(column("creators").getAttribute("data-active")).toBe("true");
+  expect(column("fans").getAttribute("data-active")).toBe("false");
+  expect(column("fans").querySelectorAll("li[data-row='fan-rank']").length).toBeGreaterThan(0);
+});
+
+it("movement stands right after the name: ▲ green and ▼ red, hidden when the row did not move", async () => {
+  stubRows([fanRow(1, { delta: 3 }), fanRow(2, { delta: -2 }), fanRow(3, { delta: 0 }), fanRow(4, { delta: null })], [creatorRow(1, { delta: 1 })]);
+  const { container } = render(<RankingBoard locale="ko" />);
+  await inRow("하트팬1");
+  const line = (name: string) => container.querySelector(`li [title='${name}']`)!.parentElement!;
+  expect(line("하트팬1").querySelector("[data-direction='up']")?.textContent).toBe("3");
+  expect(line("하트팬2").querySelector("[data-direction='down']")?.textContent).toBe("2");
+  expect(line("하트팬3").querySelector("[data-delta-cell]")).toBeNull();
+  expect(line("하트팬4").querySelector("[data-delta-cell]")).toBeNull();
+  expect(line("하트팬1").firstElementChild).toBe(container.querySelector("li [title='하트팬1']"));
 });

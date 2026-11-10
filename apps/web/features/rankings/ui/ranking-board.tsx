@@ -31,13 +31,14 @@ function List<T extends { computedAt: string | null; rows: readonly unknown[] }>
 
 /**
  * The ranking of the home page (ranking v3): 찐팬 and 크리에이터 by hearts, ten rows each, with today's biggest mover, movement, today's gain, the way to first
- * place and an opening row. Below 1024px the two lists stand one under the other; from 1024px side by side, each filling half of the card's inner width.
- * Signed out: the rows the API gives and one way to sign in, under the 찐팬 list.
+ * place and an opening row. Below 1024px one list at a time behind a 찐팬 | 크리에이터 segment; from 1024px both side by side, each filling half of the card's inner width.
+ * Signed out: the rows the API gives and one way to sign in under the list (one for the pair on PC).
  */
 export function RankingBoard({ locale, scope = "home-ranking", heading }: { locale: AppLocale; scope?: string; heading?: ReactNode }) {
   const auth = useByUsAuth();
   const guest = auth.ready && !auth.authenticated;
   const [period, setPeriod] = useState<HomeRankingPeriod>("all");
+  const [tab, setTab] = useState<"fans" | "creators">("fans");
   const periods: readonly HomeRankingPeriod[] = ["day", "week", "all"];
   const label = { day: "rkPeriodDay", week: "rkPeriodWeek", all: "rkPeriodAll" } as const;
   return <>
@@ -45,12 +46,18 @@ export function RankingBoard({ locale, scope = "home-ranking", heading }: { loca
       {heading}
       <FanTabs variant="segment" label={rankingsText(locale, "rkPeriodLabel")} current={period} items={periods.map((key) => ({ key, label: rankingsText(locale, label[key]), onSelect: () => setPeriod(key) }))} />
     </div>
+    <div className={styles.tabs}>
+      <FanTabs variant="segment" label={rankingsText(locale, "rkHomeTitle")} current={tab} items={[
+        { key: "fans", label: rankingsText(locale, "rkHomeFans"), onSelect: () => setTab("fans") },
+        { key: "creators", label: rankingsText(locale, "rkCreatorTabShort"), onSelect: () => setTab("creators") },
+      ]} />
+    </div>
     <div className={styles.columns}>
-    <section className={styles.column} data-column="fans" aria-labelledby={`${scope}-fans`}>
+    <section className={styles.column} data-column="fans" data-active={tab === "fans"} aria-labelledby={`${scope}-fans`}>
       <FanHeading as="h3" id={`${scope}-fans`}>{rankingsText(locale, "rkHomeFans")}</FanHeading>
       <FanPanel locale={locale} guest={guest} scope={scope} period={period} />
     </section>
-    <section className={styles.column} data-column="creators" aria-labelledby={`${scope}-creators`}>
+    <section className={styles.column} data-column="creators" data-active={tab === "creators"} aria-labelledby={`${scope}-creators`}>
       <FanHeading as="h3" id={`${scope}-creators`}>{rankingsText(locale, "rkCreatorTabShort")}</FanHeading>
       <CreatorPanel locale={locale} guest={guest} scope={scope} period={period} />
     </section>
@@ -81,6 +88,7 @@ function CreatorPanel({ locale, guest, scope, period }: { locale: AppLocale; gue
     {live.state.status === "error" || period !== "all" ? null : <RankHighlight locale={locale} loading={!data} rows={(data?.rows ?? []).map((row) => ({ key: row.slug, name: row.name, avatar: <CreatorAvatar slug={row.slug} src={row.imageUrl} size={40} photos={undefined} />, delta: data?.comparable ? row.delta : null, dayGain: row.dayGain }))} />}
     <div className={styles.board}>
       <List locale={locale} live={live}>{(ranking) => <CreatorRows locale={locale} ranking={ranking} metric="hearts" scope={scope} challengeTag guest={guest} period={period} fill={guest || period !== "all" ? undefined : LIST_ROWS} />}</List>
+      {guest ? <div className={styles.mobileOnly}><Foot><FootLink href={loginBack(locale)}>{rankingsText(locale, "rkSeeMyRank")}</FootLink></Foot></div> : null}
     </div>
   </>;
 }

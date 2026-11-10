@@ -7,7 +7,7 @@
 .stats { display: flex; min-width: 0; margin: 0; gap: var(--space-6); }
 .stat { min-width: 0; margin: 0; }
 .label { margin: 0; color: var(--color-muted); font-size: var(--fan-badge-size); line-height: var(--fan-body-leading); white-space: nowrap; }
-.value { overflow: hidden; margin: 0; color: var(--color-ink); font-size: var(--fan-item-title-size); font-weight: var(--fan-item-title-weight); font-variant-numeric: tabular-nums; line-height: var(--fan-heading-leading); text-overflow: ellipsis; white-space: nowrap; }
+.value { overflow: hidden; margin: 0; color: var(--color-accent-ink); font-size: var(--fan-item-title-size); font-weight: var(--fan-item-title-weight); font-variant-numeric: tabular-nums; line-height: var(--fan-heading-leading); text-overflow: ellipsis; white-space: nowrap; }
 /* 버튼: 같은 줄에 자리가 있으면 남은 폭을 쓰고, 없으면 다음 줄 전폭. 높이 44. */
 .action { display: flex; flex: 1 0 auto; min-width: 0; }
 

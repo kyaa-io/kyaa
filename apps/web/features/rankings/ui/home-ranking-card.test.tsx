@@ -54,7 +54,7 @@ it("signed out: ten rows per group, rows open in place with a sign-in action, on
   await screen.findByText("팬1");
   expect(container.querySelectorAll("[data-row='fan-rank']")).toHaveLength(10);
   expect(container.querySelectorAll("[data-row='creator-rank']")).toHaveLength(10);
-  expect(screen.getAllByRole("link", { name: "로그인하고 내 순위 보기" })).toHaveLength(1);
+  expect(container.querySelectorAll("[data-column='fans'] a[href*='/login']:not(li a)")).toHaveLength(1);
   fireEvent.click(container.querySelector("li[data-row='fan-rank'] > button")!);
   expect(screen.getByRole("link", { name: "로그인하고 프로필 보기" }).getAttribute("href")).toContain("/login");
   expect(screen.queryByRole("dialog")).toBeNull();

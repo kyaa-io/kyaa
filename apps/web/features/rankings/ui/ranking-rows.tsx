@@ -253,8 +253,8 @@ export function FanRows({ locale, ranking, metric, show, fill, scope, guest = fa
         <Rank rank={row.rank} />
         <span className={styles.avatar} data-first={(accentFirst && i === 0) || undefined}><Avatar avatar={fanAvatar(row.characterId)} imageUrl={null} label="" size={40} /></span>
         <span className={styles.body}>
-          <span className={styles.name} title={row.nickname}>{row.nickname}</span>
-          <Meta items={[rowDelta(locale, row.delta, ranking.comparable), period === "day" ? null : todayGain(locale, metric, row.dayGain)]} />
+          <span className={styles.nameLine}><span className={styles.name} title={row.nickname}>{row.nickname}</span>{rowDelta(locale, row.delta, ranking.comparable)}</span>
+          <Meta items={[period === "day" ? null : todayGain(locale, metric, row.dayGain)]} />
         </span>
         <Share value={value} top={top} />
         <span className={styles.value}>
@@ -288,9 +288,8 @@ export function CreatorRows({ locale, ranking, metric, show, fill, scope, challe
         <Rank rank={row.rank} />
         <span className={styles.avatar} data-first={(accentFirst && i === 0) || undefined}><CreatorAvatar slug={row.slug} src={row.imageUrl} size={40} photos={undefined} /></span>
         <span className={styles.body}>
-          <span className={styles.name} title={row.name}>{row.name}</span>
+          <span className={styles.nameLine}><span className={styles.name} title={row.name}>{row.name}</span>{rowDelta(locale, row.delta, ranking.comparable)}</span>
           <Meta items={[
-            rowDelta(locale, row.delta, ranking.comparable),
             period === "day" ? null : todayGain(locale, metric, row.dayGain),
             row.liveNow ? <LiveMark key="l" locale={locale} name={row.name} /> : null,
           ]} wide={challengeTag && row.challenge ? <FanTag tone="fan" className={styles.challenge}>{rankingsText(locale, "jjTag")}</FanTag> : null} />
