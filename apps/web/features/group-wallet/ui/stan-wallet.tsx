@@ -30,7 +30,7 @@ function Value({ locale, slot, unit }: { locale: AppLocale; slot: StanSlot; unit
 }
 
 /** DS-D-DUO R2: four equal tiles; the existing ad/exchange transaction runs inside the sheet. */
-export function StanWallet({ locale, state, stamps, hearts, links, entries, entriesRetry, className }: { locale: AppLocale; state: WalletCardState; stamps: StanSlot; hearts: StanSlot; links: { hearts: string; claim?: string }; entries?: number | "loading" | "missing"; entriesRetry?: () => void; className?: string }) {
+export function StanWallet({ locale, state, stamps, hearts, links, entries, entriesRetry, className, favoritePicker }: { locale: AppLocale; state: WalletCardState; stamps: StanSlot; hearts: StanSlot; links: { hearts: string; claim?: string }; entries?: number | "loading" | "missing"; entriesRetry?: () => void; className?: string; favoritePicker?: ReactNode }) {
   const w = walletCopy(locale), s = (key: Parameters<typeof dukjilText>[1], values?: unknown[]) => dukjilText(locale, key, values);
   const [open, setOpen] = useState(false), titleId = useId(), wide = useFanWide(), Overlay = wide ? Dialog : BottomSheet;
   const pendingRequest = usePendingExchange();
@@ -52,11 +52,11 @@ export function StanWallet({ locale, state, stamps, hearts, links, entries, entr
       <div className={styles.cell} data-cell="tickets">{glyph("ticket")}<span className={styles.label}>{w.tickets}</span><span className={styles.value}><Value locale={locale} slot={tickets} unit={locale === "ko" ? "장" : undefined} /></span>
         <div className={styles.under} data-entry-state={entries === undefined ? "idle" : typeof entries === "number" ? "ready" : entries} aria-busy={entries === "loading"}>{entries === "loading" ? <span aria-label={w.loading}><FanSkeleton width={96} height={18} /></span> : entries === "missing" ? <FanAction variant="text" className={styles.tileLink} ariaLabel={`${w.error} ${w.retry}`} onClick={entriesRetry}>{w.retry}</FanAction> : <Link className={styles.tileLink} href={`/my/raffles?locale=${locale}` as Route}>{entries === undefined ? s("luckyHistory") : s("luckyMyEntries", [entries.toLocaleString(locale)])} <span aria-hidden="true">›</span></Link>}</div>
       </div>
-      <div className={styles.cell} data-cell="stamps">{glyph("stamp")}<span className={styles.label}>{s("stanFlowStamps")}</span><span className={styles.value}><Value locale={locale} slot={stamps} unit={`/${STAMPS_PER_HEART}`} /></span>
+      {favoritePicker ? <div className={`${styles.cell} ${styles.favoritePicker}`} data-cell="favorite-picker">{favoritePicker}</div> : <><div className={styles.cell} data-cell="stamps">{glyph("stamp")}<span className={styles.label}>{s("stanFlowStamps")}</span><span className={styles.value}><Value locale={locale} slot={stamps} unit={`/${STAMPS_PER_HEART}`} /></span>
         <div className={styles.under}><FanGauge size="sm" className={styles.gauge} segments={STAMPS_PER_HEART} value={full ? STAMPS_PER_HEART : stampCount % STAMPS_PER_HEART} max={STAMPS_PER_HEART} label={s("stanFlowStamps")} />
           {typeof stamps === "number" && <Link className={claimable ? styles.tileLink : styles.stampLabel} href={(claimable ? links.claim! : `/passports?locale=${locale}`) as Route}>{stampText}{claimable && <> <span aria-hidden="true">›</span></>}</Link>}</div>
       </div>
-      <div className={styles.cell} data-cell="hearts">{glyph("heart")}<span className={styles.label}>{s("stanFlowHearts")}</span><span className={styles.value}><Value locale={locale} slot={hearts} /></span></div>
+      <div className={styles.cell} data-cell="hearts">{glyph("heart")}<span className={styles.label}>{s("stanFlowHearts")}</span><span className={styles.value}><Value locale={locale} slot={hearts} /></span></div></>}
     </div>
     {state.kind === "failed" && state.retry ? <FanAction onClick={state.retry}>{w.retry}</FanAction> : null}
     <Overlay open={open && ready} onClose={() => setOpen(false)} labelledBy={titleId} backdropClassName={styles.backdrop} contentClassName={styles.sheet}>

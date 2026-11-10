@@ -473,9 +473,10 @@ begin
   perform pg_temp.expect_error(format('select public.pay_fan_share_proof(%L,%L,%L,''{}'')', u3, p1, extensions.gen_random_uuid()), 'SHARE_PROOF_NOT_FOUND');
   perform pg_temp.check(not exists(select 1 from jsonb_array_elements(public.list_fan_share_proofs(u3, c1) -> 'items') x where (x ->> 'id')::uuid = p1), 'S16 share list leaves reposts out');
   perform pg_temp.check(not exists(select 1 from jsonb_array_elements(public.read_admin_share_proofs(adm, al, 'all', null, 100) -> 'items') x where (x ->> 'id')::uuid = p1), 'S16 admin share list leaves reposts out');
-  -- the old share flow: accepted at once, 10P, revocable
+  -- the share flow: reviewed (20261221140000), then 10P, revocable
   b := pg_temp.bal(u2);
   sp := public.submit_fan_share_proof(u2, c2, 'instagram', 'https://www.instagram.com/p/B3shareBB2/', 'instagram:B3shareBB2', true);
+  perform public.review_fan_share_proof(adm, al, (sp ->> 'id')::uuid, 0, 'accept', null, array['instagram','x']);
   r := public.pay_fan_share_proof(u2, (sp ->> 'id')::uuid, extensions.gen_random_uuid(), '{}');
   perform pg_temp.check((r ->> 'points')::int = 10 and pg_temp.bal(u2) = b + 10, 'S16 share proof still pays 10P ' || r::text);
   r := public.revoke_fan_share_proof(adm, al, (sp ->> 'id')::uuid, 'b3 test revoke');

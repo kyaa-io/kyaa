@@ -300,3 +300,13 @@ it('shows one favorite selector beside the daily missions title and preserves th
  expect(within(section).getByRole('heading',{name:'오늘의 덕질'}).parentElement).toContainElement(selector);
  expect(requests).toContain('/api/benefits?celebrity=bias-x&locale=ko');
 });
+it('shows one favorite picker instead of stamp and heart numbers when no favorite exists',async()=>{
+ bias.value={...bias.value,status:'empty'};
+ const view=render(<GroupBenefitsScreen locale='ko'/>);
+ await screen.findByText('137');
+ const picker=view.container.querySelector('[data-cell="favorite-picker"]') as HTMLElement;
+ expect(within(picker).getByRole('link',{name:'최애 고르기'})).toHaveAttribute('href','/pages/groups?locale=ko');
+ expect(picker).toHaveTextContent(/^최애 고르기$/);
+ expect(view.container.querySelector('[data-wallet-card] [data-cell="stamps"]')).toBeNull();
+ expect(view.container.querySelector('[data-wallet-card] [data-cell="hearts"]')).toBeNull();
+});

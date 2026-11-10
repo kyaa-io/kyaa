@@ -1,9 +1,8 @@
 import "server-only";
 import { z } from "zod";
-import { checkShareProofUrl, shareProofListSchema, shareProofResultSchema, shareProofSubmitSchema, type MissionReward } from "@/features/share-proof/domain/share-proof";
+import { checkShareProofUrl, SHARE_PROOF_STATUSES, shareProofListSchema, shareProofResultSchema, shareProofSubmitSchema } from "@/features/share-proof/domain/share-proof";
 import { creatorSlugSchema } from "@/features/passport/domain/dukjil-types";
 import { boundedJson } from "@/server/certification/certification-http";
-import { awardDukjilActionDetailed } from "@/server/dukjil/award";
 import { resolveCreatorId } from "@/server/dukjil/creator-id";
 
 export interface ShareProofDependencies {
@@ -14,7 +13,7 @@ export interface ShareProofDependencies {
 const headers = { "cache-control": "private, no-store", vary: "Authorization" };
 const STATUS: Record<string, number> = {
   SHARE_PROOF_URL_SHORT: 422, SHARE_PROOF_URL_UNSUPPORTED: 422, SHARE_PROOF_URL_NOT_POST: 422, SHARE_PROOF_OWN_POST_REQUIRED: 400,
-  PASSPORT_REQUIRED: 403, CREATOR_NOT_FOUND: 404, FAN_WEB_ACTIVE_ACCOUNT_REQUIRED: 403,
+  SHARE_PROOF_URL_REUSED: 409, PASSPORT_REQUIRED: 403, CREATOR_NOT_FOUND: 404, FAN_WEB_ACTIVE_ACCOUNT_REQUIRED: 403,
 };
 function failure(error: unknown) {
   const status = (error as { status?: unknown } | null)?.status;
@@ -30,10 +29,11 @@ function failure(error: unknown) {
 }
 const URL_CODE = { short: "SHARE_PROOF_URL_SHORT", unsupported: "SHARE_PROOF_URL_UNSUPPORTED", not_post: "SHARE_PROOF_URL_NOT_POST" } as const;
 // duplicate: the same post was sent as an Instagram repost (B3); the database answers it as a closed replay and nothing is paid.
-const storedSchema = z.object({ id: z.uuid(), replayed: z.boolean(), points: z.number().int().nonnegative().nullable(), status: z.enum(["accepted", "revoked"]), duplicate: z.boolean().optional() });
+const storedSchema = z.object({ id: z.uuid(), replayed: z.boolean(), points: z.number().int().nonnegative().nullable(), status: z.enum(SHARE_PROOF_STATUSES), duplicate: z.boolean().optional() });
 
-/** 261107-2 D12 (review r4 H2). The share mission pays for the fan's own post on one of five networks: the address is reduced to the
- * network's post id here, kept once per member in fan_share_proofs, then the unchanged dukjil payout decides (share rule). */
+/** 261107-2 D12 (review r4 H2) and DUKJIL-POLICY ④. The share mission is proven by the fan's own post on one of five networks: the address is
+ * reduced to the network's post id here and kept as a pending proof, one post for one member across all members. Nothing is paid here:
+ * an operator checks the official tag and accepts it (server/share-proof/admin.ts), and only then the unchanged dukjil payout runs. */
 export function createShareProofHandlers(deps: ShareProofDependencies) {
   const run = async (action: () => Promise<Response>) => { try { return await action(); } catch (error) { return failure(error); } };
   const creator = async (slug: string) => {
@@ -56,23 +56,7 @@ export function createShareProofHandlers(deps: ShareProofDependencies) {
       if (!checked.ok) throw new Error(URL_CODE[checked.problem]);
       const proof = checked.value, celebrity = await creator(body.creator);
       const stored = storedSchema.parse(await deps.rpc("submit_fan_share_proof", { p_app_user_id: appUserId, p_celebrity_id: celebrity, p_platform: proof.platform, p_url: proof.url, p_url_key: proof.key, p_own_post: body.ownPost }));
-      const written = { id: stored.id, replayed: stored.replayed, ...(stored.duplicate ? { duplicate: true } : {}) };
-      // A replay pays only when its payout never ran (the request died after the row was written); a cancelled proof never pays again.
-      if (stored.replayed && (stored.points !== null || stored.status === "revoked")) return Response.json(shareProofResultSchema.parse(written), { status: 200, headers });
-      // The payout runs inside pay_fan_share_proof: it locks the proof, refuses a cancelled one and pays with the proof's own creator,
-      // so an operator's cancel and this payout never interleave (review r4b M1, M2). awardDukjilActionDetailed keeps the failure
-      // record and the skip reasons; only its database call is routed through the locked function.
-      const locked = { rpc: (name: string, args: Record<string, unknown>) => name === "record_dukjil_action"
-        ? deps.rpc("pay_fan_share_proof", { p_app_user_id: appUserId, p_proof_id: stored.id, p_request_key: args.p_request_key, p_params: args.p_params })
-        : deps.rpc(name, args), resolveCreatorId: async () => celebrity };
-      const award = await awardDukjilActionDetailed(locked, { appUserId, creatorSlug: body.creator, actionKey: "share", sourceKey: `share-proof:${stored.id}`, params: { platform: proof.platform } });
-      const result = award.result;
-      const paid = result && !result.replayed && result.points > 0 ? result.points : 0;
-      const skippedReason = paid ? undefined : award.skipped ?? (result?.capped ? "daily_limit" : undefined);
-      // A refusal (daily cap, passport) closes the proof at 0P so a later resubmission cannot pay it; a transient failure leaves it open for the retry.
-      if (!paid && (skippedReason || result)) { try { await deps.rpc("set_fan_share_proof_points", { p_app_user_id: appUserId, p_id: stored.id, p_points: 0 }); } catch { /* stays open */ } }
-      const reward: MissionReward = { points: paid, stamps: paid && result?.stampId ? 1 : 0, ...(skippedReason ? { skippedReason } : {}) };
-      return Response.json(shareProofResultSchema.parse({ ...written, reward }), { status: stored.replayed ? 200 : 201, headers });
+      return Response.json(shareProofResultSchema.parse({ id: stored.id, replayed: stored.replayed, status: stored.status, ...(stored.duplicate ? { duplicate: true } : {}) }), { status: stored.replayed ? 200 : 201, headers });
     }),
   };
 }

@@ -8,7 +8,6 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import { FanDialog } from "@/components/fan-ui/fan-dialog";
 import { showFanToast } from "@/components/fan-ui/fan-toast";
-import { PointRewardBurst, usePointRewardBurst } from "@/components/fan-ui/point-reward-burst";
 import { FanSkeletonRows } from "@/components/fan-ui/fan-skeleton";
 import { communityShareLinkSchema } from "@/features/community-stamps/domain/community-stamps";
 import { DukjilProvider, useDukjil } from "@/features/dukjil/ui/dukjil-provider";
@@ -16,12 +15,13 @@ import { missionProgress } from "@/features/dukjil/domain/dukjil-ui";
 import { GroupRequestError, useGroupRequest, useGroupResource } from "@/features/groups/ui/use-group-resource";
 import { fanLoginHref } from "@/components/login-href";
 import type { AppLocale } from "@/i18n/locales";
-import { checkShareProofUrl, shareProofListSchema, shareProofResultSchema } from "../domain/share-proof";
+import { checkShareProofUrl, shareProofListSchema, shareProofResultSchema, type ShareProofItem } from "../domain/share-proof";
 import { shareProofCopy, sharePlatformName } from "./share-proof-copy";
 import gridStyles from "@/features/certification/ui/certification-grid.module.css";
 import styles from "./share-proof.module.css";
 
 const parseList = (value: unknown) => shareProofListSchema.parse(value);
+const statusText = (c: ReturnType<typeof shareProofCopy>, locale: AppLocale, item: ShareProofItem) => item.status === "pending" ? c.pending : item.status === "rejected" ? c.rejected : item.status === "revoked" ? c.revoked : item.points ? `+${item.points.toLocaleString(locale)}P` : c.noPoints;
 
 /** 261107-2 D12: the share mission as a proof in the 인증 list. The tile opens the proof dialog through `share=1` in the address,
  * so the 덕질 mission row and this tile land on the same place. */
@@ -54,7 +54,6 @@ export function ShareProofDialog({ slug, locale, onClose }: { slug: string; loca
   const { getAccessToken } = useByUsAuth();
   const list = useGroupResource(authenticated ? `/api/me/share-proofs?creator=${encodeURIComponent(slug)}` : null, parseList);
   const [url, setUrl] = useState(""), [own, setOwn] = useState(false), [problem, setProblem] = useState(""), [ownProblem, setOwnProblem] = useState(false), [busy, setBusy] = useState(false), [linkBusy, setLinkBusy] = useState(false);
-  const { burst, add, clear } = usePointRewardBurst();
   async function shareLink() {
     if (linkBusy) return;
     setLinkBusy(true);
@@ -78,19 +77,17 @@ export function ShareProofDialog({ slug, locale, onClose }: { slug: string; loca
     try {
       const result = shareProofResultSchema.parse(await request("/api/me/share-proofs", { method: "POST", body: JSON.stringify({ creator: slug, url: url.trim(), ownPost: true }) }));
       setUrl(""); setOwn(false);
-      if (result.reward?.points) add(result.reward.points);
-      else if (result.reward?.skippedReason === "daily_limit") showFanToast({ title: c.dailyLimit, tone: "neutral" });
-      else if (result.replayed) showFanToast({ title: c.used, tone: "neutral" });
+      showFanToast({ title: result.replayed ? c.used : c.sent, tone: result.replayed ? "neutral" : "success" });
+      list.retry();
     } catch (error) {
       const code = error instanceof GroupRequestError ? error.code : "";
       if (code === "SHARE_PROOF_OWN_POST_REQUIRED") { setOwnProblem(true); return; }
-      setProblem(code === "SHARE_PROOF_URL_SHORT" ? c.short : code === "SHARE_PROOF_URL_NOT_POST" ? c.notPost : code === "SHARE_PROOF_URL_UNSUPPORTED" || code === "INVALID_REQUEST" ? c.invalid : code === "PASSPORT_REQUIRED" ? c.passport : c.failed);
+      setProblem(code === "SHARE_PROOF_URL_SHORT" ? c.short : code === "SHARE_PROOF_URL_NOT_POST" ? c.notPost : code === "SHARE_PROOF_URL_UNSUPPORTED" || code === "INVALID_REQUEST" ? c.invalid : code === "PASSPORT_REQUIRED" ? c.passport : code === "SHARE_PROOF_URL_REUSED" ? c.reused : c.failed);
     } finally { setBusy(false); }
   }
   const returnTo = `${pathname}?${params?.toString() ?? ""}`;
   return <FanDialog open onOpenChange={value => { if (!value) onClose(); }} responsive size="md" title={c.title} closeLabel={c.close}
     primary={!ready ? undefined : authenticated ? { label: c.submit, onClick: () => void submit(), loading: busy } : { label: c.login, onClick: () => router.push(fanLoginHref(locale, returnTo) as Route) }} secondary={{ label: c.close, onClick: onClose }}>
-    <PointRewardBurst locale={locale} points={burst?.points ?? 0} burstKey={burst?.key} onDone={clear} />
     <div className={styles.body} data-share-proof="">
       <section className={styles.step}>
         <p className={styles.stepTitle}>{c.step1}</p>
@@ -98,6 +95,7 @@ export function ShareProofDialog({ slug, locale, onClose }: { slug: string; loca
       </section>
       <form className={styles.step} onSubmit={event => void submit(event)} noValidate>
         <label className={styles.stepTitle} htmlFor={fieldId}>{c.step2}</label>
+        <p className={styles.muted}>{c.tag}</p>
         <input id={fieldId} className={styles.input} type="url" inputMode="url" autoComplete="off" spellCheck={false} placeholder="https://" value={url}
           onChange={event => { setUrl(event.target.value); if (problem) setProblem(""); }} aria-invalid={Boolean(problem) || undefined} aria-describedby={problem ? `${fieldId}-error` : undefined} disabled={!authenticated || busy} maxLength={600} />
         {problem && <p id={`${fieldId}-error`} className={styles.error} role="alert">{problem}</p>}
@@ -112,7 +110,7 @@ export function ShareProofDialog({ slug, locale, onClose }: { slug: string; loca
         {list.loading ? <FanSkeletonRows rows={2} variant="plain" /> : list.data?.items.length ? <ul className={styles.list}>{list.data.items.slice(0, 5).map(item => <li key={item.id}>
           <a href={item.url} target="_blank" rel="noopener noreferrer" data-outbound-tracking="off">{sharePlatformName(locale, item.platform)}</a>
           <time dateTime={item.createdAt}>{new Date(item.createdAt).toLocaleDateString(locale, { month: "2-digit", day: "2-digit" })}</time>
-          <span data-status={item.status}>{item.status === "revoked" ? c.revoked : item.points ? `+${item.points.toLocaleString(locale)}P` : c.noPoints}</span>
+          <span data-status={item.status}>{statusText(c, locale, item)}</span>
         </li>)}</ul> : <p className={styles.muted}>{c.none}</p>}
       </section>}
     </div>
@@ -130,6 +128,6 @@ export function ShareProofHistoryRows({ slug, locale, classes, empty }: { slug: 
   const next = new URLSearchParams(params?.toString()); next.set("share", "1");
   return <>{items.map(item => <Link key={item.id} href={`${pathname}?${next.toString()}` as Route} scroll={false} className={classes.row} data-share-proof-row="">
     <span className={classes.copy}><strong>{c.title}</strong><small>{sharePlatformName(locale, item.platform)}</small><small>{new Intl.DateTimeFormat(locale, { calendar: "gregory", dateStyle: "medium" }).format(new Date(item.createdAt))}</small></span>
-    <span className={classes.status} data-status={item.status === "revoked" ? "rejected" : "approved"}>{item.status === "revoked" ? c.revoked : item.points ? `+${item.points.toLocaleString(locale)}P` : c.noPoints}</span>
+    <span className={classes.status} data-status={item.status === "revoked" || item.status === "rejected" ? "rejected" : item.status === "pending" ? "pending" : "approved"}>{statusText(c, locale, item)}</span>
   </Link>)}</>;
 }
