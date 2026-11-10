@@ -42,8 +42,8 @@ do $$ declare f text; begin
   select pg_temp.ex_id('creator'),pg_temp.ex_id('fan2'),1,'passport_page_claim',extensions.gen_random_uuid(),'2099-11-09 23:59:00+09' from generate_series(1,5);
   -- today
   insert into public.creator_heart_ledger(celebrity_id,app_user_id,amount,source_type,source_id,created_at)
-  select pg_temp.ex_id('creator'),pg_temp.ex_id(f),1,'passport_page_claim',extensions.gen_random_uuid(),'2099-11-10 23:59:00+09'
-    from generate_series(1,100) g(i), (values ('admin',60),('tester',50),('plain',40),('idle_admin',30),('fan1',20),('fan2',10)) v(f,n) where g.i <= v.n;
+  select pg_temp.ex_id('creator'),pg_temp.ex_id(v.who),1,'passport_page_claim',extensions.gen_random_uuid(),'2099-11-10 23:59:00+09'
+    from generate_series(1,100) g(i), (values ('admin',60),('tester',50),('plain',40),('idle_admin',30),('fan1',20),('fan2',10)) v(who,n) where g.i <= v.n;
   set local session_replication_role = origin;
   perform public.refresh_home_rankings('2099-11-09 14:59:59+00');
   perform public.refresh_home_rankings('2099-11-10 14:59:59+00');
