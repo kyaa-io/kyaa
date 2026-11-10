@@ -91,7 +91,7 @@ test('AWS compiler keeps every runtime root while full CI retains fixtures and t
   const base = JSON.parse(readFileSync(path.join(root, 'tsconfig.json'), 'utf8'));
   assert.ok(base.include.includes('.next/types/**/*.ts'));
   const config = readFileSync(path.join(root, 'next.config.ts'), 'utf8');
-  assert.match(config, /typescript: \{ tsconfigPath: "tsconfig.aws.json" \}/);
+  assert.match(config, /typescript: \{ tsconfigPath: "tsconfig.aws.json",/);
   assert.doesNotMatch(config, /ignoreBuildErrors\s*:\s*true/);
   const backend = load(readFileSync('.github/workflows/backend-security.yml', 'utf8'));
   assert.equal(backend.on.push.paths, undefined);
@@ -158,7 +158,9 @@ test('DEV caches are isolated, restored and exported without changing release im
   assert.match(script,/--target next-cache-export/);
   assert.match(script,/aws-release\.mjs build-record dev "\$digest"/);
   const dockerfile=readFileSync('Dockerfile.aws','utf8');
-  assert.match(dockerfile,/COPY --from=nextcache \/ apps\/web\/\.next\/cache\/\nRUN if \[ -f apps\/web\/\.next\/cache\/typecheck\/buildinfo \]; then mv apps\/web\/\.next\/cache\/typecheck\/buildinfo apps\/web\/\.next\/cache\/\.tsbuildinfo; fi\nRUN NODE_OPTIONS=--max-old-space-size=6144 npm run build --workspace @byus\/web\n/);
+  const stages=new Map([...dockerfile.matchAll(/^FROM .+ AS (\S+)\n([\s\S]*?)(?=^FROM |$(?![\s\S]))/gm)].map(m=>[m[1],m[0]]));
+  assert.match(stages.get('build'),/COPY --from=nextcache \/ apps\/web\/\.next\/cache\/\nRUN if \[ -f apps\/web\/\.next\/cache\/typecheck\/buildinfo \]; then mv apps\/web\/\.next\/cache\/typecheck\/buildinfo apps\/web\/\.next\/cache\/\.tsbuildinfo; fi\n/);
+  assert.match(stages.get('bundle'),/^FROM build AS bundle\nRUN KYAA_AWS_BUILD_PHASE=bundle NODE_OPTIONS=--max-old-space-size=6144 npm run build --workspace @byus\/web\n/m);
   assert.doesNotMatch(dockerfile,/COPY \.ci\/next-build-cache/);
   assert.match(dockerfile,/FROM scratch AS nextcache\n\nFROM --platform=linux\/amd64 \$\{NODE_BUILD_BASE\} AS build/);
   const buildspec=readFileSync('infrastructure/aws/platform/buildspec.yml','utf8');
@@ -167,15 +169,16 @@ test('DEV caches are isolated, restored and exported without changing release im
   assert.match(script,/--build-context nextcache=\.ci\/next-build-cache -f Dockerfile\.aws -t "\$tag"/);
   assert.match(script,/--build-context nextcache=\.ci\/next-build-cache --output type=local/);
   assert.match(readFileSync('.dockerignore','utf8'),/^\.ci\/next-build-cache$/m);
-  // Only the compiler cache and the typecheck build info leave the build stage, and the export replaces the restored directory.
-  assert.match(dockerfile,/FROM scratch AS next-cache-export\nCOPY --from=build \/app\/apps\/web\/\.next\/cache\/turbopack\/ \/turbopack\/\nCOPY --from=build \/app\/apps\/web\/\.next\/cache\/\.tsbuildinfo \/typecheck\/buildinfo\n\nFROM /);
+  // Both branches must succeed before exporting compiler cache and typecheck build info.
+  assert.match(stages.get('verified'),/^FROM bundle AS verified\nCOPY --from=typecheck \/tmp\/kyaa-web-typecheck-passed \/tmp\/kyaa-web-typecheck-passed\nCOPY --from=typecheck \/app\/apps\/web\/\.next\/cache\/\.tsbuildinfo \/app\/apps\/web\/\.next\/cache\/\.tsbuildinfo\n/m);
+  assert.match(stages.get('next-cache-export'),/^FROM scratch AS next-cache-export\nCOPY --from=verified \/app\/apps\/web\/\.next\/cache\/turbopack\/ \/turbopack\/\nCOPY --from=verified \/app\/apps\/web\/\.next\/cache\/\.tsbuildinfo \/typecheck\/buildinfo\n/);
   assert.match(script,/rm -rf \.ci\/next-build-cache && mv \.ci\/next-build-cache-export \.ci\/next-build-cache; then/);
   assert.doesNotMatch(script,/cp -a \.ci\/next-build-cache-export/);
   assert.match(steps[restore].with.key,/^dev-next-v2-/);
   assert.equal(steps[save].with.key,steps[restore].with.key);
-  // The incremental check is still Next's own typecheck: it must stay on and the config must keep producing build info.
+  // Only the isolated AWS bundle skips its inline check; the other branch must produce build info.
   assert.equal(JSON.parse(readFileSync('apps/web/tsconfig.json','utf8')).compilerOptions.incremental,true);
-  assert.doesNotMatch(readFileSync('apps/web/next.config.ts','utf8'),/ignoreBuildErrors/);
+  assert.match(readFileSync('apps/web/next.config.ts','utf8'),/process\.env\.HOSTING_PROVIDER === "aws" \? \{[^\n]*typescript: \{ tsconfigPath: "tsconfig.aws.json", ignoreBuildErrors: process\.env\.KYAA_AWS_BUILD_PHASE === "bundle" \}/);
   assert.match(dockerfile,/FROM --platform=linux\/amd64 \$\{NODE_BUILD_BASE\} AS runtime/);
   assert.match(readFileSync('apps/web/next.config.ts','utf8'),/NEXT_BUILD_CACHE === "1"[\s\S]*turbopackFileSystemCacheForBuild: true/);
   // dev 영구 캐시는 NEXT_DEV_FS_CACHE=0일 때만 끄고, 빌드 캐시 분기와 같은 experimental 객체에 합친다.
