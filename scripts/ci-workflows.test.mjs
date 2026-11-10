@@ -51,14 +51,15 @@ test('SQL groups are disjoint, retain setup, and do not wait for unrelated API o
     else assert.match(step.if ?? '', /^matrix\.suite != 'live'/, step.name ?? step.run ?? step.uses);
   }
   const grouped = jobs.database.steps.filter(step => step.if && !dependencySetup.includes(step));
-  assert.equal(grouped.length, 33);
+  assert.equal(grouped.length, 35);
   const counts = { core: 0, live: 0, events: 0, 'economy-1': 0, 'economy-2': 0 };
   for (const step of grouped) {
     const group = /^matrix\.suite == '(core|live|events|economy-1|economy-2)'$/.exec(step.if)?.[1];
     assert.ok(group, step.name);
     counts[group]++;
   }
-  assert.deepEqual(counts, { core: 13, live: 1, events: 10, 'economy-1': 2, 'economy-2': 7 });
+  // core gained the steady check-in and the share-tag review replays (DUKJIL-POLICY, 2026-11-11).
+  assert.deepEqual(counts, { core: 15, live: 1, events: 10, 'economy-1': 2, 'economy-2': 7 });
   // The former single economy suite is split in two runners; each of its nine steps appears once, and each listed SQL file is named by exactly one step. Replays that already repeated an SQL file inside a step are unchanged.
   const economySteps = grouped.filter(step => /^matrix\.suite == 'economy-[12]'$/.test(step.if));
   assert.deepEqual(economySteps.map(step => step.name).sort(), [
