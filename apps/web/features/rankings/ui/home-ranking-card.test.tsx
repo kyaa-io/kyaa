@@ -181,3 +181,23 @@ it("rings only the rows whose value changed, never on the first answer", async (
     delete (Element.prototype as Partial<Element>).animate;
   }
 });
+
+it("a period change is not a value change: no ring (and no move) when the tabs switch to an answer the cache already holds", async () => {
+  auth.value = { ...auth.value, authenticated: true, user: { id: "viewer" } };
+  const animate = vi.fn(() => ({}) as Animation);
+  Element.prototype.animate = animate;
+  try {
+    vi.stubGlobal("matchMedia", () => ({ matches: false, addEventListener() {}, removeEventListener() {} }));
+    const answers = { all: fans([fanRow(1, { nickname: "가" }), fanRow(2, { nickname: "나" })]), day: fans([fanRow(1, { nickname: "가", hearts: 2, score: 2 }), fanRow(2, { nickname: "나", hearts: 1, score: 1 })]) };
+    vi.stubGlobal("fetch", vi.fn(async (url: RequestInfo | URL) => Response.json(String(url).includes("kind=fans") ? (String(url).includes("period=day") ? answers.day : answers.all) : creators())));
+    render(<HomeRankingCard locale="ko" />);
+    await screen.findByText("가");
+    for (const name of ["오늘", "누적", "오늘", "누적"]) {
+      fireEvent.click(screen.getAllByRole("button", { name }).find((b) => b.closest("nav"))!);
+      await waitFor(() => expect(screen.getAllByText("가").length).toBeGreaterThan(0));
+    }
+    expect(animate).not.toHaveBeenCalled();
+  } finally {
+    delete (Element.prototype as Partial<Element>).animate;
+  }
+});

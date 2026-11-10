@@ -73,7 +73,7 @@ function FanPanel({ locale, guest, scope, period }: { locale: AppLocale; guest: 
     <MetricLine locale={locale} period={period} metric="points" computedAt={data?.computedAt ?? null} stale={data?.state === "stale"} />
     {live.state.status === "error" || period !== "all" ? null : <RankHighlight locale={locale} loading={!data} rows={(data?.rows ?? []).map((row, i) => ({ key: `${i}`, name: row.nickname, avatar: <Avatar avatar={fanAvatar(row.characterId)} imageUrl={null} label="" size={40} />, delta: data?.comparable ? row.delta : null, dayGain: row.dayGain }))} />}
     <div className={styles.board}>
-      <List locale={locale} live={live}>{(ranking) => <FanRows locale={locale} ranking={ranking} metric="points" scope={scope} guest={guest} fill={guest || period !== "all" ? undefined : LIST_ROWS} />}</List>
+      <List locale={locale} live={live}>{(ranking) => <FanRows key={period} locale={locale} ranking={ranking} metric="points" scope={scope} guest={guest} fill={guest || period !== "all" ? undefined : LIST_ROWS} />}</List>
       {guest ? <Foot><FootLink href={loginBack(locale)}>{rankingsText(locale, "rkSeeMyRank")}</FootLink></Foot>
         : data?.me ? <Foot><MyRank locale={locale} ranking={data} metric="points" /></Foot> : null}
     </div>
@@ -87,7 +87,7 @@ function CreatorPanel({ locale, guest, scope, period }: { locale: AppLocale; gue
     <MetricLine locale={locale} period={period} metric="likes" computedAt={data?.computedAt ?? null} stale={data?.state === "stale"} />
     {live.state.status === "error" || period !== "all" ? null : <RankHighlight locale={locale} loading={!data} rows={(data?.rows ?? []).map((row) => ({ key: row.slug, name: row.name, avatar: <CreatorAvatar slug={row.slug} src={row.imageUrl} size={40} photos={undefined} />, delta: data?.comparable ? row.delta : null, dayGain: row.dayGain }))} />}
     <div className={styles.board}>
-      <List locale={locale} live={live}>{(ranking) => <CreatorRows locale={locale} ranking={ranking} metric="likes" scope={scope} challengeTag guest={guest} period={period} fill={guest || period !== "all" ? undefined : LIST_ROWS} />}</List>
+      <List locale={locale} live={live}>{(ranking) => <CreatorRows key={period} locale={locale} ranking={ranking} metric="likes" scope={scope} challengeTag guest={guest} period={period} fill={guest || period !== "all" ? undefined : LIST_ROWS} />}</List>
       {guest ? <div className={styles.mobileOnly}><Foot><FootLink href={loginBack(locale)}>{rankingsText(locale, "rkSeeMyRank")}</FootLink></Foot></div> : null}
     </div>
   </>;
