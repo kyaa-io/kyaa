@@ -43,6 +43,7 @@ jobs:
       - name: Local SQL, authority, concurrency and browser flow
         run: bash scripts/verify-cs-local.sh
       - name: Restore the ffmpeg-static binary
+        if: ${{ !(github.event_name == 'push' && github.ref == 'refs/heads/main' && github.repository == 'kyaa-io/kyaa') }}
         id: ffmpeg-cache
         uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
         with:
@@ -52,7 +53,7 @@ jobs:
             node_modules/ffmpeg-static/ffmpeg.README
           key: ffmpeg-static-v1-${{ runner.os }}-${{ runner.arch }}-5.3.0-${{ hashFiles('package-lock.json') }}
       - name: Install the approved media runtime for the ordinary build
-        if: steps.ffmpeg-cache.outputs.cache-hit != 'true'
+        if: ${{ !(github.event_name == 'push' && github.ref == 'refs/heads/main' && github.repository == 'kyaa-io/kyaa') && steps.ffmpeg-cache.outputs.cache-hit != 'true' }}
         run: |
           d=10
           for n in 1 2 3 4; do
@@ -64,6 +65,7 @@ jobs:
       # Next's build typecheck took 6.2 of this job's 8.6 minutes from scratch. Its build info lets it re-check only what changed;
       # a missing or unusable file means a full check, and backend-security still runs the full `npm run typecheck` on every push.
       - name: Restore the typecheck build info of an earlier ordinary build
+        if: ${{ !(github.event_name == 'push' && github.ref == 'refs/heads/main' && github.repository == 'kyaa-io/kyaa') }}
         continue-on-error: true
         uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
         with:
@@ -72,16 +74,19 @@ jobs:
           restore-keys: |
             cs-typecheck-v1-${{ runner.os }}-${{ hashFiles('package-lock.json', 'apps/web/tsconfig.json') }}-
       - name: Build ordinary application
+        if: ${{ !(github.event_name == 'push' && github.ref == 'refs/heads/main' && github.repository == 'kyaa-io/kyaa') }}
         run: npm run build
         env:
           NEXT_PUBLIC_PRIVY_APP_ID: cs-build-check
       - name: Save the typecheck build info of this ordinary build
+        if: ${{ !(github.event_name == 'push' && github.ref == 'refs/heads/main' && github.repository == 'kyaa-io/kyaa') }}
         continue-on-error: true
         uses: actions/cache/save@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
         with:
           path: apps/web/.next/cache/.tsbuildinfo
           key: cs-typecheck-v1-${{ runner.os }}-${{ hashFiles('package-lock.json', 'apps/web/tsconfig.json') }}-${{ github.run_id }}-${{ github.run_attempt }}
       - name: Ordinary build rejects local test identities
+        if: ${{ !(github.event_name == 'push' && github.ref == 'refs/heads/main' && github.repository == 'kyaa-io/kyaa') }}
         run: node apps/web/e2e/cs-local/production-auth.mjs
       - uses: actions/upload-artifact@v4
         if: always()

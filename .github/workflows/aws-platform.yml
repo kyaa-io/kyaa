@@ -64,7 +64,11 @@ jobs:
           cfn-lint --region ap-northeast-2 --template infrastructure/aws/platform/network.json infrastructure/aws/platform/environment.json infrastructure/aws/platform/ci-role.json infrastructure/aws/platform/scheduled-workers.json infrastructure/aws/worker/notification-monitor.json infrastructure/aws/wave/site.json infrastructure/aws/wave/ci-role.json
           cfn-lint --region us-east-1 --template infrastructure/aws/platform/edge-security.json
       - name: Test release and notice safeguards
+        if: env.RELEASE_ENV != 'dev'
         run: node --test scripts/aws-release*.test.mjs scripts/deployment-notices.test.mjs scripts/dev-deployment-notices.test.mjs scripts/aws-wave-release.test.mjs
+      - name: Test dev deployment safeguards
+        if: env.RELEASE_ENV == 'dev'
+        run: node --test scripts/dev-deployment-notices.test.mjs
       - name: Validate promotion run sources
         if: env.RELEASE_ENV != 'dev'
         run: |
@@ -157,7 +161,10 @@ jobs:
           # No remote BuildKit cache: exporting it cost 8.8-17.2 min per run and the cached npm layer saved nothing (SPEED-CI).
           docker buildx build --load --platform linux/amd64 --build-arg NODE_BUILD_BASE="$NODE_BUILD_BASE" \
             --build-context nextcache=.ci/next-build-cache -f Dockerfile.aws -t "$tag" .
-          docker run --rm --entrypoint node "$tag" -e "if(require('fs').existsSync('/app/.env'))process.exit(1);if(process.version.split('.')[0]!=='v24')process.exit(1)"
+          image_id=$(docker image inspect "$tag" --format '{{.Id}}')
+          docker run --rm --entrypoint node "$image_id" -e "if(require('fs').existsSync('/app/.env'))process.exit(1);if(process.version.split('.')[0]!=='v24')process.exit(1)"
+          node apps/web/e2e/cs-local/production-auth.mjs image "$image_id"
+          node scripts/aws-release-runtime-auth.mjs before-push "$tag"
           docker push "$tag"
           name=${repository#*/}
           digest=$(aws ecr describe-images --region ap-northeast-2 --repository-name "$name" --image-ids imageTag="$GITHUB_SHA-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT" --query 'imageDetails[0].imageDigest' --output text)

@@ -125,7 +125,8 @@ test('the ordinary build reuses typecheck build info while the full typecheck st
     assert.equal(cs[index].with.path, 'apps/web/.next/cache/.tsbuildinfo');
     assert.match(cs[index].with.key, /^cs-typecheck-v1-.*hashFiles\('package-lock\.json', 'apps\/web\/tsconfig\.json'\).*github\.run_id/);
   }
-  assert.equal(cs[save].if, undefined);
+  assert.equal(cs[save].if, cs[build].if);
+  assert.match(cs[build].if, /github.event_name == 'push'.*refs\/heads\/main.*kyaa-io\/kyaa/);
   assert.equal(cs[build].run, 'npm run build');
   assert.equal(cs[build]['continue-on-error'], undefined);
   const backend = load(readFileSync('.github/workflows/backend-security.yml', 'utf8'));
@@ -152,7 +153,7 @@ test('DEV caches are isolated, restored and exported without changing release im
   assert.match(script,/docker buildx build --load --platform linux\/amd64/);
   assert.doesNotMatch(script,/--cache-(from|to)/);
   assert.ok(!steps.some(s=>/ghaction-github-runtime/.test(s.uses??'')));
-  assert.match(script,/docker run --rm --entrypoint node "\$tag"/);
+  assert.match(script,/docker run --rm --entrypoint node "\$image_id"/);
   assert.match(script,/docker push "\$tag"/);
   assert.match(script,/aws ecr describe-images/);
   assert.match(script,/--target next-cache-export/);
@@ -184,4 +185,48 @@ test('DEV caches are isolated, restored and exported without changing release im
   // dev 영구 캐시는 NEXT_DEV_FS_CACHE=0일 때만 끄고, 빌드 캐시 분기와 같은 experimental 객체에 합친다.
   assert.match(readFileSync('apps/web/next.config.ts','utf8'),/NEXT_DEV_FS_CACHE === "0"[\s\S]*turbopackFileSystemCacheForDev: false/);
   assert.equal(workflow.concurrency['cancel-in-progress'],false);
+});
+
+
+test('only the exact repository main push delegates the ordinary build and its exclusive prerequisites', () => {
+ const cs = load(readFileSync('.github/workflows/cs-inquiries.yml','utf8'));
+ const steps = cs.jobs['cs-inquiries'].steps;
+ const names = ['Restore the ffmpeg-static binary','Restore the typecheck build info of an earlier ordinary build','Build ordinary application','Save the typecheck build info of this ordinary build','Ordinary build rejects local test identities'];
+ const enabled = (expression, github, hit='false') => Function('github','steps',`return (${expression.replace(/^\$\{\{\s*|\s*\}\}$/g,'').replaceAll('steps.ffmpeg-cache.outputs.cache-hit',"steps['ffmpeg-cache'].outputs['cache-hit']")})`)(github,{'ffmpeg-cache':{outputs:{'cache-hit':hit}}});
+ for (const [event_name,ref,repository,delegated] of [
+  ['push','refs/heads/main','kyaa-io/kyaa',true], ['pull_request','refs/pull/1/merge','kyaa-io/kyaa',false],
+  ['push','refs/heads/release/production','kyaa-io/kyaa',false], ['workflow_dispatch','refs/heads/main','kyaa-io/kyaa',false],
+  ['schedule','refs/heads/main','kyaa-io/kyaa',false], ['workflow_call','refs/heads/main','kyaa-io/kyaa',false],
+  ['push','refs/heads/main','fork/kyaa',false], ['push','refs/heads/feature','kyaa-io/kyaa',false],
+ ]) {
+  const context={event_name,ref,repository};
+  for(const name of names) assert.equal(enabled(steps.find(s=>s.name===name).if,context),!delegated,`${event_name} ${ref} ${name}`);
+  const install=steps.find(s=>s.name==='Install the approved media runtime for the ordinary build');
+  assert.equal(enabled(install.if,context),!delegated);assert.equal(enabled(install.if,context,'true'),false);
+ }
+ for(const step of steps.filter(s=>s.run?.includes('features/support server/support')||s.run==='bash scripts/verify-cs-local.sh')) {assert.equal(step.if,undefined);assert.equal(step['continue-on-error'],undefined);}
+ assert.deepEqual(cs.on.push,{branches:['main','release/production']});
+ assert.ok(!JSON.stringify(steps).includes('waitForRequiredCi'));
+});
+
+test('dev delegates shared script tests to required notices and retains its AWS-specific protection', () => {
+ const steps=workflow.jobs.release.steps;
+ const shared=steps.find(s=>s.name==='Test release and notice safeguards');
+ assert.equal(shared.if,"env.RELEASE_ENV != 'dev'");
+ assert.equal(shared.run,'node --test scripts/aws-release*.test.mjs scripts/deployment-notices.test.mjs scripts/dev-deployment-notices.test.mjs scripts/aws-wave-release.test.mjs');
+ const dev=steps.find(s=>s.name==='Test dev deployment safeguards');
+ assert.equal(dev.if,"env.RELEASE_ENV == 'dev'");assert.equal(dev.run,'node --test scripts/dev-deployment-notices.test.mjs');
+ const notices=load(readFileSync('.github/workflows/deployment-notices.yml','utf8')).jobs['validate-notice'];
+ assert.match(notices.if,/github.event_name == 'push'/);assert.equal(notices['runs-on'],'ubuntu-24.04');
+ assert.ok(notices.steps.some(s=>s.run?.includes('scripts/aws-release*.test.mjs')&&s.run.includes('scripts/deployment-notices.test.mjs')&&s.run.includes('scripts/aws-wave-release.test.mjs')));
+ assert.ok(notices.steps.some(s=>s.run==='node scripts/deployment-notices.mjs check "$BASE_SHA" "$HEAD_SHA"'));
+});
+
+test('the same loaded image is smoked, authenticated and checked immediately before the first push', () => {
+ const build=workflow.jobs.release.steps.find(s=>s.id==='build');const script=build.run;
+ const markers=['docker buildx build --load','image_id=$(docker image inspect','docker run --rm --entrypoint node "$image_id"','node apps/web/e2e/cs-local/production-auth.mjs image "$image_id"','node scripts/aws-release-runtime-auth.mjs before-push "$tag"','docker push "$tag"','aws ecr describe-images','aws-release.mjs build-record'];
+ let previous=-1;for(const marker of markers){const i=script.indexOf(marker);assert.ok(i>previous,marker);previous=i;}
+ assert.match(script,/set -euo pipefail/);assert.equal(build['continue-on-error'],undefined);
+ assert.equal((script.match(/docker buildx build --load/g)||[]).length,1);
+ assert.ok(script.indexOf('aws-release.mjs build-record')<script.indexOf('--target next-cache-export'));
 });

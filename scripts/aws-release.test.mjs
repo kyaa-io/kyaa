@@ -3,12 +3,14 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { assertSourceOnMainEarly, recordedDeploymentEvent, trustedRun, validateRelease, assertPromotion, assertProductionAdvance, verifyDeployment, WORKFLOW_PATH, REPOSITORY, REPOSITORY_ID } from './aws-release.mjs';
 const sha='a'.repeat(40),digest=`sha256:${'b'.repeat(64)}`,mediaDigest=`sha256:${'c'.repeat(64)}`;
-const run={id:11,path:WORKFLOW_PATH,head_branch:'main',head_sha:sha,status:'completed',conclusion:'success',event:'push',repository:{id:REPOSITORY_ID,full_name:REPOSITORY}};
+const run={run_attempt:1,id:11,path:WORKFLOW_PATH,head_branch:'main',head_sha:sha,status:'completed',conclusion:'success',event:'push',repository:{id:REPOSITORY_ID,full_name:REPOSITORY}};
 const release={schemaVersion:1,sourceSha:sha,sourceRunId:11,imageDigest:digest,imageUri:`111111111111.dkr.ecr.ap-northeast-2.amazonaws.com/byus/web@${digest}`,mediaImageDigest:mediaDigest,mediaImageUri:`111111111111.dkr.ecr.ap-northeast-2.amazonaws.com/byus/web@${mediaDigest}`,cronCodeSha256:'d'.repeat(64),repositoryId:REPOSITORY_ID,workflowPath:WORKFLOW_PATH};
+release.runtimeAuth = {contractVersion:1,status:'success',checks:6,envProfile:'invalid-only-v1',imageId:'sha256:'+'e'.repeat(64),sourceSha:run.head_sha,sourceRunId:run.id,sourceRunAttempt:run.run_attempt,imageDigest:release.imageDigest};
 test('only completed successful main runs from this exact workflow can supply a release',()=>{
  assert.equal(trustedRun(run,11),run);
  for(const patch of [{path:'.github/workflows/other.yml'},{head_branch:'feature'},{conclusion:'failure'},{status:'in_progress'},{conclusion:'cancelled'},{repository:{id:1,full_name:REPOSITORY}},{event:'pull_request'}])assert.throws(()=>trustedRun({...run,...patch},11));
  assert.equal(validateRelease(release,run),release);
+ assert.deepEqual(validateRelease(JSON.parse(JSON.stringify(release)),run),release);
  for(const patch of [{sourceSha:'f'.repeat(40)},{imageDigest:'latest'},{sourceRunId:12},{mediaImageDigest:'latest'},{cronCodeSha256:'bad'},{imageUri:'https://example.test/image'}])assert.throws(()=>validateRelease({...release,...patch},run));
 });
 test('production promotes directly from successful dev proof of the exact web, media and cron artifacts',()=>{
@@ -109,4 +111,15 @@ test('early main-ancestry gate accepts ancestors and rejects others or malformed
   assert.deepEqual(seen, [sha]);
   assert.throws(() => assertSourceOnMainEarly(sha, { assertOnMain: () => { throw new Error('git failed'); } }), /^Error: SOURCE_NOT_ON_MAIN$/);
   assert.throws(() => assertSourceOnMainEarly('main', { assertOnMain: () => assert.fail('must not run') }), /INVALID_SOURCE_SHA/);
+});
+
+
+test('runtime authentication proof is mandatory and binds the source attempt and published digest', () => {
+ for (const runtimeAuth of [undefined, null, {...release.runtimeAuth,contractVersion:2}, {...release.runtimeAuth,status:'failure'}, {...release.runtimeAuth,checks:5}, {...release.runtimeAuth,envProfile:'synthetic'}, {...release.runtimeAuth,imageId:'latest'}, {...release.runtimeAuth,sourceSha:'f'.repeat(40)}, {...release.runtimeAuth,sourceRunId:12}, {...release.runtimeAuth,sourceRunAttempt:2}, {...release.runtimeAuth,imageDigest:mediaDigest}, {...release.runtimeAuth,extra:true}]) {
+  assert.throws(()=>validateRelease({...release,runtimeAuth},run), /INVALID_RUNTIME_AUTH_PROOF/);
+  assert.throws(()=>assertPromotion('prod',{...release,runtimeAuth},{...release,environment:'dev',status:'success',workflowRunId:run.id},run), /INVALID_RUNTIME_AUTH_PROOF/);
+ }
+ assert.throws(()=>validateRelease(release,{...run,run_attempt:2}), /INVALID_RUNTIME_AUTH_PROOF/);
+ assert.throws(()=>validateRelease(release,{...run,run_attempt:undefined}), /INVALID_RUNTIME_AUTH_PROOF/);
+ assert.throws(()=>validateRelease({...release,imageDigest:mediaDigest,imageUri:release.imageUri.replace(digest,mediaDigest)},run), /INVALID_RUNTIME_AUTH_PROOF/);
 });
