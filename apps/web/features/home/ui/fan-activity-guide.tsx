@@ -1,3 +1,4 @@
+import { FanHeading } from "@/components/fan-ui/fan-heading";
 import Link from "next/link";
 import type { Route } from "next";
 import { serviceGuideContent } from "@/components/service-guide/content";
@@ -18,9 +19,9 @@ export function FanActivityGuide({ locale }: { locale: AppLocale }) {
   return <div className={styles.guide}>
     <div className={styles.intro}><p>{intro}</p></div>
     <img className={styles.heroImage} src="/images/notices/fan-activity-guide.webp" width={1254} height={1254} alt="" />
-    <ol className={styles.steps}>{steps.map((step, index) => <li key={index}>
+    <ol className={styles.steps}>{steps.map((step, index) => <li key={index} data-row="guide-step">
       <span className={styles.number}>{String(index + 1).padStart(2, "0")}</span>
-      <div><h2>{step.title}</h2><p>{step.body}</p>{step.href && <Link href={`${step.href}?locale=${locale}` as Route}>{step.action}<span aria-hidden="true"> ›</span></Link>}{index === 3 && <Link href={`/benefits?locale=${locale}` as Route}>{ko ? "혜택 보기" : en ? "View benefits" : guide.steps[3].title}<span aria-hidden="true"> ›</span></Link>}</div>
+      <div><FanHeading>{step.title}</FanHeading><p>{step.body}</p>{step.href && <Link href={`${step.href}?locale=${locale}` as Route}>{step.action}<span aria-hidden="true"> ›</span></Link>}{index === 3 && <Link href={`/benefits?locale=${locale}` as Route}>{ko ? "혜택 보기" : en ? "View benefits" : guide.steps[3].title}<span aria-hidden="true"> ›</span></Link>}</div>
     </li>)}</ol>
   </div>;
 }

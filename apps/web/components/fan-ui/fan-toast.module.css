@@ -28,6 +28,8 @@
   padding: var(--space-2) var(--space-2) var(--space-2) var(--space-4);
   border: 0;
   border-radius: var(--radius-card);
+  /* design-lint-disable S1 -- User 2026-11-10: pink/purple toast gradient, fixed dd737 source. */
+  /* design-lint-disable N29 -- User 2026-11-10: only this toast background may use #6042d5. */
   background: linear-gradient(105deg, var(--color-accent), #6042d5);
   color: var(--color-canvas);
   box-shadow: var(--shadow-overlay);

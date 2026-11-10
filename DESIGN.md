@@ -2059,3 +2059,20 @@ At the user's request, registered Changha identity and hero images use the unedi
 
 ### 포인트 교환 시트 (2026-11-10)
 - 제목 아래 연회색 보유 포인트 정보, 수량 라벨과 전폭 pill 수량 조절, 그 아래 전폭 primary 교환 버튼을 둔다. 모바일 시트 최소 높이는 400px과 85dvh 중 작은 값이며 작은 화면은 기존 시트에서 스크롤한다. 광고·교환 동작은 유지한다.
+
+
+### 2026-11-10 고정 원본 dd737 dev 합본: 사용자 시각 예외와 lint 수정
+
+출처는 이 작업의 2026-11-10 사용자 지시 “pink/purple gradient toast·사진확장blur+가독성gradient·비활성luckydrawblur·최소높이bottomsheet 절대제거금지” 및 고정 최종 원본 `dd7376d123cb41a7bc8c0ff2750046dab800c786`이다. 일반 S1·S2·N29·N4보다 아래의 지정 역할에서만 이 요청을 우선한다.
+
+| 역할·소유자 | 유지할 실제 값·범위 | 근거와 검사 |
+| --- | --- | --- |
+| 공통 toast `components/fan-ui/fan-toast.module.css` `.toast` 배경 | `linear-gradient(105deg, var(--color-accent), #6042d5)` | 사용자 지정 핑크·보라 그라데이션. 이 선택자의 배경에만 S1·N29 주석 예외. 다른 색·선택자의 위반은 계속 검사한다. |
+| 모바일 사진 확장 `home-hero-banner.module.css` `.mobileBackdrop img` | `filter: blur(18px)`와 기존 `scale(1.1)` | 사진의 빈 가장자리 확장을 보존한다. 해당 선택자 S2 예외이며 이미지 원본·앞면 크롭은 바꾸지 않는다. |
+| 위 사진 위 문구 가독성 `.overlay` | `linear-gradient(180deg, transparent 30%, rgb(0 0 0 / 88%) 100%)` | 사용자 지정 가독성 배경. 해당 선택자 S1 예외만 둔다. |
+| 준비 중 럭키드로우 `group-benefits.module.css` `.luckyDisabled` | `blur(4px)`·`pointer-events:none`·`user-select:none` | 사용자 지정 비활성 표현·이동/응모 금지 상태를 보존한다. 해당 선택자 S2 예외. |
+| 교환 BottomSheet `stan-wallet.module.css` `.sheet` | 원본의 `min(400px, 85dvh)` 최소 높이 및 스크롤·전체폭 수량/CTA 유지 | 기존 승인 390×450 CTA 검증 근거를 재사용한다. 복구 요청과 새 교환은 서로 배타적인 같은 CTA 자리이므로 `stan-exchange.tsx`의 primary 부품 하나에 상태별 label/handler/disabled를 넣는다. S8 전체 완화나 화면 강조 제거가 아니다. |
+| 공지 상세·모임 모바일 하단 여유 | 공지 `24px 88px` / `8px 88px`, 모임 `padding-bottom:64px`, 출석 `bottom:80px + safe-area` | 기존 하단 내비게이션과 겹치지 않는 원본 간격. 공지·모임 해당 규칙의 N4 주석 예외이며 동일값 space 토큰·calc로만 치환한다. |
+| shorts 어두운 영상 바탕·컨트롤 | `#111` / `#333` / `#ddd`, 재생 표식 검정 65%, 반경 22px | 원본과 같은 값의 `--color-shortform-*`·`--radius-shortform-control` 토큰으로 이동했다. 카드 비율 9:16·전체화면 높이·댓글/반응 상태는 보존한다. |
+
+공통 FanAction·FanIcon·FanHeading·FanMenu를 사용하고 리스트에 data-row를 단다. raw 값만 동일 계산값으로 치환하며 새 제품 시안·추가 콘텐츠는 만들지 않는다. 기준선 파일과 룰 목록은 완화하지 않는다. 기존 N4의 선택자별 `design-lint-disable <정확 rule ID>` 처리를 공유해 S1·S2·N29의 승인 범위만 표시한다. 회귀 시험은 이 선택자 밖 gradient·blur·purple, 다른 rule ID 주석이 계속 실패하는지 검사한다. API contract 시험은 실제 route export를 거쳐 인증 401/403과 소유자 삭제 거절을 검사한다.

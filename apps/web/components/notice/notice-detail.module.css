@@ -1,13 +1,13 @@
-.page { padding-block:24px 88px; color:var(--color-ink); font-family:inherit; }
+.page { /* design-lint-disable N4 -- User 2026-11-10: mobile bottom navigation clearance (88px). */ padding-block:var(--space-6) calc(var(--space-16) + var(--space-6)); color:var(--color-ink); font-family:inherit; }
 .page.standalone { max-width:840px; }
-.back { display:inline-flex; min-height:44px; align-items:center; gap:8px; color:var(--color-ink); font-size:14px; font-weight:700; text-decoration:none; }
+.back { display:inline-flex; min-height:44px; align-items:center; gap:var(--space-2); color:var(--color-ink); font-size:14px; font-weight:700; text-decoration:none; }
 .back svg { width:17px; height:17px; }
-.layout { display:grid; grid-template-columns:minmax(0,1fr); gap:32px; margin-top:8px; }
+.layout { display:grid; grid-template-columns:minmax(0,1fr); gap:32px; margin-top:var(--space-2); }
 .article { min-width:0; width:100%; max-width:720px; }
-.header { display:grid; gap:8px; padding-bottom:16px; border-bottom:1px solid var(--color-line); }
+.header { display:grid; gap:var(--space-2); padding-bottom:var(--space-4); border-bottom:1px solid var(--color-line); }
 .header h1 { max-width:24ch; margin:0; font-size:32px; font-weight:700; letter-spacing:-.04em; line-height:1.35; text-wrap:balance; overflow-wrap:anywhere; }
 .meta { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:12px; color:var(--color-muted); font-size:13px; }
-.share { display:inline-flex; min-height:44px; align-items:center; gap:8px; padding:0 14px; border:1px solid var(--color-line); border-radius:12px; background:var(--color-surface); color:var(--color-ink); font:inherit; font-size:14px; font-weight:700; cursor:pointer; }
+.share { display:inline-flex; min-height:44px; align-items:center; gap:var(--space-2); padding:0 14px; border:1px solid var(--color-line); border-radius:12px; background:var(--color-surface); color:var(--color-ink); font:inherit; font-size:14px; font-weight:700; cursor:pointer; }
 .share svg { width:17px; height:17px; }
 .body { max-width:100%; padding-top:28px; color:var(--color-ink); font-size:16px; line-height:1.8; overflow-wrap:anywhere; text-wrap:pretty; }
 .body > :first-child { margin-top:0; }
@@ -17,7 +17,7 @@
 .body blockquote { padding-left:20px; border-left:3px solid var(--color-muted); color:var(--color-ink); }
 .body a { color:var(--color-accent-ink); text-decoration-thickness:1px; text-underline-offset:3px; }
 .body img { display:block; width:100%; height:auto; margin:32px 0; border-radius:16px; }
-.recent { min-width:0; align-self:start; padding-top:16px; border-top:1px solid var(--color-line); }
+.recent { min-width:0; align-self:start; padding-top:var(--space-4); border-top:1px solid var(--color-line); }
 .recent h2 { margin:0 0 12px; font-size:18px; letter-spacing:-.025em; }
 .recent a { display:grid; min-height:56px; align-content:center; gap:4px; border-top:1px solid var(--color-line-subtle); color:var(--color-ink); text-decoration:none; }
 .recent strong { font-size:14px; line-height:1.6; overflow-wrap:anywhere; }
@@ -30,8 +30,8 @@
   .recent { position:sticky; top:96px; }
 }
 @media (max-width:47.99rem) {
-  .page { padding-block:8px 88px; }
-  .layout { gap:24px; }
+  .page { /* design-lint-disable N4 -- User 2026-11-10: mobile bottom navigation clearance (88px). */ padding-block:var(--space-2) calc(var(--space-16) + var(--space-6)); }
+  .layout { gap:var(--space-6); }
   .header h1 { font-size:26px; }
   .body { padding-top:24px; }
   .body h2 { font-size:20px; }
@@ -42,7 +42,7 @@
 
 /* 2026-11-04 UI-RUBRIC G08: back link shares the article column; content actions sit in the meta row. */
 .page.standalone { max-width:720px; }
-.metaActions { display:inline-flex; align-items:center; gap:8px; }
+.metaActions { display:inline-flex; align-items:center; gap:var(--space-2); }
 
 /* 2026-11-05 UI-R11 SOURCE-FIX: the shared 번역/원문 toggle sits under the title row and keeps its 44px target. */
 .header > button { justify-self:start; }

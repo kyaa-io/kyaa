@@ -112,3 +112,11 @@ test('261107-2 N rules: red and green', () => {
   assert.equal(hits(scanSourceTs(src('a', '+20P ×{0}')), 'N20').length, 1);
   assert.deepEqual(['N7', 'N15', 'N15b', 'N16', 'N20'].map((id) => RULES[id].sev), ['count', 'fail', 'count', 'fail', 'fail']);
 });
+
+test('approved CSS exceptions stay on their selector and exact rule ID', () => {
+  const code = '.approved{/* design-lint-disable S1 -- user approved */background:linear-gradient(red,blue);filter:blur(4px)} .other{background:linear-gradient(red,blue);filter:blur(4px)}';
+  assert.equal(css(code).get('S1|background: linear-gradient(red,blue)'), 1);
+  assert.equal(css(code).get('S2|filter: blur(4px)'), 2);
+  assert.equal(hits(css('.approved{/* design-lint-disable S2 -- user approved */filter:blur(4px)} .other{filter:blur(4px)}'), 'S2').length, 1);
+  assert.equal(hits(css('.a{/* design-lint-disable S10 -- unrelated */background:linear-gradient(red,blue)}'), 'S1').length, 1);
+});

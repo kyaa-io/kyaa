@@ -57,7 +57,7 @@
 .heroContent { position: relative; z-index: 1; width: 100%; padding: 24px; text-shadow: 0 1px 3px color-mix(in srgb, var(--color-ink) 62%, transparent); }
 .statusRail { display: flex; max-width: 320px; align-items: center; gap: 12px; margin-bottom: 12px; }
 .statusRail p, .heroCountdown { margin: 0; }
-.liveStatus { display: inline-flex; flex: none; min-height: 28px; align-items: center; gap: 8px; padding-inline: 12px; border: 1px solid color-mix(in srgb, var(--color-accent) 92%, transparent); border-radius: 999rem; font-size: 12px; font-weight: 800; letter-spacing: .04em; }
+.liveStatus { display: inline-flex; flex: none; min-height: 28px; align-items: center; gap: 8px; padding-inline: 12px; border: 1px solid color-mix(in srgb, var(--color-accent) 92%, transparent); border-radius: 999rem; font-size:var(--fan-badge-size); font-weight: 800; letter-spacing: .04em; }
 /* Perimeter shimmer adapted from Magic UI Shimmer Button (MIT), default 3s rhythm. */
 .liveStatus[data-hero-status] { position: relative; isolation: isolate; overflow: hidden; background: var(--color-ink); border-color: color-mix(in srgb, var(--color-accent) 55%, transparent); }
 .liveStatus[data-hero-status]::before { content: ""; position: absolute; inset: .8px; z-index: 1; border-radius: inherit; background: var(--color-ink); }
@@ -228,7 +228,7 @@
   -webkit-line-clamp: 2;
 }
 .reservationMeta { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; margin-top: 6px; }
-.reservationMeta time { color: var(--muted); font-size: 12px; line-height: 1.5; }
+.reservationMeta time { color: var(--muted); font-size:var(--fan-badge-size); line-height: 1.5; }
 .reservationMeta [data-live-time] { flex: none; }
 .reservationArrow { width: 20px; height: 20px; color: var(--muted); }
 @media (hover: hover) { .reservationSummary:hover { background: var(--surface-soft); } }
@@ -397,5 +397,5 @@
   .carouselControls > .carouselPrevious, .carouselControls > .carouselNext { width: 1px; min-width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
   .carouselControls > .carouselPrevious:focus-visible, .carouselControls > .carouselNext:focus-visible { width: 44px; min-width: 44px; height: 44px; overflow: visible; clip-path: none; }
   .carouselProgress { display: none; }
-  .carouselCounter { position: absolute; z-index: 4; top: 12px; right: 12px; display: block; pointer-events: none; padding: 4px 8px; border-radius: var(--radius-pill); background: rgb(0 0 0 / 60%); color: white; font-size: 12px; font-variant-numeric: tabular-nums; }
+  .carouselCounter { position: absolute; z-index: var(--z-home-live); top: 12px; right: 12px; display: block; pointer-events: none; padding:var(--space-1) var(--space-2); border-radius: var(--radius-pill); background: var(--color-home-caption); color: var(--color-surface); font-size:var(--fan-badge-size); font-variant-numeric: tabular-nums; }
 }

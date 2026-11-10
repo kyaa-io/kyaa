@@ -1,7 +1,9 @@
 "use client";
+import { FanAction } from "@/components/fan-ui/fan-action";
+import { FanIcon } from "@/components/fan-ui/fan-icon";
 
 import { useEffect, useRef, useState } from "react";
-import { ChevronDown, ChevronUp, MoreHorizontal, Play } from "lucide-react";
+import { ChevronDown, ChevronUp, MoreHorizontal, Play } from "@/components/fan-ui/fan-icons";
 import { FanDialog } from "@/components/fan-ui/fan-dialog";
 import { fanUiText } from "@/components/fan-ui/fan-ui-copy";
 import { MediaThumbnail } from "@/features/media/ui/media-thumbnail";
@@ -39,10 +41,10 @@ export function HomeShorts({ items, locale, layout = "rail", initialVideo, offse
   return <>
     <ul className={layout === "rail" ? styles.rail : styles.grid}>
       {(layout === "rail" ? items.slice(0, 6) : items).map((item, i) => <li key={item.id} className={styles.item} data-row="short">
-        <button type="button" className={styles.card} onClick={() => setIndex(i)}>
-          <span className={styles.cover}><MediaThumbnail image={`https://i.ytimg.com/vi/${item.videoId}/oardefault.jpg`} href={item.href} kind="videos" locale={locale} /><span className={styles.play} aria-hidden="true"><Play size={22} fill="currentColor" /></span></span>
+        <FanAction variant="text" type="button" className={styles.card} onClick={() => setIndex(i)}>
+          <span className={styles.cover}><MediaThumbnail image={`https://i.ytimg.com/vi/${item.videoId}/oardefault.jpg`} href={item.href} kind="videos" locale={locale} /><span className={styles.play} aria-hidden="true"><FanIcon icon={Play} filled /></span></span>
           <span className={styles.title}>{item.title}</span>
-        </button>
+        </FanAction>
       </li>)}
     </ul>
     <FanDialog className={styles.viewer} open={!!selected} onOpenChange={open => { if (!open) { setIndex(null); setMore(false); } }} title={selected?.title ?? ""} closeLabel={fanUiText(locale, "close")}>
@@ -54,10 +56,10 @@ export function HomeShorts({ items, locale, layout = "rail", initialVideo, offse
         </div>
         <ShortsEngagement key={selected.videoId} videoId={selected.videoId} locale={locale} offset={offset} />
         <div className={styles.controls} {...swipe}>
-          <button type="button" onClick={() => move(-1)} disabled={index === 0} aria-label={navigation[locale][0]}><ChevronUp aria-hidden="true" /></button>
-          <button type="button" onClick={() => move(1)} disabled={index === items.length - 1} aria-label={navigation[locale][1]}><ChevronDown aria-hidden="true" /></button>
+          <FanAction variant="text" type="button" onClick={() => move(-1)} disabled={index === 0} ariaLabel={navigation[locale][0]}><FanIcon icon={ChevronUp} /></FanAction>
+          <FanAction variant="text" type="button" onClick={() => move(1)} disabled={index === items.length - 1} ariaLabel={navigation[locale][1]}><FanIcon icon={ChevronDown} /></FanAction>
           <span>{(index ?? 0) + 1} / {items.length}</span>
-          <button type="button" aria-label={navigation[locale][2]} aria-expanded={more} onClick={() => setMore(value => !value)}><MoreHorizontal aria-hidden="true" /></button>
+          <FanAction variant="text" type="button" ariaLabel={navigation[locale][2]} aria-expanded={more} onClick={() => setMore(value => !value)}><FanIcon icon={MoreHorizontal} /></FanAction>
           {more && <a href={selected.href} target="_blank" rel="noopener noreferrer" data-outbound-kind="external">YouTube ↗</a>}
         </div>
       </div>}

@@ -12,6 +12,15 @@
   /* U-2 ③(감독 2026-11-09 11:34): 회색 채움 폐기. 공통 층은 쓰지 않고, 화면 CSS가 치환될 때까지 투명 별칭으로만 남긴다. 새로 쓰지 않는다. */
   --color-soft: transparent;
   --color-ink: oklch(18% 0 0);
+  /* Approved shortform viewer colors, unchanged from dd737 (2026-11-10). */
+  --color-home-caption: rgb(0 0 0 / 60%);
+  --color-home-hero-shade: rgb(0 0 0 / 88%);
+  --color-shortform-canvas: #111;
+  --color-shortform-control: #333;
+  --color-shortform-meta: #ddd;
+  --color-shortform-play: rgb(0 0 0 / 65%);
+  --radius-shortform-control: 22px;
+  --z-home-live: 4;
   --color-muted: oklch(48% 0 0);
   --color-line: oklch(90% 0 0);
   --color-line-subtle: oklch(93% 0 0);

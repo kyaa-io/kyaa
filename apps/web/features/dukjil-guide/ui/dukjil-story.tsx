@@ -1,3 +1,4 @@
+import { FanHeading } from "@/components/fan-ui/fan-heading";
 import Link from "next/link";
 import type { Route } from "next";
 import type { AppLocale } from "@/i18n/locales";
@@ -24,9 +25,9 @@ export function DukjilStory({ locale }: { locale: AppLocale }) {
   const text = copy[locale];
   const titles = [guideText(locale, "dkgCtaFans"), guideText(locale, "dkgActPost"), guideText(locale, "dkgActCheckin"), guideText(locale, "dkgActLiveAttend")];
   return <section className={styles.story} aria-labelledby="dukjil-guide-title">
-    <div className={styles.intro}><h1 id="dukjil-guide-title">{guideText(locale, "dkgDkMetaTitle")}</h1><p>{text[0]}</p></div>
+    <div className={styles.intro}><FanHeading as="h1" id="dukjil-guide-title">{guideText(locale, "dkgDkMetaTitle")}</FanHeading><p>{text[0]}</p></div>
     <img className={styles.hero} src="/images/guide/dukjil-hero.webp" width={1254} height={1254} alt="" />
-    <ol className={styles.steps}>{titles.map((title, i) => <li key={title}><span aria-hidden="true">{String(i + 1).padStart(2, "0")}</span><div><h2>{title}</h2><p>{text[i + 1]}</p></div></li>)}</ol>
+    <ol className={styles.steps}>{titles.map((title, i) => <li key={title} data-row="guide-step"><span aria-hidden="true">{String(i + 1).padStart(2, "0")}</span><div><FanHeading>{title}</FanHeading><p>{text[i + 1]}</p></div></li>)}</ol>
     <div className={styles.actions}><GuideCta locale={locale} target="fan-page" returnPath="/guide/dukjil" /><Link href={`/guide/jjinfan?locale=${locale}` as Route}>{guideText(locale, "dkgLinkJjinfan")}</Link></div>
   </section>;
 }

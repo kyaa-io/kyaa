@@ -3,6 +3,17 @@
 // 심각도: fail 은 새 위반이면 실패, count 는 집계만(경고 출력). 오탐이 큰 규칙은 count 로 두고 이유를 RULES 에 적었다.
 import postcss from 'postcss';
 
+export const disabledByComment = (node, id) => {
+  const directive = new RegExp(`design-lint-disable ${id}(?:\\s|$)`);
+  for (let n = node; n; n = n.parent) {
+    const prev = n.prev?.();
+    if (prev?.type === 'comment' && directive.test(prev.text)) return true;
+    if (n.type === 'rule' && directive.test(n.raws?.before ?? '')) return true;
+    if (n.type === 'rule' && n.nodes?.some((c) => c.type === 'comment' && directive.test(c.text))) return true;
+  }
+  return false;
+};
+
 export const RULES = {
   // 기존 stylelint·버튼 규칙(C1)
   'color-no-hex': { sev: 'fail', note: 'use var(--color-*)' },
@@ -130,11 +141,11 @@ export function scanCss(code, file) {
     if (prop === 'z-index' && !/^(var\(--z-[\w-]+\)|0|1|-1|auto)$/.test(value.trim())) add(out, `T8|${where}`);
     if (/^(width|height|min-height|min-width|block-size|inline-size)$/.test(prop) && /^(44|48|52)px$/.test(value.trim())) add(out, `T9|${where}`);
     if (prop === 'font-family' && !passportPaper && !/^(inherit|initial|unset|var\(--[^)]*\))$/i.test(value.trim())) add(out, `T10|${where}`);
-    if (!/(logo|wordmark)/i.test(file) && /gradient\(/i.test(value)) add(out, `S1|${where}`);
+    if (!disabledByComment(d, 'S1') && !/(logo|wordmark)/i.test(file) && /gradient\(/i.test(value)) add(out, `S1|${where}`);
     if (/^(-webkit-)?background-clip$/.test(prop) && /text/i.test(value)) add(out, `S1|${where}`);
     if (prop === '-webkit-text-fill-color' && /transparent/i.test(value)) add(out, `S1|${where}`);
     if (prop === 'backdrop-filter' || prop === '-webkit-backdrop-filter') add(out, `S2|${where}`);
-    if (prop === 'filter' && /blur\(/i.test(value)) add(out, `S2|${where}`);
+    if (!disabledByComment(d, 'S2') && prop === 'filter' && /blur\(/i.test(value)) add(out, `S2|${where}`);
     if (prop === 'filter' && /grayscale\(/i.test(value)) add(out, `S6|${where}`);
     if (prop === 'border-radius') { for (const m of value.matchAll(/var\(--radius-(control|collection|hero)\)/g)) radii.add(m[1]); }
   });

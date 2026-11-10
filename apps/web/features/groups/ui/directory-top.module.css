@@ -59,3 +59,5 @@
   .thin[data-fill] .thinControls { padding-right: var(--space-1); }
 }
 
+
+.hotHead .hotSort { width:auto; }

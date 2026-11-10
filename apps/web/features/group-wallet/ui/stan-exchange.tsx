@@ -108,9 +108,7 @@ function StanExchangeContent({ locale, points, pointCost, pendingRequest }: Exch
       <output aria-live="polite" aria-label={`${q.quantity} ${pending?.units ?? qty}`}>{unitsText(locale, pending?.units ?? qty)}</output>
       <FanIconButton aria-label={q.increase} disabled={locked || Boolean(pending) || qty >= maxQty} onClick={() => pick(qty + 1)}><FanIcon icon={Plus} /></FanIconButton>
     </div>
-    {pending
-      ? <FanAction variant="primary" className={styles.exchangeAction} loading={working} disabled={locked} onClick={() => void submit(pending)}>{w.recover}</FanAction>
-      : <FanAction variant="primary" className={styles.exchangeAction} loading={working} disabled={locked || qty < 1} onClick={() => void start(qty)}>{rewarded.action}</FanAction>}
+    <FanAction variant="primary" className={styles.exchangeAction} loading={working} disabled={locked || (!pending && qty < 1)} onClick={() => { if (pending) void submit(pending); else void start(qty); }}>{pending ? w.recover : rewarded.action}</FanAction>
   </div>;
 }
 

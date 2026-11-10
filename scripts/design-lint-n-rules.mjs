@@ -5,7 +5,7 @@
 import postcss from 'postcss';
 import ts from 'typescript';
 import { posix } from 'node:path';
-import { jsxTags, stripComments } from './design-lint-rules.mjs';
+import { jsxTags, stripComments, disabledByComment } from './design-lint-rules.mjs';
 import { scanPurple, scanDarkCapsule } from './design-lint-color.mjs';
 
 export const RULES_N = {
@@ -69,15 +69,7 @@ const pxOf = (token) => {
   return 0;
 };
 
-const disabledByComment = (node, id) => {
-  for (let n = node; n; n = n.parent) {
-    const prev = n.prev?.();
-    if (prev?.type === 'comment' && prev.text.includes(`design-lint-disable ${id}`)) return true;
-    if (n.type === 'rule' && n.raws?.before?.includes?.(`design-lint-disable ${id}`)) return true;
-    if (n.type === 'rule' && n.nodes?.some((c) => c.type === 'comment' && c.text.includes(`design-lint-disable ${id}`))) return true;
-  }
-  return false;
-};
+
 
 // 블러 0 링(0 0 0 Npx 색)과 inset 선만 있는 그림자는 테두리 대용이라 N26 에서 뺀다.
 const boxShadowIsRing = (v) => v.split(/,(?![^(]*\))/).every((layer) => /^\s*(inset\s+)?0(px)?\s+0(px)?\s+0(px)?\b/.test(layer) || /^\s*inset\s+0(px)?\s+-?\d+px\s+0(px)?\s/.test(layer));
@@ -608,7 +600,13 @@ export function scanNFile(file, text, read) {
   if (/\.css$/.test(file)) m = scanNCss(text, file);
   else if (/\.tsx?$/.test(file)) m = scanNTs(text, file, read);
   else return m;
-  for (const [k, n] of scanPurple(text, file)) add(m, k, n);
+  let colorText = text;
+  if (/\.css$/.test(file)) {
+    const root = postcss.parse(text, { from: file });
+    root.walkDecls((d) => { if (disabledByComment(d, 'N29')) d.remove(); });
+    colorText = root.toString();
+  }
+  for (const [k, n] of scanPurple(colorText, file)) add(m, k, n);
   if (/\.css$/.test(file)) for (const [k, n] of scanDarkCapsule(text, file, postcss)) add(m, k, n);
   return m;
 }

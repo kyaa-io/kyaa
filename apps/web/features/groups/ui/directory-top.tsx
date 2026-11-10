@@ -5,12 +5,12 @@
  * 새 글 점은 응답에 마지막 방문 뒤 새 글 정보가 없어 그리지 않는다.
  */
 import type { Route } from "next";
-import { Menu } from "@base-ui/react/menu";
-import sortStyles from "./group-directory-sort.module.css";
+import { FanMenu } from "@/components/fan-ui/fan-menu";
+import { FanIconButton } from "@/components/fan-ui/fan-icon-button";
 import Link from "next/link";
 import { useRef, useState, useSyncExternalStore, type PointerEvent, type MouseEvent, type DragEvent } from "react";
 import { ChevronLeft, ChevronRight } from "@/components/icons";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown } from "@/components/fan-ui/fan-icons";
 import { FanIcon } from "@/components/fan-ui/fan-icon";
 import { Plus } from "@/components/fan-ui/fan-icons";
 import { CreatorAvatar } from "@/components/fan-ui/creator-avatar";
@@ -131,13 +131,9 @@ export function HotPosts({ locale }: { locale: AppLocale }) {
   const items = ready ? state.data.items.slice(0, open ? 10 : ROWS) : [];
   return <section className={styles.hot} aria-labelledby="directory-hot-posts" data-directory-block="hot-posts">
     <div className={styles.hotHead}><FanHeading id="directory-hot-posts">{c.hotTitle}</FanHeading>
-      <Menu.Root><Menu.Trigger className={styles.hotSort}>{c.hotSort[sort]}<ChevronDown aria-hidden="true" size={16} /></Menu.Trigger>
-        <Menu.Portal><Menu.Positioner align="end" sideOffset={4} className={sortStyles.positioner}><Menu.Popup className={sortStyles.popup} aria-label={c.hotTitle}>
-          <Menu.RadioGroup className={sortStyles.group} value={sort} onValueChange={value => { if (value === "likes" || value === "comments" || value === "views") { setSort(value); setOpen(false); } }}>
-            {(["likes", "comments", "views"] as const).map(value => <Menu.RadioItem className={sortStyles.item} key={value} value={value}>{c.hotSort[value]}</Menu.RadioItem>)}
-          </Menu.RadioGroup>
-        </Menu.Popup></Menu.Positioner></Menu.Portal>
-      </Menu.Root></div>
+      <FanMenu label={c.hotTitle} trigger={<FanIconButton className={styles.hotSort} aria-label={c.hotSort[sort]}>{c.hotSort[sort]}<FanIcon icon={ChevronDown} size={16} /></FanIconButton>}>
+        <FanMenu.Radio value={sort} onValueChange={value => { if (value === "likes" || value === "comments" || value === "views") { setSort(value); setOpen(false); } }} items={(["likes", "comments", "views"] as const).map(value => ({ value, label: c.hotSort[value] }))} />
+      </FanMenu></div>
     {state.status === "error" ? <div className={styles.state}><FanState inline compact kind="error" title={c.hotError} actions={<FanAction variant="text" size="sm" onClick={retry}>{c.retry}</FanAction>} /></div>
       : <ul className={styles.posts}>{!ready ? Array.from({ length: ROWS }, (_, i) => <li key={i} className={styles.post} data-row="hot-loading" aria-hidden="true"><FanSkeleton shape="circle" width={32} height={32} /><FanSkeleton width="70%" height={16} /><FanSkeleton width="40%" height={12} /></li>)
         : <>{items.map((post) => <li key={`${post.source}:${post.id}`} className={styles.post} data-row="hot-post">

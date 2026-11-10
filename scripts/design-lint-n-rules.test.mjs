@@ -527,3 +527,9 @@ test('a counted N branch (raw <header> in a screen) warns but does not fail', ()
     assert.match(r.stderr, /count-only N3/);
   } finally { rmSync(dir, { recursive: true, force: true }); }
 });
+
+test('N29 approved toast exception leaves other selectors and rule IDs checked', () => {
+  assert.equal(css('.toast{/* design-lint-disable N29 -- user approved */background:#6042d5}.other{color:#6042d5}').get('N29|#6042d5'), 1);
+  assert.equal(css('.toast{/* design-lint-disable S1 -- only gradient approved */background:#6042d5}').get('N29|#6042d5'), 1);
+  assert.equal(css('.toast{/* design-lint-disable N290 -- unrelated */background:#6042d5}').get('N29|#6042d5'), 1);
+});

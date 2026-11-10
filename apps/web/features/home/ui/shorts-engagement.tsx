@@ -1,7 +1,9 @@
 "use client";
+import { FanAction } from "@/components/fan-ui/fan-action";
+import { FanIcon } from "@/components/fan-ui/fan-icon";
 
 import { useRef, useState } from "react";
-import { MessageCircle, Share2 } from "lucide-react";
+import { MessageCircle, Share2 } from "@/components/fan-ui/fan-icons";
 import { z } from "zod";
 import { FanSheet } from "@/components/fan-ui/fan-dialog";
 import { fanLoginHref } from "@/components/login-href";
@@ -37,19 +39,19 @@ export function ShortsEngagement({ videoId, locale, offset }: { videoId: string;
   const share = async () => { setShareError(false); try { const link = new URL(url, window.location.origin).href; if (navigator.share) await navigator.share({ url: link }); else await navigator.clipboard.writeText(link); } catch (error) { if (!(error instanceof DOMException && error.name === "AbortError")) setShareError(true); } };
   return <div className={styles.engagement}>
     <span className={styles.brand}>kyaa</span>
-    {reactions.state.status === "ready" ? <PostReactions locale={locale} {...reactions.state.data} busy={mutation.busy || !auth.ready} loginHref={auth.ready && !auth.authenticated ? loginHref : undefined} onChange={choice => void change(choice)} /> : reactions.state.status === "error" ? <button onClick={reactions.retry}>{copy.retry}</button> : <span aria-live="polite">…</span>}
-    <button type="button" onClick={() => setOpen(true)} aria-label={copy.comments}><MessageCircle aria-hidden="true" />{reactions.state.status === "ready" ? reactions.state.data.commentCount : ""}</button>
-    <button type="button" onClick={() => void share()} aria-label={locale === "ko" ? "공유" : "Share"}><Share2 aria-hidden="true" /></button>
+    {reactions.state.status === "ready" ? <PostReactions locale={locale} {...reactions.state.data} busy={mutation.busy || !auth.ready} loginHref={auth.ready && !auth.authenticated ? loginHref : undefined} onChange={choice => void change(choice)} /> : reactions.state.status === "error" ? <FanAction variant="text" onClick={reactions.retry}>{copy.retry}</FanAction> : <span aria-live="polite">…</span>}
+    <FanAction variant="text" type="button" onClick={() => setOpen(true)} ariaLabel={copy.comments}><FanIcon icon={MessageCircle} />{reactions.state.status === "ready" ? reactions.state.data.commentCount : ""}</FanAction>
+    <FanAction variant="text" type="button" onClick={() => void share()} ariaLabel={locale === "ko" ? "공유" : "Share"}><FanIcon icon={Share2} /></FanAction>
     {shareError && <span role="alert">{copy.failed}</span>}
     {mutation.error && <span role="alert">{mutation.error}</span>}
     <FanSheet open={open} onOpenChange={setOpen} title={copy.comments} closeLabel={locale === "ko" ? "닫기" : "Close"} snap="full">
       {auth.ready && (auth.authenticated ? <form onSubmit={e => { e.preventDefault(); void submit(); }} className={styles.commentForm}>
         <label htmlFor={`short-comment-${videoId}`}>{reactionCopy.placeholder}</label><textarea id={`short-comment-${videoId}`} maxLength={1000} value={body} onChange={e => setBody(e.target.value)} disabled={mutation.busy} />
-        <button type="submit" disabled={!body.trim() || mutation.busy}>{copy.send}</button>
+        <FanAction variant="text" type="submit" disabled={!body.trim() || mutation.busy}>{copy.send}</FanAction>
       </form> : <a href={loginHref}>{copy.login}</a>)}
       {mutation.error && <p role="alert">{mutation.error}</p>}
-      {comments.state.status === "ready" ? <><ul className={styles.comments}>{comments.state.data.items.map(comment => <li key={comment.id}><strong>{comment.author.nickname}</strong><p>{comment.body}</p><time dateTime={comment.createdAt}>{new Date(comment.createdAt).toLocaleDateString(locale)}</time>{comment.isOwner && <button type="button" disabled={mutation.busy} onClick={() => void remove(comment.id)}>{copy.delete}</button>}</li>)}</ul>
-        {(cursor || comments.state.data.nextCursor) && <nav>{cursor && <button onClick={() => setCursor(null)}>{copy.newest}</button>}{comments.state.data.nextCursor && <button onClick={() => setCursor(comments.state.status === "ready" ? comments.state.data.nextCursor : null)}>{copy.older}</button>}</nav>}</> : comments.state.status === "error" ? <p role="alert">{copy.failed} <button onClick={comments.retry}>{copy.retry}</button></p> : <p aria-live="polite">…</p>}
+      {comments.state.status === "ready" ? <><ul className={styles.comments}>{comments.state.data.items.map(comment => <li key={comment.id} data-row="short-comment"><strong>{comment.author.nickname}</strong><p>{comment.body}</p><time dateTime={comment.createdAt}>{new Date(comment.createdAt).toLocaleDateString(locale)}</time>{comment.isOwner && <FanAction variant="text" type="button" disabled={mutation.busy} onClick={() => void remove(comment.id)}>{copy.delete}</FanAction>}</li>)}</ul>
+        {(cursor || comments.state.data.nextCursor) && <nav>{cursor && <FanAction variant="text" onClick={() => setCursor(null)}>{copy.newest}</FanAction>}{comments.state.data.nextCursor && <FanAction variant="text" onClick={() => setCursor(comments.state.status === "ready" ? comments.state.data.nextCursor : null)}>{copy.older}</FanAction>}</nav>}</> : comments.state.status === "error" ? <p role="alert">{copy.failed} <FanAction variant="text" onClick={comments.retry}>{copy.retry}</FanAction></p> : <p aria-live="polite">…</p>}
     </FanSheet>
   </div>;
 }
