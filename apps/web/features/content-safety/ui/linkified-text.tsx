@@ -1,5 +1,6 @@
 import { Fragment, isValidElement, type ReactNode } from "react";
-import { Link2 } from "lucide-react";
+import { Link2 } from "@/components/fan-ui/fan-icons";
+import { FanIcon } from "@/components/fan-ui/fan-icon";
 import type { AppLocale } from "@/i18n/locales";
 import { messages as noticeMessages } from "@/i18n/catalogs/components__notice__notice-body";
 import { translate } from "@/i18n/messages";
@@ -24,7 +25,7 @@ export function BodyLink({ href, children, newWindowLabel, official = false }: {
   const text = plainText(children);
   const [first = "", ...rest] = Array.from(text ?? "");
   return <a className={styles.bodyLink} href={href} target="_blank" rel={official ? "noopener noreferrer" : "noopener noreferrer nofollow ugc"} data-outbound-placement="content" data-outbound-kind="external">
-    {text ? <><span className={styles.bodyLinkHead}><Link2 size={16} aria-hidden="true" />{first}</span>{rest.join("")}</> : <><Link2 size={16} aria-hidden="true" />{children}</>}
+    {text ? <><span className={styles.bodyLinkHead}><FanIcon icon={Link2} size={16} />{first}</span>{rest.join("")}</> : <><FanIcon icon={Link2} size={16} />{children}</>}
     {newWindowLabel && <span className={styles.srOnly}>{`, ${newWindowLabel}`}</span>}
   </a>;
 }

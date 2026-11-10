@@ -99,7 +99,7 @@ function CheerCard({ item, slug, locale, returnTo, onChanged }: Omit<Props, "ite
     </header>
     <ContentTranslation sourceText={item.body} targetType="cheer" targetId={item.id} locale={locale}><p className={styles.body}>{item.body}</p></ContentTranslation>
     <div className={`${styles.actions} ${styles.postFooter}`}>
-      <button type="button" className={styles.likeButton} aria-pressed={liked} disabled={!auth.ready || !auth.authenticated || mutation.busy} onClick={() => void toggleLike()}><ReactionIcon kind="like" size={18} pressed={liked} />{copy.like} <ReactionCount value={count} locale={locale} />{!liked && <EarnActionBadge action="reaction" locale={locale} />}</button>
+      <button type="button" className={styles.likeButton} aria-pressed={liked} disabled={!auth.ready || !auth.authenticated || mutation.busy} onClick={() => void toggleLike()}><ReactionIcon kind="like" size={20} pressed={liked} />{copy.like} <ReactionCount value={count} locale={locale} />{!liked && <EarnActionBadge action="reaction" locale={locale} />}</button>
       <button type="button" aria-expanded={expanded} aria-controls={`${id}-replies`} onClick={() => { setOpened(true); setExpanded(value => !value); }}><ReactionIcon kind="comment" />{copy.comments} <ReactionCount value={item.replyCount} locale={locale} /></button>
       <RelativeTime className={styles.postDate} value={item.createdAt} locale={locale} absolute={dateLabel} />
     </div>

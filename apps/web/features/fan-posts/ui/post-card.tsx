@@ -125,7 +125,7 @@ export function PostCard({ post, locale, onChanged, onDeleted, detail = false, r
     {boardDetail ? <div className={detailStyles.bodyEnd}>
       <PostReactions {...reactionState} locale={locale} busy={!auth.ready || mutation.busy} loginHref={auth.ready && !auth.authenticated ? String(loginHref) : undefined} onChange={choice => void react(choice)} likeReward={auth.authenticated && !post.isOwner && !liked} />
       <PostShareAction title={post.body.split("\n")[0] ?? ""} locale={locale} contentType="post" />
-    </div> : <div className={`${styles.actions} ${styles.postFooter}`}><button type="button" className={styles.likeButton} onClick={() => void like()} disabled={!auth.ready || !auth.authenticated || mutation.busy} aria-pressed={liked}><ReactionIcon kind="like" size={18} pressed={liked} /> {boardLikeLabel??copy.like} <ReactionCount value={likeCount} locale={locale} />{boardLikeReward}</button>
+    </div> : <div className={`${styles.actions} ${styles.postFooter}`}><button type="button" className={styles.likeButton} onClick={() => void like()} disabled={!auth.ready || !auth.authenticated || mutation.busy} aria-pressed={liked}><ReactionIcon kind="like" size={20} pressed={liked} /> {boardLikeLabel??copy.like} <ReactionCount value={likeCount} locale={locale} />{boardLikeReward}</button>
       {!detail && <Link href={`${href}#comments` as Route} className={styles.button}><ReactionIcon kind="comment" /> {copy.comments} <ReactionCount value={post.commentCount} locale={locale} /></Link>}
       <RelativeTime className={styles.postDate} value={post.createdAt} locale={locale} />{isEdited(post) && <EditedMark className={styles.editedMark} locale={locale} />}
     </div>}
