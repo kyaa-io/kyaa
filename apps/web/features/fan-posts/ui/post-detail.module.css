@@ -57,7 +57,7 @@
   .comments { padding: var(--space-5); }
 }
 .translatedMedia { margin-top: var(--space-4); min-width: 0; }
-.inlineVideo { position: relative; width: fit-content; max-width: 100%; }
+.inlineVideo { position: relative; max-width: 100%; }
 .inlineVideo img { display: block; max-width: 100%; max-height: 640px; width: auto; height: auto; border-radius: var(--radius-media); }
 .commentMeta > :last-child:not(time):not(strong):not(.editedMark) { margin-inline-start: auto; }
 .readColumn { width: min(100%, 720px); min-width: 0; }
