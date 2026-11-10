@@ -152,6 +152,7 @@ const kindSchema = z.enum([
   "delivery_failed",
   "live_published",
   "youtube_live_started",
+  "sns_ingest_stale",
   "live_cancelled",
   "live_rescheduled",
   "campaign_outbound",
@@ -218,6 +219,8 @@ const alertSchema = z.object({
   winner_count: z.number().int().nonnegative().nullable(),
   occurred_at: z.iso.datetime({ offset: true }),
   youtube_video_id: z.string().regex(/^[A-Za-z0-9_-]{11}$/).optional(),
+  sns_platform: z.enum(["instagram", "tiktok"]).optional(),
+  sns_last_success_at: z.iso.datetime({ offset: true }).nullable().optional(),
   inquiry_id: z.uuid().nullable().optional(),
   campaign_name: z.string().min(1).max(80).optional(),
   campaign_channel: z.string().min(1).max(40).optional(),
@@ -238,6 +241,14 @@ const alertSchema = z.object({
     }
   } else if (alert.youtube_video_id !== undefined) {
     context.addIssue({ code: "custom", message: "unexpected YouTube video" });
+  }
+  if (alert.kind === "sns_ingest_stale") {
+    if (!alert.sns_platform || alert.sns_last_success_at === undefined || !alert.creator_name ||
+      [alert.actor_name, alert.actor_email, alert.live_title, alert.winner_count].some(value => value !== null) || alert.detail) {
+      context.addIssue({ code: "custom", message: "invalid SNS ingest stale source" });
+    }
+  } else if (alert.sns_platform !== undefined || alert.sns_last_success_at !== undefined) {
+    context.addIssue({ code: "custom", message: "unexpected SNS ingest source" });
   }
   if (alert.rsvp !== undefined && alert.kind !== "byus_day_rsvp_received") {
     context.addIssue({ code: "custom", message: "unexpected RSVP details" });
@@ -434,6 +445,12 @@ function detailedMessage(input: readonly TelegramAlertSnapshot[]): string | null
 }
 
 function renderLegacyAlert(alert: TelegramAlertSnapshot): string[] {
+  if (alert.kind === "sns_ingest_stale") {
+    alertSchema.parse(alert);
+    const platform = alert.sns_platform === "tiktok" ? "TikTok" : "Instagram";
+    return [`• ${cleanPublicName(alert.creator_name, 120)} ${platform} 게시물 수집 24시간 넘게 멈춤`,
+      `  마지막 성공: ${alert.sns_last_success_at ? kstTimestamp(alert.sns_last_success_at) : "기록 없음"}`];
+  }
   if (alert.kind === "youtube_live_started") {
     alertSchema.parse(alert);
     return [`• ${cleanPublicName(alert.creator_name, 120)} YouTube 라이브 시작`,
