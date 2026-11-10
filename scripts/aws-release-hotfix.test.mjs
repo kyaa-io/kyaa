@@ -7,7 +7,7 @@ import { approvedPromotion } from './aws-approved-promotion.mjs';
 import { reusableProof } from './aws-release-media-reuse.mjs';
 
 const sha = 'a'.repeat(40), branch = 'release/production';
-const run = { id: 11, repository: { id: release.REPOSITORY_ID, full_name: release.REPOSITORY }, path: release.WORKFLOW_PATH, head_branch: branch, head_sha: sha, event: 'push', status: 'completed', conclusion: 'success' };
+const run = { run_attempt: 1, id: 11, repository: { id: release.REPOSITORY_ID, full_name: release.REPOSITORY }, path: release.WORKFLOW_PATH, head_branch: branch, head_sha: sha, event: 'push', status: 'completed', conclusion: 'success' };
 
 test('only exact hotfix push sources are trusted, never arbitrary release branches or hotfix dispatches', () => {
   assert.equal(release.trustedRun(run, 11), run);
@@ -44,6 +44,7 @@ test('hotfix dev still requires source ancestry to main before using its config'
 test('hotfix promotion still requires identical tested web, media and cron artifacts', () => {
   const digest = `sha256:${'b'.repeat(64)}`;
   const artifact = { schemaVersion: 1, repositoryId: release.REPOSITORY_ID, workflowPath: release.WORKFLOW_PATH, sourceSha: sha, sourceRunId: 11, imageDigest: digest, imageUri: `111111111111.dkr.ecr.ap-northeast-2.amazonaws.com/web@${digest}`, mediaImageDigest: digest, mediaImageUri: `111111111111.dkr.ecr.ap-northeast-2.amazonaws.com/media@${digest}`, cronCodeSha256: 'c'.repeat(64) };
+  artifact.runtimeAuth = {contractVersion:1,status:'success',checks:6,envProfile:'invalid-only-v1',imageId:'sha256:'+'e'.repeat(64),sourceSha:run.head_sha,sourceRunId:run.id,sourceRunAttempt:run.run_attempt,imageDigest:artifact.imageDigest};
   const dev = { ...artifact, environment: 'dev', status: 'success', workflowRunId: 11 };
   assert.equal(release.validateRelease(artifact, run), artifact);
   assert.doesNotThrow(() => release.assertPromotion('prod', artifact, dev, run));

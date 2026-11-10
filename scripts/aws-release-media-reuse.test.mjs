@@ -6,8 +6,9 @@ import { join, dirname } from 'node:path';
 import { fingerprintMedia, resolvedBase, reusableProof, imageExists, readPriorMetadata } from './aws-release-media-reuse.mjs';
 import { REPOSITORY_ID, REPOSITORY, WORKFLOW_PATH } from './aws-release.mjs';
 const sha='a'.repeat(40), current='b'.repeat(40), digest='sha256:'+'c'.repeat(64), hash='d'.repeat(64);
-const run={id:123,repository:{id:REPOSITORY_ID,full_name:REPOSITORY},path:WORKFLOW_PATH,head_branch:'main',head_sha:sha,event:'push',status:'completed',conclusion:'success'};
+const run={run_attempt:1,id:123,repository:{id:REPOSITORY_ID,full_name:REPOSITORY},path:WORKFLOW_PATH,head_branch:'main',head_sha:sha,event:'push',status:'completed',conclusion:'success'};
 const release={schemaVersion:1,repositoryId:REPOSITORY_ID,workflowPath:WORKFLOW_PATH,sourceSha:sha,sourceRunId:123,imageDigest:digest,imageUri:`123456789012.dkr.ecr.ap-northeast-2.amazonaws.com/web@${digest}`,mediaImageDigest:digest,mediaImageUri:`123456789012.dkr.ecr.ap-northeast-2.amazonaws.com/media@${digest}`,cronCodeSha256:hash};
+release.runtimeAuth = {contractVersion:1,status:'success',checks:6,envProfile:'invalid-only-v1',imageId:'sha256:'+'e'.repeat(64),sourceSha:run.head_sha,sourceRunId:run.id,sourceRunAttempt:run.run_attempt,imageDigest:release.imageDigest};
 const dev={...release,environment:'dev',status:'success',workflowRunId:123};
 const proof={schemaVersion:1,repositoryId:REPOSITORY_ID,workflowPath:WORKFLOW_PATH,sourceSha:sha,sourceRunId:123,originalBuildSha:sha,mediaImageDigest:digest,fingerprint:hash};
 const input={proof,release,dev,run,fingerprint:hash,currentSha:current};
@@ -65,3 +66,12 @@ test('original build provenance must be an ancestor of the trusted prior release
    await assert.rejects(readPriorMetadata(root), { code: 'EISDIR' });
   } finally { await rm(root, { recursive: true, force: true }); }
  });
+
+
+test('a valid legacy release without runtime auth is a cache miss, not a promotion bypass', () => {
+ const {runtimeAuth,...legacy}=release;
+ assert.equal(reusableProof({...input,release:legacy}),false);
+ assert.throws(()=>reusableProof({...input,release:{...legacy,sourceSha:'invalid'}}),/INVALID_AWS_RELEASE_ARTIFACT/);
+ assert.throws(()=>reusableProof({...input,release:legacy,run:{...run,repository:{id:1}}}),/UNTRUSTED/);
+ assert.throws(()=>reusableProof({...input,release:{...release,runtimeAuth:null}}),/INVALID_RUNTIME_AUTH_PROOF/);
+});

@@ -4,7 +4,7 @@ import { execFileSync } from 'node:child_process';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
-import { github, trustedRun, validateRelease, assertPromotion, REPOSITORY, REPOSITORY_ID, WORKFLOW_PATH } from './aws-release.mjs';
+import { github, trustedRun, validateReleaseMetadata, validateRelease, assertPromotion, REPOSITORY, REPOSITORY_ID, WORKFLOW_PATH } from './aws-release.mjs';
 const SHA = /^[a-f0-9]{40}$/, DIGEST = /^sha256:[a-f0-9]{64}$/, HASH = /^[a-f0-9]{64}$/;
 const fail = message => { throw new Error(message); };
 const execute = (file, args) => execFileSync(file, args, { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }).trim();
@@ -26,7 +26,9 @@ export async function fingerprintMedia(bases, root = '.') {
   return hash.digest('hex');
 }
 export function reusableProof({ proof, release, dev, run, fingerprint, currentSha }, { assertAncestor = (ancestor, revision) => execute('git', ['merge-base', '--is-ancestor', ancestor, revision]) } = {}) {
-  trustedRun(run, run.id); validateRelease(release, run); assertPromotion('prod', release, dev, run);
+  trustedRun(run, run.id); validateReleaseMetadata(release, run);
+  if (release.runtimeAuth === undefined) return false;
+  validateRelease(release, run); assertPromotion('prod', release, dev, run);
   if (run.head_branch !== 'main' || run.event !== 'push' || run.id === Number(process.env.GITHUB_RUN_ID) || !SHA.test(currentSha)) fail('UNTRUSTED_MEDIA_SOURCE');
   if (!proof) return false;
   if (proof.schemaVersion !== 1 || proof.repositoryId !== REPOSITORY_ID || proof.workflowPath !== WORKFLOW_PATH || proof.sourceSha !== release.sourceSha || proof.sourceRunId !== run.id || proof.mediaImageDigest !== release.mediaImageDigest || !SHA.test(proof.originalBuildSha ?? '') || !HASH.test(proof.fingerprint ?? '')) return false;
