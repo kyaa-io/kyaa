@@ -134,7 +134,10 @@ describe("FanPostRow", () => {
   it("shows the notice tag, the comment count and a source link beside the row link", () => {
     render(<FanPostRow href="/p/1" locale="ko" title="공지 글" notice commentCount={8} source={{ label: "엘리나", href: "/elina?tab=board" }} density="home" views={12} />);
     expect(screen.getByText("공지")).toHaveAttribute("data-fan-tag", "notice");
-    expect(screen.getByLabelText("댓글 8")).toHaveTextContent("[8]");
+    const comments = screen.getByLabelText("댓글 8");
+    expect(comments).toHaveTextContent("8");
+    expect(comments).not.toHaveTextContent("[8]");
+    expect(comments.querySelector("svg")).not.toBeNull();
     expect(screen.getByRole("link", { name: "엘리나" })).toHaveAttribute("href", "/elina?tab=board");
     expect(screen.queryByLabelText(/조회/)).toBeNull();
   });
