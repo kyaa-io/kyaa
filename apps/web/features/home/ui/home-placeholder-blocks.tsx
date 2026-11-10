@@ -1,4 +1,4 @@
-import type { CSSProperties } from "react";
+import type { CSSProperties, ReactNode } from "react";
 import { FanHeading, FanSectionHeader } from "@/components/fan-ui/fan-heading";
 import Image from "next/image";
 import Link from "next/link";
@@ -88,10 +88,11 @@ export function HomeGallery({ locale, photos, hasMore, shorts, expectedPhotos }:
   </section>;
 }
 
-function GalleryColumns({ columns, layout }: { columns: readonly (readonly HomeGalleryPhoto[])[]; layout: "mobile" | "desktop" }) {
+/** The photos laid into the layout's columns (`allocateGalleryColumns`). `caption` adds a line under each photo; `itemClassName` styles that item. */
+export function GalleryColumns({ columns, layout, caption, itemClassName }: { columns: readonly (readonly HomeGalleryPhoto[])[]; layout: "mobile" | "desktop"; caption?: (photo: HomeGalleryPhoto) => ReactNode; itemClassName?: string }) {
   return <div className={`${styles.photoColumns} ${layout === "mobile" ? styles.mobileOnly : styles.desktopOnly}`} data-home-measure="photos" data-gallery-layout={layout}>
     {columns.map((photos, index) => <ul key={index} className={styles.photoColumn}>
-      {photos.map(photo => <li key={photo.id} className={styles.photo} data-row="photo"><GalleryImage photo={photo} sizes={layout === "mobile" ? "calc(50vw - 20px)" : "340px"} /></li>)}
+      {photos.map(photo => <li key={photo.id} className={[styles.photo, itemClassName].filter(Boolean).join(" ")} data-row="photo"><GalleryImage photo={photo} sizes={layout === "mobile" ? "calc(50vw - 20px)" : "340px"} />{caption?.(photo)}</li>)}
     </ul>)}
   </div>;
 }

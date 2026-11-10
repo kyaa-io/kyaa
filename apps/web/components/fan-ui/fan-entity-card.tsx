@@ -9,6 +9,7 @@ import type { AppLocale } from "@/i18n/locales";
 import type { PhotoSet } from "@/features/media/domain/public-image";
 import { CreatorAvatar } from "./creator-avatar";
 import { CreatorImage } from "./creator-image";
+import { mediaFillClass } from "./media-fill";
 import { FanTag } from "./fan-tag";
 import { fanUiText, type FanUiCopyKey } from "./fan-ui-copy";
 import styles from "./fan-entity-card.module.css";
@@ -71,10 +72,10 @@ function FanEntityTile({ href, image, name, kind, locale, badge, newBadge, class
   // Only fan pages show a creator's face; a brand or hobby page linked to a creator record still shows its own logo whole.
   const creatorSlug = image.slug && (kind === "fan" || !image.src) ? image.slug : undefined;
   const content = <>
-    <span className={styles.tileMedia} data-tile-media={creatorSlug ? "creator" : image.src ? "page" : "initials"}>
+    <span className={[styles.tileMedia, !creatorSlug && image.src ? mediaFillClass : ""].filter(Boolean).join(" ")} data-tile-media={creatorSlug ? "creator" : image.src ? "page" : "initials"}>
       {creatorSlug
         ? <CreatorImage slug={creatorSlug} src={image.src} photos={image.photos} position={image.position} presentation="portrait" alt="" width={336} height={336} sizes={sizes} fallback={<span className={styles.tileInitials} aria-hidden="true">{initials}</span>} />
-        : image.src ? <GroupImage locale={locale} src={image.src} alt="" width={336} height={336} className={styles.tileLogo} /> : <span className={styles.tileInitials} aria-hidden="true">{initials}</span>}
+        : image.src ? <GroupImage locale={locale} src={image.src} alt="" width={336} height={336} className={styles.tileLogo} backdrop /> : <span className={styles.tileInitials} aria-hidden="true">{initials}</span>}
       {badge && <span className={styles.tileBadge}>{badge}</span>}
       {newBadge && <span className={styles.tileNew}>NEW</span>}
     </span>

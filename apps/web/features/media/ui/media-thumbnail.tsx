@@ -7,9 +7,10 @@ import type { AppLocale } from "@/i18n/locales";
 import { participationCopy } from "@/i18n/catalogs/features__schedules__ui__participation";
 import { videoThumbnailUrl, youtubeVideoId } from "../domain/video-thumbnail";
 import { isRecordedReplayUrl } from "@/features/live/domain/live-watch-link";
+import { MediaBackdrop } from "@/components/fan-ui/media-fill";
 import styles from "./creator-media-panel.module.css";
 
-export function MediaThumbnail({ image, href, kind, source, locale, priority = false, iconOnly = false }: { image: string | null; href: string; kind: "photos" | "videos" | "replays"; source?: string; locale: AppLocale; priority?: boolean; iconOnly?: boolean }) {
+export function MediaThumbnail({ image, href, kind, source, locale, priority = false, iconOnly = false, backdrop = false }: { image: string | null; href: string; kind: "photos" | "videos" | "replays"; source?: string; locale: AppLocale; priority?: boolean; iconOnly?: boolean; /** The frame carries `mediaFillClass`; the cover's own blurred copy fills what the whole picture leaves. */ backdrop?: boolean }) {
   const [failed, setFailed] = useState<string[]>([]);
   const [dimensions, setDimensions] = useState<{ width: number; height: number }>();
   const id = kind !== "photos" ? youtubeVideoId(href) : null;
@@ -18,9 +19,10 @@ export function MediaThumbnail({ image, href, kind, source, locale, priority = f
   if (!src) return <span className={styles.thumbnailFallback} aria-hidden="true">{kind === "photos" ? <ImageOff size={28} /> : <Play size={28} />}{!iconOnly && <span>{[provider, participationCopy(locale)[kind]].filter(Boolean).join(" · ")}</span>}</span>;
   // Own files (/images/…) go through the image optimizer at the tile width; other hosts stay as they are.
   const local = src.startsWith("/") && !src.startsWith("//");
-  return <Image src={src} width={640} height={360} alt="" unoptimized={!local} sizes={local ? "(max-width: 767px) 50vw, 320px" : undefined} referrerPolicy="no-referrer" loading={priority ? "eager" : undefined} fetchPriority={priority ? "high" : undefined}
+  const picture = <Image src={src} width={640} height={360} alt="" unoptimized={!local} sizes={local ? "(max-width: 767px) 50vw, 320px" : undefined} referrerPolicy="no-referrer" loading={priority ? "eager" : undefined} fetchPriority={priority ? "high" : undefined}
     data-media-portrait={dimensions && dimensions.height > dimensions.width || undefined}
     style={dimensions ? { aspectRatio: `${dimensions.width} / ${dimensions.height}` } : undefined}
     onLoad={event => { const img = event.currentTarget; if (kind !== "photos" && !id && img.naturalWidth > 0) setDimensions({ width: img.naturalWidth, height: img.naturalHeight }); }}
     onError={() => { setDimensions(undefined); setFailed(previous => [...previous, src]); }} />;
+  return backdrop ? <><MediaBackdrop src={src} />{picture}</> : picture;
 }

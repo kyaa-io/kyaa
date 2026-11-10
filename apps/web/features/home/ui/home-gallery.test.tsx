@@ -56,12 +56,23 @@ describe("gallery column allocation", () => {
       expect(allocateGalleryColumns(mixed, layout).columns.map(column => column[0]!.id)).toEqual(mixed.slice(0, layout.columns).map(item => item.id));
     }
   });
-  it("keeps the given order inside a column so the first photos stay on top", () => {
-    const order = mixed.map(item => item.id);
+  it("mixes the sizes inside a column: the best photo stays on top, same-size photos keep their rank and neighbours differ in size", () => {
+    // Rank order arrives in clumps of eight tall, eight square and eight wide photos.
+    const clumped = [...[1500, 1000, 667].flatMap((height, group) => Array.from({ length: 8 }, (_, i) => photo(group * 8 + i, 1000, height)))];
+    const order = clumped.map(item => item.id);
+    const sizeOf = (item: HomeGalleryPhoto) => item.image.height;
     for (const layout of Object.values(homeGalleryLayouts)) {
-      for (const column of allocateGalleryColumns(mixed, layout).columns) {
-        const positions = column.map(item => order.indexOf(item.id));
-        expect(positions).toEqual([...positions].sort((a, b) => a - b));
+      const { columns } = allocateGalleryColumns(clumped, layout);
+      for (const column of columns) {
+        expect(column[0]!.id).toBe(order.find(id => column.some(item => item.id === id)));
+        for (const height of [1500, 1000, 667]) {
+          const same = column.filter(item => sizeOf(item) === height).map(item => order.indexOf(item.id));
+          expect(same).toEqual([...same].sort((a, b) => a - b));
+        }
+        const biggest = Math.max(...[1500, 1000, 667].map(height => column.filter(item => sizeOf(item) === height).length));
+        if (biggest <= Math.ceil(column.length / 2)) {
+          column.slice(1).forEach((item, i) => expect(sizeOf(item)).not.toBe(sizeOf(column[i]!)));
+        }
       }
     }
   });
@@ -139,7 +150,10 @@ describe("/gallery", () => {
     expect(screen.getByText("아직 사진 없음")).toBeInTheDocument();
     unmount();
     render(<HomeGalleryScreen locale="ko" items={photos} nextCursor="abc" />);
-    expect(screen.getAllByRole("listitem")).toHaveLength(4);
+    expect(screen.getAllByRole("listitem")).toHaveLength(photos.length * 2);
+    for (const layout of ["mobile", "desktop"]) {
+      expect(document.querySelectorAll(`[data-gallery-layout="${layout}"] [data-row="photo"]`)).toHaveLength(photos.length);
+    }
     expect(screen.getByRole("link", { name: /더 보기/ })).toHaveAttribute("href", "/gallery?locale=ko&cursor=abc");
   });
 });

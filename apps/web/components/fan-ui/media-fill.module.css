@@ -1,0 +1,4 @@
+/* R5: a picture or video that does not fill its frame is extended with its own colours, never with grey or white bars.
+   The frame clips; the backdrop is the same picture, covered and blurred; the picture itself stays whole (contain). */
+.fill { position: relative; overflow: hidden; isolation: isolate; background: var(--color-soft); }
+.fill > .backdrop { position: absolute; inset: -12%; z-index: -1; width: 124%; height: 124%; max-width: none; object-fit: cover; object-position: center; filter: blur(18px) saturate(1.15); pointer-events: none; }

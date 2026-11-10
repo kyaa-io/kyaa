@@ -16,6 +16,34 @@ type Layout = { columns: number; gap: number };
 const ratio = (photo: HomeGalleryPhoto) => photo.image.height / photo.image.width;
 const columnHeight = (heights: readonly number[], gap: number) => heights.reduce((sum, h) => sum + h, 0) + gap * Math.max(0, heights.length - 1);
 
+/** Each photo's size class (0 flattest, 2 tallest) by tercile of the ratios in the list, so a gallery of mostly tall photos still has three groups. */
+function galleryClasses(photos: readonly HomeGalleryPhoto[]) {
+  const sorted = photos.map(ratio).sort((a, b) => a - b);
+  const low = sorted[Math.floor(sorted.length / 3)] ?? 0;
+  const high = sorted[Math.floor((sorted.length * 2) / 3)] ?? 0;
+  return (photo: HomeGalleryPhoto) => { const value = ratio(photo); return value < low ? 0 : value < high ? 1 : 2; };
+}
+
+/**
+ * Reorders one column so neighbours differ in size class: the first photo stays on top, then the class with the most photos left that is not
+ * the previous one goes next (ties: the better ranked). Photos of one class keep their rank order and the column height is unchanged.
+ */
+function mixColumnSizes(column: readonly HomeGalleryPhoto[], sizeOf: (photo: HomeGalleryPhoto) => number) {
+  if (column.length < 3) return [...column];
+  const buckets: HomeGalleryPhoto[][] = [[], [], []];
+  column.slice(1).forEach(photo => buckets[sizeOf(photo)]!.push(photo));
+  const result = [column[0]!];
+  let previous = sizeOf(column[0]!);
+  while (result.length < column.length) {
+    const open = buckets.map((bucket, size) => ({ bucket, size })).filter(item => item.bucket.length);
+    const other = open.filter(item => item.size !== previous);
+    const pick = (other.length ? other : open).reduce((best, item) => item.bucket.length > best.bucket.length
+      || (item.bucket.length === best.bucket.length && column.indexOf(item.bucket[0]!) < column.indexOf(best.bucket[0]!)) ? item : best);
+    result.push(pick.bucket.shift()!); previous = pick.size;
+  }
+  return result;
+}
+
 /**
  * Shortest column first, then moves and swaps between columns until the tallest and shortest column differ as little as possible.
  * The first photo of each column is the first `columns` photos in the given order (rank first) and never moves, so the top row is always
@@ -57,7 +85,8 @@ export function allocateGalleryColumns(photos: readonly HomeGalleryPhoto[], layo
     if (b < 0) { const from = owner[a]!; sums[from]! -= heights[a]!; sizes[from]! -= 1; sums[to]! += heights[a]!; sizes[to]! += 1; owner[a] = to; }
     else { const ca = owner[a]!; const cb = owner[b]!; sums[ca]! += heights[b]! - heights[a]!; sums[cb]! += heights[a]! - heights[b]!; owner[a] = cb; owner[b] = ca; }
   }
-  const columns = Array.from({ length: count }, (_, column) => photos.filter((_, index) => owner[index] === column));
+  const sizeOf = galleryClasses(photos);
+  const columns = Array.from({ length: count }, (_, column) => mixColumnSizes(photos.filter((_, index) => owner[index] === column), sizeOf));
   const lengths = columns.map(column => columnHeight(column.map(ratio), layout.gap));
   return { columns, placed: photos.length, spread: lengths.length ? Math.max(...lengths) - Math.min(...lengths) : 0 };
 }
