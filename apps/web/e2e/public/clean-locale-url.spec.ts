@@ -24,7 +24,8 @@ test("legacy URLs stay clean through language switches, history, reload and logi
   await page.goto("/privacy?locale=ko&attendanceCode=KEEP&returnTo=%2Flive%2Felina%23code#fans");
   await expect(page).toHaveURL(`${baseURL}/privacy?attendanceCode=KEEP&returnTo=%2Flive%2Felina%23code#fans`);
   await expect(page.locator("html")).toHaveAttribute("lang", "ko");
-  await page.getByRole("combobox", { name: "언어 선택, 현재 한국어" }).selectOption("en");
+  await page.getByRole("combobox", { name: "언어 선택, 현재 한국어" }).click();
+  await page.getByRole("option", { name: "English" }).click();
   await expect(page).toHaveURL(`${baseURL}/privacy`);
   await expect(page.locator("html")).toHaveAttribute("lang", "en");
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("Privacy Policy");
