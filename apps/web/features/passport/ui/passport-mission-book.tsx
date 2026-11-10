@@ -54,8 +54,9 @@ export function missionHref(kind: string | null | undefined, slug: string, passp
     case "comment": return `/${creator}?tab=board&source=fans&locale=${locale}`;
     case "share": return `/passports/${encodeURIComponent(passportId)}?locale=${locale}#community-stamps`;
     case "invite": return `/my/invitations?locale=${locale}`;
-    case "subscription":
-    case "proof": return `/c/${creator}/certifications?locale=${locale}`;
+    // 07: SNS 게시 캡처 인증, 09: 증빙(멤버십·영수증 등). 둘 다 같은 증빙 화면에서 제출하고 운영자가 심사한다(BUGS-261110 B1·B6).
+    case "subscription": return `/c/${creator}/proofs?type=sns_post&locale=${locale}`;
+    case "proof": return `/c/${creator}/proofs?locale=${locale}`;
     default: return null;
   }
 }

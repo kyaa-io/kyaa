@@ -33,7 +33,7 @@ export const dukjilSource = {
   missionLocked: { ko: "팬 인증 후 받기", en: "Claim after verifying" },
   missionLoadError: { ko: "덕질 기록을 불러오지 못했어요", en: "Couldn't load the mission book" },
   missionClaimFailed: { ko: "하트를 받지 못했어요", en: "Couldn't claim the heart" },
-  missionSlotSubscription: { ko: "구독", en: "Subscribe" },
+  missionSlotSubscription: { ko: "SNS 올리기", en: "SNS post" },
   missionSlotSteady: { ko: "꾸준 출석", en: "Steady check-in" },
   missionRetry: { ko: "다시 시도", en: "Retry" },
   roomJjinfan: { ko: "찐팬", en: "True fan" },

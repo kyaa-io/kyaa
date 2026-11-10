@@ -398,16 +398,16 @@ export const messages = {
     "ru": "Не удалось получить сердце"
   },
   "missionSlotSubscription": {
-    "ja": "購読",
-    "zh-Hans": "订阅",
-    "zh-Hant": "訂閱",
-    "es": "Suscripción",
-    "id": "Berlangganan",
-    "vi": "Đăng ký",
-    "th": "สมัครสมาชิก",
-    "pt": "Assinatura",
-    "fr": "Abonnement",
-    "ru": "Подписка"
+    "ja": "SNS投稿",
+    "zh-Hans": "社交平台发帖",
+    "zh-Hant": "社群發文",
+    "es": "Publicar en redes",
+    "id": "Unggah di medsos",
+    "vi": "Đăng mạng xã hội",
+    "th": "โพสต์โซเชียล",
+    "pt": "Postar nas redes",
+    "fr": "Publier sur les réseaux",
+    "ru": "Пост в соцсети"
   },
   "missionSlotSteady": {
     "ja": "継続出席",

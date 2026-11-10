@@ -243,10 +243,10 @@ describe("dukjil guide figures match /api/dukjil/catalog", () => {
     const faq = ko.slice(ko.indexOf('id="jjinfan-faq"'));
     expect(faq.match(/<li>/g)).toHaveLength(3);
     expect(faq).not.toMatch(/48|90일|시간/);
-    expect(ko).not.toContain("채널 구독도 인증이 되나요?");
+    expect(ko).not.toContain("SNS에 올린 글도 인증이 되나요?");
     const withSub = rawPolicy({ subscription: { points: 9, stamp: { kind: "subscription" } } });
     const subHtml = renderToStaticMarkup(<JjinfanGuideContent locale="ko" model={buildGuideModel(await fetchCatalog(withSub))} />);
-    expect(subHtml).toContain("채널 구독도 인증이 되나요?");
+    expect(subHtml).toContain("SNS에 올린 글도 인증이 되나요?");
   });
 
   it("pins the privacy answer to the memo-only check and the kyaa payment card to a not-yet-open message", async () => {

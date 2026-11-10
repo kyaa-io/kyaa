@@ -11,6 +11,8 @@ import { APP_LOCALES } from "@/i18n/locales";
 
 const authState = vi.hoisted(() => ({ authenticated: false, getAccessToken: async () => "session-token" as string | null }));
 vi.mock("@/features/auth/client/cognito-auth", () => ({ useByUsAuth: () => ({ ready: true, ...authState }) }));
+const query = vi.hoisted(() => ({ value: "" }));
+vi.mock("next/navigation", () => ({ useSearchParams: () => new URLSearchParams(query.value) }));
 vi.mock("@/features/content-safety/ui/content-actions", () => ({
   ContentActions: (props: { targetType: string; targetId: string; onChanged?: () => void }) => <button type="button" data-testid="content-actions" data-target={`${props.targetType}:${props.targetId}`} onClick={props.onChanged}>신고</button>,
 }));
@@ -124,6 +126,18 @@ describe("ProofsScreen mission entry", () => {
     expect(await screen.findByRole("radio", { name: "티켓" })).toBeTruthy();
     expect(screen.getByRole("radio", { name: "영수증" })).toBeTruthy();
     expect(screen.queryByRole("radio", { name: "펀딩" })).toBeNull();
+  });
+  it("opens on the SNS post type from the passport 07 link and keeps that proof off the verified board (BUGS-261110 B6)", async () => {
+    stub(() => Response.json({ items: [mission({ proofType: "membership" }), mission({ missionId: "cccccccc-cccc-4ccc-8ccc-cccccccccccc", proofType: "sns_post", platform: "instagram" })] }));
+    query.value = "type=sns_post&locale=ko";
+    const linked = render(<ProofsScreen locale="ko" slug="mina" />);
+    expect(((await screen.findByRole("radio", { name: "SNS 올리기" })) as HTMLInputElement).checked).toBe(true);
+    expect(screen.queryByRole("checkbox", { name: "인증했어요 게시판에 공개" })).toBeNull();
+    linked.unmount();
+    query.value = "";
+    render(<ProofsScreen locale="ko" slug="mina" />);
+    expect(((await screen.findByRole("radio", { name: "멤버십" })) as HTMLInputElement).checked).toBe(true);
+    expect(screen.getByRole("checkbox", { name: "인증했어요 게시판에 공개" })).toBeTruthy();
   });
   it("shows the existing error text and disables submit when the mission is not submittable", async () => {
     stub(() => Response.json({ items: [mission({ submittable: false, unavailableReason: "PROOF_MONTHLY_LIMIT" })] }));

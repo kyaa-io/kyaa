@@ -9,6 +9,7 @@ export const proofsSource = {
   pfTypeDonation: { ko: "기부", en: "Donation" },
   pfTypeFunding: { ko: "펀딩", en: "Funding" },
   pfTypeKyaaPayment: { ko: "kyaa 결제", en: "kyaa payment" },
+  pfTypeSns: { ko: "SNS 올리기", en: "SNS post" },
   pfImages: { ko: "이미지 (최대 3장)", en: "Images (up to 3)" },
   pfAddImage: { ko: "이미지 추가", en: "Add image" },
   pfRemoveImage: { ko: "이미지 삭제", en: "Remove image" },

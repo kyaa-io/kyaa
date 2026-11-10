@@ -40,7 +40,9 @@ type Mission = {
   proofType?: ProofType | null;
   proofPlatform?: string | null;
 };
-const PROOF_TYPES = ["membership", "purchase", "receipt", "ticket", "donation", "funding", "kyaa_payment"] as const;
+const PROOF_TYPES = ["membership", "purchase", "receipt", "ticket", "donation", "funding", "kyaa_payment", "sns_post"] as const;
+// sns_post fills passport slot 07 and names one of these networks (save_admin_certification_mission_v3 refuses anything else).
+const SNS_PLATFORMS = [["instagram", "Instagram"], ["tiktok", "TikTok"], ["x", "X"], ["threads", "Threads"], ["youtube", "YouTube"]] as const;
 type ProofType = (typeof PROOF_TYPES)[number];
 const PROOF_TYPE_LABEL: Record<ProofType, { ko: string; en: string }> = {
   membership: { ko: "멤버십", en: "Membership" },
@@ -50,6 +52,7 @@ const PROOF_TYPE_LABEL: Record<ProofType, { ko: string; en: string }> = {
   donation: { ko: "후원", en: "Donation" },
   funding: { ko: "펀딩", en: "Funding" },
   kyaa_payment: { ko: "kyaa 결제", en: "kyaa payment" },
+  sns_post: { ko: "SNS 올리기", en: "SNS post" },
 };
 const blank = {
   id: "",
@@ -455,7 +458,7 @@ function CertificationManager({
               <select
                 value={form.proofType}
                 disabled={!canWrite || pending || needsRefresh || Boolean(form.membershipPlatform)}
-                onChange={(event) => setForm((value) => ({ ...value, proofType: event.target.value as ProofType | "", proofPlatform: event.target.value ? value.proofPlatform : "" }))}
+                onChange={(event) => setForm((value) => ({ ...value, proofType: event.target.value as ProofType | "", proofPlatform: event.target.value && (event.target.value === "sns_post") === SNS_PLATFORMS.some(([id]) => id === value.proofPlatform) ? value.proofPlatform : "" }))}
               >
                 <option value="">{locale === "ko" ? "지정 안 함" : "Not set"}</option>
                 {PROOF_TYPES.map((type) => <option key={type} value={type}>{PROOF_TYPE_LABEL[type][locale]}</option>)}
@@ -463,12 +466,19 @@ function CertificationManager({
             </label>
             <label>
               <span>{locale === "ko" ? "증빙 플랫폼" : "Proof platform"}</span>
-              <input
-                value={form.proofPlatform}
-                maxLength={60}
-                disabled={!canWrite || pending || needsRefresh || !form.proofType}
-                onChange={(event) => setForm((value) => ({ ...value, proofPlatform: event.target.value }))}
-              />
+              {form.proofType === "sns_post" ? (
+                <select required value={form.proofPlatform} disabled={!canWrite || pending || needsRefresh} onChange={(event) => setForm((value) => ({ ...value, proofPlatform: event.target.value }))}>
+                  <option value="">{locale === "ko" ? "플랫폼 선택" : "Select a network"}</option>
+                  {SNS_PLATFORMS.map(([id, name]) => <option key={id} value={id}>{name}</option>)}
+                </select>
+              ) : (
+                <input
+                  value={form.proofPlatform}
+                  maxLength={60}
+                  disabled={!canWrite || pending || needsRefresh || !form.proofType}
+                  onChange={(event) => setForm((value) => ({ ...value, proofPlatform: event.target.value }))}
+                />
+              )}
             </label>
             <label><span>{locale === "ko" ? "크리에이터 검색" : "Search creators"}</span><input value={creatorSearch} disabled={!canWrite || pending || needsRefresh} onChange={event => setCreatorSearch(event.target.value)} placeholder={locale === "ko" ? "이름 또는 계정으로 검색" : "Search by name or handle"} /></label>
             <label><span>{locale === "ko" ? "크리에이터" : "Creator"}</span><select required value={form.celebrityId} disabled={!canWrite || pending || needsRefresh || Boolean(form.id)} onChange={event => setForm(value => ({ ...value, celebrityId: event.target.value }))}><option value="">{locale === "ko" ? "크리에이터 선택" : "Select a creator"}</option>{form.celebrityId && !creators.some(item => item.id === form.celebrityId) ? <option value={form.celebrityId}>{missions.find(item => item.id === form.id)?.celebritySlug || (locale === "ko" ? "선택한 크리에이터" : "Selected creator")}</option> : null}{creators.filter(item => item.id === form.celebrityId || `${item.slug} ${item.localizations?.ko?.name ?? ""} ${item.localizations?.en?.name ?? ""}`.toLowerCase().includes(creatorSearch.trim().toLowerCase())).map(item => <option key={item.id} value={item.id}>{(item.localizations?.[locale] ?? item.localizations?.ko ?? item.localizations?.en)?.name ?? item.slug} · @{item.slug}</option>)}</select>{creatorError ? <small>{locale === "ko" ? "크리에이터를 불러오지 못했습니다. 심사 탭으로 이동한 뒤 다시 열어 주세요." : "Could not load creators. Reopen this tab to retry."}</small> : null}</label>
