@@ -1,5 +1,6 @@
 import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { GroupsReleaseProvider } from "@/features/groups/ui/groups-release";
 import { MyScreen } from "./my-screen";
 
 const id = "11111111-1111-4111-8111-111111111111";
@@ -87,6 +88,25 @@ describe("unified MY hub", () => {
     expect(link).toHaveAttribute("href", "/settings?locale=ko&section=profile");
     expect(link.querySelector("img")).toHaveAttribute("src", "/images/avatars/fairy-pink.webp");
     expect(link).not.toHaveTextContent("카");
+  });
+
+  it("keeps the Stamp collection and its record list in the groups MY, before the favorites", async () => {
+    const stamp = { id, kind: "first_comment", celebritySlug: "kara", issuedAt: "2026-10-09T00:00:00.000Z", mint: { status: "queued", txHash: null, tokenId: null } };
+    const fetcher = vi.fn(async (input: RequestInfo | URL) => {
+      const url = String(input);
+      if (url.startsWith("/api/community-stamps")) return Response.json({ stamps: [stamp], today: "2026-10-09" });
+      return url.startsWith("/api/me/avatar") ? Response.json({ avatar: null }) : Response.json({ summary });
+    });
+    vi.stubGlobal("fetch", fetcher);
+    const { container } = render(<GroupsReleaseProvider enabled><MyScreen locale="ko" /></GroupsReleaseProvider>);
+
+    const stamps = await screen.findByRole("heading", { name: "스탬프 모으기" });
+    const favorites = screen.getByRole("heading", { name: "내 최애" });
+    expect(stamps.compareDocumentPosition(favorites) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    const history = await waitFor(() => { const node = container.querySelector("#community-stamps details"); expect(node).not.toBeNull(); return node as HTMLDetailsElement; });
+    expect(within(history).getByText("KARA · 2026년 10월 9일")).toBeInTheDocument();
+    expect(within(history).getByText("등록 중")).toBeInTheDocument();
+    expect(container.querySelectorAll("#community-stamps")).toHaveLength(1);
   });
 
   it("ends the signed-in dashboard with a logout row", async () => {

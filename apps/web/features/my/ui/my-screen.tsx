@@ -296,6 +296,7 @@ function Dashboard({ summary, locale, avatarResource, refreshSummary, selectedSl
       <div className={styles.homeRow}>
         <MyPassportCard creators={visibleCreators} selectedSlug={selectedSlug} onSelect={onSelectSlug} communityStamps={stamps} stampsError={communityStamps.state.status === "error"} retryStamps={communityStamps.retry} locale={locale} labels={labels}/>
       </div>
+      <CommunityStampCollection locale={locale} resource={communityStamps} creatorNames={Object.fromEntries(summary.creators.map((creator) => [creator.celebrity.slug, creator.celebrity.name]))}/>
       <MyFavorites creators={passportCreators} locale={locale} labels={{ title: t.creators, find: t.findCreator, empty: t.noCreators }}/>
       <MyShortcuts locale={locale} {...myShortcutGroups(locale, hrefWithLocale(locale))}/>
       <MyLogout locale={locale}/>
