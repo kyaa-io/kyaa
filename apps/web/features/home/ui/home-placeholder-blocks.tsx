@@ -5,6 +5,7 @@ import Link from "next/link";
 import type { Route } from "next";
 import { bypassImageOptimization } from "@/components/fan-ui/public-image-policy";
 import { homeGalleryCopy, type HomeGalleryPhoto, type HomeShort } from "@/features/home/domain/home-gallery";
+import { FanSurface } from "@/components/fan-ui/fan-surface";
 import { FanSectionLink } from "@/components/fan-ui/fan-section-link";
 import { HomeShorts } from "./home-shorts";
 import { homeNoticeCategoryLabels, type HomeNoticeSummary } from "@/features/home/domain/home-notice";
@@ -46,7 +47,7 @@ export function HomeNotices({ locale, notices }: { locale: AppLocale; notices: r
   const rows = notices.slice(0, 5);
   return <section className={styles.block} aria-labelledby="home-notices-heading" data-home-block="notices">
     <FanSectionHeader variant="editorial" id="home-notices-heading" title={v[0]!} action={{ href: `/notices?locale=${locale}`, label: viewAll[locale] }} />
-    <ul className={styles.notices}>
+    <FanSurface as="div" appearance="list"><ul>
       {rows.map(item => <li key={item.id} className={styles.notice} data-row="notice">
         <Link className={styles.noticeLink} href={`${item.linkHref ?? `/notices/${item.slug}`}?locale=${locale}` as Route}>
           <span className={styles.noticeCategory}>{homeNoticeCategoryLabels[locale][item.category]}</span>
@@ -54,7 +55,7 @@ export function HomeNotices({ locale, notices }: { locale: AppLocale; notices: r
           <time className={styles.noticeDate} dateTime={item.publishedAt}>{formatHomeNoticeDate(item.publishedAt, locale)}</time>
         </Link>
       </li>)}
-    </ul>
+    </ul></FanSurface>
   </section>;
 }
 
@@ -63,7 +64,7 @@ export function HomeNoticesPlaceholder({ locale, state = "loading" }: { locale: 
   const v = values[locale];
   return <section className={styles.block} aria-labelledby="home-notices-heading" data-home-block="notices" data-home-state={state}>
     <FanSectionHeader variant="editorial" id="home-notices-heading" title={v[0]!} action={state === "empty" ? { href: `/notices?locale=${locale}`, label: viewAll[locale] } : undefined} />
-    {state === "empty" && <p className={styles.note}>{v[3]}</p>}
+    {state === "empty" && <FanSurface as="div" appearance="list" className={styles.noticeEmpty}><p className={styles.note}>{v[3]}</p></FanSurface>}
   </section>;
 }
 

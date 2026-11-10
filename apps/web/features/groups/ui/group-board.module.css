@@ -3,3 +3,7 @@
 .list[aria-busy="true"] { opacity:.6; }
 /* 모바일 홈은 5행까지만 보인다. */
 @media (max-width:767px) { .previewList > :nth-child(n+6) { display:none; } }
+
+/* R2: 목록 카드 안의 행은 좌우 여백을 갖고, 마지막 행은 카드 선을 쓴다. */
+.list > * > * { padding-inline: var(--space-4); }
+.list > :last-child > * { border-bottom: 0; }

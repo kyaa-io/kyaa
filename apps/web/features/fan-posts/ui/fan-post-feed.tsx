@@ -29,6 +29,7 @@ import { toContentLocale, type AppLocale } from "@/i18n/locales";
 import { waveEngagementCopy } from "@/i18n/catalogs/features__fanpage__wave-engagement";
 import { wavePrivacyCopy } from "@/i18n/catalogs/features__fanpage__wave-privacy";
 import styles from "@/features/content-safety/ui/content.module.css";
+import { FanSurface } from "@/components/fan-ui/fan-surface";
 import feedStyles from "./fan-post-feed.module.css";
 
 const parse = (value: unknown) => feedPageSchema.parse(value);
@@ -104,7 +105,7 @@ function FeedForOwner({ pageImage, pinnedNotices, pinnedPending = false, filterH
     {compact && composerOpen ? null : state.status === "ready" ? <>
       {resource.refreshFailed && <div className={feedStyles.sourceStatus} role="status"><p>{copy.failed}</p><FanAction variant="text" onClick={resource.retry}>{copy.retry}</FanAction></div>}
       {state.data.unavailableSources.length > 0 && <div className={feedStyles.sourceStatus} role="status"><p>{feed.sourceError}</p><FanAction variant="text" onClick={refresh}>{copy.retry}</FanAction></div>}
-      {state.data.items.length || shownPinned.length ? <>{compact ? <CompactFeed pageImage={pageImage} pinned={shownPinned} items={state.data.items} slug={slug} creatorName={creatorName} locale={locale} returnTo={returnTo} onChanged={resource.retry} officialPostLabel={officialPostLabel} /> : <ul className={styles.list}>{state.data.items.map(item => <li key={`${item.kind}:${item.id}`}><FeedItemCard item={item} slug={slug} creatorName={creatorName} locale={locale} returnTo={returnTo} onChanged={resource.retry} officialPostLabel={officialPostLabel} /></li>)}</ul>}</> : !state.data.nextCursor && !state.data.unavailableSources.length ? <div className={styles.feedEmpty} role="status"><MessageCircle size={28} aria-hidden="true" /><p>{copy.empty}</p></div> : null}
+      {state.data.items.length || shownPinned.length ? <>{compact ? <CompactFeed pageImage={pageImage} pinned={shownPinned} items={state.data.items} slug={slug} creatorName={creatorName} locale={locale} returnTo={returnTo} onChanged={resource.retry} officialPostLabel={officialPostLabel} /> : <FanSurface as="div" appearance="list"><ul className={styles.list}>{state.data.items.map(item => <li key={`${item.kind}:${item.id}`}><FeedItemCard item={item} slug={slug} creatorName={creatorName} locale={locale} returnTo={returnTo} onChanged={resource.retry} officialPostLabel={officialPostLabel} /></li>)}</ul></FanSurface>}</> : !state.data.nextCursor && !state.data.unavailableSources.length ? <div className={styles.feedEmpty} role="status"><MessageCircle size={28} aria-hidden="true" /><p>{copy.empty}</p></div> : null}
       {compact ? (!state.data.items.length && !shownPinned.length && !state.data.nextCursor && cursors.length<2 ? null : <nav className={feedStyles.pageNumbers} aria-label={source ? feed.feed : feed.fanBoard}>
         <button type="button" aria-label={copy.newer} disabled={!cursor} onClick={() => goToPage(cursors.slice(0, -1))}><ChevronLeft size={20} aria-hidden="true" /></button>
         {cursors.map((_, index) => <button key={index} type="button" aria-current={index === cursors.length - 1 ? "page" : undefined} onClick={() => goToPage(cursors.slice(0, index + 1))}>{index + 1}</button>)}

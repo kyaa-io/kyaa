@@ -1,0 +1,13 @@
+{
+  "changes": [
+    "홈의 공지사항이 오늘의 랭킹처럼 흰 카드 안에 들어가도록 바꿨어요. 공지가 없을 때도 같은 카드 안에 안내 문구가 나와요.",
+    "커뮤니티와 팬페이지·모임 홈의 게시글 목록도 같은 카드 형식으로 맞췄어요.",
+    "첨부 화면은 시험용 데이터로 만든 로컬 확인 화면이며 실제 운영 화면이 아니에요."
+  ],
+  "path": "/community",
+  "images": [
+    "release-notes/images/2026-11-10-r2-home-notices-card-390.png",
+    "release-notes/images/2026-11-10-r2-home-notices-card-1440.png",
+    "release-notes/images/2026-11-10-r2-community-feed-card-1440.png"
+  ]
+}
