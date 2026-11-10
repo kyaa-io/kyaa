@@ -400,4 +400,4 @@
   .carouselCounter { position: absolute; z-index: var(--z-home-live); top: 12px; right: 12px; display: block; pointer-events: none; padding:var(--space-1) var(--space-2); border-radius: var(--radius-pill); background: var(--color-home-caption); color: var(--color-surface); font-size:var(--fan-badge-size); font-variant-numeric: tabular-nums; }
 }
 
-@media (min-width: 768px) { .heroCarousel[data-has-controls="true"] { margin-inline: 44px; } }
+@media (min-width: 768px) { .heroCarousel[data-has-controls="true"] { margin-inline: calc(var(--space-10) + var(--space-1)); } }

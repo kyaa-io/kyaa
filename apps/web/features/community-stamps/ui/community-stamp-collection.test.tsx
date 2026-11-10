@@ -84,7 +84,7 @@ const mintedResource = { state: { status: "ready" as const, data: { stamps: [min
 
 it("opens the in-page record list from the Stamp detail without leaving the app", () => {
   const view = render(<CommunityStampCollection locale="ko" creator="elina" resource={mintedResource}/>);
-  const details = view.container.querySelector("#community-stamp-history")!;
+  const details = view.container.querySelector<HTMLElement>("#community-stamp-history")!;
   expect(details).not.toBeVisible();
 
   fireEvent.click(screen.getByRole("button", { name: "스탬프 보기" }));
@@ -107,7 +107,7 @@ it("keeps the explorer as a secondary link only for a registered Stamp and hides
   expect(link).toHaveAttribute("rel", "noopener noreferrer");
 
   fireEvent.click(screen.getByRole("button", { name: "닫기", hidden: true }));
-  const details = view.container.querySelector("#community-stamp-history")!;
+  const details = view.container.querySelector<HTMLElement>("#community-stamp-history")!;
   fireEvent.click(screen.getByRole("button", { name: /스탬프 모으기 기록 보기/ }));
   fireEvent.click(within(details).getByRole("button"));
   expect(screen.queryByRole("button", { name: "등록 기록 보기" })).not.toBeInTheDocument();
@@ -126,7 +126,7 @@ it("shows the creator display name, not the slug, in the earned history and omit
 it("keeps the registration state readable by assistive tech when the record row shows only its icon", () => {
   const view = render(<CommunityStampCollection locale="ko" creator="elina" resource={mintedResource}/>);
   fireEvent.click(screen.getByRole("button", { name: /스탬프 모으기 기록 보기/ }));
-  const row = within(view.container.querySelector("#community-stamp-history")!).getByRole("button", { name: /등록 완료/ });
+  const row = within(view.container.querySelector<HTMLElement>("#community-stamp-history")!).getByRole("button", { name: /등록 완료/ });
   const state = row.querySelector("small[title]")!;
   expect(state).toHaveAttribute("title", "등록 완료");
   expect(state.querySelector("svg")).toHaveAttribute("aria-hidden", "true");
