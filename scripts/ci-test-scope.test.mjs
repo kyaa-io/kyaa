@@ -17,6 +17,14 @@ test('only known web source and documentation inputs skip SQL suites', () => {
   assert.equal(databaseRequired([]), true);
 });
 
+test('files the content translation DB replay loads select the SQL suites', () => {
+  for (const path of ['apps/web/server/fan-posts/routes.ts', 'apps/web/server/content-translation/lease.ts', 'apps/web/server/fan-posts/content-translation-lease.db.test.ts',
+    'apps/web/server/fan-posts/content-translation-slots.db.test.ts', 'apps/web/features/fan-posts/domain/content.ts', 'apps/web/features/fan-posts/domain/post-title-slots.ts']) {
+    assert.equal(databaseRequired([path]), true, path);
+  }
+  assert.equal(databaseRequired(['apps/web/server/content-translation/google-translate.ts', 'apps/web/server/fan-posts/feed.ts']), false);
+});
+
 test('git event selection includes all push commits, PR history and both sides of renames', t => {
   const cwd = mkdtempSync(join(tmpdir(), 'byus-ci-scope-'));
   t.after(() => rmSync(cwd, { recursive: true, force: true }));
