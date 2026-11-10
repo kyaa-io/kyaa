@@ -22,10 +22,12 @@ beforeEach(()=>{
   if(url.endsWith('/api/me/wallet/history'))return Response.json({entries:[entry(1,10,'group_check_in','2026-11-09T01:00:00.000Z'),entry(2,-100,'group_exchange','2026-11-09T02:00:00.000Z'),entry(3,5,'group_check_in','2026-11-08T01:00:00.000Z')]});
   return new Response('{}',{status:404});}));
 });
-it('anchor contract: every wallet-history link points at /benefits and the section carries id wallet-history',async()=>{
+it('anchor contract: the history tabs link to /my/wallet, which renders the history; /benefits carries its own #wallet-history section',async()=>{
  const src=(p:string)=>readFileSync(new URL(p,import.meta.url),'utf8');
- expect(src('../../../app/my/wallet/page.tsx')).toContain('/benefits?locale=${parseAppLocale(query.locale)}#wallet-history');
- expect(src('../../groups/ui/history-tabs.tsx')).toContain('/benefits?locale=${locale}#wallet-history');
+ // E2E a420865d9: /my/wallet shows the real history (no redirect for it), and the tabs point there.
+ expect(src('../../../app/my/wallet/page.tsx')).toContain('<WalletScreen');
+ expect(src('../../../app/my/wallet/page.tsx')).not.toContain('#wallet-history');
+ expect(src('../../groups/ui/history-tabs.tsx')).toContain('/my/wallet?locale=${locale}');
  render(<GroupBenefitsScreen locale='ko'/>);
  await screen.findAllByText('출석체크');
  expect(document.getElementById('wallet-history')).not.toBeNull();
