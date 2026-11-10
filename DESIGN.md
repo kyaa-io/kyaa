@@ -2093,6 +2093,6 @@ At the user's request, registered Changha identity and hero images use the unedi
 ## 2026-11-10 MY 바로가기·패스포트 빈 칸·헤더 위젯 애셋 (사용자 PC QA 18:21~18:24, S4)
 
 - 이 항목은 1920~1921행의 MY 순서 중 `최애` 구역을 대체한다. MY 순서는 이름 → 알림 → 패스포트 → 스탬프 모으기 → 바로가기다. `내 최애`는 모임(`/celebrities`) 상단에 이미 있어 MY에서 구역을 없애고 바로가기 첫 항목(`내 최애` → `/celebrities`)으로 옮겼다. 1921행의 사진·이름 격자는 `/celebrities`에서만 쓴다.
-- 바로가기 9칸은 한 카드(1px `--color-line`, 반경 `--radius-collection`) 안에 두 열로 늘어선다. 행은 컬러 일러스트 아이콘 40(390은 32) · 이름 · 화살표(390은 생략)이고 행 사이는 헤어라인이다(위버스 2열 메뉴 기준). 아이콘은 imagegen 시트(`docs/design/assets/my-shortcuts/sheet.png`)에서 `scripts/prepare-my-shortcut-icons.mjs`로 잘라 `public/images/my/shortcuts/*.webp`로 둔다. 하트·동전·응모권과 같은 광택 3D 재질이다. 무채색 선 아이콘을 다시 쓰지 않는다.
+- 바로가기 9칸은 한 카드(1px `--color-line`, 반경 `--radius-collection`) 안에 두 열로 늘어선다. 행은 컬러 일러스트 아이콘 40(390은 32) · 이름 · 화살표(390은 생략)이고 행 사이는 헤어라인이다(위버스 2열 메뉴 기준). 아이콘은 imagegen 시트(저장소 밖 보관)에서 `scripts/prepare-my-shortcut-icons.mjs`로 잘라 `public/images/my/shortcuts/*.webp`로 둔다. 하트·동전·응모권과 같은 광택 3D 재질이다. 무채색 선 아이콘을 다시 쓰지 않는다.
 - 패스포트 스탬프 줄(`my-passport-card`, 미션북 `Slot`)의 아직 받지 않은 칸은 점선 원 대신 받은 칸과 같은 그림의 흐린 회색 스탬프(`public/images/stamps/ghost-v1`, `scripts/prepare-ghost-stamps.mjs`가 ink-v1에서 회색 한 색·알파 50%로 만든다)를 놓는다. 그림이 없는 칸은 회색 틀(`frame.webp`)이다. 받은 칸은 같은 그림에 `saturate(1.25) contrast(1.12)`로 더 진하게 보인다. 이전의 "회색 스탬프를 늘어놓지 않는다"는 이 요청으로 바꿨다.
 - 헤더 상태 캡슐(`fan-header-status`)의 하트와 포인트는 `economy/heart.svg`, `economy/point-coin.svg` 애셋 그림이다(`P` 글자·단색 선 하트 폐기). 크기는 기존 L10 규칙(24, 390 캡슐 안 16)을 따른다.
