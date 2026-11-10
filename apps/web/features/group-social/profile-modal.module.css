@@ -51,3 +51,7 @@
 .authorButton.authorButton { display: inline; min-height: 0; padding: 0; border: 0; background: none; color: inherit; font: inherit; text-align: inherit; }
 .authorButton.authorButton:hover { background: none; text-decoration: underline; }
 .closeSlot { display: contents; }
+
+@media (min-width: 768px) {
+  .backdrop .panel.rankingPanel[data-overlay-content] { width: 480px; }
+}
