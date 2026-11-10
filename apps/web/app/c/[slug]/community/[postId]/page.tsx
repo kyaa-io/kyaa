@@ -6,7 +6,7 @@ import { FanPostDetail } from "@/features/fan-posts/ui/fan-post-detail";
 import { parseAppLocale, toContentLocale, type AppLocale } from "@/i18n/locales";
 import { postSlotTexts } from "@/features/fan-posts/domain/post-title-slots";
 import { postSchema } from "@/features/fan-posts/domain/content";
-import { publicMetadata, shareOrigin, NO_INDEX } from "@/seo/metadata";
+import { publicMetadata, shareOrigin } from "@/seo/metadata";
 import { createContentDependencies } from "@/server/fan-posts/dependencies";
 import { createContentHandlers } from "@/server/fan-posts/routes";
 import { loadSeoCreator } from "@/server/seo/public-content";
@@ -39,9 +39,9 @@ export async function generateMetadata({ params, searchParams }: Props): Promise
   if (!title) return {};
   const metadata = publicMetadata({ path: `/c/${slug}/community/${post.id}`, locale, title, description: oneLine(rawArticle, 120) || title, image: creator?.image.url, imageAlt: title });
   const first = post.assets[0];
-  if (!first) return { ...metadata, robots: NO_INDEX };
+  if (!first) return metadata;
   const images = [{ url: `${shareOrigin()}/api/content-assets/${first.id}`, width: first.width, height: first.height, alt: title }];
-  return { ...metadata, robots: NO_INDEX, openGraph: { ...metadata.openGraph, images }, twitter: { ...metadata.twitter, card: "summary_large_image", images } };
+  return { ...metadata, openGraph: { ...metadata.openGraph, images }, twitter: { ...metadata.twitter, card: "summary_large_image", images } };
 }
 export default async function Page({ params, searchParams }: Props) {
   const [{ slug, postId }, query] = await Promise.all([params, searchParams]);

@@ -29,7 +29,7 @@ it("shows a public post's own title, opening, first photo and locale, read anony
   expect(value.openGraph.images[0]).toMatchObject({ url: expect.stringContaining(`/api/content-assets/${ASSET}`), alt: "호엥 ㅜㅜㅜ 엘리나님 최고자나요" });
   expect(value.twitter.images[0]?.url).toContain(`/api/content-assets/${ASSET}`);
   expect(value.openGraph.locale).toBe("ko_KR");
-  expect(value.robots).toEqual({ index: false, follow: false });
+  expect(value.robots).toEqual({ index: true, follow: true, "max-image-preview": "large" });
   expect(mocks.authorize).not.toHaveBeenCalled();
   expect(mocks.rpc.mock.calls.filter(([name]) => name === "read_fan_post")).toEqual([["read_fan_post", { p_app_user_id: null, p_post_id: POST, p_locale: "ko" }]]);
 });
