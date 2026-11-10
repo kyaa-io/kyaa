@@ -23,9 +23,9 @@ const FINAL_CODES = new Set(["GROUP_WALLET_INVALID", "GROUP_WALLET_REQUEST_CONFL
 /** Ticket count as it reads in the card and the toast ("3장" in Korean, the number alone elsewhere). */
 const unitsText = (locale: AppLocale, units: number) => `${units.toLocaleString(locale)}${locale === "ko" ? "장" : ""}`;
 
-/** B13: the one place an exchange starts. [− N +] picks the tickets (default: as many as the points cover), one press runs one ad for all of them,
+/** B13: the one place an exchange starts. [− N +] picks the tickets (default: one ticket), one press runs one ad for all of them,
  *  and the result is a toast. The request is saved before it is sent, so a lost answer is checked with the same key instead of spending twice. */
-type ExchangeProps = { locale: AppLocale; points: number; pointCost: number };
+type ExchangeProps = { locale: AppLocale; points: number; pointCost: number; onSuccess?: () => void };
 export function StanExchange(props: ExchangeProps & { pendingRequest?: PendingExchangeState }) {
   return props.pendingRequest ? <StanExchangeContent {...props} pendingRequest={props.pendingRequest} /> : <StandaloneExchange {...props} />;
 }
@@ -33,13 +33,13 @@ function StandaloneExchange(props: ExchangeProps) {
   const pendingRequest = usePendingExchange();
   return <StanExchangeContent {...props} pendingRequest={pendingRequest} />;
 }
-function StanExchangeContent({ locale, points, pointCost, pendingRequest }: ExchangeProps & { pendingRequest: PendingExchangeState }) {
+function StanExchangeContent({ locale, points, pointCost, pendingRequest, onSuccess }: ExchangeProps & { pendingRequest: PendingExchangeState }) {
   const w = walletCopy(locale), rewarded = rewardedExchangeCopy(locale), q = rewardedQuantityCopy(locale);
   const { request } = useGroupRequest();
   const { storageKey, storageReady, pending, setPending } = pendingRequest;
   const maxQty = Math.max(0, Math.min(MAX_UNITS, Math.floor(points / pointCost)));
   const [picked, setPicked] = useState<number | null>(null);
-  const qty = maxQty === 0 ? 0 : Math.min(Math.max(1, picked ?? maxQty), maxQty);
+  const qty = maxQty === 0 ? 0 : Math.min(Math.max(1, picked ?? 1), maxQty);
   const [ad, setAd] = useState<RewardedAdState | null>(null), [busy, setBusy] = useState(false);
   const alive = useRef(true), running = useRef(false), unsupported = useRef(false), control = useRef<{ show(): boolean; cancel(): void } | null>(null);
   useEffect(() => {
@@ -61,7 +61,7 @@ function StanExchangeContent({ locale, points, pointCost, pendingRequest }: Exch
       const { operation, ...body } = input;
       const result = exchangeSchema.parse(await request(`/api/me/wallet/${operation}`, { method: "POST", body: JSON.stringify(body) }));
       if (!alive.current) return;
-      forget(); setPicked(null);
+      forget(); setPicked(null); onSuccess?.();
       showFanToast({ title: `${w.tickets} +${unitsText(locale, result.units)}`, tone: "success" });
     } catch (error) {
       if (!alive.current) return;

@@ -50,6 +50,8 @@ export function createRunmusicHandlers(deps: FanpageDependencies, getKey = () =>
         if (contact.appUserId !== (input as { appUserId: string }).appUserId) throw new Error("RUNMUSIC_UNAVAILABLE");
         return json({ kakaoId: decryptRunmusicContact(contact.ciphertext, contact.appUserId, getKey()) });
       }
+      // No campaign row (the event data was removed): the same answer as the public read, not an unreadable state.
+      if (action === "read" && typeof raw === "object" && raw !== null && "campaign" in raw && raw.campaign === null) throw new Error("RUNMUSIC_NOT_FOUND");
       return json(action === "receive" ? checked(z.object({ receivedAt: z.iso.datetime({ offset: true }), replayed: z.boolean() }).strict(), raw) : checked(runmusicAdminStateSchema, raw));
     }),
   };

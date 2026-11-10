@@ -101,6 +101,13 @@ describe("Runmusic contact entry routes", () => {
     expect(response.status).toBe(200);
     expect((await response.json()).winners).toHaveLength(166);
   });
+  it("answers not found, not unavailable, when the campaign row is gone (the real SQL answer carries nulls)", async () => {
+    const { deps, handlers } = setup();
+    vi.mocked(deps.rpc).mockResolvedValue({ drawId: null, winners: [], campaign: null, delivery: { sent: 0, failed: 0, pending: 0, skipped: 0 }, revision: null, winnerCount: 0, receivedCount: 0, participantCount: 0, autoPublishEnabled: null });
+    const response = await handlers.admin(new Request("https://kyaa.test/api/admin/runmusic"));
+    expect(response.status).toBe(404);
+    expect(await response.json()).toEqual({ error: { code: "RUNMUSIC_NOT_FOUND" } });
+  });
   it("reveals only the authorized target and never returns ciphertext", async () => {
     const {deps,handlers}=setup();const encrypted=encryptRunmusicContact("private-id",other,key);
     vi.mocked(deps.rpc).mockResolvedValue({appUserId:other,ciphertext:encrypted.ciphertext});

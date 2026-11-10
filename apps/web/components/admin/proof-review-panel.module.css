@@ -2,9 +2,9 @@
 .bar { display: flex; flex-wrap: wrap; gap: var(--space-2); align-items: center; }
 .tableScroll { max-width: 100%; overflow: auto; border: 1px solid var(--line); border-radius: var(--radius-card); }
 .tableScroll:focus-visible { outline: 3px solid var(--ink); outline-offset: 3px; }
-.table { width: 100%; min-width: 1120px; border-collapse: collapse; text-align: left; }
+.table { width: 100%; min-width: 1040px; border-collapse: collapse; text-align: left; }
 .table th { padding: var(--space-3) var(--space-4); background: var(--soft); color: var(--secondary-ink); font-size: var(--fan-metadata-size); font-weight: 700; }
-.table td { padding: var(--space-3) var(--space-4); border-top: 1px solid var(--line); font-size: var(--fan-description-size); vertical-align: top; overflow-wrap: anywhere; }
+.table td { padding: var(--space-3) var(--space-4); border-top: 1px solid var(--line); font-size: var(--fan-description-size); vertical-align: top; overflow-wrap: break-word; }
 .body { min-width: 160px; white-space: pre-wrap; }
 .warn { display: inline-block; margin: 0 var(--space-1) var(--space-1) 0; padding: var(--space-1) var(--space-2); border-radius: var(--radius-pill); background: var(--soft); color: var(--ink); font-size: var(--fan-metadata-size); font-weight: 700; border: 1px solid var(--ink); }
 .imageBox { display: grid; gap: var(--space-2); justify-items: start; }
