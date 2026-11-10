@@ -4,13 +4,14 @@
     "영상이 화면에 60% 이상 보이면 소리 없이 자동으로 재생되고, 화면을 벗어나거나 다른 탭으로 가면 멈춰요. 한 번에 하나만 재생돼요.",
     "영상 오른쪽 아래에 일시정지·재생 버튼과 소리 버튼이 있어요. 직접 멈춘 영상은 스크롤해도 다시 켜지지 않아요.",
     "기기가 자동 재생을 막으면 재생 버튼이 나오고 누르면 소리와 함께 재생돼요. 움직임 줄이기나 데이터 절약을 켠 기기에서는 영상 파일을 받지 않고 대표 사진과 재생 버튼만 보여요.",
-    "첨부한 화면은 로컬 앱에서 시험 영상으로 확인한 390·1440 너비의 세로·가로 영상, 자동 재생 거절, 데이터 절약 상태예요."
+    "첨부한 화면은 로컬 앱에서 실제 H.264 영상 파일(세로 20MB, 가로 60MB·40초)로 확인한 390·1440 너비의 재생, 일시정지 유지, 그리고 시험 영상으로 확인한 자동 재생 거절, 데이터 절약 상태예요."
   ],
   "path": "/",
   "images": [
-    "release-notes/images/2026-11-11-post-video-vertical-390.png",
-    "release-notes/images/2026-11-11-post-video-vertical-1440.png",
-    "release-notes/images/2026-11-11-post-video-horizontal-1440.png",
+    "release-notes/images/2026-11-11-post-video-real-inline-v20-playing-390.png",
+    "release-notes/images/2026-11-11-post-video-real-inline-v20-playing-1440.png",
+    "release-notes/images/2026-11-11-post-video-real-inline-h60-1440.png",
+    "release-notes/images/2026-11-11-post-video-real-inline-pause2-1440.png",
     "release-notes/images/2026-11-11-post-video-refused-390.png",
     "release-notes/images/2026-11-11-post-video-savedata-390.png"
   ]
