@@ -141,3 +141,10 @@
 .historyPreview .historyBody>[role="status"],.historyPreview .historyBody>div:not([role]){align-self:stretch}
 .historyPreview .historySkeleton i{height:20px;margin-block:calc((var(--space-16) - var(--space-5)) / 2)}
 @media(min-width:48rem){.historyPreview .historyCard{padding-inline:var(--space-5)}}
+/* B10-T1 wallet history: rows grouped by day; earn in the brand color, spend neutral, numbers tabular. */
+.historyDay h3{margin:var(--space-3) 0 0;font-size:var(--fan-description-size);font-weight:var(--fan-item-title-weight);color:var(--color-muted)}
+.historyDay li{display:flex;align-items:center;gap:var(--space-3)}
+.historyDay li>span{flex:1;min-width:0}
+.historyDay strong{font-variant-numeric:tabular-nums;white-space:nowrap}
+.historyDay strong[data-tone="earn"]{color:var(--color-accent-ink)}
+.historyDay strong[data-tone="spend"]{color:var(--color-ink)}
