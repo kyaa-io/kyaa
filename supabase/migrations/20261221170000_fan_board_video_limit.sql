@@ -2,7 +2,13 @@
 alter table public.mobile_media_assets drop constraint mobile_media_assets_expected_byte_size_check;
 alter table public.mobile_media_assets add constraint mobile_media_assets_expected_byte_size_check
   check (expected_byte_size between 1 and case when purpose='fan_post' and kind='video' then 209715200 else 52428800 end);
-update storage.buckets set file_size_limit=209715200 where id='mobile-media';
+-- The bucket limit is a Supabase Storage setting. Where the legacy storage metadata is sealed (the AWS databases), the ceiling lives in the
+-- signed upload and the app instead and the table rejects writes, so this step is skipped there.
+do $$ begin
+  if to_regclass('storage.buckets') is null then return; end if;
+  if exists (select 1 from pg_trigger t where t.tgrelid = 'storage.buckets'::regclass and not t.tgisinternal and t.tgfoid = to_regproc('storage.byus_reject_metadata_mutation')) then return; end if;
+  update storage.buckets set file_size_limit = 209715200 where id = 'mobile-media';
+end $$;
 do $$
 declare f record; old text := 'p_byte_size not between 1 and 52428800'; next_body text;
 begin
