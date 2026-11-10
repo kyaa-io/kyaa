@@ -34,6 +34,7 @@ export async function startHarness({ port = 4216 } = {}) {
   };
   const server = await createServer({ plugins: [{ name: "wave-stage-fixture", configureServer(server) { server.middlewares.use(api); } }], configFile: false, esbuild: { jsx: "automatic" }, root: here,
     publicDir: path.join(web, "public"), cacheDir: path.join(web, "node_modules/.vite-wave-stage-local"),
+    optimizeDeps: { include: ["react", "react-dom", "react-dom/client", "react/jsx-dev-runtime", "lucide-react", "zod"] },
     resolve: { alias: [
       { find: /.*features\/auth\/client\/cognito-auth$/, replacement: path.join(here, "privy.ts") },
       { find: "@", replacement: web },
