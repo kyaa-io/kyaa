@@ -49,6 +49,7 @@
   --color-coin-ink: #4a3500;
   --color-foil: #b8975a;
   --shadow-overlay: 0 8px 24px rgb(0 0 0 / 8%);
+  --shadow-card-soft: 0 1px 3px rgb(0 0 0 / 6%);
   --shadow-dialog: 0 16px 48px rgb(0 0 0 / 16%);
 
   --space-1: 4px;
