@@ -1,4 +1,4 @@
--- ORDER: roll the web back first, then THIS file, then supabase/rollback/20261221170000_fan_board_video_limit.sql (the S3 ceiling goes before the DB reservation limit).
+-- ORDER: roll the web back first, then 20261222130000_fan_board_video_limit_b3_pair.sql, then THIS file, then supabase/rollback/20261221170000_fan_board_video_limit.sql (the S3 ceiling goes before the DB reservation limit).
 -- BOUNDARY: reserve_s3_storage_object is a low-level service function; for 'mobile-media' it only knows the bucket ceiling and does not check the purpose.
 -- The user-facing boundary is reserve_owned_mobile_media (200 MiB for fan-post videos, 50 MiB for every other purpose) plus the exact ContentLength the signed PUT carries.
 -- Rollback of 20261221171000: the bucket limit alone decides again (50 MiB on AWS). Roll the web back first; refuses while a larger mobile-media object is reserved.
