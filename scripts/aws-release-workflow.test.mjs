@@ -74,3 +74,11 @@ test('release artifacts can be replaced during a rerun of the same workflow', ()
   assert.ok(uploads.length >= 4);
   for (const step of uploads) assert.equal(step.with.overwrite, true, step.with.name);
 });
+
+test('the same loaded image is smoked, authenticated and checked immediately before the first push', () => {
+ const build=workflow.jobs.release.steps.find(s=>s.id==='build');const script=build.run;
+ const markers=['docker build --platform linux/amd64','image_id=$(docker image inspect','docker run --rm --entrypoint node "$image_id"','node apps/web/e2e/cs-local/production-auth.mjs image "$image_id"','node scripts/aws-release-runtime-auth.mjs before-push "$tag"','docker push "$tag"','aws ecr describe-images','aws-release.mjs build-record'];
+ let previous=-1;for(const marker of markers){const i=script.indexOf(marker);assert.ok(i>previous,marker);previous=i;}
+ assert.match(script,/set -euo pipefail/);assert.equal(build['continue-on-error'],undefined);
+ assert.equal((script.match(/docker build --platform linux\/amd64 --build-arg NODE_BUILD_BASE="\$NODE_BUILD_BASE" -f Dockerfile\.aws/g)||[]).length,1);
+});

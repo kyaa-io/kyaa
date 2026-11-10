@@ -96,6 +96,7 @@ jobs:
         if: env.RELEASE_ENV == 'dev'
         run: node scripts/aws-release-media-reuse.mjs prepare "$GITHUB_SHA"
       - name: Build one secretless dev image
+        id: build
         if: env.RELEASE_ENV == 'dev'
         env:
           MEDIA_REUSE: ${{ steps.media.outputs.media_reuse }}
@@ -110,7 +111,10 @@ jobs:
           aws ecr get-login-password --region ap-northeast-2 | docker login --username AWS --password-stdin "$registry"
           tag="$repository:$GITHUB_SHA-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
           docker build --platform linux/amd64 --build-arg NODE_BUILD_BASE="$NODE_BUILD_BASE" -f Dockerfile.aws -t "$tag" .
-          docker run --rm --entrypoint node "$tag" -e "if(require('fs').existsSync('/app/.env'))process.exit(1);if(process.version.split('.')[0]!=='v24')process.exit(1)"
+          image_id=$(docker image inspect "$tag" --format '{{.Id}}')
+          docker run --rm --entrypoint node "$image_id" -e "if(require('fs').existsSync('/app/.env'))process.exit(1);if(process.version.split('.')[0]!=='v24')process.exit(1)"
+          node apps/web/e2e/cs-local/production-auth.mjs image "$image_id"
+          node scripts/aws-release-runtime-auth.mjs before-push "$tag"
           docker push "$tag"
           name=${repository#*/}
           digest=$(aws ecr describe-images --region ap-northeast-2 --repository-name "$name" --image-ids imageTag="$GITHUB_SHA-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT" --query 'imageDetails[0].imageDigest' --output text)

@@ -2,6 +2,7 @@ import { readFile, writeFile, appendFile, mkdir } from 'node:fs/promises';
 import { execFileSync } from 'node:child_process';
 import { pathToFileURL } from 'node:url';
 import { loadTemplate, validateConfig } from './aws-platform-deploy.mjs';
+import { validateRuntimeAuth, publishedRuntimeAuth } from './aws-release-runtime-auth.mjs';
 export const WORKFLOW_PATH = '.github/workflows/aws-platform.yml';
 export const REPOSITORY = 'kyaa-io/kyaa';
 export const REPOSITORY_ID = 1307387500;
@@ -12,12 +13,18 @@ export function trustedRun(run, id, completed = true) {
   if (!Number.isSafeInteger(Number(id)) || Number(id) < 1 || run?.id !== Number(id) || run.repository?.id !== REPOSITORY_ID || run.repository?.full_name !== REPOSITORY || run.path !== WORKFLOW_PATH || !(run.head_branch === 'main' || (run.head_branch === HOTFIX_BRANCH && run.event === 'push')) || !SHA.test(run.head_sha ?? '') || !['push', 'workflow_dispatch'].includes(run.event) || (completed && (run.status !== 'completed' || run.conclusion !== 'success'))) fail('UNTRUSTED_AWS_WORKFLOW_RUN');
   return run;
 }
+export function validateReleaseMetadata(release, run) {
+  if (!release || Object.keys(release).some(key => !['schemaVersion', 'sourceSha', 'sourceRunId', 'imageDigest', 'imageUri', 'repositoryId', 'workflowPath', 'mediaImageDigest', 'mediaImageUri', 'cronCodeSha256', 'runtimeAuth'].includes(key)) || release.schemaVersion !== 1 || !SHA.test(release.sourceSha ?? '') || !DIGEST.test(release.imageDigest ?? '') || release.sourceSha !== run.head_sha || release.sourceRunId !== run.id || release.repositoryId !== REPOSITORY_ID || release.workflowPath !== WORKFLOW_PATH || !/^\d{12}\.dkr\.ecr\.ap-northeast-2\.amazonaws\.com\/[a-z0-9/_-]+@sha256:[a-f0-9]{64}$/.test(release.imageUri ?? '') || !release.imageUri.endsWith(`@${release.imageDigest}`) || !DIGEST.test(release.mediaImageDigest ?? '') || !/^[a-f0-9]{64}$/.test(release.cronCodeSha256 ?? '') || !release.mediaImageUri?.startsWith(release.imageUri.split('/')[0] + '/') || !release.mediaImageUri.endsWith(`@${release.mediaImageDigest}`)) fail('INVALID_AWS_RELEASE_ARTIFACT');
+  return release;
+}
 export function validateRelease(release, run) {
-  if (!release || Object.keys(release).some(key => !['schemaVersion', 'sourceSha', 'sourceRunId', 'imageDigest', 'imageUri', 'repositoryId', 'workflowPath', 'mediaImageDigest', 'mediaImageUri', 'cronCodeSha256'].includes(key)) || release.schemaVersion !== 1 || !SHA.test(release.sourceSha ?? '') || !DIGEST.test(release.imageDigest ?? '') || release.sourceSha !== run.head_sha || release.sourceRunId !== run.id || release.repositoryId !== REPOSITORY_ID || release.workflowPath !== WORKFLOW_PATH || !/^\d{12}\.dkr\.ecr\.ap-northeast-2\.amazonaws\.com\/[a-z0-9/_-]+@sha256:[a-f0-9]{64}$/.test(release.imageUri ?? '') || !release.imageUri.endsWith(`@${release.imageDigest}`) || !DIGEST.test(release.mediaImageDigest ?? '') || !/^[a-f0-9]{64}$/.test(release.cronCodeSha256 ?? '') || !release.mediaImageUri?.startsWith(release.imageUri.split('/')[0] + '/') || !release.mediaImageUri.endsWith(`@${release.mediaImageDigest}`)) fail('INVALID_AWS_RELEASE_ARTIFACT');
+  validateReleaseMetadata(release, run);
+  validateRuntimeAuth(release.runtimeAuth, { sourceSha: run.head_sha, sourceRunId: run.id, sourceRunAttempt: run.run_attempt }, release.imageDigest);
   return release;
 }
 export function assertPromotion(environment, release, proof, sourceRun) {
   if (!['dev', 'prod'].includes(environment)) fail('INVALID_ENVIRONMENT');
+  if (environment === 'prod' && sourceRun) validateRelease(release, sourceRun);
   if (environment === 'prod' && (!proof || proof.schemaVersion !== 1 || proof.environment !== 'dev' || proof.status !== 'success' || proof.workflowRunId !== sourceRun?.id || proof.sourceSha !== release.sourceSha || proof.imageDigest !== release.imageDigest || proof.mediaImageDigest !== release.mediaImageDigest || proof.cronCodeSha256 !== release.cronCodeSha256 || proof.sourceRunId !== release.sourceRunId || proof.workflowPath !== WORKFLOW_PATH || proof.repositoryId !== REPOSITORY_ID)) fail('SUCCESSFUL_MATCHING_DEV_REQUIRED');
 }
 export async function github(path, init = {}) {
@@ -116,7 +123,9 @@ async function main() {
   if (action === 'build-record') {
     const digest = args[0], uri = args[1];
     const run = trustedRun(await github(`/actions/runs/${process.env.GITHUB_RUN_ID}`), process.env.GITHUB_RUN_ID, false);
-    const release = validateRelease({ schemaVersion: 1, sourceSha: run.head_sha, sourceRunId: run.id, imageDigest: digest, imageUri: uri, mediaImageDigest: args[2], mediaImageUri: args[3], cronCodeSha256: args[4], repositoryId: REPOSITORY_ID, workflowPath: WORKFLOW_PATH }, run);
+    if (run.run_attempt !== Number(process.env.GITHUB_RUN_ATTEMPT)) fail('RUNTIME_AUTH_CURRENT_ATTEMPT_REQUIRED');
+    const runtimeAuth = await publishedRuntimeAuth(JSON.parse(await readFile('work/aws-release/runtime-auth.json', 'utf8')), run, uri);
+    const release = validateRelease({ runtimeAuth, schemaVersion: 1, sourceSha: run.head_sha, sourceRunId: run.id, imageDigest: digest, imageUri: uri, mediaImageDigest: args[2], mediaImageUri: args[3], cronCodeSha256: args[4], repositoryId: REPOSITORY_ID, workflowPath: WORKFLOW_PATH }, run);
     await writeFile('work/aws-release/aws-release.json', JSON.stringify(release)); return;
   }
   const release = JSON.parse(await readFile('work/aws-release/aws-release.json', 'utf8'));
