@@ -21,11 +21,8 @@ it('selects authenticated attachments with arrows and thumbnails and opens the s
  await waitFor(()=>expect(screen.queryByRole('dialog')).toBeNull());
  await waitFor(()=>expect(trigger).toHaveFocus());
 });
-it('keeps a permitted video as a thumbnail until play is requested',()=>{
+it('starts a permitted video through the shared autoplaying player',()=>{
  render(<PostAttachmentViewer assets={[]} video={{id:'video',width:720,height:1280,durationSeconds:30}} locale='en'/>);
- expect(screen.getByRole('img',{name:'Play video'})).toBeInTheDocument();
- expect(screen.queryByLabelText('Authorized video')).toBeNull();
- fireEvent.click(screen.getByRole('button',{name:'Play video'}));
  expect(screen.getByLabelText('Authorized video')).toHaveAttribute('controls');
 });
 it('renders no viewer for a post without attachments',()=>{
@@ -34,5 +31,5 @@ it('renders no viewer for a post without attachments',()=>{
 });
 
 it('passes explicit guest fan-post scope to main, thumbnail and expanded video while legacy photos keep their asset reader',async()=>{
- const view=render(<PostAttachmentViewer assets={[]} video={{id:'video',width:720,height:1280,durationSeconds:30}} locale='en' publicFanPost/>);expect(view.container.querySelectorAll('img')).toHaveLength(2);for(const image of view.container.querySelectorAll('img'))expect(image).toHaveAttribute('data-read-scope','fan-post');fireEvent.click(screen.getByRole('button',{name:'Play video'}));expect(screen.getByLabelText('Authorized video')).toHaveAttribute('data-read-scope','fan-post');fireEvent.click(screen.getByRole('button',{name:'View all'}));expect(within(await screen.findByRole('dialog')).getByLabelText('Authorized video')).toHaveAttribute('data-read-scope','fan-post');view.unmount();render(<PostAttachmentViewer assets={assets} locale='en' publicFanPost/>);expect(screen.getByRole('img',{name:'Attached photo'})).toHaveAttribute('src','/authorized/first');for(const image of screen.getAllByRole('img'))expect(image).not.toHaveAttribute('data-read-scope');
+ const view=render(<PostAttachmentViewer assets={[]} video={{id:'video',width:720,height:1280,durationSeconds:30}} locale='en' publicFanPost/>);expect(view.container.querySelectorAll('img')).toHaveLength(1);expect(view.container.querySelector('img')).toHaveAttribute('data-read-scope','fan-post');expect(screen.getByLabelText('Authorized video')).toHaveAttribute('data-read-scope','fan-post');fireEvent.click(screen.getByRole('button',{name:'View all'}));expect(within(await screen.findByRole('dialog')).getByLabelText('Authorized video')).toHaveAttribute('data-read-scope','fan-post');view.unmount();render(<PostAttachmentViewer assets={assets} locale='en' publicFanPost/>);expect(screen.getByRole('img',{name:'Attached photo'})).toHaveAttribute('src','/authorized/first');for(const image of screen.getAllByRole('img'))expect(image).not.toHaveAttribute('data-read-scope');
 });

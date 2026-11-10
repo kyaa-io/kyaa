@@ -13,7 +13,7 @@ import styles from './post-attachment-viewer.module.css';
 
 type Props={assets:FanPost['assets'];video?:FanPost['video'];locale:AppLocale;publicFanPost?:boolean};
 export function PostAttachmentViewer({assets,video,locale,publicFanPost=false}:Props){
- const [selected,setSelected]=useState(0),[open,setOpen]=useState(false),[playing,setPlaying]=useState(false);
+ const [selected,setSelected]=useState(0),[open,setOpen]=useState(false),[playing,setPlaying]=useState(true);
  const copy=contentCopy(locale),page=paginationCopy(locale),media=waveMediaCopy(locale),asset=assets[selected]??assets[0],count=assets.length||Number(Boolean(video));
  if(!count)return null;
  const photo=(thumbnail=false,index=selected)=><ContentAssetImage asset={assets[index]??assets[0]} locale={locale} alt={thumbnail?'':copy.photo} thumbnail={thumbnail} failure={thumbnail?'icon':'frame'}/>;

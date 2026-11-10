@@ -58,9 +58,7 @@
 }
 .translatedMedia { margin-top: var(--space-4); min-width: 0; }
 .inlineVideo { position: relative; width: fit-content; max-width: 100%; }
-.inlineVideo video, .inlineVideo img { display: block; max-width: 100%; max-height: 640px; width: auto; height: auto; border-radius: var(--radius-media); }
-.inlineVideo button { position: absolute; top: 50%; left: 50%; display: grid; place-items: center; width: 56px; height: 56px; padding: 0; border: 0; border-radius: 50%; background: var(--color-backdrop); color: var(--color-surface); cursor: pointer; transform: translate(-50%, -50%); }
-.inlineVideo button svg { width: 24px; height: 24px; fill: currentColor; }
+.inlineVideo img { display: block; max-width: 100%; max-height: 640px; width: auto; height: auto; border-radius: var(--radius-media); }
 .commentMeta > :last-child:not(time):not(strong):not(.editedMark) { margin-inline-start: auto; }
 .readColumn { width: min(100%, 720px); min-width: 0; }
 .skeleton { display: grid; gap: var(--space-4); width: 100%; }
