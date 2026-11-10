@@ -22,3 +22,7 @@
 .fold[aria-expanded="true"] .chevron { transform: rotate(180deg); }
 @media (min-width: 1024px) { .row { grid-template-columns: 40px minmax(0, 1fr) 120px; } }
 @media (prefers-reduced-motion: reduce) { .chevron { transition: none; } }
+/* Done stamp: the vintage seal frame as a mask in the ink colour, 40 inside the 64 row, turned -10deg like a pressed stamp. */
+.stamp { position: relative; display: grid; flex: none; place-items: center; width: 40px; height: 40px; color: var(--dukjil-ink-deep, var(--color-accent-ink)); transform: rotate(-10deg); }
+.stamp::before { position: absolute; inset: 0; content: ""; background: currentColor; -webkit-mask: url("/images/stamps/vintage-seal-frame.svg") center / contain no-repeat; mask: url("/images/stamps/vintage-seal-frame.svg") center / contain no-repeat; }
+.stamp > svg { position: relative; }

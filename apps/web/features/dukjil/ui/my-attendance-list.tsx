@@ -16,6 +16,7 @@ import { CreatorAttendanceDialog } from "./creator-attendance-dialog";
 import { guideText } from "@/features/dukjil-guide/ui/guide-copy";
 import { dukjilText } from "./dukjil-copy";
 import { DukjilProvider, useDukjil } from "./dukjil-provider";
+import { AttendanceAvatars } from "./attendance-avatars";
 import { EarnBadge } from "./earn-badge";
 import { StreakBand } from "./streak-band";
 import { FanMissionList, FanMissionRow } from "./fan-mission-row";
@@ -105,7 +106,7 @@ export function MyAttendanceList({ locale, section }: { locale: AppLocale; secti
   if (creators.length === 0) return <p className={styles.state}>{dukjilText(locale, "dukjilListEmpty")}</p>;
   return (
     <section aria-label={dukjilText(locale, "dukjilListTitle")}>
-      <ul className={styles.rows}>{creators.map(page => <li key={page.id} className={styles.row}><Row page={page} locale={locale} item={byId.get(page.celebrityId!)} onChanged={() => status.retry()} /></li>)}</ul>
+      <AttendanceAvatars locale={locale} creators={creators} byId={byId} verifyHref={page => verifyHref(page, locale)} onChanged={() => status.retry()} />
     </section>
   );
 }

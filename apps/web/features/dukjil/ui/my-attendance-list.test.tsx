@@ -34,8 +34,31 @@ it("reads every row's state with one attendance request and no per-row provider"
   render(<MyAttendanceList locale="ko" />);
   expect(new Set(h.urls.filter(url => url.includes("/api/me/attendance")))).toEqual(new Set(["/api/me/attendance?creators=aespa,ive"]));
   expect(screen.getAllByRole("listitem")).toHaveLength(2);
-  expect(document.querySelector("[data-earn-badge='done']")).not.toBeNull();
   expect(screen.getAllByRole("link").length).toBe(1);
+});
+
+it("modal form: round avatars named by the page, a green ring and no button once checked in, 연속 N일 under the avatar", () => {
+  render(<MyAttendanceList locale="ko" />);
+  const done = screen.getByRole("img", { name: "AESPA" });
+  expect(done.getAttribute("data-attended")).toBe("true");
+  expect(screen.getByRole("img", { name: "IVE" }).getAttribute("data-attended")).toBe("false");
+  const item = done.closest("li")!;
+  expect(item.textContent).toContain("연속 3일");
+  expect(item.textContent).toContain("오늘 완료");
+  expect(within(item).queryByRole("button")).toBeNull();
+  expect(within(item).queryByRole("link")).toBeNull();
+});
+
+it("modal form: only a page still open today has the check-in button", () => {
+  const pages = [page("aespa", "11111111-1111-4111-8111-111111111111"), page("nmixx", "33333333-3333-4333-8333-333333333333")];
+  h.list = { items: pages, nextCursor: null };
+  h.status = { kstDate: "2026-11-05", items: [
+    { celebrityId: pages[0].celebrityId, attendedToday: true, streak: 3, nextBonusIn: 4, hasPassport: true },
+    { celebrityId: pages[1].celebrityId, attendedToday: false, streak: 0, nextBonusIn: 7, hasPassport: true },
+  ] };
+  render(<MyAttendanceList locale="ko" />);
+  expect(screen.getAllByRole("button", { name: "출석하기" })).toHaveLength(1);
+  expect(screen.getByRole("img", { name: "NMIXX" }).closest("li")).toBe(screen.getByRole("button", { name: "출석하기" }).closest("li"));
 });
 
 it("section form: heading, pending pages first, five-row limit with an expand control, and a retry label that is not 출석하기", () => {
