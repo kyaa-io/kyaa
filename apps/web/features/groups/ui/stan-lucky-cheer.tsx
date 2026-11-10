@@ -161,7 +161,6 @@ export function StanLucky({ locale, bias, guest, presentation, paused = false }:
     const entry = entries.data ? entries.data.benefits.find(row => row.id === item?.raffle.benefitId)?.entry ?? null : undefined;
     const allowance = item?.status === "open" ? raffleAllowance({ raffle:item.raffle, guest, hasPassport:bias.selected?.slug===slug, tickets:{ loading:wallet.loading,value:wallet.data?.tickets }, entries:{ loading:entries.loading,error:entries.error,entry } }) : null;
     const passport = allowance?.kind === "passport";
-    const pastHref: string = slug ? creatorRafflesHref(slug, locale) : "/my/raffles?locale=" + locale;
     const href = item && slug ? passport ? creatorRaffleVerificationHref(slug,locale,item.raffle.benefitId) : raffleHref(slug,item.raffle.benefitId,locale) : `/my/raffles?locale=${locale}`;
     const amountToken = "__DUO_AMOUNT__";
     const costParts = allowance?.kind === "count" ? t(locale,"luckyCost",[RAFFLE_TICKET_COST,amountToken]).split(amountToken) : null;
@@ -176,7 +175,7 @@ export function StanLucky({ locale, bias, guest, presentation, paused = false }:
         <img className={duoStyles.glyph} src="/images/dukjil-duo/glyph-illo-lucky-80.webp" width={40} height={40} alt="" />
         {pending ? <div aria-busy="true"><FanSkeleton width="80%" height={22}/><FanSkeleton width="60%" height={17}/></div>
           : raffles.error ? <FanState inline compact kind="error" title={t(locale,"luckyLoadError")} actions={<FanAction variant="text" onClick={raffles.retry}>{groupsCopy(locale).retry}</FanAction>}/>
-          : empty || !item ? <><p className={duoStyles.emptyText}>{t(locale,slug ? "luckyEmpty" : "luckyNoFavorite")}</p><Link className={duoStyles.past} href={pastHref as Route}>{t(locale,"luckyPast")} <span aria-hidden="true">›</span></Link></>
+          : empty || !item ? <p className={duoStyles.emptyText}>{t(locale,slug ? "luckyEmpty" : "luckyNoFavorite")}</p>
           : <><FanHeading>{item.raffle.title}</FanHeading><p className={duoStyles.meta}><RaffleDate raffle={item.raffle} status={item.status} locale={locale}/> · {t(locale,"luckyWinners",[item.raffle.winnerQuantity.toLocaleString(locale)])} · {deliveryLabel(item.raffle,locale)}</p>
             <p className={duoStyles.cost} data-raffle-cost data-raffle-allowance={allowance?.kind}>{costParts && allowance?.kind === "count" ? <>{costParts[0]}<strong>{allowance.count.toLocaleString(locale)}</strong>{costParts[1]}</> : allowance?.kind === "loading" ? <FanSkeleton width={160} height={24}/> : allowance?.kind === "passport" ? t(locale,"luckyNeedPassport") : allowance?.kind === "policy" ? t(locale,"luckyNeedPolicy") : t(locale,"luckyCostGuest",[RAFFLE_TICKET_COST])}</p></>}
       </div>

@@ -181,3 +181,6 @@ section.pWallet{position:relative;box-sizing:border-box}
 @media(min-width:1024px){.page{grid-template-columns:minmax(0,1fr);grid-template-areas:"alert" "main"}.page:not(:has(> .alertList)){grid-template-areas:"main"}}
 .favorite{display:flex;align-items:center;gap:var(--space-1);min-width:0;max-width:100%;font-size:var(--fan-description-size);font-weight:var(--fan-item-title-weight)}.favoritePick{display:flex;align-items:center;gap:var(--space-1);min-width:0;max-width:100%;min-height:44px;padding:0;border:0;background:transparent;color:inherit;font:inherit;cursor:pointer}.favoriteName{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.favoritePick>span:last-child{flex:none}.favoritePick:focus-visible{outline:2px solid var(--color-focus);outline-offset:2px}
 
+
+/* 럭키드로우 구역: 지갑 카드와 분리된 자기 머리(제목 + 지난 럭키드로우)와 카드. 구역 간격은 .main의 gap. */
+.luckySection{display:grid;gap:var(--space-3);min-width:0}

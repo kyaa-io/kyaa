@@ -36,7 +36,7 @@ it("F3: lists today's rows (check-in and the daily-limit activities) under the s
   expect(left).toHaveTextContent("4개 남음");
   expect(screen.queryByRole("button", { name: /오늘 할 것/ })).toBeNull();
   const panel = document.querySelector("[data-missions-today]")!;
-  expect([...panel.querySelectorAll("li[data-mission]")].map(li => li.getAttribute("data-mission"))).toEqual(["checkin", "post", "comment", "share", "reaction"]);
+  expect([...panel.querySelectorAll("li[data-mission]")].map(li => li.getAttribute("data-mission"))).toEqual(["checkin", "post", "comment", "reaction", "share"]);
   expect(screen.getByRole("button", { name: /그 밖의 덕질/ })).toHaveAttribute("aria-expanded", "false");
   expect(screen.getByRole("button", { name: /그 밖의 덕질/ })).toHaveTextContent("+220P");
   expect(screen.getByRole("button", { name: /인증/ })).toHaveAttribute("aria-expanded", "false");

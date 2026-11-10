@@ -47,14 +47,19 @@ it("draws progress against the daily limit, shows no task sentence, and no bar w
   // A monthly cap also reports `remaining`, but that is not today's limit.
   expect(rowNow("proof").querySelector("[role=progressbar]")).toBeNull();
 });
-it("marks a finished activity and sends it after the open ones", async () => {
+it("marks a finished activity in place, keeps the catalog order and gives every count the same column", async () => {
   ui();
   const rows = await screen.findAllByRole("listitem");
   await waitFor(() => expect(rowNow("share")).toHaveAttribute("data-done", "true"));
   const keys = screen.getAllByRole("listitem").map(row => row.getAttribute("data-mission"));
   expect(rows.length).toBe(7);
-  expect(keys.indexOf("share")).toBeGreaterThan(keys.indexOf("post"));
+  // Catalog order: share (5th) stays after reaction and before invite although it is done.
+  expect(keys.indexOf("share")).toBeLessThan(keys.indexOf("invite"));
+  expect(keys.indexOf("post")).toBeLessThan(keys.indexOf("comment"));
   expect(rowNow("share")).toHaveTextContent("완료");
+  const counts = document.querySelectorAll("[data-mission-count]");
+  expect(counts.length).toBeGreaterThan(0);
+  counts.forEach(count => { expect(count.className).toMatch(/count/); expect(count.querySelector("[class*=countCheck]")).not.toBeNull(); });
 });
 it("goes to the screen of each activity and opens the dialog for check-in", async () => {
   ui();

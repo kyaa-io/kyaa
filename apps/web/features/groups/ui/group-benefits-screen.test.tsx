@@ -109,6 +109,15 @@ it('R2: distinguishes loading and failure from a real zero and retries the scope
  await within(cell as HTMLElement).findByRole('link',{name:'내 응모 0장'});
  expect(paths).toEqual(['/api/benefits?celebrity=bias-x&locale=ko','/api/benefits?celebrity=bias-x&locale=ko']);
 });
+it('DUO: 럭키드로우 is its own section with a header and the past-draws link on its right',async()=>{
+ duoData(); const v=render(<GroupBenefitsScreen locale='ko'/>);
+ await screen.findByText('글쓰기');
+ const section=v.container.querySelector('[data-lucky-section]') as HTMLElement;
+ expect(section).not.toBeNull();
+ expect(section.querySelector('[data-fan-section-header]')).toHaveTextContent('럭키드로우');
+ expect(within(section).getByRole('link',{name:/지난 럭키드로우/})).toBeInTheDocument();
+ expect(section.contains(v.container.querySelector('[data-wallet-card]'))).toBe(false);
+});
 it('DUO: preserves the approved block order, four tiles and a single check-in action',async()=>{
  duoData(); const v=render(<GroupBenefitsScreen locale='ko'/>);
  await screen.findByText('글쓰기');
