@@ -1,3 +1,4 @@
+import { luckyDrawPreviewRejection } from "@/features/benefit/lucky-draw-entry";
 import { withWaveAccess } from "@/server/wave/access";
 import {
   createBenefitRouteDependencies,
@@ -11,6 +12,8 @@ async function waveOriginalPOST(
   request: Request,
   context: { params: Promise<{ id: string }> },
 ): Promise<Response> {
+  const preview = luckyDrawPreviewRejection();
+  if (preview) return preview;
   try {
     const { id } = await context.params;
     return createPostBenefitEntryHandler(createBenefitRouteDependencies())(

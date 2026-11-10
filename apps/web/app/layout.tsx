@@ -4,6 +4,8 @@ import type { Metadata, Viewport } from "next";
 import { headers } from "next/headers";
 import { Suspense } from "react";
 import { LocaleProvider } from "../components/locale-provider";
+import { luckyDrawEntryPreview } from "@/features/benefit/lucky-draw-entry";
+import { LuckyDrawPreviewProvider } from "@/features/benefit/ui/lucky-draw-preview";
 import { GroupsReleaseProvider } from "@/features/groups/ui/groups-release";
 import { DocumentLocale } from "../components/document-locale";
 import { FanNavigationProgress } from "@/components/fan-ui/fan-navigation-progress";
@@ -81,6 +83,7 @@ export default async function RootLayout({
         {rewardedExchange.enabled && <meta name="kyaa-rewarded-ad-unit" content={rewardedExchange.adUnit} />}
         <LocaleProvider initialLocale={locale}>
         <GroupsReleaseProvider enabled={process.env.KYAA_GROUPS_ENABLED === "true"}>
+        <LuckyDrawPreviewProvider preview={luckyDrawEntryPreview(process.env)}>
         <PrivyRoot
           appId={privyAppId}
           authProvider={authProvider}
@@ -103,6 +106,7 @@ export default async function RootLayout({
           <FanToastProvider />
           <DeferredRootClients slot="after" />
         </PrivyRoot>
+        </LuckyDrawPreviewProvider>
         </GroupsReleaseProvider>
         </LocaleProvider>
       </body>

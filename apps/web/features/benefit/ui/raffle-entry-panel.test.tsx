@@ -34,6 +34,7 @@ vi.mock("./use-raffle-entry", () => ({
 }));
 
 import { RaffleEntryPanel, raffleEntryErrorText } from "./raffle-entry-panel";
+import { LuckyDrawPreviewProvider } from "./lucky-draw-preview";
 
 const policy = {
   version: "digital-v1",
@@ -188,5 +189,26 @@ describe("standalone raffle fan verification", () => {
       loading={false} loadFailed={false} status="open" refresh={vi.fn()} onAccepted={vi.fn()} onReconciled={vi.fn()} />);
     expect(screen.getByRole("spinbutton")).toBeEnabled();
     expect(screen.queryByRole("link", { name: "팬 인증하고 응모권 받기" })).toBeNull();
+  });
+});
+
+describe("lucky draw preview (production)", () => {
+  it.each([["ko", "미리보기 화면입니다", "응모하기", ["참여", "추첨", "발표"]], ["en", "This is a preview", "Enter", ["Enter", "Draw", "Result"]]] as const)("shows a disabled entry button and the entry-to-result steps in %s without any entry control", (locale, title, button, steps) => {
+    submit.mockClear();
+    const { container } = render(<LuckyDrawPreviewProvider preview><RaffleEntryPanel celebrity={celebrity} locale={locale} raffle={raffle} benefit={benefit} loading={false} loadFailed={false} status="open" refresh={vi.fn()} onAccepted={vi.fn()} onReconciled={vi.fn()} /></LuckyDrawPreviewProvider>);
+    expect(screen.getByRole("heading", { name: title })).toBeTruthy();
+    expect(screen.getByRole("button", { name: button })).toBeDisabled();
+    expect(screen.getAllByRole("button")).toHaveLength(1);
+    expect(screen.queryByRole("spinbutton")).toBeNull();
+    expect(screen.queryByRole("alertdialog")).toBeNull();
+    expect(screen.getAllByRole("heading", { level: 3 }).map((heading) => heading.textContent)).toEqual(steps);
+    expect(container.textContent).not.toMatch(/차감|deducted/);
+    expect(submit).not.toHaveBeenCalled();
+  });
+
+  it("keeps the entry controls when the preview is off", () => {
+    render(<LuckyDrawPreviewProvider preview={false}><RaffleEntryPanel celebrity={celebrity} locale="ko" raffle={raffle} benefit={benefit} loading={false} loadFailed={false} status="open" refresh={vi.fn()} onAccepted={vi.fn()} onReconciled={vi.fn()} /></LuckyDrawPreviewProvider>);
+    expect(screen.getByRole("button", { name: "1장으로 응모하기" })).toBeEnabled();
+    expect(screen.queryByText("미리보기 화면입니다")).toBeNull();
   });
 });

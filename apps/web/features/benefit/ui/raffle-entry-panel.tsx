@@ -22,6 +22,7 @@ import type { RaffleList } from "../domain/raffle";
 import { creatorRafflesHref, creatorRaffleVerificationHref } from "../domain/raffle-navigation";
 import { useRaffleEntry, type RaffleEntryError } from "./use-raffle-entry";
 import { FanSkeleton, FanSkeletonStatus } from "@/components/fan-ui/fan-skeleton";
+import { luckyDrawPreviewCopy, useLuckyDrawPreview } from "./lucky-draw-preview";
 import styles from "./creator-raffles-screen.module.css";
 
 type Props = {
@@ -43,7 +44,7 @@ export function raffleEntryErrorText(error: RaffleEntryError | null, locale: App
     : error === "rejected" ? (locale === "ko" ? "응모가 접수되지 않았어요. 잔액과 응모 조건을 다시 확인해 주세요." : translate(locale, localizedMessages.mef16df2d84a7, "The entry was not accepted. Check your balance and entry conditions.")) : null;
 }
 
-export function RaffleEntryPanel({ celebrity, locale, raffle, benefit, loading, loadFailed, status, refresh, onAccepted, onReconciled }: Props) {
+function OpenRaffleEntryPanel({ celebrity, locale, raffle, benefit, loading, loadFailed, status, refresh, onAccepted, onReconciled }: Props) {
   const auth = usePrivy();
   const ko = locale === "ko";
   const [quantity, setQuantity] = useState(1);
@@ -117,5 +118,21 @@ export function RaffleEntryPanel({ celebrity, locale, raffle, benefit, loading, 
     <AlertDialog open={confirmAmount !== null && !hasReceipt} onClose={() => { if (!request.pending) setConfirmAmount(null); }} labelledBy="raffle-confirm-title" describedBy="raffle-confirm-help" busy={request.pending} closeOnEscape={!request.pending} closeOnBackdrop={!request.pending} initialFocusRef={cancelRef} backdropClassName={styles.dialogBackdrop} contentClassName={styles.dialog}>
       <span className={styles.eyebrow}>{locale === "ko" ? "응모권 사용 확인" : translate(locale, localizedMessages.m624decf92981, "REVIEW YOUR ENTRY")}</span><h2 id="raffle-confirm-title">{locale === "ko" ? `${confirmAmount ?? amount}장으로 응모할까요?` : translate(locale, localizedMessages.mc80c83cf88e6, "Enter with {0} tickets?", [confirmAmount ?? amount])}</h2><p id="raffle-confirm-help"><TranslatedText text={raffle.title} locale={locale} controls={false} /><br />{locale === "ko" ? "확정하면 응모권이 즉시 차감돼요." : translate(locale, localizedMessages.ma1192816cc37, "Your tickets will be deducted when you confirm.")}</p><dl className={styles.facts}><div><dt>{locale === "ko" ? "현재 보유" : translate(locale, localizedMessages.m2a8bcbd514ef, "Available now")}</dt><dd>{balance ?? "—"}</dd></div><div><dt>{locale === "ko" ? "이번 응모" : translate(locale, localizedMessages.me5b902560fe0, "This entry")}</dt><dd>−{confirmAmount}</dd></div><div><dt>{locale === "ko" ? "응모 후 잔액" : translate(locale, localizedMessages.m404a4ce1070d, "Balance after entry")}</dt><dd>{balance === undefined ? "—" : Math.max(0, balance - (confirmAmount ?? 0))}</dd></div></dl>{errorText ? <p role="alert">{errorText}</p> : null}<div className={styles.dialogActions}><button type="button" className={fanActionClassName("neutral")} ref={cancelRef} disabled={request.pending} onClick={() => setConfirmAmount(null)}>{request.unresolvedRequest ? (locale === "ko" ? "닫기" : translate(locale, localizedMessages.m1844bff88b3f, "Close")) : (locale === "ko" ? "수량 다시 선택" : translate(locale, localizedMessages.mc03cf76d1cd6, "Change quantity"))}</button>{request.unresolvedRequest ? <FanAction variant="primary" disabled={request.pending} ariaBusy={request.pending} onClick={() => void request.retry()}>{request.pending ? (locale === "ko" ? "응모 접수 중" : translate(locale, localizedMessages.m6ebbd108e528, "Submitting")) : (locale === "ko" ? "같은 응모 요청 확인" : translate(locale, localizedMessages.m33fb325bbfb8, "Check the same entry"))}</FanAction> : <FanAction variant="primary" disabled={request.pending || !canEnter || (confirmAmount ?? 0) > limit} ariaBusy={request.pending} onClick={() => void confirm()}>{request.pending ? (locale === "ko" ? "응모 접수 중" : translate(locale, localizedMessages.m6ebbd108e528, "Submitting")) : (locale === "ko" ? "응모 확정" : translate(locale, localizedMessages.m68b4aca03c6e, "Confirm entry"))}</FanAction>}</div>
     </AlertDialog>
+  </>;
+}
+
+/** Production shows the preview only: no auth read, no entry request, nothing to submit. */
+export function RaffleEntryPanel(props: Props) {
+  const preview = useLuckyDrawPreview();
+  if (!preview) return <OpenRaffleEntryPanel {...props} />;
+  const copy = luckyDrawPreviewCopy(props.locale);
+  return <>
+    <section className={styles.entryPanel} aria-labelledby="raffle-entry-title" data-lucky-draw-preview>
+      <div className={styles.entryHeading}><h2 id="raffle-entry-title" tabIndex={-1}>{copy.title}</h2></div>
+      <FanAction fullWidth variant="primary" disabled trailingIcon={<ArrowRight />}>{copy.enter}</FanAction>
+    </section>
+    <section className={styles.afterEntry}><h2>{props.locale === "ko" ? "응모 후에는 이렇게 진행돼요" : translate(props.locale, localizedMessages.m971f555fb08c, "What happens after you enter")}</h2><div>
+      {copy.steps.map((step, index) => <article key={index}><span>{String(index + 1).padStart(2, "0")}</span><h3>{step.title}</h3><p>{step.body}</p></article>)}
+    </div></section>
   </>;
 }
