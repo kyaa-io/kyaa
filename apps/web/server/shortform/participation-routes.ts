@@ -5,7 +5,7 @@ import { boundedJson } from "@/server/certification/certification-http";
 import { contentFailure } from "@/server/fan-posts/routes";
 import { fanpageJson, type FanpageDependencies } from "@/server/fanpage/routes";
 
-const videoIdSchema = z.string().regex(/^[A-Za-z0-9_-]{11}$/);
+const videoIdSchema = z.string().regex(/^(?:[A-Za-z0-9_-]{11}|[0-9]{15,25})$/);
 const participationSchema = z.object({ reaction: z.enum(["like", "dislike"]).nullable(), likeCount: z.number().int().nonnegative(), dislikeCount: z.number().int().nonnegative(), commentCount: z.number().int().nonnegative() }).strict();
 const reactionInputSchema = z.object({ reaction: z.enum(["like", "dislike", "none"]) }).strict();
 const cursorSchema = z.object({ at: z.iso.datetime({ offset: true }), id: z.uuid() }).strict();

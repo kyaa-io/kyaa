@@ -19,6 +19,10 @@ const navigation: Record<AppLocale, [string, string, string]> = {
   es: ["Vídeo anterior", "Siguiente vídeo", "Más"], id: ["Video sebelumnya", "Video berikutnya", "Lainnya"], vi: ["Video trước", "Video tiếp theo", "Thêm"], th: ["วิดีโอก่อนหน้า", "วิดีโอถัดไป", "เพิ่มเติม"], pt: ["Vídeo anterior", "Próximo vídeo", "Mais"], fr: ["Vidéo précédente", "Vidéo suivante", "Plus"], ru: ["Предыдущее видео", "Следующее видео", "Ещё"],
 };
 
+// TikTok covers are signed links that expire within a day, so the covers of the creators' TikTok notices are kept as site images.
+const shortCover = (item: HomeShort) => item.platform === "tiktok" ? `/images/media/tiktok/${item.videoId}.jpg` : `https://i.ytimg.com/vi/${item.videoId}/oardefault.jpg`;
+const shortPlayer = (item: HomeShort) => item.platform === "tiktok" ? `https://www.tiktok.com/embed/${item.videoId}` : `https://www.youtube.com/embed/${item.videoId}?rel=0`;
+
 export function HomeShorts({ items, locale, layout = "rail", initialVideo, offset = 0 }: { items: readonly HomeShort[]; locale: AppLocale; layout?: "rail" | "grid"; initialVideo?: string; offset?: number }) {
   const [index, setIndex] = useState<number | null>(() => { const i = items.findIndex(item => item.videoId === initialVideo); return i < 0 ? null : i; });
   const [more, setMore] = useState(false);
@@ -43,7 +47,7 @@ export function HomeShorts({ items, locale, layout = "rail", initialVideo, offse
     <ul className={layout === "rail" ? styles.rail : styles.grid}>
       {(layout === "rail" ? items.slice(0, 6) : items).map((item, i) => <li key={item.id} className={styles.item} data-row="short">
         <FanAction variant="text" type="button" className={styles.card} onClick={() => setIndex(i)}>
-          <span className={`${styles.cover} ${mediaFillClass}`}><MediaThumbnail image={`https://i.ytimg.com/vi/${item.videoId}/oardefault.jpg`} href={item.href} kind="videos" locale={locale} backdrop /><span className={styles.play} aria-hidden="true"><FanIcon icon={Play} filled /></span></span>
+          <span className={`${styles.cover} ${mediaFillClass}`}><MediaThumbnail image={shortCover(item)} href={item.href} kind="videos" locale={locale} backdrop /><span className={styles.play} aria-hidden="true"><FanIcon icon={Play} filled /></span></span>
           <span className={styles.title}>{item.title}</span>
         </FanAction>
       </li>)}
@@ -52,7 +56,7 @@ export function HomeShorts({ items, locale, layout = "rail", initialVideo, offse
       {selected && <div className={styles.player} data-outbound-placement="shorts-player" onWheel={e => { if (Math.abs(e.deltaY) > 20 && Date.now() - wheelAt.current > 600) { wheelAt.current = Date.now(); move(e.deltaY > 0 ? 1 : -1); } }}>
         <div className={styles.stage}>
           <div className={styles.swipeZone} {...swipe} aria-hidden="true" />
-          <iframe key={selected.videoId} src={`https://www.youtube.com/embed/${selected.videoId}?rel=0`} title={selected.title} allow="encrypted-media; picture-in-picture; fullscreen" allowFullScreen referrerPolicy="strict-origin-when-cross-origin" />
+          <iframe key={selected.videoId} src={shortPlayer(selected)} title={selected.title} allow="encrypted-media; picture-in-picture; fullscreen" allowFullScreen referrerPolicy="strict-origin-when-cross-origin" />
           <div className={styles.swipeZone} {...swipe} aria-hidden="true" />
         </div>
         <ShortsEngagement key={selected.videoId} videoId={selected.videoId} locale={locale} offset={offset} />
@@ -61,7 +65,7 @@ export function HomeShorts({ items, locale, layout = "rail", initialVideo, offse
           <FanAction variant="text" type="button" onClick={() => move(1)} disabled={index === items.length - 1} ariaLabel={navigation[locale][1]}><FanIcon icon={ChevronDown} /></FanAction>
           <span>{(index ?? 0) + 1} / {items.length}</span>
           <FanAction variant="text" type="button" ariaLabel={navigation[locale][2]} aria-expanded={more} onClick={() => setMore(value => !value)}><FanIcon icon={MoreHorizontal} /></FanAction>
-          {more && <a href={selected.href} target="_blank" rel="noopener noreferrer" data-outbound-kind="external">YouTube ↗</a>}
+          {more && <a href={selected.href} target="_blank" rel="noopener noreferrer" data-outbound-kind="external">{selected.platform === "tiktok" ? "TikTok" : "YouTube"} ↗</a>}
         </div>
       </div>}
     </FanDialog>

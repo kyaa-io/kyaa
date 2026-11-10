@@ -26,15 +26,22 @@ export type HomeGalleryPhoto = z.infer<typeof homeGalleryPhotoSchema>;
 export const homeGalleryPageSchema = z.object({ items: z.array(homeGalleryPhotoSchema).max(24), hasMore: z.boolean() }).strict();
 export type HomeGalleryPage = Readonly<{ items: readonly HomeGalleryPhoto[]; nextCursor: string | null }>;
 
-/** Public short-form videos from registered creators. */
-export const homeShortSchema = z.object({
+/** Public short-form videos from registered creators: YouTube shorts, and TikTok videos the creator posted as source-only notices. */
+const youtubeShortSchema = z.object({
   id: z.uuid(),
+  platform: z.literal("youtube").default("youtube"),
   videoId: z.string().regex(/^[A-Za-z0-9_-]{11}$/),
   title: z.string().min(1).max(300),
   creator: z.object({ slug: z.string().min(1), name: z.string().min(1) }).strict(),
   href: z.string().regex(/^https:\/\/www\.youtube\.com\/watch\?v=[A-Za-z0-9_-]{11}$/),
   liveHref: z.string().regex(/^\/live\/[a-z0-9-]+$/).optional(),
 }).strict();
+const tiktokShortSchema = youtubeShortSchema.extend({
+  platform: z.literal("tiktok"),
+  videoId: z.string().regex(/^[0-9]{15,25}$/),
+  href: z.string().regex(/^https:\/\/www\.tiktok\.com\/@[A-Za-z0-9._]{1,64}\/video\/[0-9]{15,25}$/),
+}).strict().refine(short => short.href.endsWith(`/video/${short.videoId}`));
+export const homeShortSchema = z.union([youtubeShortSchema, tiktokShortSchema]);
 export type HomeShort = z.infer<typeof homeShortSchema>;
 export const homeShortsSchema = z.array(homeShortSchema).max(12);
 export const homeShortsPageSchema = z.object({ items: homeShortsSchema, hasMore: z.boolean() }).strict();

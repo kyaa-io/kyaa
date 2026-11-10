@@ -103,6 +103,7 @@ describe("response security headers", () => {
   it("allows official YouTube videos only as embedded frames", () => {
     const directives = header("Content-Security-Policy").split(";").map((value) => value.trim());
     expect(directives.find((value) => value.startsWith("frame-src "))).toContain("https://www.youtube.com");
+    expect(directives.find((value) => value.startsWith("frame-src "))).toContain("https://www.tiktok.com");
     expect(directives.filter((value) => !value.startsWith("frame-src ")).join(";")).not.toContain("https://www.youtube.com");
   });
 

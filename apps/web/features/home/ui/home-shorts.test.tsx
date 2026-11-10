@@ -23,6 +23,16 @@ describe("shorts viewer", () => {
     expect(within(dialog).getByRole("button", { name: "다음 영상" })).toBeDisabled();
     expect(zone).toBeTruthy();
   });
+  it("plays a TikTok short in the TikTok player with its kept cover", () => {
+    const tiktok = { id: "t1", platform: "tiktok", videoId: "7690854938997558549", title: "안녕히 계세여~", href: "https://www.tiktok.com/@ifewknow/video/7690854938997558549", creator: { slug: "a", name: "A" } } as HomeShort;
+    const { container } = render(<HomeShorts items={[tiktok]} locale="ko" />);
+    expect(container.querySelector("img")?.getAttribute("src")).toBe("/images/media/tiktok/7690854938997558549.jpg");
+    fireEvent.click(screen.getByRole("button", { name: "안녕히 계세여~" }));
+    const dialog = screen.getByRole("dialog");
+    expect(within(dialog).getByTitle("안녕히 계세여~").getAttribute("src")).toBe("https://www.tiktok.com/embed/7690854938997558549");
+    fireEvent.click(within(dialog).getByRole("button", { name: "더 보기" }));
+    expect(within(dialog).getByRole("link", { name: "TikTok ↗" })).toHaveAttribute("href", tiktok.href);
+  });
   it("opens a shared video and changes it by a touch gesture outside the iframe", () => {
     render(<HomeShorts items={items} locale="ko" layout="grid" initialVideo="video1" />);
     const dialog = screen.getByRole("dialog");
