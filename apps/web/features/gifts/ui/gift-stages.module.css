@@ -1,0 +1,8 @@
+.steps { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: var(--space-2); margin: 0; padding: 0; list-style: none; }
+.steps > li { display: grid; justify-items: center; align-content: start; gap: var(--space-1); min-width: 0; color: var(--color-muted); font-size: var(--fan-badge-size); line-height: var(--fan-body-leading); text-align: center; }
+.mark { display: grid; place-items: center; width: 24px; height: 24px; border: 1px solid var(--color-line); border-radius: 50%; background: var(--color-surface); font-size: var(--fan-badge-size); font-weight: var(--fan-tab-weight); font-variant-numeric: tabular-nums; }
+.mark svg { width: 14px; height: 14px; }
+.label { overflow-wrap: anywhere; }
+.steps > li[data-state="done"] .mark { border-color: var(--color-accent-line); background: var(--color-accent-soft); color: var(--color-accent-ink); }
+.steps > li[data-state="current"] { color: var(--color-ink); font-weight: var(--fan-tab-weight); }
+.steps > li[data-state="current"] .mark { border-color: var(--color-accent); background: var(--color-accent); color: var(--color-surface); }

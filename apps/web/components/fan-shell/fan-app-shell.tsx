@@ -1,4 +1,5 @@
 "use client";
+import { GiftTabDot } from "@/features/gifts/ui/gift-tab-dot";
 import { WAVE_FANPAGE_SLUG } from "@/features/fanpage/domain/wave-programs";
 import type { AppLocale } from "@/i18n/locales";
 import { messages as localizedMessages } from "@/i18n/catalogs/components__fan-shell__fan-app-shell";
@@ -106,6 +107,11 @@ export function fanNavigationItems(
   ];
 }
 
+/** The MY tab carries the new-gift dot, in the header and in the bottom bar. Only where the header already reads the shared summary (the groups shell), so the dot adds no request. */
+function withGiftDot(items: readonly FanNavigationItem[], locale: FanLocale, groupsEnabled: boolean): readonly FanNavigationItem[] {
+  return groupsEnabled ? items.map((item) => item.id === "my" ? { ...item, badge: <GiftTabDot locale={locale} /> } : item) : items;
+}
+
 const icons: Record<FanSection, ReactNode> = {
   home: <Home aria-hidden="true" />,
   community: <UsersRound aria-hidden="true" />,
@@ -159,7 +165,7 @@ export function FanAppHeader({
   const searchParams = useSearchParams();
   const browserHash = useBrowserHash();
   const pathname = currentPath ?? browserPathname;
-  const items = fanNavigationItems(locale, pathname, groupsEnabled);
+  const items = withGiftDot(fanNavigationItems(locale, pathname, groupsEnabled), locale, groupsEnabled);
   const notificationsLabel = locale === "ko" ? "알림" : translate(locale, footerMessages.m2c4e2b786e56, "Notifications");
   const nextLocale = locale === "ko" ? "en" : "ko";
   const languageHref = localeSwitchHref(
@@ -198,7 +204,7 @@ export function FanAppBottomNavigation({ locale, currentPath, groupsEnabled: exp
   const groupsEnabled = explicitGroupsEnabled ?? released;
   const browserPathname = usePathname() || "/";
   const pathname = currentPath ?? browserPathname;
-  const items = fanNavigationItems(locale, pathname, groupsEnabled).map((item) => ({
+  const items = withGiftDot(fanNavigationItems(locale, pathname, groupsEnabled), locale, groupsEnabled).map((item) => ({
     ...item,
     icon: item.icon ?? icons[item.id as FanSection],
     label: <span>{groupsEnabled ? item.label : mobileLabel(item.id as FanSection, locale, groupsEnabled)}</span>,

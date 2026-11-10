@@ -390,6 +390,12 @@
 .guestProfile>nav{width:100%;justify-content:flex-end}
 .guestProfile .pencilProfileCopy{flex:1 1 calc(100% - 60px)}
 }
+/* 390: 선물·알림·설정은 이름만 남기고 아이콘 셋으로 줄인다(이름 칸을 지킨다). 이름은 aria-label이 전한다. */
+@media(max-width:599px){
+.pencilMy .pencilProfile nav{gap:var(--space-1)}
+.pencilMy .pencilProfile nav>a{min-width:44px;justify-content:center}
+.pencilMy .pencilProfile nav [data-nav-label]{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+}
 .loadingDashboard { display:grid; gap:var(--space-8); }
 .loadingProfile { display:grid; grid-template-columns:64px minmax(0,1fr); gap:var(--space-4); align-items:center; }
 .loadingProfile>div { display:grid; gap:12px; }

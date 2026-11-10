@@ -1,0 +1,43 @@
+[
+    {
+        "result": {
+            "state": "won",
+            "title": "뱅크시 전시 관람권 2장",
+            "method": "on_site_pickup",
+            "policy": {
+                "method": "on_site_pickup",
+                "version": "2026-09-ifew-banksy-pickup-v2-pair",
+                "pickupVenue": {
+                    "en": "The Hyundai Seoul Banksy exhibition entrance desk",
+                    "ko": "더현대 서울 뱅크시 전시 입장 데스크"
+                },
+                "pickupEndsOn": "2026-12-31",
+                "shippingCountry": null,
+                "pickupInstructions": {
+                    "en": "Each winner receives two admission tickets. At the entrance desk, say you came through ByUs, then verify your name and the last four digits of your phone number.",
+                    "ko": "당첨자 1인당 관람권 2장을 지급해요. 입장 데스크에서 바이어스를 통해서 왔다고 말하고 성명과 휴대폰 뒤 4자리를 확인해 주세요."
+                },
+                "recipientWindowDays": 7,
+                "requiresShippingAcknowledgment": false
+            },
+            "carrier": null,
+            "imageUrl": null,
+            "winnerId": "5ee1f700-0000-4000-8000-000000000002",
+            "benefitId": "a11c7e00-d726-46c1-8963-6f1b6def671e",
+            "campaignId": "a11c7e00-3fcc-45a4-8901-8a9572e415c7",
+            "benefitHref": "/benefits/a11c7e00-d726-46c1-8963-6f1b6def671e",
+            "publishedAt": "2026-11-10T19:59:42.615807+09:00",
+            "entryClosesAt": "2026-11-10T19:58:29.183213+09:00",
+            "enteredTickets": 0,
+            "trackingNumber": null,
+            "claimDisposition": "active",
+            "fulfillmentStatus": "information_required",
+            "recipientEditable": true,
+            "recipientSubmitted": false,
+            "recipientDeadlineAt": "2026-11-17T19:59:42.615807+09:00"
+        },
+        "unread": true,
+        "updatedAt": "2026-11-10T20:48:23.195889+09:00",
+        "rewardResultId": "5ee1f700-0000-4000-8000-000000000001"
+    }
+]

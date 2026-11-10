@@ -35,6 +35,7 @@ const summary = {
   },
   collection: { passportCount: 1, stampCount: 2, collectibleCount: 0, recent: [] },
   unreadNotificationCount: 1,
+  gifts: { unreadCount: 1, singleUnreadId: "33333333-3333-4333-8333-333333333333" },
 };
 const getAccessToken = vi.fn(async () => "token");
 const { avatarOwner, sessionState } = vi.hoisted(() => ({
@@ -172,7 +173,7 @@ describe("unified MY hub", () => {
     expect(screen.getByRole("heading", { name: "내 최애 1" })).toBeInTheDocument();
     expect(screen.queryByRole("heading", { name: "다가오는 LIVE" })).not.toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "받은 혜택" })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "내 결과 확인" })).toHaveAttribute("href", "/my/raffles?locale=ko");
+    expect(screen.getByRole("link", { name: "선물 열어보기" })).toHaveAttribute("href", "/my/gifts/33333333-3333-4333-8333-333333333333?locale=ko");
     expect(screen.getByText("수령 완료")).toBeInTheDocument();
     expect(screen.queryByText("사용 가능한 혜택")).not.toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "KARA 이벤트" })).toBeInTheDocument();
@@ -260,7 +261,7 @@ describe("unified MY hub", () => {
     fireEvent.click(await screen.findByRole("button", { name: "Elina" }));
     expect(screen.getByText("골드 2", { selector: "strong" })).toBeInTheDocument();
     expect([...container.querySelectorAll("img")].some((image) => decodeURIComponent(image.src).includes("/ink-v1/gold-2.webp"))).toBe(true);
-    expect(fetcher.mock.calls.some(([url]) => String(url) === "/api/me/summary?locale=ko&tierStages=1&hearts=1")).toBe(true);
+    expect(fetcher.mock.calls.some(([url]) => String(url) === "/api/me/summary?locale=ko&tierStages=1&hearts=1&gifts=1")).toBe(true);
   });
 
   it("preserves the selected favorite through a locale reload and resets it for a different owner", async () => {

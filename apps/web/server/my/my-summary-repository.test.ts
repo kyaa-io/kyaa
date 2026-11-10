@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 vi.mock("server-only", () => ({}));
-import { PublicImageMySummaryRepository, SupabaseMySummaryRepository, SupabasePassportHeartsReader, SupabaseProfileFavoriteReader, type PassportHeartsReader, type ProfileFavoriteReader } from "./my-summary-repository";
+import { PublicImageMySummaryRepository, SupabaseMySummaryRepository, SupabasePassportHeartsReader, SupabaseProfileFavoriteReader, type GiftUnreadReader, type PassportHeartsReader, type ProfileFavoriteReader } from "./my-summary-repository";
 import { mySummarySchema, ownerMySummarySchema } from "../../features/my/domain/my-summary";
 
 const id = "11111111-1111-4111-8111-111111111111";
@@ -94,6 +94,27 @@ describe("MY summary repository", () => {
     );
 
     await expect(repository.get({ appUserId: id, locale: "ko", asOf: new Date() })).rejects.toThrow("directory unavailable");
+  });
+
+  describe("unread gifts", () => {
+    const unread = { unreadCount: 2, singleUnreadId: null };
+    const make = (gifts: GiftUnreadReader) => new PublicImageMySummaryRepository(
+      new SupabaseMySummaryRepository({ rpc: vi.fn().mockResolvedValue({ data: valid, error: null }) }),
+      { readCelebrityPhotoSetsBySlug: vi.fn().mockResolvedValue({}), readLivePhotoSetsBySlug: vi.fn() },
+      { list: vi.fn().mockResolvedValue([]) },
+      undefined, undefined, gifts,
+    );
+    it("adds the count only when asked", async () => {
+      const gifts = { read: vi.fn<GiftUnreadReader["read"]>().mockResolvedValue(unread) };
+      expect(await make(gifts).get({ appUserId: id, locale: "ko", asOf: new Date() })).not.toHaveProperty("gifts");
+      expect(gifts.read).not.toHaveBeenCalled();
+      expect(await make(gifts).get({ appUserId: id, locale: "ko", asOf: new Date(), includeGifts: true })).toMatchObject({ gifts: unread });
+      expect(gifts.read).toHaveBeenCalledExactlyOnceWith(id);
+    });
+    it("leaves the key out when the read fails, so the summary still loads", async () => {
+      const result = await make({ read: vi.fn<GiftUnreadReader["read"]>().mockRejectedValue(new Error("down")) }).get({ appUserId: id, locale: "ko", asOf: new Date(), includeGifts: true });
+      expect(result).not.toHaveProperty("gifts");
+    });
   });
 
   describe("hearts (C1 header ♥N)", () => {

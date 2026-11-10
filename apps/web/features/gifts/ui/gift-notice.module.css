@@ -1,0 +1,6 @@
+.notice { display: flex; align-items: center; flex-wrap: wrap; gap: var(--space-4); box-sizing: border-box; }
+.icon { display: grid; place-items: center; flex: none; width: 44px; height: 44px; border-radius: var(--radius-card); color: var(--color-service-ink); background: var(--color-surface); }
+.icon svg { width: 24px; height: 24px; }
+.copy { flex: 1 1 0; min-width: 0; }
+.notice > a { flex: none; max-width: 100%; }
+@media (max-width: 599px) { .notice > a { flex-basis: 100%; } }

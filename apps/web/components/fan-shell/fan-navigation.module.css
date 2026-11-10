@@ -1,5 +1,6 @@
 .navigationItem,
 .localeLink {
+  position: relative;
   min-height: 44px;
   cursor: pointer;
   transition:

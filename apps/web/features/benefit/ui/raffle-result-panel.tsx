@@ -8,7 +8,7 @@ import { messages as localizedMessages } from "@/i18n/catalogs/features__benefit
 import { additionalLocales, translate } from "@/i18n/messages";
 import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import { ArrowRight, Clock3, Gift, Heart, RotateCcw, TicketCheck, XCircle } from "lucide-react";
-import { useCallback } from "react";
+import { useCallback, type ReactNode } from "react";
 
 import { withLocalePath } from "@/components/locale-path";
 import { FanAction } from "@/components/fan-ui/fan-action";
@@ -175,7 +175,16 @@ function resultStatus(result: OwnedRaffleResult, locale: Locale) {
   }
 }
 
-export function RaffleResultPanel({ result, locale, embedded = false, ownerId, entrySource = "tickets" }: { result: OwnedRaffleResult; locale: Locale; embedded?: boolean; ownerId?: string; entrySource?: "tickets" | "cheer" }) {
+/** The ticket-opening reveal shows first while a win still waits for the fan's recipient details. */
+export function raffleResultNeedsReveal(result: OwnedRaffleResult) {
+  if (result.state === "not_won") return true;
+  if (result.state !== "won") return false;
+  const overdue = result.method !== "digital" && isRecipientOverdue(result.recipientDeadlineAt, result.recipientSubmitted, new Date());
+  return !(result.claimDisposition === "unclaimed" || overdue) && !result.recipientSubmitted && result.fulfillmentStatus === "information_required";
+}
+
+/** `viewedMarker` renders only while the result itself is on screen (after the reveal), so a caller can tell "seen" from "page opened". */
+export function RaffleResultPanel({ result, locale, embedded = false, ownerId, entrySource = "tickets", viewedMarker }: { result: OwnedRaffleResult; locale: Locale; embedded?: boolean; ownerId?: string; entrySource?: "tickets" | "cheer"; viewedMarker?: ReactNode }) {
   const t = copy[locale];
   const notEnteredHelp = entrySource === "cheer" ? t.cheerNotEnteredHelp : t.notEnteredHelp;
   const recipientHref = result.winnerId
@@ -218,6 +227,7 @@ export function RaffleResultPanel({ result, locale, embedded = false, ownerId, e
       </div>
   );
   const details = <>
+      {viewedMarker}
       <span className={styles.eyebrow}>{t.heading}</span>
       <div className={styles.status} data-state={result.state}>
         <span aria-hidden="true">{state.icon}</span>

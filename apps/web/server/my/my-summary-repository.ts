@@ -3,6 +3,7 @@ import "server-only";
 import { type SupabaseClient } from "@supabase/supabase-js";
 import { z } from "zod";
 import { createClient } from "@/server/data/client";
+import { giftUnreadSchema, type GiftUnread } from "../../features/gifts/domain/gift";
 import { ownerMySummarySchema, prioritizeReservedLives, type MySummary, type OwnerMySummary } from "../../features/my/domain/my-summary";
 import { SupabasePublishedContentRepository, type PublishedContentClient } from "../content/published-content-repository";
 import { createPublicImageRoleReader, type PublicImageRoleReader } from "../media/public-image-reader";
@@ -23,6 +24,19 @@ export class SupabaseProfileFavoriteReader implements ProfileFavoriteReader {
     if (error) throw new Error("Profile favorite query failed");
     const favorite = profileFavoriteSchema.parse(data).favorite;
     return favorite ? { slug: favorite.slug, name: favorite.name } : null;
+  }
+}
+
+/** Unread gifts. Kept apart from the summary function so that function (and its migration) stays as it is. */
+export interface GiftUnreadReader {
+  read(appUserId: string): Promise<GiftUnread>;
+}
+export class SupabaseGiftUnreadReader implements GiftUnreadReader {
+  constructor(private readonly client: RpcClient) {}
+  async read(appUserId: string) {
+    const { data, error } = await this.client.rpc("get_owned_gift_unread", { p_app_user_id: appUserId });
+    if (error) throw new Error("Gift unread query failed");
+    return giftUnreadSchema.parse(data);
   }
 }
 
@@ -56,7 +70,7 @@ export class SupabasePassportHeartsReader implements PassportHeartsReader {
 }
 
 export interface MySummaryRepository {
-  get(input: { appUserId: string; locale: "ko" | "en"; asOf: Date; includeStages?: boolean; includeHearts?: boolean }): Promise<MySummary>;
+  get(input: { appUserId: string; locale: "ko" | "en"; asOf: Date; includeStages?: boolean; includeHearts?: boolean; includeGifts?: boolean }): Promise<MySummary>;
 }
 
 interface OwnerMySummaryRepository {
@@ -104,15 +118,22 @@ export class PublicImageMySummaryRepository implements MySummaryRepository {
     private readonly published: PublicCreatorDirectory,
     private readonly hearts?: PassportHeartsReader,
     private readonly favorite?: ProfileFavoriteReader,
+    private readonly gifts?: GiftUnreadReader,
   ) {}
 
-  async get(input: { appUserId: string; locale: "ko" | "en"; asOf: Date; includeStages?: boolean; includeHearts?: boolean }): Promise<MySummary> {
+  async get(input: { appUserId: string; locale: "ko" | "en"; asOf: Date; includeStages?: boolean; includeHearts?: boolean; includeGifts?: boolean }): Promise<MySummary> {
     const read = await this.repository.get(input);
+    // A failed gift read leaves the key out, like a request without gifts=1: no glow rather than a wrong one.
+    const gifts = input.includeGifts && this.gifts ? await this.gifts.read(input.appUserId).catch(() => {
+      console.warn("MY_SUMMARY_GIFTS_FALLBACK", { reason: "GIFTS_READ_FAILED" });
+      return null;
+    }) : null;
     const [withHeartCounts, favorite] = input.includeHearts ? await Promise.all([
       this.hearts ? withHearts(read, input.appUserId, this.hearts) : read,
       this.favorite ? this.favorite.read(input.appUserId, input.locale).then((value) => ({ value }), () => null) : null,
     ]) : [read, null];
-    const summary: OwnerMySummary = favorite ? { ...withHeartCounts, favorite: favorite.value } : withHeartCounts;
+    const withFavorite: OwnerMySummary = favorite ? { ...withHeartCounts, favorite: favorite.value } : withHeartCounts;
+    const summary: OwnerMySummary = gifts ? { ...withFavorite, gifts } : withFavorite;
     if (summary.creators.length === 0) return { ...summary, creators: [] };
     const slugs = summary.creators.map(({ celebrity }) => celebrity.slug);
     const [photosBySlug, publicCreators] = await Promise.all([
@@ -159,5 +180,6 @@ export function createSupabaseMySummaryRepository(config: { url: string | undefi
     new SupabasePublishedContentRepository(database as unknown as PublishedContentClient),
     new SupabasePassportHeartsReader(database as unknown as PassportTableClient),
     new SupabaseProfileFavoriteReader(database as unknown as RpcClient),
+    new SupabaseGiftUnreadReader(database as unknown as RpcClient),
   );
 }

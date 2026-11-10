@@ -1,0 +1,17 @@
+.main { min-height: 72vh; padding-top: var(--space-8); padding-bottom: var(--space-12); }
+.heading, .body { width: min(100%, 760px); margin-inline: auto; }
+.heading { display: grid; gap: var(--space-2); margin-bottom: var(--space-6); }
+.body { display: grid; }
+.guest { display: grid; gap: var(--space-5); }
+.panel { display: grid; gap: var(--space-5); justify-items: stretch; }
+.panel > [data-fan-heading] { margin: 0; text-align: center; }
+
+/* 이미지 칸: 이미지는 잘리지 않게 contain, 뒤의 빛은 안 읽은 선물일 때 600ms에 한 번 켜지고 멈춘다. */
+.hero { position: relative; display: grid; place-items: center; height: 240px; }
+.image { position: relative; z-index: 1; display: block; width: min(60vw, 240px); height: 200px; }
+.image img { object-fit: contain; }
+.glow { position: absolute; z-index: 0; top: 50%; left: 50%; width: 320px; height: 320px; translate: -50% -50%; max-width: none; opacity: .85; pointer-events: none; }
+.hero[data-gift-glow] .glow { animation: gift-detail-glow var(--motion-reward) var(--motion-easing) both; }
+@keyframes gift-detail-glow { from { opacity: 0; transform: scale(.85); } to { opacity: .85; transform: scale(1); } }
+@media (prefers-reduced-motion: reduce) { .hero[data-gift-glow] .glow { animation: none; } }
+@media (max-width: 599px) { .main { padding-top: var(--space-4); } .glow { width: 260px; height: 260px; } .hero { height: 220px; } }

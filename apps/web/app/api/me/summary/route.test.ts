@@ -31,6 +31,16 @@ describe("MY summary stage opt-in", () => {
     expect(authorize).toHaveBeenCalledWith(expect.objectContaining({ authorization: "Bearer token" }));
   });
 
+  it.each(["", "?gifts=0", "?gifts=true"])("sends no gift key unless gifts=1: %s", async (query) => {
+    await GET(new Request(`https://byus.kr/api/me/summary${query}`));
+    expect(get).toHaveBeenCalledExactlyOnceWith({ appUserId: "canonical-owner", locale: "ko", asOf: expect.any(Date) });
+  });
+
+  it("asks for the unread gift count only with gifts=1", async () => {
+    await GET(new Request("https://byus.kr/api/me/summary?gifts=1", { headers: { authorization: "Bearer token" } }));
+    expect(get).toHaveBeenCalledExactlyOnceWith({ appUserId: "canonical-owner", locale: "ko", asOf: expect.any(Date), includeGifts: true });
+  });
+
   it("does not read any owner data after auth rejection", async () => {
     authorize.mockRejectedValue(new AuthError("AUTHENTICATION_REQUIRED", 401, "denied"));
     const response = await GET(new Request("https://byus.kr/api/me/summary?tierStages=1"));
