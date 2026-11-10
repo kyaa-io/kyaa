@@ -115,8 +115,15 @@ it('DUO: preserves the approved block order, four tiles and a single check-in ac
  const blocks=v.container.querySelectorAll('[data-duo-profile],[data-duo-lucky],[data-wallet-card],[data-fan-missions],[data-duo-today],[data-duo-rail],[data-duo-history]');
  expect([...blocks].map(el=>el.getAttributeNames().find(n=>n.startsWith('data-duo-')||n==='data-wallet-card'||n==='data-fan-missions'))).toEqual(['data-wallet-card','data-duo-lucky','data-fan-missions']);
  expect([...v.container.querySelectorAll('[data-cell]')].map(n=>n.getAttribute('data-cell'))).toEqual(['points','tickets','stamps','hearts']);
- expect(v.container.querySelector('[data-duo-lucky]')?.parentElement).toHaveAttribute('inert');
- expect(screen.getByRole('status')).toHaveTextContent('준비 중');
+ // C4: no blur, no cover, no inert ancestor; only the enter button rests, with its reason attached.
+ const card=v.container.querySelector('[data-duo-lucky]') as HTMLElement;
+ expect(card.closest('[inert],[aria-hidden="true"],[aria-disabled="true"]')).toBeNull();
+ expect(screen.queryByRole('status')).toBeNull();
+ const enter=within(card).getByRole('button',{name:'응모하러 가기'});
+ expect(enter).toBeDisabled();expect(enter).not.toHaveAttribute('href');
+ expect(document.getElementById(enter.getAttribute('aria-describedby')!)).toHaveTextContent('준비 중');
+ expect(card).toHaveAttribute('data-lucky-paused');expect(card).toHaveAttribute('data-lucky-module');
+ expect(card.querySelector('[data-lucky-stage]')).not.toBeNull();
  expect(v.container.querySelectorAll('[data-mission="checkin"]')).toHaveLength(1);
  expect(v.container.querySelector('[data-duo-today]')).toBeNull();
  expect(v.container.querySelector('[data-cell="hearts"]')?.querySelector('a')).toBeNull();
@@ -127,13 +134,21 @@ it('DUO: highlights the nearest open draw, actual allowance and exactly one prim
  const lucky=await screen.findByRole('region',{name:groupBenefitsCopy('ko').lucky});
  await waitFor(()=>expect(lucky.querySelector('[data-raffle-cost]')).toHaveTextContent('응모권 1장 · 지금 7번 가능'));
  expect(within(lucky).getByText('Gift 1')).toBeInTheDocument();expect(within(lucky).queryByText('Gift 2')).toBeNull();
- expect(within(lucky).getByRole('link',{name:/응모하러 가기/})).toHaveAttribute('href',`/c/bias-x/raffles/${uid(401)}?locale=ko`);
+ expect(within(lucky).queryByRole('link',{name:/응모하러 가기/})).toBeNull();
+ expect(within(lucky).getByRole('button',{name:/응모하러 가기/})).toBeDisabled();
  expect(lucky.querySelector('strong')).toHaveTextContent('7');
 });
 it('DUO: keeps policy and passport entry restrictions in the spotlight',async()=>{
  duoData();creatorRaffles=[{...creatorRaffle(1,'open',-day,7*day),fulfillmentPolicy:null}];render(<GroupBenefitsScreen locale='ko'/>);
  await screen.findByText('받는 방법이 정해지면 응모할 수 있어요');expect(screen.queryByRole('link',{name:/응모하러 가기/})).toBeNull();
- expect(screen.getByRole('link',{name:/선물 보기/})).toHaveAttribute('href',`/c/bias-x/raffles/${uid(401)}?locale=ko`);
+ expect(screen.getByRole('button',{name:/응모하러 가기/})).toBeDisabled();
+});
+it('DUO: with no draw the past-draws link still opens and the resting button sends nothing',async()=>{
+ duoData();creatorRaffles=[];render(<GroupBenefitsScreen locale='ko'/>);
+ const past=await screen.findByRole('link',{name:/지난 럭키드로우/});expect(past).toHaveAttribute('href','/c/bias-x/raffles?locale=ko');
+ const enter=screen.getByRole('button',{name:'응모하러 가기'});expect(enter).toBeDisabled();
+ const before=[...requests];fireEvent.click(enter);expect(requests).toEqual(before);
+ expect(vi.mocked(fetch).mock.calls.every(([,init])=>(init?.method??'GET')==='GET')).toBe(true);
 });
 it('DUO: opens exchange only from its tile, restores focus on Escape and makes no mutation on open',async()=>{
  duoData();render(<GroupBenefitsScreen locale='ko'/>);

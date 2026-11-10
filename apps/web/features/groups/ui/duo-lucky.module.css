@@ -1,26 +1,23 @@
-.card { position:relative; display:grid; grid-template-columns:minmax(0,1fr); column-gap:var(--space-2); row-gap:var(--space-4); box-sizing:border-box; min-height:175px; padding:var(--space-5); border:0; outline:1px solid var(--color-line); outline-offset:-1px; border-radius:var(--radius-control); background:var(--color-surface); font-variant-numeric:tabular-nums; font-feature-settings:"tnum"; }
-.copy { grid-column:1; min-width:0; padding-left:calc(var(--space-10) - var(--space-1) / 2); padding-right:var(--space-16); z-index:1; }
+/* C4 럭키드로우 카드: 위(390)·오른쪽(1024 이상)에 기계 무대, 글과 행동은 그 옆·아래. 값은 C4 시안(plan-ux 3절)의 토큰 그대로다. */
+.card { position:relative; display:grid; grid-template-columns:minmax(0,1fr); row-gap:var(--space-4); box-sizing:border-box; padding:var(--space-5); border:0; outline:1px solid var(--color-line); outline-offset:-1px; border-radius:var(--radius-control); background:var(--color-surface); overflow:hidden; font-variant-numeric:tabular-nums; font-feature-settings:"tnum"; }
+.stage { grid-column:1; grid-row:1; height:204px; margin:calc(var(--space-5) * -1) calc(var(--space-5) * -1) 0; }
+.copy { position:relative; grid-column:1; min-width:0; padding-left:calc(var(--space-10) - var(--space-1) / 2); }
 .copy h2 { line-height:22px; overflow-wrap:anywhere; }
-.machine { position:absolute; right:0; top:1px; width:108px; height:108px; max-width:none; object-fit:contain; pointer-events:none; }
-.glyph { position:absolute; left:10.5px; top:38px; width:40px; height:40px; object-fit:contain; pointer-events:none; }
+.glyph { position:absolute; left:-9.5px; top:-9px; width:40px; height:40px; object-fit:contain; pointer-events:none; }
 .meta { margin:var(--space-1) 0 0; font-size:var(--fan-badge-size); color:var(--color-muted); line-height:17px; }
-.cost { margin:var(--space-2) 0 0; color:var(--color-ink); font-size:var(--fan-action-emphasis-size); font-weight:700; line-height:1; }
+.cost { margin:var(--space-2) 0 0; color:var(--color-ink); font-size:var(--fan-action-emphasis-size); font-weight:700; line-height:1.3; }
 .cost strong { line-height:1; font-size:var(--fan-number-size); font-weight:800; }
-.action { grid-column:1/-1; width:100%; min-height:44px; max-width:none; align-self:end; }
-.empty,.pending { grid-column:1; display:flex; flex-direction:column; justify-content:center; gap:var(--space-4); min-width:0; padding-left:calc(var(--space-10) - var(--space-1) / 2); font-size:var(--fan-action-emphasis-size); }
-.empty a { color:var(--color-ink); text-decoration:none; font-weight:700; }
-.empty a:focus-visible { outline:2px solid var(--color-focus); outline-offset:4px; }
+.emptyText { margin:0; font-size:var(--fan-action-emphasis-size); line-height:22px; overflow-wrap:anywhere; }
+.past { display:inline-block; margin-top:var(--space-4); color:var(--color-ink); font-size:var(--fan-action-emphasis-size); font-weight:700; line-height:22px; text-decoration:none; }
+.past:focus-visible { outline:2px solid var(--color-focus); outline-offset:4px; }
+.copy [role="alert"] { padding:0; }
+.actionBlock { grid-column:1/-1; display:flex; flex-direction:column; align-items:stretch; }
+.action { width:100%; min-height:var(--fan-action-primary-height); max-width:none; }
 @media (min-width:1024px) {
- .card { min-height:215px; grid-template-columns:minmax(0,1fr) 200px; row-gap:var(--space-6); }
- .copy { padding-right:0; padding-left:calc(var(--space-10) + var(--space-1) / 2); }.meta { margin-top:var(--space-4); }.cost { margin-top:var(--space-6); }
- .machine { right:24px; top:7.5px; width:200px; height:200px; }
- .glyph { left:14.5px; top:87.5px; }
- .action { grid-column:1; width:200px; margin-left:calc(var(--space-10) + var(--space-1) / 2); min-height:48px; }
- .empty,.pending { grid-row:1/3; }
+ .card { grid-template-columns:minmax(0,1fr) 560px; grid-template-rows:1fr auto auto 1fr; column-gap:var(--space-6); row-gap:0; min-height:300px; /* design-lint-disable N4 -- 사용자 2026-11-10 C4: 럭키드로우 무대 히어로 */ }
+ .stage { grid-column:2; grid-row:1/5; height:auto; margin:calc(var(--space-5) * -1) calc(var(--space-5) * -1) calc(var(--space-5) * -1) 0; }
+ .copy { grid-row:2; padding-left:calc(var(--space-10) + var(--space-1) / 2); }
+ .glyph { left:-5.5px; }
+ .meta { margin-top:var(--space-3); }.cost { margin-top:var(--space-4); }
+ .actionBlock { grid-column:1; grid-row:3; width:200px; margin:var(--space-6) 0 0 calc(var(--space-10) + var(--space-1) / 2); }
 }
-
-.empty p{margin:0}
-
-.empty,.pending{padding-right:var(--space-16)}
-.empty [role="alert"]{padding:0}
-@media(min-width:1024px){.empty,.pending{padding-right:0}}

@@ -181,6 +181,3 @@ section.pWallet{position:relative;box-sizing:border-box}
 @media(min-width:1024px){.page{grid-template-columns:minmax(0,1fr);grid-template-areas:"alert" "main"}.page:not(:has(> .alertList)){grid-template-areas:"main"}}
 .favorite{display:flex;align-items:center;gap:var(--space-1);min-width:0;max-width:100%;font-size:var(--fan-description-size);font-weight:var(--fan-item-title-weight)}.favoritePick{display:flex;align-items:center;gap:var(--space-1);min-width:0;max-width:100%;min-height:44px;padding:0;border:0;background:transparent;color:inherit;font:inherit;cursor:pointer}.favoriteName{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.favoritePick>span:last-child{flex:none}.favoritePick:focus-visible{outline:2px solid var(--color-focus);outline-offset:2px}
 
-.pLucky { position: relative; }
-.luckyDisabled { /* design-lint-disable S2 -- User 2026-11-10: paused lucky draw stays blurred and inert. */ filter: blur(4px); pointer-events: none; user-select: none; }
-.luckyComingSoon { position: absolute; inset: 0; display: grid; place-items: center; font-weight: 700; pointer-events: none; }
