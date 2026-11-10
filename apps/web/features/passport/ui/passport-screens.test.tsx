@@ -218,7 +218,7 @@ describe("passport fan screens", () => {
     expect(hero).toHaveAttribute("href", "#mission-book");
     const section = container.querySelector("#stamp-book") as HTMLElement;
     expect(within(section).getByRole("heading", { name: "스탬프 모음" }).parentElement).toHaveTextContent(/^스탬프 모음$/);
-    const details = section.querySelector("#community-stamp-history") as HTMLElement;
+    const details = section.querySelector("[data-stamp-history]") as HTMLElement;
     expect(details).toBeTruthy();
     fireEvent.click(within(section).getByRole("button", { name: /스탬프 모으기 기록 보기/ }));
     expect(details).toHaveTextContent("KARA");
