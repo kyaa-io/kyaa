@@ -2,7 +2,7 @@
 .frame { --feed-video-cap: min(70vh, 640px); position: relative; display: block; box-sizing: border-box; max-width: 100%; max-height: var(--feed-video-cap); width: min(100%, calc(var(--feed-video-cap) * var(--feed-video-ratio, 1.7778))); aspect-ratio: var(--feed-video-ratio, 16 / 9); overflow: hidden; border-radius: var(--radius-media); background: var(--color-soft); }
 .video { display: block; width: 100%; height: 100%; object-fit: cover; }
 /* The scrim is the ink at 60%, the same tone the player buttons used before (no raw colour). */
-.control { position: absolute; right: var(--space-2); bottom: var(--space-2); border: 0; border-radius: var(--radius-pill); color: var(--color-surface); background: color-mix(in srgb, var(--color-ink) 60%, transparent); }
-.pause { right: calc(var(--space-2) * 2 + var(--min-target)); }
-.play { top: 50%; right: auto; bottom: auto; left: 50%; width: calc(var(--min-target) + var(--space-3)); height: calc(var(--min-target) + var(--space-3)); transform: translate(-50%, -50%); }
+.frame .control { position: absolute; right: var(--space-2); bottom: var(--space-2); border: 0; border-radius: var(--radius-pill); color: var(--color-surface); background: color-mix(in srgb, var(--color-ink) 60%, transparent); }
+.frame .pause { right: calc(var(--space-2) * 2 + var(--min-target)); }
+.frame .play { top: 50%; right: auto; bottom: auto; left: 50%; width: calc(var(--min-target) + var(--space-3)); height: calc(var(--min-target) + var(--space-3)); transform: translate(-50%, -50%); }
 @media (width < 48rem) { .frame { --feed-video-cap: min(70vh, 520px); } }
