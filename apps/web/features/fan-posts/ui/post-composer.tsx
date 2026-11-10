@@ -24,7 +24,7 @@ import { useWaveMediaUpload } from "@/features/content-safety/ui/use-wave-media-
 import { waveMediaCopy } from "@/i18n/catalogs/features__fanpage__wave-media";
 import { ContentAssetImage } from "@/features/content-safety/ui/content-asset";
 import { useContentMutation } from "@/features/content-safety/ui/use-content-mutation";
-import { PassportRequiredDialog } from "@/features/content-safety/ui/passport-required-dialog";
+import { PassportRequiredDialog, usePassportRequired } from "@/features/content-safety/ui/passport-required-dialog";
 import { contentCopy } from "@/i18n/catalogs/features__fan_posts__ui";
 import type { AppLocale } from "@/i18n/locales";
 import { waveEngagementCopy } from "@/i18n/catalogs/features__fanpage__wave-engagement";
@@ -58,6 +58,7 @@ function PostComposerForOwner({ board = false, introduction = false, program, sl
   const video = uploadedVideo?.state === "ready" && uploadedVideo.kind === "video" && uploadedVideo.width && uploadedVideo.height && uploadedVideo.durationSeconds ? { id: uploadedVideo.assetId, width: uploadedVideo.width, height: uploadedVideo.height, durationSeconds: uploadedVideo.durationSeconds } : existingVideo;
   const hasVideo = Boolean(video || videoUploads.items.length);
   const copy = contentCopy(locale), mutation = useContentMutation(locale), fieldId = useId();
+  const passportRequired = usePassportRequired(mutation.failure, slug, locale);
   const rich = useRichPostBody(useMemo(() => {
     const storedLines = board ? post?.body.split("\n").slice(1).join("\n") ?? "" : "";
     const attachments: RichAttachment[] = [...(post?.assets ?? []).map(asset => ({ assetId: asset.id, kind: "image" as const })), ...(post?.video ? [{ assetId: post.video.id, kind: "video" as const }] : [])];
@@ -188,7 +189,7 @@ function PostComposerForOwner({ board = false, introduction = false, program, sl
       {policy.error && !gated && <p role="alert" className={styles.error}>{copy.failed}<FanAction onClick={policy.retry}>{copy.retry}</FanAction></p>}
       {rich.tooLarge && <p className={styles.error} role="alert">{editorText(locale, "documentTooLarge")}</p>}
       {!rich.tooLarge && title.trim().length + rich.plainText.length + 1 > 5000 && <p className={styles.error} role="alert">{editorText(locale, "tooLong")}</p>}
-      {!uploading && (problem || (mutation.error && mutation.failure !== "passport")) && <p className={styles.error} role="alert">{problem || mutation.error}</p>}<PassportRequiredDialog failure={mutation.failure} slug={slug} locale={locale} onClose={mutation.dismiss} />
+      {!uploading && (problem || (mutation.error && !passportRequired)) && <p className={styles.error} role="alert">{problem || mutation.error}</p>}<PassportRequiredDialog failure={mutation.failure} slug={slug} locale={locale} onClose={mutation.dismiss} />
       {failedPhotos.length > 0 && <FanAction disabled={busy} onClick={() => void upload(failedPhotos)}>{copy.retry}</FanAction>}
     </>}
     cancelLabel={copy.cancel} onCancel={onCancel ? requestCancel : undefined} cancelDisabled={busy}
