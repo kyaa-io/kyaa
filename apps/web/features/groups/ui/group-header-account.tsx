@@ -3,7 +3,7 @@ import { useDukjilStatus } from '@/features/dukjil/ui/dukjil-provider';
 import { dukjilText } from '@/features/dukjil/ui/dukjil-copy';
 import { useSelectedBias } from '@/features/selected-bias/ui/use-selected-bias';
 import { POINT_COIN_SRC } from '@/features/dukjil/ui/earn-badge';
-import { useEffect, useRef, useState, isValidElement, type ReactNode, type ReactElement } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import Link from 'next/link';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { RotateCw } from 'lucide-react';
@@ -16,6 +16,7 @@ import { APP_LOCALE_NATIVE_NAMES, type AppLocale } from '@/i18n/locales';
 import {GroupLanguageDialog} from './group-language-dialog';
 import { rememberOverlayTrigger } from '@/components/ui/overlay/focus-return';
 import { walletSchema } from '@/server/group-wallet/domain';
+import { z } from 'zod';
 import { useAvatar } from '@/features/profile/ui/use-avatar';
 import { Avatar, AvatarPlaceholder } from '@/features/profile/ui/avatar';
 import { GROUP_WALLET_CHANGED_EVENT, useGroupRequest, useGroupResource } from './use-group-resource';
@@ -25,13 +26,15 @@ import { ProfileConnectionPanel } from '@/features/group-social/profile-connecti
 import { profileConnectionCopy } from '@/features/group-social/profile-copy';
 import styles from './group-header-account.module.css';
 const parse=(value:unknown)=>walletSchema.parse(value);
+const parseProfile=(value:unknown)=>z.object({profile:z.object({nickname:z.string().nullable()})}).parse(value);
 export function GroupHeaderAccount({locale,actions,actionsAreIdentity=false,languageHref}:{locale:AppLocale;actions?:ReactNode;actionsAreIdentity?:boolean;languageHref:string}){
  const auth=useGroupRequest(),wallet=useGroupResource(auth.authenticated?'/api/me/wallet':null,parse),avatar=useAvatar();
+ const profile=useGroupResource(auth.authenticated?'/api/me/profile':null,parseProfile);
  const [languageOpen,setLanguageOpen]=useState(false),trigger=useRef<HTMLButtonElement>(null);
  const [profileOwner,setProfileOwner]=useState<string|null>(null);
  const openProfile=()=>{if(trigger.current)rememberOverlayTrigger(trigger.current);setProfileOwner(auth.ownerKey);};
  const profileLabel=profileConnectionCopy(locale).profile;
- const identity=actionsAreIdentity&&isValidElement(actions)?(actions as ReactElement<{children?:ReactNode}>).props.children:<>{avatar.state.status==='ready'?<Avatar avatar={avatar.state.avatar} imageUrl={avatar.state.imageUrl} label='' size={48}/>:<AvatarPlaceholder size={48}/>}<span>{profileLabel}</span></>;
+ const identity=<>{avatar.state.status==='ready'?<Avatar avatar={avatar.state.avatar} imageUrl={avatar.state.imageUrl} label='' size={48}/>:<AvatarPlaceholder size={48}/>}<span dir="auto" style={{minWidth:0,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{profile.data?.profile.nickname ?? profileLabel}</span></>;
  const refreshWallet=wallet.retry;
  const ko=locale==='ko',dukjilStatus=useDukjilStatus(locale),dukjilOn=dukjilStatus==='on';
  // The attendance item names the fan's own favorite page ("{page} 출석체크"), or the plain 출석체크 without one — never a fixed page.

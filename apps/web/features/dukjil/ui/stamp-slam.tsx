@@ -9,20 +9,21 @@ import styles from "./stamp-slam.module.css";
 export type StampReward = { locale: AppLocale; points?: number; stamps?: number; anchor?: HTMLElement | null; label?: string };
 
 const reducedMotion = () => typeof window !== "undefined" && Boolean(window.matchMedia?.("(prefers-reduced-motion: reduce)").matches);
-/** Longest the overlay may stay if the animation never reports its end (a slow device, a failed load). */
-const SLAM_LIMIT_MS = 1400;
+/** Keep the earned stamp visible before fading. */
+const SLAM_LIMIT_MS = 2500;
 let root: Root | null = null, host: HTMLDivElement | null = null, running: Promise<void> | null = null;
 
 /** feedback D3: a stamp lands over the whole screen — the existing stamp Lottie (stamp-press.json, 0.9s) at up to 360px, on a dim layer that
- * lets every tap through, then it fades. Once at a time (a second call joins the first). Reduced motion: no overlay, resolves at once.
+ * lets every tap through, then it fades. Once at a time (a second call joins the first). Reduced motion: the still stamp stays visible without animation.
  * Never blocks input: the layer is pointer-events none and aria-hidden; the screen's own text says what happened. */
 export function playStampSlam(): Promise<void> {
-  if (typeof document === "undefined" || reducedMotion()) return Promise.resolve();
+  if (typeof document === "undefined") return Promise.resolve();
   if (running) return running;
   running = new Promise<void>((resolve) => {
     host ??= Object.assign(document.createElement("div"), { className: styles.host });
     if (!host.isConnected) document.body.appendChild(host);
     root ??= createRoot(host);
+    host.style.display = "block";
     let finished = false;
     const finish = () => {
       if (finished) return;
@@ -30,8 +31,7 @@ export function playStampSlam(): Promise<void> {
       host?.setAttribute("data-leaving", "");
       window.setTimeout(() => { root?.render(null); host?.removeAttribute("data-leaving"); running = null; resolve(); }, 160);
     };
-    window.setTimeout(finish, SLAM_LIMIT_MS);
-    root.render(<div className={styles.layer} aria-hidden="true" data-stamp-slam=""><StampPress state="press" size={360} className={styles.stamp} onDone={finish} /></div>);
+    root.render(<div ref={node => { if (node) window.setTimeout(finish, SLAM_LIMIT_MS); }} className={styles.layer} style={reducedMotion() ? { animation: "none" } : undefined} aria-hidden="true" data-stamp-slam=""><StampPress state="press" size={360} className={styles.stamp} /></div>);
   });
   return running;
 }

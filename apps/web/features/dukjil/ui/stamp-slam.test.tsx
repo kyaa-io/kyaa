@@ -17,22 +17,31 @@ it("D3: lands one full-screen stamp that lets taps through, then clears and reso
   const layer = document.querySelector("[data-stamp-slam]")!;
   expect(layer).toHaveAttribute("aria-hidden", "true");
   expect(layer.querySelector("[data-testid=stamp]")).not.toBeNull();
-  await act(async () => { vi.advanceTimersByTime(1700); });
+  await act(async () => { vi.advanceTimersByTime(2499); });
+  expect(layer).toBeInTheDocument();
+  await act(async () => { vi.advanceTimersByTime(161); });
   await first;
   expect(document.querySelector("[data-stamp-slam]")).toBeNull();
 });
-it("draws nothing with reduced motion and runs the shared reward (D8) right away", async () => {
+it("keeps the still stamp visible for 2.5 seconds with reduced motion", async () => {
   motion(true);
-  await celebrateStamp({ locale: "ko", points: 2, stamps: 1 });
-  expect(reward.calls).toEqual([{ locale: "ko", points: 2, stamps: 1, anchor: undefined, label: undefined }]);
+  let done!: Promise<void>;
+  await act(async () => { done = celebrateStamp({ locale: "ko", points: 2, stamps: 1 }); });
+  expect(document.querySelector("[data-stamp-slam]")).not.toBeNull();
+  await act(async () => { vi.advanceTimersByTime(2499); });
+  expect(document.querySelector("[data-stamp-slam]")).not.toBeNull();
+  expect(reward.calls).toHaveLength(1);
+  await act(async () => { vi.advanceTimersByTime(161); });
+  await done;
   expect(document.querySelector("[data-stamp-slam]")).toBeNull();
+  expect(reward.calls).toHaveLength(1);
 });
 it("shows the confirmed reward before the animation finishes; a stamp-only grant still says one stamp", async () => {
   motion(false);
   let done!: Promise<void>;
   await act(async () => { done = celebrateStamp({ locale: "ko", label: "퀴즈 통과" }); });
   expect(reward.calls).toHaveLength(1);
-  await act(async () => { vi.advanceTimersByTime(1700); });
+  await act(async () => { vi.advanceTimersByTime(2660); });
   await done;
   expect(reward.calls).toEqual([{ locale: "ko", points: 0, stamps: 1, anchor: undefined, label: "퀴즈 통과" }]);
 });

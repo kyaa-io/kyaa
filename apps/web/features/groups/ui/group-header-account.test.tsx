@@ -4,10 +4,10 @@ import {resetDukjilCatalogCache} from '@/features/dukjil/ui/dukjil-provider';
 import {GroupHeaderAccount,GroupHeaderPoints} from './group-header-account';
 const state=vi.hoisted(()=>({favorite:null as null|{name:string},wallet:undefined as any,request:undefined as any,failure:undefined as any,retry:undefined as any}));
 vi.mock('next/navigation',()=>({usePathname:()=>'/benefits',useSearchParams:()=>new URLSearchParams('locale=ko')}));
-vi.mock('./use-group-resource',()=>({GROUP_WALLET_CHANGED_EVENT:'wallet-changed',useGroupRequest:()=>({authenticated:true,ready:true,ownerKey:'u',request:state.request}),useGroupResource:()=>({data:state.wallet,error:Boolean(state.failure),failure:state.failure,loading:false,retry:state.retry??vi.fn()})}));
+vi.mock('./use-group-resource',()=>({GROUP_WALLET_CHANGED_EVENT:'wallet-changed',useGroupRequest:()=>({authenticated:true,ready:true,ownerKey:'u',request:state.request}),useGroupResource:(url:string)=>({data:url==='/api/me/profile'?{profile:{nickname:"아리가또아리가또아리가또아리가또"}}:state.wallet,error:Boolean(state.failure),failure:state.failure,loading:false,retry:state.retry??vi.fn()})}));
 vi.mock('@/features/selected-bias/ui/use-selected-bias',()=>({useSelectedBias:()=>({status:state.favorite?'ready':'empty',options:[],selected:state.favorite,unverified:null,select:()=>{},retry:()=>{}})}));
 vi.mock('@/features/profile/ui/use-avatar',()=>({useAvatar:()=>({state:{status:'none'}})}));
-vi.mock('@/features/group-social/profile-connection',()=>({ProfileConnectionPanel:()=>null}));
+vi.mock('@/features/group-social/profile-connection',()=>({ProfileConnectionPanel:({identity}:{identity:React.ReactNode})=><div role='dialog'>{identity}</div>}));
 beforeEach(()=>{resetDukjilCatalogCache();state.favorite=null;state.failure=undefined;state.retry=undefined;state.request=vi.fn().mockRejectedValue(new Error('no policy'));});
 const wallet=(checkedIn:boolean,nextBonusIn=3)=>({points:500,tickets:0,attendance:{date:'2026-11-05',checkedIn,streak:1,nextBonusIn,days:[]}});
 const open=()=>fireEvent.click(screen.getByRole('button',{name:'계정 메뉴'}));
@@ -82,4 +82,12 @@ it('r6 H1: the attendance item names the fan\'s own favorite page, and no fixed 
  const item=await screen.findByRole('menuitem',{name:'[시험] 랭킹 확인 페이지 출석체크'});
  expect(item).toHaveAttribute('href','/my/wallet?view=attendance&locale=ko');
  expect(document.body.textContent).not.toContain('엔카이브');
+});
+
+it('shows the full nickname accessibly in the truncated account menu and profile', async()=>{
+ state.wallet=wallet(true);render(<GroupHeaderAccount locale='ko' languageHref='/'/>);open();
+ const item=await screen.findByRole('menuitem',{name:'아리가또아리가또아리가또아리가또'});
+ expect(item.querySelector('span:last-child')).toHaveStyle({textOverflow:'ellipsis',whiteSpace:'nowrap'});
+ fireEvent.click(item);
+ expect(await screen.findByRole('dialog')).toHaveTextContent('아리가또아리가또아리가또아리가또');
 });
