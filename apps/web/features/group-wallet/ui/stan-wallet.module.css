@@ -2,7 +2,7 @@
 .head { display:flex; align-items:center; justify-content:space-between; gap:var(--space-3); margin-bottom:var(--space-3); }
 .guide { display:inline-flex; align-items:center; gap:var(--space-1); color:var(--color-muted); font-size:var(--fan-badge-size); font-weight:var(--fan-body-weight); text-decoration:none; }
 .tiles { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:var(--space-3); }
-.cell { position:relative; display:grid; grid-template-columns:24px minmax(0,1fr); grid-template-rows:auto auto 1fr; column-gap:var(--space-3); box-sizing:border-box; min-width:0; min-height:125px; padding:var(--space-4); border:0; outline:1px solid var(--color-line); outline-offset:-1px; border-radius:var(--radius-control); background:var(--color-surface); }
+.cell { position:relative; display:grid; grid-template-columns:24px minmax(0,1fr); grid-template-rows:auto auto 1fr; column-gap:var(--space-3); box-sizing:border-box; min-width:0; min-height:125px; padding:var(--space-4); border:0; outline:1px solid var(--color-line); outline-offset:-1px; border-radius:var(--radius-card); background:var(--color-surface); }
 .glyph { position:absolute; width:40px; height:40px; object-fit:contain; left:6px; top:7.5px; }
 .glyph[data-glyph="ticket"] { left:10px; top:5px; }
 .glyph[data-glyph="heart"] { left:8px; top:6.5px; }
@@ -18,10 +18,10 @@ button.tileLink { display:inline; align-self:flex-start; width:auto; min-height:
 .guide:focus-visible,.tileLink:focus-visible,.stampLabel:focus-visible { outline:2px solid var(--color-focus); outline-offset:4px; }
 @media (hover:hover) and (pointer:fine) { .guide:hover,.tileLink:hover,.stampLabel:hover { text-decoration:underline; } }
 .backdrop { position:fixed; inset:0; z-index:var(--z-dialog); display:flex; align-items:flex-end; justify-content:center; background:var(--color-backdrop); }
-.sheet { position:relative; box-sizing:border-box; width:100%; padding:var(--space-8) var(--space-4); padding-bottom:calc(var(--space-8) + env(safe-area-inset-bottom)); border:0; outline:1px solid var(--color-line); outline-offset:-1px; border-radius:var(--radius-control) var(--radius-control) 0 0; background:var(--color-surface); color:var(--color-ink); font-family:var(--font-sans); font-variant-numeric:tabular-nums; font-feature-settings:"tnum"; }
+.sheet { position:relative; box-sizing:border-box; width:100%; padding:var(--space-8) var(--space-4); padding-bottom:calc(var(--space-8) + env(safe-area-inset-bottom)); border:0; outline:1px solid var(--color-line); outline-offset:-1px; border-radius:var(--radius-card) var(--radius-card) 0 0; background:var(--color-surface); color:var(--color-ink); font-family:var(--font-sans); font-variant-numeric:tabular-nums; font-feature-settings:"tnum"; }
 .handle { position:absolute; top:var(--space-2); left:calc(50% - var(--space-5)); width:40px; height:4px; border-radius:var(--radius-pill); background:var(--color-accent-line); }
 .sheetTitle { margin:0 0 var(--space-5); font-size:var(--fan-section-size); line-height:var(--fan-heading-leading); font-weight:var(--fan-section-weight); }
-.sheetBalance { padding:var(--space-4); border-radius:var(--radius-control); background:color-mix(in srgb,var(--color-ink) 4%,var(--color-surface)); margin-bottom:var(--space-5); }
+.sheetBalance { padding:var(--space-4); border-radius:var(--radius-media); background:color-mix(in srgb,var(--color-ink) 4%,var(--color-surface)); margin-bottom:var(--space-5); }
 .sheetLabel { font-size:var(--fan-badge-size); color:var(--color-muted); line-height:17px; }
 .sheetValue { display:flex; margin-top:var(--space-1); }
 .sheetValue .number { font-size:var(--fan-number-size); font-weight:800; line-height:1; }
@@ -44,7 +44,7 @@ button.tileLink { display:inline; align-self:flex-start; width:auto; min-height:
  .value { grid-column:2; grid-row:1; margin:0; }.label { grid-column:2; grid-row:2; min-height:0; }
  .under { grid-column:2; flex-direction:row; align-items:center; justify-content:flex-end; gap:var(--space-3); }
  .under .gauge { flex:1; width:auto; }.tileLink,.stampLabel { flex-shrink:0; max-width:100%; }
- .backdrop { align-items:center; }.backdrop .sheet[data-overlay-content] { max-width:440px; border-radius:var(--radius-control); }
+ .backdrop { align-items:center; }.backdrop .sheet[data-overlay-content] { max-width:440px; border-radius:var(--radius-card); }
  .sheet .exchangeAction { min-height:48px; }
 }
 

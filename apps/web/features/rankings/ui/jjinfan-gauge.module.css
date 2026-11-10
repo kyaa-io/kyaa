@@ -1,5 +1,5 @@
 /* 찐팬 100 챌린지 카드(C7, 설계 5.1). r12, 1px 선, 머리 16/650, 수치 24/850, 막대 8px. 장식·캐릭터 없음. */
-.gauge { display: grid; gap: var(--space-2); box-sizing: border-box; min-width: 0; padding: var(--space-4); border: 1px solid var(--color-line); border-radius: var(--radius-control); background: var(--color-surface); color: var(--color-ink); }
+.gauge { display: grid; gap: var(--space-2); box-sizing: border-box; min-width: 0; padding: var(--space-4); border: 1px solid var(--color-line); border-radius: var(--radius-card); background: var(--color-surface); color: var(--color-ink); }
 .head { display: flex; align-items: center; justify-content: space-between; gap: var(--space-2); min-width: 0; }
 .head h2 { min-width: 0; margin: 0; font-weight:var(--fan-item-title-weight);font-size:16px;line-height:24px; font-synthesis: none; overflow-wrap: anywhere; }
 .count { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 var(--space-2); margin: 0; color: var(--color-muted); font-size: var(--fan-metadata-size); line-height: 18px; }

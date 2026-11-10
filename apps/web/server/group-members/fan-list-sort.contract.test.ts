@@ -31,11 +31,11 @@ describe("fan list sort migration contract", () => {
   });
 });
 describe("compressed fan toolbar contract", () => {
-  it("keeps shared chips, 36/14/700, input 44/radius 8 and scrolling without gray fills", () => {
+  it("keeps shared chips, 36/14/700, input 44/pill radius and scrolling without gray fills", () => {
     const css = read("apps/web/features/groups/ui/group-members.module.css");
     expect(css).toMatch(/\.toolbar \.tabs[^}]*flex-wrap: nowrap[^}]*overflow-x: auto/);
-    expect(css).toContain("scrollbar-width: none"); expect(css).toContain("min-height: var(--fan-chip-height); font-size: var(--fan-chip-size); font-weight: 700; border-radius: var(--radius-action)");
-    expect(css).toMatch(/\.input[^}]*height: 44px[^}]*border-radius: var\(--radius-action\)/);
+    expect(css).toContain("scrollbar-width: none"); expect(css).toContain("min-height: var(--fan-chip-height); font-size: var(--fan-chip-size); font-weight: 700; border-radius: var(--radius-pill)");
+    expect(css).toMatch(/\.input[^}]*height: 44px[^}]*border-radius: var\(--radius-pill\)/);
     expect(css).not.toMatch(/background:\s*var\(--color-soft\)/);
     expect(css).not.toMatch(/font-weight:\s*(?:500|600|650|750|850|900)/);
     expect(css).toContain("@media (min-width: 1024px)");

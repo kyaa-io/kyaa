@@ -11,14 +11,14 @@ ui-contract-updated: "2026-11-09"
 theme: "light-only"
 ui-font: "Pretendard Variable"
 base-spacing: "4px"
-radius-scale: "12px / 8px / pill"
+radius-scale: "pill / 16px / 12px / 8px"
 ---
 
 # 에이전트용 핵심 규칙 (2026-11-09 기준, 브리프 v1.1)
 
 ## 게이트 A~E 확정 (사용자 "권장대로" 2026-11-09 15:52)
 
-A2 버튼 반경 8·높이 390 44 / 1024+ 48 · B2 칩 36·14/700·반경 8 · C2 h1 26/800·h2 18/700(`FanHeading`이 태그로 정함, 폭에 따라 바뀌지 않음) · D2 페이지 전체 빈 상태도 한 줄 78 · E3 도움말 물음표 → `자세히 ›`. 시안: `board/tasks/ds-sweep/a/gate-preview/`. 화면 CSS가 직접 쓰는 옛 값(`--fan-heading-size(-wide)` 20/24, 48 고정 버튼, 12 반경 칩)은 화면 치환 묶음에서 맞춘다.
+A2 버튼 반경 알약·높이 390 44 / 1024+ 48 · B2 칩 36·14/700·반경 알약 · C2 h1 26/800·h2 18/700(`FanHeading`이 태그로 정함, 폭에 따라 바뀌지 않음) · D2 페이지 전체 빈 상태도 한 줄 78 · E3 도움말 물음표 → `자세히 ›`. 시안: `board/tasks/ds-sweep/a/gate-preview/`. 화면 CSS가 직접 쓰는 옛 값(`--fan-heading-size(-wide)` 20/24, 48 고정 버튼, 12 반경 칩)은 화면 치환 묶음에서 맞춘다.
 
 ## 사용자 규칙 4개 (DS-SWEEP, 2026-11-09 — 모든 화면 작업의 전제)
 
@@ -37,7 +37,7 @@ A2 버튼 반경 8·높이 390 44 / 1024+ 48 · B2 칩 36·14/700·반경 8 · C
 ### 공통 부품 정리 문장 (C16·C17·C18, 2026-11-09)
 
 - **C16 가져오기 경로.** 화면은 `components/fan-ui`의 부품을 파일 경로로 직접 import해도 된다. `components/fan-ui/index.ts`는 이름 목록이며 배럴 import를 강제하지 않는다(번들 분할·tree-shaking 때문, 일관성은 lint가 지킨다).
-- **C17 문서 내부 정정.** `FanSurface` 반경은 12(`--radius-card`), `FanNumber md`는 16(`--fan-item-title-size`, 게이트 C 뒤 15), 토스트 z-index는 1100(옛 모달 z 정리 T8 뒤 58). 삭제 예정 토큰은 지금 globals에 **별칭**으로 남은 단계이고 사용처 치환 전이다.
+- **C17 문서 내부 정정.** `FanSurface` 반경은 16(`--radius-card`, 2026-11-10 반경 개편 뒤), `FanNumber md`는 16(`--fan-item-title-size`, 게이트 C 뒤 15), 토스트 z-index는 1100(옛 모달 z 정리 T8 뒤 58). 옛 반경 별칭(`--radius-action`·`--radius-control`·`--radius-collection`·`--radius-hero`)은 2026-11-10에 사용처를 역할별로 치환하고 globals에서 삭제했다.
 - **C18 칸 높이.** `card-layout.md`의 46px는 행동·준비 칸의 최소 높이이며 값은 `FanAction` primary 높이(390 44·1024+ 48)를 따른다. 칸은 그보다 작지 않다. 숫자 두 개를 한 역할에 따로 적지 않는다.
 
 이 절만 읽고 작업할 수 있다. 아래 "상세 이력"은 근거 기록이며 삭제하지 않는다. 값은 홈·모임·덕질에서 같은 역할이면 같아야 한다. 층 1(이 표) 기준과 층 2(실측: `apps/web/scripts/measure-tab-parity.mjs`)를 함께 본다. "승인"은 아래 상세 이력 줄 또는 공통 소유자에 근거가 있는 값, "후보"는 근거가 약해 사용자 확인이 필요한 값이다.
@@ -48,9 +48,9 @@ A2 버튼 반경 8·높이 390 44 / 1024+ 48 · B2 칩 36·14/700·반경 8 · C
 | 구역 제목(h2) | 구역 제목 h2 18/700/1.2 | `--fan-section-*`, `fan-heading.module.css`(h2·h3) | 2026-11-09 R1(첫 시선과 8px 차) |
 | 본문 | 본문 15(390)·14(768+)/400/1.5, 글 본문·댓글 15 고정 | `--fan-body-size(-wide)`, `--fan-post-body-size` | 2026-11-09 8장 ① |
 | 보조 정보 | 메타 12/400 `--color-muted` | `--fan-metadata-size` | 2026-11-09 R1 |
-| 카드 외곽 | 카드 12 반경(`--radius-card`), 1px `--color-line`, 그림자 0, 바탕 `--color-surface`(흰 면), 회색 캔버스 면 없음 | `FanSurface` | 2026-11-09 8장 ⑦ R14 |
+| 카드 외곽 | 카드 16 반경(`--radius-card`), 1px `--color-line`, 그림자 0, 바탕 `--color-surface`(흰 면), 회색 캔버스 면 없음 | `FanSurface` | 2026-11-09 8장 ⑦ R14 |
 | 구역 컨테이너(R2) | 한 화면의 같은 역할 구역은 같은 컨테이너를 쓴다. 행 목록(공지·게시글·랭킹·알림)은 `FanSurface appearance="list"` 카드 안에 두고 행이 좌우 16과 구분선을 갖는다(마지막 행 구분선은 카드 선). 사진 격자는 타일이 컨테이너다. 카드 없는 구분선 목록과 카드를 한 화면에 섞지 않는다. 화면별 감사표는 `docs/design/card-consistency-audit.md` | `fan-surface.tsx` | 2026-11-10 사용자 제보 "app 전반 통일성 검토" |
-| 강조 버튼 | primary: 단색 `--color-accent`(`--color-page-accent`) 채움 + 흰 글자, 높이 44(390)/48(1024+), 반경 8, 15/700. 게이트 A2 확정(사용자 2026-11-09 15:52): 반경 8(`--radius-action`)·높이 `--fan-action-primary-height`(390 44 / 1024+ 48), 단색 accent·그림자 0·15/700. 같은 반경 8이 neutral·text·danger·service·passport·별 버튼에도 적용된다. 화면 CSS가 직접 쓰는 48 고정·알약 값은 화면 치환 때 맞춘다. 화면당 1개(예외: 럭키드로우 응모 가능 상태에서는 `응모하기` primary·`교환` secondary — 8장 plan ③) | `fan-action.module.css` | 2026-11-09 8장 ②④⑤ |
+| 강조 버튼 | primary: 단색 `--color-accent`(`--color-page-accent`) 채움 + 흰 글자, 높이 44(390)/48(1024+), 반경 알약, 15/700. 게이트 A2의 반경 8은 2026-11-10 사용자 요청(벤치마크 8곳)으로 알약(`--radius-pill`)이 대체한다. 높이 `--fan-action-primary-height`(390 44 / 1024+ 48), 단색 accent·그림자 0·15/700. 같은 알약 반경이 neutral·text·danger·service·passport·별 버튼에도 적용된다. 화면 CSS가 직접 쓰는 48 고정·알약 값은 화면 치환 때 맞춘다. 화면당 1개(예외: 럭키드로우 응모 가능 상태에서는 `응모하기` primary·`교환` secondary — 8장 plan ③) | `fan-action.module.css` | 2026-11-09 8장 ②④⑤ |
 | 보조 버튼 | secondary: 높이 44, 반경 8, 1px `--color-ink` 선, 15/700 | `fan-action.module.css` | 2026-11-09 R14 |
 | 탭/세그먼트(칩) | 밑줄 탭(`underline`) 44 sticky top 56, 15/700, 활성 밑줄 2px accent / 칩 36 반경 8 14/700(`--fan-chip-height`·`--fan-chip-size`, 누르는 영역은 ::after로 44, 게이트 B2 확정 — FanTabs chip·creator-roles 필터·모임 `.chip`), 선택 `--color-accent-soft` + 1px accent / 세그먼트 40 반경 8 | `fan-tabs.tsx` | 2026-11-09 R3·R14 |
 | 빈 상태 | 구역 안이든 페이지 전체든 같다(게이트 D2 확정, `scope="page"`·아이콘·설명·행동 슬롯 삭제): 섹션 틀 유지 + 회색 14/400 한 문장(`…이 없습니다`, 느낌표·권유 0), 높이 = 그 자리 행 템플릿(78), 아이콘·일러스트 0. 2026-11-10 R7 개정: 다음 행동은 실제 경로로 가는 링크 하나만 `FanState`의 `action`으로 같은 구역 안에 둔다(채운 상태와 같은 카드 구조·크기 유지, 빈 썸네일은 기본 아바타 이미지). 행동이 필요하면 아래 행 자체(`지난 럭키드로우 ›`, `+ 최애 고르기`)도 허용. 비로그인은 빈 상태가 아니라 잠금(`FanLockedValue`, 화면당 로그인 primary 1) | `fan-state.tsx` | 2026-11-09 R7 + 5장 |
@@ -164,10 +164,13 @@ A2 버튼 반경 8·높이 390 44 / 1024+ 48 · B2 칩 36·14/700·반경 8 · C
 **H6 색 교체(사용자 지시 2026-11-08, 브리프 규칙 8 개정)**: UI 강조색은 kyaa 핑크 1색(`--color-accent` #d11b62, 흰 글자 대비 5.19:1이라 짙은 변형 없이 버튼에 쓰고, 글자용은 기존 `-ink` #ad1457). 로고 팔레트(#fd48aa 계열)에서 UI 토큰을 따로 늘리지 않았다. **보라는 CSS·TSX의 hex·rgb·hsl·oklch에서 전부 제거**(색상 250~320°·채도 10% 이상, 보랏빛 회색 포함, 로고·그림 아트 파일만 허용)하고 같은 자리를 핑크 토큰으로 바꿨다: 옅은 바탕 → `-soft`, 테두리 → `-line`, 채움·링크 → `-accent`, 짙은 글자 → `-ink`. 보랏빛 회색은 중립 토큰(`--color-soft` 바탕 1단, `--color-line-subtle`·`--color-line` 선, `--color-muted`·`--color-ink` 글자)으로 모았다. 핑크→보라 3색 그라데이션 버튼 50여 곳은 핑크 단색으로 바꿨다. **짙은 회색 채움 캡슐 금지**: 캡슐·칩·배지는 흰 바탕 + 1px 테두리(선택은 핑크 테두리·글자 또는 옅은 핑크 바탕 1단), 진행 막대·행동 버튼·읽지 않음 배지·단계 번호는 `--color-accent`. 기계 검사는 N29(보라 색상값)·N30(짙은 회색 알약), 예외는 Apple 로그인 버튼(브랜드)·영상 위 표시·관리자 설문 번호.
 
 ### 간격·반경·터치
+
+2026-11-10 사용자 요청 — 벤치마크 8곳 근거: 아래 새 반경 체계가 이 문서의 이전 반경 수치보다 우선한다. 옛 별칭 사용처는 역할별로 전환을 마쳤고, 화면별 직접값은 화면 작업 때 순차 전환한다.
+
 | 항목 | 값 | 토큰 |
 |---|---|---|
 | 간격 | 4·8·12·16·20·24·32·40·48·64 | `--space-1`~`--space-16`. 쓰임은 핵심 규칙 표 "간격" 행 |
-| 반경 2단 + 원형 | **12**(카드·다이얼로그·시트·입력·메뉴·토스트·히어로 이미지) · **8**(버튼·칩·탭 칩·배지 상자·아이콘 컨테이너) · 알약(상태 배지 `FanTag`·`✓ 완료`·점에만) · 원형 50%(아바타·선 원 아이콘) | `--radius-card`, `--radius-control`, `--radius-pill`. `--radius-collection`(16)·`--radius-hero`(20) 폐기 예정(globals에 남음, 사용처 치환 전, C1 ②), 10·16·20px 직접값 0은 목표(N27 집계). 현재 `--radius-control`은 12(8은 게이트 A), `--radius-card` 12는 2026-11-09 design-sync-1에서 신설 |
+| 반경 4단 + 원형 | **알약**(주·보조 버튼, 칩, 탭 칩, 한 줄 입력, 상태 태그) · **16**(카드·다이얼로그·시트·메뉴·히어로) · **12**(카드 안 이미지·여러 줄 입력·토스트) · **8**(아이콘 상자·행 hover·작은 배지 상자) · **50%**(아바타·아이콘 전용 버튼). 안쪽 반경은 바깥 반경에서 안쪽 여백을 뺀다. 패스포트·애셋 고유 형태는 유지한다. | `--radius-pill`, `--radius-card`, `--radius-media`, `--radius-small`. 옛 별칭 사용처는 모두 역할별로 치환했다(버튼·칩·한 줄 입력→pill, 카드·메뉴·시트·모달→card, 이미지·여러 줄 입력·카드 안 행→media, 아이콘 상자·작은 배지·메뉴 항목→small, 아이콘 전용 버튼→50%). 직접값 12px·16px 등은 화면 작업 때 순차 전환한다. 2026-11-10 사용자 요청 — 벤치마크 8곳 근거. 11/09 게이트 A2 버튼 반경 8 및 B2 칩 반경 8보다 우선한다. |
 | 최소 터치 | 44 | `--min-target` |
 | 강조 버튼 높이 | 44(390) · 48(1024+) | `--fan-action-primary-height` |
 | 셸 | 헤더 56 · 컨텍스트 탭바 44 · 390 하단 탭바 56 | `--fan-shell-top`, `--fan-tabbar`, `--fan-bottom-nav-height` |
@@ -211,7 +214,7 @@ A2 버튼 반경 8·높이 390 44 / 1024+ 48 · B2 칩 36·14/700·반경 8 · C
 | `FanTabs` | `underline` 44 sticky top 56(페이지·보조 탭), `chip` 36 반경 8(필터), `segment` 40 반경 8(같은 자료 2~3개 보기) | 링크 탭(`href`)은 라우터가 그린다 |
 | `FanState` | 빈 상태(`empty`)는 한 문장 전용(`icon`·`actions`·`description` 없음, 타입에서 막음, 높이 78 14/400 회색, 2026-11-09 design-sync-1). 페이지 전체가 빈 화면도 같은 한 줄이다(게이트 D2 확정, `scope="page"` 삭제: `my-raffles-screen`·`fan-history-screen`·`participation-requests`·`notification-center`·`home-ranking-card`; `benefit-recipient-screen`의 세션 요구는 `auth`, 항목 없음은 `error`로 옮김), 오류(`error`)는 한 문장 + `다시 시도` 텍스트, 잠금(`auth`)은 로그인 primary 1 허용 | `kind=\"loading\"`은 쓰지 않는다(C6) |
 | `FanSkeleton` · `FanSkeletonRows` | 로딩. 실제 자리·크기와 같게, 구역 제목은 글자로 둔다. 변형 post·entity·member·plain | `불러오는 중` 글자(C5) |
-| `FanSurface` | 카드·면의 바탕(1px 선, 반경 `--radius-card` 12. C17 정정: 문서의 "12/16"은 12) | `FanCard`는 만들지 않았다(아래 "설계와 다르게 한 것") |
+| `FanSurface` | 카드·면의 바탕(1px 선, 반경 `--radius-card` 16. 2026-11-10 반경 개편) | `FanCard`는 만들지 않았다(아래 "설계와 다르게 한 것") |
 | `FanRow` (**5차 보류, 아직 없음**) | 목록 행 템플릿. variant `menu` 48·`setting` 65/81·`notice` 78·`transaction` 100/72·`label-value` 56·`mission` 64. `data-row` 자동, 오른쪽 칸 `data-row-end`, 사실 `data-fact`, 메타 `data-meta` | `FanEntityCard`·`FanPostRow`는 `FanRow notice`로 대체 |
 | `FanIcon` (신설, B 담당) | lucide 래퍼: `strokeWidth` 1.5, size 16·20·24, `data-icon`·`data-icon-set="lucide"`. 화면은 lucide를 직접 import하지 않는다(N25). 코인·티켓·하트 = `Coins`·`Ticket`·`Heart` | 도장 아트는 아이콘이 아니다(`data-art="stamp"`) |
 | `FanDot` (신설, B 담당) | 8px `--color-error` 점(`data-dot`). 헤더·탭바의 새 소식 | 숫자 배지 → 알림함 안 `읽지 않음 N`만 |
@@ -383,10 +386,10 @@ node apps/web/scripts/measure-r3.mjs --base http://127.0.0.1:3001 --out <dir> [-
 
 | 종류 | 폐기 | 대체 | 상태(5차 C1 `aa9eec628` 기준) |
 |---|---|---|---|
-| 토큰 | `--color-primary-action`, `--color-coin(-ink)`, `--color-foil`, `--color-service-ink`, `--color-surface-focus`, `--color-success`, `--color-warning`, `--shadow-dialog`, `--radius-collection`, `--radius-hero`, `--motion-control/-layout/-exit`, `--fan-heading-size-wide`, `--fan-heading-editorial-weight`, `--fan-personal-section-*`, `--fan-event-catalog-title-size`, `--fan-aside-title-*`, `--fan-description-*`, `--fan-action-emphasis-size`, `--fan-action-service-height` | §1 새 토큰 | 예정. globals에 남아 있고 사용처 치환 전. 굵기 토큰 7종은 1단계에서 별칭(값 동일), `--color-primary-action`은 1단계에서 삭제 |
+| 토큰 | `--color-primary-action`, `--color-coin(-ink)`, `--color-foil`, `--color-service-ink`, `--color-surface-focus`, `--color-success`, `--color-warning`, `--shadow-dialog`, `--motion-control/-layout/-exit`, `--fan-heading-size-wide`, `--fan-heading-editorial-weight`, `--fan-personal-section-*`, `--fan-event-catalog-title-size`, `--fan-aside-title-*`, `--fan-description-*`, `--fan-action-emphasis-size`, `--fan-action-service-height` | §1 새 토큰 | 예정. globals에 남아 있고 사용처 치환 전. 굵기 토큰 7종은 1단계에서 별칭(값 동일), `--color-primary-action`은 1단계에서 삭제 |
 | 글꼴 | `@font-face` `Pretendard UI 550/650/850`, `public/fonts/pencil/*.woff`, 모듈 `font-family` 선언 | `globals.css` body 1줄 | 부분: body 글꼴은 Variable 1줄이지만 `@font-face` 6개·`public/fonts/pencil/*.woff`와 e2e 하니스의 `Pretendard UI` 참조가 남아 있다 |
 | 컴포넌트 | `FanHelpTip`, `HelpHint`, `EarnBadge corner`, `EarnRemaining`, `EarnActionBadge`, `FanAction service/passport`, `FanEntityCard`·`FanPostRow`(→ `FanRow notice`), `SelectedBiasBar`·헤더 `SelectedBiasChip`(→ 메뉴 행), `GroupHeaderPoints`, `FanLanguageSwitch compact`(헤더), `PencilHeaderIcon`, `MissionArt`(미션 행), `StanLucky` 카드 목록(→ `LuckyDrawModule`), `WalletBalances`·`WalletExchange`(MY), `my-benefit-progress`, 오늘의 덕질 목록(`MyAttendanceList` 덕질 사용분), `relative-time.tsx`·`i18n/relative-time.ts`, 홈 `HomeCommunityPreview`·이벤트 배너, 홈 브랜드 줄·배너 캐러셀 | §2 | 예정(A·B 화면 작업, 5차 보류). `FanAction service/passport`는 아직 알약 그라데이션 테두리(계약 시험 고정) |
-| CSS 패턴 | `linear-gradient`(로고 제외), `box-shadow`(오버레이 토큰 외), `border-radius` 10/16/20, `text-transform: uppercase`, `border-left` 액센트 바, 아이콘 뒤 채움 배경, `animation` 반복(모듈·스켈레톤 외), 개별 `keep-all`, `Pretendard UI` 참조 | 토큰·전역 | S1·N26·N27(집계)·N28로 추적. 목표 `Pretendard UI` 참조 0(현재 globals·e2e 하니스에 남음) |
+| CSS 패턴 | `linear-gradient`(로고 제외), `box-shadow`(오버레이 토큰 외), `border-radius` 직접값(10·20 등, 역할 토큰 `--radius-pill|card|media|small`로 대체), `text-transform: uppercase`, `border-left` 액센트 바, 아이콘 뒤 채움 배경, `animation` 반복(모듈·스켈레톤 외), 개별 `keep-all`, `Pretendard UI` 참조 | 토큰·전역 | S1·N26·N27(집계)·N28로 추적. 목표 `Pretendard UI` 참조 0(현재 globals·e2e 하니스에 남음) |
 | 문구 키 | 도움말 키(`walletHelpCopy`·`stanHeartHelp` 등), `오늘 N번 남음`·`N명까지`, `Kyaa. Every Fan Moment Counts.`(홈 본문), `모은 포인트 사용하기`(B13에서 삭제: 모임 홈은 `포인트·응모권` 제목 + `내 포인트 보기` 링크). `광고 보고 교환하기`는 B13(2026-11-09 사용자 확정)으로 유지, 폐기 대상 아님 | `/guide/dukjil` 사실 표, `0/3` | A·B |
 
 ## 9. Responsive system (2026-11-10, C5 — 일관되고 규칙적이고 객관적이고 계산된 PC↔모바일)
@@ -1985,7 +1988,7 @@ At the user's request, registered Changha identity and hero images use the unedi
 - 행사 시각은 초를 쓰지 않는다. 슬라이드 그림이 실패하면 그림 칸을 빼고 글을 남긴다.
 
 ### 안내·배너
-- 가이드 상세: 히어로 h1 clamp(34px,9vw,56px)/850, 구역 번호 clamp(36px,4vw,44px)·서비스 색, 구역 h2 clamp(24px,6vw,32px). 구역 머리는 삽화(88/144, `--radius-hero`)+번호+제목. `us-fanmeetings` 위계를 따른 큰 제목 예외다. 규칙 카드는 subgrid 3트랙(이름, 수치, 한도).
+- 가이드 상세: 히어로 h1 clamp(34px,9vw,56px)/850, 구역 번호 clamp(36px,4vw,44px)·서비스 색, 구역 h2 clamp(24px,6vw,32px). 구역 머리는 삽화(88/144, `--radius-card`)+번호+제목. `us-fanmeetings` 위계를 따른 큰 제목 예외다. 규칙 카드는 subgrid 3트랙(이름, 수치, 한도).
 - 홈 배너 `data-kind="art"`: 데스크톱은 그림이 슬라이드를 채우고 왼쪽 절반에 글(768~1199는 44%), 모바일은 그림 위·글 아래. 그림 오른쪽 기준 정렬. 배경 `color-mix(ink 88%, service-ink)`.
 - **홈 배너 규격(2026-11-09 사용자 피드백 "배너가 너무 크다", 벤치마크 Weverse 홈 1080×308·반경 16·글 왼쪽/그림 오른쪽·아래 가는 인디케이터. 근거 `board/tasks/home-banner-size/benchmark-weverse.md`)**: 위의 `art`·welcome·campaign·live·guide 모든 홈 배너 슬라이드를 한 규격으로 대체한다. 이전 규격(1440에서 폭 1360×높이 680 = 16:8·최소 440, 390에서 4:5 세로 칸·최소 400, 그림이 칸을 채우고 글이 그 위에 얹힘)은 큰 사진이 첫 화면을 차지해 아래 구역이 밀려서 바꿨다.
 
@@ -1993,7 +1996,7 @@ At the user's request, registered Changha identity and hero images use the unedi
 |---|---|---|
 | 폭 | 홈 본문 폭 | 같음(본문 컨테이너 안, 배너 자체 최대 폭 없음 — 셸 폭은 공통 셸이 정한다) |
 | 높이 | 1440 680 / 390 약 448(4:5) | 390 200, 768+ `clamp(300px, 28vw, 380px)`(1440 이상 380) |
-| 모서리 | 20 | 20(`--radius-hero` 유지, 벤치마크 16~20) |
+| 모서리 | 20 | 16(`--radius-card`, 2026-11-10 반경 개편) |
 | 그림·테두리(2026-11-10 22:47 사용자 "배너가 꽉 안 참") | 그림은 칸 안쪽 오른쪽에 둔 박스(위·아래·오른쪽 여백 16, 반경 카드), 분홍 1.5px 테두리(`.heroShine`)와 `.banner::after` 선이 겹침 | 768+ 그림은 칸 높이 전체·오른쪽 가장자리까지(여백·반경 0, 모서리는 틀이 자름), 폭 50%(768~1023 46%). 테두리는 틀의 옅은 중립 실선(`--color-line` 1px) 하나만, 분홍 테두리 없음(운영 [운영] 19:45 같은 결론). 390은 원래 꽉 참 |
 | 배치 | 사진이 칸을 채움, 글은 사진 위 | 왼쪽 글 열(세로 가운데), 오른쪽에 안쪽 그림 칸(여백 16, 반경 12) |
 | 그림 칸 | 칸 전체 | 768+ 폭의 42%(태블릿 40%), 390 폭의 52%(정사각에 가까운 170×160) |
@@ -2162,7 +2165,7 @@ At the user's request, registered Changha identity and hero images use the unedi
 ## 2026-11-10 MY 바로가기·패스포트 빈 칸·헤더 위젯 애셋 (사용자 PC QA 18:21~18:24, S4)
 
 - 이 항목은 1920~1921행의 MY 순서 중 `최애` 구역을 대체한다. MY 순서는 이름 → 알림 → 패스포트 → 스탬프 모으기 → 바로가기다. `내 최애`는 모임(`/celebrities`) 상단에 이미 있어 MY에서 구역을 없애고 바로가기 첫 항목(`내 최애` → `/celebrities`)으로 옮겼다. 1921행의 사진·이름 격자는 `/celebrities`에서만 쓴다.
-- 바로가기 9칸은 한 카드(1px `--color-line`, 반경 `--radius-collection`) 안에 두 열로 늘어선다. 행은 컬러 일러스트 아이콘 40(390은 32) · 이름 · 화살표(390은 생략)이고 행 사이는 헤어라인이다(위버스 2열 메뉴 기준). 아이콘은 imagegen 시트(저장소 밖 보관)에서 `scripts/prepare-my-shortcut-icons.mjs`로 잘라 `public/images/my/shortcuts/*.webp`로 둔다. 하트·동전·응모권과 같은 광택 3D 재질이다. 무채색 선 아이콘을 다시 쓰지 않는다.
+- 바로가기 9칸은 한 카드(1px `--color-line`, 반경 `--radius-card`) 안에 두 열로 늘어선다. 행은 컬러 일러스트 아이콘 40(390은 32) · 이름 · 화살표(390은 생략)이고 행 사이는 헤어라인이다(위버스 2열 메뉴 기준). 아이콘은 imagegen 시트(저장소 밖 보관)에서 `scripts/prepare-my-shortcut-icons.mjs`로 잘라 `public/images/my/shortcuts/*.webp`로 둔다. 하트·동전·응모권과 같은 광택 3D 재질이다. 무채색 선 아이콘을 다시 쓰지 않는다.
 - 패스포트 스탬프 줄(`my-passport-card`, 미션북 `Slot`)의 아직 받지 않은 칸은 점선 원 대신 받은 칸과 같은 그림의 흐린 회색 스탬프(`public/images/stamps/ghost-v1`, `scripts/prepare-ghost-stamps.mjs`가 ink-v1에서 회색 한 색·알파 50%로 만든다)를 놓는다. 그림이 없는 칸은 회색 틀(`frame.webp`)이다. 받은 칸은 같은 그림에 `saturate(1.25) contrast(1.12)`로 더 진하게 보인다. 이전의 "회색 스탬프를 늘어놓지 않는다"는 이 요청으로 바꿨다.
 - 헤더 상태 캡슐(`fan-header-status`)의 하트와 포인트는 `economy/heart.svg`, `economy/point-coin.svg` 애셋 그림이다(`P` 글자·단색 선 하트 폐기). 크기는 기존 L10 규칙(24, 390 캡슐 안 16)을 따른다.
 
@@ -2170,7 +2173,7 @@ At the user's request, registered Changha identity and hero images use the unedi
 
 사용자 [운영] 지시(PROD-HOTFIX-1920)에 따라 모임 기능이 꺼진 운영 화면에 적용한다. 소유자는 `features/media/ui/creator-media-panel`(비 compact 분기)와 `features/fanpage/ui/celebrity-calendar`·`calendar.module.css`다.
 
-- 크리에이터 홈 `영상`·`사진`·`다시보기` 미리보기와 게시판 미디어(`?tab=board&section=media`)는 글자 없는 썸네일 격자다. 768px 미만 3열, 768px부터 4열, 1024px부터 6열, 간격 `--space-1`, 모서리 `--radius-control`. 제목·URL·출처·날짜는 화면에 쓰지 않고 접근 이름에만 원문으로 둔다. 원문 데이터는 바꾸지 않는다.
+- 크리에이터 홈 `영상`·`사진`·`다시보기` 미리보기와 게시판 미디어(`?tab=board&section=media`)는 글자 없는 썸네일 격자다. 768px 미만 3열, 768px부터 4열, 1024px부터 6열, 간격 `--space-1`, 모서리 `--radius-media`. 제목·URL·출처·날짜는 화면에 쓰지 않고 접근 이름에만 원문으로 둔다. 원문 데이터는 바꾸지 않는다.
 - 사진·게시판 미디어 칸은 정사각 크롭. 크리에이터 홈 `영상` 줄의 세로 클립(YouTube 외)은 9:16을 유지한다. 영상 칸은 왼쪽 위 28px 재생 표시(얼굴을 가리지 않게)와 원문 링크(새 창)를 둔다. 사진 실패는 아이콘만 표시한다.
 - 일정 달력: 꽉 찬 원은 선택한 날 하나(`--fanpage-action-solid`). LIVE는 숫자 아래 6px 분홍 점, 출석은 숫자에 2px `--color-success` 링과 오른쪽 위 16px 초록 체크 배지, 오늘은 1px 잉크 테두리. 달력 위 오른쪽에 범례 칩 2개(✓ 출석 · ● LIVE). 일정이 없는 날도 일정 있는 날과 같은 칸 구조(48px, 아래 7px 줄)로 숫자 높이를 맞춘다.
 

@@ -72,7 +72,7 @@
   background: var(--color-soft);
   margin-inline: calc(var(--space-3) * -1);
   padding-inline: var(--space-3);
-  border-radius: var(--radius-control);
+  border-radius: var(--radius-media);
 }
 
 .rank {
@@ -172,7 +172,7 @@
   gap: var(--space-1);
   padding: var(--space-3) var(--space-4);
   border: 1px solid var(--color-page-accent);
-  border-radius: var(--radius-collection);
+  border-radius: var(--radius-card);
   background: var(--color-canvas);
 }
 

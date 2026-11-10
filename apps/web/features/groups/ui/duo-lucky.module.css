@@ -1,5 +1,5 @@
 /* C4 럭키드로우 카드: 위(390)·오른쪽(1024 이상)에 기계 무대, 글과 행동은 그 옆·아래. 값은 C4 시안(plan-ux 3절)의 토큰 그대로다. */
-.card { position:relative; display:grid; grid-template-columns:minmax(0,1fr); row-gap:var(--space-4); box-sizing:border-box; padding:var(--space-5); border:0; outline:1px solid var(--color-line); outline-offset:-1px; border-radius:var(--radius-control); background:var(--color-surface); overflow:hidden; font-variant-numeric:tabular-nums; font-feature-settings:"tnum"; }
+.card { position:relative; display:grid; grid-template-columns:minmax(0,1fr); row-gap:var(--space-4); box-sizing:border-box; padding:var(--space-5); border:0; outline:1px solid var(--color-line); outline-offset:-1px; border-radius:var(--radius-card); background:var(--color-surface); overflow:hidden; font-variant-numeric:tabular-nums; font-feature-settings:"tnum"; }
 .stage { grid-column:1; grid-row:1; height:204px; margin:calc(var(--space-5) * -1) calc(var(--space-5) * -1) 0; }
 .copy { position:relative; grid-column:1; min-width:0; padding-left:calc(var(--space-10) - var(--space-1) / 2); }
 .copy h2 { line-height:22px; overflow-wrap:anywhere; }

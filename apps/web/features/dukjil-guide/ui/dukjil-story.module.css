@@ -1,4 +1,4 @@
-.story { overflow: hidden; border-radius: var(--radius-collection); }
+.story { overflow: hidden; border-radius: var(--radius-card); }
 .intro { padding: var(--space-8); background: var(--color-accent-soft); }
 .story .intro [data-fan-heading] { margin: 0; font-size: var(--fan-heading-size-wide); line-height: var(--fan-heading-leading); }
 .intro p { max-width: 40ch; margin: var(--space-4) 0 0; font-size: var(--fan-body-size); line-height: 1.7; }

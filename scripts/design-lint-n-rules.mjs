@@ -28,7 +28,7 @@ export const RULES_N = {
   N24: { sev: 'fail', note: '버튼 안 화살표(trailingIcon={<ArrowRight) 금지. 이동은 FanRow 의 › 만(R16)' },
   N25: { sev: 'fail', note: 'lucide-react 는 components/fan-ui(FanIcon) 안에서만 가져오고 strokeWidth 는 1.5 만(8장 ⑫)' },
   N26: { sev: 'count', note: 'box-shadow 는 none·var(--shadow-overlay)·포커스 링(블러 0)만. 카드·행·버튼 그림자 0(8장 ⑦)' },
-  N27: { sev: 'count', note: 'border-radius 는 var(--radius-card|control|pill)·0·50%·inherit 만(8장 ④)' },
+  N27: { sev: 'count', note: 'border-radius 는 var(--radius-card|pill|media|small)·0·50%·inherit 만(8장 ④)' },
   N28: { sev: 'count', note: '정적 글꼴 Pretendard UI 참조 금지. 굵기 토큰을 쓴다(8장 ③)' },
   // 2026-11-08 H6(사용자 지시): 강조색은 kyaa 핑크 1색, 보라는 로고 아트에만, 짙은 회색 채움 캡슐 금지.
   N29: { sev: 'fail', note: 'CSS·TSX 의 보라 색상값(hex·rgb·hsl·oklch, 색상 250~320°·채도 10% 이상) 금지. 강조색은 var(--color-accent*) 핑크 1색. 로고·그림 아트 파일만 허용(H6)' },
@@ -107,7 +107,7 @@ export function scanNCss(code, file) {
   root.walkDecls((d) => {
     const prop = d.prop.toLowerCase(); const v = d.value.trim(); const where = `${prop}: ${short(v)}`;
     if (prop === 'box-shadow' && !/^(none|var\(--shadow-overlay\)|inherit|initial|unset)$/.test(v) && !boxShadowIsRing(v)) add(out, `N26|${where}`);
-    if (/^border(-(top|bottom|start|end)-(left|right|start|end))?-radius$/.test(prop) && !v.split(/\s+/).every((t) => /^(0|0px|50%|inherit|initial|unset|var\(--radius-(card|control|pill)\))$/.test(t))) add(out, `N27|${where}`);
+    if (/^border(-(top|bottom|start|end)-(left|right|start|end))?-radius$/.test(prop) && !v.split(/\s+/).every((t) => /^(0|0px|50%|inherit|initial|unset|var\(--radius-(card|pill|media|small)\))$/.test(t))) add(out, `N27|${where}`);
     if (/Pretendard UI/.test(v)) add(out, `N28|${where}`);
   });
   root.walkRules((r) => {

@@ -1,7 +1,7 @@
 .refreshing { opacity: 0.6; transition: opacity 120ms linear; }
 .attendanceAction { display: block; }
 .attendanceAction > a { width: 100%; }
-.myApplication { display: flex; margin-top: var(--space-3); align-items: center; gap: var(--space-2); min-width: 0; padding: var(--space-3) var(--space-4); border: 1px solid var(--color-line); border-radius:var(--radius-collection); color: var(--color-ink); text-decoration: none; }
+.myApplication { display: flex; margin-top: var(--space-3); align-items: center; gap: var(--space-2); min-width: 0; padding: var(--space-3) var(--space-4); border: 1px solid var(--color-line); border-radius:var(--radius-card); color: var(--color-ink); text-decoration: none; }
 .myApplication:hover { background: var(--color-soft); }
 .myApplication:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 .myApplication > svg { flex: none; color: var(--color-muted); }
@@ -19,7 +19,7 @@
 .search { position: relative; flex: none; min-width: 0; }
 .search .searchInput { height: 44px; min-height: 44px; padding-inline-end: calc(var(--space-10) + var(--space-1)); }
 .searchIcon { position: absolute; inset-inline-end: 0; top: 0; display: grid; place-items: center; width: 44px; height: 44px; border: 0; background: transparent; color: var(--color-muted); cursor: pointer; }
-.controls .sort { gap: var(--space-1); height: 44px; min-height: 44px; padding-inline: var(--space-3); border: 1px solid var(--color-muted); border-radius: var(--radius-control); background: var(--color-surface); color: var(--color-ink); font: inherit; font-size: var(--fan-action-label-size); font-weight: var(--fan-item-title-weight); white-space: nowrap; }
+.controls .sort { gap: var(--space-1); height: 44px; min-height: 44px; padding-inline: var(--space-3); border: 1px solid var(--color-muted); border-radius: var(--radius-pill); background: var(--color-surface); color: var(--color-ink); font: inherit; font-size: var(--fan-action-label-size); font-weight: var(--fan-item-title-weight); white-space: nowrap; }
 .sortIcon { display: none; flex: none; }
 .controls .sort[data-active] { color: var(--color-accent-ink); background: var(--color-accent-soft); border-color: var(--color-accent); }
 /* Below 600px the sort is a 44px icon button so long search placeholders (ru, fr, en) keep the row; its name stays the current order. */

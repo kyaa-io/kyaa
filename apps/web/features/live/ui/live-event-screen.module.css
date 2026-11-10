@@ -972,7 +972,7 @@
 }
 
 /* Shared reservation controls retain the existing async and recovery flows. */
-.actionRail { border-color:var(--color-line); border-radius:var(--radius-collection); box-shadow:none; }
+.actionRail { border-color:var(--color-line); border-radius:var(--radius-card); box-shadow:none; }
 .titleGroup { margin-top:var(--space-3); }
 .scheduleGroup { margin-top:var(--space-5); padding-top:var(--space-4); border-top:1px solid var(--color-line-subtle); }
 .schedule { gap:var(--space-3); }

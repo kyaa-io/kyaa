@@ -1,0 +1,14 @@
+{
+  "changes": [
+    "버튼·탭·칩·한 줄 입력창이 알약처럼 둥글어졌어요. 카드·메뉴·팝업은 모서리를 16, 카드 안 사진과 여러 줄 입력칸은 12, 작은 아이콘 상자는 8로 맞췄어요.",
+    "아이콘만 있는 버튼은 동그란 모양이 되고, 아바타는 그대로 원형이에요. 패스포트와 일러스트 고유의 모양은 바꾸지 않았어요.",
+    "첨부한 화면은 시험 데이터를 넣은 로컬 확인 화면이에요. 운영 화면이 아니에요."
+  ],
+  "path": "/pages/groups",
+  "images": [
+    "release-notes/images/2026-11-11-radius-creator-390.png",
+    "release-notes/images/2026-11-11-radius-post-390.png",
+    "release-notes/images/2026-11-11-radius-home-390.png",
+    "release-notes/images/2026-11-11-radius-post-1440.png"
+  ]
+}

@@ -1,12 +1,12 @@
 .section { display:grid; min-width:0; gap:var(--space-3); }
 .section h2 { margin:0; font-size:var(--fan-heading-size-wide); font-weight:var(--fan-heading-weight); line-height:var(--fan-heading-leading); letter-spacing:var(--fan-heading-tracking); }
-.grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); column-gap:var(--space-6); padding:0 var(--space-5); border:1px solid var(--color-line); border-radius:var(--radius-collection); background:var(--color-canvas); }
+.grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); column-gap:var(--space-6); padding:0 var(--space-5); border:1px solid var(--color-line); border-radius:var(--radius-card); background:var(--color-canvas); }
 .grid > a { display:grid; min-width:0; min-block-size:var(--space-14); grid-template-columns:40px minmax(0,1fr) 20px; align-items:center; gap:var(--space-3); padding:var(--space-2) 0; color:var(--color-ink); }
 .grid > a:nth-child(n+3) { border-top:1px solid var(--color-line-subtle); }
 .grid img { display:block; inline-size:40px; block-size:40px; object-fit:contain; }
 .grid strong { min-width:0; font-size:var(--fan-description-size); font-weight:var(--fan-item-title-weight); line-height:1.35; overflow-wrap:anywhere; word-break:keep-all; }
 .grid svg { inline-size:20px; block-size:20px; color:var(--color-muted); }
-.grid > a:focus-visible { outline:3px solid var(--color-ink); outline-offset:-3px; border-radius:var(--radius-control); }
+.grid > a:focus-visible { outline:3px solid var(--color-ink); outline-offset:-3px; border-radius:var(--radius-media); }
 @media (hover:hover) and (pointer:fine) { .grid > a:hover strong { text-decoration:underline; text-underline-offset:3px; } }
 @media (max-width:767px) {
   .section h2 { font-size:var(--fan-heading-size); }

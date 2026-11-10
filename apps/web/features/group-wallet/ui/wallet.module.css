@@ -133,7 +133,7 @@
 /* While an ad is on its way the form stays in place (no height jump) and cannot be used. */
 /* 피드백 F2 (2026-11-08): the 덕질 history preview is a section heading over one card (segment + rows), like the cheer card beside it.
    The rows keep one height, and the empty, loading and error states hold the same height, so the card does not jump. */
-.historyPreview .historyCard{display:grid;gap:var(--space-2);box-sizing:border-box;min-width:0;padding:var(--space-3) var(--space-4) var(--space-1);border:1px solid var(--color-line);border-radius:var(--radius-control);background:var(--color-surface)}
+.historyPreview .historyCard{display:grid;gap:var(--space-2);box-sizing:border-box;min-width:0;padding:var(--space-3) var(--space-4) var(--space-1);border:1px solid var(--color-line);border-radius:var(--radius-card);background:var(--color-surface)}
 .historyPreview .historyBody{display:grid;align-content:start;min-width:0}
 .historyPreview .historyBody[data-history-rows="3"]{min-height:calc(3 * var(--space-16))}
 .historyPreview .historyBody li{box-sizing:border-box;min-height:var(--space-16);padding-block:var(--space-2)}

@@ -64,7 +64,7 @@
 .stampPress{display:block;flex:none;object-fit:contain}
 .stampGhost{filter:grayscale(1);opacity:.16}
 .checkin{display:flex;flex-direction:column;gap:var(--space-4)}
-.checkinBox{border:1px solid var(--color-line);border-radius:var(--radius-control);overflow:hidden;background:var(--color-surface)}
+.checkinBox{border:1px solid var(--color-line);border-radius:var(--radius-card);overflow:hidden;background:var(--color-surface)}
 .checkinHead{display:grid;grid-template-columns:48px minmax(0,1fr);align-items:center;gap:var(--space-3);padding:var(--space-3);background:var(--color-soft);border-bottom:1px solid var(--color-line)}
 .checkinArt{display:block;object-fit:contain}
 .checkinHeadCopy{display:grid;gap:var(--space-1);min-width:0}
@@ -80,7 +80,7 @@
 .checkinRewards>div+div{border-top:1px solid var(--color-line-subtle)}
 .checkinRewards dd{margin:0}
 .checkinAction{width:100%;min-height:52px}
-.checkinDone{display:flex;align-items:center;gap:var(--space-2);margin:0;padding:var(--space-3) var(--space-4);border:1px solid var(--color-line);border-radius:var(--radius-control);background:var(--color-soft);color:var(--color-ink);font-size:var(--fan-action-emphasis-size);line-height:22px;font-weight:var(--fan-item-title-weight)}
+.checkinDone{display:flex;align-items:center;gap:var(--space-2);margin:0;padding:var(--space-3) var(--space-4);border:1px solid var(--color-line);border-radius:var(--radius-card);background:var(--color-soft);color:var(--color-ink);font-size:var(--fan-action-emphasis-size);line-height:22px;font-weight:var(--fan-item-title-weight)}
 .checkinDone>svg{flex:none}.checkinDone>span:not([data-earn-badge]){flex:1;min-width:0}
 
 /* 연속 일수 띠 on the 덕질 tab (foundation 3.16 1). A row between hairlines like the rows below it (jinny 2: no box). */

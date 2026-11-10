@@ -5,7 +5,7 @@
 .heading { margin: 0; color: var(--color-ink); font-size: var(--fan-heading-size); font-weight: var(--fan-item-title-weight); line-height: 28px; letter-spacing: -.02em; }
 .field { display: grid; gap: var(--space-2); min-width: 0; }
 .label { color: var(--color-ink); font-size: var(--fan-description-size); font-weight: var(--fan-item-title-weight); line-height: 20px; }
-.control { box-sizing: border-box; width: 100%; height: var(--space-12); padding: 0 var(--space-4); border: 1px solid var(--color-muted); border-radius: var(--radius-control); background: var(--color-surface); color: var(--color-ink); font-size: var(--fan-body-size); line-height: 24px; }
+.control { box-sizing: border-box; width: 100%; height: var(--space-12); padding: 0 var(--space-4); border: 1px solid var(--color-muted); border-radius: var(--radius-card); background: var(--color-surface); color: var(--color-ink); font-size: var(--fan-body-size); line-height: 24px; }
 .control:focus-visible { outline: 3px solid var(--color-focus); outline-offset: 2px; }
 .control:disabled { color: var(--color-muted); }
 .options { display: flex; flex-wrap: wrap; gap: var(--space-3); min-width: 0; }

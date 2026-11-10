@@ -20,7 +20,7 @@
 .srOnly { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 
 .thumb { grid-area: thumb; position: relative; display: grid; place-items: center; width: 64px; height: 64px; }
-.thumbFrame { position: relative; z-index: 1; display: block; overflow: hidden; width: 64px; height: 64px; border-radius: var(--radius-action); outline: 1px solid var(--color-line); outline-offset: -1px; background: var(--color-surface); }
+.thumbFrame { position: relative; z-index: 1; display: block; overflow: hidden; width: 64px; height: 64px; border-radius: var(--radius-pill); outline: 1px solid var(--color-line); outline-offset: -1px; background: var(--color-surface); }
 .thumbFrame img { object-fit: contain; }
 .thumb[data-unread] .thumbFrame { outline: 0; background: transparent; }
 .thumbHalo { position: absolute; z-index: 0; top: 50%; left: 50%; width: 88px; height: 88px; translate: -50% -50%; max-width: none; opacity: .85; pointer-events: none; }

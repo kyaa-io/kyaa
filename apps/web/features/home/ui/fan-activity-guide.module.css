@@ -1,4 +1,4 @@
-.guide { display:grid; gap:0; overflow:hidden; border-radius:var(--radius-collection); }
+.guide { display:grid; gap:0; overflow:hidden; border-radius:var(--radius-card); }
 .intro { padding:var(--space-8); background:var(--color-accent-soft); }
 .intro p { max-width:38ch; margin:0; font-size:var(--fan-body-size); line-height:1.7; }
 .heroImage { display:block; width:100%; height:auto; }

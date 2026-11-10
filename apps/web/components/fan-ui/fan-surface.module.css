@@ -1,6 +1,6 @@
 /* Opt-in utility canvas; the editorial HOME and artist hero stay white. */
 .canvas { background: var(--color-utility-canvas); }
-/* DESIGN.md 카드 외곽: 반경 12(--radius-card), 1px --color-line, 그림자 0, 흰 면. */
+/* DESIGN.md 카드 외곽: 반경 16(--radius-card), 1px --color-line, 그림자 0, 흰 면. */
 .card { min-width:0; padding:var(--space-5); border:1px solid var(--color-line); border-radius:var(--radius-card); background:var(--color-surface); }
 .card[data-tone="focus"] { border-color:var(--color-line); background:var(--color-surface-focus); }
 @media(min-width:48rem) { .card { padding:var(--space-6); } }

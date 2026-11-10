@@ -3,7 +3,7 @@
 /* The overlay renders under body, outside the frame that sets the font. */
 .backdrop .panel[data-overlay-content] {
   display: flex; flex-direction: column; gap: var(--space-5); box-sizing: border-box; width: 420px; max-width: 100%;
-  padding: var(--space-6); background: var(--color-surface); color: var(--color-ink); border-radius: var(--radius-collection);
+  padding: var(--space-6); background: var(--color-surface); color: var(--color-ink); border-radius: var(--radius-card);
 }
 .handle { display: none; }
 .header { display: flex; align-items: flex-start; gap: var(--space-3); min-width: 0; }
@@ -22,18 +22,18 @@
 .failure p { margin: 0; }
 @media (max-width: 767px) {
   .backdrop { align-items: flex-end; padding: 0; }
-  .backdrop .panel[data-overlay-content] { width: 100%; padding: var(--space-3) var(--space-4) max(env(safe-area-inset-bottom), var(--space-5)); border-radius: var(--radius-hero) var(--radius-hero) 0 0; }
+  .backdrop .panel[data-overlay-content] { width: 100%; padding: var(--space-3) var(--space-4) max(env(safe-area-inset-bottom), var(--space-5)); border-radius: var(--radius-card) var(--radius-card) 0 0; }
   .handle { display: block; align-self: center; width: 40px; height: 4px; border-radius: var(--radius-pill); background: var(--color-line); }
 }
 /* 261107-2 design-r4 7.2: three numbers, SNS links the fan wrote, one-line intro. Nothing is drawn for what the fan left empty. */
-.stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); margin: 0; border: 1px solid var(--color-line); border-radius: var(--radius-control); }
+.stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); margin: 0; border: 1px solid var(--color-line); border-radius: var(--radius-media); }
 .stat { display: grid; justify-items: start; align-content: start; gap: var(--space-1); min-width: 0; min-height: 72px; box-sizing: border-box; padding: var(--space-3); }
 .stat + .stat { border-inline-start: 1px solid var(--color-line); }
 .stat dt { font-size: var(--fan-metadata-size); line-height: 1.4; color: var(--color-muted); }
 .stat dd { margin: 0; min-width: 0; }
 .statsError { margin: 0; font-size: var(--fan-metadata-size); line-height: 1.4; color: var(--color-muted); }
 .links { display: flex; flex-wrap: wrap; gap: var(--space-1); margin: calc(var(--space-3) * -1) 0 0 calc(var(--space-3) * -1); padding: 0; list-style: none; }
-.links a { display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: var(--radius-control); color: var(--color-ink); }
+.links a { display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: 50%; color: var(--color-ink); }
 .links a:focus-visible { outline: 2px solid var(--color-focus); outline-offset: -2px; }
 .links img { display: block; width: 20px; height: 20px; object-fit: contain; }
 .bio { margin: 0; font-size: var(--fan-description-size); line-height: var(--fan-body-leading); overflow-wrap: anywhere; }
@@ -46,7 +46,7 @@
 .reasons legend { margin-bottom: var(--space-2); padding: 0; font-size: var(--fan-section-size); font-weight: var(--fan-section-weight); }
 .reasonOption { display: flex; align-items: center; gap: var(--space-2); min-height: 44px; font-size: var(--fan-description-size); }
 .detailsField { display: grid; gap: var(--space-1); font-size: var(--fan-metadata-size); color: var(--color-muted); }
-.detailsField textarea { box-sizing: border-box; width: 100%; padding: var(--space-3); border: 1px solid var(--color-line); border-radius: var(--radius-control); background: var(--color-surface); color: var(--color-ink); font: inherit; font-size: var(--fan-description-size); resize: vertical; }
+.detailsField textarea { box-sizing: border-box; width: 100%; padding: var(--space-3); border: 1px solid var(--color-line); border-radius: var(--radius-media); background: var(--color-surface); color: var(--color-ink); font: inherit; font-size: var(--fan-description-size); resize: vertical; }
 /* An author's name inside a row: it keeps the row's text size and line, and only gains a hover underline. */
 .authorButton.authorButton { display: inline; min-height: 0; padding: 0; border: 0; background: none; color: inherit; font: inherit; text-align: inherit; }
 .authorButton.authorButton:hover { background: none; text-decoration: underline; }
