@@ -122,12 +122,19 @@ describe("fan content trust boundary", () => {
   });
   it("reserves quota before provider and refuses stale translated content", async () => {
     const d = dependencies(), body = { targetType: "fan_post", targetId: id, targetLocale: "en" };
-    d.rpc.mockResolvedValueOnce(null).mockResolvedValueOnce({ body: "안녕", revision: 1, sourceHash: "a".repeat(64) })
-      .mockResolvedValueOnce(null).mockRejectedValueOnce(new Error("FAN_WEB_CONFLICT"));
+    d.rpc.mockImplementation(async (name: string) => {
+      if (name === "fan_web_content_target") return { body: "안녕", revision: 1, sourceHash: "a".repeat(64) };
+      if (name === "claim_content_translation_lease") return { status: "claimed", token: "b0000000-0000-4000-8000-000000000001" };
+      if (name === "save_content_translation_leased") throw new Error("FAN_WEB_CONFLICT");
+      return null;
+    });
     d.translate.mockResolvedValue({ translatedText: "Hi" });
     expect((await createContentHandlers(d).translate(request("POST", body))).status).toBe(409);
-    expect(d.rpc.mock.calls[2]).toEqual(["reserve_content_translation_request", { p_app_user_id: owner, p_character_count: 2 }]);
-    expect(d.rpc).toHaveBeenLastCalledWith("save_content_translation", expect.objectContaining({ p_source_revision: 1, p_source_hash: "a".repeat(64) }));
+    const names = d.rpc.mock.calls.map(call => call[0]);
+    expect(names).toEqual(["read_content_translation", "fan_web_content_target", "claim_content_translation_lease", "read_content_translation", "reserve_content_translation_request", "save_content_translation_leased", "release_content_translation_lease"]);
+    expect(d.rpc.mock.calls[2][1]).toMatchObject({ p_scope: "whole", p_source_revision: 1, p_source_hash: "a".repeat(64) });
+    expect(d.rpc.mock.calls[4]).toEqual(["reserve_content_translation_request", { p_app_user_id: owner, p_character_count: 2 }]);
+    expect(d.rpc.mock.calls[5][1]).toMatchObject({ p_lease_token: "b0000000-0000-4000-8000-000000000001", p_source_revision: 1, p_source_hash: "a".repeat(64) });
   });
   describe("title/article translation slots", () => {
     const body = { targetType: "fan_post", targetId: id, targetLocale: "en", slots: "title-body" };
@@ -136,9 +143,10 @@ describe("fan content trust boundary", () => {
     const stored = (slots: Record<string, string>, cached = true) => ({ targetType: "fan_post", targetId: id, targetLocale: "en", sourceRevision: 1, cached, slots });
     /** Answers each rpc by name; `overrides` replace a name's answer (a function answers per call). */
     function wire(d: ReturnType<typeof dependencies>, overrides: Record<string, unknown> = {}) {
-      const answers: Record<string, unknown> = { fan_web_content_target: source, read_content_translation_slots: null, reserve_content_translation_request: null, save_content_translation_slots: null, ...overrides };
+      const answers: Record<string, unknown> = { fan_web_content_target: source, read_content_translation_slots: null, reserve_content_translation_request: null, save_content_translation_slots_leased: null, claim_content_translation_lease: claimed, release_content_translation_lease: null, ...overrides };
       d.rpc.mockImplementation(async (name: string) => { const answer = answers[name]; return typeof answer === "function" ? answer() : answer; });
     }
+    const claimed = { status: "claimed", token: "b0000000-0000-4000-8000-000000000001" };
     const names = (d: ReturnType<typeof dependencies>) => d.rpc.mock.calls.map(call => call[0]);
     it("R1 refuses a request without a login before any rpc or provider call", async () => {
       const d = dependencies(); d.authorize.mockRejectedValue(new AuthError("AUTHENTICATION_REQUIRED", 401, "invalid"));
@@ -147,21 +155,22 @@ describe("fan content trust boundary", () => {
     });
     it("R2 reserves the summed length, translates both slots in one call and stores them by slot", async () => {
       const d = dependencies(); let saved = false;
-      wire(d, { save_content_translation_slots: () => { saved = true; return null; }, read_content_translation_slots: () => saved ? stored({ title: "Title", article: "Body" }) : null });
+      wire(d, { save_content_translation_slots_leased: () => { saved = true; return null; }, read_content_translation_slots: () => saved ? stored({ title: "Title", article: "Body" }) : null });
       d.translateTexts.mockResolvedValue([{ translatedText: "Title", detectedSourceLocale: "ko" }, { translatedText: "Body" }]);
       const response = await createContentHandlers(d).translate(request("POST", body));
       expect(response.status).toBe(200); expect(await response.json()).toEqual(stored({ title: "Title", article: "Body" }, false));
       expect(d.translateTexts).toHaveBeenCalledOnce(); expect(d.translateTexts).toHaveBeenCalledWith(["제목", "본문"], "en");
       expect(d.rpc).toHaveBeenCalledWith("reserve_content_translation_request", { p_app_user_id: owner, p_character_count: 4 });
-      expect(d.rpc).toHaveBeenCalledWith("save_content_translation_slots", { ...slotArgs, p_source_revision: 1, p_source_hash: hash, p_slots: { title: "Title", article: "Body" }, p_detected_source_locale: "ko" });
+      expect(d.rpc).toHaveBeenCalledWith("save_content_translation_slots_leased", { ...slotArgs, p_lease_token: claimed.token, p_source_revision: 1, p_source_hash: hash, p_slots: { title: "Title", article: "Body" }, p_detected_source_locale: "ko" });
     });
     it("R3 stores each slot as the provider returned it, whatever line breaks it contains", async () => {
       for (const [title, article] of [["Line\nbreak title", "Body"], ["Title", "One line"], ["T", "A\nB"]]) {
         const d = dependencies(); let saved: unknown = null;
-        wire(d, { save_content_translation_slots: () => null, read_content_translation_slots: () => saved ? stored({ title, article }) : null });
+        wire(d, { save_content_translation_slots_leased: () => null, read_content_translation_slots: () => saved ? stored({ title, article }) : null });
         d.rpc.mockImplementation(async (name: string, args?: Record<string, unknown>) => {
+          if (name === "claim_content_translation_lease") return claimed;
           if (name === "fan_web_content_target") return source;
-          if (name === "save_content_translation_slots") { saved = args!.p_slots; return null; }
+          if (name === "save_content_translation_slots_leased") { saved = args!.p_slots; return null; }
           if (name === "read_content_translation_slots") return saved ? stored({ title, article }) : null;
           return null;
         });
@@ -183,25 +192,26 @@ describe("fan content trust boundary", () => {
     });
     it("R6 stores nothing when the provider fails, and a retry recovers", async () => {
       const d = dependencies(); let saved = false;
-      wire(d, { save_content_translation_slots: () => { saved = true; return null; }, read_content_translation_slots: () => saved ? stored({ title: "Title", article: "Body" }) : null });
+      wire(d, { save_content_translation_slots_leased: () => { saved = true; return null; }, read_content_translation_slots: () => saved ? stored({ title: "Title", article: "Body" }) : null });
       d.translateTexts.mockRejectedValueOnce(new Error("TRANSLATION_FAILED"));
       expect((await createContentHandlers(d).translate(request("POST", body))).status).toBe(503);
-      expect(names(d)).not.toContain("save_content_translation_slots");
+      expect(names(d)).not.toContain("save_content_translation_slots_leased");
       d.translateTexts.mockResolvedValueOnce([{ translatedText: "Title" }, { translatedText: "Body" }]);
       expect((await createContentHandlers(d).translate(request("POST", body))).status).toBe(200);
-      expect(names(d).filter(name => name === "save_content_translation_slots")).toHaveLength(1);
+      expect(names(d).filter(name => name === "save_content_translation_slots_leased")).toHaveLength(1);
       expect((await createContentHandlers(d).translate(request("POST", body))).status).toBe(200);
       expect(d.translateTexts).toHaveBeenCalledTimes(2);
       const wrongCount = dependencies(); wire(wrongCount); wrongCount.translateTexts.mockResolvedValue([{ translatedText: "Title" }]);
       expect((await createContentHandlers(wrongCount).translate(request("POST", body))).status).toBe(503);
-      expect(names(wrongCount)).not.toContain("save_content_translation_slots");
+      expect(names(wrongCount)).not.toContain("save_content_translation_slots_leased");
     });
     it("R7 translates a title-only or article-only post with that one slot, and refuses other targets and empty sources", async () => {
       for (const [text, slot] of [["제목", "title"], ["\n본문", "article"]] as const) {
         const d = dependencies(); let saved: Record<string, string> | null = null;
         d.rpc.mockImplementation(async (name: string, args?: Record<string, unknown>) => {
+          if (name === "claim_content_translation_lease") return claimed;
           if (name === "fan_web_content_target") return { ...source, body: text };
-          if (name === "save_content_translation_slots") { saved = args!.p_slots as Record<string, string>; return null; }
+          if (name === "save_content_translation_slots_leased") { saved = args!.p_slots as Record<string, string>; return null; }
           if (name === "read_content_translation_slots") return saved ? stored(saved) : null;
           return null;
         });
@@ -216,26 +226,31 @@ describe("fan content trust boundary", () => {
       expect((await createContentHandlers(empty).translate(request("POST", body))).status).toBe(400);
       expect(empty.translateTexts).not.toHaveBeenCalled();
     });
-    it("R8 overlapping misses each reserve and call the provider; every response carries the first stored value", async () => {
-      const d = dependencies(); let first: Record<string, string> | null = null;
+    it("R8 overlapping misses on one key reserve and call the provider once; the second answer is the stored row", async () => {
+      const d = dependencies(); let holder: string | null = null, stored_: Record<string, string> | null = null;
       d.rpc.mockImplementation(async (name: string, args?: Record<string, unknown>) => {
         if (name === "fan_web_content_target") return source;
-        if (name === "save_content_translation_slots") { first ??= args!.p_slots as Record<string, string>; return null; }
-        if (name === "read_content_translation_slots") return first ? stored(first) : null;
+        if (name === "claim_content_translation_lease") { if (holder) return { status: "busy" }; holder = "b0000000-0000-4000-8000-000000000001"; return { status: "claimed", token: holder }; }
+        if (name === "save_content_translation_slots_leased") { stored_ = args!.p_slots as Record<string, string>; holder = null; return null; }
+        if (name === "read_content_translation_slots") return stored_ ? stored(stored_) : null;
         return null;
       });
-      d.translateTexts.mockResolvedValueOnce([{ translatedText: "First" }, { translatedText: "First body" }]).mockResolvedValueOnce([{ translatedText: "Second" }, { translatedText: "Second body" }]);
+      d.translateTexts.mockImplementation(async () => { await new Promise(resolve => setTimeout(resolve, 20)); return [{ translatedText: "First" }, { translatedText: "First body" }]; });
       const h = createContentHandlers(d);
       const [a, b] = await Promise.all([h.translate(request("POST", body)), h.translate(request("POST", body))]);
-      expect(d.translateTexts).toHaveBeenCalledTimes(2); expect(names(d).filter(name => name === "reserve_content_translation_request")).toHaveLength(2);
-      expect((await a.json()).slots).toEqual({ title: "First", article: "First body" }); expect((await b.json()).slots).toEqual({ title: "First", article: "First body" });
+      expect(d.translateTexts).toHaveBeenCalledTimes(1); expect(names(d).filter(name => name === "reserve_content_translation_request")).toHaveLength(1);
+      expect(names(d).filter(name => name === "save_content_translation_slots_leased")).toHaveLength(1);
+      const answers = [await a.json(), await b.json()];
+      expect(answers.map(answer => answer.slots)).toEqual([{ title: "First", article: "First body" }, { title: "First", article: "First body" }]);
+      expect(answers.map(answer => answer.cached).sort()).toEqual([false, true]);
     });
     it("R9 returns 404 without a re-read or translated text when the post vanishes during the provider call", async () => {
-      const d = dependencies(); wire(d, { save_content_translation_slots: () => { throw new Error("FAN_WEB_NOT_FOUND"); } });
+      const d = dependencies(); wire(d, { save_content_translation_slots_leased: () => { throw new Error("FAN_WEB_NOT_FOUND"); } });
       d.translateTexts.mockResolvedValue([{ translatedText: "Secret title" }, { translatedText: "Secret body" }]);
       const response = await createContentHandlers(d).translate(request("POST", body));
       expect(response.status).toBe(404); expect(JSON.stringify(await response.json())).not.toContain("Secret");
-      expect(names(d).filter(name => name === "read_content_translation_slots")).toHaveLength(1);
+      // Two reads happen before the save (cache check, then the check after the lease is won); none after the refused save.
+      expect(names(d).filter(name => name === "read_content_translation_slots")).toHaveLength(2); expect(names(d)).toContain("release_content_translation_lease");
     });
     it("R10 returns 404 when the re-read after saving is refused", async () => {
       const d = dependencies(); let reads = 0;

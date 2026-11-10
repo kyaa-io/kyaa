@@ -4,6 +4,7 @@ import { AuthError } from "@/features/auth/domain/auth-errors";
 import { celebritySlugSchema } from "@/features/fanpage/domain/community";
 import { prepareRichPostBody, richDocumentForPost, RICH_DOCUMENT_MAX_BYTES } from "@/components/editor/rich-document";
 import { WAVE_FANPAGE_SLUG } from "@/features/fanpage/domain/wave-programs";
+import { withTranslationLease } from "@/server/content-translation/lease";
 import { postTitleSlots } from "@/features/fan-posts/domain/post-title-slots";
 import { type FanPost, slotTranslationSchema, postReactionInputSchema, postReactionSchema, assetSchema, blocksSchema, commentSchema, createCommentSchema, boardCreatePostSchema, boardEditPostSchema, postAttachmentPolicySchema, noticeSchema, postSchema, reportInputSchema, adminReportSchema, adminReportSummarySchema, targetSchema, translationInputSchema, translationSchema } from "@/features/fan-posts/domain/content";
 import { boundedJson, boundedMultipart, CertificationBodyError, json } from "@/server/certification/certification-http";
@@ -334,15 +335,19 @@ export function createContentHandlers(deps: ContentDependencies) {
         if (slots.length === 0 || count > 20_000) throw new Error("TRANSLATION_INVALID_INPUT");
         const cachedSlots = await deps.rpc("read_content_translation_slots", args);
         if (cachedSlots !== null) return json(checked(slotTranslationSchema, cachedSlots));
-        await deps.rpc("reserve_content_translation_request", { p_app_user_id, p_character_count: count });
-        const results = await deps.translateTexts(slots.map(item => item.text), value.targetLocale);
-        if (results.length !== slots.length) throw new Error("TRANSLATION_FAILED");
-        await deps.rpc("save_content_translation_slots", { ...args, p_source_revision: target.revision, p_source_hash: target.sourceHash,
-          p_slots: Object.fromEntries(slots.map((item, index) => [item.slot, results[index].translatedText])), p_detected_source_locale: results[0].detectedSourceLocale ?? null });
-        // Recheck after provider latency, as the whole-text path does. Concurrent misses keep the first stored value, and every response reads it back.
-        const stored = await deps.rpc("read_content_translation_slots", args);
-        if (stored === null) throw new Error("FAN_WEB_CONFLICT");
-        return json({ ...checked(slotTranslationSchema, stored), cached: false });
+        // One server calls the provider per cache key; the others wait for its row. Quota is reserved by that one caller only.
+        const leased = await withTranslationLease(deps.rpc, { ...args, p_scope: "slots", p_source_revision: target.revision, p_source_hash: target.sourceHash },
+          () => deps.rpc("read_content_translation_slots", args), async token => {
+            await deps.rpc("reserve_content_translation_request", { p_app_user_id, p_character_count: count });
+            const results = await deps.translateTexts(slots.map(item => item.text), value.targetLocale);
+            if (results.length !== slots.length) throw new Error("TRANSLATION_FAILED");
+            await deps.rpc("save_content_translation_slots_leased", { ...args, p_lease_token: token, p_source_revision: target.revision, p_source_hash: target.sourceHash,
+              p_slots: Object.fromEntries(slots.map((item, index) => [item.slot, results[index].translatedText])), p_detected_source_locale: results[0].detectedSourceLocale ?? null });
+            // Recheck after provider latency: the leased save refuses a changed source or a lost lease, and every response reads the stored row back.
+            return deps.rpc("read_content_translation_slots", args);
+          });
+        if (leased.value === null) throw new Error("FAN_WEB_CONFLICT");
+        return json({ ...checked(slotTranslationSchema, leased.value), cached: leased.cached });
       }
       const cached = await deps.rpc("read_content_translation", args);
       if (cached !== null) return json(checked(translationSchema, cached));
@@ -351,13 +356,16 @@ export function createContentHandlers(deps: ContentDependencies) {
       const target = checked(z.object({ body: z.string(), revision: z.number().int().positive(), sourceHash: z.string().regex(/^[a-f0-9]{64}$/) }), raw);
       const count = Array.from(target.body).length;
       if (!target.body.trim() || count > 20_000) throw new Error("TRANSLATION_INVALID_INPUT");
-      await deps.rpc("reserve_content_translation_request", { p_app_user_id, p_character_count: count });
-      const result = await deps.translate(target.body, value.targetLocale);
-      await deps.rpc("save_content_translation", { ...args, p_source_revision: target.revision, p_source_hash: target.sourceHash, p_translated_text: result.translatedText, p_detected_source_locale: result.detectedSourceLocale ?? null });
-      // Recheck after provider latency; source mutation, blocks, or deletion cannot return a stale translation.
-      const current = await deps.rpc("read_content_translation", args);
-      if (current === null) throw new Error("FAN_WEB_CONFLICT");
-      return json({ ...checked(translationSchema, current), cached: false });
+      const leased = await withTranslationLease(deps.rpc, { ...args, p_scope: "whole", p_source_revision: target.revision, p_source_hash: target.sourceHash },
+        () => deps.rpc("read_content_translation", args), async token => {
+          await deps.rpc("reserve_content_translation_request", { p_app_user_id, p_character_count: count });
+          const result = await deps.translate(target.body, value.targetLocale);
+          await deps.rpc("save_content_translation_leased", { ...args, p_lease_token: token, p_source_revision: target.revision, p_source_hash: target.sourceHash, p_translated_text: result.translatedText, p_detected_source_locale: result.detectedSourceLocale ?? null });
+          // Recheck after provider latency; source mutation, blocks, deletion or a lost lease cannot return a stale translation.
+          return deps.rpc("read_content_translation", args);
+        });
+      if (leased.value === null) throw new Error("FAN_WEB_CONFLICT");
+      return json({ ...checked(translationSchema, leased.value), cached: leased.cached });
     }),
     adminReports: (request: Request) => run(async () => {
       const actor = await deps.authorizeAdmin(request.headers.get("authorization"), crypto.randomUUID());
