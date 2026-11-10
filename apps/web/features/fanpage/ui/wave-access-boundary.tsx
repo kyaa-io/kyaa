@@ -44,7 +44,7 @@ const help: Record<AppLocale, string> = {
 export function isOverlayPath(path: string) {
   return /^\/(?:login|benefits|stamps|connect|onboarding)(?:[/?#]|$)/.test(path);
 }
-export function WaveAccessBoundary({ locale, children }: { locale: AppLocale; children: ReactNode }) {
+export function WaveAccessBoundary({ locale, children, inline = false }: { locale: AppLocale; children: ReactNode; inline?: boolean }) {
   const auth = usePrivy(), session = useByUsSession(), router = useRouter(), path = usePathname(), query = useSearchParams();
   const copy = participationCopy[locale];
   const resource = useFanpageResource(auth.ready && auth.authenticated ? "/api/kyaa-wave/participation" : null, parse);
@@ -57,19 +57,21 @@ export function WaveAccessBoundary({ locale, children }: { locale: AppLocale; ch
   const loginHref = `/login?${new URLSearchParams({ locale, returnTo: checkinHref })}`;
   const needsCheckin = auth.authenticated && resource.state.status === "ready" && !resource.state.data.participation;
   useEffect(() => {
-    if (!auth.ready || !session.ready || overlay) return;
+    if (inline || !auth.ready || !session.ready || overlay) return;
     if (!auth.authenticated) router.replace(loginHref as Route);
     else if (needsCheckin) router.replace(checkinHref as Route);
-  }, [auth.ready, auth.authenticated, session.ready, needsCheckin, overlay, router, loginHref, checkinHref]);
+  }, [inline, auth.ready, auth.authenticated, session.ready, needsCheckin, overlay, router, loginHref, checkinHref]);
   if (auth.ready && auth.authenticated && resource.state.status === "ready" && resource.state.data.participation) return <WaveParticipantNameContext.Provider value={resource.state.data.participation.displayName ?? null}>{children}</WaveParticipantNameContext.Provider>;
-  return <FanAppFrame locale={locale} mainId="wave-access-main"><FanContentContainer as="main" id="wave-access-main" className={styles.main} tabIndex={-1}>
+  const notice = <div className={inline ? styles.inline : undefined}>
     <p className={styles.eyebrow}>KYAA WAVE · 2026.10.22</p>
-    <FanHeading as="h1">Kyaa Wave</FanHeading><WavePrivacyNotice locale={locale} /><p className={styles.help}>{help[locale]}</p>
+    <FanHeading as={inline ? "h2" : "h1"}>Kyaa Wave</FanHeading><WavePrivacyNotice locale={locale} />{!inline && <p className={styles.help}>{help[locale]}</p>}
     {!auth.ready || auth.authenticated && resource.state.status === "loading" ? <p role="status">{copy.loading}</p>
       : !auth.authenticated ? <FanAction variant="primary" href={loginHref}>{copy.login}</FanAction>
       : resource.state.status === "error" ? <div><p role="alert">{copy.unavailable}</p><FanAction onClick={resource.retry}>{copy.retry}</FanAction></div>
       : <FanAction variant="primary" href={checkinHref}>{copy.start}</FanAction>}
-  </FanContentContainer></FanAppFrame>;
+  </div>;
+  if (inline) return notice;
+  return <FanAppFrame locale={locale} mainId="wave-access-main"><FanContentContainer as="main" id="wave-access-main" className={styles.main} tabIndex={-1}>{notice}</FanContentContainer></FanAppFrame>;
 }
 
 export function WaveRouteBoundary({ slug, children }: { slug: string; children: ReactNode }) {

@@ -2,3 +2,7 @@
 .eyebrow { color: var(--color-muted); font-size: 16px; line-height: 1.5; margin: 0 0 24px; }
 .help { font-size: 18px; line-height: 1.7; margin: 24px 0 32px; overflow-wrap: anywhere; }
 @media (max-width: 767px) { .main { padding-block: 48px; } .help { font-size: 16px; } }
+
+.inline { max-width:680px; padding:32px 0; }
+
+.inline a { color: var(--color-surface); }
