@@ -13,6 +13,7 @@ import { communityCopy } from "./catalogs/features__community";
 import { feedCopy } from "./catalogs/features__fan_posts__feed";
 import { fanPageNavigationCopy } from "./catalogs/features__fanpage__navigation";
 import { raffleDiscoveryCopy } from "./catalogs/features__benefit__ui__raffle-discovery";
+import { giftCopy } from "./catalogs/features__gifts__ui__gift-copy";
 import { gggiCopy } from "./catalogs/features__fanpage__gggi";
 import { fanPageBrandCopy } from "./catalogs/features__fanpage__brand";
 import { leaderboardActivityCopy } from "./catalogs/features__fanpage__ui__leaderboard-activities";
@@ -70,7 +71,7 @@ const fanWebCatalogs = new Set([
   "features__fan_posts__ui.ts", "features__fan_posts__discovery.ts", "features__community.ts", "features__schedules__ui__participation.ts",
   "features__my__ui__personal-copy.ts", "features__profile__ui__account-deletion.ts",
   "features__fan_posts__feed.ts", "features__fanpage__navigation.ts",
-  "features__benefit__ui__raffle-discovery.ts", "features__fanpage__brand.ts", "features__fanpage__ui__leaderboard-activities.ts",
+  "features__benefit__ui__raffle-discovery.ts", "features__gifts__ui__gift-copy.ts", "features__fanpage__brand.ts", "features__fanpage__ui__leaderboard-activities.ts",
   "app__account-deletion__page.ts",
 ]);
 
@@ -89,7 +90,7 @@ describe("localized messages", () => {
   it("keeps fan web copy complete in every locale with matching placeholders", () => {
     const maps = [
       ...[paginationCopy, justNowLabel, waveDrawCopy, waveEngagementCopy, waveFriendsCopy, waveHomeCheerCopy, waveMediaCopy, waveMissionsCopy, waveNavigationCopy, wavePrivacyCopy, waveProgramsCopy, liveSuggestionsCopy, publicLiveDashboardCopy].map(copy => Object.fromEntries(APP_LOCALES.map(locale => [locale, copy(locale)]))),
-      contentMessages, gggiCopy, personalCopy, accountDeletionCopy, deletionGuideCopy, raffleDiscoveryCopy, fanPageBrandCopy, leaderboardActivityCopy, Object.fromEntries(APP_LOCALES.map(locale => [locale, participationCopy(locale)])), Object.fromEntries(APP_LOCALES.map(locale => [locale, discoveryCopy(locale)])), Object.fromEntries(APP_LOCALES.map(locale => [locale, communityCopy(locale)])), Object.fromEntries(APP_LOCALES.map(locale => [locale, feedCopy(locale)])), Object.fromEntries(APP_LOCALES.map(locale => {
+      contentMessages, gggiCopy, personalCopy, accountDeletionCopy, deletionGuideCopy, raffleDiscoveryCopy, giftCopy, fanPageBrandCopy, leaderboardActivityCopy, Object.fromEntries(APP_LOCALES.map(locale => [locale, participationCopy(locale)])), Object.fromEntries(APP_LOCALES.map(locale => [locale, discoveryCopy(locale)])), Object.fromEntries(APP_LOCALES.map(locale => [locale, communityCopy(locale)])), Object.fromEntries(APP_LOCALES.map(locale => [locale, feedCopy(locale)])), Object.fromEntries(APP_LOCALES.map(locale => {
       const navigation = fanPageNavigationCopy(locale);
       expect(navigation.board.feed).toBe(feedCopy(locale).feed);
       return [locale, { ...navigation.main, ...navigation.board, boardMenu: navigation.boardMenu }];

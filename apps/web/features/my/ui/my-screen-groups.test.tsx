@@ -13,10 +13,12 @@ const stage = (key: string, tier: string, subdivision: number, rank: number, min
 const data = vi.hoisted(() => ({
   wallet: { points: 375, hearts: 4, tickets: 9, pointCost: 100 } as Record<string, number>,
   rewards: [] as unknown[],
+  gifts: undefined as undefined | { unreadCount: number; singleUnreadId: string | null },
   summary: null as unknown,
 }));
 const passportA = '10000000-0000-4000-8000-000000000001';
 const passportB = '10000000-0000-4000-8000-000000000002';
+const giftId = '50000000-0000-4000-8000-000000000001';
 const reward = (id: string) => ({ rewardResultId: id, winnerId: null, benefitId: '30000000-0000-4000-8000-000000000001', title: '선물', campaignId: '40000000-0000-4000-8000-000000000001', result: 'not_selected', method: null, status: 'not_selected', enteredTickets: 1, recipientRequired: false, updatedAt: '2026-11-05T00:00:00.000Z', benefitHref: '/benefits/30000000-0000-4000-8000-000000000001' });
 const makeSummary = () => ({
   profile: { nickname: '별빛' },
@@ -29,12 +31,13 @@ const makeSummary = () => ({
   rewards: { items: data.rewards, entries: 0, availableCount: 0 },
   collection: { recent: [], stampCount: 0, passportCount: 2, collectibleCount: 0 },
   unreadNotificationCount: 0,
+  ...(data.gifts ? { gifts: data.gifts } : {}),
 });
 vi.mock('@/features/auth/client/cognito-auth', () => ({ useByUsAuth: () => ({ ready: true, authenticated: true, user: { id: 'owner-a' } }) }));
 vi.mock('@/components/byus-session-provider', () => ({ useByUsSession: () => ({ ready: true }) }));
 vi.mock('@/components/fan-ui/use-owned-fan-resource', () => ({ useOwnedFanResource: () => ({ state: { status: 'ready', data: makeSummary() }, retry: vi.fn() }) }));
 vi.mock('@/features/profile/ui/use-avatar', () => ({ useAvatar: () => ({ state: { status: 'loading' } }) }));
-vi.mock('@/features/community-stamps/ui/use-community-stamps', () => ({ useCommunityStamps: () => ({ state: { status: 'ready', data: { stamps: [{ id: 'stamp-a', kind: 'welcome', celebritySlug: null, issuedAt: '2026-11-02T00:00:00Z' }] } }, retry: vi.fn() }) }));
+vi.mock('@/features/community-stamps/ui/use-community-stamps', () => ({ useCommunityStamps: () => ({ state: { status: 'ready', data: { stamps: [{ id: 'stamp-a', kind: 'welcome', celebritySlug: null, issuedAt: '2026-11-02T00:00:00Z', mint: { status: 'queued', txHash: null, tokenId: null } }] } }, retry: vi.fn() }) }));
 vi.mock('@/features/dukjil/ui/dukjil-provider', () => ({ DukjilProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>, useDukjil: () => ({ status: 'on' }) }));
 vi.mock('@/features/group-wallet/ui/wallet-screen', () => ({ WalletExchangeDialog: ({ open }: { open: boolean }) => open ? <div role="dialog" aria-label="교환" /> : null }));
 vi.mock('@/features/groups/ui/use-group-resource', () => ({
@@ -52,7 +55,7 @@ vi.mock('@/components/fan-shell/fan-app-shell', () => ({ FanAppFrame: ({ childre
 
 const renderMy = (locale: 'ko' | 'en' | 'ru' | 'ja' = 'ko') => render(<GroupsReleaseProvider enabled><MyScreen locale={locale} /></GroupsReleaseProvider>);
 const before = (a: Element, b: Element) => Boolean(a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING);
-beforeEach(() => { window.localStorage.clear(); data.wallet = { points: 375, hearts: 4, tickets: 9, pointCost: 100 }; data.rewards = []; });
+beforeEach(() => { window.localStorage.clear(); data.wallet = { points: 375, hearts: 4, tickets: 9, pointCost: 100 }; data.rewards = []; data.gifts = undefined; });
 
 it('puts the selected passport tier next to the name', () => {
   renderMy();
@@ -61,10 +64,10 @@ it('puts the selected passport tier next to the name', () => {
 });
 
 it('orders the screen profile, notice, passport, shortcuts and shows stamps in one place', () => {
-  data.rewards = [reward('50000000-0000-4000-8000-000000000001')];
+  data.gifts = { unreadCount: 1, singleUnreadId: giftId };
   renderMy();
   const name = screen.getByRole('heading', { level: 1, name: '별빛님' });
-  const notice = screen.getByRole('heading', { name: '래플 결과가 발표됐어요' });
+  const notice = screen.getByRole('heading', { name: '당첨 선물이 도착했어요' });
   const passport = screen.getByRole('heading', { name: '내 패스포트' });
   const shortcuts = screen.getByRole('heading', { name: '바로가기' });
   expect(screen.queryByRole('heading', { name: '내 최애' })).toBeNull();
@@ -111,34 +114,55 @@ it('does not duplicate the wallet on MY', () => {
   expect(document.querySelector('[data-wallet-card="my"]')).toBeNull();
 });
 
-it('puts the raffle result above the passport and hides it once the result is opened, until a new result arrives', () => {
-  data.rewards = [reward('50000000-0000-4000-8000-000000000001')];
+it('shows the gift notice from the server count: one gift opens it directly, several open the list, none shows nothing', () => {
+  data.gifts = { unreadCount: 1, singleUnreadId: giftId };
+  const one = renderMy();
+  expect(screen.getByRole('link', { name: '선물 열어보기' })).toHaveAttribute('href', `/my/gifts/${giftId}?locale=ko`);
+  one.unmount();
+  data.gifts = { unreadCount: 2, singleUnreadId: null };
+  const several = renderMy();
+  expect(screen.getByRole('link', { name: '선물 열어보기' })).toHaveAttribute('href', '/my/gifts?locale=ko');
+  several.unmount();
+  data.gifts = { unreadCount: 0, singleUnreadId: null };
+  renderMy();
+  expect(screen.queryByRole('heading', { name: '당첨 선물이 도착했어요' })).toBeNull();
+});
+
+it('does not mark a gift read by following the notice link or by opening the list, and ignores the old browser record', () => {
+  window.localStorage.setItem('kyaa:my:raffle-results-seen:owner-a', JSON.stringify([giftId]));
+  data.gifts = { unreadCount: 1, singleUnreadId: giftId };
   const first = renderMy();
-  const link = screen.getByRole('link', { name: /내 결과 확인/ });
-  expect(link).toHaveAttribute('href', '/my/raffles?locale=ko');
-  fireEvent.click(link);
-  expect(screen.queryByRole('heading', { name: '래플 결과가 발표됐어요' })).toBeNull();
+  fireEvent.click(screen.getByRole('link', { name: '선물 열어보기' }));
+  expect(screen.getByRole('heading', { name: '당첨 선물이 도착했어요' })).toBeInTheDocument();
   first.unmount();
   renderMy();
-  expect(screen.queryByRole('heading', { name: '래플 결과가 발표됐어요' })).toBeNull();
-  cleanupAndRerender();
+  expect(screen.getByRole('heading', { name: '당첨 선물이 도착했어요' })).toBeInTheDocument();
+  expect(window.localStorage.getItem('kyaa:my:raffle-results-seen:owner-a')).toBeNull();
 });
-function cleanupAndRerender() {
-  data.rewards = [reward('50000000-0000-4000-8000-000000000001'), reward('50000000-0000-4000-8000-000000000002')];
-  document.body.innerHTML = '';
-  renderMy();
-  expect(screen.getByRole('heading', { name: '래플 결과가 발표됐어요' })).toBeInTheDocument();
-}
 
-it('shows no notice when there is no result', () => {
+it('lights the gift link only while something is unread and names the count', () => {
+  data.gifts = { unreadCount: 0, singleUnreadId: null };
+  const none = renderMy();
+  const plain = screen.getAllByRole('link', { name: '선물' });
+  expect(plain.map(link => link.getAttribute('href'))).toEqual(['/my/gifts?locale=ko', '/my/gifts?locale=ko']);
+  expect(document.querySelector('[data-gift-glow]')).toBeNull();
+  none.unmount();
+  data.gifts = { unreadCount: 2, singleUnreadId: null };
   renderMy();
-  expect(screen.queryByRole('heading', { name: '래플 결과가 발표됐어요' })).toBeNull();
+  const lit = screen.getByRole('link', { name: '선물, 안 읽은 선물 2개' });
+  expect(lit.querySelector('[data-gift-glow]')).not.toBeNull();
+  expect(lit.compareDocumentPosition(screen.getByRole('link', { name: '알림' })) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+});
+
+it('shows no notice when there is no gift', () => {
+  renderMy();
+  expect(screen.queryByRole('heading', { name: '당첨 선물이 도착했어요' })).toBeNull();
 });
 
 it('puts every shortcut in one grid', () => {
   renderMy();
   const grid = screen.getByRole('navigation', { name: '바로가기' });
-  expect(within(grid).getAllByRole('link').map(link => link.textContent)).toEqual(['내 최애', '활동 내역', '내 응모 내역', '받은 혜택', '예약한 LIVE', '신청 내역', '친구와 메시지', '접수한 신고', '문의 내역']);
+  expect(within(grid).getAllByRole('link').map(link => link.textContent)).toEqual(['내 최애', '활동 내역', '내 응모 내역', '선물', '예약한 LIVE', '신청 내역', '친구와 메시지', '접수한 신고', '문의 내역']);
   expect(within(grid).getByRole('link', { name: '내 응모 내역' })).toHaveAttribute('href', '/my/raffles?locale=ko');
   expect(within(grid).getByRole('link', { name: '내 최애' })).toHaveAttribute('href', '/celebrities?locale=ko');
   expect(grid.querySelectorAll('img[src^="/images/my/shortcuts/"]')).toHaveLength(9);

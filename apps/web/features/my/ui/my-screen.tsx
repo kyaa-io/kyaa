@@ -16,7 +16,6 @@ import { CommunityStampCollection } from "@/features/community-stamps/ui/communi
 import { useCommunityStamps } from "@/features/community-stamps/ui/use-community-stamps";
 
 import { creatorRafflesHref } from "@/features/benefit/domain/raffle-navigation";
-import { RaffleResultsNotice } from "@/features/benefit/ui/raffle-results-notice";
 import { raffleDiscoveryCopy } from "@/i18n/catalogs/features__benefit__ui__raffle-discovery";
 import { boundFirstLikeCount } from "../../passport/domain/first-like-stamp";
 
@@ -31,7 +30,9 @@ import { FanSkeleton, FanSkeletonRows, FanSkeletonStatus } from "@/components/fa
 import { FanTag } from "@/components/fan-ui/fan-tag";
 import { myHomeText } from "./my-home-copy";
 import { MyGuestPassportCard, MyPassportCard, MyPassportCardSkeleton, passportTierName } from "./my-passport-card";
-import { MyRaffleNotice } from "./my-raffle-notice";
+import { GiftNavLink } from "@/features/gifts/ui/gift-nav-link";
+import { GiftNotice } from "@/features/gifts/ui/gift-notice";
+import { giftText } from "@/features/gifts/ui/gift-text";
 import { MyShortcuts, type MyShortcut } from "./my-shortcuts";
 import { DukjilProvider } from "@/features/dukjil/ui/dukjil-provider";
 import { CreatorImage } from "@/components/fan-ui/creator-image";
@@ -162,9 +163,10 @@ export const rewardStatusCopy: Record<MyReward["status"], Record<AppLocale, stri
 },
 };
 
-function ProfileNav({ locale, label }: { locale: FanLocale; label: string }) {
+/** `giftUnread`: unread gifts, or null when signed out (no gift link then). */
+function ProfileNav({ locale, label, giftUnread }: { locale: FanLocale; label: string; giftUnread: number | null }) {
   const t = copy[locale];
-  return <nav aria-label={label}><FanAction variant="text" trailingIcon={<Bell/>} href={`/notifications?locale=${locale}`}>{locale === "ko" ? "알림" : t.notifications}</FanAction><FanAction variant="text" trailingIcon={<Settings/>} href={`/settings?locale=${locale}`}>{t.settings}</FanAction></nav>;
+  return <nav aria-label={label}>{giftUnread === null ? null : <GiftNavLink locale={locale} unreadCount={giftUnread} />}<FanAction variant="text" ariaLabel={locale === "ko" ? "알림" : t.notifications} trailingIcon={<Bell/>} href={`/notifications?locale=${locale}`}><span data-nav-label="">{locale === "ko" ? "알림" : t.notifications}</span></FanAction><FanAction variant="text" ariaLabel={t.settings} trailingIcon={<Settings/>} href={`/settings?locale=${locale}`}><span data-nav-label="">{t.settings}</span></FanAction></nav>;
 }
 
 /** 모임 기능이 꺼진 옛 MY의 첫 로드 골격. */
@@ -187,7 +189,7 @@ function MyDashboardSkeleton({ locale }: { locale: FanLocale }) {
     <header className={styles.pencilProfile}>
       <AvatarPlaceholder size={56}/>
       <div className={styles.pencilProfileCopy}><FanSkeleton width={160} height={32} /></div>
-      <ProfileNav locale={locale} label={t.settings} />
+      <ProfileNav locale={locale} label={t.settings} giftUnread={0} />
     </header>
     <div className={styles.homeRow}>
       <MyPassportCardSkeleton title={t.myPassport} />
@@ -260,6 +262,14 @@ function Dashboard({ summary, locale, avatarResource, refreshSummary, selectedSl
   const hasLive = reservedLives.length > 0 || summary.live.history.length > 0;
   const hasVisibleCollectible = visibleRecent.some((item) => item.kind === "collectible");
   const [recentOpen, setRecentOpen] = useState(false);
+  // 래플 결과 알림의 읽음은 이제 서버가 기억한다. 이 브라우저에 남은 옛 읽음 기록은 더 읽지 않고 지운다.
+  useEffect(() => {
+    try {
+      const stale: string[] = [];
+      for (let index = 0; index < window.localStorage.length; index += 1) { const key = window.localStorage.key(index); if (key?.startsWith("kyaa:my:raffle-results-seen:")) stale.push(key); }
+      for (const key of stale) window.localStorage.removeItem(key);
+    } catch { /* 저장이 막혀 있으면 지울 것도 없다 */ }
+  }, [ownerKey]);
   const collectionFrame = useRef<number | null>(null);
   const openRecent = useCallback(() => {
     setRecentOpen(true);
@@ -288,9 +298,9 @@ function Dashboard({ summary, locale, avatarResource, refreshSummary, selectedSl
       <header className={styles.pencilProfile}>
         <Link href={`/settings?locale=${locale}&section=profile` as Route} aria-label={t.avatarSettings}>{avatarResource.state.status === "ready" ? <Avatar avatar={avatarResource.state.avatar} imageUrl={avatarResource.state.imageUrl} label={t.avatarSettings} size={56}/> : <AvatarPlaceholder size={56}/>}</Link>
         <div className={`${styles.pencilProfileCopy} ${styles.pencilName}`}><h1>{identity}</h1>{selected?.passport ? <FanTag tone="fan">{passportTierName(locale, selected.passport)}</FanTag> : null}</div>
-        <ProfileNav locale={locale} label={t.settings} />
+        <ProfileNav locale={locale} label={t.settings} giftUnread={summary.gifts?.unreadCount ?? 0} />
       </header>
-      <MyRaffleNotice locale={locale} ownerKey={ownerKey} resultIds={summary.rewards.items.map(reward => reward.rewardResultId)}/>
+      <GiftNotice locale={locale} unreadCount={summary.gifts?.unreadCount ?? 0} singleUnreadId={summary.gifts?.singleUnreadId ?? null} />
       <div className={styles.homeRow}>
         <MyPassportCard creators={visibleCreators} selectedSlug={selectedSlug} onSelect={onSelectSlug} communityStamps={stamps} stampsError={communityStamps.state.status === "error"} retryStamps={communityStamps.retry} locale={locale} labels={labels}/>
       </div>
@@ -317,7 +327,7 @@ function Dashboard({ summary, locale, avatarResource, refreshSummary, selectedSl
       </div>
     </header>
 
-    {summary.rewards.items.length > 0 ? <RaffleResultsNotice locale={locale} /> : null}
+    <GiftNotice locale={locale} unreadCount={summary.gifts?.unreadCount ?? 0} singleUnreadId={summary.gifts?.singleUnreadId ?? null} />
 
     {!groupsEnabled&&<nav className={`${styles.destinations} ${styles.primaryDestinations}`} aria-label={t.destinations}>
       <Link href={`/passports?locale=${locale}` as Route}>
@@ -517,7 +527,7 @@ function myShortcutItems(locale: FanLocale, hrefFor: (path: string) => string): 
     { key: "favorites", href: hrefFor("/celebrities"), label: t.creators, art: "favorites" },
     { key: "activity", href: hrefFor("/my/activity"), label: ko ? "활동 내역" : personalCopy[locale].title, art: "activity" },
     { key: "raffles", href: hrefFor("/my/raffles"), label: ko ? "내 응모 내역" : personalCopy[locale].raffles, art: "raffles" },
-    { key: "rewards", href: hrefFor("/my/activity?kind=rewards"), label: t.rewards, art: "rewards" },
+    { key: "gifts", href: hrefFor("/my/gifts"), label: giftText(locale, "title"), art: "rewards" },
     { key: "live", href: hrefFor("/live/calendar"), label: ko ? "예약한 LIVE" : t.reservedLive, art: "live" },
     { key: "requests", href: hrefFor("/my/requests"), label: personalCopy[locale].applications, art: "requests" },
     { key: "friends", href: hrefFor("/my/friends"), label: ko ? "친구와 메시지" : socialCopy(locale).title, art: "friends" },
@@ -536,7 +546,7 @@ function MyGuest({ locale }: { locale: FanLocale }) {
     <header className={`${styles.pencilProfile} ${styles.guestProfile}`}>
       <span className={styles.guestAvatar} aria-hidden="true"><AvatarPlaceholder size={56}/></span>
       <div className={styles.pencilProfileCopy}><h1>{t.profileSummary}</h1></div>
-      <ProfileNav locale={locale} label={t.settings} />
+      <ProfileNav locale={locale} label={t.settings} giftUnread={null} />
     </header>
     <div className={styles.homeRow}>
       <MyGuestPassportCard locale={locale} labels={{ title: t.myPassport, detail: myHomeText(locale, "viewDetails") }}/>

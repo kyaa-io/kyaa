@@ -4,7 +4,6 @@ import { APP_LOCALES } from "@/i18n/locales";
 import { raffleDiscoveryCopy } from "@/i18n/catalogs/features__benefit__ui__raffle-discovery";
 import { ElinaGuideCard } from "@/components/home-entry-cards/home-entry-cards";
 import { raffleSchema, type RaffleList } from "../domain/raffle";
-import { RaffleResultsNotice } from "./raffle-results-notice";
 
 const raffle: RaffleList["raffles"][number] = {
   id: "11111111-1111-4111-8111-111111111111", benefitId: "22222222-2222-4222-8222-222222222222",
@@ -14,12 +13,9 @@ const raffle: RaffleList["raffles"][number] = {
 };
 
 describe("raffle result discovery", () => {
-  it.each(APP_LOCALES)("keeps the banner and notice result destinations localized in %s", locale => {
-    const { container } = render(<>
-      <ElinaGuideCard locale={locale} elina={undefined} hero raffles={[{ ...raffle, resultsPublishedAt: "2026-10-09T00:00:00Z" }]} />
-      <RaffleResultsNotice locale={locale} />
-    </>);
-    expect(screen.getAllByRole("link", { name: raffleDiscoveryCopy[locale].action })).toHaveLength(2);
+  it.each(APP_LOCALES)("keeps the banner result destination localized in %s", locale => {
+    const { container } = render(<ElinaGuideCard locale={locale} elina={undefined} hero raffles={[{ ...raffle, resultsPublishedAt: "2026-10-09T00:00:00Z" }]} />);
+    expect(screen.getAllByRole("link", { name: raffleDiscoveryCopy[locale].action })).toHaveLength(1);
     for (const link of container.querySelectorAll("a")) expect(link).toHaveAttribute("href", `/my/raffles?locale=${locale}`);
     expect(container).toHaveTextContent(raffleDiscoveryCopy[locale].title);
   });

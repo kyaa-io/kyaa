@@ -1,0 +1,32 @@
+/* 안 읽은 선물의 빛(DESIGN.md "선물 안 읽음 빛" 예외). 래스터 애셋 2장을 opacity·transform으로만 움직인다.
+   등장 400ms + 띠 500ms(100ms 뒤 시작) → 숨쉬기 2.4s × 3 · 띠 4s 간격 × 3 → 약 12초 뒤 정지한 빛(.85)만 남는다. 무한 반복 없음. */
+.icon { position: relative; display: inline-grid; flex: none; place-items: center; width: 24px; height: 24px; }
+.icon > svg { position: relative; z-index: 1; }
+.clip, .forcedDot { z-index: 1; }
+.halo, .clip, .forcedDot { position: absolute; pointer-events: none; }
+.halo { z-index: 0; top: 50%; left: 50%; width: 56px; height: 56px; translate: -50% -50%; max-width: none; opacity: .85; }
+.clip { inset: calc(var(--space-2) * -1); overflow: hidden; border-radius: var(--radius-action); }
+.shine { position: absolute; top: 0; left: 0; width: var(--space-6); height: 100%; max-width: none; opacity: 0; transform: translateX(-32px); }
+.forcedDot { display: none; top: calc(var(--space-1) * -1); right: calc(var(--space-1) * -1); }
+
+.icon[data-gift-glow] .halo { animation: gift-halo-in 400ms var(--motion-easing) both, gift-halo-breathe 2400ms ease-in-out 400ms 3; }
+.icon[data-gift-glow] .shine { animation: gift-shine 4000ms var(--motion-easing) 100ms 3; }
+
+@keyframes gift-halo-in { from { opacity: 0; transform: scale(.8); } to { opacity: .85; transform: scale(1); } }
+@keyframes gift-halo-breathe { 0%, 100% { opacity: .85; transform: scale(1); } 50% { opacity: .72; transform: scale(.96); } }
+@keyframes gift-shine {
+  0% { opacity: 0; transform: translateX(-32px); }
+  2% { opacity: 1; }
+  12.5% { opacity: 1; transform: translateX(48px); }
+  13% { opacity: 0; transform: translateX(48px); }
+  100% { opacity: 0; transform: translateX(48px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .icon[data-gift-glow] .halo { animation: none; opacity: .85; }
+  .icon[data-gift-glow] .shine { animation: none; opacity: 0; }
+}
+@media (forced-colors: active) {
+  .halo, .clip { display: none; }
+  .forcedDot { display: block; }
+}

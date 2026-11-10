@@ -28,7 +28,7 @@ it("reads the shared summary and draws the badge with the unread count (dev-fan-
   const link = screen.getByRole("button", { name: "알림, 안 읽은 알림 44개" });
   expect(link).toHaveAttribute("aria-haspopup", "dialog");
   expect(link).toHaveTextContent("44");
-  expect(state.path).toBe("/api/me/summary?locale=ko&tierStages=1&hearts=1");
+  expect(state.path).toBe("/api/me/summary?locale=ko&tierStages=1&hearts=1&gifts=1");
 });
 
 it("draws 99+ past 99 and no badge at 0, signed out or loading", () => {

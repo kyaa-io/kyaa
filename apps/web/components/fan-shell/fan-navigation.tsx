@@ -12,6 +12,8 @@ export type FanNavigationItem = {
   id: string;
   isCurrent?: boolean;
   label: ReactNode;
+  /** A small mark drawn over the item (the new-gift dot on MY). It positions itself against the item. */
+  badge?: ReactNode;
 };
 
 type FanNavigationProps = {
@@ -51,6 +53,7 @@ export function FanPrimaryNavigation({
         >
           {item.icon}
           {item.label}
+          {item.badge}
         </Link>
       ))}
       <IdleRoutePrefetch hrefs={items.flatMap((item) => !item.isCurrent && typeof item.href === "string" ? [item.href] : [])} />

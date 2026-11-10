@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { myRewardSchema } from "../../benefit/domain/my-reward";
+import { giftUnreadSchema } from "../../gifts/domain/gift";
 import { FAN_TIERS } from "../../rewards/domain/reward-policy";
 import { fanStageProgressSchema } from "../../rewards/domain/fan-stage";
 import type { PhotoSet } from "../../media/domain/public-image";
@@ -64,6 +65,8 @@ export const ownerMySummarySchema = z.object({
   unreadNotificationCount: z.number().int().nonnegative(),
   /** The one favorite the fan named in MY (fan_profile_public_fields, read_owned_fan_profile_public). Only with `hearts=1`, like the hearts. */
   favorite: z.object({ slug: z.string().min(1), name: z.string() }).strict().nullable().optional(),
+  /** Unread gifts (published raffle wins the fan has not opened). Only with `gifts=1`, like the hearts: the deployed web parses the summary strictly. */
+  gifts: giftUnreadSchema.optional(),
 }).strict();
 
 export const mySummarySchema = ownerMySummarySchema.extend({
@@ -76,7 +79,7 @@ export type OwnerMySummary = z.infer<typeof ownerMySummarySchema>;
 
 /** The one summary address of the web app, so every screen shares one read (stages and hearts included). */
 export function mySummaryPath(contentLocale: string) {
-  return `/api/me/summary?locale=${contentLocale}&tierStages=1&hearts=1` as const;
+  return `/api/me/summary?locale=${contentLocale}&tierStages=1&hearts=1&gifts=1` as const;
 }
 export type MySummary = z.infer<typeof mySummarySchema>;
 

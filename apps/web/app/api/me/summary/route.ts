@@ -22,7 +22,7 @@ export async function GET(request: Request): Promise<Response> {
     });
     const notifications = await database.rpc("fan_web_drain_notification_intents", { p_app_user_id: fan.appUserId, p_limit: 100 });
     if (notifications.error) throw new Error("Notification snapshot unavailable");
-    const summary = await createSupabaseMySummaryRepository({ url: environment.SUPABASE_URL, serviceRoleKey: environment.SUPABASE_SERVICE_ROLE_KEY }, database).get({ appUserId: fan.appUserId, locale, asOf: new Date(), ...(new URL(request.url).searchParams.get("tierStages") === "1" ? { includeStages: true } : {}), ...(new URL(request.url).searchParams.get("hearts") === "1" ? { includeHearts: true } : {}) });
+    const summary = await createSupabaseMySummaryRepository({ url: environment.SUPABASE_URL, serviceRoleKey: environment.SUPABASE_SERVICE_ROLE_KEY }, database).get({ appUserId: fan.appUserId, locale, asOf: new Date(), ...(new URL(request.url).searchParams.get("tierStages") === "1" ? { includeStages: true } : {}), ...(new URL(request.url).searchParams.get("hearts") === "1" ? { includeHearts: true } : {}), ...(new URL(request.url).searchParams.get("gifts") === "1" ? { includeGifts: true } : {}) });
     return Response.json({ summary }, { headers });
   } catch (error) {
     if (error instanceof AuthError) return Response.json({ error: { code: "UNAUTHENTICATED" } }, { status: error.status, headers });

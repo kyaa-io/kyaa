@@ -175,7 +175,7 @@ A2 버튼 반경 8·높이 390 44 / 1024+ 48 · B2 칩 36·14/700·반경 8 · C
 좌측 액센트 바(`border-left ≥ 3px` 색 선)와 아이콘 뒤 채운 배경(파스텔 사각·원)은 쓰지 않는다.
 
 ### 깊이 (8장 ⑦)
-카드·행·버튼·탭·헤더는 **그림자 0**(구획은 1px `--color-line`). 오버레이(모달·시트·팝오버·드롭다운·툴팁·토스트)만 1토큰 `--shadow-overlay` = `0 8px 24px rgb(0 0 0 / 8%)`. `--shadow-dialog` 폐기 예정(globals에 남음, 3파일 사용). 유채색 그림자·글로·`filter: blur|drop-shadow`·`backdrop-filter` 0(T6·S2·S3 `fail`, N26 집계).
+카드·행·버튼·탭·헤더는 **그림자 0**(구획은 1px `--color-line`). 오버레이(모달·시트·팝오버·드롭다운·툴팁·토스트)만 1토큰 `--shadow-overlay` = `0 8px 24px rgb(0 0 0 / 8%)`. `--shadow-dialog` 폐기 예정(globals에 남음, 3파일 사용). 유채색 그림자·글로·`filter: blur|drop-shadow`·`backdrop-filter` 0(T6·S2·S3 `fail`, N26 집계). 선물 안 읽음 빛은 이 규칙을 어기지 않는다: 코드에 글로·blur·그라데이션이 없고 빛은 이미지 애셋이다(위 모션 표의 예외는 반복 횟수 한정 애니메이션 한 곳뿐).
 
 ### 모션 시간과 겹침 순서 (8장 ⑧ "150/200 2단·이징 1종")
 | 토큰 | 값 | 대상 |
@@ -184,6 +184,7 @@ A2 버튼 반경 8·높이 390 44 / 1024+ 48 · B2 칩 36·14/700·반경 8 · C
 | `--motion-slow` | 200ms(같은 날 신설) | 접기 패널·시트·다이얼로그·토스트 이동·게이지 채움·페이지 전환 |
 | `--motion-easing` | cubic-bezier(.2, 0, 0, 1) | 전부(들어올 때·나갈 때 같은 이징) |
 | 연출 예외(`data-motion`) | 랭킹 행 FLIP 240(`--motion-reorder`), 숫자 카운트 400(`--motion-count`), 스탬프 연출 `stamp-slam` 0.9초 + 보상 팝 600(`--motion-reward`), 럭키드로우 idle 2.4~4.0초(`[data-lucky-module]` 안만) | 8장 ⑧ + R18·R20 |
+| 선물 안 읽음 빛(`.icon[data-gift-glow]`, 2026-11-10 사용자 요청 "안 읽은 선물 있을 때 뒤에서 빛나게, animation으로 shine shine") | 화면: MY 프로필 줄 선물 아이콘(안 읽은 선물이 있을 때만 그림), 선물 상세 이미지 뒤. 빛은 CSS 글로가 아니라 래스터 애셋(`public/images/gift/gift-halo.png`·`gift-shine.png`)을 `opacity`·`transform`으로만 움직인다. 등장 400ms(빛) + 띠 500ms(100ms 뒤) ≤ 600ms, 이어서 숨쉬기 2.4s × 3 · 띠 4.0s 간격 × 3(무한 반복 없음), 약 12초 뒤 정지한 빛(opacity .85)만 남는다. 한 화면에서 움직이는 빛은 이 아이콘 하나. 상세 이미지 뒤 빛은 `--motion-reward`로 한 번. `prefers-reduced-motion`은 정적 빛, `forced-colors`는 `FanDot`으로 대신 | `features/gifts/ui/gift-glow.module.css`, `gift-detail-screen.module.css` |
 | 폐기 | `--motion-control`(→ fast)·`--motion-layout`(→ slow)·`--motion-exit`(→ fast), 미션 nudge 깜빡임, 숫자 펄스 1.06 | 예정: 세 토큰은 globals에 원래 값(160·240·120ms)으로 남아 있고 사용처 치환 전 |
 
 `--z-*`: 헤더 20 · 하단 내비 30 · 드롭다운 35 · 백드롭 40 · 서랍 45 · 다이얼로그 50 · alertdialog 55 · 토스트 1100(옛 모달 z 100~1000 정리(T8) 뒤 58) · 툴팁 60. z-index는 이 토큰만 쓴다(T8).
