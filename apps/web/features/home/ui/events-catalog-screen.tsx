@@ -8,6 +8,7 @@ import { useRouter } from "next/navigation";
 import { ArrowRight } from "lucide-react";
 import { FanAppFrame, FanContentContainer } from "@/components/fan-shell/fan-app-shell";
 import { FanSectionHeader } from "@/components/fan-ui/fan-heading";
+import { MediaBackdrop, mediaFillClass } from "@/components/fan-ui/media-fill";
 import { bypassImageOptimization } from "@/components/fan-ui/public-image-policy";
 import { ElinaGuideCard } from "@/components/home-entry-cards/home-entry-cards";
 import type { RaffleList } from "@/features/benefit/domain/raffle";
@@ -40,11 +41,15 @@ function EventArtwork({ banner, priority }: { banner: HomeBanner; priority: bool
   const mobileProps = imageProps(mobile);
   const creatorWelcome = banner.kind === "announcement" && banner.celebrityId !== null && banner.desktopImage.width === banner.desktopImage.height;
   if (failed) return <span className={styles.artwork} aria-hidden="true" />;
-  return <picture className={styles.artwork} data-campaign={banner.id === "8bf2f180-cb32-4f00-93e2-e84b570ad450" || undefined}>
+  const campaign = banner.id === "8bf2f180-cb32-4f00-93e2-e84b570ad450";
+  return <span className={`${styles.artwork} ${mediaFillClass}`} data-campaign={campaign || undefined}>
+    {campaign ? null : <MediaBackdrop src={mobileProps.src} />}
+    <picture>
     {!creatorWelcome || !banner.mobileImage ? <source media="(min-width: 768px)" srcSet={desktopProps.srcSet ?? desktopProps.src} sizes={desktopProps.sizes} /> : null}
     {/* getImageProps preserves Next's image policy and the original artwork ratio. */}
     <img {...mobileProps} alt={banner.alt} loading={priority ? "eager" : "lazy"} onError={() => setFailed(true)} />
-  </picture>;
+    </picture>
+  </span>;
 }
 
 export function EventsCatalogScreen({ locale, homeBanners, elina, elinaRaffles, showElinaCampaign, contentUnavailable = false, pagination }: EventsCatalogProps) {

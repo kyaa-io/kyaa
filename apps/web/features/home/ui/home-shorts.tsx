@@ -1,6 +1,7 @@
 "use client";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import { FanIcon } from "@/components/fan-ui/fan-icon";
+import { mediaFillClass } from "@/components/fan-ui/media-fill";
 
 import { useEffect, useRef, useState } from "react";
 import { ChevronDown, ChevronUp, MoreHorizontal, Play } from "@/components/fan-ui/fan-icons";
@@ -42,7 +43,7 @@ export function HomeShorts({ items, locale, layout = "rail", initialVideo, offse
     <ul className={layout === "rail" ? styles.rail : styles.grid}>
       {(layout === "rail" ? items.slice(0, 6) : items).map((item, i) => <li key={item.id} className={styles.item} data-row="short">
         <FanAction variant="text" type="button" className={styles.card} onClick={() => setIndex(i)}>
-          <span className={styles.cover}><MediaThumbnail image={`https://i.ytimg.com/vi/${item.videoId}/oardefault.jpg`} href={item.href} kind="videos" locale={locale} /><span className={styles.play} aria-hidden="true"><FanIcon icon={Play} filled /></span></span>
+          <span className={`${styles.cover} ${mediaFillClass}`}><MediaThumbnail image={`https://i.ytimg.com/vi/${item.videoId}/oardefault.jpg`} href={item.href} kind="videos" locale={locale} backdrop /><span className={styles.play} aria-hidden="true"><FanIcon icon={Play} filled /></span></span>
           <span className={styles.title}>{item.title}</span>
         </FanAction>
       </li>)}

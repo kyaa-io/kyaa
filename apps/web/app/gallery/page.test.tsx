@@ -20,7 +20,8 @@ describe("/gallery page", () => {
   it("shows the read photos and the next-page link", async () => {
     state.rpc.mockResolvedValue({ data: page, error: null });
     render(await open({ locale: "ko" }));
-    expect(screen.getAllByRole("listitem")).toHaveLength(2);
+    // Two photos in each of the two layouts (mobile 2 columns, desktop 4 columns) that CSS switches between.
+    expect(screen.getAllByRole("listitem")).toHaveLength(4);
     expect(screen.getByRole("link", { name: /더 보기/ })).toHaveAttribute("href", `/gallery?locale=ko&cursor=${encodeURIComponent(encodeHomeGalleryCursor(2))}`);
   });
   it("shows the empty row only for a read that found nothing", async () => {
