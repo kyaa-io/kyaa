@@ -132,4 +132,7 @@ it("modal grid keeps a fixed 72px track so avatars sit close together", async ()
   const css = readFileSync("features/dukjil/ui/attendance-avatars.module.css", "utf8");
   expect(css).toMatch(/\.list \{[^}]*grid-template-columns: repeat\(auto-fill, 72px\)/);
   expect(css).toMatch(/\.list \{[^}]*gap: var\(--space-4\) var\(--space-2\)/);
+  // The 4px between avatar, streak and button comes from .item's gap alone; a margin on .action would make it 8px.
+  expect(css).toMatch(/\.item \{[^}]*gap: var\(--space-1\)/);
+  expect(css).not.toMatch(/\.action \{[^}]*margin/);
 });
