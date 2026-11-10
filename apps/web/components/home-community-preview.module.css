@@ -30,3 +30,10 @@
 .pagination button:disabled { opacity:.45; cursor:default; }
 .pagination svg { width:20px; height:20px; }
 .pagination span { min-width:32px; text-align:center; font-size:14px; font-variant-numeric:tabular-nums; }
+
+/* First load: skeleton cards in the same grid and row height as the posts. */
+.posts li[data-skeleton-card] .postLink { gap:var(--space-1); }
+.skeletonTitle { margin-top:var(--space-1); }
+.skeletonMeta { margin-top:auto; }
+/* Keep room for the page arrows that arrive with the first page. */
+.skeletonList { padding-bottom:calc(var(--space-4) + var(--min-target)); }

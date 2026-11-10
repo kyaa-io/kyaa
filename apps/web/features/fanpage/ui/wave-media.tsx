@@ -53,7 +53,7 @@ function MediaDialog({ title, locale, onClose, children, busy = false }: { title
 }
 function AlbumList({ locale, profileId, onSelect, onProfile, onChanged }: { locale: AppLocale; profileId?: string; onSelect: (id: string) => void; onProfile: (author: Profile) => void; onChanged: () => void }) {
   const common = contentCopy(locale), [cursor, setCursor] = useState<string | null>(null), [previous, setPrevious] = useState<WaveAlbum[]>([]);
-  const page = useFanpageResource(`/api/kyaa-wave/${profileId ? `profiles/${profileId}/albums` : "albums"}?locale=${locale}&limit=20${cursor ? `&cursor=${encodeURIComponent(cursor)}` : ""}`, parsePage);
+  const page = useFanpageResource(`/api/kyaa-wave/${profileId ? `profiles/${profileId}/albums` : "albums"}?locale=${locale}&limit=20${cursor ? `&cursor=${encodeURIComponent(cursor)}` : ""}`, parsePage, false, true);
   const items = page.state.status === "ready" ? [...previous, ...page.state.data.items.filter(item => !previous.some(old => old.id === item.id))] : previous;
   return <div className={styles.feed}>
     <div className={profileId ? styles.gallery : styles.feed}>{items.map(album => profileId ? <AlbumTile key={album.id} album={album} locale={locale} onSelect={onSelect} /> : <WaveMediaCard key={album.id} album={album} locale={locale} onSelect={onSelect} onProfile={onProfile} onChanged={onChanged} />)}</div>
@@ -107,7 +107,7 @@ export function WaveMediaComposer({ locale, onSaved, onBusyChange }: { locale: A
 }
 function AlbumDetail({ id, locale, onProfile, onChanged, onDeleted }: { id: string; locale: AppLocale; onProfile: (author: Profile) => void; onChanged: () => void; onDeleted: () => void }) {
   const common = contentCopy(locale), album = useFanpageResource(`/api/kyaa-wave/albums/${id}?locale=${locale}`, parseAlbum), mutation = useContentMutation(locale);
-  const [cursor, setCursor] = useState<string | null>(null), comments = useFanpageResource(`/api/fan-clips/${id}/comments?locale=${locale}${cursor ? `&cursor=${encodeURIComponent(cursor)}` : ""}`, parseComments);
+  const [cursor, setCursor] = useState<string | null>(null), comments = useFanpageResource(`/api/fan-clips/${id}/comments?locale=${locale}${cursor ? `&cursor=${encodeURIComponent(cursor)}` : ""}`, parseComments, false, true);
   const commentInput = useRef<HTMLTextAreaElement>(null);
   const [body, setBody] = useState(""), attempt = useRef<{ body: string; key: string } | null>(null);
   const refresh = () => { album.retry(); comments.retry(); onChanged(); };

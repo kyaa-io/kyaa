@@ -16,7 +16,7 @@ export function CheerReplies({ cheerId, slug, locale, returnTo, onChanged }: { c
   const auth = useByUsAuth(), copy = contentCopy(locale), mutation = useContentMutation(locale), field = useId();
   const [cursor, setCursor] = useState<string | null>(null), [body, setBody] = useState("");
   const attempt = useRef<{ body: string; key: string } | null>(null);
-  const replies = useCommunityResource(`/api/cheers/${cheerId}/replies?locale=${toContentLocale(locale)}${cursor ? `&cursor=${encodeURIComponent(cursor)}` : ""}`, parse);
+  const replies = useCommunityResource(`/api/cheers/${cheerId}/replies?locale=${toContentLocale(locale)}${cursor ? `&cursor=${encodeURIComponent(cursor)}` : ""}`, parse, true, false, true);
   const refresh = () => { replies.retry(); onChanged(); };
   async function submit() {
     if (mutation.busy || !body.trim()) return;

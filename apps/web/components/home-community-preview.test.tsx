@@ -191,3 +191,22 @@ it("shows readable like and comment totals, including zero", async () => {
   expect(screen.getByLabelText("좋아요 0")).toBeInTheDocument();
   expect(screen.getByLabelText("댓글 0")).toBeInTheDocument();
 });
+
+it("shows same-shape skeleton cards first, no description line, and keeps a page in place while the next one loads", async () => {
+  let release!: (response: Response) => void;
+  const fetcher = vi.fn(async (url: string) => url.endsWith("page=2") ? new Promise<Response>(done => { release = done; }) : Response.json({ items: [preview(post(1, "첫 쪽 글"))], hasMore: true }));
+  vi.stubGlobal("fetch", fetcher);
+  const { container } = render(<HomeCommunityPreview locale="ko" />);
+  expect(container.querySelectorAll("[data-skeleton-card]")).toHaveLength(10);
+  expect(container).not.toHaveTextContent("팬들과 감상과 응원을 나눠 보세요.");
+  await screen.findByText("첫 쪽 글");
+  fireEvent.click(screen.getByRole("button", { name: "다음" }));
+  await waitFor(() => expect(fetcher).toHaveBeenCalledWith("/api/public/home-feed?locale=ko&page=2", expect.anything()));
+  expect(screen.getByText("첫 쪽 글")).toBeInTheDocument();
+  expect(container.querySelector("ul")).toHaveAttribute("aria-busy", "true");
+  expect(screen.getByRole("button", { name: "다음" })).toBeDisabled();
+  await act(async () => release(Response.json({ items: [preview(post(2, "둘째 쪽 글"))], hasMore: false })));
+  await screen.findByText("둘째 쪽 글");
+  expect(screen.queryByText("첫 쪽 글")).not.toBeInTheDocument();
+  expect(container.querySelector("ul")).not.toHaveAttribute("aria-busy");
+});

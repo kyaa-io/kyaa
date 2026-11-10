@@ -24,7 +24,7 @@ export function LeaderboardPanel({ slug, locale, showGathering = true }: { slug:
   const [category, setCategory] = useState<typeof LEADERBOARD_CATEGORIES[number]>("all");
   const resultsId = useId();
   const copy = leaderboardActivityCopy[locale];
-  const { state, retry } = useFanpageResource(`/api/celebrities/${slug}/leaderboard?locale=${toContentLocale(locale)}&category=${category}`, parse);
+  const { state, retry, pending } = useFanpageResource(`/api/celebrities/${slug}/leaderboard?locale=${toContentLocale(locale)}&category=${category}`, parse, false, true);
 
   if (state.status === "error" && state.code === "LEADERBOARD_NOT_AVAILABLE") return <>
     {showGathering && <FanGatheringPanel slug={slug} locale={locale} />}
@@ -51,7 +51,7 @@ export function LeaderboardPanel({ slug, locale, showGathering = true }: { slug:
         <dl>{LEADERBOARD_CATEGORIES.filter(value => value !== "all").map(value => <div key={value}><dt>{copy.categories[value]}</dt><dd>{copy.descriptions[value]}</dd></div>)}</dl>
       </details>
     </div>
-    <div id={resultsId} aria-busy={state.status === "loading"}>
+    <div id={resultsId} aria-busy={state.status === "loading" || pending}>
       {state.status !== "ready" ? <ResourceMessage locale={locale} error={state.status === "error"} retry={retry} /> : <>
         {state.data.me && <div className={styles.myRank}>
           <div className={styles.myPosition}><span>{locale === "ko" ? "내 순위" : translate(locale, localizedMessages.m0c416452a30e, "My rank")}</span><strong>{state.data.me.rank.toLocaleString(locale)}{locale === "ko" ? "위" : ""}</strong></div>

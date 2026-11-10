@@ -84,7 +84,7 @@ function MemberDirectory({ locale, friends, friendsStatus, busy, act, onChat }: 
   const copy = waveFriendsCopy(locale);
   const [cursors, setCursors] = useState<(string | null)[]>([null]);
   const after = cursors[cursors.length - 1];
-  const resource = useFanpageResource(`${base}/members?locale=${toContentLocale(locale)}${after ? `&after=${encodeURIComponent(after)}` : ""}`, parseWaveMembers);
+  const resource = useFanpageResource(`${base}/members?locale=${toContentLocale(locale)}${after ? `&after=${encodeURIComponent(after)}` : ""}`, parseWaveMembers, false, true);
   return <section className={styles.directory} aria-label={copy.membersTitle}>
     <FanSectionHeader as="h3" title={copy.membersTitle} description={copy.membersDescription} />
     {friendsStatus !== "ready" && <p role="status" className={styles.muted}>{friendsStatus === "loading" ? copy.relationshipLoading : copy.relationshipError}</p>}

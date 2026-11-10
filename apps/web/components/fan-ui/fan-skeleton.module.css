@@ -1,0 +1,8 @@
+/* A pink-tinted surface that only breathes in opacity; no grey shimmer or moving background. */
+.bar { display:block; max-width:100%; background-color:var(--color-skeleton, #fff0f6); opacity:0; animation:fanSkeletonPulse 1.2s ease-in-out 150ms infinite; }
+.text { height:16px; border-radius:4px; }
+.block { border-radius:8px; }
+.circle { border-radius:999px; flex:none; }
+@keyframes fanSkeletonAppear { to { opacity:1; } }
+@keyframes fanSkeletonPulse { 0%, 100% { opacity:1; } 50% { opacity:.5; } }
+@media (prefers-reduced-motion: reduce) { .bar { animation:fanSkeletonAppear 1ms linear 150ms forwards; } }

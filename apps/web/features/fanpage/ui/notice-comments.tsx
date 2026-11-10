@@ -27,7 +27,7 @@ function CommentsForOwner({ slug, noticeSlug, locale, preview, welcome, returnTo
   const styles = preview ? previewStyles : detailStyles;
   const Heading = preview ? "h3" : "h2";
   const [cursor, setCursor] = useState<string | null>(null);
-  const resource = useCommunityResource(`/api/celebrities/${slug}/notices/${noticeSlug}/comments?locale=${toContentLocale(locale)}&limit=${preview ? 2 : 20}${cursor ? `&cursor=${encodeURIComponent(cursor)}` : ""}`, parseComments);
+  const resource = useCommunityResource(`/api/celebrities/${slug}/notices/${noticeSlug}/comments?locale=${toContentLocale(locale)}&limit=${preview ? 2 : 20}${cursor ? `&cursor=${encodeURIComponent(cursor)}` : ""}`, parseComments, true, false, true);
   const [body, setBody] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");

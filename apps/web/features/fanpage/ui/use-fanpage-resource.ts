@@ -6,8 +6,10 @@ import { useEffect, useRef, useState } from "react";
 import { withRequestDeadline } from "@/features/reliability/client/request-deadline";
 
 type State<T> = { status: "loading" } | { status: "ready"; data: T } | { status: "error"; code: string; membershipCount?: number; fanCount?: number };
-/** Public reads may include owner context; a changed owner never sees an old snapshot. */
-export function useFanpageResource<T>(url: string | null, parse: (value: unknown) => T, keepPreviousData = false) {
+/** Public reads may include owner context; a changed owner never sees an old snapshot.
+ * `keepAcrossUrls` (paged or tabbed lists): while the next page, tab or filter loads, the same owner keeps seeing the
+ * previous list in place (`pending` is true) so the list never collapses; it is then replaced in one step. */
+export function useFanpageResource<T>(url: string | null, parse: (value: unknown) => T, keepPreviousData = false, keepAcrossUrls = false) {
   const { ready, authenticated, user, getAccessToken } = usePrivy();
   const tokenProvider = useRef(getAccessToken);
   useEffect(() => { tokenProvider.current = getAccessToken; }, [getAccessToken]);
@@ -17,9 +19,10 @@ export function useFanpageResource<T>(url: string | null, parse: (value: unknown
   const requestAuthenticated = sessionReady && authenticated;
   const ownerId = requestAuthenticated ? session.ownerId ?? user?.id ?? null : null;
   const [revision, setRevision] = useState(0);
-  const ownerKey = `${url}:${sessionReady}:${requestAuthenticated}:${ownerId ?? "guest"}:${session.generation}`;
+  const identityKey = `${sessionReady}:${requestAuthenticated}:${ownerId ?? "guest"}:${session.generation}`;
+  const ownerKey = `${url}:${identityKey}`;
   const key = `${ownerKey}:${revision}`;
-  const [snapshot, setSnapshot] = useState<{ key: string; ownerKey: string; state: State<T>; refreshFailed?: boolean }>();
+  const [snapshot, setSnapshot] = useState<{ key: string; ownerKey: string; identityKey?: string; state: State<T>; refreshFailed?: boolean }>();
   useEffect(() => {
     if (!url || !canRead) return;
     const controller = new AbortController();
@@ -39,7 +42,7 @@ export function useFanpageResource<T>(url: string | null, parse: (value: unknown
             : { key, ownerKey, state: { status: "error", code: body.error?.code ?? "UNAVAILABLE", membershipCount: body.membershipCount, ...(body.fanCount === undefined ? {} : { fanCount: body.fanCount }) } });
           return;
         }
-        setSnapshot({ key, ownerKey, state: { status: "ready", data: parse(body) } });
+        setSnapshot({ key, ownerKey, identityKey, state: { status: "ready", data: parse(body) } });
       } catch {
         if (!controller.signal.aborted) setSnapshot(previous => keepPreviousData && previous?.ownerKey === ownerKey && previous.state.status === "ready"
           ? { ...previous, key, refreshFailed: true }
@@ -47,11 +50,12 @@ export function useFanpageResource<T>(url: string | null, parse: (value: unknown
       }
     })();
     return () => controller.abort();
-  }, [url, key, ownerKey, canRead, requestAuthenticated, parse, keepPreviousData]);
+  }, [url, key, ownerKey, identityKey, canRead, requestAuthenticated, parse, keepPreviousData]);
   const hasCurrentData = canRead && (snapshot?.key === key || (keepPreviousData && snapshot?.ownerKey === ownerKey && snapshot.state.status === "ready"));
+  const heldAcrossUrl = canRead && !hasCurrentData && keepAcrossUrls && Boolean(url) && snapshot?.identityKey === identityKey && snapshot.state.status === "ready";
   const state: State<T> = !canRead && authenticated && session.error ? { status: "error", code: session.error }
-    : hasCurrentData ? snapshot!.state : { status: "loading" };
-  return { state, refreshFailed: canRead && snapshot?.ownerKey === ownerKey && snapshot.refreshFailed, invalidate: () => { setSnapshot(undefined); setRevision(value => value + 1); }, retry: () => {
+    : hasCurrentData || heldAcrossUrl ? snapshot!.state : { status: "loading" };
+  return { state, pending: heldAcrossUrl, refreshFailed: canRead && snapshot?.ownerKey === ownerKey && snapshot.refreshFailed, invalidate: () => { setSnapshot(undefined); setRevision(value => value + 1); }, retry: () => {
     if (authenticated && !session.ready && session.error) void session.retryTransition();
     setRevision((value) => value + 1);
   } };

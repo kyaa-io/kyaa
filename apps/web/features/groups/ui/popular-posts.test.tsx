@@ -11,7 +11,7 @@ describe('popular posts',()=>{
   expect(screen.getByRole('link',{name:'첫 번째 이야기'})).toHaveAttribute('href','/c/artist/community/post-1?locale=ko&returnTo=%2Fartist%3Ftab%3Dboard%26locale%3Dko%23celebrity-content');
   expect(screen.getByText('(3)')).toBeInTheDocument();
   fireEvent.click(screen.getByRole('button',{name:'주간'}));
-  expect(resource).toHaveBeenLastCalledWith('/api/celebrities/artist/popular-posts?period=week&locale=ko',expect.any(Function),false);
+  expect(resource).toHaveBeenLastCalledWith('/api/celebrities/artist/popular-posts?period=week&locale=ko',expect.any(Function),false,false,true);
  });
  it('shows the selected language in the empty state and period controls',()=>{
   resource.mockReturnValue({state:{status:'ready',data:{items:[]}}});

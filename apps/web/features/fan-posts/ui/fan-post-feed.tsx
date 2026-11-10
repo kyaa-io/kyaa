@@ -60,7 +60,7 @@ function FeedForOwner({ compact, beforeFeed, headingTitle, introduction = false,
   if (cursor) query.set("cursor", cursor);
   if (mediaOnly) query.set("media", "1");
   if (newsFilter !== "all" && !introduction) query.set("news", newsFilter);
-  const resource = useCommunityResource(program ? `/api/celebrities/${slug}/programs/${program}/posts?${query}` : `/api/celebrities/${slug}/feed?${query}`, program ? parseProgram : parse);
+  const resource = useCommunityResource(program ? `/api/celebrities/${slug}/programs/${program}/posts?${query}` : `/api/celebrities/${slug}/feed?${query}`, program ? parseProgram : parse, true, false, true);
   useEffect(() => {
     if (resource.state.status !== "ready" || !window.location.hash.startsWith("#cheer-")) return;
     const id = window.location.hash.slice(1);
@@ -71,7 +71,8 @@ function FeedForOwner({ compact, beforeFeed, headingTitle, introduction = false,
   }, [resource.state.status]);
   const refresh = () => { setCursors([null]); resource.retry(); };
   const saved = () => { refresh(); closeComposer(); onPosted?.(); };
-  const goToPage = (next: (string | null)[]) => { setCursors(next); section.current?.focus(); section.current?.scrollIntoView?.({ block: "start" }); };
+  // A held page stays on screen while the next one loads; ignore repeat clicks until it arrives.
+  const goToPage = (next: (string | null)[]) => { if (resource.pending) return; setCursors(next); section.current?.focus(); section.current?.scrollIntoView?.({ block: "start" }); };
   const filterLabel = newsFilter === "notice" ? copy.notice : newsFilter === "artist_post" ? officialPostLabel ?? copy.artistPost : "CHZZK";
   const sessionReady = auth.ready && session.ready;
   const writeAction = compact && !composing && selectedSource !== "official" && sessionReady && <div className={feedStyles.writeRow}>{auth.authenticated ? <button ref={composeTrigger} type="button" className={feedStyles.writeButton} onClick={() => setComposing(true)}>{locale === "ko" ? "글쓰기" : copy.writePost}<ArrowRight size={16} aria-hidden="true" /></button> : <Link className={feedStyles.writeButton} href={`/login?locale=${locale}&returnTo=${encodeURIComponent(returnTo)}`}>{locale === "ko" ? "글쓰기" : copy.writePost}<ArrowRight size={16} aria-hidden="true" /></Link>}</div>;

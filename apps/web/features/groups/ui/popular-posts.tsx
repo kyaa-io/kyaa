@@ -25,7 +25,7 @@ const labels:Record<AppLocale,readonly [string,string,string,string,string]>={
 const parse=(value:unknown)=>z.object({items:z.array(postSchema).max(10)}).parse(value);
 export function PopularPosts({slug,locale}:{slug:string;locale:AppLocale}){
  const [period,setPeriod]=useState<'day'|'week'|'month'>('day');
- const result=useCommunityResource(`/api/celebrities/${encodeURIComponent(slug)}/popular-posts?period=${period}&locale=${toContentLocale(locale)}`,parse,false);
+ const result=useCommunityResource(`/api/celebrities/${encodeURIComponent(slug)}/popular-posts?period=${period}&locale=${toContentLocale(locale)}`,parse,false,false,true);
  const [title,...text]=labels[locale],copy=contentCopy(locale);
  return <section className={styles.panel}><header><h2>{title}</h2><div>{(['day','week','month'] as const).map((value,i)=><button type='button' key={value} aria-pressed={period===value} onClick={()=>setPeriod(value)}>{text[i]}</button>)}</div></header>{result.state.status==='ready'?result.state.data.items.length?<ol>{result.state.data.items.map((post,i)=><li key={post.id}><span>{i+1}</span><Link href={`/c/${slug}/community/${post.id}?locale=${locale}&returnTo=${encodeURIComponent(boardHref(slug,locale))}`}>{post.body.split('\n')[0]}</Link>{post.commentCount>0&&<small>({post.commentCount})</small>}</li>)}</ol>:<p>{text[3]}</p>:result.state.status==='error'?<button type='button' onClick={result.retry}>{copy.retry}</button>:<p role='status'>{copy.loading}</p>}</section>;
 }

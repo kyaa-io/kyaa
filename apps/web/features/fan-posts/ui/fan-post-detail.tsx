@@ -36,7 +36,7 @@ function DetailForOwner({ postId, locale, presentation,boardPreview }: { postId:
   const attempt = useRef<{ snapshot: string; key: string } | null>(null);
   const replyTrigger = useRef<HTMLButtonElement | null>(null), restoreReplyFocus = useRef(false);
   const post = useCommunityResource(`/api/posts/${postId}?locale=${toContentLocale(locale)}`, parsePost);
-  const comments = useCommunityResource(`/api/posts/${postId}/comments?locale=${toContentLocale(locale)}${cursor ? `&cursor=${encodeURIComponent(cursor)}` : ""}`, parseComments);
+  const comments = useCommunityResource(`/api/posts/${postId}/comments?locale=${toContentLocale(locale)}${cursor ? `&cursor=${encodeURIComponent(cursor)}` : ""}`, parseComments, true, false, true);
   useEffect(() => {
     if (post.state.status !== "ready") return;
     if (replyTarget) {
