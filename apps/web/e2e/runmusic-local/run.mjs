@@ -168,7 +168,7 @@ try {
    results.push({width,locale,scenario:'admin-reveal-hide-receive',pass:true});
   }
   for(const locale of ['ko','en']){
-   await page.goto(url('existing',locale,{view:'banner'}));await expect(page.locator('[data-managed-home-banner] img')).toBeVisible();
+   await page.goto(url('existing',locale,{view:'banner'}));await expect(page.locator('[data-managed-home-banner]').getByRole('img', { name: '러닝 트랙과 음악 파형을 표현한 RUN&MUSIC 이벤트 이미지', exact: true })).toBeVisible();
    await check('banner',locale,{audit:true});
    await page.getByRole('link',{name:locale==='ko'?'이벤트 보기':'View event',exact:true}).click();
    await expect(page).toHaveURL(new RegExp(`/connect/runmusic\\?locale=${locale}$`));
@@ -183,10 +183,10 @@ try {
   page.on('console',message=>{if(message.type()==='error')errors.push({width:768,type:'console',message:message.text()});});
   for(const locale of ['ko','en']){
    await page.goto(`${harness.baseURL}/connect/runmusic?scenario=existing&view=banner&locale=${locale}`);
-   await expect(page.locator('[data-managed-home-banner] img')).toBeVisible();
+   await expect(page.locator('[data-managed-home-banner]').getByRole('img', { name: '러닝 트랙과 음악 파형을 표현한 RUN&MUSIC 이벤트 이미지', exact: true })).toBeVisible();
    await page.evaluate(async()=>{await document.fonts.ready;await Promise.all(Array.from(document.images).map(image=>image.decode()));});
    expect(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth)).toBe(false);
-   expect(await page.locator('[data-managed-home-banner] img').evaluate(image=>image.currentSrc)).toContain('/images/runmusic/banner-desktop.png');
+   expect(await page.locator('[data-managed-home-banner]').getByRole('img', { name: '러닝 트랙과 음악 파형을 표현한 RUN&MUSIC 이벤트 이미지', exact: true }).evaluate(image=>image.currentSrc)).toContain('/images/runmusic/banner-desktop.png');
    await page.screenshot({path:path.join(output,`banner-${locale}-768.png`),fullPage:true});
    results.push({width:768,locale,scenario:'banner',pass:true});
   }

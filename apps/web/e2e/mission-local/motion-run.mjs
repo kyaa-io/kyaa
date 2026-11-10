@@ -54,7 +54,7 @@ async function openMission(context, locale, scenario = "fresh") {
   const page = await context.newPage();
   watch(page, `${locale}/${scenario}`);
   await page.goto(`${harness.baseURL}/?locale=${locale}&scenario=${scenario}`);
-  await expect(page.getByRole("navigation", { name: locale === "ko" ? "미션 진행" : "Mission progress" })).toBeVisible();
+  await expect(page.getByRole("navigation", { name: locale === "ko" ? "덕질 진행" : "Mission progress" })).toBeVisible();
   await settleAssets(page);
   return page;
 }
@@ -156,7 +156,7 @@ try {
   const existingMain = existing.locator("main[data-celebrate='false']");
   await expect(existingMain).toBeVisible();
   await expect(existing.locator("main [aria-hidden='true'] i")).toHaveCount(0);
-  await expect(existing.getByRole("region", { name: "이번 미션 보상" })).toHaveCount(0);
+  await expect(existing.getByRole("region", { name: "이번 덕질 보상" })).toHaveCount(0);
   assert(!(await animations(existing)).some((item) => /paperBurst|printArrive|numberReveal/.test(item.name)));
   check("already-completed state does not replay celebration, confetti, or fresh rewards");
   await existingContext.close();

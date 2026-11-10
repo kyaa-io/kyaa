@@ -26,7 +26,7 @@ export function ShortsEngagement({ videoId, locale, offset }: { videoId: string;
   const [open, setOpen] = useState(false), [cursor, setCursor] = useState<string | null>(null), [body, setBody] = useState(""), [shareError, setShareError] = useState(false);
   const attempt = useRef<{ body: string; key: string } | null>(null);
   const url = `/shorts?locale=${encodeURIComponent(locale)}${offset ? `&offset=${offset}` : ""}&video=${encodeURIComponent(videoId)}`;
-  const loginHref = fanLoginHref(locale, url);
+  const loginHref: string = fanLoginHref(locale, url);
   const reactions = useCommunityResource(`/api/shorts/${encodeURIComponent(videoId)}/reactions`, parseReaction, false);
   const comments = useCommunityResource(open ? `/api/shorts/${encodeURIComponent(videoId)}/comments?locale=${toContentLocale(locale)}${cursor ? `&cursor=${encodeURIComponent(cursor)}` : ""}` : null, parseComments, false);
   const change = async (reaction: PostReactionChoice) => { if (await mutation.request(`/api/shorts/${encodeURIComponent(videoId)}/reactions`, "PUT", { reaction })) reactions.retry(); };

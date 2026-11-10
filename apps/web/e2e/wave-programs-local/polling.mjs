@@ -17,11 +17,11 @@ try {
    externalRequests.push(url.origin); return route.abort();
   });
   await page.goto(`${harness.baseURL}/kyaa-wave-fanpage?locale=ko&polling=1`);
-  await expect(page.getByRole('link', { name: '미션 진행', exact: true })).toBeVisible();
-  await page.getByRole('link', { name: '미션 진행', exact: true }).click();
+  await expect(page.getByRole('link', { name: '덕질 진행', exact: true })).toBeVisible();
+  await page.getByRole('link', { name: '덕질 진행', exact: true }).click();
   await expect(page).toHaveURL(/\/kyaa-wave-fanpage\?locale=ko#wave-missions$/);
   const section = page.locator('#wave-missions');
-  await expect(section.getByRole('heading', { name: '미션 진행', exact: true })).toBeVisible();
+  await expect(section.getByRole('heading', { name: '덕질 진행', exact: true })).toBeVisible();
   const quiz = section.locator('li').filter({ has: page.getByText('퀴즈 정답 보너스', { exact: true }) });
   await expect(quiz.getByText('미완료', { exact: true })).toBeVisible();
   await page.evaluate(() => document.fonts.ready);
@@ -36,7 +36,7 @@ try {
   });
   assert.equal(grant.result.id, grant.id); assert(grant.result.quizCorrectAt);
   // No activity event or manual retry: the real ten-second timer must fetch the new owner snapshot.
-  await expect(quiz.getByText('미션 스탬프 · 발급 대기', { exact: true })).toBeVisible({ timeout: 18000 });
+  await expect(quiz.getByText('덕질 스탬프 · 발급 대기', { exact: true })).toBeVisible({ timeout: 18000 });
   const queued = await page.evaluate(() => structuredClone(window.waveMissionPolling.state));
   assert.equal(queued.grants, 1);
   assert(queued.reads.length > grant.reads);
@@ -46,9 +46,9 @@ try {
 
   const receipt = await page.evaluate(async () => (await fetch('/api/fixture/wave-mission-receipt')).json());
   assert.equal(receipt.status, 'minted');
-  await expect(quiz.getByText('미션 스탬프 · 발급 대기', { exact: true })).toBeVisible();
-  await expect(quiz.getByText('미션 스탬프 · 발급 완료', { exact: true })).toBeVisible({ timeout: 18000 });
-  await expect(quiz.getByText('미션 스탬프 · 발급 대기', { exact: true })).toHaveCount(0);
+  await expect(quiz.getByText('덕질 스탬프 · 발급 대기', { exact: true })).toBeVisible();
+  await expect(quiz.getByText('덕질 스탬프 · 발급 완료', { exact: true })).toBeVisible({ timeout: 18000 });
+  await expect(quiz.getByText('덕질 스탬프 · 발급 대기', { exact: true })).toHaveCount(0);
   const minted = await page.evaluate(() => structuredClone(window.waveMissionPolling.state));
   const mintedRead = minted.reads.find(read => read.status === 'minted');
   assert(mintedRead.at - queuedRead.at >= 9000, 'receipt status must reach the DOM through the next normal poll');
@@ -57,7 +57,7 @@ try {
 
   await page.evaluate(() => window.waveMissionPolling.logout());
   await expect(section.getByRole('link', { name: '로그인', exact: true })).toBeVisible();
-  await expect(section.getByText('미션 스탬프 · 발급 완료', { exact: true })).toHaveCount(0);
+  await expect(section.getByText('덕질 스탬프 · 발급 완료', { exact: true })).toHaveCount(0);
   assert.deepEqual(errors, []);
   checks.push({ width, participantName: '김지민', grants: minted.grants, queuedPollMs: queuedRead.at - queued.reads[0].at, mintedPollMs: mintedRead.at - queuedRead.at, reads: minted.reads, homeMissionDestination: '/kyaa-wave-fanpage?locale=ko#wave-missions', logoutClearsPreviousStamp: true, blockedExternalOrigins: [...new Set(externalRequests)] });
   console.log(`PASS ${width}px: one quiz grant → queued → minted via real 10s polling; home destination and logout isolation`);

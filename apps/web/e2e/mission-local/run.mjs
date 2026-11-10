@@ -37,9 +37,9 @@ async function pageFor(viewport, locale, scenario) {
   watchNetwork(page, `${locale}/${scenario}`);
   await page.goto(`${harness.baseURL}/?locale=${locale}&scenario=${scenario}`);
   if (scenario === "already-completed") {
-    await expect(page.getByRole("heading", { name: locale === "ko" ? "두 미션 모두 완료!" : "Both missions complete!" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: locale === "ko" ? "덕질 두 가지 모두 완료!" : "Both missions complete!" })).toBeVisible();
   } else {
-    await expect(page.getByRole("navigation", { name: locale === "ko" ? "미션 진행" : "Mission progress" })).toBeVisible();
+    await expect(page.getByRole("navigation", { name: locale === "ko" ? "덕질 진행" : "Mission progress" })).toBeVisible();
   }
   return { context, page };
 }
@@ -108,9 +108,9 @@ try {
   await assertOptionLayout(desktop.page, ["하트", "별", "동그라미", "꽃"], "1440 quiz option");
   await choose(desktop.page, "하트");
   await desktop.page.getByRole("button", { name: "정답 확인하기" }).click();
-  await expect(desktop.page.getByRole("heading", { name: "두 미션 모두 완료!" })).toBeVisible();
+  await expect(desktop.page.getByRole("heading", { name: "덕질 두 가지 모두 완료!" })).toBeVisible();
   await expect(desktop.page.getByRole("status")).toHaveText(/정답이에요/);
-  const koRewards = desktop.page.getByRole("region", { name: "이번 미션 보상" });
+  const koRewards = desktop.page.getByRole("region", { name: "이번 덕질 보상" });
   await expect(koRewards).toContainText("팬 점수");
   await expect(koRewards).toContainText("응모권");
   await expect(koRewards.getByText("+1")).toHaveCount(2);
@@ -131,9 +131,9 @@ try {
   await assertContained(wrong.page, wrong.page.getByRole("button", { name: "정답 확인하기" }), wrong.page.getByRole("complementary", { name: "선택 확인" }), "390 selected quiz action");
   await snap(wrong.page, "selected-quiz-ko-mobile-390.png");
   await wrong.page.getByRole("button", { name: "정답 확인하기" }).click();
-  await expect(wrong.page.getByRole("heading", { name: "두 미션 모두 완료!" })).toBeVisible();
-  await expect(wrong.page.getByRole("status")).toHaveText("정답은 아니지만, 미션 참여는 완료됐어요.");
-  const wrongRewards = wrong.page.getByRole("region", { name: "이번 미션 보상" });
+  await expect(wrong.page.getByRole("heading", { name: "덕질 두 가지 모두 완료!" })).toBeVisible();
+  await expect(wrong.page.getByRole("status")).toHaveText("정답은 아니지만, 덕질 참여는 완료됐어요.");
+  const wrongRewards = wrong.page.getByRole("region", { name: "이번 덕질 보상" });
   await expect(wrongRewards.getByText("+1")).toHaveCount(2);
   await assertContained(wrong.page, wrong.page.getByRole("link", { name: /엘리나 팬페이지로/ }), wrong.page.locator("main"), "390 completion primary action");
   await snap(wrong.page, "wrong-quiz-ko-mobile-390.png");
@@ -143,9 +143,9 @@ try {
   await wrong.context.close();
 
   const completed = await pageFor({ width: 360, height: 800 }, "ko", "already-completed");
-  await expect(completed.page.getByRole("heading", { name: "두 미션 모두 완료!" })).toBeVisible();
-  await expect(completed.page.getByRole("status")).toHaveText(/이미 참여한 미션/);
-  await expect(completed.page.getByRole("region", { name: "이번 미션 보상" })).toHaveCount(0);
+  await expect(completed.page.getByRole("heading", { name: "덕질 두 가지 모두 완료!" })).toBeVisible();
+  await expect(completed.page.getByRole("status")).toHaveText(/이미 참여한 덕질/);
+  await expect(completed.page.getByRole("region", { name: "이번 덕질 보상" })).toHaveCount(0);
   await expect(completed.page.getByText(/^\+\d+$/)).toHaveCount(0);
   await assertContained(completed.page, completed.page.getByRole("link", { name: /엘리나 팬페이지로/ }), completed.page.locator("main"), "360 existing completion primary action");
   await snap(completed.page, "already-completed-ko-narrow-360.png");
@@ -187,8 +187,8 @@ try {
   watchNetwork(entry, "ko/entry");
   await entry.goto(`${harness.baseURL}/entry?locale=ko&scenario=fresh`);
   await expect(entry.getByRole("heading", { name: "엘리나와 뱅크시 한 작품" })).toBeVisible();
-  await expect(entry.getByRole("link", { name: "미션 시작하기" })).toHaveAttribute("href", "/live/elina-banksy-instagram-20260918/missions?locale=ko");
-  await assertContained(entry, entry.getByRole("link", { name: "미션 시작하기" }), entry.locator("main"), "360 entry CTA in Fan shell");
+  await expect(entry.getByRole("link", { name: "덕질 시작하기" })).toHaveAttribute("href", "/live/elina-banksy-instagram-20260918/missions?locale=ko");
+  await assertContained(entry, entry.getByRole("link", { name: "덕질 시작하기" }), entry.locator("main"), "360 entry CTA in Fan shell");
   await snap(entry, "entry-ko-narrow-360.png");
   check("Elina fan-page mission entry renders inside the real Fan shell at 360px after public detail exposes missions");
   await entryContext.close();
