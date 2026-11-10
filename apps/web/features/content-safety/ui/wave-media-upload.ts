@@ -1,6 +1,6 @@
 import { throwIfAborted } from "@/features/reliability/client/throw-if-aborted";
 import { z } from "zod";
-import { ownedMediaSchema, type OwnedMedia } from "@/server/mobile-media/domain";
+import { ownedMediaSchema, videoMaxBytes, type OwnedMedia } from "@/server/mobile-media/domain";
 
 export type WaveUpload = { key: string; file: File; assetId?: string; uploaded?: boolean; media?: OwnedMedia; failed?: boolean; /** 0..1 of the file's bytes sent (261107-2 D5). */ progress?: number };
 const reservationSchema = z.object({ assetId: z.uuid(), uploadUrl: z.url(), uploadToken: z.string(), expiresAt: z.string(), replayed: z.boolean() });
@@ -9,10 +9,10 @@ export async function cancelWaveUpload(task: WaveUpload, getToken: () => Promise
   const token = await getToken();
   if (token) await fetch(`/api/me/media/uploads/${task.assetId}`, { method: "DELETE", credentials: "omit", keepalive: true, headers: { Authorization: `Bearer ${token}` } });
 }
-export function validWaveFiles(files: File[], existing: WaveUpload[], photoLimit = 30) {
+export function validWaveFiles(files: File[], existing: WaveUpload[], photoLimit = 30, purpose = "wave_post") {
   const all = [...existing.map(item => item.file), ...files], videos = all.filter(file => file.type.startsWith("video/"));
   return all.length > 0 && (videos.length ? all.length === 1 : all.length <= photoLimit)
-    && all.every(file => file.size > 0 && (file.type === "video/mp4" || file.type === "video/quicktime" ? file.size <= 50 * 1024 * 1024 : ["image/jpeg", "image/png", "image/webp"].includes(file.type) && file.size <= 8 * 1024 * 1024));
+    && all.every(file => file.size > 0 && (file.type === "video/mp4" || file.type === "video/quicktime" ? file.size <= videoMaxBytes(purpose) : ["image/jpeg", "image/png", "image/webp"].includes(file.type) && file.size <= 8 * 1024 * 1024));
 }
 /** The same task retains its request ID, uploaded bytes and asset across retries. */
 export async function uploadWaveMedia(task: WaveUpload, purpose: "fan_post" | "wave_album" | "wave_post" | "group_post" | "group_image" | "dm", getToken: () => Promise<string | null>, signal: AbortSignal, onProgress?: (sent: number) => void): Promise<OwnedMedia> {

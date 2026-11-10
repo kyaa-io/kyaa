@@ -11,7 +11,7 @@ import ffmpegPath from "ffmpeg-static";
 import ffprobeStatic from "ffprobe-static";
 import sharp from "sharp";
 import { normalizePublicImage } from "@/server/media/public-image-processing";
-import { IMAGE_MAX_BYTES, VIDEO_MAX_BYTES, VIDEO_MAX_SECONDS, type OwnedMedia } from "./domain";
+import { IMAGE_MAX_BYTES, videoMaxBytes, VIDEO_MAX_SECONDS, type OwnedMedia } from "./domain";
 
 export type MediaValidationJob = OwnedMedia & { jobId: string; storagePath: string; thumbnailPath: string };
 export interface MediaWorkerDependencies {
@@ -94,7 +94,7 @@ export async function processMediaValidationJob(deps: MediaWorkerDependencies, a
   const remaining = (cap = JOB_TIMEOUT_MS) => Math.max(1, Math.min(cap, deadline - Date.now()));
   const directory = await mkdtemp(join(tmpdir(), "byus-media-")); const source = join(directory, "source"), thumbnail = join(directory, "thumbnail.webp");
   try {
-    const max = job.kind === "image" ? IMAGE_MAX_BYTES : VIDEO_MAX_BYTES;
+    const max = job.kind === "image" ? IMAGE_MAX_BYTES : videoMaxBytes(job.purpose);
     const stored = await storeResponse(await within(deps.download(job.storagePath), remaining(60_000)), source, max);
     if (stored.size !== job.byteSize) throw new Error("MEDIA_SIZE_MISMATCH");
     let width = 0, height = 0, durationSeconds: number | null = null, contentType = stored.contentType;

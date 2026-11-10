@@ -33,7 +33,7 @@ export function useWaveMediaUpload(purpose: "fan_post" | "wave_album" | "wave_po
   }
   function add(files: File[], replaceKey?: string) {
     const existing=replaceKey?items.filter(item=>item.key!==replaceKey):items;
-    if (((purpose === "wave_post" && files.some(file => !file.type.startsWith("video/"))) || (purpose === "group_image" && files.some(file => !file.type.startsWith("image/")))) || !validWaveFiles(files, existing, photoLimit)) { setInvalid(true); return; }
+    if (((purpose === "wave_post" && files.some(file => !file.type.startsWith("video/"))) || (purpose === "group_image" && files.some(file => !file.type.startsWith("image/")))) || !validWaveFiles(files, existing, photoLimit, purpose)) { setInvalid(true); return; }
     setInvalid(false);
     if(replaceKey)remove(replaceKey);
     const added = files.map(file => ({ key: crypto.randomUUID(), file }));

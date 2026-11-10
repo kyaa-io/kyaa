@@ -174,7 +174,7 @@ function PostComposerForOwner({ board = false, introduction = false, program, sl
       onPickPhotos: files => void upload(files),
       disabled: !policyReady,
       photoBlocked,
-      onPickVideo: allowVideo ? file => { if (!["video/mp4", "video/quicktime"].includes(file.type)) { setProblem(mediaCopy.videoLimit); return; } setProblem(""); videoUploads.add([file]); } : undefined,
+      onPickVideo: allowVideo ? file => { if (!["video/mp4", "video/quicktime"].includes(file.type)) { setProblem(isWave ? mediaCopy.videoLimit : mediaCopy.videoLimit.replace(/50(?=MB|Mo| МБ)/, "200")); return; } setProblem(""); videoUploads.add([file]); } : undefined,
       videoBlocked: assets.length > 0 || hasVideo,
       onBlocked: () => setProblem(blockedMessage),
       renderAttachment,
@@ -186,7 +186,7 @@ function PostComposerForOwner({ board = false, introduction = false, program, sl
     </> : undefined}
     alerts={<>
       {allowMembers && visibility === "members" && <small className={styles.hint}>{copy.memberRequired}</small>}
-      {videoUploads.invalid && <p className={styles.error} role="alert">{mediaCopy.videoLimit}</p>}
+      {videoUploads.invalid && <p className={styles.error} role="alert">{(isWave ? mediaCopy.videoLimit : mediaCopy.videoLimit.replace(/50(?=MB|Mo| МБ)/, "200"))}</p>}
       {policy.error && !gated && <p role="alert" className={styles.error}>{copy.failed}<FanAction onClick={policy.retry}>{copy.retry}</FanAction></p>}
       {rich.tooLarge && <p className={styles.error} role="alert">{editorText(locale, "documentTooLarge")}</p>}
       {!rich.tooLarge && title.trim().length + rich.plainText.length + 1 > 5000 && <p className={styles.error} role="alert">{editorText(locale, "tooLong")}</p>}
@@ -213,7 +213,7 @@ function PostComposerForOwner({ board = false, introduction = false, program, sl
           <button type="button" className={styles.attachButton} disabled={!policyReady || busy} aria-disabled={photoBlocked || undefined} aria-describedby={problem ? `${fieldId}-photo-error` : undefined} onClick={() => { if (photoBlocked) { setProblem(blockedMessage); return; } photoInput.current?.click(); }}><ImagePlus aria-hidden="true" /><span className={styles.srOnly}>{introduction ? introductionCopy.optionalPhoto : photoLimit===10?sourceMedia.photos:copy.photos}{assets.length ? ` · ${assets.length}${policyReady?`/${photoLimit}`:""}` : ""}</span>{assets.length > 0 && <span className={styles.attachCount} aria-hidden="true">{assets.length}</span>}</button>
           <input ref={photoInput} type="file" tabIndex={-1} accept="image/jpeg,image/png,image/webp" multiple disabled={!policyReady || busy || hasVideo || assets.length >= photoLimit} aria-label={introduction ? introductionCopy.optionalPhoto : photoLimit===10?sourceMedia.photos:copy.photos} aria-describedby={problem ? `${fieldId}-photo-error` : undefined} aria-invalid={problem ? true : undefined} onChange={event => { void upload(event.target.files); event.target.value = ""; }} />
         </div>
-        {allowVideo && <div className={styles.photoPicker}><button type="button" className={styles.attachButton} disabled={!policyReady || busy} aria-disabled={assets.length > 0 || hasVideo || undefined} aria-describedby={problem ? `${fieldId}-photo-error` : undefined} onClick={() => { if (assets.length > 0 || hasVideo) { setProblem(blockedMessage); return; } videoInput.current?.click(); }}><Video aria-hidden="true" /><span className={styles.srOnly}>{!isWave?sourceMedia.video:mediaCopy.uploadVideo}</span></button><input ref={videoInput} type="file" tabIndex={-1} accept="video/mp4,video/quicktime" aria-label={!isWave?sourceMedia.video:mediaCopy.uploadVideo} disabled={!policyReady || busy || assets.length > 0 || hasVideo} onChange={event => { const files=Array.from(event.target.files ?? []);event.target.value="";if(files.length!==1||files.some(file=>!["video/mp4","video/quicktime"].includes(file.type))){setProblem(mediaCopy.videoLimit);return;}setProblem("");setVideoPlaying(false);videoUploads.add(files); }} /></div>}
+        {allowVideo && <div className={styles.photoPicker}><button type="button" className={styles.attachButton} disabled={!policyReady || busy} aria-disabled={assets.length > 0 || hasVideo || undefined} aria-describedby={problem ? `${fieldId}-photo-error` : undefined} onClick={() => { if (assets.length > 0 || hasVideo) { setProblem(blockedMessage); return; } videoInput.current?.click(); }}><Video aria-hidden="true" /><span className={styles.srOnly}>{!isWave?sourceMedia.video:mediaCopy.uploadVideo}</span></button><input ref={videoInput} type="file" tabIndex={-1} accept="video/mp4,video/quicktime" aria-label={!isWave?sourceMedia.video:mediaCopy.uploadVideo} disabled={!policyReady || busy || assets.length > 0 || hasVideo} onChange={event => { const files=Array.from(event.target.files ?? []);event.target.value="";if(files.length!==1||files.some(file=>!["video/mp4","video/quicktime"].includes(file.type))){setProblem(isWave ? mediaCopy.videoLimit : mediaCopy.videoLimit.replace(/50(?=MB|Mo| МБ)/, "200"));return;}setProblem("");setVideoPlaying(false);videoUploads.add(files); }} /></div>}
         {allowMembers && !program && !isWave && <button type="button" className={styles.visibilityTrigger} disabled={busy} aria-label={`${copy.visibility}: ${copy[visibility]}`} aria-haspopup="dialog" aria-expanded={visibilityOpen} onClick={() => setVisibilityOpen(true)}>
           <strong>{copy[visibility]}</strong><ChevronDown size={16} aria-hidden="true" />
         </button>}
@@ -226,7 +226,7 @@ function PostComposerForOwner({ board = false, introduction = false, program, sl
       <div className={styles.visibilityActions}><button type="button" onClick={() => setVisibilityOpen(false)}>{copy.cancel}</button></div>
     </AccessibleOverlay>}
     {allowMembers && !program && !isWave && visibility === "members" && <small id={`${fieldId}-members-hint`} className={styles.hint}>{copy.memberRequired}</small>}
-    {videoUploads.invalid && <p className={styles.error} role="alert">{mediaCopy.videoLimit}</p>}
+    {videoUploads.invalid && <p className={styles.error} role="alert">{(isWave ? mediaCopy.videoLimit : mediaCopy.videoLimit.replace(/50(?=MB|Mo| МБ)/, "200"))}</p>}
     {policy.error&&!gated&&<p role="alert" className={styles.error}>{copy.failed}<FanAction onClick={policy.retry}>{copy.retry}</FanAction></p>}
     {!uploading && (problem || mutation.error) && <p id={problem ? `${fieldId}-photo-error` : undefined} className={styles.error} role="alert">{problem || mutation.error}</p>}
     {failedPhotos.length > 0 && <FanAction disabled={busy} onClick={() => void upload(failedPhotos)}>{copy.retry}</FanAction>}
