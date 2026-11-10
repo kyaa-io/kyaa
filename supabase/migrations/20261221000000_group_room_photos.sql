@@ -4,10 +4,13 @@ set local lock_timeout='5s';
 alter table public.group_messages add column asset_id uuid unique references public.mobile_media_assets(id);
 alter table public.group_messages drop constraint group_messages_body_check;
 alter table public.group_messages add constraint group_messages_body_check check(length(btrim(body))<=2000 and (length(btrim(body))>0 or asset_id is not null));
-do $$declare source text;needle text;replacement text;definition text;begin
+do $$declare source text;needle text;replacement text;definition text;keep_tail boolean;begin
  select pg_get_constraintdef(oid)into strict definition from pg_constraint where conrelid='public.mobile_media_assets'::regclass and conname='mobile_media_assets_attached_type_check';
  alter table public.mobile_media_assets drop constraint mobile_media_assets_attached_type_check;
- execute 'alter table public.mobile_media_assets add constraint mobile_media_assets_attached_type_check check(('||substring(definition from 8 for length(definition)-8)||') or attached_type=''group_message'')';
+ -- Keep the B3 share_proof branch last: the B3 rollback strips it by that exact tail.
+ keep_tail:=position(' OR (attached_type = ''share_proof''::text)' in definition)>0;
+ definition:=replace(definition,' OR (attached_type = ''share_proof''::text)','');
+ execute 'alter table public.mobile_media_assets add constraint mobile_media_assets_attached_type_check check(('||substring(definition from 8 for length(definition)-8)||') or attached_type=''group_message'''||case when keep_tail then ' or attached_type=''share_proof''' else '' end||')';
  source:=pg_get_functiondef('public.groups_dispatch_before_content(text,uuid,uuid,uuid,jsonb,uuid)'::regprocedure);
  needle:=$old$insert into public.group_messages(room_id,author_id,body) values(r.id,p_actor,p_input->>'body') returning id into new_id;$old$;
  replacement:=$new$
