@@ -1,3 +1,4 @@
+vi.mock("../secret-room-config", () => ({ SECRET_ROOMS_ENABLED: true }));
 import {registerFanToastHandler,type FanToastOptions} from '@/components/fan-ui/fan-toast';
 import {groupCommentCopy} from './group-comment-copy';
 import { act, fireEvent, render, renderHook, screen, waitFor, within } from "@testing-library/react";

@@ -1,3 +1,4 @@
+vi.mock("../secret-room-config", () => ({ SECRET_ROOMS_ENABLED: true }));
 import { levelLabel } from "@/features/passport/domain/passport-read-model";
 import { dukjilText } from "@/features/dukjil/ui/dukjil-copy";
 import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
