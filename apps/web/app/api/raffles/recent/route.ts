@@ -16,7 +16,7 @@ async function getRecent(request: Request) {
     for (let i = 0; i < creators.length; i += 8) {
       const batch = await Promise.all(creators.slice(i, i + 8).map(async creator => {
         const { raffles } = await repository.list({ celebritySlug: creator.slug, locale, now });
-        return raffles.filter(raffle => raffleStatus(raffle, now.getTime()) === "closed" && raffle.entryClosesAt).map(raffle => ({ raffle, creator: { slug: creator.slug, name: creator.name } }));
+        return raffles.filter(raffle => raffleStatus(raffle, now.getTime()) === "closed" && raffle.entryClosesAt).map(raffle => ({ raffle, creator: { slug: creator.slug, name: creator.name, image: creator.image.url } }));
       }));
       results.push(...batch.flat());
     }

@@ -17,15 +17,25 @@
 .pastRows { display:flex; gap:var(--space-4); overflow-x:auto; }
 .pastRows > * { flex:0 0 260px; min-width:0; }
 @media (min-width:1024px) {
- .layout[data-has-past] { display:grid; }
- .layout[data-has-past] .card, .layout[data-has-past] .pastList { grid-area:1 / 1; }
- .layout[data-has-past] .card { padding-right:36%; }
- .pastList { z-index:1; align-self:center; justify-self:end; width:32%; margin:var(--space-5); }
+ .layout[data-has-past] { display:grid; grid-template-columns:minmax(0, 1.6fr) minmax(0, 1fr); gap:var(--space-6); }
+ 
+ .layout[data-has-past] .card { padding-right:var(--space-5); }
+ .pastList { z-index:1; align-self:center; justify-self:end; width:100%; margin:0; }
  .pastRows { display:block; overflow:visible; }
- .card { grid-template-columns:280px minmax(0,1fr); grid-template-rows:1fr auto auto 1fr; column-gap:var(--space-4); row-gap:0; min-height:300px; /* design-lint-disable N4 -- 사용자 2026-11-10 C4: 럭키드로우 무대 히어로 */ }
+ .card { grid-template-columns:minmax(160px, .9fr) minmax(0,1fr); grid-template-rows:1fr auto auto 1fr; column-gap:var(--space-4); row-gap:0; min-height:300px; /* design-lint-disable N4 -- 사용자 2026-11-10 C4: 럭키드로우 무대 히어로 */ }
  .stage { grid-column:1; grid-row:1/5; height:auto; margin:calc(var(--space-5) * -1) 0 calc(var(--space-5) * -1) calc(var(--space-5) * -1); }
  .copy { grid-column:2; grid-row:2; padding-left:calc(var(--space-10) + var(--space-1) / 2); }
  .glyph { left:-5.5px; }
  .meta { margin-top:var(--space-3); }.cost { margin-top:var(--space-4); }
  .actionBlock { grid-column:2; grid-row:3; width:200px; margin:var(--space-6) 0 0 calc(var(--space-10) + var(--space-1) / 2); }
 }
+
+.badge { display:inline-flex; margin-bottom:var(--space-2); padding:var(--space-1) var(--space-3); border-radius:var(--radius-pill); background:var(--color-accent-soft); color:var(--color-muted); }
+.pastRows { margin-top:var(--space-4); }
+.pastCard { display:flex; gap:var(--space-4); padding:var(--space-4); border:1px solid var(--color-line); border-radius:var(--radius-card); background:var(--color-surface); }
+.pastCard + .pastCard { margin-top:var(--space-3); }
+.thumbnail { width:96px; height:112px; object-fit:contain; flex-shrink:0; }
+.pastCopy { min-width:0; display:flex; flex-direction:column; align-items:flex-start; gap:var(--space-2); }
+.pastCopy strong { overflow-wrap:anywhere; }
+.pastCopy > :last-child { margin-top:auto; }
+@media(width < 64rem) { .pastCard + .pastCard { margin-top:0; } .pastRows > * { flex-basis:300px; } }
