@@ -23,6 +23,15 @@ begin
 end $$;
 create trigger clear_notice_dislike after insert on public.celebrity_notice_likes for each row execute function public.clear_opposite_notice_reaction();
 create trigger clear_notice_like after insert on public.celebrity_notice_dislikes for each row execute function public.clear_opposite_notice_reaction();
+create function public.scrub_notice_dislikes_on_deletion() returns trigger language plpgsql security definer set search_path='' as $$
+begin
+ if old.status='active' and new.status='disabled' and exists(select 1 from public.account_deletion_requests where app_user_id=new.id and status='pending') then
+ delete from public.celebrity_notice_dislikes where app_user_id=new.id;
+ end if;
+ return new;
+end $$;
+create trigger app_users_scrub_notice_dislikes after update of status on public.app_users for each row execute function public.scrub_notice_dislikes_on_deletion();
+revoke all on function public.scrub_notice_dislikes_on_deletion() from public,anon,authenticated,service_role;
 create function public.read_celebrity_notice_reaction(p_app_user_id uuid,p_slug text,p_notice_slug text,p_locale public.content_locale default 'ko')
 returns jsonb language plpgsql stable security definer set search_path='' as $$
 declare n jsonb; v_id uuid;
