@@ -17,7 +17,7 @@ import { ContentActions } from "@/features/content-safety/ui/content-actions";
 import { parseNoticeDocument } from "@/server/notice/notice-domain";
 import { TranslatedText } from "@/features/content-safety/ui/use-automatic-translation";
 import { NoticeBody, NoticeTitle, NoticeTranslation, NoticeTranslationControl } from "./notice-body";
-import { PostShareAction } from "@/features/fan-posts/ui/post-share-action";
+import { NoticeReactions } from "./notice-reactions";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import { FanSkeleton, FanSkeletonStatus } from "@/components/fan-ui/fan-skeleton";
 import styles from "./notice-detail.module.css";
@@ -39,10 +39,11 @@ export function NoticeDetail({ slug, noticeSlug, locale, officialPostLabel }: { 
       <div className={`${styles.layout} ${related.length ? styles.relatedLayout : ""}`}>
         <article className={styles.article}>
           <NoticeTranslation title={notice.title} document={notice.body} locale={locale}>
-          <header className={styles.header}><span>{notice.postType === "artist_post" ? officialPostLabel ?? copy.artistPost : copy.notice} · {copy[notice.visibility]}</span><NoticeTitle locale={locale} /><div className={styles.meta}><time dateTime={notice.publishedAt}>{format(notice.publishedAt)}</time><span className={styles.metaActions}><PostShareAction title={notice.title} locale={locale} /><ContentActions targetType="notice" targetId={notice.id} locale={locale} canBlock={false} onChanged={detail.retry} /></span></div><NoticeTranslationControl locale={locale} /></header>
+          <header className={styles.header}><span>{notice.postType === "artist_post" ? officialPostLabel ?? copy.artistPost : copy.notice} · {copy[notice.visibility]}</span><NoticeTitle locale={locale} /><div className={styles.meta}><time dateTime={notice.publishedAt}>{format(notice.publishedAt)}</time><span className={styles.metaActions}><ContentActions targetType="notice" targetId={notice.id} locale={locale} canBlock={false} onChanged={detail.retry} /></span></div><NoticeTranslationControl locale={locale} /></header>
           {detail.refreshFailed && <p role="status">{copy.failed}<FanAction variant="text" onClick={detail.retry}>{copy.retry}</FanAction></p>}
           <NoticeBody document={notice.body} locale={locale} />
           </NoticeTranslation>
+          <NoticeReactions slug={slug} noticeSlug={noticeSlug} title={notice.title} locale={locale} />
           <NoticeComments slug={slug} noticeSlug={noticeSlug} locale={locale} welcome={notice.kind === "welcome"} />
         </article>
         {related.length > 0 && <aside className={styles.recent} aria-labelledby="recent-notices"><h2 id="recent-notices">{locale === "ko" ? "최근 공지" : translate(locale, messages.mc51097f53111, "Recent Notices")}</h2>{related.map(item => <Link key={item.id} href={`/c/${slug}/notices/${item.slug}?locale=${locale}&returnTo=${encodeURIComponent(returnTo)}`}><strong><TranslatedText text={item.title} locale={locale} controls={false} /></strong><small>{format(item.publishedAt)}</small></Link>)}</aside>}
