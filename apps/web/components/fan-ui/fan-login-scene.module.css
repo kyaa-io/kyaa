@@ -3,7 +3,7 @@
 .item { flex:none; inline-size:clamp(56px,17vw,88px); block-size:auto; aspect-ratio:1; object-fit:contain; animation:fan-login-float 3.6s ease-in-out infinite; animation-delay:var(--float-delay,0s); will-change:transform; }
 .item:nth-child(even) { animation-duration:4.4s; }
 .scene[data-login-scene="cover"] .stage { position:relative; display:grid; place-items:center; inline-size:min(100%,264px); min-block-size:0; }
-.cover { grid-area:1/1; inline-size:100%; block-size:auto; aspect-ratio:1536/1024; object-fit:contain; }
+.cover { grid-area:1/1; inline-size:100%; block-size:auto; object-fit:contain; }
 .scene[data-login-scene="cover"] .item { grid-area:1/1; inline-size:clamp(48px,15vw,72px); }
 .scene[data-login-scene="cover"] .item:nth-of-type(1) { justify-self:end; align-self:start; translate:6% -6%; }
 .scene[data-login-scene="cover"] .item:nth-of-type(2) { justify-self:start; align-self:end; translate:-6% 6%; }

@@ -173,10 +173,12 @@ export function MyPassportCardSkeleton({ title }: { title: string }) {
 }
 
 /** 비로그인 패스포트 카드. 로그인 화면과 같은 외곽: 여권 그림과 로그인 버튼, 공개 미션북 9칸. 내 값은 내지 않는다. */
+const GUEST_PASSPORT_IMAGE = "/images/passport/passport-cover-closed.webp";
+
 export function MyGuestPassportCard({ locale, labels, compact = false }: { locale: AppLocale; labels: Pick<MyPassportLabels, "title" | "detail">; compact?: boolean }) {
   return <section className={`${styles.card} ${styles.guest} ${compact ? styles.compact : ""}`} aria-label={labels.title}>
     <header><FanHeading>{labels.title}</FanHeading><FanSectionLink href={`/passports?locale=${locale}`}>{labels.detail}</FanSectionLink></header>
-    <FanLoginScene className={styles.guestScene} cover={{ src: "/images/passport/passport-open-book.svg", width: 1536, height: 1024 }} items={["stamp", "heart"].map((name) => ({ src: `/images/dukjil-duo/glyph-${name}-160.webp`, srcSet: `/images/dukjil-duo/glyph-${name}-160.webp 1x, /images/dukjil-duo/glyph-${name}-512.webp 3x` }))} title={`${myHomeText(locale, "tierLabel")} · ${myHomeText(locale, "stampsLabel")}`} action={<GuestLoginAction locale={locale} returnTo={`/my?locale=${locale}`} variant="primary" fullWidth />} />
+    <FanLoginScene className={styles.guestScene} cover={{ src: GUEST_PASSPORT_IMAGE, width: 800, height: 1067 }} items={[]} action={<GuestLoginAction locale={locale} returnTo={`/my?locale=${locale}`} variant="primary" fullWidth />} />
     <div className={styles.guestBook}><DukjilProvider locale={locale}><GuestMissionBook locale={locale} wide headingLevel={3} /></DukjilProvider></div>
   </section>;
 }
