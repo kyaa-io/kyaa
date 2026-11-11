@@ -14,7 +14,8 @@
     "@solana-program/memo": "0.10.0",
     "@solana-program/system": "0.10.0",
     "@solana-program/token": "0.9.0",
-    "@solana/kit": "5.5.1"
+    "@solana/kit": "5.5.1",
+    "viem": "2.55.4"
   },
   "overrides": {
     "next": {
