@@ -1,5 +1,4 @@
 {
   "changes": ["아티스트 소식의 목록과 상세에서 좋아요·싫어요를 누르고 소식 링크를 공유할 수 있어요."],
-  "path": "/elina?tab=notice",
-  "images": []
+  "path": "/elina"
 }
