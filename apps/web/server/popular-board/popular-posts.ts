@@ -15,7 +15,7 @@ export function createGetPublicPopularPosts(dependencies: Pick<FanpageDependenci
     const locales = query.getAll("locale");
     const pages = query.getAll("page");
     const sorts = query.getAll("sort");
-    const sort = z.enum(["likes", "comments", "views"]).safeParse(sorts[0] ?? "likes");
+    const sort = z.enum(["likes", "comments", "views", "latest"]).safeParse(sorts[0] ?? "likes");
     const page = z.string().regex(/^[1-9]\d{0,3}$/).transform(Number).pipe(z.number().max(1000)).safeParse(pages[0] ?? "1");
     const locale = z.enum(["ko", "en"]).safeParse(locales[0] ?? "ko");
     if (locales.length > 1 || !locale.success || pages.length > 1 || !page.success || sorts.length > 1 || !sort.success) return json({ error: { code: "FAN_WEB_INVALID_INPUT" } }, 400);

@@ -28,6 +28,8 @@ describe("popular posts route", () => {
     const { rpc, handler } = make(true);
     expect((await handler(new Request("http://x/api/public/popular-posts?sort=views"))).status).toBe(200);
     expect(rpc).toHaveBeenCalledWith("read_public_popular_posts_sorted", expect.objectContaining({ p_sort: "views" }));
+    expect((await handler(new Request("http://x/api/public/popular-posts?sort=latest"))).status).toBe(200);
+    expect(rpc).toHaveBeenLastCalledWith("read_public_popular_posts_sorted", expect.objectContaining({ p_sort: "latest" }));
     expect((await handler(new Request("http://x/api/public/popular-posts?sort=unknown"))).status).toBe(400);
     expect((await handler(new Request("http://x/api/public/popular-posts?sort=views&sort=likes"))).status).toBe(400);
   });

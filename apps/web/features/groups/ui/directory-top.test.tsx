@@ -109,6 +109,19 @@ it("hot sort requests the selected ordering from the server", async () => {
   expect(screen.getByText("조회 7")).toBeInTheDocument();
 });
 
+it("hot sort offers 최신순 after 조회수순, requests sort=latest and keeps 좋아요순 as the default", async () => {
+  state.urls = [];
+  state.posts = [post(1)];
+  render(<HotPosts locale="ko" />);
+  expect(state.urls.at(-1)).toContain("sort=likes");
+  fireEvent.click(screen.getByRole("button", { name: /좋아요순/ }));
+  const labels = (await screen.findAllByRole("menuitemradio")).map((item) => item.textContent);
+  expect(labels).toEqual(["좋아요순", "댓글순", "조회수순", "최신순"]);
+  fireEvent.click(screen.getByRole("menuitemradio", { name: "최신순" }));
+  expect(state.urls.at(-1)).toContain("sort=latest");
+  expect(screen.getByRole("button", { name: /최신순/ })).toBeInTheDocument();
+});
+
 it("hot posts: a row draws its page's picture, or the default avatar image — never an empty ring or the grey figure", () => {
   state.posts = [{ ...post(1), pageImageUrl: "https://x/p1.webp" }, post(2)];
   const { container } = render(<HotPosts locale="ko" />);

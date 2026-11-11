@@ -2185,7 +2185,7 @@ At the user's request, registered Changha identity and hero images use the unedi
 
 ### 2026-11-10 14:00 피드백 슬라이드 — 로컬 반영
 - Google Slides `10IsbKd4pM_bv6bxGaXR327oLpzTku2QAbyRoYV7NAMc`의 2–10장 사용자 요청. 기존 브랜드·핑크/보라 토스트·공통 행을 보존하는 국소 교정이다.
-- Hot 정렬은 `좋아요순·댓글순·조회수순`. 원문/번역 전환은 공통 TranslationControl에서 13px/400, 파란 `--color-translation-link`(#2876ad), 44px 터치 영역을 유지한다. 원문 데이터는 바꾸지 않는다.
+- Hot 정렬은 `좋아요순·댓글순·조회수순·최신순`(2026-11-11 사용자 요청: 작성 시각 내림차순, 기본은 좋아요순). 원문/번역 전환은 공통 TranslationControl에서 13px/400, 파란 `--color-translation-link`(#2876ad), 44px 터치 영역을 유지한다. 원문 데이터는 바꾸지 않는다.
 - 팬페이지 홈 활동과 오늘의 덕질은 기존 FanMissionRow를 공유하고 공감을 기본 목록에 포함한다. 게시판에는 글 목록/상세만 남기고 챌린지·활동·등급·이벤트 보조열을 제거하며 1열 최대720px를 유지한다. 홈의 응원과 이벤트 링크도 제거한다.
 - 교환 시트 수량 위에 실제 정책 pointCost P → 기존 응모권 asset 32px + 1장, 항목 간 12px, 수량 그룹과 20px 간격을 둔다. 기존 400px 모바일 최소높이와 440px 데스크톱 상한을 유지한다.
 - 출석 성공 보상은 도장 애니메이션과 동시에 표시한다. 행동 없는 성공 토스트는 기본 4초 뒤 닫히며 키보드로 토스트에 초점을 둔 동안에는 닫힘을 미룬다. 오류·재시도 행동·명시적 duration=0은 기존 수명주기를 유지한다.
