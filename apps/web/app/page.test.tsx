@@ -93,11 +93,11 @@ describe("Home server content isolation", () => {
     }
   });
 
-  it("reads up to 12 gallery photos with the page and settles to rejected when the read fails", async () => {
+  it("reads up to 24 gallery photos (the home block shows the 12 most varied) with the page and settles to rejected when the read fails", async () => {
     const page = { items: [{ id: "p1" }], nextCursor: null };
     repositories.homeGallery.mockResolvedValue(page);
     const result = await HomePage({ searchParams: Promise.resolve({ locale: "ko" }) });
-    expect(repositories.homeGallery).toHaveBeenCalledWith("ko", { limit: 12 });
+    expect(repositories.homeGallery).toHaveBeenCalledWith("ko", { limit: 24 });
     expect(await props(result).queries.homeGallery).toEqual({ status: "fulfilled", value: page });
     expect(repositories.homeGallery).toHaveBeenCalledTimes(1);
     repositories.homeGallery.mockRejectedValue(new Error("gallery unavailable"));

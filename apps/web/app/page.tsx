@@ -35,7 +35,7 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
     homeBanners: settleHomeQuery(measureHomeQuery("homeBanners", () => bannerRepository.list(toContentLocale(locale)))),
     homeSlots: settleHomeQuery(measureHomeQuery("homeSlots", () => bannerRepository.listSlots(toContentLocale(locale), "home"))),
     homeNotices: settleHomeQuery(measureHomeQuery("homeNotices", () => noticeRepository.listPublished(toContentLocale(locale), { limit: 5 }))),
-    homeGallery: settleHomeQuery(measureHomeQuery("homeGallery", () => galleryRepository.listPublished(toContentLocale(locale), { limit: 12 }))),
+    homeGallery: settleHomeQuery(measureHomeQuery("homeGallery", () => galleryRepository.listPublished(toContentLocale(locale), { limit: 24 }))),
     homeShorts: settleHomeQuery(measureHomeQuery("homeShorts", () => galleryRepository.listShorts(toContentLocale(locale), { limit: 12 }))),
     elinaRaffles: settleHomeQuery(measureHomeQuery("elinaRaffles", () => createRaffleDependencies().list({ celebritySlug: "elina", locale: toContentLocale(locale), now: new Date() }))),
   };

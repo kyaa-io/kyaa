@@ -14,6 +14,7 @@ import { Check, CircleAlert, Clock, Copy, RotateCcw, X } from "lucide-react";
 import Link from "next/link";
 import type { Route } from "next";
 import { useEffect, useRef, useState } from "react";
+import { useDukjil } from "@/features/dukjil/ui/dukjil-provider";
 import { notifyFanActivityUpdated } from "@/components/fan-ui/fan-activity-updates";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import { FanSectionLink } from "@/components/fan-ui/fan-section-link";
@@ -26,6 +27,20 @@ import { communityStampAction, useCommunityStamps } from "./use-community-stamps
 import styles from "./community-stamps.module.css";
 
 type Locale = AppLocale;
+/** Stamps the policy gives beyond the original five, each with the place it is earned from MY (no creator chosen yet, so creator actions lead to the creator list). `rule` is the catalog rule that must exist. */
+const MORE_STAMPS: readonly { kind: CommunityStampKind; rule: string; href: string }[] = [
+  { kind: "post", rule: "post", href: "/celebrities" },
+  { kind: "reaction", rule: "reaction", href: "/celebrities" },
+  { kind: "quiz", rule: "quiz", href: "/celebrities" },
+  { kind: "live_reserve", rule: "live_reserve", href: "/live" },
+  { kind: "live_attend", rule: "live_attend", href: "/live" },
+  { kind: "survey", rule: "survey", href: "/live" },
+  { kind: "mission", rule: "mission", href: "/live" },
+  { kind: "event_checkin", rule: "event_checkin", href: "/celebrities" },
+  { kind: "event_review", rule: "event_review", href: "/celebrities" },
+  { kind: "proof", rule: "proof", href: "/celebrities" },
+  { kind: "steady_checkin", rule: "checkin", href: "/my/wallet?view=attendance" },
+];
 type Resource = ReturnType<typeof useCommunityStamps>;
 function errorCopy(error: unknown, locale: Locale) {
   const code = error instanceof Error ? error.message : "";
@@ -77,7 +92,10 @@ function OwnerCollection({ locale, creator, resource, creatorNames }: { locale: 
   }, [historyFocus]);
   const stamps = resource.state.status === "ready" ? resource.state.data.stamps : [];
   const visible = stamps.filter(stamp => !creator || stamp.celebritySlug === creator);
-  const kinds = AVAILABLE_COMMUNITY_STAMPS.filter(kind => !creator || COMMUNITY_STAMPS[kind].scope === "creator");
+  const catalog = useDukjil()?.catalog;
+  // MY lists the other stamps the active policy really gives (a rule in the catalog), after the original five; a creator's page keeps its own short list.
+  const more = creator ? [] : MORE_STAMPS.filter(item => Boolean(catalog?.rules[item.rule]));
+  const kinds: readonly CommunityStampKind[] = [...AVAILABLE_COMMUNITY_STAMPS.filter(kind => !creator || COMMUNITY_STAMPS[kind].scope === "creator"), ...more.map(item => item.kind)];
   const earned = (kind: CommunityStampKind) => visible.find(stamp => stamp.kind === kind);
   async function run(action: "welcome" | "invite-code" | "redeem-invite") {
     if (busy) return;
@@ -105,13 +123,13 @@ function OwnerCollection({ locale, creator, resource, creatorNames }: { locale: 
     <div className={styles.heading}><h2 id="community-stamps-title">{locale === "ko" ? "스탬프 모으기" : translate(locale, localizedMessages.m7a8ba5792eaa, "Collect Stamps")}</h2>{visible.length > 0 && <FanSectionLink onClick={() => setHistoryOpen(open => !open)} expanded={historyOpen} controls="community-stamp-history">{passportBookText(locale, "communityHistory")} · {visible.length}</FanSectionLink>}</div>
     {resource.state.status === "loading" ? <FanSkeletonRows rows={3} variant="entity" ariaLabel={locale === "ko" ? "스탬프를 불러오고 있어요." : translate(locale, localizedMessages.m14ba0b095bf9, "Loading your Stamps.")} />  : resource.state.status === "error" && resource.state.kind === "missing" && creator ? <div className={styles.status} role="status"><p>{locale === "ko" ? "현재 이 최애의 스탬프 활동을 이용할 수 없어요." : translate(locale, localizedMessages.m3f3e69fa36eb, "Stamp activities for this artist are currently unavailable.")}</p><Link className={styles.action} href={`/my?locale=${locale}#community-stamps` as Route}>{locale === "ko" ? "내 스탬프 보기" : translate(locale, localizedMessages.mb43cbc171691, "View my Stamps")}</Link></div> : resource.state.status === "error" ? <p className={styles.status} role="alert">{locale === "ko" ? "스탬프를 불러오지 못했어요." : translate(locale, localizedMessages.m6f4e687b2a1d, "Couldn’t load your Stamps.")} <button className={styles.action} onClick={resource.retry}><RotateCcw aria-hidden="true"/>{locale === "ko" ? "다시 시도" : translate(locale, localizedMessages.mf721ef255caa, "Try again")}</button></p> : <>
       {resource.refreshFailed && <p role="alert" className={styles.status}>{locale === "ko" ? "최신 기록을 확인하지 못했어요." : translate(locale, localizedMessages.m4bdba754452a, "Couldn’t refresh your Stamps.")} <button className={styles.action} onClick={resource.retry}>{locale === "ko" ? "다시 시도" : translate(locale, localizedMessages.m11bce3427a8f, "Retry")}</button></p>}
-      <ul className={styles.rows}>{kinds.map(kind => {
-        const stamp = earned(kind); const info = COMMUNITY_STAMPS[kind];
+      <ul className={styles.rows} data-wide={kinds.length > 5 || undefined}>{kinds.map(kind => {
+        const stamp = earned(kind); const extra = more.find(item => item.kind === kind);
         const href = creator ? kind === "daily_checkin" ? `${creatorHomeHref(creator)}?locale=${locale}#daily-checkin` : boardHref(creator, locale, { source: "fans" }) : kind === "share" ? `/passports?locale=${locale}` : `/celebrities?locale=${locale}`;
         return <li className={styles.row} data-earned={!!stamp} key={kind}>
           <CommunityStampArtwork kind={kind} locale={locale} className={styles.art} decorative/>
-          <span className={styles.rowName}><strong>{info[locale]}</strong>{stamp && <span className={styles.state}><Check aria-hidden="true"/>{locale === "ko" ? "획득" : translate(locale, localizedMessages.ma5f24c183a36, "Earned")}</span>}</span>
-          {stamp ? <div className={styles.cardActions}><button className={styles.action} onClick={() => setSelected({ stamp, from: "card" })}>{locale === "ko" ? "스탬프 보기" : translate(locale, localizedMessages.mc4481ae2313e, "View Stamp")}</button>{kind === "share" && creator && <SharePassport quiet creator={{ slug: creator, name: creator }} locale={locale}/>}</div> : kind === "welcome" ? <button className={styles.action} disabled={busy} onClick={() => void run("welcome")}>{locale === "ko" ? "가입 스탬프 받기" : translate(locale, localizedMessages.m41ade7763a1c, "Get welcome Stamp")}</button> : kind === "invite" ? <button className={styles.action} disabled={busy} onClick={() => { setInviteOpen(true); void run("invite-code"); }}>{locale === "ko" ? "친구 초대하기" : translate(locale, localizedMessages.ma5023c1cc581, "Invite a friend")}</button> : kind === "share" && creator ? <SharePassport quiet creator={{ slug: creator, name: creator }} locale={locale}/> : <Link className={styles.action} href={href as Route}>{kind === "daily_checkin" ? (locale === "ko" ? "출석하러 가기" : translate(locale, localizedMessages.md29cb19a1b1d, "Check in")) : kind === "share" ? (locale === "ko" ? "공유" : translate(locale, shareMessages.m74d551a80196, "Share")) : (locale === "ko" ? "댓글 남기기" : translate(locale, localizedMessages.m2e60da1bfeff, "Leave a comment"))}</Link>}
+          <span className={styles.rowName}><strong>{communityStampLabel(kind, locale)}</strong>{stamp && <span className={styles.state}><Check aria-hidden="true"/>{locale === "ko" ? "획득" : translate(locale, localizedMessages.ma5f24c183a36, "Earned")}</span>}</span>
+          {stamp ? <div className={styles.cardActions}><button className={styles.action} onClick={() => setSelected({ stamp, from: "card" })}>{locale === "ko" ? "스탬프 보기" : translate(locale, localizedMessages.mc4481ae2313e, "View Stamp")}</button>{kind === "share" && creator && <SharePassport quiet creator={{ slug: creator, name: creator }} locale={locale}/>}</div> : extra ? <Link className={styles.action} href={`${extra.href}${extra.href.includes("?") ? "&" : "?"}locale=${locale}` as Route}>{locale === "ko" ? "받으러 가기" : "Go earn it"}</Link> : kind === "welcome" ? <button className={styles.action} disabled={busy} onClick={() => void run("welcome")}>{locale === "ko" ? "가입 스탬프 받기" : translate(locale, localizedMessages.m41ade7763a1c, "Get welcome Stamp")}</button> : kind === "invite" ? <button className={styles.action} disabled={busy} onClick={() => { setInviteOpen(true); void run("invite-code"); }}>{locale === "ko" ? "친구 초대하기" : translate(locale, localizedMessages.ma5023c1cc581, "Invite a friend")}</button> : kind === "share" && creator ? <SharePassport quiet creator={{ slug: creator, name: creator }} locale={locale}/> : <Link className={styles.action} href={href as Route}>{kind === "daily_checkin" ? (locale === "ko" ? "출석하러 가기" : translate(locale, localizedMessages.md29cb19a1b1d, "Check in")) : kind === "share" ? (locale === "ko" ? "공유" : translate(locale, shareMessages.m74d551a80196, "Share")) : (locale === "ko" ? "댓글 남기기" : translate(locale, localizedMessages.m2e60da1bfeff, "Leave a comment"))}</Link>}
         </li>;
       })}</ul>
       {!creator && earned("invite") && !inviteOpen && <button className={styles.action} onClick={() => { setInviteOpen(true); void run("invite-code"); }}>{locale === "ko" ? "내 초대코드" : translate(locale, localizedMessages.me2bf91513187, "My invite code")}</button>}

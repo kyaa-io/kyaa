@@ -1,0 +1,12 @@
+{
+  "changes": [
+    "MY의 바로가기 목록 맨 끝 빈 칸에 로그아웃을 다른 항목과 같은 모양으로 넣었어요. 문 밖으로 나가는 그림이 함께 나오고, 누르면 지금처럼 한 번 더 확인한 뒤 로그아웃돼요.",
+    "목록 아래에 따로 있던 로그아웃 줄은 없앴어요.",
+    "캡처는 로그인 화면이 아니라 바로가기 목록만 따로 띄운 로컬 확인 화면이에요."
+  ],
+  "path": "/my",
+  "images": [
+    "release-notes/images/2026-11-11-my-logout-shortcut-pc.png",
+    "release-notes/images/2026-11-11-my-logout-shortcut-mobile.png"
+  ]
+}

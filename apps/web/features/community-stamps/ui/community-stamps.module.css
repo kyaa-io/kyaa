@@ -11,7 +11,7 @@
 .rowName { display:flex; min-width:0; flex-wrap:wrap; align-items:center; gap:var(--space-1) var(--space-2); }
 .rowName strong { min-width:0; font-size:var(--fan-item-title-size); font-weight:var(--fan-item-title-weight); line-height:var(--fan-body-leading); overflow-wrap:anywhere; }
 /* 데스크톱도 같은 컴팩트 행(52~56)이고, 행 너비를 묶어 이름과 행동 사이가 비지 않게 한다. */
-@media (min-width:1024px) { .rows { max-width:560px; } }
+@media (min-width:1024px) { .rows { max-width:560px; } .rows[data-wide] { max-width:none; grid-template-columns:repeat(2,minmax(0,1fr)); column-gap:var(--space-6); } .rows[data-wide] > .row:nth-child(2) { border-top:0; } }
 /* 행동이 둘인 행(공유)만 좁은 화면에서 다음 줄로 내린다. */
 @media (max-width:480px) { .row:has(.cardActions > :nth-child(2)) { grid-template-columns:40px minmax(0,1fr); } .row:has(.cardActions > :nth-child(2)) > :last-child { grid-column:2; justify-self:start; } }
 .state { display:inline-flex; align-items:center; gap:var(--space-1); color:var(--color-service-ink); font-size:var(--fan-metadata-size); font-weight:var(--fan-item-title-weight); }

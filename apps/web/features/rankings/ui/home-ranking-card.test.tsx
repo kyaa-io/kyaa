@@ -20,7 +20,7 @@ const creatorRow = (rank: number, extra: Record<string, unknown> = {}) => ({ ran
 const creators = (extra: Record<string, unknown> = {}) => ({ state: "ready", metric: "hearts", day: "2026-11-08", computedAt: null, comparable: true, weekGainDays: 7,
   rows: [creatorRow(1, { slug: "elina", name: "엘리나", score: 40, hearts: 40, fans: 3, challenge: true, weekGain: 12 }), creatorRow(2, { weekGain: 0 }), creatorRow(3)], ...extra });
 
-afterEach(() => { vi.unstubAllGlobals(); vi.useRealTimers(); clearResources(); auth.value = { ...auth.value, authenticated: false, user: null }; });
+afterEach(() => { window.localStorage.clear(); vi.unstubAllGlobals(); vi.useRealTimers(); clearResources(); auth.value = { ...auth.value, authenticated: false, user: null }; });
 
 /** Answers by URL: the fan or creator body, with the asked metric written back as the server does. */
 function stub(fanBody: Record<string, unknown> = fans(), creatorBody: Record<string, unknown> = creators()) {
@@ -122,13 +122,13 @@ it("moves only changed rows on refresh and respects reduced motion", async () =>
   let clock = Date.parse("2026-11-08T03:00:00Z"); now.mockImplementation(() => clock);
   try {
     for (const reduced of [false, true]) {
-      clearResources(); animate.mockClear();
+      clearResources(); animate.mockClear(); window.localStorage.clear();
       vi.stubGlobal("matchMedia", () => ({ matches: reduced, addEventListener() {}, removeEventListener() {} }));
       let answer = fans([fanRow(1, { nickname: "가" }), fanRow(2, { nickname: "나" }), fanRow(3, { nickname: "다" })]);
       vi.stubGlobal("fetch", vi.fn(async (url: RequestInfo | URL) => Response.json(String(url).includes("kind=fans") ? answer : creators())));
       const view = render(<HomeRankingCard locale="ko" />);
       await screen.findByText("가");
-      expect(animate).not.toHaveBeenCalled();
+      animate.mockClear(); // a first visit rings places 1-3 (own test below)
       answer = fans([fanRow(1, { nickname: "나" }), fanRow(2, { nickname: "가" }), fanRow(3, { nickname: "다" })]);
       clock += 11 * 60 * 1000;
       document.dispatchEvent(new Event("visibilitychange"));
@@ -158,7 +158,7 @@ it("does not claim hidden ranks or draw login rows for short/empty answers", asy
   expect(screen.queryByText(/6~10/)).toBeNull();
 });
 
-it("rings only the rows whose value changed, never on the first answer", async () => {
+it("rings only the rows whose value changed between two answers of one visit", async () => {
   auth.value = { ...auth.value, authenticated: true, user: { id: "viewer" } };
   const animate = vi.fn(() => ({}) as Animation);
   Element.prototype.animate = animate;
@@ -170,7 +170,7 @@ it("rings only the rows whose value changed, never on the first answer", async (
     vi.stubGlobal("fetch", vi.fn(async (url: RequestInfo | URL) => Response.json(String(url).includes("kind=fans") ? answer : creators())));
     const view = render(<HomeRankingCard locale="ko" />);
     await screen.findByText("가");
-    expect(animate).not.toHaveBeenCalled();
+    animate.mockClear();
     answer = fans([fanRow(1, { nickname: "가" }), fanRow(2, { nickname: "나", hearts: 99, score: 99 })]);
     clock += 11 * 60 * 1000;
     document.dispatchEvent(new Event("visibilitychange"));
@@ -192,11 +192,44 @@ it("a period change is not a value change: no ring (and no move) when the tabs s
     vi.stubGlobal("fetch", vi.fn(async (url: RequestInfo | URL) => Response.json(String(url).includes("kind=fans") ? (String(url).includes("period=day") ? answers.day : answers.all) : creators())));
     render(<HomeRankingCard locale="ko" />);
     await screen.findByText("가");
-    for (const name of ["오늘", "누적", "오늘", "누적"]) {
+    const visit = async (names: string[]) => { for (const name of names) {
       fireEvent.click(screen.getAllByRole("button", { name }).find((b) => b.closest("nav"))!);
       await waitFor(() => expect(screen.getAllByText("가").length).toBeGreaterThan(0));
-    }
+    } };
+    await visit(["오늘", "누적"]); // the first look at each period is its own first visit
+    animate.mockClear();
+    await visit(["오늘", "누적", "오늘", "누적"]);
     expect(animate).not.toHaveBeenCalled();
+  } finally {
+    delete (Element.prototype as Partial<Element>).animate;
+  }
+});
+
+it("rings places 1-3 once on a first visit, and afterwards only the rows that differ from what the visitor last saw", async () => {
+  const animate = vi.fn(() => ({}) as Animation);
+  Element.prototype.animate = animate;
+  const rotations = () => animate.mock.calls.filter(call => JSON.stringify(call).includes("rotate")).length;
+  try {
+    vi.stubGlobal("matchMedia", () => ({ matches: false, addEventListener() {}, removeEventListener() {} }));
+    const body = (second: number) => fans([fanRow(1, { nickname: "가", points: 50, hearts: 5 }), fanRow(2, { nickname: "나", points: second, hearts: 5 }), fanRow(3, { nickname: "다", points: 30, hearts: 5 }), fanRow(4, { nickname: "라", points: 20, hearts: 5 })]);
+    const rowsOnly = () => ({ ...creators(), rows: [] });
+    vi.stubGlobal("fetch", vi.fn(async (url: RequestInfo | URL) => Response.json(String(url).includes("kind=fans") ? body(40) : rowsOnly())));
+    const first = render(<HomeRankingCard locale="ko" />);
+    await screen.findByText("가");
+    expect(rotations()).toBe(3);
+    first.unmount();
+    // The same values again: nothing rings.
+    clearResources(); animate.mockClear();
+    const again = render(<HomeRankingCard locale="ko" />);
+    await screen.findByText("가");
+    expect(rotations()).toBe(0);
+    again.unmount();
+    // One value moved since the last visit: only that row rings.
+    clearResources(); animate.mockClear();
+    vi.stubGlobal("fetch", vi.fn(async (url: RequestInfo | URL) => Response.json(String(url).includes("kind=fans") ? body(45) : rowsOnly())));
+    render(<HomeRankingCard locale="ko" />);
+    await screen.findByText("가");
+    expect(rotations()).toBe(1);
   } finally {
     delete (Element.prototype as Partial<Element>).animate;
   }
@@ -211,4 +244,16 @@ it("shows points as the coin asset and likes as the heart asset, never the lette
   expect(main("fan").textContent).toBe("7,480");
   expect(main("creator").querySelector("[data-icon='heart']")).not.toBeNull();
   expect(main("creator").textContent).toBe("105");
+});
+
+it("shows ▲▼ for a row that moved since the visitor last looked, and nothing for a row they had not seen", async () => {
+  window.localStorage.setItem("kyaa:rank-seen2:fans:points:all", JSON.stringify({ v: { "n:가": 50, "n:나": 40 }, r: { "n:가": 2, "n:나": 1 } }));
+  const answer = fans([fanRow(1, { nickname: "가", points: 50 }), fanRow(2, { nickname: "나", points: 40 }), fanRow(3, { nickname: "다", points: 30 })]);
+  vi.stubGlobal("fetch", vi.fn(async (url: RequestInfo | URL) => Response.json(String(url).includes("kind=fans") ? answer : { ...creators(), rows: [] })));
+  const { container } = render(<HomeRankingCard locale="ko" />);
+  await screen.findByText("가");
+  const mark = (name: string) => container.querySelector(`li[data-row='fan-rank']:has([title='${name}']) [data-delta-cell]`);
+  expect(mark("가")?.getAttribute("aria-label")).toBe("1계단 올라감");
+  expect(mark("나")?.getAttribute("aria-label")).toBe("1계단 내려감");
+  expect(mark("다")).toBeNull();
 });

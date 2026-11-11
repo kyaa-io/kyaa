@@ -165,6 +165,11 @@ it('puts every shortcut in one grid', () => {
   expect(within(grid).getAllByRole('link').map(link => link.textContent)).toEqual(['내 최애', '활동 내역', '내 응모 내역', '선물', '예약한 LIVE', '신청 내역', '친구와 메시지', '접수한 신고', '문의 내역']);
   expect(within(grid).getByRole('link', { name: '내 응모 내역' })).toHaveAttribute('href', '/my/raffles?locale=ko');
   expect(within(grid).getByRole('link', { name: '내 최애' })).toHaveAttribute('href', '/celebrities?locale=ko');
-  expect(grid.querySelectorAll('img[src^="/images/my/shortcuts/"]')).toHaveLength(9);
+  expect(grid.querySelectorAll('img[src^="/images/my/shortcuts/"]')).toHaveLength(10);
+  // 로그아웃은 같은 목록의 마지막 칸이고, 따로 놓인 로그아웃 줄은 없다.
+  const logout = within(grid).getByRole('button', { name: '로그아웃' });
+  expect(logout.querySelector('img')).toHaveAttribute('src', '/images/my/shortcuts/logout.webp');
+  expect(grid.lastElementChild).toBe(logout);
+  expect(screen.getAllByRole('button', { name: '로그아웃' })).toHaveLength(1);
 });
 

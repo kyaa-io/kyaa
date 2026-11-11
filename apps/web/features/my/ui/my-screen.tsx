@@ -305,8 +305,7 @@ function Dashboard({ summary, locale, avatarResource, refreshSummary, selectedSl
         <MyPassportCard creators={visibleCreators} selectedSlug={selectedSlug} onSelect={onSelectSlug} communityStamps={stamps} stampsError={communityStamps.state.status === "error"} retryStamps={communityStamps.retry} locale={locale} labels={labels}/>
       </div>
       <CommunityStampCollection locale={locale} resource={communityStamps} creatorNames={Object.fromEntries(summary.creators.map((creator) => [creator.celebrity.slug, creator.celebrity.name]))}/>
-      <MyShortcuts locale={locale} items={myShortcutItems(locale, hrefWithLocale(locale))}/>
-      <MyLogout locale={locale}/>
+      <MyShortcuts locale={locale} items={myShortcutItems(locale, hrefWithLocale(locale))} end={<MyLogout locale={locale} shortcut/>}/>
     </div></DukjilProvider>;
   }
 
