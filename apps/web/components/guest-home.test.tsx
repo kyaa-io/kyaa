@@ -86,6 +86,13 @@ describe("canonical 03 guest home", () => {
     expect(screen.getAllByTestId("home-ranking")).toHaveLength(1);
   });
 
+  it("shows the 찐팬 100 strip only when the server flag is on", () => {
+    const off = render(<GuestHome {...defaultProps} />);
+    expect(off.container.querySelector("[data-home-jjinfan-strip]")).toBeNull();
+    off.unmount();
+    const on = render(<GuestHome {...defaultProps} jjinfanGauge />);
+    expect(on.container.querySelector("[data-home-jjinfan-strip]")).not.toBeNull();
+  });
   it("draws the thin banner from the slot read with the page, before the notices, and nothing when the slot is empty", () => {
     const thin = { ...bannerFixture, id: "44444444-4444-4444-8444-444444444444", title: "얇은 띠", placement: "home_below_board" as const };
     const first = render(<GuestHome {...defaultProps} homeSlots={{ home_below_board: thin }} />);

@@ -243,7 +243,7 @@ const jjinfanFaq = (locale: AppLocale, subscription: boolean) => [
   { q: guideText(locale, "dkgFaqPrivacyQ"), a: guideText(locale, "dkgFaqPrivacyA") },
 ];
 
-export function JjinfanGuideContent({ locale, model }: { locale: AppLocale; model: GuideModel }) {
+export function JjinfanGuideContent({ locale, model, challenge = false }: { locale: AppLocale; model: GuideModel; challenge?: boolean }) {
   const open = model?.slots.filter((slot) => !slot.required).length ?? 0;
   const required = model?.slots.filter((slot) => slot.required).length ?? 0;
   const proof = model?.activities.find((activity) => activity.key === "proof");
@@ -261,7 +261,7 @@ export function JjinfanGuideContent({ locale, model }: { locale: AppLocale; mode
         <GuideProgress locale={locale} />
       </GuideHero>
 
-      <JjinfanChallengeDetail locale={locale} />
+      {challenge ? <JjinfanChallengeDetail locale={locale} /> : null}
 
       {model ? <GuideFacts items={[
         { value: model.slots.length, label: guideDetailText(locale, "dkgFactSlots") },
