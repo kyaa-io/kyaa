@@ -763,7 +763,7 @@ The page uses asymmetry only at desktop scale. The main content owns the visual 
 
 ### Navigation
 
-- Header: sticky White shell using the current shared header geometry, with 88px desktop height from 1024px. Preserve the compact mobile header and avoid duplicating historical extraction heights in new CSS.
+- Header: sticky White shell using the current shared header geometry, with 72px desktop height from 1024px (2026-11-11 대표 02:07 한 단계 축소; 88px 이전 값은 아래 기록). Preserve the compact mobile header and avoid duplicating historical extraction heights in new CSS.
 - Wordmark: 80px rendered image inside an 88×44px link target.
 - Desktop navigation from 1024px: White pill, 44px height, subtle border, active item in Near Black/800 and inactive items in Muted Ink/600.
 - Desktop optical correction: navigation is translated upward by 1px to align Pretendard with the wordmark.
@@ -2249,3 +2249,10 @@ At the user's request, registered Changha identity and hero images use the unedi
 - `1위까지`(값 N, 동점은 0, 1위 행은 칸 없음)와 오늘·최근 N일은 펼친 행의 칸에 둔다(순위 칸은 행에 이미 있어 `1위까지`로 대체).
 - 값이 바뀐 행만 테두리를 브랜드 핑크 호가 한 바퀴(600ms, 한 번). 첫 응답·값이 같은 행·새 행은 없음. 이전 설계 "큰 행 64·1위까지 행 안 표시(11/10 19:13)"는 대표 피드백으로 대체.
 - 린트 예외(사용자 승인 2026-11-11 05:15, 대표 요청 ⑤ "숫자가 변할 때마다 셀의 라운드 선을 핑크가 선을 타고 움직이던지"): `ranking-rows.module.css`의 `.pulse`(링 모양을 만드는 마스크 그라데이션 — 색 장식이 아니라 구멍 역할)와 `.sweep`(`--color-accent` 단색 꼬리 호 conic 한 줄)에만 `design-lint-disable S1` 선택자 주석을 둔다. 규칙 전체·기준선은 그대로이고, 값이 바뀐 행의 1회 연출 외에는 쓰지 않는다. 행 높이 토큰 계산은 `--space-12`+`--space-1`(=52)로 쓴다.
+
+## 2026-11-11 대표 텔레그램 누락분(CEO-MISSED-0856)
+- PC 헤더(1024px부터): 높이 88→72, 로고 폭 88→72, 메뉴 칸 높이 64→52와 메뉴 아이콘 24→20, 오른쪽 아이콘·상태 캡슐 안 표시 24→20. 터치 영역 44px, 글자 크기, 390 모바일 헤더(L10의 20·16)는 그대로다. 사유: 대표 02:07 "맨 윗부분의 로고·메뉴·우측 상단 아이콘은 PC 기준으로 조금 더 작아도". 소유자 `fan-app-shell.module.css` 끝의 한 블록과 `groups.module.css` `.shell`의 `--fan-header-height`.
+- 덕질 지갑 네 칸 아이콘: `dukjil-duo` 분홍 3D 글리프 대신 이미 쓰는 애셋 — 포인트 `economy/point-coin.svg`, 응모권 `economy/ticket.svg`, 하트 `economy/heart.svg`, 스탬프 `stamps/ink-v1/mission.webp`. 크기는 32, 교환 시트의 응모권도 같은 `economy/ticket.svg`. 사유: 대표 02:07 "다른 컬러 및 기존 아이콘이 더 패스포트 감성".
+- 응모 결과(`/my/raffles`): 제목 "응모 결과"(ko), 빈 안내 줄을 760px 열 안의 한 박스로 정리하고 `StanRaffleLists`(덕질 카드 재사용)로 최애의 진행 중·지난 럭키드로우를 채운다. 최애가 없으면 패스포트를 가진 첫 크리에이터, 그것도 없으면 안내 줄만 남는다(전 크리에이터 래플 목록 API가 아직 없다). 사유: 대표 02:08.
+- 홈 GGGI 배너 사진: 11/03에 바꾼 인스타 사진(`celebrities/changha/gggi-20261030.jpg`)에서 처음 고른 `gggi/changha-event-20261026.webp`(3:2)로 되돌림, 캠페인 열 `object-position:75% 30%`. 팬페이지 `gggi-event-entry`의 사진은 그대로. 사유: 대표 02:15.
+- MY 패스포트 표지 칸 PC 380→560px(1024+). 사유: 대표 02:15 "MY에는 패스포트 UI를 잘 보여주면".

@@ -69,7 +69,8 @@ describe("MyRafflesScreen", () => {
   });
 
   it("empty history is one line plus one browse link, both inside the 760px column", async () => {
-    vi.spyOn(globalThis, "fetch").mockResolvedValue(Response.json({ items: [], nextCursor: null }));
+    // A fresh Response per read: the favorite's summary is read by the same screen.
+    vi.spyOn(globalThis, "fetch").mockImplementation(async () => Response.json({ items: [], nextCursor: null }));
     const { container } = render(<MyRafflesScreen locale="ko" />);
     const line = await screen.findByText("아직 응모 내역이 없어요");
     const link = screen.getByRole("link", { name: "래플 둘러보기" });

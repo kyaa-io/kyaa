@@ -197,3 +197,16 @@
   .actions :global(:is(svg.lucide:not(.lucide-chevron-down):not(.lucide-rotate-cw), [data-account-trigger="menu"] > svg, img[src*="point-coin"], img[src*="economy/heart"], img[src*="/tiers/"])) { width: 20px; height: 20px; }
   .actions .statusCapsule :global(:is(svg.lucide:not(.lucide-chevron-down):not(.lucide-rotate-cw), img[src*="point-coin"], img[src*="economy/heart"], img[src*="/tiers/"])) { width: 16px; height: 16px; }
 }
+
+/* 2026-11-11 02:07 대표: PC 상단(로고·메뉴·우측 아이콘)을 한 단계 작게. 1024px부터만 — 헤더 88→72, 로고 88→72, 메뉴 칸 64→52와 아이콘 24→20(글자 크기는 그대로), 우측 표시 24→20.
+ * 터치 영역 44px와 390 모바일 헤더는 그대로 둔다. */
+@media (min-width: 64rem) {
+  .frame, .groupsNavigation.frame { --fan-header-height: 72px; }
+  .groupsNavigation.header { height: 72px; }
+  .groupsNavigation .brand { width: 72px; }
+  .groupsNavigation .brand img { width: 72px; }
+  .groupsNavigation .desktopNav { height: 52px; min-height: 52px; }
+  .groupsNavigation .desktopNavItem { height: 52px; }
+  .groupsNavigation .desktopNavItem svg { width: 20px; height: 20px; }
+  .actions :global(:is(svg.lucide:not(.lucide-chevron-down):not(.lucide-rotate-cw), [data-account-trigger="menu"] > svg, img[src*="point-coin"], img[src*="economy/heart"], img[src*="/tiers/"])) { width: 20px; height: 20px; }
+}

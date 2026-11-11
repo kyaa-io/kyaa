@@ -103,7 +103,7 @@ function StanExchangeContent({ locale, points, pointCost, pendingRequest, onSucc
   return <div className={styles.exchange}>
     <div className={styles.exchangeRate}>
       <span>{pointCost.toLocaleString(locale)} P</span><span aria-hidden="true">→</span>
-      <span className={styles.exchangeTicket}><img src="/images/dukjil-duo/glyph-ticket-80.webp" width={32} height={32} alt={w.tickets} />{unitsText(locale, 1)}</span>
+      <span className={styles.exchangeTicket}><img src="/images/economy/ticket.svg" width={32} height={32} alt={w.tickets} />{unitsText(locale, 1)}</span>
     </div>
     <span className={styles.quantityLabel}>{q.quantity}</span>
     <div className={styles.stepper} role="group" aria-label={q.quantity}>
