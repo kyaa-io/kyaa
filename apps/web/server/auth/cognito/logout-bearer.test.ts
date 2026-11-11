@@ -5,16 +5,19 @@ vi.mock("server-only", () => ({}));
 const state = vi.hoisted(() => ({ key: undefined as unknown, db: undefined as unknown, after: [] as Array<() => Promise<void>> }));
 const config = { issuer: "https://cognito-idp.ap-northeast-2.amazonaws.com/ap-northeast-2_pool", clientId: "client", domain: "https://pool.auth.ap-northeast-2.amazoncognito.com", redirectUri: "https://kyaa.io/api/auth/cognito/callback", logoutUri: "https://kyaa.io/login", origin: "https://kyaa.io", cookieSecret: Buffer.alloc(32, 7).toString("base64") };
 vi.mock("next/server", () => ({ after: (fn: () => Promise<void>) => state.after.push(fn) }));
-vi.mock("./config", () => ({ cognitoConfig: () => config, emailCognitoConfig: () => config }));
-vi.mock("../../config/env", () => ({ loadServerEnv: () => ({ GIWA_CHAIN_ID: 91342, AUTH_PROVIDER: "cognito" }) }));
+vi.mock("./config", () => ({ cognitoConfig: () => config, cognitoCleanupConfig: () => config, emailCognitoConfig: () => config }));
+vi.mock("../../config/env", () => ({ loadServerEnv: () => ({ GIWA_CHAIN_ID: 91342, AUTH_PROVIDER: "cognito", COGNITO_USER_POOL_ID: "ap-northeast-2_pool" }) }));
 vi.mock("./identity-repository", () => ({ identityDatabase: () => state.db }));
 vi.mock("./verifier", async (original) => {
   const actual = await original<typeof import("./verifier")>();
   return { ...actual, createCognitoVerifier: (c: { issuer: string; clientId: string }) => actual.createCognitoVerifier(c, async () => state.key as CryptoKey) };
 });
+vi.mock("../../profile/account-deletion-dependencies", () => ({ createAccountDeletionDependencies: () => ({}) }));
+vi.mock("../../profile/account-deletion", () => ({ processContentAssetCleanup: vi.fn(async () => 0), processMobileMediaCleanup: vi.fn(async () => 0), processAccountDeletion: vi.fn(async () => "idle") }));
+import { GET as maintenance } from "../../../app/api/internal/account-deletions/process/route";
 import { resolveCognitoAccess } from "./access";
 import { logout } from "./browser-routes";
-import { revokeSession, seal, digest, retryRemoteRevocations } from "./browser-session";
+import { revokeSession, seal, digest } from "./browser-session";
 
 let privateKey: CryptoKey;
 beforeAll(async () => {
@@ -22,7 +25,7 @@ beforeAll(async () => {
   const pair = await generateKeyPair("RS256");
   privateKey = pair.privateKey; state.key = pair.publicKey;
 });
-afterEach(() => { vi.unstubAllGlobals(); state.after.length = 0; });
+afterEach(() => { vi.unstubAllGlobals(); vi.unstubAllEnvs(); state.after.length = 0; });
 
 // In-memory stand-in for the service-role RPCs with the same semantics as 20261224000000_kyaa_native_auth.sql.
 function database(sessionKey: string, sealed: string) {
@@ -92,6 +95,9 @@ it.each(["http_503", "unavailable"])("returns logout success before remote %s; o
   expect(db.pending.get(digest(key))?.encrypted_refresh_token).not.toContain("private-refresh");
   await expect(resolveCognitoAccess(`kyaa-cognito:${token}`)).rejects.toMatchObject({ status: 401 });
   fetcher.mockResolvedValue(new Response(null, { status: 200 }));
-  expect(await retryRemoteRevocations(config)).toEqual({ attempted: 1, pending: 0 });
+  vi.stubEnv("CRON_SECRET", "c".repeat(32)); vi.stubEnv("CRON_OWNER", "aws");
+  const cron = await maintenance(new Request(`${config.origin}/api/internal/account-deletions/process`, { headers: { authorization: `Bearer ${"c".repeat(32)}`, "x-byus-scheduler": "aws" } }));
+  expect(cron.status).toBe(200);
+  expect(await cron.json()).toMatchObject({cognitoRevocations:{attempted:1,pending:0}});
   expect(db.pending.size).toBe(0);
 });
