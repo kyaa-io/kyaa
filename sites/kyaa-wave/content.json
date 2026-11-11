@@ -328,20 +328,20 @@
     "Kim Bo-seok presenting with a microphone in front of the screen"
   ],
   "altLive2": [
-    "FANS MAKE WAVES 배경 옆 연단과 원형 테이블의 참석자들",
-    "The lectern beside the FANS MAKE WAVES backdrop, with guests at round tables"
+    "FANS MAKE WAVES 배경 옆 연단에서 마이크를 들고 말하는 발표자",
+    "A speaker with a microphone at the lectern beside the FANS MAKE WAVES backdrop"
   ],
   "altLive3": [
     "무대 공연을 휴대전화로 찍는 참석자들",
     "Guests filming a stage performance on their phones"
   ],
   "altInsight1": [
-    "무대에서 이야기하는 나영석 PD와 객석",
-    "PD Na Young-seok speaking on stage, seen from the seats"
-  ],
-  "altInsight2": [
     "‘나영석 PD님께 묻다’ 보드 옆에서 이야기하는 나영석 PD",
     "PD Na Young-seok beside the “Questions for PD Na Young-seok” board"
+  ],
+  "altInsight2": [
+    "무대에서 이야기하는 나영석 PD와 객석",
+    "PD Na Young-seok speaking on stage, seen from the seats"
   ],
   "altInsight3": [
     "객석 뒤에서 본 나영석 PD 세션",
@@ -364,7 +364,8 @@
     "unconfirmed": [
       "참여 인원(04 섹션 사실 칸)",
       "01 KYAA WAVE LIVE 한 줄 설명",
-      "김보석 영문 표기(EN 임시: Kim Bo-seok)"
+      "김보석 영문 표기(EN 임시: Kim Bo-seok, 운영 전 확정)",
+      "사진 게시 동의(나영석 PD 측·참석자) — dev만, 운영 전 확인"
     ]
   }
 }
