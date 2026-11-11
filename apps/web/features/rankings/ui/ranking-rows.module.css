@@ -42,12 +42,11 @@
 .item .challenge { display: none; vertical-align: middle; }
 @media (min-width: 64rem) { .item .challenge { display: inline-flex; } }
 .item .value { display: grid; justify-items: stretch; gap: 0; min-width: 0; white-space: nowrap; }
-/* 값 열(대표 11/11 02:05 "열은 무조건 맞추기"): 고정폭 열 안에서 그림은 왼쪽 끝, 숫자는 오른쪽 끝에 붙어 모든 행에서 같은 x에 선다(tabular-nums). */
+/* 고정폭 열에서 아이콘과 숫자를 함께 오른쪽에 정렬한다. */
 .main { display: flex; justify-content: flex-end; width: 100%; max-width: 100%; }
 .mainInner { display: flex; align-items: center; justify-content: flex-end; width: 100%; gap: var(--space-1); color: var(--color-ink); font-size: var(--fan-item-title-size); font-weight: var(--fan-item-title-weight); line-height: var(--fan-metadata-leading); white-space: nowrap; }
 .main .mainNumber { font-size: inherit; font-weight: inherit; font-variant-numeric: tabular-nums; }
 .heart { flex: none; color: var(--color-accent); }
-.mainInner > :is(img, svg):first-child { margin-inline-end: auto; }
 .chevron { justify-self: end; color: var(--color-muted); }
 
 /* 오류·빈 상태: 로딩 열 행(10행 × (48+4) + 사이 8)과 같은 높이를 지켜 탭·지표를 바꿔도 줄지 않는다. 다시 시도의 누르는 영역은 44×44 이상. */
