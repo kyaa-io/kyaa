@@ -315,3 +315,6 @@
 .creatorPostLayout:not(:has(>aside)),.boardOnlyLayout{grid-template-columns:minmax(0,1fr)}
 
 .creatorPostLayout:not(:has(>aside)),.boardOnlyLayout { width:100%; max-width:720px; margin-inline:auto; }
+/* 글 상세(2026-11-11 사용자 "게시판 좌우 여백이 어색함. 다른 글 추천"): PC는 본문 ≤720(R3) + 다른 글·배너 레일 360/384(R4), 간격 R5, 둘을 가운데에 둔다. 1024 미만은 위 규칙대로 한 열(레일은 본문 아래). */
+@media (width >= 64rem){.creatorPostDetailLayout{grid-template-columns:minmax(0,var(--band-read)) var(--rail-md);justify-content:center;column-gap:var(--col-gap)}}
+@media (width >= 80rem){.creatorPostDetailLayout{grid-template-columns:minmax(0,var(--band-read)) var(--rail-wide)}}
