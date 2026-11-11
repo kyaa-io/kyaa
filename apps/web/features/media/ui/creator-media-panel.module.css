@@ -85,9 +85,9 @@
 
 :is(.compactPreview,.compactOverview) .previewGrid>li>a.play{height:auto;display:block}:is(.compactPreview,.compactOverview) [data-media-live=true] .play{aspect-ratio:16/9;overflow:hidden}:is(.compactPreview,.compactOverview) [data-media-live=true] .play img{height:100%;aspect-ratio:16/9!important;object-fit:cover;object-position:center}:is(.compactPreview,.compactOverview) .play{overflow:hidden}
 
-.heading [data-fan-heading]{font-family:inherit;font-weight:800;font-synthesis:none;line-height:var(--fan-heading-leading)}
+.heading [data-fan-heading]{font-family:inherit;line-height:var(--fan-heading-leading)}
 
-.previewHeading [data-fan-heading]{font-family:inherit;font-weight:800;font-synthesis:none;line-height:var(--fan-heading-leading)}
+.previewHeading [data-fan-heading]{font-family:inherit;line-height:var(--fan-heading-leading)}
 
 
 /* Reuse the approved home strip in the full creator media overview. */
