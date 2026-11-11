@@ -1,5 +1,6 @@
 "use client";
 import {useEffect,useId,useRef,useState} from 'react';
+import {useGroupRequest} from './use-group-resource';
 import {ArrowRight} from 'lucide-react';
 import {AccessibleOverlay} from '@/components/ui/overlay/accessible-overlay';
 import {FanAction} from '@/components/fan-ui/fan-action';
@@ -9,36 +10,48 @@ import type {AppLocale} from '@/i18n/locales';
 import styles from './page-notice-modal.module.css';
 
 const STORAGE_PREFIX='kyaa:page-notice:';
-const today=()=>{const now=new Date(),pad=(value:number)=>String(value).padStart(2,'0');return `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}`;};
-function hiddenToday(key:string){try{return window.localStorage.getItem(STORAGE_PREFIX+key)===today();}catch{return false;}}
-function hideToday(key:string){try{window.localStorage.setItem(STORAGE_PREFIX+key,today());}catch{/* 저장이 막혀도 닫기와 이동은 된다. */}}
+function remembered(key:string){try{return window.localStorage.getItem(STORAGE_PREFIX+key)==='seen';}catch{return false;}}
+function remember(key:string){try{window.localStorage.setItem(STORAGE_PREFIX+key,'seen');}catch{/* Closing still works without storage. */}}
 
-/**
- * 페이지에 알릴 일을 띠 배너 대신 모달로 한 번 보여 준다. 같은 내용은 그 페이지 게시판 공지에도 있다.
- * `오늘 다시 열지 않기`를 고르고 닫으면 같은 알림(key)은 오늘 다시 열리지 않고, 내일 다시 열린다.
- * 다른 대화상자가 열려 있거나 입력 중이면 열지 않는다. 저장소를 못 쓰면 이 화면에서만 한 번 연다.
- */
+/** Closing by any route remembers this round; signed-in readers also sync with the server. */
 export function PageNoticeModal({locale,storageKey,title,description,actionLabel,actionHref,enabled=true}:{locale:AppLocale;storageKey:string;title:string;description?:string;actionLabel:string;actionHref:string;enabled?:boolean}){
- const [open,setOpen]=useState(false),[checked,setChecked]=useState(false),shown=useRef<string|null>(null),titleId=useId(),copy=cheerEventCopy(locale,false);
+ const {request,authenticated,ready,ownerKey}=useGroupRequest();
+ const key=`${ownerKey.split(':')[0]}:${storageKey}`,url=`/api/me/page-notices?key=${encodeURIComponent(storageKey)}`;
+ const [open,setOpen]=useState(false),shown=useRef<string|null>(null),titleId=useId(),copy=cheerEventCopy(locale,false);
+ const [verified,setVerified]=useState<string|null>(null);
  useEffect(()=>{
-  if(!enabled||shown.current===storageKey)return;
+  if(!ready||!enabled)return;
+  let active=true;
+  setOpen(false);
+  if(!authenticated){setVerified(key);return;}
+  const sync=async()=>{
+   try{
+    if(remembered(key)){await request(url,{method:'POST'});}
+    else {const value=await request(url) as {seen:boolean};if(value.seen)remember(key);}
+   }catch{/* Local history remains usable when the server is unavailable. */}
+   if(active)setVerified(key);
+  };
+  void sync();return()=>{active=false;};
+ },[ready,enabled,authenticated,key,url,request]);
+ useEffect(()=>{
+  if(!enabled||!ready||verified!==key||shown.current===key)return;
   const check=()=>{
-   if(shown.current===storageKey||hiddenToday(storageKey)||document.visibilityState==='hidden')return;
+   if(shown.current===key||remembered(key)||document.visibilityState==='hidden')return;
    if(document.querySelector('[role="dialog"], [role="alertdialog"], [data-overlay-host]')||document.activeElement?.matches('input,textarea,select,[contenteditable="true"]'))return;
-   shown.current=storageKey;setChecked(false);setOpen(true);
+   shown.current=key;setOpen(true);
   };
   check();
   const observer=new MutationObserver(check);
   observer.observe(document.body,{childList:true,subtree:true});
   const interval=window.setInterval(check,30_000);
   return()=>{observer.disconnect();window.clearInterval(interval);};
- },[enabled,storageKey]);
- const close=()=>{if(checked)hideToday(storageKey);setOpen(false);};
+ },[enabled,ready,verified,key]);
+ const close=()=>{remember(key);setOpen(false);if(authenticated)void request(url,{method:'POST'}).catch(()=>undefined);};
  if(!enabled)return null;
- return <AccessibleOverlay open={open} onClose={close} labelledBy={titleId} backdropClassName={styles.backdrop} contentClassName={styles.modal}>
+ return <AccessibleOverlay open={open&&verified===key} onClose={close} labelledBy={titleId} backdropClassName={styles.backdrop} contentClassName={styles.modal}>
   <header className={styles.header}><FanHeading id={titleId}>{title}</FanHeading></header>
   {description&&<p className={styles.description}>{description}</p>}
   <FanAction variant='primary' href={actionHref} onClick={close} trailingIcon={<ArrowRight/>}>{actionLabel}</FanAction>
-  <footer className={styles.footer}><label><input type='checkbox' checked={checked} onChange={event=>setChecked(event.target.checked)}/>{copy.hideToday}</label><FanAction variant='neutral' onClick={close}>{copy.close}</FanAction></footer>
+  <footer className={styles.footer}><FanAction variant='neutral' onClick={close}>{copy.close}</FanAction></footer>
  </AccessibleOverlay>;
 }
