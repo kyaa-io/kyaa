@@ -1,3 +1,4 @@
+import { quizLearnEnabled } from "@/server/config/feature-flags";
 import { toContentLocale } from "@/i18n/locales";
 import { messages as localizedMessages } from "@/i18n/catalogs/app__c___slug___verify__result__page";
 import { translate } from "@/i18n/messages";
@@ -34,6 +35,7 @@ export default async function QuizResultPage({
 
   return (
     <QuizResultScreen
+      learningEnabled={quizLearnEnabled()}
       celebritySlug={parsedSlug.data}
       celebrityName={celebrity?.name ?? (locale === "ko" ? "최애" : translate(locale, localizedMessages.m22b4909b0f7e, "your favorite"))}
       locale={locale}

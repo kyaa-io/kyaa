@@ -53,7 +53,7 @@ describe("QuizResultScreen", () => {
     const payload = terminalAttempt("failed", 1);
     Object.assign(payload.attempt.questions[1], { learning: { hint: "데뷔 소식을 읽어 보세요", links: [{ title: "Official 原文", url: "https://example.com/channel?x=1#post" }] } });
     vi.mocked(fetch).mockResolvedValueOnce(Response.json(payload));
-    render(<QuizResultScreen attemptId={attemptId} passportId={null} celebritySlug="kara" locale="ko" />);
+    render(<QuizResultScreen learningEnabled attemptId={attemptId} passportId={null} celebritySlug="kara" locale="ko" />);
     expect(await screen.findByRole("heading", { name: "알아보기 · 2" })).toBeInTheDocument();
     expect(screen.getByText("데뷔 소식을 읽어 보세요")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Official 原文" })).toHaveAttribute("href", "https://example.com/channel?x=1#post");
@@ -211,4 +211,14 @@ describe("QuizResultScreen", () => {
       expect.objectContaining({ method: "GET", headers: { authorization: "Bearer access-token" } }),
     );
   });
+});
+
+it("hides learning by default even when the response includes hints", async () => {
+ const payload = terminalAttempt("failed", 1);
+ Object.assign(payload.attempt.questions[1], {learning:{hint:"Hidden hint",links:[{title:"Hidden SNS",url:"https://example.com"}]}});
+ vi.mocked(fetch).mockResolvedValueOnce(Response.json(payload));
+ render(<QuizResultScreen attemptId={attemptId} passportId={null} celebritySlug="kara" locale="ko" />);
+ await screen.findByRole("button", {name:"다시 도전"});
+ expect(screen.queryByText("Hidden hint")).not.toBeInTheDocument();
+ expect(screen.queryByText("Hidden SNS")).not.toBeInTheDocument();
 });

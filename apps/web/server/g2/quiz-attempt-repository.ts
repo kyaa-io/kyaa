@@ -1,3 +1,4 @@
+import { quizLearnEnabled } from "../config/feature-flags";
 import "server-only";
 
 import { quizLearningSchema } from "../../features/quiz/domain/quiz-attempt";
@@ -250,7 +251,8 @@ export class SupabaseQuizAttemptRepository implements QuizAttemptRepository {
     attemptId: string;
     locale: ContentLocale;
   }): Promise<QuizAttemptProjection | null> {
-    const data = await this.callVersioned("get_owned_quiz_attempt_v3", "get_owned_quiz_attempt_v2", {
+    const learningEnabled = quizLearnEnabled();
+    const data = await this.callVersioned(learningEnabled ? "get_owned_quiz_attempt_v3" : "get_owned_quiz_attempt_v2", learningEnabled ? "get_owned_quiz_attempt_v2" : "get_owned_quiz_attempt", {
       p_app_user_id: input.appUserId,
       p_attempt_id: input.attemptId,
     });

@@ -12,4 +12,4 @@ window.fetch=async (input,init) => {
  if(url.startsWith("/api/")) return Response.json({});
  return originalFetch(input,init);
 };
-createRoot(document.getElementById("root")!).render(<QuizResultScreen attemptId={id(99)} passportId={null} celebritySlug="kara" celebrityName="카라" locale="ko"/>);
+createRoot(document.getElementById("root")!).render(<QuizResultScreen learningEnabled attemptId={id(99)} passportId={null} celebritySlug="kara" celebrityName="카라" locale="ko"/>);

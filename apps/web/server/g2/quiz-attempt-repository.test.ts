@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("server-only", () => ({}));
 
@@ -270,4 +270,13 @@ describe("SupabaseQuizAttemptRepository", () => {
       locale: "ko",
     })).rejects.toMatchObject({ code: "UNAVAILABLE" });
   });
+});
+
+beforeEach(() => { vi.stubEnv("BYUS_DATA_ENVIRONMENT", "development"); vi.stubEnv("KYAA_FEATURE_QUIZ_LEARN", "true"); });
+afterEach(() => vi.unstubAllEnvs());
+it("uses the non-learning RPC when the feature is off", async () => {
+  vi.stubEnv("KYAA_FEATURE_QUIZ_LEARN", "false");
+  const rpc = vi.fn().mockResolvedValue({ data: rawAttempt, error: null });
+  await new SupabaseQuizAttemptRepository({ rpc }).findOwned({ appUserId: "60000000-0000-4000-8000-000000000001", attemptId: rawAttempt.attempt.id, locale: "ko" });
+  expect(rpc).toHaveBeenCalledWith("get_owned_quiz_attempt_v2", expect.anything());
 });

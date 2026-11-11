@@ -47,7 +47,7 @@ const newQuestion = (position: number): Question => ({
     active: true,
   })),
 });
-export function QuizManager({ celebrityId }: { celebrityId: string }) {
+export function QuizManager({ celebrityId, learningEnabled = false }: { celebrityId: string; learningEnabled?: boolean }) {
   const session = useAdminSession(),
     { getAccessToken } = usePrivy(),
     [locale, setLocale] = useState<AdminLocale>("ko"),
@@ -246,10 +246,10 @@ export function QuizManager({ celebrityId }: { celebrityId: string }) {
                   }
                 />
               </label>
-              <label>
+              {learningEnabled && <label>
                 <span>{locale === "ko" ? "힌트 (선택 · 정답을 적지 마세요)" : "Hint (optional · do not reveal the answer)"}</span>
                 <textarea maxLength={1000} value={q.hint ?? ""} onChange={(event) => setQuestions((items) => items.map((item, i) => i === index ? { ...item, hint: event.target.value } : item))} />
-              </label>
+              </label>}
               <div className={styles.quizOptions}>
                 {q.options.map((o, oi) => (
                   <div key={oi}>
