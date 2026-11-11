@@ -1,4 +1,5 @@
 import "server-only";
+import { refreshLocalSignupEvent } from "../signup-event/refresh";
 import { z } from "zod";
 import { AuthError } from "@/features/auth/domain/auth-errors";
 import { createClient } from "@/server/data/client";
@@ -26,6 +27,7 @@ type SessionSyncStage =
   | "session.profile";
 
 export type SessionSyncRecoveryOptions = {
+  afterSync?: (userId: string) => Promise<void>;
   canDeferNotificationSync?: (
     ownerId: string,
     identity: CanonicalPrivyIdentity,
@@ -143,6 +145,7 @@ export class SupabaseSessionSyncRepository implements SessionSyncRepository {
     if (profileResult.error) throwStageError("session.profile", "Profile state lookup failed");
     const profile = fanProfileSchema.safeParse(profileResult.data);
     if (!profile.success) throwStageError("session.profile", "Profile state lookup returned invalid data");
+    await this.recovery.afterSync?.(row.app_user_id);
     return includeAppUserId ? { ...profile.data, appUserId: row.app_user_id } : profile.data;
   }
 }
@@ -150,6 +153,7 @@ export class SupabaseSessionSyncRepository implements SessionSyncRepository {
 export function createSupabaseSessionSyncRepository(config: { url?: string; serviceRoleKey?: string }): SessionSyncRepository {
   const client = createClient(config.url, config.serviceRoleKey, { auth: { persistSession: false, autoRefreshToken: false } });
   return new SupabaseSessionSyncRepository(client as unknown as SessionSyncRpcClient, {
+    afterSync: userId => refreshLocalSignupEvent(client, userId),
     canDeferNotificationSync: (ownerId, identity) => canDeferNotificationSync(client, ownerId, identity),
   });
 }

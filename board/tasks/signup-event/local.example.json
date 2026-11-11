@@ -1,0 +1,7 @@
+{
+  "app_users": [],
+  "fan_action_occurrences": [],
+  "activityNamespaces": { "attendance": "group_creator_attendance", "post": "fan_posts" },
+  "shareRecords": [],
+  "draftWeights": { "share-click": 0, "referral-signup": 0, "attendance": 0, "post": 0 }
+}

@@ -1,0 +1,2 @@
+.banner { display: flex; align-items: center; padding: var(--space-4); background: var(--color-accent-soft); color: var(--color-ink); overflow-wrap: anywhere; }
+.banner:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
