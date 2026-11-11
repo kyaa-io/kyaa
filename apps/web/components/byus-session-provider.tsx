@@ -1,7 +1,7 @@
 "use client";
 
 import { useCreateWallet, useUser } from "@/features/auth/client/privy-backend";
-import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
+import { useByUsAuth as usePrivy, useCognitoAuth } from "@/features/auth/client/cognito-auth";
 import { rememberSession } from "@/features/auth/client/session-hint";
 import { purgeVideoBlobs } from "@/features/content-safety/ui/video-blob-cache";
 import type { Route } from "next";
@@ -78,6 +78,7 @@ function normalizedInput(input: SessionTransitionInput): Omit<ActiveTransition, 
 export function ByUsSessionProvider({ children }: { children: ReactNode }) {
   const router = useRouter();
   const { ready: sdkReady, authenticated, user, getAccessToken } = usePrivy();
+  const { enabled: kyaaSession } = useCognitoAuth();
   const { createWallet } = useCreateWallet();
   const { refreshUser } = useUser();
   const markAvatarSessionReady = useAvatarSessionReady();
@@ -149,6 +150,8 @@ export function ByUsSessionProvider({ children }: { children: ReactNode }) {
       };
       const elapsed = (start: number, cap: number) => Math.min(cap, Math.max(0, Math.round(diagnosticNow() - start))) || 0;
       try {
+        // kyaa session (PRIVY-EXIT-0005): the server already resolved the member and its wallet at sign-in.
+        if (!kyaaSession) {
         // Always refresh: the SDK callback may precede React's authenticated snapshot.
         const currentUser = await withOperationDeadline(refreshUser(), SDK_OPERATION_TIMEOUT_MS);
         assertCurrent(ownerId, generation);
@@ -191,6 +194,7 @@ export function ByUsSessionProvider({ children }: { children: ReactNode }) {
             if (reconciliation !== "wallet_found") throw walletError;
           }
           assertCurrent(ownerId, generation);
+        }
         }
         stage = "login.token";
         const token = await withOperationDeadline(getAccessToken(), SDK_OPERATION_TIMEOUT_MS);
@@ -260,7 +264,7 @@ export function ByUsSessionProvider({ children }: { children: ReactNode }) {
     })();
     synchronizationRef.current = { ownerId, generation, promise };
     return promise;
-  }, [assertCurrent, createWallet, getAccessToken, invalidateIfCurrent, markAvatarSessionReady, refreshUser, router]);
+  }, [assertCurrent, createWallet, getAccessToken, invalidateIfCurrent, kyaaSession, markAvatarSessionReady, refreshUser, router]);
 
   const beginTransition = useCallback((input: SessionTransitionInput) => {
     const normalized = normalizedInput(input);

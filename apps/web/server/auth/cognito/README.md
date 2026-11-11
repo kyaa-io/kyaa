@@ -1,3 +1,20 @@
+# Cognito sign-in without Privy (PRIVY-EXIT-0005, 2026-11-12)
+
+The user decided to stop using Privy. With `AUTH_PROVIDER=cognito` the web makes **no Privy call** to sign in or to authorize a request:
+
+- Sign-in: Cognito Hosted UI (Google, Apple) → `/api/auth/cognito/callback` verifies the ID token (nonce, RS256 JWKS) and calls `kyaa_sign_in` (`kyaa-identity.ts`). There is no Privy wallet-link step any more; `/auth/cognito/link` redirects to `/login`.
+  - `linked`: the Cognito identity points at an existing member found by **exact verified Google/Apple subject** (`live_privy_auth_accounts` recorded by past Privy session syncs, or the imported Privy export in `legacy_auth_inventory_accounts`). UUID, `did:privy` key and Privy wallet address stay unchanged.
+  - `new`: no member owns the subject or the email. The server derives the wallet address from `KYAA_WALLET_XPUB` at the reserved index and calls `create_kyaa_member`; the identity key is `kyaa:<uuid>`.
+  - `blocked` (`email_in_use`, `inactive`, `ambiguous`, `wallet_missing`): no session; the login page explains the reason. An email match alone never merges accounts.
+- Session: `__Host-kyaa-cognito` opaque cookie, encrypted DB row, up to 30 days (the Cognito refresh token lifetime), refreshed server-side. `/api/auth/cognito/session` returns `userId` (identity key) and a `kyaa-cognito:` access token kept in memory.
+- Requests: `kyaa-cognito:` Bearer → local JWT check (cached JWKS) + `resolve_kyaa_identity` (one DB read). Apple lifecycle checks use the stored provider subjects.
+- The client renders no Privy SDK in this mode (`privy-root.island.tsx`); `useByUsAuth` reads only the server session.
+- Privy Bearer tokens are still accepted for app clients that have not moved yet (`privy-node-verifier.ts` legacy path).
+
+Existing members whose Google/Apple subject was never recorded need the Privy export import (`backfill.mjs`, see `docs/operations/privy-exit-runbook.md`) before production cutover; otherwise they see `email_in_use`.
+
+The sections below describe the earlier Privy-linked design and are kept for history.
+
 # Cognito opt-in and Privy wallet identity
 
 `AUTH_PROVIDER=privy` is the unchanged default. Cognito is not ready for live activation until the external settings, inventory, migrations and real browser/device checks below are complete.
@@ -28,7 +45,7 @@ A subject and email both absent from the complete inventory receive a server-sid
 
 ## Cookies, API and logout
 
-Browser cookies contain opaque random lookup keys, with `__Host-`, HttpOnly, Secure, SameSite=Lax and Path=/. Access/ID/refresh tokens are AES-256-GCM encrypted in private DB session rows. Sessions last at most 24 hours, and refresh happens server-side. `/api/auth/cognito/session` returns access and linked wallet tokens only through a no-store same-origin response; the client keeps them in memory. Existing UI call sites use the common `useByUsAuth` adapter and retain Bearer request contracts. Cognito Bearer values have the `kyaa-cognito:` prefix. Invalid Cognito tokens never fall back to Privy verification. Privy tokens remain accepted for legacy clients and explicit wallet linking.
+Browser cookies contain opaque random lookup keys, with `__Host-`, HttpOnly, Secure, SameSite=Lax and Path=/. Access/ID/refresh tokens are AES-256-GCM encrypted in private DB session rows. Sessions last at most 30 days (Cognito refresh token lifetime), and refresh happens server-side. `/api/auth/cognito/session` returns access and linked wallet tokens only through a no-store same-origin response; the client keeps them in memory. Existing UI call sites use the common `useByUsAuth` adapter and retain Bearer request contracts. Cognito Bearer values have the `kyaa-cognito:` prefix. Invalid Cognito tokens never fall back to Privy verification. Privy tokens remain accepted for legacy clients and explicit wallet linking.
 
 Browser logout revokes the Cognito refresh token and deletes the local session before clearing client state. Cognito's offline JWT checks do not independently query token revocation; already-issued access tokens remain bounded by their configured expiry. Configure a short access-token lifetime and verify the intended logout policy before activation. Browser Hosted UI session logout URL is returned by the endpoint; callers should use it when full upstream sign-out is desired.
 

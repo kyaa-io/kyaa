@@ -1,11 +1,11 @@
 import {afterEach,expect,it,vi} from "vitest";
 vi.mock("server-only",()=>({}));
-const mock=vi.hoisted(()=>({provider:"cognito",config:{issuer:"https://cognito-idp.ap-northeast-2.amazonaws.com/ap-northeast-2_pool",clientId:"client",domain:"https://pool.auth.ap-northeast-2.amazoncognito.com",redirectUri:"https://kyaa.io/api/auth/cognito/callback",logoutUri:"https://kyaa.io/login",origin:"https://kyaa.io",cookieSecret:Buffer.alloc(32,7).toString("base64")},verify:vi.fn(),tokenRequest:vi.fn(),writeSession:vi.fn(),mapping:vi.fn(),classify:vi.fn(),rpc:vi.fn()}));
+const mock=vi.hoisted(()=>({provider:"cognito",config:{issuer:"https://cognito-idp.ap-northeast-2.amazonaws.com/ap-northeast-2_pool",clientId:"client",domain:"https://pool.auth.ap-northeast-2.amazoncognito.com",redirectUri:"https://kyaa.io/api/auth/cognito/callback",logoutUri:"https://kyaa.io/login",origin:"https://kyaa.io",cookieSecret:Buffer.alloc(32,7).toString("base64")},verify:vi.fn(),tokenRequest:vi.fn(),writeSession:vi.fn(),signIn:vi.fn(),member:vi.fn(),rpc:vi.fn()}));
 vi.mock("./config",()=>({cognitoConfig:()=>mock.config,cognitoCleanupConfig:()=>mock.config}));
-vi.mock("../../config/env",()=>({loadServerEnv:()=>({AUTH_PROVIDER:mock.provider,NEXT_PUBLIC_APP_URL:mock.config.origin,COGNITO_ENROLLMENT_ENABLED:true})}));
+vi.mock("../../config/env",()=>({loadServerEnv:()=>({AUTH_PROVIDER:mock.provider,NEXT_PUBLIC_APP_URL:mock.config.origin,GIWA_CHAIN_ID:91342})}));
 vi.mock("./verifier",async original=>({...await original<typeof import("./verifier")>(),createCognitoVerifier:()=>mock.verify}));
-vi.mock("./identity-repository",()=>({identityDatabase:()=>({rpc:mock.rpc}),readCognitoMapping:mock.mapping}));
-vi.mock("./enrollment",()=>({classifyEnrollment:mock.classify}));
+vi.mock("./identity-repository",()=>({identityDatabase:()=>({rpc:mock.rpc})}));
+vi.mock("./kyaa-identity",async original=>({...await original<typeof import("./kyaa-identity")>(),signInKyaaMember:mock.signIn,resolveKyaaMember:mock.member}));
 vi.mock("./browser-session",async original=>({...await original<typeof import("./browser-session")>(),tokenRequest:mock.tokenRequest,writeSession:mock.writeSession}));
 import{start,callback,session,logout}from"./browser-routes";
 import{seal,FLOW_COOKIE,SESSION_COOKIE,unseal,digest}from"./browser-session";
@@ -34,17 +34,32 @@ it("rejects state replay, duplicate code and a different callback origin before 
  }
  expect(mock.tokenRequest).not.toHaveBeenCalled();
 });
-it("validates ID nonce and moves an unlinked account to recovery without exposing tokens in the URL",async()=>{
+it("validates ID nonce, links or creates the member on the server and returns to login without tokens in the URL",async()=>{
  vi.stubEnv("HOSTING_PROVIDER","aws");
  mock.tokenRequest.mockResolvedValue({access_token:"secret-access",id_token:"secret-id",refresh_token:"secret-refresh",expires_in:600});
- mock.verify.mockResolvedValue({issuer:mock.config.issuer,subject:"subject",email:"fan@example.test",tokenId:"id"});
- mock.mapping.mockResolvedValue(null);mock.classify.mockResolvedValue({mode:"recovery",expectedPrivyUserId:"did:privy:old"});
+ const identity={issuer:mock.config.issuer,subject:"subject",email:"fan@example.test",tokenId:"id",provider:{name:"google",issuer:"https://accounts.google.com",subject:"g-1"}};
+ mock.verify.mockResolvedValue(identity);
+ mock.signIn.mockResolvedValue({appUserId:"00000000-0000-4000-8000-000000000001",identityKey:"did:privy:old"});
  const cookie=`${FLOW_COOKIE}=${seal({state:"state",verifier:"verifier",nonce:"nonce",expiresAt:Date.now()+60000,returnTo:"/passport"},mock.config.cookieSecret)}`;
  const response=await callback(new Request("https://origin-alb.test/api/auth/cognito/callback?code=one-time-code&state=state",{headers:{cookie,"x-forwarded-host":"kyaa.io","x-forwarded-proto":"https"}}));
- expect(response.status).toBe(303);expect(response.headers.get("location")).toBe("https://kyaa.io/auth/cognito/link?returnTo=%2Fpassport&locale=ko");
+ expect(response.status).toBe(303);expect(response.headers.get("location")).toBe("https://kyaa.io/login?returnTo=%2Fpassport&locale=ko");
  expect(mock.verify).toHaveBeenCalledWith("secret-id","id","nonce");
+ expect(mock.signIn).toHaveBeenCalledWith(identity);
  expect(response.headers.get("set-cookie")).not.toContain("secret-");expect(response.headers.get("location")).not.toContain("secret-");
- expect(mock.writeSession).toHaveBeenCalledWith(expect.any(String),expect.objectContaining({subject:"subject",enrollment:{mode:"recovery",expectedPrivyUserId:"did:privy:old"}}),mock.config);
+ expect(response.headers.get("set-cookie")).toContain(`${SESSION_COOKIE}=`);expect(response.headers.get("set-cookie")).toContain(`Max-Age=${30*86400}`);
+ expect(mock.writeSession).toHaveBeenCalledWith(expect.any(String),expect.objectContaining({subject:"subject",refreshToken:"secret-refresh"}),mock.config);
+});
+it.each(["email_in_use","inactive","ambiguous"] as const)("creates no session and explains a blocked sign-in (%s)",async reason=>{
+ mock.tokenRequest.mockResolvedValue({access_token:"access",id_token:"id",refresh_token:"refresh",expires_in:600});
+ mock.verify.mockResolvedValue({issuer:mock.config.issuer,subject:"subject",email:"fan@example.test",tokenId:"id"});
+ const {SignInBlockedError}=await import("./kyaa-identity");
+ mock.signIn.mockRejectedValue(new SignInBlockedError(reason));
+ const cookie=`${FLOW_COOKIE}=${seal({state:"state",verifier:"verifier",nonce:"nonce",expiresAt:Date.now()+60000,returnTo:"/passport"},mock.config.cookieSecret)}`;
+ const response=await callback(new Request("https://kyaa.io/api/auth/cognito/callback?code=code&state=state",{headers:{cookie}}));
+ expect(response.status).toBe(303);
+ expect(response.headers.get("location")).toBe(`https://kyaa.io/login?returnTo=%2Fpassport&locale=ko&authError=${reason}`);
+ expect(response.headers.get("set-cookie")).not.toContain(`${SESSION_COOKIE}=`);
+ expect(mock.writeSession).not.toHaveBeenCalled();
 });
 
 it("starts authorization while global legacy inventory is incomplete", async () => {
@@ -54,17 +69,16 @@ it("starts authorization while global legacy inventory is incomplete", async () 
  expect(new URL(response.headers.get("location")!).searchParams.get("identity_provider")).toBe("SignInWithApple");
  expect(mock.rpc).not.toHaveBeenCalled();
 });
-it("keeps failed enrollment classification closed after successful provider authentication", async () => {
+it("keeps the callback closed when member storage fails after provider authentication", async () => {
  mock.tokenRequest.mockResolvedValue({access_token:"access",id_token:"id",refresh_token:"refresh",expires_in:600});
  mock.verify.mockResolvedValue({issuer:mock.config.issuer,subject:"subject",email:"fan@example.test",tokenId:"id"});
- mock.mapping.mockResolvedValue(null);mock.classify.mockRejectedValue(new Error("Legacy identity inventory incomplete"));
+ mock.signIn.mockRejectedValue(new Error("Identity service unavailable"));
  const cookie=`${FLOW_COOKIE}=${seal({state:"state",verifier:"verifier",nonce:"nonce",expiresAt:Date.now()+60000,returnTo:"/passport"},mock.config.cookieSecret)}`;
  const response=await callback(new Request("https://kyaa.io/api/auth/cognito/callback?code=code&state=state",{headers:{cookie}}));
  expect(response.status).toBe(400);
- expect(mock.classify).toHaveBeenCalledOnce();
+ expect(mock.signIn).toHaveBeenCalledOnce();
  expect(mock.writeSession).not.toHaveBeenCalled();
 });
-
 it("retires old social entry points with only sanitized login context",async()=>{
  mock.provider="privy";
  for(const returnTo of ["/passport?tab=stamps","https://evil.test","//evil.test","/auth/cognito/link?returnTo=/passport","/api/auth/cognito/start"]){

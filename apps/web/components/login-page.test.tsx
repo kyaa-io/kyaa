@@ -169,12 +169,24 @@ describe("Privy login page", () => {
   it("synchronizes a confirmed Cognito session through the authenticated snapshot", async () => {
     authenticated = true;
     vi.mocked(globalThis.fetch).mockImplementation(async (url) => String(url) === "/api/auth/cognito/session"
-      ? Response.json({ authenticated: true, walletLinked: true, accessToken: "cognito-access", walletToken: "wallet-jwt", expiresAt: Date.now() + 600_000 })
+      ? Response.json({ authenticated: true, walletLinked: true, userId: "did:privy:user", accessToken: "cognito-access", expiresAt: Date.now() + 600_000 })
       : Response.json({ profile: { completed: true } }));
     rtlRender(<CognitoAuthProvider><ByUsSessionProvider><LoginPage /></ByUsSessionProvider></CognitoAuthProvider>);
     await waitFor(() => expect(replace).toHaveBeenCalledWith("/live/kara-nualeaf?locale=ko"));
-    expect(refreshUser).toHaveBeenCalledOnce();
+    // The server resolved the member and its wallet at sign-in: no Privy user refresh or wallet creation.
+    expect(refreshUser).not.toHaveBeenCalled();
     expect(globalThis.fetch).toHaveBeenCalledWith("/api/auth/session", expect.objectContaining({ headers: expect.objectContaining({ authorization: "Bearer cognito-access" }) }));
+  });
+
+  it.each([
+    ["email_in_use", "이 이메일을 쓰는 kyaa 계정이 이미 있어요. 처음 가입할 때 쓴 방법으로 로그인해 주세요."],
+    ["inactive", "이용이 중지된 계정이에요."],
+    ["ambiguous", "계정을 확인하지 못했어요. 이용 안내의 문의하기로 kyaa 운영팀에 알려 주세요."],
+  ])("explains a sign-in the server refused (%s)", async (reason, message) => {
+    authenticated = false;
+    query = `returnTo=%2Fmy&locale=ko&authError=${reason}`;
+    render(<LoginPage />);
+    expect(await screen.findByRole("alert")).toHaveTextContent(message);
   });
 
   it("returns a completed Google session to MY with locale and intent intact", async () => {

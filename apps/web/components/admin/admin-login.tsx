@@ -1,6 +1,7 @@
 "use client";
 
 import { useLogin } from "@/features/auth/client/privy-backend";
+import { useCognitoAuth } from "@/features/auth/client/cognito-auth";
 import { ArrowLeft, ArrowRight, LockKeyhole, ShieldCheck } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -22,6 +23,12 @@ export function adminReturnPath(search: string): string {
 
 export function AdminLogin({ access = "unauthenticated" }: { access?: AdminAccessState }) {
   const { login } = useLogin();
+  const cognito = useCognitoAuth();
+  const startGoogle = () => {
+    if (!cognito.enabled) return login({ loginMethods: ["google"] });
+    const returnTo = `/admin/login?${new URLSearchParams({ returnTo: adminReturnPath(window.location.search) })}`;
+    window.location.assign(new URL(`/api/auth/cognito/start?${new URLSearchParams({ provider: "google", returnTo, locale: "ko" })}`, window.location.origin).href);
+  };
   const router = useRouter();
   const session = useAdminSession();
   useEffect(() => {
@@ -66,7 +73,7 @@ export function AdminLogin({ access = "unauthenticated" }: { access?: AdminAcces
               className={styles.googleButton}
               type="button"
               disabled={session.status === "loading"}
-              onClick={() => login({ loginMethods: ["google"] })}
+              onClick={startGoogle}
             >
               <GoogleMark /><span>{session.status === "loading" ? "로그인 준비 중" : "Google로 관리자 로그인"}</span><ArrowRight aria-hidden="true" />
             </button>

@@ -11,6 +11,8 @@ import { LocaleProvider } from "@/components/locale-provider";
 import { useByUsSession } from "@/components/byus-session-provider";
 import { useLogin } from "@/features/auth/client/privy-backend";
 import { PrivyRoot } from "@/features/auth/client/privy-root";
+import { useByUsAuth } from "@/features/auth/client/cognito-auth";
+import { useEffect } from "react";
 
 const { render, act, cleanup, waitFor, screen } = realRtl as typeof RTL;
 
@@ -164,5 +166,28 @@ describe(`PrivyRoot + ByUsSessionProvider (${process.env.VITEST_ISLAND ? "island
     expect(sessionPosts()).toBe(2);
     expect(fake.counts.createWallet).toBe(0);
     expect(navigation.replace).not.toHaveBeenCalled();
+  });
+});
+
+// PRIVY-EXIT-0005: with Cognito the page signs in from kyaa's own session while the Privy SDK never becomes ready
+// (the 2026-11-11 Privy outage): no Privy user refresh, no wallet creation, one session sync with the Cognito token.
+describe(`PrivyRoot with Cognito (${process.env.VITEST_ISLAND ? "island" : "direct"} backend)`, () => {
+  function CognitoLogin() {
+    const auth = useByUsAuth(), session = useByUsSession();
+    const ownerId = auth.ready && auth.authenticated ? auth.user?.id ?? null : null;
+    useEffect(() => { if (ownerId) session.beginTransition({ ownerId, ...context }); }, [ownerId]); // eslint-disable-line react-hooks/exhaustive-deps
+    return null;
+  }
+  it("completes sign-in and session sync with Privy permanently unavailable", async () => {
+    fake.set({ ready: false, authenticated: false, user: null });
+    fetchMock.mockImplementation(async (url: string) => String(url) === "/api/auth/cognito/session"
+      ? Response.json({ authenticated: true, walletLinked: true, userId: "did:privy:member", accessToken: "kyaa-cognito:access", expiresAt: Date.now() + 600_000 })
+      : Response.json({ profile: { completed: true } }));
+    render(<LocaleProvider initialLocale="ko"><PrivyRoot appId="" authProvider="cognito"><Monitor /><CognitoLogin /></PrivyRoot></LocaleProvider>);
+    await waitFor(() => expect(sessionState()).toMatchObject({ ready: true, pending: false, ownerId: "did:privy:member", error: null }));
+    expect(sessionPosts()).toBe(1);
+    const post = fetchMock.mock.calls.find(call => String(call[0]) === "/api/auth/session")!;
+    expect((post[1] as RequestInit).headers).toMatchObject({ authorization: "Bearer kyaa-cognito:access" });
+    expect(fake.counts).toEqual({ createWallet: 0, refreshUser: 0 });
   });
 });

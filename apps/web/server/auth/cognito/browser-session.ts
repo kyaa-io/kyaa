@@ -8,6 +8,8 @@ import { createCognitoVerifier, cognitoDenied } from "./verifier";
 
 export const SESSION_COOKIE = "__Host-kyaa-cognito";
 export const FLOW_COOKIE = "__Host-kyaa-cognito-flow";
+// Bounded by the Cognito refresh token validity (30 days, infrastructure/aws/platform/environment.json).
+export const SESSION_LIFETIME_MS = 30 * 86400_000;
 export const opaque = () => randomBytes(32).toString("base64url");
 export const digest = (value: string) => createHash("sha256").update(value).digest("hex");
 export const challenge = (value: string) => createHash("sha256").update(value).digest("base64url");

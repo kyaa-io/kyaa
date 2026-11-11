@@ -73,11 +73,8 @@ vi.mock("@privy-io/react-auth", async () => {
   };
 });
 
-// For the real CognitoWalletLink (StrictMode test): enrollment "new" with Google, no marker yet.
 vi.mock("next/navigation", () => ({ useSearchParams: () => new URLSearchParams(), useRouter: () => ({ replace: vi.fn() }) }));
 vi.mock("@/components/locale-provider", () => ({ usePageLocale: () => "ko", useAppLocale: () => ({ locale: "ko", setLocale: () => undefined }) }));
-vi.mock("@/features/auth/client/cognito-auth", () => ({ useCognitoAuth: () => ({ loading: false, session: { authenticated: true, walletLinked: false, enrollment: { mode: "new", provider: "google" } }, refresh: vi.fn() }) }));
-import { CognitoWalletLink } from "../cognito-wallet-link";
 
 type Hooks = typeof direct;
 const BACKENDS: [string, Hooks][] = [["direct", direct], ["island", island as Hooks]];
@@ -231,24 +228,6 @@ describe("lease generations (plan-b §0-7)", () => {
     await expect(old).rejects.toBeInstanceOf(PrivyLeaseReleasedError);
     await fresh;
     expect(initOAuth.mock.calls).toEqual([["new"]]);
-  });
-
-  it("starts the wallet-link enrollment once under StrictMode, with no error left behind (real CognitoWalletLink)", async () => {
-    sessionStorage.clear();
-    const store = new PrivyIslandStore();
-    // The shared usePrivy mirror is already ready (client navigation into the page, plan-b §0-5 M-2).
-    function Already() { island.usePrivy(); return null; }
-    function Page({ open }: { open: boolean }) {
-      return <Root store={store}><Already />{open && <StrictMode><CognitoWalletLink appleLoginEnabled={false} /></StrictMode>}</Root>;
-    }
-    const view = render(<Page open={false} />);
-    view.rerender(<Page open />);
-    await waitFor(() => expect(fake.initOAuth).toHaveBeenCalledTimes(1));
-    await new Promise(resolve => setTimeout(resolve, 20));
-    expect(fake.initOAuth).toHaveBeenCalledTimes(1);
-    expect(sessionStorage.getItem("kyaa-cognito-wallet-reauth")).not.toBe("failed");
-    expect(view.container.querySelector("[role=alert]")).toBeNull();
-    expect(store.getIslandSnapshot().leases.filter(entry => entry.kind === "useLoginWithOAuth")).toHaveLength(1);
   });
 });
 

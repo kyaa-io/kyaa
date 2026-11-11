@@ -4,6 +4,7 @@ import { isEnabledRegionalSocialAccount, readPrivyCustomOAuthPolicy, type Custom
 import { PrivyClient } from "@privy-io/node";
 import { isCognitoToken } from "./cognito/verifier";
 import { resolveCognitoAccess } from "./cognito/access";
+import type { KyaaMember } from "./cognito/kyaa-identity";
 
 import { normalizeEvmAddress, type CanonicalWallet, type VerifiedIdentityProviderAccount } from "../../features/auth/domain/identity";
 import { AuthError } from "../../features/auth/domain/auth-errors";
@@ -195,10 +196,8 @@ export function createPrivyNodeReauthenticationResolver(
   return {
     async resolve(accessToken) {
       if (isCognitoToken(accessToken)) {
-        const { identity, mapping } = await resolveCognitoAccess(accessToken);
-        const user = await privy.users()._get(mapping.privyUserId);
-        assertCognitoWalletMapping(user, mapping, identity.subject);
-        return verifiedSession({ app_id: appId, user_id: user.id, session_id: `cognito:${identity.tokenId}` }, user);
+        const { identity, member } = await resolveCognitoAccess(accessToken);
+        return memberSession(member, identity.tokenId);
       }
       const claims = await privy.utils().auth().verifyAccessToken(accessToken);
       if (claims.app_id !== appId || !claims.session_id) throw new Error("Invalid Privy session");
@@ -207,6 +206,7 @@ export function createPrivyNodeReauthenticationResolver(
       return verifiedSession(claims, user);
     },
     async findProviderSubject(privyUserId, provider) {
+      if (!privyUserId.startsWith("did:privy:")) return null;
       const user = await privy.users()._get(privyUserId);
       if (user.id !== privyUserId) throw new Error("Privy user mismatch");
       return providerAccount(user, provider)?.subject ?? null;
@@ -232,11 +232,9 @@ export function createPrivyNodeAccessVerifier(
   const verifier: PrivyAccessVerifier = {
     async verify(accessToken) {
       if (isCognitoToken(accessToken)) {
-        const { identity, mapping } = await resolveCognitoAccess(accessToken);
-        const user = await privy.users()._get(mapping.privyUserId);
-        assertCognitoWalletMapping(user, mapping, identity.subject);
-        await lifecycle?.assertAccess(verifiedSession({ app_id: appId, user_id: user.id, session_id: `cognito:${identity.tokenId}` }, user));
-        return { privyUserId: user.id, verifiedEmail: mapping.verifiedEmail, providerAccounts: providerAccounts(user), googleLinked: latestVerifiedGoogleEmail(user) !== null };
+        const { identity, member } = await resolveCognitoAccess(accessToken);
+        await lifecycle?.assertAccess(memberSession(member, identity.tokenId));
+        return memberIdentityInput(member);
       }
       const claims = await privy.utils().auth().verifyAccessToken(accessToken);
       if (claims.app_id !== appId) {
@@ -314,12 +312,10 @@ export function createPrivyNodeSessionResolver(
   return {
     async resolve(accessToken, chainId) {
       if (isCognitoToken(accessToken)) {
-        const { identity, mapping } = await resolveCognitoAccess(accessToken);
-        const user = await privy.users()._get(mapping.privyUserId);
-        assertCognitoWalletMapping(user, mapping, identity.subject);
-        if (chainId !== mapping.chainId) throw new AuthError("INVALID_WALLET", 422, "Wallet chain mismatch");
-        await lifecycle?.assertAccess(verifiedSession({ app_id: appId, user_id: user.id, session_id: `cognito:${identity.tokenId}` }, user));
-        return { identity: mapPrivyIdentity({ privyUserId: user.id, verifiedEmail: mapping.verifiedEmail, providerAccounts: providerAccounts(user), googleLinked: latestVerifiedGoogleEmail(user) !== null }), wallet: { chainId, address: mapping.walletAddress } };
+        const { identity, member } = await resolveCognitoAccess(accessToken);
+        if (!member.walletAddress || chainId !== member.chainId) throw new AuthError("INVALID_WALLET", 422, "Wallet chain mismatch");
+        await lifecycle?.assertAccess(memberSession(member, identity.tokenId));
+        return { identity: mapPrivyIdentity(memberIdentityInput(member)), wallet: { chainId, address: member.walletAddress } };
       }
       const claims = await privy.utils().auth().verifyAccessToken(accessToken);
       if (claims.app_id !== appId) throw new Error("Privy application mismatch");
@@ -348,10 +344,26 @@ export function createPrivyNodeSessionResolver(
 }
 
 
-function assertCognitoWalletMapping(user: PrivyUserShape, mapping: { privyUserId: string; walletAddress: string; chainId: number }, subject: string): void {
-  const wallet = extractEmbeddedEvmWallet(user, mapping.chainId);
-  if (user.id !== mapping.privyUserId || wallet?.address !== mapping.walletAddress
-    || !user.linked_accounts.some((account) => account.type === "custom_auth" && account.custom_user_id === subject)) {
-    throw new AuthError("IDENTITY_LINK_CONFLICT", 409, "Account linking requires review");
-  }
+// Cognito members are resolved from kyaa's own records only; the identity key keeps its original did:privy value for
+// existing members and is kyaa:<uuid> for members who joined after Privy.
+function memberIdentityInput(member: KyaaMember) {
+  return {
+    privyUserId: member.identityKey,
+    verifiedEmail: member.verifiedEmail,
+    providerAccounts: member.providerAccounts,
+    googleLinked: member.providerAccounts.some((account) => account.issuer === "https://accounts.google.com"),
+  };
+}
+
+function memberSession(member: KyaaMember, tokenId: string): VerifiedPrivySession {
+  const subject = (issuer: string) => {
+    const account = member.providerAccounts.find((candidate) => candidate.issuer === issuer);
+    return account ? { subject: account.subject, email: null } : null;
+  };
+  return {
+    privyUserId: member.identityKey,
+    sessionId: `cognito:${tokenId}`,
+    apple: subject("https://appleid.apple.com"),
+    google: subject("https://accounts.google.com"),
+  };
 }

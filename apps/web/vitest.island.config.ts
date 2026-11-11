@@ -15,7 +15,6 @@ export const ISLAND_FILES = [
   "components/login-page.test.tsx",
   "features/auth/client/cognito-auth-pages.test.tsx",
   "features/auth/client/cognito-auth.test.tsx",
-  "features/auth/client/cognito-wallet-link.test.tsx",
   "features/connect/kyaa-wave-participation-screen.test.tsx",
   "features/fanpage/ui/cheer-event-photocard.test.tsx",
   "features/fanpage/ui/wave-access-boundary.test.tsx",

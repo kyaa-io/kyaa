@@ -25,6 +25,9 @@ export function ByUsPrivyProvider({
 }) {
   const { locale } = useAppLocale();
   useEffect(() => installResourceWriteWatch(), []);
+  const page = <AvatarSessionBridge><ByUsSessionProvider>{children}</ByUsSessionProvider></AvatarSessionBridge>;
+  // Cognito (PRIVY-EXIT-0005) needs no Privy app; the direct tree still offers the provider while one is configured.
+  if (authProvider === "cognito" && !appId) return <CognitoAuthProvider>{page}</CognitoAuthProvider>;
   if (!appId) {
     throw new Error("NEXT_PUBLIC_PRIVY_APP_ID is required to initialize kyaa authentication.");
   }
@@ -57,7 +60,7 @@ export function ByUsPrivyProvider({
         },
       }}
     >
-      {authProvider === "cognito" ? <CognitoAuthProvider><AvatarSessionBridge><ByUsSessionProvider>{children}</ByUsSessionProvider></AvatarSessionBridge></CognitoAuthProvider> : <AvatarSessionBridge><ByUsSessionProvider>{children}</ByUsSessionProvider></AvatarSessionBridge>}
+      {authProvider === "cognito" ? <CognitoAuthProvider>{page}</CognitoAuthProvider> : page}
     </PrivyProvider>
   );
 }

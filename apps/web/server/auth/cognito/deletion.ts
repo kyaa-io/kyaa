@@ -8,7 +8,7 @@ import { rpc } from "./browser-session";
 export async function approvedCognitoDeletionSubject(token:string):Promise<string|null>{
   const identity=await createCognitoVerifier(cognitoConfig())(token);
   const result=await rpc(identityDatabase(),"approved_cognito_deletion_subject",{p_issuer:identity.issuer,p_subject:identity.subject});
-  if(result===null)return null;if(typeof result!=="string" || !result.startsWith("did:privy:"))throw cognitoDenied();return result;
+  if(result===null)return null;if(typeof result!=="string" || !/^(did:privy|kyaa):/.test(result))throw cognitoDenied();return result;
 }
 async function removeCognitoUser(subject:string,poolId?:string){
   const env=loadServerEnv();if(env.AUTH_PROVIDER!=="cognito"&&env.EMAIL_AUTH_PROVIDER!=="cognito")throw new Error("Cognito cleanup not configured");

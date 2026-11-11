@@ -1,6 +1,42 @@
 import type { TranslatedMessage } from "../messages";
 
 export const messages = {
+  "mkyaaEmailInUse": {
+    "ja": "このメールアドレスの kyaa アカウントがすでにあります。最初に登録した方法でログインしてください。",
+    "zh-Hans": "已有使用此邮箱的 kyaa 账号。请使用首次注册时的方式登录。",
+    "zh-Hant": "已有使用此電子郵件的 kyaa 帳號。請使用首次註冊時的方式登入。",
+    "es": "Ya existe una cuenta de kyaa con este correo. Inicia sesión con el método que usaste al registrarte.",
+    "id": "Sudah ada akun kyaa dengan email ini. Masuk dengan cara yang kamu gunakan saat pertama mendaftar.",
+    "vi": "Đã có tài khoản kyaa dùng email này. Hãy đăng nhập bằng cách bạn đã dùng khi đăng ký lần đầu.",
+    "th": "มีบัญชี kyaa ที่ใช้อีเมลนี้อยู่แล้ว โปรดเข้าสู่ระบบด้วยวิธีที่ใช้ตอนสมัครครั้งแรก",
+    "pt": "Já existe uma conta kyaa com este e-mail. Entre com o método que você usou no cadastro.",
+    "fr": "Un compte kyaa utilise déjà cette adresse e-mail. Connectez-vous avec la méthode utilisée lors de l'inscription.",
+    "ru": "Аккаунт kyaa с этой почтой уже существует. Войдите тем способом, которым регистрировались."
+  },
+  "mkyaaAccountInactive": {
+    "ja": "利用が停止されたアカウントです。",
+    "zh-Hans": "此账号已停用。",
+    "zh-Hant": "此帳號已停用。",
+    "es": "Esta cuenta está desactivada.",
+    "id": "Akun ini sudah dinonaktifkan.",
+    "vi": "Tài khoản này đã bị ngừng sử dụng.",
+    "th": "บัญชีนี้ถูกระงับการใช้งานแล้ว",
+    "pt": "Esta conta está desativada.",
+    "fr": "Ce compte est désactivé.",
+    "ru": "Этот аккаунт отключён."
+  },
+  "mkyaaAccountReview": {
+    "ja": "アカウントを確認できませんでした。お問い合わせからお知らせください。",
+    "zh-Hans": "无法确认账号。请通过客服联系我们。",
+    "zh-Hant": "無法確認帳號。請透過客服聯絡我們。",
+    "es": "No pudimos confirmar tu cuenta. Avísanos a través de soporte.",
+    "id": "Kami tidak dapat memastikan akunmu. Hubungi kami melalui layanan bantuan.",
+    "vi": "Không thể xác nhận tài khoản. Hãy báo cho chúng tôi qua mục hỗ trợ.",
+    "th": "ไม่สามารถยืนยันบัญชีได้ โปรดแจ้งเราผ่านฝ่ายช่วยเหลือ",
+    "pt": "Não conseguimos confirmar sua conta. Avise-nos pelo suporte.",
+    "fr": "Nous n'avons pas pu vérifier votre compte. Contactez le support.",
+    "ru": "Не удалось подтвердить аккаунт. Напишите нам в поддержку."
+  },
   "mbrowserHandoff": {
     "ja": "アプリのメニューで「ブラウザで開く」を選び、Google ログインを続けてください。またはログインリンクをコピーし、Safari や Chrome で開いてください。",
     "zh-Hans": "请在应用菜单中选择“在浏览器中打开”以继续 Google 登录。也可以复制登录链接并在 Safari 或 Chrome 中打开。",

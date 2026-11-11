@@ -76,6 +76,8 @@ export function createAccountDeletionDependencies(): AccountDeletionDependencies
     },
     async deleteProviderUser(subject) {
       await cleanupCognitoSocial(subject);
+      // Members who joined after Privy never had a Privy user.
+      if (!subject.startsWith("did:privy:")) return;
       try { await privy.users().delete(subject); }
       catch (error) {
         if (error && typeof error === "object" && "status" in error && error.status === 404) return;

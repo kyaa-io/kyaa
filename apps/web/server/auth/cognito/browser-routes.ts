@@ -4,12 +4,11 @@ import { AuthError } from "../../../features/auth/domain/auth-errors";
 import { preferredLocaleSchema } from "../../../features/profile/domain/preferred-locale";
 import { sanitizeLocale, sanitizeReturnTo } from "../../../components/login-intent";
 import { appOriginForRequest } from "../../config/app-origin";
-import { classifyEnrollment } from "./enrollment";
 import { loadServerEnv } from "../../config/env";
 import { cognitoCleanupConfig, cognitoConfig } from "./config";
 import { createCognitoVerifier, COGNITO_TOKEN_PREFIX, cognitoDenied } from "./verifier";
-import { readCognitoMapping } from "./identity-repository";
-import { authHeaders, challenge, cookie, FLOW_COOKIE, opaque, readCookie, readSession, requireOrigin, revokeSession, seal, SESSION_COOKIE, tokenRequest, unseal, writeSession } from "./browser-session";
+import { resolveKyaaMember, signInKyaaMember, SignInBlockedError } from "./kyaa-identity";
+import { SESSION_LIFETIME_MS, authHeaders, challenge, cookie, FLOW_COOKIE, opaque, readCookie, readSession, requireOrigin, revokeSession, seal, SESSION_COOKIE, tokenRequest, unseal, writeSession } from "./browser-session";
 
 const flowSchema = z.object({ state: z.string(), verifier: z.string(), nonce: z.string(), expiresAt: z.number(), returnTo: z.string(), locale: preferredLocaleSchema.default("ko") });
 function denied(error: unknown): Response {
@@ -80,14 +79,20 @@ export async function callback(request: Request): Promise<Response> {
     const verify = createCognitoVerifier(config);
     const [access,id] = await Promise.all([verify(tokens.access_token),verify(tokens.id_token,"id",flow.nonce)]);
     if (access.subject !== id.subject || !id.email) throw cognitoDenied();
-    const mapping = await readCognitoMapping(id);
-    const enrollment = mapping ? undefined : await classifyEnrollment(id);
-    const key=opaque();
-    await writeSession(key,{ enrollment,preferredLocale:flow.locale, accessToken:tokens.access_token,idToken:tokens.id_token,refreshToken:tokens.refresh_token,subject:id.subject,expiresAt:Date.now()+tokens.expires_in*1000,sessionExpiresAt:Date.now()+86400_000 },config);
-    const destination = new URL(mapping ? "/login" : "/auth/cognito/link",config.origin);
+    const destination = new URL("/login",config.origin);
     destination.searchParams.set("returnTo",flow.returnTo);
     destination.searchParams.set("locale",flow.locale);
-    headers.append("set-cookie",cookie(SESSION_COOKIE,key,86400));headers.set("location",destination.toString());
+    try { await signInKyaaMember(id); }
+    catch (error) {
+      if (!(error instanceof SignInBlockedError)) throw error;
+      // No session for a blocked sign-in: the login page explains the reason (recovery/review), never merges by email.
+      destination.searchParams.set("authError",error.reason);
+      headers.set("location",destination.toString());
+      return new Response(null,{status:303,headers});
+    }
+    const key=opaque();
+    await writeSession(key,{ preferredLocale:flow.locale, accessToken:tokens.access_token,idToken:tokens.id_token,refreshToken:tokens.refresh_token,subject:id.subject,expiresAt:Date.now()+tokens.expires_in*1000,sessionExpiresAt:Date.now()+SESSION_LIFETIME_MS },config);
+    headers.append("set-cookie",cookie(SESSION_COOKIE,key,SESSION_LIFETIME_MS/1000));headers.set("location",destination.toString());
     return new Response(null,{status:303,headers});
   } catch { return Response.json({error:{code:"INVALID_AUTH_CALLBACK"}},{status:400,headers}); }
 }
@@ -98,9 +103,11 @@ export async function session(request: Request): Promise<Response> {
     // Same-origin fetches only; GET carries no tokens across cross-site contexts.
     if (request.headers.get("sec-fetch-site") === "cross-site") throw cognitoDenied();
     const {session}=await readSession(request,config);
-    const identity=await createCognitoVerifier(config)(session.idToken,"id");
-    const mapping=await readCognitoMapping(identity);
-    return Response.json({authenticated:true,walletLinked:!!mapping,accessToken:COGNITO_TOKEN_PREFIX+session.accessToken,expiresAt:session.expiresAt,enrollment:session.enrollment ? {mode:session.enrollment.mode,provider:session.enrollment.provider}:undefined,...(mapping?{walletToken:session.idToken}:{})},{headers:authHeaders()});
+    const identity=await createCognitoVerifier(config)(session.accessToken);
+    const member=await resolveKyaaMember(identity,loadServerEnv().GIWA_CHAIN_ID);
+    if(!member)throw cognitoDenied();
+    // walletLinked stays for older open tabs; every resolved member already has its wallet record.
+    return Response.json({authenticated:true,walletLinked:true,userId:member.identityKey,accessToken:COGNITO_TOKEN_PREFIX+session.accessToken,expiresAt:session.expiresAt},{headers:authHeaders()});
   }catch(error){return denied(error);}
 }
 export async function logout(request: Request): Promise<Response> {

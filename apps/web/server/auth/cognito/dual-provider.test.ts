@@ -12,22 +12,28 @@ it("never sends a rejected Cognito token to the legacy Privy verifier",async()=>
  await expect(createPrivyNodeAccessVerifier(config,port).verify("kyaa-cognito:invalid")).rejects.toThrow();
  expect(mock.verify).not.toHaveBeenCalled();
 });
-it("preserves mapped DID, email and wallet rather than Cognito email or a new wallet",async()=>{
- mock.resolve.mockResolvedValue({identity:{subject:"cognito-sub",tokenId:"jti"},mapping:{privyUserId:"did:privy:old",verifiedEmail:"original@example.test",walletAddress:"0x1111111111111111111111111111111111111111",chainId:91342}});
- mock.get.mockResolvedValue({id:"did:privy:old",linked_accounts:[{type:"google_oauth",subject:"google-original",email:"original@example.test",verified_at:1},{type:"custom_auth",custom_user_id:"cognito-sub"},{type:"wallet",address:"0x1111111111111111111111111111111111111111",chain_type:"ethereum",connector_type:"embedded",wallet_client:"privy"}]});
+const member={appUserId:"00000000-0000-4000-8000-000000000001",identityKey:"did:privy:old",verifiedEmail:"original@example.test",walletAddress:"0x1111111111111111111111111111111111111111",chainId:91342,providerAccounts:[{issuer:"https://accounts.google.com",subject:"google-original"}]};
+it("resolves a Cognito member from kyaa records only: original DID, email and wallet, no Privy call",async()=>{
+ mock.resolve.mockResolvedValue({identity:{subject:"cognito-sub",tokenId:"jti"},member});
  const result=await createPrivyNodeSessionResolver(config,port).resolve("kyaa-cognito:token",91342);
  expect(result).toEqual({identity:{privyUserId:"did:privy:old",verifiedEmail:"original@example.test",googleLinked:true,providerAccounts:[{issuer:"https://accounts.google.com",subject:"google-original"}]},wallet:{chainId:91342,address:"0x1111111111111111111111111111111111111111"}});
  const access=await createPrivyNodeAccessVerifier(config,port).verify("kyaa-cognito:token");
- expect(access.providerAccounts).toEqual([{issuer:"https://accounts.google.com",subject:"google-original"}]);
+ expect(access).toEqual({privyUserId:"did:privy:old",verifiedEmail:"original@example.test",googleLinked:true,providerAccounts:member.providerAccounts});
  expect(mock.verify).not.toHaveBeenCalled();
- mock.get.mockResolvedValueOnce({id:"did:privy:new",linked_accounts:[]});
- await expect(createPrivyNodeAccessVerifier(config,port).verify("kyaa-cognito:token")).rejects.toMatchObject({status:409});
+ expect(mock.get).not.toHaveBeenCalled();
+});
+it("serves a member who joined after Privy with its kyaa key and issued address",async()=>{
+ mock.resolve.mockResolvedValue({identity:{subject:"cognito-sub",tokenId:"jti"},member:{...member,identityKey:"kyaa:7c9e6679-7425-40de-944b-e07fc1f90ae7",walletAddress:"0x2222222222222222222222222222222222222222",providerAccounts:[{issuer:"https://appleid.apple.com",subject:"apple-1"}]}});
+ const access=await createPrivyNodeAccessVerifier(config,port).verify("kyaa-cognito:token");
+ expect(access).toMatchObject({privyUserId:"kyaa:7c9e6679-7425-40de-944b-e07fc1f90ae7",googleLinked:false});
+ await expect(createPrivyNodeSessionResolver(config,port).resolve("kyaa-cognito:token",1)).rejects.toMatchObject({status:422});
+ expect(mock.get).not.toHaveBeenCalled();
 });
 
-it("keeps Apple reauthentication on the verified Cognito refresh family while preserving the original Privy owner",async()=>{
- mock.resolve.mockResolvedValue({identity:{subject:"cognito-sub",tokenId:"stable-origin-jti"},mapping:{privyUserId:"did:privy:old",walletAddress:"0x1111111111111111111111111111111111111111",chainId:91342}});
- mock.get.mockResolvedValue({id:"did:privy:old",linked_accounts:[{type:"google_oauth",subject:"google-original",email:"original@example.test",verified_at:1},{type:"custom_auth",custom_user_id:"cognito-sub"},{type:"wallet",address:"0x1111111111111111111111111111111111111111",chain_type:"ethereum",connector_type:"embedded",wallet_client:"privy"}]});
+it("keeps Apple reauthentication on the verified Cognito refresh family while preserving the original owner",async()=>{
+ mock.resolve.mockResolvedValue({identity:{subject:"cognito-sub",tokenId:"stable-origin-jti"},member});
  const result=await createPrivyNodeReauthenticationResolver(config,port).resolve("kyaa-cognito:token");
  expect(result).toMatchObject({privyUserId:"did:privy:old",sessionId:"cognito:stable-origin-jti",google:{subject:"google-original"}});
  expect(mock.verify).not.toHaveBeenCalled();
+ expect(mock.get).not.toHaveBeenCalled();
 });

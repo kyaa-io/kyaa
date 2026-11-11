@@ -34,10 +34,12 @@ export function PrivyRoot({
   const { locale } = useAppLocale();
   useEffect(() => installResourceWriteWatch(), []);
   const config = useMemo(() => privyProviderConfig({ locale, authProvider, appleLoginEnabled, testAccountLoginEnabled }), [locale, authProvider, appleLoginEnabled, testAccountLoginEnabled]);
-  if (!appId) throw new Error(PRIVY_APP_ID_REQUIRED);
+  if (!appId && authProvider !== "cognito") throw new Error(PRIVY_APP_ID_REQUIRED);
   const page = <AvatarSessionBridge><ByUsSessionProvider>{children}</ByUsSessionProvider></AvatarSessionBridge>;
+  // Cognito (PRIVY-EXIT-0005): the Privy SDK is not mounted at all; sign-in and the session are kyaa's own.
+  if (authProvider === "cognito") return <AuthBootProvider><CognitoAuthProvider>{page}</CognitoAuthProvider></AuthBootProvider>;
   return <AuthBootProvider>
     <PrivyIsland appId={appId} config={config} />
-    {authProvider === "cognito" ? <CognitoAuthProvider>{page}</CognitoAuthProvider> : page}
+    {page}
   </AuthBootProvider>;
 }
