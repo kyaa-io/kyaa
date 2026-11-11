@@ -1,8 +1,9 @@
 // @vitest-environment jsdom
-import { render, screen, within } from "@testing-library/react";
+import { fireEvent, render, screen, within } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 vi.mock("next/link", () => ({ default: ({ href, children, ...rest }: { href: string; children: React.ReactNode }) => <a href={href} {...rest}>{children}</a> }));
 vi.mock("next/image", () => ({ default: (props: Record<string, unknown>) => <img alt="" {...(props as object)} /> }));
+vi.mock("@/features/group-social/profile-modal", () => ({ ProfileModal: ({ person }: { person: { ref: unknown } }) => <div role="dialog" data-ref={JSON.stringify(person.ref)} /> }));
 import { APP_LOCALES } from "@/i18n/locales";
 import { messages } from "@/i18n/catalogs/features__rankings__ui__rankings-copy";
 import { rankingsSource } from "./rankings-source";
@@ -47,6 +48,15 @@ describe("rankings content", () => {
     render(<FanRankingList locale="ko" ranking={fans(true)} />);
     expect(screen.queryByText("내 순위")).toBeNull();
     expect(screen.getByText("나")).toBeTruthy();
+  });
+
+  it("opens the selected public ranking profile from a keyboard-accessible row", () => {
+    render(<FanRankingList locale="ko" slug="elina" ranking={{ ...fans(false), computedAt: "2026-11-02T00:00:00Z" }} />);
+    const button = screen.getByRole("button", { name: new RegExp(LONG) });
+    button.focus();
+    expect(document.activeElement).toBe(button);
+    fireEvent.click(button);
+    expect(JSON.parse(screen.getByRole("dialog").getAttribute("data-ref")!)).toEqual({ kind: "page_ranking", slug: "elina", metric: "fan_contribution", period: "week", periodStart: "2026-11-02", computedAt: "2026-11-02T00:00:00Z", rank: 1 });
   });
 
   it("caps the progress bar at the target", () => {

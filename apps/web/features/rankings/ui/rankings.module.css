@@ -186,3 +186,7 @@
 .retry {
   margin-inline-start: var(--space-2);
 }
+
+.rowButton { display: block; width: 100%; min-height: var(--min-target); text-align: left; color: inherit; border-radius: 0; }
+.rowButton > span { display: grid; width: 100%; grid-template-columns: var(--space-8) minmax(0, 1fr) auto; align-items: center; gap: var(--space-3); text-align: left; }
+.rowButton:focus-visible { outline: 3px solid var(--color-focus); outline-offset: -3px; }
