@@ -259,6 +259,7 @@ A2 버튼 반경 알약·높이 390 44 / 1024+ 48 · B2 칩 36·14/700·반경 �
 - 연출 자리는 처음부터 차지해 CLS를 만들지 않는다. 오른쪽 위에 겹치는 `corner` 배지는 변환 때문에 위치가 튀므로 팝하지 않는다.
 - 전역 `prefers-reduced-motion` 한 줄 규칙은 **없다**. 모듈마다 `@media (prefers-reduced-motion: reduce)`로 끄고, `animation`을 쓰는 새 CSS는 N7이 분기 없으면 실패시킨다. Motion은 `MotionConfig reducedMotion="user"`로 변환을 끈다.
 - 연출은 보상을 *알리기* 위한 것이다. 전면 폭죽·파티클·상시 효과를 더하지 않는다.
+- 예외(대표 2026-11-11 16:2x): 홈 찐팬 100 줄(`home-jjinfan-strip`)의 막대 진행 끝 점은 불투명도만 1.8초 주기로 깜박인다(글로·그림자 0, reduced-motion 정지, 100/100이면 점 없음). 홈 배너와 랭킹 사이 한 줄·누르면 `/guide/jjinfan#jjinfan-challenge`·현재 진행 대상 1개(운영자가 가장 최근에 켠 챌린지)만.
 - 반복 애니메이션은 럭키드로우 idle과 로딩 스켈레톤만. 글로우·바운스·오버슈트 0. `prefers-reduced-motion`은 모듈별 분기(N7) 유지(2026-11-09).
 
 ### 3-1. 4회차 공통 규칙 (261107-2 피드백 C·D, 2026-11-08 합침)

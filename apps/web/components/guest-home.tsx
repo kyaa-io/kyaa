@@ -29,6 +29,7 @@ import { FanSectionHeader } from "./fan-ui/fan-heading";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import { FanSkeleton, FanSkeletonStatus } from "@/components/fan-ui/fan-skeleton";
 import { HomeRankingCard } from "@/features/rankings/ui/home-ranking-card";
+import { HomeJjinfanStrip } from "@/features/rankings/ui/home-jjinfan-strip";
 import { ThinBanner } from "@/features/home/ui/home-thin-banner";
 import { HomeGallery, HomeGalleryPlaceholder, HomeNotices, HomeNoticesPlaceholder } from "@/features/home/ui/home-placeholder-blocks";
 import { ObservedLiveStrip } from "@/features/live/ui/observed-live-strip";
@@ -73,7 +74,7 @@ export function GuestHome(props: GuestHomeProps) {
   return <HomeLayout locale={props.locale} hero={<HomeHero {...props} />} thinBanner={<HomeThinBanner banner={props.homeSlots?.home_below_board} locale={props.locale} />} notices={<HomeNoticesPlaceholder locale={props.locale} />} gallery={<HomeGalleryPlaceholder locale={props.locale} />} />;
 }
 
-/** 7차 홈(plan-ux-r8): 브랜드 줄·메인 배너 → 랭킹 → 얇은 배너 → 공지·갤러리. 한 열이고 옆 패널이 없다(다가오는 LIVE 블록은 2026-11-09 사용자 결정으로 뺐다). */
+/** 7차 홈(plan-ux-r8): 브랜드 줄·메인 배너 → 찐팬 100 줄(진행 중일 때만) → 랭킹 → 얇은 배너 → 공지·갤러리. 한 열이고 옆 패널이 없다(다가오는 LIVE 블록은 2026-11-09 사용자 결정으로 뺐다). */
 function HomeLayout({ locale, hero, thinBanner, notices, gallery }: { locale: AppLocale; hero: ReactNode; thinBanner: ReactNode; notices: ReactNode; gallery: ReactNode }) {
   return (
     <FanAppFrame
@@ -84,6 +85,7 @@ function HomeLayout({ locale, hero, thinBanner, notices, gallery }: { locale: Ap
       <div className={styles.shell}>
         <main id="main-content" className={styles.main}>
           {hero}
+          <div className={styles.jjinfanStrip}><HomeJjinfanStrip locale={locale} /></div>
           <div id="home-ranking" className={styles.contentSection}><HomeRankingCard locale={locale} /></div>
           {thinBanner}
           <ObservedLiveStrip locale={locale} />

@@ -11,6 +11,7 @@ import { rankingsText } from "@/features/rankings/ui/rankings-copy";
 import { proofsText, type ProofsCopyKey } from "@/features/passport-proofs/ui/proofs-copy";
 import { PROOF_TYPES } from "@/features/passport/domain/proof-types";
 import { GuideCta, GuideFansLink, GuideProgress } from "./guide-live";
+import { JjinfanChallengeDetail } from "@/features/rankings/ui/jjinfan-detail";
 import { GROUP_WALLET_POINT_COST } from "@/server/group-wallet/domain";
 import { activityLabel, guideDetailText, guideText, limitText, pointsText } from "./guide-copy";
 import styles from "./guide-content.module.css";
@@ -259,6 +260,8 @@ export function JjinfanGuideContent({ locale, model }: { locale: AppLocale; mode
       >
         <GuideProgress locale={locale} />
       </GuideHero>
+
+      <JjinfanChallengeDetail locale={locale} />
 
       {model ? <GuideFacts items={[
         { value: model.slots.length, label: guideDetailText(locale, "dkgFactSlots") },
