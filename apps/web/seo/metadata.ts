@@ -97,7 +97,7 @@ export function publicMetadata(input: {
   return {
     title, description,
     alternates: { canonical: url, languages: languageAlternates(path, input.locales) },
-    robots: isPrivatePath(path) || isRehearsalPath(path) ? NO_INDEX : { index: true, follow: true, "max-image-preview": "large" },
+    robots: shareOrigin() !== SITE_URL || isPrivatePath(path) || isRehearsalPath(path) ? NO_INDEX : { index: true, follow: true, "max-image-preview": "large" },
     openGraph: { title, description, url, type: "website", siteName: "kyaa",
       locale: openGraphLocale(locale),
       alternateLocale: (input.locales ?? APP_LOCALES).filter((value) => value !== locale).map(openGraphLocale), images },
@@ -107,10 +107,10 @@ export function publicMetadata(input: {
 
 export const pageCopy = {
   home: {
-    ko: { title: "Kyaa. Every Fan Moment Counts.", description: "최애의 LIVE 일정을 확인하고 팬 인증, 예약, 출석으로 함께한 순간을 팬 패스포트에 기록하세요." },
-    en: { title: "Kyaa. Every Fan Moment Counts.", description: "Discover your favorite creators and their LIVE events. Verify your fandom, reserve a spot for a LIVE, and record your attendance in your Fan Passport." },
+    ko: { title: "꺄(Kyaa). Every Fan Moment Counts.", description: "꺄(Kyaa)에서 최애의 LIVE 일정을 확인하고 팬 인증, 예약, 출석으로 함께한 순간을 팬 패스포트에 기록하세요." },
+    en: { title: "꺄(Kyaa). Every Fan Moment Counts.", description: "Discover Kyaa (꺄), your favorite creators and their LIVE events. Verify your fandom, reserve a spot for a LIVE, and record your attendance in your Fan Passport." },
 
-  ...additionalLocales((translationLocale) => ({ title: "Kyaa. Every Fan Moment Counts.", description: localizedMessages.m66f358c91b9f[translationLocale] }))
+  ...additionalLocales((translationLocale) => ({ title: "꺄(Kyaa). Every Fan Moment Counts.", description: `Kyaa (꺄). ${localizedMessages.m66f358c91b9f[translationLocale]}` }))
 },
   live: {
     ko: { title: "LIVE 일정 | kyaa", description: "진행 중인 LIVE와 예정된 방송을 확인하세요. 최애의 LIVE를 예약하고 함께한 순간을 기록하세요." },
