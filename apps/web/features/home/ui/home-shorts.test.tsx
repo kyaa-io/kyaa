@@ -1,5 +1,5 @@
-import { fireEvent, render, screen, within } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
+import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { HomeShorts } from "./home-shorts";
 import type { HomeShort } from "../domain/home-gallery";
 
@@ -51,5 +51,44 @@ describe("shorts viewer", () => {
     expect(within(dialog).queryByRole("link", { name: /YouTube/ })).toBeNull();
     fireEvent.click(within(dialog).getByRole("button", { name: "더 보기" }));
     expect(within(dialog).getByRole("link", { name: /YouTube/ })).toHaveAttribute("href", items[2]!.href);
+  });
+  it("shows the creator's profile photo in the caption and keeps the title to one line", () => {
+    const item = { ...items[0]!, creator: { slug: "a", name: "A", avatar: { src: "/images/celebrities/a/profile.jpg" } } } as HomeShort;
+    const { container } = render(<HomeShorts items={[item, items[1]!]} locale="ko" />);
+    const avatars = container.querySelectorAll("[data-creator-avatar]");
+    expect(decodeURIComponent(avatars[0]!.querySelector("img")!.getAttribute("src")!)).toContain("/images/celebrities/a/profile.jpg");
+    expect(avatars[1]!.querySelector("img")).toBeNull();
+    expect(avatars[1]!.querySelector("svg")).not.toBeNull();
+  });
+});
+
+describe("shorts scroll loading", () => {
+  const page = (from: number, count: number, hasMore: boolean) => ({ items: Array.from({ length: count }, (_, i) => { const code = String(from + i).padStart(11, "x"); return { id: `00000000-0000-4000-8000-${String(from + i).padStart(12, "0")}`, platform: "youtube", videoId: code, title: `영상 ${from + i}`, href: `https://www.youtube.com/watch?v=${code}`, creator: { slug: "a", name: "A" } }; }), hasMore });
+  afterEach(() => vi.unstubAllGlobals());
+  it("asks for the next page once the end is visible and stops after the last page", async () => {
+    const fetcher = vi.fn().mockResolvedValue({ ok: true, json: async () => page(8, 4, false) });
+    vi.stubGlobal("fetch", fetcher);
+    render(<HomeShorts items={items} locale="ko" layout="grid" offset={12} hasMore />);
+    await waitFor(() => expect(screen.getAllByRole("listitem")).toHaveLength(12));
+    expect(fetcher).toHaveBeenCalledTimes(1);
+    expect(fetcher).toHaveBeenCalledWith("/api/public/home-shorts?locale=ko&offset=20");
+    expect(screen.queryByRole("button", { name: "다시 시도" })).toBeNull();
+  });
+  it("does not ask for more without a next page", () => {
+    const fetcher = vi.fn();
+    vi.stubGlobal("fetch", fetcher);
+    render(<HomeShorts items={items} locale="ko" layout="grid" hasMore={false} />);
+    expect(fetcher).not.toHaveBeenCalled();
+  });
+  it("shows one retry button after a failure and loads again when pressed", async () => {
+    const fetcher = vi.fn().mockResolvedValueOnce({ ok: false, json: async () => ({}) }).mockResolvedValue({ ok: true, json: async () => page(8, 2, false) });
+    vi.stubGlobal("fetch", fetcher);
+    render(<HomeShorts items={items} locale="ko" layout="grid" hasMore />);
+    const retry = await screen.findByRole("button", { name: "다시 시도" });
+    expect(fetcher).toHaveBeenCalledTimes(1);
+    await act(async () => { fireEvent.click(retry); });
+    await waitFor(() => expect(screen.getAllByRole("listitem")).toHaveLength(10));
+    expect(fetcher).toHaveBeenCalledTimes(2);
+    expect(screen.queryByRole("button", { name: "다시 시도" })).toBeNull();
   });
 });
