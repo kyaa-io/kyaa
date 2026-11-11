@@ -22,7 +22,7 @@ export const messages = {
   },
   "stanRuleTicket": { "ja": "{0}Pごとに応募券1枚", "zh-Hans": "每{0}P兑换1张抽奖券", "zh-Hant": "每{0}P兌換1張抽獎券", "es": "1 boleto por cada {0}P", "id": "1 tiket per {0}P", "vi": "{0}P đổi 1 vé", "th": "ทุก {0}P ได้ตั๋ว 1 ใบ", "pt": "1 bilhete a cada {0}P", "fr": "1 ticket tous les {0}P", "ru": "1 билет за каждые {0}P" },
   "stanRuleHeart": { "ja": "スタンプ{0}個ごとにハート1つ", "zh-Hans": "每{0}个印章换1颗爱心", "zh-Hant": "每{0}個印章換1顆愛心", "es": "1 corazón por cada {0} sellos", "id": "1 hati per {0} stempel", "vi": "{0} con dấu đổi 1 tim", "th": "ทุก {0} ตราประทับ ได้หัวใจ 1 ดวง", "pt": "1 coração a cada {0} carimbos", "fr": "1 cœur tous les {0} tampons", "ru": "1 сердце за каждые {0} штампов" },
-  "stanBarDone": { "ja": "完了!", "zh-Hans": "完成!", "zh-Hant": "完成!", "es": "¡Listo!", "id": "Selesai!", "vi": "Xong!", "th": "เสร็จ!", "pt": "Pronto!", "fr": "Terminé !", "ru": "Готово!" },
+  "stanClaimReady": { "ja": "受け取れます", "zh-Hans": "可领取", "zh-Hant": "可領取", "es": "Listo para recibir", "id": "Siap diambil", "vi": "Có thể nhận", "th": "พร้อมรับ", "pt": "Pronto para receber", "fr": "Prêt à recevoir", "ru": "Можно получить" },
   "missionsGroupMore": {
     "ja": "その他のミッション",
     "zh-Hans": "更多任务",
