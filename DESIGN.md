@@ -2263,3 +2263,5 @@ At the user's request, registered Changha identity and hero images use the unedi
 - 응모 결과(`/my/raffles`): 제목 "응모 결과"(ko), 빈 안내 줄을 760px 열 안의 한 박스로 정리하고 `StanRaffleLists`(덕질 카드 재사용)로 최애의 진행 중·지난 럭키드로우를 채운다. 최애가 없으면 패스포트를 가진 첫 크리에이터, 그것도 없으면 안내 줄만 남는다(전 크리에이터 래플 목록 API가 아직 없다). 사유: 대표 02:08.
 - 홈 GGGI 배너 사진: 11/03에 바꾼 인스타 사진(`celebrities/changha/gggi-20261030.jpg`)에서 처음 고른 `gggi/changha-event-20261026.webp`(3:2)로 되돌림, 캠페인 열 `object-position:75% 30%`. 팬페이지 `gggi-event-entry`의 사진은 그대로. 사유: 대표 02:15.
 - MY 패스포트 표지 칸 PC 380→560px(1024+). 사유: 대표 02:15 "MY에는 패스포트 UI를 잘 보여주면".
+
+HEADER-CHIP-1456 (2026-11-11): 헤더 등급·하트·포인트 칩은 팝오버 없이 `/my`로 가는 링크 하나이고, 값이 바뀌면 `RollingNumber`(components/fan-ui, 자리별 세로 롤 600ms 감속, 증가 위·감소 아래, reduced-motion 즉시)로 넘어가며 칩 테두리가 브랜드 분홍으로 1회 깜빡인다(첫 로드 제외). 모임 목록 모바일 출석 플로팅 원형 버튼은 삭제(PC 카드 유지). 사유: 대표 2026-11-11 14:50.
