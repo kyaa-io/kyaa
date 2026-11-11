@@ -49,11 +49,19 @@ describe("popular posts page pictures", () => {
     const handler = createGetPublicPopularPosts({ rpc, authorize: vi.fn() } as never, { groupsEnabled: true, pageImage });
     const body = await (await handler(new Request("http://x/api/public/popular-posts"))).json();
     expect(pageImage).toHaveBeenCalledTimes(2);
-    expect(body.items.map((item: { pageImageUrl?: string }) => item.pageImageUrl)).toEqual(["https://x/elina.webp", "https://x/elina.webp", undefined]);
+    expect(body.items.map((item: { pageImageUrl?: string }) => item.pageImageUrl)).toEqual(["https://x/elina.webp", undefined]);
   });
   it("still answers when a page's picture cannot be read", async () => {
     const rpc = vi.fn(async () => ({ hasMore: false, items: [row("fan", "elina")] }));
     const handler = createGetPublicPopularPosts({ rpc, authorize: vi.fn() } as never, { groupsEnabled: true, pageImage: async () => { throw new Error("down"); } });
     expect((await handler(new Request("http://x/api/public/popular-posts"))).status).toBe(200);
   });
+});
+
+it('deduplicates stable source and post ID while preserving distinct posts with the same title',async()=>{
+ const row={source:'fan',id:'a9600000-0000-4000-8000-000000000001',pageRef:'elina',pageName:'elina',title:'같은 제목',nickname:'팬',createdAt:'2026-11-09T00:00:00Z',likeCount:1,commentCount:0,viewCount:1,asset:null};
+ const rpc=vi.fn(async()=>({hasMore:false,items:[row,{...row,viewCount:2},{...row,id:'a9600000-0000-4000-8000-000000000002'},{...row,source:'group'}]}));
+ const handler=createGetPublicPopularPosts({rpc,authorize:vi.fn()} as never,{groupsEnabled:true});
+ const body=await(await handler(new Request('https://x/api/public/popular-posts'))).json();
+ expect(body.items).toHaveLength(3);expect(body.items[0].viewCount).toBe(1);
 });

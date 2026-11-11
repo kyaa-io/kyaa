@@ -461,10 +461,9 @@ describe("approved fanpage", () => {
       const dialog = await screen.findByRole("dialog");
       expect(within(dialog).getByRole("heading", { name: "래플 결과가 발표됐어요" })).toBeInTheDocument();
       expect(within(dialog).getByRole("link", { name: "내 결과 확인" })).toHaveAttribute("href", "/my/raffles?locale=ko");
-      fireEvent.click(within(dialog).getByRole("checkbox", { name: "오늘 다시 열지 않기" }));
       fireEvent.click(within(dialog).getByRole("button", { name: "닫기" }));
       await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
-      expect(window.localStorage.getItem(`kyaa:page-notice:raffle-results:${kara.slug}:${resultsPublishedAt}`)).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+      expect(window.localStorage.getItem(`kyaa:page-notice:guest:raffle-results:${kara.slug}:22222222-2222-4222-8222-222222222222`)).toBe('seen');
     } else expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
   });
 

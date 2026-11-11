@@ -43,7 +43,7 @@ it('draws a public post photo, a post icon for the rest, never a broken-image ma
  expect(row).toHaveAttribute('data-notice');expect(row).toHaveTextContent('공지');
 });
 
-it('lists notices first whatever their date, then the other posts in the order given',()=>{
+it('preserves the chronological feed order including notices',()=>{
  const base={visibility:'public',revision:1,likeCount:0,liked:false};
  const items=feedPageSchema.parse({items:[
   {kind:'fan_post',id:'10000000-0000-4000-8000-000000000001',celebritySlug:'elina',body:'최신 팬 글',author:{nickname:'팬',avatarUrl:'/images/avatars/star-pink.webp'},assets:[],video:null,createdAt:'2026-11-07T01:00:00Z',updatedAt:'2026-11-07T01:00:00Z',isOwner:false,commentCount:0,...base},
@@ -52,5 +52,5 @@ it('lists notices first whatever their date, then the other posts in the order g
  ],nextCursor:null}).items;
  const {container}=render(<CompactFeed items={items} slug='elina' locale='ko' returnTo='/elina?tab=board' onChanged={()=>{}}/>);
  const titles=[...container.querySelectorAll('[data-fan-post-row]')].map(row=>row.textContent);
- expect(titles[0]).toContain('오래된 공지');expect(titles[1]).toContain('최신 팬 글');expect(titles[2]).toContain('이전 팬 글');
+ expect(titles[0]).toContain('최신 팬 글');expect(titles[1]).toContain('오래된 공지');expect(titles[2]).toContain('이전 팬 글');
 });

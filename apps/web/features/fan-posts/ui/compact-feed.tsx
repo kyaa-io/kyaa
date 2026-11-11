@@ -13,7 +13,7 @@ export type PinnedNotice={id:string;title:string;author:string;date:string;href:
 const thumbnailOf=(item:FeedItem)=>item.kind==='fan_post'?(item.visibility==='public'&&item.assets?.[0]?`/api/content-assets/${item.assets[0].id}?size=thumbnail`:null):item.kind==='chzzk'?item.images[0]?.url??null:null;
 type Props={items:FeedItem[];slug:string;locale:AppLocale;creatorName?:string;returnTo:string;onChanged:()=>void;officialPostLabel?:string;pinned?:PinnedNotice[];pageImage?:ReactNode};
 export function CompactFeed({items,slug,locale,creatorName,returnTo,pinned=[],pageImage}:Props){
- return <FanSurface as='div' appearance='list'><ul className={styles.table}>{pinned.map(notice=><li key={`pinned:${notice.id}`} data-notice=''><FanPostRow href={notice.href} locale={locale} title={notice.title} pageImage={pageImage} notice commentCount={notice.commentCount} author={notice.author} time={notice.date}/></li>)}{/* 공지는 날짜와 상관없이 목록 맨 위에 둔다. */[...items.filter(item=>item.kind==='notice'),...items.filter(item=>item.kind!=='notice')].map(item=>{
+ return <FanSurface as='div' appearance='list'><ul className={styles.table}>{pinned.map(notice=><li key={`pinned:${notice.id}`} data-notice=''><FanPostRow href={notice.href} locale={locale} title={notice.title} pageImage={pageImage} notice commentCount={notice.commentCount} author={notice.author} time={notice.date}/></li>)}{items.map(item=>{
   const isNotice=item.kind==='notice',isCheer=item.kind==='cheer';
   const title=isNotice?item.title:item.kind==='chzzk'?item.text:item.body.split('\n')[0];
   const author=isNotice?'kyaa':item.kind==='chzzk'?creatorName??'':isCheer?item.nickname:item.author.nickname;

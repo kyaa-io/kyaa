@@ -2,19 +2,19 @@ import type {ReactNode} from 'react';
 import {cleanup,fireEvent,render,screen,within} from '@testing-library/react';
 import {afterEach,beforeEach,expect,it,vi} from 'vitest';
 import {GroupMissionsOverview} from './group-mission-screen';
-const state=vi.hoisted(()=>({next:false,fan:false,failed:false,retry:vi.fn()}));
+const state=vi.hoisted(()=>({next:false,fan:false,failed:false,empty:false,retry:vi.fn()}));
 const pageId='10000000-0000-4000-8000-000000000001';
 const photo={id:pageId,title:'응원 사진 남기기',instructions:'엔카이브 응원 사진을 올려주세요.',imageUrl:'/images/groups/nchive-group.webp',state:'published',revision:1,rewardPoints:20,status:'pending',actionHref:'/?view=mission-detail&mission=photo'};
 const survey={...photo,id:'10000000-0000-4000-8000-000000000002',title:'오늘의 설문',instructions:'설문에 답해 주세요.',imageUrl:null,status:'completed',actionHref:'/?view=mission-detail&mission=survey'};
 vi.mock('./group-shell',()=>({GroupShell:({children}:{children:ReactNode})=><main>{children}</main>}));
 vi.mock('./use-group-resource',()=>({useGroupRequest:()=>({request:()=>Promise.reject(new Error('no catalog')),authenticated:true,ready:true,ownerKey:'u'}),useGroupResource:(url:string|null)=>{
  const common={ownerKey:'viewer',authenticated:true,error:false,loading:false,retry:state.retry};
- if(url?.includes('/missions'))return {...common,error:state.failed,data:state.failed?undefined:{missions:url.includes('cursor=')?[survey]:[photo],nextCursor:url.includes('cursor=')?null:survey.id}};
+ if(url?.includes('/missions'))return {...common,error:state.failed,data:state.failed?undefined:{missions:state.empty?[]:url.includes('cursor=')?[survey]:[photo],nextCursor:url.includes('cursor=')?null:survey.id}};
  if(url==='/api/me/wallet')return {...common,data:{attendance:{checkedIn:false}}};
  return {...common,data:{page:{id:pageId,kind:state.fan?'fan':'hobby',name:'엔카이브',slug:'nchive',celebrityId:pageId},membership:{role:'member'}}};
 }}));
 vi.mock('./group-activity-header',()=>({GroupActivityHeader:({pageId}:any)=><h1>fan header:{pageId}</h1>}));
-beforeEach(()=>{state.fan=false;state.failed=false;state.retry.mockReset();});
+beforeEach(()=>{state.fan=false;state.failed=false;state.empty=false;state.retry.mockReset();});
 afterEach(cleanup);
 it('renders the source overview with actual mission content, participation status, and existing destinations',()=>{
  render(<GroupMissionsOverview pageId={pageId} locale='ko' creatorName='엔카이브' header={<h1>엔카이브 팬페이지</h1>} missionLabels={{[photo.id]:{category:'사진 인증',action:'인증하기'}}}/>);
@@ -52,3 +52,5 @@ it('offers retry when the existing mission list fails',()=>{
 });
 
 it('uses verified shared activity header on actual fan mission route without preview header injection',()=>{state.fan=true;render(<GroupMissionsOverview pageId={pageId} locale='ko'/>);expect(screen.getByRole('heading',{name:`fan header:${pageId}`})).toBeInTheDocument();});
+
+it('names the missing missions rather than missing pages',()=>{state.empty=true;render(<GroupMissionsOverview pageId={pageId} locale='ko'/>);expect(screen.getByText('아직 참여할 덕질 활동이 없어요.')).toBeInTheDocument();expect(screen.queryByText('아직 표시할 페이지가 없어요.')).toBeNull();});
