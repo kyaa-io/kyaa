@@ -34,6 +34,10 @@ export const dukjilStanSource = {
   stanClaim: { ko: "받기", en: "Claim" },
   // 사용자 12:26: with no rewarded ad unit (production today) the two wallet buttons read 준비 중, disabled.
   stanPreparing: { ko: "준비 중", en: "Coming soon" },
+  // 사용자 13:28 시안: each column ends with its rule line, and a full bar gets a 완료! stamp.
+  stanRuleTicket: { ko: "{0}P마다 응모권 1장", en: "1 ticket per {0}P" },
+  stanRuleHeart: { ko: "스탬프 {0}개마다 하트 1개", en: "1 heart per {0} stamps" },
+  stanBarDone: { ko: "완료!", en: "Done!" },
   // E4·E5 (feedback E): the favorite's lucky draws, the cheer card and the six linked wallet cells.
   luckyOpensAt: { ko: "{0} 응모 시작", en: "Entries open {0}" },
   luckyClosesAt: { ko: "마감 {0}", en: "Closes {0}" },
