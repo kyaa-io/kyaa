@@ -74,6 +74,9 @@ fi
 [ "$(points)" = "$before" ] || fail "case 2 failed exchange changed the point balance"
 [ "$($P -At -c "select count(*) from public.group_wallet_receipts where app_user_id='$U' and request_key='$K2'")" = 0 ] || fail "case 2 failed exchange left a receipt"
 
+# Retire the rejected session after asserting it stayed unconsumed; only one open session is allowed.
+$P -c "update public.group_wallet_ad_sessions set voided_at=clock_timestamp(),void_reason='expired' where id='$S2'" >/dev/null
+
 # case 3 double spend: two different request keys, one session, behind the same lock
 S3=$(new_session 600); K3=e9300000-0000-4000-8000-0000000000a3; K4=e9300000-0000-4000-8000-0000000000a4
 before=$(points)
@@ -84,6 +87,8 @@ wait "$HOLD_PID" || fail "case 3 connection A failed"
 r3=0; r4=0; wait "$P3" || r3=$?; wait "$P4" || r4=$?
 ok=$(cat "$work/b3.log" "$work/b4.log" | grep -c '^OK 100$' || true)
 bad=$(cat "$work/b3.log" "$work/b4.log" | grep -c 'GROUP_WALLET_AD_SESSION_INVALID' || true)
+echo "case 3: success=$ok invalid=$bad exits=$r3,$r4"
+{ [ "$r3" = 0 ] && [ "$r4" -ne 0 ]; } || { [ "$r4" = 0 ] && [ "$r3" -ne 0 ]; } || fail "case 3 expected one successful and one failed child"
 [ "$ok" = 1 ] && [ "$bad" = 1 ] || fail "case 3 expected exactly one exchange and one AD_SESSION_INVALID, got ok=$ok invalid=$bad"
 [ "$(points)" = "$((before - 100))" ] || fail "case 3 double spend: balance moved by more than one exchange"
 

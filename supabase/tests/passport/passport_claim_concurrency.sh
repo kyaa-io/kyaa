@@ -40,7 +40,7 @@ if [ "${CLAIM_CONCURRENCY_SELFTEST:-}" = "1" ]; then
   exit 0
 fi
 
-[ "$($P -At -c 'select current_database()')" = "byus_clean" ] || { echo "byus_clean required"; exit 1; }
+[ "$($P -At -c "select current_database() || '|' || case when inet_server_addr() is null then 'local' else 'remote' end")" = "byus_clean|local" ] || { echo "byus_clean required"; exit 1; }
 $P <<'SQL'
 update public.group_wallet_release set enabled=true,write_fenced=false,legacy_writers_verified=true,migration_evidence_sha256=repeat('b',64),rewards_start_on=current_date;
 insert into public.celebrities(id,slug,status,image_url,published_at,roles,primary_role) values('d3300000-0000-4000-8000-000000000001','claim-conc','draft','/d.webp',null,'{artist}','idol');
