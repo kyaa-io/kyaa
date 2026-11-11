@@ -540,3 +540,15 @@ it("bounds a scheduled deadline override and propagates external cancellation", 
     const timeout = expect(timed).rejects.toThrow("deadline exceeded"); await vi.advanceTimersByTimeAsync(420000); await timeout;
   } finally { vi.useRealTimers(); }
 });
+
+ it("verifies history beyond five million blocks without dropping the earliest records", async () => {
+  const fixture = makeFixture({ headBlock: 5_100_020n });
+  const logs = await fixture.client.getLogs();
+  const getLogs = vi.fn(async ({ fromBlock, toBlock }: { fromBlock: bigint; toBlock: bigint }) =>
+    logs.filter((log: { blockNumber: bigint }) => log.blockNumber >= fromBlock && log.blockNumber <= toBlock));
+  const result = await readFinalizedActionSnapshot({ ...fixture.options,
+    logScan: { client: { getLogs, getChainId: fixture.client.getChainId, getBlock: fixture.client.getBlock } as unknown as PublicClient, chunkBlocks: 10_000n } });
+  expect(getLogs.mock.calls[0]![0].fromBlock).toBe(1n);
+  expect(getLogs.mock.calls.at(-1)![0].toBlock).toBe(5_100_020n);
+  expect(result.actions).toHaveLength(1);
+});

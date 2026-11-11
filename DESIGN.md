@@ -2263,3 +2263,7 @@ At the user's request, registered Changha identity and hero images use the unedi
 - 응모 결과(`/my/raffles`): 제목 "응모 결과"(ko), 빈 안내 줄을 760px 열 안의 한 박스로 정리하고 `StanRaffleLists`(덕질 카드 재사용)로 최애의 진행 중·지난 럭키드로우를 채운다. 최애가 없으면 패스포트를 가진 첫 크리에이터, 그것도 없으면 안내 줄만 남는다(전 크리에이터 래플 목록 API가 아직 없다). 사유: 대표 02:08.
 - 홈 GGGI 배너 사진: 11/03에 바꾼 인스타 사진(`celebrities/changha/gggi-20261030.jpg`)에서 처음 고른 `gggi/changha-event-20261026.webp`(3:2)로 되돌림, 캠페인 열 `object-position:75% 30%`. 팬페이지 `gggi-event-entry`의 사진은 그대로. 사유: 대표 02:15.
 - MY 패스포트 표지 칸 PC 380→560px(1024+). 사유: 대표 02:15 "MY에는 패스포트 UI를 잘 보여주면".
+
+
+### ONCHAIN-1455 (2026-11-11)
+공개 온체인 기록의 페이지·구역 제목은 FanHeading을 사용한다. 지표 카드는 radius-card와 space-4 간격, fan-number-size-wide·fan-number-weight 및 accent-ink로 숫자를 강조한다. 01/02 구역 순서를 유지하고 집계 설명은 해당 기록 아래에 둔다. 집계가 없으면 0 대신 집계 중을 표시하며, 확인된 스냅샷에는 생성 시각을 표시한다.

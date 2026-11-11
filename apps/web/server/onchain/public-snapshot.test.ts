@@ -43,3 +43,12 @@ it("rejects stored row metadata that differs from the complete payload", async (
   mocks.read.mockResolvedValue({ data: { public_payload: value, block_number: "40000001", block_hash: value.snapshot.blockHash, verified_at: value.snapshot.generatedAt } });
   expect(await getPublicOnchainResult()).toEqual({ state: "unavailable" });
 });
+
+it("shows only the last verified timestamp when a complete snapshot expires", async () => {
+  const value = payload();
+  value.snapshot.generatedAt = "2026-01-01T00:00:00Z";
+  value.snapshot.blockTimestamp = "2025-12-31T23:59:59Z";
+  expect(await getPublicOnchainResult(async () => value)).toEqual({ state: "unavailable", lastVerifiedAt: value.snapshot.generatedAt });
+  value.configFingerprint = "0".repeat(64);
+  expect(await getPublicOnchainResult(async () => value)).toEqual({ state: "unavailable" });
+});

@@ -60,7 +60,7 @@ describe("OnchainPublicPage", () => {
   it("keeps an unavailable snapshot distinct from zero and publishes all action definitions", () => {
     render(<OnchainPublicPage locale="ko" result={{ state: "unavailable" }} />);
     expect(screen.getByRole("status")).toHaveTextContent("수치를 0으로 표시하지 않습니다");
-    expect(screen.getAllByText("—").length).toBeGreaterThan(4);
+    expect(screen.getAllByText("집계 중")).toHaveLength(5);
     expect(screen.getByRole("table", { name: "행동 정의와 공개 상태" })).toBeInTheDocument();
     expect(screen.getAllByRole("row")).toHaveLength(13);
     expect(screen.getByText("회원가입 수, 전체 댓글 수, 구매 인증은 현재 이 원장에 기록되지 않습니다. 값이 없는 항목은 0건이 아니라 미기록 상태입니다.")).toBeInTheDocument();
