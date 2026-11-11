@@ -1,36 +1,42 @@
-/* 덕질 wallet (대표 11/11, 중간 버전 4cf1fee7b 구성): one card, two columns that read the same way — result (big number) over material
-   (bar or nine slots) over the column's button. 390: two columns, 안내 › in the heading row. 1024+: one row, 응모권 | 하트 | 안내. */
+/* 덕질 wallet (대표 11/11 구성, 사용자 11/11 12:45 Daily Mission 레퍼런스 모양): one card, one row per flow —
+   [64 3D asset] [result 응모권 N장 | 하트 N over a 24px round bar with the count inside] [reward pill: asset ×1 | 준비 중].
+   The guide is a ? icon next to the heading. 390: rows stacked with a hairline; 1024+: the two rows side by side. */
 .wallet { min-width:0; font-variant-numeric:tabular-nums; font-feature-settings:"tnum"; }
-.head { display:flex; align-items:center; justify-content:space-between; gap:var(--space-3); margin-bottom:var(--space-3); }
-.guide { display:inline-flex; align-items:center; gap:var(--space-1); min-height:44px; color:var(--color-ink); font-size:var(--fan-metadata-size); font-weight:var(--fan-item-title-weight); text-decoration:none; white-space:nowrap; }
-.guide:focus-visible,.result:focus-visible { outline:2px solid var(--color-focus); outline-offset:-2px; border-radius:var(--radius-small); }
-.guideColumn { display:none; }
-.card { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); min-width:0; box-sizing:border-box; border:1px solid var(--color-line); border-radius:var(--radius-card); background:var(--color-surface); }
-.column { display:flex; flex-direction:column; gap:var(--space-3); min-width:0; padding:var(--space-4); }
-.column + .column { border-inline-start:1px solid var(--color-line); }
-.result { display:grid; gap:var(--space-1); min-width:0; color:inherit; text-decoration:none; }
-.label { color:var(--color-muted); font-size:var(--fan-metadata-size); line-height:var(--fan-metadata-leading); overflow-wrap:anywhere; }
-.value { display:flex; align-items:center; gap:var(--space-2); min-width:0; min-height:32px; }
-.glyph { flex:none; width:28px; height:28px; object-fit:contain; }
-.value .number { font-size:var(--fan-number-size); font-weight:var(--fan-number-weight); line-height:1; gap:var(--space-1); white-space:nowrap; }
+.head { display:flex; align-items:center; gap:var(--space-1); margin-bottom:var(--space-3); }
+.guide { position:relative; display:inline-grid; place-items:center; width:32px; height:32px; border-radius:var(--radius-pill); color:var(--color-muted); }
+.guide::after { content:""; position:absolute; inset:-6px; }
+.guide:focus-visible,.result:focus-visible { outline:2px solid var(--color-focus); outline-offset:2px; border-radius:var(--radius-small); }
+.card { display:grid; min-width:0; box-sizing:border-box; border:1px solid var(--color-line); border-radius:var(--radius-card); background:var(--color-surface); }
+.row { display:grid; grid-template-columns:56px minmax(0,1fr) auto; align-items:center; gap:var(--space-3); min-width:0; padding:var(--space-4); }
+.row + .row { border-block-start:1px solid var(--color-line); }
+.asset { display:block; width:56px; height:56px; object-fit:contain; }
+.main { display:grid; gap:var(--space-2); min-width:0; }
+.result { display:flex; align-items:baseline; gap:var(--space-2); min-width:0; color:inherit; text-decoration:none; }
+.label { color:var(--color-ink); font-size:var(--fan-item-title-size); font-weight:var(--fan-item-title-weight); line-height:1.3; white-space:nowrap; }
+.value { display:flex; min-width:0; }
+.value .number { font-size:var(--fan-number-size); font-weight:var(--fan-number-weight); line-height:1; gap:2px; white-space:nowrap; }
 .value .number > span:last-child:not(:first-child),.sheetValue .number > span:last-child:not(:first-child) { font-size:var(--fan-action-emphasis-size); }
-.material { display:grid; gap:var(--space-2); min-width:0; padding-top:var(--space-3); border-top:1px solid var(--color-line-subtle, var(--color-line)); }
-.step { display:flex; flex-wrap:wrap; align-items:baseline; justify-content:space-between; column-gap:var(--space-2); min-width:0; font-size:var(--fan-description-size); line-height:var(--fan-metadata-leading); }
-.step > span:first-child { color:var(--color-muted); }
-.step strong { font-weight:var(--fan-item-title-weight); white-space:nowrap; }
-.material .gauge { width:100%; min-width:0; gap:0; }
-.action { margin-top:auto; }
-.favoritePicker { align-items:center; justify-content:center; }
-@media (hover:hover) and (pointer:fine) { .guide:hover { text-decoration:underline; } .result:hover .label { color:var(--color-ink); } }
+.material { display:flex; min-width:0; }
+/* Thick round bar (FanCellGauge's track language: 24 high, pill, hairline, pink tint): the count sits inside, white over the fill. */
+.bar { position:relative; display:grid; flex:1; min-width:0; height:24px; border-radius:var(--radius-pill); background:var(--color-accent-soft); box-shadow:inset 0 0 0 1px var(--color-accent-line); overflow:hidden; }
+.barFill { position:absolute; inset:0; display:grid; border-radius:inherit; background:var(--color-accent); transition:clip-path var(--motion-slow) var(--motion-easing); }
+.barText { grid-area:1/1; place-self:center; color:var(--color-ink); font-size:var(--fan-metadata-size); font-weight:700; line-height:1; white-space:nowrap; }
+.barFill .barText { color:var(--color-surface); }
+.reward { min-inline-size:76px; gap:var(--space-1); padding-inline:var(--space-3); white-space:nowrap; }
+.rewardInner { display:inline-flex; align-items:center; gap:var(--space-1); }
+.rewardAsset { display:block; flex:none; width:28px; height:28px; object-fit:contain; }
+/* Ready to receive: pink tint + pink line + pink-ink count (DESIGN.md highlight), so the pink asset still reads on it. */
+.reward.rewardReady { background:var(--color-accent-soft); box-shadow:inset 0 0 0 1.5px var(--color-accent); border-color:transparent; color:var(--color-accent-ink); }
+.favoritePicker { grid-template-columns:minmax(0,1fr); justify-items:center; }
+@media (hover:hover) and (pointer:fine) { .guide:hover { color:var(--color-ink); background:var(--color-accent-soft); } .result:hover .label { text-decoration:underline; } }
+@media (prefers-reduced-motion:reduce) { .barFill { transition:none; } }
 @media (min-width:1024px) {
- .head .guide { display:none; }
- .card { grid-template-columns:minmax(0,1fr) minmax(0,1fr) auto; }
- .column { padding:var(--space-5); }
- .value { min-height:40px; }
+ .card { grid-template-columns:repeat(2,minmax(0,1fr)); }
+ .row { grid-template-columns:64px minmax(0,1fr) auto; gap:var(--space-4); padding:var(--space-5); }
+ .row + .row { border-block-start:0; border-inline-start:1px solid var(--color-line); }
+ .asset { width:64px; height:64px; }
  .value .number { font-size:var(--fan-number-size-wide); }
- .glyph { width:32px; height:32px; }
- .action { align-self:flex-start; inline-size:auto; min-inline-size:160px; }
- .guideColumn { display:block; padding:var(--space-2) var(--space-5); border-inline-start:1px solid var(--color-line); }
+ .reward { min-inline-size:96px; }
 }
 .backdrop { position:fixed; inset:0; z-index:var(--z-dialog); display:flex; align-items:flex-end; justify-content:center; background:var(--color-backdrop); }
 .sheet { position:relative; box-sizing:border-box; width:100%; padding:var(--space-8) var(--space-4); padding-bottom:calc(var(--space-8) + env(safe-area-inset-bottom)); border:0; outline:1px solid var(--color-line); outline-offset:-1px; border-radius:var(--radius-card) var(--radius-card) 0 0; background:var(--color-surface); color:var(--color-ink); font-family:var(--font-sans); font-variant-numeric:tabular-nums; font-feature-settings:"tnum"; }

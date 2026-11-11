@@ -28,6 +28,8 @@ export const dukjilStanSource = {
   stanWalletFlows: { ko: "내 지갑", en: "My wallet" },
   // F2 (feedback F): the one entry to the 덕질 rules, in place of the help buttons.
   stanGuide: { ko: "안내", en: "Guide" },
+  // 사용자 11/11 12:45: the wallet guide is a small ? next to the heading; this is its name.
+  stanGuideLabel: { ko: "지갑 안내", en: "Wallet guide" },
   // 대표 11/11: the hearts column's button (a full stamp page becomes a heart, after the rewarded ad).
   stanClaim: { ko: "받기", en: "Claim" },
   // 사용자 12:26: with no rewarded ad unit (production today) the two wallet buttons read 준비 중, disabled.

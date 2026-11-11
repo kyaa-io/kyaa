@@ -84,7 +84,7 @@ it('대표 11/11: the tickets result links to my raffles and the points under it
  duoData();render(<GroupBenefitsScreen locale='ko'/>);await screen.findAllByText('137');
  const card=document.querySelector('[data-wallet-card]')!;
  expect(card.querySelector('[data-cell="tickets"]')).toHaveAttribute('href','/my/raffles?locale=ko');
- expect(card.querySelector('[data-cell="points"]')).toHaveTextContent('137/100P');
+ expect(card.querySelector('[data-cell="points"]')).toHaveTextContent('137 / 100P');
  expect(card.querySelector('[data-cell="points"] [role="progressbar"]')).toHaveAttribute('aria-valuenow','100');
 });
 it('대표 11/11 + 사용자 12:26: without an ad unit 교환 and 받기 read 준비 중 and stay disabled even when affordable or full',async()=>{
@@ -92,14 +92,14 @@ it('대표 11/11 + 사용자 12:26: without an ad unit 교환 and 받기 read �
  try{
   withFavorite();roadmapBody={passportId:uid(900),celebrityId:uid(901),hearts:3,pages:[{pageNo:1,slots:Array.from({length:9},(_,i)=>({slotNo:i+1,kind:null,state:'filled',stampId:null,clearedAt:null})),filled:9,claimable:true,claimed:false,locked:false,lockedReason:null}]};
   render(<GroupBenefitsScreen locale='ko'/>);await screen.findAllByText('137');
-  await waitFor(()=>expect(document.querySelector('[data-cell="stamps"]')).toHaveTextContent('9/9'));
+  await waitFor(()=>expect(document.querySelector('[data-cell="stamps"]')).toHaveTextContent('9 / 9'));
   // 사용자 12:26: both read 준비 중 (no other notice) and stay disabled.
   const wallet=document.querySelector('[data-wallet-card]') as HTMLElement;
   const preparing=within(wallet).getAllByRole('button',{name:'준비 중'});
   expect(preparing.map(b=>b.closest('[data-column]')?.getAttribute('data-column'))).toEqual(['tickets','hearts']);
   expect(preparing.every(b=>(b as HTMLButtonElement).disabled)).toBe(true);
-  expect(within(wallet).queryByRole('button',{name:'교환'})).toBeNull();
-  expect(within(wallet).queryByRole('link',{name:'받기'})).toBeNull();
+  expect(within(wallet).queryByRole('button',{name:'교환 ×1'})).toBeNull();
+  expect(within(wallet).queryByRole('link',{name:'받기 ×1'})).toBeNull();
  }finally{adUnit.value='/123/rewarded';}
 });
 it('DUO: preserves the approved block order, four tiles and a single check-in action',async()=>{
@@ -144,7 +144,7 @@ it('DUO: with no draw the past-draws link still opens and the resting button sen
 });
 it('DUO: opens exchange only from its tile, restores focus on Escape and makes no mutation on open',async()=>{
  duoData();render(<GroupBenefitsScreen locale='ko'/>);
- const trigger=await screen.findByRole('button',{name:'교환'});await waitFor(()=>expect(trigger).toBeEnabled());
+ const trigger=await screen.findByRole('button',{name:'교환 ×1'});await waitFor(()=>expect(trigger).toBeEnabled());
  expect(screen.queryByRole('dialog')).toBeNull();trigger.focus();fireEvent.click(trigger);
  const dialog=await screen.findByRole('dialog',{name:'교환하기'});
  expect(within(dialog).getByRole('group',{name:'수량'})).toHaveTextContent('1장');
@@ -155,9 +155,9 @@ it('DUO: opens exchange only from its tile, restores focus on Escape and makes n
 it('DUO: keeps unaffordable exchange disabled and enables it after the shared wallet event',async()=>{
  duoData();const base=fetch;let points=99;
  vi.stubGlobal('fetch',vi.fn((url:string,init?:RequestInit)=>url==='/api/me/wallet'?Promise.resolve(Response.json({...wallet,points})):base(url,init)));
- render(<GroupBenefitsScreen locale='ko'/>);await screen.findByText('99');expect(screen.getByRole('button',{name:'교환'})).toBeDisabled();
+ render(<GroupBenefitsScreen locale='ko'/>);await screen.findByText('99');expect(screen.getByRole('button',{name:'교환 ×1'})).toBeDisabled();
  points=100;act(()=>window.dispatchEvent(new Event('kyaa:group-wallet-changed')));
- await waitFor(()=>expect(screen.getByRole('button',{name:'교환'})).toBeEnabled());
+ await waitFor(()=>expect(screen.getByRole('button',{name:'교환 ×1'})).toBeEnabled());
 });
 it.each(APP_LOCALES)('DUO: keeps the signed-out layout and locks balances in %s without private reads',async(locale)=>{
  auth.authenticated=false;session.ownerId=null as any;bias.value={...bias.value,status:'guest'};
@@ -187,17 +187,17 @@ it('DS-D 9/9: a page already claimed (no next page yet) shows 0/9 and a disabled
  withFavorite();roadmapBody={passportId:uid(900),celebrityId:uid(901),hearts:3,pages:[{pageNo:1,slots:Array.from({length:9},(_,i)=>({slotNo:i+1,kind:null,state:'filled',stampId:null,clearedAt:null})),filled:9,claimable:false,claimed:true,locked:false,lockedReason:null}]};
  render(<GroupBenefitsScreen locale='ko'/>);
  await screen.findAllByText('137');const card=document.querySelector('[data-wallet-card]')!;
- await waitFor(()=>expect(card.querySelector('[data-cell="stamps"]')).toHaveTextContent('0/9'));
+ await waitFor(()=>expect(card.querySelector('[data-cell="stamps"]')).toHaveTextContent('0 / 9'));
  expect(card).not.toHaveTextContent('하트 받기');
- expect(within(card as HTMLElement).getByRole('button',{name:'받기'})).toBeDisabled();
+ expect(within(card as HTMLElement).getByRole('button',{name:'받기 ×1'})).toBeDisabled();
 });
 
 it('대표 11/11: at 9/9 the hearts column 받기 goes to the passport mission book',async()=>{
  withFavorite();roadmapBody={passportId:uid(900),celebrityId:uid(901),hearts:3,pages:[{pageNo:1,slots:Array.from({length:9},(_,i)=>({slotNo:i+1,kind:null,state:'filled',stampId:null,clearedAt:null})),filled:9,claimable:true,claimed:false,locked:false,lockedReason:null}]};
  render(<GroupBenefitsScreen locale='ko'/>);
  await screen.findAllByText('137');const card=document.querySelector('[data-wallet-card]')!;
- await waitFor(()=>expect(card.querySelector('[data-cell="stamps"]')).toHaveTextContent('9/9'));
- expect(within(card as HTMLElement).getByRole('link',{name:'받기'})).toHaveAttribute('href',`/passports/${uid(900)}?locale=ko#mission-book`);
+ await waitFor(()=>expect(card.querySelector('[data-cell="stamps"]')).toHaveTextContent('9 / 9'));
+ expect(within(card as HTMLElement).getByRole('link',{name:'받기 ×1'})).toHaveAttribute('href',`/passports/${uid(900)}?locale=ko#mission-book`);
 });
 
 it('uses validated catalog values, real scoped links, zero rewards and independent cursor pages',async()=>{

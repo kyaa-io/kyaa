@@ -6,6 +6,7 @@ export const messages = {
   "stanFlowCheer": { "ja": "推しを応援", "zh-Hans": "为最爱应援", "zh-Hant": "為最愛應援", "es": "Apoyar", "id": "Dukung", "vi": "Cổ vũ", "th": "เชียร์", "pt": "Apoiar", "fr": "Soutenir", "ru": "Поддержать" },
   "stanWalletFlows": { "ja": "マイウォレット", "zh-Hans": "我的钱包", "zh-Hant": "我的錢包", "es": "Mi billetera", "id": "Dompet saya", "vi": "Ví của tôi", "th": "กระเป๋าของฉัน", "pt": "Minha carteira", "fr": "Mon portefeuille", "ru": "Мой кошелёк" },
   "stanGuide": { "ja": "案内", "zh-Hans": "说明", "zh-Hant": "說明", "es": "Guía", "id": "Panduan", "vi": "Hướng dẫn", "th": "คู่มือ", "pt": "Guia", "fr": "Guide", "ru": "Правила" },
+  "stanGuideLabel": { "ja": "ウォレットの案内", "zh-Hans": "钱包说明", "zh-Hant": "錢包說明", "es": "Guía de la billetera", "id": "Panduan dompet", "vi": "Hướng dẫn ví", "th": "คู่มือกระเป๋า", "pt": "Guia da carteira", "fr": "Guide du portefeuille", "ru": "О кошельке" },
   "stanClaim": { "ja": "受け取る", "zh-Hans": "领取", "zh-Hant": "領取", "es": "Recibir", "id": "Ambil", "vi": "Nhận", "th": "รับ", "pt": "Receber", "fr": "Recevoir", "ru": "Получить" },
   "stanPreparing": {
     "ja": "準備中",
