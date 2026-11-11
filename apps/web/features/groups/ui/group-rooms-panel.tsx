@@ -1,4 +1,5 @@
 "use client";
+import { SECRET_ROOMS_ENABLED } from "../secret-room-config";
 import {GroupPublicRoomList,GroupRoomEmpty,GroupRoomHub,GroupRoomHubSkeleton,pickFeaturedRoom} from "./group-room-list";
 import {groupPublicRoomsSchema} from "@/server/group-members/domain";
 import {managementCopy,sendLabel} from "./management-copy";
@@ -8,6 +9,9 @@ import Link from "next/link";
 import type { Route } from "next";
 import { UsersRound, LockKeyhole, ChevronLeft, UserRound, BadgeCheck, MessagesSquare, ImagePlus, X } from "lucide-react";
 import type { AppLocale } from "@/i18n/locales";
+import { FanHeading } from "@/components/fan-ui/fan-heading";
+import { FanSurface } from "@/components/fan-ui/fan-surface";
+import { FanText } from "@/components/fan-ui/fan-text";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import { FanSectionLink } from "@/components/fan-ui/fan-section-link";
 import { FanSkeleton } from "@/components/fan-ui/fan-skeleton";
@@ -68,7 +72,7 @@ function RoomMessages({pageId,roomId,locale,readonly=false}:{pageId:string;roomI
     </form>}
   </section>{Boolean(visible?.participants?.length)&&<aside className={roomStyles.roomParticipants}><h3><UsersRound size={20} aria-hidden='true'/>{roomContextCopy[locale][0]}</h3>{visible!.participants!.map(person=><Link href={`/my/friends?locale=${locale}&profileId=${person.profileId}` as Route} key={person.profileId} className={roomStyles.roomParticipant}>{person.avatarUrl?<GroupImage src={person.avatarUrl} locale={locale} alt='' width={40} height={40} className={roomStyles.roomMessageAvatar}/>:<UserRound aria-hidden='true'/>}<span><strong>{person.nickname}</strong>{person.tier&&<span className={styles.meta}>{tierDisplayName(locale,person.tier)} · {roomEntryCopy(locale).verified}</span>}</span><span className={roomStyles.roomProfileAction}>{locale==='ko'?'프로필 보기':t.info}</span></Link>)}</aside>}</div>;
 }
-export function GroupRoomsPanel({pageId,locale,slug,imageUrl,initialRoomId,onJoin,joinPending=false,joinLabel}:{pageId:string;locale:AppLocale;slug?:string|null;imageUrl?:string|null;initialRoomId?:string;onJoin?:()=>void;joinPending?:boolean;joinLabel?:string}) {
+function OpenGroupRoomsPanel({pageId,locale,slug,imageUrl,initialRoomId,onJoin,joinPending=false,joinLabel}:{pageId:string;locale:AppLocale;slug?:string|null;imageUrl?:string|null;initialRoomId?:string;onJoin?:()=>void;joinPending?:boolean;joinLabel?:string}) {
  const t=groupsCopy(locale),c=interactionCopy(locale),entry=roomEntryCopy(locale),labels=roomStatusCopy(locale),auth=useGroupRequest(),g=useOptionalGroupPage();
  const rooms=useGroupResource(auth.ready&&auth.authenticated?`/api/groups/${pageId}/rooms`:null,parseRooms),nonMember=auth.ready&&(!auth.authenticated||rooms.failure?.status===403),publicRooms=useGroupResource(nonMember?`/api/groups/${pageId}/public-rooms`:null,parsePublicRooms),[selected,setSelected]=useState<string|undefined>(initialRoomId);
  const homeHref=slug?`/${slug}?locale=${locale}`:`/pages/groups/${pageId}?locale=${locale}`,roomHref=`${homeHref}&tab=rooms`,loginHref=fanLoginHref(locale,roomHref) as string;
@@ -101,4 +105,9 @@ export function GroupRoomsPanel({pageId,locale,slug,imageUrl,initialRoomId,onJoi
   :rooms.data?<><GroupRoomEmpty locale={locale}/>{!canManage&&g&&<div className={roomStyles.roomGate}><FanAction variant='neutral' href={g.hrefFor('board')}>{t.board}</FanAction></div>}</>:<GroupRoomHubSkeleton label={t.loading}/>}
   {room&&<SourceStatePanel sourceId={room.status==='closed'?'rc1U1':!unavailable&&!room.canEnter?'ipmTh':undefined} title={room.status==='closed'&&locale==='ko'?'종료된 비밀방':!unavailable&&!room.canEnter&&locale==='ko'?'멤버 전용 콘텐츠를 볼 수 없어요':unavailable||room.canEnter?labels[room.status as keyof typeof labels]:c.conditions}>{room.status==='scheduled'&&room.opensAt&&<time dateTime={room.opensAt}>{new Date(room.opensAt).toLocaleString(locale,{dateStyle:'medium',timeStyle:'short'})}</time>}{!unavailable&&!room.canEnter&&<><p>{room.minimumTier?`${c.tier} · ${room.minimumTier}`:t.membersOnly}</p>{!rooms.authenticated?<FanAction href={loginHref}>{t.login}</FanAction>:slug&&room.defaultKey!=='free'?<div className={styles.actions}><FanAction href={`/${slug}?locale=${locale}&tab=certifications`}>{c.verify}</FanAction><FanAction href={`/my?locale=${locale}`}>{c.tier}</FanAction></div>:joinAction}</>}</SourceStatePanel>}
  </section>;
+}
+
+export function GroupRoomsPanel(props: Parameters<typeof OpenGroupRoomsPanel>[0]) {
+ if (SECRET_ROOMS_ENABLED) return <OpenGroupRoomsPanel {...props}/>;
+ return <FanSurface className={roomStyles.closedRoom}><LockKeyhole aria-hidden="true" size={32}/><FanHeading>{groupsCopy(props.locale).rooms}</FanHeading><FanText as="p" role="body" id="secret-room-description">{props.locale === "ko" ? "일정 등급 이상만 들어올 수 있는, 최애와 라이브 채팅을 하는 프라이빗 공간이에요." : "A private space for live chats with your favorite artist, available to fans at a certain tier or above."}</FanText><FanAction disabled ariaDescribedBy="secret-room-description">{props.locale === "ko" ? "곧 열려요" : "Coming soon"}</FanAction></FanSurface>;
 }

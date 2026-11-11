@@ -1,3 +1,4 @@
+vi.mock("../secret-room-config", () => ({ SECRET_ROOMS_ENABLED: true }));
 import '@testing-library/jest-dom/vitest';
 import {cleanup,render,screen} from '@testing-library/react';
 import {afterEach,expect,it,vi} from 'vitest';

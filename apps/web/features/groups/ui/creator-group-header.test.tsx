@@ -1,3 +1,4 @@
+vi.mock("../secret-room-config", () => ({ SECRET_ROOMS_ENABLED: true }));
 import {render,screen} from '@testing-library/react';
 import {beforeEach,expect,it,vi} from 'vitest';
 import {CreatorGroupHeader,CreatorGroupActivities,CreatorGroupRooms} from './creator-group-header';

@@ -6,6 +6,7 @@ import { GroupMembers } from "./group-members";
 import { JjinfanGauge } from "@/features/rankings/ui/jjinfan-gauge";
 import gaugeStyles from "@/features/rankings/ui/jjinfan-gauge.module.css";
 import { GroupActivitiesPanel, GroupCollections, GroupEventsList } from "./group-activities";
+import { SECRET_ROOMS_ENABLED } from "../secret-room-config";
 import { GroupRoomsPanel } from "./group-rooms-panel";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import { groupsCopy } from "./copy";
@@ -29,6 +30,7 @@ export function CreatorGroupActivities({locale}:{slug?:string;locale:AppLocale})
 }
 export function CreatorGroupRooms({slug,locale,initialRoomId}:{slug:string;locale:AppLocale;initialRoomId?:string}) {
  const g=useGroupPage(),t=groupsCopy(locale);
+ if (!SECRET_ROOMS_ENABLED) return <GroupRoomsPanel pageId="" locale={locale}/>;
  return g.page?<GroupRoomsPanel key={`${g.ownerKey}:${initialRoomId??""}`} initialRoomId={initialRoomId} pageId={g.page.id} locale={locale} slug={slug} imageUrl={g.page.imageUrl} onJoin={g.startJoin} joinPending={g.joinPending}/>:<section className={styles.panel}><h2>{t.rooms}</h2><BodyState t={t} error={g.error} retry={g.refresh}/></section>;
 }
 export function CreatorGroupCollection({locale}:{slug?:string;locale:AppLocale}) {
