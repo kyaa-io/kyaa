@@ -43,4 +43,8 @@
 - `npm exec --workspace @byus/web -- tsc --noEmit --incremental false --pretty false` 통과.
 - 기존 세션·출석·글 경로와 화면 렌더링을 묶은 회귀 시험 104개 통과. 이벤트 핵심 시험과 갱신/공유/로컬 저장 시험도 통과했다. 이 묶음은 일부 겹치므로 합산하지 않는다.
 - 공용 브라우저의 실화면은 미확인이다. 공용 3000을 수정하지 않았고 미리보기 오류 탭은 닫았다.
-- 게이트와 push는 사용자 제한에 따라 실행하지 않는다. 로컬 커밋의 pre-commit도 동일한 제한으로 `KYAA_T3_SKIP_PRECOMMIT=1`을 사용한다.
+- 초기 커밋 `9662de223`은 당시 gate 금지에 따라 `KYAA_T3_SKIP_PRECOMMIT=1`로 pre-commit을 우회했다. 후속 lint 수정 커밋은 감독 요청에 따라 design-lint와 정상 pre-commit을 실행한다. push는 하지 않는다.
+
+## 11/11 감독 lint 수정
+
+본문은 FanText, 홈 배너는 FanAction을 사용한다. 화면 CSS의 글자 크기·행간·굵기와 버튼 소유 토큰 참조를 제거했다. 공유 동작 모듈은 공유 상태·네이티브 공유를 다루는 sharing으로 정리했으며 버튼은 기존 FanAction을 유지한다. 관리자 API 시험을 contract 이름으로 맞추고 공유 API의 운영 차단·인증 실패·검증된 소유자 계약 시험을 추가했다. design-lint 신규 위반 0, 관련 4파일 9시험 통과.

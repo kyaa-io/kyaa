@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { useByUsAuth } from '@/features/auth/client/cognito-auth';
 import { FanAction } from '@/components/fan-ui/fan-action';
-export function SignupEventShareButton() {
+export function SignupEventSharing() {
  const auth=useByUsAuth();
  const [pending,setPending]=useState(false),[status,setStatus]=useState('');
  const share=async()=>{
