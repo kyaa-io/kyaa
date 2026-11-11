@@ -1,5 +1,7 @@
 import { expect, it, vi } from "vitest";
 
+vi.mock("server-only", () => ({}));
+
 vi.mock("@/server/sns-ingest/dependencies", () => ({ createSnsIngestDependencies: vi.fn() }));
 
 it("keeps ingestion disabled without the dedicated secret", async () => {
