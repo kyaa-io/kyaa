@@ -43,9 +43,9 @@ assertSourceOnlyLocalizations(input, cmsReadbackLocalizations);
 - 입력은 원문뿐이다: `celebritySlug`, `platform`, 게시물마다 `sourceId`·`sourceUrl`·`sourcePublishedAt`·`text`·`images[{url}]`(최대 2). 제목·본문·대체 설명 필드는 받지 않는다(400). 캡션 없는 사진 글의 제목 `@계정`은 서버가 CMS 등록 계정 URL에서 만든다.
 - 서버가 `buildSourceOnlyLocalizations`로 만들어 초안 저장 → 이미지 저장 → 재조회 결과를 `assertSourceOnlyLocalizations`로 대조하고, 같을 때만 공개한다. 대조·이미지 실패는 비공개 초안으로 남긴다.
 - CMS에 등록된 활성 공식 계정 URL과 게시물 URL의 핸들이 같아야 한다. 게시물 URL은 핸들이 들어간 형태(`instagram.com/<계정>/p/<코드>/`, `tiktok.com/@<계정>/video/<ID>`)만 받는다.
-- slug는 `<platform>-<sha256(sourceId) 앞 16자>`다. 같은 slug의 공개 글은 `duplicate`, 한 번이라도 공개됐거나 관리자가 만든 글은 `blocked`로 두고 바꾸지 않는다. 이 경로가 만든 미공개 초안만 원문으로 다시 쓴다.
+- slug는 `<platform>-<sha256(sourceId) 앞 16자>`다. 같은 slug의 공개 글은 `duplicate`, 한 번이라도 공개됐거나 관리자가 만든 글은 `blocked`로 두고 바꾸지 않는다. SQL 복구 조건을 충족하는 같은 slug의 미공개 artist_post 초안을 원문으로 다시 쓴다.
 - 이미지는 `cdninstagram.com`·`fbcdn.net`·`tiktokcdn*.com`에서만 리디렉션 없이 받아 WebP로 저장하고 `/api/public/notice-media/<id>`로 공개 글일 때만 보인다.
-- 실행당 공개 시도 5건, 30일 지난 게시물 제외. 모든 호출은 `sns_ingest_runs`, 출처별 마지막 시도·성공·오류는 `sns_ingest_sources`, 글 생성·복구·공개는 `audit_logs`(`notice.sns_ingest.*`)에 남는다.
+- HTTP 요청별 서버 실행당 공개 시도 5건 (여러 요청·플랫폼 합산 상한은 아님), 30일 지난 게시물 제외. 인증·입력·등록 출처 검사를 통과해 시작한 실행은 `sns_ingest_runs`, 출처별 마지막 시도·성공·오류는 `sns_ingest_sources`, 글 생성·복구·공개는 `audit_logs`(`notice.sns_ingest.*`)에 남는다.
 - 매시 `telegram-alerts` 정비(`maintain_telegram_alerts`)가 24시간 넘게 성공하지 못한 출처를 하루 한 번 `sns_ingest_stale`로 알린다. 한 번도 호출되지 않은 출처는 기록이 없어 알리지 않는다.
 
 ## 2026-10-18 경로 조사와 수정
@@ -64,3 +64,5 @@ assertSourceOnlyLocalizations(input, cmsReadbackLocalizations);
 | 홈 공지(`/admin/home-notices`) | kyaa가 쓰는 내부 글이 기본이다. 외부 원문을 옮길 때만 원문 URL·원제·캡션 원문·원문 화면이나 HTML·확보 시각을 `work/home-notice-source-<YYYYMMDD>-<slug>/`에 남기고, `buildSourceOnlyLocalizations` 결과를 그대로 초안 저장한 뒤 `/api/admin/home-notices` 재조회 본문을 `assertSourceOnlyLocalizations`로 대조해 통과한 경우에만 발행한다. 원문을 확보하지 못하면 싣지 않는다. |
 
 기존 LIVE 제목의 160자 저장 제한은 연속된 원문 발췌로 유지한다. 이미 저장된 생성 문구의 범위와 원문 확보 상태는 `work/source-only-content-20261018/`에 별도로 기록한다. 과거 증거 파일을 덮어쓰지 않는다.
+
+인증·입력·미등록 출처 거절은 서버 로그의 `sns_ingest_rejected`에 코드·HTTP 상태만 기록한다. 요청 본문·URL·인증 헤더·비밀값은 기록하지 않는다. 이 거절 로그는 DB 실행 기록과 별개다.

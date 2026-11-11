@@ -5,11 +5,15 @@ import { createContentThumbnail, MAX_PUBLIC_IMAGE_BYTES, normalizePublicImage } 
 import { MEDIA_BUCKET } from "../mobile-media/domain";
 import { createSnsIngestService } from "./service";
 
-async function fetchImage(url: URL): Promise<Uint8Array> {
+export async function fetchImage(url: URL): Promise<Uint8Array> {
   // Redirects could leave the allowed CDN hosts, so they are refused.
   const response = await fetch(url, { redirect: "error", signal: AbortSignal.timeout(20_000), headers: { accept: "image/*" } });
   if (!response.ok || !response.body) throw new Error("SNS_INGEST_IMAGE_UNAVAILABLE");
-  if (Number(response.headers.get("content-length") ?? 0) > MAX_PUBLIC_IMAGE_BYTES) throw new Error("SNS_INGEST_IMAGE_TOO_LARGE");
+  const length = response.headers.get("content-length");
+  if (length !== null && (!/^\d+$/.test(length) || !Number.isSafeInteger(Number(length)) || Number(length) > MAX_PUBLIC_IMAGE_BYTES)) {
+    await response.body.cancel();
+    throw new Error("SNS_INGEST_IMAGE_TOO_LARGE");
+  }
   const chunks: Uint8Array[] = []; let size = 0;
   for await (const chunk of response.body as unknown as AsyncIterable<Uint8Array>) {
     size += chunk.byteLength;
