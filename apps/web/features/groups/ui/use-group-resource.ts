@@ -1,7 +1,7 @@
 "use client";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { dropResource, invalidateAfterWrite, isResourceWrite, peekResource, shareResourceRead, syncResourceOwner, useResourceEpoch, useRetainedResource } from "@/components/fan-ui/resource-cache";
-import { useByUsAuth } from "@/features/auth/client/cognito-auth";
+import { usePublicReadAuth } from "@/features/auth/client/public-read-auth";
 import { useByUsSession } from "@/components/byus-session-provider";
 import { withRequestDeadline } from "@/features/reliability/client/request-deadline";
 import { useAppLocale } from "@/components/locale-provider";
@@ -35,8 +35,9 @@ export function groupRequestPath(url:string,input:RequestInit|undefined,locale:s
   return nameLocale?withNameLocale(path,input,locale):path;
 }
 
+/** Reads as a guest when sign-in stalls past its deadline; a member token that does not arrive in time ends the request as AUTH_REQUIRED. */
 export function useGroupRequest() {
-  const auth = useByUsAuth();
+  const auth = usePublicReadAuth();
   const session = useByUsSession();
   const { locale } = useAppLocale();
   const { getAccessToken, authenticated } = auth;
@@ -46,7 +47,7 @@ export function useGroupRequest() {
   const request = useCallback(async (url: string, input?: RequestInit, format: "json" | "blob" = "json", nameLocale = true) => withRequestDeadline(async signal => {
     const path=groupRequestPath(url,input,locale,nameLocale);
     if (!auth.ready || !session.ready) throw new GroupRequestError(409, "SESSION_NOT_READY");
-    const token = authenticated ? await getAccessToken() : null;
+    const token = authenticated ? await getAccessToken().catch(() => null) : null;
     if (identity.current !== ownerKey) throw new GroupRequestError(409, "SESSION_CHANGED");
     if (authenticated && !token) throw new GroupRequestError(401, "AUTH_REQUIRED");
     const response = await fetch(path, { ...input, signal, cache: "no-store", headers: { ...(input?.body ? { "Content-Type": "application/json" } : {}), ...(token ? { Authorization: `Bearer ${token}` } : {}), ...input?.headers } });

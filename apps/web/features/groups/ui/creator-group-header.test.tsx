@@ -1,4 +1,5 @@
-vi.mock("../secret-room-config", () => ({ SECRET_ROOMS_ENABLED: true }));
+const roomsFlag = vi.hoisted(() => ({ enabled: true }));
+vi.mock("../secret-room-config", () => ({ get SECRET_ROOMS_ENABLED() { return roomsFlag.enabled; } }));
 import {render,screen} from '@testing-library/react';
 import {beforeEach,expect,it,vi} from 'vitest';
 import {CreatorGroupHeader,CreatorGroupActivities,CreatorGroupRooms} from './creator-group-header';
@@ -99,6 +100,17 @@ it('reads the neighbouring rooms tab once the head is settled: public list signe
  expect(state.preload).not.toHaveBeenCalled();nonMember.unmount();
  state.data={page:page(),membership:{role:'member'}};render(<CreatorGroupHeader celebrity={celebrity} locale='ko' tab='board'/>);
  expect(state.preload).toHaveBeenCalledWith('/api/groups/page-id/rooms');
+});
+
+it('does not read the rooms tab at all while secret rooms are closed',()=>{
+ roomsFlag.enabled=false;
+ try{
+  for(const authenticated of [false,true]){
+   state.preload=vi.fn();state.authenticated=authenticated;state.data={page:page(),membership:authenticated?{role:'member'}:null};
+   render(<CreatorGroupHeader celebrity={celebrity} locale='ko' tab='board'/>).unmount();
+   expect(state.preload).not.toHaveBeenCalled();
+  }
+ }finally{roomsFlag.enabled=true;}
 });
 
 it('keeps the same head and tab strip nodes when only the tab in the address changes',()=>{

@@ -15,6 +15,7 @@ import { parseAppLocale, toContentLocale, type AppLocale } from "@/i18n/locales"
 import type { PublishedCelebrity } from "@/server/content/content-domain";
 import { groupDetailSchema, safeGroupReturnTo, type GroupDetail, type GroupPage } from "../domain/contracts";
 import { GroupPresenceContext, useOwnGroupPresence, type GroupPresenceResult } from "./use-group-presence";
+import { SECRET_ROOMS_ENABLED } from "../secret-room-config";
 import { usePreloadGroupResource } from "./use-group-preload";
 import { type GroupRequestError, useGroupResource } from "./use-group-resource";
 import { useLinkedFanpage } from "./use-linked-fanpage";
@@ -136,13 +137,13 @@ export function GroupPageProvider({ pageId, slug, celebrity: serverCelebrity, ce
   const selectTab = useCallback((tab: string) => { startTransition(() => setActiveTab(tab)); }, [setActiveTab]);
   const preload = usePreloadGroupResource();
   const preloadTab = useCallback((tab: string) => {
-    if (!presencePageId || !ready) return;
+    if (!presencePageId || !ready || !SECRET_ROOMS_ENABLED) return;
     if (tab === "rooms") preload(`/api/groups/${presencePageId}/${authenticated ? "rooms" : "public-rooms"}`);
   }, [authenticated, preload, presencePageId, ready]);
 
   // 이웃 탭(방) 첫 호출은 머리가 자리 잡힌 뒤 한가할 때 미리 읽는다. 가입 전 로그인 회원은 방 목록이 403이라 건너뛴다.
   useEffect(() => {
-    if (!presencePageId || !ready || (authenticated && !membership)) return;
+    if (!SECRET_ROOMS_ENABLED || !presencePageId || !ready || (authenticated && !membership)) return;
     const idle = typeof window.requestIdleCallback === "function" ? window.requestIdleCallback(() => preloadTab("rooms")) : window.setTimeout(() => preloadTab("rooms"), 800);
     return () => { if (typeof window.requestIdleCallback === "function") window.cancelIdleCallback(idle); else window.clearTimeout(idle); };
   }, [authenticated, membership, preloadTab, presencePageId, ready]);

@@ -6,6 +6,7 @@ import {AuthError} from '@/features/auth/domain/auth-errors';
 import {createGroupHandler} from '@/server/groups/routes';
 import {GroupPresence} from './group-presence';
 import {useGroupPresence} from './use-group-presence';
+import { resetAuthReadyDeadlineForTest } from '@/features/auth/client/public-read-auth';
 vi.mock('server-only',()=>({}));
 const auth=vi.hoisted(()=>({ready:true,authenticated:true,user:{id:'10000000-0000-4000-8000-000000000001'},getAccessToken:vi.fn(async()=> 'token')}));
 const session=vi.hoisted(()=>({ready:true,ownerId:'10000000-0000-4000-8000-000000000001',generation:0}));
@@ -71,7 +72,8 @@ it('discards in-flight pre-disconnect responses after reconnect',async()=>{
  await act(async()=>resolveOld({onlineCount:999,todayCount:999,artists:[]}));await flush();expect(screen.queryByText(/999/)).toBeNull();
 });
 it('does not present malformed API data or auth-pending values as real counts',async()=>{
- auth.ready=false;const view=render(<GroupPresence pageId={pageId} locale='ko'/>);await flush();expect(rpc).not.toHaveBeenCalled();expect(screen.queryByText('0')).toBeNull();
+ // The sign-in wait deadline is process-wide; earlier tests advanced well past it.
+ resetAuthReadyDeadlineForTest();auth.ready=false;const view=render(<GroupPresence pageId={pageId} locale='ko'/>);await flush();expect(rpc).not.toHaveBeenCalled();expect(screen.queryByText('0')).toBeNull();
  auth.ready=true;rpc.mockResolvedValue({onlineCount:-1,todayCount:12,artists:[]});view.rerender(<GroupPresence pageId={pageId} locale='ko'/>);await flush();expect(screen.getByRole('status')).toBeVisible();expect(screen.queryByText('-1')).toBeNull();
 });
 

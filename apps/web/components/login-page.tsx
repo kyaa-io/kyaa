@@ -65,6 +65,8 @@ type LoginPageProps = {
 
 const LOGIN_READINESS_TIMEOUT = "LOGIN_READINESS_TIMEOUT";
 const SDK_OPERATION_TIMEOUT_MS = 30_000;
+// A stalled sign-in SDK shows the retry state instead of a button that stays on "Preparing sign-in".
+const LOGIN_READY_TIMEOUT_MS = 8_000;
 const subscribeToBrowserPolicy = () => () => {};
 const getBrowserHandoffSnapshot = () => requiresGoogleBrowserHandoff(navigator.userAgent);
 const getServerBrowserHandoffSnapshot = () => false;
@@ -337,10 +339,10 @@ export function LoginPage({
       return;
     }
     const timeout = window.setTimeout(() => {
-      reportRecoveryFailure("login.ready", new RequestTimeoutError(SDK_OPERATION_TIMEOUT_MS));
+      reportRecoveryFailure("login.ready", new RequestTimeoutError(LOGIN_READY_TIMEOUT_MS));
       signupFunnelTracker.result(loginMeasurementRef.current ?? signupFunnelTracker.pendingLogin(), "failed", "ready", "timeout");
       setError(LOGIN_READINESS_TIMEOUT);
-    }, SDK_OPERATION_TIMEOUT_MS);
+    }, LOGIN_READY_TIMEOUT_MS);
     return () => window.clearTimeout(timeout);
   }, [readinessAttempt, ready]);
 
