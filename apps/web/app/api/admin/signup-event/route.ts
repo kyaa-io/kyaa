@@ -1,11 +1,12 @@
 import { boundedText } from "@/server/auth/apple-notifications/reauthentication-provider";
 import { sourceSchema } from "@/server/signup-event/source-adapter";
 import { ingestLocalSources } from "@/server/signup-event/local-store";
+import { signupEvent } from '@/features/benefit/domain/signup-event';
 import { z } from "zod";
 import { authorizeLocalAdmin } from '@/server/signup-event/local-admin';
 import { AuthError } from '@/features/auth/domain/auth-errors';
 import { candidates, drawLocal, localSignupEnabled, maskedCsv, readLocalSnapshot } from '@/server/signup-event/local';
-const drawInput = z.object({ quantity: z.number().int().min(1), requestId: z.uuid() }).strict();
+const drawInput = z.object({ quantity: z.literal(17), requestId: z.uuid() }).strict();
 export const dynamic = 'force-dynamic';
 const headers = { 'cache-control': 'private, no-store', vary: 'Authorization' };
 export async function GET(request: Request) {
@@ -30,7 +31,8 @@ export async function POST(request: Request) {
     const input = JSON.parse(await boundedText(request, 1024));
     const parsed = drawInput.safeParse(input);
     if (!parsed.success) return new Response(null, { status: 400, headers });
-    const winners = drawLocal(await readLocalSnapshot(), parsed.data.quantity, parsed.data.requestId);
+    const prizes=signupEvent.prizes.flatMap(prize=>Array.from({length:prize.quantity},()=>prize.usd));
+    const winners = drawLocal(await readLocalSnapshot(), parsed.data.quantity, parsed.data.requestId).map((row,index)=>({...row,usd:prizes[index]}));
     return new Response(maskedCsv(winners), { headers: { ...headers, 'content-type': 'text/csv; charset=utf-8', 'content-disposition': 'attachment; filename="signup-winners.csv"' } });
   } catch (error) {
     return new Response(null, { status: error instanceof AuthError ? error.status : error instanceof SyntaxError || (error instanceof Error && error.message === "INVALID_WINNER_QUANTITY") ? 400 : 503, headers });

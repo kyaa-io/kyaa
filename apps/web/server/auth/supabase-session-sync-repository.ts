@@ -153,7 +153,7 @@ export class SupabaseSessionSyncRepository implements SessionSyncRepository {
 export function createSupabaseSessionSyncRepository(config: { url?: string; serviceRoleKey?: string }): SessionSyncRepository {
   const client = createClient(config.url, config.serviceRoleKey, { auth: { persistSession: false, autoRefreshToken: false } });
   return new SupabaseSessionSyncRepository(client as unknown as SessionSyncRpcClient, {
-    afterSync: userId => refreshLocalSignupEvent(client, userId),
+    afterSync: async userId => { await refreshLocalSignupEvent(client, userId); },
     canDeferNotificationSync: (ownerId, identity) => canDeferNotificationSync(client, ownerId, identity),
   });
 }

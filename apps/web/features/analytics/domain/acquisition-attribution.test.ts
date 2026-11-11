@@ -9,6 +9,8 @@ import {
 describe("acquisition attribution", () => {
   it("allows only public acquisition landing shapes and never retains a slug", () => {
     expect(acquisitionLanding("/")).toBe("home");
+    expect(acquisitionLanding("/s/raffle")).toBe("benefit");
+    expect(acquisitionLanding("/s/raffle/")).toBe("benefit");
     expect(acquisitionLanding("/c/elina")).toBe("creator");
     expect(acquisitionLanding("/elina")).toBe("creator");
     expect(acquisitionLanding("/ifewknow")).toBe("creator");
