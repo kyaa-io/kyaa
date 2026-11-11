@@ -1,5 +1,6 @@
 import {afterEach,expect,it,vi} from "vitest";
 vi.mock("server-only",()=>({}));
+vi.mock("next/server",()=>({after:vi.fn()}));
 const mock=vi.hoisted(()=>({provider:"cognito",config:{issuer:"https://cognito-idp.ap-northeast-2.amazonaws.com/ap-northeast-2_pool",clientId:"client",domain:"https://pool.auth.ap-northeast-2.amazoncognito.com",redirectUri:"https://kyaa.io/api/auth/cognito/callback",logoutUri:"https://kyaa.io/login",origin:"https://kyaa.io",cookieSecret:Buffer.alloc(32,7).toString("base64")},verify:vi.fn(),tokenRequest:vi.fn(),writeSession:vi.fn(),signIn:vi.fn(),member:vi.fn(),rpc:vi.fn(),kakao:false}));
 vi.mock("./config",()=>({cognitoConfig:()=>mock.config,cognitoCleanupConfig:()=>mock.config,emailCognitoConfig:()=>mock.config}));
 vi.mock("../../config/env",()=>({loadServerEnv:()=>({AUTH_PROVIDER:mock.provider,NEXT_PUBLIC_APP_URL:mock.config.origin,GIWA_CHAIN_ID:91342,COGNITO_KAKAO_ENABLED:mock.kakao})}));
@@ -150,30 +151,22 @@ const logoutRequest=(cookie=true,origin="https://kyaa.io")=>new Request("https:/
 function oldSession(){
  return seal({accessToken:accessJwt({sub:"old-subject",origin_jti:"origin-old",jti:"jti-old"}),idToken:"old-id",refreshToken:"old-refresh",subject:"old-subject",expiresAt:0,sessionExpiresAt:Date.now()+60000},mock.config.cookieSecret);
 }
-it.each(["privy","cognito"])("revokes the remote token and deletes the old session before clearing its cookie under %s",async provider=>{
+it.each(["privy","cognito"])("commits local logout and clears its cookie without waiting for remote revoke under %s",async provider=>{
  mock.provider=provider;
  mock.rpc.mockImplementation(async(name:string)=>({data:name==="read_cognito_browser_session"?oldSession():null,error:null}));
- const fetcher=vi.fn(async()=>{
-  expect(mock.rpc).not.toHaveBeenCalledWith("delete_cognito_browser_session",expect.anything());
-  return new Response(null,{status:200});
- });vi.stubGlobal("fetch",fetcher);
+ const fetcher=vi.fn();vi.stubGlobal("fetch",fetcher);
  const response=await logout(logoutRequest());
- expect(response.status).toBe(200);
- expect(fetcher).toHaveBeenCalledWith(new URL("/oauth2/revoke",mock.config.domain),expect.objectContaining({body:new URLSearchParams({client_id:"client",token:"old-refresh"}),redirect:"error"}));
- expect(mock.rpc).toHaveBeenLastCalledWith("delete_cognito_browser_session",{p_token_hash:digest("a".repeat(43))});
- // The token family is recorded before the remote revoke and the row delete, so a Bearer issued before logout gets 401.
- expect(mock.rpc.mock.calls.map(([name])=>name)).toEqual(["read_cognito_browser_session","revoke_cognito_token_family","delete_cognito_browser_session"]);
- expect(mock.rpc).toHaveBeenCalledWith("revoke_cognito_token_family",{p_token_ids:["origin-old","jti-old"],p_expires_at:expect.any(String)});
+ expect(response.status).toBe(200);expect(fetcher).not.toHaveBeenCalled();
+ expect(mock.rpc.mock.calls.map(([name])=>name)).toEqual(["read_cognito_browser_session","logout_cognito_browser_session"]);
+ expect(mock.rpc).toHaveBeenCalledWith("logout_cognito_browser_session",expect.objectContaining({p_token_hash:digest("a".repeat(43)),p_token_ids:["origin-old","jti-old"],p_client_id:"client",p_encrypted_refresh_token:expect.any(String)}));
  expect(response.headers.get("set-cookie")).toContain(`${SESSION_COOKIE}=; Path=/; Max-Age=0`);
  expect(await response.json()).toEqual({logoutUrl:provider==="privy"?null:"https://pool.auth.ap-northeast-2.amazoncognito.com/logout?client_id=client&logout_uri=https%3A%2F%2Fkyaa.io%2Flogin"});
 });
-it.each(["read","remote","delete"])("preserves logout failure at %s without clearing the browser cookie",async failure=>{
+it.each(["read_cognito_browser_session","logout_cognito_browser_session"])("does not claim logout success on local storage failure at %s",async failure=>{
  mock.provider="privy";
- mock.rpc.mockImplementation(async(name:string)=>({data:name==="read_cognito_browser_session"?oldSession():null,error:(failure==="read" && name==="read_cognito_browser_session") || (failure==="delete" && name==="delete_cognito_browser_session")?{message:"offline"}:null}));
- const fetcher=vi.fn().mockResolvedValue(new Response(null,{status:failure==="remote"?503:200}));vi.stubGlobal("fetch",fetcher);
+ mock.rpc.mockImplementation(async(name:string)=>({data:name==="read_cognito_browser_session"?oldSession():null,error:name===failure?{message:"offline"}:null}));
  const response=await logout(logoutRequest());
- expect(response.status).toBe(503);expect(await response.json()).toEqual({error:{code:"AUTH_UNAVAILABLE"}});expect(response.headers.has("set-cookie")).toBe(false);
- if(failure!=="delete")expect(mock.rpc).not.toHaveBeenCalledWith("delete_cognito_browser_session",expect.anything());
+ expect(response.status).toBe(503);expect(response.headers.has("set-cookie")).toBe(false);
 });
 it("requires same-origin logout before touching stale sessions",async()=>{
  mock.provider="privy";

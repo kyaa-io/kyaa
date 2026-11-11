@@ -54,11 +54,30 @@ export async function revokeSession(key: string, config: CognitoConfig, db = ide
   const claims = decodeJwt(session.accessToken);
   const tokenIds = [...new Set([claims.origin_jti, claims.jti].filter((value): value is string => typeof value === "string" && value.length > 0))];
   if (tokenIds.length === 0) throw new Error("Token revocation unavailable");
-  await rpc(db, "revoke_cognito_token_family", { p_token_ids: tokenIds, p_expires_at: new Date(Date.now() + 86_400_000).toISOString() });
-  const response = await fetch(new URL("/oauth2/revoke", config.domain), { method: "POST", headers: { "content-type": "application/x-www-form-urlencoded" }, body: new URLSearchParams({ client_id: config.clientId, token: session.refreshToken }), cache: "no-store", redirect: "error", signal: AbortSignal.timeout(5000) });
-  if (!response.ok) throw new Error("Token revocation unavailable");
-  await rpc(db, "delete_cognito_browser_session", { p_token_hash: digest(key) });
+  await rpc(db, "logout_cognito_browser_session", {
+    p_token_hash: digest(key), p_token_ids: tokenIds, p_client_id: config.clientId,
+    p_encrypted_refresh_token: seal(session.refreshToken, config.cookieSecret),
+    p_expires_at: new Date(Math.max(session.sessionExpiresAt, Date.now() + 86_400_000)).toISOString(),
+  });
 }
+// Run after the logout response, or through the authenticated retry endpoint. Never log credentials.
+export async function retryRemoteRevocations(config: CognitoConfig, db = identityDatabase()) {
+  const rows = z.array(z.object({ token_hash: z.string(), encrypted_refresh_token: z.string() })).parse(
+    await rpc(db, "pending_cognito_remote_revocations", { p_client_id: config.clientId }));
+  let pending = 0;
+  for (const row of rows) {
+    let error: string | null = null;
+    try {
+      const token = z.string().min(1).max(16_384).parse(unseal(row.encrypted_refresh_token, config.cookieSecret));
+      const response = await fetch(new URL("/oauth2/revoke", config.domain), { method: "POST", headers: { "content-type": "application/x-www-form-urlencoded" }, body: new URLSearchParams({ client_id: config.clientId, token }), cache: "no-store", redirect: "error", signal: AbortSignal.timeout(5000) });
+      if (!response.ok) error = `http_${response.status}`;
+    } catch { error = "unavailable"; }
+    await rpc(db, "finish_cognito_remote_revocation", { p_token_hash: row.token_hash, p_error: error });
+    if (error) pending++;
+  }
+  return { attempted: rows.length, pending };
+}
+
 export async function tokenRequest(config: CognitoConfig, parameters: URLSearchParams, fetcher = fetch) {
   const response = await fetcher(new URL("/oauth2/token", config.domain), { method: "POST", headers: { "content-type": "application/x-www-form-urlencoded" }, body: parameters, redirect: "error", cache: "no-store", signal: AbortSignal.timeout(10_000) });
   if (!response.ok) throw cognitoDenied();

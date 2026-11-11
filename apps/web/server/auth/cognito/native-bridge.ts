@@ -1,3 +1,4 @@
+import { after } from "next/server";
 import "server-only";
 import { z } from "zod";
 import { loadServerEnv } from "../../config/env";
@@ -5,7 +6,7 @@ import { cognitoConfig } from "./config";
 import { cognitoDenied, createCognitoVerifier, COGNITO_TOKEN_PREFIX } from "./verifier";
 import { identityDatabase } from "./identity-repository";
 import { resolveKyaaMember } from "./kyaa-identity";
-import { authHeaders, boundedAuthJson, challenge, digest, opaque, readSession, requireOrigin, revokeSession, rpc, seal, sessionSchema, unseal, writeSession } from "./browser-session";
+import { authHeaders, boundedAuthJson, challenge, digest, opaque, readSession, requireOrigin, revokeSession, retryRemoteRevocations, rpc, seal, sessionSchema, unseal, writeSession } from "./browser-session";
 
 const opaqueSchema=z.string().regex(/^[A-Za-z0-9_-]{43}$/);
 const stateSchema=z.string().regex(/^[A-Za-z0-9_-]{16,128}$/);
@@ -42,6 +43,9 @@ export async function nativeBridge(request:Request,operation:"issue"|"exchange"|
     }
     if(operation==="logout"){
       await revokeSession(key,config,db);
+      after(async () => {
+        try { await retryRemoteRevocations(config,db); } catch { console.error("COGNITO_REMOTE_REVOCATION_PENDING"); }
+      });
       return Response.json({signedOut:true},{headers:authHeaders()});
     }
     const synthetic=new Request(config.origin,{headers:{cookie:`__Host-kyaa-cognito=${key}`}});

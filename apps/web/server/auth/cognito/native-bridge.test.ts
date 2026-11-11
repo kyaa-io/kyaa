@@ -1,5 +1,6 @@
 import {afterEach,beforeEach,expect,it,vi} from "vitest";
 vi.mock("server-only",()=>({}));
+vi.mock("next/server",()=>({after:vi.fn()}));
 const mock=vi.hoisted(()=>({
  config:{issuer:"https://cognito-idp.ap-northeast-2.amazonaws.com/ap-northeast-2_pool",clientId:"client",domain:"https://pool.auth.ap-northeast-2.amazoncognito.com",origin:"https://kyaa.io",cookieSecret:Buffer.alloc(32,7).toString("base64")},
  rpc:vi.fn(),verify:vi.fn(),mapping:vi.fn(),fetch:vi.fn(),
@@ -34,19 +35,14 @@ it("fails closed without a verified wallet mapping",async()=>{
  mock.mapping.mockResolvedValue(null);
  expect((await nativeBridge(request({sessionToken:key}),"refresh")).status).toBe(401);
 });
-it("revokes the refresh token before expiring the native server session without refreshing it",async()=>{
+it("commits native local logout without waiting for remote revocation",async()=>{
+ mock.fetch.mockResolvedValue(new Response(null,{status:503}));
  const response=await nativeBridge(request({sessionToken:key}),"logout");
  expect(response.status).toBe(200);expect(await response.json()).toEqual({signedOut:true});
- expect(mock.fetch).toHaveBeenCalledTimes(1);expect(String(mock.fetch.mock.calls[0][0])).toBe(`${mock.config.domain}/oauth2/revoke`);
- expect(mock.rpc.mock.calls.map(([name])=>name)).toEqual(["read_cognito_browser_session","revoke_cognito_token_family","delete_cognito_browser_session"]);
- expect(mock.rpc).toHaveBeenCalledWith("revoke_cognito_token_family",{p_token_ids:["origin-native","jti-native"],p_expires_at:expect.any(String)});
- expect(mock.rpc).toHaveBeenLastCalledWith("delete_cognito_browser_session",{p_token_hash:digest(key)});
+ expect(mock.fetch).not.toHaveBeenCalled();
+ expect(mock.rpc.mock.calls.map(([name])=>name)).toEqual(["read_cognito_browser_session","logout_cognito_browser_session"]);
+ expect(mock.rpc).toHaveBeenCalledWith("logout_cognito_browser_session",expect.objectContaining({p_token_ids:["origin-native","jti-native"],p_token_hash:digest(key)}));
  expect(mock.verify).not.toHaveBeenCalled();
-});
-it("does not report logout success or erase retry credentials when revocation fails",async()=>{
- mock.fetch.mockResolvedValue(new Response(null,{status:503}));
- expect((await nativeBridge(request({sessionToken:key}),"logout")).status).toBe(401);
- expect(mock.rpc).not.toHaveBeenCalledWith("delete_cognito_browser_session",expect.anything());
 });
 it("makes repeated logout idempotent and rejects cross-origin browser logout before storage access",async()=>{
  mock.rpc.mockResolvedValue({data:null,error:null});

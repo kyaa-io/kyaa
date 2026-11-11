@@ -107,3 +107,9 @@ Google/Apple subject를 이미 아는 회원은 백필 없이 연결된다. 2026
   5. 잃는 회원이 있으면(카카오 가입, 이메일 불일치, Apple 팀 불일치) 롤백 공지에 안내를 넣는다. 회원 개별 발송은 사용자 결정이다. Cognito로 재전환하면 원래 계정으로 돌아온다.
   6. dev 연습(롤백 인수 RB1~RB5)을 먼저 해서 걸린 시간을 기록한다.
 - Privy 계약 해지는 병행 기간 뒤 사용자 확인으로 한다.
+
+## Cognito 로그아웃 원격 폐기 재시도 (#264/265)
+
+`20261224000100_cognito_local_logout.sql`을 코드 배포 전에 적용한다. 로그아웃은 로컬 세션 삭제·Bearer family 차단·원격 폐기 대기 기록을 한 트랜잭션으로 확정하고 쿠키를 지운다. 원격 `/oauth2/revoke`는 응답 뒤 시도하며 503·타임아웃이 로그아웃 성공을 되돌리지 않는다. family 차단은 남은 refresh 세션 수명과 추가 1일을 포함하고, 늦게 완료된 refresh가 삭제된 세션을 다시 만들지 못한다.
+
+`cognito_remote_revocations`는 서비스 전용이다. refresh token은 기존 `AUTH_COOKIE_SECRET`으로 암호화하며 성공하면 지운다. `completed_at IS NULL AND encrypted_refresh_token IS NOT NULL`인 행이 재시도 대상이고 `attempts`, `last_error`에 결과를 남긴다. 로그아웃 응답 뒤 대기 작업을 최대 5개 처리한다. 트래픽이 없을 때는 기존 `CRON_SECRET` Bearer로 `POST /api/internal/auth/cognito/revocations`를 호출해 최대 5개를 재시도한다. 중복 작업은 1분 재시도 대기로 제한한다. 응답은 처리·미완료 개수뿐이며 토큰을 출력하지 않는다. 새 스케줄·AWS 리소스는 만들지 않는다. 쿠키 키를 바꾸기 전에 대기 건을 처리해야 한다.

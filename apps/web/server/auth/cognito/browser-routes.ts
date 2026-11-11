@@ -1,3 +1,4 @@
+import { after } from "next/server";
 import { EMAIL_BROWSER_COOKIE, emailBrowserSession, logoutEmailBrowser } from "./email-browser";
 import "server-only";
 import { z } from "zod";
@@ -9,7 +10,7 @@ import { loadServerEnv } from "../../config/env";
 import { cognitoCleanupConfig, cognitoConfig } from "./config";
 import { createCognitoVerifier, COGNITO_TOKEN_PREFIX, cognitoDenied } from "./verifier";
 import { resolveKyaaMember, signInKyaaMember, SignInBlockedError } from "./kyaa-identity";
-import { SESSION_LIFETIME_MS, authHeaders, challenge, cookie, FLOW_COOKIE, opaque, readCookie, readSession, requireOrigin, revokeSession, seal, SESSION_COOKIE, tokenRequest, unseal, writeSession } from "./browser-session";
+import { SESSION_LIFETIME_MS, authHeaders, challenge, cookie, FLOW_COOKIE, opaque, readCookie, readSession, requireOrigin, revokeSession, retryRemoteRevocations, seal, SESSION_COOKIE, tokenRequest, unseal, writeSession } from "./browser-session";
 
 const flowSchema = z.object({ state: z.string(), verifier: z.string(), nonce: z.string(), expiresAt: z.number(), returnTo: z.string(), locale: preferredLocaleSchema.default("ko") });
 function denied(error: unknown): Response {
@@ -138,6 +139,9 @@ export async function logout(request: Request): Promise<Response> {
     const key=readCookie(request,SESSION_COOKIE);
     if((!key && !disabled) || (key && key.length!==43))throw cognitoDenied();
     if(key)await revokeSession(key,config);
+    after(async () => {
+      try { await retryRemoteRevocations(config); } catch { console.error("COGNITO_REMOTE_REVOCATION_PENDING"); }
+    });
     const headers=authHeaders();headers.set("set-cookie",cookie(SESSION_COOKIE,"",0));
     if(disabled)return Response.json({logoutUrl:null},{headers});
     const logoutUrl=new URL("/logout",config.domain);logoutUrl.search=new URLSearchParams({client_id:config.clientId,logout_uri:config.logoutUri}).toString();
