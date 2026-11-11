@@ -14,22 +14,22 @@
 .metricLine { display: flex; align-items: center; gap: var(--space-3); box-sizing: border-box; min-height: 20px; min-width: 0; }
 .caption { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-1); min-width: 0; margin: 0; color: var(--color-muted); font-size: var(--fan-metadata-size); font-weight: var(--fan-body-weight); font-variant-numeric: tabular-nums; }
 
-/* 행 카드(RANK-V3, 2026-11-10 19:13·21:03; 한 줄 52, 대표 11/11 01:55 "한 줄로 맞추고 셀 높이를 줄여도"): 한 항목 = 행 버튼(52, 한 줄) + 열린 패널, 반경 16, 항목 사이 8. 모든 행이 같은 카드(흰 면 + 아주 옅은 1px 선)이고, 1위(내 순위가 없을 때)·내 행·열린 행만 옅은 분홍 면(--color-accent-soft + 분홍 선).
-   열 28·8·32·8·이름(등락·LIVE·태그)·값·8·16, 카드 안쪽 12. `1위까지 N`·오늘 증가는 펼친 행에만 둔다. */
-.item { --rank-value-col: calc(var(--space-10) + var(--space-8)); --rank-name-start: calc(var(--space-3) + var(--space-8) + var(--space-6) + var(--space-5)); position: relative; border-radius: var(--radius-card); background: var(--color-surface); box-shadow: inset 0 0 0 1px var(--color-line-subtle); }
+/* 행 카드(RANK-V3, 2026-11-10 19:13·21:03; 한 줄 48, 대표 11/11 01:55 "한 줄로 맞추고 셀 높이를 줄여도"): 한 항목 = 행 버튼(48, 한 줄) + 열린 패널, 반경 16, 항목 사이 8. 모든 행이 같은 카드(흰 면 + 아주 옅은 1px 선)이고, 1위(내 순위가 없을 때)·내 행·열린 행만 옅은 분홍 면(--color-accent-soft + 분홍 선).
+   열 28·8·28·8·이름(등락·LIVE·태그)·값·8·16, 카드 안쪽 12. `1위까지 N`·오늘 증가는 펼친 행에만 둔다. */
+.item { --rank-value-col: calc(var(--space-10) + var(--space-8)); --rank-name-start: calc(var(--space-3) + var(--space-8) + var(--space-7) + var(--space-4)); position: relative; border-radius: var(--radius-card); background: var(--color-surface); box-shadow: inset 0 0 0 1px var(--color-line-subtle); }
 .item[data-tint] { background: var(--color-accent-soft); box-shadow: inset 0 0 0 1px var(--color-accent-line); }
-.item .listRow { display: flex; width: 100%; min-height: 52px; padding: 0; border: 0; border-radius: var(--radius-card); background: transparent; color: var(--color-ink); font: inherit; text-align: start; }
+.item .listRow { display: flex; width: 100%; min-height: 48px; padding: 0; border: 0; border-radius: var(--radius-card); background: transparent; color: var(--color-ink); font: inherit; text-align: start; }
 .item button.listRow > span { display: contents; }
-.rowFace { position: relative; display: grid; grid-template-columns: 28px 32px minmax(0, 1fr) var(--rank-value-col) 16px; align-items: center; column-gap: var(--space-2); flex: 1 1 auto; box-sizing: border-box; width: 100%; min-width: 0; height: 52px; padding: 0 var(--space-3); text-align: start; text-wrap: wrap; }
-.rowFace[data-loading] { grid-template-columns: 28px 32px minmax(0, 1fr) auto; }
-.rowFace[data-placeholder] { grid-template-columns: 28px 32px minmax(0, 1fr); }
-.item .rank { width: 28px; height: 24px; color: var(--color-ink); font-size: var(--fan-section-size); font-weight: var(--fan-item-title-weight); line-height: 24px; }
+.rowFace { position: relative; display: grid; grid-template-columns: 28px 28px minmax(0, 1fr) var(--rank-value-col) 16px; align-items: center; column-gap: var(--space-2); flex: 1 1 auto; box-sizing: border-box; width: 100%; min-width: 0; height: 48px; padding: 0 var(--space-3); text-align: start; text-wrap: wrap; }
+.rowFace[data-loading] { grid-template-columns: 28px 28px minmax(0, 1fr) auto; }
+.rowFace[data-placeholder] { grid-template-columns: 28px 28px minmax(0, 1fr); }
+.item .rank { width: 28px; height: 24px; color: var(--color-ink); font-size: var(--fan-item-title-size); font-weight: var(--fan-item-title-weight); line-height: 20px; }
 .rowFace[data-me] .rank { color: var(--color-accent-ink); }
-.item .avatar { display: inline-flex; width: 32px; height: 32px; border-radius: 50%; }
+.item .avatar { display: inline-flex; width: 28px; height: 28px; border-radius: 50%; }
 .item .avatar[data-first] { outline: 2px solid var(--color-accent); outline-offset: 0; }
 .item .body { justify-items: start; gap: 0; min-width: 0; max-width: 100%; }
 .item .body > * { max-width: 100%; }
-.item .name { font-size: var(--fan-action-emphasis-size); font-weight: var(--fan-item-title-weight); }
+.item .name { font-size: var(--fan-description-size); font-weight: var(--fan-item-title-weight); }
 /* 등락: ▲ 초록 / ▼ 빨강(둘 다 채도 낮은 토큰), 모양과 숫자가 함께 말한다. */
 .nameLine { display: flex; align-items: center; gap: var(--space-2); min-width: 0; max-width: 100%; }
 .nameLine > :not(.name) { flex: none; }
@@ -44,7 +44,7 @@
 .item .value { display: grid; justify-items: stretch; gap: 0; min-width: 0; white-space: nowrap; }
 /* 값 열(대표 11/11 02:05 "열은 무조건 맞추기"): 고정폭 열 안에서 그림은 왼쪽 끝, 숫자는 오른쪽 끝에 붙어 모든 행에서 같은 x에 선다(tabular-nums). */
 .main { display: flex; justify-content: flex-end; width: 100%; max-width: 100%; }
-.mainInner { display: flex; align-items: center; justify-content: flex-end; width: 100%; gap: var(--space-1); color: var(--color-ink); font-size: var(--fan-section-size); font-weight: var(--fan-item-title-weight); line-height: 24px; white-space: nowrap; }
+.mainInner { display: flex; align-items: center; justify-content: flex-end; width: 100%; gap: var(--space-1); color: var(--color-ink); font-size: var(--fan-item-title-size); font-weight: var(--fan-item-title-weight); line-height: 20px; white-space: nowrap; }
 .main .mainNumber { font-size: inherit; font-weight: inherit; font-variant-numeric: tabular-nums; }
 .heart { flex: none; color: var(--color-accent); }
 .mainInner > :is(img, svg):first-child { margin-inline-end: auto; }
@@ -71,6 +71,6 @@
 
 
 /* 값이 바뀐 행의 테두리: 분홍 호가 2px 링을 한 바퀴 돈다(ranking-rows.tsx ringPulse, 600ms, opacity·transform만). 쉴 때는 보이지 않는다. 링 모양은 마스크가 만든다(테두리 2px에서 안쪽을 뺀 링). */
-.pulse { /* design-lint-disable S1 -- 사용자 승인 2026-11-11 05:15 대표 요청(ceo-ranking-0155 ⑤): 마스크 그라데이션은 색이 아니라 링 모양(테두리 2px만 남기는 구멍)이다. 이 선택자 한정. */ position: absolute; inset: 0 0 auto; box-sizing: border-box; height: 52px; border: 2px solid transparent; border-radius: var(--radius-card); opacity: 0; pointer-events: none; -webkit-mask: linear-gradient(var(--color-ink) 0 0) padding-box exclude, linear-gradient(var(--color-ink) 0 0) border-box; mask: linear-gradient(var(--color-ink) 0 0) padding-box exclude, linear-gradient(var(--color-ink) 0 0) border-box; -webkit-mask-composite: xor; mask-composite: exclude; }
+.pulse { /* design-lint-disable S1 -- 사용자 승인 2026-11-11 05:15 대표 요청(ceo-ranking-0155 ⑤): 마스크 그라데이션은 색이 아니라 링 모양(테두리 2px만 남기는 구멍)이다. 이 선택자 한정. */ position: absolute; inset: 0 0 auto; box-sizing: border-box; height: 48px; border: 2px solid transparent; border-radius: var(--radius-card); opacity: 0; pointer-events: none; -webkit-mask: linear-gradient(var(--color-ink) 0 0) padding-box exclude, linear-gradient(var(--color-ink) 0 0) border-box; mask: linear-gradient(var(--color-ink) 0 0) padding-box exclude, linear-gradient(var(--color-ink) 0 0) border-box; -webkit-mask-composite: xor; mask-composite: exclude; }
 .sweep { /* design-lint-disable S1 -- 사용자 승인 2026-11-11 05:15 대표 요청 ⑤: 분홍 호 한 바퀴(단색 --color-accent의 꼬리 호)는 conic 한 줄로만 그려진다. 이 선택자 한정. */ position: absolute; top: 50%; left: 50%; width: 120%; aspect-ratio: 1; margin: -60% 0 0 -60%; background: conic-gradient(from 0deg, transparent 0 200deg, var(--color-accent) 360deg); }
 .pulse[data-still] .sweep { background: var(--color-accent); }
