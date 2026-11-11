@@ -218,6 +218,8 @@ describe("CertificationPanel", () => {
     render(<CertificationPanel slug="kara" locale="en" />);
     // With no certification the list still offers the share proof (D12), instead of an empty line.
     await screen.findByRole("link", { name: "share proof" });
+    // ENTRY-STAMP-1321: no proof mission, so no link to an empty proof page.
+    expect(screen.queryByRole("link", { name: "Membership and purchase proof" })).not.toBeInTheDocument();
     const missions = screen.getByRole("tab", {
       name: "Verification",
     });

@@ -128,6 +128,8 @@ export function CertificationPanel({
   const panelId = useId();
   const [tab, setTab] = useState<"missions" | "history">(initialTab);
   const [items, setItems] = useState<CertificationListItem[]>([]);
+  // 받는 인증 항목이 하나도 없는 크리에이터는 제출 화면 링크를 숨긴다(빈 화면으로 보내지 않는다).
+  const [noMissions, setNoMissions] = useState(false);
   const [category, setCategory] = useState<string>("");
   const [historyItems, setHistory] = useState<CertificationHistoryItem[]>([]);
   const [state, setState] = useState<"loading" | "ready" | "error">("loading");
@@ -163,9 +165,9 @@ export function CertificationPanel({
           );
           if (!response.ok) throw new Error();
           const body = await response.json();
-          setItems(
-            z.array(certificationListItemSchema).parse(body.certifications),
-          );
+          const list = z.array(certificationListItemSchema).parse(body.certifications);
+          setItems(list);
+          setNoMissions(!list.some((item) => item.kind === "manual" && item.status !== "closed"));
         } else if (ready && authenticated && ownerKey) {
           const token = await getAccessToken();
           const response = await fetch(
@@ -229,7 +231,7 @@ export function CertificationPanel({
         <h2 id={`${panelId}-heading`}>
           {t.title}
         </h2>
-        <FanSectionLink href={`/c/${encodeURIComponent(slug)}/proofs?locale=${locale}`}>{proofsText(locale, "pfTitle")}</FanSectionLink>
+        {noMissions ? null : <FanSectionLink href={`/c/${encodeURIComponent(slug)}/proofs?locale=${locale}`}>{proofsText(locale, "pfTitle")}</FanSectionLink>}
       </header>
       <div className={styles.tabs} role="tablist" aria-label={t.title}>
         <button

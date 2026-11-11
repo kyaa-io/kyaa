@@ -21,6 +21,7 @@ import type { Route } from "next";
 import type { AppLocale } from "@/i18n/locales";
 import { buildGuideModel } from "@/features/dukjil-guide/domain/guide-model";
 import { passportClaimResultSchema, passportRoadmapSchema, type PassportRoadmapPage, type PassportRoadmapSlot } from "../domain/dukjil-types";
+import { SNS_POST_PROOF, proofMissionListSchema, type ProofMissionList } from "../domain/proof-types";
 import { passportBookText } from "./passport-book-copy";
 import { MISSION_STAMP } from "./passport-book-source";
 import styles from "./passport-mission-book.module.css";
@@ -40,6 +41,13 @@ export const SLOT: Record<string, { label: DukjilCopyKey; task: DukjilCopyKey; a
 
 const withLocale = (path: string, locale: AppLocale) => `${path}?locale=${locale}` as Route;
 const parseRoadmap = (value: unknown) => passportRoadmapSchema.parse(value);
+const parseProofMissions = (value: unknown) => proofMissionListSchema.parse(value);
+
+/** 07·09 칸은 그 크리에이터에게 받을 인증 항목이 있을 때만 제출 화면으로 보낸다. 목록을 아직 못 읽었으면 링크를 둔다. */
+export function proofSlotOpen(kind: string | null | undefined, missions: ProofMissionList | undefined): boolean {
+  if (!missions || (kind !== "subscription" && kind !== "proof")) return true;
+  return missions.items.some(item => (item.proofType === SNS_POST_PROOF) === (kind === "subscription"));
+}
 const ONBOARDING_KEY = "kyaa:passport:mission-onboarding:v1";
 const ONBOARDING_ROWS = 3;
 
@@ -169,6 +177,7 @@ export function PassportMissionBook({ passportId, creatorSlug, locale, stampSrc 
   const dukjil = useDukjil();
   const on = dukjil?.status === "on";
   const roadmap = useGroupResource(on ? `/api/me/passports/${encodeURIComponent(passportId)}/roadmap` : null, parseRoadmap);
+  const proofMissions = useGroupResource(on ? `/api/me/proofs/missions?creator=${encodeURIComponent(creatorSlug)}` : null, parseProofMissions, { nameLocale: false });
   const { request } = useGroupRequest();
   const session = useByUsSession(), auth = useByUsAuth(), ownerId = session.ownerId ?? auth.user?.id;
   const [busy, setBusy] = useState<number | null>(null);
@@ -210,7 +219,7 @@ export function PassportMissionBook({ passportId, creatorSlug, locale, stampSrc 
   const pages = roadmap.data?.pages ?? [];
   const index = Math.min(picked ?? openingPage(pages), Math.max(0, pages.length - 1));
   const page = pages[index];
-  const hrefFor = (kind: string | null | undefined) => missionHref(kind, creatorSlug, passportId, locale);
+  const hrefFor = (kind: string | null | undefined) => proofSlotOpen(kind, proofMissions.data) ? missionHref(kind, creatorSlug, passportId, locale) : null;
   return <section ref={bookRef} id="mission-book" className={`${paper.palette} ${styles.book}`} aria-labelledby="mission-book-title" aria-busy={roadmap.loading}>
     <div className={styles.head}>
       <h2 id="mission-book-title" tabIndex={-1}>{dukjilText(locale, "missionBookTitle")}</h2>
