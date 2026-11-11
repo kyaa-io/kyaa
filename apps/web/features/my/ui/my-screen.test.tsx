@@ -40,17 +40,33 @@ const summary = {
 const getAccessToken = vi.fn(async () => "token");
 const { avatarOwner, sessionState } = vi.hoisted(() => ({
   avatarOwner: { id: undefined as string | undefined },
-  sessionState: { ready: true, pending: false, ownerId: null as string | null, generation: 0 },
+  sessionState: { ready: true, pending: false, ownerId: null as string | null, generation: 0, authenticated: true },
 }));
 
 vi.mock("@privy-io/react-auth", () => ({
-  usePrivy: () => ({ ready: true, authenticated: true, user: avatarOwner.id ? { id: avatarOwner.id } : undefined, getAccessToken }),
+  usePrivy: () => ({ ready: true, authenticated: sessionState.authenticated, user: avatarOwner.id ? { id: avatarOwner.id } : undefined, getAccessToken }),
 }));
 vi.mock("@/components/byus-session-provider", () => ({ useByUsSession: () => sessionState }));
 
-afterEach(() => { avatarOwner.id = undefined; sessionState.ready = true; sessionState.pending = false; sessionState.ownerId = null; vi.useRealTimers(); vi.restoreAllMocks(); window.history.replaceState(null, "", "/my"); });
+afterEach(() => { avatarOwner.id = undefined; sessionState.ready = true; sessionState.authenticated = true; sessionState.pending = false; sessionState.ownerId = null; vi.useRealTimers(); vi.restoreAllMocks(); window.history.replaceState(null, "", "/my"); });
 
 describe("unified MY hub", () => {
+  it("hides profile controls and passport labels when signed out", () => {
+    sessionState.authenticated = false;
+    const { container } = render(<GroupsReleaseProvider enabled><MyScreen locale="ko" /></GroupsReleaseProvider>);
+    const guest = within(container.querySelector('[class*="pencilMy"]') as HTMLElement);
+    expect(guest.queryByText("내 팬 활동")).not.toBeInTheDocument();
+    expect(guest.queryByRole("link", { name: "알림" })).not.toBeInTheDocument();
+    expect(guest.queryByRole("link", { name: "설정" })).not.toBeInTheDocument();
+    expect(screen.queryByText("등급 · 스탬프")).not.toBeInTheDocument();
+    const cover = container.querySelector('img[src="/images/passport/passport-cover-closed.webp"]');
+    expect(cover).toHaveAttribute("width", "800");
+    expect(cover).toHaveAttribute("height", "1067");
+    expect(container.querySelectorAll("[data-login-scene] img")).toHaveLength(1);
+    expect(screen.getByRole("heading", { name: "내 패스포트" })).toBeInTheDocument();
+    expect(screen.getAllByRole("link", { name: /로그인/ }).length).toBeGreaterThan(0);
+  });
+
   it("keeps the owned dashboard behind a coherent session transition", () => {
     sessionState.ready = false;
     sessionState.pending = true;

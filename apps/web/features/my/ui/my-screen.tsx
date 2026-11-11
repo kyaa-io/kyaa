@@ -539,14 +539,8 @@ const hrefWithLocale = (locale: FanLocale) => (path: string) => `${path}${path.i
 /** 비로그인 MY. 로그인 화면과 같은 구역·순서(프로필 → 패스포트 → 최애 → 바로가기)를 두고, 내 값은 잠근 칸으로, 공개 구성(미션북 9칸)은 실제로 보여 준다. */
 function MyGuest({ locale }: { locale: FanLocale }) {
   const t = copy[locale];
-  const ko = locale === "ko";
   const loginTo = (path: string) => fanLoginHref(locale, hrefWithLocale(locale)(path));
   return <div className={styles.pencilMy}>
-    <header className={`${styles.pencilProfile} ${styles.guestProfile}`}>
-      <span className={styles.guestAvatar} aria-hidden="true"><AvatarPlaceholder size={56}/></span>
-      <div className={styles.pencilProfileCopy}><h1>{t.profileSummary}</h1></div>
-      <ProfileNav locale={locale} label={t.settings} giftUnread={null} />
-    </header>
     <div className={styles.homeRow}>
       <MyGuestPassportCard locale={locale} labels={{ title: t.myPassport, detail: myHomeText(locale, "viewDetails") }}/>
     </div>
