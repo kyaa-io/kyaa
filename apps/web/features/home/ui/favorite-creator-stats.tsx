@@ -1,4 +1,5 @@
 "use client";
+import { RewardIcon } from "@/components/fan-ui/reward-icon";
 import { creatorRankingSchema, type CreatorRanking } from "@/features/rankings/domain/types";
 import { useRankingResource } from "@/features/rankings/ui/use-ranking-resource";
 import { fanProfileText } from "@/features/fan-profile/fan-profile-copy";
@@ -25,6 +26,6 @@ export function FavoriteCreatorStats({ slug, stats, locale, className }: { slug:
   return <p className={[styles.stats, className].filter(Boolean).join(" ")}>
     <span>{fanProfileText(locale, "favCardJjinfan", [value.jjinfan.toLocaleString(locale)])}</span>
     <span aria-hidden="true">·</span>
-    <span className={styles.hearts} aria-label={fanProfileText(locale, "favCardHearts", [value.hearts.toLocaleString(locale)])}><img src="/images/economy/heart.svg" alt="" width={14} height={14}/><span aria-hidden="true">{value.hearts.toLocaleString(locale)}</span></span>
+    <span className={styles.hearts} aria-label={fanProfileText(locale, "favCardHearts", [value.hearts.toLocaleString(locale)])}><RewardIcon kind="heart" alt="" width={14} height={14}/><span aria-hidden="true">{value.hearts.toLocaleString(locale)}</span></span>
   </p>;
 }

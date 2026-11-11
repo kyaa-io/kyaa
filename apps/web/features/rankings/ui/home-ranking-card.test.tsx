@@ -240,7 +240,7 @@ it("shows points as the coin asset and likes as the heart asset, never the lette
   const { container } = render(<HomeRankingCard locale="ko" />);
   await screen.findByText("가");
   const main = (kind: string) => container.querySelector(`li[data-row='${kind}-rank'] [data-metric]`) as HTMLElement;
-  expect(main("fan").querySelector("img[src='/images/economy/point-coin.svg']")).not.toBeNull();
+  expect(main("fan").querySelector("img[src='/images/economy/point-coin.webp']")).not.toBeNull();
   expect(main("fan").textContent).toBe("7,480");
   expect(main("creator").querySelector("[data-icon='heart']")).not.toBeNull();
   expect(main("creator").textContent).toBe("105");

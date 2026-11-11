@@ -1,7 +1,10 @@
 "use client";
+import { RewardIcon, REWARD_ICON_SRC } from "@/components/fan-ui/reward-icon";
 import Link from "next/link";
 import type { Route } from "next";
-import { CircleHelp, SquarePlay } from "lucide-react";
+import { SquarePlay } from "@/components/fan-ui/fan-icons";
+import { FanIcon } from "@/components/fan-ui/fan-icon";
+import type { CSSProperties } from "react";
 import { useId, useState, useSyncExternalStore, type ReactNode } from "react";
 import { BottomSheet, Dialog } from "@/components/ui/overlay/accessible-overlay";
 import { useFanWide } from "@/components/fan-ui/fan-dialog";
@@ -23,8 +26,7 @@ import { rewardedExchangeCopy } from "./rewarded-copy";
 import { usePendingExchange } from "./use-pending-exchange";
 import styles from "./stan-wallet.module.css";
 
-/** 결과 상자·재료 행의 큰 3D 애셋: 패스포트·로그인 장면에 쓰는 응모권·하트·포인트 코인·스탬프 도장. */
-const WALLET_ASSETS = { ticket: "/images/dukjil-duo/glyph-ticket", heart: "/images/dukjil-duo/glyph-heart", coin: "/images/dukjil-duo/glyph-coin", stamp: "/images/dukjil-duo/glyph-stamp" } as const;
+const WALLET_ASSETS = { coin: REWARD_ICON_SRC.point, ticket: REWARD_ICON_SRC.ticket, heart: REWARD_ICON_SRC.heart, stamp: REWARD_ICON_SRC.stamp } as const;
 
 export type StanSlot = "loading" | "locked" | "missing" | number;
 
@@ -32,7 +34,7 @@ function Value({ locale, slot, unit }: { locale: AppLocale; slot: StanSlot; unit
   if (slot === "loading") return <FanSkeleton width={48} height={28} />;
   if (slot === "locked") return <FanLockedValue locale={locale} />;
   if (slot === "missing") return <span>—</span>;
-  return <FanNumber value={slot} countUp locale={locale} unit={unit} className={styles.number} />;
+  return <FanNumber size="lg" value={slot} countUp locale={locale} unit={unit} className={styles.number} />;
 }
 
 /** The ad unit comes from a meta tag in the browser; the server render never has it, so the buttons start disabled. */
@@ -58,21 +60,21 @@ export function StanWallet({ locale, state, stamps, hearts, links, className, fa
   const stampCount = typeof stamps === "number" ? stamps : 0, full = stampCount > 0 && stampCount % STAMPS_PER_HEART === 0;
   const pageStamps = full ? STAMPS_PER_HEART : stampCount % STAMPS_PER_HEART;
   const claimable = full && Boolean(links.claim) && adReady;
-  const asset = (name: keyof typeof WALLET_ASSETS, size: number, className: string) => <img className={className} src={`${WALLET_ASSETS[name]}-160.webp`} srcSet={`${WALLET_ASSETS[name]}-160.webp 1x, ${WALLET_ASSETS[name]}-512.webp 3x`} width={size} height={size} alt="" />;
+  const asset = (name: keyof typeof WALLET_ASSETS, size: number, className: string) => <RewardIcon kind={name === "coin" ? "point" : name} size={size} className={className} />;
   /** Thick round bar with the count inside (the filled part repeats it in white); a full bar gets the 완료! stamp at its end. */
   const bar = (label: string, slot: StanSlot, value: number, max: number, current: string, total: string, doneText?: string, full = max > 0 && value >= max) => slot === "loading" ? <FanSkeleton width="100%" height={24} /> : slot === "locked" ? <FanLockedValue locale={locale} /> : <span className={styles.barRow}>
     <span className={styles.bar} role="progressbar" aria-label={label} aria-valuemin={0} aria-valuemax={max} aria-valuenow={Math.min(value, max)} aria-valuetext={`${current} / ${total}`}>
       <span className={styles.barText} aria-hidden="true">{full ? doneText : `${current} / ${total}`}</span>
-      <span className={styles.barFill} style={{ clipPath: `inset(0 ${100 - (max > 0 ? Math.min(value, max) / max : 0) * 100}% 0 0 round 999px)` }} aria-hidden="true"><span className={styles.barText}>{full ? doneText : `${current} / ${total}`}</span></span>
+      <span className={styles.barFill} style={{ "--wallet-bar-unfilled": `${100 - (max > 0 ? Math.min(value, max) / max : 0) * 100}%` } as CSSProperties} aria-hidden="true"><span className={styles.barText}>{full ? doneText : `${current} / ${total}`}</span></span>
     </span>
   </span>;
   /** One button per column. Both run behind the rewarded ad (the small video icon says so); with no ad unit it is the gray 준비 중. */
-  const action = (name: string, enabled: boolean, extra: { onClick: () => void } | { href: string } | null) => <FanAction variant="primary" className={styles.reward} {...(enabled && extra ? extra : { disabled: true })} leadingIcon={adReady || enabled ? <SquarePlay size={22} strokeWidth={2} aria-hidden="true" /> : undefined}>{adReady || enabled ? name : s("stanPreparing")}</FanAction>;
+  const action = (name: string, enabled: boolean, extra: { onClick: () => void } | { href: string } | null) => <FanAction variant="primary" className={styles.reward} {...(enabled && extra ? extra : { disabled: true })} leadingIcon={adReady || enabled ? <FanIcon icon={SquarePlay} size={20} /> : undefined}>{adReady || enabled ? name : s("stanPreparing")}</FanAction>;
   const n = (value: number) => value.toLocaleString(locale);
   const ticketText = typeof points === "number" ? n(Math.min(points, pointCost)) : "—";
   return <section className={[styles.wallet, className].filter(Boolean).join(" ")} id="wallet" aria-label={s("stanWalletFlows")} data-wallet-card="stan">
-    <div className={styles.head}><FanHeading>{s("stanWalletFlows")}</FanHeading><Link className={styles.guide} href={`/guide/dukjil?locale=${locale}` as Route} aria-label={s("stanGuideLabel")}><CircleHelp size={20} strokeWidth={1.5} aria-hidden="true" /></Link></div>
-    {state.kind === "guest" ? <FanLoginScene items={["coin", "ticket", "stamp", "heart"].map((name) => ({ src: `/images/dukjil-duo/glyph-${name}-160.webp`, srcSet: `/images/dukjil-duo/glyph-${name}-160.webp 1x, /images/dukjil-duo/glyph-${name}-512.webp 3x` }))} title={[w.points, w.tickets, s("stanFlowStamps"), s("stanFlowHearts")].join(" · ")} action={state.action} /> : <div className={styles.card}>
+    <div className={styles.head}><FanHeading>{s("stanWalletFlows")}</FanHeading><FanAction variant="text" href={`/guide/dukjil?locale=${locale}`}>{s("stanGuide")} ›</FanAction></div>
+    {state.kind === "guest" ? <FanLoginScene items={(["coin", "ticket", "stamp", "heart"] as const).map((name) => ({ src: WALLET_ASSETS[name] }))} title={[w.points, w.tickets, s("stanFlowStamps"), s("stanFlowHearts")].join(" · ")} action={state.action} /> : <div className={styles.card}>
       <div className={styles.column} data-column="tickets">
         <Link className={styles.result} data-cell="tickets" href={`/my/raffles?locale=${locale}` as Route}>
           {asset("ticket", 56, styles.resultAsset)}

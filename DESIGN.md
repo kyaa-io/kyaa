@@ -2273,3 +2273,5 @@ At the user's request, registered Changha identity and hero images use the unedi
 GROUPS-HOT-1410 (2026-11-11): 모임 Hot 목록은 첫 첨부 사진을 40px 정사각 cover 썸네일로 표시하고 사진 없는 글은 기존 페이지 아바타를 유지한다. 767px 이하는 5개씩 이전/다음 페이지, PC 펼치기는 유지한다. 모바일 출석 플로팅은 44px 스탬프 아이콘과 기존 실제 포인트 배지를 사용하고 하단에서 56px 더 올려 DM 공간을 확보한다.
 
 GROUPS-HOT-1410 출석 현황 추가(2026-11-11 사용자 “Gap 굉장히 어색함”): 모달 아바타 격자를 40px 아바타·보이는 크리에이터 이름·오른쪽 출석 행동의 단일 열 목록으로 변경. 행 padding/gap은 공통 목록과 같은 space-3, 완료는 체크 아이콘과 비활성 오늘 완료 버튼. 모달 헤더는 FanSheet 공통 제목·닫기 버튼을 사용한다.
+## ASSET-UNIFY-1403 (2026-11-11)
+사용자 결정: 포인트는 노란 P 3D 동전, 하트·응모권·일반 스탬프 표시는 기존 분홍 3D 세트. 공통 소유자는 `components/fan-ui/reward-icon.tsx`의 RewardIcon/REWARD_ICON_SRC. 종류별 패스포트 도장과 좋아요 행동 아이콘은 의미를 보존한다. 실화면 390/1440 검수는 공용 3000 통합 담당에게 인계(localdev 금지).

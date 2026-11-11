@@ -1,4 +1,5 @@
 "use client";
+import { RewardIcon } from "@/components/fan-ui/reward-icon";
 import Link from "next/link";
 import { creatorHomeHref } from "@/features/creator/domain/creator-navigation";
 import { useEffect, useId, useRef, useState } from "react";
@@ -62,7 +63,7 @@ function ProfileStats({ card, loading, locale }: { card: SocialProfileCard | nul
   const stats = card?.stats;
   if (!stats) return null;
   return <dl className={styles.stats}>
-    <div className={styles.stat}><dt>{fanProfileText(locale, "profHearts")}</dt><dd><FanNumber value={stats.hearts} size="lg" locale={locale} icon={<img src="/images/economy/heart.svg" alt="" width={20} height={20}/>}/></dd></div>
+    <div className={styles.stat}><dt>{fanProfileText(locale, "profHearts")}</dt><dd><FanNumber value={stats.hearts} size="lg" locale={locale} icon={<RewardIcon kind="heart" alt="" width={20} height={20}/>}/></dd></div>
     <div className={styles.stat}><dt>{fanProfileText(locale, "profPoints")}</dt><dd><FanNumber value={stats.points} size="lg" locale={locale} unit="P"/></dd></div>
     <div className={styles.stat}><dt>{fanProfileText(locale, "profStamps")}</dt><dd><FanNumber value={stats.stamps} size="lg" locale={locale}/></dd></div>
   </dl>;
