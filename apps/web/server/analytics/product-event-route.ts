@@ -62,6 +62,7 @@ export function createRecordProductEventHandler(dependencies: ProductEventRouteD
     const contentLength = Number(request.headers.get("content-length") ?? "0");
     if (Number.isFinite(contentLength) && contentLength > 8_192) return json({ error: { code: "EVENT_INVALID" } }, 413);
 
+    let recording = false;
     let acceptedEventName: ClientProductEventV1["eventName"] | null = null;
     try {
       const raw = await request.json();
@@ -82,6 +83,7 @@ export function createRecordProductEventHandler(dependencies: ProductEventRouteD
         if (!await consume(buckets.ip, "ip").catch(() => true)) return dropped();
         if (!await consume(buckets.holder, "holder").catch(() => true)) return dropped();
       }
+      recording = true;
       const result = await dependencies.repository.record({
         ...input,
         appUserId: owner?.appUserId ?? null,
@@ -95,9 +97,10 @@ export function createRecordProductEventHandler(dependencies: ProductEventRouteD
         if (error.code === "IDEMPOTENCY_CONFLICT" && acceptedEventName) {
           logIdempotencyConflict(acceptedEventName);
         }
-        return json({ error: { code: error.code } }, error.code === "IDEMPOTENCY_CONFLICT" ? 409 : 503);
+        if (error.code === "EVENT_UNAVAILABLE") return dropped();
+        return json({ error: { code: error.code } }, 409);
       }
-      return json({ error: { code: "EVENT_INVALID" } }, 400);
+      return recording ? dropped() : json({ error: { code: "EVENT_INVALID" } }, 400);
     }
   };
 }

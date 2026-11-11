@@ -36,6 +36,17 @@ function request(body: unknown, authorization?: string): Request {
 }
 
 describe("product event HTTP boundary", () => {
+  it("drops RPC no-op results and storage failures without HTTP 5xx", async () => {
+    const rpc = vi.fn().mockResolvedValue({ data: { skipped: true, reason: "daily_cap" }, error: null });
+    const repo = new SupabaseProductEventRepository({ rpc });
+    await expect(repo.record({ ...input, appUserId: null })).rejects.toMatchObject({ code: "RATE_LIMITED" });
+    for (const error of [new ProductEventRepositoryError("RATE_LIMITED"), new ProductEventRepositoryError("EVENT_UNAVAILABLE"), new Error("network failure")]) {
+      const handler = createRecordProductEventHandler({ identify: vi.fn().mockResolvedValue(null), repository: repository({ record: vi.fn().mockRejectedValue(error) }), now: () => now });
+      const response = await handler(request(input));
+      expect(response.status).toBe(204);
+      expect(await response.text()).toBe("");
+    }
+  });
   it("accepts anonymous outbound clicks but rejects bearer identity and raw destinations", async () => {
     const repo = repository(), identify = vi.fn().mockResolvedValue(null);
     const handler = createRecordProductEventHandler({ identify, repository: repo, now: () => now });
