@@ -21,7 +21,7 @@ const celebrity = {
   fanCount: 12_800_000,
 } as const;
 
-vi.mock("@privy-io/react-auth", () => ({
+vi.mock("@/features/auth/client/auth-fallback", () => ({
   usePrivy: () => ({ ready, authenticated, getAccessToken }),
 }));
 

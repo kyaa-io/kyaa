@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { AuthorizedCertificationManager } from "./certification-manager";
 
 const auth = vi.hoisted(() => ({ getAccessToken: vi.fn(async () => "token"), email: "operator@byus.test", role: "operator", userId: "actor-1", query: "lang=ko" }));
-vi.mock("@privy-io/react-auth", () => ({ usePrivy: () => ({ getAccessToken: auth.getAccessToken, user: { id: auth.userId } }) }));
+vi.mock("@/features/auth/client/auth-fallback", () => ({ usePrivy: () => ({ getAccessToken: auth.getAccessToken, user: { id: auth.userId } }) }));
 vi.mock("next/navigation", () => ({ useSearchParams: () => new URLSearchParams(auth.query) }));
 vi.mock("./use-admin-session", () => ({ useAdminSession: () => ({ status: "authorized", admin: { role: auth.role, email: auth.email } }) }));
 vi.mock("./operations-shell", () => ({ AdminOperationsShell: ({ children }: { children: React.ReactNode }) => <>{children}</> }));

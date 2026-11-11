@@ -4,7 +4,7 @@ import { APP_LOCALES } from "@/i18n/locales";
 import { leaderboardActivityCopy } from "@/i18n/catalogs/features__fanpage__ui__leaderboard-activities";
 import { LeaderboardPanel } from "./leaderboard-panel";
 
-vi.mock("@privy-io/react-auth", () => ({ usePrivy: () => ({ ready: true, authenticated: false, getAccessToken: async () => null }) }));
+vi.mock("@/features/auth/client/auth-fallback", () => ({ usePrivy: () => ({ ready: true, authenticated: false, getAccessToken: async () => null }) }));
 vi.mock("@/features/rankings/ui/jjinfan-gauge", () => ({ JjinfanGauge: () => <div data-testid="gathering" /> }));
 const rows = ["별빛팬", "봄날", "달빛"].map((nickname, index) => ({ profileId: `11111111-1111-4111-8111-${String(index + 1).padStart(12, "0")}`, rank: index + 1, nickname, avatarUrl: "/images/avatars/star-pink.webp", points: 7 }));
 const data = { membershipCount: 100, fanCount: 110, available: true, asOf: "2026-10-09T00:00:00Z", rows, me: rows[1] };

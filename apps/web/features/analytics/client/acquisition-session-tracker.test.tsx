@@ -16,7 +16,7 @@ vi.mock("next/navigation", () => ({
   usePathname: () => mocks.pathname,
   useSearchParams: () => mocks.searchParams,
 }));
-vi.mock("@privy-io/react-auth", () => ({
+vi.mock("@/features/auth/client/auth-fallback", () => ({
   usePrivy: () => ({
     ready: true,
     authenticated: mocks.authenticated,

@@ -14,7 +14,7 @@ export async function startHarness(port = 4198) {
     cacheDir: path.join(web, "node_modules/.vite-gggi-local"), esbuild: { jsx: "automatic" },
     resolve: { alias: [
       { find: "@", replacement: web },
-      { find: "@privy-io/react-auth", replacement: path.join(here, "privy.ts") },
+      { find: /^.*\/auth-fallback$/, replacement: path.join(here, "privy.ts") },
       { find: "server-only", replacement: path.join(here, "../lounge-local/server-only.ts") },
       { find: "next/navigation", replacement: path.join(here, "../lounge-local/next-navigation.ts") },
       { find: "next/link", replacement: path.join(here, "../lounge-local/next-link.tsx") },

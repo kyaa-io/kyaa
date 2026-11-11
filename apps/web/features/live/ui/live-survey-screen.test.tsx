@@ -6,7 +6,7 @@ import { GroupsReleaseProvider } from "@/features/groups/ui/groups-release";
 
 const getAccessToken = vi.fn(async () => "access-token");
 
-vi.mock("@privy-io/react-auth", () => ({
+vi.mock("@/features/auth/client/auth-fallback", () => ({
   usePrivy: () => ({ ready: true, authenticated: true, getAccessToken }),
 }));
 

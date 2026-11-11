@@ -10,7 +10,7 @@ const { sessionState, authState, searchParamsState } = vi.hoisted(() => ({
   searchParamsState: { current: new URLSearchParams() },
 }));
 
-vi.mock("@privy-io/react-auth", () => ({ usePrivy: () => authState.current }));
+vi.mock("@/features/auth/client/auth-fallback", () => ({ usePrivy: () => authState.current }));
 vi.mock("next/navigation", () => ({ useSearchParams: () => searchParamsState.current }));
 vi.mock("./use-admin-session", () => ({ useAdminSession: () => sessionState.current }));
 vi.mock("./operations-shell", () => ({ AdminOperationsShell: ({ children, adminRole }: { children: React.ReactNode; adminRole?: string }) => <main data-admin-role={adminRole}>{children}</main> }));

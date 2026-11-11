@@ -5,7 +5,7 @@ const { auth, session } = vi.hoisted(() => ({
   auth: { user: { id: "admin" }, getAccessToken: vi.fn(async () => "token") },
   session: { status: "authorized", admin: { role: "admin", email: "admin@example.test" } },
 }));
-vi.mock("@privy-io/react-auth", () => ({ usePrivy: () => auth }));
+vi.mock("@/features/auth/client/auth-fallback", () => ({ usePrivy: () => auth }));
 vi.mock("./use-admin-session", () => ({ useAdminSession: () => session }));
 vi.mock("./operations-shell", () => ({ AdminOperationsShell: ({ children }: { children: React.ReactNode }) => <>{children}</> }));
 vi.mock("./admin-access-state", () => ({ AdminAccessState: ({ status }: { status: string }) => <p>{status}</p> }));

@@ -4,7 +4,7 @@ import { beforeEach, expect, it, vi } from "vitest";
 import { ContentReportManager } from "./content-report-manager";
 const request = vi.fn(async () => true), retry = vi.fn();
 let role = "admin", targetType = "user_block";
-vi.mock("@privy-io/react-auth", () => ({ usePrivy: () => ({ user: { id: "owner" } }) }));
+vi.mock("@/features/auth/client/auth-fallback", () => ({ usePrivy: () => ({ user: { id: "owner" } }) }));
 vi.mock("./use-admin-session", () => ({ useAdminSession: () => ({ status: "authorized", admin: { role } }) }));
 vi.mock("./operations-shell", () => ({ AdminOperationsShell: ({ children }: { children: React.ReactNode }) => children }));
 vi.mock("@/features/content-safety/ui/use-content-mutation", () => ({ useContentMutation: () => ({ busy: false, request }) }));

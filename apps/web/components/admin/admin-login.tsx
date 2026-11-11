@@ -1,7 +1,5 @@
 "use client";
 
-import { useLogin } from "@/features/auth/client/privy-backend";
-import { useCognitoAuth } from "@/features/auth/client/cognito-auth";
 import { ArrowLeft, ArrowRight, LockKeyhole, ShieldCheck } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -22,10 +20,7 @@ export function adminReturnPath(search: string): string {
 }
 
 export function AdminLogin({ access = "unauthenticated" }: { access?: AdminAccessState }) {
-  const { login } = useLogin();
-  const cognito = useCognitoAuth();
   const startGoogle = () => {
-    if (!cognito.enabled) return login({ loginMethods: ["google"] });
     const returnTo = `/admin/login?${new URLSearchParams({ returnTo: adminReturnPath(window.location.search) })}`;
     window.location.assign(new URL(`/api/auth/cognito/start?${new URLSearchParams({ provider: "google", returnTo, locale: "ko" })}`, window.location.origin).href);
   };

@@ -7,7 +7,7 @@ const { auth, adminSession, push } = vi.hoisted(() => ({
   adminSession: { value: { status: "authorized", admin: { email: "admin@example.test", role: "operator" } } },
   push: vi.fn(),
 }));
-vi.mock("@privy-io/react-auth", () => ({ usePrivy: () => auth }));
+vi.mock("@/features/auth/client/auth-fallback", () => ({ usePrivy: () => auth }));
 vi.mock("next/navigation", () => ({ useRouter: () => ({ push }) }));
 vi.mock("next/link", () => ({ default: ({ children, ...props }: { children: ReactNode; href: string }) => <a {...props}>{children}</a> }));
 vi.mock("@/components/fan-shell/fan-app-shell", () => ({

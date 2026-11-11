@@ -5,7 +5,7 @@ import { FeedItemCard } from "@/features/fan-posts/ui/feed-item-card";
 vi.mock("@base-ui/react/menu", () => ({ Menu: {} }));
 vi.mock("@/features/content-safety/ui/content-actions", () => ({ ContentActions: () => null, ContentTranslation: () => null }));
 vi.mock("@/features/fan-posts/ui/post-card", () => ({ PostCard: () => null }));
-vi.mock("@privy-io/react-auth", () => ({ usePrivy: () => ({ ready: true, authenticated: false, user: null, getAccessToken: async () => null }) }));
+vi.mock("@/features/auth/client/auth-fallback", () => ({ usePrivy: () => ({ ready: true, authenticated: false, user: null, getAccessToken: async () => null }) }));
 vi.mock("@/components/byus-session-provider", () => ({ useByUsSession: () => ({ ready: true, ownerId: null, generation: 0 }) }));
 const items = Array.from({ length: 5 }, (_, index) => ({ id: String(index + 1), text: index === 0 ? "<script>alert(1)</script>\n방송 일정" : `소식 ${index}`, date: `2026-09-${String(15-index).padStart(2,"0")}`, images: index === 0 ? [{ url: "https://nng-phinf.pstatic.net/schedule.jpg" }] : [] }));
 const notice = {slug:"important",title:"중요 공지",pinned:true,kind:"standard",publishedAt:"2026-08-01"};

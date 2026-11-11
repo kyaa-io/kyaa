@@ -2,7 +2,7 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, expect, it, vi } from "vitest";
 import { CheerEventParticipants } from "./cheer-event-participants";
 const getAccessToken = vi.hoisted(() => vi.fn<() => Promise<string | null>>(async () => "admin-token"));
-vi.mock("@privy-io/react-auth", () => ({ usePrivy: () => ({ getAccessToken }) }));
+vi.mock("@/features/auth/client/auth-fallback", () => ({ usePrivy: () => ({ getAccessToken }) }));
 const request = vi.fn<typeof fetch>();
 const first = "10000000-0000-4000-8000-000000000001";
 const second = "10000000-0000-4000-8000-000000000002";

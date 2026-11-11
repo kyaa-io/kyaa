@@ -4,7 +4,7 @@ import { ParticipationRequests } from "./participation-requests";
 
 const push = vi.hoisted(() => vi.fn());
 vi.mock("next/navigation", () => ({ useRouter: () => ({ push }), usePathname: () => "/my/requests", useSearchParams: () => new URLSearchParams() }));
-vi.mock("@privy-io/react-auth", () => ({ usePrivy: () => ({ ready: true, authenticated: true, user: { id: "owner" } }) }));
+vi.mock("@/features/auth/client/auth-fallback", () => ({ usePrivy: () => ({ ready: true, authenticated: true, user: { id: "owner" } }) }));
 vi.mock("@/features/fanpage/ui/use-fanpage-resource", () => ({ useFanpageResource: () => ({ state: { status: "ready", data: { items: [], nextCursor: null } } }) }));
 
 it("keeps request history inside fan navigation with one-line empty lists", async () => {

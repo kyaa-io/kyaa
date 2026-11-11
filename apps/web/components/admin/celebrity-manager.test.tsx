@@ -4,7 +4,7 @@ import type { ReactNode } from "react";
 import { AuthorizedCelebrityManager } from "./celebrity-manager";
 
 const getAccessToken = vi.hoisted(() => vi.fn().mockResolvedValue("local-token"));
-vi.mock("@privy-io/react-auth", () => ({ usePrivy: () => ({ getAccessToken }) }));
+vi.mock("@/features/auth/client/auth-fallback", () => ({ usePrivy: () => ({ getAccessToken }) }));
 vi.mock("./use-admin-session", () => ({ useAdminSession: () => ({ status: "authorized", admin: { role: "admin" } }) }));
 vi.mock("./operations-shell", () => ({ AdminOperationsShell: ({ children }: { children: ReactNode }) => <main>{children}</main> }));
 vi.mock("./notice-manager", () => ({ NoticeManager: () => null }));

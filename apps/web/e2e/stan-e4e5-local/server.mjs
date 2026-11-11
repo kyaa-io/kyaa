@@ -12,7 +12,7 @@ export async function startHarness(port=5197,api='http://localhost:3141'){
  {find:'next/navigation',replacement:path.join(shared,'navigation.ts')},
  {find:'next/link',replacement:path.join(shared,'link.tsx')},
  {find:'next/image',replacement:path.join(shared,'image.tsx')},
- {find:'@privy-io/react-auth',replacement:path.join(here,'auth.ts')},
+ {find: /^.*\/auth-fallback$/,replacement:path.join(here,'auth.ts')},
  {find:'server-only',replacement:path.join(shared,'server-only.ts')},{find:'@',replacement:web}]},
  server:{hmr:false,host:'127.0.0.1',port,strictPort:true,proxy:{'/api':{target:api,changeOrigin:true}},fs:{allow:[path.resolve(web,'../..')]}}});
  await server.listen();return {server,baseURL:`http://127.0.0.1:${port}`};

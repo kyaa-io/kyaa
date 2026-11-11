@@ -3,7 +3,7 @@ import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import { ContentAssetImage } from "./content-asset";
 
 const auth = vi.hoisted(() => ({ ready: true, authenticated: false, getAccessToken: vi.fn(), user: undefined }));
-vi.mock("@privy-io/react-auth", () => ({ usePrivy: () => auth }));
+vi.mock("@/features/auth/client/auth-fallback", () => ({ usePrivy: () => auth }));
 vi.mock("@/components/byus-session-provider", () => ({ useByUsSession: () => ({ ready: true, generation: 0 }) }));
 let intersect: IntersectionObserverCallback;
 const disconnect = vi.fn();

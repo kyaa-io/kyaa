@@ -4,7 +4,7 @@ import { MyScreen } from "./my-screen";
 import { fanLoginHref } from "../../../components/login-href";
 import { resetDukjilCatalogCache } from "../../dukjil/ui/dukjil-provider";
 
-vi.mock("@privy-io/react-auth", () => ({ usePrivy: () => ({ ready: true, authenticated: false, getAccessToken: vi.fn() }) }));
+vi.mock("@/features/auth/client/auth-fallback", () => ({ usePrivy: () => ({ ready: true, authenticated: false, getAccessToken: vi.fn() }) }));
 vi.mock("next/navigation", () => ({ useRouter: () => ({ push: vi.fn() }), usePathname: () => "/my", useSearchParams: () => new URLSearchParams() }));
 
 const catalog = { version: 1, rules: { quiz: { points: 20 }, checkin: { points: 2 } }, missionBook: { pages: [{ pageNo: 1, slots: [{ slot: 1, action: "quiz" }, { slot: 2, action: "checkin" }] }] } };

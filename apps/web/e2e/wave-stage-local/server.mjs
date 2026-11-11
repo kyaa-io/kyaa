@@ -38,7 +38,7 @@ export async function startHarness({ port = 4216 } = {}) {
     resolve: { alias: [
       { find: /.*features\/auth\/client\/cognito-auth$/, replacement: path.join(here, "privy.ts") },
       { find: "@", replacement: web },
-      { find: "@privy-io/react-auth", replacement: path.join(here, "privy.ts") },
+      { find: /^.*\/auth-fallback$/, replacement: path.join(here, "privy.ts") },
       ...["next/link", "next/image", "next/navigation", "server-only"].map(name => ({ find: name, replacement: path.join(web, "e2e/mission-local", { "next/link": "next-link.tsx", "next/image": "next-image.tsx", "next/navigation": "next-navigation.ts", "server-only": "server-only.ts" }[name]) })),
     ] }, server: { host: "127.0.0.1", port, strictPort: true, fs: { allow: [web, realpathSync(path.resolve(web, "../../node_modules"))] } } });
   await server.listen();

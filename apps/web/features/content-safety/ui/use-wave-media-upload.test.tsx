@@ -2,7 +2,7 @@ import { act, renderHook, waitFor } from "@testing-library/react";
 import { afterEach, expect, it, vi } from "vitest";
 import { useWaveMediaUpload } from "./use-wave-media-upload";
 const state = vi.hoisted(() => ({ upload: vi.fn(), cancel: vi.fn(async (..._args: unknown[]) => {}), generation: 0 }));
-vi.mock("@privy-io/react-auth", () => ({ usePrivy: () => ({ authenticated: true, user: { id: "owner" }, getAccessToken: async () => "token" }) }));
+vi.mock("@/features/auth/client/auth-fallback", () => ({ usePrivy: () => ({ authenticated: true, user: { id: "owner" }, getAccessToken: async () => "token" }) }));
 vi.mock("@/components/byus-session-provider", () => ({ useByUsSession: () => ({ ready: true, ownerId: "owner", generation: state.generation }) }));
 vi.mock("./wave-media-upload", () => ({ validWaveFiles: () => true, cancelWaveUpload: (...args: unknown[]) => state.cancel(...args), uploadWaveMedia: (...args: unknown[]) => state.upload(...args) }));
 afterEach(() => { state.upload.mockReset(); state.cancel.mockClear(); state.generation = 0; });

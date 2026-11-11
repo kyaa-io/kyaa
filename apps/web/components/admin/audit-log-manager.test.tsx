@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { AuditLogManager } from "./audit-log-manager";
 
 vi.mock("next/navigation", () => ({ usePathname: () => "/admin/audit", useRouter: () => ({ replace: vi.fn() }), useSearchParams: () => new URLSearchParams() }));
-vi.mock("@privy-io/react-auth", () => ({ usePrivy: () => ({ getAccessToken: vi.fn().mockResolvedValue("token") }) }));
+vi.mock("@/features/auth/client/auth-fallback", () => ({ usePrivy: () => ({ getAccessToken: vi.fn().mockResolvedValue("token") }) }));
 vi.mock("./use-admin-session", () => ({ useAdminSession: () => ({ status: "authorized", admin: { email: "ops@byus.test", role: "viewer" } }) }));
 
 const item = { id: "91", actor: { type: "admin", id: "11111111-1111-4111-8111-111111111111", role: "operator" }, action: "live.override.created", entity: { type: "live_event", id: "kara-live" }, result: "success", summary: { before: { status: "scheduled" }, after: { status: "live" }, token: "[REDACTED]" }, correlationId: "22222222-2222-4222-8222-222222222222", createdAt: "2026-07-21T00:00:00Z" };

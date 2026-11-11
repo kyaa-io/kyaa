@@ -47,12 +47,12 @@ describe("response security headers", () => {
 
   it("allows app scripts on the connection landing while OAuth documents remain script-free", async () => {
     const landing = await unstable_getResponseFromNextConfig({ url: "https://byus.kr/connect/instagram", nextConfig });
-    expect(landing.headers.get("content-security-policy")).toContain("https://auth.privy.io");
+    expect(landing.headers.get("content-security-policy")).toContain("script-src 'self'");
     expect(landing.headers.get("content-security-policy")).not.toContain("default-src 'none'");
     for (const route of ["start", "callback", "confirm", "deletion-status"]) {
       const document = await unstable_getResponseFromNextConfig({ url: `https://byus.kr/connect/instagram/${route}`, nextConfig });
       expect(document.headers.get("content-security-policy")).toContain("default-src 'none'");
-      expect(document.headers.get("content-security-policy")).not.toContain("https://auth.privy.io");
+      expect(document.headers.get("content-security-policy")).not.toContain("script-src 'self'");
     }
   });
   it("denies framing and constrains executable content", () => {
@@ -78,12 +78,11 @@ describe("response security headers", () => {
     }
   });
 
-  it("allows only the Privy integration origins required by the active login flow", () => {
+  it("opens no third-party auth origin: sign-in is a top-level Cognito navigation", () => {
     const csp = header("Content-Security-Policy");
 
-    expect(csp).toContain("frame-src https://auth.privy.io");
-    expect(csp).toContain("connect-src 'self' https://auth.privy.io");
-    expect(csp).toContain("https://*.rpc.privy.systems");
+    for (const origin of ["privy", "walletconnect", "walletlink"]) expect(csp).not.toContain(origin);
+    expect(csp).toContain("connect-src 'self' https://*.tiktokcdn.com");
     expect(csp).not.toContain("frame-src *");
     expect(csp).not.toContain("connect-src *");
   });

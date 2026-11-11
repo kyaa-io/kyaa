@@ -30,7 +30,7 @@ const toast = vi.hoisted(() => ({ show: vi.fn() }));
 vi.mock("./mission-reward-toast", () => ({ showMissionRewardToast: toast.show }));
 vi.mock("@/components/editor/lazy-rich-editor", () => ({ LazyRichEditor: ({ label, onChange }: { label: string; onChange: (value: unknown) => void }) => <textarea aria-label={label} onChange={event => onChange({ type: "doc", content: [{ type: "paragraph", content: [{ type: "text", text: event.target.value }] }] })} /> }));
 vi.mock("next/navigation", () => ({ useRouter: () => ({ replace: state.replace }), useSearchParams: () => new URLSearchParams(state.returnTo ? { returnTo: state.returnTo } : {}) }));
-vi.mock("@privy-io/react-auth", () => ({
+vi.mock("@/features/auth/client/auth-fallback", () => ({
   usePrivy: () => ({ ready: true, authenticated: state.authenticated, user: { id: "viewer" }, getAccessToken: state.getAccessToken }),
 }));
 vi.mock("@/features/content-safety/ui/use-content-mutation", () => ({

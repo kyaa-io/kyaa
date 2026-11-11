@@ -8,7 +8,7 @@ const instagram = { items: [
   { id: "1002", mediaType: "VIDEO", mediaProductType: null, caption: "", imageUrl: "https://example.com/ig2.jpg", permalink: "https://www.instagram.com/reel/ig2/", timestamp: "2026-11-02T00:00:00Z", sourceAccount: { id: "2001", username: "mmnoo.s" } },
 ] };
 vi.mock("next/navigation", () => ({ usePathname: () => "/creator", useSearchParams: () => new URLSearchParams("tab=board&section=media&locale=ko"), useRouter: () => ({ replace: vi.fn() }) }));
-vi.mock("@privy-io/react-auth", () => ({ usePrivy: () => ({ ready: true, authenticated: false }) }));
+vi.mock("@/features/auth/client/auth-fallback", () => ({ usePrivy: () => ({ ready: true, authenticated: false }) }));
 vi.mock("@/components/byus-session-provider", () => ({ useByUsSession: () => ({ ready: true, generation: 0 }) }));
 vi.mock("@/features/content-safety/ui/content-asset", () => ({ ContentAssetImage: ({ alt }: { alt: string }) => <img alt={alt} /> }));
 vi.mock("@/features/fanpage/ui/use-news-source", () => ({ useNewsSource: (url: string | null, parse: (value: unknown) => { items: unknown[] }) => ({

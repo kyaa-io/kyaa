@@ -9,7 +9,7 @@ const auth = vi.hoisted(() => ({
   getAccessToken: vi.fn(async () => "token"),
 }));
 
-vi.mock("@privy-io/react-auth", () => ({ usePrivy: () => auth }));
+vi.mock("@/features/auth/client/auth-fallback", () => ({ usePrivy: () => auth }));
 
 import { CertificationDetailScreen } from "./certification-detail-screen";
 

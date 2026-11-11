@@ -6,7 +6,7 @@ import { MyRafflesScreen } from "./my-raffles-screen";
 const getAccessToken = vi.fn(async () => "token");
 let authenticated = true;
 let userId = "owner-a";
-vi.mock("@privy-io/react-auth", () => ({
+vi.mock("@/features/auth/client/auth-fallback", () => ({
   usePrivy: () => ({ ready: true, authenticated, user: { id: userId }, getAccessToken }),
 }));
 vi.mock("next/navigation", () => ({

@@ -3,7 +3,7 @@ import { afterEach, expect, it, vi } from "vitest";
 import { CreatorMediaPanel } from "./creator-media-panel";
 
 vi.mock("next/navigation", () => ({ usePathname: () => "/elina", useSearchParams: () => new URLSearchParams("tab=board&section=media&locale=ko"), useRouter: () => ({ replace: vi.fn() }) }));
-vi.mock("@privy-io/react-auth", () => ({ usePrivy: () => ({ ready: true, authenticated: false }) }));
+vi.mock("@/features/auth/client/auth-fallback", () => ({ usePrivy: () => ({ ready: true, authenticated: false }) }));
 vi.mock("@/components/byus-session-provider", () => ({ useByUsSession: () => ({ ready: true, generation: 0 }) }));
 vi.mock("@/features/content-safety/ui/content-asset", () => ({ ContentAssetImage: ({ alt, href }: { alt: string; href?: string }) => href ? <a href={href}><img alt={alt} /></a> : <img alt={alt} /> }));
 vi.mock("@/features/fanpage/ui/use-news-source", () => ({ useNewsSource: (url: string | null) => ({

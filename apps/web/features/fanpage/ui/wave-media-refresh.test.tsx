@@ -3,7 +3,7 @@ import { afterEach, expect, it, vi } from "vitest";
 import { subscribeFanActivityUpdates } from "@/components/fan-ui/fan-activity-updates";
 import { WaveMediaComposer } from "./wave-media";
 const state = vi.hoisted(() => ({ request: vi.fn(), ready: true, failed: false, retry: vi.fn() }));
-vi.mock("@privy-io/react-auth", () => ({ usePrivy: () => ({ user: { id: "privy-owner" } }) }));
+vi.mock("@/features/auth/client/auth-fallback", () => ({ usePrivy: () => ({ user: { id: "privy-owner" } }) }));
 vi.mock("@/components/byus-session-provider", () => ({ useByUsSession: () => ({ ownerId: "session-owner" }) }));
 vi.mock("@/features/content-safety/ui/use-content-mutation", () => ({ useContentMutation: () => ({ request: state.request, busy: false }) }));
 vi.mock("@/features/content-safety/ui/use-wave-media-upload", () => ({ useWaveMediaUpload: () => ({ ready: state.ready, busy: false, retry: state.retry, items: [{ key: "photo", failed: state.failed, file: { name: "photo.jpg" }, media: { assetId: "00000000-0000-4000-8000-000000000001", state: state.ready ? "ready" : "processing" } }] }) }));

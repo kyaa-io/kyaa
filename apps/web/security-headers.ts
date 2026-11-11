@@ -1,11 +1,5 @@
 type ResponseHeader = { key: string; value: string };
 
-const privyFrameSources = [
-  "https://auth.privy.io",
-  "https://verify.walletconnect.com",
-  "https://verify.walletconnect.org",
-];
-
 const contentSecurityPolicy = [
   "default-src 'self'",
   // Next emits inline bootstrap scripts. Removing unsafe-inline requires a
@@ -13,23 +7,17 @@ const contentSecurityPolicy = [
   `script-src 'self' 'unsafe-inline'${process.env.NODE_ENV === "development" ? " 'unsafe-eval'" : ""} https://challenges.cloudflare.com`,
   "style-src 'self' 'unsafe-inline'",
   // Published CMS records intentionally support administrator-approved HTTPS
-  // artwork. data/blob are required by Privy's documented client integration.
+  // artwork, plus data/blob previews.
   "img-src 'self' data: blob: https:",
   "font-src 'self' data:",
   "object-src 'none'",
   "base-uri 'self'",
   "form-action 'self'",
   "frame-ancestors 'none'",
-  `child-src ${privyFrameSources.join(" ")}`,
-  `frame-src ${[...privyFrameSources, "https://challenges.cloudflare.com", "https://www.youtube.com", "https://www.tiktok.com"].join(" ")}`,
+  // Sign-in is a top-level navigation to the Cognito Hosted UI (PRIVY-EXIT-0005): no auth frame or connection origin.
+  `frame-src ${["https://challenges.cloudflare.com", "https://www.youtube.com", "https://www.tiktok.com"].join(" ")}`,
   [
     "connect-src 'self'",
-    "https://auth.privy.io",
-    "wss://relay.walletconnect.com",
-    "wss://relay.walletconnect.org",
-    "wss://www.walletlink.org",
-    "https://*.rpc.privy.systems",
-    "https://explorer-api.walletconnect.com",
     "https://*.tiktokcdn.com",
     "https://*.tiktokcdn-us.com",
   ].join(" "),
@@ -50,7 +38,7 @@ export const responseSecurityHeaders: ResponseHeader[] = [
     key: "Permissions-Policy",
     value: "camera=(), microphone=(), geolocation=(), payment=(), usb=()",
   },
-  // Google/Privy authentication uses a popup and must retain its opener.
+  // Third-party pop-ups (share sheets, provider pages) may keep their opener.
   { key: "Cross-Origin-Opener-Policy", value: "same-origin-allow-popups" },
   { key: "Cross-Origin-Resource-Policy", value: "same-origin" },
   // Without includeSubDomains or preload: subdomain impact is unchecked (SECURITY-AUDIT A02). Browsers ignore it over http.

@@ -10,7 +10,7 @@ const routerReplace = vi.hoisted(() => vi.fn());
 let authenticated = true;
 let locale = "ko";
 let returnTo: string | null = null;
-vi.mock("@privy-io/react-auth", () => ({
+vi.mock("@/features/auth/client/auth-fallback", () => ({
   usePrivy: () => ({ ready: true, authenticated, getAccessToken }),
 }));
 vi.mock("next/navigation", () => ({

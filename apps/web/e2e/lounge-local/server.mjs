@@ -104,9 +104,11 @@ export async function startHarness({ communityMode = false, fanWebMode = false }
   }
   const aliases = [
     { find: "@", replacement: web },
-    ...["next/link", "next/image", "next/navigation", "@privy-io/react-auth", "server-only"].map((name) => ({
-      find: name, replacement: path.join(here, ({ "next/link": "next-link.tsx", "next/image": "next-image.tsx", "next/navigation": "next-navigation.ts", "@privy-io/react-auth": "privy.ts", "server-only": "server-only.ts" })[name]),
+    ...["next/link", "next/image", "next/navigation", "server-only"].map((name) => ({
+      find: name, replacement: path.join(here, ({ "next/link": "next-link.tsx", "next/image": "next-image.tsx", "next/navigation": "next-navigation.ts", "server-only": "server-only.ts" })[name]),
     })),
+    // Pages read auth through useByUsAuth; without CognitoAuthProvider it falls back to ./auth-fallback.
+    { find: /^.*\/auth-fallback$/, replacement: path.join(here, "privy.ts") },
   ];
   let handleApi;
   const vite = await createServer({ plugins: [{ name: "lounge-local-api", configureServer(server) { server.middlewares.use((req, res, next) => handleApi ? handleApi(req, res, next) : next()); } }], configFile: false, root: here, publicDir: path.join(web, "public"),

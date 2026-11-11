@@ -7,7 +7,7 @@ import type { FunnelAnalyticsData } from "../domain/funnel-analytics";
 import type { WeeklyMetricsData } from "../domain/weekly-metrics";
 
 const auth = vi.hoisted(() => ({ status: "authorized", email: "admin@example.invalid", getAccessToken: vi.fn(async (): Promise<string | null> => "admin-token") }));
-vi.mock("@privy-io/react-auth", () => ({ usePrivy: () => ({ getAccessToken: auth.getAccessToken }) }));
+vi.mock("@/features/auth/client/auth-fallback", () => ({ usePrivy: () => ({ getAccessToken: auth.getAccessToken }) }));
 vi.mock("../../../components/admin/use-admin-session", () => ({ useAdminSession: () => ({ status: auth.status, admin: { email: auth.email, role: "admin" } }) }));
 vi.mock("next/navigation", () => ({ usePathname: () => "/admin/traffic", useSearchParams: () => new URLSearchParams(), useRouter: () => ({ replace: vi.fn() }) }));
 import { WebAnalyticsContent, WebAnalyticsDashboard } from "./web-analytics-dashboard";

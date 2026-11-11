@@ -10,7 +10,7 @@ const search = vi.hoisted(() => ({ value: "" }));
 vi.mock("next/navigation", () => ({ useSearchParams: () => new URLSearchParams(search.value), usePathname: () => "/admin/home-notices", useRouter: () => ({ replace: vi.fn(), push: vi.fn() }) }));
 vi.mock("./use-admin-session", () => ({ useAdminSession: () => ({ status: "authorized", admin: { email: "a@example.invalid", role: "admin" } }) }));
 vi.mock("./operations-shell", () => ({ AdminOperationsShell: ({ children }: { children: React.ReactNode }) => <>{children}</> }));
-vi.mock("@privy-io/react-auth", () => ({ usePrivy: () => ({ getAccessToken: async () => "token" }) }));
+vi.mock("@/features/auth/client/auth-fallback", () => ({ usePrivy: () => ({ getAccessToken: async () => "token" }) }));
 vi.mock("@tiptap/react", () => ({
   useEditor: (options: { editable: boolean }) => ({ isEditable: options.editable, setEditable: vi.fn(), getJSON: () => ({ type: "doc", content: [] }), commands: { setContent: vi.fn() }, isDestroyed: false }),
   EditorContent: () => <div />, NodeViewWrapper: () => null, ReactNodeViewRenderer: () => null,

@@ -15,7 +15,7 @@ const analytics = vi.hoisted(() => ({
   pageViewIdempotencyKey: vi.fn<(eventName: string, routeKey: string, ownerId: string | null) => Promise<string>>(async () => "page:benefit_page_view:11111111-1111-4111-8111-111111111111"),
   recordProductEventV1: vi.fn(async () => true),
 }));
-vi.mock("@privy-io/react-auth", () => ({
+vi.mock("@/features/auth/client/auth-fallback", () => ({
   usePrivy: () => ({ ready: true, authenticated, getAccessToken, user: userId ? { id: userId } : null }),
 }));
 vi.mock("@/features/analytics/client/product-event-client", () => analytics);

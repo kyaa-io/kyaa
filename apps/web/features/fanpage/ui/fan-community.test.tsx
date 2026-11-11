@@ -5,7 +5,7 @@ import { FanCommunity } from "./fan-community";
 let owner = "owner-a";
 let authenticated = true;
 const getAccessToken = vi.fn(async (): Promise<string | null> => "token");
-vi.mock("@privy-io/react-auth", () => ({ usePrivy: () => ({ ready: true, authenticated, user: authenticated ? { id: owner } : null, getAccessToken }) }));
+vi.mock("@/features/auth/client/auth-fallback", () => ({ usePrivy: () => ({ ready: true, authenticated, user: authenticated ? { id: owner } : null, getAccessToken }) }));
 const empty = { total: 0, comments: [], nextCursor: null };
 const comment = { id: "c7000000-0000-4000-8000-000000000001", body: "늘 응원해요", nickname: "별빛팬", avatarUrl: "/images/avatars/star-pink.webp", createdAt: "2026-09-11T00:00:00Z", isOwner: true, clapCount: 0, viewerClapped: false, replyCount: 0 };
 function deferred<T>() { let resolve!: (value: T) => void; const promise = new Promise<T>(done => { resolve = done; }); return { promise, resolve }; }

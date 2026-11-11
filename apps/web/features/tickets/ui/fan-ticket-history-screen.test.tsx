@@ -6,7 +6,7 @@ const mocks = vi.hoisted(() => {
   const result = (older: boolean) => ({ state: { status: "ready", data: { enabled: true, creator: { slug: "elina", name: "Elina" }, balance: 2, today: "2026-09-15", actions: [], history: [item(older)], nextBefore: older ? null : "20" } }, retry: vi.fn(), refreshFailed: false });
   return { urls: [] as (string | null)[], initial: result(false), older: result(true), sdkOwner: "owner", sessionOwner: "owner", sessionReady: true };
 });
-vi.mock("@privy-io/react-auth", () => ({ usePrivy: () => ({ ready: true, authenticated: true, user: { id: mocks.sdkOwner }, getAccessToken: vi.fn() }) }));
+vi.mock("@/features/auth/client/auth-fallback", () => ({ usePrivy: () => ({ ready: true, authenticated: true, user: { id: mocks.sdkOwner }, getAccessToken: vi.fn() }) }));
 vi.mock("@/components/byus-session-provider", () => ({ useByUsSession: () => ({ ready: mocks.sessionReady, ownerId: mocks.sessionOwner, generation: 0 }) }));
 vi.mock("@/components/fan-shell/fan-app-shell", () => ({ FanAppFrame: ({ children }: { children: React.ReactNode }) => <>{children}</>, FanContentContainer: ({ children }: { children: React.ReactNode }) => <main>{children}</main> }));
 vi.mock("./fan-ticket-guide", () => ({ FanTicketGuide: () => <div>guide</div> }));

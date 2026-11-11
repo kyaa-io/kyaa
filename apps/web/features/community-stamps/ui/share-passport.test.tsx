@@ -5,7 +5,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 
 const auth = vi.hoisted(() => ({ user: { id: "owner-a" } as { id: string } | undefined, getAccessToken: vi.fn<() => Promise<string | null>>().mockResolvedValue("token") }));
 const action = vi.hoisted(() => vi.fn());
-vi.mock("@privy-io/react-auth", () => ({ usePrivy: () => ({ ready: true, authenticated: true, ...auth }) }));
+vi.mock("@/features/auth/client/auth-fallback", () => ({ usePrivy: () => ({ ready: true, authenticated: true, ...auth }) }));
 vi.mock("./use-community-stamps", () => ({ communityStampAction: action }));
 
 import { SharePassport } from "./share-passport";

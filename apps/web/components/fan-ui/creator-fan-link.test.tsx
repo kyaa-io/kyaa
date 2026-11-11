@@ -5,7 +5,7 @@ import { notifyFanActivityUpdated } from "./fan-activity-updates";
 let authenticated = true;
 let ownerId = "owner";
 const getAccessToken = vi.fn(async () => "token");
-vi.mock("@privy-io/react-auth", () => ({ usePrivy: () => ({ ready: true, authenticated, user: { id: ownerId }, getAccessToken }) }));
+vi.mock("@/features/auth/client/auth-fallback", () => ({ usePrivy: () => ({ ready: true, authenticated, user: { id: ownerId }, getAccessToken }) }));
 const summary = (verified: boolean, slug = "elina") => verified ? [{ celebrity: { slug }, score: { level: "Bronze", points: 0 } }] : [];
 beforeEach(() => { authenticated = true; ownerId = "owner"; vi.unstubAllGlobals(); });
 it("does not call a reaction-only relationship completed fan verification", async () => {

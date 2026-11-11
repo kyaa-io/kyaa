@@ -9,7 +9,7 @@ const context = vi.hoisted(() => ({
   auth: { ready: true, authenticated: true, user: { id: "owner-a" }, getAccessToken: vi.fn(async () => "token-a") },
   session: { ready: true, ownerId: "owner-a", generation: 1 },
 }));
-vi.mock("@privy-io/react-auth", () => ({ usePrivy: () => context.auth }));
+vi.mock("@/features/auth/client/auth-fallback", () => ({ usePrivy: () => context.auth }));
 vi.mock("@/components/byus-session-provider", () => ({ useByUsSession: () => context.session }));
 const navigation = vi.hoisted(() => ({ push: vi.fn() }));
 vi.mock("next/navigation", async (importOriginal) => ({ ...await importOriginal<typeof import("next/navigation")>(), useRouter: () => ({ push: navigation.push, replace: vi.fn(), prefetch: vi.fn(), back: vi.fn(), refresh: vi.fn() }) }));

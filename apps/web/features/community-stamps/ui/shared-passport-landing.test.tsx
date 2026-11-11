@@ -6,7 +6,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 const auth = vi.hoisted(() => ({ ready: true, authenticated: true, user: { id: "visitor-a" } as { id: string } | undefined, getAccessToken: vi.fn<() => Promise<string | null>>().mockResolvedValue("token") }));
 const action = vi.hoisted(() => vi.fn());
 const push = vi.hoisted(() => vi.fn());
-vi.mock("@privy-io/react-auth", () => ({ usePrivy: () => auth }));
+vi.mock("@/features/auth/client/auth-fallback", () => ({ usePrivy: () => auth }));
 vi.mock("./use-community-stamps", () => ({ communityStampAction: action }));
 vi.mock("next/image", () => ({ default: (props: ImgHTMLAttributes<HTMLImageElement>) => <img {...props} alt={props.alt ?? ""} /> }));
 vi.mock("next/navigation", () => ({ useRouter: () => ({ push }) }));

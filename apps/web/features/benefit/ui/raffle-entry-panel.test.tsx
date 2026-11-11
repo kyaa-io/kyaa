@@ -8,7 +8,7 @@ import type { RaffleList } from "../domain/raffle";
 const submit = vi.fn();
 const retry = vi.fn();
 
-vi.mock("@privy-io/react-auth", () => ({
+vi.mock("@/features/auth/client/auth-fallback", () => ({
   usePrivy: () => ({ ready: true, authenticated: true, user: { id: "owner-a" }, getAccessToken: vi.fn() }),
 }));
 

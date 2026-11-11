@@ -1,5 +1,6 @@
 "use client";
-import { usePrivy } from "@/features/auth/client/privy-backend";
+import { usePrivy as useFallbackAuth, type ByUsAuth, type ByUsAuthUser } from "./auth-fallback";
+import { openLoginPage } from "./open-login-page";
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { withRequestDeadline } from "@/features/reliability/client/request-deadline";
 
@@ -46,19 +47,20 @@ export function CognitoAuthProvider({children}:{children:ReactNode}){
   return <Context.Provider value={value}>{children}</Context.Provider>;
 }
 
+export type { ByUsAuth, ByUsAuthUser } from "./auth-fallback";
+
 /**
- * The app's one auth hook. With CognitoAuthProvider (every page since PRIVY-EXIT-0005) it reads kyaa's own server session
- * only: no Privy SDK state, token or network call decides sign-in. user.id is the member's identity key (did:privy:… for
- * members from before the move, kyaa:<uuid> after), the same value the server resolves from the Bearer token.
- * Without the provider (isolated component tests only) it returns the legacy SDK hook unchanged.
+ * The app's one auth hook. It reads kyaa's own server session only (Cognito sign-in, PRIVY-EXIT-0005): user.id is the
+ * member's identity key (did:privy:… for members from before the move, kyaa:<uuid> after), the same value the server
+ * resolves from the Bearer token. Without CognitoAuthProvider (isolated tests only) it returns the fallback state.
  */
-export function useByUsAuth(): ReturnType<typeof usePrivy>{
-  const privy=usePrivy(),cognito=useCognitoAuth();
+export function useByUsAuth(): ByUsAuth{
+  const fallback=useFallbackAuth(),cognito=useCognitoAuth();
   const {logout:cognitoLogout,session,loading,getAccessToken}=cognito;
   const logout=useCallback(async()=>{const destination=await cognitoLogout();if(destination)window.location.assign(destination);},[cognitoLogout]);
   const authenticated=session?.authenticated===true && session.walletLinked===true && typeof session.userId==="string";
   const userId=authenticated?session!.userId!:null;
-  const user=useMemo(()=>userId?{id:userId,linkedAccounts:[]} as unknown as NonNullable<ReturnType<typeof usePrivy>["user"]>:null,[userId]);
-  if(!cognito.enabled)return privy;
-  return {...privy,ready:!loading,authenticated,user,getAccessToken,logout};
+  const user=useMemo<ByUsAuthUser|null>(()=>userId?{id:userId,linkedAccounts:[]}:null,[userId]);
+  const auth=useMemo<ByUsAuth>(()=>({ready:!loading,authenticated,user,getAccessToken,logout,login:openLoginPage}),[authenticated,getAccessToken,loading,logout,user]);
+  return cognito.enabled?auth:fallback;
 }

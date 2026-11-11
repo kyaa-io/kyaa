@@ -8,7 +8,7 @@ const back = vi.fn();
 const explorerBaseUrl = "https://sepolia-explorer.giwa.io";
 const maskedHash = (value: string) => `${value.slice(0, 8)}…${value.slice(-6)}`;
 let locale = "ko";
-vi.mock("@privy-io/react-auth", () => ({ usePrivy: () => ({ ready: true, authenticated: true, user: { id: "did:privy:fan" }, getAccessToken }) }));
+vi.mock("@/features/auth/client/auth-fallback", () => ({ usePrivy: () => ({ ready: true, authenticated: true, user: { id: "did:privy:fan" }, getAccessToken }) }));
 vi.mock("next/navigation", () => ({ usePathname: () => "/passports", useRouter: () => ({ push, back }), useSearchParams: () => new URLSearchParams(`locale=${locale}`) }));
 
 const celebrity = { slug: "kara", name: "KARA", image: { url: "/images/guest-home/kara-card.jpg", alt: "KARA", position: "center" } };

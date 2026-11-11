@@ -2,7 +2,7 @@ import { cleanup, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { APP_LOCALES } from "@/i18n/locales";
 const state = vi.hoisted(() => ({ ready: true, authenticated: false, status: "ready", sessionReady: true, path: "/kyaa-wave-fanpage", replace: vi.fn(), query: "locale=ko&tab=friends", participation: null as null | { id: string; createdAt: string; displayName?: string } }));
-vi.mock("@privy-io/react-auth", () => ({ usePrivy: () => state }));
+vi.mock("@/features/auth/client/auth-fallback", () => ({ usePrivy: () => state }));
 vi.mock("@/components/byus-session-provider", () => ({ useByUsSession: () => ({ ready: state.sessionReady }) }));
 vi.mock("next/navigation", () => ({ useRouter: () => ({ replace: state.replace }), usePathname: () => state.path, useSearchParams: () => new URLSearchParams(state.query) }));
 vi.mock("@/components/fan-shell/fan-app-shell", () => ({ FanAppFrame: ({ children }: { children: React.ReactNode }) => <>{children}</>, FanContentContainer: ({ children }: { children: React.ReactNode }) => <main>{children}</main> }));

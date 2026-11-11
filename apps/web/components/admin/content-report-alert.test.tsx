@@ -4,7 +4,7 @@ import { afterEach, expect, it, vi } from "vitest";
 import { ContentReportAlert } from "./content-report-alert";
 const retry = vi.fn();
 let refreshFailed = false;
-vi.mock("@privy-io/react-auth", () => ({ usePrivy: () => ({}) }));
+vi.mock("@/features/auth/client/auth-fallback", () => ({ usePrivy: () => ({}) }));
 vi.mock("../fan-ui/use-owned-fan-resource", () => ({ useOwnedFanResource: () => ({ retry, refreshFailed, state: { status: "ready", data: { openCount: 3, overdueCount: 1, oldestDueAt: null } } }) }));
 afterEach(() => { vi.useRealTimers(); retry.mockClear(); refreshFailed = false; });
 it("shows pending and overdue reports and refreshes on focus and each minute", () => {

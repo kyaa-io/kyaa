@@ -3,7 +3,7 @@ import { expect, it, vi } from "vitest";
 import { useContentMutation } from "./use-content-mutation";
 
 const auth = vi.hoisted(() => ({ ready: true, authenticated: true, user: { id: "owner" }, getAccessToken: vi.fn(async () => "token") }));
-vi.mock("@privy-io/react-auth", () => ({ usePrivy: () => auth }));
+vi.mock("@/features/auth/client/auth-fallback", () => ({ usePrivy: () => auth }));
 vi.mock("@/components/byus-session-provider", () => ({ useByUsSession: () => ({ ready: true, ownerId: "owner", generation: 0 }) }));
 
 it("posts a comment without throwIfAborted and still stops after unmount", async () => {

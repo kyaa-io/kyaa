@@ -5,7 +5,7 @@ import { APP_LOCALES } from "@/i18n/locales";
 import { cheerEventCopy } from "../domain/cheer-event-copy";
 let ready = true, authenticated = true;
 const getAccessToken = vi.fn(async () => "token");
-vi.mock("@privy-io/react-auth", () => ({ usePrivy: () => ({ ready, authenticated, user: authenticated ? { id: "owner" } : null, getAccessToken }) }));
+vi.mock("@/features/auth/client/auth-fallback", () => ({ usePrivy: () => ({ ready, authenticated, user: authenticated ? { id: "owner" } : null, getAccessToken }) }));
 vi.mock("@/components/byus-session-provider", () => ({ useByUsSession: () => ({ ready, ownerId: authenticated ? "owner" : null, generation: 0 }) }));
 const event: CheerEvent = {
   campaignId: "d7000000-0000-4000-8000-000000000001", creatorSlug: "changha", liveEventId: "d7000000-0000-4000-8000-000000000002", liveSlug: "changha-wave", liveStartsAt: "2026-10-22T10:45:00Z", reservationOpensAt: "2026-10-18T00:00:00Z", reservationClosesAt: "2026-10-22T10:45:00Z", reservationAvailable: true, entryOpensAt: "2026-10-18T00:00:00Z", entryClosesAt: "2026-10-22T10:00:00Z", status: "open", participation: null,

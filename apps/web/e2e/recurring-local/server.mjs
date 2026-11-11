@@ -10,7 +10,7 @@ export async function startHarness({ port = 4194 } = {}) {
     resolve: { alias: [
       { find: "@", replacement: web },
       ...["next/link", "next/image", "next/navigation", "server-only"].map(name => ({ find: name, replacement: path.join(web, "e2e/mission-local", { "next/link": "next-link.tsx", "next/image": "next-image.tsx", "next/navigation": "next-navigation.ts", "server-only": "server-only.ts" }[name]) })),
-      { find: "@privy-io/react-auth", replacement: path.join(here, "privy.ts") },
+      { find: /^.*\/auth-fallback$/, replacement: path.join(here, "privy.ts") },
     ] },
     server: { host: "127.0.0.1", port, strictPort: true, fs: { allow: [web, path.resolve(web, "../../node_modules")] } },
     define: { "process.env.NEXT_PUBLIC_APP_URL": JSON.stringify(`http://localhost:${port}`) },

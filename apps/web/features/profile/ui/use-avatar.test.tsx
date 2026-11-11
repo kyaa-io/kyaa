@@ -11,7 +11,7 @@ const { auth, getAccessToken } = vi.hoisted(() => ({
   getAccessToken: vi.fn(async () => "token" as string | null),
 }));
 
-vi.mock("@privy-io/react-auth", () => ({
+vi.mock("@/features/auth/client/auth-fallback", () => ({
   usePrivy: () => ({ ...auth, getAccessToken }),
 }));
 

@@ -34,7 +34,7 @@ vi.mock("@/features/rankings/ui/use-ranking-resource", async () => {
   return { ...actual, useRankingResource: (url: string, parse: (value: unknown) => unknown) => url.startsWith("/api/rankings/creators") ? actual.useRankingResource(url, parse) : challenges };
 });
 
-vi.mock("@privy-io/react-auth", () => ({
+vi.mock("@/features/auth/client/auth-fallback", () => ({
   usePrivy: () => privy,
 }));
 

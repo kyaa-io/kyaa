@@ -20,7 +20,7 @@ const replace = vi.fn();
 const router = { replace };
 const getAccessToken = vi.fn().mockResolvedValue("access-token");
 
-vi.mock("@privy-io/react-auth", () => ({
+vi.mock("@/features/auth/client/auth-fallback", () => ({
   usePrivy: () => ({ ready: true, authenticated: authState.authenticated, user: authState.user, getAccessToken, logout }),
 }));
 vi.mock("@/components/byus-session-provider", () => ({ useByUsSession: () => sessionState }));

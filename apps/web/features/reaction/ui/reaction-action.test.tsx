@@ -14,7 +14,7 @@ const privy = vi.hoisted(() => ({
   unstableTokenIdentity: false,
 }));
 
-vi.mock("@privy-io/react-auth", () => ({ usePrivy: () => ({ ...privy, getAccessToken: privy.unstableTokenIdentity ? () => privy.getAccessToken() : privy.getAccessToken }) }));
+vi.mock("@/features/auth/client/auth-fallback", () => ({ usePrivy: () => ({ ...privy, getAccessToken: privy.unstableTokenIdentity ? () => privy.getAccessToken() : privy.getAccessToken }) }));
 vi.mock("next/navigation", () => ({ useRouter: () => ({ push: vi.fn() }) }));
 
 const reactionId = "11111111-1111-4111-8111-111111111111";

@@ -6,7 +6,7 @@ import { APP_LOCALES } from "@/i18n/locales";
 
 const state = vi.hoisted(() => ({ query: "tab=board&section=media&locale=ko", failure: "", allEmpty: false, manyVideos: false, liveVideo:false, channelLive:false, tiktok:false, sdkReady: true, sessionReady: true, officialAuth: undefined as undefined | { ready: boolean; getToken: () => Promise<string | null> }, replace: vi.fn(), more: vi.fn(), sources: vi.fn() }));
 vi.mock("next/navigation", () => ({ usePathname: () => "/elina", useSearchParams: () => new URLSearchParams(state.query), useRouter: () => ({ replace: state.replace }) }));
-vi.mock("@privy-io/react-auth", () => ({ usePrivy: () => ({ ready: state.sdkReady, authenticated: false }) }));
+vi.mock("@/features/auth/client/auth-fallback", () => ({ usePrivy: () => ({ ready: state.sdkReady, authenticated: false }) }));
 vi.mock("@/components/byus-session-provider", () => ({ useByUsSession: () => ({ ready: state.sessionReady, generation: 0 }) }));
 vi.mock("@/features/fanpage/ui/use-news-source", () => ({ useNewsSource: (url: string | null, _parse: unknown, _key: unknown, auth?: typeof state.officialAuth) => {
   state.sources(url);

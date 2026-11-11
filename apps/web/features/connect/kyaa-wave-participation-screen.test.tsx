@@ -9,7 +9,7 @@ const { auth, session, navigation } = vi.hoisted(() => ({
   session: { ready: true, ownerId: "owner" as string | null, generation: 0 },
   navigation: { pathname: "/connect/kyaa-wave/participate", params: new URLSearchParams("code=ABCD23&locale=ko"), replace: vi.fn() },
 }));
-vi.mock("@privy-io/react-auth", () => ({ usePrivy: () => auth }));
+vi.mock("@/features/auth/client/auth-fallback", () => ({ usePrivy: () => auth }));
 vi.mock("@/components/byus-session-provider", () => ({ useByUsSession: () => session }));
 vi.mock("@/components/locale-provider", () => ({ usePageLocale: () => navigation.params.get("locale") ?? "ko" }));
 vi.mock("next/navigation", () => ({ usePathname: () => navigation.pathname, useSearchParams: () => navigation.params, useRouter: () => navigation }));

@@ -43,7 +43,7 @@ const { avatarOwner, sessionState } = vi.hoisted(() => ({
   sessionState: { ready: true, pending: false, ownerId: null as string | null, generation: 0, authenticated: true },
 }));
 
-vi.mock("@privy-io/react-auth", () => ({
+vi.mock("@/features/auth/client/auth-fallback", () => ({
   usePrivy: () => ({ ready: true, authenticated: sessionState.authenticated, user: avatarOwner.id ? { id: avatarOwner.id } : undefined, getAccessToken }),
 }));
 vi.mock("@/components/byus-session-provider", () => ({ useByUsSession: () => sessionState }));

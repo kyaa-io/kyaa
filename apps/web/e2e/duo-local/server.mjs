@@ -9,7 +9,7 @@ const server=await createServer({configFile:false,root:here,publicDir:path.join(
  {find:/.*use-admin-session$/,replacement:path.join(shared,'auth.ts')},
  {find:/.*use-selected-bias$/,replacement:path.join(here,'bias.ts')},
  ...['navigation','link','image'].map(name=>({find:'next/'+name,replacement:path.join(shared,name+(name==='navigation'?'.ts':'.tsx'))})),
- {find:'@privy-io/react-auth',replacement:path.join(shared,'auth.ts')},
+ {find: /^.*\/auth-fallback$/,replacement:path.join(shared,'auth.ts')},
  {find:'server-only',replacement:path.join(shared,'server-only.ts')},{find:'@',replacement:web},
 ]},server:{host:'127.0.0.1',port:5198,strictPort:true,hmr:false,fs:{allow:[path.resolve(web,'../..')]}}});
 await server.listen();console.log('DUO fixture: http://127.0.0.1:5198/benefits?locale=ko');

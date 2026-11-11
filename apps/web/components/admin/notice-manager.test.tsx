@@ -18,7 +18,7 @@ const editor = {
     }),
   }),
 };
-vi.mock("@privy-io/react-auth", () => ({ usePrivy: () => ({ getAccessToken }) }));
+vi.mock("@/features/auth/client/auth-fallback", () => ({ usePrivy: () => ({ getAccessToken }) }));
 vi.mock("@tiptap/react", () => ({
   useEditor: (options: { editable: boolean }) => ({ ...editor, isEditable: options.editable }),
   EditorContent: () => <div data-testid="editor" />,

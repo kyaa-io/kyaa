@@ -8,7 +8,7 @@ import { GroupsReleaseProvider } from "@/features/groups/ui/groups-release";
 let authenticated=true;
 let owner="owner-a";
 const getAccessToken=vi.fn(async()=>"token");
-vi.mock("@privy-io/react-auth",()=>({usePrivy:()=>({ready:true,authenticated,user:{id:owner},getAccessToken,login:vi.fn()})}));
+vi.mock("@/features/auth/client/auth-fallback",()=>({usePrivy:()=>({ready:true,authenticated,user:{id:owner},getAccessToken,login:vi.fn()})}));
 beforeEach(()=>{authenticated=true;owner="owner-a";getAccessToken.mockReset().mockResolvedValue("token");vi.unstubAllGlobals();});
 it("keeps a locale-preserving return route for guests without showing a raw slug",()=>{
  authenticated=false;vi.stubGlobal("fetch",vi.fn(async()=>new Response(null,{status:404})));

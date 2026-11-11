@@ -8,7 +8,7 @@ import { installResourceWriteWatch } from "@/components/fan-ui/resource-cache";
 
 // One token getter for every render, as in the real SDK; a new one per render re-runs every keyed request forever.
 const getAccessToken = async () => "token";
-vi.mock("@privy-io/react-auth", () => ({ usePrivy: () => ({ ready: true, authenticated: true, user: { id: "viewer" }, getAccessToken }) }));
+vi.mock("@/features/auth/client/auth-fallback", () => ({ usePrivy: () => ({ ready: true, authenticated: true, user: { id: "viewer" }, getAccessToken }) }));
 vi.mock("@/components/byus-session-provider", () => ({ useByUsSession: () => ({ ready: true, ownerId: "viewer", generation: 0 }) }));
 vi.mock("next/navigation", () => ({ useRouter: () => ({ replace: vi.fn() }), useSearchParams: () => new URLSearchParams() }));
 

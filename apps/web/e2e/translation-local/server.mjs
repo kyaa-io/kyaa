@@ -28,7 +28,7 @@ export async function createTranslationFixtureServer(port = 4217) {
       { find: "@/features/auth/client/cognito-auth", replacement: path.join(here, "../community-stamps-local/privy.ts") },
       { find: "next/navigation", replacement: path.join(here, "../community-stamps-local/next-navigation.ts") },
       { find: "@", replacement: web },
-      { find: "@privy-io/react-auth", replacement: path.join(here, "../community-stamps-local/privy.ts") },
+      { find: /^.*\/auth-fallback$/, replacement: path.join(here, "../community-stamps-local/privy.ts") },
       { find: "next/link", replacement: path.join(here, "../mission-local/next-link.tsx") },
     ] }, server: { host: "127.0.0.1", port, strictPort: true, fs: { allow: [root] } } });
 }

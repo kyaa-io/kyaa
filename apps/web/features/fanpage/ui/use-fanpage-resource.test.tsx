@@ -6,7 +6,7 @@ let authenticated = true;
 let unstableTokenIdentity = false;
 const getAccessToken = vi.fn(async () => "token");
 const session = { ready: true, pending: false, ownerId: null as string | null, generation: 0, error: null as string | null, retryTransition: vi.fn(async () => {}) };
-vi.mock("@privy-io/react-auth", () => ({ usePrivy: () => ({ ready: true, authenticated, user: { id: owner }, getAccessToken: unstableTokenIdentity ? () => getAccessToken() : getAccessToken }) }));
+vi.mock("@/features/auth/client/auth-fallback", () => ({ usePrivy: () => ({ ready: true, authenticated, user: { id: owner }, getAccessToken: unstableTokenIdentity ? () => getAccessToken() : getAccessToken }) }));
 vi.mock("@/components/byus-session-provider", () => ({ useByUsSession: () => session }));
 const parse = (value: unknown) => value as { name: string };
 beforeEach(() => { owner = "a"; authenticated = true; unstableTokenIdentity = false; Object.assign(session, { ready: true, pending: false, ownerId: null, generation: 0, error: null }); session.retryTransition.mockClear(); getAccessToken.mockReset().mockResolvedValue("token"); vi.unstubAllGlobals(); });

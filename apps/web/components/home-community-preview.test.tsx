@@ -8,7 +8,7 @@ const auth = vi.hoisted(() => ({ ready: true, authenticated: false, user: { id: 
 const session = vi.hoisted(() => ({ ready: true, ownerId: "owner-a", generation: 0 }));
 // B6: which author names open a profile is asked separately; these tests are about the rows.
 vi.mock("@/features/group-social/profile-window", () => ({ ProfileAuthor: ({ children }: { children: unknown }) => children }));
-vi.mock("@privy-io/react-auth", () => ({ usePrivy: () => auth }));
+vi.mock("@/features/auth/client/auth-fallback", () => ({ usePrivy: () => auth }));
 vi.mock("@/components/byus-session-provider", () => ({ useByUsSession: () => session }));
 const uuid = (n: number) => `11111111-1111-4111-8111-${String(n).padStart(12, "0")}`;
 const post = (n: number, title: string, extra: Record<string, unknown> = {}) => ({ source: "fan", id: uuid(n), pageRef: "elina", pageName: "엘리나", title, nickname: "팬", createdAt: "2026-10-19T01:00:00Z", likeCount: 0, commentCount: 0, viewCount: null, asset: null, ...extra });

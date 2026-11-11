@@ -3,7 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { contentCopy } from "@/i18n/catalogs/features__fan_posts__ui";
 import { FanPostFeed } from "./fan-post-feed";
 const state = vi.hoisted(() => ({ authenticated: true, failWrite: false }));
-vi.mock("@privy-io/react-auth", () => ({ usePrivy: () => ({ ready: true, authenticated: state.authenticated, user: { id: "viewer" }, getAccessToken: async () => "token" }) }));
+vi.mock("@/features/auth/client/auth-fallback", () => ({ usePrivy: () => ({ ready: true, authenticated: state.authenticated, user: { id: "viewer" }, getAccessToken: async () => "token" }) }));
 vi.mock("@/components/byus-session-provider", () => ({ useByUsSession: () => ({ ready: true, ownerId: "viewer", generation: 0 }) }));
 vi.mock("@/features/content-safety/ui/content-actions", () => ({ ContentActions: () => null, ContentTranslation: ({ children }: { children: React.ReactNode }) => children }));
 const endpoint = "/api/celebrities/kyaa-wave-fanpage/programs/wave-quiz/posts";

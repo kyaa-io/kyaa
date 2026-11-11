@@ -3,7 +3,7 @@ import { beforeEach, expect, it, vi } from "vitest";
 import { AuthorizedBenefitManager } from "./benefit-manager";
 const token = vi.hoisted(() => vi.fn(async () => "admin-token"));
 const routeLocale = vi.hoisted(() => ({ value: "ko" }));
-vi.mock("@privy-io/react-auth", () => ({ usePrivy: () => ({ getAccessToken: token }) }));
+vi.mock("@/features/auth/client/auth-fallback", () => ({ usePrivy: () => ({ getAccessToken: token }) }));
 vi.mock("next/navigation", () => ({ useSearchParams: () => new URLSearchParams(`lang=${routeLocale.value}`) }));
 vi.mock("./use-admin-session", () => ({ useAdminSession: () => ({status:"authorized",admin:{email:"admin@example.test",role:"admin"}}) }));
 vi.mock("./operations-shell", () => ({ AdminOperationsShell: ({children}: {children: React.ReactNode}) => <div>{children}</div> }));

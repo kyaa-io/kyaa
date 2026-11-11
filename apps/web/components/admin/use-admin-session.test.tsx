@@ -5,7 +5,7 @@ import { useAdminSession } from "./use-admin-session";
 const getAccessToken = vi.fn();
 let privyState: { ready: boolean; authenticated: boolean; user?: { id: string } } = { ready: true, authenticated: true };
 
-vi.mock("@privy-io/react-auth", () => ({
+vi.mock("@/features/auth/client/auth-fallback", () => ({
   usePrivy: () => ({ ...privyState, getAccessToken }),
 }));
 

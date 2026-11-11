@@ -10,7 +10,7 @@ export async function startHarness(port = 4197) {
   { find: /.*\/use-admin-session$/, replacement: path.join(here, 'admin-session.ts') },
   { find: 'next/navigation', replacement: path.join(here, 'navigation.ts') },
   { find: /.*features\/auth\/client\/cognito-auth$/, replacement: path.join(here, 'privy.ts') },
-  { find: '@privy-io/react-auth', replacement: path.join(here, 'privy.ts') },
+  { find: /^.*\/auth-fallback$/, replacement: path.join(here, 'privy.ts') },
   { find: '@', replacement: web },
   ...['link', 'image'].map(name => ({ find: `next/${name}`, replacement: path.join(here, `../mission-local/next-${name}.tsx`) })),
  ] }, server: { host: '127.0.0.1', port, strictPort: true, fs: { allow: [web, realpathSync(path.resolve(web, '../../node_modules')), realpathSync(path.join(web, 'node_modules'))] } } });

@@ -10,7 +10,7 @@ export async function startHarness(port=3128) {
  {find:/.*use-admin-session$/,replacement:path.join(here,'admin.ts')},
  {find:'@',replacement:web},{find:'server-only',replacement:path.join(here,'../lounge-local/server-only.ts')},
  {find:'next/navigation',replacement:path.join(here,'navigation.ts')},
- {find:'@privy-io/react-auth',replacement:path.join(here,'../kyaa-wave-participation-local/privy.ts')},
+ {find: /^.*\/auth-fallback$/,replacement:path.join(here,'../kyaa-wave-participation-local/privy.ts')},
  ...['link','image'].map(name=>({find:`next/${name}`,replacement:path.join(here,`../mission-local/next-${name}.tsx`)}))]},server:{host:'127.0.0.1',port,strictPort:true,fs:{allow:[path.resolve(web,'../..')]}}});
  await server.listen();return {server,baseURL:`http://127.0.0.1:${port}`};
 }

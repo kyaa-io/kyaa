@@ -2,7 +2,7 @@ import { fireEvent, render, screen, waitFor, within } from "@testing-library/rea
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { AdminOverviewData } from "../domain/admin-overview";
 const auth = vi.hoisted(() => ({ session: "authorized", email: "admin@example.invalid", getAccessToken: vi.fn(async () => "token") }));
-vi.mock("@privy-io/react-auth", () => ({ usePrivy: () => ({ getAccessToken: auth.getAccessToken }) }));
+vi.mock("@/features/auth/client/auth-fallback", () => ({ usePrivy: () => ({ getAccessToken: auth.getAccessToken }) }));
 vi.mock("../../../components/admin/use-admin-session", () => ({ useAdminSession: () => ({ status: auth.session, admin: { email: auth.email, role: "admin" } }) }));
 vi.mock("next/navigation", () => ({ usePathname: () => "/admin", useSearchParams: () => new URLSearchParams(), useRouter: () => ({ replace: vi.fn() }) }));
 import { AdminOverviewContent, AdminOverviewDashboard } from "./admin-overview-dashboard";

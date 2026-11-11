@@ -3,34 +3,19 @@ import { act, fireEvent, render as rtlRender, screen, waitFor, within } from "@t
 import { StrictMode, type ReactElement } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { LoginPage } from "./login-page";
-import { createOAuthStartGuard, getOAuthStartGuard } from "../features/reliability/client/oauth-start";
 import { signupFunnelTracker } from "../features/analytics/client/signup-funnel-tracker";
 import { ByUsSessionProvider } from "./byus-session-provider";
 import * as sessionModule from "./byus-session-provider";
 import { CognitoAuthProvider } from "../features/auth/client/cognito-auth";
 
-vi.mock("../features/reliability/client/oauth-start", async (importOriginal) => ({
-  ...await importOriginal<typeof import("../features/reliability/client/oauth-start")>(),
-  getOAuthStartGuard: vi.fn(),
-}));
-
-const login = vi.fn();
-const initOAuth = vi.fn();
 const replace = vi.fn();
 const back = vi.fn();
-let onComplete: ((result?: { user: { id: string } }) => void) | undefined;
-let onError: (() => void) | undefined;
-let onOAuthComplete: ((result?: { user: { id: string } }) => void) | undefined;
+const assign = vi.fn();
 const getAccessToken = vi.fn();
-const createWallet = vi.fn();
-const refreshUser = vi.fn();
 let currentUserId = "restored-fan";
-const embeddedWallet = { type: "wallet", chainType: "ethereum", connectorType: "embedded", walletClientType: "privy", address: "0x1111111111111111111111111111111111111111" };
 const logout = vi.fn();
 let authenticated = false;
-let authenticateAfterCallback = true;
 let ready = true;
-let oauthLoading = false;
 let query = "returnTo=%2Flive%2Fkara-nualeaf&intent=reserve";
 const markAvatarSessionReady = vi.fn();
 
@@ -39,20 +24,9 @@ vi.mock("./avatar-session-bridge", () => ({
   useAvatarSessionReset: () => vi.fn(),
 }));
 
-vi.mock("@privy-io/react-auth", () => ({
-  useSubscribeToJwtAuthWithFlag: vi.fn(),
-  usePrivy: () => ({ ready, authenticated, getAccessToken, logout, user: authenticated ? { id: currentUserId } : null }),
-  useCreateWallet: () => ({ createWallet }),
-  useUser: () => ({ refreshUser }),
-  useLogin: (callbacks: { onComplete?: (result: { user: { id: string } }) => void; onError?: () => void }) => {
-    onComplete = (result = { user: { id: "callback-fan" } }) => { currentUserId = result.user.id; const value = callbacks.onComplete?.(result); if (authenticateAfterCallback) authenticated = true; return value; };
-    onError = callbacks.onError;
-    return { login };
-  },
-  useLoginWithOAuth: (callbacks: { onComplete?: (result: { user: { id: string } }) => void; onError?: () => void }) => {
-    onOAuthComplete = (result = { user: { id: "oauth-fan" } }) => { currentUserId = result.user.id; const value = callbacks.onComplete?.(result); if (authenticateAfterCallback) authenticated = true; return value; };
-    return { initOAuth, loading: oauthLoading, state: { status: "initial" } };
-  },
+// The login page reads kyaa's server session through useByUsAuth; without CognitoAuthProvider that is the fallback hook.
+vi.mock("@/features/auth/client/auth-fallback", () => ({
+  usePrivy: () => ({ ready, authenticated, getAccessToken, logout, login: vi.fn(), user: authenticated ? { id: currentUserId, linkedAccounts: [] } : null }),
 }));
 
 vi.mock("next/navigation", () => ({
@@ -70,24 +44,7 @@ function render(ui: ReactElement) {
   };
 }
 
-describe("Privy login page", () => {
-  it.each([["카카오로 계속하기", "custom:kakao"], ["위챗으로 계속하기", "custom:wechat"]])("starts the configured %s login", async (name, provider) => {
-    render(<LoginPage kakaoLoginEnabled wechatLoginEnabled />);
-    fireEvent.click(screen.getByRole("button", { name }));
-    await waitFor(() => expect(initOAuth).toHaveBeenCalledWith({ provider }));
-  });
-
-  it.each([["LINE으로 계속하기", "line"], ["Facebook으로 계속하기", "custom:facebook"], ["네이버로 계속하기", "custom:naver"]])("reveals and starts only the configured %s method", async (name, provider) => {
-    render(<LoginPage lineLoginEnabled facebookLoginEnabled naverLoginEnabled />);
-    expect(screen.queryByRole("button", { name })).not.toBeInTheDocument();
-    const trigger = screen.getByRole("button", { name: "다른 방법으로 로그인" });
-    expect(trigger).toHaveAttribute("aria-expanded", "false");
-    fireEvent.click(trigger); expect(trigger).toHaveAttribute("aria-expanded", "true");
-    expect(document.getElementById(trigger.getAttribute("aria-controls")!)).toBeVisible();
-    fireEvent.click(screen.getByRole("button", { name }));
-    await waitFor(() => expect(initOAuth).toHaveBeenCalledWith({ provider }));
-    expect(signupFunnelTracker.pendingLogin()?.provider).toBe(provider.replace("custom:", ""));
-  });
+describe("login page (Cognito)", () => {
   it("keeps the shared header language switch on the standalone login page (N19)", () => {
     render(<LoginPage />);
     const switches = document.querySelectorAll("[data-language-switch]");
@@ -100,21 +57,54 @@ describe("Privy login page", () => {
     expect(dialog.querySelectorAll("[data-language-switch]")).toHaveLength(1);
     expect(within(dialog).getByRole("button", { name: "로그인 창 닫기" })).toBeInTheDocument();
   });
-  it("shows no secondary-method disclosure when none are enabled", () => {
-    render(<LoginPage kakaoLoginEnabled wechatLoginEnabled />);
-    expect(screen.queryByRole("button", { name: "다른 방법으로 로그인" })).not.toBeInTheDocument();
-  });
-  it("hides every regional method in Cognito mode", async () => {
-    rtlRender(<CognitoAuthProvider><ByUsSessionProvider><LoginPage kakaoLoginEnabled wechatLoginEnabled lineLoginEnabled facebookLoginEnabled naverLoginEnabled /></ByUsSessionProvider></CognitoAuthProvider>);
-    await screen.findByRole("button", { name: "Google로 계속하기" });
-    expect(screen.queryByRole("button", { name: "다른 방법으로 로그인" })).not.toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: "카카오로 계속하기" })).not.toBeInTheDocument();
+  it("offers only Google by default, with Apple and Kakao behind their settings and no Privy-only method", () => {
+    render(<LoginPage />);
+    expect(screen.getByRole("button", { name: /Google로 계속하기/ })).toBeEnabled();
+    for (const name of ["카카오로 계속하기", "위챗으로 계속하기", /Apple로 계속하기/, /Test Account/]) expect(screen.queryByRole("button", { name })).not.toBeInTheDocument();
   });
 
-  it("hides custom login methods until enabled", () => {
+  it.each([
+    ["google", /Google로 계속하기/, {}],
+    ["apple", /Apple로 계속하기/, { appleLoginEnabled: true }],
+    ["kakao", "카카오로 계속하기", { cognitoKakaoEnabled: true }],
+  ] as const)("starts %s through the Cognito start route with the sanitized return and locale, once", async (provider, name, props) => {
+    const begin = vi.spyOn(signupFunnelTracker, "beginLogin");
+    query = "returnTo=%2Fmy%3Ftab%3Dstamps&locale=ko";
+    render(<LoginPage {...props} />);
+    const button = screen.getByRole("button", { name });
+    fireEvent.click(button);
+    fireEvent.click(button);
+    expect(assign).toHaveBeenCalledOnce();
+    const destination = new URL(String(assign.mock.calls[0]![0]));
+    expect(destination.pathname).toBe("/api/auth/cognito/start");
+    expect(Object.fromEntries(destination.searchParams)).toEqual({ provider, returnTo: "/my?tab=stamps&locale=ko", locale: "ko" });
+    expect(begin).toHaveBeenCalledWith(provider, "provider", "ko");
+    expect(button).toBeDisabled();
+    begin.mockRestore();
+  });
+
+  it.each([
+    ["returnTo=%2Fc%2Fkara%2Fverify&intent=passport&entity=kara&locale=ko", false, "/onboarding/profile"],
+    ["returnTo=%2Fc%2Fkara%2Fverify&intent=passport&entity=kara&locale=ko", true, "/c/kara/verify?locale=ko"],
+    ["returnTo=%2Fmy&intent=reserve&locale=ko", false, "/my?locale=ko"],
+  ])("after a Cognito sign-in returns to the page or to profile onboarding only for fan verification (%s, completed=%s)", async (nextQuery, completed, path) => {
+    query = nextQuery;
+    authenticated = true;
+    currentUserId = "kyaa:7c9e6679-7425-40de-944b-e07fc1f90ae7";
+    vi.mocked(globalThis.fetch).mockResolvedValue(Response.json({ profile: { completed } }));
     render(<LoginPage />);
-    expect(screen.queryByRole("button", { name: "카카오로 계속하기" })).not.toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: "위챗으로 계속하기" })).not.toBeInTheDocument();
+    await waitFor(() => expect(replace.mock.calls.some(([value]) => String(value).startsWith(path))).toBe(true));
+    if (path === "/onboarding/profile") expect(replace).toHaveBeenCalledWith("/onboarding/profile?returnTo=%2Fc%2Fkara%2Fverify%3Flocale%3Dko&locale=ko&intent=passport&entity=kara");
+    expect(globalThis.fetch).toHaveBeenCalledWith("/api/auth/session", expect.objectContaining({ method: "POST", headers: expect.objectContaining({ authorization: "Bearer privy-access-token" }) }));
+    expect(markAvatarSessionReady).toHaveBeenCalledWith("kyaa:7c9e6679-7425-40de-944b-e07fc1f90ae7");
+  });
+
+  it("keeps a failed session sync recoverable and retries it", async () => {
+    authenticated = true;
+    vi.mocked(globalThis.fetch).mockResolvedValueOnce(new Response(null, { status: 503 })).mockResolvedValue(Response.json({ profile: { completed: true } }));
+    render(<LoginPage />);
+    fireEvent.click(await screen.findByRole("button", { name: "다시 시도" }));
+    await waitFor(() => expect(replace).toHaveBeenCalledWith("/live/kara-nualeaf?locale=ko"));
   });
 
   afterEach(() => {
@@ -124,7 +114,8 @@ describe("Privy login page", () => {
   });
 
   beforeEach(() => {
-    vi.mocked(getOAuthStartGuard).mockReturnValue(createOAuthStartGuard());
+    vi.stubGlobal("location", { ...window.location, assign, origin: window.location.origin, href: window.location.href });
+    assign.mockClear();
     Object.defineProperty(window, "matchMedia", {
       configurable: true,
       value: vi.fn().mockImplementation((query: string) => ({
@@ -138,44 +129,17 @@ describe("Privy login page", () => {
         dispatchEvent: vi.fn(),
       })),
     });
-    login.mockClear(); initOAuth.mockReset(); replace.mockClear(); back.mockClear();
-    initOAuth.mockResolvedValue(undefined);
+    replace.mockClear(); back.mockClear();
     markAvatarSessionReady.mockClear();
     currentUserId = "restored-fan";
-    createWallet.mockReset().mockResolvedValue(embeddedWallet);
-    refreshUser.mockReset().mockImplementation(async () => ({ id: currentUserId, linkedAccounts: [embeddedWallet] }));
     authenticated = false;
-    authenticateAfterCallback = true;
     ready = true;
-    oauthLoading = false;
     query = "returnTo=%2Flive%2Fkara-nualeaf&intent=reserve";
     getAccessToken.mockReset().mockResolvedValue("privy-access-token");
     logout.mockResolvedValue(undefined);
     logout.mockClear();
     vi.spyOn(globalThis, "fetch").mockResolvedValue(Response.json({ profile: { completed: true, nickname: "John" } }));
     vi.mocked(globalThis.fetch).mockClear();
-  });
-
-  it("does not start session synchronization from a legacy SDK callback without Cognito authentication", async () => {
-    vi.mocked(globalThis.fetch).mockResolvedValue(new Response(null, { status: 401 }));
-    rtlRender(<CognitoAuthProvider><ByUsSessionProvider><LoginPage /></ByUsSessionProvider></CognitoAuthProvider>);
-    await waitFor(() => expect(screen.getByRole("button", { name: /Google/ })).toBeEnabled());
-    await act(async () => { await onComplete?.({ user: { id: "legacy-owner" } }); });
-    expect(refreshUser).not.toHaveBeenCalled();
-    expect(getAccessToken).not.toHaveBeenCalled();
-    expect(replace).not.toHaveBeenCalled();
-  });
-
-  it("synchronizes a confirmed Cognito session through the authenticated snapshot", async () => {
-    authenticated = true;
-    vi.mocked(globalThis.fetch).mockImplementation(async (url) => String(url) === "/api/auth/cognito/session"
-      ? Response.json({ authenticated: true, walletLinked: true, userId: "did:privy:user", accessToken: "cognito-access", expiresAt: Date.now() + 600_000 })
-      : Response.json({ profile: { completed: true } }));
-    rtlRender(<CognitoAuthProvider><ByUsSessionProvider><LoginPage /></ByUsSessionProvider></CognitoAuthProvider>);
-    await waitFor(() => expect(replace).toHaveBeenCalledWith("/live/kara-nualeaf?locale=ko"));
-    // The server resolved the member and its wallet at sign-in: no Privy user refresh or wallet creation.
-    expect(refreshUser).not.toHaveBeenCalled();
-    expect(globalThis.fetch).toHaveBeenCalledWith("/api/auth/session", expect.objectContaining({ headers: expect.objectContaining({ authorization: "Bearer cognito-access" }) }));
   });
 
   it.each([
@@ -201,257 +165,12 @@ describe("Privy login page", () => {
     expect(String(assign.mock.calls[0]?.[0])).toContain("/api/auth/cognito/start?provider=kakao");
   });
 
-  it("returns a completed Google session to MY with locale and intent intact", async () => {
-    query = "returnTo=%2Fmy%3Flocale%3Dko%26authIntent%3D11111111-1111-4111-8111-111111111111&locale=ko&intent=passport&entity=collection";
-    render(<LoginPage />);
-    await act(async () => { await onComplete?.(); });
-    await waitFor(() => expect(replace).toHaveBeenCalledWith("/my?locale=ko&authIntent=11111111-1111-4111-8111-111111111111"));
-  });
-
-  it.each(["/ifewknow", "/c/ifewknow"])("returns a completed login to %s with reaction intent and anchor intact", async (path) => {
-    const destination = `${path}?locale=en&authIntent=11111111-1111-4111-8111-111111111111#first-reaction`;
-    query = new URLSearchParams({ returnTo: destination, locale: "en", entity: "ifewknow" }).toString();
-    render(<LoginPage />);
-    await act(async () => { await onComplete?.(); });
-    await waitFor(() => expect(replace).toHaveBeenCalledWith(destination));
-  });
-
-  it("hands off the callback user but waits to navigate until the SDK exposes that owner", async () => {
-    authenticateAfterCallback = false;
-    const view = render(<LoginPage />);
-    await act(async () => { await onComplete?.({ user: { id: "new-google-fan" } }); });
-    await waitFor(() => expect(markAvatarSessionReady).toHaveBeenCalledWith("new-google-fan"));
-    expect(authenticated).toBe(false);
-    expect(replace).not.toHaveBeenCalled();
-    authenticated = true;
-    view.rerender(<LoginPage />);
-    await waitFor(() => expect(replace).toHaveBeenCalledTimes(1));
-  });
-
   it("synchronizes normally through the Strict Mode setup-cleanup-setup cycle", async () => {
     authenticated = true;
     render(<StrictMode><LoginPage /></StrictMode>);
 
     await waitFor(() => expect(replace).toHaveBeenCalledWith("/live/kara-nualeaf?locale=ko"));
     expect(markAvatarSessionReady).toHaveBeenCalledWith("restored-fan");
-  });
-
-  it("shows a recoverable user-facing error when callback synchronization fails before authenticated state arrives", async () => {
-    authenticateAfterCallback = false;
-    vi.mocked(globalThis.fetch)
-      .mockRejectedValueOnce(new Error("private upstream detail"))
-      .mockResolvedValueOnce(Response.json({ profile: { completed: true, nickname: "John" } }));
-    const view = render(<LoginPage />);
-
-    await act(async () => { await onComplete?.({ user: { id: "new-google-fan" } }); });
-
-    expect(screen.getByRole("alert")).toHaveTextContent("로그인 정보를 안전하게 연결하지 못했어요.");
-    expect(screen.getByRole("alert")).not.toHaveTextContent("SESSION_SYNCHRONIZATION_FAILED");
-    expect(screen.getByRole("button", { name: "다시 시도" })).toBeEnabled();
-    authenticated = true;
-    view.rerender(<LoginPage />);
-    fireEvent.click(screen.getByRole("button", { name: "다시 시도" }));
-    await waitFor(() => expect(replace).toHaveBeenCalledWith("/live/kara-nualeaf?locale=ko"));
-    expect(fetch).toHaveBeenCalledTimes(2);
-  });
-
-  it("starts Google OAuth directly without opening the Privy login modal", () => {
-    render(<LoginPage />);
-    fireEvent.click(screen.getByRole("button", { name: /Google로 계속하기/ }));
-    expect(initOAuth).toHaveBeenCalledWith({ provider: "google" });
-    expect(login).not.toHaveBeenCalled();
-    expect(screen.queryByText(/Embedded Wallet과 Fan Passport/)).not.toBeInTheDocument();
-    expect(screen.queryByText(/로그인 후 .* 돌아갑니다/)).not.toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: /Test Account 이메일/ })).not.toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: "최애와 함께한 순간을 기록하세요." }).closest("[data-fan-surface]")).toHaveAttribute("lang", "ko");
-    expect(screen.getByText("© 2026 kyaa. All rights reserved.")).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "개인정보처리방침 열기" })).toHaveAttribute("href", "/privacy?locale=ko");
-    expect(screen.getByRole("link", { name: "이용약관 열기" })).toHaveAttribute("href", "/terms?locale=ko");
-    expect(document.querySelector("picture[data-decorative-background] img")).toHaveAttribute("alt", "");
-    expect(screen.getByRole("img", { name: "펼쳐진 팬 패스포트" })).toBeInTheDocument();
-    expect(document.querySelector("[data-login-layout='passport-gateway']")).toBeInTheDocument();
-    expect(screen.getByText("YOUR FAN PASSPORT")).toBeInTheDocument();
-  });
-
-  it("shows Apple only behind the readiness flag and starts Apple OAuth directly", () => {
-    const { rerender } = render(<LoginPage />);
-    expect(screen.queryByRole("button", { name: /Apple로 계속하기/ })).not.toBeInTheDocument();
-
-    rerender(<LoginPage appleLoginEnabled />);
-    fireEvent.click(screen.getByRole("button", { name: /Apple로 계속하기/ }));
-    expect(initOAuth).toHaveBeenLastCalledWith({ provider: "apple" });
-    expect(login).not.toHaveBeenCalled();
-  });
-
-  it("synchronizes the completed headless OAuth user through the existing return path", async () => {
-    query = "returnTo=%2Fmy%3Flocale%3Dko&locale=ko";
-    render(<LoginPage />);
-
-    await act(async () => { await onOAuthComplete?.({ user: { id: "direct-google-fan" } }); });
-
-    await waitFor(() => expect(markAvatarSessionReady).toHaveBeenCalledWith("direct-google-fan"));
-    expect(replace).toHaveBeenCalledWith("/my?locale=ko");
-  });
-
-  it("prepares a new user's wallet before synchronizing and shares callback/effect work", async () => {
-    let finishWallet!: (value: unknown) => void;
-    createWallet.mockImplementation(() => new Promise(resolve => { finishWallet = resolve; }));
-    refreshUser.mockImplementation(async () => ({ id: currentUserId, linkedAccounts: [] }));
-    const { rerender } = render(<LoginPage />);
-    act(() => { void onOAuthComplete?.({ user: { id: "new-fan" } }); });
-    await waitFor(() => expect(createWallet).toHaveBeenCalledWith({ createAdditional: false }));
-    authenticated = true;
-    rerender(<LoginPage />);
-    expect(fetch).not.toHaveBeenCalled();
-    expect(replace).toHaveBeenCalledWith("/live/kara-nualeaf?locale=ko");
-    await act(async () => { finishWallet(embeddedWallet); });
-    await waitFor(() => expect(replace).toHaveBeenCalledWith("/live/kara-nualeaf?locale=ko"));
-    expect(createWallet).toHaveBeenCalledTimes(1);
-    expect(fetch).toHaveBeenCalledTimes(1);
-  });
-
-  it("reuses the existing embedded EVM wallet without creating another", async () => {
-    authenticated = true;
-    render(<LoginPage />);
-    await waitFor(() => expect(replace).toHaveBeenCalled());
-    expect(refreshUser).toHaveBeenCalledTimes(1);
-    expect(createWallet).not.toHaveBeenCalled();
-  });
-
-  it("retries wallet preparation before session sync after creation fails", async () => {
-    authenticated = true;
-    refreshUser.mockImplementation(async () => ({ id: currentUserId, linkedAccounts: [] }));
-    createWallet.mockRejectedValueOnce(new Error("wallet unavailable")).mockResolvedValueOnce(embeddedWallet);
-    render(<LoginPage />);
-    await screen.findByRole("alert");
-    expect(fetch).not.toHaveBeenCalled();
-    fireEvent.click(screen.getByRole("button", { name: "다시 시도" }));
-    await waitFor(() => expect(replace).toHaveBeenCalled());
-    expect(createWallet).toHaveBeenCalledTimes(2);
-    expect(fetch).toHaveBeenCalledTimes(1);
-  });
-
-  it("reuses a still-running wallet creation when its bounded wait is retried", async () => {
-    vi.useFakeTimers();
-    authenticated = true;
-    const observed = vi.spyOn(signupFunnelTracker, "result").mockImplementation(() => undefined);
-    refreshUser.mockImplementation(async () => ({ id: currentUserId, linkedAccounts: [] }));
-    let finishWallet!: (value: unknown) => void;
-    createWallet.mockImplementation(() => new Promise((resolve) => { finishWallet = resolve; }));
-
-    render(<LoginPage />);
-    await act(async () => { await Promise.resolve(); });
-    expect(createWallet).toHaveBeenCalledTimes(1);
-
-    await act(async () => { await vi.advanceTimersByTimeAsync(30_000); });
-    expect(screen.getByRole("alert")).toHaveTextContent("로그인 연결이 오래 걸리고 있어요.");
-    fireEvent.click(screen.getByRole("button", { name: "다시 시도" }));
-    await act(async () => { await Promise.resolve(); });
-    expect(createWallet).toHaveBeenCalledTimes(1);
-
-    await act(async () => {
-      await vi.advanceTimersByTimeAsync(2_000);
-      finishWallet(embeddedWallet);
-      await vi.advanceTimersByTimeAsync(0);
-    });
-    expect(observed.mock.calls.map((call) => call[4]?.walletWaitMs)).toEqual([30_000, 2_000]);
-    observed.mockRestore();
-    expect(fetch).toHaveBeenCalledTimes(1);
-    expect(replace).toHaveBeenCalledWith("/live/kara-nualeaf?locale=ko");
-  });
-
-  it.each(["resolve", "reject"])("continues after wallet reconciliation and ignores late SDK %s", async (settlement) => {
-    vi.useFakeTimers();
-    authenticated = true;
-    refreshUser.mockResolvedValueOnce({ id: currentUserId, linkedAccounts: [] })
-      .mockResolvedValue({ id: currentUserId, linkedAccounts: [embeddedWallet] });
-    let finishWallet!: (value: unknown) => void;
-    createWallet.mockImplementation(() => new Promise((resolve, reject) => { finishWallet = settlement === "resolve" ? resolve : reject; }));
-    render(<LoginPage />);
-    await act(async () => { await vi.advanceTimersByTimeAsync(30_000); });
-    expect(refreshUser).toHaveBeenCalledTimes(2);
-    expect(createWallet).toHaveBeenCalledTimes(1);
-    expect(fetch).toHaveBeenCalledTimes(1);
-    expect(replace).toHaveBeenCalledTimes(1);
-    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
-    await act(async () => { finishWallet(embeddedWallet); });
-    expect(fetch).toHaveBeenCalledTimes(1);
-  });
-
-  it.each(["missing", "external", "solana", "foreign-client", "wrong-user", "rejected", "stalled"])(
-    "does not establish a session when wallet reconciliation is %s", async (scenario) => {
-      vi.useFakeTimers();
-      authenticated = true;
-      refreshUser.mockResolvedValueOnce({ id: currentUserId, linkedAccounts: [] });
-      if (scenario === "rejected") refreshUser.mockRejectedValue(new Error("private SDK error"));
-      else if (scenario === "stalled") refreshUser.mockImplementation(() => new Promise(() => {}));
-      else refreshUser.mockResolvedValue({
-        id: scenario === "wrong-user" ? "another-fan" : currentUserId,
-        linkedAccounts: scenario === "missing" ? [] : [{ ...embeddedWallet, connectorType: scenario === "external" ? "injected" : "embedded", chainType: scenario === "solana" ? "solana" : "ethereum", walletClientType: scenario === "foreign-client" ? "other" : "privy" }],
-      });
-      createWallet.mockImplementation(() => new Promise(() => {}));
-      render(<LoginPage />);
-      await act(async () => { await vi.advanceTimersByTimeAsync(35_000); });
-      expect(refreshUser).toHaveBeenCalledTimes(2);
-      expect(getAccessToken).not.toHaveBeenCalled();
-      expect(fetch).not.toHaveBeenCalled();
-      expect(replace).toHaveBeenNthCalledWith(1, "/live/kara-nualeaf?locale=ko");
-      if (scenario !== "wrong-user") expect(screen.getByRole("alert")).toHaveTextContent("로그인 연결이 오래 걸리고 있어요.");
-    },
-  );
-
-  it("does not refresh or synchronize after unmount during the wallet wait", async () => {
-    vi.useFakeTimers();
-    authenticated = true;
-    refreshUser.mockResolvedValue({ id: currentUserId, linkedAccounts: [] });
-    createWallet.mockImplementation(() => new Promise(() => {}));
-    const { unmount } = render(<LoginPage />);
-    await act(async () => { await vi.advanceTimersByTimeAsync(0); });
-    unmount();
-    await act(async () => { await vi.advanceTimersByTimeAsync(35_000); });
-    expect(refreshUser).toHaveBeenCalledTimes(1);
-    expect(getAccessToken).not.toHaveBeenCalled();
-    expect(fetch).not.toHaveBeenCalled();
-  });
-
-  it("ignores a reconciliation result after switching away from and back to the same account", async () => {
-    vi.useFakeTimers();
-    authenticated = true;
-    const originalUserId = currentUserId;
-    let finishReconciliation!: (value: unknown) => void;
-    refreshUser.mockResolvedValueOnce({ id: currentUserId, linkedAccounts: [] })
-      .mockImplementationOnce(() => new Promise((resolve) => { finishReconciliation = resolve; }))
-      .mockImplementation(async () => ({ id: currentUserId, linkedAccounts: [embeddedWallet] }));
-    createWallet.mockImplementation(() => new Promise(() => {}));
-    const { rerender } = render(<LoginPage />);
-    await act(async () => { await vi.advanceTimersByTimeAsync(30_000); });
-    currentUserId = "different-fan";
-    rerender(<LoginPage />);
-    await act(async () => { await vi.advanceTimersByTimeAsync(0); });
-    currentUserId = originalUserId;
-    rerender(<LoginPage />);
-    await act(async () => { await vi.advanceTimersByTimeAsync(0); });
-    expect(fetch).toHaveBeenCalledTimes(2);
-    await act(async () => { finishReconciliation({ id: originalUserId, linkedAccounts: [embeddedWallet] }); });
-    expect(fetch).toHaveBeenCalledTimes(2);
-    expect(replace).toHaveBeenCalledTimes(3);
-    expect(createWallet).toHaveBeenCalledTimes(1);
-  });
-
-  it("ignores a reconciled wallet after unmount", async () => {
-    vi.useFakeTimers();
-    authenticated = true;
-    let finishReconciliation!: (value: unknown) => void;
-    refreshUser.mockResolvedValueOnce({ id: currentUserId, linkedAccounts: [] })
-      .mockImplementationOnce(() => new Promise((resolve) => { finishReconciliation = resolve; }));
-    createWallet.mockImplementation(() => new Promise(() => {}));
-    const { unmount } = render(<LoginPage />);
-    await act(async () => { await vi.advanceTimersByTimeAsync(30_000); });
-    unmount();
-    await act(async () => { finishReconciliation({ id: currentUserId, linkedAccounts: [embeddedWallet] }); });
-    expect(getAccessToken).not.toHaveBeenCalled();
-    expect(fetch).not.toHaveBeenCalled();
-    expect(replace).toHaveBeenCalledWith("/live/kara-nualeaf?locale=ko");
   });
 
   it("releases the session state when token retrieval stalls", async () => {
@@ -485,109 +204,6 @@ describe("Privy login page", () => {
     expect(screen.getByRole("button", { name: "다시 시도" })).toBeEnabled();
   });
 
-  it("does not let a late old-user wallet completion update the new user", async () => {
-    window.sessionStorage.clear();
-    const measurements = vi.spyOn(signupFunnelTracker, "result");
-    let finishOldWallet!: (value: unknown) => void;
-    createWallet.mockImplementation(() => new Promise((resolve) => { finishOldWallet = resolve; }));
-    refreshUser.mockImplementation(async () => ({
-      id: currentUserId,
-      linkedAccounts: currentUserId === "old-fan" ? [] : [embeddedWallet],
-    }));
-    const { rerender } = render(<LoginPage />);
-    act(() => { void onOAuthComplete?.({ user: { id: "old-fan" } }); });
-    await waitFor(() => expect(createWallet).toHaveBeenCalledTimes(1));
-    const oldAttemptNonce = signupFunnelTracker.pendingLogin()?.nonce;
-
-    currentUserId = "new-fan";
-    authenticated = true;
-    rerender(<LoginPage />);
-    await waitFor(() => expect(markAvatarSessionReady).toHaveBeenCalledWith("new-fan"));
-
-    await act(async () => { finishOldWallet(embeddedWallet); });
-    expect(markAvatarSessionReady).not.toHaveBeenCalledWith("old-fan");
-    expect(fetch).toHaveBeenCalledTimes(1);
-    expect(replace).toHaveBeenCalledTimes(2);
-    const successes = measurements.mock.calls.filter(([, outcome]) => outcome === "succeeded");
-    expect(successes).toHaveLength(1);
-    expect(successes[0][0]?.nonce).not.toBe(oldAttemptNonce);
-    expect(successes[0][0]?.trigger).toBe("session_restore");
-    expect(JSON.stringify(measurements.mock.calls)).not.toMatch(/old-fan|new-fan/);
-    measurements.mockRestore();
-  });
-
-  it("invalidates an in-flight synchronization when the authenticated user logs out", async () => {
-    authenticated = true;
-    let finishRefresh!: (value: { id: string; linkedAccounts: unknown[] }) => void;
-    refreshUser.mockImplementation(() => new Promise((resolve) => { finishRefresh = resolve; }));
-    const { rerender } = render(<LoginPage />);
-    await waitFor(() => expect(refreshUser).toHaveBeenCalledTimes(1));
-
-    authenticated = false;
-    rerender(<LoginPage />);
-    await act(async () => {
-      finishRefresh({ id: "restored-fan", linkedAccounts: [embeddedWallet] });
-    });
-
-    expect(getAccessToken).not.toHaveBeenCalled();
-    expect(fetch).not.toHaveBeenCalled();
-    expect(markAvatarSessionReady).not.toHaveBeenCalled();
-    expect(replace).toHaveBeenCalledWith("/live/kara-nualeaf?locale=ko");
-  });
-
-  it("does not prepare a wallet for a different restored account", async () => {
-    refreshUser.mockResolvedValue({ id: "different-fan", linkedAccounts: [] });
-    render(<LoginPage />);
-    await act(async () => { await onOAuthComplete?.({ user: { id: "expected-fan" } }); });
-    expect(createWallet).not.toHaveBeenCalled();
-    expect(fetch).not.toHaveBeenCalled();
-    expect(replace).toHaveBeenCalledWith("/live/kara-nualeaf?locale=ko");
-  });
-
-  it("blocks repeated OAuth starts while its authorization URL is pending", async () => {
-    let finishOAuth!: () => void;
-    initOAuth.mockImplementation(() => new Promise<void>(resolve => { finishOAuth = resolve; }));
-    render(<LoginPage />);
-    const google = screen.getByRole("button", { name: /Google로 계속하기/ });
-    fireEvent.click(google);
-    fireEvent.click(google);
-    expect(google).toBeDisabled();
-    expect(initOAuth).toHaveBeenCalledTimes(1);
-    await act(async () => { finishOAuth(); });
-  });
-
-  it("keeps the login page recoverable when direct OAuth initialization fails", async () => {
-    initOAuth.mockRejectedValueOnce(new Error("oauth initialization failed"));
-    render(<LoginPage />);
-
-    fireEvent.click(screen.getByRole("button", { name: /Google로 계속하기/ }));
-
-    expect(await screen.findByRole("alert")).toHaveTextContent("로그인을 완료하지 못했어요");
-    expect(replace).not.toHaveBeenCalled();
-  });
-
-  it("requires a fresh document after OAuth times out, including after remount and late settlement", async () => {
-    vi.useFakeTimers();
-    let finishOAuth!: () => void;
-    initOAuth.mockImplementation(() => new Promise<void>((resolve) => { finishOAuth = resolve; }));
-    const first = render(<LoginPage appleLoginEnabled />);
-    fireEvent.click(screen.getByRole("button", { name: "Google로 계속하기" }));
-    await act(async () => { await vi.advanceTimersByTimeAsync(30_000); });
-    expect(screen.getByRole("button", { name: "Apple로 계속하기" })).toBeDisabled();
-    expect(screen.getByRole("alert")).toHaveTextContent("로그인 연결이 오래 걸리고 있어요.");
-    const restart = screen.getByRole("link", { name: "로그인 다시 시작" });
-    expect(restart).toHaveAttribute("href", "/login?returnTo=%2Flive%2Fkara-nualeaf%3Flocale%3Dko&locale=ko&intent=reserve");
-    expect(logout).not.toHaveBeenCalled();
-
-    first.unmount();
-    render(<LoginPage appleLoginEnabled />);
-    fireEvent.click(screen.getByRole("button", { name: "Apple로 계속하기" }));
-    expect(initOAuth).toHaveBeenCalledTimes(1);
-    await act(async () => { finishOAuth(); });
-    expect(screen.getByRole("button", { name: "Apple로 계속하기" })).toBeDisabled();
-    expect(screen.getByRole("link", { name: "로그인 다시 시작" })).toBeInTheDocument();
-  });
-
   it("shows safe reauthentication recovery to a signed-out English user", () => {
     query = "locale=en&reauth=failed";
     render(<LoginPage appleLoginEnabled />);
@@ -600,17 +216,6 @@ describe("Privy login page", () => {
     render(<LoginPage appleLoginEnabled />);
     expect(screen.getByRole("button", { name: "Continue with Google" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Continue with Apple" })).toBeInTheDocument();
-  });
-
-  it("localizes the English heading, home link, artwork and OAuth error", async () => {
-    query = "locale=en";
-    initOAuth.mockRejectedValueOnce(new Error("oauth initialization failed"));
-    render(<LoginPage appleLoginEnabled />);
-    expect(screen.getByRole("heading", { name: "Keep a record of moments with your favorites." })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Return to kyaa home" })).toHaveAttribute("href", "/?locale=en");
-    expect(screen.getByAltText("Open Fan Passport")).toBeInTheDocument();
-    fireEvent.click(screen.getByRole("button", { name: "Continue with Google" }));
-    expect(await screen.findByRole("alert")).toHaveTextContent("We couldn't complete sign-in. Check your Google or Apple account");
   });
 
   it("returns an English direct sign-in to the English home", async () => {
@@ -651,13 +256,6 @@ describe("Privy login page", () => {
     expect(screen.getByRole("button", { name: "다시 확인" })).toBeEnabled();
   });
 
-  it("uses Privy's email OTP UI only when the non-production Test Account path is enabled", () => {
-    render(<LoginPage testAccountLoginEnabled />);
-    fireEvent.click(screen.getByRole("button", { name: /Test Account 이메일로 계속하기/ }));
-    expect(login).toHaveBeenCalledWith({ loginMethods: ["email"] });
-    expect(screen.getByText(/Privy 대시보드에 등록된 Test Account 이메일과 OTP/)).toBeInTheDocument();
-  });
-
   it("renders an accessible contextual overlay and closes back to its preserved background", async () => {
     render(<LoginPage presentation="overlay" />);
 
@@ -689,151 +287,6 @@ describe("Privy login page", () => {
 
     render(<LoginPage presentation="overlay" />);
     await waitFor(() => expect(screen.getByRole("dialog")).toHaveAttribute("data-variant", "bottom-sheet"));
-  });
-
-  it("syncs the verified Privy session before resuming the sanitized route", async () => {
-    render(<LoginPage />);
-    onComplete?.();
-    await waitFor(() => expect(replace).toHaveBeenCalledWith("/live/kara-nualeaf?locale=ko"));
-    expect(fetch).toHaveBeenCalledWith("/api/auth/session", expect.objectContaining({
-      method: "POST",
-      headers: {
-        authorization: "Bearer privy-access-token",
-        "content-type": "application/json",
-      },
-      body: JSON.stringify({ locale: "ko" }),
-    }));
-  });
-
-  it("waits for Privy OAuth URL cleanup before navigating with the authenticated owner", async () => {
-    query = "returnTo=%2Fmy&privy_oauth_code=fixture&privy_oauth_state=fixture&privy_oauth_provider=google";
-    const view = render(<LoginPage />);
-    await act(async () => { await onOAuthComplete?.({ user: { id: "oauth-return-owner" } }); });
-    authenticated = true;
-    view.rerender(<LoginPage />);
-    await waitFor(() => expect(fetch).toHaveBeenCalled());
-    expect(replace).not.toHaveBeenCalled();
-    query = "returnTo=%2Fmy";
-    view.rerender(<LoginPage />);
-    await waitFor(() => expect(replace).toHaveBeenCalledWith("/my?locale=ko"));
-    expect(replace).toHaveBeenCalledTimes(1);
-  });
-
-  it("retries a rejected early callback once the SDK exposes its authenticated owner", async () => {
-    const originalHook = sessionModule.useByUsSession;
-    let rejected = false;
-    const hook = vi.spyOn(sessionModule, "useByUsSession").mockImplementation(() => {
-      const session = originalHook();
-      return { ...session, beginTransition: (input) => {
-        if (!rejected) { rejected = true; return false; }
-        return session.beginTransition(input);
-      } };
-    });
-    try {
-      const view = render(<LoginPage />);
-      await act(async () => { await onOAuthComplete?.({ user: { id: "early-owner" } }); });
-      view.rerender(<LoginPage />);
-      await waitFor(() => expect(markAvatarSessionReady).toHaveBeenCalledWith("early-owner"));
-      expect(fetch).toHaveBeenCalledTimes(1);
-      expect(replace).toHaveBeenCalledTimes(1);
-    } finally { hook.mockRestore(); }
-  });
-
-  it("ignores duplicate successful hooks and their late error while OAuth cleanup is pending", async () => {
-    query = "returnTo=%2Fmy&privy_oauth_code=fixture&privy_oauth_state=fixture&privy_oauth_provider=google";
-    const view = render(<LoginPage />);
-    await act(async () => { await onComplete?.({ user: { id: "same-owner" } }); });
-    await waitFor(() => expect(markAvatarSessionReady).toHaveBeenCalledWith("same-owner"));
-    await act(async () => { await onOAuthComplete?.({ user: { id: "same-owner" } }); onError?.(); });
-    expect(fetch).toHaveBeenCalledTimes(1);
-    expect(replace).not.toHaveBeenCalled();
-    expect(screen.queryByText(/로그인을 완료하지 못했어요/)).not.toBeInTheDocument();
-    query = "returnTo=%2Fmy&privy_oauth_state=fixture";
-    view.rerender(<LoginPage />);
-    expect(replace).not.toHaveBeenCalled();
-    query = "returnTo=%2Fmy";
-    view.rerender(<LoginPage />);
-    await waitFor(() => expect(replace).toHaveBeenCalledWith("/my?locale=ko"));
-    expect(replace).toHaveBeenCalledTimes(1);
-  });
-
-  it.each([true, false])("preserves verification onboarding when session finishes before cleanup=%s", async (finishBeforeCleanup) => {
-    query = "returnTo=%2Fc%2Fkara%2Fverify&intent=passport&entity=kara&privy_oauth_code=fixture";
-    let finish!: (response: Response) => void;
-    vi.mocked(fetch).mockImplementationOnce(() => new Promise(resolve => { finish = resolve; }));
-    const view = render(<LoginPage />);
-    await act(async () => { await onOAuthComplete?.({ user: { id: "verification-owner" } }); });
-    await waitFor(() => expect(fetch).toHaveBeenCalled());
-    const complete = async () => { await act(async () => { finish(Response.json({ profile: { completed: false } })); }); };
-    if (finishBeforeCleanup) await complete();
-    expect(replace).not.toHaveBeenCalled();
-    query = "returnTo=%2Fc%2Fkara%2Fverify&intent=passport&entity=kara";
-    view.rerender(<LoginPage />);
-    if (!finishBeforeCleanup) {
-      await waitFor(() => expect(replace).toHaveBeenCalledWith("/c/kara/verify?locale=ko"));
-      await complete();
-    }
-    await waitFor(() => expect(replace).toHaveBeenLastCalledWith(expect.stringMatching(/^\/onboarding\/profile\?/)));
-    expect(fetch).toHaveBeenCalledTimes(1);
-  });
-
-  it("offers explicit recovery after provider invalidation with an unchanged SDK owner", async () => {
-    authenticated = true;
-    query = "returnTo=%2Fmy&privy_oauth_code=fixture&privy_oauth_state=fixture&privy_oauth_provider=google";
-    refreshUser.mockResolvedValueOnce({ id: "conflicting-owner", linkedAccounts: [] });
-    const view = render(<LoginPage />);
-    await screen.findByText("로그인 정보를 안전하게 연결하지 못했어요.");
-    expect(refreshUser).toHaveBeenCalledTimes(1);
-    expect(fetch).not.toHaveBeenCalled();
-    expect(replace).not.toHaveBeenCalled();
-    query = "returnTo=%2Fmy";
-    view.rerender(<LoginPage />);
-    expect(refreshUser).toHaveBeenCalledTimes(1);
-    fireEvent.click(screen.getByRole("button", { name: "다시 시도" }));
-    await waitFor(() => expect(markAvatarSessionReady).toHaveBeenCalledWith("restored-fan"));
-    expect(refreshUser).toHaveBeenCalledTimes(2);
-    expect(fetch).toHaveBeenCalledTimes(1);
-    expect(replace).toHaveBeenCalledWith("/my?locale=ko");
-  });
-
-  it.each(["remount", "same-page"])("uses the new return destination during same-owner %s synchronization", async (mode) => {
-    authenticated = true;
-    query = new URLSearchParams({ returnTo: "/my", locale: "ko" }).toString();
-    vi.mocked(fetch).mockImplementation(async () => Response.json({ profile: { completed: true, nickname: "John" } }));
-    const view = render(<LoginPage />);
-    await waitFor(() => expect(markAvatarSessionReady).toHaveBeenCalledWith(currentUserId));
-    expect(replace).toHaveBeenCalledWith("/my?locale=ko");
-    if (mode === "remount") view.rerender(<div>Existing protected route</div>);
-    replace.mockClear();
-    let finishRefresh!: (user: { id: string; linkedAccounts: typeof embeddedWallet[] }) => void;
-    refreshUser.mockImplementationOnce(() => new Promise(resolve => { finishRefresh = resolve; }));
-    query = new URLSearchParams({ returnTo: "/connect/runmusic?locale=ko", locale: "ko" }).toString();
-    view.rerender(<LoginPage />);
-    expect(replace.mock.calls.map(call => call[0])).not.toContain("/my?locale=ko");
-    await waitFor(() => expect(replace).toHaveBeenCalledWith("/connect/runmusic?locale=ko"));
-    expect(fetch).toHaveBeenCalledTimes(1);
-    await act(async () => { finishRefresh({ id: currentUserId, linkedAccounts: [embeddedWallet] }); });
-    await waitFor(() => expect(markAvatarSessionReady).toHaveBeenCalledTimes(2));
-    expect(replace.mock.calls.map(call => call[0])).not.toContain("/my?locale=ko");
-  });
-
-  it("supersedes a pending same-owner login when remounted with a new return destination", async () => {
-    authenticated = true;
-    query = new URLSearchParams({ returnTo: "/my", locale: "ko" }).toString();
-    let finishOld!: (user: { id: string; linkedAccounts: typeof embeddedWallet[] }) => void;
-    refreshUser.mockImplementationOnce(() => new Promise(resolve => { finishOld = resolve; }));
-    const view = render(<LoginPage />);
-    await waitFor(() => expect(refreshUser).toHaveBeenCalledTimes(1));
-    view.rerender(<div>Existing protected route</div>);
-    replace.mockClear();
-    query = new URLSearchParams({ returnTo: "/connect/runmusic?locale=ko", locale: "ko" }).toString();
-    view.rerender(<LoginPage />);
-    await waitFor(() => expect(replace).toHaveBeenCalledWith("/connect/runmusic?locale=ko"));
-    await waitFor(() => expect(markAvatarSessionReady).toHaveBeenCalledTimes(1));
-    await act(async () => { finishOld({ id: currentUserId, linkedAccounts: [embeddedWallet] }); });
-    expect(refreshUser).toHaveBeenCalledTimes(2);
-    expect(fetch).toHaveBeenCalledTimes(1);
-    expect(replace.mock.calls.map(call => call[0])).not.toContain("/my?locale=ko");
   });
 
   it("syncs an existing authenticated Privy session before redirecting", async () => {
@@ -895,23 +348,6 @@ describe("Privy login page", () => {
     expect(query).toContain("authIntent=11111111-1111-4111-8111-111111111111");
   });
 
-  it("requires server-provided provider verification after Apple revocation without clearing the Privy session", async () => {
-    authenticated = true;
-    vi.mocked(globalThis.fetch).mockResolvedValue(Response.json({
-      error: { code: "APPLE_REAUTHENTICATION_REQUIRED", providers: ["google", "apple", "google", "untrusted"] },
-    }, { status: 403 }));
-    render(<LoginPage appleLoginEnabled />);
-
-    expect(await screen.findByText("계정을 다시 확인해 주세요.")).toBeInTheDocument();
-    expect(screen.getAllByRole("button", { name: "Google로 인증" })).toHaveLength(1);
-    expect(screen.getByRole("button", { name: "Apple로 인증" })).toBeInTheDocument();
-    expect(logout).not.toHaveBeenCalled();
-    expect(initOAuth).not.toHaveBeenCalled();
-    expect(createWallet).not.toHaveBeenCalled();
-    expect(replace).toHaveBeenNthCalledWith(1, "/live/kara-nualeaf?locale=ko");
-    expect(replace).toHaveBeenCalledWith(expect.stringMatching(/^\/login\?returnTo=%2Flive%2Fkara-nualeaf/));
-  });
-
   it("keeps failed reauthentication recoverable and prevents duplicate requests", async () => {
     authenticated = true;
     let finish: ((response: Response) => void) | undefined;
@@ -928,211 +364,6 @@ describe("Privy login page", () => {
     expect(await screen.findByText("인증을 완료하지 못했어요. 기존 계정으로 다시 인증해 주세요.")).toBeInTheDocument();
     expect(button).toBeEnabled();
     expect(logout).not.toHaveBeenCalled();
-  });
-
-  it("restores a non-verification intent without forcing profile onboarding", async () => {
-    vi.mocked(globalThis.fetch).mockResolvedValue(Response.json({ profile: { completed: false, nickname: null } }));
-    render(<LoginPage />);
-    onComplete?.();
-    await waitFor(() => expect(replace).toHaveBeenCalledWith("/live/kara-nualeaf?locale=ko"));
-  });
-
-  it("does not nest an existing onboarding return path", async () => {
-    query = "returnTo=%2Fonboarding%2Fprofile%3FreturnTo%3D%252Flive%252Fkara-nualeaf%26locale%3Dko&locale=ko";
-    vi.mocked(globalThis.fetch).mockResolvedValue(Response.json({ profile: { completed: false, nickname: null } }));
-    render(<LoginPage />);
-    onComplete?.();
-    await waitFor(() => expect(replace).toHaveBeenCalledWith("/?locale=ko"));
-  });
-
-  it("preserves a non-verification durable intent while returning to its source", async () => {
-    query = "returnTo=%2Flive%2Fkara-nualeaf%3Flocale%3Dko%26authIntent%3D11111111-1111-4111-8111-111111111111%23fan-code&intent=attendance&entity=kara-nualeaf&authIntent=11111111-1111-4111-8111-111111111111";
-    vi.mocked(globalThis.fetch).mockResolvedValue(Response.json({ profile: { completed: false, nickname: null } }));
-    render(<LoginPage />);
-    onComplete?.();
-    await waitFor(() => expect(replace).toHaveBeenCalledWith(
-      "/live/kara-nualeaf?locale=ko&authIntent=11111111-1111-4111-8111-111111111111#fan-code",
-    ));
-    expect(screen.queryByText(/Fan Code 출석 인증을 이어갑니다/)).not.toBeInTheDocument();
-  });
-
-  it("inserts profile onboarding only for a fan verification intent", async () => {
-    query = "returnTo=%2Fc%2Fkara%2Fverify&intent=passport&entity=kara&locale=ko";
-    vi.mocked(globalThis.fetch).mockResolvedValue(Response.json({ profile: { completed: false, nickname: null } }));
-    render(<LoginPage />);
-    onComplete?.();
-    await waitFor(() => expect(replace).toHaveBeenCalledWith(
-      "/onboarding/profile?returnTo=%2Fc%2Fkara%2Fverify%3Flocale%3Dko&locale=ko&intent=passport&entity=kara",
-    ));
-  });
-
-  it("keeps the contextual login open and recoverable after an OAuth error", async () => {
-    render(<LoginPage presentation="overlay" />);
-    await act(async () => {
-      onError?.();
-    });
-    const alert = await screen.findByRole("alert");
-    expect(alert).toHaveTextContent("로그인을 완료하지 못했어요");
-    await waitFor(() => expect(alert).toHaveFocus());
-    expect(screen.getByRole("dialog")).toBeVisible();
-    expect(replace).not.toHaveBeenCalled();
-  });
-
-  it.each(["created", "sdk_error", "found", "missing", "read_error", "read_timeout", "token_error"])(
-    "captures bounded wallet diagnostics without changing auth when %s", async (scenario) => {
-      vi.useFakeTimers();
-      window.sessionStorage.clear();
-      authenticated = true;
-      const observed = vi.spyOn(signupFunnelTracker, "result").mockImplementation(() => undefined);
-      try {
-        refreshUser.mockResolvedValueOnce({ id: currentUserId, linkedAccounts: [] });
-        if (scenario === "missing") refreshUser.mockResolvedValue({ id: currentUserId, linkedAccounts: [] });
-        if (scenario === "read_error") refreshUser.mockRejectedValue(new Error("private-sdk-message"));
-        if (scenario === "read_timeout") refreshUser.mockImplementation(() => new Promise(() => {}));
-        if (scenario === "sdk_error") createWallet.mockImplementation(() => { throw new Error("private-wallet-error"); });
-        else if (scenario !== "created") createWallet.mockImplementation(() => new Promise(() => {}));
-        if (scenario === "token_error") getAccessToken.mockRejectedValue(new Error("private-token-error"));
-        render(<LoginPage />);
-        await act(async () => { await vi.advanceTimersByTimeAsync(35_000); });
-        const call = observed.mock.calls.find((entry) => entry[4] !== undefined);
-        expect(call).toBeDefined();
-        if (!call) throw new Error("Missing wallet diagnostic event");
-        const diag = call[4]!;
-        expect(diag).toMatchObject({
-          walletWaitOutcome: scenario === "created" ? "succeeded" : scenario === "sdk_error" ? "error" : "timeout",
-          walletReconciliation: scenario === "created" || scenario === "sdk_error" ? "not_needed"
-            : scenario === "missing" ? "wallet_missing" : scenario === "read_error" ? "error"
-              : scenario === "read_timeout" ? "timeout" : "wallet_found",
-        });
-        expect(diag.walletWaitMs).toBe(scenario === "created" || scenario === "sdk_error" ? 0 : 30_000);
-        expect(diag.walletWaitMs).toBeLessThanOrEqual(120_000);
-        expect(diag.walletReconciliationMs).toBe(scenario === "read_timeout" ? 5_000 : 0);
-        expect(diag.walletReconciliationMs).toBeLessThanOrEqual(30_000);
-        expect(JSON.stringify(diag)).not.toMatch(/private|restored-fan|0x/);
-        const success = scenario === "created" || scenario === "found";
-        expect(call[1]).toBe(success ? "succeeded" : "failed");
-        expect(fetch).toHaveBeenCalledTimes(success ? 1 : 0);
-        expect(createWallet).toHaveBeenCalledTimes(1);
-        if (scenario === "token_error") expect(call[2]).toBe("token");
-      } finally { observed.mockRestore(); }
-    },
-  );
-
-  it("omits diagnostics when the monotonic clock is unavailable", async () => {
-    authenticated = true;
-    refreshUser.mockResolvedValue({ id: currentUserId, linkedAccounts: [] });
-    const now = vi.spyOn(performance, "now").mockReturnValue(Number.NaN);
-    const observed = vi.spyOn(signupFunnelTracker, "result").mockImplementation(() => undefined);
-    try {
-      render(<LoginPage />);
-      await act(async () => { await Promise.resolve(); });
-      expect(replace).toHaveBeenCalledTimes(1);
-      expect(observed.mock.calls[0][4]).toBeUndefined();
-    } finally { now.mockRestore(); observed.mockRestore(); }
-  });
-
-  it("never emits wallet diagnostics after unmount during reconciliation", async () => {
-    vi.useFakeTimers();
-    authenticated = true;
-    const observed = vi.spyOn(signupFunnelTracker, "result").mockImplementation(() => undefined);
-    try {
-      refreshUser.mockResolvedValueOnce({ id: currentUserId, linkedAccounts: [] })
-        .mockImplementation(() => new Promise(() => {}));
-      createWallet.mockImplementation(() => new Promise(() => {}));
-      const view = render(<LoginPage />);
-      await act(async () => { await vi.advanceTimersByTimeAsync(30_000); });
-      view.unmount();
-      await act(async () => { await vi.advanceTimersByTimeAsync(5_000); });
-      expect(observed).not.toHaveBeenCalled();
-      expect(fetch).not.toHaveBeenCalled();
-    } finally { observed.mockRestore(); }
-  });
-
-  it("observes provider start and session success on the same anonymous attempt", async () => {
-    window.sessionStorage.clear();
-    const result = vi.spyOn(signupFunnelTracker, "result");
-    render(<LoginPage />);
-    fireEvent.click(screen.getByRole("button", { name: "Google로 계속하기" }));
-    const attempt = signupFunnelTracker.pendingLogin();
-    expect(attempt).toMatchObject({ provider: "google", trigger: "provider" });
-    await act(async () => { await onOAuthComplete?.(); });
-    await waitFor(() => expect(replace).toHaveBeenCalled());
-    expect(result).toHaveBeenCalledWith(expect.objectContaining({ nonce: attempt?.nonce }), "succeeded", "session", "none", undefined);
-    expect(getAccessToken).toHaveBeenCalledTimes(1); // Analytics never asks for another token.
-    result.mockRestore();
-  });
-
-  it("records a sanitized session failure and an explicit retry without changing the auth path", async () => {
-    window.sessionStorage.clear();
-    authenticated = true;
-    vi.mocked(globalThis.fetch).mockResolvedValueOnce(Response.json({ error: { code: "private-provider-detail" } }, { status: 503 }));
-    const result = vi.spyOn(signupFunnelTracker, "result");
-    const start = vi.spyOn(signupFunnelTracker, "beginLogin");
-    render(<LoginPage />);
-    await screen.findByText("로그인 정보를 안전하게 연결하지 못했어요.");
-    expect(result).toHaveBeenCalledWith(expect.anything(), "failed", "session", "session_error", undefined);
-    const failed = signupFunnelTracker.pendingLogin()?.nonce;
-    let finishRetry!: (response: Response) => void;
-    vi.mocked(globalThis.fetch).mockImplementationOnce(() => new Promise((resolve) => { finishRetry = resolve; }));
-    const retry = screen.getByRole("button", { name: /다시 시도/ });
-    fireEvent.click(retry);
-    await waitFor(() => expect(globalThis.fetch).toHaveBeenCalledTimes(2));
-    await act(async () => { onError?.(); });
-    expect(result.mock.calls.filter(([, outcome]) => outcome === "failed")).toHaveLength(1);
-    await act(async () => { finishRetry(Response.json({ profile: { completed: true } })); });
-    await waitFor(() => expect(replace).toHaveBeenCalled());
-    expect(start).toHaveBeenCalledWith("unknown", "retry", "ko");
-    const success = result.mock.calls.find(([, outcome]) => outcome === "succeeded");
-    expect(success?.[0]?.nonce).not.toBe(failed);
-    expect(JSON.stringify(result.mock.calls)).not.toContain("private-provider-detail");
-    result.mockRestore(); start.mockRestore();
-  });
-
-  it("keeps login working when browser storage blocks analytics", async () => {
-    const storage = vi.spyOn(Storage.prototype, "setItem").mockImplementation(() => { throw new Error("storage blocked"); });
-    render(<LoginPage />);
-    fireEvent.click(screen.getByRole("button", { name: "Google로 계속하기" }));
-    await act(async () => { await onOAuthComplete?.(); });
-    await waitFor(() => expect(replace).toHaveBeenCalled());
-    expect(initOAuth).toHaveBeenCalledWith({ provider: "google" });
-    expect(logout).not.toHaveBeenCalled();
-    storage.mockRestore();
-  });
-
-  it("records an OAuth failure after remount on the pending provider attempt", async () => {
-    window.sessionStorage.clear();
-    const result = vi.spyOn(signupFunnelTracker, "result");
-    const first = render(<LoginPage />);
-    await act(async () => { fireEvent.click(screen.getByRole("button", { name: "Google로 계속하기" })); });
-    const pending = signupFunnelTracker.pendingLogin();
-    first.unmount();
-    render(<LoginPage />);
-    await act(async () => { onError?.(); });
-    expect(result).toHaveBeenCalledWith(expect.objectContaining({ nonce: pending?.nonce, trigger: "provider" }), "failed", "oauth", "provider_error");
-    expect(replace).not.toHaveBeenCalled();
-    result.mockRestore();
-  });
-  it("offers a working browser handoff before the SDK is ready in Instagram", async () => {
-    ready = false;
-    vi.spyOn(window.navigator, "userAgent", "get").mockReturnValue("Instagram 350.0");
-    const writeText = vi.fn().mockResolvedValue(undefined);
-    Object.defineProperty(window.navigator, "clipboard", { configurable: true, value: { writeText } });
-    render(<LoginPage />);
-    fireEvent.click(screen.getByRole("button", { name: "로그인 링크 복사" }));
-    await waitFor(() => expect(writeText).toHaveBeenCalledWith(
-      new URL("/login?returnTo=%2Flive%2Fkara-nualeaf%3Flocale%3Dko&locale=ko&intent=reserve", window.location.origin).href,
-    ));
-    expect(initOAuth).not.toHaveBeenCalled();
-    expect(await screen.findByText("링크를 복사했어요. Safari나 Chrome에 붙여넣어 주세요.")).toBeVisible();
-  });
-
-  it.each(["Instagram 350.0", "KAKAOTALK 11.0", "[FBAN/FBIOS;FBAV/500.0]", "Line/15.0"]) ("offers a browser handoff instead of Google OAuth in %s", (agent) => {
-    vi.spyOn(window.navigator, "userAgent", "get").mockReturnValue(agent);
-    render(<LoginPage />);
-    fireEvent.click(screen.getByRole("button", { name: "Google로 계속하기" }));
-    expect(initOAuth).not.toHaveBeenCalled();
-    expect(screen.getByRole("status")).toHaveTextContent("브라우저에서");
-    expect(screen.getByRole("button", { name: "로그인 링크 복사" })).toBeEnabled();
   });
 
   describe("in-app browser hand-off on an https page", () => {
@@ -1155,30 +386,6 @@ describe("Privy login page", () => {
       expect(screen.getByRole("status")).toHaveTextContent("브라우저에서");
       expect(screen.getByRole("button", { name: "로그인 링크 복사" })).toBeEnabled();
       expect(assign).not.toHaveBeenCalled();
-    });
-
-    it("opens Instagram's external-browser link on iOS, copies the sign-in link and keeps the notice, without starting OAuth", async () => {
-      stubHttps(iosInstagram);
-      const writeText = vi.fn().mockResolvedValue(undefined);
-      Object.defineProperty(window.navigator, "clipboard", { configurable: true, value: { writeText } });
-      render(<LoginPage />);
-      fireEvent.click(screen.getByRole("button", { name: "Google로 계속하기" }));
-      expect(assign).toHaveBeenCalledWith(`instagram://extbrowser/?url=${encodeURIComponent(`https://kyaa.io${loginPath}`)}`);
-      expect(writeText).toHaveBeenCalledWith(`https://kyaa.io${loginPath}`);
-      expect(await screen.findByText("링크를 복사했어요. Safari나 Chrome에 붙여넣어 주세요.")).toBeVisible();
-      expect(initOAuth).not.toHaveBeenCalled();
-      expect(screen.getByRole("button", { name: "로그인 링크 복사" })).toBeEnabled();
-    });
-
-    it("keeps the hand-off available in Instagram even when the sign-in SDK never becomes ready", () => {
-      ready = false;
-      stubHttps(iosInstagram);
-      render(<LoginPage />);
-      const button = screen.getByRole("button", { name: "Google로 계속하기" });
-      expect(button).toBeEnabled();
-      fireEvent.click(button);
-      expect(assign).toHaveBeenCalledTimes(1);
-      expect(initOAuth).not.toHaveBeenCalled();
     });
 
     it("never shows the internal timeout code in iOS Instagram after the SDK stays unready for 30 seconds", () => {
@@ -1214,31 +421,11 @@ describe("Privy login page", () => {
       }
     });
 
-    it("keeps the neutral screen on iOS Instagram when returning from an OAuth redirect", () => {
-      ready = false;
-      query = "returnTo=%2Fmy&privy_oauth_code=fixture&privy_oauth_state=fixture&privy_oauth_provider=google";
-      stubHttps(iosInstagram);
-      render(<LoginPage />);
-      expect(screen.queryByRole("button", { name: "Google로 계속하기" })).not.toBeInTheDocument();
-      expect(assign).not.toHaveBeenCalled();
-    });
-
     it("tries Safari on iOS Threads", () => {
       stubHttps(iosThreads);
       render(<LoginPage />);
       fireEvent.click(screen.getByRole("button", { name: "Google로 계속하기" }));
       expect(assign).toHaveBeenCalledWith(`x-safari-https://kyaa.io${loginPath}`);
-    });
-
-    it("tries the device browser on Android with a same-page fallback", () => {
-      stubHttps(androidInstagram);
-      render(<LoginPage />);
-      fireEvent.click(screen.getByRole("button", { name: "Google로 계속하기" }));
-      expect(assign).toHaveBeenCalledTimes(1);
-      const target = assign.mock.calls[0][0] as string;
-      expect(target).toMatch(/^intent:\/\/kyaa\.io\/login\?/);
-      expect(target).toContain(`S.browser_fallback_url=${encodeURIComponent(`https://kyaa.io${loginPath}`)}`);
-      expect(initOAuth).not.toHaveBeenCalled();
     });
 
     it("branches before the Cognito redirect in Cognito mode", async () => {
@@ -1251,22 +438,6 @@ describe("Privy login page", () => {
       expect(screen.getByRole("button", { name: "로그인 링크 복사" })).toBeEnabled();
     });
 
-    it.each([["iOS Safari", iosSafari], ["Android Chrome", androidChrome]])("keeps the normal flow and no notice in %s", (_name, agent) => {
-      stubHttps(agent);
-      render(<LoginPage />);
-      expect(screen.queryByRole("button", { name: "로그인 링크 복사" })).not.toBeInTheDocument();
-      fireEvent.click(screen.getByRole("button", { name: "Google로 계속하기" }));
-      expect(assign).not.toHaveBeenCalled();
-      expect(initOAuth).toHaveBeenCalledWith({ provider: "google" });
-    });
-  });
-
-  it("starts Google OAuth in ordinary mobile Safari", () => {
-    vi.spyOn(window.navigator, "userAgent", "get").mockReturnValue("Mozilla/5.0 (iPhone) AppleWebKit/605.1.15 Version/18.0 Mobile/15E148 Safari/604.1");
-    render(<LoginPage />);
-    fireEvent.click(screen.getByRole("button", { name: "Google로 계속하기" }));
-    expect(initOAuth).toHaveBeenCalledWith({ provider: "google" });
-    expect(screen.queryByRole("button", { name: "로그인 링크 복사" })).not.toBeInTheDocument();
   });
 
   it("copies only the sanitized login context and keeps a selectable fallback on clipboard failure", async () => {

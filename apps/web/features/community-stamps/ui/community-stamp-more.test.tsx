@@ -2,7 +2,7 @@ import { render, screen, within } from "@testing-library/react";
 import { beforeEach, expect, it, vi } from "vitest";
 
 const dukjil = vi.hoisted(() => ({ value: null as null | { catalog: { rules: Record<string, unknown> } } }));
-vi.mock("@privy-io/react-auth", () => ({ usePrivy: () => ({ ready: true, authenticated: true, user: { id: "owner" } }) }));
+vi.mock("@/features/auth/client/auth-fallback", () => ({ usePrivy: () => ({ ready: true, authenticated: true, user: { id: "owner" } }) }));
 vi.mock("@/features/dukjil/ui/dukjil-provider", async (original) => ({ ...(await original<typeof import("@/features/dukjil/ui/dukjil-provider")>()), useDukjil: () => dukjil.value }));
 
 import { CommunityStampCollection } from "./community-stamp-collection";

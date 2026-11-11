@@ -6,7 +6,7 @@ import { wavePrivacyCopy } from "@/i18n/catalogs/features__fanpage__wave-privacy
 import { waveNavigationCopy } from "@/i18n/catalogs/features__fanpage__wave-navigation";
 import { waveFriendsCopy } from "@/i18n/catalogs/features__fanpage__wave-friends";
 const state = vi.hoisted(() => ({ ready: true, authenticated: false, status: "ready", friendships: [] as { id: string; nickname: string; avatarUrl: string; status: string }[], members: [] as { profileId: string; nickname: string; avatarUrl: string }[] }));
-vi.mock("@privy-io/react-auth", () => ({ usePrivy: () => state }));
+vi.mock("@/features/auth/client/auth-fallback", () => ({ usePrivy: () => state }));
 vi.mock("@/components/byus-session-provider", () => ({ useByUsSession: () => ({ ownerId: "viewer", generation: 0, ready: true }) }));
 vi.mock("@/features/content-safety/ui/use-content-mutation", () => ({ useContentMutation: () => ({ busy: false, error: "", request: vi.fn() }) }));
 vi.mock("./use-fanpage-resource", () => ({ useFanpageResource: (url: string) => ({ state: { status: state.status, data: url.startsWith("/api/kyaa-wave/friends/members?") ? { members: state.members, nextCursor: null } : { friendships: state.friendships } }, retry: vi.fn() }) }));

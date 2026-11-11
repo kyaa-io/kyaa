@@ -3,7 +3,7 @@ import { beforeEach, expect, it, vi } from "vitest";
 import { LiveFanSubmissions } from "./live-fan-submissions";
 const auth = vi.hoisted(() => ({ ready: true, authenticated: true, user: { id: "owner-a" } as { id: string } | null, getAccessToken: vi.fn(async () => "token-a"), login: vi.fn() }));
 const session = vi.hoisted(() => ({ ready: true, ownerId: "owner-a", generation: 0 }));
-vi.mock("@privy-io/react-auth", () => ({ usePrivy: () => auth }));
+vi.mock("@/features/auth/client/auth-fallback", () => ({ usePrivy: () => auth }));
 vi.mock("@/components/byus-session-provider", () => ({ useByUsSession: () => session }));
 vi.mock("@/features/content-safety/ui/content-actions", () => ({ ContentTranslation: ({ children }: { children: React.ReactNode }) => children, ContentActions: () => null }));
 const id = "10000000-0000-4000-8000-000000000001";

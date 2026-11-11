@@ -5,7 +5,7 @@ import type { HomeBannerManagerData } from "../../features/home/domain/home-bann
 import { HomeBannerManager } from "./home-banner-manager";
 
 const auth = vi.hoisted(() => ({ getAccessToken: vi.fn(async () => "token") }));
-vi.mock("@privy-io/react-auth", () => ({ usePrivy: () => auth }));
+vi.mock("@/features/auth/client/auth-fallback", () => ({ usePrivy: () => auth }));
 vi.mock("./operations-shell", () => ({ AdminOperationsShell: ({ children }: { children: React.ReactNode }) => <main>{children}</main> }));
 
 const firstId = "11111111-1111-4111-8111-111111111111";

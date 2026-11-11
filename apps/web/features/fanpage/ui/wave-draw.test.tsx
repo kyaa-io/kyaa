@@ -6,7 +6,7 @@ import { WAVE_PRIZES, type WaveDrawResponse } from "../domain/wave-draw";
 import { WaveDraw } from "./wave-draw";
 
 const state = vi.hoisted(() => ({ data: {} as WaveDrawResponse, retry: vi.fn(), owner: "viewer" }));
-vi.mock("@privy-io/react-auth", () => ({ usePrivy: () => ({ ready: true, authenticated: true, user: { id: state.owner }, getAccessToken: async () => "token" }) }));
+vi.mock("@/features/auth/client/auth-fallback", () => ({ usePrivy: () => ({ ready: true, authenticated: true, user: { id: state.owner }, getAccessToken: async () => "token" }) }));
 vi.mock("@/components/byus-session-provider", () => ({ useByUsSession: () => ({ ownerId: state.owner, generation: 0, ready: true }) }));
 vi.mock("./use-fanpage-resource", () => ({ useFanpageResource: () => ({ retry: state.retry, state: { status: "ready", data: state.data } }) }));
 vi.mock("@/features/benefit/ui/raffle-result-reveal", () => ({ RaffleResultReveal: ({ children }: { children: React.ReactNode }) => <div>{children}</div> }));

@@ -4,7 +4,7 @@ import { NotificationMonitor } from "./notification-monitor";
 
 const id = "11111111-1111-4111-8111-111111111111";
 const getAccessToken = vi.fn(async () => "token");
-vi.mock("@privy-io/react-auth", () => ({ usePrivy: () => ({ getAccessToken }) }));
+vi.mock("@/features/auth/client/auth-fallback", () => ({ usePrivy: () => ({ getAccessToken }) }));
 vi.mock("next/navigation", () => ({
   usePathname: () => "/admin/notifications",
   useSearchParams: () => new URLSearchParams(),

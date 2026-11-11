@@ -8,7 +8,7 @@ const benefitId = "22222222-2222-4222-8222-222222222222";
 const authState = vi.hoisted(() => ({ ready: true, authenticated: true, id: "owner-a", token: "token" }));
 const getAccessToken = vi.hoisted(() => vi.fn(async () => authState.token as string | null));
 
-vi.mock("@privy-io/react-auth", () => ({
+vi.mock("@/features/auth/client/auth-fallback", () => ({
   usePrivy: () => ({
     ready: authState.ready,
     authenticated: authState.authenticated,

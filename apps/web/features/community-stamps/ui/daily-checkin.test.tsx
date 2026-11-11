@@ -11,7 +11,7 @@ const privy = vi.hoisted(() => ({
   getAccessToken: vi.fn<() => Promise<string | null>>().mockResolvedValue("token"),
 }));
 
-vi.mock("@privy-io/react-auth", () => ({ usePrivy: () => privy }));
+vi.mock("@/features/auth/client/auth-fallback", () => ({ usePrivy: () => privy }));
 
 const mint = { status: "queued", txHash: null, tokenId: null } as const;
 const response = (body: unknown, status = 200) => new Response(JSON.stringify(body), {

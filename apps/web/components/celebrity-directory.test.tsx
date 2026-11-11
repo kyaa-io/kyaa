@@ -55,7 +55,7 @@ let authenticated = false;
 let authReady = true;
 let ownerId = "owner-a";
 const getAccessToken = vi.fn();
-vi.mock("@privy-io/react-auth", () => ({ usePrivy: () => ({ ready: authReady, authenticated, user: { id: ownerId }, getAccessToken }) }));
+vi.mock("@/features/auth/client/auth-fallback", () => ({ usePrivy: () => ({ ready: authReady, authenticated, user: { id: ownerId }, getAccessToken }) }));
 
 beforeEach(() => {
   authReady = true;

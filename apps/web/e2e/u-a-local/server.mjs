@@ -11,7 +11,7 @@ const server = await createServer({
   resolve: { alias: [
     { find: /.*features\/auth\/client\/cognito-auth$/, replacement: path.join(here, "../kyaa-wave-participation-local/privy.ts") },
     { find: /.*byus-session-provider$/, replacement: path.join(here, "../kyaa-wave-participation-local/session.ts") },
-    { find: "@privy-io/react-auth", replacement: path.join(here, "../kyaa-wave-participation-local/privy.ts") },
+    { find: /^.*\/auth-fallback$/, replacement: path.join(here, "../kyaa-wave-participation-local/privy.ts") },
     { find: "@", replacement: web },
     { find: "server-only", replacement: path.join(here, "../lounge-local/server-only.ts") },
     { find: "next/navigation", replacement: path.join(here, "../groups-local/navigation.ts") },

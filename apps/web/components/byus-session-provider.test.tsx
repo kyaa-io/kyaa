@@ -6,17 +6,15 @@ import { ByUsSessionProvider, useByUsSession } from "./byus-session-provider";
 
 const mocks = vi.hoisted(() => ({
   auth: { ready: true, authenticated: false, user: null as { id: string } | null, getAccessToken: vi.fn() },
-  refreshUser: vi.fn(),
-  createWallet: vi.fn(),
+  // The first awaited step of a transition is the access token read; tests hold a transition open through it.
+  token: vi.fn(),
   replace: vi.fn(),
   markReady: vi.fn(),
   resetAvatar: vi.fn(),
   result: vi.fn(),
 }));
-vi.mock("@privy-io/react-auth", () => ({
+vi.mock("@/features/auth/client/auth-fallback", () => ({
   usePrivy: () => mocks.auth,
-  useUser: () => ({ refreshUser: mocks.refreshUser }),
-  useCreateWallet: () => ({ createWallet: mocks.createWallet }),
 }));
 vi.mock("next/navigation", () => ({ useRouter: () => ({ replace: mocks.replace }) }));
 vi.mock("./avatar-session-bridge", () => ({
@@ -62,9 +60,8 @@ function tree(children?: React.ReactNode) {
 
 beforeEach(() => {
   window.history.replaceState({}, "", "/login");
-  mocks.auth = { ready: true, authenticated: false, user: null, getAccessToken: vi.fn(async () => "token") };
-  mocks.refreshUser.mockReset().mockResolvedValue({ id: "fan-a", linkedAccounts: [wallet] });
-  mocks.createWallet.mockReset().mockResolvedValue(wallet);
+  mocks.token.mockReset().mockResolvedValue("token");
+  mocks.auth = { ready: true, authenticated: false, user: null, getAccessToken: vi.fn(() => mocks.token()) };
   mocks.replace.mockReset().mockImplementation((path: string) => window.history.replaceState({}, "", path));
   mocks.markReady.mockReset();
   mocks.resetAvatar.mockReset();
@@ -91,7 +88,7 @@ describe("root-owned ByUs session transition", () => {
   it.each(["refresh", "request"])("supersedes changed same-owner context during %s and ignores the old result", async (stage) => {
     mocks.auth = { ...mocks.auth, authenticated: true, user: { id: "fan-a" } };
     let finishOld!: () => void;
-    if (stage === "refresh") mocks.refreshUser.mockImplementationOnce(() => new Promise(resolve => {
+    if (stage === "refresh") mocks.token.mockImplementationOnce(() => new Promise(resolve => {
       finishOld = () => resolve({ id: "fan-a", linkedAccounts: [wallet] });
     }));
     else vi.mocked(fetch).mockImplementationOnce(() => new Promise(resolve => {
@@ -100,10 +97,10 @@ describe("root-owned ByUs session transition", () => {
     render(tree(<CaptureBegin />));
     const begin = captureBegin.mock.calls.at(-1)![0] as ReturnType<typeof useByUsSession>["beginTransition"];
     await act(async () => { begin({ ownerId: "fan-a", ...context }); });
-    await waitFor(() => expect(stage === "refresh" ? mocks.refreshUser : fetch).toHaveBeenCalledTimes(1));
+    await waitFor(() => expect(stage === "refresh" ? mocks.token : fetch).toHaveBeenCalledTimes(1));
     const firstGeneration = JSON.parse(screen.getByTestId("session").textContent!).generation;
     await act(async () => { begin({ ownerId: "fan-a", ...context }); });
-    expect(mocks.refreshUser).toHaveBeenCalledTimes(1);
+    expect(mocks.token).toHaveBeenCalledTimes(1);
     expect(JSON.parse(screen.getByTestId("session").textContent!).generation).toBe(firstGeneration);
     await act(async () => { begin({ ownerId: "fan-a", ...context, returnTo: "/connect/runmusic" }); });
     await waitFor(() => expect(mocks.markReady).toHaveBeenCalledTimes(1));
@@ -119,7 +116,7 @@ describe("root-owned ByUs session transition", () => {
 
   it("continues after the source login component unmounts", async () => {
     let finishRefresh!: (value: { id: string; linkedAccounts: typeof wallet[] }) => void;
-    mocks.refreshUser.mockImplementation(() => new Promise((resolve) => { finishRefresh = resolve; }));
+    mocks.token.mockImplementation(() => new Promise((resolve) => { finishRefresh = resolve; }));
     function Harness() {
       const [showSource, setShowSource] = useState(true);
       return tree(showSource ? <Starter onStart={() => setShowSource(false)} /> : <div>destination</div>);
@@ -137,12 +134,11 @@ describe("root-owned ByUs session transition", () => {
 
   it("cancels ownership when the root provider itself unmounts", async () => {
     let finishRefresh!: (value: { id: string; linkedAccounts: typeof wallet[] }) => void;
-    mocks.refreshUser.mockImplementation(() => new Promise((resolve) => { finishRefresh = resolve; }));
+    mocks.token.mockImplementation(() => new Promise((resolve) => { finishRefresh = resolve; }));
     const view = render(tree(<Starter />));
     fireEvent.click(screen.getByRole("button", { name: "start fan-a" }));
     view.unmount();
     await act(async () => finishRefresh({ id: "fan-a", linkedAccounts: [wallet] }));
-    expect(mocks.auth.getAccessToken).not.toHaveBeenCalled();
     expect(fetch).not.toHaveBeenCalled();
     expect(mocks.markReady).not.toHaveBeenCalled();
     expect(mocks.replace).not.toHaveBeenCalled();
@@ -152,7 +148,7 @@ describe("root-owned ByUs session transition", () => {
     mocks.auth = { ...mocks.auth, authenticated: true, user: { id: "fan-b" } };
     render(tree(<Starter owner="fan-a" />));
     fireEvent.click(screen.getByRole("button", { name: "start fan-a" }));
-    expect(mocks.refreshUser).not.toHaveBeenCalled();
+    expect(mocks.token).not.toHaveBeenCalled();
     expect(screen.getByTestId("session")).toHaveTextContent('"ownerId":null');
   });
 
@@ -163,13 +159,13 @@ describe("root-owned ByUs session transition", () => {
     view.rerender(tree(<CaptureBegin />));
     await act(async () => {});
     await act(async () => { await oldBegin({ ownerId: "fan-a", ...context }); });
-    expect(mocks.refreshUser).not.toHaveBeenCalled();
+    expect(mocks.token).not.toHaveBeenCalled();
     expect(screen.getByTestId("session")).toHaveTextContent('"ownerId":null');
   });
 
   it("does not let an old A callback cancel B's active transition", async () => {
     let finishB!: (value: { id: string; linkedAccounts: typeof wallet[] }) => void;
-    mocks.refreshUser.mockImplementation(() => new Promise((resolve) => { finishB = resolve; }));
+    mocks.token.mockImplementation(() => new Promise((resolve) => { finishB = resolve; }));
     const view = render(tree(<><CaptureBegin /><Starter owner="fan-b" /></>));
     const oldBegin = captureBegin.mock.calls.at(-1)![0] as ReturnType<typeof useByUsSession>["beginTransition"];
     mocks.auth = { ...mocks.auth, authenticated: true, user: { id: "fan-b" } };
@@ -185,7 +181,7 @@ describe("root-owned ByUs session transition", () => {
 
   it("invalidates A immediately on an SDK switch and ignores A's late result while B can start", async () => {
     let finishA!: (value: { id: string; linkedAccounts: typeof wallet[] }) => void;
-    mocks.refreshUser.mockImplementationOnce(() => new Promise((resolve) => { finishA = resolve; }))
+    mocks.token.mockImplementationOnce(() => new Promise((resolve) => { finishA = resolve; }))
       .mockResolvedValueOnce({ id: "fan-b", linkedAccounts: [wallet] });
     const view = render(tree(<><Starter owner="fan-a" /><Starter owner="fan-b" /></>));
     fireEvent.click(screen.getByRole("button", { name: "start fan-a" }));
@@ -202,7 +198,7 @@ describe("root-owned ByUs session transition", () => {
   it("invalidates a pending owner on logout and ignores late SDK work", async () => {
     mocks.auth = { ...mocks.auth, authenticated: true, user: { id: "fan-a" } };
     let finish!: (value: { id: string; linkedAccounts: typeof wallet[] }) => void;
-    mocks.refreshUser.mockImplementation(() => new Promise((resolve) => { finish = resolve; }));
+    mocks.token.mockImplementation(() => new Promise((resolve) => { finish = resolve; }));
     const view = render(tree(<Starter />));
     fireEvent.click(screen.getByRole("button", { name: "start fan-a" }));
     mocks.auth = { ...mocks.auth, authenticated: false, user: null };
@@ -228,7 +224,7 @@ describe("root-owned ByUs session transition", () => {
 
   it("routes incomplete verification onboarding only while still at the provisional destination", async () => {
     let finish!: (value: { id: string; linkedAccounts: typeof wallet[] }) => void;
-    mocks.refreshUser.mockImplementation(() => new Promise((resolve) => { finish = resolve; }));
+    mocks.token.mockImplementation(() => new Promise((resolve) => { finish = resolve; }));
     vi.mocked(fetch).mockResolvedValue(Response.json({ profile: { completed: false } }));
     const verification = { ...context, returnTo: "/c/kara/verify?locale=ko", intent: "passport", entity: "kara" };
     function VerificationStarter() {
@@ -243,7 +239,7 @@ describe("root-owned ByUs session transition", () => {
 
   it("does not send a user back after they leave during a delayed successful transition", async () => {
     let finish!: (value: { id: string; linkedAccounts: typeof wallet[] }) => void;
-    mocks.refreshUser.mockImplementation(() => new Promise((resolve) => { finish = resolve; }));
+    mocks.token.mockImplementation(() => new Promise((resolve) => { finish = resolve; }));
     vi.mocked(fetch).mockResolvedValue(Response.json({ profile: { completed: false } }));
     const verification = { ...context, returnTo: "/c/kara/verify?locale=ko", intent: "passport", entity: "kara" };
     function VerificationStarter() {

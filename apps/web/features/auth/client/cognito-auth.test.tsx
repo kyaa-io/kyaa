@@ -2,7 +2,7 @@ import {act,renderHook,waitFor} from "@testing-library/react";
 import{afterEach,expect,it,vi}from"vitest";
 import type{ReactNode}from"react";
 const mock=vi.hoisted(()=>({privy:{ready:true,authenticated:true,user:{id:"did:privy:old"},getAccessToken:vi.fn(async()=>"legacy-token"),logout:vi.fn(async()=>{})},sync:vi.fn()}));
-vi.mock("@privy-io/react-auth",()=>({usePrivy:()=>mock.privy,useSubscribeToJwtAuthWithFlag:mock.sync}));
+vi.mock("@/features/auth/client/auth-fallback",()=>({usePrivy:()=>mock.privy,useSubscribeToJwtAuthWithFlag:mock.sync}));
 import{CognitoAuthProvider,useByUsAuth,useCognitoAuth}from"./cognito-auth";
 afterEach(()=>{vi.useRealTimers();vi.clearAllMocks();vi.unstubAllGlobals();});
 it.each(["request","body"])("ends a stalled session %s and permits a fresh retry without accepting the late response",async(stage)=>{

@@ -7,7 +7,7 @@ const state = vi.hoisted(() => ({
   friendships: [] as { id: string; profileId: string; nickname: string; avatarUrl: string; status: string }[],
   members: [] as {profileId:string; nickname:string; avatarUrl:string}[], nextCursor: null as string | null, friendsStatus: "ready", membersStatus: "ready", urls: [] as string[], relationship: "none", isSelf: false, hasMore: false, retry: vi.fn(),
 }));
-vi.mock("@privy-io/react-auth", () => ({ usePrivy: () => ({ ready: true, authenticated: true, user: { id: "viewer" }, getAccessToken: async () => "token" }) }));
+vi.mock("@/features/auth/client/auth-fallback", () => ({ usePrivy: () => ({ ready: true, authenticated: true, user: { id: "viewer" }, getAccessToken: async () => "token" }) }));
 vi.mock("@/components/byus-session-provider", () => ({ useByUsSession: () => ({ ownerId: "viewer", generation: 0, ready: true }) }));
 vi.mock("./wave-friend-scanner", () => ({ WaveFriendScanner: () => <p>Scanner</p> }));
 vi.mock("./use-fanpage-resource", () => ({ useFanpageResource: (url: string) => { state.urls.push(url); return ({

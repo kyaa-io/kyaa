@@ -4,7 +4,7 @@ import { PostComposer } from "./post-composer";
 import { PostCard } from "./post-card";
 import type { FanPost } from "../domain/content";
 const state = vi.hoisted(() => ({ request: vi.fn(async () => ({ ok: true })), remove: vi.fn() }));
-vi.mock("@privy-io/react-auth", () => ({ usePrivy: () => ({ ready: true, authenticated: true, user: { id: "owner" } }) }));
+vi.mock("@/features/auth/client/auth-fallback", () => ({ usePrivy: () => ({ ready: true, authenticated: true, user: { id: "owner" } }) }));
 vi.mock("@/components/byus-session-provider", () => ({ useByUsSession: () => ({ ready: true, generation: 0, ownerId: "owner" }) }));
 vi.mock("@/features/content-safety/ui/use-content-mutation", () => ({ useContentMutation: () => ({ request: state.request, busy: false, error: "" }) }));
 vi.mock("@/features/content-safety/ui/use-wave-media-upload", () => ({ useWaveMediaUpload: () => ({ items: [{ key: "task", media: { state: "ready", kind: "video", assetId: "video", width: 1280, height: 720, durationSeconds: 30 } }], ready: true, busy: false, invalid: false, remove: state.remove, markUsed:state.remove }) }));

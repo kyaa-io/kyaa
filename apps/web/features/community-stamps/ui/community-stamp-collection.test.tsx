@@ -4,7 +4,7 @@ import { APP_LOCALES } from "@/i18n/locales";
 import { AVAILABLE_COMMUNITY_STAMPS, COMMUNITY_STAMPS } from "../domain/community-stamps";
 import { CommunityStampCollection } from "./community-stamp-collection";
 
-vi.mock("@privy-io/react-auth", () => ({ usePrivy: () => ({ ready: true, authenticated: true, user: { id: "owner" } }) }));
+vi.mock("@/features/auth/client/auth-fallback", () => ({ usePrivy: () => ({ ready: true, authenticated: true, user: { id: "owner" } }) }));
 
 beforeEach(() => {
   HTMLDialogElement.prototype.showModal = vi.fn();

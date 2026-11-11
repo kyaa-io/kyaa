@@ -13,7 +13,7 @@ export async function startHarness(port) {
       { find: /.*features\/dukjil\/ui\/dukjil-provider$/, replacement: path.join(here, 'dukjil-on.ts') },
       { find: '@', replacement: web },
       { find: 'next/navigation', replacement: path.join(stamps, 'next-navigation.ts') },
-      { find: '@privy-io/react-auth', replacement: path.join(stamps, 'privy.ts') },
+      { find: /^.*\/auth-fallback$/, replacement: path.join(stamps, 'privy.ts') },
       ...['link', 'image'].map(name => ({ find: `next/${name}`, replacement: path.join(here, `../mission-local/next-${name}.tsx`) })),
     ] },
     server: { host: '127.0.0.1', port, strictPort: true, fs: { allow: [web, realpathSync(path.resolve(web, '../../node_modules')), realpathSync(path.join(web, 'node_modules'))] } },

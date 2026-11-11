@@ -18,7 +18,7 @@ const analytics = vi.hoisted(() => ({
   recordProductEventV1: vi.fn(async () => true),
 }));
 
-vi.mock("@privy-io/react-auth", () => ({
+vi.mock("@/features/auth/client/auth-fallback", () => ({
   usePrivy: () => ({ ready: authReady, authenticated, getAccessToken, user: authenticated && userAvailable ? { id: userId } : null }),
 }));
 vi.mock("@/components/byus-session-provider", () => ({ useByUsSession: () => session }));

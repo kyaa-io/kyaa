@@ -4,7 +4,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { PickupRosterExport, RaffleWinnerOperations } from "./raffle-operations-panel";
 
 const getAccessToken = vi.hoisted(() => vi.fn(async () => "admin-token"));
-vi.mock("@privy-io/react-auth", () => ({ usePrivy: () => ({ getAccessToken }) }));
+vi.mock("@/features/auth/client/auth-fallback", () => ({ usePrivy: () => ({ getAccessToken }) }));
 
 const winnerId = "11111111-1111-4111-8111-111111111111";
 const appUserId = "22222222-2222-4222-8222-222222222222";

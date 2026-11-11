@@ -4,7 +4,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { MissionBuilder } from "./mission-builder";
 
 const getAccessToken = vi.fn(async () => "token");
-vi.mock("@privy-io/react-auth", () => ({ usePrivy: () => ({ getAccessToken }) }));
+vi.mock("@/features/auth/client/auth-fallback", () => ({ usePrivy: () => ({ getAccessToken }) }));
 vi.mock("next/navigation", () => ({
   usePathname: () => "/admin/lives/live-1/missions",
   useSearchParams: () => new URLSearchParams(),

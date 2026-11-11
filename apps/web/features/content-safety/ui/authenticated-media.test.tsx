@@ -4,7 +4,7 @@ import {contentCopy} from '@/i18n/catalogs/features__fan_posts__ui';
 import { AuthenticatedMedia } from "./authenticated-media";
 const auth = vi.hoisted(() => ({ ready: true, authenticated: true, user: { id: "owner" }, getAccessToken: vi.fn(async () => "secret") }));
 const session = vi.hoisted(() => ({ ready: true, ownerId: "owner", generation: 0 }));
-vi.mock("@privy-io/react-auth", () => ({ usePrivy: () => auth }));
+vi.mock("@/features/auth/client/auth-fallback", () => ({ usePrivy: () => auth }));
 vi.mock("@/components/byus-session-provider", () => ({ useByUsSession: () => session }));
 // A video is downloaded whole only when it is near the screen and autoplay is allowed: the screen is "near" and motion is allowed here.
 beforeEach(() => {

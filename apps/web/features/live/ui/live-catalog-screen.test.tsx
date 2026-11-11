@@ -9,7 +9,7 @@ vi.mock("./observed-live-strip", () => ({ ObservedLiveStrip: () => null }));
 const privy = { ready: true, authenticated: false, getAccessToken: vi.fn() };
 const session = { ready: true, pending: false, ownerId: null as string | null, generation: 0 };
 
-vi.mock("@privy-io/react-auth", () => ({ usePrivy: () => privy }));
+vi.mock("@/features/auth/client/auth-fallback", () => ({ usePrivy: () => privy }));
 vi.mock("@/components/byus-session-provider", () => ({ useByUsSession: () => session }));
 
 const base = {

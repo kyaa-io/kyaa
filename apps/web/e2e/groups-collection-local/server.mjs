@@ -7,7 +7,7 @@ export async function startHarness(port=5193){
  {find:/.*features\/auth\/client\/cognito-auth$/,replacement:path.join(here,'auth.ts')},
  {find:/.*byus-session-provider$/,replacement:path.join(here,'auth.ts')},
  {find:/.*use-admin-session$/,replacement:path.join(here,'auth.ts')},
- {find:'@privy-io/react-auth',replacement:path.join(here,'auth.ts')},
+ {find: /^.*\/auth-fallback$/,replacement:path.join(here,'auth.ts')},
  {find:'next/navigation',replacement:path.join(here,'../groups-local/navigation.ts')},
  ...['link','image'].map(name=>({find:`next/${name}`,replacement:path.join(here,`../mission-local/next-${name}.tsx`)})),
  {find:'server-only',replacement:path.join(here,'../lounge-local/server-only.ts')},{find:'@',replacement:web}]},server:{hmr:false,host:'127.0.0.1',port,strictPort:true,fs:{allow:[path.resolve(web,'../..')]}}});

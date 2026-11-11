@@ -32,7 +32,7 @@ export async function startHarness() {
  });}}],resolve:{alias:[
  {find:/.*components\/byus-session-provider$/,replacement:path.join(here,'../wave-media-local/session.ts')},
  {find:/.*features\/auth\/client\/cognito-auth$/,replacement:path.join(here,'../community-stamps-local/privy.ts')},
- {find:'@privy-io/react-auth',replacement:path.join(here,'../community-stamps-local/privy.ts')},
+ {find: /^.*\/auth-fallback$/,replacement:path.join(here,'../community-stamps-local/privy.ts')},
  ...['link','image','navigation'].map(name=>({find:`next/${name}`,replacement:path.join(here,`../mission-local/next-${name}.${name==='navigation'?'ts':'tsx'}`)})),
  {find:'@',replacement:web}]},server:{host:'127.0.0.1',port:4217,strictPort:true,fs:{allow:[web,realpathSync(path.resolve(web,'../../node_modules')),realpathSync(path.join(web,'node_modules'))]}}});
  await server.listen(); return server;

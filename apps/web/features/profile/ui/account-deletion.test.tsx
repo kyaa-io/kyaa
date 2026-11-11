@@ -1,7 +1,7 @@
 import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, expect, it, vi } from "vitest";
 const state = vi.hoisted(() => ({ owner: "one", getAccessToken: vi.fn(), logout: vi.fn(), replace: vi.fn() }));
-vi.mock("@privy-io/react-auth", () => ({ usePrivy: () => ({ authenticated: true, user: { id: state.owner }, getAccessToken: state.getAccessToken, logout: state.logout }) }));
+vi.mock("@/features/auth/client/auth-fallback", () => ({ usePrivy: () => ({ authenticated: true, user: { id: state.owner }, getAccessToken: state.getAccessToken, logout: state.logout }) }));
 vi.mock("next/navigation", () => ({ useRouter: () => ({ replace: state.replace }) }));
 import { AccountDeletion } from "./account-deletion";
 beforeEach(() => { state.owner = "one"; vi.clearAllMocks(); state.getAccessToken.mockResolvedValue("token"); state.logout.mockResolvedValue(undefined); vi.stubGlobal("fetch", vi.fn()); });

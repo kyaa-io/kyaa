@@ -7,7 +7,7 @@ const auth = vi.hoisted(() => ({
   user: { id: "did:privy:fan-one" },
   getAccessToken: vi.fn(async () => "token"),
 }));
-vi.mock("@privy-io/react-auth", () => ({ usePrivy: () => auth }));
+vi.mock("@/features/auth/client/auth-fallback", () => ({ usePrivy: () => auth }));
 // 261107-2 D12: the share proof tile leads the list and its rows join the history; their own behaviour is tested in share-proof-panel.test.tsx.
 vi.mock("@/features/share-proof/ui/share-proof-panel", () => ({
   ShareProofTile: () => <a href="?share=1" data-share-proof-tile="">share proof</a>,

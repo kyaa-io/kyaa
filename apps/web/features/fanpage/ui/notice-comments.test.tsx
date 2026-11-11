@@ -1,7 +1,7 @@
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 const state = vi.hoisted(() => ({ authenticated: true, fail: false, hasComment: false }));
-vi.mock("@privy-io/react-auth", () => ({ usePrivy: () => ({ ready: true, authenticated: state.authenticated, getAccessToken: async () => "token" }) }));
+vi.mock("@/features/auth/client/auth-fallback", () => ({ usePrivy: () => ({ ready: true, authenticated: state.authenticated, getAccessToken: async () => "token" }) }));
 vi.mock("./use-community-resource", () => ({ useCommunityResource: () => ({ state: { status: "ready", data: { comments: state.hasComment ? [{ id: "home-cheer-comment", body: "응원해요", nickname: "팬", avatarUrl: "/avatar.png", createdAt: "2026-10-21T00:00:00Z", isOwner: true }] : [], total: state.hasComment ? 1 : 0, nextCursor: null } }, retry: vi.fn() }) }));
 vi.mock("@/features/content-safety/ui/content-actions", () => ({ ContentActions: () => null, ContentTranslation: () => null }));
 import { NoticeComments } from "./notice-comments";

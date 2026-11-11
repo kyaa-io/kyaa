@@ -2,7 +2,7 @@ import { render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({ authenticated: true, state: { status: "loading" } as unknown, retry: vi.fn() }));
-vi.mock("@privy-io/react-auth", () => ({ usePrivy: () => ({ ready: true, authenticated: mocks.authenticated, user: { id: "owner" }, getAccessToken: vi.fn() }) }));
+vi.mock("@/features/auth/client/auth-fallback", () => ({ usePrivy: () => ({ ready: true, authenticated: mocks.authenticated, user: { id: "owner" }, getAccessToken: vi.fn() }) }));
 vi.mock("@/components/fan-ui/use-owned-fan-resource", () => ({ useOwnedFanResource: () => ({ state: mocks.state, retry: mocks.retry, refreshFailed: false }) }));
 vi.mock("@/components/auth-intent-link", () => ({ AuthIntentLink: ({ children }: { children: React.ReactNode }) => <a href="/login">{children}</a> }));
 import { FanTicketGuide } from "./fan-ticket-guide";

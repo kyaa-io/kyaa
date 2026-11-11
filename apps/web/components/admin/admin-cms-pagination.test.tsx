@@ -4,7 +4,7 @@ import type { ReactNode } from "react";
 import { AuthorizedLiveManager } from "./live-manager";
 import { AuthorizedBenefitManager } from "./benefit-manager";
 const auth = vi.hoisted(() => ({ getAccessToken: vi.fn(async () => "token") }));
-vi.mock("@privy-io/react-auth", () => ({ usePrivy: () => auth }));
+vi.mock("@/features/auth/client/auth-fallback", () => ({ usePrivy: () => auth }));
 vi.mock("next/navigation", () => ({ useSearchParams: () => new URLSearchParams() }));
 vi.mock("./use-admin-session", () => ({ useAdminSession: () => ({ status: "authorized", admin: { role: "viewer" } }) }));
 vi.mock("./operations-shell", () => ({ AdminOperationsShell: ({ children }: { children: ReactNode }) => <main>{children}</main> }));

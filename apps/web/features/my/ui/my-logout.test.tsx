@@ -6,7 +6,7 @@ import { MyLogout } from "./my-logout";
 
 const { logout, replace } = vi.hoisted(() => ({ logout: vi.fn(), replace: vi.fn() }));
 
-vi.mock("@privy-io/react-auth", () => ({
+vi.mock("@/features/auth/client/auth-fallback", () => ({
   usePrivy: () => ({ ready: true, authenticated: true, user: { id: "owner-a" }, getAccessToken: vi.fn(), logout }),
 }));
 vi.mock("next/navigation", () => ({ useRouter: () => ({ replace }) }));

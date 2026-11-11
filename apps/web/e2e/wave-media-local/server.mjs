@@ -27,7 +27,7 @@ const server = await createServer({ configFile: false, root: here, publicDir: pa
  return reply({ error: { code: 'FIXTURE_UNHANDLED' } }, 404);
  }); } }], resolve: { alias: [
  { find: /.*components\/byus-session-provider$/, replacement: path.join(here, 'session.ts') },
- { find: '@privy-io/react-auth', replacement: path.join(here, 'privy.ts') },
+ { find: /^.*\/auth-fallback$/, replacement: path.join(here, 'privy.ts') },
  ...['link', 'image', 'navigation'].map(name => ({ find: `next/${name}`, replacement: path.join(here, `../mission-local/next-${name}.${name === 'navigation' ? 'ts' : 'tsx'}`) })),
  { find: '@', replacement: web },
  ] }, server: { host: '127.0.0.1', port: 4204, strictPort: true, fs: { allow: [web, realpathSync(path.resolve(web, '../../node_modules')), realpathSync(path.join(web, 'node_modules'))] } } });

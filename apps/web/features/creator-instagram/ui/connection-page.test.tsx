@@ -9,7 +9,7 @@ let authenticated = true;
 let owner = "owner-a";
 let query = "";
 const fetchMock = vi.fn();
-vi.mock("@privy-io/react-auth", () => ({ usePrivy: () => ({ ready: true, authenticated, user: authenticated ? { id: owner } : null, getAccessToken }) }));
+vi.mock("@/features/auth/client/auth-fallback", () => ({ usePrivy: () => ({ ready: true, authenticated, user: authenticated ? { id: owner } : null, getAccessToken }) }));
 vi.mock("next/navigation", () => ({ useRouter: () => ({ push }), useSearchParams: () => new URLSearchParams(query) }));
 vi.mock("next/image", () => ({ default: ({ priority: _p, unoptimized: _u, ...props }: React.ImgHTMLAttributes<HTMLImageElement> & { priority?: boolean; unoptimized?: boolean }) => <img {...props} alt={props.alt ?? ""} /> }));
 const account: CreatorInstagramAccount = { celebrityId: "11111111-1111-4111-8111-111111111111", generation: "22222222-2222-4222-8222-222222222222", slug: "elina", name: "엘리나", username: "elina_4_22", avatarUrl: "/images/home-entry/elina.jpg", liveEnabled: true, needsReconnect: false, mediaStatus: "connected" };

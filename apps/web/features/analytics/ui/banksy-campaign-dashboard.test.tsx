@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { CampaignAdminData } from "../domain/banksy-campaign";
 
 const auth = vi.hoisted(() => ({ role: "admin", getAccessToken: vi.fn(async () => "admin-token") }));
-vi.mock("@privy-io/react-auth", () => ({ usePrivy: () => ({ getAccessToken: auth.getAccessToken }) }));
+vi.mock("@/features/auth/client/auth-fallback", () => ({ usePrivy: () => ({ getAccessToken: auth.getAccessToken }) }));
 vi.mock("../../../components/admin/use-admin-session", () => ({ useAdminSession: () => ({ status: "authorized", admin: { email: "admin@example.invalid", role: auth.role } }) }));
 vi.mock("next/navigation", () => ({ usePathname: () => "/admin/campaigns", useSearchParams: () => new URLSearchParams(), useRouter: () => ({ replace: vi.fn() }) }));
 import { BanksyCampaignContent, BanksyCampaignDashboard } from "./banksy-campaign-dashboard";

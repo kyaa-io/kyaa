@@ -6,7 +6,7 @@ import { MyBenefitProgress } from "./my-benefit-progress";
 
 const { owner } = vi.hoisted(() => ({ owner: { id: "owner-a" } }));
 const getAccessToken = vi.fn(async () => "test-token");
-vi.mock("@privy-io/react-auth", () => ({ usePrivy: () => ({ ready: true, authenticated: true, user: owner, getAccessToken }) }));
+vi.mock("@/features/auth/client/auth-fallback", () => ({ usePrivy: () => ({ ready: true, authenticated: true, user: owner, getAccessToken }) }));
 afterEach(() => { owner.id = "owner-a"; });
 const ids = ["11111111-1111-4111-8111-111111111111", "22222222-2222-4222-8222-222222222222"];
 const creators: PassportCreator[] = ids.map((id, index) => ({

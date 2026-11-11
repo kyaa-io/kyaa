@@ -1,7 +1,7 @@
 import { cleanup, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 const state = vi.hoisted(() => ({ authenticated: false, ready: true, status: "ready", stamps: [] as { program: string; earnedAt: string }[] }));
-vi.mock("@privy-io/react-auth", () => ({ usePrivy: () => ({ ready: state.ready, authenticated: state.authenticated }) }));
+vi.mock("@/features/auth/client/auth-fallback", () => ({ usePrivy: () => ({ ready: state.ready, authenticated: state.authenticated }) }));
 vi.mock("@/components/byus-session-provider", () => ({ useByUsSession: () => ({ ready: true }) }));
 vi.mock("./use-fanpage-resource", () => ({ useFanpageResource: () => ({ state: { status: state.status, data: { stamps: state.stamps } }, retry: vi.fn() }) }));
 vi.mock("./use-community-resource", () => ({ useCommunityResource: () => ({ state: { status: "loading" } }) }));

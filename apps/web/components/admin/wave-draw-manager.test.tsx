@@ -3,7 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { ReactNode } from "react";
 const state = vi.hoisted(() => ({ session: { status: "authorized", admin: { email: "admin@example.com", role: "admin" } }, owner: "admin-one", token: "token-one" }));
 const getAccessToken = vi.hoisted(() => vi.fn(async () => state.token));
-vi.mock("@privy-io/react-auth", () => ({ usePrivy: () => ({ user: { id: state.owner }, getAccessToken }) }));
+vi.mock("@/features/auth/client/auth-fallback", () => ({ usePrivy: () => ({ user: { id: state.owner }, getAccessToken }) }));
 vi.mock("./use-admin-session", () => ({ useAdminSession: () => state.session }));
 vi.mock("./operations-shell", () => ({ AdminOperationsShell: ({ children }: { children: ReactNode }) => <>{children}</> }));
 vi.mock("@/features/fanpage/ui/wave-draw", () => ({ wavePrizeImage: (key: string) => `/images/wave/prizes/${key}.webp`, WaveWinners: ({ winners }: { winners: { nickname: string }[] }) => <p>{winners.map(winner => winner.nickname).join(", ")}</p> }));

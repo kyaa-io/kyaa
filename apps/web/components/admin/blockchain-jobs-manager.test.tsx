@@ -6,7 +6,7 @@ const replace = vi.fn();
 let query = "";
 let role = "operator";
 vi.mock("next/navigation", () => ({ usePathname: () => "/admin/blockchain-jobs", useRouter: () => ({ replace }), useSearchParams: () => new URLSearchParams(query) }));
-vi.mock("@privy-io/react-auth", () => ({ usePrivy: () => ({ getAccessToken: vi.fn().mockResolvedValue("token") }) }));
+vi.mock("@/features/auth/client/auth-fallback", () => ({ usePrivy: () => ({ getAccessToken: vi.fn().mockResolvedValue("token") }) }));
 vi.mock("./use-admin-session", () => ({ useAdminSession: () => ({ status: "authorized", admin: { email: "ops@byus.test", role } }) }));
 
 const failedJob = { id: "11111111-1111-4111-8111-111111111111", entityType: "passport", entityId: "22222222-2222-4222-8222-222222222222", status: "FAILED", attempts: 2, maxAttempts: 5, nextAttemptAt: "2026-07-21T00:00:00Z", createdAt: "2026-07-20T00:00:00Z", updatedAt: "2026-07-21T00:00:00Z", completedAt: null, transactionReference: null, chainState: "not_submitted", errorCode: "RPC_UNAVAILABLE", errorSummary: "Provider request could not be completed.", manuallyRetryable: true, attemptHistory: [{ attemptNumber: 2, event: "failed", fromStatus: "PROCESSING", toStatus: "FAILED", errorCode: "RPC_UNAVAILABLE", createdAt: "2026-07-21T00:00:00Z", correlationId: null }] };

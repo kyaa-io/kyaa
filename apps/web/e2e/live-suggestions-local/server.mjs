@@ -9,7 +9,7 @@ export async function startHarness(port = 4199) {
       { find: '@/server/seo/public-content', replacement: path.join(here, 'seo.ts') },
       { find: '@', replacement: web },
       { find: 'next/navigation', replacement: path.join(here, 'navigation.ts') },
-      { find: '@privy-io/react-auth', replacement: path.join(here, 'privy.ts') },
+      { find: /^.*\/auth-fallback$/, replacement: path.join(here, 'privy.ts') },
       ...['link', 'image'].map(name => ({ find: `next/${name}`, replacement: path.join(here, `../mission-local/next-${name}.tsx`) })),
     ] }, server: { host: '127.0.0.1', port, strictPort: true, fs: { allow: [web, path.resolve(web, '../../node_modules')] } } });
   await server.listen(); return { server, baseURL: `http://127.0.0.1:${port}` };

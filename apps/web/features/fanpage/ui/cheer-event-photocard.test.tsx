@@ -6,7 +6,7 @@ import { photocardClaimCopy } from "../domain/photocard-claim-copy";
 import { APP_LOCALES } from "@/i18n/locales";
 let owner = "owner-a", authenticated = true, generation = 0;
 const getAccessToken = vi.fn(async () => "token");
-vi.mock("@privy-io/react-auth", () => ({ usePrivy: () => ({ ready:true, authenticated, user:{id:owner}, getAccessToken }) }));
+vi.mock("@/features/auth/client/auth-fallback", () => ({ usePrivy: () => ({ ready:true, authenticated, user:{id:owner}, getAccessToken }) }));
 vi.mock("@/components/byus-session-provider", () => ({ useByUsSession: () => ({ ready:true, ownerId:owner, generation }) }));
 const asset = { id:"11111111-1111-4111-8111-111111111111", width:640, height:960 };
 beforeEach(()=>{owner="owner-a";authenticated=true;generation=0;vi.stubGlobal("fetch",vi.fn(async()=>new Response(new Blob(["webp"],{type:"image/webp"}))));vi.stubGlobal("URL",{createObjectURL:vi.fn(()=>"blob:private"),revokeObjectURL:vi.fn()});});
