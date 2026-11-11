@@ -64,6 +64,10 @@ export class SupabaseProductEventRepository implements ProductEventRepository {
       }
       throw new ProductEventRepositoryError("EVENT_UNAVAILABLE");
     }
+    if (data && typeof data === "object" && !Array.isArray(data)
+      && (data as Record<string, unknown>).skipped === true) {
+      throw new ProductEventRepositoryError("RATE_LIMITED");
+    }
     try { return singleResult(data); }
     catch { throw new ProductEventRepositoryError("EVENT_UNAVAILABLE"); }
   }
