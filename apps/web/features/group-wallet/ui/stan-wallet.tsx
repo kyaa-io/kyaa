@@ -1,4 +1,5 @@
 "use client";
+import { RewardIcon, REWARD_ICON_SRC } from "@/components/fan-ui/reward-icon";
 import Link from "next/link";
 import type { Route } from "next";
 import { useId, useState, type ReactNode } from "react";
@@ -21,8 +22,8 @@ import { rewardedExchangeCopy } from "./rewarded-copy";
 import { usePendingExchange } from "./use-pending-exchange";
 import styles from "./stan-wallet.module.css";
 
-/** 지갑 네 칸의 아이콘: 헤더와 패스포트에 이미 쓰는 컬러 애셋(금 포인트·보라 응모권·분홍 하트·초록 스탬프). */
-const WALLET_GLYPHS = { coin: "/images/economy/point-coin.svg", ticket: "/images/economy/ticket.svg", heart: "/images/economy/heart.svg", stamp: "/images/stamps/ink-v1/mission.webp" } as const;
+/** 지갑과 헤더가 공유하는 노란 포인트·분홍 보상 세트. */
+const WALLET_GLYPHS = { coin: REWARD_ICON_SRC.point, ticket: REWARD_ICON_SRC.ticket, heart: REWARD_ICON_SRC.heart, stamp: REWARD_ICON_SRC.stamp } as const;
 
 export type StanSlot = "loading" | "locked" | "missing" | number;
 
@@ -44,11 +45,11 @@ export function StanWallet({ locale, state, stamps, hearts, links, entries, entr
   const ready = state.kind === "ready", affordable = ready && state.points >= pointCost;
   const stampCount = typeof stamps === "number" ? stamps : 0, full = stampCount > 0 && stampCount % STAMPS_PER_HEART === 0;
   const claimable = full && Boolean(links.claim);
-  const glyph = (name: keyof typeof WALLET_GLYPHS) => <img className={styles.glyph} data-glyph={name} src={WALLET_GLYPHS[name]} width={32} height={32} alt="" />;
+  const glyph = (name: keyof typeof WALLET_GLYPHS) => <RewardIcon kind={name === "coin" ? "point" : name} className={styles.glyph} data-glyph={name} size={32} />;
   const stampText = full ? claimable ? nextHeartLabel(locale, stampCount) : "" : nextHeartLabel(locale, stampCount);
   return <section className={[styles.wallet, className].filter(Boolean).join(" ")} id="wallet" aria-label={s("stanWalletFlows")} data-wallet-card="stan">
     <div className={styles.head}><FanHeading>{s("stanWalletFlows")}</FanHeading><Link className={styles.guide} href={`/guide/dukjil?locale=${locale}` as Route}>{s("stanGuide")} <span aria-hidden="true">›</span></Link></div>
-    {state.kind === "guest" ? <FanLoginScene items={["coin", "ticket", "stamp", "heart"].map((name) => ({ src: `/images/dukjil-duo/glyph-${name}-160.webp`, srcSet: `/images/dukjil-duo/glyph-${name}-160.webp 1x, /images/dukjil-duo/glyph-${name}-512.webp 3x` }))} title={[w.points, w.tickets, s("stanFlowStamps"), s("stanFlowHearts")].join(" · ")} action={state.action} /> : <div className={styles.tiles}>
+    {state.kind === "guest" ? <FanLoginScene items={["coin", "ticket", "stamp", "heart"].map((name) => ({ src: WALLET_GLYPHS[name as keyof typeof WALLET_GLYPHS] }))} title={[w.points, w.tickets, s("stanFlowStamps"), s("stanFlowHearts")].join(" · ")} action={state.action} /> : <div className={styles.tiles}>
       <div className={styles.cell} data-cell="points">{glyph("coin")}<span className={styles.label}>{w.points}</span><span className={styles.value}><Value locale={locale} slot={points} unit="P" /></span>
         <div className={styles.under}><FanGauge size="sm" className={styles.gauge} value={ready ? Math.min(state.points, pointCost) : 0} max={pointCost} label={s("walletNextTicket", [pointCost])} />
           <FanAction variant="text" className={styles.tileLink} disabled={!ready || (!pendingRequest.pending && !affordable)} onClick={() => setOpen(true)}>{locale === "ko" ? "교환" : w.exchange} <span aria-hidden="true">›</span></FanAction></div>

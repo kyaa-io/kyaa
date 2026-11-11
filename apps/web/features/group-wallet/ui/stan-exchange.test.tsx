@@ -194,5 +194,5 @@ it.each(['invalid', 'other-owner'])('does not unlock a low-balance wallet for %s
 it('shows the policy exchange rate with the ticket asset', () => {
   render(<StanExchange locale="ko" points={250} pointCost={100} />);
   expect(screen.getByText('100 P')).toBeInTheDocument();
-  expect(screen.getByRole('img', { name: '응모권' })).toHaveAttribute('src', '/images/economy/ticket.svg');
+  expect(screen.getByRole('img', { name: '응모권' })).toHaveAttribute('src', '/images/dukjil-duo/glyph-ticket-160.webp');
 });

@@ -1,4 +1,5 @@
 "use client";
+import { RewardIcon } from "@/components/fan-ui/reward-icon";
 import Link from "next/link";
 import type { Route } from "next";
 import { ChevronRight, Heart } from "lucide-react";
@@ -135,7 +136,7 @@ function RaffleCard({ raffle, status, slug, locale, entered, allowance }: { raff
   const href = passport ? creatorRaffleVerificationHref(slug, locale, raffle.benefitId) : raffleHref(slug, raffle.benefitId, locale);
   const label = passport ? t(locale, "luckyGetPassport") : status === "open" && allowance?.kind !== "policy" ? t(locale, "luckyEnter") : status === "closed" ? t(locale, "luckyResults") : t(locale, "luckyDetails");
   return <li className={styles.raffle} data-raffle-status={status} data-raffle-allowance={open ? allowance.kind : undefined}>
-    <span className={styles.prize}>{raffle.imageUrl ? <img src={raffle.imageUrl} alt="" width={80} height={60} loading="lazy" /> : <img src="/images/economy/ticket.svg" alt="" width={32} height={32} data-fallback="" />}</span>
+    <span className={styles.prize}>{raffle.imageUrl ? <img src={raffle.imageUrl} alt="" width={80} height={60} loading="lazy" /> : <RewardIcon kind="ticket" alt="" width={32} height={32} data-fallback="" />}</span>
     <span className={styles.raffleHead}><strong className={styles.raffleTitle}>{raffle.title}</strong><span className={styles.meta}><RaffleDate raffle={raffle} status={status} locale={locale} /></span></span>
     <span className={styles.facts}>
       <span className={styles.meta}>{t(locale, "luckyWinners", [raffle.winnerQuantity.toLocaleString(locale)])} · {deliveryLabel(raffle, locale)}{entered ? <> · {t(locale, "luckyMyEntries", [entered.toLocaleString(locale)])}</> : null}</span>

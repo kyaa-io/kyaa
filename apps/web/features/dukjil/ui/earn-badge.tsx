@@ -1,4 +1,5 @@
 "use client";
+import { REWARD_ICON_SRC } from "@/components/fan-ui/reward-icon";
 import { Check, Stamp } from "lucide-react";
 import type { ReactNode } from "react";
 import type { AppLocale } from "@/i18n/locales";
@@ -30,7 +31,7 @@ export type EarnBadgeProps = {
 };
 
 /** The one coin image of every point display. */
-export const POINT_COIN_SRC = "/images/economy/point-coin.svg";
+export const POINT_COIN_SRC = REWARD_ICON_SRC.point;
 
 /** Point badge for buttons and tiles. State is carried by shape and text, never by colour alone; the hidden text names the points for screen readers. */
 export function EarnBadge({ variant, locale, points, stamp = false, remaining = null, remainingPer = "day", today = false, size, className = "" }: EarnBadgeProps) {

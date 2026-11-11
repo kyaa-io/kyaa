@@ -1,4 +1,5 @@
 "use client";
+import { RewardIcon } from "@/components/fan-ui/reward-icon";
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
 import type { Route } from "next";
@@ -31,7 +32,7 @@ export function WalletBalances({ locale, points, tickets }: { locale: AppLocale;
   const w = walletCopy(locale), h = walletHelpCopy(locale);
   return <dl className={styles.balances}>
     <div className={styles.balance} data-summary="points"><dt className={styles.label}><span>{w.points}</span><HelpHint label={h.label} text={h.points} /></dt><Value locale={locale} slot={points} unit="P" coin /></div>
-    <div className={styles.balance}><dt className={styles.label}><img src="/images/economy/ticket.svg" alt="" width={20} height={20} /><span>{locale === "ko" ? "응모권" : w.tickets}</span><HelpHint label={h.label} text={h.tickets} /></dt><Value locale={locale} slot={tickets} unit={locale === "ko" ? "장" : undefined} /></div>
+    <div className={styles.balance}><dt className={styles.label}><RewardIcon kind="ticket" alt="" width={20} height={20} /><span>{locale === "ko" ? "응모권" : w.tickets}</span><HelpHint label={h.label} text={h.tickets} /></dt><Value locale={locale} slot={tickets} unit={locale === "ko" ? "장" : undefined} /></div>
   </dl>;
 }
 

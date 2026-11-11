@@ -2263,3 +2263,6 @@ At the user's request, registered Changha identity and hero images use the unedi
 - 응모 결과(`/my/raffles`): 제목 "응모 결과"(ko), 빈 안내 줄을 760px 열 안의 한 박스로 정리하고 `StanRaffleLists`(덕질 카드 재사용)로 최애의 진행 중·지난 럭키드로우를 채운다. 최애가 없으면 패스포트를 가진 첫 크리에이터, 그것도 없으면 안내 줄만 남는다(전 크리에이터 래플 목록 API가 아직 없다). 사유: 대표 02:08.
 - 홈 GGGI 배너 사진: 11/03에 바꾼 인스타 사진(`celebrities/changha/gggi-20261030.jpg`)에서 처음 고른 `gggi/changha-event-20261026.webp`(3:2)로 되돌림, 캠페인 열 `object-position:75% 30%`. 팬페이지 `gggi-event-entry`의 사진은 그대로. 사유: 대표 02:15.
 - MY 패스포트 표지 칸 PC 380→560px(1024+). 사유: 대표 02:15 "MY에는 패스포트 UI를 잘 보여주면".
+
+## ASSET-UNIFY-1403 (2026-11-11)
+사용자 결정: 포인트는 노란 P 3D 동전, 하트·응모권·일반 스탬프 표시는 기존 분홍 3D 세트. 공통 소유자는 `components/fan-ui/reward-icon.tsx`의 RewardIcon/REWARD_ICON_SRC. 종류별 패스포트 도장과 좋아요 행동 아이콘은 의미를 보존한다. 실화면 390/1440 검수는 공용 3000 통합 담당에게 인계(localdev 금지).
