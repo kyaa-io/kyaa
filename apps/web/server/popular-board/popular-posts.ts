@@ -24,6 +24,9 @@ export function createGetPublicPopularPosts(dependencies: Pick<FanpageDependenci
       const owner = authorization === null ? null : (await dependencies.authorize(authorization)).appUserId;
       const data = popularPostsPageSchema.safeParse(await dependencies.rpc("read_public_popular_posts_sorted", { p_app_user_id: owner, p_locale: locale.data, p_page: page.data, p_include_groups: options.groupsEnabled, p_sort: sort.data }));
       if (!data.success) throw new Error("FAN_WEB_UNAVAILABLE");
+      // RPC joins can repeat a post; preserve the first ranked row by its stable source and ID.
+      const seen = new Set<string>();
+      data.data.items = data.data.items.filter(item => { const key = `${item.source}:${item.id}`; if (seen.has(key)) return false; seen.add(key); return true; });
       const { pageImage } = options;
       if (!pageImage) return json(data.data);
       // Each row carries its page's picture so the board can draw it; a page without one stays without the field.

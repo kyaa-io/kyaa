@@ -193,7 +193,7 @@ it("thin banner: draws nothing without banners, and two banners move with the ar
 it("my artists shows the default artwork for a joined group without an image", () => {
   state.authenticated = true; state.joined = [{ ...page(1), kind: "hobby", slug: null }];
   render(<MyArtists locale="ko" loginPath="/pages/groups" />);
-  expect(within(screen.getByRole("link", { name: "아티스트1" })).getByRole("presentation")).toHaveAttribute("src", "/images/groups/music-placeholder.svg");
+  expect(within(screen.getByRole("link", { name: "아티스트1" })).getByRole("presentation")).toHaveAttribute("src", "/images/avatars/star-pink.webp");
 });
 
 it("mobile Hot posts paginate five at a time", () => {
