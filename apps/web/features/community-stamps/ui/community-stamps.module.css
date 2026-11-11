@@ -70,3 +70,13 @@
 .historyState svg { width:var(--space-3); height:var(--space-3); flex-shrink:0; }
 
 .history[hidden] { display:none; }
+
+.recordGrid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:var(--space-4,16px); list-style:none; padding:0; margin:16px 0 32px; }
+.recordCard,.unearnedCard { display:flex; flex-direction:column; align-items:flex-start; gap:8px; width:100%; height:100%; padding:16px; border:1px solid var(--color-line); border-radius:16px; background:var(--color-surface); color:var(--color-text); text-align:left; overflow-wrap:anywhere; }
+.recordCard { cursor:pointer; }
+.recordCard img,.unearnedCard img { align-self:center; width:100%; max-width:168px; height:auto; object-fit:contain; }
+.unearnedCard img { opacity:.3; }
+.recordCard span,.recordCard time { font-size:14px; }
+.activityTable { width:100%; border-collapse:collapse; font-size:14px; text-align:left; }
+.activityTable th,.activityTable td { padding:12px 4px; border-bottom:1px solid var(--color-line); overflow-wrap:anywhere; }
+@media(min-width:1024px) { .recordGrid { grid-template-columns:repeat(4,minmax(0,1fr)); } }
