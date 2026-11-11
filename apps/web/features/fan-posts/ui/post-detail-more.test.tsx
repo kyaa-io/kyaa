@@ -33,11 +33,19 @@ it("switches to the latest fan posts of the page", () => {
   expect(screen.getByRole("button", { name: "최신" }).getAttribute("aria-pressed")).toBe("true");
 });
 
-it("keeps the block height with quiet placeholder rows when the page has few other posts", () => {
+it("keeps the block height with empty rows, not loading bars, when the page has few other posts", () => {
   state.answer = () => ({ status: "ready", data: [post("a"), post("current")] });
   const { container } = render(<PostDetailMore slug="elina" postId="current" locale="ko" />);
   expect(screen.getAllByRole("link")).toHaveLength(1);
-  expect(container.querySelectorAll("li[aria-hidden=true]")).toHaveLength(MORE_ROWS - 1);
+  const empty = container.querySelectorAll("li[aria-hidden=true]");
+  expect(empty).toHaveLength(MORE_ROWS - 1);
+  for (const row of empty) expect(row.childElementCount).toBe(0);
+});
+
+it("leaves a zero count out, and the whole count line when both are zero", () => {
+  state.answer = () => ({ status: "ready", data: [post("a", { likeCount: 2, commentCount: 0 }), post("b", { likeCount: 0, commentCount: 0 })] });
+  render(<PostDetailMore slug="elina" postId="current" locale="ko" />);
+  expect(screen.getAllByRole("link").map(row => row.textContent)).toEqual(["a 제목좋아요 2", "b 제목"]);
 });
 
 it("folds the list when the page has no other post, but keeps the banner place", () => {

@@ -20,14 +20,15 @@
 .title { overflow: hidden; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow-wrap: anywhere; }
 .meta { display: flex; align-items: center; gap: var(--space-3); font-variant-numeric: tabular-nums; }
 .meta > span { display: inline-flex; align-items: center; gap: var(--space-1); }
-.meta > span:first-child { color: var(--color-accent-ink); }
 .srOnly { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
-/* 비어 있는 칸과 불러오는 칸은 같은 높이의 흐린 자리다. 회색 면 대신 옅은 분홍. */
+/* 불러오는 칸은 같은 높이의 옅은 분홍 막대(회색 면 금지). 다 받은 뒤 남는 칸(.empty)은 높이만 지키고 아무것도 그리지 않는다. */
+.list > li.empty { min-height: calc(var(--space-16) + var(--space-4)); border-bottom-color: transparent; }
 .blank { display: grid; grid-template-columns: var(--space-16) minmax(0, 1fr); align-items: center; column-gap: var(--space-3); min-height: calc(var(--space-16) + var(--space-4)); padding: var(--space-2) 0; box-sizing: border-box; }
 .blank > .thumb { outline: 0; }
 .blank > .text > span { display: block; height: var(--space-3); border-radius: var(--radius-small); background: var(--color-accent-soft); }
 .blank > .text > span:first-child { width: 80%; }
 .blank > .text > span:last-child { width: 40%; }
 .failed { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); }
-/* PC 레일은 긴 글을 읽는 동안 함께 내려온다. */
-@media (width >= 64rem) { .rail { position: sticky; top: var(--space-8); } }
+/* PC 레일은 긴 글을 읽는 동안 사이트 헤더 아래에 붙어 함께 내려온다. 배너가 있어 레일이 화면보다 길어질 수 있으면 높은 화면에서만 붙인다. */
+@media (width >= 64rem) { .rail { position: sticky; top: calc(var(--fan-header-height) + var(--space-6)); } }
+@media (width >= 64rem) and (height < 60rem) { .rail:has([data-banner-slot]) { position: static; } }

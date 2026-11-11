@@ -1,7 +1,6 @@
 "use client";
-import { Heart, MessageCircle } from "@/components/fan-ui/fan-icons";
 import { FanAction } from "@/components/fan-ui/fan-action";
-import { FanIcon } from "@/components/fan-ui/fan-icon";
+import { ReactionCount, ReactionIcon } from "@/components/fan-ui/reaction-count";
 import { FanTabs } from "@/components/fan-ui/fan-tabs";
 import { FanText } from "@/components/fan-ui/fan-text";
 import Link from "next/link";
@@ -20,7 +19,7 @@ import styles from "./post-detail-more.module.css";
 type Item = Omit<z.infer<typeof fanPostFeedItemSchema>, "kind">;
 type Tab = "popular" | "latest";
 
-/** 레일에 늘 같은 행 수를 둔다. 글이 적으면 남는 칸은 흐린 자리로 채워 블록 높이가 데이터 수를 따라 바뀌지 않는다. */
+/** 레일에 늘 같은 행 수 높이를 둔다. 글이 적으면 남는 칸은 막대 없는 빈 줄이라 블록 높이가 데이터 수를 따라 바뀌지 않는다(막대는 불러오는 중에만). */
 export const MORE_ROWS = 5;
 
 const labels: Record<AppLocale, readonly [string, string, string]> = {
@@ -61,10 +60,11 @@ function MoreRow({ item, slug, locale, pageImage }: { item: Item; slug: string; 
       : pageImage}</span>
     <span className={styles.text}>
       <FanText role="row-title" className={styles.title}>{moreTitle(item)}</FanText>
-      <FanText role="meta" className={styles.meta}>
-        <span><FanIcon icon={Heart} size={16} /><span className={styles.srOnly}>{copy.like} </span>{item.likeCount.toLocaleString(locale)}</span>
-        <span><FanIcon icon={MessageCircle} size={16} /><span className={styles.srOnly}>{copy.comments} </span>{item.commentCount.toLocaleString(locale)}</span>
-      </FanText>
+      {/* 0은 그리지 않는다. 둘 다 0이면 숫자 줄이 없다(게시판 목록의 댓글 수와 같은 규칙). */}
+      {(item.likeCount > 0 || item.commentCount > 0) && <FanText role="meta" className={styles.meta}>
+        {item.likeCount > 0 && <span><ReactionIcon kind="like" /><span className={styles.srOnly}>{copy.like} </span><ReactionCount value={item.likeCount} locale={locale} /></span>}
+        {item.commentCount > 0 && <span><ReactionIcon kind="comment" /><span className={styles.srOnly}>{copy.comments} </span><ReactionCount value={item.commentCount} locale={locale} /></span>}
+      </FanText>}
     </span>
   </Link></li>;
 }
@@ -88,7 +88,7 @@ export function PostDetailMore({ slug, postId, locale, pageImage, banner = true 
     {!empty && <section className={styles.panel} aria-labelledby={`post-more-${postId}`}>
       <header><FanText role="item" as="strong" id={`post-more-${postId}`}>{title}</FanText><FanTabs variant="segment" label={title} current={tab} className={styles.tabs} items={[{ key: "popular", label: popularLabel, onSelect: () => setTab("popular") }, { key: "latest", label: latestLabel, onSelect: () => setTab("latest") }]} /></header>
       {resource.state.status === "ready"
-        ? <ul className={styles.list}>{items.map(item => <MoreRow key={item.id} item={item} slug={slug} locale={locale} pageImage={pageImage} />)}{Array.from({ length: MORE_ROWS - items.length }, (_, index) => <li key={`blank-${index}`} data-row="" className={styles.blank} aria-hidden="true"><span className={styles.thumb} /><span className={styles.text}><span /><span /></span></li>)}</ul>
+        ? <ul className={styles.list}>{items.map(item => <MoreRow key={item.id} item={item} slug={slug} locale={locale} pageImage={pageImage} />)}{Array.from({ length: MORE_ROWS - items.length }, (_, index) => <li key={`blank-${index}`} data-row="" className={styles.empty} aria-hidden="true" />)}</ul>
         : resource.state.status === "error"
           ? <div role="status" className={styles.failed}><FanText role="meta">{copy.failed}</FanText><FanAction variant="neutral" onClick={resource.retry}>{copy.retry}</FanAction></div>
           : <ul className={styles.list} aria-busy="true">{Array.from({ length: MORE_ROWS }, (_, index) => <li key={index} data-row="" className={styles.blank}><span className={styles.thumb} /><span className={styles.text}><span /><span /></span></li>)}</ul>}
