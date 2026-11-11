@@ -266,7 +266,7 @@ function RowButton({ panelId, open, onToggle, me, kind, children }: { panelId: s
   return <FanAction variant="text" className={styles.listRow} aria-expanded={open} aria-controls={open ? panelId : undefined} onClick={onToggle}>
     <span className={styles.rowFace} data-kind={kind} data-me={me || undefined}>
       {children}
-      <FanIcon icon={open ? ChevronUp : ChevronDown} size={16} className={styles.chevron} />
+      <FanIcon icon={open ? ChevronUp : ChevronDown} size={12} className={styles.chevron} />
     </span>
   </FanAction>;
 }
@@ -294,7 +294,7 @@ export function FanRows({ locale, ranking, metric, show, fill, scope, guest = fa
     return <li key={keys[i]} ref={place(keys[i]!)} id={id} className={styles.item} data-row="fan-rank" data-kind="fans" data-tint={((accentFirst && i === 0) || row.isMe || open) || undefined} data-me={row.isMe || undefined} aria-current={row.isMe || undefined}>
       <RowButton panelId={`${id}-panel`} open={open} onToggle={() => toggle(keys[i]!)} me={row.isMe} kind="fans">
         <Rank rank={row.rank} />
-        <span className={styles.avatar} data-first={(accentFirst && i === 0) || undefined}><Avatar avatar={fanAvatar(row.characterId)} imageUrl={null} label="" size={32} /></span>
+        <span className={styles.avatar} data-first={(accentFirst && i === 0) || undefined}><Avatar avatar={fanAvatar(row.characterId)} imageUrl={null} label="" size={28} /></span>
         <span className={styles.body}>
           <span className={styles.nameLine}><span className={styles.name} title={row.nickname}>{row.nickname}</span>{visitDelta(locale, row.delta, ranking.comparable, movedSince(keys[i]!, row.rank))}</span>
         </span>
@@ -334,7 +334,7 @@ export function CreatorRows({ locale, ranking, metric, show, fill, scope, challe
     return <li key={row.slug} ref={place(row.slug)} id={id} className={styles.item} data-row="creator-rank" data-kind="creators" data-tint={((accentFirst && i === 0) || open) || undefined}>
       <RowButton panelId={`${id}-panel`} open={open} onToggle={() => toggle(row.slug)} kind="creators">
         <Rank rank={row.rank} />
-        <span className={styles.avatar} data-first={(accentFirst && i === 0) || undefined}><CreatorAvatar slug={row.slug} src={row.imageUrl} size={32} photos={undefined} /></span>
+        <span className={styles.avatar} data-first={(accentFirst && i === 0) || undefined}><CreatorAvatar slug={row.slug} src={row.imageUrl} size={28} photos={undefined} /></span>
         <span className={styles.body}>
           <span className={styles.nameLine}><span className={styles.name} title={row.name}>{row.name}</span>{visitDelta(locale, row.delta, ranking.comparable, movedSince(row.slug, row.rank))}
             {row.liveNow ? <LiveMark locale={locale} name={row.name} /> : null}
