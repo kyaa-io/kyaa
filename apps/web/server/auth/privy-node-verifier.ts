@@ -2,10 +2,14 @@ import "server-only";
 import { isEnabledRegionalSocialAccount, readPrivyCustomOAuthPolicy, type CustomOAuthPolicy } from "../../components/privy-custom-oauth-policy";
 
 import { PrivyClient } from "@privy-io/node";
+import { createHash } from "node:crypto";
+import { createPrivyTokenVerifier } from "./privy-jwks";
+import { measurePrivyCall } from "./privy-latency";
+import { FAN_SESSION_BEARER, fanSessionKey, openFanSession, readFanSessionCookie, type FanSession } from "./fan-session-cookie";
 import { isCognitoToken } from "./cognito/verifier";
 import { resolveCognitoAccess } from "./cognito/access";
 
-import { normalizeEvmAddress, type CanonicalWallet, type VerifiedIdentityProviderAccount } from "../../features/auth/domain/identity";
+import { normalizeEvmAddress, type CanonicalWallet, type PrivyIdentityInput, type VerifiedIdentityProviderAccount } from "../../features/auth/domain/identity";
 import { AuthError } from "../../features/auth/domain/auth-errors";
 import type { PrivyAccessVerifier } from "./authenticate-privy";
 import { mapPrivyIdentity } from "../../features/auth/domain/identity";
@@ -46,7 +50,7 @@ export interface PrivyNodeClientPort {
     };
   };
   users(): {
-    _get(userId: string): Promise<PrivyUserShape>;
+    _get(userId: string, options?: { timeout?: number; maxRetries?: number }): Promise<PrivyUserShape>;
   };
 }
 
@@ -215,22 +219,139 @@ export function createPrivyNodeReauthenticationResolver(
 }
 
 // One page load sends the same token on many API reads at once. While one check of a token is running, the others wait for
-// its answer instead of asking Privy again (no result is kept after it settles, so a revoked session is seen on the next read).
+// its answer instead of checking again (no result is kept after it settles).
 type VerificationFlights = Map<string, ReturnType<PrivyAccessVerifier["verify"]>>;
 const sharedClientFlights: VerificationFlights = new Map();
 const injectedClientFlights = new WeakMap<PrivyNodeClientPort, VerificationFlights>();
 
+// Signed-in requests must not wait on Privy. The token signature is checked locally (privy-jwks.ts); the Privy user
+// record (verified email, Google/Apple subjects) is fetched once per fan and kept here for a short time. The fetch is
+// capped at 2 seconds with no retry; when it fails, a fan who holds our session cookie for the same Privy user goes on
+// with the identity sealed in it. Apple lifecycle checks still run on every request against the cached subjects.
+export const PRIVY_USER_TIMEOUT_MS = 2_000;
+const IDENTITY_TTL_MS = 10 * 60_000;
+const IDENTITY_CACHE_LIMIT = 5_000;
+interface CachedUser { expiresAt: number; user: PrivyUserShape }
+type IdentityCache = Map<string, CachedUser>;
+const sharedIdentityCache: IdentityCache = new Map();
+const injectedIdentityCaches = new WeakMap<PrivyNodeClientPort, IdentityCache>();
+const sharedClients = new Map<string, PrivyNodeClientPort>();
+
+export interface PrivyAccessVerifierOptions {
+  /** Cookie header of the current request; defaults to next/headers. */
+  readCookieHeader?: () => Promise<string | null>;
+  /** Key for the fan session cookie; defaults to one derived from AUTH_COOKIE_SECRET. */
+  sessionKey?: Buffer | null;
+  now?: () => number;
+}
+
+function sharedPrivyClient(appId: string, appSecret: string): PrivyNodeClientPort {
+  const key = `${appId}:${createHash("sha256").update(appSecret).digest("hex")}`;
+  let client = sharedClients.get(key);
+  if (!client) {
+    client = new PrivyClient({ appId, appSecret, timeout: PRIVY_USER_TIMEOUT_MS, maxRetries: 0 });
+    sharedClients.set(key, client);
+  }
+  return client;
+}
+
+function cacheUser(cache: IdentityCache, key: string, entry: CachedUser): void {
+  cache.delete(key);
+  if (cache.size >= IDENTITY_CACHE_LIMIT) {
+    const oldest = cache.keys().next().value;
+    if (oldest !== undefined) cache.delete(oldest);
+  }
+  cache.set(key, entry);
+}
+
+async function defaultCookieHeader(): Promise<string | null> {
+  const { headers } = await import("next/headers");
+  return (await headers()).get("cookie");
+}
+
+/** What POST /api/auth/fan-session seals into the cookie: a real Privy token's owner, never the cookie itself. */
+export interface ResolvedFanSession {
+  privyUserId: string;
+  sessionId: string;
+  identity: PrivyIdentityInput;
+  apple: VerifiedProviderAccount | null;
+  google: VerifiedProviderAccount | null;
+}
+
 export function createPrivyNodeAccessVerifier(
   config: PrivyNodeServerConfig,
   client?: PrivyNodeClientPort,
-): PrivyAccessVerifier {
+  options: PrivyAccessVerifierOptions = {},
+): PrivyAccessVerifier & { resolveFanSession(accessToken: string): Promise<ResolvedFanSession> } {
   const appId = requireConfig(config.appId, "Privy app ID");
   const appSecret = requireConfig(config.appSecret, "Privy app secret");
-  const privy = client ?? new PrivyClient({ appId, appSecret });
+  // A real PrivyClient (ours or one a route made) is used only for the user lookup; test doubles keep their own token check.
+  const fake = client !== undefined && !(client instanceof PrivyClient);
+  const privy = fake ? client : sharedPrivyClient(appId, appSecret);
+  const verifyToken = fake ? (token: string) => client.utils().auth().verifyAccessToken(token) : createPrivyTokenVerifier(appId);
   const lifecycle = createConfiguredAppleLifecycleGuard();
+  const now = options.now ?? Date.now;
+  const identities = fake ? injectedIdentityCaches.get(client) ?? new Map() : sharedIdentityCache;
+  if (fake) injectedIdentityCaches.set(client, identities);
+  const sessionKey = options.sessionKey !== undefined ? options.sessionKey : fanSessionKey(process.env.AUTH_COOKIE_SECRET);
+  const readCookieHeader = options.readCookieHeader ?? defaultCookieHeader;
+
+  async function cookieSession(): Promise<FanSession | null> {
+    if (!sessionKey) return null;
+    let header: string | null;
+    try { header = await readCookieHeader(); } catch { return null; }
+    return openFanSession(readFanSessionCookie(header), sessionKey, now());
+  }
+
+  type Resolved = { identity: PrivyIdentityInput; apple: VerifiedProviderAccount | null; google: VerifiedProviderAccount | null };
+
+  function fromSession(session: FanSession): Resolved {
+    return {
+      identity: { privyUserId: session.pid, verifiedEmail: session.em, providerAccounts: session.pa, googleLinked: session.gl },
+      apple: session.apple, google: session.google,
+    };
+  }
+
+  function fromUser(user: PrivyUserShape): Resolved {
+    return {
+      identity: {
+        privyUserId: user.id,
+        verifiedEmail: verifiedFanEmail(user, config),
+        providerAccounts: providerAccounts(user),
+        googleLinked: latestVerifiedGoogleEmail(user) !== null,
+      },
+      apple: providerAccount(user, "apple"),
+      google: providerAccount(user, "google"),
+    };
+  }
+
+  async function lookUp(claims: PrivyTokenClaims): Promise<Resolved> {
+    const key = `${appId}:${claims.user_id}`;
+    const cached = identities.get(key);
+    if (cached && cached.expiresAt > now()) return fromUser(cached.user);
+    let user: PrivyUserShape;
+    try {
+      user = await measurePrivyCall("users.get", () => privy.users()._get(claims.user_id, { timeout: PRIVY_USER_TIMEOUT_MS, maxRetries: 0 }));
+    } catch (error) {
+      const session = await cookieSession();
+      if (session && session.pid === claims.user_id) return fromSession(session);
+      throw error;
+    }
+    if (user.id !== claims.user_id) {
+      throw new Error("Privy token subject mismatch");
+    }
+    cacheUser(identities, key, { expiresAt: now() + IDENTITY_TTL_MS, user });
+    return fromUser(user);
+  }
 
   const verifier: PrivyAccessVerifier = {
     async verify(accessToken) {
+      if (accessToken === FAN_SESSION_BEARER) {
+        const session = await cookieSession();
+        if (!session) throw new Error("Fan session is missing or expired");
+        await lifecycle?.assertAccess({ privyUserId: session.pid, sessionId: session.sid, apple: session.apple, google: session.google });
+        return fromSession(session).identity;
+      }
       if (isCognitoToken(accessToken)) {
         const { identity, mapping } = await resolveCognitoAccess(accessToken);
         const user = await privy.users()._get(mapping.privyUserId);
@@ -238,33 +359,33 @@ export function createPrivyNodeAccessVerifier(
         await lifecycle?.assertAccess(verifiedSession({ app_id: appId, user_id: user.id, session_id: `cognito:${identity.tokenId}` }, user));
         return { privyUserId: user.id, verifiedEmail: mapping.verifiedEmail, providerAccounts: providerAccounts(user), googleLinked: latestVerifiedGoogleEmail(user) !== null };
       }
-      const claims = await privy.utils().auth().verifyAccessToken(accessToken);
+      const claims = await verifyToken(accessToken);
       if (claims.app_id !== appId) {
         throw new Error("Privy application mismatch");
       }
-
-      const user = await privy.users()._get(claims.user_id);
-      if (user.id !== claims.user_id) {
-        throw new Error("Privy token subject mismatch");
-      }
-      await lifecycle?.assertAccess(verifiedSession(claims, user));
-
-      return {
-        privyUserId: claims.user_id,
-        verifiedEmail: verifiedFanEmail(user, config),
-        providerAccounts: providerAccounts(user),
-        googleLinked: latestVerifiedGoogleEmail(user) !== null,
-      };
+      const entry = await lookUp(claims);
+      await lifecycle?.assertAccess({ privyUserId: claims.user_id, sessionId: claims.session_id ?? "", apple: entry.apple, google: entry.google });
+      return entry.identity;
     },
   };
-  // Every request builds its own verifier over a new Privy client, so checks join on the app and token, not on the instance.
+  // Every request builds its own verifier, so checks join on the app and token, not on the instance.
   let flights = sharedClientFlights;
-  if (client) {
+  if (fake) {
     flights = injectedClientFlights.get(client) ?? new Map();
     injectedClientFlights.set(client, flights);
   }
   return {
+    async resolveFanSession(accessToken) {
+      if (accessToken === FAN_SESSION_BEARER || isCognitoToken(accessToken)) throw new Error("A Privy access token is required");
+      const claims = await verifyToken(accessToken);
+      if (claims.app_id !== appId || !claims.session_id) throw new Error("Privy application mismatch");
+      const resolved = await lookUp(claims);
+      await lifecycle?.assertAccess({ privyUserId: claims.user_id, sessionId: claims.session_id, apple: resolved.apple, google: resolved.google });
+      return { privyUserId: claims.user_id, sessionId: claims.session_id, ...resolved };
+    },
     verify(accessToken) {
+      // The sentinel is the same string for everyone; its answer depends on this request's cookie, so it is never shared.
+      if (accessToken === FAN_SESSION_BEARER) return verifier.verify(accessToken);
       const key = `${appId}:${accessToken}`;
       const running = flights.get(key);
       if (running) return running;

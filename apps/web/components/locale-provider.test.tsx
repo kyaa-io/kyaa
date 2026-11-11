@@ -11,6 +11,7 @@ const state = vi.hoisted(() => ({ query: 'locale=en', pathname: '/', mounts: 0, 
 vi.mock('next/navigation', () => ({ usePathname: () => state.pathname, useSearchParams: () => new URLSearchParams(state.query) }));
 vi.mock('./avatar-session-bridge', () => ({ AvatarSessionBridge: ({children}: {children: ReactNode}) => children }));
 vi.mock('./byus-session-provider', () => ({ ByUsSessionProvider: ({children}: {children: ReactNode}) => children }));
+vi.mock('../features/auth/client/fan-session-keeper', () => ({ FanSessionKeeper: () => null }));
 vi.mock('@privy-io/react-auth', () => ({ PrivyProvider: function TestProvider({children, config}: {children: ReactNode; config: {appearance: {landingHeader: string}}}) {
   useEffect(() => { state.mounts += 1; }, []);
   state.header = config.appearance.landingHeader;

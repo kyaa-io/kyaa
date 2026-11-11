@@ -14,6 +14,7 @@ const pass = vi.hoisted(() => ({ children }: { children: unknown }) => children)
 vi.mock("@/components/avatar-session-bridge", () => ({ AvatarSessionBridge: pass }));
 vi.mock("@/components/byus-session-provider", () => ({ ByUsSessionProvider: pass }));
 vi.mock("@/features/auth/client/cognito-auth", () => ({ CognitoAuthProvider: pass }));
+vi.mock("@/features/auth/client/fan-session-keeper", () => ({ FanSessionKeeper: () => null }));
 vi.mock("@/components/fan-ui/resource-cache", () => ({ installResourceWriteWatch: () => () => undefined }));
 
 // components/privy-provider.tsx (direct tree) keeps its own copy of the settings; the island boundary uses

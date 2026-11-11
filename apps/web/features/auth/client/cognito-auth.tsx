@@ -2,6 +2,7 @@
 import { usePrivy, useSubscribeToJwtAuthWithFlag } from "@/features/auth/client/privy-backend";
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { withRequestDeadline } from "@/features/reliability/client/request-deadline";
+import { clearFanSession, FAN_SESSION_BEARER, PRIVY_WAIT_MS, readFanSessionHint, withPrivyDeadline } from "@/features/auth/client/fan-session";
 
 interface Session { authenticated: boolean; walletLinked: boolean; accessToken: string; walletToken?: string; expiresAt: number; enrollment?: { mode: "new" | "recovery" | "blocked"; provider?: "google" | "apple" } }
 interface CognitoAuth { enabled: boolean; loading: boolean; session: Session | null; refresh(): Promise<Session | null>; logout(): Promise<string|null>; getAccessToken(): Promise<string | null> }
@@ -52,11 +53,33 @@ export function CognitoAuthProvider({children}:{children:ReactNode}){
   return <Context.Provider value={value}>{children}</Context.Provider>;
 }
 
+type PrivyAuth = ReturnType<typeof usePrivy>;
+
+/** Stand-in for Privy's user while Privy is stalled: only the DID is known, and that is all most screens read. */
+function stalledUser(pid: string): NonNullable<PrivyAuth["user"]> {
+  return { id: pid, createdAt: new Date(0), linkedAccounts: [], mfaMethods: [], hasAcceptedTerms: true, isGuest: false } as unknown as NonNullable<PrivyAuth["user"]>;
+}
+
 /** Keeps existing UI and Bearer call sites while Cognito becomes the primary API credential. */
-export function useByUsAuth(): ReturnType<typeof usePrivy>{
+export function useByUsAuth(): PrivyAuth{
   const privy=usePrivy(),cognito=useCognitoAuth();
+  const privyReady=privy.ready;
+  // Only a browser that holds our fan session changes anything here; everyone else gets Privy's contract untouched.
+  const hintPid=cognito.enabled?null:readFanSessionHint()?.pid??null;
+  const [stalled,setStalled]=useState(false);
+  useEffect(()=>{
+    if(privyReady||!hintPid){setStalled(false);return;}
+    const timer=setTimeout(()=>setStalled(true),PRIVY_WAIT_MS);
+    return()=>clearTimeout(timer);
+  },[privyReady,hintPid]);
+  const sessionPid=privyReady?privy.user?.id??null:hintPid;
+  const bounded=useMemo<PrivyAuth>(()=>hintPid&&sessionPid===hintPid
+    ?{...privy,getAccessToken:()=>withPrivyDeadline(privy.getAccessToken,hintPid)}:privy,[privy,hintPid,sessionPid]);
+  // Privy has not loaded after PRIVY_WAIT_MS: a fan with our session goes on as signed in, with the cookie as credential.
+  const stalledAuth=useMemo<PrivyAuth|null>(()=>stalled&&hintPid?{...privy,ready:true,authenticated:true,user:stalledUser(hintPid),
+    getAccessToken:async()=>FAN_SESSION_BEARER,logout:async()=>{clearFanSession();await privy.logout();}}:null,[privy,stalled,hintPid]);
   const logout=useCallback(async()=>{const destination=await cognito.logout();await privy.logout();if(destination)window.location.assign(destination);},[cognito,privy]);
-  if(!cognito.enabled)return privy;
+  if(!cognito.enabled)return !privyReady&&stalledAuth?stalledAuth:bounded;
   const authenticated=cognito.session?.walletLinked===true && privy.authenticated;
   return {...privy,ready:privy.ready&&!cognito.loading,authenticated,user:authenticated?privy.user:null,getAccessToken:cognito.getAccessToken,logout};
 }

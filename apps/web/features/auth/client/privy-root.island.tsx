@@ -9,6 +9,7 @@ import { AvatarSessionBridge } from "@/components/avatar-session-bridge";
 import { ByUsSessionProvider } from "@/components/byus-session-provider";
 import { installResourceWriteWatch } from "@/components/fan-ui/resource-cache";
 import { CognitoAuthProvider } from "./cognito-auth";
+import { FanSessionKeeper } from "./fan-session-keeper";
 import { AuthBootProvider } from "./privy-backend.island";
 import { PrivyMirrors } from "./privy-mirrors";
 import { PRIVY_APP_ID_REQUIRED, privyProviderConfig } from "./privy-provider-config";
@@ -38,6 +39,6 @@ export function PrivyRoot({
   const page = <AvatarSessionBridge><ByUsSessionProvider>{children}</ByUsSessionProvider></AvatarSessionBridge>;
   return <AuthBootProvider>
     <PrivyIsland appId={appId} config={config} />
-    {authProvider === "cognito" ? <CognitoAuthProvider>{page}</CognitoAuthProvider> : page}
+    {authProvider === "cognito" ? <CognitoAuthProvider>{page}</CognitoAuthProvider> : <><FanSessionKeeper />{page}</>}
   </AuthBootProvider>;
 }

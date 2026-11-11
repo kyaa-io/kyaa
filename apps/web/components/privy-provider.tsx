@@ -3,6 +3,7 @@
 import { messages as localizedMessages } from "@/i18n/catalogs/components__privy-provider";
 import { translate } from "@/i18n/messages";
 import { CognitoAuthProvider } from "../features/auth/client/cognito-auth";
+import { FanSessionKeeper } from "../features/auth/client/fan-session-keeper";
 import { PrivyProvider } from "@privy-io/react-auth";
 import { useEffect, type ReactNode } from "react";
 import { useAppLocale } from "./locale-provider";
@@ -57,7 +58,7 @@ export function ByUsPrivyProvider({
         },
       }}
     >
-      {authProvider === "cognito" ? <CognitoAuthProvider><AvatarSessionBridge><ByUsSessionProvider>{children}</ByUsSessionProvider></AvatarSessionBridge></CognitoAuthProvider> : <AvatarSessionBridge><ByUsSessionProvider>{children}</ByUsSessionProvider></AvatarSessionBridge>}
+      {authProvider === "cognito" ? <CognitoAuthProvider><AvatarSessionBridge><ByUsSessionProvider>{children}</ByUsSessionProvider></AvatarSessionBridge></CognitoAuthProvider> : <><FanSessionKeeper /><AvatarSessionBridge><ByUsSessionProvider>{children}</ByUsSessionProvider></AvatarSessionBridge></>}
     </PrivyProvider>
   );
 }
