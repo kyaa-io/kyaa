@@ -1,3 +1,6 @@
+"use client";
+import { useState } from "react";
+import { ProfileModal, type ProfileModalPerson } from "@/features/group-social/profile-modal";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import { Avatar } from "@/features/profile/ui/avatar";
 import { avatarCharacterIdSchema, type Avatar as AvatarModel } from "@/features/profile/domain/avatar";
@@ -76,7 +79,8 @@ export function JjinfanProgress({ locale, count, target = JJINFAN_CHALLENGE_TARG
   );
 }
 
-export function FanRankingList({ locale, ranking }: { locale: AppLocale; ranking: PageRanking }) {
+export function FanRankingList({ locale, ranking, slug }: { locale: AppLocale; ranking: PageRanking; slug?: string }) {
+  const [person, setPerson] = useState<ProfileModalPerson | null>(null);
   const scoreKey: RankingsCopyKey = ranking.metric === "hearts" ? "rkHearts" : "rkStamps";
   const me = ranking.me;
   return (
@@ -84,17 +88,20 @@ export function FanRankingList({ locale, ranking }: { locale: AppLocale; ranking
       {ranking.rows.length === 0 ? <Empty locale={locale} /> : (
         <ol className={styles.list}>
           {ranking.rows.map((row) => (
-            <li key={row.rank} className={`${styles.row} ${row.isMe ? styles.rowMe : ""}`} aria-current={row.isMe || undefined}>
+            <li key={row.rank} aria-current={row.isMe || undefined}>
+              <FanAction variant="text" className={`${styles.row} ${styles.rowButton} ${row.isMe ? styles.rowMe : ""}`} disabled={!slug || !ranking.computedAt} onClick={() => { if (slug && ranking.computedAt) setPerson({ nickname: row.nickname, avatarUrl: null, ref: { kind: "page_ranking", slug, metric: ranking.metric === "hearts" ? "fan_contribution" : "dukjil", period: ranking.period, periodStart: ranking.periodStart, computedAt: ranking.computedAt, rank: row.rank } }); }}>
               <Rank rank={row.rank} />
               <span className={styles.who}>
                 <Avatar avatar={fanAvatar(row.characterId)} imageUrl={null} label="" size={40} />
                 <span className={styles.name}>{row.nickname}{row.isMe ? <span className={styles.meBadge}>{rankingsText(locale, "rkMe")}</span> : null}</span>
               </span>
               <span className={styles.score}>{rankingsText(locale, scoreKey, [row.score.toLocaleString(locale)])}</span>
+              </FanAction>
             </li>
           ))}
         </ol>
       )}
+      {person && <ProfileModal person={person} locale={locale} onClose={() => setPerson(null)} />}
       {me && !me.inTop ? (
         <div className={styles.pinned} role="status">
           <span className={styles.sub}>{rankingsText(locale, "rkMyRank")}</span>
