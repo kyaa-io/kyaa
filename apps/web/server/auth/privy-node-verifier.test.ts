@@ -35,7 +35,7 @@ describe("@privy-io/node server adapter", () => {
       googleLinked: true,
       providerAccounts: [],
     });
-    expect(getUser).toHaveBeenCalledWith("did:privy:user-1");
+    expect(getUser).toHaveBeenCalledWith("did:privy:user-1", { timeout: 2000, maxRetries: 0 });
   });
 
   it.each([
@@ -360,7 +360,7 @@ it("carries every verified provider subject from the token owner's server record
   };
   await expect(createPrivyNodeAccessVerifier(providerConfig, client).verify("token")).resolves.toMatchObject({ providerAccounts: verifiedProviders });
   await expect(createPrivyNodeSessionResolver(providerConfig, client).resolve("token", 91342)).resolves.toMatchObject({ identity: { providerAccounts: verifiedProviders } });
-  expect(getUser).toHaveBeenNthCalledWith(1, "did:privy:user-1");
+  expect(getUser).toHaveBeenNthCalledWith(1, "did:privy:user-1", { timeout: 2000, maxRetries: 0 });
   expect(getUser).toHaveBeenNthCalledWith(2, "did:privy:user-1");
 });
 it.each([
