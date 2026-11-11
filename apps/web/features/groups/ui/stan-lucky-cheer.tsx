@@ -3,6 +3,7 @@ import Link from "next/link";
 import type { Route } from "next";
 import { ChevronRight, Heart } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
+import { z } from "zod";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import { FanCount } from "@/components/fan-ui/fan-count-chip";
 import { FanHeading } from "@/components/fan-ui/fan-heading";
@@ -43,6 +44,8 @@ export const RAFFLE_TICKET_COST = 1;
 export const STAMPS_PER_HEART = 9;
 const LUCKY_CARDS = 2;
 const parseRaffles = (value: unknown) => raffleListSchema.parse(value);
+const recentRafflesSchema = z.object({ items: z.array(z.object({ raffle: raffleListSchema.shape.raffles.element, creator: z.object({ slug: z.string(), name: z.string() }) })) });
+const parseRecentRaffles = (value: unknown) => recentRafflesSchema.parse(value);
 const parseCreators = (value: unknown) => homeCreatorRankingSchema.parse(value);
 const parseWallet = (value: unknown) => walletSchema.parse(value);
 const parseEntries = (value: unknown) => benefitListResponseSchema.parse(value);
@@ -151,6 +154,8 @@ function RaffleCard({ raffle, status, slug, locale, entered, allowance }: { raff
 export function StanLucky({ locale, bias, guest, presentation, paused = false }: { locale: AppLocale; bias: SelectedBias; guest: boolean; presentation?: "duo"; paused?: boolean }) {
   const favorite = guest ? null : stanFavorite(bias), slug = favorite?.slug ?? null;
   const raffles = useStanRaffles(locale, slug), title = groupBenefitsCopy(locale).lucky;
+  const hasPast = raffles.items.some(item => item.status === "closed");
+  const recent = useGroupResource(presentation === "duo" && (!slug || (!raffles.loading && !raffles.error && !hasPast)) ? `/api/raffles/recent?locale=${toContentLocale(locale)}` : null, parseRecentRaffles);
   const wallet = useGroupResource(!guest && slug ? "/api/me/wallet" : null, parseWallet);
   const entries = useStanEntries(locale, !guest ? slug : null);
   // F5: open and upcoming draws take the first place; closed ones only fill a separate 지난 럭키드로우 list when none is live.
@@ -170,7 +175,7 @@ export function StanLucky({ locale, bias, guest, presentation, paused = false }:
     // C4: 쉬는 동안(paused)에는 상태와 상관없이 응모 버튼 하나만 비활성으로 두고 이유를 붙인다. href·onClick이 없어 요청을 만들지 않는다.
     const action = paused || (ready && item) ? <FanAction className={duoStyles.action} variant="primary" {...(paused ? { disabled: true, helperText: capsuleMachineCopy(locale).text("soon") } : { href })}>
       {paused || (item?.status === "open" && allowance?.kind !== "policy" && !passport) ? t(locale,"luckyEnter") : passport ? t(locale,"luckyGetPassport") : t(locale,"luckyDetails")}</FanAction> : null;
-    const pastItems = raffles.items.filter(row => row.status === "closed").slice(0, 3);
+    const pastItems = hasPast && slug && favorite ? raffles.items.filter(row => row.status === "closed").slice(0, 3).map(({ raffle }) => ({ raffle, creator: { slug, name: favorite.name } })) : recent.data?.items ?? [];
     return <div className={duoStyles.layout} data-has-past={pastItems.length ? "" : undefined}>
     <section className={duoStyles.card} id="stan-lucky" aria-label={title} data-duo-lucky data-lucky-module="" data-lucky-paused={paused ? "" : undefined} data-raffle-status={item?.status}>
       <LuckyStage className={duoStyles.stage} paused={paused} locale={locale} />
@@ -184,9 +189,9 @@ export function StanLucky({ locale, bias, guest, presentation, paused = false }:
       </div>
       {action ? <div className={duoStyles.actionBlock}>{action}</div> : null}
     </section>
-    {slug && pastItems.length > 0 && <section className={duoStyles.pastList} aria-label={t(locale, "luckyPast")} data-lucky-past>
+    {pastItems.length > 0 && <section className={duoStyles.pastList} aria-label={t(locale, "luckyPast")} data-lucky-past>
       <FanHeading>{t(locale, "luckyPast")}</FanHeading>
-      <div className={duoStyles.pastRows}>{pastItems.map(({ raffle }) => <FanPostRow key={raffle.id} density="home" locale={locale} href={raffleHref(slug, raffle.benefitId, locale)} title={raffle.title} thumbnail={raffle.imageUrl} author={<>{raffle.entryClosesAt ? t(locale, "luckyClosesAt", [dayDate(raffle.entryClosesAt, locale)]) : t(locale, "luckyClosed")} · {t(locale, "luckyWinners", [raffle.winnerQuantity.toLocaleString(locale)])}</>} />)}</div>
+      <div className={duoStyles.pastRows}>{pastItems.map(({ raffle, creator }) => <FanPostRow key={raffle.id} density="home" locale={locale} href={raffleHref(creator.slug, raffle.benefitId, locale)} title={raffle.title} thumbnail={raffle.imageUrl} author={<>{creator.name} · {raffle.entryClosesAt ? t(locale, "luckyClosesAt", [dayDate(raffle.entryClosesAt, locale)]) : t(locale, "luckyClosed")} · {t(locale, "luckyResults")}</>} />)}</div>
     </section>}
     </div>;
   }
