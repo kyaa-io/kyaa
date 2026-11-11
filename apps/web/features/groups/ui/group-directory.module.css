@@ -57,3 +57,6 @@
   .controls { grid-template-columns: max-content minmax(200px, 1fr) auto; gap: var(--space-3); }
   .filterBar { grid-column: 1; grid-row: 1; }
 }
+
+.attendanceIcon{display:none}
+@media(width < 64rem){.attendanceAction > a{width:44px;height:44px;min-height:44px;padding:0;border-radius:50%}.attendanceLabel{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}.attendanceIcon{display:block;width:24px;height:24px;background:currentColor;mask:url(/images/stamps/ink-v1/daily-checkin.webp) center/contain no-repeat}}

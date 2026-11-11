@@ -3,7 +3,7 @@ import { useState } from "react";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import { FanIcon } from "@/components/fan-ui/fan-icon";
 import { Check } from "@/components/fan-ui/fan-icons";
-import { FanTooltip } from "@/components/fan-ui/fan-tooltip";
+
 import type { GroupPage } from "@/features/groups/domain/contracts";
 import { GroupImage } from "@/features/groups/ui/group-image";
 import type { AppLocale } from "@/i18n/locales";
@@ -11,14 +11,13 @@ import type { DukjilAttendanceList } from "../domain/dukjil-ui";
 import { CreatorAttendanceDialog } from "./creator-attendance-dialog";
 import { dukjilText } from "./dukjil-copy";
 import { DukjilProvider } from "./dukjil-provider";
-import dukjilStyles from "./dukjil.module.css";
+
 import styles from "./attendance-avatars.module.css";
 
 type Creator = GroupPage & { slug: string };
 type Item = DukjilAttendanceList["items"][number] | undefined;
 
-/** "내 페이지 출석 현황" (feedback #17): round avatars, a green ring and check once checked in today, the name on hover / long press,
- * `연속 N일` under each avatar, and a check-in button only where today is still open. */
+/** 내 페이지 출석 현황: 아바타, 이름과 상태, 출석 행동을 한 행에 둔다. */
 export function AttendanceAvatars({ locale, creators, byId, verifyHref, onChanged }: {
   locale: AppLocale; creators: Creator[]; byId: ReadonlyMap<string, NonNullable<Item>>; verifyHref: (page: Creator) => string; onChanged: () => void;
 }) {
@@ -30,14 +29,13 @@ function AvatarItem({ page, locale, item, reviewHref, onChanged }: { page: Creat
   const attended = Boolean(item?.attendedToday);
   return (
     <li className={styles.item} data-row="">
-      <FanTooltip content={page.name} side="top" delay={150} longPress>
-        <span className={styles.avatar} role="img" aria-label={page.name} tabIndex={0} data-attended={attended ? "true" : "false"}>
-          {page.imageUrl ? <GroupImage locale={locale} src={page.imageUrl} alt="" width={62} height={62} className={styles.image} /> : <span className={styles.image} aria-hidden="true" />}
-          {attended && <span className={styles.check} aria-hidden="true"><FanIcon icon={Check} size={16} /></span>}
+
+        <span className={styles.avatar} role="img" aria-label={page.name} data-attended={attended ? "true" : "false"}>
+          {page.imageUrl ? <GroupImage locale={locale} src={page.imageUrl} alt="" width={40} height={40} className={styles.image} /> : <span className={styles.image} aria-hidden="true" />}
         </span>
-      </FanTooltip>
-      {attended && <span className={dukjilStyles.srOnly}>{dukjilText(locale, "dukjilBadgeDone")}</span>}
-      <small className={styles.streak}>{item && item.streak > 0 ? dukjilText(locale, "dukjilStreak", [item.streak]) : null}</small>
+
+      <span className={styles.copy}><strong>{page.name}</strong><small className={styles.streak}>{item && item.streak > 0 ? dukjilText(locale, "dukjilStreak", [item.streak]) : null}</small></span>
+      {attended && <FanAction className={styles.action} disabled onClick={() => setOpen(true)}><FanIcon icon={Check} size={16} />{dukjilText(locale, "dukjilBadgeDone")}</FanAction>}
       {!attended && (item && !item.hasPassport
         ? <FanAction className={styles.action} href={reviewHref}>{dukjilText(locale, "dukjilReview")}</FanAction>
         : <FanAction className={styles.action} onClick={() => setOpen(true)}>{dukjilText(locale, "dukjilCheckInShort")}</FanAction>)}
