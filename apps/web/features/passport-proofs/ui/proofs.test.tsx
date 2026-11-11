@@ -6,7 +6,7 @@ import { failureFromCode, listMyProofs, listProofMissions, ProofRequestError, re
 import { averageHash, fitSize, rectFromPoints } from "./proof-image";
 import { proofsSource } from "./proofs-source";
 import { proofsText } from "./proofs-copy";
-import { JjinfanTitle, ProofBoardList, ProofHistory, ProofsScreen } from "./proofs-screen";
+import { JjinfanTitle, ProofBoardList, ProofHistory, ProofsScreen, PublicProofsTab } from "./proofs-screen";
 import { APP_LOCALES } from "@/i18n/locales";
 
 const authState = vi.hoisted(() => ({ authenticated: false, getAccessToken: async () => "session-token" as string | null }));
@@ -17,6 +17,10 @@ vi.mock("@/features/content-safety/ui/content-actions", () => ({
   ContentActions: (props: { targetType: string; targetId: string; onChanged?: () => void }) => <button type="button" data-testid="content-actions" data-target={`${props.targetType}:${props.targetId}`} onClick={props.onChanged}>신고</button>,
 }));
 
+vi.mock("@/features/dukjil/ui/dukjil-provider", () => ({
+  DukjilProvider: ({ children }: { children: import("react").ReactNode }) => children,
+  useDukjil: () => ({ status: "on", catalog: { rules: { proof: { points: 173 } } } }),
+}));
 afterEach(cleanup);
 
 const item = (over: Record<string, unknown>) => ({
@@ -217,4 +221,18 @@ describe("proof API calls carry the session token", () => {
     expect(calls(fetchMock).some(([url]) => url.includes("/api/me/proofs"))).toBe(false);
     authState.authenticated = true;
   });
+});
+
+it("photo feed hides prose and displays only the recorded award", () => {
+  render(<ProofBoardList locale="ko" photoFeed items={[{ postId: "33333333-3333-4333-8333-333333333333", body: "hidden prose", createdAt: "2026-11-01T00:00:00Z", proofType: "receipt", amountVisible: null, imageUrl: "/api/pages/mina/posts/33333333-3333-4333-8333-333333333333/image?t=abc", jjinfanRank: null, awardedPoints: 37 }]} />);
+  expect(screen.queryByText("hidden prose")).toBeNull();
+  expect(screen.getByText("+37P")).toBeTruthy();
+});
+
+it("shows the actual policy reward next to the proof submission entry", async () => {
+  vi.stubGlobal("fetch", vi.fn().mockResolvedValue(new Response(JSON.stringify({ items: [], nextBefore: null }))));
+  render(<PublicProofsTab locale="ko" slug="mina" />);
+  expect(screen.getByText("173")).toBeTruthy();
+  expect(screen.getByRole("link", { name: "인증하기" }).getAttribute("href")).toBe("/c/mina/proofs?locale=ko");
+  await waitFor(() => expect(screen.getByText("아직 올라온 인증이 없어요")).toBeTruthy());
 });

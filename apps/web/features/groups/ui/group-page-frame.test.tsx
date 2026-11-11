@@ -1,7 +1,8 @@
 import type { ComponentProps, ReactNode } from "react";
 import { fireEvent, render, screen } from "@testing-library/react";
 import { beforeEach, expect, it, vi } from "vitest";
-import { GroupPageFrame } from "./group-page-frame";
+import { GroupPageHead, GroupPageFrame } from "./group-page-frame";
+import { GroupPageProvider } from "./group-page-context";
 import { groupsCopy, pageUnavailable } from "./copy";
 
 const state = vi.hoisted(() => ({
@@ -10,7 +11,7 @@ const state = vi.hoisted(() => ({
   failure: undefined as { status: number } | undefined,
   ownerKey: "guest", retry: vi.fn(), preload: vi.fn(),
 }));
-vi.mock("next/navigation", () => ({ useSearchParams: () => new URLSearchParams(state.query) }));
+vi.mock("next/navigation", () => ({ useSearchParams: () => new URLSearchParams(state.query), usePathname: () => "/mina", useRouter: () => ({ replace: vi.fn(), push: vi.fn() }) }));
 vi.mock("next/link", () => ({ default: ({ prefetch, onNavigate: _onNavigate, scroll: _scroll, ...props }: any) => <a {...props} data-prefetch={prefetch === undefined ? "default" : String(prefetch)} /> }));
 vi.mock("./use-group-resource", () => ({
   useGroupResource: () => ({ ...state, ready: true, authenticated: false, request: vi.fn() }),
@@ -97,4 +98,11 @@ it.each(["page", "owner", "locale"])("does not retain another %s's header on err
   expect(screen.queryByRole("heading", { level: 1, name: "테스트 모임" })).not.toBeInTheDocument();
   expect(document.querySelector('[data-fan-page-header="loading"]')).toBeInTheDocument();
   expect(tabNav()).toBeInTheDocument();
+});
+
+it("places the proof tab immediately after the board on a fanpage route", () => {
+  render(<GroupPageProvider slug="mina" locale="ko" celebrity={{ slug: "mina", locale: "ko", name: "Mina", summary: "", image: { url: "/mina.webp", alt: "Mina", position: "center" }, roles: ["idol"], themes: [], socialLinks: [], displayOrder: 0, fanCount: 0 }}><GroupPageHead /></GroupPageProvider>);
+  const links = [...document.querySelectorAll("nav[data-fan-tabs]")].at(-1)!.querySelectorAll("a");
+  expect([...links].slice(0, 3).map(link => link.textContent)).toEqual(["홈", "게시판", "인증"]);
+  expect(links[2].getAttribute("href")).toContain("tab=proofs");
 });
