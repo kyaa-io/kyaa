@@ -35,7 +35,7 @@ export function isRecordedReplayUrl(provider: string, value: string): boolean {
     if (url.protocol !== "https:" || url.port || url.username || url.password || url.hash) return false;
     const patterns: Record<string, RegExp> = {
       youtube: /^https:\/\/((www\.)?youtube\.com\/(watch\?v=|shorts\/|live\/)|youtu\.be\/)[A-Za-z0-9_-]{11}([?&][^\s]*)?$/,
-      instagram: /^https:\/\/(www\.)?instagram\.com\/(p|reel)\/[A-Za-z0-9_-]+\/?$/,
+      instagram: /^https:\/\/(www\.)?instagram\.com\/(?:[A-Za-z0-9._]{1,30}\/)?(p|reel)\/[A-Za-z0-9_-]+\/?$/,
       tiktok: /^https:\/\/(www\.)?tiktok\.com\/@[A-Za-z0-9_.]+\/video\/[0-9]+\/?$/,
       chzzk: /^https:\/\/chzzk\.naver\.com\/video\/[0-9]+\/?$/,
     };

@@ -25,3 +25,9 @@ it("keeps every title that carries more than a single handle", () => {
     expect(noticeMedia(photoNotice(title), "any-creator")[0].title).toBe(title);
   }
 });
+
+it("recognizes the account-qualified original Instagram URL emitted by the collector", () => {
+  const href = "https://www.instagram.com/wena/p/DQabc123xyz/";
+  const notice = { ...photoNotice("원문 제목"), body: { type: "doc", content: [{ type: "paragraph", content: [{ type: "text", text: "원문 제목", marks: [{ type: "link", attrs: { href } }] }] }] } };
+  expect(noticeMedia(notice, "wena")).toEqual([expect.objectContaining({ kind: "videos", href, image: null, title: "원문 제목" })]);
+});

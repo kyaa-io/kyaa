@@ -23,10 +23,17 @@ describe("shorts viewer", () => {
     expect(within(dialog).getByRole("button", { name: "다음 영상" })).toBeDisabled();
     expect(zone).toBeTruthy();
   });
+  it("prefers a stored thumbnail to a platform cover", () => {
+    const thumbnail = "/api/public/notice-media/20000000-0000-4000-8000-000000000002?variant=thumbnail";
+    const item = { id: "t1", platform: "tiktok", videoId: "7690854938997558549", title: "원문 제목", href: "https://www.tiktok.com/@ifewknow/video/7690854938997558549", creator: { slug: "a", name: "A" }, thumbnail } as HomeShort;
+    const { container } = render(<HomeShorts items={[item]} locale="ko" />);
+    expect(decodeURIComponent(container.querySelector("img")!.getAttribute("src")!)).toContain(thumbnail);
+    expect(container.querySelector("img")).toHaveAttribute("loading", "lazy");
+  });
   it("plays a TikTok short in the TikTok player with its kept cover", () => {
     const tiktok = { id: "t1", platform: "tiktok", videoId: "7690854938997558549", title: "안녕히 계세여~", href: "https://www.tiktok.com/@ifewknow/video/7690854938997558549", creator: { slug: "a", name: "A" } } as HomeShort;
     const { container } = render(<HomeShorts items={[tiktok]} locale="ko" />);
-    expect(container.querySelector("img")?.getAttribute("src")).toBe("/images/media/tiktok/7690854938997558549.jpg");
+    expect(decodeURIComponent(container.querySelector("img")!.getAttribute("src")!)).toContain("/images/media/tiktok/7690854938997558549.jpg");
     fireEvent.click(screen.getByRole("button", { name: "안녕히 계세여~" }));
     const dialog = screen.getByRole("dialog");
     expect(within(dialog).getByTitle("안녕히 계세여~").getAttribute("src")).toBe("https://www.tiktok.com/embed/7690854938997558549");

@@ -52,3 +52,4 @@
 @media (max-width:767px) { :global([data-overlay-root]) > .viewer.viewer.viewer:global([data-overlay-content]) { max-height:100dvh; } }
 
 .card > span { display:contents; }
+.cover:has(> [data-video-fallback]) > .play { display:none; }
