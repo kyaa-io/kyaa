@@ -11,6 +11,7 @@ import { cheerEventCopy, eventText } from "../domain/cheer-event-copy";
 import { photocardClaimSchema, type PhotocardClaim } from "../domain/photocard-claim";
 import { photocardClaimCopy } from "../domain/photocard-claim-copy";
 import type { CheerEvent } from "./cheer-event";
+import { HoloCard, PhotocardPackReveal } from "./photocard-pack-reveal";
 import styles from "./cheer-event.module.css";
 
 type Photocard = NonNullable<CheerEvent["photocard"]>;
@@ -28,6 +29,8 @@ export function PhotocardReward({ photocard, locale, name }: { photocard: Photoc
 function OwnedPhotocardReward({ collectionId, locale, name }: { collectionId: string; locale: AppLocale; name: string }) {
   const { getAccessToken } = usePrivy(), copy = cheerEventCopy(locale), claimCopy = photocardClaimCopy(locale), titleId = useId(), hintId = useId();
   const provider = useRef(getAccessToken), pending = useRef<AbortController | null>(null), viewAction = useRef<HTMLDivElement>(null), focusResult = useRef(false);
+  const [packOpened, setPackOpened] = useState(false);
+  const markPackOpened = useCallback(() => setPackOpened(true), []);
   useLayoutEffect(() => { provider.current = getAccessToken; }, [getAccessToken]);
   const [data, setData] = useState<PhotocardClaim>(), [failed, setFailed] = useState(false), [retry, setRetry] = useState(0);
   const [selected, setSelected] = useState<string>(), [submitting, setSubmitting] = useState(false), [open, setOpen] = useState(false);
@@ -92,7 +95,9 @@ function OwnedPhotocardReward({ collectionId, locale, name }: { collectionId: st
     <AccessibleOverlay open={open} onClose={() => setOpen(false)} labelledBy={titleId} backdropClassName={styles.backdrop} contentClassName={styles.photocardViewer}>
       <header className={styles.modalHeader}><h2 id={titleId}>{copy.photocard}</h2><button type="button" onClick={() => setOpen(false)} aria-label={copy.close}><X aria-hidden="true" /></button></header>
       <p>{copy.noDownload}</p>
-      {open && data.assets.map(asset => <PhotocardMedia key={asset.id} asset={asset} locale={locale} alt={eventText(copy.photocardAlt, name)} />)}
+      {open && <PhotocardPackReveal locale={locale} alreadyOpened={packOpened} onOpened={markPackOpened}>
+        {data.assets.map(asset => <HoloCard key={asset.id}><PhotocardMedia asset={asset} locale={locale} alt={eventText(copy.photocardAlt, name)} /></HoloCard>)}
+      </PhotocardPackReveal>}
     </AccessibleOverlay>
   </div>;
 }
