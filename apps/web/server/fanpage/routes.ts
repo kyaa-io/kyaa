@@ -139,6 +139,18 @@ export function createFanpageHandlers(dependencies: FanpageDependencies) {
         return fanpageJson(parseResult(commentReactionResultSchema, result));
       } catch (error) { return fanpageFailure(error); }
     },
+    async noticeReaction(request: Request, slug: string, noticeSlug: string) {
+      try {
+        celebritySlugSchema.parse(slug); celebritySlugSchema.parse(noticeSlug);
+        const owner = request.method === "PUT" ? (await dependencies.authorize(request.headers.get("authorization"))).appUserId : await optionalOwner(request, dependencies);
+        const input = request.method === "PUT" ? z.object({ reaction: z.enum(["like", "dislike", "none"]) }).strict().parse(await readSmallJson(request)) : null;
+        const result = await dependencies.rpc(input ? "set_celebrity_notice_reaction" : "read_celebrity_notice_reaction", {
+          p_app_user_id: owner, p_slug: slug, p_notice_slug: noticeSlug, p_locale: locale(request), ...(input ? { p_reaction: input.reaction } : {}),
+        });
+        if (!result) return fanpageJson({ error: { code: "FANPAGE_NOT_FOUND" } }, 404);
+        return fanpageJson(parseResult(z.object({ reaction: z.enum(["like", "dislike"]).nullable(), likeCount: z.number().int().nonnegative(), dislikeCount: z.number().int().nonnegative().nullable() }).strict(), result));
+      } catch (error) { return fanpageFailure(error); }
+    },
     async likeNotice(request: Request, slug: string, noticeSlug: string) {
       try {
         celebritySlugSchema.parse(slug); celebritySlugSchema.parse(noticeSlug);

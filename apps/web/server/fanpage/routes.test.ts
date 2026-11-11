@@ -16,6 +16,17 @@ function request(path = "/api", body?: unknown, authenticated = true, method = "
 }
 describe("fanpage server authority", () => {
   beforeEach(() => { vi.clearAllMocks(); });
+  it("reads guest notice reactions and writes only the authenticated choice", async () => {
+    const state = { reaction: "dislike", likeCount: 3, dislikeCount: null };
+    rpc.mockResolvedValue(state);
+    expect((await api.noticeReaction(request("/api?locale=ko", undefined, false, "GET"), "elina", "walk")).status).toBe(200);
+    expect(rpc).toHaveBeenLastCalledWith("read_celebrity_notice_reaction", { p_app_user_id: null, p_slug: "elina", p_notice_slug: "walk", p_locale: "ko" });
+    expect(await (await api.noticeReaction(request("/api", { reaction: "dislike" }, true, "PUT"), "elina", "walk")).json()).toEqual(state);
+    expect(rpc).toHaveBeenLastCalledWith("set_celebrity_notice_reaction", { p_app_user_id: owner, p_slug: "elina", p_notice_slug: "walk", p_locale: "ko", p_reaction: "dislike" });
+    expect((await api.noticeReaction(request("/api", { reaction: "like", appUserId: other }, true, "PUT"), "elina", "walk")).status).toBe(400);
+    expect((await api.noticeReaction(request("/api", { reaction: "like" }, false, "PUT"), "elina", "walk")).status).toBe(401);
+    expect(rpc).toHaveBeenCalledTimes(2);
+  });
   it("sets official notice likes for the authenticated owner and rejects extra caller identity", async () => {
     rpc.mockResolvedValueOnce({ liked: true, likeCount: 3 });
     const response = await api.likeNotice(request("/api", { liked: true }, true, "PUT"), "elina", "walk");
