@@ -5,13 +5,14 @@ import { FanText } from "@/components/fan-ui/fan-text";
 import { CreatorAvatar } from "@/components/fan-ui/creator-avatar";
 import { mediaFillClass } from "@/components/fan-ui/media-fill";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { ChevronDown, ChevronUp, MoreHorizontal, Play } from "@/components/fan-ui/fan-icons";
 import { FanDialog } from "@/components/fan-ui/fan-dialog";
 import { fanUiText } from "@/components/fan-ui/fan-ui-copy";
 import { MediaThumbnail } from "@/features/media/ui/media-thumbnail";
-import type { HomeShort } from "@/features/home/domain/home-gallery";
-import type { AppLocale } from "@/i18n/locales";
+import { homeShortsPageSchema, type HomeShort } from "@/features/home/domain/home-gallery";
+import { toContentLocale, type AppLocale } from "@/i18n/locales";
+import { participationCopy } from "@/i18n/catalogs/features__schedules__ui__participation";
 import { ShortsEngagement } from "./shorts-engagement";
 import styles from "./home-shorts.module.css";
 
@@ -25,7 +26,34 @@ const navigation: Record<AppLocale, [string, string, string]> = {
 const shortCover = (item: HomeShort) => item.platform === "tiktok" ? `/images/media/tiktok/${item.videoId}.jpg` : `https://i.ytimg.com/vi/${item.videoId}/oardefault.jpg`;
 const shortPlayer = (item: HomeShort) => item.platform === "tiktok" ? `https://www.tiktok.com/embed/${item.videoId}` : `https://www.youtube.com/embed/${item.videoId}?rel=0`;
 
-export function HomeShorts({ items, locale, layout = "rail", initialVideo, offset = 0 }: { items: readonly HomeShort[]; locale: AppLocale; layout?: "rail" | "grid"; initialVideo?: string; offset?: number }) {
+const PAGE_SIZE = 12;
+
+export function HomeShorts({ items: firstItems, locale, layout = "rail", initialVideo, offset = 0, hasMore: firstHasMore = false }: { items: readonly HomeShort[]; locale: AppLocale; layout?: "rail" | "grid"; initialVideo?: string; offset?: number; hasMore?: boolean }) {
+  // The grid loads the next page when its end scrolls into view; the viewer then steps through everything loaded.
+  const [items, setItems] = useState(firstItems);
+  const [hasMore, setHasMore] = useState(firstHasMore);
+  const [failed, setFailed] = useState(false);
+  const loading = useRef(false);
+  const tail = useRef<HTMLDivElement>(null);
+  const loadMore = useCallback(async () => {
+    if (loading.current) return;
+    loading.current = true;
+    setFailed(false);
+    try {
+      const response = await fetch(`/api/public/home-shorts?locale=${toContentLocale(locale)}&offset=${offset + items.length}`);
+      if (!response.ok) throw new Error();
+      const page = homeShortsPageSchema.parse(await response.json());
+      setItems(current => { const seen = new Set(current.map(item => item.id)); return [...current, ...page.items.filter(item => !seen.has(item.id))]; });
+      setHasMore(page.hasMore && page.items.length > 0);
+    } catch { setFailed(true); } finally { loading.current = false; }
+  }, [items.length, locale, offset]);
+  useEffect(() => {
+    const node = tail.current;
+    if (!node || layout !== "grid" || !hasMore || failed) return;
+    const watch = new IntersectionObserver(entries => { if (entries.some(entry => entry.isIntersecting)) void loadMore(); }, { rootMargin: "600px 0px" });
+    watch.observe(node);
+    return () => watch.disconnect();
+  }, [layout, hasMore, failed, loadMore]);
   const [index, setIndex] = useState<number | null>(() => { const i = items.findIndex(item => item.videoId === initialVideo); return i < 0 ? null : i; });
   const [more, setMore] = useState(false);
   const startY = useRef<number | null>(null);
@@ -51,12 +79,13 @@ export function HomeShorts({ items, locale, layout = "rail", initialVideo, offse
         <FanAction variant="text" type="button" className={styles.card} ariaLabel={item.title} onClick={() => setIndex(i)}>
           <span className={`${styles.cover} ${mediaFillClass}`}><MediaThumbnail image={item.thumbnail ?? shortCover(item)} href={item.href} kind="videos" locale={locale} backdrop /><span className={styles.play} aria-hidden="true"><FanIcon icon={Play} filled /></span></span>
           <span className={styles.caption}>
-            <CreatorAvatar slug={item.creator.slug} src={null} photos={undefined} size={32} />
+            <CreatorAvatar slug={item.creator.slug} src={item.creator.avatar?.src ?? null} photos={item.creator.avatar?.photos} size={32} />
             <span className={styles.details}><span className={styles.title}>{item.title}</span><FanText role="meta" className={styles.meta}>{item.creator.name} · {item.platform === "tiktok" ? "TikTok" : "YouTube"}</FanText></span>
           </span>
         </FanAction>
       </li>)}
     </ul>
+    {layout === "grid" && hasMore && (failed ? <FanAction variant="text" type="button" className={styles.retry} onClick={() => void loadMore()}>{participationCopy(locale).retry}</FanAction> : <div ref={tail} className={styles.tail} aria-hidden="true" />)}
     <FanDialog className={styles.viewer} open={!!selected} onOpenChange={open => { if (!open) { setIndex(null); setMore(false); } }} title={selected?.title ?? ""} closeLabel={fanUiText(locale, "close")}>
       {selected && <div className={styles.player} data-outbound-placement="shorts-player" onWheel={e => { if (Math.abs(e.deltaY) > 20 && Date.now() - wheelAt.current > 600) { wheelAt.current = Date.now(); move(e.deltaY > 0 ? 1 : -1); } }}>
         <div className={styles.stage}>
@@ -64,7 +93,7 @@ export function HomeShorts({ items, locale, layout = "rail", initialVideo, offse
           <iframe key={selected.videoId} src={shortPlayer(selected)} title={selected.title} allow="encrypted-media; picture-in-picture; fullscreen" allowFullScreen referrerPolicy="strict-origin-when-cross-origin" />
           <div className={styles.swipeZone} {...swipe} aria-hidden="true" />
         </div>
-        <ShortsEngagement key={selected.videoId} videoId={selected.videoId} locale={locale} offset={offset} />
+        <ShortsEngagement key={selected.videoId} videoId={selected.videoId} locale={locale} offset={offset + Math.floor((index ?? 0) / PAGE_SIZE) * PAGE_SIZE} />
         <div className={styles.controls} {...swipe}>
           <FanAction variant="text" type="button" onClick={() => move(-1)} disabled={index === 0} ariaLabel={navigation[locale][0]}><FanIcon icon={ChevronUp} /></FanAction>
           <FanAction variant="text" type="button" onClick={() => move(1)} disabled={index === items.length - 1} ariaLabel={navigation[locale][1]}><FanIcon icon={ChevronDown} /></FanAction>
