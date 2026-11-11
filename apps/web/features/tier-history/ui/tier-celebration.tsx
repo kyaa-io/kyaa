@@ -20,6 +20,11 @@ const QUIET_PATHS = /^\/(?:admin|operator|login|auth|onboarding|account-deletion
  * The read also records the change (GET /api/me/tier-changes), and runs again after every write the app makes, so the dialog
  * follows the action that caused it. A rise is marked seen as soon as it is shown, so a reload never shows it twice. */
 export function TierCelebration() {
+  const { ownerKey } = useGroupRequest();
+  return <OwnedTierCelebration key={ownerKey} />;
+}
+
+function OwnedTierCelebration() {
   const { locale } = useAppLocale();
   const pathname = usePathname() ?? "/";
   const { request, authenticated } = useGroupRequest();
@@ -27,7 +32,16 @@ export function TierCelebration() {
   const changes = useGroupResource(authenticated && !quiet ? `/api/me/tier-changes?locale=${toContentLocale(locale)}` : null, parse);
   // Rises closed on this screen stay closed even if a re-read returns them before the seen mark lands.
   const [dismissed, setDismissed] = useState<ReadonlySet<string>>(() => new Set());
-  const batch = (changes.data?.changes ?? []).filter(change => !dismissed.has(change.id));
+  const [held, setHeld] = useState<TierChange[]>([]);
+  useEffect(() => {
+    if (!authenticated || quiet) { setHeld([]); return; }
+    setHeld(current => {
+      const known = new Set(current.map(change => change.id));
+      const fresh = (changes.data?.changes ?? []).filter(change => !known.has(change.id) && !dismissed.has(change.id));
+      return fresh.length ? [...current, ...fresh] : current;
+    });
+  }, [authenticated, quiet, changes.data, dismissed]);
+  const batch = held.filter(change => !dismissed.has(change.id));
   const ids = batch.map(change => change.id).join(",");
   const posted = useRef(new Set<string>());
   useEffect(() => {
