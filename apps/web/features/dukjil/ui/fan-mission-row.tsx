@@ -12,11 +12,11 @@ import styles from "./fan-mission-row.module.css";
 /** feedback D1 · F3: the one row of every 덕질 list — today's missions, more missions, certifications, the folded heads and the 오늘의 덕질 empty row.
  * Same box everywhere: a 40 circle with the art (28) · title (one line 22) with an optional line below at the same x (progress or state) ·
  * one fixed trailing column (96, 120 from 1024px) holding one thing: `+NP`, a short action or the done tag. No arrow. Height 64, padding 12. */
-export function FanMissionRow({ href, art, title, detail, trailing, onClick, status, dataMission, done }: {
+export function FanMissionRow({ href, art, title, detail, trailing, onClick, status, dataMission, done, mobileExtra }: {
   href: string; art?: ReactNode; title: ReactNode; detail?: ReactNode; trailing?: ReactNode;
-  onClick?: (event: MouseEvent<HTMLAnchorElement>) => void; status?: string; dataMission?: string; done?: boolean;
+  onClick?: (event: MouseEvent<HTMLAnchorElement>) => void; status?: string; dataMission?: string; done?: boolean; mobileExtra?: boolean;
 }) {
-  return <li className={styles.item} data-mission={dataMission} data-status={status} data-done={done === undefined ? undefined : String(done)}>
+  return <li className={styles.item} data-mobile-extra={mobileExtra ? "" : undefined} data-mission={dataMission} data-status={status} data-done={done === undefined ? undefined : String(done)}>
     <Link className={styles.row} href={href as Route} onClick={onClick} data-fan-mission-row="">
       <RowBody art={art} title={title} detail={detail} trailing={trailing} />
     </Link>
