@@ -72,8 +72,30 @@
 
 남은 것(다음 담당):
 1. 게이트: `kyaa-t3 gate-remote 16e26e19c 9a4f03db3`. `next build`는 아직 안 돌림.
-2. dev 적용 뒤 실제 브라우저(감독 승인 후): 기존 회원 Google·Apple 재로그인(같은 MY·도장·지갑), 신규 Google 가입(주소 1개·`kyaa_wallet_derivations` 행·환영 도장), 같은 이메일 다른 계정 → `email_in_use` 문구, 정지 → "이용이 중지된 계정이에요.", 로그아웃, 탈퇴 → 재로그인 `inactive`, 관리자 Google 로그인, 네트워크 탭 `auth.privy.io` 0건, 390·1440 로그인 화면 캡처(배포 안내 이미지).
+2. dev 적용 뒤 실제 브라우저(감독 승인 후, 집계는 1-3a 방법별 표로): 기존 회원 Google·Apple 재로그인(같은 MY·도장·지갑), 신규 Google 가입(주소 1개·`kyaa_wallet_derivations` 행·환영 도장), 같은 이메일 다른 계정 → `email_in_use` 문구, 정지 → "이용이 중지된 계정이에요.", 로그아웃, 탈퇴 → 재로그인 `inactive`, 관리자 Google 로그인, 네트워크 탭 `auth.privy.io` 0건, 390·1440 로그인 화면 캡처(배포 안내 이미지).
 3. 비로그인·로그인 상태로 `useByUsAuth().login()`을 쓰는 화면 6곳(`fanpage-request-form`, `cheer-event-photocard`, `schedule-*`, `participation-requests`, `certification-detail-screen`, `app/s/raffle`, `admin/signup-event/exports`)이 `/login?returnTo=` 로 가는지.
+
+## 1-3a. 로그인 방법별 인수 기준 (감독 00:56) — 방법마다 따로 센다
+- 방법별로 통과·실패·미검증을 따로 기록한다. **소셜 신규 가입 성공을 이메일 이전 완료로 합산하지 않는다.** 확인하지 못한 방법은 "미검증"으로 보고한다.
+- 공통 통과 조건: 실제 dev 로그인 화면에서 시작해 로그인 → 서버 세션 생성 → 보호 API(예: `GET /api/me/profile` 또는 MY 화면이 부르는 API)가 200 → 새로고침 후에도 로그인 유지 → 로그아웃 후 보호 API 401. 네트워크 탭에 `auth.privy.io` 0건.
+
+| # | 방법 | 통과 조건(추가) | 현재 상태 | 막힌 이유·필요한 일 |
+|---|---|---|---|---|
+| L1 | **기존 이메일 회원**(Cognito 이메일 풀, 이전 Supabase 이메일 회원 포함) | 실제 웹 로그인 화면에서 이메일·비밀번호 입력 → 원래 회원 UUID 유지(`supabase:`/`did:privy` 키 그대로) → 보호 API 200. 틀린 비밀번호 거부, 이메일만으로 다른 계정 연결 안 됨 | **미검증 — 현재 불가** | 웹에 이메일 로그인 화면이 없다(위험 1-6). 이메일 풀은 앱 계약(`/api/auth/email/*`, 토큰을 본문으로 반환)만 있다. 필요: L1 작업(아래) |
+| L2 | **Google 신규 가입** | 처음 쓰는 Google 계정 → `kyaa_sign_in` `new` → 회원 1명·주소 1개 생성 → 보호 API 200. 주소는 전제 6에 따라 잠정(서명 인수 2-1c 전 최종 연결 금지) | 미검증(코드·단위·SQL 시험만 통과) | dev 배포·`AUTH_PROVIDER=cognito`·마이그레이션 적용 필요 |
+| L3 | **Apple** (기존 Apple 회원 연결 + 신규 가입 각각) | 기존: 원래 UUID·`did:privy`·지갑 유지. 신규: L2와 같음. Apple 이메일 가리기(릴레이 주소) 계정 포함 | 미검증 | Cognito Apple 팀 ID = `7RFN3TFR5K` 확인 필요(위험 1-2). 다르면 기존 회원 연결 불가 |
+| L4 | **기존 Google 회원 연결** | Privy 시절 Google 회원 → 같은 Google 계정 로그인 → `linked` → 원래 UUID·`did:privy`·지갑·도장·MY 그대로 → 보호 API 200. subject가 기록되지 않은 회원은 백필 후 연결(백필 전에는 `email_in_use` 안내가 정상) | 미검증(합성 DB 드라이런만 통과) | dev 배포 + (최근 미로그인 회원이면) Privy 내보내기·백필 |
+
+- 보조(별도 집계): 카카오(설정 시), 관리자 Google 로그인, 정지 회원 거부, 탈퇴 후 재로그인 거부.
+
+### L1 작업(웹 이메일 로그인) — 1차에 추가
+| 작업 | 파일(예정) | 시험 |
+|---|---|---|
+| 이메일 로그인 폼(로그인 화면에 "이메일로 계속하기") | `components/login-page.tsx`, 새 `components/email-login-form.tsx`, 문구 11개 언어 | 화면 시험: 입력 검증, 오류 문구, 중복 제출 방지 |
+| 웹용 이메일 세션: 기존 `/api/auth/email/login`(Cognito 이메일 풀 + 이전 Lambda)을 호출하되 토큰을 브라우저에 주지 않고 서버 쿠키 세션으로 | 새 `app/api/auth/email/web-login/route.ts`, `server/auth/cognito/email-session.ts` 재사용, `browser-session.ts`에 `kind: email` 세션 | 틀린 비밀번호 401, 정지·탈퇴 거부, 쿠키 HttpOnly·`__Host-`, 토큰 비노출 |
+| 웹 세션 응답에 이메일 회원 반영 | `server/auth/cognito/browser-routes.ts`(`session`이 이메일 세션도 `userId`·`kyaa-email:` 토큰 반환) | 이메일 회원 `useByUsAuth` 로그인, 보호 API 200 |
+| 로그아웃 | 기존 `/api/auth/email/logout` 연동 | 로그아웃 후 401 |
+- 이 작업은 계획만 있고 구현되지 않았다. 구현 전에는 L1을 "미검증 — 현재 불가"로 보고한다.
 
 ## 1-4. 위험
 | # | 위험 | 대응 |
@@ -83,7 +105,7 @@
 | 1-3 | 전환 직후 모든 회원 1회 재로그인 | 배포 안내 문구에 포함 |
 | 1-4 | 로그인 화면 캡처 없음 | dev 확인 때 추가 |
 | 1-5 | 앱(Flutter)의 Privy 토큰 경로는 요청마다 Privy 조회 → Privy 장애 영향 남음. 앱용 Cognito 응답에서 `walletToken` 제거 | 앱 이전 과제. `t3/privy-offpath-2355`의 Privy JWKS 로컬 검증 재사용 검토 |
-| 1-6 | 웹 이메일 로그인 화면 없음(이메일 풀은 앱 계약만) | 별도 과제 |
+| 1-6 | 웹 이메일 로그인 화면 없음(이메일 풀은 앱 계약만) → 인수 L1 불가 | 1-3a의 L1 작업을 1차에 추가. 소셜 성공을 이메일 이전 완료로 합산 금지 |
 | 1-7 | 첫 로그인 Google 프로필 사진 가져오기 꺼짐 | Cognito ID 토큰 `picture` 서버 처리로 별도 과제 |
 | 1-8 | 개인정보처리방침에 Privy 위탁 문구 남음 | 사용자 결정(법률) |
 | 1-9 | 카카오 `email_verified` 제공 여부 미확인 | dev에서 실제 앱으로 확인 |
