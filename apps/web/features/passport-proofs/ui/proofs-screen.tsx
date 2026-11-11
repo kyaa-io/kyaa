@@ -173,7 +173,7 @@ export function ProofsScreen({ locale, slug }: Props) {
 
   return (
     <div className={styles.page}>
-      <h1>{proofsText(locale, "pfTitle")}</h1>
+      <h1>{proofsText(locale, linkedType === SNS_POST_PROOF ? "pfTitleSns" : "pfTitle")}</h1>
       {missions.state.status === "loading" ? <p className={styles.state}>{proofsText(locale, "pfLoading")}</p> : null}
       {missions.state.status === "error" && missions.state.auth ? <p className={styles.state}><GuestLoginAction locale={locale} returnTo={`/c/${slug}/proofs?locale=${locale}`} variant="primary" /></p> : null}
       {missions.state.status === "error" && !missions.state.auth ? <Failure locale={locale} retry={missions.retry} /> : null}

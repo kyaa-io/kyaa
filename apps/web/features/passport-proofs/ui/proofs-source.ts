@@ -1,6 +1,7 @@
 // ko/en live here; the other locales live in i18n/catalogs/features__passport-proofs__ui__proofs-copy.ts.
 export const proofsSource = {
-  pfTitle: { ko: "증빙 제출", en: "Submit proof" },
+  pfTitle: { ko: "멤버십·구매 인증", en: "Membership and purchase proof" },
+  pfTitleSns: { ko: "SNS 글 인증", en: "Social post proof" },
   pfTypeLabel: { ko: "증빙 종류", en: "Proof type" },
   pfTypeMembership: { ko: "멤버십", en: "Membership" },
   pfTypePurchase: { ko: "구매", en: "Purchase" },

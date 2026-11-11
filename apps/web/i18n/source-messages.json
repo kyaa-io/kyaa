@@ -16650,10 +16650,16 @@
     "id": "features/rankings/ui/rankings-copy:rkRetry"
   },
   "pfTitle": {
-    "en": "Submit proof",
-    "ko": "증빙 제출",
+    "en": "Membership and purchase proof",
+    "ko": "멤버십·구매 인증",
     "source": "features/passport-proofs/ui/proofs-copy",
     "id": "features/passport-proofs/ui/proofs-copy:pfTitle"
+  },
+  "pfTitleSns": {
+    "en": "Social post proof",
+    "ko": "SNS 글 인증",
+    "source": "features/passport-proofs/ui/proofs-copy",
+    "id": "features/passport-proofs/ui/proofs-copy:pfTitleSns"
   },
   "pfTypeLabel": {
     "en": "Proof type",
