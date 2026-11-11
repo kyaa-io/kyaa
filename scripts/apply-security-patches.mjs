@@ -36,7 +36,7 @@ async function main() {
     if (patched !== source) await writeFile(schema, patched);
     copies++;
   }
-  if (!copies) throw new Error("No installed Reown schema found for the security patch");
+  if (!copies && Object.keys(lock.packages).some(directory => directory.endsWith("node_modules/@reown/appkit-wallet"))) throw new Error("No installed Reown schema found for the security patch");
   console.log(`Verified Zod compatibility patch in ${copies} Reown schema(s)`);
 }
 
