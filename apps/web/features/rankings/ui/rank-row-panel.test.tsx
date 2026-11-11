@@ -10,6 +10,7 @@ vi.mock("./rankings-copy", () => {
   };
   return { rankingsText: (_locale: string, key: string, values: readonly unknown[] = []) => (ko[key] ?? key).replace(/\{(\d+)\}/g, (_m, i) => String(values[Number(i)])) };
 });
+import { readFileSync } from "node:fs";
 import { RankRowPanel } from "./rank-row-panel";
 import type { HomeCreatorRankingRow, HomeFanRankingRow, HomeFanProfileRef } from "../domain/types";
 
@@ -114,5 +115,19 @@ describe("RankRowPanel", () => {
   it("formats numbers in the viewer's locale", () => {
     render(<RankRowPanel id="p" kind="creator" row={creator({ dayGain: 12345 })} days={7} guest={false} locale="id" />);
     expect(stat("오늘")).toBe("+12.345");
+  });
+});
+
+describe("펼침 영역의 왼쪽 선", () => {
+  // --space-7 같은 없는 토큰이 섞이면 calc 전체가 무효가 되어 패널이 이름선(84)이 아닌 대체값으로 밀린다(대표 11/11 22:33 지적).
+  const defined = new Set([...readFileSync("app/globals.css", "utf8").matchAll(/^\s*(--space-\d+):/gm)].map((m) => m[1]));
+  it.each(["ranking-rows.module.css", "rank-row-panel.module.css"])("%s는 정의된 간격 토큰만 쓴다", (file) => {
+    const css = readFileSync(`features/rankings/ui/${file}`, "utf8");
+    const used = [...css.matchAll(/var\((--space-\d+)/g)].map((m) => m[1]);
+    expect(used.filter((token) => !defined.has(token!))).toEqual([]);
+  });
+  it("패널은 행의 이름 시작선(--rank-name-start = 12 + 28 + 8 + 28 + 8)을 그대로 쓴다", () => {
+    expect(readFileSync("features/rankings/ui/ranking-rows.module.css", "utf8")).toContain("--rank-name-start: calc(var(--space-3) + var(--space-7) + var(--space-2) + var(--space-7) + var(--space-2))");
+    expect(readFileSync("features/rankings/ui/rank-row-panel.module.css", "utf8")).toContain("var(--rank-name-start)");
   });
 });

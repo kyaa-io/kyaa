@@ -50,11 +50,11 @@ export function RankRowPanel(props: RankRowPanelProps) {
 
   let action: ReactNode = null;
   if (props.kind === "creator") {
-    action = <FanAction variant="secondary" fullWidth href={`/${props.row.slug}?locale=${locale}`}>{rankingsText(locale, "rkGoFanpage")}</FanAction>;
+    action = <FanAction variant="secondary" size="sm" fullWidth href={`/${props.row.slug}?locale=${locale}`}>{rankingsText(locale, "rkGoFanpage")}</FanAction>;
   } else if (guest) {
-    if (props.loginHref) action = <FanAction variant="secondary" fullWidth href={props.loginHref}>{rankingsText(locale, "rkLoginProfile")}</FanAction>;
+    if (props.loginHref) action = <FanAction variant="secondary" size="sm" fullWidth href={props.loginHref}>{rankingsText(locale, "rkLoginProfile")}</FanAction>;
   } else {
-    action = <FanAction variant="secondary" fullWidth disabled={!props.row.profileRef} onClick={props.onOpenProfile}>{rankingsText(locale, "rkViewProfile")}</FanAction>;
+    action = <FanAction variant="secondary" size="sm" fullWidth disabled={!props.row.profileRef} onClick={props.onOpenProfile}>{rankingsText(locale, "rkViewProfile")}</FanAction>;
   }
 
   return <div id={id} className={styles.panel} data-rank-panel={props.kind}>

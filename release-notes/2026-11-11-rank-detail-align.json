@@ -1,0 +1,14 @@
+{
+  "changes": [
+    "랭킹에서 행을 펼치면 1위까지·최애·등급·하트·응모권이 행의 닉네임이 시작하는 왼쪽 선에 맞춰 보여요. 이전에는 닉네임보다 조금 오른쪽에서 시작했어요.",
+    "모바일에서도 5개 항목이 한 줄에 들어가요. 찐팬 탭과 크리에이터 탭이 같은 선에서 시작해요.",
+    "'프로필 보기'와 '팬페이지 가기' 버튼 높이를 한 단계 낮췄어요. 누르는 영역은 그대로 넓어요.",
+    "붙인 사진은 로컬 예시 데이터로 찍은 확인 화면이며 운영 화면이 아니에요."
+  ],
+  "path": "/",
+  "images": [
+    "release-notes/images/2026-11-11-rank-detail-align-fans-390.png",
+    "release-notes/images/2026-11-11-rank-detail-align-creators-390.png",
+    "release-notes/images/2026-11-11-rank-detail-align-fans-1440.png"
+  ]
+}
