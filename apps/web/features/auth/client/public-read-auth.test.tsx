@@ -43,11 +43,22 @@ it("reads the ranking as a guest when a signed-in viewer's token never arrives, 
   const hook = renderHook(() => useRankingResource("/api/rankings/home", parse));
   await settle(6_000);
   expect(hook.result.current.state).toEqual({ status: "ready", data: { n: 1 } });
-  Object.assign(auth, { user: { id: "member-2" }, getAccessToken: async () => "token" });
-  hook.rerender();
+  Object.assign(auth, { getAccessToken: async () => "token" });
+  act(() => hook.result.current.refresh());
   expect(hook.result.current.state).toEqual({ status: "ready", data: { n: 1 } });
   await settle(10);
   expect(hook.result.current.state).toEqual({ status: "ready", data: { n: 2 } });
+});
+
+it("never shows another member's ranking rows to a new owner", async () => {
+  Object.assign(auth, { ready: true, authenticated: true, user: { id: "member-1" }, getAccessToken: async () => "token" });
+  const hook = renderHook(() => useRankingResource("/api/rankings/home", parse));
+  await settle(10);
+  expect(hook.result.current.state.status).toBe("ready");
+  fetchMock.mockImplementationOnce(() => new Promise<Response>(() => {}));
+  Object.assign(auth, { user: { id: "member-2" } });
+  hook.rerender();
+  expect(hook.result.current.state).toEqual({ status: "loading" });
 });
 
 it("reads a public group page as a guest within 6 seconds when sign-in never becomes ready", async () => {

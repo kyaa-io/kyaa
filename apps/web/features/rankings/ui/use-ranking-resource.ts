@@ -58,10 +58,12 @@ export function useRankingResource<T>(url: string, parse: (value: unknown) => T)
   }, [url, ready, authenticated, attempt, cacheKey, epoch]);
 
   // The guest rows read during a stalled sign-in stay on screen while the member re-read of the same url runs.
+  // Only guest rows carry over: another member's rows (with their own values) never show for a new owner.
   const own = settled?.key === cacheKey ? settled.state : cached;
-  const [lastReady, setLastReady] = useState<{ url: string; state: State<T> }>();
-  if (own?.status === "ready" && (lastReady?.url !== url || lastReady.state !== own)) setLastReady({ url, state: own });
-  const state: State<T> = own ?? (lastReady?.url === url ? lastReady.state : undefined) ?? { status: "loading" };
+  const [lastReady, setLastReady] = useState<{ url: string; owner: string; state: State<T> }>();
+  if (own?.status === "ready" && (lastReady?.url !== url || lastReady.owner !== owner || lastReady.state !== own)) setLastReady({ url, owner, state: own });
+  const carried = lastReady && lastReady.url === url && (lastReady.owner === owner || lastReady.owner === "guest") ? lastReady.state : undefined;
+  const state: State<T> = own ?? carried ?? { status: "loading" };
   useLayoutEffect(() => { shown.current = state; });
   return { state, retry, refresh };
 }
