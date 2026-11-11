@@ -181,7 +181,7 @@ jobs:
         if: matrix.suite != 'live'
       - run: npm run build --workspace @byus/worker
         if: matrix.suite == 'core'
-      - run: sudo apt-get update && sudo apt-get install -y postgresql ripgrep
+      - run: bash scripts/ci/setup-postgres-ripgrep.sh
       - name: Verify automatic registration permissions, recovery and nonce concurrency
         if: matrix.suite == 'core'
         run: |
@@ -525,7 +525,7 @@ jobs:
           key: ${{ steps.node_modules_key.outputs.prefix }}-${{ hashFiles('package-lock.json', 'package.json', 'apps/*/package.json', 'scripts/apply-security-patches.mjs') }}
       - run: npm run security:patch
       - run: npm run build --workspace @byus/worker
-      - run: sudo apt-get update && sudo apt-get install -y postgresql ripgrep
+      - run: bash scripts/ci/setup-postgres-ripgrep.sh
       - name: Restore the pinned Foundry binaries
         id: foundry-cache
         uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
