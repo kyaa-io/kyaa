@@ -29,7 +29,7 @@ describe("public structured data", () => {
       "@id": "https://kyaa.io/#website",
       url: "https://kyaa.io/",
       name: "kyaa",
-      alternateName: ["KYAA", "Kyaa"],
+      alternateName: ["KYAA", "Kyaa", "꺄", "꺄(Kyaa)"],
       inLanguage: [...APP_LOCALES],
       publisher: { "@id": "https://kyaa.io/#organization" },
     });

@@ -56,6 +56,14 @@ describe("public search and sharing metadata", () => {
     expect(publicMetadata({ path: "/guide", locale: "ko", title: "Guide", description: "Guide" }).robots).toEqual({ index: true, follow: true, "max-image-preview": "large" });
     expect(publicMetadata({ path: "/my", locale: "ko", title: "Private", description: "Private" }).robots).toEqual({ index: false, follow: false });
   });
+  it("excludes dev search indexing while retaining production canonicals", () => {
+    vi.stubEnv("NEXT_PUBLIC_APP_URL", "https://dev.kyaa.io");
+    try {
+      const meta = publicMetadata({ path: "/", locale: "ko", ...pageCopy.home.ko });
+      expect(meta.robots).toEqual({ index: false, follow: false });
+      expect(meta.alternates?.canonical).toBe("https://kyaa.io/?locale=ko");
+    } finally { vi.unstubAllEnvs(); }
+  });
   it("does not advertise missing translations", () => {
     const meta = publicMetadata({ path: "/ifew", locale: "ko", locales: ["ko"], title: "이퓨", description: "이퓨 소식" });
     expect(meta.alternates?.languages).toEqual({ ko: "https://kyaa.io/ifew?locale=ko" });
@@ -66,7 +74,8 @@ describe("public search and sharing metadata", () => {
     expect(Object.keys(pageCopy.live)).toEqual([...APP_LOCALES]);
     expect(Object.keys(pageCopy.celebrities)).toEqual([...APP_LOCALES]);
     for (const locale of APP_LOCALES) {
-      expect(pageCopy.home[locale].title).toBe("Kyaa. Every Fan Moment Counts.");
+      expect(pageCopy.home[locale].title).toBe("꺄(Kyaa). Every Fan Moment Counts.");
+      expect(pageCopy.home[locale].description).toContain("꺄");
       expect(communityCopy(locale).title).not.toHaveLength(0);
       expect(pageCopy.live[locale].title).not.toHaveLength(0);
       expect(pageCopy.celebrities[locale].title).not.toHaveLength(0);

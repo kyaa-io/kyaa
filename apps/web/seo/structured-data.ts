@@ -28,6 +28,7 @@ export function homeStructuredData() {
         brand: {
           "@type": "Brand",
           name: "kyaa",
+          alternateName: ["꺄", "꺄(Kyaa)"],
           url: `${SITE_URL}/`,
         },
         sameAs: [
@@ -42,7 +43,7 @@ export function homeStructuredData() {
         "@id": WEBSITE_ID,
         url: `${SITE_URL}/`,
         name: "kyaa",
-        alternateName: ["KYAA", "Kyaa"],
+        alternateName: ["KYAA", "Kyaa", "꺄", "꺄(Kyaa)"],
         inLanguage: [...APP_LOCALES],
         publisher: { "@id": ORGANIZATION_ID },
       },

@@ -1,0 +1,19 @@
+# 꺄(Kyaa)
+
+> Kyaa is a fan platform operated by Sallylab Inc. Fans can discover creators and LIVE schedules, reserve a spot, and record participation in a Fan Passport. The Korean brand name is 꺄(Kyaa).
+
+## Public information
+
+- [Korean home](https://kyaa.io/?locale=ko): Service introduction and public content.
+- [English home](https://kyaa.io/?locale=en): Service introduction in English.
+- [Service guide](https://kyaa.io/guide?locale=en): How to use Kyaa and frequently asked questions.
+- [Sitemap](https://kyaa.io/sitemap.xml): Public canonical URLs and language alternatives.
+
+## Official channels
+
+- [Instagram](https://www.instagram.com/kyaa_app/)
+- [X](https://x.com/kyaa_app)
+- [Threads](https://www.threads.com/@kyaa_app)
+- [Telegram](https://t.me/Kyaa_Official)
+
+Contact: support@kyaa.io. Supported locales: ko, en, ja, zh-Hans, zh-Hant, es, id, vi, th, pt, fr, ru. Use each page's locale parameter to select its language. Reservations, attendance and benefit entries are distinct actions; consult the current event's public conditions.
