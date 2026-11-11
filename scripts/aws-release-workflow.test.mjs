@@ -41,7 +41,7 @@ test('prod promotion prints the Buildx version without letting that block it and
   assert.ok(steps.filter(step => /setup-buildx-action/.test(step.uses ?? '')).every(step => step.if === "env.RELEASE_ENV == 'dev'"));
 });
 test('promotion-path jobs run on the pinned ubuntu-24.04 runner', () => {
-  for (const name of ['release', 'notice', 'dev-notice']) assert.equal(workflow.jobs[name]['runs-on'], 'ubuntu-24.04');
+  for (const name of ['release', 'notice']) assert.equal(workflow.jobs[name]['runs-on'], 'ubuntu-24.04');
   assert.equal(load(readFileSync('.github/workflows/aws-approved-promotion.yml', 'utf8')).jobs['wait-and-promote']['runs-on'], 'ubuntu-24.04');
   assert.equal(load(readFileSync('.github/workflows/deployment-notices.yml', 'utf8')).jobs['validate-notice']['runs-on'], 'ubuntu-24.04');
 });
@@ -233,3 +233,18 @@ test('the same loaded image is smoked, authenticated and checked immediately bef
  assert.equal((script.match(/docker buildx build --load/g)||[]).length,1);
  assert.ok(script.indexOf('aws-release.mjs build-record')<script.indexOf('--target next-cache-export'));
 });
+
+ test('DEV notices run off the release path with trusted source artifacts', () => {
+ const notices=load(readFileSync('.github/workflows/deployment-notices.yml','utf8'));
+ assert.equal(workflow.jobs['dev-notice'],undefined);
+ assert.deepEqual(notices.on.workflow_run,{workflows:['AWS platform release'],types:['completed']});
+ const job=notices.jobs['dev-notice'];
+ assert.match(job.if,/workflow_run.conclusion == 'success'/);
+ assert.match(job.if,/head_repository.id == 1307387500/);
+ assert.equal(job.concurrency.group,'aws-release-dev');
+ assert.equal(job.steps[0].with.ref,'main');
+ const artifact=job.steps.find(s=>s.uses==='actions/download-artifact@v4');
+ assert.equal(artifact.with['run-id'],'${{ github.event.workflow_run.id }}');
+ assert.ok(job.steps.some(s=>s.run?.includes('assert.equal(e.deployment.payload.workflowRunId')));
+ assert.ok(job.steps.some(s=>s.run==='node scripts/dev-deployment-notices.mjs'));
+ });
