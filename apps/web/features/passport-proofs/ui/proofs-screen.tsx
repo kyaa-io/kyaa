@@ -4,6 +4,9 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { ImagePlus } from "lucide-react";
 
+import { DukjilProvider, useDukjil } from "@/features/dukjil/ui/dukjil-provider";
+import { FanNumber } from "@/components/fan-ui/fan-number";
+import { POINT_COIN_SRC, EarnBadge } from "@/features/dukjil/ui/earn-badge";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import { FanLockedRows } from "@/components/fan-ui/fan-locked-value";
 import { GuestLoginAction } from "@/features/my/ui/guest-login";
@@ -59,13 +62,13 @@ export function ProofHistory({ locale, items, onResubmit }: { locale: AppLocale;
   );
 }
 
-export function ProofBoardList({ locale, items, onChanged }: { locale: AppLocale; items: ProofBoardItem[]; onChanged?: () => void }) {
+export function ProofBoardList({ locale, items, onChanged, photoFeed = false }: { locale: AppLocale; items: ProofBoardItem[]; onChanged?: () => void; photoFeed?: boolean }) {
   // After a block succeeds the card goes away at once (by post id, no author id); the re-fetch then drops the author's other posts.
   const [hidden, setHidden] = useState<ReadonlySet<string>>(new Set());
-  const shown = items.filter((item) => !hidden.has(item.postId));
+  const shown = items.filter((item) => !hidden.has(item.postId) && (!photoFeed || Boolean(item.imageUrl)));
   if (!shown.length) return <p className={styles.state}>{proofsText(locale, "pfBoardEmpty")}</p>;
   return (
-    <ul className={styles.list}>
+    <ul className={photoFeed ? styles.photoFeed : styles.list}>
       {shown.map((item) => (
         <li key={item.postId} className={styles.historyRow}>
           <div className={styles.rowHead}>
@@ -77,7 +80,8 @@ export function ProofBoardList({ locale, items, onChanged }: { locale: AppLocale
             // eslint-disable-next-line @next/next/no-img-element -- API-streamed masked proof image
             <img className={styles.boardImage} src={item.imageUrl} alt="" loading="lazy" />
           ) : null}
-          <p className={styles.body}>{item.body}</p>
+          {item.awardedPoints != null ? <EarnBadge variant="inline" locale={locale} points={item.awardedPoints} /> : null}
+          {!photoFeed ? <p className={styles.body}>{item.body}</p> : null}
         </li>
       ))}
     </ul>
@@ -99,6 +103,29 @@ function useResource<T>(load: () => Promise<T>, deps: unknown[]) {
 
 function Failure({ locale, retry }: { locale: AppLocale; retry: () => void }) {
   return <p className={styles.state} role="alert">{proofsText(locale, "pfError")}<FanAction variant="text" onClick={retry}>{proofsText(locale, "pfRetry")}</FanAction></p>;
+}
+
+export function PublicProofsTab({ locale, slug }: { locale: AppLocale; slug: string }) {
+  return <DukjilProvider slug={slug} locale={locale}><PublicProofsFeed locale={locale} slug={slug} /></DukjilProvider>;
+}
+
+function PublicProofsFeed({ locale, slug }: { locale: AppLocale; slug: string }) {
+  const dukjil = useDukjil();
+  const points = dukjil?.status === "on" ? dukjil.catalog?.rules.proof?.points : undefined;
+  const auth = useByUsAuth();
+  const board = useResource(async () => {
+    const token = auth.ready && auth.authenticated ? await auth.getAccessToken() : null;
+    return listProofBoard(slug, undefined, token);
+  }, [slug, auth.ready, auth.authenticated]);
+  return <section data-block="proof-feed" className={styles.panel}>
+    <div className={styles.feedActions}>
+    {typeof points === "number" ? <FanNumber value={points} unit="P" locale={locale} size="xl" icon={<img src={POINT_COIN_SRC} width={32} height={32} alt="" />} /> : null}
+    <FanAction href={`/c/${slug}/proofs?locale=${locale}`} variant="neutral">{locale === "ko" ? "인증하기" : "Submit proof"}</FanAction>
+    </div>
+    {board.state.status === "loading" ? <p role="status">{proofsText(locale, "pfLoading")}</p> : null}
+    {board.state.status === "error" ? <Failure locale={locale} retry={board.retry} /> : null}
+    {board.state.status === "ready" ? <ProofBoardList locale={locale} items={board.state.data.items} onChanged={board.retry} photoFeed /> : null}
+  </section>;
 }
 
 type Props = { locale: AppLocale; slug: string };
@@ -180,6 +207,7 @@ export function ProofsScreen({ locale, slug }: Props) {
       {missions.state.status === "ready" && !types.length ? <p className={styles.state}>{proofsText(locale, "pfNoMission")}</p> : null}
       {missions.state.status === "ready" && types.length ? (
       <section className={styles.panel} aria-labelledby="pf-form">
+        <p>{locale === "ko" ? "개인정보(이름·주소·카드번호 등)는 가리고 올려 주세요" : "Hide personal information (name, address, card number, etc.) before uploading."}</p>
         <fieldset className={styles.types} disabled={busy || Boolean(resubmitting)}>
           <legend id="pf-form" className={styles.label}>{proofsText(locale, "pfTypeLabel")}</legend>
           {types.map((type) => (

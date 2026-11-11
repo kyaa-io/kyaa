@@ -3,7 +3,7 @@ import type { AppLocale } from "@/i18n/locales";
 import { creatorHomeHref } from "@/features/creator/domain/creator-navigation";
 import { GROUP_COLLECTIONS_VISIBLE } from "@/features/groups/domain/collection-visibility";
 
-export const FAN_PAGE_TABS = ["home", "board", "certifications", "events", "leaderboard"] as const;
+export const FAN_PAGE_TABS = ["home", "board", "proofs", "certifications", "events", "leaderboard"] as const;
 export const GROUP_PAGE_TABS = ["home", "board", "rooms", "activities"] as const;
 export type FanPageTab = typeof FAN_PAGE_TABS[number] | "rooms" | "activities" | "news" | "collection" | "calendar" | "members";
 export type BoardSection = "feed" | "media" | "live";

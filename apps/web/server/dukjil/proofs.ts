@@ -158,6 +158,7 @@ export function createProofHandlers(deps: ProofDependencies) {
           postId: r.postId, body: r.body, createdAt: r.createdAt, proofType: r.proofType, amountVisible: r.amountVisible ?? null,
           imageUrl: image ? `/api/pages/${encodeURIComponent(idOrSlug)}/posts/${String(r.postId)}/image?t=${encodeURIComponent(String(r.createdAt))}` : null,
           jjinfanRank: r.jjinfanRank ?? null,
+          awardedPoints: r.awardedPoints ?? null,
         };
       });
       const nextBefore = rows.length >= query.limit ? (items[items.length - 1]?.createdAt as string | undefined) ?? null : null;

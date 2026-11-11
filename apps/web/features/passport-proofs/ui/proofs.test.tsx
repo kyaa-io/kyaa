@@ -218,3 +218,9 @@ describe("proof API calls carry the session token", () => {
     authState.authenticated = true;
   });
 });
+
+it("photo feed hides prose and displays only the recorded award", () => {
+  render(<ProofBoardList locale="ko" photoFeed items={[{ postId: "33333333-3333-4333-8333-333333333333", body: "hidden prose", createdAt: "2026-11-01T00:00:00Z", proofType: "receipt", amountVisible: null, imageUrl: "/api/pages/mina/posts/33333333-3333-4333-8333-333333333333/image?t=abc", jjinfanRank: null, awardedPoints: 37 }]} />);
+  expect(screen.queryByText("hidden prose")).toBeNull();
+  expect(screen.getByText("+37P")).toBeTruthy();
+});

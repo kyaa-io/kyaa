@@ -6,7 +6,7 @@ import { fanPageNavigationCopy } from "@/i18n/catalogs/features__fanpage__naviga
 describe("fan page board navigation", () => {
   it("maps legacy tabs into the five-item fan page navigation", () => {
     for (const tab of ["community", "notice", "media", "live"]) expect(parseFanPageTab(tab)).toBe("board");
-    for (const tab of ["home", "board", "certifications", "events", "leaderboard"]) expect(parseFanPageTab(tab)).toBe(tab);
+    for (const tab of ["home", "board", "proofs", "certifications", "events", "leaderboard"]) expect(parseFanPageTab(tab)).toBe(tab);
     expect(parseFanPageTab("benefits")).toBe("events");
     expect(parseFanPageTab("unknown")).toBe("home");
   });

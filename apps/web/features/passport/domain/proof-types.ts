@@ -61,6 +61,7 @@ export type MyProofItem = z.infer<typeof myProofItemSchema>;
 // GET /api/pages/{pageId}/posts?category=proof. No author or submission id. imageUrl is an API path that streams the member's masked image
 // (consented, approved, visible posts only); it never carries a bucket path or a signed URL. jjinfanRank is the "n-th jjinfan" number or null.
 export const proofBoardItemSchema = z.object({
+  awardedPoints: z.number().int().min(0).nullable().optional(),
   postId: z.uuid(), body: z.string(), createdAt: z.string(), proofType: proofTypeSchema, amountVisible: z.boolean().nullable(),
   imageUrl: z.string().regex(/^\/api\/pages\/[^/?#]+\/posts\/[0-9a-f-]{36}\/image\?t=[^&#]+$/).nullable(), jjinfanRank: z.number().int().min(1).nullable(),
 }).strict();
