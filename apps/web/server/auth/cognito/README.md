@@ -7,7 +7,7 @@ The user decided to stop using Privy. With `AUTH_PROVIDER=cognito` the web makes
   - `new`: no member owns the subject or the email. The server derives a **provisional, receive-only** wallet address from the dev-only `KYAA_WALLET_XPUB` (rejected for production; seed discarded) at the reserved index and calls `create_kyaa_member`; the final address comes from the phase-2 signer (`docs/operations/privy-exit-plan.md` 전제 6); the identity key is `kyaa:<uuid>`.
   - `blocked` (`email_in_use`, `inactive`, `ambiguous`, `wallet_missing`): no session; the login page explains the reason. Any other callback failure returns to `/login?authError=callback_failed`. An email match alone never merges accounts.
 - Session: `__Host-kyaa-cognito` opaque cookie, encrypted DB row, up to 30 days (the Cognito refresh token lifetime), refreshed server-side. `/api/auth/cognito/session` returns `userId` (identity key) and a `kyaa-cognito:` access token kept in memory.
-- Requests: `kyaa-cognito:` Bearer → local JWT check (cached JWKS) + `resolve_kyaa_identity` (one DB read). Apple lifecycle checks use the stored provider subjects.
+- Requests: `kyaa-cognito:` Bearer → local JWT check (cached JWKS) + `resolve_kyaa_identity` (one DB read). Logout records the token's `origin_jti`/`jti` in `revoked_cognito_token_families` before deleting the session row, so a Bearer issued before logout (or refreshed from the same sign-in) gets 401. Apple lifecycle checks use the stored provider subjects.
 - The client renders no Privy SDK in this mode (`privy-root.island.tsx`); `useByUsAuth` reads only the server session.
 - Privy Bearer tokens are still accepted for app clients that have not moved yet (`privy-node-verifier.ts` legacy path).
 

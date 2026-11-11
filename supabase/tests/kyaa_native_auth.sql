@@ -43,6 +43,13 @@ begin
   perform pg_temp.kyaa_assert(member->'providerAccounts'@>jsonb_build_array(jsonb_build_object('issuer','https://kauth.kakao.com','subject','k-'||suffix)),'Kakao subject recorded');
   perform pg_temp.kyaa_assert(public.kyaa_sign_in(issuer,'c-kakao-'||suffix,'https://kauth.kakao.com','k-'||suffix,'kakao-'||suffix||'@example.test',91342)->>'mode'='linked','Kakao member links again');
 
+  -- Logout revokes the token family: an access token issued before logout no longer resolves; another sign-in does.
+  perform pg_temp.kyaa_assert(public.resolve_kyaa_identity(issuer,'c-new-'||suffix,91342,array['origin-'||suffix,'jti-'||suffix]) is not null,'live token family resolves');
+  perform public.revoke_cognito_token_family(array['origin-'||suffix,'jti-'||suffix], now()+interval '1 day');
+  perform pg_temp.kyaa_assert(public.resolve_kyaa_identity(issuer,'c-new-'||suffix,91342,array['origin-'||suffix,'jti-later-'||suffix]) is null,'refreshed token of a logged-out family is refused');
+  perform pg_temp.kyaa_assert(public.resolve_kyaa_identity(issuer,'c-new-'||suffix,91342,array['jti-'||suffix]) is null,'the exact logged-out token is refused');
+  perform pg_temp.kyaa_assert(public.resolve_kyaa_identity(issuer,'c-new-'||suffix,91342,array['origin-other-'||suffix,'jti-other-'||suffix]) is not null,'a new sign-in of the same member still works');
+
   -- Inactive member is refused.
   update public.app_users set status='disabled' where id=legacy_id;
   perform pg_temp.kyaa_assert(public.kyaa_sign_in(issuer,'c-legacy-'||suffix,google,'g-legacy-'||suffix,'legacy-'||suffix||'@example.test',91342)->>'reason'='inactive','disabled member is blocked');

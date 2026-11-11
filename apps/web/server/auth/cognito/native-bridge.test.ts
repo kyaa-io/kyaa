@@ -9,6 +9,7 @@ vi.mock("../../config/env",()=>({loadServerEnv:()=>({COGNITO_NATIVE_REDIRECT_URI
 vi.mock("./verifier",async original=>({...await original<typeof import("./verifier")>(),createCognitoVerifier:()=>mock.verify}));
 vi.mock("./identity-repository",()=>({identityDatabase:()=>({rpc:mock.rpc})}));
 vi.mock("./kyaa-identity",()=>({resolveKyaaMember:mock.mapping}));
+const accessJwt=(claims:Record<string,unknown>)=>`${Buffer.from(JSON.stringify({alg:"RS256"})).toString("base64url")}.${Buffer.from(JSON.stringify(claims)).toString("base64url")}.sig`;
 import {nativeBridge} from "./native-bridge";
 import {challenge,digest,seal} from "./browser-session";
 const key="k".repeat(43),verifier="v".repeat(43),code="c".repeat(43);
@@ -17,7 +18,7 @@ const request=(body:unknown,origin?:string)=>new Request("https://kyaa.io/api/au
 beforeEach(()=>{
  vi.clearAllMocks();vi.stubGlobal("fetch",mock.fetch);
  mock.verify.mockResolvedValue({issuer:mock.config.issuer,subject:"same-owner"});mock.mapping.mockResolvedValue(mapping);
- const encrypted=seal({accessToken:"test-access",idToken:"test-id",refreshToken:"test-refresh",subject:"same-owner",expiresAt:Date.now()+600_000,sessionExpiresAt:Date.now()+86400_000},mock.config.cookieSecret);
+ const encrypted=seal({accessToken:accessJwt({sub:"same-owner",origin_jti:"origin-native",jti:"jti-native"}),idToken:"test-id",refreshToken:"test-refresh",subject:"same-owner",expiresAt:Date.now()+600_000,sessionExpiresAt:Date.now()+86400_000},mock.config.cookieSecret);
  mock.rpc.mockImplementation(async(name:string)=>({data:["read_cognito_browser_session","consume_cognito_native_handoff"].includes(name)?encrypted:null,error:null}));
  mock.fetch.mockResolvedValue(new Response(null,{status:200}));
 });
@@ -37,7 +38,8 @@ it("revokes the refresh token before expiring the native server session without 
  const response=await nativeBridge(request({sessionToken:key}),"logout");
  expect(response.status).toBe(200);expect(await response.json()).toEqual({signedOut:true});
  expect(mock.fetch).toHaveBeenCalledTimes(1);expect(String(mock.fetch.mock.calls[0][0])).toBe(`${mock.config.domain}/oauth2/revoke`);
- expect(mock.rpc.mock.calls.map(([name])=>name)).toEqual(["read_cognito_browser_session","delete_cognito_browser_session"]);
+ expect(mock.rpc.mock.calls.map(([name])=>name)).toEqual(["read_cognito_browser_session","revoke_cognito_token_family","delete_cognito_browser_session"]);
+ expect(mock.rpc).toHaveBeenCalledWith("revoke_cognito_token_family",{p_token_ids:["origin-native","jti-native"],p_expires_at:expect.any(String)});
  expect(mock.rpc).toHaveBeenLastCalledWith("delete_cognito_browser_session",{p_token_hash:digest(key)});
  expect(mock.verify).not.toHaveBeenCalled();
 });

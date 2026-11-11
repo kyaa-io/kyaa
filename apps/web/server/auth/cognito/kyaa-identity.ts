@@ -31,8 +31,9 @@ async function call(db: IdentityRpc, name: string, args: Record<string, unknown>
 }
 
 /** Request-time lookup: (Cognito issuer, subject) -> active member. No provider network call. */
-export async function resolveKyaaMember(identity: Pick<CognitoIdentity, "issuer" | "subject">, chainId: number, db: IdentityRpc = identityDatabase()): Promise<KyaaMember | null> {
-  const data = await call(db, "resolve_kyaa_identity", { p_issuer: identity.issuer, p_subject: identity.subject, p_chain_id: chainId });
+export async function resolveKyaaMember(identity: Pick<CognitoIdentity, "issuer" | "subject" | "tokenIds">, chainId: number, db: IdentityRpc = identityDatabase()): Promise<KyaaMember | null> {
+  // tokenIds: the presented token's origin_jti/jti, so a logged-out token family resolves to null (401).
+  const data = await call(db, "resolve_kyaa_identity", { p_issuer: identity.issuer, p_subject: identity.subject, p_chain_id: chainId, p_token_ids: identity.tokenIds ?? [] });
   return data === null ? null : memberSchema.parse(data);
 }
 

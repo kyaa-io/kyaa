@@ -1,5 +1,6 @@
 import "server-only";
 import { createCipheriv, createDecipheriv, createHash, randomBytes } from "node:crypto";
+import { decodeJwt } from "jose";
 import { z } from "zod";
 import { preferredLocaleSchema } from "../../../features/profile/domain/preferred-locale";
 import { identityDatabase, type IdentityRpc } from "./identity-repository";
@@ -49,6 +50,11 @@ export async function revokeSession(key: string, config: CognitoConfig, db = ide
   const encrypted = await rpc(db, "read_cognito_browser_session", { p_token_hash: digest(key) });
   if (typeof encrypted !== "string") return;
   const session = sessionSchema.parse(unseal(encrypted, config.cookieSecret));
+  // Access tokens stay signature-valid until expiry; record their family first so a Bearer issued before logout gets 401.
+  const claims = decodeJwt(session.accessToken);
+  const tokenIds = [...new Set([claims.origin_jti, claims.jti].filter((value): value is string => typeof value === "string" && value.length > 0))];
+  if (tokenIds.length === 0) throw new Error("Token revocation unavailable");
+  await rpc(db, "revoke_cognito_token_family", { p_token_ids: tokenIds, p_expires_at: new Date(Date.now() + 86_400_000).toISOString() });
   const response = await fetch(new URL("/oauth2/revoke", config.domain), { method: "POST", headers: { "content-type": "application/x-www-form-urlencoded" }, body: new URLSearchParams({ client_id: config.clientId, token: session.refreshToken }), cache: "no-store", redirect: "error", signal: AbortSignal.timeout(5000) });
   if (!response.ok) throw new Error("Token revocation unavailable");
   await rpc(db, "delete_cognito_browser_session", { p_token_hash: digest(key) });

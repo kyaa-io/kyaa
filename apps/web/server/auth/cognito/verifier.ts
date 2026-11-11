@@ -5,7 +5,7 @@ import { AuthError } from "../../../features/auth/domain/auth-errors";
 export const COGNITO_TOKEN_PREFIX = "kyaa-cognito:";
 const keySets = new Map<string, ReturnType<typeof createRemoteJWKSet>>();
 export const cognitoDenied = () => new AuthError("AUTHENTICATION_REQUIRED", 401, "Authentication is required");
-export type CognitoIdentity = { issuer: string; subject: string; email: string; tokenId: string; provider?: { name: "google" | "apple" | "kakao"; issuer: string; subject: string } };
+export type CognitoIdentity = { issuer: string; subject: string; email: string; tokenId: string; tokenIds?: string[]; provider?: { name: "google" | "apple" | "kakao"; issuer: string; subject: string } };
 export function isCognitoToken(token: string): boolean {
   if (token.startsWith(COGNITO_TOKEN_PREFIX)) return true;
   try { return /^https:\/\/cognito-idp\.[a-z0-9-]+\.amazonaws\.com\//.test(String(decodeJwt(token).iss)); }
@@ -40,7 +40,9 @@ export function createCognitoVerifier(config: { issuer: string; clientId: string
         else if (account.providerName === "Kakao") provider = { name: "kakao", issuer: "https://kauth.kakao.com", subject: account.userId };
         else throw cognitoDenied();
       }
-      return { issuer: config.issuer, subject: payload.sub, email, ...(provider ? { provider } : {}), tokenId: typeof payload.origin_jti === "string" ? payload.origin_jti : typeof payload.jti === "string" ? payload.jti : `${payload.sub}:${payload.iat}` };
+      // origin_jti stays the same across refreshes of one sign-in; logout revokes it together with the jti.
+      const tokenIds = [payload.origin_jti, payload.jti].filter((value): value is string => typeof value === "string" && value.length > 0 && value.length <= 256);
+      return { issuer: config.issuer, subject: payload.sub, email, ...(provider ? { provider } : {}), tokenIds: [...new Set(tokenIds)], tokenId: typeof payload.origin_jti === "string" ? payload.origin_jti : typeof payload.jti === "string" ? payload.jti : `${payload.sub}:${payload.iat}` };
     } catch { throw cognitoDenied(); }
   };
 }

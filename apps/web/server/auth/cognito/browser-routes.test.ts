@@ -7,6 +7,7 @@ vi.mock("./verifier",async original=>({...await original<typeof import("./verifi
 vi.mock("./identity-repository",()=>({identityDatabase:()=>({rpc:mock.rpc})}));
 vi.mock("./kyaa-identity",async original=>({...await original<typeof import("./kyaa-identity")>(),signInKyaaMember:mock.signIn,resolveKyaaMember:mock.member}));
 vi.mock("./browser-session",async original=>({...await original<typeof import("./browser-session")>(),tokenRequest:mock.tokenRequest,writeSession:mock.writeSession}));
+const accessJwt=(claims:Record<string,unknown>)=>`${Buffer.from(JSON.stringify({alg:"RS256"})).toString("base64url")}.${Buffer.from(JSON.stringify(claims)).toString("base64url")}.sig`;
 import{start,callback,session,logout}from"./browser-routes";
 import{seal,FLOW_COOKIE,SESSION_COOKIE,unseal,digest}from"./browser-session";
 afterEach(()=>{mock.provider="cognito";mock.kakao=false;vi.clearAllMocks();vi.unstubAllEnvs();vi.unstubAllGlobals();});
@@ -147,7 +148,7 @@ it("returns JSON 401 for retired sessions",async()=>{
 });
 const logoutRequest=(cookie=true,origin="https://kyaa.io")=>new Request("https://kyaa.io/api/auth/cognito/logout",{method:"POST",headers:{origin,...(cookie?{cookie:`${SESSION_COOKIE}=${"a".repeat(43)}`}:{})}});
 function oldSession(){
- return seal({accessToken:"old-access",idToken:"old-id",refreshToken:"old-refresh",subject:"old-subject",expiresAt:0,sessionExpiresAt:Date.now()+60000},mock.config.cookieSecret);
+ return seal({accessToken:accessJwt({sub:"old-subject",origin_jti:"origin-old",jti:"jti-old"}),idToken:"old-id",refreshToken:"old-refresh",subject:"old-subject",expiresAt:0,sessionExpiresAt:Date.now()+60000},mock.config.cookieSecret);
 }
 it.each(["privy","cognito"])("revokes the remote token and deletes the old session before clearing its cookie under %s",async provider=>{
  mock.provider=provider;
@@ -160,6 +161,9 @@ it.each(["privy","cognito"])("revokes the remote token and deletes the old sessi
  expect(response.status).toBe(200);
  expect(fetcher).toHaveBeenCalledWith(new URL("/oauth2/revoke",mock.config.domain),expect.objectContaining({body:new URLSearchParams({client_id:"client",token:"old-refresh"}),redirect:"error"}));
  expect(mock.rpc).toHaveBeenLastCalledWith("delete_cognito_browser_session",{p_token_hash:digest("a".repeat(43))});
+ // The token family is recorded before the remote revoke and the row delete, so a Bearer issued before logout gets 401.
+ expect(mock.rpc.mock.calls.map(([name])=>name)).toEqual(["read_cognito_browser_session","revoke_cognito_token_family","delete_cognito_browser_session"]);
+ expect(mock.rpc).toHaveBeenCalledWith("revoke_cognito_token_family",{p_token_ids:["origin-old","jti-old"],p_expires_at:expect.any(String)});
  expect(response.headers.get("set-cookie")).toContain(`${SESSION_COOKIE}=; Path=/; Max-Age=0`);
  expect(await response.json()).toEqual({logoutUrl:provider==="privy"?null:"https://pool.auth.ap-northeast-2.amazoncognito.com/logout?client_id=client&logout_uri=https%3A%2F%2Fkyaa.io%2Flogin"});
 });

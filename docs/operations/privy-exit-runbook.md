@@ -72,7 +72,7 @@ Google/Apple subject를 이미 아는 회원은 백필 없이 연결된다. 2026
    - 로그인 중 취소·실패 → 로그인 화면에 "로그인을 마치지 못했어요." (JSON 화면이 아님)
    - 같은 이메일, 다른 Google 계정 → 로그인 화면에 `email_in_use` 문구, 세션 없음
    - 정지(`app_users.status='disabled'`) 계정 → "이용이 중지된 계정이에요."
-   - 로그아웃 → 쿠키 삭제, Cognito 로그아웃, 새로고침 뒤 비로그인
+   - 로그아웃 → 쿠키 삭제, Cognito 로그아웃, 새로고침 뒤 비로그인. **그리고 로그아웃 전에 받아 둔 `kyaa-cognito:` Bearer 접근 토큰을 보호 API(예: `GET /api/me/profile`)에 다시 보내면 401이어야 한다**(쿠키 삭제만으로는 통과 아님). 확인할 DB 상태: `cognito_browser_sessions`에서 그 세션 행이 지워지고, `revoked_cognito_token_families`에 그 토큰의 `origin_jti`·`jti`가 들어감. 같은 로그인에서 갱신된 토큰도 401(같은 `origin_jti`). 다시 로그인하면 새 토큰은 정상. 앱 Cognito 핸드오프 로그아웃(`/api/auth/cognito/native/logout`)도 같은 기준
    - 탈퇴 → 계정 삭제 접수, 같은 계정 재로그인 시 `inactive`
    - Privy 차단 상태 확인: 브라우저에서 `auth.privy.io` 요청이 0건
    - 관리자 로그인(Google) → 관리자 화면

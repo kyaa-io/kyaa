@@ -37,15 +37,38 @@ returns jsonb language sql stable security definer set search_path='' as $$
   ) a;
 $$;
 
--- Request-time lookup. Returns null for unknown or inactive members.
-create function public.resolve_kyaa_identity(p_issuer text, p_subject text, p_chain_id bigint)
+-- Logged-out Cognito token families. A browser/native logout records the access token's origin_jti (stable across
+-- refreshes of one sign-in) and jti, so an access token issued before logout fails here although its JWT signature
+-- stays valid until expiry. Rows outlive the longest Cognito access-token validity (1 day) and are then pruned.
+create table public.revoked_cognito_token_families (
+  token_id text primary key check (length(token_id) between 1 and 256),
+  revoked_at timestamptz not null default now(),
+  expires_at timestamptz not null
+);
+alter table public.revoked_cognito_token_families enable row level security;
+revoke all on public.revoked_cognito_token_families from public, anon, authenticated;
+
+create function public.revoke_cognito_token_family(p_token_ids text[], p_expires_at timestamptz)
+returns void language plpgsql security definer set search_path='' as $$
+begin
+  if p_token_ids is null or cardinality(p_token_ids) not between 1 and 4 or p_expires_at is null then raise exception 'INVALID_TOKEN_REVOCATION'; end if;
+  insert into public.revoked_cognito_token_families(token_id, expires_at)
+    select distinct t, p_expires_at from unnest(p_token_ids) t where length(t) between 1 and 256
+    on conflict (token_id) do update set expires_at=greatest(public.revoked_cognito_token_families.expires_at, excluded.expires_at);
+  delete from public.revoked_cognito_token_families where expires_at < now();
+end;
+$$;
+
+-- Request-time lookup. Returns null for unknown or inactive members and for a revoked (logged-out) token family.
+create function public.resolve_kyaa_identity(p_issuer text, p_subject text, p_chain_id bigint, p_token_ids text[] default '{}')
 returns jsonb language sql stable security definer set search_path='' as $$
   select jsonb_build_object('appUserId',u.id,'identityKey',u.privy_user_id,'verifiedEmail',u.verified_email,
     'walletAddress',w.address,'chainId',w.chain_id,'providerAccounts',public.kyaa_member_provider_accounts(u.id))
   from public.external_auth_identities i
   join public.app_users u on u.id=i.app_user_id and u.status='active'
   left join public.user_wallets w on w.app_user_id=u.id and w.chain_id=p_chain_id
-  where i.issuer=p_issuer and i.subject=p_subject;
+  where i.issuer=p_issuer and i.subject=p_subject
+    and not exists(select 1 from public.revoked_cognito_token_families r where r.token_id = any(coalesce(p_token_ids,'{}')));
 $$;
 
 -- Sign-in classification after a verified Cognito callback.
@@ -129,10 +152,10 @@ begin
 end;
 $$;
 
-revoke all on function public.kyaa_member_provider_accounts(uuid), public.resolve_kyaa_identity(text,text,bigint),
+revoke all on function public.kyaa_member_provider_accounts(uuid), public.resolve_kyaa_identity(text,text,bigint,text[]), public.revoke_cognito_token_family(text[],timestamptz),
   public.kyaa_sign_in(text,text,text,text,text,bigint),
   public.create_kyaa_member(text,text,text,text,text,bigint,bigint,text) from public, anon, authenticated;
-grant execute on function public.kyaa_member_provider_accounts(uuid), public.resolve_kyaa_identity(text,text,bigint),
+grant execute on function public.kyaa_member_provider_accounts(uuid), public.resolve_kyaa_identity(text,text,bigint,text[]), public.revoke_cognito_token_family(text[],timestamptz),
   public.kyaa_sign_in(text,text,text,text,text,bigint),
   public.create_kyaa_member(text,text,text,text,text,bigint,bigint,text) to service_role;
 

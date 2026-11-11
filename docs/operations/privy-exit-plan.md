@@ -77,6 +77,7 @@
 | 13 | 시험 이식 | 시험 124개 `vi.mock` → `auth-fallback`, e2e 하네스 30개 alias `/^.*\/auth-fallback$/` | 완료 |
 | 14 | 카카오 OIDC 준비 | `server/auth/cognito/verifier.ts`, `browser-routes.ts`, `server/config/public-runtime-config.ts`, `infrastructure/aws/platform/environment.json`(`KakaoProviderSecretArn`), `scripts/aws-platform-deploy.mjs` | 완료(기본 꺼짐) |
 | 15 | 기존 회원 백필 도구 | `scripts/privy-exit/export-privy-users.mjs`, `import-backfill.mjs`, `apps/web/server/auth/cognito/backfill.mjs`(`kyaa:` 허용) | 완료(미실행) |
+| 18 | 로그아웃 토큰 폐기(co-notes #236) | 마이그레이션: `revoked_cognito_token_families`, `revoke_cognito_token_family`, `resolve_kyaa_identity(…, p_token_ids)`. `verifier.ts`(`tokenIds`=origin_jti·jti), `kyaa-identity.ts`(조회 시 전달), `browser-session.ts` `revokeSession`(폐기 기록 → Cognito revoke → 세션 행 삭제, 기록 실패 시 로그아웃 실패) | 완료 |
 | 17 | 판정 반영(`15c861c67`) | 콜백 실패 → `/login?authError=callback_failed`(`browser-routes.ts`, 문구 11개 언어), 이메일 advisory lock(마이그레이션), 평문 시드 경로 삭제, `apps/web/scripts/dev-throwaway-xpub.mjs`, 운영 xpub 거부(`aws-platform-deploy.mjs`, `env.ts`) | 완료 |
 | 16 | 배포 안내 | `release-notes/2026-11-12-privy-exit-cognito-login.json` | 캡처 없음(1-4) |
 
@@ -86,6 +87,7 @@
 - 실제 SQL 응답 → 라우트 스키마 계약 시험(`kyaa-identity.contract.test.ts`).
 - 합성 백필 드라이런: 내보내기 형식 → backfill → 가져오기 → `kyaa_sign_in` linked(DID 유지).
 - 웹 전체 vitest(리베이스 전, 기준 `16e26e19c`): 53 실패 = 기준 커밋의 22파일·53건과 동일(신규 0). `benefit-recipient-screen` 1건은 전체 실행 부하 때만 실패, 단독 3회 통과. 리베이스 후(`15c861c67` 위 작업 트리): 21파일·52건 실패, 모두 이전 기준의 실패 파일 목록 안(신규 실패 파일 0). 새 기준 `049e51f56` 단독 실행 비교는 하지 않았다.
+- 로그아웃 토큰 폐기: `server/auth/cognito/logout-bearer.test.ts`(실제 RS256 토큰·검증기·`revokeSession`, DB만 메모리 대역) — 로그아웃 전 Bearer 401, 같은 로그인의 갱신 토큰 401, 폐기 기록 실패 시 세션 유지·로그아웃 실패. SQL `kyaa_native_auth.sql`에 폐기 계열 거부·재로그인 허용 추가. 인증 관련 vitest 500 통과. 실제 dev 브라우저 확인은 미검증.
 - 판정 반영(`15c861c67`): 콜백 시험 22, 서버 설정·인증·로그인 화면 448, 배포 설정 31, 백필 3, SQL `kyaa_native_auth.sql`(이메일 잠금 포함) 통과. 같은 이메일 동시 가입 경합 시험은 공용 로컬 DB에 마이그레이션 적용이 필요해 하지 않음(미검증).
 - 로컬 하네스: `community-stamps-local/passport-run.mjs` 32조합 통과. `banner-local/admin-run.mjs`는 기준 커밋도 같은 실패.
 - `tsc --noEmit`, 변경 파일 eslint, `scripts/aws-platform-deploy.test.mjs`(30), `scripts/privy-exit/privy-exit.test.mjs`(4) 통과.
@@ -97,7 +99,7 @@
 
 ## 1-3a. 로그인 방법별 인수 기준 (감독 00:56) — 방법마다 따로 센다
 - 방법별로 통과·실패·미검증을 따로 기록한다. **소셜 신규 가입 성공을 이메일 이전 완료로 합산하지 않는다.** 확인하지 못한 방법은 "미검증"으로 보고한다.
-- 공통 통과 조건: 실제 dev 로그인 화면에서 시작해 로그인 → 서버 세션 생성 → 보호 API(예: `GET /api/me/profile` 또는 MY 화면이 부르는 API)가 200 → 새로고침 후에도 로그인 유지 → 로그아웃 후 보호 API 401. 네트워크 탭에 `auth.privy.io` 0건.
+- 공통 통과 조건: 실제 dev 로그인 화면에서 시작해 로그인 → 서버 세션 생성 → 보호 API(예: `GET /api/me/profile` 또는 MY 화면이 부르는 API)가 200 → 새로고침 후에도 로그인 유지 → 로그아웃 후 보호 API 401. **로그아웃(co-notes #236): 쿠키 삭제만으로는 통과가 아니다. 로그아웃 전에 발급된 `kyaa-cognito:` Bearer를 보호 API에 다시 보내면 401이어야 하고(세션 행 삭제 + `revoked_cognito_token_families`에 `origin_jti`·`jti` 기록 확인), 같은 로그인에서 갱신된 토큰도 401, 재로그인 토큰은 200.** (이메일 L1은 `kyaa-email:` 세션 폐기로 같은 기준을 적용.) 네트워크 탭에 `auth.privy.io` 0건.
 
 | # | 방법 | 통과 조건(추가) | 현재 상태 | 막힌 이유·필요한 일 |
 |---|---|---|---|---|
