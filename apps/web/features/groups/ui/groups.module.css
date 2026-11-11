@@ -215,7 +215,7 @@
 .eventPreparation>a{width:120px;min-height:44px;height:44px;flex:none}
 
 /* Current Pencil title roles; sidebar labels retain their smaller body-title role. */
-:where(.page) h1,:where(.page) h2{font-weight:var(--fan-heading-weight)}
+:where(.page) h1{font-weight:var(--fan-heading-weight)}
 :where(.page) h2{line-height:var(--fan-heading-leading)}.page .discoveryHeading h2{line-height:var(--fan-heading-leading)}
 .page .nonFanIdentity .identityCopy h1{font:400 32px/40px "Pretendard UI 850",system-ui,sans-serif}
 .page .applicationAside h2{font:400 16px/24px "Pretendard UI 650",system-ui,sans-serif;font-synthesis:none}
