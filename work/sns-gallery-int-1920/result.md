@@ -1,3 +1,5 @@
+> 정정: 이 후보의 GATE-READY 판정은 SNS-REVIEW-1920에 따라 철회됐다. 기존 22002000은 secret 미설정 상태에서도 mobile-media 200MiB 상한을 50MiB로 회귀시켰고, 반복 수집은 검수자 편집을 덮어쓰며 미디어를 누적했다. 아래는 당시 검사 기록이며 안전성 보장이 아니다. 후속 수정은 work/sns-gallery-review-fix/result.md 참조.
+
 # SNS-GALLERY-INT-1920
 
 Integrated 07472726594a34919fff6a8979f8f105e0526318 into 6bea1fe470617c0d2a024a4903d206e5b5d8e183. Merge commit f9c2efe178d6775659103be2dcfcff072d573337. DESIGN append sections retained; home shorts retains main accessibility/caption/backdrop and prefers persisted thumbnail.

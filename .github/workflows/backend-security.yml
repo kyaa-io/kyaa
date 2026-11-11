@@ -110,6 +110,7 @@ jobs:
           server/g4/benefit-repository.test.ts components/admin/cheer-event-participants.test.tsx
           components/admin/benefit-manager.test.tsx
           server/runmusic features/runmusic features/connect/runmusic app/api/internal/runmusic
+          server/sns-ingest app/api/internal/sns-ingest
       - name: Install locked stage host runtime dependencies without Electron
         run: npm ci --prefix apps/stage-console --omit=dev --ignore-scripts
       - name: Verify stage host roles, recovery and presentation state
@@ -426,6 +427,14 @@ jobs:
           export PATH="$(pg_config --bindir):$PATH"
           BYUS_CLEAN_DB_PORT=55546 \
           BYUS_CLEAN_DB_ASSERTION_FILE=supabase/tests/post_reward_result.sql \
+          bash scripts/verify-clean-migration-chain.sh
+      - name: Verify SNS ingest review preservation and storage boundaries
+        if: matrix.suite == 'economy-2'
+        run: |
+          export PATH="$(pg_config --bindir):$PATH"
+          node scripts/verify-video-thumbnails-local-db.mjs
+          BYUS_CLEAN_DB_PORT=55549 \
+          BYUS_CLEAN_DB_SHELL_ASSERTION_FILE=supabase/tests/sns_ingest_ci.sh \
           bash scripts/verify-clean-migration-chain.sh
       - name: Verify public popular board read rules
         if: matrix.suite == 'economy-2'

@@ -28,6 +28,14 @@ try {
   const s3 = readFileSync(new URL('supabase/migrations/20261130001000_aws_asset_storage.sql', root), 'utf8');
   sql(s3.slice(s3.indexOf('-- Physical'), s3.indexOf('create function public.reserve_s3_storage_object')));
   for (const file of ['20261222001000_video_thumbnails.sql', '20261222002000_sns_thumbnail_storage_reservation.sql']) sql(readFileSync(new URL(`supabase/migrations/${file}`, root), 'utf8'));
+  const permissions = () => sql(`select jsonb_build_array(proowner,proacl,prosecdef,proconfig) from pg_proc where oid='public.reserve_s3_storage_object(text,text,text,bigint,text)'::regprocedure`);
+  const before = permissions();
+  sql(readFileSync(new URL('supabase/migrations/20261222003000_sns_reservation_size_repair.sql', root), 'utf8'));
+  assert.equal(permissions(), before);
+  sql(`insert into storage.buckets values('fan-content-assets',52428800,array['image/webp']);`);
+  assert.throws(() => sql(`select reserve_s3_storage_object('fan-content-assets','unreserved','image/webp',52428801,null)`), /S3_INVALID_UPLOAD/);
+  for (const size of [52428801, 104857600, 209715200]) assert.throws(() => sql(`select reserve_s3_storage_object('mobile-media','unreserved','image/webp',${size},null)`), /S3_UPLOAD_NOT_RESERVED/);
+  assert.throws(() => sql(`select reserve_s3_storage_object('mobile-media','unreserved','image/webp',209715201,null)`), /S3_INVALID_UPLOAD/);
   const notice = '10000000-0000-4000-8000-000000000001', media = '20000000-0000-4000-8000-000000000002', run = '30000000-0000-4000-8000-000000000003';
   const href = 'https://www.tiktok.com/@fixture/video/7696850953064189185', path = `sns-ingest/${notice}/${media}.webp`, thumbnail = path.replace('.webp', '-thumbnail.webp');
   sql(`insert into celebrity_notices values('${notice}','draft',null,null,false); insert into sns_ingest_posts values('${notice}','${run}','${href}');

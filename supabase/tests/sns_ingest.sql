@@ -31,6 +31,21 @@ begin
     perform pg_temp.expect(not has_table_privilege(role_name,'public.sns_ingest_runs','select,insert,update,delete'),'runs are private');
   end loop;
 
+  perform pg_temp.expect(not has_function_privilege('authenticated','public.reserve_s3_storage_object(text,text,text,bigint,text)','execute'),'S3 reservation stays private');
+  perform pg_temp.expect(has_function_privilege('service_role','public.reserve_s3_storage_object(text,text,text,bigint,text)','execute'),'S3 service permission preserved');
+  begin
+    perform public.reserve_s3_storage_object('mobile-media','unreserved/100m.mp4','video/mp4',104857600,null);
+    raise exception 'unreserved accepted';
+  exception when others then perform pg_temp.expect(sqlerrm='S3_UPLOAD_NOT_RESERVED','100 MiB reaches reservation authorization'); end;
+  begin
+    perform public.reserve_s3_storage_object('mobile-media','unreserved/200m.mp4','video/mp4',209715200,null);
+    raise exception 'unreserved accepted';
+  exception when others then perform pg_temp.expect(sqlerrm='S3_UPLOAD_NOT_RESERVED','200 MiB reaches reservation authorization'); end;
+  begin
+    perform public.reserve_s3_storage_object('mobile-media','unreserved/large.mp4','video/mp4',209715201,null);
+    raise exception 'oversize accepted';
+  exception when others then perform pg_temp.expect(sqlerrm='S3_INVALID_UPLOAD','above 200 MiB rejected'); end;
+
   perform pg_temp.expect(public.sns_ingest_source_context('sns-ingest-test','instagram')->>'accountUrl'=ig,'registered account is the source');
   perform pg_temp.expect(public.sns_ingest_source_context('sns-ingest-test','tiktok') is null,'unregistered platform has no source');
   perform pg_temp.expect(public.sns_ingest_source_context('sns-ingest-test','youtube') is null,'server-read platforms are out of scope');
@@ -65,6 +80,11 @@ begin
   perform pg_temp.expect((public.sns_ingest_read_draft(notice)#>>'{localizations,ko,title}')='원문','readback returns stored title');
 
   perform public.sns_ingest_publish(run,notice,2);
+  perform pg_temp.expect(public.authorize_public_official_media_read(media,'original') is null,'published media without ready objects is private');
+  insert into public.s3_storage_objects(bucket_id,name,metadata,state) select 'mobile-media',p,'{}',case when p=m.storage_path then 'ready' else 'uploading' end
+    from public.sns_ingest_media m cross join lateral unnest(array[m.storage_path,m.thumbnail_path]) p where m.id=media;
+  perform pg_temp.expect(public.authorize_public_official_media_read(media,'original') is null,'one ready object is insufficient');
+  update public.s3_storage_objects set state='ready' where name=(select thumbnail_path from public.sns_ingest_media where id=media);
   perform pg_temp.expect(public.authorize_public_official_media_read(media,'original')->>'storagePath' like 'sns-ingest/%','published media is public');
   saved:=public.sns_ingest_save_draft(run,'instagram-0123456789abcdef','https://www.instagram.com/ingest.test/p/A/',now(),'바뀐 제목',doc);
   perform pg_temp.expect(saved->>'status'='duplicate','published post is a duplicate');

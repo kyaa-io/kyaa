@@ -39,7 +39,7 @@ export type SnsIngestDeps = {
 export class SnsIngestSourceError extends Error {}
 
 const contextSchema = z.object({ celebrityId: z.uuid(), accountUrl: z.string() }).strict().nullable();
-const savedSchema = z.object({ status: z.enum(["created", "restored", "duplicate", "blocked"]), noticeId: z.uuid(), revision: z.number().int().positive() }).strict();
+const savedSchema = z.object({ status: z.enum(["created", "restored", "duplicate", "blocked", "held"]), noticeId: z.uuid(), revision: z.number().int().positive() }).strict();
 const draftSchema = z.object({
   revision: z.number().int().positive(),
   publicationStatus: z.string(),
@@ -64,6 +64,7 @@ export function createSnsIngestService(deps: SnsIngestDeps) {
     }));
     let saved = await save(draft);
     if (saved.status === "duplicate" || saved.status === "blocked") return item(saved.status, undefined, saved.noticeId);
+    if (saved.status === "held") return item("held", "ALREADY_HELD", saved.noticeId);
     const noticeId = saved.noticeId;
     const stored: { src: string; width: number; height: number }[] = [];
     try {
@@ -85,6 +86,7 @@ export function createSnsIngestService(deps: SnsIngestDeps) {
     }
     const input = { source, images: stored };
     if (stored.length) saved = await save(buildSourceOnlyLocalizations(input));
+    if (saved.status === "held") return item("held", "ALREADY_HELD", noticeId);
     // Publish only what the database returns unchanged from the original.
     const readback = draftSchema.parse(await deps.rpc("sns_ingest_read_draft", { p_notice_id: noticeId }));
     try {
@@ -124,7 +126,7 @@ export function createSnsIngestService(deps: SnsIngestDeps) {
           if (items.some(existing => existing.slug === slug)) { items.push({ slug, sourceUrl: post.sourceUrl, status: "duplicate" }); continue; }
           if (attempted >= SNS_INGEST_PER_RUN_LIMIT) { items.push({ slug, sourceUrl: post.sourceUrl, status: "deferred", reason: "PER_RUN_LIMIT" }); continue; }
           const result = await ingestPost(runId, account.handle, post, slug);
-          if (result.status !== "duplicate" && result.status !== "blocked" && result.status !== "rejected") attempted += 1;
+          if (result.status !== "duplicate" && result.status !== "blocked" && result.status !== "rejected" && result.reason !== "ALREADY_HELD") attempted += 1;
           items.push(result);
         }
       } catch (error) {
