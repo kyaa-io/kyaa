@@ -17,6 +17,7 @@ import { type CreatorRoleFilter } from "@/features/creator/domain/creator-role";
 
 import { Suspense, use, type ReactNode } from "react";
 import { gggiHomeBanner } from "../features/home/domain/gggi-home-banner";
+import { missionbookHomeBanner } from "../features/home/domain/missionbook-home-banner";
 import { useRouter } from "next/navigation";
 import { FanAppFrame } from "./fan-shell/fan-app-shell";
 import { LiveHeroCarousel } from "./live-hero-carousel";
@@ -114,7 +115,7 @@ type StreamingHomeProps = Pick<GuestHomeProps, "locale"> & { queries: HomeQuerie
 export function StreamingGuestHome({ queries, ...props }: StreamingHomeProps) {
   const fallbackProps = { ...props, celebrities: [] };
   return <HomeLayout locale={props.locale}
-    hero={<Suspense fallback={<HomeHero {...fallbackProps} homeBanners={[gggiHomeBanner(props.locale)]} elinaGuide={null} />}><StreamHomeHero {...props} queries={queries} /></Suspense>}
+    hero={<Suspense fallback={<HomeHero {...fallbackProps} homeBanners={[gggiHomeBanner(props.locale), missionbookHomeBanner(props.locale)]} elinaGuide={null} />}><StreamHomeHero {...props} queries={queries} /></Suspense>}
     thinBanner={<Suspense fallback={null}><StreamHomeThinBanner {...props} queries={queries} /></Suspense>}
     notices={<Suspense fallback={<HomeNoticesPlaceholder locale={props.locale} />}><StreamHomeNotices {...props} queries={queries} /></Suspense>}
     gallery={<Suspense fallback={<HomeGalleryPlaceholder locale={props.locale} />}><StreamHomeGallery {...props} queries={queries} /></Suspense>} />;
@@ -160,7 +161,7 @@ function StreamHomeGalleryContent({ queries, locale, photos }: Pick<StreamingHom
 function StreamHomeHero({ queries, ...props }: Pick<StreamingHomeProps, "queries" | "locale">) {
   const result = use(queries.homeBanners);
   return <HomeHero {...props} celebrities={[]}
-    homeBanners={[gggiHomeBanner(props.locale), ...(result.status === "fulfilled" ? result.value : [])]}
+    homeBanners={[gggiHomeBanner(props.locale), missionbookHomeBanner(props.locale), ...(result.status === "fulfilled" ? result.value : [])]}
     contentErrors={{ homeBanners: result.status === "rejected" }}
     elinaGuide={<Suspense fallback={<PersonalizationLoading quiet locale={props.locale} />}><StreamElinaGuide queries={queries} locale={props.locale} hero /></Suspense>} />;
 }

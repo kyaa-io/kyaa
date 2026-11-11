@@ -1,0 +1,5 @@
+{
+  "changes": ["홈 상단 배너에서 덕질하는 법을 바로 확인할 수 있어요. 이미지는 예시 데이터를 사용한 로컬 검증 화면이에요."],
+  "path": "/",
+  "images": ["release-notes/images/2026-11-11-missionbook-banner-390.png", "release-notes/images/2026-11-11-missionbook-banner-1440.png"]
+}

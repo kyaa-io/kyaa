@@ -23,3 +23,8 @@
 @media (max-width: 767px) {
   .root .artwork img { object-fit: contain; object-position: center; }
 }
+
+@media (min-width:768px) {
+  .root[data-missionbook] [data-hero-full-image] { top:0; bottom:0; aspect-ratio:auto; transform:none; }
+  .root[data-missionbook] .artwork img { object-fit:cover; object-position:center 40%; }
+}

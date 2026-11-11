@@ -17,7 +17,7 @@ export function HomeHeroBanner({ image, eyebrow, title, description, action, des
     <div className={styles.mobileBackdrop} data-hero-backdrop aria-hidden="true">{fullImage ?? image}</div>
     <div className={styles.image} data-hero-mobile-image>{image}</div>
     {desktopImage ? <div className={styles.desktopImage}>{desktopImage}</div> : null}
-    {fullImage ? <div className={styles.fullImage}>{fullImage}</div> : null}
+    {fullImage ? <div className={styles.fullImage} data-hero-full-image>{fullImage}</div> : null}
     <div className={styles.overlay} aria-hidden="true" />
     <div className={styles.copy}>
       <div className={styles.eyebrow}>{eyebrow}</div>

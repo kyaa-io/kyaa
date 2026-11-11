@@ -347,6 +347,7 @@ describe("streamed Home sections", () => {
     let view!: ReturnType<typeof render>;
     await act(async () => { view = render(<StreamingGuestHome {...home} locale="ko" />); });
     expect(view.container.querySelector("[data-managed-home-banner]")).toHaveTextContent("GGGI");
+    expect([...view.container.querySelectorAll("[data-managed-home-banner]")].slice(0, 2).map(el => el.getAttribute("data-managed-home-banner"))).toEqual(["8bf2f180-cb32-4f00-93e2-e84b570ad450", "247861a1-27b0-4e0a-9039-b5f8f7bc1c48"]);
     expect(screen.queryByRole("link", { name: "엘리나와 함께 뱅크시 전시 보러 가요" })).not.toBeInTheDocument();
     await act(async () => { home.pending.celebrities.resolve(celebrities); home.pending.homeSlots.resolve({}); });
     expect(screen.queryByRole("link", { name: "엘리나와 함께 뱅크시 전시 보러 가요" })).not.toBeInTheDocument();
