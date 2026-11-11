@@ -69,7 +69,7 @@ export const rankingsSource = {
   jjDonateTitle: { ko: "기부", en: "Donation" },
   jjDonatePending: { ko: "기부처는 확정 후 안내해요", en: "The recipient will be announced once confirmed" },
   jjNamesTitle: { ko: "참여한 팬", en: "Fans taking part" },
-  jjNamesPending: { ko: "이름 목록은 준비 중이에요", en: "The name list is being prepared" },
+  jjNamesPending: { ko: "이름 목록은 기부처 확정 후 안내해요", en: "The name list will be shared once the recipient is confirmed" },
   jjRankLocked: { ko: "찐팬 100명부터 순위를 공개해요", en: "Rankings open at 100 true fans" },
   rkUpdatedSec: { ko: "{0}초 전 업데이트", en: "Updated {0}s ago" },
   rkUpdatedMin: { ko: "{0}분 전 업데이트", en: "Updated {0}m ago" },

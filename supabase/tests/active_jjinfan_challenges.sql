@@ -26,15 +26,17 @@ begin
   -- 찐팬 = a fan holding a heart (passport_hearts > 0), not a title: one title without hearts does not count, one heart does.
   insert into public.app_users(id, privy_user_id, verified_email) values (newer, 'did:privy:ajc-' || newer, newer || '@example.test');
   insert into public.jjinfan_titles(app_user_id, celebrity_id) values (newer, shown);
-  insert into public.creator_heart_ledger(celebrity_id, app_user_id, amount, source_type, source_id) values (shown, off_cel, 1, 'passport_page_claim', extensions.gen_random_uuid());
+  insert into public.creator_heart_ledger(celebrity_id, app_user_id, amount, source_type, source_id) values (shown, off_cel, 1, 'passport_page_claim', extensions.gen_random_uuid()), (shown, off_cel, 1, 'passport_page_claim', extensions.gen_random_uuid());
   set local session_replication_role = origin;
 
   result := public.read_active_jjinfan_challenges('ko', 10);
   if jsonb_array_length(result -> 'items') <> 2 then raise exception 'Wrong set: %', result; end if;
   if result -> 'items' -> 0 ->> 'slug' <> 'ajc-' || left(newer::text, 8) or result -> 'items' -> 1 ->> 'slug' <> 'ajc-' || left(shown::text, 8) then raise exception 'Order wrong: %', result; end if;
   if (result -> 'items' -> 1 ->> 'count')::int <> 1 or (result -> 'items' -> 1 ->> 'target')::int <> 100 then raise exception 'Count wrong: %', result; end if;
+  -- 20261223120000: the gauge fills by hearts, not by fans: shown holds two hearts of one fan (count 1, hearts 2), newer none.
+  if (result -> 'items' -> 1 ->> 'hearts')::int <> 2 or (result -> 'items' -> 0 ->> 'hearts')::int <> 0 then raise exception 'Hearts wrong: %', result; end if;
   if result::text like '%꺼진 초안%' or result::text like '%익명 챌린지%' or result::text like '%비노출%' then raise exception 'Hidden campaign leaked: %', result; end if;
-  if exists (select 1 from jsonb_array_elements(result -> 'items') r where (select array_agg(k order by k) from jsonb_object_keys(r) k) <> array['count', 'description', 'endsOn', 'imageUrl', 'name', 'slug', 'target', 'title'])
+  if exists (select 1 from jsonb_array_elements(result -> 'items') r where (select array_agg(k order by k) from jsonb_object_keys(r) k) <> array['count', 'description', 'endsOn', 'hearts', 'imageUrl', 'name', 'slug', 'target', 'title'])
     then raise exception 'Item has other keys: %', result; end if;
   if jsonb_array_length(public.read_active_jjinfan_challenges('ko', 1) -> 'items') <> 1 then raise exception 'Limit ignored'; end if;
   -- An end date: shown through its last day (KST), then off everywhere, the page gauge included. Replica: the fixture rows skipped their admin key.

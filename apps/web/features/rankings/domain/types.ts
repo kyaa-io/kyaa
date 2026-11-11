@@ -175,6 +175,8 @@ export const activeJjinfanChallengeSchema = z.object({
   /** Last day (KST) the challenge runs; null when the administrator set none. */
   endsOn: z.iso.date().nullable(),
   count: z.number().int().min(0),
+  /** Hearts gathered on the page (대표 2026-11-11: the gauge fills by hearts, not by fans); `count` stays the number of 찐팬. */
+  hearts: z.number().int().min(0),
   target: z.literal(JJINFAN_CHALLENGE_TARGET),
 });
 export const activeJjinfanChallengesSchema = z.object({ items: z.array(activeJjinfanChallengeSchema).max(10) });
