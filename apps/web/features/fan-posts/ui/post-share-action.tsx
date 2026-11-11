@@ -1,14 +1,18 @@
 "use client";
 import cornerStyles from "@/components/fan-ui/earn-corner.module.css";
 import { NoticeShare } from "@/components/notice/notice-share";
+import { EarnBadge } from "@/features/dukjil/ui/earn-badge";
+import { useDukjil } from "@/features/dukjil/ui/dukjil-provider";
+import { todayItem } from "@/features/dukjil/domain/dukjil-ui";
 import type { AppLocale } from "@/i18n/locales";
 
-/**
- * 글·공지의 공유 버튼. 링크를 열어도 포인트가 없으므로(`fan_share_settings.visit_payouts` 꺼짐) 포인트 배지를 붙이지 않는다(BUGS-261110 B6).
- * 공유 미션(05)은 SNS 글 주소 인증, SNS 올리기(07)는 캡처 인증으로 받는다. 누르면 지금의 공유 창을 그대로 연다.
- */
 export function PostShareAction({ title, locale, contentType, url }: { title: string; locale: AppLocale; contentType?: "notice" | "post"; url?: string }) {
+  const state = useDukjil();
+  const item = todayItem(state?.today, "share");
+  const points = state?.catalog?.rules.share?.points;
+  const eligible = contentType === "post" && state?.status === "on" && state.authenticated && state.hasPassport && item && !item.stamped && item.remaining !== 0 && typeof points === "number" && points > 0;
   return <span className={cornerStyles.host} data-share-action="">
     <NoticeShare title={title} locale={locale} contentType={contentType} url={url} />
+    {eligible && <EarnBadge variant="inline" locale={locale} points={points} />}
   </span>;
 }

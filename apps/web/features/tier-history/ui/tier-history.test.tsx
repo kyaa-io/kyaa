@@ -33,6 +33,17 @@ it("celebrates a rise once, marks it seen at once and opens the passport history
   expect(h.request).toHaveBeenCalledTimes(1);
 });
 
+it("keeps the celebration open after the seen write refreshes the changes", async () => {
+  h.data = { changes: [rise("10000000-0000-4000-8000-000000000001", "Bronze", "Gold")] };
+  const view = render(<TierCelebration />);
+  await screen.findByRole("dialog", { name: "골드 등급이 됐어요" });
+  h.data = { changes: [] };
+  view.rerender(<TierCelebration />);
+  expect(screen.getByRole("dialog", { name: "골드 등급이 됐어요" })).toBeInTheDocument();
+  fireEvent.keyDown(document, { key: "Escape" });
+  await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+});
+
 it("adds the tier bonuses paid for the batch, and says nothing about a rise without one", async () => {
   h.data = { changes: [{ ...rise("10000000-0000-4000-8000-000000000001", "Bronze", "Silver"), bonusPoints: 30 }, { ...rise("10000000-0000-4000-8000-000000000002", "Silver", "Gold"), bonusPoints: 100 }] };
   render(<TierCelebration />);
