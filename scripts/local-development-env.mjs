@@ -50,6 +50,7 @@ export async function developmentLocalEnvironment() {
     BYUS_STAMP_CONTRACT_ADDRESS: contracts.BYUS_STAMP_CONTRACT_ADDRESS,
     BYUS_RELAYER_ADDRESS: wallets.BYUS_RELAYER_ADDRESS,
     NEXT_PUBLIC_BYUS_DATA_ENVIRONMENT: "development",
+    KYAA_FEATURE_QUIZ_LEARN: "true",
     BYUS_DATA_ENVIRONMENT: "development",
     NEXT_PUBLIC_PRIVY_APP_ENVIRONMENT: "development",
     NEXT_PUBLIC_PRIVY_APPLE_LOGIN_ENABLED: "false",

@@ -22,6 +22,7 @@ import { celebrateStamp } from "@/features/dukjil/ui/stamp-slam";
 import styles from "./quiz-result-screen.module.css";
 
 interface QuizResultScreenProps {
+  learningEnabled?: boolean;
   attemptId: string | null;
   passportId: string | null;
   celebritySlug: string;
@@ -149,6 +150,7 @@ export function QuizResultScreen({
   celebrityName,
   locale,
   returnTo,
+  learningEnabled = false,
 }: QuizResultScreenProps) {
   const router = useRouter();
   const { ready, authenticated, getAccessToken } = usePrivy();
@@ -300,7 +302,7 @@ export function QuizResultScreen({
             <div><dt>{locale === "ko" ? "스탬프" : "Stamp"}</dt><dd>{locale === "ko" ? "팬 인증 스탬프" : translate(locale, localizedMessages.m8829e734e0e6, "Fan Verification Stamp")}</dd></div>
           </dl>
         )}
-        {view.projection.questions.filter((question) => question.learning).map((question) => (
+        {learningEnabled && view.projection.questions.filter((question) => question.learning).map((question) => (
           <section data-block="quiz-learning" className={styles.learning} key={question.id} aria-label={locale === "ko" ? "알아보기" : "Learn more"}>
             <FanHeading>{locale === "ko" ? "알아보기" : "Learn more"} · {question.position}</FanHeading>
             <FanText as="p" role="body">{question.prompt}</FanText>

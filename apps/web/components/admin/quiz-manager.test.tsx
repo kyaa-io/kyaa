@@ -25,6 +25,7 @@ describe("quiz manager answer controls", () => {
     render(<QuizManager celebrityId="celebrity-1" />);
     const radio = await screen.findByLabelText("1번 선택지 정답");
     expect(radio).toHaveAttribute("type", "radio");
+    expect(screen.queryByText("힌트 (선택 · 정답을 적지 마세요)")).not.toBeInTheDocument();
     expect(radio.closest("label")).toHaveTextContent("정답");
     expect(screen.getByLabelText("1번 선택지 원문 유지")).toBeChecked();
     fireEvent.click(screen.getByLabelText("1번 선택지 원문 유지"));
