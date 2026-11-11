@@ -1,9 +1,46 @@
 #!/usr/bin/env bash
 # PASSPORT-RENEWAL contract 9: N parallel Claims of one complete page mint exactly one heart.
 # Case A: 8 sessions, 8 different request keys. Case B: 8 sessions, one request key. Disposable byus_clean only.
+# Every child's exit status is collected; any child that exits non-zero fails the script even when the ledger count is 1.
+# The only expected non-first outcome is the idempotent replay ("replayed": true, exit 0), counted separately from real errors.
+# CLAIM_CONCURRENCY_SELFTEST=1 runs only the child collector against synthetic children (no database) to prove a failing child fails it.
 set -euo pipefail
 P="psql -X -q -v ON_ERROR_STOP=1"
-[ "$($P -At -c 'select current_database()')" = "byus_clean" ] || { echo "byus_clean required"; exit 1; }
+
+# collect_children <label> <count> <fn>: launches children in the background, stores each $! and waits every pid, so no exit status is lost.
+collect_children() {
+  local label="$1" count="$2" fn="$3" dir i rc failed=0
+  local -a pids=()
+  dir=$(mktemp -d)
+  for i in $(seq 1 "$count"); do
+    "$fn" "$i" >"$dir/$i.out" 2>"$dir/$i.err" &
+    pids+=("$!")
+  done
+  for i in "${!pids[@]}"; do
+    rc=0
+    wait "${pids[$i]}" || rc=$?
+    if [ "$rc" -ne 0 ]; then
+      failed=$((failed + 1))
+      echo "claim concurrency: $label child $((i + 1)) failed with exit $rc: $(head -c 400 "$dir/$((i + 1)).err")" >&2
+    fi
+  done
+  FIRST_COUNT=$(cat "$dir"/*.out | grep -c '"replayed": false' || true)
+  REPLAY_COUNT=$(cat "$dir"/*.out | grep -c '"replayed": true' || true)
+  rm -rf "$dir"
+  [ "$failed" -eq 0 ]
+}
+
+if [ "${CLAIM_CONCURRENCY_SELFTEST:-}" = "1" ]; then
+  replay_child() { [ "$1" = 1 ] && echo '{"replayed": false}' || echo '{"replayed": true}'; }
+  bad_child() { if [ "$1" = 3 ]; then echo 'ERROR: unexpected sql error' >&2; return 3; fi; echo '{"replayed": true}'; }
+  collect_children selftest-ok 4 replay_child 2>/dev/null || { echo "selftest: healthy children must pass"; exit 1; }
+  [ "$FIRST_COUNT" = 1 ] && [ "$REPLAY_COUNT" = 3 ] || { echo "selftest: outcome counting wrong"; exit 1; }
+  if collect_children selftest-bad 4 bad_child 2>/dev/null; then echo "selftest: a failing child did not fail the collector"; exit 1; fi
+  echo "claim concurrency selftest ok (a failing child fails the script)"
+  exit 0
+fi
+
+[ "$($P -At -c "select current_database() || '|' || case when inet_server_addr() is null then 'local' else 'remote' end")" = "byus_clean|local" ] || { echo "byus_clean required"; exit 1; }
 $P <<'SQL'
 update public.group_wallet_release set enabled=true,write_fenced=false,legacy_writers_verified=true,migration_evidence_sha256=repeat('b',64),rewards_start_on=current_date;
 insert into public.celebrities(id,slug,status,image_url,published_at,roles,primary_role) values('d3300000-0000-4000-8000-000000000001','claim-conc','draft','/d.webp',null,'{artist}','idol');
@@ -37,20 +74,16 @@ SQL
 UA='d3300000-0000-4000-8000-000000000011'
 UB='d3300000-0000-4000-8000-000000000012'
 C='d3300000-0000-4000-8000-000000000001'
-ERR=$(mktemp)
-# A: different request keys
-for i in 1 2 3 4 5 6 7 8; do
-  $P -c "select public.claim_passport_page('$UA','$C',1,'claim-a-$i')" >/dev/null 2>>"$ERR" &
-done
-wait
-# B: the same request key
-for i in 1 2 3 4 5 6 7 8; do
-  $P -c "select public.claim_passport_page('$UB','$C',1,'claim-b-same')" >/dev/null 2>>"$ERR" &
-done
-wait
+claim_a() { $P -At -c "select public.claim_passport_page('$UA','$C',1,'claim-a-$1')"; }
+claim_b() { $P -At -c "select public.claim_passport_page('$UB','$C',1,'claim-b-same')"; }
+# A: different request keys. B: the same request key. Exactly one child per case mints; the rest must be idempotent replays.
+collect_children case-A 8 claim_a || { echo "claim concurrency failed: a case A child errored"; exit 1; }
+[ "$FIRST_COUNT" = 1 ] && [ "$REPLAY_COUNT" = 7 ] || { echo "claim concurrency failed case A outcomes first=$FIRST_COUNT replayed=$REPLAY_COUNT"; exit 1; }
+collect_children case-B 8 claim_b || { echo "claim concurrency failed: a case B child errored"; exit 1; }
+[ "$FIRST_COUNT" = 1 ] && [ "$REPLAY_COUNT" = 7 ] || { echo "claim concurrency failed case B outcomes first=$FIRST_COUNT replayed=$REPLAY_COUNT"; exit 1; }
 ha=$($P -At -c "select count(*) from public.creator_heart_ledger where app_user_id='$UA' and celebrity_id='$C' and source_type='passport_page_claim'")
 hb=$($P -At -c "select count(*) from public.creator_heart_ledger where app_user_id='$UB' and celebrity_id='$C' and source_type='passport_page_claim'")
 ca=$($P -At -c "select count(*) from public.passport_page_claims x join public.fan_passports f on f.id=x.passport_id where f.app_user_id='$UA'")
 cb=$($P -At -c "select count(*) from public.passport_page_claims x join public.fan_passports f on f.id=x.passport_id where f.app_user_id='$UB'")
-[ "$ha" = "1" ] && [ "$hb" = "1" ] && [ "$ca" = "1" ] && [ "$cb" = "1" ] || { head -c 1500 "$ERR" >&2; echo "claim concurrency failed hearts a=$ha b=$hb claims a=$ca b=$cb"; exit 1; }
+[ "$ha" = "1" ] && [ "$hb" = "1" ] && [ "$ca" = "1" ] && [ "$cb" = "1" ] || { echo "claim concurrency failed hearts a=$ha b=$hb claims a=$ca b=$cb"; exit 1; }
 echo "claim concurrency ok (different keys: 1 heart, same key: 1 heart)"
