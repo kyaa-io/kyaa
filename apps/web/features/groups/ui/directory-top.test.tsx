@@ -182,3 +182,18 @@ it("my artists shows the default artwork for a joined group without an image", (
   render(<MyArtists locale="ko" loginPath="/pages/groups" />);
   expect(within(screen.getByRole("link", { name: "아티스트1" })).getByRole("presentation")).toHaveAttribute("src", "/images/groups/music-placeholder.svg");
 });
+
+it("mobile Hot posts paginate five at a time", () => {
+  const original = window.matchMedia;
+  Object.defineProperty(window, "matchMedia", {configurable:true,value:vi.fn().mockReturnValue({matches:true,addEventListener:vi.fn(),removeEventListener:vi.fn()})});
+  try {
+    state.posts = Array.from({length:10}, (_,i)=>post(i));
+    render(<HotPosts locale="ko" />);
+    expect(screen.getByText('글 0')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button',{name:'다음'}));
+    expect(screen.queryByText('글 0')).toBeNull();
+    expect(screen.getByText('글 5')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button',{name:'이전'}));
+    expect(screen.getByText('글 0')).toBeInTheDocument();
+  } finally { Object.defineProperty(window,"matchMedia",{configurable:true,value:original}); }
+});

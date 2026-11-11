@@ -58,3 +58,5 @@
 
 
 .hotHead .hotSort { width:auto; }
+
+.postItem [data-fan-post-row] > span:first-child{width:40px;height:40px;aspect-ratio:1;border-radius:var(--radius-card);overflow:hidden}.postItem [data-fan-post-row] > span:first-child img{width:100%;height:100%;object-fit:cover}.more nav{display:flex;align-items:center;justify-content:center;gap:var(--space-3)}
