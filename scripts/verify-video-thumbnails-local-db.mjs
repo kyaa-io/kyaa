@@ -1,0 +1,53 @@
+// Isolated disposable PostgreSQL only. Never reads environment files or external database credentials.
+import { spawnSync } from 'node:child_process';
+import { mkdtempSync, mkdirSync, readFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { createServer } from 'node:net';
+import assert from 'node:assert/strict';
+const root = new URL('../', import.meta.url), dir = mkdtempSync(join(tmpdir(), 'kyaa-video-thumbnail-test-'));
+const port = await new Promise(resolve => { const server = createServer(); server.listen(0, '127.0.0.1', () => { const port = server.address().port; server.close(() => resolve(port)); }); });
+function cmd(name, args, input) { const r = spawnSync(name, args, { input, encoding: 'utf8' }); if (r.status) throw new Error(r.stderr || r.stdout); return r.stdout.trim(); }
+function sql(input) { return cmd('psql', [`postgresql://127.0.0.1:${port}/postgres`, '-XAtq', '-v', 'ON_ERROR_STOP=1'], input); }
+let started = false;
+try {
+  cmd('initdb', ['-D', join(dir, 'data'), '--auth=trust', '--no-locale', '--encoding=UTF8']); mkdirSync(join(dir, 'socket'));
+  cmd('pg_ctl', ['-D', join(dir, 'data'), '-l', join(dir, 'postgres.log'), '-o', `-h 127.0.0.1 -p ${port} -k ${join(dir, 'socket')}`, 'start']); started = true;
+  sql(`create role anon; create role authenticated; create role service_role;
+    create schema storage; create table storage.buckets(id text primary key,file_size_limit bigint,allowed_mime_types text[]);
+    insert into storage.buckets values('mobile-media',8388608,array['image/webp']);
+    create table public.app_users(id uuid primary key,status text);
+    create table public.content_assets(id uuid primary key,app_user_id uuid,storage_path text,byte_size bigint,mime_type text,sha256 text,deleted_at timestamptz,cleanup_requested_at timestamptz,storage_deleted_at timestamptz,upload_settled_at timestamptz,upload_expires_at timestamptz);
+    create table public.fan_private_uploads(bucket text,object_path text,expires_at timestamptz);
+    create table public.mobile_media_assets(id uuid,storage_path text,thumbnail_path text,purpose text,kind text,state text,cleanup_requested_at timestamptz,storage_deleted_at timestamptz,attached_type text,access_scope text,attached_id uuid,content_type text);
+    create table public.celebrity_notices(id uuid primary key,publication_status text,archived_at timestamptz,ever_published_at timestamptz,visible boolean);
+    create table public.sns_ingest_posts(notice_id uuid primary key,last_run_id uuid,source_url text);
+    create table public.sns_ingest_media(id uuid,notice_id uuid,storage_path text,thumbnail_path text,width int,height int,byte_size int,sha256 text);
+    create function public.fan_web_content_visible(uuid,text,uuid) returns boolean language sql as 'select visible from public.celebrity_notices where id=$3';
+  `);
+  const s3 = readFileSync(new URL('supabase/migrations/20261130001000_aws_asset_storage.sql', root), 'utf8');
+  sql(s3.slice(s3.indexOf('-- Physical'), s3.indexOf('create function public.reserve_s3_storage_object')));
+  for (const file of ['20261222001000_video_thumbnails.sql', '20261222002000_sns_thumbnail_storage_reservation.sql']) sql(readFileSync(new URL(`supabase/migrations/${file}`, root), 'utf8'));
+  const notice = '10000000-0000-4000-8000-000000000001', media = '20000000-0000-4000-8000-000000000002', run = '30000000-0000-4000-8000-000000000003';
+  const href = 'https://www.tiktok.com/@fixture/video/7696850953064189185', path = `sns-ingest/${notice}/${media}.webp`, thumbnail = path.replace('.webp', '-thumbnail.webp');
+  sql(`insert into celebrity_notices values('${notice}','draft',null,null,false); insert into sns_ingest_posts values('${notice}','${run}','${href}');
+    select sns_ingest_register_video_thumbnail('${run}','${notice}','${media}','${path}','${thumbnail}',640,360,10,repeat('a',64),'p16.tiktokcdn.com');`);
+  const reserve = (p, hash = 'a') => sql(`select reserve_s3_storage_object('mobile-media','${p}','image/webp',10,repeat('${hash}',64))`);
+  reserve(path); reserve(thumbnail);
+  assert.throws(() => reserve(path, 'b'), /S3_UPLOAD_NOT_RESERVED/);
+  assert.throws(() => reserve(`sns-ingest/${notice}/unreserved.webp`), /S3_UPLOAD_NOT_RESERVED/);
+  const read = () => sql(`select read_public_video_thumbnails(array['${href}'])`);
+  assert.equal(read(), '{}');
+  sql(`update celebrity_notices set visible=true,publication_status='published',ever_published_at=now();`);
+  assert.equal(read(), '{}');
+  sql(`update s3_storage_objects set state='ready';`);
+  assert.equal(JSON.parse(read())[href], `/api/public/notice-media/${media}?variant=thumbnail`);
+  assert.match(sql(`select authorize_public_official_media_read('${media}','thumbnail')`), /thumbnail.webp/);
+  sql(`update s3_storage_objects set state='deleted' where name='${thumbnail}';`);
+  assert.equal(read(), '{}');
+  assert.equal(sql(`select authorize_public_official_media_read('${media}','thumbnail') is null`), 't');
+  sql(`update s3_storage_objects set state='ready'; update celebrity_notices set visible=false;`);
+  assert.equal(read(), '{}');
+  assert.equal(sql(`select has_function_privilege('anon','public.read_public_video_thumbnails(text[])','execute') or has_function_privilege('authenticated','public.sns_ingest_register_video_thumbnail(uuid,uuid,uuid,text,text,integer,integer,integer,text,text)','execute')`), 'f');
+  console.log('PASS: migration pair, reservation hash/path, visibility, both-object readiness, deletion and role boundaries');
+} finally { if (started) cmd('pg_ctl', ['-D', join(dir, 'data'), 'stop', '-m', 'fast']); console.log(`isolated test evidence: ${dir}`); }

@@ -19,6 +19,7 @@ export const snsIngestRequestSchema = z.object({
     sourceUrl: z.string().max(2048),
     sourcePublishedAt: z.iso.datetime({ offset: true }),
     text: z.string().max(100_000),
+    videoThumbnail: z.object({ url: z.string().max(4096) }).strict().optional(),
     images: z.array(z.object({ url: z.string().max(4096) }).strict()).max(2).default([]),
   }).strict()).max(30),
 }).strict().refine(value => !value.collectorError || value.posts.length === 0, "A failed collection carries no posts");
@@ -49,6 +50,8 @@ export function createSnsIngestService(deps: SnsIngestDeps) {
   async function ingestPost(runId: string, handle: string, post: SnsIngestRequest["posts"][number], slug: string): Promise<SnsIngestItem> {
     const item = (status: SnsIngestItemStatus, reason?: string, noticeId?: string): SnsIngestItem =>
       ({ slug, sourceUrl: post.sourceUrl, status, ...(reason ? { reason } : {}), ...(noticeId ? { noticeId } : {}) });
+    const cover = post.videoThumbnail ? allowedImageUrl(post.videoThumbnail.url) : null;
+    if (post.videoThumbnail && !cover) return item("rejected", "IMAGE_HOST_NOT_ALLOWED");
     const images = post.images.map(image => allowedImageUrl(image.url));
     if (images.some(image => image === null)) return item("rejected", "IMAGE_HOST_NOT_ALLOWED");
     // A photo post without a caption is titled with the source account only (source-only-content.md).
@@ -64,18 +67,18 @@ export function createSnsIngestService(deps: SnsIngestDeps) {
     const noticeId = saved.noticeId;
     const stored: { src: string; width: number; height: number }[] = [];
     try {
-      for (const url of images as URL[]) {
+      for (const url of [...images, ...(cover ? [cover] : [])] as URL[]) {
         const image = await deps.processImage(await deps.fetchImage(url));
         const mediaId = randomUUID();
         const storagePath = `sns-ingest/${noticeId}/${mediaId}.webp`;
         const thumbnailPath = `sns-ingest/${noticeId}/${mediaId}-thumbnail.webp`;
-        await deps.upload(storagePath, image.bytes);
-        await deps.upload(thumbnailPath, image.thumbnail);
-        await deps.rpc("sns_ingest_register_media", {
+        await deps.rpc(cover === url ? "sns_ingest_register_video_thumbnail" : "sns_ingest_register_media", {
           p_run_id: runId, p_notice_id: noticeId, p_media_id: mediaId, p_storage_path: storagePath, p_thumbnail_path: thumbnailPath,
           p_width: image.width, p_height: image.height, p_byte_size: image.bytes.byteLength, p_sha256: image.sha256, p_source_host: url.hostname,
         });
-        stored.push({ src: `/api/public/notice-media/${mediaId}`, width: image.width, height: image.height });
+        await deps.upload(storagePath, image.bytes);
+        await deps.upload(thumbnailPath, image.thumbnail);
+        if (cover !== url) stored.push({ src: `/api/public/notice-media/${mediaId}`, width: image.width, height: image.height });
       }
     } catch {
       return item("held", "IMAGE_FAILED", noticeId);

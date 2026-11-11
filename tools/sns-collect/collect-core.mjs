@@ -80,7 +80,8 @@ export function extractInstagramPost(scriptTexts, expected) {
     sourceUrl: canonicalPostUrl("instagram", expected.handle, item.code),
     sourcePublishedAt: new Date(item.taken_at * 1000).toISOString(),
     text: typeof item.caption?.text === "string" ? item.caption.text : "",
-    images,
+    images: item.media_type === 2 ? [] : images,
+    ...(item.media_type === 2 && images[0] ? { videoThumbnail: images[0] } : {}),
   } };
 }
 
@@ -100,7 +101,8 @@ export function extractTikTokPost(rehydrationText, expected) {
     sourceUrl: canonicalPostUrl("tiktok", expected.handle, String(item.id)),
     sourcePublishedAt: new Date(created * 1000).toISOString(),
     text: typeof item.desc === "string" ? item.desc : "",
-    images: (photos.length ? photos : cover).slice(0, 2).map(url => ({ url })),
+    images: photos.slice(0, 2).map(url => ({ url })),
+    ...(cover.length && !photos.length ? { videoThumbnail: { url: cover[0] } } : {}),
   } };
 }
 

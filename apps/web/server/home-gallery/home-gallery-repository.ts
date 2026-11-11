@@ -29,16 +29,25 @@ export class HomeGalleryRepository {
     return { items: page.items, nextCursor: page.hasMore ? encodeHomeGalleryCursor(offset + page.items.length) : null };
   }
 
+  private async withThumbnails(items: HomeShort[]): Promise<HomeShort[]> {
+    if (!items.length) return items;
+    const { data, error } = await this.db.rpc("read_public_video_thumbnails", { p_hrefs: items.map(item => item.href) });
+    if (error) throw new HomeGalleryRepositoryError(error.message);
+    const covers = z.record(z.string(), z.string().regex(/^\/api\/public\/notice-media\/[0-9a-f-]{36}\?variant=thumbnail$/)).parse(data);
+    return items.map(item => covers[item.href] ? { ...item, thumbnail: covers[item.href] } : item);
+  }
+
   async listShorts(locale: "ko" | "en", input: { limit: number }): Promise<readonly HomeShort[]> {
     const { data, error } = await this.db.rpc("read_public_home_shortform", { p_locale: locale, p_limit: input.limit });
     if (error) throw new HomeGalleryRepositoryError(error.message);
-    return homeShortsSchema.parse(data);
+    return this.withThumbnails(homeShortsSchema.parse(data));
   }
 
   async listShortsPage(locale: "ko" | "en", input: { offset: number; limit: number }) {
     const { data, error } = await this.db.rpc("read_public_home_shortform_page", { p_locale: locale, p_offset: input.offset, p_limit: input.limit });
     if (error) throw new HomeGalleryRepositoryError(error.message);
-    return homeShortsPageSchema.parse(data);
+    const page = homeShortsPageSchema.parse(data);
+    return { ...page, items: await this.withThumbnails(page.items) };
   }
 }
 

@@ -30,6 +30,7 @@ export type HomeGalleryPage = Readonly<{ items: readonly HomeGalleryPhoto[]; nex
 const youtubeShortSchema = z.object({
   id: z.uuid(),
   platform: z.literal("youtube").default("youtube"),
+  thumbnail: z.string().regex(/^\/api\/public\/notice-media\/[0-9a-f-]{36}\?variant=thumbnail$/).optional(),
   videoId: z.string().regex(/^[A-Za-z0-9_-]{11}$/),
   title: z.string().min(1).max(300),
   creator: z.object({ slug: z.string().min(1), name: z.string().min(1) }).strict(),

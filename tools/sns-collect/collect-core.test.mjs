@@ -50,7 +50,8 @@ test("TikTok description and photos come from the rehydration data", () => {
   const page = data => JSON.stringify({ __DEFAULT_SCOPE__: { "webapp.video-detail": { itemInfo: { itemStruct: data } } } });
   const { post } = extractTikTokPost(page(item), { handle: "wena", sourceId: item.id });
   assert.equal(post.text, "연습 끝 🎧 #wena");
-  assert.deepEqual(post.images, [{ url: "https://p16-sign.tiktokcdn.com/cover.jpeg" }]);
+  assert.deepEqual(post.images, []);
+  assert.deepEqual(post.videoThumbnail, { url: "https://p16-sign.tiktokcdn.com/cover.jpeg" });
   const photo = { ...item, imagePost: { images: [{ imageURL: { urlList: ["https://p16-sign.tiktokcdn.com/1.jpeg"] } }] } };
   assert.deepEqual(extractTikTokPost(page(photo), { handle: "wena", sourceId: item.id }).post.images, [{ url: "https://p16-sign.tiktokcdn.com/1.jpeg" }]);
   assert.deepEqual(extractTikTokPost(null, { handle: "wena", sourceId: item.id }), { error: "STRUCTURE_CHANGED" });
@@ -85,4 +86,12 @@ test("sendIngest uses the dedicated secret and refuses plain HTTP endpoints", as
   await assert.rejects(sendIngest(fetchImpl, "https://dev.kyaa.io/x", "", {}), /SECRET_MISSING/);
   const refused = async () => new Response(JSON.stringify({ error: { code: "SOURCE_NOT_REGISTERED" } }), { status: 403 });
   await assert.rejects(sendIngest(refused, "https://dev.kyaa.io/x", "s".repeat(40), {}), /SNS_INGEST_HTTP_403_SOURCE_NOT_REGISTERED/);
+});
+
+test("Instagram video covers stay separate from original body photos", () => {
+  const item = { code: "DQabc123xyz", media_type: 2, taken_at: 1762740000, user: { username: "wena" }, caption: { text: "원문 캡션" }, image_versions2: { candidates: [{ url: "https://scontent.cdninstagram.com/video-cover.jpg", width: 720, height: 1280 }] } };
+  const result = extractInstagramPost([JSON.stringify({ xdt_api__v1__media__shortcode__web_info: { items: [item] } })], { handle: "wena", sourceId: item.code });
+  assert.deepEqual(result.post.images, []);
+  assert.deepEqual(result.post.videoThumbnail, { url: "https://scontent.cdninstagram.com/video-cover.jpg" });
+  assert.equal(result.post.text, "원문 캡션");
 });

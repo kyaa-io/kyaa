@@ -32,6 +32,7 @@ function fakeDatabase(options: { tamper?: (body: unknown) => unknown; account?: 
         notices.set(args.p_slug, notice);
         return { status: existing ? "restored" : "created", noticeId: notice.id, revision: notice.revision };
       }
+      case "sns_ingest_register_video_thumbnail":
       case "sns_ingest_register_media": media.set(args.p_media_id, args.p_notice_id); return null;
       case "sns_ingest_read_draft": {
         const notice = [...notices.values()].find(item => item.id === args.p_notice_id)!;
@@ -66,6 +67,30 @@ const request = (posts: unknown[], extra: Record<string, unknown> = {}) =>
   snsIngestRequestSchema.parse({ celebritySlug: "wena", platform: "instagram", posts, ...extra });
 
 describe("sns ingest service", () => {
+  it("stores a video cover before publishing without changing the original body", async () => {
+    const { deps, notices, rpc } = fakeDatabase();
+    const result = await createSnsIngestService(deps).ingest(request([post("DQabc123xyz", { videoThumbnail: { url: "https://scontent.cdninstagram.com/cover.jpg" } })]), "c");
+    expect(result.items[0]?.status).toBe("published");
+    expect(deps.fetchImage).toHaveBeenCalledWith(new URL("https://scontent.cdninstagram.com/cover.jpg"));
+    expect(deps.upload).toHaveBeenCalledTimes(2);
+    expect(rpc).toHaveBeenCalledWith("sns_ingest_register_video_thumbnail", expect.objectContaining({ p_source_host: "scontent.cdninstagram.com" }));
+    expect(JSON.stringify([...notices.values()][0]?.body)).not.toContain("notice-media");
+    expect(rpc.mock.invocationCallOrder[rpc.mock.calls.findIndex(([name]) => name === "sns_ingest_register_video_thumbnail")]).toBeLessThan(vi.mocked(deps.upload).mock.invocationCallOrder[0]!);
+  });
+  it("rejects an untrusted video cover before any download or draft write", async () => {
+    const { deps, notices } = fakeDatabase();
+    const result = await createSnsIngestService(deps).ingest(request([post("DQabc123xyz", { videoThumbnail: { url: "https://169.254.169.254/cover" } })]), "c");
+    expect(result.items[0]?.reason).toBe("IMAGE_HOST_NOT_ALLOWED");
+    expect(deps.fetchImage).not.toHaveBeenCalled();
+    expect(notices.size).toBe(0);
+  });
+  it("holds a failed video-cover upload instead of publishing a broken cover", async () => {
+    const { deps } = fakeDatabase();
+    vi.mocked(deps.upload).mockRejectedValue(new Error("unavailable"));
+    const result = await createSnsIngestService(deps).ingest(request([post("DQabc123xyz", { videoThumbnail: { url: "https://scontent.cdninstagram.com/cover.jpg" } })]), "c");
+    expect(result.items[0]).toMatchObject({ status: "held", reason: "IMAGE_FAILED" });
+  });
+
   it("holds photos for human review with original caption and stored images", async () => {
     const { deps, notices, rpc } = fakeDatabase();
     const result = await createSnsIngestService(deps).ingest(request([post("DQabc123xyz", { images: [{ url: "https://scontent.cdninstagram.com/a.jpg" }] })]), "c");

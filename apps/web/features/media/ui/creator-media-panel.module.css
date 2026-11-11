@@ -39,8 +39,9 @@
 .grid > li:has(img[data-media-portrait]) .cardBody { height:100%; align-content:space-between; gap:16px; }
 .grid > li:has(img[data-media-portrait]) strong { -webkit-line-clamp:4; text-wrap:pretty; }
 .grid > li:has(img[data-media-portrait]) img { border-radius:16px 0 0 16px; }
-.thumbnailFallback { display:grid; place-content:center; justify-items:center; gap:12px; width:100%; aspect-ratio:16/9; background:var(--color-soft); color:var(--color-muted); }
-.thumbnailFallback > span { font-size:var(--fan-metadata-size); line-height:var(--fan-body-leading); }
+.thumbnailFallback { display:grid; place-content:center; justify-items:center; gap:12px; width:100%; aspect-ratio:16/9; background:var(--color-accent-soft); color:var(--color-muted); }
+.thumbnailFallback[data-video-fallback] { height:100%; aspect-ratio:auto; }
+.thumbnailFallback > span { display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; overflow-wrap:anywhere; padding:0 var(--space-2); text-align:center; font-size:var(--fan-metadata-size); line-height:var(--fan-body-leading); }
 .panel[data-creator-media="wena"] [data-media-kind="photos"] img { aspect-ratio:5/4; height:auto; object-position:50% 0%; }
 .panel[data-creator-media="hyunji"] .grid { align-items:start; }
 .panel[data-creator-media="hyunji"] [data-media-kind="photos"] img { aspect-ratio:auto; height:auto; }
@@ -146,7 +147,7 @@
 /* The creator home preview uses the same dense grid as the full gallery. */
 .galleryRail { grid-auto-flow:row; grid-auto-columns:auto; grid-template-columns:repeat(3,minmax(0,1fr)); gap:var(--space-1); overflow:visible; scroll-snap-type:none; }
 .galleryRail .videoMark { gap:0; font-size:0; }
-.galleryRail .thumbnailFallback>span { display:none; }
+.galleryRail .thumbnailFallback>span { padding:var(--space-2); text-align:center; overflow-wrap:anywhere; }
 @media(min-width:768px) { .galleryRail { grid-template-columns:repeat(4,minmax(0,1fr)); } }
 @media(min-width:1024px) { .galleryRail { grid-auto-columns:auto; grid-template-columns:repeat(6,minmax(0,1fr)); } }
 
@@ -162,3 +163,6 @@
 .grid[data-thumbnail-only] :is(a,button):focus-visible { outline:3px solid var(--color-ink); outline-offset:-3px; }
 @media(min-width:768px) { .grid[data-thumbnail-only] { grid-template-columns:repeat(4,minmax(0,1fr)); } }
 @media(min-width:1024px) { .grid[data-thumbnail-only] { grid-template-columns:repeat(6,minmax(0,1fr)); } }
+/* Missing covers retain their source and original title inside the existing frame. */
+.thumbnailFallback[data-video-fallback] > img { width:28px; height:28px; object-fit:contain; }
+a:has(> [data-video-fallback]) > .playIcon,button:has(> [data-video-fallback]) > .playIcon { display:none; }

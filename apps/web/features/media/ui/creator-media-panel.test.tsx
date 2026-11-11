@@ -106,10 +106,10 @@ it("recovers a broken YouTube image in the full board and preserves the destinat
   fireEvent.error(card.querySelector("img")!);
   expect(card.querySelector("img")).toHaveAttribute("src", "https://i.ytimg.com/vi/abcdefghijk/mqdefault.jpg");
   fireEvent.error(card.querySelector("img")!);
-  expect(card.querySelector("img")).toBeNull();
+  expect(card.querySelector("img")).toHaveAttribute("src", "/images/guest-home/youtube.svg");
   expect(card).toHaveAttribute("href", "https://www.youtube.com/watch?v=abcdefghijk");
   expect(card.querySelector("svg")).not.toBeNull();
-  expect(card).toHaveTextContent("");
+  expect(card).toHaveTextContent("YouTube · 공식 채널 영상");
 });
 
 it("links an all-empty creator without official channels back to the board feed", () => {
