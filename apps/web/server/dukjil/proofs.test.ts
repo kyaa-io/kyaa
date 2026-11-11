@@ -131,10 +131,14 @@ describe("public proof board", () => {
     const text = await res.text();
     expect(res.status).toBe(200); expect(deps.authorize).not.toHaveBeenCalled();
     for (const secret of [owner, sub, "authorId", "submissionId", "publishConsent", "imagePhash", "uploadId", "objectPath", "imageObjectPath", "owner-secret", "certification-proofs", "token=", "/storage/"]) expect(text).not.toContain(secret);
-    expect(JSON.parse(text)).toEqual({ items: [{ postId: post, body: "인증했어요", createdAt: row.createdAt, proofType: "purchase", amountVisible: true, imageUrl, jjinfanRank: 7 }], nextBefore: null });
+    expect(JSON.parse(text)).toEqual({ items: [{ postId: post, body: "인증했어요", createdAt: row.createdAt, proofType: "purchase", amountVisible: true, imageUrl, jjinfanRank: 7, awardedPoints: null }], nextBefore: null });
     expect(res.headers.get("cache-control")).toContain("public");
     expect(deps.rpc).toHaveBeenCalledWith("read_proof_board", { p_celebrity: creator, p_limit: 20, p_before: null, p_viewer: null });
     expect(res.headers.get("vary")).toBe("Authorization");
+  });
+  it("returns the historical award without substituting today's policy", async () => {
+    vi.mocked(deps.rpc).mockResolvedValue([{ ...row, awardedPoints: 37 }]);
+    expect((await (await h.board(url(), "kyaa-wave")).json()).items[0].awardedPoints).toBe(37);
   });
   it("only asks the database for the consented board and pages with nextBefore", async () => {
     vi.mocked(deps.rpc).mockResolvedValue([row, { ...row, postId: sub, createdAt: "2026-11-05T00:00:00Z" }]);
