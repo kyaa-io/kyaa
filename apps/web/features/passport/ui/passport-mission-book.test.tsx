@@ -2,11 +2,11 @@
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-const state = vi.hoisted(() => ({ status: "on" as "on" | "off" | "loading", resource: {} as Record<string, unknown>, request: vi.fn() }));
+const state = vi.hoisted(() => ({ status: "on" as "on" | "off" | "loading", resource: {} as Record<string, unknown>, proofs: undefined as unknown, request: vi.fn() }));
 vi.mock("@/features/dukjil/ui/dukjil-provider", () => ({ useDukjil: () => ({ status: state.status }) }));
 vi.mock("@/features/groups/ui/use-group-resource", () => ({
   GroupRequestError: class extends Error { status: number; constructor(status: number) { super("x"); this.status = status; } },
-  useGroupResource: (url: string | null) => (url ? state.resource : { loading: false, error: false, data: undefined, retry: vi.fn() }),
+  useGroupResource: (url: string | null) => (url?.startsWith("/api/me/proofs/missions") ? { loading: false, error: false, data: state.proofs, retry: vi.fn() } : url ? state.resource : { loading: false, error: false, data: undefined, retry: vi.fn() }),
   useGroupRequest: () => ({ request: state.request }),
 }));
 
@@ -25,7 +25,7 @@ const page = (over: Record<string, unknown>) => ({ pageNo: 1, slots: slots(9), f
 const data = (pages: unknown[], hearts = 0) => ({ passportId: "00000000-0000-4000-8000-000000000001", celebrityId: "00000000-0000-4000-8000-000000000002", hearts, pages });
 const ui = (locale: "ko" | "en" | "ru" = "ko") => render(<PassportMissionBook passportId="p1" creatorSlug="c1" locale={locale} />);
 
-beforeEach(() => { localStorage.setItem("kyaa:passport:mission-onboarding:v1", "1"); state.status = "on"; state.request = vi.fn().mockResolvedValue({ hearts: 1, pageNo: 1, jjinfanConfirmed: false, cheerStampId: null, replayed: false }); });
+beforeEach(() => { state.proofs = undefined; localStorage.setItem("kyaa:passport:mission-onboarding:v1", "1"); state.status = "on"; state.request = vi.fn().mockResolvedValue({ hearts: 1, pageNo: 1, jjinfanConfirmed: false, cheerStampId: null, replayed: false }); });
 afterEach(cleanup);
 
 describe("PassportMissionBook", () => {
@@ -206,6 +206,19 @@ describe("PassportMissionBook", () => {
     expect(screen.getByRole("link", { name: /글쓰기/ }).getAttribute("href")).toBe("/elina?tab=board&source=fans&compose=1&locale=ko");
     expect(screen.getByRole("link", { name: /친구 추천/ }).getAttribute("href")).toBe("/my/invitations?locale=ko");
     expect(screen.getByRole("button", { name: "자세히 입국 심사 설명 보기" })).toBeTruthy();
+  });
+  it("keeps 07 and 09 unlinked when the creator takes no proof of that kind (ENTRY-STAMP-1321)", () => {
+    const mission = (proofType: string) => ({ missionId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa", proofType, platform: null, submittable: true, unavailableReason: null, closesAt: "2099-12-31T14:59:00Z" });
+    state.resource = { loading: false, error: false, data: data([page({ slots: slots(0), filled: 0, claimable: false })]), retry: vi.fn() };
+    state.proofs = { items: [] };
+    const none = render(<PassportMissionBook passportId="p" creatorSlug="wena" locale="ko" />);
+    expect(none.container.querySelector('[data-kind="subscription"] a')).toBeNull();
+    expect(none.container.querySelector('[data-kind="proof"] a')).toBeNull();
+    none.unmount();
+    state.proofs = { items: [mission("sns_post"), mission("membership")] };
+    const some = render(<PassportMissionBook passportId="p" creatorSlug="wena" locale="ko" />);
+    expect(some.container.querySelector('[data-kind="subscription"] a')?.getAttribute("href")).toBe("/c/wena/proofs?type=sns_post&locale=ko");
+    expect(some.container.querySelector('[data-kind="proof"] a')?.getAttribute("href")).toBe("/c/wena/proofs?locale=ko");
   });
   it("shows the onboarding once, with up to three open missions that link to their place", () => {
     localStorage.removeItem("kyaa:passport:mission-onboarding:v1");
