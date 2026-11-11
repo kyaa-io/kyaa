@@ -60,7 +60,7 @@ export function StanWallet({ locale, state, stamps, hearts, links, className, fa
   const claimable = full && Boolean(links.claim) && adReady;
   const asset = (name: keyof typeof WALLET_ASSETS, size: number, className: string) => <img className={className} src={`${WALLET_ASSETS[name]}-160.webp`} srcSet={`${WALLET_ASSETS[name]}-160.webp 1x, ${WALLET_ASSETS[name]}-512.webp 3x`} width={size} height={size} alt="" />;
   /** Thick round bar with the count inside (the filled part repeats it in white); a full bar gets the 완료! stamp at its end. */
-  const bar = (label: string, slot: StanSlot, value: number, max: number, current: string, total: string) => slot === "loading" ? <FanSkeleton width="100%" height={28} /> : slot === "locked" ? <FanLockedValue locale={locale} /> : <span className={styles.barRow}>
+  const bar = (label: string, slot: StanSlot, value: number, max: number, current: string, total: string) => slot === "loading" ? <FanSkeleton width="100%" height={24} /> : slot === "locked" ? <FanLockedValue locale={locale} /> : <span className={styles.barRow}>
     <span className={styles.bar} role="progressbar" aria-label={label} aria-valuemin={0} aria-valuemax={max} aria-valuenow={Math.min(value, max)} aria-valuetext={`${current} / ${total}`}>
       <span className={styles.barText} aria-hidden="true"><span>{current}</span> / {total}</span>
       <span className={styles.barFill} style={{ clipPath: `inset(0 ${100 - (max > 0 ? Math.min(value, max) / max : 0) * 100}% 0 0 round 999px)` }} aria-hidden="true"><span className={styles.barText}>{current} / {total}</span></span>
@@ -76,11 +76,11 @@ export function StanWallet({ locale, state, stamps, hearts, links, className, fa
     {state.kind === "guest" ? <FanLoginScene items={["coin", "ticket", "stamp", "heart"].map((name) => ({ src: `/images/dukjil-duo/glyph-${name}-160.webp`, srcSet: `/images/dukjil-duo/glyph-${name}-160.webp 1x, /images/dukjil-duo/glyph-${name}-512.webp 3x` }))} title={[w.points, w.tickets, s("stanFlowStamps"), s("stanFlowHearts")].join(" · ")} action={state.action} /> : <div className={styles.card}>
       <div className={styles.column} data-column="tickets">
         <Link className={styles.result} data-cell="tickets" href={`/my/raffles?locale=${locale}` as Route}>
-          {asset("ticket", 72, styles.resultAsset)}
+          {asset("ticket", 56, styles.resultAsset)}
           <span className={styles.resultText}><span className={styles.label}>{w.tickets}</span><span className={styles.value}><Value locale={locale} slot={tickets} unit={locale === "ko" ? "장" : undefined} /></span></span>
         </Link>
         <div className={styles.material} data-cell="points">
-          {asset("coin", 64, styles.asset)}
+          {asset("coin", 56, styles.asset)}
           <span className={styles.name}>{w.points}</span>
           <span className={styles.amount}><Value locale={locale} slot={points} unit="P" /></span>
           <div className={styles.progress}>{bar(s("walletNextTicket", [pointCost]), points, ready ? state.points : 0, pointCost, ticketText, `${n(pointCost)}P`)}</div>
@@ -90,11 +90,11 @@ export function StanWallet({ locale, state, stamps, hearts, links, className, fa
       </div>
       {favoritePicker ? <div className={`${styles.column} ${styles.favoritePicker}`} data-cell="favorite-picker">{favoritePicker}</div> : <div className={styles.column} data-column="hearts">
         <Link className={styles.result} data-cell="hearts" href={links.hearts as Route}>
-          {asset("heart", 72, styles.resultAsset)}
+          {asset("heart", 56, styles.resultAsset)}
           <span className={styles.resultText}><span className={styles.label}>{s("stanFlowHearts")}</span><span className={styles.value}><Value locale={locale} slot={hearts} /></span></span>
         </Link>
         <div className={styles.material} data-cell="stamps">
-          {asset("stamp", 64, styles.asset)}
+          {asset("stamp", 56, styles.asset)}
           <span className={styles.name}>{s("stanFlowStamps")}</span>
           <span className={styles.amount}><Value locale={locale} slot={stamps} unit={locale === "ko" ? "개" : undefined} /></span>
           <div className={styles.progress}>{bar(s("stanFlowStamps"), stamps, pageStamps, STAMPS_PER_HEART, typeof stamps === "number" ? String(pageStamps) : "—", String(STAMPS_PER_HEART))}</div>
