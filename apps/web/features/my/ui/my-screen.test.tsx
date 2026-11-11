@@ -117,11 +117,12 @@ describe("unified MY hub", () => {
     vi.stubGlobal("fetch", fetcher);
     const { container } = render(<GroupsReleaseProvider enabled><MyScreen locale="ko" /></GroupsReleaseProvider>);
 
-    const stamps = await screen.findByRole("heading", { name: "스탬프 모으기" });
+    const stamps = await screen.findByRole("heading", { name: "스탬프 기록" });
     const shortcuts = screen.getByRole("heading", { name: "바로가기" });
     expect(stamps.compareDocumentPosition(shortcuts) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     const history = await waitFor(() => { const node = container.querySelector("#community-stamps [data-stamp-history]"); expect(node).not.toBeNull(); return node as HTMLElement; });
-    expect(within(container.querySelector("#community-stamps")!).getByRole("button", { name: /기록 보기 · 1/ })).toHaveAttribute("aria-expanded", "false");
+    // 스탬프 기록(STAMP-RECORD 11/11): MY에서는 기록 목록을 바로 펼쳐 보여 주고 접기 버튼이 없다.
+    expect(within(container.querySelector("#community-stamps")!).queryByRole("button", { name: /기록 보기/ })).toBeNull();
     expect(within(history).getByText("KARA · 2026년 10월 9일")).toBeInTheDocument();
     expect(within(history).getByText("등록 중")).toBeInTheDocument();
     expect(container.querySelectorAll("#community-stamps")).toHaveLength(1);
