@@ -94,7 +94,7 @@ function Slot({ slot, locale, stampSrc, href }: { slot: PassportRoadmapSlot; loc
     </span>
     {href ? <Link className={styles.slotLink} href={href as Route}>{text}</Link> : text}
     {filled && slot.clearedAt ? <time className={styles.slotDate} dateTime={slot.clearedAt}>{slotDate(slot.clearedAt, locale)}</time> : null}
-    {meta && typeof rule?.points === "number" && rule.points > 0 && <EarnBadge variant="inline" locale={locale} points={rule.points} />}
+    {meta && typeof rule?.points === "number" && rule.points > 0 && <EarnBadge variant="inline" locale={locale} points={rule.points} className={styles.points} />}
     {/* BUGS-1846 T1: the help sits in the flow under the points, never over the stamp frame; label, task and points line up with the other cards of the row. */}
     {slot.kind === "quiz" ? <span className={styles.help}><FanHelpTip label={passportBookText(locale, "entryReviewHelpLabel")} title={label} closeLabel={passportBookText(locale, "helpClose")} detailsLabel={fanUiText(locale, "details")}>{passportBookText(locale, "entryReviewHelp")}</FanHelpTip></span> : null}
   </li>;

@@ -7,6 +7,7 @@ import { useFanWide } from "@/components/fan-ui/fan-dialog";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import { FanHeading } from "@/components/fan-ui/fan-heading";
 import { FanLockedValue } from "@/components/fan-ui/fan-locked-value";
+import { FanLoginScene } from "@/components/fan-ui/fan-login-scene";
 import { FanGauge, FanNumber } from "@/components/fan-ui/fan-number";
 import { FanSkeleton } from "@/components/fan-ui/fan-skeleton";
 import { dukjilText } from "@/features/dukjil/ui/dukjil-copy";
@@ -44,7 +45,7 @@ export function StanWallet({ locale, state, stamps, hearts, links, entries, entr
   const stampText = full ? claimable ? nextHeartLabel(locale, stampCount) : "" : nextHeartLabel(locale, stampCount);
   return <section className={[styles.wallet, className].filter(Boolean).join(" ")} id="wallet" aria-label={s("stanWalletFlows")} data-wallet-card="stan">
     <div className={styles.head}><FanHeading>{s("stanWalletFlows")}</FanHeading><Link className={styles.guide} href={`/guide/dukjil?locale=${locale}` as Route}>{s("stanGuide")} <span aria-hidden="true">›</span></Link></div>
-    <div className={styles.tiles}>
+    {state.kind === "guest" ? <FanLoginScene items={["coin", "ticket", "stamp", "heart"].map((name) => ({ src: `/images/dukjil-duo/glyph-${name}-160.webp`, srcSet: `/images/dukjil-duo/glyph-${name}-160.webp 1x, /images/dukjil-duo/glyph-${name}-512.webp 3x` }))} title={[w.points, w.tickets, s("stanFlowStamps"), s("stanFlowHearts")].join(" · ")} action={state.action} /> : <div className={styles.tiles}>
       <div className={styles.cell} data-cell="points">{glyph("coin")}<span className={styles.label}>{w.points}</span><span className={styles.value}><Value locale={locale} slot={points} unit="P" /></span>
         <div className={styles.under}><FanGauge size="sm" className={styles.gauge} value={ready ? Math.min(state.points, pointCost) : 0} max={pointCost} label={s("walletNextTicket", [pointCost])} />
           <FanAction variant="text" className={styles.tileLink} disabled={!ready || (!pendingRequest.pending && !affordable)} onClick={() => setOpen(true)}>{locale === "ko" ? "교환" : w.exchange} <span aria-hidden="true">›</span></FanAction></div>
@@ -57,7 +58,7 @@ export function StanWallet({ locale, state, stamps, hearts, links, entries, entr
           {typeof stamps === "number" && <Link className={claimable ? styles.tileLink : styles.stampLabel} href={(claimable ? links.claim! : `/passports?locale=${locale}`) as Route}>{stampText}{claimable && <> <span aria-hidden="true">›</span></>}</Link>}</div>
       </div>
       <div className={styles.cell} data-cell="hearts">{glyph("heart")}<span className={styles.label}>{s("stanFlowHearts")}</span><span className={styles.value}><Value locale={locale} slot={hearts} /></span></div></>}
-    </div>
+    </div>}
     {state.kind === "failed" && state.retry ? <FanAction onClick={state.retry}>{w.retry}</FanAction> : null}
     <Overlay open={open && ready} onClose={() => setOpen(false)} labelledBy={titleId} backdropClassName={styles.backdrop} contentClassName={styles.sheet}>
       {!wide && <span className={styles.handle} aria-hidden="true" />}

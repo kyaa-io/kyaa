@@ -6,7 +6,7 @@ import type { Route } from "next";
 import Link from "next/link";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import { FanSectionLink } from "@/components/fan-ui/fan-section-link";
-import { FanLockedValue } from "@/components/fan-ui/fan-locked-value";
+import { FanLoginScene } from "@/components/fan-ui/fan-login-scene";
 import { FanTabs } from "@/components/fan-ui/fan-tabs";
 import { FanSkeleton } from "@/components/fan-ui/fan-skeleton";
 import { communityStampLabel, communityStampThumb, type CommunityStamp } from "@/features/community-stamps/domain/community-stamps";
@@ -15,6 +15,7 @@ import { DukjilProvider, useDukjil } from "@/features/dukjil/ui/dukjil-provider"
 import { useGroupResource } from "@/features/groups/ui/use-group-resource";
 import { passportRoadmapSchema, type PassportRoadmapSlot } from "@/features/passport/domain/dukjil-types";
 import { levelLabel } from "@/features/passport/domain/passport-read-model";
+import { GuestLoginAction } from "./guest-login";
 import { PassportIdentityArtwork } from "@/features/passport/ui/passport-identity-artwork";
 import { GuestMissionBook, SLOT, openingPage } from "@/features/passport/ui/passport-mission-book";
 import { fanStageLabel } from "@/features/rewards/domain/fan-stage";
@@ -162,17 +163,11 @@ export function MyPassportCardSkeleton({ title }: { title: string }) {
   </section>;
 }
 
-/** 비로그인 패스포트 카드. 로그인 화면과 같은 외곽: 여권 표지, 잠긴 진행, 공개 미션북 9칸. 내 값은 잠근 칸으로 둔다. */
+/** 비로그인 패스포트 카드. 로그인 화면과 같은 외곽: 여권 그림과 로그인 버튼, 공개 미션북 9칸. 내 값은 내지 않는다. */
 export function MyGuestPassportCard({ locale, labels, compact = false }: { locale: AppLocale; labels: Pick<MyPassportLabels, "title" | "detail">; compact?: boolean }) {
   return <section className={`${styles.card} ${styles.guest} ${compact ? styles.compact : ""}`} aria-label={labels.title}>
     <header><h2>{labels.title}</h2><FanSectionLink href={`/passports?locale=${locale}`}>{labels.detail}</FanSectionLink></header>
-    <div className={styles.body}>
-      <div className={styles.book}><Image src="/images/passport/passport-open-book.svg" alt="" width={1536} height={1024} unoptimized sizes="(max-width:767px) 280px, 360px" priority /></div>
-      <div className={styles.facts}>
-        <div className={styles.progress}><span>{myHomeText(locale, "tierLabel")}</span><FanLockedValue locale={locale} /></div>
-        <div className={styles.progress}><span>{myHomeText(locale, "stampsLabel")}</span><FanLockedValue locale={locale} /></div>
-      </div>
-    </div>
+    <FanLoginScene className={styles.guestScene} cover={{ src: "/images/passport/passport-open-book.svg", width: 1536, height: 1024 }} items={["stamp", "heart"].map((name) => ({ src: `/images/dukjil-duo/glyph-${name}-160.webp`, srcSet: `/images/dukjil-duo/glyph-${name}-160.webp 1x, /images/dukjil-duo/glyph-${name}-512.webp 3x` }))} title={`${myHomeText(locale, "tierLabel")} · ${myHomeText(locale, "stampsLabel")}`} action={<GuestLoginAction locale={locale} returnTo={`/my?locale=${locale}`} variant="primary" fullWidth />} />
     <div className={styles.guestBook}><DukjilProvider locale={locale}><GuestMissionBook locale={locale} wide headingLevel={3} /></DukjilProvider></div>
   </section>;
 }

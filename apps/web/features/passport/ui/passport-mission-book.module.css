@@ -54,7 +54,10 @@
 .guestWide .pages { grid-template-columns: minmax(0, 1fr); }
 .guestWide .page { padding: 0; border: 0; background: transparent; }
 @media (min-width: 768px) {
-  .guestWide .slots { grid-template-columns: repeat(9, minmax(0, 1fr)); }
+  .guestWide .slots { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+@media (min-width: 1024px) {
+  .guestWide .slots { grid-template-columns: repeat(5, minmax(0, 1fr)); }
 }
 
 /* 칸 전체가 그 미션으로 가는 링크다. 도움말만 그 위에 뜬다. */
@@ -64,6 +67,16 @@
 .slotLink:focus-visible::after { outline: var(--focus-width) solid var(--color-focus); outline-offset: var(--focus-offset); }
 @media (hover: hover) and (pointer: fine) { .slot:has(.slotLink):hover { border-color: var(--passport-muted); } }
 .help { position: relative; z-index: 1; }
+/* 미션이 있는 칸은 한 줄에 놓인 칸끼리 그림·제목·설명·포인트·도움말·날짜 행을 같은 높이 줄에 맞춘다(subgrid). 설명은 두 줄까지만 보인다. */
+.slot[data-kind] { grid-row: span 6; grid-template-rows: subgrid; row-gap: var(--space-1); }
+.slot[data-kind] > .art { grid-row: 1; }
+.slot[data-kind] > .slotLabel { grid-row: 2; }
+.slot[data-kind] > .slotTask { grid-row: 3; }
+.slot[data-kind] > .slotLink { grid-row: 2 / span 2; grid-template-rows: subgrid; }
+.slot[data-kind] > .points { grid-row: 4; }
+.slot[data-kind] > .help { grid-row: 5; }
+.slot[data-kind] > .slotDate { grid-row: 6; }
+.slot[data-kind] .slotTask { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; overflow: hidden; }
 .slotDate { color: var(--passport-muted); font-size: var(--passport-micro); font-variant-numeric: tabular-nums; }
 @media (min-width: 1024px) { [data-passport-book] .art { width: 88px; height: 88px; } }
 

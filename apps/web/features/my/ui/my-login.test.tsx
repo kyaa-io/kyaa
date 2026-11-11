@@ -12,18 +12,19 @@ const fetcher = vi.fn(async (url: string) => String(url).startsWith("/api/dukjil
 beforeEach(() => { fetcher.mockClear(); resetDukjilCatalogCache(); vi.stubGlobal("fetch", fetcher); });
 afterEach(() => vi.unstubAllGlobals());
 
-it.each(["ko", "en", "ja", "zh-Hans", "zh-Hant", "es", "id", "vi", "th", "pt", "fr"] as const)("keeps the MY sections signed out and sends the wallet card login back to the 덕질 wallet in %s", (locale) => {
+it.each(["ko", "en", "ja", "zh-Hans", "zh-Hant", "es", "id", "vi", "th", "pt", "fr"] as const)("shows the login scene instead of locked values in the signed-out passport card in %s", (locale) => {
   render(<MyScreen locale={locale} />);
-  // B13: the signed-out wallet card is itself the way to log in (locked numbers, the whole card is the link) and comes back to the 덕질 wallet.
-  const login = document.querySelector('[data-wallet-card="my"]');
-  expect(login).toHaveAttribute("href", fanLoginHref(locale, `/benefits?locale=${locale}#wallet`));
-  expect(new URL(login!.getAttribute("href")!, "https://kyaa.invalid").searchParams.get("returnTo")).toBe(`/benefits?locale=${locale}#wallet`);
-  expect(screen.getAllByRole("heading").length).toBeGreaterThanOrEqual(5);
+  const scene = document.querySelector("[data-login-scene]");
+  expect(scene).not.toBeNull();
+  const login = within(scene as HTMLElement).getByRole("link");
+  expect(new URL(login.getAttribute("href")!, "https://kyaa.invalid").searchParams.get("returnTo")).toBe(`/my?locale=${locale}`);
+  expect(screen.queryAllByRole("img", { name: /로그인 후 확인|Sign in to view/ })).toHaveLength(0);
+  expect(screen.getAllByRole("heading").length).toBeGreaterThanOrEqual(3);
 });
 
 it("shows locked balance cells and the public mission book, and never reads personal APIs", async () => {
   render(<MyScreen locale="ko" />);
-  expect(screen.getAllByRole("img", { name: "로그인 후 확인" })).toHaveLength(5);
+  expect(document.querySelector("[data-login-scene]")).not.toBeNull();
   expect(await screen.findByRole("heading", { name: "덕질 기록", hidden: true })).toBeInTheDocument();
   await waitFor(() => expect(screen.getAllByRole("checkbox")).toHaveLength(2));
   expect(screen.getAllByRole("checkbox").every(box => box.getAttribute("aria-checked") === "false")).toBe(true);
@@ -36,15 +37,12 @@ it("sends each activity row to login with its own destination", () => {
   expect(row).toHaveAttribute("href", fanLoginHref("ko", "/my/activity?locale=ko"));
 });
 
-it("keeps the signed-in order signed out: passport, wallet, shortcuts, with the locked wallet card as the login link", () => {
+it("keeps the signed-in order signed out: passport, shortcuts, with the login scene as the passport's login", () => {
   render(<MyScreen locale="ko" />);
-  const sections = ["내 패스포트", "내 지갑", "바로가기"].map(name => screen.getByRole("heading", { name }));
+  const sections = ["내 패스포트", "바로가기"].map(name => screen.getByRole("heading", { name }));
   sections.reduce((previous, current) => { expect(Boolean(previous.compareDocumentPosition(current) & Node.DOCUMENT_POSITION_FOLLOWING)).toBe(true); return current; });
   expect(screen.queryByRole("heading", { name: "함께 모은 스탬프" })).toBeNull();
   expect(screen.queryByRole("heading", { name: "래플 결과가 발표됐어요" })).toBeNull();
-  const wallet = screen.getByRole("link", { name: "내 지갑" });
-  expect(wallet).toHaveAttribute("href", fanLoginHref("ko", "/benefits?locale=ko#wallet"));
-  expect(within(wallet).getAllByRole("img", { name: "로그인 후 확인" })).toHaveLength(3);
   expect(document.body.textContent).not.toContain("모은 포인트 사용하기");
   expect(screen.getByRole("link", { name: "내 응모 내역" })).toHaveAttribute("href", fanLoginHref("ko", "/my/raffles?locale=ko"));
   expect(screen.getByRole("link", { name: "문의 내역" })).toHaveAttribute("href", fanLoginHref("ko", "/my/inquiries?locale=ko"));

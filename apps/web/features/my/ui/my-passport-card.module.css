@@ -35,6 +35,7 @@
 .bookSkeleton { display:block; overflow:hidden; inline-size:100%; aspect-ratio:1403/1024; }
 .bookSkeleton img { display:block; inline-size:109.48%; max-inline-size:none; margin-inline-start:-4.63%; block-size:auto; filter:drop-shadow(0 8px 14px color-mix(in oklch, var(--color-ink) 7%, transparent)); }
 
+.guestScene { padding:0; border:0; background:transparent; }
 .guestBook { min-width:0; }
 .guestBook > section { margin:0; }
 
@@ -62,9 +63,8 @@
   .guest .facts { gap:var(--space-2); }
   .guest .progress:first-child { display:none; }
   .guestBook [data-guest] { grid-template-columns:minmax(0,1fr); }
-  .guestBook ol { position:relative; display:flex; gap:var(--space-2); overflow-x:auto; scroll-snap-type:x proximity; padding-block-end:var(--space-1); }
-  .guestBook li { flex:0 0 76px; scroll-snap-align:start; padding-block:var(--space-2); }
-  .guestBook li [role="checkbox"] { inline-size:40px; block-size:40px; }
+  .guestBook ol { display:grid; grid-template-columns:none; grid-auto-flow:column; grid-auto-columns:132px; grid-template-rows:repeat(6,auto); gap:0 var(--space-2); overflow-x:auto; scroll-snap-type:x proximity; padding-block-end:var(--space-1); }
+  .guestBook li { scroll-snap-align:start; padding-block:var(--space-2); }
 }
 
 /* The book occupies x=65..1468 of its 1536px source; trim only the blank sides. */
