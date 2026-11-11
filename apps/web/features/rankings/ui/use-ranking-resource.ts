@@ -2,13 +2,13 @@
 
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { dropResource, peekResource, shareResourceRead, useResourceEpoch, useRetainedResource } from "@/components/fan-ui/resource-cache";
-import { useByUsAuth } from "@/features/auth/client/cognito-auth";
+import { usePublicReadAuth } from "@/features/auth/client/public-read-auth";
 
 type State<T> = { status: "loading" } | { status: "ready"; data: T } | { status: "error" };
 
 /** Rankings are public; a signed-in viewer also gets "my" values, so the token is attached when one exists. */
 export function useRankingResource<T>(url: string, parse: (value: unknown) => T) {
-  const { ready, authenticated, user, getAccessToken } = useByUsAuth();
+  const { ready, authenticated, user, getAccessToken } = usePublicReadAuth();
   const owner = authenticated ? user?.id ?? "member" : "guest";
   const cacheKey = `ranking:${owner}:${url}`;
   const [settled, setSettled] = useState<{ key: string; state: State<T> }>();
@@ -37,7 +37,8 @@ export function useRankingResource<T>(url: string, parse: (value: unknown) => T)
     (async () => {
       try {
         const body = await shareResourceRead(cacheKey, async (signal) => {
-          const token = authenticated ? await getAccessToken() : null;
+          // A token that does not come in time reads the public rows; the member re-read follows when sign-in settles.
+          const token = authenticated ? await getAccessToken().catch(() => null) : null;
           const response = await fetch(url, { headers: token ? { Authorization: `Bearer ${token}` } : undefined, signal, ...(revalidate ? { cache: "no-cache" as const } : {}) });
           if (!response.ok) throw new Error("rankings unavailable");
           return (await response.json()) as unknown;
@@ -56,7 +57,11 @@ export function useRankingResource<T>(url: string, parse: (value: unknown) => T)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [url, ready, authenticated, attempt, cacheKey, epoch]);
 
-  const state: State<T> = settled?.key === cacheKey ? settled.state : cached ?? { status: "loading" };
+  // The guest rows read during a stalled sign-in stay on screen while the member re-read of the same url runs.
+  const own = settled?.key === cacheKey ? settled.state : cached;
+  const [lastReady, setLastReady] = useState<{ url: string; state: State<T> }>();
+  if (own?.status === "ready" && (lastReady?.url !== url || lastReady.state !== own)) setLastReady({ url, state: own });
+  const state: State<T> = own ?? (lastReady?.url === url ? lastReady.state : undefined) ?? { status: "loading" };
   useLayoutEffect(() => { shown.current = state; });
   return { state, retry, refresh };
 }
