@@ -15,6 +15,8 @@ export interface RewardedSessionDeps{
  /** Called when the session or a report was refused; no exchange is sent. */
  onRefused(error:unknown):void;
  alive():boolean;
+ /** Session routes; the ticket exchange's by default. A passport page heart uses its own (issue per page, report). */
+ paths?:{issue:string;report:string};
 }
 const READY=new Set(['issued','shown','granted']);
 function parse(value:unknown):{sessionId:string;status:string}{
@@ -28,7 +30,7 @@ export async function runRewardedSession(deps:RewardedSessionDeps):Promise<{show
  if(!deps.unit){deps.onState('unsupported');return handle;}
  deps.onState('loading');
  let session:{sessionId:string;status:string};
- try{session=parse(await deps.post('/api/me/wallet/ad-session',{}));if(!READY.has(session.status))throw new Error('GROUP_WALLET_AD_SESSION_INVALID');}
+ try{session=parse(await deps.post(deps.paths?.issue??'/api/me/wallet/ad-session',{}));if(!READY.has(session.status))throw new Error('GROUP_WALLET_AD_SESSION_INVALID');}
  catch(error){if(deps.alive())deps.onRefused(error);return handle;}
  if(!deps.alive()||cancelled)return handle;
  // A watched but unspent session is handed back by the server: no second ad.
@@ -37,7 +39,7 @@ export async function runRewardedSession(deps:RewardedSessionDeps):Promise<{show
   const gpt=await deps.loadGpt();
   if(!deps.alive()||cancelled)return handle;
   let shown:Promise<unknown>=Promise.resolve(),refused=false;
-  const report=(event:'shown'|'granted')=>deps.post('/api/me/wallet/ad-session/report',{sessionId:session.sessionId,event});
+  const report=(event:'shown'|'granted')=>deps.post(deps.paths?.report??'/api/me/wallet/ad-session/report',{sessionId:session.sessionId,event});
   control=deps.requestAd(gpt,deps.unit,state=>{
    if(!deps.alive()||refused)return;
    if(state==='showing'){shown=report('shown').catch(error=>{refused=true;control?.cancel();deps.onRefused(error);});}

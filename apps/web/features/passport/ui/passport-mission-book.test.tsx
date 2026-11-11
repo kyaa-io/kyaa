@@ -10,6 +10,13 @@ vi.mock("@/features/groups/ui/use-group-resource", () => ({
   useGroupRequest: () => ({ request: state.request }),
 }));
 
+// 대표 11/11: a heart claim runs behind the rewarded ad. The ad step is stubbed here (granted unless a test says otherwise); rewarded-session.test.ts covers it.
+const adRun = vi.hoisted(() => ({ outcome: "granted" as "granted" | "cancelled", paths: [] as unknown[] }));
+vi.mock("@/features/group-wallet/ui/rewarded-session", () => ({ runRewardedSession: async (deps: { paths?: unknown; onGranted(id: string): void; onState(s: string): void }) => {
+  adRun.paths.push(deps.paths);
+  if (adRun.outcome === "granted") deps.onGranted("77777777-7777-4777-8777-777777777777"); else deps.onState("cancelled");
+  return { show: () => true, cancel: () => {} };
+} }));
 import { PassportMissionBook, StackedStampPages, SLOT, missionHref } from "./passport-mission-book";
 
 const KINDS = ["quiz", "checkin", "post", "comment", "share", "invite", "subscription", "steady_checkin", "proof"];

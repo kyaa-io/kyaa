@@ -17,6 +17,7 @@ client owner/date/price fields. Amounts must fit safe integers; a missing or inv
 balance is an error rather than zero.
 
 - GET `/api/me/wallet`: points/tickets/global sequence, policy, attendance. Hearts are no longer part of the wallet (they live in the creator heart ledger via passport page Claim).
+- Passport page heart (20261223100000): the same ad configuration and session order, on its own table `passport_claim_ad_sessions` (never counted toward the ticket daily cap): POST `/api/me/passports/:id/pages/:pageNo/ad-session` (refused before the ad when the page cannot be claimed), POST `/api/me/passports/ad-session/report`, then POST `/api/me/passports/:id/pages/:pageNo/claim` with `adSessionId` (required; `claim_passport_page_with_ad` consumes it with the heart). The ad-less `claim_passport_page` is no longer executable by the API role.
 - POST `/api/me/wallet/exchange`: requestKey, policyVersion, target `ticket` only (`heart` is refused with 400), units, adSessionId (required; each exchange is fixed at 1 unit per rewarded-ad session).
 - POST `/api/me/wallet/ad-session`: issues one server-side rewarded-ad session (refused before the ad when gate/config closed, daily cap reached, balance < 100P, rate limited, or write-fenced).
 - POST `/api/me/wallet/ad-session/report`: sessionId, event `shown`|`granted`; server-clock compare, a `granted` sooner than the minimum viewing seconds voids the session.

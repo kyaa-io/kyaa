@@ -15,6 +15,10 @@ import { EarnBadge } from "@/features/dukjil/ui/earn-badge";
 import { StampPress } from "@/features/dukjil/ui/stamp-press";
 import { GroupRequestError, useGroupRequest, useGroupResource } from "@/features/groups/ui/use-group-resource";
 import { notifyFanActivityUpdated } from "@/components/fan-ui/fan-activity-updates";
+import { showFanToast } from "@/components/fan-ui/fan-toast";
+import { loadRewardedGpt, requestRewardedAd, rewardedAdUnit } from "@/features/group-wallet/ui/google-rewarded-ad";
+import { rewardedStopMessage, type RewardedStopKind } from "@/features/group-wallet/ui/rewarded-copy";
+import { runRewardedSession } from "@/features/group-wallet/ui/rewarded-session";
 import { useByUsSession } from "@/components/byus-session-provider";
 import { useByUsAuth } from "@/features/auth/client/cognito-auth";
 import type { Route } from "next";
@@ -190,12 +194,14 @@ export function PassportMissionBook({ passportId, creatorSlug, locale, stampSrc 
   }, [roadmap.data]);
   /** One request key per page until the claim is settled, so a retry after a failure replays the same claim. */
   const keys = useRef(new Map<number, string>());
-  const claim = useCallback(async (pageNo: number) => {
-    setBusy(pageNo); setFailedPage(null);
+  const alive = useRef(true), ad = useRef<{ show(): boolean; cancel(): void } | null>(null);
+  useEffect(() => { alive.current = true; return () => { alive.current = false; ad.current?.cancel(); }; }, []);
+  const stop = useCallback((kind: RewardedStopKind) => showFanToast({ title: rewardedStopMessage(locale, kind, 0), tone: "error" }), [locale]);
+  const send = useCallback(async (pageNo: number, adSessionId: string) => {
     const requestKey = keys.current.get(pageNo) ?? crypto.randomUUID();
     keys.current.set(pageNo, requestKey);
     try {
-      const result = await request(`/api/me/passports/${encodeURIComponent(passportId)}/pages/${pageNo}/claim`, { method: "POST", body: JSON.stringify({ requestKey }) });
+      const result = await request(`/api/me/passports/${encodeURIComponent(passportId)}/pages/${pageNo}/claim`, { method: "POST", body: JSON.stringify({ requestKey, adSessionId }) });
       passportClaimResultSchema.parse(result);
       keys.current.delete(pageNo);
       // A claimed page is a heart: the header ♥N and 덕질 read hearts from the summary, which re-reads on this signal (C1).
@@ -203,8 +209,36 @@ export function PassportMissionBook({ passportId, creatorSlug, locale, stampSrc 
     } catch (error) {
       if (error instanceof GroupRequestError && error.status === 409) keys.current.delete(pageNo);
       else setFailedPage(pageNo);
-    } finally { setBusy(null); retry(); }
+    } finally { if (alive.current) { setBusy(null); retry(); } }
   }, [ownerId, passportId, request, retry]);
+  // 대표 11/11: a heart comes after a rewarded ad, like a ticket. The page's own server session is issued first, the ad second, and the
+  // claim is sent only once the server marked the session granted (reported on rewardedSlotGranted; closing the ad pays nothing).
+  const claim = useCallback(async (pageNo: number) => {
+    setBusy(pageNo); setFailedPage(null);
+    const settle = () => { if (alive.current) setBusy(null); };
+    ad.current = await runRewardedSession({
+      post: (path, body) => request(path, { method: "POST", body: JSON.stringify(body) }),
+      paths: { issue: `/api/me/passports/${encodeURIComponent(passportId)}/pages/${pageNo}/ad-session`, report: "/api/me/passports/ad-session/report" },
+      unit: rewardedAdUnit(), loadGpt: loadRewardedGpt, requestAd: requestRewardedAd, alive: () => alive.current,
+      onState: state => {
+        if (state === "ready") setTimeout(() => ad.current?.show(), 0);
+        else if (state === "unsupported") { stop(rewardedAdUnit() ? "unsupported" : "unconfigured"); settle(); }
+        else if (state === "cancelled") { stop("incomplete"); settle(); }
+        else if (state === "no-fill") { stop("unavailable"); settle(); }
+        else if (state === "error") { stop("failed"); settle(); }
+      },
+      onGranted: id => void send(pageNo, id),
+      onRefused: error => {
+        settle();
+        const code = error instanceof GroupRequestError ? error.code : undefined;
+        if (code === "GROUP_WALLET_AD_RATE_LIMITED") stop("rateLimited");
+        else if (code === "GROUP_WALLET_AD_SESSION_INVALID") stop("sessionExpired");
+        else if (code === "GROUP_WALLET_AD_GATE_CLOSED" || code === "GROUP_WALLET_AD_CONFIG_MISSING") stop("unavailable");
+        else if (error instanceof GroupRequestError && error.status === 409) retry();
+        else setFailedPage(pageNo);
+      },
+    });
+  }, [passportId, request, retry, send, stop]);
   if (!on) return null;
   const proofHref = withLocale(`/c/${encodeURIComponent(creatorSlug)}/certifications`, locale);
   const pages = roadmap.data?.pages ?? [];

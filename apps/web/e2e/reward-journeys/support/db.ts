@@ -28,7 +28,7 @@ export function appUserIdByEmail(email: string): string {
 // Rows keyed by the member. The ledgers are append-only for the app, so a reset has to bypass their triggers: the session
 // replication role is set for this one transaction only, and only the test member's rows are touched.
 const MEMBER_TABLES = [
-  "mobile_fan_economy_ledger", "fan_ticket_ledger", "group_wallet_receipts", "group_wallet_ad_sessions", "group_wallet_attendance",
+  "mobile_fan_economy_ledger", "fan_ticket_ledger", "group_wallet_receipts", "group_wallet_ad_sessions", "passport_claim_ad_sessions", "group_wallet_attendance",
   "group_wallet_owner_sequences", "group_creator_attendance", "community_stamps", "creator_heart_ledger", "jjinfan_titles",
   "dukjil_action_log", "dukjil_point_corrections", "dukjil_wire_failures", "dukjil_pending_content_corrections", "fan_score_ledger",
   "fan_program_stamps", "fan_ticket_activity_awards", "benefit_ticket_entries", "fan_heart_conversions", "first_reaction_stamps",
