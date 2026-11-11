@@ -1,0 +1,7 @@
+*.generated.tsx
+*.index
+*.index.lock
+
+engine-change.patch
+canvas-change.patch
+main-compatible.patch

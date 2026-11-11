@@ -24,6 +24,7 @@ export default function MachineCanvas({ visible, onEngine, onUnavailable, onCont
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const engineRef = useRef<CapsuleEngine | null>(null);
   const visibleRef = useRef(visible);
+  const lostRef = useRef(false), suspendedRef = useRef(false);
   const callbacks = useRef({ onEngine, onUnavailable, onContextLost, onContextRestored, onStall });
   useEffect(() => { callbacks.current = { onEngine, onUnavailable, onContextLost, onContextRestored, onStall }; });
   // 장면은 마운트 때 한 번 만든다: 구도는 그때의 값을 쓰고, 폭이 바뀌면 부른 쪽이 key로 다시 마운트한다.
@@ -32,19 +33,24 @@ export default function MachineCanvas({ visible, onEngine, onUnavailable, onCont
   const sync = () => {
     const engine = engineRef.current;
     if (!engine) return;
-    if (visibleRef.current && document.visibilityState === "visible") engine.start(); else engine.stop();
+    if (visibleRef.current && !lostRef.current && !suspendedRef.current && document.visibilityState === "visible") engine.start(); else engine.stop();
   };
 
   useEffect(() => {
     const canvas = canvasRef.current!;
-    let cancelled = false, lost = false;
+    let cancelled = false;
     let resize: ResizeObserver | null = null;
-    const handleLost = (event: Event) => { event.preventDefault(); lost = true; engineRef.current?.stop(); engineRef.current?.clear(); callbacks.current.onContextLost(); };
-    const handleRestored = () => { if (lost) callbacks.current.onContextRestored(); };
-    const handleVisibility = () => sync();
+    const handleLost = (event: Event) => { event.preventDefault(); lostRef.current = true; canvas.dataset.contextLost = ""; engineRef.current?.stop(); engineRef.current?.clear(); callbacks.current.onContextLost(); };
+    const handleRestored = () => { if (lostRef.current) callbacks.current.onContextRestored(); };
+    const handleVisibility = () => { engineRef.current?.stop(); sync(); };
+    const handlePageHide = () => { suspendedRef.current = true; engineRef.current?.stop(); };
+    // A restored page may retain running=true without a pending Safari animation frame.
+    const handlePageShow = () => { suspendedRef.current = false; engineRef.current?.stop(); sync(); };
     canvas.addEventListener("webglcontextlost", handleLost);
     canvas.addEventListener("webglcontextrestored", handleRestored);
     document.addEventListener("visibilitychange", handleVisibility);
+    window.addEventListener("pagehide", handlePageHide);
+    window.addEventListener("pageshow", handlePageShow);
     void (async () => {
       let engine: CapsuleEngine;
       try { engine = await createCapsuleEngine(canvas, { wordmarkUrl: "/images/guest-home/kyaa-wordmark.svg", ...scene.current, onStall: () => callbacks.current.onStall?.() }); }
@@ -64,6 +70,8 @@ export default function MachineCanvas({ visible, onEngine, onUnavailable, onCont
       canvas.removeEventListener("webglcontextlost", handleLost);
       canvas.removeEventListener("webglcontextrestored", handleRestored);
       document.removeEventListener("visibilitychange", handleVisibility);
+      window.removeEventListener("pagehide", handlePageHide);
+      window.removeEventListener("pageshow", handlePageShow);
       const engine = engineRef.current; engineRef.current = null;
       if (engine) { callbacks.current.onEngine(null); engine.dispose(); }
     };
