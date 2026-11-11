@@ -8,14 +8,15 @@ const id = "10000000-0000-4000-8000-000000000001", asset = "20000000-0000-4000-8
 const notice = { id, slug: "official-post", title: "Official", pinned: false, kind: "standard", postType: "artist_post", visibility: "members", revision: 1, publishedAt: "2026-09-01T00:00:00Z" };
 const rpc = vi.fn(), authorize = vi.fn(async (token: string | null) => { if (token !== "Bearer valid") throw new AuthError("AUTHENTICATION_REQUIRED",401,"invalid"); return { appUserId: id }; });
 const run = createOfficialMediaHandler({ rpc, authorize });
-beforeEach(() => { rpc.mockReset(); authorize.mockClear(); vi.mocked(readExternalVideoThumbnail).mockReset().mockResolvedValue(null); });
+beforeEach(() => { rpc.mockReset().mockResolvedValue({}); authorize.mockClear(); vi.mocked(readExternalVideoThumbnail).mockReset().mockResolvedValue(null); });
 it("resolves a notice video's real cover only after the notice is authorized", async () => {
-  const href = "https://www.instagram.com/reel/DeRosgtTOQo/", image = "https://scontent.cdninstagram.com/cover.jpg";
+  const href = "https://www.instagram.com/reel/DeRosgtTOQo/", image = `/api/public/notice-media/${asset}?variant=thumbnail`;
   rpc.mockResolvedValueOnce({ notices: [notice], hasMore: false }).mockResolvedValueOnce({ ...notice, body: { type: "doc", content: [{ type: "paragraph", content: [{ type: "text", text: "가을 메이크업", marks: [{ type: "link", attrs: { href } }] }] }] } });
-  vi.mocked(readExternalVideoThumbnail).mockResolvedValue(image);
+  rpc.mockResolvedValue({ [href]: image });
   const response = await run(new Request("https://byus.test/api"), "elina");
   expect((await response.json()).items[0]).toMatchObject({ href, image, kind: "videos" });
-  expect(readExternalVideoThumbnail).toHaveBeenCalledWith(href);
+  expect(readExternalVideoThumbnail).not.toHaveBeenCalled();
+  expect(rpc).toHaveBeenLastCalledWith("read_public_video_thumbnails", { p_hrefs: [href] });
   rpc.mockResolvedValueOnce({ notices: [notice], hasMore: false }).mockResolvedValueOnce(null);
   vi.mocked(readExternalVideoThumbnail).mockClear();
   await run(new Request("https://byus.test/api"), "elina");
@@ -36,7 +37,7 @@ it("reauthorizes every notice, returns only private asset IDs, filters channel l
   const response = await run(new Request("https://byus.test/api?locale=en", { headers: { authorization: "Bearer valid" } }), "artist");
   expect(response.status).toBe(200); expect(response.headers.get("cache-control")).toBe("private, no-store");
   const data = await response.json(); expect(data.items).toHaveLength(2); expect(data.items[0]).toMatchObject({ image: null, asset: { id: asset }, href: "/c/artist/notices/official-post" }); expect(data.items[1].kind).toBe("videos"); expect(data.nextCursor).toBeTruthy();
-  expect(rpc).toHaveBeenLastCalledWith("read_fan_notice", { p_app_user_id: id, p_slug: "artist", p_notice_slug: "official-post", p_locale: "en" });
+  expect(rpc).toHaveBeenNthCalledWith(2, "read_fan_notice", { p_app_user_id: id, p_slug: "artist", p_notice_slug: "official-post", p_locale: "en" });
 });
 it("removes content revoked between list and detail and rejects invalid supplied auth", async () => {
   rpc.mockResolvedValueOnce({ notices: [notice], hasMore: false }).mockResolvedValueOnce(null);

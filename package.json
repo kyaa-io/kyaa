@@ -52,6 +52,7 @@
     "security:ws-canary": "node scripts/verify-websocket-canary.mjs",
     "media:prepare-live-preview": "node scripts/prepare-live-preview.mjs",
     "test:media-preview": "node --test scripts/live-preview-pipeline.contract.test.mjs",
+    "test:sns-collect": "node --test tools/sns-collect/collect-core.test.mjs",
     "telegram:bugs": "node scripts/telegram-bug-reports.mjs",
     "postinstall": "node scripts/apply-security-patches.mjs",
     "security:patch": "node scripts/apply-security-patches.mjs"
