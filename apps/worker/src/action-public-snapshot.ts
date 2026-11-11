@@ -21,7 +21,6 @@ import type { ActionLifecycleTransaction, FinalizedIndexedFanAction, IndexedCred
 const ZERO_HASH = `0x${"0".repeat(64)}` as Hash;
 const ZERO_ADDRESS = `0x${"0".repeat(40)}` as Address;
 const LOG_CHUNK_BLOCKS = 1_000n;
-const MAX_SCAN_BLOCKS = 5_000_000n;
 const MAX_HUB_LOGS = 50_000;
 const MAX_ACTIONS = 10_000;
 const MAX_EVENT_BLOCKS = 5_000;
@@ -141,7 +140,7 @@ function credentialKey(chainId: number, nftContract: Address, tokenId: bigint): 
 
 async function loadHubLogs(client: PublicClient, address: Address | Address[], fromBlock: bigint, toBlock: bigint, signal: AbortSignal, logScan?: SnapshotLogScan) {
   if (fromBlock > toBlock) throw new Error("Action public snapshot deployment block is after finalized head");
-  if (toBlock - fromBlock + 1n > MAX_SCAN_BLOCKS) throw new Error("Action public snapshot block range cap exceeded");
+  // Chain age is unbounded; the deadline, chunk size and log caps bound scan work.
   const chunkBlocks = logScan?.chunkBlocks ?? LOG_CHUNK_BLOCKS;
   if (chunkBlocks < 1n || chunkBlocks > 10_000n) throw new Error("Action public snapshot invalid log chunk size");
   const logClient = logScan?.client ?? client;

@@ -1,0 +1,41 @@
+{
+  "blockNumber": "41030337",
+  "generatedAt": "2026-11-11T06:07:48.440Z",
+  "business": {
+    "uniqueActiveWallets": 584,
+    "actionCounts": {
+      "1": 412,
+      "2": 54,
+      "3": 22,
+      "4": 207,
+      "6": 621,
+      "7": 576,
+      "8": 357,
+      "9": 6,
+      "10": 2061
+    },
+    "passportCredentials": 412,
+    "mintedCredentials": 4728,
+    "currentActionTransactions": 4316,
+    "lifecycleTransactions": 4316
+  },
+  "raw": {
+    "uniqueActiveWallets": 585,
+    "actionCounts": {
+      "1": 417,
+      "2": 56,
+      "3": 23,
+      "4": 214,
+      "6": 631,
+      "7": 576,
+      "8": 369,
+      "9": 6,
+      "10": 2241,
+      "12": 1
+    },
+    "passportCredentials": 417,
+    "mintedCredentials": 4951,
+    "currentActionTransactions": 4534,
+    "lifecycleTransactions": 4536
+  }
+}

@@ -266,7 +266,7 @@ function RowButton({ panelId, open, onToggle, me, kind, children }: { panelId: s
   return <FanAction variant="text" className={styles.listRow} aria-expanded={open} aria-controls={open ? panelId : undefined} onClick={onToggle}>
     <span className={styles.rowFace} data-kind={kind} data-me={me || undefined}>
       {children}
-      <FanIcon icon={open ? ChevronUp : ChevronDown} size={12} className={styles.chevron} />
+      <FanIcon icon={open ? ChevronUp : ChevronDown} size={16} className={styles.chevron} />
     </span>
   </FanAction>;
 }
