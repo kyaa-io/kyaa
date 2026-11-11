@@ -15,30 +15,28 @@
 | 새 회원 지갑 | Privy 임베디드 지갑 | xpub에서 파생한 주소(`m/44'/60'/0'/0/i`) |
 | 기존 회원 연결 | — | Google/Apple subject가 정확히 같을 때만. 이메일만 같으면 연결하지 않고 막는다(`email_in_use`) |
 
-## 지갑 발급 방식 결정 근거
+## 지갑 주소 (1차는 잠정, 최종은 2차 signer)
 
-> **잠정 — 최종안 아님(사용자 결정 11/12 00:5x).** 확정 방식은 (B) HD 시드 1개 + 서명 전용 실행부다. 시드는 KMS 키 1개로 봉투 암호화하고, 복호화는 signer만 하며, 회원마다 강화 파생 `m/44'/60'/0'/i'` 키로 서명한다. (A) 회원별 KMS 키는 비용 때문에 기각됐다(1만 명이면 월 약 $10,000). 아래 비강화 xpub 방식은 신규 가입을 시험하는 잠정 구현이며, 인수 기준 세 가지(발급 주소 = 서명 복원 주소, 다른 회원 요청 거부, chainId·nonce·호출 내용 변조 서명 거부)를 통과하고 signer `issueAddress`로 교체(K4)하기 전에는 신규 주소를 최종 지갑으로 연결하지 않는다. 아래 2·3번(시드 스택·시드 생성)은 봉투 암호화 방식으로 개정(K2)한 뒤 실행한다. 상세: `docs/operations/privy-exit-plan.md` 전제 6, 2-1b, 2-1c.
-
-- 웹에는 회원이 직접 서명하는 기능이 없다. 지갑은 relayer가 보내는 기록을 받는 주소다(조사 1-2).
-- 회원별 KMS 비대칭 키(ECC_SECG_P256K1)는 키당 월 $1이다. 1만 명이면 월 $10,000이고, 주소마다 KMS 호출이 필요하다.
-- HD 공개키 파생은 웹 서버가 비밀값을 하나도 갖지 않는다. 비용 0, 즉시 발급, 장애 지점이 없다.
-- 마스터 시드는 KMS 대칭키로 봉인한 Secrets Manager 값 하나다. 운영자 역할만 읽고 쓸 수 있다(`infrastructure/aws/platform/wallet-issuance.json`).
-- 위험: 비강화 파생이라 xpub와 자식 개인키 1개가 함께 새면 시드 전체가 복원된다. 자식 개인키는 금고 밖으로 내보내지 않는다. 회원이 키를 요청하면 운영자가 그 회원 키만 오프라인에서 파생해 전달하고, 그 뒤 새 시드로 교체하는 절차를 별도로 정한다.
-- `user_wallets.provider`는 모든 회원 지갑에서 `privy`로 둔다. 기록·도장 함수 약 30개가 이 값으로 회원 지갑을 고른다. 서버 발급 여부는 `kyaa_wallet_derivations`로 구분한다.
+- 확정 방식(사용자 결정 11/12 00:5x)은 (B) HD 시드 1개 + 서명 전용 실행부(signer)다. 시드는 KMS 키 1개로 봉투 암호화하고, 복호화는 signer만 하며, 회원마다 강화 파생 `m/44'/60'/0'/i'` 키로 서명한다. (A) 회원별 KMS 키는 비용 때문에 기각됐다.
+- **1차 신규 가입 주소는 잠정이고 서명할 수 없다.** dev만 쓰는 버리는 xpub로 만든다: `apps/web`에서 `node scripts/dev-throwaway-xpub.mjs` → `KYAA_WALLET_XPUB=…`. 시드는 저장하지 않고 폐기한다. AWS 리소스를 만들지 않는다.
+- **운영에는 잠정 xpub을 넣을 수 없다**: 배포 설정과 서버 설정이 모두 거부한다. 운영 신규 가입 주소는 K4(signer 발급기 교체) 전까지 확정하지 않는다.
+- **평문 시드 경로는 삭제했다**(`wallet-issuance.json`, `wallet-master-generate.mjs`). 이 둘은 시드를 Secrets Manager에 평문으로 넣고 운영자가 읽을 수 있는 구조여서 (B)와 반대였다. KMS 키·시드 암호문 생성은 dev에서도 K2(봉투 암호화로 새로 작성) 뒤에만 한다.
+- 잠정 주소 교체(K4) 순서와, 잠정 주소로 이미 나간 테스트넷 기록의 처리: `docs/operations/privy-exit-plan.md` 전제 6-2. 기록은 옮기거나 다시 발행하지 않고, 과거 주소로 함께 표시한다.
+- `user_wallets.provider`는 모든 회원 지갑에서 `privy`로 둔다. 기록·도장 함수 약 30개가 이 값으로 회원 지갑을 고른다. 서버 발급 여부는 `kyaa_wallet_derivations`(잠정)·`member_keys`(K4 이후)로 구분한다.
 
 ## 2차 예정: 회원 주소 거래와 가스 대납
 
-사용자 추가 지시(11/12)에 따라 회원 주소에서 실제 거래가 일어나고 가스는 kyaa가 낸다. GIWA Sepolia에서 EIP-7702 위임이 동작함을 확인했다(`apps/web/scripts/giwa-7702-probe.mjs`). 구조는 회원 EOA → `Simple7702Account` 위임, EntryPoint v0.8, 우리 페이마스터, 우리 relayer 번들링이다. 이때 회원 키 서명은 분리된 signer 서비스가 같은 시드로 한다. 위의 "자식 개인키를 금고 밖으로 내보내지 않는다"는 signer 메모리 안 파생으로 바뀐다. 단계·위험·비용은 `board/tasks/privy-migration/plan.md` 2차 절.
+사용자 추가 지시(11/12)에 따라 회원 주소에서 실제 거래가 일어나고 가스는 kyaa가 낸다. GIWA Sepolia에서 EIP-7702 위임이 동작함을 확인했다(`apps/web/scripts/giwa-7702-probe.mjs`). 구조는 회원 EOA → `Simple7702Account` 위임, EntryPoint v0.8, 우리 페이마스터, 우리 relayer 번들링이다. 회원 키 서명은 분리된 signer만 한다. signer는 웹 정책을 믿지 않고 체인 ID(91342, 0 거부)·위임 대상(Simple7702Account)·EntryPoint·(대상, 선택자) 허용 목록·`sender` 일치·회원 Cognito 토큰을 스스로 검사한다. 상세는 `docs/operations/privy-exit-plan.md` 2-0, 2-1c.
 
 ## 감독에게 필요한 값과 승인
 
 | # | 할 일 | 값 / 명령 | 비고 |
 |---|---|---|---|
 | 1 | Cognito Apple 팀 ID 확인 | `aws cognito-idp describe-identity-provider --user-pool-id <pool> --provider-name SignInWithApple --query 'IdentityProvider.ProviderDetails.{team:team_id,client:client_id}'` | Privy용 Apple 알림 설정은 팀 `7RFN3TFR5K`, 서비스 ID `kr.byus.web`(`apple-lifecycle.ts`). Apple `sub`는 팀 단위라 팀 ID가 같으면 기존 회원 subject가 같다. 다르면 Apple 회원은 백필로도 연결되지 않는다. 작업자 가드가 기본 프로필 읽기를 막아 확인하지 못했다. 풀: dev `ap-northeast-2_8KvygeHtY`·`ap-northeast-2_KPXkxE2l4`, staging `ap-northeast-2_ByIT6OHGz`, prod `ap-northeast-2_ucahQDtFW` |
-| 2 | 지갑 스택 생성(환경별) | `wallet-issuance.json`, `Environment`, `OperatorRoleArn` | KMS 키 1개(월 $1)·시크릿 1개(월 $0.40) |
-| 3 | 시드 생성(환경별 1회) | `node scripts/privy-exit/wallet-master-generate.mjs kyaa/<env>/wallet-master-seed` (운영자 역할) | 출력한 `KYAA_WALLET_XPUB=`만 설정에 넣는다. 이미 값이 있으면 거부한다 |
+| 2 | (K2 이후에만) 지갑 KMS 키·시드 암호문 생성 | K2에서 봉투 암호화로 새로 작성할 템플릿·스크립트 | **지금은 실행할 것이 없다.** 평문판은 삭제됨. dev도 같음 |
+| 3 | dev 잠정 xpub | `apps/web`에서 `node scripts/dev-throwaway-xpub.mjs` | dev 전용, 시드 저장 없음, 운영 거부 |
 | 4 | DB 마이그레이션 | `supabase/migrations/20261224000000_kyaa_native_auth.sql` | 추가형. `sync_privy_identity_with_provider_accounts`의 키 형식만 `kyaa:` 허용으로 넓힌다. 적용 뒤 PostgREST 스키마 캐시 재적재 |
-| 5 | 실행 설정 | `AUTH_PROVIDER=cognito`, `KYAA_WALLET_XPUB=<xpub>`, `COGNITO_USER_POOL_ID`·`COGNITO_CLIENT_ID`·`COGNITO_DOMAIN`·`COGNITO_REDIRECT_URI`·`COGNITO_LOGOUT_URI`·`AUTH_COOKIE_SECRET` 확인 | `scripts/aws-platform-deploy.mjs`가 `KYAA_WALLET_XPUB`(xpub 형식)와 `COGNITO_KAKAO_ENABLED`를 받는다 |
+| 5 | 실행 설정 | `AUTH_PROVIDER=cognito`, dev만 `KYAA_WALLET_XPUB=<3번 값>`, `COGNITO_USER_POOL_ID`·`COGNITO_CLIENT_ID`·`COGNITO_DOMAIN`·`COGNITO_REDIRECT_URI`·`COGNITO_LOGOUT_URI`·`AUTH_COOKIE_SECRET` 확인 | `scripts/aws-platform-deploy.mjs`가 `KYAA_WALLET_XPUB`(xpub 형식)와 `COGNITO_KAKAO_ENABLED`를 받는다 |
 | 6 | Privy 내보내기·백필 | 아래 절차 | 운영 전환 전에 반드시 |
 | 7 | 카카오(선택) | 아래 절차 | 꺼진 상태가 기본 |
 
@@ -66,18 +64,20 @@ Google/Apple subject를 이미 아는 회원은 백필 없이 연결된다. 2026
 
 ## dev 확인 순서
 
-1. 4번 마이그레이션 적용 → 2·3번 dev 지갑 → 5번 설정 → 배포.
+1. 4번 마이그레이션 적용 → 3번 dev 잠정 xpub(2번은 K2 전이라 하지 않음) → 5번 설정 → 배포.
 2. 브라우저(실제 dev 도메인):
    - 기존 회원 Google 로그인 → 같은 MY·도장·지갑 주소 표시
    - 기존 회원 Apple 로그인(1번 확인 뒤)
-   - 새 Google 계정 가입 → 주소 발급(`kyaa_wallet_derivations` 행 1개, `user_wallets.address` 일치), 환영 도장
+   - 새 Google 계정 가입 → 잠정 주소 발급(`kyaa_wallet_derivations` 행 1개, `user_wallets.address` 일치), 환영 도장. 이 주소는 서명 불가이며 K4에서 교체한다
+   - 로그인 중 취소·실패 → 로그인 화면에 "로그인을 마치지 못했어요." (JSON 화면이 아님)
    - 같은 이메일, 다른 Google 계정 → 로그인 화면에 `email_in_use` 문구, 세션 없음
    - 정지(`app_users.status='disabled'`) 계정 → "이용이 중지된 계정이에요."
    - 로그아웃 → 쿠키 삭제, Cognito 로그아웃, 새로고침 뒤 비로그인
    - 탈퇴 → 계정 삭제 접수, 같은 계정 재로그인 시 `inactive`
    - Privy 차단 상태 확인: 브라우저에서 `auth.privy.io` 요청이 0건
    - 관리자 로그인(Google) → 관리자 화면
-3. 운영은 감독 승인 뒤 같은 순서. 전환 직후 일부 회원은 한 번 다시 로그인한다.
+   - 집계는 로그인 방법별(L1~L4, 앱 A1~A4)로 따로 한다. 웹 이메일 로그인(L1)은 화면이 없어 "미검증 — 현재 불가"이며 소셜 성공으로 대신하지 않는다.
+3. 운영은 감독 승인 뒤, `docs/operations/privy-exit-plan.md` 1-6 운영 전환 조건(C1~C5: 앱 충돌 방침, 앱 토큰 확인, 신규 가입 주소 확정 금지 포함)을 모두 충족한 다음에. 전환 직후 일부 회원은 한 번 다시 로그인한다.
 
 ## 카카오 로그인 준비
 
@@ -94,6 +94,7 @@ Google/Apple subject를 이미 아는 회원은 백필 없이 연결된다. 2026
 
 ## 남는 것과 되돌리기
 
-- Privy Bearer 토큰 검증 경로는 앱(Flutter)이 바뀔 때까지 서버에 남는다. 웹은 쓰지 않는다.
+- Privy Bearer 토큰 검증 경로는 앱(Flutter)이 바뀔 때까지 서버에 남는다. 웹은 쓰지 않는다. 웹에서 가입한 회원은 같은 Google/Apple 계정으로 앱(Privy)에 들어오면 세션 동기화가 충돌로 실패한다(병합 없음). 처리 방침은 운영 전환 조건 C3.
+- `AUTH_COOKIE_SECRET` 하나로 30일 세션을 암호화하고 키 식별자가 없다. 키를 바꾸면 모든 웹 회원이 다시 로그인한다.
 - 되돌리기: `AUTH_PROVIDER=privy`로 이전 빌드를 배포한다. 마이그레이션은 추가형이라 되돌리지 않는다. 전환 기간에 생긴 `kyaa:` 회원은 Privy 로그인으로 들어올 수 없으므로 되돌리기 전에 수를 확인한다.
 - Privy 계약 해지는 병행 기간 뒤 사용자 확인으로 한다.

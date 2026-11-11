@@ -1,32 +1,50 @@
 # PRIVY-EXIT-0005 계획서
 
 - 작성: 2026-11-12 01:3x, 담당 변경 전 마지막 작업자(Opus). 다음 담당: Astra/Fable.
-- 작업 위치: worktree `t3-privy-exit-0005`, 브랜치 `t3/privy-exit-0005`, 기준 `16e26e19c`(origin/main).
+- 작업 위치: worktree `t3-privy-exit-0005`, 브랜치 `t3/privy-exit-0005`, 기준 `049e51f56`(origin/main, 01:5x 리베이스. 이전 기준 `16e26e19c`).
 - 사용자 결정: Privy 완전 중단(11/12 00:0x), 우리 서버가 주소 발급, 회원 주소에서 실제 거래·가스는 kyaa 대납(00:1x).
 - 하지 않는 것: main 푸시, 운영 DB 적용, AWS 리소스 생성, Privy 내보내기·백필 실행, 테스트넷 자금 수령. 모두 감독 승인.
 - 운영 실행 절차: `docs/operations/privy-exit-runbook.md`.
 
-## 0. 현재 상태
+## 0. 현재 상태 (origin/main `049e51f56` 위로 리베이스, 2026-11-12 01:5x)
 
 | 커밋 | 내용 | 상태 |
 |---|---|---|
-| `aafbdcd15` | 1차-A 서버·DB·클라이언트: Cognito 로그인, Privy 호출 제거 | 완료 |
-| `d3ca01ec8` | 1차-B 주소 발급(xpub)·백필 도구·카카오 경로·runbook | 완료 |
-| `5a4a6bf2b` | 로그인 오류 문구 원문·경로 시험 | 완료 |
-| `6bafac940` | 1차-C 웹에서 Privy SDK 제거, CSP 정리, 배포 안내 | 완료 |
-| `9a4f03db3` | 2차 근거: GIWA 7702 확인 스크립트, runbook 메모 | 완료 |
-| (이 문서 커밋) | 계획서 | — |
+| `865808703` | 1차-A 서버·DB·클라이언트: Cognito 로그인, Privy 호출 제거 | 완료 |
+| `62130ce78` | 1차-B 주소 발급(잠정 xpub)·백필 도구·카카오 경로·runbook | 완료(시드 경로는 `15c861c67`에서 삭제) |
+| `42ee3378b` | 로그인 오류 문구 원문·경로 시험 | 완료 |
+| `aae01638f` | 1차-C 웹에서 Privy SDK 제거, CSP 정리, 배포 안내 | 완료 |
+| `17803c288` | 2차 근거: GIWA 7702 확인 스크립트 | 완료 |
+| `e8d4824fd`~`ab0952977` | 계획서 개정 5회 | — |
+| `15c861c67` | 판정(plan-review.md) 반영 코드: 평문 시드 경로 삭제, dev 전용 버리는 xpub, 운영 xpub 거부, 콜백 실패 → `/login?authError=callback_failed`, 이메일 advisory lock | 완료 |
+| (이 문서 커밋) | 판정 필수 1·2·3 계획 반영 | — |
 
-게이트: 1차 전체 = `9a4f03db3`까지(1차만 = `5a4a6bf2b`). 게이트는 아직 돌리지 않았다(`kyaa-t3 gate-remote 16e26e19c <sha>`).
+- 게이트 기준: `kyaa-t3 gate-remote 049e51f56 <이 문서 커밋 sha>`. 아직 돌리지 않았다. `next build` 미실행.
+- 판정 FAIL(plan-review.md) 이후 재판정은 받지 않았다. 이 문서는 재검토 통과를 주장하지 않는다.
 
-## 전제 6 (확정, 사용자 결정 11/12 00:5x)
+## 전제 6 (확정, 사용자 결정 11/12 00:5x · 판정 필수 1 반영)
 - 필수 조건: 발급 주소로 우리 서버가 안전하게 서명할 수 있어야 한다(사용자 00:1x "회원 주소에서 tx, 가스는 kyaa 대납").
 - **확정 방식 = (B) HD 시드 1개 + 서명 전용 실행부.** 시드는 KMS 키 1개로 봉투 암호화하고, 복호화 권한은 서명 실행부(signer)에만 준다. 회원마다 **강화 파생** 키로 서명한다(2-1b).
 - **(A) 회원별 KMS 비대칭 키는 기각(비용)**: 키당 월 $1이라 1만 명이면 월 약 $10,000(2-1a, 2-1d에 비교 기록만 남김).
 - 인수 기준 3개(2-1c)는 그대로다: ① 발급 주소 = 서명 복원 주소 ② 다른 회원 서명 요청 거부 ③ chainId·nonce·호출 내용 변조 서명 거부. 통과 전 신규 주소를 최종 지갑으로 연결하지 않는다.
-- 1차(로그인에서 Privy 제거, 목표 05:00)는 지갑 방식과 무관하게 계속 진행한다. 1차의 비강화 xpub 주소 발급(`address-issuer.ts`, `KYAA_WALLET_XPUB`, `kyaa_wallet_derivations`)은 **잠정**이다. 강화 파생에서는 xpub로 주소를 만들 수 없으므로 signer `issueAddress`로 교체한다(K4).
-  - dev: 잠정 주소로 신규 가입 시험 가능(테스트넷, 기록 0). 서명 불가 주소로 표시하고 K4에서 교체.
-  - 운영: 운영 전환 조건 = "2-1c 통과 + K4 발급기 교체". 그 전에는 신규 가입 주소를 확정하지 않는다(감독 판단: 신규 가입 보류, 또는 주소 없이 받고 나중에 발급).
+
+### 6-1. 1차 dev 신규 가입 주소의 출처 (잠정, 서명 불가)
+- 1차(로그인에서 Privy 제거, 목표 05:00)는 지갑 방식과 무관하게 계속 진행한다. 신규 가입에는 주소가 필요하므로 dev는 **버리는 dev 전용 xpub**를 쓴다.
+  - 만드는 법: `apps/web`에서 `node scripts/dev-throwaway-xpub.mjs` → `KYAA_WALLET_XPUB=xpub…` 한 줄. 시드는 그 프로세스 메모리에만 있고 **저장·출력하지 않으며 종료와 함께 폐기**한다. AWS 리소스를 만들지 않는다.
+  - 결과: 이 xpub로 만든 주소(`m/44'/60'/0'/0/i`, 비강화)는 **누구도 서명할 수 없는 수신 전용 잠정 주소**다. 시드를 보관하지 않으므로 나중에 서명 가능 주소로 "승격"하는 길도 없다(K4에서 교체).
+  - 운영에는 넣을 수 없다: 배포 설정(`scripts/aws-platform-deploy.mjs`)과 서버 설정(`server/config/env.ts`, 운영 데이터)이 `KYAA_WALLET_XPUB`를 거부한다(`15c861c67`).
+- **삭제한 평문 시드 경로**: 개정 전 `wallet-issuance.json`·`scripts/privy-exit/wallet-master-generate.mjs`는 시드 평문(`seedHex`)을 Secrets Manager에 넣고 운영자 역할이 읽을 수 있는 구조여서 (B)와 반대였다. `15c861c67`에서 삭제했다. **KMS 키·시드 암호문 생성은 dev에서도 K2(봉투 암호화로 다시 작성) 뒤에만** 한다.
+
+### 6-2. 잠정 주소 → 최종 주소 교체 경계(K4)
+- 경계: K4 전 모든 `kyaa:` 회원의 주소는 잠정(서명 불가). K4 = signer `issueAddress`(강화 파생)가 2-1c를 통과한 뒤, `create_kyaa_member`의 주소 출처를 signer로 바꾸고 잠정 주소를 교체하는 단계.
+- 운영: K4 전에는 신규 가입 주소를 확정하지 않는다(운영 전환 조건 1-6). 운영에는 잠정 주소가 생길 수 없다(xpub 거부).
+- dev 교체 순서(마이그레이션 + 운영자 1회 실행, 서비스 키 전용 RPC `replace_provisional_wallet(app_user_id)`):
+  1. 대상 = `kyaa_wallet_derivations`(잠정 표시)가 있는 회원. 대상 수를 먼저 센다.
+  2. 그 회원의 미처리 온체인 작업(blockchain outbox·job에서 잠정 주소가 수신자인 `pending`/`queued`)을 확인한다. 있으면 교체를 미루고 작업을 끝내거나 취소한다(새 주소로 다시 내지 않는다).
+  3. signer `issueAddress`로 새 주소를 받는다(signer가 2-1c 통과 상태여야 함).
+  4. 한 트랜잭션에서: `user_wallets`는 (회원, 체인)당 1행이고 `external_auth_identities(chain_id, wallet_address)`와 `kyaa_wallet_derivations(chain_id, address)`가 그 주소를 외래키로 잡는다. 그래서 K4 마이그레이션이 두 외래키를 `ON UPDATE CASCADE`로 바꾸고, `user_wallets.address`를 새 주소로 갱신해 함께 바뀌게 한다. 잠정 주소는 `retired_wallet_addresses(app_user_id, chain_id, address, reason='provisional', retired_at)`에 기록하고, `kyaa_wallet_derivations` 행은 지운 뒤 `member_keys`(signer 인덱스) 행을 넣는다.
+  5. 확인: 새 주소 = signer 서명 복원 주소(2-1c ①), 회원 세션 동기화(`/api/auth/session`) 정상.
+- **이미 나간 온체인 기록**(잠정 주소로 간 환영 도장 등, 테스트넷): 옮기거나 다시 발행하지 않는다. 잠정 주소는 서명할 수 없어 회원 주도 거래 대상이 아니다. 화면은 `retired_wallet_addresses`를 과거 주소로 함께 보여 준다(Privy 주소와 같은 처리). dev 시험 계정은 교체 대신 정리(회원 삭제)도 허용한다.
 
 # 1차: Privy 없이 로그인·세션 (구현 완료, 게이트·dev 확인 남음)
 
@@ -59,6 +77,7 @@
 | 13 | 시험 이식 | 시험 124개 `vi.mock` → `auth-fallback`, e2e 하네스 30개 alias `/^.*\/auth-fallback$/` | 완료 |
 | 14 | 카카오 OIDC 준비 | `server/auth/cognito/verifier.ts`, `browser-routes.ts`, `server/config/public-runtime-config.ts`, `infrastructure/aws/platform/environment.json`(`KakaoProviderSecretArn`), `scripts/aws-platform-deploy.mjs` | 완료(기본 꺼짐) |
 | 15 | 기존 회원 백필 도구 | `scripts/privy-exit/export-privy-users.mjs`, `import-backfill.mjs`, `apps/web/server/auth/cognito/backfill.mjs`(`kyaa:` 허용) | 완료(미실행) |
+| 17 | 판정 반영(`15c861c67`) | 콜백 실패 → `/login?authError=callback_failed`(`browser-routes.ts`, 문구 11개 언어), 이메일 advisory lock(마이그레이션), 평문 시드 경로 삭제, `apps/web/scripts/dev-throwaway-xpub.mjs`, 운영 xpub 거부(`aws-platform-deploy.mjs`, `env.ts`) | 완료 |
 | 16 | 배포 안내 | `release-notes/2026-11-12-privy-exit-cognito-login.json` | 캡처 없음(1-4) |
 
 ## 1-3. 시험
@@ -66,12 +85,13 @@
 - SQL(롤백 트랜잭션, 로컬 DB): 기존 회원 연결·DID·지갑 유지, 이메일 충돌 차단, 신규 생성, 카카오, 정지 거부, 중복 subject 거부, 세션 동기화 `kyaa:` 허용 → `supabase/tests/kyaa_native_auth.sql` 통과.
 - 실제 SQL 응답 → 라우트 스키마 계약 시험(`kyaa-identity.contract.test.ts`).
 - 합성 백필 드라이런: 내보내기 형식 → backfill → 가져오기 → `kyaa_sign_in` linked(DID 유지).
-- 웹 전체 vitest: 53 실패 = 기준 커밋 `16e26e19c`의 22파일·53건과 동일(신규 0). `benefit-recipient-screen` 1건은 전체 실행 부하 때만 실패, 단독 3회 통과.
+- 웹 전체 vitest(리베이스 전, 기준 `16e26e19c`): 53 실패 = 기준 커밋의 22파일·53건과 동일(신규 0). `benefit-recipient-screen` 1건은 전체 실행 부하 때만 실패, 단독 3회 통과. 리베이스 후(`15c861c67` 위 작업 트리): 21파일·52건 실패, 모두 이전 기준의 실패 파일 목록 안(신규 실패 파일 0). 새 기준 `049e51f56` 단독 실행 비교는 하지 않았다.
+- 판정 반영(`15c861c67`): 콜백 시험 22, 서버 설정·인증·로그인 화면 448, 배포 설정 31, 백필 3, SQL `kyaa_native_auth.sql`(이메일 잠금 포함) 통과. 같은 이메일 동시 가입 경합 시험은 공용 로컬 DB에 마이그레이션 적용이 필요해 하지 않음(미검증).
 - 로컬 하네스: `community-stamps-local/passport-run.mjs` 32조합 통과. `banner-local/admin-run.mjs`는 기준 커밋도 같은 실패.
 - `tsc --noEmit`, 변경 파일 eslint, `scripts/aws-platform-deploy.test.mjs`(30), `scripts/privy-exit/privy-exit.test.mjs`(4) 통과.
 
 남은 것(다음 담당):
-1. 게이트: `kyaa-t3 gate-remote 16e26e19c 9a4f03db3`. `next build`는 아직 안 돌림.
+1. 게이트: `kyaa-t3 gate-remote 049e51f56 <최신 sha>`. `next build`는 아직 안 돌림.
 2. dev 적용 뒤 실제 브라우저(감독 승인 후, 집계는 1-3a 방법별 표로): 기존 회원 Google·Apple 재로그인(같은 MY·도장·지갑), 신규 Google 가입(주소 1개·`kyaa_wallet_derivations` 행·환영 도장), 같은 이메일 다른 계정 → `email_in_use` 문구, 정지 → "이용이 중지된 계정이에요.", 로그아웃, 탈퇴 → 재로그인 `inactive`, 관리자 Google 로그인, 네트워크 탭 `auth.privy.io` 0건, 390·1440 로그인 화면 캡처(배포 안내 이미지).
 3. 비로그인·로그인 상태로 `useByUsAuth().login()`을 쓰는 화면 6곳(`fanpage-request-form`, `cheer-event-photocard`, `schedule-*`, `participation-requests`, `certification-detail-screen`, `app/s/raffle`, `admin/signup-event/exports`)이 `/login?returnTo=` 로 가는지.
 
@@ -85,8 +105,13 @@
 | L2 | **Google 신규 가입** | 처음 쓰는 Google 계정 → `kyaa_sign_in` `new` → 회원 1명·주소 1개 생성 → 보호 API 200. 주소는 전제 6에 따라 잠정(서명 인수 2-1c 전 최종 연결 금지) | 미검증(코드·단위·SQL 시험만 통과) | dev 배포·`AUTH_PROVIDER=cognito`·마이그레이션 적용 필요 |
 | L3 | **Apple** (기존 Apple 회원 연결 + 신규 가입 각각) | 기존: 원래 UUID·`did:privy`·지갑 유지. 신규: L2와 같음. Apple 이메일 가리기(릴레이 주소) 계정 포함 | 미검증 | Cognito Apple 팀 ID = `7RFN3TFR5K` 확인 필요(위험 1-2). 다르면 기존 회원 연결 불가 |
 | L4 | **기존 Google 회원 연결** | Privy 시절 Google 회원 → 같은 Google 계정 로그인 → `linked` → 원래 UUID·`did:privy`·지갑·도장·MY 그대로 → 보호 API 200. subject가 기록되지 않은 회원은 백필 후 연결(백필 전에는 `email_in_use` 안내가 정상) | 미검증(합성 DB 드라이런만 통과) | dev 배포 + (최근 미로그인 회원이면) Privy 내보내기·백필 |
+| A1 | **앱(Flutter) — Privy Bearer** | `AUTH_PROVIDER=cognito`인 dev 서버에 현재 배포된 앱이 Privy 로그인 토큰으로 ① 세션 동기화 `POST /api/auth/session` 성공 ② 보호 API 200. 서버 Privy 검증 경로(`privy-node-verifier.ts` 비Cognito 분기)는 남아 있음 | **미검증** | 저장소에 앱 코드 없음(`apps/`=web·worker·stage-console). 실제 기기·앱 빌드로 확인 필요 |
+| A2 | **앱 — `kyaa-email:` 토큰** | 앱 이메일 로그인(`/api/auth/email/login`·`refresh`·`logout`, Cognito 이메일 풀) 토큰으로 보호 API 200, 갱신·로그아웃 정상 | **미검증** | 같은 이유. 서버 이메일 경로는 이번 변경에서 손대지 않음(`email-auth.ts`) |
+| A3 | **앱 — 배포된 로그인 방식·`walletToken` 사용 여부** | 현재 스토어 앱이 Privy 직접 로그인/이메일/Cognito 핸드오프 중 무엇을 쓰는지, `/api/auth/cognito/native/*` 응답의 `walletToken`을 읽는지 확인 | **미검증** | 이번 변경에서 `native-bridge.ts` 응답의 `walletToken`을 뺐다. main README는 앱이 이 값을 Privy SDK에 쓴다고 적었고, 10/24 기록상 Cognito 핸드오프는 앱에 출시되지 않았다. 앱이 읽는다면 되돌리거나(필드 복원) 앱 이전을 먼저 한다 |
+| A4 | **웹 신규 회원의 앱 로그인 충돌** | 웹에서 가입한 `kyaa:` 회원이 같은 Google/Apple 계정으로 앱(Privy)에 들어오면 Privy가 새 DID를 만들고 세션 동기화가 `VERIFIED_PROVIDER_OWNER_CONFLICT`로 실패한다(병합 없음, 로그인 불가). 반대 방향(앱 가입 → 웹)은 `linked`로 정상 | **미검증(예상 실패)** | 처리 방침은 1-6 운영 전환 조건 C3 |
 
-- 보조(별도 집계): 카카오(설정 시), 관리자 Google 로그인, 정지 회원 거부, 탈퇴 후 재로그인 거부.
+- 보조(별도 집계): 카카오(설정 시), 관리자 Google 로그인, 정지 회원 거부, 탈퇴 후 재로그인 거부, Google·Apple을 **둘 다** 연결했던 기존 회원(두 번째 방법은 `ambiguous`로 막힘 — 대상 수를 dev·운영 DB에서 센다), 콜백 실패(취소 등) 시 `/login` 안내.
+- 집계 규칙: L1~L4, A1~A4를 각각 통과·실패·미검증으로 보고한다. 앱 행은 실제 앱으로 확인하기 전까지 미검증이다.
 
 ### L1 작업(웹 이메일 로그인) — 1차에 추가
 | 작업 | 파일(예정) | 시험 |
@@ -104,18 +129,30 @@
 | 1-2 | Apple subject는 팀 단위. Cognito Apple 팀 ID가 `7RFN3TFR5K`와 다르면 기존 Apple 회원 연결 불가 | 감독이 `describe-identity-provider`로 팀 ID 확인(작업자 가드로 미확인) |
 | 1-3 | 전환 직후 모든 회원 1회 재로그인 | 배포 안내 문구에 포함 |
 | 1-4 | 로그인 화면 캡처 없음 | dev 확인 때 추가 |
-| 1-5 | 앱(Flutter)의 Privy 토큰 경로는 요청마다 Privy 조회 → Privy 장애 영향 남음. 앱용 Cognito 응답에서 `walletToken` 제거 | 앱 이전 과제. `t3/privy-offpath-2355`의 Privy JWKS 로컬 검증 재사용 검토 |
+| 1-5 | 앱(Flutter)의 Privy 토큰 경로는 요청마다 Privy 조회 → Privy 장애 영향 남음. 앱용 Cognito 응답에서 `walletToken` 제거. 웹 신규 회원은 앱(Privy)에 못 들어옴 | 1-3a A1~A4, 1-6 C3·C4. `t3/privy-offpath-2355`의 Privy JWKS 로컬 검증 재사용 검토 |
 | 1-6 | 웹 이메일 로그인 화면 없음(이메일 풀은 앱 계약만) → 인수 L1 불가 | 1-3a의 L1 작업을 1차에 추가. 소셜 성공을 이메일 이전 완료로 합산 금지 |
 | 1-7 | 첫 로그인 Google 프로필 사진 가져오기 꺼짐 | Cognito ID 토큰 `picture` 서버 처리로 별도 과제 |
 | 1-8 | 개인정보처리방침에 Privy 위탁 문구 남음 | 사용자 결정(법률) |
 | 1-9 | 카카오 `email_verified` 제공 여부 미확인 | dev에서 실제 앱으로 확인 |
+| 1-11 | Google·Apple 둘 다 연결한 기존 회원은 두 번째 방법이 `ambiguous`(`external_auth_identities` `unique(issuer, app_user_id)`) | 안전(병합 없음). 대상 수 측정, 안내 문구 검토 |
+| 1-12 | 웹 Cognito 경로에 남은 Privy 호출: `server/avatar/avatar-route-dependencies.ts`(Google subject), `server/g5/fan-operations-route-dependencies.ts`(관리자 회원 정보), `account-deletion-dependencies.ts`(`did:privy` 탈퇴 시 Privy 사용자 삭제), `privy-node-verifier.ts` `findProviderSubject`(Apple 재확인) | Privy 해지 전 정리 과제 |
+| 1-13 | `AUTH_COOKIE_SECRET` 하나로 30일 세션 암호화, 키 식별자 없음 | 교체 시 전원 재로그인(runbook 명시) |
 | 1-10 | 잠정 xpub 주소는 서명 불가 → 그 주소로 받은 기록은 회원 주도 거래로 다룰 수 없음 | 운영 신규 가입 주소는 2-1c 통과 전 확정 금지(전제 6). dev 잠정 주소는 교체 대상 목록으로 관리 |
 
 ## 1-5. 되돌리기
-- 앱: 이전 빌드(`16e26e19c` 계열)와 `AUTH_PROVIDER=privy`로 재배포. 웹에서 Privy SDK를 지웠으므로 설정만으로는 못 되돌린다.
+- 앱: 이전 빌드(`049e51f56` 계열)와 `AUTH_PROVIDER=privy`로 재배포. 웹에서 Privy SDK를 지웠으므로 설정만으로는 못 되돌린다.
 - DB: 마이그레이션은 추가형(새 함수·표·시퀀스, 제약 확장 2개, 기존 함수 정규식 확장). 되돌리지 않고 둔다. 이전 빌드는 새 함수를 부르지 않는다.
 - 전환 중 생긴 `kyaa:` 회원은 Privy 로그인으로 들어올 수 없다 → 되돌리기 전 `select count(*) from app_users where privy_user_id like 'kyaa:%'` 확인, 공지.
 - 세션: 이전 빌드는 `__Host-kyaa-cognito` 세션을 정리 경로로만 다룬다(기존 retired 처리).
+
+## 1-6. 운영 전환 조건 (모두 충족 전 운영 `AUTH_PROVIDER=cognito` 금지)
+- C1 게이트 통과(`049e51f56` 기준), dev 실제 브라우저에서 L2·L3·L4 각각 통과. L1은 웹 이메일 로그인 구현 전이므로 "미검증 — 현재 불가"이며 **소셜 성공으로 대체하지 않는다.** 운영 전환 시 웹 이메일 회원은 웹 로그인이 안 됨을 감독이 받아들일지 결정한다.
+- C2 Privy 내보내기·백필 완료(최근 미로그인 회원 연결), Cognito Apple 팀 ID 확인.
+- C3 앱 충돌(A4) 처리 방침 — 둘 중 하나를 사용자·감독이 고른다:
+  - (a) 앱을 Cognito 핸드오프로 먼저 이전·배포한 뒤 웹 전환(권장, 충돌 원천 차단).
+  - (b) 웹 먼저 전환하되, 앱의 세션 동기화가 `VERIFIED_PROVIDER_OWNER_CONFLICT`를 받으면 "웹에서 가입한 계정은 앱 업데이트 후 이용할 수 있어요" 안내를 띄우는 서버 응답 코드(`ACCOUNT_REQUIRES_APP_UPDATE`)를 추가하고(별도 작업, 미구현), 앱 업데이트 전까지 감수.
+- C4 A1·A2(앱 기존 로그인 유지)를 실제 앱으로 확인, A3 결과에 따라 `walletToken` 처리.
+- C5 신규 가입 주소: K4 전에는 운영 신규 가입 주소를 확정하지 않는다 — 운영 신규 가입을 막거나(권장), 주소 없이 받고 K4 뒤 발급하는 변경을 따로 만든다(미구현).
 
 ---
 
@@ -146,11 +183,25 @@
 5. 기록 경로: P2-a 컨트랙트 그대로, relayer(`WRITER_ROLE`)가 새 회원 주소로 기록 + 회원 주도 거래는 4337. P2-b(선택) ActionHub v3 `submitWithVoucher`(EIP-712 발급자 서명) — 기록 거래의 `msg.sender`를 회원으로.
 6. 남용 방지: 회원별·전체 하루 가스/건수 한도, 허용 (컨트랙트, 선택자) 목록, active 회원만, 페이마스터 예치금 하루치만, 소비 속도 경보, 감사 로그 `sponsored_operations`.
 
-## 2-0. 서명 구조
-- 서명 실행부는 분리된 signer(Lambda 1개)뿐이다. 웹·worker는 키·시드·키 ID를 모르고 **서명 의도**만 보낸다: `{appUserId, kind: userop|authorization, chainId, nonce, target, selector, calldataHash, value, paymasterAndDataHash, validUntil}` + 정책 서버 HMAC(내부 IAM 호출만 허용).
-- signer가 DB에서 `appUserId → 키 참조·주소`를 읽고 의도로부터 **직접** 다이제스트를 계산한다(UserOp v0.8 `getUserOpHash`, 7702 `keccak(0x05 ‖ rlp([chainId, delegate, nonce]))`). 호출자가 준 해시는 서명하지 않는다.
+## 2-0. 서명 구조 (판정 필수 3 반영: signer가 웹 정책을 믿지 않고 스스로 검사)
+- 서명 실행부는 분리된 signer(Lambda 1개)뿐이다. 웹·worker는 키·시드·인덱스를 모르고 **서명 의도**만 보낸다.
+- **의도 계약**(모든 필드 필수, 알 수 없는 필드가 있으면 거부):
+  `{ intentId(uuid), kind: "userop" | "authorization", appUserId, sender(회원 주소), chainId, nonce, validUntil,`
+  `  userop: { entryPoint, target, selector, value, callDataHash, paymasterAndDataHash }  // kind=userop`
+  `  authorization: { delegate }                                                         // kind=authorization`
+  `  memberToken }  // 그 회원의 유효한 Cognito access token(가능한 경우, 아래 4)`
+- **signer 자체 고정값**(signer 설정·코드 상수, 웹·정책 서버가 바꿀 수 없음):
+  1. `chainId` = 환경의 체인 하나(dev·staging·prod 모두 91342, 메인넷 전환 시 signer 재배포). **0(모든 체인 유효)과 그 밖의 값은 거부.**
+  2. `authorization.delegate` = `Simple7702Account` `0xe6Cae83BdE06E4c305530e199D7217f42808555B` 하나. 그 밖은 거부.
+  3. `userop.entryPoint` = EntryPoint v0.8 `0x4337084D9E255Ff0702461CF8895CE9E3b5Ff108` 하나. 그 밖은 거부.
+  4. `(target, selector)` 허용 목록을 signer가 **별도로** 가진다(정책 서버 목록과 독립, 두 목록이 모두 허용해야 서명). `value`는 0만.
+- **요청자·회원 매핑 검증**:
+  1. signer가 DB에서 `appUserId → (key_ref, address, status)`를 읽고 `sender ≠ address`이면 거부. 정지·탈퇴면 거부.
+  2. `memberToken`이 있으면 signer가 Cognito JWKS로 직접 검증(발급자·`client_id`·`token_use=access`·만료)하고, 토큰의 (issuer, sub)가 `external_auth_identities`로 같은 `appUserId`에 매핑될 때만 서명. **웹이 침해돼도 로그인 중이 아닌 회원은 서명받을 수 없다.** 백그라운드 작업(회원 부재 중 기록 등)은 kind별로 `memberToken` 없이 허용할지 signer 설정에 명시(기본: 거부).
+  3. 정책 서버 HMAC은 추가 검사로만 쓴다(웹 침해 시 HMAC 키도 새므로 단독으로 신뢰하지 않는다).
+- signer가 의도로부터 **직접** 다이제스트를 계산한다(UserOp v0.8 `getUserOpHash`는 고정 EntryPoint·chainId로, 7702는 `keccak(0x05 ‖ rlp([chainId, delegate, nonce]))`). 호출자가 준 해시·calldata 원문 밖의 값은 서명하지 않는다(`callDataHash`는 signer가 받은 calldata로 다시 계산해 일치 확인).
 - 서명은 low-s로 정규화하고, v는 복원 주소 = DB 주소가 되는 값으로 정한다. 둘 다 아니면 실패.
-- signer는 사용한 (회원, nonce)를 기록하고, `validUntil` 지난 의도·정지·탈퇴 회원을 거부하며, 서명 감사 로그(`signer_audit`)를 남긴다.
+- 사용한 `(appUserId, kind, nonce)`·`intentId`를 기록해 재사용을 거부하고, `validUntil` 지난 의도를 거부하며, 모든 서명·거부를 `signer_audit`에 남긴다(거부 사유 코드 포함).
 
 ## 2-1a. (A) 회원별 KMS 비대칭 키 — 기각(비용, 사용자 결정 00:5x)
 - 내용: 회원마다 `ECC_SECG_P256K1` KMS 키를 만들어 `kms:Sign`으로 서명하는 방식. 개인키가 HSM 밖으로 나오지 않고, IAM 세션 태그로 회원 단위 거부를 AWS가 보장한다.
@@ -167,13 +218,21 @@
 - **키 복구**: 시드 암호문 + KMS 키가 있으면 어느 회원 키든 재파생할 수 있다. 오프라인 봉인 사본 1부 권장(복구 절차·2인 확인). 회원 요청 시 개별 키 전달 가능(강화 파생이면 그 키로 다른 회원이 노출되지 않는다).
 - **비용**: KMS 대칭키 월 $1 + 시크릿 월 $0.40 + 복호화 요청 소량(콜드 스타트당 1회). 회원 수와 무관.
 
-## 2-1c. 인수 기준 (서명 가능성 시험, 변경 없음) — 통과 전 신규 주소 최종 연결 금지
-체인 거래 없이 `recoverAddress`(viem)와 GIWA EntryPoint v0.8 `getUserOpHash`·검증 시뮬레이션 `eth_call`로 확인한다. 1단계는 로컬(실제 HD 강화 파생 + 로컬 봉투 암호화 대역), 2단계는 감독이 dev KMS 키·시드 암호문을 만든 뒤 실제 KMS 복호화로.
+## 2-1c. 인수 기준 (서명 가능성 시험) — 통과 전 신규 주소 최종 연결 금지
+체인 거래 없이 `recoverAddress`(viem)와 GIWA EntryPoint v0.8 `getUserOpHash`·검증 시뮬레이션 `eth_call`로 확인한다. 1단계는 로컬(실제 HD 강화 파생 + 로컬 봉투 암호화 대역 + 로컬 JWKS 대역), 2단계는 감독이 dev KMS 키·시드 암호문을 만든 뒤 실제 KMS 복호화로.
 1. **발급 주소 = 서명 복원 주소**: 새 회원 키로 임의 다이제스트 20개와 7702 authorization 1개를 서명 → 매번 복원 주소 = 발급 때 저장한 주소. low-s·v 결정 실패 0건.
-2. **다른 회원의 서명 요청 거부**: 회원 A 세션에서 회원 B를 가리키는 의도 → (a) 정책 서버 거부 (b) signer DB 매핑 불일치 거부 (c) signer 외 역할(웹·worker·운영자 역할)이 시드 암호문 복호화 시도 → KMS `AccessDenied`(암호화 컨텍스트 불일치도 거부).
+2. **다른 회원의 서명 요청 거부**(검증 가능한 문장으로):
+   - (a) 정책 서버: 회원 A 세션에서 B를 가리키는 의도 생성 거부.
+   - (b) signer 매핑: 의도의 `appUserId=B`, `sender=A 주소` → `SENDER_MISMATCH`. `appUserId=B`, `sender=B 주소`, `memberToken=A의 토큰` → `TOKEN_MEMBER_MISMATCH`. `memberToken` 없음(기본 설정) → `MEMBER_TOKEN_REQUIRED`.
+   - (c) signer 외 역할(웹·worker·운영자)의 시드 암호문 복호화 → KMS `AccessDenied`(암호화 컨텍스트 불일치도 거부).
 3. **변조 서명 거부**: A의 서명을 chainId(91342→다른 값), nonce(+1), callData·target·selector·value·paymasterAndData 1바이트 변경 UserOp/authorization에 붙이면 복원 주소 ≠ A이고 EntryPoint 시뮬레이션은 `AA24 signature error`. signer는 의도에 없는 필드·호출자 제공 해시를 서명하지 않는다.
-4. 공통 추가: 같은 nonce 재사용 거부, `validUntil` 만료 거부, 정지·탈퇴 회원 거부, 감사 로그 1건씩 기록.
-- 통과 산출물: 시험 로그, 복원 주소 표, 실패 케이스별 오류 코드.
+4. **signer 자체 고정 거부 시험**(판정 필수 3, 웹 정책을 통과한 의도라도 signer가 거부):
+   - R1 허용 외 위임 대상: `authorization.delegate` ≠ Simple7702Account → `DELEGATE_NOT_ALLOWED`.
+   - R2 chainId 0(및 91342 외 값): `CHAIN_NOT_ALLOWED`.
+   - R3 허용 외 대상·선택자(정책 서버 목록에는 넣고 signer 목록에는 없는 경우 포함), EntryPoint 주소 변경, `value≠0`: `CALL_NOT_ALLOWED`/`ENTRYPOINT_NOT_ALLOWED`.
+   - R4 `sender` 불일치: `SENDER_MISMATCH`.
+5. 공통 추가: 같은 nonce·`intentId` 재사용 거부, `validUntil` 만료 거부, 정지·탈퇴 회원 거부, 알 수 없는 필드 거부, 모든 거부가 `signer_audit`에 사유 코드로 1건씩.
+- 통과 산출물: 시험 로그, 복원 주소 표, 거부 사유 코드별 결과표.
 
 ## 2-1d. 비교 기록 (결정: B 채택, A 기각 — 사용자 00:5x)
 | 항목 | (A) 회원별 KMS 비대칭 키 | (B) HD 시드 + 서명 전용 실행부(강화 파생) |
@@ -199,10 +258,10 @@
 | S1 | 테스트넷 실거래 1건(위임 + `handleOps` 1건, 페이마스터 없이 시험 예치) | `contracts/script/Sponsor7702Smoke.s.sol` 또는 `scripts/aa/smoke.mjs` | 탐색기에서 tx·회원 주소 code=`0xef0100…` 확인 | faucet ETH 수령 = 감독 |
 | S2 | 페이마스터 배포 | `contracts/lib`에 eth-infinitism v0.8 고정 버전, `contracts/script/DeployVerifyingPaymaster.s.sol`, 예치·인출 runbook | Foundry 포크 시험: 서명 유효·만료·다른 회원·허용 외 선택자 거부 | 배포 = 감독 |
 | K0 | 방식 결정 | (B) 확정, (A) 기각(비용) | — | 완료(사용자 00:5x) |
-| K1 | signer 코드 | `apps/worker/src/aa/signer.ts`(의도→다이제스트 직접 계산, low-s·v, nonce·만료·회원 상태, 감사 로그), `apps/worker/src/aa/hd-member-key.ts`(강화 `m/44'/60'/0'/i'` 파생, `issueAddress`, 키 버퍼 소거), `apps/worker/src/aa/seed-envelope.ts`(KMS `Decrypt` 포트 + 암호화 컨텍스트), 마이그레이션 `member_keys(scheme='hd', key_ref=index)`·`signer_nonces`·`signer_audit` | 2-1c 1·2(a,b)·3·4 로컬 전부 | 코드만 |
-| K2 | 인프라 코드 | `infrastructure/aws/platform/wallet-issuance.json` 개정: Secrets Manager 직접 보관 → KMS `GenerateDataKey` 봉투 암호문, 키 정책 `kms:Decrypt`는 signer 역할만 + 암호화 컨텍스트 `purpose=member-wallet-seed, environment`, 운영자 역할은 `Encrypt`·`GenerateDataKey`만(시드 생성 1회), 키 삭제·비활성 거부. signer Lambda(`wallet-signer.json`: VPC 엔드포인트, 동시 실행 상한, 로그 제한). `scripts/privy-exit/wallet-master-generate.mjs` 개정(봉투 암호화, xpub 출력 제거) | cfn 렌더 시험, 생성 스크립트 단위 시험 | AWS 생성 = 감독 |
+| K1 | signer 코드 | `apps/worker/src/aa/signer.ts`(의도 계약 엄격 파싱, 고정값 검사: chainId·위임 대상·EntryPoint·(대상,선택자) 허용 목록·value 0, `sender`·`memberToken`(Cognito JWKS) 매핑 검증, 의도→다이제스트 직접 계산, low-s·v, nonce·intentId·만료·회원 상태, 거부 사유 코드 감사 로그), `apps/worker/src/aa/hd-member-key.ts`(강화 `m/44'/60'/0'/i'` 파생, `issueAddress`, 키 버퍼 소거), `apps/worker/src/aa/seed-envelope.ts`(KMS `Decrypt` 포트 + 암호화 컨텍스트), 마이그레이션 `member_keys(scheme='hd', key_ref=index)`·`signer_nonces`·`signer_audit` | 2-1c 1·2(a,b)·3·4(R1~R4)·5 로컬 전부 | 코드만 |
+| K2 | 인프라 코드 | `infrastructure/aws/platform/wallet-issuance.json` **새로 작성**(평문 시드판은 `15c861c67`에서 삭제): Secrets Manager 직접 보관 대신 KMS `GenerateDataKey` 봉투 암호문, 키 정책 `kms:Decrypt`는 signer 역할만 + 암호화 컨텍스트 `purpose=member-wallet-seed, environment`, 운영자 역할은 `Encrypt`·`GenerateDataKey`만(시드 생성 1회), 키 삭제·비활성 거부. signer Lambda(`wallet-signer.json`: VPC 엔드포인트, 동시 실행 상한, 로그 제한). `scripts/privy-exit/wallet-master-generate.mjs` 새로 작성(봉투 암호화만, 평문 저장 금지, xpub 출력 없음) | cfn 렌더 시험, 생성 스크립트 단위 시험 | AWS 생성 = 감독 |
 | K3 | dev 실자원 인수 | 감독이 dev KMS 키·시드 암호문 생성 후 2-1c 전체(2(c) 복호화 거부 포함)를 실제 KMS로 | 시험 로그 첨부 | 감독 |
-| K4 | 1차 발급기 교체 | `create_kyaa_member` 주소 출처를 signer `issueAddress`로, `address-issuer.ts`·`KYAA_WALLET_XPUB` 제거, dev 잠정 주소 교체 | 신규 가입 시 `member_keys` 1행·서명 복원 주소 일치 | K3 통과 후 |
+| K4 | 1차 발급기 교체 | `create_kyaa_member` 주소 출처를 signer `issueAddress`로, `address-issuer.ts`·`KYAA_WALLET_XPUB`·`dev-throwaway-xpub.mjs` 제거, 외래키 `ON UPDATE CASCADE` + `replace_provisional_wallet` + `retired_wallet_addresses`로 dev 잠정 주소 교체(전제 6-2 순서) | 신규 가입 시 `member_keys` 1행·서명 복원 주소 일치 | K3 통과 후 |
 | S3 | 정책 서버 | `apps/web/server/aa/sponsor-policy.ts`(의도 생성·한도·허용 목록·HMAC) | 한도 초과·정지 회원·허용 외 선택자 거부 | |
 | S4 | DB | `supabase/migrations/<새>_member_accounts.sql`: `member_accounts`, `sponsored_operations`, 한도 RPC | SQL 시험(롤백): 하루 한도 경계, 동시성 | 운영 적용 = 감독 |
 | S5 | 기존 회원 새 주소 발급 | 첫 로그인 때 `member_accounts` 행 생성(`kyaa_sign_in` 확장) | 기존·신규 회원 각각 1개 주소 | |

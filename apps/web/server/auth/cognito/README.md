@@ -4,8 +4,8 @@ The user decided to stop using Privy. With `AUTH_PROVIDER=cognito` the web makes
 
 - Sign-in: Cognito Hosted UI (Google, Apple) → `/api/auth/cognito/callback` verifies the ID token (nonce, RS256 JWKS) and calls `kyaa_sign_in` (`kyaa-identity.ts`). There is no Privy wallet-link step any more; `/auth/cognito/link` redirects to `/login`.
   - `linked`: the Cognito identity points at an existing member found by **exact verified Google/Apple subject** (`live_privy_auth_accounts` recorded by past Privy session syncs, or the imported Privy export in `legacy_auth_inventory_accounts`). UUID, `did:privy` key and Privy wallet address stay unchanged.
-  - `new`: no member owns the subject or the email. The server derives the wallet address from `KYAA_WALLET_XPUB` at the reserved index and calls `create_kyaa_member`; the identity key is `kyaa:<uuid>`.
-  - `blocked` (`email_in_use`, `inactive`, `ambiguous`, `wallet_missing`): no session; the login page explains the reason. An email match alone never merges accounts.
+  - `new`: no member owns the subject or the email. The server derives a **provisional, receive-only** wallet address from the dev-only `KYAA_WALLET_XPUB` (rejected for production; seed discarded) at the reserved index and calls `create_kyaa_member`; the final address comes from the phase-2 signer (`docs/operations/privy-exit-plan.md` 전제 6); the identity key is `kyaa:<uuid>`.
+  - `blocked` (`email_in_use`, `inactive`, `ambiguous`, `wallet_missing`): no session; the login page explains the reason. Any other callback failure returns to `/login?authError=callback_failed`. An email match alone never merges accounts.
 - Session: `__Host-kyaa-cognito` opaque cookie, encrypted DB row, up to 30 days (the Cognito refresh token lifetime), refreshed server-side. `/api/auth/cognito/session` returns `userId` (identity key) and a `kyaa-cognito:` access token kept in memory.
 - Requests: `kyaa-cognito:` Bearer → local JWT check (cached JWKS) + `resolve_kyaa_identity` (one DB read). Apple lifecycle checks use the stored provider subjects.
 - The client renders no Privy SDK in this mode (`privy-root.island.tsx`); `useByUsAuth` reads only the server session.
