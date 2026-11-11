@@ -1,5 +1,6 @@
 "use client";
 
+import { FanTabs } from "@/components/fan-ui/fan-tabs";
 import { FanSkeletonRows } from "@/components/fan-ui/fan-skeleton";
 import { passportBookText } from "@/features/passport/ui/passport-book-copy";
 import { messages as shareMessages } from "@/i18n/catalogs/features__community-stamps__ui__share-passport";
@@ -74,6 +75,7 @@ export function CommunityStampCollection({ locale, creator, resource, creatorNam
 function OwnerCollection({ locale, creator, resource, creatorNames }: { locale: Locale; creator?: string; resource: Resource; creatorNames?: Readonly<Record<string, string>> }) {
   const auth = usePrivy();
   const [selected, setSelected] = useState<{ stamp: CommunityStamp; from: "card" | "history" } | null>(null);
+  const [filter, setFilter] = useState("all");
   const [historyOpen, setHistoryOpen] = useState(false);
   const [historyFocus, setHistoryFocus] = useState(0);
   const history = useRef<HTMLDivElement>(null);
@@ -91,7 +93,9 @@ function OwnerCollection({ locale, creator, resource, creatorNames }: { locale: 
     history.current?.parentElement?.querySelector<HTMLElement>("[aria-controls=\"community-stamp-history\"]")?.focus();
   }, [historyFocus]);
   const stamps = resource.state.status === "ready" ? resource.state.data.stamps : [];
-  const visible = stamps.filter(stamp => !creator || stamp.celebritySlug === creator);
+  const visible = stamps.filter(stamp => creator ? stamp.celebritySlug === creator : filter === "all" || stamp.celebritySlug === filter).sort((a, b) => b.issuedAt.localeCompare(a.issuedAt));
+  const stampDate = (value: string) => new Intl.DateTimeFormat(locale, { timeZone: "Asia/Seoul", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date(value));
+  const creatorName = (stamp: CommunityStamp) => stamp.celebritySlug ? creatorNames?.[stamp.celebritySlug] ?? stamp.celebritySlug : "kyaa";
   const catalog = useDukjil()?.catalog;
   // MY lists the other stamps the active policy really gives (a rule in the catalog), after the original five; a creator's page keeps its own short list.
   const more = creator ? [] : MORE_STAMPS.filter(item => Boolean(catalog?.rules[item.rule]));
@@ -120,10 +124,11 @@ function OwnerCollection({ locale, creator, resource, creatorNames }: { locale: 
     catch { if (alive.current) { setFailed(true); setMessage(locale === "ko" ? "코드를 선택해서 복사해 주세요." : translate(locale, localizedMessages.mc314a8314602, "Select the code to copy it.")); } }
   }
   return <section className={styles.section} id="community-stamps" aria-labelledby="community-stamps-title">
-    <div className={styles.heading}><h2 id="community-stamps-title">{locale === "ko" ? "스탬프 모으기" : translate(locale, localizedMessages.m7a8ba5792eaa, "Collect Stamps")}</h2>{visible.length > 0 && <FanSectionLink onClick={() => setHistoryOpen(open => !open)} expanded={historyOpen} controls="community-stamp-history">{passportBookText(locale, "communityHistory")} · {visible.length}</FanSectionLink>}</div>
+    <div className={styles.heading}><h2 id="community-stamps-title">{locale === "ko" ? (creator ? "스탬프 모으기" : "스탬프 기록") : translate(locale, localizedMessages.m7a8ba5792eaa, "Collect Stamps")}</h2>{creator && visible.length > 0 && <FanSectionLink onClick={() => setHistoryOpen(open => !open)} expanded={historyOpen} controls="community-stamp-history">{passportBookText(locale, "communityHistory")} · {visible.length}</FanSectionLink>}</div>
     {resource.state.status === "loading" ? <FanSkeletonRows rows={3} variant="entity" ariaLabel={locale === "ko" ? "스탬프를 불러오고 있어요." : translate(locale, localizedMessages.m14ba0b095bf9, "Loading your Stamps.")} />  : resource.state.status === "error" && resource.state.kind === "missing" && creator ? <div className={styles.status} role="status"><p>{locale === "ko" ? "현재 이 최애의 스탬프 활동을 이용할 수 없어요." : translate(locale, localizedMessages.m3f3e69fa36eb, "Stamp activities for this artist are currently unavailable.")}</p><Link className={styles.action} href={`/my?locale=${locale}#community-stamps` as Route}>{locale === "ko" ? "내 스탬프 보기" : translate(locale, localizedMessages.mb43cbc171691, "View my Stamps")}</Link></div> : resource.state.status === "error" ? <p className={styles.status} role="alert">{locale === "ko" ? "스탬프를 불러오지 못했어요." : translate(locale, localizedMessages.m6f4e687b2a1d, "Couldn’t load your Stamps.")} <button className={styles.action} onClick={resource.retry}><RotateCcw aria-hidden="true"/>{locale === "ko" ? "다시 시도" : translate(locale, localizedMessages.mf721ef255caa, "Try again")}</button></p> : <>
       {resource.refreshFailed && <p role="alert" className={styles.status}>{locale === "ko" ? "최신 기록을 확인하지 못했어요." : translate(locale, localizedMessages.m4bdba754452a, "Couldn’t refresh your Stamps.")} <button className={styles.action} onClick={resource.retry}>{locale === "ko" ? "다시 시도" : translate(locale, localizedMessages.m11bce3427a8f, "Retry")}</button></p>}
-      <ul className={styles.rows} data-wide={kinds.length > 5 || undefined}>{kinds.map(kind => {
+      {!creator && <><FanTabs variant="chip" label={locale === "ko" ? "최애" : "Creator"} current={filter} items={[{ key: "all", label: locale === "ko" ? "전체" : "All", onSelect: () => setFilter("all") }, ...Object.entries(creatorNames ?? {}).map(([key, label]) => ({ key, label, onSelect: () => setFilter(key) }))]} /><ul className={styles.recordGrid}>{visible.map(stamp => <li key={stamp.id}><button className={styles.recordCard} onClick={() => setSelected({ stamp, from: "history" })}><CommunityStampArtwork kind={stamp.kind} locale={locale} size={168} decorative/><strong>{communityStampLabel(stamp.kind, locale)}</strong><span>{creatorName(stamp)}</span><time dateTime={stamp.issuedAt}>{stampDate(stamp.issuedAt)}</time></button></li>)}{kinds.filter(kind => !earned(kind)).map(kind => <li key={kind} className={styles.unearnedCard}><CommunityStampArtwork kind={kind} locale={locale} size={168} decorative/><strong>{communityStampLabel(kind, locale)}</strong><Link className={styles.action} href={(filter === "all" ? "/celebrities" : creatorHomeHref(filter)) as Route}>{locale === "ko" ? "받으러 가기" : "Go earn it"}</Link></li>)}</ul><h3>{locale === "ko" ? "활동" : "Activity"}</h3><table className={styles.activityTable}><thead><tr><th>{locale === "ko" ? "스탬프" : "Stamp"}</th><th>{locale === "ko" ? "최애" : "Creator"}</th><th>{locale === "ko" ? "날짜" : "Date"}</th></tr></thead><tbody>{visible.map(stamp => <tr key={stamp.id}><td><button className={styles.action} onClick={() => setSelected({ stamp, from: "history" })}>{communityStampLabel(stamp.kind, locale)}</button></td><td>{creatorName(stamp)}</td><td><time dateTime={stamp.issuedAt}>{stampDate(stamp.issuedAt)}</time></td></tr>)}</tbody></table></>}
+      <ul hidden={!creator} className={styles.rows} data-wide={kinds.length > 5 || undefined}>{kinds.map(kind => {
         const stamp = earned(kind); const extra = more.find(item => item.kind === kind);
         const href = creator ? kind === "daily_checkin" ? `${creatorHomeHref(creator)}?locale=${locale}#daily-checkin` : boardHref(creator, locale, { source: "fans" }) : kind === "share" ? `/passports?locale=${locale}` : `/celebrities?locale=${locale}`;
         return <li className={styles.row} data-earned={!!stamp} key={kind}>
