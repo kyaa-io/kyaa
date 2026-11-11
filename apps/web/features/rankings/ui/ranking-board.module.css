@@ -5,7 +5,7 @@
 .columns { display: grid; gap: var(--space-8); min-width: 0; }
 .column[data-active="false"] { display: none; }
 .mobileOnly { display: contents; }
-.column > h3[data-fan-heading] { display: none; margin: 0; font-size: var(--fan-action-emphasis-size); font-weight: var(--fan-item-title-weight); line-height: 20px; }
+.column > h3[data-fan-heading] { display: none; margin: 0; font-size: var(--fan-item-title-size); font-weight: var(--fan-item-title-weight); line-height: 20px; }
 .column { display: grid; gap: var(--space-3); align-content: start; min-width: 0; }
 .board { display: grid; min-width: 0; }
 

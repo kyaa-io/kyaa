@@ -2,8 +2,7 @@
 .postDetail { width:min(100%,760px); margin-inline:auto; }
 .postDetail > :first-child { justify-self:start; }
 .section h2,.section h3 { margin:0; letter-spacing:-.02em; }
-.section h2 { font-size:var(--fan-heading-size); }.section h3 { font-size:var(--fan-item-title-size); font-weight:var(--fan-item-title-weight); }
-@media(min-width:768px) { .section h2 { font-size:var(--fan-heading-size-wide); } }
+.section h2 { font-size:var(--fan-section-size); font-weight:var(--fan-section-weight); }.section h3 { font-size:var(--fan-item-title-size); font-weight:var(--fan-item-title-weight); }
 .composer,.card { min-width:0; padding:20px 0; border-bottom:1px solid var(--color-line); }
 .composer { display:grid; gap:12px; }
 .composerFeatured { padding:20px; border:1px solid var(--color-line); border-radius:16px; background:var(--color-paper,var(--color-surface)); box-shadow:var(--shadow-subtle,0 8px 24px color-mix(in srgb, var(--color-ink) 6%, transparent)); }

@@ -7,7 +7,7 @@
 .scene[data-login-scene="cover"] .item { grid-area:1/1; inline-size:clamp(48px,15vw,72px); }
 .scene[data-login-scene="cover"] .item:nth-of-type(1) { justify-self:end; align-self:start; translate:6% -6%; }
 .scene[data-login-scene="cover"] .item:nth-of-type(2) { justify-self:start; align-self:end; translate:-6% 6%; }
-.title { margin:0; max-inline-size:100%; color:var(--color-ink); font-size:var(--fan-heading-size); font-weight:var(--fan-item-title-weight); line-height:1.35; overflow-wrap:anywhere; word-break:keep-all; }
+.title { margin:0; max-inline-size:100%; color:var(--color-ink); font-size:var(--fan-item-title-size); font-weight:var(--fan-item-title-weight); line-height:1.35; overflow-wrap:anywhere; word-break:keep-all; }
 .action { inline-size:min(100%,320px); }
 @keyframes fan-login-float { 0%,100% { transform:translateY(0) rotate(-2deg); } 50% { transform:translateY(-8px) rotate(2deg); } }
 @media (prefers-reduced-motion:reduce) { .item { animation:none; will-change:auto; } }

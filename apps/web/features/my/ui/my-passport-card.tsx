@@ -5,6 +5,7 @@ import Image from "next/image";
 import type { Route } from "next";
 import Link from "next/link";
 import { FanAction } from "@/components/fan-ui/fan-action";
+import { FanHeading } from "@/components/fan-ui/fan-heading";
 import { FanSectionLink } from "@/components/fan-ui/fan-section-link";
 import { FanLoginScene } from "@/components/fan-ui/fan-login-scene";
 import { FanCellGauge } from "@/components/fan-ui/fan-cell-gauge";
@@ -126,7 +127,7 @@ export function MyPassportCard({ creators, selectedSlug, onSelect, communityStam
   const total = book.page?.slots.length ?? 9;
   const filledArt = filledSlotArt(book.page);
   return <section className={styles.card} aria-label={labels.title}>
-    <header><h2>{labels.title}</h2><FanSectionLink href={href}>{labels.detail}</FanSectionLink></header>
+    <header><FanHeading>{labels.title}</FanHeading><FanSectionLink href={href}>{labels.detail}</FanSectionLink></header>
     {!selected || !passport ? <div className={styles.empty}><p>{labels.noCreators}</p><FanAction href={`/celebrities?locale=${locale}`}>{labels.findCreator}</FanAction></div> : <>
       {eligible.length > 1 ? <div className={styles.selector}><FanTabs variant="chip" label={labels.creators} current={selected.celebrity.slug} items={eligible.map((creator) => ({ key: creator.celebrity.slug, label: creator.celebrity.name, onSelect: () => onSelect(creator.celebrity.slug) }))} /></div> : null}
       <div className={styles.body}>
@@ -161,7 +162,7 @@ export function MyPassportCardSkeleton({ title }: { title: string }) {
   const [chips, setChips] = useState(false);
   useLayoutEffect(() => { try { setChips(localStorage.getItem(CHIPS_KEY) === "1"); } catch { /* 자리만 잡는 값이라 없어도 된다. */ } }, []);
   return <section className={styles.card} aria-label={title}>
-    <header><h2>{title}</h2></header>
+    <header><FanHeading>{title}</FanHeading></header>
     {chips ? <div className={styles.selector} style={{ visibility: "hidden" }} aria-hidden="true" data-passport-chip-space><FanTabs variant="chip" label="" current="" items={[{ key: "space", label: "\u00a0" }]} /></div> : null}
     <div className={styles.body} aria-hidden="true">
       <span className={styles.bookSkeleton}><Image src="/images/passport/passport-open-book.svg" alt="" width={1536} height={1024} unoptimized sizes="(max-width:767px) 100vw, 380px" priority /></span>
@@ -176,7 +177,7 @@ const GUEST_PASSPORT_IMAGE = "/images/passport/passport-cover-closed.webp";
 
 export function MyGuestPassportCard({ locale, labels, compact = false }: { locale: AppLocale; labels: Pick<MyPassportLabels, "title" | "detail">; compact?: boolean }) {
   return <section className={`${styles.card} ${styles.guest} ${compact ? styles.compact : ""}`} aria-label={labels.title}>
-    <header><h2>{labels.title}</h2><FanSectionLink href={`/passports?locale=${locale}`}>{labels.detail}</FanSectionLink></header>
+    <header><FanHeading>{labels.title}</FanHeading><FanSectionLink href={`/passports?locale=${locale}`}>{labels.detail}</FanSectionLink></header>
     <FanLoginScene className={styles.guestScene} cover={{ src: GUEST_PASSPORT_IMAGE, width: 800, height: 1067 }} items={[]} action={<GuestLoginAction locale={locale} returnTo={`/my?locale=${locale}`} variant="primary" fullWidth />} />
     <div className={styles.guestBook}><DukjilProvider locale={locale}><GuestMissionBook locale={locale} wide headingLevel={3} /></DukjilProvider></div>
   </section>;

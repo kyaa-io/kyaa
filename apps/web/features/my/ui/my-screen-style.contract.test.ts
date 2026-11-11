@@ -12,15 +12,12 @@ describe("MY creator ticket row style contract", () => {
   });
 });
 
-describe("MY headings follow the fan heading tokens", () => {
+describe("MY headings follow the fan heading roles", () => {
   const read = (file: string) => readFileSync(resolve(process.cwd(), "features/my/ui", file), "utf8");
-  it("uses the shared size, weight and leading for the profile title and section titles", () => {
-    expect(css).toMatch(/\.pencilProfileCopy h1\{font-size:var\(--fan-heading-size-wide\);font-weight:var\(--fan-heading-weight\);line-height:var\(--fan-heading-leading\)/);
-    expect(css).toContain(".pencilProfileCopy h1{font-size:var(--fan-heading-size)}");
-    for (const file of ["my-passport-card.module.css", "my-shortcuts.module.css"]) {
-      const source = read(file);
-      expect(source).not.toMatch(/h2 \{[^}]*font-weight:700/);
-      expect(source).toMatch(/h2 \{[^}]*font-weight:var\(--fan-heading-weight\); line-height:var\(--fan-heading-leading\)/);
-    }
+  it("leaves h1/h2 size to FanHeading and keeps card titles on the item-title token", () => {
+    expect(css).toContain(".pencilProfileCopy h1{overflow-wrap:anywhere}");
+    for (const file of ["my-passport-card.module.css", "my-shortcuts.module.css"]) expect(read(file)).not.toMatch(/h[12] \{[^}]*font-size/);
+    for (const file of ["my-passport-card.tsx", "my-shortcuts.tsx", "my-screen.tsx"]) expect(read(file)).not.toMatch(/<h[12][ >]/);
+    expect(read("my-passport-card.module.css")).toContain(".facts h3 { margin:0; font-size:var(--fan-item-title-size);");
   });
 });

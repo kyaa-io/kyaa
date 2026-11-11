@@ -175,9 +175,9 @@ function LegacyDashboardSkeleton({ locale }: { locale: FanLocale }) {
   return <div className={styles.loadingDashboard} aria-busy="true">
     <FanSkeletonStatus locale={locale} label={t.loading} />
     <div className={styles.loadingProfile} aria-hidden="true"><span className={styles.loadingAvatar}/><div><span className={styles.loadingLine}/><span className={styles.loadingLine}/></div></div>
-    <section><h2>{t.creators}</h2><div className={styles.loadingTiles} aria-hidden="true"><span/><span/></div></section>
-    <section><h2>{t.reservedLive}</h2><div className={styles.loadingRow} aria-hidden="true"/></section>
-    <section><h2>{t.collection}</h2><div className={styles.loadingTiles} aria-hidden="true"><span/><span/></div></section>
+    <section><FanHeading>{t.creators}</FanHeading><div className={styles.loadingTiles} aria-hidden="true"><span/><span/></div></section>
+    <section><FanHeading>{t.reservedLive}</FanHeading><div className={styles.loadingRow} aria-hidden="true"/></section>
+    <section><FanHeading>{t.collection}</FanHeading><div className={styles.loadingTiles} aria-hidden="true"><span/><span/></div></section>
   </div>;
 }
 
@@ -297,7 +297,7 @@ function Dashboard({ summary, locale, avatarResource, refreshSummary, selectedSl
     return <DukjilProvider locale={locale}><div className={styles.pencilMy}>
       <header className={styles.pencilProfile}>
         <Link href={`/settings?locale=${locale}&section=profile` as Route} aria-label={t.avatarSettings}>{avatarResource.state.status === "ready" ? <Avatar avatar={avatarResource.state.avatar} imageUrl={avatarResource.state.imageUrl} label={t.avatarSettings} size={56}/> : <AvatarPlaceholder size={56}/>}</Link>
-        <div className={`${styles.pencilProfileCopy} ${styles.pencilName}`}><h1>{identity}</h1>{selected?.passport ? <FanTag tone="fan">{passportTierName(locale, selected.passport)}</FanTag> : null}</div>
+        <div className={`${styles.pencilProfileCopy} ${styles.pencilName}`}><FanHeading as="h1">{identity}</FanHeading>{selected?.passport ? <FanTag tone="fan">{passportTierName(locale, selected.passport)}</FanTag> : null}</div>
         <ProfileNav locale={locale} label={t.settings} giftUnread={summary.gifts?.unreadCount ?? 0} />
       </header>
       <GiftNotice locale={locale} unreadCount={summary.gifts?.unreadCount ?? 0} singleUnreadId={summary.gifts?.singleUnreadId ?? null} />
@@ -318,7 +318,7 @@ function Dashboard({ summary, locale, avatarResource, refreshSummary, selectedSl
         <span className={styles.avatarEdit} aria-hidden="true"><Pencil/></span>
       </Link>
       <div className={styles.profileCopy}>
-        <h1>{identity}</h1></div>
+        <FanHeading as="h1">{identity}</FanHeading></div>
       <div className={styles.profileActions}>
         <Link className={styles.notificationLink} href={`/notifications?locale=${locale}` as Route}><Bell aria-hidden="true"/><span>{t.notifications}</span><strong>{summary.unreadNotificationCount}</strong></Link>
         <Link className={styles.notificationLink} href={`/my/inquiries?locale=${locale}` as Route}><MessageSquare aria-hidden="true"/><span>{locale === "ko" ? "문의 내역" : translate(locale, localizedMessages.mbf5ca7f787a3, "My inquiries")}</span></Link>
@@ -357,7 +357,7 @@ function Dashboard({ summary, locale, avatarResource, refreshSummary, selectedSl
     </FanSurface>
 
     <section className={styles.secondaryActions} aria-labelledby="my-secondary-actions-title">
-      <h2 id="my-secondary-actions-title">{personalCopy[locale].title}</h2>
+      <FanHeading id="my-secondary-actions-title">{personalCopy[locale].title}</FanHeading>
       <nav className={`${styles.destinations} ${styles.secondaryDestinations}`} aria-label={personalCopy[locale].title}>
         <Link href={`/my/activity?locale=${locale}` as Route}>
           <span className={styles.destinationIcon} data-kind="activity" aria-hidden="true"><History /></span>
