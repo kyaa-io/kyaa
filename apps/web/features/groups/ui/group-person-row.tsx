@@ -1,4 +1,5 @@
 "use client";
+import { RewardIcon } from "@/components/fan-ui/reward-icon";
 import type { ReactNode } from "react";
 import { ChevronRight, UserRound } from "lucide-react";
 import { FanAction } from "@/components/fan-ui/fan-action";
@@ -15,7 +16,7 @@ export function GroupPersonTier({ tier, locale }: { tier: string; locale: AppLoc
 
 /** Hearts at the row end: the main number of a fan row. One heart is one true fan. */
 export function GroupPersonHearts({ hearts, locale }: { hearts: number; locale: AppLocale }) {
-  return <span className={styles.rowHearts} aria-label={dukjilText(locale, "missionHearts", [hearts])}><img src="/images/economy/heart.svg" alt="" width={16} height={16}/><span aria-hidden="true">{hearts.toLocaleString(locale)}</span></span>;
+  return <span className={styles.rowHearts} aria-label={dukjilText(locale, "missionHearts", [hearts])}><RewardIcon kind="heart" alt="" width={16} height={16}/><span aria-hidden="true">{hearts.toLocaleString(locale)}</span></span>;
 }
 
 /** One fan: 56px, avatar 40, a line between rows. A button only when the viewer may open the profile. */

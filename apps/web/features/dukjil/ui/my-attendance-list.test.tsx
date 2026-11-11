@@ -45,7 +45,8 @@ it("modal form: round avatars named by the page, a green ring and no button once
   const item = done.closest("li")!;
   expect(item.textContent).toContain("연속 3일");
   expect(item.textContent).toContain("오늘 완료");
-  expect(within(item).queryByRole("button")).toBeNull();
+  expect(within(item).getByRole("button", {name: "오늘 완료"})).toBeDisabled();
+  expect(within(item).getByText("AESPA")).toBeInTheDocument();
   expect(within(item).queryByRole("link")).toBeNull();
 });
 
@@ -127,12 +128,10 @@ it("sends a joined page without a passport straight to its entry review", () => 
   expect(link.getAttribute("href")).toBe("/c/ive/verify?locale=ko");
 });
 
-it("modal grid keeps a fixed 72px track so avatars sit close together", async () => {
-  const { readFileSync } = await import("node:fs");
-  const css = readFileSync("features/dukjil/ui/attendance-avatars.module.css", "utf8");
-  expect(css).toMatch(/\.list \{[^}]*grid-template-columns: repeat\(auto-fill, 72px\)/);
-  expect(css).toMatch(/\.list \{[^}]*gap: var\(--space-4\) var\(--space-2\)/);
-  // The 4px between avatar, streak and button comes from .item's gap alone; a margin on .action would make it 8px.
-  expect(css).toMatch(/\.item \{[^}]*gap: var\(--space-1\)/);
-  expect(css).not.toMatch(/\.action \{[^}]*margin/);
+it("modal rows keep avatar, visible name and action together", () => {
+  (h.status as { items: { hasPassport: boolean }[] }).items[1].hasPassport = true;
+  render(<MyAttendanceList locale="ko" />);
+  const row = screen.getByRole("img", {name:"IVE"}).closest("li")!;
+  expect(within(row).getByText("IVE")).toBeInTheDocument();
+  expect(within(row).getByRole("button", {name:"출석하기"})).toBeEnabled();
 });

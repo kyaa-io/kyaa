@@ -3,17 +3,13 @@ import Link from "next/link";
 import type { Route } from "next";
 import { useEffect, useId, useState, type ReactNode } from "react";
 import { Check } from "lucide-react";
-import { FanIcon } from "@/components/fan-ui/fan-icon";
-import { ChevronDown } from "@/components/fan-ui/fan-icons";
-import { BadgeCheck, LayoutGrid } from "lucide-react";
 import type { CSSProperties, MouseEvent } from "react";
-import { FanMissionFoldRow, FanMissionList, FanMissionRow, MissionArt, MissionDoneStamp } from "./fan-mission-row";
+import { FanMissionList, FanMissionRow, MissionArt, MissionDoneStamp } from "./fan-mission-row";
 import { activityLabel } from "@/features/dukjil-guide/ui/guide-copy";
 import { FanLockedValue } from "@/components/fan-ui/fan-locked-value";
 import { FanSkeleton } from "@/components/fan-ui/fan-skeleton";
 import { FanState } from "@/components/fan-ui/fan-state";
 import { FanAction } from "@/components/fan-ui/fan-action";
-import { FanCollapsible, FanCollapsibleTrigger } from "@/components/fan-ui/fan-collapsible";
 import { CertificationGrid } from "@/features/certification/ui/certification-grid";
 import { fanLoginHref } from "@/components/login-href";
 import { walletCopy } from "@/features/group-wallet/ui/copy";
@@ -86,7 +82,7 @@ export function FanMissions({ locale, slug, title, titleSuffix, passportHref, pr
   // Catalog order stays put when a mission is done; completion only tints the row.
   const rowList = (list: typeof view) => (
     <FanMissionList className={styles.cards}>
-      {list.map(({ mission, points, count, limit, remaining, done, period }) => {
+      {list.map(({ mission, points, count, limit, remaining, done, period }, index) => {
         const finished = !guest && done;
         const progress = !guest && !group && (pending || count === undefined ? (on || pending) && !state?.todayFailure && <span className={styles.progress} aria-hidden="true"><FanSkeleton width="100%" height={6} /></span>
           : limit !== null && (
@@ -99,7 +95,7 @@ export function FanMissions({ locale, slug, title, titleSuffix, passportHref, pr
         const onClick = !guest && mission.key === "checkin" ? (event: MouseEvent<HTMLAnchorElement>) => { if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return; event.preventDefault(); onAttendance(event.currentTarget); } : undefined;
         // D1 · F3: every row is the shared FanMissionRow (circle art · title · progress at the title's x · one fixed trailing column).
         // The trailing column holds the done tag or the reward.
-        return <FanMissionRow key={mission.key} dataMission={mission.key} done={finished} href={href} onClick={onClick}
+        return <FanMissionRow mobileExtra={all && !group && on && index >= 6} key={mission.key} dataMission={mission.key} done={finished} href={href} onClick={onClick}
           art={<MissionArt src={`/images/stamps/ink-v1/${mission.art}.webp`} />}
           title={mission.label}
           detail={progress || undefined}
@@ -115,40 +111,21 @@ export function FanMissions({ locale, slug, title, titleSuffix, passportHref, pr
   const moreRows = view.filter(row => !isDaily(row.mission.key) && row.mission.key !== "proof");
   const todayLeft = guest ? todayRows.length : todayRows.filter(row => !row.done).length;
   const todayKnown = !guest && !pending && todayRows.every(row => row.count !== undefined);
-  const todayAllDone = todayKnown && todayLeft === 0;
-  // V18: a folded head says what it is worth, the sum of one round of each open row.
-  const morePoints = moreRows.reduce((sum, row) => sum + (!guest && row.done ? 0 : row.points ?? 0), 0);
-  const proofPoints = typeof state?.catalog?.rules.proof?.points === "number" ? state.catalog.rules.proof.points : undefined;
   const nudge = useNudgeOnce(on && !guest && todayKnown && todayLeft > 0);
-  // B3: today's rows fold too. The head's "n개 남음" is the toggle (44 high); open by default, kept for the session. Guests: always open, no toggle.
-  const [todayStored, setTodayStored] = useStoredOpen(TODAY_FOLD_KEY);
-  const todayId = useId();
-  const todayToggle = all && !group && on && !guest && todayKnown;
-  const todayOpen = !todayToggle || todayStored;
-  // F3: today's rows open the card under the section head (which says how many are left); the other two groups fold behind heads drawn as rows.
-  const folds = (
-    <div className={styles.folds} data-nudge={nudge ? "" : undefined}>
-      <FanCollapsible open={todayOpen} trigger={() => null} className={styles.fold}><div id={todayId} data-missions-today="">{rowList(todayRows)}</div></FanCollapsible>
-      {moreRows.length > 0 && <FanCollapsible persistKey="dukjil-missions:more" className={styles.fold}
-        trigger={({ triggerProps }) => <FanMissionFoldRow {...triggerProps} icon={<LayoutGrid size={24} strokeWidth={1.5} />}
-          title={t("missionsGroupMore")} reward={morePoints ? <EarnBadge variant="inline" locale={locale} points={morePoints} /> : null} meta={moreRows.length.toLocaleString(locale)} />}>
-        {rowList(moreRows)}
-      </FanCollapsible>}
-      {state?.catalog?.rules.proof && <FanCollapsible persistKey="dukjil-missions:proof" className={styles.fold}
-        trigger={({ triggerProps }) => <FanMissionFoldRow {...triggerProps} icon={<BadgeCheck size={24} strokeWidth={1.5} />}
-          title={t("missionsGroupProof")} reward={proofPoints ? <EarnBadge variant="inline" locale={locale} points={proofPoints} /> : null} />}>
-        <div className={styles.proofRows}><CertificationGrid variant="rows" locale={locale} slug={noPage ? "" : slug} guest={guest} fallbackHref={guest ? `/benefits?locale=${locale}` : proof} /></div>
-      </FanCollapsible>}
+  const [expanded, setExpanded] = useState(false);
+  const unfoldedRows = [...todayRows, ...moreRows];
+  const folds = <div className={styles.unfolded} data-expanded={expanded} data-nudge={nudge ? "" : undefined}>
+    <div className={styles.unfoldedGrid}>
+      {rowList(unfoldedRows)}
+      {state?.catalog?.rules.proof && <CertificationGrid variant="rows" locale={locale} slug={noPage ? "" : slug} guest={guest} fallbackHref={guest ? `/benefits?locale=${locale}` : proof} mobileVisible={Math.max(0, 6 - unfoldedRows.length)} />}
     </div>
-  );
+    <FanAction variant="text" className={styles.moreButton} aria-expanded={expanded} onClick={() => setExpanded(!expanded)}>{expanded ? (locale === "ko" ? "접기" : "Show less") : (locale === "ko" ? "더 보기" : "Show more")}</FanAction>
+  </div>;
   const folded = all && !group && on;
   return (
     <section className={`${styles.section} ${all ? styles.full : ""} ${inkStyles.palette}`} aria-labelledby={headingId} data-fan-missions>
       <div className={styles.head}>
         <div className={styles.headingGroup}><h2 id={headingId}>{title}</h2>{titleSuffix}</div>
-        {folded && todayToggle && <FanCollapsibleTrigger className={`${styles.summary} ${styles.todayToggle}`} aria-expanded={todayOpen} aria-controls={todayId} onClick={() => setTodayStored(!todayOpen)}>
-          <span data-missions-left="">{todayAllDone ? t("missionsGroupAllDone") : t("missionsGroupLeft", [todayLeft.toLocaleString(locale)])}</span><FanIcon icon={ChevronDown} size={16} className={styles.todayChevron} />
-        </FanCollapsibleTrigger>}
         {!folded && on && today && !guest && (
           <div className={styles.summary}>
             {/* C8: no stamp icon box here. Stamps are counted on the passport (덕질 and MY); a finished mission says what it paid. */}
@@ -166,14 +143,6 @@ export function FanMissions({ locale, slug, title, titleSuffix, passportHref, pr
 }
 
 const ruleDailyLimit = (rule: unknown) => { const value = (rule as { dailyLimit?: unknown } | undefined)?.dailyLimit; return typeof value === "number" && value > 0 ? value : null; };
-
-const TODAY_FOLD_KEY = "fan-collapsible:dukjil-missions:today";
-/** Open by default; the stored choice is read after the first render (same first HTML as the server). */
-function useStoredOpen(key: string): [boolean, (open: boolean) => void] {
-  const [open, setOpen] = useState(true);
-  useEffect(() => { try { const value = window.sessionStorage.getItem(key); if (value === "0") setOpen(false); } catch { /* stays open */ } }, [key]);
-  return [open, (next: boolean) => { setOpen(next); try { window.sessionStorage.setItem(key, next ? "1" : "0"); } catch { /* same behavior without storage */ } }];
-}
 
 const NUDGE_KEY = "dukjil-missions:nudged";
 /** S3: the reward badges of rows not done yet pulse at most three times, on the first visit of a session only. reduced-motion: none (CSS). */

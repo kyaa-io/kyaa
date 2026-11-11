@@ -1,11 +1,12 @@
 "use client";
+import { REWARD_ICON_SRC } from "@/components/fan-ui/reward-icon";
 
 import type { AppLocale } from "@/i18n/locales";
 import { closeFanToast, showFanToast } from "./fan-toast";
 import styles from "./reward-celebration.module.css";
 
 /** Same coin as `EarnBadge` (features/dukjil/ui/earn-badge.tsx). */
-const POINT_COIN_SRC = "/images/economy/point-coin.svg";
+const POINT_COIN_SRC = REWARD_ICON_SRC.point;
 
 /**
  * 261107-2 D8. The one way the app says "you earned something": a coin badge pops up from where the fan acted and the shared

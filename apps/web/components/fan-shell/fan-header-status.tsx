@@ -4,6 +4,7 @@ import { useEffect, useRef } from "react";
 import Link from "next/link";
 import type { Route } from "next";
 import { usePathname, useSearchParams } from "next/navigation";
+import { RewardIcon } from "@/components/fan-ui/reward-icon";
 import { RollingNumber, useChangeFlash } from "@/components/fan-ui/rolling-number";
 import { fanLoginHref } from "@/components/login-href";
 import { GROUP_WALLET_CHANGED_EVENT, useGroupRequest, useGroupResource } from "@/features/groups/ui/use-group-resource";
@@ -59,7 +60,7 @@ function OwnedHeaderStatus({ locale }: { locale: AppLocale }) {
 
   return <Link ref={chip} className={styles.trigger} href={`/my?locale=${locale}` as Route} data-header-status="" aria-label={summary}>
     {current && <><FanTierBadge tier={current.tier} stageKey={current.stage?.key} locale={locale} size={16} />{dot}</>}
-    {hearts !== undefined && <><span className={styles.value}><img src="/images/economy/heart.svg" alt="" width={16} height={16} /><RollingNumber value={hearts} format={format} /></span>{dot}</>}
-    <span className={styles.value}><img src="/images/economy/point-coin.svg" alt="" width={16} height={16} />{points === undefined ? "—" : <RollingNumber value={points} format={format} />}</span>
+    {hearts !== undefined && <><span className={styles.value}><RewardIcon kind="heart" alt="" width={16} height={16} /><RollingNumber value={hearts} format={format} /></span>{dot}</>}
+    <span className={styles.value}><RewardIcon kind="point" alt="" width={16} height={16} />{points === undefined ? "—" : <RollingNumber value={points} format={format} />}</span>
   </Link>;
 }

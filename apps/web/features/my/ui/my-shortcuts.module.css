@@ -1,5 +1,4 @@
 .section { display:grid; min-width:0; gap:var(--space-3); }
-.section h2 { margin:0; font-size:var(--fan-heading-size-wide); font-weight:var(--fan-heading-weight); line-height:var(--fan-heading-leading); letter-spacing:var(--fan-heading-tracking); }
 .grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); column-gap:var(--space-6); padding:0 var(--space-5); border:1px solid var(--color-line); border-radius:var(--radius-card); background:var(--color-canvas); }
 /* 바로가기 안 로그아웃 칸(FanAction text): 다른 칸과 같은 3열 행. 안쪽 span 은 그림 · 이름 · 화살표 순이다. */
 .grid > .row { justify-content:stretch; border-radius:0; padding-inline:0; background:transparent; color:var(--color-ink); text-align:start; }
@@ -14,7 +13,6 @@
 .grid > :is(a, .row):focus-visible { outline:3px solid var(--color-ink); outline-offset:-3px; border-radius:var(--radius-media); }
 @media (hover:hover) and (pointer:fine) { .grid > a:hover strong, .grid > .row:hover > span:nth-child(2) { text-decoration:underline; text-underline-offset:3px; } }
 @media (max-width:767px) {
-  .section h2 { font-size:var(--fan-heading-size); }
   .grid { column-gap:var(--space-3); padding-inline:var(--space-3); }
   .grid > :is(a, .row) { grid-template-columns:32px minmax(0,1fr); gap:var(--space-2); }
   .grid img { inline-size:32px; block-size:32px; }

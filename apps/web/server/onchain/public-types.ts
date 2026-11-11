@@ -34,4 +34,4 @@ export interface PublicOnchainSnapshot {
   actions: PublicOnchainAction[];
   transactions: { txHash: string; blockNumber: string; hubAddress: string; kind: "record" | "invalidate" | "correct"; qa: boolean; origin: "NATIVE" | "HISTORICAL" }[];
 }
-export type PublicOnchainResult = { state: "available"; snapshot: PublicOnchainSnapshot } | { state: "unavailable" };
+export type PublicOnchainResult = { state: "available"; snapshot: PublicOnchainSnapshot } | { state: "unavailable"; lastVerifiedAt?: string };

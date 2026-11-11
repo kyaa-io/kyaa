@@ -31,8 +31,8 @@ describe("header capsule", () => {
     const link = chip();
     expect(link).toHaveAttribute("href", "/my?locale=ko");
     expect(link).toHaveTextContent("1,260");
-    expect(link.querySelector('img[src="/images/economy/point-coin.svg"]')).not.toBeNull();
-    expect(link.querySelector('img[src="/images/economy/heart.svg"]')).not.toBeNull();
+    expect(link.querySelector('img[src="/images/economy/point-coin.webp"]')).not.toBeNull();
+    expect(link.querySelector('img[src="/images/dukjil-duo/glyph-heart-160.webp"]')).not.toBeNull();
     fireEvent.click(link);
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
     expect(link).not.toHaveAttribute("aria-expanded");
@@ -65,7 +65,7 @@ describe("header capsule", () => {
     state.wallet = { ...state.wallet, data: undefined, error: true };
     render(<FanHeaderStatus locale="ko" />);
     expect(chip()).toHaveTextContent("—");
-    expect(chip().querySelector('img[src="/images/economy/heart.svg"]')).toBeNull();
+    expect(chip().querySelector('img[src="/images/dukjil-duo/glyph-heart-160.webp"]')).toBeNull();
     expect(chip()).not.toHaveAccessibleName(/하트 0/);
   });
 

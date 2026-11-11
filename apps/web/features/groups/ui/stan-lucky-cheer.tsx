@@ -1,9 +1,13 @@
 "use client";
+import { RewardIcon } from "@/components/fan-ui/reward-icon";
 import Link from "next/link";
 import type { Route } from "next";
 import { ChevronRight, Heart } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
+import { z } from "zod";
 import { FanAction } from "@/components/fan-ui/fan-action";
+import { FanText } from "@/components/fan-ui/fan-text";
+import { FanTag } from "@/components/fan-ui/fan-tag";
 import { FanCount } from "@/components/fan-ui/fan-count-chip";
 import { FanHeading } from "@/components/fan-ui/fan-heading";
 import { FanSectionLink } from "@/components/fan-ui/fan-section-link";
@@ -42,6 +46,8 @@ export const RAFFLE_TICKET_COST = 1;
 export const STAMPS_PER_HEART = 9;
 const LUCKY_CARDS = 2;
 const parseRaffles = (value: unknown) => raffleListSchema.parse(value);
+const recentRafflesSchema = z.object({ items: z.array(z.object({ raffle: raffleListSchema.shape.raffles.element, creator: z.object({ slug: z.string(), name: z.string(), image: z.string().nullable().optional() }) })) });
+const parseRecentRaffles = (value: unknown) => recentRafflesSchema.parse(value);
 const parseCreators = (value: unknown) => homeCreatorRankingSchema.parse(value);
 const parseWallet = (value: unknown) => walletSchema.parse(value);
 const parseEntries = (value: unknown) => benefitListResponseSchema.parse(value);
@@ -135,7 +141,7 @@ function RaffleCard({ raffle, status, slug, locale, entered, allowance }: { raff
   const href = passport ? creatorRaffleVerificationHref(slug, locale, raffle.benefitId) : raffleHref(slug, raffle.benefitId, locale);
   const label = passport ? t(locale, "luckyGetPassport") : status === "open" && allowance?.kind !== "policy" ? t(locale, "luckyEnter") : status === "closed" ? t(locale, "luckyResults") : t(locale, "luckyDetails");
   return <li className={styles.raffle} data-raffle-status={status} data-raffle-allowance={open ? allowance.kind : undefined}>
-    <span className={styles.prize}>{raffle.imageUrl ? <img src={raffle.imageUrl} alt="" width={80} height={60} loading="lazy" /> : <img src="/images/economy/ticket.svg" alt="" width={32} height={32} data-fallback="" />}</span>
+    <span className={styles.prize}>{raffle.imageUrl ? <img src={raffle.imageUrl} alt="" width={80} height={60} loading="lazy" /> : <RewardIcon kind="ticket" alt="" width={32} height={32} data-fallback="" />}</span>
     <span className={styles.raffleHead}><strong className={styles.raffleTitle}>{raffle.title}</strong><span className={styles.meta}><RaffleDate raffle={raffle} status={status} locale={locale} /></span></span>
     <span className={styles.facts}>
       <span className={styles.meta}>{t(locale, "luckyWinners", [raffle.winnerQuantity.toLocaleString(locale)])} · {deliveryLabel(raffle, locale)}{entered ? <> · {t(locale, "luckyMyEntries", [entered.toLocaleString(locale)])}</> : null}</span>
@@ -150,6 +156,8 @@ function RaffleCard({ raffle, status, slug, locale, entered, allowance }: { raff
 export function StanLucky({ locale, bias, guest, presentation, paused = false }: { locale: AppLocale; bias: SelectedBias; guest: boolean; presentation?: "duo"; paused?: boolean }) {
   const favorite = guest ? null : stanFavorite(bias), slug = favorite?.slug ?? null;
   const raffles = useStanRaffles(locale, slug), title = groupBenefitsCopy(locale).lucky;
+  const hasPast = raffles.items.some(item => item.status === "closed");
+  const recent = useGroupResource(presentation === "duo" && (!slug || (!raffles.loading && !raffles.error && !hasPast)) ? `/api/raffles/recent?locale=${toContentLocale(locale)}` : null, parseRecentRaffles);
   const wallet = useGroupResource(!guest && slug ? "/api/me/wallet" : null, parseWallet);
   const entries = useStanEntries(locale, !guest ? slug : null);
   // F5: open and upcoming draws take the first place; closed ones only fill a separate 지난 럭키드로우 list when none is live.
@@ -169,18 +177,29 @@ export function StanLucky({ locale, bias, guest, presentation, paused = false }:
     // C4: 쉬는 동안(paused)에는 상태와 상관없이 응모 버튼 하나만 비활성으로 두고 이유를 붙인다. href·onClick이 없어 요청을 만들지 않는다.
     const action = paused || (ready && item) ? <FanAction className={duoStyles.action} variant="primary" {...(paused ? { disabled: true, helperText: capsuleMachineCopy(locale).text("soon") } : { href })}>
       {paused || (item?.status === "open" && allowance?.kind !== "policy" && !passport) ? t(locale,"luckyEnter") : passport ? t(locale,"luckyGetPassport") : t(locale,"luckyDetails")}</FanAction> : null;
-    return <section className={duoStyles.card} id="stan-lucky" aria-label={title} data-duo-lucky data-lucky-module="" data-lucky-paused={paused ? "" : undefined} data-raffle-status={item?.status}>
+    const pastItems = hasPast && slug && favorite ? raffles.items.filter(row => row.status === "closed").slice(0, 3).map(({ raffle }) => ({ raffle, creator: { slug, name: favorite.name, image: (favorite as { image?: string | null }).image ?? null } })) : recent.data?.items ?? [];
+    return <div className={duoStyles.layout} data-has-past={pastItems.length ? "" : undefined}>
+    <section className={duoStyles.card} id="stan-lucky" aria-label={title} data-duo-lucky data-lucky-module="" data-lucky-paused={paused ? "" : undefined} data-raffle-status={item?.status}>
       <LuckyStage className={duoStyles.stage} paused={paused} locale={locale} />
       <div className={duoStyles.copy}>
         <img className={duoStyles.glyph} src="/images/dukjil-duo/glyph-illo-lucky-80.webp" width={40} height={40} alt="" />
-        {pending ? <div aria-busy="true"><FanSkeleton width="80%" height={22}/><FanSkeleton width="60%" height={17}/></div>
+        {paused ? <><FanTag tone="neutral" className={duoStyles.badge}>{capsuleMachineCopy(locale).text("soon")}</FanTag><FanHeading>{locale === "ko" ? "다음 럭키드로우를 준비 중이에요." : t(locale,"luckyEmpty")}</FanHeading></> : pending ? <div aria-busy="true"><FanSkeleton width="80%" height={22}/><FanSkeleton width="60%" height={17}/></div>
           : raffles.error ? <FanState inline compact kind="error" title={t(locale,"luckyLoadError")} actions={<FanAction variant="text" onClick={raffles.retry}>{groupsCopy(locale).retry}</FanAction>}/>
           : empty || !item ? <p className={duoStyles.emptyText}>{t(locale,slug ? "luckyEmpty" : "luckyNoFavorite")}</p>
-          : <><FanHeading>{item.raffle.title}</FanHeading><p className={duoStyles.meta}><RaffleDate raffle={item.raffle} status={item.status} locale={locale}/> · {t(locale,"luckyWinners",[item.raffle.winnerQuantity.toLocaleString(locale)])} · {deliveryLabel(item.raffle,locale)}</p>
+          : <><FanTag tone="neutral" className={duoStyles.badge}>{capsuleMachineCopy(locale).text(item.status === "open" ? "open" : "soon")}{item.status === "open" && item.raffle.entryClosesAt ? ` · D-${Math.max(0, Math.ceil((Date.parse(item.raffle.entryClosesAt) - Date.now()) / 86400000))}` : ""}</FanTag><FanHeading>{item.raffle.title}</FanHeading><p className={duoStyles.meta}><RaffleDate raffle={item.raffle} status={item.status} locale={locale}/> · {t(locale,"luckyWinners",[item.raffle.winnerQuantity.toLocaleString(locale)])} · {deliveryLabel(item.raffle,locale)}</p>
             <p className={duoStyles.cost} data-raffle-cost data-raffle-allowance={allowance?.kind}>{costParts && allowance?.kind === "count" ? <>{costParts[0]}<strong>{allowance.count.toLocaleString(locale)}</strong>{costParts[1]}</> : allowance?.kind === "loading" ? <FanSkeleton width={160} height={24}/> : allowance?.kind === "passport" ? t(locale,"luckyNeedPassport") : allowance?.kind === "policy" ? t(locale,"luckyNeedPolicy") : t(locale,"luckyCostGuest",[RAFFLE_TICKET_COST])}</p></>}
       </div>
       {action ? <div className={duoStyles.actionBlock}>{action}</div> : null}
-    </section>;
+    </section>
+    {pastItems.length > 0 && <section className={duoStyles.pastList} aria-label={t(locale, "luckyPast")} data-lucky-past>
+      <FanHeading>{t(locale, "luckyPast")}</FanHeading>
+      <div className={duoStyles.pastRows}>{pastItems.slice(0, 3).map(({ raffle, creator }) => <article key={raffle.id} className={duoStyles.pastCard}>
+        {raffle.imageUrl || creator.image ? <img className={duoStyles.thumbnail} src={(raffle.imageUrl || creator.image)!} alt="" width={112} height={112} loading="lazy" /> : null}
+        <div className={duoStyles.pastCopy}><FanText role="item" as="strong">{raffle.title}</FanText><p className={duoStyles.meta}>{creator.name}{raffle.entryClosesAt ? <> · {t(locale, "luckyClosesAt", [dayDate(raffle.entryClosesAt, locale)])}</> : null}</p>
+        <FanAction variant="secondary" size="sm" href={raffleHref(creator.slug, raffle.benefitId, locale)}>{locale === "ko" ? "당첨 결과 보기" : t(locale, "luckyResults")} ›</FanAction></div>
+      </article>)}</div>
+    </section>}
+    </div>;
   }
   // 게이트 D2: the empty state is one line; its next step is a row below it inside the same box, ending in ›.
   const empty = (title: string, action?: ReactNode, short = false) => <div className={short ? `${styles.empty} ${styles.emptyShort}` : styles.empty}><div className={styles.emptyLine}><FanState kind="empty" title={title} /></div>{action}</div>;

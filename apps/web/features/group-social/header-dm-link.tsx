@@ -25,7 +25,7 @@ export function HeaderDmLink({locale,className}:{locale:AppLocale;className?:str
  if(!auth.authenticated)return null;
  const count=resource.data?.conversations.reduce((sum,c)=>sum+(c.unreadCount??0),0)??0;
  const label=count?`DM, ${count.toLocaleString(locale)}`:'DM';
- const content=<><FanIcon icon={Send} size={20}/>{count>0&&<span className={badgeStyles.badge} aria-hidden="true">{unreadBadgeText(count)}</span>}</>;
+ const content=<><FanIcon icon={Send} size={20} />{count>0&&<span className={badgeStyles.badge} aria-hidden="true">{unreadBadgeText(count)}</span>}</>;
  const href=`/my/friends?locale=${locale}` as const;
  const suppressed=pathname.startsWith('/my/friends')||/\/(write|new|edit|compose)(\/|$)/.test(pathname);
  return <><Link href={href} className={`${iconStyles.button} ${className??''} ${badgeStyles.link}`} aria-label={label}>{content}</Link>{!suppressed&&<Link href={href} className={`${iconStyles.button} ${styles.floating}`} aria-label={label} hidden={hidden}>{content}</Link>}</>;

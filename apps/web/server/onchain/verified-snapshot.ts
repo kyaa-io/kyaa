@@ -129,7 +129,7 @@ export async function readVerifiedPublicSnapshot(): Promise<unknown> {
   const { data, error } = await database().from("onchain_verified_snapshot").select("public_payload,block_number,block_hash,verified_at").eq("id", true).abortSignal(AbortSignal.timeout(4000)).maybeSingle();
   if (error) throw new Error("VERIFIED_SNAPSHOT_READ_UNAVAILABLE");
   if (!data) return undefined;
-  const snapshot = parseVerifiedSnapshot(data.public_payload);
+  const snapshot = parseVerifiedSnapshot(data.public_payload, Date.parse(data.verified_at));
   assertStoredMetadata(data, snapshot.blockNumber, snapshot.blockHash, snapshot.generatedAt);
   return data.public_payload;
 }

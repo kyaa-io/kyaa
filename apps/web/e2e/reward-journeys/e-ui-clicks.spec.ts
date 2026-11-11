@@ -9,7 +9,7 @@ import { Member } from "./support/member";
 
 async function openBenefits(page: Page) {
   await page.goto("/benefits?locale=ko");
-  await expect(page.locator("body")).toContainText(/포인트\s*\d+\s*P/, { timeout: 30_000 });
+  await expect(page.locator("body")).toContainText(/포인트\s*\d+\s*(\/\s*100\s*)?P/, { timeout: 30_000 });
 }
 
 test.describe("@release-gate (e) screen clicks", () => {
@@ -23,7 +23,7 @@ test.describe("@release-gate (e) screen clicks", () => {
     const context = await browser.newContext({ storageState: member.storageState, baseURL: BASE_URL, viewport: { width: 390, height: 844 } });
     const page = await context.newPage();
     await openBenefits(page);
-    await expect(page.locator("body")).toContainText(/포인트\s*0\s*P/);
+    await expect(page.locator("body")).toContainText(/포인트\s*0\s*(\/\s*100\s*)?P/);
 
     // The 출석 row opens the check-in sheet; its button sends the request.
     await page.locator('[data-mission="checkin"]').click();
@@ -40,10 +40,10 @@ test.describe("@release-gate (e) screen clicks", () => {
     expect(member.balances().points).toBe(points);
     expect(member.pointLedgerRows()).toBe(1);
     expect(member.stampCount("daily_checkin")).toBe(1);
-    await expect(page.locator("body")).toContainText(new RegExp(`포인트\\s*${points}\\s*P`));
+    await expect(page.locator("body")).toContainText(new RegExp(`포인트\\s*${points}\\s*(/\\s*100\\s*)?P`));
 
     await page.reload();
-    await expect(page.locator("body")).toContainText(new RegExp(`포인트\\s*${points}\\s*P`), { timeout: 30_000 });
+    await expect(page.locator("body")).toContainText(new RegExp(`포인트\\s*${points}\\s*(/\\s*100\\s*)?P`), { timeout: 30_000 });
     await expect(page.locator("body")).toContainText(/스탬프\s*1\s*\/\s*9/);
     expect(member.pointLedgerRows()).toBe(1);
     await context.close();
@@ -56,7 +56,7 @@ test.describe("@release-gate (e) screen clicks", () => {
     const context = await browser.newContext({ storageState: member.storageState, baseURL: BASE_URL, viewport: { width: 390, height: 844 } });
     const page = await context.newPage();
     await openBenefits(page);
-    await expect(page.locator("body")).toContainText(/포인트\s*150\s*P/);
+    await expect(page.locator("body")).toContainText(/포인트\s*150\s*(\/\s*100\s*)?P/);
 
     await page.getByRole("button", { name: /교환/ }).first().click();
     const sheet = page.getByRole("dialog");
@@ -73,8 +73,8 @@ test.describe("@release-gate (e) screen clicks", () => {
     expect(count(`select count(*) from public.mobile_fan_economy_ledger where app_user_id = '${member.id}' and amount = -100`)).toBe(1);
 
     await page.reload();
-    await expect(page.locator("body")).toContainText(/포인트\s*50\s*P/, { timeout: 30_000 });
-    await expect(page.locator("body")).toContainText(/응모권\s*1\s*장/);
+    await expect(page.locator("body")).toContainText(/포인트\s*50\s*(\/\s*100\s*)?P/, { timeout: 30_000 });
+    await expect(page.locator("body")).toContainText(/응모권\s*›?\s*1\s*장/);
     expect(member.balances()).toEqual({ points: 50, tickets: 1 });
     await context.close();
   });

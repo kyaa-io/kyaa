@@ -191,11 +191,11 @@
  * capsule stay as they are (L11 freeze). The caret (chevron, a direction mark) stays 16 and the avatar keeps its size. Below 768px the
  * signed-in capsule is held to 182px and shares it with the favorite's name, so there the capsule's marks (tier stamp, heart, coin) are one
  * size, 16, and the bare marks beside it (language, bell, menu) 20 — the name keeps at least its width before L10 (review H1). */
-.actions :global(:is(svg.lucide:not(.lucide-chevron-down):not(.lucide-rotate-cw), [data-account-trigger="menu"] > svg, img[src*="point-coin"], img[src*="economy/heart"], img[src*="/tiers/"])) { width: 24px; height: 24px; }
+.actions :global(:is(svg.lucide:not(.lucide-chevron-down):not(.lucide-rotate-cw), [data-account-trigger="menu"] > svg, img[src*="point-coin"], img[data-reward-kind="heart"], img[src*="/tiers/"])) { width: 24px; height: 24px; }
 .actions :global(svg.lucide:not(.lucide-chevron-down):not(.lucide-rotate-cw)) { stroke-width: 1.5; }
 @media (max-width: 47.999rem) {
-  .actions :global(:is(svg.lucide:not(.lucide-chevron-down):not(.lucide-rotate-cw), [data-account-trigger="menu"] > svg, img[src*="point-coin"], img[src*="economy/heart"], img[src*="/tiers/"])) { width: 20px; height: 20px; }
-  .actions .statusCapsule :global(:is(svg.lucide:not(.lucide-chevron-down):not(.lucide-rotate-cw), img[src*="point-coin"], img[src*="economy/heart"], img[src*="/tiers/"])) { width: 16px; height: 16px; }
+  .actions :global(:is(svg.lucide:not(.lucide-chevron-down):not(.lucide-rotate-cw), [data-account-trigger="menu"] > svg, img[src*="point-coin"], img[data-reward-kind="heart"], img[src*="/tiers/"])) { width: 20px; height: 20px; }
+  .actions .statusCapsule :global(:is(svg.lucide:not(.lucide-chevron-down):not(.lucide-rotate-cw), img[src*="point-coin"], img[data-reward-kind="heart"], img[src*="/tiers/"])) { width: 16px; height: 16px; }
 }
 
 /* 2026-11-11 02:07 대표: PC 상단(로고·메뉴·우측 아이콘)을 한 단계 작게. 1024px부터만 — 헤더 88→72, 로고 88→72, 메뉴 칸 64→52와 아이콘 24→20(글자 크기는 그대로), 우측 표시 24→20.
@@ -208,5 +208,5 @@
   .groupsNavigation .desktopNav { height: 52px; min-height: 52px; }
   .groupsNavigation .desktopNavItem { height: 52px; }
   .groupsNavigation .desktopNavItem svg { width: 20px; height: 20px; }
-  .actions :global(:is(svg.lucide:not(.lucide-chevron-down):not(.lucide-rotate-cw), [data-account-trigger="menu"] > svg, img[src*="point-coin"], img[src*="economy/heart"], img[src*="/tiers/"])) { width: 20px; height: 20px; }
+  .actions :global(:is(svg.lucide:not(.lucide-chevron-down):not(.lucide-rotate-cw), [data-account-trigger="menu"] > svg, img[src*="point-coin"], img[data-reward-kind="heart"], img[src*="/tiers/"])) { width: 20px; height: 20px; }
 }

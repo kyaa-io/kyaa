@@ -1,6 +1,6 @@
 .page {
   --ink: var(--color-ink);
-  --muted: var(--color-ink);
+  --muted: var(--color-muted);
   --line: var(--color-line);
   --soft: var(--color-soft);
   min-width: 0;
@@ -16,7 +16,6 @@
 
 .hero { padding: 72px 0 64px; border-bottom: 1px solid var(--line); }
 .eyebrow { margin: 0 0 20px; font-size: 12px; font-weight: 800; letter-spacing: .14em; }
-.hero h1 { max-width: 15ch; margin: 0; font-size: clamp(44px, 7vw, 88px); font-weight: 800; letter-spacing: -.055em; line-height: .98; text-wrap: balance; }
 .intro { max-width: 68ch; margin: 28px 0 0; color: var(--muted); font-size: clamp(16px, 2vw, 20px); line-height: 1.65; text-wrap: pretty; }
 .networkNotice { display: grid; gap: 5px; max-width: 820px; margin-top: 32px; padding: 18px 20px; border-left: 4px solid var(--ink); background: var(--soft); }
 .networkNotice strong { font-size: 14px; }
@@ -30,14 +29,13 @@
 .section { min-width: 0; padding-block: 72px; border-bottom: 1px solid var(--line); }
 .sectionHeading { display: grid; grid-template-columns: 40px minmax(0, 1fr); gap: 16px; margin-bottom: 32px; }
 .sectionHeading > p { margin: 4px 0 0; color: var(--muted); font-size: 12px; font-weight: 800; letter-spacing: .12em; }
-.sectionHeading h2 { margin: 0; font-size: clamp(28px, 4vw, 44px); letter-spacing: -.035em; line-height: 1.1; text-wrap: balance; }
 .sectionHeading div > p { max-width: 74ch; margin: 14px 0 0; color: var(--muted); font-size: 15px; line-height: 1.65; text-wrap: pretty; }
-.sectionHeading div > .statusNote { margin-top: 8px; font-size: 12px; }
+.statusNote { margin: var(--space-4) 0 0; color: var(--muted); font-size: var(--fan-metadata-size); line-height: var(--fan-body-leading); }
 
-.metricGrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1px; margin: 0; background: var(--line); border: 1px solid var(--line); }
-.metric { min-width: 0; padding: 22px; background: var(--color-surface); }
+.metricGrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-4); margin: 0; }
+.metric { min-width: 0; padding: var(--space-6); background: var(--color-surface); border: 1px solid var(--line); border-radius: var(--radius-card); }
 .metric dt { color: var(--muted); font-size: var(--fan-metadata-size); font-weight: var(--fan-item-title-weight); }
-.metric dd { margin: 22px 0 16px; font-size: clamp(32px, 5vw, 54px); font-weight: 800; letter-spacing: -.045em; line-height: 1; font-variant-numeric: tabular-nums; }
+.metric dd { margin: 22px 0 16px; font-size: var(--fan-number-size-wide); font-weight: var(--fan-number-weight); color: var(--color-accent-ink); letter-spacing: -.045em; line-height: 1; font-variant-numeric: tabular-nums; }
 .metric .metricScope { margin: 0; color: var(--muted); font-size: 11px; font-weight: var(--fan-body-weight); letter-spacing: 0; line-height: var(--fan-body-leading); }
 
 .tableScroll { max-width: 100%; overflow-x: auto; }
@@ -107,6 +105,7 @@
   .section { min-width: 0; padding-block: 52px; }
   .sectionHeading { grid-template-columns: 28px minmax(0, 1fr); gap: 10px; }
   .metric { padding: 18px 16px; }
+  .metric:last-child { grid-column: 1 / -1; }
   .metric dd { margin-block: 18px 12px; }
   .evidenceItem { padding: 18px 16px; }
   .evidenceHeader { flex-direction: column; gap: 12px; }
