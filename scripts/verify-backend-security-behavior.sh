@@ -51,6 +51,7 @@ psql -X -v ON_ERROR_STOP=1 -f "$root_dir/supabase/tests/kyaa_wave_member_directo
 psql -X -v ON_ERROR_STOP=1 -f "$root_dir/supabase/tests/content_report_resolution_acl.sql"
 psql -X -v ON_ERROR_STOP=1 -f "$root_dir/supabase/tests/dm_report_replay.sql"
 psql -X -v ON_ERROR_STOP=1 -f "$root_dir/supabase/tests/unified_creator_feed.sql"
+psql -X -v ON_ERROR_STOP=1 -f "$root_dir/supabase/tests/post_detail_more_privacy.sql"
 psql -X -v ON_ERROR_STOP=1 -f "$root_dir/supabase/tests/public_home_feed.sql"
 psql -X -v ON_ERROR_STOP=1 -f "$root_dir/supabase/tests/public_lists_listed_filter.sql"
 psql -X -v ON_ERROR_STOP=1 -f "$root_dir/supabase/tests/schedules_listed_filter.sql"
