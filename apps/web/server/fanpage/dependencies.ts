@@ -1,4 +1,5 @@
 import "server-only";
+import { refreshLocalSignupEvent } from "../signup-event/refresh";
 import { createClient } from "@/server/data/client";
 import { createPrivyNodeAccessVerifier } from "../auth/privy-node-verifier";
 import { authorizeAdminSession } from "../admin/admin-session-gate";
@@ -24,7 +25,10 @@ export function createFanpageDependencies(): FanpageDependencies {
   };
   return {
     async rpc(name, args) {
-      return withWaveDisplayNames(rpc, name, args, await rpc(name, args));
+      const result = await rpc(name, args);
+      const owner = name === "attend_creator" ? args.p_user : (name === "save_fan_post" || name === "save_fan_post_rich") ? args.p_app_user_id : null;
+      if (typeof owner === "string") await refreshLocalSignupEvent(database, owner);
+      return withWaveDisplayNames(rpc, name, args, result);
     },
     authorize: (authorization) => authorizeFanRequest({ authorization, verifier, repository: fans }),
     authorizeAdmin: (authorization, correlationId) => authorizeAdminSession({ authorization: authorization ?? "", correlationId, verifier, repository: admins }),
