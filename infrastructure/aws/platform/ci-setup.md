@@ -329,3 +329,18 @@ and for a second human path, set `AlarmEmail` in the environment stack parameter
 monitored address and confirm the SNS email subscription. The deploy script prints a
 warning when `AlarmEmail` is empty.
 
+Setting `AlarmEmail` makes CloudFormation create an `AWS::SNS::Subscription`, which needs
+`sns:Subscribe` (and `sns:Unsubscribe`/`sns:GetSubscriptionAttributes` to read or remove it)
+on the environment's `AlarmTopic`. Without them the update fails and rolls back (prod,
+2026-11-11 08:05). Before setting `AlarmEmail` in an environment, the administrator applies
+`cfn-execution-alarm-sns.json` for that environment (dev before prod), for example:
+
+```sh
+aws cloudformation deploy --stack-name byus-<env>-cfn-alarm-sns \
+  --template-file infrastructure/aws/platform/cfn-execution-alarm-sns.json \
+  --parameter-overrides Environment=<env> --capabilities CAPABILITY_NAMED_IAM
+```
+
+It attaches one inline policy to `byus-<env>-cfn-execution`, limited to topics named
+`byus-<env>-platform-AlarmTopic-*` in this account and region. CI never updates it.
+

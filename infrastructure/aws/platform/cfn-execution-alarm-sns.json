@@ -1,0 +1,157 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Lets the CloudFormation execution role create, read and remove the email subscription on one environment's platform AlarmTopic; administrator bootstrap, never run by CI",
+  "Rules": {
+    "SallylabOnly": {
+      "Assertions": [
+        {
+          "Assert": {
+            "Fn::Equals": [
+              {
+                "Ref": "AWS::AccountId"
+              },
+              "996702758024"
+            ]
+          },
+          "AssertDescription": "Only the user-approved Sallylab account."
+        },
+        {
+          "Assert": {
+            "Fn::Equals": [
+              {
+                "Ref": "AWS::Region"
+              },
+              "ap-northeast-2"
+            ]
+          },
+          "AssertDescription": "Only Seoul."
+        }
+      ]
+    }
+  },
+  "Parameters": {
+    "Environment": {
+      "Type": "String",
+      "AllowedValues": [
+        "dev",
+        "staging",
+        "prod"
+      ]
+    },
+    "ExecutionRoleName": {
+      "Type": "String",
+      "Default": "",
+      "Description": "Existing CloudFormation execution role name; empty means byus-<Environment>-cfn-execution.",
+      "AllowedPattern": "(|[A-Za-z0-9+=,.@_-]{1,64})"
+    },
+    "PlatformStackName": {
+      "Type": "String",
+      "Default": "",
+      "Description": "Environment stack whose generated AlarmTopic is covered; empty means byus-<Environment>-platform.",
+      "AllowedPattern": "(|[A-Za-z][A-Za-z0-9-]{0,100})"
+    }
+  },
+  "Conditions": {
+    "CustomRoleName": {
+      "Fn::Not": [
+        {
+          "Fn::Equals": [
+            {
+              "Ref": "ExecutionRoleName"
+            },
+            ""
+          ]
+        }
+      ]
+    },
+    "CustomStackName": {
+      "Fn::Not": [
+        {
+          "Fn::Equals": [
+            {
+              "Ref": "PlatformStackName"
+            },
+            ""
+          ]
+        }
+      ]
+    }
+  },
+  "Resources": {
+    "AlarmSubscriptionPolicy": {
+      "Type": "AWS::IAM::Policy",
+      "Properties": {
+        "PolicyName": {
+          "Fn::Sub": "byus-${Environment}-cfn-alarm-sns-subscription"
+        },
+        "Roles": [
+          {
+            "Fn::If": [
+              "CustomRoleName",
+              {
+                "Ref": "ExecutionRoleName"
+              },
+              {
+                "Fn::Sub": "byus-${Environment}-cfn-execution"
+              }
+            ]
+          }
+        ],
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Sid": "SubscribeToThisEnvironmentAlarmTopic",
+              "Effect": "Allow",
+              "Action": "sns:Subscribe",
+              "Resource": {
+                "Fn::Sub": [
+                  "arn:${AWS::Partition}:sns:${AWS::Region}:${AWS::AccountId}:${Stack}-AlarmTopic-*",
+                  {
+                    "Stack": {
+                      "Fn::If": [
+                        "CustomStackName",
+                        {
+                          "Ref": "PlatformStackName"
+                        },
+                        {
+                          "Fn::Sub": "byus-${Environment}-platform"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "Sid": "ReadAndRemoveSubscriptionsOfThisEnvironmentAlarmTopic",
+              "Effect": "Allow",
+              "Action": [
+                "sns:Unsubscribe",
+                "sns:GetSubscriptionAttributes"
+              ],
+              "Resource": {
+                "Fn::Sub": [
+                  "arn:${AWS::Partition}:sns:${AWS::Region}:${AWS::AccountId}:${Stack}-AlarmTopic-*:*",
+                  {
+                    "Stack": {
+                      "Fn::If": [
+                        "CustomStackName",
+                        {
+                          "Ref": "PlatformStackName"
+                        },
+                        {
+                          "Fn::Sub": "byus-${Environment}-platform"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    }
+  }
+}
