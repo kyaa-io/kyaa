@@ -1,5 +1,6 @@
 import { z } from "zod";
 import type { AppLocale } from "@/i18n/locales";
+import type { PhotoSet } from "@/features/media/domain/public-image";
 
 /**
  * Home gallery photos (read_public_home_gallery_photos, plan R8-DATA §4, narrowed 2026-11-09). Two sources only: an image of a
@@ -33,7 +34,7 @@ const youtubeShortSchema = z.object({
   thumbnail: z.string().regex(/^\/api\/public\/notice-media\/[0-9a-f-]{36}\?variant=thumbnail$/).optional(),
   videoId: z.string().regex(/^[A-Za-z0-9_-]{11}$/),
   title: z.string().min(1).max(300),
-  creator: z.object({ slug: z.string().min(1), name: z.string().min(1) }).strict(),
+  creator: z.object({ slug: z.string().min(1), name: z.string().min(1), avatar: z.object({ src: z.string().min(1), photos: z.custom<PhotoSet>().optional() }).strict().optional() }).strict(),
   href: z.string().regex(/^https:\/\/www\.youtube\.com\/watch\?v=[A-Za-z0-9_-]{11}$/),
   liveHref: z.string().regex(/^\/live\/[a-z0-9-]+$/).optional(),
 }).strict();

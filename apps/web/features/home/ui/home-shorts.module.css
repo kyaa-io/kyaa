@@ -3,14 +3,16 @@
 .rail .item { flex:none; width:160px; }
 .grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:var(--space-4) var(--space-3); }
 .item { min-width:0; }
-.item .card { display:grid; width:100%; min-width:0; gap:var(--space-2); padding:0; border:0; background:transparent; color:var(--color-ink); font:inherit; text-align:start; cursor:pointer; }
+.item .card { display:grid; grid-template-columns:minmax(0,1fr); justify-content:stretch; justify-items:stretch; align-items:start; width:100%; min-width:0; gap:var(--space-2); padding:0; border:0; background:transparent; color:var(--color-ink); font:inherit; text-align:start; cursor:pointer; }
 .card:focus-visible { outline:2px solid var(--color-focus); outline-offset:2px; }
 .cover { position:relative; display:grid; width:100%; aspect-ratio:9/16; place-items:center; overflow:hidden; border-radius:var(--radius-card,12px); background:var(--color-surface); outline:1px solid var(--color-line); outline-offset:-1px; }
 .cover > img { width:100%; height:100%; object-fit:contain; }
 .play { position:absolute; display:grid; width:44px; height:44px; place-items:center; border-radius:50%; background:var(--color-shortform-play); color:var(--color-surface); }
-.caption { display:flex; align-items:flex-start; gap:var(--space-2); min-width:0; }
-.details { display:grid; min-width:0; gap:var(--space-1); }
-.title { display:-webkit-box; overflow:hidden; -webkit-box-orient:vertical; -webkit-line-clamp:2; font-size:var(--fan-action-label-size); line-height:20px; }
+.caption { display:flex; align-items:flex-start; gap:var(--space-2); min-width:0; text-align:start; text-wrap:auto; }
+.details { display:grid; flex:1; min-width:0; gap:var(--space-1); }
+.title { overflow:hidden; font-size:var(--fan-action-label-size); line-height:20px; text-overflow:ellipsis; white-space:nowrap; }
+.tail { height:1px; }
+.retry { display:flex; margin:var(--space-4) auto 0; }
 .meta { overflow:hidden; color:var(--color-muted); text-overflow:ellipsis; white-space:nowrap; }
 .player { display:grid; gap:var(--space-3); justify-items:center; }
 .player iframe { width:min(100%,33.75vh,360px); aspect-ratio:9/16; border:0; background:var(--color-ink); }
