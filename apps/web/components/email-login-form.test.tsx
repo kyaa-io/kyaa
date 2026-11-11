@@ -17,7 +17,7 @@ it("labels both fields and prevents duplicate submits while showing credential f
   expect(screen.getByRole("button", { name: "로그인 중" })).toBeDisabled();
   complete(new Response(null, { status: 401 }));
   await waitFor(() => expect(screen.getByRole("alert")).toHaveTextContent("이메일과 비밀번호"));
-  expect(screen.getByRole("button", { name: "로그인", exact: true })).toBeEnabled();
+  expect(screen.getByRole("button", { name: /^로그인$/ })).toBeEnabled();
 });
 it("has complete copy in every supported locale", () => {
   for (const locale of APP_LOCALES) expect(emailLoginCopy(locale).every(value => value.trim().length > 0)).toBe(true);
