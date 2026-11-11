@@ -2,16 +2,28 @@ import type { TranslatedMessage } from "../messages";
 
 export const messages = {
   "pfTitle": {
-    "ja": "証明の提出",
-    "zh-Hans": "提交证明",
-    "zh-Hant": "提交證明",
-    "es": "Enviar comprobante",
-    "id": "Kirim bukti",
-    "vi": "Gửi bằng chứng",
-    "th": "ส่งหลักฐาน",
-    "pt": "Enviar comprovante",
-    "fr": "Envoyer une preuve",
-    "ru": "Отправить подтверждение"
+    "ja": "メンバーシップ・購入の証明",
+    "zh-Hans": "会员与购买证明",
+    "zh-Hant": "會員與購買證明",
+    "es": "Comprobante de membresía y compra",
+    "id": "Bukti keanggotaan dan pembelian",
+    "vi": "Bằng chứng hội viên và mua hàng",
+    "th": "หลักฐานสมาชิกและการซื้อ",
+    "pt": "Comprovante de assinatura e compra",
+    "fr": "Preuve d'abonnement et d'achat",
+    "ru": "Подтверждение подписки и покупки"
+  },
+  "pfTitleSns": {
+    "ja": "SNS投稿の証明",
+    "zh-Hans": "社交媒体帖子证明",
+    "zh-Hant": "社群貼文證明",
+    "es": "Comprobante de publicación en redes",
+    "id": "Bukti postingan media sosial",
+    "vi": "Bằng chứng bài đăng mạng xã hội",
+    "th": "หลักฐานโพสต์โซเชียล",
+    "pt": "Comprovante de post nas redes",
+    "fr": "Preuve de publication sur les réseaux",
+    "ru": "Подтверждение поста в соцсетях"
   },
   "pfTypeLabel": {
     "ja": "証明の種類",

@@ -132,11 +132,13 @@ describe("ProofsScreen mission entry", () => {
     query.value = "type=sns_post&locale=ko";
     const linked = render(<ProofsScreen locale="ko" slug="mina" />);
     expect(((await screen.findByRole("radio", { name: "SNS 올리기" })) as HTMLInputElement).checked).toBe(true);
+    expect(screen.getByRole("heading", { level: 1, name: "SNS 글 인증" })).toBeTruthy();
     expect(screen.queryByRole("checkbox", { name: "인증했어요 게시판에 공개" })).toBeNull();
     linked.unmount();
     query.value = "";
     render(<ProofsScreen locale="ko" slug="mina" />);
     expect(((await screen.findByRole("radio", { name: "멤버십" })) as HTMLInputElement).checked).toBe(true);
+    expect(screen.getByRole("heading", { level: 1, name: "멤버십·구매 인증" })).toBeTruthy();
     expect(screen.getByRole("checkbox", { name: "인증했어요 게시판에 공개" })).toBeTruthy();
   });
   it("shows the existing error text and disables submit when the mission is not submittable", async () => {
