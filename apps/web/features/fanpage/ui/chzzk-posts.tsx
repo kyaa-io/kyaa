@@ -1,4 +1,5 @@
 "use client";
+import { NoticeReactions } from "@/components/notice/notice-reactions";
 
 import { FanSkeletonRows } from "@/components/fan-ui/fan-skeleton";
 import { toContentLocale } from "@/i18n/locales";
@@ -72,6 +73,7 @@ export function CreatorNews({ slug, locale, full = false, initialFilter = "all",
           {item.source === "chzzk" && item.post.images[0] && <NewsThumbnail key={item.post.images[0].url} url={item.post.images[0].url} />}
           <ArrowRight className={styles.rowArrow} size={16} aria-hidden="true" />
         </Link>
+        {item.source === "byus" && <NoticeReactions slug={slug} noticeSlug={item.notice.slug} title={item.title} locale={locale} />}
       </li>)}
     </ul>}
     {!items.length && loading && <FanSkeletonRows rows={4} variant="post" ariaLabel={locale === "ko" ? "소식을 불러오고 있어요." : translate(locale, localizedMessages.m761de726ce49, "Loading updates.")} />}
