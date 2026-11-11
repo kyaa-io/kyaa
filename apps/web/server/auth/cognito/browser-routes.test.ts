@@ -190,3 +190,26 @@ it("logs only a callback failure stage, never provider error contents",async()=>
  expect(response.status).toBe(303);expect(log).toHaveBeenCalledExactlyOnceWith("COGNITO_CALLBACK_FAILED",{stage:"token"});
  expect(JSON.stringify(log.mock.calls)).not.toContain("private");log.mockRestore();
 });
+
+it.each(["503", "network", "timeout", "invalid_client", "invalid_grant"])("refresh %s preserves retryable sessions and removes only invalid grants",async failure=>{
+ const key="r".repeat(43);
+ const stored=seal({accessToken:accessJwt({origin_jti:"family",jti:"token"}),idToken:"id",refreshToken:"refresh",subject:"member",expiresAt:Date.now()-1000,sessionExpiresAt:Date.now()+600000},mock.config.cookieSecret);
+ const rows=new Map([[digest(key),stored]]);
+ mock.rpc.mockImplementation(async(name:string,args:Record<string,unknown>)=>{
+  if(name==="read_cognito_browser_session")return {data:rows.get(String(args.p_token_hash))??null};
+  if(name==="logout_cognito_browser_session")rows.delete(String(args.p_token_hash));
+  return {data:null};
+ });
+ vi.stubGlobal("fetch",vi.fn(async()=>{
+  if(failure==="network")throw new TypeError("fetch failed");
+  if(failure==="timeout")throw new DOMException("timed out","TimeoutError");
+  return Response.json({error:failure},{status:failure==="503"?503:400});
+ }));
+ const response=await session(new Request("https://kyaa.io/api/auth/cognito/session",{headers:{cookie:`${SESSION_COOKIE}=${key}`}}));
+ expect(response.status).toBe(failure==="invalid_grant"?401:503);
+ expect(rows.has(digest(key))).toBe(failure!=="invalid_grant");
+ if(failure!=="invalid_grant"){
+  expect(response.headers.has("set-cookie")).toBe(false);
+  expect(mock.rpc.mock.calls.map(call=>call[0])).toEqual(["read_cognito_browser_session"]);
+ }
+});

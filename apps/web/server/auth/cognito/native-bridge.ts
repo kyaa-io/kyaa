@@ -6,7 +6,7 @@ import { cognitoConfig } from "./config";
 import { cognitoDenied, createCognitoVerifier, COGNITO_TOKEN_PREFIX } from "./verifier";
 import { identityDatabase } from "./identity-repository";
 import { resolveKyaaMember } from "./kyaa-identity";
-import { authHeaders, boundedAuthJson, challenge, digest, opaque, readSession, requireOrigin, revokeSession, retryRemoteRevocations, rpc, seal, sessionSchema, unseal, writeSession } from "./browser-session";
+import { CognitoTokenUnavailable, authHeaders, boundedAuthJson, challenge, digest, opaque, readSession, requireOrigin, revokeSession, retryRemoteRevocations, rpc, seal, sessionSchema, unseal, writeSession } from "./browser-session";
 
 const opaqueSchema=z.string().regex(/^[A-Za-z0-9_-]{43}$/);
 const stateSchema=z.string().regex(/^[A-Za-z0-9_-]{16,128}$/);
@@ -56,5 +56,8 @@ export async function nativeBridge(request:Request,operation:"issue"|"exchange"|
     const {appUserId,identityKey,walletAddress,chainId}=member;
     // privyUserId keeps its field name for the existing app contract; it carries the member's identity key.
     return Response.json({sessionToken:key,accessToken:COGNITO_TOKEN_PREFIX+session.accessToken,expiresAt:session.expiresAt,appUserId,privyUserId:identityKey,walletAddress,chainId},{headers:authHeaders()});
-  }catch{return Response.json({error:{code:"INVALID_NATIVE_AUTH_HANDOFF"}},{status:401,headers:authHeaders()});}
+  }catch(error){
+    if(error instanceof CognitoTokenUnavailable)return Response.json({error:{code:"AUTH_UNAVAILABLE"}},{status:503,headers:authHeaders()});
+    return Response.json({error:{code:"INVALID_NATIVE_AUTH_HANDOFF"}},{status:401,headers:authHeaders()});
+  }
 }

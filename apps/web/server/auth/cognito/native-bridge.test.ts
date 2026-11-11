@@ -51,3 +51,12 @@ it("makes repeated logout idempotent and rejects cross-origin browser logout bef
  expect((await nativeBridge(request({sessionToken:key},"https://attacker.test"),"logout")).status).toBe(401);
  expect(mock.rpc).not.toHaveBeenCalled();
 });
+
+it.each([503,400])("native refresh maps provider HTTP %s without hiding a retryable outage",async status=>{
+ const encrypted=seal({accessToken:accessJwt({origin_jti:"family",jti:"token"}),idToken:"id",refreshToken:"refresh",subject:"same-owner",expiresAt:Date.now()-1,sessionExpiresAt:Date.now()+600000},mock.config.cookieSecret);
+ mock.rpc.mockImplementation(async(name:string)=>({data:name==="read_cognito_browser_session"?encrypted:null}));
+ mock.fetch.mockResolvedValue(Response.json({error:"invalid_grant"},{status}));
+ const response=await nativeBridge(request({sessionToken:key}),"refresh");
+ expect(response.status).toBe(status===503?503:401);
+ expect(mock.rpc.mock.calls.some(([name])=>name==="logout_cognito_browser_session")).toBe(status===400);
+});

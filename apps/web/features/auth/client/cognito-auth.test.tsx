@@ -3,6 +3,8 @@ import{afterEach,expect,it,vi}from"vitest";
 import type{ReactNode}from"react";
 const mock=vi.hoisted(()=>({privy:{ready:true,authenticated:true,user:{id:"did:privy:old"},getAccessToken:vi.fn(async()=>"legacy-token"),logout:vi.fn(async()=>{})},sync:vi.fn()}));
 vi.mock("@/features/auth/client/auth-fallback",()=>({usePrivy:()=>mock.privy,useSubscribeToJwtAuthWithFlag:mock.sync}));
+import {useOwnedFanResource} from "@/components/fan-ui/use-owned-fan-resource";
+vi.mock("@/components/byus-session-provider",()=>({useByUsSession:()=>({ready:true,ownerId:"did:privy:old",generation:0})}));
 import{CognitoAuthProvider,useByUsAuth,useCognitoAuth}from"./cognito-auth";
 afterEach(()=>{vi.useRealTimers();vi.clearAllMocks();vi.unstubAllGlobals();});
 it.each(["request","body"])("ends a stalled session %s and permits a fresh retry without accepting the late response",async(stage)=>{
@@ -68,4 +70,41 @@ it("does not claim logout when the retired server session cannot be revoked",asy
  await act(async()=>{await expect(result.current.logout()).rejects.toThrow("Sign out unavailable");});
  expect(mock.privy.logout).not.toHaveBeenCalled();
  expect(result.current.authenticated).toBe(true);
+});
+
+it.each([503,401])("refresh HTTP %s retries an outage but signs out an invalid grant",async status=>{
+ const value={authenticated:true,walletLinked:true,userId:"did:privy:old",accessToken:"old",expiresAt:Date.now()+1000};
+ const fetcher=vi.fn().mockResolvedValueOnce(Response.json(value)).mockResolvedValueOnce(new Response(null,{status})).mockResolvedValueOnce(Response.json({...value,accessToken:"renewed",expiresAt:Date.now()+600000}));
+ vi.stubGlobal("fetch",fetcher);
+ const {result}=renderHook(()=>({auth:useByUsAuth(),cognito:useCognitoAuth()}),{wrapper:({children}:{children:ReactNode})=><CognitoAuthProvider>{children}</CognitoAuthProvider>});
+ await waitFor(()=>expect(result.current.auth.authenticated).toBe(true));
+ await act(async()=>{
+  if(status===503)await expect(result.current.auth.getAccessToken()).rejects.toThrow("Authentication unavailable");
+  else await expect(result.current.auth.getAccessToken()).resolves.toBeNull();
+ });
+ expect(result.current.auth.authenticated).toBe(status===503);
+ if(status===503){
+  expect(result.current.cognito.session?.accessToken).toBe("old");
+  await act(async()=>{await expect(result.current.auth.getAccessToken()).resolves.toBe("renewed");});
+  expect(result.current.auth.authenticated).toBe(true);
+ }else expect(result.current.cognito.session).toBeNull();
+});
+
+it("keeps MY's resource in the network retry state during a refresh outage",async()=>{
+ const value={authenticated:true,walletLinked:true,userId:"did:privy:old",accessToken:"old",expiresAt:Date.now()+1000};
+ let outage=true,initial=true;
+ vi.stubGlobal("fetch",vi.fn(async(path:string)=>{
+  if(path==="/api/auth/cognito/session"){
+   if(initial){initial=false;return Response.json(value);}
+   return outage?new Response(null,{status:503}):Response.json({...value,accessToken:"new",expiresAt:Date.now()+600000});
+  }
+  return Response.json({loaded:true});
+ }));
+ const parse=(data:unknown)=>data;
+ const {result}=renderHook(()=>{const auth=useByUsAuth();return {auth,resource:useOwnedFanResource("/api/me/retry-test",parse,auth)};},{wrapper:({children}:{children:ReactNode})=><CognitoAuthProvider>{children}</CognitoAuthProvider>});
+ await waitFor(()=>expect(result.current.resource.state).toEqual({status:"error",kind:"network"}));
+ expect(result.current.auth.authenticated).toBe(true);
+ outage=false;
+ act(()=>result.current.resource.retry());
+ await waitFor(()=>expect(result.current.resource.state).toEqual({status:"ready",data:{loaded:true}}));
 });
