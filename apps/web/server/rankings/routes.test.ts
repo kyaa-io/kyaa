@@ -295,12 +295,23 @@ describe("rankings routes", () => {
   });
 
   it("lists the challenges switched on, and fails closed on an odd answer", async () => {
-    const { handlers, rpc } = make(() => ({ items: [{ slug: "elina", name: "엘리나", imageUrl: null, title: "찐팬 100명", description: "", endsOn: "2026-11-30", count: 47, target: 100, celebrityId: CEL }] }));
+    const { handlers, rpc } = make(() => ({ items: [{ slug: "elina", name: "엘리나", imageUrl: null, title: "찐팬 100명", description: "", endsOn: "2026-11-30", count: 47, hearts: 212, target: 100, celebrityId: CEL }] }));
     const res = await handlers.challenges(req("/api/rankings/challenges?locale=ko"));
     expect(rpc).toHaveBeenCalledWith("read_active_jjinfan_challenges", { p_locale: "ko", p_limit: 10 });
     expect(res.headers.get("cache-control")).toContain("public");
-    expect(await res.json()).toEqual({ items: [{ slug: "elina", name: "엘리나", imageUrl: null, title: "찐팬 100명", description: "", endsOn: "2026-11-30", count: 47, target: 100 }] });
-    const odd = make(() => ({ items: [{ slug: "a", name: "A", imageUrl: null, title: "", description: "", count: 1, target: 100 }] }));
+    expect(await res.json()).toEqual({ items: [{ slug: "elina", name: "엘리나", imageUrl: null, title: "찐팬 100명", description: "", endsOn: "2026-11-30", count: 47, hearts: 212, target: 100 }] });
+    const odd = make(() => ({ items: [{ slug: "a", name: "A", imageUrl: null, title: "", description: "", count: 1, hearts: 1, target: 100 }] }));
     expect((await odd.handlers.challenges(req("/x"))).status).toBe(503);
+  });
+
+  // The answer the local database gave (read_active_jjinfan_challenges, supabase/migrations/20261223120000): one fan holding three hearts, so count 1 and hearts 3.
+  it("passes the real database answer: hearts are the gauge value, fans stay in count; an empty list and an answer without hearts (old database) fail honestly", async () => {
+    const real = { items: [{ name: "합성 크리에이터", slug: "jj-synth", count: 1, title: "합성 찐팬 100", endsOn: null, hearts: 3, target: 100, imageUrl: "/fixture.webp", description: "" }] };
+    const ok = make(() => real);
+    const body = await (await ok.handlers.challenges(req("/api/rankings/challenges?locale=ko"))).json();
+    expect(body.items[0]).toMatchObject({ slug: "jj-synth", count: 1, hearts: 3, target: 100 });
+    expect(await (await make(() => ({ items: [] })).handlers.challenges(req("/x"))).json()).toEqual({ items: [] });
+    const { hearts: _hearts, ...old } = real.items[0]!;
+    expect((await make(() => ({ items: [old] })).handlers.challenges(req("/x"))).status).toBe(503);
   });
 });

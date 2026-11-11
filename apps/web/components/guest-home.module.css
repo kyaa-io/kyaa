@@ -34,10 +34,9 @@
 .main { min-width: 0; }
 .heroSection, .contentSection { scroll-margin-top: calc(var(--header-height) + 16px); }
 .contentSection { margin-top: var(--fan-section-gap); }
-/* 대표 2026-11-11: 배너와 랭킹 사이 빈 띠 자리에 찐팬 100 줄. 줄이 있을 때 위아래 16px, 없으면 이 칸은 비어(:empty) 예전 간격 그대로. */
+/* 대표 2026-11-11: 배너와 랭킹 사이 빈 띠 자리에 찐팬 100 줄(항상 있음, 챌린지가 없으면 0/100). 위아래 16px. */
 .jjinfanStrip { margin-top: var(--space-4); }
-.jjinfanStrip:empty { display: none; }
-.jjinfanStrip:not(:empty) + .contentSection { margin-top: var(--space-4); }
+.jjinfanStrip + .contentSection { margin-top: var(--space-4); }
 .brandTitle { display:flex; flex-wrap:wrap; align-items:baseline; gap:4px 8px; }
 .brandSlogan { color:var(--muted); font-size:var(--fan-metadata-size); font-weight:var(--fan-body-weight); line-height:1.4; letter-spacing:normal; text-wrap:pretty; }
 .heroCarousel { position: relative; color: var(--color-surface); }

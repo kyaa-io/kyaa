@@ -5,8 +5,8 @@ vi.mock("@/server/fanpage/dependencies", () => ({ createFanpageDependencies: () 
 vi.mock("@/server/dukjil/creator-id", () => ({ resolveCreatorId: vi.fn(async () => null) }));
 import { GET } from "./route";
 
-// Answer copied from the local database: read_active_jjinfan_challenges('ko', 1), 2026-11-08 (synthetic local campaign).
-const answer = { items: [{ name: "엘리나", slug: "elina", count: 101, title: "[합성] 찐팬 100명 게이지", endsOn: null, target: 100, imageUrl: "/images/guest-home/elina-card.jpg", description: "[합성] 로컬 시각 검토용 문구입니다." }] };
+// Answer from the local database (supabase/migrations/20261223120000): read_active_jjinfan_challenges('ko', 1) for a synthetic campaign with one fan holding three hearts.
+const answer = { items: [{ name: "합성 크리에이터", slug: "jj-synth", count: 1, title: "합성 찐팬 100", endsOn: null, hearts: 3, target: 100, imageUrl: "/fixture.webp", description: "" }] };
 
 beforeEach(() => { vi.clearAllMocks(); state.rpc.mockResolvedValue(answer); });
 
@@ -14,8 +14,15 @@ it("passes the database's answer through the route schema, public and the same f
   const res = await GET(new Request("https://byus.test/api/rankings/challenges?locale=ko", { headers: { authorization: "Bearer t" } }));
   expect(res.status).toBe(200);
   expect(res.headers.get("cache-control")).toContain("public");
-  expect(await res.json()).toEqual({ items: [{ slug: "elina", name: "엘리나", imageUrl: "/images/guest-home/elina-card.jpg", title: "[합성] 찐팬 100명 게이지", description: "[합성] 로컬 시각 검토용 문구입니다.", endsOn: null, count: 101, target: 100 }] });
+  expect(await res.json()).toEqual({ items: [{ slug: "jj-synth", name: "합성 크리에이터", imageUrl: "/fixture.webp", title: "합성 찐팬 100", description: "", endsOn: null, count: 1, hearts: 3, target: 100 }] });
   expect(state.authorize).not.toHaveBeenCalled();
+});
+
+it("answers an empty list for no challenge and fails loudly for an answer without hearts (old database)", async () => {
+  state.rpc.mockResolvedValue({ items: [] });
+  expect(await (await GET(new Request("https://byus.test/api/rankings/challenges"))).json()).toEqual({ items: [] });
+  state.rpc.mockResolvedValue({ items: [{ ...answer.items[0], hearts: undefined }] });
+  expect((await GET(new Request("https://byus.test/api/rankings/challenges"))).status).toBeGreaterThanOrEqual(500);
 });
 
 it("rejects a bad locale before the database and answers 503 for an old database", async () => {

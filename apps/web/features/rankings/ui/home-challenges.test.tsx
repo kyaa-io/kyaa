@@ -5,7 +5,7 @@ vi.mock("./use-ranking-resource", () => ({ useRankingResource: (url: string) => 
 import { HomeChallenges, pickHomeChallenges } from "./home-challenges";
 
 afterEach(cleanup);
-const item = (slug: string, count: number) => ({ slug, name: slug === "elina" ? "엘리나" : slug, imageUrl: null, title: "제목", description: "", endsOn: null, count, target: 100 as const });
+const item = (slug: string, count: number) => ({ slug, name: slug === "elina" ? "엘리나" : slug, imageUrl: null, title: "제목", description: "", endsOn: null, count, hearts: count * 3, target: 100 as const });
 
 it("keeps the viewer's own page first, then the closest to 100, two at most", () => {
   const items = [item("a", 10), item("b", 90), item("elina", 5), item("c", 50)];
