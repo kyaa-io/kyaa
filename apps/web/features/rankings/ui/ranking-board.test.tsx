@@ -289,16 +289,21 @@ it("a phone reads one list at a time behind the 찐팬 | 크리에이터 segment
   expect(column("fans").querySelectorAll("li[data-row='fan-rank']").length).toBeGreaterThan(0);
 });
 
-it("movement stands right after the name: ▲ green and ▼ red, hidden when the row did not move", async () => {
+it("movement is a small triangle right after the rank number: up and down differ by direction, nothing when the row did not move, no number drawn", async () => {
   stubRows([fanRow(1, { delta: 3 }), fanRow(2, { delta: -2 }), fanRow(3, { delta: 0 }), fanRow(4, { delta: null })], [creatorRow(1, { delta: 1 })]);
   const { container } = render(<RankingBoard locale="ko" />);
   await inRow("하트팬1");
-  const line = (name: string) => container.querySelector(`li [title='${name}']`)!.parentElement!;
-  expect(line("하트팬1").querySelector("[data-direction='up']")?.textContent).toBe("3");
-  expect(line("하트팬2").querySelector("[data-direction='down']")?.textContent).toBe("2");
-  expect(line("하트팬3").querySelector("[data-delta-cell]")).toBeNull();
-  expect(line("하트팬4").querySelector("[data-delta-cell]")).toBeNull();
-  expect(line("하트팬1").firstElementChild).toBe(container.querySelector("li [title='하트팬1']"));
+  const item = (name: string) => container.querySelector(`li:has([title='${name}'])`)!;
+  const mark = (name: string) => item(name).querySelector("[data-delta-cell]");
+  expect(mark("하트팬1")).toHaveAttribute("data-direction", "up");
+  expect(mark("하트팬1")?.getAttribute("aria-label")).toBe("3계단 올라감");
+  expect(mark("하트팬1")?.textContent).toBe("");
+  expect(mark("하트팬2")).toHaveAttribute("data-direction", "down");
+  expect(mark("하트팬2")?.getAttribute("aria-label")).toBe("2계단 내려감");
+  expect(mark("하트팬3")).toBeNull();
+  expect(mark("하트팬4")).toBeNull();
+  expect(mark("하트팬1")!.previousElementSibling).toBe(item("하트팬1").querySelector("[data-medal='1']"));
+  expect(mark("하트팬1")!.parentElement).toBe(item("하트팬1").querySelector("[data-medal='1']")!.parentElement);
 });
 
 it("draws no gauge bar on any row, and no way-to-first text in the line", async () => {

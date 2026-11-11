@@ -4,10 +4,10 @@
 .clip { min-height: 0; overflow: hidden; }
 /* 안쪽: 이름 시작선(순위 28 · 8 · 아바타 40 · 8 = 84). 아래·오른쪽 4는 버튼 초점 링이 잘리지 않게 둔다. */
 .body { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-3) var(--space-4); padding: var(--space-1) var(--space-3) var(--space-3) var(--rank-name-start, calc(var(--space-3) + var(--space-10) + var(--space-6) + var(--space-5))); }
-.stats { display: flex; min-width: 0; margin: 0; gap: var(--space-6); }
+.stats { display: flex; flex-wrap: wrap; min-width: 0; margin: 0; gap: var(--space-2) var(--space-5); }
 .stat { min-width: 0; margin: 0; }
 .label { margin: 0; color: var(--color-muted); font-size: var(--fan-badge-size); line-height: var(--fan-body-leading); white-space: nowrap; }
-.value { display: flex; align-items: center; gap: var(--space-1); overflow: hidden; margin: 0; color: var(--color-accent-ink); font-size: var(--fan-item-title-size); font-weight: var(--fan-item-title-weight); font-variant-numeric: tabular-nums; line-height: var(--fan-heading-leading); white-space: nowrap; }
+.value { display: flex; align-items: center; gap: var(--space-1); overflow: hidden; margin: 0; color: var(--color-accent-ink); font-size: var(--fan-description-size); font-weight: var(--fan-item-title-weight); font-variant-numeric: tabular-nums; line-height: var(--fan-heading-leading); white-space: nowrap; }
 .value > span { overflow: hidden; text-overflow: ellipsis; }
 /* 버튼: 같은 줄에 자리가 있으면 남은 폭을 쓰고, 없으면 다음 줄 전폭. 높이 44. */
 .action { display: flex; flex: 1 0 auto; min-width: 0; }
