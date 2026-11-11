@@ -1,7 +1,7 @@
 import {afterEach,expect,it,vi} from "vitest";
 vi.mock("server-only",()=>({}));
 const mock=vi.hoisted(()=>({provider:"cognito",config:{issuer:"https://cognito-idp.ap-northeast-2.amazonaws.com/ap-northeast-2_pool",clientId:"client",domain:"https://pool.auth.ap-northeast-2.amazoncognito.com",redirectUri:"https://kyaa.io/api/auth/cognito/callback",logoutUri:"https://kyaa.io/login",origin:"https://kyaa.io",cookieSecret:Buffer.alloc(32,7).toString("base64")},verify:vi.fn(),tokenRequest:vi.fn(),writeSession:vi.fn(),signIn:vi.fn(),member:vi.fn(),rpc:vi.fn(),kakao:false}));
-vi.mock("./config",()=>({cognitoConfig:()=>mock.config,cognitoCleanupConfig:()=>mock.config}));
+vi.mock("./config",()=>({cognitoConfig:()=>mock.config,cognitoCleanupConfig:()=>mock.config,emailCognitoConfig:()=>mock.config}));
 vi.mock("../../config/env",()=>({loadServerEnv:()=>({AUTH_PROVIDER:mock.provider,NEXT_PUBLIC_APP_URL:mock.config.origin,GIWA_CHAIN_ID:91342,COGNITO_KAKAO_ENABLED:mock.kakao})}));
 vi.mock("./verifier",async original=>({...await original<typeof import("./verifier")>(),createCognitoVerifier:()=>mock.verify}));
 vi.mock("./identity-repository",()=>({identityDatabase:()=>({rpc:mock.rpc})}));

@@ -104,7 +104,7 @@
 
 | # | 방법 | 통과 조건(추가) | 현재 상태 | 막힌 이유·필요한 일 |
 |---|---|---|---|---|
-| L1 | **기존 이메일 회원**(Cognito 이메일 풀, 이전 Supabase 이메일 회원 포함) | 실제 웹 로그인 화면에서 이메일·비밀번호 입력 → 원래 회원 UUID 유지(`supabase:`/`did:privy` 키 그대로) → 보호 API 200. 틀린 비밀번호 거부, 이메일만으로 다른 계정 연결 안 됨 | **미검증 — 현재 불가** | 웹에 이메일 로그인 화면이 없다(위험 1-6). 이메일 풀은 앱 계약(`/api/auth/email/*`, 토큰을 본문으로 반환)만 있다. 필요: L1 작업(아래) |
+| L1 | **기존 이메일 회원**(Cognito 이메일 풀, 이전 Supabase 이메일 회원 포함) | 실제 웹 로그인 화면에서 이메일·비밀번호 입력 → 원래 회원 UUID 유지(`supabase:`/`did:privy` 키 그대로) → 보호 API 200. 틀린 비밀번호 거부, 이메일만으로 다른 계정 연결 안 됨 | **실계정 미검증** | 웹 폼·서버 쿠키 세션 구현, 합성 시험 통과. dev 설정·기존 실계정 확인 필요 |
 | L2 | **Google 신규 가입** | 처음 쓰는 Google 계정 → `kyaa_sign_in` `new` → 회원 1명·주소 1개 생성 → 보호 API 200. 주소는 전제 6에 따라 잠정(서명 인수 2-1c 전 최종 연결 금지) | 미검증(코드·단위·SQL 시험만 통과) | dev 배포·`AUTH_PROVIDER=cognito`·마이그레이션 적용 필요 |
 | L3 | **Apple** (기존 Apple 회원 연결 + 신규 가입 각각) | 기존: 원래 UUID·`did:privy`·지갑 유지. 신규: L2와 같음. Apple 이메일 가리기(릴레이 주소) 계정 포함 | 미검증 | Cognito Apple 팀 ID = `7RFN3TFR5K` 확인 필요(위험 1-2). 다르면 기존 회원 연결 불가 |
 | L4 | **기존 Google 회원 연결** | Privy 시절 Google 회원 → 같은 Google 계정 로그인 → `linked` → 원래 UUID·`did:privy`·지갑·도장·MY 그대로 → 보호 API 200. subject가 기록되지 않은 회원은 백필 후 연결(백필 전에는 `email_in_use` 안내가 정상) | 미검증(합성 DB 드라이런만 통과) | dev 배포 + (최근 미로그인 회원이면) Privy 내보내기·백필 |
@@ -123,7 +123,7 @@
 | 웹용 이메일 세션: 기존 `/api/auth/email/login`(Cognito 이메일 풀 + 이전 Lambda)을 호출하되 토큰을 브라우저에 주지 않고 서버 쿠키 세션으로 | 새 `app/api/auth/email/web-login/route.ts`, `server/auth/cognito/email-session.ts` 재사용, `browser-session.ts`에 `kind: email` 세션 | 틀린 비밀번호 401, 정지·탈퇴 거부, 쿠키 HttpOnly·`__Host-`, 토큰 비노출 |
 | 웹 세션 응답에 이메일 회원 반영 | `server/auth/cognito/browser-routes.ts`(`session`이 이메일 세션도 `userId`·`kyaa-email:` 토큰 반환) | 이메일 회원 `useByUsAuth` 로그인, 보호 API 200 |
 | 로그아웃 | 기존 `/api/auth/email/logout` 연동 | 로그아웃 후 401 |
-- 이 작업은 계획만 있고 구현되지 않았다. 구현 전에는 L1을 "미검증 — 현재 불가"로 보고한다.
+- 2026-11-12 구현: `email-login-form.tsx`, `/api/auth/email/web-login`, `cognito/email-browser.ts`. 이메일 전용 HttpOnly 쿠키와 암호화 DB 세션(최대 24시간)을 사용하고 이메일 풀로만 갱신한다. 원래 회원 식별 키를 유지하며 출처 검사·Cognito 로그인 제한·중복 제출 방지·오류 표시를 적용했다. 폼 12개 언어, 390/1440 로컬 브라우저 오류·초점 검증 및 합성 서버 시험 통과. 실제 계정 L1 인수는 미검증.
 
 ## 1-4. 위험
 | # | 위험 | 대응 |
@@ -133,7 +133,7 @@
 | 1-3 | 전환 직후 모든 회원 1회 재로그인 | 배포 안내 문구에 포함 |
 | 1-4 | 로그인 화면 캡처 없음 | dev 확인 때 추가 |
 | 1-5 | 앱(Flutter)의 Privy 토큰 경로는 요청마다 Privy 조회 → Privy 장애 영향 남음. 앱용 Cognito 응답에서 `walletToken` 제거. 웹 신규 회원은 앱(Privy)에 못 들어옴 | 1-3a A1~A4, 1-6 C3·C4. `t3/privy-offpath-2355`의 Privy JWKS 로컬 검증 재사용 검토 |
-| 1-6 | 웹 이메일 로그인 화면 없음(이메일 풀은 앱 계약만) → 인수 L1 불가 | 1-3a의 L1 작업을 1차에 추가. 소셜 성공을 이메일 이전 완료로 합산 금지 |
+| 1-6 | L1 웹 이메일 폼·서버 세션 구현, 실계정 미검증 | 1-3a의 L1 실계정 인수 필요. 소셜 성공을 이메일 이전 완료로 합산 금지 |
 | 1-7 | 첫 로그인 Google 프로필 사진 가져오기 꺼짐 | Cognito ID 토큰 `picture` 서버 처리로 별도 과제 |
 | 1-8 | 개인정보처리방침에 Privy 위탁 문구 남음 | 사용자 결정(법률) |
 | 1-9 | 카카오 `email_verified` 제공 여부 미확인 | dev에서 실제 앱으로 확인 |

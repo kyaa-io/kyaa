@@ -1,3 +1,4 @@
+import { EMAIL_BROWSER_COOKIE, emailBrowserSession, logoutEmailBrowser } from "./email-browser";
 import "server-only";
 import { z } from "zod";
 import { AuthError } from "../../../features/auth/domain/auth-errors";
@@ -97,6 +98,7 @@ export async function callback(request: Request): Promise<Response> {
     }
     const key=opaque();
     await writeSession(key,{ preferredLocale:flow.locale, accessToken:tokens.access_token,idToken:tokens.id_token,refreshToken:tokens.refresh_token,subject:id.subject,expiresAt:Date.now()+tokens.expires_in*1000,sessionExpiresAt:Date.now()+SESSION_LIFETIME_MS },config);
+    headers.append("set-cookie",cookie(EMAIL_BROWSER_COOKIE,"",0));
     headers.append("set-cookie",cookie(SESSION_COOKIE,key,SESSION_LIFETIME_MS/1000));headers.set("location",destination.toString());
     return new Response(null,{status:303,headers});
   } catch {
@@ -112,6 +114,7 @@ export async function callback(request: Request): Promise<Response> {
 export async function session(request: Request): Promise<Response> {
   try {
     if (loadServerEnv().AUTH_PROVIDER !== "cognito") throw cognitoDenied();
+    if (readCookie(request, EMAIL_BROWSER_COOKIE)) return await emailBrowserSession(request);
     const config=cognitoConfig();
     // Same-origin fetches only; GET carries no tokens across cross-site contexts.
     if (request.headers.get("sec-fetch-site") === "cross-site") throw cognitoDenied();
@@ -127,6 +130,11 @@ export async function logout(request: Request): Promise<Response> {
   try {
     const disabled=loadServerEnv().AUTH_PROVIDER !== "cognito";
     const config=disabled ? cognitoCleanupConfig() : cognitoConfig();requireOrigin(request,config);
+    if (readCookie(request, EMAIL_BROWSER_COOKIE)) {
+      await logoutEmailBrowser(request);
+      const headers=authHeaders(); headers.append("set-cookie",cookie(EMAIL_BROWSER_COOKIE,"",0)); headers.append("set-cookie",cookie(SESSION_COOKIE,"",0));
+      return Response.json({logoutUrl:null},{headers});
+    }
     const key=readCookie(request,SESSION_COOKIE);
     if((!key && !disabled) || (key && key.length!==43))throw cognitoDenied();
     if(key)await revokeSession(key,config);

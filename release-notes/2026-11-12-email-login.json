@@ -1,0 +1,5 @@
+{
+  "changes": ["로그인 화면에서 이메일과 비밀번호로 로그인할 수 있게 했어요.", "로그인하지 못하면 입력한 내용을 확인하고 다시 시도할 수 있어요.", "첨부 이미지는 로컬에서 이메일 로그인 폼의 오류 상태를 확인한 화면이에요."],
+  "path": "/login",
+  "images": ["release-notes/images/2026-11-12-email-login-390.png", "release-notes/images/2026-11-12-email-login-1440.png"]
+}

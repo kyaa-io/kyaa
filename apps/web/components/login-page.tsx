@@ -39,6 +39,7 @@ import { signupFunnelTracker, type LoginMeasurementAttempt } from "../features/a
 import { customSocialContinue } from "@/i18n/catalogs/components__custom-social-auth";
 import { isIosInstagram, planGoogleLogin, requiresGoogleBrowserHandoff } from "./login-browser-policy";
 import styles from "./login-page.module.css";
+import { EmailLoginForm } from "./email-login-form";
 
 const loginBackground = {
   desktop: "/images/login/spectrum-light.webp",
@@ -585,6 +586,7 @@ export function LoginPage({
             <ArrowRight />
           </button>
         )}
+        <EmailLoginForm locale={locale} disabled={authenticated || oauthStarting} />
         {loginError && <p ref={errorRef} className={styles.error} role="alert" tabIndex={-1}>{loginError}</p>}
     </div>
   );
