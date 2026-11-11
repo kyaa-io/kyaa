@@ -125,7 +125,7 @@ export function HotPosts({ locale }: { locale: AppLocale }) {
   const [open, setOpen] = useState(false);
   const [page, setPage] = useState(0);
   const mobile = useSyncExternalStore((notify) => { const media = window.matchMedia("(max-width: 767px)"); media.addEventListener("change", notify); return () => media.removeEventListener("change", notify); }, () => window.matchMedia("(max-width: 767px)").matches, () => false);
-  const [sort, setSort] = useState<"likes" | "comments" | "views">("likes");
+  const [sort, setSort] = useState<"likes" | "comments" | "views" | "latest">("likes");
   const url = `/api/public/popular-posts?locale=${toContentLocale(locale)}&page=1&sort=${sort}`;
   const auth = useByUsAuth(), signedIn = auth.ready && auth.authenticated;
   const hinted = useSyncExternalStore(noSubscribe, mayHaveSession, () => false);
@@ -138,7 +138,7 @@ export function HotPosts({ locale }: { locale: AppLocale }) {
   return <section className={styles.hot} aria-labelledby="directory-hot-posts" data-directory-block="hot-posts">
     <div className={styles.hotHead}><FanHeading id="directory-hot-posts">{c.hotTitle}</FanHeading>
       <FanMenu label={c.hotTitle} trigger={<FanIconButton className={styles.hotSort} aria-label={c.hotSort[sort]}>{c.hotSort[sort]}<FanIcon icon={ChevronDown} size={16} /></FanIconButton>}>
-        <FanMenu.Radio value={sort} onValueChange={value => { if (value === "likes" || value === "comments" || value === "views") { setSort(value); setOpen(false); setPage(0); } }} items={(["likes", "comments", "views"] as const).map(value => ({ value, label: c.hotSort[value] }))} />
+        <FanMenu.Radio value={sort} onValueChange={value => { if (value === "likes" || value === "comments" || value === "views" || value === "latest") { setSort(value); setOpen(false); setPage(0); } }} items={(["likes", "comments", "views", "latest"] as const).map(value => ({ value, label: c.hotSort[value] }))} />
       </FanMenu></div>
     {state.status === "error" ? <div className={styles.state}><FanState inline compact kind="error" title={c.hotError} actions={<FanAction variant="text" size="sm" onClick={retry}>{c.retry}</FanAction>} /></div>
       : <ul className={styles.posts}>{!ready ? Array.from({ length: ROWS }, (_, i) => <li key={i} className={styles.post} data-row="hot-loading" aria-hidden="true"><FanSkeleton shape="circle" width={32} height={32} /><FanSkeleton width="70%" height={16} /><FanSkeleton width="40%" height={12} /></li>)

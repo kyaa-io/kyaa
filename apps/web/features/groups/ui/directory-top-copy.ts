@@ -16,12 +16,12 @@ const values: Record<AppLocale, readonly string[]> = {
   ru: ["Мои артисты", "Найти группы", "Войти", "Популярные записи", "Больше всего лайков", "Развернуть", "Свернуть", "Пока нет популярных записей", "Не удалось загрузить записи", "Повторить", "Лайков: {0}", "Комментариев: {0}", "Баннеры групп", "Предыдущий баннер", "Следующий баннер"],
 };
 
-const hotSort: Record<AppLocale, readonly [string, string]> = {
-  ko: ["댓글순", "조회수순"], en: ["Most commented", "Most viewed"], ja: ["コメント順", "閲覧数順"],
-  "zh-Hans": ["按评论数排序", "按浏览量排序"], "zh-Hant": ["依留言數排序", "依瀏覽數排序"],
-  es: ["Más comentarios", "Más vistas"], id: ["Komentar terbanyak", "Penayangan terbanyak"],
-  vi: ["Nhiều bình luận nhất", "Nhiều lượt xem nhất"], th: ["ความคิดเห็นมากที่สุด", "ยอดดูมากที่สุด"],
-  pt: ["Mais comentários", "Mais visualizações"], fr: ["Les plus commentées", "Les plus vues"], ru: ["Больше всего комментариев", "Больше всего просмотров"],
+const hotSort: Record<AppLocale, readonly [string, string, string]> = {
+  ko: ["댓글순", "조회수순", "최신순"], en: ["Most commented", "Most viewed", "Latest"], ja: ["コメント順", "閲覧数順", "新着順"],
+  "zh-Hans": ["按评论数排序", "按浏览量排序", "按最新排序"], "zh-Hant": ["依留言數排序", "依瀏覽數排序", "依最新排序"],
+  es: ["Más comentarios", "Más vistas", "Más recientes"], id: ["Komentar terbanyak", "Penayangan terbanyak", "Terbaru"],
+  vi: ["Nhiều bình luận nhất", "Nhiều lượt xem nhất", "Mới nhất"], th: ["ความคิดเห็นมากที่สุด", "ยอดดูมากที่สุด", "ใหม่ล่าสุด"],
+  pt: ["Mais comentários", "Mais visualizações", "Mais recentes"], fr: ["Les plus commentées", "Les plus vues", "Les plus récentes"], ru: ["Больше всего комментариев", "Больше всего просмотров", "Новые"],
 };
 
 const views: Record<AppLocale, string> = {
@@ -33,7 +33,7 @@ export function directoryTopCopy(locale: AppLocale) {
   const v = values[locale];
   const fill = (text: string, count: number) => text.replace("{0}", count.toLocaleString(locale));
   return {
-    myArtists: v[0]!, findGroups: v[1]!, signIn: v[2]!, hotTitle: v[3]!, hotSub: v[4]!, hotSort: { likes: v[4]!, comments: hotSort[locale][0], views: hotSort[locale][1] }, expand: v[5]!, collapse: v[6]!, hotEmpty: v[7]!, hotError: v[8]!, retry: v[9]!,
+    myArtists: v[0]!, findGroups: v[1]!, signIn: v[2]!, hotTitle: v[3]!, hotSub: v[4]!, hotSort: { likes: v[4]!, comments: hotSort[locale][0], views: hotSort[locale][1], latest: hotSort[locale][2] }, expand: v[5]!, collapse: v[6]!, hotEmpty: v[7]!, hotError: v[8]!, retry: v[9]!,
     likes: (count: number) => fill(v[10]!, count), comments: (count: number) => fill(v[11]!, count), views: (count: number) => fill(views[locale], count), bannerLabel: v[12]!, previousBanner: v[13]!, nextBanner: v[14]!,
   };
 }
