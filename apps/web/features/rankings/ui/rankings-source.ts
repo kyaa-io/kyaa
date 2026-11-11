@@ -103,6 +103,7 @@ export const rankingsSource = {
   rkLikesWeek: { ko: "7일간 받은 좋아요", en: "Likes in 7 days" },
   rkLikesCount: { ko: "좋아요 {0}", en: "{0} likes" },
   rkPanelHearts: { ko: "하트", en: "Hearts" },
+  rkPanelTier: { ko: "등급", en: "Tier" },
   rkPanelTickets: { ko: "응모권", en: "Entry tickets" },
   rkPanelTotalLikes: { ko: "누적 좋아요", en: "All-time likes" },
 } as const;

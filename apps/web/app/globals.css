@@ -37,6 +37,9 @@
   --color-reaction-like: var(--color-accent);
   --color-reaction-like-soft: #e05a97;
   --color-reaction-comment: oklch(56% 0.09 230);
+  /* Rank movement triangle (대표 11/11 19:0x): up in the accent, down in the same muted blue as the comment reaction. Shape + colour only; the places gained are in the label. */
+  --color-rank-up: var(--color-accent);
+  --color-rank-down: var(--color-reaction-comment);
   /* #8a4b08 → #7a4206: 자기 30% 틴트(홈 랭킹 1위 배지) 위 글자 4.22 → 4.84:1. 흰 바탕 위 8.05:1. */
   --color-warning: #7a4206;
   --color-backdrop: rgb(23 23 26 / 42%);

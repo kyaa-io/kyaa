@@ -23,28 +23,30 @@
 .rowFace { position: relative; display: grid; grid-template-columns: 28px 28px minmax(0, 1fr) var(--rank-value-col) 16px; align-items: center; column-gap: var(--space-2); flex: 1 1 auto; box-sizing: border-box; width: 100%; min-width: 0; height: 48px; padding: 0 var(--space-3); text-align: start; text-wrap: wrap; }
 .rowFace[data-loading] { grid-template-columns: 28px 28px minmax(0, 1fr) auto; }
 .rowFace[data-placeholder] { grid-template-columns: 28px 28px minmax(0, 1fr); }
-.item .rank { width: 28px; height: 24px; color: var(--color-ink); font-size: var(--fan-item-title-size); font-weight: var(--fan-item-title-weight); line-height: var(--fan-metadata-leading); }
+/* 순위 칸 28 = 숫자 상자 18(오른쪽 맞춤, 두 자리까지) + 등락 삼각형 자리 10(삼각형은 그 안 오른쪽). 삼각형이 없는 행도 자리를 비워 숫자 끝선이 같다. 글자는 한 단계 작게(16→14, 대표 11/11 19:0x). */
+.rankCell { display: inline-flex; align-items: center; width: 28px; }
+.item .rank { justify-content: flex-end; flex: none; width: 18px; height: 24px; color: var(--color-ink); font-size: var(--fan-description-size); font-weight: var(--fan-item-title-weight); line-height: var(--fan-metadata-leading); }
 .rowFace[data-me] .rank { color: var(--color-accent-ink); }
 .item .avatar { display: inline-flex; width: 28px; height: 28px; border-radius: 50%; }
 .item .avatar[data-first] { outline: 2px solid var(--color-accent); outline-offset: 0; }
 .item .body { justify-items: start; gap: 0; min-width: 0; max-width: 100%; }
 .item .body > * { max-width: 100%; }
 .item .name { font-size: var(--fan-description-size); font-weight: var(--fan-item-title-weight); }
-/* 등락: ▲ 초록 / ▼ 빨강(둘 다 채도 낮은 토큰), 모양과 숫자가 함께 말한다. */
+/* 등락: 순위 숫자 오른쪽의 작은 삼각형. 올라감 --color-rank-up(강조), 내려감 --color-rank-down(옅은 파랑). 모양과 색이 말하고 계단 수는 라벨에만 있다. */
 .nameLine { display: flex; align-items: center; gap: var(--space-2); min-width: 0; max-width: 100%; }
 .nameLine > :not(.name) { flex: none; }
 .nameLine .name { flex: 0 1 auto; }
-.delta { display: inline-flex; flex: none; align-items: center; gap: var(--space-1); color: var(--color-muted); font-weight: var(--fan-item-title-weight); font-variant-numeric: tabular-nums; }
-.delta[data-direction="up"] { color: var(--color-success); }
-.delta[data-direction="down"] { color: var(--color-error); }
-.item .delta svg { flex: none; width: 8px; height: 7px; }
+.delta { display: inline-flex; flex: none; align-items: center; justify-content: center; width: 10px; color: var(--color-muted); }
+.delta[data-direction="up"] { color: var(--color-rank-up); }
+.delta[data-direction="down"] { color: var(--color-rank-down); }
+.item .delta svg { flex: none; width: 7px; height: 6px; }
 .item .live { display: inline-flex; align-items: center; gap: var(--space-1); color: var(--color-ink); font-weight: var(--fan-item-title-weight); }
 .item .challenge { display: none; vertical-align: middle; }
 @media (min-width: 64rem) { .item .challenge { display: inline-flex; } }
 .item .value { display: grid; justify-items: stretch; gap: 0; min-width: 0; white-space: nowrap; }
 /* 고정폭 열에서 아이콘과 숫자를 함께 오른쪽에 정렬한다. */
 .main { display: flex; justify-content: flex-end; width: 100%; max-width: 100%; }
-.mainInner { display: flex; align-items: center; justify-content: flex-end; width: 100%; gap: 0; color: var(--color-ink); font-size: var(--fan-item-title-size); font-weight: var(--fan-item-title-weight); line-height: var(--fan-metadata-leading); white-space: nowrap; }
+.mainInner { display: flex; align-items: center; justify-content: flex-end; width: 100%; gap: 0; color: var(--color-ink); font-size: var(--fan-description-size); font-weight: var(--fan-item-title-weight); line-height: var(--fan-metadata-leading); white-space: nowrap; }
 .main .mainNumber { font-size: inherit; font-weight: inherit; font-variant-numeric: tabular-nums; }
 .heart { flex: none; color: var(--color-accent); }
 .chevron { justify-self: end; color: var(--color-muted); }

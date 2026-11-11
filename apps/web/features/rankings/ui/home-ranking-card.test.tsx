@@ -60,13 +60,14 @@ it("signed out: ten rows per group, rows open in place with a sign-in action, on
   expect(screen.queryByRole("dialog")).toBeNull();
 });
 
-it("shows movement beside the name on one line, no 신규 mark, no weekly column; today's gain and the way to first place only in the opened row", async () => {
+it("shows movement as a triangle right after the rank number on one line, no 신규 mark, no weekly column; today's gain and the way to first place only in the opened row", async () => {
   stub(fans([fanRow(1, { dayGain: 0, weekGain: 999, delta: 2 }), fanRow(2, { dayGain: -3 }), fanRow(3, { dayGain: null, isNew: true })]));
   const { container } = render(<HomeRankingCard locale="ko" />);
   await screen.findAllByText("팬1");
   const rows = container.querySelectorAll("[data-row='fan-rank']");
   expect(rows[0]!.querySelector("[data-delta-cell]")).toHaveAttribute("data-direction", "up");
-  expect(rows[0]!.querySelector("[data-delta-cell]")!.parentElement).toBe(rows[0]!.querySelector("[title='팬1']")!.parentElement);
+  expect(rows[0]!.querySelector("[data-delta-cell]")!.previousElementSibling).toBe(rows[0]!.querySelector("[data-medal='1']"));
+  expect(rows[0]!.querySelector("[title='팬1']")!.parentElement!.querySelector("[data-delta-cell]")).toBeNull();
   expect([...container.querySelectorAll("[data-row]")].map((row) => row.textContent).join(" ")).not.toMatch(/1위까지|현재 1위|1위와 동점|오늘/);
   expect(container.textContent).not.toContain("신규");
   expect(rows[2]!.querySelector("[data-delta-cell]")).toBeNull();
@@ -114,7 +115,7 @@ it.each(APP_LOCALES)("renders the home contract in %s", async locale => {
 
 it("moves only changed rows on refresh and respects reduced motion", async () => {
   auth.value = { ...auth.value, authenticated: true, user: { id: "viewer" } };
-  const animate = vi.fn(() => ({}) as Animation);
+  const animate = vi.fn(() => ({ cancel() {} }) as unknown as Animation);
   const original = Object.getOwnPropertyDescriptor(HTMLElement.prototype, "offsetTop");
   Object.defineProperty(HTMLElement.prototype, "offsetTop", { configurable: true, get(this: HTMLElement) { return this.parentElement ? Array.from(this.parentElement.children).indexOf(this) * 34 : 0; } });
   Element.prototype.animate = animate;
@@ -133,7 +134,7 @@ it("moves only changed rows on refresh and respects reduced motion", async () =>
       clock += 11 * 60 * 1000;
       document.dispatchEvent(new Event("visibilitychange"));
       await waitFor(() => expect(view.container.querySelector("ol > li")!.textContent).toContain("나"));
-      expect(animate.mock.calls.filter(call => JSON.stringify(call).includes("translateY"))).toHaveLength(reduced ? 0 : 2);
+      expect(animate.mock.calls.filter(call => JSON.stringify(call).includes("px)"))).toHaveLength(reduced ? 0 : 2);
       // The two rows whose value changed ring once (rotating arc + ring fade, 600ms); reduced motion: the whole ring for 300ms, nothing rotates.
       expect(animate.mock.calls.filter(call => JSON.stringify(call).includes("rotate"))).toHaveLength(reduced ? 0 : 2);
       expect(animate.mock.calls.filter(call => JSON.stringify(call).includes("opacity") && JSON.stringify(call).includes(reduced ? '"duration":300' : '"duration":600'))).toHaveLength(2);
@@ -146,8 +147,9 @@ it("moves only changed rows on refresh and respects reduced motion", async () =>
   }
 });
 
-it("keeps the server-clock refresh timing", () => {
-  expect(nextReadDelay("2026-11-08T00:09:00Z", "2026-11-08T00:00:00Z", () => 0)).toBe(60000);
+it("reads again every minute (60s plus jitter)", () => {
+  expect(nextReadDelay(() => 0)).toBe(60000);
+  expect(nextReadDelay(() => 0.999)).toBeLessThan(90000);
 });
 
 it("does not claim hidden ranks or draw login rows for short/empty answers", async () => {
@@ -160,7 +162,7 @@ it("does not claim hidden ranks or draw login rows for short/empty answers", asy
 
 it("rings only the rows whose value changed between two answers of one visit", async () => {
   auth.value = { ...auth.value, authenticated: true, user: { id: "viewer" } };
-  const animate = vi.fn(() => ({}) as Animation);
+  const animate = vi.fn(() => ({ cancel() {} }) as unknown as Animation);
   Element.prototype.animate = animate;
   const now = vi.spyOn(Date, "now");
   let clock = Date.parse("2026-11-08T03:00:00Z"); now.mockImplementation(() => clock);
@@ -184,7 +186,7 @@ it("rings only the rows whose value changed between two answers of one visit", a
 
 it("a period change is not a value change: no ring (and no move) when the tabs switch to an answer the cache already holds", async () => {
   auth.value = { ...auth.value, authenticated: true, user: { id: "viewer" } };
-  const animate = vi.fn(() => ({}) as Animation);
+  const animate = vi.fn(() => ({ cancel() {} }) as unknown as Animation);
   Element.prototype.animate = animate;
   try {
     vi.stubGlobal("matchMedia", () => ({ matches: false, addEventListener() {}, removeEventListener() {} }));
@@ -206,7 +208,7 @@ it("a period change is not a value change: no ring (and no move) when the tabs s
 });
 
 it("rings places 1-3 once on a first visit, and afterwards only the rows that differ from what the visitor last saw", async () => {
-  const animate = vi.fn(() => ({}) as Animation);
+  const animate = vi.fn(() => ({ cancel() {} }) as unknown as Animation);
   Element.prototype.animate = animate;
   const rotations = () => animate.mock.calls.filter(call => JSON.stringify(call).includes("rotate")).length;
   try {
@@ -256,4 +258,40 @@ it("shows ▲▼ for a row that moved since the visitor last looked, and nothing
   expect(mark("가")?.getAttribute("aria-label")).toBe("1계단 올라감");
   expect(mark("나")?.getAttribute("aria-label")).toBe("1계단 내려감");
   expect(mark("다")).toBeNull();
+});
+
+it("the opened fan row shows the grade (badge and name), and a row without a grade leaves the cell out", async () => {
+  stub(fans([fanRow(1, { tier: "Gold" }), fanRow(2, { tier: null })]));
+  const { container } = render(<HomeRankingCard locale="ko" />);
+  await screen.findAllByText("팬1");
+  const rows = container.querySelectorAll("[data-row='fan-rank']");
+  fireEvent.click(rows[0]!.querySelector("button")!);
+  const panel = rows[0]!.querySelector("[data-rank-panel]")!;
+  expect(panel.textContent).toContain("등급");
+  expect(panel.textContent).toContain("골드");
+  expect(panel.querySelector("img")).not.toBeNull();
+  fireEvent.click(rows[1]!.querySelector("button")!);
+  expect(rows[1]!.querySelector("[data-rank-panel]")!.textContent).not.toContain("등급");
+});
+
+it("a value that changes on a later read rolls (no invented increase); the first answer shows at once", async () => {
+  const animate = vi.fn(() => ({ cancel() {} }) as unknown as Animation);
+  Element.prototype.animate = animate;
+  vi.stubGlobal("matchMedia", () => ({ matches: false, addEventListener() {}, removeEventListener() {} }));
+  try {
+    clearResources();
+    let answer = fans([fanRow(1, { nickname: "가", points: 120 })]);
+    vi.stubGlobal("fetch", vi.fn(async (url: RequestInfo | URL) => Response.json(String(url).includes("kind=fans") ? answer : creators())));
+    const view = render(<HomeRankingCard locale="ko" />);
+    await screen.findByText("가");
+    expect(animate.mock.calls.filter(call => JSON.stringify(call).includes("%)"))).toHaveLength(0);
+    answer = fans([fanRow(1, { nickname: "가", points: 123 })]);
+    const base = Date.now();
+    const now = vi.spyOn(Date, "now");
+    now.mockImplementation(() => base + 11 * 60 * 1000);
+    document.dispatchEvent(new Event("visibilitychange"));
+    await waitFor(() => expect(view.container.querySelector("[data-row='fan-rank'] [data-metric] [role='img']")?.getAttribute("aria-label")).toBe("123"));
+    expect(animate.mock.calls.filter(call => JSON.stringify(call).includes("%)")).length).toBeGreaterThan(0);
+    now.mockRestore();
+  } finally { delete (Element.prototype as Partial<Element>).animate; }
 });

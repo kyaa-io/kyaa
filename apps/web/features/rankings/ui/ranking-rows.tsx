@@ -7,12 +7,14 @@ import { FanIcon } from "@/components/fan-ui/fan-icon";
 import { ProfileModal, type ProfileModalPerson } from "@/features/group-social/profile-modal";
 import { CreatorAvatar } from "@/components/fan-ui/creator-avatar";
 import { FanAction } from "@/components/fan-ui/fan-action";
-import { FanNumber } from "@/components/fan-ui/fan-number";
+import { RollingNumber } from "@/components/fan-ui/rolling-number";
 import { FanSkeleton } from "@/components/fan-ui/fan-skeleton";
 import { FanState } from "@/components/fan-ui/fan-state";
 import { FanTag } from "@/components/fan-ui/fan-tag";
 import { fanLoginHref } from "@/components/login-href";
 import { Avatar } from "@/features/profile/ui/avatar";
+import { levelLabel } from "@/features/passport/domain/passport-read-model";
+import { FanTierBadge } from "@/features/rewards/ui/fan-tier-badge";
 import type { AppLocale } from "@/i18n/locales";
 import {
   type HomeRankingPeriod, type HomeCreatorMetric, type HomeCreatorRanking, type HomeCreatorRankingRow, type HomeFanMetric, type HomeFanRanking, type HomeFanRankingRow,
@@ -31,24 +33,23 @@ export type RankingsTab = "fans" | "creators";
 export type RankingMetric = HomeFanMetric | HomeCreatorMetric;
 export const rankingUrl = (tab: RankingsTab, metric: RankingMetric, locale: AppLocale, limit?: number, period: HomeRankingPeriod = "all") =>
   `/api/rankings/home?kind=${tab}&metric=${metric}&locale=${locale}${limit ? `&limit=${limit}` : ""}${period === "all" ? "" : `&period=${period}`}`;
-/** A snapshot is rewritten on read once it is ten minutes old. The next read is due when this one turns ten minutes, measured on the server clock. */
-const SNAPSHOT_MS = 10 * 60 * 1000;
+/** The ranking is read again every minute while the page is visible (the server keeps the snapshot it built and rewrites it on the first read after ten minutes, so a read inside the
+ * minute costs the stored answer and a changed number reaches the screen within about a minute of being built). A little jitter keeps the readers from arriving together. */
 const MIN_GAP_MS = 60 * 1000;
 const JITTER_MS = 30 * 1000;
-export function nextReadDelay(fetchedAt: string | undefined, computedAt: string | null, random = Math.random) {
-  const age = fetchedAt && computedAt ? Math.max(0, Date.parse(fetchedAt) - Date.parse(computedAt)) : SNAPSHOT_MS;
-  return Math.max(MIN_GAP_MS, SNAPSHOT_MS - (Number.isNaN(age) ? SNAPSHOT_MS : age)) + Math.floor(random() * JITTER_MS);
+export function nextReadDelay(random = Math.random) {
+  return MIN_GAP_MS + Math.floor(random() * JITTER_MS);
 }
 
-/** Reads the ranking and reads it again, quietly (rows stay on screen), when the snapshot it showed turns ten minutes old: by a timer while the
- * page is visible, or at once when the page comes back after that moment. A failed re-read tries again a minute later. Never more often than once a minute. */
-export function useLiveRanking<T extends { computedAt: string | null; fetchedAt?: string }>(url: string, parse: (value: unknown) => T) {
+/** Reads the ranking and reads it again, quietly (rows stay on screen), every minute: by a timer while the page is visible (it stops when the tab is hidden), or at once when the
+ * tab comes back after that moment. A failed re-read tries again a minute later. Never more often than once a minute. */
+export function useLiveRanking<T extends { computedAt: string | null }>(url: string, parse: (value: unknown) => T) {
   const { state, retry, refresh } = useRankingResource(url, parse);
   const data = state.status === "ready" ? state.data : null;
   const due = useRef(0);
   useEffect(() => {
     if (!data) return;
-    due.current = Date.now() + nextReadDelay(data.fetchedAt, data.computedAt);
+    due.current = Date.now() + nextReadDelay();
     let timer: ReturnType<typeof setTimeout> | undefined;
     // A quiet re-read that fails keeps the rows (the same answer object), so this effect would not run again: the next try is armed here,
     // a minute later. A re-read that succeeds brings a new answer, and the effect starts over from its snapshot.
@@ -196,9 +197,10 @@ export function MetricLine({ locale, computedAt, stale = false, period = "all", 
   </div>;
 }
 
-/** Numbers first: the medal artwork is not here yet, so 1-3 read as numbers too (data-medal keeps the place for it). */
-function Rank({ rank }: { rank: number }) {
-  return <span className={styles.rank} data-medal={rank <= 3 ? rank : undefined}>{rank}</span>;
+/** The rank number (rolls like a calendar page when a later answer changes it) and, right after it, the movement triangle. Numbers first: the medal artwork is not here yet, so 1-3 read as numbers too (data-medal keeps the place for it).
+ * The cell is one 28px column: the number right-aligned in its box, the triangle's slot after it (empty when the row did not move), so numbers line up whether or not a mark follows. */
+function Rank({ rank, mark }: { rank: number; mark?: ReactNode }) {
+  return <span className={styles.rankCell}><span className={styles.rank} data-medal={rank <= 3 ? rank : undefined}><RollingNumber value={rank} /></span>{mark}</span>;
 }
 
 /** Rows at the live height while the first answer is read; only while a request is running. */
@@ -220,7 +222,7 @@ export function EmptyRows({ locale, text }: { locale: AppLocale; text?: string }
 /** A missing row keeps its rank number and a ring where the picture goes: no names, no values, no marks, no hidden ranks. */
 function Placeholders({ from, to }: { from: number; to: number }) {
   return <>{Array.from({ length: Math.max(0, to - from) }, (_, i) => <li key={`p${i}`} className={styles.item} data-row="rank-placeholder" data-placeholder="" aria-hidden="true">
-    <span className={styles.rowFace} data-placeholder=""><span className={styles.rank}>{from + i + 1}</span><span className={styles.ghost} /></span>
+    <span className={styles.rowFace} data-placeholder=""><span className={styles.rankCell}><span className={styles.rank}>{from + i + 1}</span></span><span className={styles.ghost} /></span>
   </li>)}</>;
 }
 
@@ -229,7 +231,7 @@ const short = (locale: AppLocale, n: number) => n >= 10000 ? n.toLocaleString(lo
 
 const unitMark = (metric: RankingMetric) => metric === "points" ? <RankUnit unit="points" /> : metric === "fans" ? null : <RankUnit unit={metric === "likes" ? "likes" : "hearts"} />;
 
-/** The right-hand number of a row: the metric's value, read by name (hearts, points, likes, fans), never from score alone. Counts up only when a later answer changes it; from 10,000 it is short (12.3K), the full number stays in the label. */
+/** The right-hand number of a row: the metric's value, read by name (hearts, points, likes, fans), never from score alone. Rolls like an odometer only when a later answer changes it (real values, never an invented increase); from 10,000 it is short (12.3K), the full number stays in the label. */
 function Main({ locale, metric, value }: { locale: AppLocale; metric: RankingMetric; value: number }) {
   const n = value.toLocaleString(locale);
   const label = metric === "hearts" ? rankingsText(locale, "rkHearts", [n]) : metric === "points" ? rankingsText(locale, "rkPointsLabel", [n]) : metric === "likes" ? rankingsText(locale, "rkLikesCount", [n]) : rankingsText(locale, "rkJjinfanCount", [n]);
@@ -238,17 +240,18 @@ function Main({ locale, metric, value }: { locale: AppLocale; metric: RankingMet
   return <span className={styles.main} aria-label={label} title={n} data-metric={metric}>
     <span aria-hidden="true" className={styles.mainInner}>
       {unitMark(metric)}{before?.trim() ? <span>{before.trim()}</span> : null}
-      {value >= 10000 ? <span className={styles.mainNumber}>{short(locale, value)}</span> : <FanNumber value={value} locale={locale} countUp className={styles.mainNumber} />}{after?.trim() ? <span>{after.trim()}</span> : null}
+      <RollingNumber value={value} format={(v) => v >= 10000 ? short(locale, v) : v.toLocaleString(locale)} className={styles.mainNumber} />{after?.trim() ? <span>{after.trim()}</span> : null}
     </span>
   </span>;
 }
 
-/** Rank movement against the previous built day: ▲N green, ▼N red. Nothing when the day has no comparison, the row was not ranked then, or it did not move (no mark for "no change"). */
+/** Rank movement as a small triangle right after the rank number (대표 11/11 19:0x): up in the accent, down in the muted blue, nothing when the day has no comparison, the row was not ranked then, or it did not move.
+ * The shape and the colour carry the direction; the number of places is in the label for screen readers. */
 function rowDelta(locale: AppLocale, delta: number | null, comparable: boolean) {
   if (!comparable || !delta) return null;
   const label = delta > 0 ? rankingsText(locale, "rkDeltaUp", [delta]) : rankingsText(locale, "rkDeltaDown", [-delta]);
   return <span className={styles.delta} data-direction={delta > 0 ? "up" : "down"} data-delta-cell role="img" aria-label={label}>
-    <svg aria-hidden="true" width="8" height="7" viewBox="0 0 10 8"><path d={delta > 0 ? "M5 0 10 8H0z" : "M5 8 0 0h10z"} fill="currentColor" /></svg><span aria-hidden="true">{Math.abs(delta).toLocaleString(locale)}</span>
+    <svg aria-hidden="true" width="7" height="6" viewBox="0 0 10 8"><path d={delta > 0 ? "M5 0 10 8H0z" : "M5 8 0 0h10z"} fill="currentColor" /></svg>
   </span>;
 }
 
@@ -293,10 +296,10 @@ export function FanRows({ locale, ranking, metric, show, fill, scope, guest = fa
     const value = fanValue(row, metric);
     return <li key={keys[i]} ref={place(keys[i]!)} id={id} className={styles.item} data-row="fan-rank" data-kind="fans" data-tint={((accentFirst && i === 0) || row.isMe || open) || undefined} data-me={row.isMe || undefined} aria-current={row.isMe || undefined}>
       <RowButton panelId={`${id}-panel`} open={open} onToggle={() => toggle(keys[i]!)} me={row.isMe} kind="fans">
-        <Rank rank={row.rank} />
+        <Rank rank={row.rank} mark={visitDelta(locale, row.delta, ranking.comparable, movedSince(keys[i]!, row.rank))} />
         <span className={styles.avatar} data-first={(accentFirst && i === 0) || undefined}><Avatar avatar={fanAvatar(row.characterId)} imageUrl={null} label="" size={28} /></span>
         <span className={styles.body}>
-          <span className={styles.nameLine}><span className={styles.name} title={row.nickname}>{row.nickname}</span>{visitDelta(locale, row.delta, ranking.comparable, movedSince(keys[i]!, row.rank))}</span>
+          <span className={styles.nameLine}><span className={styles.name} title={row.nickname}>{row.nickname}</span></span>
         </span>
         <span className={styles.value}><Main locale={locale} metric={metric} value={value} /></span>
       </RowButton>
@@ -312,9 +315,12 @@ const creatorValue = (row: HomeCreatorRankingRow, metric: RankingMetric) => metr
 /** A stat the opened row adds (대표 11/11 01:55): only a real, non-zero count; zero and a missing value leave the cell out. */
 const statCell = (locale: AppLocale, key: string, label: string, value: number | null | undefined, unit: RankUnitKind) =>
   typeof value === "number" && value > 0 ? [{ key, label, value: value.toLocaleString(locale), unit }] : [];
-/** Fans by points: hearts and entry tickets held. */
-const fanStats = (locale: AppLocale, row: HomeFanRankingRow, metric: RankingMetric) => metric === "points"
-  ? [...statCell(locale, "hearts", rankingsText(locale, "rkPanelHearts"), row.hearts, "hearts"), ...statCell(locale, "tickets", rankingsText(locale, "rkPanelTickets"), row.tickets, "tickets")] : [];
+/** Every fan row: the grade (the badge the app uses for it and its name in the viewer's language; a row with no grade leaves the cell out). Fans by points: then hearts and entry tickets held. */
+const fanStats = (locale: AppLocale, row: HomeFanRankingRow, metric: RankingMetric) => [
+  ...(row.tier ? [{ key: "tier", label: rankingsText(locale, "rkPanelTier"), value: levelLabel(locale, row.tier), icon: <FanTierBadge tier={row.tier} locale={locale} size={16} /> }] : []),
+  ...(metric === "points" ? [...statCell(locale, "hearts", rankingsText(locale, "rkPanelHearts"), row.hearts, "hearts"), ...statCell(locale, "tickets", rankingsText(locale, "rkPanelTickets"), row.tickets, "tickets")] : []),
+];
+
 /** Creators by likes: hearts (찐팬 is a built-in cell), and all-time likes when the list counts a period. No SNS follower count is stored, so none is shown. */
 const creatorStats = (locale: AppLocale, row: HomeCreatorRankingRow, metric: RankingMetric, period: HomeRankingPeriod) => metric === "likes"
   ? [...statCell(locale, "hearts", rankingsText(locale, "rkPanelHearts"), row.hearts, "likes"), ...(period === "all" ? [] : statCell(locale, "totalLikes", rankingsText(locale, "rkPanelTotalLikes"), row.totalLikes, "likes"))] : [];
@@ -333,10 +339,10 @@ export function CreatorRows({ locale, ranking, metric, show, fill, scope, challe
     const value = creatorValue(row, metric);
     return <li key={row.slug} ref={place(row.slug)} id={id} className={styles.item} data-row="creator-rank" data-kind="creators" data-tint={((accentFirst && i === 0) || open) || undefined}>
       <RowButton panelId={`${id}-panel`} open={open} onToggle={() => toggle(row.slug)} kind="creators">
-        <Rank rank={row.rank} />
+        <Rank rank={row.rank} mark={visitDelta(locale, row.delta, ranking.comparable, movedSince(row.slug, row.rank))} />
         <span className={styles.avatar} data-first={(accentFirst && i === 0) || undefined}><CreatorAvatar slug={row.slug} src={row.imageUrl} size={28} photos={undefined} /></span>
         <span className={styles.body}>
-          <span className={styles.nameLine}><span className={styles.name} title={row.name}>{row.name}</span>{visitDelta(locale, row.delta, ranking.comparable, movedSince(row.slug, row.rank))}
+          <span className={styles.nameLine}><span className={styles.name} title={row.name}>{row.name}</span>
             {row.liveNow ? <LiveMark locale={locale} name={row.name} /> : null}
             {challengeTag && row.challenge ? <FanTag tone="fan" className={styles.challenge}>{rankingsText(locale, "jjTag")}</FanTag> : null}</span>
         </span>

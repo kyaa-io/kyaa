@@ -347,6 +347,7 @@ export const messages = {
   "rkLikesWeek": {"ja": "7日間のいいね", "zh-Hans": "7天内的点赞", "zh-Hant": "7天內的按讚", "es": "Me gusta en 7 días", "id": "Suka dalam 7 hari", "vi": "Lượt thích trong 7 ngày", "th": "ถูกใจใน 7 วัน", "pt": "Curtidas em 7 dias", "fr": "J’aime sur 7 jours", "ru": "Лайки за 7 дней"},
   "rkLikesCount": {"ja": "いいね {0}", "zh-Hans": "{0} 个赞", "zh-Hant": "{0} 個讚", "es": "{0} me gusta", "id": "{0} suka", "vi": "{0} lượt thích", "th": "ถูกใจ {0}", "pt": "{0} curtidas", "fr": "{0} j’aime", "ru": "{0} лайков"},
   "rkPanelHearts": {"ja": "ハート", "zh-Hans": "爱心", "zh-Hant": "愛心", "es": "Corazones", "id": "Hati", "vi": "Tim", "th": "หัวใจ", "pt": "Corações", "fr": "Cœurs", "ru": "Сердца"},
+  "rkPanelTier": {"ja": "等級", "zh-Hans": "等级", "zh-Hant": "等級", "es": "Nivel", "id": "Tingkat", "vi": "Hạng", "th": "ระดับ", "pt": "Nível", "fr": "Niveau", "ru": "Уровень"},
   "rkPanelTickets": {"ja": "応募券", "zh-Hans": "抽奖券", "zh-Hant": "抽獎券", "es": "Boletos", "id": "Tiket undian", "vi": "Vé dự thưởng", "th": "ตั๋วชิงรางวัล", "pt": "Bilhetes", "fr": "Tickets", "ru": "Билеты"},
   "rkPanelTotalLikes": {"ja": "累計いいね", "zh-Hans": "累计点赞", "zh-Hant": "累計按讚", "es": "Me gusta totales", "id": "Total suka", "vi": "Tổng lượt thích", "th": "ถูกใจสะสม", "pt": "Curtidas no total", "fr": "J’aime cumulés", "ru": "Всего лайков"},
 } satisfies Record<string, TranslatedMessage>;
