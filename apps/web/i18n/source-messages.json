@@ -17818,5 +17818,23 @@
     "ko": "출석",
     "source": "features/fanpage/ui/celebrity-calendar",
     "id": "features/fanpage/ui/celebrity-calendar:inline.calendarKeyCheckin"
+  },
+  "mkyaaEmailInUse": {
+    "en": "A kyaa account already uses this email. Sign in with the method you used when you joined.",
+    "ko": "이 이메일을 쓰는 kyaa 계정이 이미 있어요. 처음 가입할 때 쓴 방법으로 로그인해 주세요.",
+    "source": "components/login-page",
+    "id": "components/login-page:mkyaaEmailInUse"
+  },
+  "mkyaaAccountInactive": {
+    "en": "This account is no longer active.",
+    "ko": "이용이 중지된 계정이에요.",
+    "source": "components/login-page",
+    "id": "components/login-page:mkyaaAccountInactive"
+  },
+  "mkyaaAccountReview": {
+    "en": "We couldn't verify your account. Let us know through support.",
+    "ko": "계정을 확인하지 못했어요. 이용 안내의 문의하기로 kyaa 운영팀에 알려 주세요.",
+    "source": "components/login-page",
+    "id": "components/login-page:mkyaaAccountReview"
   }
 }

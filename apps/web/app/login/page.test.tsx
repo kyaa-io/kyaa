@@ -34,7 +34,7 @@ describe("LoginRoute native reauthentication return", () => {
     expect(page.props.children.props).toEqual({
       kakaoLoginEnabled: expect.any(Boolean), lineLoginEnabled: expect.any(Boolean), wechatLoginEnabled: expect.any(Boolean),
       naverLoginEnabled: expect.any(Boolean), facebookLoginEnabled: expect.any(Boolean),
-      appleLoginEnabled: expect.any(Boolean), testAccountLoginEnabled: expect.any(Boolean),
+      appleLoginEnabled: expect.any(Boolean), testAccountLoginEnabled: expect.any(Boolean), cognitoKakaoEnabled: false,
     });
   });
 });
