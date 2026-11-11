@@ -159,12 +159,29 @@ grant execute on function public.kyaa_member_provider_accounts(uuid), public.res
   public.kyaa_sign_in(text,text,text,text,text,bigint),
   public.create_kyaa_member(text,text,text,text,text,bigint,bigint,text) to service_role;
 
--- Session sync accepts kyaa:<uuid> identity keys as well as existing did:privy keys (otherwise unchanged).
+-- Rollback safety (co-notes #237): if the web goes back to a Privy build, a member who joined through Cognito
+-- (identity key kyaa:<uuid>) signs in with Privy and gets a new did:privy. Instead of failing with
+-- VERIFIED_PROVIDER_OWNER_CONFLICT, the session sync adopts that DID for the same member when ALL hold:
+-- the presented verified Google/Apple subject already belongs to exactly one active kyaa: member, the verified email
+-- matches that member, and no member owns the new DID yet. The member UUID, records and current wallet stay; the Privy
+-- embedded wallet is not attached. Each adoption is logged. The same rule lets such a member use the Privy-based app.
+create table public.kyaa_member_privy_adoptions (
+  app_user_id uuid primary key references public.app_users(id) on delete cascade,
+  from_identity_key text not null check (from_identity_key like 'kyaa:%'),
+  to_identity_key text not null unique check (to_identity_key like 'did:privy:%'),
+  ignored_privy_wallet text,
+  adopted_at timestamptz not null default now()
+);
+alter table public.kyaa_member_privy_adoptions enable row level security;
+revoke all on public.kyaa_member_privy_adoptions from public, anon, authenticated;
+
+-- Session sync accepts kyaa:<uuid> identity keys as well as existing did:privy keys, and adopts a Privy DID for a
+-- kyaa: member as described above (otherwise unchanged).
 create or replace function public.sync_privy_identity_with_provider_accounts(
   p_privy_user_id text,p_verified_email text,p_chain_id bigint,p_wallet_address text,p_provider_accounts jsonb
 ) returns table(app_user_id uuid,wallet_id uuid)
 language plpgsql security definer set search_path='' as $$
-declare account jsonb; owner_id uuid; synced_wallet_id uuid;
+declare account jsonb; owner_id uuid; synced_wallet_id uuid; adopt_ids uuid[]; adopt_key text; adopt_wallet text;
 begin
   p_privy_user_id:=btrim(p_privy_user_id);
   if p_privy_user_id is null or p_privy_user_id !~ '^(did:privy|kyaa):[^[:space:]]+$'
@@ -185,6 +202,26 @@ begin
   for account in select distinct value from jsonb_array_elements(p_provider_accounts) order by value loop
     perform pg_advisory_xact_lock(hashtextextended('live-privy-provider:'||(account->>'issuer')||':'||(account->>'subject'),0));
   end loop;
+  if p_privy_user_id like 'did:privy:%' and not exists(select 1 from public.app_users u where u.privy_user_id=p_privy_user_id) then
+    select array_agg(distinct a.app_user_id) into adopt_ids
+      from jsonb_array_elements(p_provider_accounts) presented(value)
+      join public.live_privy_auth_accounts a on a.provider_issuer=presented.value->>'issuer' and a.provider_subject=presented.value->>'subject';
+    if cardinality(adopt_ids)=1 then
+      select u.privy_user_id into adopt_key from public.app_users u
+        where u.id=adopt_ids[1] and u.status='active' and u.privy_user_id like 'kyaa:%'
+          and u.verified_email=lower(btrim(p_verified_email))
+        for update;
+      if adopt_key is not null then
+        select w.address into adopt_wallet from public.user_wallets w where w.app_user_id=adopt_ids[1] and w.chain_id=p_chain_id;
+        insert into public.kyaa_member_privy_adoptions(app_user_id,from_identity_key,to_identity_key,ignored_privy_wallet)
+          values(adopt_ids[1],adopt_key,p_privy_user_id,case when adopt_wallet is distinct from lower(btrim(p_wallet_address)) then lower(btrim(p_wallet_address)) end);
+        update public.app_users u set privy_user_id=p_privy_user_id where u.id=adopt_ids[1];
+        update public.live_privy_auth_owners o set privy_user_id=p_privy_user_id where o.app_user_id=adopt_ids[1];
+        -- Keep the member's current wallet; the Privy embedded wallet of the new DID is not attached.
+        if adopt_wallet is not null then p_wallet_address:=adopt_wallet; end if;
+      end if;
+    end if;
+  end if;
   select s.app_user_id,s.wallet_id into strict owner_id,synced_wallet_id
     from public.sync_privy_identity(p_privy_user_id,p_verified_email,p_chain_id,p_wallet_address) s;
   if exists(select 1 from public.live_privy_auth_owners o

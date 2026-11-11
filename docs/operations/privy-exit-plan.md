@@ -77,6 +77,7 @@
 | 13 | 시험 이식 | 시험 124개 `vi.mock` → `auth-fallback`, e2e 하네스 30개 alias `/^.*\/auth-fallback$/` | 완료 |
 | 14 | 카카오 OIDC 준비 | `server/auth/cognito/verifier.ts`, `browser-routes.ts`, `server/config/public-runtime-config.ts`, `infrastructure/aws/platform/environment.json`(`KakaoProviderSecretArn`), `scripts/aws-platform-deploy.mjs` | 완료(기본 꺼짐) |
 | 15 | 기존 회원 백필 도구 | `scripts/privy-exit/export-privy-users.mjs`, `import-backfill.mjs`, `apps/web/server/auth/cognito/backfill.mjs`(`kyaa:` 허용) | 완료(미실행) |
+| 19 | 롤백 시 `kyaa:` 회원 흡수(co-notes #237) | 마이그레이션: `kyaa_member_privy_adoptions`, `sync_privy_identity_with_provider_accounts` 흡수 분기(이전 빌드도 사용). SQL 시험: 흡수·지갑 유지·재흡수 거부·다른 이메일 거부·이메일만 일치 거부·흡수 후 Cognito 조회 | 완료 |
 | 18 | 로그아웃 토큰 폐기(co-notes #236) | 마이그레이션: `revoked_cognito_token_families`, `revoke_cognito_token_family`, `resolve_kyaa_identity(…, p_token_ids)`. `verifier.ts`(`tokenIds`=origin_jti·jti), `kyaa-identity.ts`(조회 시 전달), `browser-session.ts` `revokeSession`(폐기 기록 → Cognito revoke → 세션 행 삭제, 기록 실패 시 로그아웃 실패) | 완료 |
 | 17 | 판정 반영(`15c861c67`) | 콜백 실패 → `/login?authError=callback_failed`(`browser-routes.ts`, 문구 11개 언어), 이메일 advisory lock(마이그레이션), 평문 시드 경로 삭제, `apps/web/scripts/dev-throwaway-xpub.mjs`, 운영 xpub 거부(`aws-platform-deploy.mjs`, `env.ts`) | 완료 |
 | 16 | 배포 안내 | `release-notes/2026-11-12-privy-exit-cognito-login.json` | 캡처 없음(1-4) |
@@ -110,7 +111,7 @@
 | A1 | **앱(Flutter) — Privy Bearer** | `AUTH_PROVIDER=cognito`인 dev 서버에 현재 배포된 앱이 Privy 로그인 토큰으로 ① 세션 동기화 `POST /api/auth/session` 성공 ② 보호 API 200. 서버 Privy 검증 경로(`privy-node-verifier.ts` 비Cognito 분기)는 남아 있음 | **미검증** | 저장소에 앱 코드 없음(`apps/`=web·worker·stage-console). 실제 기기·앱 빌드로 확인 필요 |
 | A2 | **앱 — `kyaa-email:` 토큰** | 앱 이메일 로그인(`/api/auth/email/login`·`refresh`·`logout`, Cognito 이메일 풀) 토큰으로 보호 API 200, 갱신·로그아웃 정상 | **미검증** | 같은 이유. 서버 이메일 경로는 이번 변경에서 손대지 않음(`email-auth.ts`) |
 | A3 | **앱 — 배포된 로그인 방식·`walletToken` 사용 여부** | 현재 스토어 앱이 Privy 직접 로그인/이메일/Cognito 핸드오프 중 무엇을 쓰는지, `/api/auth/cognito/native/*` 응답의 `walletToken`을 읽는지 확인 | **미검증** | 이번 변경에서 `native-bridge.ts` 응답의 `walletToken`을 뺐다. main README는 앱이 이 값을 Privy SDK에 쓴다고 적었고, 10/24 기록상 Cognito 핸드오프는 앱에 출시되지 않았다. 앱이 읽는다면 되돌리거나(필드 복원) 앱 이전을 먼저 한다 |
-| A4 | **웹 신규 회원의 앱 로그인 충돌** | 웹에서 가입한 `kyaa:` 회원이 같은 Google/Apple 계정으로 앱(Privy)에 들어오면 Privy가 새 DID를 만들고 세션 동기화가 `VERIFIED_PROVIDER_OWNER_CONFLICT`로 실패한다(병합 없음, 로그인 불가). 반대 방향(앱 가입 → 웹)은 `linked`로 정상 | **미검증(예상 실패)** | 처리 방침은 1-6 운영 전환 조건 C3 |
+| A4 | **웹 신규 회원의 앱 로그인** | 웹에서 가입한 `kyaa:` 회원이 같은 Google/Apple 계정으로 앱(Privy)에 로그인 → 이제 DB가 그 DID를 같은 회원으로 흡수(1-5 규칙: subject 정확 일치 + 이메일 일치 + 활성 `kyaa:` 1명) → 같은 회원·기록·지갑, 보호 API 200. 조건을 못 맞추면 별도 새 계정(병합 없음) | **미검증(DB 동작은 SQL 시험 통과)** | 실제 앱으로 확인 필요. 카카오 가입 회원은 앱(Privy)에 카카오가 없어 불가 |
 
 - 보조(별도 집계): 카카오(설정 시), 관리자 Google 로그인, 정지 회원 거부, 탈퇴 후 재로그인 거부, Google·Apple을 **둘 다** 연결했던 기존 회원(두 번째 방법은 `ambiguous`로 막힘 — 대상 수를 dev·운영 DB에서 센다), 콜백 실패(취소 등) 시 `/login` 안내.
 - 집계 규칙: L1~L4, A1~A4를 각각 통과·실패·미검증으로 보고한다. 앱 행은 실제 앱으로 확인하기 전까지 미검증이다.
@@ -141,19 +142,42 @@
 | 1-13 | `AUTH_COOKIE_SECRET` 하나로 30일 세션 암호화, 키 식별자 없음 | 교체 시 전원 재로그인(runbook 명시) |
 | 1-10 | 잠정 xpub 주소는 서명 불가 → 그 주소로 받은 기록은 회원 주도 거래로 다룰 수 없음 | 운영 신규 가입 주소는 2-1c 통과 전 확정 금지(전제 6). dev 잠정 주소는 교체 대상 목록으로 관리 |
 
-## 1-5. 되돌리기
-- 앱: 이전 빌드(`049e51f56` 계열)와 `AUTH_PROVIDER=privy`로 재배포. 웹에서 Privy SDK를 지웠으므로 설정만으로는 못 되돌린다.
-- DB: 마이그레이션은 추가형(새 함수·표·시퀀스, 제약 확장 2개, 기존 함수 정규식 확장). 되돌리지 않고 둔다. 이전 빌드는 새 함수를 부르지 않는다.
-- 전환 중 생긴 `kyaa:` 회원은 Privy 로그인으로 들어올 수 없다 → 되돌리기 전 `select count(*) from app_users where privy_user_id like 'kyaa:%'` 확인, 공지.
+## 1-5. 되돌리기 (co-notes #237 반영: 전환 뒤 생긴 `kyaa:` 회원의 접근 유지)
+- **앱**: 이전 빌드(`049e51f56` 계열)와 `AUTH_PROVIDER=privy`로 재배포한다. 웹에서 Privy SDK를 지웠으므로 설정만으로는 되돌릴 수 없다.
+- **DB**: 마이그레이션은 추가형이라 되돌리지 않는다. 이전 빌드도 이 DB의 `sync_privy_identity_with_provider_accounts`를 부르므로 아래 흡수 규칙이 롤백 뒤에도 동작한다.
+- **`kyaa:` 회원 접근 유지 방법(구현, 마이그레이션 `20261224000000`)**: 롤백 뒤 `kyaa:` 회원이 같은 Google/Apple 계정으로 Privy에 로그인하면, Privy가 새 DID를 만든다. 세션 동기화는 이때 충돌 대신 다음 조건을 **모두** 만족하면 그 DID를 같은 회원의 식별 키로 흡수한다.
+  - 제시한 검증된 Google/Apple subject가 활성 `kyaa:` 회원 정확히 1명의 것이다.
+  - 검증 이메일이 그 회원과 같다.
+  - 새 DID를 가진 회원이 아직 없다.
+  - 결과: 회원 UUID·기록·현재 지갑은 그대로이고, Privy 임베디드 지갑은 붙이지 않는다. `kyaa_member_privy_adoptions`에 1행을 남기며, 한 번 흡수되면 다시 흡수하지 않는다.
+  - 흡수 뒤에도 Cognito 로그인은 같은 회원으로 이어진다(재전환 대비).
+  - 이 규칙은 웹 신규 회원이 Privy 기반 앱에 들어오는 경우(A4)에도 같이 적용된다.
+- **그래도 접근을 잃는 회원(롤백 전에 센다, 읽기 전용)**:
+  - 카카오로 가입한 `kyaa:` 회원: Privy 빌드에는 카카오 로그인이 없다.
+    `select count(*) from app_users u join live_privy_auth_accounts a on a.app_user_id=u.id where u.status='active' and u.privy_user_id like 'kyaa:%' and a.provider_issuer='https://kauth.kakao.com' and not exists(select 1 from live_privy_auth_accounts g where g.app_user_id=u.id and g.provider_issuer<>'https://kauth.kakao.com');`
+  - Privy가 보는 이메일이 가입 때와 다른 회원(예: Google 계정 이메일 변경), Cognito Apple 팀 ID가 Privy와 달라 subject가 다른 Apple 회원: 흡수 조건을 못 맞춰 Privy가 **별도 새 계정**을 만든다(병합 없음).
+  - 전체 대상 수: `select count(*) from app_users where status='active' and privy_user_id like 'kyaa:%';`
+  - 운영 전환 조건 C5(신규 가입 주소 확정 금지 → 운영 신규 가입 보류)를 지키는 동안 운영 `kyaa:` 회원 수는 0이다.
+- **잃는 회원 안내**: 수가 0이 아니면 롤백 공지에 "카카오로 가입한 회원은 서비스 복구 후 다시 이용할 수 있어요"류 안내를 넣는다. 해당 회원 목록은 운영자만 보관한다(외부 발송은 사용자 결정). 롤백을 풀고 Cognito로 재전환하면 그 회원은 원래 계정으로 돌아온다.
 - 세션: 이전 빌드는 `__Host-kyaa-cognito` 세션을 정리 경로로만 다룬다(기존 retired 처리).
+
+### 롤백 인수(RB)
+| # | 기준 | 상태 |
+|---|---|---|
+| RB1 | 롤백 전 위 두 쿼리로 대상 수·잃는 수를 기록 | 미실행(dev 전환 후) |
+| RB2 | dev 연습: Cognito 빌드에서 Google 신규 가입(`kyaa:`) → 기록 1건 만들기 → 이전 빌드 배포 → 같은 Google로 Privy 로그인 → **같은 회원 UUID·기록·지갑**, `kyaa_member_privy_adoptions` 1행, 보호 API 200 | 미검증(DB 동작은 SQL 시험 통과) |
+| RB3 | 같은 subject·다른 이메일, 이메일만 같은 경우 → 흡수 안 됨(병합 없음) | SQL 시험 통과, 실제 미검증 |
+| RB4 | 롤백 후 재전환(Cognito 빌드) → 흡수된 회원이 Cognito로 같은 회원 | SQL 시험 통과(`resolve_kyaa_identity`), 실제 미검증 |
+| RB5 | 걸린 시간(배포 시작 → 첫 로그인 성공)을 기록 | 미실행 |
 
 ## 1-6. 운영 전환 조건 (모두 충족 전 운영 `AUTH_PROVIDER=cognito` 금지)
 - C1 게이트 통과(`049e51f56` 기준), dev 실제 브라우저에서 L2·L3·L4 각각 통과. L1은 웹 이메일 로그인 구현 전이므로 "미검증 — 현재 불가"이며 **소셜 성공으로 대체하지 않는다.** 운영 전환 시 웹 이메일 회원은 웹 로그인이 안 됨을 감독이 받아들일지 결정한다.
 - C2 Privy 내보내기·백필 완료(최근 미로그인 회원 연결), Cognito Apple 팀 ID 확인.
-- C3 앱 충돌(A4) 처리 방침 — 둘 중 하나를 사용자·감독이 고른다:
+- C3 앱 충돌(A4) 처리 방침 — DB 흡수 규칙(1-5)으로 Google/Apple 회원의 충돌은 해소됐다. 남는 것(카카오 가입 회원, 이메일·subject 불일치 회원)에 대해 둘 중 하나를 사용자·감독이 고른다:
   - (a) 앱을 Cognito 핸드오프로 먼저 이전·배포한 뒤 웹 전환(권장, 충돌 원천 차단).
   - (b) 웹 먼저 전환하되, 앱의 세션 동기화가 `VERIFIED_PROVIDER_OWNER_CONFLICT`를 받으면 "웹에서 가입한 계정은 앱 업데이트 후 이용할 수 있어요" 안내를 띄우는 서버 응답 코드(`ACCOUNT_REQUIRES_APP_UPDATE`)를 추가하고(별도 작업, 미구현), 앱 업데이트 전까지 감수.
 - C4 A1·A2(앱 기존 로그인 유지)를 실제 앱으로 확인, A3 결과에 따라 `walletToken` 처리.
+- C6 롤백 인수 RB1·RB2를 dev에서 실행·기록(잃는 회원 수와 안내 포함).
 - C5 신규 가입 주소: K4 전에는 운영 신규 가입 주소를 확정하지 않는다 — 운영 신규 가입을 막거나(권장), 주소 없이 받고 K4 뒤 발급하는 변경을 따로 만든다(미구현).
 
 ---

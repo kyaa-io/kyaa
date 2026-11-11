@@ -96,5 +96,14 @@ Google/Apple subject를 이미 아는 회원은 백필 없이 연결된다. 2026
 
 - Privy Bearer 토큰 검증 경로는 앱(Flutter)이 바뀔 때까지 서버에 남는다. 웹은 쓰지 않는다. 웹에서 가입한 회원은 같은 Google/Apple 계정으로 앱(Privy)에 들어오면 세션 동기화가 충돌로 실패한다(병합 없음). 처리 방침은 운영 전환 조건 C3.
 - `AUTH_COOKIE_SECRET` 하나로 30일 세션을 암호화하고 키 식별자가 없다. 키를 바꾸면 모든 웹 회원이 다시 로그인한다.
-- 되돌리기: `AUTH_PROVIDER=privy`로 이전 빌드를 배포한다. 마이그레이션은 추가형이라 되돌리지 않는다. 전환 기간에 생긴 `kyaa:` 회원은 Privy 로그인으로 들어올 수 없으므로 되돌리기 전에 수를 확인한다.
+- 되돌리기(co-notes #237): 기준은 이전 빌드 기동만이 아니라 전환 뒤 생긴 `kyaa:` 회원이 접근을 잃지 않는 것이다.
+  1. **롤백 전(읽기 전용)** 대상과 잃는 회원 수를 기록한다:
+     - 전체: `select count(*) from app_users where status='active' and privy_user_id like 'kyaa:%';`
+     - 카카오로만 가입한 회원(Privy 빌드에는 카카오가 없어 접근 불가): `docs/operations/privy-exit-plan.md` 1-5의 쿼리.
+     - 운영 전환 조건 C5를 지키는 동안(운영 신규 가입 보류) 운영 값은 0이어야 한다.
+  2. `AUTH_PROVIDER=privy`로 이전 빌드를 배포한다. 마이그레이션은 되돌리지 않는다. 이전 빌드도 이 DB 함수를 쓴다.
+  3. 롤백 뒤 `kyaa:` 회원이 같은 Google/Apple 계정으로 Privy에 로그인하면, DB가 새 DID를 그 회원으로 흡수한다. 조건은 subject 정확 일치, 이메일 일치, 활성 `kyaa:` 회원 1명이다. 회원 UUID·기록·지갑은 유지되고 `kyaa_member_privy_adoptions`에 1행이 남는다. 조건을 못 맞추면 Privy가 별도 새 계정을 만든다(병합 없음).
+  4. 첫 로그인 몇 건을 확인한다: 같은 회원 UUID로 보호 API 200, 흡수 기록 1행.
+  5. 잃는 회원이 있으면(카카오 가입, 이메일 불일치, Apple 팀 불일치) 롤백 공지에 안내를 넣는다. 회원 개별 발송은 사용자 결정이다. Cognito로 재전환하면 원래 계정으로 돌아온다.
+  6. dev 연습(롤백 인수 RB1~RB5)을 먼저 해서 걸린 시간을 기록한다.
 - Privy 계약 해지는 병행 기간 뒤 사용자 확인으로 한다.
