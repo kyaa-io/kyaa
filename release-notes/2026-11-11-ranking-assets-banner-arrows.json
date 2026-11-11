@@ -1,0 +1,13 @@
+{
+  "changes": [
+    "홈 랭킹의 'P'와 '좋아요' 글자를 포인트 코인과 하트 그림으로 바꿨어요. 펼친 행의 오늘 증가·1위까지·하트·응모권 숫자도 같은 그림과 함께 보여요.",
+    "홈 배너의 좌우 화살표를 배너 사진 안쪽 가장자리로 옮겼어요. 모바일은 지금처럼 밀어서 넘겨요.",
+    "캡처는 개발용 시험 데이터로 로컬에서 찍은 화면이에요."
+  ],
+  "path": "/",
+  "images": [
+    "release-notes/images/2026-11-11-ranking-asset-units-pc.png",
+    "release-notes/images/2026-11-11-ranking-asset-units-mobile.png",
+    "release-notes/images/2026-11-11-home-banner-arrows-inside-pc.png"
+  ]
+}

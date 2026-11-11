@@ -20,6 +20,7 @@ import {
 import { fanAvatar } from "./rankings-content";
 import { rankingsText } from "./rankings-copy";
 import { RankRowPanel } from "./rank-row-panel";
+import { RankUnit, type RankUnitKind } from "./rank-unit";
 import { useRankExpand } from "./use-rank-expand";
 import { useRankingResource } from "./use-ranking-resource";
 import styles from "./ranking-rows.module.css";
@@ -195,15 +196,17 @@ function Placeholders({ from, to }: { from: number; to: number }) {
 const heartIcon = (size: 16) => <FanIcon icon={Heart} size={size} filled className={styles.heart} />;
 const short = (locale: AppLocale, n: number) => n >= 10000 ? n.toLocaleString(locale, { notation: "compact", maximumFractionDigits: 1 }) : n.toLocaleString(locale);
 
-/** The right-hand number of a row: the metric's value, read by name (hearts, points, fans), never from score alone. Counts up only when a later answer changes it; from 10,000 it is short (12.3K), the full number stays in the label. */
+const unitMark = (metric: RankingMetric) => metric === "points" ? <RankUnit unit="points" /> : metric === "fans" ? null : <RankUnit unit={metric === "likes" ? "likes" : "hearts"} />;
+
+/** The right-hand number of a row: the metric's value, read by name (hearts, points, likes, fans), never from score alone. Counts up only when a later answer changes it; from 10,000 it is short (12.3K), the full number stays in the label. */
 function Main({ locale, metric, value }: { locale: AppLocale; metric: RankingMetric; value: number }) {
   const n = value.toLocaleString(locale);
   const label = metric === "hearts" ? rankingsText(locale, "rkHearts", [n]) : metric === "points" ? rankingsText(locale, "rkPointsLabel", [n]) : metric === "likes" ? rankingsText(locale, "rkLikesCount", [n]) : rankingsText(locale, "rkJjinfanCount", [n]);
-  const template = metric === "points" ? rankingsText(locale, "rkPoints", ["\u0000"]) : metric === "fans" ? rankingsText(locale, "rkJjinfanCount", ["\u0000"]) : metric === "likes" ? rankingsText(locale, "rkLikesCount", ["\u0000"]) : "\u0000";
+  const template = metric === "fans" ? rankingsText(locale, "rkJjinfanCount", ["\u0000"]) : "\u0000";
   const [before, after] = template.split("\u0000");
   return <span className={styles.main} aria-label={label} title={n} data-metric={metric}>
     <span aria-hidden="true" className={styles.mainInner}>
-      {metric === "hearts" ? heartIcon(16) : null}{before?.trim() ? <span>{before.trim()}</span> : null}
+      {unitMark(metric)}{before?.trim() ? <span>{before.trim()}</span> : null}
       {value >= 10000 ? <span className={styles.mainNumber}>{short(locale, value)}</span> : <FanNumber value={value} locale={locale} countUp className={styles.mainNumber} />}{after?.trim() ? <span>{after.trim()}</span> : null}
     </span>
   </span>;
@@ -264,7 +267,7 @@ export function FanRows({ locale, ranking, metric, show, fill, scope, guest = fa
         <span className={styles.value}><Main locale={locale} metric={metric} value={value} /></span>
       </RowButton>
       <Pulse />
-      {open ? <RankRowPanel id={`${id}-panel`} kind="fan" row={row} days={days} guest={guest} locale={locale} gap={gapToFirst(i === 0 && ranking.rows[0] === row, value, top)} extra={fanStats(locale, row, metric)}
+      {open ? <RankRowPanel id={`${id}-panel`} kind="fan" row={row} days={days} guest={guest} locale={locale} gap={gapToFirst(i === 0 && ranking.rows[0] === row, value, top)} unit={metric === "points" ? "points" : "hearts"} extra={fanStats(locale, row, metric)}
         onOpenProfile={() => { if (row.profileRef) setPerson({ ref: row.profileRef, nickname: row.nickname, avatarUrl: null, tier: row.tier }); }}
         loginHref={fanLoginHref(locale, `/?locale=${locale}`)} /> : null}
     </li>;
@@ -273,14 +276,14 @@ export function FanRows({ locale, ranking, metric, show, fill, scope, guest = fa
 
 const creatorValue = (row: HomeCreatorRankingRow, metric: RankingMetric) => metric === "fans" ? row.fans ?? row.score : metric === "likes" ? row.likes ?? row.score : row.hearts;
 /** A stat the opened row adds (대표 11/11 01:55): only a real, non-zero count; zero and a missing value leave the cell out. */
-const statCell = (locale: AppLocale, key: string, label: string, value: number | null | undefined) =>
-  typeof value === "number" && value > 0 ? [{ key, label, value: value.toLocaleString(locale) }] : [];
+const statCell = (locale: AppLocale, key: string, label: string, value: number | null | undefined, unit: RankUnitKind) =>
+  typeof value === "number" && value > 0 ? [{ key, label, value: value.toLocaleString(locale), unit }] : [];
 /** Fans by points: hearts and entry tickets held. */
 const fanStats = (locale: AppLocale, row: HomeFanRankingRow, metric: RankingMetric) => metric === "points"
-  ? [...statCell(locale, "hearts", rankingsText(locale, "rkPanelHearts"), row.hearts), ...statCell(locale, "tickets", rankingsText(locale, "rkPanelTickets"), row.tickets)] : [];
+  ? [...statCell(locale, "hearts", rankingsText(locale, "rkPanelHearts"), row.hearts, "hearts"), ...statCell(locale, "tickets", rankingsText(locale, "rkPanelTickets"), row.tickets, "tickets")] : [];
 /** Creators by likes: hearts (찐팬 is a built-in cell), and all-time likes when the list counts a period. No SNS follower count is stored, so none is shown. */
 const creatorStats = (locale: AppLocale, row: HomeCreatorRankingRow, metric: RankingMetric, period: HomeRankingPeriod) => metric === "likes"
-  ? [...statCell(locale, "hearts", rankingsText(locale, "rkPanelHearts"), row.hearts), ...(period === "all" ? [] : statCell(locale, "totalLikes", rankingsText(locale, "rkPanelTotalLikes"), row.totalLikes))] : [];
+  ? [...statCell(locale, "hearts", rankingsText(locale, "rkPanelHearts"), row.hearts, "hearts"), ...(period === "all" ? [] : statCell(locale, "totalLikes", rankingsText(locale, "rkPanelTotalLikes"), row.totalLikes, "likes"))] : [];
 
 /** Creators: name, movement (and LIVE and the 찐팬 100 challenge tag where they apply) and the metric's value on one line; the row opens a panel whose action goes to the page. */
 export function CreatorRows({ locale, ranking, metric, show, fill, scope, challengeTag = false, guest = false, period = "all" }: { locale: AppLocale; ranking: HomeCreatorRanking; guest?: boolean; metric: HomeCreatorMetric; show?: number; fill?: number; scope: string; challengeTag?: boolean; period?: HomeRankingPeriod }) {
@@ -306,7 +309,7 @@ export function CreatorRows({ locale, ranking, metric, show, fill, scope, challe
         <span className={styles.value}><Main locale={locale} metric={metric} value={value} /></span>
       </RowButton>
       <Pulse />
-      {open ? <RankRowPanel id={`${id}-panel`} kind="creator" row={row} days={days} guest={guest} locale={locale} gap={gapToFirst(i === 0 && ranking.rows[0] === row, value, top)} extra={creatorStats(locale, row, metric, period)} /> : null}
+      {open ? <RankRowPanel id={`${id}-panel`} kind="creator" row={row} days={days} guest={guest} locale={locale} gap={gapToFirst(i === 0 && ranking.rows[0] === row, value, top)} unit={metric === "likes" ? "likes" : "hearts"} extra={creatorStats(locale, row, metric, period)} /> : null}
     </li>;
   })}{fill ? <Placeholders from={shown.length} to={fill} /> : null}</ol>;
 }
@@ -326,7 +329,7 @@ export function MyRank({ locale, ranking, metric }: { locale: AppLocale; ranking
       <strong className={styles.meRank}>{rankingsText(locale, "rkRank", [me.rank.toLocaleString(locale)])}</strong>
       <span className={styles.meValue}>
         {metric === "points"
-          ? <span>{rankingsText(locale, "rkPoints", [short(locale, value)])}</span>
+          ? <span className={styles.meHearts} aria-label={rankingsText(locale, "rkPointsLabel", [value.toLocaleString(locale)])}><RankUnit unit="points" /><span aria-hidden="true">{short(locale, value)}</span></span>
           : <span className={styles.meHearts} aria-label={rankingsText(locale, "rkHearts", [value.toLocaleString(locale)])}>{heartIcon(16)}<span aria-hidden="true">{short(locale, value)}</span></span>}
         <span className={styles.dot} aria-hidden="true">·</span>
         <span className={styles.meGap}>{me.rank === 1 ? rankingsText(locale, "rkIsFirst") : gap <= 0 ? rankingsText(locale, "rkTiedFirst") : rankingsText(locale, "rkToFirst", [short(locale, gap)])}</span>

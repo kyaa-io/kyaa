@@ -79,8 +79,8 @@ describe("guest home compact icon-only action spacing", () => {
     expect(controls).toMatch(/\bwidth:\s*44px\b/);
     expect(controls).toMatch(/\bmin-width:\s*44px\b/);
     expect(controls).toMatch(/\bheight:\s*44px\b/);
-    expect(declarationBlock(".carouselPrevious")).toMatch(/\bleft:\s*-44px\b/);
-    expect(declarationBlock(".carouselNext")).toMatch(/\bright:\s*-44px\b/);
+    expect(declarationBlock(".carouselPrevious")).toMatch(/\bleft:\s*0\b/);
+    expect(declarationBlock(".carouselNext")).toMatch(/\bright:\s*0\b/);
     expect(declarationBlock(".carouselProgress")).toMatch(/\bbottom:\s*-22px\b/);
     expect(declarationBlock(".heroViewport")).toMatch(/\btouch-action:\s*pan-y\s+pinch-zoom/);
     expect(declarationBlock(".heroTrack")).not.toMatch(/\btransition:\s*transform/);
