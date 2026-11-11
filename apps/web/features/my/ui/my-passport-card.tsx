@@ -6,6 +6,7 @@ import type { Route } from "next";
 import Link from "next/link";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import { FanSectionLink } from "@/components/fan-ui/fan-section-link";
+import { FanCellGauge } from "@/components/fan-ui/fan-cell-gauge";
 import { FanLockedValue } from "@/components/fan-ui/fan-locked-value";
 import { FanTabs } from "@/components/fan-ui/fan-tabs";
 import { FanSkeleton } from "@/components/fan-ui/fan-skeleton";
@@ -17,7 +18,7 @@ import { passportRoadmapSchema, type PassportRoadmapSlot } from "@/features/pass
 import { levelLabel } from "@/features/passport/domain/passport-read-model";
 import { PassportIdentityArtwork } from "@/features/passport/ui/passport-identity-artwork";
 import { GuestMissionBook, SLOT, openingPage } from "@/features/passport/ui/passport-mission-book";
-import { fanStageLabel } from "@/features/rewards/domain/fan-stage";
+import { fanStageLabel, type FanStageProgress } from "@/features/rewards/domain/fan-stage";
 import { fanStageNextText } from "@/features/rewards/ui/fan-stage-next";
 import type { AppLocale } from "@/i18n/locales";
 import type { MySummary } from "../domain/my-summary";
@@ -39,20 +40,30 @@ export function usePassportBook(passportId: string | null | undefined) {
   return { status: !dukjil || dukjil.status === "off" ? "off" as const : roadmap.error && !roadmap.data ? "error" as const : page ? "ready" as const : "loading" as const, page, retry: roadmap.retry };
 }
 
+const MAX_STAGE_CELLS = 10;
+
+/** 다음 단계 게이지의 칸. 남은 수가 작으면 (찬 칸 + 남은 칸)을 그대로 칸으로 쓰고, 10칸을 넘기면 10칸에 비율로 채운다. 다음 단계가 없으면 가득 찬 10칸. */
+export function stageGaugeCells(stage: Pick<FanStageProgress, "next" | "remaining" | "progressPercent">) {
+  const percent = Math.min(100, Math.max(0, stage.progressPercent));
+  if (!stage.next) return { cells: MAX_STAGE_CELLS, filled: MAX_STAGE_CELLS };
+  const total = percent >= 100 ? stage.remaining : Math.round(stage.remaining / (1 - percent / 100));
+  if (total >= 1 && total <= MAX_STAGE_CELLS && stage.remaining <= total) return { cells: total, filled: total - stage.remaining };
+  const ratio = Math.round(percent / 10);
+  return { cells: MAX_STAGE_CELLS, filled: stage.remaining > 0 ? Math.min(MAX_STAGE_CELLS - 1, percent > 0 ? Math.max(1, ratio) : 0) : MAX_STAGE_CELLS };
+}
+
+const GAUGE_ICON = { ink: "/images/passport/gauge/ink.webp", stamp: "/images/passport/gauge/stamp.webp", heart: "/images/passport/gauge/heart.webp" } as const;
+
 /** 다음 단계까지: 서버의 단계 진행(stageProgress)만 읽는다(BUGS-1846). 없으면 다음 단계를 말하지 않는다. */
 export function nextTierStep(locale: AppLocale, passport: NonNullable<Creator["passport"]>) {
   const stage = passport.stageProgress;
   if (!stage) return null;
-  return { percent: stage.progressPercent, text: fanStageNextText(locale, stage) ?? myHomeText(locale, "topTier") };
+  return { percent: stage.progressPercent, text: fanStageNextText(locale, stage) ?? myHomeText(locale, "topTier"), icon: stage.unit === "stamps" ? GAUGE_ICON.stamp : stage.unit === "hearts" ? GAUGE_ICON.heart : GAUGE_ICON.ink, ...stageGaugeCells(stage) };
 }
 
 /** 이름 옆 태그와 카드가 같은 등급 이름을 쓴다. */
 export function passportTierName(locale: AppLocale, passport: NonNullable<Creator["passport"]>) {
   return passport.stageProgress ? fanStageLabel(locale, passport.stageProgress.current) : levelLabel(locale, passport.tier);
-}
-
-function Bar({ value, label }: { value: number; label: string }) {
-  return <div className={styles.bar} role="progressbar" aria-label={label} aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(value)}><span style={{ inlineSize: `${Math.min(100, Math.max(0, value))}%` }} /></div>;
 }
 
 /** 찍힌 칸의 그림. 미션이 정해지지 않은 2쪽부터는 공통 미션 스탬프를 쓴다. */
@@ -128,12 +139,9 @@ export function MyPassportCard({ creators, selectedSlug, onSelect, communityStam
             <strong>{tierName}</strong>
           </p>
           <div className={styles.progress}>
-            {book.status === "ready" && filled !== null ? <><span>{myHomeText(locale, "stampProgress", [filled, total])}</span><Bar value={(filled / total) * 100} label={myHomeText(locale, "stampProgressFull", [filled, total])} /></> : book.status === "loading" ? <FanSkeleton width="60%" height={20} /> : null}
+            {book.status === "ready" && filled !== null ? <FanCellGauge icon={GAUGE_ICON.ink} text={myHomeText(locale, "stampProgress", [filled, total])} label={myHomeText(locale, "stampProgressFull", [filled, total])} cells={total} filled={filled} /> : book.status === "loading" ? <FanSkeleton width="100%" height={52} /> : null}
           </div>
-          {tierStep ? <div className={styles.progress}>
-            <span>{tierStep.text}</span>
-            <Bar value={tierStep.percent} label={tierStep.text} />
-          </div> : null}
+          {tierStep ? <div className={styles.progress}><FanCellGauge icon={tierStep.icon} text={tierStep.text} label={tierStep.text} cells={tierStep.cells} filled={tierStep.filled} /></div> : null}
         </div>
       </div>
       {book.status === "ready" && book.page ? <ul className={styles.slots}>{book.page.slots.map((slot) => <SlotItem key={slot.slotNo} slot={slot} locale={locale} />)}</ul>

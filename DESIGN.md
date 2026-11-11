@@ -207,6 +207,7 @@ A2 버튼 반경 알약·높이 390 44 / 1024+ 48 · B2 칩 36·14/700·반경 �
 | `FanHelpTip` · `HelpHint` | **폐기(2026-11-09, R6)**. 설명은 값으로 바꾸거나(라벨-값 메타) 설정류 화면에서만 `data-explains` 한 문장 | 새로 쓰지 않는다 |
 | `FanCollapsible` · `FanCollapsibleTrigger` · `FanDisclosure` | 접기. 기본은 닫힘, 오늘 할 것만 `defaultOpen`(N5). `persistKey`로 세션 안 유지. 서버 컴포넌트에서는 `FanDisclosure` | `<details>`를 새로 쓰지 않는다 |
 | `FanNumber` · `FanGauge` | 자산 숫자(포인트·응모권·온도)는 `FanNumber`(md 16·lg 24·xl 24→32, `countUp`은 값이 바뀔 때, `pulseOnChange`는 온도). 진행·남은 양은 `FanGauge`(`valueText` 오른쪽 `1/3`, `segments`로 칸 나눔) | 막대 안에 글자를 넣지 않는다 |
+| `FanCellGauge`(팬 활동 기록 게이지, 2026-11-11 사용자 지시) | 왼쪽 44px 그림(잉크병=이번 쪽 스탬프, 스탬프=도장, 하트=하트, imagegen 2x WebP `public/images/passport/gauge/`) + 값 한 줄 + 둥근 트랙(높이 24, 안쪽 4) 안 칸 분할. 채운 칸 `--color-accent`, 빈 칸 `--color-accent-soft` + `-line` 헤어라인(회색 면 0). 이번 쪽은 쪽의 칸 수(9), 다음 등급은 남은 수 + 찬 수(최대 10칸, 넘으면 10칸에 비율). `aria-valuenow`=찬 칸·`aria-valuemax`=칸 수. 처음 보일 때 칸이 45ms 간격으로 차고 reduced-motion은 즉시. 폭 최대 520 | `fan-cell-gauge.tsx`, `my-passport-card.tsx` `stageGaugeCells` | 사용자 "gauge UI 레퍼런스" 2026-11-10 23:58 |
 | `FanCount` | 알림·댓글 수 같은 숫자 칩. 0이면 그리지 않고 99 넘으면 `99+` | 지갑 잔액(0도 보여야 함) → `FanNumber` |
 | `FanTag` | 유형·공지·인증 표시 글자(tone fan·neutral·notice·artist) | 숫자·설명을 넣지 않는다(S9). 성공·대기·실패 색 태그는 아직 없다 |
 | `EarnBadge inline` | `+20P` 글자 15/700 잉크, 행 오른쪽 열에만. `corner`·`EarnRemaining`·`EarnActionBadge`는 폐기(남은 횟수는 `0/3`) | 숫자를 화면에 직접 쓰지 않고 카탈로그 값을 읽는다(C9) |
