@@ -20,3 +20,6 @@
   .action { margin-top: var(--space-1); }
 }
 @container (min-width: 560px) { .slot[data-image-failed] .card { grid-template-columns: minmax(0, 1fr); } }
+/* PromoBanner: no picture, so the card stays one column at every width. */
+.plain .copy { padding: var(--space-4); }
+@container (min-width: 560px) { .card.plain { grid-template-columns: minmax(0, 1fr); min-height: 0; } .plain .copy { padding: var(--space-4) var(--space-5); } .plain .action { margin-top: auto; } }

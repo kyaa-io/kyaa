@@ -1,10 +1,10 @@
-/* 홈 찐팬 100 줄(대표 2026-11-11): 배너와 랭킹 사이 한 줄. 카드 12·1px accent-line 선·바탕 accent-soft, 막대 6px 알약, 진행 끝에 은은히 깜박이는 점.
+/* 홈 찐팬 하트 후원 줄(대표 2026-11-11): 배너와 랭킹 사이 한 줄. 카드 12·1px accent-line 선·바탕 accent-soft, 막대 6px 알약, 진행 끝에 은은히 깜박이는 점.
  * 깜박임은 점의 불투명도뿐(글로·그림자 0). reduced-motion은 정지. */
 .strip { display: grid; gap: var(--space-2); box-sizing: border-box; min-width: 0; padding: var(--space-3) var(--space-4); border: 1px solid var(--color-accent-line); border-radius: var(--radius-card); background: var(--color-accent-soft); color: var(--color-ink); text-decoration: none; }
 .strip[data-skeleton] { padding: 0; border: 0; background: transparent; }
-.head { display: flex; align-items: center; gap: var(--space-2); min-width: 0; }
-.heart { flex: none; color: var(--color-accent); }
-.title { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.head { display: flex; align-items: flex-start; gap: var(--space-2); min-width: 0; }
+.heart { flex: none; margin-top: var(--space-1); color: var(--color-accent); }
+.title { flex: 1; min-width: 0; overflow-wrap: anywhere; text-wrap: balance; }
 .count { flex: none; color: var(--color-accent-ink); font-variant-numeric: tabular-nums; }
 .bar { display: block; height: 6px; border-radius: var(--radius-pill); background: var(--color-surface); box-shadow: inset 0 0 0 1px var(--color-accent-line); }
 .fill { position: relative; display: block; height: 100%; min-width: 6px; border-radius: inherit; background: var(--color-accent); transition: width var(--motion-slow, 200ms) var(--motion-easing); }

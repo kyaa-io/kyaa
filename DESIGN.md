@@ -259,8 +259,9 @@ A2 버튼 반경 알약·높이 390 44 / 1024+ 48 · B2 칩 36·14/700·반경 �
 - 연출 자리는 처음부터 차지해 CLS를 만들지 않는다. 오른쪽 위에 겹치는 `corner` 배지는 변환 때문에 위치가 튀므로 팝하지 않는다.
 - 전역 `prefers-reduced-motion` 한 줄 규칙은 **없다**. 모듈마다 `@media (prefers-reduced-motion: reduce)`로 끄고, `animation`을 쓰는 새 CSS는 N7이 분기 없으면 실패시킨다. Motion은 `MotionConfig reducedMotion="user"`로 변환을 끈다.
 - 연출은 보상을 *알리기* 위한 것이다. 전면 폭죽·파티클·상시 효과를 더하지 않는다.
-- 예외(대표 2026-11-11 16:2x): 홈 찐팬 100 줄(`home-jjinfan-strip`)의 막대 진행 끝 점은 불투명도만 1.8초 주기로 깜박인다(글로·그림자 0, reduced-motion 정지, 100/100이면 점 없음). 홈 배너와 랭킹 사이 한 줄·누르면 `/guide/jjinfan#jjinfan-challenge`·현재 진행 대상 1개(운영자가 가장 최근에 켠 챌린지)만. 값은 **하트 총수/100**(`creator_heart_total`, 찐팬 인원수 `count`가 아니다). 진행 대상이 없거나 읽기에 실패하면 0/100으로 항상 보인다(빈 띠를 두지 않는다).
-- 노출 조건(2026-11-11 7차 열차): 찐팬 100 줄과 `/guide/jjinfan` 도전 구역은 서버 플래그 `KYAA_FEATURE_JJINFAN_GAUGE`로만 보인다. 없으면 개발 데이터 환경(local·dev)에서만 켜지고 운영은 꺼진다.
+- 예외(대표 2026-11-11 16:2x): 홈 찐팬 하트 후원 줄(`home-heart-donation`, 2026-11-11 23:00 개편: 제목 `<크리에이터>와 함께 찐팬 하트로 <후원 대상> 후원하기`, 찐팬 100 표현 없음)의 막대 진행 끝 점은 불투명도만 1.8초 주기로 깜박인다(글로·그림자 0, reduced-motion 정지, 100/100이면 점 없음). 홈 배너와 랭킹 사이 한 줄·누르면 `/events/heart-donation`·설정(`KYAA_HEART_DONATION_CREATOR_SLUG`·`_CREATOR_NAME`·`_CAUSE`·`_RECIPIENT`, 기본 엘리나·불우이웃·후원처 미정)이 가리키는 크리에이터 1명만. 값은 **하트 총수/100**(`creator_heart_total`, 찐팬 인원수 `count`가 아니다). 진행 대상이 없거나 읽기에 실패하면 0/100으로 항상 보인다(빈 띠를 두지 않는다).
+- 홈 랭킹 카드 바로 아래 배너 슬롯(`home-below-ranking`, 대표 2026-11-11 22:34): 공통 부품 `PromoBanner`(`components/banner-slot`, 그림 없는 한 열 카드 — 카드 12·1px `--color-line`·제목 15/700·한 줄 설명·`CTA →`)로 찐팬 100 챌린지 배너를 `/guide/jjinfan#jjinfan-challenge`로 연결한다. 나중에 광고 자리로 쓰며 `tag`에 `광고`를 넣는다. 위 16px, 아래는 얇은 배너·다음 구역 간격을 따른다. 찐팬 100 상세(`/guide/jjinfan`) 도전 구역은 찐팬 인원수/100, 후원 안내는 `/events/heart-donation`(읽는 폭 720, 후원처 없으면 `후원처는 확정 후 안내해요`)으로 옮겼다.
+- 노출 조건(2026-11-11 7차 열차): 찐팬 하트 후원 줄·랭킹 아래 배너·`/events/heart-donation`·`/guide/jjinfan` 도전 구역은 서버 플래그 `KYAA_FEATURE_JJINFAN_GAUGE`로만 보인다. 없으면 개발 데이터 환경(local·dev)에서만 켜지고 운영은 꺼진다.
 - 반복 애니메이션은 럭키드로우 idle과 로딩 스켈레톤만. 글로우·바운스·오버슈트 0. `prefers-reduced-motion`은 모듈별 분기(N7) 유지(2026-11-09).
 
 ### 3-1. 4회차 공통 규칙 (261107-2 피드백 C·D, 2026-11-08 합침)

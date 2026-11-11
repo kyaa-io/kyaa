@@ -1,7 +1,9 @@
-/* 찐팬 100 상세 위쪽(대표 2026-11-11): 하트 게이지 카드 · 기부 · 참여한 팬 · 응원 버튼. 카드 12·1px 선, 회색 면 0. */
+/* 찐팬 100 상세 위쪽·찐팬 하트 후원 상세(대표 2026-11-11): 게이지 카드 · (후원처 · 참여한 팬) · 응원 버튼. 카드 12·1px 선, 회색 면 0. */
 .detail { display: grid; gap: var(--space-4); min-width: 0; margin-block: var(--space-4); }
 .block { display: grid; gap: var(--space-2); box-sizing: border-box; min-width: 0; padding: var(--space-4); border: 1px solid var(--color-line); border-radius: var(--radius-card); background: var(--color-surface); }
 .block p { margin: 0; overflow-wrap: anywhere; }
 .count { color: var(--color-accent-ink); font-variant-numeric: tabular-nums; }
 .done { color: var(--color-accent-ink); }
 .meta { white-space: pre-line; }
+/* 후원 상세는 자기 화면이라 넓은 화면에서 읽는 폭(720)으로 모아 가운데에 둔다. 찐팬 100 상세는 안내 페이지 열을 그대로 따른다. */
+.event { width: 100%; max-width: 720px; margin-inline: auto; }

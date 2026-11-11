@@ -9,6 +9,7 @@ import { homeStructuredData, serializeStructuredData } from "@/seo/structured-da
 import { StreamingGuestHome } from "../components/guest-home";
 import { loadServerEnv } from "../server/config/env";
 import { jjinfanGaugeEnabled } from "../server/config/feature-flags";
+import { heartDonationEvent } from "../server/config/heart-donation-event";
 import { createPublishedContentRepositoryFromEnvironment } from "../server/content/published-content-repository";
 import { createHomeGalleryRepository } from "../server/home-gallery/home-gallery-repository";
 import { createHomeNoticeRepository } from "../server/home-notice/home-notice-repository";
@@ -50,6 +51,7 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
       queries={queries}
       locale={locale}
       jjinfanGauge={jjinfanGaugeEnabled()}
+      heartDonation={heartDonationEvent()}
     />
   </>;
 }

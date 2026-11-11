@@ -17531,6 +17531,60 @@
     "source": "features/rankings/ui/rankings-copy",
     "id": "features/rankings/ui/rankings-copy:jjCheer"
   },
+  "hdTitle": {
+    "en": "Donate to {1} with True Fan hearts, together with {0}",
+    "ko": "{0} 함께 찐팬 하트로 {1} 후원하기",
+    "source": "features/rankings/ui/rankings-copy",
+    "id": "features/rankings/ui/rankings-copy:hdTitle"
+  },
+  "hdCreatorDefault": {
+    "en": "Elina",
+    "ko": "엘리나",
+    "source": "features/rankings/ui/rankings-copy",
+    "id": "features/rankings/ui/rankings-copy:hdCreatorDefault"
+  },
+  "hdCauseDefault": {
+    "en": "people in need",
+    "ko": "불우이웃",
+    "source": "features/rankings/ui/rankings-copy",
+    "id": "features/rankings/ui/rankings-copy:hdCauseDefault"
+  },
+  "hdPitch": {
+    "en": "When 100 hearts fill up, we donate 1,000 KRW per heart",
+    "ko": "하트 100개가 모이면 1개당 1,000원을 후원해요",
+    "source": "features/rankings/ui/rankings-copy",
+    "id": "features/rankings/ui/rankings-copy:hdPitch"
+  },
+  "hdRecipientTitle": {
+    "en": "Recipient",
+    "ko": "후원처",
+    "source": "features/rankings/ui/rankings-copy",
+    "id": "features/rankings/ui/rankings-copy:hdRecipientTitle"
+  },
+  "hdRecipientPending": {
+    "en": "The recipient will be announced once confirmed",
+    "ko": "후원처는 확정 후 안내해요",
+    "source": "features/rankings/ui/rankings-copy",
+    "id": "features/rankings/ui/rankings-copy:hdRecipientPending"
+  },
+  "hdNamesPending": {
+    "en": "The name list will be shared once the recipient is confirmed",
+    "ko": "이름 목록은 후원처 확정 후 안내해요",
+    "source": "features/rankings/ui/rankings-copy",
+    "id": "features/rankings/ui/rankings-copy:hdNamesPending"
+  },
+  "jjBannerDesc": {
+    "en": "Rankings open once 100 true fans gather",
+    "ko": "찐팬이 100명 모이면 순위가 공개돼요",
+    "source": "features/rankings/ui/rankings-copy",
+    "id": "features/rankings/ui/rankings-copy:jjBannerDesc"
+  },
+  "jjBannerCta": {
+    "en": "See the challenge",
+    "ko": "챌린지 자세히 보기",
+    "source": "features/rankings/ui/rankings-copy",
+    "id": "features/rankings/ui/rankings-copy:jjBannerCta"
+  },
   "jjRankLocked": {
     "en": "Rankings open at 100 true fans",
     "ko": "찐팬 100명부터 순위를 공개해요",

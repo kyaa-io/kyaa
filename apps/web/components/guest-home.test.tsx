@@ -86,12 +86,19 @@ describe("canonical 03 guest home", () => {
     expect(screen.getAllByTestId("home-ranking")).toHaveLength(1);
   });
 
-  it("shows the 찐팬 100 strip only when the server flag is on", () => {
+  it("shows the heart donation strip and the banner under the ranking only when the server flag is on", () => {
     const off = render(<GuestHome {...defaultProps} />);
-    expect(off.container.querySelector("[data-home-jjinfan-strip]")).toBeNull();
+    expect(off.container.querySelector("[data-home-heart-donation]")).toBeNull();
+    expect(off.container.querySelector('[data-banner-slot="home-below-ranking"]')).toBeNull();
     off.unmount();
     const on = render(<GuestHome {...defaultProps} jjinfanGauge />);
-    expect(on.container.querySelector("[data-home-jjinfan-strip]")).not.toBeNull();
+    expect(on.container.querySelector("[data-home-heart-donation]")).not.toBeNull();
+    const ranking = on.container.querySelector("#home-ranking")!;
+    const slot = on.container.querySelector('[data-banner-slot="home-below-ranking"]')!;
+    expect(slot.textContent).toContain("찐팬 100 챌린지");
+    expect(slot.querySelector("a")).toHaveAttribute("href", "/guide/jjinfan?locale=ko#jjinfan-challenge");
+    expect(ranking.compareDocumentPosition(slot) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(on.container.querySelector("[data-home-heart-donation]")?.textContent).not.toContain("찐팬 100");
   });
   it("draws the thin banner from the slot read with the page, before the notices, and nothing when the slot is empty", () => {
     const thin = { ...bannerFixture, id: "44444444-4444-4444-8444-444444444444", title: "얇은 띠", placement: "home_below_board" as const };

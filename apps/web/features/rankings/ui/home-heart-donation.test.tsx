@@ -1,0 +1,106 @@
+import { cleanup, render, screen } from "@testing-library/react";
+import { afterEach, expect, it, vi } from "vitest";
+const h = vi.hoisted(() => ({ state: { status: "loading" } as unknown, url: "" }));
+vi.mock("./use-ranking-resource", () => ({ useRankingResource: (url: string) => { h.url = url; return { state: h.state, retry: vi.fn() }; } }));
+import { togetherWith } from "../domain/heart-donation";
+import { HeartDonationDetail } from "./heart-donation-detail";
+import { HomeHeartDonation } from "./home-heart-donation";
+import { JjinfanChallengeDetail } from "./jjinfan-detail";
+
+afterEach(cleanup);
+// `count` is the number of 찐팬 (fans holding a heart); the heart gauge reads `hearts`, the total of hearts on the page (대표 2026-11-11).
+const item = (slug: string, count: number, hearts: number) => ({ slug, name: slug === "elina" ? "엘리나" : "웬아", imageUrl: null, title: "제목", description: "", endsOn: null, count, hearts, target: 100 as const });
+const event = { creatorSlug: "elina", creatorName: null, cause: null, recipient: null };
+
+it("picks 와 or 과 by the last syllable in Korean and leaves other languages to the translation", () => {
+  expect(togetherWith("ko", "엘리나")).toBe("엘리나와");
+  expect(togetherWith("ko", "지민")).toBe("지민과");
+  expect(togetherWith("ko", "Elina")).toBe("Elina와");
+  expect(togetherWith("en", "Elina")).toBe("Elina");
+});
+
+it("shows a skeleton while reading", () => {
+  h.state = { status: "loading" };
+  const { container } = render(<HomeHeartDonation locale="ko" />);
+  expect(container.querySelector("[data-skeleton]")).not.toBeNull();
+});
+
+it("reads 0 honestly for no challenge or a failed read, and still links to the event page (no blank band)", () => {
+  for (const state of [{ status: "error" }, { status: "ready", data: { items: [] } }]) {
+    h.state = state;
+    render(<HomeHeartDonation locale="ko" />);
+    expect(screen.getByRole("link")).toHaveAttribute("href", "/events/heart-donation?locale=ko");
+    expect(screen.getByRole("link").textContent).toContain("엘리나와 함께 찐팬 하트로 불우이웃 후원하기");
+    expect(screen.getByRole("link").textContent).toContain("0/100");
+    expect(screen.getByRole("meter")).toHaveAttribute("aria-valuenow", "0");
+    cleanup();
+  }
+});
+
+it("fills by the hearts of the creator the settings name, not the first challenge and not the fan count, and carries no 찐팬 100 wording", () => {
+  h.state = { status: "ready", data: { items: [item("wena", 90, 90), item("elina", 5, 37)] } };
+  const { container } = render(<HomeHeartDonation locale="ko" event={event} />);
+  expect(h.url).toBe("/api/rankings/challenges?locale=ko");
+  const link = screen.getByRole("link");
+  expect(link.textContent).toContain("37/100");
+  expect(link.textContent).not.toContain("5/100");
+  expect(link.textContent).toContain("하트 100개가 모이면 1개당 1,000원을 후원해요");
+  expect(link.textContent).not.toContain("찐팬 100");
+  expect(screen.getAllByRole("meter")).toHaveLength(1);
+  expect(screen.getByRole("meter")).toHaveAttribute("aria-valuenow", "37");
+  expect(container.querySelector('[data-end="live"]')).not.toBeNull();
+});
+
+it("takes the creator and the cause from the settings", () => {
+  h.state = { status: "ready", data: { items: [item("wena", 1, 12)] } };
+  render(<HomeHeartDonation locale="ko" event={{ creatorSlug: "wena", creatorName: "설정이름", cause: "유기동물", recipient: null }} />);
+  expect(screen.getByRole("link").textContent).toContain("웬아와 함께 찐팬 하트로 유기동물 후원하기");
+  expect(screen.getByRole("link").textContent).toContain("12/100");
+});
+
+it("clamps hearts over 100 and drops the blinking end at 100", () => {
+  h.state = { status: "ready", data: { items: [item("elina", 40, 130)] } };
+  const { container } = render(<HomeHeartDonation locale="ko" />);
+  expect(screen.getByRole("link").textContent).toContain("100/100");
+  expect(container.querySelector('[data-end="live"]')).toBeNull();
+});
+
+it("the event page reads the hearts, the donation line, 후원처 확정 후 안내 until a recipient is set, and links to the creator's fan tab", () => {
+  h.state = { status: "ready", data: { items: [item("elina", 5, 37)] } };
+  const { container } = render(<HeartDonationDetail locale="ko" event={event} />);
+  expect(screen.getByRole("heading", { level: 1 }).textContent).toBe("엘리나와 함께 찐팬 하트로 불우이웃 후원하기");
+  expect(container.querySelector("[data-heart-donation-gauge]")?.textContent).toContain("37/100");
+  expect(screen.getByRole("progressbar")).toHaveAttribute("aria-valuenow", "37");
+  expect(container.querySelector('[data-pending="recipient"]')?.textContent).toBe("후원처는 확정 후 안내해요");
+  expect(container.querySelector('[data-pending="names"]')).not.toBeNull();
+  expect(screen.getByRole("link", { name: "응원하러 가기" })).toHaveAttribute("href", "/elina?tab=members&locale=ko");
+});
+
+it("the event page shows the recipient once the settings name one, and reads 0 with the creator's page as the cheer target when nothing is on", () => {
+  h.state = { status: "ready", data: { items: [] } };
+  const { container } = render(<HeartDonationDetail locale="ko" event={{ ...event, recipient: "사랑의 도시락" }} />);
+  expect(container.querySelector('[data-recipient="set"]')?.textContent).toBe("사랑의 도시락");
+  expect(container.querySelector('[data-pending="recipient"]')).toBeNull();
+  expect(container.querySelector("[data-heart-donation-gauge]")?.textContent).toContain("0/100");
+  expect(screen.getByRole("link", { name: "응원하러 가기" })).toHaveAttribute("href", "/elina?tab=members&locale=ko");
+});
+
+it("the 찐팬 100 detail reads the 찐팬 count of the first challenge and has no donation part", () => {
+  h.state = { status: "ready", data: { items: [item("elina", 63, 37)] } };
+  const { container } = render(<JjinfanChallengeDetail locale="ko" />);
+  expect(container.querySelector("[data-jjinfan-gauge]")?.textContent).toContain("63/100");
+  expect(screen.getByRole("progressbar")).toHaveAttribute("aria-valuenow", "63");
+  expect(container.textContent).not.toContain("후원");
+  expect(container.textContent).not.toContain("기부");
+  expect(screen.getByRole("link", { name: "응원하러 가기" })).toHaveAttribute("href", "/elina?tab=members&locale=ko");
+});
+
+it("the 찐팬 100 detail reads 0 with no cheer button when nothing is on or the read failed", () => {
+  for (const state of [{ status: "error" }, { status: "ready", data: { items: [] } }]) {
+    h.state = state;
+    const { container } = render(<JjinfanChallengeDetail locale="ko" />);
+    expect(container.querySelector("[data-jjinfan-gauge]")?.textContent).toContain("0/100");
+    expect(screen.queryByRole("link", { name: "응원하러 가기" })).toBeNull();
+    cleanup();
+  }
+});
