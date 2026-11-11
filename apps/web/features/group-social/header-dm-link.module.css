@@ -1,0 +1,3 @@
+.floating { position: fixed; right: var(--space-4); bottom: calc(var(--space-16) + var(--space-4) + env(safe-area-inset-bottom)); width: 48px; height: 48px; border-radius: var(--radius-pill); background: var(--color-surface); color: var(--color-service-ink); box-shadow: var(--shadow-overlay); z-index: var(--z-bottom-nav); }
+.floating[hidden], :global(body:has([role="dialog"], dialog[open], [aria-modal="true"])) .floating { display: none; }
+@media (min-width: 1024px) { .floating { display: none; } }

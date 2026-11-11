@@ -2265,3 +2265,4 @@ At the user's request, registered Changha identity and hero images use the unedi
 - MY 패스포트 표지 칸 PC 380→560px(1024+). 사유: 대표 02:15 "MY에는 패스포트 UI를 잘 보여주면".
 
 HEADER-CHIP-1456 (2026-11-11): 헤더 등급·하트·포인트 칩은 팝오버 없이 `/my`로 가는 링크 하나이고, 값이 바뀌면 `RollingNumber`(components/fan-ui, 자리별 세로 롤 600ms 감속, 증가 위·감소 아래, reduced-motion 즉시)로 넘어가며 칩 테두리가 브랜드 분홍으로 1회 깜빡인다(첫 로드 제외). 모임 목록 모바일 출석 플로팅 원형 버튼은 삭제(PC 카드 유지). 사유: 대표 2026-11-11 14:50.
+- HEADER-DM-1347 (2026-11-11 사용자 운영 승인): 로그인 헤더의 종 바로 다음에 기존 Send 아이콘(44px 타깃)을 표시하고 `/my/friends`로 연결한다. 대화 API의 unreadCount 합계를 사용하며 종과 DM 숫자 배지는 `--color-error`, 99+ 상한을 공유한다. 모바일 DM은 하단 탭 위 48px 원형 버튼이며 아래로 스크롤·메시지/작성/편집 화면·열린 dialog에서 숨긴다.
