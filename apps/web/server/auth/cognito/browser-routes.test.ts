@@ -30,8 +30,19 @@ it("moves an approved www alias to the canonical auth origin before setting the 
 it("rejects state replay, duplicate code and a different callback origin before provider exchange",async()=>{
  const cookie=`${FLOW_COOKIE}=${seal({state:"state",verifier:"verifier",nonce:"nonce",expiresAt:Date.now()+60000,returnTo:"/passport"},mock.config.cookieSecret)}`;
  for(const url of ["https://kyaa.io/api/auth/cognito/callback?code=x&state=wrong","https://kyaa.io/api/auth/cognito/callback?code=x&code=y&state=state","https://attacker.test/api/auth/cognito/callback?code=x&state=state"]){
-  expect((await callback(new Request(url,{headers:{cookie}}))).status).toBe(400);
+  const response=await callback(new Request(url,{headers:{cookie}}));
+  expect(response.status).toBe(303);
+  // An unvalidated flow keeps no return path: only the generic failure reason.
+  expect(response.headers.get("location")).toBe("https://kyaa.io/login?authError=callback_failed");
+  expect(response.headers.get("set-cookie")).not.toContain(`${SESSION_COOKIE}=`);
  }
+ expect(mock.tokenRequest).not.toHaveBeenCalled();
+});
+it("returns a cancelled provider screen to the login page with its validated return path",async()=>{
+ const cookie=`${FLOW_COOKIE}=${seal({state:"state",verifier:"verifier",nonce:"nonce",expiresAt:Date.now()+60000,returnTo:"/passport",locale:"ja"},mock.config.cookieSecret)}`;
+ const response=await callback(new Request("https://kyaa.io/api/auth/cognito/callback?code=x&state=state&error=access_denied",{headers:{cookie}}));
+ expect(response.status).toBe(303);
+ expect(response.headers.get("location")).toBe("https://kyaa.io/login?returnTo=%2Fpassport&locale=ja&authError=callback_failed");
  expect(mock.tokenRequest).not.toHaveBeenCalled();
 });
 it("validates ID nonce, links or creates the member on the server and returns to login without tokens in the URL",async()=>{
@@ -75,13 +86,15 @@ it("starts authorization while global legacy inventory is incomplete", async () 
  expect(new URL(response.headers.get("location")!).searchParams.get("identity_provider")).toBe("SignInWithApple");
  expect(mock.rpc).not.toHaveBeenCalled();
 });
-it("keeps the callback closed when member storage fails after provider authentication", async () => {
+it("keeps the callback closed and returns to login when member storage or issuance fails", async () => {
  mock.tokenRequest.mockResolvedValue({access_token:"access",id_token:"id",refresh_token:"refresh",expires_in:600});
  mock.verify.mockResolvedValue({issuer:mock.config.issuer,subject:"subject",email:"fan@example.test",tokenId:"id"});
  mock.signIn.mockRejectedValue(new Error("Identity service unavailable"));
  const cookie=`${FLOW_COOKIE}=${seal({state:"state",verifier:"verifier",nonce:"nonce",expiresAt:Date.now()+60000,returnTo:"/passport"},mock.config.cookieSecret)}`;
  const response=await callback(new Request("https://kyaa.io/api/auth/cognito/callback?code=code&state=state",{headers:{cookie}}));
- expect(response.status).toBe(400);
+ expect(response.status).toBe(303);
+ expect(response.headers.get("location")).toBe("https://kyaa.io/login?returnTo=%2Fpassport&locale=ko&authError=callback_failed");
+ expect(response.headers.get("set-cookie")).not.toContain(`${SESSION_COOKIE}=`);
  expect(mock.signIn).toHaveBeenCalledOnce();
  expect(mock.writeSession).not.toHaveBeenCalled();
 });

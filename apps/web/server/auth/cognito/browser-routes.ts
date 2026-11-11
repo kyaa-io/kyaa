@@ -66,6 +66,7 @@ export async function callback(request: Request): Promise<Response> {
       return retiredLogin(headers, flow);
     } catch { return retiredLogin(headers); }
   }
+  let flow: z.infer<typeof flowSchema> | null = null;
   try {
     const config = cognitoConfig();
     const url = new URL(request.url);
@@ -73,8 +74,11 @@ export async function callback(request: Request): Promise<Response> {
     if (appOriginForRequest(request,config.origin) !== config.origin || url.pathname !== new URL(config.redirectUri).pathname || url.searchParams.getAll("state").length !== 1 || url.searchParams.getAll("code").length !== 1) throw cognitoDenied();
     const encoded = readCookie(request,FLOW_COOKIE);
     if (!encoded) throw cognitoDenied();
-    const flow = flowSchema.parse(unseal(encoded,config.cookieSecret));
-    if (flow.state !== url.searchParams.get("state") || flow.expiresAt <= Date.now() || url.searchParams.has("error")) throw cognitoDenied();
+    const parsed = flowSchema.parse(unseal(encoded,config.cookieSecret));
+    if (parsed.state !== url.searchParams.get("state") || parsed.expiresAt <= Date.now()) throw cognitoDenied();
+    // Only a flow this browser started keeps its return path and locale on the failure page.
+    flow = parsed;
+    if (url.searchParams.has("error")) throw cognitoDenied();
     const tokens = await tokenRequest(config,new URLSearchParams({ grant_type:"authorization_code",client_id:config.clientId,redirect_uri:config.redirectUri,code:url.searchParams.get("code")!,code_verifier:flow.verifier }));
     if (!tokens.refresh_token) throw cognitoDenied();
     const verify = createCognitoVerifier(config);
@@ -95,7 +99,15 @@ export async function callback(request: Request): Promise<Response> {
     await writeSession(key,{ preferredLocale:flow.locale, accessToken:tokens.access_token,idToken:tokens.id_token,refreshToken:tokens.refresh_token,subject:id.subject,expiresAt:Date.now()+tokens.expires_in*1000,sessionExpiresAt:Date.now()+SESSION_LIFETIME_MS },config);
     headers.append("set-cookie",cookie(SESSION_COOKIE,key,SESSION_LIFETIME_MS/1000));headers.set("location",destination.toString());
     return new Response(null,{status:303,headers});
-  } catch { return Response.json({error:{code:"INVALID_AUTH_CALLBACK"}},{status:400,headers}); }
+  } catch {
+    // Cancelled provider screen, unverified email, storage or issuance failure: back to the login page, never a JSON page.
+    // No session is created and nothing from the request is echoed except a flow-validated return path.
+    const destination = new URL("/login", loadServerEnv().NEXT_PUBLIC_APP_URL);
+    if (flow) { destination.searchParams.set("returnTo", flow.returnTo); destination.searchParams.set("locale", flow.locale); }
+    destination.searchParams.set("authError", "callback_failed");
+    headers.set("location", destination.toString());
+    return new Response(null, { status: 303, headers });
+  }
 }
 export async function session(request: Request): Promise<Response> {
   try {

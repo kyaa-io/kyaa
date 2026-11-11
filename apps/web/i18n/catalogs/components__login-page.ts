@@ -1,6 +1,18 @@
 import type { TranslatedMessage } from "../messages";
 
 export const messages = {
+  "mkyaaCallbackFailed": {
+    "ja": "ログインを完了できませんでした。もう一度お試しください。",
+    "zh-Hans": "未能完成登录。请重试。",
+    "zh-Hant": "未能完成登入。請再試一次。",
+    "es": "No pudimos completar el inicio de sesión. Inténtalo de nuevo.",
+    "id": "Kami tidak dapat menyelesaikan proses masuk. Coba lagi.",
+    "vi": "Không thể hoàn tất đăng nhập. Hãy thử lại.",
+    "th": "ไม่สามารถเข้าสู่ระบบให้เสร็จได้ โปรดลองอีกครั้ง",
+    "pt": "Não conseguimos concluir o login. Tente novamente.",
+    "fr": "Nous n'avons pas pu terminer la connexion. Réessayez.",
+    "ru": "Не удалось завершить вход. Попробуйте ещё раз."
+  },
   "mkyaaEmailInUse": {
     "ja": "このメールアドレスの kyaa アカウントがすでにあります。最初に登録した方法でログインしてください。",
     "zh-Hans": "已有使用此邮箱的 kyaa 账号。请使用首次注册时的方式登录。",

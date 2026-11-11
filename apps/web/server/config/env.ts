@@ -310,6 +310,10 @@ const serverEnvSchema = publicEnvSchema
           path: ["PRIVY_TEST_ACCOUNT_LOGIN_ENABLED"],
         });
       }
+      if (value.KYAA_WALLET_XPUB) {
+        // PRIVY-EXIT-0005 전제 6: the xpub issues provisional receive-only addresses for dev sign-up tests only.
+        context.addIssue({ code: "custom", message: "Production data forbids the provisional wallet xpub", path: ["KYAA_WALLET_XPUB"] });
+      }
     }
     if (value.KAKAO_OAUTH_MODE === "provider" && (!value.KAKAO_CLIENT_ID || !value.KAKAO_CLIENT_SECRET || !value.KAKAO_REDIRECT_URI)) {
       context.addIssue({ code: "custom", message: "provider mode requires Kakao credentials and redirect URI", path: ["KAKAO_OAUTH_MODE"] });

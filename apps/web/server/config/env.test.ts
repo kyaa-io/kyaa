@@ -249,6 +249,18 @@ describe("server environment", () => {
     });
   });
 
+  it("keeps the provisional wallet xpub out of Production data", () => {
+    const xpub = "xpub6DXar8jpDrxoTZBrEvgTqsLQeZr2mqmKhW5GWyuPeqVpBdm9TaxRB5sR5fTqXG7oGt7vtNLRJmmqUL9zGRXT6c8URBcmACNKy3tWnL1xXAj";
+    expect(parseServerEnv({ ...validEnv, KYAA_WALLET_XPUB: xpub })).toMatchObject({ KYAA_WALLET_XPUB: xpub });
+    expect(() => parseServerEnv({
+      ...validEnv,
+      NEXT_PUBLIC_BYUS_DATA_ENVIRONMENT: "production",
+      BYUS_DATA_ENVIRONMENT: "production",
+      SUPABASE_URL: "https://gmrykvmtmuaeswpajteq.supabase.co",
+      KYAA_WALLET_XPUB: xpub,
+    })).toThrowError(/KYAA_WALLET_XPUB/);
+  });
+
   it("rejects a Dev Supabase project with Production data", () => {
     const productionBase = {
       ...validEnv,

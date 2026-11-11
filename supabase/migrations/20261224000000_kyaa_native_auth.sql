@@ -65,6 +65,8 @@ begin
   end if;
   perform pg_advisory_xact_lock(hashtextextended('external-identity:'||p_issuer||':'||p_subject,0));
   perform pg_advisory_xact_lock(hashtextextended('live-privy-provider:'||p_provider_issuer||':'||p_provider_subject,0));
+  -- Two providers with the same email signing up at once must not both pass the email check (no unique index on email).
+  perform pg_advisory_xact_lock(hashtextextended('kyaa-member-email:'||v_email,0));
 
   select i.app_user_id,u.status into v_owner,v_status from public.external_auth_identities i
     join public.app_users u on u.id=i.app_user_id where i.issuer=p_issuer and i.subject=p_subject;
@@ -109,6 +111,8 @@ begin
     or p_provider_issuer not in ('https://accounts.google.com','https://appleid.apple.com','https://kauth.kakao.com') then raise exception 'INVALID_SIGN_IN'; end if;
   perform pg_advisory_xact_lock(hashtextextended('external-identity:'||p_issuer||':'||p_subject,0));
   perform pg_advisory_xact_lock(hashtextextended('live-privy-provider:'||p_provider_issuer||':'||p_provider_subject,0));
+  -- Two providers with the same email signing up at once must not both pass the email check (no unique index on email).
+  perform pg_advisory_xact_lock(hashtextextended('kyaa-member-email:'||v_email,0));
   if exists(select 1 from public.external_auth_identities where issuer=p_issuer and subject=p_subject)
     or exists(select 1 from public.live_privy_auth_accounts where provider_issuer=p_provider_issuer and provider_subject=p_provider_subject)
     or exists(select 1 from public.legacy_auth_inventory_accounts where provider_issuer=p_provider_issuer and provider_subject=p_provider_subject)

@@ -140,6 +140,7 @@ function useMobileLoginPresentation() {
 function blockedSignInMessage(locale: AppLocale, reason: string | null): string | null {
   if (reason === "email_in_use") return locale === "ko" ? "이 이메일을 쓰는 kyaa 계정이 이미 있어요. 처음 가입할 때 쓴 방법으로 로그인해 주세요." : translate(locale, localizedMessages.mkyaaEmailInUse, "A kyaa account already uses this email. Sign in with the method you used when you joined.");
   if (reason === "inactive") return locale === "ko" ? "이용이 중지된 계정이에요." : translate(locale, localizedMessages.mkyaaAccountInactive, "This account is no longer active.");
+  if (reason === "callback_failed") return locale === "ko" ? "로그인을 마치지 못했어요. 다시 시도해 주세요." : translate(locale, localizedMessages.mkyaaCallbackFailed, "We couldn't finish signing you in. Please try again.");
   if (reason === "ambiguous" || reason === "wallet_missing" || reason === "provider_required") return locale === "ko" ? "계정을 확인하지 못했어요. 이용 안내의 문의하기로 kyaa 운영팀에 알려 주세요." : translate(locale, localizedMessages.mkyaaAccountReview, "We couldn't verify your account. Let us know through support.");
   return null;
 }

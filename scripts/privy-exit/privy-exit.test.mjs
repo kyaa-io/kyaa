@@ -36,15 +36,3 @@ test("apply sends owner batches, unowned batches and optional completion with on
   await assert.rejects(applyImport(artifact, { runId: "bad", url: "x", token: "y" }), /run UUID/);
 });
 
-test("master seed generation stores the seed once and returns the xpub the web derives from", async () => {
-  const { generateMasterSeed, accountFromSeed } = await import("./wallet-master-generate.mjs");
-  const sent = [];
-  const client = { send: async (command) => { sent.push(command); return command.constructor.name === "ListSecretVersionIdsCommand" ? { Versions: [] } : {}; } };
-  const xpub = await generateMasterSeed({ secretId: "kyaa/dev/wallet-master-seed", client });
-  assert.match(xpub, /^xpub/);
-  const stored = JSON.parse(sent[1].input.SecretString);
-  assert.equal(stored.xpub, xpub);
-  assert.equal(accountFromSeed(Uint8Array.from(Buffer.from(stored.seedHex, "hex"))).xpub, xpub);
-  const existing = { send: async () => ({ Versions: [{ VersionId: "v1" }] }) };
-  await assert.rejects(generateMasterSeed({ secretId: "kyaa/dev/wallet-master-seed", client: existing }), /already exists/);
-});

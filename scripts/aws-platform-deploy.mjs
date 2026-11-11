@@ -152,6 +152,8 @@ export function validateConfig(config, template) {
       if (key === 'RELEASE_SHA' && !/^[a-f0-9]{40}$/.test(value)) fail('RELEASE_SHA must be a full Git commit SHA');
       // Public extended key only (infrastructure/aws/platform/wallet-issuance.md); a private xprv must never be configured.
       if (key === 'KYAA_WALLET_XPUB' && !/^xpub[1-9A-HJ-NP-Za-km-z]{100,112}$/.test(value)) fail('KYAA_WALLET_XPUB must be a public xpub');
+      // Provisional receive-only addresses (PRIVY-EXIT-0005 전제 6): production never confirms them.
+      if (key === 'KYAA_WALLET_XPUB' && config.environment === 'prod') fail('KYAA_WALLET_XPUB is a dev-only provisional setting; production waits for the signer (K4)');
       if (typeof value !== 'string' || !value.trim() || /[\u0000-\u001f]/.test(value)) fail(`Invalid runtime environment value: ${key}`);
     }
     if (values.EnablePostgrest === 'true' && !secrets.includes('POSTGREST_SERVICE_TOKEN')) fail('Enabled PostgREST requires POSTGREST_SERVICE_TOKEN runtime secret key');

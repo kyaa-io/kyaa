@@ -441,3 +441,14 @@ test('quiz learning deployment settings enable dev only and force prod off', asy
  const prod = config('environment', 'prod'); prod.runtimeEnvironment.KYAA_FEATURE_QUIZ_LEARN = 'true'; validateConfig(prod, template);
  assert.equal(prod.runtimeEnvironment.KYAA_FEATURE_QUIZ_LEARN, 'false');
 });
+
+test('the provisional dev-only wallet xpub cannot enter production', async () => {
+  const t = await loadTemplate('environment');
+  const xpub = 'xpub6DXar8jpDrxoTZBrEvgTqsLQeZr2mqmKhW5GWyuPeqVpBdm9TaxRB5sR5fTqXG7oGt7vtNLRJmmqUL9zGRXT6c8URBcmACNKy3tWnL1xXAj';
+  const dev = config('environment', 'dev'); dev.runtimeEnvironment.KYAA_WALLET_XPUB = xpub;
+  assert.doesNotThrow(() => validateConfig(dev, t));
+  const prod = config('environment', 'prod'); prod.runtimeEnvironment.KYAA_WALLET_XPUB = xpub;
+  assert.throws(() => validateConfig(prod, t), /dev-only provisional/);
+  dev.runtimeEnvironment.KYAA_WALLET_XPUB = 'xprv-not-public';
+  assert.throws(() => validateConfig(dev, t), /public xpub/);
+});

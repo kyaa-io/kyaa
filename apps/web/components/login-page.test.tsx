@@ -146,6 +146,7 @@ describe("login page (Cognito)", () => {
     ["email_in_use", "이 이메일을 쓰는 kyaa 계정이 이미 있어요. 처음 가입할 때 쓴 방법으로 로그인해 주세요."],
     ["inactive", "이용이 중지된 계정이에요."],
     ["ambiguous", "계정을 확인하지 못했어요. 이용 안내의 문의하기로 kyaa 운영팀에 알려 주세요."],
+    ["callback_failed", "로그인을 마치지 못했어요. 다시 시도해 주세요."],
   ])("explains a sign-in the server refused (%s)", async (reason, message) => {
     authenticated = false;
     query = `returnTo=%2Fmy&locale=ko&authError=${reason}`;
