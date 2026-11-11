@@ -1,0 +1,17 @@
+{
+  "changes": [
+    "덕질 화면의 내 지갑이 모바일에서도 응모권 칸과 하트 칸이 나란히 놓이고, 그 아래에 포인트·스탬프 게이지와 교환·받기 버튼이 붙어 한 화면에 들어와요. 응모권·하트 칸 바탕은 연한 분홍으로 바뀌었어요.",
+    "MY 스탬프 기록은 스탬프 그림과 카드를 줄여 모바일에서 한 줄에 네 개, PC에서 여섯 개씩 보여요. 이름과 날짜가 그림 아래에 가운데로 정렬되고, 받지 못한 스탬프는 '받으러 가기'만 남겼어요. 같은 스탬프가 목록으로 한 번 더 나오던 것도 없앴어요.",
+    "찐팬 가이드의 '덕질 기록 칸·덕질로 채우는 칸·필수 칸' 숫자 줄은 세 칸 모두 숫자 아래 이름이 가운데로 맞춰져요.",
+    "첨부한 화면은 로컬 앱에서 시험 계정으로 확인한 390·1440 너비예요. 운영 화면이 아니에요."
+  ],
+  "path": "/benefits",
+  "images": [
+    "release-notes/images/2026-11-11-dukjil-stamp-compact-wallet-390.png",
+    "release-notes/images/2026-11-11-dukjil-stamp-compact-wallet-1440.png",
+    "release-notes/images/2026-11-11-dukjil-stamp-compact-stamps-390.png",
+    "release-notes/images/2026-11-11-dukjil-stamp-compact-stamps-1440.png",
+    "release-notes/images/2026-11-11-dukjil-stamp-compact-facts-390.png",
+    "release-notes/images/2026-11-11-dukjil-stamp-compact-facts-1440.png"
+  ]
+}
