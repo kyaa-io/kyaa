@@ -133,7 +133,7 @@ jobs:
           fi
       - name: Install browser for card layout regression
         if: matrix.group != 'unit'
-        run: npx playwright install --with-deps chromium
+        run: npx playwright install chromium && (timeout 180 npx playwright install-deps chromium || echo "::warning::apt mirrors unavailable; using the runner image browser libraries")
       - name: Verify fan list dates at 390px across all locales
         if: matrix.group == 'layout-and-recovery'
         run: npm run test --workspace @byus/web -- --config e2e/fan-list-local/vitest.config.ts

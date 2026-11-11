@@ -70,8 +70,8 @@ jobs:
           key: ${{ steps.node_modules_key.outputs.prefix }}-${{ hashFiles('package-lock.json', 'package.json', 'apps/*/package.json', 'scripts/apply-security-patches.mjs') }}
       - run: npm run security:patch
       - run: npm run test --workspace @byus/web -- features/support server/support --maxWorkers=3
-      - run: npx playwright install --with-deps chromium
-      - run: sudo apt-get update && sudo apt-get install -y postgresql
+      - run: npx playwright install chromium && (timeout 180 npx playwright install-deps chromium || echo "::warning::apt mirrors unavailable; using the runner image browser libraries")
+      - run: bash scripts/ci/setup-postgres-ripgrep.sh
       - name: Local SQL, authority, concurrency and browser flow
         run: bash scripts/verify-cs-local.sh
       - name: Restore the ffmpeg-static binary

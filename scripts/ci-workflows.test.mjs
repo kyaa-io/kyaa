@@ -105,7 +105,7 @@ test('SQL groups are disjoint, retain setup, and do not wait for unrelated API o
   assert.doesNotMatch(replays, /\|\| true|set \+e/);
   for (const job of [jobs.database, jobs.blockchain]) {
     const run = job.steps.map(step => step.run).filter(Boolean);
-    for (const command of ['npm ci --ignore-scripts', 'npm run security:patch', 'npm run build --workspace @byus/worker', 'sudo apt-get update && sudo apt-get install -y postgresql ripgrep']) assert.ok(run.includes(command), command);
+    for (const command of ['npm ci --ignore-scripts', 'npm run security:patch', 'npm run build --workspace @byus/worker', 'bash scripts/ci/setup-postgres-ripgrep.sh']) assert.ok(run.includes(command), command);
     // The cache steps lengthen the shared setup, so the worker build must still precede every suite-specific step.
     const setup = job.steps.findIndex(step => step.run === 'npm run build --workspace @byus/worker');
     assert.ok(setup >= 0 && setup < job.steps.findIndex((step, index) => index !== setup && (/^matrix\.suite == /.test(step.if ?? '') || step.uses?.startsWith('foundry-rs/'))));
