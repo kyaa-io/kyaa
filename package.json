@@ -60,11 +60,32 @@
     "security:patch": "node scripts/apply-security-patches.mjs"
   },
   "devDependencies": {
+    "@aws-sdk/client-lambda": "3.1091.0",
+    "@aws-sdk/client-s3": "3.1091.0",
+    "@aws-sdk/client-secrets-manager": "3.1091.0",
+    "@aws-sdk/client-sqs": "3.1091.0",
+    "@aws-sdk/credential-provider-ini": "3.973.4",
+    "@aws-sdk/credential-provider-node": "3.972.70",
+    "@playwright/test": "1.61.1",
+    "@privy-io/node": "0.26.0",
+    "@smithy/node-http-handler": "4.12.1",
+    "@supabase/supabase-js": "2.110.7",
+    "@tiptap/core": "3.31.3",
     "eslint": "^9.39.5",
     "eslint-config-next": "16.4.2",
     "fast-glob": "file:tools/eslint-root-glob",
+    "ffmpeg-static": "5.3.0",
+    "ffprobe-static": "3.1.0",
+    "ignore": "5.3.2",
+    "js-yaml": "4.3.2",
+    "jsdom": "29.1.1",
+    "pg": "8.23.1",
+    "postcss": "8.5.23",
+    "sharp": "0.35.5",
     "stylelint": "17.16.0",
-    "stylelint-declaration-strict-value": "1.12.1"
+    "stylelint-declaration-strict-value": "1.12.1",
+    "typescript": "5.9.3",
+    "zod": "4.6.7"
   },
   "allowScripts": {
     "ffmpeg-static@5.3.0": true
