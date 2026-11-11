@@ -69,6 +69,7 @@ export async function callback(request: Request): Promise<Response> {
     } catch { return retiredLogin(headers); }
   }
   let flow: z.infer<typeof flowSchema> | null = null;
+  let stage: "flow" | "token" | "verify" | "member" | "session" = "flow";
   try {
     const config = cognitoConfig();
     const url = new URL(request.url);
@@ -81,14 +82,17 @@ export async function callback(request: Request): Promise<Response> {
     // Only a flow this browser started keeps its return path and locale on the failure page.
     flow = parsed;
     if (url.searchParams.has("error")) throw cognitoDenied();
+    stage = "token";
     const tokens = await tokenRequest(config,new URLSearchParams({ grant_type:"authorization_code",client_id:config.clientId,redirect_uri:config.redirectUri,code:url.searchParams.get("code")!,code_verifier:flow.verifier }));
     if (!tokens.refresh_token) throw cognitoDenied();
+    stage = "verify";
     const verify = createCognitoVerifier(config);
     const [access,id] = await Promise.all([verify(tokens.access_token),verify(tokens.id_token,"id",flow.nonce)]);
     if (access.subject !== id.subject || !id.email) throw cognitoDenied();
     const destination = new URL("/login",config.origin);
     destination.searchParams.set("returnTo",flow.returnTo);
     destination.searchParams.set("locale",flow.locale);
+    stage = "member";
     try { await signInKyaaMember(id); }
     catch (error) {
       if (!(error instanceof SignInBlockedError)) throw error;
@@ -97,12 +101,14 @@ export async function callback(request: Request): Promise<Response> {
       headers.set("location",destination.toString());
       return new Response(null,{status:303,headers});
     }
+    stage = "session";
     const key=opaque();
     await writeSession(key,{ preferredLocale:flow.locale, accessToken:tokens.access_token,idToken:tokens.id_token,refreshToken:tokens.refresh_token,subject:id.subject,expiresAt:Date.now()+tokens.expires_in*1000,sessionExpiresAt:Date.now()+SESSION_LIFETIME_MS },config);
     headers.append("set-cookie",cookie(EMAIL_BROWSER_COOKIE,"",0));
     headers.append("set-cookie",cookie(SESSION_COOKIE,key,SESSION_LIFETIME_MS/1000));headers.set("location",destination.toString());
     return new Response(null,{status:303,headers});
   } catch {
+    if (stage !== "flow") console.error("COGNITO_CALLBACK_FAILED", { stage });
     // Cancelled provider screen, unverified email, storage or issuance failure: back to the login page, never a JSON page.
     // No session is created and nothing from the request is echoed except a flow-validated return path.
     const destination = new URL("/login", loadServerEnv().NEXT_PUBLIC_APP_URL);

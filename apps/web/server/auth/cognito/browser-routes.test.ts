@@ -181,3 +181,12 @@ it("finishes retired logout when its cookie or server session has already expire
  }
  mock.provider="cognito";expect((await logout(logoutRequest(false))).status).toBe(401);
 });
+
+it("logs only a callback failure stage, never provider error contents",async()=>{
+ const log=vi.spyOn(console,"error").mockImplementation(()=>{});
+ const flow=seal({state:"diagnostic",verifier:"v",nonce:"n",expiresAt:Date.now()+60000,returnTo:"/",locale:"ko"},mock.config.cookieSecret);
+ mock.tokenRequest.mockRejectedValueOnce(new Error("private-token-and-account"));
+ const response=await callback(new Request("https://kyaa.io/api/auth/cognito/callback?state=diagnostic&code=private-code",{headers:{cookie:`${FLOW_COOKIE}=${flow}`}}));
+ expect(response.status).toBe(303);expect(log).toHaveBeenCalledExactlyOnceWith("COGNITO_CALLBACK_FAILED",{stage:"token"});
+ expect(JSON.stringify(log.mock.calls)).not.toContain("private");log.mockRestore();
+});
