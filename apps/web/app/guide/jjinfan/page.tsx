@@ -7,6 +7,7 @@ import { loadGuideModel } from "@/features/dukjil-guide/server/load-guide-model"
 import styles from "@/features/dukjil-guide/ui/guide-content.module.css";
 import jjinfanStyles from "@/features/dukjil-guide/ui/jjinfan-guide.module.css";
 import { parseAppLocale } from "@/i18n/locales";
+import { jjinfanGaugeEnabled } from "@/server/config/feature-flags";
 import { publicMetadata } from "@/seo/metadata";
 
 type Props = { searchParams: Promise<{ locale?: string | string[] }> };
@@ -27,7 +28,7 @@ export default async function JjinfanGuidePage({ searchParams }: Props) {
   return (
     <FanAppFrame locale={locale} currentPath="/guide/jjinfan" mainId="jjinfan-guide-main">
       <FanContentContainer as="main" id="jjinfan-guide-main" tabIndex={-1} className={`${styles.page} ${jjinfanStyles.page}`}>
-        <JjinfanGuideContent locale={locale} model={model} />
+        <JjinfanGuideContent locale={locale} model={model} challenge={jjinfanGaugeEnabled()} />
       </FanContentContainer>
     </FanAppFrame>
   );

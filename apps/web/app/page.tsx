@@ -8,6 +8,7 @@ import { publicMetadata, pageCopy } from "@/seo/metadata";
 import { homeStructuredData, serializeStructuredData } from "@/seo/structured-data";
 import { StreamingGuestHome } from "../components/guest-home";
 import { loadServerEnv } from "../server/config/env";
+import { jjinfanGaugeEnabled } from "../server/config/feature-flags";
 import { createPublishedContentRepositoryFromEnvironment } from "../server/content/published-content-repository";
 import { createHomeGalleryRepository } from "../server/home-gallery/home-gallery-repository";
 import { createHomeNoticeRepository } from "../server/home-notice/home-notice-repository";
@@ -48,6 +49,7 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
     <StreamingGuestHome
       queries={queries}
       locale={locale}
+      jjinfanGauge={jjinfanGaugeEnabled()}
     />
   </>;
 }

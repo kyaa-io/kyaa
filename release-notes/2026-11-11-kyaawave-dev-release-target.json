@@ -1,0 +1,4 @@
+{
+  "changes": ["kyaa wave 홈페이지를 운영 주소와 따로 시험 주소(dev.kyaawave.com)에도 올릴 수 있게 배포 도구를 바꿨어요. 운영 kyaawave.com에 올리는 방식은 그대로예요."],
+  "path": "/"
+}

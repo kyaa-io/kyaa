@@ -137,6 +137,7 @@ web 컨테이너는 `HOSTING_PROVIDER=aws`, `APP_ENV=<환경>`, `APP_URL=https:/
 
 - `PRIVY_APPLE_LOGIN_ENABLED`, `PRIVY_TEST_ACCOUNT_LOGIN_ENABLED`, `WEB_PUSH_VAPID_PUBLIC_KEY`
 - `GIWA_CHAIN_ID`, `GIWA_RPC_URL`, `GIWA_EXPLORER_URL`, `BYUS_PASSPORT_CONTRACT_ADDRESS`, `BYUS_STAMP_CONTRACT_ADDRESS`, `BYUS_RELAYER_ADDRESS`
+- `KYAA_FEATURE_JJINFAN_GAUGE`(`true`/`false`, 홈 찐팬 100 게이지·`/guide/jjinfan` 도전 구역. 없으면 `BYUS_DATA_ENVIRONMENT=development`에서만 켜지고 prod는 꺼짐)
 - `KYAA_REWARDED_AD_UNIT`(`/네트워크코드/광고단위`, 비어 있으면 광고 교환 버튼은 꺼짐, 단위만 있고 플래그가 없으면 meta·CSP도 열리지 않고 꺼진 상태이므로 단위와 플래그를 함께 설정), `KYAA_REWARDED_TICKET_EXCHANGE_ENABLED`(`true`/`false`,  `true`는 광고 단위와 세션 설정 5개 전부 필요: `KYAA_REWARDED_AD_SESSION_TTL_SECONDS`, `KYAA_REWARDED_AD_MIN_WATCH_SECONDS`, `KYAA_REWARDED_AD_ISSUE_LIMIT`, `KYAA_REWARDED_AD_ISSUE_WINDOW_SECONDS`, `KYAA_REWARDED_AD_DAILY_CAP`, 모두 양의 정수, 기본값 없음, 하나라도 없으면 배포 검증 실패). 런타임 값이라 같은 이미지를 dev→운영으로 승격해도 환경별로 갈리며, 운영 설정은 Google 테스트 네트워크(`/22639388115/`) 단위를 거절한다. 빌드 타임 `NEXT_PUBLIC_*`는 이 목적에도 쓰지 않는다.
 - `KAKAO_OAUTH_MODE`, `KAKAO_CLIENT_ID`, `KAKAO_REDIRECT_URI`, `KAKAO_ALIMTALK_ENROLLMENT_ENABLED`, `PHONE_SMS_ENROLLMENT_MODE`, `PHONE_SMS_SENDER`, `CHZZK_LIVE_ENABLED`
 - `POSTGREST_URL` (활성화 시 `http://127.0.0.1:3001` 고정)

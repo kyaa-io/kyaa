@@ -136,7 +136,7 @@ it("keeps the registration state readable by assistive tech when the record row 
   expect(state).toHaveTextContent("등록 완료");
 });
 
-it.each([["ko", "공유"], ["en", "Share"]] as const)("labels the passport sharing action in %s", (locale, label) => {
+it.each([["ko", "받으러 가기"], ["en", "Go earn it"]] as const)("sends the unearned share stamp on the MY record to the passport sharing page in %s", (locale, label) => {
   render(<CommunityStampCollection locale={locale} resource={{ state: { status: "ready", data: { stamps: [], today: "2026-10-09" } }, retry: vi.fn(), replaceData: vi.fn(), refreshFailed: false }} />);
-  expect(screen.getByRole("link", { name: label })).toHaveAttribute("href", `/passports?locale=${locale}`);
+  expect(screen.getAllByRole("link", { name: label }).map(link => link.getAttribute("href"))).toContain(`/passports?locale=${locale}`);
 });
