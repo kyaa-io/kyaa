@@ -59,6 +59,10 @@ describe("unified MY hub", () => {
     expect(guest.queryByRole("link", { name: "알림" })).not.toBeInTheDocument();
     expect(guest.queryByRole("link", { name: "설정" })).not.toBeInTheDocument();
     expect(screen.queryByText("등급 · 스탬프")).not.toBeInTheDocument();
+    const cover = container.querySelector('img[src="/images/passport/passport-cover-closed.webp"]');
+    expect(cover).toHaveAttribute("width", "800");
+    expect(cover).toHaveAttribute("height", "1067");
+    expect(container.querySelectorAll("[data-login-scene] img")).toHaveLength(1);
     expect(screen.getByRole("heading", { name: "내 패스포트" })).toBeInTheDocument();
     expect(screen.getAllByRole("link", { name: /로그인/ }).length).toBeGreaterThan(0);
   });
