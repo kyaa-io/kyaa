@@ -1,5 +1,7 @@
 import "server-only";
 
+import { quizLearningSchema } from "../../features/quiz/domain/quiz-attempt";
+
 import { randomUUID } from "node:crypto";
 
 import { createClient } from "@/server/data/client";
@@ -89,6 +91,7 @@ const rawQuestionSchema = z
   .object({
     id: z.uuid(),
     position: z.number().int().min(1).max(3),
+    learning: quizLearningSchema.optional(),
     promptKo: z.string().trim().min(1).max(1000),
     promptEn: z.string().trim().min(1).max(1000),
     responseKind: z.enum(["choice", "letter"]),
@@ -175,6 +178,7 @@ function localizeAttempt(value: unknown, locale: ContentLocale): QuizAttemptProj
   return parseQuizAttemptProjection({
     attempt: raw.attempt,
     questions: raw.questions.map((question) => ({
+      learning: question.learning,
       id: question.id,
       position: question.position,
       prompt: locale === "ko" ? question.promptKo : question.promptEn,
@@ -246,7 +250,7 @@ export class SupabaseQuizAttemptRepository implements QuizAttemptRepository {
     attemptId: string;
     locale: ContentLocale;
   }): Promise<QuizAttemptProjection | null> {
-    const data = await this.callVersioned("get_owned_quiz_attempt_v2", "get_owned_quiz_attempt", {
+    const data = await this.callVersioned("get_owned_quiz_attempt_v3", "get_owned_quiz_attempt_v2", {
       p_app_user_id: input.appUserId,
       p_attempt_id: input.attemptId,
     });

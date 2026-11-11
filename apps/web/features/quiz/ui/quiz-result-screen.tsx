@@ -15,6 +15,8 @@ import { parseQuizAttemptProjection, parseQuizStartProjection, type QuizAttemptP
 import { appendLiveReturnTo, sanitizeLiveReturnTo } from "../domain/live-return-context";
 import { FanAppFrame, type FanLocale } from "@/components/fan-shell/fan-app-shell";
 import { passportBookText } from "@/features/passport/ui/passport-book-copy";
+import { FanHeading } from "@/components/fan-ui/fan-heading";
+import { FanText } from "@/components/fan-ui/fan-text";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import { celebrateStamp } from "@/features/dukjil/ui/stamp-slam";
 import styles from "./quiz-result-screen.module.css";
@@ -298,6 +300,16 @@ export function QuizResultScreen({
             <div><dt>{locale === "ko" ? "스탬프" : "Stamp"}</dt><dd>{locale === "ko" ? "팬 인증 스탬프" : translate(locale, localizedMessages.m8829e734e0e6, "Fan Verification Stamp")}</dd></div>
           </dl>
         )}
+        {view.projection.questions.filter((question) => question.learning).map((question) => (
+          <section data-block="quiz-learning" className={styles.learning} key={question.id} aria-label={locale === "ko" ? "알아보기" : "Learn more"}>
+            <FanHeading>{locale === "ko" ? "알아보기" : "Learn more"} · {question.position}</FanHeading>
+            <FanText as="p" role="body">{question.prompt}</FanText>
+            {question.learning?.hint && <FanText as="p" role="body">{question.learning.hint}</FanText>}
+            <div data-outbound-placement="content" data-outbound-kind="social">
+              {question.learning?.links.map((link) => <FanAction key={link.url} variant="text" external href={link.url}>{link.title}</FanAction>)}
+            </div>
+          </section>
+        ))}
         <div className={styles.actions}>
           {passed ? (
             <FanAction fullWidth variant="primary" href={appendLiveReturnTo(withLocale(`/passports/${passportId}/issuance`, locale), liveReturnTo) as Route}>

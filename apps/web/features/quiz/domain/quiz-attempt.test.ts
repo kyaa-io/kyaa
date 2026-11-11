@@ -217,3 +217,13 @@ describe("quiz answer request", () => {
     },
   );
 });
+
+// Learning links share the public HTTP(S) trust boundary with outbound tracking.
+describe("quiz learning", () => {
+  it("rejects executable URLs and answer fields", async () => {
+    const { quizLearningSchema } = await import("./quiz-attempt");
+    expect(quizLearningSchema.safeParse({ hint: null, links: [{ title: "SNS", url: "javascript:alert(1)" }] }).success).toBe(false);
+    expect(quizLearningSchema.safeParse({ hint: "Read the debut post", links: [], correctOptionId: "answer" }).success).toBe(false);
+    expect(quizLearningSchema.parse({ hint: null, links: [{ title: "原文 그대로", url: "https://example.com/?x=1#post" }] }).links[0].title).toBe("原文 그대로");
+  });
+});

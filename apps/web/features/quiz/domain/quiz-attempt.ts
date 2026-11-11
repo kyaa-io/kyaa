@@ -44,11 +44,17 @@ const quizOptionSchema = z
   })
   .strict();
 
+export const quizLearningSchema = z.object({
+  hint: z.string().max(1000).nullable(),
+  links: z.array(z.object({ title: z.string().min(1).max(500), url: z.url().refine((value) => /^https?:\/\//.test(value)) }).strict()),
+}).strict();
+
 const quizQuestionSchema = z
   .object({
     id: uuidSchema,
     position: z.number().int().min(1).max(3),
     prompt: z.string().trim().min(1).max(1000),
+    learning: quizLearningSchema.optional(),
     responseKind: z.enum(["choice", "letter"]),
     selectedOptionId: uuidSchema.nullable(),
     freeText: z.string().trim().min(1).max(200).nullable(),

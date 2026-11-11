@@ -49,6 +49,19 @@ describe("QuizResultScreen", () => {
     vi.spyOn(globalThis, "fetch").mockReset();
   });
 
+  it("shows supplied wrong-question hints and original SNS titles without answer options", async () => {
+    const payload = terminalAttempt("failed", 1);
+    Object.assign(payload.attempt.questions[1], { learning: { hint: "데뷔 소식을 읽어 보세요", links: [{ title: "Official 原文", url: "https://example.com/channel?x=1#post" }] } });
+    vi.mocked(fetch).mockResolvedValueOnce(Response.json(payload));
+    render(<QuizResultScreen attemptId={attemptId} passportId={null} celebritySlug="kara" locale="ko" />);
+    expect(await screen.findByRole("heading", { name: "알아보기 · 2" })).toBeInTheDocument();
+    expect(screen.getByText("데뷔 소식을 읽어 보세요")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Official 原文" })).toHaveAttribute("href", "https://example.com/channel?x=1#post");
+    expect(screen.queryByText("보기 1")).not.toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "알아보기 · 1" })).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "다시 도전" })).toBeInTheDocument();
+  });
+
   it("preserves the exact pass result destination when authentication is required", async () => {
     authenticated = false;
     render(<QuizResultScreen attemptId={attemptId} passportId={passportId} celebritySlug="kara" celebrityName="KARA" locale="ko" />);

@@ -72,6 +72,7 @@ const option = z.object({
 });
 const question = z.object({
   position: z.number().int().min(1),
+  hint: z.string().trim().max(1000).optional(),
   promptKo: z.string().trim().min(1).max(1000),
   promptEn: z.string().trim().min(1).max(1000),
   responseKind: z.enum(["choice", "letter"]).default("choice"),

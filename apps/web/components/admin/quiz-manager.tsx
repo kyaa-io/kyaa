@@ -18,6 +18,7 @@ type Option = {
 type Question = {
   id?: string;
   position: number;
+  hint?: string;
   promptKo: string;
   promptEn: string;
   active: boolean;
@@ -244,6 +245,10 @@ export function QuizManager({ celebrityId }: { celebrityId: string }) {
                     )
                   }
                 />
+              </label>
+              <label>
+                <span>{locale === "ko" ? "힌트 (선택 · 정답을 적지 마세요)" : "Hint (optional · do not reveal the answer)"}</span>
+                <textarea maxLength={1000} value={q.hint ?? ""} onChange={(event) => setQuestions((items) => items.map((item, i) => i === index ? { ...item, hint: event.target.value } : item))} />
               </label>
               <div className={styles.quizOptions}>
                 {q.options.map((o, oi) => (

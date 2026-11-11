@@ -33,7 +33,7 @@ const rawAttempt = {
 
 describe("SupabaseQuizAttemptRepository", () => {
   it("uses legacy RPCs only when the exact requested version is absent before execution", async () => {
-    const rpc = vi.fn(async (name: string) => name.endsWith("_v3") || name === "get_owned_quiz_attempt_v2"
+    const rpc = vi.fn(async (name: string) => name.endsWith("_v3")
       ? { data: null, error: { code: "PGRST202", message: `Could not find the function public.${name}(parameters) in the schema cache` } }
       : { data: name === "start_owned_quiz_attempt_v2" ? { kind: "attempt", ...rawAttempt } : rawAttempt, error: null });
     const repository = new SupabaseQuizAttemptRepository({ rpc });
@@ -42,7 +42,7 @@ describe("SupabaseQuizAttemptRepository", () => {
     expect(result.kind === "attempt" && result.questions[0].options[0].preserveOriginal).toBe(true);
     await repository.findOwned({ ...owner, attemptId: rawAttempt.attempt.id });
     await repository.saveAnswer({ ...owner, attemptId: rawAttempt.attempt.id, questionId: rawAttempt.questions[0].id, selectedOptionId: rawAttempt.questions[0].options[0].id, freeText: null });
-    expect(rpc.mock.calls.map(([name]) => name)).toEqual(["start_owned_quiz_attempt_v3", "start_owned_quiz_attempt_v2", "get_owned_quiz_attempt_v2", "get_owned_quiz_attempt", "save_owned_quiz_answer_v3", "save_owned_quiz_answer_v2"]);
+    expect(rpc.mock.calls.map(([name]) => name)).toEqual(["start_owned_quiz_attempt_v3", "start_owned_quiz_attempt_v2", "get_owned_quiz_attempt_v3", "get_owned_quiz_attempt_v2", "save_owned_quiz_answer_v3", "save_owned_quiz_answer_v2"]);
   });
   it.each([
     { code: "42501", message: "permission denied for function start_owned_quiz_attempt_v3" },
@@ -106,7 +106,7 @@ describe("SupabaseQuizAttemptRepository", () => {
       attemptId: rawAttempt.attempt.id,
       locale: "en",
     });
-    expect(rpc).toHaveBeenCalledWith("get_owned_quiz_attempt_v2", {
+    expect(rpc).toHaveBeenCalledWith("get_owned_quiz_attempt_v3", {
       p_app_user_id: "60000000-0000-4000-8000-000000000001",
       p_attempt_id: rawAttempt.attempt.id,
     });

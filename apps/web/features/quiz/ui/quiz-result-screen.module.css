@@ -36,3 +36,8 @@
   .actions { margin-top:24px; }
 }
 @media (prefers-reduced-motion:reduce) { .page * { transition-duration:.01ms !important; } }
+
+.learning { width:100%; min-width:0; margin-top:var(--space-6); padding-top:var(--space-4); border-top:1px solid var(--color-line); text-align:left; overflow-wrap:anywhere; }
+.learning h2 { margin:0 0 var(--space-2); }
+.learning p { white-space:pre-wrap; }
+.learning > div { display:flex; flex-wrap:wrap; gap:var(--space-2); }
