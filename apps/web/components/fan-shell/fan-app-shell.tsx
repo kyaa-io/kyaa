@@ -1,4 +1,5 @@
 "use client";
+import { HeaderDmLink } from "@/features/group-social/header-dm-link";
 import { GiftTabDot } from "@/features/gifts/ui/gift-tab-dot";
 import { WAVE_FANPAGE_SLUG } from "@/features/fanpage/domain/wave-programs";
 import type { AppLocale } from "@/i18n/locales";
@@ -142,6 +143,7 @@ export function GroupHeaderActions({ locale, languageHref, notificationsLabel, a
     {status}
     <span className={styles.headerLanguage} data-signed-in={guest ? undefined : ""}><FanLanguageSwitch locale={locale} href={languageHref} compact /></span>
     <HeaderNotificationLink locale={locale} label={notificationsLabel} className={styles.utilityLink} />
+    <HeaderDmLink locale={locale} className={styles.utilityLink} />
     <div className={styles.groupDesktopAccount}><GroupHeaderAccount locale={locale} actions={actions} actionsAreIdentity={actionsAreIdentity} languageHref={languageHref} /></div>
   </>;
 }
