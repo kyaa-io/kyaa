@@ -19,15 +19,14 @@
 
 게이트: 1차 전체 = `9a4f03db3`까지(1차만 = `5a4a6bf2b`). 게이트는 아직 돌리지 않았다(`kyaa-t3 gate-remote 16e26e19c <sha>`).
 
-## 전제 6 (수정, 감독 정정 00:28)
-- 이전 전제: "새 회원 주소 = xpub에서 수신 주소만 파생, 웹은 비밀값 0개". **최종안이 아니다.** 사용자 00:1x 결정이 "회원 주소에서 tx가 일어나고 가스는 kyaa가 대납"이므로 주소는 **우리가 서명할 수 있어야** 한다.
-- **기준안 = 회원별 AWS KMS 비대칭 키(`ECC_SECG_P256K1`, `SIGN_VERIFY`)로 만든 EOA.** 주소 = KMS `GetPublicKey`의 공개키 → keccak 하위 20바이트.
-- HD 방식은 비교안으로만 둔다(2-1b 표). 채택하려면 서명 실행부·접근 권한·키 복구 경로가 기준안 이상임을 보여야 한다.
-- 1차의 xpub 주소 발급(`address-issuer.ts`, `KYAA_WALLET_XPUB`, `kyaa_wallet_derivations`)은 **잠정**이다. 로그인에서 Privy를 빼는 작업은 계속하지만, 신규 주소를 최종 지갑으로 연결하는 것은 **2-1c 인수 기준(서명 가능성 시험) 통과 전 확정하지 않는다.**
-  - dev: 잠정 주소로 신규 가입 시험 가능(테스트넷, 기록 0). 이 주소는 서명 불가 주소로 표시하고 인수 통과 후 KMS 주소로 교체.
-  - 운영: 인수 통과 전에는 신규 가입 주소를 확정하지 않는다. 운영 전환 조건에 "2-1c 통과 + KMS 발급기 교체"를 넣는다(감독 판단: 그 전까지 운영 신규 가입을 막거나, 주소 없이 받고 나중에 발급).
-
----
+## 전제 6 (수정, 감독 정정 00:28 · 보완 00:30)
+- 이전 전제 "새 회원 주소 = xpub에서 수신 주소만 파생, 웹은 비밀값 0개"는 **최종안이 아니다.** 사용자 00:1x 결정이 "회원 주소에서 tx가 일어나고 가스는 kyaa가 대납"이므로 **필수 조건은 하나: 발급 주소로 우리 서버가 안전하게 서명할 수 있어야 한다.**
+- 방식은 **확정하지 않는다.** 후보는 (A) 회원별 KMS 비대칭 키, (B) HD 시드 + 서명 전용 실행부. 새 AWS 비용(A는 1만 명이면 월 약 $10,000)은 사용자 승인 사항이다 → 2-1d 비교표로 사용자 결정을 받는다.
+- 두 안 모두 2-1c 인수 기준(① 발급 주소 = 서명 복원 주소 ② 다른 회원 서명 요청 거부 ③ chainId·nonce·호출 내용 변조 서명 거부)을 통과해야 채택한다.
+- 1차(로그인에서 Privy 제거, 목표 05:00)는 지갑 방식과 무관하게 계속 진행한다. 1차의 xpub 주소 발급(`address-issuer.ts`, `KYAA_WALLET_XPUB`, `kyaa_wallet_derivations`)은 **잠정**이다. 신규 주소를 최종 지갑으로 연결하는 것은 선택한 안이 2-1c를 통과하기 전 확정하지 않는다.
+  - dev: 잠정 주소로 신규 가입 시험 가능(테스트넷, 기록 0). 서명 불가 주소로 표시하고 채택안 통과 후 교체.
+  - 운영: 운영 전환 조건 = "선택안 2-1c 통과 + 발급기 교체". 그 전에는 신규 가입 주소를 확정하지 않는다(감독 판단: 신규 가입 보류, 또는 주소 없이 받고 나중에 발급).
+  - (B)를 강화 파생으로 고르면 xpub로 주소를 만들 수 없으므로 1차 잠정 구현은 어느 안이든 교체된다.
 
 # 1차: Privy 없이 로그인·세션 (구현 완료, 게이트·dev 확인 남음)
 
@@ -35,7 +34,7 @@
 - 회원 식별 키 `app_users.privy_user_id`는 유지. 기존 회원 `did:privy:…` 그대로, 새 회원 `kyaa:<uuid>`. 기존 API 74개 dependencies·`findUserByPrivyId`는 그대로.
 - 로그인: Cognito Hosted UI(Google·Apple·카카오 선택) → `/api/auth/cognito/callback`에서 `kyaa_sign_in`.
   - `linked`: Google/Apple subject가 `live_privy_auth_accounts` 또는 `legacy_auth_inventory_accounts`의 한 회원과 정확히 일치.
-  - `new`: subject·이메일 모두 없음 → 서버가 주소를 받아 `create_kyaa_member`. **주소 출처는 잠정(xpub), 최종은 회원별 KMS 키 — 전제 6.**
+  - `new`: subject·이메일 모두 없음 → 서버가 주소를 받아 `create_kyaa_member`. **주소 출처는 잠정(xpub). 최종 방식은 (A)/(B) 사용자 결정 — 전제 6.**
   - `blocked`(`email_in_use`·`inactive`·`ambiguous`·`wallet_missing`): 세션 없이 `/login?authError=…`. 이메일만으로 병합하지 않는다.
 - 세션: `__Host-kyaa-cognito` 쿠키 + DB 암호화 세션, 최대 30일(Cognito refresh token 수명).
 - 요청 인증: `kyaa-cognito:` Bearer → JWKS 캐시 로컬 검증 + `resolve_kyaa_identity` 1회. `privy.users()._get` 없음.
@@ -47,7 +46,7 @@
 |---|---|---|---|
 | 1 | 로그인·회원 연결 RPC, 세션 동기화가 `kyaa:` 키 허용, 카카오 issuer 허용, `kyaa_wallet_derivations` | `supabase/migrations/20261224000000_kyaa_native_auth.sql`, `supabase/tests/kyaa_native_auth.sql` | 완료(미적용) |
 | 2 | 로그인 분류·회원 생성 서비스 | `apps/web/server/auth/cognito/kyaa-identity.ts`(+ `.test.ts`, `.contract.test.ts`) | 완료 |
-| 3 | 주소 파생(xpub, `m/44'/60'/0'/0/i`) | `apps/web/server/wallet/address-issuer.ts`(+test), env `KYAA_WALLET_XPUB` | **잠정**(전제 6). KMS 발급기로 교체 예정(2-2 K1·K2) |
+| 3 | 주소 파생(xpub, `m/44'/60'/0'/0/i`) | `apps/web/server/wallet/address-issuer.ts`(+test), env `KYAA_WALLET_XPUB` | **잠정**(전제 6). 선택안 발급기로 교체 예정(2-2 K0~K4) |
 | 4 | 콜백·세션 라우트, 30일 세션 | `server/auth/cognito/browser-routes.ts`, `browser-session.ts` | 완료 |
 | 5 | 검증기 Cognito 경로에서 Privy 제거 | `server/auth/privy-node-verifier.ts`, `server/auth/cognito/access.ts` | 완료 |
 | 6 | 앱용 Cognito 핸드오프·탈퇴 정리 | `server/auth/cognito/native-bridge.ts`, `deletion.ts`, `server/profile/account-deletion-dependencies.ts` | 완료 |
@@ -98,7 +97,7 @@
 
 ---
 
-# 2차: 회원별 KMS 키 주소 + 회원 주소 거래 + 가스 대납 (계획만)
+# 2차: 서명 가능한 회원 주소 + 회원 주소 거래 + 가스 대납 (계획만)
 
 ### 확인한 사실 (2026-11-12 01:2x, 공개 RPC 읽기 전용, 자금·전송 없음)
 | 항목 | 결과 | 근거 |
@@ -119,44 +118,59 @@
 
 ## 2-1. 설계
 1. 회원 계정 = 회원 EOA가 `Simple7702Account`(`0xe6Cae83B…555B`)에 위임. 첫 대납 거래(type-4 `handleOps`)에 authorization 포함.
-2. 회원 키 = **회원별 KMS 비대칭 키(기준안)**. 발급·서명은 2-1a, HD 비교는 2-1b, 인수 기준은 2-1c.
+2. 회원 키 = **(A) 회원별 KMS 비대칭 키 또는 (B) HD 시드 + 서명 전용 실행부 — 미확정(사용자 결정)**. 공통 구조 2-0, (A) 2-1a, (B) 2-1b, 공통 인수 기준 2-1c, 비교표 2-1d.
 3. 대납 = eth-infinitism v0.8 `VerifyingPaymaster`. 정책 서버가 UserOp마다 페이마스터 서명(회원·대상·선택자·`validUntil` 2분). relayer가 `handleOps` 제출.
 4. 기존 Privy 회원 = Privy 키로 서명 불가 → kyaa 주소를 새로 발급해 앞으로의 거래·기록은 새 주소, Privy 주소는 과거 기록 표시.
 5. 기록 경로: P2-a 컨트랙트 그대로, relayer(`WRITER_ROLE`)가 새 회원 주소로 기록 + 회원 주도 거래는 4337. P2-b(선택) ActionHub v3 `submitWithVoucher`(EIP-712 발급자 서명) — 기록 거래의 `msg.sender`를 회원으로.
 6. 남용 방지: 회원별·전체 하루 가스/건수 한도, 허용 (컨트랙트, 선택자) 목록, active 회원만, 페이마스터 예치금 하루치만, 소비 속도 경보, 감사 로그 `sponsored_operations`.
 
-## 2-1a. 기준안: 회원별 KMS 키 EOA
-- **발급**: signer 서비스가 `CreateKey(KeySpec=ECC_SECG_P256K1, KeyUsage=SIGN_VERIFY, Tags={app_user_id, environment})` → `GetPublicKey`(DER SPKI) → 비압축 공개키 → keccak256 하위 20바이트 = 주소. DB `member_keys(app_user_id unique, chain_id, kms_key_arn unique, address unique, created_at, status)` 저장. 별칭은 쓰지 않는다(별칭 수 한도 회피, ARN으로 참조).
-- **서명 실행부**: 분리된 signer Lambda 1개(웹·worker는 키 ID를 모르고 "의도(intent)"만 보낸다).
-  1. 입력 = 서버가 만든 서명 의도 `{appUserId, kind: userop|authorization, chainId, nonce, target, selector, calldataHash, validUntil}` + 정책 서버 HMAC(또는 내부 IAM 호출만 허용).
-  2. signer가 DB에서 `appUserId → kms_key_arn, address`를 읽고, 의도로부터 **직접** 다이제스트를 계산(UserOp v0.8 `getUserOpHash` / 7702 `keccak(0x05 ‖ rlp([chainId, address, nonce]))`). 호출자가 준 해시는 서명하지 않는다.
-  3. `kms:Sign(KeyId, MessageType=DIGEST, SigningAlgorithm=ECDSA_SHA_256, Message=digest)` → DER(r,s) → low-s 정규화 → v(27/28) 복원 시도로 **복원 주소 = DB 주소**인 v 선택. 둘 다 아니면 실패.
-- **접근 권한(이중)**:
-  - IAM: signer 역할만 `kms:Sign`·`kms:GetPublicKey`, 조건 `aws:ResourceTag/environment` 일치. `kms:CreateKey`는 발급 역할만, `kms:ScheduleKeyDeletion`·`kms:DisableKey`는 명시 거부(break-glass 역할만).
-  - 회원 단위: signer가 요청마다 `sts:AssumeRole`에 세션 태그 `app_user_id`를 붙여 서명 → 키 정책 조건 `aws:ResourceTag/app_user_id == aws:PrincipalTag/app_user_id`. 코드 버그로 다른 회원 키 ID를 넣어도 KMS가 거부(2-1c-②).
-- **키 복구 경로**: KMS 키는 내보낼 수 없다. 대신 ① 삭제 금지(정책 거부 + 삭제 예약 7–30일 대기·취소 가능) ② 다중 리전 키(`MultiRegion=true`, 비대칭 지원) 복제본 1개를 다른 리전에 두어 리전 장애·실수 대비(복제본 키당 월 $1 추가) ③ 키를 잃으면 그 회원 주소로는 다시 서명 불가 → 새 키·새 주소 발급, 과거 주소는 기록 표시용 보관(Privy 주소와 같은 처리).
-- **비용**: 키당 월 $1(복제 시 $2), 서명 1만 건 약 $0.15 [secp256k1 행 확인 필요]. 회원 1천 명 월 $1,000, 1만 명 월 $10,000. 줄이는 방법: 키를 첫 서명이 필요할 때 만든다(기록 수신만 하는 회원은 키 없음 → 그동안 수신 주소가 필요하면 주소도 그때 발급). 계정·리전당 KMS 키 수 한도 [확인 필요, 증설 요청 가능].
-- **속도 한도**: 비대칭 Sign 요청의 계정 공유 초당 한도 [확인 필요] → signer에서 큐·재시도.
+## 2-0. 두 안 공통 서명 구조
+- 서명 실행부는 분리된 signer(Lambda 1개)뿐이다. 웹·worker는 키·시드·키 ID를 모르고 **서명 의도**만 보낸다: `{appUserId, kind: userop|authorization, chainId, nonce, target, selector, calldataHash, value, paymasterAndDataHash, validUntil}` + 정책 서버 HMAC(내부 IAM 호출만 허용).
+- signer가 DB에서 `appUserId → 키 참조·주소`를 읽고 의도로부터 **직접** 다이제스트를 계산한다(UserOp v0.8 `getUserOpHash`, 7702 `keccak(0x05 ‖ rlp([chainId, delegate, nonce]))`). 호출자가 준 해시는 서명하지 않는다.
+- 서명은 low-s로 정규화하고, v는 복원 주소 = DB 주소가 되는 값으로 정한다. 둘 다 아니면 실패.
+- signer는 사용한 (회원, nonce)를 기록하고, `validUntil` 지난 의도·정지·탈퇴 회원을 거부하며, 서명 감사 로그(`signer_audit`)를 남긴다.
 
-## 2-1b. 비교안: HD 시드
-| 항목 | 회원별 KMS 키(기준) | HD 시드(비교) |
+## 2-1a. (A) 회원별 KMS 비대칭 키 EOA
+- **발급**: `CreateKey(ECC_SECG_P256K1, SIGN_VERIFY, Tags={app_user_id, environment})` → `GetPublicKey`(DER SPKI) → 주소. `member_keys(app_user_id unique, chain_id, scheme='kms', key_ref=ARN, address unique, status)`. 별칭은 쓰지 않는다.
+- **서명**: `kms:Sign(MessageType=DIGEST, ECDSA_SHA_256)` → DER(r,s). 개인키는 KMS(HSM) 밖으로 나오지 않는다.
+- **접근 권한**: signer 역할만 `kms:Sign`·`GetPublicKey`. 요청마다 `AssumeRole` 세션 태그 `app_user_id` → 키 정책 조건 `aws:ResourceTag/app_user_id == aws:PrincipalTag/app_user_id`로 **다른 회원 키 사용을 AWS가 거부**. `CreateKey`는 발급 역할만, `ScheduleKeyDeletion`·`DisableKey`는 명시 거부(break-glass만).
+- **키 복구**: 키 내보내기 불가. 삭제 금지 정책 + 삭제 예약 대기(7–30일, 취소 가능), 선택적으로 다중 리전 복제본(키당 월 $1 추가). 키를 잃으면 그 주소로 다시 서명할 수 없다 → 새 키·새 주소, 옛 주소는 기록 표시용.
+- **비용**: 키당 월 $1(+복제 $1), 서명 1만 건 약 $0.15 [secp256k1 행 확인 필요]. 1천 명 월 약 $1,000, 1만 명 월 약 $10,000. 줄이는 방법: 첫 서명이 필요할 때 키 생성(지연 생성). 계정·리전당 키 수와 비대칭 Sign 초당 한도 [확인 필요].
+
+## 2-1b. (B) HD 시드 + 서명 전용 실행부
+- **시드 보관**: 32바이트 시드를 KMS 대칭키로 **봉투 암호화**(`GenerateDataKey` 데이터키로 AES-GCM, 암호문만 Secrets Manager/S3). KMS 키 정책상 `kms:Decrypt`는 **signer 역할만**, 암호화 컨텍스트 `purpose=member-wallet-seed, environment` 필수. 운영자·웹·worker는 복호화 권한이 없다. 시드 생성은 1회성 운영 절차(생성 직후 메모리 폐기).
+- **서명 실행부**: signer가 콜드 스타트 때 데이터키를 복호화해 시드를 메모리에만 두고, 요청마다 회원 키를 파생해 서명한 뒤 키 버퍼를 지운다. Lambda 동시 실행 상한, VPC 엔드포인트만, 로그에 키 비출력.
+- **파생 방식(강화 파생 검토)**:
+  - 비강화 `m/44'/60'/0'/0/i`(1차 잠정): 웹이 xpub로 주소를 만들 수 있다. 하지만 **xpub + 자식 개인키 1개가 새면 시드 전체가 복원된다.**
+  - **강화 `m/44'/60'/0'/i'`(권장)**: 자식 키 유출이 다른 회원으로 번지지 않는다. 대신 xpub로 주소를 만들 수 없어 **주소 발급도 signer가 한다**(웹은 `issueAddress(appUserId)` 호출만). 인덱스는 DB 시퀀스, `member_keys(scheme='hd', key_ref=index)`.
+- **접근 권한**: 회원 단위 거부는 signer 코드(DB 매핑·의도 HMAC)가 보장한다. AWS가 회원 단위로 막아 주지 않는다(A와의 차이).
+- **키 복구**: 시드 암호문 + KMS 키가 있으면 어느 회원 키든 재파생할 수 있다. 오프라인 봉인 사본 1부 권장(복구 절차·2인 확인). 회원 요청 시 개별 키 전달 가능(강화 파생이면 그 키로 다른 회원이 노출되지 않는다).
+- **비용**: KMS 대칭키 월 $1 + 시크릿 월 $0.40 + 복호화 요청 소량(콜드 스타트당 1회). 회원 수와 무관.
+
+## 2-1c. 인수 기준 (두 안 공통, 서명 가능성 시험) — 통과 전 신규 주소 최종 연결 금지
+체인 거래 없이 `recoverAddress`(viem)와 GIWA EntryPoint v0.8 `getUserOpHash`·검증 시뮬레이션 `eth_call`로 확인한다. 1단계는 로컬 가짜 서명부(같은 입출력 형식: A는 DER·SPKI를 흉내, B는 실제 HD 파생), 2단계는 감독이 dev 자원을 만든 뒤 실제 KMS로.
+1. **발급 주소 = 서명 복원 주소**: 새 회원 키로 임의 다이제스트 20개와 7702 authorization 1개를 서명 → 매번 복원 주소 = 발급 때 저장한 주소. low-s·v 결정 실패 0건.
+2. **다른 회원의 서명 요청 거부**: 회원 A 세션에서 회원 B를 가리키는 의도 → (a) 정책 서버 거부 (b) signer DB 매핑 불일치 거부 (c) (A) 코드를 우회해 B 키로 직접 `kms:Sign` → 세션 태그 조건으로 `AccessDenied` / (B) signer 외 역할의 시드 복호화 → `AccessDenied`.
+3. **변조 서명 거부**: A의 서명을 chainId(91342→다른 값), nonce(+1), callData·target·selector·value·paymasterAndData 1바이트 변경 UserOp/authorization에 붙이면 복원 주소 ≠ A이고 EntryPoint 시뮬레이션은 `AA24 signature error`. signer는 의도에 없는 필드·호출자 제공 해시를 서명하지 않는다.
+4. 공통 추가: 같은 nonce 재사용 거부, `validUntil` 만료 거부, 정지·탈퇴 회원 거부, 감사 로그 1건씩 기록.
+- 통과 산출물: 시험 로그, 복원 주소 표, 실패 케이스별 오류 코드.
+
+## 2-1d. 비교표 (사용자 결정용)
+| 항목 | (A) 회원별 KMS 비대칭 키 | (B) HD 시드 + 서명 전용 실행부(강화 파생) |
 |---|---|---|
-| 키 생성 | `CreateKey` 회원당 1회 | 시드 1개, 회원은 인덱스 |
-| 서명 실행부 | KMS 내부(HSM), 개인키가 메모리에 나오지 않음 | signer Lambda가 시드를 복호화해 메모리에서 회원 키 파생·서명 |
-| 접근 권한 | IAM + 키 정책 + 회원 태그 조건 → 회원 단위 거부를 AWS가 보장 | 시크릿 읽기 권한 1개 = 전 회원 키. 회원 단위 거부는 signer 코드만이 보장 |
-| 유출 범위 | 회원 1명(그것도 서명 API 호출권만, 키는 못 가져감) | 시드 유출 = 전 회원 영구 유출(EOA 키 회수 불가, 7702로도 못 막음) |
-| 키 복구 | 내보내기 불가. 삭제 금지·다중 리전 복제·분실 시 새 주소 | 시드 백업(오프라인 봉인 사본 + 시크릿) → 언제든 재파생. 회원에게 키 전달 가능 |
-| 감사 | CloudTrail에 키별 Sign 기록 | Lambda 자체 로그만 |
-| 비용(1만 명) | 월 약 $10,000 | 월 약 $2 |
-| 판단 | 사용자 결정 "우리가 서명·대납"에 맞고 보안 경계가 AWS에 있음 → **기준** | 비용은 압도적이나 단일 실패점. 테스트넷 한정·비용 압박 시에만 재검토 |
+| 필수 조건(서버가 안전하게 서명) | 충족: KMS가 서명, 키는 밖으로 안 나옴 | 충족: signer만 시드 복호화, 메모리에서 서명 |
+| 월 비용(1천 / 1만 / 5만 명) [추정] | 약 $1,000 / $10,000 / $50,000(다중 리전 시 2배). 지연 생성하면 "거래한 회원 수" 비례 | 약 $2 / $2 / $2(+ Lambda, 무시 가능) |
+| 장애 범위: 서명부 침해 | signer 역할 탈취 = 서명 API 남용(키는 못 가져감). 세션 태그로 회원 단위 제한, CloudTrail로 추적·역할 즉시 차단 | signer 메모리·데이터키 탈취 = **전 회원 키 영구 유출**(EOA 키는 회수 불가, 7702로도 못 막음) |
+| 장애 범위: 키 1개 유출 | 해당 없음(키 비노출) | 강화 파생이면 그 회원 1명. 비강화면 xpub와 합쳐 전 회원 |
+| 장애 범위: AWS 장애 | KMS 리전 장애 시 서명 중단(다중 리전 복제로 완화) | 복호화는 콜드 스타트 때만 → 실행 중 signer는 계속 서명 |
+| 키 복구 | 내보내기 불가. 키를 잃으면 그 주소 영구 서명 불가 → 새 주소. 삭제 금지·복제로 예방 | 시드 암호문 + KMS 키(또는 오프라인 사본)로 전 회원 재파생. 회원에게 개별 키 전달 가능 |
+| 접근 통제 단위 | AWS가 회원 단위로 강제(IAM 조건) | signer 코드가 회원 단위로 강제 |
+| 감사 | CloudTrail에 키별 Sign 기록 | signer 자체 감사 로그 |
+| 구현량 | CreateKey·GetPublicKey·DER 처리·세션 태그 | 봉투 암호화·파생·메모리 위생·복구 절차 |
+| 인수 기준 2-1c | 1·2(a,b,c)·3·4 | 1·2(a,b,복호화 거부)·3·4 |
+| 확인 필요 | secp256k1 Sign 요금 행, 키 수 한도, Sign 초당 한도 | Lambda 메모리 덤프·로그 노출 차단 점검 |
 
-## 2-1c. 주소 발급 인수 기준 (서명 가능성 시험) — 통과 전 신규 주소 최종 연결 금지
-테스트넷·로컬에서 시험 계정으로, 체인 거래 없이 `ecrecover`/viem `recoverAddress`와 EntryPoint v0.8 `getUserOpHash`(GIWA `eth_call`)로 검증한다. AWS 실키 시험은 감독이 dev 키를 만든 뒤.
-1. **발급 주소 = 서명자 주소**: 새 키로 임의 다이제스트 20개에 KMS 서명 → 매번 복원 주소 = `GetPublicKey`로 계산한 주소 = DB 저장 주소. 7702 authorization 서명도 복원 주소 일치. low-s, v 결정 실패 0건.
-2. **다른 회원의 서명 요청 거부**: 회원 A 세션의 의도에 회원 B의 `appUserId`/키를 넣으면 (a) 정책 서버 거부 (b) signer가 DB 매핑 불일치로 거부 (c) 코드를 우회해 B 키 ARN으로 직접 `kms:Sign`해도 세션 태그 조건으로 KMS `AccessDenied`. 세 층 각각 시험.
-3. **바뀐 내용의 서명 거부**: A에게 받은 서명을 (a) chainId 91342→다른 값 (b) nonce +1 (c) callData·target·selector·value·paymasterAndData 한 바이트 변경으로 바꾼 UserOp/authorization에 붙이면 복원 주소 ≠ A 주소, EntryPoint `eth_call` 시뮬레이션은 `AA24 signature error`. 또 signer는 의도에 없는 필드가 들어간 요청을 서명하지 않는다(호출자 제공 해시 서명 금지).
-4. 추가: 같은 nonce 재사용 요청 거부(signer가 사용 nonce 기록), `validUntil` 지난 의도 거부, 정지·탈퇴 회원 거부.
-- 통과 산출물: 시험 로그, 복원 주소 표, 실패 케이스별 오류 코드. 이 묶음이 통과해야 `create_kyaa_member`의 주소 출처를 KMS로 바꾸고 운영 신규 가입 주소를 확정한다.
+판단 메모(결정 아님): 테스트넷·실자산이 없는 동안은 (B)가 비용 대비 충분하다. 메인넷·실자산 전에는 (A), 또는 혼합(고가치 회원만 A)을 다시 판단한다. **확정은 사용자 승인(새 AWS 비용).**
 
 ## 2-2. 작업 목록과 파일
 | 단계 | 작업 | 파일(예정) | 시험 | 승인 |
@@ -164,10 +178,11 @@
 | S0 | 7702·EntryPoint 근거 | `apps/web/scripts/giwa-7702-probe.mjs` | 재실행 가능 | 완료 |
 | S1 | 테스트넷 실거래 1건(위임 + `handleOps` 1건, 페이마스터 없이 시험 예치) | `contracts/script/Sponsor7702Smoke.s.sol` 또는 `scripts/aa/smoke.mjs` | 탐색기에서 tx·회원 주소 code=`0xef0100…` 확인 | faucet ETH 수령 = 감독 |
 | S2 | 페이마스터 배포 | `contracts/lib`에 eth-infinitism v0.8 고정 버전, `contracts/script/DeployVerifyingPaymaster.s.sol`, 예치·인출 runbook | Foundry 포크 시험: 서명 유효·만료·다른 회원·허용 외 선택자 거부 | 배포 = 감독 |
-| K1 | KMS 발급기·서명기 코드(AWS 호출은 포트로 분리, 시험은 로컬 secp256k1 가짜 KMS: DER 서명·SPKI 공개키를 같은 형식으로 반환) | `apps/worker/src/aa/kms-member-key.ts`(CreateKey·GetPublicKey→주소, Sign→DER→low-s→v 복원), `apps/worker/src/aa/signer.ts`(의도→다이제스트 직접 계산), 마이그레이션 `member_keys`·`signer_nonces` | 2-1c 1·3·4를 가짜 KMS로 전부, 2(b) DB 매핑 거부 | 코드만 |
-| K2 | KMS 인프라 코드 | `infrastructure/aws/platform/member-keys.json`: signer·issuer 역할, 세션 태그 조건 키 정책 템플릿, 삭제·비활성 거부, 다중 리전 옵션, CloudTrail 경보. 1차 `wallet-issuance.json`(시드)은 비교안용으로 보류 표시 | cfn 렌더 시험(기존 `aws-platform-deploy.test.mjs` 방식) | AWS 생성 = 감독 |
-| K3 | dev 실키 인수 | 감독이 dev 키 2개 생성 후 2-1c 전체(2(c) 포함)를 실제 KMS로 | 시험 로그 첨부 | 감독 |
-| K4 | 1차 발급기 교체 | `create_kyaa_member` 주소 출처를 `member_keys`로, `address-issuer.ts`·`KYAA_WALLET_XPUB` 제거 또는 비교안으로 이동, dev 잠정 주소 교체 | 신규 가입 시 `member_keys` 1행·주소 일치 | K3 통과 후 |
+| K0 | 방식 결정 | 2-1d 표로 사용자 승인(새 AWS 비용) | — | **사용자** |
+| K1 | 공통 signer 코드(서명부 포트 분리 `KmsSignerPort`/`HdSignerPort`, 두 안 모두 로컬 가짜 구현) | `apps/worker/src/aa/signer.ts`(의도→다이제스트 직접 계산, low-s·v 복원, nonce·만료·회원 상태), `apps/worker/src/aa/kms-member-key.ts`(A), `apps/worker/src/aa/hd-member-key.ts`(B, 강화 파생), 마이그레이션 `member_keys`·`signer_nonces`·`signer_audit` | 2-1c 1·2(a,b)·3·4를 두 포트 모두로 | 코드만, K0 전 착수 가능 |
+| K2 | 인프라 코드(선택안만) | (A) `infrastructure/aws/platform/member-keys.json`: signer·issuer 역할, 세션 태그 조건, 삭제 거부, 다중 리전 옵션 / (B) `wallet-issuance.json` 개정: 봉투 암호화, `kms:Decrypt`는 signer 역할만 + 암호화 컨텍스트, 시드 생성 절차 | cfn 렌더 시험 | AWS 생성 = 감독 |
+| K3 | dev 실자원 인수 | 감독이 dev 자원 생성 후 2-1c 전체(2(c) 포함)를 실제 KMS로 | 시험 로그 첨부 | 감독 |
+| K4 | 1차 발급기 교체 | `create_kyaa_member` 주소 출처를 signer `issueAddress`로, `address-issuer.ts`·`KYAA_WALLET_XPUB` 제거, dev 잠정 주소 교체 | 신규 가입 시 `member_keys` 1행·서명 복원 주소 일치 | K3 통과 후 |
 | S3 | 정책 서버 | `apps/web/server/aa/sponsor-policy.ts`(의도 생성·한도·허용 목록·HMAC) | 한도 초과·정지 회원·허용 외 선택자 거부 | |
 | S4 | DB | `supabase/migrations/<새>_member_accounts.sql`: `member_accounts`, `sponsored_operations`, 한도 RPC | SQL 시험(롤백): 하루 한도 경계, 동시성 | 운영 적용 = 감독 |
 | S5 | 기존 회원 새 주소 발급 | 첫 로그인 때 `member_accounts` 행 생성(`kyaa_sign_in` 확장) | 기존·신규 회원 각각 1개 주소 | |
@@ -178,9 +193,10 @@
 ## 2-3. 위험
 | # | 위험 | 대응 |
 |---|---|---|
-| 2-1 | (기준안) KMS 키 분실·삭제 = 그 회원 주소 서명 영구 불가 | 삭제 거부 정책, 다중 리전 복제, 분실 시 새 주소 |
-| 2-1' | (기준안) 회원 수에 비례하는 비용(1만 명 월 약 $10,000) | 지연 생성(첫 서명 때), 비용 경보, 사용자에게 비용 보고 |
-| 2-1'' | (비교안 HD) 시드 1개 유출 = 전 회원 키 | 채택 시에만 해당 |
+| R-A1 | (A) KMS 키 분실·삭제 = 그 회원 주소 서명 영구 불가 | 삭제 거부 정책, 다중 리전 복제, 분실 시 새 주소 |
+| R-A2 | (A) 회원 수 비례 비용(1만 명 월 약 $10,000) | 사용자 승인 전 확정 금지, 지연 생성, 비용 경보 |
+| R-B1 | (B) signer 침해 = 전 회원 키 영구 유출 | 복호화 권한 signer만, 강화 파생, 메모리 위생, 실자산 전 재검토 |
+| R-0 | 방식 미확정 상태로 운영 신규 가입 | 운영 전환 조건에 "선택안 2-1c 통과" 포함(전제 6) |
 | 2-2 | `VerifyingPaymaster`는 샘플, 감사 범위 [확인 필요] | 고정 커밋 사용, 대안 Candide/Pimlico 감사 페이마스터 |
 | 2-3 | 자체 번들링 운영(nonce·재시도·가스 추정) | 우리 UserOp만 처리, relayer 단일 nonce 큐 |
 | 2-4 | SQL 함수 약 30개 변경 | S6 별도 과제·게이트 |
@@ -189,7 +205,7 @@
 | 2-7 | 7702 위임 후 다른 위임으로 덮어쓰기(키 보유자) | 키는 signer만 보유 |
 
 ## 2-4. 되돌리기
-- K4 전: 1차 잠정 xpub 주소 그대로(신규 가입 주소 확정 안 함). K4 후 문제 시: `create_kyaa_member` 주소 출처를 이전 구현으로 되돌리는 배포 + 이미 만든 KMS 키는 비활성화하지 않고 보관(주소 기록 보존).
+- K4 전: 1차 잠정 xpub 주소 그대로(운영 신규 가입 주소 확정 안 함). K4 후 문제 시: `create_kyaa_member` 주소 출처를 이전 구현으로 되돌리는 배포. 이미 발급한 키(A: KMS 키, B: 인덱스)는 지우지 않고 보관(주소 기록 보존).
 - 정책 서버 플래그로 대납 즉시 중지, 페이마스터 예치금 인출.
 - 기록 수신 전환(S6)은 함수 단위 마이그레이션 → 이전 정의로 되돌리는 down 마이그레이션 동봉.
 - 위임은 온체인 상태라 되돌리지 않는다(회원 주소는 그대로 기록 수신 가능).
@@ -197,8 +213,8 @@
 ## 2-5. 비용 추정 [추정]
 - 테스트넷: UserOp 1건 ≈ 150–200k gas × 0.001 gwei ≈ 2×10⁻⁷ ETH, faucet이라 실비 0.
 - 같은 단가 가정 메인넷: 1만 명 × 하루 5건 ≈ 0.01 ETH/일 + L1 데이터 요금(미정).
-- 기준안 KMS: 회원당 월 $1(다중 리전 복제 시 $2) + 서명 1만 건 약 $0.15. 1천 명 월 약 $1,000, 1만 명 월 약 $10,000. 지연 생성으로 "실제 거래한 회원 수"에 비례하게 줄일 수 있다.
-- 비교안 HD: 시크릿 월 $0.40 + KMS 대칭키 월 $1.
+- (A) 회원별 KMS: 회원당 월 $1(다중 리전 복제 시 $2) + 서명 1만 건 약 $0.15. 1천 명 월 약 $1,000, 1만 명 월 약 $10,000. 지연 생성 시 "거래한 회원 수" 비례. **새 비용 → 사용자 승인.**
+- (B) HD + signer: KMS 대칭키 월 $1 + 시크릿 월 $0.40, 회원 수와 무관.
 - 공통: Lambda 서명 비용 무시 가능, 페이마스터 배포 가스 1회.
 
 ## 출처 (2차)
