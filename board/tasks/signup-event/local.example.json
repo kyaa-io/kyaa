@@ -1,7 +1,10 @@
 {
-  "app_users": [],
-  "fan_action_occurrences": [],
-  "activityNamespaces": { "attendance": "group_creator_attendance", "post": "fan_posts" },
-  "shareRecords": [],
-  "draftWeights": { "share-click": 0, "referral-signup": 0, "attendance": 0, "post": 0 }
+  "users": [], "actions": [], "entries": [],
+  "policy": {
+    "startsAt": "2026-11-10T15:00:00.000Z",
+    "closesAt": "2026-11-30T23:59:59.999+09:00",
+    "timeZone": "Asia/Seoul",
+    "weights": { "comment": 1, "attendance": 1 },
+    "dailyCaps": { "comment": null, "attendance": null }
+  }
 }

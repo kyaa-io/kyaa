@@ -66,6 +66,7 @@ function normalizedHostname(hostname: string): string {
 
 export function acquisitionLanding(pathname: string): AcquisitionLanding | null {
   if (pathname === "/") return "home";
+  if (/^\/s\/raffle\/?$/.test(pathname)) return "benefit";
   if (pathname === "/celebrities") return "creator_directory";
   if (creatorSlugFromHomePath(pathname) !== null) return "creator";
   if (pathname === "/live") return "live_directory";

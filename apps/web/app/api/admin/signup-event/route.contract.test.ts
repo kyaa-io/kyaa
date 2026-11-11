@@ -24,10 +24,11 @@ it('rejects production before authorization or source access',async()=>{
 });
 it('exports only masked participant and winner data for an authorized local admin',async()=>{
  authorize.mockResolvedValue({role:'admin'});
- read.mockResolvedValue({users:[{id:'00000000-0000-4000-8000-000000000001',createdAt:'2026-11-11T01:00:00Z'}],actions:[],draftWeights:{'share-click':0,'referral-signup':0,attendance:0,post:0}});
+ const users=Array.from({length:17},(_,i)=>({id:`00000000-0000-4000-8000-${String(i+1).padStart(12,'0')}`,createdAt:'2025-01-01T00:00:00Z',passportReceived:true,communityJoined:true}));
+ read.mockResolvedValue({users,actions:[],entries:users.map(user=>({userId:user.id,enteredAt:'2026-11-11T01:00:00Z'}))});
  const participants=await GET(new Request('http://localhost/api/admin/signup-event'));
  expect(participants.status).toBe(200);
  const csv=await participants.text();expect(csv).not.toContain('00000000');expect(csv).toContain(',1');
- const result=await POST(new Request('http://localhost/api/admin/signup-event',{method:'POST',body:JSON.stringify({quantity:1,requestId:'00000000-0000-4000-8000-000000000002'})}));
- expect(result.status).toBe(200);expect(await result.text()).toBe(csv);
+ const result=await POST(new Request('http://localhost/api/admin/signup-event',{method:'POST',body:JSON.stringify({quantity:17,requestId:'00000000-0000-4000-8000-000000000002'})}));
+ expect(result.status).toBe(200);const winners=await result.text();expect(winners).not.toContain('00000000');expect(winners.match(/US\$100/g)).toHaveLength(1);expect(winners.match(/US\$50/g)).toHaveLength(2);expect(winners.match(/US\$25/g)).toHaveLength(4);expect(winners.match(/US\$10(?:\r|$)/g)).toHaveLength(10);
 });

@@ -121,7 +121,7 @@ export function StreamingGuestHome({ queries, ...props }: StreamingHomeProps) {
 /** The strip is read on the server with the page, so it arrives in the page and never pushes the LIVE list down afterwards. */
 function HomeThinBanner({ banner, locale }: { banner: HomeBanner | undefined; locale: AppLocale }) {
   if (process.env.NODE_ENV !== "production" && process.env.NEXT_PUBLIC_KYAA_SIGNUP_EVENT_LOCAL === "1") {
-    return <FanAction href="/signup-event" variant="neutral" fullWidth className={signupStyles.banner}>11월 11일부터 2주간, 신규 가입 이벤트</FanAction>;
+    return <FanAction href="/s/raffle" variant="neutral" fullWidth className={signupStyles.banner}>KYAA 래플 · US$400 · 17명 · 11월 30일 마감</FanAction>;
   }
   return banner ? <ThinBanner banner={banner} locale={locale} /> : null;
 }

@@ -26,7 +26,7 @@ export function createFanpageDependencies(): FanpageDependencies {
   return {
     async rpc(name, args) {
       const result = await rpc(name, args);
-      const owner = name === "attend_creator" ? args.p_user : (name === "save_fan_post" || name === "save_fan_post_rich") ? args.p_app_user_id : null;
+      const owner = name === "attend_creator" ? args.p_user : name === "post_fan_post_comment" ? args.p_app_user_id : ((name === "groups_dispatch" && args.p_operation === "join") || (name === "groups_content_dispatch" && args.p_operation === "comment")) ? args.p_actor : null;
       if (typeof owner === "string") await refreshLocalSignupEvent(database, owner);
       return withWaveDisplayNames(rpc, name, args, result);
     },
