@@ -210,6 +210,24 @@ export function StanLucky({ locale, bias, guest, presentation, paused = false }:
   </section>;
 }
 
+/** 응모 결과 빈 상태(대표 02:08 "너무 썰렁해서"): 최애의 진행 중·지난 럭키드로우를 덕질과 같은 카드로 채운다. 읽는 중이거나 실제 목록이 없으면 아무것도 그리지 않는다. */
+export function StanRaffleLists({ locale, bias, className }: { locale: AppLocale; bias: SelectedBias; className?: string }) {
+  // 최애를 아직 고르지 않았으면 패스포트를 가진 첫 크리에이터의 목록을 보여준다.
+  const slug = (stanFavorite(bias) ?? bias.options[0])?.slug ?? null;
+  const raffles = useStanRaffles(locale, slug), entries = useStanEntries(locale, slug);
+  if (!slug || raffles.loading || raffles.error) return null;
+  const live = raffles.items.filter(item => item.status !== "closed"), past = raffles.items.filter(item => item.status === "closed").slice(0, 4);
+  const list = (items: typeof live, id: string, heading: string, kind: string) => items.length === 0 ? null : <section className={styles.listSection} aria-labelledby={id}>
+    <p className={styles.pastHead} id={id}>{heading}</p>
+    <ul className={styles.raffles} data-count={items.length} data-raffle-list={kind}>{items.map(({ raffle, status }) => {
+      const entry = entries.data?.benefits.find(item => item.id === raffle.benefitId)?.entry ?? null;
+      return <RaffleCard key={raffle.id} raffle={raffle} status={status} slug={slug} locale={locale} entered={entry?.enteredTickets ?? null} allowance={null} />;
+    })}</ul>
+  </section>;
+  const lists = [list(live, "my-raffles-live", groupBenefitsCopy(locale).lucky, "live"), list(past, "my-raffles-past", t(locale, "luckyPast"), "past")].filter(Boolean);
+  return lists.length ? <div className={className} data-my-raffle-lists="">{lists}</div> : null;
+}
+
 /** 최애 응원 (E4, user decision: cheering spends nothing): my hearts already count toward the favorite's rank, so the card shows that rank,
  * my share and the way to the fan ranking. No send button. F2: the stamps to the next heart live in the wallet's stamp cell only (one value, one shape). */
 export function StanCheer({ locale, bias, guest, hearts }: { locale: AppLocale; bias: SelectedBias; guest: boolean; hearts: number | null }) {

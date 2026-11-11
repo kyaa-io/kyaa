@@ -45,6 +45,10 @@
   .guest .book { inline-size:100%; }
 }
 /* 좁은 사이드 칸(홈 1440)에 넣는 비로그인 카드: 표지 아래에 잠긴 값, 그 아래 미션북 3칸씩. */
+/* 2026-11-11 02:15 대표: MY에서 패스포트가 정체성처럼 크고 또렷하게. PC에서 표지 칸을 380→560px로 넓히고 오른쪽 정보와 같은 높이로 가운데 맞춘다. */
+@media (min-width:1024px) {
+  .body { grid-template-columns:minmax(0,560px) minmax(0,1fr); }
+}
 .compact { gap:var(--space-4); padding:var(--space-5); }
 .compact h2 { font-size:var(--fan-heading-size); }
 .compact .body { grid-template-columns:minmax(0,1fr); gap:var(--space-4); }

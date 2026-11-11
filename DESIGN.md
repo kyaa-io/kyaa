@@ -765,7 +765,7 @@ The page uses asymmetry only at desktop scale. The main content owns the visual 
 
 ### Navigation
 
-- Header: sticky White shell using the current shared header geometry, with 88px desktop height from 1024px. Preserve the compact mobile header and avoid duplicating historical extraction heights in new CSS.
+- Header: sticky White shell using the current shared header geometry, with 72px desktop height from 1024px (2026-11-11 대표 02:07 한 단계 축소; 88px 이전 값은 아래 기록). Preserve the compact mobile header and avoid duplicating historical extraction heights in new CSS.
 - Wordmark: 80px rendered image inside an 88×44px link target.
 - Desktop navigation from 1024px: White pill, 44px height, subtle border, active item in Near Black/800 and inactive items in Muted Ink/600.
 - Desktop optical correction: navigation is translated upward by 1px to align Pretendard with the wordmark.
@@ -2255,3 +2255,10 @@ At the user's request, registered Changha identity and hero images use the unedi
 ### LUCKY-GACHA-0836 · 준비 중 기계 확대 (2026-11-11)
 
 사용자 대표 피드백에 따라 준비 중 duo 럭키드로우의 기계 그림은 투명 1254px PNG 원본과 WebP를 사용한다. 기존 카드의 크기·글·비활성 응모 버튼·Coming soon을 보존하며, 준비 중에는 카드 정지 그림을 클릭해 공통 FanDialog(lg)를 연다. 기계의 전체 실루엣과 로고를 contain으로 보존하고 카드 그림에는 기존 space-4(16px) 안전 여백을 둔다. 확대 모달은 고해상도 원본을 보여 주며, 누르는 동안에만 3D 장면으로 전환하고 종료 후 원본으로 돌아간다. 기존 자동 idle 대신 이 상태에서는 팝업의 명시적 클릭으로 기존 three.js 손잡이·캡슐 배출을 재생한다. 실제 응모·응모권 차감·보상 공개는 없다. reduced-motion·저성능·데이터 절약·장면 실패에서는 정지 그림과 150ms 투명도 반응을 사용한다. 준비 중이 아닌 카드의 기존 idle 계약은 유지한다. 모달은 공통 초점·Escape·닫기·초점 복귀 동작을 사용한다.
+
+## 2026-11-11 대표 텔레그램 누락분(CEO-MISSED-0856)
+- PC 헤더(1024px부터): 높이 88→72, 로고 폭 88→72, 메뉴 칸 높이 64→52와 메뉴 아이콘 24→20, 오른쪽 아이콘·상태 캡슐 안 표시 24→20. 터치 영역 44px, 글자 크기, 390 모바일 헤더(L10의 20·16)는 그대로다. 사유: 대표 02:07 "맨 윗부분의 로고·메뉴·우측 상단 아이콘은 PC 기준으로 조금 더 작아도". 소유자 `fan-app-shell.module.css` 끝의 한 블록과 `groups.module.css` `.shell`의 `--fan-header-height`.
+- 덕질 지갑 네 칸 아이콘: `dukjil-duo` 분홍 3D 글리프 대신 이미 쓰는 애셋 — 포인트 `economy/point-coin.svg`, 응모권 `economy/ticket.svg`, 하트 `economy/heart.svg`, 스탬프 `stamps/ink-v1/mission.webp`. 크기는 32, 교환 시트의 응모권도 같은 `economy/ticket.svg`. 사유: 대표 02:07 "다른 컬러 및 기존 아이콘이 더 패스포트 감성".
+- 응모 결과(`/my/raffles`): 제목 "응모 결과"(ko), 빈 안내 줄을 760px 열 안의 한 박스로 정리하고 `StanRaffleLists`(덕질 카드 재사용)로 최애의 진행 중·지난 럭키드로우를 채운다. 최애가 없으면 패스포트를 가진 첫 크리에이터, 그것도 없으면 안내 줄만 남는다(전 크리에이터 래플 목록 API가 아직 없다). 사유: 대표 02:08.
+- 홈 GGGI 배너 사진: 11/03에 바꾼 인스타 사진(`celebrities/changha/gggi-20261030.jpg`)에서 처음 고른 `gggi/changha-event-20261026.webp`(3:2)로 되돌림, 캠페인 열 `object-position:75% 30%`. 팬페이지 `gggi-event-entry`의 사진은 그대로. 사유: 대표 02:15.
+- MY 패스포트 표지 칸 PC 380→560px(1024+). 사유: 대표 02:15 "MY에는 패스포트 UI를 잘 보여주면".

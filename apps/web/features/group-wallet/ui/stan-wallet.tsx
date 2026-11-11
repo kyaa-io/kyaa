@@ -21,6 +21,9 @@ import { rewardedExchangeCopy } from "./rewarded-copy";
 import { usePendingExchange } from "./use-pending-exchange";
 import styles from "./stan-wallet.module.css";
 
+/** 지갑 네 칸의 아이콘: 헤더와 패스포트에 이미 쓰는 컬러 애셋(금 포인트·보라 응모권·분홍 하트·초록 스탬프). */
+const WALLET_GLYPHS = { coin: "/images/economy/point-coin.svg", ticket: "/images/economy/ticket.svg", heart: "/images/economy/heart.svg", stamp: "/images/stamps/ink-v1/mission.webp" } as const;
+
 export type StanSlot = "loading" | "locked" | "missing" | number;
 
 function Value({ locale, slot, unit }: { locale: AppLocale; slot: StanSlot; unit?: ReactNode }) {
@@ -41,7 +44,7 @@ export function StanWallet({ locale, state, stamps, hearts, links, entries, entr
   const ready = state.kind === "ready", affordable = ready && state.points >= pointCost;
   const stampCount = typeof stamps === "number" ? stamps : 0, full = stampCount > 0 && stampCount % STAMPS_PER_HEART === 0;
   const claimable = full && Boolean(links.claim);
-  const glyph = (name: string) => <img className={styles.glyph} data-glyph={name} src={`/images/dukjil-duo/glyph-${name}-80.webp`} srcSet={`/images/dukjil-duo/glyph-${name}-80.webp 2x, /images/dukjil-duo/glyph-${name}-160.webp 4x`} width={40} height={40} alt="" />;
+  const glyph = (name: keyof typeof WALLET_GLYPHS) => <img className={styles.glyph} data-glyph={name} src={WALLET_GLYPHS[name]} width={32} height={32} alt="" />;
   const stampText = full ? claimable ? nextHeartLabel(locale, stampCount) : "" : nextHeartLabel(locale, stampCount);
   return <section className={[styles.wallet, className].filter(Boolean).join(" ")} id="wallet" aria-label={s("stanWalletFlows")} data-wallet-card="stan">
     <div className={styles.head}><FanHeading>{s("stanWalletFlows")}</FanHeading><Link className={styles.guide} href={`/guide/dukjil?locale=${locale}` as Route}>{s("stanGuide")} <span aria-hidden="true">›</span></Link></div>

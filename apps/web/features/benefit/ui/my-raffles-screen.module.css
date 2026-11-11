@@ -4,8 +4,10 @@
 .heading > h1[data-fan-heading] { margin: 0; }
 .list { width: min(100%, 760px); margin: 0 auto; display: grid; gap: 18px; }
 .list > section { margin-top: 0; }
-.empty { width: min(100%, 760px); margin: 0 auto; display: grid; justify-items: start; gap: var(--space-2); }
-.empty > section { justify-self: stretch; }
+.empty { width: min(100%, 760px); margin: 0 auto; display: grid; gap: var(--space-6); }
+.emptyLists { display: grid; gap: var(--space-6); min-width: 0; }
+.empty > [data-empty-state] { box-sizing: border-box; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-3) var(--space-4); width: 100%; min-height: 0; margin: 0; padding: var(--space-4); border: 1px solid var(--color-line); border-radius: var(--radius-card); background: var(--color-surface); text-align: start; }
+.empty > [data-empty-state] > a { flex: 0 1 auto; width: auto; min-width: 0; }
 .more { display: flex; justify-content: center; margin-top: 28px; }
 .moreError { margin: 20px auto 0; color: oklch(44% .18 25); text-align: center; }
 @media (max-width: 640px) { .main { padding-top: 36px; padding-bottom: 76px; } .heading { margin-bottom: 22px; } .more > * { width: 100%; } }

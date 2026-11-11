@@ -12,9 +12,9 @@
   .root[data-creator-welcome="true"] .artwork img { object-position:53% 25%; }
 }
 
-/* GGGI 캠페인(세로 인물 원본): 얼굴이 위쪽 28% 근처. */
+/* GGGI 캠페인(가로 3:2 원본, 인물은 오른쪽): 얼굴이 가운데보다 오른쪽 위에 있어 오른쪽을 기준으로 맞춘다. */
 .root[data-gggi-campaign] .artwork { background:transparent; }
-.root[data-gggi-campaign] .artwork img { object-position:50% 28%; }
+.root[data-gggi-campaign] .artwork img { object-position:75% 30%; }
 
 /* 안내 그림은 내장 글자를 보존한다. 모바일 대체 원본도 전체를 표시한다. */
 .root[data-guide-art] .artwork { background:color-mix(in oklab, var(--color-ink) 88%, var(--color-service-ink)); }

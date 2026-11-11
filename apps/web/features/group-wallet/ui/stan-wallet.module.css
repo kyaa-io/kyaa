@@ -3,9 +3,7 @@
 .guide { display:inline-flex; align-items:center; gap:var(--space-1); color:var(--color-muted); font-size:var(--fan-badge-size); font-weight:var(--fan-body-weight); text-decoration:none; }
 .tiles { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:var(--space-3); }
 .cell { position:relative; display:grid; grid-template-columns:24px minmax(0,1fr); grid-template-rows:auto auto 1fr; column-gap:var(--space-3); box-sizing:border-box; min-width:0; min-height:125px; padding:var(--space-4); border:0; outline:1px solid var(--color-line); outline-offset:-1px; border-radius:var(--radius-card); background:var(--color-surface); }
-.glyph { position:absolute; width:40px; height:40px; object-fit:contain; left:6px; top:7.5px; }
-.glyph[data-glyph="ticket"] { left:10px; top:5px; }
-.glyph[data-glyph="heart"] { left:8px; top:6.5px; }
+.glyph { position:absolute; width:32px; height:32px; object-fit:contain; left:10px; top:11.5px; }
 .label { grid-column:2; min-height:24px; color:var(--color-muted); font-size:var(--fan-badge-size); line-height:17px; overflow-wrap:anywhere; }
 .value { display:flex; grid-column:1/-1; min-width:0; min-height:0; margin-top:var(--space-2); line-height:18px; }
 .value .number { font-size:var(--fan-section-size); font-weight:800; line-height:1; gap:var(--space-1); white-space:normal; overflow-wrap:anywhere; }
@@ -40,7 +38,7 @@ button.tileLink { display:inline; align-self:flex-start; width:auto; min-height:
 @media (max-width:1023px) { .sheet { min-height:min(400px, 85dvh); } }
 @media (min-width:1024px) {
  .cell { min-height:114px; padding:var(--space-5); grid-template-columns:28px minmax(0,1fr); grid-template-rows:18px 17px minmax(0,1fr); column-gap:var(--space-3); row-gap:var(--space-1); }
- .glyph { left:10px; top:11.5px; }.glyph[data-glyph="ticket"] { left:14px; top:9px; }.glyph[data-glyph="heart"] { left:12px; top:10.5px; }
+ .glyph { left:14px; top:15.5px; }
  .value { grid-column:2; grid-row:1; margin:0; }.label { grid-column:2; grid-row:2; min-height:0; }
  .under { grid-column:2; flex-direction:row; align-items:center; justify-content:flex-end; gap:var(--space-3); }
  .under .gauge { flex:1; width:auto; }.tileLink,.stampLabel { flex-shrink:0; max-width:100%; }

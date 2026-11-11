@@ -22,6 +22,8 @@ import { HistoryTabs } from "@/features/groups/ui/history-tabs";
 import { RaffleResultPanel } from "./raffle-result-panel";
 import { FanLockedRows } from "@/components/fan-ui/fan-locked-value";
 import { GuestLoginAction } from "@/features/my/ui/guest-login";
+import { StanRaffleLists } from "@/features/groups/ui/stan-lucky-cheer";
+import { useSelectedBias } from "@/features/selected-bias/ui/use-selected-bias";
 import styles from "./my-raffles-screen.module.css";
 
 const copy = {
@@ -81,6 +83,7 @@ export function MyRafflesScreen({ locale }: { locale: FanLocale }) {
 
 function MyRafflesOwnerScreen({ locale, auth }: { locale: FanLocale; auth: ReturnType<typeof usePrivy> }) {
   const t = copy[locale];
+  const bias = useSelectedBias(locale);
   const parse = useCallback((body: unknown) => parseList(body), []);
   const resource = useOwnedFanResource(auth.authenticated ? `/api/me/raffles?locale=${toContentLocale(locale)}` : null, parse, auth);
   const [extraPages, setExtraPages] = useState<OwnedRaffleList[]>([]);
@@ -134,7 +137,7 @@ function MyRafflesOwnerScreen({ locale, auth }: { locale: FanLocale; auth: Retur
   const heading = (
     <header className={styles.heading}>
       <FanBackAction locale={locale} fallbackHref={withLocalePath("/my", locale)} />
-      <FanHeading as="h1" variant="personal-page">{raffleDiscoveryCopy[locale].myTitle}</FanHeading>
+      <FanHeading as="h1" variant="personal-page">{locale === "ko" ? "응모 결과" : raffleDiscoveryCopy[locale].myTitle}</FanHeading>
     </header>
   );
 
@@ -148,7 +151,10 @@ function MyRafflesOwnerScreen({ locale, auth }: { locale: FanLocale; auth: Retur
   else {
     const items = [...resource.state.data.items, ...extraPages.flatMap((page) => page.items)];
     content = items.length === 0 && !nextCursor
-      ? <FanState kind="empty" title={t.empty} action={{ label: t.browse, href: withLocalePath("/benefits", locale) }} />
+      ? <div className={styles.empty}>
+          <FanState kind="empty" title={t.empty} action={{ label: t.browse, href: withLocalePath("/benefits", locale) }} />
+          <StanRaffleLists locale={locale} bias={bias} className={styles.emptyLists} />
+        </div>
       : <>
           <div className={styles.list}>{items.map((item) => <RaffleResultPanel key={`${item.campaignId}:${item.benefitId}`} result={item} locale={locale} ownerId={auth.user?.id} />)}</div>
           {moreError ? <p className={styles.moreError} role="alert">{t.moreError}</p> : null}

@@ -56,3 +56,6 @@ span.who { cursor: default; }
   .raffle { grid-template-rows: subgrid; grid-row: span 3; height: 100%; }
   .raffles { grid-template-rows: auto auto 1fr; align-items: stretch; }
 }
+
+/* 응모 결과 빈 상태의 두 목록: 제목 줄은 .pastHead, 카드는 덕질의 것 그대로. */
+.listSection { display: grid; gap: var(--space-3); min-width: 0; }
