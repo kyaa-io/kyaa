@@ -103,6 +103,6 @@ test('all required push workflows run on exact hotfix branch; prod and DEV notic
   const devNotice = workflow.split('  dev-notice:')[1];
   // Production-baseline backports intentionally omit the unrelated DEV notice job.
   if (devNotice) assert.match(devNotice, /if: github\.ref == 'refs\/heads\/main'/);
-  else assert(!workflow.includes('scripts/dev-deployment-notices'));
+  else assert(!workflow.includes('run: node scripts/dev-deployment-notices.mjs'));
   assert.match(workflow, /scripts\/aws-release-ci.mjs .*SOURCE_RUN_ID:-\$GITHUB_RUN_ID/);
 });

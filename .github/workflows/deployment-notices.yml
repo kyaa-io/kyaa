@@ -1,6 +1,9 @@
 name: Deployment notices
 
 on:
+  workflow_run:
+    workflows: [AWS platform release]
+    types: [completed]
   push:
     branches: [main, release/production]
   pull_request:
@@ -120,7 +123,7 @@ jobs:
           TELEGRAM_BUG_REPORT_OPERATOR_SECRET: ${{ secrets.TELEGRAM_BUG_REPORT_OPERATOR_SECRET }}
         run: node scripts/deployment-notices.mjs send
 
-# AWS notices run inside aws-platform.yml because GITHUB_TOKEN statuses do not retrigger workflows.
+# Production AWS notices remain inside aws-platform.yml.
 
   recover:
     name: Resume verified deployment notice
@@ -155,3 +158,62 @@ jobs:
           NOTICE_UNSENT_RECEIPT_ID: ${{ inputs.unsent_receipt_id }}
           NOTICE_INSPECTION_EVIDENCE: ${{ inputs.inspection_evidence }}
         run: node scripts/recover-deployment-notice.mjs
+
+  dev-notice:
+    name: DEV deployment notice
+    # The DEV notice endpoint only trusts main; do not widen server policy for a hotfix.
+    if: >-
+      github.event_name == 'workflow_run' &&
+      github.repository == 'kyaa-io/kyaa' &&
+      github.event.repository.id == 1307387500 &&
+      github.event.workflow_run.repository.id == 1307387500 &&
+      github.event.workflow_run.head_repository.id == 1307387500 &&
+      github.event.workflow_run.head_branch == 'main' &&
+      github.event.workflow_run.path == '.github/workflows/aws-platform.yml' &&
+      github.event.workflow_run.conclusion == 'success' &&
+      (github.event.workflow_run.event == 'push' || github.event.workflow_run.event == 'workflow_dispatch')
+    continue-on-error: true
+    # Pinned to match the release job's runner image instead of the moving ubuntu-latest.
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    environment: dev
+    concurrency:
+      group: aws-release-dev
+      queue: max
+      cancel-in-progress: false
+    permissions:
+      contents: read
+      actions: read
+      deployments: read
+      checks: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - uses: actions/download-artifact@v4
+        with:
+          github-token: ${{ github.token }}
+          run-id: ${{ github.event.workflow_run.id }}
+          name: aws-result-dev
+          path: work/aws-release
+      - name: Bind deployment artifact to the completed source run
+        env:
+          SOURCE_RUN_ID: ${{ github.event.workflow_run.id }}
+          SOURCE_SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          node --input-type=module -e 'import {readFileSync} from "node:fs"; import assert from "node:assert/strict"; const e=JSON.parse(readFileSync("work/aws-release/aws-deployment-event.json")); assert.equal(e.deployment.payload.workflowRunId, Number(process.env.SOURCE_RUN_ID)); assert.equal(e.deployment.sha, process.env.SOURCE_SHA);'
+      - name: Notify the exact successful DEV release
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          DEPLOYMENT_NOTICE_EVENT_PATH: ${{ github.workspace }}/work/aws-release/aws-deployment-event.json
+          TELEGRAM_BUG_REPORT_OPERATOR_SECRET: ${{ secrets.TELEGRAM_BUG_REPORT_OPERATOR_SECRET }}
+        run: node scripts/dev-deployment-notices.mjs
+      - name: Preserve an uncertain DEV notice for inspection
+        if: failure()
+        run: |
+          echo '::error::DEV deployment succeeded; its notice failed. Inspect the DEV receipt and room before retrying.'
