@@ -146,6 +146,9 @@ test('DEV caches are isolated, restored and exported without changing release im
   const save=steps.findIndex(s=>s.name==='Save trusted DEV Next build cache');
   assert.ok(restore>=0&&restore<build&&build<save);
   for(const i of [restore,build])assert.equal(steps[i].if,"env.RELEASE_ENV == 'dev'");
+  assert.equal(steps[save]['timeout-minutes'], 2);
+  assert.ok(save > steps.findIndex(s => s.id === 'verify'));
+  assert.ok(save > steps.findLastIndex(s => s.uses === 'actions/upload-artifact@v4'));
   assert.match(steps[save].if,/next_cache_ready/);assert.equal(steps[save]['continue-on-error'],true);
   assert.match(steps[restore].with.key,/next_cache_key\.outputs\.base/);
   assert.match(steps[save].with.key,/next_cache_key\.outputs\.base/);

@@ -224,13 +224,6 @@ jobs:
           else
             echo '::warning::Optional Next compiler cache export failed; release image validation is unchanged.'
           fi
-      - name: Save trusted DEV Next build cache
-        if: env.RELEASE_ENV == 'dev' && steps.build.outputs.next_cache_ready == 'true'
-        continue-on-error: true
-        uses: actions/cache/save@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
-        with:
-          path: .ci/next-build-cache
-          key: dev-next-v2-${{ runner.os }}-${{ steps.next_cache_key.outputs.base }}-${{ hashFiles('package-lock.json', 'apps/web/next.config.ts', 'Dockerfile.aws') }}-${{ github.run_id }}-${{ github.run_attempt }}
       - name: Record disk space after the dev build
         if: always() && env.RELEASE_ENV == 'dev'
         continue-on-error: true
@@ -299,6 +292,14 @@ jobs:
             work/aws-release/image-promotion.json
             work/aws-release/aws-media-prepared.json
             work/aws-schedules/result.json
+      - name: Save trusted DEV Next build cache
+        if: env.RELEASE_ENV == 'dev' && steps.build.outputs.next_cache_ready == 'true'
+        timeout-minutes: 2
+        continue-on-error: true
+        uses: actions/cache/save@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+        with:
+          path: .ci/next-build-cache
+          key: dev-next-v2-${{ runner.os }}-${{ steps.next_cache_key.outputs.base }}-${{ hashFiles('package-lock.json', 'apps/web/next.config.ts', 'Dockerfile.aws') }}-${{ github.run_id }}-${{ github.run_attempt }}
 
   # Keep notice failures visible without changing the verified service result.
   notice:
