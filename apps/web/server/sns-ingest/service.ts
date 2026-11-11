@@ -90,6 +90,7 @@ export function createSnsIngestService(deps: SnsIngestDeps) {
     } catch {
       return item("held", "READBACK_MISMATCH", noticeId);
     }
+    if (stored.length) return item("held", "PHOTO_REVIEW_REQUIRED", noticeId);
     await deps.rpc("sns_ingest_publish", { p_run_id: runId, p_notice_id: noticeId, p_expected_revision: readback.revision });
     return item("published", undefined, noticeId);
   }

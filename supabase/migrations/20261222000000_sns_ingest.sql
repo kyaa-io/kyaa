@@ -116,7 +116,8 @@ begin
       return jsonb_build_object('status','duplicate','noticeId',n.id,'revision',n.revision);
     end if;
     if n.archived_at is not null or n.ever_published_at is not null or n.post_type<>'artist_post'
-      or n.visibility<>'public' or n.notice_kind<>'standard' or n.pinned then
+      or n.visibility<>'public' or n.notice_kind<>'standard' or n.pinned
+      or not exists(select 1 from public.sns_ingest_posts where notice_id=n.id) then
       return jsonb_build_object('status','blocked','noticeId',n.id,'revision',n.revision);
     end if;
     v_id:=n.id; v_status:='restored';

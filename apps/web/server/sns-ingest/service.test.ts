@@ -66,12 +66,13 @@ const request = (posts: unknown[], extra: Record<string, unknown> = {}) =>
   snsIngestRequestSchema.parse({ celebritySlug: "wena", platform: "instagram", posts, ...extra });
 
 describe("sns ingest service", () => {
-  it("publishes the original caption verbatim with images on kyaa storage", async () => {
-    const { deps, notices } = fakeDatabase();
+  it("holds photos for human review with original caption and stored images", async () => {
+    const { deps, notices, rpc } = fakeDatabase();
     const result = await createSnsIngestService(deps).ingest(request([post("DQabc123xyz", { images: [{ url: "https://scontent.cdninstagram.com/a.jpg" }] })]), "c");
-    expect(result.items).toEqual([expect.objectContaining({ status: "published", slug: snsIngestSlug("instagram", "DQabc123xyz") })]);
+    expect(result.items).toEqual([expect.objectContaining({ status: "held", reason: "PHOTO_REVIEW_REQUIRED", slug: snsIngestSlug("instagram", "DQabc123xyz") })]);
     const notice = [...notices.values()][0]!;
-    expect(notice.status).toBe("published");
+    expect(notice.status).toBe("draft");
+    expect(rpc.mock.calls.some(([name]) => name === "sns_ingest_publish")).toBe(false);
     expect(notice.title).toBe("오늘 무대 고마워요 💜");
     const mediaId = JSON.stringify(notice.body).match(/notice-media\/([0-9a-f-]{36})/)![1];
     expect(notice.body).toEqual(buildSourceOnlyLocalizations({
@@ -152,7 +153,7 @@ describe("sns ingest service", () => {
   it("titles a caption-less photo post with the registered account only", async () => {
     const { deps, notices } = fakeDatabase();
     const result = await createSnsIngestService(deps).ingest(request([post("DQabc123xyz", { text: "", images: [{ url: "https://scontent.cdninstagram.com/a.jpg" }] })]), "c");
-    expect(result.items[0]!.status).toBe("published");
+    expect(result.items[0]).toMatchObject({ status: "held", reason: "PHOTO_REVIEW_REQUIRED" });
     expect([...notices.values()][0]!.title).toBe("@wena");
     expect(() => request([post("DQabc123xyz", { title: "새 제목" })])).toThrow();
   });

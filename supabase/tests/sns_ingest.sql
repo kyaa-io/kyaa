@@ -80,11 +80,13 @@ begin
   perform pg_temp.expect(saved->>'status'='blocked','ever-published post is blocked');
 
   -- An administrator draft with an ingest-shaped slug is not the machine's to publish.
-  insert into public.celebrity_notices(id,celebrity_id,slug) values('fa400000-0000-4000-8000-0000000000c1',artist,'instagram-fedcba9876543210');
+  insert into public.celebrity_notices(id,celebrity_id,slug,post_type,visibility) values('fa400000-0000-4000-8000-0000000000c1',artist,'instagram-fedcba9876543210','artist_post','public');
   insert into public.celebrity_notice_localizations(notice_id,locale,title,body_json) values
     ('fa400000-0000-4000-8000-0000000000c1','ko','관리자',doc),('fa400000-0000-4000-8000-0000000000c1','en','관리자',doc);
   saved:=public.sns_ingest_save_draft(run,'instagram-fedcba9876543210','https://www.instagram.com/ingest.test/p/B/',now(),'원문',doc);
   perform pg_temp.expect(saved->>'status'='blocked','administrator notice draft is blocked');
+  perform pg_temp.expect((select title='관리자' from public.celebrity_notice_localizations where notice_id='fa400000-0000-4000-8000-0000000000c1' and locale='ko'),'administrator title unchanged');
+  perform pg_temp.expect(not exists(select 1 from public.sns_ingest_posts where notice_id='fa400000-0000-4000-8000-0000000000c1'),'administrator draft not claimed');
 
   perform public.sns_ingest_finish_run(run,'[{"status":"published"}]',true);
   perform pg_temp.expect((select last_success_at is not null and last_error is null from public.sns_ingest_sources where celebrity_id=artist),'success is recorded');

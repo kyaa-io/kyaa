@@ -57,17 +57,17 @@ describe.skipIf(!enabled)("sns ingest on the local database", () => {
   });
   afterAll(() => { if (enabled) cleanup(); });
 
-  it("publishes once, then reports the same slug as a duplicate without changes", async () => {
+  it("holds photos on repeated collection until human review", async () => {
     const service = createSnsIngestService(deps);
     const first = await service.ingest(request("로컬 원문 💜\n#kyaa"), crypto.randomUUID());
-    expect(first.items).toEqual([expect.objectContaining({ status: "published" })]);
+    expect(first.items).toEqual([expect.objectContaining({ status: "held", reason: "PHOTO_REVIEW_REQUIRED" })]);
     const stored = JSON.parse(sql(`select jsonb_build_object('status',n.publication_status,'title',l.title,'images',jsonb_path_query_array(l.body_json,'$.**.attrs.src'))
       from public.celebrity_notices n join public.celebrity_notice_localizations l on l.notice_id=n.id and l.locale='ko' where n.id='${first.items[0]!.noticeId}'`));
-    expect(stored).toMatchObject({ status: "published", title: "로컬 원문 💜" });
+    expect(stored).toMatchObject({ status: "draft", title: "로컬 원문 💜" });
     expect(stored.images[0]).toMatch(/^\/api\/public\/notice-media\//);
     const second = await service.ingest(request("바뀐 캡션"), crypto.randomUUID());
-    expect(second.items).toEqual([expect.objectContaining({ status: "duplicate", noticeId: first.items[0]!.noticeId })]);
-    expect(sql(`select title from public.celebrity_notice_localizations where notice_id='${first.items[0]!.noticeId}' and locale='en'`)).toBe("로컬 원문 💜");
+    expect(second.items).toEqual([expect.objectContaining({ status: "held", reason: "PHOTO_REVIEW_REQUIRED", noticeId: first.items[0]!.noticeId })]);
+    expect(sql(`select title from public.celebrity_notice_localizations where notice_id='${first.items[0]!.noticeId}' and locale='en'`)).toBe("바뀐 캡션");
     expect(sql(`select count(*) from public.sns_ingest_runs where celebrity_id='${artist}' and succeeded`)).toBe("2");
   });
 });
