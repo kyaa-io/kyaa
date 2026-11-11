@@ -14,7 +14,9 @@ export function normalizeLegacyInventory(users, owners) {
     if (!owner.privy_user_id.startsWith("did:privy:")) {
       const knownLocal = owner.privy_user_id === `review-demo:${owner.id}`
         || (owner.status === "disabled" && owner.privy_user_id === `deleted:${owner.id}`)
-        || /^supabase-email:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(owner.privy_user_id);
+        || /^supabase-email:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(owner.privy_user_id)
+        // Members who joined through Cognito after Privy (PRIVY-EXIT-0005) have no Privy user.
+        || /^kyaa:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(owner.privy_user_id);
       if (!knownLocal) throw new Error("Unknown non-Privy owner namespace");
       return {appUserId:owner.id,privyUserId:owner.privy_user_id,accounts:[]};
     }

@@ -36,6 +36,13 @@ begin
     jsonb_build_array(jsonb_build_object('issuer',google,'subject','g-new-'||suffix)));
   perform pg_temp.kyaa_assert(synced=(member->>'appUserId')::uuid,'session sync keeps the kyaa member');
 
+  -- Kakao (Cognito OIDC) creates a member and links again by its subject.
+  result:=public.kyaa_sign_in(issuer,'c-kakao-'||suffix,'https://kauth.kakao.com','k-'||suffix,'kakao-'||suffix||'@example.test',91342);
+  perform pg_temp.kyaa_assert(result->>'mode'='new','unknown Kakao member is new');
+  member:=public.create_kyaa_member(issuer,'c-kakao-'||suffix,'https://kauth.kakao.com','k-'||suffix,'kakao-'||suffix||'@example.test',91342,(result->>'derivationIndex')::bigint,'0x'||substr(md5(suffix||'k')||md5(suffix||'l'),1,40));
+  perform pg_temp.kyaa_assert(member->'providerAccounts'@>jsonb_build_array(jsonb_build_object('issuer','https://kauth.kakao.com','subject','k-'||suffix)),'Kakao subject recorded');
+  perform pg_temp.kyaa_assert(public.kyaa_sign_in(issuer,'c-kakao-'||suffix,'https://kauth.kakao.com','k-'||suffix,'kakao-'||suffix||'@example.test',91342)->>'mode'='linked','Kakao member links again');
+
   -- Inactive member is refused.
   update public.app_users set status='disabled' where id=legacy_id;
   perform pg_temp.kyaa_assert(public.kyaa_sign_in(issuer,'c-legacy-'||suffix,google,'g-legacy-'||suffix,'legacy-'||suffix||'@example.test',91342)->>'reason'='inactive','disabled member is blocked');

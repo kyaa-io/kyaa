@@ -1,15 +1,15 @@
 import {afterEach,expect,it,vi} from "vitest";
 vi.mock("server-only",()=>({}));
-const mock=vi.hoisted(()=>({provider:"cognito",config:{issuer:"https://cognito-idp.ap-northeast-2.amazonaws.com/ap-northeast-2_pool",clientId:"client",domain:"https://pool.auth.ap-northeast-2.amazoncognito.com",redirectUri:"https://kyaa.io/api/auth/cognito/callback",logoutUri:"https://kyaa.io/login",origin:"https://kyaa.io",cookieSecret:Buffer.alloc(32,7).toString("base64")},verify:vi.fn(),tokenRequest:vi.fn(),writeSession:vi.fn(),signIn:vi.fn(),member:vi.fn(),rpc:vi.fn()}));
+const mock=vi.hoisted(()=>({provider:"cognito",config:{issuer:"https://cognito-idp.ap-northeast-2.amazonaws.com/ap-northeast-2_pool",clientId:"client",domain:"https://pool.auth.ap-northeast-2.amazoncognito.com",redirectUri:"https://kyaa.io/api/auth/cognito/callback",logoutUri:"https://kyaa.io/login",origin:"https://kyaa.io",cookieSecret:Buffer.alloc(32,7).toString("base64")},verify:vi.fn(),tokenRequest:vi.fn(),writeSession:vi.fn(),signIn:vi.fn(),member:vi.fn(),rpc:vi.fn(),kakao:false}));
 vi.mock("./config",()=>({cognitoConfig:()=>mock.config,cognitoCleanupConfig:()=>mock.config}));
-vi.mock("../../config/env",()=>({loadServerEnv:()=>({AUTH_PROVIDER:mock.provider,NEXT_PUBLIC_APP_URL:mock.config.origin,GIWA_CHAIN_ID:91342})}));
+vi.mock("../../config/env",()=>({loadServerEnv:()=>({AUTH_PROVIDER:mock.provider,NEXT_PUBLIC_APP_URL:mock.config.origin,GIWA_CHAIN_ID:91342,COGNITO_KAKAO_ENABLED:mock.kakao})}));
 vi.mock("./verifier",async original=>({...await original<typeof import("./verifier")>(),createCognitoVerifier:()=>mock.verify}));
 vi.mock("./identity-repository",()=>({identityDatabase:()=>({rpc:mock.rpc})}));
 vi.mock("./kyaa-identity",async original=>({...await original<typeof import("./kyaa-identity")>(),signInKyaaMember:mock.signIn,resolveKyaaMember:mock.member}));
 vi.mock("./browser-session",async original=>({...await original<typeof import("./browser-session")>(),tokenRequest:mock.tokenRequest,writeSession:mock.writeSession}));
 import{start,callback,session,logout}from"./browser-routes";
 import{seal,FLOW_COOKIE,SESSION_COOKIE,unseal,digest}from"./browser-session";
-afterEach(()=>{mock.provider="cognito";vi.clearAllMocks();vi.unstubAllEnvs();vi.unstubAllGlobals();});
+afterEach(()=>{mock.provider="cognito";mock.kakao=false;vi.clearAllMocks();vi.unstubAllEnvs();vi.unstubAllGlobals();});
 it("creates S256 PKCE, state and nonce in an encrypted HttpOnly flow cookie",async()=>{
  const response=await start(new Request("https://kyaa.io/api/auth/cognito/start?provider=google&returnTo=%2Fpassport"));
  expect(response.status).toBe(303);const url=new URL(response.headers.get("location")!);
@@ -62,6 +62,12 @@ it.each(["email_in_use","inactive","ambiguous"] as const)("creates no session an
  expect(mock.writeSession).not.toHaveBeenCalled();
 });
 
+it("starts Kakao only when Cognito Kakao login is enabled",async()=>{
+ expect((await start(new Request("https://kyaa.io/api/auth/cognito/start?provider=kakao"))).status).toBe(401);
+ mock.kakao=true;
+ const response=await start(new Request("https://kyaa.io/api/auth/cognito/start?provider=kakao"));
+ expect(response.status).toBe(303);expect(new URL(response.headers.get("location")!).searchParams.get("identity_provider")).toBe("Kakao");
+});
 it("starts authorization while global legacy inventory is incomplete", async () => {
  mock.rpc.mockResolvedValue({data:false,error:null});
  const response=await start(new Request("https://kyaa.io/api/auth/cognito/start?provider=apple"));

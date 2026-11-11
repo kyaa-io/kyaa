@@ -27,3 +27,7 @@ it("rejects expired, unsigned, tampered and wrong-algorithm tokens",async()=>{
  const jwt=await token();const parts=jwt.split(".");parts[1]=Buffer.from(JSON.stringify({iss:issuer,sub:"attacker"})).toString("base64url");
  for(const invalid of [expired,parts.join("."),"eyJhbGciOiJub25lIn0.e30."]){await expect(verify(invalid)).rejects.toMatchObject({status:401});}
 });
+it("maps the pool's Kakao OIDC provider to the Kakao issuer and subject",async()=>{
+ const jwt=await token({token_use:"id",aud:clientId,email:"fan@example.test",email_verified:true,identities:[{providerName:"Kakao",userId:"4000000001",primary:true}]});
+ await expect(createCognitoVerifier({issuer,clientId},async()=>publicKey)(jwt,"id")).resolves.toMatchObject({provider:{name:"kakao",issuer:"https://kauth.kakao.com",subject:"4000000001"}});
+});

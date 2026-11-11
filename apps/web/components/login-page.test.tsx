@@ -189,6 +189,18 @@ describe("Privy login page", () => {
     expect(await screen.findByRole("alert")).toHaveTextContent(message);
   });
 
+  it("starts Kakao through Cognito only when Cognito Kakao login is enabled", async () => {
+    vi.mocked(globalThis.fetch).mockImplementation(async () => new Response(null, { status: 401 }));
+    const assign = vi.fn();
+    vi.stubGlobal("location", { ...window.location, assign, origin: window.location.origin, href: window.location.href });
+    const view = rtlRender(<CognitoAuthProvider><ByUsSessionProvider><LoginPage /></ByUsSessionProvider></CognitoAuthProvider>);
+    expect(screen.queryByRole("button", { name: /카카오/ })).toBeNull();
+    view.unmount();
+    rtlRender(<CognitoAuthProvider><ByUsSessionProvider><LoginPage cognitoKakaoEnabled /></ByUsSessionProvider></CognitoAuthProvider>);
+    fireEvent.click(await screen.findByRole("button", { name: /카카오/ }));
+    expect(String(assign.mock.calls[0]?.[0])).toContain("/api/auth/cognito/start?provider=kakao");
+  });
+
   it("returns a completed Google session to MY with locale and intent intact", async () => {
     query = "returnTo=%2Fmy%3Flocale%3Dko%26authIntent%3D11111111-1111-4111-8111-111111111111&locale=ko&intent=passport&entity=collection";
     render(<LoginPage />);

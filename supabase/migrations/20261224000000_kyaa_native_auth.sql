@@ -6,6 +6,12 @@
 -- user_wallets.provider stays 'privy' for every member wallet: about 30 record/stamp functions select
 -- provider='privy' as "the member's embedded record address". kyaa_wallet_derivations marks server-issued ones.
 
+-- Kakao Login (Cognito OIDC provider) subjects are recorded with the Google/Apple ones. Privy session sync still
+-- accepts Google/Apple only, so Kakao rows only come from create_kyaa_member.
+alter table public.live_privy_auth_accounts drop constraint live_privy_auth_accounts_provider_issuer_check;
+alter table public.live_privy_auth_accounts add constraint live_privy_auth_accounts_provider_issuer_check
+  check (provider_issuer in ('https://accounts.google.com','https://appleid.apple.com','https://kauth.kakao.com'));
+
 create sequence public.kyaa_wallet_derivation_index_seq as bigint minvalue 0 start 0;
 create table public.kyaa_wallet_derivations (
   derivation_index bigint primary key check (derivation_index between 0 and 2147483647),
@@ -52,7 +58,7 @@ returns jsonb language plpgsql security definer set search_path='' as $$
 declare v_email text:=lower(btrim(p_verified_email)); v_owner uuid; v_owners uuid[]; v_status text; v_wallet text;
 begin
   if p_issuer !~ '^https://cognito-idp\.[a-z0-9-]+\.amazonaws\.com/[a-zA-Z0-9_-]+$' or length(p_subject) not between 1 and 256
-    or p_provider_issuer not in ('https://accounts.google.com','https://appleid.apple.com')
+    or p_provider_issuer not in ('https://accounts.google.com','https://appleid.apple.com','https://kauth.kakao.com')
     or length(p_provider_subject) not between 1 and 256
     or v_email !~ '^[^[:space:]@]+@[^[:space:]@]+\.[^[:space:]@]+$' then
     raise exception 'INVALID_SIGN_IN';
@@ -99,7 +105,8 @@ create function public.create_kyaa_member(p_issuer text, p_subject text, p_provi
 returns jsonb language plpgsql security definer set search_path='' as $$
 declare v_email text:=lower(btrim(p_verified_email)); v_key text:='kyaa:'||extensions.gen_random_uuid()::text; v_owner uuid;
 begin
-  if p_wallet_address !~ '^0x[0-9a-f]{40}$' or p_derivation_index is null or p_derivation_index<0 then raise exception 'INVALID_SIGN_IN'; end if;
+  if p_wallet_address !~ '^0x[0-9a-f]{40}$' or p_derivation_index is null or p_derivation_index<0
+    or p_provider_issuer not in ('https://accounts.google.com','https://appleid.apple.com','https://kauth.kakao.com') then raise exception 'INVALID_SIGN_IN'; end if;
   perform pg_advisory_xact_lock(hashtextextended('external-identity:'||p_issuer||':'||p_subject,0));
   perform pg_advisory_xact_lock(hashtextextended('live-privy-provider:'||p_provider_issuer||':'||p_provider_subject,0));
   if exists(select 1 from public.external_auth_identities where issuer=p_issuer and subject=p_subject)

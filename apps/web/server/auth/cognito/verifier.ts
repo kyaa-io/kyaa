@@ -5,7 +5,7 @@ import { AuthError } from "../../../features/auth/domain/auth-errors";
 export const COGNITO_TOKEN_PREFIX = "kyaa-cognito:";
 const keySets = new Map<string, ReturnType<typeof createRemoteJWKSet>>();
 export const cognitoDenied = () => new AuthError("AUTHENTICATION_REQUIRED", 401, "Authentication is required");
-export type CognitoIdentity = { issuer: string; subject: string; email: string; tokenId: string; provider?: { name: "google" | "apple"; issuer: string; subject: string } };
+export type CognitoIdentity = { issuer: string; subject: string; email: string; tokenId: string; provider?: { name: "google" | "apple" | "kakao"; issuer: string; subject: string } };
 export function isCognitoToken(token: string): boolean {
   if (token.startsWith(COGNITO_TOKEN_PREFIX)) return true;
   try { return /^https:\/\/cognito-idp\.[a-z0-9-]+\.amazonaws\.com\//.test(String(decodeJwt(token).iss)); }
@@ -36,6 +36,8 @@ export function createCognitoVerifier(config: { issuer: string; clientId: string
         if (!account || typeof account.userId !== "string" || !account.userId || account.userId.length > 256) throw cognitoDenied();
         if (account.providerName === "Google") provider = { name: "google", issuer: "https://accounts.google.com", subject: account.userId };
         else if (account.providerName === "SignInWithApple") provider = { name: "apple", issuer: "https://appleid.apple.com", subject: account.userId };
+        // Kakao Login through the pool's OIDC provider named "Kakao" (infrastructure/aws/platform/environment.json).
+        else if (account.providerName === "Kakao") provider = { name: "kakao", issuer: "https://kauth.kakao.com", subject: account.userId };
         else throw cognitoDenied();
       }
       return { issuer: config.issuer, subject: payload.sub, email, ...(provider ? { provider } : {}), tokenId: typeof payload.origin_jti === "string" ? payload.origin_jti : typeof payload.jti === "string" ? payload.jti : `${payload.sub}:${payload.iat}` };

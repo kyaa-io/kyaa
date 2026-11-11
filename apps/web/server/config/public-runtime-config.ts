@@ -16,3 +16,9 @@ export function publicRuntimeConfig() {
     ga4MeasurementId: readGa4MeasurementId(source["NEXT_PUBLIC_GA4_MEASUREMENT_ID"]),
   };
 }
+
+/** Kakao Login through the Cognito pool's OIDC provider; only with Cognito sign-in. */
+export function readCognitoKakaoLoginPolicy(): boolean {
+  const source = runtimeEnvironment();
+  return source.AUTH_PROVIDER === "cognito" && source.COGNITO_KAKAO_ENABLED === "true";
+}

@@ -27,7 +27,7 @@ const PUBLIC_RUNTIME_ENV = new Set([
   'PHONE_SMS_SENDER', 'CHZZK_LIVE_ENABLED', 'POSTGREST_URL',
   'RELEASE_SHA', 'CRON_OWNER', 'MEDIA_WORKER_FUNCTION_ARN', 'LEGACY_EMAIL_AUTH_ENABLED', 'AUTH_PROVIDER', 'EMAIL_AUTH_PROVIDER', 'COGNITO_USER_POOL_ID', 'COGNITO_CLIENT_ID',
   'COGNITO_EMAIL_USER_POOL_ID', 'COGNITO_EMAIL_CLIENT_ID', 'COGNITO_DOMAIN', 'COGNITO_REDIRECT_URI', 'COGNITO_LOGOUT_URI',
-  'COGNITO_ENROLLMENT_ENABLED', 'COGNITO_NATIVE_REDIRECT_URI', 'LEGACY_DOMAIN_REDIRECT_STATUS',
+  'COGNITO_ENROLLMENT_ENABLED', 'COGNITO_NATIVE_REDIRECT_URI', 'LEGACY_DOMAIN_REDIRECT_STATUS', 'KYAA_WALLET_XPUB', 'COGNITO_KAKAO_ENABLED',
   'AWS_STORAGE_ENABLED', 'AWS_REGION', 'S3_PUBLIC_BUCKET', 'S3_PRIVATE_BUCKET', 'ASSET_PUBLIC_BASE_URL',
   'WEBHOOK_BUFFER_ENABLED', 'WEBHOOK_REPLAY_ENABLED', 'WEBHOOK_BUFFER_QUEUE_URL',
   'WEBHOOK_BUFFER_BUCKET', 'WEBHOOK_BUFFER_KMS_KEY_ID', 'WEBHOOK_BUFFER_INSTAGRAM_SECRET_SHA256',
@@ -107,7 +107,7 @@ export function validateConfig(config, template) {
     accountArn(values.CloudFrontCertificateArn, config.accountId, 'us-east-1', 'acm', 'CloudFrontCertificateArn');
     accountArn(values.WebAclArn, config.accountId, 'us-east-1', 'wafv2', 'WebAclArn');
     if (values.SecretKmsKeyArn) accountArn(values.SecretKmsKeyArn, config.accountId, config.region, 'kms', 'SecretKmsKeyArn');
-    for (const name of ['GoogleProviderSecretArn', 'AppleProviderSecretArn']) if (values[name]) accountArn(values[name], config.accountId, config.region, 'secretsmanager', name);
+    for (const name of ['GoogleProviderSecretArn', 'AppleProviderSecretArn', 'KakaoProviderSecretArn']) if (values[name]) accountArn(values[name], config.accountId, config.region, 'secretsmanager', name);
     if (values.UserMigrationArn) {
       accountArn(values.UserMigrationArn, config.accountId, config.region, 'lambda', 'UserMigrationArn');
       if (values.UserMigrationArn.split(':').slice(5).join(':') !== `function:byus-email-migration-${config.environment}`) fail('UserMigrationArn must match the email migration function for this environment');
@@ -150,6 +150,8 @@ export function validateConfig(config, template) {
       if (key === 'AWS_REGION' && value !== config.region) fail('AWS_REGION must match the deployment region');
       if (key === 'EMAIL_AUTH_PROVIDER' && !['legacy', 'cognito'].includes(value)) fail('EMAIL_AUTH_PROVIDER must be legacy or cognito');
       if (key === 'RELEASE_SHA' && !/^[a-f0-9]{40}$/.test(value)) fail('RELEASE_SHA must be a full Git commit SHA');
+      // Public extended key only (infrastructure/aws/platform/wallet-issuance.md); a private xprv must never be configured.
+      if (key === 'KYAA_WALLET_XPUB' && !/^xpub[1-9A-HJ-NP-Za-km-z]{100,112}$/.test(value)) fail('KYAA_WALLET_XPUB must be a public xpub');
       if (typeof value !== 'string' || !value.trim() || /[\u0000-\u001f]/.test(value)) fail(`Invalid runtime environment value: ${key}`);
     }
     if (values.EnablePostgrest === 'true' && !secrets.includes('POSTGREST_SERVICE_TOKEN')) fail('Enabled PostgREST requires POSTGREST_SERVICE_TOKEN runtime secret key');

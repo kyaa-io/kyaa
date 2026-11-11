@@ -132,6 +132,7 @@ const serverEnvSchema = publicEnvSchema
     COGNITO_DOMAIN: optionalNonEmptyString,
     COGNITO_REDIRECT_URI: optionalNonEmptyString,
     COGNITO_LOGOUT_URI: optionalNonEmptyString,
+    COGNITO_KAKAO_ENABLED: booleanFlag,
     KYAA_WALLET_XPUB: z.preprocess((v) => v === "" ? undefined : v, z.string().regex(/^xpub[1-9A-HJ-NP-Za-km-z]{100,112}$/).optional()),
     AUTH_COOKIE_SECRET: z.preprocess((v) => v === "" ? undefined : v, z.string().refine((v) => /^[A-Za-z0-9+/]{43}=$/.test(v) && Buffer.from(v, "base64").length === 32, "must be a 32-byte base64 secret").optional()),
     POSTGREST_URL: optionalNonEmptyString,

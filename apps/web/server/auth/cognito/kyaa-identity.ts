@@ -6,7 +6,7 @@ import { createAddressIssuer } from "../../wallet/address-issuer";
 import { identityDatabase, type IdentityRpc } from "./identity-repository";
 import type { CognitoIdentity } from "./verifier";
 
-const providerAccountSchema = z.object({ issuer: z.enum(["https://accounts.google.com", "https://appleid.apple.com"]), subject: z.string().min(1).max(256) });
+const providerAccountSchema = z.object({ issuer: z.enum(["https://accounts.google.com", "https://appleid.apple.com", "https://kauth.kakao.com"]), subject: z.string().min(1).max(256) });
 const memberSchema = z.object({
   appUserId: z.uuid(),
   identityKey: z.string().min(1),

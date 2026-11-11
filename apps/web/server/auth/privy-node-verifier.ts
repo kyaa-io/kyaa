@@ -350,7 +350,8 @@ function memberIdentityInput(member: KyaaMember) {
   return {
     privyUserId: member.identityKey,
     verifiedEmail: member.verifiedEmail,
-    providerAccounts: member.providerAccounts,
+    // Session sync and Apple lifecycle accept Google/Apple subjects only; Kakao stays in kyaa's own records.
+    providerAccounts: member.providerAccounts.filter((account): account is VerifiedIdentityProviderAccount => account.issuer !== "https://kauth.kakao.com"),
     googleLinked: member.providerAccounts.some((account) => account.issuer === "https://accounts.google.com"),
   };
 }

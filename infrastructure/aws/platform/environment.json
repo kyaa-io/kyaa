@@ -136,6 +136,12 @@
       "Description": "Optional existing secret JSON client_id/team_id/key_id/private_key. Blank disables Apple.",
       "AllowedPattern": "(|arn:aws:secretsmanager:ap-northeast-2:\\d{12}:secret:[a-zA-Z0-9/_+=.@-]+)"
     },
+    "KakaoProviderSecretArn": {
+      "Type": "String",
+      "Default": "",
+      "Description": "Optional existing secret JSON client_id/client_secret of the Kakao Login REST app (OpenID Connect enabled). Blank disables Kakao.",
+      "AllowedPattern": "(|arn:aws:secretsmanager:ap-northeast-2:\\d{12}:secret:[a-zA-Z0-9/_+=.@-]+)"
+    },
     "WebhookBufferStackName": {
       "Type": "String",
       "Default": "",
@@ -388,6 +394,18 @@
           "Fn::Equals": [
             {
               "Ref": "AppleProviderSecretArn"
+            },
+            ""
+          ]
+        }
+      ]
+    },
+    "HasKakaoProvider": {
+      "Fn::Not": [
+        {
+          "Fn::Equals": [
+            {
+              "Ref": "KakaoProviderSecretArn"
             },
             ""
           ]
@@ -2157,6 +2175,17 @@
                 "Ref": "AWS::NoValue"
               }
             ]
+          },
+          {
+            "Fn::If": [
+              "HasKakaoProvider",
+              {
+                "Ref": "KakaoProvider"
+              },
+              {
+                "Ref": "AWS::NoValue"
+              }
+            ]
           }
         ],
         "CallbackURLs": {
@@ -2217,6 +2246,17 @@
               "HasAppleProvider",
               {
                 "Ref": "AppleProvider"
+              },
+              {
+                "Ref": "AWS::NoValue"
+              }
+            ]
+          },
+          {
+            "Fn::If": [
+              "HasKakaoProvider",
+              {
+                "Ref": "KakaoProvider"
               },
               {
                 "Ref": "AWS::NoValue"
@@ -2835,6 +2875,32 @@
         }
       },
       "Condition": "HasAppleProvider"
+    },
+    "KakaoProvider": {
+      "Type": "AWS::Cognito::UserPoolIdentityProvider",
+      "Properties": {
+        "UserPoolId": {
+          "Ref": "UserPool"
+        },
+        "ProviderName": "Kakao",
+        "ProviderType": "OIDC",
+        "ProviderDetails": {
+          "client_id": {
+            "Fn::Sub": "{{resolve:secretsmanager:${KakaoProviderSecretArn}:SecretString:client_id}}"
+          },
+          "client_secret": {
+            "Fn::Sub": "{{resolve:secretsmanager:${KakaoProviderSecretArn}:SecretString:client_secret}}"
+          },
+          "attributes_request_method": "GET",
+          "oidc_issuer": "https://kauth.kakao.com",
+          "authorize_scopes": "openid account_email"
+        },
+        "AttributeMapping": {
+          "email": "email",
+          "email_verified": "email_verified"
+        }
+      },
+      "Condition": "HasKakaoProvider"
     },
     "ImageCachePolicy": {
       "Type": "AWS::CloudFront::CachePolicy",

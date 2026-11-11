@@ -61,6 +61,8 @@ type LoginPageProps = {
   facebookLoginEnabled?: boolean;
   naverLoginEnabled?: boolean;
   testAccountLoginEnabled?: boolean;
+  /** Kakao Login through Cognito (COGNITO_KAKAO_ENABLED), separate from the retired Privy custom:kakao flag. */
+  cognitoKakaoEnabled?: boolean;
 };
 
 const LOGIN_READINESS_TIMEOUT = "LOGIN_READINESS_TIMEOUT";
@@ -162,6 +164,7 @@ export function LoginPage({
   facebookLoginEnabled = false,
   naverLoginEnabled = false,
   testAccountLoginEnabled = false,
+  cognitoKakaoEnabled = false,
 }: LoginPageProps) {
   const router = useRouter();
   const cognitoAuth = useCognitoAuth();
@@ -291,10 +294,11 @@ export function LoginPage({
       }
     }
     if (cognitoAuth.enabled) {
-      if (provider !== "google" && provider !== "apple") return;
+      const cognitoProvider = provider === "custom:kakao" && cognitoKakaoEnabled ? "kakao" : provider;
+      if (cognitoProvider !== "google" && cognitoProvider !== "apple" && cognitoProvider !== "kakao") return;
       // 돌아온 첫 화면에서 세션 확인 전에 공개 값을 그리지 않게 표시를 남긴다. 로그인을 그만두면 다음 확인 때 지워진다.
       rememberSession(true);
-      window.location.assign(new URL(`/api/auth/cognito/start?${new URLSearchParams({ provider, returnTo, locale })}`, window.location.origin).href);
+      window.location.assign(new URL(`/api/auth/cognito/start?${new URLSearchParams({ provider: cognitoProvider, returnTo, locale })}`, window.location.origin).href);
       return;
     }
     if (oauthGuard.getSnapshot() !== "idle") return;
@@ -310,7 +314,7 @@ export function LoginPage({
         if (providerMeasurementRef.current === measurement) providerMeasurementRef.current = null;
         if (mountedRef.current) setError(loginErrorMessage);
       });
-  }, [cognitoAuth.enabled, returnTo, initOAuth, locale, loginErrorMessage, oauthGuard, restartOAuthPath, iosInstagram]);
+  }, [cognitoAuth.enabled, cognitoKakaoEnabled, returnTo, initOAuth, locale, loginErrorMessage, oauthGuard, restartOAuthPath, iosInstagram]);
 
   const startOtherOAuthLogin = useCallback((event: MouseEvent<HTMLButtonElement>) => {
     const provider = event.currentTarget.dataset.provider;
@@ -658,7 +662,7 @@ export function LoginPage({
           <ArrowRight />
         </button>
         {browserHandoffNotice}
-        {!cognitoAuth.enabled && kakaoLoginEnabled && <button className={styles.googleButton} type="button"
+        {(cognitoAuth.enabled ? cognitoKakaoEnabled : kakaoLoginEnabled) && <button className={styles.googleButton} type="button"
           disabled={!ready || authenticated || oauthLoading || oauthStarting || oauthRestartRequired}
           aria-busy={!oauthRestartRequired && (authenticated || oauthLoading || oauthStarting)}
           onClick={() => startOAuthLogin("custom:kakao")}>
