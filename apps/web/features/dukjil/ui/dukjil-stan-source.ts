@@ -30,6 +30,8 @@ export const dukjilStanSource = {
   stanGuide: { ko: "안내", en: "Guide" },
   // 대표 11/11: the hearts column's button (a full stamp page becomes a heart, after the rewarded ad).
   stanClaim: { ko: "받기", en: "Claim" },
+  // 사용자 12:26: with no rewarded ad unit (production today) the two wallet buttons read 준비 중, disabled.
+  stanPreparing: { ko: "준비 중", en: "Coming soon" },
   // E4·E5 (feedback E): the favorite's lucky draws, the cheer card and the six linked wallet cells.
   luckyOpensAt: { ko: "{0} 응모 시작", en: "Entries open {0}" },
   luckyClosesAt: { ko: "마감 {0}", en: "Closes {0}" },

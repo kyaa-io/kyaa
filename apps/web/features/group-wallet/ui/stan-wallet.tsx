@@ -42,7 +42,7 @@ function useRewardedAdReady() {
 
 /** 덕질 wallet (대표 11/11 10:37, 중간 버전 4cf1fee7b 구성): points gather into tickets the way stamps gather into hearts.
  *  Two columns read the same way — the result on top (응모권 N장 | 하트 N), the material under it (포인트 N/100P bar | 스탬프 N/9 slots),
- *  and each column's own button (교환 | 받기); both run behind the rewarded ad, so both stay disabled while no ad unit is set.
+ *  and each column's own button (교환 | 받기); both run behind the rewarded ad, so while no ad unit is set both are disabled and read 준비 중.
  *  1024+: a third column holds 안내 ›; below that the link sits in the heading row. */
 export function StanWallet({ locale, state, stamps, hearts, links, className, favoritePicker }: { locale: AppLocale; state: WalletCardState; stamps: StanSlot; hearts: StanSlot; links: { hearts: string; claim?: string }; className?: string; favoritePicker?: ReactNode }) {
   const w = walletCopy(locale), s = (key: Parameters<typeof dukjilText>[1], values?: unknown[]) => dukjilText(locale, key, values);
@@ -71,7 +71,7 @@ export function StanWallet({ locale, state, stamps, hearts, links, className, fa
           {material(w.points, points, typeof points === "number" ? <><span>{points.toLocaleString(locale)}</span>/{pointCost.toLocaleString(locale)}P</> : points === "locked" ? <FanLockedValue locale={locale} /> : "—")}
           <FanGauge size="sm" className={styles.gauge} value={ready ? Math.min(state.points, pointCost) : 0} max={pointCost} label={s("walletNextTicket", [pointCost])} />
         </div>
-        <FanAction variant="secondary" size="sm" fullWidth className={styles.action} disabled={!ready || (!pendingRequest.pending && (!affordable || !adReady))} onClick={() => setOpen(true)}>{locale === "ko" ? "교환" : w.exchange}</FanAction>
+        <FanAction variant="secondary" size="sm" fullWidth className={styles.action} disabled={!ready || (!pendingRequest.pending && (!affordable || !adReady))} onClick={() => setOpen(true)}>{adReady ? locale === "ko" ? "교환" : w.exchange : s("stanPreparing")}</FanAction>
       </div>
       {favoritePicker ? <div className={`${styles.column} ${styles.favoritePicker}`} data-cell="favorite-picker">{favoritePicker}</div> : <div className={styles.column} data-column="hearts">
         <Link className={styles.result} data-cell="hearts" href={links.hearts as Route}>
@@ -82,7 +82,7 @@ export function StanWallet({ locale, state, stamps, hearts, links, className, fa
           {material(s("stanFlowStamps"), stamps, typeof stamps === "number" ? <><span>{pageStamps}</span>/{STAMPS_PER_HEART}</> : stamps === "locked" ? <FanLockedValue locale={locale} /> : "—")}
           <FanGauge size="sm" className={styles.gauge} segments={STAMPS_PER_HEART} value={pageStamps} max={STAMPS_PER_HEART} label={s("stanFlowStamps")} />
         </div>
-        <FanAction variant="secondary" size="sm" fullWidth className={styles.action} {...(claimable ? { href: links.claim! } : { disabled: true })}>{s("stanClaim")}</FanAction>
+        <FanAction variant="secondary" size="sm" fullWidth className={styles.action} {...(claimable ? { href: links.claim! } : { disabled: true })}>{adReady ? s("stanClaim") : s("stanPreparing")}</FanAction>
       </div>}
       <div className={styles.guideColumn}>{guide("column")}</div>
     </div>}

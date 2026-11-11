@@ -87,15 +87,19 @@ it('대표 11/11: the tickets result links to my raffles and the points under it
  expect(card.querySelector('[data-cell="points"]')).toHaveTextContent('137/100P');
  expect(card.querySelector('[data-cell="points"] [role="progressbar"]')).toHaveAttribute('aria-valuenow','100');
 });
-it('대표 11/11: without an ad unit 교환 and 받기 stay disabled even when affordable or full',async()=>{
+it('대표 11/11 + 사용자 12:26: without an ad unit 교환 and 받기 read 준비 중 and stay disabled even when affordable or full',async()=>{
  adUnit.value=undefined;
  try{
   withFavorite();roadmapBody={passportId:uid(900),celebrityId:uid(901),hearts:3,pages:[{pageNo:1,slots:Array.from({length:9},(_,i)=>({slotNo:i+1,kind:null,state:'filled',stampId:null,clearedAt:null})),filled:9,claimable:true,claimed:false,locked:false,lockedReason:null}]};
   render(<GroupBenefitsScreen locale='ko'/>);await screen.findAllByText('137');
   await waitFor(()=>expect(document.querySelector('[data-cell="stamps"]')).toHaveTextContent('9/9'));
-  expect(screen.getByRole('button',{name:'교환'})).toBeDisabled();
-  expect(screen.getByRole('button',{name:'받기'})).toBeDisabled();
-  expect(screen.queryByRole('link',{name:'받기'})).toBeNull();
+  // 사용자 12:26: both read 준비 중 (no other notice) and stay disabled.
+  const wallet=document.querySelector('[data-wallet-card]') as HTMLElement;
+  const preparing=within(wallet).getAllByRole('button',{name:'준비 중'});
+  expect(preparing.map(b=>b.closest('[data-column]')?.getAttribute('data-column'))).toEqual(['tickets','hearts']);
+  expect(preparing.every(b=>(b as HTMLButtonElement).disabled)).toBe(true);
+  expect(within(wallet).queryByRole('button',{name:'교환'})).toBeNull();
+  expect(within(wallet).queryByRole('link',{name:'받기'})).toBeNull();
  }finally{adUnit.value='/123/rewarded';}
 });
 it('DUO: preserves the approved block order, four tiles and a single check-in action',async()=>{

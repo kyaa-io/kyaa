@@ -7,6 +7,18 @@ export const messages = {
   "stanWalletFlows": { "ja": "マイウォレット", "zh-Hans": "我的钱包", "zh-Hant": "我的錢包", "es": "Mi billetera", "id": "Dompet saya", "vi": "Ví của tôi", "th": "กระเป๋าของฉัน", "pt": "Minha carteira", "fr": "Mon portefeuille", "ru": "Мой кошелёк" },
   "stanGuide": { "ja": "案内", "zh-Hans": "说明", "zh-Hant": "說明", "es": "Guía", "id": "Panduan", "vi": "Hướng dẫn", "th": "คู่มือ", "pt": "Guia", "fr": "Guide", "ru": "Правила" },
   "stanClaim": { "ja": "受け取る", "zh-Hans": "领取", "zh-Hant": "領取", "es": "Recibir", "id": "Ambil", "vi": "Nhận", "th": "รับ", "pt": "Receber", "fr": "Recevoir", "ru": "Получить" },
+  "stanPreparing": {
+    "ja": "準備中",
+    "zh-Hans": "准备中",
+    "zh-Hant": "準備中",
+    "es": "Próximamente",
+    "id": "Segera hadir",
+    "vi": "Sắp mở",
+    "th": "เร็ว ๆ นี้",
+    "pt": "Em breve",
+    "fr": "Bientôt",
+    "ru": "Скоро"
+  },
   "missionsGroupMore": {
     "ja": "その他のミッション",
     "zh-Hans": "更多任务",

@@ -58,8 +58,22 @@ export const responseSecurityHeaders: ResponseHeader[] = [
 ];
 
 /** Runtime bucket names keep one image deployable across isolated environments. */
-export function awsStorageContentSecurityPolicy(config: { bucket?: string; region?: string; stage?: boolean; rewardedAds?: boolean; ga4?: boolean }): string {
+/** AdSense site ownership (사용자 12:26): the one adsbygoogle.js line every page carries, only on the production domain. */
+export const ADSENSE_CLIENT = "ca-pub-6764620785144038";
+export const ADSENSE_SCRIPT_SRC = `https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${ADSENSE_CLIENT}`;
+export const ADSENSE_ORIGIN = "https://kyaa.io";
+/** The viewer's origin as the proxy sees it; the snippet and its CSP origins open only for https://kyaa.io. */
+export function adsenseEnabled(viewerOrigin: string): boolean { return viewerOrigin === ADSENSE_ORIGIN; }
+
+export function awsStorageContentSecurityPolicy(config: { bucket?: string; region?: string; stage?: boolean; rewardedAds?: boolean; ga4?: boolean; adsense?: boolean }): string {
   let policy = contentSecurityPolicy;
+  // adsbygoogle.js and what it calls back to (Google's AdSense code snippet requirements).
+  if (config.adsense) {
+    policy = policy
+      .replace("https://challenges.cloudflare.com", "https://challenges.cloudflare.com https://pagead2.googlesyndication.com https://*.adtrafficquality.google")
+      .replace("frame-src ", "frame-src https://googleads.g.doubleclick.net https://tpc.googlesyndication.com https://*.adtrafficquality.google ")
+      .replace("connect-src 'self'", "connect-src 'self' https://pagead2.googlesyndication.com https://*.adtrafficquality.google");
+  }
   // GA4 origins open only where a GA4 stream is configured (GA4_MEASUREMENT_ID); gtag.js itself loads only after consent.
   if (config.ga4) {
     policy = policy
