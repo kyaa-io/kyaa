@@ -45,48 +45,10 @@ for (const [directory, metadata] of Object.entries(lock.packages)) {
   });
 }
 
-test("CDP EIP-712 policy retains its single-argument record schema", () => {
-  const require = createRequire(new URL("node_modules/@coinbase/cdp-sdk/package.json", root));
-  const { SignEvmTypedDataFieldCriterionSchema } = require("./_cjs/policies/evmSchema.js");
-  const value = {
-    type: "evmTypedDataField",
-    types: { types: { Message: [{ name: "text", type: "string" }] }, primaryType: "Message" },
-    conditions: [{ path: "text", match: "^hello$" }],
-  };
-  assert.deepEqual(SignEvmTypedDataFieldCriterionSchema.parse(value), value);
-  assert.equal(SignEvmTypedDataFieldCriterionSchema.safeParse({ ...value, types: { types: { Message: 7 }, primaryType: "Message" } }).success, false);
-});
-
-test("Privy and x402 entrypoints load with the patched Zod graph", async () => {
+test("remaining server Privy entrypoint loads after browser SDK removal", async () => {
   const { PrivyAPIError } = await import("@privy-io/node");
   assert.equal(typeof PrivyAPIError, "function");
-  const { APIError } = await import("@privy-io/api-base");
-  const value = { error: "invalid request", code: "invalid_data" };
-  assert.deepEqual(APIError.parse(value), value);
-  assert.deepEqual(APIError.parse({ error: "invalid request" }), { error: "invalid request" });
-  assert.equal(APIError.safeParse({ ...value, code: "unknown_code" }).success, false);
-  await import("x402/shared");
-  const { PaymentRequirementsSchema } = await import("x402/types");
-  for (const field of ["outputSchema", "extra"]) {
-    const record = { description: "example", properties: { amount: "string" } };
-    assert.deepEqual(PaymentRequirementsSchema.shape[field].parse(record), record);
-  }
-});
-
-test("Axios ignores inherited HTTP methods when making a default GET request", async () => {
-  const axios = createRequire(new URL("node_modules/@coinbase/cdp-sdk/package.json", root))("axios");
-  const original = Object.getOwnPropertyDescriptor(Object.prototype, "method");
-  Object.defineProperty(Object.prototype, "method", { value: "delete", configurable: true, writable: true });
-  try {
-    const response = await axios({
-      url: "https://example.invalid",
-      adapter: async (config) => ({ data: config.method, status: 200, statusText: "OK", headers: {}, config }),
-    });
-    assert.equal(response.data, "get");
-  } finally {
-    if (original) Object.defineProperty(Object.prototype, "method", original);
-    else delete Object.prototype.method;
-  }
+  for (const removed of ["node_modules/@coinbase/cdp-sdk", "node_modules/@privy-io/api-base", "node_modules/x402", "node_modules/@privy-io/react-auth"]) assert.equal(lock.packages[removed], undefined);
 });
 
 test("Tiptap keeps __proto__ inert without inheriting executable attributes", () => {

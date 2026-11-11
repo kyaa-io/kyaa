@@ -73,6 +73,8 @@ psql -X -v ON_ERROR_STOP=1 -f "$root_dir/supabase/tests/byus_day_rsvp_admin.sql"
 psql -X -v ON_ERROR_STOP=1 -f "$root_dir/supabase/tests/cognito_identity_bridge.sql"
 psql -X -v ON_ERROR_STOP=1 -f "$root_dir/supabase/tests/cognito_live_inventory.sql"
 bash "$root_dir/supabase/tests/cognito_live_inventory_concurrency.sh"
+psql -X -v ON_ERROR_STOP=1 -f "$root_dir/supabase/tests/kyaa_native_auth.sql"
+bash "$root_dir/supabase/tests/kyaa_native_auth_concurrency.sh"
 
 FAN_WEB_DISPOSABLE_DB_URL="postgresql:///byus_clean?host=${PGHOST}&port=${PGPORT}" node "$root_dir/supabase/tests/fan_web_notification_concurrency.mjs"
 
