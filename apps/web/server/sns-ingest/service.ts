@@ -64,22 +64,30 @@ export function createSnsIngestService(deps: SnsIngestDeps) {
     }));
     let saved = await save(draft);
     if (saved.status === "duplicate" || saved.status === "blocked") return item(saved.status, undefined, saved.noticeId);
-    if (saved.status === "held") return item("held", "ALREADY_HELD", saved.noticeId);
+    const observed = z.object({ status: z.enum(["unchanged", "recorded"]), revision: z.number().int().positive() }).strict().parse(
+      await deps.rpc("sns_ingest_record_source", { p_run_id: runId, p_notice_id: saved.noticeId, p_source: post }),
+    );
+    if (saved.status === "held") return item("held", observed.status === "unchanged" ? "ALREADY_HELD" : "SOURCE_UPDATED", saved.noticeId);
     const noticeId = saved.noticeId;
     const stored: { src: string; width: number; height: number }[] = [];
     try {
-      for (const url of [...images, ...(cover ? [cover] : [])] as URL[]) {
+      const urls = [...new Map(([...images, ...(cover ? [cover] : [])] as URL[]).map(url => [url.href, url])).values()];
+      for (const url of urls) {
         const image = await deps.processImage(await deps.fetchImage(url));
         const mediaId = randomUUID();
         const storagePath = `sns-ingest/${noticeId}/${mediaId}.webp`;
         const thumbnailPath = `sns-ingest/${noticeId}/${mediaId}-thumbnail.webp`;
-        await deps.rpc(cover === url ? "sns_ingest_register_video_thumbnail" : "sns_ingest_register_media", {
+        const registrations = [
+          ...(images.some(photo => photo?.href === url.href) ? ["sns_ingest_register_media"] : []),
+          ...(cover?.href === url.href ? ["sns_ingest_register_video_thumbnail"] : []),
+        ];
+        for (const registration of registrations) await deps.rpc(registration, {
           p_run_id: runId, p_notice_id: noticeId, p_media_id: mediaId, p_storage_path: storagePath, p_thumbnail_path: thumbnailPath,
           p_width: image.width, p_height: image.height, p_byte_size: image.bytes.byteLength, p_sha256: image.sha256, p_source_host: url.hostname,
         });
         await deps.upload(storagePath, image.bytes);
         await deps.upload(thumbnailPath, image.thumbnail);
-        if (cover !== url) stored.push({ src: `/api/public/notice-media/${mediaId}`, width: image.width, height: image.height });
+        if (images.some(photo => photo?.href === url.href)) stored.push({ src: `/api/public/notice-media/${mediaId}`, width: image.width, height: image.height });
       }
     } catch {
       return item("held", "IMAGE_FAILED", noticeId);
@@ -126,7 +134,7 @@ export function createSnsIngestService(deps: SnsIngestDeps) {
           if (items.some(existing => existing.slug === slug)) { items.push({ slug, sourceUrl: post.sourceUrl, status: "duplicate" }); continue; }
           if (attempted >= SNS_INGEST_PER_RUN_LIMIT) { items.push({ slug, sourceUrl: post.sourceUrl, status: "deferred", reason: "PER_RUN_LIMIT" }); continue; }
           const result = await ingestPost(runId, account.handle, post, slug);
-          if (result.status !== "duplicate" && result.status !== "blocked" && result.status !== "rejected" && result.reason !== "ALREADY_HELD") attempted += 1;
+          if (result.status !== "duplicate" && result.status !== "blocked" && result.status !== "rejected" && result.reason !== "ALREADY_HELD" && result.reason !== "SOURCE_UPDATED") attempted += 1;
           items.push(result);
         }
       } catch (error) {

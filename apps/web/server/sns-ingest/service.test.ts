@@ -19,6 +19,7 @@ function fakeDatabase(options: { tamper?: (body: unknown) => unknown; account?: 
       case "sns_ingest_source_context":
         return options.account === null ? null : { celebrityId, accountUrl: options.account ?? "https://www.instagram.com/wena/" };
       case "sns_ingest_begin_run": return runId;
+      case "sns_ingest_record_source": return { status: "recorded", revision: 1 };
       case "sns_ingest_save_draft": {
         const existing = notices.get(args.p_slug);
         if (existing?.status === "published") return { status: "duplicate", noticeId: existing.id, revision: existing.revision };
@@ -77,6 +78,18 @@ describe("sns ingest service", () => {
     expect(rpc).toHaveBeenCalledWith("sns_ingest_register_video_thumbnail", expect.objectContaining({ p_source_host: "scontent.cdninstagram.com" }));
     expect(JSON.stringify([...notices.values()][0]?.body)).not.toContain("notice-media");
     expect(rpc.mock.invocationCallOrder[rpc.mock.calls.findIndex(([name]) => name === "sns_ingest_register_video_thumbnail")]).toBeLessThan(vi.mocked(deps.upload).mock.invocationCallOrder[0]!);
+  });
+  it("downloads and uploads a repeated original URL only once, including a shared video cover", async () => {
+    const { deps, rpc } = fakeDatabase();
+    const url = "https://scontent.cdninstagram.com/shared.jpg";
+    const result = await createSnsIngestService(deps).ingest(request([post("DQabc123xyz", {
+      images: [{ url }, { url }], videoThumbnail: { url },
+    })]), "c");
+    expect(result.items[0]).toMatchObject({ status: "held", reason: "PHOTO_REVIEW_REQUIRED" });
+    expect(deps.fetchImage).toHaveBeenCalledTimes(1);
+    expect(deps.upload).toHaveBeenCalledTimes(2);
+    expect(rpc.mock.calls.filter(([name]) => name === "sns_ingest_register_media")).toHaveLength(1);
+    expect(rpc.mock.calls.filter(([name]) => name === "sns_ingest_register_video_thumbnail")).toHaveLength(1);
   });
   it("rejects an untrusted video cover before any download or draft write", async () => {
     const { deps, notices } = fakeDatabase();

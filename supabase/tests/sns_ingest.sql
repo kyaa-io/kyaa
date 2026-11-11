@@ -21,7 +21,7 @@ begin
 
   foreach fn in array array['public.sns_ingest_source_context(text,text)','public.sns_ingest_begin_run(uuid,text,text,uuid,text)',
     'public.sns_ingest_save_draft(uuid,text,text,timestamptz,text,jsonb)','public.sns_ingest_publish(uuid,uuid,integer)',
-    'public.sns_ingest_finish_run(uuid,jsonb,boolean)','public.sns_ingest_read_draft(uuid)'] loop
+    'public.sns_ingest_record_source(uuid,uuid,jsonb)','public.sns_ingest_finish_run(uuid,jsonb,boolean)','public.sns_ingest_read_draft(uuid)'] loop
     foreach role_name in array array['anon','authenticated'] loop
       perform pg_temp.expect(not has_function_privilege(role_name,fn,'execute'),fn||' is service-only');
     end loop;
@@ -29,6 +29,7 @@ begin
   end loop;
   foreach role_name in array array['anon','authenticated','service_role'] loop
     perform pg_temp.expect(not has_table_privilege(role_name,'public.sns_ingest_runs','select,insert,update,delete'),'runs are private');
+    perform pg_temp.expect(not has_table_privilege(role_name,'public.sns_ingest_source_revisions','select,insert,update,delete'),'raw source revisions are private');
   end loop;
 
   perform pg_temp.expect(not has_function_privilege('authenticated','public.reserve_s3_storage_object(text,text,text,bigint,text)','execute'),'S3 reservation stays private');
@@ -45,6 +46,12 @@ begin
     perform public.reserve_s3_storage_object('mobile-media','unreserved/large.mp4','video/mp4',209715201,null);
     raise exception 'oversize accepted';
   exception when others then perform pg_temp.expect(sqlerrm='S3_INVALID_UPLOAD','above 200 MiB rejected'); end;
+
+  insert into public.app_users(id,privy_user_id,verified_email,status) values('fa400000-0000-4000-8000-0000000000f1','did:privy:sns-size-test','sns-size-test@byus.test','active');
+  saved:=public.reserve_owned_mobile_media('fa400000-0000-4000-8000-0000000000f1','video','fan_post','video/mp4',104857600,extensions.gen_random_uuid());
+  perform public.reserve_s3_mobile_upload(saved->>'storagePath');
+  perform pg_temp.expect(exists(select 1 from public.s3_storage_objects where bucket_id='mobile-media'
+    and name=saved->>'storagePath' and (metadata->>'size')::bigint=104857600),'100 MiB fan board video reservation succeeds end to end');
 
   perform pg_temp.expect(public.sns_ingest_source_context('sns-ingest-test','instagram')->>'accountUrl'=ig,'registered account is the source');
   perform pg_temp.expect(public.sns_ingest_source_context('sns-ingest-test','tiktok') is null,'unregistered platform has no source');
@@ -86,6 +93,10 @@ begin
   perform pg_temp.expect(public.authorize_public_official_media_read(media,'original') is null,'one ready object is insufficient');
   update public.s3_storage_objects set state='ready' where name=(select thumbnail_path from public.sns_ingest_media where id=media);
   perform pg_temp.expect(public.authorize_public_official_media_read(media,'original')->>'storagePath' like 'sns-ingest/%','published media is public');
+  failed:=false;
+  begin perform public.sns_ingest_record_source(run,notice,'{"sourceUrl":"https://www.instagram.com/ingest.test/p/A/","text":"원문","images":[]}');
+  exception when others then failed:=sqlerrm='SNS_INGEST_NOTICE_NOT_WRITABLE'; end;
+  perform pg_temp.expect(failed,'published source cannot be revised by ingest');
   saved:=public.sns_ingest_save_draft(run,'instagram-0123456789abcdef','https://www.instagram.com/ingest.test/p/A/',now(),'바뀐 제목',doc);
   perform pg_temp.expect(saved->>'status'='duplicate','published post is a duplicate');
   perform pg_temp.expect((select title from public.celebrity_notice_localizations where notice_id=notice and locale='ko')='원문','published post is unchanged');

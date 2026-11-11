@@ -1,3 +1,5 @@
+> 후속: 원문 변경 감지·별도 원문 리비전 보관 요구는 work/sns-gallery-source-revisions/result.md에서 이어간다. 이 문서는 005f5ef1f 당시 수정·검증 기록이다.
+
 # SNS-REVIEW-1920 수정
 
 84812056e의 GATE-READY를 철회한다. 이전 안전성 설명은 잘못됐다. 22002000 적용만으로 secret 유무와 관계없이 mobile-media 상한이 200MiB에서 50MiB로 회귀하고, 재수집이 검수 편집과 사진을 훼손할 수 있었다.

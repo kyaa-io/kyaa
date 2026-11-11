@@ -15,7 +15,7 @@ try {
   cmd('pg_ctl', ['-D', join(dir, 'data'), '-l', join(dir, 'postgres.log'), '-o', `-h 127.0.0.1 -p ${port} -k ${join(dir, 'socket')}`, 'start']); started = true;
   sql(`create role anon; create role authenticated; create role service_role;
     create schema storage; create table storage.buckets(id text primary key,file_size_limit bigint,allowed_mime_types text[]);
-    insert into storage.buckets values('mobile-media',8388608,array['image/webp']);
+    insert into storage.buckets values('mobile-media',52428800,array['image/webp','video/mp4']);
     create table public.app_users(id uuid primary key,status text);
     create table public.content_assets(id uuid primary key,app_user_id uuid,storage_path text,byte_size bigint,mime_type text,sha256 text,deleted_at timestamptz,cleanup_requested_at timestamptz,storage_deleted_at timestamptz,upload_settled_at timestamptz,upload_expires_at timestamptz);
     create table public.fan_private_uploads(bucket text,object_path text,expires_at timestamptz);
@@ -36,6 +36,9 @@ try {
   assert.throws(() => sql(`select reserve_s3_storage_object('fan-content-assets','unreserved','image/webp',52428801,null)`), /S3_INVALID_UPLOAD/);
   for (const size of [52428801, 104857600, 209715200]) assert.throws(() => sql(`select reserve_s3_storage_object('mobile-media','unreserved','image/webp',${size},null)`), /S3_UPLOAD_NOT_RESERVED/);
   assert.throws(() => sql(`select reserve_s3_storage_object('mobile-media','unreserved','image/webp',209715201,null)`), /S3_INVALID_UPLOAD/);
+  sql(`insert into mobile_media_assets(storage_path,purpose,kind,state) values('fan-video/100m.mp4','fan_post','video','uploading');
+    select reserve_s3_storage_object('mobile-media','fan-video/100m.mp4','video/mp4',104857600,null);`);
+  assert.equal(sql(`select metadata->>'size' from s3_storage_objects where name='fan-video/100m.mp4'`), '104857600');
   const notice = '10000000-0000-4000-8000-000000000001', media = '20000000-0000-4000-8000-000000000002', run = '30000000-0000-4000-8000-000000000003';
   const href = 'https://www.tiktok.com/@fixture/video/7696850953064189185', path = `sns-ingest/${notice}/${media}.webp`, thumbnail = path.replace('.webp', '-thumbnail.webp');
   sql(`insert into celebrity_notices values('${notice}','draft',null,null,false); insert into sns_ingest_posts values('${notice}','${run}','${href}');

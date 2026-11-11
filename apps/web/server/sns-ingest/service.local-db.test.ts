@@ -28,8 +28,9 @@ const deps: SnsIngestDeps = {
   upload: vi.fn(async () => undefined),
   now: () => new Date(),
 };
+const sourcePublishedAt = new Date().toISOString();
 const request = (text: string) => snsIngestRequestSchema.parse({ celebritySlug: "sns-ingest-local", platform: "instagram", posts: [{
-  sourceId: "DQlocal0001", sourceUrl: "https://www.instagram.com/ingest.local/p/DQlocal0001/", sourcePublishedAt: new Date().toISOString(),
+  sourceId: "DQlocal0001", sourceUrl: "https://www.instagram.com/ingest.local/p/DQlocal0001/", sourcePublishedAt,
   text, images: [{ url: "https://scontent.cdninstagram.com/a.jpg" }, { url: "https://scontent.cdninstagram.com/b.jpg" }],
 }] });
 
@@ -57,14 +58,28 @@ describe.skipIf(!enabled)("sns ingest on the local database", () => {
     expect(stored).toMatchObject({ status: "draft", title: "로컬 원문 💜" });
     expect(stored.images[0]).toMatch(/^\/api\/public\/notice-media\//);
     const id = first.items[0]!.noticeId!;
-    sql(`update celebrity_notices set revision=revision+1 where id='${id}'; update celebrity_notice_localizations set title='검수자 편집' where notice_id='${id}'`);
+    sql(`update celebrity_notices set revision=revision+1 where id='${id}'; update celebrity_notice_localizations set title='검수자 편집',body_json=jsonb_set(body_json,'{content}',(body_json->'content')||'[{"type":"paragraph","content":[{"type":"text","text":"검수자 메모"}]}]'::jsonb) where notice_id='${id}'`);
+    const reviewed = sql(`select jsonb_agg(to_jsonb(l) order by locale) from celebrity_notice_localizations l where notice_id='${id}'`);
     const snapshot = sql(`select row_to_json(n) from celebrity_notices n where id='${id}'`);
     for (let i = 0; i < 8; i++) {
-      const result = await service.ingest(request("바뀐 캡션"), crypto.randomUUID());
+      const result = await service.ingest(request("로컬 원문 💜\n#kyaa"), crypto.randomUUID());
       expect(result.items[0]).toMatchObject({ status: "held", reason: "ALREADY_HELD", noticeId: id });
     }
     expect(sql(`select row_to_json(n) from celebrity_notices n where id='${id}'`)).toBe(snapshot);
     expect(sql(`select title from celebrity_notice_localizations where notice_id='${id}' and locale='en'`)).toBe("검수자 편집");
+    expect(sql(`select count(*) from sns_ingest_media where notice_id='${id}'`)).toBe("2");
+    expect(sql(`select jsonb_agg(to_jsonb(l) order by locale) from celebrity_notice_localizations l where notice_id='${id}'`)).toBe(reviewed);
+    expect(sql(`select count(*) from sns_ingest_source_revisions where notice_id='${id}'`)).toBe("1");
+    for (let i = 0; i < 8; i++) {
+      const changed = await service.ingest(request("바뀐 원문 💜\n#new"), crypto.randomUUID());
+      expect(changed.items[0]).toMatchObject({ status: "held", reason: i === 0 ? "SOURCE_UPDATED" : "ALREADY_HELD", noticeId: id });
+    }
+    expect(sql(`select count(*) from sns_ingest_source_revisions where notice_id='${id}'`)).toBe("2");
+    expect(sql(`select source_payload->>'text' from sns_ingest_source_revisions where notice_id='${id}' and revision=1`)).toBe("로컬 원문 💜\n#kyaa");
+    expect(sql(`select source_payload->>'text' from sns_ingest_source_revisions where notice_id='${id}' and revision=2`)).toBe("바뀐 원문 💜\n#new");
+    expect(sql(`select count(distinct source_hash) from sns_ingest_source_revisions where notice_id='${id}'`)).toBe("2");
+    expect(sql(`select jsonb_agg(to_jsonb(l) order by locale) from celebrity_notice_localizations l where notice_id='${id}'`)).toBe(reviewed);
+    expect(sql(`select row_to_json(n) from celebrity_notices n where id='${id}'`)).toBe(snapshot);
     expect(sql(`select count(*) from sns_ingest_media where notice_id='${id}'`)).toBe("2");
     expect(deps.fetchImage).toHaveBeenCalledTimes(2);
     expect(deps.upload).toHaveBeenCalledTimes(4);
