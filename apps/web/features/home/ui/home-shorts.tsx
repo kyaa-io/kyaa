@@ -1,6 +1,7 @@
 "use client";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import { FanIcon } from "@/components/fan-ui/fan-icon";
+import { CreatorAvatar } from "@/components/fan-ui/creator-avatar";
 import { mediaFillClass } from "@/components/fan-ui/media-fill";
 
 import { useEffect, useRef, useState } from "react";
@@ -48,7 +49,10 @@ export function HomeShorts({ items, locale, layout = "rail", initialVideo, offse
       {(layout === "rail" ? items.slice(0, 6) : items).map((item, i) => <li key={item.id} className={styles.item} data-row="short">
         <FanAction variant="text" type="button" className={styles.card} onClick={() => setIndex(i)}>
           <span className={`${styles.cover} ${mediaFillClass}`}><MediaThumbnail image={shortCover(item)} href={item.href} kind="videos" locale={locale} backdrop /><span className={styles.play} aria-hidden="true"><FanIcon icon={Play} filled /></span></span>
-          <span className={styles.title}>{item.title}</span>
+          <span className={styles.caption}>
+            <CreatorAvatar slug={item.creator.slug} src={null} photos={undefined} size={32} />
+            <span className={styles.details}><span className={styles.title}>{item.title}</span><span className={styles.meta}>{item.creator.name} · {item.platform === "tiktok" ? "TikTok" : "YouTube"}</span></span>
+          </span>
         </FanAction>
       </li>)}
     </ul>
