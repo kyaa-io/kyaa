@@ -43,7 +43,7 @@ function useRewardedAdReady() {
 
 /** 덕질 wallet (대표 11/11 10:37 구성, 사용자 13:28 imagegen 시안 채택 — board/tasks/wallet-redesign-1130/mockups): two columns, tickets | hearts.
  *  Each column is the result box (big 3D asset + 응모권 N장 | 하트 N), a hairline, the material row (3D coin | stamp, name, big count,
- *  thick bar with the count inside and a 완료! stamp when full, the rule line) and ONE button (교환 | 받기 with the small video icon = ad).
+ *  thick bar with the count inside and 교환 가능 | 받기 가능 inside it when full, the rule line) and ONE button (교환 | 받기 with the small video icon = ad).
  *  Both buttons run behind the rewarded ad, so while no ad unit is set they are disabled and read 준비 중. The guide is a ? next to the heading.
  *  390: the columns stack; 1024+: side by side in one card. */
 export function StanWallet({ locale, state, stamps, hearts, links, className, favoritePicker }: { locale: AppLocale; state: WalletCardState; stamps: StanSlot; hearts: StanSlot; links: { hearts: string; claim?: string }; className?: string; favoritePicker?: ReactNode }) {
@@ -60,12 +60,11 @@ export function StanWallet({ locale, state, stamps, hearts, links, className, fa
   const claimable = full && Boolean(links.claim) && adReady;
   const asset = (name: keyof typeof WALLET_ASSETS, size: number, className: string) => <img className={className} src={`${WALLET_ASSETS[name]}-160.webp`} srcSet={`${WALLET_ASSETS[name]}-160.webp 1x, ${WALLET_ASSETS[name]}-512.webp 3x`} width={size} height={size} alt="" />;
   /** Thick round bar with the count inside (the filled part repeats it in white); a full bar gets the 완료! stamp at its end. */
-  const bar = (label: string, slot: StanSlot, value: number, max: number, current: string, total: string) => slot === "loading" ? <FanSkeleton width="100%" height={24} /> : slot === "locked" ? <FanLockedValue locale={locale} /> : <span className={styles.barRow}>
+  const bar = (label: string, slot: StanSlot, value: number, max: number, current: string, total: string, doneText?: string, full = max > 0 && value >= max) => slot === "loading" ? <FanSkeleton width="100%" height={24} /> : slot === "locked" ? <FanLockedValue locale={locale} /> : <span className={styles.barRow}>
     <span className={styles.bar} role="progressbar" aria-label={label} aria-valuemin={0} aria-valuemax={max} aria-valuenow={Math.min(value, max)} aria-valuetext={`${current} / ${total}`}>
-      <span className={styles.barText} aria-hidden="true"><span>{current}</span> / {total}</span>
-      <span className={styles.barFill} style={{ clipPath: `inset(0 ${100 - (max > 0 ? Math.min(value, max) / max : 0) * 100}% 0 0 round 999px)` }} aria-hidden="true"><span className={styles.barText}>{current} / {total}</span></span>
+      <span className={styles.barText} aria-hidden="true">{full ? doneText : `${current} / ${total}`}</span>
+      <span className={styles.barFill} style={{ clipPath: `inset(0 ${100 - (max > 0 ? Math.min(value, max) / max : 0) * 100}% 0 0 round 999px)` }} aria-hidden="true"><span className={styles.barText}>{full ? doneText : `${current} / ${total}`}</span></span>
     </span>
-    {max > 0 && value >= max ? <span className={styles.stamp}>{s("stanBarDone")}</span> : null}
   </span>;
   /** One button per column. Both run behind the rewarded ad (the small video icon says so); with no ad unit it is the gray 준비 중. */
   const action = (name: string, enabled: boolean, extra: { onClick: () => void } | { href: string } | null) => <FanAction variant="primary" className={styles.reward} {...(enabled && extra ? extra : { disabled: true })} leadingIcon={adReady || enabled ? <SquarePlay size={22} strokeWidth={2} aria-hidden="true" /> : undefined}>{adReady || enabled ? name : s("stanPreparing")}</FanAction>;
@@ -83,7 +82,7 @@ export function StanWallet({ locale, state, stamps, hearts, links, className, fa
           {asset("coin", 56, styles.asset)}
           <span className={styles.name}>{w.points}</span>
           <span className={styles.amount}><Value locale={locale} slot={points} unit="P" /></span>
-          <div className={styles.progress}>{bar(s("walletNextTicket", [pointCost]), points, ready ? state.points : 0, pointCost, ticketText, `${n(pointCost)}P`)}</div>
+          <div className={styles.progress}>{bar(s("walletNextTicket", [pointCost]), points, ready ? state.points : 0, pointCost, ticketText, `${n(pointCost)}P`, s("walletExchangeReady"))}</div>
           <span className={styles.rule}>{s("stanRuleTicket", [pointCost])}</span>
           {action(locale === "ko" ? "교환" : w.exchange, ready && (Boolean(pendingRequest.pending) || (affordable && adReady)), { onClick: () => setOpen(true) })}
         </div>
@@ -97,7 +96,7 @@ export function StanWallet({ locale, state, stamps, hearts, links, className, fa
           {asset("stamp", 56, styles.asset)}
           <span className={styles.name}>{s("stanFlowStamps")}</span>
           <span className={styles.amount}><Value locale={locale} slot={stamps} unit={locale === "ko" ? "개" : undefined} /></span>
-          <div className={styles.progress}>{bar(s("stanFlowStamps"), stamps, pageStamps, STAMPS_PER_HEART, typeof stamps === "number" ? String(pageStamps) : "—", String(STAMPS_PER_HEART))}</div>
+          <div className={styles.progress}>{bar(s("stanFlowStamps"), stamps, pageStamps, STAMPS_PER_HEART, typeof stamps === "number" ? String(pageStamps) : "—", String(STAMPS_PER_HEART), s("stanClaimReady"))}</div>
           <span className={styles.rule}>{s("stanRuleHeart", [STAMPS_PER_HEART])}</span>
           {action(s("stanClaim"), claimable, links.claim ? { href: links.claim } : null)}
         </div>
