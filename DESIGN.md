@@ -2266,6 +2266,8 @@ At the user's request, registered Changha identity and hero images use the unedi
 - 홈 GGGI 배너 사진: 11/03에 바꾼 인스타 사진(`celebrities/changha/gggi-20261030.jpg`)에서 처음 고른 `gggi/changha-event-20261026.webp`(3:2)로 되돌림, 캠페인 열 `object-position:75% 30%`. 팬페이지 `gggi-event-entry`의 사진은 그대로. 사유: 대표 02:15.
 - MY 패스포트 표지 칸 PC 380→560px(1024+). 사유: 대표 02:15 "MY에는 패스포트 UI를 잘 보여주면".
 
+HEADER-CHIP-1456 (2026-11-11): 헤더 등급·하트·포인트 칩은 팝오버 없이 `/my`로 가는 링크 하나이고, 값이 바뀌면 `RollingNumber`(components/fan-ui, 자리별 세로 롤 600ms 감속, 증가 위·감소 아래, reduced-motion 즉시)로 넘어가며 칩 테두리가 브랜드 분홍으로 1회 깜빡인다(첫 로드 제외). 모임 목록 모바일 출석 플로팅 원형 버튼은 삭제(PC 카드 유지). 사유: 대표 2026-11-11 14:50.
+
 2026-11-11 럭키드로우 카드: 사용자 요청으로 1024px 이상에서는 캡슐 기계를 왼쪽, 안내와 행동을 오른쪽에 세로 가운데로 배치한다. 기계 영역과 안내 영역의 간격은 `--space-4`이며 1024px 미만 배치는 유지한다. 소유자는 `features/groups/ui/duo-lucky.module.css`다.
 
 2026-11-11 럭키드로우 지난 목록: 사용자 요청으로 최애의 실제 종료된 추첨을 최신순 최대 3개 표시한다. 1024px 이상은 기계와 안내 오른쪽에 `FanPostRow` 목록을 두고, 모바일은 카드 아래 가로 스크롤로 둔다. 항목이 없거나 조회할 최애가 없으면 목록을 숨긴다. 기존 추첨 API와 링크를 사용한다.

@@ -6,6 +6,7 @@ vi.mock("@/features/groups/ui/use-group-resource", () => ({ useGroupRequest: () 
 vi.mock("@/features/selected-bias/ui/selected-bias-chip", () => ({ SelectedBiasChip: () => <span data-testid="chip" /> }));
 vi.mock("@/features/groups/ui/group-header-account", () => ({ GroupHeaderAccount: () => <span data-testid="account" /> }));
 vi.mock("./fan-header-status", () => ({ FanHeaderStatus: () => <button data-header-status="" aria-expanded="false" /> }));
+vi.mock("@/features/group-social/header-dm-link", () => ({ HeaderDmLink: () => <span data-testid="dm" /> }));
 vi.mock("./fan-language-switch", () => ({ FanLanguageSwitch: () => <span data-testid="language" /> }));
 vi.mock("next/navigation", () => ({ usePathname: () => "/", useSearchParams: () => new URLSearchParams(), useRouter: () => ({ push: () => undefined }) }));
 import { GroupHeaderActions } from "./fan-app-shell";
