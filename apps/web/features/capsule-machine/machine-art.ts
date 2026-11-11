@@ -614,14 +614,14 @@ export async function createCapsuleEngine(canvas: HTMLCanvasElement, options: Ca
       await tween(160, (k) => { crankArm.rotation.z = r0 + .18 * k; }, ease.outCubic);
       if (!alive()) return [];
       let lastJolt = 0;
-      await tween(count === 1 ? 1700 : 2300, (k, raw) => {
+      await tween(preview ? 3400 : count === 1 ? 1700 : 2300, (k, raw) => {
         crankArm.rotation.z = r0 + .18 * (1 - Math.min(1, raw * 6)) - total * k;
         if (raw - lastJolt > .12) { lastJolt = raw; jolt(.08); }
       }, ease.inOutQuad);
       if (!alive()) return [];
       await tween(260, (k) => { crankArm.rotation.z = r0 - total - .12 * Math.sin(k * Math.PI); }, ease.outCubic);
       if (!alive()) return [];
-      await tumble(count === 1 ? 2300 : 2700); // the drum turns and the capsules mix
+      await tumble(preview ? 4600 : count === 1 ? 2300 : 2700); // the drum turns and the capsules mix
       if (!alive()) return [];
       await wait(250);
       if (!alive()) return [];
