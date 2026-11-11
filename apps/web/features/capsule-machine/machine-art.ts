@@ -569,19 +569,20 @@ export async function createCapsuleEngine(canvas: HTMLCanvasElement, options: Ca
   function loop(now: number) {
     if (!running) return;
     if (halfRate && ++halfTick % 2 === 0) { rafId = requestAnimationFrame(loop); return; }
-    const dt = prev ? Math.min(.05, (now - prev) / 1000) : 0; prev = now; acc += dt;
+    const elapsed = prev ? Math.max(0, (now - prev) / 1000) : 0;
+    const dt = Math.min(.05, elapsed); prev = now; acc += dt;
     while (acc > 1 / 120) { physics(1 / 120); acc -= 1 / 120; }
     highlight.rotation.y = Math.sin(now / 1000 * .6) * .12; // only the light on the glass moves; the machine stays put
     idleStep?.(dt);
     const current = tasks; tasks = [];
     for (const task of current) if (task(dt)) tasks.push(task);
     renderer.render(scene, camera);
-    fpsFrames++; fpsTime += dt;
+    fpsFrames++; fpsTime += elapsed;
     // Under 30 fps on average: only the shadow map drops to 1024; resolution and staging stay (dev notes 4).
     if (fpsTime >= 2) { if (fpsFrames / fpsTime < 30 && key.shadow.mapSize.x > 1024) { key.shadow.mapSize.set(1024, 1024); key.shadow.map?.dispose(); key.shadow.map = null; } fpsFrames = 0; fpsTime = 0; }
     if (idleStep) {
-      if (settled < 4) settled += dt; else {
-        stallFrames++; stallTime += dt;
+      if (settled < 4) settled += elapsed; else {
+        stallFrames++; stallTime += elapsed;
         if (stallTime >= 4) {
           const avg = stallFrames / stallTime;
           if (avg < 30 && key.shadow.mapSize.x <= 1024) { if (halfRate && avg < 24) { running = false; options.onStall?.(); return; } halfRate = true; }

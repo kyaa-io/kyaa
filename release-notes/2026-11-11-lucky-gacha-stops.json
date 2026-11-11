@@ -1,0 +1,14 @@
+{
+  "changes": [
+    "화면을 벗어났다가 돌아오면 럭키드로우 기계가 다시 움직이도록 고쳤어요.",
+    "기기에서 움직임을 재생하기 어려울 때는 멈춘 장면 대신 준비된 그림을 보여 줘요.",
+    "첨부 이미지는 실제 회원 정보가 없는 로컬 검증 화면이에요."
+  ],
+  "path": "/benefits",
+  "images": [
+    "release-notes/images/2026-11-11-lucky-gacha-stops-390.png",
+    "release-notes/images/2026-11-11-lucky-gacha-resumed-390.png",
+    "release-notes/images/2026-11-11-lucky-gacha-stops-1440.png",
+    "release-notes/images/2026-11-11-lucky-gacha-resumed-1440.png"
+  ]
+}

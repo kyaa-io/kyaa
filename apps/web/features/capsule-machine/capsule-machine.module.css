@@ -6,6 +6,7 @@
 .still, .canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
 .still { object-fit: cover; object-position: 50% 50%; transition: opacity var(--motion-control) var(--motion-easing); }
 .still[data-hidden] { opacity: 0; }
+.canvas[data-context-lost] { visibility: hidden; }
 
 .sparkles { position: absolute; inset: 0; pointer-events: none; }
 .sparkles svg { position: absolute; width: 14px; height: 14px; color: var(--color-accent); fill: currentColor; stroke-width: 0; opacity: 0; animation: capsuleTwinkle 3.2s ease-in-out infinite; }
