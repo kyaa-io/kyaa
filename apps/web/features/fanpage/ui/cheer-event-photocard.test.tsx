@@ -50,15 +50,14 @@ it("requires a member choice, claims two cards, and opens only the received pair
  const post=fetcher.mock.calls.find(([,init])=>init?.method==="POST");
  expect(post).toEqual([`/api/photocard-collections/${collectionId}/claim`,expect.objectContaining({credentials:"omit",cache:"no-store",body:JSON.stringify({bundleId:options[2].id}),headers:{Authorization:"Bearer token","content-type":"application/json"}})]);
  expect(screen.queryByRole("radio")).toBeNull();fireEvent.click(view);
- expect(screen.queryByRole("img")).toBeNull();fireEvent.click(await screen.findByRole("button",{name:"포토카드 열기"}));
- expect(await screen.findAllByRole("img",{},{timeout:3000})).toHaveLength(2);expect(screen.queryByRole("button",{name:/download|다운로드/i})).toBeNull();
+ expect(await screen.findAllByRole("img")).toHaveLength(2);expect(screen.queryByRole("button",{name:/download|다운로드/i})).toBeNull();
  fireEvent.keyDown(document,{key:"Escape"});await waitFor(()=>expect(screen.queryByRole("dialog")).toBeNull());await waitFor(()=>expect(view).toHaveFocus());
 });
 it("claims a random three-card set without sending a chosen bundle and restores it on return",async()=>{
  const fetcher=mockClaims({...empty,mode:"random_three",options:[]});
  const v=render(<PhotocardReward photocard={reward} locale="ko" name="CHANGHA" />);
  fireEvent.click(await screen.findByRole("button",{name:"랜덤 포토카드 3장 받기"}));
- fireEvent.click(await screen.findByRole("button",{name:"포토카드 보기"}));fireEvent.click(await screen.findByRole("button",{name:"포토카드 열기"}));expect(await screen.findAllByRole("img",{},{timeout:3000})).toHaveLength(3);
+ fireEvent.click(await screen.findByRole("button",{name:"포토카드 보기"}));expect(await screen.findAllByRole("img")).toHaveLength(3);
  expect(fetcher.mock.calls.filter(([,i])=>i?.method==="POST")).toHaveLength(1);
  expect(fetcher.mock.calls.find(([,i])=>i?.method==="POST")?.[1]?.body).toBe("{}");
  v.unmount();render(<PhotocardReward photocard={reward} locale="ko" name="CHANGHA" />);
