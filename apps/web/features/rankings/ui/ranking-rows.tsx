@@ -72,35 +72,63 @@ const reducedMotion = () => typeof window !== "undefined" && typeof window.match
 const inView = (node: HTMLElement) => { const box = node.getBoundingClientRect(); return box.height === 0 || (box.bottom > 0 && box.top < window.innerHeight); };
 const RING_MS = 600;
 /** The pink ring runs once around the row's border (a rotating arc seen through a 2px ring mask: transform and opacity only, 600ms). Reduced motion: the whole ring shows for 300ms and goes. */
-function ringPulse(node: HTMLElement) {
+function ringPulse(node: HTMLElement, delay = 0) {
   const ring = node.querySelector<HTMLElement>("[data-pulse]");
   const sweep = ring?.firstElementChild as HTMLElement | null | undefined;
   if (!ring || !sweep || typeof ring.animate !== "function") return;
   if (reducedMotion()) {
     ring.dataset.still = "";
-    ring.animate([{ opacity: 0 }, { opacity: 1, offset: 0.3 }, { opacity: 1, offset: 0.7 }, { opacity: 0 }], { duration: 300 }).onfinish = () => { delete ring.dataset.still; };
+    ring.animate([{ opacity: 0 }, { opacity: 1, offset: 0.3 }, { opacity: 1, offset: 0.7 }, { opacity: 0 }], { duration: 300, delay }).onfinish = () => { delete ring.dataset.still; };
     return;
   }
-  ring.animate([{ opacity: 0 }, { opacity: 1, offset: 0.12 }, { opacity: 1, offset: 0.8 }, { opacity: 0 }], { duration: RING_MS, easing: "linear" });
-  sweep.animate([{ transform: "rotate(0deg)" }, { transform: "rotate(360deg)" }], { duration: RING_MS, easing: "cubic-bezier(.4, 0, .2, 1)" });
+  ring.animate([{ opacity: 0 }, { opacity: 1, offset: 0.12 }, { opacity: 1, offset: 0.8 }, { opacity: 0 }], { duration: RING_MS, easing: "linear", delay });
+  sweep.animate([{ transform: "rotate(0deg)" }, { transform: "rotate(360deg)" }], { duration: RING_MS, easing: "cubic-bezier(.4, 0, .2, 1)", delay });
+}
+const RING_STAGGER_MS = 70;
+const SEEN_PREFIX = "kyaa:rank-seen2:";
+/** What the visitor last saw in one list and period: each row's value and rank, by row key. */
+type Seen = { values: Map<string, number>; ranks: Map<string, number> };
+function readSeen(memory: string): Seen | null {
+  try {
+    const raw = window.localStorage.getItem(SEEN_PREFIX + memory);
+    const parsed: unknown = raw ? JSON.parse(raw) : null;
+    if (!parsed || typeof parsed !== "object" || !("v" in parsed) || !("r" in parsed)) return null;
+    const numbers = (value: unknown) => new Map(Object.entries(value && typeof value === "object" ? value : {}).filter((entry): entry is [string, number] => typeof entry[1] === "number"));
+    return { values: numbers(parsed.v), ranks: numbers(parsed.r) };
+  } catch { return null; }
+}
+function saveSeen(memory: string, seen: Seen) {
+  try { window.localStorage.setItem(SEEN_PREFIX + memory, JSON.stringify({ v: Object.fromEntries(seen.values), r: Object.fromEntries(seen.ranks) })); } catch { /* storage blocked: the ring then follows the first view of each visit */ }
 }
 /** A row whose rank changed between two answers of the same metric slides from its old place (transform only, 240ms) and its movement mark fades in (160ms) from
  * the same frame; only rows on screen move. Nothing moves on the first answer, on a row whose place did not change, or under reduced motion. Tops are read on every commit,
  * so opening a row's panel never counts as a move. A metric change remounts the rows. */
-function useRowMotion(order: readonly string[], values: readonly number[]) {
+function useRowMotion(order: readonly string[], values: readonly number[], ranks: readonly number[], memory: string) {
   const nodes = useRef(new Map<string, HTMLElement>());
-  const seen = useRef(new Map<string, number>());
-  // A row whose value really changed since the previous answer gets the pink ring once. Nothing on the first answer; a new row has no earlier value.
+  const seen = useRef<Map<string, number> | null>(null);
+  // Where each row stood when the visitor last looked, read once: a row that moved since then shows its ▲▼ for this visit.
+  const [lastVisit] = useState(() => typeof window === "undefined" ? null : readSeen(memory));
+  // The ring runs once on a row whose value differs from what the visitor last saw (localStorage, per list and period), and on a row that came in; on a first visit, only on places 1-3.
+  // Later answers (the ten-minute re-read) ring the rows whose value changed since the previous answer. A row not on screen waits until it is, then rings once.
   useLayoutEffect(() => {
-    const before = seen.current;
-    seen.current = new Map(order.map((key, i) => [key, values[i]!]));
-    if (before.size === 0) return;
-    for (const [key, value] of seen.current) {
-      const was = before.get(key);
+    const now = new Map(order.map((key, i) => [key, values[i]!]));
+    const before = seen.current ?? lastVisit?.values ?? null;
+    seen.current = now;
+    if (!now.size) return;
+    saveSeen(memory, { values: now, ranks: new Map(order.map((key, i) => [key, ranks[i]!])) });
+    const due = order.filter((key, i) => before ? before.get(key) !== values[i] : i < 3);
+    due.forEach((key, i) => {
       const node = nodes.current.get(key);
-      if (was !== undefined && was !== value && node && inView(node)) ringPulse(node);
-    }
+      if (!node) return;
+      if (inView(node)) { ringPulse(node, i * RING_STAGGER_MS); return; }
+      if (typeof IntersectionObserver !== "function") return;
+      const watch = new IntersectionObserver((entries) => { if (entries.some((entry) => entry.isIntersecting)) { watch.disconnect(); ringPulse(node); } }, { threshold: 0.6 });
+      watch.observe(node);
+      watchers.current.add(watch);
+    });
   });
+  const watchers = useRef(new Set<IntersectionObserver>());
+  useEffect(() => () => { for (const watch of watchers.current) watch.disconnect(); }, []);
   const tops = useRef(new Map<string, number>());
   const sorted = useRef(order.join("\n"));
   useLayoutEffect(() => {
@@ -120,7 +148,10 @@ function useRowMotion(order: readonly string[], values: readonly number[]) {
       node.querySelector<HTMLElement>("[data-delta-cell]")?.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 160, fill: "backwards" });
     }
   });
-  return (key: string) => (node: HTMLElement | null) => { if (node) nodes.current.set(key, node); else nodes.current.delete(key); };
+  const place = (key: string) => (node: HTMLElement | null) => { if (node) nodes.current.set(key, node); else nodes.current.delete(key); };
+  /** Places gained (+) or lost (−) since the visitor last looked; 0 for a row they had not seen. */
+  const movedSince = (key: string, rank: number) => { const was = lastVisit?.ranks.get(key); return was === undefined ? 0 : was - rank; };
+  return { place, movedSince };
 }
 
 /** /rankings' update line counts from the server's computedAt: seconds in tens below a minute, minutes below an hour, then (and for a stale day) the
@@ -221,6 +252,9 @@ function rowDelta(locale: AppLocale, delta: number | null, comparable: boolean) 
   </span>;
 }
 
+/** The built-day movement when the answer has one; otherwise the places gained or lost since the visitor last looked at this list. */
+const visitDelta = (locale: AppLocale, delta: number | null, comparable: boolean, moved: number) => comparable && delta ? rowDelta(locale, delta, true) : rowDelta(locale, moved, true);
+
 /** The way to first place, computed from the list itself: null on the first row (nothing to reach); 0 when tied. It opens with the row, never in the line. */
 const gapToFirst = (first: boolean, value: number, top: number) => first ? null : Math.max(0, top - value);
 
@@ -244,12 +278,12 @@ const fanKey = (row: HomeFanRankingRow, index: number, rows: readonly HomeFanRan
   rows.findIndex((other) => other.nickname === row.nickname) === index ? `n:${row.nickname}` : `r:${row.rank}`;
 
 /** Fans: nickname, movement and the metric's value on one line; the row opens a panel. `fill` keeps the block at that many rows with placeholders. */
-export function FanRows({ locale, ranking, metric, show, fill, scope, guest = false }: { locale: AppLocale; ranking: HomeFanRanking; guest?: boolean; metric: HomeFanMetric; show?: number; fill?: number; scope: string }) {
+export function FanRows({ locale, ranking, metric, show, fill, scope, guest = false, period = "all" }: { locale: AppLocale; ranking: HomeFanRanking; guest?: boolean; metric: HomeFanMetric; show?: number; fill?: number; scope: string; period?: HomeRankingPeriod }) {
   const [person, setPerson] = useState<ProfileModalPerson | null>(null);
   const { openKey, toggle } = useRankExpand();
   const shown = show === undefined ? ranking.rows : ranking.rows.slice(0, show);
   const keys = shown.map((row, i) => fanKey(row, i, shown));
-  const place = useRowMotion(keys, shown.map((row) => fanValue(row, metric)));
+  const { place, movedSince } = useRowMotion(keys, shown.map((row) => fanValue(row, metric)), shown.map((row) => row.rank), `fans:${metric}:${period}`);
   const top = ranking.rows[0] ? fanValue(ranking.rows[0], metric) : 0;
   const accentFirst = !guest && !ranking.me;
   const days = ranking.weekGainDays ?? 0;
@@ -262,7 +296,7 @@ export function FanRows({ locale, ranking, metric, show, fill, scope, guest = fa
         <Rank rank={row.rank} />
         <span className={styles.avatar} data-first={(accentFirst && i === 0) || undefined}><Avatar avatar={fanAvatar(row.characterId)} imageUrl={null} label="" size={32} /></span>
         <span className={styles.body}>
-          <span className={styles.nameLine}><span className={styles.name} title={row.nickname}>{row.nickname}</span>{rowDelta(locale, row.delta, ranking.comparable)}</span>
+          <span className={styles.nameLine}><span className={styles.name} title={row.nickname}>{row.nickname}</span>{visitDelta(locale, row.delta, ranking.comparable, movedSince(keys[i]!, row.rank))}</span>
         </span>
         <span className={styles.value}><Main locale={locale} metric={metric} value={value} /></span>
       </RowButton>
@@ -289,7 +323,7 @@ const creatorStats = (locale: AppLocale, row: HomeCreatorRankingRow, metric: Ran
 export function CreatorRows({ locale, ranking, metric, show, fill, scope, challengeTag = false, guest = false, period = "all" }: { locale: AppLocale; ranking: HomeCreatorRanking; guest?: boolean; metric: HomeCreatorMetric; show?: number; fill?: number; scope: string; challengeTag?: boolean; period?: HomeRankingPeriod }) {
   const { openKey, toggle } = useRankExpand();
   const shown = show === undefined ? ranking.rows : ranking.rows.slice(0, show);
-  const place = useRowMotion(shown.map((row) => row.slug), shown.map((row) => creatorValue(row, metric)));
+  const { place, movedSince } = useRowMotion(shown.map((row) => row.slug), shown.map((row) => creatorValue(row, metric)), shown.map((row) => row.rank), `creators:${metric}:${period}`);
   const top = ranking.rows[0] ? creatorValue(ranking.rows[0], metric) : 0;
   const accentFirst = !guest;
   const days = ranking.weekGainDays ?? 0;
@@ -302,7 +336,7 @@ export function CreatorRows({ locale, ranking, metric, show, fill, scope, challe
         <Rank rank={row.rank} />
         <span className={styles.avatar} data-first={(accentFirst && i === 0) || undefined}><CreatorAvatar slug={row.slug} src={row.imageUrl} size={32} photos={undefined} /></span>
         <span className={styles.body}>
-          <span className={styles.nameLine}><span className={styles.name} title={row.name}>{row.name}</span>{rowDelta(locale, row.delta, ranking.comparable)}
+          <span className={styles.nameLine}><span className={styles.name} title={row.name}>{row.name}</span>{visitDelta(locale, row.delta, ranking.comparable, movedSince(row.slug, row.rank))}
             {row.liveNow ? <LiveMark locale={locale} name={row.name} /> : null}
             {challengeTag && row.challenge ? <FanTag tone="fan" className={styles.challenge}>{rankingsText(locale, "jjTag")}</FanTag> : null}</span>
         </span>
