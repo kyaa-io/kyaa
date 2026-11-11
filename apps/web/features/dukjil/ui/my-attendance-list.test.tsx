@@ -129,7 +129,7 @@ it("sends a joined page without a passport straight to its entry review", () => 
 });
 
 it("modal rows keep avatar, visible name and action together", () => {
-  h.status.items[1].hasPassport = true;
+  (h.status as { items: { hasPassport: boolean }[] }).items[1].hasPassport = true;
   render(<MyAttendanceList locale="ko" />);
   const row = screen.getByRole("img", {name:"IVE"}).closest("li")!;
   expect(within(row).getByText("IVE")).toBeInTheDocument();

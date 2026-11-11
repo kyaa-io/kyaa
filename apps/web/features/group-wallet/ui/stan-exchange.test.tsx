@@ -133,7 +133,7 @@ it('reopens the wallet below cost and checks the same saved request after a lost
   let first = true;
   serve(body => { if (first) { first = false; throw new TypeError('response lost after server commit'); } return receipt(body); });
   const initial = walletView(149);
-  fireEvent.click(screen.getByRole('button', { name: '교환', exact: true }));
+  fireEvent.click(screen.getByRole('button', { name: '교환' }));
   fireEvent.click(await screen.findByRole('button', { name: '교환하기' }));
   await screen.findByRole('button', { name: '처리 결과 확인' });
   const saved = JSON.parse(sessionStorage.getItem('kyaa-wallet-pending:owner-a')!);
@@ -143,8 +143,8 @@ it('reopens the wallet below cost and checks the same saved request after a lost
   // Reconnecting sees the debit (49P) while the same request is still unresolved locally.
   walletView(49);
   expect(screen.queryByRole('dialog')).toBeNull();
-  expect(screen.getByRole('button', { name: '교환', exact: true })).toBeEnabled();
-  fireEvent.click(screen.getByRole('button', { name: '교환', exact: true }));
+  expect(screen.getByRole('button', { name: '교환' })).toBeEnabled();
+  fireEvent.click(screen.getByRole('button', { name: '교환' }));
   fireEvent.click(await screen.findByRole('button', { name: '처리 결과 확인' }));
   await waitFor(() => expect(toast).toHaveBeenCalledWith({ title: '응모권 +1장', tone: 'success' }));
   expect(exchanges()).toHaveLength(2);
@@ -160,7 +160,7 @@ it('closes the wallet sheet after a successful exchange and announces the wallet
   let before = -1; const changed = vi.fn(); window.addEventListener('kyaa:group-wallet-changed', changed);
   serve(body => { before = changed.mock.calls.length; return receipt(body); });
   walletView(350);
-  fireEvent.click(screen.getByRole('button', { name: '교환', exact: true }));
+  fireEvent.click(screen.getByRole('button', { name: '교환' }));
   expect(await screen.findByRole('dialog')).toBeInTheDocument();
   expect(screen.getByRole('group', { name: '수량' }).querySelector('output')).toHaveTextContent('1장');
   fireEvent.click(screen.getByRole('button', { name: '교환하기' }));
@@ -175,7 +175,7 @@ it('keeps the wallet sheet open and announces no wallet change when the exchange
   let before = -1; const changed = vi.fn(); window.addEventListener('kyaa:group-wallet-changed', changed);
   serve(() => { before = changed.mock.calls.length; return Response.json({ error: { code: 'GROUP_WALLET_INSUFFICIENT_BALANCE' } }, { status: 409 }); });
   walletView(350);
-  fireEvent.click(screen.getByRole('button', { name: '교환', exact: true }));
+  fireEvent.click(screen.getByRole('button', { name: '교환' }));
   fireEvent.click(await screen.findByRole('button', { name: '교환하기' }));
   await waitFor(() => expect(toast).toHaveBeenCalledWith({ title: '요청을 완료하지 못했어요.', tone: 'error' }));
   expect(screen.getByRole('dialog')).toBeInTheDocument();
@@ -187,7 +187,7 @@ it.each(['invalid', 'other-owner'])('does not unlock a low-balance wallet for %s
   const saved = { operation: 'exchange', requestKey: '40000000-0000-4000-8000-000000000004', policyVersion: 'group-wallet-v1', target: 'ticket', units: 1, adSessionId: SESSION };
   sessionStorage.setItem(kind === 'other-owner' ? 'kyaa-wallet-pending:owner-b' : 'kyaa-wallet-pending:owner-a', JSON.stringify(kind === 'invalid' ? { ...saved, requestKey: 'invalid' } : saved));
   serve(receipt); walletView(49);
-  expect(screen.getByRole('button', { name: '교환', exact: true })).toBeDisabled();
+  expect(screen.getByRole('button', { name: '교환' })).toBeDisabled();
   expect(exchanges()).toHaveLength(0);
 });
 
