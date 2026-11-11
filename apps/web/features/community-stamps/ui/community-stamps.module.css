@@ -1,5 +1,6 @@
 .section { min-width: 0; padding-block: 24px; scroll-margin-top: 96px; }
 .heading { display:flex; align-items:baseline; justify-content:space-between; gap:16px; margin-bottom:20px; }
+.heading h2 { margin:0; font-size:var(--fan-section-size); line-height:var(--fan-heading-leading); letter-spacing:var(--fan-heading-tracking); }
 .heading p,.sub,.help { color:var(--color-text-secondary, var(--color-muted)); font-size:var(--fan-metadata-size); line-height:1.6; margin:6px 0 0; }
 .count { font-size:14px; white-space:nowrap; font-variant-numeric:tabular-nums; color:var(--color-text-secondary, var(--color-muted)); }
 /* 스탬프 한 종류가 한 행이다. 그림은 언제나 원색이고, 받았는지는 이름 옆 표시로만 말한다. */

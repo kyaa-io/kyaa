@@ -17,7 +17,6 @@ import { useEffect, useRef, useState } from "react";
 import { useDukjil } from "@/features/dukjil/ui/dukjil-provider";
 import { notifyFanActivityUpdated } from "@/components/fan-ui/fan-activity-updates";
 import { FanAction } from "@/components/fan-ui/fan-action";
-import { FanHeading } from "@/components/fan-ui/fan-heading";
 import { FanSectionLink } from "@/components/fan-ui/fan-section-link";
 import { showFanToast } from "@/components/fan-ui/fan-toast";
 import { inviteRedeemFailure } from "@/features/groups/ui/group-referral-copy";
@@ -121,7 +120,7 @@ function OwnerCollection({ locale, creator, resource, creatorNames }: { locale: 
     catch { if (alive.current) { setFailed(true); setMessage(locale === "ko" ? "코드를 선택해서 복사해 주세요." : translate(locale, localizedMessages.mc314a8314602, "Select the code to copy it.")); } }
   }
   return <section className={styles.section} id="community-stamps" aria-labelledby="community-stamps-title">
-    <div className={styles.heading}><FanHeading id="community-stamps-title">{locale === "ko" ? "스탬프 모으기" : translate(locale, localizedMessages.m7a8ba5792eaa, "Collect Stamps")}</FanHeading>{visible.length > 0 && <FanSectionLink onClick={() => setHistoryOpen(open => !open)} expanded={historyOpen} controls="community-stamp-history">{passportBookText(locale, "communityHistory")} · {visible.length}</FanSectionLink>}</div>
+    <div className={styles.heading}><h2 id="community-stamps-title">{locale === "ko" ? "스탬프 모으기" : translate(locale, localizedMessages.m7a8ba5792eaa, "Collect Stamps")}</h2>{visible.length > 0 && <FanSectionLink onClick={() => setHistoryOpen(open => !open)} expanded={historyOpen} controls="community-stamp-history">{passportBookText(locale, "communityHistory")} · {visible.length}</FanSectionLink>}</div>
     {resource.state.status === "loading" ? <FanSkeletonRows rows={3} variant="entity" ariaLabel={locale === "ko" ? "스탬프를 불러오고 있어요." : translate(locale, localizedMessages.m14ba0b095bf9, "Loading your Stamps.")} />  : resource.state.status === "error" && resource.state.kind === "missing" && creator ? <div className={styles.status} role="status"><p>{locale === "ko" ? "현재 이 최애의 스탬프 활동을 이용할 수 없어요." : translate(locale, localizedMessages.m3f3e69fa36eb, "Stamp activities for this artist are currently unavailable.")}</p><Link className={styles.action} href={`/my?locale=${locale}#community-stamps` as Route}>{locale === "ko" ? "내 스탬프 보기" : translate(locale, localizedMessages.mb43cbc171691, "View my Stamps")}</Link></div> : resource.state.status === "error" ? <p className={styles.status} role="alert">{locale === "ko" ? "스탬프를 불러오지 못했어요." : translate(locale, localizedMessages.m6f4e687b2a1d, "Couldn’t load your Stamps.")} <button className={styles.action} onClick={resource.retry}><RotateCcw aria-hidden="true"/>{locale === "ko" ? "다시 시도" : translate(locale, localizedMessages.mf721ef255caa, "Try again")}</button></p> : <>
       {resource.refreshFailed && <p role="alert" className={styles.status}>{locale === "ko" ? "최신 기록을 확인하지 못했어요." : translate(locale, localizedMessages.m4bdba754452a, "Couldn’t refresh your Stamps.")} <button className={styles.action} onClick={resource.retry}>{locale === "ko" ? "다시 시도" : translate(locale, localizedMessages.m11bce3427a8f, "Retry")}</button></p>}
       <ul className={styles.rows} data-wide={kinds.length > 5 || undefined}>{kinds.map(kind => {
