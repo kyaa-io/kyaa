@@ -1,4 +1,5 @@
 "use client";
+import { FanSheet } from "@/components/fan-ui/fan-dialog";
 import {MyAttendanceList} from "@/features/dukjil/ui/my-attendance-list";
 import {DukjilProvider,DukjilSwitch} from "@/features/dukjil/ui/dukjil-provider";
 import {dukjilText} from "@/features/dukjil/ui/dukjil-copy";
@@ -81,11 +82,10 @@ function WalletAttendanceRoute({locale}:{locale:AppLocale}) {
  return <FanAppFrame locale={locale} currentPath="/my" groupsEnabled mainId="attendance-main"><FanContentContainer as="main" id="attendance-main" tabIndex={-1} className={styles.page}><div className={styles.srOnly}><FanHeading as="h1" variant="personal-page">{walletCopy(locale).attendance}</FanHeading></div></FanContentContainer><WalletAttendanceDialog locale={locale} open onClose={()=>router.replace(href as Route)}/></FanAppFrame>;
 }
 export function WalletAttendanceDialog({locale,open,onClose}:{locale:AppLocale;open:boolean;onClose:()=>void}) {
- const auth=useGroupRequest(),c=walletCopy(locale),titleId=useId(),returnTo=`/my/wallet?view=attendance&locale=${locale}`;
- return <DukjilProvider locale={locale}><Dialog open={open} onClose={onClose} labelledBy={titleId} backdropClassName={styles.supportBackdrop} contentClassName={`${styles.supportDialog} ${styles.attendanceDialog}`}>
-  <header className={styles.supportDialogHeader}><h2 id={titleId}><DukjilSwitch on={dukjilText(locale,"dukjilListTitle")} off={c.attendance} loading={c.attendance}/></h2><FanAction onClick={onClose}>{locale==='ko'?'닫기':translate(locale,closeMessages.m05a1db569ca0,'Close')}</FanAction></header>
+ const auth=useGroupRequest(),c=walletCopy(locale),returnTo=`/my/wallet?view=attendance&locale=${locale}`;
+ return <DukjilProvider locale={locale}><FanSheet open={open} onOpenChange={value=>{if(!value)onClose();}} title={<DukjilSwitch on={dukjilText(locale,"dukjilListTitle")} off={c.attendance} loading={c.attendance}/>} closeLabel={locale==='ko'?'닫기':translate(locale,closeMessages.m05a1db569ca0,'Close')}>
   {!auth.ready?<WalletLoading label={c.loading} kind="attendance"/>:!auth.authenticated?<FanAction href={`/login?locale=${locale}&returnTo=${encodeURIComponent(returnTo)}`}>{c.login}</FanAction>:open&&<DukjilSwitch loading={<WalletLoading label={c.loading} kind="attendance"/>} on={<MyAttendanceList key={auth.ownerKey} locale={locale}/>} off={<OwnedWallet key={auth.ownerKey} locale={locale} attendance embedded/>}/>}
- </Dialog></DukjilProvider>;
+ </FanSheet></DukjilProvider>;
 }
 function OwnedWallet({ locale, attendance, localProfile, localPresentation, embedded=false }: { locale: AppLocale; attendance: boolean; embedded?:boolean;localProfile?:{nickname:string;avatarUrl:string};localPresentation?:WalletLocalPresentation }) {
  const a=attendanceCopy(locale),c = walletCopy(locale), wallet = useGroupResource("/api/me/wallet", parseWallet);

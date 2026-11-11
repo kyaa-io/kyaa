@@ -12,7 +12,7 @@
   padding-inline: var(--space-1);
   border: 2px solid var(--color-surface);
   border-radius: var(--radius-pill);
-  background: var(--color-service-ink);
+  background: var(--color-error);
   color: var(--color-surface);
   font-size: var(--fan-badge-size);
   font-weight: 800;

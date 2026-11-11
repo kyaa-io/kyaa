@@ -79,6 +79,18 @@ export class Member {
     return sessionId;
   }
 
+  /** A passport page heart's ad session through the real routes (shown → granted; the session time moves back instead of waiting out the minimum viewing time). */
+  async grantedHeartAdSession(passportId: string, pageNo: number): Promise<string> {
+    const issued = await this.call<{ sessionId: string }>("POST", `/api/me/passports/${passportId}/pages/${pageNo}/ad-session`, {});
+    if (issued.status !== 200) throw new Error(`HEART_AD_SESSION_NOT_ISSUED ${issued.status} ${JSON.stringify(issued.body)}`);
+    const sessionId = issued.body.sessionId;
+    if ((await this.call("POST", "/api/me/passports/ad-session/report", { sessionId, event: "shown" })).status !== 200) throw new Error("HEART_AD_SESSION_SHOWN_FAILED");
+    exec(`update public.passport_claim_ad_sessions set issued_at = issued_at - interval '1 hour', shown_at = shown_at - interval '1 hour' where id = '${sessionId}'`);
+    const granted = await this.call<{ status: string }>("POST", "/api/me/passports/ad-session/report", { sessionId, event: "granted" });
+    if (granted.body.status !== "granted") throw new Error(`HEART_AD_SESSION_NOT_GRANTED ${JSON.stringify(granted.body)}`);
+    return sessionId;
+  }
+
   balances() { return balances(this.id); }
   stampCount(kind?: string) { return count(`select count(*) from public.community_stamps where app_user_id = '${this.id}'${kind ? ` and kind = '${kind}'` : ""}`); }
   hearts() { return count(`select coalesce(sum(amount),0) from public.creator_heart_ledger where app_user_id = '${this.id}'`); }

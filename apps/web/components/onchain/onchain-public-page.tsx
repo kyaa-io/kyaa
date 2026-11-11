@@ -2,6 +2,7 @@ import { type AppLocale } from "@/i18n/locales";
 import { messages as localizedMessages } from "@/i18n/catalogs/components__onchain__onchain-public-page";
 import { additionalLocales, translate } from "@/i18n/messages";
 import Link from "next/link";
+import { FanHeading } from "@/components/fan-ui/fan-heading";
 
 import { FanContentContainer } from "@/components/fan-shell/fan-content-container";
 import type { FanLocale } from "@/components/fan-shell/fan-app-shell";
@@ -83,6 +84,7 @@ const copy = {
     lifecycleDescription: (total: number, qa: number, historical: number) => `전체 ${total.toLocaleString("ko-KR")}건 · QA 포함 ${qa.toLocaleString("ko-KR")}건 · 역사 이관 ${historical.toLocaleString("ko-KR")}건. 기록·정정·무효화 트랜잭션을 각각 표시합니다.`,
     lifecycleShown: (shown: number, total: number) => `${total.toLocaleString("ko-KR")}건 중 최근 ${shown.toLocaleString("ko-KR")}건 표시`,
     transactionKinds: { record: "기록", correct: "정정", invalidate: "무효화" },
+    updating: "집계 중",
     unavailableValue: "—",
   },
   en: {
@@ -156,6 +158,7 @@ const copy = {
     lifecycleDescription: (total: number, qa: number, historical: number) => `${total.toLocaleString("en-US")} total · ${qa.toLocaleString("en-US")} QA · ${historical.toLocaleString("en-US")} historical. Record, correction, and invalidation transactions are listed separately.`,
     lifecycleShown: (shown: number, total: number) => `Showing the latest ${shown.toLocaleString("en-US")} of ${total.toLocaleString("en-US")}`,
     transactionKinds: { record: "Record", correct: "Correction", invalidate: "Invalidation" },
+    updating: "Updating",
     unavailableValue: "—",
   },
 
@@ -230,6 +233,7 @@ const copy = {
     lifecycleDescription: (total: number, qa: number, historical: number) => translate(translationLocale, localizedMessages.m9c3a4887e2f2, "{0} total · {1} QA · {2} historical. Record, correction, and invalidation transactions are listed separately.", [total.toLocaleString(translationLocale), qa.toLocaleString(translationLocale), historical.toLocaleString(translationLocale)]),
     lifecycleShown: (shown: number, total: number) => translate(translationLocale, localizedMessages.m248d70b8a91d, "Showing the latest {0} of {1}", [shown.toLocaleString(translationLocale), total.toLocaleString(translationLocale)]),
     transactionKinds: { record: localizedMessages.m7cfc898a2e4f[translationLocale], correct: localizedMessages.m5ed337ade8b4[translationLocale], invalidate: localizedMessages.m727107a459d4[translationLocale] },
+    updating: localizedMessages.onchainUpdating[translationLocale],
     unavailableValue: "—",
   }))
 } as const;
@@ -397,7 +401,7 @@ export function OnchainPublicPage({ locale, result }: { locale: FanLocale; resul
         <section className={styles.hero} aria-labelledby="onchain-title">
           <FanContentContainer>
             <p className={styles.eyebrow}>{t.eyebrow}</p>
-            <h1 id="onchain-title">{t.title}</h1>
+            <FanHeading as="h1" id="onchain-title">{t.title}</FanHeading>
             <p className={styles.intro}>{t.intro}</p>
             <div className={styles.networkNotice}>
               <strong>{t.testnet}</strong>
@@ -405,7 +409,8 @@ export function OnchainPublicPage({ locale, result }: { locale: FanLocale; resul
             </div>
             <div className={styles.heroMeta}>
               <p className={result.state === "available" ? styles.available : styles.unavailable} role={result.state === "unavailable" ? "status" : undefined}>
-                {result.state === "available" ? `${t.available} · #${snapshot?.blockNumber}` : t.unavailable}
+                {result.state === "available" ? `${t.available} · #${snapshot?.blockNumber} · ${formatTimestamp(snapshot!.generatedAt, locale)}` : t.unavailable}
+                {result.state === "unavailable" && result.lastVerifiedAt ? ` · ${t.generatedAt}: ${formatTimestamp(result.lastVerifiedAt, locale)}` : null}
               </p>
               <Link className={styles.download} href="/api/public/onchain" download>
                 {t.download}<span aria-hidden="true"> ↓</span>
@@ -416,15 +421,16 @@ export function OnchainPublicPage({ locale, result }: { locale: FanLocale; resul
 
         <FanContentContainer className={styles.content}>
           <section className={styles.section} aria-labelledby="metrics-title">
-            <div className={styles.sectionHeading}><p>01</p><div><h2 id="metrics-title">{t.metricsTitle}</h2><p>{t.metricsDescription}</p></div></div>
+            <div className={styles.sectionHeading}><p>01</p><div><FanHeading id="metrics-title">{t.metricsTitle}</FanHeading></div></div>
             {snapshot?.businessUnavailableReason ? <p className={styles.statusNote} role="status">{t.aggregateUnavailable}</p> : null}
             <dl className={styles.metricGrid}>
-              {metricCards.map((metric) => <div className={styles.metric} key={metric.label}><dt>{metric.label}</dt><dd>{metricValue(metric.value, locale)}</dd><dd className={styles.metricScope}>{metric.scope}</dd></div>)}
+              {metricCards.map((metric) => <div className={styles.metric} key={metric.label}><dt>{metric.label}</dt><dd>{metric.value === undefined ? t.updating : metricValue(metric.value, locale)}</dd><dd className={styles.metricScope}>{metric.scope}</dd></div>)}
             </dl>
+          <p className={styles.statusNote}>{t.metricsDescription}</p>
           </section>
 
           <section className={styles.section} aria-labelledby="actions-title">
-            <div className={styles.sectionHeading}><p>02</p><div><h2 id="actions-title">{t.actionsTitle}</h2><p>{t.actionsDescription}</p><p className={styles.statusNote}>{t.statusAsOf}</p></div></div>
+            <div className={styles.sectionHeading}><p>02</p><div><FanHeading id="actions-title">{t.actionsTitle}</FanHeading><p className={styles.statusNote}>{t.statusAsOf}</p></div></div>
             <div className={styles.tableScroll} tabIndex={0} role="region" aria-label={locale === "ko" ? "행동별 집계 표" : translate(locale, localizedMessages.m7188df05fe48, "Action metrics table")}>
               <table className={styles.actionTable} aria-labelledby="actions-title">
                 <thead><tr><th scope="col">{t.code}</th><th scope="col">{t.action}</th><th scope="col">{t.definition}</th><th scope="col">{t.count}</th><th scope="col">{t.rollout}</th></tr></thead>
@@ -436,10 +442,11 @@ export function OnchainPublicPage({ locale, result }: { locale: FanLocale; resul
                 })}</tbody>
               </table>
             </div>
+          <p className={styles.statusNote}>{t.actionsDescription}</p>
           </section>
 
           <section className={styles.section} aria-labelledby="evidence-title">
-            <div className={styles.sectionHeading}><p>03</p><div><h2 id="evidence-title">{t.evidenceTitle}</h2><p>{t.evidenceDescription}</p></div></div>
+            <div className={styles.sectionHeading}><p>03</p><div><FanHeading id="evidence-title">{t.evidenceTitle}</FanHeading></div></div>
             {snapshot ? <p className={styles.resultCount}>{t.shown(recentActions.length, snapshot.actions.length)}</p> : null}
             {recentActions.length > 0 ? <ol className={styles.evidenceList}>{recentActions.map((action) => <EvidenceItem key={`${action.hubAddress}-${action.actionId}-${action.revision}`} action={action} locale={locale} />)}</ol> : <p className={styles.empty}>{result.state === "available" ? t.noEvidence : t.unavailable}</p>}
             {snapshot ? (
@@ -458,17 +465,19 @@ export function OnchainPublicPage({ locale, result }: { locale: FanLocale; resul
                 </ul>
               </div>
             ) : null}
+          <p className={styles.statusNote}>{t.evidenceDescription}</p>
           </section>
 
           <section className={styles.section} aria-labelledby="directory-title">
-            <div className={styles.sectionHeading}><p>04</p><div><h2 id="directory-title">{t.directoryTitle}</h2><p>{t.directoryDescription}</p></div></div>
+            <div className={styles.sectionHeading}><p>04</p><div><FanHeading id="directory-title">{t.directoryTitle}</FanHeading></div></div>
             <ul className={styles.directory}>
               {officialAddresses.map((entry) => <li key={entry.address}><div><strong>{entry.name}</strong><span>{roleCopy[entry.role][locale]}</span></div><a href={explorer(`/address/${entry.address}`)} target="_blank" rel="noopener noreferrer" aria-label={`${entry.name} ${t.address}, ${t.openNew}`}>{entry.address}<span aria-hidden="true"> ↗</span></a></li>)}
             </ul>
+          <p className={styles.statusNote}>{t.directoryDescription}</p>
           </section>
 
           <section className={styles.section} aria-labelledby="snapshot-title">
-            <div className={styles.sectionHeading}><p>05</p><div><h2 id="snapshot-title">{t.snapshotTitle}</h2></div></div>
+            <div className={styles.sectionHeading}><p>05</p><div><FanHeading id="snapshot-title">{t.snapshotTitle}</FanHeading></div></div>
             <dl className={styles.snapshotDetails}>{snapshotDetails.map(([label, value]) => <div key={label}><dt>{label}</dt><dd>{value}</dd></div>)}</dl>
           </section>
         </FanContentContainer>

@@ -6,6 +6,23 @@ export const messages = {
   "stanFlowCheer": { "ja": "推しを応援", "zh-Hans": "为最爱应援", "zh-Hant": "為最愛應援", "es": "Apoyar", "id": "Dukung", "vi": "Cổ vũ", "th": "เชียร์", "pt": "Apoiar", "fr": "Soutenir", "ru": "Поддержать" },
   "stanWalletFlows": { "ja": "マイウォレット", "zh-Hans": "我的钱包", "zh-Hant": "我的錢包", "es": "Mi billetera", "id": "Dompet saya", "vi": "Ví của tôi", "th": "กระเป๋าของฉัน", "pt": "Minha carteira", "fr": "Mon portefeuille", "ru": "Мой кошелёк" },
   "stanGuide": { "ja": "案内", "zh-Hans": "说明", "zh-Hant": "說明", "es": "Guía", "id": "Panduan", "vi": "Hướng dẫn", "th": "คู่มือ", "pt": "Guia", "fr": "Guide", "ru": "Правила" },
+  "stanGuideLabel": { "ja": "ウォレットの案内", "zh-Hans": "钱包说明", "zh-Hant": "錢包說明", "es": "Guía de la billetera", "id": "Panduan dompet", "vi": "Hướng dẫn ví", "th": "คู่มือกระเป๋า", "pt": "Guia da carteira", "fr": "Guide du portefeuille", "ru": "О кошельке" },
+  "stanClaim": { "ja": "受け取る", "zh-Hans": "领取", "zh-Hant": "領取", "es": "Recibir", "id": "Ambil", "vi": "Nhận", "th": "รับ", "pt": "Receber", "fr": "Recevoir", "ru": "Получить" },
+  "stanPreparing": {
+    "ja": "準備中",
+    "zh-Hans": "准备中",
+    "zh-Hant": "準備中",
+    "es": "Próximamente",
+    "id": "Segera hadir",
+    "vi": "Sắp mở",
+    "th": "เร็ว ๆ นี้",
+    "pt": "Em breve",
+    "fr": "Bientôt",
+    "ru": "Скоро"
+  },
+  "stanRuleTicket": { "ja": "{0}Pごとに応募券1枚", "zh-Hans": "每{0}P兑换1张抽奖券", "zh-Hant": "每{0}P兌換1張抽獎券", "es": "1 boleto por cada {0}P", "id": "1 tiket per {0}P", "vi": "{0}P đổi 1 vé", "th": "ทุก {0}P ได้ตั๋ว 1 ใบ", "pt": "1 bilhete a cada {0}P", "fr": "1 ticket tous les {0}P", "ru": "1 билет за каждые {0}P" },
+  "stanRuleHeart": { "ja": "スタンプ{0}個ごとにハート1つ", "zh-Hans": "每{0}个印章换1颗爱心", "zh-Hant": "每{0}個印章換1顆愛心", "es": "1 corazón por cada {0} sellos", "id": "1 hati per {0} stempel", "vi": "{0} con dấu đổi 1 tim", "th": "ทุก {0} ตราประทับ ได้หัวใจ 1 ดวง", "pt": "1 coração a cada {0} carimbos", "fr": "1 cœur tous les {0} tampons", "ru": "1 сердце за каждые {0} штампов" },
+  "stanClaimReady": { "ja": "受け取れます", "zh-Hans": "可领取", "zh-Hant": "可領取", "es": "Listo para recibir", "id": "Siap diambil", "vi": "Có thể nhận", "th": "พร้อมรับ", "pt": "Pronto para receber", "fr": "Prêt à recevoir", "ru": "Можно получить" },
   "missionsGroupMore": {
     "ja": "その他のミッション",
     "zh-Hans": "更多任务",

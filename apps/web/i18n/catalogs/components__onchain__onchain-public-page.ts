@@ -1,6 +1,11 @@
 import type { TranslatedMessage } from "../messages";
 
 export const messages = {
+  onchainUpdating: {
+    ja: "集計中", "zh-Hans": "统计中", "zh-Hant": "統計中", es: "Actualizando",
+    id: "Memperbarui", vi: "Đang cập nhật", th: "กำลังอัปเดต", pt: "Atualizando",
+    fr: "Actualisation", ru: "Обновление"
+  },
   "m8fb00b25bfe1": {
     "ja": "kyaa オンチェーン記録",
     "zh-Hans": "kyaa 链上记录",
