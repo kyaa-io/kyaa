@@ -2266,3 +2266,5 @@ At the user's request, registered Changha identity and hero images use the unedi
 - MY 패스포트 표지 칸 PC 380→560px(1024+). 사유: 대표 02:15 "MY에는 패스포트 UI를 잘 보여주면".
 
 2026-11-11 럭키드로우 카드: 사용자 요청으로 1024px 이상에서는 캡슐 기계를 왼쪽, 안내와 행동을 오른쪽에 세로 가운데로 배치한다. 기계 영역과 안내 영역의 간격은 `--space-4`이며 1024px 미만 배치는 유지한다. 소유자는 `features/groups/ui/duo-lucky.module.css`다.
+
+2026-11-11 럭키드로우 지난 목록: 사용자 요청으로 최애의 실제 종료된 추첨을 최신순 최대 3개 표시한다. 1024px 이상은 기계와 안내 오른쪽에 `FanPostRow` 목록을 두고, 모바일은 카드 아래 가로 스크롤로 둔다. 항목이 없거나 조회할 최애가 없으면 목록을 숨긴다. 기존 추첨 API와 링크를 사용한다.

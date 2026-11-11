@@ -9,6 +9,7 @@ import { FanHeading } from "@/components/fan-ui/fan-heading";
 import { FanSectionLink } from "@/components/fan-ui/fan-section-link";
 import { FanLockedValue } from "@/components/fan-ui/fan-locked-value";
 import { FanNumber } from "@/components/fan-ui/fan-number";
+import { FanPostRow } from "@/components/fan-ui/fan-post-row";
 import { FanSkeleton } from "@/components/fan-ui/fan-skeleton";
 import { FanState } from "@/components/fan-ui/fan-state";
 import { fanLoginHref } from "@/components/login-href";
@@ -169,7 +170,9 @@ export function StanLucky({ locale, bias, guest, presentation, paused = false }:
     // C4: 쉬는 동안(paused)에는 상태와 상관없이 응모 버튼 하나만 비활성으로 두고 이유를 붙인다. href·onClick이 없어 요청을 만들지 않는다.
     const action = paused || (ready && item) ? <FanAction className={duoStyles.action} variant="primary" {...(paused ? { disabled: true, helperText: capsuleMachineCopy(locale).text("soon") } : { href })}>
       {paused || (item?.status === "open" && allowance?.kind !== "policy" && !passport) ? t(locale,"luckyEnter") : passport ? t(locale,"luckyGetPassport") : t(locale,"luckyDetails")}</FanAction> : null;
-    return <section className={duoStyles.card} id="stan-lucky" aria-label={title} data-duo-lucky data-lucky-module="" data-lucky-paused={paused ? "" : undefined} data-raffle-status={item?.status}>
+    const pastItems = raffles.items.filter(row => row.status === "closed").slice(0, 3);
+    return <div className={duoStyles.layout} data-has-past={pastItems.length ? "" : undefined}>
+    <section className={duoStyles.card} id="stan-lucky" aria-label={title} data-duo-lucky data-lucky-module="" data-lucky-paused={paused ? "" : undefined} data-raffle-status={item?.status}>
       <LuckyStage className={duoStyles.stage} paused={paused} locale={locale} />
       <div className={duoStyles.copy}>
         <img className={duoStyles.glyph} src="/images/dukjil-duo/glyph-illo-lucky-80.webp" width={40} height={40} alt="" />
@@ -180,7 +183,12 @@ export function StanLucky({ locale, bias, guest, presentation, paused = false }:
             <p className={duoStyles.cost} data-raffle-cost data-raffle-allowance={allowance?.kind}>{costParts && allowance?.kind === "count" ? <>{costParts[0]}<strong>{allowance.count.toLocaleString(locale)}</strong>{costParts[1]}</> : allowance?.kind === "loading" ? <FanSkeleton width={160} height={24}/> : allowance?.kind === "passport" ? t(locale,"luckyNeedPassport") : allowance?.kind === "policy" ? t(locale,"luckyNeedPolicy") : t(locale,"luckyCostGuest",[RAFFLE_TICKET_COST])}</p></>}
       </div>
       {action ? <div className={duoStyles.actionBlock}>{action}</div> : null}
-    </section>;
+    </section>
+    {slug && pastItems.length > 0 && <section className={duoStyles.pastList} aria-label={t(locale, "luckyPast")} data-lucky-past>
+      <FanHeading>{t(locale, "luckyPast")}</FanHeading>
+      <div className={duoStyles.pastRows}>{pastItems.map(({ raffle }) => <FanPostRow key={raffle.id} density="home" locale={locale} href={raffleHref(slug, raffle.benefitId, locale)} title={raffle.title} thumbnail={raffle.imageUrl} author={<>{raffle.entryClosesAt ? t(locale, "luckyClosesAt", [dayDate(raffle.entryClosesAt, locale)]) : t(locale, "luckyClosed")} · {t(locale, "luckyWinners", [raffle.winnerQuantity.toLocaleString(locale)])}</>} />)}</div>
+    </section>}
+    </div>;
   }
   // 게이트 D2: the empty state is one line; its next step is a row below it inside the same box, ending in ›.
   const empty = (title: string, action?: ReactNode, short = false) => <div className={short ? `${styles.empty} ${styles.emptyShort}` : styles.empty}><div className={styles.emptyLine}><FanState kind="empty" title={title} /></div>{action}</div>;
