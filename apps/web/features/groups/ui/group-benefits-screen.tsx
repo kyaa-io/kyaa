@@ -31,7 +31,7 @@ import {groupsCopy} from './copy';
 import {FanSkeletonRows} from '@/components/fan-ui/fan-skeleton';
 import {seeAllLabel} from './group-directory';
 import {groupBenefitsCopy,benefitsRaffleState} from './group-benefits-copy';
-import {StanLucky,stanFavorite,useStanEntries} from './stan-lucky-cheer';
+import {StanLucky,stanFavorite} from './stan-lucky-cheer';
 import {creatorRafflesHref} from '@/features/benefit/domain/raffle-navigation';
 import {CAPSULE_DRAW_OPEN} from '@/features/capsule-machine/domain';
 import {FavoritePickMenu} from '@/features/selected-bias/ui/selected-bias-chip';
@@ -115,12 +115,10 @@ function BenefitsHistory({locale,signedOut}:{locale:AppLocale;signedOut:boolean}
 function BenefitsWallet({locale,signedOut=false,bias}:{locale:AppLocale;signedOut?:boolean;bias:SelectedBias}){
  const auth=useGroupRequest(),w=walletCopy(locale),wallet=useGroupResource(auth.authenticated?'/api/me/wallet':null,parseWallet);
  const {guest,stamps,hearts,passportId,claimable}=useStanNumbers(bias,signedOut),favorite=guest?null:stanFavorite(bias),slug=favorite?.slug??null;
- const entries=useStanEntries(locale,auth.authenticated?slug:null);
- const entryCount=!auth.authenticated?undefined:bias.status==='loading'?'loading' as const:!slug?undefined:entries.error?'missing' as const:entries.loading||!entries.data?'loading' as const:entries.data.benefits.reduce((n,item)=>n+(item.entry?.enteredTickets??0),0);
  useEffect(()=>{window.addEventListener(GROUP_WALLET_CHANGED_EVENT,wallet.retry);return()=>window.removeEventListener(GROUP_WALLET_CHANGED_EVENT,wallet.retry);},[wallet.retry]);
  const sections=useContext(SectionContext),retryAll=()=>window.dispatchEvent(new Event(GROUP_WALLET_CHANGED_EVENT)),failed=auth.ready&&auth.authenticated&&!wallet.loading&&!wallet.data,allFailed=useSectionFailure('wallet',failed,retryAll),lifted=useLiftedAlert('wallet',{message:w.error,label:w.retry,retry:retryAll},failed&&!allFailed),walletAlert=lifted?null:<FanState inline kind='error' className={styles.inlineError} title={w.error} actions={<FanAction onClick={retryAll}>{w.retry}</FanAction>}/>;
  if(allFailed)return <div className={styles.pWallet}><FanState inline compact kind='error' title={w.error} actions={<FanAction variant='text' onClick={()=>sections?.retryAll()}>{w.retry}</FanAction>}/></div>;
- const card=(state:Parameters<typeof WalletCard>[0]['state'])=><StanWallet className={styles.pWallet} locale={locale} state={state} stamps={stamps} hearts={hearts} entries={entryCount} entriesRetry={entries.retry} favoritePicker={!guest&&!bias.selected&&!bias.unverified&&(bias.status==='empty'||bias.status==='ready')?(bias.options.length?<FavoritePickMenu locale={locale} bias={bias} className={styles.favoritePick}>{dukjilText(locale,'heartPick')}</FavoritePickMenu>:<FanAction href={`/pages/groups?locale=${locale}`}>{dukjilText(locale,'heartPick')}</FanAction>):undefined} links={{hearts:slug?`/${encodeURIComponent(slug)}?tab=fans&locale=${locale}`:`/passports?locale=${locale}`,claim:passportId&&claimable?`/passports/${encodeURIComponent(passportId)}?locale=${locale}#mission-book`:undefined}}/>;
+ const card=(state:Parameters<typeof WalletCard>[0]['state'])=><StanWallet className={styles.pWallet} locale={locale} state={state} stamps={stamps} hearts={hearts} favoritePicker={!guest&&!bias.selected&&!bias.unverified&&(bias.status==='empty'||bias.status==='ready')?(bias.options.length?<FavoritePickMenu locale={locale} bias={bias} className={styles.favoritePick}>{dukjilText(locale,'heartPick')}</FavoritePickMenu>:<FanAction href={`/pages/groups?locale=${locale}`}>{dukjilText(locale,'heartPick')}</FanAction>):undefined} links={{hearts:slug?`/${encodeURIComponent(slug)}?tab=fans&locale=${locale}`:`/passports?locale=${locale}`,claim:passportId&&claimable?`/passports/${encodeURIComponent(passportId)}?locale=${locale}#mission-book`:undefined}}/>;
  // The server saw no session: the signed-out card is drawn from the first HTML instead of a loading card of another height.
  if(!auth.ready&&signedOut||auth.ready&&!auth.authenticated)return card({kind:'guest',action:<FanAction variant='primary' fullWidth href={fanLoginHref(locale,`/benefits?locale=${locale}`)}>{w.login}</FanAction>});
  if(!auth.ready||wallet.loading)return card({kind:'loading'});

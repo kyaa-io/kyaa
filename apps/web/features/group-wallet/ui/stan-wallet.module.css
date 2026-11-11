@@ -1,20 +1,37 @@
+/* 덕질 wallet (대표 11/11, 중간 버전 4cf1fee7b 구성): one card, two columns that read the same way — result (big number) over material
+   (bar or nine slots) over the column's button. 390: two columns, 안내 › in the heading row. 1024+: one row, 응모권 | 하트 | 안내. */
 .wallet { min-width:0; font-variant-numeric:tabular-nums; font-feature-settings:"tnum"; }
 .head { display:flex; align-items:center; justify-content:space-between; gap:var(--space-3); margin-bottom:var(--space-3); }
-.guide { display:inline-flex; align-items:center; gap:var(--space-1); color:var(--color-muted); font-size:var(--fan-badge-size); font-weight:var(--fan-body-weight); text-decoration:none; }
-.tiles { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:var(--space-3); }
-.cell { position:relative; display:grid; grid-template-columns:24px minmax(0,1fr); grid-template-rows:auto auto 1fr; column-gap:var(--space-3); box-sizing:border-box; min-width:0; min-height:125px; padding:var(--space-4); border:0; outline:1px solid var(--color-line); outline-offset:-1px; border-radius:var(--radius-card); background:var(--color-surface); }
-.glyph { position:absolute; width:32px; height:32px; object-fit:contain; left:10px; top:11.5px; }
-.label { grid-column:2; min-height:24px; color:var(--color-muted); font-size:var(--fan-badge-size); line-height:17px; overflow-wrap:anywhere; }
-.value { display:flex; grid-column:1/-1; min-width:0; min-height:0; margin-top:var(--space-2); line-height:18px; }
-.value .number { font-size:var(--fan-section-size); font-weight:800; line-height:1; gap:var(--space-1); white-space:normal; overflow-wrap:anywhere; }
-.under { grid-column:1/-1; display:flex; flex-direction:column; justify-content:flex-end; align-items:stretch; gap:var(--space-2); min-width:0; min-height:0; margin-top:var(--space-2); }
-.under .gauge { width:100%; min-width:0; gap:0; }
-.under .gauge > span:first-child { height:4px; }
-.tileLink { color:var(--color-ink); font-size:var(--fan-action-emphasis-size); font-weight:var(--fan-item-title-weight); line-height:23px; text-decoration:none; overflow-wrap:anywhere; }
-button.tileLink { display:inline; align-self:flex-start; width:auto; min-height:0; padding:0; border:0; border-radius:0; text-align:start; }
-.stampLabel { color:var(--color-muted); font-size:var(--fan-badge-size); line-height:17px; text-decoration:none; overflow-wrap:anywhere; }
-.guide:focus-visible,.tileLink:focus-visible,.stampLabel:focus-visible { outline:2px solid var(--color-focus); outline-offset:4px; }
-@media (hover:hover) and (pointer:fine) { .guide:hover,.tileLink:hover,.stampLabel:hover { text-decoration:underline; } }
+.guide { display:inline-flex; align-items:center; gap:var(--space-1); min-height:44px; color:var(--color-ink); font-size:var(--fan-metadata-size); font-weight:var(--fan-item-title-weight); text-decoration:none; white-space:nowrap; }
+.guide:focus-visible,.result:focus-visible { outline:2px solid var(--color-focus); outline-offset:-2px; border-radius:var(--radius-small); }
+.guideColumn { display:none; }
+.card { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); min-width:0; box-sizing:border-box; border:1px solid var(--color-line); border-radius:var(--radius-card); background:var(--color-surface); }
+.column { display:flex; flex-direction:column; gap:var(--space-3); min-width:0; padding:var(--space-4); }
+.column + .column { border-inline-start:1px solid var(--color-line); }
+.result { display:grid; gap:var(--space-1); min-width:0; color:inherit; text-decoration:none; }
+.label { color:var(--color-muted); font-size:var(--fan-metadata-size); line-height:var(--fan-metadata-leading); overflow-wrap:anywhere; }
+.value { display:flex; align-items:center; gap:var(--space-2); min-width:0; min-height:32px; }
+.glyph { flex:none; width:28px; height:28px; object-fit:contain; }
+.value .number { font-size:var(--fan-number-size); font-weight:var(--fan-number-weight); line-height:1; gap:var(--space-1); white-space:nowrap; }
+.value .number > span:last-child:not(:first-child),.sheetValue .number > span:last-child:not(:first-child) { font-size:var(--fan-action-emphasis-size); }
+.material { display:grid; gap:var(--space-2); min-width:0; padding-top:var(--space-3); border-top:1px solid var(--color-line-subtle, var(--color-line)); }
+.step { display:flex; flex-wrap:wrap; align-items:baseline; justify-content:space-between; column-gap:var(--space-2); min-width:0; font-size:var(--fan-description-size); line-height:var(--fan-metadata-leading); }
+.step > span:first-child { color:var(--color-muted); }
+.step strong { font-weight:var(--fan-item-title-weight); white-space:nowrap; }
+.material .gauge { width:100%; min-width:0; gap:0; }
+.action { margin-top:auto; }
+.favoritePicker { align-items:center; justify-content:center; }
+@media (hover:hover) and (pointer:fine) { .guide:hover { text-decoration:underline; } .result:hover .label { color:var(--color-ink); } }
+@media (min-width:1024px) {
+ .head .guide { display:none; }
+ .card { grid-template-columns:minmax(0,1fr) minmax(0,1fr) auto; }
+ .column { padding:var(--space-5); }
+ .value { min-height:40px; }
+ .value .number { font-size:var(--fan-number-size-wide); }
+ .glyph { width:32px; height:32px; }
+ .action { align-self:flex-start; inline-size:auto; min-inline-size:160px; }
+ .guideColumn { display:block; padding:var(--space-2) var(--space-5); border-inline-start:1px solid var(--color-line); }
+}
 .backdrop { position:fixed; inset:0; z-index:var(--z-dialog); display:flex; align-items:flex-end; justify-content:center; background:var(--color-backdrop); }
 .sheet { position:relative; box-sizing:border-box; width:100%; padding:var(--space-8) var(--space-4); padding-bottom:calc(var(--space-8) + env(safe-area-inset-bottom)); border:0; outline:1px solid var(--color-line); outline-offset:-1px; border-radius:var(--radius-card) var(--radius-card) 0 0; background:var(--color-surface); color:var(--color-ink); font-family:var(--font-sans); font-variant-numeric:tabular-nums; font-feature-settings:"tnum"; }
 .handle { position:absolute; top:var(--space-2); left:calc(50% - var(--space-5)); width:40px; height:4px; border-radius:var(--radius-pill); background:var(--color-accent-line); }
@@ -37,19 +54,8 @@ button.tileLink { display:inline; align-self:flex-start; width:auto; min-height:
 @media (hover:hover) and (pointer:fine) { .stepper button:hover:not(:disabled) { background:var(--color-accent-soft); } }
 @media (max-width:1023px) { .sheet { min-height:min(400px, 85dvh); } }
 @media (min-width:1024px) {
- .cell { min-height:114px; padding:var(--space-5); grid-template-columns:28px minmax(0,1fr); grid-template-rows:18px 17px minmax(0,1fr); column-gap:var(--space-3); row-gap:var(--space-1); }
- .glyph { left:14px; top:15.5px; }
- .value { grid-column:2; grid-row:1; margin:0; }.label { grid-column:2; grid-row:2; min-height:0; }
- .under { grid-column:2; flex-direction:row; align-items:center; justify-content:flex-end; gap:var(--space-3); }
- .under .gauge { flex:1; width:auto; }.tileLink,.stampLabel { flex-shrink:0; max-width:100%; }
  .backdrop { align-items:center; }.backdrop .sheet[data-overlay-content] { max-width:440px; border-radius:var(--radius-card); }
  .sheet .exchangeAction { min-height:48px; }
 }
 
-.value .number > span:last-child:not(:first-child),.sheetValue .number > span:last-child:not(:first-child) { font-size:var(--fan-action-emphasis-size); }
 .backdrop .sheet[data-overlay-content] { padding-bottom:calc(var(--space-8) + env(safe-area-inset-bottom)); }
-
-.tileLink { position:relative; }
-.tileLink::after{position:absolute;inset:calc(-1 * var(--space-3)) 0;content:""}
-
-.favoritePicker { grid-column:1/-1; display:flex; align-items:center; justify-content:center; }

@@ -28,6 +28,8 @@ export const dukjilStanSource = {
   stanWalletFlows: { ko: "내 지갑", en: "My wallet" },
   // F2 (feedback F): the one entry to the 덕질 rules, in place of the help buttons.
   stanGuide: { ko: "안내", en: "Guide" },
+  // 대표 11/11: the hearts column's button (a full stamp page becomes a heart, after the rewarded ad).
+  stanClaim: { ko: "받기", en: "Claim" },
   // E4·E5 (feedback E): the favorite's lucky draws, the cheer card and the six linked wallet cells.
   luckyOpensAt: { ko: "{0} 응모 시작", en: "Entries open {0}" },
   luckyClosesAt: { ko: "마감 {0}", en: "Closes {0}" },

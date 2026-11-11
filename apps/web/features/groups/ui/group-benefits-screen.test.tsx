@@ -80,50 +80,30 @@ function duoData() {
   return base(url,init);
  }));
 }
-it('R2: waits for the favorite and shares the celebrity-scoped lookup with StanLucky',async()=>{
- bias.value={...bias.value,status:'loading'};
- const v=render(<GroupBenefitsScreen locale='ja'/>);
- await screen.findAllByText('137');
- expect(requests.filter(url=>url.startsWith('/api/benefits?'))).toEqual([]);
- expect(document.querySelector('[data-cell="tickets"] [aria-busy="true"]')).not.toBeNull();
- withFavorite();v.rerender(<GroupBenefitsScreen locale='ja'/>);
- await waitFor(()=>expect(requests.filter(url=>url.startsWith('/api/benefits?'))).toEqual(['/api/benefits?celebrity=bias-x&locale=en']));
- await waitFor(()=>expect(document.querySelector('[data-entry-state="ready"]')).not.toBeNull());
+it('대표 11/11: the tickets result links to my raffles and the points under it read 137/100P',async()=>{
+ duoData();render(<GroupBenefitsScreen locale='ko'/>);await screen.findAllByText('137');
+ const card=document.querySelector('[data-wallet-card]')!;
+ expect(card.querySelector('[data-cell="tickets"]')).toHaveAttribute('href','/my/raffles?locale=ko');
+ expect(card.querySelector('[data-cell="points"]')).toHaveTextContent('137/100P');
+ expect(card.querySelector('[data-cell="points"] [role="progressbar"]')).toHaveAttribute('aria-valuenow','100');
 });
-it('R2: distinguishes loading and failure from a real zero and retries the scoped lookup',async()=>{
- duoData();const base=fetch;let resolveEntries!:(response:Response)=>void;
- let next=()=>new Promise<Response>(resolve=>{resolveEntries=resolve;});
- const paths:string[]=[];
- vi.stubGlobal('fetch',vi.fn((url:string,init?:RequestInit)=>{
-  if(url.startsWith('/api/benefits?')){paths.push(url);return next();}
-  return base(url,init);
- }));
- render(<GroupBenefitsScreen locale='ko'/>);await screen.findByText('137');
- const cell=document.querySelector('[data-cell="tickets"]')!;
- expect(cell.querySelector('[aria-busy="true"]')).not.toBeNull();
- expect(within(cell as HTMLElement).queryByRole('link',{name:'내 응모 0장'})).toBeNull();
- await act(async()=>resolveEntries(Response.json({error:{code:'BENEFITS_UNAVAILABLE'}},{status:503})));
- const retry=await within(cell as HTMLElement).findByRole('button',{name:'요청을 완료하지 못했어요. 다시 시도'});
- expect(cell.querySelector('[data-entry-state="missing"]')).not.toBeNull();
- next=()=>Promise.resolve(Response.json({benefits:[]}));fireEvent.click(retry);
- await within(cell as HTMLElement).findByRole('link',{name:'내 응모 0장'});
- expect(paths).toEqual(['/api/benefits?celebrity=bias-x&locale=ko','/api/benefits?celebrity=bias-x&locale=ko']);
-});
-it('DUO: 럭키드로우 is its own section with a header and the past-draws link on its right',async()=>{
- duoData(); const v=render(<GroupBenefitsScreen locale='ko'/>);
- await screen.findByText('글쓰기');
- const section=v.container.querySelector('[data-lucky-section]') as HTMLElement;
- expect(section).not.toBeNull();
- expect(section.querySelector('[data-fan-section-header]')).toHaveTextContent('럭키드로우');
- expect(within(section).getByRole('link',{name:/지난 럭키드로우/})).toBeInTheDocument();
- expect(section.contains(v.container.querySelector('[data-wallet-card]'))).toBe(false);
+it('대표 11/11: without an ad unit 교환 and 받기 stay disabled even when affordable or full',async()=>{
+ adUnit.value=undefined;
+ try{
+  withFavorite();roadmapBody={passportId:uid(900),celebrityId:uid(901),hearts:3,pages:[{pageNo:1,slots:Array.from({length:9},(_,i)=>({slotNo:i+1,kind:null,state:'filled',stampId:null,clearedAt:null})),filled:9,claimable:true,claimed:false,locked:false,lockedReason:null}]};
+  render(<GroupBenefitsScreen locale='ko'/>);await screen.findAllByText('137');
+  await waitFor(()=>expect(document.querySelector('[data-cell="stamps"]')).toHaveTextContent('9/9'));
+  expect(screen.getByRole('button',{name:'교환'})).toBeDisabled();
+  expect(screen.getByRole('button',{name:'받기'})).toBeDisabled();
+  expect(screen.queryByRole('link',{name:'받기'})).toBeNull();
+ }finally{adUnit.value='/123/rewarded';}
 });
 it('DUO: preserves the approved block order, four tiles and a single check-in action',async()=>{
  duoData(); const v=render(<GroupBenefitsScreen locale='ko'/>);
  await screen.findByText('글쓰기');
  const blocks=v.container.querySelectorAll('[data-duo-profile],[data-duo-lucky],[data-wallet-card],[data-fan-missions],[data-duo-today],[data-duo-rail],[data-duo-history]');
  expect([...blocks].map(el=>el.getAttributeNames().find(n=>n.startsWith('data-duo-')||n==='data-wallet-card'||n==='data-fan-missions'))).toEqual(['data-wallet-card','data-duo-lucky','data-fan-missions']);
- expect([...v.container.querySelectorAll('[data-cell]')].map(n=>n.getAttribute('data-cell'))).toEqual(['points','tickets','stamps','hearts']);
+ expect([...v.container.querySelectorAll('[data-cell]')].map(n=>n.getAttribute('data-cell'))).toEqual(['tickets','points','hearts','stamps']);
  // C4: no blur, no cover, no inert ancestor; only the enter button rests, with its reason attached.
  const card=v.container.querySelector('[data-duo-lucky]') as HTMLElement;
  expect(card.closest('[inert],[aria-hidden="true"],[aria-disabled="true"]')).toBeNull();
@@ -135,7 +115,6 @@ it('DUO: preserves the approved block order, four tiles and a single check-in ac
  expect(card.querySelector('[data-lucky-stage]')).not.toBeNull();
  expect(v.container.querySelectorAll('[data-mission="checkin"]')).toHaveLength(1);
  expect(v.container.querySelector('[data-duo-today]')).toBeNull();
- expect(v.container.querySelector('[data-cell="hearts"]')?.querySelector('a')).toBeNull();
  expect(v.container.querySelector('[data-wallet-card]')?.querySelector('.lucide-chevron-right')).toBeNull();
 });
 it('DUO: highlights the nearest open draw, actual allowance and exactly one primary action',async()=>{
@@ -179,9 +158,9 @@ it('DUO: keeps unaffordable exchange disabled and enables it after the shared wa
 it.each(APP_LOCALES)('DUO: keeps the signed-out layout and locks balances in %s without private reads',async(locale)=>{
  auth.authenticated=false;session.ownerId=null as any;bias.value={...bias.value,status:'guest'};
  const v=render(<GroupBenefitsScreen locale={locale}/>);await screen.findAllByRole('link',{name:walletCopy(locale).login});
- expect(v.container.querySelectorAll('[data-cell]')).toHaveLength(4);
+ // 59bc0b1ba: signed out, one login scene replaces the wallet's cells.
+ expect(v.container.querySelectorAll('[data-wallet-card] [data-cell]')).toHaveLength(0);
  expect(v.container.querySelector('[data-wallet-card]')?.textContent).not.toContain('137');
- expect(v.container.querySelector('[data-wallet-card] button')).toBeDisabled();
  expect(requests.some(url=>url.startsWith('/api/me/'))).toBe(false);
  expect(requests.some(url=>url.includes('mine=joined')||url.includes('/leaderboard')||url.includes('/public-people'))).toBe(false);
 });
@@ -200,23 +179,21 @@ it('사용자 결정 B: the stamp words never read as automatic — 9 − (n mod
  expect(nextHeartLabel('en',4)).toBe('5 more to claim');expect(nextHeartLabel('ja',9)).toBe('ハートを受け取る');
 });
 
-it('DS-D 9/9: a page already claimed (no next page yet) shows 0/9 and 9칸 더 모으면 받기, never 하트 받기',async()=>{
+it('DS-D 9/9: a page already claimed (no next page yet) shows 0/9 and a disabled 받기',async()=>{
  withFavorite();roadmapBody={passportId:uid(900),celebrityId:uid(901),hearts:3,pages:[{pageNo:1,slots:Array.from({length:9},(_,i)=>({slotNo:i+1,kind:null,state:'filled',stampId:null,clearedAt:null})),filled:9,claimable:false,claimed:true,locked:false,lockedReason:null}]};
  render(<GroupBenefitsScreen locale='ko'/>);
  await screen.findAllByText('137');const card=document.querySelector('[data-wallet-card]')!;
  await waitFor(()=>expect(card.querySelector('[data-cell="stamps"]')).toHaveTextContent('0/9'));
- const cell=card.querySelector('[data-cell="stamps"]')!;
- expect(cell).toHaveTextContent('9칸 더 모으면 받기');expect(cell).not.toHaveTextContent('하트 받기');expect(cell.querySelector('a')).toHaveAttribute('href','/passports?locale=ko');
+ expect(card).not.toHaveTextContent('하트 받기');
+ expect(within(card as HTMLElement).getByRole('button',{name:'받기'})).toBeDisabled();
 });
 
-it('사용자 결정 B: at 9/9 the wallet stamps cell says 하트 받기 › and goes to the passport mission book',async()=>{
+it('대표 11/11: at 9/9 the hearts column 받기 goes to the passport mission book',async()=>{
  withFavorite();roadmapBody={passportId:uid(900),celebrityId:uid(901),hearts:3,pages:[{pageNo:1,slots:Array.from({length:9},(_,i)=>({slotNo:i+1,kind:null,state:'filled',stampId:null,clearedAt:null})),filled:9,claimable:true,claimed:false,locked:false,lockedReason:null}]};
  render(<GroupBenefitsScreen locale='ko'/>);
  await screen.findAllByText('137');const card=document.querySelector('[data-wallet-card]')!;
  await waitFor(()=>expect(card.querySelector('[data-cell="stamps"]')).toHaveTextContent('9/9'));
- const cell=card.querySelector('[data-cell="stamps"]')!;
- expect(cell).toHaveTextContent('하트 받기');expect(cell).not.toHaveTextContent('더 모으면');
- expect(cell.querySelector('a')).toHaveAttribute('href',`/passports/${uid(900)}?locale=ko#mission-book`);
+ expect(within(card as HTMLElement).getByRole('link',{name:'받기'})).toHaveAttribute('href',`/passports/${uid(900)}?locale=ko#mission-book`);
 });
 
 it('uses validated catalog values, real scoped links, zero rewards and independent cursor pages',async()=>{
