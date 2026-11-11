@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { isPrivatePath, isRehearsalPath } from "./seo/metadata";
 import { isInstagramManagementPath, requestLocale } from "./components/locale-path";
 import { isAppLocale } from "./i18n/locales";
-import { awsStorageContentSecurityPolicy } from "./security-headers";
+import { adsenseEnabled, awsStorageContentSecurityPolicy } from "./security-headers";
 import { isAwsHosting } from "./server/config/hosting";
 import { readGa4MeasurementId } from "./features/analytics/domain/ga4-id";
 import { isNativeAppAvailable, openAppWebPath } from "./server/app-link/open-app-redirect";
@@ -62,6 +62,9 @@ export function proxy(request: NextRequest): NextResponse {
     const requestHeaders = new Headers(request.headers);
     requestHeaders.set("x-byus-locale", locale);
     requestHeaders.set("x-byus-pathname", request.nextUrl.pathname);
+    // Always overwritten here, so a browser cannot send it in: the layout loads AdSense only when this says 1.
+    const adsense = isAwsHosting() && adsenseEnabled(viewerOrigin);
+    requestHeaders.set("x-byus-adsense", adsense ? "1" : "0");
     // Resolve page queries internally, keeping the browser/share URL language-free.
     // Static resources retain their exact URLs; admin keeps its lang contract.
     const needsLocale = (isAdminPage || isInstagramManagementPath(request.nextUrl.pathname) ? requestedLocale !== "ko" && requestedLocale !== "en" : !isAppLocale(requestedLocale))
@@ -90,6 +93,7 @@ export function proxy(request: NextRequest): NextResponse {
       response.headers.set("Content-Security-Policy", awsStorageContentSecurityPolicy({
         rewardedAds: rewardedExchangeDecision(process.env).enabled,
         ga4: readGa4MeasurementId(process.env.GA4_MEASUREMENT_ID) !== "",
+        adsense,
         bucket: process.env.S3_PRIVATE_BUCKET, region: process.env.AWS_REGION,
         stage: request.nextUrl.pathname === "/admin/wave-stage",
       }));

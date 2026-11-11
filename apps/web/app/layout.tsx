@@ -22,6 +22,7 @@ import { BYUS_BRAND_ICONS } from "./brand-icons";
 import { AuthTransitionBoundary } from "../components/auth-transition-boundary";
 import { FanToastProvider } from "../components/fan-ui/fan-toast";
 import { parseAppLocale, type AppLocale } from "../i18n/locales";
+import { ADSENSE_SCRIPT_SRC } from "../security-headers";
 import "./globals.css";
 
 const DESCRIPTIONS: Record<AppLocale, string> = {
@@ -79,6 +80,8 @@ export default async function RootLayout({
   const { authProvider, privyAppId, testAccountLoginEnabled, appleLoginEnabled, ga4MeasurementId } = publicRuntimeConfig();
   return (
     <html lang={locale}>
+      {/* AdSense site ownership: the snippet in the server HTML head of every page, on kyaa.io only (proxy decides x-byus-adsense). */}
+      {requestHeaders.get("x-byus-adsense") === "1" ? <head><script async src={ADSENSE_SCRIPT_SRC} crossOrigin="anonymous" /></head> : null}
       <body>
         {rewardedExchange.enabled && <meta name="kyaa-rewarded-ad-unit" content={rewardedExchange.adUnit} />}
         <LocaleProvider initialLocale={locale}>
