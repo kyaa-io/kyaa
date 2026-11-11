@@ -67,10 +67,11 @@ const request = (posts: unknown[], extra: Record<string, unknown> = {}) =>
   snsIngestRequestSchema.parse({ celebritySlug: "wena", platform: "instagram", posts, ...extra });
 
 describe("sns ingest service", () => {
-  it("stores a video cover before publishing without changing the original body", async () => {
+  it("stores a video cover without changing the original body or bypassing image review", async () => {
     const { deps, notices, rpc } = fakeDatabase();
     const result = await createSnsIngestService(deps).ingest(request([post("DQabc123xyz", { videoThumbnail: { url: "https://scontent.cdninstagram.com/cover.jpg" } })]), "c");
-    expect(result.items[0]?.status).toBe("published");
+    expect(result.items[0]).toMatchObject({ status: "held", reason: "PHOTO_REVIEW_REQUIRED" });
+    expect(rpc.mock.calls.some(([name]) => name === "sns_ingest_publish")).toBe(false);
     expect(deps.fetchImage).toHaveBeenCalledWith(new URL("https://scontent.cdninstagram.com/cover.jpg"));
     expect(deps.upload).toHaveBeenCalledTimes(2);
     expect(rpc).toHaveBeenCalledWith("sns_ingest_register_video_thumbnail", expect.objectContaining({ p_source_host: "scontent.cdninstagram.com" }));

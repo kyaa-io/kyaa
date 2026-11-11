@@ -47,3 +47,12 @@ it("never uses a letterboxed YouTube cover in a text-free tile (R5: no black ban
   await waitFor(() => expect(container.querySelector("img")).toHaveAttribute("src", "https://i.ytimg.com/vi/abcdefghijk/mqdefault.jpg"));
   expect(container.innerHTML).not.toContain("hqdefault");
 });
+
+it("reads a stored API cover directly so image optimization cannot outlive its visibility", () => {
+  const image = "/api/public/notice-media/20000000-0000-4000-8000-000000000002?variant=thumbnail";
+  const { container } = render(<MediaThumbnail image={image} href="https://www.tiktok.com/@fixture/video/7696850953064189185" kind="videos" locale="ko" title="원문 제목" iconOnly />);
+  const src = new URL(container.querySelector("img")!.getAttribute("src")!, location.href);
+  expect(src.pathname + src.search).toBe(image);
+  expect(container.querySelector("img")).toHaveAttribute("loading", "lazy");
+  expect(container.querySelector("img")).not.toHaveAttribute("srcset");
+});

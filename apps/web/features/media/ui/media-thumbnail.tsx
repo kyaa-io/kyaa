@@ -24,8 +24,8 @@ export function MediaThumbnail({ image, href, kind, source, locale, priority = f
   const src = candidates.find((value): value is string => typeof value === "string" && value.length > 0 && !failed.includes(value));
   const provider = id ? "YouTube" : isRecordedReplayUrl("instagram", href) ? "Instagram" : isRecordedReplayUrl("tiktok", href) ? "TikTok" : source;
   if (!src) return <span className={styles.thumbnailFallback} data-video-fallback={kind !== "photos" || undefined} aria-hidden="true">{kind === "photos" ? <ImageOff size={28} /> : provider && ["YouTube", "Instagram", "TikTok"].includes(provider) ? <Image src={`/images/guest-home/${provider.toLowerCase()}.svg`} width={28} height={28} alt="" unoptimized /> : <Play size={28} />}{(!iconOnly || kind !== "photos") && <span>{[provider, title || participationCopy(locale)[kind]].filter(Boolean).join(" · ")}</span>}</span>;
-  // Own files (/images/…) go through the image optimizer at the tile width; other hosts stay as they are.
-  const local = src.startsWith("/") && !src.startsWith("//");
+  // API images must recheck visibility instead of being retained in the image optimizer cache.
+  const local = src.startsWith("/") && !src.startsWith("//") && !src.startsWith("/api/");
   const picture = <Image src={src} width={640} height={360} alt="" unoptimized={!local} sizes={local ? "(max-width: 767px) 50vw, 320px" : undefined} referrerPolicy="no-referrer" loading={priority ? "eager" : "lazy"} fetchPriority={priority ? "high" : undefined}
     data-media-portrait={dimensions && dimensions.height > dimensions.width || undefined}
     style={dimensions ? { aspectRatio: `${dimensions.width} / ${dimensions.height}` } : undefined}

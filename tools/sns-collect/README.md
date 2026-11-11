@@ -12,6 +12,6 @@
 
 ## 별도 영상 표지 (GALLERY-THUMB-1535)
 
-영상 페이지에서 확보한 원본 표지는 `videoThumbnail: { url }`로 전송한다. 사진 본문용 `images`에 영상 표지를 넣지 않는다. 서버가 기존 CDN 허용 목록·다운로더·이미지 검증을 적용한 뒤 `mobile-media/sns-ingest/...`에 원본 표지와 작은 표지를 저장한다. 저장 실패는 `held / IMAGE_FAILED`이며 원문 본문을 바꾸지 않는다. 기존 게시물 duplicate를 재수집해서 덮어쓰지 않는다.
+영상 페이지에서 확보한 원본 표지는 `videoThumbnail: { url }`로 전송한다. 사진 본문용 `images`에 영상 표지를 넣지 않는다. 서버가 기존 CDN 허용 목록·다운로더·이미지 검증을 적용한 뒤 `mobile-media/sns-ingest/...`에 원본 표지와 작은 표지를 저장한다. 표지 저장 뒤에도 기존 이미지 검토 보류(`held / PHOTO_REVIEW_REQUIRED`)를 유지한다. 저장 실패는 `held / IMAGE_FAILED`이며 원문 본문을 바꾸지 않는다. 기존 게시물 duplicate를 재수집해서 덮어쓰지 않는다.
 
 기존 영상 보완은 감독 전용이다. `node scripts/plan-video-thumbnail-backfill.mjs manifest.json`은 네트워크·DB·S3 쓰기가 없는 dry-run이다. JSON 배열의 각 행에 `noticeId`, `platform`, `sourceUrl`, 선택 `thumbnailUrl`을 넣는다. 누락된 표지를 임의로 만들지 않는다. 실제 복사·등록과 post SQL 검토 절차는 `work/gallery-thumb-1535/backfill-post.sql`을 따른다. 새 마이그레이션 두 개와 SNS ingest 선행 마이그레이션이 모두 필요하다.

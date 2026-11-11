@@ -6,7 +6,7 @@ Overlap: fast-forwarded f77579fa4 (SNS-INGEST-INT-1520) into this isolated branc
 
 MIGRATION: 20261222000000_sns_ingest.sql prerequisite, then BOTH 20261222001000_video_thumbnails.sql and 20261222002000_sns_thumbnail_storage_reservation.sql. New table is private/RLS; register/read RPCs service-role only. Public image delivery rechecks notice visibility and both S3 objects ready. SQL pair tested in a new disposable local PostgreSQL cluster with no env files/credentials, stopped after tests. No operating/dev/shared database writes.
 
-New IG video/TikTok covers are a separate collector field, copied via existing CDN downloader and image normalization into mobile-media sns-ingest paths before publishing. Original notice text/body remain unmodified. Image metadata must be registered before S3 upload; this fixes the inherited registration-after-upload reservation conflict for collected images as well. Existing uploaded video processing already stores a frame with ffmpeg (worker.ts); it is retained.
+New IG video/TikTok covers are a separate collector field, copied via existing CDN downloader and image normalization into mobile-media sns-ingest paths before human review. Video covers retain the existing PHOTO_REVIEW_REQUIRED hold; this change does not auto-publish collected images. Original notice text/body remain unmodified. Image metadata must be registered before S3 upload; this fixes the inherited registration-after-upload reservation conflict for collected images as well. Existing uploaded video processing already stores a frame with ffmpeg (worker.ts); it is retained.
 
 Public list requests read stored covers only; they never fetch an external URL. Gallery and home shortform prefer the stored thumbnail variant. Missing/failed images show the provider logo and original title, not an empty tile. Existing YouTube and curated static image candidates remain as fallbacks; this patch does not add a new YouTube collection/import system.
 
@@ -24,3 +24,10 @@ Verification (fresh, isolated checkout):
 - dependencies.test.ts earlier passed real redirect, streamed size, image decoding and pixel limit tests; downloader code was reused unchanged.
 - sql-tests.log: actual migration pair applied in a fresh disposable PostgreSQL with fixture prerequisites. Verified object reservation, bad hash/path, public visibility, both-file readiness, deleted object and RPC role boundaries. This is not an application of migrations to dev/production.
 - design-lint: no new violations. Pre-commit result recorded at commit.
+
+
+17:20 supervisor continuation:
+- Confirmed local dependencies and rolldown available. Fresh web run: 14 files / 116 tests passed; collector + backfill: 11 passed; disposable migration-pair SQL check passed. No operating/dev/shared database accessed.
+- Final corrections: API-backed thumbnail images bypass Next image optimization so the original visibility-checking API remains authoritative. Collected video covers keep the pre-existing image review hold instead of auto-publishing.
+- Screenshots may follow after supervisor integrates this commit into shared preview; preview non-inclusion is not a code readiness failure. No localdev server, shared preview edit, DB backfill execution or deployment performed.
+- Final focused regression after corrections: ingest service and home shorts passed; thumbnail tests 10 passed after normalizing jsdom's absolute URL in the assertion. Typecheck passed (exit 0). These overlap the earlier 116-test run and are not additional independent test totals.
