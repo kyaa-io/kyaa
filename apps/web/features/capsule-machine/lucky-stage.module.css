@@ -3,3 +3,20 @@
 .stage picture, .still, .stage canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
 .still { object-fit: contain; transition: opacity var(--motion-control) var(--motion-easing); }
 .still[data-hidden] { opacity: 0; }
+
+.trigger.trigger { position: absolute; inset: 0; width: 100%; border: 0; background: transparent; cursor: zoom-in; pointer-events: auto; border-radius: 0; padding: 0; }
+.trigger:focus-visible, .demo:focus-visible { outline: 2px solid var(--color-focus); outline-offset: -3px; }
+.demo.demo { position: relative; display: block; width: 100%; aspect-ratio: 1; padding: 0; border-radius: 0; border: 0; background: transparent; cursor: pointer; }
+.demo img, .demo canvas { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; }
+
+[data-playing] .demo img:not([data-hidden]) { opacity: .7; transition: opacity var(--motion-control); }
+
+.demo [data-hidden] { opacity: 0; }
+
+.demo.demo:hover, .trigger.trigger:hover { background: transparent; }
+
+/* The machine stays vivid while repeat clicks are locked during playback. */
+.demo.demo.demo:disabled { opacity: 1; }
+
+.previewStill { box-sizing: border-box; padding: var(--space-4); }
+[data-demo-graphics="still"] .demo canvas { visibility: hidden; }

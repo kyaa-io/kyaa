@@ -16,8 +16,8 @@ import { CAPSULE_COLORS, type CapsuleLevel, type CapsuleOutcome } from "./palett
 export type { CapsuleLevel, CapsuleOutcome };
 
 export type CapsuleEngine = {
-  /** Plays the dispense (and, for one capsule, the reveal) for outcomes the server already decided. Resolves early when cleared. */
-  play(count: 1 | 10, outcomes: readonly CapsuleOutcome[]): Promise<string[]>;
+  /** Plays the dispense (and, for one capsule, the reveal) for outcomes the server already decided. Preview only dispenses a closed capsule. Resolves early when cleared. */
+  play(count: 1 | 10, outcomes: readonly CapsuleOutcome[], preview?: boolean): Promise<string[]>;
   /** Cancels a running play and removes its effects. */
   clear(): void;
   start(): void;
@@ -344,11 +344,13 @@ export async function createCapsuleEngine(canvas: HTMLCanvasElement, options: Ca
     const land = new Vector3(spread + (Math.random() - .5) * .05, CR, 1.38 + (count === 1 ? 0 : (i % 2) * .2 - .12));
     o.quaternion.setFromEuler(new Euler(Math.random() * 3, Math.random() * 3, 0));
     await tween(count === 1 ? 260 : 160, (k) => { o.position.lerpVectors(p0, p1, k); }, ease.outCubic);
+    if (own !== epoch) return null;
     const spin = new Vector3(Math.random() - .5, 0, Math.random() - .5).normalize();
     await tween(count === 1 ? 620 : 420, (k, raw) => {
       o.position.x = p1.x + (land.x - p1.x) * raw; o.position.z = p1.z + (land.z - p1.z) * raw; o.position.y = p1.y + (land.y - p1.y) * k;
       o.rotateOnWorldAxis(spin, .09);
     }, ease.outBounce);
+    if (own !== epoch) return null;
     const base = o.scale.x;
     void tween(260, (k) => { const q = Math.sin(k * Math.PI) * (1 - k * .4); o.scale.set(base * (1 + .22 * q), base * (1 - .26 * q), base * (1 + .22 * q)); }, ease.linear);
     if (rare && own === epoch) {
@@ -603,20 +605,24 @@ export async function createCapsuleEngine(canvas: HTMLCanvasElement, options: Ca
   }
 
   return {
-    async play(count, outcomes) {
+    async play(count, outcomes, preview = false) {
+      if (disposed) return [];
       clear();
       const own = epoch, alive = () => own === epoch;
       // Crank: one unbroken motion, slow start → steady → slow down with a small overshoot. Capsules only tremble.
       const r0 = crankArm.rotation.z, turns = count === 1 ? 2 : 3, total = Math.PI * 2 * turns;
       await tween(160, (k) => { crankArm.rotation.z = r0 + .18 * k; }, ease.outCubic);
+      if (!alive()) return [];
       let lastJolt = 0;
       await tween(count === 1 ? 1700 : 2300, (k, raw) => {
         crankArm.rotation.z = r0 + .18 * (1 - Math.min(1, raw * 6)) - total * k;
         if (raw - lastJolt > .12) { lastJolt = raw; jolt(.08); }
       }, ease.inOutQuad);
+      if (!alive()) return [];
       await tween(260, (k) => { crankArm.rotation.z = r0 - total - .12 * Math.sin(k * Math.PI); }, ease.outCubic);
       if (!alive()) return [];
       await tumble(count === 1 ? 2300 : 2700); // the drum turns and the capsules mix
+      if (!alive()) return [];
       await wait(250);
       if (!alive()) return [];
       const colors: string[] = [];
@@ -625,7 +631,8 @@ export async function createCapsuleEngine(canvas: HTMLCanvasElement, options: Ca
         if (!o || !alive()) return [];
         colors.push(o.userData.color as string);
         await wait(150);
-        await reveal(o, outcomes[0] ?? { level: 0, imageUrl: null }, own);
+        if (!alive()) return [];
+        if (!preview) await reveal(o, outcomes[0] ?? { level: 0, imageUrl: null }, own);
         await wait(300);
       } else {
         const outs: Array<Promise<Group | null>> = [];
