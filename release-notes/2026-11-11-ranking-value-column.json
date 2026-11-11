@@ -1,0 +1,13 @@
+{
+  "changes": [
+    "홈 랭킹의 값 열을 맞췄어요. 팬·크리에이터 모두 코인·하트 그림은 같은 자리에, 숫자는 오른쪽 끝에 맞춰 줄이 흐트러지지 않고, 펼침 화살표도 모든 행에서 같은 자리에 있어요.",
+    "화살표를 배너 안쪽으로 옮기면서 남아 있던 좌우 여백을 없애, PC에서 배너 양끝이 아래 랭킹 카드의 양끝과 나란히 맞아요.",
+    "캡처는 개발용 시험 데이터로 로컬에서 찍은 화면이에요."
+  ],
+  "path": "/",
+  "images": [
+    "release-notes/images/2026-11-11-ranking-value-column-pc.png",
+    "release-notes/images/2026-11-11-ranking-value-column-mobile.png",
+    "release-notes/images/2026-11-11-home-banner-aligned-pc.png"
+  ]
+}

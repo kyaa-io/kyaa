@@ -201,3 +201,14 @@ it("a period change is not a value change: no ring (and no move) when the tabs s
     delete (Element.prototype as Partial<Element>).animate;
   }
 });
+
+it("shows points as the coin asset and likes as the heart asset, never the letter P or the word", async () => {
+  stub(fans([fanRow(1, { nickname: "가", points: 7480 })]), creators({ rows: [creatorRow(1, { slug: "elina", name: "엘리나", likes: 105 })] }));
+  const { container } = render(<HomeRankingCard locale="ko" />);
+  await screen.findByText("가");
+  const main = (kind: string) => container.querySelector(`li[data-row='${kind}-rank'] [data-metric]`) as HTMLElement;
+  expect(main("fan").querySelector("img[src='/images/economy/point-coin.svg']")).not.toBeNull();
+  expect(main("fan").textContent).toBe("7,480");
+  expect(main("creator").querySelector("[data-icon='heart']")).not.toBeNull();
+  expect(main("creator").textContent).toBe("105");
+});

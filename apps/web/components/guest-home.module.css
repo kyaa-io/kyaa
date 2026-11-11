@@ -82,8 +82,9 @@
 .carouselControls > button::before { position: absolute; width: 32px; height: 32px; border: 1px solid color-mix(in srgb, var(--color-surface) 24%, transparent); border-radius: 50%; background: color-mix(in srgb, var(--color-ink) 44%, transparent); content: ""; transition: background-color 160ms cubic-bezier(.2,0,0,1); }
 .carouselControls > button svg { position: relative; z-index: 1; width: 16px; height: 16px; }
 .carouselCounter { display: none; }
-.carouselPrevious { left: -44px; }
-.carouselNext { right: -44px; }
+/* 좌우 화살표는 배너 이미지 박스 안쪽 가장자리, 세로 가운데(사용자 2026-11-11 08:30: 11/10 '밖' 결정 대체). */
+.carouselPrevious { left: 0; }
+.carouselNext { right: 0; }
 .carouselProgress { position: absolute; bottom: -22px; left: 50%; width: 40px; height: 3px; border-radius: 999rem; background: var(--line); transform: translateX(-50%); }
 .carouselProgress span { display: block; width: var(--progress-width); height: 100%; border-radius: inherit; background: var(--ink); transform: translateX(var(--progress-offset)); transition: transform 160ms cubic-bezier(.2,0,0,1); }
 @media (prefers-reduced-motion: reduce) { .carouselProgress span { transition: none; } }
@@ -400,4 +401,3 @@
   .carouselCounter { position: absolute; z-index: var(--z-home-live); top: 12px; right: 12px; display: block; pointer-events: none; padding:var(--space-1) var(--space-2); border-radius: var(--radius-pill); background: var(--color-home-caption); color: var(--color-surface); font-size:var(--fan-badge-size); font-variant-numeric: tabular-nums; }
 }
 
-@media (min-width: 768px) { .heroCarousel[data-has-controls="true"] { margin-inline: calc(var(--space-10) + var(--space-1)); } }
