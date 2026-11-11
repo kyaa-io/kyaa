@@ -24,7 +24,7 @@ a=0;b=0
 wait "$first" || a=$?
 wait "$second" || b=$?
 if [[ "$a" == 0 && "$b" == 0 || "$a" != 0 && "$b" != 0 ]]; then cat "$log_dir/a" "$log_dir/b";exit 1;fi
-cat "$log_dir/a" "$log_dir/b" | grep -q GROUP_WALLET_INSUFFICIENT_BALANCE
+grep -q GROUP_WALLET_INSUFFICIENT_BALANCE "$log_dir/a" "$log_dir/b"
 # Opposite inviter/invitee order must complete without deadlock.
 psql -X -v ON_ERROR_STOP=1 <<'SQL' >/dev/null
 insert into public.app_users(id,privy_user_id,verified_email)values('e9100000-0000-4000-8000-000000000005','did:privy:wallet-inviter','wallet-inviter@example.test');
