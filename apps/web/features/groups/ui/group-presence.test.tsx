@@ -5,6 +5,8 @@ import {afterEach,beforeEach,expect,it,vi} from 'vitest';
 import {AuthError} from '@/features/auth/domain/auth-errors';
 import {createGroupHandler} from '@/server/groups/routes';
 import {GroupPresence} from './group-presence';
+const frame=vi.hoisted(()=>({value:null as null|{celebrity?:{name:string}}}));
+vi.mock('./group-page-context',()=>({useOptionalGroupPage:()=>frame.value}));
 import {useGroupPresence} from './use-group-presence';
 import { resetAuthReadyDeadlineForTest } from '@/features/auth/client/public-read-auth';
 vi.mock('server-only',()=>({}));
@@ -111,6 +113,15 @@ it('pulses the online artist dot three times after the number roll and stops it 
  expect(css).not.toMatch(/infinite/);
  expect(css).toMatch(/@keyframes presencePulse \{[^}]*transform: scale\(1\);[^}]*\}[^}]*transform: scale\(2\.6\); \}/);
  expect(css).toMatch(/@media \(prefers-reduced-motion: reduce\) \{ \.liveDot::after \{ animation: none; \} \}/);
+});
+
+it('names the online artist by the fan page name, not the linked account nickname (11/13)',async()=>{
+ response={onlineCount:0,todayCount:0,artists:[{profileId:'30000000-0000-4000-8000-000000000001',nickname:'팬0106',online:true,visitedToday:true}]};
+ frame.value={celebrity:{name:'엘리나'}};
+ const view=render(<GroupPresence pageId={pageId} locale='ko' mode='compact'/>);await flush();
+ expect(screen.getByText('엘리나').parentElement).toHaveAttribute('data-online','true');
+ expect(screen.queryByText('팬0106')).toBeNull();
+ view.unmount();frame.value=null;
 });
 
 it('puts the online artist right after the fan count as a pill',async()=>{

@@ -123,23 +123,23 @@ describe("FanPostRow", () => {
     expect(container.querySelector("svg")).toBeInTheDocument();
     expect(container.textContent).not.toContain("—");
     rerender(<FanPostRow href="/p" locale="ko" title="제목" thumbnail={null} views={null} likes={3} density="board" />);
-    expect(screen.getByLabelText("추천 3")).toHaveTextContent("3");
+    expect(screen.getByLabelText("좋아요 3")).toHaveTextContent("3");
     expect(screen.queryByLabelText(/조회/)).toBeNull();
   });
   it("labels board numbers on the row itself", () => {
     render(<FanPostRow href="/p" locale="ko" title="제목" author="별빛" views={1234} likes={3} density="board" />);
     expect(screen.getByText("조회 1,234")).toBeInTheDocument();
-    expect(screen.queryByText("추천 3")).toBeNull();
+    expect(screen.queryByText("좋아요 3")).toBeNull();
   });
   it("puts likes beside the comment count and drops a zero count (11/13)", () => {
     const { rerender } = render(<FanPostRow href="/p" locale="ko" title="제목" commentCount={2} likes={5} density="board" />);
-    const comments = screen.getByLabelText("댓글 2"), likes = screen.getByLabelText("추천 5");
+    const comments = screen.getByLabelText("댓글 2"), likes = screen.getByLabelText("좋아요 5");
     expect(likes).toHaveTextContent("5");
     expect(likes.querySelector("svg")).not.toBeNull();
     expect(comments.nextElementSibling).toBe(likes);
     expect(comments.parentElement).toBe(screen.getByRole("link", { name: "제목" }).parentElement);
     rerender(<FanPostRow href="/p" locale="ko" title="제목" commentCount={0} likes={0} density="board" />);
-    expect(screen.queryByLabelText(/추천|댓글/)).toBeNull();
+    expect(screen.queryByLabelText(/좋아요|댓글/)).toBeNull();
   });
   it("marks a post the page artist reacted to with a star beside the title (11/13)", () => {
     const { rerender } = render(<FanPostRow href="/p" locale="ko" title="제목" reactedBy="엘리나" commentCount={1} />);

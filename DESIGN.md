@@ -106,7 +106,7 @@ radius-scale: "pill / 16px / 12px / 8px / 50%"
 | 오류·LIVE·알림 점 | `--color-error` | #9f1239 |
 | 경고·순위 배지 글자 | `--color-warning` | #7a4206 |
 | 완료 체크 | `--color-success` | #17613f |
-| 기능색(사용자 승인) | `--color-reaction-comment`(댓글·▼), `--color-rank-up/-down`, `--color-heart`, `--color-translation-link`, `--color-brand-link`, `--color-artist-reaction(-ink)`(게시판 행 아티스트 반응 별, 11/13) | 강조색이 아니다. 지정된 자리만 |
+| 기능색(사용자 승인) | `--color-reaction-comment`(댓글·▼), `--color-rank-up/-down`, `--color-heart`, `--color-translation-link`, `--color-brand-link`, `--color-artist-reaction(-ink)`(게시판 행 크리에이터 반응 별 한 곳 전용, 사용자 승인 11/13) | 강조색이 아니다. 지정된 자리만 |
 | 화면 전용 | `--color-shortform-*`, `--color-home-caption`, `--color-home-hero-shade`, `--color-campaign-art` | 그 화면만 |
 | 비활성 | `--fan-disabled-opacity` .4 | 면·글자색은 그대로 두고 불투명도만 |
 

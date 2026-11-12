@@ -18,7 +18,7 @@ export const fanUiSource = {
   commentsLabel: { ko: "댓글 {0}", en: "{0} comments" },
   viewsLabel: { ko: "조회 {0}", en: "{0} views" },
   editedMark: { ko: "수정됨", en: "Edited" },
-  likesLabel: { ko: "추천 {0}", en: "{0} likes" },
+  likesLabel: { ko: "좋아요 {0}", en: "{0} likes" },
   artistReacted: { ko: "{0} 반응", en: "{0} reacted" },
   loadingStatus: { ko: "불러오는 중", en: "Loading" },
   // S4: 배지에는 금액 하나만, 횟수·조건은 배지 밖 보조 글자로. `×N`은 쓰지 않는다.

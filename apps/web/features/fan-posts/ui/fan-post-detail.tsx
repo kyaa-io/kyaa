@@ -51,12 +51,13 @@ import commentStyles from "./post-comments.module.css";
 const parsePost = (value: unknown) => postSchema.parse((value as { post?: unknown })?.post);
 const parseComments = (value: unknown) => commentPageSchema.parse(value);
 
-export function FanPostDetail(props: { postId: string; locale: AppLocale; presentation?: "board";expectedSlug?:string }) {
+/** `creatorName`: 그 팬페이지 표시 이름. 아티스트 댓글의 이름 자리에 연결 계정 닉네임 대신 쓴다(11/13 감독). */
+export function FanPostDetail(props: { postId: string; locale: AppLocale; presentation?: "board";expectedSlug?:string;creatorName?:string }) {
   const auth = usePrivy(), query = useSearchParams();
   if(query.get('source')==='cheer')return <CheerDetail key={`${props.postId}:${auth.authenticated}:${auth.user?.id}`} postId={props.postId} locale={props.locale} expectedSlug={props.expectedSlug}/>;
   return <DetailForOwner key={`${props.postId}:${props.locale}:${auth.authenticated}:${auth.user?.id}`} {...props} />;
 }
-function DetailForOwner({ postId, locale, presentation: requestedPresentation }: { postId: string; locale: AppLocale; presentation?: "board" }) {
+function DetailForOwner({ postId, locale, presentation: requestedPresentation, expectedSlug, creatorName }: { postId: string; locale: AppLocale; presentation?: "board"; expectedSlug?: string; creatorName?: string }) {
   const online = useNetworkOnline();
   const copy = contentCopy(locale), auth = usePrivy(), mutation = useContentMutation(locale), fieldId = useId(), router = useRouter(), searchParams = useSearchParams();
   const [cursor, setCursor] = useState<string | null>(null), [replyTarget, setReplyTarget] = useState<{ id: string; nickname: string; body: string } | null>(null);
@@ -124,7 +125,7 @@ function DetailForOwner({ postId, locale, presentation: requestedPresentation }:
   async function remove(id: string) { if (window.confirm(copy.deleteConfirm) && await mutation.request(`/api/post-comments/${id}`, "DELETE")) refresh(); }
   if (post.state.status === "loading") return <><FanSkeletonStatus locale={locale} /><PostDetailSkeleton /></>;
   if (post.state.status !== "ready") return <p role="status" className={styles.status}>{copy.unavailable}<button className={styles.button} onClick={post.retry}>{copy.retry}</button></p>;
-  const data = post.state.data, presentation = requestedPresentation ?? (data.bodyDoc ? "board" as const : undefined), requestedReturn = searchParams.get("returnTo"), safeReturn = sanitizeReturnTo(requestedReturn);
+  const data = post.state.data, artistName = creatorName && expectedSlug === data.celebritySlug ? creatorName : undefined, presentation = requestedPresentation ?? (data.bodyDoc ? "board" as const : undefined), requestedReturn = searchParams.get("returnTo"), safeReturn = sanitizeReturnTo(requestedReturn);
   const communityHref = (requestedReturn && (safeReturn !== "/" || requestedReturn === "/") ? safeReturn : hubHref(data.celebritySlug, locale)) as Route;
   const returnTo = `/c/${data.celebritySlug}/community/${postId}?locale=${locale}&returnTo=${encodeURIComponent(communityHref)}`;
   const loginHref = fanLoginHref(locale, returnTo);
@@ -142,7 +143,7 @@ function DetailForOwner({ postId, locale, presentation: requestedPresentation }:
       {comments.state.status === "ready" ? <>
         {comments.refreshFailed && online && <p role="status" className={styles.status}>{copy.failed}<button type="button" className={styles.button} onClick={comments.retry}>{copy.retry}</button></p>}
         {!comments.state.data.items.length ? null : <ul className={`${commentStyles.list} ${detailStyles.commentList}`}>{threadComments(comments.state.data.items).map(comment => <li key={comment.id} id={`comment-${comment.id}`} data-reply={comment.parentId ? "" : undefined} data-artist={comment.artist ? "" : undefined}>
-          <div className={detailStyles.commentMeta}><img src={comment.author.avatarUrl} alt="" width={32} height={32} /><strong><ProfileAuthor contentRef={{ kind: "fan_post_comment", id: comment.id }} nickname={comment.author.nickname} avatarUrl={comment.author.avatarUrl}>{comment.author.nickname}</ProfileAuthor></strong>{comment.artist && <GroupArtistMark locale={locale} />}<RelativeTime value={comment.createdAt} locale={locale} />{isEdited(comment) && <EditedMark className={detailStyles.editedMark} locale={locale} />}{!comment.isOwner && <ContentActions targetType="fan_post_comment" targetId={comment.id} locale={locale} onChanged={refresh} />}</div>
+          <div className={detailStyles.commentMeta}><img src={comment.author.avatarUrl} alt="" width={32} height={32} /><strong><ProfileAuthor contentRef={{ kind: "fan_post_comment", id: comment.id }} nickname={comment.author.nickname} avatarUrl={comment.author.avatarUrl}>{comment.artist && artistName ? artistName : comment.author.nickname}</ProfileAuthor></strong>{comment.artist && <GroupArtistMark locale={locale} />}<RelativeTime value={comment.createdAt} locale={locale} />{isEdited(comment) && <EditedMark className={detailStyles.editedMark} locale={locale} />}{!comment.isOwner && <ContentActions targetType="fan_post_comment" targetId={comment.id} locale={locale} onChanged={refresh} />}</div>
           <ContentTranslation sourceText={comment.body} targetType="fan_post_comment" targetId={comment.id} sourceRevision={comment.revision} locale={locale}><p className={styles.body}>{comment.body}</p></ContentTranslation>
           <div className={detailStyles.commentActions}>{auth.authenticated ? <CommentLike commentId={comment.id} locale={locale} reactions={comment.reactions ?? []} /> : auth.ready && <CommentLike commentId={comment.id} locale={locale} reactions={comment.reactions ?? []} loginHref={loginHref} />}{auth.ready && !comment.parentId && (auth.authenticated ? <FanAction variant="text" disabled={mutation.busy} onClick={event => { replyTrigger.current = event.currentTarget; openReply({ id: comment.id, nickname: comment.author.nickname, body: comment.body }); }}>{copy.reply}</FanAction> : <Link className={detailStyles.commentAction} href={loginHref}>{copy.reply}</Link>)}{comment.isOwner && <FanAction variant="text" disabled={mutation.busy} onClick={() => void remove(comment.id)}>{copy.delete}</FanAction>}</div>
           {replyTarget?.id === comment.id && <div className={commentStyles.inlineReply}>{composer}</div>}
