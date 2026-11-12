@@ -52,7 +52,6 @@ export function RaffleProvider({ locale, closed, preview, children }: { locale: 
   return <RaffleContext.Provider value={value}>{children}</RaffleContext.Provider>;
 }
 
-const emphasis = 'primary' as const;
 const passportHref = (locale: AppLocale) => `/passports?locale=${locale}`;
 const communityHref = (locale: AppLocale) => `/pages/groups?locale=${locale}`;
 /** 응모권에 찍는 인쇄 문구(언어와 상관없이 같은 글자). */
@@ -64,18 +63,22 @@ export function RaffleTicket({ className }: { className?: string }) {
   return <FanPrintTicket className={className} title={ticketPrint.title} amount="US$400" prize={r.t('giftCard')} winners={r.t('totalWinners')} deadlineLabel={ticketPrint.deadlineLabel} deadline={ticketPrint.deadline} serial={ticketPrint.serial} stub={r.t('flowOnce')} stamp={r.entered ? r.t('entered') : undefined} />;
 }
 
-/** 히어로 응모 버튼: 페이지에서 유일한 분홍 면. */
+/** 응모 버튼: 페이지에서 유일한 분홍 면(primary 1개). 히어로와 모바일 하단 고정 줄이 같은 버튼을 쓴다. 요청 중에는 공통 loading, 응모 뒤에는 공통 비활성 모양. */
+function RaffleEnterAction() {
+  const r = useRaffle();
+  return <FanAction type="button" variant="primary" fullWidth loading={r.pending} disabled={!r.ready || r.entered} leadingIcon={r.entered ? <FanIcon icon={Check} /> : undefined} onClick={r.enter}>{r.entered ? r.t('entered') : r.t('enterCta')}</FanAction>;
+}
+
+/** 히어로 행동 칸: 응모 버튼 + 그 아래 한 줄(응모 전 규칙, 응모 뒤 확정된 내 응모 수, 실패하면 오류와 다시 시도). */
 export function RaffleHeroAction() {
   const r = useRaffle();
   if (r.closed) return <FanDisplay role="strong" as="p" className={styles.heroEnded}>{r.t('ended')}</FanDisplay>;
   return <>
-    <FanAction type="button" variant={emphasis} className={r.entered ? `${styles.heroButton} ${styles.heroDone}` : styles.heroButton} disabled={!r.ready || r.pending || r.entered} onClick={r.enter}>
-      {r.entered ? <><FanIcon icon={Check} />{r.t('entered')}</> : r.t('enterCta')}
-    </FanAction>
-    {r.error ? <p className={styles.heroError} role="alert"><FanDisplay role="caption">{r.s('error')}</FanDisplay> <FanAction type="button" variant="text" className={styles.retry} onClick={r.enter}>{r.t('retry')}</FanAction></p> : null}
-    {/* 응모 전에는 규칙(1인 1응모), 응모 뒤에는 확정된 내 응모 수. 댓글·출석으로 늘어난 기회는 여기에 섞지 않는다. */}
+    <RaffleEnterAction />
+    {r.error ? <p className={styles.heroError} role="alert"><FanDisplay role="caption">{r.s('error')}</FanDisplay><FanAction type="button" variant="text" size="sm" onClick={r.enter}>{r.t('retry')}</FanAction></p> : null}
+    {/* 댓글·출석으로 늘어난 기회는 이 줄에 섞지 않는다(서버 값이 아직 화면에 없음). */}
     {r.entered
-      ? <p className={styles.heroStatus} data-state="entered"><FanIcon icon={Ticket} size={16} /><FanDisplay role="caption">{r.t('myEntry')}</FanDisplay></p>
+      ? <p className={styles.heroStatus} data-state="entered" role="status"><FanIcon icon={Ticket} size={16} /><FanDisplay role="caption">{r.t('myEntry')}</FanDisplay></p>
       : <p className={styles.heroStatus}><FanDisplay role="caption">{r.t('flowOnce')}</FanDisplay></p>}
   </>;
 }
@@ -100,7 +103,7 @@ export function RaffleMoreAction({ kind }: { kind: 'passport' | 'community' }) {
     : <FanAction href={communityHref(r.locale)} variant="neutral" size="sm">{r.s('community')}</FanAction>;
 }
 
-/** 모바일 하단 고정 버튼: 응모 전에는 응모, 응모 뒤에는 출석. 마감 후에는 숨긴다. */
+/** 모바일 하단 고정 버튼: 응모 전에는 응모(primary), 응모 뒤에는 출석(neutral). 마감 후에는 숨긴다. */
 export function RaffleStickyCta() {
   const r = useRaffle();
   // 히어로의 같은 응모 버튼이 화면에 보이는 동안에는 숨겨 분홍 버튼이 두 개 겹쳐 보이지 않게 한다.
@@ -115,8 +118,8 @@ export function RaffleStickyCta() {
   if (r.closed) return null;
   const hidden = heroInView;
   return <div className={styles.sticky} data-hidden={hidden} aria-hidden={hidden || undefined} inert={hidden || undefined}>{r.entered
-    ? <FanAction href={communityHref(r.locale)} variant={emphasis} fullWidth>{r.t('checkIn')}</FanAction>
-    : <FanAction type="button" variant={emphasis} fullWidth disabled={!r.ready || r.pending} onClick={r.enter}>{r.t('enterCta')}</FanAction>}</div>;
+    ? <FanAction href={communityHref(r.locale)} variant="neutral" fullWidth>{r.t('checkIn')}</FanAction>
+    : <RaffleEnterAction />}</div>;
 }
 
 export function RaffleShare() {
@@ -129,5 +132,6 @@ export function RaffleShare() {
       await navigator.clipboard.writeText(url); setCopied(true);
     } catch { /* 공유 취소 */ }
   }
-  return <FanAction type="button" variant="neutral" onClick={share}><FanIcon icon={Share2} />{copied ? r.t('copied') : r.t('share')}</FanAction>;
+  // 아이콘은 글자 안에 넣지 않고 FanAction 의 leadingIcon 자리에 둔다: 아이콘·글자 간격 8, 세로 가운데 맞춤을 공통 버튼이 맡는다.
+  return <FanAction type="button" variant="neutral" size="sm" leadingIcon={<FanIcon icon={Share2} />} onClick={share}>{copied ? r.t('copied') : r.t('share')}</FanAction>;
 }

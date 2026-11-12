@@ -1,6 +1,7 @@
 import { RaffleContent } from './content';
 import { notFound } from 'next/navigation';
 import { FanAppFrame } from '@/components/fan-shell/fan-app-shell';
+import { FanContentContainer } from '@/components/fan-shell/fan-content-container';
 import { parseAppLocale } from '@/i18n/locales';
 import { signupRaffleText } from '@/i18n/catalogs/signup-raffle';
 import { localSignupEnabled } from '@/server/signup-event/local';
@@ -27,9 +28,9 @@ export default async function RafflePage({ searchParams }: Props) {
   const closed = now > closesAt || requested === 'closed';
   return <FanAppFrame locale={locale} currentPath="/s/raffle" mainId="raffle-main">
     <div className={styles.stage}>
-      <main id="raffle-main" className={styles.column}>
+      <FanContentContainer as="main" id="raffle-main" className={styles.column}>
         <RaffleContent locale={locale} daysLeft={kstDay(closesAt) - kstDay(now)} closed={closed} preview={preview} />
-      </main>
+      </FanContentContainer>
     </div>
   </FanAppFrame>;
 }

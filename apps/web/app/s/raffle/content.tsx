@@ -3,7 +3,9 @@ import { signupRaffleText } from '@/i18n/catalogs/signup-raffle';
 import { raffleLongformText, type SignupRaffleLongformKey } from '@/i18n/catalogs/signup-raffle-longform';
 import { FanHeading } from '@/components/fan-ui/fan-heading';
 import { FanDisplay } from '@/components/fan-ui/fan-display';
-import { FanPrintChanceCard, FanPrintDesk, FanPrintGiftCard, FanPrintPassport, type FanPrintGiftCardTone } from '@/components/fan-ui/fan-print';
+import { FanPrintChanceCard, FanPrintDesk, FanPrintGiftCard, FanPrintPassport } from '@/components/fan-ui/fan-print';
+import { FanPrintReveal } from '@/components/fan-ui/fan-print-reveal';
+import { FanSurface } from '@/components/fan-ui/fan-surface';
 import { signupEvent } from '@/features/benefit/domain/signup-event';
 import { RaffleBoostAction, RaffleHeroAction, RaffleMoreAction, RaffleProvider, RaffleShare, RaffleStickyCta, RaffleTicket, type RafflePreview } from './participation';
 import styles from './raffle.module.css';
@@ -11,7 +13,6 @@ import styles from './raffle.module.css';
 const art = (name: string) => `/images/raffle/v4/${name}.webp`;
 /** 소품에 찍는 인쇄 문구. 실제 인쇄물처럼 언어와 상관없이 같은 글자다. */
 const print = { giftCard: 'GIFT CARD', giftNote: 'KYAA RAFFLE 2026', passport: 'FAN PASSPORT', passportCode: ['P<KYAA<FAN<PASSPORT<<<<<<<<<<<<<<<<', 'KYAA2611<<FAN<ARCHIVE<<<<<<<<<<<<<<'], chance: 'DAILY CHANCE' } as const;
-const tones: Record<number, FanPrintGiftCardTone> = { 100: 'pearl', 50: 'sky', 25: 'cream', 10: 'vellum' };
 
 export function RaffleContent({ locale, daysLeft, closed, preview }: { locale: AppLocale; daysLeft: number; closed: boolean; preview?: RafflePreview }) {
   const text = (key: Parameters<typeof signupRaffleText>[1], count?: number) => signupRaffleText(locale, key, count);
@@ -30,7 +31,7 @@ export function RaffleContent({ locale, daysLeft, closed, preview }: { locale: A
         <div className={styles.heroAction} data-raffle-hero-action><RaffleHeroAction /></div>
       </div>
       <FanPrintDesk className={styles.heroArt} src={art('hero-desk-tall')} width={1280} height={1600} eager>
-        <FanPrintGiftCard className={styles.heroCard} label={print.giftCard} amount="US$100" note={print.giftNote} tone="pearl" material={art('mat-card-100')} />
+        <FanPrintGiftCard className={styles.heroCard} label={print.giftCard} amount="US$100" note={print.giftNote} material={art('mat-card-100')} />
         <RaffleTicket className={styles.heroTicket} />
       </FanPrintDesk>
     </header>
@@ -43,28 +44,28 @@ export function RaffleContent({ locale, daysLeft, closed, preview }: { locale: A
         </div>
         <p className={styles.prizeLead}><FanDisplay role="figure-xl">{t('totalWinners')}</FanDisplay><FanDisplay role="title" className={styles.muted}>{t('totalPrize')}</FanDisplay></p>
         <FanPrintDesk className={styles.prizeDesk} src={art('prize-desk-tall')} wideSrc={art('prize-desk-wide')} width={1122} height={1402}>
-          <ol className={styles.prizes}>{signupEvent.prizes.map(prize => <li key={prize.usd} data-row="raffle-prize" data-tier={prize.usd}>
-            <FanPrintGiftCard label={print.giftCard} amount={`US$${prize.usd}`} note={print.giftNote} tone={tones[prize.usd] ?? 'vellum'} count={prize.quantity} envelope={prize.usd === 100} material={art(`mat-card-${prize.usd}`)} />
-            <FanDisplay role="body" as="p" className={styles.prizeRow}>{text('prizeCount', prize.quantity)}</FanDisplay>
-          </li>)}</ol>
+          <FanPrintReveal as="ol" className={styles.prizes}>{signupEvent.prizes.map((prize, order) => <li key={prize.usd} data-row="raffle-prize" data-tier={prize.usd}>
+            <FanPrintGiftCard label={print.giftCard} amount={`US$${prize.usd}`} note={print.giftNote} count={prize.quantity} envelope={prize.usd === 100} material={art(`mat-card-${prize.usd}`)} order={order} />
+            <FanDisplay role="body" as="p">{text('prizeCount', prize.quantity)}</FanDisplay>
+          </li>)}</FanPrintReveal>
         </FanPrintDesk>
       </section>
 
       <section className={styles.section} data-block="raffle-bonus" aria-labelledby="raffle-bonus">
         <div className={styles.sectionHead}><FanHeading as="h2" id="raffle-bonus"><FanDisplay role="heading">{t('bonusTitle')}</FanDisplay></FanHeading></div>
         <div className={styles.bonus}>
-          <ul className={styles.bonusRows}>{(['comment', 'attend'] as const).map(kind => <li key={kind} data-row="raffle-bonus">
+          <FanSurface as="div" appearance="list"><ul className={styles.bonusRows}>{(['comment', 'attend'] as const).map(kind => <li key={kind} data-row="raffle-bonus">
             <div className={styles.bonusRowText}>
               <FanDisplay role="lead" as="p">{t(kind === 'comment' ? 'bonusComment' : 'bonusAttend')}</FanDisplay>
-              <p className={styles.bonusFacts}><FanDisplay role="body">{t('bonusRate')}</FanDisplay><FanDisplay role="body">{t('bonusLimit')}</FanDisplay></p>
+              <p className={styles.bonusFacts}><FanDisplay role="caption">{t('bonusRate')}</FanDisplay><FanDisplay role="caption">{t('bonusLimit')}</FanDisplay></p>
             </div>
             <RaffleBoostAction kind={kind} />
-          </li>)}</ul>
+          </li>)}</ul></FanSurface>
           <FanPrintDesk className={styles.bonusArt} src={art('step-desk-stamp')} width={1448} height={1086}>
-            <FanPrintChanceCard className={styles.bonusCard} title={print.chance} each={t('bonusEach')} slots={3} rows={[
+            <FanPrintReveal className={styles.bonusCard}><FanPrintChanceCard title={print.chance} each={t('bonusEach')} slots={3} rows={[
               { label: t('bonusComment'), stamp: 'first-comment', cap: t('bonusPerDay') },
               { label: t('bonusAttend'), stamp: 'daily-checkin', cap: t('bonusPerDay') },
-            ]} />
+            ]} /></FanPrintReveal>
           </FanPrintDesk>
         </div>
       </section>
@@ -85,7 +86,7 @@ export function RaffleContent({ locale, daysLeft, closed, preview }: { locale: A
             </div>
           </li>
           <li data-row="raffle-more">
-            <div className={styles.moreArt}><img src={art('step-community')} alt="" width="600" height="600" loading="lazy" /></div>
+            <FanPrintDesk className={styles.moreArt} src={art('step-community')} width={600} height={600} />
             <div className={styles.moreText}>
               <FanDisplay role="lead" as="p">{t('communityTitle')}</FanDisplay>
               <RaffleMoreAction kind="community" />

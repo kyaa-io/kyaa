@@ -15,13 +15,15 @@ it("prints the ticket facts and stamps it only when asked", () => {
 });
 
 it("draws one card per winner, capped at ten", () => {
-  const { container } = render(<><FanPrintGiftCard label="GIFT CARD" amount="US$25" note="KYAA RAFFLE 2026" tone="cream" count={4} /><FanPrintGiftCard label="GIFT CARD" amount="US$10" note="KYAA RAFFLE 2026" tone="vellum" count={30} /></>);
+  const { container } = render(<><FanPrintGiftCard label="GIFT CARD" amount="US$25" note="KYAA RAFFLE 2026" count={4} /><FanPrintGiftCard label="GIFT CARD" amount="US$10" note="KYAA RAFFLE 2026" count={30} /></>);
   const piles = container.querySelectorAll("[data-fan-print='gift-card']");
   expect(piles[0].querySelectorAll("i[style]").length).toBe(3);
+  expect(piles[0]).toHaveAttribute("data-art", "print");
   expect(piles[1].querySelectorAll("i[style]").length).toBe(9);
 });
 
 it("gives every chance row the same number of slots", () => {
   const { container } = render(<FanPrintChanceCard title="DAILY CHANCE" each="+1" slots={3} rows={[{ label: "댓글", stamp: "first-comment", cap: "하루 3번" }, { label: "출석", stamp: "daily-checkin", cap: "하루 3번" }]} />);
   expect(container.querySelectorAll("b").length).toBe(6);
+  expect(container.querySelectorAll("img[data-art='stamp']").length).toBe(6);
 });

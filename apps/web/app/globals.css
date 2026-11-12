@@ -59,32 +59,25 @@
   --shadow-card-soft: 0 1px 3px rgb(0 0 0 / 6%);
   --shadow-dialog: 0 16px 48px rgb(0 0 0 / 16%);
 
-  /* 래플 상세(s/raffle) 전용 바탕 틴트·폭. */
-  --raffle-max: 1200px; --raffle-sky: oklch(97.5% .012 235); --raffle-cream: oklch(98.6% .008 85);
-  /* 에디토리얼 디스플레이 글자(FanDisplay 전용, 이벤트·캠페인 상세). 큰 숫자는 가는 굵기, 위계는 크기로. */
+  /* 디스플레이 글자(FanDisplay 전용, 이벤트·캠페인 상세만 — DESIGN.md 7-2). 굵기 300(큰 금액·숫자)·400(본문·캡션·순번·lead·strong)·600(제목 줄·title) 셋. 본문 16·캡션 13·순번 12는 앱 글자 값과 같다. */
   --fan-display-amount-size: clamp(64px, 22vw, 152px); --fan-display-amount-size-wide: clamp(120px, 10.4vw, 152px);
   --fan-display-figure-xl-size: 56px; --fan-display-figure-xl-size-wide: clamp(96px, 8.4vw, 120px);
   --fan-display-figure-size: 40px; --fan-display-figure-size-wide: 64px;
-  --fan-display-figure-sm-size: 24px; --fan-display-figure-sm-size-wide: 32px;
-  --fan-display-title-size: 24px; --fan-display-title-size-wide: 32px;
-  --fan-display-heading-size: 18px; --fan-display-heading-size-wide: 20px;
-  --fan-display-lead-size: 18px; --fan-display-lead-size-wide: 20px;
-  --fan-display-strong-size: 15px; --fan-display-strong-size-wide: 16px;
-  --fan-display-body-size: 15px; --fan-display-caption-size: 13px; --fan-display-mono-size: 12px;
-  --fan-display-thin: 300; --fan-display-regular: 400; --fan-display-medium: 500; --fan-display-semibold: 600;
+  --fan-display-figure-sm-size: var(--fan-number-size); --fan-display-figure-sm-size-wide: var(--fan-number-size-wide);
+  --fan-display-title-size: var(--fan-number-size); --fan-display-title-size-wide: var(--fan-number-size-wide);
+  --fan-display-heading-size: var(--fan-section-size); --fan-display-lead-size: var(--fan-section-size);
+  --fan-display-strong-size: var(--fan-body-size); --fan-display-body-size: var(--fan-body-size); --fan-display-caption-size: var(--fan-metadata-size); --fan-display-mono-size: var(--fan-badge-size);
+  --fan-display-thin: 300; --fan-display-regular: 400; --fan-display-semibold: 600;
   --fan-display-tight: -.05em; --fan-display-snug: -.02em;
-  --fan-display-mono: ui-monospace, "SF Mono", "SFMono-Regular", Menlo, Consolas, monospace;
-  /* 인쇄 소품(FanPrint 전용): 응모권·기프트카드·패스포트·기회 카드의 종이·잉크·그림자. 빛은 왼쪽 위. */
-  --fan-print-ink: oklch(24% .01 60); --fan-print-ink-soft: oklch(24% .01 60 / 72%); --fan-print-rule: oklch(24% .01 60 / 22%); --fan-print-perforation: oklch(24% .01 60 / 38%); --fan-print-slot: oklch(24% .01 60 / 42%);
-  --fan-print-paper: oklch(95.5% .018 88); --fan-print-envelope: oklch(98% .004 90); --fan-print-desk: oklch(93% .012 85); --fan-print-hole: oklch(86% .012 85); --fan-print-gutter: oklch(40% .02 70 / 20%);
-  --fan-print-stamp-ink: #b4242d; --fan-print-mask-solid: #000;
-  --fan-print-card-pearl: oklch(92% .008 85); --fan-print-card-sky: oklch(87% .032 235); --fan-print-card-cream: oklch(92.5% .036 92); --fan-print-card-vellum: oklch(93.5% .004 160);
-  --fan-print-card-sheen: linear-gradient(135deg, rgb(255 255 255 / 22%), rgb(255 255 255 / 0%) 45%, rgb(0 0 0 / 3%));
-  --fan-print-card-pearl-sheen: linear-gradient(122deg, oklch(97% .006 85) 0%, oklch(88% .006 250) 26%, oklch(98% .008 90) 47%, oklch(86% .01 230) 70%, oklch(95% .012 80) 100%);
-  --fan-print-card-edge: rgb(255 255 255 / 55%); --fan-print-card-gap: rgb(60 45 20 / 14%);
-  --fan-print-shadow-contact: 0 1px 1px rgb(60 45 20 / 18%); --fan-print-shadow-cast: 5px 9px 14px rgb(60 45 20 / 16%);
-  --fan-print-mono-tracking: .04em; --fan-print-wordmark: url("/images/guest-home/kyaa-wordmark.svg");
+  --fan-display-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+  /* 인쇄 소품 아트(FanPrint 전용 — DESIGN.md 7-2). 종이·괘선·도장 빨강·접지 그림자는 소품 안에서만. 그림자는 무채색, 빛은 왼쪽 위. */
+  --fan-print-paper: oklch(95.5% .018 88); --fan-print-envelope: oklch(98% .004 90); --fan-print-stamp-ink: #b4242d;
+  --fan-print-rule: color-mix(in oklch, var(--color-ink) 30%, transparent); --fan-print-edge: color-mix(in oklch, var(--color-ink) 12%, transparent);
+  --fan-print-shadow-contact: 0 1px 1px rgb(0 0 0 / 16%); --fan-print-shadow-cast: 4px 8px 12px rgb(0 0 0 / 12%);
+  --fan-print-wordmark: url("/images/guest-home/kyaa-wordmark.svg"); --fan-print-ticket-mask: url("/images/raffle/v4/ticket-mask.svg");
   --fan-print-grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .35 0 0 0 0 .27 0 0 0 0 .15 0 0 0 .09 0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");
+  /* 소품 연출(DESIGN.md 9절 "카드 등장 90ms 시차", "칸 채움 45ms"): 묶음 사이 90, 한 장·한 칸 사이 45, 히어로 응모권 쉬는 움직임 한 번 4초(2회 왕복 뒤 정지). */
+  --fan-print-stagger: 90ms; --fan-print-step: 45ms; --fan-print-idle: 4s;
   --space-1: 4px;
   --space-2: 8px;
   --space-3: 12px;

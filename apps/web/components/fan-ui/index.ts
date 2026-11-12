@@ -9,7 +9,8 @@ export { FanCollapsible, FanCollapsibleTrigger, FanDisclosure, type FanCollapsib
 export { FanCellGauge, type FanCellGaugeProps } from "./fan-cell-gauge";
 export { FanNumber, FanGauge, type FanNumberProps, type FanGaugeProps } from "./fan-number";
 export { FanDisplay, type FanDisplayProps, type FanDisplayRole } from "./fan-display";
-export { FanPrintTicket, FanPrintGiftCard, FanPrintPassport, FanPrintChanceCard, FanPrintDesk, type FanPrintTicketProps, type FanPrintGiftCardProps, type FanPrintGiftCardTone, type FanPrintPassportProps, type FanPrintChanceCardProps, type FanPrintChanceRow, type FanPrintStampName } from "./fan-print";
+export { FanPrintTicket, FanPrintGiftCard, FanPrintPassport, FanPrintChanceCard, FanPrintDesk, type FanPrintTicketProps, type FanPrintGiftCardProps, type FanPrintPassportProps, type FanPrintChanceCardProps, type FanPrintChanceRow, type FanPrintStampName } from "./fan-print";
+export { FanPrintReveal } from "./fan-print-reveal";
 export { FanToastProvider, useFanToast, showFanToast, closeFanToast, type FanToastOptions, type FanToastTone } from "./fan-toast";
 export { FanTabs, type FanTabItem } from "./fan-tabs";
 export { FanCount } from "./fan-count-chip";

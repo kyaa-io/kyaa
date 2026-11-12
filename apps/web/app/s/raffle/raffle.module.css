@@ -1,74 +1,66 @@
-/* Hallmark · custom · idea: "printed matter on a morning desk: the raffle ticket, the gift cards and the passport say the event themselves" · vibe: "airy, plain, film-still, quietly nostalgic" · paper white page, cream desk photographs, ink type · kyaa pink only on the enter button · Pretendard Variable light display through FanDisplay + system mono on the printed props (FanPrint) · hero: type left, ticket on the desk right (PC); type then desk (390) · posture light/grotesk-light/chromatic-pink */
+/* Hallmark · custom · idea: "printed matter on a morning desk: the raffle ticket, the gift cards and the passport say the event themselves" · vibe: "airy, plain, film-still, quietly nostalgic" · white page, cream desk photographs, ink type · kyaa pink only on the enter button · Pretendard Variable light display through FanDisplay + system mono on the printed props (FanPrint) · hero: type left, ticket on the desk right (PC); type then desk (390) · posture light/grotesk-light/chromatic-pink */
 /* critique: v3 props were blank objects, so the page read as empty; v4 prints the facts on the props (ticket, 17 cards in four piles, stamp slots) and keeps the chrome to hairlines */
-/* type: this file declares no font-size, font-weight or line-height; every text role comes from FanDisplay / FanAction / FanPrint (design-lint N33) */
+/* system: this file is layout only. Type comes from FanDisplay / FanHeading, buttons from FanAction, the row card from FanSurface, the page width from FanContentContainer. Every length is a --space-*, --radius-*, --rail-* or --min-target token; the only raw numbers are the props' place on the desk photographs (percent, degrees, aspect ratios). */
 /* waive 62: the sticky enter bar is hidden only while the identical hero button is on screen; with scripting off the hero button stays and entering needs scripting anyway */
 
 .stage { flex: 1; background: var(--color-canvas); overflow-x: clip; }
-.column { width: min(100% - var(--space-4) * 2, var(--raffle-max)); margin-inline: auto; color: var(--color-ink); padding-bottom: calc(var(--space-16) * 2 + env(safe-area-inset-bottom, 0px)); }
-:where(.column) :where(p, h1, h2, dl, dd, ol, ul) { margin: 0; }
-.column img { max-width: 100%; }
+/* 아래 여백 = 하단 고정 줄 높이(버튼 44 + 위아래 8) */
+.column { color: var(--color-ink); padding-bottom: calc(var(--min-target) + var(--space-4)); }
+:where(.column) :where(p, h1, h2, ol, ul) { margin: 0; }
 .column :is(a, button) { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
 .muted { color: var(--color-muted); }
 
 /* 히어로: 금액 한 덩어리 → 무엇을·몇 명 → 마감 → 버튼 */
-.hero { display: grid; gap: var(--space-6); padding-block: var(--space-5) var(--space-10); }
+.hero { display: grid; gap: var(--space-6); padding-block: var(--space-4) var(--fan-section-gap); }
 .heroText { display: grid; align-content: start; min-width: 0; }
-.heroTop { display: flex; align-items: baseline; justify-content: space-between; gap: var(--space-3); padding-bottom: var(--space-3); border-bottom: 1px solid var(--color-ink); }
+.heroTop { display: flex; align-items: baseline; justify-content: space-between; gap: var(--space-3); padding-bottom: var(--space-3); border-bottom: 1px solid var(--color-line); }
 .dday { white-space: nowrap; }
 .dday[data-urgent="true"] { color: var(--color-accent-ink); }
 .amount { display: flex; align-items: baseline; gap: var(--space-2); margin-top: var(--space-6); min-width: 0; }
 .heroFacts { display: flex; flex-wrap: wrap; gap: var(--space-1) var(--space-3); margin-top: var(--space-3); }
-.heroFacts > span + span { padding-inline-start: var(--space-3); border-inline-start: 1px solid var(--color-ink); }
+.heroFacts > span + span { padding-inline-start: var(--space-3); border-inline-start: 1px solid var(--color-line); }
 .heroDeadline { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--space-1) var(--space-2); margin-top: var(--space-2); }
-.heroAction { display: grid; gap: var(--space-2); margin-top: var(--space-6); }
-.heroButton.heroButton { width: 100%; max-width: none; min-height: 56px; border: 0; border-radius: var(--radius-pill); background: var(--color-accent); color: var(--color-surface); cursor: pointer; user-select: none; -webkit-user-select: none; transition: transform var(--motion-fast) var(--motion-easing), opacity var(--motion-fast) var(--motion-easing); }
-.heroButton.heroButton:active:not(:disabled) { transform: scale(.97); }
-.heroButton:disabled { opacity: var(--fan-disabled-opacity, .4); cursor: not-allowed; }
-.heroDone.heroDone:disabled { opacity: 1; background: var(--color-surface); color: var(--color-ink); border: 1px solid var(--color-ink); cursor: default; }
-.heroButton:focus-visible { outline: var(--focus-width) solid var(--color-focus); outline-offset: var(--focus-offset); transition: none; }
+.heroAction { display: grid; justify-items: center; gap: var(--space-2); margin-top: var(--space-6); }
 .heroStatus { display: flex; align-items: center; justify-content: center; gap: var(--space-1); color: var(--color-muted); }
 .heroStatus[data-state="entered"] { color: var(--color-ink); }
-.heroEnded { min-height: 56px; display: grid; place-items: center; border-radius: var(--radius-pill); border: 1px solid var(--color-line); color: var(--color-muted); }
-.heroError { color: var(--color-error); }
-.retry.retry { border: 0; background: none; padding: 0 var(--space-1); min-height: var(--min-target); color: var(--color-ink); text-decoration: underline; cursor: pointer; }
+.heroEnded { display: grid; place-items: center; min-height: var(--min-target); color: var(--color-muted); }
+.heroError { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 0 var(--space-1); color: var(--color-error); }
 .heroArt { aspect-ratio: 1; border-radius: var(--radius-card); min-width: 0; }
-.heroTicket { position: absolute; inset-inline-start: 8%; inset-block-start: 19%; width: 82%; rotate: -6deg; }
+.heroTicket { position: absolute; inset-inline-start: 8%; inset-block-start: 19%; width: 82%; rotate: -6deg; animation: ticketRest var(--fan-print-idle) var(--motion-easing) var(--motion-reward) 4 alternate; }
 .heroCard { position: absolute; inset-inline-start: 40%; inset-block-end: 7%; width: 47%; rotate: 5deg; }
+/* 살아 있는 요소(DESIGN.md 9절): 응모권이 책상 위에서 천천히 두 번 숨 쉬고 멈춘다. transform 만, 무한 반복 없음 */
+@keyframes ticketRest { to { rotate: -4.5deg; translate: 0 calc(var(--space-1) * -1); } }
 
-.body { display: grid; gap: var(--space-12); }
+.body { display: grid; gap: var(--fan-section-gap); }
 
-/* 구역 공통: 위 검은 선 + 제목 줄(왼쪽 제목, 오른쪽 핵심 사실) */
-.section, .foot { display: grid; gap: var(--space-5); min-width: 0; }
-.sectionHead { display: flex; align-items: baseline; justify-content: space-between; gap: var(--space-3); padding-top: var(--space-3); border-top: 1px solid var(--color-line); }
+/* 구역 공통: 위 1px 선 + 제목 줄(왼쪽 제목, 오른쪽 사실 또는 행동). 제목 줄 → 내용 16 */
+.section { display: grid; gap: var(--space-4); min-width: 0; }
+.sectionHead { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); min-height: var(--space-12); border-top: 1px solid var(--color-line); }
 .sectionHead > p { white-space: nowrap; }
-.doneMark { display: inline-flex; align-items: center; gap: var(--space-1); min-height: 36px; }
+.doneMark { display: inline-flex; align-items: center; gap: var(--space-1); min-height: calc(var(--space-8) + var(--space-1)); }
 
-/* 당첨 확률 올리기: 행동 두 행(이름 · 1회당 +1 | 하루 최대 3회 · 그 행동으로 가는 버튼) + 하루 기회 카드 */
+/* 당첨 확률 올리기: 목록 카드(FanSurface list) 안 행동 두 행 + 하루 기회 카드 */
 .bonus { display: grid; gap: var(--space-6); }
-.bonusRows { list-style: none; padding: 0; display: grid; align-content: center; min-width: 0; }
-.bonusRows li { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); min-height: var(--space-12); padding-block: var(--space-3); }
-.bonusRows li + li { border-top: 1px solid var(--color-line); }
+.bonusRows li { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); min-height: var(--space-16); padding: var(--space-3) var(--space-4); border-bottom: 1px solid var(--color-line); }
 .bonusRowText { display: grid; gap: var(--space-1); min-width: 0; }
-.bonusFacts { display: flex; flex-wrap: wrap; gap: 0 var(--space-3); color: var(--color-muted); }
-.bonusFacts > span + span { padding-inline-start: var(--space-3); border-inline-start: 1px solid var(--color-line); }
+.bonusFacts { display: flex; flex-wrap: wrap; gap: 0 var(--space-2); color: var(--color-muted); }
+.bonusFacts > span + span { padding-inline-start: var(--space-2); border-inline-start: 1px solid var(--color-line); }
 .bonusRows li > a { flex: none; }
 .bonusArt { aspect-ratio: 6 / 5; border-radius: var(--radius-card); min-width: 0; }
 .bonusCard { position: absolute; inset-inline-start: 6%; inset-block-start: 15%; width: 84%; rotate: -2deg; }
 
 /* 경품: 책상 위 카드 17장을 네 묶음으로. 맨 위 카드 아랫선과 인원 줄이 칸마다 맞는다 */
 .prizeLead { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--space-2) var(--space-4); }
-.prizeDesk { border-radius: var(--radius-card); padding: var(--space-12) var(--space-5) var(--space-6); }
-.prizes { position: relative; list-style: none; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-8) var(--space-5); align-items: end; }
+.prizeDesk { border-radius: var(--radius-card); padding: var(--space-12) var(--space-4) var(--space-6); }
+.prizes { position: relative; list-style: none; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-8) var(--space-4); align-items: end; }
 .prizes li { display: grid; gap: var(--space-2); min-width: 0; }
 .prizes li:nth-child(odd) > :first-child { rotate: -1.2deg; }
 .prizes li:nth-child(even) > :first-child { rotate: 1deg; }
-.prizeRow { color: var(--fan-print-ink); }
 
-/* 더 즐기기(선택): 낮은 위계의 두 줄 */
+/* 더 즐기기(선택): 낮은 위계의 두 줄. 행 64 = 그림 64 = 이름 + 4 + 작은 버튼 36 */
 .more { list-style: none; padding: 0; display: grid; gap: var(--space-3); }
-.more li { display: grid; grid-template-columns: 80px minmax(0, 1fr); gap: var(--space-3); align-items: center; min-height: 80px; }
-.moreArt { position: relative; aspect-ratio: 1; border-radius: var(--radius-media); overflow: hidden; min-width: 0; }
-.moreArt > img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.more li { display: grid; grid-template-columns: var(--space-16) minmax(0, 1fr); gap: var(--space-3); align-items: center; min-height: var(--space-16); }
+.moreArt { aspect-ratio: 1; border-radius: var(--radius-media); min-width: 0; }
 .morePassport { position: absolute; inset-inline-start: 7%; inset-block-start: 21%; width: 86%; rotate: -4deg; }
 .moreText { display: grid; justify-items: start; gap: var(--space-1); min-width: 0; }
 
@@ -76,31 +68,32 @@
 .notice { padding-inline-start: var(--space-5); display: grid; gap: var(--space-2); color: var(--color-muted); }
 
 /* 하단 고정 응모 버튼(모바일, 하단 탭 위). 히어로 버튼이 보이는 동안은 숨김 */
-.sticky { position: fixed; z-index: var(--z-bottom-nav); inset-inline: 0; bottom: calc(var(--space-16) + env(safe-area-inset-bottom, 0px)); display: flex; justify-content: center; padding: var(--space-2) var(--space-4); background: var(--color-surface); border-top: 1px solid var(--color-line); transition: transform var(--motion-slow) var(--motion-easing), opacity var(--motion-slow) var(--motion-easing); }
-.sticky[data-hidden="true"] { opacity: 0; transform: translateY(8px); pointer-events: none; }
+.sticky { position: fixed; z-index: var(--z-bottom-nav); inset-inline: 0; bottom: calc(var(--fan-bottom-nav-height) + env(safe-area-inset-bottom, 0px)); display: flex; justify-content: center; padding: var(--space-2) var(--space-4); background: var(--color-surface); border-top: 1px solid var(--color-line); transition: translate var(--motion-slow) var(--motion-easing), opacity var(--motion-slow) var(--motion-easing); }
+.sticky[data-hidden="true"] { opacity: 0; translate: 0 var(--space-2); pointer-events: none; }
 
-/* PC: 1200 폭. 히어로 2열 · 확률 2열 · 경품 4열 · 더 즐기기 2열 · 안내 2열 */
+/* PC(64rem 이상): 셸 폭. 히어로 2열 · 확률 2열 · 경품 4열 · 더 즐기기 2열 · 안내 2열 */
 @media (width >= 64rem) {
   .sticky { display: none; }
-  .column { width: min(100% - var(--space-10) * 2, var(--raffle-max)); padding-bottom: var(--space-12); }
-  .hero { grid-template-columns: minmax(0, 6fr) minmax(0, 5fr); gap: var(--space-12); align-items: center; padding-block: var(--space-10) var(--space-12); }
+  .column { padding-bottom: var(--fan-section-gap); }
+  .hero { grid-template-columns: minmax(0, 6fr) minmax(0, 5fr); gap: var(--space-12); align-items: center; padding-block: var(--space-10) var(--fan-section-gap); }
   .heroArt { aspect-ratio: 5 / 6; }
   .heroTicket { inset-block-start: 21%; }
   .heroCard { inset-inline-start: 10%; inset-block-end: 10%; width: 50%; }
   .heroAction { justify-items: start; }
-  .heroStatus { justify-content: flex-start; }
-  .heroButton.heroButton { width: auto; min-width: 320px; }
-  .body { gap: var(--space-16); }
+  .heroStatus, .heroError { justify-content: flex-start; }
   .bonus { grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: var(--space-12); align-items: center; }
   .bonusArt { aspect-ratio: 16 / 9; }
   .bonusCard { inset-inline-start: 8%; inset-block-start: 11%; width: 60%; }
   .prizeDesk { padding: var(--space-12) var(--space-12) var(--space-10); }
   .prizes { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--space-10); }
   .more { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-10); }
-  .more li { grid-template-columns: 300px minmax(0, 1fr); gap: var(--space-8); }
-  .moreArt { aspect-ratio: 4 / 3; }
+  .more li { grid-template-columns: var(--rail-narrow) minmax(0, 1fr); gap: var(--space-8); }
+  .moreArt { aspect-ratio: 4 / 3; border-radius: var(--radius-card); }
   .morePassport { inset-inline-start: 9%; inset-block-start: 18%; width: 82%; }
   .moreText { gap: var(--space-2); }
   .notice { grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: var(--space-12); }
 }
-@media (prefers-reduced-motion: reduce) { .column * { transition: none !important; animation: none !important; } }
+@media (prefers-reduced-motion: reduce) {
+  .heroTicket { animation: none; }
+  .sticky { transition: none; }
+}

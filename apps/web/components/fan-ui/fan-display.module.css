@@ -1,15 +1,15 @@
-/* 디스플레이 글자 역할 표. 값은 globals.css --fan-display-* 토큰만 쓴다. */
+/* 디스플레이 글자 역할 표(이벤트·캠페인 상세 전용, DESIGN.md 7-2). 값은 globals.css --fan-display-* 토큰만. 굵기는 300·400·600 셋. */
 .display { font-variant-numeric: tabular-nums; }
 .amount { font-size: var(--fan-display-amount-size); font-weight: var(--fan-display-thin); line-height: 1; letter-spacing: var(--fan-display-tight); white-space: nowrap; }
 .figure-xl { font-size: var(--fan-display-figure-xl-size); font-weight: var(--fan-display-thin); line-height: 1; letter-spacing: var(--fan-display-snug); }
 .figure { font-size: var(--fan-display-figure-size); font-weight: var(--fan-display-thin); line-height: 1; letter-spacing: var(--fan-display-snug); }
 .figure-sm { font-size: var(--fan-display-figure-sm-size); font-weight: var(--fan-display-thin); line-height: 1; letter-spacing: var(--fan-display-snug); }
-.title { font-size: var(--fan-display-title-size); font-weight: var(--fan-display-medium); line-height: var(--fan-heading-leading); letter-spacing: var(--fan-display-snug); }
+.title { font-size: var(--fan-display-title-size); font-weight: var(--fan-display-semibold); line-height: var(--fan-heading-leading); letter-spacing: var(--fan-display-snug); }
 .heading { font-size: var(--fan-display-heading-size); font-weight: var(--fan-display-semibold); line-height: var(--fan-heading-leading); letter-spacing: var(--fan-display-snug); text-wrap: balance; }
-.lead { font-size: var(--fan-display-lead-size); font-weight: var(--fan-display-medium); line-height: var(--fan-heading-leading); letter-spacing: var(--fan-display-snug); }
-.strong { font-size: var(--fan-display-strong-size); font-weight: var(--fan-display-medium); line-height: var(--fan-heading-leading); }
+.lead { font-size: var(--fan-display-lead-size); font-weight: var(--fan-display-regular); line-height: var(--fan-heading-leading); letter-spacing: var(--fan-display-snug); }
+.strong { font-size: var(--fan-display-strong-size); font-weight: var(--fan-display-regular); line-height: var(--fan-heading-leading); }
 .body { font-size: var(--fan-display-body-size); font-weight: var(--fan-display-regular); line-height: var(--fan-body-leading); }
-.caption { font-size: var(--fan-display-caption-size); font-weight: var(--fan-display-regular); line-height: var(--fan-body-leading); }
+.caption { font-size: var(--fan-display-caption-size); font-weight: var(--fan-display-regular); line-height: var(--fan-metadata-leading); }
 .mono { font-family: var(--fan-display-mono); font-size: var(--fan-display-mono-size); font-weight: var(--fan-display-regular); line-height: 1; }
 @media (width >= 64rem) {
   .amount { font-size: var(--fan-display-amount-size-wide); }
@@ -17,7 +17,4 @@
   .figure { font-size: var(--fan-display-figure-size-wide); }
   .figure-sm { font-size: var(--fan-display-figure-sm-size-wide); }
   .title { font-size: var(--fan-display-title-size-wide); }
-  .heading { font-size: var(--fan-display-heading-size-wide); }
-  .lead { font-size: var(--fan-display-lead-size-wide); }
-  .strong { font-size: var(--fan-display-strong-size-wide); }
 }
