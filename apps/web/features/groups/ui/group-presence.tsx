@@ -1,5 +1,6 @@
 "use client";
 import { fanUiText } from '@/components/fan-ui/fan-ui-copy';
+import { RollingNumber } from '@/components/fan-ui/rolling-number';
 import { FanSkeleton, FanSkeletonStatus } from '@/components/fan-ui/fan-skeleton';
 import { Radio } from 'lucide-react';
 import type { AppLocale } from '@/i18n/locales';
@@ -14,14 +15,18 @@ export function GroupPresence({pageId,locale,member=false,mode="compact",memberC
  const r=useGroupPresence(pageId,true,member),t=groupsCopy(locale),c=presenceCopy(locale);
  if(mode==='hidden')return null;
  const count=(value:number)=>value.toLocaleString(locale);
- const fans=memberCount===undefined?<span className={styles.item}><FanSkeleton width={56} height={16}/></span>:<span className={styles.item}>{fanUiText(locale,'fanCount',[count(memberCount)])}</span>;
+ const metric=(key:'fanCount'|'presenceNow'|'presenceToday',value:number)=>{
+  const [before,after]=fanUiText(locale,key,['\u0001']).split('\u0001');
+  return <>{before}<RollingNumber value={value} format={count} initialFromZero emphasized />{after}</>;
+ };
+ const fans=memberCount===undefined?<span className={styles.item}><FanSkeleton width={56} height={16}/></span>:<span className={styles.item}>{metric('fanCount',memberCount)}</span>;
  if(!r.data)return <section className={styles.line} aria-label={t.groups} aria-busy={r.error?undefined:true}>{fans}{r.error
   ?<span className={styles.error} role='status'><span className={styles.errorText}>{presenceUnavailableCopy[locale]}</span><button type='button' className={styles.retry} onClick={r.retry}>{t.retry}</button></span>
   :<><span className={styles.item}><FanSkeleton width={72} height={16}/></span><FanSkeletonStatus locale={locale}/></>}</section>;
  const seen=r.data.artists.filter(artist=>artist.online||artist.visitedToday),live=seen.some(artist=>artist.online)?seen.filter(artist=>artist.online):seen,online=live.some(artist=>artist.online);
  return <section className={styles.line} aria-label={t.groups} data-wrap={challengeSlug?'':undefined}>{fans}
-  {r.data.onlineCount>0&&<span className={styles.item} data-presence='online'>{fanUiText(locale,'presenceNow',[count(r.data.onlineCount)])}</span>}
-  {r.data.todayCount>0&&<span className={styles.item} data-presence='today'>{fanUiText(locale,'presenceToday',[count(r.data.todayCount)])}</span>}
+  {r.data.onlineCount>0&&<span className={styles.item} data-presence='online'><span className={styles.onlineDot} aria-hidden="true"/>{metric('presenceNow',r.data.onlineCount)}</span>}
+  {r.data.todayCount>0&&<span className={styles.item} data-presence='today'>{metric('presenceToday',r.data.todayCount)}</span>}
   {live.length>0&&<span className={styles.artist} data-online={online}><Radio size={16} aria-hidden='true'/><strong className={styles.artistName}>{live.map(artist=>artist.nickname).join(', ')}</strong><span className={styles.artistState}>{online?c.connected:c.visited}</span></span>}
   {challengeSlug&&<PageChallengeStat slug={challengeSlug} locale={locale} className={styles.item}/>}
  </section>;

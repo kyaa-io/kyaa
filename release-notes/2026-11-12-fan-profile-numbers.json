@@ -1,0 +1,5 @@
+{
+  "changes": ["팬페이지 프로필의 팬 수와 접속·방문 숫자가 처음 보일 때 자연스럽게 올라가고, 접속·방문 수가 바뀌면 다시 움직여요. 지금 접속 숫자 앞에 작은 초록 점을 더했어요. 예시 데이터로 만든 로컬 검증 화면입니다."],
+  "path": "/groups",
+  "images": ["release-notes/images/2026-11-12-fan-numbers-390.png", "release-notes/images/2026-11-12-fan-numbers-1440.png"]
+}

@@ -45,18 +45,18 @@ type Roll = { from: string; direction: 1 | -1; id: number };
 /** A number whose changed places roll like an odometer: up when the value grows, down when it shrinks.
  * The first render and reduced-motion show the value at once. Screen readers get the final text only.
  * `duration`, `easing` and `delay` (ms, before the first place starts) let a list slow the roll and stagger its rows; the default is 600ms. */
-export function RollingNumber({ value, format = defaultFormat, className, duration, easing, delay }: { value: number; format?: (value: number) => string; className?: string } & Timing) {
-  const [state, setState] = useState<{ value: number; roll: Roll | null }>({ value, roll: null });
+export function RollingNumber({ value, format = defaultFormat, className, duration, easing, delay, initialFromZero = false, emphasized = false }: { value: number; format?: (value: number) => string; className?: string; initialFromZero?: boolean; emphasized?: boolean } & Timing) {
+  const [state, setState] = useState<{ value: number; roll: Roll | null }>(() => ({ value, roll: initialFromZero && value > 0 ? { from: format(0), direction: 1, id: 1 } : null }));
   if (state.value !== value) {
     setState({ value, roll: { from: format(state.value), direction: value > state.value ? 1 : -1, id: (state.roll?.id ?? 0) + 1 } });
   }
   const text = format(value);
   const chars = [...text];
   const before = state.roll ? [...state.roll.from] : [];
-  return <span className={[styles.number, className ?? ""].filter(Boolean).join(" ")} aria-label={text} role="img">
+  return <span className={[styles.number, emphasized ? styles.emphasized : "", className ?? ""].filter(Boolean).join(" ")} aria-label={text} role="img">
     {chars.map((char, index) => {
       const place = chars.length - 1 - index;
-      const old = before[before.length - 1 - place];
+      const old = before[before.length - 1 - place] ?? (state.roll?.id === 1 && initialFromZero ? "0" : undefined);
       const roll = state.roll;
       if (roll && isDigit(char) && isDigit(old) && old !== char) {
         return <Wheel key={`${place}:wheel`} from={Number(old)} to={Number(char)} direction={roll.direction} roll={roll.id} place={place} duration={duration} easing={easing} delay={delay} />;

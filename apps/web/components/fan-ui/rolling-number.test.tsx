@@ -16,6 +16,26 @@ describe("RollingNumber", () => {
     expect(animate).not.toHaveBeenCalled();
   });
 
+  it("can roll from zero on first display without repeating on an unchanged render", () => {
+    (HTMLElement.prototype as { animate?: unknown }).animate = animate;
+    const { rerender } = render(<RollingNumber value={25} initialFromZero />);
+    expect(screen.getByRole("img", { name: "25" })).toBeInTheDocument();
+    expect(animate).toHaveBeenCalledTimes(2);
+    rerender(<RollingNumber value={25} initialFromZero />);
+    expect(animate).toHaveBeenCalledTimes(2);
+    rerender(<RollingNumber value={26} initialFromZero />);
+    expect(animate).toHaveBeenCalledTimes(3);
+  });
+
+  it("keeps the initial zero roll still under reduced motion", () => {
+    (HTMLElement.prototype as { animate?: unknown }).animate = animate;
+    vi.stubGlobal("matchMedia", () => ({ matches: true }));
+    render(<RollingNumber value={25} initialFromZero />);
+    expect(animate).not.toHaveBeenCalled();
+    expect(screen.getByRole("img", { name: "25" })).toBeInTheDocument();
+    vi.unstubAllGlobals();
+  });
+
   it("rolls only the changed places, up when the value grows", () => {
     (HTMLElement.prototype as { animate?: unknown }).animate = animate;
     const { container, rerender } = render(<RollingNumber value={17} />);
