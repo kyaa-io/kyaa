@@ -1,0 +1,12 @@
+{
+  "changes": ["홈 랭킹에서 순위나 점수가 바뀐 행은 분홍색 테두리를 더 오래 보여준 뒤 부드럽게 사라져요.", "화면 밖에서 바뀐 행은 화면에 들어왔을 때 강조를 보여줘요. 첨부 화면은 실제 서비스 자료가 아닌 로컬 예시 데이터로 확인한 변경 전·강조 중·강조 후 모습이에요."],
+  "path": "/",
+  "images": [
+    "release-notes/images/2026-11-12-rank-change-before-390.png",
+    "release-notes/images/2026-11-12-rank-change-hold-390.png",
+    "release-notes/images/2026-11-12-rank-change-after-390.png",
+    "release-notes/images/2026-11-12-rank-change-before-1440.png",
+    "release-notes/images/2026-11-12-rank-change-hold-1440.png",
+    "release-notes/images/2026-11-12-rank-change-after-1440.png"
+  ]
+}

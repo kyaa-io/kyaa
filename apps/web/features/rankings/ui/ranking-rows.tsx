@@ -82,20 +82,14 @@ const RING_IN_MS = 250;
 const RING_HOLD_MS = 3000;
 const RING_OUT_MS = 850;
 const RING_MS = RING_IN_MS + RING_HOLD_MS + RING_OUT_MS;
-/** The pink ring comes in, remains readable, then fades around the row's border.
- * Reduced motion: the same appear-hold-fade of the whole ring, nothing rotates. */
+/** The full pink ring remains readable throughout the hold, then fades without moving the row.
+ * Reduced motion uses the same colour-only emphasis; no element rotates. */
 function ringPulse(node: HTMLElement, delay = 0) {
   const ring = node.querySelector<HTMLElement>("[data-pulse]");
-  const sweep = ring?.firstElementChild as HTMLElement | null | undefined;
-  if (!ring || !sweep || typeof ring.animate !== "function") return;
+  if (!ring || typeof ring.animate !== "function") return;
   const envelope = [{ opacity: 0, easing: "ease-out" }, { opacity: 1, offset: RING_IN_MS / RING_MS }, { opacity: 1, offset: (RING_IN_MS + RING_HOLD_MS) / RING_MS, easing: "ease-in" }, { opacity: 0 }];
-  if (reducedMotion()) {
-    ring.dataset.still = "";
-    ring.animate(envelope, { duration: RING_MS, delay }).onfinish = () => { delete ring.dataset.still; };
-    return;
-  }
-  ring.animate(envelope, { duration: RING_MS, easing: "linear", delay });
-  sweep.animate([{ transform: "rotate(0deg)" }, { transform: "rotate(360deg)" }], { duration: RING_MS, easing: "cubic-bezier(.4, 0, .2, 1)", delay });
+  ring.dataset.still = "";
+  ring.animate(envelope, { duration: RING_MS, easing: "linear", delay }).onfinish = () => { delete ring.dataset.still; };
 }
 const SEEN_PREFIX = "kyaa:rank-seen2:";
 /** What the visitor last saw in one list and period: each row's value and rank, by row key. */
