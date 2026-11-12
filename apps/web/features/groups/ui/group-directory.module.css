@@ -41,6 +41,7 @@
 }
 @media (min-width: 1280px) {
   .controls { grid-template-columns: max-content minmax(200px, 1fr) auto; gap: var(--space-3); }
+  .controls > button { justify-self: start; }
   .filterBar { grid-column: 1; grid-row: 1; }
 }
 

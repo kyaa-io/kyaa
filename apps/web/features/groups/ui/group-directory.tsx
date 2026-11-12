@@ -16,6 +16,7 @@ import { FanEntityCard } from "@/components/fan-ui/fan-entity-card";
 import { FanHeading } from "@/components/fan-ui/fan-heading";
 import { FanSkeletonRows } from "@/components/fan-ui/fan-skeleton";
 import { FanTag } from "@/components/fan-ui/fan-tag";
+import { FanTabs } from "@/components/fan-ui/fan-tabs";
 import cornerStyles from "@/components/fan-ui/earn-corner.module.css";
 import { checkinNumbers } from "@/features/dukjil/domain/dukjil-ui";
 import { DukjilProvider, useDukjil } from "@/features/dukjil/ui/dukjil-provider";
@@ -29,6 +30,7 @@ import { useGroupResource } from "./use-group-resource";
 import { groupsCopy } from "./copy";
 import { GroupShell } from "./group-shell";
 import { HotPosts, MyArtists, ThinCarousel } from "./directory-top";
+import { DirectorySearchPosts } from "./directory-search-posts";
 import { creatorRoleFilterLabel } from "@/features/creator/domain/creator-role";
 import { challengeBadge, discoveryCopy } from "./discovery-copy";
 import { walletCopy } from "@/features/group-wallet/ui/copy";
@@ -61,6 +63,7 @@ function useOverflowHint(){
 const parseList = (value:unknown)=>groupListSchema.parse(value);
 const SEARCH_DELAY_MS=300;
 const ROLE_FILTERS=['all','idol','singer','actor','creator','show_host'] as const;
+const searchTabs:Record<AppLocale,{artists:string;posts:string}>={ko:{artists:'아티스트',posts:'게시글'},en:{artists:'Artists',posts:'Posts'},ja:{artists:'アーティスト',posts:'投稿'},'zh-Hans':{artists:'艺人',posts:'帖子'},'zh-Hant':{artists:'藝人',posts:'貼文'},es:{artists:'Artistas',posts:'Publicaciones'},id:{artists:'Artis',posts:'Postingan'},vi:{artists:'Nghệ sĩ',posts:'Bài viết'},th:{artists:'ศิลปิน',posts:'โพสต์'},pt:{artists:'Artistas',posts:'Publicações'},fr:{artists:'Artistes',posts:'Publications'},ru:{artists:'Артисты',posts:'Публикации'}};
 export function GroupDirectory({locale,initialOwned=false,banners=[]}:{locale:AppLocale;banners?:HomeBanner[];initialMine?:"joined"|"bookmarked";initialType?:"all"|"fan"|"hobby"|"brand";initialSearch?:string;initialSort?:"popular"|"recent";initialOwned?:boolean}) {
   const t=groupsCopy(locale),c=discoveryCopy(locale),w=walletCopy(locale);
  const [attendanceOpen,setAttendanceOpen]=useState(false);
@@ -70,6 +73,7 @@ export function GroupDirectory({locale,initialOwned=false,banners=[]}:{locale:Ap
   const directoryLoginQuery=new URLSearchParams(query?.toString()??'');directoryLoginQuery.set('locale',locale);
   const directoryLogin=fanLoginHref(locale,`/pages/groups?${directoryLoginQuery}`);
   const type=query.get("type")??"all",search=query.get("search")??"",sort=query.get("sort")??"recent",mine=query.get("mine")??undefined,artistRole=query.get("artistRole")??undefined;
+  const [searchTab,setSearchTab]=useState<'artists'|'posts'>('artists');
   const nonFanType=type==='hobby'||type==='brand';
   const activeRole=!nonFanType?ROLE_FILTERS.find(role=>role!=='all'&&role===artistRole):undefined;
   const [draftState,setDraftState]=useState({search,value:search}),[composing,setComposing]=useState(false);
@@ -123,16 +127,19 @@ export function GroupDirectory({locale,initialOwned=false,banners=[]}:{locale:Ap
     <ThinCarousel banners={banners} locale={locale}/>
     <div className={`${styles.layout} ${styles.discoveryLayout}`}><section className={styles.main} aria-label={t.explore} id="directory-explore" data-directory-explore="" data-filtered={holdHeight||undefined}>
       <HotPosts locale={locale}/>
-      <div className={styles.discoveryHeading}><h2>{t.explore}</h2>{listData&&!resource.error&&<output aria-live="polite" className={styles.meta}>{t.all} {listedCount.toLocaleString(locale)}{listData.totalCount===undefined&&listData.nextCursor?'+':''}</output>}</div>
+      <div className={styles.discoveryHeading}><h2>{t.explore}</h2>{!(search.trim()&&searchTab==='posts')&&listData&&!resource.error&&<output aria-live="polite" className={styles.meta}>{t.all} {listedCount.toLocaleString(locale)}{listData.totalCount===undefined&&listData.nextCursor?'+':''}</output>}</div>
       <div className={directoryStyles.controls}>
       <form className={`${styles.search} ${directoryStyles.search}`} onSubmit={submit}><input className={`${styles.input} ${directoryStyles.searchInput}`} aria-label={t.searchPlaceholder} placeholder={t.searchPlaceholder} value={draft} onChange={e=>setDraft(e.target.value)} onCompositionStart={()=>setComposing(true)} onCompositionEnd={()=>setComposing(false)} maxLength={100}/><button className={directoryStyles.searchIcon} aria-label={t.search}><Search size={18}/></button></form>
       <FanSelectMenu label={t.popular} accessibleName={sort==='popular'?t.popular:c.defaultSort} value={sort==='popular'?'popular':'recent'} onValueChange={value=>{if(value==='recent'||value==='popular')setSort(value);}} options={[{value:'recent',label:c.defaultSort},{value:'popular',label:t.popular}]} active={sort==='popular'} icon={ArrowDownUp} collapseNarrow align='end'/>
-      <div ref={filterBar} className={directoryStyles.filterBar} aria-label={t.explore}><button className={`${styles.chip} ${directoryStyles.chip}`} aria-pressed={type==='all'} onClick={()=>setType('all')}>{t.all}</button><button className={`${styles.chip} ${directoryStyles.chip}`} aria-pressed={type==='fan'} onClick={()=>setType('fan')}>{fanpageLabel[locale]}</button><div className={directoryStyles.groupKinds} role="group" aria-label={t.groups}><span className={directoryStyles.groupLabel}>{t.groups}</span>{(['hobby','brand'] as const).map(value=><button className={`${styles.chip} ${directoryStyles.chip}`} aria-pressed={type===value} key={value} onClick={()=>{if(artistRole)updateQuery('artistRole',undefined);setType(value);}}>{t[value]}</button>)}</div>
-<FanSelectMenu className={directoryStyles.roleTrigger} label={groupApplyText(locale,'roleFilter')} triggerLabel={activeRole?creatorRoleFilterLabel(activeRole,locale):groupApplyText(locale,'roleFilter')} accessibleName={`${groupApplyText(locale,'roleFilter')}: ${creatorRoleFilterLabel(activeRole??'all',locale)}`} value={activeRole??'all'} onValueChange={value=>updateQuery('artistRole',value==='all'?undefined:String(value))} options={ROLE_FILTERS.map(role=>({value:role,label:creatorRoleFilterLabel(role,locale)}))} active={Boolean(activeRole)} disabled={nonFanType}/></div>
+      {!search.trim()&&<div ref={filterBar} className={directoryStyles.filterBar} aria-label={t.explore}><button className={`${styles.chip} ${directoryStyles.chip}`} aria-pressed={type==='all'} onClick={()=>setType('all')}>{t.all}</button><button className={`${styles.chip} ${directoryStyles.chip}`} aria-pressed={type==='fan'} onClick={()=>setType('fan')}>{fanpageLabel[locale]}</button><div className={directoryStyles.groupKinds} role="group" aria-label={t.groups}><span className={directoryStyles.groupLabel}>{t.groups}</span>{(['hobby','brand'] as const).map(value=><button className={`${styles.chip} ${directoryStyles.chip}`} aria-pressed={type===value} key={value} onClick={()=>{if(artistRole)updateQuery('artistRole',undefined);setType(value);}}>{t[value]}</button>)}</div>
+<FanSelectMenu className={directoryStyles.roleTrigger} label={groupApplyText(locale,'roleFilter')} triggerLabel={activeRole?creatorRoleFilterLabel(activeRole,locale):groupApplyText(locale,'roleFilter')} accessibleName={`${groupApplyText(locale,'roleFilter')}: ${creatorRoleFilterLabel(activeRole??'all',locale)}`} value={activeRole??'all'} onValueChange={value=>updateQuery('artistRole',value==='all'?undefined:String(value))} options={ROLE_FILTERS.map(role=>({value:role,label:creatorRoleFilterLabel(role,locale)}))} active={Boolean(activeRole)} disabled={nonFanType}/></div>}
       </div>
+      {search.trim()&&<FanTabs variant="segment" label={t.search} current={searchTab} items={[{key:'artists',label:t.explore,onSelect:()=>setSearchTab('artists')},{key:'posts',label:searchTabs[locale].posts,onSelect:()=>setSearchTab('posts')}]} />}
+      {searchTab==='posts'&&search.trim()?<DirectorySearchPosts locale={locale} search={search}/>:<>
       {mineRow&&<div className={styles.toolbar}><button className={styles.chip} aria-pressed={mine==="joined"} onClick={()=>setMine(mine==="joined"?undefined:"joined")}>{t.joinedPages}</button><button className={styles.chip} aria-pressed={mine==="bookmarked"} onClick={()=>setMine(mine==="bookmarked"?undefined:"bookmarked")}>{t.bookmark}</button></div>}
       {resource.error?<SourceStatePanel sourceId="J4WKn" className={stateStyles.fullWidth} title={locale==='ko'?'페이지 목록을 불러오지 못했어요':t.error} description={locale==='ko'?'목록을 다시 불러와 주세요.':t.error} icon={<CircleAlert size={24}/>} feedback="danger" role="alert" actions={[{label:t.retry,onClick:resource.retry,variant:'primary'}]}/>:resource.loading&&!listData&&!items.length?<DirectorySkeleton label={t.loading}/>:items.length?<div key="list" className={[directoryStyles.list,refreshing?directoryStyles.refreshing:''].filter(Boolean).join(' ')} data-directory-list aria-busy={refreshing||undefined}>{items.map(page=>pageCard(page))}</div>:<div key="empty" className={refreshing?directoryStyles.refreshing:undefined} aria-busy={refreshing||undefined}><SourceStatePanel className={stateStyles.fullWidth} sourceId={mine==='joined'?'C41qR2':'nHfwZ'} title={locale==='ko'?mine==='joined'?'아직 가입한 페이지가 없어요':'검색 결과가 없어요':t.empty} illustration={mine==='joined'?'page':'search'} role="status" actions={mine==='joined'?[{label:locale==='ko'?'전체 보기':t.all,href:`/pages/groups?locale=${locale}`,variant:'primary'}]:[...(filtersActive?[{label:resetFiltersLabel[locale],onClick:()=>{const url=new URL(window.location.href);for(const key of ['search','type','mine','artistRole'])url.searchParams.delete(key);window.history.replaceState(null,'',url.pathname+url.search+url.hash);setDraft('');},variant:'primary' as const}]:[]),{label:applyLabel,onClick:()=>setApplication({kind:applyKind,name:search||undefined}),...(filtersActive?{}:{variant:'primary' as const})}]} /></div>}
       {resource.data?.nextCursor&&<FanAction className={styles.more} fullWidth onClick={()=>{setPrevious({ownerKey:resource.ownerKey,items});setCursor(resource.data?.nextCursor??undefined);}} trailingIcon={<ArrowRight/>}>{t.more}</FanAction>}
+      </>}
     </section><aside className={styles.discoveryAside}>
       <section className={styles.discoveryAttendance}><div><h3>{c.attendance}</h3></div><DukjilProvider locale={locale}><CheckinCorner locale={locale}>{attendanceAction}</CheckinCorner></DukjilProvider></section>
       <div className={`${styles.discoveryCreation} ${creationStyles.creation}`}>
