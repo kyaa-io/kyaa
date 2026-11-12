@@ -59,6 +59,8 @@
   --shadow-card-soft: 0 1px 3px rgb(0 0 0 / 6%);
   --shadow-dialog: 0 16px 48px rgb(0 0 0 / 16%);
 
+  /* 래플 롱폼 포스터 전용 큰 글자·굵기·반경(s/raffle). 다른 화면은 쓰지 않는다. */
+  --raffle-r: 40px; --raffle-col: 480px; --raffle-fs-12: 12px; --raffle-fs-13: 13px; --raffle-fs-14: 14px; --raffle-fs-15: 15px; --raffle-fs-16: 16px; --raffle-fs-17: 17px; --raffle-fs-18: 18px; --raffle-fs-22: 22px; --raffle-fs-24: 24px; --raffle-fs-32: 32px; --raffle-fs-40: 40px; --raffle-fs-56: 56px; --raffle-w600: 600; --raffle-w700: 700; --raffle-w800: 800; --raffle-w900: 900;
   --space-1: 4px;
   --space-2: 8px;
   --space-3: 12px;
