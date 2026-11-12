@@ -88,3 +88,7 @@ skills-lock.json
 
 # Vite dependency cache of the local e2e harnesses
 apps/web/e2e/**/.vite/
+
+# 11/13: 공개 저장소 — 작업 메모·조사 파일은 하네스 board에 둔다
+/work/
+/board/
