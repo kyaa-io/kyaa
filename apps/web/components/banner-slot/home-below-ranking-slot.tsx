@@ -1,5 +1,5 @@
 "use client";
-import Link from "next/link";
+import Link from "@/components/fan-ui/hover-prefetch-link";
 import type { Route } from "next";
 import { ArrowRight } from "@/components/fan-ui/fan-icons";
 import { FanIcon } from "@/components/fan-ui/fan-icon";
@@ -20,9 +20,9 @@ export function HomeBelowRankingSlot({ locale }: { locale: AppLocale }) {
     href: jjinfanBannerHref(creator.slug, locale), alt: locale === "ko" ? creator.ko : creator.en,
     desktopImage: { id: creator.slug, url: `/images/jjinfan100/${creator.slug}.webp`, width: index === 0 ? 1067 : 1080, height: index === 0 ? 1600 : 1080, mimeType: "image/webp", revision: 1 }, mobileImage: null,
   }));
-  return <LiveHeroCarousel homeBanners={banners} locale={locale} elinaGuide={null} compact renderBanner={(banner) =>
+  return <div data-banner-slot="home-below-ranking"><LiveHeroCarousel homeBanners={banners} locale={locale} elinaGuide={null} compact renderBanner={(banner) =>
     <Link href={banner.href as Route} className={styles.banner} data-jjinfan-banner={banner.id}>
       <div className={styles.copy}><FanText role="banner-label" className={styles.title}>{t.title}</FanText><FanHeading variant="campaign">{banner.title}</FanHeading><FanText role="banner-action" className={styles.action}>{t.join}<FanIcon icon={ArrowRight} size={16} /></FanText></div>
       <img className={styles.portrait} src={banner.desktopImage.url} alt={banner.alt} width={banner.desktopImage.width} height={banner.desktopImage.height} loading="lazy" />
-    </Link>} />;
+    </Link>} /></div>;
 }

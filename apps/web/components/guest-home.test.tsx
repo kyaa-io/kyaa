@@ -96,7 +96,7 @@ describe("canonical 03 guest home", () => {
     const ranking = on.container.querySelector("#home-ranking")!;
     const slot = on.container.querySelector('[data-banner-slot="home-below-ranking"]')!;
     expect(slot.textContent).toContain("찐팬 100 챌린지");
-    expect(slot.querySelector("a")).toHaveAttribute("href", "/guide/jjinfan?locale=ko#jjinfan-challenge");
+    expect(slot.querySelector("a")).toHaveAttribute("href", "/yuna?locale=ko&challenge=jjinfan100");
     expect(ranking.compareDocumentPosition(slot) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     expect(on.container.querySelector("[data-home-heart-donation]")?.textContent).not.toContain("찐팬 100");
   });
