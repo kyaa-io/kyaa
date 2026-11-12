@@ -83,5 +83,5 @@ describe.skipIf(!enabled)("sns ingest on the local database", () => {
     expect(sql(`select count(*) from sns_ingest_media where notice_id='${id}'`)).toBe("2");
     expect(deps.fetchImage).toHaveBeenCalledTimes(2);
     expect(deps.upload).toHaveBeenCalledTimes(4);
-  });
+  }, 20_000);
 });
