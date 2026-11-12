@@ -1,4 +1,4 @@
-import { finishOnchainWork } from "./onchain-work.js";
+import { finishOnchainWork } from "./onchain-work.ts";
 import { getAddress } from "viem";
 import { actionCodes, linkOrigins } from "./action-constants.ts";
 
