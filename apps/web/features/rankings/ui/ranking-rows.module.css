@@ -19,7 +19,7 @@
 .item { --rank-value-col: calc(var(--space-10) + var(--space-8)); --rank-avatar-start: calc(var(--space-3) + var(--space-7) + var(--space-2)); --rank-name-start: calc(var(--rank-avatar-start) + var(--space-7) + var(--space-2)); position: relative; border-radius: var(--radius-card); background: var(--color-surface); box-shadow: inset 0 0 0 1px var(--color-line-subtle); }
 .item[data-tint] { background: var(--color-accent-soft); box-shadow: inset 0 0 0 1px var(--color-accent-line); }
 .item .toggle { position: absolute; inset: 0 0 auto; z-index: 0; display: block; width: 100%; height: 48px; min-height: 48px; padding: 0; border: 0; border-radius: var(--radius-card); background: transparent; }
-/* 행 한 줄 전체가 펼침 버튼이다(.toggle). 그 위에 놓인 글자·값은 클릭을 통과시키고, 아바타와 이름(.profile)만 따로 링크다. */
+/* 행 한 줄 전체가 펼침 버튼이다(.toggle). 그 위에 놓인 글자·값은 클릭을 통과시킨다. 닫힌 행은 어디를 눌러도 펼쳐지고, 펼친 행의 아바타·이름(.profile)만 따로 링크다(대표 11/13 04:35). */
 .rowFace[data-kind] { z-index: 1; pointer-events: none; color: var(--color-ink); }
 .rowFace[data-kind] .profile { pointer-events: auto; }
 .rowFace[data-kind] span.profile { pointer-events: none; }

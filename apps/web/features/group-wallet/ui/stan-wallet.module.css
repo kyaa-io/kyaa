@@ -1,6 +1,6 @@
 /* 덕질 wallet (대표 11/11 구성, 사용자 13:28 imagegen 시안): two columns, tickets | hearts. Each column = result box (pink tint, big 3D asset + big text),
    a hairline, the material row (3D asset, name, big count, thick bar with the count inside, rule line) and one button (교환 | 받기 + video icon).
-   Under 1024 the two columns stay side by side as two bordered cards (result box on top, gauge and button under it, one screen); 1024+: one bordered card with a vertical divider. */
+   Under 1024 the columns stack as two bordered cards, each laid out left to right (asset | text, bar | button on one line; 대표 11/13 04:37 restores this over the squeezed side-by-side cards); 1024+: one bordered card with a vertical divider. */
 .wallet { min-width:0; font-variant-numeric:tabular-nums; font-feature-settings:"tnum"; }
 .head { display:flex; align-items:center; gap:var(--space-1); margin-bottom:var(--space-3); }
 .guide { position:relative; display:inline-grid; place-items:center; width:32px; height:32px; border-radius:var(--radius-pill); color:var(--color-muted); }
@@ -36,15 +36,6 @@
 .favoritePicker { justify-items:center; align-content:center; }
 @media (hover:hover) and (pointer:fine) { .guide:hover { color:var(--color-ink); background:var(--color-accent-soft); } .result:hover .label { text-decoration:underline; } }
 @media (prefers-reduced-motion:reduce) { .barFill { transition:none; } }
-@media (width < 64rem) {
- .card { grid-template-columns:repeat(2,minmax(0,1fr)); gap:var(--space-2); }
- .column { gap:var(--space-3); padding:var(--space-3); }
- .result { gap:var(--space-2); padding:var(--space-2) var(--space-3); }
- .resultAsset,.asset { width:40px; height:40px; }
- .resultText { flex-direction:column; flex-wrap:nowrap; align-items:flex-start; gap:0; }
- .material { grid-template-columns:40px minmax(0,1fr); grid-template-areas:"asset name" "asset amount" "progress progress" "rule rule" "btn btn"; column-gap:var(--space-2); row-gap:var(--space-2); padding-block-start:var(--space-3); }
- .reward { width:100%; min-inline-size:0; }
-}
 @media (min-width:1024px) {
  .card { grid-template-columns:repeat(2,minmax(0,1fr)); gap:0; border:1px solid var(--color-line); border-radius:var(--radius-card); background:var(--color-surface); }
  .column { padding:var(--space-5); border:0; border-radius:0; background:transparent; }

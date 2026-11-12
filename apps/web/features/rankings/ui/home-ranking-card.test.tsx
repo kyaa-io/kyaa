@@ -49,13 +49,15 @@ it("is the shared ranking board under one heading: ten heart rows per group, no 
   for (const [url] of fetcher.mock.calls) expect(String(url)).toMatch(/metric=(points|likes).*limit=10/);
 });
 
-it("signed out: ten rows per group, a row's picture and name lead to sign-in, one sign-in button", async () => {
+it("signed out: ten rows per group, an opened row's picture and name lead to sign-in, one sign-in button", async () => {
   stub(fans(Array.from({ length: 10 }, (_, i) => fanRow(i + 1))), creators({ rows: Array.from({ length: 10 }, (_, i) => creatorRow(i + 1)) }));
   const { container } = render(<HomeRankingCard locale="ko" />);
   await screen.findByText("팬1");
   expect(container.querySelectorAll("[data-row='fan-rank']")).toHaveLength(10);
   expect(container.querySelectorAll("[data-row='creator-rank']")).toHaveLength(10);
   expect(container.querySelectorAll("[data-column='fans'] a[href*='/login']:not(li a)")).toHaveLength(1);
+  expect(screen.queryByRole("link", { name: "팬1, 로그인하고 프로필 보기" })).toBeNull();
+  fireEvent.click(container.querySelector("[data-column='fans'] li[data-row='fan-rank'] > button")!);
   expect(screen.getAllByRole("link", { name: "팬1, 로그인하고 프로필 보기" })[0]!.getAttribute("href")).toContain("/login");
   expect(container.querySelector("[data-rank-panel] a, [data-rank-panel] button")).toBeNull();
   expect(screen.queryByRole("dialog")).toBeNull();
@@ -82,7 +84,9 @@ it("passes the original signed profile reference without replacing its stored ra
   auth.value = { ...auth.value, authenticated: true, user: { id: "viewer" } };
   const ref = { kind: "home_ranking", day: "2026-11-08", computedAt: "2026-11-08T00:00:00Z", metric: "hearts", rank: 7, signature: "a".repeat(64) };
   stub(fans([fanRow(1, { profileRef: ref })]));
-  render(<HomeRankingCard locale="ko" />);
+  const view = render(<HomeRankingCard locale="ko" />);
+  await screen.findAllByText("팬1");
+  fireEvent.click(view.container.querySelector("li[data-row='fan-rank'] > button")!);
   fireEvent.click(await screen.findByRole("button", { name: "팬1, 프로필 보기" }));
   expect(await screen.findByTestId("ranking-profile")).toHaveTextContent(JSON.stringify(ref));
   fireEvent.click(screen.getByRole("button", { name: "close profile" }));
