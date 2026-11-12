@@ -224,7 +224,7 @@ const EMOJI = /[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/u;
 export function scanTsx(code, file) {
   const out = new Map();
   const c = stripComments(code);
-  for (const m of c.matchAll(/<a\b[^>]*(?:className|style)=/g)) add(out, 'D6|styled raw <a>');
+  for (const { attrs } of jsxTags(c, 'a')) if (/(?:^|\s)(?:className|style)\s*=/.test(attrs)) add(out, 'D6|styled raw <a>');
   add(out, 'C1|<button>', (c.match(/<button\b/g) ?? []).length);
   if (!/^apps\/web\/app\/guide\//.test(file)) for (const m of c.matchAll(/<h([1-3])\b/g)) add(out, `C2|<h${m[1]}>`);
   for (const m of c.matchAll(/<(input|textarea|select)\b([^>]*)>/g)) {
