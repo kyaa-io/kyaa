@@ -5,7 +5,7 @@ import { FanHeading } from '@/components/fan-ui/fan-heading';
 import { FanDisplay } from '@/components/fan-ui/fan-display';
 import { FanPrintChanceCard, FanPrintDesk, FanPrintGiftCard, FanPrintPassport, type FanPrintGiftCardTone } from '@/components/fan-ui/fan-print';
 import { signupEvent } from '@/features/benefit/domain/signup-event';
-import { RaffleBoostActions, RaffleHeroAction, RaffleMoreAction, RaffleProvider, RaffleShare, RaffleStickyCta, RaffleTicket, type RafflePreview } from './participation';
+import { RaffleBoostAction, RaffleHeroAction, RaffleMoreAction, RaffleProvider, RaffleShare, RaffleStickyCta, RaffleTicket, type RafflePreview } from './participation';
 import styles from './raffle.module.css';
 
 const art = (name: string) => `/images/raffle/v4/${name}.webp`;
@@ -28,7 +28,6 @@ export function RaffleContent({ locale, daysLeft, closed, preview }: { locale: A
         <p className={styles.heroFacts}><FanDisplay role="title">{t('giftCard')}</FanDisplay><FanDisplay role="title">{t('totalWinners')}</FanDisplay></p>
         <p className={styles.heroDeadline}><FanDisplay role="lead">{t('closesAt')}</FanDisplay><FanDisplay role="strong" className={styles.muted}>{t('kst')}</FanDisplay></p>
         <div className={styles.heroAction} data-raffle-hero-action><RaffleHeroAction /></div>
-        {closed ? null : <FanDisplay role="strong" as="p" className={styles.heroOnce}>{t('flowOnce')}</FanDisplay>}
       </div>
       <FanPrintDesk className={styles.heroArt} src={art('hero-desk-tall')} width={1280} height={1600} eager>
         <FanPrintGiftCard className={styles.heroCard} label={print.giftCard} amount="US$100" note={print.giftNote} tone="pearl" material={art('mat-card-100')} />
@@ -46,22 +45,21 @@ export function RaffleContent({ locale, daysLeft, closed, preview }: { locale: A
         <FanPrintDesk className={styles.prizeDesk} src={art('prize-desk-tall')} wideSrc={art('prize-desk-wide')} width={1122} height={1402}>
           <ol className={styles.prizes}>{signupEvent.prizes.map(prize => <li key={prize.usd} data-row="raffle-prize" data-tier={prize.usd}>
             <FanPrintGiftCard label={print.giftCard} amount={`US$${prize.usd}`} note={print.giftNote} tone={tones[prize.usd] ?? 'vellum'} count={prize.quantity} envelope={prize.usd === 100} material={art(`mat-card-${prize.usd}`)} />
-            <FanDisplay role="figure-sm" as="p" className={styles.prizeRow}>{text('prizeCount', prize.quantity)}</FanDisplay>
+            <FanDisplay role="body" as="p" className={styles.prizeRow}>{text('prizeCount', prize.quantity)}</FanDisplay>
           </li>)}</ol>
         </FanPrintDesk>
       </section>
 
       <section className={styles.section} data-block="raffle-bonus" aria-labelledby="raffle-bonus">
-        <div className={styles.sectionHead}>
-          <FanHeading as="h2" id="raffle-bonus"><FanDisplay role="heading">{t('bonusTitle')}</FanDisplay></FanHeading>
-          <FanDisplay role="strong" as="p">{t('bonusCap')}</FanDisplay>
-        </div>
+        <div className={styles.sectionHead}><FanHeading as="h2" id="raffle-bonus"><FanDisplay role="heading">{t('bonusTitle')}</FanDisplay></FanHeading></div>
         <div className={styles.bonus}>
-          <div className={styles.bonusText}>
-            <FanDisplay role="title" as="p" className={styles.muted}>{t('bonusOnce')}</FanDisplay>
-            <FanDisplay role="title" as="p" className={styles.bonusLead}>{t('bonusLead')}</FanDisplay>
-            <div className={styles.bonusActions}><RaffleBoostActions /></div>
-          </div>
+          <ul className={styles.bonusRows}>{(['comment', 'attend'] as const).map(kind => <li key={kind} data-row="raffle-bonus">
+            <div className={styles.bonusRowText}>
+              <FanDisplay role="lead" as="p">{t(kind === 'comment' ? 'bonusComment' : 'bonusAttend')}</FanDisplay>
+              <p className={styles.bonusFacts}><FanDisplay role="body">{t('bonusRate')}</FanDisplay><FanDisplay role="body">{t('bonusLimit')}</FanDisplay></p>
+            </div>
+            <RaffleBoostAction kind={kind} />
+          </li>)}</ul>
           <FanPrintDesk className={styles.bonusArt} src={art('step-desk-stamp')} width={1448} height={1086}>
             <FanPrintChanceCard className={styles.bonusCard} title={print.chance} each={t('bonusEach')} slots={3} rows={[
               { label: t('bonusComment'), stamp: 'first-comment', cap: t('bonusPerDay') },
@@ -72,7 +70,10 @@ export function RaffleContent({ locale, daysLeft, closed, preview }: { locale: A
       </section>
 
       <section className={styles.section} data-block="raffle-more" aria-labelledby="raffle-more">
-        <div className={styles.sectionHead}><FanHeading as="h2" id="raffle-more"><FanDisplay role="heading">{t('more')}</FanDisplay></FanHeading></div>
+        <div className={styles.sectionHead}>
+          <FanHeading as="h2" id="raffle-more"><FanDisplay role="heading">{t('more')}</FanDisplay></FanHeading>
+          <FanDisplay role="strong" as="p" className={styles.muted}>{t('optional')}</FanDisplay>
+        </div>
         <ul className={styles.more}>
           <li data-row="raffle-more">
             <FanPrintDesk className={styles.moreArt} src={art('step-desk-pen')} width={1448} height={1086}>

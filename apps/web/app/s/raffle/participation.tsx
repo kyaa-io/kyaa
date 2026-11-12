@@ -1,6 +1,6 @@
 'use client';
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
-import { Check, Share2 } from '@/components/fan-ui/fan-icons';
+import { Check, Share2, Ticket } from '@/components/fan-ui/fan-icons';
 import { FanIcon } from '@/components/fan-ui/fan-icon';
 import { FanDisplay } from '@/components/fan-ui/fan-display';
 import { FanPrintTicket } from '@/components/fan-ui/fan-print';
@@ -73,19 +73,22 @@ export function RaffleHeroAction() {
       {r.entered ? <><FanIcon icon={Check} />{r.t('entered')}</> : r.t('enterCta')}
     </FanAction>
     {r.error ? <p className={styles.heroError} role="alert"><FanDisplay role="caption">{r.s('error')}</FanDisplay> <FanAction type="button" variant="text" className={styles.retry} onClick={r.enter}>{r.t('retry')}</FanAction></p> : null}
+    {/* 응모 전에는 규칙(1인 1응모), 응모 뒤에는 확정된 내 응모 수. 댓글·출석으로 늘어난 기회는 여기에 섞지 않는다. */}
+    {r.entered
+      ? <p className={styles.heroStatus} data-state="entered"><FanIcon icon={Ticket} size={16} /><FanDisplay role="caption">{r.t('myEntry')}</FanDisplay></p>
+      : <p className={styles.heroStatus}><FanDisplay role="caption">{r.t('flowOnce')}</FanDisplay></p>}
   </>;
 }
 
-const DoneMark = ({ label }: { label: string }) => <FanDisplay role="strong" as="p" className={styles.doneMark}><FanIcon icon={Check} size={16} />{label}</FanDisplay>;
+const DoneMark = ({ label }: { label: string }) => <FanDisplay role="caption" as="p" className={styles.doneMark}><FanIcon icon={Check} size={16} />{label}</FanDisplay>;
 
-/** 확률 올리기: 출석·댓글로 가는 두 버튼. */
-export function RaffleBoostActions() {
+/** 확률 올리기: 행마다 그 행동으로 가는 버튼 하나. */
+export function RaffleBoostAction({ kind }: { kind: 'comment' | 'attend' }) {
   const r = useRaffle();
   if (r.closed) return null;
-  return <>
-    <FanAction href={communityHref(r.locale)} variant="neutral">{r.t('checkIn')}</FanAction>
-    <FanAction href={`/?locale=${r.locale}`} variant="neutral">{r.t('findPosts')}</FanAction>
-  </>;
+  return kind === 'attend'
+    ? <FanAction href={communityHref(r.locale)} variant="neutral" size="sm">{r.t('checkIn')}</FanAction>
+    : <FanAction href={`/?locale=${r.locale}`} variant="neutral" size="sm">{r.t('findPosts')}</FanAction>;
 }
 
 /** 더 즐기기(선택): Fan Passport · 커뮤니티. 끝냈으면 '완료' 표시. */

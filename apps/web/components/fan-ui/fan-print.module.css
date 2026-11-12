@@ -28,9 +28,9 @@
 .ticketStub .mono { font-size: 2.9cqw; }
 .ticketStubLine { font-size: 3.1cqw; font-weight: var(--fan-display-medium); line-height: 1; white-space: nowrap; }
 .punch { position: absolute; inset-block-end: 4.6cqw; inset-inline-start: 50%; width: 3.4cqw; height: 3.4cqw; margin-inline-start: -1.7cqw; border-radius: 50%; background: var(--fan-print-hole); display: none; }
-.ticketStamp { position: absolute; inset-inline-end: 12.5%; inset-block-start: 27%; width: 23%; aspect-ratio: 1; display: grid; place-items: center; rotate: -14deg; mix-blend-mode: multiply; opacity: 1; scale: 1; transition: opacity var(--motion-slow) var(--motion-easing), scale var(--motion-layout) var(--motion-easing); }
+.ticketStamp { position: absolute; inset-inline-end: 12.5%; inset-block-start: 29%; width: 20%; aspect-ratio: 1; display: grid; place-items: center; rotate: -14deg; mix-blend-mode: multiply; opacity: 1; scale: 1; transition: opacity var(--motion-slow) var(--motion-easing), scale var(--motion-layout) var(--motion-easing); }
 .ticketStamp img { grid-area: 1 / 1; width: 100%; height: auto; }
-.ticketStamp span { grid-area: 1 / 1; max-width: 62%; color: var(--fan-print-stamp-ink); font-size: 4cqw; font-weight: var(--fan-display-semibold); line-height: 1.1; text-align: center; text-wrap: balance; }
+.ticketStamp span { grid-area: 1 / 1; max-width: 62%; color: var(--fan-print-stamp-ink); font-size: 3.5cqw; font-weight: var(--fan-display-semibold); line-height: 1.1; text-align: center; text-wrap: balance; }
 @starting-style { .ticketStamp { opacity: 0; scale: 1.35; } }
 
 /* 기프트카드: 맨 위 한 장 + 아래 겹친 장. 겹친 장은 위로 쌓여 맨 위 카드의 아랫선이 칸마다 맞는다 */

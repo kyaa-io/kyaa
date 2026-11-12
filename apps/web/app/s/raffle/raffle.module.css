@@ -26,7 +26,8 @@
 .heroButton:disabled { opacity: var(--fan-disabled-opacity, .4); cursor: not-allowed; }
 .heroDone.heroDone:disabled { opacity: 1; background: var(--color-surface); color: var(--color-ink); border: 1px solid var(--color-ink); cursor: default; }
 .heroButton:focus-visible { outline: var(--focus-width) solid var(--color-focus); outline-offset: var(--focus-offset); transition: none; }
-.heroOnce { margin-top: var(--space-3); color: var(--color-muted); text-align: center; }
+.heroStatus { display: flex; align-items: center; justify-content: center; gap: var(--space-1); color: var(--color-muted); }
+.heroStatus[data-state="entered"] { color: var(--color-ink); }
 .heroEnded { min-height: 56px; display: grid; place-items: center; border-radius: var(--radius-pill); border: 1px solid var(--color-line); color: var(--color-muted); }
 .heroError { color: var(--color-error); }
 .retry.retry { border: 0; background: none; padding: 0 var(--space-1); min-height: var(--min-target); color: var(--color-ink); text-decoration: underline; cursor: pointer; }
@@ -38,15 +39,19 @@
 
 /* 구역 공통: 위 검은 선 + 제목 줄(왼쪽 제목, 오른쪽 핵심 사실) */
 .section, .foot { display: grid; gap: var(--space-5); min-width: 0; }
-.sectionHead { display: flex; align-items: baseline; justify-content: space-between; gap: var(--space-3); padding-top: var(--space-3); border-top: 1px solid var(--color-ink); }
+.sectionHead { display: flex; align-items: baseline; justify-content: space-between; gap: var(--space-3); padding-top: var(--space-3); border-top: 1px solid var(--color-line); }
 .sectionHead > p { white-space: nowrap; }
-.doneMark { display: inline-flex; align-items: center; gap: var(--space-1); min-height: var(--min-target); }
+.doneMark { display: inline-flex; align-items: center; gap: var(--space-1); min-height: 36px; }
 
-/* 당첨 확률 올리기: 문장 + 하루 기회 카드 */
+/* 당첨 확률 올리기: 행동 두 행(이름 · 1회당 +1 | 하루 최대 3회 · 그 행동으로 가는 버튼) + 하루 기회 카드 */
 .bonus { display: grid; gap: var(--space-6); }
-.bonusText { display: grid; align-content: start; gap: var(--space-1); min-width: 0; }
-.bonusLead { text-wrap: balance; }
-.bonusActions { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-top: var(--space-5); }
+.bonusRows { list-style: none; padding: 0; display: grid; align-content: center; min-width: 0; }
+.bonusRows li { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); min-height: var(--space-12); padding-block: var(--space-3); }
+.bonusRows li + li { border-top: 1px solid var(--color-line); }
+.bonusRowText { display: grid; gap: var(--space-1); min-width: 0; }
+.bonusFacts { display: flex; flex-wrap: wrap; gap: 0 var(--space-3); color: var(--color-muted); }
+.bonusFacts > span + span { padding-inline-start: var(--space-3); border-inline-start: 1px solid var(--color-line); }
+.bonusRows li > a { flex: none; }
 .bonusArt { aspect-ratio: 6 / 5; border-radius: var(--radius-card); min-width: 0; }
 .bonusCard { position: absolute; inset-inline-start: 6%; inset-block-start: 15%; width: 84%; rotate: -2deg; }
 
@@ -54,18 +59,18 @@
 .prizeLead { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--space-2) var(--space-4); }
 .prizeDesk { border-radius: var(--radius-card); padding: var(--space-12) var(--space-5) var(--space-6); }
 .prizes { position: relative; list-style: none; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-8) var(--space-5); align-items: end; }
-.prizes li { display: grid; gap: var(--space-3); min-width: 0; }
+.prizes li { display: grid; gap: var(--space-2); min-width: 0; }
 .prizes li:nth-child(odd) > :first-child { rotate: -1.2deg; }
 .prizes li:nth-child(even) > :first-child { rotate: 1deg; }
-.prizeRow { display: flex; align-items: baseline; padding-top: var(--space-2); border-top: 1px solid var(--fan-print-rule); color: var(--fan-print-ink); }
+.prizeRow { color: var(--fan-print-ink); }
 
 /* 더 즐기기(선택): 낮은 위계의 두 줄 */
-.more { list-style: none; padding: 0; display: grid; gap: var(--space-5); }
-.more li { display: grid; grid-template-columns: 152px minmax(0, 1fr); gap: var(--space-4); align-items: center; }
-.moreArt { position: relative; aspect-ratio: 4 / 3; border-radius: var(--radius-media); overflow: hidden; min-width: 0; }
+.more { list-style: none; padding: 0; display: grid; gap: var(--space-3); }
+.more li { display: grid; grid-template-columns: 80px minmax(0, 1fr); gap: var(--space-3); align-items: center; min-height: 80px; }
+.moreArt { position: relative; aspect-ratio: 1; border-radius: var(--radius-media); overflow: hidden; min-width: 0; }
 .moreArt > img { display: block; width: 100%; height: 100%; object-fit: cover; }
-.morePassport { position: absolute; inset-inline-start: 9%; inset-block-start: 18%; width: 82%; rotate: -4deg; }
-.moreText { display: grid; justify-items: start; gap: var(--space-2); min-width: 0; }
+.morePassport { position: absolute; inset-inline-start: 7%; inset-block-start: 21%; width: 86%; rotate: -4deg; }
+.moreText { display: grid; justify-items: start; gap: var(--space-1); min-width: 0; }
 
 /* 응모 및 당첨 안내 */
 .notice { padding-inline-start: var(--space-5); display: grid; gap: var(--space-2); color: var(--color-muted); }
@@ -83,7 +88,7 @@
   .heroTicket { inset-block-start: 21%; }
   .heroCard { inset-inline-start: 10%; inset-block-end: 10%; width: 50%; }
   .heroAction { justify-items: start; }
-  .heroOnce { text-align: start; }
+  .heroStatus { justify-content: flex-start; }
   .heroButton.heroButton { width: auto; min-width: 320px; }
   .body { gap: var(--space-16); }
   .bonus { grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: var(--space-12); align-items: center; }
@@ -93,6 +98,9 @@
   .prizes { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--space-10); }
   .more { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-10); }
   .more li { grid-template-columns: 300px minmax(0, 1fr); gap: var(--space-8); }
+  .moreArt { aspect-ratio: 4 / 3; }
+  .morePassport { inset-inline-start: 9%; inset-block-start: 18%; width: 82%; }
+  .moreText { gap: var(--space-2); }
   .notice { grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: var(--space-12); }
 }
 @media (prefers-reduced-motion: reduce) { .column * { transition: none !important; animation: none !important; } }
