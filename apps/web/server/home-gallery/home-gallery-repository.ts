@@ -67,14 +67,34 @@ export class HomeGalleryRepository {
    * The newest SHORTS_POOL short-form videos, creators taking turns (사용자 2026-11-12 "숏폼도 여러 셀럽 교차적으로"). Paging is by position in
    * this diversified list, so the offset the shorts page and the rail send means the same on every read.
    */
-  private async shortsPool(locale: "ko" | "en"): Promise<HomeShort[]> {
+  private async shortsPool(locale: "ko" | "en", diversify = true): Promise<HomeShort[]> {
     const pages = await Promise.all(Array.from({ length: SHORTS_POOL / SHORTS_READ }, async (_, index) => {
       const { data, error } = await this.db.rpc("read_public_home_shortform_page", { p_locale: locale, p_offset: index * SHORTS_READ, p_limit: SHORTS_READ });
       if (error) throw new HomeGalleryRepositoryError(error.message);
       return homeShortsPageSchema.parse(data);
     }));
     const seen = new Set<string>();
-    return diversifyShorts(pages.flatMap(page => page.items).filter(item => !seen.has(item.id) && seen.add(item.id)));
+    const items = pages.flatMap(page => page.items).filter(item => !seen.has(item.id) && seen.add(item.id));
+    return diversify ? diversifyShorts(items) : items;
+  }
+
+  /** A single stable catalog lets sorting and creator chips operate on the same public videos. */
+  async listShortsCatalog(locale: "ko" | "en") {
+    const items = await this.shortsPool(locale, false);
+    for (let offset = SHORTS_POOL; offset < 10000; offset += SHORTS_READ) {
+      const { data, error } = await this.db.rpc("read_public_home_shortform_page", { p_locale: locale, p_offset: offset, p_limit: SHORTS_READ });
+      if (error) throw new HomeGalleryRepositoryError(error.message);
+      const page = homeShortsPageSchema.parse(data);
+      items.push(...page.items);
+      if (!page.hasMore) break;
+    }
+    const popularity = await Promise.all(items.map(async (item) => {
+      const { data, error } = await this.db.rpc("read_shortform_participation", { p_video_id: item.videoId, p_app_user_id: null });
+      if (error) throw new HomeGalleryRepositoryError(error.message);
+      return [item.videoId, data === null ? 0 : z.object({ likeCount: z.number().int().nonnegative() }).parse(data).likeCount] as const;
+    }));
+    const likes = Object.fromEntries(popularity);
+    return { items: await this.withAvatars(locale, await this.withThumbnails(items)), likes };
   }
 
   async listShorts(locale: "ko" | "en", input: { limit: number }): Promise<readonly HomeShort[]> {
