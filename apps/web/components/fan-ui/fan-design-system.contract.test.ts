@@ -10,12 +10,22 @@ const heading = read("components/fan-ui/fan-heading.module.css");
 
 const invalidWeightPattern = "(font-weight: *|font: *)(1[0-9]{2}|[2356][0-9]{2}|4[1-9][0-9]|7[1-9][0-9]|8[1-9][0-9]|9[0-9]{2})([^0-9]|$)";
 
-function assertIndexedCssWeights(cwd: string) {
-  const indexed = spawnSync("git", ["ls-files", "-z", "--", "*.css"], { cwd, encoding: "utf8" });
+function gitIn(cwd: string, args: string[], isolated = false) {
+  const env = isolated
+    ? Object.fromEntries(Object.entries(process.env).filter(([key]) => !key.startsWith("GIT_")))
+    : process.env;
+  const config = isolated
+    ? ["-c", "user.name=Contract Test", "-c", "user.email=contract@example.invalid", "-c", `safe.directory=${cwd}`]
+    : [];
+  return spawnSync("git", [...config, ...args], { cwd, env, encoding: "utf8" });
+}
+
+function assertIndexedCssWeights(cwd: string, isolated = false) {
+  const indexed = gitIn(cwd, ["ls-files", "-z", "--", "*.css"], isolated);
   if (indexed.error || indexed.status !== 0) throw new Error(`Cannot list indexed CSS: ${indexed.error?.message ?? indexed.stderr}`);
   if (!indexed.stdout) throw new Error("No indexed CSS files to check");
 
-  const search = spawnSync("git", ["grep", "-nE", invalidWeightPattern, "--", "*.css"], { cwd, encoding: "utf8" });
+  const search = gitIn(cwd, ["grep", "-nE", invalidWeightPattern, "--", "*.css"], isolated);
   if (search.error || (search.status !== 0 && search.status !== 1)) throw new Error(`Cannot search indexed CSS: ${search.error?.message ?? search.stderr}`);
   if (search.status === 0) throw new Error(`Unsupported CSS font weight:\n${search.stdout}`);
   if (search.stdout) throw new Error(`Unexpected Git search output: ${search.stdout}`);
@@ -26,11 +36,11 @@ describe("indexed CSS font weight search", () => {
     const dir = mkdtempSync(resolve(tmpdir(), "fan-weight-contract-"));
     try {
       if (indexedCss !== undefined) {
-        const init = spawnSync("git", ["init", "-q"], { cwd: dir });
+        const init = gitIn(dir, ["init", "-q"], true);
         expect(init.status).toBe(0);
         if (indexedCss !== null) {
           writeFileSync(resolve(dir, "sample.css"), indexedCss);
-          const add = spawnSync("git", ["add", "sample.css"], { cwd: dir });
+          const add = gitIn(dir, ["add", "sample.css"], true);
           expect(add.status).toBe(0);
         }
       }
@@ -41,16 +51,16 @@ describe("indexed CSS font weight search", () => {
   }
 
   it("passes when indexed CSS has no invalid weight", () => {
-    inTemporaryTree((dir) => expect(() => assertIndexedCssWeights(dir)).not.toThrow(), ".a{font-weight:700}");
+    inTemporaryTree((dir) => expect(() => assertIndexedCssWeights(dir, true)).not.toThrow(), ".a{font-weight:700}");
   });
   it("fails when indexed CSS has an invalid weight", () => {
-    inTemporaryTree((dir) => expect(() => assertIndexedCssWeights(dir)).toThrow(/sample.css:1:.*font-weight:600/), ".a{font-weight:600}");
+    inTemporaryTree((dir) => expect(() => assertIndexedCssWeights(dir, true)).toThrow(/sample.css:1:.*font-weight:600/), ".a{font-weight:600}");
   });
   it("fails on a Git error", () => {
-    inTemporaryTree((dir) => expect(() => assertIndexedCssWeights(dir)).toThrow(/Cannot list indexed CSS/));
+    inTemporaryTree((dir) => expect(() => assertIndexedCssWeights(dir, true)).toThrow(/Cannot list indexed CSS/));
   });
   it("fails when the Git index has no CSS", () => {
-    inTemporaryTree((dir) => expect(() => assertIndexedCssWeights(dir)).toThrow(/No indexed CSS/), null);
+    inTemporaryTree((dir) => expect(() => assertIndexedCssWeights(dir, true)).toThrow(/No indexed CSS/), null);
   });
 });
 
