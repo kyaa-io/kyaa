@@ -155,7 +155,7 @@ function StreamHomeGallery({ queries, locale }: Pick<StreamingHomeProps, "querie
 const HOME_GALLERY_PHOTOS = 12;
 function StreamHomeGalleryContent({ queries, locale, photos }: Pick<StreamingHomeProps, "queries" | "locale"> & { photos: Awaited<HomeQueries["homeGallery"]> }) {
   const shorts = use(queries.homeShorts);
-  // The read brings up to 24; the block shows the 12 most varied (one per post, creators in turn).
+  // The read brings the newest 72; the block shows the 12 most varied (one per post, creators in turn).
   const varied = photos.status === "fulfilled" ? diversifyGalleryPhotos(photos.value.items) : [];
   return <HomeGallery locale={locale} photos={photos.status === "fulfilled" ? varied.slice(0, HOME_GALLERY_PHOTOS) : "error"} hasMore={photos.status === "fulfilled" && (photos.value.nextCursor !== null || varied.length > HOME_GALLERY_PHOTOS)}
     shorts={shorts.status === "fulfilled" ? shorts.value : "error"} />;

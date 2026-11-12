@@ -109,11 +109,12 @@
 .gallery { display:grid; gap:0; min-width:0; }
 .gallery .previewHeading { margin-bottom:var(--space-3); }
 .gallery .previewHeading [data-fan-section-header] { margin-bottom:0; }
-.galleryRail { display:grid; grid-auto-flow:column; grid-auto-columns:calc((100% - var(--space-3)) / 2.2); gap:var(--space-3); margin:0; padding:0; overflow-x:auto; list-style:none; scroll-snap-type:x proximity; scrollbar-width:none; }
-.galleryRail::-webkit-scrollbar { display:none; }
-.galleryRail > li { position:relative; aspect-ratio:1; overflow:hidden; border-radius:var(--radius-media); background:var(--color-soft); scroll-snap-align:start; }
-.galleryRail > li > a, .galleryRail > li > .play { display:block; width:100%; height:100%; padding:0; }
-.galleryRail > li img { display:block; width:100%; height:100%; aspect-ratio:1 / 1 !important; object-fit:cover; object-position:50% 30%; border-radius:0; }
+/* 팬페이지·모임 갤러리 한 줄: FanScrollRow(컨테이너 오른쪽 끝까지 채우고 가로 스크롤). 정사각 카드 132(768 이상 188). */
+.galleryRail li { width:132px; }
+@media(min-width:768px) { .galleryRail li { width:188px; } }
+.galleryRail li { position:relative; aspect-ratio:1; overflow:hidden; border-radius:var(--radius-media); background:var(--color-soft); scroll-snap-align:start; }
+.galleryRail li > a, .galleryRail li > .play { display:block; width:100%; height:100%; padding:0; }
+.galleryRail li img { display:block; width:100%; height:100%; aspect-ratio:1 / 1 !important; object-fit:cover; object-position:50% 30%; border-radius:0; }
 .galleryRail .thumbnailFallback { height:100%; aspect-ratio:auto; }
 .galleryRail [data-content-asset-placeholder] { display:grid; place-items:center; width:100%; height:100%; }
 .galleryRail [data-content-asset-card] { isolation:isolate; }
@@ -125,10 +126,6 @@
 .galleryRail .liveBadge { top:auto; bottom:var(--space-2); left:var(--space-2); }
 .galleryRail .videoMark { top:var(--space-2); left:var(--space-2); }
 .galleryRail :is(a,button):focus-visible { outline:3px solid var(--color-ink); outline-offset:-3px; }
-@media (min-width:1024px) {
-  .galleryRail { grid-auto-columns:calc((100% - var(--space-3) * 3) / 4); overflow:visible; }
-  .galleryRail > li:nth-child(n+5) { display:none; }
-}
 .gallery .previewHeading [data-fan-section-header] a > span:last-child { inset-inline-end:0; }
 
 /* C feedback: compact gallery thumbnails only; the detail keeps the original image. */
@@ -144,12 +141,8 @@
 @media(min-width:768px) { .compactOverview .grid { grid-template-columns:repeat(4,minmax(0,1fr)); } }
 @media(min-width:1024px) { .compactOverview .grid { grid-template-columns:repeat(6,minmax(0,1fr)); } }
 
-/* The creator home preview uses the same dense grid as the full gallery. */
-.galleryRail { grid-auto-flow:row; grid-auto-columns:auto; grid-template-columns:repeat(3,minmax(0,1fr)); gap:var(--space-1); overflow:visible; scroll-snap-type:none; }
 .galleryRail .videoMark { gap:0; font-size:0; }
 .galleryRail .thumbnailFallback>span { padding:var(--space-2); text-align:center; overflow-wrap:anywhere; }
-@media(min-width:768px) { .galleryRail { grid-template-columns:repeat(4,minmax(0,1fr)); } }
-@media(min-width:1024px) { .galleryRail { grid-auto-columns:auto; grid-template-columns:repeat(6,minmax(0,1fr)); } }
 
 /* Thumbnail-only creator galleries (2026-11-10 production hotfix): dense square tiles, 3/4/6 columns with a 4px gap; the creator home 영상 row keeps 9:16 for portrait clips. */
 .grid[data-thumbnail-only] { grid-template-columns:repeat(3,minmax(0,1fr)); gap:var(--space-1); align-items:start; }
@@ -166,3 +159,16 @@
 /* Missing covers retain their source and original title inside the existing frame. */
 .thumbnailFallback[data-video-fallback] > img { width:28px; height:28px; object-fit:contain; }
 a:has(> [data-video-fallback]) > .playIcon,button:has(> [data-video-fallback]) > .playIcon { display:none; }
+
+/* 팬페이지 갤러리 탭(2026-11-12 사용자 "홈처럼 모자이크 레이아웃"): 홈 갤러리와 같은 2열(1024 이상 4열)·간격 8/12·카드 모서리·원본 비율. 사진 크기를 미리 알 수 없어 CSS 열로 쌓는다. */
+.mosaic { columns:2; column-gap:var(--space-2); margin:var(--space-4) 0 0; padding:0; list-style:none; }
+.mosaic > li { position:relative; display:block; margin:0 0 var(--space-2); overflow:hidden; break-inside:avoid; border:0; border-radius:var(--radius-card,12px); background:var(--color-soft); }
+.mosaic > li > a, .mosaic > li > .play { position:relative; display:block; width:100%; height:auto; padding:0; }
+.mosaic > li img { display:block; width:100%; height:auto !important; aspect-ratio:auto !important; object-fit:cover; object-position:center !important; border-radius:0; }
+.mosaic .thumbnailFallback, .mosaic [data-content-asset-placeholder] { width:100%; height:auto; aspect-ratio:1; }
+.mosaic [data-content-asset-card] > a::after { content:""; position:absolute; inset:0; }
+.mosaic .playIcon { place-items:start; padding:var(--space-2); background:none; pointer-events:none; }
+.mosaic .playIcon svg { width:28px; height:28px; padding:calc(var(--space-2) - 1px); background:color-mix(in srgb, var(--color-ink) 60%, transparent); }
+.mosaic :is(a,button):focus-visible { outline:3px solid var(--color-ink); outline-offset:-3px; }
+@media(min-width:1024px) { .mosaic { columns:4; column-gap:var(--space-3); } .mosaic > li { margin-bottom:var(--space-3); } }
+.mosaic[aria-hidden] > li { aspect-ratio:4 / 5; }

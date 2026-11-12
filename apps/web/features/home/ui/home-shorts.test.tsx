@@ -7,9 +7,9 @@ vi.mock("./shorts-engagement", () => ({ ShortsEngagement: ({ videoId }: { videoI
 const items = Array.from({ length: 8 }, (_, i) => ({ id: `id${i}`, videoId: `video${i}`, title: `영상 ${i}`, href: `https://youtube.com/watch?v=video${i}`, creator: { slug: "a", name: "A" } })) as HomeShort[];
 
 describe("shorts viewer", () => {
-  it("shows six home cards but navigates all videos and unmounts the previous player", () => {
+  it("shows every loaded card in the scroll row and navigates all videos and unmounts the previous player", () => {
     render(<HomeShorts items={items} locale="ko" />);
-    expect(screen.getAllByRole("listitem")).toHaveLength(6);
+    expect(screen.getAllByRole("listitem")).toHaveLength(8);
     fireEvent.click(screen.getByRole("button", { name: "영상 5" }));
     const dialog = screen.getByRole("dialog");
     const previous = within(dialog).getByTitle("영상 5");

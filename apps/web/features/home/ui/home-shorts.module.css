@@ -1,6 +1,8 @@
-.rail,.grid { display:flex; gap:var(--space-2); margin:var(--space-2) 0 0; padding:0; list-style:none; }
-.rail { overflow-x:auto; overscroll-behavior-x:contain; scrollbar-width:none; }
-.rail .item { flex:none; width:160px; }
+.grid { display:flex; gap:var(--space-2); margin:var(--space-2) 0 0; padding:0; list-style:none; }
+/* 숏폼 줄은 컨테이너 오른쪽 끝까지 채우고 가로로 넘긴다(FanScrollRow). 카드 160 → 176(768 이상 200 → 232), 화살표는 표지 높이(폭 × 16/9)의 가운데. */
+.rail { margin-top:var(--space-2); }
+.rail li { width:176px; }
+.rail > button { top:156px; }
 .grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:var(--space-4) var(--space-3); }
 .item { min-width:0; }
 .item .card { display:grid; grid-template-columns:minmax(0,1fr); justify-content:stretch; justify-items:stretch; align-items:start; width:100%; min-width:0; gap:var(--space-2); padding:0; border:0; background:transparent; color:var(--color-ink); font:inherit; text-align:start; cursor:pointer; }
@@ -17,7 +19,7 @@
 .player { display:grid; gap:var(--space-3); justify-items:center; }
 .player iframe { width:min(100%,33.75vh,360px); aspect-ratio:9/16; border:0; background:var(--color-ink); }
 .player a { display:inline-flex; min-height:44px; align-items:center; color:var(--color-accent-ink); font-weight:var(--fan-item-title-weight); }
-@media (min-width:768px) { .rail .item { width:200px; } .grid { grid-template-columns:repeat(4,minmax(0,1fr)); } }
+@media (min-width:768px) { .rail li { width:232px; } .rail > button { top:206px; } .grid { grid-template-columns:repeat(4,minmax(0,1fr)); } }
 /* Shorts viewer is intentionally full-height on narrow screens. */
 :global(.backdrop) .viewer { width:min(100%,520px); max-width:520px; height:min(100dvh - 32px,900px); max-height:100dvh; background:var(--color-shortform-canvas); color:var(--color-surface); }
 .viewer:global([data-overlay-content]) { width:min(100%,520px); max-width:520px; height:min(100dvh - 32px,900px); max-height:100dvh; background:var(--color-shortform-canvas); color:var(--color-surface); }

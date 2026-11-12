@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import { ImageOff, Play } from "lucide-react";
 import type { AppLocale } from "@/i18n/locales";
@@ -12,7 +12,7 @@ import styles from "./creator-media-panel.module.css";
 
 const LETTERBOXED_YOUTUBE_COVER = /^https:\/\/i\.ytimg\.com\/vi(?:_webp)?\/[^/]+\/(?:hq|sd|)default\.(?:jpg|webp)$|^https:\/\/i\.ytimg\.com\/vi(?:_webp)?\/[^/]+\/[0-3]\.(?:jpg|webp)$/;
 
-export function MediaThumbnail({ image, href, kind, source, locale, priority = false, iconOnly = false, backdrop = false, title }: { title?: string; image: string | null; href: string; kind: "photos" | "videos" | "replays"; source?: string; locale: AppLocale; priority?: boolean; iconOnly?: boolean; /** The frame carries `mediaFillClass`; the cover's own blurred copy fills what the whole picture leaves. */ backdrop?: boolean }) {
+export function MediaThumbnail({ image, href, kind, source, locale, priority = false, iconOnly = false, backdrop = false, title, onMissing }: { title?: string; /** Called once no cover can be shown. A caller that would rather leave the card out than show a bare frame removes it here. */ onMissing?: () => void; image: string | null; href: string; kind: "photos" | "videos" | "replays"; source?: string; locale: AppLocale; priority?: boolean; iconOnly?: boolean; /** The frame carries `mediaFillClass`; the cover's own blurred copy fills what the whole picture leaves. */ backdrop?: boolean }) {
   const [failed, setFailed] = useState<string[]>([]);
   const [dimensions, setDimensions] = useState<{ width: number; height: number }>();
   const id = kind !== "photos" ? youtubeVideoId(href) : null;
@@ -23,7 +23,8 @@ export function MediaThumbnail({ image, href, kind, source, locale, priority = f
     : [image, videoThumbnailUrl(href), ...(id ? [`https://i.ytimg.com/vi/${id}/mqdefault.jpg`] : [])];
   const src = candidates.find((value): value is string => typeof value === "string" && value.length > 0 && !failed.includes(value));
   const provider = id ? "YouTube" : isRecordedReplayUrl("instagram", href) ? "Instagram" : isRecordedReplayUrl("tiktok", href) ? "TikTok" : source;
-  if (!src) return <span className={styles.thumbnailFallback} data-video-fallback={kind !== "photos" || undefined} aria-hidden="true">{kind === "photos" ? <ImageOff size={28} /> : provider && ["YouTube", "Instagram", "TikTok"].includes(provider) ? <Image src={`/images/guest-home/${provider.toLowerCase()}.svg`} width={28} height={28} alt="" unoptimized /> : <Play size={28} />}{(!iconOnly || kind !== "photos") && <span>{[provider, title || participationCopy(locale)[kind]].filter(Boolean).join(" · ")}</span>}</span>;
+  useEffect(() => { if (!src) onMissing?.(); }, [src, onMissing]);
+  if (!src) return <span className={styles.thumbnailFallback} data-video-fallback={kind !== "photos" || undefined} aria-hidden="true">{kind === "photos" ? <ImageOff size={28} /> : provider && ["YouTube", "Instagram", "TikTok"].includes(provider) ? <Image src={`/images/guest-home/${provider.toLowerCase()}.svg`} width={28} height={28} alt="" unoptimized /> : <Play size={28} />}{(!iconOnly || kind !== "photos") && <span>{[provider, title && !/^https?:\/\//i.test(title.trim()) ? title : participationCopy(locale)[kind]].filter(Boolean).join(" · ")}</span>}</span>;
   // API images must recheck visibility instead of being retained in the image optimizer cache.
   const local = src.startsWith("/") && !src.startsWith("//") && !src.startsWith("/api/");
   const picture = <Image src={src} width={640} height={360} alt="" unoptimized={!local} sizes={local ? "(max-width: 767px) 50vw, 320px" : undefined} referrerPolicy="no-referrer" loading={priority ? "eager" : "lazy"} fetchPriority={priority ? "high" : undefined}

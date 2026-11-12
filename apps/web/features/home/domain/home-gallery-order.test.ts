@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { HomeGalleryPhoto } from "./home-gallery";
-import { diversifyGalleryPhotos } from "./home-gallery-order";
+import { diversifyGalleryPhotos, diversifyShorts } from "./home-gallery-order";
 
 const photo = (id: string, slug?: string): HomeGalleryPhoto => ({ id, source: "official_sns", image: { url: "https://example.com/a.jpg", width: 4, height: 5 }, alt: id, ...(slug ? { creator: { slug, name: slug } } : {}) });
 const ids = (list: readonly HomeGalleryPhoto[]) => list.map(item => item.id);
@@ -30,4 +30,21 @@ describe("diversifyGalleryPhotos", () => {
     expect(ids(out).indexOf("m:1:image")).toBeLessThan(ids(out).indexOf("m:2:image"));
     expect(diversifyGalleryPhotos([])).toEqual([]);
   });
+});
+
+describe("diversifyShorts", () => {
+  const short = (id: string, slug: string) => ({ id, creator: { slug } });
+  it("takes creators in turn, newest first inside one creator, and never repeats a creator back to back while another has shorts", () => {
+    const list = [short("a1", "a"), short("a2", "a"), short("a3", "a"), short("b1", "b"), short("a4", "a"), short("c1", "c"), short("b2", "b")];
+    const out = diversifyShorts(list);
+    expect(out.map(item => item.id)).toEqual(["a1", "b1", "c1", "a2", "b2", "a3", "a4"]);
+    out.slice(1, 6).forEach((item, i) => expect(item.creator.slug).not.toBe(out[i]!.creator.slug));
+  });
+  it("keeps the first twelve to several creators when one creator dominates the newest list", () => {
+    const list = [...Array.from({ length: 20 }, (_, i) => short(`a${i}`, "a")), ...["b", "c", "d", "e"].flatMap(slug => [short(`${slug}1`, slug), short(`${slug}2`, slug)])];
+    const firstTwelve = diversifyShorts(list).slice(0, 12);
+    expect(new Set(firstTwelve.map(item => item.creator.slug)).size).toBe(5);
+    expect(firstTwelve.filter(item => item.creator.slug === "a").length).toBeLessThanOrEqual(4);
+  });
+  it("keeps every short", () => { expect(diversifyShorts([])).toEqual([]); expect(diversifyShorts([short("a", "a"), short("b", "a")])).toHaveLength(2); });
 });

@@ -2,7 +2,7 @@
 import { useGroupsRelease } from "@/features/groups/ui/groups-release";
 import { TranslatedText } from "@/features/content-safety/ui/use-automatic-translation";
 import { ArrowUpRight, Play, X } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { discoveryCopy } from "@/i18n/catalogs/features__fan_posts__discovery";
 import type { PublishedCelebrity } from "@/server/content/content-domain";
 import type { Route } from "next";
@@ -14,6 +14,7 @@ import { officialMediaPageSchema } from "../domain/official-media";
 import type { ContentAsset } from "@/features/fan-posts/domain/content";
 import { z } from "zod";
 import { FanAction } from "@/components/fan-ui/fan-action";
+import { FanScrollRow } from "@/components/fan-ui/fan-scroll-row";
 import { instagramMediaSchema } from "@/server/instagram/model";
 import { liveEventResponseSchema } from "@/features/live/domain/live-event";
 import { isRecordedReplayUrl } from "@/features/live/domain/live-watch-link";
@@ -84,6 +85,11 @@ export function CreatorMediaPanel({ slug, locale, channelId = slug === CHZZK_CRE
   const active=items.find(item=>item.id===activeVideo),activeId=active?youtubeVideoId(active.href):null;
   const playerDialog=compact?<dialog ref={videoDialog} className={mediaStyles.videoDialog} aria-label={active?.title??c.videos} onClose={()=>setActiveVideo(null)}><header><strong>{active?.title}</strong><FanAction onClick={()=>videoDialog.current?.close()} leadingIcon={<X/>}>{closeLabels[locale]}</FanAction></header>{activeId&&<iframe ref={videoFrame} className={mediaStyles.player} title={active?.title??c.videos} src={'https://www.youtube.com/embed/'+activeId+'?autoplay=1&playsinline=1&hl='+locale} allow='autoplay; encrypted-media; picture-in-picture; fullscreen' allowFullScreen referrerPolicy='strict-origin-when-cross-origin'/>}</dialog>:null;
   const gallery = preview && compact;
+  // A cover that cannot be shown leaves its card out of the gallery (사용자 2026-11-12: never a bare frame with the source URL).
+  const [uncovered, setUncovered] = useState<ReadonlySet<string>>(new Set());
+  const { nextCursor: moreCursor, moreLoading, moreError } = official.state, loadMoreOfficial = official.loadMore;
+  const nearEnd = useCallback(() => { if (moreCursor && !moreLoading && !moreError) loadMoreOfficial(); }, [moreCursor, moreLoading, moreError, loadMoreOfficial]);
+  const hideUncovered = useCallback((id: string) => setUncovered(current => current.has(id) ? current : new Set(current).add(id)), []);
   const thumbnailOnly = compact && !preview;
   // Without the groups release the creator galleries are thumbnail-only; titles, URLs and dates stay in the data and the accessible name.
   const plainThumbnails = !compact;
@@ -93,7 +99,7 @@ export function CreatorMediaPanel({ slug, locale, channelId = slug === CHZZK_CRE
     const returnTo = preview ? `/${slug}?locale=${locale}` : boardHref(slug, locale, { section: "media", mediaFilter: filter === "all" ? undefined : filter });
     const href = internal ? `${item.href}?${new URLSearchParams({ locale, returnTo })}` : item.href;
     const id = (preview||compact) && item.kind !== "photos" ? youtubeVideoId(item.href) : null;
-    const thumbnail = item.asset ? <ContentAssetImage asset={item.asset} locale={locale} alt={item.title} loading="lazy" anonymousPreview={!auth.ready} failure={thumbnailOnly || plainThumbnails ? "icon" : "text"} /> : <MediaThumbnail title={item.title} key={`${item.image}:${item.href}`} image={item.image} href={item.href} kind={item.kind} source={item.source} locale={locale} priority={gallery && index === 0 && item.kind === "photos"} iconOnly={thumbnailOnly || plainThumbnails} />;
+    const thumbnail = item.asset ? <ContentAssetImage asset={item.asset} locale={locale} alt={item.title} loading="lazy" anonymousPreview={!auth.ready} failure={thumbnailOnly || plainThumbnails ? "icon" : "text"} /> : <MediaThumbnail title={item.title} key={`${item.image}:${item.href}`} image={item.image} href={item.href} kind={item.kind} source={item.source} locale={locale} priority={gallery && index === 0 && item.kind === "photos"} iconOnly={thumbnailOnly || plainThumbnails} onMissing={() => hideUncovered(item.id)} />;
     const captionless = item.kind === "photos" && !item.title;
     const captionlessLabel = thumbnailOnly ? item.title || `${c[item.kind]} · ${new Date(item.date).toLocaleDateString(locale)}` : captionless ? `${c.photos} · ${new Date(item.date).toLocaleDateString(locale)}` : undefined;
     const body = thumbnailOnly || captionless ? null : <span className={mediaStyles.cardBody}><strong>{item.title ? externalSource ? <span translate="no">{item.title.slice(0, 120)}</span> : <TranslatedText text={item.title.slice(0, 120)} locale={locale} controls={false} /> : c[item.kind]}</strong>{(!compact||!preview)&&<span className={mediaStyles.meta}>{item.source ? `${item.source} · ` : ""}{c[item.kind]}{!internal && <ArrowUpRight size={12} aria-hidden="true" />} · <time dateTime={item.date}>{new Date(item.date).toLocaleDateString(locale)}</time></span>}</span>;
@@ -122,7 +128,7 @@ export function CreatorMediaPanel({ slug, locale, channelId = slug === CHZZK_CRE
       return <section className={mediaStyles.gallery} data-creator-media-preview={slug} data-outbound-campaign={slug} data-outbound-placement="content" aria-label={galleryTitle(locale)} aria-busy={waiting || undefined}>
         <div className={mediaStyles.previewHeading}><FanSectionHeader title={galleryTitle(locale)} action={{ label: viewAllText(locale), href: boardHref(slug, locale, { section: "media" }) }} /></div>
         {sourceStatus}
-        {waiting ? <><ul className={mediaStyles.galleryRail} aria-hidden="true">{[0, 1, 2, 3].map(index => <li key={index}><FanSkeleton shape="block" width="100%" height="100%" /></li>)}</ul><FanSkeletonStatus locale={locale} /></> : <ul className={mediaStyles.galleryRail}>{unique.slice(0, 8).map(mediaCard)}</ul>}
+        {waiting ? <><FanScrollRow className={mediaStyles.galleryRail} locale={locale} aria-hidden="true">{[0, 1, 2, 3, 4, 5].map(index => <li key={index}><FanSkeleton shape="block" width="100%" height="100%" /></li>)}</FanScrollRow><FanSkeletonStatus locale={locale} /></> : <FanScrollRow className={mediaStyles.galleryRail} locale={locale} label={galleryTitle(locale)} onNearEnd={nearEnd}>{unique.filter(item => !uncovered.has(item.id)).slice(0, 36).map(mediaCard)}</FanScrollRow>}
         {playerDialog}
       </section>;
     }
@@ -140,7 +146,7 @@ export function CreatorMediaPanel({ slug, locale, channelId = slug === CHZZK_CRE
     {!compact&&<div className={`${styles.tabs} ${mediaStyles.filters}`}>{(["all", "photos", "videos", "replays"] as const).map(value => <button type="button" key={value} aria-pressed={filter === value} onClick={() => setFilter(value)}>{c[value]}</button>)}</div>}
     {sourceStatus}
     {!items.length && sources.every(source => source.resource.state.status === "ready") && <div className={mediaStyles.empty} role="status"><p>{socialLinks.length ? discovery.emptyMedia : c.empty}</p>{filter === "all" ? <FanAction variant="text" href={boardHref(slug, locale)}>{feed.feed}</FanAction> : <FanAction variant="text" onClick={() => setFilter("all")}>{locale === "ko" ? "전체 보기" : translate(locale, newsMessages.m3e5383762d51, "View all")}</FanAction>}</div>}
-    {compact && !items.length && sources.some(source => source.resource.state.status === "loading") ? <><ul className={mediaStyles.galleryRail} aria-hidden="true">{[0, 1, 2, 3].map(index => <li key={index}><FanSkeleton shape="block" width="100%" height="100%" /></li>)}</ul><FanSkeletonStatus locale={locale} /></> : <ul className={`${styles.media} ${mediaStyles.grid}`} data-thumbnail-only={plainThumbnails || undefined}>{overviewItems.map(mediaCard)}</ul>}
+    {compact && !items.length && sources.some(source => source.resource.state.status === "loading") ? <><ul className={mediaStyles.mosaic} aria-hidden="true">{[0, 1, 2, 3].map(index => <li key={index}><FanSkeleton shape="block" width="100%" height="100%" /></li>)}</ul><FanSkeletonStatus locale={locale} /></> : <ul className={mediaStyles.mosaic} data-gallery-mosaic="">{overviewItems.filter(item => !uncovered.has(item.id)).map(mediaCard)}</ul>}
     {filter !== "replays" && official.state.nextCursor && <FanAction onClick={official.loadMore} disabled={official.state.moreLoading}>kyaa · {compact || !official.state.moreLoading ? c.more : c.loading}</FanAction>}
     {filter !== "replays" && official.state.moreError && <ParticipationState locale={locale} status="error" retry={official.loadMore} />}
     {(filter === "all" || filter === "photos") && chzzk.state.nextCursor && <FanAction onClick={chzzk.loadMore} disabled={chzzk.state.moreLoading}>CHZZK · {compact || !chzzk.state.moreLoading ? c.more : c.loading}</FanAction>}
