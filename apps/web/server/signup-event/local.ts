@@ -1,4 +1,4 @@
-import { createHash, randomBytes } from 'node:crypto';
+import { createHash, createHmac, randomBytes } from 'node:crypto';
 import { signupRaffleEnabled } from '../config/feature-flags';
 import { z } from 'zod';
 import { inRaffleWindow, rafflePolicySchema, signupEvent } from '../../features/benefit/domain/signup-event';
@@ -74,7 +74,8 @@ export function candidates(input: LocalSnapshot) {
   return raffleChances(input).map(({ userId, entries }) => ({ userId, entries }));
 }
 // Same exponential weighted ranking as phase4_weighted_benefit_draw.sql.
-// shortcut: retries use the current local snapshot, use the persisted SQL draw before confirming winners.
+// The seed is made on the server (never taken from a request). The admin route stores the first result of an event with
+// record_signup_raffle_draw and always answers with that stored row, so a draw cannot be repeated for another outcome.
 export function drawLocal(input: LocalSnapshot, quantity: number, seed = randomBytes(32).toString('hex')) {
   const rows = candidates(input);
   if (!Number.isSafeInteger(quantity) || quantity < 1 || quantity > rows.length) throw new Error('INVALID_WINNER_QUANTITY');
@@ -84,7 +85,8 @@ export function drawLocal(input: LocalSnapshot, quantity: number, seed = randomB
     return { ...row, rank: -Math.log(uniform) / row.entries };
   }).sort((a, b) => a.rank - b.rank || a.userId.localeCompare(b.userId)).slice(0, quantity);
 }
-export function maskedCsv(rows: { userId: string; entries: number; usd?: number }[]) {
+export function maskedCsv(rows: { userId: string; entries: number; usd?: number }[], aliasKey: Buffer) {
   // A stable event alias joins participant/winner exports without raw account identifiers.
-  return '\uFEFF회원,응모권,상품\r\n' + rows.map(row => `회원-${createHash('sha256').update(`${signupEvent.id}:${row.userId}`).digest('hex').slice(0, 12)},${row.entries},${row.usd ? `US$${row.usd}` : ''}`).join('\r\n');
+  // It is keyed with a server secret, so someone who knows a member id cannot recompute the alias and find that member's row.
+  return '\uFEFF회원,응모권,상품\r\n' + rows.map(row => `회원-${createHmac('sha256', aliasKey).update(`${signupEvent.id}:${row.userId}`).digest('hex').slice(0, 12)},${row.entries},${row.usd ? `US$${row.usd}` : ''}`).join('\r\n');
 }
