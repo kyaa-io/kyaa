@@ -1,0 +1,13 @@
+{
+  "changes": [
+    "PC 화면 헤더 오른쪽 아바타 메뉴 맨 아래에 로그아웃을 넣었어요. 누르면 확인 창이 한 번 뜨고, 확인하면 로그아웃돼요.",
+    "로그인하지 않았을 때는 같은 자리에 로그인이 보이고, 누르면 로그인 화면으로 가요. 휴대폰 화면에서는 헤더 오른쪽에 로그인 글자가 새로 생겼어요.",
+    "첨부한 화면은 로컬에서 시험용 로그인 상태를 흉내 내어 찍은 것이며 운영 회원 정보가 아니에요."
+  ],
+  "path": "/",
+  "images": [
+    "release-notes/images/2026-11-12-header-menu-logout-1440.png",
+    "release-notes/images/2026-11-12-header-menu-login-1440.png",
+    "release-notes/images/2026-11-12-header-login-390.png"
+  ]
+}

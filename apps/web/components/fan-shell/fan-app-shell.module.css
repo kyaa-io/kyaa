@@ -210,3 +210,7 @@
   .groupsNavigation .desktopNavItem svg { width: 20px; height: 20px; }
   .actions :global(:is(svg.lucide:not(.lucide-chevron-down):not(.lucide-rotate-cw), [data-account-trigger="menu"] > svg, img[src*="point-coin"], img[data-reward-kind="heart"], img[src*="/tiers/"])) { width: 20px; height: 20px; }
 }
+
+/* Signed-out mobile header: the login link stands in for the account menu that is not drawn below 768px. */
+.guestLogin { flex: 0 0 auto; white-space: nowrap; }
+@media (min-width: 48rem) { .guestLogin { display: none; } }

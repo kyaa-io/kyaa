@@ -24,13 +24,14 @@ import { walletCopy } from '@/features/group-wallet/ui/copy';
 import { groupsCopy } from './copy';
 import { ProfileConnectionPanel } from '@/features/group-social/profile-connection';
 import { profileConnectionCopy } from '@/features/group-social/profile-copy';
+import { LogoutConfirmDialog, logoutCopy } from '@/features/my/ui/my-logout';
 import styles from './group-header-account.module.css';
 const parse=(value:unknown)=>walletSchema.parse(value);
 const parseProfile=(value:unknown)=>z.object({profile:z.object({nickname:z.string().nullable()})}).parse(value);
 export function GroupHeaderAccount({locale,actions,actionsAreIdentity=false,languageHref}:{locale:AppLocale;actions?:ReactNode;actionsAreIdentity?:boolean;languageHref:string}){
  const auth=useGroupRequest(),wallet=useGroupResource(auth.authenticated?'/api/me/wallet':null,parse),avatar=useAvatar();
  const profile=useGroupResource(auth.authenticated?'/api/me/profile':null,parseProfile);
- const [languageOpen,setLanguageOpen]=useState(false),trigger=useRef<HTMLButtonElement>(null);
+ const [languageOpen,setLanguageOpen]=useState(false),[logoutOpen,setLogoutOpen]=useState(false),trigger=useRef<HTMLButtonElement>(null);
  const [profileOwner,setProfileOwner]=useState<string|null>(null);
  const openProfile=()=>{if(trigger.current)rememberOverlayTrigger(trigger.current);setProfileOwner(auth.ownerKey);};
  const profileLabel=profileConnectionCopy(locale).profile;
@@ -40,6 +41,7 @@ export function GroupHeaderAccount({locale,actions,actionsAreIdentity=false,lang
  // The attendance item names the fan's own favorite page ("{page} 출석체크"), or the plain 출석체크 without one — never a fixed page.
  const favorite=useSelectedBias(locale).selected,attendanceLabel=favorite?dukjilText(locale,'dukjilPageTitle',[favorite.name]):dukjilText(locale,'dukjilTitle');
  useEffect(()=>{const refresh=()=>refreshWallet();window.addEventListener(GROUP_WALLET_CHANGED_EVENT,refresh);return()=>window.removeEventListener(GROUP_WALLET_CHANGED_EVENT,refresh);},[refreshWallet]);
+ const pathname=usePathname()||'/',query=useSearchParams()?.toString(),loginHref=fanLoginHref(locale,`${pathname}${query?`?${query}`:''}`);
  const links=[{href:'/my',label:ko?'MY · 패스포트':'MY · Passport',icon:'my' as const},{href:'/my/friends',label:ko?'친구·메시지':'Friends · Messages',icon:'message' as const},{href:'/settings',label:ko?'개인 설정':'Settings',icon:'settings' as const}];
  // Only while dukjil is off; the amount is the server's to say, so the label names no number. Hidden once today's share is received.
  const attendance=auth.authenticated?wallet.data?.attendance:undefined,canCheckIn=Boolean(attendance&&!attendance.checkedIn&&!wallet.data?.writeFenced&&!(wallet.data?.rewardsStartOn&&attendance.date<wallet.data.rewardsStartOn));
@@ -53,8 +55,12 @@ export function GroupHeaderAccount({locale,actions,actionsAreIdentity=false,lang
   {links.map(({href,label,icon},i)=><Menu.Item key={href} className={`${styles.menuItem} ${href==='/settings'?styles.divided:''}`} render={<Link href={`${href}?locale=${locale}` as Route}/>}><PencilHeaderIcon name={icon} size={20}/>{label}</Menu.Item>)}
   <Menu.Item className={styles.menuItem} onClick={()=>{if(trigger.current)rememberOverlayTrigger(trigger.current);setLanguageOpen(true);}}><PencilHeaderIcon name="languages" size={20}/><span>{ko?'언어 설정':'Language'}</span><small>{APP_LOCALE_NATIVE_NAMES[locale]}</small></Menu.Item>
   <Menu.Item className={`${styles.menuItem} ${styles.divided}`} render={<Link href={`/pages/groups/apply?locale=${locale}`}/>}><PencilHeaderIcon name="groups" size={20}/>{groupsCopy(locale).apply}</Menu.Item>
+  {auth.authenticated
+   ?<Menu.Item className={`${styles.menuItem} ${styles.divided}`} data-account-action='logout' onClick={()=>{if(trigger.current)rememberOverlayTrigger(trigger.current);setLogoutOpen(true);}}><PencilHeaderIcon name="logout" size={20}/>{logoutCopy(locale).logout}</Menu.Item>
+   :<Menu.Item className={`${styles.menuItem} ${styles.divided}`} data-account-action='login' render={<Link href={loginHref}/>}><PencilHeaderIcon name="login" size={20}/>{walletCopy(locale).login}</Menu.Item>}
   </Menu.Popup></Menu.Positioner></Menu.Portal></Menu.Root>
   {auth.authenticated&&profileOwner===auth.ownerKey&&<ProfileConnectionPanel key={auth.ownerKey} locale={locale} identity={identity} onClose={()=>setProfileOwner(null)}/>}
+  {logoutOpen&&auth.authenticated&&<LogoutConfirmDialog locale={locale} onClose={()=>setLogoutOpen(false)}/>}
   {languageOpen&&<GroupLanguageDialog locale={locale} href={languageHref} onClose={()=>setLanguageOpen(false)}/>}
  </>;
 }
