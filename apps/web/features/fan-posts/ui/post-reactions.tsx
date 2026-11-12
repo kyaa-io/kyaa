@@ -1,5 +1,6 @@
 "use client";
 import { ThumbsDown, ThumbsUp } from "lucide-react";
+import type { ReactNode } from "react";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import { EarnBadgeCorner } from "@/features/dukjil/ui/earn-badge";
 import type { AppLocale } from "@/i18n/locales";
@@ -38,16 +39,16 @@ type Props = PostReactionState & {
   /** Signed in but not a member: both thumbs start joining (disabled when joining is not offered or is pending). */
   join?: { onJoin?: () => void; pending?: boolean };
   onChange: (choice: PostReactionChoice) => void;
-  /** Show the point badge on the thumbs up (a like that would pay). */
-  likeReward?: boolean;
+  /** Show the point badge on both thumbs (a first reaction on this post pays the same for a like and a dislike). */
+  reward?: boolean;
 };
 
-export function PostReactions({ reaction, likeCount, dislikeCount, locale, busy = false, loginHref, join, onChange, likeReward = false }: Props) {
+export function PostReactions({ reaction, likeCount, dislikeCount, locale, busy = false, loginHref, join, onChange, reward = false }: Props) {
   const t = postReactionCopy(locale), likes = likeCount.toLocaleString(locale);
   const dislikeLabel = dislikeCount === null ? t.dislike : fill(t.dislikeCount, dislikeCount.toLocaleString(locale));
   const likeIcon = <ThumbsUp strokeWidth={1.75} />, dislikeIcon = <ThumbsDown strokeWidth={1.75} />;
   const dislikeNumber = dislikeCount === null ? undefined : <span className={styles.reactionPrivateCount}>{dislikeCount.toLocaleString(locale)}</span>;
-  const shared = { variant: "neutral" as const };
+  const shared = { variant: "neutral" as const, size: "sm" as const };
   const likeProps = { ...shared, className: styles.reactionLike, leadingIcon: likeIcon };
   const dislikeProps = { ...shared, className: styles.reactionDislike, leadingIcon: dislikeIcon, ariaLabel: dislikeLabel };
   const likeText = `${t.like} ${likes}`;
@@ -63,5 +64,6 @@ export function PostReactions({ reaction, likeCount, dislikeCount, locale, busy 
     like = <FanAction {...likeProps} aria-pressed={reaction === "like"} disabled={busy} onClick={() => onChange(nextReaction(reaction, "like"))}>{likeText}</FanAction>;
     dislike = <FanAction {...dislikeProps} aria-pressed={reaction === "dislike"} disabled={busy} onClick={() => onChange(nextReaction(reaction, "dislike"))}>{dislikeNumber}</FanAction>;
   }
-  return <>{likeReward ? <EarnBadgeCorner action="reaction" locale={locale}>{like}</EarnBadgeCorner> : like}{dislike}</>;
+  const earn = (button: ReactNode) => reward ? <EarnBadgeCorner action="reaction" locale={locale}>{button}</EarnBadgeCorner> : button;
+  return <>{earn(like)}{earn(dislike)}</>;
 }

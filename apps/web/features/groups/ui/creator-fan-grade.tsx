@@ -26,7 +26,7 @@ export function CreatorFanGrade({slug,locale,resource:shared}:{slug:string;local
  const passport=resource.state.data.creators.find(item=>item.celebrity.slug===slug)?.passport;
  if(!passport)return null;
  const stage=passport.stageProgress?.current,label=stage?fanStageLabel(locale,stage):levelLabel(locale,passport.tier);
- return <Link className={styles.creatorFanGrade} href={`/passports/${passport.id}?locale=${locale}` as Route}><FanTierBadge tier={passport.tier} stageKey={stage?.key} locale={locale} size={24}/><span>{managementMembersCopy(locale).tier} · {label}</span></Link>;
+ return <Link className={styles.creatorFanGrade} href={`/passports/${passport.id}?locale=${locale}` as Route}><FanTierBadge tier={passport.tier} stageKey={stage?.key} locale={locale} size={20}/><span>{managementMembersCopy(locale).tier} · {label}</span></Link>;
 }
 
 /** 내 팬 등급이 들어올 자리. 로그인 확인과 요약을 읽는 동안 같은 크기(배지 24px + 한 줄)를 차지해 머리 행동 줄이 접히지 않게 한다. */

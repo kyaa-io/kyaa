@@ -74,8 +74,8 @@ export function PostCard({ post, locale, onChanged, onDeleted, detail = false, r
     reacting.current = true;
     const result = await mutation.request(`/api/posts/${post.id}/like`, "PUT", { reaction: choice }).finally(() => { reacting.current = false; }) as { reward?: { points?: number; stamps?: number } } | null;
     if (!result) { setReactionState(previous); return; }
-    // 261107-2 D8: the shared coin badge rises from the thumbs up, with the shared toast.
-    if (result.reward) celebrateReward({ locale, points: result.reward.points, stamps: result.reward.stamps, anchor: articleRef.current?.querySelector(`.${detailStyles.reactionLike}`) });
+    // 261107-2 D8: the shared coin badge rises from the thumb that was pressed, with the shared toast.
+    if (result.reward) celebrateReward({ locale, points: result.reward.points, stamps: result.reward.stamps, anchor: articleRef.current?.querySelector(`.${choice === "dislike" ? detailStyles.reactionDislike : detailStyles.reactionLike}`) });
     // 261107-2 F4: no onChanged here. Re-reading the whole detail (post and comments) redrew the page; the write already drops
     // only this post's reads and the fan's own values (resource-cache invalidateAfterWrite), and that re-read confirms the count.
   }
@@ -123,7 +123,7 @@ export function PostCard({ post, locale, onChanged, onDeleted, detail = false, r
 
     {presentation !== "board" && displayedBody && <ContentTranslation sourceText={post.body} targetType="fan_post" targetId={post.id} locale={locale} sourceRevision={post.revision}><p className={styles.body}><LinkifiedText text={displayedBody} locale={locale} /></p></ContentTranslation>}
     {boardDetail ? <div className={detailStyles.bodyEnd}>
-      <PostReactions {...reactionState} locale={locale} busy={!auth.ready || mutation.busy} loginHref={auth.ready && !auth.authenticated ? String(loginHref) : undefined} onChange={choice => void react(choice)} likeReward={auth.authenticated && !post.isOwner && !liked} />
+      <PostReactions {...reactionState} locale={locale} busy={!auth.ready || mutation.busy} loginHref={auth.ready && !auth.authenticated ? String(loginHref) : undefined} onChange={choice => void react(choice)} reward={auth.authenticated && !post.isOwner && reactionState.reaction === null} />
       <PostShareAction title={post.body.split("\n")[0] ?? ""} locale={locale} contentType="post" />
     </div> : <div className={`${styles.actions} ${styles.postFooter}`}><button type="button" className={styles.likeButton} onClick={() => void like()} disabled={!auth.ready || !auth.authenticated || mutation.busy} aria-pressed={liked}><ReactionIcon kind="like" size={20} pressed={liked} /> {boardLikeLabel??copy.like} <ReactionCount value={likeCount} locale={locale} />{boardLikeReward}</button>
       {!detail && <Link href={`${href}#comments` as Route} className={styles.button}><ReactionIcon kind="comment" /> {copy.comments} <ReactionCount value={post.commentCount} locale={locale} /></Link>}

@@ -81,11 +81,12 @@
 .action > a > span { display: inline-flex; align-items: center; gap: var(--space-2); }
 .action svg { width: 16px; height: 16px; flex: none; }
 
-/* 어두운 바탕 두 종류(GGGI 캠페인, 안내 그림). */
+/* 바탕이 있는 두 종류. GGGI 캠페인은 짙은 초록, 안내 그림은 핑크(2026-11-12 사용자 "배너 이미지 좌우측은 검은 배경이 아니라 분홍 계열"): 그림이 칸을 못 채우는 좌우 여백이 검정으로 보이지 않게 강조색을 바탕으로 둔다. 모바일은 같은 그림의 흐린 복사본이 여백을 채운다. */
 .banner[data-kind="campaign"] { --campaign-art: var(--color-campaign-art); background: var(--campaign-art); color: var(--color-surface); }
-.banner[data-kind="art"] { background: color-mix(in oklab, var(--color-ink) 88%, var(--color-service-ink)); color: var(--color-canvas); }
+.banner[data-kind="art"] { background: var(--color-accent); color: var(--color-surface); }
 .banner:is([data-kind="campaign"], [data-kind="art"]) :is(.eyebrow, .description) { color: color-mix(in srgb, var(--color-surface) 92%, transparent); }
 .banner[data-kind="campaign"] .action > a { background: var(--color-surface); color: var(--campaign-art) !important; }
+.banner[data-kind="art"] .action > a { background: var(--color-surface); color: var(--color-accent-ink) !important; }
 /* 어두운 바탕 위 포커스 링은 흰색(잉크 1.4:1 → 흰 12.18:1). 홈 `.page :is(a, button):focus-visible`보다 특이도가 높다. */
 .banner:is([data-kind="campaign"], [data-kind="art"]) :is(a, button):focus-visible { outline-color: var(--color-surface); }
 

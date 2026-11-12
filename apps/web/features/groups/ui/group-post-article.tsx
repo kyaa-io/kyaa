@@ -52,7 +52,7 @@ export function GroupPostArticle({ pageId, post, locale, member, authenticated, 
   const likes = shownReaction.likeCount, returnTo = `/pages/groups/${pageId}?locale=${locale}&tab=board&post=${post.id}`;
   const reaction = <PostReactions reaction={shownReaction.reaction} likeCount={likes} dislikeCount={shownReaction.dislikeCount} locale={locale} busy={busy}
     loginHref={authenticated ? undefined : String(fanLoginHref(locale, returnTo))} join={authenticated && !member ? { onJoin, pending: joinPending } : undefined}
-    onChange={choice => void react(choice)} likeReward={member && shownReaction.reaction !== "like"} />;
+    onChange={choice => void react(choice)} reward={member && shownReaction.reaction === null} />;
   const menu = (post.canEdit || post.canDelete || authenticated) ? <Menu.Root>
     <Menu.Trigger className={contentStyles.moreTrigger} aria-label={t.more}><Ellipsis size={20} aria-hidden="true" /></Menu.Trigger>
     <Menu.Portal><Menu.Positioner className={contentStyles.menuPositioner} sideOffset={4} align="end"><Menu.Popup className={contentStyles.menuPopup}>
