@@ -4,7 +4,7 @@ import { StrictMode, type ReactElement } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { LoginPage } from "./login-page";
 import { signupFunnelTracker } from "../features/analytics/client/signup-funnel-tracker";
-import { ByUsSessionProvider } from "./byus-session-provider";
+import { ByUsSessionProvider, SDK_WAIT_ROUNDS } from "./byus-session-provider";
 import * as sessionModule from "./byus-session-provider";
 import { CognitoAuthProvider } from "../features/auth/client/cognito-auth";
 
@@ -180,7 +180,7 @@ describe("login page (Cognito)", () => {
     getAccessToken.mockImplementation(() => new Promise(() => {}));
     render(<LoginPage />);
 
-    await act(async () => { await vi.advanceTimersByTimeAsync(30_000); });
+    await act(async () => { await vi.advanceTimersByTimeAsync(SDK_WAIT_ROUNDS * 30_000 + 1_000); });
 
     expect(screen.getByRole("alert")).toHaveTextContent("로그인 연결이 오래 걸리고 있어요.");
     expect(screen.getByRole("button", { name: "다시 시도" })).toBeEnabled();

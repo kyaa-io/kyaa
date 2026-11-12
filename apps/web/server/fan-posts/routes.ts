@@ -279,7 +279,9 @@ export function createContentHandlers(deps: ContentDependencies) {
         return json(value);
       }
       const result = checked(postReactionSchema, await deps.rpc("set_fan_post_reaction", { p_app_user_id, p_post_id: id, p_reaction: value.reaction }));
-      const award = result.reaction === "like" ? await awardForPost(deps, p_app_user_id, id, "reaction", `post-like:${rewardKeyId(id)}`, {}) : null;
+      // A dislike pays like a like: the same action, the same daily cap and the same per-post source, so a post pays one reaction once
+      // whichever thumb comes first, and a switch or cancel-and-redo never pays twice. A dislike on your own post pays nothing (the database checks the post's author).
+      const award = result.reaction ? await awardForPost(deps, p_app_user_id, id, "reaction", `post-like:${rewardKeyId(id)}`, {}) : null;
       // 261107-2 D8: a fresh grant goes back so the screen can celebrate it; a replay or a capped like says nothing.
       return json(award && !award.replayed ? { ...result, ...rewardFromAward(award) } : result);
     }),

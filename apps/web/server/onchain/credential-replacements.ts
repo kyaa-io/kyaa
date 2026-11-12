@@ -1,3 +1,5 @@
+import { runOnchainWork, mapOnchainWork } from "../../../worker/src/onchain-work";
+import { setImmediate as yieldToRequests } from "node:timers/promises";
 import {
   encodeAbiParameters,
   getAddress,
@@ -126,7 +128,7 @@ export async function readFinalizedCredentialReplacements(
     throw new Error("Credential migrator immutable binding mismatch");
   }
 
-  const relevantSources = new Set(source.actions.flatMap((action) => action.credentials.map((credential) => credentialAssetKey(credential.nftContract, credential.tokenId))));
+  const relevantSources = new Set((await runOnchainWork(mapOnchainWork(source.actions, action => action.credentials.map(credential => credentialAssetKey(credential.nftContract, credential.tokenId))))).flat());
   const logs = [];
   const chunkBlocks = logScan?.chunkBlocks ?? 1_000n;
   if (chunkBlocks < 1n || chunkBlocks > 10_000n) throw new Error("Credential migrator invalid log chunk size");
@@ -139,6 +141,7 @@ export async function readFinalizedCredentialReplacements(
   const representatives = new Map<string, PublicRepresentativeAsset>();
   const targets = new Set<string>();
   for (let index = 0; index < logs.length; index += 16) {
+    await yieldToRequests();
     const verified = await Promise.all(logs.slice(index, index + 16).map(async (log) => {
       if (log.blockNumber == null || log.blockNumber > blockNumber || !log.blockHash || !log.transactionHash) return;
       const args = log.args;

@@ -5,22 +5,22 @@
   gap: var(--space-1);
   flex: none;
   box-sizing: border-box;
-  height: 36px;
-  padding: 0 var(--space-3);
+  height: 28px;
+  padding: 0 var(--space-2);
   border: 1px solid var(--color-line);
   border-radius: var(--radius-pill);
   background: var(--color-surface);
   color: var(--color-ink);
   font: inherit;
-  font-size: 13px;
+  font-size: var(--fan-metadata-size);
   font-weight: 700;
   line-height: 18px;
   text-decoration: none;
   white-space: nowrap;
   cursor: pointer;
 }
-/* 터치 영역 44px. 눈에 보이는 높이는 36px로 둔다. */
-.star::after { content: ""; position: absolute; inset: -4px 0; }
+/* 터치 영역 44px. 눈에 보이는 높이는 28px로 둔다(머리 칩 줄: 인증·등급·좋아요가 같은 높이). */
+.star::after { content: ""; position: absolute; inset: -8px 0; }
 span.star { cursor: default; }
 a.star:hover, button.star:hover { background: var(--color-accent-soft); }
 .star:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }

@@ -25,6 +25,7 @@ beforeEach(() => {
   fetchMock.mockClear();
   vi.stubGlobal("fetch", fetchMock);
   Object.assign(auth, { ready: false, authenticated: false, user: null, getAccessToken: never });
+  Object.assign(session, { ready: true, ownerId: null, generation: 0 });
 });
 afterEach(() => { vi.useRealTimers(); vi.unstubAllGlobals(); });
 
@@ -77,4 +78,21 @@ it("ends a member group read in the error state within 6 seconds when the token 
   expect(hook.result.current.error).toBe(true);
   expect(hook.result.current.failure?.code).toBe("AUTH_REQUIRED");
   expect(fetchMock).not.toHaveBeenCalled();
+});
+
+// prod 2026-11-12 13:11: Privy signed in long before our session exchange finished; the home ranking ended in its error state.
+it("reads the public ranking as a guest while a new sign-in is still being exchanged, then re-reads it as the member", async () => {
+  Object.assign(auth, { ready: true, authenticated: true, user: { id: "member-1" }, getAccessToken: async () => "token" });
+  Object.assign(session, { ready: false, ownerId: "member-1", generation: 1 });
+  const hook = renderHook(() => useRankingResource("/api/rankings/home", parse));
+  await settle(10);
+  expect(hook.result.current.state).toEqual({ status: "ready", data: { n: 1 } });
+  expect(fetchMock).toHaveBeenCalledTimes(1);
+  expect(new Headers(fetchMock.mock.calls[0]?.[1]?.headers).get("authorization")).toBeNull();
+  Object.assign(session, { ready: true });
+  hook.rerender();
+  expect(hook.result.current.state).toEqual({ status: "ready", data: { n: 1 } });
+  await settle(10);
+  expect(hook.result.current.state).toEqual({ status: "ready", data: { n: 2 } });
+  expect(new Headers(fetchMock.mock.calls[1]?.[1]?.headers).get("authorization")).toBe("Bearer token");
 });

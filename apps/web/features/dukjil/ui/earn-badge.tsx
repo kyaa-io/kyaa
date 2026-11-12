@@ -103,7 +103,9 @@ export function EarnMinLength({ action, locale }: { action: DukjilActionKey; loc
   return <span className={styles.minChars}>{dukjilText(locale, "earnMinChars", [min.toLocaleString(locale)])}</span>;
 }
 
-/** 버튼 오른쪽 위에 `corner` 뱃지를 걸친다. 뱃지가 버튼 밖 형제라 버튼이 비활성이어도 색을 유지하고, 누름은 버튼으로 통과한다. */
-export function EarnBadgeCorner({ action, locale, className, children }: { action: DukjilActionKey; locale: AppLocale; className?: string; children: ReactNode }) {
-  return <span className={[cornerStyles.host, className ?? ""].filter(Boolean).join(" ")}>{children}<EarnActionBadge action={action} locale={locale} variant="corner" /></span>;
+/** 버튼 오른쪽 위에 `corner` 뱃지를 걸친다. 뱃지가 버튼 밖 형제라 버튼이 비활성이어도 색을 유지하고, 누름은 버튼으로 통과한다.
+ * 포인트를 주는 모든 버튼(좋아요·싫어요·공유·댓글·글쓰기)의 표시는 이 한 부품, 한 자리다. `action`은 정책 카탈로그와 오늘 상태에서,
+ * `points`는 호출하는 쪽이 지급 조건을 이미 판정한 값에서 그린다(공유처럼 조건이 따로 있는 행동). */
+export function EarnBadgeCorner({ locale, className, children, ...source }: { locale: AppLocale; className?: string; children: ReactNode } & ({ action: DukjilActionKey; points?: never } | { points: number | undefined; action?: never })) {
+  return <span className={[cornerStyles.host, className ?? ""].filter(Boolean).join(" ")}>{children}{source.action ? <EarnActionBadge action={source.action} locale={locale} variant="corner" /> : source.points !== undefined && <EarnBadge variant="corner" locale={locale} points={source.points} />}</span>;
 }
