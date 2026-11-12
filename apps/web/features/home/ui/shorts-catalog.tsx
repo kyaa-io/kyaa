@@ -34,8 +34,8 @@ export function ShortsCatalog({ catalog, locale, initialVideo }: { catalog: { it
   }, [artist, catalog, sort]);
   return <>
     <div className={styles.shortsControls}>
-      <FanSelectMenu label={t.sort} value={sort} onValueChange={setSort} options={[{ value: "latest", label: t.latest }, { value: "popular", label: t.popular }]} />
       <FanTabs variant="chip" label={t.artists} current={artist} items={[{ key: "all", label: t.all, onSelect: () => setArtist("all") }, ...artists.map(([slug, name]) => ({ key: slug, label: name, onSelect: () => setArtist(slug) }))]} />
+      <FanSelectMenu label={t.sort} value={sort} onValueChange={setSort} align="end" options={[{ value: "latest", label: t.latest }, { value: "popular", label: t.popular }]} />
     </div>
     <HomeShorts key={`${sort}:${artist}`} items={items} locale={locale} layout="grid" initialVideo={initialVideo} />
   </>;

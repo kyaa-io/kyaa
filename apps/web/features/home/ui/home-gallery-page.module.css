@@ -4,5 +4,6 @@
 .creator { overflow: hidden; color: var(--color-muted); font-size: var(--fan-metadata-size); line-height: 18px; text-overflow: ellipsis; white-space: nowrap; }
 .empty { display: flex; margin-top: var(--space-4); min-height: 64px; align-items: center; border-bottom: 1px solid var(--color-line); color: var(--color-muted); font-size: var(--fan-action-label-size); }
 .more { justify-self: center; margin-top: var(--space-4); }
-.shortsControls { display: grid; justify-items: start; gap: var(--space-3); margin-block: var(--space-4); min-width: 0; }
-.shortsControls > nav { max-width: 100%; }
+.shortsControls { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: var(--space-2); margin-block: var(--space-4); min-width: 0; }
+.shortsControls > nav { width: 100%; min-width: 0; height: var(--min-target); align-items: center; flex-wrap: nowrap; overflow-x: auto; overflow-y: hidden; }
+.shortsControls > button { justify-self: end; }
