@@ -3,7 +3,7 @@ import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
 import styles from "./fan-action.module.css";
-import { FanAction } from "./fan-action";
+import { FanAction, FanActionStatus } from "./fan-action";
 
 describe("FanAction", () => {
   it("renders a locale-preserving link with the shared neutral contract", () => {
@@ -113,4 +113,14 @@ it("renders an icon-only action without a label span", () => {
   const button = screen.getByRole("button", { name: "Back" });
   expect(button.className).toMatch(/iconOnly/);
   expect(button.querySelector('[class*="label"]')).toBeNull();
+});
+
+it("shows a finished action as a status in the button slot, not a dimmed disabled button", () => {
+  render(<FanActionStatus leadingIcon={<svg />}>응모 완료</FanActionStatus>);
+  const status = screen.getByRole("status");
+  expect(status).toHaveTextContent("응모 완료");
+  expect(status.tagName).toBe("P");
+  expect(screen.queryByRole("button")).toBeNull();
+  expect(status.className).toMatch(/neutral/);
+  expect(status.className).toMatch(/status/);
 });

@@ -171,3 +171,17 @@ export function FanAction({
     </div>
   );
 }
+
+/**
+ * 끝난 행동의 결과(예: `응모 완료`)를 그 행동 버튼 자리에 보여 준다. 누를 수 없으므로 버튼이 아니라 `role="status"` 글이고,
+ * 비활성(.4 불투명) 대신 보조 버튼 면(흰 면·1px 선·잉크 글자)을 primary 자리 크기(높이 44/48, 최대 폭 320)로 그린다 —
+ * 응모 전후로 줄 높이·폭이 그대로이고 글자 대비는 잉크 그대로다. 아이콘은 `leadingIcon`(간격 8).
+ */
+export function FanActionStatus({ children, leadingIcon, className }: Readonly<{ children: ReactNode; leadingIcon?: ReactNode; className?: string }>) {
+  return (
+    <p role="status" className={[styles.action, styles.neutral, styles.status, className ?? ""].filter(Boolean).join(" ")} data-fan-action-status="">
+      {leadingIcon ? <span className={styles.leading} aria-hidden="true">{leadingIcon}</span> : null}
+      <span className={styles.label}>{children}</span>
+    </p>
+  );
+}

@@ -149,6 +149,16 @@
   max-width: var(--fan-action-max-width);
 }
 
+/* FanActionStatus: 끝난 행동의 결과를 버튼 자리에. 보조 버튼 면 + primary 자리 크기, 누름·호버 없음 */
+.status {
+  width: min(100%, var(--fan-action-max-width));
+  min-height: var(--fan-action-primary-height);
+  margin: 0;
+  cursor: default;
+  /* 누를 수 없는 표시라 호버 틴트·눌림 색을 받지 않는다 */
+  pointer-events: none;
+}
+
 .actionBlock {
   display: flex;
   width: min(100%, var(--fan-action-max-width));
