@@ -170,10 +170,7 @@ it("a short list keeps its place with rank numbers and empty rings only, and a f
   const placeholders = [...container.querySelectorAll("[data-column='fans'] li[data-placeholder]")];
   expect(placeholders.map((n) => n.textContent)).toEqual(["4", "5", "6", "7", "8", "9", "10"]);
   expect(container.querySelector("[data-column='fans'] [data-loading]")).toBeNull();
-  const highlight = container.querySelector("[data-column='fans'] [data-rank-highlight]")!;
-  expect(highlight.getAttribute("data-rank-highlight")).toBe("rise");
-  expect(highlight.textContent).toContain("오늘 가장 많이 오름");
-  expect(highlight.textContent).toContain("하트팬1");
+  expect(container.querySelector("[data-rank-highlight]")).toBeNull();
 });
 
 it("while the first answer is read it shows loading rows and an empty frame, never placeholders or a highlight", async () => {
@@ -181,7 +178,7 @@ it("while the first answer is read it shows loading rows and an empty frame, nev
   const { container } = render(<RankingBoard locale="ko" />);
   expect(container.querySelectorAll("[data-column='fans'] li[data-row='fan-rank-loading']")).toHaveLength(10);
   expect(container.querySelector("[data-column='fans'] [data-placeholder]")).toBeNull();
-  expect(container.querySelector("[data-column='fans'] [data-rank-highlight='loading']")).not.toBeNull();
+  expect(container.querySelector("[data-rank-highlight]")).toBeNull();
 });
 
 it("an error draws no highlight and offers a retry that reads again", async () => {
@@ -257,7 +254,7 @@ it("period pills: 누적 is the default; 오늘 and 7일 read the period list, d
   const pill = (name: string) => screen.getByRole("button", { name });
   expect(["오늘", "7일", "누적"].map((n) => pill(n).getAttribute("aria-pressed"))).toEqual(["false", "false", "true"]);
   expect(urls(fetcher).some((u) => u.includes("period="))).toBe(false);
-  expect(container.querySelector("[data-rank-highlight]")).not.toBeNull();
+  expect(container.querySelector("[data-rank-highlight]")).toBeNull();
   fireEvent.click(pill("오늘"));
   await waitFor(() => expect(urls(fetcher)).toContain("/api/rankings/home?kind=fans&metric=points&locale=ko&limit=10&period=day"));
   expect(urls(fetcher)).toContain("/api/rankings/home?kind=creators&metric=likes&locale=ko&limit=10&period=day");
