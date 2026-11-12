@@ -144,7 +144,7 @@ test('production HA, private routing and nonproduction NAT sharing remain explic
     assert.equal(n.Resources[`DatabaseSubnet${az}`].Properties.MapPublicIpOnLaunch, false);
   }
   const t = await loadTemplate('environment');
-  assert.deepEqual(t.Resources.Service.Properties.DesiredCount['Fn::If'], ['IsProduction', 2, 1]);
+  assert.deepEqual(t.Resources.Service.Properties.DesiredCount['Fn::If'], ['IsProduction', 3, 1]);
   assert.deepEqual(t.Resources.Service.Properties.DeploymentConfiguration, { MinimumHealthyPercent: 100, MaximumPercent: 200, DeploymentCircuitBreaker: { Enable: true, Rollback: true } });
   assert.deepEqual(t.Resources.TaskDefinition.Properties.Cpu['Fn::If'], ['IsProduction', '1024', '512']);
   assert.equal(t.Resources.TaskDefinition.Properties.Memory, '2048');
