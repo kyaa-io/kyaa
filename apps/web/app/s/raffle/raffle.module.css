@@ -1,4 +1,5 @@
-/* Hallmark · custom · idea: "printed matter on a morning desk: the raffle ticket, the gift cards and the passport say the event themselves" · vibe: "airy, plain, film-still, quietly nostalgic" · white page, cream desk photographs, ink type · kyaa pink only on the enter button · Pretendard Variable light display through FanDisplay + system mono on the printed props (FanPrint) · hero: type left, ticket on the desk right (PC); type then desk (390) · posture light/grotesk-light/chromatic-pink */
+/* Hallmark · custom · idea: "printed matter on a morning desk: the raffle ticket, the gift cards and the passport say the event themselves" · vibe: "airy, plain, film-still, quietly nostalgic" · white page, cream desk photographs, ink type · kyaa pink only on the enter button · Pretendard Variable light display through FanDisplay + system mono on the printed props (FanPrint) · hero: amount and enter button left, the four card piles on the desk right (PC); amount, button, then desk (390) · posture light/grotesk-light/chromatic-pink */
+/* v5 (2026-11-13, "어디를 봐야할지 모르겠어"): one focal block. The amount is said once, the enter button sits right under it, and the prize itself (17 cards in four piles) is the hero picture. The ticket, the second US$400, the second 총 17명 and the chance-card photo are gone. Rank below the hero is carried by surface: one pale pink band (more chances), then plain hairline rows (optional), then small print. */
 /* critique: v3 props were blank objects, so the page read as empty; v4 prints the facts on the props (ticket, 17 cards in four piles, stamp slots) and keeps the chrome to hairlines */
 /* system: this file is layout only. Type comes from FanDisplay / FanHeading, buttons from FanAction, the row card from FanSurface, the page width from FanContentContainer. Every length is a --space-*, --radius-*, --rail-* or --min-target token; the only raw numbers are the props' place on the desk photographs (percent, degrees, aspect ratios). */
 /* waive 62: the sticky enter bar is hidden only while the identical hero button is on screen; with scripting off the hero button stays and entering needs scripting anyway */
@@ -10,100 +11,92 @@
 .column :is(a, button) { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
 .muted { color: var(--color-muted); }
 
-/* 히어로: 금액 한 덩어리 → 무엇을·몇 명 → 마감 → 버튼 */
+/* 히어로(1→2→3): 총액 한 덩어리 → 무엇을·몇 명 → 마감·응모 버튼 → 경품 카드 네 묶음 */
 .hero { display: grid; gap: var(--space-6); padding-block: var(--space-4) var(--fan-section-gap); }
 .heroText { display: grid; align-content: start; min-width: 0; }
 .heroTop { display: flex; align-items: baseline; justify-content: space-between; gap: var(--space-3); padding-bottom: var(--space-3); border-bottom: 1px solid var(--color-line); }
-.dday { white-space: nowrap; }
+.dday { white-space: nowrap; color: var(--color-muted); }
 .dday[data-urgent="true"] { color: var(--color-accent-ink); }
-.amount { display: flex; align-items: baseline; gap: var(--space-2); margin-top: var(--space-6); min-width: 0; }
-.heroFacts { display: flex; flex-wrap: wrap; gap: var(--space-1) var(--space-3); margin-top: var(--space-3); }
+.amount { display: flex; align-items: baseline; gap: var(--space-2); margin-top: var(--space-5); min-width: 0; }
+.heroFacts { display: flex; flex-wrap: wrap; gap: var(--space-1) var(--space-3); margin-top: var(--space-2); }
 .heroFacts > span + span { padding-inline-start: var(--space-3); border-inline-start: 1px solid var(--color-line); }
-.heroDeadline { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--space-1) var(--space-2); margin-top: var(--space-2); }
-.heroAction { display: grid; justify-items: center; gap: var(--space-2); margin-top: var(--space-6); }
+/* 행동 칸: 마감 → 버튼 → 한 줄(1인 1응모 / 내 응모 1회 / 오류) */
+.heroAction { display: grid; justify-items: center; gap: var(--space-2); margin-top: var(--space-3); }
+.heroDeadline { justify-self: start; display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--space-1) var(--space-2); margin-bottom: var(--space-2); }
+.heroCta { display: grid; justify-items: center; width: 100%; }
 /* 완료 체크 색(DESIGN.md 4절 `--color-success`): 응모 완료·더 즐기기 완료가 같은 표시 */
 .doneCheck { color: var(--color-success); }
 .heroStatus { display: flex; align-items: center; justify-content: center; gap: var(--space-1); color: var(--color-muted); }
 .heroStatus[data-state="entered"] { color: var(--color-ink); }
 .heroEnded { display: grid; place-items: center; min-height: var(--min-target); color: var(--color-muted); }
 .heroError { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 0 var(--space-1); color: var(--color-error); }
-.heroArt { aspect-ratio: 1; border-radius: var(--radius-card); min-width: 0; }
-.heroTicket { position: absolute; inset-inline-start: 8%; inset-block-start: 19%; width: 82%; rotate: -6deg; }
-.heroCard { position: absolute; inset-inline-start: 40%; inset-block-end: 7%; width: 47%; rotate: 5deg; }
-/* 살아 있는 요소(DESIGN.md 9절)는 상태가 바뀔 때만: 응모 도장, 경품 카드 쌓임, 기회 칸 찍힘. 응모권 숨쉬기는 의미가 약하고 응모 버튼과 시선을 다퉈 뺐다(v4.3) */
-
-.body { display: grid; gap: var(--fan-section-gap); }
-
-/* 구역 공통: 위 1px 선 + 제목 줄(왼쪽 제목, 오른쪽 사실 또는 행동). 제목 줄 → 내용 16 */
-.section { display: grid; gap: var(--space-4); min-width: 0; }
-.sectionHead { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); min-height: var(--space-12); border-top: 1px solid var(--color-line); }
-.sectionHead > p { white-space: nowrap; }
-.doneMark { display: inline-flex; align-items: center; gap: var(--space-1); min-height: calc(var(--space-8) + var(--space-1)); }
-
-/* 당첨 확률 올리기: 목록 카드(FanSurface list) 안 행동 두 행 + 하루 기회 카드 */
-.bonus { display: grid; gap: var(--space-6); }
-.bonusRows li { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); min-height: var(--space-16); padding: var(--space-3) var(--space-4); border-bottom: 1px solid var(--color-line); }
-.bonusRowText { display: grid; gap: var(--space-1); min-width: 0; }
-.bonusFacts { display: flex; flex-wrap: wrap; gap: 0 var(--space-2); color: var(--color-muted); }
-.bonusFacts > span + span { padding-inline-start: var(--space-2); border-inline-start: 1px solid var(--color-line); }
-.bonusRows li > a { flex: none; }
-.bonusArt { aspect-ratio: 6 / 5; border-radius: var(--radius-card); min-width: 0; }
-.bonusCard { position: absolute; inset-inline-start: 6%; inset-block-start: 15%; width: 84%; rotate: -2deg; }
-
-/* 경품: 책상 위 카드 17장을 네 묶음으로. 맨 위 카드 아랫선과 인원 줄이 칸마다 맞는다 */
-.prizeBody { display: grid; gap: var(--space-4); min-width: 0; }
-.prizeLead { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--space-2) var(--space-4); }
-.prizeDesk { border-radius: var(--radius-card); padding: var(--space-12) var(--space-4) var(--space-6); }
+/* 경품 = 히어로 그림: 책상 위 카드 17장을 네 묶음으로. 맨 위 카드 아랫선과 인원 줄이 칸마다 맞는다.
+ * 살아 있는 요소(DESIGN.md 9절): 첫 화면에서 겹친 장이 1·2·4·10장으로 한 번 세어지듯 쌓인다(FanPrintReveal inView="stack") */
+.prizeDesk { border-radius: var(--radius-card); padding: var(--space-10) var(--space-4) var(--space-5); min-width: 0; }
 .prizes { position: relative; list-style: none; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-8) var(--space-4); align-items: end; }
 .prizes li { display: grid; gap: var(--space-2); min-width: 0; }
 .prizes li:nth-child(odd) > :first-child { rotate: -1.2deg; }
 .prizes li:nth-child(even) > :first-child { rotate: 1deg; }
 
-/* 더 즐기기(선택): 낮은 위계의 두 줄. 행 64 = 그림 64 = 이름 + 4 + 작은 버튼 36 */
-.more { list-style: none; padding: 0; display: grid; gap: var(--space-3); }
-.more li { display: grid; grid-template-columns: var(--space-16) minmax(0, 1fr); gap: var(--space-3); align-items: center; min-height: var(--space-16); }
+.body { display: grid; gap: var(--fan-section-gap); }
+
+/* 4 당첨 기회 올리기: 옅은 분홍 면(FanSurface focus) 하나. 면 안에는 카드를 또 넣지 않고 행 사이 선만 */
+.bonus { display: grid; gap: var(--space-2); align-content: start; }
+.bonusRows { list-style: none; padding: 0; }
+.bonusRows li { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); min-height: var(--space-16); padding-block: var(--space-3); }
+.bonusRows li + li { border-top: 1px solid var(--color-line); }
+.bonusRows li:last-child { padding-bottom: 0; min-height: calc(var(--space-16) - var(--space-3)); }
+.bonusRowText { display: grid; gap: var(--space-1); min-width: 0; }
+.bonusFacts { display: flex; flex-wrap: wrap; gap: 0 var(--space-2); color: var(--color-muted); }
+.bonusFacts > span + span { padding-inline-start: var(--space-2); border-inline-start: 1px solid var(--color-line); }
+.bonusRows li > a { flex: none; }
+
+/* 구역 공통(더 즐기기·안내): 위 1px 선 + 제목 줄(왼쪽 제목, 오른쪽 사실 또는 행동) */
+.section, .foot { display: grid; gap: var(--space-2); align-content: start; min-width: 0; }
+.sectionHead { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); min-height: var(--space-12); border-top: 1px solid var(--color-line); }
+.sectionHead > p { white-space: nowrap; }
+.doneMark { display: inline-flex; align-items: center; gap: var(--space-1); min-height: calc(var(--space-8) + var(--space-1)); }
+
+/* 5 더 즐기기(선택): 작은 그림 48 + 이름 + 오른쪽 작은 버튼 한 줄. 행 사이 1px 선 */
+.more { list-style: none; padding: 0; display: grid; }
+.more li { display: grid; grid-template-columns: var(--space-12) minmax(0, 1fr) auto; gap: var(--space-3); align-items: center; min-height: var(--space-16); }
+.more li + li { border-top: 1px solid var(--color-line); }
 .moreArt { aspect-ratio: 1; border-radius: var(--radius-media); min-width: 0; }
 .morePassport { position: absolute; inset-inline-start: 7%; inset-block-start: 21%; width: 86%; rotate: -4deg; }
-.moreText { display: grid; justify-items: start; gap: var(--space-1); min-width: 0; }
 
-/* 응모 및 당첨 안내 */
+/* 응모 및 당첨 안내: 작은 글(caption) */
 .notice { padding-inline-start: var(--space-5); display: grid; gap: var(--space-2); color: var(--color-muted); }
 
 /* 하단 고정 응모 버튼(모바일, 하단 탭 위). 히어로 버튼이 보이는 동안은 숨김 */
 .sticky { position: fixed; z-index: var(--z-bottom-nav); inset-inline: 0; bottom: calc(var(--fan-bottom-nav-height) + env(safe-area-inset-bottom, 0px)); display: flex; justify-content: center; padding: var(--space-2) var(--space-4); background: var(--color-surface); border-top: 1px solid var(--color-line); transition: translate var(--motion-slow) var(--motion-easing), opacity var(--motion-slow) var(--motion-easing); }
 .sticky[data-hidden="true"] { opacity: 0; translate: 0 var(--space-2); pointer-events: none; }
 
-/* PC(64rem 이상): 셸 폭. 11/13 대표 '스크롤을 많이 내려야 해서' → 1440 본문 길이를 줄인다(v4.4).
- * 구역 순서는 그대로: 히어로 2열 → 경품(왼쪽 총 17명 · 오른쪽 카드 4열) → 확률 올리기 | 더 즐기기 나란히 → 안내 2열.
- * 큰 숫자는 globals.css --fan-display-*-wide 토큰을 한 단계 낮췄다(위계 amount > figure-xl > figure-sm 유지). */
+/* 태블릿(48~64rem): 카드 네 묶음 한 줄 */
+@media (width >= 48rem) and (width < 64rem) {
+  .prizes { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+
+/* PC(64rem 이상): 11/13 대표 '스크롤을 많이 내려야 해서' + 사용자 '어디를 봐야할지 모르겠어'(v5).
+ * 1440×900 첫 화면 = 히어로(총액·버튼·마감 | 경품 카드 2×2) + 당첨 기회 올리기 | 더 즐기기. 그 아래는 안내뿐. */
 @media (width >= 64rem) {
   .sticky { display: none; }
   .column { padding-bottom: var(--fan-section-gap); }
-  /* 히어로: 글 7 · 그림 5. 그림은 5:3(1440에서 547×328)으로 글 덩어리 높이에 맞춘다 */
-  .hero { grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: var(--space-12); align-items: center; padding-block: var(--space-6) var(--fan-section-gap); }
+  /* 히어로: 글 7 · 경품 책상 5. 제목 줄은 책상 윗선에, 총액~버튼 덩어리는 남은 높이 가운데(위아래 여백 같음) */
+  .hero { grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: var(--space-12); align-items: stretch; padding-block: var(--space-6) var(--space-8); }
   .heroText { display: flex; flex-direction: column; }
-  .amount { margin-top: var(--space-4); }
-  .heroAction { justify-items: start; margin-top: var(--space-4); }
-  .heroArt { aspect-ratio: 5 / 3; }
-  .heroTicket { inset-inline-start: 6%; inset-block-start: 7%; width: 64%; }
-  .heroCard { inset-inline-start: 57%; inset-block-end: 6%; width: 37%; }
-  .heroStatus, .heroError { justify-content: flex-start; }
-  /* 확률 올리기 · 더 즐기기를 한 줄에 나란히(히어로와 같은 7 · 5 열) */
-  .body { grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); column-gap: var(--space-12); align-items: start; }
-  .body > [data-block="raffle-prizes"], .body > [data-block="raffle-foot"] { grid-column: 1 / -1; }
-  /* 경품: 왼쪽 열(288)에 총 17명, 오른쪽 책상에 카드 네 묶음 한 줄 */
-  .prizeBody { grid-template-columns: var(--rail-narrow) minmax(0, 1fr); gap: var(--space-12); align-items: end; }
-  .prizeLead { flex-direction: column; align-items: flex-start; padding-bottom: var(--space-6); }
-  .prizeDesk { padding: var(--space-6) var(--space-8) var(--space-4); }
-  .prizes { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--space-6); }
-  /* 확률: 행 두 줄 + 오른쪽 작은 기회 카드 그림(288, 2:1 — 행 묶음 높이와 같게) */
-  .bonus { grid-template-columns: minmax(0, 1fr) var(--rail-narrow); gap: var(--space-6); align-items: center; }
-  .bonusArt { aspect-ratio: 2 / 1; }
-  .bonusCard { inset-inline-start: 18%; inset-block-start: 6%; width: 62%; }
-  /* 더 즐기기: 그림 96(4:3, 높이 72) + 이름·버튼 두 행 */
-  .more li { grid-template-columns: calc(var(--space-12) * 2) minmax(0, 1fr); gap: var(--space-4); }
-  .moreArt { aspect-ratio: 4 / 3; }
-  .moreText { gap: var(--space-2); }
+  .amount { margin-top: auto; }
+  .heroFacts { margin-top: var(--space-3); }
+  /* 버튼(288) 오른쪽에 마감 · 1인 1응모 두 줄 */
+  .heroAction { grid-template-columns: var(--rail-narrow) minmax(0, 1fr); gap: var(--space-1) var(--space-5); justify-items: start; align-items: center; margin-top: var(--space-8); margin-bottom: auto; }
+  .heroCta, .heroEnded { grid-column: 1; grid-row: 1 / span 2; }
+  .heroDeadline { grid-column: 2; grid-row: 1; align-self: end; margin-bottom: 0; }
+  .heroStatus { grid-column: 2; grid-row: 2; align-self: start; justify-content: flex-start; }
+  .heroError { grid-column: 1 / -1; grid-row: 3; justify-content: flex-start; }
+  .prizeDesk { padding: var(--space-7) var(--space-8) var(--space-4); }
+  .prizes { gap: var(--space-5) var(--space-6); }
+  /* 당첨 기회(분홍 면) 7 · 더 즐기기(선) 5 나란히, 안내는 전체 폭 2열 */
+  .body { grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); column-gap: var(--space-12); row-gap: var(--space-8); align-items: start; }
+  .body > [data-block="raffle-foot"] { grid-column: 1 / -1; }
   .notice { grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: var(--space-12); }
 }
 @media (prefers-reduced-motion: reduce) {

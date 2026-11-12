@@ -3,7 +3,6 @@ import { createContext, useContext, useEffect, useState, type ReactNode } from '
 import { Check, Share2, Ticket } from '@/components/fan-ui/fan-icons';
 import { FanIcon } from '@/components/fan-ui/fan-icon';
 import { FanDisplay } from '@/components/fan-ui/fan-display';
-import { FanPrintTicket } from '@/components/fan-ui/fan-print';
 import type { AppLocale } from '@/i18n/locales';
 import { signupRaffleText } from '@/i18n/catalogs/signup-raffle';
 import { raffleLongformText, type SignupRaffleLongformKey } from '@/i18n/catalogs/signup-raffle-longform';
@@ -54,15 +53,6 @@ export function RaffleProvider({ locale, closed, preview, children }: { locale: 
 
 const passportHref = (locale: AppLocale) => `/passports?locale=${locale}`;
 const communityHref = (locale: AppLocale) => `/pages/groups?locale=${locale}`;
-/** 응모권에 찍는 인쇄 문구(언어와 상관없이 같은 글자). */
-const ticketPrint = { title: 'KYAA RAFFLE', deadlineLabel: 'CLOSES', deadline: '2026.11.30 23:59 KST', serial: 'No. SAMPLE' } as const;
-
-/** 히어로 응모권. 응모하면 그 자리에서 도장이 찍힌다. */
-export function RaffleTicket({ className }: { className?: string }) {
-  const r = useRaffle();
-  return <FanPrintTicket className={className} title={ticketPrint.title} amount="US$400" prize={r.t('giftCard')} winners={r.t('totalWinners')} deadlineLabel={ticketPrint.deadlineLabel} deadline={ticketPrint.deadline} serial={ticketPrint.serial} stub={r.t('flowOnce')} stamp={r.entered ? r.t('entered') : undefined} />;
-}
-
 /** 응모 버튼: 페이지에서 유일한 분홍 면(primary 1개). 히어로와 모바일 하단 고정 줄이 같은 버튼을 쓴다. 요청 중에는 공통 loading.
  * 응모 뒤에는 누를 수 없는 버튼(비활성 .4, 흰 글자 1.99:1)이 아니라 공통 `FanActionStatus`: 흰 면·잉크 글자·완료 체크(`--color-success`)를 같은 자리·같은 크기로. */
 function RaffleEnterAction() {
@@ -74,9 +64,9 @@ function RaffleEnterAction() {
 /** 히어로 행동 칸: 응모 버튼 + 그 아래 한 줄(응모 전 규칙, 응모 뒤 확정된 내 응모 수, 실패하면 오류와 다시 시도). */
 export function RaffleHeroAction() {
   const r = useRaffle();
-  if (r.closed) return <FanDisplay role="strong" as="p" className={styles.heroEnded}>{r.t('ended')}</FanDisplay>;
+  if (r.closed) return <FanDisplay role="strong" as="p" className={styles.heroEnded} data-state="closed">{r.t('ended')}</FanDisplay>;
   return <>
-    <RaffleEnterAction />
+    <div className={styles.heroCta}><RaffleEnterAction /></div>
     {r.error ? <p className={styles.heroError} role="alert"><FanDisplay role="caption">{r.s('error')}</FanDisplay><FanAction type="button" variant="text" size="sm" onClick={r.enter}>{r.t('retry')}</FanAction></p> : null}
     {/* 댓글·출석으로 늘어난 기회는 이 줄에 섞지 않는다(서버 값이 아직 화면에 없음). */}
     {r.entered
@@ -87,7 +77,7 @@ export function RaffleHeroAction() {
 
 const DoneMark = ({ label }: { label: string }) => <FanDisplay role="caption" as="p" className={styles.doneMark}><FanIcon icon={Check} size={16} className={styles.doneCheck} />{label}</FanDisplay>;
 
-/** 확률 올리기: 행마다 그 행동으로 가는 버튼 하나. */
+/** 당첨 기회 올리기: 행마다 그 행동으로 가는 버튼 하나. */
 export function RaffleBoostAction({ kind }: { kind: 'comment' | 'attend' }) {
   const r = useRaffle();
   if (r.closed) return null;

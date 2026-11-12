@@ -60,7 +60,7 @@
   --shadow-dialog: 0 16px 48px rgb(0 0 0 / 16%);
 
   /* 디스플레이 글자(FanDisplay 전용, 이벤트·캠페인 상세만 — DESIGN.md 7-2). 굵기 300(큰 금액·숫자)·400(본문·캡션·순번·lead·strong)·600(제목 줄·title) 셋. 본문 16·캡션 13·순번 12는 앱 글자 값과 같다. */
-  --fan-display-amount-size: clamp(64px, 22vw, 152px); --fan-display-amount-size-wide: clamp(80px, 6.4vw, 96px);
+  --fan-display-amount-size: clamp(64px, 22vw, 152px); --fan-display-amount-size-wide: clamp(88px, 7.8vw, 112px);
   --fan-display-figure-xl-size: 56px; --fan-display-figure-xl-size-wide: 64px;
   --fan-display-figure-size: 40px; --fan-display-figure-size-wide: 48px;
   --fan-display-figure-sm-size: var(--fan-number-size); --fan-display-figure-sm-size-wide: var(--fan-number-size-wide);
