@@ -50,7 +50,12 @@
 .title:focus-visible { outline: none; }
 .title:focus-visible::after { outline: 2px solid var(--color-accent); outline-offset: -2px; }
 .row[data-notice] .title { font-weight: var(--fan-item-title-weight); }
-.comments { display: inline-flex; flex: none; align-items: center; gap: 2px; color: var(--color-accent-ink); font-size: var(--fan-metadata-size); font-weight: var(--fan-body-weight); line-height: 22px; font-variant-numeric: tabular-nums; }
+.count { display: inline-flex; flex: none; align-items: center; gap: 2px; color: var(--color-accent-ink); font-size: var(--fan-metadata-size); font-weight: var(--fan-body-weight); line-height: 22px; font-variant-numeric: tabular-nums; }
+.count + .count { margin-left: var(--space-1); }
+.count[data-count="likes"] svg { color: var(--color-reaction-like); }
+/* 아티스트 반응 별(기능색 --color-artist-reaction): 금색 면 + 갈색 선. 행의 다른 것은 움직이지 않는다. */
+.reacted { display: inline-flex; flex: none; color: var(--color-artist-reaction-ink); }
+.reacted svg { fill: var(--color-artist-reaction); stroke-width: 1.5; }
 .meta {
   grid-area: meta;
   display: flex;

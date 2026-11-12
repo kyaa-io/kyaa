@@ -99,14 +99,14 @@ radius-scale: "pill / 16px / 12px / 8px / 50%"
 | 글자 / 보조 글자 | `--color-ink` / `--color-muted` | oklch 18% / 48% |
 | 선 | `--color-line` / `--color-line-subtle` | oklch 90% / 93% |
 | **강조 1색**(primary 채움·활성 밑줄·게이지 채움·하트) | `--color-accent` | #d11b62 |
-| 선택·호버·자리표시 면 | `--color-accent-soft` | #fff0f6 |
+| 선택·호버·자리표시 면, 글 상세의 아티스트 댓글 면 | `--color-accent-soft` | #fff0f6 |
 | 강조 선 | `--color-accent-line` | #f4c3d7 |
 | 강조 글자 | `--color-accent-ink` | #ad1457 |
 | 팬페이지 대표색 | `--color-page-accent` | 기본 accent |
 | 오류·LIVE·알림 점 | `--color-error` | #9f1239 |
 | 경고·순위 배지 글자 | `--color-warning` | #7a4206 |
 | 완료 체크 | `--color-success` | #17613f |
-| 기능색(사용자 승인) | `--color-reaction-comment`(댓글·▼), `--color-rank-up/-down`, `--color-heart`, `--color-translation-link`, `--color-brand-link` | 강조색이 아니다. 지정된 자리만 |
+| 기능색(사용자 승인) | `--color-reaction-comment`(댓글·▼), `--color-rank-up/-down`, `--color-heart`, `--color-translation-link`, `--color-brand-link`, `--color-artist-reaction(-ink)`(게시판 행 아티스트 반응 별, 11/13) | 강조색이 아니다. 지정된 자리만 |
 | 화면 전용 | `--color-shortform-*`, `--color-home-caption`, `--color-home-hero-shade`, `--color-campaign-art` | 그 화면만 |
 | 비활성 | `--fan-disabled-opacity` .4 | 면·글자색은 그대로 두고 불투명도만 |
 
@@ -160,7 +160,7 @@ radius-scale: "pill / 16px / 12px / 8px / 50%"
 | `RollingNumber` | 바뀌는 숫자를 굴려 보이기(랭킹·헤더·접속 수) | `value`, `duration`, `easing`, `delay`, `initialFromZero` | 가짜 증가 금지(실제 값만) |
 | `FanCellGauge` | 스탬프·하트·등급 칸 게이지 | `icon` `text` `label` `cells` `filled` | — |
 | `FanSurface` | 카드·목록 카드 | `appearance` card·list·plain, `tone`, `as` | 새 `FanCard` 만들지 않음 |
-| `FanPostRow` | 글·공지·기사 목록 한 줄 | `title` `href` `thumbnail` `notice` `author` `time` `likes` `commentCount` `density` home·board | — |
+| `FanPostRow` | 글·공지·기사 목록 한 줄 | `title` `href` `thumbnail` `notice` `author` `time` `likes` `commentCount` `reactedBy` `density` home·board. 댓글·추천 수는 제목 옆(0이면 뺌), `reactedBy`(그 페이지 아티스트가 좋아요·댓글)면 제목 바로 뒤 금색 별 16 | 별 옆에 글자 붙이지 않음 |
 | `FanEntityCard` | 페이지(팬페이지·모임·취미·브랜드) 카드·행·타일 | `size` row·card·list·tile, `kind`, `memberCount`, `badge`, `newBadge` | — |
 | `FanPageHeader` | 팬페이지·모임 머리 | `image` `name` `kind` `star` `links` `stats` `tabs` `menu` | — |
 | `FanStarAction` | 머리 칩(별·인증·좋아요) | `state` empty·filled, `label`, `href`/`onClick` | — |
@@ -237,6 +237,7 @@ radius-scale: "pill / 16px / 12px / 8px / 50%"
    - 랭킹 행 재정렬(FLIP 450) · ▲▼ 등장 500 · 바뀐 행 핑크 링 1800(1회)
    - 게이지·칸 채움(칸마다 45ms)
    - 선물 안 읽음 빛(애셋 opacity·transform, 3회 뒤 정지)
+   - 아티스트 접속 알약(팬페이지 머리 접속 줄): 지금 접속 중이면 핑크 알약 + 점 고리 퍼짐 1.6s × 3회(숫자 롤링 뒤 .6s 지연), 방문만 한 날은 정지
 
 | 모션 토큰 | 값 | 쓰임 |
 |---|---|---|
@@ -2642,4 +2643,4 @@ D-C token ownership: `FanHeading variant="campaign"` owns the 18px/700 mobile an
 `/s/raffle`은 기존 campaign `FanHeading`과 `FanText` 역할을 쓰고 상금 구성은 모바일 2열·48rem 이상 4열, 참여 단계는 번호 목록으로 표시한다. 간격은 기존 space 토큰이며 응모만 primary, 패스포트·커뮤니티는 neutral이다. 홈은 기존 `HomeBanner` 모델과 `ManagedHomeBanner` 슬롯을 재사용한다. 인물 없는 기존 banner-onboard 장식 원화의 1440×900·390×390 WebP를 사용하며 상금·마감 문구는 이미지 밖 텍스트다. 원화의 하트·리본 장식 크롭은 허용하되 정보 문구를 이미지에 넣지 않는다. 로컬 실제 컴포넌트의 12언어·390/768/1440 폭·상세/배너 72조합에서 이미지 로드·가로 넘침·44px 행동을 확인했다. 캡처는 로컬 guest fixture로 실제 dev 데이터나 독립 미적 점수 평가를 뜻하지 않는다.
 
 ### 2026-11-13 Hot·게시판 공통 글 행
-사용자 요청에 따라 `FanPostRow`의 팬페이지·작성자(등급)·날짜·조회·좋아요를 오른쪽 정렬한다. 제목은 남은 폭에서 한 줄 말줄임하며 모바일 메타는 오른쪽 정렬로 줄바꿈한다. 제목·메타 글꼴 및 간격 토큰은 기존 계약을 유지한다. 긴 팬페이지·작성자는 데스크톱에서 기존 작성자 열의 132px 상한을 공유한다. 추천 반응 표기는 좋아요로 통일한다.
+사용자 요청에 따라 `FanPostRow`의 팬페이지·작성자(등급)·날짜·조회를 오른쪽 정렬한다. 좋아요는 통합된 11/13 게시판 규칙에 따라 제목 옆 댓글 수 다음 하트·숫자로 표시한다. 제목은 남은 폭에서 한 줄 말줄임하며 모바일 메타는 오른쪽 정렬로 줄바꿈한다. 제목·메타 글꼴 및 간격 토큰은 기존 계약을 유지한다. 긴 팬페이지·작성자는 데스크톱에서 기존 작성자 열의 132px 상한을 공유한다. 추천 반응 표기는 좋아요로 통일한다.

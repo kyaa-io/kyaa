@@ -146,6 +146,18 @@ export const messages = {
     "fr": "Annonce",
     "ru": "Объявление"
   },
+  "artistReacted": {
+    "ja": "{0}が反応",
+    "zh-Hans": "{0}已回应",
+    "zh-Hant": "{0}已回應",
+    "es": "{0} reaccionó",
+    "id": "{0} bereaksi",
+    "vi": "{0} đã phản hồi",
+    "th": "{0} ตอบสนองแล้ว",
+    "pt": "{0} reagiu",
+    "fr": "{0} a réagi",
+    "ru": "{0} отреагировал(а)"
+  },
   "artistTag": {
     "ja": "認証アーティスト",
     "zh-Hans": "认证艺人",

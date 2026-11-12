@@ -37,6 +37,9 @@
   --color-reaction-like: var(--color-accent);
   --color-reaction-like-soft: #e05a97;
   --color-reaction-comment: oklch(56% 0.09 230);
+  /* 아티스트 반응 별(게시판 11/13 김재영 "황금 별"): 금색 면 + 갈색 선. 게시판 행의 별 한 곳에만 쓴다. 선은 흰 바탕 위 8:1. */
+  --color-artist-reaction: #ffc83d;
+  --color-artist-reaction-ink: var(--color-warning);
   /* Rank movement triangle (대표 11/11 19:0x): up in the accent, down in the same muted blue as the comment reaction. Shape + colour only; the places gained are in the label. */
   --color-rank-up: var(--color-accent);
   --color-rank-down: var(--color-reaction-comment);

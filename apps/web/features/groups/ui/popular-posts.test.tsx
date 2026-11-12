@@ -35,7 +35,7 @@ describe('popular posts',()=>{
   resource.mockReturnValue({state:{status:'ready',data:{items:[post(1)]}}});
   const {container}=render(<PopularPosts slug='artist' locale='ko' pageImage={<span data-testid='page-image'/>}/>);
   expect(container.querySelector('[data-fan-post-row] [data-testid="page-image"]')).not.toBeNull();
-  expect(container.querySelector('[data-fan-post-row] svg')).toBeNull();
+  expect(container.querySelector('[data-fan-post-row] svg.lucide-file-text')).toBeNull();
  });
 });
 
