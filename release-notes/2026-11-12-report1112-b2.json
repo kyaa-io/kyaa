@@ -1,0 +1,5 @@
+{
+  "changes": ["내 패스포트의 아티스트 선택 칩 위쪽이 잘리지 않도록 여백을 조정했어요. 첨부 화면은 예시 데이터로 확인한 로컬 화면이에요."],
+  "path": "/my",
+  "images": ["release-notes/images/2026-11-12-report1112-b2-390.png", "release-notes/images/2026-11-12-report1112-b2-1440.png"]
+}
