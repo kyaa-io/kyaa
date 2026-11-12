@@ -90,10 +90,10 @@ try {
     // The translation arrives by itself for an English reader of Korean text.
     const control = page.locator('[data-translation-control]').first();
     await control.waitFor(); await assertEventually(async () => (await control.getAttribute('aria-pressed')) === 'true', 'the automatic translation');
-    // Like, dislike, share and the comment send button each carry the one corner point badge, on a notice as on a board post.
-    const badges = page.locator('[data-earn-badge="corner"]');
-    await assertEventually(async () => (await badges.count()) === 4, `${screen} ${width}: four point badges`);
-    assert.deepEqual(await badges.allInnerTexts().then(texts => texts.map(text => text.match(/\+\d+/)?.[0])), ['+1', '+1', '+10', '+3'], `${screen} ${width}: badge amounts`);
+    // Like, dislike and the comment send button carry the one corner point badge on a notice as on a board post; the share badge is post-only (hotfix H1).
+    const badges = page.locator('[data-earn-badge="corner"]'), amounts = screen === 'post' ? ['+1', '+1', '+10', '+3'] : ['+1', '+1', '+3'];
+    await assertEventually(async () => (await badges.count()) === amounts.length, `${screen} ${width}: ${amounts.length} point badges`);
+    assert.deepEqual(await badges.allInnerTexts().then(texts => texts.map(text => text.match(/\+\d+/)?.[0])), amounts, `${screen} ${width}: badge amounts`);
     // A comment pays at any length (2026-11-12): no minimum-length note beside the send button.
     assert.doesNotMatch(await page.locator('form').last().innerText(), /characters|자 이상/, `${screen} ${width}: no minimum length note`);
     await page.screenshot({ path: path.join(out, `${screen}-points-${width}.png`), fullPage: true });
@@ -114,7 +114,7 @@ try {
     await context.close();
   }
   // The same notice as a Korean reader sees it (no translation), for the point badges alone.
-  { Object.assign(state, { noticeReaction: null, noticeLikes: 2 }); const { context, page } = await open(browser, 'notice&locale=ko', 390); await assertEventually(async () => (await page.locator('[data-earn-badge="corner"]').count()) === 4, 'ko notice: four point badges'); await page.waitForFunction(() => [...document.querySelectorAll('article img[width="960"]')].every(node => node.complete && node.naturalWidth > 0)); await page.screenshot({ path: path.join(out, 'notice-points-ko-390.png'), fullPage: true }); await context.close(); }
+  { Object.assign(state, { noticeReaction: null, noticeLikes: 2 }); const { context, page } = await open(browser, 'notice&locale=ko', 390); await assertEventually(async () => (await page.locator('[data-earn-badge="corner"]').count()) === 3, 'ko notice: three point badges'); await page.waitForFunction(() => [...document.querySelectorAll('article img[width="960"]')].every(node => node.complete && node.naturalWidth > 0)); await page.screenshot({ path: path.join(out, 'notice-points-ko-390.png'), fullPage: true }); await context.close(); }
   await writeFile(path.join(out, 'evidence.json'), JSON.stringify({ scope: 'Real post detail and notice detail in Chromium; synthetic sign-in and API answers', checks: evidence }, null, 2));
   console.log('PASS post detail and notice detail at 390/1440: click, focus re-read, original/translation switch, like, dislike keep the same photo nodes with 0 new media requests');
 } finally { await browser.close(); await server.close(); }
