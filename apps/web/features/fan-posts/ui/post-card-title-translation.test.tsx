@@ -9,6 +9,8 @@ const context = vi.hoisted(() => ({
   session: { ready: true, ownerId: "me", generation: 1 },
 }));
 vi.mock("@/features/auth/client/cognito-auth", () => ({ useByUsAuth: () => context.auth }));
+// Reward catalog reads are outside the translation request contract.
+vi.mock("@/features/dukjil/ui/dukjil-provider", () => ({ useDukjil: () => null }));
 vi.mock("@/components/byus-session-provider", () => ({ useByUsSession: () => context.session }));
 vi.mock("@/features/content-safety/ui/use-content-mutation", () => ({ useContentMutation: () => ({ busy: false, error: "", request: vi.fn() }) }));
 vi.mock("@/features/content-safety/ui/content-actions", async importOriginal => ({ ...await importOriginal<typeof import("@/features/content-safety/ui/content-actions")>(), ContentActions: () => null }));
