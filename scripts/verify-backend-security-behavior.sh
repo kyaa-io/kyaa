@@ -88,3 +88,6 @@ bash "$root_dir/scripts/verify-cognito-email-rotation-concurrency.sh"
 
 psql -X -v ON_ERROR_STOP=1 -f "$root_dir/supabase/tests/legacy_email_password_attempt_limit.sql"
 bash "$root_dir/scripts/verify-legacy-email-attempt-concurrency.sh"
+
+# Catalog guard: no public table without RLS, no non-cryptographic random() in reward/draw functions (SECURITY-AGENTIC-1112 F-26, F-22).
+psql -X -v ON_ERROR_STOP=1 -f "$root_dir/supabase/tests/security_rls_csprng.sql"
