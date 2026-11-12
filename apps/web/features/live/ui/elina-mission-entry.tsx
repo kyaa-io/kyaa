@@ -5,7 +5,7 @@ import type { AppLocale } from "@/i18n/locales";
 import { messages as localizedMessages } from "@/i18n/catalogs/features__live__ui__elina-mission-entry";
 import { additionalLocales } from "@/i18n/messages";
 import Image from "next/image";
-import Link from "next/link";
+import Link from "../../../components/fan-ui/hover-prefetch-link";
 import { useEffect, useId, useState } from "react";
 import type { ContentLocale } from "@/server/content/content-domain";
 import { elinaLiveSlug } from "../domain/elina-event";

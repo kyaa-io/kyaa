@@ -14,7 +14,7 @@ import { boardHref } from "@/features/fanpage/domain/board-navigation";
 
 import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import { Check, CircleAlert, Clock, Copy, RotateCcw, X } from "lucide-react";
-import Link from "next/link";
+import Link from "../../../components/fan-ui/hover-prefetch-link";
 import type { Route } from "next";
 import { useEffect, useRef, useState } from "react";
 import { useDukjil } from "@/features/dukjil/ui/dukjil-provider";

@@ -9,7 +9,7 @@ import { creatorHomeHref } from "@/features/creator/domain/creator-navigation";
 import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import { ArrowLeft, ArrowRight, Check, RotateCcw } from "lucide-react";
 import type { Route } from "next";
-import Link from "next/link";
+import Link from "../../../components/fan-ui/hover-prefetch-link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 

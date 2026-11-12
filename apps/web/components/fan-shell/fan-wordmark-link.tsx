@@ -3,7 +3,7 @@ import { messages as localizedMessages } from "@/i18n/catalogs/components__fan-s
 import { translate } from "@/i18n/messages";
 import Image from "next/image";
 import type { Route } from "next";
-import Link from "next/link";
+import Link from "../fan-ui/hover-prefetch-link";
 
 type FanWordmarkLinkProps = {
   className?: string;

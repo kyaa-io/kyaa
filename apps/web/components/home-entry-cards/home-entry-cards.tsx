@@ -7,7 +7,7 @@ import { messages as localizedMessages } from "@/i18n/catalogs/components__home-
 import { additionalLocales, translate } from "@/i18n/messages";
 import type { PublishedCelebrity } from "@/server/content/content-domain";
 import { CreatorImage } from "../fan-ui/creator-image";
-import Link from "next/link";
+import Link from "../fan-ui/hover-prefetch-link";
 import type { Route } from "next";
 import { ArrowRight, ArrowUpRight } from "lucide-react";
 import type { ContentLocale } from "@/server/content/content-domain";

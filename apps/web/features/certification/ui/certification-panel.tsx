@@ -17,7 +17,7 @@ import {
   History,
 } from "lucide-react";
 import type { Route } from "next";
-import Link from "next/link";
+import Link from "../../../components/fan-ui/hover-prefetch-link";
 import Image from "next/image";
 import {
   useCallback,

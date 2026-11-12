@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "../../../components/fan-ui/hover-prefetch-link";
 import type { Route } from "next";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import type { AppLocale } from "@/i18n/locales";

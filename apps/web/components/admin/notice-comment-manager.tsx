@@ -1,6 +1,6 @@
 "use client";
 import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
-import Link from "next/link";
+import Link from "../fan-ui/hover-prefetch-link";
 import { useState } from "react";
 import { z } from "zod";
 import { useOwnedFanResource } from "../fan-ui/use-owned-fan-resource";

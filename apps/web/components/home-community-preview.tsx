@@ -1,7 +1,7 @@
 "use client";
 
 import { ProfileAuthor } from "@/features/group-social/profile-window";
-import Link from "next/link";
+import Link from "./fan-ui/hover-prefetch-link";
 import { useState, useSyncExternalStore } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { paginationCopy } from "@/i18n/catalogs/common__pagination";

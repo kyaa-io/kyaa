@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
+import Link from "../../../components/fan-ui/hover-prefetch-link";
 import type { Route } from "next";
 import type { CSSProperties } from "react";
 import { FanLockedValue } from "@/components/fan-ui/fan-locked-value";

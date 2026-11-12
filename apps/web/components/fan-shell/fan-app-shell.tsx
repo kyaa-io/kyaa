@@ -22,7 +22,7 @@ import { communityCopy } from "@/i18n/catalogs/features__community";
 
 import { useEffect, useState, type ReactNode } from "react";
 import type { Route } from "next";
-import Link from "next/link";
+import Link from "../fan-ui/hover-prefetch-link";
 import { Bell, BookOpen, Heart, Home, UsersRound } from "lucide-react";
 import { usePathname, useSearchParams } from "next/navigation";
 

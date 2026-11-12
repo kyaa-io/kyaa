@@ -2,7 +2,7 @@
 import { useId, useState, type FormEvent, type ReactNode } from "react";
 import { useByUsAuth } from "@/features/auth/client/cognito-auth";
 import { recordShareCompleted } from "@/features/analytics/client/share-event";
-import Link from "next/link";
+import Link from "../../../components/fan-ui/hover-prefetch-link";
 import type { Route } from "next";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { FanAction } from "@/components/fan-ui/fan-action";

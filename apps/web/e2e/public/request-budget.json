@@ -1,0 +1,25 @@
+{
+  "idleWindowMs": 8000,
+  "screens": {
+    "home": {
+      "rsc": 4,
+      "api": 8,
+      "total": 24
+    },
+    "community": {
+      "rsc": 4,
+      "api": 8,
+      "total": 48
+    },
+    "favorites": {
+      "rsc": 4,
+      "api": 4,
+      "total": 34
+    },
+    "my": {
+      "rsc": 4,
+      "api": 2,
+      "total": 8
+    }
+  }
+}

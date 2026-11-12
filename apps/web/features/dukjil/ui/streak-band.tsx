@@ -1,5 +1,5 @@
 "use client";
-import Link from "next/link";
+import Link from "../../../components/fan-ui/hover-prefetch-link";
 import type { Route } from "next";
 import { Check, Gift } from "lucide-react";
 import { GroupImage } from "@/features/groups/ui/group-image";

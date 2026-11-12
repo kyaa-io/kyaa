@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "./fan-ui/hover-prefetch-link";
 import { ArrowLeft } from "lucide-react";
 
 import { FocusFlowFrame } from "./fan-shell/focus-flow-frame";

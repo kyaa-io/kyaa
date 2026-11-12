@@ -1,5 +1,5 @@
 import Image from "next/image";
-import Link from "next/link";
+import Link from "../fan-ui/hover-prefetch-link";
 import { ArrowDown, ArrowRight, BadgeCheck, Building2, Check, Gift, Heart, Megaphone, Radio, ShoppingBag, Sparkles, UsersRound } from "lucide-react";
 import type { FanLocale } from "../fan-shell/fan-app-shell";
 import { FocusFlowHeader } from "../fan-shell/focus-flow-header";

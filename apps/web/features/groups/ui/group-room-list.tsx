@@ -2,7 +2,7 @@
 import { useState, type ReactNode } from "react";
 import { ChevronRight, LockKeyhole, MessageCircle, Search, UserRound } from "lucide-react";
 import type { z } from "zod";
-import Link from "next/link";
+import Link from "../../../components/fan-ui/hover-prefetch-link";
 import type { Route } from "next";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import { FanSkeleton } from "@/components/fan-ui/fan-skeleton";

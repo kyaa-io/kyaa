@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import Link from "../../../components/fan-ui/hover-prefetch-link";
 import { Select } from "@base-ui/react/select";
 import { FanHeading } from "@/components/fan-ui/fan-heading";
 import { useRouter } from "next/navigation";

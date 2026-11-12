@@ -2,7 +2,7 @@
 import { ProfileAuthor } from "@/features/group-social/profile-window";
 import { WAVE_FANPAGE_SLUG } from "@/features/fanpage/domain/wave-programs";
 import { WavePrivateBadge } from "@/features/fanpage/ui/wave-privacy";
-import Link from "next/link";
+import Link from "../../../components/fan-ui/hover-prefetch-link";
 import type { Route } from "next";
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { editorText } from "@/components/editor/editor-copy";

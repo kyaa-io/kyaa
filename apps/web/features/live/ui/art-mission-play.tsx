@@ -8,7 +8,7 @@ import { creatorHomeHref } from "@/features/creator/domain/creator-navigation";
 
 import Image from "next/image";
 import { credentialArtworkAsset } from "@/components/fan-ui/credential-artwork";
-import Link from "next/link";
+import Link from "../../../components/fan-ui/hover-prefetch-link";
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { ArrowLeft, ArrowRight, Check, Circle, CircleCheck } from "lucide-react";
 import type { z } from "zod";

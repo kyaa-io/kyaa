@@ -1,5 +1,5 @@
 "use client";
-import Link from "next/link";
+import Link from "../../../components/fan-ui/hover-prefetch-link";
 import { FanIcon } from "@/components/fan-ui/fan-icon";
 import { Heart } from "@/components/fan-ui/fan-icons";
 import { FanText } from "@/components/fan-ui/fan-text";

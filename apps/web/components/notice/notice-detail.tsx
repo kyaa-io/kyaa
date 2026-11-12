@@ -1,7 +1,7 @@
 "use client";
 import { z } from "zod";
 import { ArrowLeft } from "lucide-react";
-import Link from "next/link";
+import Link from "../fan-ui/hover-prefetch-link";
 import type { Route } from "next";
 import { useSearchParams } from "next/navigation";
 import { sanitizeReturnTo } from "@/components/login-intent";

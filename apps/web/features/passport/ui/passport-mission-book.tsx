@@ -1,5 +1,5 @@
 "use client";
-import Link from "next/link";
+import Link from "../../../components/fan-ui/hover-prefetch-link";
 import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import { Check, ChevronLeft, ChevronRight, Heart } from "lucide-react";
 import paper from "@/components/fan-ui/passport-paper.module.css";

@@ -4,7 +4,7 @@ import { translate } from "@/i18n/messages";
 import type { AppLocale } from "@/i18n/locales";
 
 import Image from "next/image";
-import Link from "next/link";
+import Link from "../fan-ui/hover-prefetch-link";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { ArrowUpRight, Ticket, X } from "lucide-react";

@@ -10,7 +10,7 @@ import { translate } from "@/i18n/messages";
 import type { AppLocale } from "@/i18n/locales";
 import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import { useRef, useState } from "react";
-import Link from "next/link";
+import Link from "../../../components/fan-ui/hover-prefetch-link";
 import { z } from "zod";
 import { AuthIntentLink } from "@/components/auth-intent-link";
 import { commentsSchema } from "../domain/community";

@@ -3,7 +3,7 @@
 import { type AppLocale, toContentLocale } from "@/i18n/locales";
 import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import type { Route } from "next";
-import Link from "next/link";
+import Link from "../../../components/fan-ui/hover-prefetch-link";
 import { useEffect, type ReactNode } from "react";
 import type { SignupAction, SignupGuide, SignupPlacement } from "../domain/signup-funnel-event";
 import { signupFunnelTracker } from "./signup-funnel-tracker";

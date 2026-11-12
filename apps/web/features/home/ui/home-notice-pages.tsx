@@ -1,5 +1,5 @@
 import type { Route } from "next";
-import Link from "next/link";
+import Link from "../../../components/fan-ui/hover-prefetch-link";
 import { paginationCopy } from "@/i18n/catalogs/common__pagination";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import { FanBackAction } from "@/components/fan-ui/fan-back-action";

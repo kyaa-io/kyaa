@@ -4,7 +4,7 @@ import { messages as localizedMessages } from "@/i18n/catalogs/features__live__u
 import { translate } from "@/i18n/messages";
 
 import type { AppLocale } from "@/i18n/locales";
-import Link from 'next/link';
+import Link from "../../../components/fan-ui/hover-prefetch-link";
 import type { Route } from 'next';
 import { ArrowUpRight, Clock3, Radio, Sparkles, TicketCheck } from 'lucide-react';
 import { useId } from 'react';

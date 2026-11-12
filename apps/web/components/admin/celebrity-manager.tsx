@@ -1,7 +1,7 @@
 "use client";
 import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import { Archive, ExternalLink, Plus, Save, Search } from "lucide-react";
-import Link from "next/link";
+import Link from "../fan-ui/hover-prefetch-link";
 import type { Route } from "next";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { AdminAccessState } from "./admin-access-state";

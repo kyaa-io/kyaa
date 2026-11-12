@@ -1,5 +1,5 @@
 'use client';
-import Link from 'next/link';
+import Link from "../fan-ui/hover-prefetch-link";
 import type {Route} from 'next';
 import {BadgeCheck,CalendarCheck,Flag,History,Inbox,ChevronRight} from 'lucide-react';
 import {ParticipationAdmin} from './participation-controls';

@@ -4,7 +4,7 @@ import { messages as localizedMessages } from "@/i18n/catalogs/app__c___slug___u
 import { translate } from "@/i18n/messages";
 import { toContentLocale } from "@/i18n/locales";
 import { parseAppLocale } from "@/i18n/locales";
-import Link from "next/link";
+import Link from "../../../../../../components/fan-ui/hover-prefetch-link";
 import type { Route } from "next";
 import { sanitizeReturnTo } from "@/components/login-intent";
 import { notFound } from "next/navigation";

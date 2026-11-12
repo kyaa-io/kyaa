@@ -2,7 +2,7 @@
 
 import { FanSkeleton } from "@/components/fan-ui/fan-skeleton";
 import Image from "next/image";
-import Link from "next/link";
+import Link from "../../components/fan-ui/hover-prefetch-link";
 import { useEffect, useRef, useState } from "react";
 import { ArrowRight, ArrowUpRight, ChevronRight, Mail, Pause, Play, RotateCcw, VideoOff, X } from "lucide-react";
 import { useAppLocale } from "@/components/locale-provider";

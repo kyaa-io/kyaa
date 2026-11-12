@@ -36,11 +36,14 @@ beforeEach(() => {
   Object.assign(state, { data: detail, query: "locale=ko&tab=board", error: false, loading: false, failure: undefined, ownerKey: "guest", retry: vi.fn(), preload: vi.fn() });
 });
 
-it("uses default Link prefetch for all five tabs", () => {
+it("leaves prefetch to the shared Link for all five tabs: off until a pointer reaches one, then the default", () => {
   render(tree());
   const links = Array.from(tabNav().querySelectorAll("a"));
   expect(links).toHaveLength(5);
-  for (const link of links) expect(link).toHaveAttribute("data-prefetch", "default");
+  for (const link of links) expect(link).toHaveAttribute("data-prefetch", "false");
+  fireEvent.mouseEnter(links[1]!);
+  expect(links[1]).toHaveAttribute("data-prefetch", "null");
+  expect(links[2]).toHaveAttribute("data-prefetch", "false");
 });
 
 it.each([500, 403, 404])("keeps the same header and nav after a detail-fetch %s while switching to rooms", status => {

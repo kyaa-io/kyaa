@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "../fan-ui/hover-prefetch-link";
 import type { Route } from "next";
 import { FanIcon } from "@/components/fan-ui/fan-icon";
 import { ChevronRight } from "@/components/fan-ui/fan-icons";

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import Link from "next/link";
+import Link from "../fan-ui/hover-prefetch-link";
 import type { Route } from "next";
 import { usePathname, useSearchParams } from "next/navigation";
 import { RewardIcon } from "@/components/fan-ui/reward-icon";

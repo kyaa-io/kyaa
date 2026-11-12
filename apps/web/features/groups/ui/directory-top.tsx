@@ -9,7 +9,7 @@ import { GroupImage } from "./group-image";
 import type { Route } from "next";
 import { FanSelectMenu } from "@/components/fan-ui/fan-select-menu";
 import { FanIconButton } from "@/components/fan-ui/fan-icon-button";
-import Link from "next/link";
+import Link from "../../../components/fan-ui/hover-prefetch-link";
 import { useRef, useState, useSyncExternalStore, type PointerEvent, type MouseEvent, type DragEvent } from "react";
 import { ChevronLeft, ChevronRight } from "@/components/icons";
 import { FanIcon } from "@/components/fan-ui/fan-icon";

@@ -22,7 +22,7 @@ import { boundFirstLikeCount } from "../../passport/domain/first-like-stamp";
 
 import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import { ArrowRight, Bell, BookOpen, CalendarDays, Check, Gift, History, ListChecks, MessageSquare, Pencil, RotateCcw, Settings, Sparkles, Ticket } from "lucide-react";
-import Link from "next/link";
+import Link from "../../../components/fan-ui/hover-prefetch-link";
 import type { Route } from "next";
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { useOwnedFanResource } from "../../../components/fan-ui/use-owned-fan-resource";

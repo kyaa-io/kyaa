@@ -1,5 +1,5 @@
 'use client';
-import Link from 'next/link';
+import Link from "../../../components/fan-ui/hover-prefetch-link";
 import {ChevronRight} from 'lucide-react';
 import type {Route} from 'next';
 import type {ReactNode} from 'react';

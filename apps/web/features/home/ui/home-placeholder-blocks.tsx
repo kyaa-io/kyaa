@@ -1,7 +1,7 @@
 import type { CSSProperties, ReactNode } from "react";
 import { FanHeading, FanSectionHeader } from "@/components/fan-ui/fan-heading";
 import Image from "next/image";
-import Link from "next/link";
+import Link from "../../../components/fan-ui/hover-prefetch-link";
 import type { Route } from "next";
 import { bypassImageOptimization } from "@/components/fan-ui/public-image-policy";
 import { homeGalleryCopy, type HomeGalleryPhoto, type HomeShort } from "@/features/home/domain/home-gallery";

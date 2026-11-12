@@ -1,7 +1,7 @@
 "use client";
 import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import { useEffect } from "react";
-import Link from "next/link";
+import Link from "../fan-ui/hover-prefetch-link";
 import styles from "./operations.module.css";
 import { adminReportSummarySchema } from "@/features/fan-posts/domain/content";
 import { useOwnedFanResource } from "../fan-ui/use-owned-fan-resource";

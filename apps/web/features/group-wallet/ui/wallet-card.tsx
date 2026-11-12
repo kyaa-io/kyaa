@@ -1,7 +1,7 @@
 "use client";
 import { RewardIcon } from "@/components/fan-ui/reward-icon";
 import { ArrowRight } from "lucide-react";
-import Link from "next/link";
+import Link from "../../../components/fan-ui/hover-prefetch-link";
 import type { Route } from "next";
 import type { ReactNode } from "react";
 import { FanHeading } from "@/components/fan-ui/fan-heading";

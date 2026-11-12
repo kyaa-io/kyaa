@@ -1,7 +1,7 @@
 "use client";
 import { ArrowLeft, ListChecks, Plus } from "lucide-react";
 import type { Route } from "next";
-import Link from "next/link";
+import Link from "../../../components/fan-ui/hover-prefetch-link";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import { FanSkeletonRows } from "@/components/fan-ui/fan-skeleton";
 import { FanTag } from "@/components/fan-ui/fan-tag";

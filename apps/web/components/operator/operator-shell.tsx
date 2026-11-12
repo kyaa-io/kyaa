@@ -2,7 +2,7 @@
 
 import { CalendarDays, Megaphone } from "lucide-react";
 import type { Route } from "next";
-import Link from "next/link";
+import Link from "../fan-ui/hover-prefetch-link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 import styles from "@/components/admin/operations.module.css";

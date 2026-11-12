@@ -2,7 +2,7 @@
 
 import type { Route } from "next";
 import Image from "next/image";
-import Link from "next/link";
+import Link from "../../../components/fan-ui/hover-prefetch-link";
 import { ArrowDownToLine, ArrowLeft, ExternalLink, Share2, X } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { AppLocale } from "@/i18n/locales";

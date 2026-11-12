@@ -1,7 +1,7 @@
 "use client";
 import { ChevronRight } from "lucide-react";
 import type { Route } from "next";
-import Link from "next/link";
+import Link from "./hover-prefetch-link";
 import type { ReactNode } from "react";
 
 import { GroupImage } from "@/features/groups/ui/group-image";

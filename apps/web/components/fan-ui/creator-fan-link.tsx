@@ -7,7 +7,7 @@ import { translate } from "@/i18n/messages";
 import { creatorHomeHref } from "@/features/creator/domain/creator-navigation";
 
 import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
-import Link from "next/link";
+import Link from "./hover-prefetch-link";
 import type { Route } from "next";
 import { Heart } from "../icons";
 import { passportDirectoryResponseSchema } from "../../features/passport/domain/passport-collection";

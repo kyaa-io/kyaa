@@ -1,7 +1,7 @@
 "use client";
 
 import { ArrowLeft, ArrowRight, LockKeyhole, ShieldCheck } from "lucide-react";
-import Link from "next/link";
+import Link from "../fan-ui/hover-prefetch-link";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { GoogleMark } from "../icons";

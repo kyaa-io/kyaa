@@ -5,7 +5,7 @@ import {EventApplicationDialog} from "./event-application-dialog";
 import { SourceStatePanel } from "./source-state-panel";
 import { GroupImage } from "./group-image";
 import { useCallback, useEffect, useRef, useState } from 'react';
-import Link from 'next/link';
+import Link from "../../../components/fan-ui/hover-prefetch-link";
 import { useRouter } from 'next/navigation';
 import type { Route } from 'next';
 import { CalendarDays, MapPin, CheckCircle2, Clock3, UsersRound, Ticket, ScanLine, SquarePen, CalendarX2, Check, Shirt, House } from 'lucide-react';

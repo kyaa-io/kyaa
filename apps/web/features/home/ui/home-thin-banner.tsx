@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "../../../components/fan-ui/hover-prefetch-link";
 import type { Route } from "next";
 import { FanTag } from "@/components/fan-ui/fan-tag";
 import { bannerCategoryLabel } from "@/features/home/domain/banner-category";

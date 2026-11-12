@@ -12,7 +12,7 @@ import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import { FanBackAction } from "@/components/fan-ui/fan-back-action";
 import { ArrowRight, CheckCircle2, Crown, ExternalLink, ImagePlus, Ticket, X } from "lucide-react";
 import Image from "next/image";
-import Link from "next/link";
+import Link from "../../../components/fan-ui/hover-prefetch-link";
 import type { Route } from "next";
 import { useEffect, useRef, useState } from "react";
 import { z } from "zod";

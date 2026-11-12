@@ -11,7 +11,7 @@ import { creatorHomeHref } from "@/features/creator/domain/creator-navigation";
 
 import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import { useEffect, useRef, useState } from "react";
-import Link from "next/link";
+import Link from "../../../components/fan-ui/hover-prefetch-link";
 import type { Route } from "next";
 import { Heart } from "lucide-react";
 import { cheerPageSchema } from "../domain/fan-community";

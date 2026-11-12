@@ -9,7 +9,7 @@ import { ArrowRight, Heart } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { bypassImageOptimization } from "@/components/fan-ui/public-image-policy";
-import Link from "next/link";
+import Link from "../../../components/fan-ui/hover-prefetch-link";
 import type { Route } from "next";
 import { useEffect, useRef, useState } from "react";
 

@@ -28,7 +28,7 @@ import { creatorHomeHref } from "@/features/creator/domain/creator-navigation";
 
 import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import Image from "next/image";
-import Link from "next/link";
+import Link from "./fan-ui/hover-prefetch-link";
 import type { Route } from "next";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useRef, type CSSProperties, type ReactNode } from "react";

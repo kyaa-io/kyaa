@@ -1,5 +1,5 @@
 import { FanHeading } from "@/components/fan-ui/fan-heading";
-import Link from "next/link";
+import Link from "../../../components/fan-ui/hover-prefetch-link";
 import type { Route } from "next";
 import type { AppLocale } from "@/i18n/locales";
 import { guideText } from "./guide-copy";

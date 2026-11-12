@@ -23,7 +23,7 @@ import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import { useByUsSession } from "@/components/byus-session-provider";
 import { Check, ChevronLeft, ChevronRight, X } from "lucide-react";
 import Image from "next/image";
-import Link from "next/link";
+import Link from "../../../components/fan-ui/hover-prefetch-link";
 import type { Route } from "next";
 import { useCallback, useEffect, useMemo, useRef, useState, type SyntheticEvent } from "react";
 
