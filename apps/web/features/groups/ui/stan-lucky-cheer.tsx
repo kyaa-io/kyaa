@@ -194,7 +194,7 @@ export function StanLucky({ locale, bias, guest, presentation, paused = false }:
     {pastItems.length === 0 && slug ? <FanSectionLink className={duoStyles.past} href={creatorRafflesHref(slug, locale)}>{t(locale, "luckyPast")}</FanSectionLink> : null}
     {pastItems.length > 0 && <section className={duoStyles.pastList} aria-label={t(locale, "luckyPast")} data-lucky-past>
       <FanHeading>{t(locale, "luckyPast")}</FanHeading>
-      <div className={duoStyles.pastRows}>{pastItems.slice(0, 3).map(({ raffle, creator }) => <Link key={raffle.id} href={raffleHref(creator.slug, raffle.benefitId, locale)} className={duoStyles.pastCard}>
+      <div className={duoStyles.pastRows}>{pastItems.slice(0, 3).map(({ raffle, creator }) => <Link key={raffle.id} href={raffleHref(creator.slug, raffle.benefitId, locale) as Route} className={duoStyles.pastCard}>
         {raffle.imageUrl || creator.image ? <img className={duoStyles.thumbnail} src={(raffle.imageUrl || creator.image)!} alt="" width={112} height={112} loading="lazy" /> : null}
         <div className={duoStyles.pastCopy}><FanText role="item" as="strong">{raffle.title}</FanText><p className={duoStyles.meta}>{creator.name}{raffle.entryClosesAt ? <> · {t(locale, "luckyClosesAt", [dayDate(raffle.entryClosesAt, locale)])}</> : null}</p></div>
         <FanText role="label" className={duoStyles.resultLink}>{locale === "ko" ? "당첨 결과 보기" : t(locale, "luckyResults")} ›</FanText>
