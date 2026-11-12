@@ -113,6 +113,7 @@ function useRowMotion(order: readonly string[], values: readonly number[], ranks
   const nodes = useRef(new Map<string, HTMLElement>());
   const seen = useRef<Map<string, number> | null>(null);
   const seenRanks = useRef<Map<string, number> | null>(null);
+  const emphasized = useRef(new Map<string, string>());
   // Where each row stood when the visitor last looked, read once: a row that moved since then shows its ▲▼ for this visit.
   const [lastVisit] = useState(() => typeof window === "undefined" ? null : readSeen(memory));
   // The ring runs once on a row whose value differs from what the visitor last saw (localStorage, per list and period), and on a row that came in; on a first visit, only on places 1-3.
@@ -125,21 +126,28 @@ function useRowMotion(order: readonly string[], values: readonly number[], ranks
     seenRanks.current = new Map(order.map((key, i) => [key, ranks[i]!]));
     if (!now.size) return;
     saveSeen(memory, { values: now, ranks: seenRanks.current });
-    const due = order.flatMap((key, i) => (before ? before.get(key) !== values[i] || beforeRanks?.get(key) !== ranks[i] : i < 3) ? [[key, i] as const] : []);
+    const due = order.flatMap((key, i) => {
+      if (!(before ? before.get(key) !== values[i] || beforeRanks?.get(key) !== ranks[i] : i < 3)) return [];
+      const signature = `${values[i]}|${ranks[i]}`;
+      if (emphasized.current.get(key) === signature) return [];
+      emphasized.current.set(key, signature);
+      return [[key, i] as const];
+    });
     due.forEach(([key, i]) => {
       const node = nodes.current.get(key);
       if (!node) return;
       if (inView(node)) { ringPulse(node, rowDelay(i)); return; }
       if (typeof IntersectionObserver !== "function") return;
-      const show = () => { if (!inView(node)) return; watch.disconnect(); watchers.current.delete(watch); document.removeEventListener("visibilitychange", show); ringPulse(node); };
+      const cleanup = () => { watch.disconnect(); pending.current.delete(cleanup); document.removeEventListener("visibilitychange", show); };
+      const show = () => { if (!inView(node)) return; cleanup(); ringPulse(node); };
       const watch = new IntersectionObserver(show, { threshold: 0.6 });
       watch.observe(node);
-      watchers.current.add(watch);
+      pending.current.add(cleanup);
       document.addEventListener("visibilitychange", show);
     });
   });
-  const watchers = useRef(new Set<IntersectionObserver>());
-  useEffect(() => () => { for (const watch of watchers.current) watch.disconnect(); }, []);
+  const pending = useRef(new Set<() => void>());
+  useEffect(() => () => { for (const cleanup of pending.current) cleanup(); }, []);
   const tops = useRef(new Map<string, number>());
   const sorted = useRef(order.join("\n"));
   useLayoutEffect(() => {
@@ -155,15 +163,15 @@ function useRowMotion(order: readonly string[], values: readonly number[], ranks
       const was = before.get(key);
       const node = nodes.current.get(key);
       if (was === undefined || was === top || !node || typeof node.animate !== "function") continue;
+      const cleanup = () => { watch?.disconnect(); pending.current.delete(cleanup); document.removeEventListener("visibilitychange", show); };
       const show = () => {
         if (!inView(node)) return;
-        watch?.disconnect();
-        document.removeEventListener("visibilitychange", show);
+        cleanup();
         node.animate([{ transform: `translateY(${was - top}px)` }, { transform: "translateY(0)" }], { duration: MOVE_MS, easing: "cubic-bezier(.2, 0, 0, 1)" });
         node.querySelector<HTMLElement>("[data-delta-cell]")?.animate([{ opacity: 0, transform: "scale(1.6)" }, { opacity: 1, transform: "scale(1)" }], { duration: MARK_MS, easing: "ease-out", fill: "backwards" });
       };
       const watch = inView(node) || typeof IntersectionObserver !== "function" ? null : new IntersectionObserver(show, { threshold: 0.6 });
-      if (watch) { watch.observe(node); document.addEventListener("visibilitychange", show); } else show();
+      if (watch) { watch.observe(node); pending.current.add(cleanup); document.addEventListener("visibilitychange", show); } else show();
     }
   });
   const place = (key: string) => (node: HTMLElement | null) => { if (node) nodes.current.set(key, node); else nodes.current.delete(key); };

@@ -19,6 +19,7 @@ const fans = (rows = [fanRow(1, { nickname: "별빛", delta: 2, favorite: { slug
 const creatorRow = (rank: number, extra: Record<string, unknown> = {}) => ({ rank, slug: `c${rank}`, name: `크리에이터${rank}`, imageUrl: null, score: 900 - rank, hearts: 900 - rank, fans: 200 - rank, challenge: false, delta: null, weekGain: null, ...extra });
 const creators = (extra: Record<string, unknown> = {}) => ({ state: "ready", metric: "hearts", day: "2026-11-08", computedAt: null, comparable: true, weekGainDays: 7,
   rows: [creatorRow(1, { slug: "elina", name: "엘리나", score: 40, hearts: 40, fans: 3, challenge: true, weekGain: 12 }), creatorRow(2, { weekGain: 0 }), creatorRow(3)], ...extra });
+const visibleRows = () => vi.spyOn(HTMLElement.prototype, "getBoundingClientRect").mockImplementation(() => ({ top: 0, bottom: 48, left: 0, right: 300, width: 300, height: 48, x: 0, y: 0, toJSON: () => ({}) }));
 
 afterEach(() => { window.localStorage.clear(); vi.unstubAllGlobals(); vi.useRealTimers(); clearResources(); auth.value = { ...auth.value, authenticated: false, user: null }; });
 
@@ -113,6 +114,7 @@ it.each(APP_LOCALES)("renders the home contract in %s", async locale => {
 });
 
 it("moves only changed rows on refresh and respects reduced motion", async () => {
+  const rect = visibleRows();
   auth.value = { ...auth.value, authenticated: true, user: { id: "viewer" } };
   const animate = vi.fn(() => ({ cancel() {} }) as unknown as Animation);
   const original = Object.getOwnPropertyDescriptor(HTMLElement.prototype, "offsetTop");
@@ -134,14 +136,15 @@ it("moves only changed rows on refresh and respects reduced motion", async () =>
       document.dispatchEvent(new Event("visibilitychange"));
       await waitFor(() => expect(view.container.querySelector("ol > li")!.textContent).toContain("나"));
       expect(animate.mock.calls.filter(call => JSON.stringify(call).includes("px)"))).toHaveLength(reduced ? 0 : 2);
-      // The two rows whose value changed ring once (rotating arc + ring: 200ms in, 1s held, 600ms out = 1800ms, rows 90ms apart); reduced motion: the same ring without the rotation.
-      expect(animate.mock.calls.filter(call => JSON.stringify(call).includes("rotate"))).toHaveLength(reduced ? 0 : 2);
-      expect(animate.mock.calls.filter(call => JSON.stringify(call).includes("opacity") && JSON.stringify(call).includes('"duration":1800'))).toHaveLength(2);
-      const ringDelays = animate.mock.calls.filter(call => JSON.stringify(call).includes('"duration":1800') && JSON.stringify(call).includes("opacity")).map(call => (call as unknown as [unknown, { delay?: number }])[1].delay ?? 0);
+      // The full colour ring holds for 3s after a 250ms entrance and fades over 850ms; no rotation, including reduced motion.
+      expect(animate.mock.calls.filter(call => JSON.stringify(call).includes("rotate"))).toHaveLength(0);
+      expect(animate.mock.calls.filter(call => JSON.stringify(call).includes("opacity") && JSON.stringify(call).includes('"duration":4100'))).toHaveLength(2);
+      const ringDelays = animate.mock.calls.filter(call => JSON.stringify(call).includes('"duration":4100') && JSON.stringify(call).includes("opacity")).map(call => (call as unknown as [unknown, { delay?: number }])[1].delay ?? 0);
       expect(ringDelays).toEqual([0, 90]);
       view.unmount();
     }
   } finally {
+    rect.mockRestore();
     now.mockRestore();
     if (original) Object.defineProperty(HTMLElement.prototype, "offsetTop", original);
     delete (Element.prototype as Partial<Element>).animate;
@@ -162,6 +165,7 @@ it("does not claim hidden ranks or draw login rows for short/empty answers", asy
 });
 
 it("rings only the rows whose value changed between two answers of one visit", async () => {
+  const rect = visibleRows();
   auth.value = { ...auth.value, authenticated: true, user: { id: "viewer" } };
   const animate = vi.fn(() => ({ cancel() {} }) as unknown as Animation);
   Element.prototype.animate = animate;
@@ -177,9 +181,10 @@ it("rings only the rows whose value changed between two answers of one visit", a
     answer = fans([fanRow(1, { nickname: "가" }), fanRow(2, { nickname: "나", hearts: 99, score: 99 })]);
     clock += 11 * 60 * 1000;
     document.dispatchEvent(new Event("visibilitychange"));
-    await waitFor(() => expect(animate.mock.calls.filter(call => JSON.stringify(call).includes("rotate"))).toHaveLength(1));
+    await waitFor(() => expect(animate.mock.calls.filter(call => JSON.stringify(call).includes('"duration":4100') && JSON.stringify(call).includes("opacity"))).toHaveLength(1));
     view.unmount();
   } finally {
+    rect.mockRestore();
     now.mockRestore();
     delete (Element.prototype as Partial<Element>).animate;
   }
@@ -209,9 +214,10 @@ it("a period change is not a value change: no ring (and no move) when the tabs s
 });
 
 it("rings places 1-3 once on a first visit, and afterwards only the rows that differ from what the visitor last saw", async () => {
+  const rect = visibleRows();
   const animate = vi.fn(() => ({ cancel() {} }) as unknown as Animation);
   Element.prototype.animate = animate;
-  const rotations = () => animate.mock.calls.filter(call => JSON.stringify(call).includes("rotate")).length;
+  const rings = () => animate.mock.calls.filter(call => JSON.stringify(call).includes('"duration":4100') && JSON.stringify(call).includes("opacity")).length;
   try {
     vi.stubGlobal("matchMedia", () => ({ matches: false, addEventListener() {}, removeEventListener() {} }));
     const body = (second: number) => fans([fanRow(1, { nickname: "가", points: 50, hearts: 5 }), fanRow(2, { nickname: "나", points: second, hearts: 5 }), fanRow(3, { nickname: "다", points: 30, hearts: 5 }), fanRow(4, { nickname: "라", points: 20, hearts: 5 })]);
@@ -219,21 +225,22 @@ it("rings places 1-3 once on a first visit, and afterwards only the rows that di
     vi.stubGlobal("fetch", vi.fn(async (url: RequestInfo | URL) => Response.json(String(url).includes("kind=fans") ? body(40) : rowsOnly())));
     const first = render(<HomeRankingCard locale="ko" />);
     await screen.findByText("가");
-    expect(rotations()).toBe(3);
+    expect(rings()).toBe(3);
     first.unmount();
     // The same values again: nothing rings.
     clearResources(); animate.mockClear();
     const again = render(<HomeRankingCard locale="ko" />);
     await screen.findByText("가");
-    expect(rotations()).toBe(0);
+    expect(rings()).toBe(0);
     again.unmount();
     // One value moved since the last visit: only that row rings.
     clearResources(); animate.mockClear();
     vi.stubGlobal("fetch", vi.fn(async (url: RequestInfo | URL) => Response.json(String(url).includes("kind=fans") ? body(45) : rowsOnly())));
     render(<HomeRankingCard locale="ko" />);
     await screen.findByText("가");
-    expect(rotations()).toBe(1);
+    expect(rings()).toBe(1);
   } finally {
+    rect.mockRestore();
     delete (Element.prototype as Partial<Element>).animate;
   }
 });
