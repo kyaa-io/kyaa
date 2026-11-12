@@ -15,29 +15,39 @@ describe("popular posts route", () => {
   it("asks for group posts when the groups feature is on", async () => {
     const { rpc, handler } = make(true);
     expect((await handler(new Request("http://x/api/public/popular-posts?locale=ko&page=2"))).status).toBe(200);
-    expect(rpc).toHaveBeenCalledExactlyOnceWith("read_public_popular_posts_sorted", { p_app_user_id: null, p_locale: "ko", p_page: 2, p_include_groups: true, p_sort: "likes" });
+    expect(rpc).toHaveBeenCalledExactlyOnceWith("read_public_popular_posts_period", { p_app_user_id: null, p_locale: "ko", p_page: 2, p_include_groups: true, p_sort: "likes", p_period: "week" });
   });
 
   it("excludes group posts in the query itself when the groups feature is off", async () => {
     const { rpc, handler } = make(false);
     expect((await handler(new Request("http://x/api/public/popular-posts"))).status).toBe(200);
-    expect(rpc).toHaveBeenCalledExactlyOnceWith("read_public_popular_posts_sorted", { p_app_user_id: null, p_locale: "ko", p_page: 1, p_include_groups: false, p_sort: "likes" });
+    expect(rpc).toHaveBeenCalledExactlyOnceWith("read_public_popular_posts_period", { p_app_user_id: null, p_locale: "ko", p_page: 1, p_include_groups: false, p_sort: "likes", p_period: "week" });
   });
 
   it("passes the selected sort to the database and rejects invalid sorts", async () => {
     const { rpc, handler } = make(true);
     expect((await handler(new Request("http://x/api/public/popular-posts?sort=views"))).status).toBe(200);
-    expect(rpc).toHaveBeenCalledWith("read_public_popular_posts_sorted", expect.objectContaining({ p_sort: "views" }));
+    expect(rpc).toHaveBeenCalledWith("read_public_popular_posts_period", expect.objectContaining({ p_sort: "views" }));
     expect((await handler(new Request("http://x/api/public/popular-posts?sort=latest"))).status).toBe(200);
-    expect(rpc).toHaveBeenLastCalledWith("read_public_popular_posts_sorted", expect.objectContaining({ p_sort: "latest" }));
+    expect(rpc).toHaveBeenLastCalledWith("read_public_popular_posts_period", expect.objectContaining({ p_sort: "latest" }));
     expect((await handler(new Request("http://x/api/public/popular-posts?sort=unknown"))).status).toBe(400);
     expect((await handler(new Request("http://x/api/public/popular-posts?sort=views&sort=likes"))).status).toBe(400);
+  });
+
+  it("passes and validates the selected time window", async () => {
+    const { rpc, handler } = make(true);
+    expect((await handler(new Request("http://x/api/public/popular-posts?period=today"))).status).toBe(200);
+    expect(rpc).toHaveBeenCalledWith("read_public_popular_posts_period", expect.objectContaining({ p_period: "today" }));
+    expect((await handler(new Request("http://x/api/public/popular-posts?period=month"))).status).toBe(200);
+    expect(rpc).toHaveBeenLastCalledWith("read_public_popular_posts_period", expect.objectContaining({ p_period: "month" }));
+    expect((await handler(new Request("http://x/api/public/popular-posts?period=bad"))).status).toBe(400);
+    expect((await handler(new Request("http://x/api/public/popular-posts?period=today&period=week"))).status).toBe(400);
   });
 
   it("keeps the viewer id and the flag together for signed-in readers", async () => {
     const { rpc, handler } = make(false);
     await handler(new Request("http://x/api/public/popular-posts?locale=en", { headers: { authorization: "Bearer t" } }));
-    expect(rpc).toHaveBeenCalledWith("read_public_popular_posts_sorted", { p_app_user_id: "11111111-1111-4111-8111-111111111111", p_locale: "en", p_page: 1, p_include_groups: false, p_sort: "likes" });
+    expect(rpc).toHaveBeenCalledWith("read_public_popular_posts_period", { p_app_user_id: "11111111-1111-4111-8111-111111111111", p_locale: "en", p_page: 1, p_include_groups: false, p_sort: "likes", p_period: "week" });
   });
 });
 
