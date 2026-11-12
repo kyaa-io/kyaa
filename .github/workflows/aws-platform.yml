@@ -51,6 +51,7 @@ jobs:
     environment: ${{ inputs.environment || 'dev' }}
     outputs:
       public_live: ${{ steps.verify.outputs.public_live }}
+      dev_web_deployed: ${{ steps.deploy_web.outputs.dev_web_deployed }}
     permissions:
       contents: read
       actions: read
@@ -276,7 +277,10 @@ jobs:
       - name: Require successful checks for the exact release commit
         run: node scripts/aws-release-ci.mjs "$(jq -r .sourceSha work/aws-release/aws-release.json)" "${SOURCE_RUN_ID:-$GITHUB_RUN_ID}"
       - name: Validate and deploy CloudFormation
-        run: node scripts/aws-platform-deploy.mjs deploy --config work/aws-release/aws-release-config.json --execute
+        id: deploy_web
+        run: |
+          node scripts/aws-platform-deploy.mjs deploy --config work/aws-release/aws-release-config.json --execute
+          if [ "$RELEASE_ENV" = dev ]; then echo 'dev_web_deployed=true' >> "$GITHUB_OUTPUT"; fi
       - name: Require healthy ECS and exact release readiness
         id: verify
         run: node scripts/aws-release.mjs verify "$RELEASE_ENV"
@@ -329,7 +333,7 @@ jobs:
     # A recovery API failure must not invalidate the verified hotfix source receipt.
     continue-on-error: true
     needs: release
-    if: needs.release.result == 'success' && github.event_name == 'push' && github.ref == 'refs/heads/release/production'
+    if: always() && needs.release.outputs.dev_web_deployed == 'true' && github.event_name == 'push' && github.ref == 'refs/heads/release/production'
     runs-on: ubuntu-24.04
     permissions:
       contents: read
