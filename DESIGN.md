@@ -2364,3 +2364,6 @@ D-C token ownership: `FanHeading variant="campaign"` owns the 18px/700 mobile an
 - 브라우저에서 390px·1440px 실제 영상 화면을 아직 검증하지 못했다. 로컬 `/shorts`의 데이터 원본 연결이 실패하며 빈 상태만 반환한다. 화면 캡처와 배포 안내 이미지는 데이터가 있는 개발 환경에서 확인해야 한다.
 ### KYAA 래플 상세·홈 배너 (2026-11-12)
 `/s/raffle`은 기존 campaign `FanHeading`과 `FanText` 역할을 쓰고 상금 구성은 모바일 2열·48rem 이상 4열, 참여 단계는 번호 목록으로 표시한다. 간격은 기존 space 토큰이며 응모만 primary, 패스포트·커뮤니티는 neutral이다. 홈은 기존 `HomeBanner` 모델과 `ManagedHomeBanner` 슬롯을 재사용한다. 인물 없는 기존 banner-onboard 장식 원화의 1440×900·390×390 WebP를 사용하며 상금·마감 문구는 이미지 밖 텍스트다. 원화의 하트·리본 장식 크롭은 허용하되 정보 문구를 이미지에 넣지 않는다. 로컬 실제 컴포넌트의 12언어·390/768/1440 폭·상세/배너 72조합에서 이미지 로드·가로 넘침·44px 행동을 확인했다. 캡처는 로컬 guest fixture로 실제 dev 데이터나 독립 미적 점수 평가를 뜻하지 않는다.
+
+### 창하 카드·프로필 사진 (2026-11-13 사용자 지정)
+창하의 기존 등록 사진을 쓰는 profile 역할(둘러보기 정사각 카드·프로필 아바타)은 지정 인스타 가을 체크 니트 사진의 680×680 얼굴 중심 WebP로 교체한다. 공통 소유자 creator-image-config.ts에서 중앙 cover·scale 1을 사용하며 이전 GGGI 확대 1.5는 승계하지 않는다. landscape·portrait 역할과 향후 별도 CMS 사진·명시적 역할 설정은 보존한다. 원본 출처·크롭 좌표는 profile-autumn-20261113.source.json에 기록한다.
