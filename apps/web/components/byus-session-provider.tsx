@@ -248,16 +248,16 @@ export function ByUsSessionProvider({ children }: { children: ReactNode }) {
         }
         reportRecoveryFailure(stage, caught);
         try { assertCurrent(ownerId, generation); } catch { return; }
-        if (caught instanceof RequestTimeoutError && stage !== "login.session" && sdkWaitsRef.current < SDK_WAIT_ROUNDS - 1) {
-          sdkWaitsRef.current += 1;
-          setTimeout(() => resumeRef.current(generation), 0);
-          return;
-        }
         const reason: SignupReason = caught instanceof RequestTimeoutError ? "timeout"
           : caught instanceof Error && caught.message === VERIFIED_EMAIL_REQUIRED ? "verified_email_required"
             : caught instanceof Error && caught.message === APPLE_REAUTHENTICATION_REQUIRED ? "reauthentication_required" : "session_error";
         const observedStage = signupStageSchema.safeParse(stage.replace(/^login\./, ""));
         signupFunnelTracker.result(measurement, "failed", observedStage.success ? observedStage.data : "session", reason, diagnosticClockValid ? walletDiagnostic : undefined);
+        if (caught instanceof RequestTimeoutError && stage !== "login.session" && sdkWaitsRef.current < SDK_WAIT_ROUNDS - 1) {
+          sdkWaitsRef.current += 1;
+          setTimeout(() => resumeRef.current(generation), 0);
+          return;
+        }
         const nextError = caught instanceof Error && [VERIFIED_EMAIL_REQUIRED, APPLE_REAUTHENTICATION_REQUIRED].includes(caught.message)
           ? caught.message : caught instanceof RequestTimeoutError ? SESSION_SYNCHRONIZATION_TIMEOUT : SESSION_SYNCHRONIZATION_FAILED;
         setError(nextError);

@@ -5,7 +5,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { LoginPage } from "./login-page";
 import { createOAuthStartGuard, getOAuthStartGuard } from "../features/reliability/client/oauth-start";
 import { signupFunnelTracker } from "../features/analytics/client/signup-funnel-tracker";
-import { ByUsSessionProvider } from "./byus-session-provider";
+import { ByUsSessionProvider, SDK_WAIT_ROUNDS } from "./byus-session-provider";
 import * as sessionModule from "./byus-session-provider";
 import { CognitoAuthProvider } from "../features/auth/client/cognito-auth";
 
@@ -307,7 +307,7 @@ describe("Privy login page", () => {
     expect(fetch).toHaveBeenCalledTimes(1);
   });
 
-  it("reuses a still-running wallet creation when its bounded wait is retried", async () => {
+  it("keeps waiting on a still-running wallet creation after its bounded wait and finishes when it does", async () => {
     vi.useFakeTimers();
     authenticated = true;
     const observed = vi.spyOn(signupFunnelTracker, "result").mockImplementation(() => undefined);
@@ -320,9 +320,7 @@ describe("Privy login page", () => {
     expect(createWallet).toHaveBeenCalledTimes(1);
 
     await act(async () => { await vi.advanceTimersByTimeAsync(30_000); });
-    expect(screen.getByRole("alert")).toHaveTextContent("로그인 연결이 오래 걸리고 있어요.");
-    fireEvent.click(screen.getByRole("button", { name: "다시 시도" }));
-    await act(async () => { await Promise.resolve(); });
+    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
     expect(createWallet).toHaveBeenCalledTimes(1);
 
     await act(async () => {
@@ -330,7 +328,11 @@ describe("Privy login page", () => {
       finishWallet(embeddedWallet);
       await vi.advanceTimersByTimeAsync(0);
     });
-    expect(observed.mock.calls.map((call) => call[4]?.walletWaitMs)).toEqual([30_000, 2_000]);
+    const waits = observed.mock.calls.map((call) => call[4]?.walletWaitMs);
+    expect(waits).toHaveLength(2);
+    expect(waits[0]).toBe(30_000);
+    expect(waits[1]).toBeGreaterThan(1_900);
+    expect(waits[1]).toBeLessThanOrEqual(2_000);
     observed.mockRestore();
     expect(fetch).toHaveBeenCalledTimes(1);
     expect(replace).toHaveBeenCalledWith("/live/kara-nualeaf?locale=ko");
@@ -367,12 +369,18 @@ describe("Privy login page", () => {
       });
       createWallet.mockImplementation(() => new Promise(() => {}));
       render(<LoginPage />);
-      await act(async () => { await vi.advanceTimersByTimeAsync(35_000); });
-      expect(refreshUser).toHaveBeenCalledTimes(2);
+      await act(async () => { await vi.advanceTimersByTimeAsync(29_000); });
+      expect(refreshUser).toHaveBeenCalledTimes(1);
+      // A slow wallet is waited for again (prod 11/12 13:11) before the sign-in shows the failure.
+      await act(async () => { await vi.advanceTimersByTimeAsync(SDK_WAIT_ROUNDS * 35_000); });
+      expect(refreshUser.mock.calls.length).toBeGreaterThanOrEqual(2);
+      expect(createWallet).toHaveBeenCalledTimes(1);
       expect(getAccessToken).not.toHaveBeenCalled();
       expect(fetch).not.toHaveBeenCalled();
       expect(replace).toHaveBeenNthCalledWith(1, "/live/kara-nualeaf?locale=ko");
-      if (scenario !== "wrong-user") expect(screen.getByRole("alert")).toHaveTextContent("로그인 연결이 오래 걸리고 있어요.");
+      // The next round's user read fails outright: that is a real SDK error, not a slow one.
+      if (scenario === "rejected") expect(screen.getByRole("alert")).toBeInTheDocument();
+      else if (scenario !== "wrong-user") expect(screen.getByRole("alert")).toHaveTextContent("로그인 연결이 오래 걸리고 있어요.");
     },
   );
 
@@ -437,9 +445,13 @@ describe("Privy login page", () => {
     render(<LoginPage />);
 
     await act(async () => { await vi.advanceTimersByTimeAsync(30_000); });
+    // A late token is waited for again before the sign-in shows the failure (prod 11/12 13:11).
+    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+    await act(async () => { await vi.advanceTimersByTimeAsync((SDK_WAIT_ROUNDS - 1) * 30_000 + 1_000); });
 
     expect(screen.getByRole("alert")).toHaveTextContent("로그인 연결이 오래 걸리고 있어요.");
     expect(screen.getByRole("button", { name: "다시 시도" })).toBeEnabled();
+    expect(getAccessToken).toHaveBeenCalledTimes(SDK_WAIT_ROUNDS);
     expect(fetch).not.toHaveBeenCalled();
   });
 
