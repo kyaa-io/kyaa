@@ -14,6 +14,8 @@ import { heartDonationEvent } from "../server/config/heart-donation-event";
 import { createPublishedContentRepositoryFromEnvironment } from "../server/content/published-content-repository";
 import { createHomeGalleryRepository } from "../server/home-gallery/home-gallery-repository";
 import { createHomeNoticeRepository } from "../server/home-notice/home-notice-repository";
+import { cookies } from "next/headers";
+import { FIRST_STEPS_COOKIE, firstStepsDoneCookie } from "../features/onboarding/domain/first-steps";
 
 export const dynamic = "force-dynamic";
 
@@ -24,6 +26,7 @@ export async function generateMetadata({ searchParams }: { searchParams: Promise
 
 export default async function HomePage({ searchParams }: { searchParams: Promise<{ locale?: string | string[] }> }) {
   const locale = parseAppLocale((await searchParams).locale);
+  const firstStepsDone = firstStepsDoneCookie((await cookies()).get(FIRST_STEPS_COOKIE)?.value);
   const environment = loadServerEnv();
   const celebrityRepository = createPublishedContentRepositoryFromEnvironment();
   const bannerRepository = createHomeBannerRepository({ url: environment.SUPABASE_URL, serviceRoleKey: environment.SUPABASE_SERVICE_ROLE_KEY });
@@ -62,6 +65,7 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
       locale={locale}
       jjinfanGauge={jjinfanGaugeEnabled()}
       heartDonation={heartDonationEvent()}
+      firstSteps={!firstStepsDone}
     />
   </>;
 }
