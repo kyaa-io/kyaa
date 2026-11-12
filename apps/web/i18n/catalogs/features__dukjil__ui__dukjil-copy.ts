@@ -229,18 +229,6 @@ export const messages = {
     "fr": "Écrire",
     "ru": "Пост"
   },
-  "earnMinChars": {
-    "ja": "{0}文字以上",
-    "zh-Hans": "{0}字以上",
-    "zh-Hant": "{0}字以上",
-    "es": "{0}+ caracteres",
-    "id": "Min. {0} karakter",
-    "vi": "Từ {0} ký tự",
-    "th": "{0} ตัวอักษรขึ้นไป",
-    "pt": "{0}+ caracteres",
-    "fr": "{0} caractères min.",
-    "ru": "От {0} символов"
-  },
   "dukjilTileComment": {
     "ja": "コメント",
     "zh-Hans": "评论",

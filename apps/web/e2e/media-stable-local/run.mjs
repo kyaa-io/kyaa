@@ -94,6 +94,8 @@ try {
     const badges = page.locator('[data-earn-badge="corner"]');
     await assertEventually(async () => (await badges.count()) === 4, `${screen} ${width}: four point badges`);
     assert.deepEqual(await badges.allInnerTexts().then(texts => texts.map(text => text.match(/\+\d+/)?.[0])), ['+1', '+1', '+10', '+3'], `${screen} ${width}: badge amounts`);
+    // A comment pays at any length (2026-11-12): no minimum-length note beside the send button.
+    assert.doesNotMatch(await page.locator('form').last().innerText(), /characters|자 이상/, `${screen} ${width}: no minimum length note`);
     await page.screenshot({ path: path.join(out, `${screen}-points-${width}.png`), fullPage: true });
     assert.equal(await watch(page, selector), 2);
     const loaded = media.length, steps = [], reactions = () => writes.filter(item => /^PUT .*\/(like|reaction)$/.test(item));
