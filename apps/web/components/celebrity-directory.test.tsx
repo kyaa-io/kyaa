@@ -3,6 +3,11 @@ import { act, fireEvent, render, screen, waitFor, within } from "@testing-librar
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { CelebrityDirectory, directoryIntroduction } from "./celebrity-directory";
 
+async function pickSort(label: string) {
+  fireEvent.click(screen.getByRole("button", { name: /^정렬/ }));
+  fireEvent.click(await screen.findByRole("menuitemradio", { name: label }));
+}
+
 const routerPush = vi.hoisted(() => vi.fn());
 vi.mock("next/navigation", () => ({
   usePathname: () => "/celebrities",
@@ -158,7 +163,7 @@ describe("directory initial loading", () => {
 
 describe("published celebrity directory", () => {
 
-  it("prioritizes editorial leads and exposes useful search and sort controls", () => {
+  it("prioritizes editorial leads and exposes useful search and sort controls", async () => {
     render(<CelebrityDirectory celebrities={publishedCelebrityFixtures} locale="ko" />);
     expect(screen.getAllByRole("link", { name: "kyaa 홈" })[0]).toHaveAttribute("href", "/?locale=ko");
     expect(screen.getAllByRole("article")).toHaveLength(3);
@@ -167,7 +172,7 @@ describe("published celebrity directory", () => {
     expect(screen.getByText("LIVE 예정")).toHaveAttribute("data-live-status", "scheduled");
     expect(screen.getByText(/7월 24일/)).toBeInTheDocument();
     expect(screen.getByRole("searchbox", { name: "이름으로 찾기" })).toBeInTheDocument();
-    expect(screen.getByRole("combobox", { name: "정렬" })).toHaveValue("published");
+    expect(screen.getByRole("button", { name: /^정렬/ })).toHaveTextContent("기본순");
     const karaCard = screen.getByText("KARA", { selector: "strong" }).closest("article");
     expect(karaCard?.querySelector("strong")?.compareDocumentPosition(karaCard.querySelector("img")!)).toBe(Node.DOCUMENT_POSITION_PRECEDING);
     expect(within(karaCard!).getByRole("link", { name: "KARA 만나보기" })).toContainElement(karaCard!.querySelector("img"));
@@ -186,9 +191,9 @@ describe("published celebrity directory", () => {
     expect(screen.getAllByRole("article")).toHaveLength(3);
   });
 
-  it("sorts without mutating the published input order", () => {
+  it("sorts without mutating the published input order", async () => {
     render(<CelebrityDirectory celebrities={publishedCelebrityFixtures} locale="ko" />);
-    fireEvent.change(screen.getByRole("combobox", { name: "정렬" }), { target: { value: "name-asc" } });
+    await pickSort("이름순");
     expect(screen.getAllByRole("article")[0]).toHaveTextContent("Changha");
     expect(publishedCelebrityFixtures[0]?.slug).toBe("kara");
   });
@@ -218,7 +223,7 @@ describe("published celebrity directory", () => {
     expect(screen.getByRole("tooltip")).toHaveTextContent("10점");
     fireEvent.keyDown(document, { key: "Escape" });
     expect(screen.queryByRole("tooltip")).not.toBeInTheDocument();
-    fireEvent.change(screen.getByRole("combobox", { name: "정렬" }), { target: { value: "name-asc" } });
+    await pickSort("이름순");
     expect(screen.getAllByRole("article")[1]).toHaveTextContent("Changha");
     expect(publishedCelebrityFixtures[0].slug).toBe("kara");
   });
@@ -298,11 +303,11 @@ it("uses one whole-row link and complete introductory sentence", () => {
   expect(directoryIntroduction("A complete introduction without punctuation", "en")).toBe("A complete introduction without punctuation");
 });
 
-it("keeps identical card treatment in default and sorted discovery", () => {
+it("keeps identical card treatment in default and sorted discovery", async () => {
   const { container } = render(<CelebrityDirectory celebrities={publishedCelebrityFixtures} locale="ko" />);
   expect(container.querySelectorAll('[data-supporting="true"]')).toHaveLength(0);
   expect(new Set([...container.querySelectorAll("article")].map(a => a.className)).size).toBe(1);
-  fireEvent.change(screen.getByRole("combobox", { name: "정렬" }), { target: { value: "name-asc" } });
+  await pickSort("이름순");
   expect(container.querySelectorAll('[data-supporting="true"]')).toHaveLength(0);
 });
 
@@ -390,7 +395,7 @@ it("clears deep-linked filters from the URL so reloading cannot restore an old r
   fireEvent.click(await screen.findByRole("button", { name: "필터 초기화" }));
   expect(screen.getAllByRole("article")).toHaveLength(3);
   expect(screen.getByRole("searchbox")).toHaveValue("");
-  expect(screen.getByRole("combobox", { name: "정렬" })).toHaveValue("name-asc");
+  expect(screen.getByRole("button", { name: /^정렬/ })).toHaveTextContent("이름순");
   expect(window.location.pathname + window.location.search).toBe("/celebrities?locale=ko&role=all&sort=name-asc");
   window.history.replaceState({}, "", "/");
 });

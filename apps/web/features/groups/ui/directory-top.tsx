@@ -7,12 +7,11 @@ import { GroupImage } from "./group-image";
  * 새 글 점은 응답에 마지막 방문 뒤 새 글 정보가 없어 그리지 않는다.
  */
 import type { Route } from "next";
-import { FanMenu } from "@/components/fan-ui/fan-menu";
+import { FanSelectMenu } from "@/components/fan-ui/fan-select-menu";
 import { FanIconButton } from "@/components/fan-ui/fan-icon-button";
 import Link from "next/link";
 import { useRef, useState, useSyncExternalStore, type PointerEvent, type MouseEvent, type DragEvent } from "react";
 import { ChevronLeft, ChevronRight } from "@/components/icons";
-import { ChevronDown } from "@/components/fan-ui/fan-icons";
 import { FanIcon } from "@/components/fan-ui/fan-icon";
 import { Plus } from "@/components/fan-ui/fan-icons";
 import { CreatorAvatar } from "@/components/fan-ui/creator-avatar";
@@ -137,9 +136,7 @@ export function HotPosts({ locale }: { locale: AppLocale }) {
   const items = ready ? state.data.items.slice(mobile ? page * ROWS : 0, mobile ? (page + 1) * ROWS : open ? 10 : ROWS) : [];
   return <section className={styles.hot} aria-labelledby="directory-hot-posts" data-directory-block="hot-posts">
     <div className={styles.hotHead}><FanHeading id="directory-hot-posts">{c.hotTitle}</FanHeading>
-      <FanMenu label={c.hotTitle} trigger={<FanIconButton className={styles.hotSort} aria-label={c.hotSort[sort]}>{c.hotSort[sort]}<FanIcon icon={ChevronDown} size={16} /></FanIconButton>}>
-        <FanMenu.Radio value={sort} onValueChange={value => { if (value === "likes" || value === "comments" || value === "views" || value === "latest") { setSort(value); setOpen(false); setPage(0); } }} items={(["likes", "comments", "views", "latest"] as const).map(value => ({ value, label: c.hotSort[value] }))} />
-      </FanMenu></div>
+      <FanSelectMenu label={c.hotTitle} accessibleName={c.hotSort[sort]} value={sort} align="end" onValueChange={value => { if (value === "likes" || value === "comments" || value === "views" || value === "latest") { setSort(value); setOpen(false); setPage(0); } }} options={(["likes", "comments", "views", "latest"] as const).map(value => ({ value, label: c.hotSort[value] }))} /></div>
     {state.status === "error" ? <div className={styles.state}><FanState inline compact kind="error" title={c.hotError} actions={<FanAction variant="text" size="sm" onClick={retry}>{c.retry}</FanAction>} /></div>
       : <ul className={styles.posts}>{!ready ? Array.from({ length: ROWS }, (_, i) => <li key={i} className={styles.post} data-row="hot-loading" aria-hidden="true"><FanSkeleton shape="circle" width={32} height={32} /><FanSkeleton width="70%" height={16} /><FanSkeleton width="40%" height={12} /></li>)
         : <>{items.map((post) => <li key={`${post.source}:${post.id}`} className={styles.postItem} data-row="hot-post">

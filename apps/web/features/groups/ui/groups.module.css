@@ -291,7 +291,7 @@
 .eventSummary{padding-inline:0}
 }
 
-@media(max-width:600px){.toolbar:has(>.boardWrite)>.boardWrite{order:1;margin-inline-start:auto}.toolbar:has(>.boardWrite)>.search,.toolbar:has(>.boardWrite)>.select{order:2}.toolbar:has(>.boardWrite)>.filters{min-width:0;flex:0 1 auto}}
+@media(max-width:600px){.toolbar:has(>.boardWrite)>.boardWrite{order:1;margin-inline-start:auto}.toolbar:has(>.boardWrite)>.search,.toolbar:has(>.boardWrite)>.boardSort{order:2}.toolbar:has(>.boardWrite)>.filters{min-width:0;flex:0 1 auto}}
 /* UI-R10 F06/F03: single-flow compose form uses the 720 reading column; photo above name at phone width. */
 .applicationPanel{width:min(100%,720px)}
 @media(max-width:767px){.applicationIdentity{grid-template-columns:minmax(0,1fr);gap:12px}.applicationPhoto{min-width:0}}
