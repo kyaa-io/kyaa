@@ -4,6 +4,7 @@ import { describe, expect, it } from "vitest";
 
 const sql = readFileSync(resolve(process.cwd(), "../../supabase/migrations/20261009100000_unified_creator_feed.sql"), "utf8");
 const behavior = readFileSync(resolve(process.cwd(), "../../supabase/tests/unified_creator_feed.sql"), "utf8");
+const noticePriority = readFileSync(resolve(process.cwd(), "../../supabase/migrations/20261220000000_pin_all_board_notices.sql"), "utf8");
 
 describe("unified creator feed SQL", () => {
   it("filters every source for viewer visibility before the shared page limit", () => {
@@ -27,5 +28,10 @@ describe("unified creator feed SQL", () => {
     expect(behavior).toContain("visibility was applied after limit");
     expect(behavior).toContain("private or blocked row leaked");
     expect(behavior).toContain("official locale/subtype");
+  });
+  it("ranks every kyaa notice equally ahead of other posts in regular and search feeds", () => {
+    expect(noticePriority.match(/case when n.post_type='notice' then 1 else 0 end pin_rank/g)).toHaveLength(2);
+    expect(noticePriority).not.toContain("n.pinned and n.notice_kind");
+    expect(behavior).toContain("unpinned welcome notice was not kept first");
   });
 });

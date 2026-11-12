@@ -41,7 +41,7 @@ begin
     (standard_notice,'en','Important notice','{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"Important notice"}]}]}'::jsonb);
 
   insert into public.fan_posts(id,celebrity_id,app_user_id,body,visibility,idempotency_key,create_request_hash,created_at,updated_at) values
-    (public_post,creator,author,'public fan post','public',extensions.gen_random_uuid(),'public','2026-09-01T00:00:00Z','2026-09-01T00:00:00Z'),
+    (public_post,creator,author,'public fan post','public',extensions.gen_random_uuid(),'public','2026-10-05T00:00:00Z','2026-10-05T00:00:00Z'),
     (private_post,creator,author,'private fan post','members',extensions.gen_random_uuid(),'private','2026-10-03T00:00:00Z','2026-10-03T00:00:00Z'),
     (blocked_post,creator,blocked_author,'blocked fan post','public',extensions.gen_random_uuid(),'blocked','2026-10-02T00:00:00Z','2026-10-02T00:00:00Z');
   insert into public.fan_lounge_messages(id,celebrity_id,app_user_id,body,idempotency_key,created_at)
@@ -63,19 +63,19 @@ begin
     p_app_user_id=>viewer,p_slug=>'unified-feed-qa',p_source=>'all',p_limit=>2,p_locale=>'ko'
   );
   if jsonb_array_length(page->'entries')<>2
-     or page#>>'{entries,0,item,id}'<>standard_notice::text
-     or page#>>'{entries,0,pinRank}'<>'2'
-     or page#>>'{entries,1,item,id}'<>welcome::text
+     or page#>>'{entries,0,item,id}'<>welcome::text
+     or page#>>'{entries,0,pinRank}'<>'1'
+     or page#>>'{entries,1,item,id}'<>standard_notice::text
      or page#>>'{entries,1,pinRank}'<>'1'
-     or page#>>'{entries,1,item,noticeKind}'<>'welcome'
-     or page#>>'{entries,1,item,commentCount}'<>'1' then
+     or page#>>'{entries,0,item,noticeKind}'<>'welcome'
+     or page#>>'{entries,0,item,commentCount}'<>'1' then
     raise exception 'pinned notice priority or filtered comment count failed: %',page;
   end if;
 
   next_page := public.read_unified_creator_feed(
     p_app_user_id=>viewer,p_slug=>'unified-feed-qa',p_source=>'all',p_before_rank=>1,
     p_before_at=>(page#>>'{entries,1,item,publishedAt}')::timestamptz,
-    p_before_kind=>'notice',p_before_id=>welcome,p_limit=>1,p_locale=>'ko'
+    p_before_kind=>'notice',p_before_id=>standard_notice,p_limit=>1,p_locale=>'ko'
   );
   if next_page#>>'{entries,0,item,id}'<>public_post::text then
     raise exception 'visibility was applied after limit or cursor skipped the public row: %',next_page;
@@ -87,10 +87,10 @@ begin
   page := public.read_unified_creator_feed(
     p_app_user_id=>null,p_slug=>'unified-feed-qa',p_source=>'official',p_news=>'notice',p_limit=>20,p_locale=>'en'
   );
-  if page#>>'{entries,0,item,title}'<>'Important notice'
-     or page#>>'{entries,0,item,commentCount}'<>'0'
-     or page#>>'{entries,1,item,title}'<>'Welcome'
-     or page#>>'{entries,1,item,commentCount}'<>'2' then
+  if page#>>'{entries,0,item,title}'<>'Welcome'
+     or page#>>'{entries,0,item,commentCount}'<>'2'
+     or page#>>'{entries,1,item,title}'<>'Important notice'
+     or page#>>'{entries,1,item,commentCount}'<>'0' then
     raise exception 'official locale/subtype or guest comment count failed: %',page;
   end if;
 
@@ -98,8 +98,8 @@ begin
   page := public.read_unified_creator_feed(
     p_app_user_id=>viewer,p_slug=>'unified-feed-qa',p_source=>'official',p_news=>'notice',p_limit=>20,p_locale=>'ko'
   );
-  if page#>>'{entries,1,item,id}'<>welcome::text or page#>>'{entries,1,pinRank}'<>'0' then
-    raise exception 'unpinned welcome notice was promoted: %',page;
+  if page#>>'{entries,0,item,id}'<>welcome::text or page#>>'{entries,0,pinRank}'<>'1' then
+    raise exception 'unpinned welcome notice was not kept first: %',page;
   end if;
 
   page := public.read_unified_creator_feed(
