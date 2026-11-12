@@ -115,3 +115,5 @@ Google/Apple subject를 이미 아는 회원은 백필 없이 연결된다. 2026
 `cognito_remote_revocations`는 서비스 전용이다. refresh token은 기존 `AUTH_COOKIE_SECRET`으로 암호화하며 성공하면 지운다. `completed_at IS NULL AND encrypted_refresh_token IS NOT NULL`인 행이 재시도 대상이고 `attempts`, `last_error`에 결과를 남긴다. 로그아웃 응답 뒤 대기 작업을 최대 5개 처리한다. 기존 15분 주기 `account-deletions` 유지보수 작업이 사용자 트래픽 없이도 최대 5개를 재시도한다. 계정·미디어 정리와 독립적으로 실행하며, 응답의 `cognitoRevocations`에 처리·미완료 개수를 남긴다. 수동 재처리가 필요하면 기존 `CRON_SECRET` Bearer로 `POST /api/internal/auth/cognito/revocations`를 호출할 수 있다. 중복 작업은 1분 재시도 대기로 제한한다. 응답은 처리·미완료 개수뿐이며 토큰을 출력하지 않는다. 새 스케줄·AWS 리소스는 만들지 않는다. 쿠키 키를 바꾸기 전에 대기 건을 처리해야 한다.
 
 RDS에 가져온 기존 함수는 새 마이그레이션 실행자와 소유자가 다를 수 있다. `20261224000200_cognito_logout_owner_access.sql`은 기존 세션 저장 함수 소유자에게만 폐기 기록 SELECT 권한과 RLS 조회 정책을 부여한다. `session` 단계의 SQLSTATE 42501 오류를 해결하며 일반 회원·익명 권한이나 인증 검증은 바꾸지 않는다. 이 후속 마이그레이션도 로그인 인수 전에 적용한다.
+
+이메일 갱신 경합 보정은 `20261224000300_cognito_email_rotation_reuse.sql` 적용 후 배포한다. 같은 refresh 핸들의 요청은 DB 잠금으로 회전 결과를 하나만 확정하고, 기존 쿠키를 가진 동시 요청에 암호화한 결과를 60초 동안 재사용한다. 결과 세션이 폐기되면 재사용하지 않는다. 기존 `AUTH_COOKIE_SECRET`을 사용하며 새 AWS 리소스는 없다.

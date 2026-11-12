@@ -20,6 +20,11 @@ const storedSchema=z.object({accessToken:z.string(),idToken:z.string(),refreshTo
 const rowSchema=z.object({sessionId:z.uuid(),legacyUserId:z.uuid(),encryptedSession:z.string()});
 const ownerSchema=z.object({appUserId:z.uuid(),privyUserId:z.string().startsWith("did:privy:")});
 const configuration=emailCognitoConfig;
+const resultSchema=z.object({accessToken:z.string().startsWith(PREFIX),refreshToken:z.string().regex(/^[A-Za-z0-9_-]{43}$/),expiresAt:z.number(),userId:z.string(),appUserId:z.uuid(),profile:fanProfileSchema});
+async function reusedRotation(refreshToken:string,config:ReturnType<typeof configuration>,db:ReturnType<typeof identityDatabase>){
+  const encrypted=await rpc(db,"read_cognito_email_rotation",{p_previous_refresh_hash:digest(refreshToken)});
+  return typeof encrypted==="string"?resultSchema.parse(unseal(encrypted,config.cookieSecret)):null;
+}
 export async function signEmailSession(input:{sessionId:string;legacyUserId:string;expiresAt:number},config:{origin:string;cookieSecret:string}){
   return PREFIX+await new SignJWT({auth_source:"cognito-email",session_id:input.sessionId}).setProtectedHeader({alg:"HS256",typ:"JWT"}).setIssuer(emailSessionIssuer(config.origin)).setAudience("kyaa-mobile-email").setSubject(input.legacyUserId).setIssuedAt().setExpirationTime(input.expiresAt).sign(Buffer.from(config.cookieSecret,"base64"));
 }
@@ -74,8 +79,14 @@ export async function cognitoEmailOperation(action:"login"|"refresh"|"logout",in
   let old:z.infer<typeof storedSchema>|undefined;
   if(action==="refresh"){
     if(!refreshToken || !/^[A-Za-z0-9_-]{43}$/.test(refreshToken))throw cognitoDenied();
+    const cached=await reusedRotation(refreshToken,config,db);
+    if(cached)return cached;
     const session=await rpc(db,"read_cognito_email_session",{p_session_id:null,p_refresh_hash:digest(refreshToken)});
-    if(session===null)throw cognitoDenied();
+    if(session===null){
+      const committed=await reusedRotation(refreshToken,config,db);
+      if(committed)return committed;
+      throw cognitoDenied();
+    }
     previous=rowSchema.parse(session);
     old=storedSchema.parse(unseal(previous.encryptedSession,config.cookieSecret));
   }
@@ -99,6 +110,12 @@ export async function cognitoEmailOperation(action:"login"|"refresh"|"logout",in
   await rpc(db,"initialize_owned_preferred_locale",{p_app_user_id:owner.appUserId,p_locale:input.locale});
   const profile=fanProfileSchema.parse(await rpc(db,"get_owned_user_profile",{p_app_user_id:owner.appUserId}));
   const accessToken=await signEmailSession({sessionId,legacyUserId,expiresAt},config);
-  await rpc(db,"write_cognito_email_session",{p_session_id:sessionId,p_legacy_user_id:legacyUserId,p_encrypted_session:seal(stored,config.cookieSecret),p_refresh_hash:digest(newRefresh),p_expires_at:new Date(expiresAt*1000).toISOString(),p_previous_refresh_hash:action==="refresh"?digest(refreshToken!):null});
-  return{accessToken,refreshToken:newRefresh,expiresAt,userId:`supabase:${legacyUserId}`,appUserId:owner.appUserId,profile};
+  const response={accessToken,refreshToken:newRefresh,expiresAt,userId:`supabase:${legacyUserId}`,appUserId:owner.appUserId,profile};
+  const args={p_session_id:sessionId,p_legacy_user_id:legacyUserId,p_encrypted_session:seal(stored,config.cookieSecret),p_refresh_hash:digest(newRefresh),p_expires_at:new Date(expiresAt*1000).toISOString(),p_previous_refresh_hash:action==="refresh"?digest(refreshToken!):null};
+  if(action==="refresh"){
+    const committed=await rpc(db,"rotate_cognito_email_session",{...args,p_encrypted_result:seal(response,config.cookieSecret)});
+    return resultSchema.parse(unseal(z.string().parse(committed),config.cookieSecret));
+  }
+  await rpc(db,"write_cognito_email_session",args);
+  return response;
 }

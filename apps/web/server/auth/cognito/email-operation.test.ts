@@ -31,11 +31,11 @@ it("rotates a server-side refresh handle and does not use it directly as a Cogni
  const session={accessToken:"old-access",idToken,refreshToken:"provider-refresh",subject:"cognito-owner",legacyUserId:legacy};
  mock.verify.mockResolvedValue({issuer:mock.config.issuer,subject:"cognito-owner",email:"old@example.test",tokenId:"jti"});
  mock.send.mockResolvedValue({AuthenticationResult:{AccessToken:"new-access",IdToken:idToken,ExpiresIn:600}});
- mock.rpc.mockImplementation(async(name:string)=>({data:name==="read_cognito_email_session"?{sessionId:owner,legacyUserId:legacy,encryptedSession:seal(session,mock.config.cookieSecret)}:name==="resolve_cognito_email_owner"?{appUserId:owner,privyUserId:"did:privy:original"}:name==="get_owned_user_profile"?{completed:false,nickname:null}:null,error:null}));
+ mock.rpc.mockImplementation(async(name:string,args:Record<string,string>)=>({data:name==="rotate_cognito_email_session"?args.p_encrypted_result:name==="read_cognito_email_session"?{sessionId:owner,legacyUserId:legacy,encryptedSession:seal(session,mock.config.cookieSecret)}:name==="resolve_cognito_email_owner"?{appUserId:owner,privyUserId:"did:privy:original"}:name==="get_owned_user_profile"?{completed:false,nickname:null}:null,error:null}));
  const result=await cognitoEmailOperation("refresh",{refreshToken:"a".repeat(43),locale:"ko"});
  expect(result?.userId).toBe(`supabase:${legacy}`);
  expect(mock.send.mock.calls[0][0].input.AuthParameters).toEqual({REFRESH_TOKEN:"provider-refresh"});
- expect(mock.rpc).toHaveBeenCalledWith("write_cognito_email_session",expect.objectContaining({p_previous_refresh_hash:expect.stringMatching(/^[a-f0-9]{64}$/)}));
+ expect(mock.rpc).toHaveBeenCalledWith("rotate_cognito_email_session",expect.objectContaining({p_previous_refresh_hash:expect.stringMatching(/^[a-f0-9]{64}$/)}));
 });
 
 async function accessToken(){
@@ -90,11 +90,11 @@ it("recovers an email refresh profile outage with the same browser cookie and no
   if(name==="read_cognito_browser_session")return {data:browserRow};
   if(name==="write_cognito_browser_session"){browserRow=args.p_encrypted_session;return {data:null};}
   if(name==="read_cognito_email_session")return {data:(args.p_refresh_hash?args.p_refresh_hash===currentRefresh:args.p_session_id===emailRow.sessionId)?emailRow:null};
-  if(name==="write_cognito_email_session"){
+  if(name==="rotate_cognito_email_session"){
    if(args.p_previous_refresh_hash!==currentRefresh)return {data:null,error:{message:"old refresh rejected"}};
    rotations++;currentRefresh=args.p_refresh_hash;
    emailRow={sessionId:args.p_session_id,legacyUserId:legacy,encryptedSession:args.p_encrypted_session};
-   return {data:null};
+   return {data:args.p_encrypted_result};
   }
   if(name==="resolve_cognito_email_owner")return {data:{appUserId:owner,privyUserId:"did:privy:original"}};
   if(name==="get_owned_user_profile"){

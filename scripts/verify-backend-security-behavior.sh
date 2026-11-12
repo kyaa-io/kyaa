@@ -83,3 +83,5 @@ FAN_WEB_DISPOSABLE_DB_URL="postgresql:///byus_clean?host=${PGHOST}&port=${PGPORT
 psql -X -v ON_ERROR_STOP=1 -f "$root_dir/supabase/tests/groups_release_rollback.sql"
 
 psql -X -v ON_ERROR_STOP=1 -f "$root_dir/supabase/tests/groups_content_release.sql"
+
+bash "$root_dir/scripts/verify-cognito-email-rotation-concurrency.sh"
