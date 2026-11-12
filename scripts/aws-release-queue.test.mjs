@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { REQUIRED_WORKFLOWS } from './aws-release-ci.mjs';
 import { shouldBuild, restoreMain } from './aws-release-queue.mjs';
 import { REPOSITORY, REPOSITORY_ID, WORKFLOW_PATH } from './aws-release.mjs';
 const sha = 'a'.repeat(40), newer = 'b'.repeat(40);
@@ -9,9 +10,41 @@ test('latest main and every non-main-push are preserved without cancellation', a
   assert.equal(await shouldBuild({ ...env, GITHUB_REF: 'refs/heads/release/production' }, () => { throw Error(); }), true);
   assert.equal(await shouldBuild({ ...env, GITHUB_EVENT_NAME: 'workflow_dispatch' }, () => { throw Error(); }), true);
 });
-test('stale main skips only after complete reservation history; API failure fails closed', async () => {
-  for (const reserved of [false, true]) assert.equal(await shouldBuild(env, async path => path.includes('/git/') ? { object: { sha: newer } } : { workflow_runs: reserved ? [{ display_title: `Approved production promotion of dev 11 (${sha})` }] : [] }), reserved);
-  await assert.rejects(shouldBuild(env, async () => { throw Error('unavailable'); }), /unavailable/);
+function candidateApi({ reserved = false, comparison = 'ahead', missing = false, status = 'completed', conclusion = 'success', failedPath } = {}) {
+  const runs = REQUIRED_WORKFLOWS.map((path, index) => ({ id: 100 + index, run_attempt: 1, repository: { id: REPOSITORY_ID, full_name: REPOSITORY }, path, head_branch: 'main', head_sha: newer, event: 'push', status, conclusion }));
+  return async path => {
+    if (failedPath && path.includes(failedPath)) throw Error('GITHUB_HTTP_503');
+    if (path === '/git/ref/heads/main') return { object: { sha: newer } };
+    if (path.includes('aws-approved-promotion.yml')) return { workflow_runs: reserved ? [{ display_title: `Approved production promotion of dev 11 (${sha})` }] : [] };
+    if (path.startsWith('/compare/')) {
+      assert.equal(path, `/compare/${sha}...${newer}`);
+      return { status: comparison, merge_base_commit: { sha: comparison === 'ahead' ? sha : newer } };
+    }
+    if (path.includes('/workflows/')) {
+      assert.ok(path.includes(`head_sha=${newer}`));
+      return { workflow_runs: missing ? [] : runs.filter(run => path.includes(run.path.split('/').at(-1))) };
+    }
+    return runs.find(run => path === `/actions/runs/${run.id}`);
+  };
+}
+test('only an unreserved ancestor with present, non-failed candidate CI is superseded', async () => {
+  for (const [options, expected] of [
+    [{}, false],
+    [{ conclusion: 'failure' }, true],
+    [{ status: 'in_progress', conclusion: null }, false],
+    [{ status: 'queued', conclusion: null }, false],
+    [{ comparison: 'diverged' }, true],
+    [{ missing: true }, true],
+    [{ reserved: true }, true],
+    [{ conclusion: 'cancelled' }, true],
+    [{ conclusion: null }, true],
+    [{ status: 'unknown', conclusion: null }, true],
+  ]) assert.equal(await shouldBuild(env, candidateApi(options)), expected, JSON.stringify(options));
+});
+test('failure at any candidate or reservation lookup preserves this build', async () => {
+  for (const failedPath of ['/git/', 'aws-approved-promotion.yml', '/compare/', 'backend-security.yml', '/actions/runs/']) {
+    assert.equal(await shouldBuild(env, candidateApi({ failedPath })), true, failedPath);
+  }
 });
 test('restore dispatches dev for completed main and leaves queued runs', async () => {
   for (const status of ['completed', 'queued']) {
