@@ -17,13 +17,16 @@ DB=$($P -At -c "select current_database()")
 case "$DB" in byus_clean|b3*) ;; *) echo "disposable clean-chain database required (got $DB)"; exit 1;; esac
 TMP="$(mktemp -d)"; trap 'rm -rf "$TMP"' EXIT
 FILES=(20261220030000_b3_policy_replace 20261220031000_b3_record_action 20261220032000_b3_cheer 20261220033000_b3_insta_repost 20261220034000_b3_tier_bonus 20261220035000_b3_reads)
-LATER=(20261221170000_fan_board_video_limit 20261222130000_fan_board_video_limit_b3_pair) # later files that change a B3-patched function
+LATER=(20261221170000_fan_board_video_limit 20261222130000_fan_board_video_limit_b3_pair 20261224000400_dukjil_comment_any_length 20261224030000_dukjil_comment_any_length_b3_pair) # later files that change a B3-patched function
 strip() { grep -v -x -e 'begin;' -e 'commit;' -e "notify pgrst, 'reload schema';" "$1"; }
 : > "$TMP/rollback.sql"; : > "$TMP/apply.sql"; : > "$TMP/later.sql"
 for (( i = ${#LATER[@]} - 1; i >= 0; i-- )); do strip "$ROOT/supabase/rollback/${LATER[i]}.sql" >> "$TMP/rollback.sql"; done
 for f in "${LATER[@]}"; do strip "$ROOT/supabase/migrations/$f.sql" >> "$TMP/later.sql"; done
 strip "$ROOT/supabase/migrations/20261222130000_fan_board_video_limit_b3_pair.sql" > "$TMP/pair.sql"
 strip "$ROOT/supabase/rollback/20261222130000_fan_board_video_limit_b3_pair.sql" > "$TMP/pair_rollback.sql"
+strip "$ROOT/supabase/migrations/20261224030000_dukjil_comment_any_length_b3_pair.sql" > "$TMP/comment_pair.sql"
+strip "$ROOT/supabase/rollback/20261224030000_dukjil_comment_any_length_b3_pair.sql" > "$TMP/comment_pair_rollback.sql"
+RECORD="public.record_dukjil_action(uuid,uuid,text,text,uuid,jsonb)"
 RESERVE="public.reserve_owned_mobile_media(uuid,text,text,text,integer,uuid)"
 RESERVE_ACL="select string_agg((a).grantee::regrole::text || ':' || (a).privilege_type, ',' order by (a).grantee::regrole::text, (a).privilege_type) from (select aclexplode(proacl) a, proowner o from pg_proc where oid = '$RESERVE'::regprocedure) x where (a).grantee <> o" # the owner itself changes in setup
 # rollbacks newest first (a plain index loop: tail -r is BSD only)
@@ -111,6 +114,29 @@ do \$\$ begin
     or pg_get_functiondef('$RESERVE'::regprocedure) !~ '209715200 else 52428800 end\) /\* b3-fan-video-limit \*/' then raise exception 'pair file did not restore pair 3'; end if;
   raise notice 'b3 reserve pair 3 replay ok';
 end \$\$;
+-- the comment-at-any-length rule (20261224000400) is B3 pair 11 of record_dukjil_action (20261224030000): a no-op when applied, undone
+-- by its rollback to 20261224000400's own text, and put back over the base line
+\i $TMP/comment_pair.sql
+do \$\$ declare f text := '$RECORD'; begin
+  if (select count(*) from public.b3_function_patches where fn = f) <> 11 or public.b3_patch_function(f, false) <> 'unchanged'
+    or pg_get_functiondef(f::regprocedure) !~ '/\* b3-comment-any-length \*/ if p_action_key not in' then raise exception 'comment pair 11 is not applied'; end if;
+  if pg_get_userbyid((select proowner from pg_proc where oid = f::regprocedure)) <> 'b3_apply' then raise exception 'record owner changed'; end if;
+  raise notice 'b3 comment pair 11 ok';
+end \$\$;
+\i $TMP/comment_pair_rollback.sql
+do \$\$ declare f text := '$RECORD'; s text; begin
+  s := (select prosrc from pg_proc where oid = f::regprocedure);
+  if (select count(*) from public.b3_function_patches where fn = f) <> 10 or public.b3_patch_function(f, false) <> 'unchanged'
+    or public.b3_patch_count(s, '  -- 20261224000400: a comment pays at any length too.') <> 1 or s ~ 'b3-comment-any-length' then raise exception 'comment pair rollback is not 20261224000400''s state'; end if;
+  -- back to the base line (a B3 rollback and re-apply after 20261224000400), the pair file puts the rule back
+  execute replace(pg_get_functiondef(f::regprocedure), s, replace(s, E'  -- 20261224000400: a comment pays at any length too.\n  if p_action_key not in (''post'', ''comment'')', '  if p_action_key <> ''post'''));
+end \$\$;
+\i $TMP/comment_pair.sql
+do \$\$ declare f text := '$RECORD'; begin
+  if (select count(*) from public.b3_function_patches where fn = f) <> 11 or public.b3_patch_function(f, false) <> 'unchanged'
+    or pg_get_functiondef(f::regprocedure) !~ '/\* b3-comment-any-length \*/ if p_action_key not in' then raise exception 'comment pair file did not restore pair 11'; end if;
+  raise notice 'b3 comment pair 11 replay ok';
+end \$\$;
 do \$\$
 declare
   c uuid := 'b3a00000-0000-4000-8000-000000000001'; adm uuid := 'b3a00000-0000-4000-8000-000000000010'; al uuid := 'b3a00000-0000-4000-8000-000000000020';
@@ -162,8 +188,8 @@ end \$\$;
 rollback;
 SQL
 } > "$TMP/member.sql"
-$P -f "$TMP/member.sql" 2>&1 | grep -e "b3 nonsuper apply ok" -e "b3 reserve pair 3" -e "b3_apply policies" -e ERROR | tee "$TMP/member.out"
-grep -q "b3 nonsuper apply ok" "$TMP/member.out" && grep -q "b3 reserve pair 3 ok" "$TMP/member.out" && grep -q "b3 reserve pair 3 replay ok" "$TMP/member.out" || { echo "b3 nonsuper apply failed"; exit 1; }
+$P -f "$TMP/member.sql" 2>&1 | grep -e "b3 nonsuper apply ok" -e "b3 reserve pair 3" -e "b3 comment pair 11" -e "b3_apply policies" -e ERROR | tee "$TMP/member.out"
+grep -q "b3 nonsuper apply ok" "$TMP/member.out" && grep -q "b3 reserve pair 3 ok" "$TMP/member.out" && grep -q "b3 reserve pair 3 replay ok" "$TMP/member.out" && grep -q "b3 comment pair 11 ok" "$TMP/member.out" && grep -q "b3 comment pair 11 replay ok" "$TMP/member.out" || { echo "b3 nonsuper apply failed"; exit 1; }
 
 # 2. reverse: an applier outside the tables' owner stops with B3_OWNER_GAP
 { setup outsider; echo "\\i $TMP/apply.sql"; echo "rollback;"; } > "$TMP/outsider.sql"
