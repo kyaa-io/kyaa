@@ -85,3 +85,6 @@ psql -X -v ON_ERROR_STOP=1 -f "$root_dir/supabase/tests/groups_release_rollback.
 psql -X -v ON_ERROR_STOP=1 -f "$root_dir/supabase/tests/groups_content_release.sql"
 
 bash "$root_dir/scripts/verify-cognito-email-rotation-concurrency.sh"
+
+psql -X -v ON_ERROR_STOP=1 -f "$root_dir/supabase/tests/legacy_email_password_attempt_limit.sql"
+bash "$root_dir/scripts/verify-legacy-email-attempt-concurrency.sh"
