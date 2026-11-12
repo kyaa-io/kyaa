@@ -74,6 +74,7 @@ A2 버튼 반경 알약·높이 390 44 / 1024+ 48 · B2 칩 36·14/700·반경 �
 | 월렛 내역 라벨(라이브 참여) | `live_participation` → "활동 참여"(`groupEarningsCopy.kinds.activity`). 라이브 참여는 설문·퀴즈 포함이라 미션이 아님. `group_mission`만 "미션 참여". `groups_pencil_dev_fixture`는 dev 시험 출처라 라벨·동작 없음 | `features/group-wallet/ui/history-label.ts` | 2026-11-06 DESIGN-FIX-5 |
 | 다크 모드 | 없음(light-only) | front matter `theme` | 승인 |
 | 페이지 머리(팬페이지) | 팬페이지 히어로(6차 적용): 390 높이 ≤ 첫 화면 1/3, 이름 26 + `팬 1.2K · ✓ 가입` 1줄 + 버튼 1 + SNS 줄, 이미지 반경 12 | `fan-page-header` | 2026-11-09 8장 block ④(6차) |
+| 팬페이지 프로필 수치(2026-11-12) | 기존 접속 한 줄의 문구·높이를 유지한다. 팬·지금 접속·오늘 방문 값은 숫자 역할의 800 굵기와 공통 `RollingNumber`를 쓰며 처음 보일 때 0에서 시작하고 이후 값이 바뀔 때만 굴린다. 지금 접속에는 6px 초록 점을 둔다. 움직임 줄이기 설정에서는 숫자가 정지한다. | `group-presence`, `rolling-number` | 사용자 11/12 14:40 |
 | 별 버튼 | 높이 36, 반경 8, 12/700 | `fan-star-action` | 2026-11-09 R14 |
 | 유형·공지·인증 태그 | 상태 배지 `FanTag` 높이 20 알약 11/700(현재 코드 22·12/700, 크기는 이번에 안 바꿈), 팬페이지·인증 태그는 `--color-accent-soft`/`-ink`(강조색 1 안), 모임·취미(`neutral`)·공지는 흰 면 + 1px `--color-line` + muted 글자(회색 면 금지, DS-SWEEP 2026-11-09) | `fan-tag` | 2026-11-09 R14 |
 | 페이지 카드·행 | 목표: `FanRow notice`(78, 사실 ≥ 2). **5차 보류**, 현재 소유자 = `FanEntityCard` | `fan-entity-card`(현재) | 2026-11-09 R5·R18. `FanRow`는 아직 없다(C15) |

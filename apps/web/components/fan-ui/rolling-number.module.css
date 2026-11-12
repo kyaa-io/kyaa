@@ -1,4 +1,5 @@
 .number { display: inline-flex; align-items: flex-start; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.emphasized { color: var(--color-ink); font-weight: var(--fan-number-weight); }
 .still, .cell { display: block; height: 1lh; }
 .wheel { display: block; height: 1lh; overflow: hidden; }
 .strip { display: flex; flex-direction: column; }

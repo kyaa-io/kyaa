@@ -19,7 +19,9 @@ describe("page head presence line (U1, N18)", () => {
   it("shows the counts that are above zero on one line", () => {
     presence.value = { data: data(4, 0), error: false, retry: () => undefined };
     const { container } = render(<GroupPresence pageId="p" locale="ko" memberCount={1234} />);
-    expect(container.textContent).toBe("팬 1,234지금 접속 4");
+    expect(container.querySelectorAll('[role="img"]')).toHaveLength(2);
+    expect(container.querySelector('[role="img"][aria-label="1,234"]')).not.toBeNull();
+    expect(container.querySelector('[data-presence="online"] [role="img"][aria-label="4"]')).not.toBeNull();
     expect(container.querySelector('[data-presence="today"]')).toBeNull();
   });
 });

@@ -14,6 +14,7 @@
   white-space: nowrap;
 }
 .item { flex: none; font-variant-numeric: tabular-nums; }
+.onlineDot { display: inline-block; width: 6px; height: 6px; margin-right: var(--space-1); border-radius: 50%; background: var(--color-success); vertical-align: 2px; }
 .item + .item::before, .item + .artist::before, .item + .error::before { content: "·"; margin: 0 var(--space-2); color: var(--color-muted); }
 .item:first-child { color: var(--color-ink); font-weight: var(--fan-item-title-weight); }
 .artist { display: inline-flex; flex: 0 1 auto; align-items: center; gap: var(--space-1); min-width: 0; color: var(--color-ink); }
