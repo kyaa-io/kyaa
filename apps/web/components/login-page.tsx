@@ -751,7 +751,6 @@ export function LoginPage({
           data-login-layout="passport-gateway"
         >
           <div className={styles.passportVisual}>
-            <span className={styles.passportLabel}>YOUR FAN PASSPORT</span>
             <div className={styles.passportArtwork}>
               <Image
                 className={styles.passportImage}
@@ -769,7 +768,7 @@ export function LoginPage({
           </div>
         </section>
       </div>
-      <FanSiteFooter locale={locale} />
+      <FanSiteFooter locale={locale} variant="compact" />
     </main>
   );
 }

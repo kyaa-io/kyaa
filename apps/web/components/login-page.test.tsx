@@ -240,13 +240,21 @@ describe("Privy login page", () => {
     expect(screen.queryByText(/로그인 후 .* 돌아갑니다/)).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /Test Account 이메일/ })).not.toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "최애와 함께한 순간을 기록하세요." }).closest("[data-fan-surface]")).toHaveAttribute("lang", "ko");
-    expect(screen.getByText("© 2026 kyaa. All rights reserved.")).toBeInTheDocument();
+    expect(screen.getByText("© 2026 kyaa")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "개인정보처리방침 열기" })).toHaveAttribute("href", "/privacy?locale=ko");
     expect(screen.getByRole("link", { name: "이용약관 열기" })).toHaveAttribute("href", "/terms?locale=ko");
     expect(document.querySelector("picture[data-decorative-background] img")).toHaveAttribute("alt", "");
     expect(screen.getByRole("img", { name: "펼쳐진 팬 패스포트" })).toBeInTheDocument();
     expect(document.querySelector("[data-login-layout='passport-gateway']")).toBeInTheDocument();
-    expect(screen.getByText("YOUR FAN PASSPORT")).toBeInTheDocument();
+    expect(screen.queryByText("YOUR FAN PASSPORT")).not.toBeInTheDocument();
+  });
+
+  it("keeps the first screen for sign-in with the compact footer (login-space-1113)", () => {
+    render(<LoginPage />);
+    const footer = screen.getByRole("contentinfo");
+    expect(footer).toHaveAttribute("data-footer-variant", "compact");
+    expect(within(footer).queryByRole("navigation")).not.toBeInTheDocument();
+    expect(within(footer).getByRole("link", { name: "이용약관 열기" })).toBeInTheDocument();
   });
 
   it("shows Apple only behind the readiness flag and starts Apple OAuth directly", () => {

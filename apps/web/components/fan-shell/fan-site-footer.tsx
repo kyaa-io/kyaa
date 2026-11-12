@@ -134,7 +134,54 @@ function fanHref(pathname: string, locale: FanLocale): Route {
   return `${pathname}?locale=${locale}` as Route;
 }
 
-export function FanSiteFooter({ locale }: { locale: FanLocale }) {
+function FanFooterLegalLinks({ locale }: { locale: FanLocale }) {
+  const t = copy[locale];
+  return (
+    <div className={styles.legalLinks}>
+      <Link className={styles.privacyLink} href={fanHref("/privacy", locale)} aria-label={locale === "ko" ? "개인정보처리방침 열기" : translate(locale, localizedMessages.mc2da954c6e18, "Open Privacy Policy")}>{t.privacy}</Link>
+      <Link href={fanHref("/terms", locale)} aria-label={locale === "ko" ? "이용약관 열기" : translate(locale, localizedMessages.m9083a379799f, "Open Terms of Use")}>{t.terms}</Link>
+      <AnalyticsConsentLink locale={locale} />
+    </div>
+  );
+}
+
+function FanFooterBusinessInfo({ locale }: { locale: FanLocale }) {
+  const t = copy[locale];
+  return (
+    <dl aria-label={t.businessInfo}>
+      <div><dt>{t.operator}</dt><dd lang="ko">주식회사 셀리랩</dd></div>
+      <div><dt>{t.representative}</dt><dd lang="ko">김보석</dd></div>
+      <div><dt>{t.registrationNumber}</dt><dd>736-86-03473</dd></div>
+      <div className={styles.businessAddress}>
+        <dt>{t.businessAddress}</dt>
+        <dd lang="ko">서울특별시 강남구 도산대로28길 46, 6층</dd>
+      </div>
+    </dl>
+  );
+}
+
+/**
+ * `compact` is the auth-page footer (login): legal links and business information only,
+ * so the sign-in card keeps the first screen. Every other page uses the full footer.
+ */
+export function FanSiteFooter({ locale, variant = "full" }: { locale: FanLocale; variant?: "full" | "compact" }) {
+  if (variant === "compact") {
+    return (
+      <footer className={`${styles.footer} ${styles.compact}`} data-fan-site-footer data-footer-variant="compact">
+        <FanContentContainer className={`${styles.business} ${styles.compactInner}`}>
+          <div className={styles.compactBusiness}>
+            <span>© 2026 kyaa</span>
+            <FanFooterBusinessInfo locale={locale} />
+          </div>
+          <FanFooterLegalLinks locale={locale} />
+        </FanContentContainer>
+      </footer>
+    );
+  }
+  return <FanSiteFooterFull locale={locale} />;
+}
+
+function FanSiteFooterFull({ locale }: { locale: FanLocale }) {
   const t = copy[locale];
   const groupsEnabled = useGroupsRelease();
   return (
@@ -209,24 +256,12 @@ export function FanSiteFooter({ locale }: { locale: FanLocale }) {
       </FanContentContainer>
 
       <FanContentContainer className={styles.business}>
-        <dl aria-label={t.businessInfo}>
-          <div><dt>{t.operator}</dt><dd lang="ko">주식회사 셀리랩</dd></div>
-          <div><dt>{t.representative}</dt><dd lang="ko">김보석</dd></div>
-          <div><dt>{t.registrationNumber}</dt><dd>736-86-03473</dd></div>
-          <div className={styles.businessAddress}>
-            <dt>{t.businessAddress}</dt>
-            <dd lang="ko">서울특별시 강남구 도산대로28길 46, 6층</dd>
-          </div>
-        </dl>
+        <FanFooterBusinessInfo locale={locale} />
       </FanContentContainer>
 
       <FanContentContainer className={styles.legal}>
         <span>© 2026 kyaa. All rights reserved.</span>
-        <div className={styles.legalLinks}>
-          <Link className={styles.privacyLink} href={fanHref("/privacy", locale)} aria-label={locale === "ko" ? "개인정보처리방침 열기" : translate(locale, localizedMessages.mc2da954c6e18, "Open Privacy Policy")}>{t.privacy}</Link>
-          <Link href={fanHref("/terms", locale)} aria-label={locale === "ko" ? "이용약관 열기" : translate(locale, localizedMessages.m9083a379799f, "Open Terms of Use")}>{t.terms}</Link>
-          <AnalyticsConsentLink locale={locale} />
-        </div>
+        <FanFooterLegalLinks locale={locale} />
       </FanContentContainer>
     </footer>
   );

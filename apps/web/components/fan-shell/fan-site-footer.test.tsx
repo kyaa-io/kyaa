@@ -13,6 +13,20 @@ const footerCss = readFileSync(
 );
 
 describe("FanSiteFooter", () => {
+  it("renders the compact auth footer with legal links and business information only", () => {
+    render(<FanSiteFooter locale="ko" variant="compact" />);
+
+    const footer = screen.getByRole("contentinfo");
+    expect(footer).toHaveAttribute("data-footer-variant", "compact");
+    expect(within(footer).queryByRole("navigation")).not.toBeInTheDocument();
+    expect(within(footer).queryByRole("heading")).not.toBeInTheDocument();
+    expect(footer.querySelectorAll('a[target="_blank"]')).toHaveLength(0);
+    expect(within(footer).getByRole("link", { name: "개인정보처리방침 열기" })).toHaveAttribute("href", "/privacy?locale=ko");
+    expect(within(footer).getByRole("link", { name: "이용약관 열기" })).toHaveAttribute("href", "/terms?locale=ko");
+    expect(footer.querySelector("dl")).toHaveTextContent("736-86-03473");
+    expect(footer).toHaveTextContent("주식회사 셀리랩");
+  });
+
   it("publishes the Korean fan navigation and essential legal links", () => {
     render(<FanSiteFooter locale="ko" />);
 
