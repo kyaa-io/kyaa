@@ -1,0 +1,13 @@
+import { createRoot } from "react-dom/client";
+import { GuestHome } from "../../components/guest-home";
+import { CelebrityFanPage } from "../../components/celebrity-fan-page";
+import { parseAppLocale } from "../../i18n/locales";
+import { gggiHomeBanner } from "../../features/home/domain/gggi-home-banner";
+import catalog from "./creators.json";
+import "../../app/globals.css";
+import "pretendard/dist/web/variable/pretendardvariable-dynamic-subset.css";
+const locale=parseAppLocale(new URLSearchParams(location.search).get("locale"));
+const creators=catalog.celebrities.filter(c=>['yuna','hiroro','mmnoo-s','elina','changha'].includes(c.slug)) as any;
+const slug=location.pathname.split('/').filter(Boolean)[0];
+const creator=creators.find((c:any)=>c.slug===slug);
+createRoot(document.getElementById('root')!).render(creator ? <CelebrityFanPage celebrity={creator} locale={locale} upcomingLive={null} /> : <GuestHome celebrities={creators} locale={locale} homeBanners={[gggiHomeBanner(locale)]} jjinfanGauge />);

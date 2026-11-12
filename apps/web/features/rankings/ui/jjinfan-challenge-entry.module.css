@@ -1,0 +1,4 @@
+/* Hallmark · shape: app screen · redesign: polish · existing small FanDialog */
+.dialog footer { display:grid; grid-template-columns:minmax(0,1fr); }
+.dialog footer button { width:100%; }
+.dialog :focus-visible { outline-color:var(--color-ink); }

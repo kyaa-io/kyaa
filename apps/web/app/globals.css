@@ -101,6 +101,7 @@
    * --fan-aside-title-*, --fan-description-*, --fan-action-emphasis-size): 1단계는 별칭(크기 값 동일), 사용처 치환 뒤 삭제. 굵기는 400·700·800만. */
   /* 게이트 C2(2026-11-09): FanHeading h1 26/800, 구역 제목 h2·h3 18/700. 아래 --fan-heading-size(-wide)는 화면 CSS가 직접 쓰는 옛 값이라 화면 치환 전까지 남는다. */
   --fan-h1-size: 26px;
+  --fan-banner-title-size-wide: 36px;
   --fan-section-size: 18px;
   --fan-section-weight: 700;
   --fan-heading-size: 20px;

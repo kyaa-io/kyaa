@@ -406,3 +406,11 @@
   .carouselCounter { position: absolute; z-index: var(--z-home-live); top: 12px; right: 12px; display: block; pointer-events: none; padding:var(--space-1) var(--space-2); border-radius: var(--radius-pill); background: var(--color-home-caption); color: var(--color-surface); font-size:var(--fan-badge-size); font-variant-numeric: tabular-nums; }
 }
 
+
+/* 11/12 D-C: the challenge shares hero controls in a shorter slot. */
+.heroCarousel[data-compact] .heroViewport { height: 160px; aspect-ratio: auto; border-radius: var(--radius-card); background:var(--color-soft); }
+@media (width >= 48rem) { .heroCarousel[data-compact] .heroViewport { height: 240px; } }
+@media (width < 48rem) { .heroCarousel[data-compact] .carouselCounter { top:auto; bottom:var(--space-3); } }
+
+.heroCarousel[data-compact] .heroTrack { gap:var(--space-1); }
+.heroCarousel[data-compact] .heroCard { background:var(--color-soft); }

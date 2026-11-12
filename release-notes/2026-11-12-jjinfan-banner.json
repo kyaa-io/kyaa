@@ -1,0 +1,14 @@
+{
+  "changes": [
+    "홈의 찐팬 100 챌린지를 유나·히로로·김민주 사진 배너로 바꿨어요.",
+    "배너에서 팬페이지로 이동하면 아직 팬 인증을 하지 않은 분에게 동참 안내가 열리고, 동참하기를 누르면 해당 크리에이터의 팬 인증으로 이동해요.",
+    "이미지는 공개된 크리에이터 사진과 예시 응답을 사용해 로컬에서 확인한 화면이에요."
+  ],
+  "path": "/",
+  "images": [
+    "release-notes/images/2026-11-12-jjinfan-home390.png",
+    "release-notes/images/2026-11-12-jjinfan-home1440.png",
+    "release-notes/images/2026-11-12-jjinfan-modal390.png",
+    "release-notes/images/2026-11-12-jjinfan-modal1440.png"
+  ]
+}

@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import { FanSectionLink } from "./fan-section-link";
 import styles from "./fan-heading.module.css";
 
-export type FanHeadingVariant = "standard" | "editorial" | "personal-page" | "personal-section";
+export type FanHeadingVariant = "standard" | "editorial" | "personal-page" | "personal-section" | "campaign";
 
 /** Semantic level is independent of visual role. No style/className escape hatch. */
 export function FanHeading({ as: Tag = "h2", variant = "standard", id, children }: {
@@ -11,7 +11,7 @@ export function FanHeading({ as: Tag = "h2", variant = "standard", id, children 
   id?: string;
   children: ReactNode;
 }) {
-  const level = Tag === "h1" || variant === "personal-page" ? styles.page : styles.section;
+  const level = variant === "campaign" ? styles.campaign : Tag === "h1" || variant === "personal-page" ? styles.page : styles.section;
   return <Tag id={id} className={[styles.heading, level].join(" ")} data-fan-heading={variant}>{children}</Tag>;
 }
 
