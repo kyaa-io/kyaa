@@ -27,12 +27,12 @@ function candidateApi({ reserved = false, comparison = 'ahead', missing = false,
     return runs.find(run => path === `/actions/runs/${run.id}`);
   };
 }
-test('only an unreserved ancestor with present, non-failed candidate CI is superseded', async () => {
+test('only an unreserved ancestor with fully successful candidate CI is superseded', async () => {
   for (const [options, expected] of [
     [{}, false],
     [{ conclusion: 'failure' }, true],
-    [{ status: 'in_progress', conclusion: null }, false],
-    [{ status: 'queued', conclusion: null }, false],
+    [{ status: 'in_progress', conclusion: null }, true],
+    [{ status: 'queued', conclusion: null }, true],
     [{ comparison: 'diverged' }, true],
     [{ missing: true }, true],
     [{ reserved: true }, true],

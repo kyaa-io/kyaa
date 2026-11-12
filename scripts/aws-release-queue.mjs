@@ -19,17 +19,8 @@ export async function shouldBuild(env, read = githubRead) {
     }
     const comparison = await read(`/compare/${env.GITHUB_SHA}...${tip.object.sha}`);
     if (comparison.status !== 'ahead' || comparison.merge_base_commit?.sha !== env.GITHUB_SHA) return true;
-    await waitForRequiredCi(tip.object.sha, {
-      failFastOnly: true,
-      githubCall: async path => {
-        const result = await read(path);
-        // The ordinary pre-build gate tolerates missing CI; superseding a build cannot.
-        if (path.includes('/workflows/') && path.endsWith('page=1') && !result.workflow_runs?.length) throw Error('CANDIDATE_CI_MISSING');
-        if (/^\/actions\/runs\/\d+$/.test(path) && !['completed', 'queued', 'in_progress', 'waiting', 'pending', 'requested'].includes(result.status)) throw Error('CANDIDATE_CI_UNKNOWN');
-        return result;
-      },
-    });
-    return false;
+    const ci = await waitForRequiredCi(tip.object.sha, { failFastOnly: true, githubCall: read });
+    return ci.status !== 'all-completed-success';
   } catch {
     // Uncertain candidates must not displace this build.
     return true;
