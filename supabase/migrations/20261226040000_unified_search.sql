@@ -1,10 +1,14 @@
 -- Public search is bounded, viewer-specific, and uses trigram indexes for contains matching.
 create extension if not exists pg_trgm with schema extensions;
+create function public.notice_search_text(document jsonb) returns text language sql immutable set search_path='' as $$
+ select coalesce(string_agg(value #>> '{}', ' '),'') from jsonb_path_query(document, 'strict $.**.text') as nodes(value)
+$$;
+alter table public.celebrity_notice_localizations add column search_body_text text generated always as (public.notice_search_text(body_json)) stored;
 create index if not exists fan_posts_public_search on public.fan_posts using gin (body extensions.gin_trgm_ops) where visibility='public' and deleted_at is null and hidden_at is null;
 create index if not exists group_posts_public_title_search on public.group_posts using gin (title extensions.gin_trgm_ops) where visibility='public' and removed_at is null;
 create index if not exists group_posts_public_body_search on public.group_posts using gin (body extensions.gin_trgm_ops) where visibility='public' and removed_at is null;
 create index if not exists celebrity_notice_title_search on public.celebrity_notice_localizations using gin (title extensions.gin_trgm_ops);
-create index if not exists celebrity_notice_body_search on public.celebrity_notice_localizations using gin ((body_json::text) extensions.gin_trgm_ops);
+create index if not exists celebrity_notice_body_search on public.celebrity_notice_localizations using gin ((search_body_text) extensions.gin_trgm_ops);
 
 create function public.search_literal_pattern(p_query text) returns text language sql immutable set search_path='' as $$
  select '%'||replace(replace(replace(p_query,chr(92),chr(92)||chr(92)),'%',chr(92)||'%'),'_',chr(92)||'_')||'%'
@@ -39,7 +43,7 @@ returns jsonb language sql stable security definer set search_path='' as $$
   left join public.celebrity_localizations cl on cl.celebrity_id=c.id and cl.locale=p_locale
   where n.publication_status='published' and n.archived_at is null and n.visibility='public'
     and c.status='published' and c.archived_at is null
-    and (nl.title ilike public.search_literal_pattern(p_query) or nl.body_json::text ilike public.search_literal_pattern(p_query))
+    and (nl.title ilike public.search_literal_pattern(p_query) or nl.search_body_text ilike public.search_literal_pattern(p_query))
  ), limited as (select * from hits order by created_at desc,id desc limit 31)
  select jsonb_build_object('items',coalesce((select jsonb_agg(jsonb_build_object('source',source,'id',id,'pageRef',page_ref,'pageName',page_name,'title',title,'createdAt',created_at,'nickname',nickname,'noticeSlug',notice_slug) order by created_at desc,id desc) from (select * from limited limit 30) x),'[]'::jsonb),'hasMore',(select count(*)>30 from limited))
  where length(btrim(p_query)) between 2 and 100
