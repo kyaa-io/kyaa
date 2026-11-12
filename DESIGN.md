@@ -107,7 +107,7 @@ radius-scale: "pill / 16px / 12px / 8px / 50%"
 | 경고·순위 배지 글자 | `--color-warning` | #7a4206 |
 | 완료 체크 | `--color-success` | #17613f |
 | 기능색(사용자 승인) | `--color-reaction-comment`(댓글·▼), `--color-rank-up/-down`, `--color-heart`, `--color-translation-link`, `--color-brand-link` | 강조색이 아니다. 지정된 자리만 |
-| 화면 전용 | `--color-shortform-*`, `--color-home-caption`, `--color-home-hero-shade`, `--color-campaign-art` | 그 화면만 |
+| 화면 전용 | `--color-shortform-*`, `--color-home-caption`, `--color-home-hero-shade`, `--color-first-steps-shade`(첫 걸음 배너 390 글자 받침, accent-ink 30% + hero-shade), `--color-campaign-art` | 그 화면만 |
 | 비활성 | `--fan-disabled-opacity` .4 | 면·글자색은 그대로 두고 불투명도만 |
 
 - 회색 채움 면 0: 칩·레일·카드·자리표시·스켈레톤·게이지 바탕은 흰 면 또는 `--color-accent-soft`.

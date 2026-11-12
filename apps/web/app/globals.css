@@ -15,6 +15,8 @@
   /* Approved shortform viewer colors, unchanged from dd737 (2026-11-10). */
   --color-home-caption: rgb(0 0 0 / 60%);
   --color-home-hero-shade: rgb(0 0 0 / 88%);
+  /* 첫 걸음 홈 배너(390) 글자 받침: 검정 대신 여권 색을 섞은 짙은 와인(GPT 2차 검토 Top3). */
+  --color-first-steps-shade: color-mix(in srgb, var(--color-accent-ink) 30%, var(--color-home-hero-shade));
   --color-shortform-canvas: #111;
   --color-shortform-control: #333;
   --color-shortform-meta: #ddd;

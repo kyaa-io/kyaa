@@ -10,22 +10,28 @@
 .canvas img { object-fit: cover; object-position: 50% 100%; }
 .pressed { position: absolute; left: var(--x); top: var(--y); width: var(--slot-size); aspect-ratio: 1; translate: -50% -50%;
   background: var(--color-accent-ink); -webkit-mask: var(--stamp) center / contain no-repeat; mask: var(--stamp) center / contain no-repeat;
-  mix-blend-mode: multiply; opacity: .86; animation: stamp-land var(--motion-reward) var(--motion-easing) both; }
+  mix-blend-mode: multiply; opacity: .86; animation: stamp-land var(--motion-slow) var(--motion-easing) both; }
 .pressed[data-step="join"] { --x: var(--slot-join-x); --y: var(--slot-join-y); rotate: -8deg; }
-.pressed[data-step="passport"] { --x: var(--slot-passport-x); --y: var(--slot-passport-y); rotate: 6deg; animation-delay: var(--motion-slow); }
-.pressed[data-step="attend"] { --x: var(--slot-attend-x); --y: var(--slot-attend-y); rotate: -4deg; animation-delay: calc(var(--motion-slow) * 2); }
-/* 도장이 위에서 눌려 내려와 종이에 닿는다: 크게·투명 → 살짝 눌림 → 제자리. transform·opacity만. */
+.pressed[data-step="passport"] { --x: var(--slot-passport-x); --y: var(--slot-passport-y); rotate: 6deg; animation-delay: var(--motion-fast); }
+.pressed[data-step="attend"] { --x: var(--slot-attend-x); --y: var(--slot-attend-y); rotate: -4deg; animation-delay: calc(var(--motion-fast) * 2); }
+/* 이 탭에서 이미 찍힘을 본 도장은 그대로 둔다(새로 마친 걸음만 200ms 한 번). */
+.pressed[data-landed] { animation: none; }
+/* 도장이 위에서 눌려 내려와 종이에 닿는다(200ms): 크게·투명 → 살짝 눌림 → 제자리. transform·opacity만. */
 @keyframes stamp-land { 0% { opacity: 0; scale: 1.5; } 55% { opacity: .86; scale: .94; } 100% { opacity: .86; scale: 1; } }
 
 .panel { display: grid; align-content: center; gap: var(--space-4); min-width: 0; }
 .head { display: flex; align-items: center; justify-content: space-between; gap: var(--space-4); min-width: 0; }
 .head h1 { margin: 0; }
 .gauge { flex: 0 1 160px; }
-/* 빈 칸은 accent-line(채운 칸 #d11b62와 3.4:1), 채운 칸은 왼쪽부터 차오른다(첫 그림에서 한 번, 칸마다 시차). */
+/* 빈 칸은 accent-line(채운 칸 #d11b62와 3.4:1), 채운 칸은 왼쪽부터 200ms에 차오른다(새로 마친 칸만, 칸마다 150ms 시차). */
 .gauge [role="progressbar"] > span:not([data-filled]) { background: var(--color-accent-line); box-shadow: none; }
-.gauge [role="progressbar"] > span[data-filled] { transform-origin: left center; animation: gauge-fill var(--motion-layout) var(--motion-easing) both; }
-.gauge [role="progressbar"] > span:nth-child(2) { animation-delay: var(--motion-slow); }
-.gauge [role="progressbar"] > span:nth-child(3) { animation-delay: calc(var(--motion-slow) * 2); }
+.gauge [role="progressbar"] > span[data-filled] { transform-origin: left center; animation: gauge-fill var(--motion-slow) var(--motion-easing) both; }
+.gauge [role="progressbar"] > span:nth-child(2) { animation-delay: var(--motion-fast); }
+.gauge [role="progressbar"] > span:nth-child(3) { animation-delay: calc(var(--motion-fast) * 2); }
+/* 이미 본 칸은 채워진 채로(새로 마친 칸만 차오른다). */
+.layout[data-landed="1"] .gauge [role="progressbar"] > span:nth-child(-n + 1),
+.layout[data-landed="2"] .gauge [role="progressbar"] > span:nth-child(-n + 2),
+.layout[data-landed="3"] .gauge [role="progressbar"] > span { animation: none; }
 @keyframes gauge-fill { from { transform: scaleX(0); } to { transform: none; } }
 
 .go { color: var(--color-accent-ink); }
@@ -33,6 +39,8 @@
 .steps [data-mission-art] { border-color: transparent; background: transparent; }
 .rowStamp { display: block; width: 36px; height: 36px; background: var(--color-muted); -webkit-mask: var(--stamp) center / contain no-repeat; mask: var(--stamp) center / contain no-repeat; }
 .steps [data-done="true"] .rowStamp { background: var(--color-accent-ink); }
+/* 마친 행도 흰 바탕: 분홍은 도장과 체크에만 남겨 완료 표시에 눈이 가게 한다(GPT 2차 검토 Top4). */
+.steps > li[data-done="true"] { background: var(--color-surface); }
 .primary { display: grid; justify-items: start; min-height: var(--min-target); }
 
 /* 행 등장: 카드·행 등장 규칙(9절) — opacity + y 8→0, 200ms, 시차. */
@@ -49,10 +57,12 @@
   .canvas { scale: none; }
   .panel { gap: var(--space-6); }
 }
-/* PC: 첫 화면(헤더 아래) 높이 안에서 그림과 걸음을 세로 가운데에 둔다 — 위쪽에 몰리고 아래가 비는 띠를 없앤다. */
+/* PC: 첫 화면(헤더 아래) 높이 안에서 그림과 걸음을 세로 가운데에 둔다 — 위쪽에 몰리고 아래가 비는 띠를 없앤다.
+ * 걸음 칸은 레일 폭(--rail-md 360)으로 두어 행 안 이름과 상태 사이가 비지 않게 하고(GPT 2차 Top1·A4), 그림은 화면 높이만큼 키워
+ * 둘을 한 묶음으로 가운데에 둔다. 남는 폭은 그림이 먼저 가져간다(PC 너비 유지). */
 @media (width >= 64rem) {
-  .layout { min-height: calc(100dvh - var(--fan-header-height)); align-content: center; gap: var(--space-8); padding-block: var(--space-8); }
-  .art { width: min(100%, calc(100dvh - var(--fan-header-height) - var(--space-8) * 2)); justify-self: end; }
+  .layout { --steps-w: var(--rail-md); --art-w: min(calc(100dvh - var(--fan-header-height) - var(--space-8) * 2), calc(100% - var(--steps-w) - var(--space-8)));
+    grid-template-columns: var(--art-w) var(--steps-w); justify-content: center; min-height: calc(100dvh - var(--fan-header-height)); align-content: center; gap: var(--space-8); padding-block: var(--space-8); }
 }
 @media (prefers-reduced-motion: reduce) {
   .steps > li, .pressed, .gauge [role="progressbar"] > span[data-filled] { animation: none; }

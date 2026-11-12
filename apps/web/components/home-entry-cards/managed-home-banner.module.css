@@ -29,9 +29,11 @@
   .root[data-missionbook] .artwork img { object-fit:cover; object-position:center 40%; }
 }
 
-/* 첫 걸음(종이 위 여권 사진, 2:1, 글자 없음): 그림 칸 전체를 채워 따로 떠 있는 사진 상자와 흐린 띠를 없앤다. 모바일은 여권·도장이 보이는 오른쪽을 기준으로 자른다. */
+/* 첫 걸음(종이 위 여권 사진, 글자 없음): 그림 칸 전체를 채워 따로 떠 있는 사진 상자와 흐린 띠를 없앤다. 모바일은 정사각 전용 크롭을 그대로 채우고,
+ * 글자 받침 그늘은 검정 대신 사진의 여권 색(강조 잉크)을 섞은 짙은 와인색으로 둔다 — 홈 배너와 온보딩 그림이 같은 종이 무드로 읽히게(GPT 2차 Top3). */
 @media (width < 48rem) {
-  .root[data-first-steps] .artwork img { object-fit:cover; object-position:68% 40%; }
+  .root[data-first-steps] .artwork img { object-fit:cover; object-position:50% 50%; }
+  .root[data-first-steps] { --color-home-hero-shade:var(--color-first-steps-shade); }
 }
 @media (width >= 48rem) {
   .root[data-first-steps] [data-hero-full-image] { top:0; bottom:0; aspect-ratio:auto; transform:none; }

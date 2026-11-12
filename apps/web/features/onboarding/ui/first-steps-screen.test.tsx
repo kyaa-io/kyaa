@@ -52,6 +52,22 @@ describe("FirstStepsScreen", () => {
   });
 });
 
+describe("FirstStepsScreen motion", () => {
+  beforeEach(() => { window.sessionStorage.clear(); });
+
+  it("lands only newly finished stamps: steps already seen in this tab stay still", () => {
+    state.view = member({ joinedPages: [elina], passports: [], attended: false });
+    const first = render(<FirstStepsScreen locale="ko" />);
+    expect(document.querySelector('[data-step="join"]')?.hasAttribute("data-landed")).toBe(false);
+    first.unmount();
+    state.view = member({ joinedPages: [elina], passports: [elina], attended: false });
+    render(<FirstStepsScreen locale="ko" />);
+    expect(document.querySelector("[data-first-steps]")?.getAttribute("data-landed")).toBe("1");
+    expect(document.querySelector('[data-step="join"]')?.hasAttribute("data-landed")).toBe(true);
+    expect(document.querySelector('[data-step="passport"]')?.hasAttribute("data-landed")).toBe(false);
+  });
+});
+
 describe("FirstStepsHomeBanner", () => {
   it("lists the steps for guests and shows progress to members", () => {
     state.view = { status: "guest" };
