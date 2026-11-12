@@ -9,6 +9,7 @@ export function PostShareAction({ title, locale, contentType, url }: { title: st
   const state = useDukjil();
   const item = todayItem(state?.today, "share");
   const points = state?.catalog?.rules.share?.points;
-  const eligible = state?.status === "on" && state.authenticated && state.hasPassport && item && !item.stamped && item.remaining !== 0 && typeof points === "number" && points > 0;
+  const eligible = contentType === "post" && state?.status === "on" && state.authenticated && state.hasPassport && item && !item.stamped && item.remaining !== 0 && typeof points === "number" && points > 0;
+
   return <span data-share-action=""><EarnBadgeCorner locale={locale} points={eligible && typeof points === "number" ? points : undefined}><NoticeShare title={title} locale={locale} contentType={contentType} url={url} /></EarnBadgeCorner></span>;
 }

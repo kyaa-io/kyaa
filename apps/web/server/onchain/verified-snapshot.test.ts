@@ -1,6 +1,6 @@
 import { afterEach, expect, it, vi } from "vitest";
 vi.mock("server-only", () => ({}));
-import { dashboardConfigFingerprint, parseVerifiedSnapshot, validatePublication } from "./verified-snapshot";
+import { dashboardConfigFingerprint, parseVerifiedSnapshot, validatePublication, validatePublicationAsync } from "./verified-snapshot";
 import { onchainConfig } from "./public-config";
 import type { PublicOnchainSnapshot } from "./public-types";
 const hash = `0x${"1".repeat(64)}`;
@@ -60,4 +60,14 @@ it("round-trips nested credentials and keeps QA exclusion across recipient corre
   expect(parseVerifiedSnapshot(envelope(value))).toEqual(value);
   value.actions[1].qa = false; expect(() => parseVerifiedSnapshot(envelope(value))).toThrow();
   value.actions[1].qa = true; value.actions[0].credentials[0].kind = 0; expect(() => parseVerifiedSnapshot(envelope(value))).toThrow();
+});
+
+it("keeps asynchronous publication validation fail-closed", async () => {
+  const value = { ...snapshot(), business: null, businessUnavailableReason: "cross_hub_source_collision" as const };
+  expect(await validatePublicationAsync(value, null)).toEqual(validatePublication(value, null));
+  for (const changed of [{ ...value, chainId: 1 }, { ...value, excludedQaWallets: [] }, { ...value, private: "unexpected" }]) {
+    await expect(validatePublicationAsync(changed, null)).rejects.toThrow();
+  }
+  const controller = new AbortController(); controller.abort(new Error("cancelled"));
+  await expect(validatePublicationAsync(value, null, controller.signal)).rejects.toThrow("cancelled");
 });

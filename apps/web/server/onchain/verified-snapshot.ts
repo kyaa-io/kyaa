@@ -1,3 +1,4 @@
+import { finishOnchainWork, runOnchainWork } from "../../../worker/src/onchain-work";
 import "server-only";
 import { createHash } from "node:crypto";
 import { z } from "zod";
@@ -6,6 +7,8 @@ import { loadServerEnv } from "../config/env";
 import { onchainConfig } from "./public-config";
 import type { PublicOnchainSnapshot } from "./public-types";
 
+const MAX_PUBLIC_ACTIONS = 10_000;
+const MAX_PUBLIC_TRANSACTIONS = 50_000;
 const count = z.number().int().nonnegative().safe();
 const integer = z.string().regex(/^(0|[1-9][0-9]*)$/);
 const hash = z.string().regex(/^0x[0-9a-fA-F]{64}$/);
@@ -58,15 +61,22 @@ const fullSnapshotSchema = z.object({
     hubAddress: address, environmentId: hash, sourceDeployment: z.string(), status: z.enum(["ACTIVE", "INVALIDATED"]),
     current: z.boolean(), qa: z.boolean(), origin: z.enum(["NATIVE", "HISTORICAL"]),
     credentials: z.array(z.object({ kind: z.number().int().min(0).max(2), nftContract: address, tokenId: integer,
-      linkOrigin: z.number().int().min(0).max(1), representativeAsset: representative.optional() }).strict()) }).strict()).max(10_000),
+      linkOrigin: z.number().int().min(0).max(1), representativeAsset: representative.optional() }).strict()) }).strict()).max(MAX_PUBLIC_ACTIONS),
   transactions: z.array(z.object({ txHash: hash, blockNumber: integer, hubAddress: address,
-    kind: z.enum(["record", "invalidate", "correct"]), qa: z.boolean(), origin: z.enum(["NATIVE", "HISTORICAL"]) }).strict()).max(50_000),
+    kind: z.enum(["record", "invalidate", "correct"]), qa: z.boolean(), origin: z.enum(["NATIVE", "HISTORICAL"]) }).strict()).max(MAX_PUBLIC_TRANSACTIONS),
 }).strict();
 const verifiedSchema = z.object({ configFingerprint: z.string().regex(/^[a-f0-9]{64}$/), snapshot: fullSnapshotSchema }).strict();
+// Validate array bounds first, then the identical element schemas in bounded steps.
+const deferredVerifiedSchema = verifiedSchema.extend({ snapshot: fullSnapshotSchema.extend({
+  actions: z.array(z.unknown()).max(MAX_PUBLIC_ACTIONS), transactions: z.array(z.unknown()).max(MAX_PUBLIC_TRANSACTIONS),
+}) });
 const same = (a: unknown, b: unknown) => JSON.stringify(a) === JSON.stringify(b);
 const lower = (value: string) => value.toLowerCase();
-export function parseVerifiedSnapshot(value: unknown, now = Date.now()): PublicOnchainSnapshot {
-  const parsed = verifiedSchema.parse(value), snapshot = parsed.snapshot;
+function* parseVerifiedSnapshotSteps(value: unknown, now: number): Generator<void, PublicOnchainSnapshot> {
+  const parsed = deferredVerifiedSchema.parse(value);
+  const snapshot: z.infer<typeof fullSnapshotSchema> = { ...parsed.snapshot, actions: [], transactions: [] };
+  for (const action of parsed.snapshot.actions) { yield; snapshot.actions.push(fullSnapshotSchema.shape.actions.element.parse(action)); }
+  for (const transaction of parsed.snapshot.transactions) { yield; snapshot.transactions.push(fullSnapshotSchema.shape.transactions.element.parse(transaction)); }
   const verifiedAt = Date.parse(snapshot.generatedAt), blockTime = Date.parse(snapshot.blockTimestamp);
   if (parsed.configFingerprint !== dashboardConfigFingerprint() || verifiedAt > now || now - verifiedAt > 15 * 60_000 || blockTime > verifiedAt
     || snapshot.network !== readConfig.network || snapshot.chainId !== readConfig.chainId || lower(snapshot.hubAddress) !== lower(readConfig.hubAddress)
@@ -85,6 +95,7 @@ export function parseVerifiedSnapshot(value: unknown, now = Date.now()): PublicO
   }
   const qaSources = new Set(snapshot.actions.filter(action => readConfig.qaWallets.some(wallet => lower(wallet) === lower(action.wallet))).map(action => lower(action.sourceOccurrence)));
   for (const action of snapshot.actions) {
+    yield;
     const hub = hubs.get(lower(action.hubAddress));
     if (!hub || action.sourceDeployment !== hub.label || action.environmentId !== snapshot.environmentId
       || BigInt(action.blockNumber) < BigInt(hub.fromBlock) || BigInt(action.blockNumber) > BigInt(snapshot.blockNumber)
@@ -95,6 +106,7 @@ export function parseVerifiedSnapshot(value: unknown, now = Date.now()): PublicO
           || BigInt(credential.representativeAsset.migration.blockNumber) > BigInt(snapshot.blockNumber))))) throw new Error("VERIFIED_SNAPSHOT_ACTION_INVALID");
   }
   for (const transaction of snapshot.transactions) {
+    yield;
     const hub = hubs.get(lower(transaction.hubAddress));
     if (!hub || BigInt(transaction.blockNumber) < BigInt(hub.fromBlock) || BigInt(transaction.blockNumber) > BigInt(snapshot.blockNumber)) throw new Error("VERIFIED_SNAPSHOT_TRANSACTION_INVALID");
   }
@@ -103,9 +115,10 @@ export function parseVerifiedSnapshot(value: unknown, now = Date.now()): PublicO
     || snapshot.historicalActions > snapshot.actions.filter(action => action.origin === "HISTORICAL").length) throw new Error("VERIFIED_SNAPSHOT_COUNTS_INVALID");
   return snapshot;
 }
-export function validatePublication(source: PublicOnchainSnapshot, dashboard: unknown): { publicPayload: z.infer<typeof verifiedSchema>; dashboardPayload: DashboardSnapshot | null } {
+type Publication = { publicPayload: z.infer<typeof verifiedSchema>; dashboardPayload: DashboardSnapshot | null };
+function* validatePublicationSteps(source: PublicOnchainSnapshot, dashboard: unknown): Generator<void, Publication> {
   const publicPayload = { configFingerprint: dashboardConfigFingerprint(), snapshot: source };
-  const snapshot = parseVerifiedSnapshot(publicPayload);
+  const snapshot = yield* parseVerifiedSnapshotSteps(publicPayload, Date.now());
   if (snapshot.business === null) {
     if (dashboard !== null) throw new Error("VERIFIED_SNAPSHOT_PROJECTION_INVALID");
     return { publicPayload, dashboardPayload: null };
@@ -116,6 +129,16 @@ export function validatePublication(source: PublicOnchainSnapshot, dashboard: un
     || !same(projection.deployments, snapshot.deployments) || !same(projection.metrics, snapshot.business)) throw new Error("VERIFIED_SNAPSHOT_PROJECTION_INVALID");
   return { publicPayload, dashboardPayload: projection };
 }
+export function parseVerifiedSnapshot(value: unknown, now = Date.now()): PublicOnchainSnapshot {
+  return finishOnchainWork(parseVerifiedSnapshotSteps(value, now));
+}
+export function validatePublication(source: PublicOnchainSnapshot, dashboard: unknown): Publication {
+  return finishOnchainWork(validatePublicationSteps(source, dashboard));
+}
+export function validatePublicationAsync(source: PublicOnchainSnapshot, dashboard: unknown, signal?: AbortSignal): Promise<Publication> {
+  return runOnchainWork(validatePublicationSteps(source, dashboard), signal);
+}
+
 function database() {
   const env = loadServerEnv();
   return createClient(env.SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY, { auth: { persistSession: false, autoRefreshToken: false } });
@@ -142,7 +165,7 @@ export async function readVerifiedDashboardSnapshot(): Promise<unknown> {
   return data.dashboard_payload;
 }
 export async function publishVerifiedSnapshot(source: PublicOnchainSnapshot, dashboard: DashboardSnapshot | null, signal?: AbortSignal): Promise<boolean> {
-  const { publicPayload, dashboardPayload } = validatePublication(source, dashboard);
+  const { publicPayload, dashboardPayload } = await validatePublicationAsync(source, dashboard, signal);
   signal?.throwIfAborted();
   const { data, error } = await database().rpc("replace_onchain_verified_snapshot", { p_public_payload: publicPayload, p_dashboard_payload: dashboardPayload }).abortSignal(signal ? AbortSignal.any([signal, AbortSignal.timeout(8000)]) : AbortSignal.timeout(8000));
   if (error) throw new Error("VERIFIED_SNAPSHOT_WRITE_UNAVAILABLE");

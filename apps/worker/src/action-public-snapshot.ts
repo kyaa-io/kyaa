@@ -1,3 +1,5 @@
+import { runOnchainWork, mapOnchainWork } from "./onchain-work.ts";
+import { setImmediate as yieldToRequests } from "node:timers/promises";
 import {
   createPublicClient,
   custom,
@@ -164,12 +166,13 @@ async function loadHubLogs(client: PublicClient, address: Address | Address[], f
   return logs;
 }
 
-function decodeHubLogs(logs: Awaited<ReturnType<PublicClient["getLogs"]>>) {
+function* decodeHubLogSteps(logs: Awaited<ReturnType<PublicClient["getLogs"]>>) {
   const recorded: RecordedEvent[] = [];
   const credentials: CredentialRef[] = [];
   const invalidated: InvalidatedEvent[] = [];
   const corrected: CorrectedEvent[] = [];
   for (const log of logs) {
+    yield;
     const topic = log.topics[0]?.toLowerCase();
     if (!topic || !hubTopics.has(topic)) continue;
     if (!log.transactionHash || !log.blockHash || log.blockNumber == null) {
@@ -204,6 +207,10 @@ function decodeHubLogs(logs: Awaited<ReturnType<PublicClient["getLogs"]>>) {
   }
   if (recorded.length > MAX_ACTIONS) throw new Error("Action public snapshot action cap exceeded");
   return { recorded, credentials, invalidated, corrected };
+}
+
+export function decodeHubLogs(logs: Awaited<ReturnType<PublicClient["getLogs"]>>, signal?: AbortSignal) {
+  return runOnchainWork(decodeHubLogSteps(logs), signal);
 }
 
 function assertRecordMatchesEvent(record: ActionRecord, event: RecordedEvent) {
@@ -385,19 +392,23 @@ async function readFinalizedActionSnapshotInner(
     throw new Error("Action public snapshot chain/environment/EAS binding mismatch");
   }
 
-  const events = decodeHubLogs(logs);
+  const events = await decodeHubLogs(logs, signal);
   const recordedById = new Map(events.recorded.map((event) => [event.actionId.toLowerCase(), event]));
   if (recordedById.size !== events.recorded.length) throw new Error("Action public snapshot duplicate record event");
+  let processed = 0;
   const refsByAction = new Map<string, CredentialRef[]>();
   for (const ref of events.credentials) {
+    if (++processed % 32 === 0) await yieldToRequests(undefined, { signal });
     const refs = refsByAction.get(ref.actionId.toLowerCase()) ?? [];
     refs.push(ref);
     refsByAction.set(ref.actionId.toLowerCase(), refs);
   }
   for (const actionId of refsByAction.keys()) {
+    if (++processed % 32 === 0) await yieldToRequests(undefined, { signal });
     if (!recordedById.has(actionId)) throw new Error("Action public snapshot credential event has no record event");
   }
   for (const ref of events.credentials) {
+    if (++processed % 32 === 0) await yieldToRequests(undefined, { signal });
     const recordEvent = recordedById.get(ref.actionId.toLowerCase())!;
     if (!sameHex(ref.transactionHash, recordEvent.transactionHash)
       || ref.blockNumber !== recordEvent.blockNumber
@@ -408,6 +419,7 @@ async function readFinalizedActionSnapshotInner(
 
   const eventBlocks = new Map<string, Hash>();
   for (const event of [...events.recorded, ...events.credentials, ...events.invalidated, ...events.corrected]) {
+    if (++processed % 32 === 0) await yieldToRequests(undefined, { signal });
     const key = event.blockNumber.toString();
     const prior = eventBlocks.get(key);
     if (prior && !sameHex(prior, event.blockHash)) throw new Error("Action public snapshot conflicting event block hashes");
@@ -417,6 +429,7 @@ async function readFinalizedActionSnapshotInner(
   const canonicalEventBlocks = [...eventBlocks];
   for (let index = 0; index < canonicalEventBlocks.length; index += READ_BATCH_SIZE) {
     assertNotAborted(signal);
+    await yieldToRequests(undefined, { signal });
     await Promise.all(canonicalEventBlocks.slice(index, index + READ_BATCH_SIZE).map(async ([number, expectedHash]) => {
       const canonical = await client.getBlock({ blockNumber: BigInt(number) });
       if (!canonical.hash || !sameHex(canonical.hash, expectedHash)) throw new Error("Action public snapshot event block reorg");
@@ -426,6 +439,7 @@ async function readFinalizedActionSnapshotInner(
   const records = new Map<string, ActionRecord>();
   for (let index = 0; index < events.recorded.length; index += READ_BATCH_SIZE) {
     assertNotAborted(signal);
+    await yieldToRequests(undefined, { signal });
     await Promise.all(events.recorded.slice(index, index + READ_BATCH_SIZE).map(async (event) => {
       const [record, schema] = await Promise.all([
         client.readContract({ address: options.hubAddress, abi: actionHubAbi, functionName: "getAction", args: [event.actionId], blockNumber }) as Promise<ActionRecord>,
@@ -440,6 +454,7 @@ async function readFinalizedActionSnapshotInner(
   const latestByOccurrence = new Map<string, Hash>();
   const eventsByOccurrence = new Map<string, RecordedEvent[]>();
   for (const event of events.recorded) {
+    if (++processed % 32 === 0) await yieldToRequests(undefined, { signal });
     const key = event.occurrenceId.toLowerCase();
     const occurrenceEvents = eventsByOccurrence.get(key) ?? [];
     occurrenceEvents.push(event);
@@ -448,6 +463,7 @@ async function readFinalizedActionSnapshotInner(
   const occurrences = [...eventsByOccurrence];
   for (let index = 0; index < occurrences.length; index += READ_BATCH_SIZE) {
     assertNotAborted(signal);
+    await yieldToRequests(undefined, { signal });
     await Promise.all(occurrences.slice(index, index + READ_BATCH_SIZE).map(async ([occurrenceKey, occurrenceEvents]) => {
       const occurrenceId = occurrenceEvents[0]!.occurrenceId;
       const latestActionId = await client.readContract({ address: options.hubAddress, abi: actionHubAbi, functionName: "latestActionId", args: [occurrenceId], blockNumber });
@@ -461,6 +477,7 @@ async function readFinalizedActionSnapshotInner(
   }
 
   for (const event of events.recorded) {
+    if (++processed % 32 === 0) await yieldToRequests(undefined, { signal });
     const record = records.get(event.actionId.toLowerCase())!;
     if (record.revision === 1) {
       if (!sameHex(record.refUID, ZERO_HASH)) throw new Error("Action public snapshot correction chain mismatch");
@@ -479,6 +496,7 @@ async function readFinalizedActionSnapshotInner(
     }
   }
   for (const correction of events.corrected) {
+    if (++processed % 32 === 0) await yieldToRequests(undefined, { signal });
     const previous = records.get(correction.previousActionId.toLowerCase());
     const next = records.get(correction.newActionId.toLowerCase());
     if (!previous || !next || !sameHex(previous.occurrenceId, correction.occurrenceId)
@@ -487,12 +505,14 @@ async function readFinalizedActionSnapshotInner(
     }
   }
   for (const invalidation of events.invalidated) {
+    if (++processed % 32 === 0) await yieldToRequests(undefined, { signal });
     const record = records.get(invalidation.actionId.toLowerCase());
     if (!record || !sameHex(record.easUID, invalidation.easUID) || record.status === 2) {
       throw new Error("Action public snapshot invalidation event mismatch");
     }
   }
   for (const record of records.values()) {
+    if (++processed % 32 === 0) await yieldToRequests(undefined, { signal });
     if (![2, 3].includes(record.status)) throw new Error("Action public snapshot unsupported Hub record status");
     if (record.status === 3 && !events.invalidated.some((event) => sameHex(event.actionId, record.actionId) && sameHex(event.easUID, record.easUID))) {
       throw new Error("Action public snapshot invalidated record lacks lifecycle event");
@@ -504,6 +524,7 @@ async function readFinalizedActionSnapshotInner(
     .filter((event) => !recordedTransactions.has(event.transactionHash.toLowerCase()));
   for (let index = 0; index < standaloneInvalidations.length; index += 8) {
     assertNotAborted(signal);
+    await yieldToRequests(undefined, { signal });
     await Promise.all(standaloneInvalidations.slice(index, index + 8)
       .map((event) => verifyStandaloneInvalidation(client, options.hubAddress, event)));
   }
@@ -513,6 +534,7 @@ async function readFinalizedActionSnapshotInner(
   const actions: FinalizedIndexedFanAction[] = [];
   for (let index = 0; index < events.recorded.length; index += READ_BATCH_SIZE) {
     assertNotAborted(signal);
+    await yieldToRequests(undefined, { signal });
     const batch = await Promise.all(events.recorded.slice(index, index + READ_BATCH_SIZE).map(async (event): Promise<FinalizedIndexedFanAction> => {
     const record = records.get(event.actionId.toLowerCase())!;
     const refs = refsByAction.get(event.actionId.toLowerCase()) ?? [];
@@ -607,7 +629,7 @@ async function readFinalizedActionSnapshotInner(
   for (const event of events.recorded) appendLifecycle(event, "record", [event.actionId]);
   for (const event of events.invalidated) appendLifecycle(event, "invalidate", [event.actionId]);
   for (const event of events.corrected) appendLifecycle(event, "correct", [event.previousActionId, event.newActionId]);
-  const lifecycleTransactions = [...lifecycleByTx.values()].map((item): ActionLifecycleTransaction => {
+  const lifecycleTransactions = await runOnchainWork(mapOnchainWork([...lifecycleByTx.values()], (item): ActionLifecycleTransaction => {
     const actionIds = uniqueStrings(item.actionIds);
     const relatedRecords = actionIds.map((id) => records.get(id.toLowerCase())).filter((record): record is ActionRecord => Boolean(record));
     if (relatedRecords.length === 0) throw new Error("Action public snapshot lifecycle transaction has no action record");
@@ -619,7 +641,7 @@ async function readFinalizedActionSnapshotInner(
       actionIds, recipients: uniqueStrings(relatedRecords.map((record) => getAddress(record.fan))),
       origin: relatedRecords[0]!.origin === 1 ? "HISTORICAL" : "NATIVE",
     };
-  });
+  }), signal);
 
   const finalCheck = await client.getBlock({ blockNumber });
   if (!finalCheck.hash || !sameHex(finalCheck.hash, blockHash)) throw new Error("Action public snapshot finalized block changed during read");
@@ -665,9 +687,9 @@ export async function readFinalizedActionSnapshot(options: FinalizedActionSnapsh
       }
       const fromBlock = deployments.reduce((minimum, deployment) => deployment.fromBlock < minimum ? deployment.fromBlock : minimum, deployments[0]!.fromBlock);
       const logs = await loadHubLogs(client, deployments.map((deployment) => deployment.hubAddress), fromBlock, pinned.number, controller.signal, options.logScan);
-      for (const log of logs) {
+      await runOnchainWork(mapOnchainWork(logs, log => {
         if (!uniqueHubs.has(getAddress(log.address).toLowerCase())) throw new Error("Action public snapshot unexpected Hub log address");
-      }
+      }), controller.signal);
       const snapshots = await Promise.all(deployments.map(async (deployment) => {
         const { deployments: _ignoredDeployments, ...sharedOptions } = options;
         const snapshot = await readFinalizedActionSnapshotInner({
@@ -680,11 +702,11 @@ export async function readFinalizedActionSnapshot(options: FinalizedActionSnapsh
       const actions = snapshots.flatMap((snapshot) => snapshot.actions);
       if (actions.length > MAX_ACTIONS) throw new Error("Action public snapshot combined action cap exceeded");
       const nativeSources = new Map<string, Set<string>>();
-      for (const action of actions.filter((candidate) => candidate.origin === "NATIVE")) {
+      await runOnchainWork(mapOnchainWork(actions.filter((candidate) => candidate.origin === "NATIVE"), action => {
         const hubs = nativeSources.get(action.sourceOccurrence.toLowerCase()) ?? new Set<string>();
         hubs.add(getAddress(action.hubProxy).toLowerCase());
         nativeSources.set(action.sourceOccurrence.toLowerCase(), hubs);
-      }
+      }), controller.signal);
       const sourceCollisions = [...nativeSources.entries()].filter(([, hubs]) => hubs.size > 1).map(([source]) => source as Hash);
       const lifecycleByHash = new Map<string, ActionLifecycleTransaction>();
       for (const transaction of snapshots.flatMap((snapshot) => snapshot.lifecycleTransactions)) {

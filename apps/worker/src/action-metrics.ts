@@ -1,3 +1,4 @@
+import { finishOnchainWork } from "./onchain-work.ts";
 import { getAddress } from "viem";
 import { actionCodes, linkOrigins } from "./action-constants.ts";
 
@@ -73,11 +74,11 @@ export interface FanActionMetrics {
   excluded: number;
 }
 
-export function isTrustedCurrentAction(action: IndexedFanAction, boundary: MetricTrustBoundary): boolean {
+export function isTrustedCurrentAction(action: IndexedFanAction, boundary: MetricTrustBoundary, address = getAddress): boolean {
   const allowedHubs = boundary.hubProxies ?? [boundary.hubProxy];
-  const issuerMatches = allowedHubs.some((hub) => getAddress(action.hubProxy) === getAddress(hub))
-    && getAddress(action.easAttester) === getAddress(action.hubProxy);
-  const recipientMatches = getAddress(action.easRecipient) === getAddress(action.recipient);
+  const issuerMatches = allowedHubs.some((hub) => address(action.hubProxy) === address(hub))
+    && address(action.easAttester) === address(action.hubProxy);
+  const recipientMatches = address(action.easRecipient) === address(action.recipient);
   const expirationValid = action.easExpirationTime === 0n || action.easExpirationTime > boundary.asOfEpochSeconds;
   return action.chainId === boundary.chainId
     && action.environmentId.toLowerCase() === boundary.environmentId.toLowerCase()
@@ -91,22 +92,31 @@ export function isTrustedCurrentAction(action: IndexedFanAction, boundary: Metri
     && expirationValid;
 }
 
-function belongsToTrustDomain(action: IndexedFanAction, boundary: MetricTrustBoundary): boolean {
+function belongsToTrustDomain(action: IndexedFanAction, boundary: MetricTrustBoundary, address = getAddress): boolean {
   const allowedHubs = boundary.hubProxies ?? [boundary.hubProxy];
   return action.chainId === boundary.chainId
     && action.environmentId.toLowerCase() === boundary.environmentId.toLowerCase()
     && action.schemaUid.toLowerCase() === boundary.schemaUid.toLowerCase()
-    && allowedHubs.some((hub) => getAddress(action.hubProxy) === getAddress(hub))
-    && getAddress(action.easAttester) === getAddress(action.hubProxy);
+    && allowedHubs.some((hub) => address(action.hubProxy) === address(hub))
+    && address(action.easAttester) === address(action.hubProxy);
 }
 
-export function aggregateFanActionMetrics(actions: readonly IndexedFanAction[], boundary: MetricTrustBoundary, options: { includeHistorical?: boolean } = {}): FanActionMetrics {
+export function* aggregateFanActionMetricSteps(actions: readonly IndexedFanAction[], boundary: MetricTrustBoundary, options: { includeHistorical?: boolean } = {}): Generator<void, FanActionMetrics> {
+  const addresses = new Map<string, ReturnType<typeof getAddress>>();
+  const address = (value: string) => {
+    let result = addresses.get(value);
+    if (result === undefined) { result = getAddress(value); addresses.set(value, result); }
+    return result;
+  };
   const latest = new Map<string, IndexedFanAction>();
-  for (const action of actions.filter((candidate) => belongsToTrustDomain(candidate, boundary))) {
+  for (const action of actions) {
+    yield;
+    if (!belongsToTrustDomain(action, boundary, address)) continue;
     const current = latest.get(action.occurrenceId.toLowerCase());
     if (!current || action.revision > current.revision) latest.set(action.occurrenceId.toLowerCase(), action);
   }
-  const current = [...latest.values()].filter((action) => isTrustedCurrentAction(action, boundary));
+  const current: IndexedFanAction[] = [];
+  for (const action of latest.values()) { yield; if (isTrustedCurrentAction(action, boundary, address)) current.push(action); }
   const trusted = current.filter((action) => options.includeHistorical || action.origin !== "HISTORICAL");
   const actionCounts: Record<number, number> = {};
   const wallets = new Set<string>();
@@ -114,8 +124,9 @@ export function aggregateFanActionMetrics(actions: readonly IndexedFanAction[], 
   const passports = new Set<string>();
   const minted = new Set<string>();
   for (const action of actions) {
-    const recipientMatches = getAddress(action.easRecipient) === getAddress(action.recipient);
-    if (!belongsToTrustDomain(action, boundary)
+    yield;
+    const recipientMatches = address(action.easRecipient) === address(action.recipient);
+    if (!belongsToTrustDomain(action, boundary, address)
       || !recipientMatches
       || action.finality !== "finalized"
       || (!options.includeHistorical && action.origin === "HISTORICAL")) continue;
@@ -125,7 +136,8 @@ export function aggregateFanActionMetrics(actions: readonly IndexedFanAction[], 
   }
   let collectibleClaims = 0;
   for (const action of trusted) {
-    wallets.add(getAddress(action.recipient));
+    yield;
+    wallets.add(address(action.recipient));
     txs.add(action.txHash.toLowerCase());
     actionCounts[action.actionCode] = (actionCounts[action.actionCode] ?? 0) + 1;
     let linkedCollectible = false;
@@ -145,4 +157,8 @@ export function aggregateFanActionMetrics(actions: readonly IndexedFanAction[], 
     historicalActions: current.filter((action) => action.origin === "HISTORICAL").length,
     excluded: latest.size - trusted.length,
   };
+}
+
+export function aggregateFanActionMetrics(actions: readonly IndexedFanAction[], boundary: MetricTrustBoundary, options: { includeHistorical?: boolean } = {}): FanActionMetrics {
+  return finishOnchainWork(aggregateFanActionMetricSteps(actions, boundary, options));
 }

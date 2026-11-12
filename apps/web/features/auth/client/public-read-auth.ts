@@ -1,6 +1,7 @@
 "use client";
 import { useCallback, useSyncExternalStore } from "react";
 import { useByUsAuth } from "@/features/auth/client/cognito-auth";
+import { useByUsSession } from "@/components/byus-session-provider";
 import { withOperationDeadline } from "@/features/reliability/client/request-deadline";
 
 /** A stalled sign-in SDK (a session refresh that never answers) must not hold every screen on its skeleton. */
@@ -20,9 +21,13 @@ export function resetAuthReadyDeadlineForTest() { readyWaitExpired = false; clea
  * and a token that does not arrive in time rejects instead of waiting. Screens that act for a member keep `useByUsAuth`. */
 export function usePublicReadAuth() {
   const auth = useByUsAuth();
+  const session = useByUsSession();
   const expired = useSyncExternalStore(subscribeReadyWait, () => readyWaitExpired, () => false);
   const { getAccessToken: read } = auth;
   const getAccessToken = useCallback(() => withOperationDeadline(read(), AUTH_TOKEN_DEADLINE_MS), [read]);
+  // While a new sign-in is still being exchanged (or its exchange failed), public reads stay guest reads;
+  // the member re-read starts when the session is ready.
+  if (auth.ready && auth.authenticated && !session.ready) return { ready: true, authenticated: false, user: null, getAccessToken };
   if (auth.ready) return { ready: true, authenticated: auth.authenticated, user: auth.user, getAccessToken };
   return { ready: expired, authenticated: false, user: null, getAccessToken };
 }

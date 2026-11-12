@@ -5,6 +5,7 @@
 .titleTag { display: inline-block; margin-inline-end: var(--space-2); vertical-align: 3px; }
 .metaRow { display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "author menu" "facts facts"; align-items: center; gap: var(--space-1) var(--space-2); }
 .metaRow[data-no-author] { grid-template-areas: "facts menu"; }
+
 .author { grid-area: author; display: flex; align-items: center; gap: var(--space-2); min-width: 0; min-height: 36px; }
 .author img { flex: none; width: 28px; height: 28px; border-radius: 50%; object-fit: cover; }
 .author strong { min-width: 0; overflow: hidden; color: var(--color-ink); font-size: var(--fan-description-size); font-weight: var(--fan-item-title-weight); line-height: 20px; text-overflow: ellipsis; white-space: nowrap; }
@@ -17,6 +18,7 @@
 .menu [class*="moreTrigger"] { width: 36px; height: 36px; }
 .menu [class*="translationButton"] { padding-block: 0; }
 .menu [class*="moreTrigger"]::after, .menu [class*="translationButton"]::after { content: ""; position: absolute; inset: -4px 0; }
+
 /* 11/12 hotfix: one low row of small chips under the body (thumbs up, thumbs down, share), no extra top gap: the article's own 16px gap already separates it. */
 .bodyEnd { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); }
 .bodyEnd [data-share-action] button { position: relative; min-height: 36px; padding: 0 var(--space-3); border-radius: var(--radius-pill); }
