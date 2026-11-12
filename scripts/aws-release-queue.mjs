@@ -2,18 +2,28 @@ import { pathToFileURL } from 'node:url';
 import { appendFile } from 'node:fs/promises';
 import { github, trustedRun } from './aws-release.mjs';
 import { githubRead } from './aws-approved-promotion.mjs';
+import { waitForRequiredCi } from './aws-release-ci.mjs';
 
 // Keep the shared deployment lock: cancellation can interrupt CloudFormation.
 export async function shouldBuild(env, read = githubRead) {
   if (env.GITHUB_EVENT_NAME !== 'push' || env.GITHUB_REF !== 'refs/heads/main') return true;
-  const tip = await read('/git/ref/heads/main');
-  if (!/^[a-f0-9]{40}$/.test(tip.object?.sha ?? '')) throw Error('INVALID_MAIN_TIP');
-  if (tip.object.sha === env.GITHUB_SHA) return true;
-  for (let page = 1; ; page++) {
-    const result = await read(`/actions/workflows/aws-approved-promotion.yml/runs?event=workflow_dispatch&branch=main&per_page=100&page=${page}`);
-    if (!Array.isArray(result.workflow_runs)) throw Error('INVALID_RESERVATION_HISTORY');
-    if (result.workflow_runs.some(run => run.display_title === `Approved production promotion of dev ${env.GITHUB_RUN_ID} (${env.GITHUB_SHA})`)) return true;
-    if (result.workflow_runs.length < 100) return false;
+  try {
+    const tip = await read('/git/ref/heads/main');
+    if (!/^[a-f0-9]{40}$/.test(tip.object?.sha ?? '')) throw Error('INVALID_MAIN_TIP');
+    if (tip.object.sha === env.GITHUB_SHA) return true;
+    for (let page = 1; ; page++) {
+      const result = await read(`/actions/workflows/aws-approved-promotion.yml/runs?event=workflow_dispatch&branch=main&per_page=100&page=${page}`);
+      if (!Array.isArray(result.workflow_runs)) throw Error('INVALID_RESERVATION_HISTORY');
+      if (result.workflow_runs.some(run => run.display_title === `Approved production promotion of dev ${env.GITHUB_RUN_ID} (${env.GITHUB_SHA})`)) return true;
+      if (result.workflow_runs.length < 100) break;
+    }
+    const comparison = await read(`/compare/${env.GITHUB_SHA}...${tip.object.sha}`);
+    if (comparison.status !== 'ahead' || comparison.merge_base_commit?.sha !== env.GITHUB_SHA) return true;
+    const ci = await waitForRequiredCi(tip.object.sha, { failFastOnly: true, githubCall: read });
+    return ci.status !== 'all-completed-success';
+  } catch {
+    // Uncertain candidates must not displace this build.
+    return true;
   }
 }
 
