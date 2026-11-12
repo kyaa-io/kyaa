@@ -16,6 +16,7 @@ import { applyReaction, PostReactions, type PostReactionChoice, type PostReactio
 import { PostInlineVideo, SlotPostBody, TranslatedPlainPostBody, TranslatedRichPostBody } from "./rich-post-body";
 import { TranslationControl, useAutomaticTranslation } from "@/features/content-safety/ui/use-automatic-translation";
 import { postSlotTexts } from "../domain/post-title-slots";
+
 import detailStyles from "./post-detail.module.css";
 import { EditedMark } from "./edited-mark";
 import { isEdited } from "../domain/edited";
@@ -90,7 +91,7 @@ export function PostCard({ post, locale, onChanged, onDeleted, detail = false, r
   const inline = useMemo(() => new Set(document ? richDocumentAttachments(document).map(item => item.assetId) : []), [document]);
   const looseAssets = post.assets.filter(asset => !inline.has(asset.id)), looseVideo = post.video && !inline.has(post.video.id) ? post.video : null;
   // A signed-in reader of a board post translates the title and the article together: one request, one state, one original/translation switch.
-  // A guest keeps the whole-text display translation of the body below, and the title stays as written.
+  // A guest translates the article through the display path, and the title stays as written.
   const boardDetail = presentation === "board" && detail, slotTranslation = boardDetail && auth.authenticated;
   const slotTexts = useMemo(() => postSlotTexts(post.body), [post.body]);
   const slotTarget = useMemo(() => ({ targetType: "fan_post" as const, targetId: post.id, sourceRevision: post.revision, slots: "title-body" as const }), [post.id, post.revision]);
@@ -99,6 +100,7 @@ export function PostCard({ post, locale, onChanged, onDeleted, detail = false, r
   const bodyTexts = useMemo(() => [post.body], [post.body]);
   const bodyTarget = useMemo(() => ({ targetType: "fan_post" as const, targetId: post.id, sourceRevision: post.revision }), [post.id, post.revision]);
   const { observeElement: observeBody, ...bodyTranslation } = useAutomaticTranslation({ texts: bodyTexts, locale, target: bodyTarget, enabled: boardDetail && !slotTranslation && (Boolean(document) || post.body.split("\n").slice(1).join("\n") !== "") });
+
   const topTranslation = slotTranslation ? slots : bodyTranslation;
   if (editing) return <PostComposer board={presentation === "board" || Boolean(editTarget?.bodyDoc)} allowMembers={post.celebritySlug !== WAVE_FANPAGE_SLUG} slug={post.celebritySlug} locale={locale} post={editTarget ?? post} onCancel={() => { setEditing(false); setEditTarget(null); }} onSaved={() => { setEditing(false); setEditTarget(null); onChanged(); }} />;
   const displayedBody = presentation === "board" && detail ? post.body.split("\n").slice(1).join("\n") : post.body;
@@ -112,6 +114,7 @@ export function PostCard({ post, locale, onChanged, onDeleted, detail = false, r
   const loginHref = fanLoginHref(locale, `/c/${post.celebritySlug}/community/${post.id}?locale=${locale}${returnTo ? `&returnTo=${encodeURIComponent(returnTo)}` : ""}`);
   return <article ref={articleRef} className={`${styles.card} ${presentation === "board" ? boardStyles.article : ""}`} data-post-id={post.id}>
     {boardDetail ? <PostDetailHeader title={slots.showing && slots.texts[0]?.trim() ? slots.texts[0] : post.body.split("\n")[0] || copy.community} titleLang={slots.showing && slots.texts[0]?.trim() ? locale : undefined} author={<ProfileAuthor contentRef={{ kind: "fan_post", id: post.id }} nickname={post.author.nickname} avatarUrl={post.author.avatarUrl}>{post.author.nickname}</ProfileAuthor>} avatarUrl={post.author.avatarUrl} translation={<TranslationControl locale={locale} translation={topTranslation} />} authorBadge={<>{post.artist && <GroupArtistMark locale={locale} />}{post.celebritySlug === WAVE_FANPAGE_SLUG ? <WavePrivateBadge locale={locale} /> : post.visibility === "members" && <span className={styles.badge}>{copy.members}</span>}</>} createdAt={post.createdAt} edited={isEdited(post)} viewCount={post.viewCount} likeCount={likeCount} commentCount={post.commentCount} locale={locale} menu={menu} /> : <header className={`${styles.meta} ${styles.postHeader}`}>{boardMetadata??<><img src={post.author.avatarUrl} alt="" width={32} height={32} /><div className={styles.postIdentity}><strong><ProfileAuthor contentRef={{ kind: "fan_post", id: post.id }} nickname={post.author.nickname} avatarUrl={post.author.avatarUrl}>{post.author.nickname}</ProfileAuthor></strong>
+
       {post.celebritySlug === WAVE_FANPAGE_SLUG ? <WavePrivateBadge locale={locale} /> : <span className={styles.badge}>{post.visibility === "members" ? copy.members : copy.public}</span>}
       </div>
       {menu}

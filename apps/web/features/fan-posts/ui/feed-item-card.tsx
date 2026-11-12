@@ -16,7 +16,7 @@ import { FanAction, fanActionClassName } from "@/components/fan-ui/fan-action";
 import { notifyFanActivityUpdated } from "@/components/fan-ui/fan-activity-updates";
 import { noticeExtensions } from "@/components/notice/tiptap-extensions";
 import { ContentActions, ContentTranslation } from "@/features/content-safety/ui/content-actions";
-import { TranslatedText, TranslationControl, useAutomaticTranslation } from "@/features/content-safety/ui/use-automatic-translation";
+import { TranslationControl, useAutomaticTranslation } from "@/features/content-safety/ui/use-automatic-translation";
 import { LinkifiedText } from "@/features/content-safety/ui/linkified-text";
 import { ContentAssetImage } from "@/features/content-safety/ui/content-asset";
 import { useContentMutation } from "@/features/content-safety/ui/use-content-mutation";
@@ -61,7 +61,7 @@ export function FeedItemCard(props: Props) {
       {item.visibility === "members" && <span className={styles.badge}>{copy.members}</span>}
       <ContentActions targetType="notice" targetId={item.id} locale={locale} canBlock={false} onChanged={onChanged} />
     </header>
-    <Link className={feedStyles.title} href={href}><TranslatedText text={item.title} locale={locale} controls={false} /></Link>
+    <Link className={feedStyles.title} href={href}>{item.title}</Link>
     {text && <FeedExcerpt text={text} locale={locale} />}
     {media && (media.asset ? <div className={feedStyles.media}><ContentAssetImage asset={media.asset} locale={locale} alt={media.title} href={href} /></div> : media.image ? <Link href={href} className={feedStyles.media} aria-label={feed.readPost}><img src={media.image} alt={media.title} loading="lazy" /></Link> : null)}
     <div className={styles.actions}><Link href={href} className={styles.button}>{feed.readPost}</Link><Link href={`${href}#comments` as Route} className={styles.button}><ReactionIcon kind="comment" />{copy.comments} <ReactionCount value={item.commentCount} locale={locale} /></Link></div>

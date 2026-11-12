@@ -27,10 +27,12 @@
 .page :is(a,button,textarea):focus-visible { outline:3px solid var(--color-ink); outline-offset:3px; }
 .srOnly { position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; }
 @media (min-width:64rem) {
-  .relatedLayout { grid-template-columns:minmax(0,1fr) 264px; gap:48px; }
+  /* 2026-11-12 14:24: the same columns as the fan board post detail: body from the left line, recent notices rail to the right line. */
+  .relatedLayout { grid-template-columns:minmax(0,1fr) var(--rail-md); gap:var(--col-gap); }
   .relatedLayout .article { max-width:none; }
   .recent { position:sticky; top:96px; }
 }
+@media (min-width:80rem) { .relatedLayout { grid-template-columns:minmax(0,1fr) var(--rail-wide); } }
 @media (max-width:47.99rem) {
   .page { /* design-lint-disable N4 -- User 2026-11-10: mobile bottom navigation clearance (88px). */ padding-block:var(--space-2) calc(var(--space-16) + var(--space-6)); }
   .layout { gap:var(--space-6); }

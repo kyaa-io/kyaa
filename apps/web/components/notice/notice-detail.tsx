@@ -16,6 +16,7 @@ import { NoticeComments } from "@/features/fanpage/ui/notice-comments";
 import { ContentActions } from "@/features/content-safety/ui/content-actions";
 import { parseNoticeDocument } from "@/server/notice/notice-domain";
 import { TranslatedText } from "@/features/content-safety/ui/use-automatic-translation";
+
 import { PostDetailHeader } from "@/features/fan-posts/ui/post-detail-header";
 import { NoticeBody, NoticeTitle, NoticeTranslation, NoticeTranslationControl } from "./notice-body";
 import { NoticeReactions } from "./notice-reactions";
@@ -51,7 +52,7 @@ export function NoticeDetail({ slug, noticeSlug, locale, officialPostLabel }: { 
           <NoticeComments slug={slug} noticeSlug={noticeSlug} locale={locale} welcome={notice.kind === "welcome"} />
           </DukjilProvider>
         </article>
-        {related.length > 0 && <aside className={styles.recent} aria-labelledby="recent-notices"><h2 id="recent-notices">{locale === "ko" ? "최근 공지" : translate(locale, messages.mc51097f53111, "Recent Notices")}</h2>{related.map(item => <Link key={item.id} href={`/c/${slug}/notices/${item.slug}?locale=${locale}&returnTo=${encodeURIComponent(returnTo)}`}><strong><TranslatedText text={item.title} locale={locale} controls={false} /></strong><small>{format(item.publishedAt)}</small></Link>)}</aside>}
+        {related.length > 0 && <aside className={styles.recent} aria-labelledby="recent-notices"><h2 id="recent-notices">{locale === "ko" ? "최근 공지" : translate(locale, messages.mc51097f53111, "Recent Notices")}</h2>{related.map(item => <Link key={item.id} href={`/c/${slug}/notices/${item.slug}?locale=${locale}&returnTo=${encodeURIComponent(returnTo)}`}><strong>{item.title}</strong><small>{format(item.publishedAt)}</small></Link>)}</aside>}
       </div>}
   </div>;
 }

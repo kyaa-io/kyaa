@@ -1,7 +1,8 @@
 /* doc-261107 D2: the header and comment rules moved to post-detail.module.css. */
 .detail { width:100%; margin:0; min-width:0; gap:16px; }
 /* 11/12 hotfix: article → comments gap. The card rule (content.module.css .card, 20px padding, loaded after this file in the post card) and the section gap stacked to ~50px between the reaction row and the comment title. */
-.detail.detail { gap:var(--space-3); }
+/* 2026-11-12 14:24: content.module.css .postDetail (760, centered) is applied after .detail in some bundles; the board detail takes its column's full width from its left line. */
+.detail.detail { width:100%; margin:0; gap:var(--space-3); }
 .detail > .article[data-post-id] { padding-bottom:var(--space-3); }
 .detail>a:first-child { margin-inline-start:-12px; }
 /* 2026-11-09 shell-width: the comment block starts at the column's left edge like the title, meta and body. */

@@ -21,34 +21,36 @@ const post: FanPost = { id, celebritySlug: "artist", body: "Concert tonight\nSee
   assets: [], createdAt: "2026-11-01T00:00:00Z", updatedAt: "2026-11-01T00:00:00Z", isOwner: false, likeCount: 0, liked: false, commentCount: 0 };
 const slotAnswer = (slots: Record<string, string>) => ({ targetType: "fan_post", targetId: id, targetLocale: "ko", sourceRevision: 3, cached: false, slots });
 const view = (value: FanPost = post) => render(<PostCard presentation="board" detail post={value} locale="ko" onChanged={vi.fn()} />);
-const requests = (fetcher: ReturnType<typeof vi.fn>) => fetcher.mock.calls.map(([url, init]) => ({ url: String(url), body: JSON.parse(String((init as RequestInit).body)) as Record<string, unknown> }));
+// Only the translation requests count: the card makes other reads of its own.
+const requests = (fetcher: ReturnType<typeof vi.fn>) => fetcher.mock.calls.filter(([url]) => String(url).includes("translations")).map(([url, init]) => ({ url: String(url), body: JSON.parse(String((init as RequestInit).body)) as Record<string, unknown> }));
 
 // The hook memoizes requests per identity, locale, target and texts for the page; a new session generation keeps each case on its own.
 beforeEach(() => { resetTranslationUnavailableForTest(); context.auth.authenticated = true; context.session.generation += 1; });
 afterEach(() => { cleanup(); vi.unstubAllGlobals(); });
 
 describe("board post title translation", () => {
-  it("C1 a signed-in reader gets title and article from one request, and the original switch restores both", async () => {
+  it("C1 a signed-in reader gets the article translated from one request, the title stays, and the original switch restores the article", async () => {
     const fetcher = vi.fn(async () => Response.json(slotAnswer({ title: "오늘 밤 콘서트", article: "공연장에서 만나요" })));
     vi.stubGlobal("fetch", fetcher);
     view();
-    expect(await screen.findByRole("heading", { level: 1, name: "오늘 밤 콘서트" })).toHaveAttribute("lang", "ko");
-    expect(screen.getByText("공연장에서 만나요")).toBeInTheDocument();
+    expect(await screen.findByText("공연장에서 만나요")).toBeInTheDocument();
+    // The title is never translated: it stays as written, with no language mark.
+    expect(screen.getByRole("heading", { level: 1, name: "Concert tonight" })).not.toHaveAttribute("lang");
     expect(requests(fetcher)).toEqual([{ url: "/api/content-translations", body: { targetType: "fan_post", targetId: id, targetLocale: "ko", locale: "ko", slots: "title-body" } }]);
     fireEvent.click(screen.getByRole("button", { name: "원문 보기" }));
     expect(screen.getByRole("heading", { level: 1, name: "Concert tonight" })).toBeInTheDocument();
     expect(screen.getByText("See you all at the venue")).toBeInTheDocument();
-    expect(screen.queryByText("오늘 밤 콘서트")).toBeNull(); expect(screen.queryByText("공연장에서 만나요")).toBeNull();
-    expect(fetcher).toHaveBeenCalledTimes(1);
+    expect(screen.queryByText("공연장에서 만나요")).toBeNull();
+    expect(requests(fetcher)).toHaveLength(1);
   });
-  it("C2 a post with only a title is translated and switched back the same way", async () => {
+  it("C2 a post with only a title (or a title in a foreign language only) asks for no translation and offers no switch", async () => {
     const fetcher = vi.fn(async () => Response.json(slotAnswer({ title: "오늘 밤 콘서트" })));
     vi.stubGlobal("fetch", fetcher);
     view({ ...post, body: "Concert tonight" });
-    expect(await screen.findByRole("heading", { level: 1, name: "오늘 밤 콘서트" })).toBeInTheDocument();
-    fireEvent.click(screen.getByRole("button", { name: "원문 보기" }));
+    await new Promise(resolve => setTimeout(resolve, 20));
     expect(screen.getByRole("heading", { level: 1, name: "Concert tonight" })).toBeInTheDocument();
-    expect(fetcher).toHaveBeenCalledTimes(1);
+    expect(screen.queryByRole("button", { name: /번역 보기|원문 보기/ })).toBeNull();
+    expect(requests(fetcher)).toHaveLength(0);
   });
   it("C3 an answer that lacks a requested slot, or has an extra one, leaves the original", async () => {
     const answers: Array<Record<string, string>> = [{ title: "오늘 밤 콘서트" }, { article: "공연장에서 만나요" }, { title: "오늘 밤 콘서트", article: "공연장에서 만나요" }];
@@ -56,8 +58,8 @@ describe("board post title translation", () => {
       context.session.generation += 1;
       const fetcher = vi.fn(async () => Response.json(slotAnswer(slots)));
       vi.stubGlobal("fetch", fetcher);
-      const { unmount } = view(slots.article && slots.title ? { ...post, body: "Concert tonight" } : post);
-      await waitFor(() => expect(fetcher).toHaveBeenCalledTimes(1));
+      const { unmount } = view(post);
+      await waitFor(() => expect(requests(fetcher)).toHaveLength(1));
       await new Promise(resolve => setTimeout(resolve, 0));
       expect(screen.getByRole("heading", { level: 1 }).textContent).toBe("Concert tonight");
       expect(screen.queryByText("오늘 밤 콘서트")).toBeNull();
@@ -65,23 +67,28 @@ describe("board post title translation", () => {
     }
   });
   it("C4 after a failed attempt the translate button retries and recovers", async () => {
-    const fetcher = vi.fn().mockResolvedValueOnce(Response.json({ error: { code: "TRANSLATION_FAILED" } }, { status: 503 }))
-      .mockResolvedValueOnce(Response.json(slotAnswer({ title: "오늘 밤 콘서트", article: "공연장에서 만나요" })));
+    let attempts = 0;
+    const fetcher = vi.fn(async (url: string) => {
+      if (!String(url).includes("translations")) return Response.json({});
+      attempts += 1;
+      return attempts === 1 ? Response.json({ error: { code: "TRANSLATION_FAILED" } }, { status: 503 }) : Response.json(slotAnswer({ title: "오늘 밤 콘서트", article: "공연장에서 만나요" }));
+    });
     vi.stubGlobal("fetch", fetcher);
     view();
-    await waitFor(() => expect(fetcher).toHaveBeenCalledTimes(1));
+    await waitFor(() => expect(requests(fetcher)).toHaveLength(1));
     expect(screen.getByRole("heading", { level: 1 }).textContent).toBe("Concert tonight");
     fireEvent.click(await screen.findByRole("button", { name: "번역 보기" }));
-    expect(await screen.findByRole("heading", { level: 1, name: "오늘 밤 콘서트" })).toBeInTheDocument();
-    expect(fetcher).toHaveBeenCalledTimes(2);
+    expect(await screen.findByText("공연장에서 만나요")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { level: 1 }).textContent).toBe("Concert tonight");
+    expect(requests(fetcher)).toHaveLength(2);
   });
-  it("C5 a guest keeps the title as written and translates the whole body through the display path only", async () => {
+  it("C5 a guest keeps the title as written and translates the article through the display path only", async () => {
     context.auth.authenticated = false;
-    const fetcher = vi.fn(async () => Response.json({ translatedText: "Concert tonight\n공연장에서 만나요" }));
+    const fetcher = vi.fn(async () => Response.json({ translatedText: "공연장에서 만나요" }));
     vi.stubGlobal("fetch", fetcher);
     view();
-    await waitFor(() => expect(fetcher).toHaveBeenCalled());
-    expect(requests(fetcher)).toEqual([{ url: "/api/display-translations", body: { text: post.body, targetLocale: "ko" } }]);
+    await waitFor(() => expect(requests(fetcher).length).toBeGreaterThan(0));
+    expect(requests(fetcher)).toEqual([{ url: "/api/display-translations", body: { text: "See you all at the venue", targetLocale: "ko" } }]);
     expect(requests(fetcher).some(item => item.url === "/api/content-translations")).toBe(false);
     expect(screen.getByRole("heading", { level: 1 }).textContent).toBe("Concert tonight");
   });
@@ -92,7 +99,8 @@ describe("board post title translation", () => {
     const first = view(); first.unmount();
     context.auth.authenticated = true; fetcher.mockClear();
     view();
-    expect(await screen.findByRole("heading", { level: 1, name: "오늘 밤 콘서트" })).toBeInTheDocument();
+    expect(await screen.findByText("공연장에서 만나요")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { level: 1, name: "Concert tonight" })).toBeInTheDocument();
     expect(requests(fetcher).map(item => item.url)).toEqual(["/api/content-translations"]);
   });
 });

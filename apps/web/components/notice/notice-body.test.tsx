@@ -64,15 +64,17 @@ describe("NoticeBody", () => {
     expect(document.content[0].content![0].text).toBe("새로운 소식");
   });
   const doc = { type: "doc" as const, content: [{ type: "paragraph", content: [{ type: "text", text: "본문 원문" }] }] };
-  const shared = (title: string) => <NoticeTranslation title={title} document={doc} locale="en"><NoticeTitle locale="en" /><NoticeTranslationControl locale="en" /><NoticeBody document={doc} locale="en" /></NoticeTranslation>;
-  it("translates title and body with one request and one toggle, and restores both originals", async () => {
-    const fetcher = vi.fn().mockImplementation(async () => Response.json({ translatedTexts: ["Original title en", "Body en"], cached: false }));
+  const shared = (title: string, source = doc) => <NoticeTranslation title={title} document={source} locale="en"><NoticeTitle locale="en" /><NoticeTranslationControl locale="en" /><NoticeBody document={source} locale="en" /></NoticeTranslation>;
+  // The translation request is shared per text, so each case that needs its own request uses its own body.
+  const failing = { type: "doc" as const, content: [{ type: "paragraph", content: [{ type: "text", text: "실패할 본문" }] }] };
+  it("translates only the body, with one request and one toggle, and never the title", async () => {
+    const fetcher = vi.fn().mockImplementation(async () => Response.json({ translatedText: "Body en", cached: false }));
     vi.stubGlobal("fetch", fetcher);
     render(shared("제목 원문"));
-    expect(await screen.findByRole("heading", { level: 1 })).toHaveTextContent("Original title en");
-    expect(screen.getByText("Body en")).toBeInTheDocument();
+    expect(await screen.findByText("Body en")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("제목 원문");
     expect(fetcher).toHaveBeenCalledTimes(1);
-    expect(JSON.parse(fetcher.mock.calls[0][1].body).texts).toEqual(["제목 원문", "본문 원문"]);
+    expect(JSON.parse(fetcher.mock.calls[0][1].body).text).toBe("본문 원문");
     expect(screen.getAllByRole("button")).toHaveLength(1);
     fireEvent.click(screen.getByRole("button", { name: "Show original" }));
     expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("제목 원문");
@@ -82,18 +84,18 @@ describe("NoticeBody", () => {
   it("keeps the original title and body when translation fails", async () => {
     const fetcher = vi.fn().mockResolvedValue(Response.json({ error: { code: "TRANSLATION_FAILED" } }, { status: 500 }));
     vi.stubGlobal("fetch", fetcher);
-    render(shared("실패 제목"));
+    render(shared("실패 제목", failing));
     // An automatic attempt that fails stays silent: the original is shown and no error appears until the reader presses the button.
     await waitFor(() => expect(fetcher).toHaveBeenCalledTimes(1));
     const translate = await screen.findByRole("button", { name: "Translate" });
     expect(screen.queryByRole("alert")).not.toBeInTheDocument();
     expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("실패 제목");
-    expect(screen.getByText("본문 원문")).toBeInTheDocument();
+    expect(screen.getByText("실패할 본문")).toBeInTheDocument();
     fireEvent.click(translate);
     expect(await screen.findByRole("alert")).toBeInTheDocument();
     expect(fetcher).toHaveBeenCalledTimes(2);
     expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("실패 제목");
-    expect(screen.getByText("본문 원문")).toBeInTheDocument();
+    expect(screen.getByText("실패할 본문")).toBeInTheDocument();
   });
   it("shows a standalone title control after the heading and falls back to the original on failure", async () => {
     vi.stubGlobal("fetch", vi.fn().mockResolvedValue(Response.json({ translatedText: "Live title" })));
