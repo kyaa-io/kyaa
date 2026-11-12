@@ -260,12 +260,26 @@ test('superseded main runs do not download or send a nonexistent dev receipt', (
   }
 });
 
-test('main restoration runs only after successful hotfix validation', () => {
+test('main restoration follows web deployment even when later release steps fail', () => {
+  const release = workflow.jobs.release;
+  const deploy = release.steps.find(step => step.id === 'deploy_web');
+  assert.equal(release.outputs.dev_web_deployed, '${{ steps.deploy_web.outputs.dev_web_deployed }}');
+  assert.equal(deploy.run, `node scripts/aws-platform-deploy.mjs deploy --config work/aws-release/aws-release-config.json --execute
+if [ "$RELEASE_ENV" = dev ]; then echo 'dev_web_deployed=true' >> "$GITHUB_OUTPUT"; fi
+`);
   const condition = workflow.jobs['restore-main'].if;
-  assert.equal(condition, "needs.release.result == 'success' && github.event_name == 'push' && github.ref == 'refs/heads/release/production'");
-  const evaluate = Function('needs', 'github', `return ${condition}`);
-  for (const result of ['success', 'failure', 'cancelled', 'skipped']) {
-    assert.equal(evaluate({ release: { result } }, { event_name: 'push', ref: 'refs/heads/release/production' }), result === 'success');
+  assert.equal(condition, "always() && needs.release.outputs.dev_web_deployed == 'true' && github.event_name == 'push' && github.ref == 'refs/heads/release/production'");
+  const evaluate = Function('always', 'needs', 'github', `return ${condition}`);
+  const hotfix = { event_name: 'push', ref: 'refs/heads/release/production' };
+  for (const [result, deployed, expected] of [
+    ['failure', 'true', true], // Web deployed, verify/schedules/receipt upload failed.
+    ['failure', '', false], // Failed before web deployment completed.
+    ['success', 'true', true],
+    ['skipped', '', false],
+  ]) {
+    const needs = { release: { result, outputs: { dev_web_deployed: deployed } } };
+    assert.equal(evaluate(() => true, needs, hotfix), expected);
+    assert.equal(evaluate(() => true, needs, { ...hotfix, ref: 'refs/heads/main' }), false);
+    assert.equal(evaluate(() => true, needs, { ...hotfix, event_name: 'workflow_dispatch' }), false);
   }
-  assert.equal(evaluate({ release: { result: 'success' } }, { event_name: 'push', ref: 'refs/heads/main' }), false);
 });
