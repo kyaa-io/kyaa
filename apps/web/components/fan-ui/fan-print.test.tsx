@@ -5,7 +5,7 @@ import { FanPrintChanceCard, FanPrintGiftCard, FanPrintTicket } from "./fan-prin
 afterEach(cleanup);
 
 it("prints the ticket facts and stamps it only when asked", () => {
-  const props = { title: "KYAA RAFFLE", amount: "US$400", prize: "Amazon 기프트카드", winners: "총 17명", deadlineLabel: "CLOSES", deadline: "2026.11.30 23:59 KST", serial: "No. SAMPLE", stub: "1인 1응모" };
+  const props = { title: "KYAA RAFFLE", amount: "US$400", prize: "Visa 기프트카드", winners: "총 17명", deadlineLabel: "CLOSES", deadline: "2026.11.30 23:59 KST", serial: "No. SAMPLE", stub: "1인 1응모" };
   const { container, rerender } = render(<FanPrintTicket {...props} />);
   expect(container.textContent).toContain("US$400");
   expect(container.querySelector("[data-fan-print-stamp]")).toBeNull();

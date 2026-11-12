@@ -42,13 +42,15 @@ export function RaffleContent({ locale, daysLeft, closed, preview }: { locale: A
           <FanHeading as="h2" id="raffle-prizes"><FanDisplay role="heading">{t('prizes')}</FanDisplay></FanHeading>
           <FanDisplay role="strong" as="p">{t('giftCard')}</FanDisplay>
         </div>
-        <p className={styles.prizeLead}><FanDisplay role="figure-xl">{t('totalWinners')}</FanDisplay><FanDisplay role="title" className={styles.muted}>{t('totalPrize')}</FanDisplay></p>
-        <FanPrintDesk className={styles.prizeDesk} src={art('prize-desk-tall')} wideSrc={art('prize-desk-wide')} width={1122} height={1402}>
-          <FanPrintReveal as="ol" className={styles.prizes}>{signupEvent.prizes.map((prize, order) => <li key={prize.usd} data-row="raffle-prize" data-tier={prize.usd}>
-            <FanPrintGiftCard label={print.giftCard} amount={`US$${prize.usd}`} note={print.giftNote} count={prize.quantity} envelope={prize.usd === 100} material={art(`mat-card-${prize.usd}`)} order={order} />
-            <FanDisplay role="body" as="p">{text('prizeCount', prize.quantity)}</FanDisplay>
-          </li>)}</FanPrintReveal>
-        </FanPrintDesk>
+        <div className={styles.prizeBody}>
+          <p className={styles.prizeLead}><FanDisplay role="figure-xl">{t('totalWinners')}</FanDisplay><FanDisplay role="title" className={styles.muted}>{t('totalPrize')}</FanDisplay></p>
+          <FanPrintDesk className={styles.prizeDesk} src={art('prize-desk-tall')} wideSrc={art('prize-desk-wide')} width={1122} height={1402}>
+            <FanPrintReveal as="ol" className={styles.prizes}>{signupEvent.prizes.map((prize, order) => <li key={prize.usd} data-row="raffle-prize" data-tier={prize.usd}>
+              <FanPrintGiftCard label={print.giftCard} amount={`US$${prize.usd}`} note={print.giftNote} count={prize.quantity} envelope={prize.usd === 100} material={art(`mat-card-${prize.usd}`)} order={order} />
+              <FanDisplay role="body" as="p">{text('prizeCount', prize.quantity)}</FanDisplay>
+            </li>)}</FanPrintReveal>
+          </FanPrintDesk>
+        </div>
       </section>
 
       <section className={styles.section} data-block="raffle-bonus" aria-labelledby="raffle-bonus">

@@ -51,6 +51,7 @@
 .bonusCard { position: absolute; inset-inline-start: 6%; inset-block-start: 15%; width: 84%; rotate: -2deg; }
 
 /* 경품: 책상 위 카드 17장을 네 묶음으로. 맨 위 카드 아랫선과 인원 줄이 칸마다 맞는다 */
+.prizeBody { display: grid; gap: var(--space-4); min-width: 0; }
 .prizeLead { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--space-2) var(--space-4); }
 .prizeDesk { border-radius: var(--radius-card); padding: var(--space-12) var(--space-4) var(--space-6); }
 .prizes { position: relative; list-style: none; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-8) var(--space-4); align-items: end; }
@@ -72,28 +73,36 @@
 .sticky { position: fixed; z-index: var(--z-bottom-nav); inset-inline: 0; bottom: calc(var(--fan-bottom-nav-height) + env(safe-area-inset-bottom, 0px)); display: flex; justify-content: center; padding: var(--space-2) var(--space-4); background: var(--color-surface); border-top: 1px solid var(--color-line); transition: translate var(--motion-slow) var(--motion-easing), opacity var(--motion-slow) var(--motion-easing); }
 .sticky[data-hidden="true"] { opacity: 0; translate: 0 var(--space-2); pointer-events: none; }
 
-/* PC(64rem 이상): 셸 폭. 히어로 2열 · 확률 2열 · 경품 4열 · 더 즐기기 2열 · 안내 2열 */
+/* PC(64rem 이상): 셸 폭. 11/13 대표 '스크롤을 많이 내려야 해서' → 1440 본문 길이를 줄인다(v4.4).
+ * 구역 순서는 그대로: 히어로 2열 → 경품(왼쪽 총 17명 · 오른쪽 카드 4열) → 확률 올리기 | 더 즐기기 나란히 → 안내 2열.
+ * 큰 숫자는 globals.css --fan-display-*-wide 토큰을 한 단계 낮췄다(위계 amount > figure-xl > figure-sm 유지). */
 @media (width >= 64rem) {
   .sticky { display: none; }
   .column { padding-bottom: var(--fan-section-gap); }
-  /* 히어로: 글 7 · 그림 5, 그림은 모바일과 같은 정사각(1440에서 547). 글 칸을 그림 높이만큼 세우고 제목 줄은 그림 윗선, 버튼·상태 줄은 그림 아랫선에 붙인다 — 글 덩어리가 가운데 떠서 위아래로 남던 빈 곳이 금액 위 한 곳으로 모인다 */
-  /* 11/13 00:37 사용자 '여백 너무 큼'(제목 줄과 금액 사이): 금액을 아래로 밀던 margin-top:auto 제거, 글 덩어리는 위에서부터 붙이고 그림은 4:3으로 낮춰 높이를 맞춘다 */
-  .hero { grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: var(--space-12); align-items: center; padding-block: var(--space-10) var(--fan-section-gap); }
+  /* 히어로: 글 7 · 그림 5. 그림은 5:3(1440에서 547×328)으로 글 덩어리 높이에 맞춘다 */
+  .hero { grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: var(--space-12); align-items: center; padding-block: var(--space-6) var(--fan-section-gap); }
   .heroText { display: flex; flex-direction: column; }
-  .amount { margin-top: var(--space-6); }
-  .heroArt { aspect-ratio: 4 / 3; }
-  .heroAction { justify-items: start; }
+  .amount { margin-top: var(--space-4); }
+  .heroAction { justify-items: start; margin-top: var(--space-4); }
+  .heroArt { aspect-ratio: 5 / 3; }
+  .heroTicket { inset-inline-start: 6%; inset-block-start: 7%; width: 64%; }
+  .heroCard { inset-inline-start: 57%; inset-block-end: 6%; width: 37%; }
   .heroStatus, .heroError { justify-content: flex-start; }
-  /* 확률: 히어로와 같은 7 · 5 열. 행 두 줄이 넓은 열, 기회 카드 그림이 좁은 열. 그림은 2:1(1440에서 547×274, v4.2 765×430의 46% 면적)로 낮춰 행 묶음(137)과의 높이 차를 줄인다 */
-  .bonus { grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: var(--space-12); align-items: center; }
+  /* 확률 올리기 · 더 즐기기를 한 줄에 나란히(히어로와 같은 7 · 5 열) */
+  .body { grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); column-gap: var(--space-12); align-items: start; }
+  .body > [data-block="raffle-prizes"], .body > [data-block="raffle-foot"] { grid-column: 1 / -1; }
+  /* 경품: 왼쪽 열(288)에 총 17명, 오른쪽 책상에 카드 네 묶음 한 줄 */
+  .prizeBody { grid-template-columns: var(--rail-narrow) minmax(0, 1fr); gap: var(--space-12); align-items: end; }
+  .prizeLead { flex-direction: column; align-items: flex-start; padding-bottom: var(--space-6); }
+  .prizeDesk { padding: var(--space-6) var(--space-8) var(--space-4); }
+  .prizes { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--space-6); }
+  /* 확률: 행 두 줄 + 오른쪽 작은 기회 카드 그림(288, 2:1 — 행 묶음 높이와 같게) */
+  .bonus { grid-template-columns: minmax(0, 1fr) var(--rail-narrow); gap: var(--space-6); align-items: center; }
   .bonusArt { aspect-ratio: 2 / 1; }
-  .bonusCard { inset-inline-start: 8%; inset-block-start: 6%; width: 56%; }
-  .prizeDesk { padding: var(--space-12) var(--space-12) var(--space-10); }
-  .prizes { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--space-10); }
-  .more { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-10); }
-  .more li { grid-template-columns: var(--rail-narrow) minmax(0, 1fr); gap: var(--space-8); }
-  .moreArt { aspect-ratio: 4 / 3; border-radius: var(--radius-card); }
-  .morePassport { inset-inline-start: 9%; inset-block-start: 18%; width: 82%; }
+  .bonusCard { inset-inline-start: 18%; inset-block-start: 6%; width: 62%; }
+  /* 더 즐기기: 그림 96(4:3, 높이 72) + 이름·버튼 두 행 */
+  .more li { grid-template-columns: calc(var(--space-12) * 2) minmax(0, 1fr); gap: var(--space-4); }
+  .moreArt { aspect-ratio: 4 / 3; }
   .moreText { gap: var(--space-2); }
   .notice { grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: var(--space-12); }
 }
