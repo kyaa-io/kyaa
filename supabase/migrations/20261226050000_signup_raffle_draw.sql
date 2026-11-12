@@ -44,6 +44,15 @@ begin
   return pg_catalog.jsonb_build_object('created', false, 'seedSha256', stored.seed_sha256, 'drawnAt', stored.drawn_at, 'winners', stored.winners);
 end;
 $$;
+-- Read-only lookup of the stored draw. The admin route asks this first, so a repeated request answers with the stored winners
+-- without reading the current participants again.
+create function public.read_signup_raffle_draw(p_event_id text)
+returns jsonb language sql stable security definer set search_path = '' as $$
+  select pg_catalog.jsonb_build_object('created', false, 'seedSha256', seed_sha256, 'drawnAt', drawn_at, 'winners', winners)
+  from public.signup_raffle_draws where event_id = p_event_id;
+$$;
+revoke all on function public.read_signup_raffle_draw(text) from public, anon, authenticated;
+grant execute on function public.read_signup_raffle_draw(text) to service_role;
 revoke all on function public.record_signup_raffle_draw(text,timestamptz,text,uuid,uuid,jsonb,jsonb) from public, anon, authenticated;
 grant execute on function public.record_signup_raffle_draw(text,timestamptz,text,uuid,uuid,jsonb,jsonb) to service_role;
 commit;

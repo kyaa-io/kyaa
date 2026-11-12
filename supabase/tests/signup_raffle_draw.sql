@@ -20,6 +20,7 @@ begin
     v_refused := sqlerrm = 'SIGNUP_RAFFLE_NOT_CLOSED';
   end;
   assert v_refused, 'a draw before the close must be refused';
+  assert public.read_signup_raffle_draw('test-closed-event') is null, 'no stored draw yet';
   -- the first draw after the close is stored
   v_first := public.record_signup_raffle_draw('test-closed-event', v_closed, repeat('a',64), v_admin, v_allow, v_candidates, v_winner_a);
   assert (v_first->>'created')::boolean and v_first->'winners' = v_winner_a, 'first draw is stored';
@@ -27,6 +28,8 @@ begin
   -- a second draw (another seed, other winners, another admin) returns the stored winners unchanged
   v_again := public.record_signup_raffle_draw('test-closed-event', v_closed, repeat('b',64), 'ab260500-0000-4000-8000-0000000000b1', v_allow, v_candidates, v_winner_b);
   assert not (v_again->>'created')::boolean and v_again->'winners' = v_winner_a and v_again->>'seedSha256' = v_first->>'seedSha256' and v_again->>'drawnAt' = v_first->>'drawnAt', 'second draw returns the first';
+  assert public.read_signup_raffle_draw('test-closed-event') = v_again, 'the lookup returns the stored draw';
+  assert public.read_signup_raffle_draw('test-open-event') is null, 'a refused draw stores nothing';
   -- a stored draw stays readable even when a later call passes a close time in the future
   v_again := public.record_signup_raffle_draw('test-closed-event', v_open, repeat('c',64), v_admin, v_allow, v_candidates, v_winner_b);
   assert v_again->'winners' = v_winner_a, 'stored draw wins over later input';
@@ -56,7 +59,9 @@ begin
   assert (select drawn_by_app_user_id from public.signup_raffle_draws where event_id = 'test-closed-event') = 'ab260500-0000-4000-8000-0000000000a1', 'the first admin is recorded';
   assert (select relrowsecurity and relforcerowsecurity from pg_catalog.pg_class where oid = 'public.signup_raffle_draws'::regclass), 'row level security is on and forced';
   assert not has_function_privilege('anon', 'public.record_signup_raffle_draw(text,timestamptz,text,uuid,uuid,jsonb,jsonb)', 'execute')
-     and not has_function_privilege('authenticated', 'public.record_signup_raffle_draw(text,timestamptz,text,uuid,uuid,jsonb,jsonb)', 'execute'), 'only the server role may draw';
+     and not has_function_privilege('authenticated', 'public.record_signup_raffle_draw(text,timestamptz,text,uuid,uuid,jsonb,jsonb)', 'execute')
+     and not has_function_privilege('anon', 'public.read_signup_raffle_draw(text)', 'execute')
+     and not has_function_privilege('authenticated', 'public.read_signup_raffle_draw(text)', 'execute'), 'only the server role may draw or read the draw';
 end
 $$;
 rollback;

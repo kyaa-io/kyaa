@@ -1,7 +1,7 @@
 import { boundedText } from "@/server/auth/apple-notifications/reauthentication-provider";
 import { randomBytes } from 'node:crypto';
 import { rafflePolicySchema, signupEvent } from '@/features/benefit/domain/signup-event';
-import { createSignupRaffleDatabase, recordSignupRaffleDraw, signupRaffleAliasKey } from '@/server/signup-event/database';
+import { createSignupRaffleDatabase, readSignupRaffleDraw, recordSignupRaffleDraw, signupRaffleAliasKey } from '@/server/signup-event/database';
 import { z } from "zod";
 import { authorizeLocalAdmin } from '@/server/signup-event/local-admin';
 import { AuthError } from '@/features/auth/domain/auth-errors';
@@ -31,14 +31,19 @@ export async function POST(request: Request) {
     const input = JSON.parse(await boundedText(request, 1024));
     const parsed = drawInput.safeParse(input);
     if (!parsed.success) return new Response(null, { status: 400, headers });
-    const policy = rafflePolicySchema.parse({});
-    // One draw per event, after it has closed. The database checks the close time again with its own clock.
-    if (Date.now() <= Date.parse(policy.closesAt)) return new Response(null, { status: 409, headers });
-    const snapshot = await readLocalSnapshot();
-    // requestId stays in the input for the existing admin page, but the seed is always made here.
-    const seed = randomBytes(32).toString('hex');
-    const drawn = drawLocal(snapshot, parsed.data.quantity, seed).map(({ userId, entries }) => ({ userId, entries }));
-    const stored = await recordSignupRaffleDraw(createSignupRaffleDatabase(), { closesAt: policy.closesAt, seed, actor: admin.appUserId, allowlistId: admin.allowlistId, candidates: candidates(snapshot), winners: drawn });
+    const database = createSignupRaffleDatabase();
+    // A stored draw is the answer. It is looked up first, so a repeated request never depends on the current participants.
+    let stored = await readSignupRaffleDraw(database);
+    if (!stored) {
+      const policy = rafflePolicySchema.parse({});
+      // One draw per event, after it has closed. The database checks the close time again with its own clock.
+      if (Date.now() <= Date.parse(policy.closesAt)) return new Response(null, { status: 409, headers });
+      const snapshot = await readLocalSnapshot();
+      // requestId stays in the input for the existing admin page, but the seed is always made here.
+      const seed = randomBytes(32).toString('hex');
+      const drawn = drawLocal(snapshot, parsed.data.quantity, seed).map(({ userId, entries }) => ({ userId, entries }));
+      stored = await recordSignupRaffleDraw(database, { closesAt: policy.closesAt, seed, actor: admin.appUserId, allowlistId: admin.allowlistId, candidates: candidates(snapshot), winners: drawn });
+    }
     const prizes=signupEvent.prizes.flatMap(prize=>Array.from({length:prize.quantity},()=>prize.usd));
     const winners = stored.winners.map((row,index)=>({...row,usd:prizes[index]}));
     return new Response(maskedCsv(winners, signupRaffleAliasKey()), { headers: { ...headers, 'content-type': 'text/csv; charset=utf-8', 'content-disposition': 'attachment; filename="signup-winners.csv"' } });

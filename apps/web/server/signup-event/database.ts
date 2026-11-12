@@ -25,6 +25,12 @@ export function signupRaffleAliasKey() {
 const drawRow = z.object({ userId: z.uuid(), entries: z.number().int().positive() }).strict();
 const storedDrawSchema = z.object({ created: z.boolean(), seedSha256: z.string().regex(/^[a-f0-9]{64}$/), drawnAt: z.string().min(1), winners: z.array(drawRow).min(1) }).strict();
 export type SignupRaffleDrawRow = z.infer<typeof drawRow>;
+/** The stored draw of the event, or null when no draw has been stored yet. */
+export async function readSignupRaffleDraw(database: Pick<DataClient, 'rpc'>) {
+  const result = await database.rpc('read_signup_raffle_draw', { p_event_id: signupEvent.id });
+  if (result.error) throw new Error('SIGNUP_RAFFLE_DRAW_FAILED');
+  return result.data === null ? null : storedDrawSchema.parse(result.data);
+}
 /**
  * Stores the draw of the event once and returns what is stored. A later call (retry, another admin, another seed)
  * gets the first stored winners back. The database refuses a first draw before the event has closed.

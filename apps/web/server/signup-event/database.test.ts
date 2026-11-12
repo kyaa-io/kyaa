@@ -1,6 +1,6 @@
 import { expect, it, vi } from 'vitest';
 vi.mock('server-only', () => ({}));
-import { readSignupRaffleSnapshot, recordSignupRaffleDraw } from './database';
+import { readSignupRaffleDraw, readSignupRaffleSnapshot, recordSignupRaffleDraw } from './database';
 it('reads a single database snapshot scoped to the authenticated member', async () => {
   const id = '00000000-0000-4000-8000-000000000001';
   const rpc = vi.fn().mockResolvedValue({ data: {users: [], entries: [], actions: []}, error: null });
@@ -57,4 +57,14 @@ it('tells an early draw apart from a storage failure and fails closed on an unex
   await expect(recordSignupRaffleDraw({ rpc: vi.fn().mockResolvedValue({ data: null, error: { message: 'SIGNUP_RAFFLE_NOT_CLOSED' } }) }, input)).rejects.toThrow('SIGNUP_RAFFLE_NOT_CLOSED');
   await expect(recordSignupRaffleDraw({ rpc: vi.fn().mockResolvedValue({ data: null, error: { message: 'timeout' } }) }, input)).rejects.toThrow('SIGNUP_RAFFLE_DRAW_FAILED');
   await expect(recordSignupRaffleDraw({ rpc: vi.fn().mockResolvedValue({ data: { winners: [] }, error: null }) }, input)).rejects.toThrow();
+});
+
+it('looks up the stored draw first: null when none, the stored row otherwise, and fails closed on an error', async () => {
+  expect(await readSignupRaffleDraw({ rpc: vi.fn().mockResolvedValue({ data: null, error: null }) })).toBeNull();
+  // The exact answer of read_signup_raffle_draw on the local database (2026-11-13).
+  const stored = JSON.parse('{"created": false, "drawnAt": "2026-11-13T07:34:25.131063+09:00", "winners": [{"userId": "ab260500-0000-4000-8000-000000000001", "entries": 3}], "seedSha256": "ffe054fe7ae0cb6dc65c3af9b61d5209f439851db43d0ba5997337df154668eb"}');
+  const rpc = vi.fn().mockResolvedValue({ data: stored, error: null });
+  expect(await readSignupRaffleDraw({ rpc })).toEqual(stored);
+  expect(rpc).toHaveBeenCalledExactlyOnceWith('read_signup_raffle_draw', { p_event_id: 'kyaa-raffle-202611' });
+  await expect(readSignupRaffleDraw({ rpc: vi.fn().mockResolvedValue({ data: null, error: { message: 'timeout' } }) })).rejects.toThrow('SIGNUP_RAFFLE_DRAW_FAILED');
 });
