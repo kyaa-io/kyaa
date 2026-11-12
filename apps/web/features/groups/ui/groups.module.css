@@ -318,3 +318,9 @@
 @media (width >= 80rem){.creatorPostDetailLayout{grid-template-columns:minmax(0,1fr) var(--rail-wide)}}
 
 @media(width < 64rem){.discoveryAttendance [data-fan-action]{width:44px;height:44px;min-height:44px;padding:0}.discoveryAside .discoveryAttendance{bottom:calc(var(--space-16) + var(--space-4) + var(--space-14) + env(safe-area-inset-bottom))}}
+
+/* Keep the check-in action visible at the start of the fan page, including wide screens. */
+.creatorHomeMain>.creatorShortcuts{display:grid;order:-1}
+@media(min-width:1024px){.creatorHomeMain>.creatorShortcuts a{flex-direction:row;justify-content:center;align-items:center;min-height:var(--min-target)}.creatorHomeMain>.creatorShortcuts .shortcutStamp{width:24px;height:24px}.creatorHomeMain>.creatorShortcuts a>span:first-child{height:24px}}
+
+.creatorShortcuts>span:first-child{min-width:0}.creatorShortcuts>span:first-child>a{width:100%;height:100%}

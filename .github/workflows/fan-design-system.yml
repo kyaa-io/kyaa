@@ -35,9 +35,9 @@ jobs:
     timeout-minutes: 30
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
       - name: Use Node.js 24
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: 24
           cache: npm
@@ -169,7 +169,7 @@ jobs:
         run: node apps/web/e2e/media-stable-local/run.mjs
       - name: Preserve card layout evidence
         if: always() && matrix.group == 'layout-and-recovery'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: card-layout-evidence
           path: |
@@ -178,14 +178,14 @@ jobs:
           if-no-files-found: ignore
       - name: Preserve RUNMUSIC browser evidence
         if: always() && matrix.group == 'runmusic'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: runmusic-browser-evidence
           path: test-results/runmusic-local
           if-no-files-found: ignore
       - name: Preserve Wave participation browser evidence
         if: always() && matrix.group == 'layout-and-recovery'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: wave-participation-browser-evidence
           path: test-results/kyaa-wave-participation

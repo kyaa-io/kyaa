@@ -1,0 +1,5 @@
+{
+  "changes": ["모임 둘러보기 검색창에서 아티스트와 공개 게시글을 각각 찾아볼 수 있어요. 차단한 회원이나 나를 차단한 회원의 글은 검색 결과에 나오지 않아요. 첨부 화면은 예시 데이터로 확인한 로컬 검증 화면이에요."],
+  "path": "/pages/groups",
+  "images": ["release-notes/images/2026-11-13-unified-search-390.png", "release-notes/images/2026-11-13-unified-search-1440.png"]
+}

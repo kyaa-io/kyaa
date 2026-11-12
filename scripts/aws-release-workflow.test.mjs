@@ -136,7 +136,7 @@ test('the ordinary build reuses typecheck build info while the full typecheck st
 });
 
 test('release artifacts can be replaced during a rerun of the same workflow', () => {
-  const uploads = workflow.jobs.release.steps.filter(step => step.uses === 'actions/upload-artifact@v4');
+  const uploads = workflow.jobs.release.steps.filter(step => step.uses?.startsWith('actions/upload-artifact@'));
   assert.ok(uploads.length >= 4);
   for (const step of uploads) assert.equal(step.with.overwrite, true, step.with.name);
 });
@@ -150,7 +150,7 @@ test('DEV caches are isolated, restored and exported without changing release im
   for(const i of [restore,build])assert.equal(steps[i].if,"env.RELEASE_ENV == 'dev'");
   assert.equal(steps[save]['timeout-minutes'], 2);
   assert.ok(save > steps.findIndex(s => s.id === 'verify'));
-  assert.ok(save > steps.findLastIndex(s => s.uses === 'actions/upload-artifact@v4'));
+  assert.ok(save > steps.findLastIndex(s => s.uses?.startsWith('actions/upload-artifact@')));
   assert.match(steps[save].if,/next_cache_ready/);assert.equal(steps[save]['continue-on-error'],true);
   assert.match(steps[restore].with.key,/next_cache_key\.outputs\.base/);
   assert.match(steps[save].with.key,/next_cache_key\.outputs\.base/);
@@ -245,8 +245,27 @@ test('the same loaded image is smoked, authenticated and checked immediately bef
  assert.match(job.if,/head_repository.id == 1307387500/);
  assert.equal(job.concurrency.group,'aws-release-dev');
  assert.equal(job.steps[0].with.ref,'main');
- const artifact=job.steps.find(s=>s.uses==='actions/download-artifact@v4');
+ const artifact=job.steps.find(s=>s.uses?.startsWith('actions/download-artifact@'));
  assert.equal(artifact.with['run-id'],'${{ github.event.workflow_run.id }}');
  assert.ok(job.steps.some(s=>s.run?.includes('assert.equal(e.deployment.payload.workflowRunId')));
  assert.ok(job.steps.some(s=>s.run==='node scripts/dev-deployment-notices.mjs'));
  });
+
+test('superseded main runs do not download or send a nonexistent dev receipt', () => {
+  const job = load(readFileSync('.github/workflows/deployment-notices.yml', 'utf8')).jobs['dev-notice'];
+  const guard = job.steps.find(step => step.id === 'deployed');
+  assert.match(guard.run, /j.name === "release" && j.conclusion === "success"/);
+  for (const step of job.steps.filter(step => step.uses?.startsWith('actions/download-artifact@') || step.name === 'Bind deployment artifact to the completed source run' || step.name === 'Notify the exact successful DEV release')) {
+    assert.equal(step.if, "steps.deployed.outputs.deployed == 'true'");
+  }
+});
+
+test('main restoration runs only after successful hotfix validation', () => {
+  const condition = workflow.jobs['restore-main'].if;
+  assert.equal(condition, "needs.release.result == 'success' && github.event_name == 'push' && github.ref == 'refs/heads/release/production'");
+  const evaluate = Function('needs', 'github', `return ${condition}`);
+  for (const result of ['success', 'failure', 'cancelled', 'skipped']) {
+    assert.equal(evaluate({ release: { result } }, { event_name: 'push', ref: 'refs/heads/release/production' }), result === 'success');
+  }
+  assert.equal(evaluate({ release: { result: 'success' } }, { event_name: 'push', ref: 'refs/heads/main' }), false);
+});

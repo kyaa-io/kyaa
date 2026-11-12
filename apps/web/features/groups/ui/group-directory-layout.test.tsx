@@ -97,3 +97,14 @@ it('keeps the guest side area and its login paths',()=>{
  expect(screen.queryByRole('heading',{level:2,name:'내 페이지'})).toBeNull();
  expect(screen.getByRole('link',{name:'출석체크'}).getAttribute('href')).toContain('/login');
 });
+it.each(['all','fan'])('uses discovery only for the default %s list',type=>{
+ history.replaceState(null,'',`/pages/groups?type=${type}`);const view=render(<GroupDirectory locale='ko'/>);
+ expect(state.urls.some(url=>url.includes('limit=20')&&url.includes('sort=discovery'))).toBe(true);view.unmount();state.urls.length=0;
+ history.replaceState(null,'',`/pages/groups?type=${type}&sort=popular`);render(<GroupDirectory locale='ko'/>);
+ expect(state.urls.some(url=>url.includes('limit=20')&&url.includes('sort=popular'))).toBe(true);
+ expect(state.urls.some(url=>url.includes('limit=20')&&url.includes('sort=discovery'))).toBe(false);
+});
+it('preserves a direct non-default order instead of forcing discovery',()=>{
+ history.replaceState(null,'','/pages/groups?sort=today');render(<GroupDirectory locale='ko'/>);
+ expect(state.urls.some(url=>url.includes('limit=20')&&url.includes('sort=today'))).toBe(true);
+});

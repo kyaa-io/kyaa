@@ -13,12 +13,18 @@
 .composer textarea,.field textarea { resize:vertical; font-size:var(--fan-body-size,16px); line-height:1.65; }
 .row,.actions,.meta { display:flex; flex-wrap:wrap; align-items:center; gap:8px 12px; }
 .row { justify-content:space-between; }.actions { margin-top:8px; }
+.card.blockedRow { box-sizing:border-box; min-height:56px; padding:0; flex-wrap:nowrap; gap:var(--space-3); }
+.blockedMeta { min-width:0; flex-wrap:nowrap; }
+.blockedMeta strong { overflow-wrap:anywhere; }
+.blockedRow [data-fan-action] { flex:none; }
 .button,.actions button:not([data-fan-action]),.pagination button { min-height:44px; border:0; border-radius:12px; padding:10px 12px; background:transparent; color:var(--color-ink); font:inherit; font-size:var(--fan-metadata-size); cursor:pointer; }
 .actions :is(button,a) { display:inline-flex; align-items:center; justify-content:center; gap:8px; flex:none; }
 .button:disabled,.actions button:disabled { opacity:.5; cursor:not-allowed; }
 .meta { font-size:var(--fan-metadata-size); color:var(--color-muted); }.meta strong { color:var(--color-ink); font-size:var(--fan-item-title-size,16px); font-weight:var(--fan-item-title-weight,700); }.meta img { flex:none; border-radius:50%; }
 .body { margin:12px 0; white-space:pre-wrap; overflow-wrap:anywhere; font-size:var(--fan-body-size,16px); line-height:1.75; }
 .list { margin:0; padding:0; list-style:none; }.list>li { min-width:0; }
+.blockedList { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); column-gap:var(--space-6); }
+@media(width < 48rem) { .blockedList { grid-template-columns:1fr; } }
 .badge { padding:3px 8px; border:1px solid var(--color-line); border-radius:999px; font-size:11px; }
 .photos { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; margin:12px 0; }
 .photos>figure { margin:0; min-width:0; }.photos img { box-sizing:border-box; width:auto; max-width:100%; height:auto; max-height:440px; justify-self:start; object-fit:contain; border:1px solid var(--color-line); border-radius:12px; background:var(--color-soft); }

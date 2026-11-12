@@ -4,9 +4,9 @@ const base=process.env.GROUPS_GUIDE_BANNER_BASE??'http://127.0.0.1:3701',out=pro
 const browser=await chromium.launch(),rows=[];
 try{for(const width of [390,1440]){
  const page=await browser.newPage({viewport:{width,height:1000}});await page.routeWebSocket('**',s=>s.close());
- await page.addInitScript(()=>{window.__skeleton=0;new MutationObserver(()=>{if(document.querySelector('[aria-busy=true][role=status]')&&!document.querySelector('[class*=directoryCard]'))window.__skeleton++;}).observe(document,{subtree:true,childList:true,attributes:true});});
+ await page.addInitScript(()=>{window.__skeleton=0;new MutationObserver(()=>{if(document.querySelector('[aria-busy=true][role=status]')&&!document.querySelector('[data-directory-list] > *'))window.__skeleton++;}).observe(document,{subtree:true,childList:true,attributes:true});});
  await page.goto(`${base}/pages/groups?locale=ko`);await page.waitForTimeout(900);
- const cards=()=>page.evaluate(()=>document.querySelectorAll('[class*=directoryCard]').length);
+ const cards=()=>page.evaluate(()=>document.querySelectorAll('[data-directory-list] > *').length);
  const api=()=>page.evaluate(()=>(window.__api??[]).filter(u=>u.includes('search=')));
  await page.evaluate(()=>{window.__skeleton=0;});const input=page.getByPlaceholder(/검색/);const before=await cards();
  await input.click();await input.pressSequentially('한강',{delay:80});

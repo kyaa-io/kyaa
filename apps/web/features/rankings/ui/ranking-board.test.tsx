@@ -39,12 +39,12 @@ function stubRows(fans: unknown[], creators: unknown[], me: unknown = null) {
   return fetcher;
 }
 
-it("shows equal scores at the same place and skips the next place", async () => {
+it("numbers equal scores 1, 2, 3 in the server's order, never a shared place", async () => {
   stubRows([fanRow(1, { score: 9000, points: 9000 }), fanRow(2, { score: 7218, points: 7218 }), fanRow(3, { score: 7218, points: 7218, isMe: true }), fanRow(4, { score: 500, points: 500 })], [], { rank: 3, score: 7218, points: 7218, hearts: 0, inTop: true, delta: null });
   const { container } = render(<RankingBoard locale="ko" />);
   await screen.findByText("하트팬4");
-  expect([...container.querySelectorAll("li[data-row='fan-rank'] [class*='rankCell'] > [class*='rank']")].map(node => node.textContent)).toEqual(["1", "2", "2", "4"]);
-  expect(container.querySelector("p[role='status'] strong")).toHaveTextContent("2위");
+  expect([...container.querySelectorAll("li[data-row='fan-rank'] [class*='rankCell'] > [class*='rank']")].map(node => node.textContent)).toEqual(["1", "2", "3", "4"]);
+  expect(container.querySelector("p[role='status'] strong")).toHaveTextContent("3위");
   window.localStorage.clear();
 });
 
@@ -113,12 +113,13 @@ it("a row is one line: movement beside the name, LIVE, the value; today's gain a
   expect(row("새얼굴").querySelector("[data-rank-panel]")!.textContent).toContain("오늘−2");
 });
 
-it("opens one row at a time, the picture and name lead to the page, and the row closes with the same click", async () => {
+it("opens one row at a time, the opened row's picture and name lead to the page, and the row closes with the same click", async () => {
   stub();
   const view = render(<RankingBoard locale="ko" />);
   await inRow("엘리나");
   const rows = () => [...view.container.querySelectorAll("li[data-row='creator-rank'] > button")] as HTMLButtonElement[];
   expect(rows()[0]).toHaveAttribute("aria-expanded", "false");
+  expect(screen.queryByRole("link", { name: "엘리나, 팬페이지 가기" })).toBeNull();
   fireEvent.click(rows()[0]!);
   expect(rows()[0]).toHaveAttribute("aria-expanded", "true");
   const panelId = rows()[0]!.getAttribute("aria-controls")!;
@@ -137,12 +138,16 @@ it("a signed-in fan row opens the profile window; a signed-out one leads to sign
   stubRows([fanRow(1, { profileRef: { kind: "home_ranking", day: "2026-11-09", computedAt: "2026-11-09T00:00:00Z", metric: "hearts", rank: 1, signature: "s" } })], []);
   const view = render(<RankingBoard locale="ko" />);
   await screen.findByText("하트팬1");
+  expect(screen.queryByRole("button", { name: "하트팬1, 프로필 보기" })).toBeNull();
+  fireEvent.click(view.container.querySelector("li[data-row='fan-rank'] > button")!);
+  expect(screen.queryByRole("dialog")).toBeNull();
   fireEvent.click(screen.getByRole("button", { name: "하트팬1, 프로필 보기" }));
   expect(await screen.findByRole("dialog", { name: "하트팬1" })).toBeInTheDocument();
   view.unmount(); clearResources();
   auth.value = { ...auth.value, authenticated: false, user: null };
   const guest = render(<RankingBoard locale="ko" />);
   await screen.findByText("하트팬1");
+  fireEvent.click(guest.container.querySelector("li[data-row='fan-rank'] > button")!);
   const login = screen.getAllByRole("link", { name: "하트팬1, 로그인하고 프로필 보기" })[0]!;
   expect(decodeURIComponent(login.getAttribute("href")!)).toContain("/?locale=ko");
 });
@@ -170,10 +175,7 @@ it("a short list keeps its place with rank numbers and empty rings only, and a f
   const placeholders = [...container.querySelectorAll("[data-column='fans'] li[data-placeholder]")];
   expect(placeholders.map((n) => n.textContent)).toEqual(["4", "5", "6", "7", "8", "9", "10"]);
   expect(container.querySelector("[data-column='fans'] [data-loading]")).toBeNull();
-  const highlight = container.querySelector("[data-column='fans'] [data-rank-highlight]")!;
-  expect(highlight.getAttribute("data-rank-highlight")).toBe("rise");
-  expect(highlight.textContent).toContain("오늘 가장 많이 오름");
-  expect(highlight.textContent).toContain("하트팬1");
+  expect(container.querySelector("[data-rank-highlight]")).toBeNull();
 });
 
 it("while the first answer is read it shows loading rows and an empty frame, never placeholders or a highlight", async () => {
@@ -181,7 +183,7 @@ it("while the first answer is read it shows loading rows and an empty frame, nev
   const { container } = render(<RankingBoard locale="ko" />);
   expect(container.querySelectorAll("[data-column='fans'] li[data-row='fan-rank-loading']")).toHaveLength(10);
   expect(container.querySelector("[data-column='fans'] [data-placeholder]")).toBeNull();
-  expect(container.querySelector("[data-column='fans'] [data-rank-highlight='loading']")).not.toBeNull();
+  expect(container.querySelector("[data-rank-highlight]")).toBeNull();
 });
 
 it("an error draws no highlight and offers a retry that reads again", async () => {
@@ -257,7 +259,7 @@ it("period pills: 누적 is the default; 오늘 and 7일 read the period list, d
   const pill = (name: string) => screen.getByRole("button", { name });
   expect(["오늘", "7일", "누적"].map((n) => pill(n).getAttribute("aria-pressed"))).toEqual(["false", "false", "true"]);
   expect(urls(fetcher).some((u) => u.includes("period="))).toBe(false);
-  expect(container.querySelector("[data-rank-highlight]")).not.toBeNull();
+  expect(container.querySelector("[data-rank-highlight]")).toBeNull();
   fireEvent.click(pill("오늘"));
   await waitFor(() => expect(urls(fetcher)).toContain("/api/rankings/home?kind=fans&metric=points&locale=ko&limit=10&period=day"));
   expect(urls(fetcher)).toContain("/api/rankings/home?kind=creators&metric=likes&locale=ko&limit=10&period=day");
@@ -346,4 +348,16 @@ it("opens a fan row with hearts and entry tickets, a creator row with 찐팬 and
   expect(creatorPanel).toContain("찐팬9명");
   expect(creatorPanel).toContain("하트77");
   expect(creatorPanel).not.toMatch(/팔로워/);
+});
+
+it("signed out, an opened creator row's picture and name still lead to the fan page, and the link does not close the row", async () => {
+  auth.value = { ...auth.value, authenticated: false, user: null };
+  stub();
+  const view = render(<RankingBoard locale="ko" />);
+  await inRow("엘리나");
+  fireEvent.click(view.container.querySelector("li[data-row='creator-rank'] > button")!);
+  const link = screen.getByRole("link", { name: "엘리나, 팬페이지 가기" });
+  expect(link).toHaveAttribute("href", "/elina?locale=ko");
+  fireEvent.click(link);
+  expect(view.container.querySelectorAll("[data-rank-panel]")).toHaveLength(1);
 });

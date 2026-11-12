@@ -1,0 +1,5 @@
+{
+  "changes": ["숏폼에서 최신순과 인기순을 고르고 아티스트별로 영상을 볼 수 있어요. 첨부 화면은 dev에 공개된 실제 숏폼 데이터를 로컬에서 표시해 확인한 화면이며 운영 화면은 아니에요."],
+  "path": "/shorts",
+  "images": ["release-notes/images/2026-11-13-shorts-filters-390.png", "release-notes/images/2026-11-13-shorts-filters-1440.png"]
+}

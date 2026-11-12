@@ -1,6 +1,6 @@
 import { expect, it, vi } from 'vitest';
 vi.mock('server-only', () => ({}));
-import { readSignupRaffleSnapshot } from './database';
+import { readSignupRaffleDraw, readSignupRaffleSnapshot, recordSignupRaffleDraw } from './database';
 it('reads a single database snapshot scoped to the authenticated member', async () => {
   const id = '00000000-0000-4000-8000-000000000001';
   const rpc = vi.fn().mockResolvedValue({ data: {users: [], entries: [], actions: []}, error: null });
@@ -37,6 +37,34 @@ it.each(['comment', 'attendance'] as const)('caps database-backed %s weights per
   expect(snapshot.policy.dailyCaps).toEqual({ comment: 3, attendance: 3 });
   expect(snapshot.policy.closesAt).toBe('2026-11-30T23:59:59.999+09:00');
   expect(candidates(snapshot)[0].entries).toBe(6);
-  expect(maskedCsv(candidates(snapshot))).toContain(',6,');
+  expect(maskedCsv(candidates(snapshot), Buffer.alloc(32, 1))).toContain(',6,');
   expect(drawLocal(snapshot, 1, 'caps-test')[0].entries).toBe(6);
+});
+
+it('stores the draw through one function call and returns the stored winners', async () => {
+  const winner = { userId: '00000000-0000-4000-8000-000000000001', entries: 2 };
+  const input = { closesAt: '2026-11-30T23:59:59.999+09:00', seed: 'a'.repeat(64), actor: '00000000-0000-4000-8000-0000000000a1', allowlistId: '00000000-0000-4000-8000-0000000000a2', candidates: [winner], winners: [winner] };
+  // The exact answer of record_signup_raffle_draw on the local database (2026-11-13), so the route schema is checked against real SQL output.
+  const stored = JSON.parse('{"created": true, "drawnAt": "2026-11-13T07:17:29.368725+09:00", "winners": [{"userId": "ab260500-0000-4000-8000-000000000001", "entries": 3}], "seedSha256": "ffe054fe7ae0cb6dc65c3af9b61d5209f439851db43d0ba5997337df154668eb"}');
+  const rpc = vi.fn().mockResolvedValue({ data: stored, error: null });
+  expect(await recordSignupRaffleDraw({ rpc }, input)).toEqual(stored);
+  expect(rpc).toHaveBeenCalledExactlyOnceWith('record_signup_raffle_draw', {
+    p_event_id: 'kyaa-raffle-202611', p_closes_at: input.closesAt, p_seed: input.seed, p_actor: input.actor, p_allowlist_id: input.allowlistId, p_candidates: [winner], p_winners: [winner],
+  });
+});
+it('tells an early draw apart from a storage failure and fails closed on an unexpected answer', async () => {
+  const input = { closesAt: '2026-11-30T23:59:59.999+09:00', seed: 'a'.repeat(64), actor: '00000000-0000-4000-8000-0000000000a1', allowlistId: '00000000-0000-4000-8000-0000000000a2', candidates: [], winners: [] };
+  await expect(recordSignupRaffleDraw({ rpc: vi.fn().mockResolvedValue({ data: null, error: { message: 'SIGNUP_RAFFLE_NOT_CLOSED' } }) }, input)).rejects.toThrow('SIGNUP_RAFFLE_NOT_CLOSED');
+  await expect(recordSignupRaffleDraw({ rpc: vi.fn().mockResolvedValue({ data: null, error: { message: 'timeout' } }) }, input)).rejects.toThrow('SIGNUP_RAFFLE_DRAW_FAILED');
+  await expect(recordSignupRaffleDraw({ rpc: vi.fn().mockResolvedValue({ data: { winners: [] }, error: null }) }, input)).rejects.toThrow();
+});
+
+it('looks up the stored draw first: null when none, the stored row otherwise, and fails closed on an error', async () => {
+  expect(await readSignupRaffleDraw({ rpc: vi.fn().mockResolvedValue({ data: null, error: null }) })).toBeNull();
+  // The exact answer of read_signup_raffle_draw on the local database (2026-11-13).
+  const stored = JSON.parse('{"created": false, "drawnAt": "2026-11-13T07:34:25.131063+09:00", "winners": [{"userId": "ab260500-0000-4000-8000-000000000001", "entries": 3}], "seedSha256": "ffe054fe7ae0cb6dc65c3af9b61d5209f439851db43d0ba5997337df154668eb"}');
+  const rpc = vi.fn().mockResolvedValue({ data: stored, error: null });
+  expect(await readSignupRaffleDraw({ rpc })).toEqual(stored);
+  expect(rpc).toHaveBeenCalledExactlyOnceWith('read_signup_raffle_draw', { p_event_id: 'kyaa-raffle-202611' });
+  await expect(readSignupRaffleDraw({ rpc: vi.fn().mockResolvedValue({ data: null, error: { message: 'timeout' } }) })).rejects.toThrow('SIGNUP_RAFFLE_DRAW_FAILED');
 });

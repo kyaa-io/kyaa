@@ -1,7 +1,7 @@
 "use client";
 import {useEffect,useId,useRef,useState} from 'react';
 import {useGroupRequest} from './use-group-resource';
-import {ArrowRight} from 'lucide-react';
+import {ArrowRight,X} from 'lucide-react';
 import {AccessibleOverlay} from '@/components/ui/overlay/accessible-overlay';
 import {FanAction} from '@/components/fan-ui/fan-action';
 import {FanHeading} from '@/components/fan-ui/fan-heading';
@@ -49,9 +49,8 @@ export function PageNoticeModal({locale,storageKey,title,description,actionLabel
  const close=()=>{remember(key);setOpen(false);if(authenticated)void request(url,{method:'POST'}).catch(()=>undefined);};
  if(!enabled)return null;
  return <AccessibleOverlay open={open&&verified===key} onClose={close} labelledBy={titleId} backdropClassName={styles.backdrop} contentClassName={styles.modal}>
-  <header className={styles.header}><FanHeading id={titleId}>{title}</FanHeading></header>
+  <header className={styles.header}><FanHeading id={titleId}>{title}</FanHeading><span className={styles.closeSlot}><FanAction variant='text' className={styles.close} onClick={close} ariaLabel={copy.close} leadingIcon={<X size={20} aria-hidden='true'/>}/></span></header>
   {description&&<p className={styles.description}>{description}</p>}
   <FanAction variant='primary' href={actionHref} onClick={close} trailingIcon={<ArrowRight/>}>{actionLabel}</FanAction>
-  <footer className={styles.footer}><FanAction variant='neutral' onClick={close}>{copy.close}</FanAction></footer>
  </AccessibleOverlay>;
 }

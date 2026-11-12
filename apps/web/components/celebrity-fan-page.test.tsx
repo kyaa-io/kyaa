@@ -1,6 +1,6 @@
 import "@testing-library/jest-dom/vitest";
 import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, onTestFinished, vi } from "vitest";
 
 let queryString = "tab=home&locale=ko";
 let authenticated = false;
@@ -574,6 +574,10 @@ describe("approved fanpage", () => {
 
   it("does not paint a multi-LIVE date with the first reservation state", async () => {
     const month = currentCalendarMonth();
+    // 11/13: 12일 일정이 '다가오는' 상태여야 하므로 시계를 그 달 1일로 고정(날짜가 지나면 깨지던 시험)
+    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.setSystemTime(new Date(`${month}-01T00:00:00.000Z`));
+    onTestFinished(() => { vi.useRealTimers(); });
     stubHubFetch({ calendarEvents: ["reserved", "not_reserved"].map((reservationState, index) => ({
       id: index === 0 ? "11111111-1111-4111-8111-111111111111" : "22222222-2222-4222-8222-222222222222",
       slug: index === 0 ? "kara-first-live" : "kara-second-live",

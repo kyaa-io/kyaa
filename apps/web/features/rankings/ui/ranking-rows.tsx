@@ -12,6 +12,7 @@ import { FanSkeleton } from "@/components/fan-ui/fan-skeleton";
 import { FanState } from "@/components/fan-ui/fan-state";
 import { FanTag } from "@/components/fan-ui/fan-tag";
 import { fanLoginHref } from "@/components/login-href";
+import { creatorHomeHref } from "@/features/creator/domain/creator-navigation";
 import { Avatar } from "@/features/profile/ui/avatar";
 import { levelLabel } from "@/features/passport/domain/passport-read-model";
 import { FanTierBadge } from "@/features/rewards/ui/fan-tier-badge";
@@ -289,8 +290,8 @@ const gapToFirst = (first: boolean, value: number, top: number) => first ? null 
 /** One mark that rings once around the row's border when its value changes (see ringPulse); invisible otherwise. */
 const Pulse = () => <span className={styles.pulse} data-pulse="" aria-hidden="true"><span className={styles.sweep} /></span>;
 
-/** The row: one button over the whole 48px line (`.toggle`, an overlay: the touch target is the row) and the visible line above it. The line lets clicks through to the button, except on the
- * picture and name, which are a link of their own (`NameTarget`). The panel (if open) follows inside the same item. */
+/** The row: one button over the whole 48px line (`.toggle`, an overlay: the touch target is the row) and the visible line above it. The line lets clicks through to the button. A closed row opens
+ * wherever it is tapped (대표 11/13 04:35: the tap opens the row, not the profile); only an opened row's picture and name are a link of their own (`NameTarget`). The panel (if open) follows inside the same item. */
 function RowToggle({ label, panelId, open, onToggle }: { label: string; panelId: string; open: boolean; onToggle: () => void }) {
   return <FanAction variant="text" className={styles.toggle} ariaLabel={label} aria-expanded={open} aria-controls={open ? panelId : undefined} onClick={onToggle} />;
 }
@@ -300,8 +301,10 @@ function RowFace({ open, me, kind, children }: { open: boolean; me?: boolean; ki
     <FanIcon icon={open ? ChevronUp : ChevronDown} size={16} className={styles.chevron} />
   </span>;
 }
-/** The picture and the name together: a fan's profile (signed in: opens the profile window; signed out: the way to sign in) or a creator's fan page. A row with no profile to open (no reference) draws them as plain content. */
-function NameTarget({ label, href, onOpen, children }: { label: string; href?: string; onOpen?: () => void; children: ReactNode }) {
+/** The picture and the name together: on an opened row, a fan's profile (signed in: opens the profile window; signed out: the way to sign in) or a creator's fan page. A closed row, or a row with no profile
+ * to open (no reference), draws them as plain content, so the tap reaches the row's own button. */
+function NameTarget({ active, label, href, onOpen, children }: { active: boolean; label: string; href?: string; onOpen?: () => void; children: ReactNode }) {
+  if (!active) return <span className={styles.profile}><span>{children}</span></span>;
   if (href) return <FanAction variant="text" className={styles.profile} href={href} ariaLabel={label}>{children}</FanAction>;
   if (onOpen) return <FanAction variant="text" className={styles.profile} ariaLabel={label} onClick={onOpen}>{children}</FanAction>;
   return <span className={styles.profile}><span>{children}</span></span>;
@@ -310,10 +313,8 @@ const LiveMark = ({ locale, name }: { locale: AppLocale; name: string }) => <spa
 
 
 const fanValue = (row: HomeFanRankingRow, metric: RankingMetric) => metric === "points" ? row.points ?? row.score : row.hearts ?? row.score;
-/** Competition ranking: equal displayed scores share a place; the following place skips ahead. */
-export function sharedRanks(values: readonly number[]): number[] {
-  return values.map((value, index) => values.findIndex((other) => other === value) + 1 || index + 1);
-}
+/** Places in list order, 1, 2, 3 … with no shared place (대표 11/13 04:34: "1, 2, 2, 2" read as broken). The server already orders equal scores (who reached the score first, then id); the list keeps that order. */
+export const listPlaces = (count: number): number[] => Array.from({ length: count }, (_, index) => index + 1);
 const fanKey = (row: HomeFanRankingRow, index: number, rows: readonly HomeFanRankingRow[]) =>
   rows.findIndex((other) => other.nickname === row.nickname) === index ? `n:${row.nickname}` : `r:${row.rank}`;
 
@@ -322,7 +323,7 @@ export function FanRows({ locale, ranking, metric, show, fill, scope, guest = fa
   const [person, setPerson] = useState<ProfileModalPerson | null>(null);
   const { openKey, toggle } = useRankExpand();
   const shown = show === undefined ? ranking.rows : ranking.rows.slice(0, show);
-  const ranks = sharedRanks(shown.map((row) => fanValue(row, metric)));
+  const ranks = listPlaces(shown.length);
   const keys = shown.map((row, i) => fanKey(row, i, shown));
   const { place, movedSince } = useRowMotion(keys, shown.map((row) => fanValue(row, metric)), ranks, `fans:${metric}:${period}`);
   const top = ranking.rows[0] ? fanValue(ranking.rows[0], metric) : 0;
@@ -340,6 +341,7 @@ export function FanRows({ locale, ranking, metric, show, fill, scope, guest = fa
       <RowFace open={open} me={row.isMe} kind="fans">
         <Rank rank={displayRank} delay={rowDelay(i)} mark={visitDelta(locale, row.delta, ranking.comparable, movedSince(keys[i]!, displayRank))} />
         <NameTarget
+          active={open}
           label={`${row.nickname}, ${rankingsText(locale, guest ? "rkLoginProfile" : "rkViewProfile")}`}
           href={loginHref}
           onOpen={!guest && ref ? () => setPerson({ ref, nickname: row.nickname, avatarUrl: null, tier: row.tier }) : undefined}>
@@ -382,7 +384,7 @@ const creatorStats = (locale: AppLocale, row: HomeCreatorRankingRow, metric: Ran
 export function CreatorRows({ locale, ranking, metric, show, fill, scope, challengeTag = false, guest = false, period = "all" }: { locale: AppLocale; ranking: HomeCreatorRanking; guest?: boolean; metric: HomeCreatorMetric; show?: number; fill?: number; scope: string; challengeTag?: boolean; period?: HomeRankingPeriod }) {
   const { openKey, toggle } = useRankExpand();
   const shown = show === undefined ? ranking.rows : ranking.rows.slice(0, show);
-  const ranks = sharedRanks(shown.map((row) => creatorValue(row, metric)));
+  const ranks = listPlaces(shown.length);
   const { place, movedSince } = useRowMotion(shown.map((row) => row.slug), shown.map((row) => creatorValue(row, metric)), ranks, `creators:${metric}:${period}`);
   const top = ranking.rows[0] ? creatorValue(ranking.rows[0], metric) : 0;
   const accentFirst = !guest;
@@ -396,7 +398,7 @@ export function CreatorRows({ locale, ranking, metric, show, fill, scope, challe
       <RowToggle label={`${rankingsText(locale, "rkRank", [displayRank.toLocaleString(locale)])} ${row.name}`} panelId={`${id}-panel`} open={open} onToggle={() => toggle(row.slug)} />
       <RowFace open={open} kind="creators">
         <Rank rank={displayRank} delay={rowDelay(i)} mark={visitDelta(locale, row.delta, ranking.comparable, movedSince(row.slug, displayRank))} />
-        <NameTarget label={`${row.name}, ${rankingsText(locale, "rkGoFanpage")}`} href={`/${row.slug}?locale=${locale}`}>
+        <NameTarget active={open} label={`${row.name}, ${rankingsText(locale, "rkGoFanpage")}`} href={creatorHomeHref(row.slug, locale)}>
           <span className={styles.avatar} data-first={(accentFirst && i === 0) || undefined}><CreatorAvatar slug={row.slug} src={row.imageUrl} size={28} photos={undefined} /></span>
           <span className={styles.body}>
             <span className={styles.nameLine}><span className={styles.name} title={row.name}>{row.name}</span>
@@ -420,8 +422,8 @@ export function MyRank({ locale, ranking, metric }: { locale: AppLocale; ranking
   const me = ranking.me;
   if (!me) return null;
   const value = metric === "points" ? me.points ?? me.score : me.hearts ?? me.score;
-  const tiedTopIndex = ranking.rows.findIndex(row => fanValue(row, metric) === value);
-  const displayRank = tiedTopIndex >= 0 ? tiedTopIndex + 1 : me.rank;
+  const listed = ranking.rows.findIndex(row => row.isMe);
+  const displayRank = listed >= 0 ? listed + 1 : me.rank;
   const first = ranking.rows[0];
   const gap = first ? fanValue(first, metric) - value : 0;
   return <p className={styles.me} role="status"><span className={styles.meLabel}>{rankingsText(locale, "rkMyRank")}</span>

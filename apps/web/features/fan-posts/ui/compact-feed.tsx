@@ -2,6 +2,7 @@
 import type {ReactNode} from 'react';
 import {FanPostRow} from '@/components/fan-ui/fan-post-row';
 import {FanSurface} from '@/components/fan-ui/fan-surface';
+import {fanUiText} from '@/components/fan-ui/fan-ui-copy';
 import type {AppLocale} from '@/i18n/locales';
 import type {FeedItem} from '../domain/feed';
 import styles from './compact-feed.module.css';
@@ -23,6 +24,6 @@ export function CompactFeed({items,slug,locale,creatorName,returnTo,pinned=[],pa
   const count=isNotice||item.kind==='fan_post'?item.commentCount:isCheer?item.replyCount:0;
   const likes=item.kind==='fan_post'?item.likeCount:isCheer?item.clapCount:undefined,views=item.kind==='fan_post'?item.viewCount:undefined;
   const href=isNotice?`/c/${slug}/notices/${item.slug}?locale=${locale}&returnTo=${encodeURIComponent(returnTo)}`:item.kind==='fan_post'?`/c/${slug}/community/${item.id}?locale=${locale}&returnTo=${encodeURIComponent(returnTo)}`:item.kind==='chzzk'?`/c/${slug}/updates/chzzk/${item.id}?locale=${locale}&returnTo=${encodeURIComponent(returnTo)}`:`/c/${slug}/community/${item.id}?source=cheer&locale=${locale}&returnTo=${encodeURIComponent(returnTo)}`;
-  return <li id={isCheer?`cheer-row-${item.id}`:undefined} key={`${item.kind}:${item.id}`} data-notice={isNotice?'':undefined}><FanPostRow href={href} locale={locale} title={title??''} thumbnail={thumbnailOf(item)} pageImage={pageImage} notice={isNotice} commentCount={count} author={authorNode} time={date} views={views} likes={likes}/></li>;
+  return <li id={isCheer?`cheer-row-${item.id}`:undefined} key={`${item.kind}:${item.id}`} data-notice={isNotice?'':undefined}><FanPostRow href={href} locale={locale} title={title??''} thumbnail={thumbnailOf(item)} pageImage={pageImage} notice={isNotice} commentCount={count} author={authorNode} time={date} views={views} likes={likes} reactedBy={item.kind==='fan_post'&&item.artistReacted?creatorName||fanUiText(locale,'artistTag'):undefined}/></li>;
  })}</ul></FanSurface>;
 }

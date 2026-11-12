@@ -49,13 +49,28 @@ describe("unified creator feed", () => {
     expect((await handler(request("?media=1&q=a"), "artist")).status).toBe(400);
   });
 
+  it("marks fan posts the page artist reacted to, and still loads when the mark cannot be read", async () => {
+    const deps = dependencies();
+    const other = { ...post, id: "00000000-0000-4000-8000-000000000004", createdAt: "2026-09-19T00:00:00Z" };
+    vi.mocked(deps.rpc).mockImplementation(async name => name === "fan_post_artist_reactions" ? [postId] : { entries: [{ pinRank: 0, item: post }, { pinRank: 0, item: other }, { pinRank: 1, item: notice }], hasMore: false });
+    const page = await (await createFeedHandler(deps)(request("?source=all"), "artist")).json();
+    expect(deps.rpc).toHaveBeenCalledWith("fan_post_artist_reactions", { p_post_ids: [postId, other.id] });
+    expect(page.items.find((item: { id: string }) => item.id === postId).artistReacted).toBe(true);
+    expect(page.items.find((item: { id: string }) => item.id === other.id).artistReacted).toBeUndefined();
+
+    vi.mocked(deps.rpc).mockImplementation(async name => { if (name === "fan_post_artist_reactions") throw new Error("missing"); return { entries: [{ pinRank: 0, item: post }], hasMore: false }; });
+    const fallback = await createFeedHandler(deps)(request("?source=fans"), "artist");
+    expect(fallback.status).toBe(200);
+    expect((await fallback.json()).items[0].artistReacted).toBeUndefined();
+  });
+
   it("normalizes decomposed input before binding the cursor", async () => {
     const deps = dependencies();
     vi.mocked(deps.rpc).mockResolvedValue({entries:[{pinRank:0,item:post}],hasMore:true});
     const handler = createFeedHandler(deps);
     const first = await handler(request("?source=fans&q=e%CC%81&limit=1"), "artist");
     const page = await first.json();
-    expect(deps.rpc).toHaveBeenLastCalledWith("read_unified_creator_feed", expect.objectContaining({p_search:"é"}));
+    expect(deps.rpc).toHaveBeenCalledWith("read_unified_creator_feed", expect.objectContaining({p_search:"é"}));
     expect((await handler(request(`?source=fans&q=%C3%A9&cursor=${page.nextCursor}`), "artist")).status).toBe(200);
   });
 
@@ -90,7 +105,7 @@ describe("unified creator feed", () => {
     expect(deps.readChzzk).not.toHaveBeenCalled();
     expect((await handler(request(`?limit=1&cursor=${page.nextCursor}`), "artist")).status).toBe(400);
     expect((await handler(request(`?media=1&limit=1&cursor=${page.nextCursor}`), "artist")).status).toBe(200);
-    expect(deps.rpc).toHaveBeenLastCalledWith("read_unified_creator_feed", expect.objectContaining({ p_before_id: postId, p_media_only: true }));
+    expect(deps.rpc).toHaveBeenCalledWith("read_unified_creator_feed", expect.objectContaining({ p_before_id: postId, p_media_only: true }));
   });
 
   it("keeps old ordinary-feed cursors compatible and rejects them for media pages", async () => {
@@ -147,7 +162,7 @@ describe("unified creator feed", () => {
 
     const second = await handler(request(`?limit=2&cursor=${firstBody.nextCursor}`), "artist");
     expect((await second.json()).items).toEqual([post]);
-    expect(deps.rpc).toHaveBeenLastCalledWith("read_unified_creator_feed", expect.objectContaining({
+    expect(deps.rpc).toHaveBeenCalledWith("read_unified_creator_feed", expect.objectContaining({
       p_before_kind: "notice", p_before_id: noticeId,
     }));
     expect(deps.readChzzk).toHaveBeenCalledTimes(1);

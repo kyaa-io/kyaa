@@ -5,6 +5,8 @@ import {afterEach,beforeEach,expect,it,vi} from 'vitest';
 import {AuthError} from '@/features/auth/domain/auth-errors';
 import {createGroupHandler} from '@/server/groups/routes';
 import {GroupPresence} from './group-presence';
+const frame=vi.hoisted(()=>({value:null as null|{celebrity?:{name:string}}}));
+vi.mock('./group-page-context',()=>({useOptionalGroupPage:()=>frame.value}));
 import {useGroupPresence} from './use-group-presence';
 import { resetAuthReadyDeadlineForTest } from '@/features/auth/client/public-read-auth';
 vi.mock('server-only',()=>({}));
@@ -105,10 +107,33 @@ it('compact mode shows one artist cell only when an artist is online or visited,
  expect(screen.queryByText('Artist')).toBeNull();view.unmount();
 });
 
-it('blinks the online artist icon and stops it under reduced motion',()=>{
+it('pulses the online artist dot three times after the number roll and stops it under reduced motion (11/13)',()=>{
  const css=readFileSync(join(__dirname,'group-presence.module.css'),'utf8');
- expect(css).toMatch(/\.artist\[data-online="true"\] svg \{ animation: presenceBlink/);
- expect(css).toMatch(/@media \(prefers-reduced-motion: reduce\) \{ \.artist\[data-online="true"\] svg \{ animation: none; \} \}/);
+ expect(css).toMatch(/\.liveDot::after \{[^}]*animation: presencePulse 1\.6s var\(--motion-easing\) \.6s 3;/);
+ expect(css).not.toMatch(/infinite/);
+ expect(css).toMatch(/@keyframes presencePulse \{[^}]*transform: scale\(1\);[^}]*\}[^}]*transform: scale\(2\.6\); \}/);
+ expect(css).toMatch(/@media \(prefers-reduced-motion: reduce\) \{ \.liveDot::after \{ animation: none; \} \}/);
+});
+
+it('names the online artist by the fan page name, not the linked account nickname (11/13)',async()=>{
+ response={onlineCount:0,todayCount:0,artists:[{profileId:'30000000-0000-4000-8000-000000000001',nickname:'팬0106',online:true,visitedToday:true}]};
+ frame.value={celebrity:{name:'엘리나'}};
+ const view=render(<GroupPresence pageId={pageId} locale='ko' mode='compact'/>);await flush();
+ expect(screen.getByText('엘리나').parentElement).toHaveAttribute('data-online','true');
+ expect(screen.queryByText('팬0106')).toBeNull();
+ view.unmount();frame.value=null;
+});
+
+it('puts the online artist right after the fan count as a pill',async()=>{
+ response={onlineCount:2,todayCount:3,artists:[{profileId:'30000000-0000-4000-8000-000000000001',nickname:'엘리나',online:true,visitedToday:true}]};
+ const view=render(<GroupPresence pageId={pageId} locale='ko' mode='compact' memberCount={25}/>);await flush();
+ const artist=screen.getByText('엘리나').parentElement!;
+ expect(artist).toHaveAttribute('data-online','true');
+ expect(artist).toHaveAttribute('role','status');
+ expect(artist.querySelector('svg')).toBeNull();
+ expect(artist.previousElementSibling!.querySelector('[aria-label="25"]')).not.toBeNull();
+ expect(artist.nextElementSibling).toHaveTextContent('지금 접속');
+ view.unmount();
 });
 
 it('hangs the separator dots in the gap and clips them at the left edge so a wrapped line never starts with one',()=>{
