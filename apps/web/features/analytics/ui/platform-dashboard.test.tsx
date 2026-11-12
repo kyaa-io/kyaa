@@ -111,7 +111,7 @@ describe("PlatformDashboardContent", () => {
     expect(csv).toContain("\"KARA\"");
   });
 
-  it("sorts and paginates creator rows", () => {
+  it("sorts and paginates creator rows", async () => {
     const creators = Array.from({ length: 11 }, (_, index) => ({
       ...data.creators.value[0],
       celebrityId: `00000000-0000-4000-8000-${String(index + 1).padStart(12, "0")}`,
@@ -124,7 +124,8 @@ describe("PlatformDashboardContent", () => {
     expect(within(section).queryByRole("link", { name: "Creator 11" })).not.toBeInTheDocument();
     fireEvent.click(within(section).getByRole("button", { name: "다음" }));
     expect(within(section).getByRole("link", { name: "Creator 11" })).toBeInTheDocument();
-    fireEvent.change(within(section).getByRole("combobox"), { target: { value: "fans" } });
+    fireEvent.click(within(section).getByRole("button", { name: /^정렬/ }));
+    fireEvent.click(await screen.findByRole("menuitemradio", { name: "누적 팬" }));
     fireEvent.click(within(section).getByRole("button", { name: "오름차순" }));
     expect(within(section).getByRole("link", { name: "Creator 11" })).toBeInTheDocument();
   });

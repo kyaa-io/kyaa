@@ -2,6 +2,7 @@
 export { FanAction, fanActionClassName, type FanActionVariant } from "./fan-action";
 export { FanDialog, FanSheet, useFanWide, type FanDialogProps, type FanSheetProps, type FanDialogPrimary, type FanDialogSecondary } from "./fan-dialog";
 export { FanMenu, type FanMenuProps, type FanMenuItemProps, type FanMenuRadioItem } from "./fan-menu";
+export { FanSelectMenu, type FanSelectMenuProps } from "./fan-select-menu";
 export { FanTooltip, useFanFinePointer, type FanTooltipProps } from "./fan-tooltip";
 export { FanHelpTip } from "./fan-help-tip";
 export { FanCollapsible, FanCollapsibleTrigger, FanDisclosure, type FanCollapsibleProps, type FanCollapsibleTriggerProps } from "./fan-collapsible";

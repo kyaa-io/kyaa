@@ -20,8 +20,6 @@
 
 .hot { display: grid; margin-bottom: var(--fan-section-gap); }
 .hotHead { display: flex; align-items: center; justify-content: space-between; gap: var(--space-2); }
-.hotSort { display: inline-flex; align-items: center; gap: var(--space-1); min-height: 44px; padding: 0; border: 0; background: transparent; color: var(--color-muted); font-size: var(--fan-metadata-size); cursor: pointer; }
-.hotSort:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 .posts { margin: var(--space-3) 0 0; padding: 0; border-top: 1px solid var(--color-line); list-style: none; }
 .post { display: grid; height: 56px; box-sizing: border-box; grid-template-columns: 32px minmax(0, 1fr); grid-template-rows: 22px 18px; align-content: center; column-gap: var(--space-3); border-bottom: 1px solid var(--color-line); }
 .postItem { list-style: none; }
@@ -57,6 +55,5 @@
 }
 
 
-.hotHead .hotSort { width:auto; }
 
 .postItem [data-fan-post-row] > span:first-child{width:40px;height:40px;aspect-ratio:1;border-radius:var(--radius-card);overflow:hidden}.postItem [data-fan-post-row] > span:first-child img{width:100%;height:100%;object-fit:cover}.more nav{display:flex;align-items:center;justify-content:center;gap:var(--space-3)}

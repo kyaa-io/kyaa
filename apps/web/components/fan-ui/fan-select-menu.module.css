@@ -1,0 +1,42 @@
+/* 정렬·필터 알약. 눈에 보이는 높이 36(--fan-chip-height 390은 44로 올라가므로 36 고정), 누르는 영역은 ::after로 44.
+ * 안쪽 여백: 글자 앞 16, 화살표 뒤 12 — lucide 화살표는 24칸 안에서 양쪽 3px씩 비어 있어 보이는 간격이 왼쪽 16·오른쪽 15로 맞는다. */
+.pill {
+  position: relative;
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: var(--space-1);
+  box-sizing: border-box;
+  height: 36px;
+  padding: 0 var(--space-3) 0 var(--space-4);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface);
+  color: var(--color-ink);
+  font: inherit;
+  font-size: var(--fan-chip-size);
+  font-weight: var(--fan-item-title-weight);
+  line-height: 20px;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.pill::after { position: absolute; inset: -4px 0; content: ""; }
+.pill[data-active] { border-color: var(--color-accent-line); background: var(--color-accent-soft); color: var(--color-accent-ink); }
+.pill[data-popup-open] .chevron { transform: rotate(180deg); }
+.pill:disabled { opacity: var(--fan-disabled-opacity); cursor: not-allowed; }
+.pill:focus-visible { outline: var(--focus-width) solid var(--color-focus); outline-offset: 2px; }
+.icon, .chevron { flex: none; }
+.chevron { transition: transform var(--motion-control) var(--motion-easing); }
+.icon { margin-inline-start: calc(var(--space-1) * -1); }
+.text { min-width: 0; }
+
+/* 메뉴는 알약 폭 이상, 가장자리는 알약과 맞춘다(Positioner align). */
+.menu { min-width: max(var(--anchor-width), 160px); }
+
+@media (max-width: 599px) {
+  .pill[data-collapse] { width: 44px; height: 44px; justify-content: center; padding: 0; }
+  .pill[data-collapse]::after { inset: 0; }
+  .pill[data-collapse] .text, .pill[data-collapse] .chevron { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+  .pill[data-collapse] .icon { margin: 0; }
+}
+@media (prefers-reduced-motion: reduce) { .chevron { transition-duration: .01ms; } }

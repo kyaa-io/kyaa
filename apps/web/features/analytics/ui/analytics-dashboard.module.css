@@ -231,8 +231,7 @@
   color: var(--color-muted);
   pointer-events: none;
 }
-.searchField input,
-.sortField select {
+.searchField input {
   width: 100%;
   height: 44px;
   border: 1px solid color-mix(in srgb, var(--color-ink) 11%, transparent);
@@ -242,17 +241,6 @@
   font: inherit;
 }
 .searchField input { padding: 0 12px 0 38px; }
-.sortField {
-  display: flex;
-  min-width: 136px;
-  align-items: center;
-  gap: 8px;
-  color: var(--color-muted);
-  font-size: 12px;
-  font-weight: 700;
-}
-.sortField > span { white-space: nowrap; }
-.sortField select { min-width: 110px; padding: 0 28px 0 10px; }
 .sortDirection,
 .exportButton,
 .pagination button {
@@ -478,7 +466,6 @@
   .section {
     padding: 16px;
   }
-  .sortField { flex: 1 1 100%; }
   .sortDirection, .exportButton { flex: 1 1 0; justify-content: center; }
 }
 @media (min-width: 80rem) {
