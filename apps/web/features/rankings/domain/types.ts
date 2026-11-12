@@ -126,7 +126,9 @@ export const homeFanRankingSchema = z.object({
   /** score is the metric's value; hearts and points name the values (both values independent of the sort metric; points null only when that day has no points build). */
   rows: z.array(platformFanRankingRowSchema.extend({ delta, favorite, fans: count.optional(), isNew: z.boolean().optional(), weekGain: z.number().int().nullable().optional(), dayGain, profileRef: homeFanProfileRefSchema.optional(), hearts: count.optional(), points: count.nullable().optional(),
     /** points list only: tickets held now and points earned all time (the row's points are the period's). */
-    tickets: count.optional(), totalPoints: count.optional() })).max(HOME_RANKING_LIMIT),
+    tickets: count.optional(), totalPoints: count.optional(),
+    /** points list only: the fan's check-in dates counted once each, and public posts still visible (read live). */
+    attendanceDays: count.optional(), posts: count.optional() })).max(HOME_RANKING_LIMIT),
   me: z.object({ rank: z.number().int().min(1), score: count, inTop: z.boolean(), hearts: count.optional(), points: count.nullable().optional(), delta: delta.optional() }).nullable(),
 });
 export type HomeFanRanking = z.infer<typeof homeFanRankingSchema>;

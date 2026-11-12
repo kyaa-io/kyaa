@@ -103,7 +103,7 @@ it("a row is one line: movement beside the name, LIVE, the value; today's gain a
   expect(row("새얼굴").querySelector("[data-rank-panel]")!.textContent).toContain("오늘−2");
 });
 
-it("opens one row at a time with the action to the page, and closes it with the same row", async () => {
+it("opens one row at a time, the picture and name lead to the page, and the row closes with the same click", async () => {
   stub();
   const view = render(<RankingBoard locale="ko" />);
   await inRow("엘리나");
@@ -113,7 +113,8 @@ it("opens one row at a time with the action to the page, and closes it with the 
   expect(rows()[0]).toHaveAttribute("aria-expanded", "true");
   const panelId = rows()[0]!.getAttribute("aria-controls")!;
   expect(view.container.querySelector(`#${panelId}`)).not.toBeNull();
-  expect(screen.getByRole("link", { name: "팬페이지 가기" })).toHaveAttribute("href", "/elina?locale=ko");
+  expect(screen.getByRole("link", { name: "엘리나, 팬페이지 가기" })).toHaveAttribute("href", "/elina?locale=ko");
+  expect(view.container.querySelector("[data-rank-panel] a, [data-rank-panel] button")).toBeNull();
   fireEvent.click(rows()[1]!);
   expect(rows()[0]).toHaveAttribute("aria-expanded", "false");
   expect(rows()[1]).toHaveAttribute("aria-expanded", "true");
@@ -126,15 +127,13 @@ it("a signed-in fan row opens the profile window; a signed-out one leads to sign
   stubRows([fanRow(1, { profileRef: { kind: "home_ranking", day: "2026-11-09", computedAt: "2026-11-09T00:00:00Z", metric: "hearts", rank: 1, signature: "s" } })], []);
   const view = render(<RankingBoard locale="ko" />);
   await screen.findByText("하트팬1");
-  fireEvent.click(view.container.querySelector("li[data-row='fan-rank'] > button")!);
-  fireEvent.click(screen.getByRole("button", { name: "프로필 보기" }));
+  fireEvent.click(screen.getByRole("button", { name: "하트팬1, 프로필 보기" }));
   expect(await screen.findByRole("dialog", { name: "하트팬1" })).toBeInTheDocument();
   view.unmount(); clearResources();
   auth.value = { ...auth.value, authenticated: false, user: null };
   const guest = render(<RankingBoard locale="ko" />);
   await screen.findByText("하트팬1");
-  fireEvent.click(guest.container.querySelector("li[data-row='fan-rank'] > button")!);
-  const login = screen.getByRole("link", { name: "로그인하고 프로필 보기" });
+  const login = screen.getAllByRole("link", { name: "하트팬1, 로그인하고 프로필 보기" })[0]!;
   expect(decodeURIComponent(login.getAttribute("href")!)).toContain("/?locale=ko");
 });
 

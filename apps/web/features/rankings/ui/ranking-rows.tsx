@@ -264,14 +264,22 @@ const gapToFirst = (first: boolean, value: number, top: number) => first ? null 
 /** One mark that rings once around the row's border when its value changes (see ringPulse); invisible otherwise. */
 const Pulse = () => <span className={styles.pulse} data-pulse="" aria-hidden="true"><span className={styles.sweep} /></span>;
 
-/** The row: one button over the whole 52px line, so the touch target is the row. The panel (if open) follows it inside the same item. */
-function RowButton({ panelId, open, onToggle, me, kind, children }: { panelId: string; open: boolean; onToggle: () => void; me?: boolean; kind: RankingsTab; children: ReactNode }) {
-  return <FanAction variant="text" className={styles.listRow} aria-expanded={open} aria-controls={open ? panelId : undefined} onClick={onToggle}>
-    <span className={styles.rowFace} data-kind={kind} data-me={me || undefined}>
-      {children}
-      <FanIcon icon={open ? ChevronUp : ChevronDown} size={16} className={styles.chevron} />
-    </span>
-  </FanAction>;
+/** The row: one button over the whole 48px line (`.toggle`, an overlay: the touch target is the row) and the visible line above it. The line lets clicks through to the button, except on the
+ * picture and name, which are a link of their own (`NameTarget`). The panel (if open) follows inside the same item. */
+function RowToggle({ label, panelId, open, onToggle }: { label: string; panelId: string; open: boolean; onToggle: () => void }) {
+  return <FanAction variant="text" className={styles.toggle} ariaLabel={label} aria-expanded={open} aria-controls={open ? panelId : undefined} onClick={onToggle} />;
+}
+function RowFace({ open, me, kind, children }: { open: boolean; me?: boolean; kind: RankingsTab; children: ReactNode }) {
+  return <span className={styles.rowFace} data-kind={kind} data-me={me || undefined}>
+    {children}
+    <FanIcon icon={open ? ChevronUp : ChevronDown} size={16} className={styles.chevron} />
+  </span>;
+}
+/** The picture and the name together: a fan's profile (signed in: opens the profile window; signed out: the way to sign in) or a creator's fan page. A row with no profile to open (no reference) draws them as plain content. */
+function NameTarget({ label, href, onOpen, children }: { label: string; href?: string; onOpen?: () => void; children: ReactNode }) {
+  if (href) return <FanAction variant="text" className={styles.profile} href={href} ariaLabel={label}>{children}</FanAction>;
+  if (onOpen) return <FanAction variant="text" className={styles.profile} ariaLabel={label} onClick={onOpen}>{children}</FanAction>;
+  return <span className={styles.profile}><span>{children}</span></span>;
 }
 const LiveMark = ({ locale, name }: { locale: AppLocale; name: string }) => <span className={styles.live} role="img" aria-label={rankingsText(locale, "rkCreatorLive", [name])}><span className={styles.liveDot} aria-hidden="true" />LIVE</span>;
 
@@ -290,23 +298,29 @@ export function FanRows({ locale, ranking, metric, show, fill, scope, guest = fa
   const top = ranking.rows[0] ? fanValue(ranking.rows[0], metric) : 0;
   const accentFirst = !guest && !ranking.me;
   const days = ranking.weekGainDays ?? 0;
+  const loginHref = guest ? String(fanLoginHref(locale, `/?locale=${locale}`)) : undefined;
   return <><ol className={styles.rows}>{shown.map((row, i) => {
     const id = `rank-${scope}-fans-${row.rank}`;
     const open = openKey === keys[i];
     const value = fanValue(row, metric);
+    const ref = row.profileRef;
     return <li key={keys[i]} ref={place(keys[i]!)} id={id} className={styles.item} data-row="fan-rank" data-kind="fans" data-tint={((accentFirst && i === 0) || row.isMe || open) || undefined} data-me={row.isMe || undefined} aria-current={row.isMe || undefined}>
-      <RowButton panelId={`${id}-panel`} open={open} onToggle={() => toggle(keys[i]!)} me={row.isMe} kind="fans">
+      <RowToggle label={`${rankingsText(locale, "rkRank", [row.rank.toLocaleString(locale)])} ${row.nickname}`} panelId={`${id}-panel`} open={open} onToggle={() => toggle(keys[i]!)} />
+      <RowFace open={open} me={row.isMe} kind="fans">
         <Rank rank={row.rank} mark={visitDelta(locale, row.delta, ranking.comparable, movedSince(keys[i]!, row.rank))} />
-        <span className={styles.avatar} data-first={(accentFirst && i === 0) || undefined}><Avatar avatar={fanAvatar(row.characterId)} imageUrl={null} label="" size={28} /></span>
-        <span className={styles.body}>
-          <span className={styles.nameLine}><span className={styles.name} title={row.nickname}>{row.nickname}</span></span>
-        </span>
+        <NameTarget
+          label={`${row.nickname}, ${rankingsText(locale, guest ? "rkLoginProfile" : "rkViewProfile")}`}
+          href={loginHref}
+          onOpen={!guest && ref ? () => setPerson({ ref, nickname: row.nickname, avatarUrl: null, tier: row.tier }) : undefined}>
+          <span className={styles.avatar} data-first={(accentFirst && i === 0) || undefined}><Avatar avatar={fanAvatar(row.characterId)} imageUrl={null} label="" size={28} /></span>
+          <span className={styles.body}>
+            <span className={styles.nameLine}><span className={styles.name} title={row.nickname}>{row.nickname}</span></span>
+          </span>
+        </NameTarget>
         <span className={styles.value}><Main locale={locale} metric={metric} value={value} /></span>
-      </RowButton>
+      </RowFace>
       <Pulse />
-      {open ? <RankRowPanel id={`${id}-panel`} kind="fan" row={row} days={days} guest={guest} locale={locale} gap={gapToFirst(i === 0 && ranking.rows[0] === row, value, top)} unit={metric === "points" ? "points" : "hearts"} extra={fanStats(locale, row, metric)}
-        onOpenProfile={() => { if (row.profileRef) setPerson({ ref: row.profileRef, nickname: row.nickname, avatarUrl: null, tier: row.tier }); }}
-        loginHref={fanLoginHref(locale, `/?locale=${locale}`)} /> : null}
+      {open ? <RankRowPanel id={`${id}-panel`} kind="fan" row={row} days={days} locale={locale} gap={gapToFirst(i === 0 && ranking.rows[0] === row, value, top)} unit={metric === "points" ? "points" : "hearts"} extra={fanStats(locale, row, metric)} /> : null}
     </li>;
   })}{fill ? <Placeholders from={shown.length} to={fill} /> : null}</ol>{person && !guest ? <ProfileModal person={person} locale={locale} onClose={() => setPerson(null)} /> : null}</>;
 }
@@ -315,10 +329,18 @@ const creatorValue = (row: HomeCreatorRankingRow, metric: RankingMetric) => metr
 /** A stat the opened row adds (대표 11/11 01:55): only a real, non-zero count; zero and a missing value leave the cell out. */
 const statCell = (locale: AppLocale, key: string, label: string, value: number | null | undefined, unit: RankUnitKind) =>
   typeof value === "number" && value > 0 ? [{ key, label, value: value.toLocaleString(locale), unit }] : [];
-/** Every fan row: the grade (the badge the app uses for it and its name in the viewer's language; a row with no grade leaves the cell out). Fans by points: then hearts and entry tickets held. */
+/** Every fan row's totals, first in the opened row (사용자 11/12 12:35): the grade (the badge the app uses for it and its name in the viewer's language), then — on the points list — entry tickets,
+ * check-in days, posts and hearts. A total the answer does not have, or that is zero, leaves its cell out. */
+const countCell = (locale: AppLocale, key: string, label: string, value: number | null | undefined) =>
+  typeof value === "number" && value > 0 ? [{ key, label, value: value.toLocaleString(locale) }] : [];
 const fanStats = (locale: AppLocale, row: HomeFanRankingRow, metric: RankingMetric) => [
   ...(row.tier ? [{ key: "tier", label: rankingsText(locale, "rkPanelTier"), value: levelLabel(locale, row.tier), icon: <FanTierBadge tier={row.tier} locale={locale} size={16} /> }] : []),
-  ...(metric === "points" ? [...statCell(locale, "hearts", rankingsText(locale, "rkPanelHearts"), row.hearts, "hearts"), ...statCell(locale, "tickets", rankingsText(locale, "rkPanelTickets"), row.tickets, "tickets")] : []),
+  ...(metric === "points" ? [
+    ...statCell(locale, "tickets", rankingsText(locale, "rkPanelTickets"), row.tickets, "tickets"),
+    ...countCell(locale, "attendance", rankingsText(locale, "rkPanelAttendance"), row.attendanceDays),
+    ...countCell(locale, "posts", rankingsText(locale, "rkPanelPosts"), row.posts),
+    ...statCell(locale, "hearts", rankingsText(locale, "rkPanelHearts"), row.hearts, "hearts"),
+  ] : []),
 ];
 
 /** Creators by likes: hearts (찐팬 is a built-in cell), and all-time likes when the list counts a period. No SNS follower count is stored, so none is shown. */
@@ -338,18 +360,21 @@ export function CreatorRows({ locale, ranking, metric, show, fill, scope, challe
     const open = openKey === row.slug;
     const value = creatorValue(row, metric);
     return <li key={row.slug} ref={place(row.slug)} id={id} className={styles.item} data-row="creator-rank" data-kind="creators" data-tint={((accentFirst && i === 0) || open) || undefined}>
-      <RowButton panelId={`${id}-panel`} open={open} onToggle={() => toggle(row.slug)} kind="creators">
+      <RowToggle label={`${rankingsText(locale, "rkRank", [row.rank.toLocaleString(locale)])} ${row.name}`} panelId={`${id}-panel`} open={open} onToggle={() => toggle(row.slug)} />
+      <RowFace open={open} kind="creators">
         <Rank rank={row.rank} mark={visitDelta(locale, row.delta, ranking.comparable, movedSince(row.slug, row.rank))} />
-        <span className={styles.avatar} data-first={(accentFirst && i === 0) || undefined}><CreatorAvatar slug={row.slug} src={row.imageUrl} size={28} photos={undefined} /></span>
-        <span className={styles.body}>
-          <span className={styles.nameLine}><span className={styles.name} title={row.name}>{row.name}</span>
-            {row.liveNow ? <LiveMark locale={locale} name={row.name} /> : null}
-            {challengeTag && row.challenge ? <FanTag tone="fan" className={styles.challenge}>{rankingsText(locale, "jjTag")}</FanTag> : null}</span>
-        </span>
+        <NameTarget label={`${row.name}, ${rankingsText(locale, "rkGoFanpage")}`} href={`/${row.slug}?locale=${locale}`}>
+          <span className={styles.avatar} data-first={(accentFirst && i === 0) || undefined}><CreatorAvatar slug={row.slug} src={row.imageUrl} size={28} photos={undefined} /></span>
+          <span className={styles.body}>
+            <span className={styles.nameLine}><span className={styles.name} title={row.name}>{row.name}</span>
+              {row.liveNow ? <LiveMark locale={locale} name={row.name} /> : null}
+              {challengeTag && row.challenge ? <FanTag tone="fan" className={styles.challenge}>{rankingsText(locale, "jjTag")}</FanTag> : null}</span>
+          </span>
+        </NameTarget>
         <span className={styles.value}><Main locale={locale} metric={metric} value={value} /></span>
-      </RowButton>
+      </RowFace>
       <Pulse />
-      {open ? <RankRowPanel id={`${id}-panel`} kind="creator" row={row} days={days} guest={guest} locale={locale} gap={gapToFirst(i === 0 && ranking.rows[0] === row, value, top)} unit={metric === "likes" ? "likes" : "hearts"} extra={creatorStats(locale, row, metric, period)} /> : null}
+      {open ? <RankRowPanel id={`${id}-panel`} kind="creator" row={row} days={days} locale={locale} gap={gapToFirst(i === 0 && ranking.rows[0] === row, value, top)} unit={metric === "likes" ? "likes" : "hearts"} extra={creatorStats(locale, row, metric, period)} /> : null}
     </li>;
   })}{fill ? <Placeholders from={shown.length} to={fill} /> : null}</ol>;
 }

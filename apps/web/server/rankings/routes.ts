@@ -221,7 +221,7 @@ export function createRankingsHandlers(deps: RankingsDependencies) {
         const r = obj(row);
         return { rank: r.rank, score: r.score, hearts: r.hearts, points: r.points ?? null, fans: r.fans, isNew: r.isNew === true, nickname: r.nickname, characterId: r.characterId, tier: r.tier ?? null,
           isMe: appUserId !== null && r.isMe === true, delta: r.delta ?? null, favorite: favoriteIn(r.favorite, lang), weekGain: r.weekGain ?? null, dayGain: r.dayGain ?? null,
-          ...(metric === "points" ? { tickets: r.tickets, totalPoints: r.totalPoints } : {}),
+          ...(metric === "points" ? { tickets: r.tickets, totalPoints: r.totalPoints, attendanceDays: r.attendanceDays, posts: r.posts } : {}),
           ...(appUserId ? { profileRef: signHomeProfileRef(checked(homeFanProfileLocatorSchema, r.profileRef), appUserId, deps.profileRefSecret) } : {}) };
       });
       const body = checked(homeFanRankingSchema, {
