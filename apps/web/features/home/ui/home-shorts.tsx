@@ -14,6 +14,7 @@ import { homeShortsPageSchema, type HomeShort } from "@/features/home/domain/hom
 import { toContentLocale, type AppLocale } from "@/i18n/locales";
 import { participationCopy } from "@/i18n/catalogs/features__schedules__ui__participation";
 import { FanScrollRow } from "@/components/fan-ui/fan-scroll-row";
+import { creatorHomeHref } from "@/features/creator/domain/creator-navigation";
 import { ShortsEngagement } from "./shorts-engagement";
 import { ShortsPlayer } from "./shorts-player";
 import styles from "./home-shorts.module.css";
@@ -28,6 +29,16 @@ const navigation: Record<AppLocale, [string, string, string]> = {
 const shortCover = (item: HomeShort) => item.platform === "tiktok" ? `/images/media/tiktok/${item.videoId}.jpg` : `https://i.ytimg.com/vi/${item.videoId}/oardefault.jpg`;
 
 const PAGE_SIZE = 12;
+
+/** The creator's fan page from a short (PM 11/13): picture, name and `모임 ›` as one link, apart from the play button. Every short comes from a registered creator, so the page exists. */
+function CreatorGroupLink({ item, locale, className, source = false }: { item: HomeShort; locale: AppLocale; className: string; source?: boolean }) {
+  const group = fanUiText(locale, "kindGroup");
+  return <FanAction variant="text" className={className} href={creatorHomeHref(item.creator.slug, locale)} ariaLabel={`${item.creator.name} ${group}`}>
+    <CreatorAvatar slug={item.creator.slug} src={item.creator.avatar?.src ?? null} photos={item.creator.avatar?.photos} size={24} />
+    <FanText role="meta" className={styles.creatorName}>{source ? `${item.creator.name} · ${item.platform === "tiktok" ? "TikTok" : "YouTube"}` : item.creator.name}</FanText>
+    <FanText role="label" className={styles.creatorGo}>{group}<span aria-hidden="true">›</span></FanText>
+  </FanAction>;
+}
 
 export function HomeShorts({ items: firstItems, locale, layout = "rail", initialVideo, offset = 0, hasMore: firstHasMore = false }: { items: readonly HomeShort[]; locale: AppLocale; layout?: "rail" | "grid"; initialVideo?: string; offset?: number; hasMore?: boolean }) {
   // The grid loads the next page when its end scrolls into view and the rail when its right end comes near, so the rail always runs to the
@@ -61,6 +72,7 @@ export function HomeShorts({ items: firstItems, locale, layout = "rail", initial
   }, [layout, hasMore, failed, loadMore]);
   const [index, setIndex] = useState<number | null>(() => { const i = items.findIndex(item => item.videoId === initialVideo); return i < 0 ? null : i; });
   const [more, setMore] = useState(false);
+  const [endedId, setEndedId] = useState<string | null>(null);
   const startY = useRef<number | null>(null);
   const wheelAt = useRef(0);
   const selected = index === null ? null : items[index];
@@ -78,14 +90,17 @@ export function HomeShorts({ items: firstItems, locale, layout = "rail", initial
     onTouchStart: (e: React.TouchEvent) => { startY.current = e.touches[0]?.clientY ?? null; },
     onTouchEnd: (e: React.TouchEvent) => { if (startY.current !== null) { const difference = startY.current - (e.changedTouches[0]?.clientY ?? startY.current); if (Math.abs(difference) >= 45) move(difference > 0 ? 1 : -1); } startY.current = null; },
   };
+  // The /shorts grid: the card button plays (cover and title); the creator line under it is its own link to the fan page. The home rail keeps its compact caption.
+  const grid = layout === "grid";
   const cards = items.map((item, i) => <li key={item.id} className={styles.item} data-row="short">
         <FanAction variant="text" type="button" className={styles.card} ariaLabel={item.title} onClick={() => setIndex(i)}>
           <span className={`${styles.cover} ${mediaFillClass}`}><MediaThumbnail image={item.thumbnail ?? shortCover(item)} href={item.href} kind="videos" locale={locale} backdrop onMissing={() => hideUncovered(item.id)} /><span className={styles.play} aria-hidden="true"><FanIcon icon={Play} filled /></span></span>
-          <span className={styles.caption}>
+          {grid ? <span className={`${styles.title} ${styles.gridTitle}`}>{item.title}</span> : <span className={styles.caption}>
             <CreatorAvatar slug={item.creator.slug} src={item.creator.avatar?.src ?? null} photos={item.creator.avatar?.photos} size={32} />
             <span className={styles.details}><span className={styles.title}>{item.title}</span><FanText role="meta" className={styles.meta}>{item.creator.name} · {item.platform === "tiktok" ? "TikTok" : "YouTube"}</FanText></span>
-          </span>
+          </span>}
         </FanAction>
+        {grid && <CreatorGroupLink item={item} locale={locale} className={styles.creatorLink} source />}
       </li>);
   const nearEnd = useCallback(() => { if (hasMore && !failed) void loadMore(); }, [hasMore, failed, loadMore]);
   return <>
@@ -96,9 +111,11 @@ export function HomeShorts({ items: firstItems, locale, layout = "rail", initial
       {selected && <div className={styles.player} data-outbound-placement="shorts-player" onWheel={e => { if (Math.abs(e.deltaY) > 20 && Date.now() - wheelAt.current > 600) { wheelAt.current = Date.now(); move(e.deltaY > 0 ? 1 : -1); } }}>
         <div className={styles.stage}>
           <div className={styles.swipeZone} {...swipe} aria-hidden="true" />
-          <ShortsPlayer key={selected.videoId} item={selected} locale={locale} />
+          <ShortsPlayer key={selected.videoId} item={selected} locale={locale} onEnded={() => setEndedId(selected.videoId)} />
           <div className={styles.swipeZone} {...swipe} aria-hidden="true" />
         </div>
+        {/* After the short ends, the same line lights up as the way on to the creator's page; nothing covers the video. */}
+        <div className={styles.viewerCreator} data-ended={endedId === selected.videoId || undefined}><CreatorGroupLink item={selected} locale={locale} className={styles.viewerCreatorLink} /></div>
         <div className={styles.bottomBar} {...swipe}>
         <ShortsEngagement key={selected.videoId} videoId={selected.videoId} locale={locale} offset={offset + Math.floor((index ?? 0) / PAGE_SIZE) * PAGE_SIZE} />
         <div className={styles.controls}>

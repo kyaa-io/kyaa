@@ -72,3 +72,18 @@
 .bottomBar .controls button { width:var(--min-target); height:var(--min-target); background:transparent; }
 .bottomBar .controls > span { white-space:nowrap; }
 @media (width < 48rem) { .bottomBar .controls button:first-child, .bottomBar .controls button:nth-child(2) { display:none; } }
+
+/* /shorts 카드(PM 11/13): 재생 버튼(표지+제목 한 줄)과 크리에이터 줄(아바타 24 · 이름 · 출처 + 오른쪽 '모임 ›')을 나눈다. 크리에이터 줄이 팬페이지로 가는 링크(누르는 높이 44). */
+.item .gridTitle { text-align:start; }
+.item .creatorLink { display:flex; justify-content:flex-start; align-items:center; gap:var(--space-2); width:100%; min-width:0; min-height:var(--min-target); padding:0; border-radius:var(--radius-small); text-align:start; }
+.creatorLink > span, .viewerCreatorLink > span { display:contents; }
+.creatorName { flex:1; min-width:0; text-align:start; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.creatorGo { display:inline-flex; flex:none; gap:var(--space-1); color:var(--color-accent-ink); }
+/* 뷰어: 영상 아래 한 줄. 재생이 끝나면 '모임 ›'이 분홍 알약으로 바뀌어 다음 갈 곳을 알린다(영상 위에 덮지 않음). */
+.viewerCreator { display:flex; justify-content:center; width:100%; padding:0 var(--space-2); box-sizing:border-box; }
+.viewerCreator .viewerCreatorLink { display:flex; justify-content:flex-start; align-items:center; gap:var(--space-2); width:100%; max-width:min(56.25dvh,420px); min-height:var(--min-target); padding:0 var(--space-1); border-radius:var(--radius-small); color:var(--color-surface); text-align:start; }
+.viewerCreator .viewerCreatorLink .creatorName { color:var(--color-surface); }
+.viewerCreator .creatorGo { align-items:center; min-height:28px; padding:0 var(--space-3); border-radius:var(--radius-pill); color:var(--color-accent-line); transition:background-color var(--motion-fast) var(--motion-easing), color var(--motion-fast) var(--motion-easing); }
+.viewerCreator[data-ended] .creatorGo { background:var(--color-accent); color:var(--color-surface); }
+@media (hover: hover) and (pointer: fine) { .viewerCreator .viewerCreatorLink:hover:not(:disabled, [aria-disabled="true"]) { background:var(--color-shortform-control); } }
+@media (prefers-reduced-motion: reduce) { .viewerCreator .creatorGo { transition:none; } }

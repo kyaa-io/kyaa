@@ -12,6 +12,7 @@ import { FanSkeleton } from "@/components/fan-ui/fan-skeleton";
 import { FanState } from "@/components/fan-ui/fan-state";
 import { FanTag } from "@/components/fan-ui/fan-tag";
 import { fanLoginHref } from "@/components/login-href";
+import { creatorHomeHref } from "@/features/creator/domain/creator-navigation";
 import { Avatar } from "@/features/profile/ui/avatar";
 import { levelLabel } from "@/features/passport/domain/passport-read-model";
 import { FanTierBadge } from "@/features/rewards/ui/fan-tier-badge";
@@ -396,7 +397,7 @@ export function CreatorRows({ locale, ranking, metric, show, fill, scope, challe
       <RowToggle label={`${rankingsText(locale, "rkRank", [displayRank.toLocaleString(locale)])} ${row.name}`} panelId={`${id}-panel`} open={open} onToggle={() => toggle(row.slug)} />
       <RowFace open={open} kind="creators">
         <Rank rank={displayRank} delay={rowDelay(i)} mark={visitDelta(locale, row.delta, ranking.comparable, movedSince(row.slug, displayRank))} />
-        <NameTarget label={`${row.name}, ${rankingsText(locale, "rkGoFanpage")}`} href={`/${row.slug}?locale=${locale}`}>
+        <NameTarget label={`${row.name}, ${rankingsText(locale, "rkGoFanpage")}`} href={creatorHomeHref(row.slug, locale)}>
           <span className={styles.avatar} data-first={(accentFirst && i === 0) || undefined}><CreatorAvatar slug={row.slug} src={row.imageUrl} size={28} photos={undefined} /></span>
           <span className={styles.body}>
             <span className={styles.nameLine}><span className={styles.name} title={row.name}>{row.name}</span>

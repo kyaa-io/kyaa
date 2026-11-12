@@ -20,7 +20,7 @@ function rememberMuted(value: boolean) {
 }
 
 type YouTubePlayer = { mute(): void; unMute(): void; isMuted(): boolean; playVideo(): void; destroy(): void };
-type YouTubeAPI = { Player: new (node: HTMLElement, options: { videoId: string; playerVars: Record<string, number>; events: { onReady: (event: { target: YouTubePlayer }) => void; onStateChange: (event: { target: YouTubePlayer }) => void; onAutoplayBlocked: () => void } }) => YouTubePlayer };
+type YouTubeAPI = { Player: new (node: HTMLElement, options: { videoId: string; playerVars: Record<string, number>; events: { onReady: (event: { target: YouTubePlayer }) => void; onStateChange: (event: { target: YouTubePlayer; data: number }) => void; onAutoplayBlocked: () => void } }) => YouTubePlayer };
 declare global { interface Window { YT?: YouTubeAPI; onYouTubeIframeAPIReady?: () => void } }
 let youtubeLoader: Promise<YouTubeAPI> | null = null;
 function youtubeAPI(): Promise<YouTubeAPI> {
@@ -38,7 +38,10 @@ function youtubeAPI(): Promise<YouTubeAPI> {
 const soundCopy: Record<AppLocale, [string, string]> = {
   ko: ["소리 켜기", "음소거"], en: ["Turn sound on", "Mute"], ja: ["音声をオン", "ミュート"], "zh-Hans": ["打开声音", "静音"], "zh-Hant": ["開啟聲音", "靜音"], es: ["Activar sonido", "Silenciar"], id: ["Nyalakan suara", "Bisukan"], vi: ["Bật âm thanh", "Tắt tiếng"], th: ["เปิดเสียง", "ปิดเสียง"], pt: ["Ativar som", "Silenciar"], fr: ["Activer le son", "Couper le son"], ru: ["Включить звук", "Выключить звук"],
 };
-export function ShortsPlayer({ item, locale }: { item: HomeShort; locale: AppLocale }) {
+/** `onEnded`: the video played to its end (YouTube state 0, TikTok onStateChange 0). */
+export function ShortsPlayer({ item, locale, onEnded }: { item: HomeShort; locale: AppLocale; onEnded?: () => void }) {
+  const ended = useRef(onEnded);
+  ended.current = onEnded;
   const [muted, setMuted] = useState(true);
   const [blocked, setBlocked] = useState(false);
   const iframe = useRef<HTMLIFrameElement>(null);
@@ -71,6 +74,7 @@ export function ShortsPlayer({ item, locale }: { item: HomeShort; locale: AppLoc
           const value = event.data.value;
           if (value !== desired.current) { desired.current = value; setMuted(value); rememberMuted(value); }
         }
+        if (event.data.type === "onStateChange" && event.data.value === 0) ended.current?.();
         if (event.data.type === "onPlayerError" && event.data.value?.errorCode === 3002) { setSound(true, false); setBlocked(true); }
       };
       window.addEventListener("message", onMessage);
@@ -81,7 +85,7 @@ export function ShortsPlayer({ item, locale }: { item: HomeShort; locale: AppLoc
       if (disposed || !youtubeNode.current) return;
       player.current = new api.Player(youtubeNode.current, { videoId: item.videoId, playerVars: { rel: 0, playsinline: 1, enablejsapi: 1, autoplay: 0 }, events: {
         onReady: event => { if (disposed) return; ready.current = true; player.current = event.target; setSound(desired.current, false); },
-        onStateChange: event => { if (!disposed && ready.current && !syncing.current) { const value = event.target.isMuted(); if (value !== desired.current) { desired.current = value; setMuted(value); rememberMuted(value); } } },
+        onStateChange: event => { if (!disposed && event.data === 0) ended.current?.(); if (!disposed && ready.current && !syncing.current) { const value = event.target.isMuted(); if (value !== desired.current) { desired.current = value; setMuted(value); rememberMuted(value); } } },
         onAutoplayBlocked: () => { if (!disposed) { setSound(true, false); setBlocked(true); } },
       } });
     }).catch(() => undefined);

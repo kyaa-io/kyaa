@@ -101,3 +101,31 @@ describe("shorts scroll loading", () => {
     expect(screen.queryByRole("button", { name: "다시 시도" })).toBeNull();
   });
 });
+
+describe("shorts → fan page (PM 11/13)", () => {
+  const clips = [{ id: "e1", videoId: "videoE", title: "엘리나 영상", href: "https://youtube.com/watch?v=videoE", creator: { slug: "elina", name: "엘리나" } }] as HomeShort[];
+  it("the /shorts card keeps play on its own button and puts the creator and 모임 on a separate link to the fan page", () => {
+    render(<HomeShorts items={clips} locale="ko" layout="grid" />);
+    const item = screen.getByRole("listitem");
+    const link = within(item).getByRole("link", { name: "엘리나 모임" });
+    expect(link).toHaveAttribute("href", "/elina?locale=ko");
+    expect(link).toHaveTextContent("엘리나 · YouTube");
+    expect(within(item).getByRole("button", { name: "엘리나 영상" }).querySelector("a")).toBeNull();
+  });
+  it("the home rail keeps its compact caption without the extra link", () => {
+    render(<HomeShorts items={clips} locale="ko" />);
+    expect(screen.queryByRole("link", { name: "엘리나 모임" })).toBeNull();
+  });
+  it("the viewer shows the creator's way to the fan page under the video and lights it when a TikTok short ends", () => {
+    const tiktok = [{ id: "t9", platform: "tiktok", videoId: "7690854938997558549", title: "틱톡", href: "https://www.tiktok.com/video/7690854938997558549", creator: { slug: "elina", name: "엘리나" } }] as HomeShort[];
+    render(<HomeShorts items={tiktok} locale="ko" layout="grid" initialVideo="7690854938997558549" />);
+    const dialog = screen.getByRole("dialog");
+    const link = within(dialog).getByRole("link", { name: "엘리나 모임" });
+    expect(link).toHaveAttribute("href", "/elina?locale=ko");
+    const line = link.parentElement!;
+    expect(line).not.toHaveAttribute("data-ended");
+    const frame = within(dialog).getByTitle("틱톡") as HTMLIFrameElement;
+    act(() => { window.dispatchEvent(new MessageEvent("message", { origin: "https://www.tiktok.com", source: frame.contentWindow, data: { "x-tiktok-player": true, type: "onStateChange", value: 0 } })); });
+    expect(line).toHaveAttribute("data-ended");
+  });
+});

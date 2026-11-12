@@ -128,3 +128,22 @@ it('omits reaction when the catalog does not support it',async()=>{
  const {reaction,...supported}=rules;h.catalog={version:1,rules:supported,missionBook:{}};
  ui();await row('post');await waitFor(()=>expect(rowNow('reaction')).toBeNull());
 });
+
+it("with a preview, shows the first three activities and opens the rest from 전체 보기 on the title line (PM 11/13)", async () => {
+  const { container } = render(<DukjilProvider slug="elina" locale="ko"><FanMissions preview={3} locale="ko" slug="elina" title="팬 활동" passportHref="/passports/p?locale=ko" proofHref="/elina?tab=certifications&locale=ko" onAttendance={onAttendance} /></DukjilProvider>);
+  await row("comment");
+  const keys = () => [...container.querySelectorAll("li[data-mission]")].map(node => node.getAttribute("data-mission"));
+  expect(keys()).toEqual(["checkin", "post", "comment"]);
+  const more = screen.getByRole("button", { name: /전체 보기/ });
+  expect(more).toHaveAttribute("aria-expanded", "false");
+  expect(container.querySelector(`#${CSS.escape(more.getAttribute("aria-controls")!)}`)).not.toBeNull();
+  expect(more.closest("[data-fan-missions] > div")!.querySelector("h2")).toHaveTextContent("팬 활동");
+  fireEvent.click(more);
+  expect(keys()).toEqual(["checkin", "post", "comment", "reaction", "share", "invite", "proof"]);
+  expect(screen.getByRole("button", { name: /접기/ })).toHaveAttribute("aria-expanded", "true");
+});
+it("without a preview, lists every activity and draws no 전체 보기", async () => {
+  ui();
+  await row("proof");
+  expect(screen.queryByRole("button", { name: /전체 보기/ })).toBeNull();
+});
