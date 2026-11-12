@@ -79,19 +79,6 @@ export const messages = {
     ru: "Впереди новые моменты."
 
   },
-  "m1023187bedc3": {
-    "ja": "{0}の最新情報やLIVEが公開されると、ここに表示されます。",
-    "zh-Hans": "{0} 的动态和 LIVE 发布后会显示在这里。",
-    "zh-Hant": "{0} 的動態和 LIVE 發布後會顯示在這裡。",
-    "es": "Las novedades y los LIVE de {0} aparecerán aquí cuando se publiquen.",
-    "id": "Pembaruan dan LIVE {0} akan muncul di sini setelah dipublikasikan.",
-    "vi": "Tin mới và LIVE của {0} sẽ xuất hiện tại đây khi được công bố.",
-    "th": "ดูข่าวสารและกิจกรรม LIVE ของ {0} ที่นี่เมื่อเผยแพร่",
-    "pt": "Veja aqui as novidades e LIVE de {0} quando forem publicadas.",
-    "fr": "Retrouvez ici les nouveautés et les LIVE de {0} dès leur publication.",
-    ru: "Следите за обновлениями и событиями {0} и LIVE здесь, когда они будут опубликованы."
-
-  },
   "mc06551416571": {
     "ja": "お知らせ＆コメント",
     "zh-Hans": "公告与评论",
@@ -129,19 +116,6 @@ export const messages = {
     "pt": "Ainda não há avisos.",
     "fr": "Aucune annonce pour le moment.",
     ru: "Пока никаких уведомлений нет."
-
-  },
-  "m694c52137a91": {
-    "ja": "新しい情報がここに表示されます。",
-    "zh-Hans": "新动态会显示在这里。",
-    "zh-Hant": "新動態會顯示在這裡。",
-    "es": "Las novedades aparecerán aquí.",
-    "id": "Pembaruan baru akan muncul di sini.",
-    "vi": "Tin mới sẽ xuất hiện tại đây.",
-    "th": "ข่าวสารใหม่จะปรากฏที่นี่",
-    "pt": "Novidades aparecerão aqui.",
-    "fr": "Les nouveautés apparaîtront ici.",
-    ru: "Новые обновления будут появляться здесь."
 
   },
   "m950773a69f9d": {
@@ -415,19 +389,6 @@ export const messages = {
     "pt": "Ver sorteio",
     "fr": "Voir le tirage au sort",
     ru: "Посмотреть розыгрыш"
-
-  },
-  "m1d0239729880": {
-    "ja": "応募期間はお知らせで案内します。",
-    "zh-Hans": "报名日期将在公告中发布。",
-    "zh-Hant": "報名日期將在公告中發布。",
-    "es": "Las fechas de inscripción se anunciarán en Avisos.",
-    "id": "Tanggal pendaftaran akan diumumkan dalam Pengumuman.",
-    "vi": "Ngày đăng ký sẽ được thông báo trong mục Thông báo.",
-    "th": "วันเปิดรับจะประกาศในประกาศ",
-    "pt": "As datas de inscrição serão anunciadas nos Avisos.",
-    "fr": "Les dates de participation seront publiées dans les annonces.",
-    ru: "Даты начала и окончания приема заявок будут объявлены в объявлениях."
 
   },
   "m1e4f7badba7d": {

@@ -9,7 +9,7 @@
 /* K8: all pages share one cell; the book takes the tallest. Only the current one is seen. */
 .pages[data-stacked] > .bookPage { display: grid; grid-area: 1 / 1; min-width: 0; }
 .bookPage:not([data-current]) { visibility: hidden; }
-/* VISUAL-K ③: every page fills the tallest page's height; the claim (or claimed/locked line) and the hint sit at the page's foot,
+/* VISUAL-K ③: every page fills the tallest page's height; the claim (or claimed/locked line) sit at the page foot,
    so a shorter page leaves its space between the grid and the action, not under the hint. */
 .pages[data-stacked] .page { display: flex; flex-direction: column; height: 100%; box-sizing: border-box; }
 .pages[data-stacked] .page :is(.claim, .lockedAction, .claimed) { margin-top: auto; }
@@ -32,8 +32,6 @@
 .check { position: absolute; right: 0; bottom: 0; z-index: 1; display: grid; width: 20px; height: 20px; place-items: center; border-radius: 50%; background: var(--passport-ink-pink); color: var(--color-surface); }
 .pressed { position: absolute; inset: 0; }
 .slotTask { max-width: 100%; color: var(--passport-muted); font-size: var(--fan-metadata-size); line-height: 1.35; overflow-wrap: anywhere; word-break: keep-all; }
-.hint { margin: 0; color: var(--passport-muted); font-size: var(--fan-metadata-size); text-align: center; }
-.hint[data-hint-placeholder] { visibility: hidden; }
 /* An inked stamp lands a little crooked, each slot in its own way. */
 .slot[data-state="filled"] .art img { transform: rotate(var(--stamp-tilt, 0deg)); }
 .slotLabel { max-width: 100%; font-size: var(--fan-item-title-size); font-weight: var(--fan-item-title-weight); line-height: 1.3; }

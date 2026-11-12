@@ -148,18 +148,6 @@ export const messages = {
     "fr": "Pointez plusieurs jours de suite",
     "ru": "Отмечайтесь несколько дней подряд"
   },
-  "missionClaimHint": {
-    "ja": "{0}マスすべて埋めるとハートがもらえます",
-    "zh-Hans": "填满 {0} 格即可获得爱心",
-    "zh-Hant": "填滿 {0} 格即可獲得愛心",
-    "es": "Completa las {0} casillas para recibir un corazón",
-    "id": "Isi semua {0} kotak untuk mendapat hati",
-    "vi": "Điền đủ {0} ô để nhận trái tim",
-    "th": "เติมครบ {0} ช่องเพื่อรับหัวใจ",
-    "pt": "Preencha os {0} espaços para receber um coração",
-    "fr": "Remplissez les {0} cases pour recevoir un cœur",
-    "ru": "Заполните все {0} ячеек, чтобы получить сердце"
-  },
   "missionsTitle": {
     "ja": "今日のミッション", "zh-Hans": "今日任务", "zh-Hant": "今日任務", "es": "Misiones de hoy", "id": "Misi hari ini", "vi": "Nhiệm vụ hôm nay", "th": "ภารกิจวันนี้", "pt": "Missões de hoje", "fr": "Missions du jour", "ru": "Задания на сегодня"
   },

@@ -43,11 +43,10 @@ export function LeaderboardPanel({ slug, locale, showGathering = true }: { slug:
       {LEADERBOARD_CATEGORIES.map((value) => <button key={value} type="button" aria-pressed={category === value} aria-controls={resultsId} onClick={() => setCategory(value)}>{copy.categories[value]}</button>)}
     </div>
     <div className={styles.guide}>
-      <p>{copy.descriptions[category]}</p>
-      <p>{copy.equalScores}</p>
-      <p>{copy.ties}</p>
       <FanDisclosure label={copy.guide}>
         <dl>{LEADERBOARD_CATEGORIES.filter(value => value !== "all").map(value => <div key={value}><dt>{copy.categories[value]}</dt><dd>{copy.descriptions[value]}</dd></div>)}</dl>
+        <p>{copy.equalScores}</p>
+        <p>{copy.ties}</p>
       </FanDisclosure>
     </div>
     <div id={resultsId} aria-busy={state.status === "loading" || pending}>

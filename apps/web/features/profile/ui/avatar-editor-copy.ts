@@ -3,19 +3,19 @@ import { additionalLocales } from "@/i18n/messages";
 export const avatarEditorCopy = {
   ko: {
     avatar: "프로필 이미지",
-    help: "캐릭터를 고르거나 내 사진을 사용할 수 있어요.",
+    
     change: "변경",
     loading: "프로필 이미지를 불러오는 중",
     loadError: "프로필 이미지를 불러오지 못했어요.",
     retry: "다시 시도",
     dialogTitle: "프로필 이미지 변경",
-    dialogHelp: "캐릭터 또는 사진을 선택한 뒤 저장해 주세요.",
+    
     characters: "캐릭터 선택",
     choosePhoto: "사진 업로드",
     replacePhoto: "다른 사진 선택",
-    photoHelp: "JPEG, PNG, WebP · 최대 4MB",
+    
     crop: "사진 위치 조정",
-    cropHelp: "사진을 드래그하거나 방향키로 위치를 맞추세요.",
+    
     zoom: "확대",
     deletePhoto: "사진 삭제",
     cancel: "취소",
@@ -32,19 +32,19 @@ export const avatarEditorCopy = {
   },
   en: {
     avatar: "Profile image",
-    help: "Choose a character or use your own photo.",
+    
     change: "Change",
     loading: "Loading profile image",
     loadError: "We couldn't load your profile image.",
     retry: "Try again",
     dialogTitle: "Change profile image",
-    dialogHelp: "Choose a character or photo, then save.",
+    
     characters: "Choose a character",
     choosePhoto: "Upload photo",
     replacePhoto: "Choose another photo",
-    photoHelp: "JPEG, PNG, WebP · up to 4MB",
+    
     crop: "Adjust photo",
-    cropHelp: "Drag the photo or use the arrow keys to position it.",
+    
     zoom: "Zoom",
     deletePhoto: "Delete photo",
     cancel: "Cancel",
@@ -62,19 +62,19 @@ export const avatarEditorCopy = {
 
   ...additionalLocales((translationLocale) => ({
     avatar: localizedMessages.mef14baa66f50[translationLocale],
-    help: localizedMessages.m61e60760de51[translationLocale],
+    
     change: localizedMessages.mf5668a0d0d7e[translationLocale],
     loading: localizedMessages.mc0a72b791ca7[translationLocale],
     loadError: localizedMessages.ma2a11b756dde[translationLocale],
     retry: localizedMessages.mefda601e510c[translationLocale],
     dialogTitle: localizedMessages.mc7dbb88dc4f6[translationLocale],
-    dialogHelp: localizedMessages.m62d5eaf43c83[translationLocale],
+    
     characters: localizedMessages.m085c2481c501[translationLocale],
     choosePhoto: localizedMessages.mbf03c5774c0e[translationLocale],
     replacePhoto: localizedMessages.mbf70b24ab9c6[translationLocale],
-    photoHelp: localizedMessages.m662b92ecf5d5[translationLocale],
+    
     crop: localizedMessages.mf8b9d453147f[translationLocale],
-    cropHelp: localizedMessages.m26fc2e38c6a1[translationLocale],
+    
     zoom: localizedMessages.m93fbd1a0efee[translationLocale],
     deletePhoto: localizedMessages.md21e28ce2c11[translationLocale],
     cancel: localizedMessages.m5d23bfb51d06[translationLocale],

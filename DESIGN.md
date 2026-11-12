@@ -954,6 +954,7 @@ Using the kyaa Fan Pulse Spectrum design system, turn the supplied product scena
 ## Optional Appendix: Content & Messaging Patterns
 
 - 화면 보조 문구(설명·소개·제목 풀어쓰기) 금지 규칙은 [docs/design/helper-copy.md](docs/design/helper-copy.md)가 우선한다. 법적 고지·비용·오류·출처 문구만 유지한다.
+- 2026-11-12: 입력칸 아래·제목 아래·빈 상태·버튼 옆 설명 줄(예: "닉네임과 캐릭터가 함께 공개돼요", "N자 이상")을 앱 전체에서 걷어냈다. 입력 규칙은 어긋났을 때 오류 문구로만 알린다. 뺀 문장과 판단은 `apps/web/i18n/helper-copy-removed.test.ts`가 다시 들어오지 못하게 막는다.
 - Headline pattern: short identity or value phrase, often mixing Korean with a familiar English product noun, e.g. “최애의 Fan Passport”.
 - CTA language: explicit task plus outcome, e.g. “라이브 예약하기”, “Google로 계속하기”, “Fan Passport 발급받기”.
 - Lifecycle copy: enumerate meaningful fan actions before promising the stored value, e.g. “팬 인증부터 라이브 예약, 출석, 후기까지”.

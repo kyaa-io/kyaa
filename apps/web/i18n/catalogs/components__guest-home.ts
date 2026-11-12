@@ -377,19 +377,6 @@ export const messages = {
     ru: "Ваш следующий LIVE"
 
   },
-  "m244ed4da2daa": {
-    "ja": "予約済みのLIVEを確認しましょう。",
-    "zh-Hans": "查看已预约的 LIVE。",
-    "zh-Hant": "查看已預約的 LIVE。",
-    "es": "Consulta los LIVE que reservaste.",
-    "id": "Periksa LIVE yang telah Anda pesan.",
-    "vi": "Kiểm tra các LIVE bạn đã đặt chỗ.",
-    "th": "ตรวจสอบ LIVE ที่จองไว้",
-    "pt": "Confira as LIVE que você reservou.",
-    "fr": "Consultez les LIVE que vous avez réservés.",
-    ru: "Проверьте зарезервированные события LIVE."
-
-  },
   "m6bb68c22ac32": {
     "ja": "ログインして予約済みのLIVEを確認しましょう。",
     "zh-Hans": "请登录后查看已预约的 LIVE。",
@@ -414,45 +401,6 @@ export const messages = {
     "pt": "Fan Passports dos seus favoritos",
     "fr": "Fan Passports de vos favoris",
     ru: "Фан-паспорта для ваших любимых персонажей"
-
-  },
-  "mb7a08e173fe7": {
-    "ja": "ファンとしてのすべての瞬間をPassportに記録しましょう。",
-    "zh-Hans": "将每个粉丝时刻记录在 Passport 中。",
-    "zh-Hant": "將每個粉絲時刻記錄在 Passport 中。",
-    "es": "Guarda cada momento como fan en tu Passport.",
-    "id": "Simpan setiap momen penggemar di Passport Anda.",
-    "vi": "Lưu mọi khoảnh khắc người hâm mộ trong Passport.",
-    "th": "เก็บทุกช่วงเวลาของแฟนคลับไว้ใน Passport",
-    "pt": "Guarde cada momento como fã em seu Passport.",
-    "fr": "Conservez chaque moment de fan dans votre Passport.",
-    ru: "Сохраните каждый момент общения с фанатами в своем Passport."
-
-  },
-  "m7918f39efab0": {
-    "ja": "Passportもスタンプもまだありません。",
-    "zh-Hans": "你还没有 Passport 或 印章。",
-    "zh-Hant": "你還沒有 Passport 或 印章。",
-    "es": "Todavía no tienes un Passport ni sellos.",
-    "id": "Anda belum memiliki Passport atau stempel.",
-    "vi": "Bạn chưa có Passport hoặc con dấu nào.",
-    "th": "ยังไม่มี Passport หรือ ตราประทับ",
-    "pt": "Você ainda não tem um Passport nem carimbos.",
-    "fr": "Vous n’avez pas encore de Passport ni de tampons.",
-    ru: "У вас пока нет ни Passport, ни каких-либо марок."
-
-  },
-  "mf31ade6d0ed9": {
-    "ja": "お気に入りとの瞬間を記録し始めましょう。",
-    "zh-Hans": "开始记录与喜爱创作者共度的时刻。",
-    "zh-Hant": "開始記錄與喜愛創作者共度的時刻。",
-    "es": "Empieza a registrar momentos con tus favoritos.",
-    "id": "Mulai catat momen bersama favorit Anda.",
-    "vi": "Bắt đầu ghi lại khoảnh khắc cùng người bạn yêu thích.",
-    "th": "เริ่มบันทึกช่วงเวลาร่วมกับคนโปรด",
-    "pt": "Comece a registrar momentos com seus favoritos.",
-    "fr": "Commencez à enregistrer vos moments avec vos favoris.",
-    ru: "Начните записывать моменты, которые вам особенно нравятся."
 
   },
   "mab415ccf7109": {

@@ -40,19 +40,6 @@ export const messages = {
     ru: "Пока к сайту не присоединилось ни одного фаната."
 
   },
-  "m85a5a48246a6": {
-    "ja": "カーソルを合わせるかタップすると名前を確認できます。{0}",
-    "zh-Hans": "悬停或轻触即可查看名称。{0}",
-    "zh-Hant": "懸停或輕觸即可查看名稱。{0}",
-    "es": "Pasa el cursor o toca para ver un nombre.{0}",
-    "id": "Arahkan kursor atau ketuk untuk melihat nama.{0}",
-    "vi": "Di chuột hoặc chạm để xem tên.{0}",
-    "th": "วางเมาส์หรือแตะเพื่อดูชื่อ{0}",
-    "pt": "Passe o cursor ou toque para ver um nome.{0}",
-    "fr": "Survolez ou touchez pour voir un nom.{0}",
-    ru: "Наведите курсор или коснитесь экрана, чтобы увидеть имя. {0}"
-
-  },
   "mfe31d3c0a45b": {
     "ja": "視差効果を減らす設定オン",
     "zh-Hans": "已开启减少动态效果",

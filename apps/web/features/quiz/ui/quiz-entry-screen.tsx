@@ -59,11 +59,11 @@ const copy = {
     listBack: "인증 목록",
     eyebrow: "팬 인증 · 시작 전",
     title: (name: string) => `${name}\n나의 팬심을 확인해 보세요.`,
-    description: "간단한 퀴즈를 통과하면 첫 팬 인증 스탬프와 패스포트를 받을 수 있어요.",
+    
     questionCount: (count: number) => `${count}문항`,
     passThreshold: (count: number) => `${count}문항 이상`,
     passThresholdTail: " 정답이면 인증 완료",
-    saved: "답변은 문항마다 안전하게 저장",
+    
     authChecking: "로그인 확인 중…",
     profileChecking: "프로필 확인 중…",
     profileError: "프로필을 확인하지 못했어요.",
@@ -75,7 +75,7 @@ const copy = {
     cooldown: "잠깐 숨 고르기! 1분 뒤 새 문제로 다시 만나요.",
     start: "팬 인증 시작하기",
     login: "로그인하고 시작하기",
-    note: "이미 시작한 인증이 있다면 저장된 문항부터 이어서 진행됩니다.",
+    
     verified: (name: string) => `${name} 팬 인증 완료`,
     openPassport: "패스포트 보기",
   },
@@ -93,11 +93,11 @@ const copy = {
     listBack: "Verification",
     eyebrow: "Fan verification · Before you begin",
     title: (name: string) => `See how well you know\n${name}.`,
-    description: "Pass a short quiz to receive your first Fan Verification Stamp and Fan Passport.",
+    
     questionCount: (count: number) => `${count} questions`,
     passThreshold: (count: number) => `At least ${count} correct`,
     passThresholdTail: " to pass",
-    saved: "Each answer is saved securely",
+    
     authChecking: "Checking sign-in…",
     profileChecking: "Checking profile…",
     profileError: "We couldn't check your profile.",
@@ -109,7 +109,7 @@ const copy = {
     cooldown: "Quick breather! Fresh questions will be ready in a minute.",
     start: "Start fan verification",
     login: "Sign in to start",
-    note: "If you already started, you'll continue from your saved questions.",
+    
     verified: (name: string) => `${name} fan verification complete`,
     openPassport: "Open Passport",
   },
@@ -128,11 +128,11 @@ const copy = {
     listBack: certificationPanelMessages.m5acaed52a19a[translationLocale],
     eyebrow: localizedMessages.m2ba7ff4d7753[translationLocale],
     title: (name: string) => translate(translationLocale, localizedMessages.m2342b08e5b5b, "See how well you know\n{0}.", [name]),
-    description: localizedMessages.me8b8a3dcf2ea[translationLocale],
+    
     questionCount: (count: number) => translate(translationLocale, localizedMessages.mbbfb2a916e4d, "{0} questions", [count]),
     passThreshold: (count: number) => translate(translationLocale, localizedMessages.mc9041df7d4b2, "At least {0} correct", [count]),
     passThresholdTail: localizedMessages.md55660c432ca[translationLocale],
-    saved: localizedMessages.m1368cd0da861[translationLocale],
+    
     authChecking: localizedMessages.mfa2e863970e4[translationLocale],
     profileChecking: localizedMessages.m882f9ba49057[translationLocale],
     profileError: localizedMessages.m1db38cfc9edf[translationLocale],
@@ -144,7 +144,7 @@ const copy = {
     cooldown: localizedMessages.m3cbe55588a43[translationLocale],
     start: localizedMessages.mb8716a66fc57[translationLocale],
     login: localizedMessages.m1fccdbe4af58[translationLocale],
-    note: localizedMessages.ma3066d315e6f[translationLocale],
+    
     verified: (name: string) => translate(translationLocale, quizResultMessages.m7309a3343f60, "{0} fan verification complete", [name]),
     openPassport: passportScreenMessages.mfc76989a61b9[translationLocale],
   }))
@@ -432,11 +432,9 @@ export function QuizEntryScreen({
                 ))}
               </h1>
             </header>
-            <p className={styles.description}>{t.description}</p>
             <ul className={styles.facts}>
               <li><Check aria-hidden="true" /><span><strong>{t.questionCount(screen.intro.quiz.totalQuestions)}</strong></span></li>
               <li><Check aria-hidden="true" /><span><strong>{t.passThreshold(screen.intro.quiz.passThreshold)}</strong>{t.passThresholdTail}</span></li>
-              <li><Check aria-hidden="true" /><span>{t.saved}</span></li>
             </ul>
             </>}
             {!ready ? (
@@ -459,7 +457,6 @@ export function QuizEntryScreen({
               <AuthIntentLink className={fanActionClassName("primary", { className: styles.entryAction })} emphasis="primary" locale={locale} input={{ sourcePath: `/c/${slug}/verify`, sourceQuery: entrySourceQuery, actionType: "START_FAN_VERIFICATION", targetType: "celebrity", targetId: slug }}>{t.login}</AuthIntentLink>
             )}
             {startError && <p className={styles.inlineError} role="alert" tabIndex={-1}>{startError}</p>}
-            {heldPassportId ? null : <p className={styles.note}>{t.note}</p>}
             <Link className={styles.returnLink} href={withLocale(creatorHomeHref(slug), locale)}>{t.fanPage(screen.intro.celebrity.name)}</Link>
           </section>
           </div>

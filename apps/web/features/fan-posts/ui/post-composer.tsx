@@ -185,7 +185,6 @@ function PostComposerForOwner({ board = false, introduction = false, program, sl
       <PostEditorSelect label={copy.visibility} value={visibility} disabled={busy} onChange={setVisibility} options={[{ value: "public", label: copy.public }, { value: "members", label: copy.members }]} />
     </> : undefined}
     alerts={<>
-      {allowMembers && visibility === "members" && <small className={styles.hint}>{copy.memberRequired}</small>}
       {videoUploads.invalid && <p className={styles.error} role="alert">{(isWave ? mediaCopy.videoLimit : mediaCopy.videoLimit.replace(/50(?=MB|Mo| МБ)/, "200"))}</p>}
       {policy.error && !gated && <p role="alert" className={styles.error}>{copy.failed}<FanAction onClick={policy.retry}>{copy.retry}</FanAction></p>}
       {rich.tooLarge && <p className={styles.error} role="alert">{editorText(locale, "documentTooLarge")}</p>}
@@ -222,10 +221,9 @@ function PostComposerForOwner({ board = false, introduction = false, program, sl
     </div>
     {allowMembers && !program && !isWave && visibilityOpen && <AccessibleOverlay open onClose={() => setVisibilityOpen(false)} labelledBy={`${fieldId}-visibility-title`} backdropClassName={styles.visibilityBackdrop} contentClassName={styles.visibilityDialog} contentAs="section" variant={isMobile ? "bottom-sheet" : "dialog"} busy={busy}>
       <h2 id={`${fieldId}-visibility-title`}>{copy.visibility}</h2>
-      <fieldset className={styles.visibility} disabled={busy} aria-describedby={visibility === "members" ? `${fieldId}-members-hint` : undefined}>{(["public", "members"] as const).map(value => <label key={value}><input type="radio" name={`${fieldId}-visibility`} value={value} checked={visibility === value} onChange={() => { setVisibility(value); setVisibilityOpen(false); }} /><span>{copy[value]}</span></label>)}</fieldset>
+      <fieldset className={styles.visibility} disabled={busy}>{(["public", "members"] as const).map(value => <label key={value}><input type="radio" name={`${fieldId}-visibility`} value={value} checked={visibility === value} onChange={() => { setVisibility(value); setVisibilityOpen(false); }} /><span>{copy[value]}</span></label>)}</fieldset>
       <div className={styles.visibilityActions}><button type="button" onClick={() => setVisibilityOpen(false)}>{copy.cancel}</button></div>
     </AccessibleOverlay>}
-    {allowMembers && !program && !isWave && visibility === "members" && <small id={`${fieldId}-members-hint`} className={styles.hint}>{copy.memberRequired}</small>}
     {videoUploads.invalid && <p className={styles.error} role="alert">{(isWave ? mediaCopy.videoLimit : mediaCopy.videoLimit.replace(/50(?=MB|Mo| МБ)/, "200"))}</p>}
     {policy.error&&!gated&&<p role="alert" className={styles.error}>{copy.failed}<FanAction onClick={policy.retry}>{copy.retry}</FanAction></p>}
     {!uploading && (problem || mutation.error) && <p id={problem ? `${fieldId}-photo-error` : undefined} className={styles.error} role="alert">{problem || mutation.error}</p>}

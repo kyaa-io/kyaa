@@ -27,19 +27,6 @@ export const messages = {
     ru: "Найдите свой любимый"
 
   },
-  "maf7baaeb1247": {
-    "ja": "大好きな人のLIVEやファンページを見てみましょう。",
-    "zh-Hans": "探索您最爱的LIVE活动和粉丝页面。",
-    "zh-Hant": "探索您最愛的LIVE活動和粉絲頁面。",
-    "es": "Explora los LIVE y las páginas de fans de tus favoritos.",
-    "id": "Jelajahi acara LIVE dan halaman fan favoritmu.",
-    "vi": "Khám phá LIVE và trang fan của những người bạn yêu thích.",
-    "th": "สำรวจ LIVE และหน้าแฟนคลับของคนโปรด",
-    "pt": "Explore os LIVE e as páginas de fãs dos seus favoritos.",
-    "fr": "Découvrez les LIVE et les pages de fans de vos artistes préférés.",
-    ru: "Изучите мероприятия и фан-страницы ваших любимых пользователей LIVE."
-
-  },
   "m9e8df343175e": {
     "ja": "セレブリティを検索",
     "zh-Hans": "搜索明星",
@@ -196,19 +183,6 @@ export const messages = {
     ru: "Профили пока недоступны."
 
   },
-  "md7f058ad3092": {
-    "ja": "新しいプロフィールが公開されると、ここに表示されます。",
-    "zh-Hans": "新主页开放后会显示在此处。",
-    "zh-Hant": "新主頁開放後會顯示在此處。",
-    "es": "Los nuevos perfiles aparecerán aquí cuando estén disponibles.",
-    "id": "Profil baru akan muncul di sini saat tersedia.",
-    "vi": "Hồ sơ mới sẽ xuất hiện ở đây khi có.",
-    "th": "โปรไฟล์ใหม่จะปรากฏเมื่อพร้อม",
-    "pt": "Novos perfis aparecerão aqui quando estiverem disponíveis.",
-    "fr": "Les nouveaux profils apparaîtront ici dès leur publication.",
-    ru: "Новые профили будут появляться здесь по мере их доступности."
-
-  },
   "m6583b95908cf": {
     "ja": "LIVEを見る",
     "zh-Hans": "探索LIVE活动",
@@ -248,19 +222,6 @@ export const messages = {
     ru: "Результаты поиска отсутствуют."
 
   },
-  "me4d7e93c8b8f": {
-    "ja": "すべての候補を見て、Fan Passportを作りましょう。",
-    "zh-Hans": "浏览所有喜爱对象并创建Fan Passport。",
-    "zh-Hant": "瀏覽所有喜愛對象並建立Fan Passport。",
-    "es": "Explora todos tus favoritos y crea un Fan Passport.",
-    "id": "Jelajahi semua favorit dan buat Fan Passport.",
-    "vi": "Khám phá tất cả người bạn yêu thích và tạo Fan Passport.",
-    "th": "ดูคนโปรดทั้งหมดและสร้าง Fan Passport",
-    "pt": "Explore todos os favoritos e crie um Fan Passport.",
-    "fr": "Parcourez tous les favoris et créez un Fan Passport.",
-    ru: "Просмотрите все избранные и создайте профиль поклонника Passport."
-
-  },
   "m73e0c60f172a": {
     "ja": "すべて見る",
     "zh-Hans": "查看全部",
@@ -272,19 +233,6 @@ export const messages = {
     "pt": "Ver todos",
     "fr": "Tout voir",
     ru: "Просмотреть все"
-
-  },
-  "m6a76b31b262c": {
-    "ja": "別の名前で検索するか、フィルターを解除してください。",
-    "zh-Hans": "请尝试其他姓名或清除筛选条件。",
-    "zh-Hant": "請嘗試其他姓名或清除篩選條件。",
-    "es": "Prueba con otro nombre o borra los filtros.",
-    "id": "Coba nama lain atau hapus filter.",
-    "vi": "Hãy thử tên khác hoặc xóa bộ lọc.",
-    "th": "ลองชื่ออื่นหรือล้างตัวกรอง",
-    "pt": "Tente outro nome ou limpe os filtros.",
-    "fr": "Essayez un autre nom ou effacez les filtres.",
-    ru: "Попробуйте другое имя или сбросьте фильтры."
 
   },
   "m90e01a3bc89a": {

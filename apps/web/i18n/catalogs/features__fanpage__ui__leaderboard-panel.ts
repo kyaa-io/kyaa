@@ -40,19 +40,6 @@ export const messages = {
     ru: "Ваша активность среди фанатов, в рейтинге"
 
   },
-  "m01cd18e08921": {
-    "ja": "累計Fan Score · 同点の場合はPassport発行時刻、未保有なら参加時刻が早い順。",
-    "zh-Hans": "累计Fan Score · 同分时按Passport发行时间排序，无Passport则按参与时间排序。",
-    "zh-Hant": "累計Fan Score · 同分時按Passport發行時間排序，無Passport則按參與時間排序。",
-    "es": "Fan Score acumulado · Los empates se ordenan por la emisión del Passport o, si no lo hay, por la hora de participación.",
-    "id": "Fan Score sepanjang waktu · Jika seri, urutan ditentukan oleh waktu penerbitan Passport, atau waktu partisipasi jika belum memilikinya.",
-    "vi": "Fan Score tích lũy · Khi bằng điểm, xếp theo thời gian cấp Passport hoặc thời gian tham gia nếu chưa có Passport.",
-    "th": "Fan Score สะสม · หากคะแนนเท่ากัน จะเรียงตามเวลาออก Passport หรือเวลาเข้าร่วมหากยังไม่มี Passport",
-    "pt": "Fan Score acumulado · Empates usam a emissão do Passport ou, sem ele, o horário de participação.",
-    "fr": "Fan Score cumulé · Les égalités sont départagées par l’émission du Passport ou, à défaut, par l’heure de participation.",
-    ru: "Пожизненный рейтинг фанатов · В случае ничьей используется время выпуска Passport или время участия для фанатов, у которых его нет."
-
-  },
   "m0c416452a30e": {
     "ja": "自分の順位",
     "zh-Hans": "我的排名",

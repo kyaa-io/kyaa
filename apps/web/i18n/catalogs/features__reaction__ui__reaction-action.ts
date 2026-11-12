@@ -157,19 +157,6 @@ export const messages = {
     ru: "Вы заработали свой первый лайк Stamp"
 
   },
-  "m7a4ba120835b": {
-    "ja": "Passportのスタンプ Bookで最初のいいねを確認できます。",
-    "zh-Hans": "可在Passport 印章 Book中查看首次点赞。",
-    "zh-Hant": "可在Passport 印章 Book中查看首次按讚。",
-    "es": "Encuentra tu primer Me gusta en el sello Book de tu Passport.",
-    "id": "Temukan suka pertamamu di stempel Book Passport.",
-    "vi": "Tìm lượt thích đầu tiên trong con dấu Book của Passport.",
-    "th": "ดูการถูกใจครั้งแรกใน ตราประทับ Book ของ Passport",
-    "pt": "Encontre sua primeira curtida no álbum de carimbos do seu Passport.",
-    "fr": "Retrouvez votre premier J’aime dans le carnet de tampons de votre Passport.",
-    ru: "Найдите свой первый лайк в альбоме для марок Passport."
-
-  },
   "m3cadbfa88dd5": {
     "ja": "First Like スタンプを保存しました。ファン認証を完了するとFan Passportに追加されます。",
     "zh-Hans": "First Like 印章已保存。完成粉丝验证后即可添加到Fan Passport。",

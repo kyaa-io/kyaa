@@ -14,19 +14,6 @@ export const messages = {
     ru: "Сегодняшняя регистрация"
 
   },
-  "made923b999af": {
-    "ja": "1日1回チェックインして、大好きな人と過ごした今日をスタンプに残しましょう。",
-    "zh-Hans": "每天签到一次，将与喜爱对象共度的今天保存为印章。",
-    "zh-Hant": "每天簽到一次，將與喜愛對象共度的今天儲存為印章。",
-    "es": "Registra tu asistencia una vez al día y guarda este día con tu favorito como un sello.",
-    "id": "Check-in sekali sehari dan simpan hari ini bersama favoritmu sebagai stempel.",
-    "vi": "Điểm danh mỗi ngày một lần và lưu lại hôm nay bên người bạn yêu thích thành con dấu.",
-    "th": "เช็กอินวันละครั้งและเก็บวันนี้กับคนโปรดเป็น ตราประทับ",
-    "pt": "Faça check-in uma vez por dia e guarde o dia com seu favorito em um carimbo.",
-    "fr": "Enregistrez votre visite une fois par jour pour garder un tampon de cette journée avec votre artiste préféré.",
-    ru: "Заходите раз в день и сохраните сегодняшний день, добавив свой любимый значок Stamp."
-
-  },
   "m1712f68ea709": {
     "ja": "出席を確認中です。",
     "zh-Hans": "正在确认签到记录。",

@@ -167,10 +167,7 @@ function Page({ page, locale, busy, failed, onClaim, proofHref, pager, stampSrc,
     <ol className={styles.slots}>{page.slots.map(slot => <Slot key={slot.slotNo} slot={slot} locale={locale} stampSrc={slot.stampId ? stampSrc?.(slot.stampId) : undefined} href={locked || slot.state === "filled" ? null : hrefFor(slot.kind)} />)}</ol>
     {page.claimed ? <p className={styles.claimed}><Heart aria-hidden="true" size={18} />{dukjilText(locale, "missionClaimed")}</p>
       : locked ? <FanAction className={styles.lockedAction} variant="neutral" href={proofHref}>{dukjilText(locale, "missionLocked")}</FanAction>
-      : <FanAction className={styles.claim} variant="primary" disabled={!page.claimable || busy} ariaDescribedBy={page.claimable ? undefined : `mission-page-${page.pageNo}-hint`} onClick={onClaim} leadingIcon={<Heart size={18} />}>{dukjilText(locale, "missionClaim")}</FanAction>}
-    {/* K8: every page keeps the hint line, hidden where it does not apply, so turning 1/2 → 2/2 (locked, claimed) never changes the page height. */}
-    {!page.claimed && !locked && !page.claimable ? <p id={`mission-page-${page.pageNo}-hint`} className={styles.hint}>{dukjilText(locale, "missionClaimHint", [page.slots.length])}</p>
-      : <p className={styles.hint} data-hint-placeholder="" aria-hidden="true">{dukjilText(locale, "missionClaimHint", [page.slots.length])}</p>}
+      : <FanAction className={styles.claim} variant="primary" disabled={!page.claimable || busy} onClick={onClaim} leadingIcon={<Heart size={18} />}>{dukjilText(locale, "missionClaim")}</FanAction>}
     {failed ? <p className={styles.error} role="alert">{dukjilText(locale, "missionClaimFailed")}</p> : null}
   </section>;
 }

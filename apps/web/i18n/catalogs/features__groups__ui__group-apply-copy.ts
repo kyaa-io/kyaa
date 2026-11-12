@@ -1,30 +1,6 @@
 import type { TranslatedMessage } from "../messages";
 
 export const messages = {
-  "hobbyDescription": {
-    "ja": "趣味：ランニングや写真など同じ趣味の人が集まるページ",
-    "zh-Hans": "爱好：跑步、摄影等同好聚集的页面",
-    "zh-Hant": "興趣：跑步、攝影等同好聚集的頁面",
-    "es": "Afición: personas que comparten una afición, como correr o la fotografía",
-    "id": "Hobi: orang-orang dengan hobi yang sama, seperti lari atau fotografi",
-    "vi": "Sở thích: những người cùng sở thích như chạy bộ, nhiếp ảnh",
-    "th": "งานอดิเรก: เพจของคนที่ชอบสิ่งเดียวกัน เช่น วิ่งหรือถ่ายภาพ",
-    "pt": "Hobby: pessoas com o mesmo hobby, como corrida ou fotografia",
-    "fr": "Loisir : des personnes qui partagent un loisir, comme la course ou la photo",
-    "ru": "Увлечение: люди с общим хобби, например бег или фотография",
-  },
-  "brandDescription": {
-    "ja": "ブランド：ブランドがお知らせやイベントを直接投稿するページ",
-    "zh-Hans": "品牌：品牌亲自发布消息和活动的页面",
-    "zh-Hant": "品牌：品牌親自發布消息和活動的頁面",
-    "es": "Marca: una marca publica sus noticias y eventos",
-    "id": "Merek: merek memposting berita dan acaranya sendiri",
-    "vi": "Thương hiệu: thương hiệu tự đăng tin tức và sự kiện",
-    "th": "แบรนด์: เพจที่แบรนด์โพสต์ข่าวและกิจกรรมเอง",
-    "pt": "Marca: uma marca publica suas notícias e eventos",
-    "fr": "Marque : une marque publie ses actualités et événements",
-    "ru": "Бренд: бренд сам публикует новости и мероприятия",
-  },
   "fanPageApply": {
     "ja": "ファンページの開設を申請",
     "zh-Hans": "申请开设粉丝页",

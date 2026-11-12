@@ -281,7 +281,7 @@ describe("FAN-020 settings", () => {
     });
     const { unmount } = renderSettings("channels");
     const confirm = await screen.findByRole("button", { name: "이 번호로 알림 받기" });
-    expect(screen.getByText("카카오 계정에 등록된 번호로 서비스 알림을 보내드려요.")).toBeInTheDocument();
+    expect(screen.queryByText("카카오 계정에 등록된 번호로 서비스 알림을 보내드려요.")).not.toBeInTheDocument();
     expect(confirm).toBeDisabled();
     fireEvent.click(screen.getByRole("checkbox", { name: /위 번호로 서비스 알림/ }));
     fireEvent.click(confirm);
@@ -292,7 +292,7 @@ describe("FAN-020 settings", () => {
     expect(JSON.stringify(mutation)).not.toContain("01012345678");
     unmount();
     renderSettings("channels", "en");
-    expect(await screen.findByText("We'll send service notifications to the number registered to your Kakao account.")).toBeInTheDocument();
+    expect(screen.queryByText("We'll send service notifications to the number registered to your Kakao account.")).not.toBeInTheDocument();
   });
 
   it.each(["connection", "enrollment"])("returns Kakao %s to the channel detail", async (flow) => {

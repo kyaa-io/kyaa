@@ -16,14 +16,6 @@
   letter-spacing: -0.03em;
   text-wrap: balance;
 }
-.intro > span {
-  display: block;
-  max-width: 65ch;
-  color: var(--color-muted);
-  font-size: 14px;
-  line-height: var(--fan-body-leading);
-  text-wrap: pretty;
-}
 .detailHeader {
   display: grid;
   grid-template-columns: 44px minmax(0, 1fr) 44px;
@@ -187,11 +179,8 @@
 .nicknameRule {
   display: flex;
   align-items: flex-start;
-  justify-content: space-between;
+  justify-content: flex-end;
   gap: 12px;
-}
-.nicknameRule small:first-child {
-  max-width: 54ch;
 }
 .nicknameRule small:last-child {
   flex: 0 0 auto;

@@ -32,29 +32,29 @@ import { sendGa4Event } from "@/features/analytics/client/ga4-client";
 type ScreenState = "checking" | "empty" | "typing" | "valid" | "duplicate" | "prohibited" | "invalid" | "saving" | "saved" | "network";
 
 type Copy = {
-  home: string; language: string; heading: (name: string) => string; subtitle: (name: string) => string; preview: string;
-  genericHeading: string; genericSubtitle: string;
+  home: string; language: string; heading: (name: string) => string; preview: string;
+  genericHeading: string;
   progress: string;
   verification: string; pending: string; owner: string; placeholderOwner: string; issuance: string;
-  field: string; counter: (count: number) => string; rule: string; privacy: string;
-  save: string; saving: string; saved: string; back: string; checking: string; empty: string; typing: string;
-  valid: string; duplicate: string; prohibited: string; invalid: string; network: string; auth: string;
+  field: string; counter: (count: number) => string;
+  save: string; saving: string; saved: string; back: string; checking: string;
+ duplicate: string; prohibited: string; invalid: string; network: string; auth: string;
 };
 
 const copy: Record<AppLocale, Copy> = {
   ko: {
     home: "kyaa 홈", language: "언어", heading: (name) => `${name} 팬 인증에 사용할 닉네임을 정해 주세요.`,
-    subtitle: (name) => `팬 인증을 통과하면 ${name} 패스포트와 활동 기록에 표시돼요.`, preview: "발급 예정 패스포트 미리보기",
+    preview: "발급 예정 패스포트 미리보기",
     genericHeading: "kyaa에서 사용할 닉네임을 정해 주세요.",
-    genericSubtitle: "프로필을 완성하면 이전 화면으로 돌아가 계속할 수 있어요.",
+    
     progress: "프로필 설정 · 1 / 1",
     verification: "팬 인증 준비", pending: "발급 예정", owner: "공개 이름", placeholderOwner: "닉네임",
     issuance: "팬 인증 완료 후 발급", field: "닉네임", counter: (count) => `${count}/32자`,
-    rule: "원하는 언어로 1–32자까지 입력해 주세요.",
-    privacy: "입력한 닉네임만 공개되며 이메일과 Google 계정 정보는 표시되지 않아요.",
+    
+    
     save: "닉네임 저장", saving: "저장 중…", saved: "저장 완료", back: "이전으로",
-    checking: "프로필을 확인하고 있어요.", empty: "사용할 닉네임을 입력해 주세요.",
-    typing: "원하는 언어로 표시 이름을 입력해 주세요.", valid: "사용 가능한 형식이에요. 저장할 때 중복 여부를 확인합니다.",
+    checking: "프로필을 확인하고 있어요.", 
+    
     duplicate: "이미 사용 중인 닉네임이에요. 다른 닉네임을 입력해 주세요.",
     prohibited: "사용할 수 없는 표현이 포함되어 있어요. 다른 닉네임을 입력해 주세요.",
     invalid: "닉네임의 길이 또는 문자를 확인해 주세요.",
@@ -63,17 +63,17 @@ const copy: Record<AppLocale, Copy> = {
   },
   en: {
     home: "kyaa home", language: "Language", heading: (name) => `Choose a display name for your ${name} fan verification.`,
-    subtitle: (name) => `After verification, it will appear in your ${name} Fan Passport and activity history.`, preview: "Fan Passport preview before issuance",
+    preview: "Fan Passport preview before issuance",
     genericHeading: "Choose the display name you'll use on kyaa.",
-    genericSubtitle: "Complete your profile to return and continue where you left off.",
+    
     progress: "Profile setup · 1 / 1",
     verification: "Fan verification", pending: "Pending issuance", owner: "Public name", placeholderOwner: "Display name",
     issuance: "Issued after fan verification", field: "Display name", counter: (count) => `${count}/32 characters`,
-    rule: "Use 1–32 characters in your preferred language.",
-    privacy: "Only this display name is public. Your email and Google account details are never shown.",
+    
+    
     save: "Save display name", saving: "Saving…", saved: "Saved", back: "Go back",
-    checking: "Checking your profile.", empty: "Enter the display name you want to use.",
-    typing: "Enter your display name in your preferred language.", valid: "The format is valid. Availability is checked when you save.",
+    checking: "Checking your profile.", 
+    
     duplicate: "This display name is taken. Try another.",
     prohibited: "This display name contains a restricted term. Try another.",
     invalid: "Check the display name length and characters.",
@@ -83,17 +83,17 @@ const copy: Record<AppLocale, Copy> = {
 
   ...additionalLocales((translationLocale): Copy => ({
     home: localizedMessages.m1a5c7fab95c1[translationLocale], language: localizedMessages.m7cecac15d1c8[translationLocale], heading: (name) => translate(translationLocale, localizedMessages.m4fd20ce2ec5e, "Choose a display name for your {0} fan verification.", [name]),
-    subtitle: (name) => translate(translationLocale, localizedMessages.mb2cc6130dfa0, "After verification, it will appear in your {0} Fan Passport and activity history.", [name]), preview: localizedMessages.m77a8433b4b98[translationLocale],
+    preview: localizedMessages.m77a8433b4b98[translationLocale],
     genericHeading: localizedMessages.m8968f5dd8d60[translationLocale],
-    genericSubtitle: localizedMessages.md0d20638439b[translationLocale],
+    
     progress: localizedMessages.m45b828d21678[translationLocale],
     verification: localizedMessages.m7d12545de2ff[translationLocale], pending: localizedMessages.m740212594afd[translationLocale], owner: localizedMessages.m1ccddaaa7c9b[translationLocale], placeholderOwner: localizedMessages.mf3186babb5fc[translationLocale],
     issuance: localizedMessages.mcb25408c796c[translationLocale], field: localizedMessages.m1f43225c3b92[translationLocale], counter: (count) => translate(translationLocale, localizedMessages.mf735427be4fd, "{0}/32 characters", [count]),
-    rule: localizedMessages.m388d99b17aa2[translationLocale],
-    privacy: localizedMessages.me914d546f539[translationLocale],
+    
+    
     save: localizedMessages.m3a4bd2a82e85[translationLocale], saving: localizedMessages.m8ce7631a645d[translationLocale], saved: localizedMessages.m66fa547b695c[translationLocale], back: localizedMessages.me581e7288bd2[translationLocale],
-    checking: localizedMessages.m613e3cef5528[translationLocale], empty: localizedMessages.m39097293d8a7[translationLocale],
-    typing: localizedMessages.mb8991f17ddf9[translationLocale], valid: localizedMessages.mece4bb8d1ff4[translationLocale],
+    checking: localizedMessages.m613e3cef5528[translationLocale], 
+    
     duplicate: localizedMessages.m2e3215a8f372[translationLocale],
     prohibited: localizedMessages.mb55fe0064f9f[translationLocale],
     invalid: localizedMessages.ma2d1a9ec33e4[translationLocale],
@@ -287,7 +287,7 @@ export function ProfileOnboardingScreen({ celebrity }: { celebrity: PublishedCel
 
   const statusText = state === "invalid"
     ? getNicknameFormatMessage(serverFormatReason ?? nicknameFormat.reason, locale) || t.invalid
-    : t[state];
+    : state === "empty" || state === "typing" || state === "valid" ? "" : t[state];
   const invalid = state === "duplicate" || state === "prohibited" || state === "invalid";
   const canSave = state !== "saving" && state !== "saved" && state !== "checking";
   const displayOwner = normalized || t.placeholderOwner;
@@ -306,7 +306,6 @@ export function ProfileOnboardingScreen({ celebrity }: { celebrity: PublishedCel
         <section className={styles.intro} aria-labelledby="profile-heading">
           <p className={styles.progress} aria-label={t.progress}>{t.progress}</p>
           <h1 id="profile-heading">{celebrity ? t.heading(celebrity.name) : t.genericHeading}</h1>
-          <p>{celebrity ? t.subtitle(celebrity.name) : t.genericSubtitle}</p>
         </section>
 
         <div className={styles.composition}>
@@ -351,11 +350,9 @@ export function ProfileOnboardingScreen({ celebrity }: { celebrity: PublishedCel
                 composingRef.current = false;
                 updateNickname(event.currentTarget.value);
               }}
-              dir="auto" autoComplete="nickname" enterKeyHint="done" aria-invalid={invalid} aria-describedby="nickname-status nickname-rules nickname-privacy"
+              dir="auto" autoComplete="nickname" enterKeyHint="done" aria-invalid={invalid} aria-describedby="nickname-status"
               disabled={state === "checking" || state === "saving" || state === "saved"} />
             <p id="nickname-status" className={styles.status} data-tone={invalid ? "error" : state === "valid" || state === "saved" ? "success" : "neutral"} role={invalid || state === "network" ? "alert" : "status"}>{statusText}</p>
-            <p id="nickname-rules" className={styles.rule}>{t.rule}</p>
-            <p id="nickname-privacy" className={styles.privacy}>{t.privacy}</p>
             <div className={styles.actions}>
               <FanAction variant="primary" type="submit" disabled={!canSave} ariaBusy={state === "saving"}>
                 {state === "saving" ? t.saving : state === "saved" ? t.saved : t.save}

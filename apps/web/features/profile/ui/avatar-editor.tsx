@@ -303,7 +303,7 @@ export function AvatarEditor({
     <div className={styles.backdrop} onMouseDown={(event) => { if (event.target === event.currentTarget && !pending) onClose(); }}>
       <div ref={dialogRef} className={styles.dialog} role="dialog" aria-modal="true" aria-labelledby="avatar-dialog-title" onKeyDown={handleDialogKeyDown}>
         <header>
-          <div><h3 id="avatar-dialog-title">{t.dialogTitle}</h3><p>{t.dialogHelp}</p></div>
+          <div><h3 id="avatar-dialog-title">{t.dialogTitle}</h3></div>
           <button ref={closeButtonRef} type="button" className={styles.close} aria-label={t.cancel} disabled={pending} onClick={onClose}><X /></button>
         </header>
 
@@ -336,7 +336,7 @@ export function AvatarEditor({
 
           <section className={styles.photoSection} aria-labelledby="avatar-photo-title">
             <div className={styles.photoHeading}>
-              <div><h4 id="avatar-photo-title">{file ? t.crop : t.choosePhoto}</h4><p>{file ? t.cropHelp : t.photoHelp}</p></div>
+              <div><h4 id="avatar-photo-title">{file ? t.crop : t.choosePhoto}</h4></div>
               <label className={styles.fileButton}>
                 <ImagePlus aria-hidden="true" />
                 <span>{file || avatar.hasImage ? t.replacePhoto : t.choosePhoto}</span>

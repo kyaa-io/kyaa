@@ -92,19 +92,6 @@ export const messages = {
     ru: "Настройки"
 
   },
-  "mdaafda9be2b2": {
-    "ja": "kyaaのプロフィールと通知を管理します。",
-    "zh-Hans": "管理你的 kyaa 个人资料和通知。",
-    "zh-Hant": "管理你的 kyaa 個人資料和通知。",
-    "es": "Administra tu perfil y tus notificaciones de kyaa.",
-    "id": "Kelola profil dan notifikasi kyaa Anda.",
-    "vi": "Quản lý hồ sơ và thông báo kyaa của bạn.",
-    "th": "จัดการโปรไฟล์และการแจ้งเตือน kyaa",
-    "pt": "Gerencie seu perfil e suas notificações na kyaa.",
-    "fr": "Gérez votre profil et vos notifications kyaa.",
-    ru: "Управляйте своим профилем kyaa и уведомлениями."
-
-  },
   "mc7fba50a9917": {
     "ja": "プロフィール",
     "zh-Hans": "个人资料",
@@ -129,19 +116,6 @@ export const messages = {
     "pt": "Nome de exibição",
     "fr": "Nom d’affichage",
     ru: "Отображаемое имя"
-
-  },
-  "m96a33c44da86": {
-    "ja": "kyaaで他のファンに表示される名前です。",
-    "zh-Hans": "这是其他粉丝在 kyaa 看到的你的名称。",
-    "zh-Hant": "這是其他粉絲在 kyaa 看到的你的名稱。",
-    "es": "Así te verán otros fans en kyaa.",
-    "id": "Nama ini akan terlihat oleh penggemar lain di kyaa.",
-    "vi": "Đây là tên người hâm mộ khác sẽ thấy trên kyaa.",
-    "th": "นี่คือชื่อที่แฟนคลับคนอื่นจะเห็นบน kyaa",
-    "pt": "É assim que outros fãs verão você na kyaa.",
-    "fr": "C’est ainsi que les autres fans vous verront sur kyaa.",
-    ru: "Вот как другие фанаты увидят вас на kyaa."
 
   },
   "m9cb82aa6061a": {
@@ -196,19 +170,6 @@ export const messages = {
     ru: "Отмена"
 
   },
-  "mbbc0c6c8fe23": {
-    "ja": "お好きな言語で1～32文字を使用してください。",
-    "zh-Hans": "请使用偏好的语言输入 1–32 个字符。",
-    "zh-Hant": "請使用偏好的語言輸入 1–32 個字元。",
-    "es": "Usa entre 1 y 32 caracteres en el idioma que prefieras.",
-    "id": "Gunakan 1–32 karakter dalam bahasa pilihan Anda.",
-    "vi": "Dùng 1–32 ký tự bằng ngôn ngữ bạn muốn.",
-    "th": "ใช้ 1–32 อักขระในภาษาที่ต้องการ",
-    "pt": "Use de 1 a 32 caracteres no idioma de sua preferência.",
-    "fr": "Utilisez 1 à 32 caractères dans la langue de votre choix.",
-    ru: "Используйте от 1 до 32 символов на предпочитаемом вами языке."
-
-  },
   "m49802171f1bd": {
     "ja": "言語",
     "zh-Hans": "语言",
@@ -222,19 +183,6 @@ export const messages = {
     ru: "Язык"
 
   },
-  "m9a20f8be7c86": {
-    "ja": "アプリと自動メールで使用する言語を選択します。",
-    "zh-Hans": "选择应用和自动电子邮件使用的语言。",
-    "zh-Hant": "選擇應用程式和自動電子郵件使用的語言。",
-    "es": "Elige el idioma de la aplicación y los correos electrónicos automáticos.",
-    "id": "Pilih bahasa untuk aplikasi dan email otomatis.",
-    "vi": "Chọn ngôn ngữ cho ứng dụng và email tự động.",
-    "th": "เลือกภาษาสำหรับแอปและอีเมลอัตโนมัติ",
-    "pt": "Escolha o idioma do aplicativo e dos e-mails automáticos.",
-    "fr": "Choisissez la langue de l’application et des e-mails automatiques.",
-    ru: "Выберите язык для приложения и автоматических писем."
-
-  },
   "m5c5dc0a0a093": {
     "ja": "通知",
     "zh-Hans": "通知",
@@ -246,19 +194,6 @@ export const messages = {
     "pt": "Notificações",
     "fr": "Notifications",
     ru: "Уведомления"
-
-  },
-  "m9541f078789c": {
-    "ja": "受け取りたい更新情報だけを選択できます。",
-    "zh-Hans": "仅选择你想收到的更新。",
-    "zh-Hant": "僅選擇你想收到的更新。",
-    "es": "Elige solo las novedades que quieras recibir.",
-    "id": "Pilih hanya kabar terbaru yang Anda inginkan.",
-    "vi": "Chỉ chọn những cập nhật bạn muốn nhận.",
-    "th": "เลือกเฉพาะข่าวสารที่ต้องการรับ",
-    "pt": "Escolha apenas as novidades que deseja receber.",
-    "fr": "Choisissez uniquement les actualités que vous souhaitez recevoir.",
-    ru: "Выбирайте только те обновления, которые вам нужны."
 
   },
   "m7b9ebb7c1094": {
@@ -534,19 +469,6 @@ export const messages = {
     ru: "Отмена…"
 
   },
-  "me54f33f29afc": {
-    "ja": "Kakaoアカウントに登録された番号へサービス通知を送信します。",
-    "zh-Hans": "我们会向你 Kakao 账户登记的号码发送服务通知。",
-    "zh-Hant": "我們會向你 Kakao 帳戶登記的號碼發送服務通知。",
-    "es": "Enviaremos las notificaciones del servicio al número registrado en tu cuenta de Kakao.",
-    "id": "Kami akan mengirim notifikasi layanan ke nomor yang terdaftar di akun Kakao Anda.",
-    "vi": "Chúng tôi sẽ gửi thông báo dịch vụ đến số đã đăng ký với tài khoản Kakao của bạn.",
-    "th": "เราจะส่งการแจ้งเตือนบริการไปยังหมายเลขที่ลงทะเบียนกับบัญชี Kakao",
-    "pt": "Enviaremos notificações de serviço ao número registrado em sua conta Kakao.",
-    "fr": "Nous enverrons les notifications de service au numéro enregistré sur votre compte Kakao.",
-    ru: "Мы будем отправлять сервисные уведомления на номер, зарегистрированный в вашем аккаунте Kakao."
-
-  },
   "m86ca9a57b1a8": {
     "ja": "続行するには同意項目を確認してください。",
     "zh-Hans": "请确认同意项后继续。",
@@ -794,19 +716,6 @@ export const messages = {
     ru: "Счет эмиссии"
 
   },
-  "m7c5b48cc38fa": {
-    "ja": "Passportとスタンプを受け取るアカウントです。ここでは変更できず、アドレスの一部のみ表示されます。",
-    "zh-Hans": "此账户用于接收 Passport 和 印章。无法在此更改，仅显示部分地址。",
-    "zh-Hant": "此帳戶用於接收 Passport 和 印章。無法在此更改，僅顯示部分地址。",
-    "es": "Esta cuenta recibe tus Passports y sellos. No se puede cambiar aquí y solo se muestra una parte de la dirección.",
-    "id": "Akun ini menerima Passports dan stempel Anda. Akun tidak dapat diubah di sini dan hanya sebagian alamat yang ditampilkan.",
-    "vi": "Tài khoản này nhận Passports và con dấu của bạn. Không thể thay đổi tại đây và chỉ hiển thị một phần địa chỉ.",
-    "th": "บัญชีนี้ใช้รับ Passports และ ตราประทับ เปลี่ยนที่นี่ไม่ได้ และแสดงที่อยู่เพียงบางส่วน",
-    "pt": "Esta conta recebe seus Passports e carimbos. Ela não pode ser alterada aqui, e apenas parte do endereço é exibida.",
-    "fr": "Ce compte reçoit vos Passports et tampons. Il ne peut pas être modifié ici et seule une partie de l’adresse est affichée.",
-    ru: "В этот аккаунт поступают ваши паспорта и штампы. Изменить адрес здесь невозможно, отображается только часть адреса."
-
-  },
   "m57a088d81a8e": {
     "ja": "発行先アカウントを準備中",
     "zh-Hans": "正在准备发行账户",
@@ -831,19 +740,6 @@ export const messages = {
     "pt": "Instalar aplicativo",
     "fr": "Installer l’application",
     ru: "Установите приложение"
-
-  },
-  "m0c4c7655ff06": {
-    "ja": "kyaaをホーム画面に追加すると、よりすばやくアクセスできます。",
-    "zh-Hans": "将 kyaa 添加到主屏幕，访问更快捷。",
-    "zh-Hant": "將 kyaa 添加到主畫面，使用更快捷。",
-    "es": "Añade kyaa a la pantalla de inicio para acceder más rápido.",
-    "id": "Tambahkan kyaa ke layar utama untuk akses yang lebih cepat.",
-    "vi": "Thêm kyaa vào màn hình chính để truy cập nhanh hơn.",
-    "th": "เพิ่ม kyaa ไปยังหน้าจอหลักเพื่อเข้าถึงได้เร็วขึ้น",
-    "pt": "Adicione a kyaa à tela inicial para acessá-la mais rapidamente.",
-    "fr": "Ajoutez kyaa à votre écran d’accueil pour y accéder plus rapidement.",
-    ru: "Добавьте kyaa на главный экран для более быстрого доступа."
 
   },
   "mf7724c014fed": {

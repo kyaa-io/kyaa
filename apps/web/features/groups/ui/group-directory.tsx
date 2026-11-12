@@ -34,7 +34,6 @@ import { challengeBadge, discoveryCopy } from "./discovery-copy";
 import { walletCopy } from "@/features/group-wallet/ui/copy";
 import styles from "./groups.module.css";
 import creationStyles from "./group-creation-banner.module.css";
-import { creationDescriptions } from "./group-creation-copy";
 import stateStyles from "./group-directory-state.module.css";
 import {SourceStatePanel} from "./source-state-panel";
 import {GroupApplicationDialog} from "./group-application-dialog";
@@ -142,7 +141,7 @@ export function GroupDirectory({locale,initialOwned=false,banners=[]}:{locale:Ap
           const title=groupApplyText(locale,kind==='fan'?'fanPageApply':'hobbyBrandPageApply');
           return <Link key={kind} className={creationStyles.banner} href={`/pages/groups/apply?locale=${locale}${kind==='fan'?'&kind=fan':''}` as Route} onClick={event=>openApplication(event,kind)} aria-label={title}>
             <img className={creationStyles.art} src={`/images/groups/create-${kind}.webp`} alt="" width={144} height={144}/>
-            <span className={creationStyles.copy}><strong>{title}</strong><span>{creationDescriptions[locale][kind]}</span></span>
+            <span className={creationStyles.copy}><strong>{title}</strong></span>
             <span className={creationStyles.arrow} aria-hidden="true"><ArrowRight size={20}/></span>
           </Link>;
         })}

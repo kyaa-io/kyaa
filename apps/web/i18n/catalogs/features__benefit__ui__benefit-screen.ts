@@ -79,19 +79,6 @@ export const messages = {
     ru: "Преимущества для фанатов"
 
   },
-  "m029fa55d14da": {
-    "ja": "ファン活動を通じて利用できる特典を確認しましょう。",
-    "zh-Hans": "查看通过粉丝活动解锁的福利。",
-    "zh-Hant": "查看通過粉絲活動解鎖的福利。",
-    "es": "Descubre los beneficios disponibles mediante tus actividades como fan.",
-    "id": "Temukan benefit yang tersedia melalui aktivitas fanmu.",
-    "vi": "Khám phá các quyền lợi dành cho hoạt động fan của bạn.",
-    "th": "ค้นพบสิทธิประโยชน์จากกิจกรรมแฟนคลับ",
-    "pt": "Descubra benefícios disponíveis por meio das suas atividades de fã.",
-    "fr": "Découvrez les avantages accessibles grâce à vos activités de fan.",
-    ru: "Узнайте о преимуществах, которые вы получаете благодаря участию в мероприятиях для фанатов."
-
-  },
   "mf06d1cb8c856": {
     "ja": "セレブリティを選択",
     "zh-Hans": "选择明星",
@@ -129,19 +116,6 @@ export const messages = {
     "pt": "Este artista ainda não tem benefícios publicados.",
     "fr": "Aucun avantage n’a encore été publié pour cet artiste.",
     ru: "Информация о каких-либо льготах для этой знаменитости пока отсутствует."
-
-  },
-  "md97cd47c327d": {
-    "ja": "新しい特典が公開されると、ここに表示されます。",
-    "zh-Hans": "新福利开放后会立即显示在此处。",
-    "zh-Hant": "新福利開放後會立即顯示在此處。",
-    "es": "Los nuevos beneficios aparecerán aquí cuando se abran.",
-    "id": "Benefit baru akan muncul di sini begitu tersedia.",
-    "vi": "Quyền lợi mới sẽ xuất hiện ở đây ngay khi được mở.",
-    "th": "สิทธิประโยชน์ใหม่จะปรากฏที่นี่ทันทีที่เปิด",
-    "pt": "Novos benefícios aparecerão aqui assim que forem abertos.",
-    "fr": "Les nouveaux avantages apparaîtront ici dès leur ouverture.",
-    ru: "Новые преимущества появятся здесь сразу после их открытия."
 
   },
   "mebbf3bca342e": {
@@ -1234,19 +1208,6 @@ export const messages = {
     "pt": "Escolha quantos bilhetes de sorteio usar e envie sua participação. A verificação de fã ou a participação no LIVE não inscreve você automaticamente.",
     "fr": "Choisissez le nombre de tickets à utiliser et envoyez votre participation. La vérification de fan ou la participation au LIVE ne vous inscrit pas automatiquement.",
     ru: "Выберите, сколько билетов розыгрыша использовать, и отправьте свою заявку. Подтверждение статуса фаната или участие в LIVE не дает права на автоматическое участие."
-
-  },
-  "m13ed96cd2401": {
-    "ja": "応募券を使って、この特典に応募できます。",
-    "zh-Hans": "使用抽奖券参与此福利。",
-    "zh-Hant": "使用抽獎票券參與此福利。",
-    "es": "Usa tus boletos para participar por este beneficio.",
-    "id": "Gunakan tiket undian untuk mengikuti undian benefit ini.",
-    "vi": "Dùng vé quay thưởng để tham gia nhận quyền lợi.",
-    "th": "ใช้บัตรจับรางวัลเพื่อเข้าร่วมรับสิทธิประโยชน์",
-    "pt": "Use seus bilhetes de sorteio para concorrer a este benefício.",
-    "fr": "Utilisez vos tickets de tirage au sort pour tenter de remporter cet avantage.",
-    ru: "Используйте билеты розыгрыша, чтобы принять участие в розыгрыше призов."
 
   },
   "m095fcfb8e291": {

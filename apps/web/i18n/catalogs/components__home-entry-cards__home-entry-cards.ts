@@ -14,19 +14,6 @@ export const messages = {
     ru: "Ваш гид по kyaa с Элиной."
 
   },
-  "m8730562b9dee": {
-    "ja": "ファン認証で応募券を受け取り、好きな賞品に応募しましょう。",
-    "zh-Hans": "完成粉丝认证，领取抽奖券，参与心仪奖品的抽奖。",
-    "zh-Hant": "完成粉絲認證，領取抽獎券，參加心儀獎品的抽獎。",
-    "es": "Verifica que eres fan, recibe boletos y participa por un regalo.",
-    "id": "Verifikasi penggemar, dapatkan tiket, lalu ikuti undian hadiah.",
-    "vi": "Xác minh người hâm mộ, nhận vé và tham gia rút thăm quà.",
-    "th": "ยืนยันสถานะแฟน รับสิทธิ์ลุ้นรางวัล แล้วร่วมลุ้นของขวัญที่คุณชอบ",
-    "pt": "Verifique seu perfil de fã, receba bilhetes e concorra ao seu presente favorito.",
-    "fr": "Validez votre statut de fan et utilisez vos tickets pour tenter de gagner un cadeau.",
-    ru: "От проверки данных фанатов до розыгрышей призов."
-
-  },
   "m874196adc5ca": {
     "ja": "抽選に応募する",
     "zh-Hans": "参加活动抽奖",

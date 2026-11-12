@@ -274,19 +274,6 @@ export const messages = {
     ru: "Требуется вход в систему."
 
   },
-  "m40e669945671": {
-    "ja": "応募券の残高と活動履歴はログイン後に確認できます。",
-    "zh-Hans": "登录后即可查看抽奖券余额和活动记录。",
-    "zh-Hant": "登入後即可查看抽獎票券餘額和活動記錄。",
-    "es": "Inicia sesión para ver tu saldo y actividad.",
-    "id": "Masuk untuk melihat saldo dan aktivitas Anda.",
-    "vi": "Đăng nhập để xem số dư và lịch sử hoạt động của bạn.",
-    "th": "เข้าสู่ระบบเพื่อดูยอดคงเหลือและกิจกรรมของคุณ",
-    "pt": "Entre para ver seu saldo e suas atividades.",
-    "fr": "Connectez-vous pour voir votre solde et vos activités.",
-    ru: "Войдите в систему, чтобы увидеть свой баланс и активность."
-
-  },
   "m28a5a63237a6": {
     "ja": "ログイン",
     "zh-Hans": "登录",

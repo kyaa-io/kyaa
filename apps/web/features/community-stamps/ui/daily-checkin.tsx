@@ -24,7 +24,7 @@ type Locale = AppLocale;
 const copy = {
   ko: {
     title: "오늘의 출석",
-    help: "하루 한 번, 최애와 함께한 오늘을 스탬프로 남겨요.",
+    
     loading: "출석 기록을 확인하고 있어요.",
     loadError: "출석 기록을 불러오지 못했어요.",
     retry: "다시 시도",
@@ -41,7 +41,7 @@ const copy = {
   },
   en: {
     title: "Today’s check-in",
-    help: "Check in once a day and keep today with your favorite as a Stamp.",
+    
     loading: "Checking your attendance.",
     loadError: "We couldn’t load your check-ins.",
     retry: "Try again",
@@ -59,7 +59,7 @@ const copy = {
 
   ...additionalLocales((translationLocale) => ({
     title: localizedMessages.me090b9615631[translationLocale],
-    help: localizedMessages.made923b999af[translationLocale],
+    
     loading: localizedMessages.m1712f68ea709[translationLocale],
     loadError: localizedMessages.mfb55da6210ea[translationLocale],
     retry: localizedMessages.m498d300c7d14[translationLocale],
@@ -112,7 +112,7 @@ export function DailyCheckin({
   }
   if (!auth.authenticated) {
     const returnTo = `${creatorHomeHref(creator)}?locale=${locale}#daily-checkin`;
-    return <section className={styles.panel} id="daily-checkin" aria-labelledby="daily-checkin-title"><div><h3 id="daily-checkin-title">{t.title}</h3><p>{t.help}</p></div><Link className={styles.primary} data-fan-action-emphasis="primary" href={`/login?locale=${locale}&returnTo=${encodeURIComponent(returnTo)}` as Route}>{t.login}</Link></section>;
+    return <section className={styles.panel} id="daily-checkin" aria-labelledby="daily-checkin-title"><div><h3 id="daily-checkin-title">{t.title}</h3></div><Link className={styles.primary} data-fan-action-emphasis="primary" href={`/login?locale=${locale}&returnTo=${encodeURIComponent(returnTo)}` as Route}>{t.login}</Link></section>;
   }
   if (!ownerId) {
     return <section className={styles.panel} id="daily-checkin" aria-labelledby="daily-checkin-title"><div><h3 id="daily-checkin-title">{t.title}</h3><FanSkeleton width="60%" height={18} /><FanSkeletonStatus locale={locale} label={t.loading} /></div></section>;
@@ -198,7 +198,7 @@ function OwnerDailyCheckin({
         ? <><FanSkeleton width="60%" height={18} /><FanSkeletonStatus locale={locale} label={t.loading} /></>
         : resource.state.status === "error"
           ? <p role="alert">{t.loadError} <button className={styles.retry} type="button" onClick={resource.retry}><RotateCcw aria-hidden="true" />{t.retry}</button></p>
-          : <p>{checkedToday ? t.earned : t.help} <span className={styles.count}>{t.count(monthCount)}</span></p>}
+          : <p>{checkedToday ? <>{t.earned} </> : null}<span className={styles.count}>{t.count(monthCount)}</span></p>}
     </div>
     {resource.state.status === "ready" ? <button className={styles.primary} type="button" disabled={busy || checkedToday} onClick={() => void checkIn()}>
       {checkedToday ? <Check aria-hidden="true" /> : null}{busy ? t.pending : checkedToday ? t.earned : t.action}

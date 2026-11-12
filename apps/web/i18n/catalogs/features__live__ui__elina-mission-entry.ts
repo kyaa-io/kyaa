@@ -27,19 +27,6 @@ export const messages = {
     ru: "Элина и Бэнкси, одно произведение искусства."
 
   },
-  "mf8ae3329afeb": {
-    "ja": "お気に入りの作品を選び、絵の中の細部を探しましょう。",
-    "zh-Hans": "选择喜爱的作品，然后寻找画面中的细节。",
-    "zh-Hant": "選擇喜愛的作品，然後尋找畫面中的細節。",
-    "es": "Elige tu obra favorita y busca un detalle en la imagen.",
-    "id": "Pilih karya seni favorit, lalu cari detail pada gambar.",
-    "vi": "Chọn tác phẩm yêu thích rồi tìm một chi tiết trong ảnh.",
-    "th": "เลือกผลงานที่คุณชอบ แล้วมองหารายละเอียดในภาพ",
-    "pt": "Escolha sua obra favorita e depois procure um detalhe na imagem.",
-    "fr": "Choisissez votre œuvre préférée, puis cherchez un détail dans l’image.",
-    ru: "Выберите понравившееся произведение искусства, а затем поищите на картинке какую-нибудь деталь."
-
-  },
   "m8e242988ecf7": {
     "ja": "投票1件 · クイズ1件",
     "zh-Hans": "1 次投票 · 1 道问答",
@@ -66,17 +53,4 @@ export const messages = {
     ru: "Начать миссии"
 
   },
-  "mc7e1a60b9ffd": {
-    "ja": "ミッションを完了するとスタンプを記録できます。",
-    "zh-Hans": "完成任务即可记录 印章。",
-    "zh-Hant": "完成任務即可記錄 印章。",
-    "es": "Completa una misión para registrar un sello.",
-    "id": "Selesaikan misi untuk mencatat stempel.",
-    "vi": "Hoàn tất nhiệm vụ để ghi một con dấu.",
-    "th": "ทำภารกิจให้สำเร็จเพื่อบันทึก ตราประทับ",
-    "pt": "Conclua uma missão para registrar um carimbo.",
-    "fr": "Terminez une mission pour enregistrer un tampon.",
-    ru: "Выполните задание по записи сигнала Stamp."
-
-  }
 } satisfies Record<string, TranslatedMessage>;

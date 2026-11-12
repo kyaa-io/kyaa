@@ -157,19 +157,6 @@ export const messages = {
     ru: "Продолжить бронирование LIVE"
 
   },
-  "m84b26c0c9170": {
-    "ja": "PassportはMYでもう一度確認できます。",
-    "zh-Hans": "可在MY中再次找到您的Passport。",
-    "zh-Hant": "可在MY中再次找到您的Passport。",
-    "es": "Encuentra de nuevo tu Passport en MY.",
-    "id": "Temukan kembali Passport-mu di MY.",
-    "vi": "Bạn có thể tìm lại Passport trong MY.",
-    "th": "ค้นหา Passport อีกครั้งใน MY",
-    "pt": "Encontre seu Passport novamente em MY.",
-    "fr": "Retrouvez votre Passport dans MY.",
-    ru: "Найдите свой Passport снова в MY."
-
-  },
   "m311f929deaa4": {
     "ja": "MYで見る",
     "zh-Hans": "在MY中查看",

@@ -69,7 +69,7 @@ const copy = {
     title: "MY", profileSummary: "내 팬 활동",
     
     login: "로그인하기", loading: "팬 활동을 불러오는 중이에요.", error: "팬 활동을 불러오지 못했어요.", retry: "다시 시도",
-    creators: "내 최애", creatorsHelp: "크리에이터별 패스포트와 모든 크리에이터에서 함께 쓰는 응모권을 확인하세요.",
+    creators: "내 최애", 
     noCreators: "아직 등록한 최애가 없어요.", findCreator: "최애 찾기", live: "내 예약 LIVE", upcoming: "예약 완료",
     history: "지난 LIVE", noLive: "예약한 LIVE가 없어요.", browseLive: "LIVE 둘러보기", rewards: "받은 혜택",
     collection: "최근 수집",
@@ -84,13 +84,13 @@ const copy = {
     raffleEmpty: "현재 열려 있는 래플이 없어요.",
     nextAction: "다음 팬 활동", noMission: "새 인증 덕질을 기다리고 있어요.", viewLive: "LIVE 일정 보기", startPassport: "팬 인증 시작하기",
     missionLoading: "다음 활동을 확인하는 중이에요.", missionError: "다음 활동을 불러오지 못했어요.", manualReward: "승인 후 지급",
-    tierHelp: "함께한 활동이 나의 등급이 돼요.", highestTier: "최고 등급을 달성했어요.", toNextTier: "까지",
+    highestTier: "최고 등급을 달성했어요.", toNextTier: "까지",
   },
   en: {
     title: "MY", profileSummary: "My fan activity",
     
     login: "Sign in", loading: "Loading your fan activity.", error: "We couldn’t load your fan activity.", retry: "Try again",
-    creators: "My favorites", creatorsHelp: "Check each Fan Passport and your raffle tickets, which are shared across all creators.",
+    creators: "My favorites", 
     noCreators: "No favorites added yet.", findCreator: "Find favorites", live: "My reserved LIVE", upcoming: "Reserved",
     history: "Past LIVE", noLive: "No reserved LIVE events.", browseLive: "Browse LIVE", rewards: "My rewards",
     collection: "Recent collection",
@@ -105,14 +105,14 @@ const copy = {
     raffleEmpty: "No raffles are open right now.",
     nextAction: "Next fan activity", noMission: "There are no new verification missions.", viewLive: "View LIVE schedule", startPassport: "Start fan verification",
     missionLoading: "Checking your next activity.", missionError: "We couldn’t load your next activity.", manualReward: "Granted after approval",
-    tierHelp: "Your fan activities determine your fan tier.", highestTier: "You reached the highest tier.", toNextTier: "to",
+    highestTier: "You reached the highest tier.", toNextTier: "to",
   },
 
   ...additionalLocales((translationLocale) => ({
     title: "MY", profileSummary: localizedMessages.ma73150e96afb[translationLocale],
     
     login: localizedMessages.m31d61c3cc601[translationLocale], loading: localizedMessages.m03449d54333c[translationLocale], error: localizedMessages.mff567c545ea0[translationLocale], retry: localizedMessages.mb0a068fe8172[translationLocale],
-    creators: localizedMessages.madfe76fc03d1[translationLocale], creatorsHelp: localizedMessages.m6c62da6f7772[translationLocale],
+    creators: localizedMessages.madfe76fc03d1[translationLocale], 
     noCreators: localizedMessages.mee9c567663d7[translationLocale], findCreator: localizedMessages.m0af6a3088bb5[translationLocale], live: localizedMessages.m3190c29eddca[translationLocale], upcoming: localizedMessages.m0de14525bbe6[translationLocale],
     history: localizedMessages.m9337541996b3[translationLocale], noLive: localizedMessages.me7c44c442e4d[translationLocale], browseLive: localizedMessages.m2f6fea140b72[translationLocale], rewards: localizedMessages.mfd30c394dc05[translationLocale],
     collection: localizedMessages.ma2be6d1414b6[translationLocale],
@@ -127,7 +127,7 @@ const copy = {
     raffleEmpty: localizedMessages.m365139d906a3[translationLocale],
     nextAction: localizedMessages.m9e00b28f1ca9[translationLocale], noMission: localizedMessages.ma1e80483c12b[translationLocale], viewLive: localizedMessages.m75589d2732b7[translationLocale], startPassport: localizedMessages.md784e78b6f0d[translationLocale],
     missionLoading: localizedMessages.m05039f1121a7[translationLocale], missionError: localizedMessages.ma96afa6f171f[translationLocale], manualReward: localizedMessages.m245b2551a6c7[translationLocale],
-    tierHelp: localizedMessages.m62ee926264d3[translationLocale], highestTier: localizedMessages.m0f473985b8a3[translationLocale], toNextTier: localizedMessages.mc031f5c28aae[translationLocale],
+    highestTier: localizedMessages.m0f473985b8a3[translationLocale], toNextTier: localizedMessages.mc031f5c28aae[translationLocale],
   }))
 } as const;
 
@@ -439,7 +439,6 @@ function SelectedFavoritePanels({ creator, locale }: { creator: MyCreator; local
             : raffleState.status === "error" ? <div className={styles.panelState} role="alert"><p>{locale === "ko" ? "이벤트를 불러오지 못했어요." : translate(locale, localizedMessages.mdd8573a9baf2, "We couldn’t load events.")}</p><FanAction variant="text" onClick={retryRaffles}>{t.retry}</FanAction></div>
             : openRaffles.length > 0 ? <div className={styles.eventSummary}>
               <div className={styles.eventTitle}><span className={styles.eventIcon}><Gift aria-hidden="true"/></span><h3>{ko ? <>응모할 수 있는 선물 <em>{openRaffles.length}종</em></> : locale === "en" ? <>{openRaffles.length} {openRaffles.length === 1 ? "gift" : "gifts"} to enter for</> : translate(locale, localizedMessages.mb3e721bb6234, "{0} gifts to enter for", [openRaffles.length])}</h3></div>
-              <p>{locale === "ko" ? "마음에 드는 선물을 고르고, 모은 응모권으로 참여해 보세요." : translate(locale, localizedMessages.m58b6515d67d0, "Choose a gift and enter with your tickets.")}</p>
               <p className={styles.eventDeadline}>{locale === "ko" ? "가장 가까운 마감 · " : translate(locale, localizedMessages.m7d4e6ed6ba76, "Next deadline · ")}<time dateTime={openRaffles[0].entryClosesAt!}>{formatClosing(openRaffles[0].entryClosesAt!, locale)}</time></p>
             </div> : <p className={styles.panelState}>{locale === "ko" ? "현재 진행 중인 이벤트가 없어요." : translate(locale, localizedMessages.m0fca25890c94, "No events are open right now.")}</p>}
           <div className={styles.eventWallet}><span><Ticket aria-hidden="true"/>{locale === "ko" ? "보유 응모권" : translate(locale, localizedMessages.ma88be67e1498, "Available tickets")}</span><strong>{creator.ticketBalance}{ko ? "장" : ""}</strong></div>
@@ -467,7 +466,7 @@ function FanGrade({ creator, locale }: { creator: PassportCreator; locale: FanLo
   const stage = creator.passport.stageProgress;
   const currentLabel = stage ? fanStageLabel(locale, stage.current) : levelLabel(locale, creator.passport.tier);
   return <div className={styles.fanGrade}>
-    <div className={styles.gradeIdentity}><FanTierBadge tier={creator.passport.tier} stageKey={stage?.current.key} locale={locale} size={88}/><div><strong>{currentLabel}</strong><p>{t.tierHelp}</p></div></div>
+    <div className={styles.gradeIdentity}><FanTierBadge tier={creator.passport.tier} stageKey={stage?.current.key} locale={locale} size={88}/><div><strong>{currentLabel}</strong></div></div>
   </div>;
 }
 
@@ -493,8 +492,8 @@ function CollectionTotal({ icon, value, label, href, kind, onClick }: { icon: Re
   return href ? <Link className={styles.collectionTotal} data-kind={kind} href={href as Route} onClick={onClick}>{content}</Link> : <span className={styles.collectionTotal} data-kind={kind}>{content}</span>;
 }
 
-function SectionTitle({ title, help, href, action }: { title: ReactNode; help?: string; href?: string; action?: string }) {
-  return <FanSectionHeader variant="personal" title={title} description={help} action={href && action ? { href, label: action } : undefined} />;
+function SectionTitle({ title, href, action }: { title: ReactNode; href?: string; action?: string }) {
+  return <FanSectionHeader variant="personal" title={title} action={href && action ? { href, label: action } : undefined} />;
 }
 
 function Empty({ text, href, action }: { text: string; href: string; action: string }) {

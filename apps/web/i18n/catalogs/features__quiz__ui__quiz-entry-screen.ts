@@ -170,19 +170,6 @@ export const messages = {
     ru: "Проверьте, насколько хорошо вы знаете.\n{0}."
 
   },
-  "me8b8a3dcf2ea": {
-    "ja": "短いクイズに合格すると、最初のファン認証スタンプとFan Passportを受け取れます。",
-    "zh-Hans": "通过简短问答，即可获得首枚粉丝认证 印章 和 Fan Passport。",
-    "zh-Hant": "通過簡短問答，即可獲得首枚粉絲認證 印章 和 Fan Passport。",
-    "es": "Aprueba un cuestionario breve para recibir tu primer sello de verificación de fans y tu Fan Passport.",
-    "id": "Lulus kuis singkat untuk menerima stempel Verifikasi Penggemar pertama dan Fan Passport Anda.",
-    "vi": "Đạt bài trắc nghiệm ngắn để nhận con dấu Xác minh Người hâm mộ đầu tiên và Fan Passport.",
-    "th": "ทำแบบทดสอบสั้น ๆ ให้ผ่านเพื่อรับ ตราประทับ ยืนยันแฟนคลับดวงแรกและ Fan Passport",
-    "pt": "Passe em um questionário curto para receber seu primeiro carimbo de verificação de fã e seu Fan Passport.",
-    "fr": "Réussissez un court quiz pour recevoir votre premier tampon de vérification de fan et votre Fan Passport.",
-    ru: "Пройдите короткий тест, чтобы получить первый Stamp за подтверждение статуса фаната и Fan Passport."
-
-  },
   "mbbfb2a916e4d": {
     "ja": "{0}問",
     "zh-Hans": "{0} 道题",
@@ -220,19 +207,6 @@ export const messages = {
     "pt": " para passar",
     "fr": " pour réussir",
     ru: " пройти"
-
-  },
-  "m1368cd0da861": {
-    "ja": "回答は1問ごとに安全に保存されます",
-    "zh-Hans": "每道答案都会安全保存",
-    "zh-Hant": "每道答案都會安全儲存",
-    "es": "Cada respuesta se guarda de forma segura",
-    "id": "Setiap jawaban disimpan dengan aman",
-    "vi": "Mỗi câu trả lời được lưu an toàn",
-    "th": "ทุกคำตอบได้รับการบันทึกอย่างปลอดภัย",
-    "pt": "Cada resposta é salva com segurança",
-    "fr": "Chaque réponse est enregistrée en toute sécurité",
-    ru: "Каждый ответ надежно сохранен."
 
   },
   "mfa2e863970e4": {
@@ -326,17 +300,4 @@ export const messages = {
     ru: "Войдите, чтобы начать"
 
   },
-  "ma3066d315e6f": {
-    "ja": "すでに開始している場合は、保存された問題から続けられます。",
-    "zh-Hans": "如果已经开始，将从已保存的问题继续。",
-    "zh-Hant": "如果已經開始，將從已儲存的問題繼續。",
-    "es": "Si ya empezaste, continuarás desde las preguntas guardadas.",
-    "id": "Jika sudah memulai, Anda akan melanjutkan dari pertanyaan yang tersimpan.",
-    "vi": "Nếu đã bắt đầu, bạn sẽ tiếp tục từ các câu hỏi đã lưu.",
-    "th": "หากคุณเริ่มไว้แล้ว ระบบจะดำเนินการต่อจากคำถามที่บันทึกไว้",
-    "pt": "Se já tiver começado, você continuará a partir das perguntas salvas.",
-    "fr": "Si vous avez déjà commencé, vous reprendrez avec les questions enregistrées.",
-    ru: "Если вы уже начали, вы продолжите с сохраненных вопросов."
-
-  }
 } satisfies Record<string, TranslatedMessage>;

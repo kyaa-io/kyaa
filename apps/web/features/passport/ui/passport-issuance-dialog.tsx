@@ -44,7 +44,7 @@ const copy = {
     stampEarned: "팬 인증 스탬프 획득",
     open: "패스포트 열기",
     continueLive: "LIVE 예약 이어가기",
-    myHint: "내 패스포트는 MY에서 다시 볼 수 있어요.",
+    
     openMy: "MY에서 보기",
     waiting: "첫 팬 인증 기록을 보여드릴게요.",
     mintComplete: "디지털 발급 완료",
@@ -75,7 +75,7 @@ const copy = {
     stampEarned: "Fan Verification Stamp earned",
     open: "Open Passport",
     continueLive: "Continue LIVE reservation",
-    myHint: "Find your Passport again in MY.",
+    
     openMy: "View in MY",
     waiting: "Showing your first fan verification record.",
     mintComplete: "Digital issuance complete",
@@ -107,7 +107,7 @@ const copy = {
     stampEarned: localizedMessages.mdd07540869ca[translationLocale],
     open: localizedMessages.m425873a1d4dd[translationLocale],
     continueLive: localizedMessages.mab2c87655564[translationLocale],
-    myHint: localizedMessages.m84b26c0c9170[translationLocale],
+    
     openMy: localizedMessages.m311f929deaa4[translationLocale],
     waiting: localizedMessages.m265d333b7f8f[translationLocale],
     mintComplete: localizedMessages.m7ccc097f1c7b[translationLocale],
@@ -355,7 +355,7 @@ export function PassportIssuanceCeremony({
                       <span>{t.open}</span><ArrowRight aria-hidden="true" />
                     </Link> : null}
                   </div>
-                  <p className={styles.revisitHint}>{t.myHint} <Link href={withLocale("/my", locale)}>{t.openMy}</Link></p>
+                  <p className={styles.revisitHint}><Link href={withLocale("/my", locale)}>{t.openMy}</Link></p>
                 </div>
               ) : (
                 <span className={styles.actionStatus}>{t.waiting}</span>

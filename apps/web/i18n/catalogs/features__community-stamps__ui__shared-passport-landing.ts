@@ -1,19 +1,6 @@
 import type { TranslatedMessage } from "../messages";
 
 export const messages = {
-  "md4ae0dc90050": {
-    "ja": "あなたをここへ導いた推しに会いましょう。",
-    "zh-Hans": "去看看让您来到这里的喜爱艺人。",
-    "zh-Hant": "去看看讓您來到這裡的喜愛藝人。",
-    "es": "Descubre al artista favorito que te trajo hasta aquí.",
-    "id": "Temui favorit yang membawa Anda ke sini.",
-    "vi": "Khám phá nghệ sĩ yêu thích đã đưa bạn đến đây.",
-    "th": "พบกับคนโปรดที่พาคุณมาที่นี่",
-    "pt": "Conheça o favorito que trouxe você até aqui.",
-    "fr": "Découvrez le favori qui vous a conduit jusqu’ici.",
-    ru: "Познакомьтесь с любимым персонажем, который привёл вас сюда."
-
-  },
   "mdd29ff7d7bcd": {
     "ja": "このPassportにつながる推しのページで、お知らせやファン活動を確認できます。",
     "zh-Hans": "前往此 Passport 关联的创作者页面，查看动态和粉丝活动。",
@@ -25,6 +12,19 @@ export const messages = {
     "pt": "Visite a página deste criador para ver novidades e momentos de fãs ligados ao Passport.",
     "fr": "Visitez la page de ce créateur pour découvrir les actualités et les moments de fans liés au Passport.",
     ru: "Посетите страницу этого автора, чтобы узнать об обновлениях и моментах из жизни фанатов, связанных с Passport."
+
+  },
+  "md4ae0dc90050": {
+    "ja": "あなたをここへ導いた推しに会いましょう。",
+    "zh-Hans": "去看看让您来到这里的喜爱艺人。",
+    "zh-Hant": "去看看讓您來到這裡的喜愛藝人。",
+    "es": "Descubre al artista favorito que te trajo hasta aquí.",
+    "id": "Temui favorit yang membawa Anda ke sini.",
+    "vi": "Khám phá nghệ sĩ yêu thích đã đưa bạn đến đây.",
+    "th": "พบกับคนโปรดที่พาคุณมาที่นี่",
+    "pt": "Conheça o favorito que trouxe você até aqui.",
+    "fr": "Découvrez le favori qui vous a conduit jusqu’ici.",
+    ru: "Познакомьтесь с любимым персонажем, который привёл вас сюда."
 
   },
   "md34e8e8c5c09": {

@@ -159,19 +159,6 @@ export const messages = {
     ru: "Войдите в систему, чтобы проверить"
 
   },
-  "md1df95a262d8": {
-    "ja": "抽選券を複数の特典に分けることも、1つにすべて使うこともできます。",
-    "zh-Hans": "你可以把抽奖券分配给多份礼物，也可以全部用于一份礼物。",
-    "zh-Hant": "你可以把抽獎券分配給多份禮物，也可以全部用於一份禮物。",
-    "es": "Reparte tus boletos entre varios regalos o úsalos todos para uno.",
-    "id": "Bagi tiket di antara beberapa hadiah atau gunakan semuanya untuk satu hadiah.",
-    "vi": "Chia vé cho nhiều món quà hoặc dùng tất cả cho một món.",
-    "th": "แบ่งสิทธิ์ระหว่างของขวัญหลายชิ้น หรือใช้ทั้งหมดกับชิ้นเดียว",
-    "pt": "Divida seus bilhetes entre os presentes ou use todos em um só.",
-    "fr": "Répartissez vos tickets entre les cadeaux ou utilisez-les tous pour un seul.",
-    ru: "Разделите билеты между подарками или используйте все для одного человека."
-
-  },
   "md731effad5fb": {
     "ja": "抽選券を集める",
     "zh-Hans": "收集抽奖券",
@@ -313,19 +300,6 @@ export const messages = {
     "pt": "Ver detalhes",
     "fr": "Voir les détails",
     ru: "Просмотреть подробности"
-
-  },
-  "md7e2e71bb4c7": {
-    "ja": "特典ごとに別々に応募します。特典と枚数を確認すると抽選券が差し引かれます。",
-    "zh-Hans": "每份礼物需单独报名。确认礼物和数量后将扣除抽奖券。",
-    "zh-Hant": "每份禮物需單獨報名。確認禮物和數量後將扣除抽獎券。",
-    "es": "Participa por cada regalo por separado. Los boletos se descuentan después de confirmar el regalo y la cantidad.",
-    "id": "Daftarkan setiap hadiah secara terpisah. Tiket dikurangi setelah Anda mengonfirmasi hadiah dan jumlahnya.",
-    "vi": "Đăng ký từng món quà riêng. Vé được trừ sau khi bạn xác nhận quà và số lượng.",
-    "th": "เข้าร่วมลุ้นของขวัญแต่ละชิ้นแยกกัน สิทธิ์จะถูกหักหลังจากคุณยืนยันของขวัญและจำนวน",
-    "pt": "Participe do sorteio de cada presente separadamente. Os bilhetes são deduzidos depois que você confirma o presente e a quantidade.",
-    "fr": "Participez séparément pour chaque cadeau. Les tickets sont déduits après confirmation du cadeau et de la quantité.",
-    ru: "Вводите информацию о каждом подарке отдельно. Билеты будут списаны после подтверждения подарка и его количества."
 
   },
   "m10d20a8e8ddf": {
