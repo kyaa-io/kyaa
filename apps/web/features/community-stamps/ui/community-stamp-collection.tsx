@@ -23,7 +23,7 @@ import { FanAction } from "@/components/fan-ui/fan-action";
 import { FanSectionLink } from "@/components/fan-ui/fan-section-link";
 import { showFanToast } from "@/components/fan-ui/fan-toast";
 import { inviteRedeemFailure } from "@/features/groups/ui/group-referral-copy";
-import { AVAILABLE_COMMUNITY_STAMPS, COMMUNITY_STAMPS, communityStampLabel, communityAwardResultSchema, communityInviteSchema, type CommunityStamp, type CommunityStampKind } from "../domain/community-stamps";
+import { AVAILABLE_COMMUNITY_STAMPS, COMMUNITY_STAMPS, communityStampLabel, communityAwardResultSchema, communityInviteRedemptionResultSchema, communityInviteSchema, type CommunityStamp, type CommunityStampKind } from "../domain/community-stamps";
 import { CommunityStampArtwork } from "./community-stamp-artwork";
 import { SharePassport } from "./share-passport";
 import { communityStampAction, useCommunityStamps } from "./use-community-stamps";
@@ -110,11 +110,16 @@ function OwnerCollection({ locale, creator, resource, creatorNames }: { locale: 
       if (action === "invite-code") {
         const result = await communityStampAction(auth.getAccessToken, action, {}, value => communityInviteSchema.parse(value));
         if (alive.current) setInvite(result);
+      } else if (action === "redeem-invite") {
+        await communityStampAction(auth.getAccessToken, action, { code }, value => communityInviteRedemptionResultSchema.parse(value));
+        if (alive.current) {
+          setInvite(current => current ? { ...current, redeemed: true } : current);
+          resource.retry(); notifyFanActivityUpdated(auth.user?.id);
+        }
       } else {
-        const result = await communityStampAction(auth.getAccessToken, action, action === "redeem-invite" ? { code } : {}, value => communityAwardResultSchema.parse(value));
+        const result = await communityStampAction(auth.getAccessToken, action, {}, value => communityAwardResultSchema.parse(value));
         if (alive.current) {
           setMessage(result.awarded ? (locale === "ko" ? "새 스탬프가 기록됐어요." : translate(locale, localizedMessages.m065af5f17fbb, "Your new Stamp has been recorded.")) : (locale === "ko" ? "이미 받은 스탬프예요." : translate(locale, localizedMessages.m3c048733aea8, "You’ve already earned this Stamp.")));
-          if (action === "redeem-invite") setInvite(current => current ? { ...current, redeemed: true } : current);
           resource.retry(); notifyFanActivityUpdated(auth.user?.id);
         }
       }

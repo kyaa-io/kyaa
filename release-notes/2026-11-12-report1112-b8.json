@@ -1,0 +1,5 @@
+{
+  "changes": ["친구 초대코드 인증에 성공한 뒤 실패 문구가 뜨지 않고 완료 상태가 표시돼요. 첨부 화면은 예시 코드로 확인한 로컬 화면이에요."],
+  "path": "/my",
+  "images": ["release-notes/images/2026-11-12-report1112-b8-390.png", "release-notes/images/2026-11-12-report1112-b8-1440.png"]
+}

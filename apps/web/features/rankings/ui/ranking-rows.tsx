@@ -281,7 +281,7 @@ function rowDelta(locale: AppLocale, delta: number | null, comparable: boolean) 
 }
 
 /** The built-day movement when the answer has one; otherwise the places gained or lost since the visitor last looked at this list. */
-const visitDelta = (locale: AppLocale, delta: number | null, comparable: boolean, moved: number) => comparable && delta ? rowDelta(locale, delta, true) : rowDelta(locale, moved, true);
+const visitDelta = (locale: AppLocale, delta: number | null, comparable: boolean, moved: number) => comparable && delta !== null ? rowDelta(locale, delta, true) : rowDelta(locale, moved, true);
 
 /** The way to first place, computed from the list itself: null on the first row (nothing to reach); 0 when tied. It opens with the row, never in the line. */
 const gapToFirst = (first: boolean, value: number, top: number) => first ? null : Math.max(0, top - value);
@@ -310,6 +310,10 @@ const LiveMark = ({ locale, name }: { locale: AppLocale; name: string }) => <spa
 
 
 const fanValue = (row: HomeFanRankingRow, metric: RankingMetric) => metric === "points" ? row.points ?? row.score : row.hearts ?? row.score;
+/** Competition ranking: equal displayed scores share a place; the following place skips ahead. */
+export function sharedRanks(values: readonly number[]): number[] {
+  return values.map((value, index) => values.findIndex((other) => other === value) + 1 || index + 1);
+}
 const fanKey = (row: HomeFanRankingRow, index: number, rows: readonly HomeFanRankingRow[]) =>
   rows.findIndex((other) => other.nickname === row.nickname) === index ? `n:${row.nickname}` : `r:${row.rank}`;
 
@@ -318,8 +322,9 @@ export function FanRows({ locale, ranking, metric, show, fill, scope, guest = fa
   const [person, setPerson] = useState<ProfileModalPerson | null>(null);
   const { openKey, toggle } = useRankExpand();
   const shown = show === undefined ? ranking.rows : ranking.rows.slice(0, show);
+  const ranks = sharedRanks(shown.map((row) => fanValue(row, metric)));
   const keys = shown.map((row, i) => fanKey(row, i, shown));
-  const { place, movedSince } = useRowMotion(keys, shown.map((row) => fanValue(row, metric)), shown.map((row) => row.rank), `fans:${metric}:${period}`);
+  const { place, movedSince } = useRowMotion(keys, shown.map((row) => fanValue(row, metric)), ranks, `fans:${metric}:${period}`);
   const top = ranking.rows[0] ? fanValue(ranking.rows[0], metric) : 0;
   const accentFirst = !guest && !ranking.me;
   const days = ranking.weekGainDays ?? 0;
@@ -328,11 +333,12 @@ export function FanRows({ locale, ranking, metric, show, fill, scope, guest = fa
     const id = `rank-${scope}-fans-${row.rank}`;
     const open = openKey === keys[i];
     const value = fanValue(row, metric);
+    const displayRank = ranks[i]!;
     const ref = row.profileRef;
     return <li key={keys[i]} ref={place(keys[i]!)} id={id} className={styles.item} data-row="fan-rank" data-kind="fans" data-tint={((accentFirst && i === 0) || row.isMe || open) || undefined} data-me={row.isMe || undefined} aria-current={row.isMe || undefined}>
-      <RowToggle label={`${rankingsText(locale, "rkRank", [row.rank.toLocaleString(locale)])} ${row.nickname}`} panelId={`${id}-panel`} open={open} onToggle={() => toggle(keys[i]!)} />
+      <RowToggle label={`${rankingsText(locale, "rkRank", [displayRank.toLocaleString(locale)])} ${row.nickname}`} panelId={`${id}-panel`} open={open} onToggle={() => toggle(keys[i]!)} />
       <RowFace open={open} me={row.isMe} kind="fans">
-        <Rank rank={row.rank} delay={rowDelay(i)} mark={visitDelta(locale, row.delta, ranking.comparable, movedSince(keys[i]!, row.rank))} />
+        <Rank rank={displayRank} delay={rowDelay(i)} mark={visitDelta(locale, row.delta, ranking.comparable, movedSince(keys[i]!, displayRank))} />
         <NameTarget
           label={`${row.nickname}, ${rankingsText(locale, guest ? "rkLoginProfile" : "rkViewProfile")}`}
           href={loginHref}
@@ -376,7 +382,8 @@ const creatorStats = (locale: AppLocale, row: HomeCreatorRankingRow, metric: Ran
 export function CreatorRows({ locale, ranking, metric, show, fill, scope, challengeTag = false, guest = false, period = "all" }: { locale: AppLocale; ranking: HomeCreatorRanking; guest?: boolean; metric: HomeCreatorMetric; show?: number; fill?: number; scope: string; challengeTag?: boolean; period?: HomeRankingPeriod }) {
   const { openKey, toggle } = useRankExpand();
   const shown = show === undefined ? ranking.rows : ranking.rows.slice(0, show);
-  const { place, movedSince } = useRowMotion(shown.map((row) => row.slug), shown.map((row) => creatorValue(row, metric)), shown.map((row) => row.rank), `creators:${metric}:${period}`);
+  const ranks = sharedRanks(shown.map((row) => creatorValue(row, metric)));
+  const { place, movedSince } = useRowMotion(shown.map((row) => row.slug), shown.map((row) => creatorValue(row, metric)), ranks, `creators:${metric}:${period}`);
   const top = ranking.rows[0] ? creatorValue(ranking.rows[0], metric) : 0;
   const accentFirst = !guest;
   const days = ranking.weekGainDays ?? 0;
@@ -384,10 +391,11 @@ export function CreatorRows({ locale, ranking, metric, show, fill, scope, challe
     const id = `rank-${scope}-creators-${row.rank}`;
     const open = openKey === row.slug;
     const value = creatorValue(row, metric);
+    const displayRank = ranks[i]!;
     return <li key={row.slug} ref={place(row.slug)} id={id} className={styles.item} data-row="creator-rank" data-kind="creators" data-tint={((accentFirst && i === 0) || open) || undefined}>
-      <RowToggle label={`${rankingsText(locale, "rkRank", [row.rank.toLocaleString(locale)])} ${row.name}`} panelId={`${id}-panel`} open={open} onToggle={() => toggle(row.slug)} />
+      <RowToggle label={`${rankingsText(locale, "rkRank", [displayRank.toLocaleString(locale)])} ${row.name}`} panelId={`${id}-panel`} open={open} onToggle={() => toggle(row.slug)} />
       <RowFace open={open} kind="creators">
-        <Rank rank={row.rank} delay={rowDelay(i)} mark={visitDelta(locale, row.delta, ranking.comparable, movedSince(row.slug, row.rank))} />
+        <Rank rank={displayRank} delay={rowDelay(i)} mark={visitDelta(locale, row.delta, ranking.comparable, movedSince(row.slug, displayRank))} />
         <NameTarget label={`${row.name}, ${rankingsText(locale, "rkGoFanpage")}`} href={`/${row.slug}?locale=${locale}`}>
           <span className={styles.avatar} data-first={(accentFirst && i === 0) || undefined}><CreatorAvatar slug={row.slug} src={row.imageUrl} size={28} photos={undefined} /></span>
           <span className={styles.body}>
@@ -412,17 +420,19 @@ export function MyRank({ locale, ranking, metric }: { locale: AppLocale; ranking
   const me = ranking.me;
   if (!me) return null;
   const value = metric === "points" ? me.points ?? me.score : me.hearts ?? me.score;
+  const tiedTopIndex = ranking.rows.findIndex(row => fanValue(row, metric) === value);
+  const displayRank = tiedTopIndex >= 0 ? tiedTopIndex + 1 : me.rank;
   const first = ranking.rows[0];
   const gap = first ? fanValue(first, metric) - value : 0;
   return <p className={styles.me} role="status"><span className={styles.meLabel}>{rankingsText(locale, "rkMyRank")}</span>
     <>
-      <strong className={styles.meRank}>{rankingsText(locale, "rkRank", [me.rank.toLocaleString(locale)])}</strong>
+      <strong className={styles.meRank}>{rankingsText(locale, "rkRank", [displayRank.toLocaleString(locale)])}</strong>
       <span className={styles.meValue}>
         {metric === "points"
           ? <span className={styles.meHearts} aria-label={rankingsText(locale, "rkPointsLabel", [value.toLocaleString(locale)])}><RankUnit unit="points" /><span aria-hidden="true">{short(locale, value)}</span></span>
           : <span className={styles.meHearts} aria-label={rankingsText(locale, "rkHearts", [value.toLocaleString(locale)])}>{heartIcon(16)}<span aria-hidden="true">{short(locale, value)}</span></span>}
         <span className={styles.dot} aria-hidden="true">·</span>
-        <span className={styles.meGap}>{me.rank === 1 ? rankingsText(locale, "rkIsFirst") : gap <= 0 ? rankingsText(locale, "rkTiedFirst") : rankingsText(locale, "rkToFirst", [short(locale, gap)])}</span>
+        <span className={styles.meGap}>{displayRank === 1 ? rankingsText(locale, "rkIsFirst") : gap <= 0 ? rankingsText(locale, "rkTiedFirst") : rankingsText(locale, "rkToFirst", [short(locale, gap)])}</span>
       </span>
     </></p>;
 }
