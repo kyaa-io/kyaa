@@ -1,4 +1,4 @@
-import { runOnchainWork, mapOnchainWork } from "./onchain-work.js";
+import { runOnchainWork, mapOnchainWork } from "./onchain-work.ts";
 import { setImmediate as yieldToRequests } from "node:timers/promises";
 import {
   createPublicClient,
