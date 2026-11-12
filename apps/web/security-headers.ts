@@ -5,6 +5,9 @@ const contentSecurityPolicy = [
   // Next emits inline bootstrap scripts. Removing unsafe-inline requires a
   // request-scoped nonce architecture; keep the exception isolated here.
   `script-src 'self' 'unsafe-inline'${process.env.NODE_ENV === "development" ? " 'unsafe-eval'" : ""} https://challenges.cloudflare.com`,
+  // Inline <script> blocks stay allowed above, but inline event-handler attributes (onerror=, onclick=) never run:
+  // React binds handlers in script, so injected markup cannot execute through an attribute (SECURITY-AGENTIC-1112 F-18).
+  "script-src-attr 'none'",
   "style-src 'self' 'unsafe-inline'",
   // Published CMS records intentionally support administrator-approved HTTPS
   // artwork, plus data/blob previews.
