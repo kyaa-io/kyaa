@@ -18,7 +18,7 @@ import styles from "./my-logout.module.css";
 /** 바로가기 안 로그아웃 칸의 그림(다른 칸과 같은 3D 계열). */
 const LOGOUT_ART = "/images/my/shortcuts/logout.webp";
 
-function logoutCopy(locale: FanLocale) {
+export function logoutCopy(locale: FanLocale) {
   if (locale === "ko") return { logout: "로그아웃", loggingOut: "로그아웃 중…", failed: "로그아웃하지 못했어요. 다시 시도해 주세요.", cancel: "취소" };
   return {
     logout: translate(locale, messages.m8763f7e0a9f2, "Log out"),
@@ -28,13 +28,12 @@ function logoutCopy(locale: FanLocale) {
   };
 }
 
-/** The last row of MY: logout behind one confirmation, using the same session logout as Settings.
- * The confirm button counts as a navigation for the overlay (data-overlay-navigates): logging out unmounts MY, and the overlay must not history.back() over the pending /login. */
-export function MyLogout({ locale, shortcut = false }: { locale: FanLocale; shortcut?: boolean }) {
+/** Logout behind one confirmation, using the same session logout as Settings. Shared by MY and the header account menu.
+ * The confirm button counts as a navigation for the overlay (data-overlay-navigates): logging out unmounts the page, and the overlay must not history.back() over the pending /login. */
+export function LogoutConfirmDialog({ locale, onClose }: { locale: FanLocale; onClose: () => void }) {
   const { logout } = useByUsAuth();
   const router = useRouter();
   const t = logoutCopy(locale);
-  const [confirming, setConfirming] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const pending = useRef(false);
@@ -54,19 +53,27 @@ export function MyLogout({ locale, shortcut = false }: { locale: FanLocale; shor
     }
   }
 
+  return <AccessibleOverlay open onClose={() => { if (!pending.current) onClose(); }} labelledBy="my-logout-title" busy={busy} backdropClassName={`${dialogStyles.backdrop} ${dialogStyles.backdropCenter}`} contentClassName={`${dialogStyles.panel} ${dialogStyles.dialog} ${dialogStyles["size-sm"]} ${styles.dialog}`} contentAs="section">
+    <div className={styles.title}><FanHeading id="my-logout-title">{t.logout}</FanHeading></div>
+    {error ? <p role="alert">{error}</p> : null}
+    <div className={styles.actions}>
+      <FanAction variant="neutral" disabled={busy} onClick={onClose}>{t.cancel}</FanAction>
+      <span className={styles.confirm} data-overlay-navigates=""><FanAction variant="primary" fullWidth disabled={busy} ariaBusy={busy} onClick={() => void signOut()}>{busy ? t.loggingOut : t.logout}</FanAction></span>
+    </div>
+  </AccessibleOverlay>;
+}
+
+/** The last row of MY: logout behind one confirmation. */
+export function MyLogout({ locale, shortcut = false }: { locale: FanLocale; shortcut?: boolean }) {
+  const t = logoutCopy(locale);
+  const [confirming, setConfirming] = useState(false);
+
   const trigger = shortcut
     ? <FanAction variant="text" className={shortcutStyles.row} leadingIcon={<img src={LOGOUT_ART} alt="" width={40} height={40} loading="lazy" decoding="async" />} trailingIcon={<FanIcon icon={ChevronRight} size={20} />} onClick={() => setConfirming(true)}>{t.logout}</FanAction>
     : <FanAction variant="text" className={styles.row} onClick={() => setConfirming(true)}><span className={styles.rowLabel}><LogOut strokeWidth={1.5}/>{t.logout}</span></FanAction>;
   const Wrapper = shortcut ? Fragment : "div";
   return <Wrapper {...(shortcut ? {} : { className: styles.logout })}>
     {trigger}
-    {confirming ? <AccessibleOverlay open onClose={() => { if (!pending.current) { setConfirming(false); setError(""); } }} labelledBy="my-logout-title" busy={busy} backdropClassName={`${dialogStyles.backdrop} ${dialogStyles.backdropCenter}`} contentClassName={`${dialogStyles.panel} ${dialogStyles.dialog} ${dialogStyles["size-sm"]} ${styles.dialog}`} contentAs="section">
-      <div className={styles.title}><FanHeading id="my-logout-title">{t.logout}</FanHeading></div>
-      {error ? <p role="alert">{error}</p> : null}
-      <div className={styles.actions}>
-        <FanAction variant="neutral" disabled={busy} onClick={() => { setConfirming(false); setError(""); }}>{t.cancel}</FanAction>
-        <span className={styles.confirm} data-overlay-navigates=""><FanAction variant="primary" fullWidth disabled={busy} ariaBusy={busy} onClick={() => void signOut()}>{busy ? t.loggingOut : t.logout}</FanAction></span>
-      </div>
-    </AccessibleOverlay> : null}
+    {confirming ? <LogoutConfirmDialog locale={locale} onClose={() => setConfirming(false)} /> : null}
   </Wrapper>;
 }

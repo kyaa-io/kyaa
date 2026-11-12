@@ -14,6 +14,8 @@ import { SelectedBiasChip } from "@/features/selected-bias/ui/selected-bias-chip
 import { useGroupRequest } from "@/features/groups/ui/use-group-resource";
 import { HeaderNotificationLink } from "@/features/notification/ui/header-notification-link";
 import { groupsCopy } from "@/features/groups/ui/copy";
+import { walletCopy } from "@/features/group-wallet/ui/copy";
+import { fanLoginHref } from "@/components/login-href";
 import { groupBenefitsCopy } from "@/features/groups/ui/group-benefits-copy";
 import { communityCopy } from "@/i18n/catalogs/features__community";
 
@@ -25,6 +27,7 @@ import { Bell, BookOpen, Heart, Home, UsersRound } from "lucide-react";
 import { usePathname, useSearchParams } from "next/navigation";
 
 import { PencilHeaderIcon } from "./pencil-header-icon";
+import { FanAction } from "@/components/fan-ui/fan-action";
 import { FanHeader } from "./fan-header";
 import { FanLanguageSwitch } from "./fan-language-switch";
 import {
@@ -134,6 +137,7 @@ export function GroupHeaderActions({ locale, languageHref, notificationsLabel, a
   locale: FanLocale; languageHref: string; notificationsLabel: string; actions?: ReactNode; actionsAreIdentity?: boolean;
 }) {
   const owner = useGroupRequest().ownerKey, guest = owner.startsWith("guest:");
+  const pathname = usePathname() || "/", query = useSearchParams()?.toString();
   // Until sign-in is known (server HTML and the first client frames) the slot is held empty, not drawn as a blank capsule that then
   // turns into the guest chip or fills with values.
   const status = owner.startsWith("pending:") ? <span className={styles.statusPending} data-header-status-pending="" aria-hidden="true" />
@@ -144,6 +148,8 @@ export function GroupHeaderActions({ locale, languageHref, notificationsLabel, a
     <span className={styles.headerLanguage} data-signed-in={guest ? undefined : ""}><FanLanguageSwitch locale={locale} href={languageHref} compact /></span>
     <HeaderNotificationLink locale={locale} label={notificationsLabel} className={styles.utilityLink} />
     <HeaderDmLink locale={locale} className={styles.utilityLink} />
+    {/* Below 768px the account menu is not drawn, so a signed-out viewer gets the way in here; from 768px the menu's last row is it. */}
+    {guest && <FanAction variant="text" size="sm" className={styles.guestLogin} href={fanLoginHref(locale, `${pathname}${query ? `?${query}` : ""}`)}>{walletCopy(locale).login}</FanAction>}
     <div className={styles.groupDesktopAccount}><GroupHeaderAccount locale={locale} actions={actions} actionsAreIdentity={actionsAreIdentity} languageHref={languageHref} /></div>
   </>;
 }

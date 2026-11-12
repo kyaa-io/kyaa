@@ -2,13 +2,14 @@ import {fireEvent,render,screen,waitFor} from '@testing-library/react';
 import {beforeEach,expect,it,vi} from 'vitest';
 import {resetDukjilCatalogCache} from '@/features/dukjil/ui/dukjil-provider';
 import {GroupHeaderAccount,GroupHeaderPoints} from './group-header-account';
-const state=vi.hoisted(()=>({favorite:null as null|{name:string},wallet:undefined as any,request:undefined as any,failure:undefined as any,retry:undefined as any}));
-vi.mock('next/navigation',()=>({usePathname:()=>'/benefits',useSearchParams:()=>new URLSearchParams('locale=ko')}));
-vi.mock('./use-group-resource',()=>({GROUP_WALLET_CHANGED_EVENT:'wallet-changed',useGroupRequest:()=>({authenticated:true,ready:true,ownerKey:'u',request:state.request}),useGroupResource:(url:string)=>({data:url==='/api/me/profile'?{profile:{nickname:"아리가또아리가또아리가또아리가또"}}:state.wallet,error:Boolean(state.failure),failure:state.failure,loading:false,retry:state.retry??vi.fn()})}));
+const state=vi.hoisted(()=>({favorite:null as null|{name:string},wallet:undefined as any,authenticated:true,request:undefined as any,failure:undefined as any,retry:undefined as any,logout:undefined as any,replace:undefined as any}));
+vi.mock('./use-group-resource',()=>({GROUP_WALLET_CHANGED_EVENT:'wallet-changed',useGroupRequest:()=>({authenticated:state.authenticated,ready:true,ownerKey:'u',request:state.request}),useGroupResource:(url:string)=>({data:url==='/api/me/profile'?{profile:{nickname:"아리가또아리가또아리가또아리가또"}}:state.wallet,error:Boolean(state.failure),failure:state.failure,loading:false,retry:state.retry??vi.fn()})}));
 vi.mock('@/features/selected-bias/ui/use-selected-bias',()=>({useSelectedBias:()=>({status:state.favorite?'ready':'empty',options:[],selected:state.favorite,unverified:null,select:()=>{},retry:()=>{}})}));
+vi.mock('@/features/auth/client/auth-fallback',()=>({usePrivy:()=>({ready:true,authenticated:true,user:{id:'u'},getAccessToken:vi.fn(),logout:state.logout})}));
+vi.mock('next/navigation',()=>({usePathname:()=>'/benefits',useSearchParams:()=>new URLSearchParams('locale=ko'),useRouter:()=>({replace:state.replace})}));
 vi.mock('@/features/profile/ui/use-avatar',()=>({useAvatar:()=>({state:{status:'none'}})}));
 vi.mock('@/features/group-social/profile-connection',()=>({ProfileConnectionPanel:({identity}:{identity:React.ReactNode})=><div role='dialog'>{identity}</div>}));
-beforeEach(()=>{resetDukjilCatalogCache();state.favorite=null;state.failure=undefined;state.retry=undefined;state.request=vi.fn().mockRejectedValue(new Error('no policy'));});
+beforeEach(()=>{state.authenticated=true;state.logout=vi.fn().mockResolvedValue(undefined);state.replace=vi.fn();resetDukjilCatalogCache();state.favorite=null;state.failure=undefined;state.retry=undefined;state.request=vi.fn().mockRejectedValue(new Error('no policy'));});
 const wallet=(checkedIn:boolean,nextBonusIn=3)=>({points:500,tickets:0,attendance:{date:'2026-11-05',checkedIn,streak:1,nextBonusIn,days:[]}});
 const open=()=>fireEvent.click(screen.getByRole('button',{name:'계정 메뉴'}));
 it('points header link goes to the benefits page, not My',()=>{
@@ -74,7 +75,8 @@ it('signed in, the avatar is the one account-menu trigger and the menu has no �
  open();
  expect(await screen.findByRole('menuitem',{name:/언어 설정/})).toHaveTextContent('한국어');
  expect(screen.queryByRole('menuitem',{name:'알림'})).toBeNull();
- expect(screen.getAllByRole('menuitem').length).toBe(6);
+ expect(screen.getAllByRole('menuitem').length).toBe(7);
+ expect(screen.getAllByRole('menuitem').at(-1)).toHaveTextContent('로그아웃');
 });
 it('r6 H1: the attendance item names the fan\'s own favorite page, and no fixed page name appears for anyone',async()=>{
  state.request=vi.fn().mockResolvedValue({version:1,rules:{checkin:{points:2,streakEvery:7,streakBonus:10}},missionBook:{}});
@@ -90,4 +92,22 @@ it('shows the full nickname accessibly in the truncated account menu and profile
  expect(item.querySelector('span:last-child')?.className).toMatch(/menuName/);
  fireEvent.click(item);
  expect(await screen.findByRole('dialog')).toHaveTextContent('아리가또아리가또아리가또아리가또');
+});
+
+it('signed in, the last menu row logs out after one confirmation and returns to login',async()=>{
+ state.wallet=wallet(true);render(<GroupHeaderAccount locale='ko' languageHref='/'/>);open();
+ fireEvent.click(await screen.findByRole('menuitem',{name:'로그아웃'}));
+ const dialog=await screen.findByRole('dialog',{name:'로그아웃'});
+ expect(state.logout).not.toHaveBeenCalled();
+ fireEvent.click(dialog.querySelectorAll('button')[1]!);
+ await waitFor(()=>expect(state.replace).toHaveBeenCalledWith('/login?locale=ko'));
+ expect(state.logout).toHaveBeenCalledTimes(1);
+});
+it('signed out, the last menu row is a login link that returns to the current page, and there is no logout',async()=>{
+ state.authenticated=false;state.wallet=undefined;render(<GroupHeaderAccount locale='ko' languageHref='/'/>);open();
+ const item=await screen.findByRole('menuitem',{name:'로그인'});
+ expect(item.getAttribute('href')).toContain('/login');
+ expect(item.getAttribute('href')).toContain('returnTo=%2Fbenefits');
+ expect(screen.getAllByRole('menuitem').at(-1)).toBe(item);
+ expect(screen.queryByRole('menuitem',{name:'로그아웃'})).toBeNull();
 });
