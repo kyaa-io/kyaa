@@ -86,6 +86,10 @@ it('keeps answering with the first winners when participants later drop below 17
  read.mockResolvedValue({users:users.slice(1),actions:[],entries:users.slice(1).map(user=>({userId:user.id,enteredAt:'2026-11-11T01:00:00Z'}))});
  const shrunk=await draw('00000000-0000-4000-8000-000000000003');
  expect(shrunk.status).toBe(200);expect(await shrunk.text()).toBe(winners);
+ // No participants left at all.
+ read.mockResolvedValue({users:[],actions:[],entries:[]});
+ const empty=await draw('00000000-0000-4000-8000-000000000005');
+ expect(empty.status).toBe(200);expect(await empty.text()).toBe(winners);
  // Participant read fails: a fresh draw would answer 503.
  read.mockRejectedValue(new Error('SIGNUP_RAFFLE_READ_FAILED'));
  const unreadable=await draw('00000000-0000-4000-8000-000000000004');
