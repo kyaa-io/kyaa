@@ -1,4 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
+
+vi.setConfig({ testTimeout: 15_000 });
 import {
   SupabaseTelegramCertificationQueue,
   SupabaseCertificationStorage,

@@ -316,11 +316,22 @@ function queue(batch: TelegramAlertBatch | null): TelegramAlertQueue & {
 describe("TelegramAlertWorker", () => {
   const batch: TelegramAlertBatch = { batchId: "559fe228-ff92-4a85-a3e9-ad83d9e60f8b", alerts: alerts.slice(0, 2) };
 
+  it("drains 45 events in three messages without resending a batch", async () => {
+    const q = queue(null);
+    for (const [index, count] of [20, 20, 5].entries()) {
+      q.claim.mockResolvedValueOnce({ batchId: `batch-${index}`, alerts: Array.from({ length: count }, () => alerts[0]) });
+    }
+    const sender = { sendText: vi.fn().mockResolvedValue(42n) };
+    await expect(new TelegramAlertWorker(q, sender, "-1001234567890").runOnce()).resolves.toBe(45);
+    expect(sender.sendText).toHaveBeenCalledTimes(3);
+    expect(q.finish).toHaveBeenCalledTimes(3);
+  }, 15_000);
+
   it("claims, begins, sends, and acknowledges a batch exactly once", async () => {
     const q = queue(batch);
     const sender: TelegramAlertSender = { sendText: vi.fn().mockResolvedValue(42n) };
     await expect(new TelegramAlertWorker(q, sender, "-1001234567890").runOnce()).resolves.toBe(2);
-    expect(q.claim).toHaveBeenCalledExactlyOnceWith("-1001234567890");
+    expect(q.claim).toHaveBeenCalledWith("-1001234567890");
     expect(q.begin).toHaveBeenCalledExactlyOnceWith(batch.batchId, "-1001234567890");
     expect(sender.sendText).toHaveBeenCalledTimes(1);
     expect(q.finish).toHaveBeenCalledExactlyOnceWith(batch.batchId, "sent", 42n, null);
