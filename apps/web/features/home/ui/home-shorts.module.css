@@ -72,3 +72,7 @@
 .bottomBar .controls button { width:var(--min-target); height:var(--min-target); background:transparent; }
 .bottomBar .controls > span { white-space:nowrap; }
 @media (width < 48rem) { .bottomBar .controls button:first-child, .bottomBar .controls button:nth-child(2) { display:none; } }
+
+/* 홈 숏폼 세로 썸네일: iOS Safari는 흐림 배경이 있는 칸에서 overflow 둥근 모서리를 무시해 네 모서리가 각져 보였다. 모서리 반경을 clip-path로도 건다(2026-11-13 Bug_Report). */
+.cover { clip-path:inset(0 round var(--radius-card,12px)); }
+.cover > img { border-radius:inherit; }
