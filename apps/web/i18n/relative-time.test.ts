@@ -44,7 +44,9 @@ describe("formatRelativeTime", () => {
     const expected = {ko: "방금 전", en: "just now", ja: "たった今", "zh-Hans": "刚刚", "zh-Hant": "剛剛", es: "ahora mismo", id: "baru saja", vi: "vừa xong", th: "เมื่อสักครู่", pt: "agora mesmo", fr: "à l’instant", ru: "только что"};
     for (const locale of APP_LOCALES) expect(formatRelativeTime(ago(10 * S), locale, now)).toBe(expected[locale]);
   });
-  it("gives the exact Seoul time", () => {
+  it("formats the same instant for Seoul, Los Angeles, and New York", () => {
     expect(exactTimeLabel("2026-11-04T03:00:00Z", "en")).toContain("12:00");
+    expect(exactTimeLabel("2026-11-04T03:00:00Z", "en", "America/Los_Angeles")).toContain("7:00");
+    expect(exactTimeLabel("2026-11-04T03:00:00Z", "en", "America/New_York")).toContain("10:00");
   });
 });

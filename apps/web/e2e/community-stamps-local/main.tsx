@@ -19,6 +19,7 @@ if (params.get("view") === "recipient") return <SharedPassportLanding locale={lo
 return <main style={{maxWidth:1000,margin:"32px auto",padding:"0 20px",fontFamily:'"Pretendard Variable", Pretendard, system-ui, sans-serif'}}><h1>MY</h1><CommunityStampCollection resource={resource} locale={locale} creator={creator}/><div style={{maxWidth:420,marginTop:32}}><CelebrityMiniCalendar celebrity={{slug:"elina",name:locale==="ko"?"엘리나":"Elina",image:{url:"/images/avatars/heart-lavender.webp",alt:"Elina"}} as PublishedCelebrity} locale={locale} upcomingLive={null}/></div></main>; }
 function PreviewRoute() {
  const view = new URLSearchParams(location.search).get("view");
+ if (view === "invite-success") return <main style={{maxWidth:1000,margin:'32px auto',padding:'0 20px'}}><CommunityStampCollection locale={locale} resource={{state:{status:'ready',data:{stamps:[{id:'11111111-1111-4111-8111-111111111111',kind:'invite',celebritySlug:null,issuedAt:'2026-11-12T00:00:00Z',mint:{status:'queued',txHash:null,tokenId:null}}],today:'2026-11-12'}},retry:()=>{},replaceData:()=>{},refreshFailed:false}} /></main>;
  if (view === "passports") return <PassportPreview/>;
  if (view === "raffle-layout") return <RafflePreview locale={locale}/>;
  if (view === "stamp-artwork") return <StampArtworkPreview locale={locale}/>;

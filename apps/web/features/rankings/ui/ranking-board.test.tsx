@@ -1,5 +1,5 @@
 import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
-import { afterEach, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, expect, it, vi } from "vitest";
 
 const auth = vi.hoisted(() => ({ value: { ready: true, authenticated: true, user: { id: "me" } as null | { id: string }, getAccessToken: async () => "t" } }));
 vi.mock("@/features/auth/client/cognito-auth", () => ({ useByUsAuth: () => auth.value }));
@@ -27,6 +27,7 @@ function stub(rowsFor: (kind: string, limit: number) => number = (_, limit) => l
 const inRow = async (name: string) => (await screen.findAllByText(name)).find((n) => n.closest("li"))!;
 const urls = (fetcher: ReturnType<typeof stub>) => fetcher.mock.calls.map(([input]) => String(input));
 
+beforeEach(() => window.localStorage.clear());
 afterEach(() => { vi.unstubAllGlobals(); clearResources(); auth.value = { ...auth.value, authenticated: true, user: { id: "me" } }; });
 
 function stubRows(fans: unknown[], creators: unknown[], me: unknown = null) {
@@ -37,6 +38,15 @@ function stubRows(fans: unknown[], creators: unknown[], me: unknown = null) {
   vi.stubGlobal("fetch", fetcher);
   return fetcher;
 }
+
+it("shows equal scores at the same place and skips the next place", async () => {
+  stubRows([fanRow(1, { score: 9000, points: 9000 }), fanRow(2, { score: 7218, points: 7218 }), fanRow(3, { score: 7218, points: 7218, isMe: true }), fanRow(4, { score: 500, points: 500 })], [], { rank: 3, score: 7218, points: 7218, hearts: 0, inTop: true, delta: null });
+  const { container } = render(<RankingBoard locale="ko" />);
+  await screen.findByText("하트팬4");
+  expect([...container.querySelectorAll("li[data-row='fan-rank'] [class*='rankCell'] > [class*='rank']")].map(node => node.textContent)).toEqual(["1", "2", "2", "4"]);
+  expect(container.querySelector("p[role='status'] strong")).toHaveTextContent("2위");
+  window.localStorage.clear();
+});
 
 it("reads both lists with ten heart rows each, one under the other: no tabs, no metric choice, no period chips, no podium", async () => {
   const fetcher = stub();

@@ -21,7 +21,7 @@ it('keeps fixture detail and replies attached to the original cheer IDs on both 
   const feed=await legacyVisualFixture(new URL('http://localhost/api/celebrities/elina/feed'+cursor),'GET','ko','creator')!.json();
   for(const item of feed.items.filter((item:any)=>item.kind==='cheer')){
    const detail=await legacyVisualFixture(new URL('http://localhost/api/cheers/'+item.id),'GET','ko','creator-post')!.json();
-   expect(detail).toEqual({source:'cheer',id:item.id,celebritySlug:'elina',body:item.body});
+   expect(detail).toEqual({source:'cheer',id:item.id,celebritySlug:'elina',body:item.body,clapCount:item.clapCount,viewerClapped:item.viewerClapped});
    const replies=await legacyVisualFixture(new URL('http://localhost/api/cheers/'+item.id+'/replies'),'GET','ko','creator-post')!.json();expect(replies.replies).toHaveLength(item.replyCount);
   }
  }
@@ -43,14 +43,15 @@ it('draws a public post photo, a post icon for the rest, never a broken-image ma
  expect(row).toHaveAttribute('data-notice');expect(row).toHaveTextContent('공지');
 });
 
-it('preserves the chronological feed order including notices',()=>{
+it('keeps all kyaa notices first in newest order',()=>{
  const base={visibility:'public',revision:1,likeCount:0,liked:false};
  const items=feedPageSchema.parse({items:[
   {kind:'fan_post',id:'10000000-0000-4000-8000-000000000001',celebritySlug:'elina',body:'최신 팬 글',author:{nickname:'팬',avatarUrl:'/images/avatars/star-pink.webp'},assets:[],video:null,createdAt:'2026-11-07T01:00:00Z',updatedAt:'2026-11-07T01:00:00Z',isOwner:false,commentCount:0,...base},
   {kind:'notice',noticeKind:'standard',id:'10000000-0000-4000-8000-000000000002',slug:'old-notice',title:'오래된 공지',postType:'notice',visibility:'public',revision:1,publishedAt:'2026-10-01T00:00:00Z',body:{},commentCount:0,likeCount:0,liked:false,pinned:false},
+  {kind:'notice',noticeKind:'welcome',id:'10000000-0000-4000-8000-000000000004',slug:'new-notice',title:'새 공지',postType:'notice',visibility:'public',revision:1,publishedAt:'2026-11-01T00:00:00Z',body:{},commentCount:0,likeCount:0,liked:false,pinned:false},
   {kind:'fan_post',id:'10000000-0000-4000-8000-000000000003',celebritySlug:'elina',body:'이전 팬 글',author:{nickname:'팬',avatarUrl:'/images/avatars/star-pink.webp'},assets:[],video:null,createdAt:'2026-11-06T01:00:00Z',updatedAt:'2026-11-06T01:00:00Z',isOwner:false,commentCount:0,...base},
  ],nextCursor:null}).items;
  const {container}=render(<CompactFeed items={items} slug='elina' locale='ko' returnTo='/elina?tab=board' onChanged={()=>{}}/>);
  const titles=[...container.querySelectorAll('[data-fan-post-row]')].map(row=>row.textContent);
- expect(titles[0]).toContain('최신 팬 글');expect(titles[1]).toContain('오래된 공지');expect(titles[2]).toContain('이전 팬 글');
+ expect(titles[0]).toContain('새 공지');expect(titles[1]).toContain('오래된 공지');expect(titles[2]).toContain('최신 팬 글');expect(titles[3]).toContain('이전 팬 글');
 });

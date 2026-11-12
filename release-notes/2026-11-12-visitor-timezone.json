@@ -1,0 +1,5 @@
+{
+  "changes": ["게시글과 댓글의 날짜·시간을 접속한 지역의 시간으로 볼 수 있게 했어요. 미국 로스앤젤레스와 뉴욕 시간대로 확인한 사진은 예시 데이터를 사용한 로컬 검증 화면입니다."],
+  "path": "/community",
+  "images": ["release-notes/images/2026-11-12-timezone-la-mobile.png", "release-notes/images/2026-11-12-timezone-ny-desktop.png"]
+}

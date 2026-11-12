@@ -14,10 +14,16 @@ describe("RelativeTime", () => {
     const node = screen.getByText("2 hours ago");
     expect(node.tagName).toBe("TIME");
     expect(node.getAttribute("datetime")).toBe(value);
-    expect(node.getAttribute("title")).toContain("10:00");
+    expect(node.getAttribute("title")).toBe(new Intl.DateTimeFormat("en", {calendar: "gregory", dateStyle: "medium", timeStyle: "short", timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone}).format(new Date(value)));
   });
   it("keeps the absolute date at seven days or more", () => {
     render(<RelativeTime value="2026-10-28T03:00:00Z" locale="ko" />);
     expect(screen.getByText(/2026/).getAttribute("title")).toBeTruthy();
+  });
+  it("uses the visitor zone after mount for an older post", () => {
+    const zone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    render(<RelativeTime value="2026-10-27T03:00:00Z" locale="en" />);
+    const expected = new Intl.DateTimeFormat("en", {calendar: "gregory", dateStyle: "medium", timeStyle: "short", timeZone: zone}).format(new Date("2026-10-27T03:00:00Z"));
+    expect(screen.getByText(expected).getAttribute("title")).toBe(expected);
   });
 });

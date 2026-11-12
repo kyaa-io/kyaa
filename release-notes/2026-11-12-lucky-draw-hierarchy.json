@@ -1,0 +1,5 @@
+{
+  "changes": ["럭키드로우 제목과 진행 중인 추첨 화면을 더 가깝게 배치했어요.", "지난 럭키드로우는 큰 추첨 화면 아래의 간결한 목록에서 확인할 수 있어요. 첨부 화면은 로컬 예시 데이터로 확인한 모습입니다."],
+  "path": "/benefits",
+  "images": ["release-notes/images/2026-11-12-lucky-hierarchy-390.png", "release-notes/images/2026-11-12-lucky-hierarchy-1440.png"]
+}

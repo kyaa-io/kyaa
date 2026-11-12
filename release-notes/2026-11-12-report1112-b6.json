@@ -1,0 +1,5 @@
+{
+  "changes": ["오늘의 랭킹에서 같은 점수를 받은 팬과 크리에이터가 같은 순위로 표시돼요. 첨부 화면은 예시 점수로 확인한 로컬 화면이에요."],
+  "path": "/",
+  "images": ["release-notes/images/2026-11-12-report1112-b6-390.png", "release-notes/images/2026-11-12-report1112-b6-1440.png"]
+}

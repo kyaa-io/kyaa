@@ -1,7 +1,7 @@
 .card { display:flex; min-width:0; flex-direction:column; gap:var(--space-5); padding:var(--space-6); border:1px solid var(--color-line); border-radius:var(--radius-card); background:var(--color-canvas); }
 .card > header { display:flex; min-height:var(--min-target); align-items:center; justify-content:space-between; gap:var(--space-3); }
 
-.selector { min-width:0; overflow-x:auto; }
+.selector { min-width:0; overflow-x:auto; padding-block:var(--space-1); }
 .book:focus-visible { outline:var(--focus-width) solid var(--color-ink); outline-offset:var(--focus-offset); }
 
 .body { display:grid; min-width:0; grid-template-columns:minmax(0,1fr); align-items:center; gap:var(--space-5); }

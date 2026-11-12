@@ -67,3 +67,15 @@ it("another refusal keeps its own line and an unknown one the general line", asy
   fireEvent.submit(container.querySelector("form")!);
   expect(await screen.findByRole("alert")).toHaveTextContent("이미 친구 코드를 인증했어요.");
 });
+
+it("accepts the redemption state returned after the stamp is recorded", async () => {
+  vi.stubGlobal("fetch", vi.fn().mockImplementation(async (url: string) => url.endsWith("/invite-code")
+    ? reply(200, { code: "ABCDEF123456", redeemed: false, redemptionState: "none" })
+    : reply(200, { state: "qualified_reward_issued" })));
+  const container = await openInvite();
+  fireEvent.change(container.querySelector("#community-friend-code")!, { target: { value: "ZYXWVU654321" } });
+  fireEvent.submit(container.querySelector("form")!);
+  expect(await screen.findByText("친구 코드 인증을 완료했어요.")).toBeInTheDocument();
+  expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+  expect(resource.retry).toHaveBeenCalled();
+});

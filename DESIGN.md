@@ -7,34 +7,309 @@ palette: 'single-gradient-highlight'
 font: 'pretendard'
 source: "live rendered page"
 observed-at: "2026-07-20"
-ui-contract-updated: "2026-11-09"
+ui-contract-updated: "2026-11-13"
 theme: "light-only"
 ui-font: "Pretendard Variable"
 base-spacing: "4px"
-radius-scale: "pill / 16px / 12px / 8px"
+radius-scale: "pill / 16px / 12px / 8px / 50%"
 ---
 
-# 에이전트용 핵심 규칙 (2026-11-09 기준, 브리프 v1.1)
 
-## 게이트 A~E 확정 (사용자 "권장대로" 2026-11-09 15:52)
+# 현재 기준 (2026-11-13, design-system-1112)
+
+이 절 하나가 kyaa 화면의 기준이다. 값의 원본은 `apps/web/app/globals.css`와 `apps/web/components/fan-ui/`이고, 이 절은 그 값을 역할별로 모은다. 아래 "이력" 부록은 근거 기록이다. **이력과 이 절이 다르면 이 절을 따른다.** 이 절과 코드가 다르면 표의 "결정" 열을 따르고, 코드는 다음 화면 작업에서 맞춘다. 토큰 표와 충돌 결정 전체: `board/tasks/design-system-1112/token-table.md`.
+
+## 0. 전제 (사용자 결정)
+
+- **미감**: 민희진 미감 — 절제, 촌스러운 것 금지, 큰 글자는 굵기가 아니라 크기로(11/12 22:52·23:03).
+- **압축 UI**: 한 줄에 하나씩 길게 늘어놓는 배치 금지, 덩그러니 자리만 차지하는 버튼 줄 금지, 촘촘하게(11/12 12:35).
+- **보조 문구 금지**: 설명용 문장은 쓰지 않는다. 법률·비용·오류·출처만(문구는 `kyaa-copy`).
+- **핑크/화이트**: 바탕 흰색, 강조 핑크 1색. 회색 채움 면 0, 보라 0.
+- **PC는 PC 너비**: 가운데 좁은 고정 폭으로 두지 않는다. 읽는 본문만 720.
+- **기존 모습 유지**: 고칠 곳만 고친다. 화면 구성은 4차 배치를 따른다(55f260fd7).
+- **헤더 동결**: 헤더·390 탭바의 요소 구성은 바꾸지 않는다(색·굵기만).
+- **블록 높이 고정**: 데이터가 없어도 블록 높이는 같다(빈 행은 흐린 자리표시).
+- **새 부품은 등록**: 새 부품은 이 절에 등록하거나 기존 부품을 쓴다. lint 통과만으로 준수로 보지 않고, 작업 끝에 이 절 항목별 감사표(design-md-audit)를 낸다(11/12 23:54).
+- **살아 있는 페이지**: 모든 페이지에 동적인 요소가 1개 이상 있다. 권장 three.js, 최소 의미 있는 애니메이션(11/13, 9절).
+
+## 1. 글자
+
+글꼴은 `Pretendard Variable` 하나(`globals.css` body 한 줄). 모듈 CSS에 `font-family`를 쓰지 않는다. 예외는 온체인 주소·순번의 고정폭 글꼴(`--fan-display-mono`)뿐.
+굵기는 **400·700·800** 셋. 800은 화면 제목과 숫자, 700은 제목·이름·라벨·버튼·칩·태그, 나머지는 400. 한 행의 700은 하나까지. 예외는 `FanDisplay` 안의 300·600(4절).
+화면 CSS는 크기·굵기·행간을 직접 쓰지 않고 아래 부품과 역할을 고른다.
+
+| 역할 | 390 / 768+ | 굵기 | 행간 | 토큰 | 부품 |
+|---|---|---|---|---|---|
+| 화면 제목 h1 | 26 / 26 | 800 | 1.2, 자간 -.03em | `--fan-h1-size` `--fan-heading-weight` `--fan-heading-leading` `--fan-heading-tracking` | `FanHeading as="h1"` |
+| 구역 제목 h2·h3 | 18 / 18 | 700 | 1.2 | `--fan-section-size` `--fan-section-weight` | `FanHeading` |
+| 글 상세 제목·대화상자 제목 | 18 | 700 | 1.2 | 구역 제목과 같음 | `FanHeading`, `FanDialog` |
+| 카드·행 제목, 항목 이름 | 16 | 700 | 1.5 | `--fan-item-title-size` `--fan-item-title-weight` | `FanText role="item"` |
+| 글 행 제목(사람이 쓴 글) | 16 | 400(공지 행 700) | 1.5 | `--fan-item-title-size` `--fan-body-weight` | `FanPostRow`, `FanText role="row-title"` |
+| 본문 | 16 | 400 | 1.5 | `--fan-body-size` | `FanText role="body"` |
+| 보조 14(메뉴 항목·토스트 제목) | 14 | 부품 | 1.4 | `--fan-description-size` | `FanMenu`, `FanToast` |
+| 메타 | 13 muted | 400 | 1.4 | `--fan-metadata-size` `--fan-metadata-leading` | `FanText role="meta"` |
+| 라벨·글자 링크(전체 보기 등) | 13 | 700 | 1.4 | `--fan-metadata-size` | `FanText role="label"`, `FanSectionLink` |
+| 버튼 | 14(primary 15) | 700 | 1.2 | `--fan-action-*` | `FanAction` |
+| 칩 | 14 | 700 | 20px | `--fan-chip-size` | `FanTabs chip`, `FanSelectMenu` |
+| 밑줄 탭 | 13 / 15 | 700 | 20 / 22px | `--fan-tab-weight` | `FanTabs underline` |
+| 배지·태그 | 12 | 700 | 22px | `--fan-badge-size` | `FanTag` |
+| 숫자 md / lg / xl | 16 / 24 / 24→32(768+) | 700 / 800 / 800 | 1 | `--fan-number-size(-wide)` `--fan-number-weight` | `FanNumber` |
+| 캘린더 | 월 20(압축 16)·날짜 14·메타 12·일정 14 | 부품 | — | `--fan-calendar-*` | 캘린더 부품 |
+
+- 위계는 4단: 화면 제목 26 > 구역 제목 18 > 카드·행 제목 16 > 라벨·메타 13·12. 한 부품 안 글자 크기는 3단까지.
+- 숫자는 모두 `tabular-nums`. 참여 수는 1만 이상 `12K`, 내 자산·금액은 전체 자릿수. 날짜는 `11. 08. 13:47`(피드) / `2026.11.08`(거래·공지), 상대 시간 금지.
+- 폐기(새로 쓰지 않음): `--fan-heading-size(-wide)` 20/24, `--fan-description-leading/-weight`, `--fan-aside-title-*`, `--fan-personal-section-*`, `--fan-event-catalog-title-size`, `--fan-heading-editorial-weight`. 굵기 500·550·650·850, 정적 글꼴 `Pretendard UI *`.
+
+## 2. 간격·패딩·마진
+
+간격 값은 `--space-*`만 쓴다: `--space-1` 4 · `-2` 8 · `-3` 12 · `-4` 16 · `-5` 20 · `-6` 24 · `-8` 32 · `-10` 40 · `-12` 48 · `-16` 64. (`--space-7` 28은 폐기 예정.)
+
+| 자리 | 값 |
+|---|---|
+| 아이콘↔글자, 이름↔보조 줄 | 4 |
+| 같은 줄 작은 요소, 칩 사이, **버튼 안 아이콘↔글자** | 8 (`FanAction`이 소유. 아이콘과 글자를 붙이지 않는다) |
+| 이미지↔글자, 카드 사이, 행 안쪽 위아래 | 12 |
+| 하위 묶음, 행 좌우 안쪽, 구역 제목→내용, 칩 줄→목록 | 16 |
+| 부품 안쪽(카드 390) | 20 — 레이아웃 간격으로는 쓰지 않음 |
+| 카드 안쪽 768+, 탭↔본문, 본문+레일 | 24 |
+| 구역 사이 | 32(390) / 48(768+) = `--fan-section-gap` |
+| 세로 간격 상한 | 64(넘으면 N4 실패) |
+
+- 레이아웃(구역·열) 간격은 16·24·32·40·48·64만.
+- 같은 화면의 좌우 바깥 여백 차는 2px 이하.
+- 마진으로 부품 사이를 띄우지 말고 부모의 `gap`으로 띄운다(행·카드 목록은 `gap`, 구역은 `--fan-section-gap`).
+
+## 3. 반경
+
+| 토큰 | 값 | 쓰는 곳 |
+|---|---|---|
+| `--radius-pill` | 999px | 모든 버튼, 칩, 한 줄 입력, 상태 태그, 아이콘 버튼 |
+| `--radius-card` | 16 | 카드, 대화상자, 시트, 메뉴, 히어로, 페이지 머리 사진 |
+| `--radius-media` | 12 | 카드 안 이미지, 여러 줄 입력, 토스트, 업로드 행 |
+| `--radius-small` | 8 | 아이콘 상자, 행 hover, 작은 배지 상자, 글 행 썸네일 |
+| `50%` | — | 아바타, 원형 버튼 |
+
+안쪽 반경 = 바깥 반경 − 안쪽 여백. 그 밖의 px(4·6·10·14·20·22)와 옛 별칭(`--radius-control/-collection/-hero/-action`)은 쓰지 않는다. 승인 예외: 숏폼 뷰어 `--radius-shortform-control` 22, 패스포트·애셋 고유 모양, `FanPrint` 소품의 폭 비례 반경.
+
+## 4. 색
+
+| 역할 | 토큰 | 값 |
+|---|---|---|
+| 페이지 바탕·카드 면 | `--color-canvas` `--color-surface` | #fff |
+| 글자 / 보조 글자 | `--color-ink` / `--color-muted` | oklch 18% / 48% |
+| 선 | `--color-line` / `--color-line-subtle` | oklch 90% / 93% |
+| **강조 1색**(primary 채움·활성 밑줄·게이지 채움·하트) | `--color-accent` | #d11b62 |
+| 선택·호버·자리표시 면 | `--color-accent-soft` | #fff0f6 |
+| 강조 선 | `--color-accent-line` | #f4c3d7 |
+| 강조 글자 | `--color-accent-ink` | #ad1457 |
+| 팬페이지 대표색 | `--color-page-accent` | 기본 accent |
+| 오류·LIVE·알림 점 | `--color-error` | #9f1239 |
+| 경고·순위 배지 글자 | `--color-warning` | #7a4206 |
+| 완료 체크 | `--color-success` | #17613f |
+| 기능색(사용자 승인) | `--color-reaction-comment`(댓글·▼), `--color-rank-up/-down`, `--color-heart`, `--color-translation-link`, `--color-brand-link` | 강조색이 아니다. 지정된 자리만 |
+| 화면 전용 | `--color-shortform-*`, `--color-home-caption`, `--color-home-hero-shade`, `--color-campaign-art` | 그 화면만 |
+| 비활성 | `--fan-disabled-opacity` .4 | 면·글자색은 그대로 두고 불투명도만 |
+
+- 회색 채움 면 0: 칩·레일·카드·자리표시·스켈레톤·게이지 바탕은 흰 면 또는 `--color-accent-soft`.
+- 호버·눌림은 `--color-accent-soft` 또는 `scale(.97)`, 호버는 `@media (hover: hover) and (pointer: fine)` 안에서만.
+- **두 번째 강조색 금지.** 이벤트 소품의 종이·잉크·도장색은 `FanPrint` 안에서만 쓴다.
+- 보라 0(예외: 토스트 그라데이션 `#6042d5` 한 곳). 그라데이션은 로고·소품·토스트 밖에서 쓰지 않는다.
+- 폐기: `--color-soft`(투명 별칭), `--color-surface-focus`, `--color-service-ink`, `--color-coin(-ink)`, `--color-foil`, `--color-utility-canvas`.
+
+## 5. 그림자·표면·카드
+
+| 항목 | 기준 |
+|---|---|
+| 카드·행·버튼·탭·헤더 | 그림자 0. 구획은 1px `--color-line` |
+| 떠 있는 것(모달·시트·메뉴·팝오버·툴팁·토스트) | `--shadow-overlay` = 0 8px 24px rgb(0 0 0 / 8%) |
+| 운영자 공지 목록 카드 | `--shadow-card-soft`만 승인(사용자 11/10 18:06) |
+| 카드 | `FanSurface`: 흰 면, 1px line, 반경 16, 안쪽 20(390)/24(768+) |
+| 목록 카드 | `FanSurface appearance="list"`: 안쪽 0, 행이 좌우 16·구분선, 마지막 행 구분선 없음 |
+| 강조 판 | `--color-accent-soft` 면 + `--color-accent-line` 선, 화면당 1 |
+| 미디어 카드 | 테두리 없이 사진이 프레임(반경 16). 사진 안에 상자를 또 넣지 않는다 |
+| 사진 여백 | 잘린 부분은 그 사진의 흐린 복사본 색(`MediaFill`), 검정 금지 |
+
+글로·유채색 그림자·`backdrop-filter`·`filter: blur` 0. 왼쪽 색 막대(`border-left` 3px+)와 아이콘 뒤 채운 배경 0. 같은 역할 구역은 한 화면에서 같은 컨테이너(카드 목록과 카드 없는 목록을 섞지 않는다).
+
+## 6. 크기
+
+| 항목 | 값 | 토큰 |
+|---|---|---|
+| 최소 터치 | 44 | `--min-target` |
+| primary 버튼 | 44(390) / 48(1024+), 최대 폭 320 | `--fan-action-primary-height` `--fan-action-max-width` |
+| 작은 버튼 `size="sm"` | 보이는 36, 누르는 영역 44 | `FanAction` |
+| 칩 | 보이는 36, 누르는 영역 44(::after) | `--fan-chip-height` |
+| 머리 칩(팬 인증·좋아요·별) | 28, 누르는 영역 44 | `FanStarAction` |
+| 밑줄 탭 / 세그먼트 / 태그 | 48 / 40 / 22 | `FanTabs`, `FanTag` |
+| 아이콘 | 16·20·24(기본 20, 버튼 안 18), lucide 선 1.5 | `FanIcon`, `--fan-icon-size` |
+| 셸 | 헤더 56, 컨텍스트 탭바 44, 390 하단 탭바 56 | |
+| 빈 상태 한 줄 | 78 | `FanState kind="empty"` |
+
+## 7. 공통 부품
+
+가져오는 곳은 `components/fan-ui`(파일 경로로 직접 import 가능). 화면은 원시 `<button>`·`<h1>`~`<h3>`·수동 `role="dialog"`·`@base-ui/react`·`lucide-react`를 직접 쓰지 않는다. 표에 없는 부품을 새로 만들면 이 표에 등록한다.
+
+| 부품 | 쓰는 경우 | 주요 props | 쓰지 않는 경우 |
+|---|---|---|---|
+| `FanAction` | 글자가 있는 모든 버튼·링크 버튼 | `variant` primary·secondary(=neutral)·text·danger, `size` md·sm, `href`/`onClick`, `leadingIcon`, `loading`, `fullWidth`, `helperText` | primary는 화면당 1. `danger`는 모달 안 확인만. `service`·`passport`·`trailingIcon` 화살표는 폐기 |
+| `FanIconButton` | 글자 없는 44 아이콘 버튼 | `aria-label` 필수, 메뉴·툴팁 트리거 | 글자가 있으면 `FanAction` |
+| `FanHeading` · `FanSectionHeader` | 화면 제목·구역 제목, 제목 줄 오른쪽 작은 링크 | `as` h1·h2·h3, `action {label, href}`, `extraAction` | `description`(보조 문구) 쓰지 않음 |
+| `FanSectionLink` | 제목 줄 오른쪽 `전체 보기 ›` | `href`/`onClick`, `expanded` | 목록 아래 따로 둔 버튼 줄 |
+| `FanText` | 이름·글 행 제목·본문·메타·라벨 | `role` item·row-title·body·meta·label·banner-label·banner-action, `as` | — |
+| `FanNumber` · `FanGauge` | 자산 숫자 / 진행 막대·칸 | `size` md·lg·xl, `unit`, `countUp` / `value` `max` `segments` `valueText` | 막대 안에 글자 넣지 않음 |
+| `RollingNumber` | 바뀌는 숫자를 굴려 보이기(랭킹·헤더·접속 수) | `value`, `duration`, `easing`, `delay`, `initialFromZero` | 가짜 증가 금지(실제 값만) |
+| `FanCellGauge` | 스탬프·하트·등급 칸 게이지 | `icon` `text` `label` `cells` `filled` | — |
+| `FanSurface` | 카드·목록 카드 | `appearance` card·list·plain, `tone`, `as` | 새 `FanCard` 만들지 않음 |
+| `FanPostRow` | 글·공지·기사 목록 한 줄 | `title` `href` `thumbnail` `notice` `author` `time` `likes` `commentCount` `density` home·board | — |
+| `FanEntityCard` | 페이지(팬페이지·모임·취미·브랜드) 카드·행·타일 | `size` row·card·list·tile, `kind`, `memberCount`, `badge`, `newBadge` | — |
+| `FanPageHeader` | 팬페이지·모임 머리 | `image` `name` `kind` `star` `links` `stats` `tabs` `menu` | — |
+| `FanStarAction` | 머리 칩(별·인증·좋아요) | `state` empty·filled, `label`, `href`/`onClick` | — |
+| `FanTabs` | 페이지 탭·필터 칩·같은 자료 보기 전환 | `variant` underline·chip·segment, `items`, `current`, `panels` | 링크 탭은 라우터가 그림 |
+| `FanSelectMenu` | 정렬·필터 드롭다운의 유일한 부품 | `options` `value` `onValueChange` `active` `icon` `collapseNarrow` `align` | 화면 CSS로 알약을 다시 그리지 않음, 네이티브 `<select>` 금지(관리자 폼 제외) |
+| `FanMenu` | 동작 2개 이상 중 고르기 | `trigger` `label` `align`, `FanMenu.Item`·`.Radio`·`.Separator` | 동작이 하나면 버튼 |
+| `FanDialog` · `FanSheet` | 답을 받아야 넘어가는 짧은 흐름 / 390 바닥 시트·1024+ 오른쪽 서랍 | `size` sm 360·md 480·lg 640, `alert`, `responsive`, `primary` `secondary` | 공유 주소가 필요한 목록·상세는 페이지 |
+| `FanTooltip` | 글자 없는 아이콘의 이름표 | `content` `side` | 터치에 필요한 정보는 넣지 않음 |
+| `FanCollapsible` · `FanDisclosure` | 눌러 여는 긴 내용 | `defaultOpen` `persistKey` `trigger` | `<details>` 새로 쓰지 않음 |
+| `FanState` | 빈 상태(한 줄 78)·오류(`다시 시도`)·잠금(로그인 primary 1) | `kind` empty·error·auth, empty의 `action {label, href}` 하나 | `kind="loading"`·아이콘·설명 없음 |
+| `FanSkeleton` · `FanSkeletonRows` · `FanSkeletonPage` | 로딩(실제와 같은 자리·크기, 핑크 틴트 숨쉬기) | `variant` post·entity·member·tile·plain, `rows` | `불러오는 중` 글자 |
+| `FanLockedValue` · `FanLockedRows` | 비로그인의 내 값 자리 | `rows` 2·3·5 | — |
+| `FanTag` | 유형·공지·인증 표시 | `tone` fan·artist·neutral·notice, `icon` | 숫자·설명 넣지 않음 |
+| `FanCount` · `FanDot` | 알림함 안 개수 / 헤더·탭바 새 소식 점 | `value` `max` / `label` | 지갑 잔액은 `FanNumber` |
+| `FanToast` | 그 자리에 결과가 안 보이는 곳의 결과 | `showFanToast({title, tone})` | 지급 성공은 `celebrateReward` |
+| `celebrateReward` · `FanRewardPop` | 포인트·스탬프 지급 연출(서버 확정 뒤 한 번) | `points` `stamps` `anchor` | 화면별 자체 연출 |
+| `EarnBadgeCorner` (`features/dukjil/ui/earn-badge.tsx`) | 포인트를 주는 모든 버튼의 오른쪽 위 노란 코인 배지(20) | `action` 또는 `points` | 같은 버튼 옆 `+NP` 글자 배지 |
+| `FanMissionRow` | 덕질 미션 한 줄(64) | — | `×N`·nudge |
+| `FanScrollRow` | 오른쪽 끝까지 찬 가로 스크롤 줄(숏폼·갤러리) | `onNearEnd`, `label` | — |
+| `MediaFill` · `CreatorAvatar` | 사진 여백 색 확장 / 원형 프로필 | `src` | — |
+| `PromoBanner` (`components/banner-slot`) | 그림 없는 한 열 배너 카드 | `tag`(광고) | — |
+| `FanIcon` · `ReactionIcon` | lucide 아이콘 16·20·24 / 좋아요·댓글 채운 아이콘 | `icon` `size` `filled` / `kind` | 이모지·다른 아이콘 세트 |
+| `FanDisplay` (이벤트·캠페인 상세 전용) | 큰 금액·가는 숫자·에디토리얼 제목 | `role` amount·figure-xl·figure·figure-sm·title·heading·lead·strong·body·caption·mono, `as` | 앱 탭 화면(홈·모임·덕질·MY·랭킹·팬페이지) |
+| `FanPrint` (이벤트·캠페인 상세 전용) | 응모권·기프트카드·패스포트·기회 카드 같은 인쇄 소품 | Ticket·Gift·Passport·Chance·Desk | 정보를 담지 않는 빈 소품 |
+
+### 7-1. 어느 것을 쓸까
+1. 답을 받아야 넘어가면 `FanDialog`, 390에서 긴 선택이면 `FanSheet`.
+2. 짧은 동작 목록이면 `FanMenu`, 정렬·필터는 `FanSelectMenu`.
+3. 설명이 필요하면 먼저 값으로 바꿀 수 있는지 본다(라벨-값 메타). 문장을 붙이지 않는다.
+4. 숫자면 `FanNumber`(바뀌는 값은 `RollingNumber`), 진행이면 `FanGauge`/`FanCellGauge`, 새 소식은 `FanDot`.
+5. 목록 한 줄이면 `FanPostRow`(글) 또는 `FanEntityCard size="row|list"`(페이지).
+6. 결과를 알릴 자리가 없으면 `FanToast`. 입력 오류는 입력 아래 글자.
+
+### 7-2. 디스플레이·인쇄 소품 규칙 (FanDisplay·FanPrint, 2026-11-13 정식 등록)
+래플 v3·v4에서 사용자 지적("FONT 촌스럽고", "굵은 heavy 숫자 금지", "자산이 비어 있다")을 풀려고 만든 부품이라 정당한 패턴으로 등록한다. 다만 앱 전체 규칙과 부딪히지 않게 범위를 좁힌다.
+- **범위**: 이벤트·캠페인 상세 페이지(`/s/*`, 이벤트 상세)만. 앱 탭 화면에는 쓰지 않는다.
+- **글자**: 값은 `--fan-display-*` 토큰만. 굵기는 300(큰 금액·숫자)·400(본문·캡션·순번)·600(제목 줄) 셋. 지금 코드의 500(title·lead·strong)은 다음 래플 작업에서 600(title) / 400(lead·strong)으로 합친다. 화면당 `amount`는 1개.
+- **소품**: 종이·잉크·도장 빨강·접촉 그림자(`drop-shadow`)·광택 그라데이션·폭 비례 반경(`cqw`)은 `FanPrint` 안에서만. 소품은 이벤트 정보(금액·마감·인원·순번)를 담는다. 빈 소품 금지.
+- **바탕**: 페이지 바탕은 흰색. 래플 브랜치의 `--raffle-sky`·`--raffle-cream` 페이지 틴트는 등록하지 않는다(색 면은 사진·소품 안에서).
+- **버튼**: 이벤트 상세도 `FanAction primary` 44/48 하나. 56 높이 버튼은 쓰지 않는다.
+- **검토**: 새 소품·디스플레이 화면은 ChatGPT 디자인 검토 프로젝트에서 390·1440 캡처 미감 검토를 받는다(11/12 23:25).
+
+## 8. 반응형
+
+| 항목 | 값 | 토큰 |
+|---|---|---|
+| 구간 | <768 / 768–1023 / 1024–1279 / ≥1280, 기준 폭 390·768·1024·1440 | 새 CSS는 `48rem`·`64rem`·`80rem` 범위 문법만(`@media (width >= 48rem)`) |
+| 셸 | 최대 1440, 바깥 여백 16 / 32 / 32 / 40 | `--shell-max-width` `--shell-inset` |
+| 띠 | 읽기 720 · 목록 920 · 전체 1440 | `--band-read/list/full` |
+| 레일 | 288 / 360(≥1024) / 384(≥1280) | `--rail-narrow/md/wide` |
+| 본문+레일 간격 | 24, ≥1280 32 | `--col-gap` |
+| 구역 간격 | 32, ≥768 48 | `--fan-section-gap` |
+| 카드 격자 | 390 1열 · 768 2열 · ≥1024 3열 · 사진 카드만 ≥1280 4열 | `repeat(auto-fill, minmax(min, 1fr))` |
+| 같은 무게 목록 쌍 | ≥1024에서만 2열 | |
+| 본문 줄 길이 | 한국어 45자 경고·60자 실패 | |
+
+- PC는 PC 너비로 채운다. 읽는 본문만 720 띠, 나머지 빈 면은 레일(다른 글·배너)로 쓴다.
+- 360~1440 어느 폭에서도 가로 넘침·글자 잘림 0. 긴 번역은 잘라내지 않고 높이를 늘린다.
+- 측정: `node apps/web/scripts/measure-responsive.mjs`.
+
+## 9. 동적 요소와 모션 (사용자 11/13 "항상 모든 페이지에 동적인게 있으면 좋겠는데, 권장 three.js / 최소 animation")
+
+**모든 페이지에 살아 있는 요소가 1개 이상 있다.** 절제한다 — 한 화면에서 눈에 띄게 움직이는 것은 하나.
+
+1. **권장: three.js 장면.** `features/capsule-machine` 패턴을 다시 쓴다.
+   - `next/dynamic(..., { ssr: false })`로 지연 로드, `IntersectionObserver`로 화면 근처(300px)에서 내려받고 화면 밖이면 멈춘다(`lucky-stage.tsx`).
+   - 같은 칸에 정지 그림(poster)을 먼저 깔고 장면을 겹친다. 높이는 처음부터 차지한다(CLS 0).
+   - 폴백(정지 그림 유지): `prefers-reduced-motion`, WebGL2 없음·GPU 0등급(`gpu.ts` `canRunCapsuleMachine`), 데이터 절약(`saveData`), 인앱 브라우저·저사양, `webglcontextlost`, 프레임 24fps 미만.
+   - 첫 로드 번들에 three.js를 넣지 않는다.
+2. **최소: 의미 있는 애니메이션.** 값이나 상태가 실제로 바뀐 것을 알린다. 예:
+   - 숫자 롤링(`RollingNumber`: 랭킹·헤더 칩·접속 수, 처음 보일 때 0에서 한 번, 이후 값이 바뀔 때만)
+   - 스탬프 찍힘(`stamp-slam` 0.9s) · 보상 팝(`celebrateReward`)
+   - 카드·행 등장(opacity + y 8→0, 200ms, 목록은 90ms 시차·최대 9칸)
+   - 랭킹 행 재정렬(FLIP 450) · ▲▼ 등장 500 · 바뀐 행 핑크 링 1800(1회)
+   - 게이지·칸 채움(칸마다 45ms)
+   - 선물 안 읽음 빛(애셋 opacity·transform, 3회 뒤 정지)
+
+| 모션 토큰 | 값 | 쓰임 |
+|---|---|---|
+| `--motion-fast` | 150ms | 색·투명도·체브론·메뉴·툴팁 열고 닫기 |
+| `--motion-slow` | 200ms | 접기·시트·대화상자·토스트·게이지·페이지 전환·카드 등장 |
+| `--motion-easing` | cubic-bezier(.2, 0, 0, 1) | 모든 전환 |
+| `--motion-count` | 400ms | 숫자 카운트 |
+| `--motion-reward` | 600ms | 보상 팝 |
+| 연출 예외(`data-motion`) | 롤링 600(랭킹 850), FLIP 450, ▲▼ 500, 링 1800, 스탬프 900, 럭키드로우 idle 8s 주기 | 해당 부품만 |
+| 폐기 | `--motion-control` 160 · `--motion-layout` 240 · `--motion-exit` 120 | fast/slow로 |
+
+규칙
+- 움직이는 속성은 `transform`·`opacity`만. 레이아웃 애니메이션 금지, 50개 이상 목록은 연출 없음.
+- 모든 `animation`·three.js에 `prefers-reduced-motion` 대체(정지 그림 또는 즉시 표시). 전역 한 줄이 아니라 모듈마다 분기(N7).
+- **장식용 무한 반복 금지.** 허용되는 반복은 three.js 장면 idle(화면 밖이면 정지)과 스켈레톤 숨쉬기뿐. 상시 깜빡임·글로·바운스·오버슈트·폭죽·파티클 0.
+- 버튼 누름은 색만 바뀐다(이동 0). 호버 이동 0.
+- `motion` 라이브러리는 보상·미션 완료·출석 연출과 `FanRouteTransition`에서만(N16). `lottie-web`은 `stamp-press.tsx`만.
+
+## 10. z-index
+`--z-sticky-header` 20 · `--z-bottom-nav` 30 · `--z-dropdown` 35 · `--z-backdrop` 40 · `--z-drawer` 45 · `--z-dialog` 50 · `--z-alertdialog` 55 · `--z-tooltip` 60 · `--z-toast` 1100. 이 토큰만 쓴다(T8).
+
+## 11. 문구·아이콘 (요약)
+- 내비·탭·구역 제목은 한국어 명사 2~7자. 버튼은 동사 2~6자, 버튼 안 조건 문구·화살표 글리프 0.
+- 상태는 값 + 조건(`응모 가능 3장`). 빈 상태·오류는 `~습니다` 한 문장, 토스트는 `~요`.
+- 대문자 영문 라벨 0. 한국어 화면은 `스탬프`(도장 단독 표기 금지).
+- 아이콘은 lucide 한 세트, 선 1.5, 16·20·24, `FanIcon` 경유. 이모지 0. 도장 그림은 아이콘이 아니라 애셋(`data-art="stamp"`).
+
+## 12. 검사
+- `node scripts/design-lint.mjs` — 새 위반만 실패(기준선 `scripts/design-lint-baseline.json`은 줄이기만).
+- 규칙 시험: `node --test scripts/design-lint*.test.mjs`.
+- 화면 기준선: `apps/web/e2e/screen-baseline/`(macOS, 390·1440).
+- lint 통과는 준수의 증거가 아니다. 디자인 작업은 이 절 1~11의 항목별 감사표를 함께 낸다.
+
+## 13. 지금 코드가 이 절과 다른 곳 (다음 작업에서 맞춤)
+
+| 곳 | 지금 | 맞출 값 |
+|---|---|---|
+| `globals.css` `--fan-chip-height` | 36과 `var(--min-target)` 44가 두 번 선언돼 실제 44 | 두 번째 줄 삭제 → 36(누르는 영역은 ::after 44). 홈 역할 칩이 보이는 높이 44→36으로 줄어든다 |
+| `--fan-heading-size(-wide)` 사용 66곳, `FanDialog` 제목 | 20/24·800 | 18/700(구역 제목) |
+| `--motion-control/-layout/-exit` 사용(fan-ui 포함) | 160/240/120 | 150/200 |
+| `--color-soft` 사용 303곳 | 투명 별칭 | 흰 면 또는 `--color-accent-soft` |
+| 반경 직접값(12px·16px·10px·20px 등) | 화면 CSS | 역할 토큰 |
+| `--space-7`·`--section-gap` | 정의만 | 삭제 |
+| 래플 브랜치(`t3/raffle-v3-2255`) | FanDisplay 굵기 500, 페이지 틴트 sky·cream, 버튼 56 | 7-2 규칙 |
+
+---
+
+# 이력 (부록)
+
+아래는 2026-11-12까지의 DESIGN.md 본문 전체를 그대로 옮긴 것이다(삭제하지 않음, 제목 단계만 한 단계 내림). 결정의 근거와 화면별 세부 기록으로 읽는다. **위 "현재 기준"과 다르면 위가 이긴다.** 특히 다음 옛 값은 대체됐다: h1=h2 20/24·850, 본문 15/14, 메타 12, 배지 11·20, 반경 12/16/20(control·collection·hero), 버튼 반경 8, 칩 44, 굵기 500·550·650·850, 핵심 숫자 hero 44/48, `--fan-post-body-size`, 랭킹 FLIP 240.
+
+
+## 에이전트용 핵심 규칙 (2026-11-09 기준, 브리프 v1.1)
+
+### 게이트 A~E 확정 (사용자 "권장대로" 2026-11-09 15:52)
 
 A2 버튼 반경 알약·높이 390 44 / 1024+ 48 · B2 칩 36·14/700·반경 알약 · C2 h1 26/800·h2 18/700(`FanHeading`이 태그로 정함, 폭에 따라 바뀌지 않음) · D2 페이지 전체 빈 상태도 한 줄 78 · E3 도움말 물음표 → `자세히 ›`. 시안: `board/tasks/ds-sweep/a/gate-preview/`. 화면 CSS가 직접 쓰는 옛 값(`--fan-heading-size(-wide)` 20/24, 48 고정 버튼, 12 반경 칩)은 화면 치환 묶음에서 맞춘다.
 
-## 사용자 규칙 4개 (DS-SWEEP, 2026-11-09 — 모든 화면 작업의 전제)
+### 사용자 규칙 4개 (DS-SWEEP, 2026-11-09 — 모든 화면 작업의 전제)
 
 1. **4차 배치 유지.** 화면 구성(블록 순서·개수·문구, 홈·헤더/셸·390 탭바·덕질·패스포트·모임·MY·글 상세·팬페이지)은 4차 55f260fd7 배치를 따른다. 디자인 시스템 정리는 면 색·굵기(400/700/800)·반경·그림자·호버 게이트만 바꾼다. 묶음마다 390 세로 총 높이 전후 차 ≤ 8px(빈 상태 축소분 제외), 블록 제목 배열 동일.
 2. **회색 채움 0(예외 없음, 감독 결정 2026-11-09 11:34).** 칩·레일·띠·카드·아이콘 타일·자리표시·스켈레톤·게이지 바탕 어디에도 무채색 면을 쓰지 않는다. 면은 흰색(`--color-surface`) 또는 핑크 틴트(`--color-accent-soft`)만. 호버·눌림 = `--color-accent-soft` 틴트 또는 `scale(.97)`, 호버는 `@media (hover: hover) and (pointer: fine)` 안에서만. 메뉴·탭 하이라이트 = 핑크 틴트 면 + 핑크 글자. 비활성 = 불투명도만(면 색 불변). 자리표시·게이지 바탕·시트 손잡이 = 핑크 틴트(`--color-accent-soft`/`-line`) 또는 헤어라인 원. 선·테두리는 `--color-line`(oklch 90%) 헤어라인만(면이 아니다). 회색 측정은 `lab()`·`oklch()`·`color-mix()`를 rgb로 환산해 센다. `--color-soft`는 정적 면에 쓰지 않는다(치환 뒤 삭제 예정).
 3. **블록 높이 고정(사용자 2026-11-09 11:02).** 데이터가 없어도 UI가 달라지면 안 된다. 목록형 블록은 설계 행 수로 고정하고 빈 행은 흐린 자리표시로 채운다. 블록 높이는 보통·적음·0건에서 같다(측정 0px 차). 블록을 숨기는 것은 설계에서 명시한 경우만이다.
 4. **헤더 동결.** 헤더·390 탭바의 요소 구성(K3·L11)은 바꾸지 않는다. 색·면 채움·굵기만 바꿀 수 있고, 글자 잘림은 어느 폭에서도 금지(360~1440 7폭에서 `scrollWidth > clientWidth` 0).
 
-### 헤더 상태 캡슐 접기 (2026-11-09 사용자 요청)
+#### 헤더 상태 캡슐 접기 (2026-11-09 사용자 요청)
 
 - 로그인 상태 캡슐은 기본 접힘: 등급 아이콘 · 하트 수 · P 잔액. 최애 이름과 개별 링크를 펼친 패널로 옮겨 헤더 길이를 줄인다. 위 헤더 동결 규칙의 이번 요청 범위 예외이며, 헤더 그리드·탭 배치는 유지한다.
 - `fan-header-status.tsx`와 전용 CSS가 값을, 공용 `components/fan-ui/header-popover.tsx`와 전용 CSS가 팝오버를 소유한다. 사용자 라이브러리 선택에 따라 이 래퍼에는 `@radix-ui/react-popover@1.3.1`을 사용한다(Base UI 전용 규칙의 이 작업 한정 예외). 버튼 높이는 `--fan-action-primary-height`(44/48), 버튼·패널 반경은 `--radius-action`(8), 행 최소 높이는 48, 흰 면·핑크 상호작용·700 굵기. 패널은 폭 280, 화면 좌우 최소 16, 긴 번역·이름은 줄바꿈한다.
 - 클릭/키보드로 최애 바꾸기 · 등급 안내 · 덕질 행을 연다. Esc는 닫고 버튼으로 포커스를 돌리며, 바깥 클릭·포커스 이동·계정 전환은 닫는다. 기본 버튼의 Enter/Space·행의 Tab 이동을 유지하고 Radix `data-state`의 CSS 진입·닫힘만 사용하며 reduced-motion에서는 즉시 바뀐다. Motion 라이브러리는 사용하지 않는다. 1만 이상은 축약하고 접근성 이름에는 전체 수치를 둔다.
 - 기존 비로그인 최애 고르기 → 로그인 동작을 유지한다. 인증 만료는 회원 수치·등급을 숨기고 로그인으로 안내한다. 12개 언어 적용. 390/1440 실화면·캡처는 통합 시각 검수 담당 확인 전이며 기능 검사와 구분한다.
 
-### 공통 부품 정리 문장 (C16·C17·C18, 2026-11-09)
+#### 공통 부품 정리 문장 (C16·C17·C18, 2026-11-09)
 
 - **C16 가져오기 경로.** 화면은 `components/fan-ui`의 부품을 파일 경로로 직접 import해도 된다. `components/fan-ui/index.ts`는 이름 목록이며 배럴 import를 강제하지 않는다(번들 분할·tree-shaking 때문, 일관성은 lint가 지킨다).
 - **C17 문서 내부 정정.** `FanSurface` 반경은 16(`--radius-card`, 2026-11-10 반경 개편 뒤), `FanNumber md`는 16(`--fan-item-title-size`, 게이트 C 뒤 15), 토스트 z-index는 1100(옛 모달 z 정리 T8 뒤 58). 옛 반경 별칭(`--radius-action`·`--radius-control`·`--radius-collection`·`--radius-hero`)은 2026-11-10에 사용처를 역할별로 치환하고 globals에서 삭제했다.
@@ -102,24 +377,24 @@ A2 버튼 반경 알약·높이 390 44 / 1024+ 48 · B2 칩 36·14/700·반경 �
 
 측정 주의(2026-11-09): 정적 글꼴 `Pretendard UI 550/650/850` 폐기는 **예정**이다. `globals.css`에 `@font-face` 6개와 `public/fonts/pencil/*.woff`가 남아 있다. 화면 글꼴은 `Pretendard Variable` 1벌이고, 굵기는 400·700·800 토큰으로 읽는다(1단계). r5 측정은 `apps/web/scripts/measure-r3.mjs`(루브릭 r3 U1~U16).
 
-### 검증 절차 — 화면 기준선(층 4)
+#### 검증 절차 — 화면 기준선(층 4)
 
 `apps/web/e2e/screen-baseline/`은 홈·모임·덕질 탭을 390·1440에서 `toHaveScreenshot`(허용 오차 0)으로 비교한다. 로컬 하니스의 고정 합성 데이터와 고정 시각(2026-11-02 KST)을 쓰며 Chromium 전용이다. 회귀 탐지용이며 하니스와 배포 화면의 차이는 제품 결함으로 세지 않는다.
 - 실행(`apps/web`에서): `npx playwright test -c e2e/screen-baseline/playwright.config.ts` (약 13초, 하니스 서버 자동 기동·종료)
 - 기준선 갱신(디자인 변경이 수락된 뒤에만): 같은 명령에 `--update-snapshots`. 갱신된 `e2e/screen-baseline/__screenshots__/darwin/*.png` 6장을 눈으로 확인한 뒤 변경과 함께 커밋한다.
 - 기준선은 macOS(darwin) 렌더링 기준이다. 다른 OS에서는 `{platform}` 폴더가 달라 이미지가 없어 실패한다. CI에는 넣지 않는다(Linux 렌더링 차이로 허용 오차 0에서 실패). macOS 로컬의 수정 전후 검사로만 쓴다.
 
-# 디자인 시스템 기준 — 토큰·공통 컴포넌트·연출·숫자 표기 (261107-2)
+## 디자인 시스템 기준 — 토큰·공통 컴포넌트·연출·숫자 표기 (261107-2)
 
 위 "에이전트용 핵심 규칙" 표의 확장판이다. 기준 커밋 `47e53192a`(bundle/doc-261107). 값의 원본은 `apps/web/app/globals.css`와 `apps/web/components/fan-ui/`이고, 이 절은 그 값을 역할별로 모아 적는다. 문서와 코드가 다르면 코드가 현재 값이므로 이 절을 고친다. 시각 검수 질문(V1~V27)과 평가 루브릭 실행법은 `docs/design/visual-review-261107.md`에 있다.
 
 원칙: 이번 단계는 **구성이 쉽게 이해되고 정돈되는 것**, **숫자·아이콘이 한 번에 읽히는 것**, **누른 동작이 실제로 되는 것**을 목표로 했다. 새 시각 언어를 만들지 않아 기존 값은 그대로 두었고, 화면마다 직접 쓰던 값에만 역할 이름을 붙였다.
 
-## 1. 토큰 (실제 값)
+### 1. 토큰 (실제 값)
 
 새 코드는 hex·직접 px 대신 토큰을 쓴다(`color-no-hex`, `declaration-strict-value`, T3~T10이 새 위반을 실패시킨다). 표에 없는 값이 필요하면 만들어 쓰지 말고 보고한다.
 
-### 글자 (Pretendard Variable 1벌, 글꼴 지정은 `globals.css`만 — 2026-11-09 8장 ②③)
+#### 글자 (Pretendard Variable 1벌, 글꼴 지정은 `globals.css`만 — 2026-11-09 8장 ②③)
 | 역할 | 390 | 768+ | 굵기 | 줄 높이 | 토큰 |
 |---|---|---|---|---|---|
 | 핵심 숫자(덕질 잔액, 화면당 1) | 44 | 48 | 800 | 1 | `--fan-hero-number-size(-wide)`, `tabular-nums`, `FanNumber size="hero"` |
@@ -133,7 +408,7 @@ A2 버튼 반경 알약·높이 390 44 / 1024+ 48 · B2 칩 36·14/700·반경 �
 
 굵기는 **400·700·800** 세 값만. 글꼴은 `Pretendard Variable` 1벌(`globals.css` body 한 줄)이며 정적 `Pretendard UI 550/650/850` 웹 글꼴은 폐기했다(TTF는 공유 이미지 서버 렌더에만 남음). 모듈 CSS의 `font-family` 선언은 0이 기준이고, 예외는 온체인 주소 표시의 `ui-monospace`. 전역 `body { word-break: keep-all; overflow-wrap: anywhere }`. 영문·숫자도 같은 벌, 숫자는 `tabular-nums`만. 삭제 예정 토큰(1단계는 globals에 별칭으로 남김, 값 동일, 사용처 치환 전): `--fan-description-*`, `--fan-aside-title-*`(사이드 제목 = h2 18/700), `--fan-heading-editorial-weight`, `--fan-personal-section-*`, `--fan-event-catalog-title-size`, `--fan-action-emphasis-size`, `--fan-heading-size-wide`.
 
-### 글자 역할별 짝 (2026-11-10 C2 T0, 제품 책임자 "글자 크기/굵기마다 역할이 있다")
+#### 글자 역할별 짝 (2026-11-10 C2 T0, 제품 책임자 "글자 크기/굵기마다 역할이 있다")
 굵기는 역할이 정한다. 700은 구역 제목·카드/행의 주체인 고유 이름·라벨-값의 값·작은 라벨과 글자 링크·버튼/탭/칩/배지(부품이 소유)·섞인 목록 안 공지/고정 행의 제목에만, 800은 화면 제목과 숫자에만 쓴다. 나머지는 400이다. 사람이 쓴 글(팬 글·공식 글·공지·댓글·메시지)의 목록 제목과 본문은 400이며 위계는 크기(행 제목 16 > 메타 13)와 색(ink > muted)으로 만든다. 메타줄은 13/400 muted, 작성자·페이지 링크는 400에 호버 밑줄. 한 행의 700은 최대 하나(글 행 0, 공지 행 제목 1, 항목 행은 이름). 화면 코드는 글자 원시값을 쓰지 않고 `FanText`·`FanHeading`·`FanNumber`·`FanTag`·`FanPostRow`를 쓴다.
 
 | # | 역할 | 크기 | 굵기 | 행간 | 소유 |
@@ -150,7 +425,7 @@ A2 버튼 반경 알약·높이 390 44 / 1024+ 48 · B2 칩 36·14/700·반경 �
 
 새 토큰은 `--fan-body-weight: 400`과 `--fan-metadata-leading: 1.4` 둘뿐이다. 화면 CSS는 크기·굵기를 위 짝으로만 묶고(T11), 부품 소유 토큰 `--fan-action-*`·`--fan-chip-*`·`--fan-tab-*`·`--fan-badge-*`·`--fan-calendar-*`를 쓰지 않는다. 화면 CSS의 font-size·font-weight·line-height 선언 수는 기준선보다 늘 수 없고 새 파일은 0이다(N33). 글·공지·기사·스레드 목록 행(`<li data-row>`)은 `FanPostRow`로 그린다(N32). T1(원시 font-weight)·T2(원시 line-height)는 이제 새 위반을 실패시킨다.
 
-### 색 (강조 1색 — 2026-11-09 8장 ⑤⑥)
+#### 색 (강조 1색 — 2026-11-09 8장 ⑤⑥)
 | 역할 | 값 | 토큰 |
 |---|---|---|
 | 바탕·표면 | 페이지 바탕은 모든 화면 흰색 #fff(`--color-canvas`), 카드는 1px 선으로만 구획. 회색 채움 면은 어디에도 없다(위 사용자 규칙 2). 칩·입력·세그먼트 레일·헤더 상태 캡슐은 흰 면 + 1px `--color-line`, 상태 표현은 `--color-accent-soft` 틴트. `--color-soft`는 `transparent` 별칭으로만 남고(화면 CSS 치환 전), 새로 쓰지 않는다(A1 2026-11-09, 사용자 2026-11-09 00:50 K2·11:16) | `--color-canvas`, `--color-surface`, `--color-accent-soft` |
@@ -165,7 +440,7 @@ A2 버튼 반경 알약·높이 390 44 / 1024+ 48 · B2 칩 36·14/700·반경 �
 
 **H6 색 교체(사용자 지시 2026-11-08, 브리프 규칙 8 개정)**: UI 강조색은 kyaa 핑크 1색(`--color-accent` #d11b62, 흰 글자 대비 5.19:1이라 짙은 변형 없이 버튼에 쓰고, 글자용은 기존 `-ink` #ad1457). 로고 팔레트(#fd48aa 계열)에서 UI 토큰을 따로 늘리지 않았다. **보라는 CSS·TSX의 hex·rgb·hsl·oklch에서 전부 제거**(색상 250~320°·채도 10% 이상, 보랏빛 회색 포함, 로고·그림 아트 파일만 허용)하고 같은 자리를 핑크 토큰으로 바꿨다: 옅은 바탕 → `-soft`, 테두리 → `-line`, 채움·링크 → `-accent`, 짙은 글자 → `-ink`. 보랏빛 회색은 중립 토큰(`--color-soft` 바탕 1단, `--color-line-subtle`·`--color-line` 선, `--color-muted`·`--color-ink` 글자)으로 모았다. 핑크→보라 3색 그라데이션 버튼 50여 곳은 핑크 단색으로 바꿨다. **짙은 회색 채움 캡슐 금지**: 캡슐·칩·배지는 흰 바탕 + 1px 테두리(선택은 핑크 테두리·글자 또는 옅은 핑크 바탕 1단), 진행 막대·행동 버튼·읽지 않음 배지·단계 번호는 `--color-accent`. 기계 검사는 N29(보라 색상값)·N30(짙은 회색 알약), 예외는 Apple 로그인 버튼(브랜드)·영상 위 표시·관리자 설문 번호.
 
-### 간격·반경·터치
+#### 간격·반경·터치
 
 2026-11-10 사용자 요청 — 벤치마크 8곳 근거: 아래 새 반경 체계가 이 문서의 이전 반경 수치보다 우선한다. 옛 별칭 사용처는 역할별로 전환을 마쳤고, 화면별 직접값은 화면 작업 때 순차 전환한다.
 
@@ -179,10 +454,10 @@ A2 버튼 반경 알약·높이 390 44 / 1024+ 48 · B2 칩 36·14/700·반경 �
 
 좌측 액센트 바(`border-left ≥ 3px` 색 선)와 아이콘 뒤 채운 배경(파스텔 사각·원)은 쓰지 않는다.
 
-### 깊이 (8장 ⑦)
+#### 깊이 (8장 ⑦)
 카드·행·버튼·탭·헤더는 **그림자 0**(구획은 1px `--color-line`). 오버레이(모달·시트·팝오버·드롭다운·툴팁·토스트)만 1토큰 `--shadow-overlay` = `0 8px 24px rgb(0 0 0 / 8%)`. `--shadow-dialog` 폐기 예정(globals에 남음, 3파일 사용). 유채색 그림자·글로·`filter: blur|drop-shadow`·`backdrop-filter` 0(T6·S2·S3 `fail`, N26 집계). 선물 안 읽음 빛은 이 규칙을 어기지 않는다: 코드에 글로·blur·그라데이션이 없고 빛은 이미지 애셋이다(위 모션 표의 예외는 반복 횟수 한정 애니메이션 한 곳뿐).
 
-### 모션 시간과 겹침 순서 (8장 ⑧ "150/200 2단·이징 1종")
+#### 모션 시간과 겹침 순서 (8장 ⑧ "150/200 2단·이징 1종")
 | 토큰 | 값 | 대상 |
 |---|---|---|
 | `--motion-fast` | 150ms(2026-11-09 design-sync-1 신설) | 색·투명도·체브론·탭 선택·메뉴·툴팁 열림·닫힘(나갈 때도 150) |
@@ -194,7 +469,7 @@ A2 버튼 반경 알약·높이 390 44 / 1024+ 48 · B2 칩 36·14/700·반경 �
 
 `--z-*`: 헤더 20 · 하단 내비 30 · 드롭다운 35 · 백드롭 40 · 서랍 45 · 다이얼로그 50 · alertdialog 55 · 토스트 1100(옛 모달 z 100~1000 정리(T8) 뒤 58) · 툴팁 60. z-index는 이 토큰만 쓴다(T8).
 
-## 2. 공통 컴포넌트와 쓰는 경우
+### 2. 공통 컴포넌트와 쓰는 경우
 
 가져오는 곳은 `components/fan-ui/index.ts` 하나다. 화면은 `@base-ui/react`를 직접 부르지 않고(N15·N15b), 원시 `<button>`·`<h1>`~`<h3>`·수동 `role="dialog"`를 새로 쓰지 않는다(C1·C2·N15b).
 
@@ -227,7 +502,7 @@ A2 버튼 반경 알약·높이 390 44 / 1024+ 48 · B2 칩 36·14/700·반경 �
 
 기존 `FanHeading`·`FanPageHeader`·`FanEntityCard`·`FanPostRow`·`FanStarAction`·`FanLockedValue`는 핵심 규칙 표의 각 행을 따른다.
 
-### 어느 것을 쓸까
+#### 어느 것을 쓸까
 1. 사용자의 답이 있어야 다음으로 가는가 → `FanDialog`. 390에서 긴 선택이면 `FanSheet`.
 2. 짧은 동작 목록인가 → `FanMenu`. 설정값 하나를 고르면 `FanMenu.Radio`.
 3. 아이콘 이름이 필요한가 → `FanTooltip`. 설명이 필요하면 값으로 바꿀 수 없는지 먼저 본다(라벨-값 메타). 안 되면 설정류 화면에서만 `data-explains` 한 문장.
@@ -236,7 +511,7 @@ A2 버튼 반경 알약·높이 390 44 / 1024+ 48 · B2 칩 36·14/700·반경 �
 6. 값이 숫자인가 → `FanNumber`(화면당 핵심 숫자 1개만 `hero`), 진행이면 `FanGauge`(`line` 2px 또는 9칸 segments), 새 소식이면 `FanDot`, 알림함 안 개수만 `FanCount`.
 7. 목록의 한 줄인가 → `FanRow`(variant로 높이 고정).
 
-## 3. 연출 규칙
+### 3. 연출 규칙
 
 도입: `motion` 14.6.0(`motion/react`의 `LazyMotion`·`m`만). 보상·미션 완료·출석 연출에만 쓰고, 값이 실제로 바뀐 뒤에 내려받는다(별도 청크 114KB, gzip 38KB, 홈·덕질·팬페이지·MY 첫 로드에 없음). 그 밖은 CSS와 Web Animations로 한다. `lottie-web`은 `stamp-press.tsx`에만 남는다(N16).
 
@@ -266,7 +541,7 @@ A2 버튼 반경 알약·높이 390 44 / 1024+ 48 · B2 칩 36·14/700·반경 �
 - 노출 조건(2026-11-11 7차 열차): 찐팬 하트 후원 줄·랭킹 아래 배너·`/events/heart-donation`·`/guide/jjinfan` 도전 구역은 서버 플래그 `KYAA_FEATURE_JJINFAN_GAUGE`로만 보인다. 없으면 개발 데이터 환경(local·dev)에서만 켜지고 운영은 꺼진다.
 - 반복 애니메이션은 럭키드로우 idle과 로딩 스켈레톤만. 글로우·바운스·오버슈트 0. `prefers-reduced-motion`은 모듈별 분기(N7) 유지(2026-11-09).
 
-### 3-1. 4회차 공통 규칙 (261107-2 피드백 C·D, 2026-11-08 합침)
+#### 3-1. 4회차 공통 규칙 (261107-2 피드백 C·D, 2026-11-08 합침)
 
 | 대상 | 규칙 | 소유 | 근거 |
 |---|---|---|---|
@@ -282,9 +557,9 @@ A2 버튼 반경 알약·높이 390 44 / 1024+ 48 · B2 칩 36·14/700·반경 �
 | 미션 행 (D1·F3, 2026-11-09 갱신) | `FanMissionRow` 하나(접힌 머리 `FanMissionFoldRow`). 그리드 `40px │ 1fr │ 96px`(1024+ 120px), 간격 12, 안쪽 12·16, 높이 64. 선 원 40(1px) + lucide 20(`FanIcon`, 매핑은 §4 아이콘) · 제목 15/700 + 같은 줄 `0/3` 12 muted(간격 8) → 4px → 2px 막대(2026-11-10: 폭 상한 없이 이름 아래 남는 폭을 채우고, 오른쪽 `0/3` 숫자 칸은 40 고정이라 행마다 막대 끝이 같다. 바탕 `--color-line`, 채움 accent) · 오른쪽 `+20P` 15/700 잉크 또는 완료 도장(2026-11-10: `stamps/vintage-seal-frame.svg` 마스크를 잉크색으로 칠한 40 원 + 체크, -10도 기울임. 글자는 스크린리더용). 오늘의 덕질 목록은 행이 4개 이상이고 구역 폭이 704 이상이면 2열(열 352+, 오른쪽 칸 트랙 96, 열 사이 1px 세로선, 홀수면 마지막 오른쪽 칸 비움, 읽는 순서는 가로). 접힌 행은 원 자리 없음(제목 x = 16), 오른쪽 `+465P ˅`. 출석도 행 전체 탭(버튼 0). `×N`·스탬프 상자·nudge 없음 | `features/dukjil/ui/fan-mission-row.tsx` | 브리프 v1.1 5장·G3·R5·R17 |
 | 모달 위 알림·줄바꿈 | 공통 토스트는 `--z-toast`(1100)로 z-index 모달(옛 화면 100~1000 포함) 위에 있고, 모달이 열려도 `inert`가 되지 않는다. 네이티브 `<dialog>`(showModal)가 열려 있으면 토스트를 그 dialog 안에 그린다. `<body>`로 그리는 모달(`AccessibleOverlay`)은 팬 화면에서 `data-fan-surface`를 받아 한국어 `keep-all` 줄바꿈을 따른다 | `components/fan-ui/fan-toast-viewport.tsx`, `top-layer.ts`, `components/ui/overlay/accessible-overlay.tsx` | 4회차 합침 QA |
 
-## 4. 숫자·아이콘 표기
+### 4. 숫자·아이콘 표기
 
-### 숫자 (S4, 2026-11-09 갱신)
+#### 숫자 (S4, 2026-11-09 갱신)
 1. 보상은 `+20P` 하나(행 오른쪽 열, 15/700 잉크). 진행은 `0/3`(12 muted) + 2px 막대. `×N`·`N번 남음`·`N명까지` 표기 폐기(N20 유지).
 2. **참여 수**(팬 수·좋아요·댓글·조회·하트 합계)는 10,000 이상 `12K`/`1.2M`(소수 1자리, 끝 0 제거; 1만 미만 전체 자릿수 `하트 1,240`). **내 자산**(포인트·응모권·스탬프·하트)·금액은 전체 자릿수. `data-metric="count|asset"`.
 3. 0은 잔액·진행에서 보이고(`0 P`·`0/9`), 카운터·배지에서는 숨긴다. `—`는 비로그인 잠금에서만.
@@ -294,14 +569,14 @@ A2 버튼 반경 알약·높이 390 44 / 1024+ 48 · B2 칩 36·14/700·반경 �
 7. 투명성: 잔액 옆 내역 진입, 리셋 시각(`/api/me/dukjil/today`의 `resetAt`), 집계 기준·마감(`/api/rankings/home`의 `period`·`closesAt`·`computedAt`), `업데이트 HH:MM`(핵심 규칙 표 "자산 투명성" 행). 홈 랭킹은 오늘(KST) 기준표를 10분마다 다시 쓰므로 `period`는 `day`다.
 8. `tabular-nums`·폭 예약 유지.
 
-### 아이콘 (8장 ⑫)
+#### 아이콘 (8장 ⑫)
 - **UI 아이콘은 lucide 단일 세트, `strokeWidth` 1.5, 16·20·24만**, `FanIcon` 경유(N25). 코인·티켓·하트도 lucide(`Coins`·`Ticket`·`Heart`), 하트만 채움 `--color-accent`. 이모지 0(C10). 기본 Material·Pencil 헤더 아이콘 0.
 - 도장 아트(`stamps/ink-v1`)는 아이콘이 아니라 **스탬프 그림**: 패스포트·완료 연출(`stamp-slam`)에서만, `data-art="stamp"`. 미션 행 아이콘은 lucide 매핑(글쓰기 `Pencil`, 댓글 `MessageCircle`, 공유 `Share2`, 공감 `Heart`, 출석 `CalendarCheck`, 초대 `UserPlus`, 인증 `BadgeCheck`, 퀴즈 `HelpCircle`, 라이브 `Radio`, 설문 `ClipboardList`).
 - 아이콘 컨테이너는 선 1px 원/사각(채움 0).
 - 용어: 한국어 화면은 **`스탬프`**만 쓴다(`도장`·`Stamp` 단독 표기 금지). 영어는 Stamp, 다른 언어는 기존 stamp 번역(덕질 용어 `dkgStamp`). 사용자 결정 2026-11-08 13:05. 약관·계정 삭제 안내·온체인 계약 이름의 `Stamp`는 그대로 둔다.
 - 글자 없는 아이콘 버튼에는 `aria-label`과 `FanTooltip`을 둔다.
 
-### 4-2. 문구 규칙 (2026-11-09 신설)
+#### 4-2. 문구 규칙 (2026-11-09 신설)
 1. 내비·탭·섹션 제목 = 한국어 명사 **2~7자**. 영문 섹션 0. 허용 목록: 제품 식별자 `HOME`·`MY`(8장 ⑪), `LIVE`·`DM`·`QR`, 브랜드명.
 2. 버튼 = 동사 2~6자(`교환`·`응모하기`·`팬 순위 보기`). 버튼 안 조건·수단 문구 0(`광고 보고` 0). 화살표 글리프 0.
 3. 상태 = 값 + 조건(`응모 가능 3장`·`4개 남음 · 자정 리셋`). 설명형 상태(`지금 N번 가능`) 0.
@@ -310,7 +585,7 @@ A2 버튼 반경 알약·높이 390 44 / 1024+ 48 · B2 칩 36·14/700·반경 �
 6. 가운뎃점은 메타 한 줄(`출처 · 일시`, `기간 · 마감`)에만, 값 2개 이상은 라벨-값 행. 대문자 영문 라벨 0(`text-transform: uppercase` 0).
 7. 외부 원문 보존·법률 문구 예외는 `roles/skills/kyaa-copy.md` 그대로. 점검 `scripts/copy-lint.mjs`(5차 B 담당, 이 커밋 기준 미작성).
 
-## 5. 기계 규칙과 실행 명령
+### 5. 기계 규칙과 실행 명령
 
 ```
 node scripts/design-lint.mjs                              # 기준선 비교(기본). 새 위반만 실패, 종료 코드 1
@@ -332,7 +607,7 @@ node apps/web/scripts/measure-r3.mjs --base http://127.0.0.1:3001 --out <dir> [-
 
 **기준선(`scripts/design-lint-baseline.json`) 다시 만들기**: 다른 묶음의 큰 화면 변경이 합쳐진 뒤 한 번만 `node scripts/design-lint.mjs --update-baseline`을 실행하고, **줄어든 숫자만** 커밋한다. 새 위반을 가리려고 올리지 않는다. 오탐이면 기준선을 올리지 말고 규칙을 고치거나 해당 줄 위에 `/* design-lint-disable N4 */`(N4에 한함, 지금은 히어로 배너 1곳)를 쓴다. 규칙 추가·수정 절차는 `docs/design/review-rules-261107.md` 끝 절.
 
-## 6. 설계와 다르게 한 것
+### 6. 설계와 다르게 한 것
 
 | 설계 | 한 것 | 이유 |
 |---|---|---|
@@ -361,7 +636,7 @@ node apps/web/scripts/measure-r3.mjs --base http://127.0.0.1:3001 --out <dir> [-
 
 측정은 `next dev` 로컬 합성 데이터이며 운영 수치가 아니다(번들은 `next build`). 전후 표와 원자료는 보드 `reports/doc-261107-2-s-perf.md`. 덕질 비로그인 CLS 0.42는 기준 커밋부터 있던 값이다(S 변경과 무관).
 
-## 7. 바뀐 옛 규칙
+### 7. 바뀐 옛 규칙
 
 | 옛 규칙 | 지금 | 이유 |
 |---|---|---|
@@ -389,7 +664,7 @@ node apps/web/scripts/measure-r3.mjs --base http://127.0.0.1:3001 --out <dir> [-
 | 덕질 6칸 지갑 | 잔액 + 라벨-값 3 | 시안·R1 |
 | 1,360 전폭 | 1,100 | R4 |
 
-## 8. 폐기 목록 (2026-11-09, 구현 체크리스트)
+### 8. 폐기 목록 (2026-11-09, 구현 체크리스트)
 
 | 종류 | 폐기 | 대체 | 상태(5차 C1 `aa9eec628` 기준) |
 |---|---|---|---|
@@ -399,7 +674,7 @@ node apps/web/scripts/measure-r3.mjs --base http://127.0.0.1:3001 --out <dir> [-
 | CSS 패턴 | `linear-gradient`(로고 제외), `box-shadow`(오버레이 토큰 외), `border-radius` 직접값(10·20 등, 역할 토큰 `--radius-pill|card|media|small`로 대체), `text-transform: uppercase`, `border-left` 액센트 바, 아이콘 뒤 채움 배경, `animation` 반복(모듈·스켈레톤 외), 개별 `keep-all`, `Pretendard UI` 참조 | 토큰·전역 | S1·N26·N27(집계)·N28로 추적. 목표 `Pretendard UI` 참조 0(현재 globals·e2e 하니스에 남음) |
 | 문구 키 | 도움말 키(`walletHelpCopy`·`stanHeartHelp` 등), `오늘 N번 남음`·`N명까지`, `Kyaa. Every Fan Moment Counts.`(홈 본문), `모은 포인트 사용하기`(B13에서 삭제: 모임 홈은 `포인트·응모권` 제목 + `내 포인트 보기` 링크). `광고 보고 교환하기`는 B13(2026-11-09 사용자 확정)으로 유지, 폐기 대상 아님 | `/guide/dukjil` 사실 표, `0/3` | A·B |
 
-## 9. Responsive system (2026-11-10, C5 — 일관되고 규칙적이고 객관적이고 계산된 PC↔모바일)
+### 9. Responsive system (2026-11-10, C5 — 일관되고 규칙적이고 객관적이고 계산된 PC↔모바일)
 
 근거: Tailwind·Primer·Android 창 크기 클래스·Every Layout·NN/g·Baymard·WCAG·GOV.UK·Carbon 등 17개 출처와 Weverse·YouTube·Threads·Billboard 실측. 아래 표가 새 작업의 기준이며 기존 값 중 맞는 것은 유지했다. 측정은 `apps/web/scripts/measure-responsive.mjs`(R12).
 
@@ -420,7 +695,7 @@ node apps/web/scripts/measure-r3.mjs --base http://127.0.0.1:3001 --out <dir> [-
 
 - **글 상세(R9 ⑤, 2026-11-11 사용자 "게시판 좌우 여백이 어색함. 다른 글 추천이 뜨면 좋을 것 같다", 대표 "여백은 광고 배너 자리로도")**: ≥1024에서 본문 `--band-read`(720) + 레일 `--rail-md`/`--rail-wide`(360/384), 간격 `--col-gap`, 둘을 셸 안 가운데. 레일은 `PostDetailMore`(`features/fan-posts/ui/post-detail-more.tsx`): '이 페이지의 다른 글' 인기(주간)·최신(팬 글) 세그먼트, 지금 글을 뺀 5행(사진 64×48 또는 페이지 이미지·제목 원문 2줄·채운 하트/댓글 `ReactionIcon` 수, 0은 그리지 않음), 행 수 높이 고정(모자라면 막대 없는 빈 줄, 막대는 불러오는 중에만), 다른 글 0이면 목록 접힘, 그 아래 `BannerSlot fanpage_second`(배너 없으면 자리 없음, 브랜드 페이지는 배너 없음). 레일은 사이트 헤더 아래(`--fan-header-height`+24)에 sticky, 배너가 있고 화면 높이 <960이면 고정하지 않음(배너가 잘리지 않게). <1024는 본문·댓글 아래 같은 레일. 레일 안 모든 조작은 44×44(세그먼트 칸은 보이는 32에 테두리 바깥까지 넓힌 누르는 영역).
 
-### 현재 코드와 충돌하는 곳 (2026-11-10 조사, 이번 작업에서 고치지 않음)
+#### 현재 코드와 충돌하는 곳 (2026-11-10 조사, 이번 작업에서 고치지 않음)
 - **레일 폭 밖의 값**: `components/fan-participation-guide/fan-participation-guide.module.css:53`(580) · `components/us-fanmeetings/us-fanmeetings-page.module.css:446`(400) · `features/benefit/ui/creator-raffles-screen.module.css:9`(350) · `components/admin/group-admin.module.css:60`(320) · `features/group-capsule/capsule.module.css:45,49`(304·320) · `features/group-raffle/raffle.module.css:1`(304) · `features/groups/ui/group-activity-frame.module.css:1`(304) · `features/groups/ui/groups.module.css:147`(312) · `features/community/ui/community.module.css:25,48`(280·260) · `components/notice/notice-detail.module.css:28`(264) · `features/group-wallet/ui/wallet.module.css:33,37`(248·264). 288·360은 R4와 일치(`celebrity-fan-page.module.css:148,152`, `wave-programs.module.css:37`, `groups.module.css:101,114,202`, `wallet.module.css:43,47`).
 - **레이아웃 간격이 단계 밖**: `features/group-wallet/ui/wallet.module.css:37`(`gap:56px`), `features/groups/ui/group-mission-screen.module.css:2`(`gap:20px`).
 - **띠 폭 밖의 max-width**: `components/service-guide/service-guide-page.module.css:9,84`(760) · `components/notice/notice-detail.module.css:2`(840; 같은 파일 :44는 720) · `components/onchain/onchain-public-page.module.css:21`(820) · `components/admin/runmusic-manager.module.css:1`(1100, 관리자).
@@ -428,7 +703,7 @@ node apps/web/scripts/measure-r3.mjs --base http://127.0.0.1:3001 --out <dir> [-
 - **구간 경계 불일치**: `components/us-fanmeetings/us-fanmeetings-page.module.css:488`(`max-width:1199px`, 경계 1280 아님). 767·1023 쿼리 292곳(N34 기준선 `scripts/design-lint-baseline.json`) 전부가 R1 전환 대상.
 - 셸 1440·여백 16/32/40(`globals.css` `--shell-max-width`·`--shell-inset`)은 R2와 일치.
 
-## 2026-11-12 운영 핫픽스 H1 (사용자 11/12 12:35)
+### 2026-11-12 운영 핫픽스 H1 (사용자 11/12 12:35)
 
 - **포인트 표시 하나**: 포인트를 주는 모든 버튼(좋아요·싫어요·공유·댓글 보내기·글쓰기)은 `EarnBadgeCorner`(버튼 오른쪽 위에 걸친 노란 코인 배지 20px) 한 부품, 한 자리다. 줄 안에 따로 놓는 `+NP` 인라인 배지는 포인트를 주는 버튼 옆에 쓰지 않는다. 정책 행동은 `action`, 조건을 호출부가 정하는 행동(공유)은 `points`로 부른다.
 - **싫어요도 같은 지급**: 좋아요와 싫어요는 같은 `reaction` 행동·같은 하루 한도·같은 글 기준(`post-like:<글 id>`)으로 지급한다. 한 글은 어느 쪽이 먼저든 한 번만 주고, 취소·바꿔 누르기로 다시 주지 않으며, 자기 글은 주지 않는다. 반응이 없는 글에서만 두 버튼에 배지를 보인다.
@@ -436,9 +711,9 @@ node apps/web/scripts/measure-r3.mjs --base http://127.0.0.1:3001 --out <dir> [-
 - **팬페이지 머리 칩**: 팬 인증·좋아요 칩과 내 등급 줄을 높이 28(누르는 영역 44)로 맞춘다. 칩 둘이 같은 줄에 먼저 오고 등급·SNS 아이콘이 다음 줄이다.
 - **홈 배너(안내 그림)**: 그림이 칸을 못 채우는 좌우 여백은 검정이 아니라 `--color-accent`(데스크톱 바탕)와 같은 그림의 흐린 복사본(모바일)이다. 데스크톱 글 버튼은 흰 바탕·`--color-accent-ink` 글자.
 
-# 상세 이력 (기존 전체 내용, 삭제하지 않음)
+## 상세 이력 (기존 전체 내용, 삭제하지 않음)
 
-## 2026-11-09 핵심 표에서 내린 행 (브리프 v1.1 8장으로 대체됨, 원문 보존)
+### 2026-11-09 핵심 표에서 내린 행 (브리프 v1.1 8장으로 대체됨, 원문 보존)
 
 | 역할 | 기준 값 | 공통 소유자 | 근거 / 상태 |
 |---|---|---|---|
@@ -462,7 +737,7 @@ node apps/web/scripts/measure-r3.mjs --base http://127.0.0.1:3001 --out <dir> [-
 | 내 응모 결과 패널·공개 h2 | 결과 패널 상태 h2: 390 20px, 768+ 24px, 굵기 850, 줄 높이 1.2(구역 제목 h2 규칙과 동일). 공개 연출 초대 h2 24px/850/1.35 | `features/benefit/ui/raffle-result-panel.module.css` `.status h2`, `raffle-result-reveal.module.css` `.invitation h2` | 2026-11-06 DESIGN-FIX-5: 전 패널 1440 26px/700/normal·390 20px/700 → 20/24px·850·1.2. 강조 역할로 두지 않고 h2 규칙에 맞춤 |
 | 역할 토큰(이름만, 값 변경 없음) | 분홍 `--color-accent` #d11b62·`-soft` #fff0f6·`-line` #f4c3d7·`-ink` #ad1457, 코인 `--color-coin` #ffc83d·`-ink` #4a3500, 금박 `--color-foil` #b8975a, 그림자 `--shadow-overlay`(0 8 24 검정 8%)·`--shadow-dialog`(0 16 48 검정 16%), 배지 글자 `--fan-badge-size` 12, 사이드 보조 제목 `--fan-aside-title-size/-weight` 16/650, 시간 `--motion-reward` 600·`--motion-count` 400·`--motion-exit` 120, `--z-toast` 58 | `app/globals.css` | 261107-2 S1. 화면마다 직접 쓰던 값에 이름만. 새 코드는 hex 대신 토큰 |
 
-# Design System: kyaa Fan Pulse Spectrum
+## Design System: kyaa Fan Pulse Spectrum
 
 <!-- Maintenance note (2026-09-05): This document describes the Fan Pulse
 Spectrum foundation, not a verified 1:1 specification of every current byus.kr
@@ -471,7 +746,7 @@ also live in feature CSS modules. Check deployed source and rendered desktop /
 mobile states before claiming full alignment. Preserve intentional surface-specific
 differences when consolidating tokens and components. -->
 
-## Current shared content contract (2026-10-09)
+### Current shared content contract (2026-10-09)
 
 - A section reads in this order: heading with secondary navigation, description, filters, content. `FanSectionHeader` owns its `{ label, href }` action: the heading and action align in one wrapping row, and supporting copy sits below both. The title has a flexible 10rem basis; long translated actions wrap naturally. Never shrink the title to fit a translation.
 - Section headings use 20px on mobile and 24px from 768px; item names use 16px/700, body copy 16px, metadata 13px. Related copy has 4–8px gaps, subgroups 16px, and major sections 32px/48px. Existing hero artwork/display type remains independent.
@@ -482,7 +757,7 @@ differences when consolidating tokens and components. -->
 - All `APP_LOCALES` use the same composition. Use native language wrapping, flexible heights, and complete accessible labels; do not encode Korean/English-only layout branches. CMS content fallback and proper names retain their existing semantics.
 - For shared composition changes, verify affected home/community screens at 390px and 1440px for every supported language, plus 360px and 768px for Korean, Japanese, Vietnamese and Thai. Read the locale list from current `APP_LOCALES` and cover new scripts/directions when supported. Include applicable guest/owner/loading/empty/error states, long names, keyboard menus, locale switching and fixed-navigation clearance. Scope local changes to their actual impact and reuse unchanged valid evidence.
 
-### Compact community (2026-10-28)
+#### Compact community (2026-10-28)
 
 - `/community` groups the shared 20/24px page heading, separator and 16px creator selector in one wrapping row. The selector and all links keep 44px targets. Fan page and LIVE remain secondary destinations. Remove the large creator box, repeated intro/board heading and redundant posting-prompt sidebar card so reading reaches the feed sooner.
 - Community tabs use an 8px top/16px bottom margin; the feed controls and composer are separated by 16px. The media filter uses the shared 12px filter corners and preserves locale, creator and media context through tabs, sidebar links, post details and login. Photo/video-only results are filtered before server pagination; no visible matches use the existing recoverable empty state.
@@ -492,7 +767,7 @@ differences when consolidating tokens and components. -->
 - Group board list (`GroupBoard` full list, `groups.module.css` `.fullBoardList .postRow`, 2026-11-05 F20): rows use `min-height:44px` with 6px vertical padding on desktop (measured 1440: 44px, was 52px) and 6px padding with a 3px row gap below 768px (measured 390: 53.5px, was 58.5px), matching the fan-page board. Long titles stay on one line with an ellipsis so height holds. Notice titles are 750 against 650 for normal titles; the grey notice ground and the plain-text `공지 ` prefix before the title (no chip; unchanged by F20, also shown on dev) stay. The group board has no shared CSS owner with `CompactFeed`, so these values are set in its own module.
 - Fan-page board and popular-post rows (`CompactFeed`): a 36×24px thumbnail (radius 4px, `#f3f3f3` ground, 14px Lucide icons) precedes each title inside the existing 24px line, so row height does not grow (measured 390: 53px, 1440: 45px, the same as without thumbnails). The first photo uses a cover crop of the authorized `?size=thumbnail` asset with lazy loading; the failed or loading status stays `visibility:hidden` so lazy loading still fires and the icon shows. Video-only posts show a Play mark, posts without media a same-size ImageOff placeholder, and notices a FileText mark; none carries visible text, only a screen-reader name on photo and video. Notice titles are bold (700) and keep the notice tag. Views show `—` when the server sends no `viewCount`.
 
-### Content and navigation refinements (2026-10-04)
+#### Content and navigation refinements (2026-10-04)
 
 - Home previews only Passports whose creators are in the current published directory; the explicit Passport count and carousel use that same set. A directory failure shows a recoverable error and a collection link, never a misleading empty collection. The owned collection and historical records remain intact and accessible from MY/Passports. A managed announcement CTA describes and opens its actual destination; creator welcome banners may link directly to the creator home.
 - Creator home is a summary. Full conversation, news and media belong to their named tabs; a personal fan activity card appears on home only. Nicknames wrap without competing with attendance, tier or growth controls. The creator's Fan board remains inside that creator's page, and detail, sign-in and back navigation preserve the originating board and language.
@@ -509,7 +784,7 @@ differences when consolidating tokens and components. -->
 - Notifications use the shared Primary action for enabling browser notifications and a Neutral action for marking all read. Unread counts, dots and permission icons use the existing Spectrum Ink and subtle focus surface; status is also conveyed through labels and weight.
 - These refinements reuse the existing kyaa brand. Public Weverse artist tabs and b.stage community/MY references informed separation of summaries, feeds, media and settings; they do not establish kyaa membership rules or authentication behavior. Source examples: [Weverse artist home](https://weverse.io/enhypen/highlight), [Weverse media](https://weverse.io/enhypen/media), [b.stage community](https://bigbang.bstage.in/community), [b.stage My Posts & Activity](https://bstage.in/article/bstage-tips-7-en/).
 
-### Creator board and unified feed (2026-10-09)
+#### Creator board and unified feed (2026-10-09)
 
 - Creator pages have five primary destinations: Home, Board, Fan verification, Events and Fan leaderboard. Board contains Feed, Official media and LIVE. Keep the creator, language and originating board filter when entering details or signing in; legacy news, media, LIVE, lounge and cheer links resolve to their corresponding destination.
 - Feed is one chronological conversation combining official posts, fan posts and existing cheers, with All, Official and Fan posts source filters. Pinned standard notices precede pinned welcome notices; an unpinned welcome notice follows its publication time. Use one existing composer in All and Fan posts. Each content type keeps only its supported reactions, comments and owner actions.
@@ -517,7 +792,7 @@ differences when consolidating tokens and components. -->
 - Official media uses three columns on desktop, two on tablet and one on mobile. Keep a purposeful empty state with a filter reset or Feed destination; a failed source has a retry action while successful content remains visible. Official channels stay available above the grid.
 - A new fan post shares the existing one-time first-comment reward eligibility with cheers and notice comments. Do not suggest a new score reward or retroactively reward existing fan posts. Existing content and reward history remain intact.
 
-### Completion requires a visual finish review
+#### Completion requires a visual finish review
 
 - Image work must follow the repository-wide [image framing and review contract](docs/design/image-framing.md), including its role owners, deliberate-space exceptions, loaded mobile/desktop evidence and access-gap reporting. This applies to new screens and source replacements as well as existing UI.
 - Approved exception (judge: orchestrator, 2026-11-05): the passport card slot (`CreatorImage presentation="passportCard"`, 92×108) shows the landscape Kara group photo with `contain` so all five members are visible, on the card frame colour `#f6f6f5`. It applies only to the registered Kara source; other creators, 40px avatars and other slots keep the `portrait` behaviour. Reason, scope and captures are recorded in the "승인된 예외" section of [docs/design/image-framing.md](docs/design/image-framing.md).
@@ -527,7 +802,7 @@ differences when consolidating tokens and components. -->
 - Check translated and long content without shrinking type/targets or hiding meaningful information. Inspect active keyboard focus in Portal menus as well as the surrounding page, and inspect open dialogs for padding, clipping, safe-area and fixed-navigation conflicts. Focus ownership or automated accessibility passes alone do not prove visible focus or aesthetic quality.
 - Keep evidence tied to the changed screen, width, locale and state. Loading-only captures, repeated identical portraits or isolated component fixtures cannot certify a whole page. Report functional checks and visual judgment separately; disclose incomplete states and unresolved material issues. No score or token check guarantees beauty.
 
-## Brand copy (2026-10-13)
+### Brand copy (2026-10-13)
 
 - The approved slogan is `Kyaa. Every Fan Moment Counts.` in every locale. Home displays `Kyaa.` with `Every Fan Moment Counts.` immediately beside it as a smaller 13px slogan, baseline-aligned with an 8px gap and natural wrapping on narrow screens (2026-10-21 user request); the old LIVE tagline is removed. Keep the full slogan for the default page/share title, installed app name, and guide footers. Preserve the existing kyaa wordmark artwork.
 - Current partner banner copy uses `NCHIVE × Kyaa` and `WELCOME TO KYAA`. Internal identifiers, legacy URLs, and historical records retain their existing names.
@@ -536,32 +811,32 @@ differences when consolidating tokens and components. -->
 - The v2 `passport.png` is the standalone representative Passport illustration. The functional Passport canvas remains the fully opened nine-slot record book with its data-driven Stamp overlays and latest-nine semantics; do not place a nine-item grid over the representative illustration's six embossed slots or reduce visible records to match it. Current state (2026-11-07): the small places (home, MY, group side, issuance, login, guides) draw `public/images/passport/passport-open-book.svg`; the detail screen draws a CSS book with page turns instead of this canvas. See "doc-261107 묶음 계약".
 - MY keeps owned Passports, points, tickets and entry history for unpublished fan pages, while hiding public participation links and requests that would lead to an unavailable page.
 
-## Intent
+### Intent
 
 The system is an image-first fan utility: editorial artist imagery creates emotion, while quiet product surfaces make reservation, login, discovery, and Passport tasks immediately understandable. Current approved role contracts below guide new UI. Historical extraction notes describe their original evidence, not current deployment status.
 
-## Color
+### Color
 
 Use a White and Near Black shell with a `single-gradient-highlight` strategy. Reserve the filled pink-to-violet Spectrum Relay for the current surface's single most important next action. Google, Passport, and repeated LIVE-row context actions may reuse the relay as a 1px outline with a high-contrast solid Spectrum Ink label; neutral utility surfaces must not compete with artist photography.
 
-## Typography
+### Typography
 
 Use Pretendard Variable throughout product UI. Apply the exact hierarchy, weight, line-height, and tracking rules documented below; countdown numerals use a monospace stack with tabular figures.
 
-## Image
+### Image
 
 Use face-legible, editorial, full-color artist photography. Preserve the approved hero crop and Home's inset square favorite artwork within a Gallery Gray field from 768px. Below 768px, Home favorite artwork fills its square frame while preserving the registered crop. The `/celebrities` directory uses full-bleed portraits: 5:4 for approved cover crops on mobile and square from 768px; mobile full-image (`contain`) sources use their natural ratio, retaining the registered image source and focal position. Role filters use 12px rounded rectangles with at least 44px touch targets; search and sort render at the same 14px label size. Use only the fully opened identity-and-stamp Passport asset.
 
-## Surfaces
+### Surfaces
 
 Use 12px controls, 16px collections, and a 20px hero with 1px neutral hairlines and short two-layer micro-shadows. Avoid dark utility cards, glassmorphism, nested cards, and decorative color surfaces.
 
-## Interaction
+### Interaction
 
 Maintain 44px minimum targets, a 3px Near Black `focus-visible` outline, 160ms control feedback, and 240ms object or layout transitions. Adjacent icon-only actions, including Home celebrity social links, use optically centered 20×20px visible marks inside separate 44×44px targets with no inter-target gap. Never overlap or shrink the targets to achieve visual density. Collapse transitions for reduced-motion users.
 2026-11-05 예외 — 모임 찾기 상단 슬라이드 점: 버튼 32×44px, 점 8px. 이유: 사용자가 점 간격을 좁히라고 명시했고 인접 타깃과 겹치지 않는다. 다른 컨트롤에는 적용하지 않는다.
 
-## Locked Contract
+### Locked Contract
 
 Preserve the Korean copy, artist identities, live data, Google login treatment, opened Passport lifecycle copy, and responsive panel behavior. The global fan information architecture is `HOME · 커뮤니티 · 최애 · MY` on desktop and mobile: HOME routes to `/`, 커뮤니티 to `/community`, 최애 to `/celebrities`, and MY to `/my`. Passport, benefits, notifications, and settings are MY sub-surfaces and keep MY active. Focused login, onboarding, verification and Passport issuance flows may use the compact Focus Header; it still carries the main header's language icon (`FanLanguageSwitch compact` via `FocusFlowFrame languageSwitch`, inside the start dialog when that dialog covers the header, and beside Close in the login overlay) because N19 has no focus-flow exception. LIVE missions and the LIVE survey use the main fan shell (`FanAppFrame`) like the LIVE detail they return to, with `← LIVE로 돌아가기` above the content (2026-11-08, evaluator round 2 defects 5·6); the Elina art-mission campaign keeps its own campaign header. The hero remains the sole dominant visual surface, while the active surface's one most important next action may use the gradient-filled Primary treatment.
 
@@ -576,11 +851,11 @@ The Home hero viewport has a 1.5px Spectrum outline with a pink-white-violet hig
 Scheduled LIVE countdowns share a vivid pink accent (`#be185d`), with a pale pink fill (`#fff1f7`) and fine pink border on MY and badge variants. Calendar text variants keep their compact unboxed layout. On Home photography, use pale pink text (`#ffd0e6`) on a dark translucent pill. A 7px dot and expanding halo pulse every 1.8s while a future LIVE is visible and active; the time text stays steady. Hidden/inactive countdowns and elapsed scheduled starts do not pulse, and reduced-motion disables both dot and halo animation. Keep existing KST date/countdown semantics and server-confirmed LIVE status.
 
 
-## 운영 통일 체계 (2026-11-10, PROD-DS-1958)
+### 운영 통일 체계 (2026-11-10, PROD-DS-1958)
 
 사용자 [운영] 요청 "gap·글자·margin·padding·layout·component 체계 통일"에 따라 운영 트리 기준으로 숫자를 고정한다. 아래 값은 `apps/web/app/globals.css` 토큰이 소유하며, 새 CSS는 토큰만 쓴다(일회성 px·hex·radius 금지). 이 절이 아래 옛 서술과 충돌하면 이 절이 이긴다. 전수 감사표: `~/.local/share/kyaa-t3/board/tasks/prod-ds-1958/audit.md`.
 
-### 글자 역할표
+#### 글자 역할표
 | 역할 | 크기 (390 / ≥768) | 굵기 | 행간 | 토큰 |
 | --- | --- | --- | --- | --- |
 | 화면 제목(h1) | 20 / 24 | 850 (editorial 800) | 1.2 | `--fan-heading-size`, `--fan-heading-size-wide` |
@@ -594,17 +869,17 @@ Scheduled LIVE countdowns share a vivid pink accent (`#be185d`), with a pale pin
 
 한 컴포넌트 안 글자 크기는 3단 이하(예: 카드 = 16 / 13 / 13).
 
-### 간격 단계 (4/8)
+#### 간격 단계 (4/8)
 - 단계: 4·8·12·16·20·24·32·40·48·64만 (`--space-1`…`--space-16`). 20은 부품 안쪽만.
 - 섹션 사이: 32 (390) / 48 (≥768) — `--fan-section-gap`·셸 소유.
 - 섹션 제목 → 내용: 16 (`.sectionHeader` margin-bottom). 칩 줄 → 목록: 16.
 - 섹션 안 목록 간격: 카드 레일 16, 칩 8, 행 목록 8~12.
 - 카드 안: 미디어 → 이름 12, 이름 → 보조 4, 보조 → 행동 줄 4(행동 줄 자체가 44 높이라 눈에 보이는 간격 ≈16).
 
-### radius 단계
+#### radius 단계
 0 · 12(`--radius-control`: 입력·작은 카드·행) · 16(`--radius-collection`: 카드·카드 미디어) · 20(`--radius-hero`: 배너) · pill(`--radius-pill`: 칩·주 행동·아이콘 버튼). 그 밖의 값(4·6·10·14 등)은 신규 금지.
 
-### 폭·여백·열 수
+#### 폭·여백·열 수
 | 화면 폭 | 바깥 여백 | 본문 열 | 보조 레일 | 카드 레일 보이는 장 수 | 카드 격자 열 |
 | --- | --- | --- | --- | --- | --- |
 | 390 | 16 | 358 | 없음 | 1장 + 다음 장 일부(288) | 1 |
@@ -613,7 +888,7 @@ Scheduled LIVE countdowns share a vivid pink accent (`#be185d`), with a pale pin
 | 1440 | 40 | 944 | 384 | 3 (304) | 3 |
 최대 폭 1440. 읽기 밴드 720, 목록 밴드 920(board/research/responsive-system.md).
 
-### 공통 컴포넌트
+#### 공통 컴포넌트
 - **섹션 헤더** `FanSectionHeader`: 제목 왼쪽, 같은 줄 오른쪽 끝에 보조 링크(14/650, 쉐브론 16). 화살표는 헤더에 두지 않는다(아래 캐러셀). 설명 문장(`description`)은 쓰지 않는다. 남은 호출은 kyaa wave 행사 화면의 상태·규칙 문구뿐이며 감사표에 후속으로 기록.
 - **캐러셀(2026-11-10 19:28 [운영] 추가)** `FanCarouselFrame` + `FanCarouselIndicator`(apps/web/components/fan-ui/fan-carousel.tsx) 하나로 홈 배너·내 패스포트·최애 카드에 적용.
   - 좌우 화살표: 콘텐츠 양옆의 자기 열(44 + 간격 8)에 세로 중앙으로 두고, 사진·배너 위에 겹치지 않는다. **홈 배너(`live-hero-carousel`)만 예외 — 사용자 2026-11-11 08:30("이미지 박스 안으로 … 여러 번 말했는데")로 배너 이미지 박스 안쪽 좌우 가장자리·세로 가운데에 둔다(누르는 자리 44가 가장자리에 닿고 원형 32 반투명 어두운 바탕·흰 아이콘 16이 6 안쪽).** 모바일(768 미만)은 그대로 숨김. 44 원형, `--color-soft` 바탕, 아이콘 20. 카드 레일은 사진 높이의 가운데에 맞춘다(`--fan-carousel-arrow-offset`). 배너·최애 카드는 768 미만에서 화살표를 숨기고 밀어서 넘긴다(동작 줄이기 사용자는 화살표 유지). 패스포트는 모든 폭에서 화살표를 보인다.
@@ -628,13 +903,13 @@ Scheduled LIVE countdowns share a vivid pink accent (`#be185d`), with a pale pin
 - **아이콘**: 기본 20(`--fan-icon-size`), 링크 쉐브론만 16. 한 줄의 아이콘은 같은 크기·같은 색(`--color-muted`). SNS 마크는 원본 모양을 마스크로 써서 단색 20. 하트는 미인증 = 회색 선, 패스포트 보유 = `--color-heart` 채움. 글자 색은 항상 잉크.
 - **스켈레톤**: 실제 카드와 같은 높이(미디어 + 이름 24 + 보조 20 + 행동 44).
 
-## 1. Visual Theme & Atmosphere
+### 1. Visual Theme & Atmosphere
 
 Fan Pulse Spectrum is a bright, image-first fan utility interface. A full-color KARA hero supplies nearly all of the page's visual intensity; the surrounding product UI stays white, neutral, and deliberately quiet. The composition pairs editorial entertainment imagery with disciplined product surfaces: generous whitespace, black display type, hairline borders, short micro-shadows, and one pink-to-violet conversion accent. The result should feel like a polished global fan platform rather than a promotional microsite or a dense dashboard.
 
 The page uses asymmetry only at desktop scale. The main content owns the visual narrative while a narrower sticky context panel handles logged-out actions. Below 1024px, that panel disappears and the experience becomes a single-column feed with a fixed four-item bottom navigation. Color is concentrated in photography, the primary reservation action, and restrained Spectrum outlines on repeated LIVE-row actions; utility cards do not compete with the hero.
 
-### Key Characteristics
+#### Key Characteristics
 
 - Image-first editorial hierarchy with one dominant 2:1 desktop hero.
 - White canvas, near-black text, soft neutral surfaces, and almost invisible borders.
@@ -643,7 +918,7 @@ The page uses asymmetry only at desktop scale. The main content owns the visual 
 - Large negative space between sections; dense information is organized inside compact rows rather than scattered labels.
 - Product utility and fandom emotion remain separate: photography carries emotion, cards carry tasks.
 
-## 2. Color Palette & Roles
+### 2. Color Palette & Roles
 
 | Role | Semantic Name | Value | Usage |
 | --- | --- | --- | --- |
@@ -662,20 +937,20 @@ The page uses asymmetry only at desktop scale. The main content owns the visual 
 | Highlight action text | Spectrum Ink | `oklch(45% 0.22 315)` | Solid accessible label, icon, and arrow on outlined highlight actions |
 | Body link | Brand Link | `#AD1457` (`--color-brand-link`, 6.96:1 on white) | Web addresses and links inside post, notice and CHZZK bodies: inherited size, 550 weight, 1px underline, Lucide Link2 16px; the icon stays with the first character when an address wraps |
 
-### Primary
+#### Primary
 
 - The interface is monochrome-first. White and Near Black define the product shell.
 - The Spectrum Relay is a conversion signal, not a decorative background. It appears at most once as a filled action in each active main or inert-isolated overlay. Google, Passport, and repeated LIVE-row actions may reuse it as a restrained 1px outline, but every action within the same repeated collection uses the same outline treatment.
 - Photography may be colorful, but no colored surface should be introduced merely to balance an image.
 
-### Interactive
+#### Interactive
 
 - Default interactive text inherits Near Black or Muted Ink according to hierarchy.
 - `:focus-visible` uses a 3px Near Black outline with a 3px offset. Exception (2026-11-04): the fan, hobby and brand page tab strips scroll horizontally below 1024px and would clip an outer ring, so their tab links move the ring inside (`-3px` offset) at that width. The fan tab keeps the 3px Near Black ring; hobby and brand tabs keep the group-role ring below. At 1024px and wider the strip does not scroll (`overflow:visible`) and keeps the default outer offset. Group-role exception (2026-11-05, recorded per owning file; values unchanged): the group screens do not share one ring. `apps/web/features/groups/ui/groups.module.css` uses a 2px `#d11b62` outline with a 3px offset for `.page :is(a,button,input,select,textarea)` (line 47), the `summary` toggles (lines 82, 90) and the image picker and application-type chips (lines 78, 123), a 2px offset for the social links (line 70), and 2px `#bd1258` with a 2px offset for the activity and room cards (lines 189, 195); `.sourceRaffleCreate` is 2px `#ad1457` with a 3px offset (line 319). The same 2px `#d11b62` / 3px offset is used by `group-collections`, `group-members`, `group-manage`, `group-settings-panel`, `group-report-manager`, `group-qualification`, `my-passport-hero`, `my-group-destinations` and `group-header-account` (`.profile`; its language, menu and close controls use a 2px offset) and by `group-wallet/ui/wallet.module.css` `.supportDialog`. 3px `#d11b62` with a 3px offset is `wallet.module.css` `.page`. 3px `#121212` Near Black is used by `wallet.module.css` `.walletPage`, `activity-evidence`, `task-panel.css`, `event-application-dialog`, `group-earnings` and `group-benefits` (offsets 2, 3 or 4px by control). 3px `#ad1457` is used by `group-home-source` pagination (2px offset), `group-rooms` and `creator-board-aside` (3px offset); 2px `#ad1457` / 3px by `artist-presence-dialog`. Smaller owners are `group-room-list` (2px near-black, 2px offset), `group-application-dialog` (3px `--color-focus`, 2px offset) and `creator-board-footer` (`--focus-width` ink). These are existing per-screen values kept as is; `#d11b62` is 5.19:1 against white (text 4.5:1, non-text 3:1 met). Fanpage role exception (2026-11-04): `apps/web/features/fanpage/ui/fanpage.module.css` line 7 (`.page :is(a,button,input,textarea):focus-visible` and `.dialog :focus-visible`) keeps the legacy pink 3px ring (`#ff2d87`, offset 4px) instead of the Near Black ring; contrast on white is 3.51:1 (non-text 3:1 met). Fan strip height includes the tab's 1px overlap with the divider so the bottom edge of the ring is not clipped.
 - Fine-pointer hover feedback runs for 160ms with `cubic-bezier(0.2, 0, 0, 1)`.
 - The gradient CTA darkens all three stops on hover; outlined Spectrum actions receive a faint Spectrum-tinted White surface while preserving their outline; neutral controls shift toward `oklch(97.5% 0 0)`.
 
-### Neutral Scale
+#### Neutral Scale
 
 - Canvas and card: `#FFFFFF`.
 - Gallery field: `#F6F6F5`.
@@ -684,16 +959,16 @@ The page uses asymmetry only at desktop scale. The main content owns the visual 
 - Muted text: `oklch(48% 0 0)`.
 - Primary text: `oklch(18% 0 0)`.
 
-### Surface & Overlay
+#### Surface & Overlay
 
 - Main canvas: solid White; no page gradient or ambient color wash.
 - Hero readability: two restrained black scrims, vertical and horizontal, fading to transparent before the image midpoint.
 - Text on hero photography uses a short `0 1px 3px` dark text shadow.
 - Passport asset uses a soft object drop-shadow rather than a surrounding colored panel.
 
-### Theme Modes
+#### Theme Modes
 
-#### Light Mode
+##### Light Mode
 
 - Background: Canvas White.
 - Surface: Canvas White with a Micro Hairline and short micro-shadow where separation is necessary.
@@ -701,27 +976,27 @@ The page uses asymmetry only at desktop scale. The main content owns the visual 
 - Accent: Spectrum Relay on the primary hero CTA.
 - Notes: this is the only observed and supported appearance mode.
 
-#### Dark Mode
+##### Dark Mode
 
 - Not observed and not implemented. Do not infer or auto-generate a dark palette from this document.
 
-### Shadows & Depth
+#### Shadows & Depth
 
 - Card micro-shadow: `0 1px 2px oklch(18% 0 0 / 0.05), 0 4px 12px oklch(18% 0 0 / 0.03)`.
 - Hero CTA shadow: `0 5px 8px rgb(58 18 55 / 22%)`.
 - Passport image: `drop-shadow(0 8px 14px rgb(23 25 28 / 7%))`.
 - Borders provide the primary separation; shadows confirm depth but never create floating islands.
 
-## 3. Typography Rules
+### 3. Typography Rules
 
-### Font Family
+#### Font Family
 
 - Primary: `"Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif`.
 - Google login control: `"Google Sans", Roboto, Arial, sans-serif`.
 - Numeric countdown: `ui-monospace, SFMono-Regular, Menlo, monospace` with tabular figures.
 - OpenType features: use `font-variant-numeric: tabular-nums` for changing timer values.
 
-### Hierarchy
+#### Hierarchy
 
 | Role | Font | Size | Weight | Line Height | Letter Spacing | Notes |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -738,7 +1013,7 @@ The page uses asymmetry only at desktop scale. The main content owns the visual 
 | Passport supporting line | Pretendard Variable | `13px` | `550` | `1.5` | `0` | Muted Ink |
 | Countdown | UI monospace | `14px` | `750` | Normal | `-0.02em` | Stable width; never use proportional numerals |
 
-### Principles
+#### Principles
 
 - Use weight contrast before introducing additional size tiers.
 - Korean headings are short, assertive noun phrases; subtitles explain value in one sentence.
@@ -746,9 +1021,9 @@ The page uses asymmetry only at desktop scale. The main content owns the visual 
 - Do not use the Bricolage wordmark font for UI copy. The custom wordmark remains an image asset.
 - Keep hero text high-contrast and left aligned; keep Passport empty-state copy centered.
 
-## 4. Component Stylings
+### 4. Component Stylings
 
-### Buttons and Links
+#### Buttons and Links
 
 - Primary CTA: at most one visible per active main or inert-isolated overlay; some surfaces need none. Use a 320px maximum width, 48px minimum height, full pill radius, Spectrum Relay fill, White text, Pretendard Variable 15px/800, optically centered label, and optional 18px leading/trailing icons. Labels are short verbs describing the immediate next action. Put necessary preconditions or destination details in helper copy 8px below at 13px/550 and connect it with `aria-describedby`.
 - Google login: 90% of card width, 52px minimum height, full pill radius, White fill, 1px Spectrum Relay outline, solid Spectrum Ink label, authentic multicolor G mark, centered label.
@@ -767,7 +1042,7 @@ The page uses asymmetry only at desktop scale. The main content owns the visual 
 - LIVE detail action rail: treat its title as a Page heading, not a Hero overlay title. Use 24px/800 on desktop and 20px/800 on mobile, 14px/550 schedule labels, 14px/750 schedule values, 24px between information groups, and 8px between the Primary and its 13px/550 helper.
 - Avoid parallel primary actions. The hero ends at “라이브 예약하기”; detailed information belongs downstream.
 
-### Cards and Containers
+#### Cards and Containers
 
 - Collection card: White, 16px radius, 24px desktop padding / 20px mobile padding, Micro Hairline, card micro-shadow.
 - Utility card and live row: White, 12px radius, Micro Hairline, card micro-shadow.
@@ -775,13 +1050,13 @@ The page uses asymmetry only at desktop scale. The main content owns the visual 
 - Desktop context cards stack with a 16px gap and remain visually quieter than the hero.
 - Nested colored cards are prohibited. Inner separation should use a media field, spacing, or a hairline.
 
-### Inputs and Interactive Controls
+#### Inputs and Interactive Controls
 
 - No form input was observed on this page.
 - Controls use an explicit 3px Near Black focus outline with 3px outer offset. The shared ContentActions/PostCard More menu items use a 3px inset outline (`-3px` offset) to stay inside the compact popup; report-dialog fields and actions keep the default outer offset. Portal content owns its product font and focus styling independently of the page frame.
 - Touch targets remain at least 44px even when the visible icon or label is smaller.
 
-### Navigation
+#### Navigation
 
 - Header: sticky White shell using the current shared header geometry, with 72px desktop height from 1024px (2026-11-11 대표 02:07 한 단계 축소; 88px 이전 값은 아래 기록). Preserve the compact mobile header and avoid duplicating historical extraction heights in new CSS.
 - Wordmark: 80px rendered image inside an 88×44px link target.
@@ -792,7 +1067,7 @@ The page uses asymmetry only at desktop scale. The main content owns the visual 
 - Desktop and mobile use the same four product destinations: `HOME`, `커뮤니티`, `최애`, `MY`. Do not replace them with section anchors or separate mobile-only labels.
 - `/passports`, `/stamps`, `/benefits`, `/notifications`, and `/settings` are MY sub-routes and render MY as the current top-level destination.
 
-### Image Treatment
+#### Image Treatment
 
 - Hero uses full-bleed high-resolution KARA photography with `object-fit: cover` and a slightly right-shifted focal position.
 - Home favorite cards fill one square 16px-radius media frame with the shared full-bleed portrait or preview at every width (2026-11-10 PROD-DS-1958; the earlier nested `#F6F6F5` gallery field is retired). The `/celebrities` directory fills its entire media area, 5:4 below 768px and square from 768px. Both use the shared per-creator framing. Mobile directory images requiring `contain` use a content-sized frame instead of 5:4 letterboxing; never promote an unapproved crop to cover.
@@ -800,7 +1075,7 @@ The page uses asymmetry only at desktop scale. The main content owns the visual 
 - Upcoming LIVE avatars reuse the corresponding artist imagery in circular 64px desktop / 56px mobile crops. (Home no longer has this block since 2026-11-09; the LIVE list, calendar and fan pages keep their own.)
 - Passport uses the fully opened identity-and-stamp-book image `passport-open-book.svg` with `object-fit: contain` in small places and a CSS book with page turns on the detail screen. It is never shown as a closed burgundy cover; the detail screen keeps only a cover band.
 
-### Distinctive Components
+#### Distinctive Components
 
 - Status Rail: UPCOMING outline pill plus date on one horizontal rail; the countdown sits below in monospace. Scheduled LIVE events use `D-{days} HH:MM:SS`, omitting the day prefix when less than 24 hours remain, and update once per second. Active events and countdowns that reach zero show `LIVE NOW`.
 - Favorite Gallery Collection: an unboxed section (same left edge as other Home sections, 2026-11-10) with image-led items; each item reads portrait → emphasized name → fan count → fan-detail and social actions. Keep the YouTube, TikTok, and Instagram mark shapes as one-ink 20px masks in full-size targets (2026-11-10).
@@ -808,9 +1083,9 @@ The page uses asymmetry only at desktop scale. The main content owns the visual 
 - Fan Passport Card: title/subtitle, opened Passport asset, lifecycle value copy, and login CTA in one quiet vertical composition.
 - Upcoming LIVE Row: circular avatar, identity/title/date block, right-aligned reservation metadata on tablet/desktop, and a 44px chevron action. (Removed from Home 2026-11-09; see "홈 블록 순서" in 안내·배너.)
 
-## 5. Layout Principles
+### 5. Layout Principles
 
-### Spacing System
+#### Spacing System
 
 - Base unit: `4px`.
 - Repeated spacing values: `4, 8, 12, 16, 20, 24, 32, 40, 48, 64px`.
@@ -819,7 +1094,7 @@ The page uses asymmetry only at desktop scale. The main content owns the visual 
 - Shared section headers use a 16px bottom gap. The optional secondary link wraps below when a 20rem title column and the action do not fit.
 - Dense components use 12–24px internal gaps; avoid arbitrary intermediate spacing.
 
-### Grid & Container
+#### Grid & Container
 
 - Maximum product width: `1440px`.
 - Shell width tokens (2026-11-09 shell-width): `--shell-max-width: 1440px` and `--shell-inset` (`16px` below 768px, `32px` from 768px, `40px` from 1280px), defined once in `app/globals.css`. The header inner container, the page body (`FanContentContainer`), HOME's own header and shell, the focus-flow and compact headers and the onchain header all read these two tokens, so the logo's left edge and the avatar's right edge line up with the body's first and last content edges at every width. Do not put a literal `1440px` or a `max-width` below it on an element that also carries the container class, and do not override the header inner `padding-inline`. Detail screens (fan page post, notice, group event, mission) start at the shell's left edge: the title, meta, body, reaction buttons and the comment block (head, composer card, list) share the tab row's left edge (at 1024px and wider the comment block drops its card inset; below 1024px it keeps it), and the fan page post column fills the cell next to the fixed 288px rail (gap 32px). The PC header (1024px and up) is one grid at every width: `minmax(0,1fr) auto minmax(0,1fr)` = logo | tabs | right group, so the tab group's centre equals the header's centre (measured 0px at 1024/1100/1200/1280/1300/1440/1920). Below 1400px the tabs use compact cells (gap 0, padding 8px; font 13px from 1024 to 1199px); the right group shrinks instead of moving the tabs. The mobile rule below 1024px is unchanged. The 덕질 body grid (`group-benefits.module.css`) is `minmax(0,1fr) 352px` with a 32px gap from 1024px and is not centered: the left column takes the remaining width, so the body's left and right edges equal the header's logo-left and avatar-right (measured 0px at 390/768/1024/1280/1440/1920/2560). Notices with a recent list use a `minmax(0,1fr) 264px` grid with a 48px gap; notices without one, group events and missions keep a 720px reading width but are left aligned. This replaces the centered 720px columns of FX-47 and UI-R10 F06. The participation guide, the US fan meetings page and the public live dashboard use the same tokens (their 100px/64px desktop insets are gone; their mobile insets of 20px are unchanged). Measured 1440/1920/2560: logo left = body left (40/280/600) and avatar right = body right (1400/1640/1960). Before this, MY's `.main { max-width:1232px }` narrowed the body on the same element as the 1440 container, and the groups header used 16px at 768~1023 and 40px at 1024~1279 while the body used 32px.
@@ -831,7 +1106,7 @@ The page uses asymmetry only at desktop scale. The main content owns the visual 
 - At 390px: 16px page insets and a 358px content column.
 - Desktop hero ratio: `16:8`; mobile hero ratio: `4:5`.
 
-### Whitespace Philosophy
+#### Whitespace Philosophy
 
 - Whitespace is the primary neutralizing force against colorful artist imagery.
 - After implementation, review spacing/alignment/type separately at the same viewport, locale, content and state before and after. Keep related title/description closer than separate actions; choose existing role tokens, not equal gaps to fill a frame. Preserve purposeful bottom-aligned card actions and approved image safety space. Record changed properties and values, then verify actual mobile/desktop composition alongside behavior and accessibility.
@@ -840,7 +1115,7 @@ The page uses asymmetry only at desktop scale. The main content owns the visual 
 - Left alignment governs discovery and live information. Center alignment is reserved for empty states and authentication prompts.
 - The right context panel stays sticky and task-focused rather than becoming a second scrolling content feed.
 
-### Border Radius Scale
+#### Border Radius Scale
 
 - Micro: `10px` for compact social buttons.
 - Standard control: `12px`.
@@ -849,7 +1124,7 @@ The page uses asymmetry only at desktop scale. The main content owns the visual 
 - Authentication CTA: `14px`.
 - Pill: `999rem` for navigation capsule, status, and primary CTA.
 
-## 6. Depth & Elevation
+### 6. Depth & Elevation
 
 | Level | Treatment | Use |
 | --- | --- | --- |
@@ -859,7 +1134,7 @@ The page uses asymmetry only at desktop scale. The main content owns the visual 
 | Hero | Full-bleed image plus internal black scrim | Primary live feature only |
 | Focus | 3px Near Black outline with 3px offset | Keyboard focus on every link and button |
 
-### Depth Principles
+#### Depth Principles
 
 - Use borders before shadows and micro-shadows before floating elevation.
 - The hero is visually dominant without an external shadow.
@@ -870,9 +1145,9 @@ The page uses asymmetry only at desktop scale. The main content owns the visual 
 - The footer remains normal-flow content and owns no viewport height, bottom-navigation clearance, or safe-area padding. `FanAppFrame`, `FocusFlowFrame`, standalone login, and standalone page layouts own the clearance required by their navigation and viewport context.
 - No glassmorphism, backdrop blur, ambient colored glow, or broad decorative shadow was observed.
 
-## 7. Do's and Don'ts
+### 7. Do's and Don'ts
 
-### Do
+#### Do
 
 - Let one strong artist image lead each viewport.
 - Keep utility surfaces white and separate them with hairlines and micro-shadows.
@@ -882,7 +1157,7 @@ The page uses asymmetry only at desktop scale. The main content owns the visual 
 - Use real social brand marks and face-legible, high-quality artist photography.
 - Present Passport as an opened record system with empty stamp capacity.
 
-### Don't
+#### Don't
 
 - Do not add colored card backgrounds to “balance” the hero.
 - Do not place multiple gradients, dark feature cards, or competing primary CTAs on the same screen.
@@ -892,9 +1167,9 @@ The page uses asymmetry only at desktop scale. The main content owns the visual 
 - Do not hide secondary information behind tiny hit areas or use icons below 44px without a larger target.
 - Do not fabricate dark mode rules from the light-only implementation.
 
-## 8. Responsive Behavior
+### 8. Responsive Behavior
 
-### Breakpoints
+#### Breakpoints
 
 | Name | Width | Key Changes |
 | --- | --- | --- |
@@ -903,7 +1178,7 @@ The page uses asymmetry only at desktop scale. The main content owns the visual 
 | Desktop | `1024–1279px` | Desktop header navigation appears; side context panel is visible and sticky; bottom navigation disappears; no panel toggle |
 | Wide desktop | `≥ 1280px` | 40px page inset, 384px context panel, 32px column gap; social controls remain icon-only |
 
-### Touch Targets
+#### Touch Targets
 
 - Standalone links and buttons maintain at least 44×44px interaction areas; inline prose links keep readable native line flow. Never shrink icon targets to fit a translation.
 - Adjacent icon-only actions maintain independent 44×44px hit areas with `0px` visual gap; hit areas must meet edge-to-edge but never overlap.
@@ -911,7 +1186,7 @@ The page uses asymmetry only at desktop scale. The main content owns the visual 
 - Bottom navigation divides the viewport into four equal-width targets with 64px minimum height.
 - Horizontal favorite cards use scroll snap and hide the scrollbar without disabling native touch scrolling.
 
-### Responsive Layout Strategy
+#### Responsive Layout Strategy
 
 - Desktop behavior: two-column shell with a 944px content column and sticky 384px context panel at 1440px.
 - Tablet behavior: single content column, compact header and bottom navigation; the side context and desktop header navigation are hidden below 1024px.
@@ -920,9 +1195,9 @@ The page uses asymmetry only at desktop scale. The main content owns the visual 
 - Live metadata: reservation count is hidden on mobile, leaving avatar, content, and action columns.
 - Reduced motion: all transitions are reduced to `0.01ms`, and smooth scrolling is disabled.
 
-## 9. Agent Prompt Guide
+### 9. Agent Prompt Guide
 
-### Quick Color Reference
+#### Quick Color Reference
 
 - Primary CTA: Spectrum Relay gradient.
 - Background: `#FFFFFF`.
@@ -932,11 +1207,11 @@ The page uses asymmetry only at desktop scale. The main content owns the visual 
 - Media field: `#F6F6F5`.
 - Status accent: `rgb(255 95 191 / 78%)`.
 
-### Quick Summary
+#### Quick Summary
 
 Build a white, image-first K-pop fan product with Pretendard typography, a dominant full-color editorial hero, and at most one pink-to-violet filled gradient CTA per active surface. Repeated LIVE-row actions may reuse that relay as a consistent 1px outline; keep all other utility surfaces neutral with 1px hairlines, 12/16/20px radii, and short two-layer micro-shadows. Use the shared 32px/48px section spacing and compact heading/optional-description groups with quiet secondary navigation. On wide screens, split the page into a large content column and a narrow sticky logged-out context panel. Below 1024px remove that panel and use fixed bottom navigation; below 768px use the existing horizontal snap collection where appropriate.
 
-### Example Component Prompts
+#### Example Component Prompts
 
 - Hero: “Create a 2:1 desktop live hero with full-bleed high-resolution artist photography, a restrained left-and-bottom black scrim, a clearly defined outlined UPCOMING rail, 48px white event title, monospace countdown, and one 320×48px spectrum-gradient reservation pill.”
 - Card: “Create a White favorite collection with a 16px outer radius, 24px padding, micro hairline and short two-layer shadow. Place three square Gallery Gray media fields inside; use the shared min(84%, 240px) inset portrait, then a wrapping 16px/700 name, 13px fan count and a separate action group with three 44px social controls and 20px brand marks.”
@@ -944,11 +1219,11 @@ Build a white, image-first K-pop fan product with Pretendard typography, a domin
 - Passport: “Create a quiet White Passport utility card with a 20px/850 title, 14px subtitle, fully opened identity-and-stamp asset, centered two-line lifecycle copy, and a 90%-width 52px outlined login CTA.”
 - Live row: “Create a 112px White live row with a 64px circular artist avatar, wrapping 16px/700 title and 13px metadata stack, plus a right-aligned 184×48px Spectrum-outline Secondary booking pill. Apply the same outline treatment to every action in the collection. Below 768px use a 44px icon-only action without turning repeated rows into filled Primary buttons.”
 
-### Ready-to-Use Prompt
+#### Ready-to-Use Prompt
 
 Using the kyaa Fan Pulse Spectrum design system, turn the supplied product scenario into a responsive fan-platform screen. Preserve the White/Near Black shell, Pretendard hierarchy, 4px spacing scale, 12/16/20px radius ladder, hairline-plus-micro-shadow surfaces, face-legible editorial imagery, and at most one filled Spectrum Relay primary CTA per active surface. Repeated LIVE-row actions may use the same relay as a consistent 1px outline. Use a wide content column plus sticky context panel at desktop, a single column with fixed bottom navigation below 1024px, and the existing horizontal snap collection below 768px where appropriate. Do not introduce dark cards, extra filled or decorative gradients, glassmorphism, nested cards, or decorative color surfaces.
 
-### Iteration Guide
+#### Iteration Guide
 
 1. Establish the screen’s main task and visual focus before adding secondary modules; a utility screen does not need a hero or filled CTA.
 2. Translate scenario information into title/subtitle pairs, compact rows, or one neutral utility card.
@@ -956,7 +1231,7 @@ Using the kyaa Fan Pulse Spectrum design system, turn the supplied product scena
 4. Verify 44px targets, 3px focus outlines, and mobile in-flow activity access.
 5. Confirm that new components reuse shared roles and tokens, then apply the separate visual finish criteria below. Token compliance alone is insufficient.
 
-## Optional Appendix: Interaction Patterns
+### Optional Appendix: Interaction Patterns
 
 - Scroll behavior: header remains sticky; context panel is sticky from 1024px; mobile/tablet use a fixed bottom navigation.
 - Hover behavior: neutral controls receive a subtle gray fill; artist media fields rise by 2px and strengthen their border; Passport artwork rises by 6px; the primary gradient darkens.
@@ -964,7 +1239,7 @@ Using the kyaa Fan Pulse Spectrum design system, turn the supplied product scena
 - Animation tone: restrained and product-like, 160ms for control feedback and 240ms for layout/object transitions.
 - Reduced motion: transitions collapse to effectively instant and smooth scrolling is removed.
 
-## Optional Appendix: Content & Messaging Patterns
+### Optional Appendix: Content & Messaging Patterns
 
 - 화면 보조 문구(설명·소개·제목 풀어쓰기) 금지 규칙은 [docs/design/helper-copy.md](docs/design/helper-copy.md)가 우선한다. 법적 고지·비용·오류·출처 문구만 유지한다.
 - 2026-11-12: 입력칸 아래·제목 아래·빈 상태·버튼 옆 설명 줄(예: "닉네임과 캐릭터가 함께 공개돼요", "N자 이상")을 앱 전체에서 걷어냈다. 입력 규칙은 어긋났을 때 오류 문구로만 알린다. 뺀 문장과 판단은 `apps/web/i18n/helper-copy-removed.test.ts`가 다시 들어오지 못하게 막는다.
@@ -973,11 +1248,11 @@ Using the kyaa Fan Pulse Spectrum design system, turn the supplied product scena
 - Lifecycle copy: enumerate meaningful fan actions before promising the stored value, e.g. “팬 인증부터 라이브 예약, 출석, 후기까지”.
 - Voice and tone: warm and encouraging, but never cute, overly promotional, or verbose.
 
-## Optional Appendix: Historical Observed Pages (2026-07-20)
+### Optional Appendix: Historical Observed Pages (2026-07-20)
 
 - `http://127.0.0.1:5173/candidates/03-fan-pulse-spectrum`: desktop 1440×1100, tablet 768×1024, and mobile 390×844 rendered states; logged-out context panel open and collapsed; hover-capable controls.
 
-## Optional Appendix: Historical Evidence Notes (2026-07-20; not current rules)
+### Optional Appendix: Historical Evidence Notes (2026-07-20; not current rules)
 
 - Observed: the live rendered page exposes no root variables on `:root`; reusable tokens are scoped to `[data-fan-pulse-home]` and were read from the loaded stylesheet.
 - Observed: at 1440px the hero is 944×472px, the favorite collection is 944px wide, and the open context panel is 384px wide.
@@ -986,7 +1261,7 @@ Using the kyaa Fan Pulse Spectrum design system, turn the supplied product scena
 - Inferred rule: color is intentionally budgeted—photography plus one primary gradient—because neutral utility surfaces preserve visual rest beside the hero.
 - Inferred rule: the side panel is contextual rather than foundational because it is removed entirely below 1024px without replacing the main content flow.
 
-## Shared fan UI implementation (updated 2026-10-04)
+### Shared fan UI implementation (updated 2026-10-04)
 
 The current consolidation covers Home section headers, LIVE catalog headers,
 LIVE calendar page title, MY page/section headings, and shared FanAction controls.
@@ -1026,7 +1301,7 @@ claim that all screens or all local CSS have been migrated.
   make the check mandatory for merges.
 
 
-### Calendar phase one ownership
+#### Calendar phase one ownership
 
 - `components/fan-calendar/calendar-parts.tsx` owns month controls, KST labels,
   and the numeral-only today ring for full and embedded calendars. Callers keep
@@ -1053,7 +1328,7 @@ claim that all screens or all local CSS have been migrated.
 - No date-selection panel, month/list toggle, new reservation flow or API change
   is part of phase one. Validate 360/390/768/1024/1440px before promoting changes.
 
-## Utility surfaces and truthful copy (2026-09-05)
+### Utility surfaces and truthful copy (2026-09-05)
 
 The UI/copy guide is implemented as an opt-in extension, not a replacement of
 Fan Pulse Spectrum. `fan-ui/fan-surface` owns neutral utility canvases and static
@@ -1100,7 +1375,7 @@ account or isolated auth/API fixtures. Passing fixtures is not proof of a live
 production account or of benefit eligibility logic.
 
 
-## Fan hub density refinement (2026-09-05)
+### Fan hub density refinement (2026-09-05)
 
 - Utility pages reuse the white `--color-canvas` via `--color-utility-canvas`;
   gray remains a media or hover field, not an alternate whole-page theme.
@@ -1127,14 +1402,14 @@ MY notification preferences live beside unread notifications in the profile head
 with visible labels and 44px targets. Mobile wraps the same utility group below
 the identity; no separate full-width settings row appears below activity records.
 
-### Growing creator roster
+#### Growing creator roster
 The editorial first three are centrally configured in `apps/web/server/content/creator-discovery.ts` (Changha, Elina, Yuna). Priority is conveyed only by order: all creators share the same card size, image treatment and information rules on each discovery surface. No secondary group heading, divider, compact tier on home cards. Display the existing CMS fan count below each name using the shared compact Fans format. Additional creators use individual-platform audience stored in CMS as an approximate order signal; do not sum platforms. Explicit directory sorts/search remain neutral. For group photos, crop around the complete member group with every face visible; do not fit the entire venue into the card. Personal MY records are unchanged.
 
 Home favorites preserve the existing portrait-card size and image/social treatment in a single horizontal snap rail at every breakpoint. Desktop shows three equal cards (Changha/Elina/Yuna first); mobile keeps the existing card width. Use banner-style circular arrows at the left/right media edges for viewport-sized movement, disabled at boundaries, synchronized with native touch/trackpad scrolling and resize, with reduced-motion support. Do not show the bottom page count or pagination capsule. Portraits use a 240 × 240 CSS-pixel square (shrinking only when needed inside narrower cards), object-fit cover with creator focal points; Xin uses a 1.6× bottom-centered crop within the same square, retaining all five members while reducing venue and crowd space. Directory remains a normal grid. Generated list/gallery concepts were not selected.
 
 Creator portrait selection and crop requirements: [프로필 사진 규약](docs/design/creator-profile-photo-guidelines.md). Visible tattoos are excluded from final profile crops; use another source if a complete face-preserving crop cannot remove them.
 
-### September 6 remaining feedback
+#### September 6 remaining feedback
 
 Passport collection photos use a more compact desktop crop. Fan Score and Stamp
 numbers link to the existing Passport activity ledger and Stamp Book with stable
@@ -1161,7 +1436,7 @@ reason 현재 참여 가능한 미션이 없어요. / No missions are available 
 Unknown read results retain a link to check the authenticated list and never
 claim there are no missions. No question or owner payload is exposed publicly.
 
-### Creator directory portrait contract
+#### Creator directory portrait contract
 
 `/celebrities` and Home favorites share `CreatorPortrait` and registered crops.
 Directory keeps its responsive grid and existing full-card links, using the
@@ -1175,11 +1450,11 @@ Banner and circular-avatar treatments remain separate. See the directory section
 of [프로필 사진 규약](docs/design/creator-profile-photo-guidelines.md) for replacement
 and desktop/mobile verification requirements.
 
-### 원형 크리에이터 프로필
+#### 원형 크리에이터 프로필
 - 팬 화면의 원형 사진은 `CreatorAvatar` 공용 컴포넌트 사용. 시각 옵션은 `size`만 허용하며 원형 마스크·개인/그룹 크롭·실패 시 실루엣은 공용으로 관리한다.
 - 등록·교체·24px/64px 검수는 `docs/design/creator-profile-photo-guidelines.md`의 원형 프로필 공용 구현 규약을 따른다. 호출부에서 내부 이미지 CSS를 덮어쓰지 않는다.
 
-### 모바일 LIVE 캘린더 — 2026-09-06 후속 피드백
+#### 모바일 LIVE 캘린더 — 2026-09-06 후속 피드백
 
 앞선 calendar phase-one의 목록 전용 모바일 범위를 확장한다. 1024px 미만에서는
 기존 월 이동 헤더 아래 7열 날짜 선택 달력을 제공하고, 선택된 셀럽의 일정이 있는
@@ -1203,27 +1478,27 @@ PC 날짜 셀의 다건 전환과 전체 보기 dialog는 유지한다.
 여러 색 점의 의미를 새로 만들지 않으며 기존 예약·방송 상태는 카드에 유지한다.
 공식 출처와 원본 이미지는 artifacts/feedback-2026-09-06/calendar/benchmark에 보관한다.
 
-### Shared creator photography — 2026-09-10
+#### Shared creator photography — 2026-09-10
 
 All creator identity-photo consumers use `CreatorImage` with source and framing registered in `creator-image-config.ts`. `CreatorPortrait` and `CreatorAvatar` keep their existing square/circle masks and sizing APIs. MY, LIVE detail/calendar, Passport photos and calendar collage use the same renderer; fanpage banners use `CreatorHeroPicture` and the same registry with separate responsive composition. Source replacement and crop stay coupled. A later CMS upload must be honored without inheriting a previous photo's zoom. Keep event artwork, benefits and user avatars separate. Park Myungho uses the approved user-provided suit portrait, about50% crown-to-chin height in square/circular photos; preserve shape-specific framing in wide/vertical surfaces.
 
-## Contextual content translation (2026-10-09)
+### Contextual content translation (2026-10-09)
 
 Content translation uses the selected app locale. Show the text action directly below the affected content, aligned to its text edge, with muted 13px utility type and a 44px minimum target; preserve keyboard focus, loading/error feedback, and the original toggle. Hide the action entirely for language-free content and confidently matching source text. Ignore URLs, email addresses, and mentions for detection. Korean, Japanese (with kana), and Thai use script dominance; longer Latin-script text uses conservative language ranking. Short/ambiguous text, mixed scripts, and indistinguishable Chinese variants retain manual translation. Detection is local and never triggers translation API requests on reading. Changes to text, revision, locale, or account invalidate visible translated state.
 
-### Incremental Home and community updates — 2026-10-19
+#### Incremental Home and community updates — 2026-10-19
 
 Home previews ten public fan posts or root cheers per page across published creators below the managed hero banner, for guests and signed-in fans at every breakpoint. Ready photo/video posts come first, then newest within each group (2026-10-31 media-first approval). The banner always leads the fan-board preview in both DOM and visual order. Apply the verified viewer’s existing block relationships before selecting each page, exclude members-only content even for its owner, and preserve source text. Keep existing navigation and banners. Community creator selection preserves the selected tab and locale; its popup follows the shared focus, touch-target and viewport rules. Fan score summaries expose existing scores and next-stage targets without changing score policy.
 
-### RUN&MUSIC winner notice (2026-10-30)
+#### RUN&MUSIC winner notice (2026-10-30)
 
 The approved compact notice at `/connect/runmusic/notice` pairs the intact official 3:1 banner with the title, prize counts and email date on desktop; mobile stacks the same natural-ratio banner above that concise summary. The list uses prize filters, masked-email search and 24-row pagination (four desktop/two mobile columns). Public data contains masked emails only: 104 winners, excluding three approved test-domain entries, with 15 yogurt and 89 Starbucks winners. This notice does not change historic draw records. Local screenshots validate 390/1440px, filters, search reset and page navigation.
 
-### Compact home fan-board preview — 2026-10-31
+#### Compact home fan-board preview — 2026-10-31
 
 Use two equal columns from 768px with 8px row / 16px column gaps, 12px card corners and 8px content padding. Show ten items per page (five rows on desktop). Use uniform 104px rows with 80px square thumbnails at every breakpoint; below 768px use one column and 8px row gaps. Preserve the existing 16px body, 13px metadata, shared section heading and 44px minimum actions. Show at most two body lines; align metadata at the bottom. Following the 2026-10-31 request for uniform, denser cards, home preview thumbnails use cover with a horizontally centered, upper-quarter focal position inside an 80px square with 8px corners. This crop is scoped to the home preview; full post imagery remains intact. Keep board and author metadata on one line, with the source text retained in the DOM; body previews retain two lines at 16px/22px. Fixed height is an explicit exception for this preview role, not a global card rule. Text-only posts have no fabricated image. Place localized previous/next arrow buttons and the current page below the list; disable unavailable directions. Fetch only ten items plus a next-page sentinel on the server, preserving public visibility, block and WAVE exclusions. The legacy three-item RPC remains available for old clients during rollout. Preserve loaded same-owner content on return refresh; clear it for page/owner transitions and community mutations. This structural compression reflects the user's general UI preference without shrinking readable text or touch targets.
 
-## 2026-11-02 모임 웹 전환 범위
+### 2026-11-02 모임 웹 전환 범위
 
 `KYAA_GROUPS_ENABLED`로 활성화되는 모임·관련 MY 화면은 승인된 `outputs/kyaa-fanpage-implementation-20261101/DESIGN.md`의 최신 계약을 따른다. 기존 HOME과 gate-off 페이지의 계약은 유지한다.
 
@@ -1235,7 +1510,7 @@ Use two equal columns from 768px with 8px row / 16px column gaps, 12px card corn
 
 - 모임 지갑 출석은 기존 `CalendarDayNumber`로 현재 KST 월을 보여준다. 출석은 크리에이터 페이지별(2026-11-05 PASSPORT-RENEWAL)이며 실제 출석 기록에만 도장을 표시한다. 포인트 수치(출석 P·7일 보너스)는 고정 문구로 쓰지 않고 `/api/dukjil/catalog`와 `today` 응답에서만 읽는다(수치가 없으면 "출석하기"만 표기). 이전의 10P/30P 고정 표기는 정책이 2P+도장, 7일마다 +10P로 바뀌어 폐기했다. 새 출석·배지·타일·MY 목록은 카탈로그에 규칙이 있고 `today.policyActive`가 아닐 때만 나오며, 카탈로그가 비었거나 실패하면 기존 출석 화면과 고정 문구가 그대로 남는다(`DukjilSwitch`). 배지 숫자는 카탈로그, 남은 횟수·완료는 `today`에서만 읽는다. `wallet.module.css`가 7열 간격·핑크 도장·오늘 테두리를 소유한다. 관리자 행사 지원의 참석/후기 수는 `group-admin.module.css`의 2열 요약으로 표시한다.
 
-### 모임 운영 전환: Pencil 원본 구성 보존 (2026-11-02)
+#### 모임 운영 전환: Pencil 원본 구성 보존 (2026-11-02)
 
 `outputs/kyaa-fanpage-implementation-20261101/kyaa-fanpage.pen`의 승인된 화면 구성을 운영 UI 기준으로 유지한다. 기능 추가를 이유로 원본의 정보 순서·대표 이미지 비율·주요 행동 위치를 다른 구성으로 바꾸지 않는다. 실제 데이터·권한·로딩·오류·다국어·200% 확대에 필요한 대응은 해당 구조 안에서 처리한다.
 
@@ -1278,7 +1553,7 @@ Use two equal columns from 768px with 8px row / 16px column gaps, 12px card corn
 
 - 비밀방 접근 실패는 HTTP401 로그인,403 가입,404 페이지 목록,그 외 재시도로 구분한다. 기존 서버 권한을 유지하며 접근 오류를 빈 대화 상태로 표시하지 않는다. 로그인 복귀 경로는 원래 팬페이지의 비밀방과 언어를 보존한다.
 
-### Custom social sign-in preparation · 2026-11-02
+#### Custom social sign-in preparation · 2026-11-02
 
 Kakao/WeChat sign-in is gated off by default. Enabled provider buttons reuse the existing 90%-width, minimum 52px, White outlined pill treatment and 3px Near Black focus outline, with provider names in each locale; they do not alter the Google artwork. The focused email-link step uses the existing 440px task width, 20px mobile / 24px desktop section heading, 16px explanatory text, 14px field labels, 48px fields with 16px input text, 12px corners and 16px related-control gaps. Errors are associated with inputs and announced. Existing-account sign-in links live in Settings → Account and reuse `FanAction` with 32px mobile / 48px desktop section spacing; notification consent is a separate surface. OAuth account linking keeps the same DID and embedded EVM wallet. Actual browser verification and release evidence must distinguish local fixtures from live enabled authentication.
 
@@ -1286,7 +1561,7 @@ Kakao/WeChat sign-in is gated off by default. Enabled provider buttons reuse the
 
 - 비밀방 대화의 아티스트 표시는 `group_artist_bindings`에 근거하며 공개 아바타 URL을 재사용한다. 참여 회원은 해당 방의 읽기·작성 기록이 있고 현재 입장 가능한 회원 중 차단 관계와 아티스트를 제외한 최대20명이다. PC288px 보조 영역·32px 간격·24px 패딩, 모바일 아래 단일 열·16px 패딩을 사용한다. 기존 인증·방 접근 판정 이후에만 이 정보를 반환한다. 실제 dev 인증 fixture와 전체 원본 비교는 별도 검증 대상이다.
 
-### Regional social sign-in preparation · 2026-11-02
+#### Regional social sign-in preparation · 2026-11-02
 
 Extend the fixed sign-in registry to LINE, Facebook and Naver while preserving the existing Google, Apple, Kakao and WeChat positions. Enabled LINE/Facebook/Naver methods live in a default-collapsed “Other ways to sign in” group; omit its trigger when all three are disabled. The disclosure has `aria-expanded`/`aria-controls`, a persistent hidden panel and native keyboard behavior. Reuse the current outlined sign-in button role with 16px group spacing and the existing mobile/desktop widths. Settings → Account reuses its existing account-link section for all five methods. All five remain off under Cognito; no additional social providers are in this preparation scope. Native LINE uses SDK `line` and linked-account type `line_oauth`; provider email does not bypass OTP verification.
 - 읽기 전용 비밀방 `aWY6S`는 기존 입장 조건을 충족한 같은 페이지 운영진·아티스트만 입력할 수 있다. 서버가 메시지 조회마다 `canSend`를 반환하고 UI는 명시적인 false를 우선한다. 권한 회수 후 조회 실패가 이어져도 입력을 다시 열지 않는다. 원본의 대화·입력 크기와 공통 컴포넌트를 유지한다. PC1440·모바일390 로컬 fixture의 읽기 전용/운영자 입력 상태를 확인했으며, 실제 dev 인증 계정 검증은 남아 있다.
@@ -1302,11 +1577,11 @@ Extend the fixed sign-in registry to LINE, Facebook and Naver while preserving t
 - 추첨 상세 `mF4bM`의 경품 이미지 슬롯은 원본 491.42×328px과 같은 3:2 비율이며 화면 폭에 맞춰 줄어든다. `group-raffle/raffle.module.css`가 소유하고, 고정 280/220px 높이·추가 분홍 배경을 제거한다. 상품 전체와 로고는 contain으로 보존하며 이미지가 없으면 슬롯을 만들지 않는다.
 - 추첨 상세는 별도 중복 섹션 제목 없이 경품 이미지와 추첨 제목으로 시작한다. PC 경품 열491.42px·열간32px·보조 영역288px,1024px미만은 경품→응모→보조 영역으로 쌓는다. `GroupActivityFrame`의 기본 행사·미션 배치는 유지한다.
 
-### 2026-11-02 local review — current Pencil header and featured carousel
+#### 2026-11-02 local review — current Pencil header and featured carousel
 User-selected source nodes `uTQNU`, `C1QkP`, `koi97`, `FP2ON`, `xzfqF`, `n325b`, `qADEF` supersede earlier header/banner geometry in the groups-enabled shell. Source extracted through Pencil `Export(..., "html-css", ..., {includeLayerIds:true})`. Header: HOME / 모임 / 최애 / MY with icons and active pink underline; account actions move language and notifications into a menu. Desktop header 88px, nav 488×64px; mobile header 68px. Carousel source `pjusn` / `tbCyx`: desktop slide 960×480px, 24px next-slide gap, bottom gradient with white action; mobile slide 300×349px, 200px photograph and dark copy region, 12px gap. Carousel CSS is copied from export inline declarations with source-node comments; responsive resets, runtime image binding, semantic HTML and interactions are explicit adaptations. No autoplay. Language dialog: desktop 960px/3 columns/32px padding; mobile 358px/2 columns/20px padding with scroll containment. Production gate-off shell remains unchanged; this work is local-only pending user review, no new dev or production deployment.
 Header icon/font fidelity correction: uTQNU SVG path geometry (including phosphor coins-fill) is copied into pencil-header-icon.tsx, replacing approximate package icons in the groups header/account menu. Exact exported PretendardUI650.ttf and PretendardUI850.ttf are bundled under public/fonts/pencil and used at font-weight:400 as declared by the export, with synthesis disabled. Desktop navigation icon size is24px; point/menu icons20px. This overrides previous variable-font approximation only in the groups-enabled shell.
 
-### I591ou artist-home reproduction (2026-11-02, local review)
+#### I591ou artist-home reproduction (2026-11-02, local review)
 
 - Source: `outputs/kyaa-fanpage-implementation-20261101/kyaa-fanpage.pen`, node `I591ou`, inspected with Pencil CLI. This change is under local review, not evidence of deployment.
 - Creator home keeps a 312px unpadded aside and 32px column gap. The passport heading precedes the artwork; its final action is a text link. The video preview is borderless with 16px thumbnail corners, 8px title spacing and a bottom-left LIVE badge. Board titles use 16px regular text, 52px minimum rows and a compact Spectrum writing action.
@@ -1316,10 +1591,10 @@ Header icon/font fidelity correction: uTQNU SVG path geometry (including phospho
 
 - 2026-11-02 account identity: keep points, avatar and menu trigger in the desktop header; show the provided profile image and nickname as the first account-menu item instead. Long nicknames wrap in the menu, including on mobile.
 
-### 2026-11-02 팬 페이지 표·사이드바 정렬
+#### 2026-11-02 팬 페이지 표·사이드바 정렬
 사용자 지정 MApsZ, CSYpc, Z46DUz, QEXS7, qIhmn을 갱신하고 I591ou와 로컬 구현에 적용한다. 표 제목은 왼쪽, 작성자·작성일·조회·추천은 헤더와 본문 모두 중앙 정렬한다. 메타 열 너비는 112/96/64/64px, 셀 좌우 여백은 8px이다. 사이드바 이동 행은 최소 64px, 상하 여백 12px, 아이콘과 화살표 20px, 열 간격 12px이다. 제목 아래와 행 사이 8px, 그룹 사이와 구분선 위아래는 24px이다. 긴 문구는 줄바꿈하고 행 높이가 늘어난다. 팬등급과 추첨에도 이동 화살표를 표시한다.
 
-### 2026-11-02 전체 Pencil 로컬 속성 대조
+#### 2026-11-02 전체 Pencil 로컬 속성 대조
 
 - 현재 원본 `kyaa-fanpage.pen` 239개 최상위 항목(제품 화면·상태215, 시스템·참고24)을 Pencil CLI로 확인했다. 기존205개 연결표는 최신 원본의 완전한 검수 근거가 아니다. `docs/design/groups-production-coverage.json`의 항목별 로컬 경로·미검증 상태를 기준으로 추적한다.
 - `Nev5n` 공통 팬 헤더와 최신 화면을 우선하여 게시판·비밀방·활동에도 팬 정체성 및 접속 현황을 유지한다. 위의 간단한 헤더/접속 현황은 홈에만 표시 규칙을 대체한다. `CreatorGroupHeader`가 공통 소유자이다.
@@ -1330,7 +1605,7 @@ Header icon/font fidelity correction: uTQNU SVG path geometry (including phospho
 - `zBRpr` 미션 허브는180px 출석 원본 이미지·사진/텍스트 미션·288px 참여 레일을 사용하며 기존 미션 상세를 별도로 유지한다. `ZwPUD` 컬렉션은556.27px 이미지·24px 간격·상품 선택·168×48px 행동이다. 원본 분류는 로컬 fixture에서 명시적으로 제공하고 서버 필드를 추측하지 않는다.
 - 이 작업의 데이터·댓글·첨부 선택은 로컬 검증 fixture를 포함한다. 실제 서비스 반영이나 외부 API 연동 완료의 근거로 사용하지 않는다.
 
-### 2026-11-02 Pencil 속성 마감 · 로컬 검증 범위
+#### 2026-11-02 Pencil 속성 마감 · 로컬 검증 범위
 
 - 제목용 `Pretendard UI 550/650/850` 폰트는 해당 파일의 실제 굵기를 사용하고 합성 굵기를 만들지 않는다. 제목별 크기·행간은 원본 역할로 지정하며, 공통 GroupShell/관리자 셸은 `Pretendard Variable`을 기본 본문 서체로 사용한다. 정의되지 않은 CSS 변수를 글꼴 fallback 목록에 넣지 않는다.
 - `XnL4z` 정렬 메뉴는 200px, 안쪽8px, 항목 사이4px, 모서리12px, 항목44px이다. 키보드 선택과 Esc 닫기를 제공한다. `QyrvD` 선택 행은 높이72px, 좌우20px, 모서리12px, 제목16/24와 오른쪽 분류13/21을 사용한다.
@@ -1340,7 +1615,7 @@ Header icon/font fidelity correction: uTQNU SVG path geometry (including phospho
 - 검증은 항목별 연결표에 원본 치수·390/1440 렌더, 측정한 속성, 키보드 동작 및 증거 파일을 기록한다. 화면 폭·여백·간격·모서리 검사와 실제 시각 검수를 구분한다. 전체 파일의 모든 중첩 노드에 대한 자동 픽셀 동일성 인증으로 확대하지 않는다.
 
 
-### 2026-11-02 22:16 최신 Pencil 재추출 · localhost 전용 계약
+#### 2026-11-02 22:16 최신 Pencil 재추출 · localhost 전용 계약
 
 이번 사용자 지정 원본은 `kyaa-fanpage.pen`의 330개 루트다. 이전 239/327개 기준보다 이 항목을 우선한다. 제품 화면·상태 291개, 디자인 시스템·설계 참고32개, 명시적 보관7개를 분리한다. 추출 HTML/CSS·노드 속성·323개 표시 루트 PNG는 `byus/work/fanpage-visual-diff-20261102/reextract-221612/`에 보존하고, 경로·검증 근거는 `docs/design/groups-production-coverage.json`에 연결한다.
 
@@ -1353,7 +1628,7 @@ Header icon/font fidelity correction: uTQNU SVG path geometry (including phospho
 - 캘린더 원본에 명시된 기존 WEB 우선 지시를 따른다. 기존 캘린더·LIVE 예약·일반 일정 구독을 재사용하며 초안의 통합 예약폼은 만들지 않는다. 일정 fixture와 예시 출처는 실제 일정·공식 출처 보증이 아니다.
 - 네이티브 날짜/파일 입력의 OS표시와 실제 API 계약에 없는 조회수·상대 시각·예시 인원 차이는 데이터/접근성 적응으로 구분한다. 이 로컬 검증은 실제 포인트 지급·신고/승인 처리·QR촬영·운영 배포를 포함하지 않는다. 원본 폭 및390/1440에서 렌더·해당 속성·상호작용·키보드·넘침을 검사하되 모든 중첩 DOM값의 완전한 자동 픽셀 동일성으로 확대하지 않는다.
 
-### 2026-11-02 22:35 최신 재추출 · 작업 표시 방식 우선 적용
+#### 2026-11-02 22:35 최신 재추출 · 작업 표시 방식 우선 적용
 
 사용자의 재추출 요청에 따라 현재 원본은339개 루트로 갱신한다(제품299, 참고32, 상태 비교 묶음1, 보관7). 직전330개 대비 신규9·변경39·동일284·비표시 보관7이며, 신규8개 제품은 모바일 확인 시트다. 아래 LNwys 계약은 앞의 일반 페이지형 작업·960px 언어창·기존 독립 상태 카드 계약보다 우선한다.
 
@@ -1367,7 +1642,7 @@ Header icon/font fidelity correction: uTQNU SVG path geometry (including phospho
 
 현재 작업 본문의 가운데 정렬 테두리는 Export content-box 중복을 제거해 원본 외곽 크기로 복원한다(체크 행44px). 모바일 하단은 원본에 따라 취소88px+나머지 기본 행동이며, R05 가입 시트는 두 버튼169px를 유지한다. 원본에 호출 배경이 포함된 모바일 시트는 해당 배경도 표시한다. 네이티브 select/checkbox/date의 운영체제별 외형 차이는 허용하되 행·버튼 외곽과 간격은 원본을 따른다.
 
-### 2026-11-03 cycle01 — current Pencil source and dev integration
+#### 2026-11-03 cycle01 — current Pencil source and dev integration
 
 The 23:43 KST CLI extraction supersedes the 339-root inventory: 342 roots, comprising 301 product screens/states, 33 references, one state reference and seven archives. Evidence is in `byus/work/pen-dev-loop-20261102/cycle-01/`. The user has authorized actual dev API/DB integration; production deployment remains excluded. Local fixture screenshots and actual service verification are recorded separately in the coverage ledger.
 
@@ -1377,11 +1652,11 @@ The 23:43 KST CLI extraction supersedes the 339-root inventory: 342 roots, compr
 - Shared detail identity wrappers use the group page container without inherited 70dvh minimum height. M01/M03 label width is 180px with 24px desktop gap and stacked 8px mobile gap. M02 textarea is 112px; application description is 144px with 16px padding; board comment input is 96px. A01 date fields use two columns with 16px gap, stacking on mobile.
 - Native controls, actual data and preserved service actions may differ from fixture examples; each exception and missing API contract remains explicit. Render/geometry checks do not certify every nested pixel or physical camera behavior.
 
-### Gift applications (2026-11-03, Pencil current-002 A06/A07)
+#### Gift applications (2026-11-03, Pencil current-002 A06/A07)
 
 Gift operator screens use the exported A06 registration properties (PC AbUp2 / mobile v0nqnh) and current-002 A07 status properties (PC fBPhw / mobile G4ayh). Owner: `features/groups/ui/group-gifts.module.css`. Main width is 960px at 1440, mobile horizontal padding 16px; content top spacing 32/16px, title 32/48px PC and 24/36px mobile at weight400, section titles 24/20px bold with normal line height. Form groups use20px separation,16px internal gaps; controls48px, multiline96px, radius12px, image container20px padding and12px gap. Primary action280px PC/full width mobile,48px tall. Status card uses20px vertical padding,12px gap,24/36px bold heading and16/24px reason. Shared header and black operation band retain real page name. Fulfillment is an enum select and upload/request/error states are interactive extensions of the exported form; successful requests preserve persisted revision/status. Only the application's current saved status is shown. Approved raffle selection and admin review use existing common controls. Uploaded images remain private until linked to a published visible raffle; replacing a gift revision preserves an already published image snapshot.
 
-### 2026-11-03 current-002 — refreshed Pencil properties
+#### 2026-11-03 current-002 — refreshed Pencil properties
 
 Latest CLI HTML/PNG source: `byus/work/pen-dev-loop-20261102/reextract-current-002/` (342 roots; 92 changed, 243 unchanged, 7 archived). The requested source overrides earlier layout values only for these changes.
 
@@ -1394,7 +1669,7 @@ Latest CLI HTML/PNG source: `byus/work/pen-dev-loop-20261102/reextract-current-0
 
 Evidence: current-002/parent-render (390/1440), associated computed-style assertions, focused MY/profile/wallet tests. Actual values and allowed actions come from APIs; screenshots use explicitly identified fixtures. Physical camera scanning is not certified by browser fixtures.
 
-### 2026-11-03 최신 Pencil 재추출 003
+#### 2026-11-03 최신 Pencil 재추출 003
 
 - 원본 `kyaa-fanpage.pen`을 CLI HTML+CSS로 다시 추출: 352개 루트, 직전 추출 대비 신규 10개·변경 33개·동일 302개·비렌더 7개. 캔버스 구역 안내도 변경 수에 포함된다.
 - 알림 저장 실패(hKn1B/MDfpG)는 선택값을 유지하며 16/24px `#9F1239` 안내와 ‘다시 저장’을 표시한다. 초대 동의(f2Ojl/rvIf6)의 ‘나중에’는 닫기, 본문의 44px ‘초대 거절’은 실제 거절 요청이다.
@@ -1403,17 +1678,17 @@ Evidence: current-002/parent-render (390/1440), associated computed-style assert
 - A08/A09는 `/pages/groups/[pageId]/events/[eventId]/support` 및 `view=history`에서 기존 참석·후기·정산 검토 API를 사용한다. 960px 본문, PC 32/48px·모바일 24/36px 제목, 20px 간격을 사용한다. 원본 1만원 산식은 명시된 예시이며 지급·정책 확정·새 원장 처리를 의미하지 않는다. 제출 설명/증빙 URL 입력은 기존 API를 위한 기능적 확장이다.
 - 확인/결과 상태는 실제 성공·실패 조건에 연결한다. 서버에 없는 광고 전환 정책과 본인 신고 결과 조회를 완료된 기능처럼 표시하지 않는다.
 
-### Activity proof, survey, review (2026-11-03, Pencil current-003)
+#### Activity proof, survey, review (2026-11-03, Pencil current-003)
 
 `activity-evidence-task.tsx` and `activity-evidence.module.css` own M02 photo proof and event-review inputs. They reuse TaskPanel640px PC/fullscreen mobile, shared76px header and80px actions. Body padding24px PC/16px mobile,16px vertical gap,8px label gap,112px textarea and48px review-title input. Photo attachment has24px padding/16px gap,18/27px normal title and32px icon; optional review attachment uses20px/12px. Current003 A2DH4O/E5rm07 requires a ready photo and original-material confirmation: required label,14/21px helper, disabled action background#EFEFEF/text#777777. L3JHJe/iWg4L error uses#9F1239 outline/helper and re-selection while preserving the description. Successful attachment leaves the temporary upload cleanup pool only after acknowledged persistence. Photo/review history remains private; replacing a current image preserves immutable prior evidence.
 
 M05 (`group-survey-form.tsx`) uses the persisted question and exactly3 options,60px option rows with8px separation,24px controls,112px optional-opinion textarea,20px form gaps and280px PC/full-width mobile action. The page uses the existing real group slug/public creator/header contract; generic mission cover/instruction/reward duplication is omitted for survey. Its fixed mobile navigation is hidden while answering, preserving the source form's unobstructed action. Submission/review forms send their viewed mission/submission revisions; stale state returns conflict and preserves current edits. Current statuses/reasons/rewards and previous revision records come from the API; no source policy example becomes a real reward promise.
 - 후속 시각 검수: 행사 신청 전과 A08/A09의 주 행동은 PC 280px, 모바일 전체 너비다. 모바일 규칙을 PC로 확장하지 않는다. 행사 티켓·미션의 빈 접이식 컨테이너는 숨겨 불필요한 grid 간격을 없앤다.
 
-### 2026-11-03 own report states · current-003
+#### 2026-11-03 own report states · current-003
 `/my/groups/reports` uses exported XlbOv/AYzQG state panels:640px maximum width,24px padding,16px gap,16px corner, #e8e8e8 outline,24/31px Pretendard UI850 title at exported weight400,48px actions with12px corners and14/20px UI650 labels. Source HTML declarations are adapted only for responsive width, semantic buttons and actual report data. Existing created date and expanded resolution/status are functional additions; private or removed targets have no link. Owner:`group-own-reports.module.css`. Source-state panels retain their dedicated640px reading column within the960px page body.
 
-### Group calendars (2026-11-03, Pencil current-003)
+#### Group calendars (2026-11-03, Pencil current-003)
 
 `FI1kg` / `euRh2` / `I2EszZ` / `E8m4wq` explicitly require reuse of the existing WEB `/live/calendar` calendar, day list, month art, reservation/detail actions and responsive layout; the hobby frame is placement guidance rather than a replacement visual implementation. `GroupCalendarPanel` embeds `LiveCalendarScreen` under the actual group/creator header, hides other-creator filters and preserves the current group path, locale and query during month navigation. No new visual tokens are introduced. Creator-linked pages use their authorized LIVE identity and schedule slug; other groups use only their own authorized published/cancelled/ended event records. Group event entries retain explicit real event destinations and group identity rather than fabricating LIVE/creator/schedule records. Source example events and empty-state examples never replace API results. Native390px/1440px renders cover fan, hobby and brand with empty/occupied dates; existing WEB calendar regressions remain required.
 
@@ -1424,20 +1699,20 @@ UI-011 evidence is inherited from `work/local-team-20261103/tasks/UI-011/result.
 
 2026-11-03 Pencil003 cRVyO: reduced-motion state uses the original160px contain capsule, #FFF5FA background, centered34px title line and26px description line. Existing120ms reduced reveal timing is preserved. Mobile qUpqC/HbVi5 and PRK1L/x3FJF confirmations use77px action region and45px primary button (15/21,800); other80px/compact76px action regions remain role-specific.
 
-### Event create/publish/participation (2026-11-03, current-003)
+#### Event create/publish/participation (2026-11-03, current-003)
 A01 XwD8y/O1pP6 uses32/48px PC and24/36px mobile normal headings,20px form groups,8px labels,16/24px normal label text,48px inputs and96px textarea. Basic order is name,start/end,read-only Asia/Seoul,location,participation instructions; real required registration windows/capacity/approval/image/state remain additional settings rather than invented defaults. Existing schedule-time conversion makes wall time explicitly KST. A02 JhfMg/IybBO reuses actual event-save publication; source item text18/27px normal, actions160px PC/equal mobile with12px gap. E02 nlql7/uGGjp uses real review/check-in status,20px row padding,12px gaps and review action200px PC/full width mobile. Source example states are not substituted for actual API status. Missing linked-mission/cancellation-reason/attendance-request contracts remain explicitly partial; no fake submission, automatic check-in or reward policy is introduced.
 - 79000 A01/A02 contract follow-up: the actual authorized paginated mission selector preserves omitted values and clears only on explicit no-link choice. Event editor form occupies the exported960px column rather than inheriting the shared720px form maximum. Cancellation uses source24px divider padding/16px gap/20px700 section title/96px textarea and280px PC/full mobile #9F1239 action. Reason is optional raw text (max1000); persisted reason display comes only from the server. No new reward/refund/check-in policy is implied.
 
-### Profile QR camera access states (2026-11-03, current-003 ae7UT/P0nPX)
+#### Profile QR camera access states (2026-11-03, current-003 ae7UT/P0nPX)
 Profile QR scanning keeps the existing profile overlay and shared scanner/image-upload flow. Only confirmed unavailable platform capability (insecure context or missing getUserMedia) renders source `카메라 미지원`; only observed Permissions API camera=denied renders `카메라 권한 없음` with source browser-setting guidance/reopen action. Unsupported permission queries and generic library camera errors remain generic. State rows use12px vertical padding/8px gap/1px #E4E1E6 divider,18/27px normal titles,16/24px body and280px PC/full-width mobile retry. Existing profile width is preserved. Mocked390/1440 renders and unit tests cover both states without camera prompts/streams; physical camera capture remains unverified and excluded.
 
 - 2026-11-03 · 컬렉션 상품 URL 조회 실패 `kgWAV`: 실제 상품 URL 조회가 실패한 경우에만 CLI003 원본의 아이콘24px·제목24/31px·본문16/24px·패딩24px·간격16px·반경16px·필드48px·주요 행동48px을 적용한다. 목록 조회 오류와 구분한다. 수동 이미지 URL은 검증 후 기존 `group_image` 업로드로 전환하고 ready 자산만 저장하며, 입력한 제목·판매처 URL과 실패한 저장의 요청 식별자를 보존한다. 원본은 `reextract-current-003/properties/kgWAV.json`; 실제390/1440 로컬 API fixture 검증은 `reextract-current-003/collection-import/checks.json`에 기록한다.
 
-### 2026-11-03 MY 신고 내역 접근
+#### 2026-11-03 MY 신고 내역 접근
 
 원본 current003 `BdXrj`의 상단 3개 이동에 실제 서비스의 `접수한 신고` 링크를 더해 4개가 됐다. 767px 이하에서는 MY 프로필의 이동 버튼만 2열로 배치해 한 글자씩 줄바꿈되는 문제를 막는다. 버튼 최소 높이 44px와 기존 데스크톱 배치를 유지한다.
 
-### 2026-11-03 비밀방 참여 회원
+#### 2026-11-03 비밀방 참여 회원
 
 원본 current003 `EU2Nf`의 참여 회원은 36px 아바타와 회원 정보를 2열로 두고, 프로필 보기 행동을 정보 아래 같은 열에 놓는다. `roomParticipant`의 2열 grid와 `roomProfileAction`의 두 번째 열 배치로 좁은 회원 정보가 한 글자씩 줄바꿈되는 문제를 막는다. 목록 행 높이는 원본 CLI 실제 경계(PC 104px, 모바일 158px)를 유지한다. HTML 내보내기의 content-box 계산으로 추가되는 40px은 실제 Pencil 도형의 높이가 아니다.
 
@@ -1445,70 +1720,70 @@ Profile QR scanning keeps the existing profile overlay and shared scanner/image-
 
 원본 current003의 추가 확인값을 비밀방에 적용한다: 목록 안내문 16px/normal(`WfS6E`, `xnacl`), PC 대화 열 안쪽 가로 여백 24px(`GAOT0`), PC 보내기 104×48px(`QN7qg`), 참여 회원 제목 16px/24px·700과 20px Users 아이콘(`QxYQ6`, `T5m4W8`). 대화 열 여백과 고정 전송 폭은 1024px 이상에만 적용하며 모바일의 기존 대화 경계를 유지한다.
 
-### M03 current submission (2026-11-03, KUuyw/r5caXR)
+#### M03 current submission (2026-11-03, KUuyw/r5caXR)
 Own current submission body/status is shown independently of older history length. Existing owner-scoped mission GET supplies all data; original text/whitespace, server rejection reason, actual completed rewardPoints and existing canSubmit permission are preserved. Current photo/text history uses the source unboxed hierarchy:32/48px PC or24/36px mobile heading,20px vertical gaps,8px status spacing,18/27px normal row titles and16/24px body. Native CLI PNGs show90.5px effective short-row height; exported HTML content-box must not add padding twice. Browser short rows91px with-.5px margin/half-pixel inset divider preserve that interval, while long text/actual photos grow naturally. Only rejected+canSubmit offers source `내용 보완하기` and retains existing revision-aware form. Previous revisions remain separate; no fake group reward-history/result destination is added. Survey/manager review flow and empty M01 stay unchanged.
 
-### 2026-11-03 신청 검토·보완 작업 패널
+#### 2026-11-03 신청 검토·보완 작업 패널
 
 원본 current003 `CDOu1`/`IrlP8`을 기존 `TaskPanel`로 연결한다. 실제 Pencil CLI 경계는 PC 640×763px(감사 문서의 560px 표기는 오기), 모바일 390×844px 전체 화면이다. 헤더 76px, PC 본문 607px·padding 24px, 모바일 본문 padding 16px, 하단 행동 80px, 설명 입력 96px, 증빙 선택 48px를 적용한다. 요약 제목 18px/27px·본문 16px/24px를 패널 범위에서 명시해 호출 화면의 문단 line-height가 새어들지 않게 한다. 실제 접수 상태와 보완 사유·저장된 설명은 신청자 데이터로 표시하며 예시 상태를 운영 상태로 만들지 않는다. 신청 유형·이름·증빙 주소는 기존 값을 그대로 제출하고, 보완 설명과 증빙만 이 패널에서 편집한다. 실패 재시도의 요청 ID·조회한 revision·초안 보존과 작성 취소 확인은 기존 API 및 공통 작업 패널 계약을 따른다.
 - M01↔M03 view-flow correction: the actual mission Next route explicitly whitelists `view=conditions|submission` and defaults to conditions, including after a prior submission. Existing requirements/instructions remain reachable through source `내 제출 내역` / `미션 참여 조건` navigation; locale and appropriate existing query values stay on the same real mission path. A missing own submission falls back to conditions. Only acknowledged own submission POST navigates to submission; failure and manager review PATCH stay in place. This restores flow without claiming the still-separate full M01 template or M06 history/result implementation.
 
 - 2026-11-03 · 팬 게시판 native 첨부 `R2Cts3`/`Urthu`/`wCL5S`/`BXOYV`: published fan group에 연결된 celebrity의 게시글만 서버 정책에 따라 사진10장 또는 영상1개를 허용하고 혼합 첨부를 금지한다. 기존 일반 대상4장·WAVE 행사 게이트는 유지한다. 원본의 사진104×104/영상104×138 썸네일, 모바일 입력48px·본문160px·첨부 행동48px·취소88px/등록 나머지 폭을 해당 작성기에만 적용한다. 첨부 썸네일 cover는 원본에 지정된 미리보기 역할에 한정하며 상세/확대 재생은 실제 비율을 보존한다. 정책 실패 시 기존 첨부를 자르지 않는다. 공개 영상의 optional-viewer 읽기는 별도 fan-post 범위이며 DM/WAVE/draft의 기존 인증 읽기는 유지한다. 실제390/1440 로컬 합성 파일 검증은 `work/pen-dev-loop-20261102/fan-board-media/render/{checks,edit-checks,guest-checks}.json`에 기록한다. 이 근거는 source 전체 페이지를 픽셀 단위로 일치시켰다는 의미는 아니다.
 
-### 2026-11-03 모임 알림 저장 완료 안내
+#### 2026-11-03 모임 알림 저장 완료 안내
 
 원본 current003 `M6GC6N`/`T4HZxl`의 저장 완료 설명(`cMAi3`, `I0EcQ`)은 실제 Pencil CLI 16px·line-height 1.5·높이 24px다. 실제 알림 설정 PUT 성공 뒤 기존 창 안에 이 문구를 16px/24px, #5d5d5d의 polite live status로 하나만 표시한다. 상태 비교 원본의 대기·성공·실패를 동시에 표시하지 않는다. 새 편집·다시 저장·닫기·재열기에는 완료 표시를 비우고, 모임·계정이 바뀌면 이전 창과 초안을 제거한다. 실패한 선택값 및 성공 뒤 재조회 실패 시 현재 창은 유지한다. 기존 TaskPanel·닫기 행동을 재사용한다.
 
-### M03 earnings navigation (2026-11-03, current-004)
+#### M03 earnings navigation (2026-11-03, current-004)
 
 Fresh Pencil desktop CLI extraction is byte-identical to current-003; the older on-disk pen export is not the latest canvas. M03 `W1n8A`/`mshCT` connects the owned submission to the actual group earnings route, preserving locale without forwarding mission-only query parameters. The text action uses the exported 240px desktop/full-width mobile, minimum44px height,8px horizontal padding,12px radius and14/20px Pretendard UI650 label. Long translations may increase height. Global wallet and attendance destinations remain global. Local synthetic-fixture captures at1440/390 show240×44/358×44px actions with no horizontal overflow; this does not certify the destination API or DEV deployment.
 
-### Survey revisit and submitted-history entry (2026-11-03, current-004)
+#### Survey revisit and submitted-history entry (2026-11-03, current-004)
 
 Saved surveys with no further submission permission show the actual mission title and the source `hHsHw:q0NBD` / `jxGJk:BjYCo` already-answered explanation before the existing own-history action. Revisiting is not a fresh submission success. All12 locale strings retain16/24px explanation type; the page title uses32/48px desktop and24/36px mobile, with20px group spacing. Scoped selectors prevent the shared page paragraph rule from changing the source24px line height. Mission-overview submitted-history links explicitly select `view=submission`; participation links retain their existing view, and both preserve locale and other query/hash values. Actual component browser checks cover12 locales×390/1440, history navigation and earnings destination; examples are synthetic local API data.
 
-### M06/M07 actual group earnings (2026-11-03, current-004)
+#### M06/M07 actual group earnings (2026-11-03, current-004)
 
 `group-earnings-screen.tsx`, `group-earning-result.tsx` and `group-earnings.module.css` own the real list/detail routes. Direct Pencil CLI native geometry for `OtyQM/EGVrD/tTXMv/Tnes3` defines960px desktop and358px at390px body widths,20px group gaps,32/48px desktop or24/36px mobile headings,18/27px row titles and16/24px body. Short list rows are89/81/89px; result rows81/81/78px, including padding. Long original titles/reasons and localized labels expand naturally. The48px return action is280px desktop/full width mobile. Mobile bottom clearance protects pagination from fixed navigation.
 
 The existing shared group identity and authenticated resource helpers remain authoritative. Scope describes the current group and all returned activity; it does not invent a cross-group filter. Only verified credited amounts are shown as credits; pending/rejected/no-reward/under-review/corrected/raffle-return states are distinct, and null is never converted to0. Original source title/reason is preserved; missing time is not replaced by occurrence time. Detail/back navigation preserves locale and opaque cursor. Source `HMCkB/EMnw2` empty/error/retry treatments are mutually exclusive. Local synthetic-fixture browser evidence covers all12 locales at390/1440, narrow long-text boundaries, errors, session changes, pagination and keyboard focus. This certifies the named component states, not whole shared chrome parity, live DEV data or every historical reward source.
 
-### Group form languages and narrow cancel labels (2026-11-03, current-004)
+#### Group form languages and narrow cancel labels (2026-11-03, current-004)
 
 Gift, invitation/consent, activity-photo/review and survey interface copy is complete for all12 APP_LOCALES; original user/source fields remain unchanged. Gift image removal/method placeholder and invitation Later action use the same locale owners. Editing a gift without changing fulfillment method preserves its stored original fulfillment description rather than replacing it with a translated label. New or explicitly changed methods retain the existing enum-to-description behavior.
 
 The photo/review task alone reduces mobile cancel-button horizontal padding from20px to8px, preserving source88px target width,48px height and14/20px label. This accommodates complete localized words without shrinking text or changing shared TaskPanel actions. Local synthetic fixtures verified144 form cases at390/1440, with48 additional photo/review cancel-label checks after this scoped padding correction. Actual French mobile and desktop consent captures were inspected; this is not native-speaker/legal or whole-shared-shell certification.
 
-### Actual global benefits, capsule and raffle (2026-11-03, current-004)
+#### Actual global benefits, capsule and raffle (2026-11-03, current-004)
 
 The groups-enabled `/benefits` route uses `GroupBenefitsScreen` with real wallet, paginated group raffle/mission catalog and public creator data; gate-off keeps the legacy screen. Source `sX58m/ajFsZ` orders balances/history, lucky draws, creator support and point events. Repeated raffle cards share content/metadata/action tracks with CSS subgrid so long titles and optional actual metadata do not misalign actions. No sample campaign promise, fake entry total or invented reward is copied into production. Capsule entry is generic and real published content supplies the remaining cards.
 
 Source `mF4bM/EqCqG/mC9VD/S38b4C` belongs to global 덕질: actual capsule/raffle consumers now use that frame without the old group identity/activity tabs; pageId remains API scope. `/benefits/` descendants retain the same selected global destination. Capsule desktop controls stack as in the source, while translated radio rows expand without text overlap. Existing accounting, consent, confirmation/receipt and direct-wallet-exchange semantics remain unchanged. The global side rail uses only supported destinations, not source-only creator/event examples. Native current004 source PNGs and actual no-preview component captures were inspected; synthetic fixture checks are not deployed wallet writes or full-source parity.
 
-### Existing-data collection presentation (2026-11-03, current-004)
+#### Existing-data collection presentation (2026-11-03, current-004)
 
 Actual `CreatorGroupCollection`, `GroupDetailScreen` and Activities→Collection bind the stored page name to a localized collection heading and source description. Stored names and product titles remain literal, including `$&` and `{name}`, and sale URLs retain query/hash and common outbound behavior. Source `ZwPUD/vkvq6` uses600×400px desktop and358×238.67px at390px contained artwork,40/20px product gaps and240×48/full-width48px seller actions. Mobile section title is20/26px and product title24/31px. At768–1023px details stack under the maximum600px image instead of collapsing to a narrow column. Existing items/status/selection remain intact.
 
 Source category/product-group samples have no authored persistence contract and are not invented or displayed as actual metadata. New classification management is not part of this implementation; the existing merchandise-view/seller-link function is retained.12locale actual-caller captures, long originals, sold-out/error/retry/pagination and keyboard evidence are scoped to that existing-data composition, not complete source grouping or deployed seller availability.
 
-### M01 mission conditions (2026-11-03, f5sjXn/UvV19)
+#### M01 mission conditions (2026-11-03, f5sjXn/UvV19)
 Direct CLI html-css declarations/native PNGs define the conditions title32/48px PC or24/36px mobile, API mission-title subtitle16/24px, source before-participation heading20/30px, and four16/24px fact rows. Facts use180px labels/24px horizontal gap on PC, stacked8px gap on mobile,16px row padding/20px separation and a half-pixel divider. Native short rows occupy55.5px PC/87.5px mobile effectively (56/88px browser rect minus.5px margin), avoiding exported HTML content-box double padding. Primary/secondary actions are280px PC/full-width mobile and48px tall. Actual API instructions/rewardPoints, including0P, replace examples; source unconfirmed-policy and timing-caveat text remains verbatim. No recognition count, specific payout date or sample reward is inferred. The source member requirement matches the existing SQL membership guard. Own history is disabled when no owned submission exists; submission/revision/view navigation and API permissions remain unchanged. Current shared chrome and actual optional content may differ from source examples; no whole-page100-point claim.
 
-## Managed discovery banners — 2026-11-03
+### Managed discovery banners — 2026-11-03
 
 User-approved: group discovery banners use the existing banner manager's image, localized copy and destination. Placement separates Home, group discovery and both; category is shown above the title (13px/700/20px): event, group, fan page, with existing news/LIVE categories retained. Preserve current artwork framing, carousel spacing and controls; support zero, one or multiple published banners. Links open the registered detail destination and preserve the selected locale. Local fixtures use the same public banner DTO; they do not represent live DB contents. Final visual verification is delegated to the user for this session.
 
-## Benefits hierarchy and currency artwork — 2026-11-03
+### Benefits hierarchy and currency artwork — 2026-11-03
 
 User-approved local review: apply the same asset summary → lucky draw → separated support/point activities hierarchy to the actual benefits screen and Pencil preview. Desktop title-to-assets gap is32px and assets-to-lucky-draw gap48px; mobile retains32px. Asset summary uses Canvas White #fff (UI-001 supersedes the initial gray proposal), the existing16px radius/1px boundary, and an internal divider (desktop vertical with32px spacing; mobile horizontal with20px spacing). Lower activities have a1px #e4e1e6 top divider and32px top padding; desktop columns48px apart, mobile32px. Amounts use tabular numerals and item tracks share subgrid alignment. Heart/ticket SVGs in public/images/economy use transparent128px viewBoxes and decorative empty alt beside their labels; preserve their full silhouettes. No financial-policy, amounts, destinations or lucky-draw artwork changes. Initial scoped14tests and CSS parsing passed; see UI-001 below for subsequent browser review. User retains final design approval.
 
-### UI-001 · white benefits asset hierarchy (2026-11-03, local only)
+#### UI-001 · white benefits asset hierarchy (2026-11-03, local only)
 
 Actual GroupBenefitsScreen and PencilBenefitsPreview preserve existing labels, images, balances, links, keyboard semantics and policies. Use white asset backgrounds with the existing16px radius/1px boundary. Point amount is40/48px desktop and32/44px mobile; ticket/heart amounts remain32/45px desktop and28/40px mobile. At widths below768px, history sits beside the point amount and the40px currency icons sit beside amounts, keeping labels and full-width44px-minimum actions in shared subgrid tracks. Preserve48px desktop icons with contained artwork and empty alt. Long action labels wrap rather than truncate. No new copy, animation, decoration or conversion policy.
 
 Page gap32px, with16px extra after the desktop asset summary (48px to lucky draw); mobile uses32px without the extra margin. At768–1023px lucky-draw cards stack to one column to retain readable image/title proportions;1024px+ keeps two columns. Support/point activities retain their existing divider and32px top padding. Local Aside review covers KO390/1440 and tablet768, plus actual component VI390 with long fixture content. The actual component uses existing synthetic API fixtures, not production balances. Evidence and current limitations live in work/local-team-20261103/tasks/UI-001/. UI-001 is excluded from separate DEV work and does not authorize deployment.
 
-### UI-002 · distinct benefits roles (2026-11-03, local only)
+#### UI-002 · distinct benefits roles (2026-11-03, local only)
 
 This follow-up supersedes UI-001's enclosing asset panel and lower divider treatment. Keep the asset background white and expose the existing localized wallet name (`walletCopy.wallet`) as its h2,24/34px desktop and20/28px mobile. Render balances as an open summary strip (no enclosing border/radius/padding), retaining the internal point/item divider and original amount hierarchy. Desktop exchange controls use natural width with144px minimum; mobile retains full currency-column width and44px minimum height. Do not add financial copy or change destinations/policies. The 2026-11-03 wallet polish places each existing currency icon before its amount in the same row with a 12px gap, using an intrinsic amount track and a trailing flexible space track; the amount row grows when long balances wrap. Labels and actions span the whole item, preserving shared subgrid amount/action alignment. Icon sizes stay48px desktop/40px mobile, contain/empty alt unchanged.
 
@@ -1519,7 +1794,7 @@ This structural distinction was selected after one scoped UI-002-R review: summa
 UI-007 (2026-11-03): 덕질 자산 전환 버튼 앞에 교환비율을 14px/20px #5d5d5d로 표시한다. 실제 화면은 검증된 wallet API pointCost, 정적 preview는 동일 walletSchema의 정책값을 사용한다. API 로딩/오류 상태에 추정 비율을 표시하지 않는다. 비로그인 상태는 정책 값이므로 공용 상수 `GROUP_WALLET_POINT_COST`로 실제 비율을 표시한다(2026-11-06 사용자 원칙). 잔액/아이콘과 버튼의 두 열 정렬을 유지한다. UI-007b (2026-11-05): 합계는 선택 수량×API `pointCost`이며 같은 규칙이다. 중간에 멈추면 수량을 1로 되돌려 합계가 실제 잔액 기준으로 나온다.
 
 
-### UI-013 · 지갑 / 사용 목적 / 참여 이벤트 (2026-11-03, local only)
+#### UI-013 · 지갑 / 사용 목적 / 참여 이벤트 (2026-11-03, local only)
 
 이 계약은 UI-002의 럭키드로우 경계·하단 배치와 UI-007의 전환 버튼 위치만 대체한다. 흰색 지갑 요약, 검증된 API 교환비율(14/20px), 잔액과 아이콘 사이12px 및 아이콘48/40px는 유지한다. 전환 행동은 해당 사용 목적 카드 하단으로 이동하며 기존 My 지갑 목적지·정책을 유지한다.
 
@@ -1530,7 +1805,7 @@ UI-007 (2026-11-03): 덕질 자산 전환 버튼 앞에 교환비율을 14px/20p
 actual/preview는 같은 역할 구조를 사용하지만 preview의 기존 예시 수치·정적 이벤트를 운영 데이터로 간주하지 않는다. 로컬390/768/1440 및 긴 문구·빈/오류/비로그인 확인과18개 국소 테스트 근거는 work/local-team-20261103/tasks/UI-013/에 있다. 운영 데이터·배포 검증이 아니며 최종 시각 판단은 사용자에게 있다.
 
 
-### UI-016 · benefits composition polish (2026-11-03, local only)
+#### UI-016 · benefits composition polish (2026-11-03, local only)
 
 UI-013의 흰 지갑→두 목적 카드→분류된 세로 이벤트 구조를 유지한다. 지갑은 PC1:2 grid 안에서 points/두 자산의 라벨20px·수치 최소48px·하단44px 행을 맞추고 수치는32/48px로 통일한다. 모바일은 포인트 한 행과 두 자산 행으로 유지하며 자산 수치는28/40px, 아이콘 다음 잔액 사이 12px를 보존한다. 긴 잔액은 수치 행을 늘려 교환비율과 겹치지 않게 한다.
 
@@ -1540,19 +1815,19 @@ UI-013의 흰 지갑→두 목적 카드→분류된 세로 이벤트 구조를 
 
 UI-009 (2026-11-03): 게시판 CompactFeed의 제목/댓글수 행은 chevron·inline 펼침 없이 원래 글 ID 상세로 이동한다. cheer는 source=cheer로 기존 상세의 권한검사 원문 읽기/댓글을 사용하며 fan_post로 변환하지 않는다. 제목은 원문 첫줄, 본문은 원문 그대로; 기존 상세 타입·returnTo·키보드 링크 동작 보존.
 
-### UI-010 팬페이지 제목 별
+#### UI-010 팬페이지 제목 별
 
 > 2026-11-07 Q1로 대체됨: 머리의 별은 `FanStarAction` 하나다(팬페이지는 팬 인증, 취미·브랜드·모임은 가입). 아래는 당시 기록이다.
 - 팬페이지 제목 옆 별은 해당 slug의 기존 `/c/[slug]/verify?locale=…` 팬인증 진입 링크이며 접근 가능한 이름은 기존 번역 `팬 인증`을 사용한다. 북마크 여부를 인증완료 표시로 사용하지 않는다. 로그인·이미 인증·퀴즈 없음 처리는 기존 QuizEntryScreen 정책을 따른다. 브랜드 제목 별 및 메뉴의 북마크 기능은 보존한다. 기존 별 크기22px/버튼 스타일을 재사용한다.
 
-### UI-012 회원·랭킹 탭과 프로필 보기
+#### UI-012 회원·랭킹 탭과 프로필 보기
 - CreatorGroupHeader와 GroupDetailScreen의 회원·랭킹은 캘린더 바로 다음 동일 navigation 링크다. 기존 `/pages/groups/{id}?locale=…&tab=members` 및 returnTo 처리, 하위 회원/내 친구/팬랭킹 상태를 보존한다. 우측 별도 회원 버튼은 제거하고 메뉴는 유지한다. 1023px 이하 해당 nav는 탭이 한 줄 폭을 넘으면 가로 스크롤하며(아래 팬페이지 탭 규칙) 선택 탭은 기존 aria-current/브랜드 underline을 사용한다. 회원·랭킹 탭 라벨은 es·id·vi·pt·fr·ru에서 390 기준 원문구가 탭 폭 358px을 넘어(367~409px) 줄인 문구를 쓰고, 랭킹은 목적지 화면 안에 있다. en은 원문구를 유지한다.
 - GroupMembers의 프로필 보기 affordance는 행 전체 Link 안의 span이며 중첩 버튼을 만들지 않는다. 기존 `fanActionClassName('neutral')`를 재사용해 중앙정렬/line-height1.2를 공유하고,44px 높이·가로12px padding·8px gap·18px chevron·내용기반폭을 적용한다. 기존 모바일 축약 `프로필`과 긴닉네임 줄바꿈을 유지한다. 국소 렌더 측정: PC약115.65px/모바일88.30px 폭, 모두44px 높이/16.8px 줄높이.
 
-### UI-018 · 전환 조회 / 응원 연결 체크포인트
+#### UI-018 · 전환 조회 / 응원 연결 체크포인트
 전환 preview의 받을 응모권은 한개선택 select 대신 기존 Kyaa 공식 응모권 고정라벨이다. 기본 사용자진입의 잔액/비율/계산은 wallet GET의 검증된 schema값으로 표시하고 실패를0이나성공으로 바꾸지 않는다. 명시한 ticket/heart 오류 node는 원래시안을 유지한다. 광고 성공/차감은 만들지 않으며 재조회만 수행한다. 응원 진입은 WalletSupportDialog를 재사용하며 actual의 선택 slug 또는 preview nchive를 명시적으로 전달한다. href deep-link는 유지하고 수정키 없는 primary activation만 모달로 연다. 기존 OwnedWallet의 ownerKey+slug 상태경계/auth/receipt를 재사용한다. 공통 accessible-overlay Dialog는 폭min(100%,560px),높이최대calc(100dvh - 32px),흰배경/radius16px/padding24px·모바일16px와 focus trap/Escape/지연초점복귀를 사용한다. 로컬초안은 합성·제안·운영미반영 disclosure이며 공통 Dialog를 사용한다. 390px에서 하트 전환 CTA를 가린 fixed 배치는 폐기한다. 로컬초안 trigger는 content와 footer 뒤 provider 끝에 단일 인스턴스로 두는 normal-flow end chrome을 사용한다. 헤더 앞 삽입 및 행동 위 고정 겹침을 피한다. 현재 main.tsx의 해당 순서는 소스로 확인했으며 최종 통합 캡처는 checks 검증 대상으로 남긴다.
 
-### ARCH-001 · 두 공통 레이아웃 계열 (2026-11-03, implemented / acceptance pending)
+#### ARCH-001 · 두 공통 레이아웃 계열 (2026-11-03, implemented / acceptance pending)
 
 인물(셀럽·크리에이터)은 팬페이지이며 모임이 아니다. 팬페이지끼리는 하나의 공통 팬페이지 구성을, 취미·브랜드 모임끼리는 별도의 공통 모임 구성을 사용한다. 두 계열을 하나의 시각 레이아웃으로 강제하거나 개별아티스트/모임별 마크업을 복제하지 않는다. 실제 데이터·기능가용성·가입/접근권한 차이는 보존한다.
 
@@ -1564,10 +1839,10 @@ backend 구현체크포인트 기준: 검증된 kind=fan + celebrityId + 유효s
 
 ARCH-001 최신 사용자 확인: 두 공통 계열은 최종 목표 계약이며 전체 구현 완료를 뜻하지 않는다. 현재 canonical brand /[slug]의 CelebrityFanPage/CreatorGroupHeader 사용과 generic brand/hobby 헤더 CSS 차이는 backend의 남은 모임 계열 통합 범위다. 해당 경로의 최종 source 및 각 계열 390/1440 근거 확인 전 공통 모임 레이아웃 적용 완료로 표시하지 않는다. coordinator 디렉터리 인계는 별도 pending을 유지한다.
 
-### UI-015 · 확정 캡슐 영상 연결 (2026-11-03, local only)
+#### UI-015 · 확정 캡슐 영상 연결 (2026-11-03, local only)
 MEDIA-001의 실제 WebM/MP4 및 poster를 공통 CapsuleReveal에서 사용한다. 서버 확정 receipt 이후에만 muted/playsInline/no-loop로 한 번 재생하며 ended는 기존 TaskPanel 결과모달로 이어진다. 영상은 width100%/max-width480px/aspect-ratio1/object-fit contain/radius12px로 전체 기계를 보존한다. 원본의 불투명 웜그레이 배경은 영상 내용이며 새 CSS 회색 면이 아니다. play 거부/미디어 오류/10초 미완료에는 정지 poster와 기존 결과 바로 보기 행동을 유지하고, reduced-motion은 재생 없이120ms 후 같은 확정결과를 표시한다. skip/닫기/재열기는 새draw를 실행하지 않으며 기존receipt/idempotency/계정경계를 유지한다. 하단 경품·확률·기록 분리와 사전고지는 유지한다. actual/preview390·1440에서 실제 WebM decode/currentTime/ended→모달/Escape복귀를 확인했다. 브라우저별 MP4 자동대체의 전기종 검증을 뜻하지 않는다.
 
-### ARCH-001 · 등급/탭 및 모임 공통 구성 추가 체크포인트
+#### ARCH-001 · 등급/탭 및 모임 공통 구성 추가 체크포인트
 backend 최신 design-proposal의 구현·국소검증 근거를 반영한다. 사람 팬페이지의 CreatorFanGrade는 인증된 owner-scoped `/api/me/summary?locale=...&tierStages=1`에서 현재 slug의 passport만 사용한다. 기존 FanTierBadge/stage/level 표기를 재사용하며 badge24px,글자13/20px,gap8px,링크최소44px,줄바꿈을 적용한다. 복원중/guest에는 이전개인등급을 노출하지 않고 loading/error/retry를 구분하며 passport가 없으면 기존 인증링크로 연결한다. 헤더 Silver와 방 입장요건 Gold는 서로 다른 데이터이며 요건으로 개인등급을 추론하지 않는다.
 
 팬페이지 탭은 gap0, 높이56px이다. 1024px 이상은 동일5열(1440 실측 전체600px/각120px, 좌우padding 12px)이고, 1023px 이하에서 탭이 한 줄 폭을 넘으면 줄바꿈 없이 가로 스크롤하며 모바일 좌우padding은 8px이다(2026-11-04 갱신, 이전 5열 균등·4px 실측 대체). 이전 calendar만의74px/43px·탭별offset 규칙을 팬페이지 계열에서 대체한다. 모임 계열에 팬페이지 스타일을 강제하지 않는다. 관련 room/month/board 필터·returnTo·원래 회원ID 경로 보존 및 hash-jump 제거/Link scroll=false는 적용된 계약이나, 이것만으로 문서reload 방지가 검증된 것은 아니다.
@@ -1582,14 +1857,14 @@ UI-018 최종 notice 실측/소스 동기화: compact trigger의 wrapper는 flex
 
 UI018 잔액 정합성 보완: 기본 Pencil benefits 요약의 points/tickets/hearts/pointCost는 지원모달과 동일한 기존 `/api/me/wallet` 응답을 walletSchema로 검증해 표시한다. 로딩/조회실패에는 원래고정값·0잔액으로 대체하지 않고 상태/재시도를 제공한다. wallet-changed 이벤트에 재조회하며,명시적 ticket/heart 오류 source node의 고정시안만 보존한다. 390/1440 공유로컬에서 요약2하트와 지원모달2하트가 일치함을 확인하여 앞선 기본화면35/2불일치는 해소했다. 정책/fixture잔액을 임의수정한 것이 아니다.
 
-### DATA-001 · 관리형 캐러셀 원본 비율 (로컬 구현 완료)
+#### DATA-001 · 관리형 캐러셀 원본 비율 (로컬 구현 완료)
 DiscoveryCarousel은 등록된 desktop/mobile URL·원본alt·자연크기를 보존하는 단일 responsive picture를 사용한다. PC 기존960×480 slide 안에서 정사각 WeNa480×480 원본은480×480 이미지와 copy열로,가로형 NCHIVE1638×819 원본은960×480 및 기존하단copy로 표시한다. 모바일/768은 등록모바일원본을 사용하여 WeNa2560×1890→300×221.484375,NCHIVE704×880→300×375로 비율을 유지한다. cover crop/비율왜곡/모바일배경중복을 만들지 않는다.
 
 track의 slide는 같은높이로 stretch(KO실측552px)하여 전환시 높이변화를 방지한다. 짧은이미지 아래 더큰흰copy영역은 의도된본문영역이며 이미지letterbox가 아니다. NCHIVE 모바일 하단어두운영역은 원본source-1-mobileImage.webp 내용으로 보존한다. 옆slide부분노출은 기존동작이고 inactive/inert이며 활성원본전체는 보인다. URL·문구·순서·featured선정/랭킹 변경은 이프레이밍계약에 포함하지 않는다.
 
 backend DATA-001 완료인계 근거: 원본4이미지와 양slide KO390/768/1440,EN390/1440 settled캡처 직접검수,WeNa4명/NCHIVE6명·WELCOME보존. 초기resize과도기캡처는최종근거아님. pause/dot/arrow와Next Enter 활성slide변경,국소5tests/crop-tests.log 및diff PASS. 기존source-equality/link-identity 근거재사용. layout은문서동기화만수행하며동일브라우저·검사를반복하지 않았다. 로컬3128의관리형home데이터/합성directory검증이고운영반영이 아니다. 사용자최종시각판단은남으며 ARCH/UI014 완료를뜻하지 않는다.
 
-### ARCH-001 · 디렉터리 두 계열 분류 구현
+#### ARCH-001 · 디렉터리 두 계열 분류 구현
 coordinator의 정확한 인계 후 backend가 구현한 디렉터리는 인물 팬페이지를 독립 계열로 표시하고 취미/브랜드는 모임 계열의 구분된 필터로 표시한다. featured/browse/owned sidebar의 제목·메타데이터도 같은 분류를 사용하며 혼합목록의 오류/빈상태는 사람을 모임으로 통칭하지 않는다. 원래 이름·groupHref검증연결·query/API/검색/정렬/페이지네이션은 보존한다. featured는 기존 전체인기순 첫3개/기존순서이며 계열별3개나 새랭킹으로 바꾸지 않는다.
 
 모바일에서는 검색/정렬을 계열필터 아래로 배치하고 취미/브랜드 버튼을 중첩overflow로 압축하지 않는다. 기존역할필터스크롤은 유지한다. backend directory-tests.log1PASS 및 실제로컬 fan→brand→hobby 필터2/1/17·390/1440최종캡처 근거를 재사용한다. 수치는해당합성fixture관찰이지운영건수가 아니다. 초기HMR/stale refs캡처는최종근거에서제외한다. 배너재작업/데이터재등록/순서변경없음.
@@ -1600,32 +1875,32 @@ UI014 로컬 구현: 가입한 페이지 사이드바의 최근 방문순은 현
 
 오늘 주목의 로컬 순위 계약은 KST 당일 인증된 고유 heartbeat 사용자 수를 우선하고, 동률은 공개 유효 게시물 수·생성시간·ID 순으로 정한다. 비활성 계정과 artist binding은 방문 집계에서 제외하며 공개 가능한 페이지의 첫 3개만 사용한다. 카드의 기존 memberCount는 회원 수로, 오늘 방문이나 게시물 수가 아니다. 전체 웹 방문자·실시간 접속 또는 개인 최근 방문 순위로 표현하지 않는다. 원본 visibility 함수 체인을 일부 합성 schema에 연결한 로컬 검증 근거다. 별도 실제 GroupDirectory 합성 하네스에서 390/1440의 세 카드 순서·원본 합성 ID 링크·키보드 초점과 가로 넘침 없음을 확인했다. 필수 DTO placeholder는 실제 회원 수나 활동 수가 아니며 하단 일반 목록 검증도 아니다. 실제 DB 적용·운영 인증·성능·운영 데이터 순위 화면은 미검증이다. 공유 로컬 fixture의 의도된 503에서는 영역을 유지하고 기존 오류 안내와 최소44px 재시도 행동을 표시한다. 로딩과 명시적 빈 상태도 구분하며, 390/1440 오류 화면 및 국소 4 tests를 확인했다. 테스트의 재시도 복구는 mock rerender이며 실제 네트워크 복구와 정상 서비스 200 화면의 증거는 아니다.
 
-### UI020 · 디렉터리 페이지 개설 신청 맥락 모달 (승인 계약 / 최종검수 진행중)
+#### UI020 · 디렉터리 페이지 개설 신청 맥락 모달 (승인 계약 / 최종검수 진행중)
 디렉터리의 팬페이지 개설 신청 및 취미·브랜드 페이지 개설 신청은 기존 TaskPanel을 재사용하는 맥락모달로 연결한다. PC폭800px/max-width viewport-32px,radius16px,header76px,본문padding24px. 모바일390px에서는fullscreen/본문padding16px/내부스크롤/고정제목·기본하단행동80px를 사용한다. 이값은 사용자승인계약이며 최종렌더실측완료를뜻하지 않는다.
 
 첫 화면은 이름·소개 두 필수 입력을 우선한다. 팬 신청은 유형 선택 없이 fan으로 고정하고 취미·브랜드는 기존 두 종류 선택을 유지한다. 사진·가입 질문·운영자 자격 자료는 선택 details에 두며 summary는 최소44px과 focus 표시를 유지한다. 장문 qualification은 같은 창의 기존 필수 근거 폼과 하단 행동을 재사용하고 단계 전환 중 기본·증빙 초안을 보존한다. 기존표준검증/API/승인정책을변경하지 않으며 성공receipt확인후만접수상태를표시한다. Escape/닫기/browserBack은기존sourceDiscardConfirmation으로동일dialog안에서확인하고 중첩모달을추가하지 않는다. focus trap/복귀/body scroll lock은TaskPanel소유이다. 기존독립direct routes와수정키링크동작을보존한다.
 
 새CSS는group-application-dialog.module.css에한정하고 input border-box로내부넘침을방지한다. shared TaskPanel/groups CSS는변경하지 않는다. 로컬 API double의 초기 화면 390/1440과 자격 단계 화면 390/1440, 관련16tests를 확인했다. 자격 단계 왕복과 이전 입력·자격 초안 보존은 390과 1440에서 확인했다. 1440은 합성 API double에서 키보드 Enter로 이전·재진입 및 하단 초점을 확인한 근거다. 실제 신청·업로드·자격 상태 조회·운영 데이터 검증이나 배포를 뜻하지 않는다.
 
-### UI021 · 지갑 초기 로딩 (로컬 부분 구현)
+#### UI021 · 지갑 초기 로딩 (로컬 부분 구현)
 
 WalletScreen과 공통 응원·출석 모달은 인증 준비 및 지갑·응원 대상·이력의 최초 조회에 해당 화면 형태의 skeleton을 사용한다. 상태는 이름 있는 role=status/aria-busy, 장식은 aria-hidden이며 reduced-motion에서는 애니메이션을 끈다. 기존 값이 있는 재조회는 내용을 유지하고 로딩·인증·오류·빈 상태·영수증을 구분한다. PC 지갑의 사이드 placeholder는 독립 지갑에만 두고 모달에는 넣지 않는다. 숫자나 인위적 지연은 만들지 않는다.
 
 로컬 합성 gate에서 지갑·응원·이력·출석의 390/1440 초기 로딩과 기존 성공·오류 경로를 확인했고, 출석 오류 후 키보드 재시도도 확인했다. 출석 모달 CTA와 닫기 버튼은 검증한 두 폭에서 최소44px 이상이다. 브라우저 reduced-motion에서 각 skeleton과 장식 및 가상 요소의 애니메이션이 꺼짐을 확인했다. 수정 후 응원 모달의 로딩→실제 내용은 390/1440 모두 상단 차이 0.75px·높이 차이 1.5px이며, 1440 지갑의 첫 잔액 면 placeholder와 실제 면은 모두 top 211px이다. 빈 이력은 섹션이 약116.4px 줄어드는 내용을 그대로 유지한다. 이 좌표 차이는 CLS 측정이 아니며, 항목이 있는 이력의 이동·실제 스크린리더·다른 언어의 긴 문구는 미검증이다. 전체 UI021 완료나 운영 검증을 뜻하지 않는다.
 
-### UI021 · 덕질 초기 로딩 (부분구현, local)
+#### UI021 · 덕질 초기 로딩 (부분구현, local)
 GroupBenefitsScreen의 자산요약/이벤트 원본/응원대상 최초조회는 기존 benefit skeleton의 oklch(94% 0 0),radius6px,1.4초 pulse 표현을 역할 geometry에 맞춰 사용한다. wallet은 PC3열·모바일 point후2열,이벤트는 각 source당 이미지80×60/모바일64×48과 텍스트행,응원대상은48×48/모바일32×40 placeholder다. 시각요소 aria-hidden,상태는 role=status/aria-busy+기존 locale loading명칭이며 reduced-motion에서 animation없음. 이미 수집한 목록이 있는 다음페이지 로딩에는 내용을 유지한다. auth/empty/error/retry·실제값·원래전환정책을 보존하며 placeholder 숫자/인위적지연을 만들지 않는다. 이 회색은 조회중에만 나타나는 skeleton 상태이며 덕질 기본배경에 회색면을 추가하지 않는다.
 
 actual local synthetic fixture390/1440 loading·ready·error 캡처/14tests 및 마지막변경 영향1test를 확인했다. browser state들은 별도fixture 방문이며 같은화면 지연→응답 전환은 자동test에서 확인했다. fixture는 public creator를 지연시키지 않아 응원대상 skeleton 실브라우저는 미검증. UI021 다른소유범위/전체완료·운영반영 아님.
 
-### 팬등급 위치·배너 표면 경계 (post-snapshot 부분 검증)
+#### 팬등급 위치·배너 표면 경계 (post-snapshot 부분 검증)
 사람 팬페이지의 기존 owner-scoped exact-slug CreatorFanGrade는 제목·설명 stack에서 분리해 우측 creatorUtilities의 SNS 링크 위에 둔다. creatorUtilities는 flex column/gap8px,모바일 actions는 height:auto/min-height44px이고 유틸리티는 유연하게 흐른다. guest/unknown/검증링크·기존 SNS/가입/탭/identity 계약은 유지하며 구체적인 재검증은 아직 남는다. 사용자 전역 원칙: 하나의 컴포넌트에 독립 정보·행동 셋 이상을 단일 목록으로 몰지 않고 의미별영역으로 나눈다. 기존 기능 삭제나 전사이트 일괄변경을 뜻하지 않는다.
 
 관리형 discovery slide는 기존 radius20px에 inset 1px solid #e4e1e6 outline으로 artwork와 흰 copy를 하나의 배너 surface로 구분한다. 원본 responsive URL·비율·얼굴·내장문구·CTA/controls를 보존한다. backend scoped header/carousel12tests 및 모바일경계·양크기 grade 캡처 근거를 재사용한다. desktop배너 캡처는 viewport resize 직후 모바일원본이 남아 유효근거가 아니므로 settled reload 후 재확인 필요. guest/unknown·긴문구도 변경범위 검수 대기이며 grade 캡처에는 기존 source-error alert가 보인다. 전체 시각완료/운영반영을 뜻하지 않는다.
 
 팬등급/SNS 정렬 후속: creatorUtilities는 align-items:flex-end/gap8px로 등급과 SNS 행의 오른쪽 기준을 맞춘다. 합성 harness의 390/1440 영어 Platinum 4, unknown 인증 링크, guest 등급 숨김에서 오른쪽 차이 0px, SNS 링크 각각 44×44px 및 가로 넘침 없음을 확인했다. 다른 언어의 가장 긴 등급과 실제 계정은 미검증이다. 접속 현황을 불러오지 못할 때는 기존 meta 역할의 13px/1.5/#5d5d5d 짧은 role=status 문구만 표시하고 숫자·아티스트 접속을 추정하지 않는다. 일시적 GET 실패는 한 번 재시도하며 인증 오류·abort·명시적 transport 미설정은 반복하지 않는다. 기본 `/nchive?locale=ko`의 로컬 transport 미제공503에서는 390/1440 상태 화면을 확인했으나, 실제 인증 transport 연결·성공은 미검증이다. 기존 API001 guard/인증/권한을 우회하거나 허위인원을 표시하지 않는다.
 
-### UI011-D · 공유 전체 달력 compact 구현 (이전 구현 기록)
+#### UI011-D · 공유 전체 달력 compact 구현 (이전 구현 기록)
 
 아래는 이전 공유 전체 달력 compact 구현의 기록이다. 현재 사이드카드는 문서의 최신 embedded mini 계약을 따르며, 아래 전체 달력 검증을 mini 카드 증거로 사용하지 않는다.
 사이드 일정카드는 기존 CreatorGroupCalendar→GroupCalendarPanel→LiveCalendarScreen 실제공유달력을 항상 compact 표시한다. 공유 CalendarArt 높이는 PC165px/모바일130px,월 헤더와7열 날짜 grid를 사용하며 day min-height44px이다. 크기조절은 CSS로 처리하고 버튼에 transform 축소를 적용하지 않는다. 기존 실제 group/artist LIVE source·KST·선택월·이벤트 상세 및 선택월이 담긴 전체달력 링크 하나를 유지한다. 샘플일정이나 접기토글을 추가하지 않는다. 초기 identity/page 로딩에는 기존 live catalog shimmer를 재사용한 grid-shaped accessible status skeleton과 reduced-motion을 제공하고 오류·재시도는 별도 유지한다.
@@ -1636,76 +1911,76 @@ UI021 덕질 추가검증: 전용 local creator GET gate를 수동해제해 실�
 
 UI011-D 최종근거 동기화: compact loading skeleton은 art 높이130px/radius12,월 placeholder 폭50%·높이32px,7열 gap8px·cell 높이36px/radius8; full은 art180px/cell80px이며 status/aria-busy 및 reduced-motion을 유지한다. 기존 live shimmer의44px override 충돌을 소유자가 수정한 이후의 실측값이다. assets controlled 합성 resolver의390/1440 loading→success 및 503→retry→success 근거가 직전 미검증문구를 대체한다. 최종 실제 shared3128 화면에 보이는 날짜버튼30개 전수 실측에서390 최소46.28×46 CSS px,1024/1440 최소44×44 CSS px이며 가로넘침0으로 프로젝트 필수44×44를 충족한다. compact 전용으로 기존 margin-left:32%와 header margin/max-width/size를 보정하고 calendar margin-inline을 0으로 하여 1024의 월헤더 offset을 수정해 이전/다음 월 버튼 모두44×44로 viewport 안에 표시되며 다음월 클릭→12월을 확인했다. desktop 1024px 이상 rail은342px이며 이전312px rail·39.71×43 실측 및 40px min-height 미달 판정을 대체한다. transform 축소없음. 정상이미지와 다음월/전체달력링크는 기존근거 재사용. 모든근거는 로컬합성,post-DEV snapshot 변경이며 운영검증이 아니다.
 
-### UI011D 이전 복원 기록 · 공유 전체 달력 compact (현재 mini 카드 아님)
+#### UI011D 이전 복원 기록 · 공유 전체 달력 compact (현재 mini 카드 아님)
 CreatorScheduleCard는 기존 CreatorGroupCalendar→GroupCalendarPanel→LiveCalendarScreen compact를 다시 사용한다. 기존 group/artist source·slug/identity/locale/KST·loading/error와 단일 전체달력 링크를 유지하며 선택월을 링크에 전달한다. 샘플행·접기 토글은 없다. 직전 CelebrityMiniCalendar 사이드카드 및 선택월 reset 미완료 상태는 최신 복원으로 대체됐다. 소유자는 자신의 카드·테스트 변경만 복원했으며 다른 공유 달력/art/rail dirty를 되돌리지 않았다.
 
 assets의 복원 후 card1test·실제3128 390/1440 날짜30개 전수(최소46.28×46 및44×44,가로넘침없음)와 동일 복원 구현의 기존8tests·controlled loading/error/retry·1024 월 이동·선택월 전체링크 근거를 재사용한다. 합성 로컬 fixture이며 운영 일정·배포 검증이 아니다. 이전 불명확한 소유 탭 정리 여부는 확정하지 않는다.
 
-### UI011D 최신 현재 카드 · embedded mini (post-DEV snapshot / 로컬 범위 검증)
+#### UI011D 최신 현재 카드 · embedded mini (post-DEV snapshot / 로컬 범위 검증)
 최신 지시에 따라 CreatorScheduleCard는 기존 CelebrityMiniCalendar를 creator·locale과 embedded로 즉시 렌더한다. 샘플행·접기 toggle 없이 기존 전체달력 링크 하나를 유지한다. 390/1024/1440 실제 월 이전·다음 버튼은 각44×44·viewport 내부,가로넘침0으로 관찰됐다. 별도 controlled harness의 명시적 합성 이벤트 날짜 버튼은342px 카드에서390/1024/1440 모두44×49px,넘침0이며 Enter 선택을 확인했다. 실제 운영 이벤트를 뜻하지 않는다. 실제 컴포넌트의 로딩 status와 장식 skeleton bar는 max-width180px/height16px/radius8px이며,오류 alert의 retry는 최소높이44px·focus ring을 사용한다. 합성 test-only gate로390/1440 loading→503→retry→success를 확인했고 제품 지연을 추가하지 않았다.
 
 mini의 기존 onMonthChange callback으로 선택월을 단일 전체달력 링크의 month 쿼리에 전달한다. 로컬 실제 12월 선택 후 `/nchive?tab=calendar&locale=ko&month=2026-12` 도착과 scoped callback/link 1test를 확인했다. 이전 공유 전체달력 compact의 날짜30개·로딩 검증은 현재 mini 카드의 증거가 아니다. 기존 공유 calendar/art/rail 변경은 다른 실제 사용처를 소유자·release writer가 추적할 때까지 보존한다. post-DEV snapshot 로컬 합성 검증이며 운영 일정·배포를 뜻하지 않는다.
 
-### UI022 · 팬 인증 목록 카드 (부분 구현, 로컬)
+#### UI022 · 팬 인증 목록 카드 (부분 구현, 로컬)
 기존 CertificationPanel의 공개 인증 목록은 API가 제공한 kind/category/title/description/actionHref만 표시한다. 인증 가능한 전체 카드 링크는 최소높이152px,기존흰배경/radius16px/padding20px와 동일 정보순서를 유지하고 keyboard focus-visible 3px #d11b62 outline/offset3px을 제공한다. 선택을 새로 저장하는 UI나 임의 인증종류·단계를 만들지 않는다. 로그인 소유자의 기존 `/api/me/celebrities/:slug/certifications` 응답을 strict historyItemSchema로 검증하고 같은 kind+missionId의 최신 제출상태만 각 카드에 표시한다. 승인(ko 인증 완료),pending(검토중),rejected(반려)를 구분하며,인증준비/게스트/계정·slug 변경에서는 이전 owner 상태를 재사용하지 않는다. 개인 이력조회 실패는 기존 오류/재시도 표현이며 완료로 바꾸지 않는다. 원래 공개 availability/actionHref/퀴즈·제출 경로와보상을 변경하지 않는다.
 
 2026-11-03 공개 NCHIVE 인증 목록의 Official Fan 퀴즈 1개를 소스 기반 로컬 fixture로 확인했으며, 다른 시점·인물의 종류나 개인 자격을 일반화하지 않는다. NCHIVE 개인 이력 fixture의 503은 오류·재시도로 표시하고 승인이나 미승인으로 추정하지 않으며 공개 목록을 지우지 않는다. 기존 인증 패널의 합성 390/1440 승인·초점, pending/rejected/error/loading/guest·긴 제목 및12tests 근거를 재사용한다. 팬 sidebar/mobile 인증 카드는 기존 certifications 탭으로 연결되며 390/1440 키보드 이동과 locale·returnTo 보존을 로컬에서 확인했다. 별도 통제된 guest hook을 사용하는 실제 sidebar·패널 하네스의 1440에서는 원래 href로 Enter 이동 후 공개 퀴즈·로그인 안내와 Back/Forward를 확인했고 개인 이력 GET은 없었다. 공개 목록 503→Enter 재시도는 별도 390 패널에서 확인했다. 공유 환경의 기존 auth shim 이동 연속성, 390 게스트 sidebar 호출부와 실제 개인 이력은 미검증이다. 실제 계정 인증·업로드·운영 데이터/배포 검증이 아니다.
 
 UI011D mini 카드 배치 보완: 제목과 선택월을 전달하는 단일 전체달력 링크를 상단 header에서 좌우 배치한다. header flex gap8px,링크 text12px/padding8px/min44×44px,360px 이하는 wrap이며 기존하단 중복행동과 겹친화살표는 제거한다. 실제 KO390/1024/1440 링크96×44px,EN390 100.02×44px·넘침0. embedded 기본일정 목록의 중복 제목은 선택일이 없을 때만 숨기고 선택일 제목·이벤트/빈상태는 유지한다. 목록 gap4px/padding8px,데이터·KST/오류/재시도는 변경하지 않는다. assets card1test·390 다음월→Enter 전체링크의 month 유지와 정상캡처,기존mini 로딩/이벤트 검증을 재사용한다. 360px 이하 wrap과 영어 외 긴번역은 실제 브라우저 미검증; 합성 데이터/post-DEV snapshot이며 운영반영 아님.
 
-### 팬페이지 이야기 헤더 (2026-11-03, 로컬 후속)
+#### 팬페이지 이야기 헤더 (2026-11-03, 로컬 후속)
 
 `CreatorGroupHome`의 이야기 제목, 기존 필터와 전체 보기·글쓰기 행동을 하나의 헤더로 묶는다. 데스크톱에서는 한 행에 배치하고, 1023px 이하에서는 제목 아래 도구 영역이 줄바꿈하며 모바일에서도 필터와 행동을 숨기지 않는다. 기존 필터 상태·링크·권한을 유지한다. 로컬 합성 화면의 390/1024/1440 캡처와 390/1024의 44×44px 이상 제어 영역, 1024 키보드 필터 동작 및 관련 테스트 1건은 backend 근거를 재사용한다. 이 변경은 DEV001 스냅샷 이후이며 운영 검증이 아니다.
 
-### 덕질 교환·응원·추첨 구성 (2026-11-03 로컬 작업 중)
+#### 덕질 교환·응원·추첨 구성 (2026-11-03 로컬 작업 중)
 
 기존 흰 지갑과 자산 아이콘 선행 순서를 유지한다. 그 아래 교환 행동은 반경16px의 하나의 흰 경계 안에 사용 가능 포인트와 응모권·하트 선택, 검증된 비율 및 단일 행동을 묶고, 다음에 전체 너비 응원과 럭키드로우 캠페인 카드 순서로 둔다. 덕질의 포인트 이벤트 섹션과 해당 mission 목록 요청은 제거하며 다른 미션 화면·API는 유지한다. 응원은 기존 공개 창작자 데이터 순서의 48px 원형 이미지·이름을 native radio로 하나 선택하며 선택 윤곽과 체크는 선택만 의미한다. PC는 대상과 수량을 두 열로, 모바일은 쌓아 배치한다. 기존 Base UI 단일 thumb slider와 정확한 숫자 입력을 함께 사용한다. 범위는 1부터 실제 wallet 잔액과1000 중 작은 값까지이며 잔액0은 입력 비활성, 잔액1은 slider 비활성이다. thumb 44×44px·현재값 말풍선과 기존 브랜드 강조를 사용한다. 기존 지갑 확인 모달로 선택 수량을 전달하고 wallet GET과 모달에서 각각 확인한다. 원래 수정 클릭용 링크, 개인 상태·오류·기존 전환 경로를 보존한다.
 
 럭키드로우 카드는 기존 캡슐 진입과 API의 실제 캠페인을 구별해 표시한다. 카드의 기존 이미지·제목·상태·기한·원래 링크를 유지하고 API에 없는 경품·수량·비용은 만들지 않는다. 사용자가 승인한 카드 내부 색상 예외로 캡슐은 연한 노랑, 캠페인은 연한 분홍 프레임을 사용한다. 주변은 흰색이며 768px 이상 2열, 그 미만 1열이다. 이미지 최대폭360px·높이280px(모바일200px) contain, 반경20px이며 제목은 위, 기존 설명·상태는 아래에 둔다. 합성 실제 컴포넌트와 preview의 390/768/1024/1440 이미지 로드·외곽 및 넘침을 확인했다. 실제 컴포넌트 KO/EN/JA 390/1440, preview의 12개 언어 32개 폭 조합과 긴 합성 문구의 390/1440 행 높이를 검증했고 preview 주요 영역 axe A/AA는 두 폭에서 위반 0이다. 기존 passport/raffle-layout 필수 자동검사는 승인된 빈 4197 포트의 임시 서버로 실행해 32개 언어·폭 조합을 통과했고 서버는 종료했다. 이 검사는 새 benefits 카드 역할 자체를 대체하지 않으므로 별도 benefits 검증 근거와 구분한다. 선택은 native radio와 기존 분홍 선택 표시로 나타내며 기존 64px/모바일56px 자산 이미지를 contain한다. 하트 비율은 검증된 wallet GET으로 표시한다. 공식 응모권의 구분된 전환 계약이 없어 응모권 선택 시 실행을 비활성화하고 비율을 추정하지 않는다. 공식 응모권 전환과 광고 서버 검증·수량 전달 계약은 미완료다. 이 규칙은 UI-013/016의 두 목적 카드 배치를 대체한다.
 
-### UI019 · 출석 모달 (로컬)
+#### UI019 · 출석 모달 (로컬)
 
 직접 `/my/wallet?view=attendance` 진입은 최소 MY 화면과 기존 `WalletAttendanceDialog`를 사용하며 닫으면 MY로 돌아간다. 문맥 내 출석 링크는 기본 href와 수정키 이동을 보존하고 일반 클릭만 공통 Dialog로 연다. 닫기·Escape는 원래 링크에 초점을 돌린다. 공통 모달은 최대560px, viewport 양쪽16px 여백, 반경16px, 본문 padding PC24px·모바일16px 및 기존 focus trap을 사용한다. 기존 인증·requestKey·영수증 복구를 유지하고, 검증된 출석 영수증 이후 별도 wallet 재조회로 확인한 잔액만 표시한다. 실패는 기존 오류와 재시도를 표시한다.
 
 합성 로컬 검증에서 390/1440 오류→키보드 재시도→복구, 닫기 약62×44px, 주요 행동은 각각326×48px·320×48px, 가로 넘침 없음을 확인했다. 기존 호출부와 직접 진입은 같은 출석 로직을 사용한다. 모임 홈의 GroupHomeInfo 사이드바 링크는 1440px에서 272×44px로 확인됐고, 390px에서는 숨겨지므로 별도의 GroupDetail 모바일 링크(324×44px)를 사용한다. 각각 원래 URL과 초점 복귀를 유지한다. 이 근거는 합성 데이터이며 실제 출석·운영 보상 또는 배포의 증거가 아니다.
 
-### DATA-001 · 공통 이미지 배너 (로컬 검증)
+#### DATA-001 · 공통 이미지 배너 (로컬 검증)
 
 최신 사용자 방향은 위의 정사각 이미지·별도 copy열 방식을 대체한다. 관리형 discovery slide는 원본 desktop/mobile URL과 alt·문구·목적지·순서를 유지하고, 짧은 문구는 공통 이미지 프레임 위에 copy와 CTA를 겹친다. PC 프레임은 960×480, 모바일·태블릿은 300×250px이며 top-aligned cover와 기존 반경20px·경계·제어를 유지한다. 렌더된 문구 높이가 이미지의 보호 범위를 넘으면 같은 슬라이드의 이미지 아래에 문구와 CTA를 배치한다. 활성 슬라이드 높이에 viewport를 맞춰 짧은 배너로 이동할 때 빈 공간을 남기지 않으며, 줄바꿈된 CTA도 최소44px 높이를 유지한다.
 
 CMS 계약은 제목 최대160자·설명 최대600자·CTA 최대80자이며 제목과 CTA는 비어 있을 수 없다. 이전 288자 합성 설명도 유효 범위에 속하며 문구 한도를 임의로 줄이지 않는다. backend 로컬 검증에서 합성 최대 길이 KO 문구를 WeNa·NCHIVE에 주입해 390/1440의 이미지 아래 분리와 가로 넘침 없음을 확인했고, EN 600자도 같은 폭에서 확인했다. 긴 배너에서 짧은 배너로 전환하면 모바일 viewport는 250px로 돌아간다. 변경 후 6 tests PASS 및 기존 정상 390/768/1440·제어 키보드 근거를 재사용한다. 이 관찰은 현재 두 애셋과 합성 문구에 한정하며, 기존 원본 하단 크롭이 있다. 미래 이미지의 얼굴·문구·로고는 등록 시 별도 프레이밍 검수가 필요하다. 위임받은 최종 시각 확인에서 NCHIVE 390/1440 보이는 화면의 이미지·여섯 얼굴·WELCOME 및 이미지 아래 문구 분리를 확인했으며, 캡처 화면 밖의 전체 문구·CTA는 이 시각 확인의 범위가 아니다. 운영 반영의 증거는 아니다.
 
-### UI021 · 팬 피드 초기 로딩 (로컬 부분 구현)
+#### UI021 · 팬 피드 초기 로딩 (로컬 부분 구현)
 
 첫 피드 조회는 이름 있는 role=status/aria-busy skeleton을 사용하고 장식은 aria-hidden으로 둔다. compact는 3행, 데스크톱 행52px·모바일60px, bar 높이14px·반경6px, 중립 oklch(94% 0 0) 및 1.4초 pulse이며 reduced-motion에서는 animation을 끈다. noncompact는 최소120px 행·36px avatar placeholder를 사용한다. 같은 키의 재조회에서는 기존 내용을 유지하고 빈 상태·오류·재시도는 기존 동작을 보존한다.
 
 합성 로컬 compact·noncompact 390/1440의 초기 로딩과 오류→키보드 재시도, browser reduced-motion animation none 및 noncompact 120px 행·넘침 없음을 확인했다. refresh suite의 attachment-policy 테스트 fixture를 실제 스키마에 맞추고 정책 조회를 피드 조회 수에서 분리한 후 기존 동작 검증을 유지해 전체 7건이 통과했다 (`tasks/UI-021-worker5/refresh-final.md`). 실제 스크린리더·운영 데이터는 미검증이며 UI021 전체 완료를 뜻하지 않는다.
 
-### UI021 · 디렉터리 초기 로딩 (로컬)
+#### UI021 · 디렉터리 초기 로딩 (로컬)
 
 첫 조회에서 오늘 주목 3개·목록 6개·가입 목록 3개의 장식 skeleton과 이름 있는 busy 상태를 표시한다. 오늘 주목은 PC 3열·모바일 세로, 이미지는 56px이다. 본문은 PC 3열·1023px 이하 세로, 이미지 56px과 행 최소 96/80px을 사용한다. 가입 목록은 36px 이미지와 최소 60px 행이다. 중립 oklch(94% 0 0), 14/12px 막대, 12px 간격을 사용하고 reduced-motion에서는 움직이지 않는다. 기존 동일 키 데이터는 재조회 중 유지하고 오류·빈 상태는 구분한다.
 
 합성 지연 GET의 실제 컴포넌트에서 390/1440 로딩→성공 및 오류, reduced-motion과 장식 요소의 비포커스를 확인했고 국소 6 tests를 재사용한다. 실제 로그인·운영 데이터나 순위·방문 기록의 증거는 아니다.
 
-### 팬 홈 사이드바 카드 제목 (로컬)
+#### 팬 홈 사이드바 카드 제목 (로컬)
 
 다가오는 일정·찐팬인증·내 패스포트 및 같은 역할의 사이드바 카드 제목은 기존 `Pretendard UI 650`, 16px/24px, font-weight400, font-synthesis:none으로 통일한다. 범위는 `creatorHomeAside`의 직접 카드·section 제목과 해당 모바일 카드이며 전역 h2 규칙을 바꾸지 않는다. 로컬 1440px 한국어의 다섯 제목과 390px 영어 일정·인증 제목에서 동일 역할 및 텍스트 넘침 없음을 확인했다. 캘린더 행동의 별도 색상·초점 근거는 아래 UI011D 계약을 따른다.
 
 UI011D 캘린더 상단 단일 링크는 기존 브랜드 #ad1457, 12px/1.3, 반경8px 및 hover #fff0f6을 사용하고 기존 focus-visible·선택월 href·최소44×44px을 유지한다. 흰 배경 대비 계산 약6.97:1이며 로컬 KO390/1440·EN390/1440을 확인했다. KO390 95.99×44px, EN390/1440 100.02×44px 및 390 가로 넘침 없음을 확인했고 EN390 focus ring을 살폈다. 영어 외 긴 번역과 200% 확대는 미검증이며 합성 로컬 근거다.
 
-### UI021 · 팬 경로 공통 로딩 (컴포넌트 검증)
+#### UI021 · 팬 경로 공통 로딩 (컴포넌트 검증)
 
 `FanRouteLoading`은 최대폭360px, 제목 55%×24px·보조 78%×14px, 필드 두 개와 행동 각48px, 간격·반경12px의 중립 oklch(94% 0 0) skeleton을 사용한다. page는 최소50vh/padding32px 16px, overlay는 최소240px/padding24px다. 기존 현지화 status와 aria-busy를 유지하고 reduced-motion에서는 animation을 끄며 포커스를 가로채지 않는다.
 
 활동·방·컬렉션·이벤트·브랜드홈 resolver와 멤버 연결, 그룹 상세 및 팬 identity의 최초 대기는 기존 page/overlay를 사용한다. 기존 데이터가 있으면 유지하고 오류 시 기존 alert·retry를 표시한다. 합성 gate의 실제 활동·상세 컴포넌트에서 390/1440 로딩→성공·503 오류, 상세 오류→키보드 재시도→헤더 복구, reduced-motion과 넘침 없음을 확인했다. 실제 Next 경로·인증 transport, 스크린리더와 실제 dialog focus trap은 미검증이며 UI021 전체 완료를 뜻하지 않는다.
 
-### UI023 · 회원 행 대화 진입 (로컬 통합 중)
+#### UI023 · 회원 행 대화 진입 (로컬 통합 중)
 
 기존 회원 프로필 행 링크와 대화 행동은 중첩하지 않는 형제 요소로 둔다. 행의 profileId·닉네임·locale을 기존 `MemberDmEntry`에 전달하며, 개인 식별자 직접 비교 대신 기존 프로필 응답의 isSelf·DM 권한·기존 대화 여부를 사용한다. 비회원 목록 접근과 기존 프로필 목적지를 유지한다. 좁은 화면에서는 프로필 링크 전체 너비 아래에 88×44px 대화 버튼과 전체 너비 오류를 배치해 긴 이름을 읽을 수 있게 한다. 데스크톱 행동 열은 88px이며 랭킹 제목과 점수 열을 정렬한다. 권한 조회 중 기존 동작 가드와 aria-busy를 유지해 키보드 초점을 잃거나 중복 실행하지 않는다.
 
 합성 390/1440 회원 오류·거절·본인 상태와 키보드 초점 및 랭킹 정렬, 국소 테스트 7건을 확인했다. 공유 fixture의 잘못된 프로필 DTO는 이동을 거부하며 실제 권한의 증거가 아니다. 실제 인증·DM 전송이나 운영 검증은 하지 않았다.
 
-### 응원 댓글의 조건부 포인트 안내 (로컬)
+#### 응원 댓글의 조건부 포인트 안내 (로컬)
 
 기존 cheer 댓글 입력 옆에는 해당 creator의 인증된 earning-status를 읽는 `ActivityPointHint(comment)`를 재사용한다. 표시값·조건·남은 횟수는 응답을 따르고 disabled·자격 없음·미설정·오류를 구분한다. 댓글 성공 후 상태를 재조회하되 응답을 적립 영수증이나 보장으로 해석하지 않는다. 원래 cheer ID의 replies 조회와 replyToId 제출 경로는 유지하며 fan_post로 변환하지 않는다. 기존 안내 스타일 13px/20px, gap4px 8px, 강조 #ad1457 및 조건 #5d5d5d를 사용한다. 로컬 합성 정책·mock 제출 테스트 8건과 390/1440 표시 검증 근거이며 실제 댓글·적립 또는 운영 정책 확인은 아니다.
 
@@ -1715,7 +1990,7 @@ UI018 로컬 진행(2026-11-06 정리): 하트 교환 화면은 하트 UI 삭제
 
 UI018 섹션 구분은 흰 배경과 기존 경계색을 유지하며 자산 요약→단일 교환 패널→응원→럭키드로우 순서다. 주요 간격은 PC48px·모바일32px, 응원 및 럭키드로우 앞의 가는 경계와 안쪽 간격은 PC24px·모바일20px이다. 공식 응모권의 권위 있는 잔액·전환 및 광고 검증 계약은 여전히 확인되지 않았다.
 
-### 덕질 응모권 전환 우선 공개 (2026-11-04 사용자 승인)
+#### 덕질 응모권 전환 우선 공개 (2026-11-04 사용자 승인)
 앞선 UI018의 공식 응모권 `—` 표시와 전환 비활성, 하트 기본 선택 기준을 이 항목이 대체한다. 덕질의 교환 패널에서는 `group-wallet-v1`의 모임 응모권 전환만 연다. 하트 선택지는 비활성 radio와 흐린 아이콘(3px), 13px `곧 안내해 드릴게요`로 표시하고, 지갑 요약의 교환비율도 응모권에만 표시한다. Kyaa 공식 응모권은 자산이 없어 화면에 표시하지 않는다. 교환 행동은 `WalletExchangeDialog`에서 기존 요청 키·결과 복구 흐름을 그대로 쓴다.
 
 럭키드로우 목록은 `BenefitsComingSoon`으로 제목을 남긴 채 흐림 6px·`inert`·`aria-hidden`을 적용하고, 흰 배경 12px radius·16px/700 안내를 가운데에 둔다. 높이는 160~480px로 제한한다. 390/1440 예시 데이터 화면에서 확인했다.
@@ -1724,42 +1999,42 @@ UI018 섹션 구분은 흰 배경과 기존 경계색을 유지하며 자산 요
 
 응모권 교환은 보상형 광고 완료 후에만 진행한다(2026-11-04 사용자 결정, 흐름은 2026-11-09 B13). 덕질 포인트 타일의 `교환 ›`으로 시트를 연 뒤 `[− N장 +]`로 장수를 고르고 `광고 보고 교환하기`를 1탭하면 중간 창 없이 서버가 광고 세션을 발급하고 광고가 1회 표시된다. 광고 시청이 서버에서 granted로 확인되면 교환 요청 1건을 보내고, 서버는 그 granted 세션 1개를 소비하며 같은 트랜잭션에서 N×100P를 차감하고 응모권 N장을 적립한다(`exchange_owned_group_wallet`, 1~1000장, 하루 한도는 소비된 세션 = 교환 횟수로 센다). 끝나면 토스트 `응모권 +N장`만 띄우고 완료 화면은 없다. 취소·광고 없음·오류·하루 한도에는 차감하지 않고 기존 문구를 토스트로 안내한다. 광고 단위(`NEXT_PUBLIC_REWARDED_AD_UNIT`)가 없거나 이 기기에서 광고를 볼 수 없으면 버튼은 눌리고, 누른 뒤 그 사유를 토스트로 알린다. 응답을 잃으면 같은 요청 키·같은 세션으로 다시 확인해 두 번 차감하지 않는다.
 
-## 2026-11-04 수락 작업 통합 (checks, DESIGN-SYNC-20261104-01)
+### 2026-11-04 수락 작업 통합 (checks, DESIGN-SYNC-20261104-01)
 
 아래는 수락된 로컬 작업을 현재 계약으로 옮긴 것이다. "계약"은 앞으로 지킬 규칙이고 "관찰"은 합성 로컬 예시 데이터(3128)에서 한 번 잰 값이다. 관찰 값은 운영 근거가 아니며 계약이 아니다. 앞선 항목과 충돌하면 사용자 요청이 근거인 이 절이 해당 범위에서 대체하며, 대체 범위를 각 항목에 적는다.
 
-### 팬페이지 홈 하단·LIVE 링크 (2026-11-04)
+#### 팬페이지 홈 하단·LIVE 링크 (2026-11-04)
 - 계약: 크리에이터 홈 게시판 하단(`CreatorBoardFooter`)은 검색 입력만 둔다. "전체 보기"·"글쓰기"는 위쪽 이야기 헤더(앞선 "팬페이지 이야기 헤더" 계약)에만 제공한다. 다른 호출부의 `FanPostFeed` 동작은 바꾸지 않는다.
 - 계약: compact 영상 미리보기 카드(예: "팬들과 함께하는 LIVE")의 제목 링크 높이는 44px 이상이다. 이미지 링크는 같은 목적지의 별도 링크이며 외부 링크 공통 UTM·클릭 측정은 링크마다 한 번만 적용한다.
 - 관찰(합성): LIVE 제목 링크 390px 358×44(수정 전 358×30), 1440px 318×44.
 - 충돌 판단: 위쪽 헤더 계약과 일치. 하단 중복 버튼 제거는 사용자 요청.
 - 미검증: 한국어만 관찰, 다른 언어 미검증.
 
-### 공통 빈 상태 (2026-11-04)
+#### 공통 빈 상태 (2026-11-04)
 - 계약: 정보가 없는 상태는 `SourceStatePanel`의 `illustration`(자체 SVG)·제목·설명·필요 시 다음 행동으로 표시한다. 사이드바·좁은 영역은 compact, 본문은 regular를 쓴다. 일러스트는 장식(`aria-hidden`)이며 오류 상태에는 쓰지 않는다. 종류는 page·search·people·notice·live·ticket·comment 7가지다.
 - 관찰(합성): compact 일러스트 112×84, 패딩 20/16, 제목 18px. regular 160×120.
 - 미검증·후속: 내 페이지·MY 큰 빈 화면의 실제 캡처, 일러스트 하드코딩 색의 토큰화, 다크 모드 없음.
 
-### 탐색 영역 오류·내 페이지 빈 상태·모임 라벨 (2026-11-04)
+#### 탐색 영역 오류·내 페이지 빈 상태·모임 라벨 (2026-11-04)
 - 계약: 탐색(추천 영역) 오류는 내용 폭(`fit-content`, 최대 640px)의 컴팩트 알림으로 표시하고 재시도는 문구 옆의 44px 외곽선 중립 버튼(간격 12px)이다. 사이드바 알림은 기존대로 전체 폭·우측 정렬이다. 앞선 503 알림 문장은 이 범위에서만 이 규칙으로 대체되며 영역 유지·재시도 44px 기준은 그대로다.
 - 계약: 내 페이지가 0건이면 일러스트 빈 상태로 대체하고 "최근 방문순"과 "내 페이지 전체 보기"를 숨긴다.
 - 계약: 디렉터리 필터의 "모임" 라벨 그룹은 라벨을 유지하되 앞 그룹과 1px 구분선(`#e4e1e6`)과 12px 좌측 여백·패딩으로 구별한다. 필터 동작은 바꾸지 않는다. 데스크톱 칩은 밑줄형 탭이며 12px 반경은 모바일 칩에만 적용한다. `sort=today&limit=3`은 의도된 값이다.
 - 관찰(합성, ko만): 1440px 행 높이 44·칩 44, 390px 한 줄 유지·넘침 없음.
 - 미검증: 한국어만 관찰, 다른 언어 미검증.
 
-### 최애 찾기 압축 행 (2026-11-04 사용자 요청)
+#### 최애 찾기 압축 행 (2026-11-04 사용자 요청)
 - 계약: `/celebrities`(그룹 비활성 시)는 72px(모바일 64px) 정사각 썸네일과 이름·역할·패스포트 보유·소개를 담은 압축 행으로 표시한다. 열은 1열, 768px부터 2열, 1280px부터 3열이다. 패스포트 보유 배지는 역할 줄 옆에 두고 카드 링크는 2열 그리드이며 카드 높이를 고정하지 않고 같은 행은 늘려 맞춘다.
 - 충돌 판단: 이전의 정사각 큰 카드(약 575px 높이) 배치를 이 목록에서 대체한다. 근거는 사용자 요청.
 - 관찰(합성, 10장으로 DOM 복제): 1440px 3열 445×98, 768px 2열 346×98, 390px 1열 358×98.
 - 미검증: 실제 데이터, LIVE 행, 단체 사진 얼굴 크롭, 나머지 9개 언어.
 
-### 덕질 요약·교환 정돈 (2026-11-04)
+#### 덕질 요약·교환 정돈 (2026-11-04)
 - 계약: 덕질 요약(`BenefitsSummary`)은 동일 구조의 카드 3장(아이콘·라벨·숫자, 포인트도 아이콘)이며 제목은 `srOnly`다. 768~1023px에서는 포인트 카드가 한 행 전폭이고 응모권·하트가 아래 2열이다. 선택한 카드는 24px 체크 배지와 테두리를 쓰고 하트 카드는 같은 점선·흐림 프레임을 쓴다.
 - 계약: 교환 패널은 포인트 잔액을 반복하지 않는다. 환산(예: "100 P → 1장", 값은 지갑 API의 `pointCost`)과 주요 버튼은 하단 바에 한 번만 두며 PC는 환산 좌측·버튼 우측, 모바일은 쌓고 버튼 전폭이다. 비활성 사유는 기존 `곧 안내해 드릴게요`를 버튼 아래에 한 번만 보인다. "참여 내역"·"적립·사용 내역"은 테두리 쉐브론 링크 44px다. 수량 선택(2개 이상 가능할 때만 표시)이 추가되어 하단 바 합계는 선택 수량×`pointCost`로 바뀌고, 진행 k/N 막대와 중단 사유는 버튼 아래에 한 번만 둔다.
 - 충돌 판단: 앞선 UI-007(환산비가 버튼 앞 2열)과 "덕질 교환·응원·추첨 구성"의 교환 블록 내 "사용 가능 포인트" 표시를 배치 면에서만 대체한다. 비율·정책 값과 "덕질 응모권 전환 우선 공개"의 하트 비활성, 광고 후 교환 게이트는 그대로 유지한다.
 - 미검증: 활성·오류 상태 캡처.
 
-### 출석 대화상자 간결화 (2026-11-04 사용자 요청)
+#### 출석 대화상자 간결화 (2026-11-04 사용자 요청)
 - 계약: 규칙은 한 줄로 한 번만 말한다("매일 출석하면 10P · 7일 연속이면 보너스 20P"). 7개 칸은 같은 높이의 일자·도장·보상 3단이고 390px에서도 한 행을 유지한다. 칸마다 같은 포인트를 반복하지 않고 보너스(7일차) 칸만 +20P를 표기한다. 오늘 칸은 강조 테두리를 쓴다. 상단 카드·큰 도장·하단 설명은 없고 주요 버튼은 대화상자 전폭 52px다. 오늘 도장이 0개이면 제목은 `오늘 첫 도장을 찍어요`다(4805ef90c).
 - 충돌 판단: 모임 웹 전환 절의 출석 항목(4+3 모바일, 320×48 행동, 큰 도장, 10P/30P 칸 표기)과 "UI019 · 출석 모달"의 행동 326×48/320×48을 대화상자 레이아웃 범위에서 대체한다. 공통 Dialog 규격(최대 560px, 닫기·Escape 초점 복귀, 직접 진입 동작)은 유지한다.
 - 관찰(합성): 1440px 버튼 512×52, 390px 326×52, 대화상자 높이 약 597→390px(1440; 597은 수정 전 직접 확인, 파일 없음). 관찰 프레임은 6일 연속·7번째 칸 합성 값이다.
@@ -1767,21 +2042,21 @@ UI018 섹션 구분은 흰 배경과 기존 경계색을 유지하며 자산 요
 - 관찰(완료 상태): 합성 mock이며 실제 출석 제출은 하지 않았다. 근거 reports/3f5413d04b8766f03b07.md.
 - 미검증: 1~5일차, 다른 언어, 키보드 초점 캡처.
 
-### 목록·카드 섹션의 전체 보기 (2026-11-04)
+#### 목록·카드 섹션의 전체 보기 (2026-11-04)
 - 계약: 목록·카드 섹션의 "전체 보기"는 제목 행 오른쪽에 두며 높이는 44px 이상이다. 개수는 같은 링크 안에 `· N`으로 표기한다(예: "전체 보기 · 3"). 개수를 링크 밖 별도 요소로 두지 않는다.
 - 계약: 정렬 기준 보조 문구(예: "최근 방문순")는 제목과 링크 사이에 들어가면 같은 행에 두고, 들어가지 않으면 그 문구만 제목 아래 줄로 내린다. 이때 링크는 제목 행에 남는다.
 - 계약: 목록 하단에 전체 보기만 있는 단독 이동 행을 두지 않는다. 예외는 이어보기·펼침 토글·필터·모달 트리거이며 이는 이 규칙의 대상이 아니다. 목록이 비면 전체 보기 링크는 숨긴다.
 - 관찰(합성 3128, ko·en·th·ru, reports/d3bb4c4dfe1c1cc6fc39.md): ko·en·th 390과 ko 1440에서 제목·정렬 문구·링크가 한 줄이고 링크 44px, ru 390은 링크가 제목과 첫 행에 남고 정렬 문구만 아래 줄이다. scrollWidth는 화면 폭과 같다.
 - 미검증: 다른 언어(ko·en·th·ru 외), 실제 데이터, 390·1440 외 폭.
 
-### 모임 상단·목록 보완 제안 (UI-RUBRIC fix-r01-moim, worker6, 제안)
+#### 모임 상단·목록 보완 제안 (UI-RUBRIC fix-r01-moim, worker6, 제안)
 - 제안: 1023px 이하 모임·팬페이지 상단의 '…' 메뉴는 탐색 줄이 아니라 제목 행 오른쪽에 둔다(빈 줄 제거). 1024px 이상은 기존 탐색 줄 유지. 팬페이지 1023px 이하에서 팬등급과 SNS는 한 행(좌 팬등급, 우 SNS)에 둔다.
 - 제안: 모임 둘러보기 언어 칩은 고정 80px 대신 최소 80px·최대 min(42vw,184px)로 내용에 맞춘다(ru 'Ру…' 잘림 해소). 600px 이하 검색·정렬 선택은 각각 전체 폭 한 줄이다.
 - 제안: 라이브 캘린더 일정 목록 배경은 부모 안쪽 여백 안에 두며 음수 마진을 쓰지 않는다. 모임 참여 카드 아래 간격은 1023px 이하 16px.
 - 제안: 배너 CTA 그라데이션은 125deg #d9194c→#b91a93→#6042d5, 흰 글자(가장 밝은 정지점 대비 약 5.0:1). 인기글 링크·운영자 회원 이름 버튼·1024px 이상 홈 게시글 행은 목표 크기 44px 이상.
 - 예외 근거(제안): 44px 예외는 본문 문장 흐름 안에 끼어 있는 인라인 링크에만 적용하고 줄 높이를 따른다. 단독 줄에 놓인 안내 링크(예: 혜택 수령 화면 `.privacy a`는 44px 최소 높이)와 인기글 링크·회원 이름 버튼 같은 목록 컴포넌트는 예외가 아니며 44px을 지킨다. 미검증: 운영자·비회원 상태의 '…' 위치 전 폭 확인, ru 외 언어의 상단 실측.
 
-## 2026-11-04 버튼·내역·MY 홈 갱신
+### 2026-11-04 버튼·내역·MY 홈 갱신
 
 - (2026-11-09 삭제: 비활성은 불투명도만, 아래 토큰은 더 쓰지 않는다) 비활성 토큰(`app/globals.css :root`): `--fan-action-disabled-bg #e4e1e6`, `--fan-action-disabled-ink #5d5d5d`(배경 대비 5.1:1, 계산값), `--fan-action-disabled-text-ink #6b6b6b`(text 변형, 흰 배경 대비 약 5.3:1, 계산값·브라우저 실측 아님). 화면 모듈은 직접 색을 쓰지 않는다. 별도로 필요한 토큰은 아직 없다.
 - FanAction 로딩 스피너는 절대 배치가 아니라 라벨 뒤 flex 자식이며 trailing 아이콘 자리를 대신한다(글자·아이콘과 겹치지 않는다). 패딩은 `8px 18px`, 최소 높이 44px이다. Link 분기는 비활성·로딩이 불가하다. 아이콘은 반드시 `leadingIcon`/`trailingIcon`으로 넘긴다(자식으로 넣으면 글자 위에 쌓인다).
@@ -1789,16 +2064,16 @@ UI018 섹션 구분은 흰 배경과 기존 경계색을 유지하며 자산 요
 - 덕질 홈 제목 행에 짧은 `내역` 링크 하나만 둔다(`/my/wallet#wallet-history`). 잔액 요약 카드에는 내역 버튼이 없다. 이동 링크는 text FanAction이며 화살표는 제목 행 오른쪽이다.
 - MY 홈: 패스포트는 인라인(embedded)으로 보인다. 상단 유틸리티는 알림·설정만이고 신고·문의는 활동 영역에 둔다. 프로필 행은 이름·알림·설정만, 비로그인은 로그인 화면과 같은 구역을 유지하고 내 값은 `FanLockedValue`·`FanLockedRows`로 둔다(`비로그인 화면(전 화면)` 행). 패스포트 선택 칩의 이름은 최대폭 말줄임이다.
 
-### Home metadata and empty reservations — 2026-11-03
+#### Home metadata and empty reservations — 2026-11-03
 
 The home fan-board preview keeps its compact thumbnail cards and shows localized like and comment totals as non-interactive, muted 13px metadata with 14px decorative icons. Totals include zero; existing cheer totals map to claps and replies. Empty reserved-LIVE summaries omit the large calendar illustration and use a wrapping inline status/link row with 4–12px gaps, preserving the 44px link target. Populated reservations and passport empty states are unchanged.
 
-### Changha GGGI photography — 2026-11-03
+#### Changha GGGI photography — 2026-11-03
 
 At the user's request, registered Changha identity and hero images use the unedited first photograph from his own Instagram post `DfHkOu8mQkn` (2026-10-30), stored at `/images/celebrities/changha/gggi-20261030.jpg` (1883×2510). Old registered URLs resolve to the new image; future CMS uploads and explicit role removals remain authoritative. Identity and hero crops focus at 50% 28%; square/avatar/passport identity crops use 1.5x about that focus for legible faces; calendar retains its near-top portrait focus. The GGGI campaign keeps green copy on the left and the portrait in the right 46% on desktop; mobile uses a 4:3 face-preserving crop above the existing white information panel. The campaign dialog uses a 3:2 crop at the same focus. Background event lettering is photographic context, not a complete text banner; the person's face and campaign UI copy remain visible. Original social posts and historical event artwork are not rewritten.
 
 
-### DEV groups experience (2026-11-03)
+#### DEV groups experience (2026-11-03)
 - Heart support reuses the common Dialog on the originating page; direct support links use a minimal shell and return to the selected creator board. Preserve focus restoration, native modified links and the existing wallet request/receipt contract.
 - Benefits retain the wallet data source and separate group tickets from unverified official tickets. The latest approved layout uses wallet, exchange, support and lucky-draw sections; the point-event section is removed. Local fixture values are not live balances.
 - Capsule reveal uses the shared result dialog and supports video failure, skip and reduced motion. Group application uses the shared dialog and retains unsaved-input confirmation.
@@ -1806,7 +2081,7 @@ At the user's request, registered Changha identity and hero images use the unedi
 
 - 2026-11-04 모임 `/my/groups/reports`·`/my/invitations`: 페이지 제목은 800 굵기 32px(모바일 24px), 본문 열은 최대 720px 가운데 정렬, 카드 제목은 18/28px로 페이지 제목보다 작게 둔다. 도움말 문장은 두지 않는다.
 
-### UI-RUBRIC R02 모임 화면 정렬 기록 (2026-11-04)
+#### UI-RUBRIC R02 모임 화면 정렬 기록 (2026-11-04)
 - 캐러셀 슬라이드 하단 그라데이션은 `linear-gradient(0deg,#000000E6,#000000B3 55%,#00000000)`로 소식 라벨 대비 4.5:1을 지킨다. 행사 화면은 제목과 카드가 같은 720px 가운데 열이다. 공지 단독 화면 본문은 열 가운데이며 인증 카드가 1개면 전폭이다. 공지 상세 standalone 폭은 720px 왼쪽 정렬이고(2026-11-09 shell-width, 이전 가운데), 관련 공지가 있으면 본문이 남는 폭을 쓰고 오른쪽 264px 레일이 셸 오른쪽 끝에 닿는다(이전 1152px).
 - 공지 상세 상단·댓글 정렬(2026-11-10 사용자 요청): 뒤로가기 아래 간격 8px, 제목·메타 간격 8px, 댓글 아바타는 44px 작성자·행동 행에 맞추고 입력 안내는 남은 너비를 사용한다. 모바일 최근 공지는 본문과 같은 좌우 경계에 둔다. 원문 제목과 본문은 변경하지 않는다.
 - 알림 카드(640px)와 초대 카드는 1440에서 가운데 정렬이다. 선물·행사 운영 띠의 글자는 1024px 이상에서 본문 960px 열 왼쪽선에 맞추고 1023px 이하는 16px 여백이다. 게시판 '목록으로' 링크는 글자 안쪽 여백을 상쇄해 본문 왼쪽선에 맞춘다.
@@ -1820,7 +2095,7 @@ At the user's request, registered Changha identity and hero images use the unedi
 - compact 사진·영상 화면에는 공식 채널 줄을 두지 않는다. 헤더의 SNS 아이콘은 그대로 둔다. 제목은 '사진 · 영상'으로 고정한다.
 - 회원 탭에는 '회원' 소제목을 두지 않는다(탭 이름과 중복). 회원 행의 '대화하기' 버튼은 줄바꿈하지 않고(nowrap) 최소 폭 88px을 둔다.
 
-## 모임 디렉터리 팬페이지 우선 구간 (2026-11-04)
+### 모임 디렉터리 팬페이지 우선 구간 (2026-11-04)
 
 - `/pages/groups` 기본 화면(필터·검색·내 페이지 없음)은 팬페이지 카드 구간 없이 주목할 페이지와 취미·브랜드 목록으로 구성한다(2026-11-04 사용자 요청으로 큰 팬페이지 카드 구간과 전체 보기 링크를 제거). 팬페이지는 주목할 페이지·팬페이지 필터·최애 찾기에서 계속 열 수 있다.
 - 목록은 서버의 `type=nonfan`(취미·브랜드만)으로 조회해 페이지 넘김·총계가 서버 기준으로 맞는다.
@@ -1829,7 +2104,7 @@ At the user's request, registered Changha identity and hero images use the unedi
 - 2026-11-10 사용자 요청: 중복된 모임 찾기의 ‘내 페이지’ 최근 방문 목록과 전체 보기·페이지 이동을 제거하고 상단 ‘내 아티스트’는 유지한다. 가입 데이터와 다른 화면의 내 페이지는 그대로 둔다.
 - 2026-11-09 사용자 결정(텍스트 다이어트): 모임 화면 옆 페이지 개설 블록은 질문 머리 문장과 '취미·브랜드 페이지 자세히' 링크를 없애고 행 2개만 둔다 — '팬페이지 개설 신청 ›', '취미·브랜드 페이지 개설 신청 ›'. 행은 높이 44px, 위 헤어라인, 설명·제목 없음. 끝의 `›`는 라벨 뒤 글자(`aria-hidden`)이고 `trailingIcon`은 쓰지 않는다(N24). `FanRow`가 생기면 그쪽으로 옮긴다(DS 묶음 B). 취미·브랜드 설명은 신청 화면 안(`group-application.tsx` 안내)에서 한다. 링크 목적지는 기존 신청 화면 그대로다. 390·1440의 12개 언어에서 넘침이 없고, ru·vi의 1440은 두 번째 행이 두 줄이 된다.
 
-### UI-RUBRIC R02 덕질·패스포트 화면 기록 (2026-11-04)
+#### UI-RUBRIC R02 덕질·패스포트 화면 기록 (2026-11-04)
 - 패스포트 목록(`.collection`)은 768px 이상 2열, 1240px 이상 3열이며 트랙 폭은 최대 380px(`repeat(n,minmax(0,380px))`)이다. 카드 facts는 2열 격자로 값을 같은 행 하단에 맞추고 최소 높이 64px을 둔다.
 - 스탬프 수: 목록 카드의 숫자는 기존 스탬프 + 해당 크리에이터의 커뮤니티 스탬프이고 상세 상단과 같은 계산이다. 스탬프북 제목과 아트는 기존 스탬프만 쓴다.
 - 지갑 오류는 한 곳에만 표시한다. 인접한 잠금 구간(FX-35)은 한 줄의 잠금 행으로 합친다.
@@ -1839,7 +2114,7 @@ At the user's request, registered Changha identity and hero images use the unedi
 - 크리에이터 추첨 선물 카드 목록은 `grid-template-rows: subgrid`로 7개 행(작품·메타·제목·설명·마감·내 응모·행동)을 같은 행 카드끼리 공유한다. 폭별 최소 높이는 두지 않는다(상세는 `docs/design/card-layout.md`).
 - 모임 응모권 전환 대화상자의 교환 요약(필요 포인트·교환 후 포인트)은 대화상자 내용 폭 전체 1열이며 제목·버튼 왼쪽선과 같다(페이지의 2열 교환 배치를 상속하지 않는다).
 
-### UI-RUBRIC R03 덕질 화면 기록 (2026-11-04)
+#### UI-RUBRIC R03 덕질 화면 기록 (2026-11-04)
 
 - 포인트·하트·응모권(`/my/wallet`): 1440에서 본문 안에 같은 제목이 한 번 더 나오던 `h2`와 보조 안내 문장을 없애고, 제목은 `FanHeading`의 `c.wallet` 하나로 통일했다(390/768 모바일 제목도 같은 문구). 내역 영역 제목은 ko에서 "내역"으로 줄여 탭 "적립·사용"과 겹치지 않게 했다. DESIGN.md의 20/24 제목 척도는 그대로이고 새 값은 없다.
 - 덕질 인라인 오류(`role="alert"`): 문구와 "다시 시도" 버튼 사이에 12px 간격을 두는 세로 배치(`.inlineError`)로 맞췄다.
@@ -1848,7 +2123,7 @@ At the user's request, registered Changha identity and hero images use the unedi
 - 팬 활동 사이드의 덕질 행은 좌우 안쪽 여백을 없애 위 행과 왼쪽 선을 맞추고 높이 44px을 유지한다.
 - 확인한 합성 화면은 로컬 하니스 캡처이며 운영 화면이 아니다.
 
-### UI-RUBRIC R03b 덕질·공통 기록 (2026-11-04)
+#### UI-RUBRIC R03b 덕질·공통 기록 (2026-11-04)
 
 - 덕질(`/benefits`) H1은 `.heading h1` 하나로 390에서 20px, 768px부터 24px이다(이전 32/28px 중복 선언 제거). 영향 화면은 덕질 홈과 같은 제목 구조를 쓰는 X01(덕질 로딩·안내 합성)이다. 로컬 하니스의 `pencil-benefits-preview.css`는 같은 H1을 32px/28px로 따로 선언해 이 값이 하니스 캡처에는 아직 반영되지 않는다.
 - 모임 페이지 탭(`groups.module.css`, 480px 이하): 탭 글자 12px, 좌우 안쪽 여백(padding-inline) 4px, 최소 탭 폭 44px. 기준 값이 아니라 러시아어 탭 5개를 한 줄로 유지하기 위한 예외다(근거: `work/local-team-20261103/tasks/UI-RUBRIC-20261104/fix-groups-result-r03.md` M-01·M-02). 범위는 480px 이하 페이지 탭뿐이며 그 위 폭은 기존 값이다.
@@ -1861,12 +2136,12 @@ At the user's request, registered Changha identity and hero images use the unedi
 - 방문 통계(`/admin/traffic`) 주간 표(2026-11-09 metrics-weekly): 가입 퍼널 위에 같은 패널·표 스타일(`admin-overview-dashboard.module.css`, `web-analytics-dashboard.module.css`)로 둔다. 제목 "주간"(퍼널과 같은 `FanHeading`·`.funnelHeading`)과 오른쪽 `FanAction` 보조 버튼(CSV 내려받기, `Download` 아이콘은 `fan-icons`로 가져옴). 열은 주(월~일, KST)·가입·주간 활성·글·댓글·포인트 지급·하트 지급·누적 가입이고, 누적 가입 칸 아래에 "3,000명 중 N.N%"를 보조 글씨로 붙인다. 최근 8주를 최신순으로 쓰며 이번 주는 "집계 중"을 붙인다. 기간 선택(7·30·90일)과 무관하다. 1440에서는 전체 폭, 390에서는 표가 760px 최소 폭의 가로 스크롤 영역이고 주 열만 왼쪽에 고정한다(8열이라 한 화면에 들어가지 않음). 굵기는 400·700만 쓴다. 집계 기준은 표 아래 `details`에 두고 문구는 컴포넌트 안에 ko/en으로 둔다. CSV는 같은 열에 목표 대비 % 열을 더하고 UTF-8 BOM을 붙인다. 확인은 로컬 DB 복사본의 실제 응답을 넣은 390·1440 ko/en 화면이며 운영·dev 관리자 화면은 보지 않았다.
 - 채널 운영자 관리 화면(`/admin/operators`, `components/admin/channel-operator-manager.tsx`): 전체 관리자(`role: admin`)만 열 수 있고 조회 전용 관리자는 접근 불가 화면을 본다. 관리자 목록 화면의 `admin-directory-manager.module.css`와 `AdminOperationsShell`·`AlertDialog`를 그대로 재사용하며 새 토큰을 도입하지 않았다. 구성은 제목 → 지정 패널(채널 선택·이메일·지정 버튼) → 운영자 표(이메일·상태·지정일·해지일·작업)이다. 390px에서는 표가 카드 목록으로 바뀐다. 해지는 확인 창을 거치고 해지된 행은 흐리게 남는다(기록 보존). 안내 문구(보조 설명)는 두지 않았고 오류·성공 메시지만 표시한다. 문구는 컴포넌트 안에 ko/en으로 두었으며 화면 문자열 카탈로그 이전은 후속 작업이다. 검증은 합성 데이터의 PC1440·모바일390 로컬 화면이며 운영·dev 화면은 보지 않았다.
 
-## UI-RUBRIC R04 모임 헤더 포커스 (2026-11-05)
+### UI-RUBRIC R04 모임 헤더 포커스 (2026-11-05)
 
 - 모임 화면의 머리글·하단 메뉴 포커스 링은 3px Near Black(#121212)이다. 이 범위에서 계정 프로필 `.profile:focus-visible`의 2px #d11b62 링도 같은 3px ink 링으로 바뀌었다. 본문으로 바로가기 링크(`FanSkipLink`)의 포커스도 같은 3px ink다. 새 값은 없고 167행의 기존 링을 모임 머리글까지 확장한 것이다.
 - 모임 하위 화면의 페이지 제목은 원본 Export 기준으로 데스크톱 32px(400)·모바일 24px인 화면(미션 조건·적립 내역·응원/선물·미션 제출)과 20/24px 계약 화면(덕질·이벤트)이 공존한다. 이번 감사에서 중첩 카드는 0건이었고 제목 크기는 화면별 원본 값이라 바꾸지 않았다. 2026-11-05 결정(UI-R11 FX-05): 화면별 제목 굵기는 통일하지 않는다. 역할별 굵기 850/800/700과 `font-weight:400` + UI 850 페이스 방식을 유지하며, 이 항목의 '별도 결정 사항'은 종결한다.
 
-## UI-RUBRIC R06 지갑·덕질·패스포트 값 정리 (2026-11-05)
+### UI-RUBRIC R06 지갑·덕질·패스포트 값 정리 (2026-11-05)
 
 - 지갑 H1은 18px 예외 기록이 없어 계약값으로 맞췄다: 데스크톱 24px/32px, 1023px 이하 24px, 767px 이하 20px/28px. 굵기는 표준 제목과 같은 850이다(Pretendard UI 850, font-weight 400, font-synthesis none). 소스 지갑의 "내역" h2는 20px/26px이다.
 - 덕질 교환 상점 `.exchangeShop` 반경은 컬렉션 사다리 16px이다(데스크톱·모바일 동일). 지원(하트) 영역 로딩은 `BenefitsSkeleton`을 쓴다.
@@ -1874,14 +2149,14 @@ At the user's request, registered Changha identity and hero images use the unedi
 - 출석 7일 칸의 보너스 표시(+20P)는 규칙 줄과 중복이어서 제거했다. 응모 상세 오른쪽 메뉴의 지갑 바로가기는 "포인트·하트·응모권" 링크와 중복이어서 제거했다.
 - 최애 찾기 카드 `.cardIdentity > p`(역할 줄)는 패스포트 보유 배지 높이(24px)와 같은 min-height를 가져, 배지 없는 카드도 팬페이지 문구가 같은 위치에서 시작한다(전: 보유 카드와 2px, 390px에서 카드 높이 5px 차이).
 
-## UI-RUBRIC R09 내 활동 내역·운영 제목 기록 (2026-11-05)
+### UI-RUBRIC R09 내 활동 내역·운영 제목 기록 (2026-11-05)
 
 - 내 활동 내역 `/my/activity`(D10, `fan-history-screen`)는 덕질 계열이라 제목을 덕질 H1 계약(390px 20px, 768px부터 24px)에 맞췄다. 굵기는 기존 700, 줄 높이 1.3은 유지한다(이전 28px/700). 1440 측정: 24px·700·31.2px.
 - D10 본문 열은 규칙이 없는 현재 값을 그대로 기록한다: `main` 최대 900px(1440에서 x270 폭 900), 안쪽 좌우 여백 40px로 제목·돌아가기·탭이 x310 폭 820에 같이 정렬된다. 390px는 좌우 16px(폭 358). 값은 바꾸지 않았다.
 - 운영 회원 관리(G25)의 제목 24px/400은 바꾸지 않는다. 덕질·이벤트의 20/24px 제목 계약에 속하는 화면으로 기록한다. G12 일정 상세(`schedule-detail.tsx`, `ParticipationPage wide`)는 1440에서 x240 w960으로, 모임 하위 본문 열 960(위 모임 하위 화면 규칙)에 맞췄다. `ParticipationPage`의 기본 폭 880은 다른 화면에 그대로 둔다.
 - 확인 화면은 로컬 합성 fixture 캡처이며 운영 화면이 아니다.
 
-## CTA 위계 정리
+### CTA 위계 정리
 
 - 행동 가치별 강도: 화면(또는 오버레이)의 핵심 다음 행동 하나만 `FanAction variant="primary"`. 닫기·확인(단순 닫음)·홈/MY로 이동·내역/기록 보기 같은 보조 행동은 `neutral` 또는 `text`로 둔다. 행동이 끝난 뒤의 완료 상태에는 primary를 남기지 않는다.
 - 이유: 출석 완료 뒤 "내 출석 기록 보기"가 화면에서 가장 강한 버튼으로 남는 등 보조 행동이 핵심 행동처럼 보였다. 기존 한 화면 강조 1개 규칙(위 Primary CTA)을 그대로 적용한 것이며 새 값은 없다.
@@ -1889,7 +2164,7 @@ At the user's request, registered Changha identity and hero images use the unedi
 - 지갑 출석 완료 뒤 "내 출석 기록 보기"도 같은 규칙으로 neutral로 낮춘다. 모임 상세 잠금 가입, 디렉터리, 댓글·글쓰기 등록 화면은 이 규칙의 변경 대상에 넣지 않았다.
 - 빈 상태의 유일한 다음 행동은 강조(primary)를 유지한다. 내 응모 빈 상태의 혜택 둘러보기를 primary로 되돌렸다. 혜택 수령 화면은 수정 가능 상태의 "수정"이 그 상태의 주 행동이라 primary이고, 읽기 전용 상태는 강조 없이 둔다.
 
-## 포인트 지급 연출 (2026-11-05)
+### 포인트 지급 연출 (2026-11-05)
 
 - 공통 소유자는 `components/fan-ui/point-reward-burst`(`usePointRewardBurst`·`PointRewardBurst`)다. 포인트가 실제로 지급되는 행동의 완료 시점에만 쓴다. 현재 연결: 지갑 출석 체크인, 그룹 미션 제출이 완료로 바뀔 때.
 - 값: 서버 응답이 돌려준 금액(`pointsAwarded`·`rewardPoints`)만 쓴다. 잔액 차이나 고정 숫자로 추정하지 않고, 응답이 `replayed`이거나 0 이하면 재생하지 않는다. 1200ms 안에 연달아 지급되면 합산해 한 번 재생한다. 라이브 `scoreDelta`는 팬 점수라 연결하지 않는다.
@@ -1901,20 +2176,20 @@ At the user's request, registered Changha identity and hero images use the unedi
 - 지갑 폭: 지갑 페이지 폭은 공통 `FanContentContainer`(최대 1440px) 하나로 정한다. 별도 1040px 폭을 두지 않으며, 패널 폭은 컨테이너 안쪽 grid로 정한다.
 - 내 응모·지갑 상단 탭 쌍: 현재 탭은 채운 primary 그라데이션이 아니라 공통 탭 현재 값(글자 #ad1457, 배경 #fff0f6, 테두리 #d11b62, 굵기는 비활성 탭과 같은 `--fan-tab-weight` 500)으로 위치만 표시한다.
 
-## 혜택 요약 ? 도움말
+### 혜택 요약 ? 도움말
 
 - 사용자 명시 요청에 따라 "도움말 문구 금지" 규칙의 예외로 혜택 요약 카드(포인트·모임 응모권)의 라벨 옆 ? 버튼에만 짧은 설명을 둔다. 다른 화면에는 확장하지 않는다.
 - 공통 소유자는 `features/group-wallet/ui/help-hint.tsx`다. 클릭(터치는 탭)으로 고정, 호버(마우스만)·포커스로 열림, Esc로 닫고 포커스 복귀, 바깥 누름으로 호버·포커스 열림까지 닫힘, `aria-expanded`·`aria-controls`·`aria-describedby`와 `role="tooltip"`. 팝오버는 카드 안쪽 폭(좌우 12px)에 맞춰 열려 390px에서도 화면 밖으로 나가지 않는다. 버튼 24px, 눌림 영역은 ::after로 44px까지 확장.
 - 문구는 `walletHelpCopy`(12개 언어). 포인트→응모권 전환은 광고를 본 뒤에만 열리므로 그렇게 적는다. 포인트 적립처는 코드로 확인된 출석체크·모임 미션·댓글만 쓰고(댓글 적립은 그룹 지갑과 같은 `mobile_fan_economy_ledger`의 `fan_point` 원장) 금액은 적지 않는다. 하트는 지갑 자산이 아니어서 지갑에 하트 카드와 ?를 두지 않는다.
 - 확인 화면은 로컬 합성 fixture 캡처(390·1440)이며 운영 화면이 아니다.
 
-## 모임·팬페이지 공통 레이아웃 정리 (2026-11-05)
+### 모임·팬페이지 공통 레이아웃 정리 (2026-11-05)
 - 가로 폭과 좌우 여백은 공통 `FanContentContainer`(최대 1440px, 좌우 16/32/40px) 하나가 정한다. `GroupShell`의 `main`도 이 컨테이너를 쓰고 `groups.module.css`의 `.page`는 세로 여백(데스크톱 32/48, 1023px 이하 24/32)만 가진다. 그래서 모임 화면의 좌우 여백은 390px 16, 768~1279px 32, 1280px 이상 40이다. 이전에는 768~1023px가 16, 1024~1279px가 40이었다.
 - 탭 목록(홈·게시판·방·캘린더·멤버·랭킹)은 `features/groups/ui/group-tab-links.tsx` 하나가 소유하고 `CreatorGroupHeader`와 `GroupDetail`이 같이 쓴다.
 - `GroupPresence`는 compact 형태 하나뿐이다. 접속·방문 지표와 아티스트 한 줄을 보여 주고, 아티스트가 접속 중이면 접속 중인 이름만 적는다. 이전의 별도 요약 형태는 크리에이터 없는 fan 상세 분기에서만 쓰였는데, 그 분기는 앞에서 로딩·오류 셸을 반환해 화면에 나온 적이 없다. 지금은 compact 하나뿐이고 크리에이터 헤더에서만 보인다. 접속·방문 이력이 없는 아티스트는 빈 행을 만들지 않고 줄 자체가 없다(비어 있는 칸을 남기는 것보다 낫다고 판단). 브랜드·취미 페이지는 숨김을 유지한다.
 - 확인: 로컬 합성 fixture(390·768·1440)에서 가로 스크롤 없음. 운영 화면이 아니다. 혜택·지갑·래플 화면은 원래 `FanContentContainer`를 직접 쓰므로 값이 바뀌지 않는다.
 
-## 모임 화면 열 폭 규칙 (2026-11-05, UI-R10-FIX-LAYOUT-2)
+### 모임 화면 열 폭 규칙 (2026-11-05, UI-R10-FIX-LAYOUT-2)
 - 목록·그리드·대시보드 화면은 `FanContentContainer` 전체 폭(최대 1440px, 좌우 16/32/40px)을 쓴다. 화면별 `max-width`로 좁히지 않는다.
 - 폭을 좁히는 화면은 단일 흐름 작성 폼과 글을 읽는 화면뿐이다. 읽는 열은 최대 720px이고 가운데에 둔다. 모임 개설 신청 패널은 760px에서 720px로 맞췄다. 일정 상세(G12)는 글을 읽는 화면이라 960px에서 720px 가운데 열로 맞췄다(UI-R10-FIX-LAYOUT-3).
 - 화면별 분류(1440, 전→후): G07 글 읽기 x200 w720(1040 칸 안 가운데, `.creatorPostRead.creatorPostRead>*`로 `.detail{width:100%}`와의 specificity 동률을 이김) → 2026-11-09 shell-width: x40 w1040(칸 전체, 탭 왼쪽 끝과 같음, 센터 규칙 삭제) · G10 모임 목록 x360 w720→x40 w1040(본문, 옆 영역 별도) · G11 캘린더 x40 w1360 유지 · G12 일정 상세 x240 w960→x360 w720 · G18 미션 제출 폼 w960→w720 가운데 · G19 행사 상세 w720 가운데 유지(단일 흐름) → 2026-11-09 shell-width: w720 왼쪽 정렬(x40) · G20 행사 응원 대시보드 w960→x40 w1360 · G21 미션 그리드 x40 w1040+옆 영역 유지 · G22 선물 등록 신청 w1360→x360 w720 가운데(단일 흐름 작성 폼, 제목·폼 `.main>h1`·`.main>.form`, 390은 w358 유지) · G23 수익 목록 w960→w1360. 팬페이지 둘러보기(D11) 결과가 2개면 2열로 행을 채운다.
@@ -1922,18 +2197,18 @@ At the user's request, registered Changha identity and hero images use the unedi
 - 390px의 게시판 이야기 행은 카드와 같은 16px 거터에 글자를 맞춘다(행 안쪽 12px 여백 제거). 옆 영역 제목 행("내 페이지"·"오늘의 활동")의 "전체 보기" 같은 이동 링크는 제목 행 오른쪽 끝에 둔다.
 - 확인: 로컬 합성 fixture(3128) 390·1440 캡처. 운영 화면이 아니다.
 
-## 인기 게시판 표
+### 인기 게시판 표
 
 - 인기 게시판 표에서 썸네일이 없는 행은 빈 자리 없이 제목을 왼쪽 끝에 붙이고, 작성자·시간·조회·추천 수치 열은 모든 행에서 같은 위치에 정렬한다. 제목 열과 작성자 열 사이에는 16px 간격을 둔다.
 
-## 덕질 혜택 실패 알림
+### 덕질 혜택 실패 알림
 
 - 혜택 화면의 지갑·응원·카탈로그 실패 알림은 지갑 구역 바로 아래 한 목록에 모은다. 문구가 같으면 알림 한 개만 보이고 "다시 시도"는 같은 문구의 실패 요청을 모두 다시 부른다. 문구가 다르면 각각 보이며 간격은 16px이다. 알림은 흐림·inert 밖에 둔다.
 - 이미 받은 내용(카탈로그 항목, 응원 지원 대상 래플 목록)은 요청이 일부 실패해도 흐림과 "곧 안내해 드릴게요" 칩을 유지한 채 가리지 않는다. 받은 내용이 하나도 없을 때만 실패한 구역을 숨기고 칩을 없앤다.
 - 지갑 실패 때 잔액 자리는 "— P"·"—"로 두고 알림은 목록에 한 번만 보인다. 모임 응원 비활성 버튼은 opacity 대신 FanAction 비활성 글자색 토큰을 쓴다.
 - 확인: 로컬 합성 fixture에서 실제 GroupBenefitsScreen 390·1440 캡처. 운영 화면이 아니다.
 
-## 모임 달력 월 이동과 퀴즈 결과 보상 (2026-11-05, UI-R10-FIX-A2)
+### 모임 달력 월 이동과 퀴즈 결과 보상 (2026-11-05, UI-R10-FIX-A2)
 
 - 모임 화면에 들어간 달력(1024px 이상)의 월 이동은 제목 행에서 "일정" 제목 오른쪽에 둔다. 달력 위쪽 여백 84px을 두고 월 이동을 절대 위치(왼쪽 200px, 너비 360px)로 올린다. 768~1023px에서는 월 이동을 오른쪽 끝에 맞춘다. 1024~1120px 구간에서는 장식 그림을 .56배로 줄여 월 이동의 다음 버튼과 닿지 않게 한다.
 - 제품이 지원하는 12개 언어(ko·en·ja·zh-Hans·zh-Hant·es·id·vi·th·pt·fr·ru)의 제목·전체 LIVE 버튼 오른쪽 끝은 1024·1100·1440px에서 가장 긴 러시아어도 164~172px로 월 이동 시작(232~240px)과 겹치지 않는다.
@@ -1942,7 +2217,7 @@ At the user's request, registered Changha identity and hero images use the unedi
 
 - 적립 배지(`EarnBadge`, 2026-11-05): `icon` 18px 노란 P 코인, `inline` 분홍 `+nP · 도장 ×남은횟수`, `done` 회색 체크+"오늘 완료". 상태는 색만으로 전달하지 않고 모양·문구와 스크린리더 문구("포인트 N 적립")를 함께 쓴다. 수치와 남은 횟수는 `today` 응답 그대로이며 응답 전에는 그리지 않는다. 팬 페이지 오른쪽의 "오늘의 덕질" 타일 목록은 상한에 도달한 타일을 완료 배지로 바꿔 뒤로 보낸다.
 
-## 패스포트 쪽·하트·등급 표시 (2026-11-06, PR-P2-UI)
+### 패스포트 쪽·하트·등급 표시 (2026-11-06, PR-P2-UI)
 
 - 등급은 크리에이터 하트 수로 정한다. 하트는 패스포트 한 쪽(스탬프 9칸)을 채워 받으면 1개씩 쌓이며 지갑 자산이 아니다. 2쪽부터는 찐팬 칭호가 있어야 받을 수 있고, 찐팬이 아닌 팬에게는 등급 상한이 없다. 그래서 화면 어디에도 "골드 = 찐팬"으로 쓰지 않는다.
 - 골드 이상 방은 찐팬만 들어간다. 조건이 모자란 회원에게도 방은 보이며 입장 버튼은 비활성이고, 뱃지는 "등급 · 찐팬", 행동은 해당 크리에이터의 인증 목록 하나다.
@@ -1950,7 +2225,7 @@ At the user's request, registered Changha identity and hero images use the unedi
 - 미션북은 `ink-v1` 스탬프 그림을 쓴다. 입국 칸은 전용 그림이 없어 welcome을 쓴 임시 매핑이다.
 - 이유: 새 정책에서 등급과 입장 조건이 점수가 아닌 하트·찐팬으로 바뀌었다. 지시서가 가리킨 88행은 현재 파일에서 커뮤니티 탭 규칙이어서, 해당 내용은 이 절에 새로 적었다.
 
-## 덕질 2단 구성 (2026-11-06, 사용자 지적)
+### 덕질 2단 구성 (2026-11-06, 사용자 지적)
 
 - 사용자 원문: "현재 이 오밀조밀 화면에 비해, 덕질 화면은 너무 프로토타입같은 느낌 조잡한 느낌". 기준 화면은 홈이다. 측정(글자·간격·색·린트)은 통과했으나 구성·밀도·끝선·위계가 어긋났다는 지적이다. 기록은 보드 `ui-feedback.md`와 같다.
 - 계약: 덕질(`/benefits`, `KYAA_GROUPS_ENABLED=true`의 `GroupBenefitsScreen`)은 홈과 같은 단 폭의 2단이다. 1024px 이상 `minmax(0,1fr) 360px`·간격 24px, 1280px 이상 `minmax(0,1fr) 384px`·간격 32px, 1023px 이하는 1단. 제목 줄은 없다(아래 "페이지 제목 숨김"). 구역 사이는 `--fan-section-gap`(32/48)이다. 오른쪽 단은 고정(sticky)하지 않는다. 홈 하니스와 같은 x(본문 40~984, 단 1016~1400, 1440 기준)에서 확인했다.
@@ -1975,13 +2250,13 @@ At the user's request, registered Changha identity and hero images use the unedi
 - 알려진 한계: 390 등 1023px 이하에서 본문이 짧은 페이지(비로그인, 랭킹 1행)는 럭키드로우 아래에 빈 공간이 남는다. 원인은 공용 셸의 "짧은 페이지는 푸터가 하단 탭 아래에서 시작한다"(`fan-app-shell.module.css` `min-height: calc(100dvh - 헤더 - 하단 탭)`, 1023px 이하)이며 덕질의 하단 여백(80px)이 아니다. 셸은 공통 소유자라 이 화면에서 덮어쓰지 않았다.
 - 계약(내역 행 이름, 2026-11-06 감독 대조): 내역 행은 `활동 참여`로 뭉치지 않고 실제 활동 이름을 쓴다. 내역 API(`/api/me/wallet/history`)가 행마다 `actionKey`(덕질 활동 종류. 정정 행은 회수한 활동)와 `correctionReason`(`content_deleted`·`content_hidden`·`other`)을 내려주고, 화면은 덕질 가이드의 12개 언어 활동 이름(글 쓰기·댓글 달기·공감 누르기·공유하기·친구 초대·입국 심사 퀴즈·채널 구독·라이브 예약·라이브 참여·설문 참여·미션 참여·행사 체크인·행사 후기·찐팬 도장 인증)을 재사용한다. 정정 행은 "글 삭제로 회수"·"댓글 삭제로 회수"·"숨김 처리로 회수"(12개 언어, `history-label.ts`), 그 밖의 정정은 기존 "적립 정정"이다. 출석 적립 행(정책 2P)은 "출석체크", 초대받은 친구의 100P(`invite_friend`)는 "초대로 가입"(12개 언어)이다. 활동을 알 수 없는 행(예전 행, 응원 `cheer`, 새 키)은 기존 "활동 참여"를 유지한다. 금액·지급 로직은 바꾸지 않았다.
 
-## DUO 비로그인 상태 (2026-11-10, DUO-FIX-GUEST)
+### DUO 비로그인 상태 (2026-11-10, DUO-FIX-GUEST)
 
 - 비로그인 머리는 기존 번역의 최애 선택 제목과 로그인 행동을 표시하고, 콘텐츠 없는 커버·아바타 영역은 만들지 않는다. 로그인 상태의 DUO 커버·프로필 규격은 유지한다.
 - 찐팬/팬 순위 탭과 내역·친구 추천은 유지한다. 고정 막대 대신 공통 잠금 표시와 기존 번역의 로그인 행동을 표시한다. 비로그인 카드 본문은 5행/3행 최소 높이를 해제하고 안내 내용에 맞춘다. 안내 간격 12px, 안쪽 여백 16px은 공통 토큰을 사용한다.
 - 공개 미션과 럭키드로우 영역은 그대로 표시하며 회원 전용 조회·API 권한·포인트·교환·출석 동작은 변경하지 않는다.
 
-## 덕질 재설계 F2·F3 (2026-11-08, 사용자 지적 "벤치마킹해서 최대한 따라하자", "레이아웃 여백 이상하고")
+### 덕질 재설계 F2·F3 (2026-11-08, 사용자 지적 "벤치마킹해서 최대한 따라하자", "레이아웃 여백 이상하고")
 
 - 대체: 위 "덕질 2단 구성 (2026-11-06)"의 단 폭(`1fr 360/384`), 오른쪽 단 = 지갑 카드 계약, 그리고 261107-2 U4·E4·E5의 "지갑 띠 + 럭키드로우·응원 한 줄" 배치를 대체한다. 교환 위계(포인트 ≥ pointCost일 때만 활성), 상태·대화상자·`#wallet-history` 계약은 그대로다. 근거: 보드 `feedback-f/plan-ux-stan.md`, `feedback-f/benchmark.md`(Duolingo 웹 본문 + 레일, 토스 내 포인트).
 - 계약(폭): 1024px 이상 `grid-template-columns: minmax(0,640px) 352px`, 간격 32, 가운데 정렬(`justify-content:center`). 1440에서 1,024(좌우 208), 1024~1199에서 레일 352 유지·본문은 나머지(1024 뷰포트에서 576). 지갑은 두 열을 가로지른다. 1023px 이하는 1열.
@@ -1995,15 +2270,15 @@ At the user's request, registered Changha identity and hero images use the unedi
 - 로컬 확인(B, 3127 개발 서버, 비로그인 실제 화면): 390·1024·1440 × ko·ja·th·ru 미션 7행(오늘 5 + 접힌 머리 2) 모두 높이 64(ja·ru 390의 접힌 머리만 2줄 66), 원 40·50%, 오른쪽 열 96/120, 제목 x 64, 오른쪽 끝 여백 12, 화살표 0, 응원 게이지 0. 로그인 상태의 진행 줄은 같은 CSS 클래스로 게이지를 넣은 합성 측정(행 64, 제목 x = 게이지 x = 64)이며 실제 로그인 화면은 보지 못했다. 측정 `apps/web/scripts/measure-stan-missions.mjs`.
 
 
-## doc-261107 묶음 계약 (2026-11-07)
+### doc-261107 묶음 계약 (2026-11-07)
 
 묶음에서 정한 값이다. 다른 절과 다르면 이 절을 따른다. 구현 파일과 대조한 값은 근거 파일을 함께 적었고, 로그인 화면 일부는 시험과 코드로만 대조했다.
 
-### 이름
+#### 이름
 - 사용자 결정(2026-11-07): 머리의 별과 행위는 `팬 인증`, 퀴즈 단계와 출석 현황의 이름은 `입국 심사`다(명세 [57]). `찐팬 인증`은 쓰지 않는다. 새 페이지 신청 문구는 `운영팀이 승인하면 페이지가 열려요.`다. 사람은 `팬`, `팬 점수`·`팬 랭킹`은 띄어 쓴다. 미션북의 칸 표시는 `도장`이다.
 - 오류 공통 문구는 입력 보존을 약속하지 않는다. 읽기 화면에도 함께 쓰이기 때문이다.
 
-### 공용 부품
+#### 공용 부품
 - 용어: 화면의 한국어는 `도장`이다. `스탬프`를 쓰지 않는다. 이 문서의 옛 기록에 남은 `스탬프`는 `도장`으로 읽는다. 코드 이름은 그대로 둔다.
 - `FanPostRow` 게시판 밀도: 768 이상은 작성자 132px, 시간 52px, `조회`·`추천` 각 64px 고정 열이고 값이 없는 행도 자리를 비운다. 조회·추천은 보이는 글자로 쓴다. 390은 값이 없는 열을 뺀다.
 - `FanSkeletonRows variant="member"`는 56px 행이다. 팬 행과 같아 화면별 덮어쓰기를 두지 않는다.
@@ -2020,22 +2295,22 @@ At the user's request, registered Changha identity and hero images use the unedi
 - 본문은 모든 폭에서 첫 화면 높이를 채운다. 푸터는 첫 화면 아래에서 시작해 내용이 와도 밀리지 않는다.
 - 이름 대체 글자는 앞 기호를 뺀 첫 두 글자이며 칸 가운데에 둔다.
 
-### 사이드
+#### 사이드
 - 팬페이지 홈 사이드 순서는 값과 무관하게 `다가오는 일정 → 팬 활동 → 찐팬 게이지 → 패스포트`다. 게이지는 기본 꺼짐이고 늦게 도착하므로 위에 끼워 넣지 않는다(시각 검토 2차 N9, F2의 `맨 위` 결정을 대체).
 
-### 게시글·에디터
+#### 게시글·에디터
 - 게시글 상세: 제목 390 20/28, 768 이상 24/34, 700. 메타 13/20 `│` 구분. 아바타 32. 본문 16/26, 폭 최대 720. 댓글 구역 `--color-soft`, 위 32, 안쪽 16(768 이상 20), 반경 12. 입력 2줄 52px, 포커스나 입력 시 104px(`features/fan-posts/ui/post-detail.module.css`).
 - 리치 에디터: 도구 막대 44px(호버 바탕과 링크 입력줄 바탕은 `--color-accent-soft`), 390은 서식 한 줄 가로 스크롤과 미디어 한 줄. 본문 최소 184, 390 160. 첨부 미리보기 최대 320(`components/editor/rich-text.module.css`).
 - YouTube는 누르기 전에는 포스터(mqdefault, 16:9)만 읽고, 누르면 iframe을 연다.
 - 수정 폼은 열 때 서버에서 읽은 값으로만 시작한다. 저장소에 남은 값으로 폼을 채우지 않는다(`useGroupResource`의 `forEdit`).
 
-### 패스포트
+#### 패스포트
 - 상세는 CSS 책과 쪽 넘김이다. 닫힌 표지는 쓰지 않고 표지 띠만 둔다.
 - 값: 종이 #f7f2e8, 칸 #fbf8f1, 선 #d9cbb2, 잉크 #4a3a26, 표지 #23252b, 금박 #d8bd86. 칸 원 64px, 쪽 넘김 44px, 신원 사진 96×116. 등급 카드 뱃지 88(1024 이상 96). 미션북 칸 이름 16/700, 할 일 13.
 - 작은 그림은 `passport-open-book.svg`이고 원 칸은 점선이다. MY 카드는 찍힌 칸의 도장 그림을 그 위에 올린다.
 - 닉네임이 없으면 FAN NAME에 `—` 대신 `닉네임 없음`을 쓴다.
 
-### MY·덕질·랭킹
+#### MY·덕질·랭킹
 - MY 순서: 이름, 알림, 패스포트(크게), 지갑(광고 교환), 최애(큰 사진 줄), 바로가기(격자+목록). 잠금 자리는 움직이는 막대 대신 점선과 잠금 아이콘이다.
 - 2026-11-10 사용자 요청: MY 내 최애는 모임 찾기와 같은 사진·이름 격자로 표시하고 사진을 누르면 팬페이지로 이동한다. 기존 패스포트 보유 조건과 비공개 페이지 처리·사진 원본을 유지한다.
 - 출석 모달: 8열(1~6일 1칸, 7일 2칸), 480 이하 3열·7일 전체 폭, 칸 최소 88px, 분홍 #fff0f6/#ad1457/#d11b62.
@@ -2046,18 +2321,18 @@ At the user's request, registered Changha identity and hero images use the unedi
 - 홈 랭킹 카드(2026-11-08 C3): 탭 `찐팬 순위`(누적 하트)·`크리에이터 순위`(`찐팬 N`과 하트 합계, 모든 폭. 일반 팬 수는 쓰지 않음, 사용자 QA D13). 10행(행 44), 열 `24·32·1fr·auto·auto·36`, 마지막 열은 `RankDelta`(`rank-delta.tsx`, 아이콘 12 stroke 2.5 + 숫자 12/700 tabular, 폭 36 오른쪽 정렬, 오름만 `--color-accent-ink`, 내림·같음 `--color-muted`, 전일 없음·첫 7일은 같음 표시). 1024~1199는 등급 열을 숨긴다. 바닥 줄 왼쪽 `11~20위`는 같은 카드 안에서 펼친다(설계 3절의 `/rankings#rank-11`은 `/rankings`가 주간·하트 기준이라 다른 순위가 보이므로 쓰지 않음). 빈·오류는 10행 높이를 지킨다. 머리 옆 보조 글자는 탭 기준(`누적 하트`/`찐팬 수`).
 - 찐팬 100 챌린지(C7): 게이지 카드는 팬·랭킹 탭 맨 위, `찐팬 100 챌린지` 16/650 + 오른쪽 `공유`(secondary sm) / `찐팬 67 / 100명`(24/850, 달성 시 `달성` accent-ink) / `FanGauge md` / `11. 30.까지 · 운영자 한 줄`(13 muted, 있을 때만). 꺼짐·종료·로딩·실패는 카드 없음. 홈 모듈은 랭킹 카드 아래 16px, 같은 외곽(r collection, 안쪽 20), 행 56(사진 40·이름 최대 7.5em·`FanGauge sm`+`67 / 100명`), 최대 2행(내 패스포트 페이지 우선, 다음 달성률), 바닥 오른쪽 `응원하러 가기`. 목록 태그 `찐팬 100 도전 중`은 `FanTag fan`(인증 아이콘 없음)으로 모임 목록 카드 메타 줄과 홈 최애 카드 사진 왼쪽 위(8px)에 둔다. 홈 랭킹 행에는 넣지 않는다(360 폭에서 이름 칸이 사라짐). 구슬 트레이는 삭제했다.
 
-### 소셜
+#### 소셜
 - 팬 행: 56px, 아바타 40, 닉네임 15/600, 메타 13, 1px 선, 768 이상 2열 간격 24.
 - 프로필 모달: 420px, 안쪽 24, 반경 16 / 767 이하 아래 시트, 위쪽 반경 20. 대화 창: 360×480, 오른쪽·아래 24, 반경 16, `--z-dropdown` / 767 이하 전체 화면.
 - 대화 머리의 `친구`는 실제 친구일 때만 쓴다. 계정이 제한되면 `/my/friends`는 다시 시도 대신 제한 안내 한 칸을 보인다.
 
-### 모임 화면
+#### 모임 화면
 - 홈 갤러리는 외부 영상도 정사각 크롭이다(`image-framing.md`의 영상 16:9와 다름, 지정 원본 3.4절). `object-position:50% 30%`. 페이지 메뉴: 너비 280, 행 48, 글자 15, 아이콘 20, 묶음 사이 1px 선.
 - 비밀방: `아바타 줄(48, 가로 넘김) → 진행 중 큰 카드(1px 선, 라일락 면, 반경 16, 안쪽 16/20) → 다른 방 격자(1px 선, 반경 12, 최소 72, auto-fit 280)`. 잠긴 방은 소프트 면+자물쇠+등급, 열린 방은 말풍선 아이콘. 검색은 방 8개 이상일 때만. 비로그인·미가입은 큰 카드·아바타 줄 없이 같은 격자와 아래 행동 하나.
 - 캘린더 머리: `화살표 44 · 월 그림 · 화살표`를 본문 폭 가운데, 사진 묶음은 오른쪽 끝선(390은 아래 가운데). 머리 줄 폭의 container query(월 숫자 64~120, 사진 168~300). `일정`+`전체 LIVE`는 달력 위(1440)/아래(390), 연도·시간대는 달력 아래 13px. 월 그림·요일·날짜 칸을 바로 그리고 일정만 채우며, 빈 달 문구는 로딩이 끝난 뒤에만 보인다.
 - 행사 시각은 초를 쓰지 않는다. 슬라이드 그림이 실패하면 그림 칸을 빼고 글을 남긴다.
 
-### 안내·배너
+#### 안내·배너
 - 가이드 상세: 히어로 h1 clamp(34px,9vw,56px)/850, 구역 번호 clamp(36px,4vw,44px)·서비스 색, 구역 h2 clamp(24px,6vw,32px). 구역 머리는 삽화(88/144, `--radius-card`)+번호+제목. `us-fanmeetings` 위계를 따른 큰 제목 예외다. 규칙 카드는 subgrid 3트랙(이름, 수치, 한도).
 - 홈 배너 `data-kind="art"`: 데스크톱은 그림이 슬라이드를 채우고 왼쪽 절반에 글(768~1199는 44%), 모바일은 그림 위·글 아래. 그림 오른쪽 기준 정렬. 배경 `color-mix(ink 88%, service-ink)`.
 - **홈 배너 규격(2026-11-09 사용자 피드백 "배너가 너무 크다", 벤치마크 Weverse 홈 1080×308·반경 16·글 왼쪽/그림 오른쪽·아래 가는 인디케이터. 근거 `board/tasks/home-banner-size/benchmark-weverse.md`)**: 위의 `art`·welcome·campaign·live·guide 모든 홈 배너 슬라이드를 한 규격으로 대체한다. 이전 규격(1440에서 폭 1360×높이 680 = 16:8·최소 440, 390에서 4:5 세로 칸·최소 400, 그림이 칸을 채우고 글이 그 위에 얹힘)은 큰 사진이 첫 화면을 차지해 아래 구역이 밀려서 바꿨다.
@@ -2082,7 +2357,7 @@ At the user's request, registered Changha identity and hero images use the unedi
 
 - 홈 안내 배너 그림(2026-11-09): 내장 문구 보존을 위해 안내 이미지는 `contain`으로 표시하고, 768px 이상 그림 칸은 데스크톱 원본의 2:1 비율로 맞춘다. 사진 배너는 기존 `cover`와 초점을 유지한다. 시각 검수는 별도 작업자가 수행한다.
 
-### 2026-11-10 홈 갤러리 검토 수정
+#### 2026-11-10 홈 갤러리 검토 수정
 
 - 홈 갤러리·숏츠의 loading/error/empty는 흰색 `--color-surface`와 `--color-line`을 사용한다. 기존 핑크 자리표시 규칙의 이 화면 예외이며 회색 채움은 쓰지 않는다.
 - 사진 구역은 서버가 읽은 사진의 원본 치수와 최종 열 배치를 로딩 예약에도 공유한다. 고정 570/712px 대신 동일 사진의 실제 반응형 높이를 예약한다. 치수를 아직 알 수 없는 초기 셸은 모바일 1230px(기존 570px), 데스크톱 712px를 사용한다.
@@ -2090,7 +2365,7 @@ At the user's request, registered Changha identity and hero images use the unedi
 
 - 2026-11-10 스트리밍 회귀 수정: 사진 치수 조회는 갤러리의 Suspense 안에서만 기다린다. 조회 전에는 기존 고정 예약(모바일 1230px·데스크톱 712px)을 사용하고, 조회 후 숏츠 대기 중에는 같은 열 배치와 원본 비율로 예약한다. 홈 셸과 다른 섹션은 갤러리 조회를 기다리지 않는다.
 
-### 홈 랭킹 정보 보완 (2026-11-09, rank-info)
+#### 홈 랭킹 정보 보완 (2026-11-09, rank-info)
 - 홈 두 탭의 실제 데이터 행은 `ranking-rows.tsx`의 compact 변형을 쓴다. `순위·등락 | 사진·이름·LIVE | 찐팬·하트·최근 7일 증감` 한 줄, 높이 56, 사진 24, 열 `20·32·24·minmax(0,1fr)·auto`, 간격 4. 이름은 말줄임하고 원문 title을 제공한다. 390 한 카드/1440 두 카드는 기존 1024 분기를 유지한다. `/rankings`의 등급·최애·보조 정보 행은 보존한다.
 - 팬의 찐팬 수는 공개 집계 대상 크리에이터 중 하트를 보유한 곳의 수다. 크리에이터는 기존 찐팬 인원이다. 하트·찐팬 수는 정렬 지표와 관계없이 표시하며 증감은 최근 7일 범위 내 가장 오래된 스냅샷과 비교한다. 앞에 실제 weekGainDays(예: 3일, 7일)와 정렬 지표의 기존 하트 아이콘/P/찐팬 표기를 함께 표시한다. 비교 기록이 없으면 일수는 표시하지 않는다. 양수 +n, 0 +0, 음수 −n, 비교 자료 없음 —. 큰 수는 locale compact 표기와 전체 값 접근성 이름/title을 함께 쓴다.
 - 등락은 순위 바로 다음 `▲n`/`▼n`/`—`. 신규 태그와 분리한다. 신규는 이전 기준 집계가 존재하고 그 이후 최근 7일 안에 처음 등장한 항목이다. 첫 집계 전체를 신규로 표시하지 않는다.
@@ -2101,7 +2376,7 @@ At the user's request, registered Changha identity and hero images use the unedi
 - 2026-11-10 리뷰 보완: 홈 메달 순위·신규·증감은 `--color-ink`. 전용 비분홍 등락 토큰이 없으므로 ▲▼도 `--color-ink`. 내 순위/로그인 면은 흰색이며 분홍은 팬/크리에이터 선택 탭과 기존 하트 자산 두 역할에 한정한다. 정렬 지표 탭은 중립 면·글자·선 토큰을 쓴다. 기존 하트 아이콘을 aria-hidden으로 사용하며 문자 하트·회색 필터는 사용하지 않는다. 행 간 `--color-line` 1px 헤어라인은 높이 56을 바꾸지 않는다. 데스크톱 크리에이터의 전체 보기 링크는 상단 한 개만 둔다.
 - 팬의 찐팬 수(하트를 보유한 크리에이터 수)와 신규(기준 집계 이후 최근 7일 안 최초 등장)는 현 구현의 해석이다. 대표 원문에서 확정한 정의가 아니며 사용자 확인이 필요하다. 이번 리뷰에서는 계산을 바꾸지 않는다.
 
-## 팬·랭킹 팬 목록 — 2026-11-09 fan-list-sort 브리프(23:22 추가 포함)
+### 팬·랭킹 팬 목록 — 2026-11-09 fan-list-sort 브리프(23:22 추가 포함)
 
 - 팬 목록 칩은 `팬 · 찐팬 · 내 친구 · 팬 랭킹` 순서다. 찐팬은 해당 크리에이터의 `heart_totals` 하트 1개 이상이다. 팬·찐팬·친구 목록은 하트 내림차순 → 누적 스탬프 내림차순 → 최근 활동 내림차순 → 내부 app_user_id 오름차순으로 읽고, 머리 오른쪽에 `하트 많은 순`을 둔다.
 - `GroupMembers`의 1024px 이상 헤더는 왼쪽 칩·오른쪽 검색 입력 한 줄이다. 좁은 화면은 칩을 가로 스크롤하고 검색을 그 아래 둔다. 칩은 공통 `FanTabs` 36·14/700·반경 8, 검색은 44·반경 8, 별도 검색 버튼 없이 250ms 디바운스다. 빈 검색 결과는 78px 한 줄이다.
@@ -2109,28 +2384,28 @@ At the user's request, registered Changha identity and hero images use the unedi
 - **첫 하트 시각(2026-11-10 감독 결정):** 브리프의 상대 시간 요구보다 DESIGN의 날짜 2형식 규칙을 우선한다. 서울 기준 피드 형식 `11. 08. 13:47`로 표시하고, 올해가 아니면 `2025. 11. 08. 13:47`처럼 연도를 붙인다. 기존 `localScheduleTime` 절대 날짜 유틸을 재사용한다. 12개 언어의 라벨은 유지한다. 상대 시각 호출과 N23 예외는 없다.
 - 이번 구현 워커는 실제 390·1440 화면을 **못 봄**. 긴 닉네임·12개 언어 칩 길이·행 메타 잘림·모바일 다음 칩 노출·실제 높이는 별도 캡처 워커가 판정한다. 계약·컴포넌트 시험을 시각 검수 통과로 간주하지 않는다.
 
-### 팬 목록 날짜 잘림·공개 응답 수정 — 2026-11-10 mini 검토
+#### 팬 목록 날짜 잘림·공개 응답 수정 — 2026-11-10 mini 검토
 
 - 찐팬 메타는 12개 언어에서 짧은 라벨(찐팬·True fan·熱烈ファン 등)을 먼저 쓰고 날짜를 분리한다. 날짜는 `flex-shrink: 0`, 라벨에만 말줄임이다. 날짜의 월·일 순서와 구분자는 선택 언어를 따르며, 24시간 시·분과 서울 기준 다른 해 연도 표시는 유지한다.
 - 날짜 줄 아래에 스탬프를 표시한다. 새 정렬 목록 행의 최소 높이는 구분선 포함 64px(내용 최소 63px + 선 1px)이다. 아바타 40·기존 이름/수치 규격은 유지한다.
 - `fan-list-overflow.browser.spec.tsx`는 실제 행·메타 컴포넌트와 CSS로 390px에서 긴 닉네임, 하트 12,345, 스탬프 1,234, 12개 언어 × 올해/다른 해 24건을 검사한다. 날짜 전체 텍스트 범위·행 안 경계, 라벨 선행 순서, 가로 넘침, 행 56~64px를 실제 Chromium에서 확인한다. 브라우저 fixture 검증이며 운영 화면 검수와 구분한다.
 - `last_active_at`은 서버의 정렬과 암호화 커서에만 남긴다. 새 정렬 API의 공개 행은 닉네임·아바타·등급·하트·스탬프·첫 하트 시각 6개 필드다. 구형 `?hearts=1` 공개 API의 4개 필드(닉네임·아바타·등급·하트)는 유지한다.
 
-### 2026-11-10 승인 사용자 피드백: 홈 랭킹 카드
+#### 2026-11-10 승인 사용자 피드백: 홈 랭킹 카드
 
 홈 랭킹에 한해 위의 과거 탭·행 규칙을 대체한다. 소유자는 `features/rankings/ui/home-ranking-card`와 `ranking-rows`의 compact 분기다. 셸·푸터·전체 `/rankings` 지표는 보존한다. 한 카드 안 오늘의 랭킹(15/700)·실제 집계시각(11) → 찐팬 → 크리에이터 → 전체 보기. 양쪽 하트 기준을 명시 요청하며 로그인은 각 1~10위, 비로그인은 최대 공개 1~5위이며 각 구분이 공개 상한 5행일 때만 순위 범위를 확정하지 않는 로그인 진입(44px)을 둔다. 소수·빈 데이터에는 이 행을 두지 않는다. 없는 행은 생성하지 않는다. 행34px·아바타28px·순위16px·이름12/700·하트12/400·증가11/400, 카드 위12px·머리24px·구분20px·그룹간8px·하단36px·반경12px. 승인된 압축 행의 터치 영역은 행 전체다. 이름과 등락은 같은 flex 묶음으로 실제 이름 끝부터 등락 시작까지 gap8px, 이름 최대 폭은 팬142px·크리에이터72px(390 기준)이며 긴 이름만 말줄임한다. LIVE가 있으면 등락 앞6px 점+간격8px을 사용한다, Chevron12/stroke2.5/숫자간4px, 크리에이터 찐팬62px. 390 카드358px에서 팬 이름은 최대142px·크리에이터는 최대72px. 이는 09:43 주 감독의 실제 문자 끝~등락 8px 정정에 따른 승인 격자 보정이다. 숫자 우측 정렬·tabular, 이름만 말줄임. dayGain은 전날 KST 스냅샷 대비 하트이며 null/0/음수를 보존한다. 프로필에는 응답의 로그인 전용 profileRef를 원문 전달하고 기존 ProfileModal/AccessibleOverlay를 재사용한다. 홈 랭킹 참조로 연 프로필에 한해 데스크톱 폭480px을 적용하고 모바일은 기존 바텀시트를 유지한다. 기준은 board/tasks/user-feedback-20261110/rank/plan-ux.md 및 390.png, 사용자 최신 구현 승인이다.
 
-### 2026-11-10 콘텐츠 피드백 3 — 컴팩트 갤러리
+#### 2026-11-10 콘텐츠 피드백 3 — 컴팩트 갤러리
 
 - `CreatorMediaPanel`이 소유하는 원래 팬페이지 게시판 미디어(`/<slug>?tab=board&section=media`)와 홈 `preview` 갤러리는 동일한 촘촘한 정사각 썸네일 격자를 사용한다. 768px 미만 3열, 768px부터 4열, 1024px부터 6열, 간격 4px이다. 홈 미리보기의 2.2칸 가로 스크롤은 이 역할에서 사용하지 않는다.
 - 썸네일에서 제목·URL·작성자·날짜·사진/영상 유형 글자를 숨긴다. 접근 이름, 비문자 재생 표시, 기존 LIVE 상태, 실제 상세/선택 동작과 원문 데이터는 보존한다. 현재 실제 2건을 반복 복제해 칸을 채우지 않는다.
 - 정사각 크롭은 이 미리보기 역할에만 적용한다. 얼굴·피사체를 실제 390px/1440px에서 확인하고 상세의 원본 비율을 유지한다. 사용자 `feedback-3.png`의 엔카이브 헤더·게시판 탭 아래 영역이 근거이며 공통 셸·푸터는 변경하지 않는다. 기존 외부 영상의 자연 비율 규칙은 상세와 이 컴팩트 갤러리 외 호출에서 계속 적용한다.
 
-### 홈 배너 제어 (2026-11-10 사용자 지정)
+#### 홈 배너 제어 (2026-11-10 사용자 지정)
 
 좌우 이동 화살표는 배너 안 양끝에 배치하고, 아래에는 40px 선형 인디케이터를 둔다. 화살표는 배너 높이의 가운데에 둔다. 일시정지 버튼은 제거하며 수동 이동 시 자동 재생을 멈춘다. 기존 배너 내용과 크기는 유지한다.
 
-### 홈 랭킹 폭 (2026-11-10 사용자 지정)
+#### 홈 랭킹 폭 (2026-11-10 사용자 지정)
 
 홈 랭킹 카드는 주변 홈 콘텐츠와 같은 너비로 표시한다. 행은 기존 원본의 촘촘한 단일 행 구성을 유지한다.
 - 홈 공지와 `/notices` 목록(2026-11-10): 지정 참고 화면에 맞춰 분류·제목·날짜를 세로로 배치하고 날짜에 연도를 표시한다. 공지 건수가 5개 미만이면 빈 대시 행을 만들지 않으며 긴 제목은 줄바꿈한다.
@@ -2166,22 +2441,22 @@ At the user's request, registered Changha identity and hero images use the unedi
 
 덕질 화면은 지갑을 먼저 두고 럭키드로우 영역은 흐리게 표시하며 준비 중 상태로 이동·응모를 막는다(2026-11-10).
 
-### 숏폼 뷰어 (2026-11-10, 로컬 확인용)
+#### 숏폼 뷰어 (2026-11-10, 로컬 확인용)
 사용자 요청으로 기존 카드형 모달 대신 모바일 화면을 채우는 세로 영상 뷰어를 사용한다. 영상 바깥의 터치 영역과 이전·다음 버튼, 키보드·휠로 이동하며 현재 영상만 재생창에 남긴다. 제목과 닫기는 안전 영역에 두고 kyaa 반응은 YouTube 자체 반응과 구분한다. 원본 링크는 더 보기 안에 둔다.
 
-### 오늘의 덕질 행 (2026-11-10, 로컬 확인용)
+#### 오늘의 덕질 행 (2026-11-10, 로컬 확인용)
 사용자 요청으로 팬 활동과 같은 `FanMissionRow`의 40px 원형 도장, 포인트 코인, 진행 막대와 카운트, 완료 pill을 오늘의 덕질에도 적용한다. 오늘의 덕질 제목·남은 개수와 접기, 그 밖의 덕질 및 인증 확장, 실제 항목과 동작은 유지한다. 이전의 단색 아이콘·별도 수치 표시는 제거한다. 상단 독립 최애 선택을 오늘의 덕질 제목 옆으로 이동하고 24px 원형 아바타를 붙인다. 긴 이름은 줄임표로 표시하며, 화면 전체에서 사용하던 선택 상태는 유지한다.
 
-### MY 패스포트와 오늘의 덕질 선택기 (2026-11-10 로컬)
+#### MY 패스포트와 오늘의 덕질 선택기 (2026-11-10 로컬)
 - MY의 지갑 요약은 제거하고 덕질의 지갑은 유지한다. 로딩·비로그인 MY도 같은 구성이다.
 - MY 패스포트 책은 1536×1024 원본의 좌우 빈 공간(x 0–65, 1468–1536)만 잘라 가용 폭에 맞추고 책과 인물·스탬프의 비율을 유지한다.
 - 오늘의 덕질 제목 옆 최애 선택은 본문 보조 크기와 24px 아바타를 사용한다.
 
-### 포인트 교환 시트 (2026-11-10)
+#### 포인트 교환 시트 (2026-11-10)
 - 제목 아래 연회색 보유 포인트 정보, 수량 라벨과 전폭 pill 수량 조절, 그 아래 전폭 primary 교환 버튼을 둔다. 모바일 시트 최소 높이는 400px과 85dvh 중 작은 값이며 작은 화면은 기존 시트에서 스크롤한다. 광고·교환 동작은 유지한다.
 
 
-### 2026-11-10 고정 원본 dd737 dev 합본: 사용자 시각 예외와 lint 수정
+#### 2026-11-10 고정 원본 dd737 dev 합본: 사용자 시각 예외와 lint 수정
 
 출처는 이 작업의 2026-11-10 사용자 지시 “pink/purple gradient toast·사진확장blur+가독성gradient·비활성luckydrawblur·최소높이bottomsheet 절대제거금지” 및 고정 최종 원본 `dd7376d123cb41a7bc8c0ff2750046dab800c786`이다. 일반 S1·S2·N29·N4보다 아래의 지정 역할에서만 이 요청을 우선한다.
 
@@ -2200,7 +2475,7 @@ At the user's request, registered Changha identity and hero images use the unedi
 - 2026-11-10 정식 UI gate의 후속 보정: 오늘의 덕질 최애 선택 문구는 본문 보조 14px를 유지하고, 공통 400·700·800 굵기 계약에 따라 원본의 600 대신 `--fan-item-title-weight`(700)를 사용한다. 배너 개별 점·정지 버튼을 복원하지 않고 이전/다음·선형 진행 표시·수동 이동 후 자동 재생 중지, 모바일 자동 재생 금지를 검증한다. 한국어 Elina 진입은 승인된 “덕질 시작하기”를 유지한다.
 
 
-### 2026-11-10 14:00 피드백 슬라이드 — 로컬 반영
+#### 2026-11-10 14:00 피드백 슬라이드 — 로컬 반영
 - Google Slides `10IsbKd4pM_bv6bxGaXR327oLpzTku2QAbyRoYV7NAMc`의 2–10장 사용자 요청. 기존 브랜드·핑크/보라 토스트·공통 행을 보존하는 국소 교정이다.
 - Hot 정렬은 `좋아요순·댓글순·조회수순·최신순`(2026-11-11 사용자 요청: 작성 시각 내림차순, 기본은 좋아요순). 원문/번역 전환은 공통 TranslationControl에서 13px/400, 파란 `--color-translation-link`(#2876ad), 44px 터치 영역을 유지한다. 원문 데이터는 바꾸지 않는다.
 - 팬페이지 홈 활동과 오늘의 덕질은 기존 FanMissionRow를 공유하고 공감을 기본 목록에 포함한다. 게시판에는 글 목록/상세만 남기고 챌린지·활동·등급·이벤트 보조열을 제거하며 1열 최대720px를 유지한다. 홈의 응원과 이벤트 링크도 제거한다.
@@ -2210,7 +2485,7 @@ At the user's request, registered Changha identity and hero images use the unedi
 - 비밀방 내부는 44px 뒤로가기 ChevronLeft와 방 제목으로 축약하고 중복 방 탭을 제거한다. 기존 비공개 이미지 업로드·인증 이미지 표시를 재사용하며 이미지 원본 비율과 최대 원본 크기를 보존한다. 사진 전용 메시지도 허용한다. 업로드/삭제는 중립 아이콘 행동, 보내기만 강조한다.
 - 로컬 S3 업로드도 AWS_STORAGE_ENABLED가 켜져 있으면 기존 검증된 버킷·리전의 `/mobile-media/` 주소만 CSP에 허용한다. 호스팅 종류로 실제 저장소 설정을 무시하지 않는다.
 
-### /rankings 목록 재설계 1차 (2026-11-10, RANK-V3 A r3·C1)
+#### /rankings 목록 재설계 1차 (2026-11-10, RANK-V3 A r3·C1)
 `/rankings`의 목록만 바꾼다. 홈 압축 카드(`home-ranking-card.*`, `ranking-rows`의 compact 분기)와 앱 셸은 그대로다. 근거는 `board/tasks/rank-redesign/refs-20261110/concepts/A/handoff-impl.md`(끝 17:40 보완 포함)와 대표 17:30 C1이다. 상세 시트·기간 선택·연속 활동·추이·찐팬 TOP은 2차이며 이번 화면에 없다.
 - 머리: h1 `랭킹` → 세그먼트 `찐팬 | 크리에이터`(1023px 이하만) → 줄 `누적 하트 · N초 전 업데이트`(13/400 muted) 오른쪽에 기준 전환 텍스트 버튼(하트·포인트 / 하트·찐팬 수, 12px, 줄 높이 36, 누르는 영역 44). 기존 `?tab&metric` 주소와 기준 전환은 그대로 보존한다.
 - 1024px 이상은 두 목록이 양옆(C1): 각 단 최대 400, 단 사이 40, 단 제목 `찐팬`·`크리에이터`(h2). 행 높이(64)·열·간격은 390과 같고 이름과 하트 사이를 단 폭이 제한한다. 두 목록을 함께 읽으므로 1023px 이하에서 숨은 쪽도 함께 요청한다.
@@ -2228,19 +2503,19 @@ At the user's request, registered Changha identity and hero images use the unedi
 - RANK-V3 실제 화면 판정 보완: PC 바깥 영역은 최대 920px로 가운데에 놓고, 제목과 두 단의 읽기 영역은 최대 840px로 끝선을 맞춘다. 단 최대 400px, 간격 40px, 행 64px를 쓴다. 비로그인 PC의 주 행동은 찐팬 단에 하나만 두고, 모바일의 선택 탭 행동은 유지한다. 내 행만 분홍 면을 쓰며 일반 hover에는 분홍 면을 추가하지 않는다. 기준 전환의 누르는 영역은 최소 44×44px이다(2026-11-10).
 - 공지(`/notices`·`/notices/[slug]`·홈 공지, 2026-11-10 사용자 지적 #2~#11): 홈·목록·상세 하단의 공지 목록은 `NoticeCard`(`features/home/ui/notice-card`) 하나가 소유한다. 외곽은 랭킹 카드와 같은 12 반경 + 1px `--color-line`, 행은 분류·제목·날짜 88px, 홈은 아래 `전체 보기 ›`, 상세는 제목 줄 오른쪽 `최근 공지사항 ›`. 공지 목록 페이지는 회색 바탕을 없애 흰 바탕으로 하고 카드 선 둘레에만 `0 1px 3px rgb(0 0 0 / 6%)`을 준다(위 표의 카드 그림자 0에서 이 한 곳만 사용자 요청으로 예외, 홈·상세 카드는 그림자 0 유지). 상세는 운영자 공지이므로 좋아요·싫어요·공유·댓글을 두지 않고 본문이 셸 폭을 꽉 채운다. 본문 그림은 PC(1024+)에서 폭을 채우되 21:9로 자른다. 공지 본문 그림은 `/images/notices/<이름>.webp` 정적 경로를 쓸 수 있다.
 
-## 미디어 표시 (2026-11-10 S6, 사용자 PC QA #13·#15)
+### 미디어 표시 (2026-11-10 S6, 사용자 PC QA #13·#15)
 
 - 갤러리(홈 갤러리와 `/gallery`)는 같은 `allocateGalleryColumns`로 열을 정한다. 사진은 원본 비율 그대로이고 열 바닥을 맞춘 뒤, 각 열 안에서 이웃 사진이 같은 크기 그룹(목록 비율의 3분위수)이 되지 않게 섞는다. 열의 맨 위 사진(순위가 가장 높은 사진)은 고정이고 같은 그룹끼리는 순위 순서를 지킨다. 근거 `board/research/media-layout.md`.
 - 칸을 `contain`으로 통째로 채워야 하는 이미지·영상은 남는 여백을 그 이미지의 흐린 복사본으로 채운다. 공통 소유자는 `components/fan-ui/media-fill.tsx`(`MediaFill`, `mediaFillClass`, `MediaBackdrop`)다. 뒷면은 `alt=""`·`aria-hidden`이며 사진 자체는 자르지 않는다. 적용: 모임 격자 로고·배너 칸, 홈 쇼츠 표지, 이벤트 목록 그림. 승인 크롭·상품 배경·패스포트 장식에는 쓰지 않는다.
 - 2026-11-10 S3 덕질·출석 UI(사용자 PC QA #17·#18): "내 페이지 출석 현황" 모달은 행 목록 대신 원형 아바타 격자(`attendance-avatars.tsx`)다. 2026-11-10 22:48 사용자 "gap을 줄여 주기"로 열 72 고정·간격 16/8·아바타와 `연속 N일`·버튼 사이 4로 줄였다(390에서 한 줄 4개, 앞 기록의 열 최소 96·간격 24/16은 폐기). 아바타 68(링 3 + 안쪽 4 + 이미지 54), 오늘 출석한 페이지만 초록 링과 오른쪽 아래 24 체크 배지, 이름은 마우스 호버·포커스(`FanTooltip`) 또는 터치 450ms 길게 누름(`FanTooltip longPress`, 1.8초 표시)에서만 보이고 스크린리더는 `role="img"`의 이름과 숨은 "오늘 완료"로 읽는다. 아바타 아래 `연속 N일` 13 muted, 오늘 출석을 못 한 페이지에만 `출석하기`(입국 심사 전이면 `입국 심사`) 버튼. 초록은 사용자가 참고 화면으로 지정한 출석 링·체크에만 쓰며 폐기 예정 표의 `--color-success`(#17613f) 값을 그대로 쓴다(새 값 없음). 같은 작업에서 `wallet.module.css .supportBackdrop`에 `justify-content:center`를 더했다: 공통 오버레이의 `display:flex`가 `display:grid`를 이기는 순서에서 모달이 왼쪽 끝에 붙던 것을 막는다. 확인: 로컬 dev(3002) 합성 계정 390·1440, 프로덕션 빌드는 이 환경에서 `ffprobe` 없음으로 못 돌림.
-## 2026-11-10 MY 바로가기·패스포트 빈 칸·헤더 위젯 애셋 (사용자 PC QA 18:21~18:24, S4)
+### 2026-11-10 MY 바로가기·패스포트 빈 칸·헤더 위젯 애셋 (사용자 PC QA 18:21~18:24, S4)
 
 - 이 항목은 1920~1921행의 MY 순서 중 `최애` 구역을 대체한다. MY 순서는 이름 → 알림 → 패스포트 → 스탬프 모으기 → 바로가기다. `내 최애`는 모임(`/celebrities`) 상단에 이미 있어 MY에서 구역을 없애고 바로가기 첫 항목(`내 최애` → `/celebrities`)으로 옮겼다. 1921행의 사진·이름 격자는 `/celebrities`에서만 쓴다.
 - 바로가기 9칸은 한 카드(1px `--color-line`, 반경 `--radius-card`) 안에 두 열로 늘어선다. 행은 컬러 일러스트 아이콘 40(390은 32) · 이름 · 화살표(390은 생략)이고 행 사이는 헤어라인이다(위버스 2열 메뉴 기준). 아이콘은 imagegen 시트(저장소 밖 보관)에서 `scripts/prepare-my-shortcut-icons.mjs`로 잘라 `public/images/my/shortcuts/*.webp`로 둔다. 하트·동전·응모권과 같은 광택 3D 재질이다. 무채색 선 아이콘을 다시 쓰지 않는다.
 - 패스포트 스탬프 줄(`my-passport-card`, 미션북 `Slot`)의 아직 받지 않은 칸은 점선 원 대신 받은 칸과 같은 그림의 흐린 회색 스탬프(`public/images/stamps/ghost-v1`, `scripts/prepare-ghost-stamps.mjs`가 ink-v1에서 회색 한 색·알파 50%로 만든다)를 놓는다. 그림이 없는 칸은 회색 틀(`frame.webp`)이다. 받은 칸은 같은 그림에 `saturate(1.25) contrast(1.12)`로 더 진하게 보인다. 이전의 "회색 스탬프를 늘어놓지 않는다"는 이 요청으로 바꿨다.
 - 헤더 상태 캡슐(`fan-header-status`)의 하트와 포인트는 `economy/heart.svg`, `economy/point-coin.svg` 애셋 그림이다(`P` 글자·단색 선 하트 폐기). 크기는 기존 L10 규칙(24, 390 캡슐 안 16)을 따른다.
 
-### 2026-11-10 운영 핫픽스 — 크리에이터 미디어·일정 달력
+#### 2026-11-10 운영 핫픽스 — 크리에이터 미디어·일정 달력
 
 사용자 [운영] 지시(PROD-HOTFIX-1920)에 따라 모임 기능이 꺼진 운영 화면에 적용한다. 소유자는 `features/media/ui/creator-media-panel`(비 compact 분기)와 `features/fanpage/ui/celebrity-calendar`·`calendar.module.css`다.
 
@@ -2248,7 +2523,7 @@ At the user's request, registered Changha identity and hero images use the unedi
 - 사진·게시판 미디어 칸은 정사각 크롭. 크리에이터 홈 `영상` 줄의 세로 클립(YouTube 외)은 9:16을 유지한다. 영상 칸은 왼쪽 위 28px 재생 표시(얼굴을 가리지 않게)와 원문 링크(새 창)를 둔다. 사진 실패는 아이콘만 표시한다.
 - 일정 달력: 꽉 찬 원은 선택한 날 하나(`--fanpage-action-solid`). LIVE는 숫자 아래 6px 분홍 점, 출석은 숫자에 2px `--color-success` 링과 오른쪽 위 16px 초록 체크 배지, 오늘은 1px 잉크 테두리. 달력 위 오른쪽에 범례 칩 2개(✓ 출석 · ● LIVE). 일정이 없는 날도 일정 있는 날과 같은 칸 구조(48px, 아래 7px 줄)로 숫자 높이를 맞춘다.
 
-### 홈 오늘의 랭킹 — 홈 본문으로 이동 (2026-11-10 19:06·19:36, 사용자 지시·감독 결정, `board/decisions-by-screen.md` 홈 절)
+#### 홈 오늘의 랭킹 — 홈 본문으로 이동 (2026-11-10 19:06·19:36, 사용자 지시·감독 결정, `board/decisions-by-screen.md` 홈 절)
 위의 홈 랭킹 압축 카드(행 34)와 `/rankings` 목록 재설계 1차 절을 이 절이 대체한다. 소유자는 `features/rankings/ui/ranking-board`(본문)와 `home-ranking-card`(카드 외곽·제목), 행은 `ranking-rows`다.
 - 구조: 카드(흰 면 + 1px 선, 반경 12, 안쪽 20, 챌린지 카드와 같은 값) 안에 제목 `오늘의 랭킹`(18/700) → 찐팬 → 크리에이터. `전체 보기`·별도 `/rankings` 화면·`포인트`·`찐팬 수` 탭·`신규` 표시는 없다. `/rankings`는 홈의 `#home-ranking`으로 리다이렉트한다. 1023px 이하는 카드 제목 아래 `찐팬 | 크리에이터` 세그먼트(틀 높이 48)로 한 목록씩 보이고(비로그인은 두 목록 모두 자기 로그인 버튼), 1024px부터는 세그먼트 없이 두 단이 카드 안쪽 폭을 반씩 채운다(단 사이 40, 가운데 고정폭 없음, 비로그인 로그인 버튼은 찐팬 단 하나).
 - 한 단: 단 제목(15/700) → `누적 하트 · N초 전 업데이트`(13/400) → 하이라이트 카드(실제로 오른 행이 있을 때만) → 행 10개 → 로그인 버튼(비로그인, 찐팬 단 하나) 또는 `내 순위`(순위가 있을 때만).
@@ -2266,17 +2541,17 @@ At the user's request, registered Changha identity and hero images use the unedi
 - 목록 전환 로딩(2026-11-10 [운영] "페이지네이션 누르면 화면이 싹 줄었다가 다시 생김"): 쪽·탭·필터를 바꿔 다시 읽는 목록은 `useFanpageResource`/`useCommunityResource`의 마지막 인자 `keepAcrossUrls`로 같은 사용자의 이전 목록을 제자리에 두고(`pending`, 목록 `aria-busy`), 새 목록이 오면 한 번에 바꾼다(`anonymous` 인자 뒤). 사용자가 바뀌면 이전 목록을 들고 있지 않는다. 대기 중에는 쪽 넘김을 막는다. 첫 로딩 골격은 main의 `FanSkeletonRows`. 적용: 홈 팬게시판(인기글 쪽), 팬게시판 피드 쪽, 크리에이터 모임 홈 게시판 쪽, 응원 댓글·공지 댓글·글 상세 댓글·응원 답글, 팬 순위 분류 탭, 인기글 기간 탭, kyaa wave 앨범·클립 댓글·멤버.
 - 가로 영상 썸네일(2026-11-10 감독, 사용자 규칙 R5 검은 띠 금지): 글자 없는 썸네일·`backdrop` 칸의 YouTube 영상은 위아래 검은 띠가 박힌 4:3 표지(`hqdefault`·`sddefault`·`default`·`0~3.jpg`)를 쓰지 않고 16:9 표지(`hq720` → `mqdefault`, 120×90 회색 대체 이미지는 실패로 본다)를 쓴다(`features/media/ui/media-thumbnail.tsx`). 칸 비율·흐린 배경은 main의 `MediaBackdrop`/정사각 칸 규칙을 따른다.
 
-### 홈 랭킹 행 한 줄·52 (2026-11-11 RANK-COMPACT, 대표 01:55 "한 줄로 맞추고 셀 높이를 조금 줄여도 … 너무 큼직큼직")
+#### 홈 랭킹 행 한 줄·52 (2026-11-11 RANK-COMPACT, 대표 01:55 "한 줄로 맞추고 셀 높이를 조금 줄여도 … 너무 큼직큼직")
 - 행(찐팬·크리에이터, 390·1440 동일)은 한 줄 52px(이전 64): 순위 28 · 아바타 32 · 이름(+등락 ▲N 초록/▼N 빨강, 변동 없으면 숨김 · LIVE · 1024부터 찐팬 100 태그) · 하트 수 · 화살표. 둘째 줄과 `1위까지 N`·`현재 1위`·오늘 +♥는 행에서 뺐다.
 - `1위까지`(값 N, 동점은 0, 1위 행은 칸 없음)와 오늘·최근 N일은 펼친 행의 칸에 둔다(순위 칸은 행에 이미 있어 `1위까지`로 대체).
 - 값이 바뀐 행만 테두리를 브랜드 핑크 호가 한 바퀴(600ms, 한 번). 첫 응답·값이 같은 행·새 행은 없음. 이전 설계 "큰 행 64·1위까지 행 안 표시(11/10 19:13)"는 대표 피드백으로 대체.
 - 린트 예외(사용자 승인 2026-11-11 05:15, 대표 요청 ⑤ "숫자가 변할 때마다 셀의 라운드 선을 핑크가 선을 타고 움직이던지"): `ranking-rows.module.css`의 `.pulse`(링 모양을 만드는 마스크 그라데이션 — 색 장식이 아니라 구멍 역할)와 `.sweep`(`--color-accent` 단색 꼬리 호 conic 한 줄)에만 `design-lint-disable S1` 선택자 주석을 둔다. 규칙 전체·기준선은 그대로이고, 값이 바뀐 행의 1회 연출 외에는 쓰지 않는다. 행 높이 토큰 계산은 `--space-12`+`--space-1`(=52)로 쓴다.
 
-### LUCKY-GACHA-0836 · 준비 중 기계 확대 (2026-11-11)
+#### LUCKY-GACHA-0836 · 준비 중 기계 확대 (2026-11-11)
 
 사용자 대표 피드백에 따라 준비 중 duo 럭키드로우의 기계 그림은 투명 1254px PNG 원본과 WebP를 사용한다. 기존 카드의 크기·글·비활성 응모 버튼·Coming soon을 보존하며, 준비 중에는 카드 정지 그림을 클릭해 공통 FanDialog(lg)를 연다. 기계의 전체 실루엣과 로고를 contain으로 보존하고 카드 그림에는 기존 space-4(16px) 안전 여백을 둔다. 확대 모달은 고해상도 원본을 보여 주며, 누르는 동안에만 3D 장면으로 전환하고 종료 후 원본으로 돌아간다. 기존 자동 idle 대신 이 상태에서는 팝업의 명시적 클릭으로 기존 three.js 손잡이·캡슐 배출을 재생한다. 실제 응모·응모권 차감·보상 공개는 없다. reduced-motion·저성능·데이터 절약·장면 실패에서는 정지 그림과 150ms 투명도 반응을 사용한다. 준비 중이 아닌 카드의 기존 idle 계약은 유지한다. 모달은 공통 초점·Escape·닫기·초점 복귀 동작을 사용한다.
 
-## 2026-11-11 대표 텔레그램 누락분(CEO-MISSED-0856)
+### 2026-11-11 대표 텔레그램 누락분(CEO-MISSED-0856)
 - PC 헤더(1024px부터): 높이 88→72, 로고 폭 88→72, 메뉴 칸 높이 64→52와 메뉴 아이콘 24→20, 오른쪽 아이콘·상태 캡슐 안 표시 24→20. 터치 영역 44px, 글자 크기, 390 모바일 헤더(L10의 20·16)는 그대로다. 사유: 대표 02:07 "맨 윗부분의 로고·메뉴·우측 상단 아이콘은 PC 기준으로 조금 더 작아도". 소유자 `fan-app-shell.module.css` 끝의 한 블록과 `groups.module.css` `.shell`의 `--fan-header-height`.
 - 덕질 지갑 네 칸 아이콘: `dukjil-duo` 분홍 3D 글리프 대신 이미 쓰는 애셋 — 포인트 `economy/point-coin.svg`, 응모권 `economy/ticket.svg`, 하트 `economy/heart.svg`, 스탬프 `stamps/ink-v1/mission.webp`. 크기는 32, 교환 시트의 응모권도 같은 `economy/ticket.svg`. 사유: 대표 02:07 "다른 컬러 및 기존 아이콘이 더 패스포트 감성".
 - 덕질 지갑 2차(사용자 2026-11-11 12:45, 레퍼런스 `board/tasks/wallet-redesign-1130/benchmark-daily-mission.png`): 흐름마다 한 행 `56(1024+ 64) 3D 애셋 │ 이름 16/700 + 보유 수 24(32)/800 위, 24px 알약 막대(바탕 `--color-accent-soft` + `-line` 헤어라인, 채움 `--color-accent` 단색, 막대 안 `N / 100P`·`N / 9` 13/700 — 채운 부분은 흰 글자) │ 보상 알약(애셋 28 + `×1`, 최소 76/96)`. 받을 수 있으면 알약이 핑크 틴트 + 1.5px accent 선 + accent-ink 글자(분홍 애셋이 primary 채움에 묻혀서 primary 대신), 광고 없음은 같은 알약 흐리게 `준비 중`. 390 두 행 위아래·헤어라인, 1024+ 두 행 좌우·세로선. 3D 애셋은 이 화면에서 사용자 지시로 다시 `dukjil-duo` 글리프(위 02:07 결정의 이 화면 예외). `안내 ›` 글자 대신 제목 옆 lucide `CircleHelp` 20 링크(32 원, 누르는 영역 44, 이름 `지갑 안내`, `/guide/dukjil`로 이동) — 툴팁 행의 "물음표 도움말 금지"에 대한 이 화면만의 사용자 예외(말풍선 없이 안내 페이지로 이동만). 오늘 이미 받은 상태를 알려 주는 데이터가 지갑에 없어 완료 도장은 넣지 않았다. `stan-wallet.tsx`, `stan-wallet.module.css`.
@@ -2288,33 +2563,35 @@ HEADER-CHIP-1456 (2026-11-11): 헤더 등급·하트·포인트 칩은 팝오버
 
 2026-11-11 럭키드로우 카드: 사용자 요청으로 1024px 이상에서는 캡슐 기계를 왼쪽, 안내와 행동을 오른쪽에 세로 가운데로 배치한다. 기계 영역과 안내 영역의 간격은 `--space-4`이며 1024px 미만 배치는 유지한다. 소유자는 `features/groups/ui/duo-lucky.module.css`다.
 
+2026-11-12 덕질 럭키드로우 위계: 사용자 PC 캡처 피드백에 따라 구역 제목과 본문 사이는 8px로 붙인다. 진행·준비 중 기계 카드의 크기와 내부 배치는 유지하고, 지난 회차 3개는 카드 아래의 56px 썸네일·구분선 행으로 표시한다. 지난 회차가 보일 때 제목 줄의 같은 이름 링크는 숨기고 각 결과 행 전체를 링크로 사용한다. 지난 회차가 없을 때는 목록으로 가는 링크 하나를 유지한다. 소유자는 `features/groups/ui/group-benefits.module.css`, `duo-lucky.module.css`, `stan-lucky-cheer.tsx`다.
+
 2026-11-11 럭키드로우 지난 목록: 사용자 요청으로 최애의 실제 종료된 추첨을 최신순 최대 3개 표시한다. 1024px 이상은 기계와 안내 오른쪽에 `FanPostRow` 목록을 두고, 모바일은 카드 아래 가로 스크롤로 둔다. 항목이 없거나 조회할 최애가 없으면 목록을 숨긴다. 기존 추첨 API와 링크를 사용한다.
 - HEADER-DM-1347 (2026-11-11 사용자 운영 승인): 로그인 헤더의 종 바로 다음에 기존 Send 아이콘(44px 타깃)을 표시하고 `/my/friends`로 연결한다. 대화 API의 unreadCount 합계를 사용하며 종과 DM 숫자 배지는 `--color-error`, 99+ 상한을 공유한다. 모바일 DM은 하단 탭 위 48px 원형 버튼이며 아래로 스크롤·메시지/작성/편집 화면·열린 dialog에서 숨긴다.
 최애의 종료된 추첨이 없거나 최애가 없으면 공개된 전체 크리에이터의 종료 추첨을 마감일 최신순으로 대신 표시하고 크리에이터명과 결과 보기 안내를 함께 둔다. 실제 항목이 없을 때는 목록을 숨긴다.
 GROUPS-HOT-1410 (2026-11-11): 모임 Hot 목록은 첫 첨부 사진을 40px 정사각 cover 썸네일로 표시하고 사진 없는 글은 기존 페이지 아바타를 유지한다. 767px 이하는 5개씩 이전/다음 페이지, PC 펼치기는 유지한다. 모바일 출석 플로팅은 44px 스탬프 아이콘과 기존 실제 포인트 배지를 사용하고 하단에서 56px 더 올려 DM 공간을 확보한다.
 
 GROUPS-HOT-1410 출석 현황 추가(2026-11-11 사용자 “Gap 굉장히 어색함”): 모달 아바타 격자를 40px 아바타·보이는 크리에이터 이름·오른쪽 출석 행동의 단일 열 목록으로 변경. 행 padding/gap은 공통 목록과 같은 space-3, 완료는 체크 아이콘과 비활성 오늘 완료 버튼. 모달 헤더는 FanSheet 공통 제목·닫기 버튼을 사용한다.
-## ASSET-UNIFY-1403 (2026-11-11)
+### ASSET-UNIFY-1403 (2026-11-11)
 사용자 결정: 포인트는 노란 P 3D 동전, 하트·응모권·일반 스탬프 표시는 기존 분홍 3D 세트. 공통 소유자는 `components/fan-ui/reward-icon.tsx`의 RewardIcon/REWARD_ICON_SRC. 종류별 패스포트 도장과 좋아요 행동 아이콘은 의미를 보존한다. 실화면 390/1440 검수는 공용 3000 통합 담당에게 인계(localdev 금지).
 
-### ONCHAIN-1455 (2026-11-11)
+#### ONCHAIN-1455 (2026-11-11)
 공개 온체인 기록의 페이지·구역 제목은 FanHeading을 사용한다. 지표 카드는 radius-card와 space-4 간격, fan-number-size-wide·fan-number-weight 및 accent-ink로 숫자를 강조한다. 01/02 구역 순서를 유지하고 집계 설명은 해당 기록 아래에 둔다. 집계가 없으면 0 대신 집계 중을 표시하며, 확인된 스냅샷에는 생성 시각을 표시한다.
 
-### PROOF-TAB-1630 (2026-11-11 대표 16:45)
+#### PROOF-TAB-1630 (2026-11-11 대표 16:45)
 팬페이지 게시판 다음 인증 탭. 영수증·멤버십·후원 캡처는 원본 비율 전체 노출, 본문 숨김, 기존 공개 승인·동의 조건 유지. 상단은 공용 FanNumber xl + 노란 포인트 아이콘과 현재 정책 proof.points, 카드 EarnBadge는 해당 인증의 실제 지급액(없으면 숨김). 기존 공용 탭·버튼·신고 부품을 재사용. 390/1440 실화면은 공용 미리보기 통합 전 미확인.
 
-### 운영 E2E 후속 수정 (2026-11-11, E2E-FIX-BATCH-1650)
+#### 운영 E2E 후속 수정 (2026-11-11, E2E-FIX-BATCH-1650)
 
 - 기존 FanAction·FanHeading·AccessibleOverlay와 역할 토큰을 유지한다. 결과 알림의 모든 닫기 경로는 회차·계정별 확인 기록을 남기며, 하루 숨기기 선택지는 제거한다. guest는 로컬, 로그인은 로컬과 서버에 기록한다.
 - 팬게시판 공지의 별도 상단 고정을 제거하고 서버가 제공한 시간순을 유지한다(11/10 19:38 결정). 인기글은 한국 시간 기준 오늘·이번 주(월요일 시작)·이번 달 작성 글의 추천 내림차순이며 동률은 최신순이다. 기간 제목은 12개 언어로 바뀐다.
 - 공용 preview 통합 전 코드 검증 단계다. 이 변경의 390·1440 실제 화면·캡처 검수는 통합 뒤 필요하며, 현재 화면을 수정 후 근거로 사용하지 않는다.
-### 갤러리 영상 표지 누락 (GALLERY-THUMB-1535, 2026-11-11 사용자 요청)
+#### 갤러리 영상 표지 누락 (GALLERY-THUMB-1535, 2026-11-11 사용자 요청)
 
 - 공통 소유자 `MediaThumbnail`: 영상 표지가 없거나 실패하면 기존 플랫폼 로고와 원문 제목을 슬롯 안에 표시한다. 기존의 '썸네일만' 규칙 중 표지 누락 상태에 적용하는 예외다. 사진의 무문구 표시는 유지한다.
 - 누락 배경은 `--color-accent-soft`, 문구는 기존 메타 크기, 플랫폼 로고는 28px이다. 원래 카드 비율을 유지하고 영상 표지는 lazy로 읽는다. 숏폼은 고정 9:16 프레임에 표지 전체를 표시하며 흐린 복제 배경을 추가하지 않는다.
 - 원문·원본 링크는 변경하지 않으며 표지는 별도 저장 메타데이터다. 390·1440 실제 변경 후 화면 검수는 코드 커밋 이후 공용 preview에 감독이 통합한 뒤 수행해야 한다. 현재 브랜치의 코드 검사만으로 시각 통과를 주장하지 않는다.
 
-## FAN-RANK-LIVE-1930 (2026-11-11 대표 19:0x, 홈 랭킹 등락·글자·굴림·등급)
+### FAN-RANK-LIVE-1930 (2026-11-11 대표 19:0x, 홈 랭킹 등락·글자·굴림·등급)
 - 2026-11-12 DEV #114: 값이나 순위가 바뀐 홈 랭킹 행의 분홍 링은 화면에 들어온 뒤 250ms 진입, 3초 유지, 850ms 퇴장한다. 화면 밖이나 숨긴 탭에서 바뀐 행은 다시 보일 때 시작한다. 기존 1초 유지가 찰나 같다는 사용자 피드백에 따른 화면 한정 예외다. 분홍 호는 유지 중 테두리 전체가 보이도록 바꿨고, 움직임 줄이기에서도 색만 같은 시간 유지하며 회전하지 않는다. 행 높이·배치·문구·색 토큰은 그대로다. 실제 `FanRows`·`CreatorRows`의 로컬 예시 데이터로 390·1440 뷰포트 브라우저에서 전·중·후를 확인했다(`release-notes/images/2026-11-12-rank-change-*`). 1440 캡처 파일은 브라우저 도구가 1280×800으로 축소 저장했다. 운영 홈 전체 화면과 실제 회원 데이터는 확인하지 않았다.
 - 글자: 랭킹 행의 순위·이름·값은 `--fan-description-size` 14(이전 순위·값 16), 펼침 값도 14. 굵기는 그대로(순위·이름 700).
 - 등락: 이름 옆 `▲N`을 없애고 순위 숫자 바로 오른쪽 작은 삼각형(7×6)으로 옮겼다. 순위 칸은 28 = 숫자 상자 18(오른쪽 맞춤) + 삼각형 자리 10이라 표시가 없는 행도 숫자 끝선이 같다. 올라감 `--color-rank-up`(= `--color-accent`), 내려감 `--color-rank-down`(= `--color-reaction-comment` 옅은 파랑). 변동 없음·비교 없음은 표시 없음. 계단 수는 `aria-label`로만 말한다. 전 행 적용(홈 찐팬·크리에이터).
@@ -2323,22 +2600,22 @@ GROUPS-HOT-1410 출석 현황 추가(2026-11-11 사용자 “Gap 굉장히 어�
 - 등급: 찐팬 행 펼침에 등급 칸(공통 `FanTierBadge` 16 + `levelLabel`)을 더했다(행에 등급이 없으면 칸 없음). 칸이 늘어 펼침 값 줄은 줄바꿈 허용.
 - 확인: 로컬 실제 데이터 + 오르내림 값 임의 주입(운영·dev 아님), 390·1440. 못 본 것: 로그인 상태 내 행, 12개 언어 화면, 운영 데이터의 긴 이름.
 
-## QUIZ-LEARN 운영 활성화 (2026-11-12 H3)
+### QUIZ-LEARN 운영 활성화 (2026-11-12 H3)
 
 11/12 12:35 승인에 따라 기존 결과 화면의 오답 학습 구역을 운영에서도 명시적인 서버 플래그로 연다. FanHeading/FanText/FanAction, 기존 결과 폭 690px 및 learning 간격 토큰을 유지한다. '알아보기'는 12개 언어로 표시하며 힌트 원문은 변경하지 않는다. 새 보조 설명·스타일 값은 추가하지 않았다. 합성 데이터 실제 브라우저 390/1440 캡처는 release-notes/images/2026-11-12-quiz-learn-production-{390,1440}.png. 힌트와 공식 링크·재도전이 모두 보이며 잘림이 없다. 이 기록은 구현자 화면 확인이며 별도 회사 모델의 독립 미적 판정은 포함하지 않는다.
-### 2026-11-12 사용자 요청: 랭킹 펼친 행 (DEV, 사용자 12:35)
+#### 2026-11-12 사용자 요청: 랭킹 펼친 행 (DEV, 사용자 12:35)
 - 펼친 칸의 '프로필 보기'·'팬페이지 가기' 버튼을 없앴다. 행의 아바타·이름(`.profile`)이 링크다: 로그인한 찐팬은 프로필 창, 비로그인은 로그인, 크리에이터는 팬페이지. 행 한 줄 전체가 펼침 버튼(`.toggle` 겹침, 48)이고 글자·값은 클릭을 통과시키며 아바타·이름만 자기 링크다. 접근성 이름은 `이름, 프로필 보기`.
 - 펼친 칸은 행의 아바타 왼쪽 선(`--rank-avatar-start` = 12 + 28 + 8 = 48)에서 시작한다(이전: 이름 시작선 84). 칸은 열 폭이 같은 격자(`auto-fill`, 최소 4.5rem, 가로 12·세로 8)다.
 - 칸 내용은 총합 먼저: 등급·응모권·출석일(누적, 날짜 중복 없이)·게시글 수(공개 글만)·하트, 다음에 오늘·최근·1위까지·최애 중 기존 규칙대로 최대 3칸. 값이 없거나 0이면 칸을 숨긴다(가짜·추정 값 없음). 출석일·게시글은 `read_home_fan_ranking_v3`가 행마다 실시간으로 센다(마이그레이션 `20261224000400`).
 - 확인: 로컬 DB(출석·게시글 시험 행을 넣은 1위 팬)·390·1440 실제 브라우저. 못 본 것: 로그인 상태에서 프로필 창이 뜨는 실화면(단위 시험만), 다른 언어 화면, 운영 데이터.
-### 2026-11-12 등급 안내 (사용자 12:35 승인)
+#### 2026-11-12 등급 안내 (사용자 12:35 승인)
 
 - 소유자: `features/rewards/ui/tier-guide*`, `/notices/tier-guide`. 기존 공지 상세의 `FanHeading` 제목/구역 제목·본문/메타·간격·색 토큰을 재사용한다. 1024px 이상은 자연 비율 보조 그림과 조건 표를 두 열에 놓으며 모바일은 한 열이다. 표의 ink-v1 도장은 기존 32px 역할을 사용한다. 숫자는 tabular-nums, 조건은 최소 기준(≥)이다.
 - MY(`my-screen`, `my-passport-card`)·팬 활동 기록(`fan-tier-journey`)의 등급 옆 정보 버튼은 같은 `TierGuideInfo`가 소유한다. 기존 44px 터치 영역, lucide Info 16px, `FanDialog`의 제목·닫기·주 행동을 재사용한다. 버튼 → 모달 → 언어를 유지한 공지 상세 이동이다.
 - 보조 그림은 Codex imagegen의 여권·하트 도장 장식이며 `1200×800`, `width:100%;height:auto`로 전체 표시한다. 승인 ink-v1 등급 도장 11종은 변경하지 않는다. 규칙 본문은 실제 등급 유지/새 획득 기준이며 설명용 보조 줄을 신설하지 않는다. 미확정 혜택은 생략한다.
 - 검수 근거: `board/tasks/fb-1112/captures/`의 390·1440 실제 제품 컴포넌트/예시 데이터 화면. 원격 dev·운영 인증 화면으로 표현하지 않는다. 정책 확인 범위와 검증 한계는 같은 폴더의 `tier-facts.md`, `verification.md`에 남긴다.
 - 최종 압축 구성: 5개 큰 등급 행 안에 11개 세부 조건을 묶는다. 큰 등급은 32px 배지·FanText item, 세부 숫자는 FanText label, 조건은 FanText body다. 표면은 기존 `--color-accent-soft`를 실버·플래티넘 묶음에 사용한다. 정책 본문은 자연 비율 그림 아래로 배치해 PC 두 열 균형을 맞춘다. 정보 아이콘은 FanIcon 20px, 버튼은 FanIconButton 44px로 공통 소유자를 따른다.
-### 2026-11-12 · Home 찐팬 100 challenge banner (D-C)
+#### 2026-11-12 · Home 찐팬 100 challenge banner (D-C)
 
 The below-ranking challenge uses `LiveHeroCarousel` with the same arrows, counter, progress, keyboard, swipe and reduced-motion behavior as the top hero. The approved shorter slot is 160px below 768px and 240px from 768px (top hero remains unchanged). It uses the existing 16px card radius, metadata/body type, section heading on mobile and the existing top-hero 36px title role for creator names on desktop. The mobile counter sits at the bottom right in this compact variant so it cannot cover a creator's eyes. Creator photos remain unchanged; the shared Image Gen satin/heart background fills the frame, with a 28% left/14% right edge mask blending each approved portrait. Desktop portrait width is capped at eight space-10 units, with 50%/0% focus to preserve each face; the photo sits 12% in from the right, and the reading group centers in the left 60% to avoid a vacant center; mobile contains the portrait at natural ratio. The 1440×480 composed masters are stored alongside the unmodified source photos and background. The designated first campaign creators are Yuna (`yuna`), Hiroro (`hiroro`), and Kim Minju (`mmnoo-s`), selected by the 11/12 user instruction; no counts or campaign dates are invented. Text is HTML in all 12 locales. A challenge link opens the existing fan verification entry only after the current account's passport read completes; existing passport owners receive no challenge dialog. Closing removes only the challenge query. Source and local screen evidence: `work/jjinfan-banner/verification.md`.
 
@@ -2349,16 +2626,16 @@ D-C dialog uses the existing small FanDialog (360px maximum) with a full-width p
 D-C token ownership: `FanHeading variant="campaign"` owns the 18px/700 mobile and `--fan-banner-title-size-wide`36px/700 desktop name role. `FanText` owns `banner-label` (13→20px/700) and `banner-action` (13→16px/700). Other heading/text variants are unchanged. The screen CSS owns geometry/color only; arrows use FanIcon through fan-icons at1.5px stroke. Portrait edge compositing uses a raster alpha artwork mask (`portrait-mask.png`); no CSS gradient is introduced. Responsive additions use48rem range syntax.
 
 - 2026-11-12 14:50 사용자 요청: 랭킹 변화 강조가 너무 짧음. 위 `연출 예외` 행의 값으로 늘렸다. 확인: 로컬 실제 브라우저(1440)에서 응답을 바꿔 순위 교체·값 변화를 일으키고 `getAnimations()`로 길이·지연(롤링 850, 링 1800, 행 지연 0/90/180, 이동 450, ▲▼ 500)과 시간별 프레임을 확인, 움직임 줄이기는 링만 1800(회전·롤링 없음). 못 본 것: 390 폭의 움직임, 운영 데이터.
-### 2026-11-12 D–F: 최애 미선택 안내와 이퓨 카드
+#### 2026-11-12 D–F: 최애 미선택 안내와 이퓨 카드
 - 사용자 13:35 결정: 최애 미선택 안내는 `모임에 가입해보세요`와 `/pages/groups` 이동으로 대체한다. 기존 최애가 있는 경우의 변경 메뉴는 유지한다. 이 빈 상태만 그림 금지 규칙의 예외이며 글자 없는 Codex imagegen 핑크 패스포트 애셋을 사용한다. 헤더 40px, 지갑·프로필 64px의 기존 슬롯을 사용하고 설명 줄은 추가하지 않는다.
 - `MyArtists`의 확정된 빈 상태는 모임 찾기만 남기고 별 캐릭터 3칸을 숨긴다. 로딩 스켈레톤은 유지한다.
 - 이퓨 `portrait`(모임 격자·정사각 카드)만 기존 2.45배 확대를 1배로 해제한다. 원본 스튜디오 사진의 상반신을 보존하며 아바타·패스포트의 기존 구도는 유지한다.
 - 검증 화면은 `e2e/no-pick-local`의 실제 공통 컴포넌트와 예시 로그인·데이터로 구성한다. 운영 데이터 검증과 구분한다.
 
 
-### 숏폼 뷰어 소리·하단 바 (2026-11-12, SHORTS-VIEWER-2133)
+#### 숏폼 뷰어 소리·하단 바 (2026-11-12, SHORTS-VIEWER-2133)
 - 사용자가 소리를 켜거나 끄면 같은 브라우저 세션의 다음·이전 영상에 적용한다. 첫 진입은 음소거이며, 영상 안의 음소거 변경도 읽을 수 있는 플레이어에서는 반영한다.
 - 기존 두 줄 하단 조작을 한 줄로 묶는다. 반응은 공통 `PostReactions`를 그대로 쓰고, 좁은 화면의 이전·다음 화살표는 숨겨 스와이프·키보드 이동을 우선한다. 소리 버튼은 영상 위 우측에 둔다. 간격은 `--space-1/2`, 터치 대상은 `--min-target`, 영상 위 색은 기존 `--color-shortform-control`을 사용한다. 데스크톱 화살표는 유지한다.
 - 브라우저에서 390px·1440px 실제 영상 화면을 아직 검증하지 못했다. 로컬 `/shorts`의 데이터 원본 연결이 실패하며 빈 상태만 반환한다. 화면 캡처와 배포 안내 이미지는 데이터가 있는 개발 환경에서 확인해야 한다.
-### KYAA 래플 상세·홈 배너 (2026-11-12)
+#### KYAA 래플 상세·홈 배너 (2026-11-12)
 `/s/raffle`은 기존 campaign `FanHeading`과 `FanText` 역할을 쓰고 상금 구성은 모바일 2열·48rem 이상 4열, 참여 단계는 번호 목록으로 표시한다. 간격은 기존 space 토큰이며 응모만 primary, 패스포트·커뮤니티는 neutral이다. 홈은 기존 `HomeBanner` 모델과 `ManagedHomeBanner` 슬롯을 재사용한다. 인물 없는 기존 banner-onboard 장식 원화의 1440×900·390×390 WebP를 사용하며 상금·마감 문구는 이미지 밖 텍스트다. 원화의 하트·리본 장식 크롭은 허용하되 정보 문구를 이미지에 넣지 않는다. 로컬 실제 컴포넌트의 12언어·390/768/1440 폭·상세/배너 72조합에서 이미지 로드·가로 넘침·44px 행동을 확인했다. 캡처는 로컬 guest fixture로 실제 dev 데이터나 독립 미적 점수 평가를 뜻하지 않는다.
