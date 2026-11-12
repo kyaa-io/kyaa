@@ -137,3 +137,15 @@ test('T1 and T2 are fail-level now', async () => {
   assert.equal(RULES.T1.sev, 'fail');
   assert.equal(RULES.T2.sev, 'fail');
 });
+
+test('raw actions: C1 buttons and D6 styled anchors fail; shared actions and plain links pass', () => {
+  for (const code of ['<button className={styles.action}>Go</button>', '<button style={{color: "red"}}>Go</button>']) {
+    assert.equal(hits(tsx(code), 'C1').length, 1);
+  }
+  for (const code of ['<a className={styles.action}>Go</a>', '<a style={{color: "red"}}>Go</a>', '<a onClick={() => go()} className = {styles.action}>Go</a>', '<a\nstyle = {{ color: "red" }}>Go</a>']) {
+    assert.equal(hits(tsx(code), 'D6').length, 1, code);
+  }
+  for (const code of ['<FanAction onClick={go}>Go</FanAction>', '<FanAction href="/next">Go</FanAction>', '<a href="/next">Go</a>', '<a data-style="plain" href="/next">Go</a>', '/* <a className="x">Go</a> */']) {
+    assert.equal(hits(tsx(code), 'C1').length + hits(tsx(code), 'D6').length, 0, code);
+  }
+});

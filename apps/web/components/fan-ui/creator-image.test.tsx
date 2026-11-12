@@ -10,7 +10,7 @@ describe("shared creator photography", () => {
     const src = "/images/guest-home/changha-card.jpg";
     for (const presentation of ["portrait", "avatar", "passport"] as const) {
       expect(resolveCreatorImage({ slug: "changha", src, presentation, position: "center 32%" })).toMatchObject({
-        src: "/images/celebrities/changha/gggi-20261030.jpg", crop: { fit: "cover", position: "50% 28%", scale: 1.5 },
+        src: "/images/celebrities/changha/profile-autumn-sharp-20261113.webp", crop: { fit: "cover", position: "50% 50%", scale: 1 },
       });
     }
     expect(resolveCreatorHeroImage("changha", { url: src, position: "center 32%" })).toMatchObject({
