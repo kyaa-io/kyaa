@@ -77,10 +77,11 @@
   .sticky { display: none; }
   .column { padding-bottom: var(--fan-section-gap); }
   /* 히어로: 글 7 · 그림 5, 그림은 모바일과 같은 정사각(1440에서 547). 글 칸을 그림 높이만큼 세우고 제목 줄은 그림 윗선, 버튼·상태 줄은 그림 아랫선에 붙인다 — 글 덩어리가 가운데 떠서 위아래로 남던 빈 곳이 금액 위 한 곳으로 모인다 */
-  .hero { grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: var(--space-12); align-items: stretch; padding-block: var(--space-10) var(--fan-section-gap); }
+  /* 11/13 00:37 사용자 '여백 너무 큼'(제목 줄과 금액 사이): 금액을 아래로 밀던 margin-top:auto 제거, 글 덩어리는 위에서부터 붙이고 그림은 4:3으로 낮춰 높이를 맞춘다 */
+  .hero { grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: var(--space-12); align-items: center; padding-block: var(--space-10) var(--fan-section-gap); }
   .heroText { display: flex; flex-direction: column; }
-  .amount { margin-top: auto; padding-top: var(--space-6); }
-  .heroArt { align-self: center; }
+  .amount { margin-top: var(--space-6); }
+  .heroArt { aspect-ratio: 4 / 3; }
   .heroAction { justify-items: start; }
   .heroStatus, .heroError { justify-content: flex-start; }
   /* 확률: 히어로와 같은 7 · 5 열. 행 두 줄이 넓은 열, 기회 카드 그림이 좁은 열. 그림은 2:1(1440에서 547×274, v4.2 765×430의 46% 면적)로 낮춰 행 묶음(137)과의 높이 차를 줄인다 */
