@@ -26,16 +26,16 @@ export function NoticeBody(props: { document: TiptapDocument; locale: AppLocale;
 
 /** Title and body follow one translation state: one request, one 번역/원문 toggle. The source document and title are never mutated. */
 export function NoticeTranslation({ title, document, locale, children }: { title: string; document: TiptapDocument; locale: AppLocale; children: ReactNode }) {
-  const texts = useMemo(() => collectNoticeTexts(document, locale, title), [document, locale, title]);
+  // The title is never translated: it is shown as written. Only the body takes part in the translation.
+  const texts = useMemo(() => collectNoticeTexts(document, locale), [document, locale]);
   const { observeElement, ...translation } = useAutomaticTranslation({ texts, locale });
   const translatedDocument = useMemo(() => applyNoticeTranslation(document, texts, translation.showing ? translation.texts : null), [document, texts, translation.showing, translation.texts]);
-  const shownTitle = translation.showing ? translation.texts[texts.indexOf(title)] ?? title : title;
-  return <SharedTranslation.Provider value={{ title: shownTitle, document: translatedDocument, translation, observeElement }}>{children}</SharedTranslation.Provider>;
+  return <SharedTranslation.Provider value={{ title, document: translatedDocument, translation, observeElement }}>{children}</SharedTranslation.Provider>;
 }
 
-export function NoticeTitle({ locale }: { locale: AppLocale }) {
+export function NoticeTitle({ className }: { locale?: AppLocale; className?: string }) {
   const shared = useContext(SharedTranslation);
-  return shared ? <h1 lang={shared.translation.showing ? locale : undefined}>{shared.title}</h1> : null;
+  return shared ? <h1 className={className}>{shared.title}</h1> : null;
 }
 
 export function NoticeTranslationControl({ locale }: { locale: AppLocale }) {
@@ -43,9 +43,8 @@ export function NoticeTranslationControl({ locale }: { locale: AppLocale }) {
   return shared ? <TranslationControl locale={locale} translation={shared.translation} /> : null;
 }
 
-function collectNoticeTexts(document: TiptapDocument, locale: AppLocale, title?: string) {
+function collectNoticeTexts(document: TiptapDocument, locale: AppLocale) {
   const result: string[] = [];
-  if (title && shouldOfferTranslation(title, locale)) result.push(title);
   const collect = (node: JSONContent) => {
     if (node.type === "text" && node.text && !node.marks?.some(mark => mark.type === "code") && shouldOfferTranslation(node.text, locale) && !result.includes(node.text)) result.push(node.text);
     node.content?.forEach(collect);

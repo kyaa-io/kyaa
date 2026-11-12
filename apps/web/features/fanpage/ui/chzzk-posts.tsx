@@ -19,7 +19,6 @@ import { creatorHomeHref } from "@/features/creator/domain/creator-navigation";
 import { CHZZK_COMMUNITY_URL, chzzkFeedSchema, type ChzzkPost } from "../domain/chzzk-posts";
 import { creatorNewsItems, newsNoticesSchema, type NewsNotice } from "../domain/creator-news";
 import styles from "./chzzk-posts.module.css";
-import { TranslatedText } from "@/features/content-safety/ui/use-automatic-translation";
 
 import { useNewsSource } from "./use-news-source";
 import { LinkifiedText } from "@/features/content-safety/ui/linkified-text";
@@ -68,7 +67,7 @@ export function CreatorNews({ slug, locale, full = false, initialFilter = "all",
                 : <span className={styles.notice}>{item.pinned && <Pin size={12} aria-hidden="true" />}{item.notice.postType === "artist_post" ? postLabel : item.notice.kind === "welcome" ? (locale === "ko" ? "이용 안내" : translate(locale, localizedMessages.m1160110e13ea, "Start here")) : contentLabels.notice}{item.notice.visibility === "members" ? ` · ${contentLabels.members}` : ""}</span>}
               <time dateTime={item.date}>{item.date.slice(0, 10).replaceAll("-", ".")}</time>
             </span>
-            {item.source === "chzzk" ? <span className={styles.title} translate="no">{item.title}</span> : <TranslatedText text={item.title} locale={locale} className={styles.title} controls={false} />}
+            <span className={styles.title} translate="no">{item.title}</span>
           </span>
           {item.source === "chzzk" && item.post.images[0] && <NewsThumbnail key={item.post.images[0].url} url={item.post.images[0].url} />}
           <ArrowRight className={styles.rowArrow} size={16} aria-hidden="true" />
