@@ -6,6 +6,7 @@ import path from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 import {
   buildHttp5xxLogLine,
+  buildHttpSlowLogLine,
   describeError,
   installHttp5xxLog,
   loadRouteMatchers,
@@ -160,5 +161,56 @@ describe("installed on a real http server", () => {
     const wrapped = http.Server.prototype.emit;
     installHttp5xxLog({ matchers: [], write: () => {} });
     expect(http.Server.prototype.emit).toBe(wrapped);
+  });
+});
+
+describe("slow request line", () => {
+  it("carries only the route template, method, status, duration, rsc flag and request id", () => {
+    const line = buildHttpSlowLogLine({
+      url: "/api/groups/user-123/wallet?token=secret&_rsc=abc",
+      method: "get",
+      status: 200,
+      durationMs: 812.4,
+      headers: { authorization: "Bearer secret", cookie: "session=secret", "x-amzn-trace-id": "Root=1-abc" },
+      matchers: loadRouteMatchers(manifestFile()),
+    });
+    expect(line).toEqual({
+      event: "http_slow", route: "/api/groups/[groupId]/wallet", method: "GET", status: 200, durationMs: 812, rsc: true, requestId: "Root=1-abc",
+    });
+    expect(JSON.stringify(line)).not.toMatch(/secret|user-123/);
+  });
+
+  it("never echoes an unknown raw path", () => {
+    expect(buildHttpSlowLogLine({ url: "/members/m-42?x=1", method: "GET", status: 200, durationMs: 600, headers: {}, matchers: [] }).route).toBe("(unmatched)");
+  });
+});
+
+describe("slow lines on a real http server", () => {
+  const originalEmit = http.Server.prototype.emit;
+  let server: http.Server | undefined;
+  afterEach(async () => {
+    await new Promise<void>((resolve) => (server ? server.close(() => resolve()) : resolve()));
+    server = undefined;
+    uninstallHttp5xxLogForTest(originalEmit as never);
+  });
+
+  it("logs a slow 2xx once, skips a fast one, and leaves a slow 5xx to the 5xx line", async () => {
+    const lines: string[] = [];
+    installHttp5xxLog({ matchers: loadRouteMatchers(manifestFile()), write: (line) => lines.push(line), slowMs: 60 });
+    server = http.createServer((req, res) => {
+      const delay = req.url?.includes("slow") ? 90 : 0;
+      setTimeout(() => { res.statusCode = req.url?.includes("fail") ? 503 : 200; res.end("{}"); }, delay);
+    });
+    await new Promise<void>((resolve) => server!.listen(0, "127.0.0.1", resolve));
+    const base = `http://127.0.0.1:${(server.address() as AddressInfo).port}`;
+    await fetch(`${base}/api/health/live`);
+    await fetch(`${base}/api/health/live?slow=1&token=secret`);
+    await fetch(`${base}/api/groups/user-123/wallet?slow=1&fail=1`);
+    for (let i = 0; i < 50 && lines.length < 2; i += 1) await new Promise((r) => setTimeout(r, 10));
+    expect(lines.map((line) => JSON.parse(line).event)).toEqual(["http_slow", "http_5xx"]);
+    const slow = JSON.parse(lines[0]!);
+    expect(slow).toMatchObject({ route: "/api/health/live", method: "GET", status: 200, rsc: false });
+    expect(slow.durationMs).toBeGreaterThanOrEqual(60);
+    expect(lines[0]).not.toMatch(/secret/);
   });
 });

@@ -27,6 +27,25 @@
 - 운영: `byus-prod-platform-WebLogs-JE1K9bG99c9z` (서울)
 - dev: `aws logs describe-log-groups --profile kyaa-readonly --query 'logGroups[?contains(logGroupName, `dev-platform-WebLogs`)].logGroupName'`
 
+## 느린 요청 로그 (`http_slow`)
+
+5xx가 아닌 응답이 500ms 이상 걸리면 같은 로그 그룹에 한 줄을 남깁니다. 평소 p95를 만드는 느린 경로를 찾는 용도입니다.
+
+```json
+{"event":"http_slow","route":"/community","method":"GET","status":200,"durationMs":812,"rsc":true,"requestId":"Root=1-67891233-abcdef012345678912345678"}
+```
+
+경로 템플릿·메서드·상태·소요 ms·`rsc`(화면 이동·prefetch 요청 여부)·요청 ID만 남기고 쿼리·식별자·헤더·토큰은 남기지 않습니다. 5xx 응답은 위 `http_5xx` 줄만 남습니다. 소요 시간은 요청을 받은 때부터 응답 전송이 끝날 때까지라 스트리밍 응답은 전송 시간을 포함합니다.
+
+느린 요청 상위 경로 (24시간):
+
+```
+filter event = "http_slow"
+| stats count(*) as slow, pct(durationMs, 50) as p50, pct(durationMs, 95) as p95, max(durationMs) as mx by route, rsc
+| sort slow desc
+| limit 10
+```
+
 ## Logs Insights 쿼리
 
 5xx가 많은 경로 상위 10개:

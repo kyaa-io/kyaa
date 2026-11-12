@@ -10,7 +10,10 @@ import path from "node:path";
 // 회원 식별자·쿼리·본문·토큰이 섞이지 않도록 실제 경로 대신 라우트 템플릿(/api/x/[id])만 쓰고, 오류 메시지는 남기지 않는다.
 
 export const API_5XX_EVENT = "http_5xx";
+export const API_SLOW_EVENT = "http_slow";
 export const UNMATCHED_ROUTE = "(unmatched)";
+/** 이 시간(ms) 이상 걸린 5xx 아닌 응답을 `http_slow` 한 줄로 남긴다. 평소 p95 0.74초의 느린 요청이 어느 경로인지 찾는 용도. */
+export const SLOW_REQUEST_MS = 500;
 
 type RouteMatcher = { page: string; regex: RegExp };
 type RequestErrorInfo = { name: string; code: string | null; digest: string | null; routePath: string | null };
@@ -25,6 +28,17 @@ export type Http5xxLogLine = {
   errorName: string | null;
   errorCode: string | null;
   digest: string | null;
+  requestId: string | null;
+};
+
+export type HttpSlowLogLine = {
+  event: typeof API_SLOW_EVENT;
+  route: string;
+  method: string;
+  status: number;
+  durationMs: number;
+  /** RSC(화면 이동·prefetch) 요청인지. 값은 `_rsc` 쿼리나 `rsc` 헤더의 존재만 보고, 내용은 남기지 않는다. */
+  rsc: boolean;
   requestId: string | null;
 };
 
@@ -104,6 +118,28 @@ export function buildHttp5xxLogLine(input: {
   };
 }
 
+/** 경로 템플릿·메서드·상태·소요 ms·RSC 여부·요청 ID만 담는다. 쿼리·식별자·헤더·토큰은 넣지 않는다. */
+export function buildHttpSlowLogLine(input: {
+  url: string | undefined;
+  method: string | undefined;
+  status: number;
+  durationMs: number;
+  headers: Record<string, string | string[] | undefined>;
+  matchers: readonly RouteMatcher[];
+}): HttpSlowLogLine {
+  const method = (input.method ?? "").toUpperCase();
+  const query = (input.url ?? "").split("#", 1)[0]!.split("?", 2)[1] ?? "";
+  return {
+    event: API_SLOW_EVENT,
+    route: resolveRouteTemplate(input.url, input.matchers),
+    method: METHODS.has(method) ? method : "OTHER",
+    status: input.status,
+    durationMs: Math.round(input.durationMs),
+    rsc: headerValue(input.headers.rsc) === "1" || new URLSearchParams(query).has("_rsc"),
+    requestId: requestIdFrom(input.headers),
+  };
+}
+
 /** instrumentation.onRequestError에서 부른다. 응답 훅이 같은 요청의 5xx 줄에 오류 정보를 합친다. */
 export function recordRequestError(error: unknown, context: { routePath?: string }): void {
   const state = requestState.getStore();
@@ -116,6 +152,7 @@ type Emit = (this: http.Server, event: string | symbol, ...args: unknown[]) => b
 export function installHttp5xxLog(options: {
   matchers?: readonly RouteMatcher[];
   write?: (line: string) => void;
+  slowMs?: number;
 } = {}): void {
   const proto = http.Server.prototype as unknown as { emit: Emit; [INSTALLED]?: boolean };
   // dev 서버는 instrumentation을 다시 읽을 수 있다. 한 번만 감싼다.
@@ -124,14 +161,29 @@ export function installHttp5xxLog(options: {
 
   const matchers = options.matchers ?? loadRouteMatchers();
   const write = options.write ?? ((line: string) => console.error(line));
+  const slowMs = options.slowMs ?? SLOW_REQUEST_MS;
   const originalEmit = proto.emit;
 
   proto.emit = function emit(this: http.Server, event: string | symbol, ...args: unknown[]): boolean {
     if (event !== "request") return originalEmit.call(this, event, ...args);
     const [req, res] = args as [IncomingMessage, ServerResponse];
     const state: RequestState = {};
+    const startedAt = performance.now();
     res.once("finish", () => {
-      if (res.statusCode < 500) return;
+      if (res.statusCode < 500) {
+        const durationMs = performance.now() - startedAt;
+        if (durationMs >= slowMs) {
+          write(JSON.stringify(buildHttpSlowLogLine({
+            url: req.url,
+            method: req.method,
+            status: res.statusCode,
+            durationMs,
+            headers: req.headers,
+            matchers,
+          })));
+        }
+        return;
+      }
       write(JSON.stringify(buildHttp5xxLogLine({
         url: req.url,
         method: req.method,
