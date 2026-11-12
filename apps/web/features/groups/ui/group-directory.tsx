@@ -88,7 +88,7 @@ export function GroupDirectory({locale,initialOwned=false,banners=[]}:{locale:Ap
   // Any change of the list, also from a link, starts again at its first page. The screen itself stays mounted.
   const [cursorKey,setCursorKey]=useState(listKey);
   if(cursorKey!==listKey){setCursorKey(listKey);setCursor(undefined);setPrevious({ownerKey:"",items:[]});}
-  const listQuery=groupApiQuery({type:listType,search,sort:mine||initialOwned?sort:'discovery',mine,cursor,limit:'20',artistRole:listType==='fan'?artistRole:undefined,owned:initialOwned?"1":undefined});
+  const listQuery=groupApiQuery({type:listType,search,sort:mine||initialOwned||sort!=='recent'?sort:'discovery',mine,cursor,limit:'20',artistRole:listType==='fan'?artistRole:undefined,owned:initialOwned?"1":undefined});
   const resource=useGroupResource(listQuery,parseList);
   const filtersActive=Boolean(search||type!=='all'||mine||artistRole);
   // Once a search, filter or order is used, the list keeps a screen of height for the rest of the visit, so narrowing it never pulls the page up.

@@ -120,6 +120,12 @@ const names=["엔카이브 팬페이지","엘리나 팬페이지","한강 러닝
 const descriptions=['공식 영상과 LIVE 소식','음악·일상 소식과 응원 글','같이 달리고 러닝 기록을 나눠요.','러닝·음악 행사 모임','일상의 순간을 사진으로 나눠요.','함께 읽고 감상을 나눠요.','좋아하는 음악과 공연 소식','다녀온 공연의 순간을 나눠요.','새 앨범과 공연 소식을 나눠요.','출연 소식과 작품 이야기를 나눠요.','무대 영상과 응원 글을 모아요.','영상과 일상 소식을 함께 봐요.','방송 소식과 응원 글을 나눠요.','공연 일정과 음악 이야기를 나눠요.'];
 const counts=[1280,356,84,2450,128,96,214,173,87,154,203,142,118,92,137,185,116,108,164,103];
 const items=names.map((name,i)=>({id:`e9200000-0000-4000-8000-${String(i+1).padStart(12,'0')}`,kind:i<2||(state==='fans6'&&i<6)?'fan':i===3?'brand':'hobby',celebrityId:i<2||(state==='fans6'&&i<6)?`e9200000-0000-4000-8000-${String(i+1).padStart(12,'0')}`:null,slug:i===0?'nchive':i===1?'elina':null,name:(state==='long'&&i===7)||(state==='fans6'&&i===4)?'긴 이름의 팬페이지에서도 줄바꿈과 카드 정렬을 확인하는 페이지':name,description:state==='long'&&i===7?'아주 긴 소개가 이어져도 마지막 행동과 카드 외곽이 같은 행에서 정렬되어야 합니다.':descriptions[i]??'',imageUrl:state==='fans6'&&i>=2&&i<6?`/images/groups/fan-example-${i-1}.svg`:i===0?'/images/groups/nchive-pencil.jpg':i===1?'/images/groups/elina-pencil.jpg':i===2?'/images/groups/running-event.png':i===3?'/images/groups/runmusic-pencil.jpg':`/images/groups/source-hobby-${i-4}.svg`,question:null,anonymous:false,memberCount:counts[i]??3}));
+// Explicit local preview state; SQL tests verify the production ordering separately.
+if(state==='discovery-priority'){
+ const seeds=[['elina','엘리나','/images/groups/elina-pencil.jpg'],['yuna','유나','/images/groups/source-calendar/f9c838570dbcfc33.jpg'],['changha','창하','/images/groups/source-calendar/f33c1a13fe9e3e80.jpg']];
+ items.splice(0,2,...seeds.map(([slug,name,imageUrl],i)=>({...items[0]!,id:`e9300000-0000-4000-8000-${String(i+1).padStart(12,'0')}`,celebrityId:`e9300000-0000-4000-8000-${String(i+1).padStart(12,'0')}`,kind:'fan',slug,name,imageUrl})));
+}
+
 let settingsNickname='별빛';
 let fixtureJoined=state!=='invite',presenceEnabled=state==='presence-off'?false:sessionStorage.getItem('pencil-presence-enabled')!=='false';
 const raffleReceipts=new Map<string,{id:string;amount:number;enteredTickets:number;tickets:number}>();let localEnteredTickets=30;
