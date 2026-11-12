@@ -259,3 +259,56 @@ describe("root-owned ByUs session transition", () => {
     expect(mocks.replace).not.toHaveBeenCalled();
   });
 });
+
+describe("a slow sign-in SDK (prod 2026-11-12 13:11: the Privy token came after the deadline)", () => {
+  const advance = async (ms: number) => { await act(async () => { await vi.advanceTimersByTimeAsync(ms); }); };
+  const sessionState = () => JSON.parse(screen.getByTestId("session").textContent!);
+
+  it("keeps waiting while the token is late and finishes by itself, without ever showing the failure", async () => {
+    vi.useFakeTimers();
+    try {
+      mocks.auth = { ...mocks.auth, authenticated: true, user: { id: "fan-a" } };
+      let deliver!: (token: string) => void;
+      const late = new Promise<string>((resolve) => { deliver = resolve; });
+      mocks.auth.getAccessToken = vi.fn(() => late);
+      render(tree(<Starter />));
+      fireEvent.click(screen.getByRole("button", { name: "start fan-a" }));
+      const errors: unknown[] = [];
+      for (let waited = 0; waited < 45_000; waited += 5_000) { await advance(5_000); errors.push(sessionState().error); }
+      expect(errors.every((value) => value === null)).toBe(true);
+      expect(sessionState()).toMatchObject({ ready: false, pending: true });
+      expect(fetch).not.toHaveBeenCalled();
+      await act(async () => { deliver("token"); });
+      await advance(0);
+      expect(sessionState()).toMatchObject({ ready: true, pending: false, error: null });
+      expect(fetch).toHaveBeenCalledTimes(1);
+      expect(mocks.markReady).toHaveBeenCalledWith("fan-a");
+    } finally { vi.useRealTimers(); }
+  });
+
+  it("after the waits run out, resumes the exchange by itself when the SDK finishes", async () => {
+    vi.useFakeTimers();
+    try {
+      mocks.auth = { ...mocks.auth, authenticated: true, user: { id: "fan-a" } };
+      mocks.auth.getAccessToken = vi.fn(() => new Promise<string>(() => {}));
+      const view = render(tree(<Starter />));
+      fireEvent.click(screen.getByRole("button", { name: "start fan-a" }));
+      await advance(4 * 30_000 + 1_000);
+      expect(sessionState()).toMatchObject({ ready: false, error: "SESSION_SYNCHRONIZATION_TIMEOUT" });
+      expect(fetch).not.toHaveBeenCalled();
+      mocks.auth = { ...mocks.auth, user: { id: "fan-a" }, getAccessToken: vi.fn(async () => "token") };
+      view.rerender(tree(<Starter />));
+      await advance(0);
+      expect(sessionState()).toMatchObject({ ready: true, pending: false, error: null });
+      expect(fetch).toHaveBeenCalledTimes(1);
+    } finally { vi.useRealTimers(); }
+  });
+
+  it("shows the failure at once when our own session exchange fails", async () => {
+    vi.mocked(fetch).mockResolvedValueOnce(Response.json({ error: { code: "X" } }, { status: 500 }));
+    render(tree(<Starter />));
+    fireEvent.click(screen.getByRole("button", { name: "start fan-a" }));
+    await waitFor(() => expect(screen.getByTestId("session")).toHaveTextContent('"error":"SESSION_SYNCHRONIZATION_FAILED"'));
+    expect(fetch).toHaveBeenCalledTimes(1);
+  });
+});

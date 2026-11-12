@@ -23,6 +23,9 @@ export const SESSION_SYNCHRONIZATION_TIMEOUT = "SESSION_SYNCHRONIZATION_TIMEOUT"
 export const SESSION_SYNCHRONIZATION_FAILED = "SESSION_SYNCHRONIZATION_FAILED";
 const SDK_OPERATION_TIMEOUT_MS = 30_000;
 const WALLET_RECONCILIATION_TIMEOUT_MS = 5_000;
+// A sign-in SDK that is only slow (its user, wallet or token arrives after the deadline) is waited for again
+// instead of ending the sign-in: the exchange resumes by itself, and only a real failure shows the retry link.
+export const SDK_WAIT_ROUNDS = 4;
 
 class StaleLoginIdentityError extends Error {
   constructor() { super("Login identity changed"); this.name = "StaleLoginIdentityError"; }
@@ -97,6 +100,8 @@ export function ByUsSessionProvider({ children }: { children: ReactNode }) {
   const requestControllerRef = useRef<AbortController | null>(null);
   const sdkOwnerId = sdkReady && authenticated ? user?.id ?? null : null;
   const latestSdkOwnerRef = useRef(sdkOwnerId);
+  const sdkWaitsRef = useRef(0);
+  const resumeRef = useRef<(generation: number) => void>(() => {});
 
   useLayoutEffect(() => {
     latestSdkOwnerRef.current = sdkOwnerId;
@@ -221,6 +226,7 @@ export function ByUsSessionProvider({ children }: { children: ReactNode }) {
           throw new Error("Session synchronization failed");
         }
         assertCurrent(ownerId, generation);
+        sdkWaitsRef.current = 0;
         signupFunnelTracker.result(measurement, "succeeded", "session", "none", diagnosticClockValid ? walletDiagnostic : undefined);
         markAvatarSessionReady(ownerId);
         const returnPathname = new URL(returnTo, "https://byus.local").pathname;
@@ -242,6 +248,11 @@ export function ByUsSessionProvider({ children }: { children: ReactNode }) {
         }
         reportRecoveryFailure(stage, caught);
         try { assertCurrent(ownerId, generation); } catch { return; }
+        if (caught instanceof RequestTimeoutError && stage !== "login.session" && sdkWaitsRef.current < SDK_WAIT_ROUNDS - 1) {
+          sdkWaitsRef.current += 1;
+          setTimeout(() => resumeRef.current(generation), 0);
+          return;
+        }
         const reason: SignupReason = caught instanceof RequestTimeoutError ? "timeout"
           : caught instanceof Error && caught.message === VERIFIED_EMAIL_REQUIRED ? "verified_email_required"
             : caught instanceof Error && caught.message === APPLE_REAUTHENTICATION_REQUIRED ? "reauthentication_required" : "session_error";
@@ -276,6 +287,7 @@ export function ByUsSessionProvider({ children }: { children: ReactNode }) {
     generationRef.current += 1;
     const transition: ActiveTransition = { ...normalized, generation: generationRef.current, seenSdkOwner: currentSdkOwner === normalized.ownerId };
     activeRef.current = transition;
+    sdkWaitsRef.current = 0;
     resetAvatarSession();
     setError(null); setReauthenticationProviders([]);
     setRecoveryPath(transition.loginPath);
@@ -284,7 +296,7 @@ export function ByUsSessionProvider({ children }: { children: ReactNode }) {
     return true;
   }, [resetAvatarSession, synchronize]);
 
-  const retryTransition = useCallback(() => {
+  const restartTransition = useCallback(() => {
     const current = activeRef.current;
     if (!current) return Promise.resolve();
     generationRef.current += 1;
@@ -295,6 +307,20 @@ export function ByUsSessionProvider({ children }: { children: ReactNode }) {
     setSnapshot({ ready: false, pending: true, ownerId: transition.ownerId, generation: transition.generation, destination: transition.provisionalDestination });
     return synchronize(transition);
   }, [resetAvatarSession, synchronize]);
+  const retryTransition = useCallback(() => { sdkWaitsRef.current = 0; return restartTransition(); }, [restartTransition]);
+  useLayoutEffect(() => {
+    resumeRef.current = (generation) => { if (activeRef.current?.generation === generation && generationRef.current === generation) void restartTransition(); };
+  }, [restartTransition]);
+  // The SDK finished after the waits ran out (the user, wallet or token came late): resume the exchange once for that change.
+  const lateResumeRef = useRef<unknown>(null);
+  useEffect(() => {
+    const active = activeRef.current;
+    if (error !== SESSION_SYNCHRONIZATION_TIMEOUT || !active || sdkOwnerId !== active.ownerId) { lateResumeRef.current = null; return; }
+    if (lateResumeRef.current === null) { lateResumeRef.current = user; return; }
+    if (lateResumeRef.current === user) return;
+    lateResumeRef.current = user;
+    void retryTransition();
+  }, [error, retryTransition, sdkOwnerId, user]);
 
   useEffect(() => {
     if (!sdkReady) return;
