@@ -99,14 +99,14 @@ radius-scale: "pill / 16px / 12px / 8px / 50%"
 | 글자 / 보조 글자 | `--color-ink` / `--color-muted` | oklch 18% / 48% |
 | 선 | `--color-line` / `--color-line-subtle` | oklch 90% / 93% |
 | **강조 1색**(primary 채움·활성 밑줄·게이지 채움·하트) | `--color-accent` | #d11b62 |
-| 선택·호버·자리표시 면 | `--color-accent-soft` | #fff0f6 |
+| 선택·호버·자리표시 면, 글 상세의 아티스트 댓글 면 | `--color-accent-soft` | #fff0f6 |
 | 강조 선 | `--color-accent-line` | #f4c3d7 |
 | 강조 글자 | `--color-accent-ink` | #ad1457 |
 | 팬페이지 대표색 | `--color-page-accent` | 기본 accent |
 | 오류·LIVE·알림 점 | `--color-error` | #9f1239 |
 | 경고·순위 배지 글자 | `--color-warning` | #7a4206 |
 | 완료 체크 | `--color-success` | #17613f |
-| 기능색(사용자 승인) | `--color-reaction-comment`(댓글·▼), `--color-rank-up/-down`, `--color-heart`, `--color-translation-link`, `--color-brand-link` | 강조색이 아니다. 지정된 자리만 |
+| 기능색(사용자 승인) | `--color-reaction-comment`(댓글·▼), `--color-rank-up/-down`, `--color-heart`, `--color-translation-link`, `--color-brand-link`, `--color-artist-reaction(-ink)`(게시판 행 크리에이터 반응 별 한 곳 전용, 사용자 승인 11/13) | 강조색이 아니다. 지정된 자리만 |
 | 화면 전용 | `--color-shortform-*`, `--color-home-caption`, `--color-home-hero-shade`, `--color-campaign-art` | 그 화면만 |
 | 비활성 | `--fan-disabled-opacity` .4 | 면·글자색은 그대로 두고 불투명도만 |
 
@@ -154,13 +154,13 @@ radius-scale: "pill / 16px / 12px / 8px / 50%"
 | `FanAction` | 글자가 있는 모든 버튼·링크 버튼 | `variant` primary·secondary(=neutral)·text·danger, `size` md·sm, `href`/`onClick`, `leadingIcon`, `loading`, `fullWidth`, `helperText` | primary는 화면당 1. `danger`는 모달 안 확인만. `service`·`passport`·`trailingIcon` 화살표는 폐기 |
 | `FanIconButton` | 글자 없는 44 아이콘 버튼 | `aria-label` 필수, 메뉴·툴팁 트리거 | 글자가 있으면 `FanAction` |
 | `FanHeading` · `FanSectionHeader` | 화면 제목·구역 제목, 제목 줄 오른쪽 작은 링크 | `as` h1·h2·h3, `action {label, href}`, `extraAction` | `description`(보조 문구) 쓰지 않음 |
-| `FanSectionLink` | 제목 줄 오른쪽 `전체 보기 ›` | `href`/`onClick`, `expanded` | 목록 아래 따로 둔 버튼 줄 |
+| `FanSectionLink` | 제목 줄 오른쪽 `전체 보기 ›`. 같은 자리에서 펼치는 목록 미리보기도 이것(`onClick`+`expanded`, 펼친 뒤 `접기 ›`; 예: 팬페이지 390 팬 활동 3행 `FanMissions preview`, 11/13) | `href`/`onClick`, `expanded` | 목록 아래 따로 둔 버튼 줄 |
 | `FanText` | 이름·글 행 제목·본문·메타·라벨 | `role` item·row-title·body·meta·label·banner-label·banner-action, `as` | — |
 | `FanNumber` · `FanGauge` | 자산 숫자 / 진행 막대·칸 | `size` md·lg·xl, `unit`, `countUp` / `value` `max` `segments` `valueText` | 막대 안에 글자 넣지 않음 |
 | `RollingNumber` | 바뀌는 숫자를 굴려 보이기(랭킹·헤더·접속 수) | `value`, `duration`, `easing`, `delay`, `initialFromZero` | 가짜 증가 금지(실제 값만) |
 | `FanCellGauge` | 스탬프·하트·등급 칸 게이지 | `icon` `text` `label` `cells` `filled` | — |
 | `FanSurface` | 카드·목록 카드 | `appearance` card·list·plain, `tone`, `as` | 새 `FanCard` 만들지 않음 |
-| `FanPostRow` | 글·공지·기사 목록 한 줄 | `title` `href` `thumbnail` `notice` `author` `time` `likes` `commentCount` `density` home·board | — |
+| `FanPostRow` | 글·공지·기사 목록 한 줄 | `title` `href` `thumbnail` `notice` `author` `time` `likes` `commentCount` `reactedBy` `density` home·board. 댓글·추천 수는 제목 옆(0이면 뺌), `reactedBy`(그 페이지 아티스트가 좋아요·댓글)면 제목 바로 뒤 금색 별 16 | 별 옆에 글자 붙이지 않음 |
 | `FanEntityCard` | 페이지(팬페이지·모임·취미·브랜드) 카드·행·타일 | `size` row·card·list·tile, `kind`, `memberCount`, `badge`, `newBadge` | — |
 | `FanPageHeader` | 팬페이지·모임 머리 | `image` `name` `kind` `star` `links` `stats` `tabs` `menu` | — |
 | `FanStarAction` | 머리 칩(별·인증·좋아요) | `state` empty·filled, `label`, `href`/`onClick` | — |
@@ -238,6 +238,7 @@ radius-scale: "pill / 16px / 12px / 8px / 50%"
    - 랭킹 행 재정렬(FLIP 450) · ▲▼ 등장 500 · 바뀐 행 핑크 링 1800(1회)
    - 게이지·칸 채움(칸마다 45ms)
    - 선물 안 읽음 빛(애셋 opacity·transform, 3회 뒤 정지)
+   - 아티스트 접속 알약(팬페이지 머리 접속 줄): 지금 접속 중이면 핑크 알약 + 점 고리 퍼짐 1.6s × 3회(숫자 롤링 뒤 .6s 지연), 방문만 한 날은 정지
 
 | 모션 토큰 | 값 | 쓰임 |
 |---|---|---|
@@ -477,6 +478,8 @@ A2 버튼 반경 알약·높이 390 44 / 1024+ 48 · B2 칩 36·14/700·반경 �
 | 컴포넌트 | 쓰는 경우 | 쓰지 않는 경우 |
 |---|---|---|
 | `FanAction` | 모든 버튼·링크 모양. primary = accent 단색·반경 8·44/48, secondary = 1px 잉크 선·반경 8, `size="sm"` 36, `loading`(라벨 유지 + 대기). 비활성은 준비 기간에 한해 화면당 2(`교환` 포인트 부족·럭키드로우 `준비 중`, 사용자 2026-11-10 C4: 상대 날짜 대신 기존 `capsuleMachineCopy` `soon`)까지(8장 plan ④). `service`·`passport` 변형은 폐기(남은 호출은 secondary 모양) | 화면 전체에 primary는 하나(V7). `danger`는 모달 안 확인(삭제·신고)에만 |
+| `FanActionStatus` (2026-11-13, 래플 v4.3) | 끝난 행동의 결과(`응모 완료`)를 그 버튼 자리에 그대로 보여 줄 때. 누를 수 없으므로 `role="status"` 글이고, 비활성(.4) 대신 보조 버튼 면(흰 면·1px line·잉크 글자)을 primary 자리 크기(44/48, 최대 320)로 그린다. 완료 체크 아이콘은 `--color-success`, `leadingIcon`(간격 8) | 다시 누를 수 있는 행동은 `FanAction`. 준비 중·조건 미달처럼 아직 못 하는 행동은 기존 비활성 |
+| `FanActivityStamp` (2026-11-13, 래플 v5.2) | 덕질 행동 이름 옆의 작은 스탬프 그림. `kind` = comment·attendance·invite·passport·community·share·post, `size` sm 32 · md 40(기본) · lg 48. 그림은 패스포트에 찍히는 `stamps/ink-v1`과 같다. 이름이 바로 옆 글자로 있으므로 `alt=""`·`aria-hidden`. 누르는 요소가 아니다 | `components/fan-ui/fan-activity-stamp.tsx` | 4절 아이콘 "덕질 행동에는 작게라도 항상 스탬프 자산을 붙인다" |
 | `FanIconButton` | 글자 없는 44px 아이콘 버튼. `FanMenu`·`FanTooltip` 트리거(ref·aria를 DOM에 넘김). `aria-label` 필수 | 글자가 있는 버튼 → `FanAction` |
 | `FanDialog` | 화면을 막고 답을 받는 짧은 흐름: 확인·삭제·신고·교환·프로필 수정·언어 선택. `size` sm 360·md 480·lg 640(390은 전폭-32). `alert`는 되돌릴 수 없는 확인(배경 클릭으로 닫히지 않음). `responsive`면 1024 미만에서 시트 | 공유 주소가 필요한 목록·상세 → 페이지(N14). 항목 고르기 → `FanMenu`. 소개 문장은 그리지 않는다(`description`은 화면 판독기 전용) |
 | `FanSheet` | 390에서 바닥으로 올라오는 선택·긴 내용·터치 도움말. 1024+는 오른쪽 서랍(폭 420). `snap` content·half·full | 짧은 확인 → `FanDialog`. 드래그로 닫기는 없다(버튼·ESC·백드롭) |
@@ -530,6 +533,7 @@ A2 버튼 반경 알약·높이 390 44 / 1024+ 48 · B2 칩 36·14/700·반경 �
 | 보상 팝 | `FanRewardPop` 1회 | 600(연출 예외) | opacity만 |
 | 랭킹 재정렬 | 행 FLIP | 240(`--motion-reorder`, 연출 예외) | 없음 |
 | 럭키드로우 idle | three.js 장면 8초 주기(plan-ux 5절): 응모권 0~0.4 나타남(크기만) → 0.4~1.7 머묾(±4px·±3°) → 1.7~2.9 투입구로 → 2.9~3.3 들어감 → 3.3~4.8 캡슐 한 번 휘돌고 하트 불빛 → 쉼. 상시 캡슐이 12초에 한 바퀴 구름(중력 4° 기울임). `[data-lucky-module]` 안만. 사용자 2026-11-10 C4가 캡슐 ±4px·2.4~4.0초 계약을 대체 | 8초 루프(무한) | 정지 그림(reduced-motion·GPU 0등급·데이터 절약·컨텍스트 손실·프레임 24fps 미만) |
+| 래플 경품 카드 (2026-11-13, v5.1) | three.js(`features/raffle-cards`): 책상 위 기프트카드 네 묶음의 맨 위 한 장이 떠서(카드 폭의 7%) 기운다(±3°·±4.5°, 주기 7·9·11초). 빛 띠가 8초에 한 번 1.6초 동안 카드 면을 지나간다(밝기 +16%, 묶음마다 0.35초 시차). PC는 포인터 쪽으로 최대 8°·6°, 모바일은 기기 기울기(허락 없이 들어올 때만) 또는 쉬는 움직임만. 카드 면은 DOM 글자 자리를 그대로 옮긴 캔버스(화면 배율의 2배) | 쉬는 움직임(무한, 화면 밖·가려진 탭에서는 멈춤). 시작은 1.4초에 걸쳐 정지 자세에서 | 정지 그림 = 같은 자리의 DOM 카드(reduced-motion·데이터 절약·WebGL 2 없음·GPU 0등급·장면 실패·컨텍스트 손실·4초 평균 24fps 미만) |
 | 스켈레톤 | 띠(로딩 중만) | 1.2초 | 정지 |
 
 규칙
@@ -573,6 +577,7 @@ A2 버튼 반경 알약·높이 390 44 / 1024+ 48 · B2 칩 36·14/700·반경 �
 #### 아이콘 (8장 ⑫)
 - **UI 아이콘은 lucide 단일 세트, `strokeWidth` 1.5, 16·20·24만**, `FanIcon` 경유(N25). 코인·티켓·하트도 lucide(`Coins`·`Ticket`·`Heart`), 하트만 채움 `--color-accent`. 이모지 0(C10). 기본 Material·Pencil 헤더 아이콘 0.
 - 도장 아트(`stamps/ink-v1`)는 아이콘이 아니라 **스탬프 그림**: 패스포트·완료 연출(`stamp-slam`)에서만, `data-art="stamp"`. 미션 행 아이콘은 lucide 매핑(글쓰기 `Pencil`, 댓글 `MessageCircle`, 공유 `Share2`, 공감 `Heart`, 출석 `CalendarCheck`, 초대 `UserPlus`, 인증 `BadgeCheck`, 퀴즈 `HelpCircle`, 라이브 `Radio`, 설문 `ClipboardList`).
+- **덕질 행동에는 작게라도 항상 스탬프 자산을 붙인다**(사용자 2026-11-13 "우리의 덕질들 댓글 출석 이런것들은 … 작게라도 asset은 항상 있으면 좋겠어. 스탬프 그림이라도"). 댓글·출석·친구 초대·Fan Passport·커뮤니티·공유·글쓰기 같은 덕질 행동을 화면에 행·칸·버튼 옆 이름으로 보여 줄 때는 그 행동의 `ink-v1` 스탬프 그림을 이름 왼쪽에 둔다. 부품은 `FanActivityStamp kind`(32·40·48, `data-art="stamp"`, `aria-hidden`) 하나이고 매핑은 댓글 `first-comment` · 출석 `daily-checkin` · 친구 초대 `invite` · Fan Passport `welcome` · 커뮤니티 `membership` · 공유 `share` · 글쓰기 `post`. 그림에 면·선·그림자를 더하지 않고, 색을 바꾸지 않는다(그림 자체의 잉크색). 이벤트·캠페인 상세와 새로 만드는 화면부터 적용하고, 위 줄의 미션 행 lucide 매핑은 그 화면을 고칠 때 이 규칙으로 옮긴다. 그림이 없는 행동은 같은 세트로 새로 뽑는다(Codex imagegen, `manifest.json` 등록).
 - 아이콘 컨테이너는 선 1px 원/사각(채움 0).
 - 용어: 한국어 화면은 **`스탬프`**만 쓴다(`도장`·`Stamp` 단독 표기 금지). 영어는 Stamp, 다른 언어는 기존 stamp 번역(덕질 용어 `dkgStamp`). 사용자 결정 2026-11-08 13:05. 약관·계정 삭제 안내·온체인 계약 이름의 `Stamp`는 그대로 둔다.
 - 글자 없는 아이콘 버튼에는 `aria-label`과 `FanTooltip`을 둔다.
@@ -2662,3 +2667,66 @@ D-C token ownership: `FanHeading variant="campaign"` owns the 18px/700 mobile an
 | 메뉴 | `FanSelectMenu align="end"` | 390px에서 메뉴 왼쪽 214px·오른쪽 374px로 화면 안에 표시 |
 | 데스크톱 | 같은 행의 칩 왼쪽·정렬 오른쪽 | 1440px 실제 공개 dev 숏폼 데이터 로컬 렌더에서 카드 8개 표시·본문 가로 넘침 0 |
 | 홈 언어 S8 | 기존 `FanLanguageSwitch` | 앞선 dev 390px 홈 실화면에서 버튼 노출·12개 언어 선택 창 확인. 추가 변경 없음 |
+### 2026-11-13 Hot·게시판 공통 글 행
+사용자 요청에 따라 `FanPostRow`의 팬페이지·작성자(등급)·날짜·조회를 오른쪽 정렬한다. 좋아요는 통합된 11/13 게시판 규칙에 따라 제목 옆 댓글 수 다음 하트·숫자로 표시한다. 제목은 남은 폭에서 한 줄 말줄임하며 모바일 메타는 오른쪽 정렬로 줄바꿈한다. 제목·메타 글꼴 및 간격 토큰은 기존 계약을 유지한다. 긴 팬페이지·작성자는 데스크톱에서 기존 작성자 열의 132px 상한을 공유한다. 추천 반응 표기는 좋아요로 통일한다.
+### 랭킹 재확인 A1·A2 (2026-11-13)
+대표 11/11 18:58 → 11/12 14:28 지시에 따라 별도 최대 상승 카드를 제거한다. 등락은 모든 순위 숫자 오른쪽 기존 7×6 삼각형만 유지한다. 펼친 스탯은 기존 토큰으로 라벨·값을 한 줄에 놓고 스탯 단위로 줄바꿈하며, 높이 애니메이션 없이 즉시 표시한다. 아바타·이름의 프로필 접근은 보존한다.
+
+### MY 스탬프 기록 S1 (2026-11-13)
+
+| 기준 | 적용 |
+| --- | --- |
+| 위치·구성 | 내 패스포트 바로 아래 기존 스탬프 기록에서 아티스트별 접기 목록을 먼저 표시한다. 공통 `FanDisclosure`와 기존 스탬프 행·자산을 사용한다. |
+| 글자·색·간격 | 기존 섹션 제목, 공통 접기 트리거와 기록 목록의 역할 토큰을 사용한다. 별도 보조 문구나 새 시각 장식은 추가하지 않는다. |
+| 데이터·상호작용 | 실제 발급 기록만 아티스트별로 분류하고 개수를 표시한다. 계정 공통 기록은 kyaa에 둔다. 행을 누르면 기존 상세창을 연다. 미획득 스탬프의 기존 받기 경로를 유지한다. |
+| 언어·접근성 | 새 번역 문구 없이 기존 12개 언어의 스탬프 이름·날짜를 재사용한다. 공통 접기 버튼의 `aria-expanded`·`aria-controls` 및 44px 터치 영역을 따른다. |
+| 검수 경계 | 실제 보유 데이터의 390/1440 화면, 원본 스탬프 자산의 표시 결과 및 감독의 시각 판정이 완료 기준이다. |
+
+### 큰 글자 줄 왼쪽 광학 정렬 (2026-11-13, 7-2 `FanDisplay`)
+사용자 "K, 신, 11 이렇게 있을 때 신 왼쪽에 여백 있지. 이런 거 방지해야 해". 글자는 저마다 왼쪽 여백(사이드 베어링)을 갖고 그 크기는 글자 크기에 비례한다. 그래서 `KYAA`(24px)·`신규`(40px)·`11월`(16px)을 같은 x에 놓으면 잉크가 37.5·38.5·38.25에서 시작해 큰 줄이 안으로 들어가 보인다(390 실측).
+- **규칙**: 왼쪽 정렬로 쌓이는 디스플레이 글자 줄(24px 이상 줄이 하나라도 있는 묶음의 모든 줄)은 `FanDisplay optical`을 쓴다. 첫 글자의 잉크가 칸 왼쪽 선에서 시작한다. 화면 CSS에서 `margin-left: -2px` 같은 손 보정을 하지 않는다.
+- **동작**: 브라우저가 글꼴이 준비된 뒤 첫 글자의 왼쪽 여백을 재서(캔버스 글자 측정, 100px 기준 em 배수) `--fan-display-ink-start`로 넘기고, CSS가 `margin-inline-start: calc(값 * -1em)`으로 당긴다. em 배수라 폭에 따라 글자 크기가 바뀌어도 다시 재지 않는다. 재기 전(서버 HTML·스크립트 없음)에는 굵기별 평균값 `--fan-display-ink-thin` .063 · `-regular` .052 · `-semibold` .045(Pretendard 한글·라틴·숫자 평균)를 쓴다. 한글·라틴·숫자·가나·한자 모두 같은 방식이다(문자 종류별 표를 두지 않는다. 같은 문자 종류 안에서도 `V` .017 ~ `U` .096처럼 글자마다 다르다).
+- **숫자**: optical 줄은 비례폭 숫자(`font-variant-numeric: normal`)다. 고정폭 `1`은 칸 가운데에 놓여 왼쪽이 비기 때문이다. 값이 바뀌는 숫자(남은 시간·카운트)는 고정폭이 필요하므로 optical을 쓰지 않는다.
+- **쓰지 않는 곳**: 줄 중간의 글자(앞 글자와의 사이가 좁아진다), 가운데·오른쪽 정렬 줄, 오른쪽에서 왼쪽으로 쓰는 언어(재지 않고 그대로 둔다).
+- **검증**: 4배 캡처에서 줄마다 가장 왼쪽 잉크 픽셀 열이 같은지 본다. 래플 키 비주얼 네 줄(`KYAA 래플`·`신규 가입 이벤트`·`US$400`·`11월 10일 ~ 11월 30일`)은 390에서 36.00, 1440에서 104.00으로 같다.
+
+### KYAA 래플 상세 v5.2 — 친구 초대 +3 · 덕질 행동 스탬프 · 키 비주얼에 총액 (2026-11-13)
+사용자 "공유하면 확률 업 되고 그런거는 어떨까?" → 결정 "내 링크로 친구가 가입하면 +3"(친구당), "덕질들 … 작게라도 asset은 항상", 독립 검토(gpt-review-5, 84점) 상위 수정. 아래 v5.1 절의 흐름·three.js·하단 고정 줄은 그대로이고 달라진 곳만 적는다.
+- **키 비주얼**: 글자 네 줄 — `KYAA 래플`(`title`) · `신규 가입 이벤트`(`figure`) · `US$400 | Visa 기프트카드 | 총 17명`(`lead`, 사이 1px 선) · 기간(`strong`). 총액·총인원은 여기 한 번이다(화면 결정 "히어로에 총 US$400 + 총 17명 + 마감 한 덩어리"). 경품 구역의 큰 `총 US$400` 줄은 없앴다. 네 줄 모두 `optical`. 사진 비율은 모바일 1131/1150, 48rem부터 1920/640(v5.1보다 약 17% 낮다).
+- **PC(64rem 이상)**: 경품 책상 8 | 참여 방법 4(버튼·공유·마감을 세로로) → 당첨 확률 7 | 더 즐기기 5 → 안내 2열. 1440×900 첫 화면에 응모 버튼이 들어온다.
+- **당첨 확률 올리기**: 세 행 — 댓글(`1회당 +1 | 하루 최대 3회`) · 출석(같음) · 친구 초대(`내 링크로 친구가 가입·응모하면 +3`, 버튼 `초대 링크 공유`). 행 왼쪽에 `FanActivityStamp`(40). 더 즐기기 두 행의 그림도 같은 스탬프(48)로 바꿨다(책상 사진 썸네일 삭제).
+- **친구 초대 규칙(서버)**: 기존 친구 초대(`community_stamp_invite_*`)를 그대로 쓴다. 공유 주소 `/s/raffle?invite=<내 초대 코드>`. 친구가 그 주소로 들어와 가입하고 응모하면 응모와 함께 초대 코드가 등록되고(기존 등록 규칙: 본인 코드·맞초대·이미 등록·기존 인증 회원 거절), 초대한 사람의 당첨 기회가 친구 한 명당 +3 된다. 친구는 한 번만 세고, 이벤트 기간에 새로 가입한 계정만, 운영자·테스트 계정은 양쪽 다 제외한다. 가중치는 `rafflePolicySchema.weights.referral`(3), 댓글·출석 하루 상한은 그대로. migration `20261224050000_signup_raffle_referral.sql`.
+- **서버 값만**: 응모 뒤 상태 줄은 `내 당첨 기회 N회`(기본 1 + 댓글·출석 + 친구 초대, `GET /api/signup-event/entry`), 친구 초대 행은 한 명 이상일 때 `초대한 친구 N명`. 값을 받기 전에는 `내 응모 1회`만 말한다. 다시 들어와도 응모 완료 상태가 서버에서 복원된다.
+- **따르지 않은 검토 의견**: 제목 `당첨 기회 더 모으기`(사용자 원문 `당첨 확률 올리기` 유지), "공유 보상은 만들지 않는다"(사용자가 +3으로 결정). 모바일 전체 캡처에서 하단 탭이 경품 위에 찍힌 것은 캡처 방식 때문이라(화면에 붙어 다니는 줄이 긴 캡처 중간에 찍힘) 전체 캡처에서는 숨기고 첫 화면 캡처에만 둔다.
+
+### KYAA 래플 상세 v5.1 — 키 비주얼·상세페이지 흐름·살아 있는 요소 (2026-11-13)
+사용자 "동적인 요소가 아예 없는데", "상단에 신규 가입 이벤트! 이런 느낌으로… 지금 이게 뭔지", "화면 한 장에 다 있는 것도 어색. 여기는 상세페이지니까", "친구에게 공유도 너무 작은 거 아니야?" + 상시 규칙 "모든 페이지에 동적인 것, 권장 three.js / 최소 animation". 아래 v5 절의 배치와 살아 있는 요소 서술은 이 절이 대신하고, v5의 위계 원칙(초점 하나, 중복 없음, 면으로 순위)과 v4.2의 부품·토큰 규칙은 그대로다.
+- **흐름(위→아래)**: ① 키 비주얼(`FanPrintDesk` 사진 + HTML 글자: `KYAA 래플`(`title`) · `신규 가입 이벤트`(`figure`) · 기간(`strong`), 글자는 이 셋뿐) ② 경품(총 US$400은 `figure-xl`, `Visa 기프트카드 | 총 17명`, 카드 네 묶음) ③ 참여 방법·필수(응모 primary + 친구에게 공유 secondary + 마감·남은 시간 + 1인 1응모) ④ 당첨 확률 올리기(`FanSurface tone="focus"`, 페이지에 하나) ⑤ 더 즐기기·선택 ⑥ 응모 및 당첨 안내(`caption`). `amount` 역할(가장 큰 숫자)은 이 화면에서 쓰지 않는다.
+- **키 비주얼 사진**: Codex imagegen, 글자·로고 없음, v4 책상 사진과 같은 톤. 모바일 세로(1131×1391, 글자 위), 48rem부터 가로(1920×750, 글자 왼쪽) — `FanPrintDesk wideFrom="48rem"`. 첫 화면 그림(LCP)이라 `eager`.
+- **PC(64rem 이상)**: 구역은 위→아래로 흐르고 구역 안을 가로로 써서 낮춘다. 경품 글 4 | 책상 8(카드 한 줄), 참여 방법 한 줄(버튼 288 · 공유 · 마감·남은 시간 · 1인 1응모), 당첨 확률 7 | 더 즐기기 5, 안내 2열.
+- **하단 고정 줄(모든 폭)**: 남은 시간 + 응모 버튼(응모 뒤에는 출석 neutral). 참여 방법 칸의 버튼이 화면에 보이는 동안만 숨긴다(분홍 primary가 동시에 둘 보이지 않게). 모바일은 하단 탭 위, PC는 화면 아래.
+- **살아 있는 요소 셋**: ① 경품 카드 three.js(3절 표 "래플 경품 카드") ② 남은 시간 `D-17 | 21:04:09`가 1초마다 바뀐다(`role="timer"`, 고정폭 숫자, 보조 기술에는 마감 문구만) ③ 응모하면 완료 표시 오른쪽 위에 잉크 도장이 한 번 내려앉는다(`FanPrintStamp`, opacity + scale 1.35→1, 200). 경품 묶음이 올라와 쌓이는 연출(`FanPrintReveal`)은 그대로이고 three.js는 그 연출이 끝난 자리를 재서 이어받는다.
+- **three.js 규칙**: 서버 HTML과 첫 그리기는 DOM 카드(정지 그림)이고, 화면 근처 + 브라우저 한가함 + GPU 확인 뒤에만 청크를 내려받아 같은 자리에 겹친다(칸 크기 변화 0, `data-fan-print-float="3d"`일 때 DOM 카드 면만 `visibility: hidden`). 금액 글자는 DOM이 놓은 글자 칸을 그대로 따라 그린 캔버스 텍스처라 흐려지지 않는다. 봉투·인원 줄·책상 사진은 DOM 그대로. 누르는 것을 막지 않는다(`pointer-events: none`, `aria-hidden`).
+- **공유 버튼**: 공통 보조 버튼(`FanAction variant="secondary"`, 44/48, 아이콘은 `leadingIcon`)을 응모 버튼 바로 아래(PC는 옆)에 둔다. v4.3의 글자형 작은 버튼과 안내 구역 오른쪽 자리는 없앴다.
+- **문구**: `당첨 확률 올리기`(사용자 원문으로 되돌림, 행의 `1회당 +1`은 유지). 도장 인쇄 문구 `ENTERED`는 소품 글자(언어와 상관없이 같음).
+
+### KYAA 래플 상세 v5 — 위계 재설계 (2026-11-13)
+사용자 "구분이나 위계가 부족", "딱 처음보면 어디를 봐야할지 모르겠어" + 대표 "PC에서 스크롤을 많이 내려야". 아래 v4.2 절의 부품·토큰 규칙은 그대로이고, 배치와 살아 있는 요소 서술만 이 절이 대신한다.
+- **시선 순서 1→5**: ① 총 US$400(`amount`, 화면에 한 번) + `Visa 기프트카드 | 총 17명` ② 응모 버튼(유일한 분홍 primary) + 마감 + 1인 1응모 ③ 경품 카드 네 묶음(히어로 그림 = 경품, 별도 경품 구역 없음) ④ 당첨 기회 올리기(`FanSurface tone="focus"` 옅은 분홍 면, 페이지에 하나) ⑤ 더 즐기기(선택, 면 없이 1px 선 행·그림 48) → 응모 및 당첨 안내(`caption`).
+- **중복 삭제**: 응모권 소품(US$400·총 17명·마감 반복), 경품 구역의 `총 17명`·`총 US$400`, 하루 기회 카드 사진. 총액·총인원은 히어로 글자에만 있다(테스트로 고정).
+- **PC(64rem 이상)**: 히어로 글 7 · 경품 책상 5, 제목 줄은 책상 윗선, 총액~버튼 덩어리는 남은 높이 가운데. 버튼(`--rail-narrow` 288×48) 오른쪽에 마감·1인 1응모 두 줄. 그 아래 당첨 기회 7 | 더 즐기기 5, 안내 2열. `--fan-display-amount-size-wide`는 clamp(88px, 7.8vw, 112px)(1440에서 112): 큰 숫자가 하나뿐이라 한 단계 올렸다. 1440×900 첫 화면에 총액·버튼·마감·경품 네 묶음·당첨 기회가 다 들어온다.
+- **모바일**: 총액 → 무엇을·몇 명 → 마감 → 버튼 → 경품 책상 2×2 → 분홍 면 → 선 행 → 안내. 48~64rem은 카드 네 묶음 한 줄.
+- **살아 있는 요소**: 첫 화면 경품 카드의 겹친 장이 1·2·4·10장으로 한 번 세어지듯 쌓인다(`FanPrintReveal inView="stack"`, `translate`만, 90 시차·45 간격, 반복 없음). 소품은 숨기지 않으므로 LCP·스크립트 없음과 무관하고 `prefers-reduced-motion`에서는 움직이지 않는다. v4.2의 ①응모권 도장 ③기회 칸 ④숨쉬기는 소품이 빠져 이 화면에서는 쓰지 않는다(부품은 남아 있다).
+
+### KYAA 래플 상세 v4.2 — 디자인 시스템 맞춤 (2026-11-13)
+기준은 design-system-1112의 "현재 기준"(브랜치 `t3/design-md-1112`) 7-2·9절이고, 이 브랜치의 래플 코드를 그 기준에 맞췄다. 위 2026-11-12 문단의 `FanText`·번호 목록 서술은 v4에서 바뀐 옛 내용이다. 감사표: `board/tasks/signup-event/v4/design-md-audit.md`.
+- **`FanDisplay`·`FanPrint`는 이벤트·캠페인 상세(`/s/*`) 전용 부품**이다. 앱 탭 화면에는 쓰지 않는다.
+- **`FanDisplay` 글자**: 굵기 300(amount·figure 계열)·400(lead·strong·body·caption·mono)·600(title·heading) 셋. 500은 없다. 크기는 큰 숫자 3단(amount 64~152, figure-xl 56 / 96~120, figure 40 / 64)만 새 값이고 나머지는 앱 글자 토큰의 별칭이다: figure-sm·title = `--fan-number-size(-wide)` 24/32, heading·lead = `--fan-section-size` 18, strong·body = `--fan-body-size` 16, caption = `--fan-metadata-size` 13(행간 1.4), mono = `--fan-badge-size` 12. 화면당 `amount` 1개.
+- **`FanPrint` 소품**(Ticket·GiftCard·Passport·ChanceCard·Desk·Reveal): 책상 사진 위에 놓는 그림이다. `aria-hidden`·`data-art="print"`, 누르는 요소 없음, 화면 글자에 없는 정보를 담지 않는다. 모서리는 `--radius-small`(봉투 0, 도장 칸 50%). 색은 `--color-ink`·`--color-muted`와 소품 토큰 5개(`--fan-print-paper`·`-envelope`·`-rule`·`-edge`·`-stamp-ink`)뿐이고, 도장 빨강은 kyaa 잉크 도장(stamps/ink-v1) 그림의 색이라 소품 안에서만 쓴다. 그림자는 무채색 접지 그림자 한 쌍(`--fan-print-shadow-contact`·`-cast`)을 소품 바깥선에만 쓴다. 그라데이션은 쓰지 않는다(응모권 반달 홈은 `ticket-mask.svg`, 봉투 선은 SVG 선, 카드 면은 재질 사진). 글자 크기와 안쪽 여백만 소품 폭 비례(`cqw`)다.
+- **화면 CSS(`raffle.module.css`)는 배치만 한다.** 글자는 `FanHeading`·`FanDisplay`, 버튼은 `FanAction`(응모 primary 1개 44/48·최대 320, 행 안 버튼 `sm` 36, 아이콘은 `leadingIcon`), 행동 두 행은 `FanSurface appearance="list"`(행 64, 안쪽 12·16), 페이지 폭은 `FanContentContainer`(셸 1440, 바깥 여백 `--shell-inset`). 길이는 `--space-*`·`--radius-*`·`--rail-narrow`·`--min-target`만 쓰고, 직접 숫자는 소품이 사진 위에 놓이는 자리(%, 기울기, 그림 비율)뿐이다. 구역 사이 `--fan-section-gap`(32/48), 제목 줄 → 내용 16, 바탕 흰색.
+- **살아 있는 요소(9절, 최소안 = 의미 있는 애니메이션)**: ① 응모하면 응모권에 도장이 찍힌다(opacity + scale 1.35→1, 200) ② 경품 구역이 화면에 들어오면 카드 네 묶음이 90 시차로 올라오고(opacity + y 8→0, 200) 겹친 장이 45 간격으로 쌓인다 ③ 하루 기회 카드의 도장 칸 6개가 90 간격으로 찍힌다 ④ 히어로 응모권이 4초에 한 번씩 두 번 숨 쉬고 멈춘다(기울기 1.5도·y 4, 무한 반복 없음). 모두 `transform`·`opacity`뿐이고 `prefers-reduced-motion`·스크립트 없음·처음부터 화면 안에 있는 소품은 정지 상태로 그대로 보인다(`FanPrintReveal`). 첫 화면 그림을 숨겼다 보이지 않아 LCP에 영향이 없다. three.js는 쓰지 않았다: 소품의 글자·숫자를 DOM으로 정확히 찍는 것이 이 화면의 방식이라 캔버스로 옮기면 글자가 텍스처가 되고, 인앱 브라우저에 내려받는 양만 는다.
+
+### 창하 카드·프로필 사진 (2026-11-13 사용자 지정)
+창하의 기존 등록 사진을 쓰는 profile 역할(둘러보기 정사각 카드·프로필 아바타)은 지정 인스타 가을 체크 니트 사진의 680×680 얼굴 중심 WebP로 교체한다. 공통 소유자 creator-image-config.ts에서 중앙 cover·scale 1을 사용하며 이전 GGGI 확대 1.5는 승계하지 않는다. landscape·portrait 역할과 향후 별도 CMS 사진·명시적 역할 설정은 보존한다. 원본 출처·크롭 좌표는 profile-autumn-20261113.source.json에 기록한다.
+
+창하 사진 재검수(2026-11-13): 감독의 흐림·얼굴 크기 지적에 따라 같은 지정 JPEG에서 (285,245)부터 540×540을 무손실 WebP로 다시 추출한다. 새 경로 profile-autumn-sharp-20261113.webp로 이전 캐시를 구분하며 중앙 cover·scale 1을 유지한다. 카드 표시 111/161 CSS px에서 원본 540px 로드와 filter none을 확인했다. 로컬 이름 fixture는 실제 celebrity_localizations 이름을 쓰는 기존 규칙에 맞춰 엘리나·유나·창하로 표시한다.

@@ -28,5 +28,5 @@ it("keeps the author row and the counts for a post", () => {
 it("omits an incomparable historical view count without changing likes", () => {
  const {container} = render(<PostDetailHeader title="글" createdAt="2026-10-01T00:00:00Z" viewCount={2} likeCount={3} locale="ko" />);
  expect(container).not.toHaveTextContent("조회");
- expect(container).toHaveTextContent("추천 3");
+ expect(container).toHaveTextContent("좋아요 3");
 });

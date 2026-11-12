@@ -123,13 +123,33 @@ describe("FanPostRow", () => {
     expect(container.querySelector("svg")).toBeInTheDocument();
     expect(container.textContent).not.toContain("—");
     rerender(<FanPostRow href="/p" locale="ko" title="제목" thumbnail={null} views={null} likes={3} density="board" />);
-    expect(screen.getByText("추천 3")).toBeInTheDocument();
+    expect(screen.getByLabelText("좋아요 3")).toHaveTextContent("3");
     expect(screen.queryByLabelText(/조회/)).toBeNull();
   });
   it("labels board numbers on the row itself", () => {
     render(<FanPostRow href="/p" locale="ko" title="제목" author="별빛" views={1234} likes={3} density="board" />);
     expect(screen.getByText("조회 1,234")).toBeInTheDocument();
-    expect(screen.getByText("추천 3")).toBeInTheDocument();
+    expect(screen.queryByText("좋아요 3")).toBeNull();
+  });
+  it("puts likes beside the comment count and drops a zero count (11/13)", () => {
+    const { rerender } = render(<FanPostRow href="/p" locale="ko" title="제목" commentCount={2} likes={5} density="board" />);
+    const comments = screen.getByLabelText("댓글 2"), likes = screen.getByLabelText("좋아요 5");
+    expect(likes).toHaveTextContent("5");
+    expect(likes.querySelector("svg")).not.toBeNull();
+    expect(comments.nextElementSibling).toBe(likes);
+    expect(comments.parentElement).toBe(screen.getByRole("link", { name: "제목" }).parentElement);
+    rerender(<FanPostRow href="/p" locale="ko" title="제목" commentCount={0} likes={0} density="board" />);
+    expect(screen.queryByLabelText(/좋아요|댓글/)).toBeNull();
+  });
+  it("marks a post the page artist reacted to with a star beside the title (11/13)", () => {
+    const { rerender } = render(<FanPostRow href="/p" locale="ko" title="제목" reactedBy="엘리나" commentCount={1} />);
+    const star = screen.getByRole("img", { name: "엘리나 반응" });
+    expect(star).toHaveAttribute("data-artist-reacted");
+    expect(screen.getByRole("link", { name: "제목" }).nextElementSibling).toBe(star);
+    rerender(<FanPostRow href="/p" locale="en" title="Title" reactedBy="Elina" />);
+    expect(screen.getByRole("img", { name: "Elina reacted" })).toBeInTheDocument();
+    rerender(<FanPostRow href="/p" locale="ko" title="제목" />);
+    expect(screen.queryByRole("img")).toBeNull();
   });
   it("shows the notice tag, the comment count and a source link beside the row link", () => {
     render(<FanPostRow href="/p/1" locale="ko" title="공지 글" notice commentCount={8} source={{ label: "엘리나", href: "/elina?tab=board" }} density="home" views={12} />);

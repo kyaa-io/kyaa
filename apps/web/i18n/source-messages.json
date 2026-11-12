@@ -17051,6 +17051,66 @@
     "source": "features/rankings/ui/rankings-copy",
     "id": "features/rankings/ui/rankings-copy:hdNamesPending"
   },
+  "hdStepsTitle": {
+    "en": "How to join",
+    "ko": "참여 방법",
+    "source": "features/rankings/ui/rankings-copy",
+    "id": "features/rankings/ui/rankings-copy:hdStepsTitle"
+  },
+  "hdStepPassport": {
+    "en": "Get the {0} passport",
+    "ko": "{0} 패스포트 받기",
+    "source": "features/rankings/ui/rankings-copy",
+    "id": "features/rankings/ui/rankings-copy:hdStepPassport"
+  },
+  "hdStepPassportGo": {
+    "en": "Get",
+    "ko": "받기",
+    "source": "features/rankings/ui/rankings-copy",
+    "id": "features/rankings/ui/rankings-copy:hdStepPassportGo"
+  },
+  "hdStepStamps": {
+    "en": "Collect {0} stamps by cheering",
+    "ko": "덕질로 스탬프 {0}개 모으기",
+    "source": "features/rankings/ui/rankings-copy",
+    "id": "features/rankings/ui/rankings-copy:hdStepStamps"
+  },
+  "hdStepStampKinds": {
+    "en": "Check-in, comment, post and share stamps",
+    "ko": "출석, 댓글, 글쓰기, 공유 스탬프",
+    "source": "features/rankings/ui/rankings-copy",
+    "id": "features/rankings/ui/rankings-copy:hdStepStampKinds"
+  },
+  "hdStepStampsGo": {
+    "en": "Do missions",
+    "ko": "미션 하기",
+    "source": "features/rankings/ui/rankings-copy",
+    "id": "features/rankings/ui/rankings-copy:hdStepStampsGo"
+  },
+  "hdStepHeart": {
+    "en": "Claim a heart",
+    "ko": "하트 받기",
+    "source": "features/rankings/ui/rankings-copy",
+    "id": "features/rankings/ui/rankings-copy:hdStepHeart"
+  },
+  "hdStepHeartValue": {
+    "en": "1 heart = 1,000 KRW donated",
+    "ko": "하트 1개 = 1,000원 후원",
+    "source": "features/rankings/ui/rankings-copy",
+    "id": "features/rankings/ui/rankings-copy:hdStepHeartValue"
+  },
+  "hdStepHeartGo": {
+    "en": "Claim",
+    "ko": "하트 받기",
+    "source": "features/rankings/ui/rankings-copy",
+    "id": "features/rankings/ui/rankings-copy:hdStepHeartGo"
+  },
+  "hdStepDone": {
+    "en": "Done",
+    "ko": "완료",
+    "source": "features/rankings/ui/rankings-copy",
+    "id": "features/rankings/ui/rankings-copy:hdStepDone"
+  },
   "jjBannerDesc": {
     "en": "Rankings open once 100 true fans gather",
     "ko": "찐팬이 100명 모이면 순위가 공개돼요",

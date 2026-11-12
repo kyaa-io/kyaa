@@ -3,7 +3,7 @@ import { APP_LOCALES, type AppLocale } from '@/i18n/locales';
 /** Synthetic stand-in for celebrity_localizations (content locales ko and en only). The second page has no en row on purpose, so the fallback order is visible. */
 const fanPageNames: Record<string, { ko: string; en?: string }> = {
   nchive: { ko: '엔카이브 팬페이지', en: 'NCHIVE fan page' },
-  elina: { ko: '엘리나 팬페이지' },
+  elina: { ko: '엘리나' },
 };
 
 /** Same order as public.group_page_name: requested content locale, en, stored ko name. */

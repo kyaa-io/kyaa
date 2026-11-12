@@ -36,7 +36,7 @@ test('a raw color in a new file fails and the token version passes', () => {
     const bad = run(dir, ['--base', base]);
     assert.equal(bad.status, 1, bad.stderr + bad.stdout);
     assert.match(bad.stderr, /color-no-hex/);
-    write(dir, 'apps/web/features/home/new.module.css', '.c { color: var(--color-ink); padding: var(--space-3); border-radius: var(--radius-control); }\n');
+    write(dir, 'apps/web/features/home/new.module.css', '.c { color: var(--color-ink); padding: var(--space-3); border-radius: var(--radius-pill); }\n');
     assert.equal(run(dir, ['--base', base]).status, 0);
   } finally { rmSync(dir, { recursive: true, force: true }); }
 });

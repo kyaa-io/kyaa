@@ -25,3 +25,12 @@ it('does not synthesize counts on DB failure or override database membership den
  expect((await s.handle('heartbeat',new Request('https://kyaa.test/api',{method:'PUT',headers:{authorization:'Bearer valid'}}),{id})).status).toBe(403);
  s.rpc.mockRejectedValueOnce(Error('DB_UNAVAILABLE'));const response=await s.handle('presence',new Request('https://kyaa.test/api'),{id});expect(response.status).toBe(503);expect(await response.json()).not.toHaveProperty('onlineCount');
 });
+
+it('accepts explicit notification consent separately from display sharing',async()=>{
+ const s=setup();
+ const request=(body:unknown)=>new Request('https://kyaa.test/api',{method:'PUT',headers:{authorization:'Bearer valid','content-type':'application/json'},body:JSON.stringify(body)});
+ expect((await s.handle('set-presence-setting',request({notifyEnabled:true}),{})).status).toBe(200);
+ expect(s.rpc).toHaveBeenCalledWith('groups_content_dispatch',expect.objectContaining({p_actor:id,p_input:{notifyEnabled:true}}));
+ expect((await s.handle('set-presence-setting',request({}),{})).status).toBe(400);
+ expect((await s.handle('set-presence-setting',request({notifyEnabled:'true'}),{})).status).toBe(400);
+});

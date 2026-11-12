@@ -37,6 +37,9 @@
   --color-reaction-like: var(--color-accent);
   --color-reaction-like-soft: #e05a97;
   --color-reaction-comment: oklch(56% 0.09 230);
+  /* 아티스트 반응 별(게시판 11/13 김재영 "황금 별"): 금색 면 + 갈색 선. 게시판 행의 별 한 곳에만 쓴다. 선은 흰 바탕 위 8:1. */
+  --color-artist-reaction: #ffc83d;
+  --color-artist-reaction-ink: var(--color-warning);
   /* Rank movement triangle (대표 11/11 19:0x): up in the accent, down in the same muted blue as the comment reaction. Shape + colour only; the places gained are in the label. */
   --color-rank-up: var(--color-accent);
   --color-rank-down: var(--color-reaction-comment);
@@ -59,6 +62,27 @@
   --shadow-card-soft: 0 1px 3px rgb(0 0 0 / 6%);
   --shadow-dialog: 0 16px 48px rgb(0 0 0 / 16%);
 
+  /* 디스플레이 글자(FanDisplay 전용, 이벤트·캠페인 상세만 — DESIGN.md 7-2). 굵기 300(큰 금액·숫자)·400(본문·캡션·순번·lead·strong)·600(제목 줄·title) 셋. 본문 16·캡션 13·순번 12는 앱 글자 값과 같다. */
+  --fan-display-amount-size: clamp(64px, 22vw, 152px); --fan-display-amount-size-wide: clamp(88px, 7.8vw, 112px);
+  --fan-display-figure-xl-size: 56px; --fan-display-figure-xl-size-wide: 64px;
+  --fan-display-figure-size: 40px; --fan-display-figure-size-wide: 48px;
+  --fan-display-figure-sm-size: var(--fan-number-size); --fan-display-figure-sm-size-wide: var(--fan-number-size-wide);
+  --fan-display-title-size: var(--fan-number-size); --fan-display-title-size-wide: var(--fan-number-size-wide);
+  --fan-display-heading-size: var(--fan-section-size); --fan-display-lead-size: var(--fan-section-size);
+  --fan-display-strong-size: var(--fan-body-size); --fan-display-body-size: var(--fan-body-size); --fan-display-caption-size: var(--fan-metadata-size); --fan-display-mono-size: var(--fan-badge-size);
+  --fan-display-thin: 300; --fan-display-regular: 400; --fan-display-semibold: 600;
+  --fan-display-tight: -.05em; --fan-display-snug: -.02em;
+  /* 큰 글자 줄 왼쪽 광학 정렬: 재기 전 기본값(Pretendard 첫 글자 왼쪽 여백 평균, em 배수). 굵기 300·400·600 */
+  --fan-display-ink-thin: .063; --fan-display-ink-regular: .052; --fan-display-ink-semibold: .045;
+  --fan-display-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+  /* 인쇄 소품 아트(FanPrint 전용 — DESIGN.md 7-2). 종이·괘선·도장 빨강·접지 그림자는 소품 안에서만. 그림자는 무채색, 빛은 왼쪽 위. */
+  --fan-print-paper: oklch(95.5% .018 88); --fan-print-envelope: oklch(98% .004 90); --fan-print-stamp-ink: #b4242d;
+  --fan-print-rule: color-mix(in oklch, var(--color-ink) 30%, transparent); --fan-print-edge: color-mix(in oklch, var(--color-ink) 12%, transparent);
+  --fan-print-shadow-contact: 0 1px 1px rgb(0 0 0 / 16%); --fan-print-shadow-cast: 4px 8px 12px rgb(0 0 0 / 12%);
+  --fan-print-wordmark: url("/images/guest-home/kyaa-wordmark.svg"); --fan-print-ticket-mask: url("/images/raffle/v4/ticket-mask.svg");
+  --fan-print-grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .35 0 0 0 0 .27 0 0 0 0 .15 0 0 0 .09 0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");
+  /* 소품 연출(DESIGN.md 9절 "카드 등장 90ms 시차", "칸 채움 45ms"): 묶음 사이 90, 한 장·한 칸 사이 45, 히어로 응모권 쉬는 움직임 한 번 4초(2회 왕복 뒤 정지). */
+  --fan-print-stagger: 90ms; --fan-print-step: 45ms; --fan-print-idle: 4s;
   --space-1: 4px;
   --space-2: 8px;
   --space-3: 12px;

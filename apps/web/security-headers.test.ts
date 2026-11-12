@@ -200,3 +200,17 @@ it("opens the GA4 origins only where a GA4 stream is configured", () => {
   expect(directive(on, "frame-src")).not.toContain("googletagmanager");
   expect(awsStorageContentSecurityPolicy({ ga4: true, rewardedAds: true })).toContain("https://securepubads.g.doubleclick.net");
 });
+
+describe("inline event-handler attributes", () => {
+  it("never run, in the base policy and in every runtime variant", () => {
+    const variants = [
+      header("Content-Security-Policy"),
+      awsStorageContentSecurityPolicy({}),
+      awsStorageContentSecurityPolicy({ adsense: true, ga4: true, rewardedAds: true, stage: true, bucket: "byus-dev-private", region: "ap-northeast-2" }),
+    ];
+    for (const policy of variants) {
+      expect(policy.split("; ")).toContain("script-src-attr 'none'");
+      expect(policy.split("; ").filter(part => part.startsWith("script-src-attr"))).toHaveLength(1);
+    }
+  });
+});

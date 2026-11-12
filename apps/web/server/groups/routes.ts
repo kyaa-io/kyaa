@@ -102,7 +102,7 @@ const inputSchemas = {
   "artist-bind":z.object({appUserId:uuid,requestId}).strict(),
   "artist-unbind":z.object({appUserId:uuid,requestId}).strict(),
   "set-notifications":z.union([z.object({enabled:z.boolean()}).strict(),z.object({notices:z.boolean(),events:z.boolean(),recipients:z.boolean(),activity:z.boolean()}).strict().transform(value=>({enabled:true,...value}))]),
-  "set-presence-setting":z.object({enabled:z.boolean()}).strict(),
+  "set-presence-setting":z.object({enabled:z.boolean().optional(),notifyEnabled:z.boolean().optional()}).strict().refine(v=>v.enabled!==undefined||v.notifyEnabled!==undefined),
   review: z.object({expectedRevision:z.number().int().min(1).optional(), action: z.enum(["approve", "reject", "request_changes", "start_review"]), reason: z.string().trim().max(1000).optional(), celebrityId: uuid.optional(), requestId }).strict(),
 };
 export type GroupOperation = "directory" | "resolve" | "detail" | "applications" | "application-status" | "apply" | "revise" | "post-edit" | "join" | "leave" | "bookmark" | "unbookmark" | "members" | "role" | "transfer" | "posts" | "post" | "post-detail" | "post-remove" | "rooms" | "room" | "messages" | "message" | "settings" | "admin-applications" | "review" | "comments" | "comment" | "comment-remove" | "reaction" | "dislike" | "room-state" | "report" | "admin-reports" | "resolve-report" | "report-evidence" | "artist-bind" | "artist-unbind" | "artist-bindings" | "presence" | "heartbeat" | "presence-setting" | "set-presence-setting" | "notifications" | "set-notifications" | "room-read" | "page-reports" | "page-resolve-report" | "own-reports" | "operator-members" | "operator-members-export" | "notice-broadcast-status" | "mission-stats";

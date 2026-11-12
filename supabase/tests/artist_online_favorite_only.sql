@@ -21,7 +21,7 @@ begin
   artist := ids[1]; fav := ids[2]; plain := ids[3]; other_fav := ids[4]; off_fan := ids[5]; muted := ids[6];
   if muted is null then raise exception 'fixture: need six active users'; end if;
   insert into public.group_artist_bindings(page_id, app_user_id, verified_by) values (page, artist, admin_id);
-  insert into public.group_artist_presence_settings values (artist, true) on conflict (app_user_id) do update set enabled = true;
+  insert into public.group_artist_presence_settings(app_user_id,enabled,notify_enabled) values (artist, true, true) on conflict (app_user_id) do update set enabled = true, notify_enabled = true;
   insert into public.group_memberships(page_id, app_user_id) values (page, artist), (page, fav), (page, plain), (page, other_fav), (page, off_fan), (page, muted);
   delete from public.notification_preferences where app_user_id = any(ids);
   -- Fixture users may carry artist notices left by earlier local runs; start them empty (rolled back with the rest).

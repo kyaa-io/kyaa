@@ -1,0 +1,27 @@
+/* 하트 후원 참여 방법(대표 11/13 "어떻게 해야 참여할 수 있을지 가이드"): 카드 하나 안에 세 줄. 줄 = 44 그림 · 글 · 오른쪽 행동(지금 단계만 primary sm, 지난 단계는 체크).
+ * 카드 16·1px line·흰 면(옆 카드와 같은 .block 규칙), 줄 사이 1px line-subtle. 지금 단계 줄만 accent-soft 면(행 반경 small 8). 움직임은 도장 네 개가 한 번 찍히는 것(합성 속성만)과 막대 칸 색 전환뿐. */
+.steps { display: grid; gap: var(--space-2); box-sizing: border-box; min-width: 0; padding: var(--space-4); border: 1px solid var(--color-line); border-radius: var(--radius-card); background: var(--color-surface); }
+.list { display: grid; margin: 0; padding: 0; list-style: none; }
+.row { display: grid; grid-template-columns: 44px minmax(0, 1fr) auto; align-items: center; gap: var(--space-3); min-width: 0; padding: var(--space-3) var(--space-2); }
+.row + .row { border-top: 1px solid var(--color-line-subtle); }
+.row[data-current] { border-radius: var(--radius-small); background: var(--color-accent-soft); }
+.row[data-current], .row[data-current] + .row { border-top-color: transparent; }
+.art { display: block; width: 44px; height: 44px; object-fit: contain; }
+.body { display: grid; gap: var(--space-1); min-width: 0; }
+.title { min-width: 0; overflow-wrap: anywhere; color: var(--color-ink); }
+.meta { min-width: 0; color: var(--color-muted); }
+.done { display: inline-flex; align-items: center; gap: var(--space-1); color: var(--color-muted); white-space: nowrap; }
+.done svg { color: var(--color-success); }
+
+/* 스탬프 줄: 제목 · 9칸 막대(FanGauge segments) · 그 아래 덕질 도장 네 개(출석·댓글·글·공유, 24). 도장은 처음 보일 때 한 번 찍힌다. */
+.stamps { display: flex; gap: var(--space-1); }
+.stamps img { display: block; width: 24px; height: 24px; transform: rotate(-6deg); }
+.stamps img:nth-child(even) { transform: rotate(5deg); }
+
+@media (prefers-reduced-motion: no-preference) {
+  .stamps img { animation: stampIn var(--motion-reward) var(--motion-easing) both; animation-delay: calc(240ms + var(--stamp-index) * 90ms); }
+  .stamps img:nth-child(even) { animation-name: stampInEven; }
+}
+@keyframes stampIn { from { opacity: 0; transform: scale(1.4) rotate(-6deg); } 60% { opacity: 1; transform: scale(.94) rotate(-6deg); } to { opacity: 1; transform: scale(1) rotate(-6deg); } }
+@keyframes stampInEven { from { opacity: 0; transform: scale(1.4) rotate(5deg); } 60% { opacity: 1; transform: scale(.94) rotate(5deg); } to { opacity: 1; transform: scale(1) rotate(5deg); } }
+@media (prefers-reduced-motion: reduce) { .stamps img { animation: none; } }

@@ -1,0 +1,107 @@
+/* Hallmark · custom · printed props for the raffle page (see app/s/raffle/raffle.module.css stamp) · paper cream, ink, one stamp red · Pretendard + system mono */
+/* 인쇄 소품 아트(DESIGN.md §2 FanPrint). 색·그림자는 globals.css --fan-print-* 토큰, 모서리는 --radius-small, 굵기는 FanDisplay 의 300·400·600. 글자 크기와 안쪽 여백만 소품 폭 기준(cqw)이라 사진처럼 함께 줄어든다. */
+.ticket, .gift, .passport, .chance { position: relative; container-type: inline-size; color: var(--color-ink); font-variant-numeric: tabular-nums; user-select: none; -webkit-user-select: none; }
+.ticket :where(p), .gift :where(p), .passport :where(p), .chance :where(p) { margin: 0; }
+.ticket img, .gift img, .passport img, .chance img { display: block; }
+.mono { font-family: var(--fan-display-mono); font-weight: var(--fan-display-regular); line-height: 1; white-space: nowrap; }
+.wordmark { display: block; aspect-ratio: 1164 / 563; background: currentColor; mask: var(--fan-print-wordmark) center / contain no-repeat; -webkit-mask: var(--fan-print-wordmark) center / contain no-repeat; }
+.ticket, .gift, .passport, .chance { filter: drop-shadow(var(--fan-print-shadow-contact)) drop-shadow(var(--fan-print-shadow-cast)); }
+
+/* 종이 면 공통: 색 면 + 고운 결 */
+.ticketPaper, .page, .chancePaper { background-color: var(--fan-print-paper); background-image: var(--fan-print-grain); background-size: 160px 160px; }
+
+/* 응모권 */
+.ticket { aspect-ratio: 2.1; }
+.ticketPaper { position: absolute; inset: 0; display: grid; grid-template-columns: minmax(0, 1fr) 21%; border-radius: var(--radius-small); mask: var(--fan-print-ticket-mask) center / 100% 100% no-repeat; -webkit-mask: var(--fan-print-ticket-mask) center / 100% 100% no-repeat; }
+.ticketMain { display: grid; grid-template-rows: auto 1fr auto auto; padding: 5cqw 5.5cqw 4.6cqw; min-width: 0; }
+.ticketHead { display: flex; align-items: center; justify-content: space-between; }
+.ticketHead .wordmark { width: 15cqw; }
+.ticketHead .mono { font-size: 2.9cqw; }
+.ticketAmount { align-self: end; font-size: 18.5cqw; font-weight: var(--fan-display-thin); letter-spacing: var(--fan-display-tight); line-height: 1; white-space: nowrap; }
+.ticketPrize { display: flex; gap: 2.4cqw; margin-top: 2.2cqw; font-size: 3.5cqw; font-weight: var(--fan-display-semibold); line-height: var(--fan-heading-leading); white-space: nowrap; }
+.ticketPrize span + span { padding-inline-start: 2.4cqw; border-inline-start: 1px solid var(--fan-print-rule); }
+.ticketFoot { display: flex; align-items: baseline; gap: 2cqw; margin-top: 3.2cqw; padding-top: 2.6cqw; border-top: 1px solid var(--fan-print-rule); }
+.ticketFoot .mono { font-size: 2.6cqw; color: var(--color-muted); }
+.ticketFoot .ticketDeadline { font-size: 3.1cqw; color: inherit; }
+.ticketStub { position: relative; display: flex; align-items: center; justify-content: space-between; padding: 5cqw 0 4.6cqw; border-inline-start: 1px dashed var(--fan-print-rule); writing-mode: vertical-rl; text-orientation: sideways; }
+.ticketStub .mono { font-size: 2.9cqw; }
+.ticketStubLine { font-size: 3.1cqw; font-weight: var(--fan-display-semibold); line-height: 1; white-space: nowrap; }
+/* 응모 도장: kyaa 잉크 도장 테(stamps/ink-v1) 그대로. 도장 빨강은 소품 안에서만 쓴다 */
+.ticketStamp { position: absolute; inset-inline-end: 12.5%; inset-block-start: 29%; width: 20%; aspect-ratio: 1; display: grid; place-items: center; rotate: -14deg; color: var(--fan-print-stamp-ink); mix-blend-mode: multiply; opacity: 1; scale: 1; transition: opacity var(--motion-slow) var(--motion-easing), scale var(--motion-slow) var(--motion-easing); }
+.ticketStamp img { grid-area: 1 / 1; width: 100%; height: auto; }
+.ticketStamp span { grid-area: 1 / 1; max-width: 62%; font-size: 3.5cqw; font-weight: var(--fan-display-semibold); line-height: var(--fan-heading-leading); text-align: center; text-wrap: balance; }
+@starting-style { .ticketStamp { opacity: 0; scale: 1.35; } }
+
+/* 낱장 도장(FanPrintStamp): 응모권 도장과 같은 그림·같은 내려앉음. 폭은 쓰는 쪽이 정한다 */
+.stamp { container-type: inline-size; aspect-ratio: 1; display: grid; place-items: center; color: var(--fan-print-stamp-ink); mix-blend-mode: multiply; pointer-events: none; user-select: none; -webkit-user-select: none; opacity: 1; scale: 1; transition: opacity var(--motion-slow) var(--motion-easing), scale var(--motion-slow) var(--motion-easing); }
+.stamp img { grid-area: 1 / 1; display: block; width: 100%; height: auto; }
+.stamp span { grid-area: 1 / 1; max-width: 64%; font-family: var(--fan-display-mono); font-size: 13cqw; font-weight: var(--fan-display-regular); line-height: 1; text-align: center; }
+@starting-style { .stamp { opacity: 0; scale: 1.35; } }
+
+/* 기프트카드: 맨 위 한 장 + 아래 겹친 장. 겹친 장은 위로 쌓여 맨 위 카드의 아랫선이 칸마다 맞는다 */
+.giftPile { position: relative; padding-top: 13cqw; }
+.giftFace, .giftUnder { aspect-ratio: 1.586; border-radius: var(--radius-small); background: var(--fan-print-paper) var(--fan-print-material, none) center / cover; box-shadow: inset 0 0 0 1px var(--fan-print-edge); }
+.giftFace { position: relative; display: grid; grid-template-rows: auto 1fr auto; padding: 6.5cqw 7cqw 6cqw; }
+.giftUnder { position: absolute; inset-inline: 0; inset-block-end: 0; translate: 0 calc(var(--i) * -1.3cqw); }
+.giftUnder:nth-child(odd) { rotate: .7deg; }
+.giftUnder:nth-child(3n) { rotate: -.9deg; }
+.giftHead { display: flex; align-items: flex-start; justify-content: space-between; }
+.giftHead .mono { font-size: 4.3cqw; }
+.giftHead .wordmark { width: 20cqw; }
+.giftAmount { align-self: end; font-size: 19cqw; font-weight: var(--fan-display-thin); letter-spacing: var(--fan-display-tight); line-height: 1; white-space: nowrap; }
+.giftNote { margin-top: 3cqw; font-size: 3.6cqw; color: var(--color-muted); }
+.envelope { position: absolute; inset-inline: -4cqw; inset-block: 0 34%; width: calc(100% + 8cqw); height: 66%; background: var(--fan-print-envelope); color: var(--fan-print-rule); }
+
+/* 패스포트 펼침 */
+.passport { aspect-ratio: 1.46; }
+.passportBook { position: absolute; inset: 0; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); border-radius: var(--radius-small); overflow: hidden; }
+.page { position: relative; display: grid; align-content: start; padding: 5cqw 4.6cqw 4cqw; min-width: 0; overflow: hidden; }
+.page:first-child { border-inline-end: 1px solid var(--fan-print-rule); }
+.page > .mono { font-size: 2.5cqw; }
+.passportMark { width: 21cqw; margin-top: 4cqw; }
+.passportCaption { margin-top: 2cqw; font-size: 2.7cqw; font-weight: var(--fan-display-semibold); line-height: var(--fan-heading-leading); }
+.passportSeal { position: absolute; inset-inline-end: 3cqw; inset-block-end: 12cqw; width: 19cqw; height: auto; rotate: -9deg; mix-blend-mode: multiply; }
+.passportCode { position: absolute; inset-inline: 4.6cqw; inset-block-end: 4cqw; display: grid; gap: 1.1cqw; font-size: 2.05cqw; color: var(--color-muted); overflow: hidden; }
+.stampGrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.6cqw 1cqw; align-content: center; height: 100%; }
+.stampGrid img { width: 100%; height: auto; mix-blend-mode: multiply; }
+.stampGrid img:nth-child(1) { rotate: -8deg; }
+.stampGrid img:nth-child(2) { rotate: 6deg; translate: 0 1.4cqw; }
+.stampGrid img:nth-child(3) { rotate: 4deg; translate: 1cqw 0; }
+.stampGrid img:nth-child(4) { rotate: -5deg; translate: -.6cqw 1cqw; }
+
+/* 하루 기회 카드 */
+.chancePaper { display: grid; gap: 4cqw; padding: 5.5cqw 6cqw 6cqw; border-radius: var(--radius-small); }
+.chanceHead { display: flex; align-items: center; justify-content: space-between; padding-bottom: 3.4cqw; border-bottom: 1px solid var(--fan-print-rule); }
+.chanceHead .wordmark { width: 13cqw; }
+.chanceHead .mono { font-size: 2.7cqw; }
+.chanceRow { display: grid; grid-template-columns: 15cqw minmax(0, 1fr) auto; align-items: center; gap: 3cqw; }
+.chanceRow + .chanceRow { padding-top: 4cqw; border-top: 1px dashed var(--fan-print-rule); }
+.chanceLabel { font-size: 4.6cqw; font-weight: var(--fan-display-semibold); line-height: var(--fan-heading-leading); }
+.chanceSlots { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 2.6cqw; }
+.chanceSlot { display: grid; justify-items: center; gap: 1.6cqw; }
+.chanceSlot i { display: grid; place-items: center; width: 100%; aspect-ratio: 1; border-radius: 50%; border: 1px dashed var(--fan-print-rule); }
+.chanceSlot img { width: 84%; height: auto; opacity: .3; mix-blend-mode: multiply; }
+.chanceSlot b { font-family: var(--fan-display-mono); font-size: 3.4cqw; font-weight: var(--fan-display-regular); line-height: 1; }
+.chanceCap { font-size: 2.7cqw; color: var(--color-muted); }
+
+/* 책상 사진 면. 사진이 오기 전에는 빈 면(회색 자리표시 없음) */
+.desk { position: relative; overflow: hidden; }
+.desk > picture, .desk > picture > img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
+
+/* 연출(DESIGN.md §3 캠페인 소품): FanPrintReveal 이 화면 아래에 있던 소품에만 건다. transform·opacity 한 번, 반복 없음 */
+[data-fan-print-reveal="armed"] .gift { opacity: 0; translate: 0 var(--space-2); }
+[data-fan-print-reveal="armed"] .giftUnder, [data-fan-print-reveal="stacked"] .giftUnder { translate: 0 0; }
+[data-fan-print-reveal="in"] .gift { transition: opacity var(--motion-slow) var(--motion-easing) calc(var(--o, 0) * var(--fan-print-stagger)), translate var(--motion-slow) var(--motion-easing) calc(var(--o, 0) * var(--fan-print-stagger)); }
+[data-fan-print-reveal="in"] .giftUnder { transition: translate var(--motion-slow) var(--motion-easing) calc(var(--o, 0) * var(--fan-print-stagger) + var(--motion-slow) + (var(--i) - 1) * var(--fan-print-step)); }
+[data-fan-print-reveal="armed"] .chanceSlot img { opacity: 0; scale: 1.3; }
+[data-fan-print-reveal="in"] .chanceSlot img { transition: opacity var(--motion-slow) var(--motion-easing) calc(var(--i) * var(--fan-print-stagger)), scale var(--motion-slow) var(--motion-easing) calc(var(--i) * var(--fan-print-stagger)); }
+
+/* three.js 카드(features/raffle-cards)가 준비되면 같은 자리의 DOM 카드 면만 감춘다. 봉투·칸 크기는 그대로라 자리 변화가 없다 */
+[data-fan-print-float="3d"] :is(.giftFace, .giftUnder) { visibility: hidden; }
+
+@media (prefers-reduced-motion: reduce) {
+  .ticketStamp, .stamp, [data-fan-print-reveal] .gift, [data-fan-print-reveal] .giftUnder, [data-fan-print-reveal] .chanceSlot img { transition: none; }
+  [data-fan-print-reveal="armed"] .gift { opacity: 1; translate: none; }
+  [data-fan-print-reveal="armed"] .giftUnder { translate: 0 calc(var(--i) * -1.3cqw); }
+  [data-fan-print-reveal="armed"] .chanceSlot img { opacity: .3; scale: 1; }
+}
