@@ -33,9 +33,9 @@ export function NoticeTranslation({ title, document, locale, children }: { title
   return <SharedTranslation.Provider value={{ title: shownTitle, document: translatedDocument, translation, observeElement }}>{children}</SharedTranslation.Provider>;
 }
 
-export function NoticeTitle({ locale }: { locale: AppLocale }) {
+export function NoticeTitle({ locale, className }: { locale: AppLocale; className?: string }) {
   const shared = useContext(SharedTranslation);
-  return shared ? <h1 lang={shared.translation.showing ? locale : undefined}>{shared.title}</h1> : null;
+  return shared ? <h1 className={className} lang={shared.translation.showing ? locale : undefined}>{shared.title}</h1> : null;
 }
 
 export function NoticeTranslationControl({ locale }: { locale: AppLocale }) {

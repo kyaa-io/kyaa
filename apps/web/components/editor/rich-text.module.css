@@ -15,6 +15,7 @@
 .body :is(strong, b), .editable :is(strong, b) { font-weight: var(--fan-item-title-weight); }
 .body u, .editable u { text-decoration: underline; text-underline-offset: 2px; }
 .body a, .editable a { color: var(--color-service-ink); text-decoration: underline; text-underline-offset: 2px; }
+.body[data-text-hidden] > :not(.media) { display: none; }
 .media { margin: var(--space-4) 0; min-width: 0; }
 .media img, .media video { display: block; max-width: 100%; height: auto; border-radius: var(--radius-media); }
 .youtube { position: relative; width: 100%; margin: var(--space-4) 0; aspect-ratio: 16 / 9; overflow: hidden; border-radius: var(--radius-media); background: var(--color-ink); }

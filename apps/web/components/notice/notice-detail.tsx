@@ -16,6 +16,7 @@ import { NoticeComments } from "@/features/fanpage/ui/notice-comments";
 import { ContentActions } from "@/features/content-safety/ui/content-actions";
 import { parseNoticeDocument } from "@/server/notice/notice-domain";
 import { TranslatedText } from "@/features/content-safety/ui/use-automatic-translation";
+import { PostDetailHeader } from "@/features/fan-posts/ui/post-detail-header";
 import { NoticeBody, NoticeTitle, NoticeTranslation, NoticeTranslationControl } from "./notice-body";
 import { NoticeReactions } from "./notice-reactions";
 import { FanAction } from "@/components/fan-ui/fan-action";
@@ -39,7 +40,8 @@ export function NoticeDetail({ slug, noticeSlug, locale, officialPostLabel }: { 
       <div className={`${styles.layout} ${related.length ? styles.relatedLayout : ""}`}>
         <article className={styles.article}>
           <NoticeTranslation title={notice.title} document={notice.body} locale={locale}>
-          <header className={styles.header}><span>{notice.postType === "artist_post" ? officialPostLabel ?? copy.artistPost : copy.notice} · {copy[notice.visibility]}</span><NoticeTitle locale={locale} /><div className={styles.meta}><time dateTime={notice.publishedAt}>{format(notice.publishedAt)}</time><span className={styles.metaActions}><ContentActions targetType="notice" targetId={notice.id} locale={locale} canBlock={false} onChanged={detail.retry} /></span></div><NoticeTranslationControl locale={locale} /></header>
+          <PostDetailHeader kicker={<>{notice.postType === "artist_post" ? officialPostLabel ?? copy.artistPost : copy.notice} · {copy[notice.visibility]}</>} renderTitle={className => <NoticeTitle locale={locale} className={className} />} createdAt={notice.publishedAt} locale={locale}
+            translation={<NoticeTranslationControl locale={locale} />} menu={<ContentActions targetType="notice" targetId={notice.id} locale={locale} canBlock={false} onChanged={detail.retry} />} />
           {detail.refreshFailed && <p role="status">{copy.failed}<FanAction variant="text" onClick={detail.retry}>{copy.retry}</FanAction></p>}
           <NoticeBody document={notice.body} locale={locale} />
           </NoticeTranslation>
