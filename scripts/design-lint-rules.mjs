@@ -2,6 +2,7 @@
 // 한 파일의 내용을 받아 "규칙|세부" -> 개수 Map 을 돌려준다. 기준선 비교와 출력은 design-lint.mjs 가 한다.
 // 심각도: fail 은 새 위반이면 실패, count 는 집계만(경고 출력). 오탐이 큰 규칙은 count 로 두고 이유를 RULES 에 적었다.
 import postcss from 'postcss';
+import { TOKEN_RULES, scanTokens } from './design-lint-token-rules.mjs';
 
 export const disabledByComment = (node, id) => {
   const directive = new RegExp(`design-lint-disable ${id}(?:\\s|$)`);
@@ -15,6 +16,7 @@ export const disabledByComment = (node, id) => {
 };
 
 export const RULES = {
+  ...TOKEN_RULES,
   // 기존 stylelint·버튼 규칙(C1)
   'color-no-hex': { sev: 'fail', note: 'use var(--color-*)' },
   'color-named': { sev: 'fail', note: 'use var(--color-*)' },
@@ -120,7 +122,7 @@ const OWNED_TOKEN = /var\(\s*--fan-(action|chip|tab|badge|calendar)-[\w-]+/;
 const varName = (v) => (v.trim().match(/^var\(\s*(--[\w-]+)\s*[,)]/) ?? [])[1];
 
 export function scanCss(code, file) {
-  const out = new Map();
+  const out = scanTokens(code);
   const root = postcss.parse(code, { from: file });
   const perRule = new Map(); // rule node -> decl map
   const radii = new Set();
@@ -222,6 +224,7 @@ const EMOJI = /[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/u;
 export function scanTsx(code, file) {
   const out = new Map();
   const c = stripComments(code);
+  for (const m of c.matchAll(/<a\b[^>]*(?:className|style)=/g)) add(out, 'D6|styled raw <a>');
   add(out, 'C1|<button>', (c.match(/<button\b/g) ?? []).length);
   if (!/^apps\/web\/app\/guide\//.test(file)) for (const m of c.matchAll(/<h([1-3])\b/g)) add(out, `C2|<h${m[1]}>`);
   for (const m of c.matchAll(/<(input|textarea|select)\b([^>]*)>/g)) {
