@@ -1,4 +1,5 @@
 "use client";
+import { TierGuideInfo } from "@/features/rewards/ui/tier-guide-info";
 
 import { FanCollapsible, FanCollapsibleTrigger } from "@/components/fan-ui/fan-collapsible";
 import { walletCopy } from "@/features/group-wallet/ui/copy";
@@ -297,7 +298,7 @@ function Dashboard({ summary, locale, avatarResource, refreshSummary, selectedSl
     return <DukjilProvider locale={locale}><div className={styles.pencilMy}>
       <header className={styles.pencilProfile}>
         <Link href={`/settings?locale=${locale}&section=profile` as Route} aria-label={t.avatarSettings}>{avatarResource.state.status === "ready" ? <Avatar avatar={avatarResource.state.avatar} imageUrl={avatarResource.state.imageUrl} label={t.avatarSettings} size={56}/> : <AvatarPlaceholder size={56}/>}</Link>
-        <div className={`${styles.pencilProfileCopy} ${styles.pencilName}`}><FanHeading as="h1">{identity}</FanHeading>{selected?.passport ? <FanTag tone="fan">{passportTierName(locale, selected.passport)}</FanTag> : null}</div>
+        <div className={`${styles.pencilProfileCopy} ${styles.pencilName}`}><FanHeading as="h1">{identity}</FanHeading>{selected?.passport ? <><FanTag tone="fan">{passportTierName(locale, selected.passport)}</FanTag><TierGuideInfo locale={locale}/></> : null}</div>
         <ProfileNav locale={locale} label={t.settings} giftUnread={summary.gifts?.unreadCount ?? 0} />
       </header>
       <GiftNotice locale={locale} unreadCount={summary.gifts?.unreadCount ?? 0} singleUnreadId={summary.gifts?.singleUnreadId ?? null} />
@@ -467,7 +468,7 @@ function FanGrade({ creator, locale }: { creator: PassportCreator; locale: FanLo
   const stage = creator.passport.stageProgress;
   const currentLabel = stage ? fanStageLabel(locale, stage.current) : levelLabel(locale, creator.passport.tier);
   return <div className={styles.fanGrade}>
-    <div className={styles.gradeIdentity}><FanTierBadge tier={creator.passport.tier} stageKey={stage?.current.key} locale={locale} size={88}/><div><strong>{currentLabel}</strong><p>{t.tierHelp}</p></div></div>
+    <div className={styles.gradeIdentity}><FanTierBadge tier={creator.passport.tier} stageKey={stage?.current.key} locale={locale} size={88}/><div><strong>{currentLabel}</strong><TierGuideInfo locale={locale}/><p>{t.tierHelp}</p></div></div>
   </div>;
 }
 

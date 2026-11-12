@@ -1,4 +1,5 @@
 "use client";
+import { TierGuideInfo } from "@/features/rewards/ui/tier-guide-info";
 import type { ReactNode } from "react";
 import { passportBookText } from "@/features/passport/ui/passport-book-copy";
 import { levelLabel } from "@/features/passport/domain/passport-read-model";
@@ -36,7 +37,7 @@ export function FanTierJourney({ locale, tier, stage, creatorName, currentLabel,
     <div className={styles.now}>
       <FanTierBadge className={styles.seal} tier={tier} stageKey={stage?.current.key} locale={locale} size={88} />
       <div className={styles.nowText}>
-        <strong>{passportBookText(locale, "tierNow", [currentLabel])}</strong>
+        <strong>{passportBookText(locale, "tierNow", [currentLabel])}<TierGuideInfo locale={locale}/></strong>
         {nextText ? <span>{nextText}</span> : stage ? <span>{topLabel}</span> : null}
         {stage ? <progress aria-label={nextText ? nextAria : topLabel} max={100} value={percent} /> : null}
       </div>
