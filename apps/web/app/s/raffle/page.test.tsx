@@ -33,9 +33,9 @@ it('matches approved prizes, steps and date without unconfirmed time or rewards'
   expect([...bonus.querySelectorAll('[data-fan-activity-stamp]')].map(node => node.getAttribute('data-fan-activity-stamp'))).toEqual(['passport', 'community', 'comment', 'attendance', 'invite']);
   for (const text of ['커뮤니티 가입', '내 링크로 가입·응모한 친구 1명마다(인원 제한 없음)']) expect(bonus.textContent).toContain(text);
   expect(bonus.querySelectorAll('[data-row="raffle-bonus"]')[0]!.textContent).toContain('한 번');
-  // 더 즐기기 두 행도 +1
+  // 같은 숫자 두 번 금지: 더 즐기기에는 +값이 없다
   const more = view.container.querySelector('[data-block="raffle-more"]')!;
-  expect([...more.querySelectorAll('[data-raffle-plus]')].map(node => node.textContent)).toEqual(['+1', '+1']);
+  expect(more.querySelectorAll('[data-raffle-plus]')).toHaveLength(0);
   // 안내 목록: 응모만 하면 추첨 대상, 기회 합산, 친구 초대 무제한
   expect(screen.getByText(/응모만 하면 추첨 대상/)).toBeTruthy();
   expect(screen.getByText(/Fan Passport \+1 \+ 커뮤니티 가입 \+1/)).toBeTruthy();

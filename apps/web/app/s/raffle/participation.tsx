@@ -181,13 +181,13 @@ export function RaffleInvitedFriends() {
   return r.friends ? <FanDisplay role="caption" data-raffle-friends>{r.t('invitedFriends', r.friends)}</FanDisplay> : null;
 }
 
-/** 더 즐기기(선택): Fan Passport · 커뮤니티. 끝냈으면 '완료' 표시. */
-export function RaffleMoreAction({ kind }: { kind: 'passport' | 'community' }) {
+/** Fan Passport · 커뮤니티 행동 버튼. 끝냈으면 '완료' 표시. short: 행 이름이 바로 옆에 있는 당첨 확률 올리기 행에서는 '받기'/'가입'만(390에서 이름·+1·버튼이 한 줄). */
+export function RaffleMoreAction({ kind, short = false }: { kind: 'passport' | 'community'; short?: boolean }) {
   const r = useRaffle();
   if (kind === 'passport' ? r.passport : r.community) return <DoneMark label={r.t('done')} />;
   return kind === 'passport'
-    ? <FanAction href={passportHref(r.locale)} variant="neutral" size="sm">{r.s('passport')}</FanAction>
-    : <FanAction href={communityHref(r.locale)} variant="neutral" size="sm">{r.s('community')}</FanAction>;
+    ? <FanAction href={passportHref(r.locale)} variant="neutral" size="sm">{short ? r.t('getShort') : r.s('passport')}</FanAction>
+    : <FanAction href={communityHref(r.locale)} variant="neutral" size="sm">{short ? r.t('joinShort') : r.s('community')}</FanAction>;
 }
 
 /** 하단 고정 줄(모든 폭): 남은 시간 + 응모 전에는 응모(primary), 응모 뒤에는 출석(neutral). 마감 후에는 숨긴다. */

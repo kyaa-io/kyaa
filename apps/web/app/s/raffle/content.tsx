@@ -71,11 +71,11 @@ export function RaffleContent({ locale, closesAt, now, closed, preview, invite }
             <p className={styles.bonusName}><FanDisplay role="lead">{t(row.label)}</FanDisplay><FanDisplay role="lead" className={styles.plus} data-raffle-plus>{t(row.plus)}</FanDisplay></p>
             <p className={styles.bonusFacts}>{row.facts.map(key => <FanDisplay key={key} role="caption">{t(key)}</FanDisplay>)}{row.kind === 'invite' ? <RaffleInvitedFriends /> : null}</p>
           </div>
-          {row.kind === 'passport' || row.kind === 'community' ? <RaffleMoreAction kind={row.kind} /> : <RaffleBoostAction kind={row.kind} />}
+          {row.kind === 'passport' || row.kind === 'community' ? <RaffleMoreAction kind={row.kind} short /> : <RaffleBoostAction kind={row.kind} />}
         </li>)}</ul>
       </FanSurface>
 
-      {/* 더 즐기기(선택): 면 없이 선으로만 나눈 낮은 두 행. 그림은 그 행동의 스탬프 */}
+      {/* 더 즐기기(선택): 면 없이 선으로만 나눈 낮은 두 행. 그림은 그 행동의 스탬프. 기회 값(+1)은 당첨 확률 올리기에만 둔다(같은 숫자 두 번 금지, 감독 2026-11-13) */}
       <section className={styles.section} data-block="raffle-more" aria-labelledby="raffle-more">
         <div className={styles.sectionHead}>
           <FanHeading as="h2" id="raffle-more"><FanDisplay role="heading">{t('more')}</FanDisplay></FanHeading>
@@ -84,12 +84,12 @@ export function RaffleContent({ locale, closesAt, now, closed, preview, invite }
         <ul className={styles.more}>
           <li data-row="raffle-more">
             <FanActivityStamp kind="passport" size="lg" />
-            <p className={styles.bonusName}><FanDisplay role="strong">{t('passportTitle')}</FanDisplay><FanDisplay role="strong" className={styles.plus} data-raffle-plus>{t('plusOne')}</FanDisplay></p>
+            <FanDisplay role="strong" as="p">{t('passportTitle')}</FanDisplay>
             <RaffleMoreAction kind="passport" />
           </li>
           <li data-row="raffle-more">
             <FanActivityStamp kind="community" size="lg" />
-            <p className={styles.bonusName}><FanDisplay role="strong">{t('communityTitle')}</FanDisplay><FanDisplay role="strong" className={styles.plus} data-raffle-plus>{t('plusOne')}</FanDisplay></p>
+            <FanDisplay role="strong" as="p">{t('communityTitle')}</FanDisplay>
             <RaffleMoreAction kind="community" />
           </li>
         </ul>

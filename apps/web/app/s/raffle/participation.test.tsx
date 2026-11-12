@@ -2,7 +2,7 @@ import { act, cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 const auth = vi.hoisted(() => ({ authenticated: false, ready: true, login: vi.fn(), getAccessToken: vi.fn(async () => 'token') }));
 vi.mock('@/features/auth/client/cognito-auth', () => ({ useByUsAuth: () => auth }));
-import { RaffleBoostAction, RaffleCountdown, RaffleEnterBlock, RaffleInvitedFriends, RaffleProvider, raffleCountdown } from './participation';
+import { RaffleBoostAction, RaffleCountdown, RaffleEnterBlock, RaffleInvitedFriends, RaffleMoreAction, RaffleProvider, raffleCountdown } from './participation';
 
 const closesAt = Date.parse('2026-11-30T23:59:59.999+09:00'), now = Date.parse('2026-11-13T02:00:00+09:00');
 beforeEach(() => { vi.useFakeTimers(); vi.setSystemTime(now); });
@@ -109,4 +109,11 @@ it('sends a signed-out fan to sign in instead of sharing a link without a code',
 it('ignores a malformed invite code from the address', () => {
   render(<RaffleProvider locale="ko" closed={false} closesAt={closesAt} now={now} invite={'<script>'}><RaffleEnterBlock /></RaffleProvider>);
   expect(window.localStorage.getItem('kyaa:raffle:invite')).toBeNull();
+});
+
+it('uses short action labels inside the boost rows and full labels elsewhere', () => {
+  render(<RaffleProvider locale="ko" closed={false} closesAt={closesAt} now={now}><RaffleMoreAction kind="passport" short /><RaffleMoreAction kind="community" short /><RaffleMoreAction kind="passport" /></RaffleProvider>);
+  expect(screen.getByRole('link', { name: '받기' })).toBeTruthy();
+  expect(screen.getByRole('link', { name: '가입' })).toBeTruthy();
+  expect(screen.getByRole('link', { name: 'Fan Passport 받기' })).toBeTruthy();
 });
