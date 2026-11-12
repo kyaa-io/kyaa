@@ -99,14 +99,14 @@ radius-scale: "pill / 16px / 12px / 8px / 50%"
 | 글자 / 보조 글자 | `--color-ink` / `--color-muted` | oklch 18% / 48% |
 | 선 | `--color-line` / `--color-line-subtle` | oklch 90% / 93% |
 | **강조 1색**(primary 채움·활성 밑줄·게이지 채움·하트) | `--color-accent` | #d11b62 |
-| 선택·호버·자리표시 면 | `--color-accent-soft` | #fff0f6 |
+| 선택·호버·자리표시 면, 글 상세의 아티스트 댓글 면 | `--color-accent-soft` | #fff0f6 |
 | 강조 선 | `--color-accent-line` | #f4c3d7 |
 | 강조 글자 | `--color-accent-ink` | #ad1457 |
 | 팬페이지 대표색 | `--color-page-accent` | 기본 accent |
 | 오류·LIVE·알림 점 | `--color-error` | #9f1239 |
 | 경고·순위 배지 글자 | `--color-warning` | #7a4206 |
 | 완료 체크 | `--color-success` | #17613f |
-| 기능색(사용자 승인) | `--color-reaction-comment`(댓글·▼), `--color-rank-up/-down`, `--color-heart`, `--color-translation-link`, `--color-brand-link` | 강조색이 아니다. 지정된 자리만 |
+| 기능색(사용자 승인) | `--color-reaction-comment`(댓글·▼), `--color-rank-up/-down`, `--color-heart`, `--color-translation-link`, `--color-brand-link`, `--color-artist-reaction(-ink)`(게시판 행 크리에이터 반응 별 한 곳 전용, 사용자 승인 11/13) | 강조색이 아니다. 지정된 자리만 |
 | 화면 전용 | `--color-shortform-*`, `--color-home-caption`, `--color-home-hero-shade`, `--color-campaign-art` | 그 화면만 |
 | 비활성 | `--fan-disabled-opacity` .4 | 면·글자색은 그대로 두고 불투명도만 |
 
@@ -160,7 +160,7 @@ radius-scale: "pill / 16px / 12px / 8px / 50%"
 | `RollingNumber` | 바뀌는 숫자를 굴려 보이기(랭킹·헤더·접속 수) | `value`, `duration`, `easing`, `delay`, `initialFromZero` | 가짜 증가 금지(실제 값만) |
 | `FanCellGauge` | 스탬프·하트·등급 칸 게이지 | `icon` `text` `label` `cells` `filled` | — |
 | `FanSurface` | 카드·목록 카드 | `appearance` card·list·plain, `tone`, `as` | 새 `FanCard` 만들지 않음 |
-| `FanPostRow` | 글·공지·기사 목록 한 줄 | `title` `href` `thumbnail` `notice` `author` `time` `likes` `commentCount` `density` home·board | — |
+| `FanPostRow` | 글·공지·기사 목록 한 줄 | `title` `href` `thumbnail` `notice` `author` `time` `likes` `commentCount` `reactedBy` `density` home·board. 댓글·추천 수는 제목 옆(0이면 뺌), `reactedBy`(그 페이지 아티스트가 좋아요·댓글)면 제목 바로 뒤 금색 별 16 | 별 옆에 글자 붙이지 않음 |
 | `FanEntityCard` | 페이지(팬페이지·모임·취미·브랜드) 카드·행·타일 | `size` row·card·list·tile, `kind`, `memberCount`, `badge`, `newBadge` | — |
 | `FanPageHeader` | 팬페이지·모임 머리 | `image` `name` `kind` `star` `links` `stats` `tabs` `menu` | — |
 | `FanStarAction` | 머리 칩(별·인증·좋아요) | `state` empty·filled, `label`, `href`/`onClick` | — |
@@ -238,6 +238,7 @@ radius-scale: "pill / 16px / 12px / 8px / 50%"
    - 랭킹 행 재정렬(FLIP 450) · ▲▼ 등장 500 · 바뀐 행 핑크 링 1800(1회)
    - 게이지·칸 채움(칸마다 45ms)
    - 선물 안 읽음 빛(애셋 opacity·transform, 3회 뒤 정지)
+   - 아티스트 접속 알약(팬페이지 머리 접속 줄): 지금 접속 중이면 핑크 알약 + 점 고리 퍼짐 1.6s × 3회(숫자 롤링 뒤 .6s 지연), 방문만 한 날은 정지
 
 | 모션 토큰 | 값 | 쓰임 |
 |---|---|---|

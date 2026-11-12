@@ -15,14 +15,20 @@
 }
 .item { flex: none; font-variant-numeric: tabular-nums; }
 .onlineDot { display: inline-block; width: 6px; height: 6px; margin-right: var(--space-1); border-radius: 50%; background: var(--color-success); vertical-align: 2px; }
-.item + .item::before, .item + .artist::before, .item + .error::before { content: "·"; margin: 0 var(--space-2); color: var(--color-muted); }
+.item + .item::before, .item + .artist::before, .artist + .item::before, .item + .error::before { content: "·"; margin: 0 var(--space-2); color: var(--color-muted); }
 .item:first-child { color: var(--color-ink); font-weight: var(--fan-item-title-weight); }
 .artist { display: inline-flex; flex: 0 1 auto; align-items: center; gap: var(--space-1); min-width: 0; color: var(--color-ink); }
 .artist svg { flex: none; }
-/* 접속 공개를 켠 아티스트가 지금 들어와 있을 때만 아이콘이 깜박인다. 방문만 한 날은 정지. 모션을 줄인 설정이면 멈춘다. */
-.artist[data-online="true"] svg { animation: presenceBlink 1.6s ease-in-out infinite; }
-@keyframes presenceBlink { 50% { opacity: .35; } }
-@media (prefers-reduced-motion: reduce) { .artist[data-online="true"] svg { animation: none; } }
+/* 11/13 접속 공개를 켠 아티스트가 지금 들어와 있으면 핑크 알약(줄 높이 24 안). 점의 고리가 세 번 퍼지고 멈춘다(상시 깜박임 금지, DESIGN 9절).
+   접속 숫자 롤링(600ms)이 끝난 뒤 시작한다. 방문만 한 날은 알약 없이 정지. 모션을 줄인 설정이면 점만 보인다. */
+.artist[data-online="true"] { height: 24px; box-sizing: border-box; padding: 0 var(--space-2); border-radius: var(--radius-pill); background: var(--color-accent-soft); color: var(--color-accent-ink); }
+.artist[data-online="true"] .artistState { color: var(--color-accent-ink); }
+/* 짧은 이름(엘리나·유나) 뒤에 빈칸이 생기지 않게 알약 안 최소 폭은 2글자. */
+.artist[data-online="true"] .artistName { min-width: 2em; }
+.liveDot { position: relative; flex: none; width: 6px; height: 6px; border-radius: 50%; background: var(--color-accent); }
+.liveDot::after { content: ""; position: absolute; inset: 0; border-radius: 50%; background: var(--color-accent); opacity: 0; animation: presencePulse 1.6s var(--motion-easing) .6s 3; }
+@keyframes presencePulse { 0% { opacity: .6; transform: scale(1); } 100% { opacity: 0; transform: scale(2.6); } }
+@media (prefers-reduced-motion: reduce) { .liveDot::after { animation: none; } }
 .artistName { overflow: hidden; min-width: 48px; font-weight: var(--fan-item-title-weight); text-overflow: ellipsis; }
 .artistState { flex: none; color: var(--color-muted); font-weight: var(--fan-body-weight); }
 .error { display: inline-flex; flex: 0 1 auto; align-items: center; gap: var(--space-2); min-width: 0; }

@@ -94,6 +94,18 @@ function dbCursor(pinRank: number, item: z.infer<typeof dbItemSchema>): z.infer<
   return { rank: pinRank, at: itemTime(item), kind: item.kind, id: item.id };
 }
 
+const reactedSchema = z.array(z.uuid()).max(50);
+/** Posts on this page the page's own artist liked or commented on. The mark is extra: when it cannot be read
+ * (for example the app is deployed before the function), the board still loads without it. */
+async function artistReactedPosts(dependencies: FeedDependencies, postIds: string[]): Promise<ReadonlySet<string>> {
+  if (!postIds.length) return new Set();
+  try {
+    return new Set(reactedSchema.parse(await dependencies.rpc("fan_post_artist_reactions", { p_post_ids: postIds })));
+  } catch {
+    return new Set();
+  }
+}
+
 export function feedFailure(error: unknown) {
   if (error instanceof AuthError) return response({ error: { code: error.status === 401 ? "AUTHENTICATION_REQUIRED" : "FAN_WEB_FORBIDDEN" } }, error.status);
   if (error instanceof z.ZodError || error instanceof SyntaxError) return response({ error: { code: "FAN_WEB_INVALID_INPUT" } }, 400);
@@ -187,7 +199,9 @@ export function createFeedHandler(dependencies: FeedDependencies) {
         v: 1, slug, source, news, locale, mediaOnly, search, db: nextDbCursor, dbDone,
         chzzk: nextChzzkCursor, chzzkDone,
       });
-      return response(checked(feedPageSchema, { items: [...selected].sort(compareByTime).map(entry => entry.item), nextCursor, unavailableSources }));
+      const reacted = await artistReactedPosts(dependencies, selected.flatMap(entry => entry.item.kind === "fan_post" ? [entry.item.id] : []));
+      const items = [...selected].sort(compareByTime).map(entry => entry.item.kind === "fan_post" && reacted.has(entry.item.id) ? { ...entry.item, artistReacted: true } : entry.item);
+      return response(checked(feedPageSchema, { items, nextCursor, unavailableSources }));
     } catch (error) {
       return feedFailure(error);
     }
