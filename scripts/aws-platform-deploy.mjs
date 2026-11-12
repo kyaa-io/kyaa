@@ -156,7 +156,7 @@ export function validateConfig(config, template) {
     if (values.EnablePostgrest === 'true' && config.runtimeEnvironment?.POSTGREST_URL !== 'http://127.0.0.1:3001') fail('Web PostgREST URL must use its localhost sidecar');
     for (const key of ['PRIVY_APP_ID', 'PRIVY_APP_ENVIRONMENT', 'BYUS_DATA_ENVIRONMENT']) if (!config.runtimeEnvironment?.[key]) fail(`Missing runtimeEnvironment.${key}`);
     const prod = config.environment === 'prod';
-    config.runtimeEnvironment.KYAA_FEATURE_QUIZ_LEARN = prod ? 'false' : (config.runtimeEnvironment.KYAA_FEATURE_QUIZ_LEARN ?? 'true');
+    config.runtimeEnvironment.KYAA_FEATURE_QUIZ_LEARN = config.runtimeEnvironment.KYAA_FEATURE_QUIZ_LEARN ?? 'true';
     if (config.runtimeEnvironment.BYUS_DATA_ENVIRONMENT !== (prod ? 'production' : 'development')) fail('BYUS_DATA_ENVIRONMENT must match the environment');
     if (config.runtimeEnvironment.PRIVY_APP_ENVIRONMENT !== (prod ? 'production' : 'development')) fail('PRIVY_APP_ENVIRONMENT must match the environment');
     const rewardedUnit = config.runtimeEnvironment.KYAA_REWARDED_AD_UNIT, rewardedOn = config.runtimeEnvironment.KYAA_REWARDED_TICKET_EXCHANGE_ENABLED === 'true';

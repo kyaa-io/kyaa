@@ -432,12 +432,14 @@ test('regional login flags are explicitly allowed runtime values and default to 
   assert(flags.every((key) => rendered.some((entry) => entry.Name === key && entry.Value === 'true')));
 });
 
-test('quiz learning deployment settings enable dev only and force prod off', async () => {
+test('quiz learning defaults on in dev and production with explicit opt-out', async () => {
  const template = await loadTemplate('environment');
  const dev = config(); validateConfig(dev, template);
  assert.equal(dev.runtimeEnvironment.KYAA_FEATURE_QUIZ_LEARN, 'true');
  const disabled = config(); disabled.runtimeEnvironment.KYAA_FEATURE_QUIZ_LEARN = 'false'; validateConfig(disabled, template);
  assert.equal(disabled.runtimeEnvironment.KYAA_FEATURE_QUIZ_LEARN, 'false');
- const prod = config('environment', 'prod'); prod.runtimeEnvironment.KYAA_FEATURE_QUIZ_LEARN = 'true'; validateConfig(prod, template);
+ const prod = config('environment', 'prod'); validateConfig(prod, template);
+ assert.equal(prod.runtimeEnvironment.KYAA_FEATURE_QUIZ_LEARN, 'true');
+ prod.runtimeEnvironment.KYAA_FEATURE_QUIZ_LEARN = 'false'; validateConfig(prod, template);
  assert.equal(prod.runtimeEnvironment.KYAA_FEATURE_QUIZ_LEARN, 'false');
 });

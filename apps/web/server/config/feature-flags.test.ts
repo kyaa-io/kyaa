@@ -13,10 +13,10 @@ describe("jjinfanGaugeEnabled", () => {
   });
 });
 
-it("quiz learning requires explicit dev opt-in and never enables production", () => {
+it("quiz learning requires explicit opt-in including production", () => {
  expect(quizLearnEnabled({})).toBe(false);
  expect(quizLearnEnabled({BYUS_DATA_ENVIRONMENT:"development"})).toBe(false);
  expect(quizLearnEnabled({BYUS_DATA_ENVIRONMENT:"development",KYAA_FEATURE_QUIZ_LEARN:"false"})).toBe(false);
  expect(quizLearnEnabled({BYUS_DATA_ENVIRONMENT:"development",KYAA_FEATURE_QUIZ_LEARN:"true"})).toBe(true);
- expect(quizLearnEnabled({BYUS_DATA_ENVIRONMENT:"production",KYAA_FEATURE_QUIZ_LEARN:"true"})).toBe(false);
+ expect(quizLearnEnabled({BYUS_DATA_ENVIRONMENT:"production",KYAA_FEATURE_QUIZ_LEARN:"true"})).toBe(true);
 });

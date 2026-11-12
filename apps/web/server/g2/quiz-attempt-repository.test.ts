@@ -280,3 +280,13 @@ it("uses the non-learning RPC when the feature is off", async () => {
   await new SupabaseQuizAttemptRepository({ rpc }).findOwned({ appUserId: "60000000-0000-4000-8000-000000000001", attemptId: rawAttempt.attempt.id, locale: "ko" });
   expect(rpc).toHaveBeenCalledWith("get_owned_quiz_attempt_v2", expect.anything());
 });
+
+it("production without the learning migration returns an attempt without hints", async () => {
+  vi.stubEnv("BYUS_DATA_ENVIRONMENT", "production");
+  const rpc = vi.fn(async (name: string) => name === "get_owned_quiz_attempt_v3"
+    ? { data: null, error: { code: "PGRST202", message: `Could not find the function public.${name}(parameters) in the schema cache` } }
+    : { data: rawAttempt, error: null });
+  const result = await new SupabaseQuizAttemptRepository({ rpc }).findOwned({ appUserId: "60000000-0000-4000-8000-000000000001", attemptId: rawAttempt.attempt.id, locale: "ko" });
+  expect(result?.questions.every((question) => question.learning === undefined)).toBe(true);
+  expect(rpc.mock.calls.map(([name]) => name)).toEqual(["get_owned_quiz_attempt_v3", "get_owned_quiz_attempt_v2"]);
+});

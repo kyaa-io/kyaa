@@ -303,8 +303,8 @@ export function QuizResultScreen({
           </dl>
         )}
         {learningEnabled && view.projection.questions.filter((question) => question.learning).map((question) => (
-          <section data-block="quiz-learning" className={styles.learning} key={question.id} aria-label={locale === "ko" ? "알아보기" : "Learn more"}>
-            <FanHeading>{locale === "ko" ? "알아보기" : "Learn more"} · {question.position}</FanHeading>
+          <section data-block="quiz-learning" className={styles.learning} key={question.id} aria-label={locale === "ko" ? "알아보기" : translate(locale, localizedMessages.quizLearnMore, "Learn more")}>
+            <FanHeading>{locale === "ko" ? "알아보기" : translate(locale, localizedMessages.quizLearnMore, "Learn more")} · {question.position}</FanHeading>
             <FanText as="p" role="body">{question.prompt}</FanText>
             {question.learning?.hint && <FanText as="p" role="body">{question.learning.hint}</FanText>}
             <div data-outbound-placement="content" data-outbound-kind="social">
