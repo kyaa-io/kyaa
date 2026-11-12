@@ -1,6 +1,6 @@
 # DEV-TRAIN-2 통합 결과
 
-상태: NEED-PUSH — 필수 빠른 검사 완료(제목 번역의 기존 실패 6개 별도). 푸시하지 않음.
+상태: NEED-PUSH — 최신 main 및 후속 2개 커밋 통합·필수 빠른 검사 완료. 번역 기존 실패 6개도 시험 대역 수정 후 통과. 푸시하지 않음.
 
 기준: origin/main 3d88d2d3253ca4e4f56ed34b218683232462369d
 
@@ -41,3 +41,27 @@
 - 로그: work/train2/npm-ci.log, original-types.log, types.log, vitest.log, vitest-related.log. diff 근거: translation-review.diff, media-preservation.diff.
 
 최종 검사: `npm run typecheck` exit 0; 관련 Vitest 6파일 35개 통과; notices-check exit 0; design-lint exit 0(no new violations). 전체 빌드·mini gate·실브라우저·운영 DB 검증은 이 통합 작업에서 수행하지 않음. 기존 제목 번역 실패 6개는 남아 있음.
+
+## 18시 감독 후속: 최신 main 통합
+
+포함(--no-ff): origin/main `4e8168552088dff860fde94f3826e570fff06d66`, 번역 시험 대역 `1f3bdc2e823465ad263acd4a8c61e1d570c7bd00`, community 리다이렉트 `770ae4f7a5f9308d410ab2630a9719420aaaa484`.
+
+충돌 처리:
+- earn-badge/cheer-replies/fan-post-detail: H1 EarnBadgeCorner 단일 표시를 보존하고 dev EarnMinLength 제거 유지.
+- board-detail: H1 댓글 간격과 dev 전체 열 폭·왼쪽 정렬 모두 유지.
+- post-detail CSS: H1 제목·댓글·반응 줄 압축 유지, dev kicker·작성자 없는 헤더·상단 번역 토글과 44px 터치 영역 유지.
+- post-share-action: H1의 게시글만 공유 보상 표시 조건 채택. dev의 공지도 보상 표시하던 조건은 버림. 이에 맞춰 공지 공유 시험도 배지 없음으로 수정.
+- 번역 시험 충돌: 1f3bdc2e의 엄격한 API 대역 및 원본 title/article 기대값 채택. 런타임은 기존 통합 상태 유지. 종전 실패 6개 모두 해소.
+- community-screen modify/delete: 리다이렉트 커밋의 삭제 채택. 삭제된 화면에 적용했던 dev 보조 문구 제거 변경도 함께 소멸. 나머지 화면의 보조 문구 제거 유지.
+- PC 폭·상단 토글·사진 안정 렌더·공통 정렬은 보존. 기존 release-notes 수정 없음.
+
+새 검증:
+- `npx tsc --noEmit -p apps/web/tsconfig.json`: exit 0 (Next build 대체 요청에 따른 web 타입검사).
+- `npx tsc --noEmit -p apps/worker/tsconfig.json`: exit 0.
+- worker 공유 action-metrics/action-public-snapshot/onchain-work의 상대 .ts 지정자 대상 존재 확인. web allowImportingTsExtensions 및 worker rewriteRelativeImportExtensions 설정 확인.
+- `npm run test:web -- features/fan-posts features/dukjil/ui/earn-badge.test.tsx components/notice/notice-body.test.tsx app/community/page.test.tsx features/community/domain/legacy-links-contract.test.ts`: 37파일 221개 통과(제목 번역 6개 포함).
+- notices-check: full base SHA 4e8168552088dff860fde94f3826e570fff06d66 및 full head SHA로 exit 0.
+- design-lint: exit 0, no new violations.
+- 근거: work/train2/{types-main,worker-types-main,worker-imports-main,vitest-main,notices-main,design-main}.log, main-conflicts.diff.
+
+Next build·mini gate·실화면·운영 DB 확인과 푸시는 수행하지 않음. 기존 main/release 푸시 금지 유지.
