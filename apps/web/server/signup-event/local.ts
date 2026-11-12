@@ -22,7 +22,11 @@ export async function readLocalSnapshot(userId?: string): Promise<LocalSnapshot>
   const { createSignupRaffleDatabase, readSignupRaffleSnapshot } = await import('./database');
   return readSignupRaffleSnapshot(createSignupRaffleDatabase(), userId);
 }
-export function candidates(input: LocalSnapshot) {
+/**
+ * 응모한 회원마다 당첨 기회 수를 센다(서버 값만). 기본 1 + 댓글·출석(응모 뒤, 종류별 하루 상한) + 친구 초대(친구 한 명당 한 번, 상한 없음).
+ * 친구 초대 행은 DB가 "내 코드로 가입 + 응모한 친구"만 만들어 준다(20261224050000). 여기서는 중복만 걸러 가중치를 더한다.
+ */
+export function raffleChances(input: LocalSnapshot) {
   const snapshot = localSnapshotSchema.parse(input);
   const users = new Map(snapshot.users.map(user => [user.id, user]));
   if (users.size !== snapshot.users.length) throw new Error('DUPLICATE_USER');
@@ -30,12 +34,21 @@ export function candidates(input: LocalSnapshot) {
   for (const entry of snapshot.entries) {
     if (inRaffleWindow(entry.enteredAt, snapshot.policy) && (!entered.has(entry.userId) || Date.parse(entry.enteredAt) < Date.parse(entered.get(entry.userId)!))) entered.set(entry.userId, entry.enteredAt);
   }
-  return snapshot.users.filter(user => entered.has(user.id) && user.passportReceived && user.communityJoined).map(user => {
-    const seen = new Set<string>(), daily = new Map<string, number>();
+  const ordered = [...snapshot.actions].sort((a,b) => Date.parse(a.occurredAt)-Date.parse(b.occurredAt) || a.sourceId.localeCompare(b.sourceId));
+  return snapshot.users.filter(user => entered.has(user.id)).map(user => {
+    const seen = new Set<string>(), daily = new Map<string, number>(), friends = new Set<string>();
     let entries = 1;
-    const ordered = [...snapshot.actions].sort((a,b) => Date.parse(a.occurredAt)-Date.parse(b.occurredAt) || a.sourceId.localeCompare(b.sourceId));
     for (const action of ordered) {
-      if (action.userId !== user.id || (action.kind !== 'comment' && action.kind !== 'attendance') || !inRaffleWindow(action.occurredAt,snapshot.policy) || Date.parse(action.occurredAt)<Date.parse(entered.get(user.id)!)) continue;
+      if (action.userId !== user.id || !inRaffleWindow(action.occurredAt,snapshot.policy)) continue;
+      if (action.kind === 'referral-signup') {
+        // 친구는 한 번만: 같은 행이 두 번 오거나 같은 친구가 다른 행으로 와도 한 번. 본인은 친구가 아니다.
+        const friend = action.referredUserId ?? action.sourceId;
+        if (action.referredUserId === user.id || friends.has(friend)) continue;
+        friends.add(friend);
+        entries += snapshot.policy.weights.referral;
+        continue;
+      }
+      if ((action.kind !== 'comment' && action.kind !== 'attendance') || Date.parse(action.occurredAt)<Date.parse(entered.get(user.id)!)) continue;
       const key = `${action.kind}:${action.sourceId}`;
       if (seen.has(key)) continue;
       seen.add(key);
@@ -45,8 +58,11 @@ export function candidates(input: LocalSnapshot) {
       daily.set(bucket,count+1);
       entries += snapshot.policy.weights[action.kind];
     }
-    return { userId: user.id, entries };
+    return { userId: user.id, entries, friends: friends.size, eligible: user.passportReceived && user.communityJoined };
   });
+}
+export function candidates(input: LocalSnapshot) {
+  return raffleChances(input).filter(row => row.eligible).map(({ userId, entries }) => ({ userId, entries }));
 }
 // Same exponential weighted ranking as phase4_weighted_benefit_draw.sql.
 // shortcut: retries use the current local snapshot, use the persisted SQL draw before confirming winners.

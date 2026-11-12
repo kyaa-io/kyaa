@@ -13,19 +13,18 @@
 .muted { color: var(--color-muted); }
 
 /* 키 비주얼: 포스터 사진 위에 이벤트 이름·종류·기간만 HTML로 얹는다. 사진의 빈 쪽(모바일 위, 48rem부터 왼쪽)이 글자 자리 */
-.keyVisual { aspect-ratio: 1131 / 1391; border-radius: var(--radius-card); margin-block: var(--space-4) var(--fan-section-gap); min-width: 0; }
+.keyVisual { aspect-ratio: 1131 / 1150; border-radius: var(--radius-card); margin-block: var(--space-4) var(--fan-section-gap); min-width: 0; }
 .keyText { position: absolute; inset: 0; display: grid; align-content: start; gap: var(--space-3); padding: var(--space-8) var(--space-5); }
 .keyText h1 { display: grid; gap: var(--space-2); }
+/* 얼마·무엇을·몇 명: 한 줄, 사이 1px 선 */
+.keyFacts { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--space-1) var(--space-3); }
+.keyFacts > span + span { padding-inline-start: var(--space-3); border-inline-start: 1px solid var(--color-muted); }
 
 .body { display: grid; gap: var(--fan-section-gap); }
 
-/* 경품: 제목 줄 → 총액(이 화면에 한 번)·무엇을·몇 명 → 책상 위 카드 네 묶음. 맨 위 카드 아랫선과 인원 줄이 칸마다 맞는다.
+/* 경품: 제목 줄 → 책상 위 카드 네 묶음(총액·총인원은 키 비주얼에 한 번). 맨 위 카드 아랫선과 인원 줄이 칸마다 맞는다.
  * 살아 있는 요소(DESIGN.md 3절 래플 카드): 묶음이 올라와 쌓인 뒤 맨 위 카드가 three.js로 살짝 떠서 기울고 빛이 한 번씩 지나간다(features/raffle-cards) */
-.prize { display: grid; gap: var(--space-4); min-width: 0; }
-.prizeText { display: grid; align-content: start; gap: var(--space-2); min-width: 0; }
-.amount { display: flex; align-items: baseline; gap: var(--space-2); min-width: 0; }
-.facts { display: flex; flex-wrap: wrap; gap: var(--space-1) var(--space-3); }
-.facts > span + span { padding-inline-start: var(--space-3); border-inline-start: 1px solid var(--color-line); }
+.prize { display: grid; gap: var(--space-2); align-content: start; min-width: 0; }
 .prizeDesk { border-radius: var(--radius-card); padding: var(--space-8) var(--space-4) var(--space-5); min-width: 0; }
 .prizes { position: relative; list-style: none; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-6) var(--space-4); align-items: end; }
 .prizes li { display: grid; gap: var(--space-2); min-width: 0; }
@@ -56,10 +55,11 @@
 .bonusRows li { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); min-height: var(--space-16); padding-block: var(--space-3); }
 .bonusRows li + li { border-top: 1px solid var(--color-line); }
 .bonusRows li:last-child { padding-bottom: 0; min-height: calc(var(--space-16) - var(--space-3)); }
-.bonusRowText { display: grid; gap: var(--space-1); min-width: 0; }
-.bonusFacts { display: flex; flex-wrap: wrap; gap: 0 var(--space-2); color: var(--color-muted); }
+.bonusRowText { flex: 1; display: grid; gap: var(--space-1); min-width: 0; }
+.bonusFacts { display: flex; flex-wrap: wrap; gap: 0 var(--space-2); color: var(--color-muted); word-break: keep-all; }
+.bonusFacts > span { text-wrap: balance; }
 .bonusFacts > span + span { padding-inline-start: var(--space-2); border-inline-start: 1px solid var(--color-line); }
-.bonusRows li > a { flex: none; }
+.bonusRows li > :is(a, button) { flex: none; }
 
 /* 구역 공통(더 즐기기·안내): 위 1px 선 + 제목 줄(왼쪽 제목, 오른쪽 사실 또는 행동) */
 .section, .foot { display: grid; gap: var(--space-2); align-content: start; min-width: 0; }
@@ -67,15 +67,13 @@
 .sectionHead > p { white-space: nowrap; }
 .doneMark { display: inline-flex; align-items: center; gap: var(--space-1); min-height: calc(var(--space-8) + var(--space-1)); }
 
-/* 더 즐기기(선택): 작은 그림 48 + 이름 + 오른쪽 작은 버튼 한 줄. 행 사이 1px 선 */
+/* 더 즐기기(선택): 스탬프 그림 48 + 이름 + 오른쪽 작은 버튼 한 줄. 행 사이 1px 선 */
 .more { list-style: none; padding: 0; display: grid; }
 .more li { display: grid; grid-template-columns: var(--space-12) minmax(0, 1fr) auto; gap: var(--space-3); align-items: center; min-height: var(--space-16); }
 .more li + li { border-top: 1px solid var(--color-line); }
-.moreArt { aspect-ratio: 1; border-radius: var(--radius-media); min-width: 0; }
-.morePassport { position: absolute; inset-inline-start: 7%; inset-block-start: 21%; width: 86%; rotate: -4deg; }
 
 /* 응모 및 당첨 안내: 작은 글(caption) */
-.notice { padding-inline-start: var(--space-5); display: grid; gap: var(--space-2); color: var(--color-muted); }
+.notice { padding-inline-start: var(--space-5); display: grid; gap: var(--space-2); color: var(--color-muted); word-break: keep-all; }
 
 /* 하단 고정 줄(모든 폭): 남은 시간 + 응모 버튼. 모바일은 하단 탭 위, PC는 화면 아래. 참여 방법 칸의 버튼이 보이는 동안은 숨김 */
 .sticky { position: fixed; z-index: var(--z-bottom-nav); inset-inline: 0; bottom: calc(var(--fan-bottom-nav-height) + env(safe-area-inset-bottom, 0px)); display: flex; justify-content: center; padding: var(--space-2) var(--space-4); background: var(--color-surface); border-top: 1px solid var(--color-line); transition: translate var(--motion-slow) var(--motion-easing), opacity var(--motion-slow) var(--motion-easing); }
@@ -85,27 +83,26 @@
 
 /* 48rem부터: 키 비주얼은 가로 사진(글자 왼쪽), 경품 카드 네 묶음 한 줄 */
 @media (width >= 48rem) {
-  .keyVisual { aspect-ratio: 1920 / 750; }
+  .keyVisual { aspect-ratio: 1920 / 640; }
   .keyText { align-content: center; padding: var(--space-8) var(--space-10); }
   .prizeDesk { padding: var(--space-8) var(--space-6) var(--space-5); }
   .prizes { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 }
 
-/* PC(64rem 이상): 구역은 위→아래로 흐르되 구역 안은 가로로 써서 낮게. 경품 글 4 | 책상 8, 참여 방법 한 줄, 당첨 확률 7 | 더 즐기기 5, 안내 2열 */
+/* PC(64rem 이상): 구역은 위→아래로 흐르되 구역 안은 가로로 써서 낮게. 경품 책상 8 | 참여 방법 4(세로), 당첨 확률 7 | 더 즐기기 5, 안내 2열 */
 @media (width >= 64rem) {
   .sticky { bottom: 0; }
   .keyVisual { margin-block: var(--space-6) var(--space-8); }
   .keyText { padding-inline: var(--space-16); }
-  .body { grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); column-gap: var(--space-12); row-gap: var(--space-8); align-items: start; }
-  .body > :is([data-block="raffle-prize"], [data-block="raffle-enter"], [data-block="raffle-foot"]) { grid-column: 1 / -1; }
-  .prize { grid-template-columns: minmax(0, 4fr) minmax(0, 8fr); gap: var(--space-12); align-items: stretch; }
-  .prizeDesk { padding: var(--space-8) var(--space-10) var(--space-5); }
-  .prizes { gap: var(--space-8); }
-  .enter { grid-template-columns: auto auto minmax(0, 1fr); gap: var(--space-2) var(--space-8); justify-items: start; align-items: center; }
-  .enterActions { grid-template-columns: var(--rail-narrow) auto; gap: var(--space-3); width: auto; max-width: none; }
-  .enterFacts { justify-content: flex-start; margin-top: 0; }
-  .enterStatus { justify-content: flex-start; }
-  .enterError { grid-column: 1 / -1; justify-content: flex-start; }
+  .body { grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: var(--space-12); row-gap: var(--space-8); align-items: start; }
+  .body > [data-block="raffle-prize"] { grid-column: span 8; }
+  .body > [data-block="raffle-enter"] { grid-column: span 4; }
+  .body > [data-block="raffle-bonus"] { grid-column: span 7; }
+  .body > [data-block="raffle-more"] { grid-column: span 5; }
+  .body > [data-block="raffle-foot"] { grid-column: 1 / -1; }
+  .prizeDesk { padding: var(--space-8) var(--space-8) var(--space-5); }
+  .prizes { gap: var(--space-6); }
+  .enter { padding-top: var(--space-2); }
   .notice { grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: var(--space-12); }
 }
 @media (prefers-reduced-motion: reduce) {

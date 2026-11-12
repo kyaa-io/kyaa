@@ -1,5 +1,5 @@
 'use client';
-import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
+import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
 import { FanPrintStamp } from '@/components/fan-ui/fan-print';
 import { Check, Share2, Ticket } from '@/components/fan-ui/fan-icons';
 import { FanIcon } from '@/components/fan-ui/fan-icon';
@@ -7,7 +7,9 @@ import { FanDisplay } from '@/components/fan-ui/fan-display';
 import type { AppLocale } from '@/i18n/locales';
 import { signupRaffleText } from '@/i18n/catalogs/signup-raffle';
 import { raffleLongformText, type SignupRaffleLongformKey } from '@/i18n/catalogs/signup-raffle-longform';
-import { signupEvent } from '@/features/benefit/domain/signup-event';
+import { raffleInviteCode, raffleShareHref } from '@/features/benefit/domain/signup-event';
+import { communityInviteSchema } from '@/features/community-stamps/domain/community-stamps';
+import { communityStampAction } from '@/features/community-stamps/ui/use-community-stamps';
 import { useByUsAuth } from '@/features/auth/client/cognito-auth';
 import { FanAction, FanActionStatus } from '@/components/fan-ui/fan-action';
 import styles from './raffle.module.css';
@@ -18,16 +20,61 @@ export type RafflePreview = 'in' | 'entered' | 'passport' | 'done' | 'error' | u
 type Ctx = {
   locale: AppLocale; closed: boolean; closesAt: number; now: number; ready: boolean; signedIn: boolean; pending: boolean; entered: boolean;
   passport: boolean; community: boolean; error: boolean;
-  enter: () => void; t: (key: SignupRaffleLongformKey, count?: number) => string; s: (key: Parameters<typeof signupRaffleText>[1]) => string;
+  /** 서버가 센 내 당첨 기회 수와 내 링크로 가입·응모한 친구 수. 서버 값을 받기 전에는 없다(화면이 지어내지 않는다). */
+  chances?: number; friends?: number;
+  /** 내 친구 초대 코드(로그인했을 때만). 공유 주소에 붙는다. */
+  inviteCode?: string;
+  enter: () => void; login: () => void; t: (key: SignupRaffleLongformKey, count?: number) => string; s: (key: Parameters<typeof signupRaffleText>[1]) => string;
 };
 const RaffleContext = createContext<Ctx | null>(null);
 function useRaffle() { const value = useContext(RaffleContext); if (!value) throw new Error('RaffleProvider missing'); return value; }
 
-export function RaffleProvider({ locale, closed, closesAt, now, preview, children }: { locale: AppLocale; closed: boolean; closesAt: number; now: number; preview?: RafflePreview; children: ReactNode }) {
-  const auth = useByUsAuth();
+/** 친구가 준 초대 코드는 가입·로그인으로 화면이 바뀌어도 남아 있어야 해서 이 브라우저에 적어 둔다. 저장소를 못 쓰면 이번 화면에서만 쓴다. */
+const inviteKey = 'kyaa:raffle:invite';
+const storedInvite = () => { try { return raffleInviteCode(window.localStorage.getItem(inviteKey)); } catch { return undefined; } };
+const storeInvite = (code?: string) => { try { if (code) window.localStorage.setItem(inviteKey, code); else window.localStorage.removeItem(inviteKey); } catch { /* 저장소 없음 */ } };
+type EntryResult = { entered?: boolean; passportReceived?: boolean; communityJoined?: boolean; chances?: number; friends?: number; invite?: 'registered' | 'refused' | 'pending' };
+const count = (value: unknown) => typeof value === 'number' && Number.isSafeInteger(value) && value >= 0 ? value : undefined;
+
+export function RaffleProvider({ locale, closed, closesAt, now, preview, invite, children }: { locale: AppLocale; closed: boolean; closesAt: number; now: number; preview?: RafflePreview; /** 주소의 ?invite= 로 받은 친구의 초대 코드 */ invite?: string; children: ReactNode }) {
+  const auth = useByUsAuth(), { getAccessToken } = auth;
   const [pending, setPending] = useState(false);
   const [entered, setEntered] = useState(false), [passport, setPassport] = useState(false), [community, setCommunity] = useState(false), [error, setError] = useState(false);
+  const [chances, setChances] = useState<number>(), [friends, setFriends] = useState<number>(), [inviteCode, setInviteCode] = useState<string>();
+  const received = useRef<string | undefined>(undefined);
   const p = preview;
+  const apply = useCallback((result: EntryResult) => {
+    setEntered(!!result.entered); setPassport(!!result.passportReceived); setCommunity(!!result.communityJoined);
+    setChances(result.entered ? count(result.chances) : undefined); setFriends(result.entered ? count(result.friends) : undefined);
+    // 등록됐거나 등록할 수 없는 코드는 다시 보내지 않는다. 잠시 뒤 다시(pending)만 남겨 둔다.
+    if (result.invite && result.invite !== 'pending') { received.current = undefined; storeInvite(); }
+  }, []);
+  const request = useCallback(async (method: 'GET' | 'POST') => {
+    const token = await getAccessToken(); if (!token) throw new Error('auth');
+    const code = method === 'POST' ? received.current : undefined;
+    const response = await fetch('/api/signup-event/entry', { method, headers: { authorization: `Bearer ${token}`, ...(code ? { 'content-type': 'application/json' } : {}) }, ...(code ? { body: JSON.stringify({ invite: code }) } : {}) });
+    if (!response.ok) throw new Error('entry');
+    return await response.json() as EntryResult;
+  }, [getAccessToken]);
+  useEffect(() => {
+    const code = raffleInviteCode(invite) ?? storedInvite();
+    received.current = code;
+    if (code) storeInvite(code);
+  }, [invite]);
+  // 로그인한 회원: 내 응모 상태와 당첨 기회 수를 서버에서 읽는다. 받은 초대 코드가 남아 있고 이미 응모했다면 그 코드를 한 번 더 등록해 본다.
+  useEffect(() => {
+    if (p || closed || !auth.ready || !auth.authenticated) return;
+    let live = true;
+    void (async () => {
+      try {
+        let result = await request('GET');
+        if (result.entered && received.current) result = await request('POST');
+        if (live) apply(result);
+      } catch { /* 상태를 못 읽으면 응모 전 화면 그대로 둔다. 응모 버튼은 여러 번 눌러도 한 번만 기록된다 */ }
+      try { const mine = await communityStampAction(getAccessToken, 'invite-code', {}, value => communityInviteSchema.parse(value)); if (live) setInviteCode(raffleInviteCode(mine.code)); } catch { /* 코드가 없으면 일반 주소를 공유한다 */ }
+    })();
+    return () => { live = false; };
+  }, [p, closed, auth.ready, auth.authenticated, request, apply, getAccessToken]);
   const view = {
     signedIn: auth.authenticated || !!p,
     entered: entered || p === 'entered' || p === 'passport' || p === 'done',
@@ -41,16 +88,11 @@ export function RaffleProvider({ locale, closed, closesAt, now, preview, childre
     if (p === 'in') { setPending(true); window.setTimeout(() => { setPending(false); setEntered(true); }, 400); return; }
     if (!auth.authenticated) { auth.login(); return; }
     setPending(true); setError(false);
-    try {
-      const token = await auth.getAccessToken(); if (!token) throw new Error('auth');
-      const response = await fetch('/api/signup-event/entry', { method: 'POST', headers: { authorization: `Bearer ${token}` } });
-      if (!response.ok) throw new Error('entry');
-      const result = await response.json();
-      setEntered(true); setPassport(!!result.passportReceived); setCommunity(!!result.communityJoined);
-    } catch { setError(true); }
+    try { apply({ ...await request('POST'), entered: true }); }
+    catch { setError(true); }
     finally { setPending(false); }
   }
-  const value: Ctx = { locale, closed, closesAt, now, ready: auth.ready || !!p, pending, ...view, enter, t: (key, count) => raffleLongformText(locale, key, count), s: (key) => signupRaffleText(locale, key) };
+  const value: Ctx = { locale, closed, closesAt, now, ready: auth.ready || !!p, pending, ...view, chances, friends, inviteCode, enter, login: auth.login, t: (key, count) => raffleLongformText(locale, key, count), s: (key) => signupRaffleText(locale, key) };
   return <RaffleContext.Provider value={value}>{children}</RaffleContext.Provider>;
 }
 
@@ -109,22 +151,31 @@ export function RaffleEnterBlock() {
       <RaffleCountdown />
     </div>
     {r.error ? <p className={styles.enterError} role="alert"><FanDisplay role="caption">{r.s('error')}</FanDisplay><FanAction type="button" variant="text" size="sm" onClick={r.enter}>{r.t('retry')}</FanAction></p> : null}
-    {/* 댓글·출석으로 늘어난 기회는 이 줄에 섞지 않는다(서버 값이 아직 화면에 없음). */}
+    {/* 내 당첨 기회 수는 서버가 센 값만 쓴다(기본 1 + 댓글·출석 + 친구 초대). 값을 받기 전에는 응모 1회만 말한다 */}
     {r.entered
-      ? <p className={styles.enterStatus} data-state="entered" role="status"><FanIcon icon={Ticket} size={16} /><FanDisplay role="caption">{r.t('myEntry')}</FanDisplay></p>
+      ? <p className={styles.enterStatus} data-state="entered" role="status"><FanIcon icon={Ticket} size={16} /><FanDisplay role="caption">{r.chances ? r.t('myChances', r.chances) : r.t('myEntry')}</FanDisplay></p>
       : <p className={styles.enterStatus}><FanDisplay role="caption">{r.t('flowOnce')}</FanDisplay></p>}
   </div>;
 }
 
 const DoneMark = ({ label }: { label: string }) => <FanDisplay role="caption" as="p" className={styles.doneMark}><FanIcon icon={Check} size={16} className={styles.doneCheck} />{label}</FanDisplay>;
 
-/** 당첨 기회 올리기: 행마다 그 행동으로 가는 버튼 하나. */
-export function RaffleBoostAction({ kind }: { kind: 'comment' | 'attend' }) {
+/** 당첨 확률 올리기: 행마다 그 행동으로 가는 버튼 하나. 친구 초대 행은 내 초대 링크를 공유한다. */
+export function RaffleBoostAction({ kind }: { kind: 'comment' | 'attend' | 'invite' }) {
   const r = useRaffle();
+  const share = useRaffleShare();
   if (r.closed) return null;
+  // 내 초대 링크는 로그인해야 생긴다: 비로그인은 로그인으로 보낸다(코드 없는 주소를 '초대 링크'라고 공유하지 않는다)
+  if (kind === 'invite') return <FanAction type="button" variant="neutral" size="sm" onClick={r.signedIn ? share.share : r.login}>{share.copied ? r.t('copied') : r.t('inviteCta')}</FanAction>;
   return kind === 'attend'
     ? <FanAction href={communityHref(r.locale)} variant="neutral" size="sm">{r.t('checkIn')}</FanAction>
     : <FanAction href={`/?locale=${r.locale}`} variant="neutral" size="sm">{r.t('findPosts')}</FanAction>;
+}
+
+/** 친구 초대 행의 사실 줄 끝: 내 링크로 가입·응모한 친구 수(서버 값, 한 명 이상일 때만). */
+export function RaffleInvitedFriends() {
+  const r = useRaffle();
+  return r.friends ? <FanDisplay role="caption" data-raffle-friends>{r.t('invitedFriends', r.friends)}</FanDisplay> : null;
 }
 
 /** 더 즐기기(선택): Fan Passport · 커뮤니티. 끝냈으면 '완료' 표시. */
@@ -160,16 +211,23 @@ export function RaffleStickyCta() {
   </div>;
 }
 
-export function RaffleShare() {
+/** 공유: 로그인한 회원은 내 초대 코드가 붙은 주소(친구가 이 주소로 가입·응모하면 내 당첨 기회 +3), 아니면 일반 주소. 공유 시트가 없으면 주소를 복사한다. */
+function useRaffleShare() {
   const r = useRaffle();
   const [copied, setCopied] = useState(false);
   async function share() {
-    const url = `${location.origin}${signupEvent.href}?utm_source=share&utm_medium=social&utm_campaign=${signupEvent.id}&utm_content=content.share`;
+    const url = `${location.origin}${raffleShareHref(r.inviteCode)}`;
     try {
       if (navigator.share) { await navigator.share({ title: r.s('title'), url }); return; }
       await navigator.clipboard.writeText(url); setCopied(true);
     } catch { /* 공유 취소 */ }
   }
+  return { share, copied };
+}
+
+export function RaffleShare() {
+  const r = useRaffle();
+  const { share, copied } = useRaffleShare();
   // 공통 보조 버튼 그대로(높이 44/48, 아이콘은 leadingIcon 자리라 간격 8). v4.3의 글자형 작은 버튼은 사용자 "너무 작은 거 아니야?"(2026-11-13)로 되돌렸다.
   return <FanAction type="button" variant="secondary" fullWidth leadingIcon={<FanIcon icon={Share2} />} onClick={share}>{copied ? r.t('copied') : r.t('share')}</FanAction>;
 }

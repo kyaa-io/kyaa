@@ -69,6 +69,8 @@
   --fan-display-strong-size: var(--fan-body-size); --fan-display-body-size: var(--fan-body-size); --fan-display-caption-size: var(--fan-metadata-size); --fan-display-mono-size: var(--fan-badge-size);
   --fan-display-thin: 300; --fan-display-regular: 400; --fan-display-semibold: 600;
   --fan-display-tight: -.05em; --fan-display-snug: -.02em;
+  /* 큰 글자 줄 왼쪽 광학 정렬: 재기 전 기본값(Pretendard 첫 글자 왼쪽 여백 평균, em 배수). 굵기 300·400·600 */
+  --fan-display-ink-thin: .063; --fan-display-ink-regular: .052; --fan-display-ink-semibold: .045;
   --fan-display-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
   /* 인쇄 소품 아트(FanPrint 전용 — DESIGN.md 7-2). 종이·괘선·도장 빨강·접지 그림자는 소품 안에서만. 그림자는 무채색, 빛은 왼쪽 위. */
   --fan-print-paper: oklch(95.5% .018 88); --fan-print-envelope: oklch(98% .004 90); --fan-print-stamp-ink: #b4242d;

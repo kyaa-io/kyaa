@@ -1,5 +1,10 @@
 /* 디스플레이 글자 역할 표(이벤트·캠페인 상세 전용, DESIGN.md 7-2). 값은 globals.css --fan-display-* 토큰만. 굵기는 300·400·600 셋. */
 .display { font-variant-numeric: tabular-nums; }
+/* 큰 글자 줄 왼쪽 광학 정렬(DESIGN.md 7-2): 첫 글자의 왼쪽 여백만큼 줄을 왼쪽으로 당겨 잉크가 칸 왼쪽 선에 닿게 한다.
+ * 값은 em 배수라 폭에 따라 글자 크기가 바뀌어도 맞는다. 재기 전(서버 HTML·스크립트 없음)에는 굵기별 평균값을 쓴다. 줄 머리 숫자는 비례폭(고정폭 숫자는 왼쪽이 빈다) */
+.optical { --fan-display-ink-fallback: var(--fan-display-ink-regular); margin-inline-start: calc(var(--fan-display-ink-start, var(--fan-display-ink-fallback)) * -1em); font-variant-numeric: normal; }
+.optical:is(.amount, .figure-xl, .figure, .figure-sm) { --fan-display-ink-fallback: var(--fan-display-ink-thin); }
+.optical:is(.title, .heading) { --fan-display-ink-fallback: var(--fan-display-ink-semibold); }
 .amount { font-size: var(--fan-display-amount-size); font-weight: var(--fan-display-thin); line-height: 1; letter-spacing: var(--fan-display-tight); white-space: nowrap; }
 .figure-xl { font-size: var(--fan-display-figure-xl-size); font-weight: var(--fan-display-thin); line-height: 1; letter-spacing: var(--fan-display-snug); }
 .figure { font-size: var(--fan-display-figure-size); font-weight: var(--fan-display-thin); line-height: 1; letter-spacing: var(--fan-display-snug); }

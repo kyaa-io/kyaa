@@ -5,11 +5,11 @@ import { FanContentContainer } from '@/components/fan-shell/fan-content-containe
 import { parseAppLocale } from '@/i18n/locales';
 import { signupRaffleText } from '@/i18n/catalogs/signup-raffle';
 import { localSignupEnabled } from '@/server/signup-event/local';
-import { rafflePolicySchema } from '@/features/benefit/domain/signup-event';
+import { raffleInviteCode, rafflePolicySchema } from '@/features/benefit/domain/signup-event';
 import type { RafflePreview } from './participation';
 import styles from './raffle.module.css';
 export const dynamic = 'force-dynamic';
-type Props = { searchParams: Promise<{ locale?: string | string[]; preview?: string | string[] }> };
+type Props = { searchParams: Promise<{ locale?: string | string[]; preview?: string | string[]; invite?: string | string[] }> };
 export async function generateMetadata({ searchParams }: Props) {
   const locale = parseAppLocale((await searchParams).locale);
   return { title: signupRaffleText(locale, 'title'), description: `US$400 · ${signupRaffleText(locale, 'winners')} · ${signupRaffleText(locale, 'deadline')}` };
@@ -28,7 +28,7 @@ export default async function RafflePage({ searchParams }: Props) {
   return <FanAppFrame locale={locale} currentPath="/s/raffle" mainId="raffle-main">
     <div className={styles.stage}>
       <FanContentContainer as="main" id="raffle-main" className={styles.column}>
-        <RaffleContent locale={locale} closesAt={closesAt} now={now} closed={closed} preview={preview} />
+        <RaffleContent locale={locale} closesAt={closesAt} now={now} closed={closed} preview={preview} invite={raffleInviteCode(query.invite)} />
       </FanContentContainer>
     </div>
   </FanAppFrame>;
