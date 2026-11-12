@@ -20,6 +20,8 @@ try {
    const icons=await chips.evaluateAll(elements=>elements.map(e=>({path:e.querySelector('svg path')?.getAttribute('d'),transform:getComputedStyle(e.querySelector('svg')).transform})));
    if(icons.length!==2||!icons[0].path||icons[0].path!==icons[1].path||icons[0].transform!==icons[1].transform)throw Error(`${period}: chevrons differ ${JSON.stringify(icons)}`);
    if(width===1440&&period!=='today')await page.getByRole('button',{name:'펼치기'}).click();
+   const visible=await page.locator('[data-directory-block="hot-posts"] [data-row="hot-post"]').count();
+   if(visible!==Math.min(count,width===390?5:period==='today'?5:10)||await page.locator('[data-directory-block="hot-posts"] [data-row="hot-placeholder"]').count())throw Error(`${period} ${width}: ${visible} actual rows or filler`);
    if(width===390)await page.locator('[data-directory-block="hot-posts"]').evaluate(element=>window.scrollTo(0,element.getBoundingClientRect().top+window.scrollY-80));
    const output=path.join(notes,period==='week'?`2026-11-12-hot-period-${width}.png`:`2026-11-13-hot-${period}-${width}.png`);
    await page.screenshot({path:output});console.log(`PASS Hot ${period} ${width}: ${count} rows, same chevron, ${output}`);await page.close();
@@ -27,6 +29,8 @@ try {
   const page=await browser.newPage({viewport:{width,height:width===390?844:900},deviceScaleFactor:1});
   await page.goto('http://127.0.0.1:3128/settings?locale=ko&section=blocked&s3Preview=1');
   const button=page.getByRole('button',{name:'차단 해제: 예시 팬'});await button.waitFor();
+  const layout=await page.evaluate(()=>({headings:[...document.querySelectorAll('h1,h2,h3')].filter(e=>e.textContent?.trim()==='작성자 차단').length,row:document.querySelector('button[aria-label^="차단 해제"]')?.closest('li')?.getBoundingClientRect().height,avatar:document.querySelector('button[aria-label^="차단 해제"]')?.closest('li')?.querySelector('img')?.width,common:document.querySelector('button[aria-label^="차단 해제"]')?.hasAttribute('data-fan-action')}));
+  if(layout.headings!==1||layout.row!==56||layout.avatar!==40||!layout.common)throw Error(`S3 ${width}: ${JSON.stringify(layout)}`);
   await page.evaluate(()=>document.activeElement instanceof HTMLElement&&document.activeElement.blur());
   const output=path.join(notes,`2026-11-13-blocked-${width}.png`);await page.screenshot({path:output});
   await button.click();await page.getByText('차단한 사용자가 없어요.').waitFor();

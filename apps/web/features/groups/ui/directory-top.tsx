@@ -144,10 +144,7 @@ export function HotPosts({ locale }: { locale: AppLocale }) {
         : <>{items.map((post) => <li key={`${post.source}:${post.id}`} className={styles.postItem} data-row="hot-post">
           <FanPostRow locale={locale} href={postHref(post, locale)} title={firstLine(post.title)} thumbnail={post.asset ? post.source === "group" ? `/api/groups/media/${post.asset.id}?variant=thumbnail` : `/api/content-assets/${post.asset.id}?size=thumbnail` : null} pageImage={<PostAvatar post={post} />} commentCount={post.commentCount}
             source={{ label: post.pageName, href: pageHref(post, locale) }} author={post.nickname} time={post.createdAt} views={post.viewCount} likes={post.likeCount} />
-        </li>)}{Array.from({ length: Math.max(0, (!mobile && open ? 2 * ROWS : ROWS) - items.length) }, (_, i) => {
-          const note = total === 0 && i === 0;
-          return <li key={`p${i}`} className={styles.post} data-row="hot-placeholder" aria-hidden={note ? undefined : true}><img className={styles.ghostSmall} src={DEFAULT_AVATAR} alt="" width={32} height={32} /><span className={styles.placeholderText}>{note ? c.hotEmpty : "—"}</span></li>;
-        })}</>}</ul>}
+        </li>)}{total === 0 ? <li data-row="hot-empty"><FanState kind="empty" title={c.hotEmpty} /></li> : null}</>}</ul>}
     {state.status === "error" ? null : <div className={styles.more}>{mobile ? <nav aria-label={c.hotTitle}><FanIconButton aria-label={paginationCopy(locale).previous} disabled={page === 0} onClick={() => setPage(0)}><ChevronLeft /></FanIconButton><span aria-current="page">{page + 1} / {Math.max(1, Math.ceil(total / ROWS))}</span><FanIconButton aria-label={paginationCopy(locale).next} disabled={(page + 1) * ROWS >= total} onClick={() => setPage(1)}><ChevronRight /></FanIconButton></nav> : <FanAction variant="neutral" disabled={total <= ROWS} aria-expanded={open} onClick={() => setOpen((value) => !value)}>{open ? c.collapse : c.expand}</FanAction>}</div>}
   </section>;
 }

@@ -27,3 +27,11 @@ it("keeps the account visible when unblocking fails", async () => {
   expect(screen.getByRole("button", { name: "차단 해제: 예시 팬" })).toBeEnabled();
   expect(state.retry).not.toHaveBeenCalled();
 });
+
+it("omits the duplicate heading in settings and uses a shared secondary small action", () => {
+  const { container } = render(<BlockedUsers locale="ko" showHeading={false} />);
+  expect(screen.queryByRole("heading", { name: "작성자 차단" })).toBeNull();
+  const action = screen.getByRole("button", { name: "차단 해제: 예시 팬" });
+  expect(action).toHaveAttribute("data-fan-action");
+  expect(container.querySelector("li img")).toHaveAttribute("width", "40");
+});
