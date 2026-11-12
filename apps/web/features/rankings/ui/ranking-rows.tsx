@@ -68,8 +68,8 @@ export function useLiveRanking<T extends { computedAt: string | null }>(url: str
 }
 export type Live<T extends { computedAt: string | null }> = ReturnType<typeof useLiveRanking<T & { fetchedAt?: string }>>;
 
-/** Change emphasis (사용자 11/12 14:50 "너무 찰나로 빡 끝나고 있어"): a place that moved slides for 450ms and its ▲▼ mark pops in for 500ms; a number rolls 850ms (ease-out, digits one after another);
- * a row whose value changed shows its pink ring for 200ms in, about 1s held, 600ms out. Rows follow each other 90ms apart (by their place in the list, at most nine steps). */
+/** Keep a changed row legible after it reaches the viewport: 250ms in, 3s held, 850ms out.
+ * Only the changed row animates; the ring is absolutely positioned and cannot move its neighbours. */
 const MOVE_MS = 450;
 const MARK_MS = 500;
 const ROLL_MS = 850;
@@ -77,12 +77,12 @@ const ROLL_EASE = "cubic-bezier(0.33, 1, 0.68, 1)";
 const ROW_STAGGER_MS = 90;
 const rowDelay = (index: number) => Math.min(index, 9) * ROW_STAGGER_MS;
 const reducedMotion = () => typeof window !== "undefined" && typeof window.matchMedia === "function" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-const inView = (node: HTMLElement) => { const box = node.getBoundingClientRect(); return box.height === 0 || (box.bottom > 0 && box.top < window.innerHeight); };
-const RING_IN_MS = 200;
-const RING_HOLD_MS = 1000;
-const RING_OUT_MS = 600;
+const inView = (node: HTMLElement) => { const box = node.getBoundingClientRect(); return document.visibilityState === "visible" && box.height > 0 && Math.min(box.bottom, window.innerHeight) - Math.max(box.top, 0) >= Math.min(box.height * 0.6, window.innerHeight); };
+const RING_IN_MS = 250;
+const RING_HOLD_MS = 3000;
+const RING_OUT_MS = 850;
 const RING_MS = RING_IN_MS + RING_HOLD_MS + RING_OUT_MS;
-/** The pink ring comes in over 200ms, is held for 1s and fades over 600ms around the row's border (a rotating arc seen through a 2px ring mask: transform and opacity only; the arc turns once, slowly, over the whole span).
+/** The pink ring comes in, remains readable, then fades around the row's border.
  * Reduced motion: the same appear-hold-fade of the whole ring, nothing rotates. */
 function ringPulse(node: HTMLElement, delay = 0) {
   const ring = node.querySelector<HTMLElement>("[data-pulse]");
@@ -118,6 +118,7 @@ function saveSeen(memory: string, seen: Seen) {
 function useRowMotion(order: readonly string[], values: readonly number[], ranks: readonly number[], memory: string) {
   const nodes = useRef(new Map<string, HTMLElement>());
   const seen = useRef<Map<string, number> | null>(null);
+  const seenRanks = useRef<Map<string, number> | null>(null);
   // Where each row stood when the visitor last looked, read once: a row that moved since then shows its ▲▼ for this visit.
   const [lastVisit] = useState(() => typeof window === "undefined" ? null : readSeen(memory));
   // The ring runs once on a row whose value differs from what the visitor last saw (localStorage, per list and period), and on a row that came in; on a first visit, only on places 1-3.
@@ -125,18 +126,22 @@ function useRowMotion(order: readonly string[], values: readonly number[], ranks
   useLayoutEffect(() => {
     const now = new Map(order.map((key, i) => [key, values[i]!]));
     const before = seen.current ?? lastVisit?.values ?? null;
+    const beforeRanks = seenRanks.current ?? lastVisit?.ranks ?? null;
     seen.current = now;
+    seenRanks.current = new Map(order.map((key, i) => [key, ranks[i]!]));
     if (!now.size) return;
-    saveSeen(memory, { values: now, ranks: new Map(order.map((key, i) => [key, ranks[i]!])) });
-    const due = order.flatMap((key, i) => (before ? before.get(key) !== values[i] : i < 3) ? [[key, i] as const] : []);
+    saveSeen(memory, { values: now, ranks: seenRanks.current });
+    const due = order.flatMap((key, i) => (before ? before.get(key) !== values[i] || beforeRanks?.get(key) !== ranks[i] : i < 3) ? [[key, i] as const] : []);
     due.forEach(([key, i]) => {
       const node = nodes.current.get(key);
       if (!node) return;
       if (inView(node)) { ringPulse(node, rowDelay(i)); return; }
       if (typeof IntersectionObserver !== "function") return;
-      const watch = new IntersectionObserver((entries) => { if (entries.some((entry) => entry.isIntersecting)) { watch.disconnect(); ringPulse(node); } }, { threshold: 0.6 });
+      const show = () => { if (!inView(node)) return; watch.disconnect(); watchers.current.delete(watch); document.removeEventListener("visibilitychange", show); ringPulse(node); };
+      const watch = new IntersectionObserver(show, { threshold: 0.6 });
       watch.observe(node);
       watchers.current.add(watch);
+      document.addEventListener("visibilitychange", show);
     });
   });
   const watchers = useRef(new Set<IntersectionObserver>());
@@ -155,9 +160,16 @@ function useRowMotion(order: readonly string[], values: readonly number[], ranks
     for (const [key, top] of after) {
       const was = before.get(key);
       const node = nodes.current.get(key);
-      if (was === undefined || was === top || !node || typeof node.animate !== "function" || !inView(node)) continue;
-      node.animate([{ transform: `translateY(${was - top}px)` }, { transform: "translateY(0)" }], { duration: MOVE_MS, easing: "cubic-bezier(.2, 0, 0, 1)" });
-      node.querySelector<HTMLElement>("[data-delta-cell]")?.animate([{ opacity: 0, transform: "scale(1.6)" }, { opacity: 1, transform: "scale(1)" }], { duration: MARK_MS, easing: "ease-out", fill: "backwards" });
+      if (was === undefined || was === top || !node || typeof node.animate !== "function") continue;
+      const show = () => {
+        if (!inView(node)) return;
+        watch?.disconnect();
+        document.removeEventListener("visibilitychange", show);
+        node.animate([{ transform: `translateY(${was - top}px)` }, { transform: "translateY(0)" }], { duration: MOVE_MS, easing: "cubic-bezier(.2, 0, 0, 1)" });
+        node.querySelector<HTMLElement>("[data-delta-cell]")?.animate([{ opacity: 0, transform: "scale(1.6)" }, { opacity: 1, transform: "scale(1)" }], { duration: MARK_MS, easing: "ease-out", fill: "backwards" });
+      };
+      const watch = inView(node) || typeof IntersectionObserver !== "function" ? null : new IntersectionObserver(show, { threshold: 0.6 });
+      if (watch) { watch.observe(node); document.addEventListener("visibilitychange", show); } else show();
     }
   });
   const place = (key: string) => (node: HTMLElement | null) => { if (node) nodes.current.set(key, node); else nodes.current.delete(key); };
