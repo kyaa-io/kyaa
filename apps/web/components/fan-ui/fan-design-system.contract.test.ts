@@ -1,10 +1,68 @@
-import { readFileSync } from "node:fs";
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { spawnSync } from "node:child_process";
+import { tmpdir } from "node:os";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 
 const read = (file: string) => readFileSync(resolve(process.cwd(), file), "utf8");
 const tokens = read("app/globals.css");
 const heading = read("components/fan-ui/fan-heading.module.css");
+
+const invalidWeightPattern = "(font-weight: *|font: *)(1[0-9]{2}|[2356][0-9]{2}|4[1-9][0-9]|7[1-9][0-9]|8[1-9][0-9]|9[0-9]{2})([^0-9]|$)";
+
+function gitIn(cwd: string, args: string[], isolated = false) {
+  const env = (isolated
+    ? Object.fromEntries(Object.entries(process.env).filter(([key]) => !key.startsWith("GIT_")))
+    : process.env) as NodeJS.ProcessEnv;
+  const config = isolated
+    ? ["-c", "user.name=Contract Test", "-c", "user.email=contract@example.invalid", "-c", `safe.directory=${cwd}`]
+    : [];
+  return spawnSync("git", [...config, ...args], { cwd, env, encoding: "utf8" });
+}
+
+function assertIndexedCssWeights(cwd: string, isolated = false) {
+  const indexed = gitIn(cwd, ["ls-files", "-z", "--", "*.css"], isolated);
+  if (indexed.error || indexed.status !== 0) throw new Error(`Cannot list indexed CSS: ${indexed.error?.message ?? indexed.stderr}`);
+  if (!indexed.stdout) throw new Error("No indexed CSS files to check");
+
+  const search = gitIn(cwd, ["grep", "-nE", invalidWeightPattern, "--", "*.css"], isolated);
+  if (search.error || (search.status !== 0 && search.status !== 1)) throw new Error(`Cannot search indexed CSS: ${search.error?.message ?? search.stderr}`);
+  if (search.status === 0) throw new Error(`Unsupported CSS font weight:\n${search.stdout}`);
+  if (search.stdout) throw new Error(`Unexpected Git search output: ${search.stdout}`);
+}
+
+describe("indexed CSS font weight search", () => {
+  function inTemporaryTree(callback: (dir: string) => void, indexedCss?: string | null) {
+    const dir = mkdtempSync(resolve(tmpdir(), "fan-weight-contract-"));
+    try {
+      if (indexedCss !== undefined) {
+        const init = gitIn(dir, ["init", "-q"], true);
+        expect(init.status).toBe(0);
+        if (indexedCss !== null) {
+          writeFileSync(resolve(dir, "sample.css"), indexedCss);
+          const add = gitIn(dir, ["add", "sample.css"], true);
+          expect(add.status).toBe(0);
+        }
+      }
+      callback(dir);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  }
+
+  it("passes when indexed CSS has no invalid weight", () => {
+    inTemporaryTree((dir) => expect(() => assertIndexedCssWeights(dir, true)).not.toThrow(), ".a{font-weight:700}");
+  });
+  it("fails when indexed CSS has an invalid weight", () => {
+    inTemporaryTree((dir) => expect(() => assertIndexedCssWeights(dir, true)).toThrow(/sample.css:1:.*font-weight:600/), ".a{font-weight:600}");
+  });
+  it("fails on a Git error", () => {
+    inTemporaryTree((dir) => expect(() => assertIndexedCssWeights(dir, true)).toThrow(/Cannot list indexed CSS/));
+  });
+  it("fails when the Git index has no CSS", () => {
+    inTemporaryTree((dir) => expect(() => assertIndexedCssWeights(dir, true)).toThrow(/No indexed CSS/), null);
+  });
+});
 
 describe("fan design system ownership", () => {
   it("keeps the approved responsive and control dimensions in the central foundation", () => {
@@ -13,10 +71,8 @@ describe("fan design system ownership", () => {
     expect(heading).not.toContain("@media");
     expect(heading).not.toMatch(/font-size:\s*\d/);
   });
-  it("uses only the 400·700·800 weights in CSS (design-sync-1 C5)", async () => {
-    const { execSync } = await import("node:child_process");
-    const hits = execSync("git grep -nE '(font-weight: *|font: *)(1[0-9]{2}|[2356][0-9]{2}|4[1-9][0-9]|7[1-9][0-9]|8[1-9][0-9]|9[0-9]{2})([^0-9]|$)' -- '*.css' || true", { encoding: "utf8" });
-    expect(hits).toBe("");
+  it("uses only the 400·700·800 weights in CSS (design-sync-1 C5)", () => {
+    assertIndexedCssWeights(process.cwd());
     for (const token of ["--fan-heading-weight: 800", "--fan-number-weight: 800", "--fan-tab-weight: 700", "--fan-action-weight: 700", "--fan-description-weight: 400", "--fan-aside-title-weight: var(--fan-item-title-weight)"]) expect(tokens).toContain(token);
   });
   it("resolves every shared fan variable rather than silently falling back", () => {
