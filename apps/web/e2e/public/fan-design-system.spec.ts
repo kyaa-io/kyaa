@@ -62,7 +62,7 @@ for (const locale of APP_LOCALES) {
       expect(Math.min(rect.width, rect.height)).toBeGreaterThanOrEqual(44);
     }
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
-    await page.goto(`/community?locale=${locale}`);
+    await page.goto(`/pages/groups?locale=${locale}`);
     await expect(page.locator("html")).toHaveAttribute("lang", locale);
     await expect(page.locator("h1[data-fan-heading]")).toBeVisible();
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);

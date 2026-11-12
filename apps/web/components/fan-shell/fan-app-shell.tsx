@@ -100,7 +100,7 @@ export function fanNavigationItems(
   ];
   return [
     { id: "home", href: `/${query}` as Route, label: "HOME", isCurrent: current === "home" },
-    { id: "community", href: `/community${query}` as Route, label: communityCopy(locale).title, isCurrent: current === "community" },
+    { id: "community", href: `/pages/groups${query}` as Route, label: communityCopy(locale).title, isCurrent: current === "community" },
     {
       id: "favorites",
       href: `${groupsEnabled ? "/pages/groups" : "/celebrities"}${query}` as Route,

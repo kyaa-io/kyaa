@@ -33,7 +33,7 @@ export function outboundTrackingAllowed(pathname: string) {
 export function outboundCampaign(pathname: string, publishedSlug?: string) {
   if (publishedSlug && outboundCampaignSchema.safeParse(publishedSlug).success
     && (pathname === `/${publishedSlug}` || pathname.startsWith(`/c/${publishedSlug}/`))) return publishedSlug;
-  return ({ "/": "home", "/celebrities": "celebrities", "/community": "community", "/live": "live", "/benefits": "benefits", "/guide": "guide" } as Record<string, string>)[pathname] ?? "kyaa";
+  return ({ "/": "home", "/celebrities": "celebrities", "/pages/groups": "groups", "/live": "live", "/benefits": "benefits", "/guide": "guide" } as Record<string, string>)[pathname] ?? "kyaa";
 }
 
 const sensitiveKey = /^(?:x-amz-|x-goog-|oauth)|(?:token|signature|secret|credential|session|authorization)|(?:^|_)(?:sig|auth|code|state|redirect_uri|redirect_url|key)(?:$|_)|^(?:apiKey|clientKey|redirectUri|redirectUrl)$/i;
