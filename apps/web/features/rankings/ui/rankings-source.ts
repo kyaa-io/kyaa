@@ -110,5 +110,7 @@ export const rankingsSource = {
   rkPanelHearts: { ko: "하트", en: "Hearts" },
   rkPanelTier: { ko: "등급", en: "Tier" },
   rkPanelTickets: { ko: "응모권", en: "Entry tickets" },
+  rkPanelAttendance: { ko: "출석일", en: "Check-in days" },
+  rkPanelPosts: { ko: "게시글", en: "Posts" },
   rkPanelTotalLikes: { ko: "누적 좋아요", en: "All-time likes" },
 } as const;
