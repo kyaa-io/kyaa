@@ -159,7 +159,11 @@ export function createFanCommunityHandlers(dependencies: FanpageDependencies) {
         });
         if (raw === null) return fanpageJson({ error: { code: "FANPAGE_NOT_FOUND" } }, 404);
         const target = parseResult(z.object({ targetType: z.literal("cheer"), targetId: z.literal(id), celebritySlug: celebritySlugSchema, body: z.string().min(1).max(1000) }), raw);
-        return fanpageJson({ source: "cheer", id: target.targetId, celebritySlug: target.celebritySlug, body: target.body });
+        const lounge = parseResult(z.object({ messages: z.array(z.object({ id: z.uuid(), reactions: z.array(z.object({ emoji: z.string(), count: z.number().int().nonnegative(), reacted: z.boolean() })) })) }), await dependencies.rpc("read_celebrity_lounge", { p_slug: target.celebritySlug, p_app_user_id: owner, p_ids: [id], p_locale: parseLocale(new URL(request.url)) }));
+        const message = lounge.messages.find(message => message.id === id);
+        if (!message) return fanpageJson({ error: { code: "FANPAGE_NOT_FOUND" } }, 404);
+        const clap = message.reactions.find(reaction => reaction.emoji === "👏");
+        return fanpageJson({ source: "cheer", id: target.targetId, celebritySlug: target.celebritySlug, body: target.body, clapCount: clap?.count ?? 0, viewerClapped: clap?.reacted ?? false });
       } catch (error) {
         return fanpageFailure(error);
       }

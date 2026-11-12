@@ -1,4 +1,5 @@
 "use client";
+import { visiblePostViews } from "@/components/fan-ui/post-view-count";
 import { FileText, MessageCircle } from "lucide-react";
 import type { Route } from "next";
 import Link from "./hover-prefetch-link";
@@ -60,7 +61,7 @@ export function FanPostRow({ href, locale, title, thumbnail, pageImage, notice =
       {author && <span className={styles.authorCell}><span className={styles.author}>{author}</span>{authorArtist && <FanTag tone="artist">{fanUiText(locale, "artistTag")}</FanTag>}</span>}
       {timeLabel && <time className={styles.time} dateTime={isoTime} suppressHydrationWarning>{timeLabel}</time>}
       {timeLabel && edited && <EditedMark locale={locale} />}
-      {density === "board" && (typeof views === "number" ? <span className={styles.number}>{fanUiText(locale, "viewsLabel", [count(views)])}</span> : <span className={styles.number} data-blank aria-hidden="true" />)}
+      {density === "board" && (typeof views === "number" && visiblePostViews(views, likes) !== undefined ? <span className={styles.number}>{fanUiText(locale, "viewsLabel", [count(views)])}</span> : <span className={styles.number} data-blank aria-hidden="true" />)}
       {density === "board" && (typeof likes === "number" ? <span className={styles.number}>{fanUiText(locale, "likesLabel", [count(likes)])}</span> : <span className={styles.number} data-blank aria-hidden="true" />)}
     </div>
   </div>;

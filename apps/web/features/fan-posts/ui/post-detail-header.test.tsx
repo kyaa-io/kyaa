@@ -19,8 +19,14 @@ it("draws a notice head without an author: kicker, title, then the date beside t
 });
 
 it("keeps the author row and the counts for a post", () => {
-  const { container } = render(<PostDetailHeader title="글" author="팬" createdAt="2026-11-11T05:20:00+09:00" viewCount={2} likeCount={3} commentCount={4} locale="ko" />);
+  const { container } = render(<PostDetailHeader title="글" author="팬" createdAt="2026-11-11T05:20:00+09:00" viewCount={3} likeCount={3} commentCount={4} locale="ko" />);
   expect(container.querySelector("[data-no-author]")).toBeNull();
   expect(container.querySelector("img")).toBeInTheDocument();
-  expect(container).toHaveTextContent("조회 2");
+  expect(container).toHaveTextContent("조회 3");
+});
+
+it("omits an incomparable historical view count without changing likes", () => {
+ const {container} = render(<PostDetailHeader title="글" createdAt="2026-10-01T00:00:00Z" viewCount={2} likeCount={3} locale="ko" />);
+ expect(container).not.toHaveTextContent("조회");
+ expect(container).toHaveTextContent("추천 3");
 });

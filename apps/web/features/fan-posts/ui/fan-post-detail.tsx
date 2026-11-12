@@ -3,6 +3,7 @@ import { ProfileAuthor } from "@/features/group-social/profile-window";
 import { EarnBadgeCorner } from "@/features/dukjil/ui/earn-badge";
 
 import { FanSkeleton, FanSkeletonRows, FanSkeletonStatus } from "@/components/fan-ui/fan-skeleton";
+import { ReactionCount, ReactionIcon } from "@/components/fan-ui/reaction-count";
 import { fanLoginHref } from "@/components/login-href";
 import { boardCopy } from "@/features/groups/ui/board-copy";
 import { PostDetailSkeleton } from "./post-detail-header";
@@ -185,7 +186,7 @@ export const CommentComposer = memo(function CommentComposer({ showRewards = tru
   </fieldset></form>;
 });
 
-const parseCheerDetail=(value:unknown)=>z.object({source:z.literal('cheer'),id:z.uuid(),celebritySlug:z.string().min(1),body:z.string().min(1).max(1000)}).strict().parse(value);
+const parseCheerDetail=(value:unknown)=>z.object({source:z.literal('cheer'),id:z.uuid(),celebritySlug:z.string().min(1),body:z.string().min(1).max(1000),clapCount:z.number().int().nonnegative(),viewerClapped:z.boolean()}).strict().parse(value);
 function CheerDetail({postId,locale,expectedSlug}:{postId:string;locale:AppLocale;expectedSlug?:string}){
  const copy=contentCopy(locale),query=useSearchParams(),resource=useCommunityResource(`/api/cheers/${postId}?locale=${toContentLocale(locale)}`,parseCheerDetail);
  if(resource.state.status==='loading')return <section className={`${styles.section} ${styles.postDetail}`} aria-busy='true'><FanSkeletonStatus locale={locale}/><FanSkeleton width='60%' height={28}/><FanSkeleton shape='block' height={96}/></section>;
@@ -197,7 +198,16 @@ function CheerDetail({postId,locale,expectedSlug}:{postId:string;locale:AppLocal
  return <section className={`${styles.section} ${styles.postDetail} ${boardStyles.detail}`} data-cheer-detail-id={data.id}>
  <FanAction href={back} variant='text' leadingIcon={<ArrowLeft/>}>{copy.back}</FanAction>
  <FanHeading as='h1' variant='personal-page'>{data.body.split('\n')[0]}</FanHeading>
+ {resource.refreshFailed && <p role="status" className={styles.status}>{copy.failed}<FanAction variant="text" onClick={resource.retry}>{copy.retry}</FanAction></p>}
  <article className={boardStyles.article}><ContentTranslation sourceText={data.body} targetType='cheer' targetId={data.id} locale={locale}><p className={styles.body}>{data.body}</p></ContentTranslation></article>
+ <CheerLike key={`${data.id}:${data.viewerClapped}:${data.clapCount}`} id={data.id} count={data.clapCount} selected={data.viewerClapped} locale={locale} returnTo={returnTo} onChanged={resource.retry}/>
  <CheerReplies detail cheerId={data.id} slug={data.celebritySlug} locale={locale} returnTo={returnTo} onChanged={resource.retry}/>
  </section>;
+}
+
+function CheerLike({id,count,selected,locale,returnTo,onChanged}:{id:string;count:number;selected:boolean;locale:AppLocale;returnTo:string;onChanged:()=>void}) {
+ const auth=usePrivy(), mutation=useContentMutation(locale),copy=contentCopy(locale);
+ const [liked,setLiked]=useState(selected);
+ async function toggle(){ if(await mutation.request(`/api/cheers/${id}/clap`,"PUT",{selected:!liked})){setLiked(!liked);onChanged();} }
+ return <div>{auth.ready&&!auth.authenticated?<FanAction href={fanLoginHref(locale,returnTo)} variant="neutral">{copy.like}</FanAction>:<FanAction variant="neutral" disabled={!auth.ready||mutation.busy} aria-pressed={liked} leadingIcon={<ReactionIcon kind="like" size={20} pressed={liked}/>} onClick={()=>void toggle()}>{copy.like} <ReactionCount value={count+(Number(liked)-Number(selected))} locale={locale}/></FanAction>}{mutation.error&&<p role="alert">{mutation.error}</p>}</div>;
 }

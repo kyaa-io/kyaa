@@ -1,0 +1,12 @@
+{
+  "changes": [
+    "예전 응원 글 상세에서도 좋아요를 누르거나 취소할 수 있어요.",
+    "추천수보다 작은 조회수는 게시판 목록과 상세에서 표시하지 않아요. 저장된 수치는 바꾸지 않았어요.",
+    "첨부 화면은 예시 데이터를 사용한 로컬 검증 화면이에요."
+  ],
+  "path": "/elina",
+  "images": [
+    "release-notes/images/2026-11-12-report-board-shot390.png",
+    "release-notes/images/2026-11-12-report-board-b4390.png"
+  ]
+}

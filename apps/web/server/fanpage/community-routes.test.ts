@@ -144,9 +144,9 @@ describe("fan community routes", () => {
 
 describe('cheer detail original-source read',()=>{
  it('uses the visibility gate and returns only original public detail fields',async()=>{
-  rpc.mockResolvedValue({targetType:'cheer',targetId:firstId,celebritySlug:'elina',body:'Original\nBody',appUserId:other,sourceHash:'private'});
+  rpc.mockResolvedValueOnce({targetType:'cheer',targetId:firstId,celebritySlug:'elina',body:'Original\nBody',appUserId:other,sourceHash:'private'}).mockResolvedValueOnce({messages:[{id:firstId,reactions:[{emoji:'👏',count:7,reacted:true}]}]});
   const response=await api.cheer(request('/api/cheers/'+firstId),firstId);
-  expect(await response.json()).toEqual({source:'cheer',id:firstId,celebritySlug:'elina',body:'Original\nBody'});
+  expect(await response.json()).toEqual({source:'cheer',id:firstId,celebritySlug:'elina',body:'Original\nBody',clapCount:7,viewerClapped:true});
   expect(rpc).toHaveBeenCalledWith('fan_web_content_target',{p_app_user_id:owner,p_target_type:'cheer',p_target_id:firstId,p_locale:'ko'});
  });
  it('preserves guest visibility and rejects hidden or mismatched rows',async()=>{
