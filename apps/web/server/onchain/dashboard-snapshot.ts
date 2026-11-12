@@ -1,19 +1,32 @@
+import { finishOnchainWork, runOnchainWork } from "../../../worker/src/onchain-work";
 import "server-only";
 import { createPublicClient, http } from "viem";
 import { readFinalizedActionSnapshot, snapshotClient, type SnapshotLogScan } from "../../../worker/src/action-public-snapshot";
-import { projectPublicOnchainSnapshot } from "./public-aggregate";
+import { projectPublicOnchainSnapshotAsync } from "./public-aggregate";
 import { readFinalizedCredentialReplacements, type CredentialReplacementConfig } from "./credential-replacements";
 import type { PublicOnchainSnapshot } from "./public-types";
 
 import { dashboardConfigFingerprint, parseDashboardSnapshot, readConfig, dashboardLogConfig, readVerifiedDashboardSnapshot, publishVerifiedSnapshot, type DashboardSnapshot, type DashboardOnchainResult } from "./verified-snapshot";
 export { dashboardConfigFingerprint, parseDashboardSnapshot, dashboardSnapshotSchema, type DashboardSnapshot, type DashboardOnchainResult } from "./verified-snapshot";
 
-export function sanitizeDashboardSnapshot(source: PublicOnchainSnapshot): DashboardSnapshot {
+function* sanitizeDashboardSteps(source: PublicOnchainSnapshot): Generator<void, DashboardSnapshot> {
   if (!source.business) throw new Error("DASHBOARD_BUSINESS_UNAVAILABLE");
-  const candidate = source.actions.filter((action) => !action.qa && action.current && action.status === "ACTIVE" && action.origin === "NATIVE"
-    && source.transactions.some(tx => !tx.qa && tx.origin === "NATIVE" && tx.txHash.toLowerCase() === action.txHash.toLowerCase()
-      && tx.hubAddress.toLowerCase() === action.hubAddress.toLowerCase()))
-    .sort((a, b) => BigInt(a.blockNumber) > BigInt(b.blockNumber) ? -1 : BigInt(a.blockNumber) < BigInt(b.blockNumber) ? 1 : a.actionId.localeCompare(b.actionId))[0];
+  const transactions = new Set<string>();
+  for (const tx of source.transactions) {
+    yield;
+    if (!tx.qa && tx.origin === "NATIVE") transactions.add(`${tx.hubAddress.toLowerCase()}:${tx.txHash.toLowerCase()}`);
+  }
+  let candidate: PublicOnchainSnapshot["actions"][number] | undefined;
+  let candidateBlock = -1n;
+  for (const action of source.actions) {
+    yield;
+    if (action.qa || !action.current || action.status !== "ACTIVE" || action.origin !== "NATIVE"
+      || !transactions.has(`${action.hubAddress.toLowerCase()}:${action.txHash.toLowerCase()}`)) continue;
+    const block = BigInt(action.blockNumber);
+    if (!candidate || block > candidateBlock || (block === candidateBlock && action.actionId.localeCompare(candidate.actionId) < 0)) {
+      candidate = action; candidateBlock = block;
+    }
+  }
   return parseDashboardSnapshot({ version: 1, configFingerprint: dashboardConfigFingerprint(), network: source.network, chainId: source.chainId,
     verifiedAt: source.generatedAt, blockNumber: source.blockNumber, blockHash: source.blockHash, blockTimestamp: source.blockTimestamp,
     deployments: source.deployments.map(({ label, hubAddress, fromBlock, actionCount, writeStatus }) => ({ label, hubAddress, fromBlock, actionCount, writeStatus })),
@@ -22,6 +35,9 @@ export function sanitizeDashboardSnapshot(source: PublicOnchainSnapshot): Dashbo
       lifecycleTransactions: source.business.lifecycleTransactions, currentActionTransactions: source.business.currentActionTransactions },
     proof: candidate ? { txHash: candidate.txHash, blockNumber: candidate.blockNumber, hubAddress: candidate.hubAddress,
       actionId: candidate.actionId, easUid: candidate.easUid, status: candidate.status, current: candidate.current, origin: candidate.origin } : null });
+}
+export function sanitizeDashboardSnapshot(source: PublicOnchainSnapshot): DashboardSnapshot {
+  return finishOnchainWork(sanitizeDashboardSteps(source));
 }
 export async function getDashboardOnchainResult(read = readVerifiedDashboardSnapshot): Promise<DashboardOnchainResult> {
   try {
@@ -56,7 +72,7 @@ async function verifySnapshot(signal: AbortSignal): Promise<PublicOnchainSnapsho
       ? await readFinalizedCredentialReplacements(readConfig as CredentialReplacementConfig, source, client, logScan) : new Map();
     signal.throwIfAborted();
     phase = "projection";
-    const projected = projectPublicOnchainSnapshot(source, new Date(), representatives);
+    const projected = await projectPublicOnchainSnapshotAsync(source, new Date(), representatives, signal);
     console.info("onchain_dashboard_verification", { state: "complete", actionsMs, elapsedMs: Date.now() - started });
     return projected;
   } catch (error) {
@@ -80,7 +96,7 @@ export async function refreshDashboardSnapshot(deps = { verify: verifySnapshot, 
       controller.signal.throwIfAborted();
       const source = await deps.verify(controller.signal);
       controller.signal.throwIfAborted();
-      const dashboard = source.business === null ? null : sanitizeDashboardSnapshot(source);
+      const dashboard = source.business === null ? null : await runOnchainWork(sanitizeDashboardSteps(source), controller.signal);
       return { updated: await deps.write(source, dashboard, controller.signal) };
     };
     return await Promise.race([work(), deadline]);
