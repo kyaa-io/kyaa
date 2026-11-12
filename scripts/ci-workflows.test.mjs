@@ -283,6 +283,16 @@ test('every root npm ci restores an exact, environment-bound node_modules cache 
     const key = '${{ steps.node_modules_key.outputs.prefix }}-${{ ' + lockInputs + ' }}';
     assert.match(steps[restore].uses, /^actions\/cache\/restore@[a-f0-9]{40}$/);
     assert.match(steps[save].uses, /^actions\/cache\/save@[a-f0-9]{40}$/);
+    if (file === 'aws-platform') {
+      assert.equal(steps[restore].with.key, key + '-${{ github.run_id }}-${{ github.run_attempt }}');
+      assert.equal(steps[restore].with['restore-keys'], key + '-\n');
+      assert.equal(steps[save].with.key, '${{ steps.node_modules.outputs.cache-primary-key }}');
+      assert.equal(steps[check].if, "steps.node_modules.outputs.cache-matched-key != ''");
+      assert.equal(steps[install].if, "steps.node_modules.outputs.cache-matched-key == ''");
+      assert.equal(steps[save].if, "steps.node_modules.outputs.cache-matched-key == '' || steps.repair.outputs.repaired == 'true'");
+      assert.match(steps[check].run, /npm ci --ignore-scripts\n\s+node scripts\/verify-installed-node-modules.mjs\n\s+echo "repaired=true"/);
+      continue;
+    }
     for (const step of [steps[restore], steps[save]]) {
       assert.equal(step.with.key, key);
       assert.equal(step.with['restore-keys'], undefined);
