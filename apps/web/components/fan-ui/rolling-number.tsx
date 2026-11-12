@@ -19,7 +19,9 @@ function wheelDigits(from: number, to: number, direction: 1 | -1) {
   return Array.from({ length: steps + 1 }, (_, index) => (first + index) % 10);
 }
 
-function Wheel({ from, to, direction, roll, place }: { from: number; to: number; direction: 1 | -1; roll: number; place: number }) {
+type Timing = { duration?: number; easing?: string; delay?: number };
+
+function Wheel({ from, to, direction, roll, place, duration = ROLL_MS, easing = EASE_OUT, delay = 0 }: { from: number; to: number; direction: 1 | -1; roll: number; place: number } & Timing) {
   const strip = useRef<HTMLSpanElement>(null);
   const digits = wheelDigits(from, to, direction);
   const travel = ((digits.length - 1) / digits.length) * 100;
@@ -28,9 +30,9 @@ function Wheel({ from, to, direction, roll, place }: { from: number; to: number;
     if (!node || typeof node.animate !== "function" || reducedMotion()) return;
     const resting = direction > 0 ? `translateY(-${travel}%)` : "translateY(0)";
     const start = direction > 0 ? "translateY(0)" : `translateY(-${travel}%)`;
-    const animation = node.animate([{ transform: start }, { transform: resting }], { duration: ROLL_MS, delay: place * PLACE_STAGGER_MS, easing: EASE_OUT, fill: "backwards" });
+    const animation = node.animate([{ transform: start }, { transform: resting }], { duration, delay: delay + place * PLACE_STAGGER_MS, easing, fill: "backwards" });
     return () => animation.cancel();
-  }, [roll, direction, travel, place]);
+  }, [roll, direction, travel, place, duration, easing, delay]);
   return <span className={styles.wheel} aria-hidden="true">
     <span ref={strip} className={styles.strip} style={{ transform: direction > 0 ? `translateY(-${travel}%)` : undefined }}>
       {digits.map((digit, index) => <span key={index} className={styles.cell}>{digit}</span>)}
@@ -41,8 +43,9 @@ function Wheel({ from, to, direction, roll, place }: { from: number; to: number;
 type Roll = { from: string; direction: 1 | -1; id: number };
 
 /** A number whose changed places roll like an odometer: up when the value grows, down when it shrinks.
- * The first render and reduced-motion show the value at once. Screen readers get the final text only. */
-export function RollingNumber({ value, format = defaultFormat, className }: { value: number; format?: (value: number) => string; className?: string }) {
+ * The first render and reduced-motion show the value at once. Screen readers get the final text only.
+ * `duration`, `easing` and `delay` (ms, before the first place starts) let a list slow the roll and stagger its rows; the default is 600ms. */
+export function RollingNumber({ value, format = defaultFormat, className, duration, easing, delay }: { value: number; format?: (value: number) => string; className?: string } & Timing) {
   const [state, setState] = useState<{ value: number; roll: Roll | null }>({ value, roll: null });
   if (state.value !== value) {
     setState({ value, roll: { from: format(state.value), direction: value > state.value ? 1 : -1, id: (state.roll?.id ?? 0) + 1 } });
@@ -56,7 +59,7 @@ export function RollingNumber({ value, format = defaultFormat, className }: { va
       const old = before[before.length - 1 - place];
       const roll = state.roll;
       if (roll && isDigit(char) && isDigit(old) && old !== char) {
-        return <Wheel key={`${place}:wheel`} from={Number(old)} to={Number(char)} direction={roll.direction} roll={roll.id} place={place} />;
+        return <Wheel key={`${place}:wheel`} from={Number(old)} to={Number(char)} direction={roll.direction} roll={roll.id} place={place} duration={duration} easing={easing} delay={delay} />;
       }
       return <span key={`${place}:still`} className={styles.still} aria-hidden="true">{char}</span>;
     })}

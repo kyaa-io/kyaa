@@ -68,24 +68,35 @@ export function useLiveRanking<T extends { computedAt: string | null }>(url: str
 }
 export type Live<T extends { computedAt: string | null }> = ReturnType<typeof useLiveRanking<T & { fetchedAt?: string }>>;
 
-const MOVE_MS = 240;
+/** Change emphasis (사용자 11/12 14:50 "너무 찰나로 빡 끝나고 있어"): a place that moved slides for 450ms and its ▲▼ mark pops in for 500ms; a number rolls 850ms (ease-out, digits one after another);
+ * a row whose value changed shows its pink ring for 200ms in, about 1s held, 600ms out. Rows follow each other 90ms apart (by their place in the list, at most nine steps). */
+const MOVE_MS = 450;
+const MARK_MS = 500;
+const ROLL_MS = 850;
+const ROLL_EASE = "cubic-bezier(0.33, 1, 0.68, 1)";
+const ROW_STAGGER_MS = 90;
+const rowDelay = (index: number) => Math.min(index, 9) * ROW_STAGGER_MS;
 const reducedMotion = () => typeof window !== "undefined" && typeof window.matchMedia === "function" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 const inView = (node: HTMLElement) => { const box = node.getBoundingClientRect(); return box.height === 0 || (box.bottom > 0 && box.top < window.innerHeight); };
-const RING_MS = 600;
-/** The pink ring runs once around the row's border (a rotating arc seen through a 2px ring mask: transform and opacity only, 600ms). Reduced motion: the whole ring shows for 300ms and goes. */
+const RING_IN_MS = 200;
+const RING_HOLD_MS = 1000;
+const RING_OUT_MS = 600;
+const RING_MS = RING_IN_MS + RING_HOLD_MS + RING_OUT_MS;
+/** The pink ring comes in over 200ms, is held for 1s and fades over 600ms around the row's border (a rotating arc seen through a 2px ring mask: transform and opacity only; the arc turns once, slowly, over the whole span).
+ * Reduced motion: the same appear-hold-fade of the whole ring, nothing rotates. */
 function ringPulse(node: HTMLElement, delay = 0) {
   const ring = node.querySelector<HTMLElement>("[data-pulse]");
   const sweep = ring?.firstElementChild as HTMLElement | null | undefined;
   if (!ring || !sweep || typeof ring.animate !== "function") return;
+  const envelope = [{ opacity: 0, easing: "ease-out" }, { opacity: 1, offset: RING_IN_MS / RING_MS }, { opacity: 1, offset: (RING_IN_MS + RING_HOLD_MS) / RING_MS, easing: "ease-in" }, { opacity: 0 }];
   if (reducedMotion()) {
     ring.dataset.still = "";
-    ring.animate([{ opacity: 0 }, { opacity: 1, offset: 0.3 }, { opacity: 1, offset: 0.7 }, { opacity: 0 }], { duration: 300, delay }).onfinish = () => { delete ring.dataset.still; };
+    ring.animate(envelope, { duration: RING_MS, delay }).onfinish = () => { delete ring.dataset.still; };
     return;
   }
-  ring.animate([{ opacity: 0 }, { opacity: 1, offset: 0.12 }, { opacity: 1, offset: 0.8 }, { opacity: 0 }], { duration: RING_MS, easing: "linear", delay });
+  ring.animate(envelope, { duration: RING_MS, easing: "linear", delay });
   sweep.animate([{ transform: "rotate(0deg)" }, { transform: "rotate(360deg)" }], { duration: RING_MS, easing: "cubic-bezier(.4, 0, .2, 1)", delay });
 }
-const RING_STAGGER_MS = 70;
 const SEEN_PREFIX = "kyaa:rank-seen2:";
 /** What the visitor last saw in one list and period: each row's value and rank, by row key. */
 type Seen = { values: Map<string, number>; ranks: Map<string, number> };
@@ -117,11 +128,11 @@ function useRowMotion(order: readonly string[], values: readonly number[], ranks
     seen.current = now;
     if (!now.size) return;
     saveSeen(memory, { values: now, ranks: new Map(order.map((key, i) => [key, ranks[i]!])) });
-    const due = order.filter((key, i) => before ? before.get(key) !== values[i] : i < 3);
-    due.forEach((key, i) => {
+    const due = order.flatMap((key, i) => (before ? before.get(key) !== values[i] : i < 3) ? [[key, i] as const] : []);
+    due.forEach(([key, i]) => {
       const node = nodes.current.get(key);
       if (!node) return;
-      if (inView(node)) { ringPulse(node, i * RING_STAGGER_MS); return; }
+      if (inView(node)) { ringPulse(node, rowDelay(i)); return; }
       if (typeof IntersectionObserver !== "function") return;
       const watch = new IntersectionObserver((entries) => { if (entries.some((entry) => entry.isIntersecting)) { watch.disconnect(); ringPulse(node); } }, { threshold: 0.6 });
       watch.observe(node);
@@ -146,7 +157,7 @@ function useRowMotion(order: readonly string[], values: readonly number[], ranks
       const node = nodes.current.get(key);
       if (was === undefined || was === top || !node || typeof node.animate !== "function" || !inView(node)) continue;
       node.animate([{ transform: `translateY(${was - top}px)` }, { transform: "translateY(0)" }], { duration: MOVE_MS, easing: "cubic-bezier(.2, 0, 0, 1)" });
-      node.querySelector<HTMLElement>("[data-delta-cell]")?.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 160, fill: "backwards" });
+      node.querySelector<HTMLElement>("[data-delta-cell]")?.animate([{ opacity: 0, transform: "scale(1.6)" }, { opacity: 1, transform: "scale(1)" }], { duration: MARK_MS, easing: "ease-out", fill: "backwards" });
     }
   });
   const place = (key: string) => (node: HTMLElement | null) => { if (node) nodes.current.set(key, node); else nodes.current.delete(key); };
@@ -199,8 +210,8 @@ export function MetricLine({ locale, computedAt, stale = false, period = "all", 
 
 /** The rank number (rolls like a calendar page when a later answer changes it) and, right after it, the movement triangle. Numbers first: the medal artwork is not here yet, so 1-3 read as numbers too (data-medal keeps the place for it).
  * The cell is one 28px column: the number right-aligned in its box, the triangle's slot after it (empty when the row did not move), so numbers line up whether or not a mark follows. */
-function Rank({ rank, mark }: { rank: number; mark?: ReactNode }) {
-  return <span className={styles.rankCell}><span className={styles.rank} data-medal={rank <= 3 ? rank : undefined}><RollingNumber value={rank} /></span>{mark}</span>;
+function Rank({ rank, mark, delay }: { rank: number; mark?: ReactNode; delay: number }) {
+  return <span className={styles.rankCell}><span className={styles.rank} data-medal={rank <= 3 ? rank : undefined}><RollingNumber value={rank} duration={ROLL_MS} easing={ROLL_EASE} delay={delay} /></span>{mark}</span>;
 }
 
 /** Rows at the live height while the first answer is read; only while a request is running. */
@@ -232,7 +243,7 @@ const short = (locale: AppLocale, n: number) => n >= 10000 ? n.toLocaleString(lo
 const unitMark = (metric: RankingMetric) => metric === "points" ? <RankUnit unit="points" /> : metric === "fans" ? null : <RankUnit unit={metric === "likes" ? "likes" : "hearts"} />;
 
 /** The right-hand number of a row: the metric's value, read by name (hearts, points, likes, fans), never from score alone. Rolls like an odometer only when a later answer changes it (real values, never an invented increase); from 10,000 it is short (12.3K), the full number stays in the label. */
-function Main({ locale, metric, value }: { locale: AppLocale; metric: RankingMetric; value: number }) {
+function Main({ locale, metric, value, delay }: { locale: AppLocale; metric: RankingMetric; value: number; delay: number }) {
   const n = value.toLocaleString(locale);
   const label = metric === "hearts" ? rankingsText(locale, "rkHearts", [n]) : metric === "points" ? rankingsText(locale, "rkPointsLabel", [n]) : metric === "likes" ? rankingsText(locale, "rkLikesCount", [n]) : rankingsText(locale, "rkJjinfanCount", [n]);
   const template = metric === "fans" ? rankingsText(locale, "rkJjinfanCount", ["\u0000"]) : "\u0000";
@@ -240,7 +251,7 @@ function Main({ locale, metric, value }: { locale: AppLocale; metric: RankingMet
   return <span className={styles.main} aria-label={label} title={n} data-metric={metric}>
     <span aria-hidden="true" className={styles.mainInner}>
       {unitMark(metric)}{before?.trim() ? <span>{before.trim()}</span> : null}
-      <RollingNumber value={value} format={(v) => v >= 10000 ? short(locale, v) : v.toLocaleString(locale)} className={styles.mainNumber} />{after?.trim() ? <span>{after.trim()}</span> : null}
+      <RollingNumber value={value} format={(v) => v >= 10000 ? short(locale, v) : v.toLocaleString(locale)} className={styles.mainNumber} duration={ROLL_MS} easing={ROLL_EASE} delay={delay} />{after?.trim() ? <span>{after.trim()}</span> : null}
     </span>
   </span>;
 }
@@ -307,7 +318,7 @@ export function FanRows({ locale, ranking, metric, show, fill, scope, guest = fa
     return <li key={keys[i]} ref={place(keys[i]!)} id={id} className={styles.item} data-row="fan-rank" data-kind="fans" data-tint={((accentFirst && i === 0) || row.isMe || open) || undefined} data-me={row.isMe || undefined} aria-current={row.isMe || undefined}>
       <RowToggle label={`${rankingsText(locale, "rkRank", [row.rank.toLocaleString(locale)])} ${row.nickname}`} panelId={`${id}-panel`} open={open} onToggle={() => toggle(keys[i]!)} />
       <RowFace open={open} me={row.isMe} kind="fans">
-        <Rank rank={row.rank} mark={visitDelta(locale, row.delta, ranking.comparable, movedSince(keys[i]!, row.rank))} />
+        <Rank rank={row.rank} delay={rowDelay(i)} mark={visitDelta(locale, row.delta, ranking.comparable, movedSince(keys[i]!, row.rank))} />
         <NameTarget
           label={`${row.nickname}, ${rankingsText(locale, guest ? "rkLoginProfile" : "rkViewProfile")}`}
           href={loginHref}
@@ -317,7 +328,7 @@ export function FanRows({ locale, ranking, metric, show, fill, scope, guest = fa
             <span className={styles.nameLine}><span className={styles.name} title={row.nickname}>{row.nickname}</span></span>
           </span>
         </NameTarget>
-        <span className={styles.value}><Main locale={locale} metric={metric} value={value} /></span>
+        <span className={styles.value}><Main locale={locale} metric={metric} value={value} delay={rowDelay(i)} /></span>
       </RowFace>
       <Pulse />
       {open ? <RankRowPanel id={`${id}-panel`} kind="fan" row={row} days={days} locale={locale} gap={gapToFirst(i === 0 && ranking.rows[0] === row, value, top)} unit={metric === "points" ? "points" : "hearts"} extra={fanStats(locale, row, metric)} /> : null}
@@ -362,7 +373,7 @@ export function CreatorRows({ locale, ranking, metric, show, fill, scope, challe
     return <li key={row.slug} ref={place(row.slug)} id={id} className={styles.item} data-row="creator-rank" data-kind="creators" data-tint={((accentFirst && i === 0) || open) || undefined}>
       <RowToggle label={`${rankingsText(locale, "rkRank", [row.rank.toLocaleString(locale)])} ${row.name}`} panelId={`${id}-panel`} open={open} onToggle={() => toggle(row.slug)} />
       <RowFace open={open} kind="creators">
-        <Rank rank={row.rank} mark={visitDelta(locale, row.delta, ranking.comparable, movedSince(row.slug, row.rank))} />
+        <Rank rank={row.rank} delay={rowDelay(i)} mark={visitDelta(locale, row.delta, ranking.comparable, movedSince(row.slug, row.rank))} />
         <NameTarget label={`${row.name}, ${rankingsText(locale, "rkGoFanpage")}`} href={`/${row.slug}?locale=${locale}`}>
           <span className={styles.avatar} data-first={(accentFirst && i === 0) || undefined}><CreatorAvatar slug={row.slug} src={row.imageUrl} size={28} photos={undefined} /></span>
           <span className={styles.body}>
@@ -371,7 +382,7 @@ export function CreatorRows({ locale, ranking, metric, show, fill, scope, challe
               {challengeTag && row.challenge ? <FanTag tone="fan" className={styles.challenge}>{rankingsText(locale, "jjTag")}</FanTag> : null}</span>
           </span>
         </NameTarget>
-        <span className={styles.value}><Main locale={locale} metric={metric} value={value} /></span>
+        <span className={styles.value}><Main locale={locale} metric={metric} value={value} delay={rowDelay(i)} /></span>
       </RowFace>
       <Pulse />
       {open ? <RankRowPanel id={`${id}-panel`} kind="creator" row={row} days={days} locale={locale} gap={gapToFirst(i === 0 && ranking.rows[0] === row, value, top)} unit={metric === "likes" ? "likes" : "hearts"} extra={creatorStats(locale, row, metric, period)} /> : null}

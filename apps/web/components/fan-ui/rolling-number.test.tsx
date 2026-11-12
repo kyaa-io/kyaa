@@ -30,6 +30,14 @@ describe("RollingNumber", () => {
     expect(container.textContent).toContain("78");
   });
 
+  it("a list can slow the roll and delay it: duration, easing and the row's delay come through", () => {
+    (HTMLElement.prototype as { animate?: unknown }).animate = animate;
+    const { rerender } = render(<RollingNumber value={17} duration={850} easing="ease-out" delay={180} />);
+    rerender(<RollingNumber value={18} duration={850} easing="ease-out" delay={180} />);
+    const [, options] = animate.mock.calls[0]!;
+    expect(options).toMatchObject({ duration: 850, easing: "ease-out", delay: 180 });
+  });
+
   it("rolls down when the value shrinks and passes through the carry", () => {
     (HTMLElement.prototype as { animate?: unknown }).animate = animate;
     const { rerender } = render(<RollingNumber value={100} />);

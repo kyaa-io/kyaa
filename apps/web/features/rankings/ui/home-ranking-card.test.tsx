@@ -134,9 +134,11 @@ it("moves only changed rows on refresh and respects reduced motion", async () =>
       document.dispatchEvent(new Event("visibilitychange"));
       await waitFor(() => expect(view.container.querySelector("ol > li")!.textContent).toContain("나"));
       expect(animate.mock.calls.filter(call => JSON.stringify(call).includes("px)"))).toHaveLength(reduced ? 0 : 2);
-      // The two rows whose value changed ring once (rotating arc + ring fade, 600ms); reduced motion: the whole ring for 300ms, nothing rotates.
+      // The two rows whose value changed ring once (rotating arc + ring: 200ms in, 1s held, 600ms out = 1800ms, rows 90ms apart); reduced motion: the same ring without the rotation.
       expect(animate.mock.calls.filter(call => JSON.stringify(call).includes("rotate"))).toHaveLength(reduced ? 0 : 2);
-      expect(animate.mock.calls.filter(call => JSON.stringify(call).includes("opacity") && JSON.stringify(call).includes(reduced ? '"duration":300' : '"duration":600'))).toHaveLength(2);
+      expect(animate.mock.calls.filter(call => JSON.stringify(call).includes("opacity") && JSON.stringify(call).includes('"duration":1800'))).toHaveLength(2);
+      const ringDelays = animate.mock.calls.filter(call => JSON.stringify(call).includes('"duration":1800') && JSON.stringify(call).includes("opacity")).map(call => (call as unknown as [unknown, { delay?: number }])[1].delay ?? 0);
+      expect(ringDelays).toEqual([0, 90]);
       view.unmount();
     }
   } finally {
