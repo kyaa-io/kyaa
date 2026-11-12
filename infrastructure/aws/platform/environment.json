@@ -1331,7 +1331,7 @@
         "DesiredCount": {
           "Fn::If": [
             "IsProduction",
-            2,
+            3,
             1
           ]
         },
