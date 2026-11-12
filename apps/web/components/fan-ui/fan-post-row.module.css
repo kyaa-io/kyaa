@@ -60,6 +60,9 @@
   grid-area: meta;
   display: flex;
   align-items: center;
+  justify-content: flex-end;
+  text-align: right;
+  flex-wrap: wrap;
   gap: var(--space-1);
   min-width: 0;
   color: var(--color-muted);
@@ -85,12 +88,13 @@
     padding: var(--space-1) 0;
   }
   .thumb { width: 56px; }
-  .meta { gap: var(--space-2); }
+  .meta { gap: var(--space-2); max-width: 60vw; }
   .meta > * + *::before { content: "│"; margin-right: var(--space-2); color: var(--color-line); }
   /* 게시판은 행끼리 세로로 맞는다. 긴 이름만 줄임표로 줄고 수와 시간 열은 움직이지 않는다. */
   .row[data-density="board"] .meta { gap: var(--space-3); }
   .row[data-density="board"] .meta > *::before { content: none; }
-  .row[data-density="board"] .authorCell { flex: none; width: 132px; }
+  .row[data-density="board"] .authorCell { max-width: 132px; justify-content: flex-end; }
+  .source { max-width: 132px; }
   .row[data-density="board"] .time { flex: none; width: 52px; }
   .row[data-density="board"] .number { display: block; flex: none; width: 64px; text-align: right; }
 }

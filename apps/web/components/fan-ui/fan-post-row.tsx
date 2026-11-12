@@ -43,7 +43,7 @@ export type FanPostRowProps = Readonly<{
   density?: "home" | "board";
 }>;
 
-/** 게시판 목록 한 줄. 댓글·추천 수는 제목 옆(0이면 뺌). 값이 없는 열은 빼고 `—`를 쓰지 않는다. 사진이 없거나 깨지면 페이지 이미지를, 그것도 없으면 글 아이콘 칸을 둔다. */
+/** 게시판 목록 한 줄. 댓글·좋아요 수는 제목 옆(0이면 뺌). 값이 없는 열은 빼고 `—`를 쓰지 않는다. 사진이 없거나 깨지면 페이지 이미지를, 그것도 없으면 글 아이콘 칸을 둔다. */
 export function FanPostRow({ href, locale, title, thumbnail, pageImage, notice = false, commentCount, source, author, authorArtist = false, time, edited = false, views, likes, reactedBy, density = "board" }: FanPostRowProps) {
   const [broken, setBroken] = useState(false);
   const count = (value: number) => value.toLocaleString(locale);
