@@ -670,8 +670,23 @@ export class TelegramAlertWorker {
   ) {}
 
   async runOnce(): Promise<number> {
+    const started = Date.now();
+    let total = 0;
+    const seen = new Set<string>();
+    // One batch is one Telegram message; leave budget for claim, send and finish.
+    for (let messages = 0; messages < 20 && Date.now() - started < 40_000; messages++) {
+      const sent = await this.runBatch(seen);
+      if (!sent) break;
+      total += sent;
+      await new Promise((resolve) => setTimeout(resolve, 3_100));
+    }
+    return total;
+  }
+
+  private async runBatch(seen: Set<string>): Promise<number> {
     const batch = await this.queue.claim(this.chatId);
-    if (!batch) return 0;
+    if (!batch || seen.has(batch.batchId)) return 0;
+    seen.add(batch.batchId);
     const text = renderTelegramAlertMessage(batch.alerts);
     if (!await this.queue.begin(batch.batchId, this.chatId)) return 0;
     let providerMessageId: bigint;

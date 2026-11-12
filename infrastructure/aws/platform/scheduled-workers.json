@@ -968,7 +968,7 @@
         "GroupName": {
           "Ref": "ScheduleGroup"
         },
-        "ScheduleExpression": "cron(23 * * * ? *)",
+        "ScheduleExpression": "rate(1 minute)",
         "ScheduleExpressionTimezone": "UTC",
         "FlexibleTimeWindow": {
           "Mode": "OFF"

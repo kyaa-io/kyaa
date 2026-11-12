@@ -443,3 +443,8 @@ test('quiz learning defaults on in dev and production with explicit opt-out', as
  prod.runtimeEnvironment.KYAA_FEATURE_QUIZ_LEARN = 'false'; validateConfig(prod, template);
  assert.equal(prod.runtimeEnvironment.KYAA_FEATURE_QUIZ_LEARN, 'false');
 });
+
+test('Telegram alerts run every minute', async () => {
+  const template = JSON.parse(await readFile(new URL('../infrastructure/aws/platform/scheduled-workers.json', import.meta.url), 'utf8'));
+  assert.equal(template.Resources.ScheduleTelegramAlerts.Properties.ScheduleExpression, 'rate(1 minute)');
+});
