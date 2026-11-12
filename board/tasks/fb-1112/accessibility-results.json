@@ -1,0 +1,56 @@
+[
+  {
+    "width": 390,
+    "guideViolations": [],
+    "dialogViolations": [],
+    "controls": [
+      {
+        "name": "닫기",
+        "rect": {
+          "width": 44,
+          "height": 44
+        }
+      },
+      {
+        "name": "보러 가기",
+        "rect": {
+          "width": 318,
+          "height": 44
+        }
+      }
+    ],
+    "info": {
+      "x": 111.859375,
+      "y": 447.9375,
+      "width": 44,
+      "height": 44
+    }
+  },
+  {
+    "width": 1440,
+    "guideViolations": [],
+    "dialogViolations": [],
+    "controls": [
+      {
+        "name": "닫기",
+        "rect": {
+          "width": 44,
+          "height": 44
+        }
+      },
+      {
+        "name": "보러 가기",
+        "rect": {
+          "width": 120,
+          "height": 48
+        }
+      }
+    ],
+    "info": {
+      "x": 855.859375,
+      "y": 307.234375,
+      "width": 44,
+      "height": 44
+    }
+  }
+]
