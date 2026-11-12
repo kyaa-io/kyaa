@@ -2367,3 +2367,5 @@ D-C token ownership: `FanHeading variant="campaign"` owns the 18px/700 mobile an
 
 ### 창하 카드·프로필 사진 (2026-11-13 사용자 지정)
 창하의 기존 등록 사진을 쓰는 profile 역할(둘러보기 정사각 카드·프로필 아바타)은 지정 인스타 가을 체크 니트 사진의 680×680 얼굴 중심 WebP로 교체한다. 공통 소유자 creator-image-config.ts에서 중앙 cover·scale 1을 사용하며 이전 GGGI 확대 1.5는 승계하지 않는다. landscape·portrait 역할과 향후 별도 CMS 사진·명시적 역할 설정은 보존한다. 원본 출처·크롭 좌표는 profile-autumn-20261113.source.json에 기록한다.
+
+창하 사진 재검수(2026-11-13): 감독의 흐림·얼굴 크기 지적에 따라 같은 지정 JPEG에서 (285,245)부터 540×540을 무손실 WebP로 다시 추출한다. 새 경로 profile-autumn-sharp-20261113.webp로 이전 캐시를 구분하며 중앙 cover·scale 1을 유지한다. 카드 표시 111/161 CSS px에서 원본 540px 로드와 filter none을 확인했다. 로컬 이름 fixture는 실제 celebrity_localizations 이름을 쓰는 기존 규칙에 맞춰 엘리나·유나·창하로 표시한다.

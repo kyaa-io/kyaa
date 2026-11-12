@@ -14,7 +14,7 @@ export function creatorPresentationRole(presentation: CreatorImagePresentation) 
 
 export const parkMyunghoProfile = "/images/celebrities/park-myungho/profile-20260910.png";
 const changhaPhotos = {
-  profile: "/images/celebrities/changha/profile-autumn-20261113.webp",
+  profile: "/images/celebrities/changha/profile-autumn-sharp-20261113.webp",
   landscape: "/images/celebrities/changha/gggi-20261030.jpg",
   portrait: "/images/celebrities/changha/gggi-20261030.jpg",
   calendar: "/images/celebrities/changha/gggi-20261030.jpg",
@@ -22,7 +22,7 @@ const changhaPhotos = {
 
 function isRegisteredChanghaSource(source: string | null | undefined) {
   return Boolean(source && [
-    ...Object.values(changhaPhotos), "/images/celebrities/changha/gggi-20261030.jpg", "/images/celebrities/changha/profile-20261021.webp", "/images/celebrities/changha/hero-desktop-20261021.webp", "/images/celebrities/changha/portrait-20261021.webp", "/images/celebrities/changha/calendar-20261021.webp", "/images/guest-home/changha-card.jpg",
+    ...Object.values(changhaPhotos), "/images/celebrities/changha/profile-autumn-20261113.webp", "/images/celebrities/changha/gggi-20261030.jpg", "/images/celebrities/changha/profile-20261021.webp", "/images/celebrities/changha/hero-desktop-20261021.webp", "/images/celebrities/changha/portrait-20261021.webp", "/images/celebrities/changha/calendar-20261021.webp", "/images/guest-home/changha-card.jpg",
     "/images/celebrities/changha/hero-source.jpg", "/images/celebrities/changha/hero-mobile.jpg",
     "/images/celebrities/changha/hero-editorial-20260911.webp", "/images/celebrities/changha/hero-editorial-portrait-20260911.webp",
   ].includes(source));
