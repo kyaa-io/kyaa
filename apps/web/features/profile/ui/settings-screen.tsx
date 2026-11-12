@@ -1500,7 +1500,7 @@ export function SettingsScreen({ locale, initialSection = null }: { locale: Loca
             <p className={styles.support}>{t.unsupported}</p>
           )}
         </section> : null}
-        {section === "blocked" ? <BlockedUsers locale={locale}/> : null}
+        {section === "blocked" ? <BlockedUsers locale={locale} showHeading={false}/> : null}
         {section === "delete" ? <AccountDeletion locale={locale}/> : null}
       </FanContentContainer>
     </div>

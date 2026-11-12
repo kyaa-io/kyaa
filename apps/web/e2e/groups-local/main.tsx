@@ -135,6 +135,14 @@ const quizProjection=(status:'open'|'failed'|'passed')=>{
 };
 let qualificationSupplementSubmitted=false,qualificationSupplementAttempts=0;
 const earningFixtures=[{entryKey:'mission:e9400000-0000-4000-8000-000000000001',kind:'mission',activityKey:'mission-1',title:'응원 사진 인증',status:'credited',asset:'fan_point',originalAmount:30,correctionAmount:null,netAmount:30,reason:null,occurredAt:'2026-11-01T09:00:00+09:00',processedAt:'2026-11-01T10:00:00+09:00',activityHref:'/pages/groups/e9200000-0000-4000-8000-000000000001/missions'},{entryKey:'mission:e9400000-0000-4000-8000-000000000002',kind:'mission',activityKey:'mission-2',title:'공연 후기 인증',status:'pending',asset:'fan_point',originalAmount:30,correctionAmount:null,netAmount:null,reason:null,occurredAt:'2026-11-02T09:00:00+09:00',processedAt:null,activityHref:'/pages/groups/e9200000-0000-4000-8000-000000000001/missions'},{entryKey:'activity:e9400000-0000-4000-8000-000000000003',kind:'activity',activityKey:'activity-3',title:'한강 러닝 인증',status:'rejected',asset:'fan_point',originalAmount:20,correctionAmount:null,netAmount:0,reason:'사진에서 활동 내용을 확인하지 못했어요.',occurredAt:'2026-11-02T12:00:00+09:00',processedAt:'2026-11-02T13:00:00+09:00',activityHref:null},{entryKey:'raffle:e9400000-0000-4000-8000-000000000004',kind:'raffle',activityKey:'raffle-4',title:'엔카이브 굿즈 추첨 응모',status:'entered',asset:'ticket',originalAmount:-3,correctionAmount:null,netAmount:-3,reason:null,occurredAt:'2026-11-03T12:00:00+09:00',processedAt:'2026-11-03T12:00:00+09:00',activityHref:null}];
+const hotFixturePosts = Array.from({length:10}, (_,i) => ({
+ source:'fan' as const,id:`e9300000-0000-4000-8000-0000000000${String(i+1).padStart(2,'0')}`,
+ pageRef:i%2?'elina':'nchive',pageName:i%2?'엘리나 팬페이지':'엔카이브 팬페이지',
+ title:['오늘의 공연 이야기','새 사진을 함께 봐요','이번 주 응원 모음','팬들이 고른 무대','가장 기억에 남는 순간','함께한 활동 후기','이번 주의 사진','지난 공연 이야기','한 달의 응원','팬페이지 소식'][i],
+ nickname:['별빛','달빛','팬'][i%3],createdAt:new Date(Date.now()-(i<3?i*3600000:i<7?(i-2)*86400000:(i-5)*5*86400000)).toISOString(),
+ likeCount:20-i,commentCount:10-i,viewCount:100-i*4,asset:null,pageImageUrl:i%2?'/images/groups/elina-pencil.jpg':'/images/groups/nchive-pencil.jpg'
+}));
+let blockedFixtureProfiles=[{profileId:'e9200000-0000-4000-8000-000000000002',closed:false,nickname:'예시 팬',avatarUrl:null,blockedAt:'2026-11-01T00:00:00Z'}];
 const receipts=new Map<string,unknown>();let points=2450,hearts=state==='insufficient'?0:2,tickets=state==='zero-tickets'?0:12,checkedIn=false,adSession:string|null=null;
 const json=(value:unknown,status=200)=>Promise.resolve(Response.json(value,{status})),realFetch=window.fetch.bind(window);
 const groupInvitationFixture=createGroupInvitationFixture({authenticated:query.get('auth')!=='off',failOnce:query.get('state')==='invite-save-failure'});
@@ -143,6 +151,9 @@ const eventOperationsFixture=createEventOperationsFixture(id,query.get('eventOps
 window.fetch=(async(input:RequestInfo|URL,init?:RequestInit)=>{
  const url=new URL(typeof input==='string'?input:input instanceof URL?input.href:input.url,location.origin);
  if(!url.pathname.startsWith('/api/'))return realFetch(input,init);
+ if(query.get('hotFixture')==='1'&&url.pathname==='/api/public/popular-posts'){const period=url.searchParams.get('period')??'week',count=period==='today'?3:period==='month'?10:7;return json({items:hotFixturePosts.slice(0,count),hasMore:false});}
+ if(query.get('s3Preview')==='1'&&url.pathname==='/api/me/social/blocks')return json({profiles:blockedFixtureProfiles});
+ if(query.get('s3Preview')==='1'&&url.pathname.startsWith('/api/me/social/blocks/')&&init?.method==='DELETE'){blockedFixtureProfiles=blockedFixtureProfiles.filter(profile=>profile.profileId!==url.pathname.split('/').at(-1));return json({ok:true});}
  (((window as unknown as {__api?:string[]}).__api??=[])).push(`${url.pathname}${url.search}`);
  if(state==='loading')return new Promise<Response>(()=>{/* review knob: keep every API request pending to capture the loading skeleton */});
  const path=url.pathname,body=init?.body?JSON.parse(String(init.body)):null;

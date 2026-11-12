@@ -24,6 +24,13 @@ const hotSort: Record<AppLocale, readonly [string, string, string]> = {
   pt: ["Mais comentários", "Mais visualizações", "Mais recentes"], fr: ["Les plus commentées", "Les plus vues", "Les plus récentes"], ru: ["Больше всего комментариев", "Больше всего просмотров", "Новые"],
 };
 
+const periods: Record<AppLocale, readonly [string, string, string, string]> = {
+  ko: ["기간", "오늘", "7일", "한 달"], en: ["Period", "Today", "7 days", "One month"], ja: ["期間", "今日", "7日", "1か月"],
+  "zh-Hans": ["时间范围", "今天", "7天", "一个月"], "zh-Hant": ["期間", "今天", "7天", "一個月"], es: ["Período", "Hoy", "7 días", "Un mes"],
+  id: ["Periode", "Hari ini", "7 hari", "Satu bulan"], vi: ["Khoảng thời gian", "Hôm nay", "7 ngày", "Một tháng"], th: ["ช่วงเวลา", "วันนี้", "7 วัน", "หนึ่งเดือน"],
+  pt: ["Período", "Hoje", "7 dias", "Um mês"], fr: ["Période", "Aujourd’hui", "7 jours", "Un mois"], ru: ["Период", "Сегодня", "7 дней", "Один месяц"],
+};
+
 const views: Record<AppLocale, string> = {
   ko: "조회 {0}", en: "{0} views", ja: "閲覧 {0}", "zh-Hans": "浏览 {0}", "zh-Hant": "瀏覽 {0}",
   es: "{0} vistas", id: "{0} tayangan", vi: "{0} lượt xem", th: "{0} ครั้งที่ดู", pt: "{0} visualizações", fr: "{0} vues", ru: "Просмотров: {0}",
@@ -33,7 +40,7 @@ export function directoryTopCopy(locale: AppLocale) {
   const v = values[locale];
   const fill = (text: string, count: number) => text.replace("{0}", count.toLocaleString(locale));
   return {
-    myArtists: v[0]!, findGroups: v[1]!, signIn: v[2]!, hotTitle: v[3]!, hotSub: v[4]!, hotSort: { likes: v[4]!, comments: hotSort[locale][0], views: hotSort[locale][1], latest: hotSort[locale][2] }, expand: v[5]!, collapse: v[6]!, hotEmpty: v[7]!, hotError: v[8]!, retry: v[9]!,
+    myArtists: v[0]!, findGroups: v[1]!, signIn: v[2]!, hotTitle: v[3]!, periodLabel: periods[locale][0], period: { today: periods[locale][1], week: periods[locale][2], month: periods[locale][3] }, hotSub: v[4]!, hotSort: { likes: v[4]!, comments: hotSort[locale][0], views: hotSort[locale][1], latest: hotSort[locale][2] }, expand: v[5]!, collapse: v[6]!, hotEmpty: v[7]!, hotError: v[8]!, retry: v[9]!,
     likes: (count: number) => fill(v[10]!, count), comments: (count: number) => fill(v[11]!, count), views: (count: number) => fill(views[locale], count), bannerLabel: v[12]!, previousBanner: v[13]!, nextBanner: v[14]!,
   };
 }

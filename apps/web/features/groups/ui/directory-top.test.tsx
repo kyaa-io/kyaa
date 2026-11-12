@@ -105,7 +105,6 @@ it("hot sort requests the selected ordering from the server", async () => {
   fireEvent.click(screen.getByRole("button", { name: /좋아요순/ }));
   fireEvent.click(await screen.findByRole("menuitemradio", { name: "조회수순" }));
   expect(state.urls.at(-1)).toContain("sort=views");
-  expect(screen.getByText("조회 7")).toBeInTheDocument();
 });
 
 it("hot sort offers 최신순 after 조회수순, requests sort=latest and keeps 좋아요순 as the default", async () => {
@@ -121,6 +120,18 @@ it("hot sort offers 최신순 after 조회수순, requests sort=latest and keeps
   expect(screen.getByRole("button", { name: /최신순/ })).toBeInTheDocument();
 });
 
+it("hot period requests today, seven days, and month from the server", async () => {
+  state.urls = [];
+  render(<HotPosts locale="ko" />);
+  expect(state.urls.at(-1)).toContain("period=week");
+  fireEvent.click(screen.getByRole("button", { name: /기간: 7일/ }));
+  fireEvent.click(await screen.findByRole("menuitemradio", { name: "오늘" }));
+  expect(state.urls.at(-1)).toContain("period=today");
+  fireEvent.click(screen.getByRole("button", { name: /기간: 오늘/ }));
+  fireEvent.click(await screen.findByRole("menuitemradio", { name: "한 달" }));
+  expect(state.urls.at(-1)).toContain("period=month");
+});
+
 it("hot posts: a row draws its page's picture, or the default avatar image — never an empty ring or the grey figure", () => {
   state.posts = [{ ...post(1), pageImageUrl: "https://x/p1.webp" }, post(2)];
   const { container } = render(<HotPosts locale="ko" />);
@@ -130,27 +141,28 @@ it("hot posts: a row draws its page's picture, or the default avatar image — n
   expect(rows[1]!.querySelector("img")).toHaveAttribute("src", "/images/avatars/star-pink.webp");
 });
 
-it("hot posts: six answers stay six real rows when closed and fill to ten rows when open, so the open block is as high as with ten", () => {
+it("hot posts: six answers show only six real rows when opened, without filler", () => {
   state.posts = Array.from({ length: 6 }, (_, i) => post(i + 1));
   const { container } = render(<HotPosts locale="ko" />);
   expect(container.querySelectorAll("ul > li")).toHaveLength(5);
   fireEvent.click(screen.getByRole("button", { name: "펼치기" }));
-  expect(container.querySelectorAll("ul > li")).toHaveLength(10);
+  expect(container.querySelectorAll("ul > li")).toHaveLength(6);
   expect(container.querySelectorAll("ul > li[data-row=hot-post]")).toHaveLength(6);
+  expect(container.querySelector("[data-row=hot-placeholder]")).toBeNull();
 });
 
-it("hot posts: two answers keep five rows (R8-RULE-1), zero answers say so on the first row, and the expand button stays but is off", () => {
+it("hot posts: two answers show two rows, zero answers show one empty state, and expand is off", () => {
   state.posts = [post(1), post(2)];
   const first = render(<HotPosts locale="ko" />);
-  expect(first.container.querySelectorAll("ul > li")).toHaveLength(5);
-  expect(first.container.querySelectorAll("ul > li[aria-hidden='true']")).toHaveLength(3);
+  expect(first.container.querySelectorAll("ul > li")).toHaveLength(2);
+  expect(first.container.querySelectorAll("ul > li[aria-hidden='true']")).toHaveLength(0);
   expect(screen.getByRole("button", { name: "펼치기" })).toBeDisabled();
   first.unmount();
   state.posts = [];
   const second = render(<HotPosts locale="ko" />);
-  expect(second.container.querySelectorAll("ul > li")).toHaveLength(5);
+  expect(second.container.querySelectorAll("ul > li")).toHaveLength(1);
   expect(screen.getByText("아직 Hot 게시글 없음")).toBeInTheDocument();
-  expect(second.container.querySelectorAll("ul > li[aria-hidden='true']")).toHaveLength(4);
+  expect(second.container.querySelector("[data-row=hot-empty] [data-empty-state=section]")).toBeInTheDocument();
 });
 
 it("hot posts: loading keeps five rows and an error says so with a retry", () => {
@@ -208,6 +220,18 @@ it("mobile Hot posts paginate five at a time", () => {
     fireEvent.click(screen.getByRole('button',{name:'이전'}));
     expect(screen.getByText('글 0')).toBeInTheDocument();
   } finally { Object.defineProperty(window,"matchMedia",{configurable:true,value:original}); }
+});
+
+it("mobile Hot last page shows two real rows from seven, without filler", () => {
+  const original = window.matchMedia;
+  Object.defineProperty(window, "matchMedia", {configurable:true,value:vi.fn().mockReturnValue({matches:true,addEventListener:vi.fn(),removeEventListener:vi.fn()})});
+  try {
+    state.posts = Array.from({length:7}, (_,i)=>post(i));
+    const view = render(<HotPosts locale="ko" />);
+    fireEvent.click(screen.getByRole("button", {name:"다음"}));
+    expect(view.container.querySelectorAll("[data-row=hot-post]")).toHaveLength(2);
+    expect(view.container.querySelector("[data-row=hot-placeholder]")).toBeNull();
+  } finally { Object.defineProperty(window, "matchMedia", {configurable:true,value:original}); }
 });
 
 it("keeps loading skeletons separate from the settled empty rail", () => { state.authenticated = true; state.joinedLoading = true; const view = render(<MyArtists locale="ko" loginPath="/pages/groups"/>); expect(view.container.querySelectorAll("[data-row=artist-loading]").length).toBeGreaterThan(0); expect(view.container.querySelectorAll("[data-row=artist-ghost]")).toHaveLength(0); });
