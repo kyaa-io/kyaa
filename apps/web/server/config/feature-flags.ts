@@ -7,7 +7,7 @@ export function jjinfanGaugeEnabled(env: Env = process.env): boolean {
   return env.BYUS_DATA_ENVIRONMENT === "development";
 }
 
-/** Quiz learning is opt-in and restricted to local/dev data environments. */
+/** Quiz learning requires explicit opt-in in every data environment. */
 export function quizLearnEnabled(env: Env = process.env): boolean {
-  return env.BYUS_DATA_ENVIRONMENT === "development" && env.KYAA_FEATURE_QUIZ_LEARN === "true";
+  return env.KYAA_FEATURE_QUIZ_LEARN === "true";
 }

@@ -184,4 +184,4 @@ SNS email 구독은 선택이며 수신자가 확인해야 활성화된다. Clou
 
 PostgREST 이미지는 `Dockerfile.postgrest.aws`와 `buildspec-postgrest.yml`로 별도 생성하고 ECR digest로 고정한다. 공식 PostgREST 14.18 이미지와 AWS 공개 RDS CA bundle을 포함하며 UID 1001로 실행한다. `PGRST_DB_URI`에는 `sslmode=verify-full&sslrootcert=/etc/ssl/certs/rds-ca-bundle.crt`를 지정한다. CA 원본은 https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem 이며, 인증서를 갱신할 때 AWS 원문·해시·실제 TLS 연결을 다시 확인한다.
 
-- `KYAA_FEATURE_QUIZ_LEARN`: 서버 전용 퀴즈 학습 플래그. 기본 꺼짐이며 `BYUS_DATA_ENVIRONMENT=development`와 `true`가 모두 필요하다. 로컬 dev 환경 생성과 dev 배포 설정에서만 켜며, 운영 배포는 강제로 `false`를 설정한다. 꺼지면 학습 RPC를 호출하지 않고 결과의 알아보기 및 관리자 힌트 입력을 숨긴다.
+- `KYAA_FEATURE_QUIZ_LEARN`: 서버 전용 퀴즈 학습 플래그. 서버에서는 `true`일 때 켜진다. 로컬 dev 환경 생성 및 dev·운영 배포 설정은 기본 `true`이며 명시적인 `false`로 끌 수 있다. 꺼지면 학습 RPC를 호출하지 않고 결과의 알아보기 및 관리자 힌트 입력을 숨긴다.

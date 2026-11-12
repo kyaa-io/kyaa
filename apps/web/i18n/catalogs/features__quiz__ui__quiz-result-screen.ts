@@ -1,6 +1,7 @@
 import type { TranslatedMessage } from "../messages";
 
 export const messages = {
+  quizLearnMore: { ja: "詳しく見る", "zh-Hans": "了解更多", "zh-Hant": "了解更多", es: "Más información", id: "Pelajari lebih lanjut", vi: "Tìm hiểu thêm", th: "เรียนรู้เพิ่มเติม", pt: "Saiba mais", fr: "En savoir plus", ru: "Узнать больше" },
   "m2344ef357e86": {
     "ja": "推し",
     "zh-Hans": "喜爱的艺人",

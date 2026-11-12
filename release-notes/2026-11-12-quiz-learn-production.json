@@ -1,0 +1,5 @@
+{
+  "changes": ["팬 인증 퀴즈에서 틀린 문항의 힌트와 공식 SNS 링크를 확인하고 다시 도전할 수 있어요. 정답은 공개하지 않아요.", "첨부 화면은 예시 데이터를 사용한 로컬 검증 화면이에요."],
+  "path": "/c/kara/verify",
+  "images": ["release-notes/images/2026-11-12-quiz-learn-production-390.png", "release-notes/images/2026-11-12-quiz-learn-production-1440.png"]
+}
