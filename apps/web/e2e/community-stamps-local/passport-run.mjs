@@ -7,11 +7,12 @@ import { APP_LOCALES } from '../../i18n/locales.ts';
 
 const out = process.env.PASSPORT_LAYOUT_OUTPUT ?? 'test-results/passport-layout';
 await mkdir(out, { recursive: true });
-const harness = await startHarness(4197);
-const browser = await chromium.launch();
+const harness = await startHarness();
+let browser;
 const results = [];
 const locales = APP_LOCALES;
 try {
+  browser = await chromium.launch();
   for (const locale of locales) {
     const widths = ['ko', 'ja', 'vi', 'th'].includes(locale) ? [360, 390, 768, 1440] : [390, 1440];
     for (const width of widths) {
@@ -94,6 +95,5 @@ try {
   await writeFile(`${out}/results.json`, JSON.stringify(results, null, 2));
   console.log(`PASS: ${results.length} locale/viewport combinations; row heights, facts, footers, overflow, keyboard focus, accessibility and collection states`);
 } finally {
-  await browser.close();
-  await harness.server.close();
+  try { await browser?.close(); } finally { await harness.server.close(); }
 }
