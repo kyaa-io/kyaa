@@ -4,8 +4,9 @@ import { mkdir, writeFile } from 'node:fs/promises';
 import assert from 'node:assert/strict';
 import { startHarness } from './server.mjs';
 const out='test-results/community-stamp-share-local'; await mkdir(out,{recursive:true});
-const harness=await startHarness(4194), browser=await chromium.launch(), checks=[];
+const harness=await startHarness(); let browser; const checks=[];
 try {
+ browser=await chromium.launch();
  for(const locale of ['ko','en']) for(const width of [360,1440]) {
   const context=await browser.newContext({viewport:{width,height:900},reducedMotion:'reduce'}),page=await context.newPage(),errors=[],actions=[];
   page.on('pageerror',e=>errors.push(e.message));
@@ -61,4 +62,4 @@ try {
  }
  await writeFile(`${out}/evidence.json`,JSON.stringify({boundary:'Actual production UI/CSS, synthetic auth and API on localhost. Database security is verified separately in disposable PostgreSQL; no real accounts or mint actions.',checks},null,2));
  console.log(checks.join('\n'));
-} finally {await browser.close();await harness.server.close();}
+} finally {try {await browser?.close();} finally {await harness.server.close();}}

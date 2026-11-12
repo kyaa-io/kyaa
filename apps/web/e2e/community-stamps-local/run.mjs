@@ -4,8 +4,9 @@ import { mkdir, writeFile } from 'node:fs/promises';
 import assert from 'node:assert/strict';
 import { startHarness } from './server.mjs';
 const out='test-results/community-stamps-local'; await mkdir(out,{recursive:true});
-const harness=await startHarness(); const browser=await chromium.launch(); const checks=[];
+const harness=await startHarness(); let browser; const checks=[];
 try {
+ browser=await chromium.launch();
  for(const locale of ['ko','en']) for(const width of [360,1440]) {
  const context=await browser.newContext({viewport:{width,height:950},reducedMotion:'reduce'}); const page=await context.newPage(); const errors=[];page.on('pageerror',e=>errors.push(e.message));
  let stamps=[];const actions=[];const today=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
@@ -47,4 +48,4 @@ try {
  assert.deepEqual(errors,[]);checks.push(`${locale}/${width}: artwork, overflow, award refresh, dialog Escape, copy no award, axe`);await context.close();
  }
  await writeFile(`${out}/evidence.json`,JSON.stringify({boundary:'Actual community stamp component and CSS, loopback fixture auth/API. No real accounts, database or chain actions.',checks},null,2));console.log(checks.join('\n'));
-} finally {await browser.close();await harness.server.close();}
+} finally {try {await browser?.close();} finally {await harness.server.close();}}
