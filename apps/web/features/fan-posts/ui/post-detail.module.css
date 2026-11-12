@@ -52,6 +52,10 @@
 .commentList > li > :first-child > img { position: absolute; top: var(--space-2); left: 0; width: 32px; height: 32px; margin-top: 0; border-radius: 50%; object-fit: cover; }
 .commentList > li[data-reply] { margin-inline-start: var(--space-10); padding-inline-start: var(--space-10); }
 .commentList > li[data-reply] > :first-child > img { width: 28px; height: 28px; }
+/* 11/13 아티스트 댓글: 그 페이지 아티스트의 댓글은 핑크 틴트 면으로 눈에 띄게(선택 면과 같은 --color-accent-soft). 아바타와 글을 면 안으로 12 들인다. */
+.commentList > li[data-artist] { padding-inline: calc(var(--space-10) + var(--space-3)) var(--space-3); border-top-color: transparent; border-radius: var(--radius-media); background: var(--color-accent-soft); }
+.commentList > li[data-artist] > :first-child > img { left: var(--space-3); }
+.commentList > li[data-artist] + li { border-top-color: transparent; }
 .commentList > li p { margin: 0; overflow-wrap: anywhere; white-space: pre-wrap; }
 .commentAction { position: relative; display: inline-flex; align-items: center; min-height: 32px; padding: 0 var(--space-2); border: 0; background: transparent; color: var(--color-muted); font: 700 13px/20px "Pretendard Variable", system-ui, sans-serif; text-decoration: none; cursor: pointer; }
 .commentAction:focus-visible { outline: 3px solid var(--color-focus); outline-offset: -3px; }

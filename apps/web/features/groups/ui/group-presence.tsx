@@ -24,10 +24,11 @@ export function GroupPresence({pageId,locale,member=false,mode="compact",memberC
   ?<span className={styles.error} role='status'><span className={styles.errorText}>{presenceUnavailableCopy[locale]}</span><button type='button' className={styles.retry} onClick={r.retry}>{t.retry}</button></span>
   :<><span className={styles.item}><FanSkeleton width={72} height={16}/></span><FanSkeletonStatus locale={locale}/></>}</section>;
  const seen=r.data.artists.filter(artist=>artist.online||artist.visitedToday),live=seen.some(artist=>artist.online)?seen.filter(artist=>artist.online):seen,online=live.some(artist=>artist.online);
+ // 아티스트 표시는 팬 수 바로 뒤에 둔다(390에서 줄 끝에 잘리지 않게). 지금 접속 중이면 핑크 알약 + 점이 세 번 퍼진다.
  return <section className={styles.line} aria-label={t.groups} data-wrap={challengeSlug?'':undefined}>{fans}
+  {live.length>0&&<span className={styles.artist} data-online={online} role={online?'status':undefined}>{online?<span className={styles.liveDot} aria-hidden='true'/>:<Radio size={16} aria-hidden='true'/>}<strong className={styles.artistName}>{live.map(artist=>artist.nickname).join(', ')}</strong><span className={styles.artistState}>{online?c.connected:c.visited}</span></span>}
   {r.data.onlineCount>0&&<span className={styles.item} data-presence='online'><span className={styles.onlineDot} aria-hidden="true"/>{metric('presenceNow',r.data.onlineCount)}</span>}
   {r.data.todayCount>0&&<span className={styles.item} data-presence='today'>{metric('presenceToday',r.data.todayCount)}</span>}
-  {live.length>0&&<span className={styles.artist} data-online={online}><Radio size={16} aria-hidden='true'/><strong className={styles.artistName}>{live.map(artist=>artist.nickname).join(', ')}</strong><span className={styles.artistState}>{online?c.connected:c.visited}</span></span>}
   {challengeSlug&&<PageChallengeStat slug={challengeSlug} locale={locale} className={styles.item}/>}
  </section>;
 }
