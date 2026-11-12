@@ -454,3 +454,8 @@ test('the provisional dev-only wallet xpub cannot enter production', async () =>
   dev.runtimeEnvironment.KYAA_WALLET_XPUB = 'xprv-not-public';
   assert.throws(() => validateConfig(dev, t), /public xpub/);
 });
+
+test('Telegram alerts run every minute', async () => {
+  const template = JSON.parse(await readFile(new URL('../infrastructure/aws/platform/scheduled-workers.json', import.meta.url), 'utf8'));
+  assert.equal(template.Resources.ScheduleTelegramAlerts.Properties.ScheduleExpression, 'rate(1 minute)');
+});

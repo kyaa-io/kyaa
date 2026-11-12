@@ -448,11 +448,27 @@ export class TelegramCertificationWorker {
 
   async runOnce(): Promise<number> {
     const now = this.timing.now ?? Date.now;
-    const runDeadlineMs = this.timing.runDeadlineMs ?? DELIVERY_RUN_DEADLINE_MS;
+    const started = now();
+    const deadline = this.timing.runDeadlineMs ?? DELIVERY_RUN_DEADLINE_MS;
+    let total = 0;
+    const seen = new Set<string>();
+    // Each delivery has at most three photos: six deliveries stay below 20 messages.
+    while (total < 6 && now() - started < deadline) {
+      const sent = await this.runDelivery(deadline - (now() - started), seen);
+      if (!sent) break;
+      total += sent;
+    }
+    return total;
+  }
+
+  private async runDelivery(remainingMs: number, seen: Set<string>): Promise<number> {
+    const now = this.timing.now ?? Date.now;
+    const runDeadlineMs = remainingMs;
     const uploadStartBudgetMs = this.timing.uploadStartBudgetMs ?? REQUIRED_UPLOAD_START_BUDGET_MS;
     const startedAt = now();
     const claim = await this.queue.claim(this.chatId);
-    if (!claim) return 0;
+    if (!claim || seen.has(claim.deliveryId)) return 0;
+    seen.add(claim.deliveryId);
     let firstMessageId: number | null = claim.actionMessageId;
     for (const upload of claim.uploads) {
       if (upload.deliveryStatus === "sent") {
@@ -464,6 +480,7 @@ export class TelegramCertificationWorker {
         console.info("telegram_certification_delivery", { outcome: "partial", stage: "budget" });
         return 0;
       }
+      await new Promise((resolve) => setTimeout(resolve, 3_100));
       const begun = await this.queue.begin(claim.deliveryId, this.chatId, claim.leaseToken, upload.id, upload.order);
       if (!begun.accepted) return 0;
       let bytes: Blob;
