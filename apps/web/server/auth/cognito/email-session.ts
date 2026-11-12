@@ -95,8 +95,10 @@ export async function cognitoEmailOperation(action:"login"|"refresh"|"logout",in
   const owner=ownerSchema.parse(resolved);
   const sessionId=randomUUID(),newRefresh=opaque(),expiresAt=Math.floor(Date.now()/1000)+tokens.ExpiresIn;
   const stored={accessToken:tokens.AccessToken,idToken:tokens.IdToken,refreshToken:tokens.RefreshToken??old!.refreshToken,subject:identity.subject,legacyUserId};
-  await rpc(db,"write_cognito_email_session",{p_session_id:sessionId,p_legacy_user_id:legacyUserId,p_encrypted_session:seal(stored,config.cookieSecret),p_refresh_hash:digest(newRefresh),p_expires_at:new Date(expiresAt*1000).toISOString(),p_previous_refresh_hash:action==="refresh"?digest(refreshToken!):null});
+  // Finish fallible response preparation before consuming the browser's current refresh handle.
   await rpc(db,"initialize_owned_preferred_locale",{p_app_user_id:owner.appUserId,p_locale:input.locale});
   const profile=fanProfileSchema.parse(await rpc(db,"get_owned_user_profile",{p_app_user_id:owner.appUserId}));
-  return{accessToken:await signEmailSession({sessionId,legacyUserId,expiresAt},config),refreshToken:newRefresh,expiresAt,userId:`supabase:${legacyUserId}`,appUserId:owner.appUserId,profile};
+  const accessToken=await signEmailSession({sessionId,legacyUserId,expiresAt},config);
+  await rpc(db,"write_cognito_email_session",{p_session_id:sessionId,p_legacy_user_id:legacyUserId,p_encrypted_session:seal(stored,config.cookieSecret),p_refresh_hash:digest(newRefresh),p_expires_at:new Date(expiresAt*1000).toISOString(),p_previous_refresh_hash:action==="refresh"?digest(refreshToken!):null});
+  return{accessToken,refreshToken:newRefresh,expiresAt,userId:`supabase:${legacyUserId}`,appUserId:owner.appUserId,profile};
 }
