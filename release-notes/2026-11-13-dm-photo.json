@@ -1,0 +1,11 @@
+{
+  "changes": [
+    "대화창에서 사진과 글을 함께 보낸 뒤에도 말풍선이 바로 보이고, 사진을 누르면 크게 볼 수 있어요.",
+    "안내 화면은 예시 데이터로 확인한 로컬 화면이에요."
+  ],
+  "path": "/my/friends",
+  "images": [
+    "release-notes/images/2026-11-13-dm-photo-390.png",
+    "release-notes/images/2026-11-13-dm-photo-1440.png"
+  ]
+}

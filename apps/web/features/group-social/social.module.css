@@ -54,3 +54,12 @@
 [data-chat-dock] .composeRow>button:last-child{flex:none;width:44px;min-width:44px;padding:0}
 [data-chat-dock] .sendLabel{display:none}
 [data-chat-dock] .sendIcon{display:block}
+
+/* DM rows keep their full height inside the scrolling dock, including after media loads. */
+.messages>.message,.messages>.mine{flex-shrink:0;min-width:0}
+.messagePhoto{display:block;width:min(260px,100%);padding:0;border:0;background:transparent;cursor:zoom-in;text-align:start}
+.messagePhoto:focus-visible{outline:2px solid var(--color-focus);outline-offset:2px}
+.messagePhoto img,.messagePhoto [aria-busy]{display:block;width:100%;max-width:260px;height:auto;max-height:260px;object-fit:contain;border-radius:var(--radius-card)}
+.photoExpanded img{display:block;width:100%;height:auto;max-height:70dvh;object-fit:contain}
+.message:has(p):has(.messagePhoto){padding:14px 18px;border:1px solid var(--color-line);background:var(--color-surface)}
+.mine:has(p):has(.messagePhoto){padding:14px 18px;border:0;background:var(--color-accent-soft)}

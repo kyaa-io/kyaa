@@ -10,7 +10,7 @@ const session = vi.hoisted(() => ({ ready: true, ownerId: "did:privy:me", genera
 vi.mock("@/features/auth/client/cognito-auth", () => ({ useByUsAuth: () => auth }));
 vi.mock("@/components/byus-session-provider", () => ({ useByUsSession: () => session }));
 vi.mock("@/features/content-safety/ui/use-wave-media-upload", () => ({ useWaveMediaUpload: () => ({ items: [], ready: false, invalid: false, add: vi.fn(), remove: vi.fn(), markUsed: vi.fn(), retry: vi.fn() }) }));
-vi.mock("@/features/content-safety/ui/authenticated-media", () => ({ AuthenticatedMedia: () => null }));
+vi.mock("@/features/content-safety/ui/authenticated-media", () => ({ AuthenticatedMedia: ({ alt }: { alt: string }) => <img src="/test-photo.png" alt={alt} /> }));
 
 const person = "10000000-0000-4000-8000-000000000001", chatId = "20000000-0000-4000-8000-000000000002", messageId = "30000000-0000-4000-8000-000000000003";
 const target: ChatDockTarget = { owner: "did:privy:me", profileId: person, nickname: "별빛", avatarUrl: null, conversationId: chatId };
@@ -115,3 +115,25 @@ it("the receiver sees the request end if the sender cancels it", async () => {
   chat = row({ status: "cancelled", canSend: false, retryAt: "2100-01-01T00:00:00Z" });
   await waitFor(() => expect(screen.queryByRole("button", { name: "수락" })).toBeNull(), { timeout: 7000 });
 }, 10000);
+
+it("keeps a sent photo and its text visible immediately in the dock", async () => {
+  chat = row({ status: "accepted", canSend: true });
+  let sent = false;
+  vi.mocked(fetch).mockImplementation(async (input, init) => {
+    const url = String(input instanceof Request ? input.url : input);
+    if (url.includes("/messages") && init?.method === "POST") { sent = true; return Response.json({ id: "40000000-0000-4000-8000-000000000004" }); }
+    if (url.includes("/messages")) return Response.json({ messages: [
+      { id: messageId, senderProfileId: person, text: "첫 메시지", createdAt: "2026-11-07T00:00:00Z", isMine: false, attachment: null },
+      ...(sent ? [{ id: "40000000-0000-4000-8000-000000000004", senderProfileId: person, text: "사진과 함께", createdAt: "2026-11-07T00:01:00Z", isMine: true, attachment: { assetId: "50000000-0000-4000-8000-000000000005", kind: "image" } }] : []),
+    ] });
+    return Response.json({ conversations: [chat] });
+  });
+  render(<ChatDock locale="ko" target={target} />);
+  const log = await screen.findByRole("log");
+  await within(log).findByText("첫 메시지");
+  fireEvent.change(screen.getByRole("textbox", { name: "메시지" }), { target: { value: "사진과 함께" } });
+  fireEvent.click(screen.getByRole("button", { name: "보내기" }));
+  expect(await within(log).findByText("사진과 함께", undefined, { timeout: 1000 })).toBeVisible();
+  fireEvent.click(within(log).getByRole("button", { name: "사진" }));
+  expect(screen.getByRole("dialog", { name: "사진" })).toBeVisible();
+});

@@ -2364,3 +2364,13 @@ D-C token ownership: `FanHeading variant="campaign"` owns the 18px/700 mobile an
 - 브라우저에서 390px·1440px 실제 영상 화면을 아직 검증하지 못했다. 로컬 `/shorts`의 데이터 원본 연결이 실패하며 빈 상태만 반환한다. 화면 캡처와 배포 안내 이미지는 데이터가 있는 개발 환경에서 확인해야 한다.
 ### KYAA 래플 상세·홈 배너 (2026-11-12)
 `/s/raffle`은 기존 campaign `FanHeading`과 `FanText` 역할을 쓰고 상금 구성은 모바일 2열·48rem 이상 4열, 참여 단계는 번호 목록으로 표시한다. 간격은 기존 space 토큰이며 응모만 primary, 패스포트·커뮤니티는 neutral이다. 홈은 기존 `HomeBanner` 모델과 `ManagedHomeBanner` 슬롯을 재사용한다. 인물 없는 기존 banner-onboard 장식 원화의 1440×900·390×390 WebP를 사용하며 상금·마감 문구는 이미지 밖 텍스트다. 원화의 하트·리본 장식 크롭은 허용하되 정보 문구를 이미지에 넣지 않는다. 로컬 실제 컴포넌트의 12언어·390/768/1440 폭·상세/배너 72조합에서 이미지 로드·가로 넘침·44px 행동을 확인했다. 캡처는 로컬 guest fixture로 실제 dev 데이터나 독립 미적 점수 평가를 뜻하지 않는다.
+
+## DM 대화창 준수표 (2026-11-13)
+
+| 역할 | 적용 값·공통 소유자 | 확인 |
+|---|---|---|
+| 말풍선 본문·외곽 | 기존 `social.module.css`의 본문 16/400, `--color-line`, 내 메시지 `--color-accent-soft` 유지 | 사진과 글을 함께 보낸 말풍선의 배경과 전체 높이 보존 |
+| 사진 표시 | 기존 `AuthenticatedMedia`, `object-fit: contain`, 260px 상한, `--radius-card` | 원본 비율 유지, 확대 시 원본 요청 |
+| 확대 화면 | 공통 `FanDialog`의 `lg` 규격·닫기 제어 | 별도 시각 언어와 보조 문구 없음 |
+| 다국어 | 기존 `mediaCopy`와 `fanUiText` | 모든 지원 언어의 사진·닫기 명칭 재사용 |
+| 입력 중 | DM 실시간 상태 전송 경로 없음 | 이번 변경에서는 표시하지 않음. 양쪽 권한 검증·짧은 만료 시간이 있는 presence 경로 설계 후 구현 |
