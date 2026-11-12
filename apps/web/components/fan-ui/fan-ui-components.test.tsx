@@ -123,13 +123,13 @@ describe("FanPostRow", () => {
     expect(container.querySelector("svg")).toBeInTheDocument();
     expect(container.textContent).not.toContain("—");
     rerender(<FanPostRow href="/p" locale="ko" title="제목" thumbnail={null} views={null} likes={3} density="board" />);
-    expect(screen.getByText("추천 3")).toBeInTheDocument();
+    expect(screen.getByText("좋아요 3")).toBeInTheDocument();
     expect(screen.queryByLabelText(/조회/)).toBeNull();
   });
   it("labels board numbers on the row itself", () => {
     render(<FanPostRow href="/p" locale="ko" title="제목" author="별빛" views={1234} likes={3} density="board" />);
     expect(screen.getByText("조회 1,234")).toBeInTheDocument();
-    expect(screen.getByText("추천 3")).toBeInTheDocument();
+    expect(screen.getByText("좋아요 3")).toBeInTheDocument();
   });
   it("shows the notice tag, the comment count and a source link beside the row link", () => {
     render(<FanPostRow href="/p/1" locale="ko" title="공지 글" notice commentCount={8} source={{ label: "엘리나", href: "/elina?tab=board" }} density="home" views={12} />);
