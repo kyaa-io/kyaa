@@ -35,8 +35,10 @@
 .enter { display: grid; justify-items: center; gap: var(--space-2); }
 .enterActions { display: grid; gap: var(--space-2); width: 100%; max-width: calc(var(--rail-narrow) + var(--space-8)); }
 .enterCta { position: relative; display: grid; justify-items: center; min-width: 0; }
-/* 응모 도장: 완료 표시의 오른쪽 위 모서리에 걸쳐 한 번 내려앉는다 */
-.enterStamp { position: absolute; inset-inline-end: calc(var(--space-3) * -1); inset-block-start: calc(var(--space-6) * -1); width: var(--space-16); rotate: -14deg; }
+/* 응모 결과 줄(v5.3): 도장 40 + 내 당첨 기회. 도장은 버튼 밖으로 걸치지 않고 이 줄 안에서 한 번 내려앉는다 */
+.enterResult { display: flex; align-items: center; justify-content: center; gap: var(--space-3); min-height: var(--space-12); }
+.enterStamp { flex: none; width: var(--space-10); rotate: -6deg; }
+.enterChances { display: flex; align-items: baseline; gap: var(--space-2); }
 .enterFacts { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: center; gap: var(--space-1) var(--space-3); margin-top: var(--space-1); }
 .enterDeadline { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--space-1) var(--space-2); }
 .countdown { display: flex; align-items: baseline; gap: var(--space-2); white-space: nowrap; }
@@ -49,13 +51,16 @@
 .enterEnded { display: grid; place-items: center; min-height: var(--min-target); color: var(--color-muted); }
 .enterError { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 0 var(--space-1); color: var(--color-error); }
 
-/* 당첨 확률 올리기: 옅은 분홍 면(FanSurface focus) 하나. 면 안에는 카드를 또 넣지 않고 행 사이 선만 */
+/* 당첨 확률 올리기: 옅은 분홍 면(FanSurface focus) 하나. 면 안에는 카드를 또 넣지 않고 행 사이 선만.
+ * 행 이름 바로 옆에 붙는 기회(+1·+3)는 잉크 강조색 글자(면이 아니라 글자라 분홍 면은 응모 버튼 하나 그대로) */
 .bonus { display: grid; gap: var(--space-2); align-content: start; }
 .bonusRows { list-style: none; padding: 0; }
 .bonusRows li { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); min-height: var(--space-16); padding-block: var(--space-3); }
 .bonusRows li + li { border-top: 1px solid var(--color-line); }
 .bonusRows li:last-child { padding-bottom: 0; min-height: calc(var(--space-16) - var(--space-3)); }
 .bonusRowText { flex: 1; display: grid; gap: var(--space-1); min-width: 0; }
+.bonusName { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 var(--space-2); }
+.plus { color: var(--color-accent-ink); font-variant-numeric: tabular-nums; white-space: nowrap; }
 .bonusFacts { display: flex; flex-wrap: wrap; gap: 0 var(--space-2); color: var(--color-muted); word-break: keep-all; }
 .bonusFacts > span { text-wrap: balance; }
 .bonusFacts > span + span { padding-inline-start: var(--space-2); border-inline-start: 1px solid var(--color-line); }

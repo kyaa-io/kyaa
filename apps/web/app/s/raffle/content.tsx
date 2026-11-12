@@ -15,8 +15,15 @@ import styles from './raffle.module.css';
 const art = (name: string) => `/images/raffle/v4/${name}.webp`;
 /** 소품에 찍는 인쇄 문구. 실제 인쇄물처럼 언어와 상관없이 같은 글자다. */
 const print = { giftCard: 'GIFT CARD', giftNote: 'KYAA RAFFLE 2026' } as const;
-/** 당첨 확률 올리기 행: 덕질 행동마다 같은 잉크 스탬프 그림을 붙인다(DESIGN.md 4절). */
-const boosts = [{ kind: 'comment', stamp: 'comment', label: 'bonusComment' }, { kind: 'attend', stamp: 'attendance', label: 'bonusAttend' }, { kind: 'invite', stamp: 'invite', label: 'bonusInvite' }] as const;
+/** 당첨 확률 올리기 행: 기회가 붙는 행동 전부(응모만 필수, 사용자 결정 2026-11-13). 행 이름 옆에 몇 회가 붙는지, 아래 줄에 조건.
+ * 덕질 행동마다 같은 잉크 스탬프 그림을 붙인다(DESIGN.md 4절). */
+const boosts = [
+  { kind: 'passport', stamp: 'passport', label: 'bonusPassport', plus: 'plusOne', facts: ['bonusOnce'] },
+  { kind: 'community', stamp: 'community', label: 'bonusCommunity', plus: 'plusOne', facts: ['bonusOnce'] },
+  { kind: 'comment', stamp: 'comment', label: 'bonusComment', plus: 'plusOne', facts: ['bonusLimit'] },
+  { kind: 'attend', stamp: 'attendance', label: 'bonusAttend', plus: 'plusOne', facts: ['bonusLimit'] },
+  { kind: 'invite', stamp: 'invite', label: 'bonusInvite', plus: 'plusThree', facts: ['bonusInviteRule'] },
+] as const;
 
 export function RaffleContent({ locale, closesAt, now, closed, preview, invite }: { locale: AppLocale; closesAt: number; now: number; closed: boolean; preview?: RafflePreview; invite?: string }) {
   const text = (key: Parameters<typeof signupRaffleText>[1], count?: number) => signupRaffleText(locale, key, count);
@@ -61,12 +68,10 @@ export function RaffleContent({ locale, closesAt, now, closed, preview, invite }
         <ul className={styles.bonusRows}>{boosts.map(row => <li key={row.kind} data-row="raffle-bonus" data-kind={row.kind}>
           <FanActivityStamp kind={row.stamp} />
           <div className={styles.bonusRowText}>
-            <FanDisplay role="lead" as="p">{t(row.label)}</FanDisplay>
-            {row.kind === 'invite'
-              ? <p className={styles.bonusFacts}><FanDisplay role="caption">{t('bonusInviteRule')}</FanDisplay><RaffleInvitedFriends /></p>
-              : <p className={styles.bonusFacts}><FanDisplay role="caption">{t('bonusRate')}</FanDisplay><FanDisplay role="caption">{t('bonusLimit')}</FanDisplay></p>}
+            <p className={styles.bonusName}><FanDisplay role="lead">{t(row.label)}</FanDisplay><FanDisplay role="lead" className={styles.plus} data-raffle-plus>{t(row.plus)}</FanDisplay></p>
+            <p className={styles.bonusFacts}>{row.facts.map(key => <FanDisplay key={key} role="caption">{t(key)}</FanDisplay>)}{row.kind === 'invite' ? <RaffleInvitedFriends /> : null}</p>
           </div>
-          <RaffleBoostAction kind={row.kind} />
+          {row.kind === 'passport' || row.kind === 'community' ? <RaffleMoreAction kind={row.kind} /> : <RaffleBoostAction kind={row.kind} />}
         </li>)}</ul>
       </FanSurface>
 
@@ -79,12 +84,12 @@ export function RaffleContent({ locale, closesAt, now, closed, preview, invite }
         <ul className={styles.more}>
           <li data-row="raffle-more">
             <FanActivityStamp kind="passport" size="lg" />
-            <FanDisplay role="strong" as="p">{t('passportTitle')}</FanDisplay>
+            <p className={styles.bonusName}><FanDisplay role="strong">{t('passportTitle')}</FanDisplay><FanDisplay role="strong" className={styles.plus} data-raffle-plus>{t('plusOne')}</FanDisplay></p>
             <RaffleMoreAction kind="passport" />
           </li>
           <li data-row="raffle-more">
             <FanActivityStamp kind="community" size="lg" />
-            <FanDisplay role="strong" as="p">{t('communityTitle')}</FanDisplay>
+            <p className={styles.bonusName}><FanDisplay role="strong">{t('communityTitle')}</FanDisplay><FanDisplay role="strong" className={styles.plus} data-raffle-plus>{t('plusOne')}</FanDisplay></p>
             <RaffleMoreAction kind="community" />
           </li>
         </ul>

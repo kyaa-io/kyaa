@@ -3,7 +3,7 @@ import { inRaffleWindow,rafflePolicySchema,signupEvent,raffleChannelHref,raffleI
 it('uses the approved prize distribution and configurable closing boundary',()=>{
  expect(signupEvent.prizes.reduce((sum,p)=>sum+p.quantity,0)).toBe(17);
  expect(signupEvent.prizes.reduce((sum,p)=>sum+p.quantity*p.usd,0)).toBe(400);
- const policy=rafflePolicySchema.parse({});expect(policy.weights).toEqual({comment:1,attendance:1,referral:3});expect(policy.dailyCaps).toEqual({comment:3,attendance:3});
+ const policy=rafflePolicySchema.parse({});expect(policy.weights).toEqual({comment:1,attendance:1,referral:3,passport:1,community:1});expect(policy.dailyCaps).toEqual({comment:3,attendance:3});
  expect(inRaffleWindow('2026-11-30T14:59:59.999Z',policy)).toBe(true);expect(inRaffleWindow('2026-11-30T15:00:00Z',policy)).toBe(false);
  expect(rafflePolicySchema.safeParse({timeZone:'invalid'}).success).toBe(false);
 });

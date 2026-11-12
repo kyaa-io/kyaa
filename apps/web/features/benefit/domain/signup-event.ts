@@ -8,8 +8,9 @@ export const rafflePolicySchema = z.object({
   startsAt: z.iso.datetime({ offset: true }).default('2026-11-10T15:00:00.000Z'),
   closesAt: z.iso.datetime({ offset: true }).default('2026-11-30T23:59:59.999+09:00'),
   timeZone: timeZone.default('Asia/Seoul'),
+  // passport·community: Fan Passport 받기·커뮤니티 가입은 추첨 자격이 아니라 각각 한 번 +1(사용자 결정 2026-11-13, 응모만 필수).
   // referral: 내 초대 링크로 가입하고 응모한 친구 한 명당(사용자 결정 2026-11-13). 댓글·출석과 달리 하루 상한이 없고 친구마다 한 번이다.
-  weights: z.object({ comment: z.number().int().nonnegative().default(1), attendance: z.number().int().nonnegative().default(1), referral: z.number().int().nonnegative().default(3) }).default({ comment: 1, attendance: 1, referral: 3 }),
+  weights: z.object({ comment: z.number().int().nonnegative().default(1), attendance: z.number().int().nonnegative().default(1), referral: z.number().int().nonnegative().default(3), passport: z.number().int().nonnegative().default(1), community: z.number().int().nonnegative().default(1) }).default({ comment: 1, attendance: 1, referral: 3, passport: 1, community: 1 }),
   dailyCaps: z.object({ comment: z.number().int().nonnegative().nullable(), attendance: z.number().int().nonnegative().nullable() }).default({ comment: 3, attendance: 3 }),
 }).refine(value => Date.parse(value.startsAt) <= Date.parse(value.closesAt));
 export type RafflePolicy = z.infer<typeof rafflePolicySchema>;

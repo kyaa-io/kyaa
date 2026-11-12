@@ -3,7 +3,7 @@ import { signupRaffleEnabled } from '../config/feature-flags';
 import { z } from 'zod';
 import { inRaffleWindow, rafflePolicySchema, signupEvent } from '../../features/benefit/domain/signup-event';
 
-const actionKinds = ['attendance', 'comment', 'post', 'share-click', 'referral-signup'] as const;
+const actionKinds = ['attendance', 'comment', 'post', 'share-click', 'referral-signup', 'passport', 'community'] as const;
 export const localSnapshotSchema = z.object({
   users: z.array(z.object({ id: z.uuid(), createdAt: z.iso.datetime({ offset: true }), passportReceived: z.boolean().default(false), communityJoined: z.boolean().default(false) }).strict()),
   // Only server verified records belong here; client analytics are not reward evidence.
@@ -23,8 +23,9 @@ export async function readLocalSnapshot(userId?: string): Promise<LocalSnapshot>
   return readSignupRaffleSnapshot(createSignupRaffleDatabase(), userId);
 }
 /**
- * 응모한 회원마다 당첨 기회 수를 센다(서버 값만). 기본 1 + 댓글·출석(응모 뒤, 종류별 하루 상한) + 친구 초대(친구 한 명당 한 번, 상한 없음).
- * 친구 초대 행은 DB가 "내 코드로 가입 + 응모한 친구"만 만들어 준다(20261224050000). 여기서는 중복만 걸러 가중치를 더한다.
+ * 응모한 회원마다 당첨 기회 수를 센다(서버 값만). 응모만 하면 추첨 대상이다(사용자 결정 2026-11-13).
+ * 기본 1 + Fan Passport 1·커뮤니티 가입 1(각 한 번) + 댓글·출석(응모 뒤, 종류별 하루 상한) + 친구 초대(친구 한 명당 한 번, 상한 없음).
+ * Fan Passport·커뮤니티·친구 초대 행은 DB가 만들어 준다(20261224050000, 20261224060000). 여기서는 중복만 걸러 가중치를 더한다.
  */
 export function raffleChances(input: LocalSnapshot) {
   const snapshot = localSnapshotSchema.parse(input);
@@ -36,10 +37,17 @@ export function raffleChances(input: LocalSnapshot) {
   }
   const ordered = [...snapshot.actions].sort((a,b) => Date.parse(a.occurredAt)-Date.parse(b.occurredAt) || a.sourceId.localeCompare(b.sourceId));
   return snapshot.users.filter(user => entered.has(user.id)).map(user => {
-    const seen = new Set<string>(), daily = new Map<string, number>(), friends = new Set<string>();
+    const seen = new Set<string>(), daily = new Map<string, number>(), friends = new Set<string>(), once = new Set<string>();
     let entries = 1;
     for (const action of ordered) {
       if (action.userId !== user.id || !inRaffleWindow(action.occurredAt,snapshot.policy)) continue;
+      if (action.kind === 'passport' || action.kind === 'community') {
+        // 끝낸 시점이 응모 전이어도 센다. 종류마다 한 번.
+        if (once.has(action.kind)) continue;
+        once.add(action.kind);
+        entries += snapshot.policy.weights[action.kind];
+        continue;
+      }
       if (action.kind === 'referral-signup') {
         // 친구는 한 번만: 같은 행이 두 번 오거나 같은 친구가 다른 행으로 와도 한 번. 본인은 친구가 아니다.
         const friend = action.referredUserId ?? action.sourceId;
@@ -58,11 +66,12 @@ export function raffleChances(input: LocalSnapshot) {
       daily.set(bucket,count+1);
       entries += snapshot.policy.weights[action.kind];
     }
-    return { userId: user.id, entries, friends: friends.size, eligible: user.passportReceived && user.communityJoined };
+    return { userId: user.id, entries, friends: friends.size };
   });
 }
+/** 추첨 후보 = 기간 안에 응모한 회원 전원. Fan Passport·커뮤니티는 자격이 아니라 기회 +1이다. */
 export function candidates(input: LocalSnapshot) {
-  return raffleChances(input).filter(row => row.eligible).map(({ userId, entries }) => ({ userId, entries }));
+  return raffleChances(input).map(({ userId, entries }) => ({ userId, entries }));
 }
 // Same exponential weighted ranking as phase4_weighted_benefit_draw.sql.
 // shortcut: retries use the current local snapshot, use the persisted SQL draw before confirming winners.

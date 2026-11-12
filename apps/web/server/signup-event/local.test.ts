@@ -3,10 +3,20 @@ import { candidates,drawLocal,localSnapshotSchema,maskedCsv,localSignupEnabled,r
 const a='00000000-0000-4000-8000-000000000001',b='00000000-0000-4000-8000-000000000002';
 const enteredAt='2026-11-11T01:00:00Z';
 const fixture=()=>localSnapshotSchema.parse({users:[a,b].map(id=>({id,createdAt:'2025-01-01T00:00:00Z',passportReceived:true,communityJoined:true})),actions:[],entries:[a,b].map(userId=>({userId,enteredAt}))});
-it('accepts existing members only after entry, passport and community completion',()=>{
+it('puts every entrant on the roster with 1 chance, with or without passport and community',()=>{
  const data=fixture();expect(candidates(data)).toEqual([{userId:a,entries:1},{userId:b,entries:1}]);
- expect(candidates({...data,entries:[]})).toEqual([]);expect(candidates({...data,users:data.users.map(user=>({...user,passportReceived:false}))})).toEqual([]);
- expect(candidates({...data,users:data.users.map(user=>({...user,communityJoined:false}))})).toEqual([]);
+ expect(candidates({...data,entries:[]})).toEqual([]);
+ const bare={...data,users:data.users.map(user=>({...user,passportReceived:false,communityJoined:false}))};
+ expect(candidates(bare)).toEqual([{userId:a,entries:1},{userId:b,entries:1}]);
+});
+it('adds 1 for Fan Passport and 1 for community, once each, even when done before entry',()=>{
+ const data=fixture();
+ const row=(kind:'passport'|'community',sourceId:string,occurredAt='2026-11-10T15:00:00Z')=>({userId:a,kind,sourceId,occurredAt});
+ data.actions=[row('passport','passport:fan_passports')];expect(candidates(data)[0].entries).toBe(2);
+ data.actions=[row('community','community:group_memberships')];expect(candidates(data)[0].entries).toBe(2);
+ data.actions=[row('passport','p1'),row('passport','p2'),row('community','c1'),row('community','c2','2026-11-12T00:00:00Z')];expect(candidates(data)).toEqual([{userId:a,entries:3},{userId:b,entries:1}]);
+ data.actions=[row('passport','late','2026-12-01T00:00:00Z')];expect(candidates(data)[0].entries).toBe(1);
+ data.policy.weights.passport=0;data.actions=[row('passport','p1'),row('community','c1')];expect(candidates(data)[0].entries).toBe(2);
 });
 it('counts only unique comments and attendance after entry, with separate daily caps in the configured timezone',()=>{
  const data=fixture();data.policy.dailyCaps={comment:1,attendance:1};
@@ -14,7 +24,7 @@ it('counts only unique comments and attendance after entry, with separate daily 
  data.actions=[action,action,{...action,sourceId:'two'},{...action,sourceId:'next-day',occurredAt:'2026-11-11T15:01:00Z'},{...action,kind:'attendance',sourceId:'checkin'},{...action,kind:'share-click'},{...action,kind:'post'},{...action,sourceId:'before-entry',occurredAt:'2026-11-11T00:00:00Z'},{...action,sourceId:'late',occurredAt:'2026-12-01T00:00:00Z'}];
  expect(candidates(data)[0].entries).toBe(4);
  data.policy.timeZone='UTC';expect(candidates(data)[0].entries).toBe(3);
- data.policy.dailyCaps={comment:null,attendance:null};data.policy.weights={comment:2,attendance:3,referral:3};expect(candidates(data)[0].entries).toBe(10);
+ data.policy.dailyCaps={comment:null,attendance:null};data.policy.weights={comment:2,attendance:3,referral:3,passport:1,community:1};expect(candidates(data)[0].entries).toBe(10);
  data.policy.dailyCaps={comment:0,attendance:0};expect(candidates(data)[0].entries).toBe(1);
 });
 it('deduplicates entries, masks identifiers and selects distinct members with stable retries',()=>{
@@ -37,9 +47,12 @@ it('adds 3 chances per invited friend once, with no daily cap and regardless of 
  expect(candidates(data)[0].entries).toBe(4);
  data.policy.weights.referral=0;data.actions=[friend('r1','2026-11-11T02:00:00Z')];expect(candidates(data)[0].entries).toBe(1);
 });
-it('counts chances and friends for every entrant while the draw keeps its eligibility filter',()=>{
- const data=fixture();data.users[1].passportReceived=false;
- data.actions=[{userId:b,kind:'referral-signup',sourceId:'r1',occurredAt:'2026-11-11T02:00:00Z'}];
- expect(raffleChances(data)).toEqual([{userId:a,entries:1,friends:0,eligible:true},{userId:b,entries:4,friends:1,eligible:false}]);
- expect(candidates(data)).toEqual([{userId:a,entries:1}]);
+it('counts chances and friends for every entrant and the draw takes them all',()=>{
+ const data=fixture();data.users[1].passportReceived=false;data.users[1].communityJoined=false;
+ data.actions=[{userId:b,kind:'referral-signup',sourceId:'r1',occurredAt:'2026-11-11T02:00:00Z'},{userId:b,kind:'referral-signup',sourceId:'r2',occurredAt:'2026-11-11T02:00:01Z'}];
+ expect(raffleChances(data)).toEqual([{userId:a,entries:1,friends:0},{userId:b,entries:7,friends:2}]);
+ expect(candidates(data)).toEqual([{userId:a,entries:1},{userId:b,entries:7}]);
+ // 친구 초대는 상한이 없다: 친구 20명 = +60
+ data.actions=Array.from({length:20},(_,n)=>({userId:b,kind:'referral-signup' as const,sourceId:`f${n}`,occurredAt:'2026-11-11T02:00:00Z'}));
+ expect(candidates(data)[1].entries).toBe(61);
 });

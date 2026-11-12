@@ -139,10 +139,7 @@ export function RaffleEnterBlock() {
   if (r.closed) return <FanDisplay role="strong" as="p" className={styles.enterEnded} data-state="closed">{r.t('ended')}</FanDisplay>;
   return <div className={styles.enter} data-raffle-hero-action>
     <div className={styles.enterActions}>
-      <div className={styles.enterCta}>
-        <RaffleEnterAction />
-        {r.entered ? <FanPrintStamp label={stampPrint} className={styles.enterStamp} /> : null}
-      </div>
+      <div className={styles.enterCta}><RaffleEnterAction /></div>
       {/* 응모 바로 옆(모바일은 바로 아래)의 보조 행동. 응모 뒤에는 이 칸에서 누를 수 있는 유일한 버튼이라 다음 행동이 된다 */}
       <RaffleShare />
     </div>
@@ -151,9 +148,15 @@ export function RaffleEnterBlock() {
       <RaffleCountdown />
     </div>
     {r.error ? <p className={styles.enterError} role="alert"><FanDisplay role="caption">{r.s('error')}</FanDisplay><FanAction type="button" variant="text" size="sm" onClick={r.enter}>{r.t('retry')}</FanAction></p> : null}
-    {/* 내 당첨 기회 수는 서버가 센 값만 쓴다(기본 1 + 댓글·출석 + 친구 초대). 값을 받기 전에는 응모 1회만 말한다 */}
+    {/* 응모 뒤의 주인공은 내 당첨 기회 수(서버가 센 값만: 기본 1 + Fan Passport·커뮤니티 + 댓글·출석 + 친구 초대). 도장은 이 칸 안 왼쪽에 40으로 한 번 찍힌다.
+     * 값을 받기 전(또는 개발 미리보기)에는 숫자를 지어내지 않고 응모 1회만 말한다 */}
     {r.entered
-      ? <p className={styles.enterStatus} data-state="entered" role="status"><FanIcon icon={Ticket} size={16} /><FanDisplay role="caption">{r.chances ? r.t('myChances', r.chances) : r.t('myEntry')}</FanDisplay></p>
+      ? <div className={styles.enterResult} data-state="entered" role="status">
+          <FanPrintStamp label={stampPrint} className={styles.enterStamp} />
+          {r.chances
+            ? <p className={styles.enterChances} data-raffle-chances><FanDisplay role="caption" className={styles.muted}>{r.t('myChancesLabel')}</FanDisplay><FanDisplay role="figure-sm">{r.t('chancesCount', r.chances)}</FanDisplay></p>
+            : <p className={styles.enterStatus} data-state="entered"><FanIcon icon={Ticket} size={16} /><FanDisplay role="caption">{r.t('myEntry')}</FanDisplay></p>}
+        </div>
       : <p className={styles.enterStatus}><FanDisplay role="caption">{r.t('flowOnce')}</FanDisplay></p>}
   </div>;
 }

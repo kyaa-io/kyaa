@@ -36,16 +36,17 @@ it('registers a friend invite code through the existing referral after the entry
  for(const bad of ['short',"AB23'; drop table",123,null]){const body=await (await post(bad)).json();expect(body.invite).toBeUndefined();}
  expect(mocks.rpc).not.toHaveBeenCalled();
 });
-it('reads my chances from the server snapshot: 1 + capped comments + 3 per invited friend',async()=>{
+it('reads my chances from the server snapshot: 1 + community 1 + capped comments + 3 per invited friend',async()=>{
  vi.stubEnv('KYAA_FEATURE_SIGNUP_RAFFLE','true');mocks.authorize.mockResolvedValue({appUserId:owner});
  mocks.read.mockResolvedValue(snapshot([
   ...[0,1,2,3].map(n=>({userId:owner,kind:'comment',sourceId:`c${n}`,occurredAt:`2026-11-11T02:00:0${n}Z`})),
   {userId:owner,kind:'referral-signup',sourceId:'referral:a',occurredAt:'2026-11-10T16:00:00Z'},
   {userId:owner,kind:'referral-signup',sourceId:'referral:b',occurredAt:'2026-11-12T16:00:00Z'},
+  {userId:owner,kind:'community',sourceId:'community:group_memberships',occurredAt:'2026-11-10T15:00:00Z'},
  ]));
  const response=await GET(new Request('http://localhost'));
  expect(response.status).toBe(200);expect(mocks.read).toHaveBeenCalledWith(owner);expect(mocks.refresh).not.toHaveBeenCalled();
- expect(await response.json()).toEqual({entered:true,passportReceived:false,communityJoined:true,chances:10,friends:2});
+ expect(await response.json()).toEqual({entered:true,passportReceived:false,communityJoined:true,chances:11,friends:2});
  mocks.read.mockResolvedValue({users:[],entries:[],actions:[]});
  expect(await (await GET(new Request('http://localhost'))).json()).toEqual({entered:false,passportReceived:false,communityJoined:false,chances:0,friends:0});
  mocks.authorize.mockRejectedValue(new AuthError('AUTHENTICATION_REQUIRED',401,'required'));
