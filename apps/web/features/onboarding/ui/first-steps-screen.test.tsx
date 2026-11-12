@@ -32,9 +32,10 @@ describe("FirstStepsScreen", () => {
     state.view = member({ joinedPages: [elina], passports: [], attended: false });
     render(<FirstStepsScreen locale="ko" />);
     expect(screen.getByRole("progressbar").getAttribute("aria-valuenow")).toBe("1");
-    expect(screen.getByRole("link", { name: "팬 인증하기" }).getAttribute("href")).toBe("/c/elina/verify?locale=ko");
+    expect(screen.getByRole("link", { name: "패스포트 받기" }).getAttribute("href")).toBe("/c/elina/verify?locale=ko");
     expect(document.querySelector('[data-mission="first-step-join"]')?.getAttribute("data-done")).toBe("true");
     expect(screen.getByText("엘리나")).toBeTruthy();
+    expect([...document.querySelectorAll("[data-next]")].map((label) => label.textContent)).toEqual(["받기"]);
     expect([...document.querySelectorAll("[data-step]")].map((stamp) => stamp.getAttribute("data-step"))).toEqual(["join"]);
     expect(state.slam).not.toHaveBeenCalled();
   });

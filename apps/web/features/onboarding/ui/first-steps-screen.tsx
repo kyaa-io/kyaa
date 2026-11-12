@@ -71,6 +71,9 @@ export function FirstStepsScreen({ locale }: { locale: AppLocale }) {
   };
 
   /** 화면의 버튼은 하나: 비회원은 로그인, 회원은 다음 걸음(다 마치면 덕질), 실패는 다시 시도. 읽는 동안은 버튼 높이만큼 자리를 비워 둔다. */
+  /** 지금 할 수 있는 걸음(비회원·읽는 중은 첫 걸음). 그 행의 상태 글자만 분홍, 나머지 아직인 걸음은 회색. */
+  const nextId = member ? member.progress.next : FIRST_STEP_IDS[0];
+
   const primary: { href?: string; onClick?: () => void; label: string; variant: "primary" | "secondary" } | null = view.status === "guest"
     ? { href: loginHref(locale), label: t.login, variant: "primary" }
     : member
@@ -104,7 +107,7 @@ export function FirstStepsScreen({ locale }: { locale: AppLocale }) {
             art={<span className={styles.rowStamp} style={{ "--stamp": `url(${FIRST_STEP_STAMP[id]})` } as CSSProperties} />}
             title={t.step[id]}
             detail={done ? detail(id) : undefined}
-            trailing={done ? <MissionDoneStamp label={t.done} /> : <FanText role="label" className={styles.go}>{t.action[id]}</FanText>} />;
+            trailing={done ? <MissionDoneStamp label={t.done} /> : <FanText role="label" className={styles.go} data-next={id === nextId ? "" : undefined}>{t.action[id]}</FanText>} />;
         })}
       </FanMissionList>
       {view.status === "error" ? <FanState kind="error" inline compact title={t.error} /> : null}

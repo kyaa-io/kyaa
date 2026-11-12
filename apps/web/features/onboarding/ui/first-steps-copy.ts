@@ -13,8 +13,8 @@ const ko = {
   retry: "다시 시도",
   error: "첫 걸음을 불러오지 못했습니다.",
   step: { join: "모임 가입", passport: "팬 패스포트 받기", attend: "첫 출석" },
-  action: { join: "가입", passport: "인증", attend: "출석" },
-  next: { join: "모임 가입하기", passport: "팬 인증하기", attend: "출석하기" },
+  action: { join: "가입", passport: "받기", attend: "출석" },
+  next: { join: "모임 가입하기", passport: "패스포트 받기", attend: "출석하기" },
   streak: (days: number) => `연속 ${days}일`,
 };
 
@@ -30,8 +30,8 @@ const en: typeof ko = {
   retry: "Try again",
   error: "We couldn't load your first steps.",
   step: { join: "Join a page", passport: "Get a Fan Passport", attend: "First check-in" },
-  action: { join: "Join", passport: "Verify", attend: "Check in" },
-  next: { join: "Join a page", passport: "Verify as a fan", attend: "Check in" },
+  action: { join: "Join", passport: "Get", attend: "Check in" },
+  next: { join: "Join a page", passport: "Get a passport", attend: "Check in" },
   streak: (days: number) => `${days}-day streak`,
 };
 
