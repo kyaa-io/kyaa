@@ -1,0 +1,161 @@
+diff --cc apps/web/components/notice/notice-body.tsx
+index 7e1ea80bc,98fd9d35e..000000000
+--- a/apps/web/components/notice/notice-body.tsx
++++ b/apps/web/components/notice/notice-body.tsx
+@@@ -27,16 -26,16 +27,22 @@@ export function NoticeBody(props: { doc
+  
+  /** Title and body follow one translation state: one request, one 번역/원문 toggle. The source document and title are never mutated. */
+  export function NoticeTranslation({ title, document, locale, children }: { title: string; document: TiptapDocument; locale: AppLocale; children: ReactNode }) {
+-   const texts = useMemo(() => collectNoticeTexts(document, locale, title), [document, locale, title]);
++   // The title is never translated: it is shown as written. Only the body takes part in the translation.
++   const texts = useMemo(() => collectNoticeTexts(document, locale), [document, locale]);
+    const { observeElement, ...translation } = useAutomaticTranslation({ texts, locale });
+    const translatedDocument = useMemo(() => applyNoticeTranslation(document, texts, translation.showing ? translation.texts : null), [document, texts, translation.showing, translation.texts]);
+-   const shownTitle = translation.showing ? translation.texts[texts.indexOf(title)] ?? title : title;
+-   return <SharedTranslation.Provider value={{ title: shownTitle, document: translatedDocument, translation, observeElement }}>{children}</SharedTranslation.Provider>;
++   return <SharedTranslation.Provider value={{ title, document: translatedDocument, translation, observeElement }}>{children}</SharedTranslation.Provider>;
+  }
+  
+++<<<<<<< HEAD
+ +export function NoticeTitle({ locale, className }: { locale: AppLocale; className?: string }) {
+ +  const shared = useContext(SharedTranslation);
+ +  return shared ? <h1 className={className} lang={shared.translation.showing ? locale : undefined}>{shared.title}</h1> : null;
+++=======
++ export function NoticeTitle({ className }: { locale?: AppLocale; className?: string }) {
++   const shared = useContext(SharedTranslation);
++   return shared ? <h1 className={className}>{shared.title}</h1> : null;
+++>>>>>>> 006754188
+  }
+  
+  export function NoticeTranslationControl({ locale }: { locale: AppLocale }) {
+diff --cc apps/web/components/notice/notice-detail.tsx
+index e8a59f221,bbce40a08..000000000
+--- a/apps/web/components/notice/notice-detail.tsx
++++ b/apps/web/components/notice/notice-detail.tsx
+@@@ -15,7 -15,6 +15,10 @@@ import { useCommunityResource } from "@
+  import { NoticeComments } from "@/features/fanpage/ui/notice-comments";
+  import { ContentActions } from "@/features/content-safety/ui/content-actions";
+  import { parseNoticeDocument } from "@/server/notice/notice-domain";
+++<<<<<<< HEAD
+ +import { TranslatedText } from "@/features/content-safety/ui/use-automatic-translation";
+++=======
+++>>>>>>> 006754188
+  import { PostDetailHeader } from "@/features/fan-posts/ui/post-detail-header";
+  import { NoticeBody, NoticeTitle, NoticeTranslation, NoticeTranslationControl } from "./notice-body";
+  import { NoticeReactions } from "./notice-reactions";
+@@@ -46,12 -44,10 +49,12 @@@ export function NoticeDetail({ slug, no
+            {detail.refreshFailed && <p role="status">{copy.failed}<FanAction variant="text" onClick={detail.retry}>{copy.retry}</FanAction></p>}
+            <NoticeBody document={notice.body} locale={locale} />
+            </NoticeTranslation>
+ +          <DukjilProvider slug={slug} locale={locale}>
+            <NoticeReactions slug={slug} noticeSlug={noticeSlug} title={notice.title} locale={locale} />
+            <NoticeComments slug={slug} noticeSlug={noticeSlug} locale={locale} welcome={notice.kind === "welcome"} />
+ +          </DukjilProvider>
+          </article>
+-         {related.length > 0 && <aside className={styles.recent} aria-labelledby="recent-notices"><h2 id="recent-notices">{locale === "ko" ? "최근 공지" : translate(locale, messages.mc51097f53111, "Recent Notices")}</h2>{related.map(item => <Link key={item.id} href={`/c/${slug}/notices/${item.slug}?locale=${locale}&returnTo=${encodeURIComponent(returnTo)}`}><strong><TranslatedText text={item.title} locale={locale} controls={false} /></strong><small>{format(item.publishedAt)}</small></Link>)}</aside>}
++         {related.length > 0 && <aside className={styles.recent} aria-labelledby="recent-notices"><h2 id="recent-notices">{locale === "ko" ? "최근 공지" : translate(locale, messages.mc51097f53111, "Recent Notices")}</h2>{related.map(item => <Link key={item.id} href={`/c/${slug}/notices/${item.slug}?locale=${locale}&returnTo=${encodeURIComponent(returnTo)}`}><strong>{item.title}</strong><small>{format(item.publishedAt)}</small></Link>)}</aside>}
+        </div>}
+    </div>;
+  }
+diff --cc apps/web/features/fan-posts/ui/post-card.tsx
+index 0ac785440,f132c4dd2..000000000
+--- a/apps/web/features/fan-posts/ui/post-card.tsx
++++ b/apps/web/features/fan-posts/ui/post-card.tsx
+@@@ -16,6 -16,7 +16,10 @@@ import { applyReaction, PostReactions, 
+  import { PostInlineVideo, SlotPostBody, TranslatedPlainPostBody, TranslatedRichPostBody } from "./rich-post-body";
+  import { TranslationControl, useAutomaticTranslation } from "@/features/content-safety/ui/use-automatic-translation";
+  import { postSlotTexts } from "../domain/post-title-slots";
+++<<<<<<< HEAD
+++=======
++ import { shouldOfferTranslation } from "@/features/content-safety/domain/translation-eligibility";
+++>>>>>>> 006754188
+  import detailStyles from "./post-detail.module.css";
+  import { EditedMark } from "./edited-mark";
+  import { isEdited } from "../domain/edited";
+@@@ -94,11 -95,12 +98,20 @@@ export function PostCard({ post, locale
+    const boardDetail = presentation === "board" && detail, slotTranslation = boardDetail && auth.authenticated;
+    const slotTexts = useMemo(() => postSlotTexts(post.body), [post.body]);
+    const slotTarget = useMemo(() => ({ targetType: "fan_post" as const, targetId: post.id, sourceRevision: post.revision, slots: "title-body" as const }), [post.id, post.revision]);
+++<<<<<<< HEAD
+ +  const { observeElement: observeSlots, ...slots } = useAutomaticTranslation({ texts: slotTexts, locale, target: slotTarget, enabled: slotTranslation });
+ +  // A guest (or a post read without the slot answer) translates the whole body instead. Its switch lives with the slot one at the top of the post.
+ +  const bodyTexts = useMemo(() => [post.body], [post.body]);
+ +  const bodyTarget = useMemo(() => ({ targetType: "fan_post" as const, targetId: post.id, sourceRevision: post.revision }), [post.id, post.revision]);
+ +  const { observeElement: observeBody, ...bodyTranslation } = useAutomaticTranslation({ texts: bodyTexts, locale, target: bodyTarget, enabled: boardDetail && !slotTranslation && (Boolean(document) || post.body.split("\n").slice(1).join("\n") !== "") });
+++=======
++   // The title is never translated, so a post whose article needs no translation offers none (a foreign title alone does not).
++   const { observeElement: observeSlots, ...slots } = useAutomaticTranslation({ texts: slotTexts, locale, target: slotTarget, enabled: slotTranslation && shouldOfferTranslation(slotTexts[1], locale) });
++   // A guest (or a post read without the slot answer) translates the whole body instead. Its switch lives with the slot one at the top of the post.
++   const bodyTexts = useMemo(() => [slotTexts[1]], [slotTexts]);
++   const bodyTarget = useMemo(() => ({ targetType: "fan_post" as const, targetId: post.id, sourceRevision: post.revision }), [post.id, post.revision]);
++   const { observeElement: observeBody, ...bodyTranslation } = useAutomaticTranslation({ texts: bodyTexts, locale, target: bodyTarget, enabled: boardDetail && !slotTranslation && shouldOfferTranslation(slotTexts[1], locale) });
+++>>>>>>> 006754188
+    const topTranslation = slotTranslation ? slots : bodyTranslation;
+    if (editing) return <PostComposer board={presentation === "board" || Boolean(editTarget?.bodyDoc)} allowMembers={post.celebritySlug !== WAVE_FANPAGE_SLUG} slug={post.celebritySlug} locale={locale} post={editTarget ?? post} onCancel={() => { setEditing(false); setEditTarget(null); }} onSaved={() => { setEditing(false); setEditTarget(null); onChanged(); }} />;
+    const displayedBody = presentation === "board" && detail ? post.body.split("\n").slice(1).join("\n") : post.body;
+@@@ -111,7 -113,7 +124,11 @@@
+    </Menu.Root> : <ContentActions targetType="fan_post" targetId={post.id} locale={locale} onChanged={onChanged} />;
+    const loginHref = fanLoginHref(locale, `/c/${post.celebritySlug}/community/${post.id}?locale=${locale}${returnTo ? `&returnTo=${encodeURIComponent(returnTo)}` : ""}`);
+    return <article ref={articleRef} className={`${styles.card} ${presentation === "board" ? boardStyles.article : ""}`} data-post-id={post.id}>
+++<<<<<<< HEAD
+ +    {boardDetail ? <PostDetailHeader title={slots.showing && slots.texts[0]?.trim() ? slots.texts[0] : post.body.split("\n")[0] || copy.community} titleLang={slots.showing && slots.texts[0]?.trim() ? locale : undefined} author={<ProfileAuthor contentRef={{ kind: "fan_post", id: post.id }} nickname={post.author.nickname} avatarUrl={post.author.avatarUrl}>{post.author.nickname}</ProfileAuthor>} avatarUrl={post.author.avatarUrl} translation={<TranslationControl locale={locale} translation={topTranslation} />} authorBadge={<>{post.artist && <GroupArtistMark locale={locale} />}{post.celebritySlug === WAVE_FANPAGE_SLUG ? <WavePrivateBadge locale={locale} /> : post.visibility === "members" && <span className={styles.badge}>{copy.members}</span>}</>} createdAt={post.createdAt} edited={isEdited(post)} viewCount={post.viewCount} likeCount={likeCount} commentCount={post.commentCount} locale={locale} menu={menu} /> : <header className={`${styles.meta} ${styles.postHeader}`}>{boardMetadata??<><img src={post.author.avatarUrl} alt="" width={32} height={32} /><div className={styles.postIdentity}><strong><ProfileAuthor contentRef={{ kind: "fan_post", id: post.id }} nickname={post.author.nickname} avatarUrl={post.author.avatarUrl}>{post.author.nickname}</ProfileAuthor></strong>
+++=======
++     {boardDetail ? <PostDetailHeader title={post.body.split("\n")[0] || copy.community} author={<ProfileAuthor contentRef={{ kind: "fan_post", id: post.id }} nickname={post.author.nickname} avatarUrl={post.author.avatarUrl}>{post.author.nickname}</ProfileAuthor>} avatarUrl={post.author.avatarUrl} translation={<TranslationControl locale={locale} translation={topTranslation} />} authorBadge={<>{post.artist && <GroupArtistMark locale={locale} />}{post.celebritySlug === WAVE_FANPAGE_SLUG ? <WavePrivateBadge locale={locale} /> : post.visibility === "members" && <span className={styles.badge}>{copy.members}</span>}</>} createdAt={post.createdAt} edited={isEdited(post)} viewCount={post.viewCount} likeCount={likeCount} commentCount={post.commentCount} locale={locale} menu={menu} /> : <header className={`${styles.meta} ${styles.postHeader}`}>{boardMetadata??<><img src={post.author.avatarUrl} alt="" width={32} height={32} /><div className={styles.postIdentity}><strong><ProfileAuthor contentRef={{ kind: "fan_post", id: post.id }} nickname={post.author.nickname} avatarUrl={post.author.avatarUrl}>{post.author.nickname}</ProfileAuthor></strong>
+++>>>>>>> 006754188
+        {post.celebritySlug === WAVE_FANPAGE_SLUG ? <WavePrivateBadge locale={locale} /> : <span className={styles.badge}>{post.visibility === "members" ? copy.members : copy.public}</span>}
+        </div>
+        {menu}
+diff --cc apps/web/features/fan-posts/ui/rich-post-body.tsx
+index 8b02f09d6,0a4344121..000000000
+--- a/apps/web/features/fan-posts/ui/rich-post-body.tsx
++++ b/apps/web/features/fan-posts/ui/rich-post-body.tsx
+@@@ -1,8 -1,8 +1,15 @@@
+  "use client";
+++<<<<<<< HEAD
+ +import type { ReactNode } from "react";
+ +import { RichBody, type RichAttachmentRenderer } from "@/components/editor/rich-body";
+ +import { editorText } from "@/components/editor/editor-copy";
+ +import type { RichDocument } from "@/components/editor/rich-document";
+++=======
++ import { useMemo, type ReactNode } from "react";
++ import { RichBody, type RichAttachmentRenderer } from "@/components/editor/rich-body";
++ import { editorText } from "@/components/editor/editor-copy";
++ import { richDocumentAttachments, type RichDocument } from "@/components/editor/rich-document";
+++>>>>>>> 006754188
+  import { LinkifiedText } from "@/features/content-safety/ui/linkified-text";
+  import { AuthenticatedMedia } from "@/features/content-safety/ui/authenticated-media";
+  import type { AutomaticTranslation } from "@/features/content-safety/ui/use-automatic-translation";
+@@@ -10,15 -10,17 +17,33 @@@ import type { AppLocale } from "@/i18n/
+  import contentStyles from "@/features/content-safety/ui/content.module.css";
+  import styles from "./post-detail.module.css";
+  
+++<<<<<<< HEAD
+ +/** Formatted source text, or its translation as plain text with the post's media kept. The stored document never changes. */
+ +export function TranslatedRichPostBody({ document, translation, observeElement, locale, renderAttachment }: { document: RichDocument; translation: Pick<AutomaticTranslation, "showing" | "texts">; observeElement: (node: HTMLElement | null) => void; locale: AppLocale; renderAttachment: RichAttachmentRenderer }) {
+ +  // The document is always drawn by the same element, so a switch never remounts its photos and videos (the translation sits above it, the document's text is hidden).
+ +  return <div ref={observeElement}>
+ +    {translation.showing ? <p className={contentStyles.body} lang={locale}>{translation.texts[0]}</p> : null}
+ +    <RichBody document={document} locale={locale} renderAttachment={renderAttachment} textHidden={translation.showing} />
+ +  </div>;
+ +}
+ +
+++/** Plain-text board article (no document): the translation replaces the text; there is no media inside the text. */
+++export function TranslatedPlainPostBody({ children, translation, observeElement, locale }: { children: ReactNode; translation: Pick<AutomaticTranslation, "showing" | "texts">; observeElement: (node: HTMLElement | null) => void; locale: AppLocale }) {
+++  return <div ref={observeElement} className={contentStyles.translation}>
+++    {translation.showing ? <p className={contentStyles.body} lang={locale}><LinkifiedText text={translation.texts[0]} locale={locale} /></p> : children}
+++=======
++ /** Formatted source text, or its translation as plain text with the post's media kept. The stored document never changes.
++  *  The translation state is owned by the post card, which draws its switch at the top of the post. */
++ export function TranslatedRichPostBody({ document, translation, observeElement, locale, renderAttachment }: { document: RichDocument; translation: Pick<AutomaticTranslation, "showing" | "texts">; observeElement: (node: HTMLElement | null) => void; locale: AppLocale; renderAttachment: RichAttachmentRenderer }) {
++   const attachments = useMemo(() => richDocumentAttachments(document), [document]);
++   return <div ref={observeElement}>
++     {translation.showing
++       ? <><p className={contentStyles.body} lang={locale}>{translation.texts[0]}</p>{attachments.map(item => <div key={item.assetId} className={styles.translatedMedia}>{renderAttachment(item)}</div>)}</>
++       : <RichBody document={document} locale={locale} renderAttachment={renderAttachment} />}
+++>>>>>>> 006754188
++   </div>;
++ }
++ 
+  /** Plain-text board article (no document): the translation replaces the text; there is no media inside the text. */
+  export function TranslatedPlainPostBody({ children, translation, observeElement, locale }: { children: ReactNode; translation: Pick<AutomaticTranslation, "showing" | "texts">; observeElement: (node: HTMLElement | null) => void; locale: AppLocale }) {
+    return <div ref={observeElement} className={contentStyles.translation}>
