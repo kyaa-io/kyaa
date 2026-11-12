@@ -15,7 +15,7 @@ it("routes PUT through bearer ownership and response validation", async () => {
   const response = await PUT(request(), context);
   expect(response.status).toBe(200);
   expect(await response.json()).toEqual(value);
-  expect(state.rpc).toHaveBeenCalledExactlyOnceWith("set_celebrity_notice_reaction", { p_slug: "elina", p_notice_slug: "artist-news", p_app_user_id: owner, p_locale: "ko", p_reaction: "dislike" });
+  expect(state.rpc).toHaveBeenCalledWith("set_celebrity_notice_reaction", { p_slug: "elina", p_notice_slug: "artist-news", p_app_user_id: owner, p_locale: "ko", p_reaction: "dislike" });
 });
 it("reads guest reactions without authorizing a write", async () => {
   const value = { reaction: null, likeCount: 2, dislikeCount: null };

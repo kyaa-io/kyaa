@@ -164,6 +164,9 @@ jobs:
       - name: Verify legacy cheer actions and reply recovery
         if: matrix.group == 'layout-and-recovery'
         run: node apps/web/e2e/community-compact-local/legacy-cheer-run.mjs
+      - name: Verify post and notice photos stay mounted on click, re-read, reaction and translation switch
+        if: matrix.group == 'layout-and-recovery'
+        run: node apps/web/e2e/media-stable-local/run.mjs
       - name: Preserve card layout evidence
         if: always() && matrix.group == 'layout-and-recovery'
         uses: actions/upload-artifact@v4

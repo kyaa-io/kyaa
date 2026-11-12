@@ -22,10 +22,66 @@ describe("fanpage server authority", () => {
     expect((await api.noticeReaction(request("/api?locale=ko", undefined, false, "GET"), "elina", "walk")).status).toBe(200);
     expect(rpc).toHaveBeenLastCalledWith("read_celebrity_notice_reaction", { p_app_user_id: null, p_slug: "elina", p_notice_slug: "walk", p_locale: "ko" });
     expect(await (await api.noticeReaction(request("/api", { reaction: "dislike" }, true, "PUT"), "elina", "walk")).json()).toEqual(state);
-    expect(rpc).toHaveBeenLastCalledWith("set_celebrity_notice_reaction", { p_app_user_id: owner, p_slug: "elina", p_notice_slug: "walk", p_locale: "ko", p_reaction: "dislike" });
+    expect(rpc).toHaveBeenCalledWith("set_celebrity_notice_reaction", { p_app_user_id: owner, p_slug: "elina", p_notice_slug: "walk", p_locale: "ko", p_reaction: "dislike" });
     expect((await api.noticeReaction(request("/api", { reaction: "like", appUserId: other }, true, "PUT"), "elina", "walk")).status).toBe(400);
     expect((await api.noticeReaction(request("/api", { reaction: "like" }, false, "PUT"), "elina", "walk")).status).toBe(401);
-    expect(rpc).toHaveBeenCalledTimes(2);
+    // read, write, and the notice read for the reward key (it answered without an id here, so nothing was paid).
+    expect(rpc.mock.calls.map(call => call[0])).toEqual(["read_celebrity_notice_reaction", "set_celebrity_notice_reaction", "read_fan_notice"]);
+  });
+  describe("notice rewards follow the fan board rules", () => {
+    const noticeId = "44444444-4444-4444-8444-444444444444", creatorId = "55555555-5555-4555-8555-555555555555";
+    const paying = createFanpageHandlers({ rpc, authorize, authorizeAdmin, resolveCreatorId: async () => creatorId });
+    const answers = (record: (args: Record<string, unknown>) => unknown, write: unknown) => rpc.mockImplementation(async (name: string, args: Record<string, unknown>) => {
+      if (name === "read_fan_notice") return { id: noticeId.toUpperCase() };
+      if (name === "record_dukjil_action") return record(args);
+      if (name === "record_dukjil_award_failure") return null;
+      return write;
+    });
+    const awards = () => rpc.mock.calls.filter(call => call[0] === "record_dukjil_action").map(call => call[1] as Record<string, unknown>);
+    it.each(["like", "dislike"] as const)("pays a first %s once per notice through record_dukjil_action", async (reaction) => {
+      answers(() => ({ points: 1, stampId: null, capped: false, reason: null, replayed: false }), { reaction, likeCount: 1, dislikeCount: null });
+      const body = await (await paying.noticeReaction(request("/api", { reaction }, true, "PUT"), "elina", "walk")).json();
+      expect(body).toEqual({ reaction, likeCount: 1, dislikeCount: null, reward: { points: 1, stamps: 0 } });
+      expect(awards()).toEqual([expect.objectContaining({ p_user: owner, p_celebrity: creatorId, p_action_key: "reaction", p_source_key: `notice-reaction:${noticeId}`, p_params: {} })]);
+    });
+    it("pays nothing for a cancel, a replay, or a read", async () => {
+      answers(() => ({ points: 1, stampId: null, capped: false, reason: null, replayed: true }), { reaction: null, likeCount: 0, dislikeCount: null });
+      expect(await (await paying.noticeReaction(request("/api", { reaction: "none" }, true, "PUT"), "elina", "walk")).json()).toEqual({ reaction: null, likeCount: 0, dislikeCount: null });
+      expect(awards()).toHaveLength(0);
+      answers(() => ({ points: 1, stampId: null, capped: false, reason: null, replayed: true }), { reaction: "like", likeCount: 1, dislikeCount: null });
+      expect(await (await paying.noticeReaction(request("/api", { reaction: "like" }, true, "PUT"), "elina", "walk")).json()).toEqual({ reaction: "like", likeCount: 1, dislikeCount: null });
+      expect((await paying.noticeReaction(request("/api?locale=ko", undefined, true, "GET"), "elina", "walk")).status).toBe(200);
+      expect(awards()).toHaveLength(1);
+    });
+    it("a fan without this page's passport, or past the daily cap, keeps the reaction and gets no points", async () => {
+      for (const [code, skippedReason] of [["PASSPORT_REQUIRED", "passport_required"], ["DUKJIL_DAILY_LIMIT", "daily_limit"]] as const) {
+        answers(() => { throw new Error(code); }, { reaction: "like", likeCount: 1, dislikeCount: null });
+        const response = await paying.noticeReaction(request("/api", { reaction: "like" }, true, "PUT"), "elina", "walk");
+        expect(response.status).toBe(200);
+        expect(await response.json()).toEqual({ reaction: "like", likeCount: 1, dislikeCount: null, reward: { points: 0, stamps: 0, skippedReason } });
+      }
+      expect(rpc.mock.calls.some(call => call[0] === "record_dukjil_award_failure")).toBe(false);
+    });
+    it("pays a comment with the comment rule: its id as the source, the notice as the once-per-target key", async () => {
+      answers(() => ({ points: 3, stampId: commentId, capped: false, reason: null, replayed: false }), { id: commentId, replayed: false });
+      const body = await (await paying.postComment(request("/api", { body: "  오늘 소식 고마워요  ", idempotencyKey: other }), "elina", "walk")).json();
+      expect(body).toEqual({ id: commentId, replayed: false, reward: { points: 3, stamps: 1 } });
+      expect(awards()).toEqual([expect.objectContaining({ p_user: owner, p_celebrity: creatorId, p_action_key: "comment", p_source_key: commentId,
+        p_params: { chars: 10, bodyHash: expect.stringMatching(/^[0-9a-f]{64}$/), isReply: false, targetKey: `notice:${noticeId}` } })]);
+    });
+    it("says why a comment paid nothing, and never pays a replayed request", async () => {
+      answers(() => { throw new Error("DUKJIL_CONTENT_TOO_SHORT"); }, { id: commentId, replayed: false });
+      expect(await (await paying.postComment(request("/api", { body: "hi", idempotencyKey: other }), "elina", "walk")).json()).toEqual({ id: commentId, replayed: false, reward: { points: 0, stamps: 0, skippedReason: "too_short" } });
+      rpc.mockClear();
+      answers(() => ({ points: 3, stampId: null, capped: false, reason: null, replayed: false }), { id: commentId, replayed: true });
+      expect(await (await paying.postComment(request("/api", { body: "hi", idempotencyKey: other }), "elina", "walk")).json()).toEqual({ id: commentId, replayed: true });
+      expect(awards()).toHaveLength(0);
+    });
+    it("a failed reward call never fails the reaction or the comment", async () => {
+      rpc.mockImplementation(async (name: string) => { if (name === "set_celebrity_notice_reaction") return { reaction: "like", likeCount: 1, dislikeCount: null }; if (name === "post_celebrity_notice_comment") return { id: commentId, replayed: false }; throw new Error("database down"); });
+      expect(await (await paying.noticeReaction(request("/api", { reaction: "like" }, true, "PUT"), "elina", "walk")).json()).toEqual({ reaction: "like", likeCount: 1, dislikeCount: null });
+      expect(await (await paying.postComment(request("/api", { body: "응원해요", idempotencyKey: other }), "elina", "walk")).json()).toEqual({ id: commentId, replayed: false });
+    });
   });
   it("sets official notice likes for the authenticated owner and rejects extra caller identity", async () => {
     rpc.mockResolvedValueOnce({ liked: true, likeCount: 3 });

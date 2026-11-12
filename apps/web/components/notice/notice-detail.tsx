@@ -21,6 +21,7 @@ import { NoticeBody, NoticeTitle, NoticeTranslation, NoticeTranslationControl } 
 import { NoticeReactions } from "./notice-reactions";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import { FanSkeleton, FanSkeletonStatus } from "@/components/fan-ui/fan-skeleton";
+import { DukjilProvider } from "@/features/dukjil/ui/dukjil-provider";
 import styles from "./notice-detail.module.css";
 
 const parseNotice = (value: unknown) => { const item = noticeSchema.parse(value); return { ...item, body: parseNoticeDocument(item.body) }; };
@@ -45,8 +46,10 @@ export function NoticeDetail({ slug, noticeSlug, locale, officialPostLabel }: { 
           {detail.refreshFailed && <p role="status">{copy.failed}<FanAction variant="text" onClick={detail.retry}>{copy.retry}</FanAction></p>}
           <NoticeBody document={notice.body} locale={locale} />
           </NoticeTranslation>
+          <DukjilProvider slug={slug} locale={locale}>
           <NoticeReactions slug={slug} noticeSlug={noticeSlug} title={notice.title} locale={locale} />
           <NoticeComments slug={slug} noticeSlug={noticeSlug} locale={locale} welcome={notice.kind === "welcome"} />
+          </DukjilProvider>
         </article>
         {related.length > 0 && <aside className={styles.recent} aria-labelledby="recent-notices"><h2 id="recent-notices">{locale === "ko" ? "최근 공지" : translate(locale, messages.mc51097f53111, "Recent Notices")}</h2>{related.map(item => <Link key={item.id} href={`/c/${slug}/notices/${item.slug}?locale=${locale}&returnTo=${encodeURIComponent(returnTo)}`}><strong><TranslatedText text={item.title} locale={locale} controls={false} /></strong><small>{format(item.publishedAt)}</small></Link>)}</aside>}
       </div>}

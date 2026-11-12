@@ -6,6 +6,7 @@ import type { AppLocale } from "@/i18n/locales";
 import type { RichAttachment, RichAttachmentKind, RichDocument } from "./rich-document";
 import { richDocumentExtensions } from "./rich-extensions";
 import { RichYouTubeEmbed } from "./rich-youtube";
+import { RichIsland, stableTree } from "./stable-tree";
 import styles from "./rich-text.module.css";
 
 export type RichAttachmentRenderer = (attachment: RichAttachment) => ReactNode;
@@ -14,20 +15,20 @@ export type RichAttachmentRenderer = (attachment: RichAttachment) => ReactNode;
 /** `textHidden`: only the media blocks stay visible. A translated post shows its translation above them, so the media keep one mounted node
  *  (no reload or flash) while the reader switches between the translation and the original. */
 export function RichBody({ document, locale, renderAttachment, textHidden = false }: { document: RichDocument; locale: AppLocale; renderAttachment: RichAttachmentRenderer; textHidden?: boolean }) {
-  // The renderer builds new component types on every call, so an unmemoized tree remounts every photo and video whenever the parent re-renders
-  // (a translation switch, a reaction): they reloaded and flashed. One tree per document, locale and renderer keeps the same nodes.
-  const tree = useMemo(() => renderToReactElement({
+  // `stableTree` turns the renderer's per-call wrappers into plain tags, so a later render (a re-read hands over a new document object and
+  // a new renderer) keeps every photo and video node mounted. The memo only saves the work of building the same tree again.
+  const tree = useMemo(() => stableTree(renderToReactElement({
     content: document as JSONContent,
     extensions: richDocumentExtensions,
     options: {
       nodeMapping: {
-        attachment: ({ node }) => <div className={styles.media}>{renderAttachment({ assetId: String(node.attrs.assetId), kind: node.attrs.kind as RichAttachmentKind })}</div>,
-        youtube: ({ node }) => <RichYouTubeEmbed videoId={String(node.attrs.videoId)} locale={locale} />,
+        attachment: ({ node }) => <div className={styles.media}><RichIsland>{renderAttachment({ assetId: String(node.attrs.assetId), kind: node.attrs.kind as RichAttachmentKind })}</RichIsland></div>,
+        youtube: ({ node }) => <RichIsland><RichYouTubeEmbed videoId={String(node.attrs.videoId)} locale={locale} /></RichIsland>,
       },
       markMapping: {
         link: ({ mark, children }) => createElement("a", { href: String(mark.attrs.href), target: "_blank", rel: "nofollow ugc noopener noreferrer", "data-outbound-placement": "content", "data-outbound-kind": "external" }, children),
       },
     },
-  }), [document, locale, renderAttachment]);
+  })), [document, locale, renderAttachment]);
   return <div className={styles.body} data-rich-body="" data-text-hidden={textHidden || undefined}>{tree}</div>;
 }
