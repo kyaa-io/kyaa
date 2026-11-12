@@ -1,0 +1,28 @@
+\ir cognito_email_compatibility.sql
+begin;
+create function pg_temp.check_attempt(v boolean) returns void language plpgsql as $$ begin if v is distinct from true then raise exception 'attempt assertion failed'; end if; end $$;
+insert into public.app_users(id,privy_user_id,verified_email) values('00000000-0000-0000-0000-000000000005','did:privy:attempt-test','attempt@example.test');
+insert into public.legacy_email_credentials(legacy_user_id,app_user_id,email,encrypted_password,email_confirmed_at,enabled) values('00000000-0000-0000-0000-000000000005','00000000-0000-0000-0000-000000000005','attempt@example.test',extensions.crypt('correct',extensions.gen_salt('bf',10)),now(),true);
+grant execute on function pg_temp.check_attempt(boolean) to legacy_auth_migrator;
+set local role legacy_auth_migrator;
+select public.verify_legacy_email_password(' Attempt@EXAMPLE.test ','wrong') from generate_series(1,5);
+select pg_temp.check_attempt(public.verify_legacy_email_password('attempt@example.test','correct') is null);
+reset role;
+select pg_temp.check_attempt(failure_count=5 and locked_until>now()) from public.legacy_email_password_attempts;
+update public.legacy_email_password_attempts set locked_until=now()-interval '1 second',window_started_at=now()-interval '16 minutes';
+select pg_temp.check_attempt(public.verify_legacy_email_password('attempt@example.test','correct') is not null);
+select pg_temp.check_attempt(not exists(select from public.legacy_email_password_attempts));
+select public.verify_legacy_email_password('attempt@example.test','wrong');
+select pg_temp.check_attempt(public.verify_legacy_email_password('attempt@example.test','correct') is not null);
+select pg_temp.check_attempt(not exists(select from public.legacy_email_password_attempts));
+select public.verify_legacy_email_password('absent@example.test','wrong') from generate_series(1,5);
+select pg_temp.check_attempt(exists(select from public.legacy_email_password_attempts where email_sha256=encode(extensions.digest('absent@example.test','sha256'),'hex') and failure_count=5 and locked_until>now()));
+update public.legacy_email_credentials set encrypted_password='not-bcrypt';
+select public.verify_legacy_email_password('attempt@example.test','wrong');
+select pg_temp.check_attempt(exists(select from public.legacy_email_password_attempts where failure_count=1));
+select pg_temp.check_attempt(not has_table_privilege(r,'public.legacy_email_password_attempts',p)) from unnest(array['anon','authenticated','service_role','legacy_auth_migrator']) r cross join unnest(array['SELECT','INSERT','UPDATE','DELETE','TRUNCATE','REFERENCES','TRIGGER']) p;
+select pg_temp.check_attempt(relrowsecurity) from pg_class where oid='public.legacy_email_password_attempts'::regclass;
+update public.legacy_email_password_attempts set window_started_at=now()-interval '2 days',locked_until=null;
+select public.verify_legacy_email_password('cleanup@example.test','wrong');
+select pg_temp.check_attempt(not exists(select from public.legacy_email_password_attempts where window_started_at<now()-interval '1 day'));
+rollback;

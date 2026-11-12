@@ -22,6 +22,20 @@ function* workflowRunSteps() {
   }
 }
 
+test('every third-party action is pinned to a full commit SHA', () => {
+  // A tag such as @v4 can be moved to different code after review; a 40-hex commit cannot (SECURITY-AGENTIC-1112 F-35).
+  for (const file of readdirSync('.github/workflows').filter(name => /\.ya?ml$/.test(name))) {
+    const workflow = load(readFileSync(`.github/workflows/${file}`, 'utf8'));
+    for (const [jobName, job] of Object.entries(workflow.jobs ?? {})) {
+      const uses = [job.uses, ...(job.steps ?? []).map(step => step.uses)].filter(value => typeof value === 'string');
+      for (const value of uses) {
+        if (value.startsWith('./')) continue;
+        assert.match(value, /^[\w.-]+\/[\w./-]+@[0-9a-f]{40}$/, `${file}/${jobName}: ${value}`);
+      }
+    }
+  }
+});
+
 test('workflow run steps never install apt packages directly', () => {
   for (const { file, jobName, index, run } of workflowRunSteps()) {
     assert.doesNotMatch(run, /\bapt-get(?:\s+--?[\w-]+)*\s+install\b/, `${file}/${jobName}/step ${index + 1}`);
@@ -182,7 +196,7 @@ test('UI check requires every group and preserves evidence on producing runners'
   assert.equal(browser.length, 9);
   assert.ok(browser.some(step => step.run === 'node apps/web/e2e/media-stable-local/run.mjs' && step.if === "matrix.group == 'layout-and-recovery'"), 'photo remount regression runs in CI');
   for (const step of browser) assert.match(step.if, /^matrix.group == '(wave-programs|runmusic|layout-and-recovery)'$/);
-  const artifacts = job.steps.filter(step => step.uses === 'actions/upload-artifact@v4');
+  const artifacts = job.steps.filter(step => step.uses?.startsWith('actions/upload-artifact@'));
   assert.equal(artifacts.length, 3);
   for (const step of artifacts) {
     const group = step.with.name === 'runmusic-browser-evidence' ? 'runmusic' : 'layout-and-recovery';
