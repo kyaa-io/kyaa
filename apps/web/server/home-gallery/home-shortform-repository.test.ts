@@ -12,6 +12,19 @@ const pageRpc = (list: ReturnType<typeof video>[]) => vi.fn(async (name: string,
 });
 
 describe("home shortform", () => {
+  it("uses public reaction totals to rank every creator's visible shorts", async () => {
+    const list = [video(1, "a"), video(2, "b")];
+    const rpc = vi.fn(async (name: string, args: { p_offset?: number; p_limit?: number; p_video_id?: string }) => {
+      if (name === "read_public_video_thumbnails") return { data: {}, error: null };
+      if (name === "read_shortform_participation") return { data: { likeCount: args.p_video_id === list[1]!.videoId ? 4 : 1 }, error: null };
+      const offset = args.p_offset ?? 0, limit = args.p_limit ?? 12;
+      return { data: { items: list.slice(offset, offset + limit), hasMore: false }, error: null };
+    });
+    const catalog = await new HomeGalleryRepository({ rpc } as never).listShortsCatalog("ko");
+    expect(catalog.items).toHaveLength(2);
+    expect(catalog.likes).toEqual({ [list[0]!.videoId]: 1, [list[1]!.videoId]: 4 });
+    expect(rpc).toHaveBeenCalledWith("read_shortform_participation", { p_video_id: list[0]!.videoId, p_app_user_id: null });
+  });
   it("reads public creator videos without requiring a LIVE page, with the cover the site stored", async () => {
     const one = video(1, "nchive", "U8YzMfHLFQM");
     const thumbnail = "/api/public/notice-media/20000000-0000-4000-8000-000000000002?variant=thumbnail";
