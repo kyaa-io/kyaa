@@ -121,8 +121,8 @@ describe("sitemap URL inclusion", () => {
     expect(map.some(({ url }) => url === "https://kyaa.io/guide?locale=ko")).toBe(true);
     expect(map.some(({ url }) => url === "https://kyaa.io/guide?locale=en")).toBe(true);
     expect(map.some(({ url }) => url === "https://kyaa.io/guide?locale=ru")).toBe(true);
-    expect(map.some(({ url }) => url === "https://kyaa.io/community?locale=ko")).toBe(true);
-    expect(map.some(({ url }) => url === "https://kyaa.io/community?locale=en")).toBe(true);
+    expect(map.some(({ url }) => url === "https://kyaa.io/pages/groups?locale=ko")).toBe(true);
+    expect(map.some(({ url }) => url === "https://kyaa.io/pages/groups?locale=en")).toBe(true);
     expect(map.some(({ url }) => url === "https://kyaa.io/pages/onchain?locale=ko")).toBe(true);
     expect(map.some(({ url }) => url === "https://kyaa.io/pages/onchain?locale=en")).toBe(true);
     expect(map.some(({ url }) => /rehearsal|\/my|\/verify/.test(url))).toBe(false);

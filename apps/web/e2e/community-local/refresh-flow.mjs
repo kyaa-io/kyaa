@@ -34,7 +34,7 @@ try {
     console.log(`${verdict} ${name} requests=${reqs.length} noReload=${noReload} ${note}`);
   };
 
-  const hub = "/community?creator=elina&tab=posts&locale=ko";
+  const hub = "/c/elina?tab=board&locale=ko";
   await page.goto(harness.baseURL + hub);
   await page.waitForLoadState("networkidle");
   await page.waitForTimeout(1500);

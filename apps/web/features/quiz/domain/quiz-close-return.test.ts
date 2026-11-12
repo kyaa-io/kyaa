@@ -5,7 +5,7 @@ const memory = () => { const m = new Map<string, string>(); return { getItem: (k
 
 describe("quiz close return", () => {
   it("accepts only this creator's certification lists", () => {
-    expect(sanitizeCertificationListPath("/community?creator=kara&tab=certifications&locale=en", "kara")).toBe("/community?creator=kara&tab=certifications&locale=en");
+    expect(sanitizeCertificationListPath("/c/kara?tab=certifications&locale=en", "kara")).toBe("/c/kara?tab=certifications&locale=en");
     expect(sanitizeCertificationListPath("/c/kara/certifications?locale=ko", "kara")).toBe("/c/kara/certifications?locale=ko");
     for (const bad of ["https://evil.example/c/kara/certifications", "//evil.example", "/c/other/certifications", "/community?creator=other&tab=certifications", "/community?creator=kara&tab=certifications&x=1", "/c/kara/certifications#a", "/c/kara/verify", "/c/kara/certifications\\x", ""]) {
       expect(sanitizeCertificationListPath(bad, "kara")).toBeNull();
@@ -22,7 +22,7 @@ describe("quiz close return", () => {
     expect(readQuizCloseReturn(s, "kara")).not.toBeNull();
     clearQuizCloseReturn(s);
     expect(readQuizCloseReturn(s, "kara")).toBeNull();
-    expect(sanitizeCertificationListPath(certificationListHref("Kara", "ko"), "kara")).toBe("/community?creator=kara&tab=certifications&locale=ko");
+    expect(sanitizeCertificationListPath(certificationListHref("Kara", "ko"), "kara")).toBe("/c/kara?tab=certifications&locale=ko");
     expect(takeQuizFocusReturn(s, "kara")).toBeNull();
     rememberQuizFocusReturn(s, "kara", "item-1");
     expect(takeQuizFocusReturn(s, "kara")).toBe("item-1");

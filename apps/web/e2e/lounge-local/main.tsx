@@ -52,8 +52,6 @@ import { GuestHome } from "../../components/guest-home";
 import { officialVideoFixture } from "./product-quality-fixture";
 import { discoveryChzzkPost, discoveryFixtureResponse, discoveryIds } from "./discovery-fixture";
 import { feedbackBanner, feedbackFixtureResponse, feedbackPublishedCreators } from "./feedback-fixture";
-import { CommunityScreen } from "../../features/community/ui/community-screen";
-import { parseCommunityTab, selectCommunityCreator } from "../../features/community/domain/navigation";
 import { parseAppLocale, toContentLocale } from "../../i18n/locales";
 import "../../app/globals.css";
 import "pretendard/dist/web/variable/pretendardvariable-dynamic-subset.css";
@@ -62,7 +60,6 @@ const params = new URLSearchParams(location.search);
 const locale = parseAppLocale(params.get("locale"));
 const feedbackMode = params.get("feedback") === "1";
 const celebrity = { slug: "elina", locale: toContentLocale(locale), name: locale === "ko" ? "엘리나" : "Elina", summary: "엘리나 팬페이지", image: { url: "/images/guest-home/elina-card.jpg", alt: "Elina", position: "center" }, roles: ["creator"] as const, themes: [], socialLinks: [{ platform: "instagram" as const, url: "https://www.instagram.com/elina_4_22/" }, ...((params.has("quality") || feedbackMode) ? [{ platform: "youtube" as const, url: "https://www.youtube.com/@ElinaKarimova" }] : [])], displayOrder: 0, fanCount: 0 } as const;
-const communityCreators = [celebrity, { ...celebrity, slug: "yuna", name: "Yuna", summary: "Yuna fan page", image: { ...celebrity.image, alt: "Yuna" }, socialLinks: [], displayOrder: 1 }] as const;
 const communityMode = (import.meta.env as unknown as Record<string, string | undefined>).VITE_COMMUNITY_MODE === "true";
 const fanWebMode = (import.meta.env as unknown as Record<string, string | undefined>).VITE_FAN_WEB_MODE === "true";
 const fanWebPath = location.pathname === "/community" || /^\/(?:c\/elina\/(?:community\/|notices\/|schedule-suggestions|updates\/chzzk\/|verify\/(?:questions|result))|live\/(?:calendar\/schedules\/|discovery-survey\/survey)|bias\/requests|my\/(?:activity|requests|rewards\/[0-9a-f-]{36}\/recipient)|s\/[a-f0-9]{32}|settings\/blocked-users|admin\/(?:schedules|schedule-suggestions|fanpage-requests))/.test(location.pathname);
@@ -76,11 +73,6 @@ function AccountSwitcher({ children }: { children: ReactNode }) {
 
 function fanWebScreen() {
   if (feedbackMode && location.pathname === "/") return <GuestHome celebrities={feedbackPublishedCreators(locale)} homeBanners={[feedbackBanner(locale)]} locale={locale} />;
-  if (location.pathname === "/community") {
-    const communityLocale = parseAppLocale(params.get("locale"));
-    const creator = selectCommunityCreator(communityCreators, params.get("creator") ?? undefined);
-    return <CommunityScreen creators={communityCreators} creator={creator} locale={communityLocale} tab={parseCommunityTab(params.get("tab"))} />;
-  }
   if (location.pathname === "/fixtures/tiktok-live") return <TikTokLiveFallbackFixture locale={locale} />;
   if (location.pathname === "/celebrities") return <CelebrityDirectory celebrities={[{ ...celebrity, upcomingLive: null }]} locale={locale} initialQuery={params.get("q") ?? ""} />;
   const detail = location.pathname.match(/^\/c\/elina\/community\/([0-9a-f-]{36})$/);

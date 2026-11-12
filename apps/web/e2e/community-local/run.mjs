@@ -53,7 +53,7 @@ try {
     await page.route("**/api/celebrities/*/certifications?*", route => route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ certifications: [] }) }));
   }
 
-  const hub = "/community?creator=elina&tab=posts&locale=ko";
+  const hub = "/c/elina?tab=board&locale=ko";
   await guest.goto(harness.baseURL + hub);
   await expect(guest.getByRole("heading", { name: "커뮤니티", exact: true })).toBeVisible();
   const login = guest.getByRole("link", { name: "로그인하고 참여하기" });
@@ -146,7 +146,7 @@ try {
   assert.equal(afterModeration.data.items.some(post => post.body === moderatedBody), false);
   pass("Passport privacy and existing report moderation hide protected content from guests");
 
-  await fan.goto(harness.baseURL + "/community?creator=elina&tab=fans&locale=ko");
+  await fan.goto(harness.baseURL + "/c/elina?tab=leaderboard&locale=ko");
   const recentFans = await api(null, "/api/celebrities/elina/fans?locale=ko");
   assert.equal(recentFans.status, 200);
   assert(recentFans.data.fanCount < 100);
@@ -155,11 +155,11 @@ try {
   await expect(fan.getByRole("table")).toHaveCount(0);
   pass("recent fans render through the creator-scoped API below the current 100-fan leaderboard threshold");
 
-  await fan.goto(harness.baseURL + "/community?creator=elina&tab=requests&locale=ko");
+  await fan.goto(harness.baseURL + "/c/elina?tab=home&locale=ko");
   await expect(fan.getByRole("link", { name: /일정 제안/ })).toHaveAttribute("href", "/c/elina/schedule-suggestions?locale=ko");
   await expect(fan.getByRole("link", { name: "팬페이지 개설 신청" })).toHaveAttribute("href", "/pages/groups/apply?kind=fan&locale=ko");
   await expect(fan.getByRole("link", { name: "내 신청 내역" })).toHaveAttribute("href", "/my/requests?locale=ko");
-  await fan.goto(harness.baseURL + "/community?creator=elina&tab=certifications&locale=ko");
+  await fan.goto(harness.baseURL + "/c/elina?tab=certifications&locale=ko");
   await expect(fan.getByRole("heading", { name: "팬 인증", exact: true })).toBeVisible();
   await expect(fan.getByText("등록된 인증이 없어요.")).toBeVisible();
   pass("request destinations and the creator-scoped certification tab render through existing components");

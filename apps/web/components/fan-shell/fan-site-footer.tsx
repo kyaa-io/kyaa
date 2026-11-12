@@ -151,7 +151,7 @@ export function FanSiteFooter({ locale }: { locale: FanLocale }) {
           <section>
             <h2>{t.explore}</h2>
             <Link href={fanHref("/", locale)}>HOME</Link>
-            <Link href={fanHref(groupsEnabled ? "/pages/groups" : "/community", locale)}>{groupsEnabled ? groupsCopy(locale).groups : communityCopy(locale).title}</Link>
+            <Link href={fanHref(groupsEnabled ? "/pages/groups" : "/pages/groups", locale)}>{groupsEnabled ? groupsCopy(locale).groups : communityCopy(locale).title}</Link>
             <Link href={fanHref(groupsEnabled ? "/benefits" : "/celebrities", locale)}>{groupsEnabled ? groupBenefitsCopy(locale).title : t.favorites}</Link>
           </section>
           <section>

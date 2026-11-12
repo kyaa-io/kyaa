@@ -61,7 +61,7 @@ describe("fan app shell navigation", () => {
       isCurrent,
     }))).toEqual([
       { id: "home", href: "/?locale=ko", label: "HOME", isCurrent: false },
-      { id: "community", href: "/community?locale=ko", label: "커뮤니티", isCurrent: true },
+      { id: "community", href: "/pages/groups?locale=ko", label: "커뮤니티", isCurrent: true },
       { id: "favorites", href: "/celebrities?locale=ko", label: "최애", isCurrent: false },
       { id: "my", href: "/my?locale=ko", label: "MY", isCurrent: false },
     ]);

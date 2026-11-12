@@ -19,7 +19,7 @@ export type QuizCloseReturn = { href: string; itemId: string };
 
 /** The list the dialog belongs to: where closing goes when no list click was remembered (direct entry, reload, error screens). */
 export function certificationListHref(slug: string, locale: string): string {
-  return `/community?creator=${encodeURIComponent(slug.toLowerCase())}&tab=certifications&locale=${locale}`;
+  return `/c/${encodeURIComponent(slug.toLowerCase())}?tab=certifications&locale=${locale}`;
 }
 
 export function sanitizeCertificationListPath(value: string | null | undefined, slug: string): string | null {
@@ -32,7 +32,7 @@ export function sanitizeCertificationListPath(value: string | null | undefined, 
     const isCommunity = path === "/community"
       && parsed.searchParams.get("creator")?.toLowerCase() === own
       && TABS.has(parsed.searchParams.get("tab") ?? "");
-    const isCreatorList = path.toLowerCase() === `/c/${own}/certifications`;
+    const isCreatorList = path.toLowerCase() === `/c/${own}/certifications` || ([`/c/${own}`, `/${own}`].includes(path.toLowerCase()) && parsed.searchParams.get("tab") === "certifications");
     if (!isCommunity && !isCreatorList) return null;
     const allowed = new Set(["creator", "tab", "locale"]);
     for (const key of parsed.searchParams.keys()) if (!allowed.has(key)) return null;
@@ -41,6 +41,10 @@ export function sanitizeCertificationListPath(value: string | null | undefined, 
     for (const key of ["creator", "tab", "locale"]) {
       const value = parsed.searchParams.get(key);
       if (value && (value.length > 32 || !HANDLE.test(value))) return null;
+    }
+    if (isCommunity) {
+      parsed.searchParams.delete("creator");
+      return `/c/${encodeURIComponent(own)}?${parsed.searchParams}`;
     }
     return `${path}${parsed.search}`;
   } catch {

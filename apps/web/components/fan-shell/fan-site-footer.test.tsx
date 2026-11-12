@@ -18,7 +18,7 @@ describe("FanSiteFooter", () => {
 
     const footer = screen.getByRole("contentinfo");
     const navigation = within(footer).getByRole("navigation", { name: "kyaa 하단 메뉴" });
-    expect(within(navigation).getByRole("link", { name: "커뮤니티" })).toHaveAttribute("href", "/community?locale=ko");
+    expect(within(navigation).getByRole("link", { name: "커뮤니티" })).toHaveAttribute("href", "/pages/groups?locale=ko");
     expect(within(navigation).getByRole("link", { name: "팬미팅 협업 문의" })).toHaveAttribute("href", "/pages/us-fanmeetings?locale=ko");
     expect(within(navigation).getByRole("link", { name: "이용 가이드" })).toHaveAttribute("href", "/guide?locale=ko");
     expect(within(navigation).getByRole("link", { name: "패스포트" })).toHaveAttribute("href", "/passports?locale=ko");
@@ -47,7 +47,7 @@ describe("FanSiteFooter", () => {
     render(<FanSiteFooter locale="en" />);
 
     const navigation = screen.getByRole("navigation", { name: "kyaa footer navigation" });
-    expect(within(navigation).getByRole("link", { name: "Community" })).toHaveAttribute("href", "/community?locale=en");
+    expect(within(navigation).getByRole("link", { name: "Community" })).toHaveAttribute("href", "/pages/groups?locale=en");
     expect(within(navigation).getByRole("link", { name: "Favorites" })).toHaveAttribute("href", "/celebrities?locale=en");
     expect(within(navigation).getByRole("link", { name: "Fanmeeting partnerships" })).toHaveAttribute("href", "/pages/us-fanmeetings?locale=en");
     expect(within(navigation).getByRole("link", { name: "Service guide" })).toHaveAttribute("href", "/guide?locale=en");
