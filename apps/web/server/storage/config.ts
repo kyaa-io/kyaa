@@ -12,7 +12,7 @@ export function storageConfig(source: Record<string, string | undefined>): Stora
   return schema.parse(source);
 }
 export const bucketPolicies = {
-  "cms-assets": { public: true, maxBytes: 10485760, types: ["image/jpeg", "image/png", "image/webp", "image/gif", "image/svg+xml", "video/mp4"] },
+  "cms-assets": { public: true, maxBytes: 10485760, types: ["image/jpeg", "image/png", "image/webp", "image/gif", "video/mp4"] },
   "fan-avatars": { public: false, maxBytes: 4194304, types: ["image/webp"] },
   "certification-proofs": { public: false, maxBytes: 3145728, types: ["image/webp"] },
   "fan-content-assets": { public: false, maxBytes: 8388608, types: ["image/webp"] },
