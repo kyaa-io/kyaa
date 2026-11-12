@@ -329,7 +329,7 @@ jobs:
     # A recovery API failure must not invalidate the verified hotfix source receipt.
     continue-on-error: true
     needs: release
-    if: always() && github.event_name == 'push' && github.ref == 'refs/heads/release/production'
+    if: needs.release.result == 'success' && github.event_name == 'push' && github.ref == 'refs/heads/release/production'
     runs-on: ubuntu-24.04
     permissions:
       contents: read

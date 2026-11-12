@@ -39,3 +39,17 @@ test('restoration rejects a source unrelated to the latest main SHA', async () =
     return { id: 11, repository: { id: REPOSITORY_ID, full_name: REPOSITORY }, path: WORKFLOW_PATH, head_branch: 'main', head_sha: newer, event: 'push', status: 'completed' };
   }, () => { throw Error('MUST_NOT_DISPATCH'); }), /LATEST_MAIN_RUN_MISMATCH/);
 });
+test('default shouldBuild retries transient failures on both main and reservation reads', async t => {
+  const token = process.env.GITHUB_TOKEN;
+  process.env.GITHUB_TOKEN = 'local-test-token';
+  t.after(() => { if (token === undefined) delete process.env.GITHUB_TOKEN; else process.env.GITHUB_TOKEN = token; });
+  const calls = new Map();
+  t.mock.method(globalThis, 'fetch', async url => {
+    const count = (calls.get(url) ?? 0) + 1;
+    calls.set(url, count);
+    if (count === 1) return { ok: false, status: 503 };
+    return { ok: true, json: async () => url.includes('/git/') ? { object: { sha: newer } } : { workflow_runs: [{ display_title: `Approved production promotion of dev 11 (${sha})` }] } };
+  });
+  assert.equal(await shouldBuild(env), true);
+  assert.deepEqual([...calls.values()], [2, 2]);
+});

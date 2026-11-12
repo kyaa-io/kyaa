@@ -259,3 +259,13 @@ test('superseded main runs do not download or send a nonexistent dev receipt', (
     assert.equal(step.if, "steps.deployed.outputs.deployed == 'true'");
   }
 });
+
+test('main restoration runs only after successful hotfix validation', () => {
+  const condition = workflow.jobs['restore-main'].if;
+  assert.equal(condition, "needs.release.result == 'success' && github.event_name == 'push' && github.ref == 'refs/heads/release/production'");
+  const evaluate = Function('needs', 'github', `return ${condition}`);
+  for (const result of ['success', 'failure', 'cancelled', 'skipped']) {
+    assert.equal(evaluate({ release: { result } }, { event_name: 'push', ref: 'refs/heads/release/production' }), result === 'success');
+  }
+  assert.equal(evaluate({ release: { result: 'success' } }, { event_name: 'push', ref: 'refs/heads/main' }), false);
+});

@@ -1,9 +1,10 @@
 import { pathToFileURL } from 'node:url';
 import { appendFile } from 'node:fs/promises';
 import { github, trustedRun } from './aws-release.mjs';
+import { githubRead } from './aws-approved-promotion.mjs';
 
 // Keep the shared deployment lock: cancellation can interrupt CloudFormation.
-export async function shouldBuild(env, read = github) {
+export async function shouldBuild(env, read = githubRead) {
   if (env.GITHUB_EVENT_NAME !== 'push' || env.GITHUB_REF !== 'refs/heads/main') return true;
   const tip = await read('/git/ref/heads/main');
   if (!/^[a-f0-9]{40}$/.test(tip.object?.sha ?? '')) throw Error('INVALID_MAIN_TIP');
