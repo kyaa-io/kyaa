@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { spawnSync } from 'node:child_process';
@@ -10,6 +10,29 @@ import { verifyInstalledModules } from './verify-installed-node-modules.mjs';
 const backend = load(readFileSync('.github/workflows/backend-security.yml', 'utf8'));
 const fan = load(readFileSync('.github/workflows/fan-design-system.yml', 'utf8'));
 const succeeds = (script, env) => spawnSync('bash', ['-e', '-c', script], { env: { ...process.env, ...env } }).status === 0;
+
+function* workflowRunSteps() {
+  for (const file of readdirSync('.github/workflows').filter(name => name.endsWith('.yml'))) {
+    const workflow = load(readFileSync(`.github/workflows/${file}`, 'utf8'));
+    for (const [jobName, job] of Object.entries(workflow.jobs ?? {})) {
+      for (const [index, step] of (job.steps ?? []).entries()) {
+        if (typeof step.run === 'string') yield { file, jobName, index, run: step.run };
+      }
+    }
+  }
+}
+
+test('workflow run steps never install apt packages directly', () => {
+  for (const { file, jobName, index, run } of workflowRunSteps()) {
+    assert.doesNotMatch(run, /\bapt-get(?:\s+--?[\w-]+)*\s+install\b/, `${file}/${jobName}/step ${index + 1}`);
+  }
+});
+
+test('workflow run steps never use playwright install --with-deps', () => {
+  for (const { file, jobName, index, run } of workflowRunSteps()) {
+    assert.doesNotMatch(run, /\bplaywright\s+install\b[^;&|\n]*--with-deps\b/, `${file}/${jobName}/step ${index + 1}`);
+  }
+});
 
 test('security check rejects failed, cancelled, missing and unexpectedly skipped jobs', () => {
   const gate = backend.jobs['security-boundaries'];
