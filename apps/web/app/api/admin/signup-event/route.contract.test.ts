@@ -5,7 +5,7 @@ const { authorize, read } = vi.hoisted(() => ({ authorize: vi.fn(), read: vi.fn(
 vi.mock('@/server/signup-event/local-admin', () => ({authorizeLocalAdmin:authorize}));
 vi.mock('@/server/signup-event/local', async importOriginal => ({...await importOriginal<typeof import('@/server/signup-event/local')>(),readLocalSnapshot:read}));
 import { GET, POST } from './route';
-beforeEach(()=>{vi.stubEnv('KYAA_SIGNUP_EVENT_LOCAL','1');authorize.mockReset();read.mockReset();});
+beforeEach(()=>{vi.stubEnv('KYAA_FEATURE_SIGNUP_RAFFLE','true');authorize.mockReset();read.mockReset();});
 it('requires admin authorization before reading local participant data', async()=>{
  authorize.mockRejectedValue(new AuthError('AUTHENTICATION_REQUIRED',401,'required'));
  expect((await GET(new Request('http://localhost/api/admin/signup-event'))).status).toBe(401);
@@ -17,10 +17,10 @@ it('viewers cannot draw', async()=>{
  expect(read).not.toHaveBeenCalled();
 });
 it('rejects production before authorization or source access',async()=>{
- vi.stubEnv('NODE_ENV','production');
+ vi.stubEnv('KYAA_FEATURE_SIGNUP_RAFFLE','false');
  expect((await GET(new Request('http://localhost/api/admin/signup-event'))).status).toBe(404);
  expect(authorize).not.toHaveBeenCalled();expect(read).not.toHaveBeenCalled();
- vi.stubEnv('NODE_ENV','test');
+ vi.stubEnv('KYAA_FEATURE_SIGNUP_RAFFLE','true');
 });
 it('exports only masked participant and winner data for an authorized local admin',async()=>{
  authorize.mockResolvedValue({role:'admin'});

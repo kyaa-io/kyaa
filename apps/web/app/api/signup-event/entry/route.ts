@@ -12,7 +12,7 @@ export async function POST(request: Request) {
   const env=loadServerEnv();
   const database=createClient(env.SUPABASE_URL,env.SUPABASE_SERVICE_ROLE_KEY,{auth:{persistSession:false,autoRefreshToken:false}});
   if(!await refreshLocalSignupEvent(database,actor.appUserId,true))return new Response(null,{status:409,headers});
-  const snapshot=await readLocalSnapshot();
+  const snapshot=await readLocalSnapshot(actor.appUserId);
   const user=snapshot.users.find(user=>user.id===actor.appUserId);
   return Response.json({entered:true,passportReceived:user?.passportReceived??false,communityJoined:user?.communityJoined??false},{headers});
  }catch(error){return new Response(null,{status:error instanceof AuthError?error.status:503,headers});}

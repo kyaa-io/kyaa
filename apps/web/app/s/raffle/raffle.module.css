@@ -1,1 +1,13 @@
-.event { max-width: 48rem; margin: 0 auto; padding: var(--space-6); display: grid; gap: var(--space-4); color: var(--color-ink); background: var(--color-surface); }
+.event { display: grid; gap: var(--space-6); color: var(--color-ink); padding-block: var(--space-6) var(--space-12); }
+.hero { display: grid; grid-template-columns: 1fr 1fr; align-items: center; gap: var(--space-6); overflow: hidden; background: var(--color-accent-soft); border-radius: var(--radius-card); }
+.intro { display: grid; gap: var(--space-3); padding: var(--space-6); }
+.artwork { display: block; min-width: 0; }
+.artwork img { display: block; width: 100%; height: auto; }
+.prizes { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); list-style: none; padding: 0; margin: 0; gap: var(--space-4); }
+.prizes li { display: grid; gap: var(--space-1); padding-block: var(--space-4); border-bottom: 1px solid var(--color-line); }
+.steps { margin: 0; padding-inline-start: var(--space-6); display: grid; gap: var(--space-3); }
+.actions { display: flex; flex-wrap: wrap; gap: var(--space-3); }
+@media (width < 48rem) { .hero { gap: 0; } .intro { padding: var(--space-4); } .prizes { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.intro p, .event > p { margin: 0; }
+.artwork img { max-height: 280px; object-fit: cover; }
+@media (width < 48rem) { .artwork img { height: 180px; } }

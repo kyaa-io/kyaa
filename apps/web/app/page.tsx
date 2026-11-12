@@ -8,7 +8,8 @@ import { publicMetadata, pageCopy } from "@/seo/metadata";
 import { homeStructuredData, serializeStructuredData } from "@/seo/structured-data";
 import { StreamingGuestHome } from "../components/guest-home";
 import { loadServerEnv } from "../server/config/env";
-import { jjinfanGaugeEnabled } from "../server/config/feature-flags";
+import { SIGNUP_RAFFLE_BANNER_ID, signupRaffleHomeBanner } from "../features/home/domain/signup-raffle-home-banner";
+import { signupRaffleEnabled, jjinfanGaugeEnabled } from "../server/config/feature-flags";
 import { heartDonationEvent } from "../server/config/heart-donation-event";
 import { createPublishedContentRepositoryFromEnvironment } from "../server/content/published-content-repository";
 import { createHomeGalleryRepository } from "../server/home-gallery/home-gallery-repository";
@@ -34,8 +35,17 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
       const elina = await celebrityRepository.findBySlug(toContentLocale(locale), "elina");
       return elina ? [elina] : [];
     })),
-    homeBanners: settleHomeQuery(measureHomeQuery("homeBanners", () => bannerRepository.list(toContentLocale(locale)))),
-    homeSlots: settleHomeQuery(measureHomeQuery("homeSlots", () => bannerRepository.listSlots(toContentLocale(locale), "home"))),
+    homeBanners: settleHomeQuery(measureHomeQuery("homeBanners", async () => {
+      const banners = await bannerRepository.list(toContentLocale(locale));
+      const raffle = signupRaffleHomeBanner(locale);
+      const others = banners.filter(banner => banner.id !== raffle.id && banner.href?.split("?")[0] !== "/s/raffle");
+      return signupRaffleEnabled() ? [raffle, ...others] : others;
+    })),
+    homeSlots: settleHomeQuery(measureHomeQuery("homeSlots", async () => {
+      const slots = await bannerRepository.listSlots(toContentLocale(locale), "home");
+      if (signupRaffleEnabled()) return slots;
+      return Object.fromEntries(Object.entries(slots).filter(([, banner]) => banner?.id !== SIGNUP_RAFFLE_BANNER_ID && banner?.href?.split("?")[0] !== "/s/raffle"));
+    })),
     homeNotices: settleHomeQuery(measureHomeQuery("homeNotices", () => noticeRepository.listPublished(toContentLocale(locale), { limit: 5 }))),
     homeGallery: settleHomeQuery(measureHomeQuery("homeGallery", () => galleryRepository.listPublishedPool(toContentLocale(locale), { pages: 3 }))),
     homeShorts: settleHomeQuery(measureHomeQuery("homeShorts", () => galleryRepository.listShorts(toContentLocale(locale), { limit: 12 }))),

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { jjinfanGaugeEnabled, quizLearnEnabled } from "./feature-flags";
+import { jjinfanGaugeEnabled, quizLearnEnabled, signupRaffleEnabled } from "./feature-flags";
 
 describe("jjinfanGaugeEnabled", () => {
   it("stays off in production unless explicitly turned on", () => {
@@ -19,4 +19,11 @@ it("quiz learning requires explicit opt-in including production", () => {
  expect(quizLearnEnabled({BYUS_DATA_ENVIRONMENT:"development",KYAA_FEATURE_QUIZ_LEARN:"false"})).toBe(false);
  expect(quizLearnEnabled({BYUS_DATA_ENVIRONMENT:"development",KYAA_FEATURE_QUIZ_LEARN:"true"})).toBe(true);
  expect(quizLearnEnabled({BYUS_DATA_ENVIRONMENT:"production",KYAA_FEATURE_QUIZ_LEARN:"true"})).toBe(true);
+});
+
+it("signup raffle requires an explicit server opt-in", () => {
+  expect(signupRaffleEnabled({})).toBe(false);
+  expect(signupRaffleEnabled({BYUS_DATA_ENVIRONMENT:"development"})).toBe(false);
+  expect(signupRaffleEnabled({KYAA_FEATURE_SIGNUP_RAFFLE:"false"})).toBe(false);
+  expect(signupRaffleEnabled({NODE_ENV:"production",KYAA_FEATURE_SIGNUP_RAFFLE:"true"})).toBe(true);
 });

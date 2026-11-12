@@ -459,3 +459,15 @@ test('Telegram alerts run every minute', async () => {
   const template = JSON.parse(await readFile(new URL('../infrastructure/aws/platform/scheduled-workers.json', import.meta.url), 'utf8'));
   assert.equal(template.Resources.ScheduleTelegramAlerts.Properties.ScheduleExpression, 'rate(1 minute)');
 });
+
+test('signup raffle defaults on only in dev and validates explicit switches', async () => {
+  const template = await loadTemplate('environment');
+  const dev = config(); validateConfig(dev, template);
+  assert.equal(dev.runtimeEnvironment.KYAA_FEATURE_SIGNUP_RAFFLE, 'true');
+  const prod = config('environment', 'prod'); validateConfig(prod, template);
+  assert.equal(prod.runtimeEnvironment.KYAA_FEATURE_SIGNUP_RAFFLE, 'false');
+  dev.runtimeEnvironment.KYAA_FEATURE_SIGNUP_RAFFLE = 'false'; validateConfig(dev, template);
+  assert.equal(dev.runtimeEnvironment.KYAA_FEATURE_SIGNUP_RAFFLE, 'false');
+  dev.runtimeEnvironment.KYAA_FEATURE_SIGNUP_RAFFLE = 'invalid';
+  assert.throws(() => validateConfig(dev, template), /KYAA_FEATURE_SIGNUP_RAFFLE must be true or false/);
+});

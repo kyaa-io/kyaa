@@ -28,6 +28,7 @@ import HomePage from "./page";
 
 describe("Home server content isolation", () => {
   beforeEach(() => {
+    vi.unstubAllEnvs();
     repositories.homeBanners.mockReset().mockResolvedValue([]);
     repositories.raffles.mockReset().mockResolvedValue({ raffles: [] });
     repositories.guidePhotos.mockReset().mockResolvedValue(undefined);
@@ -42,6 +43,18 @@ describe("Home server content isolation", () => {
     queries: Record<"celebrities" | "homeBanners" | "homeSlots" | "elinaRaffles" | "homeNotices" | "homeGallery" | "homeShorts", Promise<{ status: string; value?: unknown }>>;
     [key: string]: unknown;
   };
+
+  it("shows the raffle only with the server opt-in and avoids duplicate CMS banners", async () => {
+    const cms = { id: "cms-raffle", href: "/s/raffle?utm_source=home" };
+    repositories.homeBanners.mockResolvedValue([cms]);
+    vi.stubEnv("KYAA_FEATURE_SIGNUP_RAFFLE", "false");
+    expect(await props(await HomePage({ searchParams: Promise.resolve({}) })).queries.homeBanners)
+      .toEqual({ status: "fulfilled", value: [] });
+    vi.stubEnv("KYAA_FEATURE_SIGNUP_RAFFLE", "true");
+    const result = await props(await HomePage({ searchParams: Promise.resolve({}) })).queries.homeBanners;
+    expect(result.value).toHaveLength(1);
+    expect(result.value).toEqual([expect.objectContaining({ href: expect.stringContaining("/s/raffle") })]);
+  });
 
   it("streams current raffle metadata and settles to rejected when its read fails", async () => {
     const raffles = [{ title: "Current prize", entryClosesAt: "2026-10-07T09:00:00Z" }];

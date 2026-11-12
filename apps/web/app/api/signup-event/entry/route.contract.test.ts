@@ -9,16 +9,16 @@ vi.mock('@/server/signup-event/local',async original=>({...await original<typeof
 import { POST } from './route';
 afterEach(()=>{vi.unstubAllEnvs();vi.resetAllMocks();});
 it('blocks production and unauthenticated entry before source writes',async()=>{
- vi.stubEnv('KYAA_SIGNUP_EVENT_LOCAL','1');vi.stubEnv('NODE_ENV','production');expect((await POST(new Request('http://localhost'))).status).toBe(404);expect(mocks.authorize).not.toHaveBeenCalled();
- vi.stubEnv('NODE_ENV','test');mocks.authorize.mockRejectedValue(new AuthError('AUTHENTICATION_REQUIRED',401,'required'));
+ vi.stubEnv('KYAA_FEATURE_SIGNUP_RAFFLE','true');vi.stubEnv('KYAA_FEATURE_SIGNUP_RAFFLE','false');expect((await POST(new Request('http://localhost'))).status).toBe(404);expect(mocks.authorize).not.toHaveBeenCalled();
+ vi.stubEnv('KYAA_FEATURE_SIGNUP_RAFFLE','true');mocks.authorize.mockRejectedValue(new AuthError('AUTHENTICATION_REQUIRED',401,'required'));
  expect((await POST(new Request('http://localhost'))).status).toBe(401);expect(mocks.refresh).not.toHaveBeenCalled();
 });
 it('uses the authenticated owner and ignores client eligibility claims',async()=>{
- vi.stubEnv('KYAA_SIGNUP_EVENT_LOCAL','1');mocks.authorize.mockResolvedValue({appUserId:'owner'});mocks.client.mockReturnValue('read-only-client');mocks.refresh.mockResolvedValue(true);mocks.read.mockResolvedValue({users:[{id:'owner',passportReceived:false,communityJoined:true}]});
+ vi.stubEnv('KYAA_FEATURE_SIGNUP_RAFFLE','true');mocks.authorize.mockResolvedValue({appUserId:'owner'});mocks.client.mockReturnValue('read-only-client');mocks.refresh.mockResolvedValue(true);mocks.read.mockResolvedValue({users:[{id:'owner',passportReceived:false,communityJoined:true}]});
  const response=await POST(new Request('http://localhost',{method:'POST',body:JSON.stringify({userId:'other',passportReceived:true})}));
  expect(response.status).toBe(200);expect(mocks.refresh).toHaveBeenCalledWith('read-only-client','owner',true);expect(await response.json()).toEqual({entered:true,passportReceived:false,communityJoined:true});
 });
 it('does not report successful entry when the window is closed or local storage fails',async()=>{
- vi.stubEnv('KYAA_SIGNUP_EVENT_LOCAL','1');mocks.authorize.mockResolvedValue({appUserId:'owner'});mocks.refresh.mockResolvedValue(false);
+ vi.stubEnv('KYAA_FEATURE_SIGNUP_RAFFLE','true');mocks.authorize.mockResolvedValue({appUserId:'owner'});mocks.refresh.mockResolvedValue(false);
  expect((await POST(new Request('http://localhost'))).status).toBe(409);expect(mocks.read).not.toHaveBeenCalled();
 });

@@ -1,6 +1,4 @@
 import { boundedText } from "@/server/auth/apple-notifications/reauthentication-provider";
-import { sourceSchema } from "@/server/signup-event/source-adapter";
-import { ingestLocalSources } from "@/server/signup-event/local-store";
 import { signupEvent } from '@/features/benefit/domain/signup-event';
 import { z } from "zod";
 import { authorizeLocalAdmin } from '@/server/signup-event/local-admin';
@@ -39,19 +37,5 @@ export async function POST(request: Request) {
   }
 }
 
-/** Admin-only ingestion of verified source records into the local file adapter. */
-export async function PUT(request: Request) {
-  if (!localSignupEnabled()) return new Response(null, { status: 404, headers });
-  try {
-    const admin = await authorizeLocalAdmin({ authorization: request.headers.get('authorization') ?? '', correlationId: crypto.randomUUID() });
-    if (admin.role === 'viewer') return new Response(null, { status: 403, headers });
-    const raw = JSON.parse(await boundedText(request, 16384));
-    const parsed = sourceSchema.safeParse(raw);
-    if (!parsed.success) return new Response(null, { status: 400, headers });
-    await ingestLocalSources(parsed.data);
-    return new Response(null, { status: 204, headers });
-  } catch (error) {
-    const conflict=error instanceof Error && (error.message==='SIGNUP_EVENT_SOURCE_CONFLICT'||('code' in error && error.code==='EEXIST'));
-    return new Response(null, { status: error instanceof AuthError ? error.status : conflict ? 409 : error instanceof SyntaxError ? 400 : 503, headers });
-  }
-}
+/** Client-supplied reward evidence is never accepted. */
+export async function PUT() { return new Response(null, { status: localSignupEnabled() ? 405 : 404, headers }); }

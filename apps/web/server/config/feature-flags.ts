@@ -11,3 +11,8 @@ export function jjinfanGaugeEnabled(env: Env = process.env): boolean {
 export function quizLearnEnabled(env: Env = process.env): boolean {
   return env.KYAA_FEATURE_QUIZ_LEARN === "true";
 }
+
+/** Server-only opt-in; production stays off until explicitly approved. */
+export function signupRaffleEnabled(env: Env = process.env): boolean {
+  return env.KYAA_FEATURE_SIGNUP_RAFFLE === "true";
+}
