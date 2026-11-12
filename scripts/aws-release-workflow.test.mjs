@@ -85,7 +85,9 @@ test('AWS compiler keeps every runtime root while full CI retains fixtures and t
   const full = parse('tsconfig.json'), runtime = parse('tsconfig.aws.json');
   const excluded = name => /\/e2e\/|\.(test|spec)\.tsx?$|\/vitest\.(config|setup)\.ts$/.test(name);
   const runtimeFiles = new Set(runtime.fileNames);
-  assert.ok(full.fileNames.some(name => name.endsWith('/e2e/community-compact-local/main.tsx')));
+  assert.ok(full.fileNames.some(name => name.endsWith('/e2e/translation-local/main.tsx')));
+  assert.ok(full.fileNames.some(name => /\.(test|spec)\.tsx?$/.test(name)));
+  assert.ok(runtime.fileNames.every(name => !excluded(name)));
   for (const name of full.fileNames.filter(name => !excluded(name))) assert.ok(runtimeFiles.has(name), name);
   assert.ok(runtime.fileNames.length < full.fileNames.length);
   const base = JSON.parse(readFileSync(path.join(root, 'tsconfig.json'), 'utf8'));

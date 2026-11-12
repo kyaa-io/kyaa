@@ -65,3 +65,10 @@
 - 근거: work/train2/{types-main,worker-types-main,worker-imports-main,vitest-main,notices-main,design-main}.log, main-conflicts.diff.
 
 Next build·mini gate·실화면·운영 DB 확인과 푸시는 수행하지 않음. 기존 main/release 푸시 금지 유지.
+
+## 18:11 notices-tests 후속
+
+원본 7596d743b317d455b8a156d3b528efb6680ab3ee 보존. 삭제된 community-compact-local/main.tsx 고정 경로를 현재 존재하는 translation-local/main.tsx로 교체. full CI 시험 포함·AWS runtime e2e/시험 제외를 추가 assert하여 계약 유지.
+
+실패했던 정확한 명령 `node --test scripts/deployment-notices.test.mjs scripts/recover-deployment-notice.test.mjs scripts/aws-release*.test.mjs scripts/aws-wave-release.test.mjs` 로컬 exit 0: 173 pass, 1 skip, 0 fail. 로그 work/train2/notices-tests-fix.log.
+mini 기존 7596 게이트 result passed=false 종료 및 실행 프로세스 없음, flock 획득 가능 확인. base 4e8168552088dff860fde94f3826e570fff06d66으로 수정 커밋에 단일 gate-remote 실행; 성공 단계 재사용은 도구 기본 기능만 사용하며 영수증/로그 수동 복제하지 않음. 최종 결과는 해당 head 영수증 및 완료 응답에 기록.
