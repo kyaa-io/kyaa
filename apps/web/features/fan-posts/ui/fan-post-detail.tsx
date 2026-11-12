@@ -1,6 +1,6 @@
 "use client";
 import { ProfileAuthor } from "@/features/group-social/profile-window";
-import { EarnActionBadge, EarnMinLength } from "@/features/dukjil/ui/earn-badge";
+import { EarnBadgeCorner, EarnMinLength } from "@/features/dukjil/ui/earn-badge";
 import { FanSkeleton, FanSkeletonRows, FanSkeletonStatus } from "@/components/fan-ui/fan-skeleton";
 import { fanLoginHref } from "@/components/login-href";
 import { boardCopy } from "@/features/groups/ui/board-copy";
@@ -178,7 +178,7 @@ export const CommentComposer = memo(function CommentComposer({ showRewards = tru
     <div className={detailStyles.commentTools}>
       <span className={detailStyles.commentCounter}>{draft.length.toLocaleString(locale)} / 1,000</span>
       {replyTarget && <FanAction type="button" variant="text" disabled={busy} onClick={onCancel}>{copy.cancel}</FanAction>}
-      {showRewards && <><EarnMinLength action="comment" locale={locale} /><EarnActionBadge action="comment" locale={locale} /></>}<FanAction type="submit" variant="neutral" size="sm" ariaBusy={busy} loading={busy} disabled={!gated && !draft.trim()}>{rc.post}</FanAction>
+      {showRewards && <EarnMinLength action="comment" locale={locale} />}{(() => { const send = <FanAction type="submit" variant="neutral" size="sm" ariaBusy={busy} loading={busy} disabled={!gated && !draft.trim()}>{rc.post}</FanAction>; return showRewards ? <EarnBadgeCorner action="comment" locale={locale}>{send}</EarnBadgeCorner> : send; })()}
     </div>
   </fieldset></form>;
 });

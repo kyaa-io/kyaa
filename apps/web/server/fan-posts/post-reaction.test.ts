@@ -42,17 +42,36 @@ describe("post reactions", () => {
     expect(JSON.stringify(odd)).not.toContain("voters");
   });
 
-  it("writes one choice; only a like earns the reaction reward", async () => {
+  it("writes one choice; a like and a dislike earn the same reaction reward, a cancel earns nothing", async () => {
     const d = dependencies(), h = createContentHandlers(d);
     d.rpc.mockImplementation(async (name: string) => name === "set_fan_post_reaction" ? { reaction: "dislike", dislikeCount: null } : null);
     const response = await h.like(put({ reaction: "dislike" }), id);
     expect(await response.json()).toEqual({ reaction: "dislike", dislikeCount: null });
     expect(d.rpc).toHaveBeenCalledWith("set_fan_post_reaction", { p_app_user_id: owner, p_post_id: id, p_reaction: "dislike" });
-    expect(d.rpc.mock.calls.map(call => call[0])).toEqual(["set_fan_post_reaction"]);
-    d.rpc.mockReset().mockImplementation(async (name: string) => name === "set_fan_post_reaction" ? { reaction: "like", dislikeCount: null } : null);
-    await h.like(put({ reaction: "like" }), id);
     // The reward step starts by resolving the post's page.
     expect(d.rpc.mock.calls.map(call => call[0])).toEqual(["set_fan_post_reaction", "read_fan_post"]);
+    d.rpc.mockReset().mockImplementation(async (name: string) => name === "set_fan_post_reaction" ? { reaction: "like", dislikeCount: null } : null);
+    await h.like(put({ reaction: "like" }), id);
+    expect(d.rpc.mock.calls.map(call => call[0])).toEqual(["set_fan_post_reaction", "read_fan_post"]);
+    d.rpc.mockReset().mockImplementation(async (name: string) => name === "set_fan_post_reaction" ? { reaction: null, dislikeCount: null } : null);
+    await h.like(put({ reaction: "none" }), id);
+    expect(d.rpc.mock.calls.map(call => call[0])).toEqual(["set_fan_post_reaction"]);
+  });
+
+  it("pays a dislike on the like's source, so one post pays one reaction once whichever thumb comes first", async () => {
+    const d = Object.assign(dependencies(), { resolveCreatorId: async () => "30000000-0000-4000-8000-000000000003" }), h = createContentHandlers(d);
+    const award = { points: 1, stampId: null, capped: false, reason: null, replayed: false };
+    d.rpc.mockImplementation(async (name: string, args: Record<string, unknown>) => name === "set_fan_post_reaction" ? { reaction: args.p_reaction, dislikeCount: null } : name === "read_fan_post" ? { post } : name === "record_dukjil_action" ? award : null);
+    const sources = async (reaction: string) => { d.rpc.mockClear(); const body = await (await h.like(put({ reaction }), id)).json(); return { body, keys: d.rpc.mock.calls.filter(([name]) => name === "record_dukjil_action").map(([, args]) => [args.p_action_key, args.p_source_key]) }; };
+    const disliked = await sources("dislike"), liked = await sources("like");
+    expect(disliked.keys).toEqual([["reaction", `post-like:${id}`]]);
+    expect(liked.keys).toEqual(disliked.keys);
+    expect(disliked.body).toEqual({ reaction: "dislike", dislikeCount: null, reward: { points: 1, stamps: 0 } });
+    // The database's own-post and replay checks answer 0 / replayed for the same source, and the response then carries no reward.
+    Object.assign(award, { points: 0, reason: "SELF_REACTION" });
+    expect((await sources("dislike")).body).toEqual({ reaction: "dislike", dislikeCount: null });
+    Object.assign(award, { points: 1, reason: null, replayed: true });
+    expect((await sources("dislike")).body).toEqual({ reaction: "dislike", dislikeCount: null });
   });
 
   it("returns a fresh like grant for the shared celebration, and nothing for a replayed or empty grant (261107-2 D8)", async () => {
