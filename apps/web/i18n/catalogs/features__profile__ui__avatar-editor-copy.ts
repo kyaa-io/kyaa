@@ -14,19 +14,6 @@ export const messages = {
     ru: "Изображение профиля"
 
   },
-  "m61e60760de51": {
-    "ja": "キャラクターを選ぶか、自分の写真を使用できます。",
-    "zh-Hans": "您可以选择角色或使用自己的照片。",
-    "zh-Hant": "您可以選擇角色或使用自己的照片。",
-    "es": "Elige un personaje o usa tu propia foto.",
-    "id": "Pilih karakter atau gunakan foto Anda.",
-    "vi": "Chọn nhân vật hoặc dùng ảnh của bạn.",
-    "th": "เลือกตัวละครหรือใช้รูปของคุณเอง",
-    "pt": "Escolha um personagem ou use sua própria foto.",
-    "fr": "Choisissez un personnage ou utilisez votre propre photo.",
-    ru: "Выберите персонажа или используйте свою фотографию."
-
-  },
   "mf5668a0d0d7e": {
     "ja": "変更",
     "zh-Hans": "更改",
@@ -92,19 +79,6 @@ export const messages = {
     ru: "Изменить изображение профиля"
 
   },
-  "m62d5eaf43c83": {
-    "ja": "キャラクターまたは写真を選択して保存してください。",
-    "zh-Hans": "请选择角色或照片，然后保存。",
-    "zh-Hant": "請選擇角色或照片，然後儲存。",
-    "es": "Elige un personaje o una foto y guarda los cambios.",
-    "id": "Pilih karakter atau foto, lalu simpan.",
-    "vi": "Chọn nhân vật hoặc ảnh rồi lưu.",
-    "th": "เลือกตัวละครหรือรูปภาพ แล้วบันทึก",
-    "pt": "Escolha um personagem ou uma foto e salve.",
-    "fr": "Choisissez un personnage ou une photo, puis enregistrez.",
-    ru: "Выберите персонажа или фотографию, затем сохраните."
-
-  },
   "m085c2481c501": {
     "ja": "キャラクターを選択",
     "zh-Hans": "选择角色",
@@ -144,19 +118,6 @@ export const messages = {
     ru: "Выберите другую фотографию"
 
   },
-  "m662b92ecf5d5": {
-    "ja": "JPEG、PNG、WebP・最大4MB",
-    "zh-Hans": "JPEG、PNG、WebP · 最大4MB",
-    "zh-Hant": "JPEG、PNG、WebP · 最大4MB",
-    "es": "JPEG, PNG, WebP · hasta 4 MB",
-    "id": "JPEG, PNG, WebP · hingga 4 MB",
-    "vi": "JPEG, PNG, WebP · tối đa 4 MB",
-    "th": "JPEG, PNG, WebP · สูงสุด 4MB",
-    "pt": "JPEG, PNG, WebP · até 4 MB",
-    "fr": "JPEG, PNG, WebP · jusqu’à 4 Mo",
-    ru: "JPEG, PNG, WebP · до 4 МБ"
-
-  },
   "mf8b9d453147f": {
     "ja": "写真を調整",
     "zh-Hans": "调整照片",
@@ -168,19 +129,6 @@ export const messages = {
     "pt": "Ajustar foto",
     "fr": "Ajuster la photo",
     ru: "Отредактировать фото"
-
-  },
-  "m26fc2e38c6a1": {
-    "ja": "写真をドラッグするか、矢印キーで位置を調整してください。",
-    "zh-Hans": "拖动照片或使用方向键调整位置。",
-    "zh-Hant": "拖動照片或使用方向鍵調整位置。",
-    "es": "Arrastra la foto o usa las teclas de flecha para colocarla.",
-    "id": "Seret foto atau gunakan tombol panah untuk mengatur posisinya.",
-    "vi": "Kéo ảnh hoặc dùng phím mũi tên để đặt vị trí.",
-    "th": "ลากรูปหรือใช้ปุ่มลูกศรเพื่อจัดตำแหน่ง",
-    "pt": "Arraste a foto ou use as teclas de seta para posicioná-la.",
-    "fr": "Faites glisser la photo ou utilisez les touches fléchées pour la positionner.",
-    ru: "Перетащите фотографию или используйте клавиши со стрелками, чтобы расположить её."
 
   },
   "m93fbd1a0efee": {

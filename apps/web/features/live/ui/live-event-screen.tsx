@@ -137,11 +137,10 @@ const copy = {
     howTo: "참여 방법",
     benefit: "LIVE 혜택",
     fanCode: "출석코드",
-    fanCodeHelper:
-      "LIVE에서 공개된 출석코드를 입력하면 예약 여부와 관계없이 출석을 남길 수 있어요.",
+    
     attendance: {
       label: "출석코드 입력",
-      placeholder: "영문·숫자 4자 이상",
+      
       submit: "출석 인증하기",
       pending: "출석 확인 중",
       signIn: "로그인하고 출석 인증하기",
@@ -164,13 +163,6 @@ const copy = {
       survey: "설문 참여하고 다음 스탬프 받기",
     },
     steps: ["예약", "LIVE 시청", "출석코드", "설문", "스탬프"],
-    stepHelpers: [
-      "일정을 먼저 저장해요",
-      "새 탭에서 시청해요",
-      "LIVE 시작 후 입력해요",
-      "출석 완료 후 참여해요",
-      "참여 기록을 남겨요",
-    ],
     action: {
       reservation_upcoming: "예약 오픈 전",
       sign_in_to_reserve: "로그인하기",
@@ -183,9 +175,7 @@ const copy = {
       live_cancelled: "취소된 LIVE",
     },
     actionHelper: {
-      signIn: "LIVE를 예약하려면 먼저 로그인해 주세요.",
       verifyFan: "예약하려면 {celebrity} 패스포트가 필요해요.",
-      watch: "외부 LIVE가 새 창에서 열려요.",
     },
     reservationPeriod: "예약 기간",
     eventTime: "LIVE 일정",
@@ -218,11 +208,10 @@ const copy = {
     howTo: "How to join",
     benefit: "LIVE benefit",
     fanCode: "Fan Code",
-    fanCodeHelper:
-      "Enter the Fan Code shared during the LIVE to record attendance—no reservation required.",
+    
     attendance: {
       label: "Enter Fan Code",
-      placeholder: "4+ letters or numbers",
+      
       submit: "Verify attendance",
       pending: "Checking attendance",
       signIn: "Sign in to verify attendance",
@@ -244,13 +233,6 @@ const copy = {
       survey: "Take the survey for your next Stamp",
     },
     steps: ["Reserve", "Watch LIVE", "Fan Code", "Survey", "Stamp"],
-    stepHelpers: [
-      "Save the schedule",
-      "Watch in a new tab",
-      "Enter the code after the LIVE starts",
-      "Available after attendance",
-      "Keep your participation record",
-    ],
     action: {
       reservation_upcoming: "Reservations open soon",
       sign_in_to_reserve: "Sign in",
@@ -263,9 +245,7 @@ const copy = {
       live_cancelled: "LIVE cancelled",
     },
     actionHelper: {
-      signIn: "Sign in first to reserve this LIVE.",
       verifyFan: "A {celebrity} Fan Passport is required to reserve.",
-      watch: "Opens the external LIVE in a new window.",
     },
     reservationPeriod: "Reservation period",
     eventTime: "LIVE schedule",
@@ -299,11 +279,10 @@ const copy = {
     howTo: localizedMessages.ma1336a310e6a[translationLocale],
     benefit: localizedMessages.m8ebaaf980ec3[translationLocale],
     fanCode: "Fan Code",
-    fanCodeHelper:
-      localizedMessages.m9cb659e21e1b[translationLocale],
+    
     attendance: {
       label: localizedMessages.meb25155466c1[translationLocale],
-      placeholder: localizedMessages.m9970843ef1fe[translationLocale],
+      
       submit: localizedMessages.m2b26660bd101[translationLocale],
       pending: localizedMessages.m1b999fd86e9e[translationLocale],
       signIn: localizedMessages.m651b2dba01e4[translationLocale],
@@ -325,13 +304,6 @@ const copy = {
       survey: localizedMessages.md07b6a5fbdf5[translationLocale],
     },
     steps: [localizedMessages.mcc382dc90935[translationLocale], localizedMessages.m40df16e2ff9f[translationLocale], "Fan Code", localizedMessages.m3e2bfb186511[translationLocale], "Stamp"],
-    stepHelpers: [
-      localizedMessages.m1bca3fbe9814[translationLocale],
-      localizedMessages.m7dac7fc03667[translationLocale],
-      localizedMessages.m620f22306a1f[translationLocale],
-      localizedMessages.mc724e11d3089[translationLocale],
-      localizedMessages.m11c287d2d2a2[translationLocale],
-    ],
     action: {
       reservation_upcoming: localizedMessages.md776b8250cdb[translationLocale],
       sign_in_to_reserve: localizedMessages.m41236d922737[translationLocale],
@@ -344,9 +316,7 @@ const copy = {
       live_cancelled: localizedMessages.m83708e51b816[translationLocale],
     },
     actionHelper: {
-      signIn: localizedMessages.m941b88c1ccf4[translationLocale],
       verifyFan: localizedMessages.m21ef7db4e5f6[translationLocale],
-      watch: localizedMessages.mb3d5745c39d6[translationLocale],
     },
     reservationPeriod: localizedMessages.m3d248d578b9a[translationLocale],
     eventTime: localizedMessages.m287b7301639d[translationLocale],
@@ -373,8 +343,7 @@ const copy = {
 const ifewLiveCopy = {
   ko: {
     fanCode: "출석 코드",
-    fanCodeHelper:
-      "LIVE 방송에서 알려주는 출석 코드를 이 화면에 입력하면 kyaa에 출석을 남길 수 있어요.",
+    
     attendance: {
       label: "출석 코드 입력",
       beforeLive:
@@ -385,19 +354,12 @@ const ifewLiveCopy = {
         "LIVE 출석이 기록되고 응모권 2장을 받았어요.",
     },
     steps: ["팬 인증", "LIVE 예약", "LIVE 출석", "선물 응모"],
-    stepHelpers: [
-      "이퓨 패스포트를 발급받아요",
-      "일정을 미리 저장해요. 예약은 선택이에요",
-      "방송에서 공개된 출석 코드를 kyaa에 입력해요",
-      "응모권으로 뱅크시 관람권 추첨에 응모해요",
-    ],
     prizeAction: "뱅크시 관람권 추첨 응모하기",
-    prizeHelper: `${ifewPrizeName.ko} 추첨 페이지로 이동해요.`,
+    
   },
   en: {
     fanCode: "Attendance code",
-    fanCodeHelper:
-      "Enter the attendance code shared during the LIVE here to record your attendance on kyaa.",
+    
     attendance: {
       label: "Enter attendance code",
       beforeLive:
@@ -408,20 +370,13 @@ const ifewLiveCopy = {
         "Your LIVE attendance is recorded, and you received 2 raffle tickets.",
     },
     steps: ["Fan verification", "Reserve", "LIVE attendance", "Enter the prize draw"],
-    stepHelpers: [
-      "Get your ifew Fan Passport",
-      "Save the schedule. Reservation is optional",
-      "Enter the broadcast’s attendance code on kyaa",
-      "Use your raffle tickets to enter the Banksy ticket draw",
-    ],
     prizeAction: "Enter the Banksy ticket draw",
-    prizeHelper: `Go to the draw for ${ifewPrizeName.en}.`,
+    
   },
 
   ...additionalLocales((translationLocale) => ({
     fanCode: localizedMessages.me66aaa7d8055[translationLocale],
-    fanCodeHelper:
-      localizedMessages.m371c2f660b46[translationLocale],
+    
     attendance: {
       label: localizedMessages.m31c62ef02fb7[translationLocale],
       beforeLive:
@@ -432,14 +387,7 @@ const ifewLiveCopy = {
         localizedMessages.mb60738bd2925[translationLocale],
     },
     steps: [localizedMessages.m1bbf967d6533[translationLocale], localizedMessages.m0d651ff6594c[translationLocale], localizedMessages.m6c2684807ecf[translationLocale], localizedMessages.m327d547c4531[translationLocale]],
-    stepHelpers: [
-      localizedMessages.m3214aef0a091[translationLocale],
-      localizedMessages.mdd030a1bc56e[translationLocale],
-      localizedMessages.m5af701c505c4[translationLocale],
-      localizedMessages.m26439d5fae3a[translationLocale],
-    ],
     prizeAction: localizedMessages.mc8cc08deb635[translationLocale],
-    prizeHelper: translate(translationLocale, localizedMessages.ma1a8c0a4609b, "Go to the draw for {0}.", [ifewPrizeName.en]),
   }))
 } as const;
 
@@ -1280,7 +1228,7 @@ export function LiveEventScreen({
   const elinaSteps = ({ ko: ["팬 인증", "LIVE 예약", "선물 응모", "방송 당일 출석"], en: ["Verify", "Reserve", "Enter for prizes", "LIVE check-in"], ...additionalLocales((translationLocale) => ([localizedMessages.mc1710e55de0d[translationLocale], localizedMessages.m30f072d4f05f[translationLocale], localizedMessages.mfa0fca66bf63[translationLocale], localizedMessages.med9574a43a55[translationLocale]])) })[locale];
   const elinaStepHelpers = ({ ko: ["첫 인증으로 응모권 1장", "첫 예약으로 응모권 1장", "모은 응모권으로 직접 응모해요", "kyaa에 코드 입력하고 2장 추가"], en: ["Earn 1 ticket on first verification", "Earn 1 ticket on first reservation", "Use your tickets to enter separately", "Return to kyaa, enter the code and earn 2"], ...additionalLocales((translationLocale) => ([localizedMessages.mcdbf7d4c741f[translationLocale], localizedMessages.m256a94549924[translationLocale], localizedMessages.m0e68ee041cca[translationLocale], localizedMessages.m52dd9000cd4f[translationLocale]])) })[locale];
   const journeySteps = live.attendanceConfigured === false ? c.steps.slice(0, 2) : eventCopy?.steps ?? (isElinaLive ? elinaSteps : c.steps.filter((_, index) => live.missionsAvailable !== false || index !== 3));
-  const journeyStepHelpers = live.attendanceConfigured === false ? c.stepHelpers.slice(0, 2) : eventCopy?.stepHelpers ?? (isElinaLive ? elinaStepHelpers : c.stepHelpers.filter((_, index) => live.missionsAvailable !== false || index !== 3));
+  const journeyStepHelpers = isElinaLive && live.attendanceConfigured !== false && !eventCopy ? elinaStepHelpers : null;
   const statusLabel =
     live.effectiveStatus === "scheduled"
       ? c.scheduled
@@ -1302,15 +1250,9 @@ export function LiveEventScreen({
   });
   const verificationHref = `/c/${live.celebrity.slug}/verify?${verificationQuery.toString()}` as Route;
   const primaryHelper =
-    primaryAction === "sign_in_to_reserve"
-      ? c.actionHelper.signIn
-      : primaryAction === "verify_fan"
-        ? c.actionHelper.verifyFan.replace("{celebrity}", live.celebrity.name)
-        : primaryAction === "watch_live"
-          ? isIfewLive
-            ? locale === "ko" ? "틱톡이 새 창에서 열려요. 시청 후 이 화면에서 출석 코드를 입력해 주세요." : translate(locale, localizedMessages.mfecd6473737d, "TikTok opens in a new tab. Return here to enter the attendance code.")
-            : c.actionHelper.watch
-          : null;
+    primaryAction === "verify_fan"
+      ? c.actionHelper.verifyFan.replace("{celebrity}", live.celebrity.name)
+      : null;
   const primaryHelperId = primaryHelper ? "live-primary-action-helper" : undefined;
   const attendanceError =
     attendance.kind === "error"
@@ -1353,7 +1295,6 @@ export function LiveEventScreen({
           <span>{actionLabel}</span>
           <span className={styles.actionTrailing} aria-hidden="true"><ArrowRight /></span>
         </AuthIntentLink>
-        <p id={primaryHelperId} className={styles.actionHelper}>{primaryHelper}</p>
       </div>
     ) : primaryAction === "verify_fan" ? (
       <div className={styles.primaryActionBlock}>
@@ -1388,9 +1329,6 @@ export function LiveEventScreen({
         >
           {actionLabel}
         </FanAction>
-        <p id={primaryHelperId} className={styles.actionHelper}>
-          {primaryHelper}
-        </p>
       </div>
     ) : primaryAction === "reserve" ? (
       <div className={styles.primaryActionBlock}>
@@ -1412,9 +1350,6 @@ export function LiveEventScreen({
           {primaryAction === "reserved" ? <Check aria-hidden="true" /> : <LockKeyhole aria-hidden="true" />}
           <span>{actionLabel}</span>
         </p>
-        {primaryAction === "reserved" && isIfewLive ? <p className={styles.actionHelper}>
-          {locale === "ko" ? "방송이 시작되면 이 화면에서 출석 코드를 입력할 수 있어요." : translate(locale, localizedMessages.m368720b16d69, "When the LIVE starts, return here to enter the attendance code.")}
-        </p> : null}
       </div>
     );
   const hasPrimaryActionControl =
@@ -1560,7 +1495,6 @@ export function LiveEventScreen({
                 className={styles.missionLink}
                 fullWidth
                 href={`/live/${slug}/missions?locale=${locale}` as Route}
-                helperText={live.missionsAvailable == null ? (locale === "ko" ? "덕질 목록에서 참여 가능 여부를 확인해 주세요." : translate(locale, localizedMessages.m74fb6f427790, "Check the mission list for availability.")) : undefined}
               >
                 <span className={styles.missionLinkContent}><span>{locale === "ko" ? "LIVE 덕질 보기" : translate(locale, localizedMessages.ma66aa523b5a6, "View LIVE missions")}</span><ArrowRight aria-hidden="true" /></span>
               </FanAction>
@@ -1602,7 +1536,7 @@ export function LiveEventScreen({
                   <li key={step}>
                     <span>{index + 1}</span>
                     <strong>{step}</strong>
-                    <small>{journeyStepHelpers[index]}</small>
+                    {journeyStepHelpers ? <small>{journeyStepHelpers[index]}</small> : null}
                   </li>
                 ))}
               </ol>
@@ -1668,7 +1602,7 @@ export function LiveEventScreen({
                     <div className={styles.fanCodeHeading}>
                       {attendancePhase === 'open' && <p className={styles.attendanceOpenLabel}><Radio aria-hidden="true" />{locale === "ko" ? '출석 접수 중' : translate(locale, localizedMessages.m322388657d99, "CHECK-IN OPEN")}</p>}
                       <h2 id="fan-code-title">{attendancePhase === 'open' ? locale === "ko" ? '지금 출석코드를 입력해 주세요' : translate(locale, localizedMessages.mbe3a5f73fa38, "Enter your Fan Code now") : eventCopy?.fanCode ?? c.fanCode}</h2>
-                      {live.effectiveStatus !== "scheduled" || attendancePhase === 'open' ? <p>{eventCopy?.fanCodeHelper ?? c.fanCodeHelper}</p> : null}
+                     
                     </div>
                     <div className={styles.fanCodeIcon} data-fan-code-header-icon aria-hidden="true">
                       <TicketCheck />
@@ -1726,12 +1660,7 @@ export function LiveEventScreen({
                           spellCheck={false}
                           minLength={4}
                           maxLength={32}
-                          placeholder={attendanceCopy.placeholder}
-                          aria-describedby={
-                            attendanceError
-                              ? "fan-code-help fan-code-error"
-                              : "fan-code-help"
-                          }
+                          aria-describedby={attendanceError ? "fan-code-error" : undefined}
                           aria-invalid={attendanceError ? true : undefined}
                           disabled={
                             !sessionReady ||
@@ -1758,9 +1687,6 @@ export function LiveEventScreen({
                           {authenticated && attendance.kind !== "pending" && <EarnActionBadge action="live_attend" locale={locale} />}
                         </button>
                       </div>
-                      <p id="fan-code-help" className={styles.inputHelp}>
-                        {attendanceCopy.placeholder}
-                      </p>
                       {attendanceError && (
                         <p
                           id="fan-code-error"

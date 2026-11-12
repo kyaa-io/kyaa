@@ -84,8 +84,8 @@ it('offers two illustrated application banners with their existing destinations'
  expect(within(area).getByRole('link',{name:'팬페이지 개설 신청'})).toBe(rows[0]);expect(within(area).getByRole('link',{name:'취미·브랜드 페이지 개설 신청'})).toBe(rows[1]);
  expect(rows[0]).toHaveAttribute('href','/pages/groups/apply?locale=ko&kind=fan');
  expect(rows[1]).toHaveAttribute('href','/pages/groups/apply?locale=ko');
- expect(area.textContent).toContain('좋아하는 크리에이터의 팬페이지를 신청해요');
- expect(area.textContent).toContain('함께할 취미나 브랜드 페이지를 신청해요');
+ expect(area.textContent).toContain('팬페이지 개설 신청');
+ expect(area.textContent).not.toContain('신청해요');
  expect(within(area).queryByRole('heading')).toBeNull();
  expect(screen.queryByRole('button',{name:/^자세히/})).toBeNull();
  expect(screen.queryByText(/만들고 싶나요/)).toBeNull();

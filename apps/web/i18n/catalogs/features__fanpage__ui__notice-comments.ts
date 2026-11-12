@@ -196,19 +196,6 @@ export const messages = {
     ru: "Поделитесь своими мыслями с другими фанатами."
 
   },
-  "me6fdaaca8e8d": {
-    "ja": "ニックネームとキャラクターアバターは公開されます。",
-    "zh-Hans": "你的昵称和角色头像将公开显示。",
-    "zh-Hant": "你的暱稱和角色頭像將公開顯示。",
-    "es": "Tu apodo y el avatar de tu personaje son públicos.",
-    "id": "Nama panggilan dan avatar karakter Anda dapat dilihat publik.",
-    "vi": "Biệt danh và ảnh đại diện nhân vật của bạn được công khai.",
-    "th": "ชื่อเล่นและอวาตาร์ตัวละครของคุณจะแสดงต่อสาธารณะ",
-    "pt": "Seu nome de exibição e avatar de personagem são públicos.",
-    "fr": "Votre pseudo et votre avatar de personnage sont publics.",
-    ru: "Ваш никнейм и аватар персонажа общедоступны."
-
-  },
   "md971c1d51fcb": {
     "ja": "保存中…",
     "zh-Hans": "正在保存…",

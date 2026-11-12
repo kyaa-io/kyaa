@@ -51,20 +51,20 @@ type State =
 const copy = {
   ko: {
     title: "알림", all: "모두 읽음", readingAll: "모두 읽는 중…",
-    empty: "아직 도착한 알림이 없습니다.", emptyHelp: "라이브를 예약하면 시작 전 알림을 받을 수 있어요.", today: "오늘", previous: "이전 알림",
+    empty: "아직 도착한 알림이 없습니다.", today: "오늘", previous: "이전 알림",
     enable: "브라우저 알림 켜기", enabling: "알림 켜는 중…", enabled: "켜짐", permission: "알림은 예약 완료 뒤, 이 버튼을 선택할 때만 권한을 요청합니다.",
     subscribed: "브라우저 알림이 켜졌습니다.", denied: "브라우저 설정에서 알림 권한을 허용해 주세요.", unsupported: "이 브라우저는 푸시 알림을 지원하지 않습니다.", failed: "알림 설정을 저장하지 못했습니다.",
-    readAllFailed: "알림을 모두 읽음으로 표시하지 못했습니다. 다시 시도해 주세요.", readFailed: "읽음으로 표시하지 못했습니다. 다시 시도하거나 알림으로 바로 이동할 수 있어요.", continueToNotification: "알림으로 이동", signIn: "로그인 후 알림을 확인해 주세요.", signInHelp: "로그인하면 읽지 않은 소식과 예약한 LIVE 알림을 이어서 볼 수 있어요.",
+    readAllFailed: "알림을 모두 읽음으로 표시하지 못했습니다. 다시 시도해 주세요.", readFailed: "읽음으로 표시하지 못했습니다. 다시 시도하거나 알림으로 바로 이동할 수 있어요.", continueToNotification: "알림으로 이동", signIn: "로그인 후 알림을 확인해 주세요.", 
     google: "Google로 계속하기", retry: "다시 시도", load: "알림을 불러오는 중입니다.", loadError: "알림을 불러오지 못했습니다.", loadErrorHelp: "연결을 확인한 뒤 다시 시도해 주세요.",
     upcoming: "다가오는 LIVE 보기", settings: "알림 설정 열기", read: "읽음", unread: "읽지 않음", readLabel: "읽은 알림", unreadLabel: "읽지 않은 알림",
     summary: "알림 요약", unreadSummary: "읽지 않은 알림", notifications: "개", browser: "브라우저 알림", choose: "선택 필요",
   },
   en: {
     title: "Notifications", all: "Mark all as read", readingAll: "Marking all as read…",
-    empty: "No notifications yet.", emptyHelp: "Reserve a spot for a LIVE to get a reminder before it starts.", today: "Today", previous: "Earlier notifications",
+    empty: "No notifications yet.", today: "Today", previous: "Earlier notifications",
     enable: "Enable browser notifications", enabling: "Enabling notifications…", enabled: "On", permission: "We only request permission after a reservation, when you select this button.",
     subscribed: "Browser notifications are on.", denied: "Allow notifications in your browser settings.", unsupported: "This browser does not support push notifications.", failed: "We couldn't save your notification settings.",
-    readAllFailed: "We couldn't mark all notifications as read. Please try again.", readFailed: "We couldn't mark this notification as read. Try again or continue to the notification.", continueToNotification: "Continue to notification", signIn: "Sign in to view notifications.", signInHelp: "Sign in to continue viewing unread updates and reminders for your reserved LIVE events.",
+    readAllFailed: "We couldn't mark all notifications as read. Please try again.", readFailed: "We couldn't mark this notification as read. Try again or continue to the notification.", continueToNotification: "Continue to notification", signIn: "Sign in to view notifications.", 
     google: "Continue with Google", retry: "Try again", load: "Loading notifications.", loadError: "We couldn't load notifications.", loadErrorHelp: "Check your connection and try again.",
     upcoming: "View upcoming LIVE", settings: "Open notification settings", read: "Read", unread: "Unread", readLabel: "Read notification", unreadLabel: "Unread notification",
     summary: "Notification summary", unreadSummary: "Unread notifications", notifications: "", browser: "Browser notifications", choose: "Action needed",
@@ -72,10 +72,10 @@ const copy = {
 
   ...additionalLocales((translationLocale) => ({
     title: localizedMessages.m0ce955712d28[translationLocale], all: localizedMessages.mafbd37836ffe[translationLocale], readingAll: localizedMessages.m34565e48b2b1[translationLocale],
-    empty: localizedMessages.maafa0b4fa930[translationLocale], emptyHelp: localizedMessages.m5507fd7439f2[translationLocale], today: localizedMessages.mb74b6fc18430[translationLocale], previous: localizedMessages.m96f267992aca[translationLocale],
+    empty: localizedMessages.maafa0b4fa930[translationLocale], today: localizedMessages.mb74b6fc18430[translationLocale], previous: localizedMessages.m96f267992aca[translationLocale],
     enable: localizedMessages.m151f36b9f2ce[translationLocale], enabling: localizedMessages.m1104d490cfc4[translationLocale], enabled: localizedMessages.md7bd4e99fe18[translationLocale], permission: localizedMessages.meab304c085e0[translationLocale],
     subscribed: localizedMessages.m9ca4125ddd98[translationLocale], denied: localizedMessages.m29358063ccfb[translationLocale], unsupported: localizedMessages.m56f488cb0908[translationLocale], failed: localizedMessages.mede544d7b169[translationLocale],
-    readAllFailed: localizedMessages.m41d314b7affd[translationLocale], readFailed: localizedMessages.m7c3fdceca820[translationLocale], continueToNotification: localizedMessages.m333948906d83[translationLocale], signIn: localizedMessages.m765c2ab5d16d[translationLocale], signInHelp: localizedMessages.m6f8d40e676c7[translationLocale],
+    readAllFailed: localizedMessages.m41d314b7affd[translationLocale], readFailed: localizedMessages.m7c3fdceca820[translationLocale], continueToNotification: localizedMessages.m333948906d83[translationLocale], signIn: localizedMessages.m765c2ab5d16d[translationLocale], 
     google: localizedMessages.m2615b4ad9ca5[translationLocale], retry: localizedMessages.m350d86b1a577[translationLocale], load: localizedMessages.m5c06daa850a1[translationLocale], loadError: localizedMessages.md8e8eebe2936[translationLocale], loadErrorHelp: localizedMessages.mb0cd1fafd814[translationLocale],
     upcoming: localizedMessages.m4841af4dca97[translationLocale], settings: localizedMessages.mae16c506a010[translationLocale], read: localizedMessages.mcac3b1390d50[translationLocale], unread: localizedMessages.mc77726e05eaf[translationLocale], readLabel: localizedMessages.m5471bf002659[translationLocale], unreadLabel: localizedMessages.m8600684fcd79[translationLocale],
     summary: localizedMessages.m4633173083a2[translationLocale], unreadSummary: localizedMessages.m2bf19d8e6d6f[translationLocale], notifications: "", browser: localizedMessages.mdbf91260c2e9[translationLocale], choose: localizedMessages.medcfd408c0b8[translationLocale],

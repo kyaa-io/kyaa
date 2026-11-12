@@ -57,9 +57,9 @@ it('leads a received application to its status',async()=>{
  expect(screen.getByText('운영팀이 승인하면 페이지가 열려요.')).toBeInTheDocument();
  expect(screen.getByRole('link',{name:'내 신청 보기'})).toHaveAttribute('href','/pages/groups/apply?view=mine&locale=ko');
 });
-it('explains the chosen page type in one line',()=>{
- open('hobby');expect(screen.getByText(/^취미: /)).toBeInTheDocument();expect(screen.queryByText(/^브랜드: /)).toBeNull();
- fireEvent.click(screen.getByRole('radio',{name:'브랜드'}));expect(screen.getByText(/^브랜드: /)).toBeInTheDocument();
+it('shows no description line under the page type choice',()=>{
+ open('hobby');expect(screen.queryByText(/^취미: /)).toBeNull();
+ fireEvent.click(screen.getByRole('radio',{name:'브랜드'}));expect(screen.queryByText(/^브랜드: /)).toBeNull();
 });
 it('carries a searched name into the fan name field',()=>{
  render(<GroupApplicationDialog locale='ko' initialKind='fan' initialName='Ru' onClose={vi.fn()}/>);expect(screen.getByRole('combobox',{name:'페이지 이름'})).toHaveValue('Ru');

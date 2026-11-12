@@ -35,7 +35,6 @@ function CommunityFans({ slug, locale, compact = false, mediaOnly = false }: { s
       {resource.state.status === "ready" && <span>{resource.state.data.fanCount.toLocaleString(locale)}{copy.countSuffix}</span>}
     </header>
     {resource.state.status === "ready" ? <>
-      <p>{copy.fansIntro}</p>
       {resource.state.data.fans.length ? <ul className={compact ? styles.fanPreview : styles.fanList}>
         {resource.state.data.fans.slice(0, compact ? 6 : 24).map((fan, index) => <li key={`${fan.nickname}:${index}`}><img src={fan.avatarUrl} width={40} height={40} alt="" /><span>{fan.nickname}</span></li>)}
       </ul> : <p className={styles.empty}>{copy.noFans}</p>}
@@ -103,7 +102,7 @@ export function CommunityScreen({ creators, creator, locale, tab = "posts", medi
           </div>
           <aside className={styles.sidebar}>
             {tab !== "fans" && <CommunityFans slug={creator.slug} locale={locale} mediaOnly={mediaOnly} compact />}
-            {tab !== "certifications" && <section className={styles.verify}><BadgeCheck size={24} aria-hidden="true" /><h2>{copy.certifications}</h2><p>{copy.verifyIntro}</p><Link className={styles.textLink} href={communityHref(creator.slug, locale, "certifications", mediaOnly)}>{copy.certifications}<ArrowRight size={16} aria-hidden="true" /></Link></section>}
+            {tab !== "certifications" && <section className={styles.verify}><BadgeCheck size={24} aria-hidden="true" /><h2>{copy.certifications}</h2><Link className={styles.textLink} href={communityHref(creator.slug, locale, "certifications", mediaOnly)}>{copy.certifications}<ArrowRight size={16} aria-hidden="true" /></Link></section>}
           </aside>
         </div>
       </> : <p className={styles.empty} role="status">{copy.empty}</p>}

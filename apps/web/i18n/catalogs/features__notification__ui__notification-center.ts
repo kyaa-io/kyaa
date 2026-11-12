@@ -53,19 +53,6 @@ export const messages = {
     ru: "Уведомлений пока нет."
 
   },
-  "m5507fd7439f2": {
-    "ja": "LIVEを予約すると、開始前にリマインダーを受け取れます。",
-    "zh-Hans": "预约 LIVE，即可在开始前收到提醒。",
-    "zh-Hant": "預約 LIVE，即可在開始前收到提醒。",
-    "es": "Reserva un lugar para un LIVE y recibe un recordatorio antes de que empiece.",
-    "id": "Pesan tempat untuk LIVE agar mendapat pengingat sebelum dimulai.",
-    "vi": "Đặt chỗ LIVE để nhận lời nhắc trước khi bắt đầu.",
-    "th": "จองที่สำหรับ LIVE เพื่อรับการเตือนก่อนเริ่ม",
-    "pt": "Reserve um lugar em uma LIVE para receber um lembrete antes do início.",
-    "fr": "Réservez une place pour un LIVE afin de recevoir un rappel avant son début.",
-    ru: "Зарезервируйте место для LIVE, чтобы получить напоминание перед началом."
-
-  },
   "mb74b6fc18430": {
     "ja": "今日",
     "zh-Hans": "今天",
@@ -220,19 +207,6 @@ export const messages = {
     "pt": "Entre para ver as notificações.",
     "fr": "Connectez-vous pour voir les notifications.",
     ru: "Войдите в систему, чтобы просматривать уведомления."
-
-  },
-  "m6f8d40e676c7": {
-    "ja": "ログインすると、未読の更新情報と予約済みLIVEのリマインダーを引き続き確認できます。",
-    "zh-Hans": "登录后可继续查看未读更新和已预约 LIVE 的提醒。",
-    "zh-Hant": "登入後可繼續查看未讀更新和已預約 LIVE 的提醒。",
-    "es": "Inicia sesión para seguir viendo las novedades sin leer y los recordatorios de tus LIVE reservados.",
-    "id": "Masuk untuk terus melihat pembaruan yang belum dibaca dan pengingat LIVE yang telah Anda pesan.",
-    "vi": "Đăng nhập để tiếp tục xem cập nhật chưa đọc và lời nhắc LIVE đã đặt chỗ.",
-    "th": "เข้าสู่ระบบเพื่อดูข่าวสารที่ยังไม่ได้อ่านและการแจ้งเตือนสำหรับ LIVE ที่คุณจองไว้ต่อ",
-    "pt": "Entre para continuar vendo novidades não lidas e lembretes das LIVE que você reservou.",
-    "fr": "Connectez-vous pour continuer à voir les actualités non lues et les rappels des LIVE que vous avez réservés.",
-    ru: "Войдите в систему, чтобы продолжить просмотр непрочитанных обновлений и напоминаний по зарезервированным вами мероприятиям LIVE."
 
   },
   "m2615b4ad9ca5": {

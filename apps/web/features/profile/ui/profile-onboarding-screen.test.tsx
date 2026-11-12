@@ -67,7 +67,7 @@ describe("FAN-005 profile onboarding", () => {
     render(<ProfileOnboardingScreen celebrity={null} />);
 
     expect(await screen.findByRole("heading", { name: "kyaa에서 사용할 닉네임을 정해 주세요." })).toBeInTheDocument();
-    expect(screen.getByText("프로필을 완성하면 이전 화면으로 돌아가 계속할 수 있어요.")).toBeInTheDocument();
+    expect(screen.queryByText("프로필을 완성하면 이전 화면으로 돌아가 계속할 수 있어요.")).not.toBeInTheDocument();
     expect(screen.queryByLabelText("발급 예정 Fan Passport 미리보기")).not.toBeInTheDocument();
     expect(screen.queryByText("팬 인증 완료 후 발급")).not.toBeInTheDocument();
     expect(screen.getByRole("link", { name: "이전으로" })).toHaveAttribute("href", "/settings?locale=ko");
@@ -88,7 +88,7 @@ describe("FAN-005 profile onboarding", () => {
     expect(save).toBeEnabled();
 
     fireEvent.change(input, { target: { value: "J" } });
-    expect(screen.getByText("사용 가능한 형식이에요. 저장할 때 중복 여부를 확인합니다.")).toBeInTheDocument();
+    expect(screen.queryByText("사용 가능한 형식이에요. 저장할 때 중복 여부를 확인합니다.")).not.toBeInTheDocument();
     expect(save).toBeEnabled();
 
     fireEvent.change(input, { target: { value: "John 팬" } });
@@ -97,7 +97,7 @@ describe("FAN-005 profile onboarding", () => {
     expect(screen.queryByText("Fan Score")).not.toBeInTheDocument();
     expect(screen.queryByText("Stamps")).not.toBeInTheDocument();
     expect(screen.getByLabelText("6/32자")).toBeInTheDocument();
-    expect(screen.getByText("사용 가능한 형식이에요. 저장할 때 중복 여부를 확인합니다.")).toBeInTheDocument();
+    expect(screen.queryByText("사용 가능한 형식이에요. 저장할 때 중복 여부를 확인합니다.")).not.toBeInTheDocument();
     expect(save).toBeEnabled();
 
     fireEvent.change(input, { target: { value: "ليلى💜!" } });
@@ -186,7 +186,7 @@ describe("FAN-005 profile onboarding", () => {
     query = "returnTo=%2Fc%2Fkara%2Fverify%3Fstep%3Dintro%23fan-verify&intent=passport&entity=kara&locale=en";
     render(<ProfileOnboardingScreen celebrity={{ ...celebrity, locale: "en" }} />);
     expect(await screen.findByRole("heading", { name: "Choose a display name for your KARA fan verification." })).toBeInTheDocument();
-    expect(screen.getByText("After verification, it will appear in your KARA Fan Passport and activity history.")).toBeInTheDocument();
+    expect(screen.queryByText("After verification, it will appear in your KARA Fan Passport and activity history.")).not.toBeInTheDocument();
     expect(screen.getByRole("textbox", { name: "Display name" })).toHaveAttribute("dir", "auto");
     expect(screen.getByRole("combobox", { name: "Choose language, currently English" })).toHaveValue("en");
   });

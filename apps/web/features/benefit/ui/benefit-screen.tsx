@@ -92,11 +92,11 @@ const copy = {
   ko: {
     nav: ["홈", "셀럽", "라이브", "패스포트", "혜택"],
     title: "팬 혜택",
-    subtitle: "함께한 기록으로 열리는 특별한 혜택을 확인하세요.",
+    
     filter: "셀럽 선택",
     allEmpty: "공개된 혜택이 아직 없어요.",
     filterEmpty: "이 셀럽의 공개된 혜택이 아직 없어요.",
-    emptyHelp: "새 혜택이 열리면 이곳에서 바로 확인할 수 있어요.",
+    
     loadError: "혜택을 불러오지 못했어요.",
     loadHelp: "잠시 후 다시 시도해 주세요.",
     retry: "다시 불러오기",
@@ -176,11 +176,11 @@ const copy = {
   en: {
     nav: ["Home", "Celebrities", "Live", "Passports", "Benefits"],
     title: "Fan benefits",
-    subtitle: "Discover benefits available through your fan activities.",
+    
     filter: "Choose a celebrity",
     allEmpty: "There are no published benefits yet.",
     filterEmpty: "This celebrity has no published benefits yet.",
-    emptyHelp: "New benefits will appear here as soon as they open.",
+    
     loadError: "We couldn’t load benefits.",
     loadHelp: "Please try again shortly.",
     retry: "Try again",
@@ -263,11 +263,11 @@ const copy = {
   ...additionalLocales((translationLocale) => ({
     nav: [localizedMessages.mc479fe23637d[translationLocale], localizedMessages.m22f4a1234a39[translationLocale], localizedMessages.ma2124acff3dd[translationLocale], localizedMessages.m355f806fbf48[translationLocale], localizedMessages.mcd53f051880a[translationLocale]],
     title: localizedMessages.mf334d12f8dfe[translationLocale],
-    subtitle: localizedMessages.m029fa55d14da[translationLocale],
+    
     filter: localizedMessages.mf06d1cb8c856[translationLocale],
     allEmpty: localizedMessages.m8a47290d1158[translationLocale],
     filterEmpty: localizedMessages.m03a800dc1dd2[translationLocale],
-    emptyHelp: localizedMessages.md97cd47c327d[translationLocale],
+    
     loadError: localizedMessages.mebbf3bca342e[translationLocale],
     loadHelp: localizedMessages.m74c2ede087d3[translationLocale],
     retry: localizedMessages.m67a8aa0164c1[translationLocale],
@@ -574,7 +574,6 @@ export function BenefitsScreen({
         <div className={styles.listHeading}>
           <div>
             <h1>{c.title}</h1>
-            <p>{c.subtitle}</p>
           </div>
           {celebrities.length > 0 && <label>
             {c.filter}
@@ -627,7 +626,6 @@ export function BenefitsScreen({
           <section className={styles.message} role="status">
             <TicketCheck aria-hidden="true" />
             <h2>{selected ? c.filterEmpty : c.allEmpty}</h2>
-            <p>{c.emptyHelp}</p>
           </section>
         )}
         {view.kind === "ready" && view.benefits.length > 0 && (
@@ -1114,7 +1112,7 @@ function BenefitDetailOwnerScreen({
         >
           <TicketCheck aria-hidden="true" />
           <h1>{view.notFound ? c.notFound : c.loadError}</h1>
-          <p>{view.notFound ? c.emptyHelp : c.loadHelp}</p>
+          {view.notFound ? null : <p>{c.loadHelp}</p>}
           {!view.notFound && (
             <div className={styles.messageActions}>
               <FanAction onClick={() => void load()}>
@@ -1139,7 +1137,7 @@ function BenefitDetailOwnerScreen({
           >
             <TicketCheck aria-hidden="true" />
             <h1>{view.notFound ? c.notFound : c.loadError}</h1>
-            <p>{view.notFound ? c.emptyHelp : c.loadHelp}</p>
+            {view.notFound ? null : <p>{c.loadHelp}</p>}
             <div className={styles.messageActions}>
               {!view.notFound && (
                 <FanAction onClick={() => void load()}>
@@ -1279,11 +1277,9 @@ function BenefitDetailOwnerScreen({
           <section className={`${styles.delivery} ${styles.entryPanel} ${styles.detailAction}`} aria-live="polite">
             <div>
               <h2 className={styles.entryHeading}><FanMotionIcon name="ticket" size={24} />{c.enter}</h2>
-              <p>
-                {isIfewRaffle
-                  ? locale === "ko" ? "사용할 응모권 수량을 선택하고 직접 응모해 주세요. 팬 인증이나 LIVE 참여만으로 자동 응모되지는 않아요." : translate(locale, localizedMessages.m2b5088f52e34, "Choose how many raffle tickets to use and submit your entry. Fan verification or LIVE participation does not enter you automatically.")
-                  : locale === "ko" ? "응모권을 사용해 혜택에 응모할 수 있어요." : translate(locale, localizedMessages.m13ed96cd2401, "Use your raffle tickets to enter for this benefit.")}
-              </p>
+              {isIfewRaffle ? <p>
+                {locale === "ko" ? "사용할 응모권 수량을 선택하고 직접 응모해 주세요. 팬 인증이나 LIVE 참여만으로 자동 응모되지는 않아요." : translate(locale, localizedMessages.m2b5088f52e34, "Choose how many raffle tickets to use and submit your entry. Fan verification or LIVE participation does not enter you automatically.")}
+              </p> : null}
               <dl className={`${styles.period} ${styles.entryStats}`}>
                 <div>
                   <dt>{c.tickets}</dt>

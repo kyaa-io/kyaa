@@ -79,19 +79,6 @@ export const messages = {
     ru: "Мои любимые"
 
   },
-  "m6c62da6f7772": {
-    "ja": "クリエイターごとのFan Passportと、共通の応募券を確認できます。",
-    "zh-Hans": "查看每位创作者的 Fan Passport 和通用的抽奖券。",
-    "zh-Hant": "查看每位創作者的 Fan Passport 和通用的抽獎票券。",
-    "es": "Consulta el Fan Passport de cada creador y tus boletos de sorteo, que son los mismos para todos.",
-    "id": "Periksa Fan Passport tiap kreator dan tiket undianmu, yang berlaku untuk semua kreator.",
-    "vi": "Xem Fan Passport của từng nhà sáng tạo và vé rút thăm dùng chung cho tất cả.",
-    "th": "ตรวจสอบ Fan Passport แต่ละใบและตั๋วจับรางวัลที่ใช้ร่วมกันทุกครีเอเตอร์",
-    "pt": "Confira cada Fan Passport e seus bilhetes de sorteio, que valem para todos os criadores.",
-    "fr": "Consultez chaque Fan Passport et vos tickets de tirage, valables pour tous les créateurs.",
-    ru: "Проверьте Fan Passport каждого автора и свои билеты розыгрыша: они общие для всех авторов."
-
-  },
   "mee9c567663d7": {
     "ja": "まだ推しを追加していません。",
     "zh-Hans": "尚未添加喜爱的艺人。",
@@ -664,19 +651,6 @@ export const messages = {
     ru: "Предоставляется после утверждения"
 
   },
-  "m62ee926264d3": {
-    "ja": "参加したファン活動がファンランクに反映されます。",
-    "zh-Hans": "参与的粉丝活动将决定您的粉丝等级。",
-    "zh-Hant": "參與的粉絲活動將決定您的粉絲等級。",
-    "es": "Tus actividades como fan determinan tu nivel.",
-    "id": "Aktivitas penggemar Anda menentukan tingkat penggemar.",
-    "vi": "Hoạt động của bạn quyết định cấp người hâm mộ.",
-    "th": "กิจกรรมแฟนของคุณเป็นตัวกำหนดระดับแฟน",
-    "pt": "Suas atividades de fã determinam seu nível de fã.",
-    "fr": "Vos activités de fan déterminent votre niveau de fan.",
-    ru: "Ваша активность как фаната определяет ваш уровень фанатской поддержки."
-
-  },
   "m0f473985b8a3": {
     "ja": "最高ランクに到達しました。",
     "zh-Hans": "您已达到最高等级。",
@@ -1078,19 +1052,6 @@ export const messages = {
     "pt": "Não foi possível carregar os eventos.",
     "fr": "Impossible de charger les événements.",
     ru: "Нам не удалось загрузить события."
-
-  },
-  "m58b6515d67d0": {
-    "ja": "プレゼントを選び、抽選券で応募しましょう。",
-    "zh-Hans": "选择礼物并使用抽奖券参与。",
-    "zh-Hant": "選擇禮物並使用抽獎券參與。",
-    "es": "Elige un regalo y participa con tus tickets.",
-    "id": "Pilih hadiah dan ikuti dengan tiketmu.",
-    "vi": "Chọn quà và tham gia bằng vé của bạn.",
-    "th": "เลือกของขวัญและใช้ตั๋วเข้าร่วม",
-    "pt": "Escolha um presente e participe com seus tickets.",
-    "fr": "Choisissez un cadeau et participez avec vos tickets.",
-    ru: "Выберите подарок и примите участие в розыгрыше, предъявив билеты."
 
   },
   "m7d4e6ed6ba76": {

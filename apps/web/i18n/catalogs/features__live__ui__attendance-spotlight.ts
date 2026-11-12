@@ -27,19 +27,6 @@ export const messages = {
     ru: "Ищете LIVE? Сделайте это официально."
 
   },
-  "m20ade23c673e": {
-    "ja": "配信中に発表されたFan Codeを入力してください。",
-    "zh-Hans": "请输入直播中公布的Fan Code。",
-    "zh-Hant": "請輸入直播中公布的Fan Code。",
-    "es": "Introduce el Fan Code compartido durante la transmisión.",
-    "id": "Masukkan Fan Code yang dibagikan saat siaran.",
-    "vi": "Nhập Fan Code được công bố trong buổi phát trực tiếp.",
-    "th": "กรอก Fan Code ที่แจ้งระหว่างไลฟ์",
-    "pt": "Digite o Fan Code divulgado durante a transmissão.",
-    "fr": "Saisissez le Fan Code communiqué pendant le direct.",
-    ru: "Введите Fan Code, показанный во время трансляции."
-
-  },
   "m387239bdda6b": {
     "ja": " まで",
     "zh-Hans": " 截止",

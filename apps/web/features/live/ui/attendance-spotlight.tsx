@@ -20,7 +20,6 @@ export function AttendanceSpotlight({ locale, closesAt, href, onClick }: { local
     <div className={styles.copy}>
       <p className={styles.badge}><Radio aria-hidden="true" />{ko ? '지금 출석코드 입력 가능' : translate(locale, localizedMessages.m6c981491f2d7, "CHECK-IN IS OPEN")}</p>
       <h2 id={id}>{ko ? <>오늘의 LIVE,<br />내 출석을 남겨요.</> : locale === "en" ? <>Here for the LIVE?<br />Make it official.</> : translate(locale, localizedMessages.m1a8044462ad1, "Here for the LIVE? Make it official.")}</h2>
-      <p className={styles.description}>{ko ? '방송에서 공개된 출석코드를 입력해 주세요.' : translate(locale, localizedMessages.m20ade23c673e, "Enter the Fan Code shared during the broadcast.")}</p>
       <p className={styles.deadline}><Clock3 aria-hidden="true" /><time dateTime={closesAt}>{deadline} KST</time>{ko ? '까지' : translate(locale, localizedMessages.m387239bdda6b, " · Closes")}</p>
     </div>
     <div className={styles.actionArea}>

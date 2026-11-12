@@ -1,6 +1,19 @@
 import type { TranslatedMessage } from "../messages";
 
 export const messages = {
+  "me5c736e8c93f": {
+    "ja": "結果発表後、自分の応募履歴で当選結果を確認できます。",
+    "zh-Hans": "结果公布后，可在我的抽奖记录中查看是否中奖。",
+    "zh-Hant": "結果公佈後，可在我的抽獎記錄中查看是否中獎。",
+    "es": "Consulta el resultado en tu historial después del anuncio.",
+    "id": "Periksa hasil di riwayat undian setelah pengumuman.",
+    "vi": "Xem kết quả trong lịch sử sau khi công bố.",
+    "th": "ตรวจสอบผลในรายการจับรางวัลของคุณหลังประกาศผล",
+    "pt": "Confira o resultado nas suas participações após o anúncio.",
+    "fr": "Après l’annonce, consultez vos participations aux tirages au sort pour connaître le résultat.",
+    ru: "Результаты розыгрыша будут объявлены после того, как ваши заявки будут опубликованы."
+
+  },
   "m06251a41fbb6": {
     "ja": "応募結果をまだ確認できません。同じリクエストをもう一度確認してください。",
     "zh-Hans": "尚未确认抽奖结果，请再次检查同一请求。",
@@ -220,19 +233,6 @@ export const messages = {
     "pt": "Bilhetes restantes",
     "fr": "Tickets restants",
     ru: "Осталось билетов"
-
-  },
-  "me5c736e8c93f": {
-    "ja": "結果発表後、自分の応募履歴で当選結果を確認できます。",
-    "zh-Hans": "结果公布后，可在我的抽奖记录中查看是否中奖。",
-    "zh-Hant": "結果公佈後，可在我的抽獎記錄中查看是否中獎。",
-    "es": "Consulta el resultado en tu historial después del anuncio.",
-    "id": "Periksa hasil di riwayat undian setelah pengumuman.",
-    "vi": "Xem kết quả trong lịch sử sau khi công bố.",
-    "th": "ตรวจสอบผลในรายการจับรางวัลของคุณหลังประกาศผล",
-    "pt": "Confira o resultado nas suas participações após o anúncio.",
-    "fr": "Après l’annonce, consultez vos participations aux tirages au sort pour connaître le résultat.",
-    ru: "Результаты розыгрыша будут объявлены после того, как ваши заявки будут опубликованы."
 
   },
   "mbb4518651f9d": {
@@ -493,19 +493,6 @@ export const messages = {
     "pt": "{0} bilhetes para guardar",
     "fr": "{0} tickets à conserver",
     ru: "Билеты {0} для сохранения"
-
-  },
-  "mec009adf8387": {
-    "ja": "応募券を選択するか、枚数を調整してください。",
-    "zh-Hans": "请选择抽奖券或调整数量。",
-    "zh-Hant": "請選擇抽獎票券或調整數量。",
-    "es": "Selecciona tus boletos o ajusta la cantidad.",
-    "id": "Pilih tiket atau sesuaikan jumlahnya.",
-    "vi": "Chọn vé hoặc điều chỉnh số lượng.",
-    "th": "เลือกตั๋วหรือปรับจำนวน",
-    "pt": "Selecione seus bilhetes ou ajuste a quantidade.",
-    "fr": "Choisissez vos tickets ou ajustez la quantité.",
-    ru: "Выберите билеты или измените количество."
 
   },
   "m7d1c769b8495": {

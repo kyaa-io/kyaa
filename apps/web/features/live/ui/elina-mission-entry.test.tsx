@@ -40,9 +40,8 @@ describe("ElinaMissionEntry", () => {
     render(<ElinaMissionEntry celebritySlug="elina" locale="ko" />);
 
     expect(await screen.findByRole("heading", { name: "엘리나와 뱅크시 한 작품" })).toBeInTheDocument();
-    expect(screen.getByText("마음에 드는 작품을 고르고, 그림 속 디테일도 찾아봐요.")).toBeInTheDocument();
+    expect(screen.queryByText("마음에 드는 작품을 고르고, 그림 속 디테일도 찾아봐요.")).not.toBeInTheDocument();
     expect(screen.getByText("투표 1개 · 퀴즈 1개")).toBeInTheDocument();
-    expect(screen.getByText("작품을 고르고 스탬프를 남겨요.")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "덕질 시작하기" })).toHaveAttribute(
       "href",
       "/live/elina-banksy-instagram-20260918/missions?locale=ko",
@@ -60,7 +59,7 @@ describe("ElinaMissionEntry", () => {
     render(<ElinaMissionEntry celebritySlug="elina" locale="en" />);
 
     expect(await screen.findByRole("heading", { name: "Elina and Banksy, one artwork" })).toBeInTheDocument();
-    expect(screen.getByText("Pick your favorite artwork, then look for a detail in the picture.")).toBeInTheDocument();
+    expect(screen.queryByText("Pick your favorite artwork, then look for a detail in the picture.")).not.toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Start missions" })).toHaveAttribute(
       "href",
       "/live/elina-banksy-instagram-20260918/missions?locale=en",

@@ -119,21 +119,21 @@ const copy = {
     logoutFailed: "로그아웃하지 못했어요. 다시 시도해 주세요.",
     back: "홈으로",
     title: "설정",
-    subtitle: "kyaa에서 사용할 프로필과 알림을 관리하세요.",
+    
     profile: "프로필",
     nickname: "닉네임",
-    nicknameHelp: "kyaa에서 다른 팬들에게 표시되는 이름이에요.",
+    
     edit: "변경",
     save: "저장",
     saving: "저장 중…",
     cancel: "취소",
-    nicknameRule: "원하는 언어로 1–32자까지 입력해 주세요.",
+    
     language: "언어",
-    languageHelp: "앱과 자동 이메일에 사용할 언어를 선택하세요.",
+    
     korean: "한국어",
     english: "English",
     notifications: "알림",
-    notificationHelp: "받고 싶은 소식만 선택할 수 있어요.",
+    
     connections: "연결 및 수신 채널",
     googleReadOnly: "Google · 로그인에서 확인됨 (읽기 전용)",
     kakaoConnect: "Kakao 연결",
@@ -155,7 +155,7 @@ const copy = {
     kakaoEnrollmentConfirming: "등록 중…",
     kakaoEnrollmentCancel: "등록 취소",
     kakaoEnrollmentCanceling: "취소 중…",
-    kakaoEnrollmentHelp: "카카오 계정에 등록된 번호로 서비스 알림을 보내드려요.",
+    
     kakaoEnrollmentConsentRequired: "동의 항목을 확인해 주세요.",
     live: "LIVE 시작 알림",
     survey: "설문 참여 알림",
@@ -175,11 +175,10 @@ const copy = {
     subscriptionOn: "등록된 브라우저 알림이 있어요.",
     subscriptionOff: "등록된 브라우저 알림이 없어요.",
     wallet: "발급 계정",
-    walletHelp:
-      "패스포트와 스탬프를 받는 계정이에요. 변경할 수 없으며 주소는 일부만 표시돼요.",
+    
     noWallet: "발급 계정 준비 중",
     install: "앱 설치",
-    installHelp: "홈 화면에 kyaa를 추가하면 더 빠르게 열 수 있어요.",
+    
     installAction: "kyaa 설치하기",
     installChecking: "설치 가능 여부를 확인하고 있어요.",
     installing: "설치 요청 확인 중…",
@@ -208,21 +207,21 @@ const copy = {
     logoutFailed: "Could not log out. Please try again.",
     back: "Home",
     title: "Settings",
-    subtitle: "Manage your kyaa profile and notifications.",
+    
     profile: "Profile",
     nickname: "Display name",
-    nicknameHelp: "This is how other fans will see you on kyaa.",
+    
     edit: "Change",
     save: "Save",
     saving: "Saving…",
     cancel: "Cancel",
-    nicknameRule: "Use 1–32 characters in your preferred language.",
+    
     language: "Language",
-    languageHelp: "Choose the language for the app and automatic emails.",
+    
     korean: "한국어",
     english: "English",
     notifications: "Notifications",
-    notificationHelp: "Choose only the updates you want.",
+    
     connections: "Connections and delivery channels",
     googleReadOnly: "Google · verified at sign-in (read-only)",
     kakaoConnect: "Connect Kakao",
@@ -244,7 +243,7 @@ const copy = {
     kakaoEnrollmentConfirming: "Registering…",
     kakaoEnrollmentCancel: "Cancel registration",
     kakaoEnrollmentCanceling: "Canceling…",
-    kakaoEnrollmentHelp: "We'll send service notifications to the number registered to your Kakao account.",
+    
     kakaoEnrollmentConsentRequired: "Confirm the consent item to continue.",
     live: "LIVE start reminders",
     survey: "Survey reminders",
@@ -264,11 +263,10 @@ const copy = {
     subscriptionOn: "Your account has a registered browser notification.",
     subscriptionOff: "Your account has no registered browser notification.",
     wallet: "Issuance account",
-    walletHelp:
-      "This account receives your Passports and Stamps. It cannot be changed here, and only part of the address is shown.",
+    
     noWallet: "Your issuance account is getting ready",
     install: "Install app",
-    installHelp: "Add kyaa to your home screen for faster access.",
+    
     installAction: "Install kyaa",
     installChecking: "Checking installation availability.",
     installing: "Waiting for installation…",
@@ -298,21 +296,21 @@ const copy = {
     logoutFailed: localizedMessages.m8a916681ec62[translationLocale],
     back: localizedMessages.mbad22f5a1a0b[translationLocale],
     title: localizedMessages.m261b34eb8339[translationLocale],
-    subtitle: localizedMessages.mdaafda9be2b2[translationLocale],
+    
     profile: localizedMessages.mc7fba50a9917[translationLocale],
     nickname: localizedMessages.m0b89ab7abb98[translationLocale],
-    nicknameHelp: localizedMessages.m96a33c44da86[translationLocale],
+    
     edit: localizedMessages.m9cb82aa6061a[translationLocale],
     save: localizedMessages.m570b0f115075[translationLocale],
     saving: localizedMessages.m074cf81ab408[translationLocale],
     cancel: localizedMessages.m135463f232a4[translationLocale],
-    nicknameRule: localizedMessages.mbbc0c6c8fe23[translationLocale],
+    
     language: localizedMessages.m49802171f1bd[translationLocale],
-    languageHelp: localizedMessages.m9a20f8be7c86[translationLocale],
+    
     korean: "한국어",
     english: "English",
     notifications: localizedMessages.m5c5dc0a0a093[translationLocale],
-    notificationHelp: localizedMessages.m9541f078789c[translationLocale],
+    
     connections: localizedMessages.m7b9ebb7c1094[translationLocale],
     googleReadOnly: localizedMessages.mdbcc9163726d[translationLocale],
     kakaoConnect: localizedMessages.m7e969d218a0a[translationLocale],
@@ -334,7 +332,7 @@ const copy = {
     kakaoEnrollmentConfirming: localizedMessages.m3d0d085be27c[translationLocale],
     kakaoEnrollmentCancel: localizedMessages.m2192406b70a7[translationLocale],
     kakaoEnrollmentCanceling: localizedMessages.m669a0179df30[translationLocale],
-    kakaoEnrollmentHelp: localizedMessages.me54f33f29afc[translationLocale],
+    
     kakaoEnrollmentConsentRequired: localizedMessages.m86ca9a57b1a8[translationLocale],
     live: localizedMessages.mae960a5d1279[translationLocale],
     survey: localizedMessages.m6b0841295ef6[translationLocale],
@@ -354,11 +352,10 @@ const copy = {
     subscriptionOn: localizedMessages.m3eed0bed3a92[translationLocale],
     subscriptionOff: localizedMessages.ma3e2c0bc840f[translationLocale],
     wallet: localizedMessages.m0d42fa0921ee[translationLocale],
-    walletHelp:
-      localizedMessages.m7c5b48cc38fa[translationLocale],
+    
     noWallet: localizedMessages.m57a088d81a8e[translationLocale],
     install: localizedMessages.m76dbd917d816[translationLocale],
-    installHelp: localizedMessages.m0c4c7655ff06[translationLocale],
+    
     installAction: localizedMessages.mf7724c014fed[translationLocale],
     installChecking: localizedMessages.m62549f14759c[translationLocale],
     installing: localizedMessages.m5bf6071fbab4[translationLocale],
@@ -1063,7 +1060,7 @@ export function SettingsScreen({ locale, initialSection = null }: { locale: Loca
   const settingsRows = [
     { section: "profile" as const, icon: <Pencil />, label: t.profile, value: settings.nickname },
     { section: "language" as const, icon: <Globe2 />, label: t.language, value: preferredLanguage },
-    { section: "notifications" as const, icon: <Bell />, label: t.notifications, value: t.notificationHelp },
+    { section: "notifications" as const, icon: <Bell />, label: t.notifications, value: "" },
     { section: "channels" as const, icon: <Bell />, label: t.connections, value: connections.channels.filter((channel) => channel.consented).map((channel) => channel.kind === "email" ? t.emailChannel : t.kakaoChannel).join(" · ") },
     { section: "account" as const, icon: <WalletCards />, label: t.account, value: settings.wallet?.maskedAddress ?? t.noWallet },
     { section: "installation" as const, icon: <Smartphone />, label: t.install, value: installValue },
@@ -1080,7 +1077,6 @@ export function SettingsScreen({ locale, initialSection = null }: { locale: Loca
           <h1 ref={detailHeadingRef} tabIndex={-1}>{sectionLabels[section]}</h1>
         </header> : <div className={styles.intro}>
           <h1>{t.title}</h1>
-          <span>{t.subtitle}</span>
         </div>}
 
         {!section ? <div className={styles.settingsGroups}>
@@ -1113,7 +1109,6 @@ export function SettingsScreen({ locale, initialSection = null }: { locale: Loca
             </div>
             <div>
               <h2 id="profile-title">{t.profile}</h2>
-              <p id="nickname-help">{t.nicknameHelp}</p>
             </div>
           </div>
           <AvatarSettings locale={locale} resource={avatarResource} />
@@ -1190,11 +1185,10 @@ export function SettingsScreen({ locale, initialSection = null }: { locale: Loca
                 dir="auto"
                 autoComplete="nickname"
                 aria-invalid={nicknameFieldInvalid}
-                aria-describedby="nickname-help nickname-rule nickname-message"
+                aria-describedby="nickname-message"
                 disabled={saving}
               />
               <span className={styles.nicknameRule}>
-                <small id="nickname-rule">{t.nicknameRule}</small>
                 <small aria-label={`${getNicknameFormat(nickname).length}/32`}>
                   {getNicknameFormat(nickname).length}/32
                 </small>
@@ -1264,7 +1258,6 @@ export function SettingsScreen({ locale, initialSection = null }: { locale: Loca
             </div>
             <div>
               <h2 id="language-title">{languageSettings[locale].email}</h2>
-              <p>{languageSettings[locale].help}</p>
             </div>
           </div>
           <div
@@ -1306,7 +1299,6 @@ export function SettingsScreen({ locale, initialSection = null }: { locale: Loca
             </div>
             <div>
               <h2 id="notifications-title">{t.notifications}</h2>
-              <p>{t.notificationHelp}</p>
             </div>
           </div>
           {message && <p id="settings-message" className={styles.message} data-tone={messageError ? "error" : "success"} role={messageError ? "alert" : "status"} aria-live={messageError ? "assertive" : "polite"}>{message}</p>}
@@ -1402,7 +1394,7 @@ export function SettingsScreen({ locale, initialSection = null }: { locale: Loca
         {section === "channels" ? <section className={styles.section} aria-labelledby="channels-title">
           <div className={styles.sectionTitle}>
             <div className={styles.icon}><Bell /></div>
-            <div><h2 id="channels-title">{t.connections}</h2><p>{t.notificationHelp}</p></div>
+            <div><h2 id="channels-title">{t.connections}</h2></div>
           </div>
           <div className={styles.channelControls}>
             {connections.accounts.some((account) => account.provider === "google" && account.status === "connected") && <p>{t.googleReadOnly}</p>}
@@ -1442,7 +1434,6 @@ export function SettingsScreen({ locale, initialSection = null }: { locale: Loca
               onRegistered={(channel) => { setConnections((current) => current ? { ...current, channels: [...current.channels.filter((item) => item.kind !== "kakao"), channel] } : current); setKakaoEnrollmentConsent(false); setKakaoEnrollment((current) => ({ ...current, pending: null })); }} />}
             {kakaoEnrollment.enabled && (!phoneSmsEnabled || kakaoEnrollment.pending) && <div className={styles.kakaoEnrollment}>
               <strong>{t.kakaoEnrollmentTitle}</strong>
-              <small>{t.kakaoEnrollmentHelp}</small>
               {kakaoEnrollment.pending ? <>
                 <p><span>{t.kakaoEnrollmentPending}</span><strong>{kakaoEnrollment.pending.destinationLabel}</strong></p>
                 <label className={styles.consentCheck}><input type="checkbox" checked={kakaoEnrollmentConsent} disabled={connectionAction !== null} onChange={(event) => setKakaoEnrollmentConsent(event.target.checked)} /><span>{t.kakaoEnrollmentConfirmConsent}</span></label>
@@ -1463,7 +1454,6 @@ export function SettingsScreen({ locale, initialSection = null }: { locale: Loca
             </div>
             <div>
               <h2 id="wallet-title">{t.wallet}</h2>
-              <p>{t.walletHelp}</p>
             </div>
           </div>
           <div className={styles.walletValue}>
@@ -1482,7 +1472,6 @@ export function SettingsScreen({ locale, initialSection = null }: { locale: Loca
             </div>
             <div>
               <h2 id="install-title">{t.install}</h2>
-              <p>{t.installHelp}</p>
             </div>
           </div>
           {installState === "checking" ? (

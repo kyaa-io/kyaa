@@ -14,19 +14,6 @@ export const messages = {
     ru: "Подключите Alimtalk по номеру телефона."
 
   },
-  "ma01708c2c56f": {
-    "ja": "KakaoTalkを使用している韓国の携帯電話番号を登録してください。",
-    "zh-Hans": "请登记使用 KakaoTalk 的韩国手机号码。",
-    "zh-Hant": "請登記使用 KakaoTalk 的韓國手機號碼。",
-    "es": "Registra un número móvil de Corea que use KakaoTalk.",
-    "id": "Daftarkan nomor ponsel Korea yang digunakan untuk KakaoTalk.",
-    "vi": "Đăng ký số điện thoại Hàn Quốc dùng KakaoTalk.",
-    "th": "ลงทะเบียนหมายเลขโทรศัพท์มือถือเกาหลีที่ใช้กับ KakaoTalk",
-    "pt": "Cadastre um número de celular coreano usado no KakaoTalk.",
-    "fr": "Enregistrez un numéro de mobile coréen utilisé avec KakaoTalk.",
-    ru: "Зарегистрируйте корейский номер мобильного телефона, используемый для KakaoTalk ."
-
-  },
   "mdc0b30d439dc": {
     "ja": "携帯電話番号",
     "zh-Hans": "手机号码",

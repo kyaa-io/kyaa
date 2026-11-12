@@ -60,7 +60,7 @@ describe("PassportIssuanceCeremony", () => {
     expect(screen.getByText("발급 상태 확인 중")).toBeInTheDocument();
     const openPassport = screen.getByRole("link", { name: "패스포트 열기" });
     expect(openPassport).toHaveAttribute("href", `/passports/${aggregate.passport.id}?locale=ko`);
-    expect(screen.getByText(/내 패스포트는 MY에서 다시 볼 수 있어요/)).toBeInTheDocument();
+    expect(screen.queryByText(/내 패스포트는 MY에서 다시 볼 수 있어요/)).not.toBeInTheDocument();
     expect(screen.getByRole("link", { name: "MY에서 보기" })).toHaveAttribute("href", "/my?locale=ko");
     expect(openPassport).toHaveFocus();
   });

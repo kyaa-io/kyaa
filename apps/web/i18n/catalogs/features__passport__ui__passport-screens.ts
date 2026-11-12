@@ -53,19 +53,6 @@ export const messages = {
     ru: "Паспортов пока нет."
 
   },
-  "m59e0b11ca75c": {
-    "ja": "アーティストのファン認証を完了すると、最初の記録が始まります。",
-    "zh-Hans": "完成艺人的粉丝验证，即可开始第一条记录。",
-    "zh-Hant": "完成藝人的粉絲驗證，即可開始第一條記錄。",
-    "es": "Completa la verificación de fan de un artista para iniciar tu primer registro.",
-    "id": "Selesaikan verifikasi fan untuk seorang artis guna memulai catatan pertamamu.",
-    "vi": "Hoàn tất xác minh fan cho một nghệ sĩ để bắt đầu bản ghi đầu tiên.",
-    "th": "ยืนยันแฟนคลับของศิลปินเพื่อเริ่มบันทึกแรก",
-    "pt": "Conclua a verificação de fã de um artista para começar seu primeiro registro.",
-    "fr": "Effectuez la vérification de fan d’un artiste pour créer votre premier souvenir.",
-    ru: "Для начала записи своего первого альбома необходимо пройти полную проверку фанатов у артиста."
-
-  },
   "mbfa0d61142d3": {
     "ja": "認証するアーティストを探す",
     "zh-Hans": "查找可验证的艺人",
@@ -259,19 +246,6 @@ export const messages = {
     "pt": "Ainda não há atividades",
     "fr": "Aucune activité pour le moment",
     ru: "Пока нет активности."
-
-  },
-  "maacf890b3b73": {
-    "ja": "ファン認証やLIVEへの参加がここに表示されます。",
-    "zh-Hans": "粉丝验证和LIVE参与记录会显示在这里。",
-    "zh-Hant": "粉絲驗證和LIVE參與記錄會顯示在這裡。",
-    "es": "La verificación de fan y la participación en LIVE aparecerán aquí.",
-    "id": "Verifikasi fan dan partisipasi LIVE akan muncul di sini.",
-    "vi": "Hoạt động xác minh fan và tham gia LIVE sẽ xuất hiện tại đây.",
-    "th": "การยืนยันแฟนคลับและการเข้าร่วม LIVE จะปรากฏที่นี่",
-    "pt": "Suas verificações de fã e participações em LIVE aparecerão aqui.",
-    "fr": "Vos vérifications de fan et participations aux LIVE apparaîtront ici.",
-    ru: "Здесь будет опубликована информация о подтверждении участия фаната и LIVE."
 
   },
   "ma76da83341eb": {

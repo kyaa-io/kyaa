@@ -22,7 +22,7 @@ const copy = {
   ko: {
     title: <>엘리나와 함께 <br />뱅크시 전시 보러 가요</>,
     label: "엘리나와 함께 뱅크시 전시 보러 가요",
-    description: "팬 인증하고 응모권을 받아 원하는 선물에 응모하세요.",
+    
     action: "이벤트 응모하기",
     fanmeeting: "미국 팬미팅, kyaa와 함께 준비하세요",
     explore: "기획사와 아티스트를 위한 미국 현지 협업",
@@ -30,7 +30,7 @@ const copy = {
   en: {
     title: <>See Banksy <br />with Elina</>,
     label: "See Banksy with Elina",
-    description: "Verify fandom, get tickets, and enter for a prize.",
+    
     action: "Enter the raffle",
     fanmeeting: "Plan your U.S. fanmeeting with kyaa",
     explore: "U.S. event partnerships for agencies and artists",
@@ -39,7 +39,7 @@ const copy = {
   ...additionalLocales((translationLocale) => ({
     title: localizedMessages.ma1bde353710b[translationLocale],
     label: localizedMessages.ma1bde353710b[translationLocale],
-    description: localizedMessages.m8730562b9dee[translationLocale],
+    
     action: localizedMessages.m874196adc5ca[translationLocale],
     fanmeeting: localizedMessages.m16b2e3b23b97[translationLocale],
     explore: localizedMessages.mb8abbbaa625c[translationLocale],
@@ -55,7 +55,7 @@ export function ElinaGuideCard({ locale, elina, hero = false, priority = false, 
   const showHistory = results.length > 0 || awaitingResults || cancelled;
   const resultCopy = raffleDiscoveryCopy[locale];
   const title = results.length ? resultCopy.title : awaitingResults ? resultCopy.pendingTitle : cancelled ? resultCopy.cancelledTitle : t.title;
-  const description = results.length ? resultCopy.description : awaitingResults ? resultCopy.pendingDescription : cancelled ? null : t.description;
+  const description = results.length ? resultCopy.description : awaitingResults ? resultCopy.pendingDescription : null;
   const action = results.length ? resultCopy.action : showHistory ? resultCopy.historyAction : t.action;
   const href: string = showHistory ? `/my/raffles?locale=${locale}` : String(elinaRafflesHref(locale));
   const deadline = openRaffles[0]?.entryClosesAt;

@@ -40,19 +40,6 @@ export const messages = {
     ru: "Выберите отображаемое имя для подтверждения статуса фаната {0}."
 
   },
-  "mb2cc6130dfa0": {
-    "ja": "認証後、{0} Fan Passportと活動履歴に表示されます。",
-    "zh-Hans": "认证后，它将显示在你的 {0} Fan Passport 和活动记录中。",
-    "zh-Hant": "認證後，它將顯示在你的 {0} Fan Passport 和活動記錄中。",
-    "es": "Después de la verificación, aparecerá en tu Fan Passport de {0} y en el historial de actividad.",
-    "id": "Setelah verifikasi, nama tersebut akan muncul di {0} Fan Passport dan riwayat aktivitas Anda.",
-    "vi": "Sau khi xác minh, tên sẽ xuất hiện trong {0} Fan Passport và lịch sử hoạt động.",
-    "th": "หลังยืนยัน ชื่อนี้จะแสดงใน {0} Fan Passport และประวัติกิจกรรม",
-    "pt": "Após a verificação, ele aparecerá em seu Fan Passport de {0} e no histórico de atividades.",
-    "fr": "Après la vérification, il apparaîtra dans votre Fan Passport de {0} et votre historique d’activité.",
-    ru: "После подтверждения оно появится в вашем Fan Passport {0} и истории активности."
-
-  },
   "m77a8433b4b98": {
     "ja": "発行前のFan Passportプレビュー",
     "zh-Hans": "发行前的 Fan Passport 预览",
@@ -77,19 +64,6 @@ export const messages = {
     "pt": "Escolha o nome de exibição que usará na kyaa.",
     "fr": "Choisissez le nom d’affichage que vous utiliserez sur kyaa.",
     ru: "Выберите отображаемое имя, которое вы будете использовать для kyaa."
-
-  },
-  "md0d20638439b": {
-    "ja": "プロフィールを完成すると元の画面に戻り、続きから進められます。",
-    "zh-Hans": "完善个人资料后，将返回原页面继续操作。",
-    "zh-Hant": "完善個人資料後，將返回原頁面繼續操作。",
-    "es": "Completa tu perfil para volver y continuar donde lo dejaste.",
-    "id": "Lengkapi profil untuk kembali dan melanjutkan dari bagian terakhir.",
-    "vi": "Hoàn tất hồ sơ để quay lại và tiếp tục từ nơi đã dừng.",
-    "th": "ตั้งค่าโปรไฟล์ให้เสร็จเพื่อกลับไปทำต่อจากจุดเดิม",
-    "pt": "Conclua seu perfil para voltar e continuar de onde parou.",
-    "fr": "Terminez votre profil pour revenir et reprendre là où vous vous étiez arrêté.",
-    ru: "Заполните свой профиль, чтобы вернуться и продолжить с того места, где вы остановились."
 
   },
   "m45b828d21678": {
@@ -196,32 +170,6 @@ export const messages = {
     ru: "{0} /32 символа"
 
   },
-  "m388d99b17aa2": {
-    "ja": "お好きな言語で1～32文字を使用してください。",
-    "zh-Hans": "请使用偏好的语言输入 1–32 个字符。",
-    "zh-Hant": "請使用偏好的語言輸入 1–32 個字元。",
-    "es": "Usa entre 1 y 32 caracteres en el idioma que prefieras.",
-    "id": "Gunakan 1–32 karakter dalam bahasa pilihan Anda.",
-    "vi": "Dùng 1–32 ký tự bằng ngôn ngữ bạn muốn.",
-    "th": "ใช้ 1–32 อักขระในภาษาที่ต้องการ",
-    "pt": "Use de 1 a 32 caracteres no idioma de sua preferência.",
-    "fr": "Utilisez 1 à 32 caractères dans la langue de votre choix.",
-    ru: "Используйте от 1 до 32 символов на предпочитаемом вами языке."
-
-  },
-  "me914d546f539": {
-    "ja": "この表示名だけが公開されます。メールアドレスやGoogleアカウントの情報は表示されません。",
-    "zh-Hans": "只有此显示名称会公开。你的电子邮件和 Google 账户详情绝不会显示。",
-    "zh-Hant": "只有此顯示名稱會公開。你的電子郵件和 Google 帳戶詳情絕不會顯示。",
-    "es": "Solo este nombre visible será público. Tu correo electrónico y los datos de tu cuenta de Google nunca se muestran.",
-    "id": "Hanya nama tampilan ini yang dapat dilihat publik. Email dan detail akun Google Anda tidak pernah ditampilkan.",
-    "vi": "Chỉ tên hiển thị này được công khai. Email và thông tin tài khoản Google không bao giờ được hiển thị.",
-    "th": "มีเพียงชื่อที่แสดงนี้เท่านั้นที่เปิดเผย อีเมลและข้อมูลบัญชี Google จะไม่แสดง",
-    "pt": "Somente este nome de exibição é público. Seu e-mail e os dados da conta Google nunca são exibidos.",
-    "fr": "Seul ce nom d’affichage est public. Votre e-mail et les informations de votre compte Google ne sont jamais affichés.",
-    ru: "В открытом доступе находится только это отображаемое имя. Ваш адрес электронной почты и данные учетной записи Google никогда не отображаются."
-
-  },
   "m3a4bd2a82e85": {
     "ja": "表示名を保存",
     "zh-Hans": "保存显示名称",
@@ -285,45 +233,6 @@ export const messages = {
     "pt": "Verificando seu perfil.",
     "fr": "Vérification de votre profil.",
     ru: "Проверяем ваш профиль."
-
-  },
-  "m39097293d8a7": {
-    "ja": "使用する表示名を入力してください。",
-    "zh-Hans": "请输入要使用的显示名称。",
-    "zh-Hant": "請輸入要使用的顯示名稱。",
-    "es": "Escribe el nombre visible que quieres usar.",
-    "id": "Masukkan nama tampilan yang ingin digunakan.",
-    "vi": "Nhập tên hiển thị bạn muốn dùng.",
-    "th": "กรอกชื่อที่ต้องการใช้",
-    "pt": "Digite o nome de exibição que deseja usar.",
-    "fr": "Saisissez le nom d’affichage que vous souhaitez utiliser.",
-    ru: "Введите отображаемое имя, которое вы хотите использовать."
-
-  },
-  "mb8991f17ddf9": {
-    "ja": "お好きな言語で表示名を入力してください。",
-    "zh-Hans": "请使用偏好的语言输入显示名称。",
-    "zh-Hant": "請使用偏好的語言輸入顯示名稱。",
-    "es": "Escribe tu nombre visible en el idioma que prefieras.",
-    "id": "Masukkan nama tampilan dalam bahasa pilihan Anda.",
-    "vi": "Nhập tên hiển thị bằng ngôn ngữ bạn muốn.",
-    "th": "กรอกชื่อที่แสดงในภาษาที่ต้องการ",
-    "pt": "Digite seu nome de exibição no idioma de sua preferência.",
-    "fr": "Saisissez votre nom d’affichage dans la langue de votre choix.",
-    ru: "Введите отображаемое имя на предпочитаемом вами языке."
-
-  },
-  "mece4bb8d1ff4": {
-    "ja": "有効な形式です。使用可能かどうかは保存時に確認されます。",
-    "zh-Hans": "格式有效。保存时会检查是否可用。",
-    "zh-Hant": "格式有效。儲存時會檢查是否可用。",
-    "es": "El formato es válido. La disponibilidad se comprueba al guardar.",
-    "id": "Formatnya valid. Ketersediaan diperiksa saat Anda menyimpan.",
-    "vi": "Định dạng hợp lệ. Tính khả dụng được kiểm tra khi lưu.",
-    "th": "รูปแบบถูกต้อง ระบบจะตรวจสอบว่าใช้ได้หรือไม่เมื่อบันทึก",
-    "pt": "O formato é válido. A disponibilidade será verificada ao salvar.",
-    "fr": "Le format est valide. La disponibilité sera vérifiée lors de l’enregistrement.",
-    ru: "Формат действителен. Проверка доступности выполняется при сохранении."
 
   },
   "m2e3215a8f372": {

@@ -56,7 +56,7 @@ export function AvatarSettings({ locale, resource }: { locale: Locale; resource:
         )}
         <span>
           <strong>{t.avatar}</strong>
-          <small>{state.status === "error" ? t.loadError : state.status === "loading" ? t.loading : t.help}</small>
+          {state.status === "error" || state.status === "loading" ? <small>{state.status === "error" ? t.loadError : t.loading}</small> : null}
         </span>
       </div>
       {state.status === "ready" ? (

@@ -53,19 +53,6 @@ export const messages = {
     ru: "Фан-зона"
 
   },
-  "m383c407379f4": {
-    "ja": "好きな気持ちをファン同士で共有しましょう。",
-    "zh-Hans": "与其他粉丝分享您的喜爱。",
-    "zh-Hant": "與其他粉絲分享您的喜愛。",
-    "es": "Comparte lo que te gusta con otros fans.",
-    "id": "Bagikan hal yang kamu sukai bersama penggemar lain.",
-    "vi": "Chia sẻ điều bạn yêu thích với những fan khác.",
-    "th": "แบ่งปันสิ่งที่คุณชอบกับแฟนคนอื่นๆ",
-    "pt": "Compartilhe o que você gosta com outros fãs.",
-    "fr": "Partagez ce que vous aimez avec d’autres fans.",
-    ru: "Делитесь тем, что вам нравится, с другими поклонниками."
-
-  },
   "meca8345827ea": {
     "ja": "会話を読み込めませんでした。",
     "zh-Hans": "无法加载对话。",
@@ -103,19 +90,6 @@ export const messages = {
     "pt": "Tentar novamente",
     "fr": "Réessayer",
     ru: "Повторить попытку"
-
-  },
-  "mc7d81cddb402": {
-    "ja": "ファンになったきっかけは？最初の会話を始めましょう。",
-    "zh-Hans": "是什么让您成为粉丝？开始对话吧。",
-    "zh-Hant": "是什麼讓您成為粉絲？開始對話吧。",
-    "es": "¿Qué te hizo fan? Inicia la conversación.",
-    "id": "Apa yang membuatmu menjadi penggemar? Mulai percakapan.",
-    "vi": "Điều gì khiến bạn trở thành fan? Hãy bắt đầu trò chuyện.",
-    "th": "อะไรทำให้คุณกลายเป็นแฟน? เริ่มคุยกันเลย",
-    "pt": "O que fez você virar fã? Comece a conversa.",
-    "fr": "Qu’est-ce qui a fait de vous un fan ? Lancez la conversation.",
-    ru: "Что сделало вас поклонником? Начните разговор."
 
   },
   "m756ef6db984e": {
@@ -196,19 +170,6 @@ export const messages = {
     ru: "Объявления и комментарии"
 
   },
-  "mbfc8b9fc2a05": {
-    "ja": "最新情報はお知らせで、ファン同士の会話はここで確認できます。",
-    "zh-Hans": "在公告中查看最新动态，并在此与其他粉丝聊天。",
-    "zh-Hant": "在公告中查看最新動態，並在此與其他粉絲聊天。",
-    "es": "Consulta las novedades en los avisos y charla aquí con otros fans.",
-    "id": "Lihat kabar terbaru di pengumuman dan ngobrol dengan sesama penggemar di sini.",
-    "vi": "Xem tin mới trong mục thông báo và trò chuyện cùng các fan tại đây.",
-    "th": "อ่านข่าวล่าสุดในประกาศและพูดคุยกับแฟนคนอื่นๆ ได้ที่นี่",
-    "pt": "Veja as novidades nos avisos e converse com outros fãs aqui.",
-    "fr": "Retrouvez les nouveautés dans les annonces et discutez ici avec d’autres fans.",
-    ru: "Здесь вы найдете обновления в объявлениях и сможете пообщаться с другими фанатами."
-
-  },
   "m6f20b8d887ff": {
     "ja": "ファンの会話",
     "zh-Hans": "粉丝对话",
@@ -246,19 +207,6 @@ export const messages = {
     "pt": "Espaço de {0}",
     "fr": "Salon de {0}",
     ru: "{0} лаунж"
-
-  },
-  "mb985872a2f3f": {
-    "ja": "{0}についてファン同士で話しましょう。",
-    "zh-Hans": "与其他粉丝聊聊{0}。",
-    "zh-Hant": "與其他粉絲聊聊{0}。",
-    "es": "Habla de {0} con otros fans.",
-    "id": "Bahas {0} bersama penggemar lain.",
-    "vi": "Trò chuyện về {0} cùng các fan khác.",
-    "th": "คุยเรื่อง {0} กับแฟนคนอื่นๆ",
-    "pt": "Converse sobre {0} com outros fãs.",
-    "fr": "Parlez de {0} avec d’autres fans.",
-    ru: "Обсудите {0} с другими фанатами."
 
   },
   "m1047c5f9ba14": {
@@ -324,19 +272,6 @@ export const messages = {
     "pt": "Começar a conversa",
     "fr": "Lancer la conversation",
     ru: "Начните разговор"
-
-  },
-  "m8c480759b8c6": {
-    "ja": "お気に入りの動画やファンになった瞬間を共有しましょう。",
-    "zh-Hans": "分享喜爱的视频或成为粉丝的瞬间。",
-    "zh-Hant": "分享喜愛的影片或成為粉絲的瞬間。",
-    "es": "Comparte un video favorito o el momento en que te hiciste fan.",
-    "id": "Bagikan video favorit atau momen saat kamu menjadi penggemar.",
-    "vi": "Chia sẻ video yêu thích hoặc khoảnh khắc bạn trở thành fan.",
-    "th": "แบ่งปันวิดีโอโปรดหรือช่วงเวลาที่คุณกลายเป็นแฟน",
-    "pt": "Compartilhe um vídeo favorito ou o momento em que virou fã.",
-    "fr": "Partagez une vidéo préférée ou le moment où vous êtes devenu fan.",
-    ru: "Поделитесь любимым видео или моментом, когда вы стали фанатом."
 
   },
   "m59ae8783649d": {
@@ -545,19 +480,6 @@ export const messages = {
     "pt": "Enviar mensagem",
     "fr": "Envoyer le message",
     ru: "Отправить сообщение"
-
-  },
-  "m5dcde97047e7": {
-    "ja": "ニックネームとアバターは公開されます。互いを尊重して会話しましょう。",
-    "zh-Hans": "您的昵称和头像将公开显示。请友善交流。",
-    "zh-Hant": "您的暱稱和頭像將公開顯示。請友善交流。",
-    "es": "Tu apodo y avatar son públicos. Trata a los demás con respeto.",
-    "id": "Nama panggilan dan avatarmu terlihat publik. Bersikaplah baik satu sama lain.",
-    "vi": "Biệt danh và ảnh đại diện của bạn được hiển thị công khai. Hãy đối xử tử tế với nhau.",
-    "th": "ชื่อเล่นและอวตารของคุณจะแสดงต่อสาธารณะ โปรดปฏิบัติต่อกันอย่างสุภาพ",
-    "pt": "Seu apelido e avatar são públicos. Trate os outros com gentileza.",
-    "fr": "Votre pseudo et votre avatar sont publics. Faites preuve de bienveillance.",
-    ru: "Ваш никнейм и аватар общедоступны. Будьте добры друг к другу."
 
   },
   "m4bf364149fc6": {

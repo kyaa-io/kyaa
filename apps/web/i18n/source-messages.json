@@ -695,12 +695,6 @@
     "source": "components/celebrity-directory",
     "id": "components/celebrity-directory:copy.heading"
   },
-  "maf7baaeb1247": {
-    "en": "Explore your favorites’ LIVE events and fan pages.",
-    "ko": "좋아하는 최애를 만나고, 다음 LIVE를 확인하세요.",
-    "source": "components/celebrity-directory",
-    "id": "components/celebrity-directory:copy.intro"
-  },
   "m9e8df343175e": {
     "en": "Search celebrities",
     "ko": "이름으로 찾기",
@@ -773,12 +767,6 @@
     "source": "components/celebrity-directory",
     "id": "components/celebrity-directory:copy.noPublished"
   },
-  "md7f058ad3092": {
-    "en": "New profiles will appear here when they’re available.",
-    "ko": "새로운 셀럽이 공개되면 이곳에서 바로 만날 수 있어요.",
-    "source": "components/celebrity-directory",
-    "id": "components/celebrity-directory:copy.noPublishedHelp"
-  },
   "m6583b95908cf": {
     "en": "Explore LIVE events",
     "ko": "LIVE 둘러보기",
@@ -797,23 +785,11 @@
     "source": "components/celebrity-directory",
     "id": "components/celebrity-directory:copy.searchEmpty"
   },
-  "me4d7e93c8b8f": {
-    "en": "Browse all favorites and create a Fan Passport.",
-    "ko": "전체 최애를 둘러보고 팬 패스포트를 만들어 보세요.",
-    "source": "components/celebrity-directory",
-    "id": "components/celebrity-directory:copy.ownedHelp"
-  },
   "m73e0c60f172a": {
     "en": "View all",
     "ko": "전체 보기",
     "source": "components/celebrity-directory",
     "id": "components/celebrity-directory:copy.discoverAll"
-  },
-  "m6a76b31b262c": {
-    "en": "Try another name or clear the filters.",
-    "ko": "다른 이름으로 검색하거나 필터를 초기화해 보세요.",
-    "source": "components/celebrity-directory",
-    "id": "components/celebrity-directory:copy.searchHelp"
   },
   "m90e01a3bc89a": {
     "en": "Clear filters",
@@ -995,12 +971,6 @@
     "source": "components/celebrity-fan-page",
     "id": "components/celebrity-fan-page:inline.mc899fd01e3a6"
   },
-  "m2e295c5fb59b": {
-    "en": "Record memberships, tickets, and on-site moments.",
-    "ko": "멤버십 · 티켓 · 현장 인증으로 팬 활동을 기록하세요.",
-    "source": "components/celebrity-fan-page",
-    "id": "components/celebrity-fan-page:inline.m506fe1132334"
-  },
   "m2733b5519c3d": {
     "en": "View verification missions",
     "ko": "인증 미션 보기",
@@ -1012,12 +982,6 @@
     "ko": "내 인증 내역",
     "source": "components/celebrity-fan-page",
     "id": "components/celebrity-fan-page:inline.macfe05925253"
-  },
-  "mf444b267ae91": {
-    "ko": "좋아하는 마음을 팬 인증으로 남겨요",
-    "en": "Make your fandom part of your story.",
-    "source": "components/celebrity-fan-page",
-    "id": "components/celebrity-fan-page:inline.mf444b267ae91"
   },
   "mb919c47dfa9f": {
     "en": "Instagram LIVE\nwith Elina",
@@ -1859,12 +1823,6 @@
     "source": "components/guest-home",
     "id": "components/guest-home:copy.soon"
   },
-  "m244ed4da2daa": {
-    "en": "Check your reserved LIVE events.",
-    "ko": "예약한 LIVE를 확인해보세요.",
-    "source": "components/guest-home",
-    "id": "components/guest-home:copy.booked"
-  },
   "m6bb68c22ac32": {
     "en": "Sign in to see the LIVE events you reserved.",
     "ko": "로그인하고 예약한 최애의 LIVE를 확인해 보세요.",
@@ -1876,24 +1834,6 @@
     "ko": "최애의 팬 패스포트",
     "source": "components/guest-home",
     "id": "components/guest-home:copy.passportHeading"
-  },
-  "mb7a08e173fe7": {
-    "en": "Keep every fan moment in your Passport.",
-    "ko": "팬이 된 모든 순간을 패스포트에 기록하세요.",
-    "source": "components/guest-home",
-    "id": "components/guest-home:copy.passportSub"
-  },
-  "m7918f39efab0": {
-    "en": "You don't have a Passport or any Stamps yet.",
-    "ko": "아직 발급된 패스포트와 스탬프가 없어요.",
-    "source": "components/guest-home",
-    "id": "components/guest-home:copy.passportEmpty"
-  },
-  "mf31ade6d0ed9": {
-    "en": "Start recording moments with your favorites.",
-    "ko": "최애와 함께한 첫 순간부터 기록해 보세요.",
-    "source": "components/guest-home",
-    "id": "components/guest-home:copy.passportHelp"
   },
   "mab415ccf7109": {
     "en": "My fan activity",
@@ -2086,12 +2026,6 @@
     "ko": "엘리나와 함께 kyaa 참여 가이드",
     "source": "components/home-entry-cards/home-entry-cards",
     "id": "components/home-entry-cards/home-entry-cards:copy.label"
-  },
-  "m8730562b9dee": {
-    "en": "From fan verification to prize draws",
-    "ko": "팬 인증부터 선물 응모까지",
-    "source": "components/home-entry-cards/home-entry-cards",
-    "id": "components/home-entry-cards/home-entry-cards:copy.description"
   },
   "m874196adc5ca": {
     "en": "See how to join",
@@ -5099,12 +5033,6 @@
     "source": "features/benefit/ui/benefit-screen",
     "id": "features/benefit/ui/benefit-screen:copy.title"
   },
-  "m029fa55d14da": {
-    "en": "Discover benefits available through your fan activities.",
-    "ko": "함께한 기록으로 열리는 특별한 혜택을 확인하세요.",
-    "source": "features/benefit/ui/benefit-screen",
-    "id": "features/benefit/ui/benefit-screen:copy.subtitle"
-  },
   "mf06d1cb8c856": {
     "en": "Choose a celebrity",
     "ko": "셀럽 선택",
@@ -5122,12 +5050,6 @@
     "ko": "이 셀럽의 공개된 혜택이 아직 없어요.",
     "source": "features/benefit/ui/benefit-screen",
     "id": "features/benefit/ui/benefit-screen:copy.filterEmpty"
-  },
-  "md97cd47c327d": {
-    "en": "New benefits will appear here as soon as they open.",
-    "ko": "새 혜택이 열리면 이곳에서 바로 확인할 수 있어요.",
-    "source": "features/benefit/ui/benefit-screen",
-    "id": "features/benefit/ui/benefit-screen:copy.emptyHelp"
   },
   "mebbf3bca342e": {
     "en": "We couldn’t load benefits.",
@@ -5633,12 +5555,6 @@
     "source": "features/benefit/ui/benefit-screen",
     "id": "features/benefit/ui/benefit-screen:inline.mfb5601f38ca5"
   },
-  "m13ed96cd2401": {
-    "en": "Use your raffle tickets to enter for this benefit.",
-    "ko": "응모권을 사용해 혜택에 응모할 수 있어요.",
-    "source": "features/benefit/ui/benefit-screen",
-    "id": "features/benefit/ui/benefit-screen:inline.m2fe4bd58310c"
-  },
   "m095fcfb8e291": {
     "en": "entries",
     "ko": "응모",
@@ -5783,12 +5699,6 @@
     "source": "features/benefit/ui/creator-raffles-screen",
     "id": "features/benefit/ui/creator-raffles-screen:inline.md0d702be792e"
   },
-  "md1df95a262d8": {
-    "en": "Split your tickets between gifts, or use them all for one.",
-    "ko": "원하는 선물에 나누어 쓰거나, 한 선물에 모아 쓸 수 있어요.",
-    "source": "features/benefit/ui/creator-raffles-screen",
-    "id": "features/benefit/ui/creator-raffles-screen:inline.me985e001511b"
-  },
   "md731effad5fb": {
     "en": "Collect tickets",
     "ko": "응모권 모으기",
@@ -5854,12 +5764,6 @@
     "ko": "자세히 보기",
     "source": "features/benefit/ui/creator-raffles-screen",
     "id": "features/benefit/ui/creator-raffles-screen:inline.me9f45b668ff0"
-  },
-  "md7e2e71bb4c7": {
-    "en": "Enter each gift separately. Tickets are deducted after you confirm the gift and quantity.",
-    "ko": "선물마다 따로 응모해요. 선택한 선물과 수량을 확인한 뒤 응모권이 차감돼요.",
-    "source": "features/benefit/ui/creator-raffles-screen",
-    "id": "features/benefit/ui/creator-raffles-screen:inline.m4d5cd2c849a5"
   },
   "m10d20a8e8ddf": {
     "en": "Winners",
@@ -6911,12 +6815,6 @@
     "source": "features/community-stamps/ui/daily-checkin",
     "id": "features/community-stamps/ui/daily-checkin:copy.title"
   },
-  "made923b999af": {
-    "en": "Check in once a day and keep today with your favorite as a Stamp.",
-    "ko": "하루 한 번, 최애와 함께한 오늘을 스탬프로 남겨요.",
-    "source": "features/community-stamps/ui/daily-checkin",
-    "id": "features/community-stamps/ui/daily-checkin:copy.help"
-  },
   "m1712f68ea709": {
     "en": "Checking your attendance.",
     "ko": "출석 기록을 확인하고 있어요.",
@@ -7325,12 +7223,6 @@
     "source": "features/fanpage/ui/fan-gathering",
     "id": "features/fanpage/ui/fan-gathering:inline.m0a4af459069b"
   },
-  "m85a5a48246a6": {
-    "en": "Hover or tap to see a name.{0}",
-    "ko": "캐릭터에 마우스를 올리거나 눌러 닉네임을 확인하세요.{0}",
-    "source": "features/fanpage/ui/fan-gathering",
-    "id": "features/fanpage/ui/fan-gathering:inline.m1b2452f9fc7e"
-  },
   "mfe31d3c0a45b": {
     "en": "Reduced motion on",
     "ko": "동작 줄이기 사용 중",
@@ -7391,12 +7283,6 @@
     "source": "features/fanpage/ui/home-panels",
     "id": "features/fanpage/ui/home-panels:inline.m68cd012b6328"
   },
-  "m1023187bedc3": {
-    "en": "See {0}'s updates and LIVE events here when published.",
-    "ko": "{0}의 새 소식과 LIVE가 공개되면 이곳에서 만나요.",
-    "source": "features/fanpage/ui/home-panels",
-    "id": "features/fanpage/ui/home-panels:inline.m72c7004f4e92"
-  },
   "mc06551416571": {
     "en": "Notices & comments",
     "ko": "공지와 댓글",
@@ -7414,12 +7300,6 @@
     "ko": "아직 등록된 공지가 없어요.",
     "source": "features/fanpage/ui/home-panels",
     "id": "features/fanpage/ui/home-panels:inline.m9ed531d16087"
-  },
-  "m694c52137a91": {
-    "en": "New updates will appear here.",
-    "ko": "새 소식이 올라오면 여기에서 확인할 수 있어요.",
-    "source": "features/fanpage/ui/home-panels",
-    "id": "features/fanpage/ui/home-panels:inline.m779aa6ed7c06"
   },
   "m950773a69f9d": {
     "en": "Start here",
@@ -7547,12 +7427,6 @@
     "source": "features/fanpage/ui/home-panels",
     "id": "features/fanpage/ui/home-panels:inline.m509a3664aba6"
   },
-  "m1d0239729880": {
-    "en": "Entry dates will be announced in Notices.",
-    "ko": "응모 일정은 공지에서 안내해요.",
-    "source": "features/fanpage/ui/home-panels",
-    "id": "features/fanpage/ui/home-panels:inline.m63663da0f432"
-  },
   "m1e4f7badba7d": {
     "en": "Upcoming",
     "ko": "예정",
@@ -7661,12 +7535,6 @@
     "source": "features/live/ui/elina-mission-entry",
     "id": "features/live/ui/elina-mission-entry:copy.title"
   },
-  "mf8ae3329afeb": {
-    "en": "Pick your favorite artwork, then look for a detail in the picture.",
-    "ko": "마음에 드는 작품을 고르고, 그림 속 디테일도 찾아봐요.",
-    "source": "features/live/ui/elina-mission-entry",
-    "id": "features/live/ui/elina-mission-entry:copy.invitation"
-  },
   "m8e242988ecf7": {
     "en": "1 vote · 1 quiz",
     "ko": "투표 1개 · 퀴즈 1개",
@@ -7678,12 +7546,6 @@
     "ko": "미션 시작하기",
     "source": "features/live/ui/elina-mission-entry",
     "id": "features/live/ui/elina-mission-entry:copy.action"
-  },
-  "mc7e1a60b9ffd": {
-    "en": "Complete a mission to record a Stamp.",
-    "ko": "작품을 고르고 스탬프를 남겨요.",
-    "source": "features/live/ui/elina-mission-entry",
-    "id": "features/live/ui/elina-mission-entry:copy.hint"
   },
   "m486f168dcd98": {
     "en": "LIVE calendar",
@@ -8063,23 +7925,11 @@
     "source": "features/live/ui/live-event-screen",
     "id": "features/live/ui/live-event-screen:copy.benefit"
   },
-  "m9cb659e21e1b": {
-    "en": "Enter the Fan Code shared during the LIVE to record attendance—no reservation required.",
-    "ko": "LIVE에서 공개된 출석코드를 입력하면 예약 여부와 관계없이 출석을 남길 수 있어요.",
-    "source": "features/live/ui/live-event-screen",
-    "id": "features/live/ui/live-event-screen:copy.fanCodeHelper"
-  },
   "meb25155466c1": {
     "en": "Enter Fan Code",
     "ko": "출석코드 입력",
     "source": "features/live/ui/live-event-screen",
     "id": "features/live/ui/live-event-screen:copy.attendance.label"
-  },
-  "m9970843ef1fe": {
-    "en": "4+ letters or numbers",
-    "ko": "영문·숫자 4자 이상",
-    "source": "features/live/ui/live-event-screen",
-    "id": "features/live/ui/live-event-screen:copy.attendance.placeholder"
   },
   "m2b26660bd101": {
     "en": "Verify attendance",
@@ -8207,36 +8057,6 @@
     "source": "features/live/ui/live-event-screen",
     "id": "features/live/ui/live-event-screen:copy.steps.3"
   },
-  "m1bca3fbe9814": {
-    "en": "Save the schedule",
-    "ko": "일정을 먼저 저장해요",
-    "source": "features/live/ui/live-event-screen",
-    "id": "features/live/ui/live-event-screen:copy.stepHelpers.0"
-  },
-  "m7dac7fc03667": {
-    "en": "Watch in a new tab",
-    "ko": "새 탭에서 시청해요",
-    "source": "features/live/ui/live-event-screen",
-    "id": "features/live/ui/live-event-screen:copy.stepHelpers.1"
-  },
-  "m620f22306a1f": {
-    "en": "Enter the code after the LIVE starts",
-    "ko": "LIVE 시작 후 입력해요",
-    "source": "features/live/ui/live-event-screen",
-    "id": "features/live/ui/live-event-screen:copy.stepHelpers.2"
-  },
-  "mc724e11d3089": {
-    "en": "Available after attendance",
-    "ko": "출석 완료 후 참여해요",
-    "source": "features/live/ui/live-event-screen",
-    "id": "features/live/ui/live-event-screen:copy.stepHelpers.3"
-  },
-  "m11c287d2d2a2": {
-    "en": "Keep your participation record",
-    "ko": "참여 기록을 남겨요",
-    "source": "features/live/ui/live-event-screen",
-    "id": "features/live/ui/live-event-screen:copy.stepHelpers.4"
-  },
   "md776b8250cdb": {
     "en": "Reservations open soon",
     "ko": "예약 오픈 전",
@@ -8302,12 +8122,6 @@
     "ko": "예약하려면 {celebrity} 팬 패스포트가 필요해요.",
     "source": "features/live/ui/live-event-screen",
     "id": "features/live/ui/live-event-screen:copy.actionHelper.verifyFan"
-  },
-  "mb3d5745c39d6": {
-    "en": "Opens the external LIVE in a new window.",
-    "ko": "외부 LIVE가 새 창에서 열려요.",
-    "source": "features/live/ui/live-event-screen",
-    "id": "features/live/ui/live-event-screen:copy.actionHelper.watch"
   },
   "m3d248d578b9a": {
     "en": "Reservation period",
@@ -8417,12 +8231,6 @@
     "source": "features/live/ui/live-event-screen",
     "id": "features/live/ui/live-event-screen:ifewLiveCopy.fanCode"
   },
-  "m371c2f660b46": {
-    "en": "Enter the attendance code shared during the LIVE here to record your attendance on kyaa.",
-    "ko": "LIVE 방송에서 알려주는 출석 코드를 이 화면에 입력하면 kyaa에 출석을 남길 수 있어요.",
-    "source": "features/live/ui/live-event-screen",
-    "id": "features/live/ui/live-event-screen:ifewLiveCopy.fanCodeHelper"
-  },
   "m31c62ef02fb7": {
     "en": "Enter attendance code",
     "ko": "출석 코드 입력",
@@ -8500,12 +8308,6 @@
     "ko": "뱅크시 관람권 추첨 응모하기",
     "source": "features/live/ui/live-event-screen",
     "id": "features/live/ui/live-event-screen:ifewLiveCopy.prizeAction"
-  },
-  "ma1a8c0a4609b": {
-    "en": "Go to the draw for {0}.",
-    "ko": "{0} 추첨 페이지로 이동해요.",
-    "source": "features/live/ui/live-event-screen",
-    "id": "features/live/ui/live-event-screen:ifewLiveCopy.prizeHelper"
   },
   "m6590318357c5": {
     "en": "Same day",
@@ -8621,18 +8423,6 @@
     "source": "features/live/ui/live-event-screen",
     "id": "features/live/ui/live-event-screen:inline.m53d59bab9b20.3"
   },
-  "mfecd6473737d": {
-    "en": "TikTok opens in a new tab. Return here to enter the attendance code.",
-    "ko": "틱톡이 새 창에서 열려요. 시청 후 이 화면에서 출석 코드를 입력해 주세요.",
-    "source": "features/live/ui/live-event-screen",
-    "id": "features/live/ui/live-event-screen:inline.m0ae1c193b9f5"
-  },
-  "m368720b16d69": {
-    "en": "When the LIVE starts, return here to enter the attendance code.",
-    "ko": "방송이 시작되면 이 화면에서 출석 코드를 입력할 수 있어요.",
-    "source": "features/live/ui/live-event-screen",
-    "id": "features/live/ui/live-event-screen:inline.mcb0e004068c4"
-  },
   "m236456e2f613": {
     "en": "LIVE reservation details",
     "ko": "LIVE 예약 정보",
@@ -8680,12 +8470,6 @@
     "ko": "현재 참여 가능한 미션이 없어요.",
     "source": "features/live/ui/live-event-screen",
     "id": "features/live/ui/live-event-screen:inline.m1c716fda2e42"
-  },
-  "m74fb6f427790": {
-    "en": "Check the mission list for availability.",
-    "ko": "미션 목록에서 참여 가능 여부를 확인해 주세요.",
-    "source": "features/live/ui/live-event-screen",
-    "id": "features/live/ui/live-event-screen:inline.m54fd54a7d89a"
   },
   "ma66aa523b5a6": {
     "en": "View LIVE missions",
@@ -9113,24 +8897,6 @@
     "source": "features/live/ui/live-survey-screen",
     "id": "features/live/ui/live-survey-screen:copy.submittedAt"
   },
-  "m5d830501519f": {
-    "en": "Choose one answer.",
-    "ko": "한 가지를 선택해 주세요.",
-    "source": "features/live/ui/live-survey-screen",
-    "id": "features/live/ui/live-survey-screen:copy.singleHint"
-  },
-  "m1c61e64194df": {
-    "en": "Choose all that apply.",
-    "ko": "해당하는 답변을 모두 선택해 주세요.",
-    "source": "features/live/ui/live-survey-screen",
-    "id": "features/live/ui/live-survey-screen:copy.multipleHint"
-  },
-  "m8acc8ddbb047": {
-    "en": "Choose a rating from 1 to 5.",
-    "ko": "1점부터 5점까지 선택해 주세요.",
-    "source": "features/live/ui/live-survey-screen",
-    "id": "features/live/ui/live-survey-screen:copy.ratingHint"
-  },
   "m5faa6bee45bd": {
     "en": "Live now",
     "ko": "지금 LIVE 중",
@@ -9352,12 +9118,6 @@
     "ko": "내 최애",
     "source": "features/my/ui/my-screen",
     "id": "features/my/ui/my-screen:copy.creators"
-  },
-  "m6c62da6f7772": {
-    "en": "Check each Fan Passport and your raffle tickets, which are shared across all creators.",
-    "ko": "크리에이터별 패스포트와 모든 크리에이터에서 함께 쓰는 응모권을 확인하세요.",
-    "source": "features/my/ui/my-screen",
-    "id": "features/my/ui/my-screen:copy.creatorsHelp"
   },
   "mee9c567663d7": {
     "en": "No favorites added yet.",
@@ -9623,12 +9383,6 @@
     "source": "features/my/ui/my-screen",
     "id": "features/my/ui/my-screen:copy.manualReward"
   },
-  "m62ee926264d3": {
-    "en": "Your fan activities determine your fan tier.",
-    "ko": "함께한 활동이 나의 등급이 돼요.",
-    "source": "features/my/ui/my-screen",
-    "id": "features/my/ui/my-screen:copy.tierHelp"
-  },
   "m0f473985b8a3": {
     "en": "You reached the highest tier.",
     "ko": "최고 등급을 달성했어요.",
@@ -9815,12 +9569,6 @@
     "source": "features/my/ui/my-screen",
     "id": "features/my/ui/my-screen:inline.m1ff8ef4b1836"
   },
-  "m58b6515d67d0": {
-    "en": "Choose a gift and enter with your tickets.",
-    "ko": "마음에 드는 선물을 고르고, 모은 응모권으로 참여해 보세요.",
-    "source": "features/my/ui/my-screen",
-    "id": "features/my/ui/my-screen:inline.mfb869153c336"
-  },
   "m7d4e6ed6ba76": {
     "en": "Next deadline · ",
     "ko": "가장 가까운 마감 · ",
@@ -9947,12 +9695,6 @@
     "source": "features/notification/ui/notification-center",
     "id": "features/notification/ui/notification-center:copy.empty"
   },
-  "m5507fd7439f2": {
-    "en": "Reserve a spot for a LIVE to get a reminder before it starts.",
-    "ko": "라이브를 예약하면 시작 전 알림을 받을 수 있어요.",
-    "source": "features/notification/ui/notification-center",
-    "id": "features/notification/ui/notification-center:copy.emptyHelp"
-  },
   "mb74b6fc18430": {
     "en": "Today",
     "ko": "오늘",
@@ -10024,12 +9766,6 @@
     "ko": "로그인 후 알림을 확인해 주세요.",
     "source": "features/notification/ui/notification-center",
     "id": "features/notification/ui/notification-center:copy.signIn"
-  },
-  "m6f8d40e676c7": {
-    "en": "Sign in to continue viewing unread updates and reminders for your reserved LIVE events.",
-    "ko": "로그인하면 읽지 않은 소식과 예약한 LIVE 알림을 이어서 볼 수 있어요.",
-    "source": "features/notification/ui/notification-center",
-    "id": "features/notification/ui/notification-center:copy.signInHelp"
   },
   "m2615b4ad9ca5": {
     "en": "Continue with Google",
@@ -10319,12 +10055,6 @@
     "source": "features/passport/ui/passport-issuance-dialog",
     "id": "features/passport/ui/passport-issuance-dialog:copy.continueLive"
   },
-  "m84b26c0c9170": {
-    "en": "Find your Passport again in MY.",
-    "ko": "내 패스포트는 MY에서 다시 볼 수 있어요.",
-    "source": "features/passport/ui/passport-issuance-dialog",
-    "id": "features/passport/ui/passport-issuance-dialog:copy.myHint"
-  },
   "m311f929deaa4": {
     "en": "View in MY",
     "ko": "MY에서 보기",
@@ -10451,12 +10181,6 @@
     "source": "features/passport/ui/passport-screens",
     "id": "features/passport/ui/passport-screens:copy.emptyTitle"
   },
-  "m59e0b11ca75c": {
-    "en": "Complete fan verification for an artist to begin your first record.",
-    "ko": "좋아하는 크리에이터의 팬 인증을 완료하면 첫 기록이 시작돼요.",
-    "source": "features/passport/ui/passport-screens",
-    "id": "features/passport/ui/passport-screens:copy.emptyBody"
-  },
   "mbfa0d61142d3": {
     "en": "Find artists to verify",
     "ko": "팬 인증 가능한 크리에이터 보기",
@@ -10546,12 +10270,6 @@
     "ko": "아직 활동 기록이 없어요.",
     "source": "features/passport/ui/passport-screens",
     "id": "features/passport/ui/passport-screens:copy.noActivity"
-  },
-  "maacf890b3b73": {
-    "en": "Fan verification and LIVE participation will appear here.",
-    "ko": "팬 인증과 라이브 참여를 시작하면 이곳에 차곡차곡 남아요.",
-    "source": "features/passport/ui/passport-screens",
-    "id": "features/passport/ui/passport-screens:copy.noActivityBody"
   },
   "ma76da83341eb": {
     "en": "Waiting for your next moment",
@@ -10865,12 +10583,6 @@
     "source": "features/profile/ui/avatar-editor-copy",
     "id": "features/profile/ui/avatar-editor-copy:avatarEditorCopy.avatar"
   },
-  "m61e60760de51": {
-    "en": "Choose a character or use your own photo.",
-    "ko": "캐릭터를 고르거나 내 사진을 사용할 수 있어요.",
-    "source": "features/profile/ui/avatar-editor-copy",
-    "id": "features/profile/ui/avatar-editor-copy:avatarEditorCopy.help"
-  },
   "mf5668a0d0d7e": {
     "en": "Change",
     "ko": "변경",
@@ -10901,12 +10613,6 @@
     "source": "features/profile/ui/avatar-editor-copy",
     "id": "features/profile/ui/avatar-editor-copy:avatarEditorCopy.dialogTitle"
   },
-  "m62d5eaf43c83": {
-    "en": "Choose a character or photo, then save.",
-    "ko": "캐릭터 또는 사진을 선택한 뒤 저장해 주세요.",
-    "source": "features/profile/ui/avatar-editor-copy",
-    "id": "features/profile/ui/avatar-editor-copy:avatarEditorCopy.dialogHelp"
-  },
   "m085c2481c501": {
     "en": "Choose a character",
     "ko": "캐릭터 선택",
@@ -10925,23 +10631,11 @@
     "source": "features/profile/ui/avatar-editor-copy",
     "id": "features/profile/ui/avatar-editor-copy:avatarEditorCopy.replacePhoto"
   },
-  "m662b92ecf5d5": {
-    "en": "JPEG, PNG, WebP · up to 4MB",
-    "ko": "JPEG, PNG, WebP · 최대 4MB",
-    "source": "features/profile/ui/avatar-editor-copy",
-    "id": "features/profile/ui/avatar-editor-copy:avatarEditorCopy.photoHelp"
-  },
   "mf8b9d453147f": {
     "en": "Adjust photo",
     "ko": "사진 위치 조정",
     "source": "features/profile/ui/avatar-editor-copy",
     "id": "features/profile/ui/avatar-editor-copy:avatarEditorCopy.crop"
-  },
-  "m26fc2e38c6a1": {
-    "en": "Drag the photo or use the arrow keys to position it.",
-    "ko": "사진을 드래그하거나 방향키로 위치를 맞추세요.",
-    "source": "features/profile/ui/avatar-editor-copy",
-    "id": "features/profile/ui/avatar-editor-copy:avatarEditorCopy.cropHelp"
   },
   "m93fbd1a0efee": {
     "en": "Zoom",
@@ -11068,12 +10762,6 @@
     "ko": "휴대폰 번호로 알림톡 받기",
     "source": "features/profile/ui/phone-sms-enrollment",
     "id": "features/profile/ui/phone-sms-enrollment:copy.title"
-  },
-  "ma01708c2c56f": {
-    "en": "Register a Korean mobile number used for KakaoTalk.",
-    "ko": "카카오톡을 사용하는 국내 휴대폰 번호를 등록해 주세요.",
-    "source": "features/profile/ui/phone-sms-enrollment",
-    "id": "features/profile/ui/phone-sms-enrollment:copy.help"
   },
   "mdc0b30d439dc": {
     "en": "Mobile number",
@@ -11231,12 +10919,6 @@
     "source": "features/profile/ui/profile-onboarding-screen",
     "id": "features/profile/ui/profile-onboarding-screen:copy.heading.message"
   },
-  "mb2cc6130dfa0": {
-    "en": "After verification, it will appear in your {0} Fan Passport and activity history.",
-    "ko": "팬 인증을 통과하면 {0} 팬 패스포트와 활동 기록에 표시돼요.",
-    "source": "features/profile/ui/profile-onboarding-screen",
-    "id": "features/profile/ui/profile-onboarding-screen:copy.subtitle.message"
-  },
   "m77a8433b4b98": {
     "en": "Fan Passport preview before issuance",
     "ko": "발급 예정 팬 패스포트 미리보기",
@@ -11248,12 +10930,6 @@
     "ko": "kyaa에서 사용할 닉네임을 정해 주세요.",
     "source": "features/profile/ui/profile-onboarding-screen",
     "id": "features/profile/ui/profile-onboarding-screen:copy.genericHeading"
-  },
-  "md0d20638439b": {
-    "en": "Complete your profile to return and continue where you left off.",
-    "ko": "프로필을 완성하면 이전 화면으로 돌아가 계속할 수 있어요.",
-    "source": "features/profile/ui/profile-onboarding-screen",
-    "id": "features/profile/ui/profile-onboarding-screen:copy.genericSubtitle"
   },
   "m45b828d21678": {
     "en": "Profile setup · 1 / 1",
@@ -11303,18 +10979,6 @@
     "source": "features/profile/ui/profile-onboarding-screen",
     "id": "features/profile/ui/profile-onboarding-screen:copy.counter.message"
   },
-  "m388d99b17aa2": {
-    "en": "Use 1–32 characters in your preferred language.",
-    "ko": "원하는 언어로 1–32자까지 입력해 주세요.",
-    "source": "features/profile/ui/profile-onboarding-screen",
-    "id": "features/profile/ui/profile-onboarding-screen:copy.rule"
-  },
-  "me914d546f539": {
-    "en": "Only this display name is public. Your email and Google account details are never shown.",
-    "ko": "입력한 닉네임만 공개되며 이메일과 Google 계정 정보는 표시되지 않아요.",
-    "source": "features/profile/ui/profile-onboarding-screen",
-    "id": "features/profile/ui/profile-onboarding-screen:copy.privacy"
-  },
   "m3a4bd2a82e85": {
     "en": "Save display name",
     "ko": "닉네임 저장",
@@ -11344,24 +11008,6 @@
     "ko": "프로필을 확인하고 있어요.",
     "source": "features/profile/ui/profile-onboarding-screen",
     "id": "features/profile/ui/profile-onboarding-screen:copy.checking"
-  },
-  "m39097293d8a7": {
-    "en": "Enter the display name you want to use.",
-    "ko": "사용할 닉네임을 입력해 주세요.",
-    "source": "features/profile/ui/profile-onboarding-screen",
-    "id": "features/profile/ui/profile-onboarding-screen:copy.empty"
-  },
-  "mb8991f17ddf9": {
-    "en": "Enter your display name in your preferred language.",
-    "ko": "원하는 언어로 표시 이름을 입력해 주세요.",
-    "source": "features/profile/ui/profile-onboarding-screen",
-    "id": "features/profile/ui/profile-onboarding-screen:copy.typing"
-  },
-  "mece4bb8d1ff4": {
-    "en": "The format is valid. Availability is checked when you save.",
-    "ko": "사용 가능한 형식이에요. 저장할 때 중복 여부를 확인합니다.",
-    "source": "features/profile/ui/profile-onboarding-screen",
-    "id": "features/profile/ui/profile-onboarding-screen:copy.valid"
   },
   "m2e3215a8f372": {
     "en": "This display name is taken. Try another.",
@@ -11429,12 +11075,6 @@
     "source": "features/profile/ui/settings-screen",
     "id": "features/profile/ui/settings-screen:copy.title"
   },
-  "mdaafda9be2b2": {
-    "en": "Manage your kyaa profile and notifications.",
-    "ko": "kyaa에서 사용할 프로필과 알림을 관리하세요.",
-    "source": "features/profile/ui/settings-screen",
-    "id": "features/profile/ui/settings-screen:copy.subtitle"
-  },
   "mc7fba50a9917": {
     "en": "Profile",
     "ko": "프로필",
@@ -11446,12 +11086,6 @@
     "ko": "닉네임",
     "source": "features/profile/ui/settings-screen",
     "id": "features/profile/ui/settings-screen:copy.nickname"
-  },
-  "m96a33c44da86": {
-    "en": "This is how other fans will see you on kyaa.",
-    "ko": "kyaa에서 다른 팬들에게 표시되는 이름이에요.",
-    "source": "features/profile/ui/settings-screen",
-    "id": "features/profile/ui/settings-screen:copy.nicknameHelp"
   },
   "m9cb82aa6061a": {
     "en": "Change",
@@ -11477,35 +11111,17 @@
     "source": "features/profile/ui/settings-screen",
     "id": "features/profile/ui/settings-screen:copy.cancel"
   },
-  "mbbc0c6c8fe23": {
-    "en": "Use 1–32 characters in your preferred language.",
-    "ko": "원하는 언어로 1–32자까지 입력해 주세요.",
-    "source": "features/profile/ui/settings-screen",
-    "id": "features/profile/ui/settings-screen:copy.nicknameRule"
-  },
   "m49802171f1bd": {
     "en": "Language",
     "ko": "언어",
     "source": "features/profile/ui/settings-screen",
     "id": "features/profile/ui/settings-screen:copy.language"
   },
-  "m9a20f8be7c86": {
-    "en": "Choose the language for the app and automatic emails.",
-    "ko": "앱과 자동 이메일에 사용할 언어를 선택하세요.",
-    "source": "features/profile/ui/settings-screen",
-    "id": "features/profile/ui/settings-screen:copy.languageHelp"
-  },
   "m5c5dc0a0a093": {
     "en": "Notifications",
     "ko": "알림",
     "source": "features/profile/ui/settings-screen",
     "id": "features/profile/ui/settings-screen:copy.notifications"
-  },
-  "m9541f078789c": {
-    "en": "Choose only the updates you want.",
-    "ko": "받고 싶은 소식만 선택할 수 있어요.",
-    "source": "features/profile/ui/settings-screen",
-    "id": "features/profile/ui/settings-screen:copy.notificationHelp"
   },
   "m7b9ebb7c1094": {
     "en": "Connections and delivery channels",
@@ -11633,12 +11249,6 @@
     "source": "features/profile/ui/settings-screen",
     "id": "features/profile/ui/settings-screen:copy.kakaoEnrollmentCanceling"
   },
-  "me54f33f29afc": {
-    "en": "We'll send service notifications to the number registered to your Kakao account.",
-    "ko": "카카오 계정에 등록된 번호로 서비스 알림을 보내드려요.",
-    "source": "features/profile/ui/settings-screen",
-    "id": "features/profile/ui/settings-screen:copy.kakaoEnrollmentHelp"
-  },
   "m86ca9a57b1a8": {
     "en": "Confirm the consent item to continue.",
     "ko": "동의 항목을 확인해 주세요.",
@@ -11753,12 +11363,6 @@
     "source": "features/profile/ui/settings-screen",
     "id": "features/profile/ui/settings-screen:copy.wallet"
   },
-  "m7c5b48cc38fa": {
-    "en": "This account receives your Passports and Stamps. It cannot be changed here, and only part of the address is shown.",
-    "ko": "패스포트와 스탬프를 받는 계정이에요. 변경할 수 없으며 주소는 일부만 표시돼요.",
-    "source": "features/profile/ui/settings-screen",
-    "id": "features/profile/ui/settings-screen:copy.walletHelp"
-  },
   "m57a088d81a8e": {
     "en": "Your issuance account is getting ready",
     "ko": "발급 계정 준비 중",
@@ -11770,12 +11374,6 @@
     "ko": "앱 설치",
     "source": "features/profile/ui/settings-screen",
     "id": "features/profile/ui/settings-screen:copy.install"
-  },
-  "m0c4c7655ff06": {
-    "en": "Add kyaa to your home screen for faster access.",
-    "ko": "홈 화면에 kyaa를 추가하면 더 빠르게 열 수 있어요.",
-    "source": "features/profile/ui/settings-screen",
-    "id": "features/profile/ui/settings-screen:copy.installHelp"
   },
   "mf7724c014fed": {
     "en": "Install kyaa",
@@ -11975,12 +11573,6 @@
     "source": "features/quiz/ui/quiz-entry-screen",
     "id": "features/quiz/ui/quiz-entry-screen:copy.title.message"
   },
-  "me8b8a3dcf2ea": {
-    "en": "Pass a short quiz to receive your first Fan Verification Stamp and Fan Passport.",
-    "ko": "간단한 퀴즈를 통과하면 첫 팬 인증 스탬프와 팬 패스포트를 받을 수 있어요.",
-    "source": "features/quiz/ui/quiz-entry-screen",
-    "id": "features/quiz/ui/quiz-entry-screen:copy.description"
-  },
   "mbbfb2a916e4d": {
     "en": "{0} questions",
     "ko": "{0}문항",
@@ -11998,12 +11590,6 @@
     "ko": " 정답이면 인증 완료",
     "source": "features/quiz/ui/quiz-entry-screen",
     "id": "features/quiz/ui/quiz-entry-screen:copy.passThresholdTail"
-  },
-  "m1368cd0da861": {
-    "en": "Each answer is saved securely",
-    "ko": "답변은 문항마다 안전하게 저장",
-    "source": "features/quiz/ui/quiz-entry-screen",
-    "id": "features/quiz/ui/quiz-entry-screen:copy.saved"
   },
   "mfa2e863970e4": {
     "en": "Checking sign-in…",
@@ -12046,12 +11632,6 @@
     "ko": "로그인하고 시작하기",
     "source": "features/quiz/ui/quiz-entry-screen",
     "id": "features/quiz/ui/quiz-entry-screen:copy.login"
-  },
-  "ma3066d315e6f": {
-    "en": "If you already started, you'll continue from your saved questions.",
-    "ko": "이미 시작한 인증이 있다면 저장된 문항부터 이어서 진행됩니다.",
-    "source": "features/quiz/ui/quiz-entry-screen",
-    "id": "features/quiz/ui/quiz-entry-screen:copy.note"
   },
   "m56ef76018c22": {
     "en": "Your sign-in expired. Sign in again to continue.",
@@ -12442,12 +12022,6 @@
     "ko": "첫 좋아요 스탬프를 받았어요",
     "source": "features/reaction/ui/reaction-action",
     "id": "features/reaction/ui/reaction-action:inline.mb24460f2bdf7"
-  },
-  "m7a4ba120835b": {
-    "en": "Find your first like in your Passport stamp book.",
-    "ko": "패스포트 스탬프함에서 첫 좋아요를 확인해 보세요.",
-    "source": "features/reaction/ui/reaction-action",
-    "id": "features/reaction/ui/reaction-action:inline.m64d0f59190df"
   },
   "m3cadbfa88dd5": {
     "en": "Your First Like Stamp is saved. Complete fan verification to add it to your Fan Passport.",
@@ -13133,12 +12707,6 @@
     "source": "features/tickets/ui/fan-ticket-history-screen",
     "id": "features/tickets/ui/fan-ticket-history-screen:inline.m96552c4a8039"
   },
-  "m40e669945671": {
-    "en": "Sign in to see your balance and activity.",
-    "ko": "내 응모권과 활동 내역은 로그인 후 확인할 수 있어요.",
-    "source": "features/tickets/ui/fan-ticket-history-screen",
-    "id": "features/tickets/ui/fan-ticket-history-screen:inline.mc1372433e80c"
-  },
   "m28a5a63237a6": {
     "en": "Sign in",
     "ko": "로그인",
@@ -13505,12 +13073,6 @@
     "source": "features/benefit/ui/raffle-entry-panel",
     "id": "features/benefit/ui/raffle-entry-panel:inline.m5398bb6a9090"
   },
-  "mec009adf8387": {
-    "en": "Select your tickets or adjust the quantity.",
-    "ko": "응모권을 눌러 선택하거나 수량을 조절해요.",
-    "source": "features/benefit/ui/raffle-entry-panel",
-    "id": "features/benefit/ui/raffle-entry-panel:inline.mc1cf00fd3ca7"
-  },
   "m7d1c769b8495": {
     "en": "Tickets to use",
     "ko": "사용할 응모권",
@@ -13745,18 +13307,6 @@
     "source": "features/community-stamps/ui/community-stamp-collection",
     "id": "features/community-stamps/ui/community-stamp-collection:inline.m01196c4a9fdb"
   },
-  "m25f2023407fb": {
-    "en": "Collect everyday moments with your favorite.",
-    "ko": "최애와 함께한 일상을 차곡차곡 모아요.",
-    "source": "features/community-stamps/ui/community-stamp-collection",
-    "id": "features/community-stamps/ui/community-stamp-collection:inline.mbcdb97377d78"
-  },
-  "m07087be1eb13": {
-    "en": "From your first hello to everyday check-ins.",
-    "ko": "첫 인사부터 매일의 출석까지, 나만의 팬 기록.",
-    "source": "features/community-stamps/ui/community-stamp-collection",
-    "id": "features/community-stamps/ui/community-stamp-collection:inline.m5630b235c44c"
-  },
   "mcc9d0c254436": {
     "en": "{0} collected",
     "ko": "{0}개 수집",
@@ -13846,12 +13396,6 @@
     "ko": "친구와 함께 받는 스탬프",
     "source": "features/community-stamps/ui/community-stamp-collection",
     "id": "features/community-stamps/ui/community-stamp-collection:inline.m68a817105d71"
-  },
-  "m100712960346": {
-    "en": "Send your code to a friend or enter theirs. Each account earns this Stamp once.",
-    "ko": "내 코드를 친구에게 보내거나 친구의 코드를 입력하세요. 계정당 스탬프는 한 번 받아요.",
-    "source": "features/community-stamps/ui/community-stamp-collection",
-    "id": "features/community-stamps/ui/community-stamp-collection:inline.mf357988364e8"
   },
   "m8cb1f88e95a6": {
     "en": "Copy",
@@ -14015,12 +13559,6 @@
     "source": "features/fanpage/ui/cheer-comments",
     "id": "features/fanpage/ui/cheer-comments:inline.m66052cb2a1f8"
   },
-  "md6dd3ae88bb5": {
-    "en": "Leave a little encouragement for {0}.",
-    "ko": "{0}에게 응원의 한마디를 남겨 주세요.",
-    "source": "features/fanpage/ui/cheer-comments",
-    "id": "features/fanpage/ui/cheer-comments:inline.m947689d46c67"
-  },
   "m50c3557aeb73": {
     "en": "Leave a cheer",
     "ko": "응원 남기기",
@@ -14032,12 +13570,6 @@
     "ko": "좋아하는 마음을 전해 보세요.",
     "source": "features/fanpage/ui/cheer-comments",
     "id": "features/fanpage/ui/cheer-comments:inline.m80cd62896bed"
-  },
-  "m3a6d1f6dc70b": {
-    "en": "Your nickname and character are public.",
-    "ko": "닉네임과 캐릭터가 함께 공개돼요.",
-    "source": "features/fanpage/ui/cheer-comments",
-    "id": "features/fanpage/ui/cheer-comments:inline.m09c1d2cc4c2e"
   },
   "m1a69469dcb28": {
     "en": "Saving…",
@@ -14423,12 +13955,6 @@
     "source": "features/fanpage/ui/leaderboard-panel",
     "id": "features/fanpage/ui/leaderboard-panel:inline.m3c4d2415a424"
   },
-  "m01cd18e08921": {
-    "en": "Lifetime Fan Score · Ties use Passport issuance time, or participation time for fans without one.",
-    "ko": "누적 팬 점수 기준 · 동점이면 패스포트 발급 시각, 패스포트가 없으면 참여 시각이 빠른 팬이 앞서요.",
-    "source": "features/fanpage/ui/leaderboard-panel",
-    "id": "features/fanpage/ui/leaderboard-panel:inline.m113c97e137e2"
-  },
   "m0c416452a30e": {
     "en": "My rank",
     "ko": "내 순위",
@@ -14560,12 +14086,6 @@
     "ko": "함께 나누고 싶은 이야기를 남겨 주세요.",
     "source": "features/fanpage/ui/notice-comments",
     "id": "features/fanpage/ui/notice-comments:inline.mcad7370b1d5d"
-  },
-  "me6fdaaca8e8d": {
-    "en": "Your nickname and character avatar are public.",
-    "ko": "닉네임과 캐릭터 아바타가 함께 공개돼요.",
-    "source": "features/fanpage/ui/notice-comments",
-    "id": "features/fanpage/ui/notice-comments:inline.m8ed84209804b"
   },
   "md971c1d51fcb": {
     "en": "Saving…",
@@ -14861,12 +14381,6 @@
     "source": "features/lounge/ui/lounge-screen",
     "id": "features/lounge/ui/lounge-screen:inline.md183d7d33ef2"
   },
-  "m383c407379f4": {
-    "en": "Share what you love with other fans.",
-    "ko": "좋아하는 마음, 함께 나눠요.",
-    "source": "features/lounge/ui/lounge-screen",
-    "id": "features/lounge/ui/lounge-screen:inline.m40d7f514267c"
-  },
   "meca8345827ea": {
     "en": "Couldn't load the conversation.",
     "ko": "대화를 불러오지 못했어요.",
@@ -14884,12 +14398,6 @@
     "ko": "다시 시도",
     "source": "features/lounge/ui/lounge-screen",
     "id": "features/lounge/ui/lounge-screen:inline.m4a8583337883"
-  },
-  "mc7d81cddb402": {
-    "en": "What made you a fan? Start the conversation.",
-    "ko": "어떤 순간에 팬이 되셨나요? 첫 이야기를 남겨 보세요.",
-    "source": "features/lounge/ui/lounge-screen",
-    "id": "features/lounge/ui/lounge-screen:inline.m705ee8f9173c"
   },
   "m756ef6db984e": {
     "en": "Join the conversation",
@@ -14927,12 +14435,6 @@
     "source": "features/lounge/ui/lounge-screen",
     "id": "features/lounge/ui/lounge-screen:inline.md6924ac9e966"
   },
-  "mbfc8b9fc2a05": {
-    "en": "Find updates in notices and chat with fellow fans here.",
-    "ko": "새 소식은 공지에서, 팬들과의 이야기는 라운지에서 나눠요.",
-    "source": "features/lounge/ui/lounge-screen",
-    "id": "features/lounge/ui/lounge-screen:inline.m64fb6a5bafd6"
-  },
   "m6f20b8d887ff": {
     "en": "Fan conversation",
     "ko": "팬 대화",
@@ -14950,12 +14452,6 @@
     "ko": "{0} 라운지",
     "source": "features/lounge/ui/lounge-screen",
     "id": "features/lounge/ui/lounge-screen:inline.m93d19ddbf771"
-  },
-  "mb985872a2f3f": {
-    "en": "Talk about {0} with fellow fans.",
-    "ko": "{0} 얘기, 편하게 나눠요.",
-    "source": "features/lounge/ui/lounge-screen",
-    "id": "features/lounge/ui/lounge-screen:inline.m4355803fbd35"
   },
   "m1047c5f9ba14": {
     "en": "Notices",
@@ -14986,12 +14482,6 @@
     "ko": "첫 이야기를 기다리고 있어요",
     "source": "features/lounge/ui/lounge-screen",
     "id": "features/lounge/ui/lounge-screen:inline.m62de2413a1a4"
-  },
-  "m8c480759b8c6": {
-    "en": "Share a favorite video or the moment you became a fan.",
-    "ko": "좋아하는 영상이나 팬이 된 순간을 나눠 보세요.",
-    "source": "features/lounge/ui/lounge-screen",
-    "id": "features/lounge/ui/lounge-screen:inline.m222fb7fe978c"
   },
   "m59ae8783649d": {
     "en": " · You",
@@ -15088,12 +14578,6 @@
     "ko": "메시지 보내기",
     "source": "features/lounge/ui/lounge-screen",
     "id": "features/lounge/ui/lounge-screen:inline.m4af633680b9e"
-  },
-  "m5dcde97047e7": {
-    "en": "Your nickname and avatar are public. Be kind to one another.",
-    "ko": "닉네임과 아바타가 공개돼요. 서로를 존중하며 이야기해요.",
-    "source": "features/lounge/ui/lounge-screen",
-    "id": "features/lounge/ui/lounge-screen:inline.m287ffde58bc1"
   },
   "m4bf364149fc6": {
     "en": "Sign in to join the conversation",
@@ -15766,12 +15250,6 @@
     "en": "Here for the LIVE? Make it official.",
     "source": "features/live/ui/attendance-spotlight",
     "id": "features/live/ui/attendance-spotlight:inline.m1a8044462ad1"
-  },
-  "m20ade23c673e": {
-    "ko": "방송에서 공개된 출석코드를 입력해 주세요.",
-    "en": "Enter the Fan Code shared during the broadcast.",
-    "source": "features/live/ui/attendance-spotlight",
-    "id": "features/live/ui/attendance-spotlight:inline.m20ade23c673e"
   },
   "m387239bdda6b": {
     "ko": "까지",

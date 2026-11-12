@@ -53,19 +53,6 @@ export const messages = {
     ru: "Ваше здоровье"
 
   },
-  "md6dd3ae88bb5": {
-    "ja": "{0}へ短い応援メッセージを送りましょう。",
-    "zh-Hans": "为{0}留下一句鼓励。",
-    "zh-Hant": "為{0}留下一句鼓勵。",
-    "es": "Deja unas palabras de ánimo para {0}.",
-    "id": "Tinggalkan sedikit semangat untuk {0}.",
-    "vi": "Gửi vài lời động viên đến {0}.",
-    "th": "ฝากกำลังใจสั้นๆ ให้ {0}",
-    "pt": "Deixe algumas palavras de incentivo para {0}.",
-    "fr": "Laissez quelques mots d’encouragement à {0}.",
-    ru: "Оставьте небольшой комментарий для {0} ."
-
-  },
   "m50c3557aeb73": {
     "ja": "応援を送る",
     "zh-Hans": "留下应援",
@@ -90,19 +77,6 @@ export const messages = {
     "pt": "Compartilhe o que você admira.",
     "fr": "Partagez ce que vous appréciez.",
     ru: "Поделитесь тем, что вам нравится."
-
-  },
-  "m3a6d1f6dc70b": {
-    "ja": "ニックネームとキャラクターは公開されます。",
-    "zh-Hans": "您的昵称和角色将公开显示。",
-    "zh-Hant": "您的暱稱和角色將公開顯示。",
-    "es": "Tu apodo y personaje son públicos.",
-    "id": "Nama panggilan dan karaktermu terlihat publik.",
-    "vi": "Biệt danh và nhân vật của bạn được hiển thị công khai.",
-    "th": "ชื่อเล่นและตัวละครของคุณจะแสดงต่อสาธารณะ",
-    "pt": "Seu apelido e personagem são públicos.",
-    "fr": "Votre pseudo et votre personnage sont publics.",
-    ru: "Ваш никнейм и имя персонажа доступны для публичного просмотра."
 
   },
   "m1a69469dcb28": {

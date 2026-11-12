@@ -300,19 +300,6 @@ export const messages = {
     ru: "Проверка фанатов"
 
   },
-  "m2e295c5fb59b": {
-    "ja": "メンバーシップ、チケット、現地認証でファン活動を記録しましょう。",
-    "zh-Hans": "通过会员、票券和现场认证记录粉丝活动。",
-    "zh-Hant": "通過會員、票券和現場認證記錄粉絲活動。",
-    "es": "Registra membresías, boletos y momentos presenciales.",
-    "id": "Catat keanggotaan, tiket, dan momen di lokasi.",
-    "vi": "Ghi lại hoạt động người hâm mộ qua tư cách thành viên, vé và xác minh tại địa điểm.",
-    "th": "บันทึกกิจกรรมแฟนผ่านการเป็นสมาชิก ตั๋ว และการยืนยัน ณ สถานที่",
-    "pt": "Registre suas atividades de fã com assinaturas, bilhetes e verificações presenciais.",
-    "fr": "Enregistrez vos abonnements, vos billets et vos moments sur place.",
-    ru: "Регистрируйте членство, билеты и моменты, запечатлевшие происходящее на месте."
-
-  },
   "m2733b5519c3d": {
     "ja": "認証ミッションを見る",
     "zh-Hans": "查看认证任务",
@@ -339,17 +326,4 @@ export const messages = {
     ru: "Мои подтверждения"
 
   },
-  "mf444b267ae91": {
-    "ja": "好きな気持ちをファン認証で残しましょう。",
-    "zh-Hans": "用粉丝认证记录你的热爱。",
-    "zh-Hant": "用粉絲認證記錄你的熱愛。",
-    "es": "Haz que ser fan forme parte de tu historia.",
-    "id": "Jadikan rasa sukamu bagian dari ceritamu.",
-    "vi": "Ghi dấu tình cảm của bạn qua xác minh fan.",
-    "th": "บันทึกความชอบของคุณด้วยการยืนยันแฟน",
-    "pt": "Faça sua paixão de fã fazer parte da sua história.",
-    "fr": "Faites de votre passion une part de votre histoire.",
-    ru: "Сделайте своё увлечение частью своей истории."
-
-  }
 } satisfies Record<string, TranslatedMessage>;

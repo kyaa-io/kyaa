@@ -66,32 +66,6 @@ export const messages = {
     ru: "Собирайте марки"
 
   },
-  "m25f2023407fb": {
-    "ja": "大好きな人との日常の瞬間を集めましょう。",
-    "zh-Hans": "收集与喜爱对象共度的日常瞬间。",
-    "zh-Hant": "收集與喜愛對象共度的日常瞬間。",
-    "es": "Colecciona momentos cotidianos con tu artista favorito.",
-    "id": "Kumpulkan momen sehari-hari bersama favoritmu.",
-    "vi": "Lưu giữ những khoảnh khắc thường ngày bên người bạn yêu thích.",
-    "th": "สะสมช่วงเวลาในแต่ละวันกับคนโปรดของคุณ",
-    "pt": "Colecione momentos do dia a dia com seu favorito.",
-    "fr": "Collectionnez les moments du quotidien avec votre artiste préféré.",
-    ru: "Собирайте повседневные моменты с любимыми людьми."
-
-  },
-  "m07087be1eb13": {
-    "ja": "最初のあいさつから毎日のチェックインまで。",
-    "zh-Hans": "从第一次问候到每日签到。",
-    "zh-Hant": "從第一次問候到每日簽到。",
-    "es": "Desde tu primer saludo hasta tus visitas diarias.",
-    "id": "Dari sapaan pertama hingga check-in harian.",
-    "vi": "Từ lời chào đầu tiên đến những lần điểm danh hằng ngày.",
-    "th": "ตั้งแต่คำทักทายแรกจนถึงการเช็กอินทุกวัน",
-    "pt": "Do primeiro olá aos check-ins diários.",
-    "fr": "Du premier bonjour aux visites quotidiennes.",
-    ru: "От первого приветствия до ежедневных проверок."
-
-  },
   "mcc9d0c254436": {
     "ja": "{0}個獲得",
     "zh-Hans": "已收集{0}个",
@@ -285,19 +259,6 @@ export const messages = {
     "pt": "Um carimbo para cada um de vocês",
     "fr": "Un tampon pour chacun de vous",
     ru: "Stamp для вас обоих"
-
-  },
-  "m100712960346": {
-    "ja": "自分のコードを友達に送るか、友達のコードを入力してください。このスタンプは各アカウントで1回のみ獲得できます。",
-    "zh-Hans": "将您的代码发送给朋友，或输入朋友的代码。每个账号仅可获得一次此印章。",
-    "zh-Hant": "將您的代碼發送給朋友，或輸入朋友的代碼。每個帳號僅可獲得一次此印章。",
-    "es": "Envía tu código a un amigo o introduce el suyo. Cada cuenta recibe este sello una sola vez.",
-    "id": "Kirim kodemu ke teman atau masukkan kode mereka. Setiap akun hanya mendapat stempel ini sekali.",
-    "vi": "Gửi mã của bạn cho một người bạn hoặc nhập mã của họ. Mỗi tài khoản chỉ nhận con dấu này một lần.",
-    "th": "ส่งรหัสของคุณให้เพื่อนหรือกรอกรหัสของเพื่อน แต่ละบัญชีจะได้รับ ตราประทับ นี้เพียงครั้งเดียว",
-    "pt": "Envie seu código a um amigo ou digite o dele. Cada conta recebe este carimbo uma única vez.",
-    "fr": "Envoyez votre code à un ami ou saisissez le sien. Chaque compte ne reçoit ce tampon qu’une seule fois.",
-    ru: "Отправьте свой код другу или введите его код. Каждый аккаунт получает этот Stamp один раз."
 
   },
   "m8cb1f88e95a6": {

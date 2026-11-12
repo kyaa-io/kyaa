@@ -404,43 +404,4 @@ export const messages = {
     ru: "Поданный"
 
   },
-  "m5d830501519f": {
-    "ja": "回答を1つ選択してください。",
-    "zh-Hans": "请选择一个答案。",
-    "zh-Hant": "請選擇一個答案。",
-    "es": "Elige una respuesta.",
-    "id": "Pilih satu jawaban.",
-    "vi": "Chọn một câu trả lời.",
-    "th": "เลือกหนึ่งคำตอบ",
-    "pt": "Escolha uma resposta.",
-    "fr": "Choisissez une réponse.",
-    ru: "Выберите один ответ."
-
-  },
-  "m1c61e64194df": {
-    "ja": "当てはまる回答をすべて選択してください。",
-    "zh-Hans": "请选择所有符合的答案。",
-    "zh-Hant": "請選擇所有符合的答案。",
-    "es": "Elige todas las opciones aplicables.",
-    "id": "Pilih semua yang sesuai.",
-    "vi": "Chọn tất cả đáp án phù hợp.",
-    "th": "เลือกทุกข้อที่ตรง",
-    "pt": "Escolha todas as opções que se aplicam.",
-    "fr": "Choisissez toutes les réponses qui s’appliquent.",
-    ru: "Выберите все подходящие варианты."
-
-  },
-  "m8acc8ddbb047": {
-    "ja": "1～5の評価を選択してください。",
-    "zh-Hans": "请选择1到5分。",
-    "zh-Hant": "請選擇1到5分。",
-    "es": "Elige una puntuación del 1 al 5.",
-    "id": "Pilih nilai dari 1 hingga 5.",
-    "vi": "Chọn điểm từ 1 đến 5.",
-    "th": "เลือกคะแนน 1 ถึง 5",
-    "pt": "Escolha uma nota de 1 a 5.",
-    "fr": "Choisissez une note de 1 à 5.",
-    ru: "Выберите оценку от 1 до 5."
-
-  }
 } satisfies Record<string, TranslatedMessage>;

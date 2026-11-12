@@ -34,7 +34,7 @@ describe("creator news", () => {
       ? { notices: [{ ...notice, slug: "artist-news", title: "아티스트의 새 소식", postType: "artist_post" }], nextCursor: null }
       : { notices: [{ ...notice, postType: "notice" }], nextCursor: "page-two" }))));
     render(<CreatorNews slug="elina" locale="ko" initialFilter="artist_post" />);
-    await screen.findByText("더 보기를 눌러 이 분류의 소식을 확인해 보세요.");
+    await screen.findByRole("button", { name: "더 보기" });
     expect(screen.queryByText("아직 공개된 소식이 없어요.")).not.toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "더 보기" }));
     expect(await screen.findByText("아티스트의 새 소식")).toBeInTheDocument();

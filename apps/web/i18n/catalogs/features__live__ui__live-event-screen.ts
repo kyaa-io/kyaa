@@ -157,19 +157,6 @@ export const messages = {
     ru: "LIVE выгода"
 
   },
-  "m9cb659e21e1b": {
-    "ja": "LIVE中に公開されたFan Codeを入力すると、予約なしでも出席を記録できます。",
-    "zh-Hans": "输入LIVE中公布的Fan Code即可记录出席，无需预约。",
-    "zh-Hant": "輸入LIVE中公佈的Fan Code即可記錄出席，無需預約。",
-    "es": "Introduce el Fan Code compartido durante el LIVE para registrar tu asistencia, sin necesidad de reserva.",
-    "id": "Masukkan Fan Code yang dibagikan saat LIVE untuk mencatat kehadiran, tanpa perlu reservasi.",
-    "vi": "Nhập Fan Code được chia sẻ trong LIVE để ghi nhận điểm danh, không cần đặt chỗ.",
-    "th": "กรอก Fan Code ที่แชร์ระหว่าง LIVE เพื่อบันทึกการเข้าร่วมได้โดยไม่ต้องจอง",
-    "pt": "Digite o Fan Code divulgado durante o LIVE para registrar sua presença, sem necessidade de reserva.",
-    "fr": "Saisissez le Fan Code communiqué pendant le LIVE pour enregistrer votre présence, sans réservation obligatoire.",
-    ru: "Введите Fan Code, показанный во время LIVE, чтобы отметить посещение — бронирование не требуется."
-
-  },
   "meb25155466c1": {
     "ja": "Fan Codeを入力",
     "zh-Hans": "输入Fan Code",
@@ -181,19 +168,6 @@ export const messages = {
     "pt": "Digitar Fan Code",
     "fr": "Saisir le Fan Code",
     ru: "Ввести Fan Code"
-
-  },
-  "m9970843ef1fe": {
-    "ja": "英数字4文字以上",
-    "zh-Hans": "至少4个字母或数字",
-    "zh-Hant": "至少4個字母或數字",
-    "es": "4 o más letras o números",
-    "id": "Minimal 4 huruf atau angka",
-    "vi": "Tối thiểu 4 chữ cái hoặc chữ số",
-    "th": "ตัวอักษรหรือตัวเลขอย่างน้อย 4 ตัว",
-    "pt": "4 ou mais letras ou números",
-    "fr": "Au moins 4 lettres ou chiffres",
-    ru: "4+ буквы или цифры"
 
   },
   "m2b26660bd101": {
@@ -469,71 +443,6 @@ export const messages = {
     ru: "Опрос"
 
   },
-  "m1bca3fbe9814": {
-    "ja": "予定を保存",
-    "zh-Hans": "保存日程",
-    "zh-Hant": "儲存日程",
-    "es": "Guardar la fecha",
-    "id": "Simpan jadwal",
-    "vi": "Lưu lịch",
-    "th": "บันทึกกำหนดการ",
-    "pt": "Salvar a data",
-    "fr": "Enregistrer la date",
-    ru: "Сохраните расписание"
-
-  },
-  "m7dac7fc03667": {
-    "ja": "新しいタブで視聴",
-    "zh-Hans": "在新标签页中观看",
-    "zh-Hant": "在新標籤頁中觀看",
-    "es": "Ver en una pestaña nueva",
-    "id": "Tonton di tab baru",
-    "vi": "Xem trong thẻ mới",
-    "th": "รับชมในแท็บใหม่",
-    "pt": "Assistir em uma nova aba",
-    "fr": "Regarder dans un nouvel onglet",
-    ru: "Смотреть в новой вкладке"
-
-  },
-  "m620f22306a1f": {
-    "ja": "LIVE開始後にコードを入力",
-    "zh-Hans": "LIVE开始后输入代码",
-    "zh-Hant": "LIVE開始後輸入代碼",
-    "es": "Introduce el código cuando comience el LIVE",
-    "id": "Masukkan kode setelah LIVE dimulai",
-    "vi": "Nhập mã sau khi LIVE bắt đầu",
-    "th": "กรอกรหัสหลัง LIVE เริ่ม",
-    "pt": "Digite o código após o início do LIVE",
-    "fr": "Saisissez le code après le début du LIVE",
-    ru: "Введите код после запуска LIVE"
-
-  },
-  "mc724e11d3089": {
-    "ja": "出席後に参加できます",
-    "zh-Hans": "出席后可参与",
-    "zh-Hant": "出席後可參與",
-    "es": "Disponible después de asistir",
-    "id": "Tersedia setelah mencatat kehadiran",
-    "vi": "Có thể tham gia sau khi điểm danh",
-    "th": "เข้าร่วมได้หลังยืนยันการเข้าร่วม",
-    "pt": "Disponível após confirmar presença",
-    "fr": "Disponible après confirmation de présence",
-    ru: "Доступно после посещения"
-
-  },
-  "m11c287d2d2a2": {
-    "ja": "参加記録を残す",
-    "zh-Hans": "保存参与记录",
-    "zh-Hant": "儲存參與記錄",
-    "es": "Conservar tu registro de participación",
-    "id": "Simpan catatan partisipasimu",
-    "vi": "Lưu lại lịch sử tham gia",
-    "th": "เก็บบันทึกการเข้าร่วม",
-    "pt": "Guardar seu registro de participação",
-    "fr": "Conserver votre participation",
-    ru: "Ведите учет своего участия."
-
-  },
   "md776b8250cdb": {
     "ja": "まもなく予約開始",
     "zh-Hans": "预约即将开放",
@@ -675,19 +584,6 @@ export const messages = {
     "pt": "É necessário ter um Fan Passport de {celebrity} para reservar.",
     "fr": "Un Fan Passport de {celebrity} est nécessaire pour réserver.",
     ru: "Для бронирования нужен Fan Passport {celebrity}."
-
-  },
-  "mb3d5745c39d6": {
-    "ja": "外部のLIVEが新しいウィンドウで開きます。",
-    "zh-Hans": "外部LIVE将在新窗口中打开。",
-    "zh-Hant": "外部LIVE將在新窗口中開啟。",
-    "es": "El LIVE externo se abre en una ventana nueva.",
-    "id": "LIVE eksternal akan terbuka di jendela baru.",
-    "vi": "LIVE bên ngoài sẽ mở trong cửa sổ mới.",
-    "th": "LIVE ภายนอกจะเปิดในหน้าต่างใหม่",
-    "pt": "Abre o LIVE externo em uma nova janela.",
-    "fr": "Ouvre le LIVE externe dans une nouvelle fenêtre.",
-    ru: "Открывает внешний файл LIVE в новом окне."
 
   },
   "m3d248d578b9a": {
@@ -924,19 +820,6 @@ export const messages = {
     ru: "код посещаемости"
 
   },
-  "m371c2f660b46": {
-    "ja": "LIVE中に共有された出席コードをここに入力すると、kyaaに出席を記録できます。",
-    "zh-Hans": "在此输入LIVE中公布的出席代码，即可在kyaa记录出席。",
-    "zh-Hant": "在此輸入LIVE中公佈的出席代碼，即可在kyaa記錄出席。",
-    "es": "Introduce aquí el código compartido durante el LIVE para registrar tu asistencia en kyaa.",
-    "id": "Masukkan kode kehadiran yang dibagikan saat LIVE di sini untuk mencatat kehadiranmu di kyaa.",
-    "vi": "Nhập mã điểm danh được chia sẻ trong LIVE tại đây để ghi nhận điểm danh trên kyaa.",
-    "th": "กรอกรหัสเข้าร่วมที่แชร์ระหว่าง LIVE ที่นี่เพื่อบันทึกการเข้าร่วมบน kyaa",
-    "pt": "Digite aqui o código divulgado durante o LIVE para registrar sua presença no kyaa.",
-    "fr": "Saisissez ici le code communiqué pendant le LIVE pour enregistrer votre présence sur kyaa.",
-    ru: "Введите код подтверждения присутствия, предоставленный во время LIVE, чтобы зарегистрировать свое присутствие в kyaa."
-
-  },
   "m31c62ef02fb7": {
     "ja": "出席コードを入力",
     "zh-Hans": "输入出席代码",
@@ -1104,19 +987,6 @@ export const messages = {
     "pt": "Participar do sorteio de ingressos Banksy",
     "fr": "Participer au tirage au sort de billets Banksy",
     ru: "Примите участие в розыгрыше билетов Бэнкси."
-
-  },
-  "ma1a8c0a4609b": {
-    "ja": "{0}の抽選ページへ移動します。",
-    "zh-Hans": "前往{0}的抽选页面。",
-    "zh-Hant": "前往{0}的抽選頁面。",
-    "es": "Ir al sorteo de {0}.",
-    "id": "Buka undian {0}.",
-    "vi": "Đi đến trang quay thưởng {0}.",
-    "th": "ไปยังหน้าจับรางวัล {0}",
-    "pt": "Ir ao sorteio de {0}.",
-    "fr": "Accéder au tirage au sort pour {0}.",
-    ru: "Перейдите к розыгрышу {0} ."
 
   },
   "m6590318357c5": {
@@ -1366,32 +1236,6 @@ export const messages = {
     ru: "Вернитесь к kyaa, введите код и получите 2"
 
   },
-  "mfecd6473737d": {
-    "ja": "TikTokが新しいタブで開きます。ここに戻って出席コードを入力してください。",
-    "zh-Hans": "TikTok将在新标签页中打开。请返回此处输入出席代码。",
-    "zh-Hant": "TikTok將在新標籤頁中開啟。請返回此處輸入出席代碼。",
-    "es": "TikTok se abre en una pestaña nueva. Vuelve aquí para introducir el código de asistencia.",
-    "id": "TikTok terbuka di tab baru. Kembali ke sini untuk memasukkan kode kehadiran.",
-    "vi": "TikTok mở trong thẻ mới. Hãy quay lại đây để nhập mã điểm danh.",
-    "th": "TikTok จะเปิดในแท็บใหม่ กลับมาที่นี่เพื่อกรอกรหัสเข้าร่วม",
-    "pt": "O TikTok abre em uma nova aba. Volte aqui para digitar o código de presença.",
-    "fr": "TikTok s’ouvre dans un nouvel onglet. Revenez ici pour saisir le code de présence.",
-    ru: "TikTok откроется в новой вкладке. Вернитесь сюда, чтобы ввести код посещения."
-
-  },
-  "m368720b16d69": {
-    "ja": "LIVEが始まったら、ここに戻って出席コードを入力してください。",
-    "zh-Hans": "LIVE开始后，请返回此处输入出席代码。",
-    "zh-Hant": "LIVE開始後，請返回此處輸入出席代碼。",
-    "es": "Cuando comience el LIVE, vuelve aquí para introducir el código de asistencia.",
-    "id": "Saat LIVE dimulai, kembali ke sini untuk memasukkan kode kehadiran.",
-    "vi": "Khi LIVE bắt đầu, quay lại đây để nhập mã điểm danh.",
-    "th": "เมื่อ LIVE เริ่ม ให้กลับมาที่นี่เพื่อกรอกรหัสเข้าร่วม",
-    "pt": "Quando o LIVE começar, volte aqui para digitar o código de presença.",
-    "fr": "Au début du LIVE, revenez ici pour saisir le code de présence.",
-    ru: "Когда начнётся отчёт LIVE, вернитесь сюда, чтобы ввести код отчёта о посещаемости."
-
-  },
   "m236456e2f613": {
     "ja": "LIVE予約の詳細",
     "zh-Hans": "LIVE预约详情",
@@ -1494,19 +1338,6 @@ export const messages = {
     "pt": "Não há missões disponíveis no momento.",
     "fr": "Aucune mission n’est disponible pour le moment.",
     ru: "В данный момент нет доступных заданий."
-
-  },
-  "m74fb6f427790": {
-    "ja": "ミッション一覧で参加可否を確認してください。",
-    "zh-Hans": "请在任务列表中查看是否可参与。",
-    "zh-Hant": "請在任務列表中查看是否可參與。",
-    "es": "Consulta la lista de misiones para comprobar su disponibilidad.",
-    "id": "Periksa ketersediaan di daftar misi.",
-    "vi": "Hãy kiểm tra danh sách nhiệm vụ để biết nhiệm vụ nào đang mở.",
-    "th": "ตรวจสอบภารกิจที่เข้าร่วมได้ในรายการภารกิจ",
-    "pt": "Consulte a lista de missões para saber quais estão disponíveis.",
-    "fr": "Consultez la liste des missions pour connaître les disponibilités.",
-    ru: "Проверьте список доступных заданий."
 
   },
   "ma66aa523b5a6": {

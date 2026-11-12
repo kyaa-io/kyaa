@@ -70,9 +70,9 @@ const copy = {
     stamp: "설문 스탬프 적립 완료",
     returnLive: "LIVE로 돌아가기",
     submittedAt: "제출 완료",
-    singleHint: "한 가지를 선택해 주세요.",
-    multipleHint: "해당하는 답변을 모두 선택해 주세요.",
-    ratingHint: "1점부터 5점까지 선택해 주세요.",
+    
+    
+    
   },
   en: {
     back: "Back to LIVE",
@@ -107,9 +107,9 @@ const copy = {
     stamp: "Survey Stamp earned",
     returnLive: "Back to LIVE",
     submittedAt: "Submitted",
-    singleHint: "Choose one answer.",
-    multipleHint: "Choose all that apply.",
-    ratingHint: "Choose a rating from 1 to 5.",
+    
+    
+    
   },
 
   ...additionalLocales((translationLocale) => ({
@@ -145,9 +145,9 @@ const copy = {
     stamp: localizedMessages.m2e8bd9aa8ca2[translationLocale],
     returnLive: localizedMessages.m058f8af8a2f7[translationLocale],
     submittedAt: localizedMessages.m3f07790b87ff[translationLocale],
-    singleHint: localizedMessages.m5d830501519f[translationLocale],
-    multipleHint: localizedMessages.m1c61e64194df[translationLocale],
-    ratingHint: localizedMessages.m8acc8ddbb047[translationLocale],
+    
+    
+    
   }))
 } as const;
 
@@ -502,9 +502,9 @@ export function LiveSurveyScreen({ slug, locale }: { slug: string; locale: Local
                 <li key={question.id} className={styles.question} data-question-id={question.id}>
                   <fieldset aria-describedby={`${descriptionId}${error ? ` ${errorId}` : ""}`}>
                     <legend><span className={styles.number}>{index + 1}</span><span id={`${descriptionId}-question`} className={styles.questionText}><TranslatedText text={question.question} locale={locale} controls={false} /></span><small>{question.required ? c.required : c.optional}</small></legend>
-                    <p id={descriptionId} className={styles.hint}>
-                      {question.type === "single_choice" ? c.singleHint : question.type === "multiple_choice" ? c.multipleHint : question.type === "rating_1_5" ? c.ratingHint : c.textCount(answer?.freeText?.length ?? 0)}
-                    </p>
+                    {question.type === "single_choice" || question.type === "multiple_choice" || question.type === "rating_1_5" ? null : <p id={descriptionId} className={styles.hint}>
+                      {c.textCount(answer?.freeText?.length ?? 0)}
+                    </p>}
                     {question.type === "single_choice" && <div className={styles.options}>{question.options.map((option) => <label key={option.id}><input type="radio" name={question.id} value={option.id} checked={answer?.selectedOptionIds?.[0] === option.id} required={question.required} onChange={() => replaceAnswer({ questionId: question.id, selectedOptionIds: [option.id] })} />{option.preserveOriginal !== false ? <span translate="no">{option.label}</span> : <TranslatedText text={option.label} locale={locale} controls={false} />}</label>)}</div>}
                     {question.type === "multiple_choice" && <div className={styles.options}>{question.options.map((option) => {
                       const selected = answer?.selectedOptionIds ?? [];
