@@ -51,6 +51,13 @@ describe("login page (Cognito)", () => {
     expect(switches).toHaveLength(1);
     expect(switches[0]).toHaveAccessibleName("언어 선택, 현재 한국어");
   });
+  it("keeps the first screen for sign-in with the compact footer (login-space-1113)", () => {
+    render(<LoginPage />);
+    const footer = screen.getByRole("contentinfo");
+    expect(footer).toHaveAttribute("data-footer-variant", "compact");
+    expect(within(footer).queryByRole("navigation")).not.toBeInTheDocument();
+    expect(within(footer).getByRole("link", { name: "이용약관 열기" })).toBeInTheDocument();
+  });
   it("keeps the language switch beside Close in the login overlay", () => {
     render(<LoginPage presentation="overlay" />);
     const dialog = screen.getByRole("dialog");

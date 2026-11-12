@@ -181,6 +181,7 @@ radius-scale: "pill / 16px / 12px / 8px / 50%"
 | `FanMissionRow` | 덕질 미션 한 줄(64) | — | `×N`·nudge |
 | `FanScrollRow` | 오른쪽 끝까지 찬 가로 스크롤 줄(숏폼·갤러리) | `onNearEnd`, `label` | — |
 | `MediaFill` · `CreatorAvatar` | 사진 여백 색 확장 / 원형 프로필 | `src` | — |
+| `FanSiteFooter` (`components/fan-shell`) | 사이트 하단. 기본 `full`(링크 3열·소셜·사업자 정보·법률 링크), 로그인 같은 인증 화면은 `variant="compact"`(© + 사업자 정보 한 줄 + 개인정보처리방침·이용약관, 1440 높이 약 60) | `locale`, `variant` full·compact | 인증 화면에서 full 푸터를 첫 화면에 올리지 않음. compact에 메뉴·소셜·설명 문구를 넣지 않음 |
 | `PromoBanner` (`components/banner-slot`) | 그림 없는 한 열 배너 카드 | `tag`(광고) | — |
 | `FanIcon` · `ReactionIcon` | lucide 아이콘 16·20·24 / 좋아요·댓글 채운 아이콘 | `icon` `size` `filled` / `kind` | 이모지·다른 아이콘 세트 |
 | `FanDisplay` (이벤트·캠페인 상세 전용) | 큰 금액·가는 숫자·에디토리얼 제목 | `role` amount·figure-xl·figure·figure-sm·title·heading·lead·strong·body·caption·mono, `as` | 앱 탭 화면(홈·모임·덕질·MY·랭킹·팬페이지) |

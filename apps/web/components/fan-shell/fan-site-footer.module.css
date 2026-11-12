@@ -254,3 +254,66 @@
 
 .legalLinks a{min-width:44px}
 @media (max-width: 360px) { .legalLinks { flex-wrap: wrap; } .legalLinks a { white-space: normal; } }
+
+/* compact: auth-page footer (DESIGN.md 7 FanSiteFooter variant="compact") */
+.footer.compact {
+  padding: var(--space-2) 0;
+  background: transparent;
+}
+
+.compactInner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0 var(--space-6);
+  margin-top: 0;
+}
+
+.compactBusiness {
+  display: flex;
+  min-width: 0;
+  flex: 1 1 auto;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1) var(--space-4);
+  padding-block: var(--space-3);
+}
+
+.compactBusiness dl {
+  display: flex;
+  min-width: 0;
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-4);
+  margin: 0;
+}
+
+.compactBusiness dl > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 var(--space-2);
+}
+
+.compactBusiness dt {
+  white-space: nowrap;
+}
+
+.compactBusiness dd {
+  margin: 0;
+  overflow-wrap: break-word;
+}
+
+.compactBusiness .businessAddress {
+  flex-basis: auto;
+}
+
+@media (max-width: 47.999rem) {
+  .compactInner {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .compactBusiness {
+    padding-block: var(--space-2) 0;
+  }
+}
