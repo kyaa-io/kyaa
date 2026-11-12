@@ -18,7 +18,7 @@ begin
   artist := ids[1]; fan := ids[2]; outsider := ids[3];
   if outsider is null then raise exception 'fixture: need three active users'; end if;
   insert into public.group_artist_bindings(page_id, app_user_id, verified_by) values (page, artist, admin_id);
-  insert into public.group_artist_presence_settings values (artist, true) on conflict (app_user_id) do update set enabled = true;
+  insert into public.group_artist_presence_settings(app_user_id,enabled,notify_enabled) values (artist, true, true) on conflict (app_user_id) do update set enabled = true, notify_enabled = true;
   insert into public.group_memberships(page_id, app_user_id) values (page, artist), (page, fan);
   delete from public.notification_preferences where app_user_id = fan;
   -- Fixture users may carry artist notices left by earlier local runs; start them empty (rolled back with the rest).
@@ -129,15 +129,15 @@ begin
   raise notice 'AC3 next day notices=%', n;
   if n <> 2 then raise exception 'AC3 next day failed'; end if;
 
-  -- 4. Presence sharing off -> no online notice.
-  update public.group_artist_presence_settings set enabled = false where app_user_id = artist;
+  -- 4. Notification consent off while display sharing stays on -> no online notice.
+  update public.group_artist_presence_settings set notify_enabled = false where app_user_id = artist;
   update public.group_presence set seen_at = (day0 + 2 + time '10:00') at time zone 'Asia/Seoul' where app_user_id = artist and page_id = page;
   select count(*) into n from public.fan_notifications where app_user_id = fan and kind::text = 'artist_online';
-  raise notice 'AC4 sharing off notices=%', n;
+  raise notice 'AC4 notification consent off notices=%', n;
   if n <> 2 then raise exception 'AC4 failed'; end if;
 
   -- Anonymous comments and non-artists never notify.
-  update public.group_artist_presence_settings set enabled = true where app_user_id = artist;
+  update public.group_artist_presence_settings set notify_enabled = true where app_user_id = artist;
   perform public.fan_web_patch_notification_preferences(fan, '{"artist_activity_notifications": true}');
   insert into public.group_comments(post_id, author_id, body, anonymous) values (post, outsider, '일반 팬', false) returning id into cm;
   if public.artist_activity_notify_comment(cm) <> 0 then raise exception 'non-artist notified'; end if;
