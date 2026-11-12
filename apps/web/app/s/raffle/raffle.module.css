@@ -21,15 +21,16 @@
 .heroFacts > span + span { padding-inline-start: var(--space-3); border-inline-start: 1px solid var(--color-line); }
 .heroDeadline { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--space-1) var(--space-2); margin-top: var(--space-2); }
 .heroAction { display: grid; justify-items: center; gap: var(--space-2); margin-top: var(--space-6); }
+/* 완료 체크 색(DESIGN.md 4절 `--color-success`): 응모 완료·더 즐기기 완료가 같은 표시 */
+.doneCheck { color: var(--color-success); }
 .heroStatus { display: flex; align-items: center; justify-content: center; gap: var(--space-1); color: var(--color-muted); }
 .heroStatus[data-state="entered"] { color: var(--color-ink); }
 .heroEnded { display: grid; place-items: center; min-height: var(--min-target); color: var(--color-muted); }
 .heroError { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 0 var(--space-1); color: var(--color-error); }
 .heroArt { aspect-ratio: 1; border-radius: var(--radius-card); min-width: 0; }
-.heroTicket { position: absolute; inset-inline-start: 8%; inset-block-start: 19%; width: 82%; rotate: -6deg; animation: ticketRest var(--fan-print-idle) var(--motion-easing) var(--motion-reward) 4 alternate; }
+.heroTicket { position: absolute; inset-inline-start: 8%; inset-block-start: 19%; width: 82%; rotate: -6deg; }
 .heroCard { position: absolute; inset-inline-start: 40%; inset-block-end: 7%; width: 47%; rotate: 5deg; }
-/* 살아 있는 요소(DESIGN.md 9절): 응모권이 책상 위에서 천천히 두 번 숨 쉬고 멈춘다. transform 만, 무한 반복 없음 */
-@keyframes ticketRest { to { rotate: -4.5deg; translate: 0 calc(var(--space-1) * -1); } }
+/* 살아 있는 요소(DESIGN.md 9절)는 상태가 바뀔 때만: 응모 도장, 경품 카드 쌓임, 기회 칸 찍힘. 응모권 숨쉬기는 의미가 약하고 응모 버튼과 시선을 다퉈 뺐다(v4.3) */
 
 .body { display: grid; gap: var(--fan-section-gap); }
 
@@ -75,15 +76,17 @@
 @media (width >= 64rem) {
   .sticky { display: none; }
   .column { padding-bottom: var(--fan-section-gap); }
-  .hero { grid-template-columns: minmax(0, 6fr) minmax(0, 5fr); gap: var(--space-12); align-items: center; padding-block: var(--space-10) var(--fan-section-gap); }
-  .heroArt { aspect-ratio: 5 / 6; }
-  .heroTicket { inset-block-start: 21%; }
-  .heroCard { inset-inline-start: 10%; inset-block-end: 10%; width: 50%; }
+  /* 히어로: 글 7 · 그림 5, 그림은 모바일과 같은 정사각(1440에서 547). 글 칸을 그림 높이만큼 세우고 제목 줄은 그림 윗선, 버튼·상태 줄은 그림 아랫선에 붙인다 — 글 덩어리가 가운데 떠서 위아래로 남던 빈 곳이 금액 위 한 곳으로 모인다 */
+  .hero { grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: var(--space-12); align-items: stretch; padding-block: var(--space-10) var(--fan-section-gap); }
+  .heroText { display: flex; flex-direction: column; }
+  .amount { margin-top: auto; padding-top: var(--space-6); }
+  .heroArt { align-self: center; }
   .heroAction { justify-items: start; }
   .heroStatus, .heroError { justify-content: flex-start; }
-  .bonus { grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: var(--space-12); align-items: center; }
-  .bonusArt { aspect-ratio: 16 / 9; }
-  .bonusCard { inset-inline-start: 8%; inset-block-start: 11%; width: 60%; }
+  /* 확률: 히어로와 같은 7 · 5 열. 행 두 줄이 넓은 열, 기회 카드 그림이 좁은 열. 그림은 2:1(1440에서 547×274, v4.2 765×430의 46% 면적)로 낮춰 행 묶음(137)과의 높이 차를 줄인다 */
+  .bonus { grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: var(--space-12); align-items: center; }
+  .bonusArt { aspect-ratio: 2 / 1; }
+  .bonusCard { inset-inline-start: 8%; inset-block-start: 6%; width: 56%; }
   .prizeDesk { padding: var(--space-12) var(--space-12) var(--space-10); }
   .prizes { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--space-10); }
   .more { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-10); }
@@ -94,6 +97,5 @@
   .notice { grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: var(--space-12); }
 }
 @media (prefers-reduced-motion: reduce) {
-  .heroTicket { animation: none; }
   .sticky { transition: none; }
 }

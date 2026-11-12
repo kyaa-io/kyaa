@@ -9,7 +9,7 @@ import { signupRaffleText } from '@/i18n/catalogs/signup-raffle';
 import { raffleLongformText, type SignupRaffleLongformKey } from '@/i18n/catalogs/signup-raffle-longform';
 import { signupEvent } from '@/features/benefit/domain/signup-event';
 import { useByUsAuth } from '@/features/auth/client/cognito-auth';
-import { FanAction } from '@/components/fan-ui/fan-action';
+import { FanAction, FanActionStatus } from '@/components/fan-ui/fan-action';
 import styles from './raffle.module.css';
 
 /** 개발 서버에서 로그인 없이 상태별 화면을 보기 위한 표시 전용 값(서버 규칙·API와 무관). */
@@ -63,10 +63,12 @@ export function RaffleTicket({ className }: { className?: string }) {
   return <FanPrintTicket className={className} title={ticketPrint.title} amount="US$400" prize={r.t('giftCard')} winners={r.t('totalWinners')} deadlineLabel={ticketPrint.deadlineLabel} deadline={ticketPrint.deadline} serial={ticketPrint.serial} stub={r.t('flowOnce')} stamp={r.entered ? r.t('entered') : undefined} />;
 }
 
-/** 응모 버튼: 페이지에서 유일한 분홍 면(primary 1개). 히어로와 모바일 하단 고정 줄이 같은 버튼을 쓴다. 요청 중에는 공통 loading, 응모 뒤에는 공통 비활성 모양. */
+/** 응모 버튼: 페이지에서 유일한 분홍 면(primary 1개). 히어로와 모바일 하단 고정 줄이 같은 버튼을 쓴다. 요청 중에는 공통 loading.
+ * 응모 뒤에는 누를 수 없는 버튼(비활성 .4, 흰 글자 1.99:1)이 아니라 공통 `FanActionStatus`: 흰 면·잉크 글자·완료 체크(`--color-success`)를 같은 자리·같은 크기로. */
 function RaffleEnterAction() {
   const r = useRaffle();
-  return <FanAction type="button" variant="primary" fullWidth loading={r.pending} disabled={!r.ready || r.entered} leadingIcon={r.entered ? <FanIcon icon={Check} /> : undefined} onClick={r.enter}>{r.entered ? r.t('entered') : r.t('enterCta')}</FanAction>;
+  if (r.entered) return <FanActionStatus leadingIcon={<FanIcon icon={Check} className={styles.doneCheck} />}>{r.t('entered')}</FanActionStatus>;
+  return <FanAction type="button" variant="primary" fullWidth loading={r.pending} disabled={!r.ready} onClick={r.enter}>{r.t('enterCta')}</FanAction>;
 }
 
 /** 히어로 행동 칸: 응모 버튼 + 그 아래 한 줄(응모 전 규칙, 응모 뒤 확정된 내 응모 수, 실패하면 오류와 다시 시도). */
@@ -83,7 +85,7 @@ export function RaffleHeroAction() {
   </>;
 }
 
-const DoneMark = ({ label }: { label: string }) => <FanDisplay role="caption" as="p" className={styles.doneMark}><FanIcon icon={Check} size={16} />{label}</FanDisplay>;
+const DoneMark = ({ label }: { label: string }) => <FanDisplay role="caption" as="p" className={styles.doneMark}><FanIcon icon={Check} size={16} className={styles.doneCheck} />{label}</FanDisplay>;
 
 /** 확률 올리기: 행마다 그 행동으로 가는 버튼 하나. */
 export function RaffleBoostAction({ kind }: { kind: 'comment' | 'attend' }) {
@@ -132,6 +134,6 @@ export function RaffleShare() {
       await navigator.clipboard.writeText(url); setCopied(true);
     } catch { /* 공유 취소 */ }
   }
-  // 아이콘은 글자 안에 넣지 않고 FanAction 의 leadingIcon 자리에 둔다: 아이콘·글자 간격 8, 세로 가운데 맞춤을 공통 버튼이 맡는다.
-  return <FanAction type="button" variant="neutral" size="sm" leadingIcon={<FanIcon icon={Share2} />} onClick={share}>{copied ? r.t('copied') : r.t('share')}</FanAction>;
+  // 아이콘은 FanAction 의 leadingIcon 자리(간격 8·세로 가운데는 공통 버튼 몫). 제목 줄 오른쪽 작은 행동이라 text 변형: 흰 바탕에서 1.36:1이던 선 테두리를 없애고 잉크 글자(17:1)로만 식별한다(v4.3).
+  return <FanAction type="button" variant="text" size="sm" leadingIcon={<FanIcon icon={Share2} />} onClick={share}>{copied ? r.t('copied') : r.t('share')}</FanAction>;
 }

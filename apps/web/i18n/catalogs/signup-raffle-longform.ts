@@ -16,7 +16,7 @@ const copy = {
     share: "친구에게 공유", copied: "링크를 복사했어요", notice: "응모 및 당첨 안내",
     notice1: "응모 기간: 2026년 11월 10일 ~ 11월 30일 23:59 (한국 시간)", notice2: "1인 1응모", notice3: "당첨 확률 반영은 댓글·출석 각각 하루 3회까지(한국 날짜 기준)",
     notice4: "여러 계정·자동화 등 부정 참여는 제외돼요", notice5: "당첨자에게는 가입 이메일로 연락해요", notice6: "Amazon 기프트카드 지급 방식과 당첨 발표 일정은 안내 예정", notice7: "개인정보는 당첨 연락·지급에만 사용해요",
-    notice8: "Amazon 기프트카드는 발행 지역의 Amazon 스토어에서만 쓸 수 있어요",
+    notice8: "당첨자가 사용하는 지역의 Amazon 기프트카드로 같은 금액(US$ 기준)을 지급해요",
   },
   en: {
     daysLeft: "{0} days left", lastDay: "Last day", ended: "This raffle has ended", kst: "Korea time",
@@ -32,12 +32,21 @@ const copy = {
     share: "Share with friends", copied: "Link copied", notice: "Entry and winner info",
     notice1: "Period: Nov 10 to Nov 30, 2026, 23:59 (KST)", notice2: "One entry per person", notice3: "Chances count up to 3 comments and 3 check-ins per day (KST date)",
     notice4: "Multiple accounts or automation are disqualified", notice5: "Winners are contacted by their sign-up email", notice6: "Gift card delivery and announcement date to be announced", notice7: "Personal data is used only to contact and pay winners",
-    notice8: "Amazon gift cards can only be used in the Amazon store of the region where they were issued",
+    notice8: "Winners get an Amazon gift card for the region they use, in the same amount (US$ basis)",
   },
 } as const;
 
+/** 지급 지역 안내(사용자 결정 2026-11-13: 당첨자 나라에 맞춰 지급)는 당첨 조건이라 주요 6개 언어로 직접 쓴다. 나머지 언어는 영어. */
+const prizeRegionNotice: Partial<Record<AppLocale, string>> = {
+  ja: "当選者が利用する地域のAmazonギフトカードで、同じ金額(USドル基準)をお渡しします",
+  "zh-Hans": "按中奖者使用的地区发放同等金额(以美元计)的 Amazon 礼品卡",
+  "zh-Hant": "依得獎者使用的地區發放同等金額(以美元計)的 Amazon 禮品卡",
+  es: "Los ganadores reciben una tarjeta regalo de Amazon de su región por el mismo importe (en US$)",
+};
+
 export type SignupRaffleLongformKey = keyof typeof copy.ko;
 export function raffleLongformText(locale: AppLocale, key: SignupRaffleLongformKey, count?: number): string {
+  if (key === "notice8" && prizeRegionNotice[locale]) return prizeRegionNotice[locale];
   const table = locale === "ko" ? copy.ko : copy.en;
   return table[key].replace("{0}", String(count ?? ""));
 }

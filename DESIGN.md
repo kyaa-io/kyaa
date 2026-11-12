@@ -201,6 +201,7 @@ A2 버튼 반경 알약·높이 390 44 / 1024+ 48 · B2 칩 36·14/700·반경 �
 | 컴포넌트 | 쓰는 경우 | 쓰지 않는 경우 |
 |---|---|---|
 | `FanAction` | 모든 버튼·링크 모양. primary = accent 단색·반경 8·44/48, secondary = 1px 잉크 선·반경 8, `size="sm"` 36, `loading`(라벨 유지 + 대기). 비활성은 준비 기간에 한해 화면당 2(`교환` 포인트 부족·럭키드로우 `준비 중`, 사용자 2026-11-10 C4: 상대 날짜 대신 기존 `capsuleMachineCopy` `soon`)까지(8장 plan ④). `service`·`passport` 변형은 폐기(남은 호출은 secondary 모양) | 화면 전체에 primary는 하나(V7). `danger`는 모달 안 확인(삭제·신고)에만 |
+| `FanActionStatus` (2026-11-13, 래플 v4.3) | 끝난 행동의 결과(`응모 완료`)를 그 버튼 자리에 그대로 보여 줄 때. 누를 수 없으므로 `role="status"` 글이고, 비활성(.4) 대신 보조 버튼 면(흰 면·1px line·잉크 글자)을 primary 자리 크기(44/48, 최대 320)로 그린다. 완료 체크 아이콘은 `--color-success`, `leadingIcon`(간격 8) | 다시 누를 수 있는 행동은 `FanAction`. 준비 중·조건 미달처럼 아직 못 하는 행동은 기존 비활성 |
 | `FanIconButton` | 글자 없는 44px 아이콘 버튼. `FanMenu`·`FanTooltip` 트리거(ref·aria를 DOM에 넘김). `aria-label` 필수 | 글자가 있는 버튼 → `FanAction` |
 | `FanDialog` | 화면을 막고 답을 받는 짧은 흐름: 확인·삭제·신고·교환·프로필 수정·언어 선택. `size` sm 360·md 480·lg 640(390은 전폭-32). `alert`는 되돌릴 수 없는 확인(배경 클릭으로 닫히지 않음). `responsive`면 1024 미만에서 시트 | 공유 주소가 필요한 목록·상세 → 페이지(N14). 항목 고르기 → `FanMenu`. 소개 문장은 그리지 않는다(`description`은 화면 판독기 전용) |
 | `FanSheet` | 390에서 바닥으로 올라오는 선택·긴 내용·터치 도움말. 1024+는 오른쪽 서랍(폭 420). `snap` content·half·full | 짧은 확인 → `FanDialog`. 드래그로 닫기는 없다(버튼·ESC·백드롭) |
