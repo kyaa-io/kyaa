@@ -32,6 +32,12 @@
 .ticketStamp span { grid-area: 1 / 1; max-width: 62%; font-size: 3.5cqw; font-weight: var(--fan-display-semibold); line-height: var(--fan-heading-leading); text-align: center; text-wrap: balance; }
 @starting-style { .ticketStamp { opacity: 0; scale: 1.35; } }
 
+/* 낱장 도장(FanPrintStamp): 응모권 도장과 같은 그림·같은 내려앉음. 폭은 쓰는 쪽이 정한다 */
+.stamp { container-type: inline-size; aspect-ratio: 1; display: grid; place-items: center; color: var(--fan-print-stamp-ink); mix-blend-mode: multiply; pointer-events: none; user-select: none; -webkit-user-select: none; opacity: 1; scale: 1; transition: opacity var(--motion-slow) var(--motion-easing), scale var(--motion-slow) var(--motion-easing); }
+.stamp img { grid-area: 1 / 1; display: block; width: 100%; height: auto; }
+.stamp span { grid-area: 1 / 1; max-width: 64%; font-family: var(--fan-display-mono); font-size: 13cqw; font-weight: var(--fan-display-regular); line-height: 1; text-align: center; }
+@starting-style { .stamp { opacity: 0; scale: 1.35; } }
+
 /* 기프트카드: 맨 위 한 장 + 아래 겹친 장. 겹친 장은 위로 쌓여 맨 위 카드의 아랫선이 칸마다 맞는다 */
 .giftPile { position: relative; padding-top: 13cqw; }
 .giftFace, .giftUnder { aspect-ratio: 1.586; border-radius: var(--radius-small); background: var(--fan-print-paper) var(--fan-print-material, none) center / cover; box-shadow: inset 0 0 0 1px var(--fan-print-edge); }
@@ -90,8 +96,11 @@
 [data-fan-print-reveal="armed"] .chanceSlot img { opacity: 0; scale: 1.3; }
 [data-fan-print-reveal="in"] .chanceSlot img { transition: opacity var(--motion-slow) var(--motion-easing) calc(var(--i) * var(--fan-print-stagger)), scale var(--motion-slow) var(--motion-easing) calc(var(--i) * var(--fan-print-stagger)); }
 
+/* three.js 카드(features/raffle-cards)가 준비되면 같은 자리의 DOM 카드 면만 감춘다. 봉투·칸 크기는 그대로라 자리 변화가 없다 */
+[data-fan-print-float="3d"] :is(.giftFace, .giftUnder) { visibility: hidden; }
+
 @media (prefers-reduced-motion: reduce) {
-  .ticketStamp, [data-fan-print-reveal] .gift, [data-fan-print-reveal] .giftUnder, [data-fan-print-reveal] .chanceSlot img { transition: none; }
+  .ticketStamp, .stamp, [data-fan-print-reveal] .gift, [data-fan-print-reveal] .giftUnder, [data-fan-print-reveal] .chanceSlot img { transition: none; }
   [data-fan-print-reveal="armed"] .gift { opacity: 1; translate: none; }
   [data-fan-print-reveal="armed"] .giftUnder { translate: 0 calc(var(--i) * -1.3cqw); }
   [data-fan-print-reveal="armed"] .chanceSlot img { opacity: .3; scale: 1; }

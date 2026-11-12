@@ -3,11 +3,11 @@ import type { AppLocale } from "../locales";
 /** 래플 상세 페이지의 짧은 이벤트 카피. 한국어·영어를 직접 쓰고 나머지 언어는 영어로 보인다. */
 const copy = {
   ko: {
-    daysLeft: "{0}일 남음", lastDay: "오늘 마감", ended: "응모가 마감됐어요", kst: "한국 시간",
+    eventKind: "신규 가입 이벤트", period: "11월 10일 ~ 11월 30일", how: "참여 방법", required: "필수", ended: "응모가 마감됐어요", kst: "한국 시간",
     closesAt: "11월 30일 23:59 마감", giftCard: "Visa 기프트카드", total: "총", totalWinners: "총 17명",
     enterCta: "래플 응모하기", entered: "응모 완료", retry: "다시 시도",
     flowOnce: "1인 1응모",
-    bonusTitle: "당첨 기회 올리기", bonusRate: "1회당 +1", bonusLimit: "하루 최대 3회",
+    bonusTitle: "당첨 확률 올리기", bonusRate: "1회당 +1", bonusLimit: "하루 최대 3회",
     bonusComment: "댓글", bonusAttend: "출석",
     checkIn: "출석하기", findPosts: "댓글 달러 가기", myEntry: "내 응모 1회", optional: "선택",
     prizes: "경품", more: "더 즐기기", done: "완료",
@@ -19,11 +19,11 @@ const copy = {
     notice8: "Visa 가상 기프트카드로 지급해요. 온라인 결제에 쓸 수 있어요",
   },
   en: {
-    daysLeft: "{0} days left", lastDay: "Last day", ended: "This raffle has ended", kst: "Korea time",
+    eventKind: "New member event", period: "Nov 10 – Nov 30", how: "How to enter", required: "Required", ended: "This raffle has ended", kst: "Korea time",
     closesAt: "Ends Nov 30, 23:59", giftCard: "Visa gift card", total: "Total", totalWinners: "17 winners",
     enterCta: "Enter the raffle", entered: "You're in", retry: "Try again",
     flowOnce: "One entry per person",
-    bonusTitle: "Get more chances", bonusRate: "+1 each time", bonusLimit: "Up to 3 a day",
+    bonusTitle: "Boost your odds", bonusRate: "+1 each time", bonusLimit: "Up to 3 a day",
     bonusComment: "Comment", bonusAttend: "Check-in",
     checkIn: "Check in", findPosts: "Go comment", myEntry: "Your entries: 1", optional: "Optional",
     prizes: "Prizes", more: "More to enjoy", done: "Done",

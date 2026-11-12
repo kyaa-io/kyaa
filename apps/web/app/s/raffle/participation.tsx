@@ -1,5 +1,6 @@
 'use client';
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
+import { FanPrintStamp } from '@/components/fan-ui/fan-print';
 import { Check, Share2, Ticket } from '@/components/fan-ui/fan-icons';
 import { FanIcon } from '@/components/fan-ui/fan-icon';
 import { FanDisplay } from '@/components/fan-ui/fan-display';
@@ -15,14 +16,14 @@ import styles from './raffle.module.css';
 export type RafflePreview = 'in' | 'entered' | 'passport' | 'done' | 'error' | undefined;
 
 type Ctx = {
-  locale: AppLocale; closed: boolean; ready: boolean; signedIn: boolean; pending: boolean; entered: boolean;
+  locale: AppLocale; closed: boolean; closesAt: number; now: number; ready: boolean; signedIn: boolean; pending: boolean; entered: boolean;
   passport: boolean; community: boolean; error: boolean;
   enter: () => void; t: (key: SignupRaffleLongformKey, count?: number) => string; s: (key: Parameters<typeof signupRaffleText>[1]) => string;
 };
 const RaffleContext = createContext<Ctx | null>(null);
 function useRaffle() { const value = useContext(RaffleContext); if (!value) throw new Error('RaffleProvider missing'); return value; }
 
-export function RaffleProvider({ locale, closed, preview, children }: { locale: AppLocale; closed: boolean; preview?: RafflePreview; children: ReactNode }) {
+export function RaffleProvider({ locale, closed, closesAt, now, preview, children }: { locale: AppLocale; closed: boolean; closesAt: number; now: number; preview?: RafflePreview; children: ReactNode }) {
   const auth = useByUsAuth();
   const [pending, setPending] = useState(false);
   const [entered, setEntered] = useState(false), [passport, setPassport] = useState(false), [community, setCommunity] = useState(false), [error, setError] = useState(false);
@@ -36,6 +37,8 @@ export function RaffleProvider({ locale, closed, preview, children }: { locale: 
   };
   async function enter() {
     if (closed) return;
+    // 개발 서버의 ?preview=in: 로그인·API 없이 응모 순간(요청 중 → 완료 → 도장)만 보여 준다. 운영 빌드에는 preview 값이 오지 않는다.
+    if (p === 'in') { setPending(true); window.setTimeout(() => { setPending(false); setEntered(true); }, 400); return; }
     if (!auth.authenticated) { auth.login(); return; }
     setPending(true); setError(false);
     try {
@@ -47,7 +50,7 @@ export function RaffleProvider({ locale, closed, preview, children }: { locale: 
     } catch { setError(true); }
     finally { setPending(false); }
   }
-  const value: Ctx = { locale, closed, ready: auth.ready || !!p, pending, ...view, enter, t: (key, count) => raffleLongformText(locale, key, count), s: (key) => signupRaffleText(locale, key) };
+  const value: Ctx = { locale, closed, closesAt, now, ready: auth.ready || !!p, pending, ...view, enter, t: (key, count) => raffleLongformText(locale, key, count), s: (key) => signupRaffleText(locale, key) };
   return <RaffleContext.Provider value={value}>{children}</RaffleContext.Provider>;
 }
 
@@ -61,18 +64,56 @@ function RaffleEnterAction() {
   return <FanAction type="button" variant="primary" fullWidth loading={r.pending} disabled={!r.ready} onClick={r.enter}>{r.t('enterCta')}</FanAction>;
 }
 
-/** 히어로 행동 칸: 응모 버튼 + 그 아래 한 줄(응모 전 규칙, 응모 뒤 확정된 내 응모 수, 실패하면 오류와 다시 시도). */
-export function RaffleHeroAction() {
+/** 마감까지 남은 시간을 `D-17`과 `21:04:09`로 나눈다. 하루가 안 남으면 `D-DAY`. */
+export function raffleCountdown(left: number) {
+  const seconds = Math.max(0, Math.floor(left / 1000)), days = Math.floor(seconds / 86400), two = (value: number) => String(value).padStart(2, '0');
+  return { day: days > 0 ? `D-${days}` : 'D-DAY', clock: `${two(Math.floor(seconds % 86400 / 3600))}:${two(Math.floor(seconds % 3600 / 60))}:${two(seconds % 60)}`, urgent: days < 1 };
+}
+
+/** 살아 있는 신호: 마감까지 남은 시간이 1초마다 바뀐다(고정폭 숫자라 자리가 흔들리지 않는다). 서버가 그린 값에서 시작해 브라우저 시계로 이어 간다. */
+export function RaffleCountdown() {
   const r = useRaffle();
-  if (r.closed) return <FanDisplay role="strong" as="p" className={styles.heroEnded} data-state="closed">{r.t('ended')}</FanDisplay>;
-  return <>
-    <div className={styles.heroCta}><RaffleEnterAction /></div>
-    {r.error ? <p className={styles.heroError} role="alert"><FanDisplay role="caption">{r.s('error')}</FanDisplay><FanAction type="button" variant="text" size="sm" onClick={r.enter}>{r.t('retry')}</FanAction></p> : null}
+  const [now, setNow] = useState(r.now);
+  useEffect(() => {
+    const tick = () => setNow(Date.now());
+    tick();
+    const timer = window.setInterval(tick, 1000);
+    return () => window.clearInterval(timer);
+  }, []);
+  if (r.closed || now > r.closesAt) return null;
+  const left = raffleCountdown(r.closesAt - now);
+  // 보조 기술에는 1초마다 읽히지 않게 마감 문구만 준다.
+  return <p className={styles.countdown} role="timer" aria-live="off" aria-label={r.t('closesAt')} data-urgent={left.urgent} data-raffle-countdown>
+    <FanDisplay role="strong" aria-hidden="true">{left.day}</FanDisplay><FanDisplay role="strong" aria-hidden="true" suppressHydrationWarning>{left.clock}</FanDisplay>
+  </p>;
+}
+
+/** 소품에 찍는 인쇄 문구(언어와 상관없이 같은 글자). */
+const stampPrint = 'ENTERED';
+
+/** 참여 방법 칸: 응모 버튼(응모 뒤에는 완료 표시 + 도장) · 친구에게 공유 · 마감과 남은 시간 · 한 줄(1인 1응모 / 내 응모 1회 / 오류와 다시 시도). */
+export function RaffleEnterBlock() {
+  const r = useRaffle();
+  if (r.closed) return <FanDisplay role="strong" as="p" className={styles.enterEnded} data-state="closed">{r.t('ended')}</FanDisplay>;
+  return <div className={styles.enter} data-raffle-hero-action>
+    <div className={styles.enterActions}>
+      <div className={styles.enterCta}>
+        <RaffleEnterAction />
+        {r.entered ? <FanPrintStamp label={stampPrint} className={styles.enterStamp} /> : null}
+      </div>
+      {/* 응모 바로 옆(모바일은 바로 아래)의 보조 행동. 응모 뒤에는 이 칸에서 누를 수 있는 유일한 버튼이라 다음 행동이 된다 */}
+      <RaffleShare />
+    </div>
+    <div className={styles.enterFacts}>
+      <p className={styles.enterDeadline}><FanDisplay role="strong">{r.t('closesAt')}</FanDisplay><FanDisplay role="caption" className={styles.muted}>{r.t('kst')}</FanDisplay></p>
+      <RaffleCountdown />
+    </div>
+    {r.error ? <p className={styles.enterError} role="alert"><FanDisplay role="caption">{r.s('error')}</FanDisplay><FanAction type="button" variant="text" size="sm" onClick={r.enter}>{r.t('retry')}</FanAction></p> : null}
     {/* 댓글·출석으로 늘어난 기회는 이 줄에 섞지 않는다(서버 값이 아직 화면에 없음). */}
     {r.entered
-      ? <p className={styles.heroStatus} data-state="entered" role="status"><FanIcon icon={Ticket} size={16} /><FanDisplay role="caption">{r.t('myEntry')}</FanDisplay></p>
-      : <p className={styles.heroStatus}><FanDisplay role="caption">{r.t('flowOnce')}</FanDisplay></p>}
-  </>;
+      ? <p className={styles.enterStatus} data-state="entered" role="status"><FanIcon icon={Ticket} size={16} /><FanDisplay role="caption">{r.t('myEntry')}</FanDisplay></p>
+      : <p className={styles.enterStatus}><FanDisplay role="caption">{r.t('flowOnce')}</FanDisplay></p>}
+  </div>;
 }
 
 const DoneMark = ({ label }: { label: string }) => <FanDisplay role="caption" as="p" className={styles.doneMark}><FanIcon icon={Check} size={16} className={styles.doneCheck} />{label}</FanDisplay>;
@@ -95,23 +136,28 @@ export function RaffleMoreAction({ kind }: { kind: 'passport' | 'community' }) {
     : <FanAction href={communityHref(r.locale)} variant="neutral" size="sm">{r.s('community')}</FanAction>;
 }
 
-/** 모바일 하단 고정 버튼: 응모 전에는 응모(primary), 응모 뒤에는 출석(neutral). 마감 후에는 숨긴다. */
+/** 하단 고정 줄(모든 폭): 남은 시간 + 응모 전에는 응모(primary), 응모 뒤에는 출석(neutral). 마감 후에는 숨긴다. */
 export function RaffleStickyCta() {
   const r = useRaffle();
-  // 히어로의 같은 응모 버튼이 화면에 보이는 동안에는 숨겨 분홍 버튼이 두 개 겹쳐 보이지 않게 한다.
-  const [heroInView, setHeroInView] = useState(true);
+  // 참여 방법 칸의 같은 응모 버튼이 화면에 보이는 동안에는 숨겨 분홍 버튼이 두 개 겹쳐 보이지 않게 한다.
+  const [inlineInView, setInlineInView] = useState(true);
   useEffect(() => {
     const target = document.querySelector('[data-raffle-hero-action]');
-    if (!target || typeof IntersectionObserver === 'undefined') { setHeroInView(false); return; }
-    const observer = new IntersectionObserver(([entry]) => setHeroInView(entry.isIntersecting));
+    if (!target || typeof IntersectionObserver === 'undefined') { setInlineInView(false); return; }
+    const observer = new IntersectionObserver(([entry]) => setInlineInView(Boolean(entry?.isIntersecting)));
     observer.observe(target);
     return () => observer.disconnect();
   }, []);
   if (r.closed) return null;
-  const hidden = heroInView;
-  return <div className={styles.sticky} data-hidden={hidden} aria-hidden={hidden || undefined} inert={hidden || undefined}>{r.entered
-    ? <FanAction href={communityHref(r.locale)} variant="neutral" fullWidth>{r.t('checkIn')}</FanAction>
-    : <RaffleEnterAction />}</div>;
+  const hidden = inlineInView;
+  return <div className={styles.sticky} data-hidden={hidden} aria-hidden={hidden || undefined} inert={hidden || undefined}>
+    <div className={styles.stickyRow}>
+      <RaffleCountdown />
+      <div className={styles.stickyCta}>{r.entered
+        ? <FanAction href={communityHref(r.locale)} variant="neutral" fullWidth>{r.t('checkIn')}</FanAction>
+        : <RaffleEnterAction />}</div>
+    </div>
+  </div>;
 }
 
 export function RaffleShare() {
@@ -124,6 +170,6 @@ export function RaffleShare() {
       await navigator.clipboard.writeText(url); setCopied(true);
     } catch { /* 공유 취소 */ }
   }
-  // 아이콘은 FanAction 의 leadingIcon 자리(간격 8·세로 가운데는 공통 버튼 몫). 제목 줄 오른쪽 작은 행동이라 text 변형: 흰 바탕에서 1.36:1이던 선 테두리를 없애고 잉크 글자(17:1)로만 식별한다(v4.3).
-  return <FanAction type="button" variant="text" size="sm" leadingIcon={<FanIcon icon={Share2} />} onClick={share}>{copied ? r.t('copied') : r.t('share')}</FanAction>;
+  // 공통 보조 버튼 그대로(높이 44/48, 아이콘은 leadingIcon 자리라 간격 8). v4.3의 글자형 작은 버튼은 사용자 "너무 작은 거 아니야?"(2026-11-13)로 되돌렸다.
+  return <FanAction type="button" variant="secondary" fullWidth leadingIcon={<FanIcon icon={Share2} />} onClick={share}>{copied ? r.t('copied') : r.t('share')}</FanAction>;
 }

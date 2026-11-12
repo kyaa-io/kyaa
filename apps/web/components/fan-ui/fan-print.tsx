@@ -70,14 +70,19 @@ export function FanPrintGiftCard({ label, amount, note, count = 1, envelope, mat
   return <div className={cx(styles.gift, className)} aria-hidden="true" data-art="print" data-fan-print="gift-card" style={order ? ({ "--o": order } as CSSProperties) : undefined}>
     <div className={styles.giftPile} style={face}>
       {envelope ? <svg className={styles.envelope} viewBox="0 0 100 60" preserveAspectRatio="none"><path d="M0 0 50 34 100 0" fill="none" stroke="currentColor" strokeWidth="1.5" vectorEffect="non-scaling-stroke" /></svg> : null}
-      {Array.from({ length: under }, (_, i) => <i key={i} className={styles.giftUnder} style={{ "--i": under - i } as CSSProperties} />)}
-      <div className={styles.giftFace}>
-        <div className={styles.giftHead}><span className={styles.mono}>{label}</span><i className={styles.wordmark} /></div>
-        <p className={styles.giftAmount}>{amount}</p>
-        <span className={cx(styles.mono, styles.giftNote)}>{note}</span>
+      {Array.from({ length: under }, (_, i) => <i key={i} className={styles.giftUnder} data-fan-print-part="under" style={{ "--i": under - i } as CSSProperties} />)}
+      <div className={styles.giftFace} data-fan-print-part="face">
+        <div className={styles.giftHead}><span className={styles.mono} data-fan-print-part="ink">{label}</span><i className={styles.wordmark} data-fan-print-part="mark" /></div>
+        <p className={styles.giftAmount} data-fan-print-part="ink">{amount}</p>
+        <span className={cx(styles.mono, styles.giftNote)} data-fan-print-part="ink">{note}</span>
       </div>
     </div>
   </div>;
+}
+
+/** 잉크 도장 한 번(응모 완료 같은 결과가 난 자리에 찍는다). 크기·자리·기울기는 쓰는 쪽이 정하고, 나타날 때 한 번 내려앉는다. */
+export function FanPrintStamp({ label, className }: Readonly<{ label: string; className?: string }>) {
+  return <div className={cx(styles.stamp, className)} aria-hidden="true" data-art="print" data-fan-print="stamp"><img data-art="stamp" src={inkStamp("frame")} alt="" width="512" height="512" /><span>{label}</span></div>;
 }
 
 export type FanPrintPassportProps = Readonly<{
@@ -131,10 +136,10 @@ export function FanPrintChanceCard({ title, each, slots, rows, className }: FanP
 }
 
 /** 소품을 올려 두는 사진 면(책상·장면). 자식은 쓰는 쪽에서 자리·기울기를 정한다. */
-export function FanPrintDesk({ src, wideSrc, width, height, eager, className, children }: Readonly<{ src: string; wideSrc?: string; width: number; height: number; eager?: boolean; className?: string; children?: ReactNode }>) {
+export function FanPrintDesk({ src, wideSrc, wideFrom = "64rem", width, height, eager, className, children }: Readonly<{ src: string; wideSrc?: string; /** wideSrc로 바뀌는 폭(기본 64rem). */ wideFrom?: "48rem" | "64rem"; width: number; height: number; eager?: boolean; className?: string; children?: ReactNode }>) {
   return <div className={cx(styles.desk, className)} data-fan-print="desk">
     <picture>
-      {wideSrc ? <source media="(width >= 64rem)" srcSet={wideSrc} /> : null}
+      {wideSrc ? <source media={`(width >= ${wideFrom})`} srcSet={wideSrc} /> : null}
       <img src={src} alt="" width={width} height={height} loading={eager ? undefined : "lazy"} fetchPriority={eager ? "high" : undefined} />
     </picture>
     {children}

@@ -14,7 +14,6 @@ export async function generateMetadata({ searchParams }: Props) {
   const locale = parseAppLocale((await searchParams).locale);
   return { title: signupRaffleText(locale, 'title'), description: `US$400 · ${signupRaffleText(locale, 'winners')} · ${signupRaffleText(locale, 'deadline')}` };
 }
-const kstDay = (time: number) => Math.floor((time + 9 * 3600_000) / 86_400_000);
 const previews = ['in', 'entered', 'passport', 'done', 'error'] as const;
 export default async function RafflePage({ searchParams }: Props) {
   if (!localSignupEnabled()) notFound();
@@ -29,7 +28,7 @@ export default async function RafflePage({ searchParams }: Props) {
   return <FanAppFrame locale={locale} currentPath="/s/raffle" mainId="raffle-main">
     <div className={styles.stage}>
       <FanContentContainer as="main" id="raffle-main" className={styles.column}>
-        <RaffleContent locale={locale} daysLeft={kstDay(closesAt) - kstDay(now)} closed={closed} preview={preview} />
+        <RaffleContent locale={locale} closesAt={closesAt} now={now} closed={closed} preview={preview} />
       </FanContentContainer>
     </div>
   </FanAppFrame>;
