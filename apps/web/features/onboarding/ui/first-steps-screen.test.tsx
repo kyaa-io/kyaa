@@ -22,6 +22,7 @@ describe("FirstStepsScreen", () => {
     render(<FirstStepsScreen locale="ko" />);
     expect(screen.getByRole("heading", { level: 1, name: "첫 걸음" })).toBeTruthy();
     expect(screen.getAllByRole("listitem")).toHaveLength(3);
+    expect(document.querySelectorAll("[data-step]")).toHaveLength(0);
     expect(screen.getByRole("progressbar").getAttribute("aria-valuenow")).toBe("0");
     expect(screen.getByRole("link", { name: "로그인" }).getAttribute("href")).toBe("/login?returnTo=%2Fonboarding%3Flocale%3Dko&locale=ko");
     expect(screen.getByRole("link", { name: /모임 가입/ }).getAttribute("href")).toBe("/pages/groups?locale=ko");
@@ -34,6 +35,7 @@ describe("FirstStepsScreen", () => {
     expect(screen.getByRole("link", { name: "팬 인증하기" }).getAttribute("href")).toBe("/c/elina/verify?locale=ko");
     expect(document.querySelector('[data-mission="first-step-join"]')?.getAttribute("data-done")).toBe("true");
     expect(screen.getByText("엘리나")).toBeTruthy();
+    expect([...document.querySelectorAll("[data-step]")].map((stamp) => stamp.getAttribute("data-step"))).toEqual(["join"]);
     expect(state.slam).not.toHaveBeenCalled();
   });
 
@@ -42,6 +44,7 @@ describe("FirstStepsScreen", () => {
     const { unmount } = render(<FirstStepsScreen locale="ko" />);
     expect(screen.getByRole("link", { name: "덕질하러 가기" }).getAttribute("href")).toBe("/benefits?locale=ko");
     expect(screen.getByText("연속 2일")).toBeTruthy();
+    expect(document.querySelectorAll("[data-step]")).toHaveLength(3);
     expect(state.slam).toHaveBeenCalledTimes(1);
     unmount();
     render(<FirstStepsScreen locale="ko" />);

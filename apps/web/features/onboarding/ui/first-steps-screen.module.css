@@ -1,24 +1,59 @@
-/* 첫 걸음(M1): 390은 그림 띠 → 제목·게이지 → 세 걸음 → 버튼 하나. 768+는 그림 | 걸음 두 칸으로 PC 너비를 채운다. */
+/* 첫 걸음(M1): 390은 그림 띠(2:1) → 제목·게이지 → 세 걸음 → 버튼 하나. 768+는 그림(정사각) | 걸음 두 칸(11:9), 1024+는 그 둘을 첫 화면 높이 가운데에 둔다. */
 .layout { display: grid; gap: var(--space-4); padding-block: var(--space-4) var(--fan-section-gap); }
-.art { margin: 0; overflow: hidden; border-radius: var(--radius-card); background: var(--color-accent-soft); aspect-ratio: 16 / 9; }
-.art > img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: 50% 45%; }
+
+/* 그림: 빈 여권. 마친 걸음마다 그 걸음의 ink-v1 도장이 여권 빈 면에 찍힌다(.pressed). 칸 비율 = 원본 비율이라 도장 자리(%)가 어긋나지 않는다. */
+.art { position: relative; margin: 0; overflow: hidden; border-radius: var(--radius-card); background: var(--color-accent-soft); aspect-ratio: 2 / 1;
+  --slot-join-x: 62.5%; --slot-join-y: 36%; --slot-passport-x: 68.75%; --slot-passport-y: 50%; --slot-attend-x: 63%; --slot-attend-y: 64%; --slot-size: 6%; }
+/* 390: 2:1 원본의 왼쪽 빈 종이를 덜어 여권을 키운다(그림과 도장을 한 판으로 같이 확대). */
+.canvas { position: absolute; inset: 0; transform-origin: 75% 50%; scale: 1.4; }
+.canvas picture, .canvas img { display: block; width: 100%; height: 100%; }
+.canvas img { object-fit: cover; object-position: 50% 100%; }
+.pressed { position: absolute; left: var(--x); top: var(--y); width: var(--slot-size); aspect-ratio: 1; translate: -50% -50%;
+  background: var(--color-accent-ink); -webkit-mask: var(--stamp) center / contain no-repeat; mask: var(--stamp) center / contain no-repeat;
+  mix-blend-mode: multiply; opacity: .86; animation: stamp-land var(--motion-reward) var(--motion-easing) both; }
+.pressed[data-step="join"] { --x: var(--slot-join-x); --y: var(--slot-join-y); rotate: -8deg; }
+.pressed[data-step="passport"] { --x: var(--slot-passport-x); --y: var(--slot-passport-y); rotate: 6deg; animation-delay: var(--motion-slow); }
+.pressed[data-step="attend"] { --x: var(--slot-attend-x); --y: var(--slot-attend-y); rotate: -4deg; animation-delay: calc(var(--motion-slow) * 2); }
+/* 도장이 위에서 눌려 내려와 종이에 닿는다: 크게·투명 → 살짝 눌림 → 제자리. transform·opacity만. */
+@keyframes stamp-land { 0% { opacity: 0; scale: 1.5; } 55% { opacity: .86; scale: .94; } 100% { opacity: .86; scale: 1; } }
+
 .panel { display: grid; align-content: center; gap: var(--space-4); min-width: 0; }
 .head { display: flex; align-items: center; justify-content: space-between; gap: var(--space-4); min-width: 0; }
 .head h1 { margin: 0; }
 .gauge { flex: 0 1 160px; }
+/* 빈 칸은 accent-line(채운 칸 #d11b62와 3.4:1), 채운 칸은 왼쪽부터 차오른다(첫 그림에서 한 번, 칸마다 시차). */
+.gauge [role="progressbar"] > span:not([data-filled]) { background: var(--color-accent-line); box-shadow: none; }
+.gauge [role="progressbar"] > span[data-filled] { transform-origin: left center; animation: gauge-fill var(--motion-layout) var(--motion-easing) both; }
+.gauge [role="progressbar"] > span:nth-child(2) { animation-delay: var(--motion-slow); }
+.gauge [role="progressbar"] > span:nth-child(3) { animation-delay: calc(var(--motion-slow) * 2); }
+@keyframes gauge-fill { from { transform: scaleX(0); } to { transform: none; } }
+
 .go { color: var(--color-accent-ink); }
+/* 행 그림: 같은 ink-v1 도장 한 벌. 아직이면 회색 선 도장, 마치면 분홍 잉크. 도장 자체가 둥근 틀이라 행 그림 원 선은 겹치지 않게 지운다. */
+.steps [data-mission-art] { border-color: transparent; background: transparent; }
+.rowStamp { display: block; width: 36px; height: 36px; background: var(--color-muted); -webkit-mask: var(--stamp) center / contain no-repeat; mask: var(--stamp) center / contain no-repeat; }
+.steps [data-done="true"] .rowStamp { background: var(--color-accent-ink); }
 .primary { display: grid; justify-items: start; min-height: var(--min-target); }
 
-/* 행 등장: 카드·행 등장 규칙(9절) — opacity + y 8→0, 200ms, 90ms 시차. */
+/* 행 등장: 카드·행 등장 규칙(9절) — opacity + y 8→0, 200ms, 시차. */
 .steps > li { animation: step-in var(--motion-slow) var(--motion-easing) both; }
-.steps > li:nth-child(2) { animation-delay: 90ms; }
-.steps > li:nth-child(3) { animation-delay: 180ms; }
+.steps > li:nth-child(2) { animation-delay: var(--motion-fast); }
+.steps > li:nth-child(3) { animation-delay: calc(var(--motion-fast) * 2); }
 @keyframes step-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
 
 @media (width >= 48rem) {
-  .layout { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: var(--space-6); padding-block: var(--space-6) var(--fan-section-gap); }
-  .art { aspect-ratio: 16 / 10; }
+  .layout { grid-template-columns: minmax(0, 11fr) minmax(0, 9fr); align-items: center; gap: var(--space-6); padding-block: var(--space-6) var(--fan-section-gap); }
+  /* 정사각 원본 그대로(위쪽 빈 종이 = 여백). 도장 자리는 여권 오른쪽 면. */
+  .art { aspect-ratio: 1;
+    --slot-join-x: 53.75%; --slot-join-y: 61%; --slot-passport-x: 64%; --slot-passport-y: 70%; --slot-attend-x: 55.6%; --slot-attend-y: 79%; --slot-size: 9%; }
+  .canvas { scale: none; }
   .panel { gap: var(--space-6); }
 }
-@media (width >= 80rem) { .layout { gap: var(--space-8); } }
-@media (prefers-reduced-motion: reduce) { .steps > li { animation: none; } }
+/* PC: 첫 화면(헤더 아래) 높이 안에서 그림과 걸음을 세로 가운데에 둔다 — 위쪽에 몰리고 아래가 비는 띠를 없앤다. */
+@media (width >= 64rem) {
+  .layout { min-height: calc(100dvh - var(--fan-header-height)); align-content: center; gap: var(--space-8); padding-block: var(--space-8); }
+  .art { width: min(100%, calc(100dvh - var(--fan-header-height) - var(--space-8) * 2)); justify-self: end; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .steps > li, .pressed, .gauge [role="progressbar"] > span[data-filled] { animation: none; }
+}

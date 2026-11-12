@@ -12,7 +12,7 @@ export function firstStepsHomeBanner(locale: AppLocale): HomeBanner {
     id: FIRST_STEPS_BANNER_ID, kind: "announcement", celebrityId: null, category: "guide", placement: "home",
     title: t.bannerTitle, description: FIRST_STEP_IDS.map((id) => t.step[id]).join(" · "),
     ctaLabel: t.start, href: FIRST_STEPS_PATH, alt: t.bannerTitle,
-    desktopImage: { id: "12fa27a0-0498-4f14-90e2-d320be5a94bf", url: "/images/notices/fan-activity-guide.webp", width: 1254, height: 1254, mimeType: "image/webp", revision: 1 },
+    desktopImage: { id: "5c0f2b8e-7d1a-4f3e-9b6c-2a4d8e1f0c37", url: "/images/onboarding/first-steps-wide.webp", width: 1774, height: 887, mimeType: "image/webp", revision: 1 },
     mobileImage: null,
   };
 }

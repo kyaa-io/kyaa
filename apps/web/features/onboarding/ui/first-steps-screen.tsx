@@ -1,12 +1,12 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, type CSSProperties } from "react";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import { FanHeading } from "@/components/fan-ui/fan-heading";
 import { FanGauge } from "@/components/fan-ui/fan-number";
 import { FanState } from "@/components/fan-ui/fan-state";
 import { FanText } from "@/components/fan-ui/fan-text";
-import { FanMissionList, FanMissionRow, MissionArt, MissionDoneStamp } from "@/features/dukjil/ui/fan-mission-row";
+import { FanMissionList, FanMissionRow, MissionDoneStamp } from "@/features/dukjil/ui/fan-mission-row";
 import { playStampSlam } from "@/features/dukjil/ui/stamp-slam";
 import type { AppLocale } from "@/i18n/locales";
 import { FIRST_STEP_IDS, FIRST_STEPS_PATH, firstStepHref, type FirstStepId } from "../domain/first-steps";
@@ -14,13 +14,14 @@ import { firstStepsCopy } from "./first-steps-copy";
 import { useFirstSteps } from "./use-first-steps";
 import styles from "./first-steps-screen.module.css";
 
-/** 걸음마다 기존 3D 애셋(덕질 안내·지갑 화풍). */
-export const FIRST_STEP_ART: Record<FirstStepId, string> = {
-  join: "/images/dukjil-duo/glyph-heart-80.webp",
-  passport: "/images/passport/passport-cover-closed.webp",
-  attend: "/images/dukjil-duo/glyph-stamp-80.webp",
+/** 걸음마다 ink-v1 도장 한 벌(같은 화풍). 행 그림과 여권 위 도장이 같은 모양이다. */
+export const FIRST_STEP_STAMP: Record<FirstStepId, string> = {
+  join: "/images/stamps/ink-v1/invite.webp",
+  passport: "/images/stamps/ink-v1/welcome.webp",
+  attend: "/images/stamps/ink-v1/daily-checkin.webp",
 };
-export const FIRST_STEPS_ART = "/images/notices/fan-activity-guide.webp";
+/** 첫 걸음 전용 그림(빈 여권 + 도장 + 잉크): 390은 2:1, 768+는 정사각. 걸음을 마칠 때마다 여권 빈 면에 도장이 코드로 찍힌다. */
+export const FIRST_STEPS_ART = { wide: "/images/onboarding/first-steps-wide.webp", square: "/images/onboarding/first-steps-square.webp" } as const;
 const SLAM_SEEN = "kyaa:first-steps:slam";
 
 function loginHref(locale: AppLocale) {
@@ -66,9 +67,15 @@ export function FirstStepsScreen({ locale }: { locale: AppLocale }) {
         : null;
 
   return <div className={styles.layout} data-first-steps={view.status} data-complete={member?.progress.complete ? "true" : undefined}>
-    <div className={styles.art}>
-      <img src={FIRST_STEPS_ART} width={1254} height={1254} alt="" fetchPriority="high" />
-    </div>
+    <div className={styles.art}><div className={styles.canvas}>
+      <picture>
+        <source media="(min-width: 48rem)" srcSet={FIRST_STEPS_ART.square} width={1600} height={1600} />
+        <img src={FIRST_STEPS_ART.wide} width={1774} height={887} alt="" fetchPriority="high" />
+      </picture>
+      {FIRST_STEP_IDS.map((id, index) => member?.progress.steps[index]?.done
+        ? <span key={id} className={styles.pressed} data-step={id} style={{ "--stamp": `url(${FIRST_STEP_STAMP[id]})` } as CSSProperties} aria-hidden="true" />
+        : null)}
+    </div></div>
     <div className={styles.panel}>
       <div className={styles.head}>
         <FanHeading as="h1">{t.title}</FanHeading>
@@ -79,7 +86,7 @@ export function FirstStepsScreen({ locale }: { locale: AppLocale }) {
           const done = member?.progress.steps[index]?.done ?? false;
           return <FanMissionRow key={id} dataMission={`first-step-${id}`} done={done}
             href={view.status === "guest" && id !== "join" ? loginHref(locale) : firstStepHref(id, facts, locale)}
-            art={<MissionArt src={FIRST_STEP_ART[id]} />}
+            art={<span className={styles.rowStamp} style={{ "--stamp": `url(${FIRST_STEP_STAMP[id]})` } as CSSProperties} />}
             title={t.step[id]}
             detail={done ? detail(id) : undefined}
             trailing={done ? <MissionDoneStamp label={t.done} /> : <FanText role="label" className={styles.go}>{t.action[id]}</FanText>} />;

@@ -28,3 +28,12 @@
   .root[data-missionbook] [data-hero-full-image] { top:0; bottom:0; aspect-ratio:auto; transform:none; }
   .root[data-missionbook] .artwork img { object-fit:cover; object-position:center 40%; }
 }
+
+/* 첫 걸음(종이 위 여권 사진, 2:1, 글자 없음): 그림 칸 전체를 채워 따로 떠 있는 사진 상자와 흐린 띠를 없앤다. 모바일은 여권·도장이 보이는 오른쪽을 기준으로 자른다. */
+@media (width < 48rem) {
+  .root[data-first-steps] .artwork img { object-fit:cover; object-position:68% 40%; }
+}
+@media (width >= 48rem) {
+  .root[data-first-steps] [data-hero-full-image] { top:0; bottom:0; aspect-ratio:auto; transform:none; }
+  .root[data-first-steps] .artwork img { object-fit:cover; object-position:62% 50%; }
+}
