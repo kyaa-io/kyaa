@@ -133,7 +133,11 @@ export function LiveHeroCarousel({
   elina,
   elinaRaffles,
   elinaGuide,
+  renderBanner,
+  compact = false,
 }: {
+  renderBanner?: (banner: HomeBanner) => ReactNode;
+  compact?: boolean;
   elinaGuide?: ReactNode;
   elinaRaffles?: RaffleList["raffles"];
   elina?: PublishedCelebrity;
@@ -293,6 +297,7 @@ export function LiveHeroCarousel({
       data-reduced-motion={reducedMotion ? "true" : "false"}
       data-shine-paused={autoplayPaused ? "true" : "false"}
       data-has-controls={hasControls ? "true" : "false"}
+      data-compact={compact || undefined}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       onFocusCapture={() => setFocusWithin(true)}
@@ -312,7 +317,7 @@ export function LiveHeroCarousel({
               aria-hidden={index !== activeIndex} aria-roledescription="slide"
               aria-label={t.position(index + 1, total)} inert={index !== activeIndex}
               data-active={index === activeIndex ? "true" : "false"}>
-              {banner ? <ManagedHomeBanner banner={banner} locale={locale} priority={index === 0} />
+              {banner ? renderBanner ? renderBanner(banner) : <ManagedHomeBanner banner={banner} locale={locale} priority={index === 0} />
                 : elinaGuide !== undefined ? elinaGuide : <ElinaGuideCard locale={locale} elina={elina} raffles={elinaRaffles} hero priority={index === 0} />}
             </article>
           ))}

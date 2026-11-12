@@ -1,12 +1,28 @@
-import { jjinfanDetailHref } from "@/features/rankings/ui/jjinfan-featured";
-import { rankingsText } from "@/features/rankings/ui/rankings-copy";
+"use client";
+import Link from "next/link";
+import type { Route } from "next";
+import { ArrowRight } from "@/components/fan-ui/fan-icons";
+import { FanIcon } from "@/components/fan-ui/fan-icon";
+import { FanHeading } from "@/components/fan-ui/fan-heading";
+import { FanText } from "@/components/fan-ui/fan-text";
+import { LiveHeroCarousel } from "@/components/live-hero-carousel";
+import type { HomeBanner } from "@/features/home/domain/home-banner";
+import { JJINFAN_BANNER_CREATORS, jjinfanBannerHref } from "@/features/rankings/domain/jjinfan-banner";
+import { jjinfanBannerCopy } from "@/features/rankings/ui/jjinfan-banner-copy";
 import type { AppLocale } from "@/i18n/locales";
-import { PromoBanner } from "./promo-banner";
+import styles from "./jjinfan-banner.module.css";
 
-/**
- * The home's banner slot right under the ranking card (대표 2026-11-11, slot name `home-below-ranking`): today the 찐팬 100 challenge banner to its detail page,
- * and the place an advertisement goes later (swap the content, keep PromoBanner or the managed BannerSlotCard). The caller draws it only while the 찐팬 100 flag is on, so production shows no box and no space.
- */
 export function HomeBelowRankingSlot({ locale }: { locale: AppLocale }) {
-  return <PromoBanner slot="home-below-ranking" href={jjinfanDetailHref(locale)} title={rankingsText(locale, "jjTitle")} description={rankingsText(locale, "jjBannerDesc")} ctaLabel={rankingsText(locale, "jjBannerCta")} />;
+  const t = jjinfanBannerCopy[locale];
+  const banners: HomeBanner[] = JJINFAN_BANNER_CREATORS.map((creator, index) => ({
+    id: creator.slug, kind: "announcement", celebrityId: null, category: "fanpage",
+    title: locale === "ko" ? creator.ko : creator.en, description: "", ctaLabel: t.join,
+    href: jjinfanBannerHref(creator.slug, locale), alt: locale === "ko" ? creator.ko : creator.en,
+    desktopImage: { id: creator.slug, url: `/images/jjinfan100/${creator.slug}.webp`, width: index === 0 ? 1067 : 1080, height: index === 0 ? 1600 : 1080, mimeType: "image/webp", revision: 1 }, mobileImage: null,
+  }));
+  return <LiveHeroCarousel homeBanners={banners} locale={locale} elinaGuide={null} compact renderBanner={(banner) =>
+    <Link href={banner.href as Route} className={styles.banner} data-jjinfan-banner={banner.id}>
+      <div className={styles.copy}><FanText role="banner-label" className={styles.title}>{t.title}</FanText><FanHeading variant="campaign">{banner.title}</FanHeading><FanText role="banner-action" className={styles.action}>{t.join}<FanIcon icon={ArrowRight} size={16} /></FanText></div>
+      <img className={styles.portrait} src={banner.desktopImage.url} alt={banner.alt} width={banner.desktopImage.width} height={banner.desktopImage.height} loading="lazy" />
+    </Link>} />;
 }

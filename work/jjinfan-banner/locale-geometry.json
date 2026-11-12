@@ -1,0 +1,3714 @@
+[
+  {
+    "width": 390,
+    "locale": "ko",
+    "view": "home",
+    "overflow": 0,
+    "bounds": {
+      "x": 16,
+      "y": 1544.1875,
+      "width": 358,
+      "height": 160,
+      "top": 1544.1875,
+      "right": 374,
+      "bottom": 1704.1875,
+      "left": 16
+    },
+    "texts": [
+      {
+        "text": "찐팬 100 챌린지",
+        "rect": {
+          "x": 40,
+          "y": 1589.890625,
+          "width": 85.453125,
+          "height": 15,
+          "top": 1589.890625,
+          "right": 125.453125,
+          "bottom": 1604.890625,
+          "left": 40
+        }
+      },
+      {
+        "text": "유나",
+        "rect": {
+          "x": 40,
+          "y": 1612.890625,
+          "width": 31.125,
+          "height": 21.59375,
+          "top": 1612.890625,
+          "right": 71.125,
+          "bottom": 1634.484375,
+          "left": 40
+        }
+      },
+      {
+        "text": "동참하기",
+        "rect": {
+          "x": 40,
+          "y": 1642.484375,
+          "width": 68.953125,
+          "height": 16,
+          "top": 1642.484375,
+          "right": 108.953125,
+          "bottom": 1658.484375,
+          "left": 40
+        }
+      }
+    ],
+    "ok": true
+  },
+  {
+    "width": 390,
+    "locale": "ko",
+    "view": "modal",
+    "overflow": 0,
+    "bounds": {
+      "x": 16,
+      "y": 382,
+      "width": 358,
+      "height": 136,
+      "top": 382,
+      "right": 374,
+      "bottom": 518,
+      "left": 16
+    },
+    "texts": [
+      {
+        "text": "찐팬 100 챌린지를 하고 있어요. 같이 동참해봐요!",
+        "rect": {
+          "x": 36,
+          "y": 394,
+          "width": 270,
+          "height": 48,
+          "top": 394,
+          "right": 306,
+          "bottom": 442,
+          "left": 36
+        }
+      },
+      {
+        "text": "",
+        "rect": {
+          "x": 318,
+          "y": 396,
+          "width": 44,
+          "height": 44,
+          "top": 396,
+          "right": 362,
+          "bottom": 440,
+          "left": 318
+        }
+      },
+      {
+        "text": "동참하기",
+        "rect": {
+          "x": 36,
+          "y": 454,
+          "width": 318,
+          "height": 44,
+          "top": 454,
+          "right": 354,
+          "bottom": 498,
+          "left": 36
+        }
+      }
+    ],
+    "ok": true
+  },
+  {
+    "width": 390,
+    "locale": "en",
+    "view": "home",
+    "overflow": 0,
+    "bounds": {
+      "x": 16,
+      "y": 1601.78125,
+      "width": 358,
+      "height": 160,
+      "top": 1601.78125,
+      "right": 374,
+      "bottom": 1761.78125,
+      "left": 16
+    },
+    "texts": [
+      {
+        "text": "100 True Fans Challenge",
+        "rect": {
+          "x": 40,
+          "y": 1647.484375,
+          "width": 151.203125,
+          "height": 15,
+          "top": 1647.484375,
+          "right": 191.203125,
+          "bottom": 1662.484375,
+          "left": 40
+        }
+      },
+      {
+        "text": "Yuna",
+        "rect": {
+          "x": 40,
+          "y": 1670.484375,
+          "width": 43.375,
+          "height": 21.59375,
+          "top": 1670.484375,
+          "right": 83.375,
+          "bottom": 1692.078125,
+          "left": 40
+        }
+      },
+      {
+        "text": "Join in",
+        "rect": {
+          "x": 40,
+          "y": 1700.078125,
+          "width": 64.015625,
+          "height": 16,
+          "top": 1700.078125,
+          "right": 104.015625,
+          "bottom": 1716.078125,
+          "left": 40
+        }
+      }
+    ],
+    "ok": true
+  },
+  {
+    "width": 390,
+    "locale": "en",
+    "view": "modal",
+    "overflow": 0,
+    "bounds": {
+      "x": 16,
+      "y": 382,
+      "width": 358,
+      "height": 136,
+      "top": 382,
+      "right": 374,
+      "bottom": 518,
+      "left": 16
+    },
+    "texts": [
+      {
+        "text": "The 100 True Fans Challenge is on. Join in!",
+        "rect": {
+          "x": 36,
+          "y": 394,
+          "width": 270,
+          "height": 48,
+          "top": 394,
+          "right": 306,
+          "bottom": 442,
+          "left": 36
+        }
+      },
+      {
+        "text": "",
+        "rect": {
+          "x": 318,
+          "y": 396,
+          "width": 44,
+          "height": 44,
+          "top": 396,
+          "right": 362,
+          "bottom": 440,
+          "left": 318
+        }
+      },
+      {
+        "text": "Join in",
+        "rect": {
+          "x": 36,
+          "y": 454,
+          "width": 318,
+          "height": 44,
+          "top": 454,
+          "right": 354,
+          "bottom": 498,
+          "left": 36
+        }
+      }
+    ],
+    "ok": true
+  },
+  {
+    "width": 390,
+    "locale": "ja",
+    "view": "home",
+    "overflow": 0,
+    "bounds": {
+      "x": 16,
+      "y": 1562.375,
+      "width": 358,
+      "height": 160,
+      "top": 1562.375,
+      "right": 374,
+      "bottom": 1722.375,
+      "left": 16
+    },
+    "texts": [
+      {
+        "text": "真のファン100人チャレンジ",
+        "rect": {
+          "x": 40,
+          "y": 1603.578125,
+          "width": 158.953125,
+          "height": 20,
+          "top": 1603.578125,
+          "right": 198.953125,
+          "bottom": 1623.578125,
+          "left": 40
+        }
+      },
+      {
+        "text": "Yuna",
+        "rect": {
+          "x": 40,
+          "y": 1631.578125,
+          "width": 43.375,
+          "height": 21.59375,
+          "top": 1631.578125,
+          "right": 83.375,
+          "bottom": 1653.171875,
+          "left": 40
+        }
+      },
+      {
+        "text": "参加する",
+        "rect": {
+          "x": 40,
+          "y": 1661.171875,
+          "width": 74.375,
+          "height": 20,
+          "top": 1661.171875,
+          "right": 114.375,
+          "bottom": 1681.171875,
+          "left": 40
+        }
+      }
+    ],
+    "ok": true
+  },
+  {
+    "width": 390,
+    "locale": "ja",
+    "view": "modal",
+    "overflow": 0,
+    "bounds": {
+      "x": 16,
+      "y": 382,
+      "width": 358,
+      "height": 136,
+      "top": 382,
+      "right": 374,
+      "bottom": 518,
+      "left": 16
+    },
+    "texts": [
+      {
+        "text": "真のファン100人チャレンジ開催中。一緒に参加しましょう！",
+        "rect": {
+          "x": 36,
+          "y": 394,
+          "width": 270,
+          "height": 48,
+          "top": 394,
+          "right": 306,
+          "bottom": 442,
+          "left": 36
+        }
+      },
+      {
+        "text": "",
+        "rect": {
+          "x": 318,
+          "y": 396,
+          "width": 44,
+          "height": 44,
+          "top": 396,
+          "right": 362,
+          "bottom": 440,
+          "left": 318
+        }
+      },
+      {
+        "text": "参加する",
+        "rect": {
+          "x": 36,
+          "y": 454,
+          "width": 318,
+          "height": 44,
+          "top": 454,
+          "right": 354,
+          "bottom": 498,
+          "left": 36
+        }
+      }
+    ],
+    "ok": true
+  },
+  {
+    "width": 390,
+    "locale": "zh-Hans",
+    "view": "home",
+    "overflow": 0,
+    "bounds": {
+      "x": 16,
+      "y": 1544.1875,
+      "width": 358,
+      "height": 160,
+      "top": 1544.1875,
+      "right": 374,
+      "bottom": 1704.1875,
+      "left": 16
+    },
+    "texts": [
+      {
+        "text": "100位真爱粉挑战",
+        "rect": {
+          "x": 40,
+          "y": 1587.390625,
+          "width": 101.265625,
+          "height": 18,
+          "top": 1587.390625,
+          "right": 141.265625,
+          "bottom": 1605.390625,
+          "left": 40
+        }
+      },
+      {
+        "text": "Yuna",
+        "rect": {
+          "x": 40,
+          "y": 1613.390625,
+          "width": 43.375,
+          "height": 21.59375,
+          "top": 1613.390625,
+          "right": 83.375,
+          "bottom": 1634.984375,
+          "left": 40
+        }
+      },
+      {
+        "text": "参与挑战",
+        "rect": {
+          "x": 40,
+          "y": 1642.984375,
+          "width": 76,
+          "height": 18,
+          "top": 1642.984375,
+          "right": 116,
+          "bottom": 1660.984375,
+          "left": 40
+        }
+      }
+    ],
+    "ok": true
+  },
+  {
+    "width": 390,
+    "locale": "zh-Hans",
+    "view": "modal",
+    "overflow": 0,
+    "bounds": {
+      "x": 16,
+      "y": 382,
+      "width": 358,
+      "height": 136,
+      "top": 382,
+      "right": 374,
+      "bottom": 518,
+      "left": 16
+    },
+    "texts": [
+      {
+        "text": "100位真爱粉挑战进行中，一起来参与吧！",
+        "rect": {
+          "x": 36,
+          "y": 394,
+          "width": 270,
+          "height": 48,
+          "top": 394,
+          "right": 306,
+          "bottom": 442,
+          "left": 36
+        }
+      },
+      {
+        "text": "",
+        "rect": {
+          "x": 318,
+          "y": 396,
+          "width": 44,
+          "height": 44,
+          "top": 396,
+          "right": 362,
+          "bottom": 440,
+          "left": 318
+        }
+      },
+      {
+        "text": "参与挑战",
+        "rect": {
+          "x": 36,
+          "y": 454,
+          "width": 318,
+          "height": 44,
+          "top": 454,
+          "right": 354,
+          "bottom": 498,
+          "left": 36
+        }
+      }
+    ],
+    "ok": true
+  },
+  {
+    "width": 390,
+    "locale": "zh-Hant",
+    "view": "home",
+    "overflow": 0,
+    "bounds": {
+      "x": 16,
+      "y": 1544.1875,
+      "width": 358,
+      "height": 160,
+      "top": 1544.1875,
+      "right": 374,
+      "bottom": 1704.1875,
+      "left": 16
+    },
+    "texts": [
+      {
+        "text": "100位真愛粉挑戰",
+        "rect": {
+          "x": 40,
+          "y": 1587.390625,
+          "width": 101.265625,
+          "height": 18,
+          "top": 1587.390625,
+          "right": 141.265625,
+          "bottom": 1605.390625,
+          "left": 40
+        }
+      },
+      {
+        "text": "Yuna",
+        "rect": {
+          "x": 40,
+          "y": 1613.390625,
+          "width": 43.375,
+          "height": 21.59375,
+          "top": 1613.390625,
+          "right": 83.375,
+          "bottom": 1634.984375,
+          "left": 40
+        }
+      },
+      {
+        "text": "參與挑戰",
+        "rect": {
+          "x": 40,
+          "y": 1642.984375,
+          "width": 76,
+          "height": 18,
+          "top": 1642.984375,
+          "right": 116,
+          "bottom": 1660.984375,
+          "left": 40
+        }
+      }
+    ],
+    "ok": true
+  },
+  {
+    "width": 390,
+    "locale": "zh-Hant",
+    "view": "modal",
+    "overflow": 0,
+    "bounds": {
+      "x": 16,
+      "y": 382,
+      "width": 358,
+      "height": 136,
+      "top": 382,
+      "right": 374,
+      "bottom": 518,
+      "left": 16
+    },
+    "texts": [
+      {
+        "text": "100位真愛粉挑戰進行中，一起來參與吧！",
+        "rect": {
+          "x": 36,
+          "y": 394,
+          "width": 270,
+          "height": 48,
+          "top": 394,
+          "right": 306,
+          "bottom": 442,
+          "left": 36
+        }
+      },
+      {
+        "text": "",
+        "rect": {
+          "x": 318,
+          "y": 396,
+          "width": 44,
+          "height": 44,
+          "top": 396,
+          "right": 362,
+          "bottom": 440,
+          "left": 318
+        }
+      },
+      {
+        "text": "參與挑戰",
+        "rect": {
+          "x": 36,
+          "y": 454,
+          "width": 318,
+          "height": 44,
+          "top": 454,
+          "right": 354,
+          "bottom": 498,
+          "left": 36
+        }
+      }
+    ],
+    "ok": true
+  },
+  {
+    "width": 390,
+    "locale": "es",
+    "view": "home",
+    "overflow": 0,
+    "bounds": {
+      "x": 16,
+      "y": 1619.96875,
+      "width": 358,
+      "height": 160,
+      "top": 1619.96875,
+      "right": 374,
+      "bottom": 1779.96875,
+      "left": 16
+    },
+    "texts": [
+      {
+        "text": "Reto de 100 fans de verdad",
+        "rect": {
+          "x": 40,
+          "y": 1665.671875,
+          "width": 166.15625,
+          "height": 15,
+          "top": 1665.671875,
+          "right": 206.15625,
+          "bottom": 1680.671875,
+          "left": 40
+        }
+      },
+      {
+        "text": "Yuna",
+        "rect": {
+          "x": 40,
+          "y": 1688.671875,
+          "width": 43.375,
+          "height": 21.59375,
+          "top": 1688.671875,
+          "right": 83.375,
+          "bottom": 1710.265625,
+          "left": 40
+        }
+      },
+      {
+        "text": "Participar",
+        "rect": {
+          "x": 40,
+          "y": 1718.265625,
+          "width": 83.625,
+          "height": 16,
+          "top": 1718.265625,
+          "right": 123.625,
+          "bottom": 1734.265625,
+          "left": 40
+        }
+      }
+    ],
+    "ok": true
+  },
+  {
+    "width": 390,
+    "locale": "es",
+    "view": "modal",
+    "overflow": 0,
+    "bounds": {
+      "x": 16,
+      "y": 382,
+      "width": 358,
+      "height": 136,
+      "top": 382,
+      "right": 374,
+      "bottom": 518,
+      "left": 16
+    },
+    "texts": [
+      {
+        "text": "¡El reto de 100 fans de verdad está en marcha! ¡Participa!",
+        "rect": {
+          "x": 36,
+          "y": 394,
+          "width": 270,
+          "height": 48,
+          "top": 394,
+          "right": 306,
+          "bottom": 442,
+          "left": 36
+        }
+      },
+      {
+        "text": "",
+        "rect": {
+          "x": 318,
+          "y": 396,
+          "width": 44,
+          "height": 44,
+          "top": 396,
+          "right": 362,
+          "bottom": 440,
+          "left": 318
+        }
+      },
+      {
+        "text": "Participar",
+        "rect": {
+          "x": 36,
+          "y": 454,
+          "width": 318,
+          "height": 44,
+          "top": 454,
+          "right": 354,
+          "bottom": 498,
+          "left": 36
+        }
+      }
+    ],
+    "ok": true
+  },
+  {
+    "width": 390,
+    "locale": "id",
+    "view": "home",
+    "overflow": 0,
+    "bounds": {
+      "x": 16,
+      "y": 1619.96875,
+      "width": 358,
+      "height": 160,
+      "top": 1619.96875,
+      "right": 374,
+      "bottom": 1779.96875,
+      "left": 16
+    },
+    "texts": [
+      {
+        "text": "Tantangan 100 Fan Sejati",
+        "rect": {
+          "x": 40,
+          "y": 1665.671875,
+          "width": 154.078125,
+          "height": 15,
+          "top": 1665.671875,
+          "right": 194.078125,
+          "bottom": 1680.671875,
+          "left": 40
+        }
+      },
+      {
+        "text": "Yuna",
+        "rect": {
+          "x": 40,
+          "y": 1688.671875,
+          "width": 43.375,
+          "height": 21.59375,
+          "top": 1688.671875,
+          "right": 83.375,
+          "bottom": 1710.265625,
+          "left": 40
+        }
+      },
+      {
+        "text": "Ikut serta",
+        "rect": {
+          "x": 40,
+          "y": 1718.265625,
+          "width": 82.25,
+          "height": 16,
+          "top": 1718.265625,
+          "right": 122.25,
+          "bottom": 1734.265625,
+          "left": 40
+        }
+      }
+    ],
+    "ok": true
+  },
+  {
+    "width": 390,
+    "locale": "id",
+    "view": "modal",
+    "overflow": 0,
+    "bounds": {
+      "x": 16,
+      "y": 370,
+      "width": 358,
+      "height": 160,
+      "top": 370,
+      "right": 374,
+      "bottom": 530,
+      "left": 16
+    },
+    "texts": [
+      {
+        "text": "Tantangan 100 Fan Sejati sedang berlangsung. Ayo ikut!",
+        "rect": {
+          "x": 36,
+          "y": 382,
+          "width": 270,
+          "height": 72,
+          "top": 382,
+          "right": 306,
+          "bottom": 454,
+          "left": 36
+        }
+      },
+      {
+        "text": "",
+        "rect": {
+          "x": 318,
+          "y": 396,
+          "width": 44,
+          "height": 44,
+          "top": 396,
+          "right": 362,
+          "bottom": 440,
+          "left": 318
+        }
+      },
+      {
+        "text": "Ikut serta",
+        "rect": {
+          "x": 36,
+          "y": 466,
+          "width": 318,
+          "height": 44,
+          "top": 466,
+          "right": 354,
+          "bottom": 510,
+          "left": 36
+        }
+      }
+    ],
+    "ok": true
+  },
+  {
+    "width": 390,
+    "locale": "vi",
+    "view": "home",
+    "overflow": 0,
+    "bounds": {
+      "x": 16,
+      "y": 1619.96875,
+      "width": 358,
+      "height": 160,
+      "top": 1619.96875,
+      "right": 374,
+      "bottom": 1779.96875,
+      "left": 16
+    },
+    "texts": [
+      {
+        "text": "Thử thách 100 fan đích thực",
+        "rect": {
+          "x": 40,
+          "y": 1658.171875,
+          "width": 166.796875,
+          "height": 30,
+          "top": 1658.171875,
+          "right": 206.796875,
+          "bottom": 1688.171875,
+          "left": 40
+        }
+      },
+      {
+        "text": "Yuna",
+        "rect": {
+          "x": 40,
+          "y": 1696.171875,
+          "width": 43.375,
+          "height": 21.59375,
+          "top": 1696.171875,
+          "right": 83.375,
+          "bottom": 1717.765625,
+          "left": 40
+        }
+      },
+      {
+        "text": "Tham gia",
+        "rect": {
+          "x": 40,
+          "y": 1725.765625,
+          "width": 80.34375,
+          "height": 16,
+          "top": 1725.765625,
+          "right": 120.34375,
+          "bottom": 1741.765625,
+          "left": 40
+        }
+      }
+    ],
+    "ok": true
+  },
+  {
+    "width": 390,
+    "locale": "vi",
+    "view": "modal",
+    "overflow": 0,
+    "bounds": {
+      "x": 16,
+      "y": 370,
+      "width": 358,
+      "height": 160,
+      "top": 370,
+      "right": 374,
+      "bottom": 530,
+      "left": 16
+    },
+    "texts": [
+      {
+        "text": "Thử thách 100 fan đích thực đang diễn ra. Cùng tham gia nhé!",
+        "rect": {
+          "x": 36,
+          "y": 382,
+          "width": 270,
+          "height": 72,
+          "top": 382,
+          "right": 306,
+          "bottom": 454,
+          "left": 36
+        }
+      },
+      {
+        "text": "",
+        "rect": {
+          "x": 318,
+          "y": 396,
+          "width": 44,
+          "height": 44,
+          "top": 396,
+          "right": 362,
+          "bottom": 440,
+          "left": 318
+        }
+      },
+      {
+        "text": "Tham gia",
+        "rect": {
+          "x": 36,
+          "y": 466,
+          "width": 318,
+          "height": 44,
+          "top": 466,
+          "right": 354,
+          "bottom": 510,
+          "left": 36
+        }
+      }
+    ],
+    "ok": true
+  },
+  {
+    "width": 390,
+    "locale": "th",
+    "view": "home",
+    "overflow": 0,
+    "bounds": {
+      "x": 16,
+      "y": 1544.1875,
+      "width": 358,
+      "height": 160,
+      "top": 1544.1875,
+      "right": 374,
+      "bottom": 1704.1875,
+      "left": 16
+    },
+    "texts": [
+      {
+        "text": "ชาเลนจ์ 100 แฟนตัวจริง",
+        "rect": {
+          "x": 40,
+          "y": 1587.390625,
+          "width": 128.53125,
+          "height": 18,
+          "top": 1587.390625,
+          "right": 168.53125,
+          "bottom": 1605.390625,
+          "left": 40
+        }
+      },
+      {
+        "text": "Yuna",
+        "rect": {
+          "x": 40,
+          "y": 1613.390625,
+          "width": 43.375,
+          "height": 21.59375,
+          "top": 1613.390625,
+          "right": 83.375,
+          "bottom": 1634.984375,
+          "left": 40
+        }
+      },
+      {
+        "text": "เข้าร่วม",
+        "rect": {
+          "x": 40,
+          "y": 1642.984375,
+          "width": 63.1875,
+          "height": 18,
+          "top": 1642.984375,
+          "right": 103.1875,
+          "bottom": 1660.984375,
+          "left": 40
+        }
+      }
+    ],
+    "ok": true
+  },
+  {
+    "width": 390,
+    "locale": "th",
+    "view": "modal",
+    "overflow": 0,
+    "bounds": {
+      "x": 16,
+      "y": 382,
+      "width": 358,
+      "height": 136,
+      "top": 382,
+      "right": 374,
+      "bottom": 518,
+      "left": 16
+    },
+    "texts": [
+      {
+        "text": "ชาเลนจ์ 100 แฟนตัวจริงกำลังจัดอยู่ มาร่วมกันเลย!",
+        "rect": {
+          "x": 36,
+          "y": 394,
+          "width": 270,
+          "height": 48,
+          "top": 394,
+          "right": 306,
+          "bottom": 442,
+          "left": 36
+        }
+      },
+      {
+        "text": "",
+        "rect": {
+          "x": 318,
+          "y": 396,
+          "width": 44,
+          "height": 44,
+          "top": 396,
+          "right": 362,
+          "bottom": 440,
+          "left": 318
+        }
+      },
+      {
+        "text": "เข้าร่วม",
+        "rect": {
+          "x": 36,
+          "y": 454,
+          "width": 318,
+          "height": 44,
+          "top": 454,
+          "right": 354,
+          "bottom": 498,
+          "left": 36
+        }
+      }
+    ],
+    "ok": true
+  },
+  {
+    "width": 390,
+    "locale": "pt",
+    "view": "home",
+    "overflow": 0,
+    "bounds": {
+      "x": 16,
+      "y": 1586.375,
+      "width": 358,
+      "height": 160,
+      "top": 1586.375,
+      "right": 374,
+      "bottom": 1746.375,
+      "left": 16
+    },
+    "texts": [
+      {
+        "text": "Desafio dos 100 fãs de verdade",
+        "rect": {
+          "x": 40,
+          "y": 1624.578125,
+          "width": 166.796875,
+          "height": 30,
+          "top": 1624.578125,
+          "right": 206.796875,
+          "bottom": 1654.578125,
+          "left": 40
+        }
+      },
+      {
+        "text": "Yuna",
+        "rect": {
+          "x": 40,
+          "y": 1662.578125,
+          "width": 43.375,
+          "height": 21.59375,
+          "top": 1662.578125,
+          "right": 83.375,
+          "bottom": 1684.171875,
+          "left": 40
+        }
+      },
+      {
+        "text": "Participar",
+        "rect": {
+          "x": 40,
+          "y": 1692.171875,
+          "width": 83.625,
+          "height": 16,
+          "top": 1692.171875,
+          "right": 123.625,
+          "bottom": 1708.171875,
+          "left": 40
+        }
+      }
+    ],
+    "ok": true
+  },
+  {
+    "width": 390,
+    "locale": "pt",
+    "view": "modal",
+    "overflow": 0,
+    "bounds": {
+      "x": 16,
+      "y": 370,
+      "width": 358,
+      "height": 160,
+      "top": 370,
+      "right": 374,
+      "bottom": 530,
+      "left": 16
+    },
+    "texts": [
+      {
+        "text": "O desafio dos 100 fãs de verdade está a acontecer. Participe!",
+        "rect": {
+          "x": 36,
+          "y": 382,
+          "width": 270,
+          "height": 72,
+          "top": 382,
+          "right": 306,
+          "bottom": 454,
+          "left": 36
+        }
+      },
+      {
+        "text": "",
+        "rect": {
+          "x": 318,
+          "y": 396,
+          "width": 44,
+          "height": 44,
+          "top": 396,
+          "right": 362,
+          "bottom": 440,
+          "left": 318
+        }
+      },
+      {
+        "text": "Participar",
+        "rect": {
+          "x": 36,
+          "y": 466,
+          "width": 318,
+          "height": 44,
+          "top": 466,
+          "right": 354,
+          "bottom": 510,
+          "left": 36
+        }
+      }
+    ],
+    "ok": true
+  },
+  {
+    "width": 390,
+    "locale": "fr",
+    "view": "home",
+    "overflow": 0,
+    "bounds": {
+      "x": 16,
+      "y": 1619.96875,
+      "width": 358,
+      "height": 160,
+      "top": 1619.96875,
+      "right": 374,
+      "bottom": 1779.96875,
+      "left": 16
+    },
+    "texts": [
+      {
+        "text": "Défi des 100 vrais fans",
+        "rect": {
+          "x": 40,
+          "y": 1665.671875,
+          "width": 138.734375,
+          "height": 15,
+          "top": 1665.671875,
+          "right": 178.734375,
+          "bottom": 1680.671875,
+          "left": 40
+        }
+      },
+      {
+        "text": "Yuna",
+        "rect": {
+          "x": 40,
+          "y": 1688.671875,
+          "width": 43.375,
+          "height": 21.59375,
+          "top": 1688.671875,
+          "right": 83.375,
+          "bottom": 1710.265625,
+          "left": 40
+        }
+      },
+      {
+        "text": "Participer",
+        "rect": {
+          "x": 40,
+          "y": 1718.265625,
+          "width": 83.859375,
+          "height": 16,
+          "top": 1718.265625,
+          "right": 123.859375,
+          "bottom": 1734.265625,
+          "left": 40
+        }
+      }
+    ],
+    "ok": true
+  },
+  {
+    "width": 390,
+    "locale": "fr",
+    "view": "modal",
+    "overflow": 0,
+    "bounds": {
+      "x": 16,
+      "y": 382,
+      "width": 358,
+      "height": 136,
+      "top": 382,
+      "right": 374,
+      "bottom": 518,
+      "left": 16
+    },
+    "texts": [
+      {
+        "text": "Le défi des 100 vrais fans est lancé. Participez !",
+        "rect": {
+          "x": 36,
+          "y": 394,
+          "width": 270,
+          "height": 48,
+          "top": 394,
+          "right": 306,
+          "bottom": 442,
+          "left": 36
+        }
+      },
+      {
+        "text": "",
+        "rect": {
+          "x": 318,
+          "y": 396,
+          "width": 44,
+          "height": 44,
+          "top": 396,
+          "right": 362,
+          "bottom": 440,
+          "left": 318
+        }
+      },
+      {
+        "text": "Participer",
+        "rect": {
+          "x": 36,
+          "y": 454,
+          "width": 318,
+          "height": 44,
+          "top": 454,
+          "right": 354,
+          "bottom": 498,
+          "left": 36
+        }
+      }
+    ],
+    "ok": true
+  },
+  {
+    "width": 390,
+    "locale": "ru",
+    "view": "home",
+    "overflow": 0,
+    "bounds": {
+      "x": 16,
+      "y": 1619.96875,
+      "width": 358,
+      "height": 160,
+      "top": 1619.96875,
+      "right": 374,
+      "bottom": 1779.96875,
+      "left": 16
+    },
+    "texts": [
+      {
+        "text": "Челлендж «100 настоящих фанатов»",
+        "rect": {
+          "x": 40,
+          "y": 1658.171875,
+          "width": 166.796875,
+          "height": 30,
+          "top": 1658.171875,
+          "right": 206.796875,
+          "bottom": 1688.171875,
+          "left": 40
+        }
+      },
+      {
+        "text": "Yuna",
+        "rect": {
+          "x": 40,
+          "y": 1696.171875,
+          "width": 43.375,
+          "height": 21.59375,
+          "top": 1696.171875,
+          "right": 83.375,
+          "bottom": 1717.765625,
+          "left": 40
+        }
+      },
+      {
+        "text": "Присоединиться",
+        "rect": {
+          "x": 40,
+          "y": 1725.765625,
+          "width": 131.140625,
+          "height": 16,
+          "top": 1725.765625,
+          "right": 171.140625,
+          "bottom": 1741.765625,
+          "left": 40
+        }
+      }
+    ],
+    "ok": true
+  },
+  {
+    "width": 390,
+    "locale": "ru",
+    "view": "modal",
+    "overflow": 0,
+    "bounds": {
+      "x": 16,
+      "y": 370,
+      "width": 358,
+      "height": 160,
+      "top": 370,
+      "right": 374,
+      "bottom": 530,
+      "left": 16
+    },
+    "texts": [
+      {
+        "text": "Челлендж «100 настоящих фанатов» уже идёт. Присоединяйтесь!",
+        "rect": {
+          "x": 36,
+          "y": 382,
+          "width": 270,
+          "height": 72,
+          "top": 382,
+          "right": 306,
+          "bottom": 454,
+          "left": 36
+        }
+      },
+      {
+        "text": "",
+        "rect": {
+          "x": 318,
+          "y": 396,
+          "width": 44,
+          "height": 44,
+          "top": 396,
+          "right": 362,
+          "bottom": 440,
+          "left": 318
+        }
+      },
+      {
+        "text": "Присоединиться",
+        "rect": {
+          "x": 36,
+          "y": 466,
+          "width": 318,
+          "height": 44,
+          "top": 466,
+          "right": 354,
+          "bottom": 510,
+          "left": 36
+        }
+      }
+    ],
+    "ok": true
+  },
+  {
+    "width": 1440,
+    "locale": "ko",
+    "view": "home",
+    "overflow": 0,
+    "bounds": {
+      "x": 40,
+      "y": 1554.1875,
+      "width": 1360,
+      "height": 240,
+      "top": 1554.1875,
+      "right": 1400,
+      "bottom": 1794.1875,
+      "left": 40
+    },
+    "texts": [
+      {
+        "text": "찐팬 100 챌린지",
+        "rect": {
+          "x": 382.265625,
+          "y": 1619.09375,
+          "width": 131.453125,
+          "height": 24,
+          "top": 1619.09375,
+          "right": 513.71875,
+          "bottom": 1643.09375,
+          "left": 382.265625
+        }
+      },
+      {
+        "text": "유나",
+        "rect": {
+          "x": 416.875,
+          "y": 1655.09375,
+          "width": 62.234375,
+          "height": 43.1875,
+          "top": 1655.09375,
+          "right": 479.109375,
+          "bottom": 1698.28125,
+          "left": 416.875
+        }
+      },
+      {
+        "text": "동참하기",
+        "rect": {
+          "x": 408.34375,
+          "y": 1710.28125,
+          "width": 79.3125,
+          "height": 19,
+          "top": 1710.28125,
+          "right": 487.65625,
+          "bottom": 1729.28125,
+          "left": 408.34375
+        }
+      }
+    ],
+    "ok": true
+  },
+  {
+    "width": 1440,
+    "locale": "ko",
+    "view": "modal",
+    "overflow": 0,
+    "bounds": {
+      "x": 540,
+      "y": 380,
+      "width": 360,
+      "height": 140,
+      "top": 380,
+      "right": 900,
+      "bottom": 520,
+      "left": 540
+    },
+    "texts": [
+      {
+        "text": "찐팬 100 챌린지를 하고 있어요. 같이 동참해봐요!",
+        "rect": {
+          "x": 560,
+          "y": 392,
+          "width": 272,
+          "height": 48,
+          "top": 392,
+          "right": 832,
+          "bottom": 440,
+          "left": 560
+        }
+      },
+      {
+        "text": "",
+        "rect": {
+          "x": 844,
+          "y": 394,
+          "width": 44,
+          "height": 44,
+          "top": 394,
+          "right": 888,
+          "bottom": 438,
+          "left": 844
+        }
+      },
+      {
+        "text": "동참하기",
+        "rect": {
+          "x": 560,
+          "y": 452,
+          "width": 320,
+          "height": 48,
+          "top": 452,
+          "right": 880,
+          "bottom": 500,
+          "left": 560
+        }
+      }
+    ],
+    "ok": true
+  },
+  {
+    "width": 1440,
+    "locale": "en",
+    "view": "home",
+    "overflow": 0,
+    "bounds": {
+      "x": 40,
+      "y": 1554.1875,
+      "width": 1360,
+      "height": 240,
+      "top": 1554.1875,
+      "right": 1400,
+      "bottom": 1794.1875,
+      "left": 40
+    },
+    "texts": [
+      {
+        "text": "100 True Fans Challenge",
+        "rect": {
+          "x": 331.6875,
+          "y": 1619.09375,
+          "width": 232.609375,
+          "height": 24,
+          "top": 1619.09375,
+          "right": 564.296875,
+          "bottom": 1643.09375,
+          "left": 331.6875
+        }
+      },
+      {
+        "text": "Yuna",
+        "rect": {
+          "x": 404.625,
+          "y": 1655.09375,
+          "width": 86.734375,
+          "height": 43.1875,
+          "top": 1655.09375,
+          "right": 491.359375,
+          "bottom": 1698.28125,
+          "left": 404.625
+        }
+      },
+      {
+        "text": "Join in",
+        "rect": {
+          "x": 411.375,
+          "y": 1710.28125,
+          "width": 73.25,
+          "height": 19,
+          "top": 1710.28125,
+          "right": 484.625,
+          "bottom": 1729.28125,
+          "left": 411.375
+        }
+      }
+    ],
+    "ok": true
+  },
+  {
+    "width": 1440,
+    "locale": "en",
+    "view": "modal",
+    "overflow": 0,
+    "bounds": {
+      "x": 540,
+      "y": 380,
+      "width": 360,
+      "height": 140,
+      "top": 380,
+      "right": 900,
+      "bottom": 520,
+      "left": 540
+    },
+    "texts": [
+      {
+        "text": "The 100 True Fans Challenge is on. Join in!",
+        "rect": {
+          "x": 560,
+          "y": 392,
+          "width": 272,
+          "height": 48,
+          "top": 392,
+          "right": 832,
+          "bottom": 440,
+          "left": 560
+        }
+      },
+      {
+        "text": "",
+        "rect": {
+          "x": 844,
+          "y": 394,
+          "width": 44,
+          "height": 44,
+          "top": 394,
+          "right": 888,
+          "bottom": 438,
+          "left": 844
+        }
+      },
+      {
+        "text": "Join in",
+        "rect": {
+          "x": 560,
+          "y": 452,
+          "width": 320,
+          "height": 48,
+          "top": 452,
+          "right": 880,
+          "bottom": 500,
+          "left": 560
+        }
+      }
+    ],
+    "ok": true
+  },
+  {
+    "width": 1440,
+    "locale": "ja",
+    "view": "home",
+    "overflow": 0,
+    "bounds": {
+      "x": 40,
+      "y": 1554.1875,
+      "width": 1360,
+      "height": 240,
+      "top": 1554.1875,
+      "right": 1400,
+      "bottom": 1794.1875,
+      "left": 40
+    },
+    "texts": [
+      {
+        "text": "真のファン100人チャレンジ",
+        "rect": {
+          "x": 325.734375,
+          "y": 1613.59375,
+          "width": 244.53125,
+          "height": 30,
+          "top": 1613.59375,
+          "right": 570.265625,
+          "bottom": 1643.59375,
+          "left": 325.734375
+        }
+      },
+      {
+        "text": "Yuna",
+        "rect": {
+          "x": 404.625,
+          "y": 1655.59375,
+          "width": 86.734375,
+          "height": 43.1875,
+          "top": 1655.59375,
+          "right": 491.359375,
+          "bottom": 1698.78125,
+          "left": 404.625
+        }
+      },
+      {
+        "text": "参加する",
+        "rect": {
+          "x": 405,
+          "y": 1710.78125,
+          "width": 86,
+          "height": 24,
+          "top": 1710.78125,
+          "right": 491,
+          "bottom": 1734.78125,
+          "left": 405
+        }
+      }
+    ],
+    "ok": true
+  },
+  {
+    "width": 1440,
+    "locale": "ja",
+    "view": "modal",
+    "overflow": 0,
+    "bounds": {
+      "x": 540,
+      "y": 380,
+      "width": 360,
+      "height": 140,
+      "top": 380,
+      "right": 900,
+      "bottom": 520,
+      "left": 540
+    },
+    "texts": [
+      {
+        "text": "真のファン100人チャレンジ開催中。一緒に参加しましょう！",
+        "rect": {
+          "x": 560,
+          "y": 392,
+          "width": 272,
+          "height": 48,
+          "top": 392,
+          "right": 832,
+          "bottom": 440,
+          "left": 560
+        }
+      },
+      {
+        "text": "",
+        "rect": {
+          "x": 844,
+          "y": 394,
+          "width": 44,
+          "height": 44,
+          "top": 394,
+          "right": 888,
+          "bottom": 438,
+          "left": 844
+        }
+      },
+      {
+        "text": "参加する",
+        "rect": {
+          "x": 560,
+          "y": 452,
+          "width": 320,
+          "height": 48,
+          "top": 452,
+          "right": 880,
+          "bottom": 500,
+          "left": 560
+        }
+      }
+    ],
+    "ok": true
+  },
+  {
+    "width": 1440,
+    "locale": "zh-Hans",
+    "view": "home",
+    "overflow": 0,
+    "bounds": {
+      "x": 40,
+      "y": 1554.1875,
+      "width": 1360,
+      "height": 240,
+      "top": 1554.1875,
+      "right": 1400,
+      "bottom": 1794.1875,
+      "left": 40
+    },
+    "texts": [
+      {
+        "text": "100位真爱粉挑战",
+        "rect": {
+          "x": 370.109375,
+          "y": 1615.59375,
+          "width": 155.78125,
+          "height": 28,
+          "top": 1615.59375,
+          "right": 525.890625,
+          "bottom": 1643.59375,
+          "left": 370.109375
+        }
+      },
+      {
+        "text": "Yuna",
+        "rect": {
+          "x": 404.625,
+          "y": 1655.59375,
+          "width": 86.734375,
+          "height": 43.1875,
+          "top": 1655.59375,
+          "right": 491.359375,
+          "bottom": 1698.78125,
+          "left": 404.625
+        }
+      },
+      {
+        "text": "参与挑战",
+        "rect": {
+          "x": 404,
+          "y": 1710.78125,
+          "width": 88,
+          "height": 22,
+          "top": 1710.78125,
+          "right": 492,
+          "bottom": 1732.78125,
+          "left": 404
+        }
+      }
+    ],
+    "ok": true
+  },
+  {
+    "width": 1440,
+    "locale": "zh-Hans",
+    "view": "modal",
+    "overflow": 0,
+    "bounds": {
+      "x": 540,
+      "y": 380,
+      "width": 360,
+      "height": 140,
+      "top": 380,
+      "right": 900,
+      "bottom": 520,
+      "left": 540
+    },
+    "texts": [
+      {
+        "text": "100位真爱粉挑战进行中，一起来参与吧！",
+        "rect": {
+          "x": 560,
+          "y": 392,
+          "width": 272,
+          "height": 48,
+          "top": 392,
+          "right": 832,
+          "bottom": 440,
+          "left": 560
+        }
+      },
+      {
+        "text": "",
+        "rect": {
+          "x": 844,
+          "y": 394,
+          "width": 44,
+          "height": 44,
+          "top": 394,
+          "right": 888,
+          "bottom": 438,
+          "left": 844
+        }
+      },
+      {
+        "text": "参与挑战",
+        "rect": {
+          "x": 560,
+          "y": 452,
+          "width": 320,
+          "height": 48,
+          "top": 452,
+          "right": 880,
+          "bottom": 500,
+          "left": 560
+        }
+      }
+    ],
+    "ok": true
+  },
+  {
+    "width": 1440,
+    "locale": "zh-Hant",
+    "view": "home",
+    "overflow": 0,
+    "bounds": {
+      "x": 40,
+      "y": 1554.1875,
+      "width": 1360,
+      "height": 240,
+      "top": 1554.1875,
+      "right": 1400,
+      "bottom": 1794.1875,
+      "left": 40
+    },
+    "texts": [
+      {
+        "text": "100位真愛粉挑戰",
+        "rect": {
+          "x": 370.109375,
+          "y": 1615.59375,
+          "width": 155.78125,
+          "height": 28,
+          "top": 1615.59375,
+          "right": 525.890625,
+          "bottom": 1643.59375,
+          "left": 370.109375
+        }
+      },
+      {
+        "text": "Yuna",
+        "rect": {
+          "x": 404.625,
+          "y": 1655.59375,
+          "width": 86.734375,
+          "height": 43.1875,
+          "top": 1655.59375,
+          "right": 491.359375,
+          "bottom": 1698.78125,
+          "left": 404.625
+        }
+      },
+      {
+        "text": "參與挑戰",
+        "rect": {
+          "x": 404,
+          "y": 1710.78125,
+          "width": 88,
+          "height": 22,
+          "top": 1710.78125,
+          "right": 492,
+          "bottom": 1732.78125,
+          "left": 404
+        }
+      }
+    ],
+    "ok": true
+  },
+  {
+    "width": 1440,
+    "locale": "zh-Hant",
+    "view": "modal",
+    "overflow": 0,
+    "bounds": {
+      "x": 540,
+      "y": 380,
+      "width": 360,
+      "height": 140,
+      "top": 380,
+      "right": 900,
+      "bottom": 520,
+      "left": 540
+    },
+    "texts": [
+      {
+        "text": "100位真愛粉挑戰進行中，一起來參與吧！",
+        "rect": {
+          "x": 560,
+          "y": 392,
+          "width": 272,
+          "height": 48,
+          "top": 392,
+          "right": 832,
+          "bottom": 440,
+          "left": 560
+        }
+      },
+      {
+        "text": "",
+        "rect": {
+          "x": 844,
+          "y": 394,
+          "width": 44,
+          "height": 44,
+          "top": 394,
+          "right": 888,
+          "bottom": 438,
+          "left": 844
+        }
+      },
+      {
+        "text": "參與挑戰",
+        "rect": {
+          "x": 560,
+          "y": 452,
+          "width": 320,
+          "height": 48,
+          "top": 452,
+          "right": 880,
+          "bottom": 500,
+          "left": 560
+        }
+      }
+    ],
+    "ok": true
+  },
+  {
+    "width": 1440,
+    "locale": "es",
+    "view": "home",
+    "overflow": 0,
+    "bounds": {
+      "x": 40,
+      "y": 1554.1875,
+      "width": 1360,
+      "height": 240,
+      "top": 1554.1875,
+      "right": 1400,
+      "bottom": 1794.1875,
+      "left": 40
+    },
+    "texts": [
+      {
+        "text": "Reto de 100 fans de verdad",
+        "rect": {
+          "x": 320.1875,
+          "y": 1619.09375,
+          "width": 255.625,
+          "height": 24,
+          "top": 1619.09375,
+          "right": 575.8125,
+          "bottom": 1643.09375,
+          "left": 320.1875
+        }
+      },
+      {
+        "text": "Yuna",
+        "rect": {
+          "x": 404.625,
+          "y": 1655.09375,
+          "width": 86.734375,
+          "height": 43.1875,
+          "top": 1655.09375,
+          "right": 491.359375,
+          "bottom": 1698.28125,
+          "left": 404.625
+        }
+      },
+      {
+        "text": "Participar",
+        "rect": {
+          "x": 399.296875,
+          "y": 1710.28125,
+          "width": 97.390625,
+          "height": 19,
+          "top": 1710.28125,
+          "right": 496.6875,
+          "bottom": 1729.28125,
+          "left": 399.296875
+        }
+      }
+    ],
+    "ok": true
+  },
+  {
+    "width": 1440,
+    "locale": "es",
+    "view": "modal",
+    "overflow": 0,
+    "bounds": {
+      "x": 540,
+      "y": 380,
+      "width": 360,
+      "height": 140,
+      "top": 380,
+      "right": 900,
+      "bottom": 520,
+      "left": 540
+    },
+    "texts": [
+      {
+        "text": "¡El reto de 100 fans de verdad está en marcha! ¡Participa!",
+        "rect": {
+          "x": 560,
+          "y": 392,
+          "width": 272,
+          "height": 48,
+          "top": 392,
+          "right": 832,
+          "bottom": 440,
+          "left": 560
+        }
+      },
+      {
+        "text": "",
+        "rect": {
+          "x": 844,
+          "y": 394,
+          "width": 44,
+          "height": 44,
+          "top": 394,
+          "right": 888,
+          "bottom": 438,
+          "left": 844
+        }
+      },
+      {
+        "text": "Participar",
+        "rect": {
+          "x": 560,
+          "y": 452,
+          "width": 320,
+          "height": 48,
+          "top": 452,
+          "right": 880,
+          "bottom": 500,
+          "left": 560
+        }
+      }
+    ],
+    "ok": true
+  },
+  {
+    "width": 1440,
+    "locale": "id",
+    "view": "home",
+    "overflow": 0,
+    "bounds": {
+      "x": 40,
+      "y": 1554.1875,
+      "width": 1360,
+      "height": 240,
+      "top": 1554.1875,
+      "right": 1400,
+      "bottom": 1794.1875,
+      "left": 40
+    },
+    "texts": [
+      {
+        "text": "Tantangan 100 Fan Sejati",
+        "rect": {
+          "x": 329.46875,
+          "y": 1619.09375,
+          "width": 237.046875,
+          "height": 24,
+          "top": 1619.09375,
+          "right": 566.515625,
+          "bottom": 1643.09375,
+          "left": 329.46875
+        }
+      },
+      {
+        "text": "Yuna",
+        "rect": {
+          "x": 404.625,
+          "y": 1655.09375,
+          "width": 86.734375,
+          "height": 43.1875,
+          "top": 1655.09375,
+          "right": 491.359375,
+          "bottom": 1698.28125,
+          "left": 404.625
+        }
+      },
+      {
+        "text": "Ikut serta",
+        "rect": {
+          "x": 400.15625,
+          "y": 1710.28125,
+          "width": 95.6875,
+          "height": 19,
+          "top": 1710.28125,
+          "right": 495.84375,
+          "bottom": 1729.28125,
+          "left": 400.15625
+        }
+      }
+    ],
+    "ok": true
+  },
+  {
+    "width": 1440,
+    "locale": "id",
+    "view": "modal",
+    "overflow": 0,
+    "bounds": {
+      "x": 540,
+      "y": 368,
+      "width": 360,
+      "height": 164,
+      "top": 368,
+      "right": 900,
+      "bottom": 532,
+      "left": 540
+    },
+    "texts": [
+      {
+        "text": "Tantangan 100 Fan Sejati sedang berlangsung. Ayo ikut!",
+        "rect": {
+          "x": 560,
+          "y": 380,
+          "width": 272,
+          "height": 72,
+          "top": 380,
+          "right": 832,
+          "bottom": 452,
+          "left": 560
+        }
+      },
+      {
+        "text": "",
+        "rect": {
+          "x": 844,
+          "y": 394,
+          "width": 44,
+          "height": 44,
+          "top": 394,
+          "right": 888,
+          "bottom": 438,
+          "left": 844
+        }
+      },
+      {
+        "text": "Ikut serta",
+        "rect": {
+          "x": 560,
+          "y": 464,
+          "width": 320,
+          "height": 48,
+          "top": 464,
+          "right": 880,
+          "bottom": 512,
+          "left": 560
+        }
+      }
+    ],
+    "ok": true
+  },
+  {
+    "width": 1440,
+    "locale": "vi",
+    "view": "home",
+    "overflow": 0,
+    "bounds": {
+      "x": 40,
+      "y": 1554.1875,
+      "width": 1360,
+      "height": 240,
+      "top": 1554.1875,
+      "right": 1400,
+      "bottom": 1794.1875,
+      "left": 40
+    },
+    "texts": [
+      {
+        "text": "Thử thách 100 fan đích thực",
+        "rect": {
+          "x": 314.703125,
+          "y": 1619.09375,
+          "width": 266.578125,
+          "height": 24,
+          "top": 1619.09375,
+          "right": 581.28125,
+          "bottom": 1643.09375,
+          "left": 314.703125
+        }
+      },
+      {
+        "text": "Yuna",
+        "rect": {
+          "x": 404.625,
+          "y": 1655.09375,
+          "width": 86.734375,
+          "height": 43.1875,
+          "top": 1655.09375,
+          "right": 491.359375,
+          "bottom": 1698.28125,
+          "left": 404.625
+        }
+      },
+      {
+        "text": "Tham gia",
+        "rect": {
+          "x": 401.328125,
+          "y": 1710.28125,
+          "width": 93.328125,
+          "height": 19,
+          "top": 1710.28125,
+          "right": 494.65625,
+          "bottom": 1729.28125,
+          "left": 401.328125
+        }
+      }
+    ],
+    "ok": true
+  },
+  {
+    "width": 1440,
+    "locale": "vi",
+    "view": "modal",
+    "overflow": 0,
+    "bounds": {
+      "x": 540,
+      "y": 368,
+      "width": 360,
+      "height": 164,
+      "top": 368,
+      "right": 900,
+      "bottom": 532,
+      "left": 540
+    },
+    "texts": [
+      {
+        "text": "Thử thách 100 fan đích thực đang diễn ra. Cùng tham gia nhé!",
+        "rect": {
+          "x": 560,
+          "y": 380,
+          "width": 272,
+          "height": 72,
+          "top": 380,
+          "right": 832,
+          "bottom": 452,
+          "left": 560
+        }
+      },
+      {
+        "text": "",
+        "rect": {
+          "x": 844,
+          "y": 394,
+          "width": 44,
+          "height": 44,
+          "top": 394,
+          "right": 888,
+          "bottom": 438,
+          "left": 844
+        }
+      },
+      {
+        "text": "Tham gia",
+        "rect": {
+          "x": 560,
+          "y": 464,
+          "width": 320,
+          "height": 48,
+          "top": 464,
+          "right": 880,
+          "bottom": 512,
+          "left": 560
+        }
+      }
+    ],
+    "ok": true
+  },
+  {
+    "width": 1440,
+    "locale": "th",
+    "view": "home",
+    "overflow": 0,
+    "bounds": {
+      "x": 40,
+      "y": 1554.1875,
+      "width": 1360,
+      "height": 240,
+      "top": 1554.1875,
+      "right": 1400,
+      "bottom": 1794.1875,
+      "left": 40
+    },
+    "texts": [
+      {
+        "text": "ชาเลนจ์ 100 แฟนตัวจริง",
+        "rect": {
+          "x": 349.125,
+          "y": 1615.59375,
+          "width": 197.75,
+          "height": 28,
+          "top": 1615.59375,
+          "right": 546.875,
+          "bottom": 1643.59375,
+          "left": 349.125
+        }
+      },
+      {
+        "text": "Yuna",
+        "rect": {
+          "x": 404.625,
+          "y": 1655.59375,
+          "width": 86.734375,
+          "height": 43.1875,
+          "top": 1655.59375,
+          "right": 491.359375,
+          "bottom": 1698.78125,
+          "left": 404.625
+        }
+      },
+      {
+        "text": "เข้าร่วม",
+        "rect": {
+          "x": 411.875,
+          "y": 1710.78125,
+          "width": 72.234375,
+          "height": 22,
+          "top": 1710.78125,
+          "right": 484.109375,
+          "bottom": 1732.78125,
+          "left": 411.875
+        }
+      }
+    ],
+    "ok": true
+  },
+  {
+    "width": 1440,
+    "locale": "th",
+    "view": "modal",
+    "overflow": 0,
+    "bounds": {
+      "x": 540,
+      "y": 380,
+      "width": 360,
+      "height": 140,
+      "top": 380,
+      "right": 900,
+      "bottom": 520,
+      "left": 540
+    },
+    "texts": [
+      {
+        "text": "ชาเลนจ์ 100 แฟนตัวจริงกำลังจัดอยู่ มาร่วมกันเลย!",
+        "rect": {
+          "x": 560,
+          "y": 392,
+          "width": 272,
+          "height": 48,
+          "top": 392,
+          "right": 832,
+          "bottom": 440,
+          "left": 560
+        }
+      },
+      {
+        "text": "",
+        "rect": {
+          "x": 844,
+          "y": 394,
+          "width": 44,
+          "height": 44,
+          "top": 394,
+          "right": 888,
+          "bottom": 438,
+          "left": 844
+        }
+      },
+      {
+        "text": "เข้าร่วม",
+        "rect": {
+          "x": 560,
+          "y": 452,
+          "width": 320,
+          "height": 48,
+          "top": 452,
+          "right": 880,
+          "bottom": 500,
+          "left": 560
+        }
+      }
+    ],
+    "ok": true
+  },
+  {
+    "width": 1440,
+    "locale": "pt",
+    "view": "home",
+    "overflow": 0,
+    "bounds": {
+      "x": 40,
+      "y": 1554.1875,
+      "width": 1360,
+      "height": 240,
+      "top": 1554.1875,
+      "right": 1400,
+      "bottom": 1794.1875,
+      "left": 40
+    },
+    "texts": [
+      {
+        "text": "Desafio dos 100 fãs de verdade",
+        "rect": {
+          "x": 300.34375,
+          "y": 1619.09375,
+          "width": 295.3125,
+          "height": 24,
+          "top": 1619.09375,
+          "right": 595.65625,
+          "bottom": 1643.09375,
+          "left": 300.34375
+        }
+      },
+      {
+        "text": "Yuna",
+        "rect": {
+          "x": 404.625,
+          "y": 1655.09375,
+          "width": 86.734375,
+          "height": 43.1875,
+          "top": 1655.09375,
+          "right": 491.359375,
+          "bottom": 1698.28125,
+          "left": 404.625
+        }
+      },
+      {
+        "text": "Participar",
+        "rect": {
+          "x": 399.296875,
+          "y": 1710.28125,
+          "width": 97.390625,
+          "height": 19,
+          "top": 1710.28125,
+          "right": 496.6875,
+          "bottom": 1729.28125,
+          "left": 399.296875
+        }
+      }
+    ],
+    "ok": true
+  },
+  {
+    "width": 1440,
+    "locale": "pt",
+    "view": "modal",
+    "overflow": 0,
+    "bounds": {
+      "x": 540,
+      "y": 368,
+      "width": 360,
+      "height": 164,
+      "top": 368,
+      "right": 900,
+      "bottom": 532,
+      "left": 540
+    },
+    "texts": [
+      {
+        "text": "O desafio dos 100 fãs de verdade está a acontecer. Participe!",
+        "rect": {
+          "x": 560,
+          "y": 380,
+          "width": 272,
+          "height": 72,
+          "top": 380,
+          "right": 832,
+          "bottom": 452,
+          "left": 560
+        }
+      },
+      {
+        "text": "",
+        "rect": {
+          "x": 844,
+          "y": 394,
+          "width": 44,
+          "height": 44,
+          "top": 394,
+          "right": 888,
+          "bottom": 438,
+          "left": 844
+        }
+      },
+      {
+        "text": "Participar",
+        "rect": {
+          "x": 560,
+          "y": 464,
+          "width": 320,
+          "height": 48,
+          "top": 464,
+          "right": 880,
+          "bottom": 512,
+          "left": 560
+        }
+      }
+    ],
+    "ok": true
+  },
+  {
+    "width": 1440,
+    "locale": "fr",
+    "view": "home",
+    "overflow": 0,
+    "bounds": {
+      "x": 40,
+      "y": 1554.1875,
+      "width": 1360,
+      "height": 240,
+      "top": 1554.1875,
+      "right": 1400,
+      "bottom": 1794.1875,
+      "left": 40
+    },
+    "texts": [
+      {
+        "text": "Défi des 100 vrais fans",
+        "rect": {
+          "x": 341.28125,
+          "y": 1619.09375,
+          "width": 213.421875,
+          "height": 24,
+          "top": 1619.09375,
+          "right": 554.703125,
+          "bottom": 1643.09375,
+          "left": 341.28125
+        }
+      },
+      {
+        "text": "Yuna",
+        "rect": {
+          "x": 404.625,
+          "y": 1655.09375,
+          "width": 86.734375,
+          "height": 43.1875,
+          "top": 1655.09375,
+          "right": 491.359375,
+          "bottom": 1698.28125,
+          "left": 404.625
+        }
+      },
+      {
+        "text": "Participer",
+        "rect": {
+          "x": 399.15625,
+          "y": 1710.28125,
+          "width": 97.671875,
+          "height": 19,
+          "top": 1710.28125,
+          "right": 496.828125,
+          "bottom": 1729.28125,
+          "left": 399.15625
+        }
+      }
+    ],
+    "ok": true
+  },
+  {
+    "width": 1440,
+    "locale": "fr",
+    "view": "modal",
+    "overflow": 0,
+    "bounds": {
+      "x": 540,
+      "y": 380,
+      "width": 360,
+      "height": 140,
+      "top": 380,
+      "right": 900,
+      "bottom": 520,
+      "left": 540
+    },
+    "texts": [
+      {
+        "text": "Le défi des 100 vrais fans est lancé. Participez !",
+        "rect": {
+          "x": 560,
+          "y": 392,
+          "width": 272,
+          "height": 48,
+          "top": 392,
+          "right": 832,
+          "bottom": 440,
+          "left": 560
+        }
+      },
+      {
+        "text": "",
+        "rect": {
+          "x": 844,
+          "y": 394,
+          "width": 44,
+          "height": 44,
+          "top": 394,
+          "right": 888,
+          "bottom": 438,
+          "left": 844
+        }
+      },
+      {
+        "text": "Participer",
+        "rect": {
+          "x": 560,
+          "y": 452,
+          "width": 320,
+          "height": 48,
+          "top": 452,
+          "right": 880,
+          "bottom": 500,
+          "left": 560
+        }
+      }
+    ],
+    "ok": true
+  },
+  {
+    "width": 1440,
+    "locale": "ru",
+    "view": "home",
+    "overflow": 0,
+    "bounds": {
+      "x": 40,
+      "y": 1554.1875,
+      "width": 1360,
+      "height": 240,
+      "top": 1554.1875,
+      "right": 1400,
+      "bottom": 1794.1875,
+      "left": 40
+    },
+    "texts": [
+      {
+        "text": "Челлендж «100 настоящих фанатов»",
+        "rect": {
+          "x": 265.59375,
+          "y": 1619.09375,
+          "width": 364.796875,
+          "height": 24,
+          "top": 1619.09375,
+          "right": 630.390625,
+          "bottom": 1643.09375,
+          "left": 265.59375
+        }
+      },
+      {
+        "text": "Yuna",
+        "rect": {
+          "x": 404.625,
+          "y": 1655.09375,
+          "width": 86.734375,
+          "height": 43.1875,
+          "top": 1655.09375,
+          "right": 491.359375,
+          "bottom": 1698.28125,
+          "left": 404.625
+        }
+      },
+      {
+        "text": "Присоединиться",
+        "rect": {
+          "x": 370.0625,
+          "y": 1710.28125,
+          "width": 155.859375,
+          "height": 19,
+          "top": 1710.28125,
+          "right": 525.921875,
+          "bottom": 1729.28125,
+          "left": 370.0625
+        }
+      }
+    ],
+    "ok": true
+  },
+  {
+    "width": 1440,
+    "locale": "ru",
+    "view": "modal",
+    "overflow": 0,
+    "bounds": {
+      "x": 540,
+      "y": 368,
+      "width": 360,
+      "height": 164,
+      "top": 368,
+      "right": 900,
+      "bottom": 532,
+      "left": 540
+    },
+    "texts": [
+      {
+        "text": "Челлендж «100 настоящих фанатов» уже идёт. Присоединяйтесь!",
+        "rect": {
+          "x": 560,
+          "y": 380,
+          "width": 272,
+          "height": 72,
+          "top": 380,
+          "right": 832,
+          "bottom": 452,
+          "left": 560
+        }
+      },
+      {
+        "text": "",
+        "rect": {
+          "x": 844,
+          "y": 394,
+          "width": 44,
+          "height": 44,
+          "top": 394,
+          "right": 888,
+          "bottom": 438,
+          "left": 844
+        }
+      },
+      {
+        "text": "Присоединиться",
+        "rect": {
+          "x": 560,
+          "y": 464,
+          "width": 320,
+          "height": 48,
+          "top": 464,
+          "right": 880,
+          "bottom": 512,
+          "left": 560
+        }
+      }
+    ],
+    "ok": true
+  },
+  {
+    "width": 360,
+    "locale": "ko",
+    "view": "home",
+    "overflow": 0,
+    "bounds": {
+      "x": 16,
+      "y": 1514.1875,
+      "width": 328,
+      "height": 160,
+      "top": 1514.1875,
+      "right": 344,
+      "bottom": 1674.1875,
+      "left": 16
+    },
+    "texts": [
+      {
+        "text": "찐팬 100 챌린지",
+        "rect": {
+          "x": 40,
+          "y": 1559.890625,
+          "width": 85.453125,
+          "height": 15,
+          "top": 1559.890625,
+          "right": 125.453125,
+          "bottom": 1574.890625,
+          "left": 40
+        }
+      },
+      {
+        "text": "유나",
+        "rect": {
+          "x": 40,
+          "y": 1582.890625,
+          "width": 31.125,
+          "height": 21.59375,
+          "top": 1582.890625,
+          "right": 71.125,
+          "bottom": 1604.484375,
+          "left": 40
+        }
+      },
+      {
+        "text": "동참하기",
+        "rect": {
+          "x": 40,
+          "y": 1612.484375,
+          "width": 68.953125,
+          "height": 16,
+          "top": 1612.484375,
+          "right": 108.953125,
+          "bottom": 1628.484375,
+          "left": 40
+        }
+      }
+    ],
+    "ok": true
+  },
+  {
+    "width": 360,
+    "locale": "ko",
+    "view": "modal",
+    "overflow": 0,
+    "bounds": {
+      "x": 16,
+      "y": 382,
+      "width": 328,
+      "height": 136,
+      "top": 382,
+      "right": 344,
+      "bottom": 518,
+      "left": 16
+    },
+    "texts": [
+      {
+        "text": "찐팬 100 챌린지를 하고 있어요. 같이 동참해봐요!",
+        "rect": {
+          "x": 36,
+          "y": 394,
+          "width": 240,
+          "height": 48,
+          "top": 394,
+          "right": 276,
+          "bottom": 442,
+          "left": 36
+        }
+      },
+      {
+        "text": "",
+        "rect": {
+          "x": 288,
+          "y": 396,
+          "width": 44,
+          "height": 44,
+          "top": 396,
+          "right": 332,
+          "bottom": 440,
+          "left": 288
+        }
+      },
+      {
+        "text": "동참하기",
+        "rect": {
+          "x": 36,
+          "y": 454,
+          "width": 288,
+          "height": 44,
+          "top": 454,
+          "right": 324,
+          "bottom": 498,
+          "left": 36
+        }
+      }
+    ],
+    "ok": true
+  },
+  {
+    "width": 360,
+    "locale": "ja",
+    "view": "home",
+    "overflow": 0,
+    "bounds": {
+      "x": 16,
+      "y": 1589.96875,
+      "width": 328,
+      "height": 160,
+      "top": 1589.96875,
+      "right": 344,
+      "bottom": 1749.96875,
+      "left": 16
+    },
+    "texts": [
+      {
+        "text": "真のファン100人チャレンジ",
+        "rect": {
+          "x": 40,
+          "y": 1623.671875,
+          "width": 148.796875,
+          "height": 35,
+          "top": 1623.671875,
+          "right": 188.796875,
+          "bottom": 1658.671875,
+          "left": 40
+        }
+      },
+      {
+        "text": "Yuna",
+        "rect": {
+          "x": 40,
+          "y": 1666.671875,
+          "width": 43.375,
+          "height": 21.59375,
+          "top": 1666.671875,
+          "right": 83.375,
+          "bottom": 1688.265625,
+          "left": 40
+        }
+      },
+      {
+        "text": "参加する",
+        "rect": {
+          "x": 40,
+          "y": 1696.265625,
+          "width": 74.375,
+          "height": 20,
+          "top": 1696.265625,
+          "right": 114.375,
+          "bottom": 1716.265625,
+          "left": 40
+        }
+      }
+    ],
+    "ok": true
+  },
+  {
+    "width": 360,
+    "locale": "ja",
+    "view": "modal",
+    "overflow": 0,
+    "bounds": {
+      "x": 16,
+      "y": 370,
+      "width": 328,
+      "height": 160,
+      "top": 370,
+      "right": 344,
+      "bottom": 530,
+      "left": 16
+    },
+    "texts": [
+      {
+        "text": "真のファン100人チャレンジ開催中。一緒に参加しましょう！",
+        "rect": {
+          "x": 36,
+          "y": 382,
+          "width": 240,
+          "height": 72,
+          "top": 382,
+          "right": 276,
+          "bottom": 454,
+          "left": 36
+        }
+      },
+      {
+        "text": "",
+        "rect": {
+          "x": 288,
+          "y": 396,
+          "width": 44,
+          "height": 44,
+          "top": 396,
+          "right": 332,
+          "bottom": 440,
+          "left": 288
+        }
+      },
+      {
+        "text": "参加する",
+        "rect": {
+          "x": 36,
+          "y": 466,
+          "width": 288,
+          "height": 44,
+          "top": 466,
+          "right": 324,
+          "bottom": 510,
+          "left": 36
+        }
+      }
+    ],
+    "ok": true
+  },
+  {
+    "width": 360,
+    "locale": "vi",
+    "view": "home",
+    "overflow": 0,
+    "bounds": {
+      "x": 16,
+      "y": 1589.96875,
+      "width": 328,
+      "height": 160,
+      "top": 1589.96875,
+      "right": 344,
+      "bottom": 1749.96875,
+      "left": 16
+    },
+    "texts": [
+      {
+        "text": "Thử thách 100 fan đích thực",
+        "rect": {
+          "x": 40,
+          "y": 1628.171875,
+          "width": 148.796875,
+          "height": 30,
+          "top": 1628.171875,
+          "right": 188.796875,
+          "bottom": 1658.171875,
+          "left": 40
+        }
+      },
+      {
+        "text": "Yuna",
+        "rect": {
+          "x": 40,
+          "y": 1666.171875,
+          "width": 43.375,
+          "height": 21.59375,
+          "top": 1666.171875,
+          "right": 83.375,
+          "bottom": 1687.765625,
+          "left": 40
+        }
+      },
+      {
+        "text": "Tham gia",
+        "rect": {
+          "x": 40,
+          "y": 1695.765625,
+          "width": 80.34375,
+          "height": 16,
+          "top": 1695.765625,
+          "right": 120.34375,
+          "bottom": 1711.765625,
+          "left": 40
+        }
+      }
+    ],
+    "ok": true
+  },
+  {
+    "width": 360,
+    "locale": "vi",
+    "view": "modal",
+    "overflow": 0,
+    "bounds": {
+      "x": 16,
+      "y": 370,
+      "width": 328,
+      "height": 160,
+      "top": 370,
+      "right": 344,
+      "bottom": 530,
+      "left": 16
+    },
+    "texts": [
+      {
+        "text": "Thử thách 100 fan đích thực đang diễn ra. Cùng tham gia nhé!",
+        "rect": {
+          "x": 36,
+          "y": 382,
+          "width": 240,
+          "height": 72,
+          "top": 382,
+          "right": 276,
+          "bottom": 454,
+          "left": 36
+        }
+      },
+      {
+        "text": "",
+        "rect": {
+          "x": 288,
+          "y": 396,
+          "width": 44,
+          "height": 44,
+          "top": 396,
+          "right": 332,
+          "bottom": 440,
+          "left": 288
+        }
+      },
+      {
+        "text": "Tham gia",
+        "rect": {
+          "x": 36,
+          "y": 466,
+          "width": 288,
+          "height": 44,
+          "top": 466,
+          "right": 324,
+          "bottom": 510,
+          "left": 36
+        }
+      }
+    ],
+    "ok": true
+  },
+  {
+    "width": 360,
+    "locale": "th",
+    "view": "home",
+    "overflow": 0,
+    "bounds": {
+      "x": 16,
+      "y": 1514.1875,
+      "width": 328,
+      "height": 160,
+      "top": 1514.1875,
+      "right": 344,
+      "bottom": 1674.1875,
+      "left": 16
+    },
+    "texts": [
+      {
+        "text": "ชาเลนจ์ 100 แฟนตัวจริง",
+        "rect": {
+          "x": 40,
+          "y": 1557.390625,
+          "width": 128.53125,
+          "height": 18,
+          "top": 1557.390625,
+          "right": 168.53125,
+          "bottom": 1575.390625,
+          "left": 40
+        }
+      },
+      {
+        "text": "Yuna",
+        "rect": {
+          "x": 40,
+          "y": 1583.390625,
+          "width": 43.375,
+          "height": 21.59375,
+          "top": 1583.390625,
+          "right": 83.375,
+          "bottom": 1604.984375,
+          "left": 40
+        }
+      },
+      {
+        "text": "เข้าร่วม",
+        "rect": {
+          "x": 40,
+          "y": 1612.984375,
+          "width": 63.1875,
+          "height": 18,
+          "top": 1612.984375,
+          "right": 103.1875,
+          "bottom": 1630.984375,
+          "left": 40
+        }
+      }
+    ],
+    "ok": true
+  },
+  {
+    "width": 360,
+    "locale": "th",
+    "view": "modal",
+    "overflow": 0,
+    "bounds": {
+      "x": 16,
+      "y": 382,
+      "width": 328,
+      "height": 136,
+      "top": 382,
+      "right": 344,
+      "bottom": 518,
+      "left": 16
+    },
+    "texts": [
+      {
+        "text": "ชาเลนจ์ 100 แฟนตัวจริงกำลังจัดอยู่ มาร่วมกันเลย!",
+        "rect": {
+          "x": 36,
+          "y": 394,
+          "width": 240,
+          "height": 48,
+          "top": 394,
+          "right": 276,
+          "bottom": 442,
+          "left": 36
+        }
+      },
+      {
+        "text": "",
+        "rect": {
+          "x": 288,
+          "y": 396,
+          "width": 44,
+          "height": 44,
+          "top": 396,
+          "right": 332,
+          "bottom": 440,
+          "left": 288
+        }
+      },
+      {
+        "text": "เข้าร่วม",
+        "rect": {
+          "x": 36,
+          "y": 454,
+          "width": 288,
+          "height": 44,
+          "top": 454,
+          "right": 324,
+          "bottom": 498,
+          "left": 36
+        }
+      }
+    ],
+    "ok": true
+  },
+  {
+    "width": 768,
+    "locale": "ko",
+    "view": "home",
+    "overflow": 0,
+    "bounds": {
+      "x": 32,
+      "y": 1498.1875,
+      "width": 704,
+      "height": 240,
+      "top": 1498.1875,
+      "right": 736,
+      "bottom": 1738.1875,
+      "left": 32
+    },
+    "texts": [
+      {
+        "text": "찐팬 100 챌린지",
+        "rect": {
+          "x": 177.46875,
+          "y": 1563.09375,
+          "width": 131.453125,
+          "height": 24,
+          "top": 1563.09375,
+          "right": 308.921875,
+          "bottom": 1587.09375,
+          "left": 177.46875
+        }
+      },
+      {
+        "text": "유나",
+        "rect": {
+          "x": 212.078125,
+          "y": 1599.09375,
+          "width": 62.234375,
+          "height": 43.1875,
+          "top": 1599.09375,
+          "right": 274.3125,
+          "bottom": 1642.28125,
+          "left": 212.078125
+        }
+      },
+      {
+        "text": "동참하기",
+        "rect": {
+          "x": 203.53125,
+          "y": 1654.28125,
+          "width": 79.3125,
+          "height": 19,
+          "top": 1654.28125,
+          "right": 282.84375,
+          "bottom": 1673.28125,
+          "left": 203.53125
+        }
+      }
+    ],
+    "ok": true
+  },
+  {
+    "width": 768,
+    "locale": "ko",
+    "view": "modal",
+    "overflow": 0,
+    "bounds": {
+      "x": 204,
+      "y": 382,
+      "width": 360,
+      "height": 136,
+      "top": 382,
+      "right": 564,
+      "bottom": 518,
+      "left": 204
+    },
+    "texts": [
+      {
+        "text": "찐팬 100 챌린지를 하고 있어요. 같이 동참해봐요!",
+        "rect": {
+          "x": 224,
+          "y": 394,
+          "width": 272,
+          "height": 48,
+          "top": 394,
+          "right": 496,
+          "bottom": 442,
+          "left": 224
+        }
+      },
+      {
+        "text": "",
+        "rect": {
+          "x": 508,
+          "y": 396,
+          "width": 44,
+          "height": 44,
+          "top": 396,
+          "right": 552,
+          "bottom": 440,
+          "left": 508
+        }
+      },
+      {
+        "text": "동참하기",
+        "rect": {
+          "x": 224,
+          "y": 454,
+          "width": 320,
+          "height": 44,
+          "top": 454,
+          "right": 544,
+          "bottom": 498,
+          "left": 224
+        }
+      }
+    ],
+    "ok": true
+  },
+  {
+    "width": 768,
+    "locale": "ja",
+    "view": "home",
+    "overflow": 0,
+    "bounds": {
+      "x": 32,
+      "y": 1498.1875,
+      "width": 704,
+      "height": 240,
+      "top": 1498.1875,
+      "right": 736,
+      "bottom": 1738.1875,
+      "left": 32
+    },
+    "texts": [
+      {
+        "text": "真のファン100人チャレンジ",
+        "rect": {
+          "x": 120.921875,
+          "y": 1557.59375,
+          "width": 244.53125,
+          "height": 30,
+          "top": 1557.59375,
+          "right": 365.453125,
+          "bottom": 1587.59375,
+          "left": 120.921875
+        }
+      },
+      {
+        "text": "Yuna",
+        "rect": {
+          "x": 199.828125,
+          "y": 1599.59375,
+          "width": 86.734375,
+          "height": 43.1875,
+          "top": 1599.59375,
+          "right": 286.5625,
+          "bottom": 1642.78125,
+          "left": 199.828125
+        }
+      },
+      {
+        "text": "参加する",
+        "rect": {
+          "x": 200.1875,
+          "y": 1654.78125,
+          "width": 86,
+          "height": 24,
+          "top": 1654.78125,
+          "right": 286.1875,
+          "bottom": 1678.78125,
+          "left": 200.1875
+        }
+      }
+    ],
+    "ok": true
+  },
+  {
+    "width": 768,
+    "locale": "ja",
+    "view": "modal",
+    "overflow": 0,
+    "bounds": {
+      "x": 204,
+      "y": 382,
+      "width": 360,
+      "height": 136,
+      "top": 382,
+      "right": 564,
+      "bottom": 518,
+      "left": 204
+    },
+    "texts": [
+      {
+        "text": "真のファン100人チャレンジ開催中。一緒に参加しましょう！",
+        "rect": {
+          "x": 224,
+          "y": 394,
+          "width": 272,
+          "height": 48,
+          "top": 394,
+          "right": 496,
+          "bottom": 442,
+          "left": 224
+        }
+      },
+      {
+        "text": "",
+        "rect": {
+          "x": 508,
+          "y": 396,
+          "width": 44,
+          "height": 44,
+          "top": 396,
+          "right": 552,
+          "bottom": 440,
+          "left": 508
+        }
+      },
+      {
+        "text": "参加する",
+        "rect": {
+          "x": 224,
+          "y": 454,
+          "width": 320,
+          "height": 44,
+          "top": 454,
+          "right": 544,
+          "bottom": 498,
+          "left": 224
+        }
+      }
+    ],
+    "ok": true
+  },
+  {
+    "width": 768,
+    "locale": "vi",
+    "view": "home",
+    "overflow": 0,
+    "bounds": {
+      "x": 32,
+      "y": 1498.1875,
+      "width": 704,
+      "height": 240,
+      "top": 1498.1875,
+      "right": 736,
+      "bottom": 1738.1875,
+      "left": 32
+    },
+    "texts": [
+      {
+        "text": "Thử thách 100 fan đích thực",
+        "rect": {
+          "x": 109.90625,
+          "y": 1563.09375,
+          "width": 266.578125,
+          "height": 24,
+          "top": 1563.09375,
+          "right": 376.484375,
+          "bottom": 1587.09375,
+          "left": 109.90625
+        }
+      },
+      {
+        "text": "Yuna",
+        "rect": {
+          "x": 199.828125,
+          "y": 1599.09375,
+          "width": 86.734375,
+          "height": 43.1875,
+          "top": 1599.09375,
+          "right": 286.5625,
+          "bottom": 1642.28125,
+          "left": 199.828125
+        }
+      },
+      {
+        "text": "Tham gia",
+        "rect": {
+          "x": 196.53125,
+          "y": 1654.28125,
+          "width": 93.328125,
+          "height": 19,
+          "top": 1654.28125,
+          "right": 289.859375,
+          "bottom": 1673.28125,
+          "left": 196.53125
+        }
+      }
+    ],
+    "ok": true
+  },
+  {
+    "width": 768,
+    "locale": "vi",
+    "view": "modal",
+    "overflow": 0,
+    "bounds": {
+      "x": 204,
+      "y": 370,
+      "width": 360,
+      "height": 160,
+      "top": 370,
+      "right": 564,
+      "bottom": 530,
+      "left": 204
+    },
+    "texts": [
+      {
+        "text": "Thử thách 100 fan đích thực đang diễn ra. Cùng tham gia nhé!",
+        "rect": {
+          "x": 224,
+          "y": 382,
+          "width": 272,
+          "height": 72,
+          "top": 382,
+          "right": 496,
+          "bottom": 454,
+          "left": 224
+        }
+      },
+      {
+        "text": "",
+        "rect": {
+          "x": 508,
+          "y": 396,
+          "width": 44,
+          "height": 44,
+          "top": 396,
+          "right": 552,
+          "bottom": 440,
+          "left": 508
+        }
+      },
+      {
+        "text": "Tham gia",
+        "rect": {
+          "x": 224,
+          "y": 466,
+          "width": 320,
+          "height": 44,
+          "top": 466,
+          "right": 544,
+          "bottom": 510,
+          "left": 224
+        }
+      }
+    ],
+    "ok": true
+  },
+  {
+    "width": 768,
+    "locale": "th",
+    "view": "home",
+    "overflow": 0,
+    "bounds": {
+      "x": 32,
+      "y": 1498.1875,
+      "width": 704,
+      "height": 240,
+      "top": 1498.1875,
+      "right": 736,
+      "bottom": 1738.1875,
+      "left": 32
+    },
+    "texts": [
+      {
+        "text": "ชาเลนจ์ 100 แฟนตัวจริง",
+        "rect": {
+          "x": 144.3125,
+          "y": 1559.59375,
+          "width": 197.75,
+          "height": 28,
+          "top": 1559.59375,
+          "right": 342.0625,
+          "bottom": 1587.59375,
+          "left": 144.3125
+        }
+      },
+      {
+        "text": "Yuna",
+        "rect": {
+          "x": 199.828125,
+          "y": 1599.59375,
+          "width": 86.734375,
+          "height": 43.1875,
+          "top": 1599.59375,
+          "right": 286.5625,
+          "bottom": 1642.78125,
+          "left": 199.828125
+        }
+      },
+      {
+        "text": "เข้าร่วม",
+        "rect": {
+          "x": 207.078125,
+          "y": 1654.78125,
+          "width": 72.234375,
+          "height": 22,
+          "top": 1654.78125,
+          "right": 279.3125,
+          "bottom": 1676.78125,
+          "left": 207.078125
+        }
+      }
+    ],
+    "ok": true
+  },
+  {
+    "width": 768,
+    "locale": "th",
+    "view": "modal",
+    "overflow": 0,
+    "bounds": {
+      "x": 204,
+      "y": 382,
+      "width": 360,
+      "height": 136,
+      "top": 382,
+      "right": 564,
+      "bottom": 518,
+      "left": 204
+    },
+    "texts": [
+      {
+        "text": "ชาเลนจ์ 100 แฟนตัวจริงกำลังจัดอยู่ มาร่วมกันเลย!",
+        "rect": {
+          "x": 224,
+          "y": 394,
+          "width": 272,
+          "height": 48,
+          "top": 394,
+          "right": 496,
+          "bottom": 442,
+          "left": 224
+        }
+      },
+      {
+        "text": "",
+        "rect": {
+          "x": 508,
+          "y": 396,
+          "width": 44,
+          "height": 44,
+          "top": 396,
+          "right": 552,
+          "bottom": 440,
+          "left": 508
+        }
+      },
+      {
+        "text": "เข้าร่วม",
+        "rect": {
+          "x": 224,
+          "y": 454,
+          "width": 320,
+          "height": 44,
+          "top": 454,
+          "right": 544,
+          "bottom": 498,
+          "left": 224
+        }
+      }
+    ],
+    "ok": true
+  }
+]

@@ -1,7 +1,7 @@
 import type { ComponentPropsWithoutRef, ElementType } from "react";
 import styles from "./fan-text.module.css";
 
-export type FanTextRole = "item" | "row-title" | "body" | "meta" | "label";
+export type FanTextRole = "item" | "row-title" | "body" | "meta" | "label" | "banner-label" | "banner-action";
 export type FanTextTag = "span" | "p" | "strong" | "time" | "dd" | "dt" | "div";
 
 export type FanTextProps<T extends FanTextTag = "span"> = Readonly<{

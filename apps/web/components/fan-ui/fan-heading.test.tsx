@@ -3,6 +3,10 @@ import { describe, expect, it, vi } from "vitest";
 import { FanHeading, FanSectionHeader } from "./fan-heading";
 
 describe("shared fan headings", () => {
+  it("keeps campaign names semantic h2 headings", () => {
+    render(<FanHeading variant="campaign">유나</FanHeading>);
+    expect(screen.getByRole("heading", { level: 2, name: "유나" })).toHaveAttribute("data-fan-heading", "campaign");
+  });
   it("keeps semantic level and ID independent of visual role", () => {
     render(<FanHeading as="h1" id="my-title" variant="personal-page">MY</FanHeading>);
     expect(screen.getByRole("heading", { level: 1, name: "MY" })).toHaveAttribute("id", "my-title");

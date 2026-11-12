@@ -1,0 +1,359 @@
+{
+  "celebrities": [
+    {
+      "slug": "elina",
+      "locale": "ko",
+      "name": "엘리나",
+      "summary": "음악과 패션·뷰티 콘텐츠를 선보이는 가수이자 크리에이터, 모델입니다.",
+      "image": {
+        "url": "/images/guest-home/elina-card.jpg",
+        "alt": "Elina 프로필 이미지",
+        "position": "center 36%"
+      },
+      "roles": [
+        "creator"
+      ],
+      "websiteUrl": null,
+      "ticketUrl": null,
+      "themes": [],
+      "socialLinks": [
+        {
+          "platform": "youtube",
+          "url": "https://www.youtube.com/@ElinaKarimova"
+        },
+        {
+          "platform": "tiktok",
+          "url": "https://www.tiktok.com/@elina_karimovaa"
+        },
+        {
+          "platform": "instagram",
+          "url": "https://www.instagram.com/elina_4_22/"
+        }
+      ],
+      "displayOrder": 0,
+      "fanCount": 17348000
+    },
+    {
+      "slug": "changha",
+      "locale": "ko",
+      "name": "창하",
+      "summary": "브랜드 캠페인과 영상 콘텐츠에서 활동하는 크리에이터이자 배우입니다.",
+      "image": {
+        "url": "/images/guest-home/changha-card.jpg",
+        "alt": "Changha 프로필 이미지",
+        "position": "center 32%"
+      },
+      "roles": [
+        "creator"
+      ],
+      "websiteUrl": null,
+      "ticketUrl": null,
+      "themes": [],
+      "socialLinks": [
+        {
+          "platform": "youtube",
+          "url": "https://www.youtube.com/channel/UCX4H3pl79Gs0Y-fbqwXiyzw"
+        },
+        {
+          "platform": "tiktok",
+          "url": "https://www.tiktok.com/@chang._.a"
+        },
+        {
+          "platform": "instagram",
+          "url": "https://www.instagram.com/chang._.a/"
+        }
+      ],
+      "displayOrder": 1,
+      "fanCount": 28213000
+    },
+    {
+      "slug": "yuna",
+      "locale": "ko",
+      "name": "유나",
+      "summary": "뷰티와 라이프스타일 콘텐츠를 선보이는 가수이자 뷰티 크리에이터, 모델입니다.",
+      "image": {
+        "url": "https://kyaa.io/public-assets/cms-assets/celebrities/yuna/profile-f6180ad3a36ea5c1.webp",
+        "alt": "회색 의상을 입은 유나의 프로필 사진",
+        "position": "center"
+      },
+      "roles": [
+        "creator"
+      ],
+      "websiteUrl": null,
+      "ticketUrl": null,
+      "themes": [],
+      "socialLinks": [
+        {
+          "platform": "youtube",
+          "url": "https://www.youtube.com/@YunaKarimova_"
+        },
+        {
+          "platform": "tiktok",
+          "url": "https://www.tiktok.com/@yuna1_27"
+        },
+        {
+          "platform": "instagram",
+          "url": "https://www.instagram.com/yuna_1_27/"
+        }
+      ],
+      "displayOrder": 2,
+      "fanCount": 4235900
+    },
+    {
+      "slug": "hiroro",
+      "locale": "ko",
+      "name": "히로로",
+      "summary": "10/26 start❤️ / Live: 9pm~ random / Korean model",
+      "image": {
+        "url": "https://dev.kyaa.io/public-assets/cms-assets/public-image-assets/91208d2df7f952595291af2167759df396feefd71c71902926fdc9b6a8a50370.webp",
+        "alt": "히로로",
+        "position": "50% 50%",
+        "photos": {
+          "landscape": {
+            "asset": {
+              "id": "72b0c566-0da9-4c6b-87d3-39b121a818f7",
+              "url": "https://dev.kyaa.io/public-assets/cms-assets/public-image-assets/d24d8045e42d3a44adf9746ea0d05ab1cbd7611c969434045014c52f7a241e72.webp",
+              "width": 1708,
+              "height": 2560,
+              "mimeType": "image/webp",
+              "revision": 1
+            },
+            "alt": {
+              "ko": "히로로",
+              "en": "Hiroro"
+            },
+            "frames": {
+              "creator.collection": {
+                "fit": "cover",
+                "x": 50,
+                "y": 15,
+                "approvedAssetRevision": 1
+              },
+              "creator.hero.desktop": {
+                "fit": "cover",
+                "x": 50,
+                "y": 12,
+                "approvedAssetRevision": 1
+              }
+            },
+            "revision": 2
+          },
+          "portrait": {
+            "asset": {
+              "id": "72b0c566-0da9-4c6b-87d3-39b121a818f7",
+              "url": "https://dev.kyaa.io/public-assets/cms-assets/public-image-assets/d24d8045e42d3a44adf9746ea0d05ab1cbd7611c969434045014c52f7a241e72.webp",
+              "width": 1708,
+              "height": 2560,
+              "mimeType": "image/webp",
+              "revision": 1
+            },
+            "alt": {
+              "ko": "히로로",
+              "en": "Hiroro"
+            },
+            "frames": {
+              "creator.calendar": {
+                "fit": "cover",
+                "x": 50,
+                "y": 20,
+                "approvedAssetRevision": 1
+              },
+              "creator.vertical": {
+                "fit": "cover",
+                "x": 50,
+                "y": 20,
+                "approvedAssetRevision": 1
+              },
+              "creator.hero.mobile": {
+                "fit": "cover",
+                "x": 50,
+                "y": 60,
+                "approvedAssetRevision": 1
+              }
+            },
+            "revision": 2
+          },
+          "profile": {
+            "asset": {
+              "id": "0ab5acf1-692b-4509-bd69-b394befb08b8",
+              "url": "https://dev.kyaa.io/public-assets/cms-assets/public-image-assets/91208d2df7f952595291af2167759df396feefd71c71902926fdc9b6a8a50370.webp",
+              "width": 1080,
+              "height": 1080,
+              "mimeType": "image/webp",
+              "revision": 1
+            },
+            "alt": {
+              "ko": "히로로",
+              "en": "Hiroro"
+            },
+            "frames": {
+              "identity.avatar": {
+                "fit": "cover",
+                "x": 50,
+                "y": 50,
+                "approvedAssetRevision": 1
+              },
+              "identity.square": {
+                "fit": "cover",
+                "x": 50,
+                "y": 50,
+                "approvedAssetRevision": 1
+              },
+              "identity.passport": {
+                "fit": "cover",
+                "x": 50,
+                "y": 30,
+                "approvedAssetRevision": 1
+              }
+            },
+            "revision": 2
+          }
+        }
+      },
+      "roles": [
+        "creator"
+      ],
+      "websiteUrl": null,
+      "ticketUrl": null,
+      "themes": [],
+      "socialLinks": [
+        {
+          "platform": "tiktok",
+          "url": "https://www.tiktok.com/@rororhuiro"
+        }
+      ],
+      "displayOrder": 130,
+      "fanCount": 0
+    },
+    {
+      "slug": "mmnoo-s",
+      "locale": "ko",
+      "name": "김민주",
+      "summary": "⊹ ｡˚ ೀ ˖ ｡* ⊹꣑୧⊹ ｡˚˚ ೀ ˖ ｡* ⊹\n\nLive time - Story Announcement",
+      "image": {
+        "url": "https://dev.kyaa.io/public-assets/cms-assets/public-image-assets/a705524acb1f19f38c613380ac618145b559cfa9c4dc1fada29090b8dce11fd9.webp",
+        "alt": "김민주",
+        "position": "50% 50%",
+        "photos": {
+          "landscape": {
+            "asset": {
+              "id": "eae2400c-924f-4e68-8a28-4f12fac66fd2",
+              "url": "https://dev.kyaa.io/public-assets/cms-assets/public-image-assets/e18f37e99780371f21866037d38dcd28be4451ff26f8052478d2c05c3031a0dd.webp",
+              "width": 1440,
+              "height": 1920,
+              "mimeType": "image/webp",
+              "revision": 1
+            },
+            "alt": {
+              "ko": "김민주",
+              "en": "김민주"
+            },
+            "frames": {
+              "creator.collection": {
+                "fit": "cover",
+                "x": 50,
+                "y": 28,
+                "approvedAssetRevision": 1
+              },
+              "creator.hero.desktop": {
+                "fit": "cover",
+                "x": 50,
+                "y": 28,
+                "approvedAssetRevision": 1
+              }
+            },
+            "revision": 1
+          },
+          "portrait": {
+            "asset": {
+              "id": "eae2400c-924f-4e68-8a28-4f12fac66fd2",
+              "url": "https://dev.kyaa.io/public-assets/cms-assets/public-image-assets/e18f37e99780371f21866037d38dcd28be4451ff26f8052478d2c05c3031a0dd.webp",
+              "width": 1440,
+              "height": 1920,
+              "mimeType": "image/webp",
+              "revision": 1
+            },
+            "alt": {
+              "ko": "김민주",
+              "en": "김민주"
+            },
+            "frames": {
+              "creator.calendar": {
+                "fit": "cover",
+                "x": 50,
+                "y": 25,
+                "approvedAssetRevision": 1
+              },
+              "creator.vertical": {
+                "fit": "cover",
+                "x": 50,
+                "y": 25,
+                "approvedAssetRevision": 1
+              },
+              "creator.hero.mobile": {
+                "fit": "cover",
+                "x": 50,
+                "y": 0,
+                "approvedAssetRevision": 1
+              }
+            },
+            "revision": 1
+          },
+          "profile": {
+            "asset": {
+              "id": "03b08c83-297e-420b-92b3-fa0ac2f67b58",
+              "url": "https://dev.kyaa.io/public-assets/cms-assets/public-image-assets/a705524acb1f19f38c613380ac618145b559cfa9c4dc1fada29090b8dce11fd9.webp",
+              "width": 1080,
+              "height": 1080,
+              "mimeType": "image/webp",
+              "revision": 1
+            },
+            "alt": {
+              "ko": "김민주",
+              "en": "김민주"
+            },
+            "frames": {
+              "identity.avatar": {
+                "fit": "cover",
+                "x": 50,
+                "y": 50,
+                "approvedAssetRevision": 1
+              },
+              "identity.square": {
+                "fit": "cover",
+                "x": 50,
+                "y": 50,
+                "approvedAssetRevision": 1
+              },
+              "identity.passport": {
+                "fit": "cover",
+                "x": 50,
+                "y": 30,
+                "approvedAssetRevision": 1
+              }
+            },
+            "revision": 1
+          }
+        }
+      },
+      "roles": [
+        "creator"
+      ],
+      "websiteUrl": null,
+      "ticketUrl": null,
+      "themes": [],
+      "socialLinks": [
+        {
+          "platform": "tiktok",
+          "url": "https://www.tiktok.com/@ineffabl__"
+        },
+        {
+          "platform": "instagram",
+          "url": "https://www.instagram.com/mmnoo.s/"
+        }
+      ],
+      "displayOrder": 140,
+      "fanCount": 0
+    }
+  ]
+}
