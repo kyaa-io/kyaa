@@ -1,0 +1,9 @@
+{
+  "changes": [
+    "PC 로그인 화면에서 로그인 카드가 첫 화면을 넉넉하게 채우도록 크게 키우고 가운데에 놓았어요.",
+    "로그인 화면 아래의 큰 사이트 메뉴를 빼고, 사업자 정보와 개인정보처리방침·이용약관만 한 줄로 작게 보여 줘요.",
+    "휴대폰에서도 로그인 카드가 화면 가운데에 오고 아래 안내가 짧아졌어요. 사진은 로컬 검증 화면입니다."
+  ],
+  "path": "/login",
+  "images": ["release-notes/images/2026-11-13-login-space-desktop.png", "release-notes/images/2026-11-13-login-space-mobile.png"]
+}
