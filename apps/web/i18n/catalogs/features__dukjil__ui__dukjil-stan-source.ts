@@ -239,18 +239,7 @@ export const messages = {
     "fr": "Encourager {0}",
     "ru": "Поддержать {0}"
   },
-  "heartPick": {
-    "ja": "推しを選ぶ",
-    "zh-Hans": "选择本命",
-    "zh-Hant": "選擇本命",
-    "es": "Elige a tu favorito",
-    "id": "Pilih favoritmu",
-    "vi": "Chọn người yêu thích",
-    "th": "เลือกเมนของคุณ",
-    "pt": "Escolha seu favorito",
-    "fr": "Choisir votre favori",
-    "ru": "Выбрать любимца"
-  },
+  "heartPick": {"ja": "コミュニティに参加してみましょう", "zh-Hans": "加入一个社区吧", "zh-Hant": "加入一個社群吧", "es": "Únete a una comunidad", "id": "Bergabunglah dengan komunitas", "vi": "Tham gia cộng đồng", "th": "เข้าร่วมชุมชนกัน", "pt": "Participe de uma comunidade", "fr": "Rejoignez une communauté", "ru": "Присоединяйтесь к сообществу"},
   "walletNextTicket": {
     "ja": "応募券まであと{0}P",
     "zh-Hans": "距离抽奖券还差 {0}P",

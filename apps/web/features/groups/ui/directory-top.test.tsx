@@ -3,12 +3,12 @@ import "@testing-library/jest-dom/vitest";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import type { HomeBanner } from "@/features/home/domain/home-banner";
 
-const state = vi.hoisted(() => ({ authenticated: false, joined: [] as unknown[], joinedFails: false, posts: [] as unknown[], postsFail: false, postsLoading: false, urls: [] as string[] }));
+const state = vi.hoisted(() => ({ authenticated: false, joined: [] as unknown[], joinedFails: false, joinedLoading: false, posts: [] as unknown[], postsFail: false, postsLoading: false, urls: [] as string[] }));
 vi.mock("@/features/auth/client/cognito-auth", () => ({ useByUsAuth: () => ({ ready: true, authenticated: state.authenticated, user: null, getAccessToken: async () => "t" }) }));
 vi.mock("./use-group-resource", () => ({
   useGroupRequest: () => ({ ready: true, authenticated: state.authenticated, ownerKey: "o", request: vi.fn() }),
   useGroupResource: (url: string | null) => url === null ? { ready: true, authenticated: state.authenticated, loading: false, error: false, data: null }
-    : { ready: true, authenticated: state.authenticated, loading: false, error: state.joinedFails, data: { items: state.joined, nextCursor: null } },
+    : { ready: true, authenticated: state.authenticated, loading: state.joinedLoading, error: state.joinedFails, data: state.joinedLoading ? null : { items: state.joined, nextCursor: null } },
 }));
 vi.mock("@/features/fanpage/ui/use-community-resource", () => ({
   useCommunityResource: (url: string | null) => { if (url) state.urls.push(url); return url === null ? { state: { status: "loading" }, retry: vi.fn() }
@@ -24,26 +24,25 @@ const asset = (w: number, h: number) => ({ id: "22222222-2222-4222-8222-22222222
 const banner = (strip: boolean, id = "11111111-1111-4111-8111-111111111111"): HomeBanner => ({ id, kind: "announcement", celebrityId: null, title: "배너 제목", description: "", ctaLabel: "보기", href: "/events", alt: "배너",
   desktopImage: strip ? asset(2720, 240) : asset(1200, 600), mobileImage: strip ? asset(716, 180) : asset(600, 500) });
 
-beforeEach(() => { state.authenticated = false; state.joined = []; state.joinedFails = false; state.posts = []; state.postsFail = false; state.postsLoading = false; });
+beforeEach(() => { state.authenticated = false; state.joined = []; state.joinedFails = false; state.joinedLoading = false; state.posts = []; state.postsFail = false; state.postsLoading = false; });
 afterEach(cleanup);
 
-it("my artists: the add slot first; a guest sees three empty rings and the sign-in button, without a new-post dot", () => {
+it("my artists: the add slot first; a guest sees no empty rings and the sign-in button, without a new-post dot", () => {
   const { container } = render(<MyArtists locale="ko" loginPath="/pages/groups" />);
   const heading = screen.getByRole("heading", { name: "내 아티스트" });
-  // The sign-in button sits on the title row, so the four circles (add + three rings) fit one row without being cut.
+  // Sign-in stays on the heading row; the settled rail contains only discovery.
   expect(heading.parentElement).toContainElement(screen.getByRole("link", { name: "로그인" }));
   expect(container.querySelector("ul")).toHaveAttribute("data-ghost");
   expect(screen.getByRole("link", { name: "모임 찾기" })).toBeInTheDocument();
-  expect(container.querySelectorAll("li[aria-hidden='true']")).toHaveLength(3);
+  expect(container.querySelectorAll("li[aria-hidden='true']")).toHaveLength(0);
   expect(screen.getByRole("link", { name: "로그인" }).getAttribute("href")).toContain("/login");
   expect(container.querySelector("[role='img']")).toBeNull();
-  // 빈 상태의 원은 기본 아바타 이미지를 쓰고 빈 흰 원을 그리지 않는다.
+  // Settled empty state has no decorative avatar placeholders.
   const ghosts = container.querySelectorAll("li[data-row='artist-ghost'] img");
-  expect(ghosts).toHaveLength(3);
-  ghosts.forEach((img) => expect(img.getAttribute("src")).toBe("/images/avatars/star-pink.webp"));
+  expect(ghosts).toHaveLength(0);
 });
 
-it("my artists: joined pages follow the add slot and open their page; no pages keeps the three rings; a signed-in viewer has no sign-in button", () => {
+it("my artists: joined pages follow the add slot and open their page; no pages hides empty rings; a signed-in viewer has no sign-in button", () => {
   state.authenticated = true; state.joined = [page(1), page(2)];
   const first = render(<MyArtists locale="ko" loginPath="/pages/groups" />);
   const names = [...first.container.querySelectorAll("li")].map((li) => li.textContent);
@@ -53,7 +52,7 @@ it("my artists: joined pages follow the add slot and open their page; no pages k
   first.unmount();
   state.joined = [];
   const second = render(<MyArtists locale="ko" loginPath="/pages/groups" />);
-  expect(second.container.querySelectorAll("li[aria-hidden='true']")).toHaveLength(3);
+  expect(second.container.querySelectorAll("li[aria-hidden='true']")).toHaveLength(0);
 });
 
 it("drags the artist rail with a mouse and swipes banners without following their links", () => {
@@ -210,3 +209,5 @@ it("mobile Hot posts paginate five at a time", () => {
     expect(screen.getByText('글 0')).toBeInTheDocument();
   } finally { Object.defineProperty(window,"matchMedia",{configurable:true,value:original}); }
 });
+
+it("keeps loading skeletons separate from the settled empty rail", () => { state.authenticated = true; state.joinedLoading = true; const view = render(<MyArtists locale="ko" loginPath="/pages/groups"/>); expect(view.container.querySelectorAll("[data-row=artist-loading]").length).toBeGreaterThan(0); expect(view.container.querySelectorAll("[data-row=artist-ghost]")).toHaveLength(0); });

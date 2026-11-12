@@ -2347,3 +2347,9 @@ D-C dialog uses the existing small FanDialog (360px maximum) with a full-width p
 D-C token ownership: `FanHeading variant="campaign"` owns the 18px/700 mobile and `--fan-banner-title-size-wide`36px/700 desktop name role. `FanText` owns `banner-label` (13→20px/700) and `banner-action` (13→16px/700). Other heading/text variants are unchanged. The screen CSS owns geometry/color only; arrows use FanIcon through fan-icons at1.5px stroke. Portrait edge compositing uses a raster alpha artwork mask (`portrait-mask.png`); no CSS gradient is introduced. Responsive additions use48rem range syntax.
 
 - 2026-11-12 14:50 사용자 요청: 랭킹 변화 강조가 너무 짧음. 위 `연출 예외` 행의 값으로 늘렸다. 확인: 로컬 실제 브라우저(1440)에서 응답을 바꿔 순위 교체·값 변화를 일으키고 `getAnimations()`로 길이·지연(롤링 850, 링 1800, 행 지연 0/90/180, 이동 450, ▲▼ 500)과 시간별 프레임을 확인, 움직임 줄이기는 링만 1800(회전·롤링 없음). 못 본 것: 390 폭의 움직임, 운영 데이터.
+### 2026-11-12 D–F: 최애 미선택 안내와 이퓨 카드
+- 사용자 13:35 결정: 최애 미선택 안내는 `모임에 가입해보세요`와 `/pages/groups` 이동으로 대체한다. 기존 최애가 있는 경우의 변경 메뉴는 유지한다. 이 빈 상태만 그림 금지 규칙의 예외이며 글자 없는 Codex imagegen 핑크 패스포트 애셋을 사용한다. 헤더 40px, 지갑·프로필 64px의 기존 슬롯을 사용하고 설명 줄은 추가하지 않는다.
+- `MyArtists`의 확정된 빈 상태는 모임 찾기만 남기고 별 캐릭터 3칸을 숨긴다. 로딩 스켈레톤은 유지한다.
+- 이퓨 `portrait`(모임 격자·정사각 카드)만 기존 2.45배 확대를 1배로 해제한다. 원본 스튜디오 사진의 상반신을 보존하며 아바타·패스포트의 기존 구도는 유지한다.
+- 검증 화면은 `e2e/no-pick-local`의 실제 공통 컴포넌트와 예시 로그인·데이터로 구성한다. 운영 데이터 검증과 구분한다.
+

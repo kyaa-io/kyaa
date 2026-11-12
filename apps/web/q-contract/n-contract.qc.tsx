@@ -110,7 +110,7 @@ describe("N17 헤더 상태 3칸(C1: 온도 → 하트)", () => {
     const FanHeaderStatus = await loadHeaderStatus();
     const { container } = render(<FanHeaderStatus {...props({ [PROPS.headerStatus.favorite]: null })} />);
     expect(container.querySelector("[data-hearts]")).toBeNull();
-    expect(container).toHaveTextContent("최애 고르기");
+    expect(container).toHaveTextContent("모임에 가입해보세요");
   });
   it("N17: 값이 바뀔 때만 data-pulse 가 한 번 붙고 이후 제거된다", async () => {
     const FanHeaderStatus = await loadHeaderStatus();

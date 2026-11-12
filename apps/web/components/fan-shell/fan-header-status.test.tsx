@@ -11,7 +11,7 @@ const state = vi.hoisted(() => ({
 }));
 vi.mock("@/features/groups/ui/use-group-resource", () => ({ useGroupRequest: () => state.auth, useGroupResource: () => state.wallet, GROUP_WALLET_CHANGED_EVENT: "wallet-changed" }));
 vi.mock("@/features/selected-bias/ui/use-selected-bias", () => ({ useSelectedBias: () => state.bias }));
-vi.mock("@/features/selected-bias/ui/selected-bias-chip", () => ({ SelectedBiasChip: () => <a href="/login">최애 고르기</a> }));
+vi.mock("@/features/selected-bias/ui/selected-bias-chip", () => ({ SelectedBiasChip: () => <a href="/pages/groups?locale=ko">모임에 가입해보세요</a> }));
 vi.mock("@/features/rewards/ui/fan-tier-badge", () => ({ FanTierBadge: () => <span data-testid="tier" /> }));
 vi.mock("next/navigation", () => ({ usePathname: () => "/benefits", useSearchParams: () => new URLSearchParams("locale=ko") }));
 import { FanHeaderStatus } from "./fan-header-status";
@@ -49,7 +49,7 @@ describe("header capsule", () => {
     const view = render(<FanHeaderStatus locale="ko" />);
     state.auth = { ...state.auth, authenticated: false, ownerKey: "guest:1" };
     view.rerender(<FanHeaderStatus locale="ko" />);
-    expect(screen.getByRole("link", { name: "최애 고르기" })).toHaveAttribute("href", "/login");
+    expect(screen.getByRole("link", { name: "모임에 가입해보세요" })).toHaveAttribute("href", "/pages/groups?locale=ko");
     expect(screen.queryByText(/1,260|Current favorite/)).not.toBeInTheDocument();
   });
 

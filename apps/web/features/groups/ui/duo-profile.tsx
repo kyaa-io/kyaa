@@ -56,8 +56,8 @@ export function DuoProfile({ locale, bias, guest }: Props) {
   const machine = image === "/images/groups/capsule-machine.png";
   const cover = machine ? "/images/groups/capsule-machine-reveal-poster.webp" : hero?.src;
   const grade = selected ? fanStageLabel(locale, { tier: selected.tier, subdivision: selected.stage?.subdivision ?? Number(fanTierEntryKey(selected.tier).split("-").at(-1)) }) : null;
-  const pick = <><Plus size={24} strokeWidth={1.5} aria-hidden="true" />{dukjilText(locale, "heartPick")} <span aria-hidden="true">›</span></>;
-  if (guest) return <section className={`${styles.profile} ${styles.guestProfile}`} data-duo-profile><FanHeading variant="personal-page">{dukjilText(locale, "heartPick")}</FanHeading><FanAction variant="primary" href={fanLoginHref(locale, `/benefits?locale=${locale}`)}>{w.login}</FanAction></section>;
+  const pick = <><img src="/images/groups/join-community-20261112.webp" alt="" width={64} height={64} />{dukjilText(locale, "heartPick")} <span aria-hidden="true">›</span></>;
+  if (guest) return <section className={`${styles.profile} ${styles.guestProfile}`} data-duo-profile><FanHeading variant="personal-page">{dukjilText(locale, "heartPick")}</FanHeading><FanAction variant="primary" href={`/pages/groups?locale=${locale}`}>{pick}</FanAction></section>;
   return <section className={styles.profile} data-duo-profile>
     <div className={styles.cover} data-machine={machine || undefined}>{cover ? <picture><source media="(max-width:1023px)" srcSet={machine ? cover : hero?.mobileSrc ?? cover} /><img src={cover} alt="" style={{ "--duo-cover-position": hero?.desktopPosition, "--duo-cover-mobile-position": hero?.mobilePosition } as CSSProperties} /></picture> : <span className={styles.coverEmpty} aria-hidden="true" />}</div>
     <div className={styles.identity}>

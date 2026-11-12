@@ -1,6 +1,6 @@
 // ko/en live here; the other locales are in i18n/catalogs/features__selected-bias.ts.
 export const selectedBiasSource = {
-  biasChoose: { ko: "최애 고르기", en: "Choose favorite" },
+  biasChoose: { ko: "모임에 가입해보세요", en: "Join a community" },
   biasMine: { ko: "내 최애", en: "My favorites" },
   biasFindMore: { ko: "다른 최애 찾기", en: "Find more favorites" },
   biasCurrent: { ko: "내 최애 {0}, 등급 {1}. 눌러서 바꾸기", en: "Favorite {0}, tier {1}. Press to change" },

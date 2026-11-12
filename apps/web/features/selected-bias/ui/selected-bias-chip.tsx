@@ -3,12 +3,12 @@ import { Menu } from "@base-ui/react/menu";
 import { Check, ChevronDown, Heart, Star } from "lucide-react";
 import type { ReactNode } from "react";
 import { FanNumber } from "@/components/fan-ui/fan-number";
-import { FanLockedValue } from "@/components/fan-ui/fan-locked-value";
 import type { Route } from "next";
 import Link from "../../../components/fan-ui/hover-prefetch-link";
 import { usePathname, useSearchParams } from "next/navigation";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import { fanLoginHref } from "@/components/login-href";
+
 import { fanStageLabel, fanTierEntryKey, type FanStageKey } from "@/features/rewards/domain/fan-stage";
 import { FanTierBadge } from "@/features/rewards/ui/fan-tier-badge";
 import { messages } from "@/i18n/catalogs/features__selected-bias";
@@ -28,19 +28,16 @@ function gradeOf(locale: AppLocale, option: SelectedBiasOption) {
   return fanStageLabel(locale, { tier: option.tier, subdivision: option.stage?.subdivision ?? Number(key.split("-").at(-1)) });
 }
 
-const Empty = ({ locale }: { locale: AppLocale }) => <><Star size={20} aria-hidden="true" className={styles.star} /><span className={styles.pickLabel}>{text(locale, "biasChoose")}</span></>;
+const Empty = ({ locale }: { locale: AppLocale }) => <><img src="/images/groups/join-community-20261112.webp" alt="" width={40} height={40} /><span className={styles.pickLabel}>{text(locale, "biasChoose")}</span></>;
 
 /** The header's tier and selected favorite. Signed out it stays in place as the way in; pressing it changes the favorite everywhere the hook is read. */
 export function SelectedBiasChip({ locale }: { locale: AppLocale }) {
   const bias = useSelectedBias(locale);
-  const pathname = usePathname() || "/", query = useSearchParams()?.toString();
   if (bias.status === "loading") return <span className={styles.chip} data-selected-bias="loading" aria-hidden="true"><span className={styles.placeholder} /></span>;
-  if (bias.status === "guest") return <Link className={styles.chip} data-selected-bias="guest" aria-label={text(locale, "biasChoose")} href={fanLoginHref(locale, `${pathname}${query ? `?${query}` : ""}`)}><Empty locale={locale} /></Link>;
   if (bias.unverified) return <Link className={styles.chip} data-selected-bias="unverified" href={`/${encodeURIComponent(bias.unverified.slug)}?locale=${locale}` as Route}><Star size={20} aria-hidden="true" className={styles.star} /><span className={styles.name}>{bias.unverified.name}</span></Link>;
-  if (bias.status === "empty") return <Link className={styles.chip} data-selected-bias="empty" aria-label={text(locale, "biasChoose")} href={`/pages/groups?locale=${locale}` as Route}><Empty locale={locale} /></Link>;
-  if (bias.status === "error") return <FanAction variant="text" className={styles.chip} data-selected-bias="error" aria-label={text(locale, "biasChoose")} onClick={bias.retry}><Empty locale={locale} /></FanAction>;
-  // D2: passports but no favorite named yet — "최애 고르기" opens the same menu to name one, never a dead end.
-  if (!bias.selected) return <PickChip locale={locale} bias={bias} />;
+  if (bias.status === "empty" || bias.status === "guest" || bias.status === "error") return <Link className={styles.chip} data-selected-bias="empty" aria-label={text(locale, "biasChoose")} href={`/pages/groups?locale=${locale}` as Route}><Empty locale={locale} /></Link>;
+  // No named favorite: use community discovery even when passports already exist.
+  if (!bias.selected) return <Link className={styles.chip} data-selected-bias="unnamed" href={`/pages/groups?locale=${locale}` as Route}><Empty locale={locale} /></Link>;
   return <SelectedChip locale={locale} bias={bias} current={bias.selected} />;
 }
 
@@ -119,14 +116,9 @@ function FavoriteMenu({ locale, bias, current }: { locale: AppLocale; bias: Sele
 /** 덕질 status bar (feedback C1·C9, 390 and 1440): one row, the same three values as the header. Left: tier · favorite, which opens the
  * favorite menu; right: ♥N, which opens the favorite's fans tab. Signed out: choose-favorite (to sign in) and a locked hearts value.
  * `bias` is passed in so the screen can draw the server-read favorite in the first HTML. */
-export function SelectedBiasBar({ locale, bias, loginHref }: { locale: AppLocale; bias: SelectedBias; loginHref: string }) {
+export function SelectedBiasBar({ locale, bias }: { locale: AppLocale; bias: SelectedBias; loginHref: string }) {
   if (bias.status === "loading") return <div className={styles.bar} data-selected-bias-bar="loading" aria-hidden="true"><span className={styles.placeholder} /></div>;
-  if (bias.status === "guest") return <div className={styles.bar} data-selected-bias-bar="guest"><Link className={styles.chip} href={loginHref as Route}><Empty locale={locale} /></Link><span className={styles.barHearts}><Heart size={20} strokeWidth={1.75} aria-hidden="true" className={styles.heart} /><FanLockedValue locale={locale} /></span></div>;
   const current = bias.selected;
-  if (!current && bias.options.length) return <div className={styles.bar} data-selected-bias-bar="unnamed"><Menu.Root>
-    <Menu.Trigger className={`${styles.chip} ${styles.barTrigger}`}><Empty locale={locale} /><ChevronDown size={16} aria-hidden="true" className={styles.barChevron} /></Menu.Trigger>
-    <FavoriteMenu locale={locale} bias={bias} current={null} />
-  </Menu.Root></div>;
   if (!current) {
     const target = bias.unverified;
     return <div className={styles.bar} data-selected-bias-bar="empty"><Link className={styles.chip} href={(target ? `/${encodeURIComponent(target.slug)}?locale=${locale}` : `/pages/groups?locale=${locale}`) as Route}>{target ? <><Star size={20} aria-hidden="true" className={styles.star} /><span className={styles.name}>{target.name}</span></> : <Empty locale={locale} />}</Link></div>;
@@ -148,16 +140,10 @@ export function SelectedBiasBar({ locale, bias, loginHref }: { locale: AppLocale
   </div>;
 }
 
-/** Passports but no favorite named: the chip says "최애 고르기" and opens the menu of passports to name one (D2). */
-function PickChip({ locale, bias }: { locale: AppLocale; bias: SelectedBias }) {
-  return <Menu.Root>
-    <Menu.Trigger className={`${styles.chip} ${styles.trigger}`} data-selected-bias="unnamed" aria-label={text(locale, "biasChoose")}><Empty locale={locale} /></Menu.Trigger>
-    <FavoriteMenu locale={locale} bias={bias} current={null} />
-  </Menu.Root>;
-}
 
-/** A "최애 고르기" trigger anywhere on a page (덕질 wallet, heart card) that opens the favorite menu when passports exist (D2). */
+/** Existing favorites keep their switch menu; empty states lead to community discovery. */
 export function FavoritePickMenu({ locale, bias, className, children }: { locale: AppLocale; bias: SelectedBias; className?: string; children: ReactNode }) {
+  if (!bias.selected && !bias.unverified) return <Link className={className} href={`/pages/groups?locale=${locale}` as Route} data-favorite-pick="">{children}</Link>;
   return <Menu.Root>
     <Menu.Trigger className={className} data-favorite-pick="">{children}</Menu.Trigger>
     <FavoriteMenu locale={locale} bias={bias} current={null} />
