@@ -93,7 +93,7 @@ export function resolveCreatorImage({ slug, src, presentation = "portrait", posi
       ? { src, crop: { position: "50% 100%", scale: 1.6, origin: "50% 100%" } }
       : { src: "/images/celebrities/xin/hero-concept-mobile.jpg", crop: { ...base, position: "50% 30%" } };
   }
-  if (slug === "ifewknow") return { src, crop: { ...ifewCrop, position: position ?? ifewCrop.position } };
+  if (slug === "ifewknow") return { src, crop: { ...ifewCrop, scale: presentation === "portrait" ? 1 : ifewCrop.scale, position: position ?? ifewCrop.position } };
   if (slug === "yuna") return { src, crop: presentation === "avatar"
     ? { position: "50% 0%", scale: .82, origin: "50% 50%", translateX: "-4%" }
     : { ...base, position: presentation === "passport" ? "50% 0%" : "50% 20%" } };

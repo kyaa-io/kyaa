@@ -1,0 +1,15 @@
+import {createRoot} from 'react-dom/client';
+import {MyArtists} from '@/features/groups/ui/directory-top';
+import {SelectedBiasChip} from '@/features/selected-bias/ui/selected-bias-chip';
+import {StanWallet} from '@/features/group-wallet/ui/stan-wallet';
+import {FanHeading} from '@/components/fan-ui/fan-heading';
+import {FanAction} from '@/components/fan-ui/fan-action';
+import {FanEntityCard} from '@/components/fan-ui/fan-entity-card';
+import {LocaleProvider} from '@/components/locale-provider';
+import {dukjilText} from '@/features/dukjil/ui/dukjil-copy';
+import {parseAppLocale} from '@/i18n/locales';
+import '@/app/globals.css';
+import './style.css';
+import directoryStyles from '@/features/groups/ui/group-directory.module.css';
+const locale=parseAppLocale(new URLSearchParams(location.search).get('locale'));
+createRoot(document.getElementById('root')!).render(<LocaleProvider initialLocale={locale}><main className="fixture"><p>로컬 예시 데이터 · DEV 검증</p><SelectedBiasChip locale={locale}/><MyArtists locale={locale} loginPath="/pages/groups"/><StanWallet locale={locale} state={{kind:'ready',points:1370,tickets:27,pointCost:100}} stamps={0} hearts={0} links={{hearts:'/pages/groups'}} favoritePicker={<FanAction href={`/pages/groups?locale=${locale}`}><img src="/images/groups/join-community-20261112.webp" alt="" width={64} height={64}/>{dukjilText(locale,'heartPick')}</FanAction>}/><section id="directory-explore"><FanHeading as="h2">크리에이터</FanHeading><div className={directoryStyles.list}><FanEntityCard size="tile" href="/ifewknow" image={{src:"/images/celebrities/ifewknow/hero-studio.jpg",slug:"ifewknow"}} name="이퓨" kind="fan" locale={locale}/><FanEntityCard size="tile" href="/ifewknow" image={{src:"/images/celebrities/ifewknow/hero-studio.jpg",slug:"ifewknow"}} name="예시 크리에이터" kind="fan" locale={locale}/></div></section></main></LocaleProvider>);

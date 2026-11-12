@@ -1,11 +1,13 @@
 import { render, screen } from "@testing-library/react";
 import { beforeEach, expect, it, vi } from "vitest";
-import { SelectedBiasChip } from "./selected-bias-chip";
+import { SelectedBiasChip, SelectedBiasBar } from "./selected-bias-chip";
 
 const state = vi.hoisted(() => ({ auth: { ready: true, authenticated: true, user: { id: "owner" } } as { ready: boolean; authenticated: boolean; user: { id: string } | null }, summary: { state: { status: "loading" } as unknown, retry: () => {} } }));
 vi.mock("@/features/auth/client/cognito-auth", () => ({ useByUsAuth: () => state.auth }));
 vi.mock("@/components/fan-ui/use-owned-fan-resource", () => ({ useOwnedFanResource: () => state.summary }));
 vi.mock("next/navigation", () => ({ usePathname: () => "/my", useSearchParams: () => new URLSearchParams("locale=ko") }));
+
+import { useSelectedBias } from "./use-selected-bias";
 
 const creator = (slug: string, name: string, passport: boolean, hearts?: number) => ({ celebrity: { slug, name, image: "/a.png" }, relationship: passport ? "passport" : "first_reaction_only", passport: passport ? { id: `${slug}-p`, tier: "Silver", score: 0, remainingToNextTier: 0, stageProgress: null, ...(hearts === undefined ? {} : { hearts }) } : null, ticketBalance: 0, firstReaction: null });
 const ready = (...creators: unknown[]) => { state.summary = { state: { status: "ready", data: { creators, favorite: favorite.slug ? { slug: favorite.slug, name: favorite.slug } : null } }, retry: () => {} }; };
@@ -20,7 +22,7 @@ it("shows the favorite named in MY with its tier", () => {
   expect(chip).toHaveAttribute("data-selected-bias", "selected");
   expect(chip).toHaveTextContent("엘리나");
   expect(chip).toHaveTextContent("실버");
-  expect(chip).not.toHaveTextContent("최애 고르기");
+  expect(chip).not.toHaveTextContent("모임에 가입해보세요");
 });
 it("shows the named favorite among several passports", () => {
   favorite.slug = "p1";
@@ -38,23 +40,23 @@ it("shows a favorite without a passport by name, leading to its page", () => {
 it("asks to choose only with no favorite at all", () => {
   ready();
   render(<SelectedBiasChip locale="ko" />);
-  expect(screen.getByRole("link")).toHaveTextContent("최애 고르기");
+  expect(screen.getByRole("link")).toHaveTextContent("모임에 가입해보세요");
 });
 it("keeps the choose-favorite chip named when its label is hidden at narrow widths, and never ellipsizes the label", () => {
   ready();
   render(<SelectedBiasChip locale="ko" />);
-  const chip = screen.getByRole("link", { name: "최애 고르기" });
+  const chip = screen.getByRole("link", { name: "모임에 가입해보세요" });
   const label = chip.querySelector("span")!;
-  expect(label).toHaveTextContent("최애 고르기");
+  expect(label).toHaveTextContent("모임에 가입해보세요");
   expect(label.className).not.toMatch(/\bname\b/);
 });
 it("does not say choose while the login or the summary is still loading", () => {
   state.summary = { state: { status: "loading" }, retry: () => {} };
   const { container, rerender } = render(<SelectedBiasChip locale="ko" />);
-  expect(container).not.toHaveTextContent("최애 고르기");
+  expect(container).not.toHaveTextContent("모임에 가입해보세요");
   state.auth = { ready: false, authenticated: false, user: null };
   rerender(<SelectedBiasChip locale="ko" />);
-  expect(container).not.toHaveTextContent("최애 고르기");
+  expect(container).not.toHaveTextContent("모임에 가입해보세요");
 });
 
 it("reads tier · favorite · ♥hearts of the selected favorite, from the summary (C1)", () => {
@@ -92,7 +94,7 @@ it("D2: with passports but no favorite named, 최애 고르기 opens the favorit
   favorite.slug = null;
   ready(creator("elina", "엘리나", true), creator("p1", "시험", true));
   render(<SelectedBiasChip locale="ko" />);
-  const pick = screen.getByRole("button", { name: /최애 고르기/ });
+  const pick = screen.getByRole("link", { name: /모임에 가입해보세요/ });
   expect(pick).toHaveAttribute("data-selected-bias", "unnamed");
   expect(document.querySelector("[data-cell=hearts]")).toBeNull();
 });
@@ -102,4 +104,12 @@ it("does not read the old browser choice as the favorite", () => {
   ready(creator("elina", "엘리나", true), creator("p1", "시험", true));
   render(<SelectedBiasChip locale="ko" />);
   expect(document.querySelector("[data-selected-bias]")).not.toHaveTextContent("시험");
+});
+
+it("the wallet bar discovers communities even with unnamed passports", () => {
+ favorite.slug=null; ready(creator("elina","엘리나",true));
+ function Bar(){return <SelectedBiasBar locale="ko" bias={useSelectedBias("ko")} loginHref="/login"/>;}
+ render(<Bar/>);
+ expect(screen.getByRole("link")).toHaveAttribute("href","/pages/groups?locale=ko");
+ expect(screen.queryByRole("button")).toBeNull();
 });

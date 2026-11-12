@@ -111,3 +111,5 @@ describe("shared creator photography", () => {
     expect(resolveCreatorHeroImage(slug, { url: src, position: "center", photos: { landscape: null, portrait: null } })).toMatchObject({ src, mobileSrc: src });
   });
 });
+
+it("keeps the ifew card at its natural scale", () => { expect(resolveCreatorImage({slug:"ifewknow",src:"/images/celebrities/ifewknow/hero-studio.jpg",presentation:"portrait"}).crop.scale).toBe(1); });

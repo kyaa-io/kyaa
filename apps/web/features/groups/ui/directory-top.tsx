@@ -97,7 +97,7 @@ export function MyArtists({ locale, loginPath }: { locale: AppLocale; loginPath:
     <ul className={styles.rail} data-ghost={ghost || undefined} {...drag}>
       <li className={styles.slot} data-row="artist-add"><a className={styles.add} href="#directory-explore" onClick={(event) => { event.preventDefault(); focusDirectorySearch(); }} aria-label={c.findGroups}><FanIcon icon={Plus} size={24} /></a><span className={styles.slotName} aria-hidden={ghost ? undefined : true}>{ghost ? c.findGroups : null}</span></li>
       {waiting ? Array.from({ length: SLOTS + 1 }, (_, i) => <li key={i} className={styles.slot} data-row="artist-loading" aria-hidden="true"><FanSkeleton shape="circle" width={64} height={64} /><FanSkeleton width={48} height={12} /></li>)
-        : ghost ? Array.from({ length: SLOTS }, (_, i) => <li key={i} className={styles.slot} data-row="artist-ghost" aria-hidden="true"><img className={styles.ghost} src={DEFAULT_AVATAR} alt="" width={64} height={64} /><span className={styles.ghostName} /></li>)
+        : ghost ? null
         : items.map((page) => <li key={page.id} className={styles.slot} data-row="artist">
           <Link className={styles.artist} href={groupHref(page, locale) as Route}>
             {page.slug ? <CreatorAvatar slug={page.slug} src={page.imageUrl} size={64} photos={undefined} /> : <GroupImage locale={locale} className={styles.ghost} src={page.imageUrl ?? DEFAULT_AVATAR} alt="" width={64} height={64} />}
