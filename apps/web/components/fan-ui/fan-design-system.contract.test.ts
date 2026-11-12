@@ -11,9 +11,9 @@ const heading = read("components/fan-ui/fan-heading.module.css");
 const invalidWeightPattern = "(font-weight: *|font: *)(1[0-9]{2}|[2356][0-9]{2}|4[1-9][0-9]|7[1-9][0-9]|8[1-9][0-9]|9[0-9]{2})([^0-9]|$)";
 
 function gitIn(cwd: string, args: string[], isolated = false) {
-  const env = isolated
+  const env = (isolated
     ? Object.fromEntries(Object.entries(process.env).filter(([key]) => !key.startsWith("GIT_")))
-    : process.env;
+    : process.env) as NodeJS.ProcessEnv;
   const config = isolated
     ? ["-c", "user.name=Contract Test", "-c", "user.email=contract@example.invalid", "-c", `safe.directory=${cwd}`]
     : [];
