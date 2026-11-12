@@ -1,5 +1,4 @@
 "use client";
-import signupStyles from "@/features/home/ui/signup-event-banner.module.css";
 
 import type { RaffleList } from "@/features/benefit/domain/raffle";
 import type { AppLocale } from "@/i18n/locales";
@@ -126,9 +125,6 @@ export function StreamingGuestHome({ queries, ...props }: StreamingHomeProps) {
 
 /** The strip is read on the server with the page, so it arrives in the page and never pushes the LIVE list down afterwards. */
 function HomeThinBanner({ banner, locale }: { banner: HomeBanner | undefined; locale: AppLocale }) {
-  if (process.env.NODE_ENV !== "production" && process.env.NEXT_PUBLIC_KYAA_SIGNUP_EVENT_LOCAL === "1") {
-    return <FanAction href="/s/raffle" variant="neutral" fullWidth className={signupStyles.banner}>KYAA 래플 · US$400 · 17명 · 11월 30일 마감</FanAction>;
-  }
   return banner ? <ThinBanner banner={banner} locale={locale} /> : null;
 }
 function StreamHomeThinBanner({ queries, locale }: Pick<StreamingHomeProps, "queries" | "locale">) {

@@ -1,0 +1,5 @@
+{
+  "changes": ["KYAA 래플 상세에서 US$400 상금과 17명 당첨 구성, 11월 30일 마감, 참여 단계를 확인하고 응모할 수 있어요.", "홈 이미지 배너에서 래플로 이동할 수 있으며, 응모와 확인된 팬 활동을 서버에 저장해요. 첨부 이미지는 로컬 검증 화면이에요."],
+  "path": "/s/raffle",
+  "images": ["release-notes/images/2026-11-12-signup-raffle-detail-390.png", "release-notes/images/2026-11-12-signup-raffle-detail-1440.png", "release-notes/images/2026-11-12-signup-raffle-banner-390.png", "release-notes/images/2026-11-12-signup-raffle-banner-1440.png"]
+}

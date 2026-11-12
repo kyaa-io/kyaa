@@ -1,5 +1,5 @@
 import { createHash, randomBytes } from 'node:crypto';
-import { readFile } from 'node:fs/promises';
+import { signupRaffleEnabled } from '../config/feature-flags';
 import { z } from 'zod';
 import { inRaffleWindow, rafflePolicySchema, signupEvent } from '../../features/benefit/domain/signup-event';
 
@@ -15,14 +15,12 @@ export const localSnapshotSchema = z.object({
 }).strict();
 export type LocalSnapshot = z.infer<typeof localSnapshotSchema>;
 export function localSignupEnabled(env: Record<string, string | undefined> = process.env) {
-  return env.NODE_ENV !== 'production' && env.KYAA_SIGNUP_EVENT_LOCAL === '1';
+  return signupRaffleEnabled(env);
 }
-export async function readLocalSnapshot(): Promise<LocalSnapshot> {
-  if (!localSignupEnabled()) throw new Error('SIGNUP_EVENT_LOCAL_DISABLED');
-  // A local file adapter deliberately has no database client or write path.
-  const raw = JSON.parse(await readFile(process.env.KYAA_SIGNUP_EVENT_SNAPSHOT ?? 'board/tasks/signup-event/local.json', 'utf8'));
-  if ('app_users' in raw) return (await import('./source-adapter')).projectSources(raw);
-  return localSnapshotSchema.parse(raw);
+export async function readLocalSnapshot(userId?: string): Promise<LocalSnapshot> {
+  if (!localSignupEnabled()) throw new Error('SIGNUP_RAFFLE_DISABLED');
+  const { createSignupRaffleDatabase, readSignupRaffleSnapshot } = await import('./database');
+  return readSignupRaffleSnapshot(createSignupRaffleDatabase(), userId);
 }
 export function candidates(input: LocalSnapshot) {
   const snapshot = localSnapshotSchema.parse(input);

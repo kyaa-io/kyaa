@@ -22,4 +22,4 @@ it('deduplicates entries, masks identifiers and selects distinct members with st
  expect(drawLocal(data,2,'retry')).toEqual(drawLocal(data,2,'retry'));expect(new Set(drawLocal(data,2,'retry').map(row=>row.userId)).size).toBe(2);
  const csv=maskedCsv(drawLocal(data,2,'retry'));expect(csv).not.toContain(a);expect(csv).not.toContain(b);expect(()=>drawLocal(data,3)).toThrow('INVALID_WINNER_QUANTITY');
 });
-it('stays disabled by default and in production',()=>{expect(localSignupEnabled({})).toBe(false);expect(localSignupEnabled({NODE_ENV:'production',KYAA_SIGNUP_EVENT_LOCAL:'1'})).toBe(false);});
+it('requires explicit opt-in in every environment',()=>{expect(localSignupEnabled({})).toBe(false);expect(localSignupEnabled({NODE_ENV:'production',KYAA_FEATURE_SIGNUP_RAFFLE:'true'})).toBe(true);expect(localSignupEnabled({NODE_ENV:'production',KYAA_FEATURE_SIGNUP_RAFFLE:'false'})).toBe(false);});

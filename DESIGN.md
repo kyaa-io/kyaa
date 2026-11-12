@@ -2354,3 +2354,6 @@ D-C token ownership: `FanHeading variant="campaign"` owns the 18px/700 mobile an
 - 이퓨 `portrait`(모임 격자·정사각 카드)만 기존 2.45배 확대를 1배로 해제한다. 원본 스튜디오 사진의 상반신을 보존하며 아바타·패스포트의 기존 구도는 유지한다.
 - 검증 화면은 `e2e/no-pick-local`의 실제 공통 컴포넌트와 예시 로그인·데이터로 구성한다. 운영 데이터 검증과 구분한다.
 
+
+### KYAA 래플 상세·홈 배너 (2026-11-12)
+`/s/raffle`은 기존 campaign `FanHeading`과 `FanText` 역할을 쓰고 상금 구성은 모바일 2열·48rem 이상 4열, 참여 단계는 번호 목록으로 표시한다. 간격은 기존 space 토큰이며 응모만 primary, 패스포트·커뮤니티는 neutral이다. 홈은 기존 `HomeBanner` 모델과 `ManagedHomeBanner` 슬롯을 재사용한다. 인물 없는 기존 banner-onboard 장식 원화의 1440×900·390×390 WebP를 사용하며 상금·마감 문구는 이미지 밖 텍스트다. 원화의 하트·리본 장식 크롭은 허용하되 정보 문구를 이미지에 넣지 않는다. 로컬 실제 컴포넌트의 12언어·390/768/1440 폭·상세/배너 72조합에서 이미지 로드·가로 넘침·44px 행동을 확인했다. 캡처는 로컬 guest fixture로 실제 dev 데이터나 독립 미적 점수 평가를 뜻하지 않는다.
