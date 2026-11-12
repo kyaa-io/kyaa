@@ -250,3 +250,22 @@ test('the same loaded image is smoked, authenticated and checked immediately bef
  assert.ok(job.steps.some(s=>s.run?.includes('assert.equal(e.deployment.payload.workflowRunId')));
  assert.ok(job.steps.some(s=>s.run==='node scripts/dev-deployment-notices.mjs'));
  });
+
+test('superseded main runs do not download or send a nonexistent dev receipt', () => {
+  const job = load(readFileSync('.github/workflows/deployment-notices.yml', 'utf8')).jobs['dev-notice'];
+  const guard = job.steps.find(step => step.id === 'deployed');
+  assert.match(guard.run, /j.name === "release" && j.conclusion === "success"/);
+  for (const step of job.steps.filter(step => step.uses?.startsWith('actions/download-artifact@') || step.name === 'Bind deployment artifact to the completed source run' || step.name === 'Notify the exact successful DEV release')) {
+    assert.equal(step.if, "steps.deployed.outputs.deployed == 'true'");
+  }
+});
+
+test('main restoration runs only after successful hotfix validation', () => {
+  const condition = workflow.jobs['restore-main'].if;
+  assert.equal(condition, "needs.release.result == 'success' && github.event_name == 'push' && github.ref == 'refs/heads/release/production'");
+  const evaluate = Function('needs', 'github', `return ${condition}`);
+  for (const result of ['success', 'failure', 'cancelled', 'skipped']) {
+    assert.equal(evaluate({ release: { result } }, { event_name: 'push', ref: 'refs/heads/release/production' }), result === 'success');
+  }
+  assert.equal(evaluate({ release: { result: 'success' } }, { event_name: 'push', ref: 'refs/heads/main' }), false);
+});

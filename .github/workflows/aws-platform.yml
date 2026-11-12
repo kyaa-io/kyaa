@@ -23,8 +23,27 @@ concurrency:
   queue: max
   cancel-in-progress: false
 jobs:
+  select:
+    runs-on: ubuntu-24.04
+    outputs:
+      build: ${{ steps.select.outputs.build }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 24
+      - id: select
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: node scripts/aws-release-queue.mjs
+    permissions:
+      contents: read
+      actions: read
   release:
-    if: github.repository == 'kyaa-io/kyaa' && (github.ref == 'refs/heads/main' || (github.ref == 'refs/heads/release/production' && github.event_name == 'push'))
+    needs: select
+    if: needs.select.outputs.build == 'true' && github.repository == 'kyaa-io/kyaa' && (github.ref == 'refs/heads/main' || (github.ref == 'refs/heads/release/production' && github.event_name == 'push'))
     # Pinned: ubuntu-latest moved to 26.04. A fresh media image built there is suspected of failing the dev scheduled-workers stack update
     # (fresh media builds only happen off main, where reuse is off); the last good media build came from ubuntu-24.04.
     runs-on: ubuntu-24.04
@@ -68,27 +87,32 @@ jobs:
           path: |
             node_modules
             apps/*/node_modules
-          key: ${{ steps.node_modules_key.outputs.prefix }}-${{ hashFiles('package-lock.json', 'package.json', 'apps/*/package.json', 'scripts/apply-security-patches.mjs') }}
+          key: ${{ steps.node_modules_key.outputs.prefix }}-${{ hashFiles('package-lock.json', 'package.json', 'apps/*/package.json', 'scripts/apply-security-patches.mjs') }}-${{ github.run_id }}-${{ github.run_attempt }}
+          restore-keys: |
+            ${{ steps.node_modules_key.outputs.prefix }}-${{ hashFiles('package-lock.json', 'package.json', 'apps/*/package.json', 'scripts/apply-security-patches.mjs') }}-
       - name: Reinstall when restored node_modules is unusable
-        if: steps.node_modules.outputs.cache-hit == 'true'
+        id: repair
+        if: steps.node_modules.outputs.cache-matched-key != ''
         shell: bash
         run: |
           if ! node scripts/verify-installed-node-modules.mjs; then
             echo '::warning::Restored node_modules is unusable; reinstalling from the lockfile'
             rm -rf node_modules apps/*/node_modules
             npm ci --ignore-scripts
+            node scripts/verify-installed-node-modules.mjs
+            echo "repaired=true" >> "$GITHUB_OUTPUT"
           fi
       - run: npm ci --ignore-scripts
-        if: steps.node_modules.outputs.cache-hit != 'true'
+        if: steps.node_modules.outputs.cache-matched-key == ''
       - name: Save locked node_modules
-        if: steps.node_modules.outputs.cache-hit != 'true'
+        if: steps.node_modules.outputs.cache-matched-key == '' || steps.repair.outputs.repaired == 'true'
         continue-on-error: true
         uses: actions/cache/save@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
         with:
           path: |
             node_modules
             apps/*/node_modules
-          key: ${{ steps.node_modules_key.outputs.prefix }}-${{ hashFiles('package-lock.json', 'package.json', 'apps/*/package.json', 'scripts/apply-security-patches.mjs') }}
+          key: ${{ steps.node_modules.outputs.cache-primary-key }}
       - run: npm run security:patch
       - name: Lint only actual CloudFormation templates
         run: |
@@ -300,6 +324,26 @@ jobs:
         with:
           path: .ci/next-build-cache
           key: dev-next-v2-${{ runner.os }}-${{ steps.next_cache_key.outputs.base }}-${{ hashFiles('package-lock.json', 'apps/web/next.config.ts', 'Dockerfile.aws') }}-${{ github.run_id }}-${{ github.run_attempt }}
+
+  restore-main:
+    # A recovery API failure must not invalidate the verified hotfix source receipt.
+    continue-on-error: true
+    needs: release
+    if: needs.release.result == 'success' && github.event_name == 'push' && github.ref == 'refs/heads/release/production'
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      actions: write
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 24
+      - env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: node scripts/aws-release-queue.mjs restore
 
   # Keep notice failures visible without changing the verified service result.
   notice:
