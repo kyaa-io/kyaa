@@ -2,7 +2,7 @@
 
 import { FanSkeletonRows } from "@/components/fan-ui/fan-skeleton";
 import { useEffect, useId, useRef, useState } from "react";
-import Link from "next/link";
+import Link from "../../../components/fan-ui/hover-prefetch-link";
 import Image from "next/image";
 import { bypassImageOptimization } from "@/components/fan-ui/public-image-policy";
 import { FanState } from "@/components/fan-ui/fan-state";

@@ -1,7 +1,7 @@
 import { ChevronRight } from "lucide-react";
 import type { Route } from "next";
 import type { ReactNode } from "react";
-import Link from "next/link";
+import Link from "../../../components/fan-ui/hover-prefetch-link";
 import { FanHeading } from "@/components/fan-ui/fan-heading";
 import type { AppLocale } from "@/i18n/locales";
 import { myHomeText } from "./my-home-copy";

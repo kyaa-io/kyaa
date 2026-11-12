@@ -10,7 +10,7 @@ import { creatorHomeHref } from "@/features/creator/domain/creator-navigation";
 
 import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import { useEffect, useRef, useState } from "react";
-import Link from "next/link";
+import Link from "../../../components/fan-ui/hover-prefetch-link";
 import { ArrowDown, ArrowLeft, ArrowRight, ArrowUp, Heart, MessageCircle, Pin, SmilePlus, X } from "lucide-react";
 import { FanAppFrame, FanContentContainer } from "@/components/fan-shell/fan-app-shell";
 import type { PublishedCelebrity } from "@/server/content/content-domain";

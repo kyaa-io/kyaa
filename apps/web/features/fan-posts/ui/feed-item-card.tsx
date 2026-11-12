@@ -2,7 +2,7 @@
 import { EarnActionBadge } from "@/features/dukjil/ui/earn-badge";
 import { RelativeTime } from "@/components/relative-time";
 import { useEffect, useId, useRef, useState } from "react";
-import Link from "next/link";
+import Link from "../../../components/fan-ui/hover-prefetch-link";
 import type { Route } from "next";
 import { Menu } from "@base-ui/react/menu";
 import { generateText, type JSONContent } from "@tiptap/core";

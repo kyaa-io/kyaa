@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import Link from "next/link";
+import Link from "../../../components/fan-ui/hover-prefetch-link";
 import type { Route } from "next";
 import { ArrowLeft, ArrowUpRight, Check, Lightbulb, MessageCircle, Users } from "lucide-react";
 import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";

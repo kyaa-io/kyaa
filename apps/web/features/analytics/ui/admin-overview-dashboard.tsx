@@ -3,7 +3,7 @@
 import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import { ArrowDownRight, ArrowRight, ArrowUpRight, CalendarDays, CheckCircle2, CircleAlert, RefreshCw, Users } from "lucide-react";
 import type { Route } from "next";
-import Link from "next/link";
+import Link from "../../../components/fan-ui/hover-prefetch-link";
 import { useEffect, useMemo, useState } from "react";
 import { AdminAccessState } from "../../../components/admin/admin-access-state";
 import { AdminOperationsShell, type AdminLocale } from "../../../components/admin/operations-shell";

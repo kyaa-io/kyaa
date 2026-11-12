@@ -5,7 +5,7 @@ import { activeJjinfanChallengesSchema } from "@/features/rankings/domain/types"
 import {WalletAttendanceDialog} from "@/features/group-wallet/ui/wallet-screen";
 import type { HomeBanner } from "@/features/home/domain/home-banner";
 import { useEffect, useRef, useState, type FormEvent, type MouseEvent, type ReactNode } from "react";
-import Link from "next/link";
+import Link from "../../../components/fan-ui/hover-prefetch-link";
 import type { Route } from "next";
 import {Menu} from "@base-ui/react/menu";
 import sortStyles from "./group-directory-sort.module.css";

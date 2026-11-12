@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
+import Link from "../../components/fan-ui/hover-prefetch-link";
 import { useEffect, useRef } from "react";
 import { ArrowLeft, ArrowRight, ChevronDown, MapPin } from "lucide-react";
 import { useAppLocale } from "@/components/locale-provider";

@@ -7,7 +7,7 @@ import { messages as localizedMessages } from "@/i18n/catalogs/features__fanpage
 import { translate } from "@/i18n/messages";
 import type { AppLocale } from "@/i18n/locales";
 import Image from "next/image";
-import Link from "next/link";
+import Link from "../../../components/fan-ui/hover-prefetch-link";
 import { FanSectionLink } from "@/components/fan-ui/fan-section-link";
 import type { Route } from "next";
 import { ArrowRight, ArrowUpRight, Pin } from "lucide-react";

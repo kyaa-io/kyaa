@@ -3,7 +3,7 @@
 import { Menu } from "@base-ui/react/menu";
 import { Check } from "lucide-react";
 import type { Route } from "next";
-import Link from "next/link";
+import Link from "./hover-prefetch-link";
 import type { ReactElement, ReactNode } from "react";
 import styles from "./fan-menu.module.css";
 

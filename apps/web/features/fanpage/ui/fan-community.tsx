@@ -9,7 +9,7 @@ import { communityHref } from "@/features/community/domain/navigation";
 import { fanPageHref } from "../domain/board-navigation";
 import { WAVE_FANPAGE_SLUG } from "../domain/wave-programs";
 
-import Link from "next/link";
+import Link from "../../../components/fan-ui/hover-prefetch-link";
 import { Heart, MoreHorizontal } from "lucide-react";
 import { fanCommunitySchema } from "../domain/fan-community";
 import { useCommunityResource } from "./use-community-resource";

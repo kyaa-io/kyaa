@@ -12,7 +12,7 @@ import { additionalLocales, translate } from "@/i18n/messages";
 import { useCallback, useEffect, useId, useRef, useState, type CSSProperties } from "react";
 import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import { useByUsSession } from "@/components/byus-session-provider";
-import Link from "next/link";
+import Link from "../../../components/fan-ui/hover-prefetch-link";
 import type { Route } from "next";
 import { ArrowRight } from "@/components/icons";
 import { FanAction } from "@/components/fan-ui/fan-action";

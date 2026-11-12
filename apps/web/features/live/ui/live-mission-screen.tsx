@@ -7,7 +7,7 @@ import { toContentLocale } from "@/i18n/locales";
 import type { AppLocale } from "@/i18n/locales";
 import { messages as localizedMessages } from "@/i18n/catalogs/features__live__ui__live-mission-screen";
 import { translate } from "@/i18n/messages";
-import Link from "next/link";
+import Link from "../../../components/fan-ui/hover-prefetch-link";
 import { ArrowLeft } from "lucide-react";
 import Image from "next/image";
 import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";

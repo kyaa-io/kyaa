@@ -10,7 +10,7 @@ import { getSessionStorage } from "@/features/reliability/client/session-storage
 import { withRequestDeadline } from "@/features/reliability/client/request-deadline";
 
 import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
-import Link from "next/link";
+import Link from "../../../components/fan-ui/hover-prefetch-link";
 import type { Route } from "next";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { AuthIntentLink } from "../../../components/auth-intent-link";

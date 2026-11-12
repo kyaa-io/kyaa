@@ -7,7 +7,7 @@ import { messages as localizedMessages } from "@/i18n/catalogs/features__support
 import { translate } from "@/i18n/messages";
 import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import { ArrowLeft, ArrowRight, Check, MessageSquare, Plus, RefreshCw, Send } from "lucide-react";
-import Link from "next/link";
+import Link from "../../../components/fan-ui/hover-prefetch-link";
 import type { Route } from "next";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, type FormEvent } from "react";

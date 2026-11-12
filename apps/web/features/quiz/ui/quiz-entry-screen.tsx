@@ -15,7 +15,7 @@ import { getSessionStorage } from "@/features/reliability/client/session-storage
 import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import { ArrowRight, Check, CircleAlert, RotateCcw, X } from "lucide-react";
 import type { Route } from "next";
-import Link from "next/link";
+import Link from "../../../components/fan-ui/hover-prefetch-link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 

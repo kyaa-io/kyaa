@@ -5,7 +5,7 @@ import {groupPublicRoomsSchema} from "@/server/group-members/domain";
 import {managementCopy,sendLabel} from "./management-copy";
 import { GroupImage } from "./group-image";
 import { useEffect, useRef, useState, type CSSProperties, type FormEvent, type ReactNode } from "react";
-import Link from "next/link";
+import Link from "../../../components/fan-ui/hover-prefetch-link";
 import type { Route } from "next";
 import { UsersRound, LockKeyhole, ChevronLeft, UserRound, BadgeCheck, MessagesSquare, ImagePlus, X } from "lucide-react";
 import type { AppLocale } from "@/i18n/locales";

@@ -1,6 +1,6 @@
 "use client";
 import type { Route } from "next";
-import Link from "next/link";
+import Link from "./hover-prefetch-link";
 import dynamic from "next/dynamic";
 import { startTransition, useEffect, useOptimistic, useRef, type ReactNode } from "react";
 

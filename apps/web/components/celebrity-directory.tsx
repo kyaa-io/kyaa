@@ -16,7 +16,7 @@ import { CreatorRoleFilterControl, CreatorRolesText } from "./fan-ui/creator-rol
 import { CreatorAvatar } from "./fan-ui/creator-avatar";
 import { availableCreatorRoles, creatorRoleFilterLabel, matchesCreatorRole, type CreatorRoleFilter } from "@/features/creator/domain/creator-role";
 import { orderCreatorsForDiscovery } from "../server/content/creator-discovery";
-import Link from "next/link";
+import Link from "./fan-ui/hover-prefetch-link";
 import type { Route } from "next";
 import { useMemo, useState } from "react";
 import { ChevronDown, ChevronRight } from "lucide-react";

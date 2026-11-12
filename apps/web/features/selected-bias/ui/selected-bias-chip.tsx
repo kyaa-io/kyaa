@@ -5,7 +5,7 @@ import type { ReactNode } from "react";
 import { FanNumber } from "@/components/fan-ui/fan-number";
 import { FanLockedValue } from "@/components/fan-ui/fan-locked-value";
 import type { Route } from "next";
-import Link from "next/link";
+import Link from "../../../components/fan-ui/hover-prefetch-link";
 import { usePathname, useSearchParams } from "next/navigation";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import { fanLoginHref } from "@/components/login-href";

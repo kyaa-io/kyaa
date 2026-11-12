@@ -1,7 +1,7 @@
 import { messages as localizedMessages } from "@/i18n/catalogs/components__fan-participation-guide__fan-participation-guide";
 import { translate } from "@/i18n/messages";
 import Image from "next/image";
-import Link from "next/link";
+import Link from "../fan-ui/hover-prefetch-link";
 import type { Route } from "next";
 import { ArrowRight, BadgeCheck, BookOpen, CalendarDays, MessageCircle } from "lucide-react";
 import type { FanLocale } from "../fan-shell/fan-app-shell";

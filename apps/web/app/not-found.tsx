@@ -2,7 +2,7 @@
 
 import { messages as localizedMessages } from "@/i18n/catalogs/app__not-found";
 import { translate } from "@/i18n/messages";
-import Link from "next/link";
+import Link from "../components/fan-ui/hover-prefetch-link";
 import { useAppLocale } from "../components/locale-provider";
 import styles from "../components/public-content-state.module.css";
 

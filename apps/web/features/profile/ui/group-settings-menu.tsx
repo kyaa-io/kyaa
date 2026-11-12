@@ -1,5 +1,5 @@
 'use client';
-import Link from 'next/link';
+import Link from "../../../components/fan-ui/hover-prefetch-link";
 import type {Route} from 'next';
 import {z} from 'zod';
 import type {AppLocale} from '@/i18n/locales';

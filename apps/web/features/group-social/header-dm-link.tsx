@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import { Send } from "@/components/fan-ui/fan-icons";
 import { FanIcon } from "@/components/fan-ui/fan-icon";
-import Link from "next/link";
+import Link from "../../components/fan-ui/hover-prefetch-link";
 import iconStyles from "@/components/fan-ui/fan-icon-button.module.css";
 import { useGroupRequest, useGroupResource } from "@/features/groups/ui/use-group-resource";
 import { parseConversations } from "./conversation";

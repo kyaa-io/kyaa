@@ -13,7 +13,7 @@ import { CreatorAvatar } from "@/components/fan-ui/creator-avatar";
 
 import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import Image from "next/image";
-import Link from "next/link";
+import Link from "../../../components/fan-ui/hover-prefetch-link";
 import type { Route } from "next";
 import { useRouter, useSearchParams } from "next/navigation";
 import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";

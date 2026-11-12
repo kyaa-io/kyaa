@@ -16,7 +16,7 @@ import { useCommunityStamps } from "@/features/community-stamps/ui/use-community
 
 import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import { ArrowLeft, ArrowRight, BookOpen, CalendarDays, Check, ChevronRight, CircleHelp, ExternalLink, Heart, Plus, RotateCcw, Sparkles, X } from "lucide-react";
-import Link from "next/link";
+import Link from "../../../components/fan-ui/hover-prefetch-link";
 import { CreatorAvatar } from "@/components/fan-ui/creator-avatar";
 import { CreatorImage } from "@/components/fan-ui/creator-image";
 import { FanSkeleton } from "@/components/fan-ui/fan-skeleton";

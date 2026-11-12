@@ -1,7 +1,7 @@
 "use client";
 import {useEffect,useId,useState} from 'react';
 import type {Route} from 'next';
-import Link from 'next/link';
+import Link from "../../../components/fan-ui/hover-prefetch-link";
 import {FanAction} from '@/components/fan-ui/fan-action';
 import { FanSectionLink } from "@/components/fan-ui/fan-section-link";
 import {FanSkeleton,FanSkeletonStatus} from '@/components/fan-ui/fan-skeleton';

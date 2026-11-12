@@ -5,7 +5,7 @@ import {openingPage} from '@/features/passport/ui/passport-mission-book';
 import {passportRoadmapSchema} from '@/features/passport/domain/dukjil-types';
 import {useSelectedBias,type SelectedBias,type SelectedBiasOption} from '@/features/selected-bias/ui/use-selected-bias';
 import {createContext,useCallback,useContext,useEffect,useRef,useState,type ReactNode} from 'react';
-import Link from 'next/link';
+import Link from "../../../components/fan-ui/hover-prefetch-link";
 import type {Route} from 'next';
 import {ChevronRight,Ticket} from 'lucide-react';
 import {FanAppFrame,FanContentContainer} from '@/components/fan-shell/fan-app-shell';

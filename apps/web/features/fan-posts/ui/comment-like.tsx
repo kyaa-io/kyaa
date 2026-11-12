@@ -1,6 +1,6 @@
 "use client";
 import { Heart } from "lucide-react";
-import Link from "next/link";
+import Link from "../../../components/fan-ui/hover-prefetch-link";
 import type { Route } from "next";
 import { useState } from "react";
 import { useContentMutation } from "@/features/content-safety/ui/use-content-mutation";

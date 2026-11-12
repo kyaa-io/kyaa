@@ -3,7 +3,7 @@
 import { useEffect, useLayoutEffect, useState } from "react";
 import Image from "next/image";
 import type { Route } from "next";
-import Link from "next/link";
+import Link from "../../../components/fan-ui/hover-prefetch-link";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import { FanHeading } from "@/components/fan-ui/fan-heading";
 import { FanSectionLink } from "@/components/fan-ui/fan-section-link";

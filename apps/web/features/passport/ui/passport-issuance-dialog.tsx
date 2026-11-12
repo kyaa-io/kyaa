@@ -8,7 +8,7 @@ import { messages as fanLinkMessages } from "@/i18n/catalogs/components__fan-ui_
 import { additionalLocales, translate } from "@/i18n/messages";
 import { usePageLocale } from "@/components/locale-provider";
 
-import Link from "next/link";
+import Link from "../../../components/fan-ui/hover-prefetch-link";
 import type { Route } from "next";
 import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import { useCallback, useEffect, useRef, useState } from "react";

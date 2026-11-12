@@ -7,7 +7,7 @@ import { messages as localizedMessages } from "@/i18n/catalogs/features__my__ui_
 import { additionalLocales, translate } from "@/i18n/messages";
 import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import { ArrowRight, Check, RotateCcw } from "lucide-react";
-import Link from "next/link";
+import Link from "../../../components/fan-ui/hover-prefetch-link";
 import { useCallback } from "react";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import { useOwnedFanResource } from "@/components/fan-ui/use-owned-fan-resource";

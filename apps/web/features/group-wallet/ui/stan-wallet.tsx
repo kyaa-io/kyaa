@@ -1,6 +1,6 @@
 "use client";
 import { RewardIcon, REWARD_ICON_SRC } from "@/components/fan-ui/reward-icon";
-import Link from "next/link";
+import Link from "../../../components/fan-ui/hover-prefetch-link";
 import type { Route } from "next";
 import { SquarePlay } from "@/components/fan-ui/fan-icons";
 import { FanIcon } from "@/components/fan-ui/fan-icon";

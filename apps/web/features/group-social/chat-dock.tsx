@@ -1,5 +1,5 @@
 "use client";
-import Link from "next/link";
+import Link from "../../components/fan-ui/hover-prefetch-link";
 import type { Route } from "next";
 import { useEffect, useId, useRef, useState, type FormEvent, type KeyboardEvent } from "react";
 import { ArrowUp, Maximize2, UsersRound, X } from "lucide-react";

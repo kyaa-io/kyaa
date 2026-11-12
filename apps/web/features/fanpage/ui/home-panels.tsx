@@ -11,7 +11,7 @@ import { FanSectionLink } from "@/components/fan-ui/fan-section-link";
 import { FanSkeletonRows } from "@/components/fan-ui/fan-skeleton";
 import { useEffect, useState } from "react";
 import Image from "next/image";
-import Link from "next/link";
+import Link from "../../../components/fan-ui/hover-prefetch-link";
 import { EmptyIllustration } from "@/features/groups/ui/empty-illustration";
 import { ArrowRight, CalendarDays, Radio, Ticket } from "lucide-react";
 import { z } from "zod";

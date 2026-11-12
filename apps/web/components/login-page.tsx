@@ -9,7 +9,7 @@ import { usePageLocale } from "@/components/locale-provider";
 
 import { useByUsAuth } from "@/features/auth/client/cognito-auth";
 import Image, { getImageProps } from "next/image";
-import Link from "next/link";
+import Link from "./fan-ui/hover-prefetch-link";
 import type { Route } from "next";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";

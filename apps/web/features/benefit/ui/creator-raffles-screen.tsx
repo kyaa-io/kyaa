@@ -12,7 +12,7 @@ import { BANKSY_BENEFIT_IDS } from "@/features/analytics/domain/banksy-campaign"
 
 import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import { useCallback, useEffect, useState } from "react";
-import Link from "next/link";
+import Link from "../../../components/fan-ui/hover-prefetch-link";
 import { useRouter } from "next/navigation";
 import type { Route } from "next";
 import { ArrowLeft, ArrowRight, ArrowUpRight, History, Ticket } from "lucide-react";

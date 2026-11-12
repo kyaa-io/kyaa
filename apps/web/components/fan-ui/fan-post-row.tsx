@@ -1,7 +1,7 @@
 "use client";
 import { FileText, MessageCircle } from "lucide-react";
 import type { Route } from "next";
-import Link from "next/link";
+import Link from "./hover-prefetch-link";
 import { useState, type ReactNode } from "react";
 
 import { EditedMark } from "@/features/fan-posts/ui/edited-mark";

@@ -2,7 +2,7 @@
 
 import { messages as localizedMessages } from "@/i18n/catalogs/components__public-content-state";
 import { additionalLocales } from "@/i18n/messages";
-import Link from "next/link";
+import Link from "./fan-ui/hover-prefetch-link";
 import { useAppLocale } from "./locale-provider";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import { FanSkeleton } from "@/components/fan-ui/fan-skeleton";

@@ -6,7 +6,7 @@ import {
   MessageSquareText, ScrollText, ShieldCheck, Sparkles, UserCog, UsersRound, X, type LucideIcon,
 } from "lucide-react";
 import type { Route } from "next";
-import Link from "next/link";
+import Link from "../fan-ui/hover-prefetch-link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
 import { useGroupsRelease } from "@/features/groups/ui/groups-release";

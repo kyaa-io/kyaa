@@ -9,7 +9,7 @@ import { getSessionStorage } from "@/features/reliability/client/session-storage
 
 import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import type { Route } from "next";
-import Link from "next/link";
+import Link from "../../../components/fan-ui/hover-prefetch-link";
 import { ArrowLeft, Check, RotateCcw, Save, Stamp } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 

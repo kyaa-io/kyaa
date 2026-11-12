@@ -1,6 +1,6 @@
 import { TranslatedText } from "@/features/content-safety/ui/use-automatic-translation";
 import { Check, Camera, Heart, PenLine, Users, MessageCircle, Radio, Mic, Trophy, Globe, Flag } from "lucide-react";
-import Link from "next/link";
+import Link from "../../../components/fan-ui/hover-prefetch-link";
 import type { Route } from "next";
 import { waveProgramHref, WAVE_FANPAGE_SLUG } from "../domain/wave-programs";
 import { waveSectionHref } from "./wave-navigation";

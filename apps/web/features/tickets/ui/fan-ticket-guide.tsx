@@ -4,7 +4,7 @@ import { toContentLocale } from "@/i18n/locales";
 import { messages as localizedMessages } from "@/i18n/catalogs/features__tickets__ui__fan-ticket-guide";
 import { additionalLocales, translate } from "@/i18n/messages";
 import { useEffect } from "react";
-import Link from "next/link";
+import Link from "../../../components/fan-ui/hover-prefetch-link";
 import type { Route } from "next";
 import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import { ArrowRight, Check, Clock3, Ticket } from "lucide-react";

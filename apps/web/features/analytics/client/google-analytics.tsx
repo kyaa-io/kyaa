@@ -2,7 +2,7 @@
 
 import { FanAction } from "@/components/fan-ui/fan-action";
 import { usePageLocale } from "@/components/locale-provider";
-import Link from "next/link";
+import Link from "../../../components/fan-ui/hover-prefetch-link";
 import type { Route } from "next";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";

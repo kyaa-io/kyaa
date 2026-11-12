@@ -1,5 +1,5 @@
 "use client";
-import Link from "next/link";
+import Link from "../../../components/fan-ui/hover-prefetch-link";
 import type { Route } from "next";
 import { useEffect, useState } from "react";
 import { z } from "zod";

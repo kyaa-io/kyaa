@@ -2,7 +2,7 @@
 
 import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import { Copy, ExternalLink, RefreshCw } from "lucide-react";
-import Link from "next/link";
+import Link from "../../../components/fan-ui/hover-prefetch-link";
 import { useEffect, useRef, useState } from "react";
 import { AdminAccessState } from "../../../components/admin/admin-access-state";
 import { AdminOperationsShell, type AdminLocale } from "../../../components/admin/operations-shell";

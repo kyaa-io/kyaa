@@ -1,5 +1,5 @@
 import type {ReactNode} from 'react';
-import Link from 'next/link';
+import Link from "../fan-ui/hover-prefetch-link";
 import {ShieldCheck} from 'lucide-react';
 import styles from './group-admin.module.css';
 export function GroupAdminShell({locale,children}:{locale:'ko'|'en';children:ReactNode}){

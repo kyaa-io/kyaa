@@ -12,7 +12,7 @@ import {z} from 'zod';
 import { GroupArtistMark } from "@/features/groups/ui/group-artist-mark";
 import {CheerReplies} from './cheer-replies';
 import { ArrowLeft } from "lucide-react";
-import Link from "next/link";
+import Link from "../../../components/fan-ui/hover-prefetch-link";
 import { useRouter, useSearchParams } from "next/navigation";
 import type { Route } from "next";
 import { memo, useEffect, useId, useRef, useState, type ReactNode } from "react";

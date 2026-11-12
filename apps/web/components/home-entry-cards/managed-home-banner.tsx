@@ -5,7 +5,7 @@ import { messages as localizedMessages } from "@/i18n/catalogs/components__home-
 import { translate } from "@/i18n/messages";
 import { getImageProps } from "next/image";
 import { preload } from "react-dom";
-import Link from "next/link";
+import Link from "../fan-ui/hover-prefetch-link";
 import type { Route } from "next";
 import { useState } from "react";
 import { ArrowRight } from "lucide-react";

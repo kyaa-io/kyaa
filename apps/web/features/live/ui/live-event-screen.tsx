@@ -19,7 +19,7 @@ import { liveWatchHref } from "../domain/live-watch-link";
 
 import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import type { Route } from "next";
-import Link from "next/link";
+import Link from "../../../components/fan-ui/hover-prefetch-link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
   ArrowLeft,

@@ -14,7 +14,7 @@ import { messages as localizedMessages } from "@/i18n/catalogs/features__notific
 import { additionalLocales } from "@/i18n/messages";
 import { usePageLocale } from "@/components/locale-provider";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
-import Link from "next/link";
+import Link from "../../../components/fan-ui/hover-prefetch-link";
 import type { Route } from "next";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";

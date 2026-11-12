@@ -4,7 +4,7 @@ import { dukjilText } from '@/features/dukjil/ui/dukjil-copy';
 import { useSelectedBias } from '@/features/selected-bias/ui/use-selected-bias';
 import { POINT_COIN_SRC } from '@/features/dukjil/ui/earn-badge';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
-import Link from 'next/link';
+import Link from "../../../components/fan-ui/hover-prefetch-link";
 import { usePathname, useSearchParams } from 'next/navigation';
 import { RotateCw } from 'lucide-react';
 import { fanLoginHref } from '@/components/login-href';

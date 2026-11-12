@@ -10,7 +10,7 @@ import { CreatorAvatar } from "@/components/fan-ui/creator-avatar";
 import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import { useByUsSession } from "@/components/byus-session-provider";
 import { ArrowRight, CalendarDays, ChevronLeft, ChevronRight, CircleCheck, Eye, Play, RotateCcw } from "lucide-react";
-import Link from "next/link";
+import Link from "../../../components/fan-ui/hover-prefetch-link";
 import type { Route } from "next";
 import { useCallback, useEffect, useState } from "react";
 

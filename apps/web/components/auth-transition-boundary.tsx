@@ -5,7 +5,7 @@ import { messages as localizedMessages } from "@/i18n/catalogs/components__auth-
 import { translate } from "@/i18n/messages";
 import { isCreatorHandle } from "@/features/creator/domain/creator-navigation";
 import type { Route } from "next";
-import Link from "next/link";
+import Link from "./fan-ui/hover-prefetch-link";
 import { usePathname, useSearchParams } from "next/navigation";
 import type { ReactNode } from "react";
 import { useAppLocale } from "./locale-provider";

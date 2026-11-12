@@ -10,7 +10,7 @@ import { additionalLocales, translate } from "@/i18n/messages";
 import { communityCopy } from "@/i18n/catalogs/features__community";
 import type { Route } from "next";
 import Image from "next/image";
-import Link from "next/link";
+import Link from "../fan-ui/hover-prefetch-link";
 
 import type { FanLocale } from "./fan-app-shell";
 import { FanContentContainer } from "./fan-content-container";

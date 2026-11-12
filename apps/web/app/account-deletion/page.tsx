@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import Link from "../../components/fan-ui/hover-prefetch-link";
 import { ArrowLeft } from "lucide-react";
 
 import { FocusFlowFrame } from "@/components/fan-shell/focus-flow-frame";

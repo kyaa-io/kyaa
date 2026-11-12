@@ -3,7 +3,7 @@ import { FanAction } from "@/components/fan-ui/fan-action";
 import { ReactionCount, ReactionIcon } from "@/components/fan-ui/reaction-count";
 import { FanTabs } from "@/components/fan-ui/fan-tabs";
 import { FanText } from "@/components/fan-ui/fan-text";
-import Link from "next/link";
+import Link from "../../../components/fan-ui/hover-prefetch-link";
 import type { Route } from "next";
 import { useState, type ReactNode } from "react";
 import { z } from "zod";

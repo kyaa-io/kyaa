@@ -12,7 +12,7 @@ import {
   Trash2,
 } from "lucide-react";
 import type { Route } from "next";
-import Link from "next/link";
+import Link from "../fan-ui/hover-prefetch-link";
 import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useAdminSession } from "./use-admin-session";

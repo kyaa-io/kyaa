@@ -3,7 +3,7 @@ import type { ReactNode } from 'react';
 import { FanSkeletonRows } from '@/components/fan-ui/fan-skeleton';
 import eventListStyles from '@/features/groups/ui/group-event-list.module.css';
 import { GroupImage } from "@/features/groups/ui/group-image";
-import Link from 'next/link';
+import Link from "../../components/fan-ui/hover-prefetch-link";
 import type { Route } from 'next';
 import { z } from 'zod';
 import { FanAction } from '@/components/fan-ui/fan-action';

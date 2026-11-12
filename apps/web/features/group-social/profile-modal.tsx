@@ -1,6 +1,6 @@
 "use client";
 import { RewardIcon } from "@/components/fan-ui/reward-icon";
-import Link from "next/link";
+import Link from "../../components/fan-ui/hover-prefetch-link";
 import { creatorHomeHref } from "@/features/creator/domain/creator-navigation";
 import { useEffect, useId, useRef, useState } from "react";
 import { ArrowRight, Ellipsis, Link2, UserRound, X } from "lucide-react";

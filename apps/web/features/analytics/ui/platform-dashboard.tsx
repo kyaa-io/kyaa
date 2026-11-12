@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
-import Link from "next/link";
+import Link from "../../../components/fan-ui/hover-prefetch-link";
 import type { Route } from "next";
 import { AdminAccessState } from "../../../components/admin/admin-access-state";
 import { AdminOperationsShell, type AdminLocale } from "../../../components/admin/operations-shell";

@@ -2,7 +2,7 @@
 
 import { AlertCircle, LoaderCircle, ShieldAlert } from "lucide-react";
 import type { Route } from "next";
-import Link from "next/link";
+import Link from "../fan-ui/hover-prefetch-link";
 import { usePathname } from "next/navigation";
 import styles from "./operations.module.css";
 

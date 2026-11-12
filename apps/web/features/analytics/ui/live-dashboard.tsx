@@ -1,5 +1,5 @@
 "use client";
-import Link from "next/link";
+import Link from "../../../components/fan-ui/hover-prefetch-link";
 import { useEffect, useState } from "react";
 import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import { AdminAccessState } from "../../../components/admin/admin-access-state";

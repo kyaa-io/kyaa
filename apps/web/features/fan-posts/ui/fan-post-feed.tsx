@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useId, useRef, useState, type ReactNode } from "react";
-import Link from "next/link";
+import Link from "../../../components/fan-ui/hover-prefetch-link";
 import type { Route } from "next";
 import { ArrowLeft, ArrowRight, ChevronLeft, ChevronRight, MessageCircle, PenLine, X } from "lucide-react";
 import { discoveryCopy } from "@/i18n/catalogs/features__fan_posts__discovery";

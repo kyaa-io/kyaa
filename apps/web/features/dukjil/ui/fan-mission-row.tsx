@@ -1,6 +1,6 @@
 "use client";
 import { ChevronDown } from "lucide-react";
-import Link from "next/link";
+import Link from "../../../components/fan-ui/hover-prefetch-link";
 import type { Route } from "next";
 import type { MouseEvent, ReactNode } from "react";
 import { FanCollapsibleTrigger, type FanCollapsibleTriggerProps } from "@/components/fan-ui/fan-collapsible";

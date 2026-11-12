@@ -1,7 +1,7 @@
 "use client";
 import {useDukjilStatus} from "@/features/dukjil/ui/dukjil-provider";
 import {dukjilText} from "@/features/dukjil/ui/dukjil-copy";
-import Link from 'next/link';
+import Link from "../../../components/fan-ui/hover-prefetch-link";
 import type { Route } from 'next';
 import { z } from 'zod';
 import { ArrowRight, CalendarCheck, CircleDot, Coins, MessageSquare, Radio, Ticket, UsersRound } from 'lucide-react';

@@ -1,7 +1,7 @@
 "use client";
 import { Star } from "lucide-react";
 import type { Route } from "next";
-import Link from "next/link";
+import Link from "./hover-prefetch-link";
 
 import styles from "./fan-star-action.module.css";
 

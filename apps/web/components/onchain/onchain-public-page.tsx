@@ -1,7 +1,7 @@
 import { type AppLocale } from "@/i18n/locales";
 import { messages as localizedMessages } from "@/i18n/catalogs/components__onchain__onchain-public-page";
 import { additionalLocales, translate } from "@/i18n/messages";
-import Link from "next/link";
+import Link from "../fan-ui/hover-prefetch-link";
 import { FanHeading } from "@/components/fan-ui/fan-heading";
 
 import { FanContentContainer } from "@/components/fan-shell/fan-content-container";

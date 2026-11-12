@@ -2,7 +2,7 @@
 import {eventApprovalCopy,isEventOpen} from '@/features/group-event-approval/event-approval-status';
 import {SourceStatePanel} from "./source-state-panel";
 import { GroupImage } from "./group-image";
-import Link from 'next/link';
+import Link from "../../../components/fan-ui/hover-prefetch-link";
 import { useState } from 'react';
 import {usePathname,useSearchParams} from 'next/navigation';
 import {activityHubCopy} from './activity-hub-copy';
