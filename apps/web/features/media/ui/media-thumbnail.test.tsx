@@ -1,5 +1,5 @@
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
-import { afterEach, expect, it } from "vitest";
+import { afterEach, expect, it, vi } from "vitest";
 import { MediaThumbnail } from "./media-thumbnail";
 afterEach(cleanup);
 it.each(["7690854938997558549", "7689367463607192852"])("uses the verified local cover for the curated TikTok recording %s", id => {
@@ -55,4 +55,18 @@ it("reads a stored API cover directly so image optimization cannot outlive its v
   expect(src.pathname + src.search).toBe(image);
   expect(container.querySelector("img")).toHaveAttribute("loading", "lazy");
   expect(container.querySelector("img")).not.toHaveAttribute("srcset");
+});
+
+it("reports a cover that cannot be shown and never prints the source URL as the label (사용자 2026-11-12 Instagram 칸)", () => {
+  const href = "https://www.instagram.com/jen2jen2_/p/DfEtowlgX1j/", onMissing = vi.fn();
+  const { container } = render(<MediaThumbnail image={null} href={href} kind="videos" source="Instagram" title={href} locale="ko" onMissing={onMissing} />);
+  expect(onMissing).toHaveBeenCalledTimes(1);
+  expect(container.textContent).not.toContain("http");
+  expect(container.textContent).not.toContain("instagram.com");
+});
+
+it("does not report a cover that is shown", () => {
+  const onMissing = vi.fn();
+  render(<MediaThumbnail image="/cover.jpg" href="https://www.instagram.com/p/DfEtowlgX1j/" kind="videos" source="Instagram" locale="ko" onMissing={onMissing} />);
+  expect(onMissing).not.toHaveBeenCalled();
 });

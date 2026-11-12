@@ -13,6 +13,7 @@ import { MediaThumbnail } from "@/features/media/ui/media-thumbnail";
 import { homeShortsPageSchema, type HomeShort } from "@/features/home/domain/home-gallery";
 import { toContentLocale, type AppLocale } from "@/i18n/locales";
 import { participationCopy } from "@/i18n/catalogs/features__schedules__ui__participation";
+import { FanScrollRow } from "@/components/fan-ui/fan-scroll-row";
 import { ShortsEngagement } from "./shorts-engagement";
 import styles from "./home-shorts.module.css";
 
@@ -29,8 +30,12 @@ const shortPlayer = (item: HomeShort) => item.platform === "tiktok" ? `https://w
 const PAGE_SIZE = 12;
 
 export function HomeShorts({ items: firstItems, locale, layout = "rail", initialVideo, offset = 0, hasMore: firstHasMore = false }: { items: readonly HomeShort[]; locale: AppLocale; layout?: "rail" | "grid"; initialVideo?: string; offset?: number; hasMore?: boolean }) {
-  // The grid loads the next page when its end scrolls into view; the viewer then steps through everything loaded.
-  const [items, setItems] = useState(firstItems);
+  // The grid loads the next page when its end scrolls into view and the rail when its right end comes near, so the rail always runs to the
+  // container's edge; the viewer then steps through everything loaded. A short whose cover cannot be shown is left out (never a bare URL).
+  const [loaded, setItems] = useState(firstItems);
+  const [uncovered, setUncovered] = useState<ReadonlySet<string>>(new Set());
+  const items = loaded.filter(item => !uncovered.has(item.id));
+  const hideUncovered = useCallback((id: string) => setUncovered(current => current.has(id) ? current : new Set(current).add(id)), []);
   const [hasMore, setHasMore] = useState(firstHasMore);
   const [failed, setFailed] = useState(false);
   const loading = useRef(false);
@@ -40,13 +45,13 @@ export function HomeShorts({ items: firstItems, locale, layout = "rail", initial
     loading.current = true;
     setFailed(false);
     try {
-      const response = await fetch(`/api/public/home-shorts?locale=${toContentLocale(locale)}&offset=${offset + items.length}`);
+      const response = await fetch(`/api/public/home-shorts?locale=${toContentLocale(locale)}&offset=${offset + loaded.length}`);
       if (!response.ok) throw new Error();
       const page = homeShortsPageSchema.parse(await response.json());
       setItems(current => { const seen = new Set(current.map(item => item.id)); return [...current, ...page.items.filter(item => !seen.has(item.id))]; });
       setHasMore(page.hasMore && page.items.length > 0);
     } catch { setFailed(true); } finally { loading.current = false; }
-  }, [items.length, locale, offset]);
+  }, [loaded.length, locale, offset]);
   useEffect(() => {
     const node = tail.current;
     if (!node || layout !== "grid" || !hasMore || failed) return;
@@ -73,18 +78,19 @@ export function HomeShorts({ items: firstItems, locale, layout = "rail", initial
     onTouchStart: (e: React.TouchEvent) => { startY.current = e.touches[0]?.clientY ?? null; },
     onTouchEnd: (e: React.TouchEvent) => { if (startY.current !== null) { const difference = startY.current - (e.changedTouches[0]?.clientY ?? startY.current); if (Math.abs(difference) >= 45) move(difference > 0 ? 1 : -1); } startY.current = null; },
   };
-  return <>
-    <ul className={layout === "rail" ? styles.rail : styles.grid}>
-      {(layout === "rail" ? items.slice(0, 6) : items).map((item, i) => <li key={item.id} className={styles.item} data-row="short">
+  const cards = items.map((item, i) => <li key={item.id} className={styles.item} data-row="short">
         <FanAction variant="text" type="button" className={styles.card} ariaLabel={item.title} onClick={() => setIndex(i)}>
-          <span className={`${styles.cover} ${mediaFillClass}`}><MediaThumbnail image={item.thumbnail ?? shortCover(item)} href={item.href} kind="videos" locale={locale} backdrop /><span className={styles.play} aria-hidden="true"><FanIcon icon={Play} filled /></span></span>
+          <span className={`${styles.cover} ${mediaFillClass}`}><MediaThumbnail image={item.thumbnail ?? shortCover(item)} href={item.href} kind="videos" locale={locale} backdrop onMissing={() => hideUncovered(item.id)} /><span className={styles.play} aria-hidden="true"><FanIcon icon={Play} filled /></span></span>
           <span className={styles.caption}>
             <CreatorAvatar slug={item.creator.slug} src={item.creator.avatar?.src ?? null} photos={item.creator.avatar?.photos} size={32} />
             <span className={styles.details}><span className={styles.title}>{item.title}</span><FanText role="meta" className={styles.meta}>{item.creator.name} · {item.platform === "tiktok" ? "TikTok" : "YouTube"}</FanText></span>
           </span>
         </FanAction>
-      </li>)}
-    </ul>
+      </li>);
+  const nearEnd = useCallback(() => { if (hasMore && !failed) void loadMore(); }, [hasMore, failed, loadMore]);
+  return <>
+    {layout === "rail" ? <FanScrollRow className={styles.rail} locale={locale} onNearEnd={nearEnd}>{cards}</FanScrollRow> : <ul className={styles.grid}>{cards}</ul>}
+    {layout === "rail" && hasMore && failed ? <FanAction variant="text" type="button" className={styles.retry} onClick={() => void loadMore()}>{participationCopy(locale).retry}</FanAction> : null}
     {layout === "grid" && hasMore && (failed ? <FanAction variant="text" type="button" className={styles.retry} onClick={() => void loadMore()}>{participationCopy(locale).retry}</FanAction> : <div ref={tail} className={styles.tail} aria-hidden="true" />)}
     <FanDialog className={styles.viewer} open={!!selected} onOpenChange={open => { if (!open) { setIndex(null); setMore(false); } }} title={selected?.title ?? ""} closeLabel={fanUiText(locale, "close")}>
       {selected && <div className={styles.player} data-outbound-placement="shorts-player" onWheel={e => { if (Math.abs(e.deltaY) > 20 && Date.now() - wheelAt.current > 600) { wheelAt.current = Date.now(); move(e.deltaY > 0 ? 1 : -1); } }}>

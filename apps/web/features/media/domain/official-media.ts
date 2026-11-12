@@ -21,7 +21,7 @@ export function noticeMedia(notice: z.infer<typeof noticeSchema>, creatorSlug: s
     if (Array.isArray(node.marks)) for (const value of node.marks) {
       const mark = value as { type?: string; attrs?: { href?: unknown } }, href = mark.attrs?.href;
       if (mark.type === "link" && typeof href === "string" && !seen.has(href) && ["youtube", "instagram", "tiktok", "chzzk"].some(provider => isRecordedReplayUrl(provider, href))) {
-        seen.add(href); items.push({ id: `notice:${notice.id}:${items.length}`, kind: "videos", title: String(node.text || notice.title), image: videoThumbnailUrl(href), asset: null, href, date: notice.publishedAt });
+        seen.add(href); items.push({ id: `notice:${notice.id}:${items.length}`, kind: "videos", title: node.text && !/^https?:\/\//i.test(String(node.text).trim()) ? String(node.text) : notice.title, image: videoThumbnailUrl(href), asset: null, href, date: notice.publishedAt });
       }
     }
     if (Array.isArray(node.content)) node.content.forEach(child => visit(child as Record<string, unknown>));

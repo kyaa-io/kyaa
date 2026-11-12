@@ -18,19 +18,29 @@ export function diversifyGalleryPhotos(photos: readonly HomeGalleryPhoto[]): Hom
     const post = postOf(photo);
     if (seenPosts.has(post)) rest.push(photo); else { seenPosts.add(post); firsts.push(photo); }
   }
-  const order = (list: readonly HomeGalleryPhoto[]) => {
-    const queues = new Map<string, HomeGalleryPhoto[]>();
-    for (const photo of list) { const key = creatorOf(photo); (queues.get(key) ?? queues.set(key, []).get(key)!).push(photo); }
-    const result: HomeGalleryPhoto[] = [];
-    let last = "";
-    while (result.length < list.length) {
-      const round = [...queues.entries()].filter(([, queue]) => queue.length);
-      // A round starts with the first creator that is not the one just shown, so a creator is never repeated back to back.
-      const start = round.findIndex(([key]) => key !== last);
-      const turn = start > 0 ? [...round.slice(start), ...round.slice(0, start)] : round;
-      for (const [key, queue] of turn) { result.push(queue.shift()!); last = key; }
-    }
-    return result;
-  };
-  return [...order(firsts), ...order(rest)];
+  return [...roundRobinByKey(firsts, creatorOf), ...roundRobinByKey(rest, creatorOf)];
+}
+
+/**
+ * Round-robin over keys (creators): each round takes the oldest-queued item of every key in order of first appearance, and a round starts
+ * with the first key that is not the one just shown, so a key is never repeated back to back while another key still has items.
+ * Order inside one key is the input order (newest first for the callers). Nothing is dropped.
+ */
+export function roundRobinByKey<T>(list: readonly T[], keyOf: (item: T) => string): T[] {
+  const queues = new Map<string, T[]>();
+  for (const item of list) { const key = keyOf(item); (queues.get(key) ?? queues.set(key, []).get(key)!).push(item); }
+  const result: T[] = [];
+  let last = "";
+  while (result.length < list.length) {
+    const round = [...queues.entries()].filter(([, queue]) => queue.length);
+    const start = round.findIndex(([key]) => key !== last);
+    const turn = start > 0 ? [...round.slice(start), ...round.slice(0, start)] : round;
+    for (const [key, queue] of turn) { result.push(queue.shift()!); last = key; }
+  }
+  return result;
+}
+
+/** Home Shorts (사용자 2026-11-12 "숏폼도 여러 셀럽 교차적으로"): creators take turns, newest first inside one creator. */
+export function diversifyShorts<T extends { creator: { slug: string } }>(shorts: readonly T[]): T[] {
+  return roundRobinByKey(shorts, short => short.creator.slug);
 }

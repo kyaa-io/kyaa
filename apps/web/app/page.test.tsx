@@ -20,7 +20,7 @@ vi.mock("../server/content/home-banner-repository", () => ({ createHomeBannerRep
 
 vi.mock("../server/home-notice/home-notice-repository", () => ({ createHomeNoticeRepository: () => ({ listPublished: repositories.homeNotices }) }));
 
-vi.mock("../server/home-gallery/home-gallery-repository", () => ({ createHomeGalleryRepository: () => ({ listPublished: repositories.homeGallery, listShorts: repositories.homeShorts }) }));
+vi.mock("../server/home-gallery/home-gallery-repository", () => ({ createHomeGalleryRepository: () => ({ listPublishedPool: repositories.homeGallery, listShorts: repositories.homeShorts }) }));
 
 vi.mock("../server/raffle/raffle-dependencies", () => ({ createRaffleDependencies: () => ({ list: repositories.raffles }) }));
 
@@ -97,7 +97,7 @@ describe("Home server content isolation", () => {
     const page = { items: [{ id: "p1" }], nextCursor: null };
     repositories.homeGallery.mockResolvedValue(page);
     const result = await HomePage({ searchParams: Promise.resolve({ locale: "ko" }) });
-    expect(repositories.homeGallery).toHaveBeenCalledWith("ko", { limit: 24 });
+    expect(repositories.homeGallery).toHaveBeenCalledWith("ko", { pages: 3 });
     expect(await props(result).queries.homeGallery).toEqual({ status: "fulfilled", value: page });
     expect(repositories.homeGallery).toHaveBeenCalledTimes(1);
     repositories.homeGallery.mockRejectedValue(new Error("gallery unavailable"));
