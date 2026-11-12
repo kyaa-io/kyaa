@@ -344,3 +344,14 @@ it("opens a fan row with hearts and entry tickets, a creator row with 찐팬 and
   expect(creatorPanel).toContain("하트77");
   expect(creatorPanel).not.toMatch(/팔로워/);
 });
+
+it("signed out, a creator's picture and name still lead to the fan page, and the link does not open the row", async () => {
+  auth.value = { ...auth.value, authenticated: false, user: null };
+  stub();
+  const view = render(<RankingBoard locale="ko" />);
+  await inRow("엘리나");
+  const link = screen.getByRole("link", { name: "엘리나, 팬페이지 가기" });
+  expect(link).toHaveAttribute("href", "/elina?locale=ko");
+  fireEvent.click(link);
+  expect(view.container.querySelectorAll("[data-rank-panel]")).toHaveLength(0);
+});

@@ -27,4 +27,6 @@ export const fanUiSource = {
   earnUpTo: { ko: "{0}명까지", en: "up to {0}" },
   close: { ko: "닫기", en: "Close" },
   details: { ko: "자세히", en: "Details" },
+  viewAll: { ko: "전체 보기", en: "View all" },
+  collapse: { ko: "접기", en: "Show less" },
 } as const;

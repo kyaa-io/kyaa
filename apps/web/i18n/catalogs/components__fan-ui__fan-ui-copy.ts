@@ -246,5 +246,7 @@ export const messages = {
   "earnRemainingMonth": { "ja": "今月あと{0}回", "zh-Hans": "本月还剩 {0} 次", "zh-Hant": "本月還剩 {0} 次", "es": "Quedan {0} este mes", "id": "Sisa {0} bulan ini", "vi": "Còn {0} lần trong tháng này", "th": "เดือนนี้เหลือ {0} ครั้ง", "pt": "Restam {0} este mês", "fr": "Encore {0} ce mois-ci", "ru": "Осталось в этом месяце: {0}" },
   "earnUpTo": { "ja": "{0}人まで", "zh-Hans": "最多 {0} 人", "zh-Hant": "最多 {0} 人", "es": "hasta {0}", "id": "hingga {0}", "vi": "tối đa {0}", "th": "สูงสุด {0} คน", "pt": "até {0}", "fr": "jusqu’à {0}", "ru": "до {0}" },
   "close": { "ja": "閉じる", "zh-Hans": "关闭", "zh-Hant": "關閉", "es": "Cerrar", "id": "Tutup", "vi": "Đóng", "th": "ปิด", "pt": "Fechar", "fr": "Fermer", "ru": "Закрыть" },
-  "details": { "ja": "詳細", "zh-Hans": "详情", "zh-Hant": "詳情", "es": "Detalles", "id": "Detail", "vi": "Chi tiết", "th": "รายละเอียด", "pt": "Detalhes", "fr": "Détails", "ru": "Подробнее" }
+  "details": { "ja": "詳細", "zh-Hans": "详情", "zh-Hant": "詳情", "es": "Detalles", "id": "Detail", "vi": "Chi tiết", "th": "รายละเอียด", "pt": "Detalhes", "fr": "Détails", "ru": "Подробнее" },
+  "viewAll": { "ja": "すべて見る", "zh-Hans": "查看全部", "zh-Hant": "查看全部", "es": "Ver todo", "id": "Lihat semua", "vi": "Xem tất cả", "th": "ดูทั้งหมด", "pt": "Ver tudo", "fr": "Tout voir", "ru": "Смотреть все" },
+  "collapse": { "ja": "閉じる", "zh-Hans": "收起", "zh-Hant": "收起", "es": "Ver menos", "id": "Tutup", "vi": "Thu gọn", "th": "ย่อ", "pt": "Ver menos", "fr": "Réduire", "ru": "Свернуть" }
 } as const satisfies Record<string, TranslatedMessage>;

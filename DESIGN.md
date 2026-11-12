@@ -154,7 +154,7 @@ radius-scale: "pill / 16px / 12px / 8px / 50%"
 | `FanAction` | 글자가 있는 모든 버튼·링크 버튼 | `variant` primary·secondary(=neutral)·text·danger, `size` md·sm, `href`/`onClick`, `leadingIcon`, `loading`, `fullWidth`, `helperText` | primary는 화면당 1. `danger`는 모달 안 확인만. `service`·`passport`·`trailingIcon` 화살표는 폐기 |
 | `FanIconButton` | 글자 없는 44 아이콘 버튼 | `aria-label` 필수, 메뉴·툴팁 트리거 | 글자가 있으면 `FanAction` |
 | `FanHeading` · `FanSectionHeader` | 화면 제목·구역 제목, 제목 줄 오른쪽 작은 링크 | `as` h1·h2·h3, `action {label, href}`, `extraAction` | `description`(보조 문구) 쓰지 않음 |
-| `FanSectionLink` | 제목 줄 오른쪽 `전체 보기 ›` | `href`/`onClick`, `expanded` | 목록 아래 따로 둔 버튼 줄 |
+| `FanSectionLink` | 제목 줄 오른쪽 `전체 보기 ›`. 같은 자리에서 펼치는 목록 미리보기도 이것(`onClick`+`expanded`, 펼친 뒤 `접기 ›`; 예: 팬페이지 390 팬 활동 3행 `FanMissions preview`, 11/13) | `href`/`onClick`, `expanded` | 목록 아래 따로 둔 버튼 줄 |
 | `FanText` | 이름·글 행 제목·본문·메타·라벨 | `role` item·row-title·body·meta·label·banner-label·banner-action, `as` | — |
 | `FanNumber` · `FanGauge` | 자산 숫자 / 진행 막대·칸 | `size` md·lg·xl, `unit`, `countUp` / `value` `max` `segments` `valueText` | 막대 안에 글자 넣지 않음 |
 | `RollingNumber` | 바뀌는 숫자를 굴려 보이기(랭킹·헤더·접속 수) | `value`, `duration`, `easing`, `delay`, `initialFromZero` | 가짜 증가 금지(실제 값만) |
