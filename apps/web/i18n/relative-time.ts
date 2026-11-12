@@ -7,10 +7,10 @@ export const RELATIVE_TIME_MAX_DAYS = 7;
 const FUTURE_TOLERANCE_MS = 60_000;
 const SECOND = 1000, MINUTE = 60 * SECOND, HOUR = 60 * MINUTE, DAY = 24 * HOUR;
 
-export const exactTimeLabel = (value: string | Date, locale: AppLocale) => {
+export const exactTimeLabel = (value: string | Date, locale: AppLocale, timeZone = "Asia/Seoul") => {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return "";
-  return new Intl.DateTimeFormat(locale, {calendar: "gregory", dateStyle: "medium", timeStyle: "short", timeZone: "Asia/Seoul"}).format(date);
+  return new Intl.DateTimeFormat(locale, {calendar: "gregory", dateStyle: "medium", timeStyle: "short", timeZone}).format(date);
 };
 
 /** 상대 표기를 쓸 수 없으면(7일 이상, 먼 미래, 잘못된 값) null을 돌려 호출부가 절대 날짜를 쓰게 한다. */
