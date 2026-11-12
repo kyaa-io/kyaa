@@ -10,6 +10,7 @@ vi.mock("@/features/groups/ui/use-group-resource", () => ({
 }));
 import { DukjilProvider, resetDukjilCatalogCache } from "./dukjil-provider";
 import { FanMissions } from "./fan-missions";
+import { CheckinCorner } from "./checkin-corner";
 
 const action = (count: number, remaining: number | null, stamped = false) => ({ count, points: count, remaining, stamped });
 const today = { kstDate: "2026-11-07", policyActive: true, totalPoints: 22, hasPassport: true, attendance: { attendedToday: true, streak: 3, nextBonusIn: 4 }, actions: { post: action(1, 2, true), comment: action(0, 10), reaction: action(2, 8), share: action(3, 0, true), invite: action(0, null), proof: action(0, 2) } };
@@ -127,4 +128,18 @@ it.each([false,true])('shows supported reaction once with shared progress and re
 it('omits reaction when the catalog does not support it',async()=>{
  const {reaction,...supported}=rules;h.catalog={version:1,rules:supported,missionBook:{}};
  ui();await row('post');await waitFor(()=>expect(rowNow('reaction')).toBeNull());
+});
+
+it("keeps the fan-page check-in shortcut visible across guest and completed attendance states", async () => {
+  h.auth = false;
+  h.today = undefined;
+  const guest = render(<DukjilProvider slug="elina" locale="ko"><CheckinCorner locale="ko"><a href="/my/wallet?view=attendance&locale=ko">출석체크</a></CheckinCorner></DukjilProvider>);
+  expect(screen.getByRole("link", { name: "출석체크" })).toBeInTheDocument();
+  await waitFor(() => expect(guest.container.querySelector('[data-earn-badge="corner"]')).toHaveTextContent("+2"));
+  guest.unmount();
+  h.auth = true;
+  h.today = today;
+  const completed = render(<DukjilProvider slug="elina" locale="ko"><CheckinCorner locale="ko"><a href="/my/wallet?view=attendance&locale=ko">출석체크</a></CheckinCorner></DukjilProvider>);
+  expect(screen.getByRole("link", { name: "출석체크" })).toBeInTheDocument();
+  await waitFor(() => expect(completed.container.querySelector('[data-earn-badge="corner"]')).toBeNull());
 });

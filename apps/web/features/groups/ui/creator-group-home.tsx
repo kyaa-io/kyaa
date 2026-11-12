@@ -11,6 +11,7 @@ import {FanState} from '@/components/fan-ui/fan-state';
 import {FanTabs,type FanTabItem} from '@/components/fan-ui/fan-tabs';
 import {fanLoginHref} from '@/components/login-href';
 import {EarnBadgeCorner} from '@/features/dukjil/ui/earn-badge';
+import {CheckinCorner} from '@/features/dukjil/ui/checkin-corner';
 import {FanMissions} from '@/features/dukjil/ui/fan-missions';
 import {JjinfanGauge} from '@/features/rankings/ui/jjinfan-gauge';
 import {GroupBrandHomeEvent} from './group-home-panels';
@@ -78,7 +79,7 @@ export function CreatorGroupHome({celebrity,locale,channelId,passportId,owned,on
   </section>
   {!brand&&<BannerSlot slot='fanpage_second' locale={locale}/>}
   <div className={styles.mobileParticipation}>{compact&&<><JjinfanGauge slug={celebrity.slug} locale={locale}/><FanMissions locale={locale} slug={celebrity.slug} title={locale==='ko'?'팬 활동':t.activities} passportHref={passportHref} proofHref={proofHref} onAttendance={trigger=>{attendanceTrigger.current=trigger;setAttendanceOpen(true);}}/></>}<CreatorScheduleCard celebrity={celebrity} locale={locale} schedule={schedule}/></div>
-  <nav className={styles.creatorShortcuts} aria-label={c.activity}><FanAction href={`/my/wallet?view=attendance&locale=${locale}`} onClick={event=>{if(event.defaultPrevented||event.button!==0||event.metaKey||event.ctrlKey||event.shiftKey||event.altKey||event.currentTarget.target||event.currentTarget.hasAttribute('download'))return;event.preventDefault();attendanceTrigger.current=event.currentTarget;setAttendanceOpen(true);}} leadingIcon={<span className={styles.shortcutStamp} data-art="stamp"/>}>{c.stamps}</FanAction><FanAction href={passportHref} leadingIcon={<BookOpen/>}>{w.passport}</FanAction></nav>
+  <nav className={styles.creatorShortcuts} aria-label={c.activity}><CheckinCorner locale={locale}><FanAction href={`/my/wallet?view=attendance&locale=${locale}`} onClick={event=>{if(event.defaultPrevented||event.button!==0||event.metaKey||event.ctrlKey||event.shiftKey||event.altKey||event.currentTarget.target||event.currentTarget.hasAttribute('download'))return;event.preventDefault();attendanceTrigger.current=event.currentTarget;setAttendanceOpen(true);}} leadingIcon={<span className={styles.shortcutStamp} data-art="stamp"/>}>{c.stamps}</FanAction></CheckinCorner><FanAction href={passportHref} leadingIcon={<BookOpen/>}>{w.passport}</FanAction></nav>
  </div>{attendanceOpen&&<CreatorAttendanceEntry slug={celebrity.slug} pageName={celebrity.name} locale={locale} reviewHref={`/c/${encodeURIComponent(celebrity.slug)}/verify?locale=${locale}`} onClose={()=>{setAttendanceOpen(false);requestAnimationFrame(()=>attendanceTrigger.current?.focus());}}/>}<CreatorGroupHomeAside celebrity={celebrity} schedule={schedule} slug={celebrity.slug} locale={locale} passportId={passportId} owned={owned}/></div></DukjilProvider>;
 }
 
