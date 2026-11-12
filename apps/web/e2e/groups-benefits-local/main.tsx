@@ -24,6 +24,7 @@ window.fetch=async(input,init)=>{
  if(state==='loading'&&(path.includes('/benefits')||path==='/api/me/wallet'||path==='/api/groups/capsules'||path.endsWith(`/raffles/${id}`)))return new Promise(resolve=>waiting.push(resolve));
  if(state==='error'&&(path.startsWith('/api/groups')||path==='/api/me/wallet'))return Response.json({error:{code:'SYNTHETIC_FAILURE'}},{status:503});
  if(path==='/api/me/wallet')return Response.json({...wallet(),...(state==='insufficient'?{tickets:0}:{})});
+ if(path==='/api/raffles/recent')return Response.json({items:[1,2,3].map(n=>({raffle:{...raffle,id:`10000000-0000-4000-8000-00000000000${n}`,benefitId:`10000000-0000-4000-8000-00000000000${n}`,title:`지난 럭키드로우 선물 ${n}`,status:'closed',entryClosesAt:'2026-10-31T00:00:00Z',resultsPublishedAt:'2026-11-01T00:00:00Z'},creator:{slug:'synthetic-creator',name:'합성 크리에이터',image:null}}))});
  if(path==='/api/groups/benefits'){
   const kind=url.searchParams.get('kind'),cursor=url.searchParams.get('cursor');
   const itemId=cursor?second:id,base={id:itemId,pageId:id,pageName:'합성 모임 · Synthetic group',title:cursor?'두 번째 · Second page':name,description:'합성 설명 · Synthetic original description',imageUrl:'/images/groups/nchive-goods-concept.png',href:`/pages/groups/${id}/${kind}/${itemId}`};

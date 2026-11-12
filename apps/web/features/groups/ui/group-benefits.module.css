@@ -183,4 +183,5 @@ section.pWallet{position:relative;box-sizing:border-box}
 
 
 /* 럭키드로우 구역: 지갑 카드와 분리된 자기 머리(제목 + 지난 럭키드로우)와 카드. 구역 간격은 .main의 gap. */
-.luckySection{display:grid;gap:var(--space-3);min-width:0}
+.luckySection{display:grid;gap:var(--space-2);min-width:0}
+.luckySection > [data-fan-section-header]{margin-bottom:0}

@@ -32,7 +32,6 @@ import {FanSkeletonRows} from '@/components/fan-ui/fan-skeleton';
 import {seeAllLabel} from './group-directory';
 import {groupBenefitsCopy,benefitsRaffleState} from './group-benefits-copy';
 import {StanLucky,stanFavorite} from './stan-lucky-cheer';
-import {creatorRafflesHref} from '@/features/benefit/domain/raffle-navigation';
 import {CAPSULE_DRAW_OPEN} from '@/features/capsule-machine/domain';
 import {FavoritePickMenu} from '@/features/selected-bias/ui/selected-bias-chip';
 import {WalletHistoryPanel} from '@/features/group-wallet/ui/wallet-screen';
@@ -87,8 +86,7 @@ function useStanNumbers(bias:SelectedBias,signedOut:boolean){
 function BenefitsLucky({locale,bias,signedOut}:{locale:AppLocale;bias:SelectedBias;signedOut:boolean}){
  const allFailed=Boolean(useContext(SectionContext)?.allFailed),{guest}=useStanNumbers(bias,signedOut),slug=guest?null:stanFavorite(bias)?.slug??null;
  // 럭키드로우 is its own section: a header with the past-draws link on the right, then the draw card.
- const pastHref=slug?creatorRafflesHref(slug,locale):`/my/raffles?locale=${locale}`;
- return <div className={`${styles.pLucky} ${styles.luckySection}`} hidden={allFailed} data-lucky-section=''><FanSectionHeader title={groupBenefitsCopy(locale).lucky} action={{label:dukjilText(locale,'luckyPast'),href:pastHref}}/><StanLucky locale={locale} bias={bias} guest={guest} presentation='duo' paused={!CAPSULE_DRAW_OPEN}/></div>;
+ return <div className={`${styles.pLucky} ${styles.luckySection}`} hidden={allFailed} data-lucky-section=''><FanSectionHeader title={groupBenefitsCopy(locale).lucky}/><StanLucky locale={locale} bias={bias} guest={guest} presentation='duo' paused={!CAPSULE_DRAW_OPEN}/></div>;
 }
 /** 오늘의 미션: every catalog activity for the viewer's first joined fan page; its rows lead to that page. Guests and viewers without a page see the same list and go to the login or the page directory. */
 function BenefitsDailyMissions({locale,bias}:{locale:AppLocale;bias:SelectedBias}){
