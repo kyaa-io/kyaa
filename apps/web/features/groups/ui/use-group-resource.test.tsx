@@ -102,3 +102,24 @@ it("never shows the previous member's value after the owner changes", async () =
   expect(view.result.current.loading).toBe(true);
   await waitFor(() => expect(view.result.current.data?.n).toBe(2));
 });
+
+it("does not resurrect a blocked author's posts after POST succeeds, the next list fails, and retry succeeds", async () => {
+  let blocked = false, failNext = false;
+  const posts = (value: unknown) => value as { items: string[] };
+  const fetcher = vi.fn(async (_url: string, init?: RequestInit) => {
+    if (init?.method === "POST") { blocked = true; failNext = true; return Response.json({ ok: true }); }
+    if (failNext) { failNext = false; return Response.json({ error: { code: "UNAVAILABLE" } }, { status: 503 }); }
+    return Response.json({ items: blocked ? ["other"] : ["blocked-author", "other"] });
+  });
+  vi.stubGlobal("fetch", fetcher);
+  const view = renderHook(() => ({ list: useGroupResource("/api/groups/block-regression/posts", posts), request: useGroupRequest().request }));
+  await waitFor(() => expect(view.result.current.list.data?.items).toContain("blocked-author"));
+  await act(async () => { await view.result.current.request("/api/me/social/blocks", { method: "POST", body: JSON.stringify({ profileId: "author" }) }); });
+  await waitFor(() => expect(fetcher).toHaveBeenCalledTimes(3));
+  await act(async () => {});
+  act(() => view.result.current.list.retry());
+  await waitFor(() => expect(view.result.current.list.data?.items).toEqual(["other"]));
+  view.unmount();
+  const remount = renderHook(() => useGroupResource("/api/groups/block-regression/posts", posts));
+  expect(remount.result.current.data?.items).toEqual(["other"]);
+});
