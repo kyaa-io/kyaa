@@ -3,7 +3,6 @@ import { beforeEach, expect, it, vi } from "vitest";
 
 const auth = vi.hoisted(() => ({ ownerKey: "pending:0" }));
 vi.mock("@/features/groups/ui/use-group-resource", () => ({ useGroupRequest: () => ({ ownerKey: auth.ownerKey, authenticated: auth.ownerKey.startsWith("u"), ready: !auth.ownerKey.startsWith("pending") }) }));
-vi.mock("@/features/selected-bias/ui/selected-bias-chip", () => ({ SelectedBiasChip: () => <span data-testid="chip" /> }));
 vi.mock("@/features/groups/ui/group-header-account", () => ({ GroupHeaderAccount: () => <span data-testid="account" /> }));
 vi.mock("./fan-header-status", () => ({ FanHeaderStatus: () => <button data-header-status="" aria-expanded="false" /> }));
 vi.mock("@/features/group-social/header-dm-link", () => ({ HeaderDmLink: () => <span data-testid="dm" /> }));
@@ -18,14 +17,17 @@ it("holds the status slot empty while sign-in is unknown — no blank capsule", 
   const c = view();
   expect(c.querySelector("[data-header-status-pending]")).not.toBeNull();
   expect(c.querySelector("[data-header-status]")).toBeNull();
-  expect(c.querySelector("[data-testid=chip]")).toBeNull();
+  expect(c.querySelector('a[href*="/login"]')).toBeNull();
 });
 
-it("shows the guest chip signed out and the capsule with the points signed in", () => {
+it("shows one small login action signed out (no illustrated join chip) and the capsule with the points signed in", () => {
   auth.ownerKey = "guest:0";
   let c = view();
   expect(c.querySelector("[data-header-status]")).toBeNull();
-  expect(c.querySelector("[data-testid=chip]")).not.toBeNull();
+  expect(c.querySelectorAll('a[href*="/login"]')).toHaveLength(1);
+  expect(c.querySelector('a[href*="/login"]')).toHaveAttribute("data-fan-action", "");
+  expect(c.querySelector("[data-selected-bias]")).toBeNull();
+  expect(c.textContent).not.toContain("모임에 가입해보세요");
   auth.ownerKey = "user-1:0";
   c = view();
   const capsule = c.querySelector("[data-header-status]")!;
