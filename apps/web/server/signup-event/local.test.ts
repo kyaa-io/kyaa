@@ -30,7 +30,7 @@ it('counts only unique comments and attendance after entry, with separate daily 
 it('deduplicates entries, masks identifiers and selects distinct members with stable retries',()=>{
  const data=fixture();data.entries.push(data.entries[0]);expect(candidates(data)).toHaveLength(2);
  expect(drawLocal(data,2,'retry')).toEqual(drawLocal(data,2,'retry'));expect(new Set(drawLocal(data,2,'retry').map(row=>row.userId)).size).toBe(2);
- const csv=maskedCsv(drawLocal(data,2,'retry'));expect(csv).not.toContain(a);expect(csv).not.toContain(b);expect(()=>drawLocal(data,3)).toThrow('INVALID_WINNER_QUANTITY');
+ const csv=maskedCsv(drawLocal(data,2,'retry'),Buffer.alloc(32,1));expect(csv).not.toContain(a);expect(csv).not.toContain(b);expect(()=>drawLocal(data,3)).toThrow('INVALID_WINNER_QUANTITY');
 });
 it('requires explicit opt-in in every environment',()=>{expect(localSignupEnabled({})).toBe(false);expect(localSignupEnabled({NODE_ENV:'production',KYAA_FEATURE_SIGNUP_RAFFLE:'true'})).toBe(true);expect(localSignupEnabled({NODE_ENV:'production',KYAA_FEATURE_SIGNUP_RAFFLE:'false'})).toBe(false);});
 it('adds 3 chances per invited friend once, with no daily cap and regardless of my own entry time',()=>{
