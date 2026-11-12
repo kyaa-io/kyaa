@@ -1,0 +1,11 @@
+{
+  "changes": [
+    "차단 목록에서 차단을 해제하면 해당 사용자가 목록에서 바로 사라져요.",
+    "모임 화면의 Hot 게시글을 오늘, 최근 7일, 최근 한 달 중 원하는 기간으로 골라 볼 수 있어요. 첨부 화면은 예시 데이터를 사용한 로컬 검증 화면이며 게시글 목록은 연결되지 않은 상태예요."
+  ],
+  "path": "/pages/groups",
+  "images": [
+    "release-notes/images/2026-11-12-hot-period-390.png",
+    "release-notes/images/2026-11-12-hot-period-1440.png"
+  ]
+}

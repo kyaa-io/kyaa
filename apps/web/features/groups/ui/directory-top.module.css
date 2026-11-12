@@ -20,6 +20,7 @@
 
 .hot { display: grid; margin-bottom: var(--fan-section-gap); }
 .hotHead { display: flex; align-items: center; justify-content: space-between; gap: var(--space-2); }
+.hotFilters { display: flex; align-items: center; gap: var(--space-2); }
 .posts { margin: var(--space-3) 0 0; padding: 0; border-top: 1px solid var(--color-line); list-style: none; }
 .post { display: grid; height: 56px; box-sizing: border-box; grid-template-columns: 32px minmax(0, 1fr); grid-template-rows: 22px 18px; align-content: center; column-gap: var(--space-3); border-bottom: 1px solid var(--color-line); }
 .postItem { list-style: none; }

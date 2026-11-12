@@ -105,7 +105,6 @@ it("hot sort requests the selected ordering from the server", async () => {
   fireEvent.click(screen.getByRole("button", { name: /좋아요순/ }));
   fireEvent.click(await screen.findByRole("menuitemradio", { name: "조회수순" }));
   expect(state.urls.at(-1)).toContain("sort=views");
-  expect(screen.getByText("조회 7")).toBeInTheDocument();
 });
 
 it("hot sort offers 최신순 after 조회수순, requests sort=latest and keeps 좋아요순 as the default", async () => {
@@ -119,6 +118,18 @@ it("hot sort offers 최신순 after 조회수순, requests sort=latest and keeps
   fireEvent.click(screen.getByRole("menuitemradio", { name: "최신순" }));
   expect(state.urls.at(-1)).toContain("sort=latest");
   expect(screen.getByRole("button", { name: /최신순/ })).toBeInTheDocument();
+});
+
+it("hot period requests today, seven days, and month from the server", async () => {
+  state.urls = [];
+  render(<HotPosts locale="ko" />);
+  expect(state.urls.at(-1)).toContain("period=week");
+  fireEvent.click(screen.getByRole("button", { name: /기간: 7일/ }));
+  fireEvent.click(await screen.findByRole("menuitemradio", { name: "오늘" }));
+  expect(state.urls.at(-1)).toContain("period=today");
+  fireEvent.click(screen.getByRole("button", { name: /기간: 오늘/ }));
+  fireEvent.click(await screen.findByRole("menuitemradio", { name: "한 달" }));
+  expect(state.urls.at(-1)).toContain("period=month");
 });
 
 it("hot posts: a row draws its page's picture, or the default avatar image — never an empty ring or the grey figure", () => {

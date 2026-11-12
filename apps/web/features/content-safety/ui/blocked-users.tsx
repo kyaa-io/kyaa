@@ -13,16 +13,17 @@ const parse = (value: unknown) => blocks.parse(value);
 export function BlockedUsers({ locale }: { locale: AppLocale }) {
   const copy = contentCopy(locale), auth = useGroupRequest();
   const resource = useGroupResource(auth.authenticated ? "/api/me/social/blocks?fields=closed" : null, parse);
-  const [busy, setBusy] = useState(false), [failed, setFailed] = useState(false);
+  const [busy, setBusy] = useState<string | null>(null), [failed, setFailed] = useState(false);
+  const [removed, setRemoved] = useState<string[]>([]);
   async function remove(id: string) {
-    setBusy(true); setFailed(false);
-    try { await auth.request(`/api/me/social/blocks/${id}`, { method: "DELETE" }); resource.retry(); } catch { setFailed(true); } finally { setBusy(false); }
+    setBusy(id); setFailed(false);
+    try { await auth.request(`/api/me/social/blocks/${id}`, { method: "DELETE" }); setRemoved(previous => [...previous, id]); resource.retry(); } catch { setFailed(true); } finally { setBusy(null); }
   }
-  const items = resource.data?.profiles;
+  const items = resource.data?.profiles.filter(user => !removed.includes(user.profileId));
   return <section className={styles.section}><h2>{copy.block}</h2>
     {items ? items.length ? <ul className={styles.list}>{items.map(user => { const name = user.closed ? reachText(locale, "closedAccount") : user.nickname ?? reachText(locale, "closedAccount"); return <li key={user.profileId} className={`${styles.card} ${styles.row}`}>
       <span className={styles.meta}><img src={user.avatarUrl ?? "/images/avatars/star-pink.webp"} alt="" width={32} height={32} /><strong>{name}</strong></span>
-      <button className={styles.button} type="button" disabled={busy} aria-label={`${copy.unblock}: ${name}`} onClick={() => void remove(user.profileId)}>{copy.unblock}</button>
+      <button className={styles.button} type="button" disabled={busy !== null} aria-label={`${copy.unblock}: ${name}`} onClick={() => void remove(user.profileId)}>{copy.unblock}</button>
     </li>; })}</ul> : <p className={styles.empty}>{copy.noBlocks}</p> : <p role="status">{resource.error ? copy.failed : copy.loading}{resource.error && <button className={styles.button} onClick={resource.retry}>{copy.retry}</button>}</p>}
     {failed && <p className={styles.error} role="alert">{copy.failed}</p>}
   </section>;
