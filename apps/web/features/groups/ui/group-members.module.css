@@ -62,7 +62,7 @@
 .nameLine { display: flex; align-items: center; gap: var(--space-2); min-width: 0; }
 .nameLine strong { min-width: 0; }
 .tierTag { flex: none; }
-.rowHearts { display: inline-flex; flex: none; align-items: center; gap: var(--space-1); font-size: var(--fan-item-title-size); font-weight: var(--fan-item-title-weight); font-variant-numeric: tabular-nums; color: var(--color-ink); }
+.rowHearts { display: inline-flex; flex: none; align-items: center; gap: var(--space-1); font-size: var(--fan-section-size); font-weight: var(--fan-section-weight); font-variant-numeric: tabular-nums; color: var(--color-ink); }
 
 @media (min-width: 1024px) {
   .toolbar { flex-direction: row; align-items: center; justify-content: space-between; gap: var(--space-4); }
