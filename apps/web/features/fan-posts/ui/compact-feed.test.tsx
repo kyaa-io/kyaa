@@ -21,7 +21,7 @@ it('keeps fixture detail and replies attached to the original cheer IDs on both 
   const feed=await legacyVisualFixture(new URL('http://localhost/api/celebrities/elina/feed'+cursor),'GET','ko','creator')!.json();
   for(const item of feed.items.filter((item:any)=>item.kind==='cheer')){
    const detail=await legacyVisualFixture(new URL('http://localhost/api/cheers/'+item.id),'GET','ko','creator-post')!.json();
-   expect(detail).toEqual({source:'cheer',id:item.id,celebritySlug:'elina',body:item.body});
+   expect(detail).toEqual({source:'cheer',id:item.id,celebritySlug:'elina',body:item.body,clapCount:item.clapCount,viewerClapped:item.viewerClapped});
    const replies=await legacyVisualFixture(new URL('http://localhost/api/cheers/'+item.id+'/replies'),'GET','ko','creator-post')!.json();expect(replies.replies).toHaveLength(item.replyCount);
   }
  }
