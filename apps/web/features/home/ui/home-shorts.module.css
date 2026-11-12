@@ -57,3 +57,18 @@
 
 .card > span { display:contents; }
 .cover:has(> [data-video-fallback]) > .play { display:none; }
+
+/* The video owns the free space; reactions and navigation share a single compact footer. */
+.mediaFrame { position:relative; flex:1; display:flex; min-width:0; max-width:min(56.25dvh,420px); height:100%; }
+.mediaFrame iframe, .youtubeFrame, .youtubeFrame iframe { width:100%; height:100%; border:0; }
+.soundButton { position:absolute; right:var(--space-2); top:var(--space-2); display:grid; width:var(--min-target); height:var(--min-target); place-items:center; border:0; border-radius:50%; background:var(--color-shortform-control); color:var(--color-surface); }
+.soundBlocked { outline:2px solid var(--color-accent); outline-offset:2px; }
+.bottomBar { display:flex; width:100%; min-height:var(--min-target); align-items:center; justify-content:space-between; gap:var(--space-1); padding:0 var(--space-2); touch-action:none; }
+.bottomBar .engagement { flex:1; min-width:0; justify-content:flex-start; flex-wrap:nowrap; gap:var(--space-1); padding:0; }
+.bottomBar .engagement .brand { display:none; }
+.bottomBar .engagement > button { min-width:var(--min-target); min-height:var(--min-target); padding:0 var(--space-1); background:transparent; }
+.bottomBar .engagement > button svg { width:16px; height:16px; }
+.bottomBar .controls { width:auto; min-height:var(--min-target); gap:0; flex:none; }
+.bottomBar .controls button { width:var(--min-target); height:var(--min-target); background:transparent; }
+.bottomBar .controls > span { white-space:nowrap; }
+@media (width < 48rem) { .bottomBar .controls button:first-child, .bottomBar .controls button:nth-child(2) { display:none; } }

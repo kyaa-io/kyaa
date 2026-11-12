@@ -15,7 +15,7 @@ describe("shorts viewer", () => {
     const previous = within(dialog).getByTitle("영상 5");
     fireEvent.keyDown(window, { key: "ArrowDown" });
     expect(previous.isConnected).toBe(false);
-    expect(within(dialog).getByTitle("영상 6")).toHaveAttribute("src", "https://www.youtube.com/embed/video6?rel=0");
+    expect(within(dialog).getByTitle("영상 6")).toHaveAttribute("src", "https://www.youtube.com/embed/video6?rel=0&enablejsapi=1&autoplay=0");
     expect(within(dialog).getByTestId("engagement")).toHaveTextContent("video6");
     const zone = dialog.querySelector('[aria-hidden="true"]')?.parentElement;
     fireEvent.click(within(dialog).getByRole("button", { name: "다음 영상" }));
@@ -36,9 +36,18 @@ describe("shorts viewer", () => {
     expect(decodeURIComponent(container.querySelector("img")!.getAttribute("src")!)).toContain("/images/media/tiktok/7690854938997558549.jpg");
     fireEvent.click(screen.getByRole("button", { name: "안녕히 계세여~" }));
     const dialog = screen.getByRole("dialog");
-    expect(within(dialog).getByTitle("안녕히 계세여~").getAttribute("src")).toBe("https://www.tiktok.com/embed/7690854938997558549");
+    expect(within(dialog).getByTitle("안녕히 계세여~").getAttribute("src")).toBe("https://www.tiktok.com/player/v1/7690854938997558549?autoplay=0");
     fireEvent.click(within(dialog).getByRole("button", { name: "더 보기" }));
     expect(within(dialog).getByRole("link", { name: "TikTok ↗" })).toHaveAttribute("href", tiktok.href);
+  });
+  it("keeps the chosen sound state when moving to another TikTok short", () => {
+    const clips = ["7690854938997558549", "7690854938997558550"].map((videoId, i) => ({ id: `t${i}`, platform: "tiktok", videoId, title: `TikTok ${i}`, href: `https://www.tiktok.com/video/${videoId}`, creator: { slug: "a", name: "A" } })) as HomeShort[];
+    render(<HomeShorts items={clips} locale="ko" layout="grid" initialVideo={clips[0]!.videoId} />);
+    const dialog = screen.getByRole("dialog");
+    fireEvent.click(within(dialog).getByRole("button", { name: "소리 켜기" }));
+    expect(sessionStorage.getItem("kyaa:shorts-muted")).toBe("false");
+    fireEvent.click(within(dialog).getByRole("button", { name: "다음 영상" }));
+    expect(within(dialog).getByRole("button", { name: "음소거" })).toHaveAttribute("aria-pressed", "true");
   });
   it("opens a shared video and changes it by a touch gesture outside the iframe", () => {
     render(<HomeShorts items={items} locale="ko" layout="grid" initialVideo="video1" />);

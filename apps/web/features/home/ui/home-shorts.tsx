@@ -15,6 +15,7 @@ import { toContentLocale, type AppLocale } from "@/i18n/locales";
 import { participationCopy } from "@/i18n/catalogs/features__schedules__ui__participation";
 import { FanScrollRow } from "@/components/fan-ui/fan-scroll-row";
 import { ShortsEngagement } from "./shorts-engagement";
+import { ShortsPlayer } from "./shorts-player";
 import styles from "./home-shorts.module.css";
 
 const navigation: Record<AppLocale, [string, string, string]> = {
@@ -25,7 +26,6 @@ const navigation: Record<AppLocale, [string, string, string]> = {
 
 // TikTok covers are signed links that expire within a day, so the covers of the creators' TikTok notices are kept as site images.
 const shortCover = (item: HomeShort) => item.platform === "tiktok" ? `/images/media/tiktok/${item.videoId}.jpg` : `https://i.ytimg.com/vi/${item.videoId}/oardefault.jpg`;
-const shortPlayer = (item: HomeShort) => item.platform === "tiktok" ? `https://www.tiktok.com/embed/${item.videoId}` : `https://www.youtube.com/embed/${item.videoId}?rel=0`;
 
 const PAGE_SIZE = 12;
 
@@ -96,16 +96,18 @@ export function HomeShorts({ items: firstItems, locale, layout = "rail", initial
       {selected && <div className={styles.player} data-outbound-placement="shorts-player" onWheel={e => { if (Math.abs(e.deltaY) > 20 && Date.now() - wheelAt.current > 600) { wheelAt.current = Date.now(); move(e.deltaY > 0 ? 1 : -1); } }}>
         <div className={styles.stage}>
           <div className={styles.swipeZone} {...swipe} aria-hidden="true" />
-          <iframe key={selected.videoId} src={shortPlayer(selected)} title={selected.title} allow="encrypted-media; picture-in-picture; fullscreen" allowFullScreen referrerPolicy="strict-origin-when-cross-origin" />
+          <ShortsPlayer key={selected.videoId} item={selected} locale={locale} />
           <div className={styles.swipeZone} {...swipe} aria-hidden="true" />
         </div>
+        <div className={styles.bottomBar} {...swipe}>
         <ShortsEngagement key={selected.videoId} videoId={selected.videoId} locale={locale} offset={offset + Math.floor((index ?? 0) / PAGE_SIZE) * PAGE_SIZE} />
-        <div className={styles.controls} {...swipe}>
+        <div className={styles.controls}>
           <FanAction variant="text" type="button" onClick={() => move(-1)} disabled={index === 0} ariaLabel={navigation[locale][0]}><FanIcon icon={ChevronUp} /></FanAction>
           <FanAction variant="text" type="button" onClick={() => move(1)} disabled={index === items.length - 1} ariaLabel={navigation[locale][1]}><FanIcon icon={ChevronDown} /></FanAction>
           <span>{(index ?? 0) + 1} / {items.length}</span>
           <FanAction variant="text" type="button" ariaLabel={navigation[locale][2]} aria-expanded={more} onClick={() => setMore(value => !value)}><FanIcon icon={MoreHorizontal} /></FanAction>
           {more && <a href={selected.href} target="_blank" rel="noopener noreferrer" data-outbound-kind="external">{selected.platform === "tiktok" ? "TikTok" : "YouTube"} ↗</a>}
+        </div>
         </div>
       </div>}
     </FanDialog>
