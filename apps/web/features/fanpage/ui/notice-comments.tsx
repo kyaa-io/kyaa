@@ -15,6 +15,11 @@ import { z } from "zod";
 import { AuthIntentLink } from "@/components/auth-intent-link";
 import { commentsSchema } from "../domain/community";
 import { useCommunityResource } from "./use-community-resource";
+import { EarnBadgeCorner } from "@/features/dukjil/ui/earn-badge";
+import { useDukjil } from "@/features/dukjil/ui/dukjil-provider";
+import { registrationReward } from "@/features/fan-posts/domain/registration-reward";
+import { showMissionRewardToast } from "@/features/fan-posts/ui/mission-reward-toast";
+import { announceMissionSkip } from "@/features/fan-posts/ui/mission-skip-notice";
 import { ContentActions, ContentTranslation } from "@/features/content-safety/ui/content-actions";
 import previewStyles from "./fanpage.module.css";
 import detailStyles from "./notice-comments.module.css";
@@ -25,7 +30,7 @@ export function NoticeComments({ slug, noticeSlug, locale, preview = false, welc
   return <CommentsForOwner key={`${slug}:${noticeSlug}:${auth.user?.id ?? "guest"}`} {...{ slug, noticeSlug, locale, preview, welcome, returnTo, onPosted, onChanged }} />;
 }
 function CommentsForOwner({ slug, noticeSlug, locale, preview, welcome, returnTo, onPosted, onChanged }: { slug: string; noticeSlug: string; locale: AppLocale; preview: boolean; welcome: boolean; returnTo?: string; onPosted?: () => void; onChanged?: () => void }) {
-  const { authenticated, ready, getAccessToken } = usePrivy();
+  const { authenticated, ready, getAccessToken } = usePrivy(), dukjil = useDukjil();
   const ko = locale === "ko";
   const styles = preview ? previewStyles : detailStyles;
   const Heading = preview ? "h3" : "h2";
@@ -49,7 +54,12 @@ function CommentsForOwner({ slug, noticeSlug, locale, preview, welcome, returnTo
         body: id ? undefined : JSON.stringify({ body: trimmed, idempotencyKey: attempt.current!.key }),
       });
       if (!response.ok) { setError(response.status === 429 ? (locale === "ko" ? "댓글은 잠시 후 다시 남겨 주세요." : translate(locale, localizedMessages.m3050bc7116ad, "Please wait before posting again.")) : (locale === "ko" ? "저장하지 못했어요. 다시 시도해 주세요." : translate(locale, localizedMessages.m22c6a29029bd, "Couldn't save. Please try again."))); return; }
-      if (!id) { setBody(""); attempt.current = null; onPosted?.(); }
+      if (!id) {
+        // The comment pays like a fan board comment: the answer says what was paid, or why nothing was.
+        const posted: unknown = await response.json().catch(() => null), reward = registrationReward(posted);
+        if (reward) { showMissionRewardToast(locale, "comment", reward); dukjil?.refresh(); } else announceMissionSkip(locale, "comment", posted);
+        setBody(""); attempt.current = null; onPosted?.();
+      }
       onChanged?.();
       setCursor(null); resource.retry();
     } catch { setError(locale === "ko" ? "연결을 확인하고 다시 시도해 주세요." : translate(locale, localizedMessages.m0540c5d5c62d, "Check your connection and try again.")); }
@@ -64,7 +74,7 @@ function CommentsForOwner({ slug, noticeSlug, locale, preview, welcome, returnTo
         {!preview && <div className={styles.pagination}>{cursor && <button onClick={() => setCursor(null)}>{locale === "ko" ? "최신 댓글" : translate(locale, localizedMessages.m787c23318977, "Newest")}</button>}{resource.state.data.nextCursor && <button onClick={() => { if (resource.state.status === "ready") setCursor(resource.state.data.nextCursor); }}>{locale === "ko" ? "이전 댓글" : translate(locale, localizedMessages.md95599a46ca8, "Older comments")}</button>}</div>}
       </>}
     </div>
-    {ready && authenticated ? <form className={styles.commentForm} onSubmit={(event) => { event.preventDefault(); void mutate(); }}><label htmlFor={`comment-${noticeSlug}`}>{locale === "ko" ? "댓글 남기기" : translate(locale, localizedMessages.medde5c8acf8b, "Leave a comment")}</label><textarea id={`comment-${noticeSlug}`} value={body} onChange={(event) => setBody(event.target.value)} aria-describedby={`comment-note-${noticeSlug}${error ? ` comment-error-${noticeSlug}` : ""}`} maxLength={1000} rows={preview ? 2 : 3} required disabled={busy} placeholder={locale === "ko" ? "함께 나누고 싶은 이야기를 남겨 주세요." : translate(locale, localizedMessages.macce2f00ffd7, "Share a thought with other fans.")} /><div><small id={`comment-note-${noticeSlug}`}>{slug === WAVE_FANPAGE_SLUG ? waveActivityNameNote[locale] : locale === "ko" ? "닉네임과 캐릭터 아바타가 함께 공개돼요." : translate(locale, localizedMessages.me6fdaaca8e8d, "Your nickname and character avatar are public.")}</small><button type="submit" className={styles.darkButton} disabled={busy || !body.trim()}>{busy ? (locale === "ko" ? "저장 중…" : translate(locale, localizedMessages.md971c1d51fcb, "Saving…")) : (locale === "ko" ? "등록" : translate(locale, localizedMessages.m80d2b610a85f, "Post"))}</button></div></form> : ready ? returnTo ? <Link className={styles.loginComment} href={`/login?locale=${locale}&returnTo=${encodeURIComponent(returnTo)}`}>{locale === "ko" ? "로그인하고 댓글 남기기" : translate(locale, localizedMessages.ma981a032c0ac, "Sign in to comment")}</Link> : <AuthIntentLink className={styles.loginComment} locale={locale} input={{ sourcePath: `/c/${slug}/notices/${noticeSlug}`, sourceQuery: `?locale=${locale}`, actionType: "OPEN_PASSPORT", targetType: "celebrity", targetId: slug }}>{locale === "ko" ? "로그인하고 댓글 남기기" : translate(locale, localizedMessages.ma981a032c0ac, "Sign in to comment")}</AuthIntentLink> : null}
+    {ready && authenticated ? <form className={styles.commentForm} onSubmit={(event) => { event.preventDefault(); void mutate(); }}><label htmlFor={`comment-${noticeSlug}`}>{locale === "ko" ? "댓글 남기기" : translate(locale, localizedMessages.medde5c8acf8b, "Leave a comment")}</label><textarea id={`comment-${noticeSlug}`} value={body} onChange={(event) => setBody(event.target.value)} aria-describedby={`comment-note-${noticeSlug}${error ? ` comment-error-${noticeSlug}` : ""}`} maxLength={1000} rows={preview ? 2 : 3} required disabled={busy} placeholder={locale === "ko" ? "함께 나누고 싶은 이야기를 남겨 주세요." : translate(locale, localizedMessages.macce2f00ffd7, "Share a thought with other fans.")} /><div><small id={`comment-note-${noticeSlug}`}>{slug === WAVE_FANPAGE_SLUG ? waveActivityNameNote[locale] : locale === "ko" ? "닉네임과 캐릭터 아바타가 함께 공개돼요." : translate(locale, localizedMessages.me6fdaaca8e8d, "Your nickname and character avatar are public.")}</small><EarnBadgeCorner action="comment" locale={locale}><button type="submit" className={styles.darkButton} disabled={busy || !body.trim()}>{busy ? (locale === "ko" ? "저장 중…" : translate(locale, localizedMessages.md971c1d51fcb, "Saving…")) : (locale === "ko" ? "등록" : translate(locale, localizedMessages.m80d2b610a85f, "Post"))}</button></EarnBadgeCorner></div></form> : ready ? returnTo ? <Link className={styles.loginComment} href={`/login?locale=${locale}&returnTo=${encodeURIComponent(returnTo)}`}>{locale === "ko" ? "로그인하고 댓글 남기기" : translate(locale, localizedMessages.ma981a032c0ac, "Sign in to comment")}</Link> : <AuthIntentLink className={styles.loginComment} locale={locale} input={{ sourcePath: `/c/${slug}/notices/${noticeSlug}`, sourceQuery: `?locale=${locale}`, actionType: "OPEN_PASSPORT", targetType: "celebrity", targetId: slug }}>{locale === "ko" ? "로그인하고 댓글 남기기" : translate(locale, localizedMessages.ma981a032c0ac, "Sign in to comment")}</AuthIntentLink> : null}
     {error && <p id={`comment-error-${noticeSlug}`} role="alert">{error}</p>}
   </section>;
 }

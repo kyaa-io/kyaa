@@ -13,7 +13,7 @@ import { FanSkeletonRows } from "@/components/fan-ui/fan-skeleton";
 import { fanLoginHref } from "@/components/login-href";
 import { RelativeTime } from "@/components/relative-time";
 import { useWaveMediaUpload } from "@/features/content-safety/ui/use-wave-media-upload";
-import { EarnActionBadge } from "@/features/dukjil/ui/earn-badge";
+import { EarnBadgeCorner } from "@/features/dukjil/ui/earn-badge";
 import { threadComments } from "@/features/fan-posts/domain/comment-thread";
 import { UploadProgressList, waveUploadRow } from "@/components/editor/upload-progress";
 import { postReactionCopy } from "@/features/fan-posts/ui/post-reaction-copy";
@@ -105,7 +105,7 @@ export function GroupPostComments({ pageId, postId, locale, commentCount, canWri
       <div className={detailStyles.commentTools}>
         <span className={detailStyles.commentCounter}>{draft.length.toLocaleString(locale)} / 2,000</span>
         <label className={detailStyles.commentAction}><ImagePlus size={18} aria-hidden="true" />{attachmentLabel[locale]}<input className={editorStyles.fileInput} type="file" accept="image/jpeg,image/png,image/webp,video/mp4,video/quicktime" multiple disabled={Boolean(busy) || upload.busy} onChange={event => { upload.add(Array.from(event.target.files ?? [])); event.target.value = ""; }} /></label>
-        <EarnActionBadge action="comment" locale={locale} /><FanAction type="submit" variant="neutral" size="sm" ariaBusy={busy === "comment"} loading={busy === "comment"} disabled={notReady}>{sendLabel[locale]}</FanAction>
+        <EarnBadgeCorner action="comment" locale={locale}><FanAction type="submit" variant="neutral" size="sm" ariaBusy={busy === "comment"} loading={busy === "comment"} disabled={notReady}>{sendLabel[locale]}</FanAction></EarnBadgeCorner>
       </div>
     </form> : <div className={detailStyles.commentForm}>
       {r.authenticated ? <span className={detailStyles.guestField} aria-hidden="true">{postReactionCopy(locale).placeholder}</span> : <a className={detailStyles.guestField} href={fanLoginHref(locale, returnTo)}>{postReactionCopy(locale).placeholder}</a>}

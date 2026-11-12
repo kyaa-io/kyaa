@@ -13,9 +13,9 @@ import { GroupArtistMark } from "@/features/groups/ui/group-artist-mark";
 import { PostDetailHeader } from "./post-detail-header";
 import { celebrateReward } from "@/components/fan-ui/reward-celebration";
 import { applyReaction, PostReactions, type PostReactionChoice, type PostReactionState } from "./post-reactions";
-import { PostInlineVideo, SlotPostBody, TranslatedRichPostBody } from "./rich-post-body";
+import { PostInlineVideo, SlotPostBody, TranslatedPlainPostBody, TranslatedRichPostBody } from "./rich-post-body";
+import { TranslationControl, useAutomaticTranslation } from "@/features/content-safety/ui/use-automatic-translation";
 import { postSlotTexts } from "../domain/post-title-slots";
-import { useAutomaticTranslation } from "@/features/content-safety/ui/use-automatic-translation";
 import detailStyles from "./post-detail.module.css";
 import { EditedMark } from "./edited-mark";
 import { isEdited } from "../domain/edited";
@@ -74,8 +74,8 @@ export function PostCard({ post, locale, onChanged, onDeleted, detail = false, r
     reacting.current = true;
     const result = await mutation.request(`/api/posts/${post.id}/like`, "PUT", { reaction: choice }).finally(() => { reacting.current = false; }) as { reward?: { points?: number; stamps?: number } } | null;
     if (!result) { setReactionState(previous); return; }
-    // 261107-2 D8: the shared coin badge rises from the thumbs up, with the shared toast.
-    if (result.reward) celebrateReward({ locale, points: result.reward.points, stamps: result.reward.stamps, anchor: articleRef.current?.querySelector(`.${detailStyles.reactionLike}`) });
+    // 261107-2 D8: the shared coin badge rises from the thumb that was pressed, with the shared toast.
+    if (result.reward) celebrateReward({ locale, points: result.reward.points, stamps: result.reward.stamps, anchor: articleRef.current?.querySelector(`.${choice === "dislike" ? detailStyles.reactionDislike : detailStyles.reactionLike}`) });
     // 261107-2 F4: no onChanged here. Re-reading the whole detail (post and comments) redrew the page; the write already drops
     // only this post's reads and the fan's own values (resource-cache invalidateAfterWrite), and that re-read confirms the count.
   }
@@ -95,6 +95,11 @@ export function PostCard({ post, locale, onChanged, onDeleted, detail = false, r
   const slotTexts = useMemo(() => postSlotTexts(post.body), [post.body]);
   const slotTarget = useMemo(() => ({ targetType: "fan_post" as const, targetId: post.id, sourceRevision: post.revision, slots: "title-body" as const }), [post.id, post.revision]);
   const { observeElement: observeSlots, ...slots } = useAutomaticTranslation({ texts: slotTexts, locale, target: slotTarget, enabled: slotTranslation });
+  // A guest (or a post read without the slot answer) translates the whole body instead. Its switch lives with the slot one at the top of the post.
+  const bodyTexts = useMemo(() => [post.body], [post.body]);
+  const bodyTarget = useMemo(() => ({ targetType: "fan_post" as const, targetId: post.id, sourceRevision: post.revision }), [post.id, post.revision]);
+  const { observeElement: observeBody, ...bodyTranslation } = useAutomaticTranslation({ texts: bodyTexts, locale, target: bodyTarget, enabled: boardDetail && !slotTranslation && (Boolean(document) || post.body.split("\n").slice(1).join("\n") !== "") });
+  const topTranslation = slotTranslation ? slots : bodyTranslation;
   if (editing) return <PostComposer board={presentation === "board" || Boolean(editTarget?.bodyDoc)} allowMembers={post.celebritySlug !== WAVE_FANPAGE_SLUG} slug={post.celebritySlug} locale={locale} post={editTarget ?? post} onCancel={() => { setEditing(false); setEditTarget(null); }} onSaved={() => { setEditing(false); setEditTarget(null); onChanged(); }} />;
   const displayedBody = presentation === "board" && detail ? post.body.split("\n").slice(1).join("\n") : post.body;
   const menu = post.isOwner ? <Menu.Root disabled={mutation.busy}>
@@ -106,14 +111,14 @@ export function PostCard({ post, locale, onChanged, onDeleted, detail = false, r
   </Menu.Root> : <ContentActions targetType="fan_post" targetId={post.id} locale={locale} onChanged={onChanged} />;
   const loginHref = fanLoginHref(locale, `/c/${post.celebritySlug}/community/${post.id}?locale=${locale}${returnTo ? `&returnTo=${encodeURIComponent(returnTo)}` : ""}`);
   return <article ref={articleRef} className={`${styles.card} ${presentation === "board" ? boardStyles.article : ""}`} data-post-id={post.id}>
-    {boardDetail ? <PostDetailHeader title={slots.showing && slots.texts[0]?.trim() ? slots.texts[0] : post.body.split("\n")[0] || copy.community} titleLang={slots.showing && slots.texts[0]?.trim() ? locale : undefined} author={<ProfileAuthor contentRef={{ kind: "fan_post", id: post.id }} nickname={post.author.nickname} avatarUrl={post.author.avatarUrl}>{post.author.nickname}</ProfileAuthor>} avatarUrl={post.author.avatarUrl} authorBadge={<>{post.artist && <GroupArtistMark locale={locale} />}{post.celebritySlug === WAVE_FANPAGE_SLUG ? <WavePrivateBadge locale={locale} /> : post.visibility === "members" && <span className={styles.badge}>{copy.members}</span>}</>} createdAt={post.createdAt} edited={isEdited(post)} viewCount={post.viewCount} likeCount={likeCount} commentCount={post.commentCount} locale={locale} menu={menu} /> : <header className={`${styles.meta} ${styles.postHeader}`}>{boardMetadata??<><img src={post.author.avatarUrl} alt="" width={32} height={32} /><div className={styles.postIdentity}><strong><ProfileAuthor contentRef={{ kind: "fan_post", id: post.id }} nickname={post.author.nickname} avatarUrl={post.author.avatarUrl}>{post.author.nickname}</ProfileAuthor></strong>
+    {boardDetail ? <PostDetailHeader title={slots.showing && slots.texts[0]?.trim() ? slots.texts[0] : post.body.split("\n")[0] || copy.community} titleLang={slots.showing && slots.texts[0]?.trim() ? locale : undefined} author={<ProfileAuthor contentRef={{ kind: "fan_post", id: post.id }} nickname={post.author.nickname} avatarUrl={post.author.avatarUrl}>{post.author.nickname}</ProfileAuthor>} avatarUrl={post.author.avatarUrl} translation={<TranslationControl locale={locale} translation={topTranslation} />} authorBadge={<>{post.artist && <GroupArtistMark locale={locale} />}{post.celebritySlug === WAVE_FANPAGE_SLUG ? <WavePrivateBadge locale={locale} /> : post.visibility === "members" && <span className={styles.badge}>{copy.members}</span>}</>} createdAt={post.createdAt} edited={isEdited(post)} viewCount={post.viewCount} likeCount={likeCount} commentCount={post.commentCount} locale={locale} menu={menu} /> : <header className={`${styles.meta} ${styles.postHeader}`}>{boardMetadata??<><img src={post.author.avatarUrl} alt="" width={32} height={32} /><div className={styles.postIdentity}><strong><ProfileAuthor contentRef={{ kind: "fan_post", id: post.id }} nickname={post.author.nickname} avatarUrl={post.author.avatarUrl}>{post.author.nickname}</ProfileAuthor></strong>
       {post.celebritySlug === WAVE_FANPAGE_SLUG ? <WavePrivateBadge locale={locale} /> : <span className={styles.badge}>{post.visibility === "members" ? copy.members : copy.public}</span>}
       </div>
       {menu}
     </>} </header>}
     {slotTranslation && <SlotPostBody document={document} plainText={displayedBody} translated={slots.texts[1]} translation={slots} observeElement={observeSlots} locale={locale} renderAttachment={renderAttachment} />}
-    {!slotTranslation && presentation === "board" && document && <div data-post-body><TranslatedRichPostBody document={document} sourceText={post.body} target={{ targetType: "fan_post", targetId: post.id, sourceRevision: post.revision }} locale={locale} renderAttachment={renderAttachment} /></div>}
-    {!slotTranslation && presentation === "board" && !document && displayedBody && <div data-post-body><ContentTranslation sourceText={post.body} targetType="fan_post" targetId={post.id} locale={locale} sourceRevision={post.revision}><p className={styles.body}><LinkifiedText text={displayedBody} locale={locale} /></p></ContentTranslation></div>}
+    {!slotTranslation && presentation === "board" && document && <div data-post-body><TranslatedRichPostBody document={document} translation={bodyTranslation} observeElement={observeBody} locale={locale} renderAttachment={renderAttachment} /></div>}
+    {!slotTranslation && presentation === "board" && !document && displayedBody && <div data-post-body><TranslatedPlainPostBody translation={bodyTranslation} observeElement={observeBody} locale={locale}><p className={styles.body}><LinkifiedText text={displayedBody} locale={locale} /></p></TranslatedPlainPostBody></div>}
     <div className={styles.postMedia} data-post-media="">
     {presentation === "board" && detail ? <PostAttachmentViewer key={[...looseAssets.map(asset=>asset.id),looseVideo?.id].join(":")} assets={looseAssets} video={looseVideo} publicFanPost={post.celebritySlug!==WAVE_FANPAGE_SLUG} locale={locale}/> : <>
     {post.assets.length > 0 && <div className={`${styles.photos} ${styles.postPhotos}`}>{post.assets.map(asset => <ContentAssetImage key={asset.id} asset={asset} locale={locale} alt={copy.photo} />)}</div>}
@@ -123,7 +128,7 @@ export function PostCard({ post, locale, onChanged, onDeleted, detail = false, r
 
     {presentation !== "board" && displayedBody && <ContentTranslation sourceText={post.body} targetType="fan_post" targetId={post.id} locale={locale} sourceRevision={post.revision}><p className={styles.body}><LinkifiedText text={displayedBody} locale={locale} /></p></ContentTranslation>}
     {boardDetail ? <div className={detailStyles.bodyEnd}>
-      <PostReactions {...reactionState} locale={locale} busy={!auth.ready || mutation.busy} loginHref={auth.ready && !auth.authenticated ? String(loginHref) : undefined} onChange={choice => void react(choice)} likeReward={auth.authenticated && !post.isOwner && !liked} />
+      <PostReactions {...reactionState} locale={locale} busy={!auth.ready || mutation.busy} loginHref={auth.ready && !auth.authenticated ? String(loginHref) : undefined} onChange={choice => void react(choice)} reward={auth.authenticated && !post.isOwner && reactionState.reaction === null} />
       <PostShareAction title={post.body.split("\n")[0] ?? ""} locale={locale} contentType="post" />
     </div> : <div className={`${styles.actions} ${styles.postFooter}`}><button type="button" className={styles.likeButton} onClick={() => void like()} disabled={!auth.ready || !auth.authenticated || mutation.busy} aria-pressed={liked}><ReactionIcon kind="like" size={20} pressed={liked} /> {boardLikeLabel??copy.like} <ReactionCount value={likeCount} locale={locale} />{boardLikeReward}</button>
       {!detail && <Link href={`${href}#comments` as Route} className={styles.button}><ReactionIcon kind="comment" /> {copy.comments} <ReactionCount value={post.commentCount} locale={locale} /></Link>}

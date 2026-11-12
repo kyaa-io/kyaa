@@ -179,7 +179,8 @@ test('UI check requires every group and preserves evidence on producing runners'
   assert.equal(gate.steps[0].env.CONTRACTS_RESULT, '${{ needs.ui-contracts.result }}');
   for (const result of ['success', 'failure', 'cancelled', 'skipped', '']) assert.equal(succeeds(gate.steps[0].run, { CONTRACTS_RESULT: result }), result === 'success');
   const browser = job.steps.filter(step => step.run?.includes('node apps/web/e2e/'));
-  assert.equal(browser.length, 8);
+  assert.equal(browser.length, 9);
+  assert.ok(browser.some(step => step.run === 'node apps/web/e2e/media-stable-local/run.mjs' && step.if === "matrix.group == 'layout-and-recovery'"), 'photo remount regression runs in CI');
   for (const step of browser) assert.match(step.if, /^matrix.group == '(wave-programs|runmusic|layout-and-recovery)'$/);
   const artifacts = job.steps.filter(step => step.uses === 'actions/upload-artifact@v4');
   assert.equal(artifacts.length, 3);

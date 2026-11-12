@@ -1,0 +1,172 @@
+{
+ "version": 1,
+ "rules": {
+  "post": {
+   "points": 20,
+   "dailyLimit": 3,
+   "stamp": "post",
+   "minChars": 20,
+   "pointCap": {
+    "max": 3,
+    "per": "user_day"
+   },
+   "sameBodyDays": 7
+  },
+  "quiz": {
+   "points": 20,
+   "dailyLimit": null,
+   "stamp": "quiz"
+  },
+  "cheer": {
+   "points": 0,
+   "dailyLimit": null,
+   "stamp": "cheer"
+  },
+  "proof": {
+   "points": 100,
+   "dailyLimit": null,
+   "stamp": "proof",
+   "pointCap": {
+    "max": 2,
+    "per": "creator_month"
+   },
+   "firstPoints": 500
+  },
+  "share": {
+   "points": 10,
+   "dailyLimit": 3,
+   "stamp": "share",
+   "pointCap": {
+    "max": 3,
+    "per": "user_day"
+   }
+  },
+  "invite": {
+   "points": 200,
+   "dailyLimit": null,
+   "stamp": "invite",
+   "pointCap": {
+    "max": 5,
+    "per": "user_month"
+   },
+   "friendAction": "invite_friend"
+  },
+  "survey": {
+   "points": 10,
+   "dailyLimit": null,
+   "stamp": "survey"
+  },
+  "checkin": {
+   "points": 2,
+   "dailyLimit": null,
+   "stamp": "daily_checkin",
+   "streakBonus": 10,
+   "streakEvery": 7
+  },
+  "comment": {
+   "points": 3,
+   "dailyLimit": 10,
+   "stamp": "comment",
+   "minChars": 5,
+   "pointCap": {
+    "max": 10,
+    "per": "user_day"
+   },
+   "oncePerTarget": true
+  },
+  "mission": {
+   "points": 50,
+   "dailyLimit": null,
+   "stamp": "mission",
+   "pointsMax": 300,
+   "pointsMin": 50
+  },
+  "reaction": {
+   "points": 1,
+   "dailyLimit": 5,
+   "stamp": "reaction",
+   "pointCap": {
+    "max": 5,
+    "per": "user_day"
+   }
+  },
+  "live_attend": {
+   "points": 20,
+   "dailyLimit": null,
+   "stamp": "live_attend"
+  },
+  "event_review": {
+   "points": 30,
+   "dailyLimit": null,
+   "stamp": "event_review"
+  },
+  "live_reserve": {
+   "points": 5,
+   "dailyLimit": null,
+   "stamp": "live_reserve"
+  },
+  "subscription": {
+   "points": 30,
+   "dailyLimit": null,
+   "stamp": "subscription"
+  },
+  "event_checkin": {
+   "points": 100,
+   "dailyLimit": null,
+   "stamp": "event_checkin"
+  },
+  "invite_friend": {
+   "points": 100,
+   "dailyLimit": null,
+   "stamp": null
+  }
+ },
+ "missionBook": {
+  "pages": [
+   {
+    "slots": [
+     {
+      "slot": 1,
+      "action": "quiz"
+     },
+     {
+      "slot": 2,
+      "action": "checkin"
+     },
+     {
+      "slot": 3,
+      "action": "post"
+     },
+     {
+      "slot": 4,
+      "action": "comment"
+     },
+     {
+      "slot": 5,
+      "action": "share"
+     },
+     {
+      "slot": 6,
+      "action": "invite"
+     },
+     {
+      "slot": 7,
+      "action": "subscription"
+     },
+     {
+      "days": 3,
+      "slot": 8,
+      "action": "steady_checkin"
+     },
+     {
+      "slot": 9,
+      "action": "proof",
+      "required": true
+     }
+    ],
+    "pageNo": 1
+   }
+  ],
+  "overflow": "next_page"
+ }
+}

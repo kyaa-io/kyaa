@@ -45,9 +45,15 @@ describe("PostReactions", () => {
     fireEvent.click(screen.getByRole("button", { name: "싫어요" }));
     expect(onJoin).toHaveBeenCalledOnce();
   });
-  it("puts the point badge on the thumbs up only", () => {
-    const { container } = render(<PostReactions reaction={null} likeCount={0} dislikeCount={null} locale="ko" likeReward onChange={() => undefined} />);
-    expect(container.querySelectorAll("[data-earn]")).toHaveLength(1);
-    expect(container.querySelector("[data-earn]")).toHaveTextContent("좋아요 0");
+  it("puts the same point badge on both thumbs", () => {
+    const { container } = render(<PostReactions reaction={null} likeCount={0} dislikeCount={null} locale="ko" reward onChange={() => undefined} />);
+    const hosts = [...container.querySelectorAll("[data-earn]")];
+    expect(hosts).toHaveLength(2);
+    expect(hosts[0]).toHaveTextContent("좋아요 0");
+    expect(hosts[1].querySelector("button")).toHaveAccessibleName("싫어요");
+  });
+  it("draws no point badge without a reward", () => {
+    const { container } = render(<PostReactions reaction={null} likeCount={0} dislikeCount={null} locale="ko" onChange={() => undefined} />);
+    expect(container.querySelector("[data-earn]")).toBeNull();
   });
 });

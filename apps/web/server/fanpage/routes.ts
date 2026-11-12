@@ -3,11 +3,27 @@ import { z } from "zod";
 import { AuthError } from "../../features/auth/domain/auth-errors";
 import { celebritySlugSchema, commentReactionResultSchema, commentReactionSchema, commentsSchema, fanpageSummarySchema, leaderboardCategorySchema, leaderboardSchema, postCommentSchema } from "../../features/fanpage/domain/community";
 import type { AdminSession } from "../admin/admin-session-gate";
+import { awardDukjilActionDetailed, dukjilBodyParams, dukjilWriteReward } from "../dukjil/award";
 
 export interface FanpageDependencies {
   rpc(name: string, args: Record<string, unknown>): Promise<unknown>;
   authorize(authorization: string | null): Promise<{ appUserId: string }>;
   authorizeAdmin(authorization: string | null, correlationId: string): Promise<AdminSession>;
+  /** Tests only: the creator id of a slug for the reward call (the award resolves it itself otherwise). */
+  resolveCreatorId?: (slug: string) => Promise<string | null>;
+}
+/**
+ * A reaction or a comment on a notice (아티스트 소식) pays by the fan board's rules through the same `record_dukjil_action` call: the
+ * `reaction` and `comment` policies with their daily caps, the passport check, and one payment per notice. The key is the notice's id,
+ * read the way the actor can read it. A notice has no fan author, so there is no own-post case. Never throws: the write already happened.
+ */
+async function noticeAward(dependencies: FanpageDependencies, appUserId: string, slug: string, noticeSlug: string, action: (noticeId: string) => { actionKey: "reaction" | "comment"; sourceKey: string; params: Record<string, unknown> }) {
+  try {
+    const raw = await dependencies.rpc("read_fan_notice", { p_app_user_id: appUserId, p_slug: slug, p_notice_slug: noticeSlug, p_locale: "ko" });
+    const id = z.uuid().safeParse((raw as { id?: unknown } | null)?.id);
+    if (!id.success) return {};
+    return dukjilWriteReward(await awardDukjilActionDetailed(dependencies, { appUserId, creatorSlug: slug, ...action(id.data.toLowerCase()) }));
+  } catch { return {}; }
 }
 const headers = { "cache-control": "private, no-store", vary: "Authorization" };
 export const fanpageJson = (value: unknown, status = 200) => Response.json(value, { status, headers });
@@ -125,7 +141,10 @@ export function createFanpageHandlers(dependencies: FanpageDependencies) {
           p_app_user_id: appUserId, p_slug: slug, p_notice_slug: noticeSlug, p_body: input.body, p_idempotency_key: input.idempotencyKey,
           ...(input.parentId ? { p_parent_id: input.parentId } : {}),
         });
-        return fanpageJson(parseResult(z.object({ id: z.uuid(), replayed: z.boolean() }).strict(), result));
+        const written = parseResult(z.object({ id: z.uuid(), replayed: z.boolean() }).strict(), result);
+        // A replayed request pays nothing again; one comment per notice pays (oncePerTarget keys on the notice).
+        const reward = written.replayed ? {} : await noticeAward(dependencies, appUserId, slug, noticeSlug, noticeId => ({ actionKey: "comment", sourceKey: written.id, params: { ...dukjilBodyParams(input.body), isReply: input.parentId != null, targetKey: `notice:${noticeId}` } }));
+        return fanpageJson({ ...written, ...reward });
       } catch (error) { return fanpageFailure(error); }
     },
     async reactToComment(request: Request, id: string) {
@@ -148,7 +167,10 @@ export function createFanpageHandlers(dependencies: FanpageDependencies) {
           p_app_user_id: owner, p_slug: slug, p_notice_slug: noticeSlug, p_locale: locale(request), ...(input ? { p_reaction: input.reaction } : {}),
         });
         if (!result) return fanpageJson({ error: { code: "FANPAGE_NOT_FOUND" } }, 404);
-        return fanpageJson(parseResult(z.object({ reaction: z.enum(["like", "dislike"]).nullable(), likeCount: z.number().int().nonnegative(), dislikeCount: z.number().int().nonnegative().nullable() }).strict(), result));
+        const state = parseResult(z.object({ reaction: z.enum(["like", "dislike"]).nullable(), likeCount: z.number().int().nonnegative(), dislikeCount: z.number().int().nonnegative().nullable() }).strict(), result);
+        // A like and a dislike pay alike, once per notice: the source is the notice, so a switch or cancel-and-redo never pays twice.
+        const reward = input && state.reaction && owner ? await noticeAward(dependencies, owner, slug, noticeSlug, noticeId => ({ actionKey: "reaction", sourceKey: `notice-reaction:${noticeId}`, params: {} })) : {};
+        return fanpageJson({ ...state, ...reward });
       } catch (error) { return fanpageFailure(error); }
     },
     async likeNotice(request: Request, slug: string, noticeSlug: string) {

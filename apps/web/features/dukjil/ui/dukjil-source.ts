@@ -20,7 +20,6 @@ export const dukjilSource = {
   dukjilTileAttendance: { ko: "출석", en: "Check-in" },
   dukjilTilePost: { ko: "글쓰기", en: "Write" },
   dukjilTileComment: { ko: "댓글", en: "Comment" },
-  earnMinChars: { ko: "{0}자 이상", en: "{0}+ characters" },
   dukjilTileShare: { ko: "공유", en: "Share" },
   dukjilTileInvite: { ko: "친구 추천", en: "Invite friends" },
   dukjilTileProof: { ko: "인증", en: "Verify" },

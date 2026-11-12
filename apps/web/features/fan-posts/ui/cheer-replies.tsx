@@ -1,5 +1,5 @@
 "use client";
-import { EarnActionBadge, EarnBadgeCorner, EarnMinLength } from "@/features/dukjil/ui/earn-badge";
+import { EarnBadgeCorner } from "@/features/dukjil/ui/earn-badge";
 import { FanSkeletonRows } from "@/components/fan-ui/fan-skeleton";
 import { showMissionRewardToast } from "./mission-reward-toast";
 import { GroupArtistMark } from "@/features/groups/ui/group-artist-mark";
@@ -47,7 +47,7 @@ export function CheerReplies({ detail = false, cheerId, slug, locale, returnTo, 
       <label className={detail ? detailStyles.commentLabel : commentStyles.label} htmlFor={field}>{copy.newComment}</label>
       <textarea id={field} rows={2} required maxLength={1000} disabled={mutation.busy} value={body} onChange={event => setBody(event.target.value)} />
       <ActivityPointHint slug={slug} action="comment" locale={locale} />
-      <div className={detail ? detailStyles.commentTools : commentStyles.tools}>{detail && <span className={detailStyles.commentCounter}>{body.length.toLocaleString(locale)} / 1,000</span>}{(() => { const send = <FanAction type="submit" variant="neutral" ariaBusy={mutation.busy} loading={mutation.busy} disabled={!body.trim()}>{copy.send}</FanAction>; return detail ? <><EarnMinLength action="comment" locale={locale} /><EarnActionBadge action="comment" locale={locale} />{send}</> : <EarnBadgeCorner action="comment" locale={locale}>{send}</EarnBadgeCorner>; })()}</div>
+      <div className={detail ? detailStyles.commentTools : commentStyles.tools}>{detail && <span className={detailStyles.commentCounter}>{body.length.toLocaleString(locale)} / 1,000</span>}{(() => { const send = <FanAction type="submit" variant="neutral" ariaBusy={mutation.busy} loading={mutation.busy} disabled={!body.trim()}>{copy.send}</FanAction>; return detail ? <><EarnBadgeCorner action="comment" locale={locale}>{send}</EarnBadgeCorner></> : <EarnBadgeCorner action="comment" locale={locale}>{send}</EarnBadgeCorner>; })()}</div>
     </form> : detail ? <div className={detailStyles.commentForm} data-guest-comment-box=""><span className={detailStyles.commentLabel}>{copy.newComment}</span><span className={detailStyles.guestField} /><div className={detailStyles.commentTools}><FanAction variant="neutral" href={`/login?locale=${locale}&returnTo=${encodeURIComponent(returnTo)}`}>{copy.login}</FanAction></div></div> : <FanAction href={`/login?locale=${locale}&returnTo=${encodeURIComponent(returnTo)}`}>{copy.login}</FanAction>)}
     {mutation.error && <p className={styles.error} role="alert">{mutation.error}</p>}
     {replies.state.status === "ready" ? <>

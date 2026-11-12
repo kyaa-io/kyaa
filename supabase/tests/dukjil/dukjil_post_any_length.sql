@@ -1,5 +1,5 @@
 -- 20261219020000: a post pays the 글쓰기 mission at any length, on a fan page and on a creator's group board.
--- Daily cap (3), one payout per post (a retried award replays), PASSPORT_REQUIRED and the comment minimum (5) stay.
+-- Daily cap (3), one payout per post (a retried award replays) and PASSPORT_REQUIRED stay. (The comment minimum went with 20261224000400.)
 -- Saves real posts through save_fan_post and groups_content_dispatch('post'), then awards them the way the web routes do.
 -- Local DB only, one transaction, everything rolls back. Needs a published group page with a creator, one member holding that
 -- creator's passport and one member without it (picked from the data; the test stops when none is found).
@@ -78,13 +78,6 @@ begin
   end;
   if exists(select 1 from public.dukjil_action_log where app_user_id = stranger and source_key = p::text) then raise exception 'stranger has a log row'; end if;
 
-  -- The other actions keep their minimum: a 3-character comment is still too short.
-  begin
-    perform public.record_dukjil_action(holder, c, 'comment', 'short-comment-probe', extensions.gen_random_uuid(), pg_temp.text_params('짧은댓'));
-    raise exception 'short comment accepted';
-  exception when others then
-    if position('DUKJIL_CONTENT_TOO_SHORT' in sqlerrm) = 0 then raise; end if;
-  end;
   raise notice 'dukjil_post_any_length ok';
 end $t$;
 
