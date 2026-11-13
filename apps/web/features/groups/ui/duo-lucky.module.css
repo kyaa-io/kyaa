@@ -1,5 +1,6 @@
 /* C4 럭키드로우 카드: 위(390)·왼쪽(1024 이상)에 기계 무대, 글과 행동은 그 옆·아래. 값은 C4 시안(plan-ux 3절)의 토큰 그대로다. */
-.layout { min-width:0; max-width:100%; }
+/* The card's own width picks the layout (덕질 columns are 358–960 whatever the viewport): from 576 the stage sits beside the copy. */
+.layout { min-width:0; max-width:100%; container-type:inline-size; }
 .card { position:relative; display:grid; grid-template-columns:minmax(0,1fr); row-gap:var(--space-4); box-sizing:border-box; padding:var(--space-5); border:0; outline:1px solid var(--color-line); outline-offset:-1px; border-radius:var(--radius-card); background:var(--color-surface); overflow:hidden; font-variant-numeric:tabular-nums; font-feature-settings:"tnum"; }
 .stage { grid-column:1; grid-row:1; height:160px; margin:calc(var(--space-5) * -1) calc(var(--space-5) * -1) 0; }
 .copy { position:relative; grid-column:1; min-width:0; padding-left:calc(var(--space-10) - var(--space-1) / 2); }
@@ -19,9 +20,10 @@
 .pastRows > * { min-width:0; }
 @media (min-width:1024px) {
  .layout[data-has-past] { display:grid; grid-template-columns:minmax(0, 1fr); gap:var(--space-3); }
- 
- .layout[data-has-past] .card { padding-right:var(--space-5); }
  .pastList { width:100%; margin:0; }
+}
+@container (min-width:36rem) {
+ .layout[data-has-past] .card { padding-right:var(--space-5); }
  .pastRows { display:block; overflow:visible; }
  .card { grid-template-columns:minmax(160px, .9fr) minmax(0,1fr); grid-template-rows:1fr auto auto 1fr; column-gap:var(--space-4); row-gap:0; min-height:300px; /* design-lint-disable N4 -- 사용자 2026-11-10 C4: 럭키드로우 무대 히어로 */ }
  .stage { grid-column:1; grid-row:1/5; height:auto; margin:calc(var(--space-5) * -1) 0 calc(var(--space-5) * -1) calc(var(--space-5) * -1); }
