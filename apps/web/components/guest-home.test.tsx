@@ -11,6 +11,7 @@ import { renderToString } from "react-dom/server";
 import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { formatPassportTier, GuestHome, StreamingGuestHome } from "./guest-home";
+import { SIGNUP_RAFFLE_BANNER_ID } from "../features/home/domain/signup-raffle-home-banner";
 import { notifyFanActivityUpdated } from "./fan-ui/fan-activity-updates";
 import { formatHeroLiveTitle, formatLiveCountdown } from "./live-hero-carousel";
 
@@ -367,6 +368,23 @@ describe("streamed Home sections", () => {
     expect(screen.queryByRole("link", { name: "엘리나와 함께 뱅크시 전시 보러 가요" })).not.toBeInTheDocument();
     await act(async () => { home.pending.homeBanners.resolve([bannerFixture]); home.pending.elinaRaffles.resolve({ raffles: elinaRaffles }); });
     expect(screen.getAllByRole("link", { name: "엘리나와 함께 뱅크시 전시 보러 가요", hidden: true }).length).toBeGreaterThan(0);
+  });
+
+  it("puts the signup raffle banner first in the waiting and the finished carousel, and keeps the old order when it is off", async () => {
+    const ids = (view: ReturnType<typeof render>) => [...view.container.querySelectorAll("[data-managed-home-banner]")].map(el => el.getAttribute("data-managed-home-banner"));
+    const raffle = SIGNUP_RAFFLE_BANNER_ID;
+    const home = pendingHome();
+    let view!: ReturnType<typeof render>;
+    await act(async () => { view = render(<StreamingGuestHome {...home} locale="ko" signupRaffle firstSteps />); });
+    expect(ids(view).slice(0, 3)).toEqual([raffle, expect.any(String), "8bf2f180-cb32-4f00-93e2-e84b570ad450"]);
+    await act(async () => { home.pending.homeBanners.resolve([bannerFixture]); });
+    expect(ids(view)[0]).toBe(raffle);
+    expect(ids(view).filter(id => id === raffle)).toHaveLength(1);
+    view.unmount();
+    const off = pendingHome();
+    await act(async () => { view = render(<StreamingGuestHome {...off} locale="ko" />); });
+    expect(ids(view)).not.toContain(raffle);
+    expect(ids(view).slice(0, 2)).toEqual(["8bf2f180-cb32-4f00-93e2-e84b570ad450", "247861a1-27b0-4e0a-9039-b5f8f7bc1c48"]);
   });
 
   it("renders ready home sections before gallery data, then reserves photo geometry while Shorts is pending", async () => {
