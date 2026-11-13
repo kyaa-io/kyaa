@@ -145,7 +145,7 @@ export function GroupHeaderActions({ locale, languageHref, notificationsLabel, a
     : <FanHeaderStatus locale={locale} />;
   return <>
     {status}
-    <span className={styles.headerLanguage} data-signed-in={guest ? undefined : ""}><FanLanguageSwitch locale={locale} href={languageHref} compact /></span>
+    <span className={styles.headerLanguage} data-signed-in={guest || pathname === "/" ? undefined : ""}><FanLanguageSwitch locale={locale} href={languageHref} compact /></span>
     <HeaderNotificationLink locale={locale} label={notificationsLabel} className={styles.utilityLink} />
     <HeaderDmLink locale={locale} className={styles.utilityLink} />
     <div className={styles.groupDesktopAccount}><GroupHeaderAccount locale={locale} actions={actions} actionsAreIdentity={actionsAreIdentity} languageHref={languageHref} /></div>

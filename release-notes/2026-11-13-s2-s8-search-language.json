@@ -1,0 +1,5 @@
+{
+ "changes": ["닉네임으로 유저를 찾고 프로필을 열 수 있어요. 공개 프로필만 검색되며 서로 차단한 상대는 표시하지 않아요.", "메시지는 기존처럼 같은 팬페이지의 팬끼리 요청할 수 있어요.", "홈에서도 기존 언어 버튼으로 언어를 바꿀 수 있어요. 첨부 화면은 예시 데이터를 사용한 로컬 검색 및 공통 헤더 검증 화면이에요."],
+ "path": "/pages/groups",
+ "images": ["release-notes/images/2026-11-13-s2-s8-users-390.png", "release-notes/images/2026-11-13-s2-s8-users-1440.png", "release-notes/images/2026-11-13-s2-s8-home-header-390.png", "release-notes/images/2026-11-13-s2-s8-home-header-1440.png"]
+}

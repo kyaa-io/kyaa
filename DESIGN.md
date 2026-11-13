@@ -2750,3 +2750,9 @@ D-C token ownership: `FanHeading variant="campaign"` owns the 18px/700 mobile an
 창하 사진 재검수(2026-11-13): 감독의 흐림·얼굴 크기 지적에 따라 같은 지정 JPEG에서 (285,245)부터 540×540을 무손실 WebP로 다시 추출한다. 새 경로 profile-autumn-sharp-20261113.webp로 이전 캐시를 구분하며 중앙 cover·scale 1을 유지한다. 카드 표시 111/161 CSS px에서 원본 540px 로드와 filter none을 확인했다. 로컬 이름 fixture는 실제 celebrity_localizations 이름을 쓰는 기존 규칙에 맞춰 엘리나·유나·창하로 표시한다.
 
 홈 GGGI 배너 사진 교체(2026-11-13, 대표 todo #157, 사용자 재확인): 합성한 `gggi/changha-event-20261026.webp` 대신 창하님이 직접 올린 인스타 가을 돌담길 사진(`De_06z_GfgF` 5번)의 지정 원본 1080×1440에서 가로 3:2 크롭(left 0, top 170, 1080×720, WebP q90, 확대·보정 없음)을 `gggi/changha-autumn-banner-20261113.webp`로 쓴다. 배너 레이아웃·문구·캠페인 열 `object-position:75% 30%`는 그대로이고 개정 번호만 4로 올렸다. 390(모바일 contain+흐림 바탕)·1440(오른쪽 50% cover)에서 얼굴·손이 잘리지 않음을 로컬 합성 화면에서 확인했다. 출처·크롭 좌표는 `changha-autumn-banner-20261113.source.json`에 기록한다. 공지 본문용 이전 그림은 그대로 둔다.
+
+### 2026-11-13 S2·S8 (#126·#148)
+
+- 사용자 지정 예외: 홈(`/`)에서는 로그인한 PC에서도 기존 `FanLanguageSwitch compact`를 헤더에 노출한다. 다른 화면의 헤더 구성은 유지한다. 같은 부품·언어 대화상자·크기·색을 재사용하며 새 안내 문구는 넣지 않는다.
+- 검색의 유저 탭은 기존 `FanTabs segment`와 `FanAction text`, `FanState`, `FanSkeletonRows`를 쓴다. 결과에는 닉네임만 표시하고 기존 프로필 창을 연다. 메시지 권한은 기존 프로필·메시지 요청 경로가 판단한다.
+- design-md-audit: 글자·간격·색·상호작용은 위 공통 부품 소유. 새 CSS·이미지·카드 없음. 390·1440 실제 브라우저에서 긴 닉네임과 탭을 확인했다. 캡처는 예시 데이터를 쓰는 로컬 모임 harness와 `/` 경로의 공통 헤더 검증이다. 실제 홈의 서버 데이터 통합 화면과 실제 DB 검색 실행은 이번 로컬 검증에 포함되지 않는다.
