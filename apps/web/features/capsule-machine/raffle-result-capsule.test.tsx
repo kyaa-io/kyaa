@@ -52,3 +52,15 @@ it.each([["reduced motion", true, true], ["no GPU", false, false]])("shows the r
   expect(document.querySelector("[data-raffle-capsule]")?.getAttribute("data-raffle-capsule")).toBe("shown");
   expect(screen.getByText("US$50 당첨")).toBeTruthy();
 });
+
+it("stops a machine that never finishes and shows the result after the cap", async () => {
+  vi.useFakeTimers();
+  engine.play.mockImplementationOnce(() => new Promise<string[]>(() => {}));
+  view({ state: "lost" });
+  await act(async () => { await vi.advanceTimersByTimeAsync(50); });
+  expect(document.querySelector("[data-raffle-capsule]")?.getAttribute("data-raffle-capsule")).toBe("playing");
+  await act(async () => { await vi.advanceTimersByTimeAsync(10_000); });
+  expect(engine.clear).toHaveBeenCalled();
+  expect(screen.getByText("이번에는 당첨되지 않았어요")).toBeTruthy();
+  vi.useRealTimers();
+});

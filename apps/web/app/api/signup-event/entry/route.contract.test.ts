@@ -1,9 +1,10 @@
 import { afterEach,expect,it,vi } from 'vitest';
 import { AuthError } from '@/features/auth/domain/auth-errors';
-const mocks=vi.hoisted(()=>({authorize:vi.fn(),refresh:vi.fn(),read:vi.fn(),client:vi.fn(),rpc:vi.fn()}));
+const mocks=vi.hoisted(()=>({authorize:vi.fn(),refresh:vi.fn(),read:vi.fn(),client:vi.fn(),rpc:vi.fn(),stored:vi.fn()}));
 vi.mock('@/server/fanpage/dependencies',()=>({createFanpageDependencies:()=>({authorize:mocks.authorize,rpc:mocks.rpc})}));
 vi.mock('@/server/data/client',()=>({createClient:mocks.client}));
 vi.mock('@/server/config/env',()=>({loadServerEnv:()=>({})}));
+vi.mock('@/server/signup-event/database',()=>({createSignupRaffleDatabase:()=>'stored-client',readSignupRaffleStored:mocks.stored}));
 vi.mock('@/server/signup-event/refresh',()=>({refreshLocalSignupEvent:mocks.refresh}));
 vi.mock('@/server/signup-event/local',async original=>({...await original<typeof import('@/server/signup-event/local')>(),readLocalSnapshot:mocks.read}));
 import { GET, POST } from './route';
@@ -56,4 +57,19 @@ it('reads my chances from the server snapshot: 1 + community 1 + capped comments
 it('does not report successful entry when the window is closed or local storage fails',async()=>{
  vi.stubEnv('KYAA_FEATURE_SIGNUP_RAFFLE','true');mocks.authorize.mockResolvedValue({appUserId:owner});mocks.refresh.mockResolvedValue(false);
  expect((await POST(new Request('http://localhost'))).status).toBe(409);expect(mocks.read).not.toHaveBeenCalled();
+});
+it('adds everyone else\'s stored chances to my fresh count for the page total, and omits the total when it cannot be read',async()=>{
+ vi.useFakeTimers({toFake:['Date']});vi.setSystemTime(new Date('2026-11-20T00:00:00Z'));
+ const other='00000000-0000-4000-8000-000000000002';
+ vi.stubEnv('KYAA_FEATURE_SIGNUP_RAFFLE','true');mocks.authorize.mockResolvedValue({appUserId:owner});
+ mocks.read.mockResolvedValue(snapshot([{userId:owner,kind:'comment',sourceId:'c1',occurredAt:'2026-11-11T02:00:00Z'}]));
+ // 저장 값의 내 행은 아직 1회(오래됨): 합계에는 방금 센 내 값(2)을 쓴다. 다른 회원은 응모 1 + 커뮤니티 1 = 2
+ mocks.stored.mockResolvedValue({users:[{id:owner,createdAt:enteredAt},{id:other,createdAt:enteredAt}],entries:[{userId:owner,enteredAt},{userId:other,enteredAt}],actions:[{userId:other,kind:'community',sourceId:'community:x',occurredAt:'2026-11-11T03:00:00Z'}]});
+ expect(await (await GET(new Request('http://localhost'))).json()).toEqual({entered:true,passportReceived:false,communityJoined:true,chances:2,friends:0,totalChances:4,winChance:1});
+ expect(mocks.stored).toHaveBeenCalledWith('stored-client');
+ // 1분 안의 다음 요청은 저장 값을 다시 읽지 않는다
+ await GET(new Request('http://localhost'));expect(mocks.stored).toHaveBeenCalledTimes(1);
+ vi.setSystemTime(new Date('2026-11-20T00:02:00Z'));mocks.stored.mockRejectedValue(new Error('SIGNUP_RAFFLE_READ_FAILED'));
+ expect(await (await GET(new Request('http://localhost'))).json()).toEqual({entered:true,passportReceived:false,communityJoined:true,chances:2,friends:0});
+ vi.useRealTimers();
 });

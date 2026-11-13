@@ -16,6 +16,8 @@ import styles from "./raffle-result-capsule.module.css";
 const MachineCanvas = dynamic(() => import("./machine-canvas"), { ssr: false });
 /** 장면이 이만큼 안에 준비되지 않으면 연출 없이 결과를 바로 보인다. */
 const ENGINE_WAIT_MS = 3000;
+/** 연출이 이 시간 안에 끝나지 않으면 멈추고 결과를 보인다. */
+const PLAY_MAX_MS = 10000;
 
 export type RaffleCapsuleResult = { state: "won"; usd: number } | { state: "lost" };
 export type RaffleCapsuleLabels = { title: string; won: string; lost: string; thanks: string; claim: string; claimCta: string };
@@ -77,6 +79,13 @@ export function RaffleResultCapsule({ open, onOpenChange, result, locale, labels
       if (at >= 0) setColor(at);
     }, () => undefined).finally(show);
   }, [open, engine, phase, reduced, show, won, usd]);
+
+  // 느린 기기(소프트웨어 렌더링 등)에서는 프레임으로 도는 연출이 끝나지 않을 수 있다: 상한이 지나면 결과로 넘어간다.
+  useEffect(() => {
+    if (phase !== "playing") return;
+    const timer = window.setTimeout(() => { engine?.clear(); show(); }, PLAY_MAX_MS);
+    return () => window.clearTimeout(timer);
+  }, [phase, engine, show]);
 
   const handleUnavailable = useCallback(() => setGpu("off"), []);
   const stage = phase !== "shown";
