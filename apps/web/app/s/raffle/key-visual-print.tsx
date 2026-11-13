@@ -29,9 +29,9 @@ const wideCards: FanPrintPhotoCard[] = [
 ];
 // 세로판은 앞 카드 아래가 봉투 속이라 금액을 올리고 아래 줄은 찍지 않는다.
 const tallCards: FanPrintPhotoCard[] = [
-  { ...tall.gold, lines: [amount('US$25', 150, 105)] },
-  { ...tall.blue, lines: [amount('US$50', 175, 110)] },
-  { ...tall.cream, lines: [mono('GIFT CARD', 112, 40), amount('US$100', 330, 180, 62)], mark },
+  { ...tall.gold, lines: [amount('US$25', 150, 118)] },
+  { ...tall.blue, lines: [amount('US$50', 180, 125)] },
+  { ...tall.cream, lines: [mono('GIFT CARD', 124, 64), amount('US$100', 340, 180, 62)], mark },
 ];
 const wideStamp: FanPrintPhotoStamp = { at: [1113, 618], size: 90, turn: -6, lines: stampLines };
 const tallStamp: FanPrintPhotoStamp = { at: [190, 1222], size: 84, turn: -33, lines: stampLines };
