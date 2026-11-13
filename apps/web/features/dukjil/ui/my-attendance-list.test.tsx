@@ -44,6 +44,8 @@ it("modal form: round avatars named by the page, a green ring and no button once
   expect(screen.getByRole("img", { name: "IVE" }).getAttribute("data-attended")).toBe("false");
   const item = done.closest("li")!;
   expect(item.textContent).toContain("연속 3일");
+  expect(item.querySelector("small [data-number-role]")?.textContent).toBe("3");
+  expect(item.querySelector('small [data-fan-activity-stamp="streak"]')).not.toBeNull();
   expect(item.textContent).toContain("오늘 완료");
   expect(within(item).getByRole("button", {name: "오늘 완료"})).toBeDisabled();
   expect(within(item).getByText("AESPA")).toBeInTheDocument();
