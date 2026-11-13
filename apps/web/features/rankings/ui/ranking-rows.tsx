@@ -11,7 +11,6 @@ import { RollingNumber } from "@/components/fan-ui/rolling-number";
 import { FanSkeleton } from "@/components/fan-ui/fan-skeleton";
 import { FanState } from "@/components/fan-ui/fan-state";
 import { FanTag } from "@/components/fan-ui/fan-tag";
-import { formatCountMetric } from "@/components/fan-ui/fan-count";
 import { fanLoginHref } from "@/components/login-href";
 import { creatorHomeHref } from "@/features/creator/domain/creator-navigation";
 import { Avatar } from "@/features/profile/ui/avatar";
@@ -408,12 +407,14 @@ const fanStats = (locale: AppLocale, row: HomeFanRankingRow, metric: RankingMetr
   ] : []),
 ];
 
-/** Creators by likes (대표 11/13 08:50 "찐팬 ♥ 5 · SNS"): the 찐팬 hearts first, with the heart asset, then the operator-kept SNS follower total (celebrities.fan_count, 6.8M style; one number,
+/** The SNS total of an opened creator row (대표 요청 11/13): 1,000 and up shortened in every language (3,856 → 3.9K, 6,800,000 → 6.8M). Only this cell; the other lists keep formatCountMetric's rule. */
+const snsFans = new Intl.NumberFormat("en-US", { notation: "compact", maximumFractionDigits: 1 });
+/** Creators by likes (대표 11/13 08:50 "찐팬 ♥ 5 · SNS"): the 찐팬 hearts first, with the heart asset, then the operator-kept SNS fan total (celebrities.fan_count, "통합 팬 수" in the admin; one number,
  * no per-platform split is stored, so no platform icon), then all-time likes when the list counts a period. A creator without a kept total has no SNS cell; a made-up number never is. */
 const creatorStats = (locale: AppLocale, row: HomeCreatorRankingRow, metric: RankingMetric, period: HomeRankingPeriod) => metric === "likes"
   ? [
     ...statCell(locale, "hearts", rankingsText(locale, "rkPanelJjinfan"), row.hearts, "hearts"),
-    ...(typeof row.fanCount === "number" && row.fanCount > 0 ? [{ key: "followers", label: rankingsText(locale, "rkPanelFollowers"), value: formatCountMetric(locale, row.fanCount) }] : []),
+    ...(typeof row.fanCount === "number" && row.fanCount > 0 ? [{ key: "snsFans", label: rankingsText(locale, "rkPanelSnsFans"), value: snsFans.format(row.fanCount) }] : []),
     ...(period === "all" ? [] : statCell(locale, "totalLikes", rankingsText(locale, "rkPanelTotalLikes"), row.totalLikes, "likes")),
   ] : [];
 
