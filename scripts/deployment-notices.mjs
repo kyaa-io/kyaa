@@ -162,6 +162,13 @@ export function receiptState(receipt) {
   if (!receipt) return 'new';
   if (receipt.status === 'completed' && receipt.conclusion === 'success') return 'sent';
   if (receipt.status === 'completed' && receipt.conclusion === 'failure') return 'rejected';
+  if (receipt.status === 'completed' && receipt.conclusion === 'neutral' && receipt.name === CHECK_NAME && receipt.app?.slug === 'github-actions') {
+    try {
+      const replacement = JSON.parse(receipt.output.summary).replacedBySummary;
+      if (/^[a-f0-9]{64}$/.test(replacement?.planHash) && replacement.chatId === -5187701508 &&
+          [replacement.deploymentId, replacement.receiptId, replacement.messageId, replacement.suppressedBatches].every(id => Number.isSafeInteger(id) && id > 0)) return 'superseded';
+    } catch { /* Unrecognised receipt remains blocked. */ }
+  }
   return 'uncertain';
 }
 
@@ -219,9 +226,19 @@ export async function notifyDeployment({ event, github, send, notes = readNotes,
         && matches.every(check => receiptState(check) === 'sent' && check.output?.summary === summary);
       if (!sameDelivery) throw new Error('MULTIPLE_NOTICE_RECEIPTS_REQUIRE_REVIEW');
     }
-    return matches[0];
+    const receipt = matches[0];
+    if (receiptState(receipt) === 'superseded') {
+      const replacement = JSON.parse(receipt.output.summary).replacedBySummary;
+      const confirmed = await github(`/check-runs/${replacement.receiptId}`);
+      const delivery = JSON.parse(confirmed.output?.summary ?? '{}');
+      if (confirmed.name !== CHECK_NAME || confirmed.app?.slug !== 'github-actions' || receiptState(confirmed) !== 'sent' ||
+          confirmed.external_id !== String(replacement.deploymentId) || delivery.planHash !== replacement.planHash ||
+          delivery.replacesSourceReceiptId !== receipt.id || delivery.messageId !== replacement.messageId || delivery.chatId !== replacement.chatId) throw new Error('SUMMARY_REPLACEMENT_NOT_CONFIRMED');
+    }
+    return receipt;
   }
   const existing = await receiptFor(deployment);
+  if (receiptState(existing) === 'superseded') return { skipped: 'already_superseded_by_summary' };
   if (receiptState(existing) === 'sent') return { skipped: 'already_sent' };
   if (receiptState(existing) === 'uncertain') throw new Error('NOTICE_DELIVERY_UNCERTAIN: inspect the Telegram room before retrying');
 

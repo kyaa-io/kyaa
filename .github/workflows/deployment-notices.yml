@@ -10,6 +10,18 @@ on:
   deployment_status:
   workflow_dispatch:
     inputs:
+      operation:
+        type: choice
+        options: [recover, resolve-receipt, plan-summary, send-summary]
+        default: recover
+      plan_hash:
+        type: string
+      outcome:
+        type: choice
+        options: [sent, rejected]
+      message_ids:
+        description: "Inspected Telegram message IDs, comma separated (for rejected: adjacent evidence message)"
+        type: string
       deployment_id:
         description: 'Verified AWS deployment currently live on kyaa.io (or dev.kyaa.io for environment dev)'
         required: true
@@ -81,7 +93,7 @@ jobs:
           key: ${{ steps.node_modules_key.outputs.prefix }}-${{ hashFiles('package-lock.json', 'package.json', 'apps/*/package.json', 'scripts/apply-security-patches.mjs') }}
       - run: npm run security:patch
       - name: Test notice delivery safeguards
-        run: node --test scripts/deployment-notices.test.mjs scripts/recover-deployment-notice.test.mjs scripts/aws-release*.test.mjs scripts/aws-wave-release.test.mjs
+        run: node --test scripts/deployment-notices.test.mjs scripts/recover-deployment-notice.test.mjs scripts/resolve-deployment-receipt.test.mjs scripts/send-deployment-summary.test.mjs scripts/aws-release*.test.mjs scripts/aws-wave-release.test.mjs
       - name: Check Korean release notes
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
@@ -127,7 +139,7 @@ jobs:
 
   recover:
     name: Resume verified deployment notice
-    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && (inputs.operation == 'recover' || inputs.operation == '')
     environment: ${{ inputs.environment == 'dev' && 'dev' || 'prod' }}
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -227,3 +239,65 @@ jobs:
         if: failure()
         run: |
           echo '::error::DEV deployment succeeded; its notice failed. Inspect the DEV receipt and room before retrying.'
+
+  resolve-receipt:
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && inputs.operation == 'resolve-receipt' && inputs.environment == 'prod'
+    environment: prod
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    concurrency:
+      group: telegram-production-notices
+      queue: max
+      cancel-in-progress: false
+    permissions:
+      contents: read
+      deployments: read
+      checks: write
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: main
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 24
+      - name: Resolve inspected receipt without sending
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          NOTICE_DEPLOYMENT_ID: ${{ inputs.deployment_id }}
+          NOTICE_OUTCOME: ${{ inputs.outcome }}
+          NOTICE_MESSAGE_IDS: ${{ inputs.message_ids }}
+          NOTICE_INSPECTION_EVIDENCE: ${{ inputs.inspection_evidence }}
+        run: node scripts/resolve-deployment-receipt.mjs
+
+  summary-recovery:
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && (inputs.operation == 'plan-summary' || inputs.operation == 'send-summary') && inputs.environment == 'prod'
+    environment: prod
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    concurrency:
+      group: telegram-production-notices
+      queue: max
+      cancel-in-progress: false
+    permissions:
+      contents: read
+      actions: read
+      deployments: read
+      checks: write
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: main
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 24
+      - name: Plan or send one approved replacement summary
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          NOTICE_DEPLOYMENT_ID: ${{ inputs.deployment_id }}
+          NOTICE_OPERATION: ${{ inputs.operation }}
+          NOTICE_PLAN_HASH: ${{ inputs.plan_hash }}
+          TELEGRAM_BUG_REPORT_BOT_TOKEN: ${{ secrets.TELEGRAM_BUG_REPORT_BOT_TOKEN }}
+        run: node scripts/send-deployment-summary.mjs
