@@ -1,0 +1,13 @@
+.event { max-width: 48rem; margin: 0 auto; padding: var(--space-6); display: grid; gap: var(--space-4); color: var(--color-ink); }
+.languages { display: flex; justify-content: flex-end; gap: var(--space-4); }
+.languages a { min-width: var(--min-target); justify-content: center; min-height: var(--min-target); display: inline-flex; align-items: center; color: var(--color-ink); }
+.sheet { display: grid; gap: var(--space-6); }
+.heart { color: var(--color-accent); display: flex; justify-content: center; padding: var(--space-6); }
+.heart svg { animation: arrive var(--motion-layout) ease-out both; }
+.steps { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--space-4); }
+.steps li { display: flex; align-items: center; gap: var(--space-4); }
+.steps li > span:first-child { width: var(--space-6); flex-shrink: 0; }
+.steps li svg { margin-left: auto; color: var(--color-accent); flex-shrink: 0; }
+.result { display: grid; gap: var(--space-2); }
+@keyframes arrive { from { transform: scale(.85); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .heart svg { animation: none; } }
