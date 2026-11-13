@@ -22,6 +22,9 @@ vi.mock("../server/home-notice/home-notice-repository", () => ({ createHomeNotic
 
 vi.mock("../server/home-gallery/home-gallery-repository", () => ({ createHomeGalleryRepository: () => ({ listPublishedPool: repositories.homeGallery, listShorts: repositories.homeShorts }) }));
 
+const requestCookies = vi.hoisted(() => new Map<string, string>());
+vi.mock("next/headers", () => ({ cookies: async () => ({ get: (name: string) => requestCookies.has(name) ? { name, value: requestCookies.get(name) } : undefined }) }));
+
 vi.mock("../server/raffle/raffle-dependencies", () => ({ createRaffleDependencies: () => ({ list: repositories.raffles }) }));
 
 import HomePage from "./page";
@@ -37,12 +40,21 @@ describe("Home server content isolation", () => {
     repositories.homeNotices.mockReset().mockResolvedValue({ items: [], nextCursor: null });
     repositories.homeGallery.mockReset().mockResolvedValue({ items: [], nextCursor: null });
     repositories.homeShorts.mockReset().mockResolvedValue([]);
+    requestCookies.clear();
   });
 
   const props = (result: { props: { children: Array<{ props: Record<string, unknown> }> } }) => result.props.children[1].props as {
     queries: Record<"celebrities" | "homeBanners" | "homeSlots" | "elinaRaffles" | "homeNotices" | "homeGallery" | "homeShorts", Promise<{ status: string; value?: unknown }>>;
     [key: string]: unknown;
   };
+
+  it("keeps the first-steps banner until this browser finished the three steps", async () => {
+    expect(props(await HomePage({ searchParams: Promise.resolve({}) })).firstSteps).toBe(true);
+    requestCookies.set("kyaa_first_steps", "other");
+    expect(props(await HomePage({ searchParams: Promise.resolve({}) })).firstSteps).toBe(true);
+    requestCookies.set("kyaa_first_steps", "done");
+    expect(props(await HomePage({ searchParams: Promise.resolve({}) })).firstSteps).toBe(false);
+  });
 
   it("shows the raffle only with the server opt-in and avoids duplicate CMS banners", async () => {
     const cms = { id: "cms-raffle", href: "/s/raffle?utm_source=home" };

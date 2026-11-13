@@ -64,9 +64,9 @@ it('Q1 brand: signed-in join button, joined shows a status that does not leave, 
  expect(new URL(screen.getByRole('link',{name:'가입'}).getAttribute('href')!,'https://kyaa.test').pathname).toBe('/login');
 });
 it('signed out never asks for my summary',()=>{render(<CreatorGroupHeader celebrity={celebrity} locale='ko' tab='home'/>);expect(state.urls.filter(url=>url?.startsWith('/api/me/'))).toEqual([]);});
-it('places the single members link immediately after calendar in navigation',()=>{
+it('lists certifications after the board and places the single members link immediately after calendar',()=>{
  state.data={page:page(),membership:null};const {container}=render(<CreatorGroupHeader celebrity={celebrity} locale='ko' tab='home'/>);
- expect(Array.from(container.querySelectorAll('nav[data-fan-tabs] a')).map(link=>link.textContent)).toEqual(['홈','게시판','비밀방','캘린더','팬·랭킹']);
+ expect(Array.from(container.querySelectorAll('nav[data-fan-tabs] a')).map(link=>link.textContent)).toEqual(['홈','게시판','인증','비밀방','캘린더','팬·랭킹']);
  expect(screen.getByRole('link',{name:'홈'})).toHaveAttribute('aria-current','page');
 });
 it('renders the page menu exactly once for a member and not at all otherwise',()=>{state.data={page:page(),membership:{role:'member',joinedAt:'2026-11-01'}};const view=render(<CreatorGroupHeader celebrity={celebrity} locale='ko' tab='home'/>);expect(screen.getAllByRole('button',{name:'page-menu'})).toHaveLength(1);view.unmount();state.data={page:page(),membership:null};render(<CreatorGroupHeader celebrity={celebrity} locale='ko' tab='home'/>);expect(screen.queryByRole('button',{name:'page-menu'})).toBeNull();});

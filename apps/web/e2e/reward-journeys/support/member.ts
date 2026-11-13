@@ -5,21 +5,7 @@ import { appUserIdByEmail, balances, count, exec, resetMember, scalar } from "./
 
 export type ApiResult<T = Record<string, unknown>> = { status: number; body: T };
 
-type StorageState = { origins?: { localStorage?: { name: string; value: string }[] }[] };
-
-function readToken(account: string): string {
-  const file = path.join(ACCOUNT_DIR, `${account}.local${APP_PORT}.json`);
-  if (!fs.existsSync(file)) throw new Error(`REWARD_E2E_LOGIN_MISSING: run \`kyaa-t3 local-login ${account} --port ${APP_PORT}\``);
-  const state = JSON.parse(fs.readFileSync(file, "utf8")) as StorageState;
-  for (const origin of state.origins ?? []) for (const item of origin.localStorage ?? []) {
-    if (item.name !== "privy:token") continue;
-    const token = JSON.parse(item.value) as string;
-    const exp = JSON.parse(Buffer.from(token.split(".")[1], "base64url").toString()).exp as number;
-    if (exp - Date.now() / 1000 < 120) throw new Error(`REWARD_E2E_TOKEN_EXPIRED: run \`kyaa-t3 local-login ${account} --port ${APP_PORT} --fresh\``);
-    return token;
-  }
-  throw new Error(`REWARD_E2E_LOGIN_MISSING: no token in ${file}`);
-}
+import { storedCredential, sessionToken } from "./session";
 
 function readEmail(account: string): string {
   const accounts = JSON.parse(fs.readFileSync(path.join(ACCOUNT_DIR, "accounts.json"), "utf8")) as Record<string, { email: string }>;
@@ -33,18 +19,18 @@ export const newKey = (): string => crypto.randomUUID();
 /** A signed-in test member: the real Privy token goes to the real routes; the database is only read, seeded or reset around them. */
 export class Member {
   readonly id: string;
-  private readonly token: string;
-  constructor(readonly account: string) {
-    this.token = readToken(account);
+  private readonly credential: ReturnType<typeof storedCredential>;
+  constructor(readonly account: string, private readonly stateFile = path.join(ACCOUNT_DIR, `${account}.local${APP_PORT}.json`)) {
+    this.credential = storedCredential(this.storageState);
     this.id = appUserIdByEmail(readEmail(account));
   }
   /** The storage state file of this login, for browser contexts. */
-  get storageState(): string { return path.join(ACCOUNT_DIR, `${this.account}.local${APP_PORT}.json`); }
+  get storageState(): string { return this.stateFile; }
 
   async call<T = Record<string, unknown>>(method: "GET" | "POST", url: string, body?: unknown): Promise<ApiResult<T>> {
     const response = await fetch(`${BASE_URL}${url}`, {
       method,
-      headers: { authorization: `Bearer ${this.token}`, ...(body === undefined ? {} : { "content-type": "application/json" }) },
+      headers: { authorization: `Bearer ${this.credential.token ?? await sessionToken(BASE_URL, this.credential.cookie!)}`, ...(body === undefined ? {} : { "content-type": "application/json" }) },
       body: body === undefined ? undefined : JSON.stringify(body),
     });
     const text = await response.text();

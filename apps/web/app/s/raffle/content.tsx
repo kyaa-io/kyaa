@@ -9,7 +9,7 @@ import { FanPrintReveal } from '@/components/fan-ui/fan-print-reveal';
 import { FanSurface } from '@/components/fan-ui/fan-surface';
 import { signupEvent } from '@/features/benefit/domain/signup-event';
 import { RaffleCardFloat } from '@/features/raffle-cards/card-float';
-import { RaffleBoostAction, RaffleEnterBlock, RaffleInvitedFriends, RaffleMoreAction, RaffleProvider, RaffleStickyCta, type RafflePreview } from './participation';
+import { RaffleBoostAction, RaffleEnterBlock, RaffleInvitedFriends, RaffleMoreAction, RaffleOdds, RaffleProvider, RaffleStickyCta, RaffleCountdown, type RafflePreview } from './participation';
 import styles from './raffle.module.css';
 
 const art = (name: string) => `/images/raffle/v4/${name}.webp`;
@@ -37,6 +37,7 @@ export function RaffleContent({ locale, closesAt, now, closed, preview, invite }
         {/* 총액·총인원은 이 화면에 여기 한 번(테스트로 고정) */}
         <p className={styles.keyFacts}><FanDisplay role="lead" optical>US$400</FanDisplay><FanDisplay role="lead">{t('giftCard')}</FanDisplay><FanDisplay role="lead">{t('totalWinners')}</FanDisplay></p>
         <FanDisplay role="strong" as="p" optical>{t('period')}</FanDisplay>
+        <RaffleCountdown hero />
       </header>
     </FanPrintDesk>
 
@@ -65,6 +66,7 @@ export function RaffleContent({ locale, closesAt, now, closed, preview, invite }
       {/* 당첨 확률 올리기: 페이지에서 하나뿐인 옅은 분홍 면. 행마다 그 행동의 스탬프 그림 */}
       <FanSurface tone="focus" className={styles.bonus} data-block="raffle-bonus" aria-labelledby="raffle-bonus">
         <FanHeading as="h2" id="raffle-bonus"><FanDisplay role="heading">{t('bonusTitle')}</FanDisplay></FanHeading>
+        <RaffleOdds />
         <ul className={styles.bonusRows}>{boosts.map(row => <li key={row.kind} data-row="raffle-bonus" data-kind={row.kind}>
           <FanActivityStamp kind={row.stamp} />
           <div className={styles.bonusRowText}>

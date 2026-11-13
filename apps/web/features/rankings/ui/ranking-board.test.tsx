@@ -102,7 +102,8 @@ it("a row is one line: movement beside the name, LIVE, the value; today's gain a
   expect([...view.container.querySelectorAll("[data-row]")].map((row) => row.textContent).join(" ")).not.toMatch(/오늘|1위까지|현재 1위|1위와 동점/);
   expect(row("삼등").querySelector("[data-delta-cell]")).toBeNull();
   expect(row("이등").textContent).not.toContain("오늘");
-  expect(row("일등").querySelector("[data-metric] [data-icon='heart']")).not.toBeNull();
+  expect(row("일등").querySelector("[data-metric] [data-unit='likes']")).not.toBeNull();
+  expect(row("일등").querySelector("[data-metric] [data-icon='heart']")).toBeNull();
   fireEvent.click(row("삼등").querySelector("button")!);
   expect(row("삼등").querySelector("[data-rank-panel]")!.textContent).toContain("1위까지12,245");
   expect(row("삼등").querySelector("[data-rank-panel]")!.textContent).not.toContain("오늘");
@@ -345,8 +346,11 @@ it("opens a fan row with hearts and entry tickets, a creator row with 찐팬 and
   expect(creator.querySelector("[data-metric='likes']")).toHaveAttribute("aria-label", "좋아요 50");
   fireEvent.click(creator.querySelector("button")!);
   const creatorPanel = creator.querySelector("[data-rank-panel]")!.textContent!;
-  expect(creatorPanel).toContain("찐팬9명");
-  expect(creatorPanel).toContain("하트77");
+  // 대표 11/13 08:50: "찐팬 ♥ 77" with the heart asset; the head count and a second heart cell are not repeated.
+  expect(creatorPanel).toContain("찐팬77");
+  expect(creatorPanel).not.toContain("9명");
+  expect(creatorPanel).not.toContain("하트");
+  expect(creator.querySelector("[data-rank-panel] [data-unit='hearts']")).not.toBeNull();
   expect(creatorPanel).not.toMatch(/팔로워/);
 });
 

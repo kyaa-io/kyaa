@@ -1,6 +1,6 @@
 import { expect, it, vi } from 'vitest';
 vi.mock('server-only', () => ({}));
-import { readSignupRaffleDraw, readSignupRaffleSnapshot, recordSignupRaffleDraw } from './database';
+import { readSignupRaffleDraw, readSignupRaffleSnapshot, readSignupRaffleStored, recordSignupRaffleDraw } from './database';
 it('reads a single database snapshot scoped to the authenticated member', async () => {
   const id = '00000000-0000-4000-8000-000000000001';
   const rpc = vi.fn().mockResolvedValue({ data: {users: [], entries: [], actions: []}, error: null });
@@ -67,4 +67,19 @@ it('looks up the stored draw first: null when none, the stored row otherwise, an
   expect(await readSignupRaffleDraw({ rpc })).toEqual(stored);
   expect(rpc).toHaveBeenCalledExactlyOnceWith('read_signup_raffle_draw', { p_event_id: 'kyaa-raffle-202611' });
   await expect(readSignupRaffleDraw({ rpc: vi.fn().mockResolvedValue({ data: null, error: { message: 'timeout' } }) })).rejects.toThrow('SIGNUP_RAFFLE_DRAW_FAILED');
+});
+it('reads every stored entry and action page by page without refreshing anyone', async () => {
+  const user = (n: number) => `00000000-0000-4000-8000-${String(n).padStart(12, '0')}`;
+  const entries = Array.from({ length: 1001 }, (_, n) => ({ app_user_id: user(n + 1), entered_at: '2026-11-11T01:00:00Z', passport_received: false, community_joined: n === 0 }));
+  const actions = [{ app_user_id: user(1), kind: 'community', source_id: 'community:x', occurred_at: '2026-11-11T02:00:00Z' }];
+  const calls: string[] = [];
+  const from = vi.fn((table: string) => ({ select: () => ({ order: () => ({ range: async (start: number, end: number) => {
+    calls.push(`${table}:${start}-${end}`);
+    return { data: (table === 'signup_raffle_entries' ? entries : actions).slice(start, end + 1), error: null };
+  } }) }) }));
+  const stored = await readSignupRaffleStored({ from } as never);
+  expect(stored.users).toHaveLength(1001);
+  expect(stored.entries[1000]).toEqual({ userId: user(1001), enteredAt: '2026-11-11T01:00:00Z' });
+  expect(stored.actions).toEqual([{ userId: user(1), kind: 'community', sourceId: 'community:x', occurredAt: '2026-11-11T02:00:00Z' }]);
+  expect(calls.sort()).toEqual(['signup_raffle_actions:0-999', 'signup_raffle_entries:0-999', 'signup_raffle_entries:1000-1999']);
 });

@@ -14,4 +14,9 @@ export const myHomeSource = {
   streakDays: { ko: "연속 {0}일", en: "{0}-day streak" },
   shortcutsTitle: { ko: "바로가기", en: "Shortcuts" },
   moreShortcuts: { ko: "그 밖의 바로가기", en: "More shortcuts" },
+  eventsTitle: { ko: "이벤트 현황", en: "My events" },
+  eventEntered: { ko: "응모 완료", en: "Entered" },
+  eventNotEntered: { ko: "미응모", en: "Not entered" },
+  eventChances: { ko: "당첨 기회 {0}회", en: "{0} chances" },
+  eventClosed: { ko: "마감", en: "Closed" },
 } as const;

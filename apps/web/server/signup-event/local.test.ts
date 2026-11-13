@@ -1,5 +1,5 @@
 import { expect,it } from 'vitest';
-import { candidates,drawLocal,localSnapshotSchema,maskedCsv,localSignupEnabled,raffleChances } from './local';
+import { candidates,drawLocal,localSnapshotSchema,maskedCsv,localSignupEnabled,raffleChances,raffleWinChance } from './local';
 const a='00000000-0000-4000-8000-000000000001',b='00000000-0000-4000-8000-000000000002';
 const enteredAt='2026-11-11T01:00:00Z';
 const fixture=()=>localSnapshotSchema.parse({users:[a,b].map(id=>({id,createdAt:'2025-01-01T00:00:00Z',passportReceived:true,communityJoined:true})),actions:[],entries:[a,b].map(userId=>({userId,enteredAt}))});
@@ -55,4 +55,15 @@ it('counts chances and friends for every entrant and the draw takes them all',()
  // 친구 초대는 상한이 없다: 친구 20명 = +60
  data.actions=Array.from({length:20},(_,n)=>({userId:b,kind:'referral-signup' as const,sourceId:`f${n}`,occurredAt:'2026-11-11T02:00:00Z'}));
  expect(candidates(data)[1].entries).toBe(61);
+});
+
+it('counts my win chance the way the draw picks: everyone wins when there are fewer fans than prizes, and weight helps', () => {
+  expect(raffleWinChance([1, 1, 1], 1, 17)).toBe(1);
+  let seed = 1; const random = () => { seed = (seed * 16807) % 2147483647; return (seed - 1) / 2147483646; };
+  const others = Array.from({ length: 99 }, () => 1);
+  const even = raffleWinChance(others, 1, 17, 4000, random);
+  expect(even).toBeGreaterThan(0.14); expect(even).toBeLessThan(0.20); // 100명 중 17명 = 17%
+  const heavy = raffleWinChance(others, 10, 17, 4000, random);
+  expect(heavy).toBeGreaterThan(0.75); expect(heavy).toBeLessThan(1);
+  expect(heavy).toBeLessThan(10 / 109 * 17); // 선형식(1.56)과 다르다
 });

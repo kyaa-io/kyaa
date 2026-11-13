@@ -1,0 +1,14 @@
+{
+  "changes": ["KYAA 래플 추첨이 끝나면 응모한 회원의 래플 페이지에 '결과 확인' 버튼이 생겨요. 누르면 럭키드로우의 캡슐 기계가 캡슐을 꺼내 당첨 여부를 보여 주고, 당첨이면 받을 기프트카드 금액과 수령 안내로 가는 버튼이, 미당첨이면 짧은 감사 인사가 나와요. 결과는 서버에 저장된 추첨 결과만 쓰며, 추첨 전에는 버튼이 보이지 않아요. 첨부 화면은 예시 데이터로 확인한 로컬 검증 화면이에요."],
+  "path": "/s/raffle",
+  "images": [
+    "release-notes/images/2026-11-13-raffle-result-capsule-entry-390.png",
+    "release-notes/images/2026-11-13-raffle-result-capsule-won-machine-390.png",
+    "release-notes/images/2026-11-13-raffle-result-capsule-won-390.png",
+    "release-notes/images/2026-11-13-raffle-result-capsule-lost-390.png",
+    "release-notes/images/2026-11-13-raffle-result-capsule-won-1440.png",
+    "release-notes/images/2026-11-13-raffle-result-capsule-lost-1440.png",
+    "release-notes/images/2026-11-13-raffle-result-capsule-before-390.png",
+    "release-notes/images/2026-11-13-raffle-result-capsule-before-1440.png"
+  ]
+}

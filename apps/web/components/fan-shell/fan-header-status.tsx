@@ -9,7 +9,6 @@ import { RollingNumber, useChangeFlash } from "@/components/fan-ui/rolling-numbe
 import { fanLoginHref } from "@/components/login-href";
 import { GROUP_WALLET_CHANGED_EVENT, useGroupRequest, useGroupResource } from "@/features/groups/ui/use-group-resource";
 import { walletCopy } from "@/features/group-wallet/ui/copy";
-import { SelectedBiasChip } from "@/features/selected-bias/ui/selected-bias-chip";
 import { useSelectedBias } from "@/features/selected-bias/ui/use-selected-bias";
 import { fanStageLabel, fanTierEntryKey } from "@/features/rewards/domain/fan-stage";
 import { FanTierBadge } from "@/features/rewards/ui/fan-tier-badge";
@@ -53,8 +52,9 @@ function OwnedHeaderStatus({ locale }: { locale: AppLocale }) {
   useChangeFlash(chip, [grade || undefined, hearts, points]);
   // A stale authenticated session must never keep a previously read member balance/tier on screen.
   const expired = wallet.failure?.status === 401 || wallet.failure?.status === 403;
-  if (!auth.authenticated) return <SelectedBiasChip locale={locale} />;
-  if (expired || bias.status === "guest") return <Link className={styles.trigger} href={loginHref}>{w.login}</Link>;
+  // Signed out (or a session that just ended) the header holds only the small 로그인 link — never the illustrated join chip (user 11/13).
+  // Signed in without a favorite the capsule shows the points alone; joining a group is led by the home first-steps banner, not the header.
+  if (!auth.authenticated || expired || bias.status === "guest") return <Link className={styles.trigger} href={loginHref}>{w.login}</Link>;
   const summary = [c.status, grade, hearts === undefined ? "" : `${c.hearts} ${hearts.toLocaleString(locale)}`, `${w.points} ${points?.toLocaleString(locale) ?? "—"}`].filter(Boolean).join(" · ");
   const format = (value: number) => compactNumber(value, locale);
 

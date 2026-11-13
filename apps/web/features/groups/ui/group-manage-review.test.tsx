@@ -66,7 +66,7 @@ it('fills every locale of the new form copy with the same placeholders',()=>{
 });
 it('shows missions as a list with one create button, then the form in the same place',async()=>{
  const view=manage('missions');
- const create=await screen.findByRole('button',{name:'미션 만들기'});
+ const create=await screen.findByRole('button',{name:'덕질 만들기'});
  expect(view.container.querySelector('form')).toBeNull();expect(view.container.querySelector('details')).toBeNull();
  expect(await screen.findByText(manageFormText('ko','missionsNone'))).toBeInTheDocument();
  fireEvent.click(create);

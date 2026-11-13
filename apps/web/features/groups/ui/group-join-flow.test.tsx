@@ -1,3 +1,4 @@
+vi.mock("../secret-room-config", () => ({ SECRET_ROOMS_ENABLED: true }));
 import { describe,it,expect,vi,beforeEach,afterEach } from "vitest";
 import { render,screen,fireEvent,waitFor,cleanup,within } from "@testing-library/react";
 const res=vi.hoisted(()=>({detail:{data:null as unknown,error:false,loading:false,authenticated:true,retry:vi.fn(),request:vi.fn(),failure:undefined,ownerKey:"o"}}));

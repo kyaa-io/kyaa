@@ -69,6 +69,30 @@ export function raffleChances(input: LocalSnapshot) {
     return { userId: user.id, entries, friends: friends.size };
   });
 }
+/**
+ * 화면에 보이는 확률의 재료: 응모한 모든 회원의 당첨 기회. 다른 회원은 저장된 값(stored), 나는 방금 센 값(mine)을 쓴다.
+ * 계산식은 추첨(drawLocal)과 같다.
+ */
+export function raffleOthers(stored: LocalSnapshot, userId: string) {
+  return raffleChances(stored).filter(row => row.userId !== userId).map(row => row.entries);
+}
+/**
+ * 지금 내 당첨 확률(0~1). 추첨과 같은 방식(기회 수로 가중한 지수 키 순위, 서로 다른 winners명)을 runs번 돌려 센다.
+ * `내 기회 ÷ 전체 기회 × 명수`는 기대 당첨 횟수라 참가자가 적거나 내 비중이 크면 실제 확률과 달라져서 화면 숫자는 이 값을 쓴다.
+ * 나보다 키가 작은 다른 회원 수만 세면 되므로 정렬하지 않는다.
+ */
+export function raffleWinChance(others: readonly number[], mine: number, winners: number, runs = 2000, random: () => number = Math.random) {
+  if (others.length < winners) return 1;
+  const key = (weight: number) => -Math.log(1 - random()) / weight;
+  let wins = 0;
+  for (let run = 0; run < runs; run++) {
+    const my = key(mine);
+    let ahead = 0;
+    for (const weight of others) if (key(weight) < my && ++ahead >= winners) break;
+    if (ahead < winners) wins++;
+  }
+  return wins / runs;
+}
 /** 추첨 후보 = 기간 안에 응모한 회원 전원. Fan Passport·커뮤니티는 자격이 아니라 기회 +1이다. */
 export function candidates(input: LocalSnapshot) {
   return raffleChances(input).map(({ userId, entries }) => ({ userId, entries }));

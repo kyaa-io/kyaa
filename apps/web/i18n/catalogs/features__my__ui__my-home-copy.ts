@@ -168,5 +168,65 @@ export const messages = {
     "pt": "Mais atalhos",
     "fr": "Autres raccourcis",
     "ru": "Другие ярлыки"
+  },
+  "eventsTitle": {
+    "ja": "イベント状況",
+    "zh-Hans": "活动状态",
+    "zh-Hant": "活動狀態",
+    "es": "Mis eventos",
+    "id": "Event saya",
+    "vi": "Sự kiện của tôi",
+    "th": "กิจกรรมของฉัน",
+    "pt": "Meus eventos",
+    "fr": "Mes événements",
+    "ru": "Мои события"
+  },
+  "eventEntered": {
+    "ja": "応募済み",
+    "zh-Hans": "已参与",
+    "zh-Hant": "已參加",
+    "es": "Participando",
+    "id": "Sudah ikut",
+    "vi": "Đã tham gia",
+    "th": "เข้าร่วมแล้ว",
+    "pt": "Inscrito",
+    "fr": "Inscrit",
+    "ru": "Участвую"
+  },
+  "eventNotEntered": {
+    "ja": "未応募",
+    "zh-Hans": "未参与",
+    "zh-Hant": "未參加",
+    "es": "Sin participar",
+    "id": "Belum ikut",
+    "vi": "Chưa tham gia",
+    "th": "ยังไม่ได้เข้าร่วม",
+    "pt": "Não inscrito",
+    "fr": "Non inscrit",
+    "ru": "Не участвую"
+  },
+  "eventChances": {
+    "ja": "当選チャンス{0}回",
+    "zh-Hans": "中奖机会 {0} 次",
+    "zh-Hant": "中獎機會 {0} 次",
+    "es": "{0} oportunidades",
+    "id": "{0} kesempatan",
+    "vi": "{0} lượt cơ hội",
+    "th": "{0} สิทธิ์",
+    "pt": "{0} chances",
+    "fr": "{0} chances",
+    "ru": "Шансов: {0}"
+  },
+  "eventClosed": {
+    "ja": "締切",
+    "zh-Hans": "已截止",
+    "zh-Hant": "已截止",
+    "es": "Cerrado",
+    "id": "Ditutup",
+    "vi": "Đã kết thúc",
+    "th": "ปิดแล้ว",
+    "pt": "Encerrado",
+    "fr": "Terminé",
+    "ru": "Завершено"
   }
 } as const satisfies Record<string, TranslatedMessage>;
