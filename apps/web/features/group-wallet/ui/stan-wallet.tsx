@@ -44,8 +44,8 @@ function useRewardedAdReady() {
 }
 
 /** 덕질 wallet swap cards (대표 11/13 09:39 + 사용자 13:2x 환전기 벤치마크): each section is headed by ONE converter —
- *  two stacked cells, what I give on top (asset, name, 보유 N, −cost, a thin bar toward the cost) and what I get below (asset, name,
- *  보유 N, +1), a joint chip on the seam, then one wide button. ≥1024 lays the same cells side by side with the button at the end.
+ *  two stacked cells, what I give on top (asset, name, 보유 N, 사용 cost, a thin bar toward the cost) and what I get below (asset, name,
+ *  보유 N, 획득 1), a joint chip on the seam, then one wide button. ≥1024 lays the same cells side by side with the button at the end.
  *  `part` renders one card (tickets heads 럭키드로우, hearts heads 덕질 미션); without it both stack (fixtures). The button runs behind the
  *  rewarded ad (video icon in every state), is primary only when it can be pressed, and reads 준비 중 without an ad unit. A guest sees
  *  the same cells with locked values and the sign-in action in the button's place. */
@@ -65,7 +65,11 @@ export function StanWallet({ locale, state, stamps, hearts, links, className, fa
   const ko = locale === "ko";
   /** 보유 N: the real balance (137P stays 137P past the cost), or the locked / loading mark in the same line. A balance that failed to load leaves the line empty (the section's own error and retry say so) — no dash. */
   const held = (slot: StanSlot, text: string) => typeof slot === "number" ? s("stanHeld", [text]) : slot === "loading" ? <FanSkeleton width={64} height={16} /> : slot === "locked" ? <FanLockedValue locale={locale} /> : null;
-  const amount = (sign: "−" | "+", value: number, unit: string) => <FanNumber size="lg" value={value} unit={unit || undefined} icon={sign} locale={locale} className={styles.amount} />;
+  /** The amount carries a word, not a sign (대표 11/13 20:36: −100P read as a loss): 사용 over what I give, 획득 over what I get. */
+  const amount = (side: "spend" | "gain", value: number, unit: string) => <span className={styles.amount}>
+    <FanText role="meta" className={styles.amountLabel}>{s(side === "spend" ? "stanSpend" : "stanGain")}</FanText>
+    <FanNumber size="lg" value={value} unit={unit || undefined} locale={locale} />
+  </span>;
   type Side = { cell: string; kind: keyof typeof WALLET_ASSETS; name: string; held: ReactNode; amount: ReactNode; bar?: { value: number; max: number; text: string; label: string } };
   const body = (side: Side) => <>
     <RewardIcon kind={side.kind === "coin" ? "point" : side.kind} size={40} className={styles.cellAsset} />
@@ -88,15 +92,15 @@ export function StanWallet({ locale, state, stamps, hearts, links, className, fa
   const pointValue = ready ? state.points : 0;
   return <section className={[styles.wallet, className].filter(Boolean).join(" ")} id={part ? `wallet-${part}` : "wallet"} aria-label={part === "tickets" ? `${w.points} → ${w.tickets}` : part === "hearts" ? `${s("stanFlowStamps")} → ${s("stanFlowHearts")}` : s("stanWalletFlows")} data-wallet-card="stan" data-wallet-part={part}>
     {show("tickets") ? swap("tickets",
-      { cell: "points", kind: "coin", name: w.points, held: held(points, typeof points === "number" ? `${n(points)}P` : ""), amount: amount("−", pointCost, "P"),
+      { cell: "points", kind: "coin", name: w.points, held: held(points, typeof points === "number" ? `${n(points)}P` : ""), amount: amount("spend", pointCost, "P"),
         bar: typeof points === "number" ? { value: pointValue, max: pointCost, text: `${n(pointValue)} / ${n(pointCost)}P`, label: s("walletNextTicket", [pointCost]) } : undefined },
-      { cell: "tickets", kind: "ticket", name: w.tickets, held: held(tickets, typeof tickets === "number" ? `${n(tickets)}${ko ? "장" : ""}` : ""), amount: amount("+", 1, ko ? "장" : "") },
+      { cell: "tickets", kind: "ticket", name: w.tickets, held: held(tickets, typeof tickets === "number" ? `${n(tickets)}${ko ? "장" : ""}` : ""), amount: amount("gain", 1, ko ? "장" : "") },
       `/my/raffles?locale=${locale}`,
       action(ko ? "교환" : w.exchange, ready && (Boolean(pendingRequest.pending) || (affordable && adReady)), { onClick: () => setOpen(true) })) : null}
     {show("hearts") ? favoritePicker ? <div className={`${styles.swap} ${styles.favoritePicker}`} data-cell="favorite-picker">{favoritePicker}</div> : swap("hearts",
-      { cell: "stamps", kind: "stamp", name: s("stanFlowStamps"), held: held(stamps, `${pageStamps} / ${STAMPS_PER_HEART}`), amount: amount("−", STAMPS_PER_HEART, ko ? "개" : ""),
+      { cell: "stamps", kind: "stamp", name: s("stanFlowStamps"), held: held(stamps, `${pageStamps} / ${STAMPS_PER_HEART}`), amount: amount("spend", STAMPS_PER_HEART, ko ? "개" : ""),
         bar: typeof stamps === "number" ? { value: pageStamps, max: STAMPS_PER_HEART, text: `${pageStamps} / ${STAMPS_PER_HEART}`, label: s("stanFlowStamps") } : undefined },
-      { cell: "hearts", kind: "heart", name: s("stanFlowHearts"), held: held(hearts, typeof hearts === "number" ? `${n(hearts)}${ko ? "개" : ""}` : ""), amount: amount("+", 1, ko ? "개" : "") },
+      { cell: "hearts", kind: "heart", name: s("stanFlowHearts"), held: held(hearts, typeof hearts === "number" ? `${n(hearts)}${ko ? "개" : ""}` : ""), amount: amount("gain", 1, ko ? "개" : "") },
       links.hearts,
       action(s("stanClaim"), claimable, links.claim ? { href: links.claim } : null)) : null}
     {state.kind === "failed" && state.retry ? <FanAction onClick={state.retry}>{w.retry}</FanAction> : null}
