@@ -133,10 +133,14 @@ export async function sendIngest(fetchImpl, endpoint, secret, body) {
  */
 export async function collectSource(browser, source, options = {}) {
   const handle = accountHandle(source.platform, source.accountUrl);
-  const profile = await browser.read(source.accountUrl);
+  let profile = await browser.read(source.accountUrl);
+  // A profile can become interactive before its post grid arrives. Retry only this read.
+  if (!isLoginWall(source.platform, profile.finalUrl) && !profile.emptyProfile && !profilePostIds(source.platform, profile.hrefs, handle).length) {
+    profile = await browser.read(source.accountUrl);
+  }
   if (isLoginWall(source.platform, profile.finalUrl)) return { request: buildIngestRequest(source, [], "BLOCKED_LOGIN"), unread: [] };
   const ids = profilePostIds(source.platform, profile.hrefs, handle).slice(0, options.limit ?? MAX_POSTS_PER_SOURCE);
-  if (!ids.length) return { request: buildIngestRequest(source, [], "STRUCTURE_CHANGED"), unread: [] };
+  if (!ids.length) return { request: buildIngestRequest(source, [], profile.emptyProfile === true ? undefined : "STRUCTURE_CHANGED"), unread: [] };
   const posts = []; const unread = [];
   for (const sourceId of ids) {
     let page;
@@ -156,7 +160,7 @@ export async function collectSource(browser, source, options = {}) {
 /** Keep each image request below the gateway deadline while preserving the five-new-post budget. */
 export async function sendCollectedSource(fetchImpl, endpoint, secret, request, onProgress) {
   const result = { runIds: [], items: [], unsubmitted: request.posts.length };
-  const batches = request.collectorError ? [request] : request.posts.map(post => ({ ...request, posts: [post] }));
+  const batches = request.collectorError || !request.posts.length ? [request] : request.posts.map(post => ({ ...request, posts: [post] }));
   let attempted = 0;
   for (const batch of batches) {
     if (attempted >= 5) break;

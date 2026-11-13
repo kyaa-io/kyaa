@@ -127,3 +127,18 @@ test("source submission preserves completed evidence and stops after uncertain f
   await assert.rejects(sendCollectedSource(fetchImpl,"https://dev.kyaa.io/x","s".repeat(40),{posts:[{}, {}, {}]},r=>progress.push(JSON.parse(JSON.stringify(r)))),/HTTP_504/);
   assert.equal(calls,2);assert.deepEqual(progress[0].runIds,["first"]);
 });
+
+
+test("late profile grids retry once while confirmed empty profiles remain healthy", async () => {
+  let reads = 0;
+  const result = await collectSource({async read(url) {
+    if (url === igSource.accountUrl) return ++reads === 1 ? {finalUrl:url,hrefs:[]} : {finalUrl:url,hrefs:['/p/DQabc123xyz/']};
+    return {finalUrl:url,scripts:[igScript(igItem)]};
+  }},igSource);
+  assert.equal(reads,2);assert.equal(result.request.posts.length,1);
+  const empty = await collectSource({async read(url) {return {finalUrl:url,hrefs:[],emptyProfile:true};}},igSource);
+  assert.equal(empty.request.collectorError,undefined);assert.deepEqual(empty.request.posts,[]);
+  let submitted=0;
+  await sendCollectedSource(async()=>{submitted++;return new Response(JSON.stringify({runId:'empty',items:[]}));},'https://dev.kyaa.io/x','s'.repeat(40),empty.request,()=>{});
+  assert.equal(submitted,1);
+});

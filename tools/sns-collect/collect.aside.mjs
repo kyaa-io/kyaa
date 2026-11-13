@@ -10,13 +10,15 @@ const browser = {
   async read(url) {
     const code = `const tab = await openTab(${JSON.stringify(url)});
       try {
-        await snapshot(tab);
-        console.log("SNS_RESULT:" + JSON.stringify(await tab.evaluate(() => ({
+        const view = await snapshot(tab);
+        const data = await tab.evaluate(() => ({
           finalUrl: location.href,
           hrefs: [...document.querySelectorAll("a[href]")].map(a => a.getAttribute("href")),
           scripts: [...document.querySelectorAll('script[type="application/json"]')].map(s => s.textContent ?? ""),
           rehydration: document.getElementById("__UNIVERSAL_DATA_FOR_REHYDRATION__")?.textContent ?? null
-        }))));
+        }));
+        data.emptyProfile = /heading.*게시물 없음/.test(view.tree) && /게시물\\s+0(?:[^0-9]|$)/.test(view.tree);
+        console.log("SNS_RESULT:" + JSON.stringify(data));
       } finally { await closeTab(tab); }`;
     const { stdout } = await exec("aside", ["repl", "--account", "u0", "--json", code],
       { timeout: 130000, maxBuffer: 32 * 1024 * 1024, env: { ...process.env, SNS_INGEST_SECRET: "" } });

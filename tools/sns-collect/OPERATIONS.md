@@ -21,7 +21,7 @@ gh workflow run aws-platform.yml --repo kyaa-io/kyaa --ref main -f environment=p
 
 mini에 Aside CLI와 연결된 Aside u0 프로필이 필요하다. 11/13 사용자 설치·로그인 뒤 CLI 1.26.1113.1717과 Profile 0 연결을 확인했다. Instagram은 로그인 완료했고, TikTok은 로그인 없이 공개 게시물 원문을 읽을 수 있음을 확인했다. 수집은 mini 로컬 Aside를 사용한다.
 
-`~/.config/kyaa-sns/config.json`의 기본값은 `{"target":"dev","devVerified":false}`. `sources.json`은 `{celebritySlug,platform,accountUrl}` 배열이며 CMS의 현재 활성 공식 계정 목록과 대조해야 한다. 11/13 dev CMS의 공개 크리에이터·활성 공식 계정을 직접 조회해 22개 출처로 갱신했다. 기존 13개 목록으로 시작한 실행과 추가 9개 출처 확인은 기록을 분리한다.
+`~/.config/kyaa-sns/config.json`의 기본값은 `{"target":"dev","devVerified":false}`. `sources.json`은 `{celebritySlug,platform,accountUrl}` 배열이며 CMS의 현재 활성 공식 계정 목록과 대조해야 한다. 11/13 dev CMS의 공개 크리에이터·활성 공식 계정을 직접 조회해 22개 출처로 갱신했다. 기존 13개 실행, 전체 22개 실행, 목록 확인 실패 3개 계정의 후속 검증은 기록을 분리한다.
 
 mini의 지정 checkout에 이 변경을 반영한 뒤, dev 키·설정·출처 목록을 비공개 경로로 복사한다. 운영 키와 대상 전환은 감독만 실행한다.
 
@@ -56,3 +56,5 @@ mini 실행 코드는 공유 checkout 대신 `~/.local/share/kyaa-sns-collector/
 비밀 JSON 갱신은 감독이 다른 런타임 비밀 수정과 겹치지 않게 직렬 실행한다. 강제 종료된 Aside 세션의 탭 정리는 보장되지 않으므로 timeout 뒤에는 해당 실행의 탭을 확인한다. 사용자 탭은 닫지 않는다.
 
 11/13 mini에서 기존 `io.kyaa.sns-collect` label 하나를 등록하고 dev 대상으로 kickstart했다. 예약 간격은 7200초이며, 사용자 Instagram 탭을 보존하도록 수집 동시 탭을 2개로 제한한다. 운영 전환은 감독만 수행한다.
+
+게시물 링크가 없는 프로필은 한 번 더 읽는다. Instagram 화면에 게시물 0개와 게시물 없음이 함께 표시될 때만 빈 수집을 정상으로 기록하며, 그 밖의 목록 확인 실패는 계속 오류로 알린다.
