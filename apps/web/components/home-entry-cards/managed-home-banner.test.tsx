@@ -28,7 +28,7 @@ describe("managed home banner", () => {
     const hints = [...html.matchAll(/<link rel="preload"[^>]*>/g)].map(match => match[0]);
     // One asset (no mobile original): one hint without media, its sizes covering every width.
     expect(hints).toHaveLength(1);
-    expect(hints[0]).toContain('as="image"'); expect(hints[0]).toContain('fetchPriority="high"'); expect(hints[0]).toContain("changha-event-20261026.webp"); expect(hints[0]).not.toContain("media=");
+    expect(hints[0]).toContain('as="image"'); expect(hints[0]).toContain('fetchPriority="high"'); expect(hints[0]).toContain("changha-autumn-banner-20261113.webp"); expect(hints[0]).not.toContain("media=");
     const twoAssets = renderToString(<ManagedHomeBanner banner={guide({ category: "announcement", mobileImage: { ...bannerFixture.desktopImage, id: "99999999-0000-4000-8000-000000000001", url: "/images/groups/nchive-group.webp" } })} locale="ko" priority />);
     const media = [...twoAssets.matchAll(/<link rel="preload"[^>]*media="([^"]*)"/g)].map(match => match[1]);
     expect(media).toEqual(["(min-width: 768px)", "(max-width: 767px)"]);

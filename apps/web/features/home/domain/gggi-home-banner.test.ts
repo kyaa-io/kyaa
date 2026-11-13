@@ -5,7 +5,7 @@ import { gggiHomeBanner } from "./gggi-home-banner";
 describe("GGGI home campaign", () => {
   it.each(APP_LOCALES)("uses valid artwork and a localized entry link in %s", locale => {
     const banner = homeBannerSchema.parse(gggiHomeBanner(locale));
-    expect(banner.desktopImage.width / banner.desktopImage.height).toBe(1536 / 1024);
+    expect(banner.desktopImage.width / banner.desktopImage.height).toBe(3 / 2);
     expect(localizedBannerHref(banner.href, locale)).toBe(`/gggi?locale=${locale}#gggi-event`);
   });
 });

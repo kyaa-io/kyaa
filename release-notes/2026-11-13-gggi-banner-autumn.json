@@ -1,0 +1,12 @@
+{
+  "changes": [
+    "홈의 GGGI × 창하 굿즈 이벤트 배너 사진을 창하님이 직접 올리신 가을 돌담길 사진으로 바꿨어요.",
+    "사진은 합성 없이 원본을 가로 3:2로 잘라 얼굴과 손이 모두 보이게 했고, 배너의 글과 버튼은 그대로예요.",
+    "첨부 이미지는 예시 데이터를 쓴 로컬 확인 화면이에요."
+  ],
+  "path": "/",
+  "images": [
+    "release-notes/images/2026-11-13-gggi-banner-autumn-390.png",
+    "release-notes/images/2026-11-13-gggi-banner-autumn-1440.png"
+  ]
+}
