@@ -1,5 +1,5 @@
 {
-  "changes": ["X 좋아요 미션 페이지 맨 위 그림을 운영과 같은 하트 가랜드·kyaa 티켓 그림으로 맞췄어요.", "좋아요 미션을 마친 회원의 도장 화면에 운영처럼 kyaa 로고가 함께 보여요.", "첨부 이미지는 로그인하지 않은 상태의 로컬 확인 화면이에요."],
+  "changes": ["X 좋아요 미션 페이지 맨 위 그림을 운영과 같은 하트 가랜드·kyaa 티켓 그림으로 맞췄어요.", "좋아요 미션을 마친 회원의 도장 화면에 운영처럼 kyaa 로고가 함께 보여요.", "첨부 이미지는 예시 닉네임과 좋아요 수를 넣은 로컬 확인 화면이에요(완료 화면, 좋아요 전 화면 순서)."],
   "path": "/s/x",
-  "images": ["release-notes/images/2026-11-13-x-mission-key-visual-main-390.png"]
+  "images": ["release-notes/images/2026-11-13-x-mission-main-port-done-390.png", "release-notes/images/2026-11-13-x-mission-main-port-done-1440.png", "release-notes/images/2026-11-13-x-mission-main-port-ready-390.png", "release-notes/images/2026-11-13-x-mission-main-port-ready-1440.png"]
 }
