@@ -118,3 +118,15 @@
 @media (min-width: 768px) {
   .banner[data-kind="art"] .fullImage { top: 50%; bottom: auto; aspect-ratio: 2 / 1; transform: translateY(-50%); }
 }
+
+/* X mission keeps the requested side-by-side composition on mobile. */
+@media (width < 48rem) {
+  .banner[data-kind="mission"] { color: var(--color-ink); }
+  .banner[data-kind="mission"] :is(.mobileBackdrop, .overlay) { display: none; }
+  .banner[data-kind="mission"] .fullImage { inset: 0 0 0 auto; width: 46%; }
+  .banner[data-kind="mission"] .copy { inset: 0 auto 0 0; width: 54%; align-items: flex-start; text-align: left; }
+  .banner[data-kind="mission"] .eyebrow { color: var(--color-accent); }
+  .banner[data-kind="mission"] .description { color: var(--color-muted); }
+  .banner[data-kind="mission"] .action > a { color: var(--color-accent) !important; }
+  .banner[data-kind="mission"] :is(a, button):focus-visible { outline-color: var(--color-accent); }
+}
