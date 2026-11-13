@@ -165,6 +165,12 @@ it.each(APP_LOCALES)('DUO: keeps the signed-out layout and locks balances in %s 
  // 대표 11/13 09:39 (replaces 59bc0b1ba's login scene): signed out, both swap lines keep their cells with locked values and the sign-in action.
  expect([...v.container.querySelectorAll('[data-wallet-card] [data-cell]')].map(n=>n.getAttribute('data-cell'))).toEqual(['points','tickets','stamps','hearts']);
  expect(v.container.querySelector('[data-wallet-card]')?.textContent).not.toContain('137');
+ // 사용자 11/13 11:2x: one login gate — the sections sit blurred, inert and hidden from screen readers; the only sign-in is the gate's, and no 내역.
+ const gate=v.container.querySelector('[data-login-gate]') as HTMLElement;
+ const backdrop=gate.firstElementChild as HTMLElement;
+ expect(backdrop.getAttribute('aria-hidden')).toBe('true');expect(backdrop.hasAttribute('inert')).toBe(true);
+ expect(within(gate).getAllByRole('link',{name:walletCopy(locale).login})).toHaveLength(1);
+ expect(v.container.querySelector('#wallet-history')).toBeNull();
  expect(requests.some(url=>url.startsWith('/api/me/'))).toBe(false);
  expect(requests.some(url=>url.includes('mine=joined')||url.includes('/leaderboard')||url.includes('/public-people'))).toBe(false);
 });

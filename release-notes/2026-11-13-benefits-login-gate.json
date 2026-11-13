@@ -1,0 +1,5 @@
+{
+  "changes": ["로그인하지 않은 상태로 덕질 탭을 열면, 덕질 화면이 흐리게 깔리고 가운데에 '로그인하고 덕질 시작하기' 카드 하나만 보여요. 칸마다 따로 있던 로그인 버튼과 안내는 없앴고, 로그인하면 덕질 탭으로 돌아와요. 첨부 화면은 로컬에서 확인한 화면이에요."],
+  "path": "/benefits",
+  "images": ["release-notes/images/2026-11-13-benefits-login-gate-390.png", "release-notes/images/2026-11-13-benefits-login-gate-1440.png"]
+}

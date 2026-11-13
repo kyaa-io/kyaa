@@ -40,6 +40,8 @@ export const dukjilStanSource = {
   stanClaimReady: { ko: "받기 가능", en: "Ready to claim" },
   // 대표 11/13 09:39: 덕질 has two sections, 럭키드로우 and 덕질 미션, each headed by a one-line swap (my balance → what I get).
   stanMissionsSection: { ko: "덕질 미션", en: "Missions" },
+  // 사용자 11/13 11:2x: signed out, 덕질 is one login gate over the blurred page.
+  stanGateTitle: { ko: "로그인하고 덕질 시작하기", en: "Sign in to start" },
   stanGetTicket: { ko: "응모권 +1장", en: "+1 ticket" },
   stanGetHeart: { ko: "하트 +1개", en: "+1 heart" },
   stanHeld: { ko: "보유 {0}", en: "{0} held" },

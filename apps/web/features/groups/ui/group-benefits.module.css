@@ -192,3 +192,11 @@ section.pWallet{position:relative;box-sizing:border-box}
 
 /* 모바일 럭키드로우: 제목과 카드 사이를 좁힌다(2026-11-13 Bug_Report). */
 @media (width < 48rem){.luckySection > [data-fan-section-header]{min-height:0}}
+
+/* 사용자 11/13 11:2x login gate: the signed-out sections blurred behind one centred card. The backdrop shows about one screen of the real
+   layout (section titles faintly readable, numbers not), takes no pointer or keyboard input (inert). */
+.gate{position:relative;min-width:0}
+.gateBackdrop{max-block-size:760px;overflow:hidden;/* design-lint-disable S2 -- User 2026-11-13 11:2x: signed-out 덕질 is a login gate over the blurred page (not decoration). */ filter:blur(4px);opacity:.6;pointer-events:none;user-select:none}
+/* The login scene is the card (its own border, surface, padding); the wrapper only places it and lifts it off the blur. 480 holds its four 88px assets from 768px. */
+.gateCard{position:absolute;inset-block-start:var(--space-16);inset-inline:0;margin-inline:auto;box-sizing:border-box;inline-size:min(100%,480px);border-radius:var(--radius-card);box-shadow:var(--shadow-overlay)}
+@media (width >= 64rem){.gateBackdrop{max-block-size:820px}.gateCard{inset-block-start:calc(var(--space-16) + var(--space-4))}}
