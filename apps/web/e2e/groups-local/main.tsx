@@ -158,6 +158,8 @@ const eventOperationsFixture=createEventOperationsFixture(id,query.get('eventOps
 window.fetch=(async(input:RequestInfo|URL,init?:RequestInit)=>{
  const url=new URL(typeof input==='string'?input:input instanceof URL?input.href:input.url,location.origin);
  if(!url.pathname.startsWith('/api/'))return realFetch(input,init);
+ // MY 이벤트 현황: ?raffle=entered|open(없으면 이벤트 꺼짐 404). 합성 값.
+ if(url.pathname==='/api/signup-event/entry'){const raffle=query.get('raffle');return raffle==='entered'?json({entered:true,passportReceived:true,communityJoined:false,chances:4,friends:1}):raffle==='open'?json({entered:false,passportReceived:false,communityJoined:false,chances:0,friends:0}):Promise.resolve(new Response(null,{status:404}));}
  if(query.get('hotFixture')==='1'&&url.pathname==='/api/public/popular-posts'){const period=url.searchParams.get('period')??'week',count=period==='today'?3:period==='month'?10:7;return json({items:hotFixturePosts.slice(0,count),hasMore:false});}
  if(query.get('s3Preview')==='1'&&url.pathname==='/api/me/social/blocks')return json({profiles:blockedFixtureProfiles});
  if(query.get('s3Preview')==='1'&&url.pathname.startsWith('/api/me/social/blocks/')&&init?.method==='DELETE'){blockedFixtureProfiles=blockedFixtureProfiles.filter(profile=>profile.profileId!==url.pathname.split('/').at(-1));return json({ok:true});}
