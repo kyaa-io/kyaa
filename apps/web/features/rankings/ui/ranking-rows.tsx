@@ -69,8 +69,10 @@ export function useLiveRanking<T extends { computedAt: string | null }>(url: str
 }
 export type Live<T extends { computedAt: string | null }> = ReturnType<typeof useLiveRanking<T & { fetchedAt?: string }>>;
 
-/** Keep a changed row legible after it reaches the viewport: 250ms in, 3s held, 850ms out.
- * Only the changed row animates; the ring is absolutely positioned and cannot move its neighbours. */
+/** First look at a list: the rows come in one after another from place 1 (opacity and 8px rise, 200ms, 90ms apart, at most 9 steps), places of the two columns together.
+ * A ▲▼ the row carries pops in right after its row. Nothing else moves on entry: the pink ring is kept for a value that changes while the visitor watches (사용자 11/13 09:0x). */
+const ENTER_MS = 200;
+const ENTER_EASE = "cubic-bezier(.2, 0, 0, 1)";
 const MOVE_MS = 450;
 const MARK_MS = 500;
 const ROLL_MS = 850;
@@ -92,7 +94,8 @@ function ringPulse(node: HTMLElement, delay = 0) {
   ring.dataset.still = "";
   ring.animate(envelope, { duration: RING_MS, easing: "linear", delay }).onfinish = () => { delete ring.dataset.still; };
 }
-const SEEN_PREFIX = "kyaa:rank-seen2:";
+/** v3: places became 1, 2, 3 … with no shared place (11/13 04:34); a v2 memory holds shared places (1, 2, 2, 2) and would read every tied row as moved. */
+const SEEN_PREFIX = "kyaa:rank-seen3:";
 /** What the visitor last saw in one list and period: each row's value and rank, by row key. */
 type Seen = { values: Map<string, number>; ranks: Map<string, number> };
 function readSeen(memory: string): Seen | null {
@@ -109,26 +112,28 @@ function saveSeen(memory: string, seen: Seen) {
 }
 /** A row whose rank changed between two answers of the same metric slides from its old place (transform only, 240ms) and its movement mark fades in (160ms) from
  * the same frame; only rows on screen move. Nothing moves on the first answer, on a row whose place did not change, or under reduced motion. Tops are read on every commit,
- * so opening a row's panel never counts as a move. A metric change remounts the rows. */
-function useRowMotion(order: readonly string[], values: readonly number[], ranks: readonly number[], memory: string) {
+ * so opening a row's panel never counts as a move. A metric change remounts the rows.
+ * `entryRef` is the panel's own flag: the first answer the panel draws plays the entrance (rows on screen at once, the others when they reach the screen); a period switch does not. */
+function useRowMotion(order: readonly string[], values: readonly number[], ranks: readonly number[], memory: string, entryRef?: { current: boolean }) {
   const nodes = useRef(new Map<string, HTMLElement>());
   const seen = useRef<Map<string, number> | null>(null);
   const seenRanks = useRef<Map<string, number> | null>(null);
   const emphasized = useRef(new Map<string, string>());
   // Where each row stood when the visitor last looked, read once: a row that moved since then shows its ▲▼ for this visit.
   const [lastVisit] = useState(() => typeof window === "undefined" ? null : readSeen(memory));
-  // The ring runs once on a row whose value differs from what the visitor last saw (localStorage, per list and period), and on a row that came in; on a first visit, only on places 1-3.
-  // Later answers (the ten-minute re-read) ring the rows whose value changed since the previous answer. A row not on screen waits until it is, then rings once.
+  // The ring runs only for a later answer of the same visit (the minute re-read): the rows whose value or place changed since the previous answer, or that came in.
+  // The first answer rings nothing; what moved since the last visit is told by its ▲▼. A row not on screen waits until it is, then rings once.
   useLayoutEffect(() => {
     const now = new Map(order.map((key, i) => [key, values[i]!]));
-    const before = seen.current ?? lastVisit?.values ?? null;
-    const beforeRanks = seenRanks.current ?? lastVisit?.ranks ?? null;
+    const before = seen.current;
+    const beforeRanks = seenRanks.current;
     seen.current = now;
     seenRanks.current = new Map(order.map((key, i) => [key, ranks[i]!]));
     if (!now.size) return;
     saveSeen(memory, { values: now, ranks: seenRanks.current });
+    if (!before || !beforeRanks) return;
     const due = order.flatMap((key, i) => {
-      if (!(before ? before.get(key) !== values[i] || beforeRanks?.get(key) !== ranks[i] : i < 3)) return [];
+      if (before.get(key) === values[i] && beforeRanks.get(key) === ranks[i]) return [];
       const signature = `${values[i]}|${ranks[i]}`;
       if (emphasized.current.get(key) === signature) return [];
       emphasized.current.set(key, signature);
@@ -149,6 +154,32 @@ function useRowMotion(order: readonly string[], values: readonly number[], ranks
   });
   const pending = useRef(new Set<() => void>());
   useEffect(() => () => { for (const cleanup of pending.current) cleanup(); }, []);
+  useLayoutEffect(() => {
+    if (!entryRef || entryRef.current || !order.length) return;
+    entryRef.current = true;
+    if (reducedMotion()) return;
+    const rows = order.map((key) => nodes.current.get(key)).filter((node): node is HTMLElement => !!node && typeof node.animate === "function");
+    // Rows that reach the screen together come in together, top first; the step restarts for each group, so a row scrolled to later does not wait for its place number.
+    const enter = (group: HTMLElement[]) => group.forEach((node, step) => {
+      const delay = Math.min(step, 9) * ROW_STAGGER_MS;
+      node.animate([{ opacity: 0, transform: "translateY(8px)" }, { opacity: 1, transform: "translateY(0)" }], { duration: ENTER_MS, easing: ENTER_EASE, delay, fill: "backwards" });
+      node.querySelector<HTMLElement>("[data-delta-cell]")?.animate([{ opacity: 0, transform: "scale(1.6)" }, { opacity: 1, transform: "scale(1)" }], { duration: MARK_MS, easing: "ease-out", delay: delay + ENTER_MS, fill: "backwards" });
+    });
+    const onScreen = (node: HTMLElement) => { const box = node.getBoundingClientRect(); return box.bottom > 0 && box.top < window.innerHeight; };
+    const later = document.visibilityState === "visible" ? rows.filter((node) => !onScreen(node)) : rows;
+    enter(rows.filter((node) => !later.includes(node)));
+    if (!later.length || typeof IntersectionObserver !== "function") return;
+    const waiting = new Set(later);
+    const watch = new IntersectionObserver((entries) => {
+      const arrived = rows.filter((node) => waiting.has(node) && entries.some((item) => item.target === node && item.isIntersecting));
+      arrived.forEach((node) => { waiting.delete(node); watch.unobserve(node); });
+      enter(arrived);
+      if (!waiting.size) cleanup();
+    });
+    const cleanup = () => { watch.disconnect(); pending.current.delete(cleanup); };
+    later.forEach((node) => watch.observe(node));
+    pending.current.add(cleanup);
+  });
   const tops = useRef(new Map<string, number>());
   const sorted = useRef(order.join("\n"));
   useLayoutEffect(() => {
@@ -257,13 +288,13 @@ const short = (locale: AppLocale, n: number) => n >= 10000 ? n.toLocaleString(lo
 
 const unitMark = (metric: RankingMetric) => metric === "points" ? <RankUnit unit="points" /> : metric === "fans" ? null : <RankUnit unit={metric === "likes" ? "likes" : "hearts"} />;
 
-/** The right-hand number of a row: the metric's value, read by name (hearts, points, likes, fans), never from score alone. Rolls like an odometer only when a later answer changes it (real values, never an invented increase); from 10,000 it is short (12.3K), the full number stays in the label. */
+/** The right-hand number of a row: the metric's value, read by name (hearts, points, likes, fans), never from score alone. A zero is told, in the muted colour (GPT review 11/13: an inked 0 on most rows read as noise). Rolls like an odometer only when a later answer changes it (real values, never an invented increase); from 10,000 it is short (12.3K), the full number stays in the label. */
 function Main({ locale, metric, value, delay }: { locale: AppLocale; metric: RankingMetric; value: number; delay: number }) {
   const n = value.toLocaleString(locale);
   const label = metric === "hearts" ? rankingsText(locale, "rkHearts", [n]) : metric === "points" ? rankingsText(locale, "rkPointsLabel", [n]) : metric === "likes" ? rankingsText(locale, "rkLikesCount", [n]) : rankingsText(locale, "rkJjinfanCount", [n]);
   const template = metric === "fans" ? rankingsText(locale, "rkJjinfanCount", ["\u0000"]) : "\u0000";
   const [before, after] = template.split("\u0000");
-  return <span className={styles.main} aria-label={label} title={n} data-metric={metric}>
+  return <span className={styles.main} aria-label={label} title={n} data-metric={metric} data-zero={value === 0 || undefined}>
     <span aria-hidden="true" className={styles.mainInner}>
       {unitMark(metric)}{before?.trim() ? <span>{before.trim()}</span> : null}
       <RollingNumber value={value} format={(v) => v >= 10000 ? short(locale, v) : v.toLocaleString(locale)} className={styles.mainNumber} duration={ROLL_MS} easing={ROLL_EASE} delay={delay} />{after?.trim() ? <span>{after.trim()}</span> : null}
@@ -319,13 +350,13 @@ const fanKey = (row: HomeFanRankingRow, index: number, rows: readonly HomeFanRan
   rows.findIndex((other) => other.nickname === row.nickname) === index ? `n:${row.nickname}` : `r:${row.rank}`;
 
 /** Fans: nickname, movement and the metric's value on one line; the row opens a panel. `fill` keeps the block at that many rows with placeholders. */
-export function FanRows({ locale, ranking, metric, show, fill, scope, guest = false, period = "all" }: { locale: AppLocale; ranking: HomeFanRanking; guest?: boolean; metric: HomeFanMetric; show?: number; fill?: number; scope: string; period?: HomeRankingPeriod }) {
+export function FanRows({ locale, ranking, metric, show, fill, scope, guest = false, period = "all", entryRef }: { locale: AppLocale; ranking: HomeFanRanking; guest?: boolean; metric: HomeFanMetric; show?: number; fill?: number; scope: string; period?: HomeRankingPeriod; entryRef?: { current: boolean } }) {
   const [person, setPerson] = useState<ProfileModalPerson | null>(null);
   const { openKey, toggle } = useRankExpand();
   const shown = show === undefined ? ranking.rows : ranking.rows.slice(0, show);
   const ranks = listPlaces(shown.length);
   const keys = shown.map((row, i) => fanKey(row, i, shown));
-  const { place, movedSince } = useRowMotion(keys, shown.map((row) => fanValue(row, metric)), ranks, `fans:${metric}:${period}`);
+  const { place, movedSince } = useRowMotion(keys, shown.map((row) => fanValue(row, metric)), ranks, `fans:${metric}:${period}`, entryRef);
   const top = ranking.rows[0] ? fanValue(ranking.rows[0], metric) : 0;
   const accentFirst = !guest && !ranking.me;
   const days = ranking.weekGainDays ?? 0;
@@ -376,16 +407,17 @@ const fanStats = (locale: AppLocale, row: HomeFanRankingRow, metric: RankingMetr
   ] : []),
 ];
 
-/** Creators by likes: hearts (찐팬 is a built-in cell), and all-time likes when the list counts a period. No SNS follower count is stored, so none is shown. */
+/** Creators by likes (대표 11/13 08:50 "찐팬 ♥ 5 · SNS"): the 찐팬 hearts first, with the heart asset, then all-time likes when the list counts a period.
+ * No SNS follower count is stored anywhere (20261222140000), so no SNS cell is drawn; a made-up number never is. */
 const creatorStats = (locale: AppLocale, row: HomeCreatorRankingRow, metric: RankingMetric, period: HomeRankingPeriod) => metric === "likes"
-  ? [...statCell(locale, "hearts", rankingsText(locale, "rkPanelHearts"), row.hearts, "likes"), ...(period === "all" ? [] : statCell(locale, "totalLikes", rankingsText(locale, "rkPanelTotalLikes"), row.totalLikes, "likes"))] : [];
+  ? [...statCell(locale, "hearts", rankingsText(locale, "rkPanelJjinfan"), row.hearts, "hearts"), ...(period === "all" ? [] : statCell(locale, "totalLikes", rankingsText(locale, "rkPanelTotalLikes"), row.totalLikes, "likes"))] : [];
 
 /** Creators: name, movement (and LIVE and the 찐팬 100 challenge tag where they apply) and the metric's value on one line; the row opens a panel whose action goes to the page. */
-export function CreatorRows({ locale, ranking, metric, show, fill, scope, challengeTag = false, guest = false, period = "all" }: { locale: AppLocale; ranking: HomeCreatorRanking; guest?: boolean; metric: HomeCreatorMetric; show?: number; fill?: number; scope: string; challengeTag?: boolean; period?: HomeRankingPeriod }) {
+export function CreatorRows({ locale, ranking, metric, show, fill, scope, challengeTag = false, guest = false, period = "all", entryRef }: { locale: AppLocale; ranking: HomeCreatorRanking; guest?: boolean; metric: HomeCreatorMetric; show?: number; fill?: number; scope: string; challengeTag?: boolean; period?: HomeRankingPeriod; entryRef?: { current: boolean } }) {
   const { openKey, toggle } = useRankExpand();
   const shown = show === undefined ? ranking.rows : ranking.rows.slice(0, show);
   const ranks = listPlaces(shown.length);
-  const { place, movedSince } = useRowMotion(shown.map((row) => row.slug), shown.map((row) => creatorValue(row, metric)), ranks, `creators:${metric}:${period}`);
+  const { place, movedSince } = useRowMotion(shown.map((row) => row.slug), shown.map((row) => creatorValue(row, metric)), ranks, `creators:${metric}:${period}`, entryRef);
   const top = ranking.rows[0] ? creatorValue(ranking.rows[0], metric) : 0;
   const accentFirst = !guest;
   const days = ranking.weekGainDays ?? 0;
