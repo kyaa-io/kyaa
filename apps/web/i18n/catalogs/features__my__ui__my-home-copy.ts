@@ -228,5 +228,41 @@ export const messages = {
     "pt": "Encerrado",
     "fr": "Terminé",
     "ru": "Завершено"
+  },
+  "statsTitle": {
+    "ja": "マイ統計",
+    "zh-Hans": "我的统计",
+    "zh-Hant": "我的統計",
+    "es": "Mis estadísticas",
+    "id": "Statistik saya",
+    "vi": "Thống kê của tôi",
+    "th": "สถิติของฉัน",
+    "pt": "Minhas estatísticas",
+    "fr": "Mes statistiques",
+    "ru": "Моя статистика"
+  },
+  "streakLabel": {
+    "ja": "連続出席",
+    "zh-Hans": "连续签到",
+    "zh-Hant": "連續簽到",
+    "es": "Racha de asistencia",
+    "id": "Absen beruntun",
+    "vi": "Điểm danh liên tiếp",
+    "th": "เช็กอินต่อเนื่อง",
+    "pt": "Sequência de check-in",
+    "fr": "Série de présences",
+    "ru": "Серия отметок"
+  },
+  "tierNone": {
+    "ja": "なし",
+    "zh-Hans": "无",
+    "zh-Hant": "無",
+    "es": "Ninguno",
+    "id": "Belum ada",
+    "vi": "Chưa có",
+    "th": "ยังไม่มี",
+    "pt": "Nenhum",
+    "fr": "Aucun",
+    "ru": "Нет"
   }
 } as const satisfies Record<string, TranslatedMessage>;

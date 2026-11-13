@@ -19,4 +19,7 @@ export const myHomeSource = {
   eventNotEntered: { ko: "미응모", en: "Not entered" },
   eventChances: { ko: "당첨 기회 {0}회", en: "{0} chances" },
   eventClosed: { ko: "마감", en: "Closed" },
+  statsTitle: { ko: "내 통계", en: "My stats" },
+  streakLabel: { ko: "연속 출석", en: "Check-in streak" },
+  tierNone: { ko: "없음", en: "None" },
 } as const;
