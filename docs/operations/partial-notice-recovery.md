@@ -1,24 +1,24 @@
-# Partial production notice recovery
+# November 13 approved summary replacement
 
-Supervisor gate/main integration is required before execution. This procedure changes only GitHub check receipts and sends notices through the existing production endpoint; it does not redeploy services or change the DB.
+This supersedes the 25-batch resume plan. `plan-partial` / `resume-partial` and their implementation have been removed. Do not run commit 0e0b53e.
 
-## Plan and resume
+User decision: keep the 11 confirmed deliveries for deployment 7697046938, permanently suppress the remaining 25 original batches, and replace the backlog with one readable production summary. The source is closed as **neutral / partially delivered, replaced by summary**, never as fully delivered. Its original 11 batch payloads and Bot API IDs remain intact; browser IDs are not mapped or substituted.
 
-1. Select the **currently live** AWS production deployment ID. `7748523186` is the requested November 13 candidate, not a guarantee of the live deployment at execution time. `verifyAwsNotice` checks live revision, deployment status and workflow provenance. Source receipt is `130201930767` (deployment `7697046938`).
-2. Dispatch the main workflow with `operation=plan-partial`, `environment=prod`, `deployment_id=<live ID>`, `source_receipt_id=130201930767`. This operation does not mutate receipts or send. Preserve the printed plan and its `planHash` in the gate evidence.
-3. Review the plan: 36 original hashes, 11 confirmed, 25 remaining. It reconstructs original batches from immutable release notes and the successful historical deployment timestamp. Every recorded delivered payload and Bot API ID must validate. Browser IDs are never substituted. The legacy failure `DEPLOYMENT_VERIFICATION_UNAVAILABLE` is a pre-Telegram failure in the endpoint; transport failures and other uncertain reasons stop separately.
-4. Dispatch `operation=resume-partial` with the same fields and `plan_hash=<reviewed planHash>`. A changed source summary, destination, payload, conflicting receipt, pending send, or invalid ID stops execution. The workflow uses the same production lock as normal notices.
-5. Inspect the result. Only batches 12–36 are sent, with their original text and image list. Each intent hash is persisted **before** the POST; confirmed response IDs are checkpointed afterwards. A definitely rejected request can resume; an unresolved intent cannot. Never clear an unresolved intent or infer absence from an ID difference. A crash after sending requires separate message reconciliation, not rerun-by-reset.
-6. Only after all 25 confirmations does the source receipt become success with original and recovered IDs. The destination recovery receipt then becomes failure: its delivery covered historical source batches, not the destination's new release notes. A failure between these final two writes can be finalized by rerunning the same recovery plan; no Telegram POST repeats.
-7. Dispatch existing `operation=recover`, `environment=prod`, `deployment_id=<same live ID>` with **no** unsent receipt override. It now uses the completed source deployment as the baseline and sends only subsequent deployed release notes under existing batching rules. Verify receipt IDs and actual room delivery. If live deployment changed, stop and regenerate a plan for the appropriate destination; do not reuse a plan bound to another deployment.
+The reviewed message and evidence are in `scripts/deployment-notice-summary-1113.json`. It pins source receipt 130201930767 and its exact original summary hash, all 36 original batch hashes, source SHA 08cb013e1bba62fd1e46a2ecfae59bdb96e94cac, destination deployment 7748523186 and SHA c063e57caacc53471cf9dbcf6a2eb82adcc697de. The diff contains 61 immutable release-note files. Eight selected files map to eight human-written highlights; “외 53건” counts the other release-note files, not individual features, deployments, or historical batches. No screenshots or old batches are sent.
 
-Example after gate (not executed by the implementation agent):
+## Supervisor execution after gate/main integration
+
+0. The supervisor must provision `TELEGRAM_BUG_REPORT_BOT_TOKEN` in the protected GitHub prod environment through an approved secret-delivery path, using the same bot as the original notices. Only `TELEGRAM_BUG_REPORT_OPERATOR_SECRET` is currently present in repository secrets; it is not a bot token. No token was retrieved or stored during implementation. A missing token stops send-summary before any receipt mutation. Do not put tokens in command arguments, chat, logs, or this repository.
+1. Run `plan-summary` on main with environment prod and deployment_id 7748523186. It verifies the exact live revision, deployment/run provenance, pinned release-note set and content hashes, source receipt and confirmed prefix. It prints the exact message and plan hash without writes or sends. If the live SHA is no longer c063e57ca, stop; do not silently expand the summary or substitute another deployment.
+2. Review the output, then only on supervisor instruction run `send-summary` with the same destination and reviewed plan_hash. It uses the production notification lock and a dedicated single Telegram sendMessage call. The existing service endpoint rejects [운영] titles, so that endpoint and all service/DB code remain unchanged. It reserves the destination receipt before the single text-only POST. No old batch POST exists in this code.
+3. The replacement summary is saved as a successful destination receipt with its API message ID. Only then is the original receipt closed as neutral with explicit suppression count 25 and a reference to that confirmed summary. This order keeps ordinary notifications blocked if summary delivery is uncertain. The normal sender validates that reference and will never resend the old deployment.
+4. If the final source PATCH fails, rerun the **same** approved summary plan: it reads the successful destination receipt and only finishes closure, without sending again. An unresolved POST or lost delivery checkpoint blocks reruns. A definitive pre-send rejection permits retry. Do not delete receipts, clear uncertain state, or use generic resolve-receipt to bypass it.
+5. Verify the one message in the room and both receipts. Do **not** dispatch `recover` for the same deployment: its summary already covers its new notes. Future automatic notices start after c063e57ca and use normal formatting/batching. No persistent switch or service/DB change is needed.
+
+Commands below are for the supervisor after gate/main and explicit execution instruction; the implementation agent has not run them:
 
 ```sh
-gh workflow run deployment-notices.yml --ref main -f operation=plan-partial -f environment=prod -f deployment_id=7748523186 -f source_receipt_id=130201930767
-# Copy and review the plan hash from that run before the next dispatch.
-gh workflow run deployment-notices.yml --ref main -f operation=resume-partial -f environment=prod -f deployment_id=7748523186 -f source_receipt_id=130201930767 -f plan_hash=REVIEWED_PLAN_HASH
-gh workflow run deployment-notices.yml --ref main -f operation=recover -f environment=prod -f deployment_id=7748523186
+gh workflow run deployment-notices.yml --ref main -f operation=plan-summary -f environment=prod -f deployment_id=7748523186
+# Review the exact output and replace REVIEWED_PLAN_HASH.
+gh workflow run deployment-notices.yml --ref main -f operation=send-summary -f environment=prod -f deployment_id=7748523186 -f plan_hash=REVIEWED_PLAN_HASH
 ```
-
-An unresolved target recovery receipt intentionally blocks ordinary delivery. The existing generic resolve-receipt operation is not a replacement for batch reconciliation. No receipt deletion, browser/API ID mapping, or partial-as-full success is permitted.

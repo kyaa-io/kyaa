@@ -1,0 +1,329 @@
+{
+  "sourceReceiptId": 130201930767,
+  "sourceDeploymentId": 7697046938,
+  "targetDeploymentId": 7748523186,
+  "baseSha": "08cb013e1bba62fd1e46a2ecfae59bdb96e94cac",
+  "headSha": "c063e57caacc53471cf9dbcf6a2eb82adcc697de",
+  "sourceReceiptHash": "3ec84d483ac9e30aedbe2f9edd62f6c6317abbe347c83ea22e2257f9b946cd66",
+  "originalBatchHashes": [
+    "254c70059a4577b27393a742ec711b8ed9e3f4c233d015b34c71a52da096d940",
+    "8b05cf56fa24a6d6cce5185fc668c96e28c0b2a3693450f5d4dd81b0f9d9ff1e",
+    "a350c7f571495ed83f0b7e28afaa31bb629b9af45dbec206c64be3ac6004bd8f",
+    "0585e2b6e557588dc435ec61a06905d4053464ae60e27d8848675a1eb0f26e27",
+    "77c4f1a21585ad8bc205629fadcef51eabd5600fb34f9f8f95f47c17399bfc18",
+    "62b3abce12a590f374aafa5586286002082088d8a68378bafb171e9d7114c8c5",
+    "db0733949f4c0a751d843cf04ed78fecc3b98c38dedccfec51a8fe5b242f2bd3",
+    "da874739328a0185b461733835ced37acd5a5d6501f6bf765aa5bd583c84c9b0",
+    "5e0a14bc1f3bca10f5c445bc63ac4bf352644c0857fe847b4b3bc36ebf64db02",
+    "f55c9f8f31c5e1a80a983e46a2f379047b8f61b3c9157e64fa6a1cf7f00251a3",
+    "98d1b0bfaf87affa16a7fc30a9f1ec2bababb7447869bd2342e06ca1bb002e94",
+    "dbc76485496b5c5abcf31db290a19d659fbd8f44557674ddc89d0ca8b19a67ff",
+    "e8e9df390a9aae9b64a52cdf72e5e9522eabcb7869cc2fd29b5c17aa6f8e76da",
+    "30259b6d71256e210c9713e632cd840aea3f7686cbdedf81bbbea9bf6cbebeb4",
+    "7d829f4aac3d60e4c74d4ae9507afc60080ac0d5e3dc624466b6e6ed946bba2f",
+    "203a4834c3aa84e0154e7174d93ccdfc90fe503eda36f7e47aa0f90c11caf746",
+    "7f6d6f374499fa4e80fcca6dd213a2b6cd65c6ff559dcf99dd78378874b1ef78",
+    "f7ba746733495e85d8167bbb8f3f0c036fb8392dcae614c6ee97e90a39740d80",
+    "68413ffbec348b6611fd4ddfa39491ec245b82234039720da61a161a9c9ff66c",
+    "2c33ce3260f4acc7b001b526ce6a18475a7280c84048f74a0e1c811ed50d26e9",
+    "36a2814205075665e5df4de976d29294575b48e61bd2a98619ba341872ccd8aa",
+    "b7197c2b4e57fb6249f5cd76e4d54e0401ccebcf26c660a7f7354b66a28c41a0",
+    "1baf2e98be9d572b900fdb910d215077875892fb87c0847a2a8b43ab42182058",
+    "9728c85013995eda05655297bcef95ca2df4ac5eaf590b971f700f6a5dd4b53a",
+    "1df4d9c0789b1679981473d9f213ee0997c32f8f2786365bbebd3dbec73f4b52",
+    "243dd7d108c7a65a8d8e6fbdd7d876725b753f8b4993bb7b729903f0ddb4a68d",
+    "18f14a9f363e0084f063197497f945bd4ab508ad554190fd00d1b7314aeff23f",
+    "b6fb786e6abcaed3a676338fa7273bcc6001612f854614c95bb6d6cbcf34de52",
+    "b5b239e3fb5a632869023e47f26d885c7e632e52568f7c28d56de22cb28e0591",
+    "8e5defa3b642f97ef03dec9f4796a60f58a3ef24b92477e917d9bd33c5e63835",
+    "48934f8c5a1343e064fdfd3c8894176b4acbf6e0df03623bd124a86295da3533",
+    "8163c30a78498263ea1ea606574bfe3ba4521484693934028ba4896c9b44dcf7",
+    "b510689f4cb6851cfbc68e7234f4cda6a7399cba9528c37bb2681aedbb339e1e",
+    "9e560ab80cdfceb85d0793a675443e36d670c5231fc81c25ce75ee8a2b657121",
+    "b6c0bc1bedd8946a396370638bbf1a24a9effc6392ce4284ce629d295535af03",
+    "0fe1aa64b6d3a3adf4c384667216b66756e209e8386fd81356f5482041434c3d"
+  ],
+  "confirmedBatches": 11,
+  "suppressedBatches": 25,
+  "decision": "2026-11-13 사용자 승인: 확정 11묶음 보존, 남은 25묶음 재전송 금지, 11/11 이후 운영 변경 요약 한 건으로 대체",
+  "notes": [
+    {
+      "path": "release-notes/2026-11-10-sns-ingest-server-path.json",
+      "sha256": "17b65c0466b3818930e224e32b9760dc23c560f934a0a5820f49189c2e523616"
+    },
+    {
+      "path": "release-notes/2026-11-11-adsense-snippet.json",
+      "sha256": "ef02cd24a1b176c8c19a12a2fedc0c8f11b64d6471e945ba3f218b8b5d82944f"
+    },
+    {
+      "path": "release-notes/2026-11-11-api-5xx-log.json",
+      "sha256": "0726ed0827fa5f38e237407a28c9f9ff304bcc498324a3d4901691cc8729dc04"
+    },
+    {
+      "path": "release-notes/2026-11-11-attendance-list-1413.json",
+      "sha256": "fa73cb82f0b5ab40e76236aa51246f860e9d869a4312b58796e0ce02cb3228af"
+    },
+    {
+      "path": "release-notes/2026-11-11-auth-wait-timeout.json",
+      "sha256": "df6edcc3a5f1439d3715bf943c055e17592b592a3b47c5040b3acaf27fb22cbc"
+    },
+    {
+      "path": "release-notes/2026-11-11-ceo-missed-0856.json",
+      "sha256": "87d52f15c44548047961833ca96837c9cf50c78ea9531152052e227220c61596"
+    },
+    {
+      "path": "release-notes/2026-11-11-e2e-fix-batch-1650.json",
+      "sha256": "bea8de30e8a018070a6d8e7a73cf0f407d1aac0cead947a0508d6e17b181f4d2"
+    },
+    {
+      "path": "release-notes/2026-11-11-entry-stamp-and-proof-title.json",
+      "sha256": "8f44ca8cfd3af3bd334d47992d84566c886f68360732489684a1bbc2abf96604"
+    },
+    {
+      "path": "release-notes/2026-11-11-fan-activity-gauge.json",
+      "sha256": "fe60edf141195351a6608b1dc74d6fa38058e54ed27aeaf3d39be17913d7b616"
+    },
+    {
+      "path": "release-notes/2026-11-11-fan-ranking-profile.json",
+      "sha256": "4f7cff269a5d74e8f18e75169c395d2d52e73c29965afd953cabe3e9fe0a0025"
+    },
+    {
+      "path": "release-notes/2026-11-11-gacha-spin-rank-font.json",
+      "sha256": "d05def6fd04d98e95ec14c09a559bff1e5f6c675f5fb82f95a684f05133ebbc0"
+    },
+    {
+      "path": "release-notes/2026-11-11-gallery-align-infinite.json",
+      "sha256": "a2a46e84d5595e3a237be597f4d53de3949303e21a09e508c6039e171048f722"
+    },
+    {
+      "path": "release-notes/2026-11-11-gallery-video-stored-covers.json",
+      "sha256": "5bb83d19c950ad9429a1e90388a88792210b40afdf3525c3028e051359d5c189"
+    },
+    {
+      "path": "release-notes/2026-11-11-groups-hot-1410.json",
+      "sha256": "d4c8003320a4cfd9ff2bc1b50592176d9c40219e50ca2cf71359ce384506db9d"
+    },
+    {
+      "path": "release-notes/2026-11-11-header-chip-1456.json",
+      "sha256": "1e5c3b1ef70e1dcb0b6f68d3a0afedd69837263391bd43cf66b98db8fba6a30b"
+    },
+    {
+      "path": "release-notes/2026-11-11-home-shorts-tiktok.json",
+      "sha256": "8f93955a67dc82b8bb8721efddc5cde55e76a0d0284cb652a0361891b494233b"
+    },
+    {
+      "path": "release-notes/2026-11-11-hot-posts-latest-sort.json",
+      "sha256": "5b24ef02da7524a6b2f41d3319b50daf80324467a2ffda1ea23f733ea516fd1a"
+    },
+    {
+      "path": "release-notes/2026-11-11-kyaa-search.json",
+      "sha256": "fd2d32a2227246a49fd90b9d3426e9bffdcc213d6e28020d18cceb6307046cde"
+    },
+    {
+      "path": "release-notes/2026-11-11-kyaawave-dev-release-target.json",
+      "sha256": "251357c6ed97c7a9204f22164dc4bb2d8f1ebdbf9549bf6cc4891888fcfe24c2"
+    },
+    {
+      "path": "release-notes/2026-11-11-loggedout-login-scene.json",
+      "sha256": "1fb3c823eb57a4177226fe891b0e76281667fd03e01d927293ed1ddbeed092cc"
+    },
+    {
+      "path": "release-notes/2026-11-11-lucky-card-layout.json",
+      "sha256": "4383cabc4d12f2ea41003cf31853db28219e3c0af944033064d631bbc37ce20d"
+    },
+    {
+      "path": "release-notes/2026-11-11-lucky-gacha-stops.json",
+      "sha256": "065037d9a86ef292a1127ad21c1e1338ee090e09e4e31cb51f84a95dd3519073"
+    },
+    {
+      "path": "release-notes/2026-11-11-lucky-gacha.json",
+      "sha256": "9251cefa2944e35ebcf1ec04959ee49007b5fd66d1a0e28b25b8ab4c44a81365"
+    },
+    {
+      "path": "release-notes/2026-11-11-missionbook-banner.json",
+      "sha256": "8af63f3513a64c5c6b47c281a428dc8c61cdcfa813e3da756a6dbca4938c86f3"
+    },
+    {
+      "path": "release-notes/2026-11-11-my-guest-clean.json",
+      "sha256": "517537b0ed4a7562b704483926dc73af8acb54ed3b975997734d6948295214da"
+    },
+    {
+      "path": "release-notes/2026-11-11-my-logout-shortcut.json",
+      "sha256": "9968dc6bdf2652fa157362c572e4e916dd1a8e79486fa9e244c9ea6f30f3ecbb"
+    },
+    {
+      "path": "release-notes/2026-11-11-my-stamps-more-kinds.json",
+      "sha256": "758f54b2fc2e5ffbe0ac387a5ba6313a3afbe67bb9f15fafb90194acb2240a12"
+    },
+    {
+      "path": "release-notes/2026-11-11-notice-reactions.json",
+      "sha256": "6e5aad1b45415a185342dae04b1b798d87974bafe7a1adf4cf32e1e1b5a725a8"
+    },
+    {
+      "path": "release-notes/2026-11-11-onchain-records.json",
+      "sha256": "28ec6f9e70f68b1d3209b2641d7aea78c9d15cb15024def19ecba0b1701ffea8"
+    },
+    {
+      "path": "release-notes/2026-11-11-post-detail-more.json",
+      "sha256": "7eb0b6e8b5804ee9b08fdf5f22f014b04bedda8fb78b43b0bb596c0c5aa7a30e"
+    },
+    {
+      "path": "release-notes/2026-11-11-product-event-daily-cap.json",
+      "sha256": "7271b1c62fbbb355be012a210c29c5ab2a0ea3ae04f4eec30f459ae8a3fa3b85"
+    },
+    {
+      "path": "release-notes/2026-11-11-proof-tab-1630.json",
+      "sha256": "ea35d6dcf6790554eb160a9fc119be29b88abedef74b236539a45a4eba76fc6b"
+    },
+    {
+      "path": "release-notes/2026-11-11-quiz-learn-dev-only.json",
+      "sha256": "bccb5f8187d0f04d70f89045bd2ac14c40ebb6e0a82867ad6f9f356cb346240c"
+    },
+    {
+      "path": "release-notes/2026-11-11-quiz-learn.json",
+      "sha256": "2b4bab2f7480f1f17aa9605d6b39a5ae57dcba9f930df157f4c1aab011435b9f"
+    },
+    {
+      "path": "release-notes/2026-11-11-raffle-jjinfan-hidden.json",
+      "sha256": "f3f268d97bf2fd55ba7b58e146bd5ae59dceab621d0d85d657106df34540cb1f"
+    },
+    {
+      "path": "release-notes/2026-11-11-rank-heart-detail.json",
+      "sha256": "19dd01d980521c0dc6fd1f7ab176f110c72c5fda956f1ef7de083f7e8b2c2466"
+    },
+    {
+      "path": "release-notes/2026-11-11-rank-heart-gap.json",
+      "sha256": "85bb55673cb0af3dc641ce14ced9553b35b19a47ae9c85b5556d760378835a38"
+    },
+    {
+      "path": "release-notes/2026-11-11-ranking-assets-banner-arrows.json",
+      "sha256": "71f6378ee527d2bea6edf510a7f84b330443b58cb27bd78183490c1825fc9316"
+    },
+    {
+      "path": "release-notes/2026-11-11-ranking-motion-gallery-order.json",
+      "sha256": "f651ea5842156d907b9c9e186c7c1ce6542f7b0c2349aa7b8aa4f709215c8076"
+    },
+    {
+      "path": "release-notes/2026-11-11-ranking-triangle-tier-roll.json",
+      "sha256": "236e50eb768acbe2e7f4f9c49606407a68a7a95f32b0f695c88d3aedcd850601"
+    },
+    {
+      "path": "release-notes/2026-11-11-ranking-value-column.json",
+      "sha256": "4ea4d1dc55469eac6bfb6a36c77f89006a2a9284111b832ebd7db30bd8739d9d"
+    },
+    {
+      "path": "release-notes/2026-11-11-secret-room-close.json",
+      "sha256": "b23b72c2f14474f56aa329f394ef8deed5276cbd8e6d333a3f64be3c9bc02232"
+    },
+    {
+      "path": "release-notes/2026-11-11-secret-room-closed-loading.json",
+      "sha256": "d664187ded2d8ebcbb6f18b755dab00443e4af4dd5ed0134e0bcfb4c7ae9e34c"
+    },
+    {
+      "path": "release-notes/2026-11-11-sns-ingest-download-security.json",
+      "sha256": "a915581a57cf8f039b3933c0c872b265bb7524aaf1b1010185eee1c5f628b6a4"
+    },
+    {
+      "path": "release-notes/2026-11-11-sns-ingest-integration.json",
+      "sha256": "2ffea8f24bdca534a4325e59adaccba98c5cfe2a7c7002941c587e22c3b7117c"
+    },
+    {
+      "path": "release-notes/2026-11-11-sns-ingest-review.json",
+      "sha256": "36b3e086141534e91a1b64ae3830deeb44c586ba2b3341d12be77157330f864a"
+    },
+    {
+      "path": "release-notes/2026-11-11-sns-review-preservation-fix.json",
+      "sha256": "c5e6c7dc7c7f60447cec1cc01366a2a72be1eb861b952522fab27074dd68e90b"
+    },
+    {
+      "path": "release-notes/2026-11-11-sns-source-revisions.json",
+      "sha256": "646f765ea87416544e01f074501d18dbc32f8c73134197b267f50a9f2c7f19a7"
+    },
+    {
+      "path": "release-notes/2026-11-11-tier-share-1630.json",
+      "sha256": "61de83adc15a854201ebc22a21c27ee037ccf9932bdedf948f3a4c8149597bf9"
+    },
+    {
+      "path": "release-notes/2026-11-11-wallet-redesign.json",
+      "sha256": "7d282fad553e962df123994a035c0d41706afd7d273382b6575fad428f0c1d3f"
+    },
+    {
+      "path": "release-notes/2026-11-11-wallet-start-date.json",
+      "sha256": "d2cbbed97423ae1558cd5781f14b7141057857c5e96a00094aac3964f6e4bcc1"
+    },
+    {
+      "path": "release-notes/2026-11-11-wallet-v2.json",
+      "sha256": "ac381456d001a5de1baad063a8037a22d1c012a905b7a56d37270934f407c730"
+    },
+    {
+      "path": "release-notes/2026-11-12-ci-without-apt-mirrors.json",
+      "sha256": "6df96fad2c92866b9da5c646d169c9fd3aa55233eae37d88cb4418e8180bfaf4"
+    },
+    {
+      "path": "release-notes/2026-11-12-login-resume.json",
+      "sha256": "26aa442ccb3633edf751891aa462f547b6636d3322d19ec0ee7e0dea09e9a8f6"
+    },
+    {
+      "path": "release-notes/2026-11-12-onchain-refresh-yield.json",
+      "sha256": "72a39daccdfdb1fddbdc7edd2ad969af3e5f335e261c6058d1a814eff1884ec8"
+    },
+    {
+      "path": "release-notes/2026-11-12-post-detail-compact-pink-banner.json",
+      "sha256": "14c08c8a7563c2e7191d405cff1ac6fbb9cabdb970f8c4dc499d7c8ec10eb174"
+    },
+    {
+      "path": "release-notes/2026-11-12-quiz-learn-production.json",
+      "sha256": "4011350274b89fc2279d0b4f180aa156c9762a47c22490653eb4029c8edce8fd"
+    },
+    {
+      "path": "release-notes/2026-11-12-release-config-keys.json",
+      "sha256": "952f3303fcb34495cb695a1510031478095b16309584d4ff74f44fae9f64b89c"
+    },
+    {
+      "path": "release-notes/2026-11-12-telegram-alert-fast.json",
+      "sha256": "797ec8dd1c7ca95c9e047f9e2ce8a28f57140c24ce586903418aa7ffeed1305d"
+    },
+    {
+      "path": "release-notes/2026-11-13-login-space.json",
+      "sha256": "140be087b6f20498cc8b4c4a7d979c62cc7c13486bcc6bf0d23173a08829ec61"
+    },
+    {
+      "path": "release-notes/2026-11-13-prod-web-three-tasks.json",
+      "sha256": "1836dca71d0f8db913089ac86c0f04f03275d5099f32f859d706b598aa27697e"
+    }
+  ],
+  "highlights": [
+    {
+      "path": "release-notes/2026-11-13-login-space.json",
+      "text": "로그인 카드를 키우고 화면 가운데로 옮겼으며, 아래 안내를 짧게 정리했어요."
+    },
+    {
+      "path": "release-notes/2026-11-12-login-resume.json",
+      "text": "로그인 연결이 늦어져도 연결이 끝나면 자동으로 마무리돼요."
+    },
+    {
+      "path": "release-notes/2026-11-11-wallet-v2.json",
+      "text": "내 지갑에서 응모권·하트 보유량과 포인트·스탬프 진행 상황을 한 줄씩 볼 수 있어요."
+    },
+    {
+      "path": "release-notes/2026-11-12-quiz-learn-production.json",
+      "text": "팬 인증 퀴즈에서 틀린 문항의 힌트와 공식 SNS 링크를 보고 다시 도전할 수 있어요."
+    },
+    {
+      "path": "release-notes/2026-11-11-home-shorts-tiktok.json",
+      "text": "공개 TikTok 영상 글을 홈 숏폼에서 보고 좋아요·싫어요와 댓글을 남길 수 있어요."
+    },
+    {
+      "path": "release-notes/2026-11-11-gallery-align-infinite.json",
+      "text": "숏폼 목록 끝에 닿으면 다음 영상이 이어서 나와요."
+    },
+    {
+      "path": "release-notes/2026-11-11-fan-ranking-profile.json",
+      "text": "팬페이지 랭킹에서 팬을 누르면 프로필을 볼 수 있어요."
+    },
+    {
+      "path": "release-notes/2026-11-11-notice-reactions.json",
+      "text": "아티스트 소식에서도 좋아요·싫어요와 링크 공유를 할 수 있어요."
+    }
+  ]
+}

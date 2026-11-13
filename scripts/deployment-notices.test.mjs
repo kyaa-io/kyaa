@@ -506,3 +506,21 @@ test('AWS Wave keeps Vercel and second AWS sent baselines without replay and blo
   await assert.rejects(notifyDeployment(options),/PRIOR_NOTICE_DELIVERY_UNCERTAIN/);assert.equal(records.sent.length,1);
  }
 });
+
+test('summary-superseded deployment is never resent and must reference a confirmed summary',async()=>{
+ for(const confirmed of [true,false]){
+  const source=receipt(deployment,'neutral');
+  source.output={summary:JSON.stringify({replacedBySummary:{planHash:'a'.repeat(64),deploymentId:deployment.id+1,receiptId:12345,messageId:88,chatId:-5187701508,suppressedBatches:25}})};
+  const {options,records}=harness({existing:source}),original=options.github;
+  options.github=async(path,init)=>path==='/check-runs/12345'?{id:12345,name:CHECK_NAME,app:{slug:'github-actions'},external_id:String(deployment.id+1),status:'completed',conclusion:confirmed?'success':'action_required',output:{summary:JSON.stringify({planHash:'a'.repeat(64),replacesSourceReceiptId:source.id,messageId:88,chatId:-5187701508})}}:original(path,init);
+  if(confirmed)assert.deepEqual(await notifyDeployment(options),{skipped:'already_superseded_by_summary'});
+  else await assert.rejects(notifyDeployment(options),/SUMMARY_REPLACEMENT_NOT_CONFIRMED/);
+  assert.equal(records.sent.length,0);
+ }
+});
+test('later automatic notice starts after the delivered summary and same deployment is skipped',async()=>{
+ const existing=receipt(deployment);existing.output={summary:JSON.stringify({text:'[운영] 요약',messageId:88,chatId:-5187701508})};
+ const same=harness({existing});assert.deepEqual(await notifyDeployment(same.options),{skipped:'already_sent'});assert.equal(same.records.sent.length,0);
+ const prior={id:deployment.id-1,sha:priorSha,creator:{login:'vercel[bot]'}};prior.receipt=receipt(prior);prior.receipt.output=existing.output;
+ const next=harness({prior});await notifyDeployment(next.options);assert.equal(next.records.notes[0].base,priorSha);assert.equal(next.records.sent.length,1);
+});
