@@ -2,7 +2,7 @@ import { fireEvent, render, screen, waitFor, within } from '@testing-library/rea
 import { beforeAll, afterAll, beforeEach, expect, it, vi } from 'vitest';
 import { APP_LOCALES } from '@/i18n/locales';
 import { GroupRaffleScreen } from './raffle-screen';
-import { raffleCopy } from './copy';
+import { raffleCopy,raffleRulesCopy } from './copy';
 import { groupBenefitsCopy } from '@/features/groups/ui/group-benefits-copy';
 const auth=vi.hoisted(()=>({ready:true,authenticated:true,user:{id:'owner-a'},getAccessToken:vi.fn(async()=> 'token-a')}));
 const session=vi.hoisted(()=>({ready:true,ownerId:'owner-a',generation:0}));
@@ -17,7 +17,7 @@ const originalShow=Object.getOwnPropertyDescriptor(HTMLDialogElement.prototype,'
 beforeAll(()=>{Object.defineProperty(HTMLDialogElement.prototype,'showModal',{configurable:true,value:function(this:HTMLDialogElement){this.open=true;}});Object.defineProperty(HTMLDialogElement.prototype,'close',{configurable:true,value:function(this:HTMLDialogElement){this.open=false;}});});
 afterAll(()=>{if(originalShow)Object.defineProperty(HTMLDialogElement.prototype,'showModal',originalShow);else Reflect.deleteProperty(HTMLDialogElement.prototype,'showModal');if(originalClose)Object.defineProperty(HTMLDialogElement.prototype,'close',originalClose);else Reflect.deleteProperty(HTMLDialogElement.prototype,'close');});
 beforeEach(()=>{sessionStorage.clear();session.ownerId='owner-a';session.generation=0;vi.stubGlobal('confirm',vi.fn(()=>true));});
-it('uses all supported locales for raffle controls',()=>{for(const locale of APP_LOCALES)expect(Object.values(raffleCopy(locale)).every(x=>typeof x==='string'&&x.length>0)).toBe(true);});
+it('uses all supported locales for raffle controls',()=>{for(const locale of APP_LOCALES)expect(Object.values({...raffleCopy(locale),...raffleRulesCopy(locale)}).every(x=>typeof x==='string'&&x.length>0)).toBe(true);});
 it('keeps single-ticket entry implicit and replays the same request after a lost response',async()=>{
  const writes:Record<string,unknown>[]=[];vi.stubGlobal('fetch',vi.fn(async(url:string,input?:RequestInit)=>{if(url==='/api/me/wallet')return Response.json(wallet);if(url.endsWith('/entries')){const body=JSON.parse(input!.body as string);writes.push(body);expect(JSON.parse(sessionStorage.getItem(`kyaa-raffle-pending:owner-a:${id}:${id}`)!)).toEqual(body);if(writes.length===1)throw new TypeError('offline');return Response.json({id,amount:1,enteredTickets:1,tickets:11});}return Response.json(detail);}));
  const view=render(<GroupRaffleScreen pageId={id} raffleId={id} locale='ko'/>);fireEvent.click(await screen.findByRole('button',{name:'응모하기'}));fireEvent.click(await screen.findByRole('button',{name:'1장으로 응모하기'}));await screen.findByRole('alert');expect(screen.queryByRole('spinbutton')).not.toBeInTheDocument();view.unmount();render(<GroupRaffleScreen pageId={id} raffleId={id} locale='ko'/>);fireEvent.click(await screen.findByRole('button',{name:/결과/}));await waitFor(()=>expect(writes).toHaveLength(2));expect(writes[0]).toEqual(writes[1]);await waitFor(()=>expect(sessionStorage.length).toBe(0));
@@ -74,4 +74,46 @@ it('labels the error-path link with the benefits destination name in every local
 it('labels the closed waiting-panel link with the benefits destination name',async()=>{
  vi.stubGlobal('fetch',vi.fn(async(url:string)=>Response.json(url==='/api/me/wallet'?wallet:{...detail,raffle:{...raffle,status:'closed',entryClosesAt:'2020-01-01T00:00:00Z'},enteredTickets:1})));
  for(const locale of ['ko','en'] as const){const view=render(<GroupRaffleScreen pageId={id} raffleId={id} locale={locale}/>);const link=await screen.findByRole('link',{name:groupBenefitsCopy(locale).title});expect(link.getAttribute('href')).toBe(`/benefits?locale=${locale}`);view.unmount();}
+});
+
+it('allows one free entry with no wallet balance or wallet response and never describes a deduction',async()=>{
+ const writes:Record<string,unknown>[]=[];
+ vi.stubGlobal('fetch',vi.fn(async(url:string,input?:RequestInit)=>{
+  if(url==='/api/me/wallet')return new Response('{}',{status:500});
+  if(url.endsWith('/entries')){writes.push(JSON.parse(String(input?.body)));return Response.json({id,amount:1,enteredTickets:1,tickets:0});}
+  return Response.json({...detail,raffle:{...raffle,entryMode:'free',perFanTicketLimit:100},conditionProgress:[]});
+ }));
+ render(<GroupRaffleScreen pageId={id} raffleId={id} locale='ko'/>);
+ fireEvent.click(await screen.findByRole('button',{name:'응모하기'}));
+ const dialog=screen.getByRole('dialog',{name:'무료 1회'});
+ expect(screen.queryByText('보유 응모권')).not.toBeInTheDocument();expect(screen.queryByText('응모 후 응모권')).not.toBeInTheDocument();expect(screen.queryByRole('spinbutton')).not.toBeInTheDocument();
+ fireEvent.click(within(dialog).getByRole('button',{name:'응모하기'}));await screen.findByText('무료 응모를 완료했어요.');
+ expect(writes).toHaveLength(1);expect(writes[0].amount).toBe(1);expect(screen.queryByText(/응모권 1장을 사용/)).not.toBeInTheDocument();
+});
+it('shows individually met conditions and prevents confirmation when one is unmet',async()=>{
+ const conditions=[{type:'attendance_days',min:3},{type:'mission_approved',min:1}];
+ vi.stubGlobal('fetch',vi.fn(async(url:string)=>Response.json(url==='/api/me/wallet'?wallet:{...detail,canEnter:false,raffle:{...raffle,entryMode:'free',conditions},conditionProgress:[{...conditions[0],current:3,met:true},{...conditions[1],current:0,met:false}]})));
+ const view=render(<GroupRaffleScreen pageId={id} raffleId={id} locale='ko'/>);
+ await screen.findByText('출석 일수');expect(view.container.querySelector('[data-status=met] [aria-label="3"]')).toBeInTheDocument();expect(view.container.querySelector('[data-status=unmet] [aria-label="0"]')).toBeInTheDocument();expect(view.container.querySelector('[data-status=met]')).toHaveTextContent('출석 일수');expect(view.container.querySelector('[data-status=unmet]')).toHaveTextContent('승인된 미션');expect(screen.getByRole('button',{name:'응모하기'})).toBeDisabled();
+});
+it('blocks an upcoming or unapproved raffle even if the server canEnter hint is true',async()=>{
+ for(const variant of [{opensAt:'2100-12-01T00:00:00Z',label:/시작 전/},{approvalStatus:'pending',label:/승인 대기/},{approvalStatus:'rejected',label:/승인 반려/}]){
+  session.generation+=1;
+  vi.stubGlobal('fetch',vi.fn(async(url:string)=>Response.json(url==='/api/me/wallet'?wallet:{...detail,raffle:{...raffle,entryMode:'free',...variant}})));
+  const view=render(<GroupRaffleScreen pageId={id} raffleId={id} locale='ko'/>);await screen.findAllByText(variant.label);expect(screen.getByRole('button',{name:'응모하기'})).toBeDisabled();view.unmount();
+ }
+});
+it('publishes only server-provided masked winner names after the result is announced',async()=>{
+ vi.stubGlobal('fetch',vi.fn(async(url:string)=>Response.json(url==='/api/me/wallet'?wallet:{...detail,raffle:{...raffle,status:'closed',resultsPublishedAt:'2026-11-01T00:00:00Z'},winnersMasked:['김*','이*']})));
+ render(<GroupRaffleScreen pageId={id} raffleId={id} locale='ko'/>);await screen.findByRole('heading',{name:'당첨자'});expect(screen.getByText('김*')).toBeInTheDocument();expect(screen.getByText('이*')).toBeInTheDocument();
+});
+
+it('retains legacy ticket behavior when new raffle fields are absent',async()=>{
+ const {groupRaffleDetailSchema}=await import('./domain');
+ const parsed=groupRaffleDetailSchema.parse(detail);
+ expect(parsed.raffle).toMatchObject({entryMode:'ticket',conditions:[],approvalStatus:'approved',opensAt:null,attendanceSource:'attendance'});expect(parsed.conditionProgress).toEqual([]);expect(parsed.winnersMasked).toEqual([]);
+});
+it('uses visit progress for a hobby raffle without requiring a page context provider',async()=>{
+ vi.stubGlobal('fetch',vi.fn(async(url:string)=>Response.json(url==='/api/me/wallet'?wallet:{...detail,raffle:{...raffle,entryMode:'free',attendanceSource:'visit',conditions:[{type:'attendance_days',min:3}]},conditionProgress:[{type:'attendance_days',min:3,current:3,met:true}]})));
+ render(<GroupRaffleScreen pageId={id} raffleId={id} locale='ko'/>);expect(await screen.findByText('방문 일수')).toBeInTheDocument();expect(screen.queryByText('출석 일수')).not.toBeInTheDocument();
 });

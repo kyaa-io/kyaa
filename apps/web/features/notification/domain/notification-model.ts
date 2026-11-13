@@ -3,6 +3,7 @@ import { z } from "zod";
 export const notificationKindSchema = z.enum([
   "runmusic_result",
   "group_raffle_won",
+  "group_raffle_result",
   "group_event_reviewed",
   "group_notice",
   "live_24h",
