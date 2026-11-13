@@ -79,3 +79,36 @@ test.describe("@release-gate (b) one action never pays twice", () => {
     await context.close();
   });
 });
+
+// Run only with a local email browser storage state and a disposable local database.
+test("cookie-only email login: lost attendance response retries with no duplicate credit", async ({ browser }) => {
+  assertLocalOnly();
+  const state = process.env.REWARD_E2E_EMAIL_STORAGE_STATE;
+  test.skip(!state, "REWARD_E2E_EMAIL_STORAGE_STATE is required");
+  const emailMember = new Member(process.env.REWARD_E2E_EMAIL_ACCOUNT ?? "dev-fan-5", state!);
+  const { creatorSlug } = emailMember.reset();
+  const context = await browser.newContext({ storageState: state, baseURL: BASE_URL });
+  try {
+    const page = await context.newPage();
+    await page.goto("/api/health/live");
+    const session = await page.evaluate(async () => {
+      const response = await fetch("/api/auth/cognito/session");
+      return { status: response.status, body: await response.json(), privy: localStorage.getItem("privy:token") };
+    });
+    expect(session).toMatchObject({ status: 200, body: { authenticated: true, accessToken: expect.stringMatching(/^kyaa-email:/) }, privy: null });
+    const requestKey = newKey(), url = `/api/me/attendance/${creatorSlug}`;
+    await page.route(`**${url}`, async (route) => { await route.fetch(); await route.abort("connectionreset"); });
+    const lost = await page.evaluate(async ({ url, requestKey, token }) => {
+      try { await fetch(url, { method: "POST", headers: { authorization: `Bearer ${token}`, "content-type": "application/json" }, body: JSON.stringify({ requestKey }) }); return false; } catch { return true; }
+    }, { url, requestKey, token: session.body.accessToken });
+    expect(lost).toBe(true);
+    const paid = emailMember.balances().points;
+    expect(paid).toBeGreaterThan(0);
+    await page.unroute(`**${url}`);
+    const retried = await emailMember.call<Attend>("POST", url, { requestKey });
+    expect(retried).toMatchObject({ status: 200, body: { points: paid, replayed: true } });
+    expect(emailMember.balances().points).toBe(paid);
+    expect(emailMember.pointLedgerRows()).toBe(1);
+    expect(emailMember.stampCount("daily_checkin")).toBe(1);
+  } finally { await context.close(); }
+});
