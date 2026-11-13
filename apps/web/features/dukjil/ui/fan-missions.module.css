@@ -54,6 +54,8 @@
 .unfolded:has([data-mobile-extra]) .moreButton{display:block}
 @container (min-width:44rem){
  .unfoldedGrid{grid-template-columns:repeat(2,minmax(0,1fr))}
+ /* 사용자 11/13 13:2x: the missions and the certifications share one trailing width in the two-column grid, so every row's coin sits at the same x inside its column. */
+ .unfoldedGrid [data-fan-mission-row]{grid-template-columns:40px minmax(0,1fr) 96px}
  .unfoldedGrid>ul>li{box-shadow:inset -1px -1px var(--color-line-subtle)}
  .unfolded[data-expanded="false"] [data-mobile-extra]{display:block}
  .unfolded:has([data-mobile-extra]) .moreButton{display:none}
