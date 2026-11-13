@@ -82,6 +82,8 @@
 .activityTable { width:100%; border-collapse:collapse; font:inherit; text-align:left; }
 .activityTable th,.activityTable td { padding:var(--space-3) var(--space-1); border-bottom:1px solid var(--color-line); overflow-wrap:anywhere; }
 @media(min-width:1024px) { .recordGrid { grid-template-columns:repeat(6,minmax(0,1fr)); gap:var(--space-3); } .recordGrid img { max-width:72px; } }
+/* 1280+: 스탬프 18개를 3줄이 아니라 9칸 2줄로(MY 스크롤 약 160px 감소). */
+@media(min-width:80rem) { .recordGrid { grid-template-columns:repeat(9,minmax(0,1fr)); } }
 
 .artistStampList { display:grid; gap:var(--space-2); }
 .artistStampRows { list-style:none; margin:0; padding:0; }

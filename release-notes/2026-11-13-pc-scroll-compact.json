@@ -1,0 +1,15 @@
+{
+  "changes": [
+    "PC 화면(1280px 이상)에서 사이트 하단 푸터가 짧아졌어요. 안내 및 문의 링크 11개를 한 줄로 길게 세우지 않고 두 줄로 나눠, 모든 화면 맨 아래가 약 220px 짧아져요.",
+    "홈 공지사항은 분류·제목·날짜를 한 줄에 놓아 한 건 높이가 77px에서 49px로 줄었어요. MY 스탬프 기록은 한 줄에 9칸으로 놓아 18개가 3줄 대신 2줄에 들어와요. 모바일 화면은 그대로예요. 첨부 화면은 예시 데이터로 확인한 로컬 검증 화면이에요."
+  ],
+  "path": "/",
+  "images": [
+    "release-notes/images/2026-11-13-pc-footer-before-1440.png",
+    "release-notes/images/2026-11-13-pc-footer-after-1440.png",
+    "release-notes/images/2026-11-13-pc-notice-before-1440.png",
+    "release-notes/images/2026-11-13-pc-notice-after-1440.png",
+    "release-notes/images/2026-11-13-pc-stamps-before-1440.png",
+    "release-notes/images/2026-11-13-pc-stamps-after-1440.png"
+  ]
+}

@@ -223,6 +223,20 @@
     grid-template-columns: minmax(240px, 1.2fr) minmax(420px, 1.8fr);
     gap: var(--space-12);
   }
+
+  /* PC: 마지막 열(안내 및 문의 11개)을 두 줄 열로 펼쳐 한 줄에 하나씩 길게 서는 것을 줄인다. */
+  .navigation {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 2fr);
+  }
+
+  .navigation section:last-child {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: var(--space-4);
+  }
+
+  .navigation section:last-child h2 {
+    grid-column: 1 / -1;
+  }
 }
 
 @media (max-width: 47.999rem) {
