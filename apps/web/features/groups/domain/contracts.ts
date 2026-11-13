@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { externalRoomLinksRead } from "./external-room-link";
 
 export const groupKindSchema = z.enum(["fan", "hobby", "brand"]);
 export const groupPageSchema = z.object({
@@ -12,6 +13,7 @@ export const groupPageSchema = z.object({
   newPostCount: z.number().int().nonnegative().nullable().optional(),
   liveNow: z.boolean().nullable().optional(),
   lastActiveAt: z.iso.datetime({offset:true}).nullable().optional(),
+  externalLinks: externalRoomLinksRead,
 });
 export const groupListSchema = z.object({ items: z.array(groupPageSchema), totalCount: z.number().int().nonnegative().optional(), nextCursor: z.union([z.string().uuid(),z.string().regex(/^[A-Za-z0-9_-]{1,512}$/)]).nullable() });
 export const groupDetailSchema = z.object({ page: groupPageSchema, membership: z.object({ role: z.enum(["owner", "manager", "member"]), joinedAt: z.string() }).nullable(), bookmarked: z.boolean() });
