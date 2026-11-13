@@ -27,3 +27,6 @@
 }
 .sectionHeader.personal { min-height: 0; }
 .personal .description { font-weight: inherit; }
+
+/* Compact campaign name keeps the approved home hero title role. */
+.heading.campaign { font-size:var(--fan-campaign-title-size); font-weight:var(--fan-section-weight); letter-spacing:normal; text-wrap:initial; }

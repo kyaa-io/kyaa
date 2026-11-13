@@ -1,6 +1,6 @@
 "use client";
 import { throwIfAborted } from "@/features/reliability/client/throw-if-aborted";
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode, type Dispatch, type SetStateAction } from "react";
 import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import { useByUsSession } from "@/components/byus-session-provider";
 import { FanAction } from "@/components/fan-ui/fan-action";
@@ -13,7 +13,16 @@ import { localScheduleTime, scheduleInstant } from "../domain/schedule-time";
 import type { ScheduleInput } from "../domain/participation";
 import styles from "./participation.module.css";
 
-export function useParticipationAction() {
+type ParticipationAction = Omit<ReturnType<typeof usePrivy>, "ready" | "busy" | "error" | "setError" | "run" | "idempotencyKey"> & {
+  ready: boolean;
+  busy: boolean;
+  error: string;
+  setError: Dispatch<SetStateAction<string>>;
+  run<T>(url: string, method: string, body: unknown, parse: (value: unknown) => T, requireAuth?: boolean): Promise<T | null>;
+  idempotencyKey(input: unknown): string;
+};
+
+export function useParticipationAction(): ParticipationAction {
   const auth = usePrivy();
   const session = useByUsSession();
   const [busy, setBusy] = useState(false);

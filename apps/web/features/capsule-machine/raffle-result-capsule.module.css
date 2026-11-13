@@ -1,0 +1,24 @@
+/* 래플 결과 팝업: 기계 칸과 결과 칸은 같은 높이(정사각에 가까운 칸)라 연출이 끝나도 팝업 크기가 흔들리지 않는다. */
+.body { display: grid; }
+.stage, .result { grid-area: 1 / 1; min-height: min(80vw, 400px); }
+.stage { position: relative; overflow: hidden; border-radius: var(--radius-media); }
+.still, .stage canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; object-fit: contain; }
+.still { transition: opacity var(--motion-fast) var(--motion-easing); }
+.still[data-hidden] { opacity: 0; }
+.skip { position: absolute; right: var(--space-3); bottom: var(--space-3); }
+
+.result { display: grid; align-content: center; justify-items: center; gap: var(--space-3); text-align: center; }
+.result:focus { outline: none; }
+.prize { display: grid; justify-items: center; width: min(100%, 240px); container-type: inline-size; }
+/* 기계 연출 뒤 경품 카드가 아래에서 올라온다(transform·opacity만). */
+.card { width: 100%; animation: cardRise var(--motion-slow) var(--motion-easing) both; }
+.blank { display: block; width: 128px; }
+.title, .note { margin: 0; }
+.note { color: var(--color-muted); }
+.actions { display: grid; justify-items: center; gap: var(--space-2); width: min(100%, 320px); margin-top: var(--space-1); }
+@keyframes cardRise { from { opacity: 0; transform: translateY(var(--space-3)); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .card { animation: none; }
+  .still { transition: none; }
+}
