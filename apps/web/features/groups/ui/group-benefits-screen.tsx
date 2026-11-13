@@ -12,6 +12,7 @@ import {FanAppFrame,FanContentContainer} from '@/components/fan-shell/fan-app-sh
 import {FanAction} from '@/components/fan-ui/fan-action';
 import {FanMissions} from '@/features/dukjil/ui/fan-missions';
 import {StanMissionStrip} from './stan-mission-strip';
+import {StanPassportBook} from './stan-passport-book';
 import {FanLoginScene} from '@/components/fan-ui/fan-login-scene';
 import {REWARD_ICON_SRC} from '@/components/fan-ui/reward-icon';
 import {CreatorAttendanceEntry} from '@/features/dukjil/ui/creator-attendance-entry';
@@ -123,7 +124,7 @@ function BenefitsDailyMissions({locale,bias,signedOut,wallet}:{locale:AppLocale;
  const favoriteAvatar=chosen?<CreatorAvatar slug={chosen.slug} src={bias.selected?.image??null} photos={undefined} size={24}/>:null;
  const favorite=bias.status!=='guest'&&(stanFavorite(bias)||bias.options.length>0)?<span className={styles.favorite}><span aria-hidden="true">·</span>{bias.options.length?<FavoritePickMenu locale={locale} bias={bias} className={styles.favoritePick}>{favoriteAvatar}<span className={styles.favoriteName}>{stanFavorite(bias)?.name??dukjilText(locale,'heartPick')}</span><span aria-hidden="true">▾</span></FavoritePickMenu>:<>{favoriteAvatar}<span className={styles.favoriteName}>{stanFavorite(bias)?.name}</span></>}</span>:null;
  const list=pending?<div className={styles.missionsPending} aria-busy='true' data-missions-pending=''><FanHeading as='h3'>{title}</FanHeading><FanSkeletonRows rows={5}/></div>:status==='on'?<FanMissions all locale={locale} slug={slug} title={title} titleSuffix={favorite} passportHref={`/passports?locale=${locale}`} proofHref={`/${slug}?tab=certifications&locale=${locale}`} noPage={slug?undefined:directory} onAttendance={()=>setAttendance(true)}/>:null;
- return <section className={`${styles.pMissions} ${styles.missionsSection}`} hidden={allFailed} aria-labelledby={headingId} data-missions-section=''>{head}{wallet}<DukjilProvider key={slug} slug={slug||undefined} accountToday={!slug} locale={locale}><StanMissionStrip locale={locale} slots={stripSlots} href={stripHref}/>{list}{attendance&&page&&<CreatorAttendanceEntry slug={slug} pageName={page.name} locale={locale} reviewHref={`/c/${encodeURIComponent(slug)}/verify?locale=${locale}`} onClose={()=>setAttendance(false)}/>}</DukjilProvider></section>;
+ return <section className={`${styles.pMissions} ${styles.missionsSection}`} hidden={allFailed} aria-labelledby={headingId} data-missions-section=''>{head}{wallet}<DukjilProvider key={slug} slug={slug||undefined} accountToday={!slug} locale={locale}>{bias.selected?<StanPassportBook locale={locale} option={bias.selected}/>:<StanMissionStrip locale={locale} slots={stripSlots} href={stripHref}/>}{list}{attendance&&page&&<CreatorAttendanceEntry slug={slug} pageName={page.name} locale={locale} reviewHref={`/c/${encodeURIComponent(slug)}/verify?locale=${locale}`} onClose={()=>setAttendance(false)}/>}</DukjilProvider></section>;
 }
 /** 내역 (#wallet-history): the signed-in member's own point/ticket ledger; a guest gets the sign-in action and no request is made. */
 function BenefitsHistory({locale,signedOut}:{locale:AppLocale;signedOut:boolean}){

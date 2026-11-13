@@ -7,7 +7,7 @@ import { PassportStampCanvas } from "./passport-stamp-artwork";
 import styles from "./passport-identity-artwork.module.css";
 
 type Props = Omit<ComponentProps<typeof PassportStampCanvas>, "celebrityName"> & {
-  celebrity: MySummary["creators"][number]["celebrity"];
+  celebrity: Pick<MySummary["creators"][number]["celebrity"], "slug" | "name" | "image" | "imagePosition" | "photos">;
 };
 
 /** Compact Home identity layer. Detail and issuance keep the original canvas. */

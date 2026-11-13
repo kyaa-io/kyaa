@@ -1,35 +1,59 @@
 /* 덕질 wallet swap rows: one heads 럭키드로우, one heads 덕질 미션 (대표 11/13 09:39). */
-.wallet { min-width:0; font-variant-numeric:tabular-nums; font-feature-settings:"tnum"; }
+.wallet { container-type:inline-size; min-width:0; font-variant-numeric:tabular-nums; font-feature-settings:"tnum"; }
 .head { display:flex; align-items:center; gap:var(--space-1); margin-bottom:var(--space-3); }
 .guide { position:relative; display:inline-grid; place-items:center; width:32px; height:32px; border-radius:var(--radius-pill); color:var(--color-muted); }
 .guide::after { content:""; position:absolute; inset:-6px; }
 .guide:focus-visible { outline:2px solid var(--color-focus); outline-offset:2px; border-radius:var(--radius-small); }
-/* 대표 11/13 09:39: one swap line per section head — [balance] → [what I get] [button], 80px at 390 (GPT 1안). */
-.swap { display:grid; grid-template-columns:minmax(0,1.3fr) auto minmax(0,1fr) auto; align-items:center; gap:var(--space-1); min-width:0; padding:var(--space-3); border:1px solid var(--color-line); border-radius:var(--radius-card); background:var(--color-surface); }
+/* 사용자 11/13 13:2x converter (환전기 벤치마크): two stacked cells joined by a chip on the seam, then one wide button.
+   Cells are the cards (no outer card — no card in a card). The section sets the gap around the card (no outer margin).
+   A card 720+ wide lays the cells side by side with the button at the end; the 덕질 columns (358·468·664·704) keep the stack. */
+.swap { display:grid; gap:var(--space-3); min-width:0; }
 .swap + .swap { margin-block-start:var(--space-3); }
-.from,.to { display:grid; gap:var(--space-1); min-width:0; }
-.to { min-block-size:var(--min-target); align-content:center; color:var(--color-ink); text-decoration:none; }
-.to:focus-visible { outline:2px solid var(--color-focus); outline-offset:2px; border-radius:var(--radius-small); }
-.swapLabel { overflow:hidden; color:var(--color-muted); font-size:var(--fan-metadata-size); line-height:var(--fan-metadata-leading); white-space:nowrap; text-overflow:ellipsis; }
-.swapValue { display:flex; align-items:center; gap:var(--space-1); min-width:0; color:var(--color-ink); }
-.swapAsset { display:block; flex:none; width:20px; height:20px; object-fit:contain; }
-.amount { overflow:hidden; font-size:var(--fan-metadata-size); font-weight:var(--fan-item-title-weight); line-height:var(--fan-item-compact-leading); white-space:pre; text-overflow:ellipsis; }
-.amount strong { font-size:var(--fan-item-title-size); }
-.get { overflow:hidden; font-size:var(--fan-description-size); font-weight:var(--fan-item-title-weight); line-height:var(--fan-item-compact-leading); white-space:nowrap; text-overflow:ellipsis; }
-.arrow { color:var(--color-muted); font-weight:var(--fan-item-title-weight); }
-.bar { position:relative; display:block; box-sizing:border-box; height:6px; border:1px solid var(--color-accent-line); border-radius:var(--radius-pill); background:var(--color-accent-soft); overflow:hidden; }
+.cells { position:relative; display:grid; gap:var(--space-1); min-width:0; }
+.cell { display:grid; grid-template-columns:auto minmax(0,1fr) auto; grid-template-areas:"asset text amount"; align-items:center; column-gap:var(--space-3); position:relative; min-width:0; min-block-size:76px; box-sizing:border-box; padding:var(--space-4); border:1px solid var(--color-line); border-radius:var(--radius-card); background:var(--color-surface); color:var(--color-ink); text-decoration:none; }
+.cell:focus-visible { outline:2px solid var(--color-focus); outline-offset:2px; }
+.cellAsset { grid-area:asset; display:block; flex:none; width:40px; height:40px; object-fit:contain; }
+/* The ticket art has more empty margin than the coin: draw it at the coin's visible size (GPT 검토 #5). */
+.cell[data-cell="tickets"] .cellAsset { transform:scale(1.3); }
+.cellText { grid-area:text; display:grid; gap:var(--space-1); min-width:0; }
+.cellName { overflow:hidden; white-space:nowrap; text-overflow:ellipsis; }
+.cellHeld { display:flex; align-items:center; gap:var(--space-2); min-width:0; min-block-size:18px; }
+.heldText { display:flex; align-items:center; min-width:0; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; }
+.amount { grid-area:amount; }
+.cell[data-side="from"] .amount { color:var(--color-muted); }
+.joint { position:absolute; inset-block-start:50%; inset-inline-start:50%; z-index:1; display:grid; place-items:center; width:32px; height:32px; box-sizing:border-box; border:1px solid var(--color-line); border-radius:50%; background:var(--color-surface); color:var(--color-ink); transform:translate(-50%,-50%); pointer-events:none; }
+.bar { position:relative; flex:1 1 auto; min-inline-size:40px; max-inline-size:120px; display:block; box-sizing:border-box; height:6px; border:1px solid var(--color-accent-line); border-radius:var(--radius-pill); background:var(--color-accent-soft); overflow:hidden; }
 .barFill { position:absolute; inset-block:0; inset-inline-start:0; inline-size:var(--wallet-bar-fill); border-radius:inherit; background:var(--color-accent); transition:inline-size var(--motion-slow) var(--motion-easing); }
-/* `.swap .reward` outranks FanAction's one-class `.primary` (width min(100%,320)) whatever the CSS chunk order. */
-.swap .reward { inline-size:auto; min-inline-size:72px; padding-inline:var(--space-3); white-space:nowrap; }
-@media (hover:hover) and (pointer:fine) { .to:hover .get { text-decoration:underline; } }
+/* `.swap .reward` outranks FanAction's one-class `.primary` (width min(100%,320)): the converter's button spans the cells (벤치마크). */
+.swap .reward { inline-size:100%; max-inline-size:none; white-space:nowrap; }
+@media (hover:hover) and (pointer:fine) { a.cell:hover { background:var(--color-accent-soft); } }
+/* The neutral 준비 중 / 받기 button keeps the primary's 48 at 1024+ so both cards end on the same line. */
+@media (width >= 64rem) { .swap .reward { min-block-size:var(--space-12); } }
+@container (width >= 30rem) { .cell { padding:var(--space-4) var(--space-5); } }
+/* 덕질 두 열(584·664): the cells sit side by side (재료 → 결과) and the button stays underneath at full width, so a cell is about as wide
+   as on a phone and the name, the balance and the amount stay together (stacked full-width cells left 44–72% of the row empty).
+   The 재료 cell is the wider one (6:5) — it carries the gauge; the 결과 cell has only a name, a balance and the amount, so a narrower
+   cell keeps the balance and the amount within 40% of its width. The chip follows the seam. */
+@container (width >= 36rem) {
+ .cells { grid-template-columns:minmax(0,6fr) minmax(0,5fr); }
+ .joint { inset-inline-start:calc((100% - var(--space-1)) * 6 / 11 + var(--space-1) / 2); }
+ .cell { padding:var(--space-4); }
+ /* The 32px chip sits on the seam: the cells keep 24 on that side so the amount and the next asset clear it. */
+ .cell[data-side="from"] { padding-inline-end:var(--space-6); }
+ .cell[data-side="to"] { padding-inline-start:var(--space-6); }
+ .joint { transform:translate(-50%,-50%) rotate(-90deg); }
+ .bar { min-inline-size:24px; }
+}
+@container (width >= 45rem) {
+ .swap { grid-template-columns:minmax(0,1fr) 200px; align-items:center; column-gap:var(--space-4); }
+ /* 3:2 here: with the button beside them the cells are wide again (960 card: 444 + 296). */
+ .cells { grid-template-columns:minmax(0,3fr) minmax(0,2fr); }
+ .joint { inset-inline-start:calc((100% - var(--space-1)) * 3 / 5 + var(--space-1) / 2); transform:translate(-50%,-50%) rotate(-90deg); }
+}
 .favoritePicker { justify-items:center; align-content:center; }
-.swap.favoritePicker { grid-template-columns:minmax(0,1fr); }
+.swap.favoritePicker { grid-template-columns:minmax(0,1fr); padding:var(--space-3); border:1px solid var(--color-line); border-radius:var(--radius-card); background:var(--color-surface); }
 @media (hover:hover) and (pointer:fine) { .guide:hover { color:var(--color-ink); background:var(--color-accent-soft); } }
 @media (prefers-reduced-motion:reduce) { .barFill { transition:none; } }
-@media (min-width:1024px) {
- .swap { grid-template-columns:minmax(0,360px) auto minmax(0,1fr) auto; padding:var(--space-3) var(--space-4); column-gap:var(--space-4); }
- .swap .reward { min-inline-size:120px; min-block-size:var(--space-12); }
-}
 .backdrop { position:fixed; inset:0; z-index:var(--z-dialog); display:flex; align-items:flex-end; justify-content:center; background:var(--color-backdrop); }
 .sheet { position:relative; box-sizing:border-box; width:100%; padding:var(--space-8) var(--space-4); padding-bottom:calc(var(--space-8) + env(safe-area-inset-bottom)); border:0; outline:1px solid var(--color-line); outline-offset:-1px; border-radius:var(--radius-card) var(--radius-card) 0 0; background:var(--color-surface); color:var(--color-ink); font-family:var(--font-sans); font-variant-numeric:tabular-nums; font-feature-settings:"tnum"; }
 .handle { position:absolute; top:var(--space-2); left:calc(50% - var(--space-5)); width:40px; height:4px; border-radius:var(--radius-pill); background:var(--color-accent-line); }

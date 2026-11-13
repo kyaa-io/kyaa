@@ -1,7 +1,7 @@
 "use client";
 import { TierGuideInfo } from "@/features/rewards/ui/tier-guide-info";
 
-import { useEffect, useLayoutEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useState, type ReactNode } from "react";
 import Image from "next/image";
 import type { Route } from "next";
 import Link from "../../../components/fan-ui/hover-prefetch-link";
@@ -94,6 +94,42 @@ function SlotItem({ slot, locale }: { slot: PassportRoadmapSlot; locale: AppLoca
   </li>;
 }
 
+type BookBodyProps = {
+  passportId: string; celebrity: Parameters<typeof PassportIdentityArtwork>[0]["celebrity"]; tier: NonNullable<Creator["passport"]>["tier"]; stageKey: string | null; tierName: string;
+  tierStep: ReturnType<typeof nextTierStep>; book: ReturnType<typeof usePassportBook>; href: string; bookLabel: string; locale: AppLocale;
+  /** What the slot row shows while the mission policy is off. */
+  fallback?: ReactNode; fallbackCount?: number; error?: { message: string; retryLabel: string; onRetry: () => void } | null;
+};
+
+/** 여권 그림 · 등급 · 스탬프 게이지 · 미션북 9칸. MY의 패스포트 카드와 덕질 탭의 덕질 기록이 같은 부품을 쓴다. 카드 외곽(`.card`)은 부르는 쪽이 둔다. */
+export function PassportBookBody({ passportId, celebrity, tier, stageKey, tierName, tierStep, book, href, bookLabel, locale, fallback = null, fallbackCount = 0, error = null }: BookBodyProps) {
+  const filled = book.page?.filled ?? null;
+  const total = book.page?.slots.length ?? 9;
+  const filledArt = filledSlotArt(book.page);
+  return <>
+    <div className={styles.body} data-passport-book-body="">
+      <Link href={href as Route} className={styles.book} data-my-passport-book={passportId} aria-label={bookLabel}>
+        <PassportIdentityArtwork celebrity={celebrity} locale={locale} level={tier} stamps={[]} slotArt={filledArt} totalCount={filled ?? fallbackCount} priority />
+      </Link>
+      <div className={styles.facts}>
+        <h3>{myHomeText(locale, "passportRecord", [celebrity.name])}</h3>
+        <p className={styles.tier}>
+          <Image unoptimized src={`/images/passport/tiers/ink-v1/${stageKey ?? `${tier.toLowerCase()}-1`}.webp`} width={32} height={32} alt="" aria-hidden="true" />
+          <strong>{tierName}</strong><TierGuideInfo locale={locale}/>
+        </p>
+        <div className={styles.progress}>
+          {book.status === "ready" && filled !== null ? <FanCellGauge icon={GAUGE_ICON.ink} text={myHomeText(locale, "stampProgress", [filled, total])} label={myHomeText(locale, "stampProgressFull", [filled, total])} cells={total} filled={filled} /> : book.status === "loading" ? <FanSkeleton width="100%" height={52} /> : null}
+        </div>
+        {tierStep ? <div className={styles.progress}><FanCellGauge icon={tierStep.icon} text={tierStep.text} label={tierStep.text} cells={tierStep.cells} filled={tierStep.filled} /></div> : null}
+      </div>
+    </div>
+    {book.status === "ready" && book.page ? <ul className={styles.slots} data-passport-slots="">{book.page.slots.map((slot) => <SlotItem key={slot.slotNo} slot={slot} locale={locale} />)}</ul>
+      : book.status === "loading" ? <div className={styles.slots} data-passport-slots="" aria-hidden="true">{Array.from({ length: 9 }, (_, index) => <span className={styles.slot} key={index}><FanSkeleton shape="circle" width={48} height={48} /><FanSkeleton width={40} height={12} /></span>)}</div>
+      : fallback}
+    {error ? <div className={styles.state} role="alert"><p>{error.message}</p><FanAction onClick={error.onRetry}>{error.retryLabel}</FanAction></div> : null}
+  </>;
+}
+
 export type MyPassportLabels = { title: string; detail: string; noCreators: string; findCreator: string; loadError: string; retry: string; creators: string };
 
 type CardProps = {
@@ -124,34 +160,13 @@ export function MyPassportCard({ creators, selectedSlug, onSelect, communityStam
   const tierStep = passport ? nextTierStep(locale, passport) : null;
   const manyPassports = eligible.length > 1;
   useEffect(() => { try { localStorage.setItem(CHIPS_KEY, manyPassports ? "1" : "0"); } catch { /* 기기별 편의값이다. */ } }, [manyPassports]);
-  const filled = book.page?.filled ?? null;
-  const total = book.page?.slots.length ?? 9;
-  const filledArt = filledSlotArt(book.page);
   return <section className={styles.card} aria-label={labels.title}>
     <header><FanHeading>{labels.title}</FanHeading><FanSectionLink href={href}>{labels.detail}</FanSectionLink></header>
     {!selected || !passport ? <div className={styles.empty}><p>{labels.noCreators}</p><FanAction href={`/celebrities?locale=${locale}`}>{labels.findCreator}</FanAction></div> : <>
       {eligible.length > 1 ? <div className={styles.selector}><FanTabs variant="chip" label={labels.creators} current={selected.celebrity.slug} items={eligible.map((creator) => ({ key: creator.celebrity.slug, label: creator.celebrity.name, onSelect: () => onSelect(creator.celebrity.slug) }))} /></div> : null}
-      <div className={styles.body}>
-        <Link href={href as Route} className={styles.book} data-my-passport-book={passport.id} aria-label={`${selected.celebrity.name} · ${labels.detail}`}>
-          <PassportIdentityArtwork celebrity={selected.celebrity} locale={locale} level={passport.tier} stamps={[]} slotArt={filledArt} totalCount={filled ?? fallbackStamps.length} priority />
-        </Link>
-        <div className={styles.facts}>
-          <h3>{myHomeText(locale, "passportRecord", [selected.celebrity.name])}</h3>
-          <p className={styles.tier}>
-            <Image unoptimized src={`/images/passport/tiers/ink-v1/${stage?.current.key ?? `${passport.tier.toLowerCase()}-1`}.webp`} width={32} height={32} alt="" aria-hidden="true" />
-            <strong>{tierName}</strong><TierGuideInfo locale={locale}/>
-          </p>
-          <div className={styles.progress}>
-            {book.status === "ready" && filled !== null ? <FanCellGauge icon={GAUGE_ICON.ink} text={myHomeText(locale, "stampProgress", [filled, total])} label={myHomeText(locale, "stampProgressFull", [filled, total])} cells={total} filled={filled} /> : book.status === "loading" ? <FanSkeleton width="100%" height={52} /> : null}
-          </div>
-          {tierStep ? <div className={styles.progress}><FanCellGauge icon={tierStep.icon} text={tierStep.text} label={tierStep.text} cells={tierStep.cells} filled={tierStep.filled} /></div> : null}
-        </div>
-      </div>
-      {book.status === "ready" && book.page ? <ul className={styles.slots}>{book.page.slots.map((slot) => <SlotItem key={slot.slotNo} slot={slot} locale={locale} />)}</ul>
-        : book.status === "loading" ? <div className={styles.slots} aria-hidden="true">{Array.from({ length: 9 }, (_, index) => <span className={styles.slot} key={index}><FanSkeleton shape="circle" width={48} height={48} /><FanSkeleton width={40} height={12} /></span>)}</div>
-        : fallbackStamps.length > 0 ? <ul className={styles.slots}>{fallbackStamps.map((stamp) => <li className={styles.slot} data-state="filled" key={stamp.id}><span className={styles.slotArt}><img src={communityStampThumb(stamp.kind)} alt="" width={56} height={56} /></span><span className={styles.slotName}>{communityStampLabel(stamp.kind, locale)}</span></li>)}</ul>
-        : null}
-      {book.status === "error" || (book.status === "off" && stampsError) ? <div className={styles.state} role="alert"><p>{labels.loadError}</p><FanAction onClick={() => { book.retry(); retryStamps(); }}>{labels.retry}</FanAction></div> : null}
+      <PassportBookBody passportId={passport.id} celebrity={selected.celebrity} tier={passport.tier} stageKey={stage?.current.key ?? null} tierName={tierName} tierStep={tierStep} book={book} href={href} bookLabel={`${selected.celebrity.name} · ${labels.detail}`} locale={locale} fallbackCount={fallbackStamps.length}
+        fallback={fallbackStamps.length > 0 ? <ul className={styles.slots}>{fallbackStamps.map((stamp) => <li className={styles.slot} data-state="filled" key={stamp.id}><span className={styles.slotArt}><img src={communityStampThumb(stamp.kind)} alt="" width={56} height={56} /></span><span className={styles.slotName}>{communityStampLabel(stamp.kind, locale)}</span></li>)}</ul> : null}
+        error={book.status === "error" || (book.status === "off" && stampsError) ? { message: labels.loadError, retryLabel: labels.retry, onRetry: () => { book.retry(); retryStamps(); } } : null} />
     </>}
   </section>;
 }
