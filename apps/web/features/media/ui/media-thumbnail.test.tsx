@@ -56,3 +56,10 @@ it("reads a stored API cover directly so image optimization cannot outlive its v
   expect(container.querySelector("img")).toHaveAttribute("loading", "lazy");
   expect(container.querySelector("img")).not.toHaveAttribute("srcset");
 });
+
+it("never prints the source URL as the label of a missing cover (사용자 2026-11-12 Instagram 칸)", () => {
+  const href = "https://www.instagram.com/jen2jen2_/p/DfEtowlgX1j/";
+  const { container } = render(<MediaThumbnail image={null} href={href} kind="videos" source="Instagram" title={href} locale="ko" />);
+  expect(container.textContent).not.toContain("http");
+  expect(container.textContent).not.toContain("instagram.com");
+});

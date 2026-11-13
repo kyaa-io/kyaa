@@ -1,0 +1,16 @@
+/* 가로 스크롤 줄(숏폼·팬페이지 갤러리). 카드 폭(`.쓰는쪽 li`)과 화살표 높이(`.쓰는쪽 > button`의 top)는 쓰는 쪽이 정한다. 화살표는 768 이상에서만, 줄 가장자리 안쪽·세로 가운데(홈 배너와 같은 원형 32 반투명 어두운 바탕·흰 아이콘 16, 누르는 자리 44). */
+.row { position: relative; min-width: 0; }
+.track { display: flex; gap: var(--space-2); margin: 0; padding: 0; overflow-x: auto; overscroll-behavior-x: contain; scroll-snap-type: x proximity; scrollbar-width: none; list-style: none; }
+.track::-webkit-scrollbar { display: none; }
+.track > * { flex: none; width: 160px; scroll-snap-align: start; }
+.arrow { display: none; }
+@media (min-width: 768px) {
+  .arrow { position: absolute; top: 50%; z-index: 1; display: grid; width: var(--min-target); height: var(--min-target); padding: 0; place-items: center; border: 0; border-radius: var(--radius-pill); background: transparent; color: var(--color-surface); cursor: pointer; transform: translateY(-50%); }
+  .arrow[hidden] { display: none; }
+  .arrow::before { content: ""; position: absolute; inset: calc((var(--min-target) - 32px) / 2); border-radius: var(--radius-pill); background: color-mix(in srgb, var(--color-ink) 60%, transparent); }
+  .arrow > svg { position: relative; }
+  .arrow:focus-visible { outline: var(--focus-width) solid var(--color-focus); outline-offset: calc(var(--focus-width) * -1); }
+  .previous { inset-inline-start: calc(var(--space-2) - 6px); }
+  .next { inset-inline-end: calc(var(--space-2) - 6px); }
+}
+@media (prefers-reduced-motion: reduce) { .arrow { transition: none; } }

@@ -1,0 +1,5 @@
+{
+  "changes": ["팬페이지 갤러리 줄이 네 장에서 멈추지 않고 화면 오른쪽 끝까지 채워져요. 옆으로 넘기면 더 많은 사진과 영상이 이어서 나와요.", "표지를 불러오지 못한 영상 칸에 주소 글자 대신 글 제목이 보여요.", "첨부 화면은 예시 사진을 넣은 로컬 검증 화면이에요."],
+  "path": "/elina",
+  "images": ["release-notes/images/2026-11-13-prod-gallery-fill-fanpage-row-1440.png", "release-notes/images/2026-11-13-prod-gallery-fill-fanpage-row-390.png"]
+}
