@@ -1,10 +1,10 @@
 /* 덕질 기록 sits in a column of 358–704px whatever the viewport (the page frame, 사용자 11/13 13:37), so MY's viewport rules (560px art from 1024px, nine slots in a row from 768px) are replaced by the card's own width.
-   Content width: below 36rem the art stacks over the facts and the nine slots scroll sideways like MY on a phone; below 52rem the art takes 300px beside the facts. */
+   Content width: below 30rem the art stacks over the facts and the nine slots scroll sideways like MY on a phone; below 52rem the art takes 300px beside the facts. */
 .host { container-type: inline-size; }
 @container (max-width: 51.99rem) {
   .host [data-passport-book-body] { grid-template-columns: minmax(0, 300px) minmax(0, 1fr); gap: var(--space-5); }
 }
-@container (max-width: 35.99rem) {
+@container (max-width: 29.99rem) {
   .host [data-passport-book-body] { grid-template-columns: minmax(0, 1fr); gap: var(--space-4); }
   .host [data-passport-slots] { display: flex; overflow-x: auto; scroll-snap-type: x proximity; padding-block-end: var(--space-1); }
   .host [data-passport-slots] > * { flex: 0 0 72px; scroll-snap-align: start; }

@@ -28,6 +28,17 @@
 /* The neutral 준비 중 / 받기 button keeps the primary's 48 at 1024+ so both cards end on the same line. */
 @media (width >= 64rem) { .swap .reward { min-block-size:var(--space-12); } }
 @container (width >= 30rem) { .cell { padding:var(--space-4) var(--space-5); } }
+/* 덕질 두 열(584·664): the cells sit side by side (재료 → 결과) and the button stays underneath at full width, so a cell is about as wide
+   as on a phone and the name, the balance and the amount stay together (stacked full-width cells left 44–72% of the row empty). */
+@container (width >= 36rem) {
+ .cells { grid-template-columns:minmax(0,1fr) minmax(0,1fr); }
+ .cell { padding:var(--space-4); }
+ /* The 32px chip sits on the seam: the cells keep 24 on that side so the amount and the next asset clear it. */
+ .cell[data-side="from"] { padding-inline-end:var(--space-6); }
+ .cell[data-side="to"] { padding-inline-start:var(--space-6); }
+ .joint { transform:translate(-50%,-50%) rotate(-90deg); }
+ .bar { min-inline-size:24px; }
+}
 @container (width >= 45rem) {
  .swap { grid-template-columns:minmax(0,1fr) 200px; align-items:center; column-gap:var(--space-4); }
  .cells { grid-template-columns:minmax(0,1fr) minmax(0,1fr); }

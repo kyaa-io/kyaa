@@ -63,8 +63,8 @@ export function StanWallet({ locale, state, stamps, hearts, links, className, fa
   const claimable = full && Boolean(links.claim) && adReady;
   const n = (value: number) => value.toLocaleString(locale);
   const ko = locale === "ko";
-  /** 보유 N: the real balance (137P stays 137P past the cost), or the locked / loading / missing mark in the same line. */
-  const held = (slot: StanSlot, text: string) => typeof slot === "number" ? s("stanHeld", [text]) : slot === "loading" ? <FanSkeleton width={64} height={16} /> : slot === "locked" ? <FanLockedValue locale={locale} /> : "—";
+  /** 보유 N: the real balance (137P stays 137P past the cost), or the locked / loading mark in the same line. A balance that failed to load leaves the line empty (the section's own error and retry say so) — no dash. */
+  const held = (slot: StanSlot, text: string) => typeof slot === "number" ? s("stanHeld", [text]) : slot === "loading" ? <FanSkeleton width={64} height={16} /> : slot === "locked" ? <FanLockedValue locale={locale} /> : null;
   const amount = (sign: "−" | "+", value: number, unit: string) => <FanNumber size="lg" value={value} unit={unit || undefined} icon={sign} locale={locale} className={styles.amount} />;
   type Side = { cell: string; kind: keyof typeof WALLET_ASSETS; name: string; held: ReactNode; amount: ReactNode; bar?: { value: number; max: number; text: string; label: string } };
   const body = (side: Side) => <>

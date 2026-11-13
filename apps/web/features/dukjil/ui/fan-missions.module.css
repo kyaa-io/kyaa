@@ -55,7 +55,8 @@
 .unfolded[data-expanded="false"] [data-mobile-extra]{display:none}
 .moreButton{display:none;width:100%;min-height:44px;border:0;background:var(--color-surface);color:inherit;font:inherit;cursor:pointer}
 .unfolded:has([data-mobile-extra]) .moreButton{display:block}
-@container (min-width:44rem){
+/* 두 열은 목록 폭 576부터(덕질 두 열의 584·664 포함): 한 열로 두면 진행 막대 없는 행의 이름과 보상 사이가 행 폭의 65%까지 빈다. */
+@container (min-width:36rem){
  .unfoldedGrid{grid-template-columns:repeat(2,minmax(0,1fr))}
  .unfoldedGrid>ul>li{box-shadow:inset -1px -1px var(--color-line-subtle)}
  .unfolded[data-expanded="false"] [data-mobile-extra]{display:block}
