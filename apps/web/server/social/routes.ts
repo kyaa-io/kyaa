@@ -125,6 +125,12 @@ const signedInByRefSchema = socialProfileSchema.extend({ reach: socialReachSchem
 
 export function createSocialHandlers(deps: SocialDependencies) {
   return {
+    async searchProfiles(request: Request) { try {
+      const appUserId = await owner(request, deps);
+      const query = z.string().trim().min(2).max(80).parse(one(new URL(request.url), "q"));
+      const result = await deps.rpc("search_social_profiles", { p_app_user_id: appUserId, p_query: query });
+      return json(checked(z.object({ items: z.array(z.object({ profileId: uuid, nickname: z.string().min(1).max(80) }).strict()).max(20) }).strict(), result));
+    } catch (error) { return failure(error); } },
     async profile(request: Request, profileId: string) { try {
       const appUserId = await owner(request, deps); const url = new URL(request.url);
       const activityCursor = decodeActivityCursor(one(url, "activityCursor"));
