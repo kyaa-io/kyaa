@@ -14,6 +14,8 @@
 
 /* 키 비주얼: 포스터 사진 위에 이벤트 이름·종류·기간만 HTML로 얹는다. 사진의 빈 쪽(모바일 위, 48rem부터 왼쪽)이 글자 자리 */
 .keyVisual { aspect-ratio: 1131 / 1150; border-radius: var(--radius-card); margin-block: var(--space-4) var(--fan-section-gap); min-width: 0; }
+/* 사진 속 카드 인쇄: 사진이 바뀌는 폭(48rem)에서 같이 바뀐다 */
+.kvPrintWide { display: none; }
 .keyText { position: absolute; inset: 0; display: grid; align-content: start; gap: var(--space-3); padding: var(--space-8) var(--space-5); }
 .keyText h1 { display: grid; gap: var(--space-2); }
 /* 얼마·무엇을·몇 명: 한 줄, 사이 1px 선 */
@@ -91,6 +93,8 @@
 /* 48rem부터: 키 비주얼은 가로 사진(글자 왼쪽), 경품 카드 네 묶음 한 줄 */
 @media (width >= 48rem) {
   .keyVisual { aspect-ratio: 1920 / 640; }
+  .kvPrintTall { display: none; }
+  .kvPrintWide { display: block; }
   .keyText { align-content: center; padding: var(--space-8) var(--space-10); }
   .prizeDesk { padding: var(--space-8) var(--space-6) var(--space-5); }
   .prizes { grid-template-columns: repeat(4, minmax(0, 1fr)); }

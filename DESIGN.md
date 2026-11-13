@@ -185,7 +185,7 @@ radius-scale: "pill / 16px / 12px / 8px / 50%"
 | `PromoBanner` (`components/banner-slot`) | 그림 없는 한 열 배너 카드 | `tag`(광고) | — |
 | `FanIcon` · `ReactionIcon` | lucide 아이콘 16·20·24 / 좋아요·댓글 채운 아이콘 | `icon` `size` `filled` / `kind` | 이모지·다른 아이콘 세트 |
 | `FanDisplay` (이벤트·캠페인 상세 전용) | 큰 금액·가는 숫자·에디토리얼 제목 | `role` amount·figure-xl·figure·figure-sm·title·heading·lead·strong·body·caption·mono, `as` | 앱 탭 화면(홈·모임·덕질·MY·랭킹·팬페이지) |
-| `FanPrint` (이벤트·캠페인 상세 전용) | 응모권·기프트카드·패스포트·기회 카드 같은 인쇄 소품 | Ticket·Gift·Passport·Chance·Desk | 정보를 담지 않는 빈 소품 |
+| `FanPrint` (이벤트·캠페인 상세 전용) | 응모권·기프트카드·패스포트·기회 카드 같은 인쇄 소품 | Ticket·Gift·Passport·Chance·Desk·PhotoInk | 정보를 담지 않는 빈 소품 |
 
 ### 7-1. 어느 것을 쓸까
 1. 답을 받아야 넘어가면 `FanDialog`, 390에서 긴 선택이면 `FanSheet`.
@@ -2689,6 +2689,12 @@ D-C token ownership: `FanHeading variant="campaign"` owns the 18px/700 mobile an
 - **숫자**: optical 줄은 비례폭 숫자(`font-variant-numeric: normal`)다. 고정폭 `1`은 칸 가운데에 놓여 왼쪽이 비기 때문이다. 값이 바뀌는 숫자(남은 시간·카운트)는 고정폭이 필요하므로 optical을 쓰지 않는다.
 - **쓰지 않는 곳**: 줄 중간의 글자(앞 글자와의 사이가 좁아진다), 가운데·오른쪽 정렬 줄, 오른쪽에서 왼쪽으로 쓰는 언어(재지 않고 그대로 둔다).
 - **검증**: 4배 캡처에서 줄마다 가장 왼쪽 잉크 픽셀 열이 같은지 본다. 래플 키 비주얼 네 줄(`KYAA 래플`·`신규 가입 이벤트`·`US$400`·`11월 10일 ~ 11월 30일`)은 390에서 36.00, 1440에서 104.00으로 같다.
+
+### KYAA 래플 상세 v5.3 — 키 비주얼 카드에 인쇄 (2026-11-13)
+사용자 "뒤에 이미지 쓰여져 있는게 없는데?"(11/12 "애셋에 내용이 너무 비어있는데"와 같은 지적). 키 비주얼 사진 속 카드·꼬리표가 빈 종이라 무엇을 주는 이벤트인지 그림으로 안 보였다. 아래 v5.2 절의 글자 네 줄·사진 비율은 그대로다.
+- **`FanPrintPhotoInk`**(`components/fan-ui/fan-print.tsx`): 책상 사진 속 빈 카드에 인쇄를 찍는 SVG. `viewBox` = 사진 픽셀, `preserveAspectRatio="xMidYMid slice"`(= `object-fit: cover` 가운데)라 사진이 잘려도 카드 자리에 붙는다. 카드마다 사진에서 잰 세 모서리(왼쪽 위·오른쪽 위·왼쪽 아래)로 카드 면(1000×630)을 맞추고, 가려진 모서리는 보이는 변의 연장으로 잡는다. 잉크는 `--color-ink` 78% 곱하기, 도장은 `--fan-print-stamp-ink` + `stamps/ink-v1/frame`. `aria-hidden`.
+- **찍는 내용**: 앞 크림 카드 `GIFT CARD`(mono) · kyaa 워드마크(잉크) · `US$100`(thin) · `KYAA RAFFLE 2026`(mono, 가로판만 — 세로판은 봉투 속), 하늘 카드 `US$50`, 금 카드 `US$25`(뒤 카드는 보이는 위쪽 띠에 금액만), 꼬리표 `KYAA / RAFFLE` 붉은 도장. 실제 카드사 로고·상표는 그리지 않는다(`Visa 기프트카드`는 HTML 글자에만). 인쇄 문구는 언어와 상관없이 같다.
+- **사진을 바꾸면** 모서리 좌표(`app/s/raffle/key-visual-print.tsx`)를 다시 재고 390·1440에서 글자가 앞 카드 가장자리를 넘지 않는지 본다.
 
 ### KYAA 래플 상세 v5.2 — 친구 초대 +3 · 덕질 행동 스탬프 · 키 비주얼에 총액 (2026-11-13)
 사용자 "공유하면 확률 업 되고 그런거는 어떨까?" → 결정 "내 링크로 친구가 가입하면 +3"(친구당), "덕질들 … 작게라도 asset은 항상", 독립 검토(gpt-review-5, 84점) 상위 수정. 아래 v5.1 절의 흐름·three.js·하단 고정 줄은 그대로이고 달라진 곳만 적는다.
