@@ -94,19 +94,19 @@ it('대표 11/11 + 사용자 12:26: without an ad unit 교환 and 받기 read �
   render(<GroupBenefitsScreen locale='ko'/>);await screen.findAllByText('137');
   await waitFor(()=>expect(document.querySelector('[data-cell="stamps"]')).toHaveTextContent('9 / 9'));
   // 사용자 12:26: both read 준비 중 (no other notice) and stay disabled.
-  const wallet=document.querySelector('[data-wallet-card]') as HTMLElement;
-  const preparing=within(wallet).getAllByRole('button',{name:'준비 중'});
+  // 대표 11/13 09:39: the two swap lines head 럭키드로우 and 덕질 미션.
+  const preparing=[...document.querySelectorAll('[data-wallet-card]')].flatMap(card=>within(card as HTMLElement).getAllByRole('button',{name:'준비 중'}));
   expect(preparing.map(b=>b.closest('[data-column]')?.getAttribute('data-column'))).toEqual(['tickets','hearts']);
   expect(preparing.every(b=>(b as HTMLButtonElement).disabled)).toBe(true);
-  expect(within(wallet).queryByRole('button',{name:'교환 ×1'})).toBeNull();
-  expect(within(wallet).queryByRole('link',{name:'받기 ×1'})).toBeNull();
+  expect(within(document.body).queryByRole('button',{name:'교환 ×1'})).toBeNull();
+  expect(within(document.body).queryByRole('link',{name:'받기 ×1'})).toBeNull();
  }finally{adUnit.value='/123/rewarded';}
 });
 it('DUO: preserves the approved block order, four tiles and a single check-in action',async()=>{
  duoData(); const v=render(<GroupBenefitsScreen locale='ko'/>);
  await screen.findByText('글쓰기');
  const blocks=v.container.querySelectorAll('[data-duo-profile],[data-duo-lucky],[data-wallet-card],[data-fan-missions],[data-duo-today],[data-duo-rail],[data-duo-history]');
- expect([...blocks].map(el=>el.getAttributeNames().find(n=>n.startsWith('data-duo-')||n==='data-wallet-card'||n==='data-fan-missions'))).toEqual(['data-wallet-card','data-duo-lucky','data-fan-missions']);
+ expect([...blocks].map(el=>el.getAttributeNames().find(n=>n.startsWith('data-duo-')||n==='data-wallet-card'||n==='data-fan-missions'))).toEqual(['data-wallet-card','data-duo-lucky','data-wallet-card','data-fan-missions']);
  expect([...v.container.querySelectorAll('[data-cell]')].map(n=>n.getAttribute('data-cell'))).toEqual(['points','tickets','stamps','hearts']);
  // C4: no blur, no cover, no inert ancestor; only the enter button rests, with its reason attached.
  const card=v.container.querySelector('[data-duo-lucky]') as HTMLElement;
@@ -162,8 +162,8 @@ it('DUO: keeps unaffordable exchange disabled and enables it after the shared wa
 it.each(APP_LOCALES)('DUO: keeps the signed-out layout and locks balances in %s without private reads',async(locale)=>{
  auth.authenticated=false;session.ownerId=null as any;bias.value={...bias.value,status:'guest'};
  const v=render(<GroupBenefitsScreen locale={locale}/>);await screen.findAllByRole('link',{name:walletCopy(locale).login});
- // 59bc0b1ba: signed out, one login scene replaces the wallet's cells.
- expect(v.container.querySelectorAll('[data-wallet-card] [data-cell]')).toHaveLength(0);
+ // 대표 11/13 09:39 (replaces 59bc0b1ba's login scene): signed out, both swap lines keep their cells with locked values and the sign-in action.
+ expect([...v.container.querySelectorAll('[data-wallet-card] [data-cell]')].map(n=>n.getAttribute('data-cell'))).toEqual(['points','tickets','stamps','hearts']);
  expect(v.container.querySelector('[data-wallet-card]')?.textContent).not.toContain('137');
  expect(requests.some(url=>url.startsWith('/api/me/'))).toBe(false);
  expect(requests.some(url=>url.includes('mine=joined')||url.includes('/leaderboard')||url.includes('/public-people'))).toBe(false);

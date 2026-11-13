@@ -42,7 +42,7 @@ window.fetch=async(input,init)=>{
   const body=JSON.parse(String(init?.body)),old=receipts.get(body.requestKey);if(old)return Response.json(old);
   tickets-=body.count;const result={requestKey:body.requestKey,campaignId:id,count:body.count,tickets,results:Array.from({length:body.count},(_,i)=>({index:i+1,prizeId:i===0?second:null,name:i===0?'합성 경품 · Synthetic prize':null,imageUrl:i===0?'/images/groups/nchive-goods-concept.png':null}))};receipts.set(body.requestKey,result);return Response.json(result);
  }
- if(path==='/api/dukjil/catalog')return Response.json({version:1,rules:{checkin:{points:10}},missionBook:null});
+ if(path==='/api/dukjil/catalog')return Response.json({version:1,rules:{checkin:{points:10}},missionBook:q.has('book')?{pages:[{slots:['quiz','checkin','post','comment','share','invite','subscription','steady_checkin','proof'].map((action,i)=>({slot:i+1,action}))}]}:null});
  if(path==='/api/groups'&&url.searchParams.get('mine')==='joined')return Response.json({items:state==='empty'?[]:[{id,kind:'fan',celebrityId:second,slug:'synthetic-creator',name:'합성 크리에이터 · Synthetic creator',description:'합성 소개',imageUrl:'/images/groups/nchive-group.webp',question:null,memberCount:1}],nextCursor:null});
  if(path==='/api/me/attendance')return Response.json({kstDate:'2026-11-01',items:[{celebrityId:second,attendedToday:false,streak:1,nextBonusIn:4,hasPassport:true}]});
  if(path==='/api/rankings/creators')return Response.json({period:'week',periodStart:'2026-10-26',computedAt:'2026-11-01T01:00:00.000Z',rows:state==='empty'?[]:[{rank:1,slug:'synthetic-creator',name:'합성 크리에이터 · Synthetic creator',imageUrl:'/images/groups/nchive-group.webp',score:120,jjinfanCount:37,myHearts:12}]});

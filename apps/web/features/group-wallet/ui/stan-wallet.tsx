@@ -11,7 +11,6 @@ import { useFanWide } from "@/components/fan-ui/fan-dialog";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import { FanHeading } from "@/components/fan-ui/fan-heading";
 import { FanLockedValue } from "@/components/fan-ui/fan-locked-value";
-import { FanLoginScene } from "@/components/fan-ui/fan-login-scene";
 import { FanNumber } from "@/components/fan-ui/fan-number";
 import { FanSkeleton } from "@/components/fan-ui/fan-skeleton";
 import { dukjilText } from "@/features/dukjil/ui/dukjil-copy";
@@ -43,12 +42,12 @@ function useRewardedAdReady() {
   return useSyncExternalStore(noSubscribe, () => Boolean(rewardedAdUnit()), () => false);
 }
 
-/** 덕질 wallet (사용자·대표 11/13 09:13~09:16, crypto-wallet benchmark: balance card + convert): two separate sections, 포인트 · 응모권 then
- *  스탬프 · 하트, never mixed in one card. Each section = its title, then one bordered box: the material balance big (3D coin | stamp + count)
- *  with what you hold on the right (보유 N, links to my raffles | hearts), then one line of progress (count over a thin bar) and the one
- *  conversion button (100P → 응모권 1장 | 스탬프 9 → 하트 1, video icon = after the rewarded ad). The button is primary only when it can be
- *  pressed; with no ad unit it reads 준비 중. 390: sections stack; 1024+: side by side. */
-export function StanWallet({ locale, state, stamps, hearts, links, className, favoritePicker }: { locale: AppLocale; state: WalletCardState; stamps: StanSlot; hearts: StanSlot; links: { hearts: string; claim?: string }; className?: string; favoritePicker?: ReactNode }) {
+/** 덕질 wallet swap rows (대표 11/13 09:39): 덕질 has two sections, and each is headed by ONE line of the crypto-wallet swap —
+ *  [my balance: label, asset + N / goal, thin bar] → [what I get: 보유 N, asset + 응모권 +1장 | 하트 +1개] [one button].
+ *  `part` renders one row (tickets heads 럭키드로우, hearts heads 덕질 미션); without it both rows stack (fixtures). The button runs behind the
+ *  rewarded ad (video icon), is primary only when it can be pressed, and reads 준비 중 without an ad unit. A guest sees the same row
+ *  with locked values and the sign-in action in the button's place. */
+export function StanWallet({ locale, state, stamps, hearts, links, className, favoritePicker, part }: { locale: AppLocale; state: WalletCardState; stamps: StanSlot; hearts: StanSlot; links: { hearts: string; claim?: string }; className?: string; favoritePicker?: ReactNode; part?: "tickets" | "hearts" }) {
   const w = walletCopy(locale), s = (key: Parameters<typeof dukjilText>[1], values?: unknown[]) => dukjilText(locale, key, values);
   const [open, setOpen] = useState(false), titleId = useId(), wide = useFanWide(), Overlay = wide ? Dialog : BottomSheet;
   const pendingRequest = usePendingExchange();
@@ -61,60 +60,42 @@ export function StanWallet({ locale, state, stamps, hearts, links, className, fa
   const pageStamps = full ? STAMPS_PER_HEART : stampCount % STAMPS_PER_HEART;
   const claimable = full && Boolean(links.claim) && adReady;
   const asset = (name: keyof typeof WALLET_ASSETS, size: number, className: string) => <RewardIcon kind={name === "coin" ? "point" : name} size={size} className={className} />;
-  /** Progress = the real count over a thin 8px bar (GPT review 11/13: the count never touches the fill). The fill stops at the goal; the
-   *  count does not, so 137P reads 137 / 100P. */
-  const progress = (label: string, slot: StanSlot, value: number, max: number, current: string, total: string) => {
-    if (slot === "loading") return <FanSkeleton width="100%" height={28} />;
-    if (slot === "locked") return <FanLockedValue locale={locale} />;
-    const ratio = max > 0 ? Math.min(value, max) / max : 0;
+  /** The balance side: label, asset + the real count over the goal (137P reads 137 / 100P; the bar stops at the goal), then a thin bar. */
+  const from = (label: string, kind: "coin" | "stamp", slot: StanSlot, value: number, max: number, current: string, total: string, barLabel: string) => {
+    const ratio = max > 0 ? Math.min(value, max) / max : 0, counted = typeof slot === "number";
     return <>
-      <span className={styles.count} aria-hidden="true">{`${current} / ${total}`}</span>
-      <span className={styles.bar} role="progressbar" aria-label={label} aria-valuemin={0} aria-valuemax={max} aria-valuenow={Math.min(value, max)} aria-valuetext={`${current} / ${total}`}>
+      <span className={styles.swapLabel}>{label}</span>
+      <span className={styles.swapValue}>{asset(kind, 20, styles.swapAsset)}{counted ? <span className={styles.amount}><strong>{current}</strong>{` / ${total}`}</span> : <Value locale={locale} slot={slot} />}</span>
+      {counted ? <span className={styles.bar} role="progressbar" aria-label={barLabel} aria-valuemin={0} aria-valuemax={max} aria-valuenow={Math.min(value, max)} aria-valuetext={`${current} / ${total}`}>
         <span className={styles.barFill} style={{ "--wallet-bar-fill": `${ratio * 100}%` } as CSSProperties} aria-hidden="true" />
-      </span>
+      </span> : null}
     </>;
   };
   /** One button per column. Both run behind the rewarded ad (the small video icon says so); with no ad unit it is the gray 준비 중. */
-  const action = (name: string, enabled: boolean, extra: { onClick: () => void } | { href: string } | null) => <FanAction variant={enabled ? "primary" : "neutral"} className={styles.reward} {...(enabled && extra ? extra : { disabled: true })} leadingIcon={adReady || enabled ? <FanIcon icon={SquarePlay} size={20} /> : undefined}>{adReady || enabled ? name : s("stanPreparing")}</FanAction>;
+  const action = (name: string, enabled: boolean, extra: { onClick: () => void } | { href: string } | null) => state.kind === "guest" ? state.action : <FanAction variant={enabled ? "primary" : "neutral"} className={styles.reward} {...(enabled && extra ? extra : { disabled: true })} leadingIcon={adReady || enabled ? <FanIcon icon={SquarePlay} size={20} /> : undefined}>{adReady || enabled ? name : s("stanPreparing")}</FanAction>;
   const n = (value: number) => value.toLocaleString(locale);
   const ticketText = typeof points === "number" ? n(points) : "—";
   const held = (slot: StanSlot, unit: string) => typeof slot === "number" ? `${n(slot)}${unit}` : "—";
-  return <section className={[styles.wallet, className].filter(Boolean).join(" ")} id="wallet" aria-label={s("stanWalletFlows")} data-wallet-card="stan">
-    <div className={styles.head}><FanHeading>{s("stanWalletFlows")}</FanHeading><FanAction variant="text" href={`/guide/dukjil?locale=${locale}`}>{s("stanGuide")} ›</FanAction></div>
-    {state.kind === "guest" ? <FanLoginScene items={(["coin", "ticket", "stamp", "heart"] as const).map((name) => ({ src: WALLET_ASSETS[name] }))} title={[w.points, w.tickets, s("stanFlowStamps"), s("stanFlowHearts")].join(" · ")} action={state.action} /> : <div className={styles.sections}>
-      <section className={styles.flow} data-column="tickets" aria-labelledby={`${titleId}-tickets`}>
-        <p className={styles.flowTitle} id={`${titleId}-tickets`}>{w.points} · {w.tickets}</p>
-        <div className={styles.box} data-cell="points">
-          <div className={styles.balance}>
-            {asset("coin", 32, styles.balanceAsset)}
-            <span className={styles.value}><Value locale={locale} slot={points} unit="P" /></span>
-            <Link className={styles.held} data-cell="tickets" href={`/my/raffles?locale=${locale}` as Route} aria-label={`${w.tickets} ${typeof tickets === "number" ? n(tickets) : ""}`.trim()}>
-              {asset("ticket", 20, styles.heldAsset)}<span aria-hidden="true">{s("stanHeld", [held(tickets, locale === "ko" ? "장" : "")])}</span><span className={styles.chevron} aria-hidden="true">›</span>
-            </Link>
-          </div>
-          <div className={styles.act}>
-            <div className={styles.progress}>{progress(s("walletNextTicket", [pointCost]), points, ready ? state.points : 0, pointCost, ticketText, `${n(pointCost)}P`)}</div>
-            {action(s("stanConvertTicket", [n(pointCost)]), ready && (Boolean(pendingRequest.pending) || (affordable && adReady)), { onClick: () => setOpen(true) })}
-          </div>
-        </div>
-      </section>
-      {favoritePicker ? <section className={`${styles.flow} ${styles.favoritePicker}`} data-cell="favorite-picker">{favoritePicker}</section> : <section className={styles.flow} data-column="hearts" aria-labelledby={`${titleId}-hearts`}>
-        <p className={styles.flowTitle} id={`${titleId}-hearts`}>{s("stanFlowStamps")} · {s("stanFlowHearts")}</p>
-        <div className={styles.box} data-cell="stamps">
-          <div className={styles.balance}>
-            {asset("stamp", 32, styles.balanceAsset)}
-            <span className={styles.value}><Value locale={locale} slot={stamps} unit={locale === "ko" ? "개" : undefined} /></span>
-            <Link className={styles.held} data-cell="hearts" href={links.hearts as Route} aria-label={`${s("stanFlowHearts")} ${typeof hearts === "number" ? n(hearts) : ""}`.trim()}>
-              {asset("heart", 20, styles.heldAsset)}<span aria-hidden="true">{s("stanHeld", [held(hearts, "")])}</span><span className={styles.chevron} aria-hidden="true">›</span>
-            </Link>
-          </div>
-          <div className={styles.act}>
-            <div className={styles.progress}>{progress(s("stanFlowStamps"), stamps, pageStamps, STAMPS_PER_HEART, typeof stamps === "number" ? String(pageStamps) : "—", String(STAMPS_PER_HEART))}</div>
-            {action(s("stanConvertHeart", [STAMPS_PER_HEART]), claimable, links.claim ? { href: links.claim } : null)}
-          </div>
-        </div>
-      </section>}
-    </div>}
+  const show = (name: "tickets" | "hearts") => !part || part === name;
+  return <section className={[styles.wallet, className].filter(Boolean).join(" ")} id={part ? `wallet-${part}` : "wallet"} aria-label={part === "tickets" ? `${w.points} → ${w.tickets}` : part === "hearts" ? `${s("stanFlowStamps")} → ${s("stanFlowHearts")}` : s("stanWalletFlows")} data-wallet-card="stan" data-wallet-part={part}>
+    {show("tickets") ? <div className={styles.swap} data-column="tickets">
+      <div className={styles.from} data-cell="points">{from(w.points, "coin", points, ready ? state.points : 0, pointCost, ticketText, `${n(pointCost)}P`, s("walletNextTicket", [pointCost]))}</div>
+      <span className={styles.arrow} aria-hidden="true">→</span>
+      <Link className={styles.to} data-cell="tickets" href={`/my/raffles?locale=${locale}` as Route}>
+        <span className={styles.swapLabel}>{typeof tickets === "number" ? s("stanHeld", [held(tickets, locale === "ko" ? "장" : "")]) : w.tickets}</span>
+        <span className={styles.swapValue}>{asset("ticket", 20, styles.swapAsset)}<span className={styles.get}>{s("stanGetTicket")}</span></span>
+      </Link>
+      {action(locale === "ko" ? "교환" : w.exchange, ready && (Boolean(pendingRequest.pending) || (affordable && adReady)), { onClick: () => setOpen(true) })}
+    </div> : null}
+    {show("hearts") ? favoritePicker ? <div className={`${styles.swap} ${styles.favoritePicker}`} data-cell="favorite-picker">{favoritePicker}</div> : <div className={styles.swap} data-column="hearts">
+      <div className={styles.from} data-cell="stamps">{from(s("stanFlowStamps"), "stamp", stamps, pageStamps, STAMPS_PER_HEART, typeof stamps === "number" ? String(pageStamps) : "—", String(STAMPS_PER_HEART), s("stanFlowStamps"))}</div>
+      <span className={styles.arrow} aria-hidden="true">→</span>
+      <Link className={styles.to} data-cell="hearts" href={links.hearts as Route}>
+        <span className={styles.swapLabel}>{typeof hearts === "number" ? s("stanHeld", [held(hearts, "")]) : s("stanFlowHearts")}</span>
+        <span className={styles.swapValue}>{asset("heart", 20, styles.swapAsset)}<span className={styles.get}>{s("stanGetHeart")}</span></span>
+      </Link>
+      {action(s("stanClaim"), claimable, links.claim ? { href: links.claim } : null)}
+    </div> : null}
     {state.kind === "failed" && state.retry ? <FanAction onClick={state.retry}>{w.retry}</FanAction> : null}
     <Overlay open={open && ready} onClose={() => setOpen(false)} labelledBy={titleId} backdropClassName={styles.backdrop} contentClassName={styles.sheet}>
       {!wide && <span className={styles.handle} aria-hidden="true" />}

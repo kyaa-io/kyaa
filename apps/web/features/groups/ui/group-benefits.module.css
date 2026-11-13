@@ -185,6 +185,10 @@ section.pWallet{position:relative;box-sizing:border-box}
 /* 럭키드로우 구역: 지갑 카드와 분리된 자기 머리(제목 + 지난 럭키드로우)와 카드. 구역 간격은 .main의 gap. */
 .luckySection{display:grid;gap:var(--space-2);min-width:0}
 .luckySection > [data-fan-section-header]{margin-bottom:0}
+/* 덕질 미션 section (대표 11/13 09:39): the same head-then-blocks rhythm as 럭키드로우. */
+.missionsSection{display:grid;gap:var(--space-2);min-width:0}
+.missionsSection > [data-fan-section-header]{margin-bottom:0}
+.missionsSection > [data-wallet-card]{margin-bottom:var(--space-1)}
 
 /* 모바일 럭키드로우: 제목과 카드 사이를 좁힌다(2026-11-13 Bug_Report). */
 @media (width < 48rem){.luckySection > [data-fan-section-header]{min-height:0}}
