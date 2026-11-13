@@ -16,6 +16,35 @@ export async function readSignupRaffleSnapshot(database: Pick<DataClient, 'rpc'>
   if (result.error) throw new Error('SIGNUP_RAFFLE_READ_FAILED');
   return localSnapshotSchema.parse(result.data);
 }
+const storedPage = 1000;
+const storedEntry = z.object({ app_user_id: z.uuid(), entered_at: z.string(), passport_received: z.boolean(), community_joined: z.boolean() });
+const storedAction = z.object({ app_user_id: z.uuid(), kind: z.string(), source_id: z.string(), occurred_at: z.string() });
+async function readAll<T>(database: Pick<DataClient, 'from'>, table: string, columns: string, row: z.ZodType<T>) {
+  const rows: T[] = [];
+  for (let from = 0; ; from += storedPage) {
+    const result = await database.from(table).select(columns).order('id').range(from, from + storedPage - 1);
+    if (result.error) throw new Error('SIGNUP_RAFFLE_READ_FAILED');
+    const page = z.array(row).parse(result.data);
+    rows.push(...page);
+    if (page.length < storedPage) return rows;
+  }
+}
+/**
+ * Everyone's stored raffle rows, read without refreshing them (read_signup_raffle_snapshot(null) would rewrite every participant).
+ * A participant's rows are refreshed whenever that participant opens the page or enters, so this is at most slightly behind.
+ * Used only for the page's approximate total of chances; the draw still reads the refreshed snapshot.
+ */
+export async function readSignupRaffleStored(database: Pick<DataClient, 'from'>): Promise<LocalSnapshot> {
+  const [entries, actions] = await Promise.all([
+    readAll(database, 'signup_raffle_entries', 'app_user_id,entered_at,passport_received,community_joined', storedEntry),
+    readAll(database, 'signup_raffle_actions', 'app_user_id,kind,source_id,occurred_at', storedAction),
+  ]);
+  return localSnapshotSchema.parse({
+    users: entries.map(row => ({ id: row.app_user_id, createdAt: row.entered_at, passportReceived: row.passport_received, communityJoined: row.community_joined })),
+    entries: entries.map(row => ({ userId: row.app_user_id, enteredAt: row.entered_at })),
+    actions: actions.map(row => ({ userId: row.app_user_id, kind: row.kind, sourceId: row.source_id, occurredAt: row.occurred_at })),
+  });
+}
 /** Key for the export alias. Derived with its own label so the alias never shares key material with another use. */
 export function signupRaffleAliasKey() {
   const secret = loadServerEnv().SUPABASE_SERVICE_ROLE_KEY;

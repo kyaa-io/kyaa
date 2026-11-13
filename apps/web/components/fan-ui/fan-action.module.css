@@ -71,7 +71,7 @@
 }
 
 .neutral {
-  border-color: var(--color-line);
+  border-color: var(--color-ink);
   background: var(--color-surface);
   color: var(--color-ink);
 }

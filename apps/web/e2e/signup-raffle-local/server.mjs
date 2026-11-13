@@ -8,6 +8,7 @@ export async function startHarness() {
   resolve: { alias: [
    { find: '@/features/auth/client/cognito-auth', replacement: path.join(here, 'auth.ts') },
    { find: '@', replacement: web },
+   { find: 'next/dynamic', replacement: path.join(here, 'next-dynamic.tsx') },
    { find: 'next/navigation', replacement: path.join(web, 'e2e/banner-local/next-navigation.ts') },
    { find: 'next/link', replacement: path.join(web, 'e2e/mission-local/next-link.tsx') },
    { find: 'next/image', replacement: path.join(web, 'e2e/mission-local/next-image.tsx') },
