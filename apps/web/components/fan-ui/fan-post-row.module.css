@@ -1,10 +1,11 @@
 .row {
   position: relative;
   display: grid;
-  grid-template-columns: 48px minmax(0, 1fr);
-  grid-template-areas: "thumb head" "thumb meta";
+  /* 썸네일 칸에 칸 간격(12)을 넣고 열 간격은 0: 공지 칩 칸이 없는 행에서 칩 자리가 비지 않는다. */
+  grid-template-columns: calc(48px + var(--space-3)) auto minmax(0, 1fr);
+  grid-template-areas: "thumb head head" "thumb chip meta";
   align-items: center;
-  column-gap: var(--space-3);
+  column-gap: 0;
   row-gap: var(--space-1);
   box-sizing: border-box;
   min-height: 60px;
@@ -33,7 +34,8 @@
 /* 페이지 이미지는 사진처럼 칸을 채우지 않고 칸 가운데에 둥글게 둔다. */
 .thumb[data-page-image] > * { flex: none; }
 .head { grid-area: head; display: flex; align-items: center; gap: var(--space-1); min-width: 0; }
-.head > [data-fan-tag] { margin-right: var(--space-1); }
+/* 공지 칩: 모바일은 정보 줄 맨 앞, 넓은 화면은 제목 앞. 제목 시작점은 칩 유무와 무관하게 같다(모바일). */
+.chip { grid-area: chip; margin-right: var(--space-1); }
 .title {
   overflow: hidden;
   min-width: 0;
@@ -81,14 +83,14 @@
 
 @media (min-width: 48rem) {
   .row {
-    grid-template-columns: 56px minmax(0, 1fr) auto;
-    grid-template-areas: "thumb head meta";
-    column-gap: var(--space-3);
+    grid-template-columns: calc(56px + var(--space-3)) auto minmax(0, 1fr) auto;
+    grid-template-areas: "thumb chip head meta";
     min-height: 52px;
     padding: var(--space-1) 0;
   }
   .thumb { width: 56px; }
-  .meta { justify-content: flex-end; text-align: right; gap: var(--space-2); max-width: 60vw; }
+  .chip { margin-right: var(--space-2); }
+  .meta { justify-content: flex-end; text-align: right; gap: var(--space-2); max-width: 60vw; margin-left: var(--space-3); }
   .meta > * + *::before { content: "│"; margin-right: var(--space-2); color: var(--color-line); }
   /* 게시판은 행끼리 세로로 맞는다. 긴 이름만 줄임표로 줄고 수와 시간 열은 움직이지 않는다. */
   .row[data-density="board"] .meta { gap: var(--space-3); }
