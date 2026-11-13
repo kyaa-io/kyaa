@@ -19,11 +19,12 @@ export class CreatorRegistrationChain implements RegistrationChain {
     const [chainId, code, pointer, registrar] = await Promise.all([
       this.client.getChainId(),
       this.client.getCode({ address: deployment.registry, ...at }),
-      this.client.readContract({ address: deployment.hub, abi: registrationAbi, functionName: "contextRegistry", ...at }),
+      // The base Hub has no getter; the registry shares this slot with the paused flag.
+      this.client.getStorageAt({ address: deployment.hub, slot: "0x9b4561162b6d58cdaee430aa4073a2ec544ff4ca21320ef4e942bd0b419f7707", ...at }),
       this.client.readContract({ address: deployment.registry, abi: registrationAbi, functionName: "registrar", ...at }),
     ]);
     requireRegistration(chainId === deployment.chainId && code && keccak256(code) === deployment.runtime
-      && pointer.toLowerCase() === deployment.registry && registrar.toLowerCase() === this.registrar.toLowerCase(), "REGISTRATION_DEPLOYMENT_CHANGED");
+      && pointer && /^0x[0-9a-f]{64}$/i.test(pointer) && `0x${pointer.slice(-40)}`.toLowerCase() === deployment.registry && registrar.toLowerCase() === this.registrar.toLowerCase(), "REGISTRATION_DEPLOYMENT_CHANGED");
   }
   private async context(claim: RegistrationClaim, blockNumber?: bigint) {
     return this.client.readContract({ address: deployment.registry, abi: registrationAbi, functionName: "isValidContext", args: [registrationId(claim.job.creator_id), claim.job.campaign_id ? registrationId(claim.job.campaign_id) : zero], ...(blockNumber === undefined ? {} : { blockNumber }) });
