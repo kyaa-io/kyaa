@@ -231,6 +231,7 @@ radius-scale: "pill / 16px / 12px / 8px / 50%"
    - 같은 칸에 정지 그림(poster)을 먼저 깔고 장면을 겹친다. 높이는 처음부터 차지한다(CLS 0).
    - 폴백(정지 그림 유지): `prefers-reduced-motion`, WebGL2 없음·GPU 0등급(`gpu.ts` `canRunCapsuleMachine`), 데이터 절약(`saveData`), 인앱 브라우저·저사양, `webglcontextlost`, 프레임 24fps 미만.
    - 첫 로드 번들에 three.js를 넣지 않는다.
+   - 래플 결과 팝업(`features/capsule-machine/raffle-result-capsule.tsx`, 대표 11/13 09:12): 추첨이 저장된 뒤 응모자만 `/s/raffle`의 `결과 확인`(마감 뒤 primary 1)으로 연다. `FanDialog md` 안에서 같은 기계 엔진이 서버 결과를 한 번 꺼내고(당첨 level 1, US$100은 2, 미당첨 0), 끝나면 같은 칸에 결과(당첨: `FanPrintGiftCard` 금액 + 수령 안내 primary / 미당첨: 빈 캡슐 + 감사 한 줄). three.js는 팝업이 열린 뒤에만, 움직임 줄이기·GPU 없음·3초 안에 장면 없음이면 결과만.
 2. **최소: 의미 있는 애니메이션.** 값이나 상태가 실제로 바뀐 것을 알린다. 예:
    - 숫자 롤링(`RollingNumber`: 랭킹·헤더 칩·접속 수, 처음 보일 때 0에서 한 번, 이후 값이 바뀔 때만)
    - 스탬프 찍힘(`stamp-slam` 0.9s) · 보상 팝(`celebrateReward`)

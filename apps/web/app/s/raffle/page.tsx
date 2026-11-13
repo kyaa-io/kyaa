@@ -14,17 +14,17 @@ export async function generateMetadata({ searchParams }: Props) {
   const locale = parseAppLocale((await searchParams).locale);
   return { title: signupRaffleText(locale, 'title'), description: `US$400 · ${signupRaffleText(locale, 'winners')} · ${signupRaffleText(locale, 'deadline')}` };
 }
-const previews = ['in', 'entered', 'passport', 'done', 'error'] as const;
+const previews = ['in', 'entered', 'passport', 'done', 'error', 'won', 'lost'] as const;
 export default async function RafflePage({ searchParams }: Props) {
   if (!localSignupEnabled()) notFound();
   const query = await searchParams;
   const locale = parseAppLocale(query.locale);
   const now = Date.now();
   const closesAt = Date.parse(rafflePolicySchema.parse({}).closesAt);
-  // 개발 서버에서만: 상태별 화면 확인용(?preview=in|entered|passport|done|error|closed). 운영 빌드에서는 무시한다.
+  // 개발 서버에서만: 상태별 화면 확인용(?preview=in|entered|passport|done|error|closed|won|lost). won·lost는 추첨 뒤 결과 팝업. 운영 빌드에서는 무시한다.
   const requested = process.env.NODE_ENV === 'production' ? undefined : query.preview;
   const preview = previews.find(value => value === requested) as RafflePreview;
-  const closed = now > closesAt || requested === 'closed';
+  const closed = now > closesAt || requested === 'closed' || preview === 'won' || preview === 'lost';
   return <FanAppFrame locale={locale} currentPath="/s/raffle" mainId="raffle-main">
     <div className={styles.stage}>
       <FanContentContainer as="main" id="raffle-main" className={styles.column}>

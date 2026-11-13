@@ -12,10 +12,13 @@ import { communityInviteSchema } from '@/features/community-stamps/domain/commun
 import { communityStampAction } from '@/features/community-stamps/ui/use-community-stamps';
 import { useByUsAuth } from '@/features/auth/client/cognito-auth';
 import { FanAction, FanActionStatus } from '@/components/fan-ui/fan-action';
+import type { RaffleCapsuleResult } from '@/features/capsule-machine/raffle-result-capsule';
+import { RaffleResultEntry } from './result-entry';
+import { signupRaffleResultSchema } from '@/server/signup-event/result';
 import styles from './raffle.module.css';
 
 /** 개발 서버에서 로그인 없이 상태별 화면을 보기 위한 표시 전용 값(서버 규칙·API와 무관). */
-export type RafflePreview = 'in' | 'entered' | 'passport' | 'done' | 'error' | undefined;
+export type RafflePreview = 'in' | 'entered' | 'passport' | 'done' | 'error' | 'won' | 'lost' | undefined;
 
 type Ctx = {
   locale: AppLocale; closed: boolean; closesAt: number; now: number; ready: boolean; signedIn: boolean; pending: boolean; entered: boolean;
@@ -24,6 +27,8 @@ type Ctx = {
   chances?: number; friends?: number;
   /** 내 친구 초대 코드(로그인했을 때만). 공유 주소에 붙는다. */
   inviteCode?: string;
+  /** 마감 뒤 내 결과(서버에 저장된 추첨이 있고 내가 응모했을 때만). 추첨 전·미응모·조회 실패는 없다. */
+  result?: RaffleCapsuleResult;
   enter: () => void; login: () => void; t: (key: SignupRaffleLongformKey, count?: number) => string; s: (key: Parameters<typeof signupRaffleText>[1]) => string;
 };
 const RaffleContext = createContext<Ctx | null>(null);
@@ -41,6 +46,7 @@ export function RaffleProvider({ locale, closed, closesAt, now, preview, invite,
   const [pending, setPending] = useState(false);
   const [entered, setEntered] = useState(false), [passport, setPassport] = useState(false), [community, setCommunity] = useState(false), [error, setError] = useState(false);
   const [chances, setChances] = useState<number>(), [friends, setFriends] = useState<number>(), [inviteCode, setInviteCode] = useState<string>();
+  const [result, setResult] = useState<RaffleCapsuleResult>();
   const received = useRef<string | undefined>(undefined);
   const p = preview;
   const apply = useCallback((result: EntryResult) => {
@@ -75,6 +81,21 @@ export function RaffleProvider({ locale, closed, closesAt, now, preview, invite,
     })();
     return () => { live = false; };
   }, [p, closed, auth.ready, auth.authenticated, request, apply, getAccessToken]);
+  // 마감 뒤: 서버에 저장된 추첨이 있을 때만 내 결과가 온다(여기서 뽑지 않는다). 못 읽으면 결과 확인 버튼을 내지 않는다.
+  useEffect(() => {
+    if (p || !closed || !auth.ready || !auth.authenticated) return;
+    let live = true;
+    void (async () => {
+      try {
+        const token = await getAccessToken(); if (!token) return;
+        const response = await fetch('/api/signup-event/result', { headers: { authorization: `Bearer ${token}` } });
+        if (!response.ok) return;
+        const mine = signupRaffleResultSchema.parse(await response.json());
+        if (live && (mine.state === 'won' || mine.state === 'lost')) setResult(mine);
+      } catch { /* 결과 확인 버튼 없이 마감 줄만 */ }
+    })();
+    return () => { live = false; };
+  }, [p, closed, auth.ready, auth.authenticated, getAccessToken]);
   const view = {
     signedIn: auth.authenticated || !!p,
     entered: entered || p === 'entered' || p === 'passport' || p === 'done',
@@ -92,7 +113,9 @@ export function RaffleProvider({ locale, closed, closesAt, now, preview, invite,
     catch { setError(true); }
     finally { setPending(false); }
   }
-  const value: Ctx = { locale, closed, closesAt, now, ready: auth.ready || !!p, pending, ...view, chances, friends, inviteCode, enter, login: auth.login, t: (key, count) => raffleLongformText(locale, key, count), s: (key) => signupRaffleText(locale, key) };
+  // 개발 미리보기 won·lost: 로그인·API 없이 결과 팝업만 본다(US$100 당첨 / 미당첨). 운영 빌드에는 preview 값이 오지 않는다.
+  const shown = p === 'won' ? { state: 'won' as const, usd: 100 } : p === 'lost' ? { state: 'lost' as const } : result;
+  const value: Ctx = { locale, closed, closesAt, now, ready: auth.ready || !!p, pending, ...view, chances, friends, inviteCode, result: shown, enter, login: auth.login, t: (key, count) => raffleLongformText(locale, key, count), s: (key) => signupRaffleText(locale, key) };
   return <RaffleContext.Provider value={value}>{children}</RaffleContext.Provider>;
 }
 
@@ -136,7 +159,7 @@ const stampPrint = 'ENTERED';
 /** 참여 방법 칸: 응모 버튼(응모 뒤에는 완료 표시 + 도장) · 친구에게 공유 · 마감과 남은 시간 · 한 줄(1인 1응모 / 내 응모 1회 / 오류와 다시 시도). */
 export function RaffleEnterBlock() {
   const r = useRaffle();
-  if (r.closed) return <FanDisplay role="strong" as="p" className={styles.enterEnded} data-state="closed">{r.t('ended')}</FanDisplay>;
+  if (r.closed) return r.result ? <RaffleResultEntry locale={r.locale} result={r.result} /> : <FanDisplay role="strong" as="p" className={styles.enterEnded} data-state="closed">{r.t('ended')}</FanDisplay>;
   return <div className={styles.enter} data-raffle-hero-action>
     <div className={styles.enterActions}>
       <div className={styles.enterCta}><RaffleEnterAction /></div>

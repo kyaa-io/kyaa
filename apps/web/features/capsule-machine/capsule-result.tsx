@@ -10,7 +10,7 @@ import type { CapsuleOutcome } from "./palette-art";
 import styles from "./capsule-machine.module.css";
 
 /** One result capsule: the pre-rendered closed capsule pops open (same materials and light as the 3D scene); a prize image rises out of it. */
-function CapsuleArt({ colorIndex, imageUrl, big, delay }: { colorIndex: number; imageUrl: string | null; big?: boolean; delay: number }) {
+export function CapsuleArt({ colorIndex, imageUrl, big, delay }: { colorIndex: number; imageUrl: string | null; big?: boolean; delay: number }) {
   return <span className={big ? `${styles.capArt} ${styles.capArtBig}` : styles.capArt} style={{ "--d": `${delay}ms` } as CSSProperties} aria-hidden="true">
     <img className={styles.capClosed} src={`/images/capsule-machine/capsule-${colorIndex}-closed.webp`} alt="" width={256} height={256} />
     <img className={styles.capOpen} src={`/images/capsule-machine/capsule-${colorIndex}-open.webp`} alt="" width={256} height={256} />

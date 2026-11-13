@@ -1,5 +1,5 @@
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
-import { afterEach, beforeEach, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 const auth = vi.hoisted(() => ({ authenticated: false, ready: true, login: vi.fn(), getAccessToken: vi.fn(async () => 'token') }));
 vi.mock('@/features/auth/client/cognito-auth', () => ({ useByUsAuth: () => auth }));
 import { RaffleBoostAction, RaffleCountdown, RaffleEnterBlock, RaffleInvitedFriends, RaffleMoreAction, RaffleProvider, raffleCountdown } from './participation';
@@ -116,4 +116,32 @@ it('uses short action labels inside the boost rows and full labels elsewhere', (
   expect(screen.getByRole('link', { name: '받기' })).toBeTruthy();
   expect(screen.getByRole('link', { name: '가입' })).toBeTruthy();
   expect(screen.getByRole('link', { name: 'Fan Passport 받기' })).toBeTruthy();
+});
+
+describe('result after the draw', () => {
+  const closedAt = closesAt + 86_400_000;
+  const answer = (body: unknown, ok = true) => vi.stubGlobal('fetch', vi.fn(async () => ({ ok, json: async () => body })));
+  it.each([
+    [{ state: 'pending' }, true], [{ state: 'not-entered' }, true], [{ state: 'won', usd: 50 }, false], [{ state: 'lost' }, false],
+  ])('shows 결과 확인 only once the server has a stored draw for an entrant (%o)', async (body, hidden) => {
+    auth.authenticated = true;
+    answer(body);
+    render(<RaffleProvider locale="ko" closed closesAt={closesAt} now={closedAt}><RaffleEnterBlock /></RaffleProvider>);
+    await settle();
+    expect(screen.getByText('응모가 마감됐어요')).toBeTruthy();
+    expect(screen.queryByRole('button', { name: '결과 확인' }) === null).toBe(hidden);
+    expect(vi.mocked(fetch).mock.calls[0]![0]).toBe('/api/signup-event/result');
+  });
+  it('asks nothing before the close or without sign-in, and hides the entry when the result cannot be read', async () => {
+    answer({ state: 'won', usd: 10 });
+    render(<RaffleProvider locale="ko" closed closesAt={closesAt} now={closedAt}><RaffleEnterBlock /></RaffleProvider>);
+    await settle();
+    expect(fetch).not.toHaveBeenCalled();
+    cleanup();
+    auth.authenticated = true;
+    answer(null, false);
+    render(<RaffleProvider locale="ko" closed closesAt={closesAt} now={closedAt}><RaffleEnterBlock /></RaffleProvider>);
+    await settle();
+    expect(screen.queryByRole('button', { name: '결과 확인' })).toBeNull();
+  });
 });

@@ -19,6 +19,8 @@ const copy = {
     notice9: "친구 초대: 내 링크로 가입한 친구가 응모하면 친구 1명당 당첨 기회 +3(인원 제한 없음, 이벤트 기간 중 새로 가입한 친구만)",
     notice4: "여러 계정·자동화 등 부정 참여는 제외돼요", notice5: "당첨자에게는 가입 이메일로 연락해요", notice6: "기프트카드 지급일과 당첨 발표 일정은 안내 예정", notice7: "개인정보는 당첨 연락·지급에만 사용해요",
     notice8: "Visa 가상 기프트카드로 지급해요. 온라인 결제에 쓸 수 있어요",
+    resultCta: "결과 확인", resultTitle: "래플 결과", resultWon: "US${0} 당첨", resultLost: "이번에는 당첨되지 않았어요", resultThanks: "응모해 주셔서 고마워요",
+    resultClaim: "가입 이메일로 수령 안내를 보내 드려요", resultClaimCta: "수령 안내 보기",
   },
   en: {
     eventKind: "New member event", period: "Nov 10 – Nov 30", how: "How to enter", required: "Required", ended: "This raffle has ended", kst: "Korea time",
@@ -37,6 +39,8 @@ const copy = {
     notice9: "Invites: +3 chances for each friend who signs up with your link and enters (no limit, new sign-ups during the event only)",
     notice4: "Multiple accounts or automation are disqualified", notice5: "Winners are contacted by their sign-up email", notice6: "Gift card delivery and winner announcement dates to be announced", notice7: "Personal data is used only to contact and pay winners",
     notice8: "Prizes are Visa virtual gift cards, usable for online payments",
+    resultCta: "See my result", resultTitle: "Raffle result", resultWon: "You won US${0}", resultLost: "Not a winner this time", resultThanks: "Thanks for entering",
+    resultClaim: "We'll send how to claim it to your sign-up email", resultClaimCta: "How to claim",
   },
 } as const;
 

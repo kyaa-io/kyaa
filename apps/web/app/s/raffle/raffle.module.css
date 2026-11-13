@@ -49,6 +49,9 @@
 .enterStatus { display: flex; align-items: center; justify-content: center; gap: var(--space-1); color: var(--color-muted); }
 .enterStatus[data-state="entered"] { color: var(--color-ink); }
 .enterEnded { display: grid; place-items: center; min-height: var(--min-target); color: var(--color-muted); }
+/* 추첨 뒤(응모자만): 마감 줄 아래 결과 확인 버튼 하나. 폭은 응모 버튼과 같다 */
+.enterClosed { display: grid; justify-items: center; gap: var(--space-3); }
+.enterClosed > .enterCta { width: 100%; max-width: calc(var(--rail-narrow) + var(--space-8)); }
 .enterError { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 0 var(--space-1); color: var(--color-error); }
 
 /* 당첨 확률 올리기: 옅은 분홍 면(FanSurface focus) 하나. 면 안에는 카드를 또 넣지 않고 행 사이 선만.
