@@ -45,6 +45,9 @@ export const dukjilStanSource = {
   stanGetTicket: { ko: "응모권 +1장", en: "+1 ticket" },
   stanGetHeart: { ko: "하트 +1개", en: "+1 heart" },
   stanHeld: { ko: "보유 {0}", en: "{0} held" },
+  // 대표 11/13 20:36: −100P read as a loss; the converter labels its two amounts instead of signing them (Uniswap 매도/매수, Wise 송금액/수령액).
+  stanSpend: { ko: "사용", en: "You use" },
+  stanGain: { ko: "획득", en: "You get" },
   // E4·E5 (feedback E): the favorite's lucky draws, the cheer card and the six linked wallet cells.
   luckyOpensAt: { ko: "{0} 응모 시작", en: "Entries open {0}" },
   luckyClosesAt: { ko: "마감 {0}", en: "Closes {0}" },

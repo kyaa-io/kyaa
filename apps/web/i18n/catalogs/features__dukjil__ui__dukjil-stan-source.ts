@@ -27,6 +27,8 @@ export const messages = {
   "stanGetTicket": { "ja": "応募券 +1枚", "zh-Hans": "抽奖券 +1张", "zh-Hant": "抽獎券 +1張", "es": "+1 boleto", "id": "+1 tiket", "vi": "+1 vé", "th": "ตั๋ว +1 ใบ", "pt": "+1 bilhete", "fr": "+1 ticket", "ru": "+1 билет" },
   "stanGetHeart": { "ja": "ハート +1", "zh-Hans": "爱心 +1颗", "zh-Hant": "愛心 +1顆", "es": "+1 corazón", "id": "+1 hati", "vi": "+1 trái tim", "th": "หัวใจ +1", "pt": "+1 coração", "fr": "+1 cœur", "ru": "+1 сердце" },
   "stanHeld": { "ja": "保有 {0}", "zh-Hans": "持有 {0}", "zh-Hant": "持有 {0}", "es": "{0} en tu poder", "id": "Dimiliki {0}", "vi": "Đang có {0}", "th": "มีอยู่ {0}", "pt": "{0} em mãos", "fr": "{0} en main", "ru": "Есть {0}" },
+  "stanSpend": { "ja": "使用", "zh-Hans": "使用", "zh-Hant": "使用", "es": "Usas", "id": "Dipakai", "vi": "Dùng", "th": "ใช้", "pt": "Você usa", "fr": "Utilisé", "ru": "Тратите" },
+  "stanGain": { "ja": "獲得", "zh-Hans": "获得", "zh-Hant": "獲得", "es": "Recibes", "id": "Didapat", "vi": "Nhận", "th": "ได้รับ", "pt": "Você recebe", "fr": "Obtenu", "ru": "Получаете" },
   "stanClaimReady": { "ja": "受け取れます", "zh-Hans": "可领取", "zh-Hant": "可領取", "es": "Listo para recibir", "id": "Siap diambil", "vi": "Có thể nhận", "th": "พร้อมรับ", "pt": "Pronto para receber", "fr": "Prêt à recevoir", "ru": "Можно получить" },
   "missionsGroupMore": {
     "ja": "その他のミッション",
