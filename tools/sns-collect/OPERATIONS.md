@@ -19,9 +19,9 @@ gh workflow run aws-platform.yml --repo kyaa-io/kyaa --ref main -f environment=p
 
 ## mini 설치와 전환
 
-mini에 Aside CLI와 로그인된 Aside u0 프로필이 먼저 있어야 한다. 이 작업 당시 SSH는 연결되지만 로그인 셸에서도 Aside 실행 파일을 찾지 못했다. 원격 Aside 접근도 `Remote Control requires the Pro plan`으로 거절됐다. 다른 브라우저로 우회하지 않았다.
+mini에 Aside CLI와 연결된 Aside u0 프로필이 필요하다. 11/13 사용자 설치·로그인 뒤 CLI 1.26.1113.1717과 Profile 0 연결을 확인했다. Instagram은 로그인 완료했고, TikTok은 로그인 없이 공개 게시물 원문을 읽을 수 있음을 확인했다. 수집은 mini 로컬 Aside를 사용한다.
 
-`~/.config/kyaa-sns/config.json`의 기본값은 `{"target":"dev","devVerified":false}`. `sources.json`은 `{celebritySlug,platform,accountUrl}` 배열이며 CMS의 현재 활성 공식 계정 목록과 대조해야 한다. 이번 시험 목록은 11/10 보류 기록의 13개 계정으로 전체 현재 CMS 목록을 보증하지 않는다.
+`~/.config/kyaa-sns/config.json`의 기본값은 `{"target":"dev","devVerified":false}`. `sources.json`은 `{celebritySlug,platform,accountUrl}` 배열이며 CMS의 현재 활성 공식 계정 목록과 대조해야 한다. 11/13 dev CMS의 공개 크리에이터·활성 공식 계정을 직접 조회해 22개 출처로 갱신했다. 기존 13개 목록으로 시작한 실행과 추가 9개 출처 확인은 기록을 분리한다.
 
 mini의 지정 checkout에 이 변경을 반영한 뒤, dev 키·설정·출처 목록을 비공개 경로로 복사한다. 운영 키와 대상 전환은 감독만 실행한다.
 
@@ -54,3 +54,5 @@ ssh kyaa-mini 'launchctl kickstart gui/$(id -u)/io.kyaa.sns-collect'
 mini 실행 코드는 공유 checkout 대신 `~/.local/share/kyaa-sns-collector/`에 고정 복사한다. dev 상태에서 launchctl bootstrap과 kickstart로 먼저 검증한 뒤 운영으로 전환한다. 이미 등록된 작업은 bootout 후 다시 bootstrap한다.
 
 비밀 JSON 갱신은 감독이 다른 런타임 비밀 수정과 겹치지 않게 직렬 실행한다. 강제 종료된 Aside 세션의 탭 정리는 보장되지 않으므로 timeout 뒤에는 해당 실행의 탭을 확인한다. 사용자 탭은 닫지 않는다.
+
+11/13 mini에서 기존 `io.kyaa.sns-collect` label 하나를 등록하고 dev 대상으로 kickstart했다. 예약 간격은 7200초이며, 사용자 Instagram 탭을 보존하도록 수집 동시 탭을 2개로 제한한다. 운영 전환은 감독만 수행한다.

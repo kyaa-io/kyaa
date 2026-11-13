@@ -55,9 +55,9 @@ async function runSource(source) {
     writeFileSync(join(out, "summary.json"), JSON.stringify(summary, null, 2));
   }
 }
-// Three workers bound concurrent browser tabs to three.
+// Leave one of the three allowed tabs for the user's signed-in browser.
 let next = 0;
-await Promise.all(Array.from({ length: Math.min(3, sources.length) }, async () => {
+await Promise.all(Array.from({ length: Math.min(2, sources.length) }, async () => {
   while (next < sources.length) await runSource(sources[next++]);
 }));
 writeFileSync(join(out, "summary.json"), JSON.stringify(summary, null, 2));
