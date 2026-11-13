@@ -133,13 +133,19 @@ export async function sendIngest(fetchImpl, endpoint, secret, body) {
  */
 export async function collectSource(browser, source, options = {}) {
   const handle = accountHandle(source.platform, source.accountUrl);
-  const profile = await browser.read(source.accountUrl);
+  let profile = await browser.read(source.accountUrl);
+  // A profile can become interactive before its post grid arrives. Retry only this read.
+  if (!isLoginWall(source.platform, profile.finalUrl) && !profile.emptyProfile && !profilePostIds(source.platform, profile.hrefs, handle).length) {
+    profile = await browser.read(source.accountUrl);
+  }
   if (isLoginWall(source.platform, profile.finalUrl)) return { request: buildIngestRequest(source, [], "BLOCKED_LOGIN"), unread: [] };
   const ids = profilePostIds(source.platform, profile.hrefs, handle).slice(0, options.limit ?? MAX_POSTS_PER_SOURCE);
-  if (!ids.length) return { request: buildIngestRequest(source, [], "STRUCTURE_CHANGED"), unread: [] };
+  if (!ids.length) return { request: buildIngestRequest(source, [], profile.emptyProfile === true ? undefined : "STRUCTURE_CHANGED"), unread: [] };
   const posts = []; const unread = [];
   for (const sourceId of ids) {
-    const page = await browser.read(canonicalPostUrl(source.platform, handle, sourceId));
+    let page;
+    try { page = await browser.read(canonicalPostUrl(source.platform, handle, sourceId)); }
+    catch { unread.push({ sourceId, error: "READ_FAILED" }); continue; }
     if (isLoginWall(source.platform, page.finalUrl)) return { request: buildIngestRequest(source, [], "BLOCKED_LOGIN"), unread: [] };
     const result = source.platform === "tiktok"
       ? extractTikTokPost(page.rehydration, { handle, sourceId })
@@ -149,4 +155,22 @@ export async function collectSource(browser, source, options = {}) {
   // Every listed post failing to parse means the page layout changed, not that there is nothing new.
   if (!posts.length) return { request: buildIngestRequest(source, [], "STRUCTURE_CHANGED"), unread };
   return { request: buildIngestRequest(source, posts), unread };
+}
+
+/** Keep each image request below the gateway deadline while preserving the five-new-post budget. */
+export async function sendCollectedSource(fetchImpl, endpoint, secret, request, onProgress) {
+  const result = { runIds: [], items: [], unsubmitted: request.posts.length };
+  const batches = request.collectorError || !request.posts.length ? [request] : request.posts.map(post => ({ ...request, posts: [post] }));
+  let attempted = 0;
+  for (const batch of batches) {
+    if (attempted >= 5) break;
+    const received = await sendIngest(fetchImpl, endpoint, secret, batch);
+    result.runIds.push(received.runId);
+    result.items.push(...received.items);
+    result.unsubmitted -= batch.posts.length;
+    attempted += received.items.filter(item => item.status === "published" ||
+      (item.status === "held" && !["ALREADY_HELD", "SOURCE_UPDATED"].includes(item.reason))).length;
+    onProgress(result);
+  }
+  return result;
 }
