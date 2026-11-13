@@ -10,6 +10,8 @@ describe("members tab join lock",()=>{
  it("joins through the parent callback and stays on the tab",()=>{
   const onJoin=vi.fn();
   render(<GroupMembers pageId={page} locale="ko" member={false} onJoin={onJoin} joinLabel="가입하기"/>);
+  // The fan list is public for everyone; the join prompt lives on the friends tab for a signed-in non-member.
+  fireEvent.click(screen.getByRole("button",{name:"내 친구"}));
   const button=screen.getByRole("button",{name:"가입하기"});
   fireEvent.click(button);
   expect(onJoin).toHaveBeenCalledOnce();
@@ -18,6 +20,7 @@ describe("members tab join lock",()=>{
  it("blocks duplicate submits while the join is pending",()=>{
   const onJoin=vi.fn();
   render(<GroupMembers pageId={page} locale="ko" member={false} onJoin={onJoin} joinPending joinLabel="가입하기"/>);
+  fireEvent.click(screen.getByRole("button",{name:"내 친구"}));
   const button=screen.getByRole("button",{name:"가입하기"});
   expect(button).toBeDisabled();
   fireEvent.click(button);

@@ -20,7 +20,9 @@ it.each(['?search=Ru','?type=fan','?type=hobby','?type=fan&artistRole=idol&searc
  const order=[screen.getByTestId('my-artists'),screen.getByTestId('banners'),screen.getByTestId('hot-posts'),screen.getByRole('heading',{level:2,name:'페이지 둘러보기'})];
  order.slice(1).forEach((node,i)=>expect(order[i]!.compareDocumentPosition(node)&Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy());
  expect(screen.getByRole('heading',{level:2,name:'페이지 둘러보기'})).toBeInTheDocument();
- expect(screen.getByRole('button',{name:/^활동 분야/})).toBeInTheDocument();
+ // The type and role filters only exist while no search is typed; a search swaps them for the artists/posts tabs.
+ if(query.includes('search=')){expect(screen.queryByRole('button',{name:/^활동 분야/})).toBeNull();expect(screen.getByText('게시글')).toBeInTheDocument();}
+ else expect(screen.getByRole('button',{name:/^활동 분야/})).toBeInTheDocument();
 });
 it('draws the h1 with FanHeading so the one page-title size (26/800) applies',()=>{
  render(<GroupDirectory locale='ko'/>);

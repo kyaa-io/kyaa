@@ -29,23 +29,23 @@ const privateCalls=()=>urls.filter(url=>/\/api\/me\/|\/people\b|\/rooms(\?|$)|\/
 const returnTo=(link:HTMLElement)=>new URL(link.getAttribute("href")!,"https://kyaa.invalid").searchParams.get("returnTo");
 
 it("audit 7: lists public fans without calling the member APIs, and rows expose no profile action",async()=>{
- routes={"/public-people":{items:[{nickname:"공개 팬",avatarUrl:"/images/avatars/star-pink.webp",tier:"Silver",hearts:3},{nickname:"둘째 팬",avatarUrl:null,tier:null,hearts:0}],nextOffset:null}};
+ routes={"/public-people":{items:[{nickname:"공개 팬",avatarUrl:"/images/avatars/star-pink.webp",tier:"Silver",hearts:3,stamps:2,first_jjinfan_at:null},{nickname:"둘째 팬",avatarUrl:null,tier:null,hearts:0,stamps:0,first_jjinfan_at:null}],nextCursor:null}};
  render(<GroupMembers pageId={pageId} locale="ko" member={false} rankingsSlug="elina" inTab presentation={{creatorName:"엘리나",subtitles:{}}}/>);
  expect(await screen.findByText("공개 팬")).toBeVisible();expect(screen.getByText(levelLabel("ko","Silver"))).toBeVisible();expect(screen.getByLabelText(dukjilText("ko","missionHearts",[3]))).toBeVisible();
  expect(privateCalls()).toEqual([]);
  expect(screen.queryByRole("link",{name:/공개 팬/})).toBeNull();expect(screen.queryByText("프로필 보기")).toBeNull();expect(screen.queryByRole("button",{name:/DM/})).toBeNull();
 });
-it("audit 7: pages through the public list by offset",async()=>{
- routes={"offset=30":{items:[{nickname:"뒷장 팬",avatarUrl:null,tier:null,hearts:0}],nextOffset:null},"/public-people":{items:[{nickname:"첫 팬",avatarUrl:null,tier:null,hearts:0}],nextOffset:30}};
+it("audit 7: pages through the public list by cursor",async()=>{
+ routes={"cursor=page2":{items:[{nickname:"뒷장 팬",avatarUrl:null,tier:null,hearts:0,stamps:0,first_jjinfan_at:null}],nextCursor:null},"/public-people":{items:[{nickname:"첫 팬",avatarUrl:null,tier:null,hearts:0,stamps:0,first_jjinfan_at:null}],nextCursor:"page2"}};
  render(<GroupMembers pageId={pageId} locale="ko" member={false}/>);
  fireEvent.click(await screen.findByRole("button",{name:/더 보기/}));
  expect(await screen.findByText("뒷장 팬")).toBeVisible();expect(screen.getByText("첫 팬")).toBeVisible();
  expect(screen.queryByRole("button",{name:/더 보기/})).toBeNull();
 });
 it("audit 7: an empty or failing public list keeps the section and never turns into a private call",async()=>{
- routes={"/public-people":{items:[],nextOffset:null}};
+ routes={"/public-people":{items:[],nextCursor:null}};
  const view=render(<GroupMembers pageId={pageId} locale="ko" member={false}/>);
- expect(await screen.findByText("가입 후 함께하는 팬을 만나보세요.")).toBeVisible();view.unmount();clearResources();
+ expect(await screen.findByText("조건에 맞는 팬이 없어요.")).toBeVisible();view.unmount();clearResources();
  routes={"/public-people":503};
  render(<GroupMembers pageId={pageId} locale="ko" member={false}/>);
  expect(await screen.findByRole("alert")).toBeVisible();expect(screen.getByRole("button",{name:"다시 시도"})).toBeVisible();expect(privateCalls()).toEqual([]);
@@ -104,7 +104,7 @@ it("audit 8: a signed-in non-member sees the same names and a join action",async
 });
 it("audit 5: my pages holds locked rows, attendance is not a second emphasis, login links keep locale",async()=>{
  render(<GroupDirectory locale="en"/>);
- const links=await screen.findAllByRole("link",{name:"Log in"});
+ const links=await screen.findAllByRole("link",{name:"Sign in"});
  expect(links[0].getAttribute("href")).toContain("locale=en");expect(returnTo(links[0])).toContain("/pages/groups?");
  const attendance=screen.getByRole("link",{name:/attendance|check.?in/i});
  expect(attendance.getAttribute("href")).toContain("/login?");expect(attendance.className).not.toMatch(/primary/);

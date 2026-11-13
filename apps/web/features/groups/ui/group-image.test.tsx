@@ -6,16 +6,18 @@ const auth=vi.hoisted(()=>({ready:true,authenticated:true,user:{id:'owner-a'},ge
 const session=vi.hoisted(()=>({ready:true,ownerId:'owner-a',generation:0}));
 vi.mock('@/features/auth/client/cognito-auth',()=>({useByUsAuth:()=>auth}));
 vi.mock('@/components/byus-session-provider',()=>({useByUsSession:()=>session}));
+// jsdom's Blob has no stream(), so undici's Response rejects it; hand back a Response-shaped object whose blob() is the jsdom Blob the component checks with instanceof.
+const imageResponse=()=>({ok:true,status:200,blob:async()=>new Blob(['image'],{type:'image/png'})}) as unknown as Response;
 beforeEach(()=>{auth.authenticated=true;auth.getAccessToken.mockClear();session.ownerId='owner-a';session.generation=0;Object.defineProperty(URL,'createObjectURL',{value:vi.fn(()=> 'blob:authorized-image'),configurable:true});Object.defineProperty(URL,'revokeObjectURL',{value:vi.fn(),configurable:true});});
 it('loads a draft group image with its bearer and revokes the private blob',async()=>{
- const fetch=vi.fn(async(_url:string,_init?:RequestInit)=>new Response(new Blob(['image'],{type:'image/png'})));vi.stubGlobal('fetch',fetch);
+ const fetch=vi.fn(async(_url:string,_init?:RequestInit)=>imageResponse());vi.stubGlobal('fetch',fetch);
  const view=render(<GroupImage locale='ko' src='/api/groups/images/10000000-0000-4000-8000-000000000001' alt='행사 사진'/>);await waitFor(()=>expect(screen.getByRole('img',{name:'행사 사진'})).toHaveAttribute('src','blob:authorized-image'));expect(fetch.mock.calls[0]?.[1]?.headers).toMatchObject({Authorization:'Bearer private-token'});view.unmount();expect(URL.revokeObjectURL).toHaveBeenCalledWith('blob:authorized-image');
 });
 it('does not pass a public external URL to the authenticated reader',()=>{
  const fetch=vi.fn();vi.stubGlobal('fetch',fetch);render(<GroupImage locale='ko' src='https://example.com/api/groups/images/image.png' alt='외부 사진'/>);expect(screen.getByRole('img',{name:'외부 사진'})).toHaveAttribute('src','https://example.com/api/groups/images/image.png');expect(fetch).not.toHaveBeenCalled();
 });
 it('removes the prior owner image immediately when the session changes',async()=>{
- const fetch=vi.fn(async(_url:string,_init?:RequestInit)=>new Response(new Blob(['image'],{type:'image/png'})));vi.stubGlobal('fetch',fetch);const view=render(<GroupImage locale='ko' src='/api/groups/images/10000000-0000-4000-8000-000000000001' alt='비공개 사진'/>);await screen.findByRole('img',{name:'비공개 사진'});session.ownerId='owner-b';session.generation++;fetch.mockImplementation(async()=>new Response(null,{status:403}));view.rerender(<GroupImage locale='ko' src='/api/groups/images/10000000-0000-4000-8000-000000000001' alt='비공개 사진'/>);expect(screen.queryByRole('img',{name:'비공개 사진'})).not.toBeInTheDocument();await waitFor(()=>expect(URL.revokeObjectURL).toHaveBeenCalledWith('blob:authorized-image'));
+ const fetch=vi.fn(async(_url:string,_init?:RequestInit)=>imageResponse());vi.stubGlobal('fetch',fetch);const view=render(<GroupImage locale='ko' src='/api/groups/images/10000000-0000-4000-8000-000000000001' alt='비공개 사진'/>);await screen.findByRole('img',{name:'비공개 사진'});session.ownerId='owner-b';session.generation++;fetch.mockImplementation(async()=>new Response(null,{status:403}));view.rerender(<GroupImage locale='ko' src='/api/groups/images/10000000-0000-4000-8000-000000000001' alt='비공개 사진'/>);expect(screen.queryByRole('img',{name:'비공개 사진'})).not.toBeInTheDocument();await waitFor(()=>expect(URL.revokeObjectURL).toHaveBeenCalledWith('blob:authorized-image'));
 });
 
 it('keeps a guest-denied image hidden and sends no bearer',async()=>{
