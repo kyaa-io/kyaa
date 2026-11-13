@@ -134,7 +134,9 @@ export function projectNotificationRow(
       const said = eventReviewText(locale, eventReview);
       return { id: String(row.id), kind, title: said.title, detail: said.detail, createdAt: String(row.created_at), readAt: row.read_at == null ? null : String(row.read_at), deepLink: String(row.deep_link), eventReview };
     }
-    return { id: String(row.id), kind, title: copy[locale === "ko" ? 0 : 2], detail: copy[locale === "ko" ? 1 : 3], createdAt: String(row.created_at), readAt: row.read_at == null ? null : String(row.read_at), deepLink: !directWeb && ["fan_friend_request", "fan_dm_request", "fan_dm_message", "support_reply", "stamp_issued", "participation_deadline"].includes(kind)
+    const folded = kind === "official_post" ? one(row.payload)?.count : undefined;
+    const count = typeof folded === "number" && Number.isInteger(folded) && folded > 1 ? folded : undefined;
+    return { id: String(row.id), kind, title: copy[locale === "ko" ? 0 : 2], detail: copy[locale === "ko" ? 1 : 3], createdAt: String(row.created_at), readAt: row.read_at == null ? null : String(row.read_at), ...(count ? { count } : {}), deepLink: !directWeb && ["fan_friend_request", "fan_dm_request", "fan_dm_message", "support_reply", "stamp_issued", "participation_deadline"].includes(kind)
       ? openAppWebPath(`returnTo=${encodeURIComponent(String(row.deep_link))}`) : String(row.deep_link) };
   }
   const live = one(row.live_events);

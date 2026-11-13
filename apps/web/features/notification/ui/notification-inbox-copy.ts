@@ -12,6 +12,8 @@ type Copy = {
   said: {
     reply: string; replyNoTarget: string; post: string; postNoTarget: string; reaction: string; reactionNoTarget: string;
     friendRequest: string; dmRequest: string; dm: string; official: string; officialNoTarget: string;
+    /** 2시간 안에 올라온 같은 아티스트의 새 소식을 한 알림으로 묶은 것. {n} 개수. */
+    officialMany: string;
   };
 };
 
@@ -28,6 +30,7 @@ const copy: Record<AppLocale, Copy> = {
       reaction: "{a}님이 ‘{t}’에 반응했습니다", reactionNoTarget: "{a}님이 내 글에 반응했습니다",
       friendRequest: "{a}님이 친구 요청을 보냈습니다", dmRequest: "{a}님이 메시지 요청을 보냈습니다", dm: "{a}님이 메시지를 보냈습니다",
       official: "{a}님이 ‘{t}’ 소식을 올렸습니다", officialNoTarget: "{a}님이 새 소식을 올렸습니다",
+      officialMany: "{a}님이 새 소식 {n}개를 올렸습니다",
     },
   },
   en: {
@@ -42,6 +45,7 @@ const copy: Record<AppLocale, Copy> = {
       reaction: "{a} reacted to “{t}”", reactionNoTarget: "{a} reacted to your post",
       friendRequest: "{a} sent you a friend request", dmRequest: "{a} sent you a message request", dm: "{a} sent you a message",
       official: "{a} posted the update “{t}”", officialNoTarget: "{a} posted a new update",
+      officialMany: "{a} posted {n} new updates",
     },
   },
   ja: {
@@ -56,6 +60,7 @@ const copy: Record<AppLocale, Copy> = {
       reaction: "{a}さんが「{t}」に反応しました", reactionNoTarget: "{a}さんがあなたの投稿に反応しました",
       friendRequest: "{a}さんから友達申請が届きました", dmRequest: "{a}さんからメッセージリクエストが届きました", dm: "{a}さんからメッセージが届きました",
       official: "{a}さんがお知らせ「{t}」を投稿しました", officialNoTarget: "{a}さんが新しいお知らせを投稿しました",
+      officialMany: "{a}さんが新しいお知らせを{n}件投稿しました",
     },
   },
   "zh-Hans": {
@@ -70,6 +75,7 @@ const copy: Record<AppLocale, Copy> = {
       reaction: "{a} 回应了“{t}”", reactionNoTarget: "{a} 回应了你的帖子",
       friendRequest: "{a} 向你发送了好友请求", dmRequest: "{a} 向你发送了消息请求", dm: "{a} 给你发送了消息",
       official: "{a} 发布了动态“{t}”", officialNoTarget: "{a} 发布了新动态",
+      officialMany: "{a} 发布了 {n} 条新动态",
     },
   },
   "zh-Hant": {
@@ -84,6 +90,7 @@ const copy: Record<AppLocale, Copy> = {
       reaction: "{a} 回應了「{t}」", reactionNoTarget: "{a} 回應了你的貼文",
       friendRequest: "{a} 向你送出好友邀請", dmRequest: "{a} 向你送出訊息請求", dm: "{a} 傳送了訊息給你",
       official: "{a} 發布了消息「{t}」", officialNoTarget: "{a} 發布了新消息",
+      officialMany: "{a} 發布了 {n} 則新消息",
     },
   },
   es: {
@@ -98,6 +105,7 @@ const copy: Record<AppLocale, Copy> = {
       reaction: "{a} reaccionó a “{t}”", reactionNoTarget: "{a} reaccionó a tu publicación",
       friendRequest: "{a} te envió una solicitud de amistad", dmRequest: "{a} te envió una solicitud de mensaje", dm: "{a} te envió un mensaje",
       official: "{a} publicó la noticia “{t}”", officialNoTarget: "{a} publicó una noticia",
+      officialMany: "{a} publicó {n} noticias nuevas",
     },
   },
   id: {
@@ -112,6 +120,7 @@ const copy: Record<AppLocale, Copy> = {
       reaction: "{a} menanggapi “{t}”", reactionNoTarget: "{a} menanggapi postingan Anda",
       friendRequest: "{a} mengirim permintaan pertemanan", dmRequest: "{a} mengirim permintaan pesan", dm: "{a} mengirim pesan",
       official: "{a} memposting kabar “{t}”", officialNoTarget: "{a} memposting kabar baru",
+      officialMany: "{a} memposting {n} kabar baru",
     },
   },
   vi: {
@@ -126,6 +135,7 @@ const copy: Record<AppLocale, Copy> = {
       reaction: "{a} đã bày tỏ cảm xúc với “{t}”", reactionNoTarget: "{a} đã bày tỏ cảm xúc với bài viết của bạn",
       friendRequest: "{a} đã gửi lời mời kết bạn", dmRequest: "{a} đã gửi yêu cầu nhắn tin", dm: "{a} đã gửi tin nhắn cho bạn",
       official: "{a} đã đăng tin “{t}”", officialNoTarget: "{a} đã đăng tin mới",
+      officialMany: "{a} đã đăng {n} tin mới",
     },
   },
   th: {
@@ -140,6 +150,7 @@ const copy: Record<AppLocale, Copy> = {
       reaction: "{a} แสดงความรู้สึกต่อ “{t}”", reactionNoTarget: "{a} แสดงความรู้สึกต่อโพสต์ของคุณ",
       friendRequest: "{a} ส่งคำขอเป็นเพื่อน", dmRequest: "{a} ส่งคำขอส่งข้อความ", dm: "{a} ส่งข้อความถึงคุณ",
       official: "{a} โพสต์ข่าว “{t}”", officialNoTarget: "{a} โพสต์ข่าวใหม่",
+      officialMany: "{a} โพสต์ข่าวใหม่ {n} รายการ",
     },
   },
   pt: {
@@ -154,6 +165,7 @@ const copy: Record<AppLocale, Copy> = {
       reaction: "{a} reagiu a “{t}”", reactionNoTarget: "{a} reagiu à sua publicação",
       friendRequest: "{a} enviou um pedido de amizade", dmRequest: "{a} enviou um pedido de mensagem", dm: "{a} enviou uma mensagem",
       official: "{a} publicou a notícia “{t}”", officialNoTarget: "{a} publicou uma notícia",
+      officialMany: "{a} publicou {n} notícias novas",
     },
   },
   fr: {
@@ -168,6 +180,7 @@ const copy: Record<AppLocale, Copy> = {
       reaction: "{a} a réagi à « {t} »", reactionNoTarget: "{a} a réagi à votre publication",
       friendRequest: "{a} vous a envoyé une demande d’ami", dmRequest: "{a} vous a envoyé une demande de message", dm: "{a} vous a envoyé un message",
       official: "{a} a publié l’actualité « {t} »", officialNoTarget: "{a} a publié une actualité",
+      officialMany: "{a} a publié {n} nouvelles actualités",
     },
   },
   ru: {
@@ -182,6 +195,7 @@ const copy: Record<AppLocale, Copy> = {
       reaction: "{a} отреагировал(а) на «{t}»", reactionNoTarget: "{a} отреагировал(а) на ваш пост",
       friendRequest: "{a} отправил(а) запрос в друзья", dmRequest: "{a} отправил(а) запрос на переписку", dm: "{a} отправил(а) вам сообщение",
       official: "{a} опубликовал(а) новость «{t}»", officialNoTarget: "{a} опубликовал(а) новость",
+      officialMany: "{a} опубликовал(а) новостей: {n}",
     },
   },
 };
@@ -200,10 +214,11 @@ const sentenceKey: Partial<Record<NotificationItem["kind"], [keyof Copy["said"],
 };
 
 /** 주체가 있는 종류의 1줄 문장. 주체가 없거나(차단·익명·사람 없는 종류) 템플릿이 없으면 null → 서버 제목을 쓴다. */
-export function actorSentence(locale: AppLocale, kind: NotificationItem["kind"], actor: string | null | undefined, target: string | null) {
+export function actorSentence(locale: AppLocale, kind: NotificationItem["kind"], actor: string | null | undefined, target: string | null, count?: number) {
   const keys = sentenceKey[kind];
   if (!keys || !actor) return null;
   const said = inboxCopy(locale).said;
+  if (kind === "official_post" && count && count > 1) return said.officialMany.replace("{a}", actor).replace("{n}", String(count));
   const template = target || !keys[1] ? said[keys[0]] : said[keys[1]];
   return template.replace("{a}", actor).replace("{t}", target ?? "");
 }
