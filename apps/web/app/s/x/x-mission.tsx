@@ -124,6 +124,7 @@ function MissionForOwner({ locale, auth }: { locale: 'ko' | 'en'; auth: ReturnTy
  return <FanContentContainer as="main" id="x-mission-main" className={styles.column} lang={locale}>
   <div className={styles.hero}>
    {completed ? <section className={styles.proof} data-block="x-mission-stamp" data-celebrate={celebrate ? '' : undefined} aria-labelledby="x-mission-stamped">
+    <img className={styles.wordmark} src="/images/guest-home/kyaa-wordmark.svg" alt="kyaa" width={1164} height={563} />
     <FanDisplay role="caption">{t.event}</FanDisplay>
     <img className={styles.stamp} src={stampArt} alt="" width={512} height={512} decoding="async" />
     <FanHeading as="h2" id="x-mission-stamped"><FanDisplay role="title">{t.stamped}</FanDisplay></FanHeading>

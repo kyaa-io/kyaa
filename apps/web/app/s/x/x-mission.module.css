@@ -11,6 +11,7 @@
 .keyVisual img { display: block; width: 100%; height: 100%; object-fit: cover; }
 /* 완료 증명 카드(사용자 2026-11-13 "캡처해서 올릴 수 있게"): 키 비주얼 자리. 이벤트 이름 → 큰 kyaa 도장 → 완료 제목 → 닉네임·날짜. 390 첫 화면 한 장에 다 든다 */
 .proof { display: grid; justify-items: center; align-content: center; gap: var(--space-3); padding: var(--space-6) var(--space-5); border-radius: var(--radius-card); background: var(--color-accent-soft); text-align: center; min-width: 0; }
+.wordmark { width: calc(var(--space-16) + var(--space-8)); height: auto; }
 .stamp { width: calc(var(--space-16) * 2.5); height: auto; rotate: -8deg; }
 .proof h2 { text-wrap: balance; }
 .proofFacts { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--space-1) var(--space-3); word-break: keep-all; }
