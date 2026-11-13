@@ -2694,6 +2694,7 @@ D-C token ownership: `FanHeading variant="campaign"` owns the 18px/700 mobile an
 사용자 "뒤에 이미지 쓰여져 있는게 없는데?"(11/12 "애셋에 내용이 너무 비어있는데"와 같은 지적). 키 비주얼 사진 속 카드·꼬리표가 빈 종이라 무엇을 주는 이벤트인지 그림으로 안 보였다. 아래 v5.2 절의 글자 네 줄·사진 비율은 그대로다.
 - **`FanPrintPhotoInk`**(`components/fan-ui/fan-print.tsx`): 책상 사진 속 빈 카드에 인쇄를 찍는 SVG. `viewBox` = 사진 픽셀, `preserveAspectRatio="xMidYMid slice"`(= `object-fit: cover` 가운데)라 사진이 잘려도 카드 자리에 붙는다. 카드마다 사진에서 잰 세 모서리(왼쪽 위·오른쪽 위·왼쪽 아래)로 카드 면(1000×630)을 맞추고, 가려진 모서리는 보이는 변의 연장으로 잡는다. 잉크는 `--color-ink` 78% 곱하기, 도장은 `--fan-print-stamp-ink` + `stamps/ink-v1/frame`. `aria-hidden`.
 - **찍는 내용**: 앞 크림 카드 `GIFT CARD`(mono) · kyaa 워드마크(잉크) · `US$100`(thin) · `KYAA RAFFLE 2026`(mono, 가로판만 — 세로판은 봉투 속), 하늘 카드 `US$50`, 금 카드 `US$25`(뒤 카드는 보이는 위쪽 띠에 금액만), 꼬리표 `KYAA / RAFFLE` 붉은 도장. 실제 카드사 로고·상표는 그리지 않는다(`Visa 기프트카드`는 HTML 글자에만). 인쇄 문구는 언어와 상관없이 같다.
+- **당첨 확률 올리기 버튼 폭**(사용자 09:1x): 다섯 행(받기·가입·댓글 달러 가기·출석하기·초대 링크 공유)이 한 격자(subgrid)라 오른쪽 버튼 칸은 가장 긴 라벨 폭 하나로 맞는다(ko 105, en 130). `FanAction sm`이 칸을 채우고 글자는 가운데, 줄바꿈 없음. 좁은 폭에서는 버튼 폭을 지키고 행 이름 줄이 접힌다(`+1`은 이름 다음 줄로).
 - **사진을 바꾸면** 모서리 좌표(`app/s/raffle/key-visual-print.tsx`)를 다시 재고 390·1440에서 글자가 앞 카드 가장자리를 넘지 않는지 본다.
 
 ### KYAA 래플 상세 v5.2 — 친구 초대 +3 · 덕질 행동 스탬프 · 키 비주얼에 총액 (2026-11-13)
