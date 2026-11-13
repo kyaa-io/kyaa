@@ -1,5 +1,14 @@
+// Gate repository overrides must not reach fixture Git, CLI children, or in-process readNotes.
+for (const key of Object.keys(process.env)) {
+  if (key.startsWith('GIT_')) delete process.env[key];
+}
+
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import {mkdtempSync,mkdirSync,copyFileSync,rmSync} from 'node:fs';
+import {tmpdir} from 'node:os';
+import {join,dirname} from 'node:path';
+import {execFileSync} from 'node:child_process';
 import {hash,summaryManifest,summaryText,verifySummarySources,validateSource,sendSummary} from './send-deployment-summary.mjs';
 import {receiptState} from './deployment-notices.mjs';
 function fixture(){
@@ -11,7 +20,28 @@ function fixture(){
  const id=path==='/check-runs'?20:Number(path.split('/').at(-1));db.set(id,{...db.get(id),...structuredClone(init.body),id,app:{slug:'github-actions'}});return structuredClone(db.get(id));};
  return {manifest,target,db,sent,options:{github,target,manifest,expectedHash:hash(manifest),send:async body=>{sent.push(body);return {chatId:-5187701508,messageId:2000};}}};
 }
-test('actual deployed note set matches 61 pinned sources; summary has 8 highlights plus 53 other notes',()=>{verifySummarySources(summaryManifest);assert.equal(summaryManifest.notes.length,61);assert.equal(summaryText(summaryManifest).split('\n').length,10);assert.match(summaryText(summaryManifest),/외 53건/);});
+test('pinned note contents and source validation work in an isolated Git fixture',()=>{
+ const repository=mkdtempSync(join(tmpdir(),'notice-summary-sources-'));
+ const git=(...args)=>execFileSync('git',['-c','user.name=Notice test','-c','user.email=notice@example.invalid',...args],{cwd:repository,encoding:'utf8',stdio:['ignore','pipe','pipe']}).trim();
+ try{
+  git('init','-q');git('commit','--allow-empty','-qm','base');
+  const baseSha=git('rev-parse','HEAD');
+  // Use the archived immutable files and their real pinned hashes; only history is synthetic.
+  for(const note of summaryManifest.notes){
+   const destination=join(repository,note.path);mkdirSync(dirname(destination),{recursive:true});
+   copyFileSync(new URL('../'+note.path,import.meta.url),destination);
+  }
+  git('add','release-notes');git('commit','-qm','pinned release notes');
+  const manifest={...summaryManifest,baseSha,headSha:git('rev-parse','HEAD')};
+  verifySummarySources(manifest,repository);
+  assert.throws(()=>verifySummarySources({...manifest,notes:manifest.notes.slice(1)},repository),/SUMMARY_NOTE_SET_CHANGED/);
+  assert.throws(()=>verifySummarySources({...manifest,notes:manifest.notes.map((note,i)=>i===0?{...note,sha256:'0'.repeat(64)}:note)},repository),/SUMMARY_NOTE_CHANGED/);
+  assert.throws(()=>verifySummarySources({...manifest,baseSha:manifest.headSha,headSha:baseSha},repository));
+  assert.equal(summaryManifest.notes.length,61);
+  assert.equal(summaryText(summaryManifest).split('\n').length,10);
+  assert.match(summaryText(summaryManifest),/외 53건/);
+ }finally{rmSync(repository,{recursive:true,force:true});}
+});
 test('one summary replaces 25 unsent batches without pretending all 36 were delivered',async()=>{const f=fixture();await sendSummary(f.options);assert.equal(f.sent.length,1);assert.equal(f.sent[0].text,summaryText(f.manifest));assert.equal(f.sent[0].images,undefined);const source=f.db.get(10);assert.equal(source.conclusion,'neutral');assert.equal(receiptState(source),'superseded');const audit=JSON.parse(source.output.summary);assert.equal(audit.delivered.length,11);assert.equal(audit.replacedBySummary.suppressedBatches,25);assert.equal(f.db.get(20).conclusion,'success');await sendSummary(f.options);assert.equal(f.sent.length,1);});
 test('uncertain send cannot replay summary or unlock original',async()=>{const f=fixture();await assert.rejects(sendSummary({...f.options,send:async()=>{throw new Error('transport');}}));await assert.rejects(sendSummary(f.options),/UNCERTAIN/);assert.equal(f.sent.length,0);assert.equal(f.db.get(10).conclusion,'action_required');});
 test('definitively rejected summary can retry without resending old batches',async()=>{const f=fixture();await assert.rejects(sendSummary({...f.options,send:async()=>{throw Object.assign(new Error('rejected'),{definitelyNotSent:true});}}));await sendSummary(f.options);assert.equal(f.sent.length,1);});

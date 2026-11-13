@@ -1,3 +1,8 @@
+// Gate repository overrides must not reach fixture Git, CLI children, or in-process readNotes.
+for (const key of Object.keys(process.env)) {
+  if (key.startsWith('GIT_')) delete process.env[key];
+}
+
 import test from 'node:test';import assert from 'node:assert/strict';
 import {notifyDevDeployment,eligibleDevDeployment,formatDevNotice,devNoticeBatches,DEV_CHECK_NAME,DEV_ORIGIN} from './dev-deployment-notices.mjs';
 import {execFileSync} from 'node:child_process';import {mkdtempSync,mkdirSync,writeFileSync,rmSync} from 'node:fs';import {tmpdir} from 'node:os';import {join} from 'node:path';

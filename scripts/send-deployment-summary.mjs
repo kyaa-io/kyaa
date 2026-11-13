@@ -12,8 +12,8 @@ export function summaryText(manifest) {
  if(text.split('\n').length>10||text.length>3900)throw new Error('SUMMARY_TOO_LONG');
  return text;
 }
-export function verifySummarySources(manifest) {
- const git=(...args)=>execFileSync('git',args,{encoding:'utf8'});
+export function verifySummarySources(manifest, repository = process.cwd()) {
+ const git=(...args)=>execFileSync('git',args,{encoding:'utf8',cwd:repository});
  git('merge-base','--is-ancestor',manifest.baseSha,manifest.headSha);
  const entries=git('diff','--name-status','--no-renames',manifest.baseSha,manifest.headSha,'--','release-notes/*.json').trim().split('\n');
  if(JSON.stringify(entries)!==JSON.stringify(manifest.notes.map(n=>'A\t'+n.path)))throw new Error('SUMMARY_NOTE_SET_CHANGED');
