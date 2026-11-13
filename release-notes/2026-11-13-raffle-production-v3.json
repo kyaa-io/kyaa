@@ -1,0 +1,11 @@
+{
+  "changes": [
+    "신규 가입 이벤트 홈 배너를 선택한 기프트카드 포켓 이미지로 바꿨어요.",
+    "첨부 화면은 로컬 예시 데이터로 확인한 화면이에요."
+  ],
+  "path": "/",
+  "images": [
+    "release-notes/images/2026-11-13-raffle-v3-banner-390.png",
+    "release-notes/images/2026-11-13-raffle-v3-banner-1440.png"
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "changes": [
+    "홈 배너 제목을 신규 가입 이벤트로 바꾸고, 기프트카드와 응모권이 보이는 이미지로 교체했어요.",
+    "첨부 화면은 로컬 예시 데이터로 확인한 화면이에요."
+  ],
+  "path": "/",
+  "images": [
+    "release-notes/images/2026-11-13-home-raffle-390.png",
+    "release-notes/images/2026-11-13-home-raffle-1440.png"
+  ]
+}

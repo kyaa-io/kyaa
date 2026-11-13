@@ -1,0 +1,16 @@
+{
+  "changes": [
+    "신규 가입 이벤트 배너와 래플 참여 안내를 반영했어요.",
+    "응모 후 당첨 기회를 확인하고, 추첨이 끝나면 캡슐로 결과를 볼 수 있어요.",
+    "첨부 화면은 로컬 예시 데이터로 확인한 화면이에요."
+  ],
+  "path": "/s/raffle",
+  "images": [
+    "release-notes/images/2026-11-13-raffle-v2-banner-390.png",
+    "release-notes/images/2026-11-13-raffle-v2-banner-1440.png",
+    "release-notes/images/2026-11-13-raffle-v2-detail-390.png",
+    "release-notes/images/2026-11-13-raffle-v2-detail-1440.png",
+    "release-notes/images/2026-11-13-raffle-v2-entry-390.png",
+    "release-notes/images/2026-11-13-raffle-v2-entry-1440.png"
+  ]
+}
