@@ -1,9 +1,7 @@
 "use client";
 
 import { useEffect, type ReactNode } from "react";
-import { CalendarCheck } from "@/components/fan-ui/fan-icons";
 import { FanHeading } from "@/components/fan-ui/fan-heading";
-import { FanIcon } from "@/components/fan-ui/fan-icon";
 import { FanNumber } from "@/components/fan-ui/fan-number";
 import { FanSkeleton } from "@/components/fan-ui/fan-skeleton";
 import { FanText } from "@/components/fan-ui/fan-text";
@@ -81,7 +79,7 @@ export function MyStatsCard({ locale, passport, stamps }: { locale: AppLocale; p
       <Cell label={w.points} icon={<RewardIcon kind="point" size={32} />}><Value locale={locale} slot={read((data) => data.points)} unit="P" /></Cell>
       <Cell label={w.tickets} icon={<RewardIcon kind="ticket" size={32} />}><Value locale={locale} slot={read((data) => data.tickets)} unit={ko ? "장" : undefined} /></Cell>
       <Cell label={myHomeText(locale, "stampsLabel")} icon={<RewardIcon kind="stamp" size={32} />}><StampValue locale={locale} passport={passport} fallback={stamps} /></Cell>
-      <Cell label={myHomeText(locale, "streakLabel")} icon={<span className={styles.streakIcon}><FanIcon icon={CalendarCheck} size={20} /></span>}><Value locale={locale} slot={read((data) => data.attendance.streak)} unit={ko ? "일" : undefined} /></Cell>
+      <Cell label={myHomeText(locale, "streakLabel")} icon={<img src="/images/my/shortcuts/activity.webp" width={32} height={32} alt="" />}><Value locale={locale} slot={read((data) => data.attendance.streak)} unit={ko ? "일" : undefined} /></Cell>
     </dl>
   </section>;
 }
