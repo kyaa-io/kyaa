@@ -10,25 +10,32 @@
 .swap { display:grid; gap:var(--space-3); min-width:0; }
 .swap + .swap { margin-block-start:var(--space-3); }
 .cells { position:relative; display:grid; gap:var(--space-1); min-width:0; }
-.cell { display:grid; grid-template-columns:auto minmax(0,1fr) auto; grid-template-areas:"asset text amount"; align-items:center; column-gap:var(--space-3); position:relative; min-width:0; min-block-size:76px; box-sizing:border-box; padding:var(--space-4); border:1px solid var(--color-line); border-radius:var(--radius-card); background:var(--color-surface); color:var(--color-ink); text-decoration:none; }
+.cell { display:grid; grid-template-columns:auto minmax(0,1fr); grid-template-areas:"asset text"; align-items:center; column-gap:var(--space-3); position:relative; isolation:isolate; min-width:0; min-block-size:76px; box-sizing:border-box; padding:var(--space-4); border:1px solid var(--color-line); border-radius:var(--radius-card); background:var(--color-surface); color:var(--color-ink); text-decoration:none; }
 .cell:focus-visible { outline:2px solid var(--color-focus); outline-offset:2px; }
 .cellAsset { grid-area:asset; display:block; flex:none; width:40px; height:40px; object-fit:contain; }
 /* 대표 11/13 20:36 "아이콘 크기가 서로 다릅니다": the four arts fill their frames differently (coin 87×90%, ticket 68×42%,
-   stamp 49×57%, heart 57×50% of the image, alpha bounding box). Each is scaled to one visible size in the 40 box: coin 32, ticket 34×21
-   (wide and flat), stamp 27×32, heart 30×26 (its solid pink reads heavier than the coin's ring at the same size). */
-.cellAsset[data-reward-kind="point"] { transform:scale(.89); }
+   stamp 49×57%, heart 57×50% of the image, alpha bounding box). Each is scaled to one visible size in the 40 box: coin 30, ticket 34×21
+   (wide and flat), stamp 27×32, heart 30×26. The coin's full disc and yellow gloss read heavier than the heart at the same width (감독 21:3x B2). */
+.cellAsset[data-reward-kind="point"] { transform:scale(.84); }
 .cellAsset[data-reward-kind="ticket"] { transform:scale(1.25); }
 .cellAsset[data-reward-kind="stamp"] { transform:scale(1.4); }
 .cellAsset[data-reward-kind="heart"] { transform:scale(1.3); }
 .cellText { grid-area:text; display:grid; gap:var(--space-1); min-width:0; }
-.cellName { overflow:hidden; white-space:nowrap; text-overflow:ellipsis; }
+/* 감독 21:3x B1·B5: name, amount and 사용/획득 on one line, the balance smaller under it — no empty middle between 보유 and the amount. */
+.cellMain { display:flex; align-items:baseline; gap:var(--space-2); min-width:0; }
+.cellName { flex:0 1 auto; min-width:0; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; }
 .cellHeld { display:flex; align-items:center; gap:var(--space-2); min-width:0; min-block-size:18px; }
 .heldText { display:flex; align-items:center; min-width:0; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; }
-/* 사용 / 획득 over the number, right-aligned like a swap's two amount fields; both numbers in ink (the word says which way). */
-.amount { grid-area:amount; display:grid; justify-items:end; gap:var(--space-1); }
+/* 100P 사용 · 1장 획득: the word says which way (both numbers in ink), as a swap's 매도/매수 labels do. */
+.amount { display:inline-flex; flex:none; align-items:baseline; gap:var(--space-1); }
 .amountLabel { color:var(--color-muted); }
+/* 감독 21:3x B4: a balance that just changed (exchange, claim) tints its cell once and fades — opacity only, nothing on load. */
+.cell::after { content:""; position:absolute; inset:0; z-index:-1; border-radius:inherit; background:var(--color-accent-soft); opacity:0; pointer-events:none; }
+.cell[data-changed]::after { animation:wallet-balance-changed var(--motion-reward) var(--motion-easing) 1; }
+@keyframes wallet-balance-changed { from { opacity:1; } to { opacity:0; } }
 .joint { position:absolute; inset-block-start:50%; inset-inline-start:50%; z-index:1; display:grid; place-items:center; width:32px; height:32px; box-sizing:border-box; border:1px solid var(--color-line); border-radius:50%; background:var(--color-surface); color:var(--color-ink); transform:translate(-50%,-50%); pointer-events:none; }
-.bar { position:relative; flex:1 1 auto; min-inline-size:40px; max-inline-size:120px; display:block; box-sizing:border-box; height:6px; border:1px solid var(--color-accent-line); border-radius:var(--radius-pill); background:var(--color-accent-soft); overflow:hidden; }
+/* The track is neutral so only the filled part is pink (감독 21:3x B3: a pink track sat next to the pink heart). It runs to the cell's end. */
+.bar { position:relative; flex:1 1 auto; min-inline-size:40px; display:block; box-sizing:border-box; height:6px; border:1px solid var(--color-line); border-radius:var(--radius-pill); background:var(--color-line-subtle); overflow:hidden; }
 .barFill { position:absolute; inset-block:0; inset-inline-start:0; inline-size:var(--wallet-bar-fill); border-radius:inherit; background:var(--color-accent); transition:inline-size var(--motion-slow) var(--motion-easing); }
 /* `.swap .reward` outranks FanAction's one-class `.primary` (width min(100%,320)): the converter's button spans the cells (벤치마크). */
 .swap .reward { inline-size:100%; max-inline-size:none; white-space:nowrap; }
@@ -59,7 +66,7 @@
 .favoritePicker { justify-items:center; align-content:center; }
 .swap.favoritePicker { grid-template-columns:minmax(0,1fr); padding:var(--space-3); border:1px solid var(--color-line); border-radius:var(--radius-card); background:var(--color-surface); }
 @media (hover:hover) and (pointer:fine) { .guide:hover { color:var(--color-ink); background:var(--color-accent-soft); } }
-@media (prefers-reduced-motion:reduce) { .barFill { transition:none; } }
+@media (prefers-reduced-motion:reduce) { .barFill { transition:none; } .cell[data-changed]::after { animation:none; } }
 .backdrop { position:fixed; inset:0; z-index:var(--z-dialog); display:flex; align-items:flex-end; justify-content:center; background:var(--color-backdrop); }
 .sheet { position:relative; box-sizing:border-box; width:100%; padding:var(--space-8) var(--space-4); padding-bottom:calc(var(--space-8) + env(safe-area-inset-bottom)); border:0; outline:1px solid var(--color-line); outline-offset:-1px; border-radius:var(--radius-card) var(--radius-card) 0 0; background:var(--color-surface); color:var(--color-ink); font-family:var(--font-sans); font-variant-numeric:tabular-nums; font-feature-settings:"tnum"; }
 .handle { position:absolute; top:var(--space-2); left:calc(50% - var(--space-5)); width:40px; height:4px; border-radius:var(--radius-pill); background:var(--color-accent-line); }
