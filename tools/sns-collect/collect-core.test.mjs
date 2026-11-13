@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import {
   accountHandle, buildIngestRequest, canonicalPostUrl, collectSource, extractInstagramPost, extractTikTokPost,
-  isLoginWall, profilePostIds, sendIngest,
+  isLoginWall, profilePostIds, sendIngest, sendCollectedSource,
 } from "./collect-core.mjs";
 
 const igSource = { celebritySlug: "wena", platform: "instagram", accountUrl: "https://www.instagram.com/wena/" };
@@ -105,4 +105,25 @@ test("a failed post read preserves already collected originals", async () => {
   assert.equal(result.request.posts.length, 1);
   assert.equal(result.request.posts[0].text, caption);
   assert.deepEqual(result.unread, [{ sourceId: 'DQbroken01', error: 'READ_FAILED' }]);
+});
+
+
+test("source submission sends one post at a time and caps new attempts at five", async () => {
+  const calls = []; const progress = [];
+  const fetchImpl = async (_url, init) => {
+    const body = JSON.parse(init.body); calls.push(body);
+    return new Response(JSON.stringify({runId: String(calls.length), items: [{status: "held", reason: calls.length === 1 ? "ALREADY_HELD" : "PHOTO_REVIEW_REQUIRED"}]}));
+  };
+  const result = await sendCollectedSource(fetchImpl, "https://dev.kyaa.io/x", "s".repeat(40),
+    {celebritySlug:"wena",platform:"instagram",posts:Array.from({length:8}, (_,i)=>({sourceId:String(i)}))},
+    r=>progress.push(r.items.length));
+  assert.equal(calls.length,6); assert(calls.every(c=>c.posts.length===1));
+  assert.equal(result.unsubmitted,2); assert.deepEqual(progress,[1,2,3,4,5,6]);
+});
+
+test("source submission preserves completed evidence and stops after uncertain failure", async () => {
+  let calls=0;const progress=[];
+  const fetchImpl=async()=>++calls===1 ? new Response(JSON.stringify({runId:"first",items:[{status:"published"}]})) : new Response("{}",{status:504});
+  await assert.rejects(sendCollectedSource(fetchImpl,"https://dev.kyaa.io/x","s".repeat(40),{posts:[{}, {}, {}]},r=>progress.push(JSON.parse(JSON.stringify(r)))),/HTTP_504/);
+  assert.equal(calls,2);assert.deepEqual(progress[0].runIds,["first"]);
 });

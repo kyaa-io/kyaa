@@ -152,3 +152,21 @@ export async function collectSource(browser, source, options = {}) {
   if (!posts.length) return { request: buildIngestRequest(source, [], "STRUCTURE_CHANGED"), unread };
   return { request: buildIngestRequest(source, posts), unread };
 }
+
+/** Keep each image request below the gateway deadline while preserving the five-new-post budget. */
+export async function sendCollectedSource(fetchImpl, endpoint, secret, request, onProgress) {
+  const result = { runIds: [], items: [], unsubmitted: request.posts.length };
+  const batches = request.collectorError ? [request] : request.posts.map(post => ({ ...request, posts: [post] }));
+  let attempted = 0;
+  for (const batch of batches) {
+    if (attempted >= 5) break;
+    const received = await sendIngest(fetchImpl, endpoint, secret, batch);
+    result.runIds.push(received.runId);
+    result.items.push(...received.items);
+    result.unsubmitted -= batch.posts.length;
+    attempted += received.items.filter(item => item.status === "published" ||
+      (item.status === "held" && !["ALREADY_HELD", "SOURCE_UPDATED"].includes(item.reason))).length;
+    onProgress(result);
+  }
+  return result;
+}

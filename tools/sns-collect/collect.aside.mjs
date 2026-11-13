@@ -3,7 +3,7 @@ import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
 import { join } from "node:path";
-import { collectSource, sendIngest } from "./collect-core.mjs";
+import { collectSource, sendCollectedSource } from "./collect-core.mjs";
 
 const exec = promisify(execFile);
 const browser = {
@@ -42,11 +42,12 @@ async function runSource(source) {
   try {
     const { request, unread } = await collectSource(browser, source);
     writeFileSync(join(out, `${name}.request.json`), JSON.stringify({ request, unread }, null, 2));
-    const result = await sendIngest(fetch, process.env.SNS_INGEST_ENDPOINT, process.env.SNS_INGEST_SECRET, request);
+    const result = await sendCollectedSource(fetch, process.env.SNS_INGEST_ENDPOINT, process.env.SNS_INGEST_SECRET, request,
+      partial => writeFileSync(join(out, `${name}.result.json`), JSON.stringify(partial, null, 2)));
     writeFileSync(join(out, `${name}.result.json`), JSON.stringify(result, null, 2));
     const statuses = {};
     for (const item of result.items) statuses[item.status] = (statuses[item.status] ?? 0) + 1;
-    summary.push({ source: name, collectorError: request.collectorError ?? null, sent: request.posts.length, unread: unread.length, failed: result.items.filter(item => item.reason === "IMAGE_FAILED" || item.status === "failed").length,
+    summary.push({ source: name, collectorError: request.collectorError ?? null, sent: request.posts.length - result.unsubmitted, deferred: result.unsubmitted, unread: unread.length, failed: result.items.filter(item => item.reason === "IMAGE_FAILED" || item.status === "failed").length,
       statuses });
   } catch (error) {
     // One broken source must not stop the others; the server's stale alert covers what is never sent.
