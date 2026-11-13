@@ -110,6 +110,14 @@ it('switches the passport card to the other favorite', () => {
   const card = screen.getByRole('region', { name: '내 패스포트' });
   expect(within(card).getByText('이번 쪽 1/9')).toBeInTheDocument();
   expect(within(card).getByText('실버까지 도장 1칸')).toBeInTheDocument();
+  // 내 통계도 같은 패스포트를 따른다: 등급·하트·스탬프는 고른 최애의 것이다.
+  const stats = screen.getByRole('region', { name: '내 통계' });
+  // 값이 바뀌면 숫자가 카운트업하므로, 화면 판독기가 읽는 최종 값(aria-hidden 제외)을 본다.
+  const value = (label: string) => { const dd = within(stats).getByText(label).closest('div')!.querySelector('dd')!.cloneNode(true) as HTMLElement; dd.querySelectorAll('[aria-hidden="true"]').forEach((node) => node.remove()); return dd.textContent; };
+  expect(value('등급')).toBe('브론즈');
+  expect(within(screen.getByRole('heading', { level: 1, name: '별빛님' }).parentElement as HTMLElement).getByText('브론즈')).toBeInTheDocument();
+  expect(value('하트')).toBe('—');
+  expect(value('스탬프')).toBe('1/9');
 });
 
 it('shows my stats between the profile and the passport as numbers only', () => {
@@ -129,11 +137,19 @@ it('shows my stats between the profile and the passport as numbers only', () => 
   expect(within(stats).queryByRole('button')).toBeNull();
 });
 
-it('shows points from 10,000 in the short form', () => {
+it('shows points from 10,000 in the short form and drops the decimal once the short number has three digits', () => {
+  data.wallet = { points: 1_234_567, tickets: 0, pointCost: 100, attendance: { streak: 0 } };
+  const { unmount } = renderMy();
+  expect(within(screen.getByRole('region', { name: '내 통계' })).getByText('포인트').closest('div')!.querySelector('dd')!.textContent).toBe('123만P');
+  unmount();
   data.wallet = { points: 12_345, tickets: 0, pointCost: 100, attendance: { streak: 0 } };
-  renderMy('en');
+  const { unmount: unmountEn } = renderMy('en');
   const stats = screen.getByRole('region', { name: 'My stats' });
-  expect(within(stats).getByText('Points').closest('div')!.querySelector('dd')!.textContent).toBe('12.3KP');
+  expect(within(stats).getByText('Points').closest('div')!.querySelector('dd')!.textContent).toBe('12.3K\u2009P');
+  unmountEn();
+  data.wallet = { points: 1_234_567, tickets: 0, pointCost: 100, attendance: { streak: 0 } };
+  renderMy('en');
+  expect(within(screen.getByRole('region', { name: 'My stats' })).getByText('Points').closest('div')!.querySelector('dd')!.textContent).toBe('1.2M\u2009P');
 });
 
 it('does not duplicate the wallet on MY', () => {

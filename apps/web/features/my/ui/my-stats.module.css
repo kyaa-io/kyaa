@@ -14,5 +14,6 @@
 .value { grid-area:value; display:flex; min-width:0; min-block-size:24px; align-items:center; margin:0; overflow-wrap:anywhere; word-break:keep-all; }
 .muted { color:var(--color-muted); }
 .emptyTier { inline-size:28px; block-size:28px; border:1.5px dashed var(--color-accent-line); border-radius:50%; }
-@media (width >= 48rem) { .grid { grid-template-columns:repeat(6,minmax(0,1fr)); } }
+/* 768+: 6칸을 한 줄로 펴고, 넓은 폭에서 왼쪽에 붙은 숫자가 흩어져 보이지 않게 칸 가운데로 모은다. */
+@media (width >= 48rem) { .grid { grid-template-columns:repeat(6,minmax(0,1fr)); } .cell { justify-items:center; text-align:center; } .value { justify-content:center; } }
 @media (width < 30rem) { .card { padding:var(--space-5); } }

@@ -27,12 +27,15 @@ const COMPACT_FROM = 10_000;
 function Value({ locale, slot, unit }: { locale: AppLocale; slot: Slot; unit?: string }) {
   if (slot === "loading") return <FanSkeleton width={48} height={24} />;
   if (slot === "missing") return <FanText role="item" className={styles.muted}>—</FanText>;
-  // From 10,000 the short form (1.2만, 12.3K) keeps every cell on its line; 덕질 keeps the exact number. The short word rides in the unit.
+  // From 10,000 the short form (1.2만, 12.3K, 1.2M; no decimal once the short number has three digits: 123만) keeps every cell inside its 95px column at 390; 덕질 keeps the exact number. The short word rides in the unit.
   if (slot >= COMPACT_FROM) {
-    const parts = new Intl.NumberFormat(locale, { notation: "compact", maximumFractionDigits: 1 }).formatToParts(slot);
+    const compact = (digits: number) => new Intl.NumberFormat(locale, { notation: "compact", maximumFractionDigits: digits }).formatToParts(slot);
+    const oneDecimal = compact(1);
+    const parts = (oneDecimal.find((part) => part.type === "integer")?.value.length ?? 0) >= 3 ? compact(0) : oneDecimal;
     const short = Number(parts.filter((part) => ["integer", "decimal", "fraction"].includes(part.type)).map((part) => part.type === "decimal" ? "." : part.value).join(""));
     const word = parts.filter((part) => part.type === "compact" || part.type === "literal").map((part) => part.value).join("").trim();
-    return <FanNumber size="lg" value={short} locale={locale} unit={`${word}${unit ?? ""}`} />;
+    // 12.3K P: a Latin short word and the unit read as one word without a thin space between them (1.2만P needs none).
+    return <FanNumber size="lg" value={short} locale={locale} unit={unit && /[A-Za-z]$/.test(word) ? `${word}\u2009${unit}` : `${word}${unit ?? ""}`} />;
   }
   return <FanNumber size="lg" value={slot} countUp locale={locale} unit={unit} />;
 }
