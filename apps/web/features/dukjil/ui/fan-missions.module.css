@@ -61,4 +61,8 @@
  .unfoldedGrid>ul>li{box-shadow:inset -1px -1px var(--color-line-subtle)}
  .unfolded[data-expanded="false"] [data-mobile-extra]{display:block}
  .unfolded:has([data-mobile-extra]) .moreButton{display:none}
+/* 목록 폭 800부터 세 열(1024 한 열 본문 960 → 320씩): 두 열은 행 400까지만 이름~보상 사이가 행 폭의 40% 안이다(480에서는 53%). */
+@container (min-width:50rem){
+ .unfoldedGrid{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
 }
