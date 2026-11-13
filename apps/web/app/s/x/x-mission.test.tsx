@@ -8,6 +8,7 @@ let completed = false;
 beforeEach(() => {
  completed = false; auth.authenticated = true; auth.user.id = 'one';
  vi.stubGlobal('fetch', vi.fn(async (url: string, init?: RequestInit) => {
+  if (url === '/api/me/profile') return Response.json({ profile: { nickname: 'Mina' } });
   if (url.includes('/fans')) return Response.json({ likeCount: completed ? 8 : 7 });
   if (init?.method === 'POST') { completed = true; return Response.json(result); }
   return Response.json({ reaction: completed ? result : null });
@@ -18,14 +19,16 @@ it('records a like, refreshes server count, and prevents repeat submission', asy
  render(<XMission locale="en" />);
  const button = screen.getByRole('button', {name:'Like'});
  await waitFor(() => expect(button).not.toBeDisabled()); fireEvent.click(button);
- await screen.findByRole('heading', {name:'Mission complete'});
+ await screen.findByRole('heading', {name:'Stamped! Mission complete'});
  await screen.findByText('Likes · 8');
  expect(screen.getByRole('button', {name:'Mission complete'})).toBeDisabled();
  expect(vi.mocked(fetch).mock.calls.filter(([,init]) => init?.method === 'POST')).toHaveLength(1);
 });
 it('restores a previously completed mission', async () => {
  completed = true; render(<XMission locale="ko" />);
- await screen.findByRole('heading', {name:'미션 완료'});
+ await screen.findByRole('heading', {name:'도장 쾅! 좋아요 미션 완료'});
+ expect(screen.getByText('KYAA × X 좋아요 미션')).toBeTruthy();
+ expect(await screen.findByText('Mina')).toBeTruthy();
  expect(screen.getByRole('button', {name:'미션 완료'})).toBeDisabled();
 });
 it('uses Google OAuth with the same localized returnTo for guests', async () => {
@@ -41,7 +44,7 @@ it('does not invent completion or count when the event data is unavailable', asy
  render(<XMission locale="en" />);
  await screen.findByText('Couldn’t load the event. Please try again.');
  expect(screen.queryByText(/Likes ·/)).toBeNull();
- expect(screen.queryByRole('heading', {name:'Mission complete'})).toBeNull();
+ expect(screen.queryByRole('heading', {name:'Stamped! Mission complete'})).toBeNull();
  expect(screen.queryByRole('button', {name:'Like'})).toBeNull();
 });
 

@@ -9,6 +9,7 @@ const actualFetch = window.fetch.bind(window);
 window.fetch = async (input, init) => {
  const url = String(input);
  if (url === '/api/events') { window.dispatchEvent(new CustomEvent('mission-fixture-event', {detail:JSON.parse(String(init?.body))})); return Response.json({ event:{id:'fixture-event',replayed:false} }, {status:201}); }
+ if (url === '/api/me/profile') return Response.json({ profile: { nickname: 'kyaafan' } });
  if (!url.startsWith('/api/celebrities/x-mission-1113/')) return actualFetch(input, init);
  if (params.get('state') === 'error') return new Response(null, { status: 503 });
  if (url.includes('/fans')) return Response.json({ likeCount: completed ? 8 : 7 });
