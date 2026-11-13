@@ -65,7 +65,7 @@ it('adds everyone else\'s stored chances to my fresh count for the page total, a
  mocks.read.mockResolvedValue(snapshot([{userId:owner,kind:'comment',sourceId:'c1',occurredAt:'2026-11-11T02:00:00Z'}]));
  // 저장 값의 내 행은 아직 1회(오래됨): 합계에는 방금 센 내 값(2)을 쓴다. 다른 회원은 응모 1 + 커뮤니티 1 = 2
  mocks.stored.mockResolvedValue({users:[{id:owner,createdAt:enteredAt},{id:other,createdAt:enteredAt}],entries:[{userId:owner,enteredAt},{userId:other,enteredAt}],actions:[{userId:other,kind:'community',sourceId:'community:x',occurredAt:'2026-11-11T03:00:00Z'}]});
- expect(await (await GET(new Request('http://localhost'))).json()).toEqual({entered:true,passportReceived:false,communityJoined:true,chances:2,friends:0,totalChances:4});
+ expect(await (await GET(new Request('http://localhost'))).json()).toEqual({entered:true,passportReceived:false,communityJoined:true,chances:2,friends:0,totalChances:4,winChance:1});
  expect(mocks.stored).toHaveBeenCalledWith('stored-client');
  // 1분 안의 다음 요청은 저장 값을 다시 읽지 않는다
  await GET(new Request('http://localhost'));expect(mocks.stored).toHaveBeenCalledTimes(1);

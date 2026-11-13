@@ -125,16 +125,16 @@ it('always shows the odds rule, and my current odds only from server counts', as
   expect(view.container.querySelector('[data-raffle-odds-mine]')).toBeNull();
   cleanup();
   auth.authenticated = true;
-  server({ entered: true, passportReceived: false, communityJoined: false, chances: 3, friends: 0, totalChances: 120 });
+  server({ entered: true, passportReceived: false, communityJoined: false, chances: 3, friends: 0, totalChances: 120, winChance: 0.404 });
   render(<RaffleProvider locale="ko" closed={false} closesAt={closesAt} now={now}><RaffleOdds /></RaffleProvider>);
   await settle();
-  expect(document.querySelector('[data-raffle-odds-mine]')?.textContent).toBe('지금 내 확률 약 43% = 3회 ÷ 120회 × 17명');
+  expect(document.querySelector('[data-raffle-odds-mine]')?.textContent).toBe('지금 내 확률 약 40% (내 기회 3회 · 전체 120회)');
 });
 
-it('rounds small odds to one decimal and stops at 100%', () => {
-  expect(raffleOddsText('ko', 1, 2000, 17)).toBe('지금 내 확률 약 0.9% = 1회 ÷ 2000회 × 17명');
-  expect(raffleOddsText('en', 5, 20, 17)).toBe('Your odds now about 100% = 5 ÷ 20 × 17');
-  expect(raffleOddsText('ko', 1, 100000, 17)).toBe('지금 내 확률 약 0.1% 미만 = 1회 ÷ 100000회 × 17명');
+it('rounds small odds to one decimal', () => {
+  expect(raffleOddsText('ko', 0.0094, 1, 2000)).toBe('지금 내 확률 약 0.9% (내 기회 1회 · 전체 2000회)');
+  expect(raffleOddsText('en', 1, 5, 20)).toBe('Your odds now about 100% (your 5 of 20 chances)');
+  expect(raffleOddsText('ko', 0.0004, 1, 100000)).toBe('지금 내 확률 약 0.1% 미만 (내 기회 1회 · 전체 100000회)');
 });
 
 it('numbers the two steps and checks the first one after entering', () => {
@@ -151,4 +151,9 @@ it('shows the same ticking clock large in the key visual', () => {
   const timer = screen.getByRole('timer');
   expect(timer.getAttribute('data-size')).toBe('hero');
   expect(timer.textContent).toBe('D-1721:59:59');
+});
+
+it('tells a signed-out fan to sign in first in step 1', () => {
+  const view = render(<RaffleProvider locale="ko" closed={false} closesAt={closesAt} now={now}><RaffleEnterBlock /></RaffleProvider>);
+  expect(view.container.querySelector('[data-row="raffle-step"]')?.textContent).toBe('1로그인한 뒤 래플 응모하기를 한 번 누르면 참여 완료');
 });

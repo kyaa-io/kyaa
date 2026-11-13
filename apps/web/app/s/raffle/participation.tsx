@@ -7,7 +7,7 @@ import { FanDisplay } from '@/components/fan-ui/fan-display';
 import type { AppLocale } from '@/i18n/locales';
 import { signupRaffleText } from '@/i18n/catalogs/signup-raffle';
 import { raffleLongformText, raffleOddsText, type SignupRaffleLongformKey } from '@/i18n/catalogs/signup-raffle-longform';
-import { raffleInviteCode, raffleShareHref, signupEvent } from '@/features/benefit/domain/signup-event';
+import { raffleInviteCode, raffleShareHref } from '@/features/benefit/domain/signup-event';
 import { communityInviteSchema } from '@/features/community-stamps/domain/community-stamps';
 import { communityStampAction } from '@/features/community-stamps/ui/use-community-stamps';
 import { useByUsAuth } from '@/features/auth/client/cognito-auth';
@@ -24,6 +24,8 @@ type Ctx = {
   chances?: number; friends?: number;
   /** 응모한 모든 회원의 당첨 기회 합계(서버 값, 대략 확률의 분모). 못 읽으면 없다. */
   totalChances?: number;
+  /** 추첨 방식대로 서버가 센 지금 내 당첨 확률(0~1). */
+  winChance?: number;
   /** 내 친구 초대 코드(로그인했을 때만). 공유 주소에 붙는다. */
   inviteCode?: string;
   enter: () => void; login: () => void; t: (key: SignupRaffleLongformKey, count?: number) => string; s: (key: Parameters<typeof signupRaffleText>[1]) => string;
@@ -35,19 +37,19 @@ function useRaffle() { const value = useContext(RaffleContext); if (!value) thro
 const inviteKey = 'kyaa:raffle:invite';
 const storedInvite = () => { try { return raffleInviteCode(window.localStorage.getItem(inviteKey)); } catch { return undefined; } };
 const storeInvite = (code?: string) => { try { if (code) window.localStorage.setItem(inviteKey, code); else window.localStorage.removeItem(inviteKey); } catch { /* 저장소 없음 */ } };
-type EntryResult = { entered?: boolean; passportReceived?: boolean; communityJoined?: boolean; chances?: number; friends?: number; totalChances?: number; invite?: 'registered' | 'refused' | 'pending' };
+type EntryResult = { entered?: boolean; passportReceived?: boolean; communityJoined?: boolean; chances?: number; friends?: number; totalChances?: number; winChance?: number; invite?: 'registered' | 'refused' | 'pending' };
 const count = (value: unknown) => typeof value === 'number' && Number.isSafeInteger(value) && value >= 0 ? value : undefined;
 
 export function RaffleProvider({ locale, closed, closesAt, now, preview, invite, children }: { locale: AppLocale; closed: boolean; closesAt: number; now: number; preview?: RafflePreview; /** 주소의 ?invite= 로 받은 친구의 초대 코드 */ invite?: string; children: ReactNode }) {
   const auth = useByUsAuth(), { getAccessToken } = auth;
   const [pending, setPending] = useState(false);
   const [entered, setEntered] = useState(false), [passport, setPassport] = useState(false), [community, setCommunity] = useState(false), [error, setError] = useState(false);
-  const [chances, setChances] = useState<number>(), [friends, setFriends] = useState<number>(), [totalChances, setTotalChances] = useState<number>(), [inviteCode, setInviteCode] = useState<string>();
+  const [chances, setChances] = useState<number>(), [friends, setFriends] = useState<number>(), [totalChances, setTotalChances] = useState<number>(), [winChance, setWinChance] = useState<number>(), [inviteCode, setInviteCode] = useState<string>();
   const received = useRef<string | undefined>(undefined);
   const p = preview;
   const apply = useCallback((result: EntryResult) => {
     setEntered(!!result.entered); setPassport(!!result.passportReceived); setCommunity(!!result.communityJoined);
-    setChances(result.entered ? count(result.chances) : undefined); setFriends(result.entered ? count(result.friends) : undefined); setTotalChances(result.entered ? count(result.totalChances) : undefined);
+    setChances(result.entered ? count(result.chances) : undefined); setFriends(result.entered ? count(result.friends) : undefined); setTotalChances(result.entered ? count(result.totalChances) : undefined); setWinChance(result.entered && typeof result.winChance === 'number' && result.winChance >= 0 && result.winChance <= 1 ? result.winChance : undefined);
     // 등록됐거나 등록할 수 없는 코드는 다시 보내지 않는다. 잠시 뒤 다시(pending)만 남겨 둔다.
     if (result.invite && result.invite !== 'pending') { received.current = undefined; storeInvite(); }
   }, []);
@@ -94,7 +96,7 @@ export function RaffleProvider({ locale, closed, closesAt, now, preview, invite,
     catch { setError(true); }
     finally { setPending(false); }
   }
-  const value: Ctx = { locale, closed, closesAt, now, ready: auth.ready || !!p, pending, ...view, chances, friends, totalChances, inviteCode, enter, login: auth.login, t: (key, count) => raffleLongformText(locale, key, count), s: (key) => signupRaffleText(locale, key) };
+  const value: Ctx = { locale, closed, closesAt, now, ready: auth.ready || !!p, pending, ...view, chances, friends, totalChances, winChance, inviteCode, enter, login: auth.login, t: (key, count) => raffleLongformText(locale, key, count), s: (key) => signupRaffleText(locale, key) };
   return <RaffleContext.Provider value={value}>{children}</RaffleContext.Provider>;
 }
 
@@ -144,7 +146,7 @@ export function RaffleEnterBlock() {
   return <div className={styles.enter} data-raffle-hero-action>
     {/* 버튼 하나로 끝나는지 헷갈린다는 대표 지적(2026-11-13): 두 걸음을 번호로. 응모하면 1번에 체크 */}
     <ol className={styles.steps}>
-      <li data-row="raffle-step" data-done={r.entered || undefined}><FanDisplay role="strong" className={styles.stepMark} aria-hidden="true">{r.entered ? <FanIcon icon={Check} size={16} /> : 1}</FanDisplay><FanDisplay role="strong">{r.t('step1')}</FanDisplay></li>
+      <li data-row="raffle-step" data-done={r.entered || undefined}><FanDisplay role="strong" className={styles.stepMark} aria-hidden="true">{r.entered ? <FanIcon icon={Check} size={16} /> : 1}</FanDisplay><FanDisplay role="strong">{r.t(r.signedIn ? 'step1' : 'step1Guest')}</FanDisplay></li>
       <li data-row="raffle-step"><FanDisplay role="strong" className={styles.stepMark} aria-hidden="true">2</FanDisplay><FanDisplay role="strong">{r.t('step2')}</FanDisplay></li>
     </ol>
     <div className={styles.enterActions}>
@@ -184,13 +186,12 @@ export function RaffleBoostAction({ kind }: { kind: 'comment' | 'attend' | 'invi
     : <FanAction href={`/?locale=${r.locale}`} variant="neutral" size="sm">{r.t('findPosts')}</FanAction>;
 }
 
-const winners = signupEvent.prizes.reduce((sum, prize) => sum + prize.quantity, 0);
-/** 당첨 확률 식(대표 2026-11-13 "투명하게"): 식은 늘 보이고, 응모한 회원에게는 서버가 센 내 기회·전체 기회로 지금 확률을 붙인다. 값이 없으면 숫자를 지어내지 않는다. */
+/** 당첨 확률 식(대표 2026-11-13 "투명하게"): 식은 늘 보이고, 응모한 회원에게는 서버가 추첨 방식대로 센 지금 확률과 내 기회·전체 기회를 붙인다. 값이 없으면 숫자를 지어내지 않는다. */
 export function RaffleOdds() {
   const r = useRaffle();
   return <div className={styles.odds} data-raffle-odds>
     <FanDisplay role="caption" as="p">{r.t('oddsRule')}</FanDisplay>
-    {r.entered && r.chances && r.totalChances ? <FanDisplay role="caption" as="p" className={styles.oddsMine} data-raffle-odds-mine>{raffleOddsText(r.locale, r.chances, r.totalChances, winners)}</FanDisplay> : null}
+    {r.entered && r.chances && r.totalChances && r.winChance !== undefined ? <FanDisplay role="caption" as="p" className={styles.oddsMine} data-raffle-odds-mine>{raffleOddsText(r.locale, r.winChance, r.chances, r.totalChances)}</FanDisplay> : null}
   </div>;
 }
 
