@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState, type MouseEvent } from 'react';
 import { z } from 'zod';
 import { useByUsAuth } from '@/features/auth/client/cognito-auth';
 import { reactionResultSchema } from '@/features/reaction/domain/reaction';
@@ -8,6 +8,9 @@ import { FanHeading } from '@/components/fan-ui/fan-heading';
 import { FanText } from '@/components/fan-ui/fan-text';
 import { FanSurface } from '@/components/fan-ui/fan-surface';
 import { Heart, Check } from '@/components/fan-ui/fan-icons';
+import { externalBrowserUrl } from '@/components/login-browser-policy';
+import { recordClientProductEvent, pageViewIdempotencyKey } from '@/features/analytics/client/product-event-client';
+import { isXBrowser, missionAttribution } from './mission-context';
 import styles from './x-mission.module.css';
 export const missionSlug = 'x-mission-1113';
 const countSchema = z.object({ likeCount: z.number().int().nonnegative() });
@@ -22,6 +25,11 @@ export function XMission({ locale }: { locale: 'ko' | 'en' }) {
 }
 function MissionForOwner({ locale, auth }: { locale: 'ko' | 'en'; auth: ReturnType<typeof useByUsAuth> }) {
  const t = copy[locale];
+ const [locationContext, setLocationContext] = useState({ search:'', hash:'' });
+ useEffect(() => { setLocationContext({ search:window.location.search, hash:window.location.hash }); }, []);
+ const languageHref = (value: 'ko' | 'en') => { const query = new URLSearchParams(locationContext.search); query.set('locale', value); return `?${query}${locationContext.hash}`; };
+ const [inX, setInX] = useState(false), [browserNotice, setBrowserNotice] = useState(false);
+ useEffect(() => { setInX(isXBrowser(navigator.userAgent)); }, []);
  const [count, setCount] = useState<number>();
  const [completed, setCompleted] = useState(false), [loaded, setLoaded] = useState(false);
  const [error, setError] = useState<'load' | 'save'>(), [pending, setPending] = useState(false), [retry, setRetry] = useState(0);
@@ -46,6 +54,14 @@ function MissionForOwner({ locale, auth }: { locale: 'ko' | 'en'; auth: ReturnTy
   })();
   return () => controller.abort();
  }, [authenticated, getAccessToken, locale, ready, retry]);
+ const recordAttribution = useCallback(async () => {
+  const properties = missionAttribution(window.location.search);
+  if (!properties || !authenticated || !auth.user?.id) return;
+  const token = await getAccessToken(); if (!token) return;
+  const idempotencyKey = await pageViewIdempotencyKey('creator_page_view', `x-mission-${properties.kol}`, auth.user.id);
+  await recordClientProductEvent({ eventName:'creator_page_view', source:'x_mission.identified', idempotencyKey, celebrityId:null, liveEventId:null, missionId:null, benefitId:null, properties }, token);
+ }, [authenticated, auth.user?.id, getAccessToken]);
+ useEffect(() => { if (ready && authenticated) void recordAttribution().catch(() => {}); }, [ready, authenticated, recordAttribution]);
  async function like() {
   if (!loaded || pending || completed || !authenticated) return;
   setPending(true); setError(undefined);
@@ -54,6 +70,7 @@ function MissionForOwner({ locale, auth }: { locale: 'ko' | 'en'; auth: ReturnTy
    const response = await fetch(`/api/celebrities/${missionSlug}/reactions`, { method: 'POST', headers: { authorization: `Bearer ${token}` }, cache: 'no-store' });
    if (!response.ok) throw new Error('like');
    reactionResultSchema.parse(await response.json());
+   void recordAttribution().catch(() => {});
    setCompleted(true);
    setRetry(value => value + 1);
   } catch { setError('save'); }
@@ -61,9 +78,22 @@ function MissionForOwner({ locale, auth }: { locale: 'ko' | 'en'; auth: ReturnTy
  }
  const primary = 'primary' as const;
  const returnTo = typeof window === 'undefined' ? `/s/x?locale=${locale}` : `/s/x${window.location.search}${window.location.hash}`;
+ function beginLogin(event: MouseEvent<HTMLAnchorElement>) {
+  const target = new URL(returnTo, window.location.origin); target.searchParams.set('x_started', new Date().toISOString());
+  event.currentTarget.href = `/api/auth/cognito/start?${new URLSearchParams({ provider:'google', returnTo:target.pathname + target.search + target.hash, locale })}`;
+ }
+ function openBrowser() {
+  setBrowserNotice(true);
+  // iOS X has no reliable universal external-browser handoff; keep the app-menu instruction visible.
+  if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) return;
+  const target = externalBrowserUrl(navigator.userAgent, window.location.href);
+  if (target) window.location.assign(target);
+ }
  const loginHref = `/api/auth/cognito/start?${new URLSearchParams({ provider: 'google', returnTo, locale })}`;
  return <main className={styles.event} lang={locale}>
-  <nav className={styles.languages} aria-label="Language"><a href="?locale=en" lang="en" aria-current={locale === 'en' ? 'page' : undefined}>EN</a><a href="?locale=ko" lang="ko" aria-current={locale === 'ko' ? 'page' : undefined}>한국어</a></nav>
+  <nav className={styles.languages} aria-label="Language"><a href={languageHref('en')} lang="en" aria-current={locale === 'en' ? 'page' : undefined}>EN</a><a href={languageHref('ko')} lang="ko" aria-current={locale === 'ko' ? 'page' : undefined}>한국어</a></nav>
+  {inX && <FanAction onClick={openBrowser}>{locale === 'ko' ? '브라우저로 열기' : 'Open in browser'}</FanAction>}
+  {browserNotice && <FanText as="p" role="body">{locale === 'ko' ? 'X 메뉴에서 ‘브라우저에서 열기’를 선택해 주세요.' : 'Choose “Open in browser” from the X menu.'}</FanText>}
   <FanSurface className={styles.sheet} data-block="x-mission">
    <FanText role="label">KYAA × X</FanText>
    <FanHeading as="h1" variant="editorial">{t.title}</FanHeading>
@@ -71,7 +101,7 @@ function MissionForOwner({ locale, auth }: { locale: 'ko' | 'en'; auth: ReturnTy
    <ol className={styles.steps}>{t.steps.map((step, index) => <li data-row="mission-step" key={step} aria-current={!completed && index === (authenticated ? 2 : 1) ? 'step' : undefined}><FanText role="meta">0{index + 1}</FanText><FanText role="body">{step}</FanText>{(index === 0 || index === 1 && authenticated || completed) && <Check size={20} strokeWidth={1.5} aria-hidden="true" />}</li>)}</ol>
    <div className={styles.result} role="status" aria-live="polite">{completed && <FanHeading>{t.done}</FanHeading>}{count !== undefined && <FanText role="meta">{t.count} · {new Intl.NumberFormat(locale).format(count)}</FanText>}</div>
    {error && <FanText as="p" role="body" aria-live="assertive">{error === 'load' ? t.error : t.saveError}</FanText>}
-   {error === 'load' ? <FanAction onClick={() => setRetry(value => value + 1)}>{t.retry}</FanAction> : !authenticated ? <FanAction href={loginHref} variant={primary} fullWidth>{t.login}</FanAction> : <FanAction onClick={like} variant={primary} fullWidth disabled={!ready || !loaded || completed || pending} loading={pending} leadingIcon={<Heart size={20} strokeWidth={1.5} />}>{completed ? t.done : t.like}</FanAction>}
+   {error === 'load' ? <FanAction onClick={() => setRetry(value => value + 1)}>{t.retry}</FanAction> : !authenticated ? <FanAction href={loginHref} onClick={beginLogin} variant={primary} fullWidth>{t.login}</FanAction> : <FanAction onClick={like} variant={primary} fullWidth disabled={!ready || !loaded || completed || pending} loading={pending} leadingIcon={<Heart size={20} strokeWidth={1.5} />}>{completed ? t.done : t.like}</FanAction>}
   </FanSurface>
  </main>;
 }

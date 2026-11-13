@@ -1,3 +1,4 @@
+import { kolPropertiesSchema } from './x-mission-attribution';
 import { z } from "zod";
 import { SIGNUP_CLIENT_EVENT_NAMES, SIGNUP_SERVER_EVENT_NAMES, validateSignupEvent } from "./signup-funnel-event";
 import { validateOutboundEvent } from "./outbound-link";
@@ -53,6 +54,11 @@ const propertiesSchema = z.record(z.string().min(1).max(80), primitiveSchema)
     }
   });
 
+function validateKol(event: {source:string;eventName:string;anonymousSessionId:string|null;properties:unknown}, context:z.RefinementCtx) {
+ if (event.source !== 'x_mission.identified') return;
+ if (event.eventName !== 'creator_page_view' || event.anonymousSessionId !== null || !kolPropertiesSchema.safeParse(event.properties).success) context.addIssue({code:'custom',message:'Invalid X mission attribution'});
+}
+
 const productEventV1BaseSchema = z.object({
   schemaVersion: z.literal(1),
   eventName: productEventNameSchema,
@@ -72,6 +78,7 @@ export const productEventV1Schema = productEventV1BaseSchema.superRefine((event,
   if ((event.appUserId === null) === (event.anonymousSessionId === null)) {
     context.addIssue({ code: "custom", message: "Exactly one event owner is required" });
   }
+  validateKol(event, context);
   validateSignupEvent(event, context);
   validateOutboundEvent(event, context);
   validateFunnelClientEvent(event, context);
@@ -82,7 +89,7 @@ export const clientProductEventV1Schema = productEventV1BaseSchema
   .refine((event) => clientProductEventNameSchema.safeParse(event.eventName).success, {
     message: "Completion events are server-only",
     path: ["eventName"],
-  }).superRefine(validateSignupEvent).superRefine(validateOutboundEvent).superRefine(validateFunnelClientEvent);
+  }).superRefine(validateKol).superRefine(validateSignupEvent).superRefine(validateOutboundEvent).superRefine(validateFunnelClientEvent);
 
 export type ProductEventV1 = z.infer<typeof productEventV1Schema>;
 export type ClientProductEventV1 = z.infer<typeof clientProductEventV1Schema>;
