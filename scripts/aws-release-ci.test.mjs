@@ -152,3 +152,26 @@ test('fail-fast CLI never blocks the build on lookup errors and writes no proof 
     assert.throws(() => readFileSync(join(directory, 'work/aws-release/ci-proof.json')));
   } finally { rmSync(directory, { recursive: true, force: true }); }
 });
+
+test('retries transient errors only for the failed CI read', async () => {
+  let attempts = 0;
+  const base = api();
+  const proof = await waitForRequiredCi(sha, options({ githubCall: async path => {
+    if (path.includes('backend-security') && ++attempts <= 2) throw Error('GITHUB_HTTP_500');
+    return base(path);
+  }, sleep: async () => {} }));
+  assert.equal(proof.status, 'success');
+  assert.equal(attempts, 4);
+});
+test('persistent 500 and 4xx fail with bounded attempts', async () => {
+  for (const [status, expected] of [[500, 3], [403, 1], [429, 1]]) {
+    let attempts = 0;
+    await assert.rejects(waitForRequiredCi(sha, options({ sourceRunId: 1, githubCall: async () => { attempts++; throw Error(`GITHUB_HTTP_${status}`); }, sleep: async () => {} })), new RegExp(`GITHUB_HTTP_${status}`));
+    assert.equal(attempts, expected);
+  }
+});
+test('retry backoff respects the CI deadline', async () => {
+  let time = 0;
+  await assert.rejects(waitForRequiredCi(sha, options({ now: () => time, sleep: async ms => { time += ms; }, githubCall: async () => { throw new TypeError('network'); } })), /REQUIRED_CI_TIMEOUT/);
+  assert.equal(time, 20);
+});

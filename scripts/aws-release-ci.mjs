@@ -1,5 +1,6 @@
 import { mkdir, writeFile, appendFile } from 'node:fs/promises';
 import { pathToFileURL } from 'node:url';
+import { githubRead } from './aws-approved-promotion.mjs';
 import { github, trustedRun, REPOSITORY, REPOSITORY_ID } from './aws-release.mjs';
 
 export const REQUIRED_WORKFLOWS = ['backend-security', 'fan-design-system', 'dependency-audit', 'deployment-notices', 'cs-inquiries'].map(name => `.github/workflows/${name}.yml`);
@@ -11,20 +12,25 @@ function trusted(run, workflow, sha, branch, id) {
 
 export async function waitForRequiredCi(sha, { sourceRunId, githubCall = github, timeoutMs = 40 * 60_000, pollMs = 30_000, missingGraceMs = 120_000, maxPages = 10, failFastOnly = false, now = Date.now, sleep = ms => new Promise(resolve => setTimeout(resolve, ms)) } = {}) {
   if (!/^[a-f0-9]{40}$/.test(sha ?? '')) fail('INVALID_SOURCE_SHA');
+  let started = now();
+  let beforeDeadline = () => {};
+  let deadlineActive = false;
+  const read = path => githubRead(path, { read: githubCall, retryable: error => /^GITHUB_HTTP_5\d\d$/.test(error.message) || ['TypeError', 'AbortError', 'TimeoutError'].includes(error.name), wait: async ms => { beforeDeadline(); await sleep(deadlineActive ? Math.min(ms, Math.max(0, timeoutMs - (now() - started))) : ms); beforeDeadline(); } });
   let branch = 'main';
   if (sourceRunId !== undefined) {
-    const source = trustedRun(await githubCall(`/actions/runs/${sourceRunId}`), sourceRunId, false);
+    const source = trustedRun(await read(`/actions/runs/${sourceRunId}`), sourceRunId, false);
     if (source.head_sha !== sha) fail('SOURCE_RUN_SHA_MISMATCH');
     branch = source.head_branch;
   }
   if (!Number.isFinite(timeoutMs) || timeoutMs <= 0 || !Number.isFinite(pollMs) || pollMs <= 0 || !Number.isFinite(missingGraceMs) || missingGraceMs < 0 || !Number.isSafeInteger(maxPages) || maxPages < 1 || maxPages > 10) fail('INVALID_CI_WAIT_OPTIONS');
-  const started = now();
-  const beforeDeadline = () => { if (now() - started >= timeoutMs) fail('REQUIRED_CI_TIMEOUT'); };
+  started = now();
+  deadlineActive = true;
+  beforeDeadline = () => { if (now() - started >= timeoutMs) fail('REQUIRED_CI_TIMEOUT'); };
   async function current(workflow) {
     let latest;
     for (let page = 1; page <= maxPages; page++) {
       beforeDeadline();
-      const response = await githubCall(`/actions/workflows/${workflow.split('/').at(-1)}/runs?branch=${encodeURIComponent(branch)}&event=push&head_sha=${sha}&per_page=100&page=${page}`);
+      const response = await read(`/actions/workflows/${workflow.split('/').at(-1)}/runs?branch=${encodeURIComponent(branch)}&event=push&head_sha=${sha}&per_page=100&page=${page}`);
       if (!Array.isArray(response?.workflow_runs) || response.workflow_runs.length > 100) fail('INVALID_CI_RUN_LIST');
       for (const candidate of response.workflow_runs) {
         trusted(candidate, workflow, sha, branch);
@@ -40,7 +46,7 @@ export async function waitForRequiredCi(sha, { sourceRunId, githubCall = github,
     }
     // The list may still describe a failed earlier attempt after a rerun starts.
     beforeDeadline();
-    const run = trusted(await githubCall(`/actions/runs/${latest.id}`), workflow, sha, branch, latest.id);
+    const run = trusted(await read(`/actions/runs/${latest.id}`), workflow, sha, branch, latest.id);
     if (run.run_attempt < latest.run_attempt) fail('UNTRUSTED_CI_RUN');
     if (run.status !== 'completed') return null;
     if (run.conclusion !== 'success') fail(`REQUIRED_CI_FAILED:${workflow}:${run.id}:${run.run_attempt}`);
