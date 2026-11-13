@@ -407,10 +407,16 @@ const fanStats = (locale: AppLocale, row: HomeFanRankingRow, metric: RankingMetr
   ] : []),
 ];
 
-/** Creators by likes (대표 11/13 08:50 "찐팬 ♥ 5 · SNS"): the 찐팬 hearts first, with the heart asset, then all-time likes when the list counts a period.
- * No SNS follower count is stored anywhere (20261222140000), so no SNS cell is drawn; a made-up number never is. */
+/** The SNS total of an opened creator row (대표 요청 11/13): 1,000 and up shortened in every language (3,856 → 3.9K, 6,800,000 → 6.8M). Only this cell; the other lists keep formatCountMetric's rule. */
+const snsFans = new Intl.NumberFormat("en-US", { notation: "compact", maximumFractionDigits: 1 });
+/** Creators by likes (대표 11/13 08:50 "찐팬 ♥ 5 · SNS"): the 찐팬 hearts first, with the heart asset, then the operator-kept SNS fan total (celebrities.fan_count, "통합 팬 수" in the admin; one number,
+ * no per-platform split is stored, so no platform icon), then all-time likes when the list counts a period. A creator without a kept total has no SNS cell; a made-up number never is. */
 const creatorStats = (locale: AppLocale, row: HomeCreatorRankingRow, metric: RankingMetric, period: HomeRankingPeriod) => metric === "likes"
-  ? [...statCell(locale, "hearts", rankingsText(locale, "rkPanelJjinfan"), row.hearts, "hearts"), ...(period === "all" ? [] : statCell(locale, "totalLikes", rankingsText(locale, "rkPanelTotalLikes"), row.totalLikes, "likes"))] : [];
+  ? [
+    ...statCell(locale, "hearts", rankingsText(locale, "rkPanelJjinfan"), row.hearts, "hearts"),
+    ...(typeof row.fanCount === "number" && row.fanCount > 0 ? [{ key: "snsFans", label: rankingsText(locale, "rkPanelSnsFans"), value: snsFans.format(row.fanCount) }] : []),
+    ...(period === "all" ? [] : statCell(locale, "totalLikes", rankingsText(locale, "rkPanelTotalLikes"), row.totalLikes, "likes")),
+  ] : [];
 
 /** Creators: name, movement (and LIVE and the 찐팬 100 challenge tag where they apply) and the metric's value on one line; the row opens a panel whose action goes to the page. */
 export function CreatorRows({ locale, ranking, metric, show, fill, scope, challengeTag = false, guest = false, period = "all", entryRef }: { locale: AppLocale; ranking: HomeCreatorRanking; guest?: boolean; metric: HomeCreatorMetric; show?: number; fill?: number; scope: string; challengeTag?: boolean; period?: HomeRankingPeriod; entryRef?: { current: boolean } }) {
@@ -418,7 +424,6 @@ export function CreatorRows({ locale, ranking, metric, show, fill, scope, challe
   const shown = show === undefined ? ranking.rows : ranking.rows.slice(0, show);
   const ranks = listPlaces(shown.length);
   const { place, movedSince } = useRowMotion(shown.map((row) => row.slug), shown.map((row) => creatorValue(row, metric)), ranks, `creators:${metric}:${period}`, entryRef);
-  const top = ranking.rows[0] ? creatorValue(ranking.rows[0], metric) : 0;
   const accentFirst = !guest;
   const days = ranking.weekGainDays ?? 0;
   return <ol className={styles.rows}>{shown.map((row, i) => {
@@ -441,7 +446,7 @@ export function CreatorRows({ locale, ranking, metric, show, fill, scope, challe
         <span className={styles.value}><Main locale={locale} metric={metric} value={value} delay={rowDelay(i)} /></span>
       </RowFace>
       <Pulse />
-      {open ? <RankRowPanel id={`${id}-panel`} kind="creator" row={row} days={days} locale={locale} gap={gapToFirst(i === 0 && ranking.rows[0] === row, value, top)} unit={metric === "likes" ? "likes" : "hearts"} extra={creatorStats(locale, row, metric, period)} /> : null}
+      {open ? <RankRowPanel id={`${id}-panel`} kind="creator" row={row} days={days} locale={locale} unit={metric === "likes" ? "likes" : "hearts"} extra={creatorStats(locale, row, metric, period)} /> : null}
     </li>;
   })}{fill ? <Placeholders from={shown.length} to={fill} /> : null}</ol>;
 }

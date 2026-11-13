@@ -197,6 +197,26 @@ describe("rankings routes", () => {
     expect(body.rows[0]).toMatchObject({ hearts: 7, points: null, fans: 2, liveNow: true, delta: 0, weekGain: 0, isNew: false });
   });
 
+  it("adds the operator-kept SNS follower total to the likes list by slug, null without one, and no non-participant value on other lists", async () => {
+    const likesRow = (rank: number, slug: string) => ({ rank, slug, name: slug.toUpperCase(), imageUrl: null, score: 5, hearts: 3, points: null, fans: 2, liveNow: false, isNew: false, challenge: false, delta: 0, weekGain: 0, likes: 5, totalLikes: 9 });
+    const answer = (metric: string) => () => ({ ...head({ metric, weekGainDays: 1 }), rows: [likesRow(1, "a"), likesRow(2, "b"), likesRow(3, "c")] });
+    const readFanCounts = vi.fn(async () => new Map<string, number | null>([["a", 6_800_000], ["b", null]]));
+    const { handlers } = make(answer("likes"), { ...fresh, readFanCounts });
+    const likes = await (await handlers.home(req("/x?kind=creators&metric=likes"))).json();
+    expect(likes.rows.map((row: { fanCount: number | null }) => row.fanCount)).toEqual([6_800_000, null, null]);
+    const hearts = await (await make(answer("hearts"), { ...fresh, readFanCounts }).handlers.home(req("/x?kind=creators&metric=hearts"))).json();
+    expect(hearts.rows[0]).not.toHaveProperty("fanCount");
+    expect(readFanCounts).toHaveBeenCalledTimes(1);
+  });
+
+  it("keeps the likes list when the follower totals cannot be read", async () => {
+    const row = { rank: 1, slug: "a", name: "A", imageUrl: null, score: 5, hearts: 3, points: null, fans: 2, liveNow: false, isNew: false, challenge: false, delta: 0, weekGain: 0, likes: 5, totalLikes: 9 };
+    const { handlers } = make(() => ({ ...head({ metric: "likes", weekGainDays: 1 }), rows: [row] }), { ...fresh, readFanCounts: async () => { throw new Error("down"); } });
+    const res = await handlers.home(req("/x?kind=creators&metric=likes"));
+    expect(res.status).toBe(200);
+    expect((await res.json()).rows[0].fanCount).toBeNull();
+  });
+
   it("keeps each list's default metric when none is asked for, and passes the asked one (unit regression)", async () => {
     const { handlers, rpc } = make((name, args) => ({ ...head(), metric: args.p_metric, rows: [], me: null }), fresh);
     expect((await (await handlers.home(req("/x?kind=fans"))).json()).metric).toBe("hearts");
