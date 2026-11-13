@@ -1,0 +1,1 @@
+{"changes":["홈 순위의 크리에이터 탭에서 행을 펼치면 찐팬 하트 수가 0이어도 '찐팬 ♥ 0'으로 항상 보여요. 전에는 0이면 이 칸이 사라져서 SNS 팬 수만 보였어요.","SNS 팬 수는 입력되지 않은 크리에이터에게만 보이지 않아요. 첨부 화면은 예시 순위를 넣은 로컬 검증 화면이에요."],"path":"/","images":["release-notes/images/2026-11-14-creator-rank-fans-zero-390.png","release-notes/images/2026-11-14-creator-rank-fans-zero-1440.png"]}

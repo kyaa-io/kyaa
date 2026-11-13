@@ -413,7 +413,8 @@ const snsFans = new Intl.NumberFormat("en-US", { notation: "compact", maximumFra
  * no per-platform split is stored, so no platform icon), then all-time likes when the list counts a period. A creator without a kept total has no SNS cell; a made-up number never is. */
 const creatorStats = (locale: AppLocale, row: HomeCreatorRankingRow, metric: RankingMetric, period: HomeRankingPeriod) => metric === "likes"
   ? [
-    ...statCell(locale, "hearts", rankingsText(locale, "rkPanelJjinfan"), row.hearts, "hearts"),
+    // 찐팬 ♥ is always drawn, 0 included (대표 11/14); only the SNS cell leaves when no total is kept.
+    { key: "hearts", label: rankingsText(locale, "rkPanelJjinfan"), value: row.hearts.toLocaleString(locale), unit: "hearts" as const },
     ...(typeof row.fanCount === "number" && row.fanCount > 0 ? [{ key: "snsFans", label: rankingsText(locale, "rkPanelSnsFans"), value: snsFans.format(row.fanCount) }] : []),
     ...(period === "all" ? [] : statCell(locale, "totalLikes", rankingsText(locale, "rkPanelTotalLikes"), row.totalLikes, "likes")),
   ] : [];

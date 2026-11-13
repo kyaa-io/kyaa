@@ -89,7 +89,7 @@ it("a row is one line: movement beside the name, LIVE, the value; today's gain a
       creatorRow(1, { name: "일등", likes: 12345, delta: 2, dayGain: 125, liveNow: true }),
       creatorRow(2, { name: "이등", likes: 12345, delta: -1, dayGain: 0 }),
       creatorRow(3, { name: "삼등", likes: 100, delta: 0, dayGain: null, fanCount: 6_800_000 }),
-      creatorRow(4, { fanCount: 3856, name: "새얼굴", likes: 7, delta: null, isNew: true, dayGain: -2 }),
+      creatorRow(4, { fanCount: 3856, hearts: 0, name: "새얼굴", likes: 7, delta: null, isNew: true, dayGain: -2 }),
     ],
   );
   const view = render(<RankingBoard locale="ko" />);
@@ -117,6 +117,8 @@ it("a row is one line: movement beside the name, LIVE, the value; today's gain a
   fireEvent.click(row("새얼굴").querySelector("button")!);
   expect(row("새얼굴").querySelector("[data-rank-panel]")!.textContent).toContain("오늘−2");
   expect(row("새얼굴").querySelector("[data-rank-panel]")!.textContent).toContain("SNS 팬3.9K");
+  expect(row("새얼굴").querySelector("[data-rank-panel]")!.textContent).toContain("찐팬0");
+  expect(row("새얼굴").querySelector("[data-rank-panel] [data-unit='hearts']")).not.toBeNull();
 });
 
 it("opens one row at a time, the opened row's picture and name lead to the page, and the row closes with the same click", async () => {
