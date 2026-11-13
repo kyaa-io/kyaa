@@ -149,6 +149,8 @@ it('shows three history rows from 1024px and five below, and names a single tick
   await screen.findAllByText('Exchange');await act(async()=>{});
   expect(view.container.querySelectorAll('li')).toHaveLength(3);
   expect(screen.getByText('+1 Ticket')).toBeInTheDocument();
+  // 사용자 11/13 13:36: the exchange row's ticket is the 3D ticket asset like the coin of the other rows, not an outline icon.
+  const first=view.container.querySelector('li')!;expect(first.querySelector('img')?.getAttribute('src')).toBe('/images/dukjil-duo/glyph-ticket-160.webp');expect(first.querySelector('svg')).toBeNull();
   fireEvent.click(screen.getByRole('button',{name:'View all'}));expect(view.container.querySelectorAll('li')).toHaveLength(8);
  }finally{vi.unstubAllGlobals();}
 });
