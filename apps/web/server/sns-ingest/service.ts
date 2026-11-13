@@ -70,10 +70,14 @@ export function createSnsIngestService(deps: SnsIngestDeps) {
     if (saved.status === "held") return item("held", observed.status === "unchanged" ? "ALREADY_HELD" : "SOURCE_UPDATED", saved.noticeId);
     const noticeId = saved.noticeId;
     const stored: { src: string; width: number; height: number }[] = [];
+    let imageStage = "download";
     try {
       const urls = [...new Map(([...images, ...(cover ? [cover] : [])] as URL[]).map(url => [url.href, url])).values()];
       for (const url of urls) {
-        const image = await deps.processImage(await deps.fetchImage(url));
+        imageStage = "download";
+        const bytes = await deps.fetchImage(url);
+        imageStage = "normalize";
+        const image = await deps.processImage(bytes);
         const mediaId = randomUUID();
         const storagePath = `sns-ingest/${noticeId}/${mediaId}.webp`;
         const thumbnailPath = `sns-ingest/${noticeId}/${mediaId}-thumbnail.webp`;
@@ -81,15 +85,19 @@ export function createSnsIngestService(deps: SnsIngestDeps) {
           ...(images.some(photo => photo?.href === url.href) ? ["sns_ingest_register_media"] : []),
           ...(cover?.href === url.href ? ["sns_ingest_register_video_thumbnail"] : []),
         ];
+        imageStage = "register";
         for (const registration of registrations) await deps.rpc(registration, {
           p_run_id: runId, p_notice_id: noticeId, p_media_id: mediaId, p_storage_path: storagePath, p_thumbnail_path: thumbnailPath,
           p_width: image.width, p_height: image.height, p_byte_size: image.bytes.byteLength, p_sha256: image.sha256, p_source_host: url.hostname,
         });
+        imageStage = "upload_original";
         await deps.upload(storagePath, image.bytes);
+        imageStage = "upload_thumbnail";
         await deps.upload(thumbnailPath, image.thumbnail);
         if (images.some(photo => photo?.href === url.href)) stored.push({ src: `/api/public/notice-media/${mediaId}`, width: image.width, height: image.height });
       }
     } catch {
+      console.warn("sns_ingest_image_failed", { noticeId, stage: imageStage });
       return item("held", "IMAGE_FAILED", noticeId);
     }
     const input = { source, images: stored };

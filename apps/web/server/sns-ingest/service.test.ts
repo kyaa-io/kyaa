@@ -98,6 +98,26 @@ describe("sns ingest service", () => {
     expect(deps.fetchImage).not.toHaveBeenCalled();
     expect(notices.size).toBe(0);
   });
+  it.each(["download", "normalize", "register", "upload_original", "upload_thumbnail"])("logs only the failed image stage: %s", async stage => {
+    const { deps } = fakeDatabase();
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const failure = new Error("private signed URL and credentials must not be logged");
+    if (stage === "download") vi.mocked(deps.fetchImage).mockRejectedValue(failure);
+    if (stage === "normalize") vi.mocked(deps.processImage).mockRejectedValue(failure);
+    if (stage === "register") {
+      const rpc = deps.rpc;
+      deps.rpc = async (name, args) => { if (name === "sns_ingest_register_video_thumbnail") throw failure; return rpc(name, args); };
+    }
+    if (stage === "upload_original") vi.mocked(deps.upload).mockRejectedValueOnce(failure);
+    if (stage === "upload_thumbnail") vi.mocked(deps.upload).mockResolvedValueOnce(undefined).mockRejectedValueOnce(failure);
+    try {
+      const result = await createSnsIngestService(deps).ingest(request([post("DQabc123xyz", { videoThumbnail: { url: "https://scontent.cdninstagram.com/cover.jpg" } })]), "c");
+      expect(result.items[0]).toMatchObject({ status: "held", reason: "IMAGE_FAILED" });
+      expect(warn).toHaveBeenCalledWith("sns_ingest_image_failed", { noticeId: result.items[0].noticeId, stage });
+      expect(JSON.stringify(warn.mock.calls)).not.toContain("credentials");
+    } finally { warn.mockRestore(); }
+  });
+
   it("holds a failed video-cover upload instead of publishing a broken cover", async () => {
     const { deps } = fakeDatabase();
     vi.mocked(deps.upload).mockRejectedValue(new Error("unavailable"));
