@@ -34,6 +34,7 @@ import { MyGuestPassportCard, MyPassportCard, MyPassportCardSkeleton, passportTi
 import { GiftNavLink } from "@/features/gifts/ui/gift-nav-link";
 import { GiftNotice } from "@/features/gifts/ui/gift-notice";
 import { giftText } from "@/features/gifts/ui/gift-text";
+import { MyEventsSection } from "./my-events";
 import { MyShortcuts, type MyShortcut } from "./my-shortcuts";
 import { DukjilProvider } from "@/features/dukjil/ui/dukjil-provider";
 import { CreatorImage } from "@/components/fan-ui/creator-image";
@@ -305,6 +306,7 @@ function Dashboard({ summary, locale, avatarResource, refreshSummary, selectedSl
       <div className={styles.homeRow}>
         <MyPassportCard creators={visibleCreators} selectedSlug={selectedSlug} onSelect={onSelectSlug} communityStamps={stamps} stampsError={communityStamps.state.status === "error"} retryStamps={communityStamps.retry} locale={locale} labels={labels}/>
       </div>
+      <MyEventsSection locale={locale}/>
       <CommunityStampCollection locale={locale} resource={communityStamps} creatorNames={Object.fromEntries(summary.creators.map((creator) => [creator.celebrity.slug, creator.celebrity.name]))}/>
       <MyShortcuts locale={locale} items={myShortcutItems(locale, hrefWithLocale(locale))} end={<MyLogout locale={locale} shortcut/>}/>
     </div></DukjilProvider>;

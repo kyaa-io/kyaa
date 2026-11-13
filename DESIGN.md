@@ -186,6 +186,7 @@ radius-scale: "pill / 16px / 12px / 8px / 50%"
 | `FanIcon` · `ReactionIcon` | lucide 아이콘 16·20·24 / 좋아요·댓글 채운 아이콘 | `icon` `size` `filled` / `kind` | 이모지·다른 아이콘 세트 |
 | `FanDisplay` (이벤트·캠페인 상세 전용) | 큰 금액·가는 숫자·에디토리얼 제목 | `role` amount·figure-xl·figure·figure-sm·title·heading·lead·strong·body·caption·mono, `as` | 앱 탭 화면(홈·모임·덕질·MY·랭킹·팬페이지) |
 | `FanPrint` (이벤트·캠페인 상세 전용) | 응모권·기프트카드·패스포트·기회 카드 같은 인쇄 소품 | Ticket·Gift·Passport·Chance·Desk | 정보를 담지 않는 빈 소품 |
+| `MyEvents` · `MyEventRowLink` (`features/my/ui/my-events.tsx`) | MY 이벤트 현황: 참여 중·참여 가능한 이벤트 한 줄(도장 40 · 이름 · 상태·기회 수 · D-day · 화살표). 래플·럭키드로우·찐팬100 하트 후원이 같은 줄을 쓴다(대표 11/13 09:12) | `rows` (`title` `href` `entered` `chances` `closesAt`) | 가짜 줄·자리표시 줄 없음. 줄이 없으면(비로그인·이벤트 없음) 구역을 그리지 않는다 |
 
 ### 7-1. 어느 것을 쓸까
 1. 답을 받아야 넘어가면 `FanDialog`, 390에서 긴 선택이면 `FanSheet`.
@@ -197,7 +198,7 @@ radius-scale: "pill / 16px / 12px / 8px / 50%"
 
 ### 7-2. 디스플레이·인쇄 소품 규칙 (FanDisplay·FanPrint, 2026-11-13 정식 등록)
 래플 v3·v4에서 사용자 지적("FONT 촌스럽고", "굵은 heavy 숫자 금지", "자산이 비어 있다")을 풀려고 만든 부품이라 정당한 패턴으로 등록한다. 다만 앱 전체 규칙과 부딪히지 않게 범위를 좁힌다.
-- **범위**: 이벤트·캠페인 상세 페이지(`/s/*`, 이벤트 상세)만. 앱 탭 화면에는 쓰지 않는다.
+- **범위**: 이벤트·캠페인 상세 페이지(`/s/*`, 이벤트 상세)만. 앱 탭 화면에는 쓰지 않는다. 예외 한 곳: MY 이벤트 현황 줄의 응모 도장 `FanPrintStamp` 40(래플 페이지에서 찍은 같은 도장, 11/13).
 - **글자**: 값은 `--fan-display-*` 토큰만. 굵기는 300(큰 금액·숫자)·400(본문·캡션·순번)·600(제목 줄) 셋. 지금 코드의 500(title·lead·strong)은 다음 래플 작업에서 600(title) / 400(lead·strong)으로 합친다. 화면당 `amount`는 1개.
 - **소품**: 종이·잉크·도장 빨강·접촉 그림자(`drop-shadow`)·광택 그라데이션·폭 비례 반경(`cqw`)은 `FanPrint` 안에서만. 소품은 이벤트 정보(금액·마감·인원·순번)를 담는다. 빈 소품 금지.
 - **바탕**: 페이지 바탕은 흰색. 래플 브랜치의 `--raffle-sky`·`--raffle-cream` 페이지 틴트는 등록하지 않는다(색 면은 사진·소품 안에서).
