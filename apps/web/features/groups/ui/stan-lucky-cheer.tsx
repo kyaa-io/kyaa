@@ -175,7 +175,7 @@ export function StanLucky({ locale, bias, guest, presentation, paused = false }:
     const pending = bias.status === "loading" || Boolean(slug && raffles.loading), empty = !pending && !raffles.error && (!item || !slug);
     const ready = !pending && !raffles.error && !empty;
     // C4: 쉬는 동안(paused)에는 상태와 상관없이 응모 버튼 하나만 비활성으로 두고 이유를 붙인다. href·onClick이 없어 요청을 만들지 않는다.
-    const action = paused || (ready && item) ? <FanAction className={duoStyles.action} variant="primary" {...(paused ? { disabled: true, helperText: capsuleMachineCopy(locale).text("soon") } : { href })}>
+    const action = paused || (ready && item) ? <FanAction className={duoStyles.action} variant="primary" size="sm" {...(paused ? { disabled: true, helperText: capsuleMachineCopy(locale).text("soon") } : { href })}>
       {paused || (item?.status === "open" && allowance?.kind !== "policy" && !passport) ? t(locale,"luckyEnter") : passport ? t(locale,"luckyGetPassport") : t(locale,"luckyDetails")}</FanAction> : null;
     const pastItems = hasPast && slug && favorite ? raffles.items.filter(row => row.status === "closed").slice(0, 3).map(({ raffle }) => ({ raffle, creator: { slug, name: favorite.name, image: (favorite as { image?: string | null }).image ?? null } })) : recent.data?.items ?? [];
     return <div className={duoStyles.layout} data-has-past={pastItems.length ? "" : undefined}>
@@ -183,7 +183,7 @@ export function StanLucky({ locale, bias, guest, presentation, paused = false }:
       <LuckyStage className={duoStyles.stage} paused={paused} locale={locale} />
       <div className={duoStyles.copy}>
         <img className={duoStyles.glyph} src="/images/dukjil-duo/glyph-illo-lucky-80.webp" width={40} height={40} alt="" />
-        {paused ? <><FanHeading>{locale === "ko" ? "다음 럭키드로우를 준비 중이에요." : t(locale,"luckyEmpty")}</FanHeading></> : pending ? <div aria-busy="true"><FanSkeleton width="80%" height={22}/><FanSkeleton width="60%" height={17}/></div>
+        {paused ? <FanText role="item" as="p" className={duoStyles.pausedText}>{locale === "ko" ? "다음 럭키드로우를 준비 중이에요." : t(locale,"luckyEmpty")}</FanText> : pending ? <div aria-busy="true"><FanSkeleton width="80%" height={22}/><FanSkeleton width="60%" height={17}/></div>
           : raffles.error ? <FanState inline compact kind="error" title={t(locale,"luckyLoadError")} actions={<FanAction variant="text" onClick={raffles.retry}>{groupsCopy(locale).retry}</FanAction>}/>
           : empty || !item ? <p className={duoStyles.emptyText}>{t(locale,slug ? "luckyEmpty" : "luckyNoFavorite")}</p>
           : <><FanTag tone="neutral" className={duoStyles.badge}>{capsuleMachineCopy(locale).text(item.status === "open" ? "open" : "soon")}{item.status === "open" && item.raffle.entryClosesAt ? ` · D-${Math.max(0, Math.ceil((Date.parse(item.raffle.entryClosesAt) - Date.now()) / 86400000))}` : ""}</FanTag><FanHeading>{item.raffle.title}</FanHeading><p className={duoStyles.meta}><RaffleDate raffle={item.raffle} status={item.status} locale={locale}/> · {t(locale,"luckyWinners",[item.raffle.winnerQuantity.toLocaleString(locale)])} · {deliveryLabel(item.raffle,locale)}</p>
