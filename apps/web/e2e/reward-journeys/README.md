@@ -10,6 +10,8 @@ kyaa-t3 local-login dev-fan-5 --port 3002      # storage state with a Privy Deve
 npm run test:e2e:rewards --workspace @byus/web
 ```
 
+For the email browser login replay case, set `REWARD_E2E_EMAIL_STORAGE_STATE` to a Playwright storage state containing the local `__Host-kyaa-email` cookie and `REWARD_E2E_EMAIL_ACCOUNT` to the matching local fixture account. The login response only confirms cookie issuance; the helpers verify the authenticated `/api/auth/cognito/session` response and use its in-memory `kyaa-email:` access token. The new case sends attendance from a cookie-only browser, drops the first response after the local server processes it, and retries with the same request key. It requires the disposable loopback app and database; it is skipped when no email state is supplied. No Dev or production connection is needed. The read-only member smoke accepts the same cookie-only storage state and resolves its API token through that session endpoint.
+
 `REWARD_E2E_BASE_URL` (default `http://localhost:3002`), `REWARD_E2E_ACCOUNT_PRIMARY` (default `dev-fan-5`). The suite refuses any non-loopback app or database (`assertLocalOnly`). A missing or expiring login stops it with the command to run.
 
 ## What each journey proves

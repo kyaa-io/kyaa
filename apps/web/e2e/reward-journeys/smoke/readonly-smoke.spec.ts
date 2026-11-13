@@ -1,4 +1,4 @@
-import fs from "node:fs";
+import { storedCredential } from "../support/session";
 import { expect, test, type Page } from "@playwright/test";
 import { guardWrites, type WriteGuard } from "./guard";
 
@@ -21,10 +21,15 @@ async function open(page: Page, path: string) {
   return { ms: () => Date.now() - started };
 }
 
-function token(): string {
-  const state = JSON.parse(fs.readFileSync(STORAGE_STATE!, "utf8")) as { origins?: { localStorage?: { name: string; value: string }[] }[] };
-  for (const origin of state.origins ?? []) for (const item of origin.localStorage ?? []) if (item.name === "privy:token") return JSON.parse(item.value) as string;
-  throw new Error("SMOKE_STORAGE_STATE has no privy:token");
+async function authHeaders(page: Page): Promise<Record<string, string>> {
+  const credential = storedCredential(STORAGE_STATE!);
+  if (credential.token) return { authorization: `Bearer ${credential.token}` };
+  const session = await page.request.get(`${BASE_URL}/api/auth/cognito/session`);
+  expect(session.status()).toBe(200);
+  const body = await session.json() as { authenticated?: boolean; accessToken?: string };
+  expect(body.authenticated).toBe(true);
+  expect(body.accessToken).toMatch(/^kyaa-email:/);
+  return { authorization: `Bearer ${body.accessToken}` };
 }
 
 test.describe("@smoke guest", () => {
@@ -80,7 +85,7 @@ test.describe("@smoke member", () => {
   });
 
   test("wallet numbers on the API match the wallet and 덕질 screens", async ({ page }) => {
-    const headers = { authorization: `Bearer ${token()}` };
+    const headers = await authHeaders(page);
     const wallet = await page.request.get(`${BASE_URL}/api/me/wallet`, { headers });
     expect(wallet.status()).toBe(200);
     const { points, tickets, pointCost, policyVersion } = (await wallet.json()) as { points: number; tickets: number; pointCost: number; policyVersion: string };
