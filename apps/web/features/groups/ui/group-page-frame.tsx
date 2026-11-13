@@ -100,7 +100,7 @@ function GroupPageBody({ children }: { children: ReactNode }) {
   const g = useGroupPage();
   const t = groupsCopy(g.locale);
   let panel: ReactNode = <><GroupPageJoin />{children}</>;
-  if (g.routePageId && g.error) panel = <div className={styles.status} role="alert">{g.failure && [403, 404].includes(g.failure.status) ? <><LockKeyhole size={32} aria-hidden="true" /><FanHeading>{pageUnavailable[g.locale]}</FanHeading><FanAction href={`/pages/groups?locale=${g.locale}`}>{t.explore}</FanAction></> : <p>{t.error}</p>}<FanAction onClick={g.refresh}>{t.retry}</FanAction></div>;
+  if (g.routePageId && g.error) panel = <div className={styles.status} role="alert">{g.failure && [403, 404].includes(g.failure.status) ? <><LockKeyhole size={32} aria-hidden="true" /><FanHeading>{pageUnavailable[g.locale]}</FanHeading><FanAction href={`/pages/groups?locale=${g.locale}`}>{t.explore}</FanAction></> : <><p>{t.error}</p><FanAction onClick={g.refresh}>{t.retry}</FanAction></>}</div>;
   else if (g.routePageId && g.page?.kind === "fan" && g.celebrityFailed) panel = <div className={styles.status} role="alert"><p>{t.error}</p><FanAction onClick={g.retryCelebrity}>{t.retry}</FanAction></div>;
   return <><GroupPageHead />{panel}</>;
 }
