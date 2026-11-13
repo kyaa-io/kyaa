@@ -28,7 +28,7 @@ function gradeOf(locale: AppLocale, option: SelectedBiasOption) {
   return fanStageLabel(locale, { tier: option.tier, subdivision: option.stage?.subdivision ?? Number(key.split("-").at(-1)) });
 }
 
-const Empty = ({ locale }: { locale: AppLocale }) => <><img src="/images/groups/join-community-20261112.webp" alt="" width={40} height={40} /><span className={styles.pickLabel}>{text(locale, "biasChoose")}</span></>;
+const Empty = ({ locale }: { locale: AppLocale }) => <><img src="/images/groups/join-community-cutout-20261113.webp" alt="" width={40} height={28} /><span className={styles.pickLabel}>{text(locale, "biasChoose")}</span></>;
 
 /** The header's tier and selected favorite. Signed out it stays in place as the way in; pressing it changes the favorite everywhere the hook is read. */
 export function SelectedBiasChip({ locale }: { locale: AppLocale }) {

@@ -254,7 +254,7 @@ export function StanCheer({ locale, bias, guest, hearts }: { locale: AppLocale; 
   const favorite = guest ? null : stanFavorite(bias), slug = favorite?.slug ?? null, title = t(locale, "stanFlowCheer");
   const rank = useStanRank(locale, slug), selected = bias.selected && bias.selected.slug === slug ? bias.selected : null;
   const login = fanLoginHref(locale, `/benefits?locale=${locale}`);
-  const pickInner = <><img src="/images/groups/join-community-20261112.webp" alt="" width={40} height={40} /><span className={styles.name}>{t(locale, "heartPick")}</span><ChevronRight size={16} aria-hidden="true" /></>;
+  const pickInner = <><img src="/images/groups/join-community-cutout-20261113.webp" alt="" width={40} height={28} /><span className={styles.name}>{t(locale, "heartPick")}</span><ChevronRight size={16} aria-hidden="true" /></>;
   const head = bias.status === "loading" ? <span className={styles.who}><FanSkeleton shape="circle" width={40} height={40} /><FanSkeleton width={120} height={20} /></span>
     : guest ? <span className={styles.who}><span className={styles.avatarIcon}><Heart size={20} aria-hidden="true" /></span><span className={styles.whoText}><FanLockedValue locale={locale} /></span></span>
     : !favorite ? (bias.options.length ? <FavoritePickMenu locale={locale} bias={bias} className={styles.who}>{pickInner}</FavoritePickMenu> : <Link className={styles.who} href={`/pages/groups?locale=${locale}` as Route}>{pickInner}</Link>)
