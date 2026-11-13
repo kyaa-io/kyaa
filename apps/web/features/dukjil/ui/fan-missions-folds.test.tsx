@@ -98,7 +98,8 @@ it("shows the six requested kinds to a guest without a page, each leading to the
   ui("");
   const grid = await waitFor(() => { const el = document.querySelector('[data-certification-grid="kinds"]'); expect(el).not.toBeNull(); return el as HTMLElement; });
   const links = [...grid.querySelectorAll("a")];
-  expect(links.map(link => link.textContent)).toEqual(["구매 영수증", "인스타 멤버십", "틱톡 멤버십", "유튜브 구독", "라이브 후원", "팬카페 가입"]);
+  // 사용자 11/13 10:4x: each of the six shows the 인증 policy points (catalog rules.proof) as the mission rows' +NP badge.
+  expect(links.map(link => link.textContent)).toEqual(["구매 영수증", "인스타 멤버십", "틱톡 멤버십", "유튜브 구독", "라이브 후원", "팬카페 가입"].map(name => `${name}+100P포인트 100 적립`));
   links.forEach(link => expect(link.getAttribute("href")).toMatch(/^\/login\?/));
 });
 
