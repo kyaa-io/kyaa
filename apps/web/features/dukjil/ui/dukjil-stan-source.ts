@@ -38,6 +38,10 @@ export const dukjilStanSource = {
   stanRuleTicket: { ko: "{0}P마다 응모권 1장", en: "1 ticket per {0}P" },
   stanRuleHeart: { ko: "스탬프 {0}개마다 하트 1개", en: "1 heart per {0} stamps" },
   stanClaimReady: { ko: "받기 가능", en: "Ready to claim" },
+  // 사용자·대표 11/13 09:13: each wallet section ends in one conversion button that says the exchange, and its right side says what you hold.
+  stanConvertTicket: { ko: "{0}P → 응모권 1장", en: "{0}P → 1 ticket" },
+  stanConvertHeart: { ko: "스탬프 {0} → 하트 1", en: "{0} stamps → 1 heart" },
+  stanHeld: { ko: "보유 {0}", en: "{0} held" },
   // E4·E5 (feedback E): the favorite's lucky draws, the cheer card and the six linked wallet cells.
   luckyOpensAt: { ko: "{0} 응모 시작", en: "Entries open {0}" },
   luckyClosesAt: { ko: "마감 {0}", en: "Closes {0}" },

@@ -107,7 +107,7 @@ it('DUO: preserves the approved block order, four tiles and a single check-in ac
  await screen.findByText('글쓰기');
  const blocks=v.container.querySelectorAll('[data-duo-profile],[data-duo-lucky],[data-wallet-card],[data-fan-missions],[data-duo-today],[data-duo-rail],[data-duo-history]');
  expect([...blocks].map(el=>el.getAttributeNames().find(n=>n.startsWith('data-duo-')||n==='data-wallet-card'||n==='data-fan-missions'))).toEqual(['data-wallet-card','data-duo-lucky','data-fan-missions']);
- expect([...v.container.querySelectorAll('[data-cell]')].map(n=>n.getAttribute('data-cell'))).toEqual(['tickets','points','hearts','stamps']);
+ expect([...v.container.querySelectorAll('[data-cell]')].map(n=>n.getAttribute('data-cell'))).toEqual(['points','tickets','stamps','hearts']);
  // C4: no blur, no cover, no inert ancestor; only the enter button rests, with its reason attached.
  const card=v.container.querySelector('[data-duo-lucky]') as HTMLElement;
  expect(card.closest('[inert],[aria-hidden="true"],[aria-disabled="true"]')).toBeNull();
