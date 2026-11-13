@@ -6,12 +6,12 @@ const fail = message => { throw new Error(message); };
 const RESERVATION_PATH = '.github/workflows/aws-approved-promotion.yml';
 const reservationTitle = (id, sha) => `Approved production promotion of dev ${id} (${sha})`;
 
-export async function githubRead(path, { read = github, wait = sleep } = {}) {
+export async function githubRead(path, { read = github, wait = sleep, retryable = error => /GITHUB_HTTP_(429|5\d\d)/.test(error.message) || ['TypeError', 'AbortError', 'TimeoutError'].includes(error.name) } = {}) {
   for (let attempt = 0; ; attempt += 1) {
     try { return await read(path); }
     catch (error) {
-      if (attempt >= 2 || !(/GITHUB_HTTP_(429|5\d\d)/.test(error.message) || ['TypeError', 'AbortError', 'TimeoutError'].includes(error.name))) throw error;
-      await wait(1000 * (attempt + 1));
+      if (attempt >= 2 || !retryable(error)) throw error;
+      await wait(1000 * (2 ** attempt));
     }
   }
 }
