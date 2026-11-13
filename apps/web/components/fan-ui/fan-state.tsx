@@ -34,7 +34,7 @@ export function FanState(props: FanStateProps) {
     return (
       <section className={[styles.state, styles.section, className ?? ""].filter(Boolean).join(" ")} role="status" aria-live="polite" data-empty-state="section">
         <p className={styles.title}>{title.replace(/[.。]$/, "")}</p>
-        {props.action ? <FanAction variant="primary" href={props.action.href}>{props.action.label}</FanAction> : null}
+        {props.action ? <FanAction variant="primary" size="sm" href={props.action.href}>{props.action.label}</FanAction> : null}
       </section>
     );
   }

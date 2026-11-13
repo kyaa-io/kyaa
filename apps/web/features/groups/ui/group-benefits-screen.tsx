@@ -110,7 +110,7 @@ function BenefitsDailyMissions({locale,bias,signedOut,wallet}:{locale:AppLocale;
 /** 내역 (#wallet-history): the signed-in member's own point/ticket ledger; a guest gets the sign-in action and no request is made. */
 function BenefitsHistory({locale,signedOut}:{locale:AppLocale;signedOut:boolean}){
  const auth=useGroupRequest(),w=walletCopy(locale),allFailed=Boolean(useContext(SectionContext)?.allFailed),guest=(!auth.ready&&signedOut)||(auth.ready&&!auth.authenticated);
- if(guest)return <section className={styles.pHistory} hidden={allFailed}><FanHeading><span id='wallet-history'>{locale==='ko'?'내역':w.history}</span></FanHeading><FanState inline compact kind='empty' title={locale==='ko'?'로그인하면 내 적립·사용 내역을 볼 수 있어요':w.login} action={{label:w.login,href:fanLoginHref(locale,`/benefits?locale=${locale}#wallet-history`)}}/></section>;
+ if(guest)return <section className={styles.pHistory} hidden={allFailed}><FanHeading><span id='wallet-history'>{locale==='ko'?'내역':w.history}</span></FanHeading><FanState inline compact kind='empty' title={locale==='ko'?'로그인하면 내역이 보여요':w.login} action={{label:w.login,href:fanLoginHref(locale,`/benefits?locale=${locale}#wallet-history`)}}/></section>;
  if(!auth.ready)return <section className={styles.pHistory} aria-busy='true'><FanHeading><span id='wallet-history'>{locale==='ko'?'내역':w.history}</span></FanHeading><FanSkeletonRows rows={3}/></section>;
  return <div className={styles.pHistory} hidden={allFailed}><WalletHistoryPanel key={auth.ownerKey} locale={locale} preview={{rows:5,moreLabel:seeAllLabel[locale],lessLabel:locale==='ko'?'접기':'Show less'}}/></div>;
 }
