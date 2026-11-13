@@ -220,6 +220,15 @@ it('대표 11/11: at 9/9 the hearts column 받기 goes to the passport mission b
  expect(within(card as HTMLElement).getByRole('link',{name:'받기'})).toHaveAttribute('href',`/passports/${uid(900)}?locale=ko#mission-book`);
 });
 
+it('사용자 11/13 13:2x: with a favorite the 덕질 기록 is the MY passport body (art, tier, gauge, nine slots) and no longer the one-line stamp strip',async()=>{
+ withFavorite();roadmapBody={passportId:uid(900),celebrityId:uid(901),hearts:3,pages:[{pageNo:1,slots:Array.from({length:9},(_,i)=>({slotNo:i+1,kind:null,state:i<6?'filled':'empty',stampId:null,clearedAt:null})),filled:6,claimable:false,claimed:false,locked:false,lockedReason:null}]};
+ render(<GroupBenefitsScreen locale='ko'/>);
+ const book=await waitFor(()=>{const el=document.querySelector('[data-stan-passport-book]');expect(el).toBeTruthy();return el as HTMLElement;});
+ await waitFor(()=>expect(book.querySelectorAll('ul li[data-state]').length).toBe(9));
+ expect(book.querySelector(`[data-my-passport-book="${uid(900)}"]`)).toHaveAttribute('href',`/passports/${uid(900)}?locale=ko#mission-book`);
+ expect(document.querySelector('[data-mission-strip]')).toBeNull();
+});
+
 it('uses validated catalog values, real scoped links, zero rewards and independent cursor pages',async()=>{
  renderCatalog('ja');await screen.findByText('First raffle');
  expect(requests.some(url=>url.includes('kind=missions'))).toBe(false);expect(screen.queryByText('Survey')).not.toBeInTheDocument();

@@ -1,0 +1,5 @@
+{
+  "changes": ["덕질 탭의 덕질 기록이 MY의 패스포트와 같은 모양으로 바뀌었어요. 여권 그림에 찍은 도장, 등급, 이번 쪽 진행 칸, 미션북 9칸이 한 번에 보여요.", "덕질 미션 목록의 모든 행에 받을 포인트가 표시돼요. 구매 영수증·라이브 후원·팬카페 가입 인증도 +100P로 보이고, 포인트 아이콘이 모든 행에서 같은 세로 줄에 맞춰져요.", "첨부 화면은 로컬 시험 계정과 예시 데이터로 확인한 화면이에요."],
+  "path": "/benefits",
+  "images": ["release-notes/images/2026-11-13-dukjil-passport-points-390.png", "release-notes/images/2026-11-13-dukjil-passport-points-1440.png", "release-notes/images/2026-11-13-dukjil-points-column-1440.png"]
+}
