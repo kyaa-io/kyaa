@@ -201,12 +201,12 @@ section.pWallet{position:relative;box-sizing:border-box}
 
 /* 페이지 틀 (사용자 11/13 13:37): 본문은 헤더와 같은 셸 폭(FanContentContainer: 최대 1440, 좌우 16/32/40)을 그대로 쓴다 — 이 모듈은 폭·좌우 여백을 정하지 않는다.
    간격은 두 값뿐: 구역 사이 --fan-section-gap(32, 768+ 48), 구역 안(제목→블록, 블록→블록) --space-3(12). 구역을 가르는 선은 없다.
-   1024+ 는 두 열: 럭키드로우 + 내역 | 덕질 미션. 내역은 왼쪽 열의 둘째 행에 놓이고, 덕질 미션이 두 행을 차지한다(행 높이는 왼쪽 열이 정한다). */
+   1280+ 는 두 열(열 584 이상 — 1024~1279 는 열이 468 이라 카드들이 깨져 한 열): 럭키드로우 + 내역 | 덕질 미션. 내역은 왼쪽 열의 둘째 행에 놓이고, 덕질 미션이 두 행을 차지한다(행 높이는 왼쪽 열이 정한다). */
 .page{gap:var(--fan-section-gap);padding-top:var(--space-6);padding-bottom:var(--space-12)}
 .main,.gateBackdrop{display:flex;flex-direction:column;gap:var(--fan-section-gap);min-width:0}
 .gateBackdrop > .pLucky,.gateBackdrop > .pMissions{order:initial}
 @media (width >= 48rem){.page{padding-top:var(--space-8)}}
-@media (width >= 64rem){
+@media (width >= 80rem){
  .main,.gateBackdrop{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:auto 1fr;column-gap:var(--col-gap);row-gap:var(--fan-section-gap);align-items:start}
  .main > .pLucky,.gateBackdrop > .pLucky{grid-column:1;grid-row:1}
  .main > .pMissions,.gateBackdrop > .pMissions{grid-column:2;grid-row:1 / span 2}
