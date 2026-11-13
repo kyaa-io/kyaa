@@ -7,9 +7,9 @@ export function signupRaffleHomeBanner(locale: AppLocale): HomeBanner {
   const text = (key: Parameters<typeof signupRaffleText>[1]) => signupRaffleText(locale, key);
   return {
     id: SIGNUP_RAFFLE_BANNER_ID, kind: "announcement", celebrityId: null, category: "event", placement: "home",
-    title: text("title"), description: `US$400 · ${text("winners")} · ${text("deadline")}`,
-    ctaLabel: text("enter"), href: "/s/raffle?utm_source=kyaa&utm_medium=home_banner&utm_campaign=signup_raffle", alt: text("art"),
-    desktopImage: { id: "052ea25c-b933-4d66-8d73-f8233349086d", url: "/images/signup-raffle/desktop.webp", width: 1440, height: 900, mimeType: "image/webp", revision: 1 },
-    mobileImage: { id: "735a095a-5704-487c-9cd1-c4b73767ce7e", url: "/images/signup-raffle/mobile.webp", width: 390, height: 390, mimeType: "image/webp", revision: 1 },
+    title: text("homeBannerTitle"), description: `US$400 · ${text("winners")} · ${text("deadline")}`,
+    ctaLabel: text("enter"), href: "/s/raffle?utm_source=kyaa&utm_medium=home_banner&utm_campaign=signup_raffle", alt: text("homeBannerArt"),
+    desktopImage: { id: "052ea25c-b933-4d66-8d73-f8233349086d", url: "/images/signup-raffle/home-c.webp", width: 1536, height: 1024, mimeType: "image/webp", revision: 2 },
+    mobileImage: { id: "735a095a-5704-487c-9cd1-c4b73767ce7e", url: "/images/signup-raffle/home-c.webp", width: 1536, height: 1024, mimeType: "image/webp", revision: 2 },
   };
 }

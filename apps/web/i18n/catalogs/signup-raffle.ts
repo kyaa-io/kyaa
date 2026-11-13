@@ -3,6 +3,8 @@ import type { AppLocale } from "../locales";
 const copy = {
   "ko": {
     "title": "KYAA 래플",
+    "homeBannerTitle": "신규 가입 이벤트",
+    "homeBannerArt": "기프트카드와 분홍색 응모권",
     "winners": "17명",
     "deadline": "11월 30일 마감",
     "prizeCount": "{0}명",
@@ -21,6 +23,8 @@ const copy = {
   },
   "en": {
     "title": "KYAA Raffle",
+    "homeBannerTitle": "New Member Event",
+    "homeBannerArt": "Gift card and pink raffle tickets",
     "winners": "17 winners",
     "deadline": "Closes November 30",
     "prizeCount": "{0} winners",
@@ -39,6 +43,8 @@ const copy = {
   },
   "ja": {
     "title": "KYAA ラッフル",
+    "homeBannerTitle": "新規登録イベント",
+    "homeBannerArt": "ギフトカードとピンクの抽選券",
     "winners": "17名",
     "deadline": "11月30日締切",
     "prizeCount": "{0}名",
@@ -57,6 +63,8 @@ const copy = {
   },
   "zh-Hans": {
     "title": "KYAA 抽奖",
+    "homeBannerTitle": "新用户注册活动",
+    "homeBannerArt": "礼品卡和粉色抽奖券",
     "winners": "17名",
     "deadline": "11月30日截止",
     "prizeCount": "{0}名",
@@ -75,6 +83,8 @@ const copy = {
   },
   "zh-Hant": {
     "title": "KYAA 抽獎",
+    "homeBannerTitle": "新用戶註冊活動",
+    "homeBannerArt": "禮品卡和粉色抽獎券",
     "winners": "17名",
     "deadline": "11月30日截止",
     "prizeCount": "{0}名",
@@ -93,6 +103,8 @@ const copy = {
   },
   "es": {
     "title": "Sorteo KYAA",
+    "homeBannerTitle": "Evento para nuevos miembros",
+    "homeBannerArt": "Tarjeta regalo y boletos rosas",
     "winners": "17 ganadores",
     "deadline": "Cierra el 30 de noviembre",
     "prizeCount": "{0} ganadores",
@@ -111,6 +123,8 @@ const copy = {
   },
   "id": {
     "title": "Undian KYAA",
+    "homeBannerTitle": "Acara Pendaftaran Baru",
+    "homeBannerArt": "Kartu hadiah dan tiket undian merah muda",
     "winners": "17 pemenang",
     "deadline": "Berakhir 30 November",
     "prizeCount": "{0} pemenang",
@@ -129,6 +143,8 @@ const copy = {
   },
   "vi": {
     "title": "Bốc thăm KYAA",
+    "homeBannerTitle": "Sự kiện đăng ký mới",
+    "homeBannerArt": "Thẻ quà tặng và vé dự thưởng màu hồng",
     "winners": "17 người thắng",
     "deadline": "Kết thúc ngày 30 tháng 11",
     "prizeCount": "{0} người thắng",
@@ -147,6 +163,8 @@ const copy = {
   },
   "th": {
     "title": "จับรางวัล KYAA",
+    "homeBannerTitle": "กิจกรรมสมัครสมาชิกใหม่",
+    "homeBannerArt": "บัตรของขวัญและสลากสีชมพู",
     "winners": "ผู้ชนะ 17 คน",
     "deadline": "ปิดรับ 30 พฤศจิกายน",
     "prizeCount": "ผู้ชนะ {0} คน",
@@ -165,6 +183,8 @@ const copy = {
   },
   "pt": {
     "title": "Sorteio KYAA",
+    "homeBannerTitle": "Evento para novos membros",
+    "homeBannerArt": "Cartão-presente e bilhetes rosa",
     "winners": "17 vencedores",
     "deadline": "Encerra em 30 de novembro",
     "prizeCount": "{0} vencedores",
@@ -183,6 +203,8 @@ const copy = {
   },
   "fr": {
     "title": "Tirage KYAA",
+    "homeBannerTitle": "Événement nouveaux membres",
+    "homeBannerArt": "Carte cadeau et billets roses",
     "winners": "17 gagnants",
     "deadline": "Clôture le 30 novembre",
     "prizeCount": "{0} gagnants",
@@ -201,6 +223,8 @@ const copy = {
   },
   "ru": {
     "title": "Розыгрыш KYAA",
+    "homeBannerTitle": "Акция для новых участников",
+    "homeBannerArt": "Подарочная карта и розовые билеты",
     "winners": "17 победителей",
     "deadline": "До 30 ноября",
     "prizeCount": "Победителей: {0}",

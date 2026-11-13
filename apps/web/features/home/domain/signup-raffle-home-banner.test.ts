@@ -1,4 +1,5 @@
 import { expect, it } from 'vitest';
+import { signupRaffleText } from '@/i18n/catalogs/signup-raffle';
 import { APP_LOCALES } from '@/i18n/locales';
 import { homeBannerSchema, localizedBannerHref } from './home-banner';
 import { signupRaffleHomeBanner } from './signup-raffle-home-banner';
@@ -9,7 +10,9 @@ it('provides registrable responsive data and preserves campaign attribution in e
     expect(href.pathname).toBe('/s/raffle');
     expect(href.searchParams.get('utm_campaign')).toBe('signup_raffle');
     expect(href.searchParams.get('locale')).toBe(locale);
+    expect(banner.title).toBe(signupRaffleText(locale, 'homeBannerTitle'));
+    expect(banner.title).not.toBe(signupRaffleText(locale, 'title'));
     expect(banner.description).toContain('US$400');
-    expect(banner.mobileImage?.width).toBe(390);
+    expect(banner.mobileImage?.url).toBe('/images/signup-raffle/home-c.webp');
   }
 });
