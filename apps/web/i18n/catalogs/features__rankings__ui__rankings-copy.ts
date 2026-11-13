@@ -366,5 +366,6 @@ export const messages = {
   "rkPanelTickets": {"ja": "応募券", "zh-Hans": "抽奖券", "zh-Hant": "抽獎券", "es": "Boletos", "id": "Tiket undian", "vi": "Vé dự thưởng", "th": "ตั๋วชิงรางวัล", "pt": "Bilhetes", "fr": "Tickets", "ru": "Билеты"},
   "rkPanelAttendance": {"ja": "出席日数", "zh-Hans": "签到天数", "zh-Hant": "簽到天數", "es": "Días de asistencia", "id": "Hari absen", "vi": "Ngày điểm danh", "th": "วันเช็กอิน", "pt": "Dias de presença", "fr": "Jours de présence", "ru": "Дней отметок"},
   "rkPanelPosts": {"ja": "投稿", "zh-Hans": "帖子", "zh-Hant": "貼文", "es": "Publicaciones", "id": "Postingan", "vi": "Bài viết", "th": "โพสต์", "pt": "Publicações", "fr": "Publications", "ru": "Публикации"},
+  "rkPanelFollowers": {"ja": "SNSフォロワー", "zh-Hans": "社交媒体粉丝", "zh-Hant": "社群追蹤者", "es": "Seguidores en redes", "id": "Pengikut media sosial", "vi": "Người theo dõi MXH", "th": "ผู้ติดตามโซเชียล", "pt": "Seguidores nas redes", "fr": "Abonnés réseaux", "ru": "Подписчики в соцсетях"},
   "rkPanelTotalLikes": {"ja": "累計いいね", "zh-Hans": "累计点赞", "zh-Hant": "累計按讚", "es": "Me gusta totales", "id": "Total suka", "vi": "Tổng lượt thích", "th": "ถูกใจสะสม", "pt": "Curtidas no total", "fr": "J’aime cumulés", "ru": "Всего лайков"},
 } satisfies Record<string, TranslatedMessage>;

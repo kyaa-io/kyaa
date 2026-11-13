@@ -88,7 +88,7 @@ it("a row is one line: movement beside the name, LIVE, the value; today's gain a
     [], [
       creatorRow(1, { name: "일등", likes: 12345, delta: 2, dayGain: 125, liveNow: true }),
       creatorRow(2, { name: "이등", likes: 12345, delta: -1, dayGain: 0 }),
-      creatorRow(3, { name: "삼등", likes: 100, delta: 0, dayGain: null }),
+      creatorRow(3, { name: "삼등", likes: 100, delta: 0, dayGain: null, fanCount: 6_800_000 }),
       creatorRow(4, { name: "새얼굴", likes: 7, delta: null, isNew: true, dayGain: -2 }),
     ],
   );
@@ -106,8 +106,11 @@ it("a row is one line: movement beside the name, LIVE, the value; today's gain a
   expect(row("일등").querySelector("[data-metric] [data-icon='heart']")).toBeNull();
   fireEvent.click(row("삼등").querySelector("button")!);
   expect(row("삼등").querySelector("[data-rank-panel]")!.textContent).toContain("찐팬40");
+  expect(row("삼등").querySelector("[data-rank-panel]")!.textContent).toContain("SNS 팔로워6.8M");
   expect(row("삼등").querySelector("[data-rank-panel]")!.textContent).not.toContain("1위까지");
   expect(row("삼등").querySelector("[data-rank-panel]")!.textContent).not.toContain("오늘");
+  fireEvent.click(row("이등").querySelector("button")!);
+  expect(row("이등").querySelector("[data-rank-panel]")!.textContent).not.toContain("SNS");
   expect(row("새얼굴").textContent).not.toContain("신규");
   expect(row("새얼굴").querySelector("[data-direction='new']")).toBeNull();
   expect(row("새얼굴").querySelector("[data-direction]")).toBeNull();

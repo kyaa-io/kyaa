@@ -123,4 +123,5 @@ export const rankingsSource = {
   rkPanelAttendance: { ko: "출석일", en: "Check-in days" },
   rkPanelPosts: { ko: "게시글", en: "Posts" },
   rkPanelTotalLikes: { ko: "누적 좋아요", en: "All-time likes" },
+  rkPanelFollowers: { ko: "SNS 팔로워", en: "SNS followers" },
 } as const;
