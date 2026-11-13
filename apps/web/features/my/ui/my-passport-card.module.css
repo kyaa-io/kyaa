@@ -62,8 +62,9 @@
   .guest .facts { gap:var(--space-2); }
   .guest .progress:first-child { display:none; }
   .guestBook [data-guest] { grid-template-columns:minmax(0,1fr); }
-  .guestBook ol { display:grid; grid-template-columns:none; grid-auto-flow:column; grid-auto-columns:132px; grid-template-rows:repeat(6,auto); gap:0 var(--space-2); overflow-x:auto; scroll-snap-type:x proximity; padding-block-end:var(--space-1); }
-  .guestBook li { scroll-snap-align:start; padding-block:var(--space-2); }
+  /* 2026-11-13 PM 점검: 132px 가로 넘김은 셋째 칸이 오른쪽에서 잘렸다. 11/11 결정대로 두 칸씩 줄바꿈해 모든 칸이 보이게 한다. */
+  .guestBook ol { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); grid-auto-flow:row; gap:var(--space-2); }
+  .guestBook li { padding-block:var(--space-2); }
 }
 
 /* The book occupies x=65..1468 of its 1536px source; trim only the blank sides. */

@@ -202,6 +202,10 @@ body {
   background: var(--color-canvas);
 }
 
+/* 방문 통계 동의 바가 떠 있는 동안 페이지 끝에 바 높이만큼 자리를 둔다(바: 탭바 위 8px, 64rem부터 아래 24px). 닫으면 원래대로. */
+:root[data-consent-bar] body { padding-bottom: calc(var(--consent-bar-height, 0px) + var(--space-4)); }
+@media (width >= 64rem) { :root[data-consent-bar] body { padding-bottom: calc(var(--consent-bar-height, 0px) + var(--space-10)); } }
+
 /* 모달·창·안내처럼 body 아래에 바로 그리는 요소도 앱 글꼴을 쓴다. */
 body {
   font-family: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif;

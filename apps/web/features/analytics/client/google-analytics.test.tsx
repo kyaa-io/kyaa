@@ -48,6 +48,15 @@ describe("GoogleAnalytics", () => {
     expect(JSON.parse(window.localStorage.getItem("kyaa.analytics-consent.v1")!)).toMatchObject({ choice: "denied" });
   });
 
+  it("keeps room at the page end only while the bar is shown", () => {
+    render(<GoogleAnalytics measurementId="G-WKSF9KP5QW" />);
+    expect(document.documentElement).toHaveAttribute("data-consent-bar");
+    expect(document.documentElement.style.getPropertyValue("--consent-bar-height")).toMatch(/^\d+px$/);
+    fireEvent.click(screen.getByRole("button", { name: "허용" }));
+    expect(document.documentElement).not.toHaveAttribute("data-consent-bar");
+    expect(document.documentElement.style.getPropertyValue("--consent-bar-height")).toBe("");
+  });
+
   it("loads gtag once after consent with denied defaults; the first screen is sent by the tag from `set` values, later screens by hand", () => {
     const view = render(<GoogleAnalytics measurementId="G-WKSF9KP5QW" />);
     fireEvent.click(screen.getByRole("button", { name: "허용" }));

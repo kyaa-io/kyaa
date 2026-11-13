@@ -67,7 +67,21 @@ function ConsentBar({ onChoose }: { onChoose: (choice: AnalyticsConsent) => void
     policy: analyticsConsentText(locale, "policy"), decline: analyticsConsentText(locale, "decline"), allow: analyticsConsentText(locale, "allow"),
   };
   const privacy = (locale === "ko" ? "/privacy" : `/privacy?locale=${locale}`) as Route;
-  return <section className={styles.bar} aria-label={copy.region}>
+  const bar = useRef<HTMLElement>(null);
+  // While the bar floats over the page, the page keeps room for it at the end (globals.css `[data-consent-bar]`), so the
+  // last rows and the footer can scroll above it. Closing the bar removes the room.
+  useEffect(() => {
+    const node = bar.current;
+    const root = document.documentElement;
+    if (!node) return;
+    const sync = () => root.style.setProperty("--consent-bar-height", `${node.offsetHeight}px`);
+    sync();
+    root.setAttribute("data-consent-bar", "");
+    const observer = new ResizeObserver(sync);
+    observer.observe(node);
+    return () => { observer.disconnect(); root.removeAttribute("data-consent-bar"); root.style.removeProperty("--consent-bar-height"); };
+  }, []);
+  return <section ref={bar} className={styles.bar} aria-label={copy.region}>
     <p className={styles.copy}>{copy.question} <Link href={privacy} className={styles.policy}>{copy.policy}</Link></p>
     <div className={styles.actions}>
       <FanAction size="sm" onClick={() => onChoose("denied")}>{copy.decline}</FanAction>
