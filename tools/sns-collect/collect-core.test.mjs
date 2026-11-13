@@ -95,3 +95,14 @@ test("Instagram video covers stay separate from original body photos", () => {
   assert.deepEqual(result.post.videoThumbnail, { url: "https://scontent.cdninstagram.com/video-cover.jpg" });
   assert.equal(result.post.text, "원문 캡션");
 });
+
+test("a failed post read preserves already collected originals", async () => {
+  const result = await collectSource({ async read(url) {
+    if (url === igSource.accountUrl) return { finalUrl: url, hrefs: ['/p/DQabc123xyz/', '/p/DQbroken01/'] };
+    if (url.includes('DQbroken01')) throw new Error('timeout');
+    return { finalUrl: url, scripts: [igScript(igItem)] };
+  } }, igSource);
+  assert.equal(result.request.posts.length, 1);
+  assert.equal(result.request.posts[0].text, caption);
+  assert.deepEqual(result.unread, [{ sourceId: 'DQbroken01', error: 'READ_FAILED' }]);
+});

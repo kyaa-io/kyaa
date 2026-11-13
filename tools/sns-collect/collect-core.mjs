@@ -139,7 +139,9 @@ export async function collectSource(browser, source, options = {}) {
   if (!ids.length) return { request: buildIngestRequest(source, [], "STRUCTURE_CHANGED"), unread: [] };
   const posts = []; const unread = [];
   for (const sourceId of ids) {
-    const page = await browser.read(canonicalPostUrl(source.platform, handle, sourceId));
+    let page;
+    try { page = await browser.read(canonicalPostUrl(source.platform, handle, sourceId)); }
+    catch { unread.push({ sourceId, error: "READ_FAILED" }); continue; }
     if (isLoginWall(source.platform, page.finalUrl)) return { request: buildIngestRequest(source, [], "BLOCKED_LOGIN"), unread: [] };
     const result = source.platform === "tiktok"
       ? extractTikTokPost(page.rehydration, { handle, sourceId })

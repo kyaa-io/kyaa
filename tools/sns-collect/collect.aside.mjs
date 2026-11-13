@@ -1,51 +1,65 @@
-// Draft: run with `aside repl --file tools/sns-collect/collect.aside.mjs` on the collector Mac.
-// Not verified against a live Aside REPL yet (Aside is not installed on the machine this was written on).
-// Assumed REPL globals, kept in this one function: openTab(url) -> tab, tab.evaluate(fn), closeTab(tab).
-// Rules: a dedicated new tab per page, never the user's tabs (no listBrowserTabs/attach*), close only our tab.
-//
-// Environment (set by launchd, never written to a file here):
-//   SNS_INGEST_ENDPOINT  e.g. https://dev.kyaa.io/api/internal/sns-ingest
-//   SNS_INGEST_SECRET    the dedicated ingest secret
-//   SNS_COLLECT_SOURCES  path to a JSON array of { celebritySlug, platform, accountUrl }
-//   SNS_COLLECT_OUT      directory for this run's evidence (originals and server results)
+// Run with node; Aside REPL cannot import Node modules.
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { execFile } from "node:child_process";
+import { promisify } from "node:util";
 import { join } from "node:path";
 import { collectSource, sendIngest } from "./collect-core.mjs";
 
+const exec = promisify(execFile);
 const browser = {
   async read(url) {
-    /* global openTab, closeTab */
-    const tab = await openTab(url);
-    try {
-      return await tab.evaluate(() => ({
-        finalUrl: location.href,
-        hrefs: [...document.querySelectorAll("a[href]")].map(anchor => anchor.getAttribute("href")),
-        scripts: [...document.querySelectorAll('script[type="application/json"]')].map(script => script.textContent ?? ""),
-        rehydration: document.getElementById("__UNIVERSAL_DATA_FOR_REHYDRATION__")?.textContent ?? null,
-      }));
-    } finally {
-      await closeTab(tab);
-    }
+    const code = `const tab = await openTab(${JSON.stringify(url)});
+      try {
+        await snapshot(tab);
+        console.log("SNS_RESULT:" + JSON.stringify(await tab.evaluate(() => ({
+          finalUrl: location.href,
+          hrefs: [...document.querySelectorAll("a[href]")].map(a => a.getAttribute("href")),
+          scripts: [...document.querySelectorAll('script[type="application/json"]')].map(s => s.textContent ?? ""),
+          rehydration: document.getElementById("__UNIVERSAL_DATA_FOR_REHYDRATION__")?.textContent ?? null
+        }))));
+      } finally { await closeTab(tab); }`;
+    const { stdout } = await exec("aside", ["repl", "--account", "u0", "--json", code],
+      { timeout: 130000, maxBuffer: 32 * 1024 * 1024, env: { ...process.env, SNS_INGEST_SECRET: "" } });
+    const result = JSON.parse(stdout.split("\n").findLast(line => line.startsWith('{"run":')) ?? stdout);
+    if (result.run?.error) throw new Error("ASIDE_READ_FAILED");
+    const line = result.run.content.filter(c => c.type === "text").flatMap(c => c.text.split("\n")).find(l => l.startsWith("SNS_RESULT:"));
+    if (!line) throw new Error("ASIDE_RESULT_MISSING");
+    return JSON.parse(line.slice("SNS_RESULT:".length));
   },
 };
 
 const sources = JSON.parse(readFileSync(process.env.SNS_COLLECT_SOURCES, "utf8"));
+if (!Array.isArray(sources) || !sources.length || sources.some(s =>
+  !s || !/^[a-z0-9][a-z0-9.-]*$/i.test(s.celebritySlug ?? "") ||
+  !["instagram", "tiktok"].includes(s.platform) || typeof s.accountUrl !== "string")) {
+  throw new Error("SNS_COLLECT_SOURCES_INVALID");
+}
 const out = process.env.SNS_COLLECT_OUT;
 mkdirSync(out, { recursive: true });
 const summary = [];
-for (const source of sources) {
+async function runSource(source) {
   const name = `${source.celebritySlug}-${source.platform}`;
   try {
     const { request, unread } = await collectSource(browser, source);
     writeFileSync(join(out, `${name}.request.json`), JSON.stringify({ request, unread }, null, 2));
     const result = await sendIngest(fetch, process.env.SNS_INGEST_ENDPOINT, process.env.SNS_INGEST_SECRET, request);
     writeFileSync(join(out, `${name}.result.json`), JSON.stringify(result, null, 2));
-    summary.push({ source: name, collectorError: request.collectorError ?? null, sent: request.posts.length, unread: unread.length,
-      statuses: Object.fromEntries(Object.entries(Object.groupBy(result.items, item => item.status)).map(([key, items]) => [key, items.length])) });
+    const statuses = {};
+    for (const item of result.items) statuses[item.status] = (statuses[item.status] ?? 0) + 1;
+    summary.push({ source: name, collectorError: request.collectorError ?? null, sent: request.posts.length, unread: unread.length, failed: result.items.filter(item => item.reason === "IMAGE_FAILED" || item.status === "failed").length,
+      statuses });
   } catch (error) {
     // One broken source must not stop the others; the server's stale alert covers what is never sent.
     summary.push({ source: name, error: String(error?.message ?? error) });
+  } finally {
+    writeFileSync(join(out, "summary.json"), JSON.stringify(summary, null, 2));
   }
 }
+// Three workers bound concurrent browser tabs to three.
+let next = 0;
+await Promise.all(Array.from({ length: Math.min(3, sources.length) }, async () => {
+  while (next < sources.length) await runSource(sources[next++]);
+}));
 writeFileSync(join(out, "summary.json"), JSON.stringify(summary, null, 2));
 console.log(JSON.stringify(summary));
+if (summary.some(s => s.error || s.collectorError || s.unread || s.failed)) process.exitCode = 1;
