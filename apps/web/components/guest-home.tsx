@@ -17,6 +17,7 @@ import { type CreatorRoleFilter } from "@/features/creator/domain/creator-role";
 import { Suspense, use, type ReactNode } from "react";
 import { gggiHomeBanner } from "../features/home/domain/gggi-home-banner";
 import { missionbookHomeBanner } from "../features/home/domain/missionbook-home-banner";
+import { firstStepsHomeBanner } from "../features/home/domain/first-steps-home-banner";
 import { useRouter } from "next/navigation";
 import { FanAppFrame } from "./fan-shell/fan-app-shell";
 import { LiveHeroCarousel } from "./live-hero-carousel";
@@ -112,12 +113,17 @@ function HomeHero({ locale, homeBanners = [], celebrities, elinaRaffles, content
 
 </>);
 }
-type StreamingHomeProps = Pick<GuestHomeProps, "locale" | "jjinfanGauge" | "heartDonation"> & { queries: HomeQueries };
+type StreamingHomeProps = Pick<GuestHomeProps, "locale" | "jjinfanGauge" | "heartDonation"> & { queries: HomeQueries; /** 온보딩 첫 배너(M1). 세 걸음을 마친 브라우저는 서버가 false로 넘긴다. */ firstSteps?: boolean };
+
+/** 코드로 둔 홈 배너: 첫 걸음(아직 안 마친 브라우저) → GGGI → 덕질하는 법. 대기 화면과 완성 화면이 같은 순서라 첫 그림이 바뀌지 않는다. */
+function pinnedHomeBanners(locale: AppLocale, firstSteps: boolean) {
+  return [...(firstSteps ? [firstStepsHomeBanner(locale)] : []), gggiHomeBanner(locale), missionbookHomeBanner(locale)];
+}
 
 export function StreamingGuestHome({ queries, ...props }: StreamingHomeProps) {
   const fallbackProps = { ...props, celebrities: [] };
   return <HomeLayout locale={props.locale} jjinfanGauge={props.jjinfanGauge} heartDonation={props.heartDonation}
-    hero={<Suspense fallback={<HomeHero {...fallbackProps} homeBanners={[gggiHomeBanner(props.locale), missionbookHomeBanner(props.locale)]} elinaGuide={null} />}><StreamHomeHero {...props} queries={queries} /></Suspense>}
+    hero={<Suspense fallback={<HomeHero {...fallbackProps} homeBanners={pinnedHomeBanners(props.locale, props.firstSteps ?? false)} elinaGuide={null} />}><StreamHomeHero {...props} queries={queries} /></Suspense>}
     thinBanner={<Suspense fallback={null}><StreamHomeThinBanner {...props} queries={queries} /></Suspense>}
     notices={<Suspense fallback={<HomeNoticesPlaceholder locale={props.locale} />}><StreamHomeNotices {...props} queries={queries} /></Suspense>}
     gallery={<Suspense fallback={<HomeGalleryPlaceholder locale={props.locale} />}><StreamHomeGallery {...props} queries={queries} /></Suspense>} />;
@@ -157,10 +163,10 @@ function StreamHomeGalleryContent({ queries, locale, photos }: Pick<StreamingHom
     shorts={shorts.status === "fulfilled" ? shorts.value : "error"} />;
 }
 
-function StreamHomeHero({ queries, ...props }: Pick<StreamingHomeProps, "queries" | "locale">) {
+function StreamHomeHero({ queries, firstSteps = false, ...props }: Pick<StreamingHomeProps, "queries" | "locale" | "firstSteps">) {
   const result = use(queries.homeBanners);
   return <HomeHero {...props} celebrities={[]}
-    homeBanners={[gggiHomeBanner(props.locale), missionbookHomeBanner(props.locale), ...(result.status === "fulfilled" ? result.value : [])]}
+    homeBanners={[...pinnedHomeBanners(props.locale, firstSteps), ...(result.status === "fulfilled" ? result.value : [])]}
     contentErrors={{ homeBanners: result.status === "rejected" }}
     elinaGuide={<Suspense fallback={<PersonalizationLoading quiet locale={props.locale} />}><StreamElinaGuide queries={queries} locale={props.locale} hero /></Suspense>} />;
 }

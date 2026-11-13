@@ -144,7 +144,6 @@
 
 /* 261107-2 U2: chip · points · language · bell on every width; avatar and menu from 768px. The chip gives way first. */
 .groupsNavigation .actions > .utilityLink { order: 0; }
-.groupsNavigation .actions > [data-selected-bias] { min-width: 0; }
 @media (max-width: 63.999rem) { .groupsNavigation .actions { gap: 0; } }
 
 /* 261107-2 3차: signed in, 1024–1199px had 518px of header actions for ~336px of room (the right column was max-content), so the
@@ -211,6 +210,5 @@
   .actions :global(:is(svg.lucide:not(.lucide-chevron-down):not(.lucide-rotate-cw), [data-account-trigger="menu"] > svg, img[src*="point-coin"], img[data-reward-kind="heart"], img[src*="/tiers/"])) { width: 20px; height: 20px; }
 }
 
-/* Signed-out mobile header: the login link stands in for the account menu that is not drawn below 768px. */
+/* Signed-out header, every width: one small 로그인 action in the status slot (user 11/13 — the illustrated join chip read as an ad). */
 .guestLogin { flex: 0 0 auto; white-space: nowrap; }
-@media (min-width: 48rem) { .guestLogin { display: none; } }
