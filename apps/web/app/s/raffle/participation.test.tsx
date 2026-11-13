@@ -2,7 +2,8 @@ import { act, cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 const auth = vi.hoisted(() => ({ authenticated: false, ready: true, login: vi.fn(), getAccessToken: vi.fn(async () => 'token') }));
 vi.mock('@/features/auth/client/cognito-auth', () => ({ useByUsAuth: () => auth }));
-import { RaffleBoostAction, RaffleCountdown, RaffleEnterBlock, RaffleInvitedFriends, RaffleMoreAction, RaffleProvider, raffleCountdown } from './participation';
+import { RaffleBoostAction, RaffleCountdown, RaffleEnterBlock, RaffleInvitedFriends, RaffleMoreAction, RaffleOdds, RaffleProvider, raffleCountdown } from './participation';
+import { raffleOddsText } from '@/i18n/catalogs/signup-raffle-longform';
 
 const closesAt = Date.parse('2026-11-30T23:59:59.999+09:00'), now = Date.parse('2026-11-13T02:00:00+09:00');
 beforeEach(() => { vi.useFakeTimers(); vi.setSystemTime(now); });
@@ -116,4 +117,38 @@ it('uses short action labels inside the boost rows and full labels elsewhere', (
   expect(screen.getByRole('link', { name: '받기' })).toBeTruthy();
   expect(screen.getByRole('link', { name: '가입' })).toBeTruthy();
   expect(screen.getByRole('link', { name: 'Fan Passport 받기' })).toBeTruthy();
+});
+
+it('always shows the odds rule, and my current odds only from server counts', async () => {
+  const view = render(<RaffleProvider locale="ko" closed={false} closesAt={closesAt} now={now}><RaffleOdds /></RaffleProvider>);
+  expect(screen.getByText('당첨 확률 ≈ 내 당첨 기회 ÷ 전체 당첨 기회 × 17명')).toBeTruthy();
+  expect(view.container.querySelector('[data-raffle-odds-mine]')).toBeNull();
+  cleanup();
+  auth.authenticated = true;
+  server({ entered: true, passportReceived: false, communityJoined: false, chances: 3, friends: 0, totalChances: 120 });
+  render(<RaffleProvider locale="ko" closed={false} closesAt={closesAt} now={now}><RaffleOdds /></RaffleProvider>);
+  await settle();
+  expect(document.querySelector('[data-raffle-odds-mine]')?.textContent).toBe('지금 내 확률 약 43% = 3회 ÷ 120회 × 17명');
+});
+
+it('rounds small odds to one decimal and stops at 100%', () => {
+  expect(raffleOddsText('ko', 1, 2000, 17)).toBe('지금 내 확률 약 0.9% = 1회 ÷ 2000회 × 17명');
+  expect(raffleOddsText('en', 5, 20, 17)).toBe('Your odds now about 100% = 5 ÷ 20 × 17');
+  expect(raffleOddsText('ko', 1, 100000, 17)).toBe('지금 내 확률 약 0.1% 미만 = 1회 ÷ 100000회 × 17명');
+});
+
+it('numbers the two steps and checks the first one after entering', () => {
+  const view = render(<RaffleProvider locale="ko" closed={false} closesAt={closesAt} now={now} preview="in"><RaffleEnterBlock /></RaffleProvider>);
+  const steps = () => [...view.container.querySelectorAll('[data-row="raffle-step"]')];
+  expect(steps().map(step => step.textContent)).toEqual(['1래플 응모하기를 한 번 누르면 참여 완료', '2아래 활동으로 당첨 기회 더 받기(선택)']);
+  fireEvent.click(screen.getByRole('button', { name: '래플 응모하기' }));
+  act(() => { vi.advanceTimersByTime(500); });
+  expect(steps()[0]!.hasAttribute('data-done')).toBe(true);
+});
+
+it('shows the same ticking clock large in the key visual', () => {
+  render(<RaffleProvider locale="ko" closed={false} closesAt={closesAt} now={now}><RaffleCountdown hero /></RaffleProvider>);
+  const timer = screen.getByRole('timer');
+  expect(timer.getAttribute('data-size')).toBe('hero');
+  expect(timer.textContent).toBe('D-1721:59:59');
 });

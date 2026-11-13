@@ -69,6 +69,13 @@ export function raffleChances(input: LocalSnapshot) {
     return { userId: user.id, entries, friends: friends.size };
   });
 }
+/**
+ * 화면에 보이는 대략 확률의 분모: 응모한 모든 회원의 당첨 기회 합계. 다른 회원은 저장된 값(stored), 나는 방금 센 값(mine)을 쓴다.
+ * 추첨(drawLocal)과 같은 계산식이라 분모가 추첨 후보 전체와 같다.
+ */
+export function raffleTotalChances(stored: LocalSnapshot, mine: { userId: string; entries: number }) {
+  return raffleChances(stored).reduce((sum, row) => row.userId === mine.userId ? sum : sum + row.entries, mine.entries);
+}
 /** 추첨 후보 = 기간 안에 응모한 회원 전원. Fan Passport·커뮤니티는 자격이 아니라 기회 +1이다. */
 export function candidates(input: LocalSnapshot) {
   return raffleChances(input).map(({ userId, entries }) => ({ userId, entries }));

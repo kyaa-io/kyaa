@@ -6,8 +6,8 @@ import { FanIcon } from '@/components/fan-ui/fan-icon';
 import { FanDisplay } from '@/components/fan-ui/fan-display';
 import type { AppLocale } from '@/i18n/locales';
 import { signupRaffleText } from '@/i18n/catalogs/signup-raffle';
-import { raffleLongformText, type SignupRaffleLongformKey } from '@/i18n/catalogs/signup-raffle-longform';
-import { raffleInviteCode, raffleShareHref } from '@/features/benefit/domain/signup-event';
+import { raffleLongformText, raffleOddsText, type SignupRaffleLongformKey } from '@/i18n/catalogs/signup-raffle-longform';
+import { raffleInviteCode, raffleShareHref, signupEvent } from '@/features/benefit/domain/signup-event';
 import { communityInviteSchema } from '@/features/community-stamps/domain/community-stamps';
 import { communityStampAction } from '@/features/community-stamps/ui/use-community-stamps';
 import { useByUsAuth } from '@/features/auth/client/cognito-auth';
@@ -22,6 +22,8 @@ type Ctx = {
   passport: boolean; community: boolean; error: boolean;
   /** 서버가 센 내 당첨 기회 수와 내 링크로 가입·응모한 친구 수. 서버 값을 받기 전에는 없다(화면이 지어내지 않는다). */
   chances?: number; friends?: number;
+  /** 응모한 모든 회원의 당첨 기회 합계(서버 값, 대략 확률의 분모). 못 읽으면 없다. */
+  totalChances?: number;
   /** 내 친구 초대 코드(로그인했을 때만). 공유 주소에 붙는다. */
   inviteCode?: string;
   enter: () => void; login: () => void; t: (key: SignupRaffleLongformKey, count?: number) => string; s: (key: Parameters<typeof signupRaffleText>[1]) => string;
@@ -33,19 +35,19 @@ function useRaffle() { const value = useContext(RaffleContext); if (!value) thro
 const inviteKey = 'kyaa:raffle:invite';
 const storedInvite = () => { try { return raffleInviteCode(window.localStorage.getItem(inviteKey)); } catch { return undefined; } };
 const storeInvite = (code?: string) => { try { if (code) window.localStorage.setItem(inviteKey, code); else window.localStorage.removeItem(inviteKey); } catch { /* 저장소 없음 */ } };
-type EntryResult = { entered?: boolean; passportReceived?: boolean; communityJoined?: boolean; chances?: number; friends?: number; invite?: 'registered' | 'refused' | 'pending' };
+type EntryResult = { entered?: boolean; passportReceived?: boolean; communityJoined?: boolean; chances?: number; friends?: number; totalChances?: number; invite?: 'registered' | 'refused' | 'pending' };
 const count = (value: unknown) => typeof value === 'number' && Number.isSafeInteger(value) && value >= 0 ? value : undefined;
 
 export function RaffleProvider({ locale, closed, closesAt, now, preview, invite, children }: { locale: AppLocale; closed: boolean; closesAt: number; now: number; preview?: RafflePreview; /** 주소의 ?invite= 로 받은 친구의 초대 코드 */ invite?: string; children: ReactNode }) {
   const auth = useByUsAuth(), { getAccessToken } = auth;
   const [pending, setPending] = useState(false);
   const [entered, setEntered] = useState(false), [passport, setPassport] = useState(false), [community, setCommunity] = useState(false), [error, setError] = useState(false);
-  const [chances, setChances] = useState<number>(), [friends, setFriends] = useState<number>(), [inviteCode, setInviteCode] = useState<string>();
+  const [chances, setChances] = useState<number>(), [friends, setFriends] = useState<number>(), [totalChances, setTotalChances] = useState<number>(), [inviteCode, setInviteCode] = useState<string>();
   const received = useRef<string | undefined>(undefined);
   const p = preview;
   const apply = useCallback((result: EntryResult) => {
     setEntered(!!result.entered); setPassport(!!result.passportReceived); setCommunity(!!result.communityJoined);
-    setChances(result.entered ? count(result.chances) : undefined); setFriends(result.entered ? count(result.friends) : undefined);
+    setChances(result.entered ? count(result.chances) : undefined); setFriends(result.entered ? count(result.friends) : undefined); setTotalChances(result.entered ? count(result.totalChances) : undefined);
     // 등록됐거나 등록할 수 없는 코드는 다시 보내지 않는다. 잠시 뒤 다시(pending)만 남겨 둔다.
     if (result.invite && result.invite !== 'pending') { received.current = undefined; storeInvite(); }
   }, []);
@@ -92,7 +94,7 @@ export function RaffleProvider({ locale, closed, closesAt, now, preview, invite,
     catch { setError(true); }
     finally { setPending(false); }
   }
-  const value: Ctx = { locale, closed, closesAt, now, ready: auth.ready || !!p, pending, ...view, chances, friends, inviteCode, enter, login: auth.login, t: (key, count) => raffleLongformText(locale, key, count), s: (key) => signupRaffleText(locale, key) };
+  const value: Ctx = { locale, closed, closesAt, now, ready: auth.ready || !!p, pending, ...view, chances, friends, totalChances, inviteCode, enter, login: auth.login, t: (key, count) => raffleLongformText(locale, key, count), s: (key) => signupRaffleText(locale, key) };
   return <RaffleContext.Provider value={value}>{children}</RaffleContext.Provider>;
 }
 
@@ -113,7 +115,7 @@ export function raffleCountdown(left: number) {
 }
 
 /** 살아 있는 신호: 마감까지 남은 시간이 1초마다 바뀐다(고정폭 숫자라 자리가 흔들리지 않는다). 서버가 그린 값에서 시작해 브라우저 시계로 이어 간다. */
-export function RaffleCountdown() {
+export function RaffleCountdown({ hero = false }: { hero?: boolean }) {
   const r = useRaffle();
   const [now, setNow] = useState(r.now);
   useEffect(() => {
@@ -125,8 +127,10 @@ export function RaffleCountdown() {
   if (r.closed || now > r.closesAt) return null;
   const left = raffleCountdown(r.closesAt - now);
   // 보조 기술에는 1초마다 읽히지 않게 마감 문구만 준다.
-  return <p className={styles.countdown} role="timer" aria-live="off" aria-label={r.t('closesAt')} data-urgent={left.urgent} data-raffle-countdown>
-    <FanDisplay role="strong" aria-hidden="true">{left.day}</FanDisplay><FanDisplay role="strong" aria-hidden="true" suppressHydrationWarning>{left.clock}</FanDisplay>
+  // hero: 키 비주얼 안의 큰 남은 시간(대표 2026-11-13 "타임어택"). 같은 시계라 하단 고정 줄과 1초도 어긋나지 않는다.
+  const role = hero ? 'figure' : 'strong';
+  return <p className={styles.countdown} role="timer" aria-live="off" aria-label={r.t('closesAt')} data-urgent={left.urgent} data-size={hero ? 'hero' : undefined} data-raffle-countdown>
+    <FanDisplay role={role} optical={hero} aria-hidden="true">{left.day}</FanDisplay><FanDisplay role={role} aria-hidden="true" suppressHydrationWarning>{left.clock}</FanDisplay>
   </p>;
 }
 
@@ -138,6 +142,11 @@ export function RaffleEnterBlock() {
   const r = useRaffle();
   if (r.closed) return <FanDisplay role="strong" as="p" className={styles.enterEnded} data-state="closed">{r.t('ended')}</FanDisplay>;
   return <div className={styles.enter} data-raffle-hero-action>
+    {/* 버튼 하나로 끝나는지 헷갈린다는 대표 지적(2026-11-13): 두 걸음을 번호로. 응모하면 1번에 체크 */}
+    <ol className={styles.steps}>
+      <li data-row="raffle-step" data-done={r.entered || undefined}><FanDisplay role="strong" className={styles.stepMark} aria-hidden="true">{r.entered ? <FanIcon icon={Check} size={16} /> : 1}</FanDisplay><FanDisplay role="strong">{r.t('step1')}</FanDisplay></li>
+      <li data-row="raffle-step"><FanDisplay role="strong" className={styles.stepMark} aria-hidden="true">2</FanDisplay><FanDisplay role="strong">{r.t('step2')}</FanDisplay></li>
+    </ol>
     <div className={styles.enterActions}>
       <div className={styles.enterCta}><RaffleEnterAction /></div>
       {/* 응모 바로 옆(모바일은 바로 아래)의 보조 행동. 응모 뒤에는 이 칸에서 누를 수 있는 유일한 버튼이라 다음 행동이 된다 */}
@@ -173,6 +182,16 @@ export function RaffleBoostAction({ kind }: { kind: 'comment' | 'attend' | 'invi
   return kind === 'attend'
     ? <FanAction href={communityHref(r.locale)} variant="neutral" size="sm">{r.t('checkIn')}</FanAction>
     : <FanAction href={`/?locale=${r.locale}`} variant="neutral" size="sm">{r.t('findPosts')}</FanAction>;
+}
+
+const winners = signupEvent.prizes.reduce((sum, prize) => sum + prize.quantity, 0);
+/** 당첨 확률 식(대표 2026-11-13 "투명하게"): 식은 늘 보이고, 응모한 회원에게는 서버가 센 내 기회·전체 기회로 지금 확률을 붙인다. 값이 없으면 숫자를 지어내지 않는다. */
+export function RaffleOdds() {
+  const r = useRaffle();
+  return <div className={styles.odds} data-raffle-odds>
+    <FanDisplay role="caption" as="p">{r.t('oddsRule')}</FanDisplay>
+    {r.entered && r.chances && r.totalChances ? <FanDisplay role="caption" as="p" className={styles.oddsMine} data-raffle-odds-mine>{raffleOddsText(r.locale, r.chances, r.totalChances, winners)}</FanDisplay> : null}
+  </div>;
 }
 
 /** 친구 초대 행의 사실 줄 끝: 내 링크로 가입·응모한 친구 수(서버 값, 한 명 이상일 때만). */

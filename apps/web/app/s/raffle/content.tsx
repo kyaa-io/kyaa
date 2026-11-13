@@ -8,9 +8,8 @@ import { FanActivityStamp } from '@/components/fan-ui/fan-activity-stamp';
 import { FanPrintReveal } from '@/components/fan-ui/fan-print-reveal';
 import { FanSurface } from '@/components/fan-ui/fan-surface';
 import { signupEvent } from '@/features/benefit/domain/signup-event';
-import { RaffleKeyPrint } from './key-visual-print';
 import { RaffleCardFloat } from '@/features/raffle-cards/card-float';
-import { RaffleBoostAction, RaffleEnterBlock, RaffleInvitedFriends, RaffleMoreAction, RaffleProvider, RaffleStickyCta, type RafflePreview } from './participation';
+import { RaffleBoostAction, RaffleEnterBlock, RaffleInvitedFriends, RaffleMoreAction, RaffleOdds, RaffleProvider, RaffleStickyCta, RaffleCountdown, type RafflePreview } from './participation';
 import styles from './raffle.module.css';
 
 const art = (name: string) => `/images/raffle/v4/${name}.webp`;
@@ -32,13 +31,13 @@ export function RaffleContent({ locale, closesAt, now, closed, preview, invite }
   return <RaffleProvider locale={locale} closed={closed} closesAt={closesAt} now={now} preview={preview} invite={invite}>
     {/* v5.2 상세페이지 흐름: 키 비주얼(무슨 이벤트·얼마·몇 명·언제까지) → 경품 카드 | 참여 방법(필수) → 당첨 확률 올리기 → 더 즐기기(선택) → 안내. 응모 버튼은 하단 고정 줄로 늘 보인다 */}
     <FanPrintDesk className={styles.keyVisual} src={art('key-visual-tall')} wideSrc={art('key-visual-wide')} wideFrom="48rem" width={1131} height={1391} eager>
-      <RaffleKeyPrint />
       {/* 왼쪽 정렬로 쌓이는 줄은 모두 optical: 첫 글자 잉크가 같은 세로선에서 시작한다(DESIGN.md 7-2 큰 글자 줄 왼쪽 광학 정렬) */}
       <header className={styles.keyText}>
         <FanHeading as="h1"><FanDisplay role="title" optical>{text('title')}</FanDisplay>{' '}<FanDisplay role="figure" optical>{t('eventKind')}</FanDisplay></FanHeading>
         {/* 총액·총인원은 이 화면에 여기 한 번(테스트로 고정) */}
         <p className={styles.keyFacts}><FanDisplay role="lead" optical>US$400</FanDisplay><FanDisplay role="lead">{t('giftCard')}</FanDisplay><FanDisplay role="lead">{t('totalWinners')}</FanDisplay></p>
         <FanDisplay role="strong" as="p" optical>{t('period')}</FanDisplay>
+        <RaffleCountdown hero />
       </header>
     </FanPrintDesk>
 
@@ -67,6 +66,7 @@ export function RaffleContent({ locale, closesAt, now, closed, preview, invite }
       {/* 당첨 확률 올리기: 페이지에서 하나뿐인 옅은 분홍 면. 행마다 그 행동의 스탬프 그림 */}
       <FanSurface tone="focus" className={styles.bonus} data-block="raffle-bonus" aria-labelledby="raffle-bonus">
         <FanHeading as="h2" id="raffle-bonus"><FanDisplay role="heading">{t('bonusTitle')}</FanDisplay></FanHeading>
+        <RaffleOdds />
         <ul className={styles.bonusRows}>{boosts.map(row => <li key={row.kind} data-row="raffle-bonus" data-kind={row.kind}>
           <FanActivityStamp kind={row.stamp} />
           <div className={styles.bonusRowText}>

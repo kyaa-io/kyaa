@@ -135,34 +135,6 @@ export function FanPrintChanceCard({ title, each, slots, rows, className }: FanP
   </div>;
 }
 
-type FanPrintPoint = readonly [number, number];
-/** 사진 속 카드 한 장에 찍는 글자. 좌표는 카드 면(가로 1000 × 세로 630, 기프트카드 비율) 기준. */
-export type FanPrintPhotoLine = Readonly<{ text: string; x: number; y: number; size: number; type?: "amount" | "mono" }>;
-/** 사진 속 카드: 사진 픽셀로 잰 세 모서리(왼쪽 위·오른쪽 위·왼쪽 아래) + 찍을 글자. 가려진 모서리는 보이는 변의 연장으로 잡는다. */
-export type FanPrintPhotoCard = Readonly<{ tl: FanPrintPoint; tr: FanPrintPoint; bl: FanPrintPoint; lines: readonly FanPrintPhotoLine[]; mark?: Readonly<{ x: number; y: number; width: number }> }>;
-export type FanPrintPhotoStamp = Readonly<{ at: FanPrintPoint; size: number; turn: number; lines: readonly [string, string] }>;
-const CARD_W = 1000;
-const CARD_H = 630;
-const onCard = ({ tl, tr, bl }: FanPrintPhotoCard) => `matrix(${(tr[0] - tl[0]) / CARD_W} ${(tr[1] - tl[1]) / CARD_W} ${(bl[0] - tl[0]) / CARD_H} ${(bl[1] - tl[1]) / CARD_H} ${tl[0]} ${tl[1]})`;
-
-/**
- * 책상 사진(FanPrintDesk) 속 빈 카드·꼬리표에 인쇄를 찍는다. viewBox가 사진 픽셀이고 slice가 object-fit: cover 가운데와 같아서
- * 사진이 어떻게 잘려도 카드 자리에 붙어 있다. 잉크는 종이 결이 비치게 곱하기. FanPrintDesk의 자식으로 둔다.
- */
-export function FanPrintPhotoInk({ width, height, cards, stamp, className }: Readonly<{ width: number; height: number; cards: readonly FanPrintPhotoCard[]; stamp?: FanPrintPhotoStamp; className?: string }>) {
-  return <svg className={cx(styles.photoInk, className)} viewBox={`0 0 ${width} ${height}`} preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false" data-art="print" data-fan-print="photo-ink">
-    <g className={styles.photoInkCards}>{cards.map((card, i) => <g key={i} transform={onCard(card)}>
-      {card.lines.map(line => <text key={line.text} className={line.type === "mono" ? styles.mono : styles.photoAmount} x={line.x} y={line.y} fontSize={line.size}>{line.text}</text>)}
-      {card.mark ? <image className={styles.photoMark} href="/images/guest-home/kyaa-wordmark.svg" x={card.mark.x} y={card.mark.y} width={card.mark.width} height={card.mark.width * 563 / 1164} /> : null}
-    </g>)}</g>
-    {stamp ? <g className={styles.photoStamp} transform={`translate(${stamp.at[0]} ${stamp.at[1]}) rotate(${stamp.turn})`}>
-      <image href={inkStamp("frame")} x={-stamp.size / 2} y={-stamp.size / 2} width={stamp.size} height={stamp.size} />
-      <text x="0" y={-stamp.size * .02} fontSize={stamp.size * .17} textAnchor="middle">{stamp.lines[0]}</text>
-      <text x="0" y={stamp.size * .16} fontSize={stamp.size * .12} textAnchor="middle">{stamp.lines[1]}</text>
-    </g> : null}
-  </svg>;
-}
-
 /** 소품을 올려 두는 사진 면(책상·장면). 자식은 쓰는 쪽에서 자리·기울기를 정한다. */
 export function FanPrintDesk({ src, wideSrc, wideFrom = "64rem", width, height, eager, className, children }: Readonly<{ src: string; wideSrc?: string; /** wideSrc로 바뀌는 폭(기본 64rem). */ wideFrom?: "48rem" | "64rem"; width: number; height: number; eager?: boolean; className?: string; children?: ReactNode }>) {
   return <div className={cx(styles.desk, className)} data-fan-print="desk">
