@@ -49,13 +49,14 @@
 .unfoldedGrid>ul{display:contents}
 .unfoldedGrid>ul>li{min-width:0;border:0;box-shadow:inset 0 -1px var(--color-line-subtle)}
 .unfoldedGrid>.cards{border:0}
+/* 한 목록 안에서 인증 항목이 없으면 빈 문구 줄을 두지 않는다(알릴 것이 없는 줄). 보상 열은 폭과 상관없이 96 — 동전이 모든 행에서 같은 x. */
+.unfoldedGrid>[data-empty-state]{display:none}
+.unfoldedGrid [data-fan-mission-row]{grid-template-columns:40px minmax(0,1fr) 96px}
 .unfolded[data-expanded="false"] [data-mobile-extra]{display:none}
 .moreButton{display:none;width:100%;min-height:44px;border:0;background:var(--color-surface);color:inherit;font:inherit;cursor:pointer}
 .unfolded:has([data-mobile-extra]) .moreButton{display:block}
 @container (min-width:44rem){
  .unfoldedGrid{grid-template-columns:repeat(2,minmax(0,1fr))}
- /* 사용자 11/13 13:2x: the missions and the certifications share one trailing width in the two-column grid, so every row's coin sits at the same x inside its column. */
- .unfoldedGrid [data-fan-mission-row]{grid-template-columns:40px minmax(0,1fr) 96px}
  .unfoldedGrid>ul>li{box-shadow:inset -1px -1px var(--color-line-subtle)}
  .unfolded[data-expanded="false"] [data-mobile-extra]{display:block}
  .unfolded:has([data-mobile-extra]) .moreButton{display:none}
