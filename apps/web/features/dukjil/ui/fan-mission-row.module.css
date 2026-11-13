@@ -13,6 +13,8 @@
 .detail { display: flex; align-items: center; gap: var(--space-2); min-width: 0; min-height: 18px; color: var(--color-muted); font-size: var(--fan-metadata-size); line-height: 18px; }
 .detail > * { min-width: 0; }
 .trailing { display: flex; align-items: center; justify-content: flex-end; gap: var(--space-2); min-width: 0; font-size: var(--fan-metadata-size); line-height: 20px; }
+/* 진행 줄이 있는 행은 +NP·동작도 그 줄(막대와 같은 세로 중심)에 두어 숫자와 같은 높이로 맞춘다. */
+.row:has([data-mission-count]) .trailing { align-self: end; height: 18px; }
 /* 사용자 11/13 13:2x: the +NP badge fills the column and starts at its left edge, so every row's coin sits at the same x whatever the number (+2P … +1,000P). */
 .trailing > [data-earn-badge="inline"] { inline-size: 100%; justify-content: flex-start; }
 .item[data-status="closed"] .row, .item[data-status="preparing"] .row, .item[data-done="true"] .row { color: var(--color-muted); }
