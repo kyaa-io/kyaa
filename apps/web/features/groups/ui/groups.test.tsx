@@ -242,5 +242,7 @@ it('shows the identity skeleton only while the first request is pending and reta
  await act(async()=>finish(Response.json({error:{code:'UNAVAILABLE'}},{status:503})));
  expect(await screen.findByRole('alert')).toBeInTheDocument();
  expect(screen.getByRole('button',{name:'다시 시도'})).toBeInTheDocument();
- expect(screen.queryByRole('status')).toBeNull();
+ // A failed first read keeps the header skeleton and tabs (group-page-frame.test); its hidden loading label is the only status left, and the error itself is the alert.
+ expect(screen.getAllByRole('status')).toHaveLength(1);
+ expect(document.querySelector('[data-fan-page-header="loading"]')).not.toBeNull();
 });

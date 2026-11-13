@@ -58,8 +58,14 @@ it.each([500, 403, 404])("keeps the same header and nav after a detail-fetch %s 
   expect(nav.querySelector('[aria-current="page"]')).toHaveAttribute("href", "/pages/groups/page-id?locale=ko&tab=rooms");
   expect(screen.getByRole("alert")).toHaveTextContent(status === 500 ? groupsCopy("ko").error : pageUnavailable.ko);
   expect(screen.queryByText("panel content")).not.toBeInTheDocument();
-  fireEvent.click(screen.getByRole("button", { name: "다시 시도" }));
-  expect(state.retry).toHaveBeenCalledOnce();
+  // An unavailable page (403/404) offers exploration instead of a permanent retry; only other failures retry.
+  if (status === 500) {
+    fireEvent.click(screen.getByRole("button", { name: "다시 시도" }));
+    expect(state.retry).toHaveBeenCalledOnce();
+  } else {
+    expect(screen.queryByRole("button", { name: "다시 시도" })).not.toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "페이지 둘러보기" })).toHaveAttribute("href", "/pages/groups?locale=ko");
+  }
   Object.assign(state, { data: detail, error: false, failure: undefined });
   view.rerender(tree());
   expect(screen.queryByRole("alert")).not.toBeInTheDocument();
