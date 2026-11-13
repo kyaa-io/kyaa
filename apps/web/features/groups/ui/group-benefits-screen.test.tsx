@@ -293,7 +293,7 @@ it('shows one favorite selector beside the daily missions title and preserves th
 it('shows one favorite picker instead of stamp and heart numbers when no favorite exists',async()=>{
  bias.value={...bias.value,status:'empty'};
  const view=render(<GroupBenefitsScreen locale='ko'/>);
- await screen.findByText('137');
+ await screen.findAllByText('137');
  const picker=view.container.querySelector('[data-cell="favorite-picker"]') as HTMLElement;
  expect(within(picker).getByRole('link',{name:'모임에 가입해보세요'})).toHaveAttribute('href','/pages/groups?locale=ko');
  expect(picker).toHaveTextContent(/^모임에 가입해보세요$/);

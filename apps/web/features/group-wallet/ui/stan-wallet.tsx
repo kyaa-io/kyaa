@@ -47,7 +47,9 @@ function useRewardedAdReady() {
  *  Each column is the result box (big 3D asset + 응모권 N장 | 하트 N), a hairline, the material row (3D coin | stamp, name, big count,
  *  thick bar with the count inside and 교환 가능 | 받기 가능 inside it when full, the rule line) and ONE button (교환 | 받기 with the small video icon = ad).
  *  Both buttons run behind the rewarded ad, so while no ad unit is set they are disabled and read 준비 중. The guide is a ? next to the heading.
- *  390: the columns stack; 1024+: side by side in one card. */
+ *  대표 11/13 09:09 "여백이 너무 크고 어떻게 써야 할지 직관적이지 않음": each flow is two lines in one card — result (asset 40, 응모권 N장 | 하트 N)
+ *  with its one button on the right, then the material line (asset 24, the 24px bar with N/M inside, → reward +1). The button is primary
+ *  only when it can be pressed; otherwise neutral. 390: the flows stack in one card; 1024+: side by side. */
 export function StanWallet({ locale, state, stamps, hearts, links, className, favoritePicker }: { locale: AppLocale; state: WalletCardState; stamps: StanSlot; hearts: StanSlot; links: { hearts: string; claim?: string }; className?: string; favoritePicker?: ReactNode }) {
   const w = walletCopy(locale), s = (key: Parameters<typeof dukjilText>[1], values?: unknown[]) => dukjilText(locale, key, values);
   const [open, setOpen] = useState(false), titleId = useId(), wide = useFanWide(), Overlay = wide ? Dialog : BottomSheet;
@@ -61,46 +63,55 @@ export function StanWallet({ locale, state, stamps, hearts, links, className, fa
   const pageStamps = full ? STAMPS_PER_HEART : stampCount % STAMPS_PER_HEART;
   const claimable = full && Boolean(links.claim) && adReady;
   const asset = (name: keyof typeof WALLET_ASSETS, size: number, className: string) => <RewardIcon kind={name === "coin" ? "point" : name} size={size} className={className} />;
-  /** Thick round bar with the count inside (the filled part repeats it in white); a full bar gets the 완료! stamp at its end. */
-  const bar = (label: string, slot: StanSlot, value: number, max: number, current: string, total: string, doneText?: string, full = max > 0 && value >= max) => slot === "loading" ? <FanSkeleton width="100%" height={24} /> : slot === "locked" ? <FanLockedValue locale={locale} /> : <span className={styles.barRow}>
-    <span className={styles.bar} role="progressbar" aria-label={label} aria-valuemin={0} aria-valuemax={max} aria-valuenow={Math.min(value, max)} aria-valuetext={`${current} / ${total}`}>
-      <span className={styles.barText} aria-hidden="true">{full ? doneText : `${current} / ${total}`}</span>
-      <span className={styles.barFill} style={{ "--wallet-bar-unfilled": `${100 - (max > 0 ? Math.min(value, max) / max : 0) * 100}%` } as CSSProperties} aria-hidden="true"><span className={styles.barText}>{full ? doneText : `${current} / ${total}`}</span></span>
-    </span>
-  </span>;
+  /** Thick round bar with the real count inside. The fill stops at the goal; the count does not, so 137P reads 137 / 100P. The count never
+   *  straddles the fill's round end (it cut the glyph in half, GPT review 11/13): from half full it sits centred in the fill in white,
+   *  below half centred in the empty part in ink. Ready is shown by the goal turning accent and the button turning primary. */
+  const bar = (label: string, slot: StanSlot, value: number, max: number, current: string, total: string) => {
+    if (slot === "loading") return <FanSkeleton width="100%" height={24} />;
+    if (slot === "locked") return <FanLockedValue locale={locale} />;
+    const ratio = max > 0 ? Math.min(value, max) / max : 0;
+    return <span className={styles.barRow}>
+      <span className={styles.bar} role="progressbar" aria-label={label} aria-valuemin={0} aria-valuemax={max} aria-valuenow={Math.min(value, max)} aria-valuetext={`${current} / ${total}`} style={{ "--wallet-bar-fill": `${ratio * 100}%` } as CSSProperties}>
+        <span className={styles.barFill} aria-hidden="true" />
+        <span className={styles.barText} data-on-fill={ratio >= 0.5 || undefined} aria-hidden="true"><span>{current}</span>{` / ${total}`}</span>
+      </span>
+    </span>;
+  };
   /** One button per column. Both run behind the rewarded ad (the small video icon says so); with no ad unit it is the gray 준비 중. */
-  const action = (name: string, enabled: boolean, extra: { onClick: () => void } | { href: string } | null) => <FanAction variant="primary" className={styles.reward} {...(enabled && extra ? extra : { disabled: true })} leadingIcon={adReady || enabled ? <FanIcon icon={SquarePlay} size={20} /> : undefined}>{adReady || enabled ? name : s("stanPreparing")}</FanAction>;
+  const action = (name: string, enabled: boolean, extra: { onClick: () => void } | { href: string } | null) => <FanAction variant={enabled ? "primary" : "neutral"} className={styles.reward} {...(enabled && extra ? extra : { disabled: true })} leadingIcon={adReady || enabled ? <FanIcon icon={SquarePlay} size={20} /> : undefined}>{adReady || enabled ? name : s("stanPreparing")}</FanAction>;
+  /** The bar ends in what it turns into: → 응모권 +1 | 하트 +1. The rule sentence is its accessible name, so nothing extra is printed. */
+  const goal = (kind: "ticket" | "heart", rule: string, ready: boolean) => <span className={styles.goal} data-ready={ready || undefined} role="img" aria-label={rule}><span aria-hidden="true">→</span><RewardIcon kind={kind} size={20} /><span aria-hidden="true">+1</span></span>;
   const n = (value: number) => value.toLocaleString(locale);
-  const ticketText = typeof points === "number" ? n(Math.min(points, pointCost)) : "—";
+  const ticketText = typeof points === "number" ? n(points) : "—";
   return <section className={[styles.wallet, className].filter(Boolean).join(" ")} id="wallet" aria-label={s("stanWalletFlows")} data-wallet-card="stan">
     <div className={styles.head}><FanHeading>{s("stanWalletFlows")}</FanHeading><FanAction variant="text" href={`/guide/dukjil?locale=${locale}`}>{s("stanGuide")} ›</FanAction></div>
     {state.kind === "guest" ? <FanLoginScene items={(["coin", "ticket", "stamp", "heart"] as const).map((name) => ({ src: WALLET_ASSETS[name] }))} title={[w.points, w.tickets, s("stanFlowStamps"), s("stanFlowHearts")].join(" · ")} action={state.action} /> : <div className={styles.card}>
       <div className={styles.column} data-column="tickets">
-        <Link className={styles.result} data-cell="tickets" href={`/my/raffles?locale=${locale}` as Route}>
-          {asset("ticket", 56, styles.resultAsset)}
-          <span className={styles.resultText}><span className={styles.label}>{w.tickets}</span><span className={styles.value}><Value locale={locale} slot={tickets} unit={locale === "ko" ? "장" : undefined} /></span></span>
-        </Link>
-        <div className={styles.material} data-cell="points">
-          {asset("coin", 56, styles.asset)}
-          <span className={styles.name}>{w.points}</span>
-          <span className={styles.amount}><Value locale={locale} slot={points} unit="P" /></span>
-          <div className={styles.progress}>{bar(s("walletNextTicket", [pointCost]), points, ready ? state.points : 0, pointCost, ticketText, `${n(pointCost)}P`, s("walletExchangeReady"))}</div>
-          <span className={styles.rule}>{s("stanRuleTicket", [pointCost])}</span>
+        <div className={styles.top}>
+          <Link className={styles.result} data-cell="tickets" href={`/my/raffles?locale=${locale}` as Route}>
+            {asset("ticket", 40, styles.resultAsset)}
+            <span className={styles.label}>{w.tickets}</span><span className={styles.value}><Value locale={locale} slot={tickets} unit={locale === "ko" ? "장" : undefined} /></span>
+          </Link>
           {action(locale === "ko" ? "교환" : w.exchange, ready && (Boolean(pendingRequest.pending) || (affordable && adReady)), { onClick: () => setOpen(true) })}
+        </div>
+        <div className={styles.material} data-cell="points">
+          {asset("coin", 24, styles.asset)}
+          <div className={styles.progress}>{bar(s("walletNextTicket", [pointCost]), points, ready ? state.points : 0, pointCost, ticketText, `${n(pointCost)}P`)}</div>
+          {goal("ticket", s("stanRuleTicket", [pointCost]), affordable)}
         </div>
       </div>
       {favoritePicker ? <div className={`${styles.column} ${styles.favoritePicker}`} data-cell="favorite-picker">{favoritePicker}</div> : <div className={styles.column} data-column="hearts">
-        <Link className={styles.result} data-cell="hearts" href={links.hearts as Route}>
-          {asset("heart", 56, styles.resultAsset)}
-          <span className={styles.resultText}><span className={styles.label}>{s("stanFlowHearts")}</span><span className={styles.value}><Value locale={locale} slot={hearts} /></span></span>
-        </Link>
-        <div className={styles.material} data-cell="stamps">
-          {asset("stamp", 56, styles.asset)}
-          <span className={styles.name}>{s("stanFlowStamps")}</span>
-          <span className={styles.amount}><Value locale={locale} slot={stamps} unit={locale === "ko" ? "개" : undefined} /></span>
-          <div className={styles.progress}>{bar(s("stanFlowStamps"), stamps, pageStamps, STAMPS_PER_HEART, typeof stamps === "number" ? String(pageStamps) : "—", String(STAMPS_PER_HEART), s("stanClaimReady"))}</div>
-          <span className={styles.rule}>{s("stanRuleHeart", [STAMPS_PER_HEART])}</span>
+        <div className={styles.top}>
+          <Link className={styles.result} data-cell="hearts" href={links.hearts as Route}>
+            {asset("heart", 40, styles.resultAsset)}
+            <span className={styles.label}>{s("stanFlowHearts")}</span><span className={styles.value}><Value locale={locale} slot={hearts} /></span>
+          </Link>
           {action(s("stanClaim"), claimable, links.claim ? { href: links.claim } : null)}
+        </div>
+        <div className={styles.material} data-cell="stamps">
+          {asset("stamp", 24, styles.asset)}
+          <div className={styles.progress}>{bar(s("stanFlowStamps"), stamps, pageStamps, STAMPS_PER_HEART, typeof stamps === "number" ? String(pageStamps) : "—", String(STAMPS_PER_HEART))}</div>
+          {goal("heart", s("stanRuleHeart", [STAMPS_PER_HEART]), full)}
         </div>
       </div>}
     </div>}

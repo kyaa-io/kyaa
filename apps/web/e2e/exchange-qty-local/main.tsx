@@ -37,7 +37,8 @@ function Harness({ locale }: { locale: AppLocale }) {
   const wallet = useGroupResource('/api/me/wallet', parse), { retry } = wallet;
   useEffect(() => { window.addEventListener(GROUP_WALLET_CHANGED_EVENT, retry); return () => window.removeEventListener(GROUP_WALLET_CHANGED_EVENT, retry); }, [retry]);
   const state = wallet.data ? { kind: 'ready' as const, points: wallet.data.points, tickets: wallet.data.tickets, pointCost: wallet.data.pointCost } : { kind: 'loading' as const };
-  return <><StanWallet locale={locale} state={state} stamps={4} hearts={3} links={{ hearts: '#' }} /><FanToastViewport /></>;
+  const stamps = Number(q.get('stamps') ?? 4), hearts = Number(q.get('hearts') ?? 3);
+  return <><StanWallet locale={locale} state={state} stamps={stamps} hearts={hearts} links={{ hearts: '#', claim: q.has('claim') ? '#claim' : undefined }} /><FanToastViewport /></>;
 }
 /** ?my=1: the MY 내 지갑 card in every state, side by side at the MY column width (360px from 1024px). */
 function MyCards({ locale }: { locale: AppLocale }) {
