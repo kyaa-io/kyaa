@@ -156,8 +156,6 @@ export const homeCreatorRankingRowSchema = z.object({
   /** likes list only: page likes in the period and all time. */
   likes: count.optional(),
   totalLikes: count.optional(),
-  /** likes list only: the operator-managed total of the creator's SNS followers (celebrities.fan_count, the same value the public creator answer calls fanCount). null when none is kept. No per-platform split is stored. */
-  fanCount: count.nullable().optional(),
 });
 export const homeCreatorRankingSchema = z.object({
   ...homeHead,

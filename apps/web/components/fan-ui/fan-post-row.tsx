@@ -53,8 +53,8 @@ export function FanPostRow({ href, locale, title, thumbnail, pageImage, notice =
     <span className={styles.thumb} data-page-image={(!thumbnail || broken) && pageImage ? "" : undefined}>{thumbnail && !broken
       ? <img src={thumbnail} alt="" width={56} height={42} loading="lazy" decoding="async" onError={() => setBroken(true)} />
       : pageImage ?? <FileText size={16} aria-hidden="true" />}</span>
-    {notice && <FanTag tone="notice" className={styles.chip}>{fanUiText(locale, "noticeTag")}</FanTag>}
     <div className={styles.head}>
+      {notice && <FanTag tone="notice">{fanUiText(locale, "noticeTag")}</FanTag>}
       <Link href={href as Route} className={styles.title}>{title}</Link>
       {reactedBy && <span className={styles.reacted} role="img" aria-label={fanUiText(locale, "artistReacted", [reactedBy])} data-artist-reacted><Star size={16} aria-hidden="true" /></span>}
       {commentCount !== undefined && commentCount > 0 && <span className={styles.count} aria-label={fanUiText(locale, "commentsLabel", [count(commentCount)])}><MessageCircle size={13} fill="currentColor" aria-hidden="true" />{count(commentCount)}</span>}

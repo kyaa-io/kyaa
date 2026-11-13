@@ -15,8 +15,6 @@ export interface RankingsDependencies {
   rpc(name: string, args: Record<string, unknown>): Promise<unknown>;
   authorize(authorization: string | null): Promise<{ appUserId: string }>;
   resolveCreatorId(slug: string): Promise<string | null>;
-  /** The operator-managed SNS follower total by creator slug (celebrities.fan_count), read for the likes list's opened rows. */
-  readFanCounts?(): Promise<ReadonlyMap<string, number | null>>;
   /** Development only: rebuild the snapshots from a read when they are older than REFRESH_AFTER_MS. Production leaves this off and relies on a scheduler. */
   refreshOnRead?: boolean;
   now?: () => number;
@@ -201,12 +199,10 @@ export function createRankingsHandlers(deps: RankingsDependencies) {
           : period === "all"
           ? await readHome("read_home_creator_ranking_v2", { p_locale: lang, p_metric: metric, p_limit: creatorLimit })
           : await readHome("read_home_creator_ranking_period", { p_locale: lang, p_period: period, p_limit: creatorLimit }));
-        // The follower total is a display extra of the opened row: a failed read leaves the cell out instead of failing the ranking.
-        const fanCounts = metric === "likes" && deps.readFanCounts ? await deps.readFanCounts().catch(() => null) : null;
         const rows = arr(raw.rows).map((row) => {
           const r = obj(row);
           return { rank: r.rank, slug: r.slug, name: r.name, imageUrl: r.imageUrl ?? null, score: r.score, hearts: r.hearts, points: r.points ?? null, fans: r.fans, liveNow: r.liveNow === true, isNew: r.isNew === true, challenge: r.challenge === true, delta: r.delta ?? null, weekGain: r.weekGain ?? null, dayGain: r.dayGain ?? null,
-            ...(metric === "likes" ? { likes: r.likes, totalLikes: r.totalLikes, fanCount: typeof r.slug === "string" ? fanCounts?.get(r.slug) ?? null : null } : {}) };
+            ...(metric === "likes" ? { likes: r.likes, totalLikes: r.totalLikes } : {}) };
         });
         return Response.json(checked(homeCreatorRankingSchema, { ...head(raw, metric), weekGainDays: raw.weekGainDays ?? null, rows }), { headers: listHeaders(request, member) });
       }
