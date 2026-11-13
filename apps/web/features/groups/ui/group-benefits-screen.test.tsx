@@ -83,10 +83,10 @@ function duoData() {
  }));
 }
 it('대표 11/11: the tickets result links to my raffles and the points under it read 137/100P',async()=>{
- duoData();render(<GroupBenefitsScreen locale='ko'/>);await screen.findAllByText('137');
+ duoData();render(<GroupBenefitsScreen locale='ko'/>);await screen.findAllByText('보유 137P');
  const card=document.querySelector('[data-wallet-card]')!;
  expect(card.querySelector('[data-cell="tickets"]')).toHaveAttribute('href','/my/raffles?locale=ko');
- expect(card.querySelector('[data-cell="points"]')).toHaveTextContent('137 / 100P');
+ expect(card.querySelector('[data-cell="points"]')).toHaveTextContent('보유 137P');expect(card.querySelector('[data-cell="points"]')).toHaveTextContent('−100P');
  // 대표 11/13 09:39 swap line: the real count stays in view; ready is the 교환 button turning primary (no 교환 가능 label).
  expect(within(card as HTMLElement).getByRole('button',{name:'교환'})).toHaveAttribute('data-fan-action-emphasis','primary');
  expect(card.querySelector('[data-cell="points"] [role="progressbar"]')).toHaveAttribute('aria-valuenow','100');
@@ -96,7 +96,7 @@ it('대표 11/11 + 사용자 12:26: without an ad unit 교환 and 받기 read �
  adUnit.value=undefined;
  try{
   withFavorite();roadmapBody={passportId:uid(900),celebrityId:uid(901),hearts:3,pages:[{pageNo:1,slots:Array.from({length:9},(_,i)=>({slotNo:i+1,kind:null,state:'filled',stampId:null,clearedAt:null})),filled:9,claimable:true,claimed:false,locked:false,lockedReason:null}]};
-  render(<GroupBenefitsScreen locale='ko'/>);await screen.findAllByText('137');
+  render(<GroupBenefitsScreen locale='ko'/>);await screen.findAllByText('보유 137P');
   await waitFor(()=>expect(document.querySelector('[data-cell="stamps"] [role="progressbar"]')).toHaveAttribute('aria-valuetext','9 / 9'));
   // 사용자 12:26: both read 준비 중 (no other notice) and stay disabled.
   // 대표 11/13 09:39: the two swap lines head 럭키드로우 and 덕질 미션.
@@ -169,7 +169,7 @@ it('DUO: opens exchange only from its tile, restores focus on Escape and makes n
 it('DUO: keeps unaffordable exchange disabled and enables it after the shared wallet event',async()=>{
  duoData();const base=fetch;let points=99;
  vi.stubGlobal('fetch',vi.fn((url:string,init?:RequestInit)=>url==='/api/me/wallet'?Promise.resolve(Response.json({...wallet,points})):base(url,init)));
- render(<GroupBenefitsScreen locale='ko'/>);await screen.findByText('99');expect(screen.getByRole('button',{name:'교환'})).toBeDisabled();
+ render(<GroupBenefitsScreen locale='ko'/>);await screen.findByText('보유 99P');expect(screen.getByRole('button',{name:'교환'})).toBeDisabled();
  points=100;act(()=>window.dispatchEvent(new Event('kyaa:group-wallet-changed')));
  await waitFor(()=>expect(screen.getByRole('button',{name:'교환'})).toBeEnabled());
 });
@@ -206,7 +206,7 @@ it('사용자 결정 B: the stamp words never read as automatic — 9 − (n mod
 it('DS-D 9/9: a page already claimed (no next page yet) shows 0/9 and a disabled 받기',async()=>{
  withFavorite();roadmapBody={passportId:uid(900),celebrityId:uid(901),hearts:3,pages:[{pageNo:1,slots:Array.from({length:9},(_,i)=>({slotNo:i+1,kind:null,state:'filled',stampId:null,clearedAt:null})),filled:9,claimable:false,claimed:true,locked:false,lockedReason:null}]};
  render(<GroupBenefitsScreen locale='ko'/>);
- await screen.findAllByText('137');const card=document.querySelector('[data-wallet-part="hearts"]')!; // 대표 11/13 09:39: the stamps → heart swap heads 덕질 미션.
+ await screen.findAllByText('보유 137P');const card=document.querySelector('[data-wallet-part="hearts"]')!; // 대표 11/13 09:39: the stamps → heart swap heads 덕질 미션.
  await waitFor(()=>expect(card.querySelector('[data-cell="stamps"] [role="progressbar"]')).toHaveAttribute('aria-valuetext','0 / 9'));
  expect(card).not.toHaveTextContent('하트 받기');
  expect(within(card as HTMLElement).getByRole('button',{name:'받기'})).toBeDisabled();
@@ -215,7 +215,7 @@ it('DS-D 9/9: a page already claimed (no next page yet) shows 0/9 and a disabled
 it('대표 11/11: at 9/9 the hearts column 받기 goes to the passport mission book',async()=>{
  withFavorite();roadmapBody={passportId:uid(900),celebrityId:uid(901),hearts:3,pages:[{pageNo:1,slots:Array.from({length:9},(_,i)=>({slotNo:i+1,kind:null,state:'filled',stampId:null,clearedAt:null})),filled:9,claimable:true,claimed:false,locked:false,lockedReason:null}]};
  render(<GroupBenefitsScreen locale='ko'/>);
- await screen.findAllByText('137');const card=document.querySelector('[data-wallet-part="hearts"]')!; // 대표 11/13 09:39: the stamps → heart swap heads 덕질 미션.
+ await screen.findAllByText('보유 137P');const card=document.querySelector('[data-wallet-part="hearts"]')!; // 대표 11/13 09:39: the stamps → heart swap heads 덕질 미션.
  await waitFor(()=>expect(card.querySelector('[data-cell="stamps"] [role="progressbar"]')).toHaveAttribute('aria-valuetext','9 / 9'));
  expect(within(card as HTMLElement).getByRole('link',{name:'받기'})).toHaveAttribute('href',`/passports/${uid(900)}?locale=ko#mission-book`);
 });
@@ -275,7 +275,7 @@ it('drops accumulated pages immediately when the owner changes',async()=>{
 });
 
 it('refreshes balances after the shared wallet mutation event',async()=>{
- render(<GroupBenefitsScreen locale='ko'/>);await screen.findAllByText('137');requests.length=0;
+ render(<GroupBenefitsScreen locale='ko'/>);await screen.findAllByText('보유 137P');requests.length=0;
  await act(async()=>window.dispatchEvent(new Event('kyaa:group-wallet-changed')));
  expect(requests).toContain('/api/me/wallet');
 });
@@ -289,7 +289,7 @@ it('labels preparing entries and preserves raffle errors',async()=>{const origin
 
 
 it('hides 오늘의 덕질 while the attendance policy is off',async()=>{
- catalogOn=false;render(<GroupBenefitsScreen locale='ko'/>);await screen.findAllByText('137');
+ catalogOn=false;render(<GroupBenefitsScreen locale='ko'/>);await screen.findAllByText('보유 137P');
  await waitFor(()=>expect(screen.queryByRole('region',{name:'오늘의 덕질'})).toBeNull());expect(requests.some(url=>url.includes('/api/me/attendance'))).toBe(false);
 });
 
@@ -313,7 +313,7 @@ it('shows one favorite selector beside the daily missions title and preserves th
 it('shows one favorite picker instead of stamp and heart numbers when no favorite exists',async()=>{
  bias.value={...bias.value,status:'empty'};
  const view=render(<GroupBenefitsScreen locale='ko'/>);
- await screen.findAllByText('137');
+ await screen.findAllByText('보유 137P');
  const picker=view.container.querySelector('[data-cell="favorite-picker"]') as HTMLElement;
  expect(within(picker).getByRole('link',{name:'모임에 가입해보세요'})).toHaveAttribute('href','/pages/groups?locale=ko');
  expect(picker).toHaveTextContent(/^모임에 가입해보세요$/);
