@@ -418,7 +418,6 @@ export function CreatorRows({ locale, ranking, metric, show, fill, scope, challe
   const shown = show === undefined ? ranking.rows : ranking.rows.slice(0, show);
   const ranks = listPlaces(shown.length);
   const { place, movedSince } = useRowMotion(shown.map((row) => row.slug), shown.map((row) => creatorValue(row, metric)), ranks, `creators:${metric}:${period}`, entryRef);
-  const top = ranking.rows[0] ? creatorValue(ranking.rows[0], metric) : 0;
   const accentFirst = !guest;
   const days = ranking.weekGainDays ?? 0;
   return <ol className={styles.rows}>{shown.map((row, i) => {
@@ -441,7 +440,7 @@ export function CreatorRows({ locale, ranking, metric, show, fill, scope, challe
         <span className={styles.value}><Main locale={locale} metric={metric} value={value} delay={rowDelay(i)} /></span>
       </RowFace>
       <Pulse />
-      {open ? <RankRowPanel id={`${id}-panel`} kind="creator" row={row} days={days} locale={locale} gap={gapToFirst(i === 0 && ranking.rows[0] === row, value, top)} unit={metric === "likes" ? "likes" : "hearts"} extra={creatorStats(locale, row, metric, period)} /> : null}
+      {open ? <RankRowPanel id={`${id}-panel`} kind="creator" row={row} days={days} locale={locale} unit={metric === "likes" ? "likes" : "hearts"} extra={creatorStats(locale, row, metric, period)} /> : null}
     </li>;
   })}{fill ? <Placeholders from={shown.length} to={fill} /> : null}</ol>;
 }

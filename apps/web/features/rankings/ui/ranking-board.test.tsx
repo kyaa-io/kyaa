@@ -105,7 +105,8 @@ it("a row is one line: movement beside the name, LIVE, the value; today's gain a
   expect(row("일등").querySelector("[data-metric] [data-unit='likes']")).not.toBeNull();
   expect(row("일등").querySelector("[data-metric] [data-icon='heart']")).toBeNull();
   fireEvent.click(row("삼등").querySelector("button")!);
-  expect(row("삼등").querySelector("[data-rank-panel]")!.textContent).toContain("1위까지12,245");
+  expect(row("삼등").querySelector("[data-rank-panel]")!.textContent).toContain("찐팬40");
+  expect(row("삼등").querySelector("[data-rank-panel]")!.textContent).not.toContain("1위까지");
   expect(row("삼등").querySelector("[data-rank-panel]")!.textContent).not.toContain("오늘");
   expect(row("새얼굴").textContent).not.toContain("신규");
   expect(row("새얼굴").querySelector("[data-direction='new']")).toBeNull();
