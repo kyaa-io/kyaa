@@ -57,3 +57,13 @@
 - 이벤트와 파라미터는 `domain/ga4.ts`의 `GA4_EVENT_PARAMETERS` 허용 목록만 보낸다(회원·크리에이터·글 식별자, 자유 문구 없음). 자체 원장 이름과의 대응은 `GA4_EVENT_NAME`.
 - CSP: `awsStorageContentSecurityPolicy({ ga4 })`가 ID가 있는 환경에서만 `script-src https://www.googletagmanager.com`, `connect-src https://*.google-analytics.com https://*.analytics.google.com https://www.googletagmanager.com`을 연다(이미지는 기존 `img-src https:`). 이 CSP는 `AWS_STORAGE_ENABLED=true`인 AWS 응답에 적용된다.
 - GA 관리 화면에서 향상된 측정의 "브라우저 기록 이벤트 기반 페이지 변경·아웃바운드 클릭·사이트 검색·양식 상호작용"을 꺼야 중복·수집 과다가 없다(코드로 끌 수 없음).
+
+## X KoL 미션 (`/s/x`, 2026-11-13)
+
+게시 링크는 `https://kyaa.io/s/x?utm_source=x&utm_medium=kol&utm_campaign=kol-1113&utm_content=kol01` 형식이며 `kol00`~`kol99`의 공개 코드만 허용한다. 명시 언어를 원하면 `locale=en` 또는 `locale=ko`를 추가한다. 언어 전환·Google returnTo·외부 브라우저 이동에 UTM을 보존한다. URL을 가진 인증 회원의 방문을 기존 `/api/events`에 `creator_page_view`, `source=x_mission.identified`로 기록한다. 속성은 고정 source/medium/campaign, KoL 코드, nullable Google 시작 시각뿐이며 원본 URL·회원 ID·링크 문구는 속성에 넣지 않는다. 익명 방문을 회원과 연결하지 않는다.
+
+회원별 이 캠페인의 **첫 인증 접점**을 해당 KoL에 귀속한다. 이후 다른 KoL 링크로 돌아와도 최초 귀속이 유지되며 조회 SQL이 회원을 distinct로 센다. 조회는 `supabase/reports/x-mission-kol-report.sql`을 기존 관리자 DB 접근 권한으로 실행한다. 신규 가입은 Google 시작 시각부터 인증 귀환 기록까지의 같은 회원 `account_created` 서버 원장(`server.commit_projection`)이 있을 때만 센다. 시작 시각은 브라우저에서 전달한 보조 신호이며 변경 가능하다. 단순 당일 가입이나 같은 날짜만으로 신규 유입으로 세지 않는다. 시작 신호가 없거나 가입 원장이 누락되면 신규 가입 귀속은 미확정이며 0 집계에 포함되지 않는다. 실제 가입·좋아요 완료 사실은 서버 원장을 사용하고, 회원소유 유입 이벤트를 그 사실의 인과관계 증명으로 취급하지 않는다. 첫 인증 유입보다 앞선 과거 좋아요는 캠페인 좋아요 전환 수에 포함하지 않는다.
+
+기존 `/admin/traffic`의 채널 집계는 그대로다. 이 KoL 상세 보고는 SQL로 제공한다. 측정은 기존 내부 원장·인증·권한·append-only 보존 정책을 그대로 사용하며 새 외부 전송·익명 연결·동의 우회를 추가하지 않는다. 브라우저 저장소 제한, 차단 도구, 네트워크 실패와 기존 이벤트 API의 rate/오류 시 204 drop 정책 때문에 누락될 수 있다. 좋아요 성공을 측정 실패로 되돌리거나 차단하지 않으며 보고 수는 측정된 회원 수다. 별도 삭제·보존기간 작업은 추가하지 않는다.
+
+첫 인증 유입 전송이 실패하고 좋아요 완료 뒤 재전송만 남으면 좋아요가 첫 인증 시각보다 앞서 집계에서 빠질 수 있다. 과거 좋아요를 이번 전환으로 포함시키지 않도록 이 시간 조건은 유지한다.

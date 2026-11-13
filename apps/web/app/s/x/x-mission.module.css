@@ -1,0 +1,75 @@
+/* X 좋아요 미션 상세: 래플 상세(/s/raffle)와 같은 앱 셸 안의 이벤트 상세. 키 비주얼(종이 공예 사진) → 제목·부제 → 참여 방법 1→2→3 + 진행 → 좋아요 버튼(분홍 primary 하나) → 완료·좋아요 수.
+ * 이 파일은 배치만 맡는다. 글자는 FanDisplay/FanHeading, 버튼은 FanAction, 폭은 FanContentContainer. 길이는 --space-*·--radius-*·--min-target 토큰. */
+.column { color: var(--color-ink); padding-block: var(--space-4) var(--fan-section-gap); }
+:where(.column) :where(p, h1, h2, h3, ol) { margin: 0; }
+.column :is(a, button) { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+.muted { color: var(--color-muted); }
+.accent { color: var(--color-accent-ink); }
+
+.hero { display: grid; gap: var(--space-4); }
+.keyVisual { border-radius: var(--radius-card); overflow: hidden; aspect-ratio: 16 / 10; background: var(--color-accent-soft); min-width: 0; }
+.keyVisual img { display: block; width: 100%; height: 100%; object-fit: cover; }
+/* 완료 증명 카드(사용자 2026-11-13 "캡처해서 올릴 수 있게"): 키 비주얼 자리. 이벤트 이름 → 큰 kyaa 도장 → 완료 제목 → 닉네임·날짜. 390 첫 화면 한 장에 다 든다 */
+.proof { display: grid; justify-items: center; align-content: center; gap: var(--space-3); padding: var(--space-6) var(--space-5); border-radius: var(--radius-card); background: var(--color-accent-soft); text-align: center; min-width: 0; }
+.stamp { width: calc(var(--space-16) * 2.5); height: auto; rotate: -8deg; }
+.proof h2 { text-wrap: balance; }
+.proofFacts { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--space-1) var(--space-3); word-break: keep-all; }
+.proofFacts > span + span { padding-inline-start: var(--space-3); border-inline-start: 1px solid var(--color-muted); }
+/* 도장 쾅(방금 완료한 때만): 크게 들렸다가 내려앉아 한 번 눌린다. 450ms 한 번 */
+.proof[data-celebrate] .stamp { animation: slam 450ms var(--motion-easing) 200ms both; }
+.proof[data-celebrate] h2 { animation: rise var(--motion-reward) var(--motion-easing) 500ms both; }
+@keyframes slam { 0% { transform: scale(1.8); opacity: 0; } 60% { transform: scale(.94); opacity: 1; } 100% { transform: scale(1); } }
+@keyframes rise { from { transform: translateY(var(--space-2)); opacity: 0; } to { transform: none; opacity: 1; } }
+.panel { display: grid; gap: var(--space-6); align-content: start; min-width: 0; }
+
+.topRow { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--space-3); }
+.languages { display: flex; gap: var(--space-1); }
+.languages a { display: inline-flex; align-items: center; justify-content: center; min-width: var(--min-target); min-height: var(--min-target); padding-inline: var(--space-2); color: var(--color-muted); text-decoration: none; }
+.languages a[aria-current="page"] { color: var(--color-ink); text-decoration: underline; text-decoration-thickness: 1.5px; text-underline-offset: var(--space-1); }
+.title { display: grid; gap: var(--space-2); }
+.browser { display: grid; gap: var(--space-2); }
+
+.mission { display: grid; gap: var(--space-4); min-width: 0; }
+.sectionHead { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); min-height: var(--space-12); border-top: 1px solid var(--color-line); }
+.progressText { font-variant-numeric: tabular-nums; white-space: nowrap; }
+/* 진행: 세 칸 막대. 끝낸 칸만 분홍 단색 */
+.progress { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-1); }
+.progress span { height: var(--space-1); border-radius: var(--radius-pill); background: var(--color-accent-soft); transition: background-color var(--motion-slow) var(--motion-easing); }
+.progress span[data-done] { background: var(--color-accent); }
+
+/* 단계 행: 3D 애셋 48 · 번호+이름 · 끝낸 표시. 행 사이 1px 선 */
+.steps { list-style: none; padding: 0; display: grid; }
+.steps li { display: grid; grid-template-columns: var(--space-10) minmax(0, 1fr) var(--space-6); align-items: center; gap: var(--space-3); min-height: calc(var(--space-12) + var(--space-2)); padding-block: var(--space-1); }
+.steps li + li { border-top: 1px solid var(--color-line); }
+.stepArt { width: var(--space-10); height: var(--space-10); object-fit: contain; }
+.steps li:not([data-done]):not([aria-current]) .stepArt { opacity: .45; }
+.stepText { display: grid; gap: var(--space-1); min-width: 0; word-break: keep-all; }
+.stepNo { color: var(--color-accent-ink); font-variant-numeric: tabular-nums; }
+/* 끝낸 표시: 체크 아이콘 + 잉크색(DESIGN.md 4절, 초록 --color-success는 폐기 예정) */
+.check { color: var(--color-ink); justify-self: end; }
+.todo { justify-self: end; width: var(--space-5); height: var(--space-5); border: 1.5px solid var(--color-muted); border-radius: var(--radius-pill); }
+.steps li[aria-current="step"] .todo { border-color: var(--color-accent); }
+
+.result { display: grid; gap: var(--space-2); scroll-margin-bottom: calc(var(--fan-bottom-nav-height) + var(--space-4)); }
+.result:empty { display: none; }
+.count { display: inline-flex; align-items: center; gap: var(--space-1); color: var(--color-muted); font-variant-numeric: tabular-nums; }
+.count svg { color: var(--color-accent); fill: currentColor; }
+.cta { display: grid; justify-items: center; }
+
+/* 완료 순간(방금 누른 때만): 버튼 안 하트가 한 번 튀어 오른다. 600ms 한 번 */
+.pop { animation: pop var(--motion-reward) var(--motion-easing) both; }
+@keyframes pop { 0% { transform: scale(.4); } 55% { transform: scale(1.35); } 100% { transform: scale(1); } }
+.headTitle { display: flex; align-items: baseline; gap: var(--space-2); }
+
+/* PC: 키 비주얼 7 | 미션 5, 가운데 정렬 */
+@media (width >= 64rem) {
+  .column { padding-top: var(--space-8); }
+  .keyVisual, .proof { aspect-ratio: 3 / 2; }
+  .stamp { width: calc(var(--space-16) * 3.5); }
+  .cta { justify-items: start; }
+  .hero { grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); column-gap: var(--space-12); align-items: start; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pop, .proof[data-celebrate] :is(.stamp, h2) { animation: none; }
+  .progress span { transition: none; }
+}
