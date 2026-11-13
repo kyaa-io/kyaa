@@ -8,7 +8,7 @@ import { publicMetadata, pageCopy } from "@/seo/metadata";
 import { homeStructuredData, serializeStructuredData } from "@/seo/structured-data";
 import { StreamingGuestHome } from "../components/guest-home";
 import { loadServerEnv } from "../server/config/env";
-import { SIGNUP_RAFFLE_BANNER_ID, signupRaffleHomeBanner } from "../features/home/domain/signup-raffle-home-banner";
+import { SIGNUP_RAFFLE_BANNER_ID } from "../features/home/domain/signup-raffle-home-banner";
 import { signupRaffleEnabled, jjinfanGaugeEnabled } from "../server/config/feature-flags";
 import { heartDonationEvent } from "../server/config/heart-donation-event";
 import { createPublishedContentRepositoryFromEnvironment } from "../server/content/published-content-repository";
@@ -40,9 +40,8 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
     })),
     homeBanners: settleHomeQuery(measureHomeQuery("homeBanners", async () => {
       const banners = await bannerRepository.list(toContentLocale(locale));
-      const raffle = signupRaffleHomeBanner(locale);
-      const others = banners.filter(banner => banner.id !== raffle.id && banner.href?.split("?")[0] !== "/s/raffle");
-      return signupRaffleEnabled() ? [raffle, ...others] : others;
+      // The raffle banner is pinned first by the home itself; the CMS copy would show it twice.
+      return banners.filter(banner => banner.id !== SIGNUP_RAFFLE_BANNER_ID && banner.href?.split("?")[0] !== "/s/raffle");
     })),
     homeSlots: settleHomeQuery(measureHomeQuery("homeSlots", async () => {
       const slots = await bannerRepository.listSlots(toContentLocale(locale), "home");
@@ -64,6 +63,7 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
       queries={queries}
       locale={locale}
       jjinfanGauge={jjinfanGaugeEnabled()}
+      signupRaffle={signupRaffleEnabled()}
       heartDonation={heartDonationEvent()}
       firstSteps={!firstStepsDone}
     />

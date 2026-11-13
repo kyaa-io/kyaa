@@ -56,16 +56,18 @@ describe("Home server content isolation", () => {
     expect(props(await HomePage({ searchParams: Promise.resolve({}) })).firstSteps).toBe(false);
   });
 
-  it("shows the raffle only with the server opt-in and avoids duplicate CMS banners", async () => {
+  it("passes the raffle opt-in to the home and drops the duplicate CMS raffle banner", async () => {
     const cms = { id: "cms-raffle", href: "/s/raffle?utm_source=home" };
-    repositories.homeBanners.mockResolvedValue([cms]);
+    const other = { id: "other", href: "/events" };
+    repositories.homeBanners.mockResolvedValue([cms, other]);
     vi.stubEnv("KYAA_FEATURE_SIGNUP_RAFFLE", "false");
-    expect(await props(await HomePage({ searchParams: Promise.resolve({}) })).queries.homeBanners)
-      .toEqual({ status: "fulfilled", value: [] });
+    const off = props(await HomePage({ searchParams: Promise.resolve({}) }));
+    expect(off.signupRaffle).toBe(false);
+    expect(await off.queries.homeBanners).toEqual({ status: "fulfilled", value: [other] });
     vi.stubEnv("KYAA_FEATURE_SIGNUP_RAFFLE", "true");
-    const result = await props(await HomePage({ searchParams: Promise.resolve({}) })).queries.homeBanners;
-    expect(result.value).toHaveLength(1);
-    expect(result.value).toEqual([expect.objectContaining({ href: expect.stringContaining("/s/raffle") })]);
+    const on = props(await HomePage({ searchParams: Promise.resolve({}) }));
+    expect(on.signupRaffle).toBe(true);
+    expect(await on.queries.homeBanners).toEqual({ status: "fulfilled", value: [other] });
   });
 
   it("streams current raffle metadata and settles to rejected when its read fails", async () => {
