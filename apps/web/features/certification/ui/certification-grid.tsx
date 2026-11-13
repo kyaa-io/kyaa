@@ -14,6 +14,8 @@ import { knownCertificationTitle } from "../domain/certification-title";
 import { certificationListItemSchema, type CertificationListItem } from "../domain/certification";
 import { certificationStampSrc } from "../domain/certification-stamp";
 import { FanMissionList, FanMissionRow, MissionArt } from "@/features/dukjil/ui/fan-mission-row";
+import { useDukjil } from "@/features/dukjil/ui/dukjil-provider";
+import { EarnBadge } from "@/features/dukjil/ui/earn-badge";
 import styles from "./certification-grid.module.css";
 
 const listSchema = z.object({ certifications: z.array(certificationListItemSchema) }).passthrough();
@@ -27,6 +29,9 @@ export const CERTIFICATION_KINDS: ReadonlyArray<{ key: DukjilCopyKey; art: strin
   { key: "certKindDonation", art: "support" },
   { key: "certKindFancafe", art: "welcome" },
 ];
+
+/** 덕질 정책 v1 `proof.points` — the 인증 reward when neither the page nor the loaded catalog gives one. */
+export const DEFAULT_PROOF_POINTS = 100;
 
 const STATE_KEY: Record<CertificationListItem["status"], DukjilCopyKey> = { available: "certAvailable", preparing: "certPreparing", closed: "certClosed" };
 
@@ -50,7 +55,14 @@ export function CertificationGrid({ locale, slug, guest, fallbackHref, variant =
   }, [slug, locale, attempt]);
   const go = (href: string) => (guest ? fanLoginHref(locale, href) : href) as Route;
   const rows = variant === "rows";
-  if (!slug && rows) return <FanMissionList data-certification-grid="kinds">{CERTIFICATION_KINDS.map((kind, index) => <FanMissionRow mobileExtra={mobileVisible !== undefined && index >= mobileVisible} key={kind.key} href={go(fallbackHref)} art={<MissionArt src={`/images/stamps/ink-v1/${kind.art}.webp`} />} title={dukjilText(locale, kind.key)} />)}</FanMissionList>;
+  // 사용자 11/13 13:2x "포인트 없는 것들이 없어야 해": every certification row shows +NP. A page's own certification pays its server
+  // reward (score_points) when that is above 0; a reward of 0 or none shows the 인증 policy points (catalog rules.proof, the value the proof
+  // screen shows), and without a catalog value the policy default (supabase dukjil policy v1: proof.points 100).
+  const dukjil = useDukjil();
+  const catalogPoints = dukjil?.status === "on" ? dukjil.catalog?.rules.proof?.points : undefined;
+  const policyPoints = typeof catalogPoints === "number" && catalogPoints > 0 ? catalogPoints : DEFAULT_PROOF_POINTS;
+  const badge = (points: number | undefined) => <EarnBadge variant="inline" locale={locale} points={typeof points === "number" && points > 0 ? points : policyPoints} />;
+  if (!slug && rows) return <FanMissionList data-certification-grid="kinds">{CERTIFICATION_KINDS.map((kind, index) => <FanMissionRow mobileExtra={mobileVisible !== undefined && index >= mobileVisible} key={kind.key} href={go(fallbackHref)} art={<MissionArt src={`/images/stamps/ink-v1/${kind.art}.webp`} />} title={dukjilText(locale, kind.key)} trailing={badge(policyPoints)} />)}</FanMissionList>;
   if (!slug) {
     return <ul className={styles.grid} data-certification-grid="kinds">{CERTIFICATION_KINDS.map(kind => <li key={kind.key}><Link className={styles.tile} href={go(fallbackHref)}>
       <img src={`/images/stamps/ink-v1/${kind.art}.webp`} alt="" width={32} height={32} loading="lazy" /><strong>{dukjilText(locale, kind.key)}</strong>
@@ -64,7 +76,8 @@ export function CertificationGrid({ locale, slug, guest, fallbackHref, variant =
   const items = [...load.items].sort((a, b) => order[a.status] - order[b.status]);
   if (rows) return <FanMissionList data-certification-grid="items">{items.map((item, index) => <FanMissionRow mobileExtra={mobileVisible !== undefined && index >= mobileVisible} key={item.id} status={item.status} href={go(item.actionHref)}
     art={<MissionArt src={certificationStampSrc(item)} />} title={knownCertificationTitle(locale, item) ?? item.title}
-    detail={<span className={styles.state} data-status={item.status}>{dukjilText(locale, STATE_KEY[item.status])}</span>} />)}</FanMissionList>;
+    detail={<span className={styles.state} data-status={item.status}>{dukjilText(locale, STATE_KEY[item.status])}</span>}
+    trailing={badge(item.reward?.scorePoints)} />)}</FanMissionList>;
   return <ul className={styles.grid} data-certification-grid="items">{items.map(item => <li key={item.id}><Link className={styles.tile} href={go(item.actionHref)} data-status={item.status}>
     <img src={certificationStampSrc(item)} alt="" width={32} height={32} loading="lazy" />
     <strong>{knownCertificationTitle(locale, item) ?? item.title}</strong>

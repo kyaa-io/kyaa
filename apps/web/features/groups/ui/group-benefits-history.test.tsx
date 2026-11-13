@@ -7,7 +7,9 @@ import {clearResources} from '@/components/fan-ui/resource-cache';
 
 configure({defaultHidden:true});
 vi.mock('@/features/group-wallet/ui/google-rewarded-ad',()=>({rewardedAdUnit:()=>undefined}));
-vi.mock('@/features/selected-bias/ui/use-selected-bias',()=>({useSelectedBias:()=>({status:'guest',options:[],selected:null,unverified:null,select:()=>{},retry:()=>{}})}));
+// A signed-in member without a favorite ('empty'); 'guest' is the signed-out answer and puts the whole tab behind the login gate (사용자 11/13 11:2x).
+const bias=vi.hoisted(()=>({status:'empty' as 'empty'|'guest'}));
+vi.mock('@/features/selected-bias/ui/use-selected-bias',()=>({useSelectedBias:()=>({status:bias.status,options:[],selected:null,unverified:null,select:()=>{},retry:()=>{}})}));
 const auth=vi.hoisted(()=>({ready:true,authenticated:true,user:{id:'owner-a'},getAccessToken:vi.fn(async()=>'synthetic-token')}));
 const session=vi.hoisted(()=>({ready:true,ownerId:'owner-a',generation:0}));
 vi.mock('@/features/auth/client/cognito-auth',()=>({useByUsAuth:()=>auth}));
@@ -17,7 +19,7 @@ const guid=(n:number)=>`70000000-0000-4000-8000-${String(n).padStart(12,'0')}`;
 const entry=(n:number,amount:number,sourceType:string,createdAt:string,asset='fan_point')=>({id:guid(n),asset,amount,sourceType,sourceId:guid(100+n),celebrityId:null,createdAt});
 const requests:string[]=[];
 beforeEach(()=>{
- clearResources();requests.length=0;auth.ready=true;auth.authenticated=true;session.ready=true;
+ clearResources();requests.length=0;auth.ready=true;auth.authenticated=true;session.ready=true;bias.status='empty';
  vi.stubGlobal('fetch',vi.fn(async(url:string)=>{requests.push(url);
   if(url.endsWith('/api/me/wallet/history'))return Response.json({entries:[entry(1,10,'group_check_in','2026-11-09T01:00:00.000Z'),entry(2,-100,'group_exchange','2026-11-09T02:00:00.000Z'),entry(3,5,'group_check_in','2026-11-08T01:00:00.000Z')]});
   return new Response('{}',{status:404});}));
@@ -44,11 +46,12 @@ it('groupByDay splits at Seoul midnight and keeps order',()=>{
  const days=groupByDay([{createdAt:'2026-11-09T14:59:00Z'},{createdAt:'2026-11-09T15:01:00Z'}],'ko');
  expect(days.map(day=>day.key)).toEqual(['2026-11-09','2026-11-10']);
 });
-it('access control: signed out shows the sign-in action and never requests the ledger',()=>{
- auth.ready=false;auth.authenticated=false;session.ready=false;
+it('access control: signed out is the login gate — no 내역 section, one sign-in action, and the ledger is never requested',()=>{
+ auth.ready=false;auth.authenticated=false;session.ready=false;bias.status='guest';
  const view=render(<GroupBenefitsScreen locale='ko' signedOut/>);
- expect(document.getElementById('wallet-history')).not.toBeNull();
- expect(view.container.querySelectorAll('a[href^="/login"]').length).toBeGreaterThanOrEqual(2);
+ expect(view.container.querySelector('[data-login-gate]')).not.toBeNull();
+ expect(document.getElementById('wallet-history')).toBeNull();
+ expect(view.container.querySelectorAll('a[href^="/login"]')).toHaveLength(1);
  expect(requests.some(url=>url.includes('/api/me/wallet/history'))).toBe(false);
 });
 it('empty state keeps the card and offers one 오늘의 덕질 action',async()=>{

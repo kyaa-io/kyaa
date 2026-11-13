@@ -56,7 +56,7 @@ it("signed out: ten rows per group, rows open in place with a sign-in action, on
   expect(container.querySelectorAll("[data-row='creator-rank']")).toHaveLength(10);
   expect(container.querySelectorAll("[data-column='fans'] a[href*='/login']:not(li a)")).toHaveLength(1);
   fireEvent.click(container.querySelector("li[data-row='fan-rank'] > button")!);
-  expect(screen.getByRole("link", { name: "로그인하고 프로필 보기" }).getAttribute("href")).toContain("/login");
+  expect(screen.getAllByRole("link", { name: "팬1, 로그인하고 프로필 보기" })[0]!.getAttribute("href")).toContain("/login");
   expect(screen.queryByRole("dialog")).toBeNull();
 });
 
@@ -83,7 +83,7 @@ it("passes the original signed profile reference without replacing its stored ra
   stub(fans([fanRow(1, { profileRef: ref })]));
   render(<HomeRankingCard locale="ko" />);
   fireEvent.click(await screen.findByRole("button", { name: /팬1/ }));
-  fireEvent.click(await screen.findByRole("button", { name: "프로필 보기" }));
+  fireEvent.click(await screen.findByRole("button", { name: "팬1, 프로필 보기" }));
   expect(await screen.findByTestId("ranking-profile")).toHaveTextContent(JSON.stringify(ref));
   fireEvent.click(screen.getByRole("button", { name: "close profile" }));
   expect(screen.queryByTestId("ranking-profile")).toBeNull();

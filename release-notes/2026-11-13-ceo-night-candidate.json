@@ -1,0 +1,15 @@
+{
+  "changes": [
+    "덕질 탭을 포인트·응모권 교환과 럭키드로우, 스탬프·하트 교환과 미션북 순서로 정리했어요.",
+    "홈 순위를 펼쳤을 때 별도 이동 버튼을 없애고 이름과 프로필 사진으로 이동할 수 있어요.",
+    "글 좋아요를 누를 때 본문이 튀는 현상과 완료 표시를 고치고 팬 수를 분홍색으로 강조했어요.",
+    "첨부 화면은 예시 데이터를 넣은 로컬 검증 화면이에요."
+  ],
+  "path": "/benefits",
+  "images": [
+    "release-notes/images/2026-11-13-ceo-night-dukjil-390.png",
+    "release-notes/images/2026-11-13-ceo-night-dukjil-1440.png",
+    "release-notes/images/2026-11-13-ceo-night-ranking-1440.png",
+    "release-notes/images/2026-11-13-ceo-night-ranking-390.png"
+  ]
+}

@@ -29,25 +29,22 @@ beforeEach(() => {
 });
 afterEach(() => { cleanup(); vi.unstubAllGlobals(); });
 
-it("F3: lists today's rows (check-in and the daily-limit activities) under the section head without a fold, and leaves the rest closed", async () => {
+it("lists today's rows (check-in and the daily-limit activities) first, then the other missions, with no fold heads", async () => {
   ui();
-  // reaction is done (5/5): 출석·글쓰기·댓글·공유 are left; the section head says so.
-  const left = await waitFor(() => { const el = document.querySelector("[data-missions-left]"); expect(el).not.toBeNull(); return el!; });
-  expect(left).toHaveTextContent("4개 남음");
+  // The 덕질 tab is one unfolded list: daily rows, then more missions. reaction is done (5/5) and keeps its catalog place.
+  await screen.findByText("글쓰기");
+  const list = document.querySelector("[data-fan-missions] [data-expanded]")!;
+  expect([...list.querySelectorAll("li[data-mission]")].map(li => li.getAttribute("data-mission"))).toEqual(["checkin", "post", "comment", "reaction", "share", "invite", "quiz"]);
+  expect(screen.queryByRole("button", { name: /그 밖의 덕질/ })).toBeNull();
   expect(screen.queryByRole("button", { name: /오늘 할 것/ })).toBeNull();
-  const panel = document.querySelector("[data-missions-today]")!;
-  expect([...panel.querySelectorAll("li[data-mission]")].map(li => li.getAttribute("data-mission"))).toEqual(["checkin", "post", "comment", "reaction", "share"]);
-  expect(screen.getByRole("button", { name: /그 밖의 덕질/ })).toHaveAttribute("aria-expanded", "false");
-  expect(screen.getByRole("button", { name: /그 밖의 덕질/ })).toHaveTextContent("+220P");
-  expect(screen.getByRole("button", { name: /인증/ })).toHaveAttribute("aria-expanded", "false");
-  const more = document.getElementById(screen.getByRole("button", { name: /그 밖의 덕질/ }).getAttribute("aria-controls")!)!;
-  expect([...more.querySelectorAll("li[data-mission]")].map(li => li.getAttribute("data-mission"))).toEqual(["invite", "quiz"]);
+  expect(document.querySelector("[data-missions-left]")).toBeNull();
+  expect(screen.getByRole("button", { name: "더 보기" })).toHaveAttribute("aria-expanded", "false");
 });
 
 it("shows S4 numbers in the F3 row: the reward and count use the shared fan activity row", async () => {
   ui();
-  await screen.findByRole("button", { name: /그 밖의 덕질/ });
-  const post = (await screen.findByText("글쓰기")).closest("li")!;
+  await waitFor(() => expect(document.querySelector('[data-mission="post"]')).toHaveTextContent("+20P"));
+  const post = document.querySelector('[data-mission="post"]') as HTMLElement;
   expect(post).toHaveTextContent("+20P");
   expect(post).not.toHaveTextContent("×");
   expect(within(post).getByRole("progressbar", { name: "글쓰기" })).toHaveAttribute("aria-valuenow", "1");
@@ -66,26 +63,26 @@ it("shows S4 numbers in the F3 row: the reward and count use the shared fan acti
 
 it("nudges the open reward badges on the first visit of a session only", async () => {
   const first = ui();
-  await screen.findByRole("button", { name: /그 밖의 덕질/ });
+  await screen.findByText("글쓰기");
   await waitFor(() => expect(window.sessionStorage.getItem("dukjil-missions:nudged")).toBe("1"));
   expect(document.querySelector("[data-nudge]")).not.toBeNull();
   first.unmount();
   ui();
-  await screen.findByRole("button", { name: /그 밖의 덕질/ });
+  await screen.findByText("글쓰기");
   expect(document.querySelector("[data-nudge]")).toBeNull();
 });
 
-it("says so in the section head when everything daily is done, the rows staying with their done tags", async () => {
+it("keeps every done row in place with its done tag when all daily missions are finished", async () => {
   h.today = todayWith({ ...open, post: action(3, 0), comment: action(10, 0), share: action(3, 0) }, true);
   ui();
-  await waitFor(() => expect(document.querySelector("[data-missions-left]")).toHaveTextContent("모두 완료"));
-  expect(document.querySelectorAll("[data-missions-today] li[data-done=true]")).toHaveLength(5);
+  await waitFor(() => expect(document.querySelectorAll("[data-fan-missions] li[data-done=true]")).toHaveLength(5));
+  expect([...document.querySelectorAll("[data-fan-missions] li[data-mission]")].map(li => li.getAttribute("data-mission"))).toEqual(["checkin", "post", "comment", "reaction", "share", "invite", "quiz"]);
+  expect(document.querySelector("[data-missions-left]")).toBeNull();
+  expect(document.querySelector('[data-mission="post"] [data-mission-trailing]')).toHaveTextContent("완료");
 });
 
 it("lists the favorite's certifications as tiles to their own pages, open first, without LIVE missions", async () => {
   ui();
-  const fold = await screen.findByRole("button", { name: /인증/ });
-  expect(fold).toHaveTextContent("+100P");
   const grid = await waitFor(() => { const el = document.querySelector('[data-certification-grid="items"]'); expect(el).not.toBeNull(); return el as HTMLElement; });
   const links = [...grid.querySelectorAll("a")];
   expect(links.map(link => link.getAttribute("href"))).toEqual(["/c/bias-x/certifications/1", "/c/bias-x/certifications/3"]);
@@ -98,40 +95,37 @@ it("shows the six requested kinds to a guest without a page, each leading to the
   ui("");
   const grid = await waitFor(() => { const el = document.querySelector('[data-certification-grid="kinds"]'); expect(el).not.toBeNull(); return el as HTMLElement; });
   const links = [...grid.querySelectorAll("a")];
-  expect(links.map(link => link.textContent)).toEqual(["구매 영수증", "인스타 멤버십", "틱톡 멤버십", "유튜브 구독", "라이브 후원", "팬카페 가입"]);
+  // 사용자 11/13 10:4x: each of the six shows the 인증 policy points (catalog rules.proof) as the mission rows' +NP badge.
+  expect(links.map(link => link.textContent)).toEqual(["구매 영수증", "인스타 멤버십", "틱톡 멤버십", "유튜브 구독", "라이브 후원", "팬카페 가입"].map(name => `${name}+100P포인트 100 적립`));
   links.forEach(link => expect(link.getAttribute("href")).toMatch(/^\/login\?/));
 });
 
 it("D1: today's rows, more missions and certifications are all the one FanMissionRow", async () => {
   ui();
-  for (const name of [/그 밖의 덕질/, /인증/]) fireEvent.click(await screen.findByRole("button", { name }));
   await waitFor(() => expect(document.querySelector('[data-certification-grid="items"]')).not.toBeNull());
   const items = [...document.querySelectorAll("[data-fan-missions] li")].filter(li => !li.hasAttribute("aria-busy"));
   expect(items.length).toBeGreaterThan(5);
   for (const li of items) expect(li.querySelector("a[data-fan-mission-row]"), li.textContent ?? "").not.toBeNull();
-  // F3: the folded heads are rows too.
-  expect(document.querySelectorAll('button[data-fan-mission-row="fold"]')).toHaveLength(2);
+  // The fold heads are gone: no row is a button.
+  expect(document.querySelectorAll('button[data-fan-mission-row="fold"]')).toHaveLength(0);
 });
 
-it("B3: the head's n개 남음 folds today's rows (open by default, kept for the session); daily actions use the fan activity stamp art", async () => {
+it("the more button expands the unfolded list and daily actions use the fan activity stamp art", async () => {
   ui();
-  const toggle = await waitFor(() => { const el = document.querySelector("[data-missions-left]")?.closest("button"); expect(el).toBeTruthy(); return el!; });
-  expect(toggle).toHaveAttribute("aria-expanded", "true");
-  const panel = document.getElementById(toggle.getAttribute("aria-controls")!)!;
-  expect(panel).toHaveAttribute("data-missions-today");
-  expect(panel.querySelectorAll("[data-mission-art] > img")).toHaveLength(5);
-  fireEvent.click(toggle);
-  expect(toggle).toHaveAttribute("aria-expanded", "false");
-  expect(panel.closest("[inert]")).not.toBeNull();
-  expect(window.sessionStorage.getItem("fan-collapsible:dukjil-missions:today")).toBe("0");
-  cleanup(); resetDukjilCatalogCache(); ui();
-  const again = await waitFor(() => { const el = document.querySelector("[data-missions-left]")?.closest("button"); expect(el).toBeTruthy(); return el!; });
-  await waitFor(() => expect(again).toHaveAttribute("aria-expanded", "false"));
+  await screen.findByText("글쓰기");
+  const list = document.querySelector("[data-fan-missions] [data-expanded]")!;
+  expect(list.querySelectorAll("li[data-mission] [data-mission-art] > img")).toHaveLength(7);
+  const more = screen.getByRole("button", { name: "더 보기" });
+  fireEvent.click(more);
+  expect(list).toHaveAttribute("data-expanded", "true");
+  expect(screen.getByRole("button", { name: "접기" })).toHaveAttribute("aria-expanded", "true");
+  fireEvent.click(screen.getByRole("button", { name: "접기" }));
+  expect(list).toHaveAttribute("data-expanded", "false");
 });
 
-it("B3: guests get no today toggle (the rows stay open)", async () => {
+it("guests get the rows without a left-today count", async () => {
   h.auth = false; ui();
   await screen.findByText("글쓰기");
   expect(document.querySelector("[data-missions-left]")).toBeNull();
-  expect(document.querySelector("[data-missions-today]")?.closest("[inert]")).toBeNull();
+  expect(document.querySelectorAll("[data-fan-missions] li[data-mission]").length).toBeGreaterThan(0);
 });

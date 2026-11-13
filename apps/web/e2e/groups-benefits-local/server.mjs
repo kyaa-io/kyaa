@@ -1,5 +1,6 @@
 import {createServer} from 'vite';
 import path from 'node:path';
+import {realpathSync} from 'node:fs';
 import {fileURLToPath} from 'node:url';
 const here=path.dirname(fileURLToPath(import.meta.url)),web=path.resolve(here,'../..');
 export async function startHarness(port=5196){
@@ -7,11 +8,12 @@ export async function startHarness(port=5196){
  {find:/.*features\/auth\/client\/cognito-auth$/,replacement:path.join(here,'auth.ts')},
  {find:/.*byus-session-provider$/,replacement:path.join(here,'auth.ts')},
  {find:/.*use-admin-session$/,replacement:path.join(here,'auth.ts')},
+ {find:/.*selected-bias\/ui\/use-selected-bias$/,replacement:path.join(here,'selected-bias.ts')},
  {find:'next/navigation',replacement:path.join(here,'navigation.ts')},
  {find:'next/link',replacement:path.join(here,'link.tsx')},
  {find:'next/image',replacement:path.join(here,'image.tsx')},
  {find:'@privy-io/react-auth',replacement:path.join(here,'auth.ts')},
- {find:'server-only',replacement:path.join(here,'server-only.ts')},{find:'@',replacement:web}]},server:{hmr:false,host:'127.0.0.1',port,strictPort:true,fs:{allow:[path.resolve(web,'../..')]}}});
+ {find:'server-only',replacement:path.join(here,'server-only.ts')},{find:'@',replacement:web}]},server:{hmr:false,host:'127.0.0.1',port,strictPort:true,fs:{allow:[path.resolve(web,'../..'),realpathSync(path.join(web,'../../node_modules'))]}}});
  await server.listen();return {server,baseURL:`http://127.0.0.1:${port}`};
 }
 if(process.argv[1]===fileURLToPath(import.meta.url)){const h=await startHarness();console.log(h.baseURL);}

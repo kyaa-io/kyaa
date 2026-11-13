@@ -22,6 +22,11 @@ export const messages = {
   },
   "stanRuleTicket": { "ja": "{0}Pごとに応募券1枚", "zh-Hans": "每{0}P兑换1张抽奖券", "zh-Hant": "每{0}P兌換1張抽獎券", "es": "1 boleto por cada {0}P", "id": "1 tiket per {0}P", "vi": "{0}P đổi 1 vé", "th": "ทุก {0}P ได้ตั๋ว 1 ใบ", "pt": "1 bilhete a cada {0}P", "fr": "1 ticket tous les {0}P", "ru": "1 билет за каждые {0}P" },
   "stanRuleHeart": { "ja": "スタンプ{0}個ごとにハート1つ", "zh-Hans": "每{0}个印章换1颗爱心", "zh-Hant": "每{0}個印章換1顆愛心", "es": "1 corazón por cada {0} sellos", "id": "1 hati per {0} stempel", "vi": "{0} con dấu đổi 1 tim", "th": "ทุก {0} ตราประทับ ได้หัวใจ 1 ดวง", "pt": "1 coração a cada {0} carimbos", "fr": "1 cœur tous les {0} tampons", "ru": "1 сердце за каждые {0} штампов" },
+  "stanMissionsSection": { "ja": "推し活ミッション", "zh-Hans": "追星任务", "zh-Hant": "追星任務", "es": "Misiones", "id": "Misi", "vi": "Nhiệm vụ", "th": "ภารกิจ", "pt": "Missões", "fr": "Missions", "ru": "Миссии" },
+  "stanGateTitle": { "ja": "ログインして推し活を始めよう", "zh-Hans": "登录后开始追星", "zh-Hant": "登入後開始追星", "es": "Inicia sesión para empezar", "id": "Masuk untuk mulai", "vi": "Đăng nhập để bắt đầu", "th": "เข้าสู่ระบบเพื่อเริ่ม", "pt": "Entre para começar", "fr": "Connectez-vous pour commencer", "ru": "Войдите, чтобы начать" },
+  "stanGetTicket": { "ja": "応募券 +1枚", "zh-Hans": "抽奖券 +1张", "zh-Hant": "抽獎券 +1張", "es": "+1 boleto", "id": "+1 tiket", "vi": "+1 vé", "th": "ตั๋ว +1 ใบ", "pt": "+1 bilhete", "fr": "+1 ticket", "ru": "+1 билет" },
+  "stanGetHeart": { "ja": "ハート +1", "zh-Hans": "爱心 +1颗", "zh-Hant": "愛心 +1顆", "es": "+1 corazón", "id": "+1 hati", "vi": "+1 trái tim", "th": "หัวใจ +1", "pt": "+1 coração", "fr": "+1 cœur", "ru": "+1 сердце" },
+  "stanHeld": { "ja": "保有 {0}", "zh-Hans": "持有 {0}", "zh-Hant": "持有 {0}", "es": "{0} en tu poder", "id": "Dimiliki {0}", "vi": "Đang có {0}", "th": "มีอยู่ {0}", "pt": "{0} em mãos", "fr": "{0} en main", "ru": "Есть {0}" },
   "stanClaimReady": { "ja": "受け取れます", "zh-Hans": "可领取", "zh-Hant": "可領取", "es": "Listo para recibir", "id": "Siap diambil", "vi": "Có thể nhận", "th": "พร้อมรับ", "pt": "Pronto para receber", "fr": "Prêt à recevoir", "ru": "Можно получить" },
   "missionsGroupMore": {
     "ja": "その他のミッション",
@@ -239,18 +244,7 @@ export const messages = {
     "fr": "Encourager {0}",
     "ru": "Поддержать {0}"
   },
-  "heartPick": {
-    "ja": "推しを選ぶ",
-    "zh-Hans": "选择本命",
-    "zh-Hant": "選擇本命",
-    "es": "Elige a tu favorito",
-    "id": "Pilih favoritmu",
-    "vi": "Chọn người yêu thích",
-    "th": "เลือกเมนของคุณ",
-    "pt": "Escolha seu favorito",
-    "fr": "Choisir votre favori",
-    "ru": "Выбрать любимца"
-  },
+  "heartPick": {"ja": "コミュニティに参加してみましょう", "zh-Hans": "加入一个社区吧", "zh-Hant": "加入一個社群吧", "es": "Únete a una comunidad", "id": "Bergabunglah dengan komunitas", "vi": "Tham gia cộng đồng", "th": "เข้าร่วมชุมชนกัน", "pt": "Participe de uma comunidade", "fr": "Rejoignez une communauté", "ru": "Присоединяйтесь к сообществу"},
   "walletNextTicket": {
     "ja": "応募券まであと{0}P",
     "zh-Hans": "距离抽奖券还差 {0}P",

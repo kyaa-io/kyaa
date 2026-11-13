@@ -1,6 +1,8 @@
 import type { TranslatedMessage } from "../messages";
 
 export const messages = {
+  "collapse": { "ja": "閉じる", "zh-Hans": "收起", "zh-Hant": "收起", "es": "Ver menos", "id": "Tutup", "vi": "Thu gọn", "th": "ย่อ", "pt": "Ver menos", "fr": "Réduire", "ru": "Свернуть" },
+  "viewAll": { "ja": "すべて見る", "zh-Hans": "查看全部", "zh-Hant": "查看全部", "es": "Ver todo", "id": "Lihat semua", "vi": "Xem tất cả", "th": "ดูทั้งหมด", "pt": "Ver tudo", "fr": "Tout voir", "ru": "Смотреть все" },
   "back": { "ja": "戻る", "zh-Hans": "返回", "zh-Hant": "返回", "es": "Atrás", "id": "Kembali", "vi": "Quay lại", "th": "ย้อนกลับ", "pt": "Voltar", "fr": "Retour", "ru": "Назад" },
   "kindFan": {
     "ja": "ファンページ",

@@ -183,7 +183,7 @@ export function StanLucky({ locale, bias, guest, presentation, paused = false }:
       <LuckyStage className={duoStyles.stage} paused={paused} locale={locale} />
       <div className={duoStyles.copy}>
         <img className={duoStyles.glyph} src="/images/dukjil-duo/glyph-illo-lucky-80.webp" width={40} height={40} alt="" />
-        {paused ? <><FanTag tone="neutral" className={duoStyles.badge}>{capsuleMachineCopy(locale).text("soon")}</FanTag><FanHeading>{locale === "ko" ? "다음 럭키드로우를 준비 중이에요." : t(locale,"luckyEmpty")}</FanHeading></> : pending ? <div aria-busy="true"><FanSkeleton width="80%" height={22}/><FanSkeleton width="60%" height={17}/></div>
+        {paused ? <><FanHeading>{locale === "ko" ? "다음 럭키드로우를 준비 중이에요." : t(locale,"luckyEmpty")}</FanHeading></> : pending ? <div aria-busy="true"><FanSkeleton width="80%" height={22}/><FanSkeleton width="60%" height={17}/></div>
           : raffles.error ? <FanState inline compact kind="error" title={t(locale,"luckyLoadError")} actions={<FanAction variant="text" onClick={raffles.retry}>{groupsCopy(locale).retry}</FanAction>}/>
           : empty || !item ? <p className={duoStyles.emptyText}>{t(locale,slug ? "luckyEmpty" : "luckyNoFavorite")}</p>
           : <><FanTag tone="neutral" className={duoStyles.badge}>{capsuleMachineCopy(locale).text(item.status === "open" ? "open" : "soon")}{item.status === "open" && item.raffle.entryClosesAt ? ` · D-${Math.max(0, Math.ceil((Date.parse(item.raffle.entryClosesAt) - Date.now()) / 86400000))}` : ""}</FanTag><FanHeading>{item.raffle.title}</FanHeading><p className={duoStyles.meta}><RaffleDate raffle={item.raffle} status={item.status} locale={locale}/> · {t(locale,"luckyWinners",[item.raffle.winnerQuantity.toLocaleString(locale)])} · {deliveryLabel(item.raffle,locale)}</p>
@@ -191,13 +191,14 @@ export function StanLucky({ locale, bias, guest, presentation, paused = false }:
       </div>
       {action ? <div className={duoStyles.actionBlock}>{action}</div> : null}
     </section>
+    {pastItems.length === 0 && slug ? <FanSectionLink className={duoStyles.past} href={creatorRafflesHref(slug, locale)}>{t(locale, "luckyPast")}</FanSectionLink> : null}
     {pastItems.length > 0 && <section className={duoStyles.pastList} aria-label={t(locale, "luckyPast")} data-lucky-past>
       <FanHeading>{t(locale, "luckyPast")}</FanHeading>
-      <div className={duoStyles.pastRows}>{pastItems.slice(0, 3).map(({ raffle, creator }) => <article key={raffle.id} className={duoStyles.pastCard}>
+      <div className={duoStyles.pastRows}>{pastItems.slice(0, 3).map(({ raffle, creator }) => <Link key={raffle.id} href={raffleHref(creator.slug, raffle.benefitId, locale) as Route} className={duoStyles.pastCard}>
         {raffle.imageUrl || creator.image ? <img className={duoStyles.thumbnail} src={(raffle.imageUrl || creator.image)!} alt="" width={112} height={112} loading="lazy" /> : null}
-        <div className={duoStyles.pastCopy}><FanText role="item" as="strong">{raffle.title}</FanText><p className={duoStyles.meta}>{creator.name}{raffle.entryClosesAt ? <> · {t(locale, "luckyClosesAt", [dayDate(raffle.entryClosesAt, locale)])}</> : null}</p>
-        <FanAction variant="secondary" size="sm" href={raffleHref(creator.slug, raffle.benefitId, locale)}>{locale === "ko" ? "당첨 결과 보기" : t(locale, "luckyResults")} ›</FanAction></div>
-      </article>)}</div>
+        <div className={duoStyles.pastCopy}><FanText role="item" as="strong">{raffle.title}</FanText><p className={duoStyles.meta}>{creator.name}{raffle.entryClosesAt ? <> · {t(locale, "luckyClosesAt", [dayDate(raffle.entryClosesAt, locale)])}</> : null}</p></div>
+        <FanText role="label" className={duoStyles.resultLink}>{locale === "ko" ? "당첨 결과 보기" : t(locale, "luckyResults")} ›</FanText>
+      </Link>)}</div>
     </section>}
     </div>;
   }
@@ -253,7 +254,7 @@ export function StanCheer({ locale, bias, guest, hearts }: { locale: AppLocale; 
   const favorite = guest ? null : stanFavorite(bias), slug = favorite?.slug ?? null, title = t(locale, "stanFlowCheer");
   const rank = useStanRank(locale, slug), selected = bias.selected && bias.selected.slug === slug ? bias.selected : null;
   const login = fanLoginHref(locale, `/benefits?locale=${locale}`);
-  const pickInner = <><span className={styles.avatarIcon}><Heart size={20} aria-hidden="true" /></span><span className={styles.name}>{t(locale, "heartPick")}</span><ChevronRight size={16} aria-hidden="true" /></>;
+  const pickInner = <><img src="/images/groups/join-community-cutout-20261113.webp" alt="" width={40} height={28} /><span className={styles.name}>{t(locale, "heartPick")}</span><ChevronRight size={16} aria-hidden="true" /></>;
   const head = bias.status === "loading" ? <span className={styles.who}><FanSkeleton shape="circle" width={40} height={40} /><FanSkeleton width={120} height={20} /></span>
     : guest ? <span className={styles.who}><span className={styles.avatarIcon}><Heart size={20} aria-hidden="true" /></span><span className={styles.whoText}><FanLockedValue locale={locale} /></span></span>
     : !favorite ? (bias.options.length ? <FavoritePickMenu locale={locale} bias={bias} className={styles.who}>{pickInner}</FavoritePickMenu> : <Link className={styles.who} href={`/pages/groups?locale=${locale}` as Route}>{pickInner}</Link>)
@@ -272,7 +273,7 @@ export function StanCheer({ locale, bias, guest, hearts }: { locale: AppLocale; 
         {rank.row ? <div><dt>{rankingsText(locale, "rkCumulativeFans")} · {rankingsText(locale, "rkCumulativeHearts")}</dt><dd className={styles.community}>{rank.row.score.toLocaleString(locale)} · {heartIcon}{rank.row.hearts.toLocaleString(locale)}</dd></div> : null}
       </dl>
       {/* H1: without a favorite the pick row above is the one way to choose; the button stays for the fan ranking and the guest login. */}
-      {guest || slug ? <FanAction variant="secondary" size="sm" fullWidth className={styles.action} href={guest ? login : `/${encodeURIComponent(slug!)}?tab=fans&locale=${locale}`}>{guest ? t(locale, "heartPick") : t(locale, "cheerFanRanking")}</FanAction> : null}
+      {guest || slug ? <FanAction variant="secondary" size="sm" fullWidth className={styles.action} href={guest ? `/pages/groups?locale=${locale}` : `/${encodeURIComponent(slug!)}?tab=fans&locale=${locale}`}>{guest ? t(locale, "heartPick") : t(locale, "cheerFanRanking")}</FanAction> : null}
     </div>
   </section>;
 }

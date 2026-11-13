@@ -1,5 +1,10 @@
 // Words of the 덕질 (Stan) tab renewal (261107-2 U4·U5); ko/en live here, the other locales in i18n/catalogs/features__dukjil__ui__dukjil-stan-source.ts.
 export const dukjilStanSource = {
+  stanMissionsSection: { ko: "덕질 미션", en: "Missions" },
+  stanGateTitle: { ko: "로그인하고 덕질 시작하기", en: "Sign in to start" },
+  stanGetTicket: { ko: "응모권 +1장", en: "+1 ticket" },
+  stanGetHeart: { ko: "하트 +1개", en: "+1 heart" },
+  stanHeld: { ko: "보유 {0}", en: "{0} held" },
   missionsGroupMore: { ko: "그 밖의 덕질", en: "More missions" },
   missionsGroupProof: { ko: "인증", en: "Certifications" },
   missionsGroupLeft: { ko: "{0}개 남음", en: "{0} left" },
@@ -18,7 +23,7 @@ export const dukjilStanSource = {
   certKindFancafe: { ko: "팬카페 가입", en: "Fan cafe membership" },
   heartTitle: { ko: "하트 응원", en: "Cheer with hearts" },
   heartGo: { ko: "{0} 응원하러 가기", en: "Cheer for {0}" },
-  heartPick: { ko: "최애 고르기", en: "Pick your favorite" },
+  heartPick: { ko: "모임에 가입해보세요", en: "Join a community" },
   walletNextTicket: { ko: "응모권까지 {0}P", en: "{0}P to a ticket" },
   walletExchangeReady: { ko: "교환 가능", en: "Ready to exchange" },
   // C9 (feedback C): the 덕질 wallet's two flows, points → tickets → lucky draw and stamps → hearts → cheering the favorite.

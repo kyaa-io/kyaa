@@ -10,6 +10,8 @@ import { FanLockedValue } from "@/components/fan-ui/fan-locked-value";
 import { FanSkeleton } from "@/components/fan-ui/fan-skeleton";
 import { FanState } from "@/components/fan-ui/fan-state";
 import { FanAction } from "@/components/fan-ui/fan-action";
+import { FanSectionLink } from "@/components/fan-ui/fan-section-link";
+import { fanUiText } from "@/components/fan-ui/fan-ui-copy";
 import { CertificationGrid } from "@/features/certification/ui/certification-grid";
 import { fanLoginHref } from "@/components/login-href";
 import { walletCopy } from "@/features/group-wallet/ui/copy";
@@ -32,10 +34,12 @@ const LEGACY_KEYS: readonly MissionKey[] = ["checkin", "post", "comment"];
 export type GroupMissionLinks = { write: string; comment: string };
 
 /** One row per fan activity: what to do, the points, today's count against the daily limit, a stamp when done. Pressing a row goes to where that activity happens. `all` lists every catalog activity with an all-clear row on top (the 덕질 tab); without it a page shows its main activities. */
-export function FanMissions({ locale, slug, title, titleSuffix, passportHref, proofHref, footer, onAttendance, group, all = false, noPage }: { locale: AppLocale; slug: string; title: string; titleSuffix?: ReactNode; passportHref: string; proofHref: string; footer?: ReactNode; onAttendance: (trigger: HTMLElement) => void; group?: GroupMissionLinks; all?: boolean; /** Where the activity rows go while the viewer has no page to do them on. */ noPage?: string }) {
+export function FanMissions({ locale, slug, title, titleSuffix, passportHref, proofHref, footer, onAttendance, group, all = false, noPage, preview }: { locale: AppLocale; slug: string; title: string; titleSuffix?: ReactNode; passportHref: string; proofHref: string; footer?: ReactNode; onAttendance: (trigger: HTMLElement) => void; group?: GroupMissionLinks; all?: boolean; /** Where the activity rows go while the viewer has no page to do them on. */ noPage?: string; /** Show only this many rows first; the rest open with `전체 보기 ›` on the title line (팬페이지 390, PM 11/13: no long column of seven rows). */ preview?: number }) {
   const state = useDukjil();
   const anywhere = useAttendedAnywhereToday(!group && state?.authenticated === true);
   const headingId = useId();
+  const listId = useId();
+  const [showAll, setShowAll] = useState(false);
   const on = state?.status === "on";
   const guest = state?.status !== "loading" && state?.authenticated === false;
   const today = activeToday(state?.today);
@@ -80,8 +84,8 @@ export function FanMissions({ locale, slug, title, titleSuffix, passportHref, pr
       return { mission, ...missionProgress(state?.catalog, state?.today, mission.key) };
     });
   // Catalog order stays put when a mission is done; completion only tints the row.
-  const rowList = (list: typeof view) => (
-    <FanMissionList className={styles.cards}>
+  const rowList = (list: typeof view, id?: string) => (
+    <FanMissionList id={id} className={styles.cards}>
       {list.map(({ mission, points, count, limit, remaining, done, period }, index) => {
         const finished = !guest && done;
         const progress = !guest && !group && (pending || count === undefined ? (on || pending) && !state?.todayFailure && <span className={styles.progress} aria-hidden="true"><FanSkeleton width="100%" height={6} /></span>
@@ -104,7 +108,8 @@ export function FanMissions({ locale, slug, title, titleSuffix, passportHref, pr
       })}
     </FanMissionList>
   );
-  const rows = rowList(view);
+  const capped = !all && preview !== undefined && view.length > preview;
+  const rows = rowList(capped && !showAll ? view.slice(0, preview) : view, capped ? listId : undefined);
   // 덕질 tab: three folds. Today = check-in and every activity with a daily limit; the rest wait in "more"; proof is the certification grid.
   const isDaily = (key: MissionKey) => key === "checkin" || Boolean(ruleDailyLimit(state?.catalog?.rules[key]));
   const todayRows = view.filter(row => isDaily(row.mission.key));
@@ -134,6 +139,7 @@ export function FanMissions({ locale, slug, title, titleSuffix, passportHref, pr
         )}
         {pending && <span className={styles.summary} aria-hidden="true"><FanSkeleton width={96} height={20} /></span>}
         {guest && state?.status === "on" && !folded && <div className={styles.summary}><FanLockedValue locale={locale} /></div>}
+        {capped && <FanSectionLink onClick={() => setShowAll(value => !value)} expanded={showAll} controls={listId}>{fanUiText(locale, showAll ? "collapse" : "viewAll")}</FanSectionLink>}
       </div>
       {folded ? folds : rows}
       {state?.todayFailure && !guest && <FanState inline compact kind="error" title={dukjilText(locale, "dukjilLoadError")} actions={<FanAction variant="text" onClick={state.refresh}>{walletCopy(locale).retry}</FanAction>} />}

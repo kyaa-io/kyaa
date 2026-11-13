@@ -43,8 +43,8 @@ export function FanMissionFoldRow({ icon, title, meta, reward, ...triggerProps }
 }
 
 /** The list the rows sit in: inside a fold it draws only the dividers; on its own (`framed`) it is the outlined card. */
-export function FanMissionList({ framed = false, children, className, ...data }: { framed?: boolean; children: ReactNode; className?: string } & { [key: `data-${string}`]: string | undefined }) {
-  return <ul className={[styles.list, framed ? styles.framed : "", className ?? ""].filter(Boolean).join(" ")} {...data}>{children}</ul>;
+export function FanMissionList({ framed = false, children, className, id, ...data }: { framed?: boolean; children: ReactNode; className?: string; id?: string } & { [key: `data-${string}`]: string | undefined }) {
+  return <ul id={id} className={[styles.list, framed ? styles.framed : "", className ?? ""].filter(Boolean).join(" ")} {...data}>{children}</ul>;
 }
 
 /** Stamp art image for a row (decorative), 28 inside the 40 circle. */

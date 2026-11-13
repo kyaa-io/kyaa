@@ -105,6 +105,18 @@ it('compact mode shows one artist cell only when an artist is online or visited,
  expect(screen.queryByText('Artist')).toBeNull();view.unmount();
 });
 
+it('sets the fan count as a pink pill that blinks three times after it appears, then stops (11/13 대표)',async()=>{
+ const view=render(<GroupPresence pageId={pageId} locale='ko' mode='compact' memberCount={27}/>);await flush();
+ const fans=view.container.querySelector('[data-fan-count]')!;
+ expect(fans).toHaveTextContent('팬 27');expect(fans.className).toMatch(/fanCount/);expect(view.container.querySelector('section')!.firstElementChild).toBe(fans);
+ const css=readFileSync(join(__dirname,'group-presence.module.css'),'utf8');
+ expect(css).toMatch(/\.item\.fanCount \{[^}]*background: var\(--color-accent-soft\);[^}]*color: var\(--color-accent-ink\)/);
+ expect(css).toMatch(/\.fanCount::before \{[^}]*animation: fanCountBlink \.6s var\(--motion-easing\) \.6s 3;/);
+ expect(css).not.toMatch(/fanCountBlink[^;}]*infinite/);
+ expect(css).toMatch(/@media \(prefers-reduced-motion: reduce\) \{ \.fanCount::before \{ animation: none; \} \}/);
+ view.unmount();
+});
+
 it('blinks the online artist icon and stops it under reduced motion',()=>{
  const css=readFileSync(join(__dirname,'group-presence.module.css'),'utf8');
  expect(css).toMatch(/\.artist\[data-online="true"\] svg \{ animation: presenceBlink/);

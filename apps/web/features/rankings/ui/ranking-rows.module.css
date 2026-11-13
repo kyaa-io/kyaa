@@ -16,10 +16,22 @@
 
 /* 행 카드(RANK-V3, 2026-11-10 19:13·21:03; 한 줄 48, 대표 11/11 01:55 "한 줄로 맞추고 셀 높이를 줄여도"): 한 항목 = 행 버튼(48, 한 줄) + 열린 패널, 반경 16, 항목 사이 8. 모든 행이 같은 카드(흰 면 + 아주 옅은 1px 선)이고, 1위(내 순위가 없을 때)·내 행·열린 행만 옅은 분홍 면(--color-accent-soft + 분홍 선).
    열 28·8·28·8·이름(등락·LIVE·태그)·값·8·16, 카드 안쪽 12. `1위까지 N`·오늘 증가는 펼친 행에만 둔다. */
-.item { --rank-value-col: calc(var(--space-10) + var(--space-8)); --rank-name-start: calc(var(--space-3) + var(--space-8) + var(--space-7) + var(--space-4)); position: relative; border-radius: var(--radius-card); background: var(--color-surface); box-shadow: inset 0 0 0 1px var(--color-line-subtle); }
+.item { --rank-value-col: calc(var(--space-10) + var(--space-8)); --rank-avatar-start: calc(var(--space-3) + var(--space-7) + var(--space-2)); --rank-name-start: calc(var(--rank-avatar-start) + var(--space-7) + var(--space-2)); position: relative; border-radius: var(--radius-card); background: var(--color-surface); box-shadow: inset 0 0 0 1px var(--color-line-subtle); }
 .item[data-tint] { background: var(--color-accent-soft); box-shadow: inset 0 0 0 1px var(--color-accent-line); }
-.item .listRow { display: flex; width: 100%; min-height: 48px; padding: 0; border: 0; border-radius: var(--radius-card); background: transparent; color: var(--color-ink); font: inherit; text-align: start; }
-.item button.listRow > span { display: contents; }
+.item .toggle { position: absolute; inset: 0 0 auto; z-index: 0; display: block; width: 100%; height: 48px; min-height: 48px; padding: 0; border: 0; border-radius: var(--radius-card); background: transparent; }
+/* 행 한 줄 전체가 펼침 버튼이다(.toggle). 그 위에 놓인 글자·값은 클릭을 통과시킨다. 닫힌 행은 어디를 눌러도 펼쳐지고, 펼친 행의 아바타·이름(.profile)만 따로 링크다(대표 11/13 04:35). */
+.rowFace[data-kind] { z-index: 1; pointer-events: none; color: var(--color-ink); }
+.rowFace[data-kind] .profile { pointer-events: auto; }
+.rowFace[data-kind] span.profile { pointer-events: none; }
+.item .profile { grid-column: 2 / 4; display: inline-flex; justify-content: flex-start; justify-self: start; box-sizing: border-box; min-width: 0; max-width: 100%; height: 48px; min-height: 48px; padding: 0; border: 0; border-radius: var(--radius-card); background: transparent; color: inherit; font: inherit; text-align: start; text-decoration: none; }
+.item .profile > span { display: flex; align-items: center; gap: var(--space-2); min-width: 0; text-align: start; text-wrap: nowrap; }
+.item .profile:hover:not(:disabled, [aria-disabled="true"]), .item .profile:active:not(:disabled, [aria-disabled="true"]) { background: transparent; }
+/* 아바타·이름 링크(크리에이터 → 팬페이지, 팬 → 프로필, 비로그인 포함): 행 모양은 그대로 두고 이름 글자만 강조 글자색+밑줄로 바뀐다. 포커스 링은 아바타·이름을 감싼다(PM 11/13). */
+@media (hover: hover) and (pointer: fine) { .item a.profile:hover .name, .item button.profile:hover .name { color: var(--color-accent-ink); text-decoration: underline; } }
+.item .profile .name { transition: color var(--motion-fast) var(--motion-easing); }
+.item .profile:focus-visible { outline: var(--focus-width) solid var(--color-ink); outline-offset: var(--focus-offset); border-radius: var(--radius-small); }
+.item .profile:focus-visible .name { color: var(--color-accent-ink); }
+@media (prefers-reduced-motion: reduce) { .item .profile .name { transition: none; } }
 .rowFace { position: relative; display: grid; grid-template-columns: 28px 28px minmax(0, 1fr) var(--rank-value-col) 16px; align-items: center; column-gap: var(--space-2); flex: 1 1 auto; box-sizing: border-box; width: 100%; min-width: 0; height: 48px; padding: 0 var(--space-3); text-align: start; text-wrap: wrap; }
 .rowFace[data-loading] { grid-template-columns: 28px 28px minmax(0, 1fr) auto; }
 .rowFace[data-placeholder] { grid-template-columns: 28px 28px minmax(0, 1fr); }

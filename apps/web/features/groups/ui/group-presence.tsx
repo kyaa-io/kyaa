@@ -14,7 +14,7 @@ export function GroupPresence({pageId,locale,member=false,mode="compact",memberC
  const r=useGroupPresence(pageId,true,member),t=groupsCopy(locale),c=presenceCopy(locale);
  if(mode==='hidden')return null;
  const count=(value:number)=>value.toLocaleString(locale);
- const fans=memberCount===undefined?<span className={styles.item}><FanSkeleton width={56} height={16}/></span>:<span className={styles.item}>{fanUiText(locale,'fanCount',[count(memberCount)])}</span>;
+ const fans=memberCount===undefined?<span className={styles.item}><FanSkeleton width={56} height={16}/></span>:<span className={`${styles.item} ${styles.fanCount}`} data-fan-count=''>{fanUiText(locale,'fanCount',[count(memberCount)])}</span>;
  if(!r.data)return <section className={styles.line} aria-label={t.groups} aria-busy={r.error?undefined:true}>{fans}{r.error
   ?<span className={styles.error} role='status'><span className={styles.errorText}>{presenceUnavailableCopy[locale]}</span><button type='button' className={styles.retry} onClick={r.retry}>{t.retry}</button></span>
   :<><span className={styles.item}><FanSkeleton width={72} height={16}/></span><FanSkeletonStatus locale={locale}/></>}</section>;

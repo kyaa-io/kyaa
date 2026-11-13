@@ -1,3 +1,4 @@
+import {HomeRankingCard} from '@/features/rankings/ui/home-ranking-card';
 import {createRoot} from 'react-dom/client';
 import {GroupBenefitsScreen} from '@/features/groups/ui/group-benefits-screen';
 import {CapsuleScreen} from '@/features/group-capsule/capsule-screen';
@@ -23,6 +24,10 @@ window.fetch=async(input,init)=>{
  requests.push({url:path+url.search,method});
  if(state==='loading'&&(path.includes('/benefits')||path==='/api/me/wallet'||path==='/api/groups/capsules'||path.endsWith(`/raffles/${id}`)))return new Promise(resolve=>waiting.push(resolve));
  if(state==='error'&&(path.startsWith('/api/groups')||path==='/api/me/wallet'))return Response.json({error:{code:'SYNTHETIC_FAILURE'}},{status:503});
+ if(path.includes('/roadmap'))return Response.json({passportId:id,celebrityId:second,hearts:13,pages:[{pageNo:1,slots:Array.from({length:9},(_,i)=>({slotNo:i+1,kind:null,state:i<6?'filled':'empty',stampId:null,clearedAt:null})),filled:6,claimable:false,claimed:false,locked:false,lockedReason:null}]});
+ if(path==='/api/me/dukjil/today')return Response.json({kstDate:'2026-11-13',policyActive:true,totalPoints:0,actions:{},attendance:null,hasPassport:true});
+ if(path==='/api/dukjil/catalog')return Response.json({version:1,rules:{checkin:{points:2},post:{points:20},comment:{points:3},share:{points:10}},missionBook:null});
+ if(path.startsWith('/api/rankings/')) {return Response.json({state:'ready',metric:url.searchParams.get('metric'),day:'2026-11-13',computedAt:'2026-11-13T09:00:00Z',comparable:true,weekGainDays:7,me:null,rows:Array.from({length:10},(_,i)=>({rank:i+1,score:900-i,hearts:120-i,points:900-i,nickname:`예시 팬${i+1}`,characterId:'star-pink',tier:'Gold',isMe:false,delta:1,favorite:null,slug:`sample-${i}`,name:`예시 크리에이터${i+1}`,imageUrl:null,fans:37,challenge:false,weekGain:12,dayGain:3}))});}
  if(path==='/api/me/wallet')return Response.json({...wallet(),...(state==='insufficient'?{tickets:0}:{})});
  if(path==='/api/groups/benefits'){
   const kind=url.searchParams.get('kind'),cursor=url.searchParams.get('cursor');
@@ -53,5 +58,5 @@ window.fetch=async(input,init)=>{
 };
 Object.assign(window,{benefitsHarness:{requests,locales:APP_LOCALES,transition,setState:(next:string)=>{state=next;},sessionSnapshot}});
 const path=location.pathname;
-const content=path.startsWith('/my/capsules')?<CapsuleScreen locale={locale} pageId={q.get('pageId')??undefined}/>:path.includes('/raffles/')?<GroupRaffleScreen pageId={id} raffleId={id} locale={locale}/>:path==='/benefits'?<GroupBenefitsScreen locale={locale}/>:<FanAppFrame locale={locale} groupsEnabled={q.get('gate')!=='off'}><main><h1>Synthetic legacy detail route</h1></main></FanAppFrame>;
+const content=q.has('ranking')?<FanAppFrame locale={locale} groupsEnabled><main style={{padding:16}}><HomeRankingCard locale={locale}/></main></FanAppFrame>:path.startsWith('/my/capsules')?<CapsuleScreen locale={locale} pageId={q.get('pageId')??undefined}/>:path.includes('/raffles/')?<GroupRaffleScreen pageId={id} raffleId={id} locale={locale}/>:path==='/benefits'?<GroupBenefitsScreen locale={locale}/>:<FanAppFrame locale={locale} groupsEnabled={q.get('gate')!=='off'}><main><h1>Synthetic legacy detail route</h1></main></FanAppFrame>;
 createRoot(document.getElementById('root')!).render(<LocaleProvider initialLocale={locale}><GroupsReleaseProvider enabled={q.get('gate')!=='off'}>{content}</GroupsReleaseProvider></LocaleProvider>);
