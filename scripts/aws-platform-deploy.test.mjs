@@ -471,3 +471,19 @@ test('signup raffle defaults on only in dev and validates explicit switches', as
   dev.runtimeEnvironment.KYAA_FEATURE_SIGNUP_RAFFLE = 'invalid';
   assert.throws(() => validateConfig(dev, template), /KYAA_FEATURE_SIGNUP_RAFFLE must be true or false/);
 });
+
+
+test('production signup raffle accepts explicit booleans and renders the runtime flag', async () => {
+  const template = await loadTemplate('environment');
+  for (const value of ['true', 'false']) {
+    const source = config('environment', 'prod');
+    source.runtimeEnvironment.KYAA_FEATURE_SIGNUP_RAFFLE = value;
+    const rendered = renderTemplate(source, template).Resources.TaskDefinition.Properties.ContainerDefinitions.find(container => container.Name === 'web').Environment;
+    assert(rendered.some(entry => entry.Name === 'KYAA_FEATURE_SIGNUP_RAFFLE' && entry.Value === value));
+  }
+  for (const value of ['1', 'TRUE', '', true, false]) {
+    const source = config('environment', 'prod');
+    source.runtimeEnvironment.KYAA_FEATURE_SIGNUP_RAFFLE = value;
+    assert.throws(() => validateConfig(source, template), /KYAA_FEATURE_SIGNUP_RAFFLE/);
+  }
+});
