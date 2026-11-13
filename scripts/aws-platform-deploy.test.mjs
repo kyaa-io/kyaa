@@ -448,3 +448,19 @@ test('Telegram alerts run every minute', async () => {
   const template = JSON.parse(await readFile(new URL('../infrastructure/aws/platform/scheduled-workers.json', import.meta.url), 'utf8'));
   assert.equal(template.Resources.ScheduleTelegramAlerts.Properties.ScheduleExpression, 'rate(1 minute)');
 });
+
+
+test('production signup raffle accepts explicit booleans and renders the runtime flag', async () => {
+  const template = await loadTemplate('environment');
+  for (const value of ['true', 'false']) {
+    const source = config('environment', 'prod');
+    source.runtimeEnvironment.KYAA_FEATURE_SIGNUP_RAFFLE = value;
+    const rendered = renderTemplate(source, template).Resources.TaskDefinition.Properties.ContainerDefinitions.find(container => container.Name === 'web').Environment;
+    assert(rendered.some(entry => entry.Name === 'KYAA_FEATURE_SIGNUP_RAFFLE' && entry.Value === value));
+  }
+  for (const value of ['1', 'TRUE', '', true, false]) {
+    const source = config('environment', 'prod');
+    source.runtimeEnvironment.KYAA_FEATURE_SIGNUP_RAFFLE = value;
+    assert.throws(() => validateConfig(source, template), /KYAA_FEATURE_SIGNUP_RAFFLE/);
+  }
+});
