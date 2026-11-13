@@ -87,7 +87,8 @@ export function EarnActionBadge({ action, locale, variant = "inline", stamp = fa
   // 미션 완료(S3): 완료로 바뀐 순간 한 번만 스탬프처럼 scale .6→1. 처음부터 완료면 연출 없음.
   // 버튼 모서리(corner) 배지는 절대 위치라 연출 중 transform이 기준 상자를 바꾼다. 연출은 타일·행 배지에만.
   const pop = variant === "corner" ? "static" : null;
-  if (item.remaining === 0) return <FanRewardPop trigger={pop ?? "done"} kind="complete"><EarnBadge variant="done" locale={locale} className={className} /></FanRewardPop>;
+  // 버튼 모서리는 받을 포인트를 알리는 자리다. 오늘 몫을 다 받았으면 버튼 위에 `오늘 완료` 글자를 겹치지 않고 비워 둔다(11/13 대표).
+  if (item.remaining === 0) return variant === "corner" ? null : <FanRewardPop trigger={pop ?? "done"} kind="complete"><EarnBadge variant="done" locale={locale} className={className} /></FanRewardPop>;
   return <FanRewardPop trigger={pop ?? "open"} kind="complete"><EarnBadge variant={variant} locale={locale} points={points} stamp={stamp && typeof rule.stamp === "string"} remaining={item.remaining} remainingPer={capPeriod(rule)} className={className} /></FanRewardPop>;
 }
 

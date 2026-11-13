@@ -22,7 +22,7 @@ export function GroupPresence({pageId,locale,member=false,mode="compact",memberC
   const [before,after]=fanUiText(locale,key,['\u0001']).split('\u0001');
   return <>{before}<RollingNumber value={value} format={count} initialFromZero emphasized />{after}</>;
  };
- const fans=memberCount===undefined?<span className={styles.item}><FanSkeleton width={56} height={16}/></span>:<span className={styles.item}>{metric('fanCount',memberCount)}</span>;
+ const fans=memberCount===undefined?<span className={styles.item}><FanSkeleton width={56} height={16}/></span>:<span className={`${styles.item} ${styles.fanCount}`} data-fan-count=''>{metric('fanCount',memberCount)}</span>;
  if(!r.data)return <section className={styles.line} aria-label={t.groups} aria-busy={r.error?undefined:true}>{fans}{r.error
   ?<span className={styles.error} role='status'><span className={styles.errorText}>{presenceUnavailableCopy[locale]}</span><button type='button' className={styles.retry} onClick={r.retry}>{t.retry}</button></span>
   :<><span className={styles.item}><FanSkeleton width={72} height={16}/></span><FanSkeletonStatus locale={locale}/></>}</section>;
