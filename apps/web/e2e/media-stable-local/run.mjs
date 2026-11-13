@@ -104,7 +104,14 @@ try {
     await step('window focus re-read', () => reread(page, reads, readPath));
     await step('show original', async () => { await control.click(); await assertEventually(async () => (await control.getAttribute('aria-pressed')) === 'false', 'the original'); });
     await step('show translation', async () => { await control.click(); await assertEventually(async () => (await control.getAttribute('aria-pressed')) === 'true', 'the translation'); });
-    await step('like', async () => { await page.getByRole('button', { name: /^Like/ }).first().click(); await assertEventually(() => reactions().length === 1, `the like write (writes: ${writes.join(', ')})`); await page.waitForTimeout(600); });
+    // The like button must not move while the like is written and the post is read again (CEO 11/13: on production it dropped a few pixels and came back).
+    await step('like', async () => {
+      await page.evaluate(() => { const find = () => [...document.querySelectorAll('button')].find(node => /^(Like|좋아요)/.test(node.textContent ?? '')); const ys = []; window.__likeYs = ys; const tick = () => { const node = find(); if (node) ys.push(node.getBoundingClientRect().top + window.scrollY); window.__likeRaf = requestAnimationFrame(tick); }; tick(); });
+      await page.getByRole('button', { name: /^Like/ }).first().click(); await assertEventually(() => reactions().length === 1, `the like write (writes: ${writes.join(', ')})`); await page.waitForTimeout(900);
+      const ys = await page.evaluate(() => { cancelAnimationFrame(window.__likeRaf); return window.__likeYs; });
+      assert.ok(ys.length > 20, `${screen} ${width}: sampled the like button (${ys.length} frames)`);
+      assert.ok(Math.max(...ys) - Math.min(...ys) < 0.5, `${screen} ${width}: the like button stayed in place (moved ${Math.max(...ys) - Math.min(...ys)}px over ${ys.length} frames)`);
+    });
     await step('second re-read (one polling period of the return-visit refresh)', () => reread(page, reads, readPath));
     await step('page became visible again', async () => { await page.evaluate(() => document.dispatchEvent(new Event('visibilitychange'))); await page.waitForTimeout(600); });
     await step('dislike', async () => { await page.getByRole('button', { name: /Dislike/ }).first().click(); await assertEventually(() => reactions().length === 2, 'the dislike write'); await page.waitForTimeout(600); });

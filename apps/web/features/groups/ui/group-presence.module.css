@@ -17,6 +17,13 @@
 .onlineDot { display: inline-block; width: 6px; height: 6px; margin-right: var(--space-1); border-radius: 50%; background: var(--color-success); vertical-align: 2px; }
 .item + .item::before, .item + .artist::before, .artist + .item::before, .item + .error::before { content: "·"; margin: 0 var(--space-2); color: var(--color-muted); }
 .item:first-child { color: var(--color-ink); font-weight: var(--fan-item-title-weight); }
+/* 11/13 대표: 머리 줄에서 `팬 27`이 가장 먼저 읽혀야 한다. 팬 수를 핑크 알약으로 앉히고, 숫자 롤링(.6s)이 끝난 뒤 바탕이 한 번 진해졌다 돌아오기를 세 번 하고 멈춘다
+   (상시 깜박임 금지, DESIGN 9절). 글자는 흔들리지 않고 알약 뒤 면만 움직인다. 줄 안 공백은 flex가 지우므로 글자와 숫자 사이는 gap 4로 둔다. 모션을 줄인 설정이면 알약만 보인다. */
+.item.fanCount { position: relative; isolation: isolate; display: inline-flex; align-items: center; gap: var(--space-1); height: 22px; padding: 0 var(--space-2); border-radius: var(--radius-pill); background: var(--color-accent-soft); color: var(--color-accent-ink); }
+.fanCount [role="img"] { color: inherit; }
+.fanCount::before { content: ""; position: absolute; inset: 0; z-index: -1; border-radius: inherit; background: var(--color-accent-line); opacity: 0; animation: fanCountBlink .6s var(--motion-easing) .6s 3; }
+@keyframes fanCountBlink { 0%, 100% { opacity: 0; } 40% { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .fanCount::before { animation: none; } }
 .artist { display: inline-flex; flex: 0 1 auto; align-items: center; gap: var(--space-1); min-width: 0; color: var(--color-ink); }
 .artist svg { flex: none; }
 /* 11/13 접속 공개를 켠 아티스트가 지금 들어와 있으면 핑크 알약(줄 높이 24 안). 점의 고리가 세 번 퍼지고 멈춘다(상시 깜박임 금지, DESIGN 9절).

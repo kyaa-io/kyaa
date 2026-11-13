@@ -115,6 +115,18 @@ it('pulses the online artist dot three times after the number roll and stops it 
  expect(css).toMatch(/@media \(prefers-reduced-motion: reduce\) \{ \.liveDot::after \{ animation: none; \} \}/);
 });
 
+it('sets the fan count as a pink pill that blinks three times after the number roll, then stops (11/13 대표)',async()=>{
+ const view=render(<GroupPresence pageId={pageId} locale='ko' mode='compact' memberCount={27}/>);await flush();
+ const fans=view.container.querySelector('[data-fan-count]')!;
+ expect(fans.querySelector('[aria-label="27"]')).not.toBeNull();expect(fans.textContent!.startsWith('팬')).toBe(true);expect(fans.className).toMatch(/fanCount/);expect(view.container.querySelector('section')!.firstElementChild).toBe(fans);
+ const css=readFileSync(join(__dirname,'group-presence.module.css'),'utf8');
+ expect(css).toMatch(/\.item\.fanCount \{[^}]*background: var\(--color-accent-soft\);[^}]*color: var\(--color-accent-ink\)/);
+ expect(css).toMatch(/\.fanCount::before \{[^}]*animation: fanCountBlink \.6s var\(--motion-easing\) \.6s 3;/);
+ expect(css).not.toMatch(/fanCountBlink[^;}]*infinite/);
+ expect(css).toMatch(/@media \(prefers-reduced-motion: reduce\) \{ \.fanCount::before \{ animation: none; \} \}/);
+ view.unmount();
+});
+
 it('names the online artist by the fan page name, not the linked account nickname (11/13)',async()=>{
  response={onlineCount:0,todayCount:0,artists:[{profileId:'30000000-0000-4000-8000-000000000001',nickname:'팬0106',online:true,visitedToday:true}]};
  frame.value={celebrity:{name:'엘리나'}};
