@@ -58,3 +58,9 @@ mini 실행 코드는 공유 checkout 대신 `~/.local/share/kyaa-sns-collector/
 11/13 mini에서 기존 `io.kyaa.sns-collect` label 하나를 등록하고 dev 대상으로 kickstart했다. 예약 간격은 7200초이며, 사용자 Instagram 탭을 보존하도록 수집 동시 탭을 2개로 제한한다. 운영 전환은 감독만 수행한다.
 
 게시물 링크가 없는 프로필은 한 번 더 읽는다. Instagram 화면에 게시물 0개와 게시물 없음이 함께 표시될 때만 빈 수집을 정상으로 기록하며, 그 밖의 목록 확인 실패는 계속 오류로 알린다.
+
+## 역순 공개 알림 인수 조건
+
+`20261226151000_artist_new_post_source_order.sql`은 main의 `20261226150000_artist_new_post_notification.sql` 다음에 적용한다. SNS 원문 시각을 우선하고 직접 작성한 글은 공개 시각으로 비교한다. 늦게 공개된 과거 글도 묶음 개수와 미읽음 상태에는 반영하지만 대표 글은 과거로 바꾸지 않는다.
+
+`supabase/tests/artist_new_post_reverse_publication.sql`은 최신 A → 과거 B에서 A 링크 유지, 개수 2와 미읽음 복귀, 더 최신 C에서 C로 이동을 검사한다. dev에서 main의 선행 migration과 수정 migration을 한 트랜잭션 안에 임시 적용하여 수정 전 실패·수정 후 통과를 확인했고 모두 롤백했다. 운영 및 dev의 영구 알림 함수는 변경하지 않았다. 통합 시 선행 migration이 필요하며, 다른 형태의 함수에 잘못 적용되지 않도록 본문 일치 검사를 둔다.
