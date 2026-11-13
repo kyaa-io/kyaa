@@ -1,0 +1,5 @@
+{
+  "changes": ["운영팀이 보낸 1회용 방장 링크로 들어오면 모임 이름·소개·사진·방 링크만 적고 바로 모임을 열 수 있어요. 방 링크는 오픈채팅·카페·디스코드·X·밴드 주소를 3개까지 넣을 수 있고, 모임 머리에 아이콘으로 나와요. 모임 설정에서도 방 링크를 바꿀 수 있어요. 첨부 화면은 시험용 데이터로 확인한 로컬 화면이에요."],
+  "path": "/pages/groups/apply",
+  "images": ["release-notes/images/2026-11-13-leader-open-390.png", "release-notes/images/2026-11-13-leader-open-1440.png", "release-notes/images/2026-11-13-leader-room-links-390.png"]
+}

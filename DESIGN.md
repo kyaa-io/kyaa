@@ -162,7 +162,8 @@ radius-scale: "pill / 16px / 12px / 8px / 50%"
 | `FanSurface` | 카드·목록 카드 | `appearance` card·list·plain, `tone`, `as` | 새 `FanCard` 만들지 않음 |
 | `FanPostRow` | 글·공지·기사 목록 한 줄 | `title` `href` `thumbnail` `notice` `author` `time` `likes` `commentCount` `reactedBy` `density` home·board. 댓글·추천 수는 제목 옆(0이면 뺌), `reactedBy`(그 페이지 아티스트가 좋아요·댓글)면 제목 바로 뒤 금색 별 16 | 별 옆에 글자 붙이지 않음 |
 | `FanEntityCard` | 페이지(팬페이지·모임·취미·브랜드) 카드·행·타일 | `size` row·card·list·tile, `kind`, `memberCount`, `badge`, `newBadge` | — |
-| `FanPageHeader` | 팬페이지·모임 머리 | `image` `name` `kind` `star` `links` `stats` `tabs` `menu` | — |
+| `FanPageHeader` | 팬페이지·모임 머리 | `image` `name` `kind` `star` `links`(크리에이터 SNS 뒤에 방 링크 오픈채팅·카페·디스코드·X·밴드, 최대 3, 11/13 방장 1차) `stats` `tabs` `menu` | — |
+| `useRoomLinkFields` (`features/groups/ui/room-link-fields.tsx`) | 모임 방 링크 입력 줄(최대 3). 붙여 넣으면 왼쪽에 종류 아이콘, 허용 밖 주소는 입력 아래 한 줄 오류 | `locale` `initial` → `{node, links, read}`. 한 줄 입력 48·알약, `링크 추가`는 `FanAction text sm` | 종류를 화면에서 정하지 않는다(서버가 호스트로 판별). 설명 문장 없음 |
 | `FanStarAction` | 머리 칩(별·인증·좋아요) | `state` empty·filled, `label`, `href`/`onClick` | — |
 | `FanTabs` | 페이지 탭·필터 칩·같은 자료 보기 전환 | `variant` underline·chip·segment, `items`, `current`, `panels` | 링크 탭은 라우터가 그림 |
 | `FanSelectMenu` | 정렬·필터 드롭다운의 유일한 부품 | `options` `value` `onValueChange` `active` `icon` `collapseNarrow` `align` | 화면 CSS로 알약을 다시 그리지 않음, 네이티브 `<select>` 금지(관리자 폼 제외) |

@@ -1,6 +1,7 @@
 import "server-only";
 import { z } from "zod";
 import { qualificationSchema } from "@/features/groups/domain/qualification";
+import { externalRoomLinksInput } from "@/features/groups/domain/external-room-link";
 import { groupMessagesSchema, groupOwnReportsSchema } from "@/features/groups/domain/contracts";
 import { applicationStatusListSchema } from "@/features/groups/domain/application-status";
 import { groupMembersCsv, groupMissionStatsSchema, groupNoticeBroadcastStatusSchema, groupOperatorJjinfanFilter, groupOperatorMembersExportSchema, groupOperatorMembersSchema, groupOperatorSearch } from "@/features/groups/domain/operator-tools";
@@ -50,7 +51,7 @@ function decodeVisitedCursor(token:string,owner:string) {
  if(cursor.owner!==owner) throw new SyntaxError("cursor owner mismatch");
  return cursor;
 }
-const base = z.object({ qualification: qualificationSchema.optional(), expectedRevision: z.number().int().min(1).optional(), kind: z.enum(["fan", "hobby", "brand"]), name: z.string().trim().min(1).max(100), description: z.string().trim().min(1).max(1000), imageAssetId:uuid.nullable().optional(), imageUrl: z.string().max(2048).refine(v => /^https:\/\//.test(v) || /^\/[^/]/.test(v)).nullable().optional(), question: z.string().trim().max(300).nullable().optional(), requestId }).strict();
+const base = z.object({ qualification: qualificationSchema.optional(), expectedRevision: z.number().int().min(1).optional(), kind: z.enum(["fan", "hobby", "brand"]), name: z.string().trim().min(1).max(100), description: z.string().trim().min(1).max(1000), imageAssetId:uuid.nullable().optional(), imageUrl: z.string().max(2048).refine(v => /^https:\/\//.test(v) || /^\/[^/]/.test(v)).nullable().optional(), question: z.string().trim().max(300).nullable().optional(), externalLinks: externalRoomLinksInput.optional(), requestId }).strict();
 /** `body` stays plain text for every older reader. With a document it is derived here, never taken from the client. */
 const groupPostFields = { title: z.string().trim().min(1).max(100), body: z.string().trim().min(1).max(20000).optional(), visibility: z.enum(["public", "members"]), category: z.enum(["notice","free"]).optional(), assetIds: z.array(uuid).max(5).optional(), bodyDoc: z.unknown().optional(), requestId };
 function preparedPost<T extends { body?: string; bodyDoc?: unknown; assetIds?: string[]; title: string }>(value: T) {
@@ -91,7 +92,7 @@ const inputSchemas = {
   post: groupNewPostInput,
   room: z.object({ name: z.string().trim().min(1).max(100), minimumTier: z.enum(["Member", "Bronze", "Silver", "Gold", "Platinum", "Diamond"]).default("Gold"), requestId }).strict(),
   message: z.object({ body: z.string().trim().max(2000), assetId: uuid.optional(), requestId }).strict().refine(value => Boolean(value.body || value.assetId)),
-  settings: z.object({ name: z.string().trim().min(1).max(100), description: z.string().trim().max(1000), question: z.string().trim().max(300).nullable(), anonymous: z.boolean(), imageAssetId:uuid.nullable().optional(), requestId }).strict(),
+  settings: z.object({ name: z.string().trim().min(1).max(100), description: z.string().trim().max(1000), question: z.string().trim().max(300).nullable(), anonymous: z.boolean(), imageAssetId:uuid.nullable().optional(), externalLinks: externalRoomLinksInput.optional(), requestId }).strict(),
   comment: z.object({body:z.string().trim().min(1).max(2000),parentId:uuid.nullable().optional(),assetIds:z.array(uuid).max(5).optional(),requestId}).strict(),
   reaction: z.object({liked:z.boolean(),requestId}).strict(),
   dislike: z.object({disliked:z.boolean(),requestId}).strict(),

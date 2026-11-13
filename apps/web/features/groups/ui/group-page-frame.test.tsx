@@ -46,6 +46,25 @@ it("leaves prefetch to the shared Link for all five tabs: off until a pointer re
   expect(links[2]).toHaveAttribute("data-prefetch", "false");
 });
 
+it("puts the room links in the header icon row, one icon per link, after any creator links", () => {
+  Object.assign(state, { data: { ...detail, page: { ...detail.page, externalLinks: [
+    { kind: "kakao-openchat", url: "https://open.kakao.com/o/abc" },
+    { kind: "kakao-openchat", url: "https://open.kakao.com/o/def" },
+    { kind: "discord", url: "https://discord.gg/abc" },
+  ] } } });
+  render(tree());
+  const links = Array.from(document.querySelectorAll<HTMLAnchorElement>("a[data-platform]"));
+  expect(links.map(link => link.dataset.platform)).toEqual(["kakao-openchat", "kakao-openchat", "discord"]);
+  expect(links.map(link => link.getAttribute("href"))).toEqual(["https://open.kakao.com/o/abc", "https://open.kakao.com/o/def", "https://discord.gg/abc"]);
+  for (const link of links) { expect(link).toHaveAttribute("rel", "noopener noreferrer"); expect(link).toHaveAttribute("target", "_blank"); }
+  expect(links[0]!.querySelector("img")).toHaveAttribute("src", "/images/guest-home/kakao-openchat.svg");
+});
+
+it("draws no icon row for a page without room links", () => {
+  render(tree());
+  expect(document.querySelector("a[data-platform]")).toBeNull();
+});
+
 it.each([500, 403, 404])("keeps the same header and nav after a detail-fetch %s while switching to rooms", status => {
   const view = render(tree());
   const heading = screen.getByRole("heading", { level: 1, name: "테스트 모임" });

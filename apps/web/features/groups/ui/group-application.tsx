@@ -2,6 +2,7 @@
 import { useEffect, useLayoutEffect, useId, useRef, useState, type FormEvent } from "react";
 import type { AppLocale } from "@/i18n/locales";
 import { FanAction, fanActionClassName } from "@/components/fan-ui/fan-action";
+import { FanText } from "@/components/fan-ui/fan-text";
 import { applicationReceiptSchema } from "../domain/contracts";
 import { useGroupRequest } from "./use-group-resource";
 import { groupsCopy,pageTypeLabel } from "./copy";
@@ -18,8 +19,9 @@ import {CelebrityNameField} from "./celebrity-name-field";
 import {useOperatingExperience} from "./operating-experience-fields";
 import {groupApplyText} from "./group-apply-copy";
 import dialogStyles from "./group-application-dialog.module.css";
+import leaderStyles from "./group-leader-open.module.css";
 const optionalSettings:Record<AppLocale,string>={ko:'추가 설정 (선택)',en:'Additional settings (optional)',ja:'追加設定（任意）','zh-Hans':'其他设置（可选）','zh-Hant':'其他設定（選填）',es:'Opciones adicionales (opcional)',id:'Pengaturan tambahan (opsional)',vi:'Cài đặt bổ sung (không bắt buộc)',th:'การตั้งค่าเพิ่มเติม (ไม่บังคับ)',pt:'Configurações adicionais (opcional)',fr:'Options supplémentaires (facultatif)',ru:'Дополнительные настройки (необязательно)'};
-export function GroupApplication({locale,initialKind="hobby",initialName="",modal}:{locale:AppLocale;initialKind?:"fan"|"hobby"|"brand";initialName?:string;modal?:{onClose:()=>void}}) {
+export function GroupApplication({locale,initialKind="hobby",initialName="",modal,notice}:{locale:AppLocale;initialKind?:"fan"|"hobby"|"brand";initialName?:string;modal?:{onClose:()=>void};notice?:string}) {
   const t=groupsCopy(locale),c=applicationCopy(locale),auth=useGroupRequest(),operation=useRef<{body:string;id:string}|null>(null),formRef=useRef<HTMLFormElement>(null);
   const kinds:readonly ("fan"|"hobby"|"brand")[]=initialKind==="fan"?["fan"]:["hobby","brand"];
   const formId=useId(),inFlight=useRef(false);
@@ -58,7 +60,7 @@ export function GroupApplication({locale,initialKind="hobby",initialName="",moda
   const nameLabel=t.name;
   const nameField=kind==='fan'?<CelebrityNameField locale={locale} label={nameLabel} initialValue={initialName} disabled={pending}/>:<label className={styles.field}>{nameLabel}<input className={styles.input} name="name" required maxLength={100} disabled={pending} defaultValue={initialName}/></label>;
   const receipt=<SourceStatePanel sourceId='D9f8Z' title={groupApplyText(locale,initialKind==='fan'?'receivedFanTitle':'receivedPageTitle')} description={groupApplyText(locale,'receivedNote')} role='status' actions={[{label:groupApplyText(locale,'viewMine'),href:`/pages/groups/apply?view=mine&locale=${locale}`,variant:'primary'},{label:t.explore,...(modal?{onClick:modal.onClose}:{href:`/pages/groups?locale=${locale}`}),variant:'neutral'}]}/>;
-  const application=<section className={`${styles.applicationPanel} ${modal?dialogStyles.panel:""}`}><header>{!modal&&<h1>{complete?t.received:t.apply}</h1>}</header>{complete?receipt:!auth.authenticated?<div className={styles.status}><FanAction href={`/login?returnTo=${encodeURIComponent(`/pages/groups/apply?locale=${locale}&kind=${initialKind}`)}`}>{t.login}</FanAction></div>:<form id={formId} onChange={()=>setDirty(true)} ref={formRef} key={auth.ownerKey} className={styles.form} onSubmit={submit}>
+  const application=<section className={`${styles.applicationPanel} ${modal?dialogStyles.panel:""}`}><header>{!modal&&<h1>{complete?t.received:t.apply}</h1>}{notice&&<div role="alert"><FanText role="meta" as="p" className={leaderStyles.notice}>{notice}</FanText></div>}</header>{complete?receipt:!auth.authenticated?<div className={styles.status}><FanAction href={`/login?returnTo=${encodeURIComponent(`/pages/groups/apply?locale=${locale}&kind=${initialKind}`)}`}>{t.login}</FanAction></div>:<form id={formId} onChange={()=>setDirty(true)} ref={formRef} key={auth.ownerKey} className={styles.form} onSubmit={submit}>
     {modal&&initialKind==='fan'?<input type='hidden' name='kind' value='fan'/>:<div className={dialogStyles.kind}><div className={styles.applicationTypes} role='group' aria-label={pageTypeLabel[locale]}><strong>{pageTypeLabel[locale]}</strong>{kinds.map(k=><label key={k} className={styles.chip}><input type='radio' className={styles.fileInput} name='kind' value={k} checked={kind===k} onChange={()=>setKind(k)} disabled={pending}/>{t[k]}</label>)}</div></div>}
     {modal||kind==='fan'?nameField:<div className={styles.applicationIdentity}><div className={`${styles.field} ${styles.applicationPhoto}`}><span>{c.photo}</span><GroupImageField locale={locale} disabled={pending} onReadyChange={setImageReady}/></div><div className={styles.field}>{nameField}</div></div>}
     <label className={styles.field}>{t.description}<textarea className={styles.textarea} name="description" required maxLength={1000} disabled={pending}/></label>

@@ -76,7 +76,7 @@ export function FanPageHeader({ image, name, kind, locale, description, descript
         {actions ? <div className={styles.actions}>
           {star && <FanStarAction {...star} className={styles.star} />}
           {utility}
-          {links.length > 0 && <nav className={styles.links} aria-label={plainName || undefined}>{links.map((link) => <a key={link.kind} href={link.href} target="_blank" rel="noopener noreferrer" aria-label={link.kind} data-platform={link.kind} data-outbound-kind="social"><img src={iconOf(link.kind)} width={20} height={20} alt="" /></a>)}</nav>}
+          {links.length > 0 && <nav className={styles.links} aria-label={plainName || undefined}>{links.map((link) => <a key={`${link.kind}:${link.href}`} href={link.href} target="_blank" rel="noopener noreferrer" aria-label={link.kind} data-platform={link.kind} data-outbound-kind="social"><img src={iconOf(link.kind)} width={20} height={20} alt="" /></a>)}</nav>}
         </div> : null}
         {menu ? <div className={styles.menu}>{menu}</div> : null}
       </div>

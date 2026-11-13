@@ -23,4 +23,13 @@ export const groupApplySource = {
   pageExistsNote: { ko: "이미 열린 팬페이지예요.", en: "This fan page is already open." },
   roleFilter: { ko: "활동 분야", en: "Category" },
   nameSuggestions: { ko: "이름 후보", en: "Name suggestions" },
+  roomLink: { ko: "방 링크", en: "Room link" },
+  roomLinkAdd: { ko: "링크 추가", en: "Add link" },
+  roomLinkInvalid: { ko: "지원하지 않는 주소예요", en: "This link isn’t supported" },
+  openGroup: { ko: "모임 열기", en: "Open group" },
+  passInvalid: { ko: "사용할 수 없는 링크예요", en: "This link can’t be used" },
+  groupIntro: { ko: "소개", en: "Introduction" },
+  optional: { ko: "선택", en: "Optional" },
+  preview: { ko: "미리보기", en: "Preview" },
+  changePhoto: { ko: "사진 올리기", en: "Add photo" },
 } as const;

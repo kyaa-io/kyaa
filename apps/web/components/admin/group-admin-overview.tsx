@@ -3,6 +3,7 @@ import Link from "../fan-ui/hover-prefetch-link";
 import type {Route} from 'next';
 import {BadgeCheck,CalendarCheck,Flag,History,Inbox,ChevronRight} from 'lucide-react';
 import {ParticipationAdmin} from './participation-controls';
+import {GroupLeaderPasses} from './group-leader-passes';
 import styles from './group-admin.module.css';
 export function GroupAdminOverview({locale}:{locale:'ko'|'en'}){
  const ko=locale==='ko',title=ko?'확인이 필요한 요청':'Requests to review';
@@ -15,5 +16,5 @@ export function GroupAdminOverview({locale}:{locale:'ko'|'en'}){
   {href:'/admin/audit',Icon:History,label:ko?'관리 기록':'Audit log'},
  ];
  const href=(value:string)=>(locale==='en'?`${value}?lang=en`:value) as Route;
- return <ParticipationAdmin groupLayout locale={locale} title={title} description="">{()=> <div className={styles.overviewLayout}><nav className={styles.overviewNav} aria-label={ko?'모임 관리 메뉴':'Group administration'}>{entries.map(({href:path,Icon,label})=><Link key={path} href={href(path)}><Icon size={24} aria-hidden="true"/><span>{label}</span><ChevronRight size={18} aria-hidden="true"/></Link>)}</nav><section><h1 className={styles.applicationTitle}><span><Inbox size={24} aria-hidden="true"/></span>{title}</h1><ul className={styles.overviewCards}>{entries.filter(entry=>'description' in entry).map(({href:path,Icon,title:label,description})=><li key={path}><Link href={href(path)}><Icon size={24} aria-hidden="true"/><span><strong>{label}</strong><small>{description}</small></span><ChevronRight size={18} aria-hidden="true"/></Link></li>)}</ul></section></div>}</ParticipationAdmin>;
+ return <ParticipationAdmin groupLayout locale={locale} title={title} description="">{(role)=> <div className={styles.overviewLayout}><nav className={styles.overviewNav} aria-label={ko?'모임 관리 메뉴':'Group administration'}>{entries.map(({href:path,Icon,label})=><Link key={path} href={href(path)}><Icon size={24} aria-hidden="true"/><span>{label}</span><ChevronRight size={18} aria-hidden="true"/></Link>)}</nav><section><h1 className={styles.applicationTitle}><span><Inbox size={24} aria-hidden="true"/></span>{title}</h1><ul className={styles.overviewCards}>{entries.filter(entry=>'description' in entry).map(({href:path,Icon,title:label,description})=><li key={path}><Link href={href(path)}><Icon size={24} aria-hidden="true"/><span><strong>{label}</strong><small>{description}</small></span><ChevronRight size={18} aria-hidden="true"/></Link></li>)}</ul><GroupLeaderPasses locale={locale} readOnly={role==='viewer'}/></section></div>}</ParticipationAdmin>;
 }
