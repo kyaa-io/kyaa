@@ -44,3 +44,13 @@ it('does not invent completion or count when the event data is unavailable', asy
  expect(screen.queryByRole('heading', {name:'Mission complete'})).toBeNull();
  expect(screen.queryByRole('button', {name:'Like'})).toBeNull();
 });
+
+it('preserves KoL attribution, flow start and hash when switching language', async () => {
+ window.history.replaceState({}, '', '/s/x?utm_source=x&utm_medium=kol&utm_campaign=kol-1113&utm_content=kol01&x_started=2026-11-13T07%3A00%3A00.000Z#steps');
+ auth.authenticated=false; render(<XMission locale="en" />);
+ const link=screen.getByRole('link',{name:'한국어'});
+ await waitFor(()=>expect(link.getAttribute('href')).toContain('utm_content=kol01'));
+ const url=new URL(link.getAttribute('href')!, 'https://kyaa.io/s/x');
+ expect(url.searchParams.get('locale')).toBe('ko'); expect(url.searchParams.get('utm_source')).toBe('x');
+ expect(url.searchParams.get('x_started')).toBe('2026-11-13T07:00:00.000Z'); expect(url.hash).toBe('#steps');
+});
