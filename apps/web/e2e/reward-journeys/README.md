@@ -60,3 +60,7 @@ SMOKE_BASE_URL=https://kyaa.io [SMOKE_STORAGE_STATE=<test account storage state>
 - Public lucky draw "closed" state and the unchanged wallet: the local app runs with `BYUS_DATA_ENVIRONMENT=development`, where entries are open. The closed path needs a production-data-environment server; only the route unit contract covers it today.
 - The 3-day steady check-in boundary, lucky draw → result → MY, gift tab, ranking pills, fan board uploads: next journeys.
 - One cheer per KST day (`concurrent cheers on one day stamp once`) is skipped while the database's active dukjil policy has no `cheer.sourceMode = user_day` (B3 policy). Under policy v1 a second cheer returns 409 `SOURCE_REUSED` instead of a replay.
+
+## Cookie-only local mock browser run
+
+`node apps/web/e2e/reward-journeys/email-local/run.mjs` starts a loopback HTTP fixture with `/api/auth/cognito/session` and `/api/me/attendance/local-creator`. It opens Chromium with only an HttpOnly `__Host-kyaa-email` cookie, drops the first attendance response after the fixture commits, and retries the same request key. It asserts two received keys, one receipt, one point-ledger write and no extra points. This proves browser retry and the **mock's** stateful deduplication; it does not execute the real database function. The actual server route forwards `requestKey` to `attend_creator`, whose current SQL returns a matching receipt before calling `group_wallet_post` (`supabase/migrations/20261210139500_attend_creator_steady_checkin.sql`). That SQL is source evidence, not a database execution in this run.
