@@ -40,8 +40,8 @@ export function GroupManageMissions({ pageId, pageName, locale }: { pageId: stri
 }
 
 /** 운영 관리의 추첨 탭. 승인된 선물에서 들어오면 폼부터 연다. */
-export function GroupManageRaffles({ pageId, pageName, locale, initialGiftId }: { pageId: string; pageName?: string; locale: AppLocale; initialGiftId?: string }) {
+export function GroupManageRaffles({ pageId, pageName, pageKind, locale, initialGiftId }: { pageId: string; pageName?: string; pageKind?: string; locale: AppLocale; initialGiftId?: string }) {
   const c = raffleCopy(locale), [creating, setCreating] = useAddressParam("new");
-  if (creating || initialGiftId) return <div id="raffles"><FanAction variant="text" leadingIcon={<ArrowLeft />} href={`/pages/groups/${pageId}/manage?section=raffles&locale=${locale}`} onClick={initialGiftId ? undefined : event => { event.preventDefault(); setCreating(null); }}>{c.title}</FanAction><CreateGroupRaffle pageId={pageId} pageName={pageName} locale={locale} initialGiftId={initialGiftId} /></div>;
+  if (creating || initialGiftId) return <div id="raffles"><FanAction variant="text" leadingIcon={<ArrowLeft />} href={`/pages/groups/${pageId}/manage?section=raffles&locale=${locale}`} onClick={initialGiftId ? undefined : event => { event.preventDefault(); setCreating(null); }}>{c.title}</FanAction><CreateGroupRaffle pageId={pageId} pageName={pageName} pageKind={pageKind} locale={locale} initialGiftId={initialGiftId} /></div>;
   return <div id="raffles"><GroupRaffleList pageId={pageId} locale={locale} emptyLabel={manageFormText(locale, "raffleNone")} action={<FanAction variant="primary" leadingIcon={<Plus />} onClick={() => setCreating("1")}>{c.create}</FanAction>} /></div>;
 }

@@ -101,6 +101,10 @@ export function projectNotificationRow(
     const page = text(payload.pageName, locale === "ko" ? "페이지" : "Page");
     return { id: String(row.id), kind, title: locale === "ko" ? `${page} 공지` : `Notice from ${page}`, detail: text(payload.postTitle, locale === "ko" ? "새 공지" : "New notice"), createdAt: String(row.created_at), readAt: row.read_at == null ? null : String(row.read_at), deepLink: String(row.deep_link) };
   }
+  if (kind === "group_raffle_result" || (kind === "group_raffle_won" && typeof one(row.payload)?.prizeName === "string")) {
+    const payload = one(row.payload) ?? {};
+    return { id: String(row.id), kind, title: kind === "group_raffle_won" ? (locale === "ko" ? "추첨에 당첨됐어요" : "You won the draw") : (locale === "ko" ? "추첨 결과가 나왔어요" : "The draw results are ready"), detail: text(payload.prizeName, locale === "ko" ? "경품" : "Prize"), createdAt: String(row.created_at), readAt: row.read_at == null ? null : String(row.read_at), deepLink: String(row.deep_link) };
+  }
   if (kind === "artist_comment" || kind === "artist_online") {
     const said = artistNotificationText(kind, one(row.payload) ?? {}, locale);
     return { id: String(row.id), kind, title: said.title, detail: said.detail, createdAt: String(row.created_at), readAt: row.read_at == null ? null : String(row.read_at), deepLink: String(row.deep_link) as NotificationItem["deepLink"] };

@@ -247,3 +247,16 @@ describe("B8 group notice notification", () => {
     expect(projectNotificationRow(row, "en")).toMatchObject({ title: "Notice from b8 모임", detail: "정기 모임 안내" });
   });
 });
+
+it("renders raffle result with only the prize name and the scoped direct link", () => {
+ const target = "e9200000-0000-4000-8000-000000000001";
+ const path = `/pages/groups/${target}/raffles/${target}`;
+ for (const locale of ["ko", "en"] as const) {
+  const item = projectNotificationRow({ id: target, kind: "group_raffle_result", created_at: "2026-11-01T00:00:00Z", read_at: null, deep_link: path, payload: { prizeName: "Gift card", nickname: "Private full name", winners: ["Secret"] } }, locale);
+  expect(notificationItemSchema.safeParse(item).success).toBe(true);
+  expect(item.detail).toBe("Gift card");
+  expect(item.deepLink).toBe(path);
+  expect(JSON.stringify(item)).not.toContain("Private full name");
+  expect(JSON.stringify(item)).not.toContain("Secret");
+ }
+});

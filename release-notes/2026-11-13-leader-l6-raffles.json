@@ -1,0 +1,16 @@
+{
+  "changes": [
+    "모임 추첨을 무료 1회 응모로 열고, 시작 시각과 출석·방문·미션·글·댓글 조건을 정할 수 있어요.",
+    "응모 조건별 달성 현황과 가린 당첨자 이름을 확인할 수 있고, 추첨이 끝나면 현재 모임에 가입된 응모자에게 결과를 알려드려요.",
+    "첨부 화면은 로컬 예시 데이터로 확인한 화면이에요."
+  ],
+  "path": "/pages/groups",
+  "images": [
+    "release-notes/images/2026-11-13-leader-l6-create-390.png",
+    "release-notes/images/2026-11-13-leader-l6-create-1440.png",
+    "release-notes/images/2026-11-13-leader-l6-entry-390.png",
+    "release-notes/images/2026-11-13-leader-l6-entry-1440.png",
+    "release-notes/images/2026-11-13-leader-l6-result-390.png",
+    "release-notes/images/2026-11-13-leader-l6-result-1440.png"
+  ]
+}
