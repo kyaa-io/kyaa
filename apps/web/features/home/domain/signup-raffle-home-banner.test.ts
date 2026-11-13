@@ -13,6 +13,6 @@ it('provides registrable responsive data and preserves campaign attribution in e
     expect(banner.title).toBe(signupRaffleText(locale, 'homeBannerTitle'));
     expect(banner.title).not.toBe(signupRaffleText(locale, 'title'));
     expect(banner.description).toContain('US$400');
-    expect(banner.mobileImage?.width).toBe(390);
+    expect(banner.mobileImage?.url).toBe('/images/signup-raffle/home-c.webp');
   }
 });
