@@ -2759,3 +2759,5 @@ D-C token ownership: `FanHeading variant="campaign"` owns the 18px/700 mobile an
 - 사용자 지정 예외: 홈(`/`)에서는 로그인한 PC에서도 기존 `FanLanguageSwitch compact`를 헤더에 노출한다. 다른 화면의 헤더 구성은 유지한다. 같은 부품·언어 대화상자·크기·색을 재사용하며 새 안내 문구는 넣지 않는다.
 - 검색의 유저 탭은 기존 `FanTabs segment`와 `FanAction text`, `FanState`, `FanSkeletonRows`를 쓴다. 결과에는 닉네임만 표시하고 기존 프로필 창을 연다. 메시지 권한은 기존 프로필·메시지 요청 경로가 판단한다.
 - design-md-audit: 글자·간격·색·상호작용은 위 공통 부품 소유. 새 CSS·이미지·카드 없음. 390·1440 실제 브라우저에서 긴 닉네임과 탭을 확인했다. 캡처는 예시 데이터를 쓰는 로컬 모임 harness와 `/` 경로의 공통 헤더 검증이다. 실제 홈의 서버 데이터 통합 화면과 실제 DB 검색 실행은 이번 로컬 검증에 포함되지 않는다.
+
+- 2026-11-13 X 미션 홈 배너는 기존 ManagedHomeBanner와 공통 토큰을 재사용한다.
