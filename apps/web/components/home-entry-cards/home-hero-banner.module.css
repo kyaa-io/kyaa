@@ -123,7 +123,7 @@
 @media (width < 48rem) {
   .banner[data-kind="mission"] { color: var(--color-ink); }
   .banner[data-kind="mission"] :is(.mobileBackdrop, .overlay) { display: none; }
-  .banner[data-kind="mission"] .fullImage { inset: 0 0 0 auto; width: 46%; }
+  .banner[data-kind="mission"] .fullImage { inset: 50% 0 auto auto; width: 46%; aspect-ratio: 1; transform: translateY(-50%); }
   .banner[data-kind="mission"] .copy { inset: 0 auto 0 0; width: 54%; align-items: flex-start; text-align: left; }
   .banner[data-kind="mission"] .eyebrow { color: var(--color-accent); }
   .banner[data-kind="mission"] .description { color: var(--color-muted); }
