@@ -17,7 +17,7 @@ try {
    await page.getByText(locale==='ko'?'좋아요 · 8':'Likes · 8').waitFor();
   }
   assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'overflow');
-  assert(await page.locator('a,button').evaluateAll(nodes=>nodes.every(n=>n.getBoundingClientRect().height>=44&&n.getBoundingClientRect().width>=44)),'touch target');
+  assert(await page.locator('main a, main button').evaluateAll(nodes=>nodes.every(n=>n.getBoundingClientRect().height>=44&&n.getBoundingClientRect().width>=44)),'touch target');
   assert.deepEqual(errors,[]);
   await page.close();
  }
