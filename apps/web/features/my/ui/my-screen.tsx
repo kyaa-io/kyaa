@@ -35,6 +35,7 @@ import { GiftNavLink } from "@/features/gifts/ui/gift-nav-link";
 import { GiftNotice } from "@/features/gifts/ui/gift-notice";
 import { giftText } from "@/features/gifts/ui/gift-text";
 import { MyEventsSection } from "./my-events";
+import { MyStatsCard } from "./my-stats";
 import { MyShortcuts, type MyShortcut } from "./my-shortcuts";
 import { DukjilProvider } from "@/features/dukjil/ui/dukjil-provider";
 import { CreatorImage } from "@/components/fan-ui/creator-image";
@@ -193,6 +194,7 @@ function MyDashboardSkeleton({ locale }: { locale: FanLocale }) {
       <div className={styles.pencilProfileCopy}><FanSkeleton width={160} height={32} /></div>
       <ProfileNav locale={locale} label={t.settings} giftUnread={0} />
     </header>
+    <MyStatsCard locale={locale} passport="loading" stamps="loading"/>
     <div className={styles.homeRow}>
       <MyPassportCardSkeleton title={t.myPassport} />
     </div>
@@ -303,6 +305,7 @@ function Dashboard({ summary, locale, avatarResource, refreshSummary, selectedSl
         <ProfileNav locale={locale} label={t.settings} giftUnread={summary.gifts?.unreadCount ?? 0} />
       </header>
       <GiftNotice locale={locale} unreadCount={summary.gifts?.unreadCount ?? 0} singleUnreadId={summary.gifts?.singleUnreadId ?? null} />
+      <MyStatsCard locale={locale} passport={selected?.passport ?? null} stamps={communityStamps.state.status === "loading" ? "loading" : stampCount}/>
       <div className={styles.homeRow}>
         <MyPassportCard creators={visibleCreators} selectedSlug={selectedSlug} onSelect={onSelectSlug} communityStamps={stamps} stampsError={communityStamps.state.status === "error"} retryStamps={communityStamps.retry} locale={locale} labels={labels}/>
       </div>

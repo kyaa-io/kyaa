@@ -11,7 +11,7 @@ const roadmap = (passportId: string, filled: number) => ({
 });
 const stage = (key: string, tier: string, subdivision: number, rank: number, minimumScore: number) => ({ key, tier, subdivision, rank, minimumScore });
 const data = vi.hoisted(() => ({
-  wallet: { points: 375, hearts: 4, tickets: 9, pointCost: 100 } as Record<string, number>,
+  wallet: { points: 375, tickets: 9, pointCost: 100, attendance: { streak: 5 } } as Record<string, unknown>,
   rewards: [] as unknown[],
   gifts: undefined as undefined | { unreadCount: number; singleUnreadId: string | null },
   summary: null as unknown,
@@ -23,7 +23,7 @@ const reward = (id: string) => ({ rewardResultId: id, winnerId: null, benefitId:
 const makeSummary = () => ({
   profile: { nickname: '별빛' },
   creators: [
-    { celebrity: { slug: 'nchive', name: '엔카이브', image: '/nchive.jpg', isPublic: true }, relationship: 'passport', passport: { id: passportA, tier: 'Silver', score: 15, remainingToNextTier: 35, stageProgress: { policyVersion: 3, current: stage('silver-1', 'Silver', 1, 2, 0), next: stage('silver-2', 'Silver', 2, 3, 0), remaining: 3, progressPercent: 0, unit: "stamps" as const } }, ticketBalance: 12, firstReaction: null },
+    { celebrity: { slug: 'nchive', name: '엔카이브', image: '/nchive.jpg', isPublic: true }, relationship: 'passport', passport: { id: passportA, tier: 'Silver', hearts: 4, score: 15, remainingToNextTier: 35, stageProgress: { policyVersion: 3, current: stage('silver-1', 'Silver', 1, 2, 0), next: stage('silver-2', 'Silver', 2, 3, 0), remaining: 3, progressPercent: 0, unit: "stamps" as const } }, ticketBalance: 12, firstReaction: null },
     { celebrity: { slug: 'second', name: '두번째', image: '/second.jpg', isPublic: true }, relationship: 'passport', passport: { id: passportB, tier: 'Bronze', score: 3, remainingToNextTier: 7, stageProgress: { policyVersion: 3, current: stage('bronze-1', 'Bronze', 1, 1, 0), next: stage('silver-1', 'Silver', 1, 2, 0), remaining: 1, progressPercent: 66, unit: "stamps" as const } }, ticketBalance: 0, firstReaction: null },
     { celebrity: { slug: 'unverified', name: '미인증 최애', image: '/u.jpg', isPublic: true }, relationship: 'first_reaction_only', passport: null, ticketBalance: 0, firstReaction: null },
   ],
@@ -55,7 +55,7 @@ vi.mock('@/components/fan-shell/fan-app-shell', () => ({ FanAppFrame: ({ childre
 
 const renderMy = (locale: 'ko' | 'en' | 'ru' | 'ja' = 'ko') => render(<GroupsReleaseProvider enabled><MyScreen locale={locale} /></GroupsReleaseProvider>);
 const before = (a: Element, b: Element) => Boolean(a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING);
-beforeEach(() => { window.localStorage.clear(); data.wallet = { points: 375, hearts: 4, tickets: 9, pointCost: 100 }; data.rewards = []; data.gifts = undefined; });
+beforeEach(() => { window.localStorage.clear(); data.wallet = { points: 375, tickets: 9, pointCost: 100, attendance: { streak: 5 } }; data.rewards = []; data.gifts = undefined; });
 
 it('puts the selected passport tier next to the name', () => {
   renderMy();
@@ -110,6 +110,30 @@ it('switches the passport card to the other favorite', () => {
   const card = screen.getByRole('region', { name: '내 패스포트' });
   expect(within(card).getByText('이번 쪽 1/9')).toBeInTheDocument();
   expect(within(card).getByText('실버까지 도장 1칸')).toBeInTheDocument();
+});
+
+it('shows my stats between the profile and the passport as numbers only', () => {
+  renderMy();
+  const name = screen.getByRole('heading', { level: 1, name: '별빛님' });
+  const stats = screen.getByRole('region', { name: '내 통계' });
+  const passport = screen.getByRole('heading', { name: '내 패스포트' });
+  expect(before(name, stats)).toBe(true);
+  expect(before(stats, passport)).toBe(true);
+  const value = (label: string) => within(stats).getByText(label).closest('div')!.querySelector('dd')!.textContent;
+  expect(value('등급')).toBe('실버 1');
+  expect(value('하트')).toBe('4');
+  expect(value('포인트')).toBe('375P');
+  expect(value('응모권')).toBe('9장');
+  expect(value('스탬프')).toBe('3/9');
+  expect(value('연속 출석')).toBe('5일');
+  expect(within(stats).queryByRole('button')).toBeNull();
+});
+
+it('shows points from 10,000 in the short form', () => {
+  data.wallet = { points: 12_345, tickets: 0, pointCost: 100, attendance: { streak: 0 } };
+  renderMy('en');
+  const stats = screen.getByRole('region', { name: 'My stats' });
+  expect(within(stats).getByText('Points').closest('div')!.querySelector('dd')!.textContent).toBe('12.3KP');
 });
 
 it('does not duplicate the wallet on MY', () => {
