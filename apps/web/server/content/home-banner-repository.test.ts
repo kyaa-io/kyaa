@@ -25,3 +25,15 @@ it("reads group-discovery banners through the placement-specific RPC", async()=>
  expect(rpc).toHaveBeenCalledWith('read_published_discovery_banners',{p_locale:'ko'});
  expect(rows[0]).toMatchObject({placement:'groups',category:'event'});
 });
+
+it("reads the 덕질 area and keeps only its own slot", async()=>{
+ const rpc=vi.fn().mockResolvedValue({data:{dukjil_mid:{...valid,placement:'dukjil_mid',category:'event'},home_mid:{...valid,placement:'home_mid'}},error:null});
+ const slots=await createHomeBannerRepository({url:undefined,serviceRoleKey:undefined}, {rpc} as never).listSlots('ko','dukjil');
+ expect(rpc).toHaveBeenCalledWith('read_published_slot_banners',{p_locale:'ko',p_area:'dukjil'});
+ expect(Object.keys(slots)).toEqual(['dukjil_mid']);
+});
+it("reads home_mid with the home slots", async()=>{
+ const rpc=vi.fn().mockResolvedValue({data:{home_mid:{...valid,placement:'home_mid',category:'ad'}},error:null});
+ const slots=await createHomeBannerRepository({url:undefined,serviceRoleKey:undefined}, {rpc} as never).listSlots('en','home');
+ expect(slots.home_mid?.id).toBe(valid.id);
+});

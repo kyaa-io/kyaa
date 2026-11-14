@@ -175,3 +175,19 @@ it('saves placement and category with the banner in one command',async()=>{
  const init=fetcher.mock.calls[1] as unknown as [string,RequestInit];
  expect(JSON.parse(String(init[1].body))).toMatchObject({action:'save',placement:'groups',category:'group'});
 });
+
+it('offers 홈배너2 and 덕질배너1 as placements and saves the chosen slot',async()=>{
+ const data=fixture();
+ const fetcher=vi.fn(async()=>Response.json(data));vi.stubGlobal('fetch',fetcher);
+ render(<HomeBannerManager locale="ko" role="admin"/>);
+ await screen.findByDisplayValue('카라 LIVE');
+ const select=screen.getByRole('combobox',{name:'노출 위치'});
+ expect(within(select).getByRole('option',{name:/홈배너2 · 랭킹 아래 \(모바일 716 x 320, PC 2720 x 480\)/})).toBeInTheDocument();
+ expect(within(select).getByRole('option',{name:/덕질배너1 · 덕질 탭 가운데/})).toBeInTheDocument();
+ expect(within(select).getAllByRole('option')).toHaveLength(9);
+ fireEvent.change(select,{target:{value:'dukjil_mid'}});
+ fireEvent.click(screen.getByRole('button',{name:'초안 저장'}));
+ await waitFor(()=>expect(fetcher).toHaveBeenCalledTimes(2));
+ const init=fetcher.mock.calls[1] as unknown as [string,RequestInit];
+ expect(JSON.parse(String(init[1].body))).toMatchObject({action:'save',placement:'dukjil_mid'});
+});

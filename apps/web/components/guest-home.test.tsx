@@ -87,19 +87,43 @@ describe("canonical 03 guest home", () => {
     expect(screen.getAllByTestId("home-ranking")).toHaveLength(1);
   });
 
-  it("shows the heart donation strip and the banner under the ranking only when the server flag is on", () => {
+  it("shows the heart donation strip as 홈배너1 right above the ranking only when the server flag is on, with nothing under the ranking", () => {
     const off = render(<GuestHome {...defaultProps} />);
     expect(off.container.querySelector("[data-home-heart-donation]")).toBeNull();
-    expect(off.container.querySelector('[data-banner-slot="home-below-ranking"]')).toBeNull();
+    expect(off.container.querySelector('[data-banner-slot="home_top"]')).toBeNull();
     off.unmount();
     const on = render(<GuestHome {...defaultProps} jjinfanGauge />);
-    expect(on.container.querySelector("[data-home-heart-donation]")).not.toBeNull();
+    const top = on.container.querySelector('[data-banner-slot="home_top"]')!;
     const ranking = on.container.querySelector("#home-ranking")!;
-    const slot = on.container.querySelector('[data-banner-slot="home-below-ranking"]')!;
+    expect(top.querySelector("[data-home-heart-donation]")).not.toBeNull();
+    expect(top.querySelector('[data-banner-slot="home-below-ranking"]')).toBeNull();
+    expect(top.compareDocumentPosition(ranking) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(on.container.querySelector('[data-banner-slot="home-below-ranking"]')).toBeNull();
+    expect(top.textContent).not.toContain("찐팬 100");
+  });
+  it("puts the 찐팬 100 banner row in 홈배너1 instead of the donation strip when the setting says jjinfan100", () => {
+    const { container } = render(<GuestHome {...defaultProps} jjinfanGauge homeTop="jjinfan100" />);
+    const top = container.querySelector('[data-banner-slot="home_top"]')!;
+    const slot = top.querySelector('[data-banner-slot="home-below-ranking"]')!;
     expect(slot.textContent).toContain("찐팬 100 챌린지");
     expect(slot.querySelector("a")).toHaveAttribute("href", "/yuna?locale=ko&challenge=jjinfan100");
-    expect(ranking.compareDocumentPosition(slot) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
-    expect(on.container.querySelector("[data-home-heart-donation]")?.textContent).not.toContain("찐팬 100");
+    expect(container.querySelector("[data-home-heart-donation]")).toBeNull();
+    expect(top.compareDocumentPosition(container.querySelector("#home-ranking")!) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(container.querySelectorAll('[data-banner-slot="home-below-ranking"]')).toHaveLength(1);
+  });
+  it("draws 홈배너2 right under the ranking from the home_mid slot, before the thin banner, and nothing when the slot is empty", () => {
+    const mid = { ...bannerFixture, id: "55555555-5555-4555-8555-555555555555", title: "광고", category: "ad" as const, placement: "home_mid" as const };
+    const thin = { ...bannerFixture, id: "44444444-4444-4444-8444-444444444444", title: "얇은 띠", placement: "home_below_board" as const };
+    const first = render(<GuestHome {...defaultProps} homeSlots={{ home_mid: mid, home_below_board: thin }} />);
+    const midStrip = first.container.querySelector('[data-banner-size="mid"]')!;
+    const thinStrip = first.container.querySelector('[data-banner-size="thin"]')!;
+    expect(midStrip).toHaveAttribute("data-banner-id", mid.id);
+    expect(screen.getByTestId("home-ranking").compareDocumentPosition(midStrip) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(midStrip.compareDocumentPosition(thinStrip) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    first.unmount();
+    const second = render(<GuestHome {...defaultProps} />);
+    expect(second.container.querySelector('[data-banner-size="mid"]')).toBeNull();
+    expect(second.container.querySelector("[class*=midBanner]")).toBeNull();
   });
   it("draws the thin banner from the slot read with the page, before the notices, and nothing when the slot is empty", () => {
     const thin = { ...bannerFixture, id: "44444444-4444-4444-8444-444444444444", title: "얇은 띠", placement: "home_below_board" as const };

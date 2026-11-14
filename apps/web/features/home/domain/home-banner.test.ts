@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { bannerFixture } from "../../../e2e/banner-local/fixture";
-import { bannerPublicationIssues, homeBannerCommandSchema, homeBannerSchema, isBannerHref, localizedBannerHref, withHomeGuideBanners, withoutGuideBanners } from "./home-banner";
+import { bannerPublicationIssues, bannerSlotsByArea, homeBannerCommandSchema, homeBannerSchema, isBannerHref, localizedBannerHref, withHomeGuideBanners, withoutGuideBanners } from "./home-banner";
 
 describe("independent home banner contract", () => {
   it("appends the home guide banners to the discovery slides without repeating any", () => {
@@ -48,4 +48,11 @@ it('validates placement and category independently from existing banner kinds',(
  expect(homeBannerSchema.safeParse({...bannerFixture,placement:'groups',category:'event'}).success).toBe(true);
  expect(homeBannerSchema.safeParse({...bannerFixture,placement:'private'}).success).toBe(false);
  expect(homeBannerSchema.safeParse({...bannerFixture,category:'unknown'}).success).toBe(false);
+});
+
+it('accepts the two mid slots as placements and keeps them in their own areas',()=>{
+ for(const placement of ['home_mid','dukjil_mid'])expect(homeBannerSchema.safeParse({...bannerFixture,placement}).success).toBe(true);
+ expect(bannerSlotsByArea.home).toContain('home_mid');
+ expect(bannerSlotsByArea.dukjil).toEqual(['dukjil_mid']);
+ expect(bannerSlotsByArea.fanpage).not.toContain('dukjil_mid');
 });

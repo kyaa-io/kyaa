@@ -1,5 +1,5 @@
 import { expect, it } from "vitest";
-import { heartDonationEvent } from "./heart-donation-event";
+import { heartDonationEvent, homeTopBanner } from "./heart-donation-event";
 
 it("defaults to Elina with no cause and no recipient yet", () => {
   expect(heartDonationEvent({})).toEqual({ creatorSlug: "elina", creatorName: null, cause: null, recipient: null });
@@ -10,4 +10,9 @@ it("reads the creator, the cause and the recipient from the settings", () => {
 });
 it("ignores a slug that cannot be a page address", () => {
   expect(heartDonationEvent({ KYAA_HEART_DONATION_CREATOR_SLUG: "../admin" }).creatorSlug).toBe("elina");
+});
+it("keeps the donation strip as the top banner until the setting says jjinfan100", () => {
+  expect(homeTopBanner({})).toBe("donation");
+  expect(homeTopBanner({ KYAA_HOME_TOP_BANNER: "other" })).toBe("donation");
+  expect(homeTopBanner({ KYAA_HOME_TOP_BANNER: " jjinfan100 " })).toBe("jjinfan100");
 });

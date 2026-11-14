@@ -126,6 +126,23 @@ it('DUO: preserves the approved block order, four tiles and a single check-in ac
  expect(v.container.querySelector('[data-duo-today]')).toBeNull();
  expect(v.container.querySelector('[data-wallet-card]')?.querySelector('.lucide-chevron-right')).toBeNull();
 });
+it('대표 11/14 22:25 덕질배너1: the banner sits between the lucky draw and the missions, and without one there is no row, no wrapper and no grid flag',async()=>{
+ duoData(); const asset={id:uid(900),url:'/dukjil-banner.webp',width:716,height:320,mimeType:'image/webp',revision:1};
+ const banner={id:uid(901),kind:'announcement' as const,celebrityId:null,placement:'dukjil_mid' as const,category:'event' as const,title:'영수증 버리지 마세요',description:'',ctaLabel:'보기',href:'/guide/dukjil',alt:'영수증 버리지 마세요',desktopImage:{...asset,width:2720,height:480},mobileImage:asset};
+ const v=render(<GroupBenefitsScreen locale='ko' banner={banner}/>);
+ await screen.findByText('글쓰기');
+ const slot=v.container.querySelector('[data-dukjil-banner-slot]')!,lucky=v.container.querySelector('[data-lucky-section]')!,missions=v.container.querySelector('[data-missions-section]')!;
+ expect(lucky.compareDocumentPosition(slot)&Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+ expect(slot.compareDocumentPosition(missions)&Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+ expect(slot.querySelector('a')).toHaveAttribute('href','/guide/dukjil?locale=ko');
+ expect(slot.querySelector('[data-banner-size="mid"]')).toHaveAttribute('data-split','true');
+ expect(v.container.querySelector('[data-dukjil-banner]')).not.toBeNull();
+ v.unmount();
+ const none=render(<GroupBenefitsScreen locale='ko'/>);
+ await screen.findByText('글쓰기');
+ expect(none.container.querySelector('[data-dukjil-banner-slot]')).toBeNull();
+ expect(none.container.querySelector('[data-dukjil-banner]')).toBeNull();
+});
 it('DUO: while the draw rests the card says so with one disabled enter button and no allowance',async()=>{
  duoData();render(<GroupBenefitsScreen locale='ko'/>);
  const lucky=await screen.findByRole('region',{name:groupBenefitsCopy('ko').lucky});

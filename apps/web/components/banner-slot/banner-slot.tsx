@@ -10,7 +10,7 @@ import type { AppLocale } from "@/i18n/locales";
 import { useBannerSlots } from "./banner-slot-source";
 import styles from "./banner-slot.module.css";
 
-const areaOf = (slot: BannerSlotKey) => slot.startsWith("home_") ? "home" as const : "fanpage" as const;
+const areaOf = (slot: BannerSlotKey) => slot.startsWith("home_") ? "home" as const : slot.startsWith("dukjil_") ? "dukjil" as const : "fanpage" as const;
 
 /**
  * A managed banner slot. Nothing is drawn while it loads, when it is empty or when it fails: no box and no space,
