@@ -49,9 +49,12 @@ export function celebrityHandlers(deps: CmsRouteDeps) {
         const c = correlation(request),
           admin = await actor(request, deps, c),
           id = new URL(request.url).searchParams.get("id");
+        const items = await deps.repository.celebrities(admin, id);
+        const platformFollowers = await deps.repository.platformFollowers(admin, id).catch(() => null);
         return Response.json({
-          items: await deps.repository.celebrities(admin, id),
-          platformFollowers: await deps.repository.platformFollowers(admin, id),
+          items,
+          platformFollowers,
+          followersUnavailable: platformFollowers === null,
           role: admin.role,
         });
       } catch (e) {

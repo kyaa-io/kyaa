@@ -189,6 +189,7 @@ function CelebrityCms({
     [query, setQuery] = useState(""),
     [publicationFilter, setPublicationFilter] =
       useState<PublicationFilter>("all"),
+    [followersUnavailable, setFollowersUnavailable] = useState(false),
     [state, setState] = useState<"loading" | "ready" | "error" | "saving">(
       "loading",
     ),
@@ -218,8 +219,9 @@ function CelebrityCms({
   const load = useCallback(async () => {
     setState("loading");
     try {
-      const p = (await request("GET")) as { items: Celebrity[]; platformFollowers?: AdminPlatformFollower[] };
+      const p = (await request("GET")) as { items: Celebrity[]; platformFollowers: AdminPlatformFollower[] | null; followersUnavailable?: boolean };
       setFollowers(p.platformFollowers ?? []);
+      setFollowersUnavailable(p.followersUnavailable === true);
       // A record saved without localizations returns null; one bad row must not break the whole list.
       setItems(p.items.map((x) => ({ ...x, localizations: { ko: x.localizations?.ko ?? blank.localizations.ko, en: x.localizations?.en ?? blank.localizations.en } })));
       setState("ready");
@@ -864,6 +866,7 @@ function CelebrityCms({
               key={current.id}
               celebrityId={current.id}
               rows={followers.filter((row) => row.celebrityId === current.id)}
+              unavailable={followersUnavailable}
               locale={locale}
               canEdit={canEdit}
               save={saveFollowers}
