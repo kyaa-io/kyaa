@@ -1,5 +1,6 @@
 import type { ComponentProps, ReactNode } from "react";
-import { fireEvent, render, screen } from "@testing-library/react";
+import { act, fireEvent, render, screen } from "@testing-library/react";
+import { notifyFanActivityUpdated } from "@/components/fan-ui/fan-activity-updates";
 import { beforeEach, expect, it, vi } from "vitest";
 import { GroupPageHead, GroupPageFrame } from "./group-page-frame";
 import { GroupPageProvider } from "./group-page-context";
@@ -9,7 +10,7 @@ const state = vi.hoisted(() => ({
   data: undefined as ComponentProps<typeof GroupPageFrame>["initialDetail"],
   query: "locale=ko&tab=board", error: false, loading: false,
   failure: undefined as { status: number } | undefined,
-  ownerKey: "guest", retry: vi.fn(), preload: vi.fn(),
+  ownerKey: "guest", retry: vi.fn(), preload: vi.fn(), authenticated: false,
 }));
 vi.mock("next/navigation", () => ({ useSearchParams: () => new URLSearchParams(state.query), usePathname: () => "/mina", useRouter: () => ({ replace: vi.fn(), push: vi.fn() }) }));
 vi.mock("next/link", () => ({ default: ({ prefetch, onNavigate: _onNavigate, scroll: _scroll, ...props }: any) => <a {...props} data-prefetch={prefetch === undefined ? "default" : String(prefetch)} /> }));
@@ -22,7 +23,7 @@ vi.mock("./use-group-presence", async importOriginal => ({ ...await importOrigin
 vi.mock("./group-presence", () => ({ GroupPresence: ({ memberCount }: { memberCount?: number }) => <div>{memberCount}</div> }));
 vi.mock("./group-page-menu", () => ({ GroupPageMenu: () => null }));
 vi.mock("./group-shell", () => ({ GroupShell: ({ children }: { children: ReactNode }) => <main>{children}</main> }));
-vi.mock("@/features/auth/client/cognito-auth", () => ({ useByUsAuth: () => ({ ready: true, authenticated: false }) }));
+vi.mock("@/features/auth/client/cognito-auth", () => ({ useByUsAuth: () => ({ ready: true, authenticated: state.authenticated, user: state.authenticated ? { id: "viewer" } : undefined }) }));
 vi.mock("@/components/fan-ui/use-owned-fan-resource", () => ({ useOwnedFanResource: () => ({ state: { status: "loading" }, retry: vi.fn() }) }));
 vi.mock("@/features/content-safety/ui/use-automatic-translation", () => ({ TranslationControl: () => null, useAutomaticTranslation: ({ texts }: { texts: readonly string[] }) => ({ observeElement: () => {}, texts }) }));
 
@@ -33,7 +34,7 @@ const detail: NonNullable<ComponentProps<typeof GroupPageFrame>["initialDetail"]
 const tree = (props: Partial<ComponentProps<typeof GroupPageFrame>> = {}) => <GroupPageFrame pageId="page-id" locale="ko" {...props}><div>panel content</div></GroupPageFrame>;
 const tabNav = () => document.querySelector("nav[data-fan-tabs]")!;
 beforeEach(() => {
-  Object.assign(state, { data: detail, query: "locale=ko&tab=board", error: false, loading: false, failure: undefined, ownerKey: "guest", retry: vi.fn(), preload: vi.fn() });
+  Object.assign(state, { data: detail, query: "locale=ko&tab=board", error: false, loading: false, failure: undefined, ownerKey: "guest", retry: vi.fn(), preload: vi.fn(), authenticated: false });
 });
 
 it("leaves prefetch to the shared Link for all five tabs: off until a pointer reaches one, then the default", () => {
@@ -133,4 +134,31 @@ it("places the proof tab immediately after the board on a fanpage route", () => 
   const links = [...document.querySelectorAll("nav[data-fan-tabs]")].at(-1)!.querySelectorAll("a");
   expect([...links].slice(0, 3).map(link => link.textContent)).toEqual(["홈", "게시판", "인증"]);
   expect(links[2].getAttribute("href")).toContain("tab=proofs");
+});
+
+const fanDetail = (extra: object) => ({ ...detail, page: { ...detail.page, kind: "fan" as const, celebrityId: "c", slug: "elina", name: "엘리나", ...extra } });
+
+it("shows the like count as the fan page's 팬 N and the member count on every other page", () => {
+  Object.assign(state, { data: fanDetail({ memberCount: 146, likeCount: 107 }) });
+  const fan = render(tree());
+  expect(fan.container).toHaveTextContent("107");
+  expect(fan.container).not.toHaveTextContent("146");
+  fan.unmount();
+  Object.assign(state, { data: { ...detail, page: { ...detail.page, memberCount: 13, likeCount: 5 } } });
+  const hobby = render(tree());
+  expect(hobby.container).toHaveTextContent("13");
+  expect(hobby.container).not.toHaveTextContent("5");
+  hobby.unmount();
+  Object.assign(state, { data: fanDetail({ memberCount: 146 }) });
+  expect(render(tree()).container).toHaveTextContent("146");
+});
+
+it("re-reads the page after this viewer's own like succeeds, and not for another viewer's or on a plain focus", () => {
+  Object.assign(state, { data: fanDetail({ memberCount: 146, likeCount: 107 }), authenticated: true });
+  render(tree());
+  act(() => notifyFanActivityUpdated("someone-else"));
+  act(() => { window.dispatchEvent(new Event("focus")); });
+  expect(state.retry).not.toHaveBeenCalled();
+  act(() => notifyFanActivityUpdated("viewer"));
+  expect(state.retry).toHaveBeenCalledTimes(1);
 });

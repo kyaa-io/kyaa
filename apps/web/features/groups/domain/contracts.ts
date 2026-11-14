@@ -6,6 +6,8 @@ export const groupPageSchema = z.object({
   id: z.string().uuid(), kind: groupKindSchema, celebrityId: z.string().uuid().nullable(),
   slug: z.string().nullable(), anonymous:z.boolean().optional(), name: z.string(), description: z.string(),
   imageUrl: z.string().nullable(), question: z.string().nullable(), memberCount: z.number().int().nonnegative(),
+  // 팬페이지(kind=fan)에만: '좋아요 남기기'를 누른 활성 계정 수. 홈 크리에이터 랭킹의 누적 좋아요와 같은 값이다.
+  likeCount: z.number().int().nonnegative().optional(),
   lastSeenAt: z.iso.datetime({offset:true}).nullable().optional(),
   isNew: z.boolean().optional(), challenge: z.boolean().optional(), fanCount: z.number().int().nonnegative().optional(),
   // Only with ?fields=facts (groupApiQuery({ fields: "facts" })). Absent on older servers and without the parameter.
