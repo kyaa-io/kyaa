@@ -85,6 +85,66 @@ describe("a write empties the store under mounted hooks", () => {
     await waitFor(() => expect(screen.getByTestId("group")).toHaveTextContent("n=2"));
     expect(seen).not.toContain("group:loading");
   });
+  describe("a late failed preload never touches a newer read of the same address", () => {
+    const url = "/api/groups/tab";
+    const cacheKey = () => `${ownerKey()}:ko:true:${url}`;
+    function deferredReads() {
+      const pending: { resolve: (response: Response) => void; reject: (error: Error) => void }[] = [];
+      vi.stubGlobal("fetch", vi.fn((_input: RequestInfo | URL, init?: RequestInit) => {
+        if (init?.method) return Promise.resolve(Response.json({ ok: true }));
+        return new Promise<Response>((resolve, reject) => { pending.push({ resolve, reject }); });
+      }));
+      return pending;
+    }
+    function mountPreloader() {
+      function Preloader() { const preload = usePreloadGroupResource(); useEffect(() => { handle.write = async () => preload(url); }); return null; }
+      render(<Preloader />);
+    }
+    const preloadAgain = () => act(async () => { await write(); });
+    const settle = (action: () => void) => act(async () => { action(); await new Promise((resolve) => setTimeout(resolve, 20)); });
+
+    it("keeps the new read's stored value when the old preload fails after it succeeded, and the next preload adds no GET", async () => {
+      const pending = deferredReads();
+      mountPreloader();
+      await preloadAgain();
+      await waitFor(() => expect(pending).toHaveLength(1));
+      clearResources();
+      await preloadAgain();
+      await waitFor(() => expect(pending).toHaveLength(2));
+      await settle(() => pending[1]!.resolve(Response.json({ n: 2 })));
+      await waitFor(() => expect(peekResource(cacheKey())?.value).toEqual({ n: 2 }));
+      await settle(() => pending[0]!.reject(new Error("late failure")));
+      expect(peekResource(cacheKey())?.value).toEqual({ n: 2 });
+      await preloadAgain();
+      expect(pending).toHaveLength(2);
+    });
+    it("lets the next preload join the new read when the old preload fails while it is still running", async () => {
+      const pending = deferredReads();
+      mountPreloader();
+      await preloadAgain();
+      await waitFor(() => expect(pending).toHaveLength(1));
+      clearResources();
+      await preloadAgain();
+      await waitFor(() => expect(pending).toHaveLength(2));
+      await settle(() => pending[0]!.reject(new Error("late failure")));
+      await preloadAgain();
+      expect(pending).toHaveLength(2);
+      await settle(() => pending[1]!.resolve(Response.json({ n: 2 })));
+      await waitFor(() => expect(peekResource(cacheKey())?.value).toEqual({ n: 2 }));
+    });
+    it("reads again on the next preload when the only preload failed", async () => {
+      const pending = deferredReads();
+      mountPreloader();
+      await preloadAgain();
+      await waitFor(() => expect(pending).toHaveLength(1));
+      await settle(() => pending[0]!.reject(new Error("failure")));
+      expect(peekResource(cacheKey())).toBeUndefined();
+      await preloadAgain();
+      await waitFor(() => expect(pending).toHaveLength(2));
+      await settle(() => pending[1]!.resolve(Response.json({ n: 3 })));
+      await waitFor(() => expect(peekResource(cacheKey())?.value).toEqual({ n: 3 }));
+    });
+  });
   it("reuses an /api/me value read moments ago, so panels mounting one after another on first load read it once", async () => {
     const net = jsonFetch({ "/api/me/wallet": { n: 2 } });
     storeResource(`${ownerKey()}:ko:true:/api/me/wallet`, { n: 1 });
