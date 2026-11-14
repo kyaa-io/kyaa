@@ -1,0 +1,8 @@
+{
+  "changes": [
+    "PC 화면(768px 이상)에서 모임 맨 위 크리에이터 배너가 왼쪽에 치우쳐 오른쪽이 비어 보이던 것을 가운데로 옮겼어요. 배너 크기와 비율은 그대로이고 모바일 화면은 바뀌지 않아요.",
+    "첨부 화면은 로컬 예시 데이터로 연 1440px 캡처이며 운영 화면이 아니에요."
+  ],
+  "path": "/celebrities",
+  "images": ["release-notes/images/2026-11-15-groups-promo-banner-center-1440.png"]
+}
