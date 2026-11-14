@@ -31,7 +31,6 @@
 .emptyNumber { position: absolute; inset: 0; display: grid; place-items: center; color: var(--passport-muted); font-size: var(--fan-item-title-size); font-weight: var(--fan-item-title-weight); font-variant-numeric: tabular-nums; }
 .check { position: absolute; right: 0; bottom: 0; z-index: 1; display: grid; width: 20px; height: 20px; place-items: center; border-radius: 50%; background: var(--passport-ink-pink); color: var(--color-surface); }
 .pressed { position: absolute; inset: 0; }
-.slotTask { max-width: 100%; color: var(--passport-muted); font-size: var(--fan-metadata-size); line-height: 1.35; overflow-wrap: anywhere; word-break: keep-all; }
 /* An inked stamp lands a little crooked, each slot in its own way. */
 .slot[data-state="filled"] .art img { transform: rotate(var(--stamp-tilt, 0deg)); }
 .slotLabel { max-width: 100%; font-size: var(--fan-item-title-size); font-weight: var(--fan-item-title-weight); line-height: 1.3; }
@@ -58,23 +57,21 @@
   .guestWide .slots { grid-template-columns: repeat(5, minmax(0, 1fr)); }
 }
 
-/* 칸 전체가 그 미션으로 가는 링크다. 도움말만 그 위에 뜬다. */
-.slotLink { display: grid; min-width: 0; max-width: 100%; justify-items: center; gap: var(--space-1); color: inherit; text-decoration: none; }
+/* 칸 전체가 누르는 자리다(로그인: 설명 시트를 연다, 비로그인: 로그인으로 간다). */
+.slotLink { display: grid; min-width: 0; max-width: 100%; justify-items: center; gap: var(--space-1); margin: 0; padding: 0; border: 0; background: none; color: inherit; font: inherit; text-align: inherit; text-decoration: none; cursor: pointer; }
 .slotLink::after { position: absolute; inset: 0; border-radius: inherit; content: ""; }
 .slotLink:focus-visible { outline: 0; }
 .slotLink:focus-visible::after { outline: var(--focus-width) solid var(--color-focus); outline-offset: var(--focus-offset); }
 @media (hover: hover) and (pointer: fine) { .slot:has(.slotLink):hover { border-color: var(--passport-muted); } }
-.help { position: relative; z-index: 1; }
-/* 미션이 있는 칸은 한 줄에 놓인 칸끼리 그림·제목·설명·포인트·도움말·날짜 행을 같은 높이 줄에 맞춘다(subgrid). 설명은 두 줄까지만 보인다. */
-.slot[data-kind] { grid-row: span 6; grid-template-rows: subgrid; row-gap: var(--space-1); }
+/* 미션이 있는 칸은 한 줄에 놓인 칸끼리 그림·제목·포인트·날짜 행을 같은 높이 줄에 맞춘다(subgrid). */
+.slot[data-kind] { grid-row: span 4; grid-template-rows: subgrid; row-gap: var(--space-1); }
 .slot[data-kind] > .art { grid-row: 1; }
-.slot[data-kind] > .slotLabel { grid-row: 2; }
-.slot[data-kind] > .slotTask { grid-row: 3; }
-.slot[data-kind] > .slotLink { grid-row: 2 / span 2; grid-template-rows: subgrid; }
-.slot[data-kind] > .points { grid-row: 4; }
-.slot[data-kind] > .help { grid-row: 5; }
-.slot[data-kind] > .slotDate { grid-row: 6; }
-.slot[data-kind] .slotTask { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; overflow: hidden; }
+.slot[data-kind] > .slotLabel, .slot[data-kind] > .slotLink { grid-row: 2; }
+.slot[data-kind] > .points { grid-row: 3; }
+.slot[data-kind] > .slotDate { grid-row: 4; }
+.sheetBody { display: grid; justify-items: start; gap: var(--space-3); }
+.sheetTask { margin: 0; font-size: var(--fan-description-size); line-height: var(--fan-description-leading); overflow-wrap: anywhere; word-break: keep-all; }
+.slotDate { grid-row: 6; }
 .slotDate { color: var(--passport-muted); font-size: var(--passport-micro); font-variant-numeric: tabular-nums; }
 @media (min-width: 1024px) { [data-passport-book] .art { width: 88px; height: 88px; } }
 
