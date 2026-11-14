@@ -1,0 +1,5 @@
+{
+  "changes": ["홈 순위 아래 '찐팬 100 챌린지' 배너의 문구(챌린지 이름, 크리에이터 이름, 참여 버튼)를 가운데에서 왼쪽 안쪽으로 옮기고 왼쪽 정렬했어요. 시작 위치는 큰 화면에서 홈 맨 위 배너 문구와 같아요. 사진, 배너 높이, 모바일 화면은 그대로예요. 첨부 캡처는 내 컴퓨터에서 실제 화면 구성으로 찍은 수정 전·후 화면이에요."],
+  "path": "/",
+  "images": ["release-notes/images/2026-11-14-jjinfan-banner-left-before.png", "release-notes/images/2026-11-14-jjinfan-banner-left-after.png"]
+}
