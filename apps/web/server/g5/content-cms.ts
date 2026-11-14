@@ -5,6 +5,7 @@ import { z } from "zod";
 import { isCreatorHandle } from "../../features/creator/domain/creator-navigation";
 import { creatorRoleSchema } from "../../features/creator/domain/creator-role";
 import type { AdminSession } from "../admin/admin-session-gate";
+import { FOLLOWER_PLATFORMS, parseFollowerInput } from "../../features/rankings/domain/platform-followers";
 
 const uuid = z.string().uuid();
 // Preserve old editing clients during the additive primary-role rollout.
@@ -60,8 +61,20 @@ export const celebrityPayload = z.object({
         active: z.boolean(),
       }),
     )
-    .max(3),
+    .max(4),
 });
+/** What an operator typed for each platform ("1.2만", "50K", "1,088", "0"; empty = unconfirmed). The text is turned into the stored count, rounding and wording here, never in the browser. Only the platforms listed change. */
+export const platformFollowersPayload = z.array(z.object({
+  platform: z.enum(FOLLOWER_PLATFORMS),
+  text: z.string().max(40),
+}).transform((item, context) => {
+  const parsed = parseFollowerInput(item.text);
+  if (parsed === undefined) {
+    context.addIssue({ code: "custom", path: ["text"], message: "not a follower count" });
+    return z.NEVER;
+  }
+  return { platform: item.platform, count: parsed?.count ?? null, digits: parsed?.digits ?? null, sourceText: parsed?.sourceText ?? null };
+})).min(1).max(FOLLOWER_PLATFORMS.length).refine((items) => new Set(items.map((item) => item.platform)).size === items.length, "duplicate platform");
 const option = z.object({
   position: z.number().int().min(1).max(4),
   labelKo: z.string().trim().min(1).max(500),
@@ -104,6 +117,7 @@ export const commandPayload = z.discriminatedUnion("action", [
   }),
   z.object({ action: z.enum(["publish", "unpublish"]), celebrityId: uuid }),
   z.object({ action: z.literal("retry_registration"), celebrityId: uuid }),
+  z.object({ action: z.literal("save_platform_followers"), celebrityId: uuid, items: platformFollowersPayload }),
   z.object({
     action: z.literal("archive"),
     celebrityId: uuid,
@@ -168,6 +182,12 @@ export class ContentCmsRepository {
       p_celebrity: id,
       p_payload: payload,
     });
+  }
+  platformFollowers(actor: AdminSession, id: string | null) {
+    return this.call("read_admin_platform_followers", { p_actor: actor.allowlistId, p_celebrity: id });
+  }
+  savePlatformFollowers(actor: AdminSession, correlation: string, id: string, items: z.output<typeof platformFollowersPayload>) {
+    return this.call("save_admin_platform_followers", { p_actor: actor.allowlistId, p_correlation: correlation, p_celebrity: id, p_items: items });
   }
   publication(
     actor: AdminSession,

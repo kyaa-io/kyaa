@@ -9,3 +9,6 @@
 .label { overflow: hidden; margin: 0; text-overflow: ellipsis; color: var(--color-muted); font-size: var(--fan-badge-size); line-height: var(--fan-body-leading); white-space: nowrap; }
 .value { display: flex; align-items: center; gap: var(--space-1); overflow: hidden; margin: 0; color: var(--color-accent-ink); font-size: var(--fan-metadata-size); font-weight: var(--fan-item-title-weight); font-variant-numeric: tabular-nums; line-height: var(--fan-heading-leading); white-space: nowrap; }
 .value > span { overflow: hidden; text-overflow: ellipsis; }
+/* 플랫폼별 팔로워(A1, 안 A): 칸 줄 아래 따로 한 줄. 로고가 이름이라 글자 라벨이 없고, 숫자 칸은 값 칸(.value)을 그대로 쓴다. 넘치면 이 줄 안에서만 줄바꿈한다. */
+.platforms { display: flex; flex-wrap: wrap; min-width: 0; margin: var(--space-2) 0 0; padding: 0; gap: var(--space-2); list-style: none; }
+.platforms img { display: block; flex: none; }

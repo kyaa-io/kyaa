@@ -91,7 +91,9 @@ describe("home ranking public data contract", () => {
       }
       expect(body.rows[0]).not.toHaveProperty("profileId");
       expect(authorize).toHaveBeenCalledTimes(authenticated ? 1 : 0);
-      expect(rpc).toHaveBeenCalledTimes(1);
+      // The creator list also reads the platform follower counts (20261227150001), in a call of its own.
+      expect(rpc).toHaveBeenCalledTimes(kind === "creators" ? 2 : 1);
+      if (kind === "creators") expect(rpc).toHaveBeenLastCalledWith("read_celebrity_platform_followers", { p_slugs: [creator.slug] });
     });
   }
 

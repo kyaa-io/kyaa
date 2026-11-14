@@ -51,6 +51,7 @@ export function celebrityHandlers(deps: CmsRouteDeps) {
           id = new URL(request.url).searchParams.get("id");
         return Response.json({
           items: await deps.repository.celebrities(admin, id),
+          platformFollowers: await deps.repository.platformFollowers(admin, id),
           role: admin.role,
         });
       } catch (e) {
@@ -64,6 +65,10 @@ export function celebrityHandlers(deps: CmsRouteDeps) {
           body = commandPayload.parse(await request.json());
         if (body.action === "retry_registration") {
           return Response.json(await deps.repository.retryRegistration(admin, c, body.celebrityId));
+        }
+        if (body.action === "save_platform_followers") {
+          const result = await deps.repository.savePlatformFollowers(admin, c, body.celebrityId, body.items);
+          return Response.json({ platformFollowers: result });
         }
         if (body.action === "save") {
           const result = await deps.repository.saveCelebrity(
