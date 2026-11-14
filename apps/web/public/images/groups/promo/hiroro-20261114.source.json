@@ -4,6 +4,5 @@
   "date": "2026-11-14",
   "prompt": "Wide K-pop fan slogan banner; use the attached real photo with face, hair, outfit and pose unchanged. Flat pastel background; only large bold rounded capital text HIRORO; up to five small flat edge stickers; no other words, logo or watermark. Center-band crop to 1500x600.",
   "method": "Imagegen lettering/background plus original-photo cutout composite after two imagegen edit failures.",
-  "revision": "2026-11-14: regenerated lettering layout so every letter is visible; preserved existing banner people with original-pixel cutout composite.",
-  "revisionPrompt": "Change only the lettering layout of HIRORO; preserve the same people, faces, order, background and stickers; show every letter completely."
+  "revision": "2026-11-14: original layout retained; original-photo cutout enlarged and moved upward to align the person height with the other banners."
 }
