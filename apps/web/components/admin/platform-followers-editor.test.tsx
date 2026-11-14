@@ -7,6 +7,12 @@ const row = (over: Partial<AdminPlatformFollower>): AdminPlatformFollower => ({ 
 const input = (name: string) => screen.getByLabelText(new RegExp(name)) as HTMLInputElement;
 
 describe("PlatformFollowersEditor", () => {
+  it("shows an unavailable read without presenting empty counts for editing", () => {
+    render(<PlatformFollowersEditor celebrityId="c1" locale="ko" canEdit unavailable save={vi.fn()} rows={[]} />);
+    expect(screen.getByRole("alert")).toHaveTextContent("불러오지 못했습니다.");
+    expect(screen.queryByRole("textbox")).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "팔로워 저장" })).not.toBeInTheDocument();
+  });
   it("shows the platform's wording for a rounded count, the number for an exact one, 0 as 0, and marks a platform nobody confirmed", () => {
     render(<PlatformFollowersEditor celebrityId="c1" locale="ko" canEdit save={vi.fn()} rows={[row({}), row({ platform: "tiktok", count: 0, sourceText: null, digits: null }), row({ platform: "youtube", count: 1088, sourceText: null, digits: null, sourceKind: "collector" })]} />);
     expect(input("Instagram").value).toBe("1.2만");

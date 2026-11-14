@@ -52,7 +52,7 @@ describe("platform follower counts write boundary", () => {
     const celebrities = vi.fn().mockResolvedValue([]);
     const authorize = vi.fn().mockResolvedValue(admin);
     const deps: CmsRouteDeps = { authorize, repository: { savePlatformFollowers, platformFollowers, celebrities } as never, invalidatePublicContent: vi.fn() };
-    return { handlers: celebrityHandlers(deps), savePlatformFollowers, platformFollowers, authorize };
+    return { handlers: celebrityHandlers(deps), savePlatformFollowers, platformFollowers, celebrities, authorize };
   };
   const post = (items: unknown) => new Request("https://byus.test/api/admin/celebrities", {
     method: "POST", headers: { "content-type": "application/json", authorization: "Bearer token" },
@@ -97,5 +97,21 @@ describe("platform follower counts write boundary", () => {
     const { handlers } = make();
     const body = await (await handlers.GET(new Request("https://byus.test/api/admin/celebrities", { headers: { authorization: "Bearer token" } }))).json();
     expect(body.platformFollowers).toEqual([{ celebrityId, platform: "instagram", count: 12000 }]);
+    expect(body.followersUnavailable).toBe(false);
+  });
+  it("keeps the creator list available when only follower counts fail", async () => {
+    const { handlers, platformFollowers, celebrities } = make();
+    celebrities.mockResolvedValue([{ id: celebrityId }]);
+    platformFollowers.mockRejectedValue(new Error("read-only transaction"));
+    const response = await handlers.GET(new Request("https://byus.test/api/admin/celebrities"));
+    expect(response.status).toBe(200);
+    expect(await response.json()).toMatchObject({ items: [{ id: celebrityId }], platformFollowers: null, followersUnavailable: true });
+  });
+  it("still fails the list when the creator read fails", async () => {
+    const { handlers, celebrities, platformFollowers } = make();
+    celebrities.mockRejectedValue(new Error("creator read failed"));
+    const response = await handlers.GET(new Request("https://byus.test/api/admin/celebrities"));
+    expect(response.status).toBe(500);
+    expect(platformFollowers).not.toHaveBeenCalled();
   });
 });

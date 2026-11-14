@@ -25,8 +25,8 @@ const day = (value: string) => value.slice(0, 10);
 
 /** The administrator's input for the platform follower counts the creator ranking shows. Type the number as the platform shows it ("1.2만", "50K", "1,088"); empty = unconfirmed (not shown), 0 = confirmed zero.
  * It saves on its own: the creator form's save never touches these counts. */
-export function PlatformFollowersEditor({ celebrityId, rows, locale, canEdit, save }: {
-  celebrityId: string; rows: AdminPlatformFollower[]; locale: AdminLocale; canEdit: boolean;
+export function PlatformFollowersEditor({ celebrityId, rows, locale, canEdit, unavailable = false, save }: {
+  celebrityId: string; rows: AdminPlatformFollower[]; locale: AdminLocale; canEdit: boolean; unavailable?: boolean;
   save: (celebrityId: string, items: { platform: FollowerPlatform; text: string }[]) => Promise<AdminPlatformFollower[]>;
 }) {
   const ko = locale === "ko";
@@ -47,9 +47,10 @@ export function PlatformFollowersEditor({ celebrityId, rows, locale, canEdit, sa
   }
   return (
     <form className={styles.cmsForm} onSubmit={submit} aria-label={ko ? "플랫폼별 팔로워" : "Platform followers"}>
-      <fieldset disabled={!canEdit || state === "saving"}>
+      <fieldset disabled={!canEdit || unavailable || state === "saving"}>
         <legend>{ko ? "플랫폼별 팔로워" : "Platform followers"}</legend>
-        {FOLLOWER_PLATFORMS.map((platform) => {
+        {unavailable && <p role="alert" className={styles.cmsMessage}>{ko ? "불러오지 못했습니다." : "Could not load follower counts."}</p>}
+        {!unavailable && FOLLOWER_PLATFORMS.map((platform) => {
           const row = saved.find((item) => item.platform === platform);
           return (
             <label key={platform}>
@@ -69,7 +70,7 @@ export function PlatformFollowersEditor({ celebrityId, rows, locale, canEdit, sa
       </fieldset>
       {state === "saved" && <p role="status" className={styles.cmsMessage}>{ko ? "팔로워 수를 저장했습니다." : "Follower counts saved."}</p>}
       {state === "error" && <p role="alert" className={styles.cmsMessage}>{ko ? "저장하지 못했습니다." : "Could not save."}</p>}
-      {canEdit && (
+      {canEdit && !unavailable && (
         <div className={styles.formActions}>
           <FanAction type="submit" variant="secondary" leadingIcon={<Save aria-hidden="true" />} disabled={state === "saving" || !changed.length || invalid.length > 0}>
             {ko ? "팔로워 저장" : "Save followers"}

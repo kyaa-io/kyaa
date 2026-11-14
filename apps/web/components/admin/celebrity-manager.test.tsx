@@ -16,6 +16,14 @@ const celebrity = {
 };
 afterEach(() => vi.unstubAllGlobals());
 
+it("keeps the creator list usable when follower counts cannot load", async () => {
+  vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: true, json: async () => ({ items: [celebrity], platformFollowers: null, followersUnavailable: true }) }));
+  render(<AuthorizedCelebrityManager environment="Development" />);
+  fireEvent.click(await screen.findByRole("button", { name: /직군 검증.*가수/ }));
+  expect(screen.getAllByText("불러오지 못했습니다.").some((message) => message.closest("form")?.getAttribute("aria-label") === "플랫폼별 팔로워")).toBe(true);
+  expect(screen.queryByRole("button", { name: "팔로워 저장" })).not.toBeInTheDocument();
+});
+
 it("shows registration failure separately from publication and retries the same creator", async () => {
   const item = { ...celebrity, status: "published", onchainRegistration: {
     status: "failed", likesEnabled: false, attempts: 3, nextAttemptAt: null,
