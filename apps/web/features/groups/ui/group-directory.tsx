@@ -30,6 +30,8 @@ import { useGroupResource } from "./use-group-resource";
 import { groupsCopy } from "./copy";
 import { GroupShell } from "./group-shell";
 import { HotPosts, MyArtists, ThinCarousel } from "./directory-top";
+import { TodayFanpageBanner } from "./today-fanpage-banner";
+import type { TodayFanpage } from "../domain/today-fanpage";
 import { DirectorySearchUsers, userSearchLabels } from "./directory-search-users";
 import { DirectorySearchPosts } from "./directory-search-posts";
 import { creatorRoleFilterLabel } from "@/features/creator/domain/creator-role";
@@ -65,7 +67,7 @@ const parseList = (value:unknown)=>groupListSchema.parse(value);
 const SEARCH_DELAY_MS=300;
 const ROLE_FILTERS=['all','idol','singer','actor','creator','show_host'] as const;
 const searchTabs:Record<AppLocale,{artists:string;posts:string}>={ko:{artists:'아티스트',posts:'게시글'},en:{artists:'Artists',posts:'Posts'},ja:{artists:'アーティスト',posts:'投稿'},'zh-Hans':{artists:'艺人',posts:'帖子'},'zh-Hant':{artists:'藝人',posts:'貼文'},es:{artists:'Artistas',posts:'Publicaciones'},id:{artists:'Artis',posts:'Postingan'},vi:{artists:'Nghệ sĩ',posts:'Bài viết'},th:{artists:'ศิลปิน',posts:'โพสต์'},pt:{artists:'Artistas',posts:'Publicações'},fr:{artists:'Artistes',posts:'Publications'},ru:{artists:'Артисты',posts:'Публикации'}};
-export function GroupDirectory({locale,initialOwned=false,banners=[]}:{locale:AppLocale;banners?:HomeBanner[];initialMine?:"joined"|"bookmarked";initialType?:"all"|"fan"|"hobby"|"brand";initialSearch?:string;initialSort?:"popular"|"recent";initialOwned?:boolean}) {
+export function GroupDirectory({locale,initialOwned=false,banners=[],todayFanpages=[]}:{locale:AppLocale;banners?:HomeBanner[];todayFanpages?:readonly TodayFanpage[];initialMine?:"joined"|"bookmarked";initialType?:"all"|"fan"|"hobby"|"brand";initialSearch?:string;initialSort?:"popular"|"recent";initialOwned?:boolean}) {
   const t=groupsCopy(locale),c=discoveryCopy(locale),w=walletCopy(locale);
  const [attendanceOpen,setAttendanceOpen]=useState(false);
  const attendanceTrigger=useRef<HTMLAnchorElement|null>(null);
@@ -124,6 +126,7 @@ export function GroupDirectory({locale,initialOwned=false,banners=[]}:{locale:Ap
   const attendanceAction=!resource.authenticated?<FanAction className={styles.discoveryAttendanceGuest} variant="neutral" href={directoryLogin}><span className={directoryStyles.attendanceIcon} aria-hidden="true"/><span className={directoryStyles.attendanceLabel}>{w.attendance}</span></FanAction>:<FanAction href={`/my/wallet?view=attendance&locale=${locale}`} onClick={event=>{if(event.defaultPrevented||event.button!==0||event.metaKey||event.ctrlKey||event.shiftKey||event.altKey||event.currentTarget.target||event.currentTarget.hasAttribute('download'))return;event.preventDefault();attendanceTrigger.current=event.currentTarget;setAttendanceOpen(true);}} variant="primary"><span className={directoryStyles.attendanceIcon} aria-hidden="true"/><span className={directoryStyles.attendanceLabel}>{w.attendance}</span></FanAction>;
   return <GroupShell locale={locale}>
     <header className={styles.discoveryIntro}><FanHeading as="h1">{c.title}</FanHeading></header>
+    <TodayFanpageBanner items={todayFanpages} locale={locale}/>
     <MyArtists locale={locale} loginPath={`/pages/groups?${directoryLoginQuery}`}/>
     <ThinCarousel banners={banners} locale={locale}/>
     <div className={`${styles.layout} ${styles.discoveryLayout}`}><section className={styles.main} aria-label={t.explore} id="directory-explore" data-directory-explore="" data-filtered={holdHeight||undefined}>

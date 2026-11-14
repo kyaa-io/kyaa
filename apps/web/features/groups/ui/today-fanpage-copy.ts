@@ -1,0 +1,18 @@
+import type { AppLocale } from "@/i18n/locales";
+
+type Copy = { tag: string; posts: string; comments: string; likes: string; missions: string; fans: (n: string) => string; period: (days: number) => string; action: string; label: string; previous: string; next: string };
+const copy: Record<AppLocale, Copy> = {
+  ko: { tag: "오늘의 팬페이지", posts: "게시글", comments: "댓글", likes: "좋아요", missions: "미션", fans: (n) => `팬 ${n}명 참여`, period: (d) => `최근 ${d}일`, action: "팬페이지 가기", label: "오늘의 팬페이지", previous: "이전 팬페이지", next: "다음 팬페이지" },
+  en: { tag: "Fan page of the day", posts: "Posts", comments: "Comments", likes: "Likes", missions: "Missions", fans: (n) => `${n} fans joined in`, period: (d) => `Last ${d} days`, action: "Visit fan page", label: "Fan pages of the day", previous: "Previous fan page", next: "Next fan page" },
+  ja: { tag: "今日のファンページ", posts: "投稿", comments: "コメント", likes: "いいね", missions: "ミッション", fans: (n) => `ファン${n}人が参加`, period: (d) => `直近${d}日`, action: "ファンページへ", label: "今日のファンページ", previous: "前のファンページ", next: "次のファンページ" },
+  "zh-Hans": { tag: "今日粉丝主页", posts: "帖子", comments: "评论", likes: "点赞", missions: "任务", fans: (n) => `${n}位粉丝参与`, period: (d) => `最近${d}天`, action: "前往粉丝主页", label: "今日粉丝主页", previous: "上一个粉丝主页", next: "下一个粉丝主页" },
+  "zh-Hant": { tag: "今日粉絲專頁", posts: "貼文", comments: "留言", likes: "按讚", missions: "任務", fans: (n) => `${n}位粉絲參與`, period: (d) => `最近${d}天`, action: "前往粉絲專頁", label: "今日粉絲專頁", previous: "上一個粉絲專頁", next: "下一個粉絲專頁" },
+  es: { tag: "Página de fans del día", posts: "Publicaciones", comments: "Comentarios", likes: "Me gusta", missions: "Misiones", fans: (n) => `${n} fans participaron`, period: (d) => `Últimos ${d} días`, action: "Ir a la página", label: "Páginas de fans del día", previous: "Página anterior", next: "Página siguiente" },
+  id: { tag: "Halaman penggemar hari ini", posts: "Postingan", comments: "Komentar", likes: "Suka", missions: "Misi", fans: (n) => `${n} penggemar ikut`, period: (d) => `${d} hari terakhir`, action: "Buka halaman", label: "Halaman penggemar hari ini", previous: "Halaman sebelumnya", next: "Halaman berikutnya" },
+  vi: { tag: "Trang người hâm mộ hôm nay", posts: "Bài viết", comments: "Bình luận", likes: "Lượt thích", missions: "Nhiệm vụ", fans: (n) => `${n} fan tham gia`, period: (d) => `${d} ngày qua`, action: "Đến trang", label: "Trang người hâm mộ hôm nay", previous: "Trang trước", next: "Trang sau" },
+  th: { tag: "แฟนเพจประจำวัน", posts: "โพสต์", comments: "ความคิดเห็น", likes: "ถูกใจ", missions: "ภารกิจ", fans: (n) => `แฟน ${n} คนร่วมกิจกรรม`, period: (d) => `${d} วันล่าสุด`, action: "ไปที่แฟนเพจ", label: "แฟนเพจประจำวัน", previous: "แฟนเพจก่อนหน้า", next: "แฟนเพจถัดไป" },
+  pt: { tag: "Página de fãs do dia", posts: "Publicações", comments: "Comentários", likes: "Curtidas", missions: "Missões", fans: (n) => `${n} fãs participaram`, period: (d) => `Últimos ${d} dias`, action: "Ir para a página", label: "Páginas de fãs do dia", previous: "Página anterior", next: "Próxima página" },
+  fr: { tag: "Page de fans du jour", posts: "Publications", comments: "Commentaires", likes: "J’aime", missions: "Missions", fans: (n) => `${n} fans actifs`, period: (d) => `${d} derniers jours`, action: "Voir la page", label: "Pages de fans du jour", previous: "Page précédente", next: "Page suivante" },
+  ru: { tag: "Фан-страница дня", posts: "Посты", comments: "Комм.", likes: "Лайки", missions: "Миссии", fans: (n) => `Участвовали ${n} фанатов`, period: (d) => `За ${d} дней`, action: "Открыть страницу", label: "Фан-страницы дня", previous: "Предыдущая страница", next: "Следующая страница" },
+};
+export const todayFanpageCopy = (locale: AppLocale) => copy[locale];

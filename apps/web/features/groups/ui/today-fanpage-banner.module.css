@@ -1,0 +1,27 @@
+/* 오늘의 팬페이지(대표 2026-11-14 02:07 "모임 최상단은 크게 배너로"). 강조 판 1개(화면당 1): accent-soft 면 + accent-line 선, 반경 16, 그림자 0.
+   1024 미만: 사진 112 │ 태그·이름·메타, 아래 줄에 활동 숫자와 이동 글자. 1024+: 사진 168 │ 태그·이름·메타·숫자 │ 오른쪽 아래 이동 글자. */
+.banner { position: relative; margin-bottom: var(--fan-section-gap); }
+.link { display: grid; grid-template-columns: 112px minmax(0, 1fr); grid-template-areas: "photo identity" "stats stats" "action action"; column-gap: var(--space-4); row-gap: var(--space-3); padding: var(--space-5); border: 1px solid var(--color-accent-line); border-radius: var(--radius-card); background: var(--color-accent-soft); color: var(--color-ink); text-decoration: none; }
+.link:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
+.photo { display: block; grid-area: photo; width: 112px; aspect-ratio: 1; overflow: hidden; border-radius: var(--radius-media); background: var(--color-canvas); }
+.photo img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.identity { display: grid; grid-area: identity; align-content: center; justify-items: start; gap: var(--space-2); min-width: 0; }
+.name { display: block; width: 100%; min-width: 0; overflow-wrap: anywhere; }
+.name > * { display: -webkit-box; overflow: hidden; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+.stats { display: flex; grid-area: stats; flex-wrap: wrap; align-items: baseline; gap: var(--space-2) var(--space-5); min-width: 0; }
+.stats:empty { display: none; }
+.stat { display: inline-flex; align-items: baseline; gap: var(--space-1); }
+.action { grid-area: action; color: var(--color-accent-ink); }
+.controls { position: absolute; right: var(--space-2); bottom: var(--space-1); display: flex; align-items: center; color: var(--color-muted); font-variant-numeric: tabular-nums; }
+@media (hover: hover) and (pointer: fine) { .link:hover .action { text-decoration: underline; text-underline-offset: 3px; } }
+
+@media (width >= 64rem) {
+  /* 사진 │ 태그·이름·메타·이동 │ 오른쪽 활동 숫자(라벨 아래). 숫자 열이 카드 오른쪽 끝선을 채운다. */
+  .link { grid-template-columns: 168px minmax(0, 1fr) auto; grid-template-areas: "photo identity stats" "photo action stats"; grid-template-rows: auto auto; align-content: center; column-gap: var(--space-8); row-gap: var(--space-4); padding: var(--space-6); }
+  .photo { width: 168px; }
+  .identity { align-self: end; }
+  .action { align-self: start; }
+  .stats { align-self: center; flex-wrap: nowrap; gap: var(--space-10); padding-right: var(--space-6); }
+  .stat { flex-direction: column-reverse; align-items: center; gap: var(--space-2); }
+  .controls { right: var(--space-4); bottom: var(--space-4); gap: var(--space-1); }
+}

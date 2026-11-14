@@ -38,6 +38,7 @@ const noSubscribe = () => () => {};
 const DEFAULT_AVATAR = "/images/avatars/star-pink.webp";
 const ROWS = 5;
 const SLOTS = 3;
+const AVATAR = 48;
 
 function useHorizontalDrag<T extends HTMLElement>(mode: "rail" | "banner", onSwipe?: (step: number) => void) {
   const drag = useRef<{ x: number; y: number; left: number; moved: boolean } | null>(null);
@@ -77,8 +78,8 @@ function focusDirectorySearch() {
   input?.focus({ preventScroll: true });
 }
 
-/** 첫 칸 `+`는 로그인 여부와 관계없이 모임 찾기. 가입한 모임이 없으면 흐린 원 세 개가 같은 자리를 채운다.
- * 비로그인의 로그인 버튼은 제목 줄에 둔다: 원 네 개(+ 포함)가 390·360에서도 잘리지 않고 한 줄에 들어가야 한다. */
+/** 오늘의 팬페이지 아래 한 줄(보석 2026-11-14 12:1x "내 아티스트·모임 찾기 글자 없이 세로 폭을 줄이기"): `+`(모임 찾기 → 검색 칸)와 가입한 페이지의 원형 사진만.
+ * 비로그인은 같은 줄 끝에 로그인 버튼. 이름은 화면에 쓰지 않고 링크 이름(aria-label)·툴팁으로 둔다. */
 export function MyArtists({ locale, loginPath }: { locale: AppLocale; loginPath: string }) {
   const c = directoryTopCopy(locale);
   const drag = useHorizontalDrag<HTMLUListElement>("rail");
@@ -87,23 +88,17 @@ export function MyArtists({ locale, loginPath }: { locale: AppLocale; loginPath:
   const guest = session.ready && !session.authenticated;
   const items = joined.data?.items ?? [];
   const waiting = !session.ready || (session.authenticated && joined.loading && !joined.data);
-  const ghost = !waiting && (guest || joined.error || items.length === 0);
-  return <section className={styles.card} aria-labelledby="directory-my-artists" data-directory-block="my-artists">
-    <div className={styles.cardHead}>
-      <FanHeading id="directory-my-artists" as="h2">{c.myArtists}</FanHeading>
-      {guest ? <FanAction className={styles.login} variant="neutral" size="sm" href={fanLoginHref(locale, loginPath)}>{c.signIn}</FanAction> : null}
-    </div>
-    <ul className={styles.rail} data-ghost={ghost || undefined} {...drag}>
-      <li className={styles.slot} data-row="artist-add"><a className={styles.add} href="#directory-explore" onClick={(event) => { event.preventDefault(); focusDirectorySearch(); }} aria-label={c.findGroups}><FanIcon icon={Plus} size={24} /></a><span className={styles.slotName} aria-hidden={ghost ? undefined : true}>{ghost ? c.findGroups : null}</span></li>
-      {waiting ? Array.from({ length: SLOTS + 1 }, (_, i) => <li key={i} className={styles.slot} data-row="artist-loading" aria-hidden="true"><FanSkeleton shape="circle" width={64} height={64} /><FanSkeleton width={48} height={12} /></li>)
-        : ghost ? null
+  return <section className={styles.row} aria-label={c.myArtists} data-directory-block="my-artists">
+    <ul className={styles.rail} {...drag}>
+      <li className={styles.slot} data-row="artist-add"><a className={styles.add} href="#directory-explore" onClick={(event) => { event.preventDefault(); focusDirectorySearch(); }} aria-label={c.findGroups} title={c.findGroups}><FanIcon icon={Plus} size={20} /></a></li>
+      {waiting ? Array.from({ length: SLOTS }, (_, i) => <li key={i} className={styles.slot} data-row="artist-loading" aria-hidden="true"><FanSkeleton shape="circle" width={AVATAR} height={AVATAR} /></li>)
         : items.map((page) => <li key={page.id} className={styles.slot} data-row="artist">
-          <Link className={styles.artist} href={groupHref(page, locale) as Route}>
-            {page.slug ? <CreatorAvatar slug={page.slug} src={page.imageUrl} size={64} photos={undefined} /> : <GroupImage locale={locale} className={styles.ghost} src={page.imageUrl ?? DEFAULT_AVATAR} alt="" width={64} height={64} />}
-            <span className={styles.slotName}>{page.name}</span>
+          <Link className={styles.artist} href={groupHref(page, locale) as Route} aria-label={page.name} title={page.name}>
+            {page.slug ? <CreatorAvatar slug={page.slug} src={page.imageUrl} size={AVATAR} photos={undefined} /> : <GroupImage locale={locale} className={styles.ghost} src={page.imageUrl ?? DEFAULT_AVATAR} alt="" width={AVATAR} height={AVATAR} />}
           </Link>
         </li>)}
     </ul>
+    {guest ? <FanAction className={styles.login} variant="neutral" size="sm" href={fanLoginHref(locale, loginPath)}>{c.signIn}</FanAction> : null}
   </section>;
 }
 
