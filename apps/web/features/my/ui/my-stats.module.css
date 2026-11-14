@@ -1,0 +1,11 @@
+/* MY 숫자 한 줄: 카드 없이 세 칸을 헤어라인으로 나눈 한 줄. 칸은 숫자 → 그림+이름, 가운데 정렬. 글자는 FanNumber·FanText가 맡는다. */
+.row { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); margin:0; padding-block:var(--space-2); }
+.cell { display:grid; min-width:0; justify-items:center; row-gap:var(--space-1); padding-inline:var(--space-2); }
+.cell + .cell { border-inline-start:1px solid var(--color-line); }
+.value { order:-1; display:flex; min-width:0; min-block-size:32px; align-items:center; justify-content:center; margin:0; }
+.label { display:flex; min-width:0; align-items:center; gap:var(--space-1); }
+.name { min-width:0; color:var(--color-muted); white-space:nowrap; }
+.icon { display:grid; flex:none; inline-size:16px; block-size:16px; place-items:center; }
+.icon img { inline-size:16px; block-size:16px; object-fit:contain; }
+.muted { color:var(--color-muted); }
+.emptyTier { inline-size:14px; block-size:14px; border:1.5px dashed var(--color-accent-line); border-radius:50%; }
