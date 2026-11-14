@@ -18,6 +18,13 @@
 .pastList { min-width:0; margin-top:var(--space-3); }
 .pastRows { display:block; }
 .pastRows > * { min-width:0; }
+/* C1·C2 (대표 11/13 23:59, 11/14 12:0x): below 576 the machine gets the height the button and its 준비 중 note give up — stage 160 → 208, the button 44 → 36 (its press area stays 44 through ::after, the same as FanAction size="sm"), the note 13 → 12. */
+@container (max-width:35.99rem) {
+ .stage { height:208px; }
+ .action { min-height:36px; }
+ .action::after { position:absolute; inset:-4px 0; content:""; }
+ .actionBlock p { margin-top:var(--space-1); }
+}
 @media (min-width:1024px) {
  .layout[data-has-past] { display:grid; grid-template-columns:minmax(0, 1fr); gap:var(--space-3); }
  .pastList { width:100%; margin:0; }

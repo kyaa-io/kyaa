@@ -28,3 +28,8 @@
 }
 @media (prefers-reduced-motion: reduce) { .still { animation: none; } }
 @keyframes stillIdle { 0%, 100% { transform: translateY(0) rotate(0); } 30% { transform: translateY(calc(var(--space-1) * -1)) rotate(-1.2deg); } 65% { transform: translateY(var(--space-1)) rotate(1.2deg); } }
+
+/* C2 (PifBetter 11/14 01:45): the open-state picture and the 3D canvas keep the machine right of centre with the ticket left of it (lucky-stage-narrow.webp, FRAMING_NARROW). Below 576 the stage moves left by the machine's offset, 16% of its width, so the machine sits on the card's centre line. The resting state's square picture is already centred. */
+@container (max-width:35.99rem) {
+  .stage:not([data-preview-enabled]) picture, .stage:not([data-preview-enabled]) canvas { left: -16%; }
+}

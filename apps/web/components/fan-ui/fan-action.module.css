@@ -180,6 +180,11 @@
   text-wrap: pretty;
 }
 
+/* C1 (보석 2026-11-14 12:2x): inside a card narrower than 576 the note under the button is one step smaller (13 → 12). The 럭키드로우 card is the only user of helperText. */
+@container (max-width: 35.99rem) {
+  .helper { font-size: var(--fan-badge-size); }
+}
+
 /* Disabled/loading: one rule for every variant, no hover, no lift. U-1 (2026-11-09): the face and ink stay the variant's own;
  * only the opacity drops. Doubled class: a screen module's hover or transform must not show on a disabled button. */
 .action.action:disabled,
