@@ -20,6 +20,12 @@ describe('room list contract',()=>{
 
 describe('visited group list contract',()=>{
  const group={id:page,kind:'fan',celebrityId:null,slug:null,name:'A',description:'B',imageUrl:null,question:null,memberCount:1};
+ it('keeps the optional likeCount and rejects a negative or fractional one',()=>{
+  expect(groupListSchema.parse({items:[{...group,likeCount:107}],nextCursor:null}).items[0].likeCount).toBe(107);
+  expect(groupListSchema.parse({items:[group],nextCursor:null}).items[0].likeCount).toBeUndefined();
+  expect(groupListSchema.safeParse({items:[{...group,likeCount:-1}],nextCursor:null}).success).toBe(false);
+  expect(groupListSchema.safeParse({items:[{...group,likeCount:1.5}],nextCursor:null}).success).toBe(false);
+ });
  it('preserves UUID or bounded opaque cursors and optional nullable last visit',()=>{
   expect(groupListSchema.parse({items:[group],nextCursor:actor}).nextCursor).toBe(actor);
   expect(groupListSchema.parse({items:[{...group,lastSeenAt:'2026-11-03T10:00:00+09:00'}],nextCursor:'eyJ2IjoxfQ'}).items[0].lastSeenAt).toBe('2026-11-03T10:00:00+09:00');
