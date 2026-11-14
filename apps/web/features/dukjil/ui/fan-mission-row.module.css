@@ -1,9 +1,9 @@
-/* feedback D1 · F3: one mission row for every 덕질 list. 40 circle │ 1fr │ 96 (120 from 1024px), gap 12, padding 12, height 64.
-   Title and the line below start at x = 64 inside the card; the trailing column is fixed and its content sits on the right edge. */
+/* feedback D1 · F3: one mission row for every 덕질 list. 40 circle │ 1fr │ 76, gap 12, padding 12 (left = right), height 64.
+   Title and the line below start at x = 64 inside the card. D4 (사용자 11/14): the trailing column is a fixed 76 slot, wide enough for the longest value (+1,000P = 74), so nothing is left empty on its right. */
 .list { display: grid; margin: 0; padding: 0; list-style: none; min-width: 0; }
 .framed { border: 1px solid var(--color-line); border-radius: var(--radius-card); overflow: hidden; background: var(--color-surface); }
 .item + .item { border-top: 1px solid var(--color-line-subtle); }
-.row { display: grid; grid-template-columns: 40px minmax(0, 1fr) 96px; align-items: center; gap: var(--space-3); box-sizing: border-box; width: 100%; min-height: 64px; padding: var(--space-3); color: inherit; text-decoration: none; }
+.row { display: grid; grid-template-columns: 40px minmax(0, 1fr) 76px; align-items: center; gap: var(--space-3); box-sizing: border-box; width: 100%; min-height: 64px; padding: var(--space-3); color: inherit; text-decoration: none; }
 .row:focus-visible { outline: 2px solid var(--color-focus); outline-offset: -2px; }
 .art { box-sizing: border-box; display: grid; place-items: center; width: 40px; height: 40px; border: 1px solid var(--color-line); border-radius: 50%; background: var(--color-surface); overflow: hidden; }
 .art > img, .art > svg { display: block; width: 28px; height: 28px; object-fit: contain; }
@@ -22,7 +22,6 @@
 .foldMeta { color: var(--color-muted); font-weight: var(--fan-item-title-weight); font-variant-numeric: tabular-nums; }
 .chevron { flex: none; color: var(--color-muted); transition: transform 160ms var(--motion-easing); }
 .fold[aria-expanded="true"] .chevron { transform: rotate(180deg); }
-@media (min-width: 1024px) { .row { grid-template-columns: 40px minmax(0, 1fr) 120px; } }
 @media (prefers-reduced-motion: reduce) { .chevron { transition: none; } }
 /* Done stamp: the vintage seal frame as a mask in the ink colour, 40 inside the 64 row, turned -10deg like a pressed stamp. */
 .stamp { position: relative; display: grid; flex: none; place-items: center; width: 40px; height: 40px; color: var(--dukjil-ink-deep, var(--color-accent-ink)); transform: rotate(-10deg); }
