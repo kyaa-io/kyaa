@@ -38,5 +38,7 @@
 
 .feedActions { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-4); }
 .rewardIcon { display: inline-flex; align-items: center; gap: var(--space-1); }
+.rewardPlus { position: relative; top: -0.24em; }
+@media (min-width: 48rem) { .rewardPlus { top: -0.07em; } }
 .photoFeed { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr)); gap: var(--space-4); margin: 0; padding: 0; list-style: none; }
 .photoFeed .boardImage { max-width: 100%; max-height: none; background: var(--color-surface); }
