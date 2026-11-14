@@ -4,14 +4,13 @@
 .tabs { display: block; min-width: 0; }
 .columns { display: grid; gap: var(--space-8); min-width: 0; }
 .column[data-active="false"] { display: none; }
-.mobileOnly { display: contents; }
 .column > h3[data-fan-heading] { display: none; margin: 0; font-size: var(--fan-item-title-size); font-weight: var(--fan-item-title-weight); line-height: 20px; }
 .column { display: grid; gap: var(--space-3); align-content: start; min-width: 0; }
 .board { display: grid; min-width: 0; }
 
 @media (min-width: 64rem) {
   .column > h3[data-fan-heading] { display: block; }
-  .tabs, .mobileOnly { display: none; }
+  .tabs { display: none; }
   .column[data-active="false"] { display: grid; }
   .columns { grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: var(--space-10); }
 }

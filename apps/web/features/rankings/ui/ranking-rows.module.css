@@ -77,7 +77,6 @@
 .meValue { display: inline-flex; align-items: center; gap: var(--space-1); min-width: 0; margin-inline-start: auto; font-variant-numeric: tabular-nums; white-space: nowrap; }
 .meHearts { display: inline-flex; align-items: center; gap: var(--space-1); font-weight: var(--fan-item-title-weight); }
 .meGap { color: var(--color-muted); }
-.foot .login { width: 100%; max-width: none; margin-block: var(--space-2); }
 
 .live { display: inline-flex; }
 .liveDot { width: 6px; height: 6px; border-radius: 50%; background: var(--color-error); }

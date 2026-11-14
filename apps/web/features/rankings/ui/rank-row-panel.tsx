@@ -18,7 +18,7 @@ type PanelBase = {
   /** Hearts (or points) to the first place; 0 when tied, null on the first row (no cell). */
   gap?: number | null;
   /** Totals the list puts first (label and an already formatted value). A cell is passed only when its value exists; none passed, none drawn. */
-  extra?: readonly { key: string; label: string; value: string; unit?: RankUnitKind; icon?: ReactNode }[];
+  extra?: readonly { key: string; label: string; value: string; unit?: RankUnitKind; size?: 16 | 20; icon?: ReactNode }[];
   /** What the list counts: the gain and gap cells carry that unit's asset in front of the number. */
   unit?: RankUnitKind;
 };
@@ -31,8 +31,8 @@ export type RankRowPanelProps = PanelBase & (
 const isCount = (value: number | null | undefined): value is number => typeof value === "number" && Number.isFinite(value) && value !== 0;
 const signed = (locale: AppLocale, value: number) => `${value < 0 ? "−" : "+"}${Math.abs(value).toLocaleString(locale)}`;
 
-function Stat({ label, value, unit, icon }: { label: string; value: string; unit?: RankUnitKind; icon?: ReactNode }) {
-  return <div className={styles.stat}><dt className={styles.label}>{label}</dt><dd className={styles.value} title={value}>{icon ?? (unit ? <RankUnit unit={unit} /> : null)}<span>{value}</span></dd></div>;
+function Stat({ label, value, unit, size, icon }: { label: string; value: string; unit?: RankUnitKind; size?: 16 | 20; icon?: ReactNode }) {
+  return <div className={styles.stat}><dt className={styles.label}>{label}</dt><dd className={styles.value} title={value}>{icon ?? (unit ? <RankUnit unit={unit} size={size} /> : null)}<span>{value}</span></dd></div>;
 }
 
 export function RankRowPanel(props: RankRowPanelProps) {
@@ -47,7 +47,7 @@ export function RankRowPanel(props: RankRowPanelProps) {
   if (props.kind === "creator" && isCount(props.row.fans) && props.unit !== "likes") cells.push(<Stat key="fans" label={rankingsText(locale, "rkPanelJjinfan")} value={rankingsText(locale, "rkPanelFanCount", [props.row.fans.toLocaleString(locale)])} />);
   if (props.kind === "fan" && props.row.favorite) cells.push(<Stat key="favorite" label={rankingsText(locale, "rkPanelFavorite")} value={props.row.favorite.name} />);
 
-  const stats = [...(props.extra ?? []).map((cell) => <Stat key={cell.key} label={cell.label} value={cell.value} unit={cell.unit} icon={cell.icon} />), ...cells.slice(0, 3)];
+  const stats = [...(props.extra ?? []).map((cell) => <Stat key={cell.key} label={cell.label} value={cell.value} unit={cell.unit} size={cell.size} icon={cell.icon} />), ...cells.slice(0, 3)];
   if (!stats.length) return null;
   return <div id={id} className={styles.panel} data-rank-panel={props.kind}>
     <div className={styles.clip}>

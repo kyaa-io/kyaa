@@ -16703,12 +16703,6 @@
     "source": "features/rankings/ui/rankings-copy",
     "id": "features/rankings/ui/rankings-copy:rkFans"
   },
-  "rkSeeMyRank": {
-    "en": "Sign in to see your rank",
-    "ko": "로그인하고 내 순위 보기",
-    "source": "features/rankings/ui/rankings-copy",
-    "id": "features/rankings/ui/rankings-copy:rkSeeMyRank"
-  },
   "profFavorite": {
     "en": "Favorite: {0}",
     "ko": "최애 {0}",

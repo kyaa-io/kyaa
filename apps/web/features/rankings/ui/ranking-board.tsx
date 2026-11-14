@@ -1,18 +1,16 @@
 "use client";
 
-import type { Route } from "next";
 import { useRef, useState, type ReactNode } from "react";
 
 import { CreatorAvatar } from "@/components/fan-ui/creator-avatar";
 import { FanHeading } from "@/components/fan-ui/fan-heading";
-import { fanLoginHref } from "@/components/login-href";
 import { useByUsAuth } from "@/features/auth/client/cognito-auth";
 import { Avatar } from "@/features/profile/ui/avatar";
 import type { AppLocale } from "@/i18n/locales";
 import { homeCreatorRankingSchema, homeFanRankingSchema, type HomeRankingPeriod } from "../domain/types";
 import { FanTabs } from "@/components/fan-ui/fan-tabs";
 import { fanAvatar } from "./rankings-content";
-import { CreatorRows, EmptyRows, FailedRows, FanRows, Foot, FootLink, LoadingRows, MetricLine, MyRank, rankingUrl, useLiveRanking, type Live } from "./ranking-rows";
+import { CreatorRows, EmptyRows, FailedRows, FanRows, Foot, LoadingRows, MetricLine, MyRank, rankingUrl, useLiveRanking, type Live } from "./ranking-rows";
 import { rankingsText } from "./rankings-copy";
 import styles from "./ranking-board.module.css";
 
@@ -63,8 +61,6 @@ export function RankingBoard({ locale, scope = "home-ranking", heading }: { loca
   </div></>;
 }
 
-const loginBack = (locale: AppLocale) => fanLoginHref(locale, `/?locale=${locale}`) as Route;
-
 function FanPanel({ locale, guest, scope, period }: { locale: AppLocale; guest: boolean; scope: string; period: HomeRankingPeriod }) {
   const entryRef = useRef(false);
   const live = useLiveRanking(rankingUrl("fans", "points", locale, LIST_ROWS, period), parseFans);
@@ -73,8 +69,7 @@ function FanPanel({ locale, guest, scope, period }: { locale: AppLocale; guest: 
     <MetricLine locale={locale} period={period} metric="points" computedAt={data?.computedAt ?? null} stale={data?.state === "stale"} />
     <div className={styles.board}>
       <List locale={locale} live={live}>{(ranking) => <FanRows key={period} entryRef={entryRef} locale={locale} ranking={ranking} metric="points" scope={scope} guest={guest} period={period} fill={guest || period !== "all" ? undefined : LIST_ROWS} />}</List>
-      {guest ? <Foot><FootLink href={loginBack(locale)}>{rankingsText(locale, "rkSeeMyRank")}</FootLink></Foot>
-        : data?.me ? <Foot><MyRank locale={locale} ranking={data} metric="points" /></Foot> : null}
+      {!guest && data?.me ? <Foot><MyRank locale={locale} ranking={data} metric="points" /></Foot> : null}
     </div>
   </>;
 }
@@ -87,7 +82,6 @@ function CreatorPanel({ locale, guest, scope, period }: { locale: AppLocale; gue
     <MetricLine locale={locale} period={period} metric="likes" computedAt={data?.computedAt ?? null} stale={data?.state === "stale"} />
     <div className={styles.board}>
       <List locale={locale} live={live}>{(ranking) => <CreatorRows key={period} entryRef={entryRef} locale={locale} ranking={ranking} metric="likes" scope={scope} challengeTag guest={guest} period={period} fill={guest || period !== "all" ? undefined : LIST_ROWS} />}</List>
-      {guest ? <div className={styles.mobileOnly}><Foot><FootLink href={loginBack(locale)}>{rankingsText(locale, "rkSeeMyRank")}</FootLink></Foot></div> : null}
     </div>
   </>;
 }

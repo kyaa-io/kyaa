@@ -1,2 +1,2 @@
 .mark { display: block; flex: none; }
-.like { flex: none; color: inherit; }
+.like { flex: none; color: var(--color-reaction-like); }

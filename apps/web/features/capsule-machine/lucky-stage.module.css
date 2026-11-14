@@ -6,7 +6,8 @@
 
 .trigger.trigger { position: absolute; inset: 0; width: 100%; border: 0; background: transparent; cursor: zoom-in; pointer-events: auto; border-radius: 0; padding: 0; }
 .trigger:focus-visible, .demo:focus-visible { outline: 2px solid var(--color-focus); outline-offset: -3px; }
-.demo.demo { position: relative; display: block; width: 100%; aspect-ratio: 1; padding: 0; border-radius: 0; border: 0; background: transparent; cursor: pointer; }
+/* D2 (대표 11/14 01:55): the machine fits the popup without scrolling — as wide as the popup allows, but never taller than the popup's body (70vh, and 85dvh minus the head 12 + 44 and the body padding 12 + 20), centred. */
+.demo.demo { position: relative; display: block; width: min(100%, calc(70vh - var(--space-3) - var(--space-5)), calc(85dvh - var(--space-3) - var(--min-target) - var(--space-3) - var(--space-5))); margin-inline: auto; aspect-ratio: 1; padding: 0; border-radius: 0; border: 0; background: transparent; cursor: pointer; }
 .demo img, .demo canvas { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; }
 
 [data-playing] .demo img:not([data-hidden]) { opacity: .7; transition: opacity var(--motion-control); }

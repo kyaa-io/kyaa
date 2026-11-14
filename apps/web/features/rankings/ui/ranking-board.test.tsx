@@ -102,8 +102,8 @@ it("a row is one line: movement beside the name, LIVE, the value; today's gain a
   expect([...view.container.querySelectorAll("[data-row]")].map((row) => row.textContent).join(" ")).not.toMatch(/오늘|1위까지|현재 1위|1위와 동점/);
   expect(row("삼등").querySelector("[data-delta-cell]")).toBeNull();
   expect(row("이등").textContent).not.toContain("오늘");
-  expect(row("일등").querySelector("[data-metric] [data-unit='likes']")).not.toBeNull();
-  expect(row("일등").querySelector("[data-metric] [data-icon='heart']")).toBeNull();
+  expect(row("일등").querySelector("[data-metric] [data-unit='likes'][data-icon='heart']")).not.toBeNull();
+  expect(row("일등").querySelector("[data-metric] img")).toBeNull();
   fireEvent.click(row("삼등").querySelector("button")!);
   expect(row("삼등").querySelector("[data-rank-panel]")!.textContent).toContain("1위까지12,245");
   expect(row("삼등").querySelector("[data-rank-panel]")!.textContent).not.toContain("오늘");
@@ -153,19 +153,14 @@ it("a signed-in fan row opens the profile window; a signed-out one leads to sign
   expect(decodeURIComponent(login.getAttribute("href")!)).toContain("/?locale=ko");
 });
 
-it("signed out: the rows the API gives, no placeholders, and one way to sign in back to the home page", async () => {
+it("signed out: the rows the API gives, no placeholders, and no sign-in button under the lists (사용자 11/14 PifBetter 01:44)", async () => {
   auth.value = { ...auth.value, authenticated: false, user: null };
   stub((_, limit) => Math.min(limit, 5));
   const { container } = render(<RankingBoard locale="ko" />);
   await screen.findByText("하트팬1");
   expect(container.querySelectorAll("li[data-row='fan-rank']")).toHaveLength(5);
-  const logins = screen.getAllByRole("link", { name: "로그인하고 내 순위 보기" });
-  // One under the 찐팬 list; the 크리에이터 tab has its own on a phone (hidden from 1024px, where the pair has one).
-  expect(logins).toHaveLength(2);
-  expect(container.querySelectorAll("[data-column='fans'] [data-ranking-foot]")).toHaveLength(1);
-  expect(container.querySelectorAll("[data-column='creators'] [data-ranking-foot]")).toHaveLength(1);
-  expect(logins[0]!.getAttribute("href")).toContain("/login");
-  expect(decodeURIComponent(logins[0]!.getAttribute("href")!)).toContain("/?locale=ko");
+  expect(screen.queryByRole("link", { name: "로그인하고 내 순위 보기" })).toBeNull();
+  expect(container.querySelector("[data-ranking-foot]")).toBeNull();
   expect(container.querySelector("[data-placeholder]")).toBeNull();
 });
 
@@ -339,6 +334,8 @@ it("opens a fan row with hearts and entry tickets, a creator row with 찐팬 and
   const fanPanel = fan.querySelector("[data-rank-panel]")!.textContent!;
   expect(fanPanel).toContain("하트12");
   expect(fanPanel).toContain("응모권3");
+  // 대표 11/14 02:11: only the creator's 찐팬 heart grows (20); the fan row's heart keeps 16.
+  expect(fan.querySelector("[data-rank-panel] [data-unit='hearts']")).toHaveAttribute("width", "16");
   const empty = view.container.querySelector("li[data-row='fan-rank']:has([title='빈팬'])") as HTMLElement;
   fireEvent.click(empty.querySelector("button")!);
   expect(empty.querySelector("[data-rank-panel]")!.textContent).not.toMatch(/하트|응모권/);
@@ -350,7 +347,8 @@ it("opens a fan row with hearts and entry tickets, a creator row with 찐팬 and
   expect(creatorPanel).toContain("찐팬77");
   expect(creatorPanel).not.toContain("9명");
   expect(creatorPanel).not.toContain("하트");
-  expect(creator.querySelector("[data-rank-panel] [data-unit='hearts']")).not.toBeNull();
+  expect(creator.querySelector("[data-rank-panel] [data-unit='hearts']")).toHaveAttribute("width", "20");
+  expect(creator.querySelector("[data-metric] [data-unit]")).toHaveAttribute("data-unit", "likes");
   expect(creatorPanel).not.toMatch(/팔로워/);
 });
 
