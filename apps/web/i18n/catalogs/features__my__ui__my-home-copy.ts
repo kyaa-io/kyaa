@@ -228,5 +228,17 @@ export const messages = {
     "pt": "Encerrado",
     "fr": "Terminé",
     "ru": "Завершено"
+  },
+  "tierNone": {
+    "ja": "なし",
+    "zh-Hans": "无",
+    "zh-Hant": "無",
+    "es": "Ninguno",
+    "id": "Belum ada",
+    "vi": "Chưa có",
+    "th": "ยังไม่มี",
+    "pt": "Nenhum",
+    "fr": "Aucun",
+    "ru": "Нет"
   }
 } as const satisfies Record<string, TranslatedMessage>;

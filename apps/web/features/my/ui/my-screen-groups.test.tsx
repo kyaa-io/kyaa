@@ -63,6 +63,23 @@ it('puts the selected passport tier next to the name', () => {
   expect(within(name.parentElement as HTMLElement).getByText(/실버|Silver/)).toBeInTheDocument();
 });
 
+it('shows points, stamps and tier in one read-only row between the profile and the passport', () => {
+  const { container } = renderMy();
+  const stats = container.querySelector('[data-block="my-stats"]') as HTMLElement;
+  const name = screen.getByRole('heading', { level: 1, name: '별빛님' });
+  const passport = screen.getByRole('heading', { name: '내 패스포트' });
+  expect(before(name, stats)).toBe(true);
+  expect(before(stats, passport)).toBe(true);
+  const value = (label: string) => within(stats).getByText(label).closest('div')!.querySelector('dd')!.textContent;
+  expect(value('포인트')).toBe('375');
+  expect(value('스탬프')).toBe('3/9');
+  expect(value('등급')).toBe('실버 1');
+  expect(within(stats).queryByText('하트')).toBeNull();
+  expect(within(stats).queryByText('응모권')).toBeNull();
+  expect(within(stats).queryByRole('button')).toBeNull();
+  expect(within(stats).queryByRole('link')).toBeNull();
+});
+
 it('orders the screen profile, notice, passport, shortcuts and shows stamps in one place', () => {
   data.gifts = { unreadCount: 1, singleUnreadId: giftId };
   renderMy();
