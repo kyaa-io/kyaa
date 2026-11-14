@@ -19,8 +19,9 @@ export BYUS_CLEAN_DB_UPGRADE_AFTER_FILE="$ROOT_DIR/supabase/tests/fixtures/live_
 bash "$ROOT_DIR/scripts/verify-clean-migration-chain.sh"
 
 # Exercise the new migration against an event created by the previous functions.
+# This and the next replay call every STABLE/IMMUTABLE API function read-only, as PostgREST does.
 unset BYUS_CLEAN_DB_SHELL_ASSERTION_FILE
-export BYUS_CLEAN_DB_ASSERTION_FILE=
+export BYUS_CLEAN_DB_ASSERTION_FILE="$ROOT_DIR/supabase/tests/readonly_stable_rpc_probe.sql"
 export BYUS_CLEAN_DB_UPGRADE_MIGRATION=20261013110000_kyaa_credential_cutover.sql
 export BYUS_CLEAN_DB_UPGRADE_BEFORE_FILE="$ROOT_DIR/supabase/tests/fixtures/kyaa_credential_cutover_before.sql"
 export BYUS_CLEAN_DB_UPGRADE_AFTER_FILE="$ROOT_DIR/supabase/tests/fixtures/kyaa_credential_cutover_after.sql"
