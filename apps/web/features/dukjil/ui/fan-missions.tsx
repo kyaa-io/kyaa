@@ -88,9 +88,9 @@ export function FanMissions({ locale, slug, title, titleSuffix, passportHref, pr
     <FanMissionList id={id} className={styles.cards}>
       {list.map(({ mission, points, count, limit, remaining, done, period }, index) => {
         const finished = !guest && done;
-        // B3 (대표 11/14 02:01): on a page's 팬 활동 card the count sits right after the activity's name and the bar fills the line below; the 덕질 tab (`all`) keeps the count at the bar's end.
+        // B3 · D4 (대표 11/14 02:01): the count sits right after the activity's name and the bar fills the line below, on a page's 팬 활동 card and on the 덕질 tab alike.
         const countCell = (className: string, shown: number, max: number) => <span className={className} data-mission-count=""><span className={styles.countCheck} aria-hidden="true">{done && <Check size={12} />}</span><span className={styles.countValue}>{shown.toLocaleString(locale)}/{max.toLocaleString(locale)}</span></span>;
-        const nameCount = !all && !guest && !group && !pending && count !== undefined && limit !== null ? countCell(styles.nameCount, count, limit) : null;
+        const nameCount = !guest && !group && !pending && count !== undefined && limit !== null ? countCell(styles.nameCount, count, limit) : null;
         const progress = !guest && !group && (pending || count === undefined ? (on || pending) && !state?.todayFailure && <span className={styles.progress} aria-hidden="true"><FanSkeleton width="100%" height={6} /></span>
           : limit !== null && (
             <span className={styles.progress}>
