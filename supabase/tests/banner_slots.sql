@@ -12,12 +12,12 @@ begin
  perform set_config('byus.banner_slot.viewer',viewer::text,true);perform set_config('byus.banner_slot.viewer_allow',viewer_allow::text,true);
 end $$;
 -- Earlier published slot banners on this database would change the answers below.
-update public.home_banners set publication_status='draft' where placement in('home_below_board','home_between_events','fanpage_below_gallery','fanpage_second');
+update public.home_banners set publication_status='draft' where placement in('home_below_board','home_between_events','home_mid','fanpage_below_gallery','fanpage_second','dukjil_mid');
 set local role service_role;
 do $$
 declare actor uuid:=current_setting('byus.banner_slot.actor')::uuid;allow_id uuid:=current_setting('byus.banner_slot.allow')::uuid;asset uuid:=current_setting('byus.banner_slot.asset')::uuid;
  viewer uuid:=current_setting('byus.banner_slot.viewer')::uuid;viewer_allow uuid:=current_setting('byus.banner_slot.viewer_allow')::uuid;
- loc jsonb;first_id uuid;second_id uuid;fan_id uuid;caught boolean;result jsonb;
+ loc jsonb;first_id uuid;second_id uuid;fan_id uuid;mid_id uuid;dukjil_id uuid;caught boolean;result jsonb;
 begin
  loc:=jsonb_build_object('title','찐팬100 챌린지','description','','ctaLabel','응원하기','href','/elina?locale=ko','alt','찐팬100 챌린지','desktopAssetId',asset,'mobileAssetId',null);
  loc:=jsonb_build_object('ko',loc,'en',loc||'{"title":"Fan 100","ctaLabel":"Cheer","alt":"Fan 100"}');
@@ -47,6 +47,17 @@ begin
  if not caught then raise exception 'Unknown slot accepted';end if;
  caught:=false;begin perform public.read_published_slot_banners('ko','groups');exception when others then caught:=sqlerrm='invalid banner area';end;
  if not caught then raise exception 'Unknown area accepted';end if;
+ -- Mid slots (20261227170001): home_mid answers with the home slots, dukjil_mid only in its own area, and the sliders never show either.
+ mid_id:=(public.save_admin_managed_banner(actor,allow_id,gen_random_uuid(),null,0,'announcement',null,loc,'home_mid','ad')->>'id')::uuid;
+ dukjil_id:=(public.save_admin_managed_banner(actor,allow_id,gen_random_uuid(),null,0,'announcement',null,loc,'dukjil_mid','event')->>'id')::uuid;
+ perform public.set_admin_home_banner_publication(actor,allow_id,gen_random_uuid(),mid_id,1,'published');
+ perform public.set_admin_home_banner_publication(actor,allow_id,gen_random_uuid(),dukjil_id,1,'published');
+ result:=public.read_published_slot_banners('ko','home');
+ if result->'home_mid'->>'id'<>mid_id::text or result->'home_mid'->>'category'<>'ad' or result ? 'dukjil_mid' then raise exception 'home_mid wrong: %',result;end if;
+ result:=public.read_published_slot_banners('ko','dukjil');
+ if result<>jsonb_build_object('dukjil_mid',result->'dukjil_mid') or result->'dukjil_mid'->>'id'<>dukjil_id::text then raise exception 'dukjil area wrong: %',result;end if;
+ if public.read_published_slot_banners('ko','fanpage') ? 'dukjil_mid' or public.read_published_slot_banners('ko','fanpage') ? 'home_mid' then raise exception 'Mid slot leaked into fanpage';end if;
+ if exists(select 1 from jsonb_array_elements(public.read_published_home_banners('ko')||public.read_published_discovery_banners('ko'))x where x->>'id' in(mid_id::text,dukjil_id::text))then raise exception 'Mid slot banner reached a slider';end if;
  raise notice 'PASS banner slots';
 end $$;
 reset role;
