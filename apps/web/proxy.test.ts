@@ -118,6 +118,25 @@ describe("admin API proxy prefilter", () => {
   });
 });
 
+describe("release sha header", () => {
+  const sha = "0123456789abcdef0123456789abcdef01234567";
+  it("marks page responses with a valid RELEASE_SHA, including locale rewrites", () => {
+    vi.stubEnv("RELEASE_SHA", sha);
+    expect(proxy(new NextRequest("https://byus.example/live/elina")).headers.get("x-release-sha")).toBe(sha);
+    expect(proxy(new NextRequest("https://byus.example/live/elina?locale=en")).headers.get("x-release-sha")).toBe(sha);
+  });
+  it.each([undefined, "", "abc", "0123456789ABCDEF0123456789ABCDEF01234567", `${sha}0`, "g".repeat(40)])("omits the header for %s", (value) => {
+    if (value === undefined) vi.stubEnv("RELEASE_SHA", undefined); else vi.stubEnv("RELEASE_SHA", value);
+    expect(proxy(new NextRequest("https://byus.example/live/elina")).headers.has("x-release-sha")).toBe(false);
+  });
+  it("leaves static files and admin API responses alone", () => {
+    vi.stubEnv("RELEASE_SHA", sha);
+    expect(proxy(new NextRequest("https://byus.example/manifest.webmanifest")).headers.has("x-release-sha")).toBe(false);
+    const api = proxy(new NextRequest("https://byus.example/api/admin/session", { headers: { authorization: "Bearer opaque-token" } }));
+    expect(api.headers.has("x-release-sha")).toBe(false);
+  });
+});
+
 describe("page locale proxy", () => {
   it("prevents indexing, caching, framing and referrer leakage of shared tokens", () => {
     const response = proxy(new NextRequest("https://byus.example/s/" + "a".repeat(32)));
