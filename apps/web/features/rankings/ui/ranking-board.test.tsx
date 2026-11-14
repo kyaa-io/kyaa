@@ -339,6 +339,8 @@ it("opens a fan row with hearts and entry tickets, a creator row with 찐팬 and
   const fanPanel = fan.querySelector("[data-rank-panel]")!.textContent!;
   expect(fanPanel).toContain("하트12");
   expect(fanPanel).toContain("응모권3");
+  // 대표 11/14 02:11: only the creator's 찐팬 heart grows (20); the fan row's heart keeps 16.
+  expect(fan.querySelector("[data-rank-panel] [data-unit='hearts']")).toHaveAttribute("width", "16");
   const empty = view.container.querySelector("li[data-row='fan-rank']:has([title='빈팬'])") as HTMLElement;
   fireEvent.click(empty.querySelector("button")!);
   expect(empty.querySelector("[data-rank-panel]")!.textContent).not.toMatch(/하트|응모권/);
@@ -350,7 +352,8 @@ it("opens a fan row with hearts and entry tickets, a creator row with 찐팬 and
   expect(creatorPanel).toContain("찐팬77");
   expect(creatorPanel).not.toContain("9명");
   expect(creatorPanel).not.toContain("하트");
-  expect(creator.querySelector("[data-rank-panel] [data-unit='hearts']")).not.toBeNull();
+  expect(creator.querySelector("[data-rank-panel] [data-unit='hearts']")).toHaveAttribute("width", "20");
+  expect(creator.querySelector("[data-metric] [data-unit]")).toHaveAttribute("data-unit", "likes");
   expect(creatorPanel).not.toMatch(/팔로워/);
 });
 
