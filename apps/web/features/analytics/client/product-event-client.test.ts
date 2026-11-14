@@ -245,3 +245,91 @@ describe("events recorded twice at once", () => {
     expect(fetchMock).toHaveBeenCalledTimes(2);
   });
 });
+
+describe("sessionStorage unavailable (private mode, in-app browsers)", () => {
+  const properties = {
+    source: "x", medium: "kol", campaign: "kol-1113", kol: "kol01", flowStartedAt: null,
+  };
+  const memberEvent = (idempotencyKey: string) => ({
+    eventName: "creator_page_view" as const,
+    source: "x_mission.identified",
+    idempotencyKey,
+    celebrityId: null,
+    liveEventId: null,
+    missionId: null,
+    benefitId: null,
+    properties,
+  });
+  let fetchMock: ReturnType<typeof vi.fn>;
+
+  async function loadFresh() {
+    vi.resetModules();
+    return import("./product-event-client");
+  }
+  const realStorage = Object.getOwnPropertyDescriptor(window, "sessionStorage");
+  function breakStorage(methods: Array<"getItem" | "setItem">) {
+    const base = window.sessionStorage;
+    const broken = {
+      get length() { return base.length; },
+      key: (index: number) => base.key(index),
+      removeItem: (key: string) => base.removeItem(key),
+      getItem: (key: string) => {
+        if (methods.includes("getItem")) throw new DOMException("denied", "SecurityError");
+        return base.getItem(key);
+      },
+      setItem: (key: string, value: string) => {
+        if (methods.includes("setItem")) throw new DOMException("denied", "SecurityError");
+        base.setItem(key, value);
+      },
+    };
+    Object.defineProperty(window, "sessionStorage", { configurable: true, value: broken });
+  }
+
+  beforeEach(() => {
+    window.sessionStorage.clear();
+    fetchMock = vi.fn().mockResolvedValue(new Response(null, { status: 201 }));
+    vi.stubGlobal("fetch", fetchMock);
+  });
+  afterEach(() => {
+    if (realStorage) Object.defineProperty(window, "sessionStorage", realStorage);
+    vi.unstubAllGlobals();
+    vi.restoreAllMocks();
+  });
+
+  it("still sends the X attribution event when getItem and setItem both throw", async () => {
+    const client = await loadFresh();
+    breakStorage(["getItem", "setItem"]);
+    const key = await client.pageViewIdempotencyKey("creator_page_view", "x-mission-kol01", "owner-1");
+    await expect(client.recordClientProductEvent(memberEvent(key), "token")).resolves.toBeUndefined();
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(JSON.parse(fetchMock.mock.calls[0][1].body)).toMatchObject({
+      source: "x_mission.identified", idempotencyKey: key, properties,
+    });
+  });
+
+  it("keeps the same page-view key and anonymous session id in memory when storage is unwritable", async () => {
+    const client = await loadFresh();
+    breakStorage(["getItem", "setItem"]);
+    const first = await client.pageViewIdempotencyKey("creator_page_view", "/c/elina", null, 1);
+    const replay = await client.pageViewIdempotencyKey("creator_page_view", "/c/elina", null, 2);
+    expect(replay).toBe(first);
+    expect(client.anonymousSessionId()).toBe(client.anonymousSessionId());
+  });
+
+  it("works when only setItem throws (quota or read-only storage)", async () => {
+    const client = await loadFresh();
+    breakStorage(["setItem"]);
+    const first = await client.pageViewIdempotencyKey("creator_page_view", "x-mission-kol01", "owner-1", 1);
+    expect(await client.pageViewIdempotencyKey("creator_page_view", "x-mission-kol01", "owner-1", 2)).toBe(first);
+    await expect(client.recordClientProductEvent(memberEvent(first), "token")).resolves.toBeUndefined();
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("keeps using sessionStorage as before when it works", async () => {
+    const client = await loadFresh();
+    const id = client.anonymousSessionId();
+    expect(window.sessionStorage.getItem("byus.product-event.session.v1")).toBe(id);
+    const key = await client.pageViewIdempotencyKey("creator_page_view", "/c/elina", null, 1);
+    expect(JSON.stringify(window.sessionStorage.getItem("byus.product-event.page-view-cache.v2"))).toContain(key);
+  });
+});

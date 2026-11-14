@@ -18,11 +18,26 @@ type PageViewCacheEntry = {
   event: ClientProductEventV1 | null;
 };
 
+// sessionStorage를 읽거나 쓸 수 없는 브라우저(개인 모드·인앱 브라우저 등)에서는 같은 페이지 메모리로 키를 유지하고 전송은 계속한다.
+let memorySessionId: string | null = null;
+let memoryPageViewEntries: PageViewCacheEntry[] = [];
+let pageViewStorageFailed = false;
+
 export function anonymousSessionId(): string {
-  const existing = window.sessionStorage.getItem(SESSION_KEY);
-  if (existing) return existing;
+  try {
+    const existing = window.sessionStorage.getItem(SESSION_KEY);
+    if (existing) return existing;
+  } catch {
+    // 저장소를 읽을 수 없으면 메모리 값을 쓴다.
+  }
+  if (memorySessionId) return memorySessionId;
   const created = crypto.randomUUID();
-  window.sessionStorage.setItem(SESSION_KEY, created);
+  memorySessionId = created;
+  try {
+    window.sessionStorage.setItem(SESSION_KEY, created);
+  } catch {
+    // 저장하지 못해도 이 페이지에서는 같은 키를 쓴다.
+  }
   return created;
 }
 
@@ -32,8 +47,17 @@ async function identityScope(value: string): Promise<string> {
 }
 
 function readPageViewCache(now: number): PageViewCacheEntry[] {
+  let raw: string | null = null;
   try {
-    const parsed = JSON.parse(window.sessionStorage.getItem(PAGE_VIEW_CACHE_KEY) ?? "[]") as unknown;
+    if (!pageViewStorageFailed) raw = window.sessionStorage.getItem(PAGE_VIEW_CACHE_KEY);
+  } catch {
+    pageViewStorageFailed = true;
+  }
+  if (pageViewStorageFailed) {
+    return memoryPageViewEntries.filter((entry) => entry.storedAt >= now - PAGE_VIEW_WINDOW_MS && entry.storedAt <= now);
+  }
+  try {
+    const parsed = JSON.parse(raw ?? "[]") as unknown;
     if (!Array.isArray(parsed)) return [];
     return parsed.flatMap((value): PageViewCacheEntry[] => {
       if (!value || typeof value !== "object") return [];
@@ -69,10 +93,14 @@ function readPageViewCache(now: number): PageViewCacheEntry[] {
 }
 
 function writePageViewCache(entries: PageViewCacheEntry[]): void {
-  window.sessionStorage.setItem(
-    PAGE_VIEW_CACHE_KEY,
-    JSON.stringify(entries.slice(-MAX_PAGE_VIEW_CACHE_ENTRIES)),
-  );
+  const kept = entries.slice(-MAX_PAGE_VIEW_CACHE_ENTRIES);
+  memoryPageViewEntries = kept;
+  try {
+    window.sessionStorage.setItem(PAGE_VIEW_CACHE_KEY, JSON.stringify(kept));
+  } catch {
+    // 저장하지 못해도 메모리 사본으로 같은 페이지의 키를 유지한다.
+    pageViewStorageFailed = true;
+  }
 }
 
 function canonicalPageViewPayload(
@@ -92,6 +120,14 @@ function canonicalPageViewPayload(
 }
 
 function removeLegacyPageViewCache(): void {
+  try {
+    removeLegacyPageViewKeys();
+  } catch {
+    // 정리는 실패해도 기록에 영향이 없다.
+  }
+}
+
+function removeLegacyPageViewKeys(): void {
   for (let index = 0; index < window.sessionStorage.length; index += 1) {
     const key = window.sessionStorage.key(index);
     if (key === LEGACY_PAGE_VIEW_PAYLOAD_CACHE_KEY || key?.startsWith(`${LEGACY_PAGE_VIEW_KEY_PREFIX}:`)) {
