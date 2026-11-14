@@ -193,25 +193,15 @@ section.pWallet{position:relative;box-sizing:border-box}
 .missionsSection > :is([data-mission-strip],[data-stan-passport-book],[data-fan-missions],[data-missions-pending]){margin-block-start:calc(var(--fan-section-gap) - var(--space-3))}
 
 
-/* 사용자 11/13 11:2x login gate: the signed-out sections blurred behind one centred card. The backdrop shows about one screen of the real
-   layout (section titles faintly readable, numbers not), takes no pointer or keyboard input (inert). */
-.gate{position:relative;min-width:0}
-.gateBackdrop{max-block-size:760px;overflow:hidden;/* design-lint-disable S2 -- User 2026-11-13 11:2x: signed-out 덕질 is a login gate over the blurred page (not decoration). */ filter:blur(4px);opacity:.6;pointer-events:none;user-select:none}
-/* The login scene is the card (its own border, surface, padding); the wrapper only places it and lifts it off the blur. 480 holds its four 88px assets from 768px. */
-.gateCard{position:absolute;inset-block-start:var(--space-16);inset-inline:0;margin-inline:auto;box-sizing:border-box;inline-size:min(100%,480px);border-radius:var(--radius-card);box-shadow:var(--shadow-overlay)}
-@media (width >= 64rem){.gateBackdrop{max-block-size:820px}.gateCard{inset-block-start:calc(var(--space-16) + var(--space-4))}}
-
 /* 페이지 틀 (사용자 11/13 13:37): 본문은 헤더와 같은 셸 폭(FanContentContainer: 최대 1440, 좌우 16/32/40)을 그대로 쓴다 — 이 모듈은 폭·좌우 여백을 정하지 않는다.
    간격은 두 값뿐: 구역 사이 --fan-section-gap(32, 768+ 48), 구역 안(제목→블록, 블록→블록) --space-3(12). 구역을 가르는 선은 없다.
    1280+ 는 두 열(열 584 이상 — 1024~1279 는 열이 468 이라 카드들이 깨져 한 열): 럭키드로우 + 내역 | 덕질 미션. 내역은 왼쪽 열의 둘째 행에 놓이고, 덕질 미션이 두 행을 차지한다(행 높이는 왼쪽 열이 정한다). */
 .page{gap:var(--fan-section-gap);padding-top:var(--space-6);padding-bottom:var(--space-12)}
-.main,.gateBackdrop{display:flex;flex-direction:column;gap:var(--fan-section-gap);min-width:0}
-.gateBackdrop > .pLucky,.gateBackdrop > .pMissions{order:initial}
+.main{display:flex;flex-direction:column;gap:var(--fan-section-gap);min-width:0}
 @media (width >= 48rem){.page{padding-top:var(--space-8)}}
 @media (width >= 80rem){
- .main,.gateBackdrop{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:auto 1fr;column-gap:var(--col-gap);row-gap:var(--fan-section-gap);align-items:start}
- .main > .pLucky,.gateBackdrop > .pLucky{grid-column:1;grid-row:1}
- .main > .pMissions,.gateBackdrop > .pMissions{grid-column:2;grid-row:1 / span 2}
+ .main{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:auto 1fr;column-gap:var(--col-gap);row-gap:var(--fan-section-gap);align-items:start}
+ .main > .pLucky{grid-column:1;grid-row:1}
+ .main > .pMissions{grid-column:2;grid-row:1 / span 2}
  .main > .pHistory{grid-column:1;grid-row:2}
- .main > .gate{grid-column:1 / -1}
 }

@@ -7,7 +7,7 @@ import {clearResources} from '@/components/fan-ui/resource-cache';
 
 configure({defaultHidden:true});
 vi.mock('@/features/group-wallet/ui/google-rewarded-ad',()=>({rewardedAdUnit:()=>undefined}));
-// A signed-in member without a favorite ('empty'); 'guest' is the signed-out answer and puts the whole tab behind the login gate (사용자 11/13 11:2x).
+// A signed-in member without a favorite ('empty'); 'guest' is the signed-out answer: the tab opens without 내역 (대표 11/14 01:53, replacing the 11/13 login gate).
 const bias=vi.hoisted(()=>({status:'empty' as 'empty'|'guest'}));
 vi.mock('@/features/selected-bias/ui/use-selected-bias',()=>({useSelectedBias:()=>({status:bias.status,options:[],selected:null,unverified:null,select:()=>{},retry:()=>{}})}));
 const auth=vi.hoisted(()=>({ready:true,authenticated:true,user:{id:'owner-a'},getAccessToken:vi.fn(async()=>'synthetic-token')}));
@@ -46,12 +46,11 @@ it('groupByDay splits at Seoul midnight and keeps order',()=>{
  const days=groupByDay([{createdAt:'2026-11-09T14:59:00Z'},{createdAt:'2026-11-09T15:01:00Z'}],'ko');
  expect(days.map(day=>day.key)).toEqual(['2026-11-09','2026-11-10']);
 });
-it('access control: signed out is the login gate — no 내역 section, one sign-in action, and the ledger is never requested',()=>{
+it('access control: signed out opens the tab without a 내역 section and the ledger is never requested',()=>{
  auth.ready=false;auth.authenticated=false;session.ready=false;bias.status='guest';
  const view=render(<GroupBenefitsScreen locale='ko' signedOut/>);
- expect(view.container.querySelector('[data-login-gate]')).not.toBeNull();
+ expect(view.container.querySelector('[data-login-gate]')).toBeNull();
  expect(document.getElementById('wallet-history')).toBeNull();
- expect(view.container.querySelectorAll('a[href^="/login"]')).toHaveLength(1);
  expect(requests.some(url=>url.includes('/api/me/wallet/history'))).toBe(false);
 });
 it('empty state keeps the card and offers one 오늘의 덕질 action',async()=>{

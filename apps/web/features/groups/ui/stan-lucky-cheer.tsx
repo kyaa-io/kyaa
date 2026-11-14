@@ -169,14 +169,14 @@ export function StanLucky({ locale, bias, guest, presentation, paused = false }:
     const entry = entries.data ? entries.data.benefits.find(row => row.id === item?.raffle.benefitId)?.entry ?? null : undefined;
     const allowance = item?.status === "open" ? raffleAllowance({ raffle:item.raffle, guest, hasPassport:bias.selected?.slug===slug, tickets:{ loading:wallet.loading,value:wallet.data?.tickets }, entries:{ loading:entries.loading,error:entries.error,entry } }) : null;
     const passport = allowance?.kind === "passport";
-    const href = item && slug ? passport ? creatorRaffleVerificationHref(slug,locale,item.raffle.benefitId) : raffleHref(slug,item.raffle.benefitId,locale) : `/my/raffles?locale=${locale}`;
+    const href = guest ? fanLoginHref(locale, `/benefits?locale=${locale}`) : item && slug ? passport ? creatorRaffleVerificationHref(slug,locale,item.raffle.benefitId) : raffleHref(slug,item.raffle.benefitId,locale) : `/my/raffles?locale=${locale}`;
     const amountToken = "__DUO_AMOUNT__";
     const costParts = allowance?.kind === "count" ? t(locale,"luckyCost",[RAFFLE_TICKET_COST,amountToken]).split(amountToken) : null;
     const pending = bias.status === "loading" || Boolean(slug && raffles.loading), empty = !pending && !raffles.error && (!item || !slug);
     const ready = !pending && !raffles.error && !empty;
     // C4: 쉬는 동안(paused)에는 상태와 상관없이 응모 버튼 하나만 비활성으로 두고 이유를 붙인다. href·onClick이 없어 요청을 만들지 않는다.
-    const action = paused || (ready && item) ? <FanAction className={duoStyles.action} variant="primary" {...(paused ? { disabled: true, helperText: capsuleMachineCopy(locale).text("soon") } : { href })}>
-      {paused || (item?.status === "open" && allowance?.kind !== "policy" && !passport) ? t(locale,"luckyEnter") : passport ? t(locale,"luckyGetPassport") : t(locale,"luckyDetails")}</FanAction> : null;
+    const action = paused || (ready && item) || guest ? <FanAction className={duoStyles.action} variant="primary" {...(paused ? { disabled: true, helperText: capsuleMachineCopy(locale).text("soon") } : { href })}>
+      {paused || guest || (item?.status === "open" && allowance?.kind !== "policy" && !passport) ? t(locale,"luckyEnter") : passport ? t(locale,"luckyGetPassport") : t(locale,"luckyDetails")}</FanAction> : null;
     const pastItems = hasPast && slug && favorite ? raffles.items.filter(row => row.status === "closed").slice(0, 3).map(({ raffle }) => ({ raffle, creator: { slug, name: favorite.name, image: (favorite as { image?: string | null }).image ?? null } })) : recent.data?.items ?? [];
     return <div className={duoStyles.layout} data-has-past={pastItems.length ? "" : undefined}>
     <section className={duoStyles.card} id="stan-lucky" aria-label={title} data-duo-lucky data-lucky-module="" data-lucky-paused={paused ? "" : undefined} data-raffle-status={item?.status}>

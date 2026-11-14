@@ -62,7 +62,7 @@ function useRewardedAdReady() {
  *  `part` renders one card (tickets heads 럭키드로우, hearts heads 덕질 미션); without it both stack (fixtures). The button runs behind the
  *  rewarded ad (video icon in every state), is primary only when it can be pressed, and reads 준비 중 without an ad unit. A guest sees
  *  the same cells with locked values and the sign-in action in the button's place. */
-export function StanWallet({ locale, state, stamps, hearts, links, className, favoritePicker, part }: { locale: AppLocale; state: WalletCardState; stamps: StanSlot; hearts: StanSlot; links: { hearts: string; claim?: string }; className?: string; favoritePicker?: ReactNode; part?: "tickets" | "hearts" }) {
+export function StanWallet({ locale, state, stamps, hearts, links, className, favoritePicker, part, loginHref }: { locale: AppLocale; state: WalletCardState; stamps: StanSlot; hearts: StanSlot; links: { hearts: string; claim?: string }; className?: string; favoritePicker?: ReactNode; part?: "tickets" | "hearts"; /** Signed out: the buttons and the received cell lead here (the login) instead of showing `state.action`. */ loginHref?: string }) {
   const w = walletCopy(locale), s = (key: Parameters<typeof dukjilText>[1], values?: unknown[]) => dukjilText(locale, key, values);
   const [open, setOpen] = useState(false), titleId = useId(), wide = useFanWide(), Overlay = wide ? Dialog : BottomSheet;
   const pendingRequest = usePendingExchange();
@@ -92,12 +92,12 @@ export function StanWallet({ locale, state, stamps, hearts, links, className, fa
     </span> : null}</FanText></span>
   </>;
   /** One button per card, as wide as the cells. Both run behind the rewarded ad (the video icon says so); with no ad unit it is the gray 준비 중. */
-  const action = (name: string, enabled: boolean, extra: { onClick: () => void } | { href: string } | null) => state.kind === "guest" ? state.action : <FanAction variant={enabled ? "primary" : "neutral"} className={styles.reward} {...(enabled && extra ? extra : { disabled: true })} leadingIcon={<FanIcon icon={SquarePlay} size={20} />}>{adReady || enabled ? name : s("stanPreparing")}</FanAction>;
+  const action = (name: string, enabled: boolean, extra: { onClick: () => void } | { href: string } | null) => state.kind === "guest" ? (loginHref ? <FanAction variant="primary" className={styles.reward} href={loginHref} leadingIcon={<FanIcon icon={SquarePlay} size={20} />}>{name}</FanAction> : state.action) : <FanAction variant={enabled ? "primary" : "neutral"} className={styles.reward} {...(enabled && extra ? extra : { disabled: true })} leadingIcon={<FanIcon icon={SquarePlay} size={20} />}>{adReady || enabled ? name : s("stanPreparing")}</FanAction>;
   const swap = (column: "tickets" | "hearts", from: Side, to: Side, href: string, button: ReactNode) => <div className={styles.swap} data-column={column}>
     <div className={styles.cells}>
       <div className={styles.cell} data-cell={from.cell} data-side="from" data-changed={from.flash[0] || undefined} onAnimationEnd={from.flash[1]}>{body(from)}</div>
       <span className={styles.joint} aria-hidden="true"><FanIcon icon={ArrowDown} size={16} /></span>
-      <Link className={styles.cell} data-cell={to.cell} data-side="to" data-changed={to.flash[0] || undefined} onAnimationEnd={to.flash[1]} href={href as Route}>{body(to)}</Link>
+      <Link className={styles.cell} data-cell={to.cell} data-side="to" data-changed={to.flash[0] || undefined} onAnimationEnd={to.flash[1]} href={(state.kind === "guest" && loginHref ? loginHref : href) as Route}>{body(to)}</Link>
     </div>
     {button}
   </div>;

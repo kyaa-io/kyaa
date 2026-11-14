@@ -13,8 +13,6 @@ import {FanAction} from '@/components/fan-ui/fan-action';
 import {FanMissions} from '@/features/dukjil/ui/fan-missions';
 import {StanMissionStrip} from './stan-mission-strip';
 import {StanPassportBook} from './stan-passport-book';
-import {FanLoginScene} from '@/components/fan-ui/fan-login-scene';
-import {REWARD_ICON_SRC} from '@/components/fan-ui/reward-icon';
 import {CreatorAttendanceEntry} from '@/features/dukjil/ui/creator-attendance-entry';
 import {groupListSchema} from '@/features/groups/domain/contracts';
 import {DukjilProvider,useDukjilStatus} from '@/features/dukjil/ui/dukjil-provider';
@@ -68,29 +66,18 @@ function useSectionFailure(id:string,failed:boolean,retry:()=>void){
 }
 export function GroupBenefitsScreen({locale,initialHeart=null,signedOut=false}:{locale:AppLocale;initialHeart?:SelectedBiasOption|null;signedOut?:boolean}){
  const auth=useGroupRequest(),c=groupBenefitsCopy(locale),bias=useStanBias(locale,initialHeart,signedOut);
- // 사용자 11/13 11:2x: signed out, the whole tab is one login gate over the blurred sections (no per-section sign-in prompts, no 내역).
+ // 대표 11/14 01:53 (replaces 사용자 11/13 11:2x's login gate): signed out, the tab opens as it is — locked balances, public mission points, no 내역 — and each action (교환·받기·응모·덕질 행) leads to the login, which returns to /benefits.
  const guest=(!auth.ready&&signedOut)||(auth.ready&&!auth.authenticated)||bias.status==='guest';
  const sections=<><BenefitsLucky locale={locale} bias={bias} signedOut={signedOut} wallet={<BenefitsWallet key={`${locale}:${auth.ownerKey}:tickets`} part='tickets' locale={locale} signedOut={signedOut} bias={bias}/>}/><BenefitsDailyMissions locale={locale} bias={bias} signedOut={signedOut} wallet={<BenefitsWallet key={`${locale}:${auth.ownerKey}:hearts`} part='hearts' locale={locale} signedOut={signedOut} bias={bias}/>}/></>;
  return <FanAppFrame locale={locale} currentPath='/benefits' groupsEnabled mainId='benefits-main'><FanContentContainer as='main' id='benefits-main' className={styles.page}>
  <header className={styles.srOnly}><FanHeading as='h1'>{c.title}</FanHeading></header>
  <BenefitsAlerts><BenefitsSections><BenefitsAlertList/>
- <div className={styles.main}>{guest?<BenefitsLoginGate locale={locale}>{sections}</BenefitsLoginGate>:<>{sections}<BenefitsHistory locale={locale} signedOut={signedOut}/></>}</div>
+ <div className={styles.main}>{sections}{!guest&&<BenefitsHistory locale={locale}/>}</div>
  </BenefitsSections></BenefitsAlerts>
  </FanContentContainer></FanAppFrame>;
 }
-/** 사용자 11/13 11:2x login gate: the real sections (signed-out values: locked balances, public mission points — no member numbers) drawn
- *  blurred and inert behind one centred card. The card is the shared login scene (the four reward assets, one line, one button); the
- *  button opens the app's login (the /login modal route) and returns to /benefits. The backdrop is hidden from screen readers and from
- *  the keyboard (inert), so Tab goes from the header to the card's button. */
-function BenefitsLoginGate({locale,children}:{locale:AppLocale;children:ReactNode}){
- return <section className={styles.gate} aria-label={dukjilText(locale,'stanGateTitle')} data-login-gate='' data-block='login-gate'>
-  <div className={styles.gateBackdrop} aria-hidden='true' inert>{children}</div>
-  <div className={styles.gateCard}>
-   <FanLoginScene items={GATE_ASSETS} title={dukjilText(locale,'stanGateTitle')} action={<FanAction variant='primary' fullWidth href={fanLoginHref(locale,`/benefits?locale=${locale}`)}>{walletCopy(locale).login}</FanAction>}/>
-  </div>
- </section>;
-}
-const GATE_ASSETS=(['point','ticket','stamp','heart'] as const).map(kind=>({src:REWARD_ICON_SRC[kind]}));
+/** Where every signed-out action goes: the app's login (the /login modal route), back to this tab. */
+const benefitsLoginHref=(locale:AppLocale)=>fanLoginHref(locale,`/benefits?locale=${locale}`);
 /** The numbers the wallet and the cheer card share (C9): stamps are the stamped slots of the passport page being filled (the MY card's number), hearts come with the summary. */
 function useStanNumbers(bias:SelectedBias,signedOut:boolean){
  const auth=useGroupRequest(),guest=(!auth.ready&&signedOut)||(auth.ready&&!auth.authenticated)||bias.status==='guest';
@@ -113,8 +100,8 @@ function BenefitsLucky({locale,bias,signedOut,wallet}:{locale:AppLocale;bias:Sel
  *  list and go to the login or the page directory. The header, swap line and strip stay when the attendance policy is off. */
 function BenefitsDailyMissions({locale,bias,signedOut,wallet}:{locale:AppLocale;bias:SelectedBias;signedOut:boolean;wallet:ReactNode}){
  const auth=useGroupRequest(),status=useDukjilStatus(locale),joined=useGroupResource(auth.authenticated?'/api/groups?mine=joined&limit=50':null,parseJoined),[attendance,setAttendance]=useState(false),allFailed=Boolean(useContext(SectionContext)?.allFailed);
- const {passportId,stripSlots}=useStanNumbers(bias,signedOut),headingId=useId();
- const stripHref=passportId?`/passports/${encodeURIComponent(passportId)}?locale=${locale}#mission-book`:`/passports?locale=${locale}`;
+ const {guest,passportId,stripSlots}=useStanNumbers(bias,signedOut),headingId=useId();
+ const stripHref=guest?benefitsLoginHref(locale):passportId?`/passports/${encodeURIComponent(passportId)}?locale=${locale}#mission-book`:`/passports?locale=${locale}`;
  const head=<FanSectionHeader id={headingId} title={dukjilText(locale,'stanMissionsSection')}/>;
  // Hold the list's place, at the height the loaded list takes (no jump below), until the policy, the favorite and the joined pages are known, so it does not appear late and push the page (V12).
  const pending=status==='loading'||!auth.ready||(auth.authenticated&&(joined.loading||bias.status==='loading'));
@@ -123,13 +110,12 @@ function BenefitsDailyMissions({locale,bias,signedOut,wallet}:{locale:AppLocale;
  const page=chosen?{slug:chosen.slug,name:chosen.name}:first?{slug:first.slug,name:first.name}:null,slug=page?.slug??'',title=dukjilText(locale,'missionsTitle'),directory=`/pages/groups?locale=${locale}`;
  const favoriteAvatar=chosen?<CreatorAvatar slug={chosen.slug} src={chosen.image} photos={undefined} size={24}/>:null;
  const favorite=bias.status!=='guest'&&(stanFavorite(bias)||bias.options.length>0)?<span className={styles.favorite}><span aria-hidden="true">·</span>{bias.options.length?<FavoritePickMenu locale={locale} bias={bias} className={styles.favoritePick}>{favoriteAvatar}<span className={styles.favoriteName}>{stanFavorite(bias)?.name??dukjilText(locale,'heartPick')}</span><span aria-hidden="true">▾</span></FavoritePickMenu>:<>{favoriteAvatar}<span className={styles.favoriteName}>{stanFavorite(bias)?.name}</span></>}</span>:null;
- const list=pending?<div className={styles.missionsPending} aria-busy='true' data-missions-pending=''><FanHeading as='h3'>{title}</FanHeading><FanSkeletonRows rows={5}/></div>:status==='on'?<FanMissions all locale={locale} slug={slug} title={title} titleSuffix={favorite} passportHref={`/passports?locale=${locale}`} proofHref={`/${slug}?tab=certifications&locale=${locale}`} noPage={slug?undefined:directory} onAttendance={()=>setAttendance(true)}/>:null;
+ const list=pending?<div className={styles.missionsPending} aria-busy='true' data-missions-pending=''><FanHeading as='h3'>{title}</FanHeading><FanSkeletonRows rows={5}/></div>:status==='on'?<FanMissions all locale={locale} slug={slug} title={title} loginReturn={`/benefits?locale=${locale}`} titleSuffix={favorite} passportHref={`/passports?locale=${locale}`} proofHref={`/${slug}?tab=certifications&locale=${locale}`} noPage={slug?undefined:directory} onAttendance={()=>setAttendance(true)}/>:null;
  return <section className={`${styles.pMissions} ${styles.missionsSection}`} hidden={allFailed} aria-labelledby={headingId} data-missions-section=''>{head}{wallet}<DukjilProvider key={slug} slug={slug||undefined} accountToday={!slug} locale={locale}>{bias.selected?<StanPassportBook locale={locale} option={bias.selected}/>:<StanMissionStrip locale={locale} slots={stripSlots} href={stripHref}/>}{list}{attendance&&page&&<CreatorAttendanceEntry slug={slug} pageName={page.name} locale={locale} reviewHref={`/c/${encodeURIComponent(slug)}/verify?locale=${locale}`} onClose={()=>setAttendance(false)}/>}</DukjilProvider></section>;
 }
-/** 내역 (#wallet-history): the signed-in member's own point/ticket ledger; a guest gets the sign-in action and no request is made. */
-function BenefitsHistory({locale,signedOut}:{locale:AppLocale;signedOut:boolean}){
- const auth=useGroupRequest(),w=walletCopy(locale),allFailed=Boolean(useContext(SectionContext)?.allFailed),guest=(!auth.ready&&signedOut)||(auth.ready&&!auth.authenticated);
- if(guest)return <section className={styles.pHistory} hidden={allFailed}><FanHeading><span id='wallet-history'>{locale==='ko'?'내역':w.history}</span></FanHeading><FanState inline compact kind='empty' title={locale==='ko'?'로그인하면 내역이 보여요':w.login} action={{label:w.login,href:fanLoginHref(locale,`/benefits?locale=${locale}#wallet-history`)}}/></section>;
+/** 내역 (#wallet-history): the signed-in member's own point/ticket ledger; a guest never reaches it (the screen does not render it), so no request is made. */
+function BenefitsHistory({locale}:{locale:AppLocale}){
+ const auth=useGroupRequest(),w=walletCopy(locale),allFailed=Boolean(useContext(SectionContext)?.allFailed);
  if(!auth.ready)return <section className={styles.pHistory} aria-busy='true'><FanHeading><span id='wallet-history'>{locale==='ko'?'내역':w.history}</span></FanHeading><FanSkeletonRows rows={3}/></section>;
  return <div className={styles.pHistory} hidden={allFailed}><WalletHistoryPanel key={auth.ownerKey} locale={locale} preview={{rows:5,moreLabel:seeAllLabel[locale],lessLabel:locale==='ko'?'접기':'Show less'}}/></div>;
 }
@@ -140,7 +126,7 @@ function BenefitsWallet({locale,signedOut=false,bias,part}:{locale:AppLocale;sig
  useEffect(()=>{window.addEventListener(GROUP_WALLET_CHANGED_EVENT,wallet.retry);return()=>window.removeEventListener(GROUP_WALLET_CHANGED_EVENT,wallet.retry);},[wallet.retry]);
  const sections=useContext(SectionContext),retryAll=()=>window.dispatchEvent(new Event(GROUP_WALLET_CHANGED_EVENT)),failed=auth.ready&&auth.authenticated&&!wallet.loading&&!wallet.data,allFailed=useSectionFailure(`wallet-${part}`,failed,retryAll),lifted=useLiftedAlert(`wallet-${part}`,{message:w.error,label:w.retry,retry:retryAll},failed&&!allFailed),walletAlert=lifted?null:<FanState inline kind='error' className={styles.inlineError} title={w.error} actions={<FanAction onClick={retryAll}>{w.retry}</FanAction>}/>;
  if(allFailed)return <div className={styles.pWallet}><FanState inline compact kind='error' title={w.error} actions={<FanAction variant='text' onClick={()=>sections?.retryAll()}>{w.retry}</FanAction>}/></div>;
- const card=(state:Parameters<typeof WalletCard>[0]['state'])=><StanWallet part={part} locale={locale} state={state} stamps={stamps} hearts={hearts} favoritePicker={!guest&&!bias.selected&&!bias.unverified&&(bias.status==='empty'||bias.status==='ready')?(bias.options.length?<FavoritePickMenu locale={locale} bias={bias} className={styles.favoritePick}><img src="/images/groups/join-community-cutout-20261113.webp" alt="" width={64} height={45}/>{dukjilText(locale,'heartPick')}</FavoritePickMenu>:<FanAction href={`/pages/groups?locale=${locale}`}><img src="/images/groups/join-community-cutout-20261113.webp" alt="" width={64} height={45}/>{dukjilText(locale,'heartPick')}</FanAction>):undefined} links={{hearts:slug?`/${encodeURIComponent(slug)}?tab=fans&locale=${locale}`:`/passports?locale=${locale}`,claim:passportId&&claimable?`/passports/${encodeURIComponent(passportId)}?locale=${locale}#mission-book`:undefined}}/>;
+ const card=(state:Parameters<typeof WalletCard>[0]['state'])=><StanWallet part={part} locale={locale} state={state} loginHref={benefitsLoginHref(locale)} stamps={stamps} hearts={hearts} favoritePicker={!guest&&!bias.selected&&!bias.unverified&&(bias.status==='empty'||bias.status==='ready')?(bias.options.length?<FavoritePickMenu locale={locale} bias={bias} className={styles.favoritePick}><img src="/images/groups/join-community-cutout-20261113.webp" alt="" width={64} height={45}/>{dukjilText(locale,'heartPick')}</FavoritePickMenu>:<FanAction href={`/pages/groups?locale=${locale}`}><img src="/images/groups/join-community-cutout-20261113.webp" alt="" width={64} height={45}/>{dukjilText(locale,'heartPick')}</FanAction>):undefined} links={{hearts:slug?`/${encodeURIComponent(slug)}?tab=fans&locale=${locale}`:`/passports?locale=${locale}`,claim:passportId&&claimable?`/passports/${encodeURIComponent(passportId)}?locale=${locale}#mission-book`:undefined}}/>;
  // The server saw no session: the signed-out card is drawn from the first HTML instead of a loading card of another height.
  if(!auth.ready&&signedOut||auth.ready&&!auth.authenticated)return card({kind:'guest',action:null});
  if(!auth.ready||wallet.loading)return card({kind:'loading'});

@@ -34,7 +34,7 @@ const LEGACY_KEYS: readonly MissionKey[] = ["checkin", "post", "comment"];
 export type GroupMissionLinks = { write: string; comment: string };
 
 /** One row per fan activity: what to do, the points, today's count against the daily limit, a stamp when done. Pressing a row goes to where that activity happens. `all` lists every catalog activity with an all-clear row on top (the 덕질 tab); without it a page shows its main activities. */
-export function FanMissions({ locale, slug, title, titleSuffix, passportHref, proofHref, footer, onAttendance, group, all = false, noPage, preview }: { locale: AppLocale; slug: string; title: string; titleSuffix?: ReactNode; passportHref: string; proofHref: string; footer?: ReactNode; onAttendance: (trigger: HTMLElement) => void; group?: GroupMissionLinks; all?: boolean; /** Where the activity rows go while the viewer has no page to do them on. */ noPage?: string; /** Show only this many rows first; the rest open with `전체 보기 ›` on the title line (팬페이지 390, PM 11/13: no long column of seven rows). */ preview?: number }) {
+export function FanMissions({ locale, slug, title, titleSuffix, passportHref, proofHref, footer, onAttendance, group, all = false, noPage, preview, loginReturn }: { locale: AppLocale; slug: string; title: string; titleSuffix?: ReactNode; passportHref: string; proofHref: string; footer?: ReactNode; onAttendance: (trigger: HTMLElement) => void; group?: GroupMissionLinks; all?: boolean; /** Where the activity rows go while the viewer has no page to do them on. */ noPage?: string; /** Show only this many rows first; the rest open with `전체 보기 ›` on the title line (팬페이지 390, PM 11/13: no long column of seven rows). */ preview?: number; /** Where a signed-out press comes back to after the login; the row's own address when absent. */ loginReturn?: string }) {
   const state = useDukjil();
   const anywhere = useAttendedAnywhereToday(!group && state?.authenticated === true);
   const headingId = useId();
@@ -98,7 +98,7 @@ export function FanMissions({ locale, slug, title, titleSuffix, passportHref, pr
               {!nameCount && countCell(styles.count, count, limit)}
             </span>
           ));
-        const href = guest ? fanLoginHref(locale, mission.href) : mission.href;
+        const href = guest ? fanLoginHref(locale, loginReturn ?? mission.href) : mission.href;
         const onClick = !guest && mission.key === "checkin" ? (event: MouseEvent<HTMLAnchorElement>) => { if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return; event.preventDefault(); onAttendance(event.currentTarget); } : undefined;
         // D1 · F3: every row is the shared FanMissionRow (circle art · title · progress at the title's x · one fixed trailing column).
         // The trailing column holds the done tag or the reward.
