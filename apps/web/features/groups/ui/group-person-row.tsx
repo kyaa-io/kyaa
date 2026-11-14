@@ -14,9 +14,9 @@ export function GroupPersonTier({ tier, locale }: { tier: string; locale: AppLoc
   return <FanTag tone="neutral" className={styles.tierTag}>{tierDisplayName(locale, tier)}</FanTag>;
 }
 
-/** Hearts at the row end: the main number of a fan row. One heart is one true fan. Icon 20 + 18/700 (대표 11/13 "하트 조금 크게"). */
+/** Hearts at the row end: the main number of a fan row. One heart is one true fan. Icon 30 (visible ~17px: the artwork has margin) + 20/700 (대표 11/13 "하트 조금 크게"). */
 export function GroupPersonHearts({ hearts, locale }: { hearts: number; locale: AppLocale }) {
-  return <span className={styles.rowHearts} aria-label={dukjilText(locale, "missionHearts", [hearts])}><RewardIcon kind="heart" alt="" width={20} height={20}/><span aria-hidden="true">{hearts.toLocaleString(locale)}</span></span>;
+  return <span className={styles.rowHearts} aria-label={dukjilText(locale, "missionHearts", [hearts])}><RewardIcon kind="heart" alt="" width={30} height={30}/><span aria-hidden="true">{hearts.toLocaleString(locale)}</span></span>;
 }
 
 /** One fan: 56px, avatar 40, a line between rows. A button only when the viewer may open the profile. */
