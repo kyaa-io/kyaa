@@ -120,4 +120,41 @@ describe("펼침 영역의 왼쪽 선", () => {
     expect(readFileSync("features/rankings/ui/ranking-rows.module.css", "utf8")).toContain("--rank-avatar-start: calc(var(--space-3) + var(--space-7) + var(--space-2))");
     expect(readFileSync("features/rankings/ui/rank-row-panel.module.css", "utf8")).toContain("var(--rank-avatar-start)");
   });
+
+  describe("platform follower counts (A1)", () => {
+    const platforms = () => [...document.querySelectorAll("[data-rank-platforms] li")].map((li) => [li.getAttribute("data-platform"), li.querySelector("img")?.getAttribute("alt"), li.querySelector("img")?.getAttribute("src"), li.textContent]);
+
+    it("draws one logo and number per confirmed platform on a line of its own, in the fixed order, and no label word", () => {
+      render(<RankRowPanel id="p" kind="creator" row={creator({ dayGain: 1, platforms: [
+        { platform: "chzzk", count: 5000 }, { platform: "youtube", count: 200000 }, { platform: "instagram", count: 12000, digits: 2, text: "1.2만" }, { platform: "tiktok", count: 100000 },
+      ] })} days={7} locale="ko" gap={4} />);
+      expect(platforms()).toEqual([
+        ["instagram", "Instagram", "/images/guest-home/instagram.svg", "1.2만"],
+        ["tiktok", "TikTok", "/images/guest-home/tiktok.svg", "100K"],
+        ["youtube", "YouTube", "/images/guest-home/youtube.svg", "200K"],
+        ["chzzk", "치지직", "/images/guest-home/chzzk.png", "5K"],
+      ]);
+      // The platform line sits outside the cell list, so the cells keep their own row.
+      expect(document.querySelector("[data-rank-platforms]")?.closest("dl")).toBeNull();
+      expect(document.querySelectorAll("dt")).toHaveLength(3);
+    });
+
+    it("draws a confirmed zero as 0 and leaves an unconfirmed platform out (it is simply not in the list)", () => {
+      render(<RankRowPanel id="p" kind="creator" row={creator({ dayGain: 1, platforms: [{ platform: "tiktok", count: 0 }] })} days={7} locale="ko" />);
+      expect(platforms()).toEqual([["tiktok", "TikTok", "/images/guest-home/tiktok.svg", "0"]]);
+    });
+
+    it("no platforms: no platform line, the panel is what it was", () => {
+      render(<RankRowPanel id="p" kind="creator" row={creator({ dayGain: 1 })} days={7} locale="ko" />);
+      expect(document.querySelector("[data-rank-platforms]")).toBeNull();
+    });
+
+    it("a creator with platforms but no cells still opens, and a fan row never draws the line", () => {
+      const view = render(<RankRowPanel id="p" kind="creator" row={creator({ dayGain: 0, weekGain: 0, platforms: [{ platform: "youtube", count: 3 }] })} days={0} locale="en" />);
+      expect(platforms()).toEqual([["youtube", "YouTube", "/images/guest-home/youtube.svg", "3"]]);
+      view.unmount();
+      render(<RankRowPanel id="p" kind="fan" row={fan({ weekGain: 0, dayGain: 0, favorite: null })} days={0} locale="ko" />);
+      expect(document.getElementById("p")).toBeNull();
+    });
+  });
 });

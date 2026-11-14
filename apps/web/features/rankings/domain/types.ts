@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { platformFollowerSchema } from "./platform-followers";
 
 export const RANKING_PERIODS = ["week", "month", "all"] as const;
 export type RankingPeriod = (typeof RANKING_PERIODS)[number];
@@ -156,6 +157,8 @@ export const homeCreatorRankingRowSchema = z.object({
   /** likes list only: page likes in the period and all time. */
   likes: count.optional(),
   totalLikes: count.optional(),
+  /** Follower counts the platforms show, confirmed ones only, in a fixed platform order (public: count, rounding and the platform's wording). Absent from an older server. */
+  platforms: z.array(platformFollowerSchema).max(12).optional(),
 });
 export const homeCreatorRankingSchema = z.object({
   ...homeHead,

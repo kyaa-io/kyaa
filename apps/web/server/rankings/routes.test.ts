@@ -197,6 +197,41 @@ describe("rankings routes", () => {
     expect(body.rows[0]).toMatchObject({ hearts: 7, points: null, fans: 2, liveNow: true, delta: 0, weekGain: 0, isNew: false });
   });
 
+  describe("platform follower counts on the creator list", () => {
+    const row = (slug: string) => ({ rank: 1, slug, name: slug, imageUrl: null, score: 2, hearts: 7, points: null, fans: 2, liveNow: false, isNew: false, challenge: false, delta: 0, weekGain: 0 });
+    const withRows = (followers: (args: Record<string, unknown>) => unknown) => make((name, args) =>
+      name === "read_celebrity_platform_followers" ? followers(args) : { ...head({ metric: "fans", weekGainDays: 1 }), rows: [row("a"), row("b"), row("c")] }, fresh);
+
+    it("adds the confirmed counts to the matching rows, a confirmed 0 included, and none to a creator without a count", async () => {
+      const { handlers, rpc } = withRows(() => ({
+        a: [{ platform: "instagram", count: 12000, digits: 2, text: "1.2만" }, { platform: "tiktok", count: 0, digits: null, text: null }],
+        b: [{ platform: "chzzk", count: 1088, digits: null, text: null }],
+      }));
+      const body = await (await handlers.home(req("/x?kind=creators"))).json();
+      expect(rpc).toHaveBeenCalledWith("read_celebrity_platform_followers", { p_slugs: ["a", "b", "c"] });
+      expect(body.rows[0].platforms).toEqual([{ platform: "instagram", count: 12000, digits: 2, text: "1.2만" }, { platform: "tiktok", count: 0, digits: null, text: null }]);
+      expect(body.rows[1].platforms).toEqual([{ platform: "chzzk", count: 1088, digits: null, text: null }]);
+      expect("platforms" in body.rows[2]).toBe(false);
+    });
+
+    it("never passes an address, source, operator or time through, even if the database returned one", async () => {
+      const { handlers } = withRows(() => ({ a: [{ platform: "youtube", count: 5, digits: null, text: null, sourceUrl: "https://youtube.com/@a", sourceKind: "manual", enteredBy: "x", checkedAt: "2026-11-14" }] }));
+      const text = await (await handlers.home(req("/x?kind=creators"))).text();
+      expect(text).toContain('"platform":"youtube"');
+      for (const leaked of ["sourceUrl", "youtube.com", "sourceKind", "enteredBy", "checkedAt"]) expect(text).not.toContain(leaked);
+    });
+
+    it("answers the ranking without counts when the count read fails, and does not read them for an empty list", async () => {
+      const failing = withRows(() => { throw new Error("db down"); });
+      const body = await (await failing.handlers.home(req("/x?kind=creators"))).json();
+      expect(body.rows).toHaveLength(3);
+      expect(body.rows.every((r: Record<string, unknown>) => !("platforms" in r))).toBe(true);
+      const empty = make(() => ({ ...head({ metric: "fans", weekGainDays: 1 }), rows: [] }), fresh);
+      await empty.handlers.home(req("/x?kind=creators"));
+      expect(empty.rpc.mock.calls.map((call) => call[0])).not.toContain("read_celebrity_platform_followers");
+    });
+  });
+
   it("keeps each list's default metric when none is asked for, and passes the asked one (unit regression)", async () => {
     const { handlers, rpc } = make((name, args) => ({ ...head(), metric: args.p_metric, rows: [], me: null }), fresh);
     expect((await (await handlers.home(req("/x?kind=fans"))).json()).metric).toBe("hearts");
