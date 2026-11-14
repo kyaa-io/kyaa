@@ -27,32 +27,29 @@ const banner = (strip: boolean, id = "11111111-1111-4111-8111-111111111111"): Ho
 beforeEach(() => { state.authenticated = false; state.joined = []; state.joinedFails = false; state.joinedLoading = false; state.posts = []; state.postsFail = false; state.postsLoading = false; });
 afterEach(cleanup);
 
-it("my artists: the add slot first; a guest sees no empty rings and the sign-in button, without a new-post dot", () => {
+it("my artists: one row with the add circle and no visible heading or labels; a guest gets the sign-in button on the same row", () => {
   const { container } = render(<MyArtists locale="ko" loginPath="/pages/groups" />);
-  const heading = screen.getByRole("heading", { name: "내 아티스트" });
-  // Sign-in stays on the heading row; the settled rail contains only discovery.
-  expect(heading.parentElement).toContainElement(screen.getByRole("link", { name: "로그인" }));
-  expect(container.querySelector("ul")).toHaveAttribute("data-ghost");
-  expect(screen.getByRole("link", { name: "모임 찾기" })).toBeInTheDocument();
-  expect(container.querySelectorAll("li[aria-hidden='true']")).toHaveLength(0);
+  expect(screen.queryByRole("heading")).toBeNull();
+  expect(container.textContent).not.toContain("내 아티스트");
+  expect(container.textContent).not.toContain("모임 찾기");
+  expect(screen.getByRole("region", { name: "내 아티스트" })).toContainElement(screen.getByRole("link", { name: "로그인" }));
+  expect(screen.getByRole("link", { name: "모임 찾기" }).getAttribute("href")).toBe("#directory-explore");
+  expect(container.querySelectorAll("li")).toHaveLength(1);
   expect(screen.getByRole("link", { name: "로그인" }).getAttribute("href")).toContain("/login");
-  expect(container.querySelector("[role='img']")).toBeNull();
-  // Settled empty state has no decorative avatar placeholders.
-  const ghosts = container.querySelectorAll("li[data-row='artist-ghost'] img");
-  expect(ghosts).toHaveLength(0);
 });
 
-it("my artists: joined pages follow the add slot and open their page; no pages hides empty rings; a signed-in viewer has no sign-in button", () => {
+it("my artists: joined pages follow the add circle as named picture links; a signed-in viewer has no sign-in button", () => {
   state.authenticated = true; state.joined = [page(1), page(2)];
   const first = render(<MyArtists locale="ko" loginPath="/pages/groups" />);
-  const names = [...first.container.querySelectorAll("li")].map((li) => li.textContent);
-  expect(names.slice(1)).toEqual(["아티스트1", "아티스트2"]);
+  const items = [...first.container.querySelectorAll("li")];
+  expect(items.map((li) => li.textContent)).toEqual(["", "", ""]);
+  expect(items.slice(1).map((li) => li.querySelector("a")?.getAttribute("aria-label"))).toEqual(["아티스트1", "아티스트2"]);
   expect(screen.queryByRole("link", { name: "로그인" })).toBeNull();
   expect(screen.getByRole("link", { name: "아티스트1" }).getAttribute("href")).toContain(page(1).id);
   first.unmount();
   state.joined = [];
   const second = render(<MyArtists locale="ko" loginPath="/pages/groups" />);
-  expect(second.container.querySelectorAll("li[aria-hidden='true']")).toHaveLength(0);
+  expect(second.container.querySelectorAll("li")).toHaveLength(1);
 });
 
 it("drags the artist rail with a mouse and swipes banners without following their links", () => {
