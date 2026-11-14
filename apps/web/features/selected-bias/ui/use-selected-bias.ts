@@ -21,7 +21,7 @@ export type SelectedBias = {
   /** The favorite named in MY (one value, fan_profile_public_fields) while its passport exists; null when none is named. */
   selected: SelectedBiasOption | null;
   /** With no passport: the first creator the viewer follows, shown by name without a tier. */
-  unverified: { slug: string; name: string } | null;
+  unverified: { slug: string; name: string; image: string } | null;
   /** Names the favorite in MY. The header shows it at once and goes back if saving fails. */
   select: (slug: string) => void;
   retry: () => void;
@@ -100,5 +100,5 @@ export function useSelectedBias(locale: AppLocale): SelectedBias {
     : summary.state.status === "error" ? summary.state.kind === "auth" ? "guest" : "error"
     : options.length ? "ready" : "empty";
   const followed = data?.creators[0]?.celebrity;
-  return { status, options, selected, unverified: status === "empty" && followed ? { slug: followed.slug, name: followed.name } : null, select, retry: summary.retry };
+  return { status, options, selected, unverified: status === "empty" && followed ? { slug: followed.slug, name: followed.name, image: followed.image } : null, select, retry: summary.retry };
 }

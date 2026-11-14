@@ -319,6 +319,12 @@ it('shows one favorite selector beside the daily missions title and preserves th
  expect(within(section).getByRole('heading',{name:'오늘의 덕질'}).parentElement).toContainElement(selector);
  expect(requests).toContain('/api/benefits?celebrity=bias-x&locale=ko');
 });
+it('draws the followed creator photo beside 오늘의 덕질 when the viewer holds no passport yet',async()=>{
+ bias.value={...bias.value,status:'empty',options:[],selected:null,unverified:{slug:'bias-x',name:'Bias X',image:'/x.webp'}};
+ duoData();render(<GroupBenefitsScreen locale='ko'/>);
+ const section=await screen.findByRole('region',{name:'오늘의 덕질'});
+ expect(section.querySelector('[data-creator-avatar="bias-x"] img')).not.toBeNull();
+});
 it('shows one favorite picker instead of stamp and heart numbers when no favorite exists',async()=>{
  bias.value={...bias.value,status:'empty'};
  const view=render(<GroupBenefitsScreen locale='ko'/>);
