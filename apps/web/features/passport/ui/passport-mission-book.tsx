@@ -5,9 +5,8 @@ import { Check, ChevronLeft, ChevronRight, Heart } from "lucide-react";
 import paper from "@/components/fan-ui/passport-paper.module.css";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import { FanHeading } from "@/components/fan-ui/fan-heading";
-import { FanHelpTip } from "@/components/fan-ui/fan-help-tip";
+import { FanSheetTrigger } from "@/components/fan-ui/fan-sheet-trigger";
 import { fanLoginHref } from "@/components/login-href";
-import { fanUiText } from "@/components/fan-ui/fan-ui-copy";
 import { Dialog } from "@/components/ui/overlay/accessible-overlay";
 import { dukjilText, type DukjilCopyKey } from "@/features/dukjil/ui/dukjil-copy";
 import { useDukjil } from "@/features/dukjil/ui/dukjil-provider";
@@ -75,7 +74,8 @@ export function missionHref(kind: string | null | undefined, slug: string, passp
 
 const slotDate = (value: string, locale: AppLocale) => new Intl.DateTimeFormat(locale, { calendar: "gregory", timeZone: "Asia/Seoul", month: "numeric", day: "numeric" }).format(new Date(value));
 
-function Slot({ slot, locale, stampSrc, href }: { slot: PassportRoadmapSlot; locale: AppLocale; stampSrc?: string; href?: string | null }) {
+/** `sheet`가 있으면 칸을 누를 때 설명 시트가 열리고, 그 안 버튼이 미션 화면으로 간다. 없으면(비로그인) 칸 전체가 `href` 링크다. */
+function Slot({ slot, locale, stampSrc, href, sheet = false }: { slot: PassportRoadmapSlot; locale: AppLocale; stampSrc?: string; href?: string | null; sheet?: boolean }) {
   const dukjil = useDukjil();
   const meta = slot.kind ? SLOT[slot.kind] : undefined;
   const number = String(slot.slotNo);
@@ -83,19 +83,17 @@ function Slot({ slot, locale, stampSrc, href }: { slot: PassportRoadmapSlot; loc
   const filled = slot.state === "filled";
   const model = dukjil?.catalog && slot.kind === "steady_checkin" ? buildGuideModel(dukjil.catalog) : null;
   const days = model?.slots.find(item => item.action === "steady_checkin")?.days ?? null;
-  const task = !meta ? null : slot.kind === "quiz" ? passportBookText(locale, "entryReviewTask") : days ? dukjilText(locale, "missionTaskSteady", [days]) : dukjilText(locale, meta.task);
+  const task = !meta ? null : slot.kind === "quiz" ? passportBookText(locale, "entryReviewHelp") : days ? dukjilText(locale, "missionTaskSteady", [days]) : dukjilText(locale, meta.task);
   const rule = slot.kind ? dukjil?.catalog?.rules[slot.kind] as { points?: unknown } | undefined : undefined;
+  const points = typeof rule?.points === "number" && rule.points > 0 ? rule.points : null;
   // 받지 않은 칸은 받은 칸과 같은 그림을 흐린 회색으로 놓는다(ghost-v1). 그림이 없는 옛 칸은 회색 틀만 놓는다.
   const src = filled ? meta ? `/images/stamps/ink-v1/${meta.art}.webp` : stampSrc : `/images/stamps/ghost-v1/${meta ? meta.art : "frame"}.webp`;
   // A slot that fills while the page is open gets the stamp press once; a slot already filled on arrival stays still.
   const before = useRef(filled);
   const [pressing, setPressing] = useState(false);
   useEffect(() => { if (filled && !before.current) setPressing(true); before.current = filled; }, [filled]);
-  const text = <>
-    {meta ? <span className={styles.slotLabel} aria-hidden={href ? undefined : "true"} data-wrap-anywhere>{label}</span> : null}
-    {task && <span className={styles.slotTask} data-slot-task>{task}</span>}
-  </>;
-  // Read-only checkbox semantics: the screen reader says filled or empty in the reader's own language. The link beside it stretches over the whole card.
+  const labelNode = meta ? <span className={styles.slotLabel} aria-hidden={href || sheet ? undefined : "true"} data-wrap-anywhere>{label}</span> : null;
+  // Read-only checkbox semantics: the screen reader says filled or empty in the reader's own language. The link or button beside it stretches over the whole card.
   return <li className={styles.slot} data-state={slot.state} data-kind={slot.kind} data-frame={meta?.frame ?? "round"} style={{ "--stamp-tilt": `${(slot.slotNo % 5 - 2) * 3}deg` } as CSSProperties}>
     {meta ? <span className={styles.number} aria-hidden="true">{number.padStart(2, "0")}</span> : null}
     <span className={styles.art} role="checkbox" aria-checked={filled} aria-disabled="true" aria-label={label}>
@@ -104,11 +102,15 @@ function Slot({ slot, locale, stampSrc, href }: { slot: PassportRoadmapSlot; loc
       {filled ? <span className={styles.check}><Check aria-hidden="true" size={12} strokeWidth={3} /></span> : null}
       {pressing && <StampPress state="press" size={64} className={styles.pressed} onDone={() => setPressing(false)} />}
     </span>
-    {href ? <Link className={styles.slotLink} href={href as Route}>{text}</Link> : text}
+    {sheet && meta ? <FanSheetTrigger className={styles.slotLink} trigger={labelNode} title={label} closeLabel={passportBookText(locale, "helpClose")} actionHref={href} actionLabel={passportBookText(locale, "missionGo")}>
+      <div className={styles.sheetBody}>
+        <p className={styles.sheetTask}>{task}</p>
+        {points !== null ? <EarnBadge variant="inline" locale={locale} points={points} /> : null}
+      </div>
+    </FanSheetTrigger>
+      : href ? <Link className={styles.slotLink} href={href as Route}>{labelNode}</Link> : labelNode}
     {filled && slot.clearedAt ? <time className={styles.slotDate} dateTime={slot.clearedAt}>{slotDate(slot.clearedAt, locale)}</time> : null}
-    {meta && typeof rule?.points === "number" && rule.points > 0 && <EarnBadge variant="inline" locale={locale} points={rule.points} className={styles.points} />}
-    {/* BUGS-1846 T1: the help sits in the flow under the points, never over the stamp frame; label, task and points line up with the other cards of the row. */}
-    {slot.kind === "quiz" ? <span className={styles.help}><FanHelpTip label={passportBookText(locale, "entryReviewHelpLabel")} title={label} closeLabel={passportBookText(locale, "helpClose")} detailsLabel={fanUiText(locale, "details")}>{passportBookText(locale, "entryReviewHelp")}</FanHelpTip></span> : null}
+    {meta && points !== null && <EarnBadge variant="inline" locale={locale} points={points} className={styles.points} />}
   </li>;
 }
 
@@ -164,7 +166,7 @@ function Page({ page, locale, busy, failed, onClaim, proofHref, pager, stampSrc,
       <span id={`mission-page-${page.pageNo}-count`} className={styles.count}>{page.filled}/{page.slots.length}</span>
       {pager}
     </header>
-    <ol className={styles.slots}>{page.slots.map(slot => <Slot key={slot.slotNo} slot={slot} locale={locale} stampSrc={slot.stampId ? stampSrc?.(slot.stampId) : undefined} href={locked || slot.state === "filled" ? null : hrefFor(slot.kind)} />)}</ol>
+    <ol className={styles.slots}>{page.slots.map(slot => <Slot key={slot.slotNo} slot={slot} locale={locale} stampSrc={slot.stampId ? stampSrc?.(slot.stampId) : undefined} href={locked || slot.state === "filled" ? null : hrefFor(slot.kind)} sheet />)}</ol>
     {page.claimed ? <p className={styles.claimed}><Heart aria-hidden="true" size={18} />{dukjilText(locale, "missionClaimed")}</p>
       : locked ? <FanAction className={styles.lockedAction} variant="neutral" href={proofHref}>{dukjilText(locale, "missionLocked")}</FanAction>
       : <FanAction className={styles.claim} variant="primary" disabled={!page.claimable || busy} onClick={onClaim} leadingIcon={<Heart size={18} />}>{dukjilText(locale, "missionClaim")}</FanAction>}
