@@ -165,6 +165,21 @@ describe("global web wallet trust boundary", () => {
     expect(response.status).toBe(200);
     expect(await response.json()).toEqual({ entries });
   });
+  describe("history response compatibility", () => {
+    const row = { id: key, asset: "fan_point", amount: 30, sourceType: "tier_bonus", sourceId: session, celebrityId: null, createdAt: "2026-11-06T00:00:00Z", actionKey: "tier_bonus", tier: "Gold" };
+    const read = async (entries: unknown[], extra: object = {}) => {
+      vi.mocked(deps.rpc).mockResolvedValue({ ...extra, entries });
+      return api.history(request("/history"));
+    };
+    it("accepts unknown keys on the object and on a row, and drops them from the result", async () => {
+      const response = await read([{ ...row, futureLabel: "x" }], { futureTotal: 9 });
+      expect(response.status).toBe(200);
+      expect(await response.json()).toEqual({ entries: [row] });
+    });
+    it("still fails on a wrongly typed known field, a missing required id and an unknown tier", async () => {
+      for (const bad of [{ ...row, amount: "30" }, { ...row, id: undefined }, { ...row, tier: "Bronze" }]) expect((await read([bad])).status).toBe(503);
+    });
+  });
   it("bounds history queries and rejects duplicate limit keys", async () => {
     for (const path of ["/history?limit=101", "/history?limit=1&limit=2"]) expect((await api.history(request(path))).status).toBe(400);
     expect(deps.rpc).not.toHaveBeenCalled();
