@@ -5,6 +5,7 @@ import { isInstagramManagementPath, requestLocale } from "./components/locale-pa
 import { isAppLocale } from "./i18n/locales";
 import { adsenseEnabled, awsStorageContentSecurityPolicy } from "./security-headers";
 import { isAwsHosting } from "./server/config/hosting";
+import { releaseSha } from "./server/config/release-sha";
 import { readGa4MeasurementId } from "./features/analytics/domain/ga4-id";
 import { isNativeAppAvailable, openAppWebPath } from "./server/app-link/open-app-redirect";
 
@@ -98,6 +99,9 @@ export function proxy(request: NextRequest): NextResponse {
         stage: request.nextUrl.pathname === "/admin/wave-stage",
       }));
     }
+    // Lets a screenshot check confirm which deployment served the page; same value /api/health/live already shows.
+    const sha = isPage ? releaseSha() : undefined;
+    if (sha) response.headers.set("x-release-sha", sha);
     if (resolve) {
       response.headers.set("Cache-Control", "private, no-store");
       response.headers.set("Vary", "Accept-Language, Cookie");
