@@ -86,18 +86,18 @@ it('대표 11/11: the tickets result links to my raffles and the points under it
  duoData();render(<GroupBenefitsScreen locale='ko'/>);await screen.findAllByText('보유 137P');
  const card=document.querySelector('[data-wallet-card]')!;
  expect(card.querySelector('[data-cell="tickets"]')).toHaveAttribute('href','/my/raffles?locale=ko');
- expect(card.querySelector('[data-cell="points"]')).toHaveTextContent('보유 137P');expect(card.querySelector('[data-cell="points"]')).toHaveTextContent('−100P');
+ expect(card.querySelector('[data-cell="points"]')).toHaveTextContent('보유 137P');expect(card.querySelector('[data-cell="points"]')).toHaveTextContent('100P사용');
  // 대표 11/13 09:39 swap line: the real count stays in view; ready is the 교환 button turning primary (no 교환 가능 label).
  expect(within(card as HTMLElement).getByRole('button',{name:'교환'})).toHaveAttribute('data-fan-action-emphasis','primary');
- expect(card.querySelector('[data-cell="points"] [role="progressbar"]')).toHaveAttribute('aria-valuenow','100');
- expect(card.querySelector('[data-cell="points"] [role="progressbar"]')).toHaveAttribute('aria-valuetext','137 / 100P');
+ // 대표 11/14 18:22 N8: no bar under the count, only the balance text.
+ expect(card.querySelector('[role="progressbar"]')).toBeNull();
 });
 it('대표 11/11 + 사용자 12:26: without an ad unit 교환 and 받기 read 준비 중 and stay disabled even when affordable or full',async()=>{
  adUnit.value=undefined;
  try{
   withFavorite();roadmapBody={passportId:uid(900),celebrityId:uid(901),hearts:3,pages:[{pageNo:1,slots:Array.from({length:9},(_,i)=>({slotNo:i+1,kind:null,state:'filled',stampId:null,clearedAt:null})),filled:9,claimable:true,claimed:false,locked:false,lockedReason:null}]};
   render(<GroupBenefitsScreen locale='ko'/>);await screen.findAllByText('보유 137P');
-  await waitFor(()=>expect(document.querySelector('[data-cell="stamps"] [role="progressbar"]')).toHaveAttribute('aria-valuetext','9 / 9'));
+  await waitFor(()=>expect(document.querySelector('[data-cell="stamps"]')).toHaveTextContent('보유 9 / 9'));
   // 사용자 12:26: both read 준비 중 (no other notice) and stay disabled.
   // 대표 11/13 09:39: the two swap lines head 럭키드로우 and 덕질 미션.
   const preparing=[...document.querySelectorAll('[data-wallet-card]')].flatMap(card=>within(card as HTMLElement).getAllByRole('button',{name:'준비 중'}));
@@ -211,7 +211,7 @@ it('DS-D 9/9: a page already claimed (no next page yet) shows 0/9 and a disabled
  withFavorite();roadmapBody={passportId:uid(900),celebrityId:uid(901),hearts:3,pages:[{pageNo:1,slots:Array.from({length:9},(_,i)=>({slotNo:i+1,kind:null,state:'filled',stampId:null,clearedAt:null})),filled:9,claimable:false,claimed:true,locked:false,lockedReason:null}]};
  render(<GroupBenefitsScreen locale='ko'/>);
  await screen.findAllByText('보유 137P');const card=document.querySelector('[data-wallet-part="hearts"]')!; // 대표 11/13 09:39: the stamps → heart swap heads 덕질 미션.
- await waitFor(()=>expect(card.querySelector('[data-cell="stamps"] [role="progressbar"]')).toHaveAttribute('aria-valuetext','0 / 9'));
+ await waitFor(()=>expect(card.querySelector('[data-cell="stamps"]')).toHaveTextContent('보유 0 / 9'));
  expect(card).not.toHaveTextContent('하트 받기');
  expect(within(card as HTMLElement).getByRole('button',{name:'받기'})).toBeDisabled();
 });
@@ -220,7 +220,7 @@ it('대표 11/11: at 9/9 the hearts column 받기 goes to the passport mission b
  withFavorite();roadmapBody={passportId:uid(900),celebrityId:uid(901),hearts:3,pages:[{pageNo:1,slots:Array.from({length:9},(_,i)=>({slotNo:i+1,kind:null,state:'filled',stampId:null,clearedAt:null})),filled:9,claimable:true,claimed:false,locked:false,lockedReason:null}]};
  render(<GroupBenefitsScreen locale='ko'/>);
  await screen.findAllByText('보유 137P');const card=document.querySelector('[data-wallet-part="hearts"]')!; // 대표 11/13 09:39: the stamps → heart swap heads 덕질 미션.
- await waitFor(()=>expect(card.querySelector('[data-cell="stamps"] [role="progressbar"]')).toHaveAttribute('aria-valuetext','9 / 9'));
+ await waitFor(()=>expect(card.querySelector('[data-cell="stamps"]')).toHaveTextContent('보유 9 / 9'));
  expect(within(card as HTMLElement).getByRole('link',{name:'받기'})).toHaveAttribute('href',`/passports/${uid(900)}?locale=ko#mission-book`);
 });
 

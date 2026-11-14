@@ -4,7 +4,7 @@ import Link from "../../../components/fan-ui/hover-prefetch-link";
 import type { Route } from "next";
 import { ArrowDown, SquarePlay } from "@/components/fan-ui/fan-icons";
 import { FanIcon } from "@/components/fan-ui/fan-icon";
-import type { AnimationEvent, CSSProperties } from "react";
+import type { AnimationEvent } from "react";
 import { useEffect, useId, useRef, useState, useSyncExternalStore, type ReactNode } from "react";
 import { BottomSheet, Dialog } from "@/components/ui/overlay/accessible-overlay";
 import { useFanWide } from "@/components/fan-ui/fan-dialog";
@@ -57,7 +57,7 @@ function useRewardedAdReady() {
 }
 
 /** 덕질 wallet swap cards (대표 11/13 09:39 + 사용자 13:2x 환전기 벤치마크): each section is headed by ONE converter —
- *  two stacked cells, what I give on top (asset, name, 보유 N, 사용 cost, a thin bar toward the cost) and what I get below (asset, name,
+ *  two stacked cells, what I give on top (asset, name, 보유 N, 사용 cost) and what I get below (asset, name,
  *  보유 N, 획득 1), a joint chip on the seam, then one wide button. ≥1024 lays the same cells side by side with the button at the end.
  *  `part` renders one card (tickets heads 럭키드로우, hearts heads 덕질 미션); without it both stack (fixtures). The button runs behind the
  *  rewarded ad (video icon in every state), is primary only when it can be pressed, and reads 준비 중 without an ad unit. A guest sees
@@ -83,13 +83,11 @@ export function StanWallet({ locale, state, stamps, hearts, links, className, fa
     <FanNumber size="lg" value={value} unit={unit || undefined} locale={locale} />
     <FanText role="meta" className={styles.amountLabel}>{s(side === "spend" ? "stanSpend" : "stanGain")}</FanText>
   </span>;
-  type Side = { cell: string; kind: keyof typeof WALLET_ASSETS; name: string; held: ReactNode; amount: ReactNode; flash: [boolean, (event: AnimationEvent) => void]; bar?: { value: number; max: number; text: string; label: string } };
-  /** Main line: name + amount + 사용/획득. Under it, smaller, the balance (and the gauge toward the cost) — what I have never competes with what moves. */
+  type Side = { cell: string; kind: keyof typeof WALLET_ASSETS; name: string; held: ReactNode; amount: ReactNode; flash: [boolean, (event: AnimationEvent) => void] };
+  /** Main line: name + amount + 사용/획득. Under it, smaller, the balance — what I have never competes with what moves. */
   const body = (side: Side) => <>
     <RewardIcon kind={side.kind === "coin" ? "point" : side.kind} size={40} className={styles.cellAsset} />
-    <span className={styles.cellText}><span className={styles.cellMain}><FanText role="item" className={styles.cellName}>{side.name}</FanText>{side.amount}</span><FanText role="meta" className={styles.cellHeld}><span className={styles.heldText}>{side.held}</span>{side.bar ? <span className={styles.bar} role="progressbar" aria-label={side.bar.label} aria-valuemin={0} aria-valuemax={side.bar.max} aria-valuenow={Math.min(side.bar.value, side.bar.max)} aria-valuetext={side.bar.text}>
-      <span className={styles.barFill} style={{ "--wallet-bar-fill": `${(side.bar.max > 0 ? Math.min(side.bar.value, side.bar.max) / side.bar.max : 0) * 100}%` } as CSSProperties} aria-hidden="true" />
-    </span> : null}</FanText></span>
+    <span className={styles.cellText}><span className={styles.cellMain}><FanText role="item" className={styles.cellName}>{side.name}</FanText>{side.amount}</span><FanText role="meta" className={styles.cellHeld}><span className={styles.heldText}>{side.held}</span></FanText></span>
   </>;
   /** One button per card, as wide as the cells. Both run behind the rewarded ad (the video icon says so); with no ad unit it is the gray 준비 중. */
   const action = (name: string, enabled: boolean, extra: { onClick: () => void } | { href: string } | null) => state.kind === "guest" ? (loginHref ? <FanAction variant="primary" className={styles.reward} href={loginHref} leadingIcon={<FanIcon icon={SquarePlay} size={20} />}>{name}</FanAction> : state.action) : <FanAction variant={enabled ? "primary" : "neutral"} className={styles.reward} {...(enabled && extra ? extra : { disabled: true })} leadingIcon={<FanIcon icon={SquarePlay} size={20} />}>{adReady || enabled ? name : s("stanPreparing")}</FanAction>;
@@ -103,17 +101,14 @@ export function StanWallet({ locale, state, stamps, hearts, links, className, fa
   </div>;
   const flashes = { points: useBalanceFlash(points), tickets: useBalanceFlash(tickets), stamps: useBalanceFlash(stamps), hearts: useBalanceFlash(hearts) };
   const show = (name: "tickets" | "hearts") => !part || part === name;
-  const pointValue = ready ? state.points : 0;
   return <section className={[styles.wallet, className].filter(Boolean).join(" ")} id={part ? `wallet-${part}` : "wallet"} aria-label={part === "tickets" ? `${w.points} → ${w.tickets}` : part === "hearts" ? `${s("stanFlowStamps")} → ${s("stanFlowHearts")}` : s("stanWalletFlows")} data-wallet-card="stan" data-wallet-part={part}>
     {show("tickets") ? swap("tickets",
-      { cell: "points", flash: flashes.points, kind: "coin", name: w.points, held: held(points, typeof points === "number" ? `${n(points)}P` : ""), amount: amount("spend", pointCost, "P"),
-        bar: typeof points === "number" ? { value: pointValue, max: pointCost, text: `${n(pointValue)} / ${n(pointCost)}P`, label: s("walletNextTicket", [pointCost]) } : undefined },
+      { cell: "points", flash: flashes.points, kind: "coin", name: w.points, held: held(points, typeof points === "number" ? `${n(points)}P` : ""), amount: amount("spend", pointCost, "P") },
       { cell: "tickets", flash: flashes.tickets, kind: "ticket", name: w.tickets, held: held(tickets, typeof tickets === "number" ? `${n(tickets)}${ko ? "장" : ""}` : ""), amount: amount("gain", 1, ko ? "장" : "") },
       `/my/raffles?locale=${locale}`,
       action(ko ? "교환" : w.exchange, ready && (Boolean(pendingRequest.pending) || (affordable && adReady)), { onClick: () => setOpen(true) })) : null}
     {show("hearts") ? favoritePicker ? <div className={`${styles.swap} ${styles.favoritePicker}`} data-cell="favorite-picker">{favoritePicker}</div> : swap("hearts",
-      { cell: "stamps", flash: flashes.stamps, kind: "stamp", name: s("stanFlowStamps"), held: held(stamps, `${pageStamps} / ${STAMPS_PER_HEART}`), amount: amount("spend", STAMPS_PER_HEART, ko ? "개" : ""),
-        bar: typeof stamps === "number" ? { value: pageStamps, max: STAMPS_PER_HEART, text: `${pageStamps} / ${STAMPS_PER_HEART}`, label: s("stanFlowStamps") } : undefined },
+      { cell: "stamps", flash: flashes.stamps, kind: "stamp", name: s("stanFlowStamps"), held: held(stamps, `${pageStamps} / ${STAMPS_PER_HEART}`), amount: amount("spend", STAMPS_PER_HEART, ko ? "개" : "") },
       { cell: "hearts", flash: flashes.hearts, kind: "heart", name: s("stanFlowHearts"), held: held(hearts, typeof hearts === "number" ? `${n(hearts)}${ko ? "개" : ""}` : ""), amount: amount("gain", 1, ko ? "개" : "") },
       links.hearts,
       action(s("stanClaim"), claimable, links.claim ? { href: links.claim } : null)) : null}
