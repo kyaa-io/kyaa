@@ -111,6 +111,20 @@ describe("canonical 03 guest home", () => {
     expect(top.compareDocumentPosition(container.querySelector("#home-ranking")!) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     expect(container.querySelectorAll('[data-banner-slot="home-below-ranking"]')).toHaveLength(1);
   });
+  it("draws 홈배너2 right under the ranking from the home_mid slot, before the thin banner, and nothing when the slot is empty", () => {
+    const mid = { ...bannerFixture, id: "55555555-5555-4555-8555-555555555555", title: "광고", category: "ad" as const, placement: "home_mid" as const };
+    const thin = { ...bannerFixture, id: "44444444-4444-4444-8444-444444444444", title: "얇은 띠", placement: "home_below_board" as const };
+    const first = render(<GuestHome {...defaultProps} homeSlots={{ home_mid: mid, home_below_board: thin }} />);
+    const midStrip = first.container.querySelector('[data-banner-size="mid"]')!;
+    const thinStrip = first.container.querySelector('[data-banner-size="thin"]')!;
+    expect(midStrip).toHaveAttribute("data-banner-id", mid.id);
+    expect(screen.getByTestId("home-ranking").compareDocumentPosition(midStrip) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(midStrip.compareDocumentPosition(thinStrip) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    first.unmount();
+    const second = render(<GuestHome {...defaultProps} />);
+    expect(second.container.querySelector('[data-banner-size="mid"]')).toBeNull();
+    expect(second.container.querySelector("[class*=midBanner]")).toBeNull();
+  });
   it("draws the thin banner from the slot read with the page, before the notices, and nothing when the slot is empty", () => {
     const thin = { ...bannerFixture, id: "44444444-4444-4444-8444-444444444444", title: "얇은 띠", placement: "home_below_board" as const };
     const first = render(<GuestHome {...defaultProps} homeSlots={{ home_below_board: thin }} />);
