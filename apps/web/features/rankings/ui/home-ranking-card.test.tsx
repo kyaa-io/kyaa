@@ -263,15 +263,15 @@ it("reduced motion: the rows are drawn at once, no entrance", async () => {
   }
 });
 
-it("shows points as the coin asset and likes as the thumbs-up, never the letter P or the word", async () => {
+it("shows points as the coin asset and likes as the flat heart, never the letter P or the word", async () => {
   stub(fans([fanRow(1, { nickname: "가", points: 7480 })]), creators({ rows: [creatorRow(1, { slug: "elina", name: "엘리나", likes: 105 })] }));
   const { container } = render(<HomeRankingCard locale="ko" />);
   await screen.findByText("가");
   const main = (kind: string) => container.querySelector(`li[data-row='${kind}-rank'] [data-metric]`) as HTMLElement;
   expect(main("fan").querySelector("img[src='/images/economy/point-coin.webp']")).not.toBeNull();
   expect(main("fan").textContent).toBe("7,480");
-  expect(main("creator").querySelector("[data-unit='likes']")).not.toBeNull();
-  expect(main("creator").querySelector("[data-icon='heart']")).toBeNull();
+  expect(main("creator").querySelector("[data-unit='likes'][data-icon='heart']")).not.toBeNull();
+  expect(main("creator").querySelector("[data-icon='thumbs-up'], img")).toBeNull();
   expect(main("creator").textContent).toBe("105");
 });
 
