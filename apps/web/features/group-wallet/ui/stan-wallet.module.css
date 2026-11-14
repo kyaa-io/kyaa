@@ -36,9 +36,6 @@
 @keyframes wallet-balance-changed { from { opacity:1; } to { opacity:0; } }
 /* 독립 판정 21:4x·22:0x: the seam chip and the cell borders read louder than the amounts — subtle lines, a muted arrow, a 28 chip. */
 .joint { position:absolute; inset-block-start:50%; inset-inline-start:50%; z-index:1; display:grid; place-items:center; width:28px; height:28px; box-sizing:border-box; border:1px solid var(--color-line-subtle); border-radius:50%; background:var(--color-surface); color:var(--color-muted); transform:translate(-50%,-50%); pointer-events:none; }
-/* The track is neutral so only the filled part is pink (감독 21:3x B3: a pink track sat next to the pink heart). It runs to the cell's end. */
-.bar { position:relative; flex:1 1 auto; min-inline-size:40px; display:block; box-sizing:border-box; height:6px; border:1px solid var(--color-line); border-radius:var(--radius-pill); background:var(--color-line-subtle); overflow:hidden; }
-.barFill { position:absolute; inset-block:0; inset-inline-start:0; inline-size:var(--wallet-bar-fill); border-radius:inherit; background:var(--color-accent); transition:inline-size var(--motion-slow) var(--motion-easing); }
 /* `.swap .reward` outranks FanAction's one-class `.primary` (width min(100%,320)): the converter's button spans the cells (벤치마크). */
 .swap .reward { inline-size:100%; max-inline-size:none; white-space:nowrap; }
 /* 대표 11/14 18:22 N8: a button that cannot be pressed (0 balance, 준비 중) was a white, outlined, faded box like the two cells above it. It is a soft pink face
@@ -60,7 +57,6 @@
  .cell[data-side="from"] { padding-inline-end:var(--space-6); }
  .cell[data-side="to"] { padding-inline-start:var(--space-6); }
  .joint { transform:translate(-50%,-50%) rotate(-90deg); }
- .bar { min-inline-size:24px; }
 }
 @container (width >= 45rem) {
  .swap { grid-template-columns:minmax(0,1fr) 200px; align-items:center; column-gap:var(--space-4); }
@@ -71,7 +67,7 @@
 .favoritePicker { justify-items:center; align-content:center; }
 .swap.favoritePicker { grid-template-columns:minmax(0,1fr); padding:var(--space-3); border:1px solid var(--color-line); border-radius:var(--radius-card); background:var(--color-surface); }
 @media (hover:hover) and (pointer:fine) { .guide:hover { color:var(--color-ink); background:var(--color-accent-soft); } }
-@media (prefers-reduced-motion:reduce) { .barFill { transition:none; } .cell[data-changed]::after { animation:none; } }
+@media (prefers-reduced-motion:reduce) { .cell[data-changed]::after { animation:none; } }
 .backdrop { position:fixed; inset:0; z-index:var(--z-dialog); display:flex; align-items:flex-end; justify-content:center; background:var(--color-backdrop); }
 .sheet { position:relative; box-sizing:border-box; width:100%; padding:var(--space-8) var(--space-4); padding-bottom:calc(var(--space-8) + env(safe-area-inset-bottom)); border:0; outline:1px solid var(--color-line); outline-offset:-1px; border-radius:var(--radius-card) var(--radius-card) 0 0; background:var(--color-surface); color:var(--color-ink); font-family:var(--font-sans); font-variant-numeric:tabular-nums; font-feature-settings:"tnum"; }
 .handle { position:absolute; top:var(--space-2); left:calc(50% - var(--space-5)); width:40px; height:4px; border-radius:var(--radius-pill); background:var(--color-accent-line); }
