@@ -100,12 +100,12 @@
 .favoritePicker a { display:flex; flex-direction:column; gap:var(--space-2); height:auto; padding:var(--space-2); white-space:normal; text-align:center; border:0; background:transparent; }
 .favoritePicker a > span { display:flex; flex-direction:column; align-items:center; gap:var(--space-2); }
 
-/* 덕질 미션 head's mission book strip (stan-mission-strip.tsx): one bordered link, title + N/9 over nine stamps in one row. */
-.strip { display:grid; gap:var(--space-2); min-width:0; padding:var(--space-3); border:1px solid var(--color-line); border-radius:var(--radius-card); background:var(--color-surface); color:var(--color-ink); text-decoration:none; }
+/* 덕질 미션 head's mission book strip (stan-mission-strip.tsx): one link. 덕질 기록 is a section title (18/700 like 덕질 미션 and 오늘의 덕질) with N/9 at the row's right end, 12 above the one bordered card of nine stamps. */
+.strip { display:grid; gap:var(--space-3); min-width:0; color:var(--color-ink); text-decoration:none; }
 .strip:focus-visible { outline:2px solid var(--color-focus); outline-offset:2px; }
-.stripHead { display:flex; align-items:center; justify-content:space-between; gap:var(--space-2); font-size:var(--fan-description-size); font-weight:var(--fan-item-title-weight); line-height:var(--fan-item-compact-leading); }
-.stripCount { color:var(--color-muted); font-variant-numeric:tabular-nums; }
-.stripStamps { display:grid; grid-template-columns:repeat(9,minmax(0,1fr)); gap:var(--space-1); }
+.stripHead { display:flex; align-items:center; justify-content:space-between; gap:var(--space-2); font-size:var(--fan-section-size); font-weight:var(--fan-section-weight); line-height:var(--fan-heading-leading); letter-spacing:var(--fan-heading-tracking); }
+.stripCount { color:var(--color-muted); font-size:var(--fan-description-size); font-weight:var(--fan-item-title-weight); line-height:var(--fan-item-compact-leading); font-variant-numeric:tabular-nums; }
+.stripStamps { display:grid; grid-template-columns:repeat(9,minmax(0,1fr)); gap:var(--space-1); padding:var(--space-3); border:1px solid var(--color-line); border-radius:var(--radius-card); background:var(--color-surface); }
 .stripStamps img { display:block; inline-size:100%; max-inline-size:56px; block-size:auto; aspect-ratio:1; justify-self:center; object-fit:contain; }
 @media (hover:hover) and (pointer:fine) { .strip:hover .stripHead > span:first-child { text-decoration:underline; } }
-@media (min-width:1024px) { .strip { padding:var(--space-3) var(--space-4); } }
+@media (min-width:1024px) { .stripStamps { padding:var(--space-3) var(--space-4); } }

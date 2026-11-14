@@ -189,6 +189,8 @@ section.pWallet{position:relative;box-sizing:border-box}
 .missionsSection > [data-fan-section-header]{min-height:0;margin-bottom:0}
 /* 오늘의 덕질 머리도 44 줄(최애 고르기 누름 자리)이라 목록과의 사이를 0으로 둔다 — 제목 글자 → 목록 11. */
 .missionsSection [data-fan-missions]{row-gap:0}
+/* D3 (대표 11/14, 보석 A): 교환·받기 박스 → 덕질 기록 → 오늘의 덕질 are three sections one section gap apart (32, 768+ 48), like the sections of the page; each title sits 12 above its card (the grid gap). */
+.missionsSection > :is([data-mission-strip],[data-stan-passport-book],[data-fan-missions],[data-missions-pending]){margin-block-start:calc(var(--fan-section-gap) - var(--space-3))}
 
 
 /* 사용자 11/13 11:2x login gate: the signed-out sections blurred behind one centred card. The backdrop shows about one screen of the real
