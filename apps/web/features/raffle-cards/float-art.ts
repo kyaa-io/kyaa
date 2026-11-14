@@ -31,7 +31,7 @@ export type FloatEngine = {
 export type FloatEngineOptions = { onStall?: () => void };
 
 const FOV = 24, DEG = Math.PI / 180;
-/** 움직임 값: 한 곳에 모아 둔다. 주기는 서로 맞물리지 않게 7·9·11초, 빛은 8초에 한 번 1.6초 동안 지나간다. */
+/** 움직임 값은 이 상수 하나에 둔다. 주기는 서로 맞물리지 않게 7·9·11초, 빛은 8초에 한 번 1.6초 동안 지나간다. */
 const MOTION = { lift: .07, liftPeriod: 7, tiltX: 3 * DEG, tiltXPeriod: 9, tiltY: 4.5 * DEG, tiltYPeriod: 11, pointerX: 8 * DEG, pointerY: 6 * DEG, sweepEvery: 8, sweepFor: 1.6, sweepGap: .35, sweepGain: .16, rampFor: 1.4, follow: 4 };
 
 const vertexShader = "varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }";
