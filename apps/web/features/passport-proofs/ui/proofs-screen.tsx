@@ -119,7 +119,7 @@ function PublicProofsFeed({ locale, slug }: { locale: AppLocale; slug: string })
   }, [slug, auth.ready, auth.authenticated]);
   return <section data-block="proof-feed" className={styles.panel}>
     <div className={styles.feedActions}>
-    {typeof points === "number" ? <FanNumber value={points} unit="P" locale={locale} size="xl" icon={<><img src={POINT_COIN_SRC} width={32} height={32} alt="" /><span>+</span></>} /> : null}
+    {typeof points === "number" ? <FanNumber value={points} unit="P" locale={locale} size="xl" icon={<span className={styles.rewardIcon}><img src={POINT_COIN_SRC} width={32} height={32} alt="" /><span>+</span></span>} /> : null}
     <FanAction href={`/c/${slug}/proofs?locale=${locale}`} variant="neutral">{locale === "ko" ? "인증하기" : "Submit proof"}</FanAction>
     </div>
     {board.state.status === "loading" ? <p role="status">{proofsText(locale, "pfLoading")}</p> : null}
