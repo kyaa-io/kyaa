@@ -187,8 +187,8 @@ section.pWallet{position:relative;box-sizing:border-box}
 /* 덕질 미션 section (대표 11/13 09:39): the same head-then-blocks rhythm as 럭키드로우. */
 .missionsSection{display:grid;gap:var(--space-3);min-width:0}
 .missionsSection > [data-fan-section-header]{min-height:0;margin-bottom:0}
-/* 오늘의 덕질 머리도 44 줄(최애 고르기 누름 자리)이라 목록과의 사이를 0으로 둔다 — 제목 글자 → 목록 11. */
-.missionsSection [data-fan-missions]{row-gap:0}
+/* 오늘의 덕질 머리가 44 줄(최애 고르기 누름 자리)일 때만 목록과의 사이를 0으로 둔다 — 제목 글자 → 목록 11. 최애 버튼이 없으면 22 줄이라 다른 구역과 같은 12(.section gap)를 둔다. */
+.missionsSection [data-fan-missions]:has(.favoritePick){row-gap:0}
 /* D3 (대표 11/14, 보석 A): 교환·받기 박스 → 덕질 기록 → 오늘의 덕질 are three sections one section gap apart (32, 768+ 48), like the sections of the page; each title sits 12 above its card (the grid gap). */
 .missionsSection > :is([data-mission-strip],[data-stan-passport-book],[data-fan-missions],[data-missions-pending]){margin-block-start:calc(var(--fan-section-gap) - var(--space-3))}
 
