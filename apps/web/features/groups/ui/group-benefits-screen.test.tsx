@@ -175,15 +175,19 @@ it('DUO: keeps unaffordable exchange disabled and enables it after the shared wa
 });
 it.each(APP_LOCALES)('DUO: keeps the signed-out layout and locks balances in %s without private reads',async(locale)=>{
  auth.authenticated=false;session.ownerId=null as any;bias.value={...bias.value,status:'guest'};
- const v=render(<GroupBenefitsScreen locale={locale}/>);await screen.findAllByRole('link',{name:walletCopy(locale).login});
+ const v=render(<GroupBenefitsScreen locale={locale}/>);await waitFor(()=>expect(v.container.querySelectorAll('[data-wallet-card] a[href^="/login"]').length).toBe(4));
  // 대표 11/13 09:39 (replaces 59bc0b1ba's login scene): signed out, both swap lines keep their cells with locked values and the sign-in action.
  expect([...v.container.querySelectorAll('[data-wallet-card] [data-cell]')].map(n=>n.getAttribute('data-cell'))).toEqual(['points','tickets','stamps','hearts']);
  expect(v.container.querySelector('[data-wallet-card]')?.textContent).not.toContain('137');
- // 사용자 11/13 11:2x: one login gate — the sections sit blurred, inert and hidden from screen readers; the only sign-in is the gate's, and no 내역.
- const gate=v.container.querySelector('[data-login-gate]') as HTMLElement;
- const backdrop=gate.firstElementChild as HTMLElement;
- expect(backdrop.getAttribute('aria-hidden')).toBe('true');expect(backdrop.hasAttribute('inert')).toBe(true);
- expect(within(gate).getAllByRole('link',{name:walletCopy(locale).login})).toHaveLength(1);
+ // 대표 11/14 01:53 (replaces 사용자 11/13 11:2x's gate): no gate, blur or inert backdrop — the page is open, and each action (교환·받기·mission rows) is a link to the login that comes back to /benefits.
+ expect(v.container.querySelector('[data-login-gate]')).toBeNull();
+ expect(v.container.querySelector('[inert],[aria-hidden="true"][class*="gateBackdrop"]')).toBeNull();
+ await waitFor(()=>{expect(v.container.querySelector('[data-fan-missions] a')).not.toBeNull();});
+ const loginTo=(el:Element|null)=>{const href=el?.getAttribute('href')??'';return href.startsWith('/login')&&decodeURIComponent(href).includes(`/benefits?locale=${locale}`);};
+ const wallets=[...v.container.querySelectorAll('[data-wallet-card]')];
+ expect(wallets).toHaveLength(2);
+ for(const wallet of wallets){expect(wallet.querySelectorAll('a[href^="/login"]')).toHaveLength(2);for(const link of wallet.querySelectorAll('a'))expect(loginTo(link)).toBe(true);}
+ expect(loginTo(v.container.querySelector('[data-fan-missions] a'))).toBe(true);
  expect(v.container.querySelector('#wallet-history')).toBeNull();
  expect(requests.some(url=>url.startsWith('/api/me/'))).toBe(false);
  expect(requests.some(url=>url.includes('mine=joined')||url.includes('/leaderboard')||url.includes('/public-people'))).toBe(false);
