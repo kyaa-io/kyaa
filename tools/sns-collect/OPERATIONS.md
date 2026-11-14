@@ -64,3 +64,7 @@ mini 실행 코드는 공유 checkout 대신 `~/.local/share/kyaa-sns-collector/
 `20261226151000_artist_new_post_source_order.sql`은 main의 `20261226150000_artist_new_post_notification.sql` 다음에 적용한다. SNS 원문 시각을 우선하고 직접 작성한 글은 공개 시각으로 비교한다. 늦게 공개된 과거 글도 묶음 개수와 미읽음 상태에는 반영하지만 대표 글은 과거로 바꾸지 않는다.
 
 `supabase/tests/artist_new_post_reverse_publication.sql`은 최신 A → 과거 B에서 A 링크 유지, 개수 2와 미읽음 복귀, 더 최신 C에서 C로 이동을 검사한다. dev에서 main의 선행 migration과 수정 migration을 한 트랜잭션 안에 임시 적용하여 수정 전 실패·수정 후 통과를 확인했고 모두 롤백했다. 운영 및 dev의 영구 알림 함수는 변경하지 않았다. 통합 시 선행 migration이 필요하며, 다른 형태의 함수에 잘못 적용되지 않도록 본문 일치 검사를 둔다.
+
+## YouTube 팔로워 주간 수집
+
+기존 `io.kyaa.sns-collect`의 2시간 실행에서 대상 환경별 마지막 성공 시각을 확인하고 7일이 지나면 같은 SNS 전용 키로 내부 YouTube 수집 경로를 호출한다. 서버의 기존 `YOUTUBE_DATA_API_KEY`를 사용하며 Mac에 API 키를 복사하지 않는다. 서버 호출 실패 시 성공 시각을 갱신하지 않아 다음 실행에서 재시도한다. 숨김·응답 실패인 채널은 기존 수치를 유지한다. 기존 mini 실행 파일을 갱신할 때 `run.py`를 함께 복사한다.

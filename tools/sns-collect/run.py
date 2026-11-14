@@ -1,5 +1,5 @@
 """launchd entry: private config, overlap lock, durable logs and local failure notification."""
-import datetime, fcntl, json, os, signal, subprocess, sys
+import datetime, fcntl, json, os, signal, subprocess, sys, urllib.request
 from pathlib import Path
 os.umask(0o077)
 root = Path.home() / '.config/kyaa-sns'
@@ -27,6 +27,19 @@ try:
             env = dict(os.environ, SNS_INGEST_ENDPOINT=('https://dev.kyaa.io' if target == 'dev' else 'https://kyaa.io') + '/api/internal/sns-ingest',
                        SNS_INGEST_SECRET=(root / (target + '.secret')).read_text().strip(),
                        SNS_COLLECT_SOURCES=str(root / 'sources.json'), SNS_COLLECT_OUT=str(out))
+            # The existing two-hour launchd entry checks the weekly collector without a new scheduler.
+            weekly = root / ('youtube-followers-' + target + '.last-success')
+            due = not weekly.exists() or (datetime.datetime.now(datetime.timezone.utc).timestamp() - weekly.stat().st_mtime) >= 7 * 86400
+            if due:
+                try:
+                    req = urllib.request.Request(
+                        ('https://dev.kyaa.io' if target == 'dev' else 'https://kyaa.io') + '/api/internal/youtube-followers',
+                        data=b'{}', method='POST', headers={'Authorization': 'Bearer ' + env['SNS_INGEST_SECRET'], 'Content-Type': 'application/json'})
+                    with urllib.request.urlopen(req, timeout=290) as response:
+                        if response.status != 200: raise ValueError('YOUTUBE_COLLECT_FAILED')
+                    weekly.touch()
+                except Exception as error:
+                    log.write('YOUTUBE_COLLECT_' + type(error).__name__ + '\n')
             proc = subprocess.Popen(['node', str(Path(__file__).with_name('collect.aside.mjs'))], env=env,
                                     stdout=log, stderr=log, start_new_session=True)
             try:
