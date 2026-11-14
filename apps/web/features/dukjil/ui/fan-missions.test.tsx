@@ -48,7 +48,7 @@ it("draws progress against the daily limit, shows no task sentence, and no bar w
   // A monthly cap also reports `remaining`, but that is not today's limit.
   expect(rowNow("proof").querySelector("[role=progressbar]")).toBeNull();
 });
-it("marks a finished activity in place, keeps the catalog order and gives every count the same column", async () => {
+it("marks a finished activity in place, keeps the catalog order and puts every count right after the activity's name", async () => {
   ui();
   const rows = await screen.findAllByRole("listitem");
   await waitFor(() => expect(rowNow("share")).toHaveAttribute("data-done", "true"));
@@ -60,7 +60,9 @@ it("marks a finished activity in place, keeps the catalog order and gives every 
   expect(rowNow("share")).toHaveTextContent("완료");
   const counts = document.querySelectorAll("[data-mission-count]");
   expect(counts.length).toBeGreaterThan(0);
-  counts.forEach(count => { expect(count.className).toMatch(/count/); expect(count.querySelector("[class*=countCheck]")).not.toBeNull(); });
+  // 대표 11/14 02:01: a page's 팬 활동 card draws the count in the name line, the bar alone below.
+  counts.forEach(count => { expect(count.className).toMatch(/nameCount/); expect(count.closest("[data-mission-title]")).not.toBeNull(); expect(count.querySelector("[class*=countCheck]")).not.toBeNull(); });
+  document.querySelectorAll("[data-mission-detail] [data-mission-count]").forEach(() => { throw new Error("count left under the name"); });
 });
 it("goes to the screen of each activity and opens the dialog for check-in", async () => {
   ui();

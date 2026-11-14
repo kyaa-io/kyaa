@@ -88,11 +88,14 @@ export function FanMissions({ locale, slug, title, titleSuffix, passportHref, pr
     <FanMissionList id={id} className={styles.cards}>
       {list.map(({ mission, points, count, limit, remaining, done, period }, index) => {
         const finished = !guest && done;
+        // B3 (대표 11/14 02:01): on a page's 팬 활동 card the count sits right after the activity's name and the bar fills the line below; the 덕질 tab (`all`) keeps the count at the bar's end.
+        const countCell = (className: string, shown: number, max: number) => <span className={className} data-mission-count=""><span className={styles.countCheck} aria-hidden="true">{done && <Check size={12} />}</span><span className={styles.countValue}>{shown.toLocaleString(locale)}/{max.toLocaleString(locale)}</span></span>;
+        const nameCount = !all && !guest && !group && !pending && count !== undefined && limit !== null ? countCell(styles.nameCount, count, limit) : null;
         const progress = !guest && !group && (pending || count === undefined ? (on || pending) && !state?.todayFailure && <span className={styles.progress} aria-hidden="true"><FanSkeleton width="100%" height={6} /></span>
           : limit !== null && (
             <span className={styles.progress}>
               <span className={styles.bar} role="progressbar" aria-label={mission.label} aria-valuemin={0} aria-valuemax={limit} aria-valuenow={Math.min(count, limit)}><i style={{ "--mission-fill": Math.min(1, count / limit) } as CSSProperties} data-done={done} /></span>
-              <span className={styles.count} data-mission-count=""><span className={styles.countCheck} aria-hidden="true">{done && <Check size={12} />}</span><span className={styles.countValue}>{count.toLocaleString(locale)}/{limit.toLocaleString(locale)}</span></span>
+              {!nameCount && countCell(styles.count, count, limit)}
             </span>
           ));
         const href = guest ? fanLoginHref(locale, mission.href) : mission.href;
@@ -101,7 +104,7 @@ export function FanMissions({ locale, slug, title, titleSuffix, passportHref, pr
         // The trailing column holds the done tag or the reward.
         return <FanMissionRow mobileExtra={all && !group && on && index >= 6} key={mission.key} dataMission={mission.key} done={finished} href={href} onClick={onClick}
           art={<MissionArt src={`/images/stamps/ink-v1/${mission.art}.webp`} />}
-          title={mission.label}
+          title={nameCount ? <>{mission.label}{nameCount}</> : mission.label}
           detail={progress || undefined}
           trailing={finished ? <MissionDoneStamp label={dukjilText(locale, "missionDoneShort")} />
             : on && points ? <EarnBadge variant="inline" className={styles.reward} locale={locale} points={points} remaining={guest ? null : remaining} remainingPer={period} /> : undefined} />;
@@ -128,7 +131,7 @@ export function FanMissions({ locale, slug, title, titleSuffix, passportHref, pr
   </div>;
   const folded = all && !group && on;
   return (
-    <section className={`${styles.section} ${all ? styles.full : ""} ${inkStyles.palette}`} aria-labelledby={headingId} data-fan-missions>
+    <section className={`${styles.section} ${all ? styles.full : styles.compact} ${inkStyles.palette}`} aria-labelledby={headingId} data-fan-missions>
       <div className={styles.head}>
         <div className={styles.headingGroup}><h2 id={headingId}>{title}</h2>{titleSuffix}</div>
         {!folded && on && today && !guest && (
