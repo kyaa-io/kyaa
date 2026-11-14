@@ -23,8 +23,8 @@ it('loads only managed discovery banners and passes them to the real directory',
 it('does not read banners when groups are disabled',async()=>{
  enabled.mockReturnValue(false);await expect(Page({searchParams:Promise.resolve({})})).rejects.toThrow('NOT_FOUND');expect(list).not.toHaveBeenCalled();
 });
-it('passes the fan pages of the day to the directory, and an empty list when there are none',async()=>{
- const item={slug:'elina',name:'엘리나'};today.mockResolvedValueOnce([item]);
- expect((await Page({searchParams:Promise.resolve({})})).props.todayFanpages).toEqual([item]);
- expect((await Page({searchParams:Promise.resolve({})})).props.todayFanpages).toEqual([]);
+it('passes only the slugs of this week\'s hot fan pages, in order, to order the promo banners',async()=>{
+ today.mockResolvedValueOnce([{slug:'elina',name:'엘리나'},{slug:'wena',name:'위나'}]);
+ expect((await Page({searchParams:Promise.resolve({})})).props.promoOrder).toEqual(['elina','wena']);
+ expect((await Page({searchParams:Promise.resolve({})})).props.promoOrder).toEqual([]);
 });
