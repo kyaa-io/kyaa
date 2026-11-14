@@ -30,7 +30,6 @@ export const rankingsSource = {
   rkCreatorTab: { ko: "크리에이터 랭킹", en: "Creator rankings" },
   rkViewAll: { ko: "전체 보기", en: "View all" },
   rkFans: { ko: "팬 {0}", en: "{0} fans" },
-  rkSeeMyRank: { ko: "로그인하고 내 순위 보기", en: "Sign in to see your rank" },
   rkFanTab: { ko: "찐팬 순위", en: "True fan ranking" },
   rkCreatorRankTab: { ko: "크리에이터 순위", en: "Creator ranking" },
   rkFanTabShort: { ko: "팬", en: "Fans" },

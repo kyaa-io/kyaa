@@ -153,19 +153,14 @@ it("a signed-in fan row opens the profile window; a signed-out one leads to sign
   expect(decodeURIComponent(login.getAttribute("href")!)).toContain("/?locale=ko");
 });
 
-it("signed out: the rows the API gives, no placeholders, and one way to sign in back to the home page", async () => {
+it("signed out: the rows the API gives, no placeholders, and no sign-in button under the lists (사용자 11/14 PifBetter 01:44)", async () => {
   auth.value = { ...auth.value, authenticated: false, user: null };
   stub((_, limit) => Math.min(limit, 5));
   const { container } = render(<RankingBoard locale="ko" />);
   await screen.findByText("하트팬1");
   expect(container.querySelectorAll("li[data-row='fan-rank']")).toHaveLength(5);
-  const logins = screen.getAllByRole("link", { name: "로그인하고 내 순위 보기" });
-  // One under the 찐팬 list; the 크리에이터 tab has its own on a phone (hidden from 1024px, where the pair has one).
-  expect(logins).toHaveLength(2);
-  expect(container.querySelectorAll("[data-column='fans'] [data-ranking-foot]")).toHaveLength(1);
-  expect(container.querySelectorAll("[data-column='creators'] [data-ranking-foot]")).toHaveLength(1);
-  expect(logins[0]!.getAttribute("href")).toContain("/login");
-  expect(decodeURIComponent(logins[0]!.getAttribute("href")!)).toContain("/?locale=ko");
+  expect(screen.queryByRole("link", { name: "로그인하고 내 순위 보기" })).toBeNull();
+  expect(container.querySelector("[data-ranking-foot]")).toBeNull();
   expect(container.querySelector("[data-placeholder]")).toBeNull();
 });
 

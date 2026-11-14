@@ -49,13 +49,13 @@ it("is the shared ranking board under one heading: ten heart rows per group, no 
   for (const [url] of fetcher.mock.calls) expect(String(url)).toMatch(/metric=(points|likes).*limit=10/);
 });
 
-it("signed out: ten rows per group, an opened row's picture and name lead to sign-in, one sign-in button", async () => {
+it("signed out: ten rows per group, an opened row's picture and name lead to sign-in, and no sign-in button under the list", async () => {
   stub(fans(Array.from({ length: 10 }, (_, i) => fanRow(i + 1))), creators({ rows: Array.from({ length: 10 }, (_, i) => creatorRow(i + 1)) }));
   const { container } = render(<HomeRankingCard locale="ko" />);
   await screen.findByText("팬1");
   expect(container.querySelectorAll("[data-row='fan-rank']")).toHaveLength(10);
   expect(container.querySelectorAll("[data-row='creator-rank']")).toHaveLength(10);
-  expect(container.querySelectorAll("[data-column='fans'] a[href*='/login']:not(li a)")).toHaveLength(1);
+  expect(container.querySelectorAll("[data-column='fans'] a[href*='/login']:not(li a)")).toHaveLength(0);
   expect(screen.queryByRole("link", { name: "팬1, 로그인하고 프로필 보기" })).toBeNull();
   fireEvent.click(container.querySelector("[data-column='fans'] li[data-row='fan-rank'] > button")!);
   expect(screen.getAllByRole("link", { name: "팬1, 로그인하고 프로필 보기" })[0]!.getAttribute("href")).toContain("/login");

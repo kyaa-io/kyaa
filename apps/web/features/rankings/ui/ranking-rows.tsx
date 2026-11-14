@@ -1,5 +1,4 @@
 "use client";
-import type { Route } from "next";
 import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 
 import { ChevronDown, ChevronUp, Heart } from "@/components/fan-ui/fan-icons";
@@ -469,8 +468,4 @@ export function MyRank({ locale, ranking, metric }: { locale: AppLocale; ranking
         <span className={styles.meGap}>{displayRank === 1 ? rankingsText(locale, "rkIsFirst") : gap <= 0 ? rankingsText(locale, "rkTiedFirst") : rankingsText(locale, "rkToFirst", [short(locale, gap)])}</span>
       </span>
     </></p>;
-}
-/** Signed out: the one primary action of the screen, in the bottom bar. */
-export function FootLink({ href, children }: { href: Route; children: ReactNode }) {
-  return <FanAction variant="primary" fullWidth href={href} className={styles.login}>{children}</FanAction>;
 }
