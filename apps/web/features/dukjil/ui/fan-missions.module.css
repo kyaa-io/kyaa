@@ -16,7 +16,7 @@
 .nameCount{width:auto;justify-content:flex-start;margin-inline-start:var(--space-2);vertical-align:baseline}
 /* B3 (대표 11/14 02:01): on a page's 팬 활동 card the count is the small grey text right after the activity's name; the bar fills the line below. */
 .countValue{min-width:0;white-space:nowrap}
-/* B3: the reward column of a page's 팬 활동 card is 76 (the widest badge, +1,000P, is 74) instead of 96/120, so the points sit at the card's right end; the coins still share one x. */
+/* B3 (사용자 11/14 Q2): the reward is a fixed-width slot taken first, its content left-aligned inside, so every row's coin sits at the same x; the card's left and right padding stay equal (12). 76 holds the widest badge (+1,000P, 74), so a label never leaves the slot into the card's padding. */
 .compact .cards [data-fan-mission-row]{grid-template-columns:40px minmax(0,1fr) 76px}
 /* feedback #18 (R4): the bar fills what the name leaves, so the row has no empty middle. A list of four or more rows splits into two columns once the section is 704 wide (each column 352+); an odd last row leaves its right cell empty. */
 @container (min-width:44rem){
