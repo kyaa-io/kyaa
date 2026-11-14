@@ -7,4 +7,5 @@ export const todayFanpageRowSchema = z.object({
   likes: z.number().int().nonnegative(), missions: z.number().int().nonnegative(), fans: z.number().int().nonnegative(),
 });
 export const todayFanpageRowsSchema = z.array(todayFanpageRowSchema);
+export type TodayFanpageRow = z.infer<typeof todayFanpageRowSchema>;
 export type TodayFanpage = Omit<z.infer<typeof todayFanpageRowSchema>, "name"> & { name: string; imageUrl: string | null };
