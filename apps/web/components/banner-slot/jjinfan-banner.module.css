@@ -8,6 +8,6 @@
 .portrait { position:absolute; right:0; top:0; width:auto; max-width:45%; height:100%; object-fit:contain; object-position:right center; mask-image:url("/images/jjinfan100/portrait-mask.png"); mask-size:100% 100%; mask-repeat:no-repeat; }
 .banner:focus-visible { outline:3px solid var(--color-ink); outline-offset:-3px; }
 @media (width >= 48rem) {
-  .copy { padding:var(--space-6) var(--space-10); gap:var(--space-3); align-items:center; text-align:center; }
+  .copy { padding:var(--space-6) var(--space-10); gap:var(--space-3); align-items:flex-start; text-align:left; }
   .portrait { right:12%; width:40%; max-width:calc(var(--space-10) * 8); object-fit:cover; object-position:50% 0; }
 }
