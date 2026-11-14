@@ -4,7 +4,7 @@ import { AuthError } from "@/features/auth/domain/auth-errors";
 import { celebritySlugSchema } from "@/features/fanpage/domain/community";
 import { prepareRichPostBody, richDocumentForPost, RICH_DOCUMENT_MAX_BYTES } from "@/components/editor/rich-document";
 import { WAVE_FANPAGE_SLUG } from "@/features/fanpage/domain/wave-programs";
-import { withTranslationLease } from "@/server/content-translation/lease";
+import { withTranslationLease, type FailureHold } from "@/server/content-translation/lease";
 import { postTitleSlots } from "@/features/fan-posts/domain/post-title-slots";
 import { type FanPost, slotTranslationSchema, postReactionInputSchema, postReactionSchema, assetSchema, blocksSchema, commentSchema, createCommentSchema, boardCreatePostSchema, boardEditPostSchema, postAttachmentPolicySchema, noticeSchema, postSchema, reportInputSchema, adminReportSchema, adminReportSummarySchema, targetSchema, translationInputSchema, translationSchema } from "@/features/fan-posts/domain/content";
 import { boundedJson, boundedMultipart, CertificationBodyError, json } from "@/server/certification/certification-http";
@@ -186,6 +186,16 @@ export function contentFailure(error: unknown) {
     TRANSLATION_RATE_LIMITED: 429, TRANSLATION_INVALID_INPUT: 400, TRANSLATION_UNAVAILABLE: 503, TRANSLATION_FAILED: 503 };
   return json({ error: { code: statuses[code] ? code : "FAN_WEB_UNAVAILABLE" } }, statuses[code] ?? 503);
 }
+/** Errors thrown by the provider call itself. Quota reservation, access and source checks fail outside it and are never shared between users. */
+const providerErrors = new WeakSet<object>();
+async function providerCall<T>(call: () => Promise<T>): Promise<T> {
+  try { return await call(); } catch (error) { if (typeof error === "object" && error !== null) providerErrors.add(error); throw error; }
+}
+function failureHold(args: Record<string, unknown>, scope: "whole" | "slots", target: { revision: number; sourceHash: string }): FailureHold {
+  return { key: JSON.stringify([args.p_target_type, args.p_target_id, args.p_target_locale, args.p_locale, scope, target.revision, target.sourceHash]),
+    applies: error => typeof error === "object" && error !== null && providerErrors.has(error) && (error as Error).message !== "TRANSLATION_INVALID_INPUT" };
+}
+
 export function createContentHandlers(deps: ContentDependencies) {
   const owner = async (request: Request, optional = false) => optional && !request.headers.has("authorization") ? null : (await deps.authorize(request.headers.get("authorization"))).appUserId;
   const run = async (action: () => Promise<Response>) => { try { return await action(); } catch (error) { return contentFailure(error); } };
@@ -341,13 +351,16 @@ export function createContentHandlers(deps: ContentDependencies) {
         const leased = await withTranslationLease(deps.rpc, { ...args, p_scope: "slots", p_source_revision: target.revision, p_source_hash: target.sourceHash },
           () => deps.rpc("read_content_translation_slots", args), async token => {
             await deps.rpc("reserve_content_translation_request", { p_app_user_id, p_character_count: count });
-            const results = await deps.translateTexts(slots.map(item => item.text), value.targetLocale);
-            if (results.length !== slots.length) throw new Error("TRANSLATION_FAILED");
+            const results = await providerCall(async () => {
+              const translated = await deps.translateTexts(slots.map(item => item.text), value.targetLocale);
+              if (translated.length !== slots.length) throw new Error("TRANSLATION_FAILED");
+              return translated;
+            });
             await deps.rpc("save_content_translation_slots_leased", { ...args, p_lease_token: token, p_source_revision: target.revision, p_source_hash: target.sourceHash,
               p_slots: Object.fromEntries(slots.map((item, index) => [item.slot, results[index].translatedText])), p_detected_source_locale: results[0].detectedSourceLocale ?? null });
             // Recheck after provider latency: the leased save refuses a changed source or a lost lease, and every response reads the stored row back.
             return deps.rpc("read_content_translation_slots", args);
-          });
+          }, undefined, failureHold(args, "slots", target));
         if (leased.value === null) throw new Error("FAN_WEB_CONFLICT");
         return json({ ...checked(slotTranslationSchema, leased.value), cached: leased.cached });
       }
@@ -361,11 +374,11 @@ export function createContentHandlers(deps: ContentDependencies) {
       const leased = await withTranslationLease(deps.rpc, { ...args, p_scope: "whole", p_source_revision: target.revision, p_source_hash: target.sourceHash },
         () => deps.rpc("read_content_translation", args), async token => {
           await deps.rpc("reserve_content_translation_request", { p_app_user_id, p_character_count: count });
-          const result = await deps.translate(target.body, value.targetLocale);
+          const result = await providerCall(() => deps.translate(target.body, value.targetLocale));
           await deps.rpc("save_content_translation_leased", { ...args, p_lease_token: token, p_source_revision: target.revision, p_source_hash: target.sourceHash, p_translated_text: result.translatedText, p_detected_source_locale: result.detectedSourceLocale ?? null });
           // Recheck after provider latency; source mutation, blocks, deletion or a lost lease cannot return a stale translation.
           return deps.rpc("read_content_translation", args);
-        });
+        }, undefined, failureHold(args, "whole", target));
       if (leased.value === null) throw new Error("FAN_WEB_CONFLICT");
       return json({ ...checked(translationSchema, leased.value), cached: leased.cached });
     }),
