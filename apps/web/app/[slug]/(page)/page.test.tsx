@@ -76,3 +76,19 @@ it("sends an old leaderboard link to the fans tab when fan pages use the group l
     expect(mocks.redirect).not.toHaveBeenCalled();
   } finally { process.env.KYAA_GROUPS_ENABLED = before; }
 });
+
+it("passes the 찐팬 100 flag from the server so a direct ?challenge= link opens nothing while the challenge is off", async () => {
+  const keys = ["KYAA_FEATURE_JJINFAN_GAUGE", "BYUS_DATA_ENVIRONMENT"] as const;
+  const before = keys.map(key => process.env[key]);
+  const enabled = async () => (await CelebrityPage({ params: Promise.resolve({ slug: "runmusic" }), searchParams: Promise.resolve({ locale: "ko" }) })).props.children.props.jjinfanChallengeEnabled;
+  try {
+    delete process.env.KYAA_FEATURE_JJINFAN_GAUGE; process.env.BYUS_DATA_ENVIRONMENT = "production";
+    expect(await enabled()).toBe(false);
+    process.env.KYAA_FEATURE_JJINFAN_GAUGE = "false"; process.env.BYUS_DATA_ENVIRONMENT = "development";
+    expect(await enabled()).toBe(false);
+    delete process.env.KYAA_FEATURE_JJINFAN_GAUGE;
+    expect(await enabled()).toBe(true);
+    process.env.KYAA_FEATURE_JJINFAN_GAUGE = "true"; process.env.BYUS_DATA_ENVIRONMENT = "production";
+    expect(await enabled()).toBe(true);
+  } finally { keys.forEach((key, index) => { if (before[index] === undefined) delete process.env[key]; else process.env[key] = before[index]; }); }
+});

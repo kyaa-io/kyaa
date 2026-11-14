@@ -9,7 +9,7 @@ import { mkdtempSync, writeFileSync, mkdirSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { execFileSync, spawnSync } from 'node:child_process';
-import { AWS_BOOTSTRAP, BOOTSTRAP, CHECK_NAME, WAVE_BOOTSTRAP, WAVE_CHECK_NAME, isWaveDeployment, eligibleDeployment, REPOSITORY, REPOSITORY_ID, createGithubClient, formatNotice, readNotes, checkNotes, validateNote, notifyDeployment, noticeImages } from './deployment-notices.mjs';
+import { AWS_BOOTSTRAP, BOOTSTRAP, CHECK_NAME, WAVE_BOOTSTRAP, WAVE_CHECK_NAME, isWaveDeployment, eligibleDeployment, REPOSITORY, REPOSITORY_ID, createGithubClient, formatNotice, readNotes, checkNotes, validateNote, notifyDeployment, noticeImages, productionNotes, heldNoteFiles, NOTICE_HOLDS_PATH } from './deployment-notices.mjs';
 
 const note = { changes: ['알림 목록의 점을 굵은 제목과 같은 높이에 맞췄어요.'], path: '/notifications' };
 const sha = 'c'.repeat(40), priorSha = 'b'.repeat(40);
@@ -528,4 +528,43 @@ test('later automatic notice starts after the delivered summary and same deploym
  const same=harness({existing});assert.deepEqual(await notifyDeployment(same.options),{skipped:'already_sent'});assert.equal(same.records.sent.length,0);
  const prior={id:deployment.id-1,sha:priorSha,creator:{login:'vercel[bot]'}};prior.receipt=receipt(prior);prior.receipt.output=existing.output;
  const next=harness({prior});await notifyDeployment(next.options);assert.equal(next.records.notes[0].base,priorSha);assert.equal(next.records.sent.length,1);
+});
+
+test('held notes skip the production room until their hold is removed, while DEV still reads them', () => {
+  const cwd = process.cwd(), dir = mkdtempSync(join(tmpdir(), 'byus-notice-hold-'));
+  const git = (...args) => execFileSync(process.env.GIT_EXECUTABLE || 'git', args, { cwd: dir, encoding: 'utf8' }).trim();
+  const held = { changes: ['찐팬 100 배너를 홈에 넣었어요.'], path: '/' };
+  const later = { changes: ['알림 목록 글자를 키웠어요.'], path: '/notifications' };
+  const write = (file, value) => writeFileSync(join(dir, file), typeof value === 'string' ? value : JSON.stringify(value));
+  try {
+    git('init', '-q'); git('config', 'user.name', 'Test'); git('config', 'user.email', 'test@example.invalid');
+    git('commit', '--allow-empty', '-qm', 'base'); const base = git('rev-parse', 'HEAD');
+    mkdirSync(join(dir, 'release-notes')); mkdirSync(join(dir, 'scripts'));
+    write('release-notes/a-fix.json', note); write('release-notes/b-jjinfan.json', held);
+    write(NOTICE_HOLDS_PATH, { jjinfan: ['release-notes/b-jjinfan.json'] });
+    git('add', '.'); git('commit', '-qm', 'hold'); const holding = git('rev-parse', 'HEAD');
+    process.chdir(dir);
+    assert.deepEqual(productionNotes(base, holding), [note]);
+    assert.deepEqual(readNotes(base, holding), [note, held]);
+    assert.deepEqual([...heldNoteFiles(holding)], ['release-notes/b-jjinfan.json']);
+    assert.deepEqual([...heldNoteFiles(base)], []);
+    write('release-notes/c-later.json', later); git('add', '.'); git('commit', '-qm', 'still held'); const stillHeld = git('rev-parse', 'HEAD');
+    assert.deepEqual(productionNotes(holding, stillHeld), [later]);
+    rmSync(join(dir, NOTICE_HOLDS_PATH)); write('release-notes/d-release.json', { changes: ['찐팬 100 챌린지를 열었어요.'], path: '/' });
+    git('add', '-A'); git('commit', '-qm', 'release hold'); const released = git('rev-parse', 'HEAD');
+    assert.deepEqual(productionNotes(stillHeld, released), [held, { changes: ['찐팬 100 챌린지를 열었어요.'], path: '/' }]);
+    assert.deepEqual(productionNotes(base, released).length, 4);
+    write(NOTICE_HOLDS_PATH, { jjinfan: ['release-notes/missing.json'] }); write('release-notes/e-typo.json', later);
+    git('add', '.'); git('commit', '-qm', 'typo'); const typo = git('rev-parse', 'HEAD');
+    assert.throws(() => productionNotes(released, typo), /HELD_NOTE_NOT_FOUND/);
+    for (const holds of [[], { jjinfan: [] }, { Bad: ['release-notes/a-fix.json'] }, { jjinfan: ['release-notes/a-fix.json', 'release-notes/a-fix.json'] }]) {
+      write(NOTICE_HOLDS_PATH, holds); git('add', '.'); git('commit', '-qm', 'bad');
+      assert.throws(() => heldNoteFiles(git('rev-parse', 'HEAD')), /INVALID_NOTICE_HOLDS/);
+    }
+  } finally { process.chdir(cwd); rmSync(dir, { recursive: true, force: true }); }
+});
+
+test('production notices default to the hold-aware note reader and the repository hold list resolves', () => {
+  assert.match(notifyDeployment.toString(), /notes = productionNotes/);
+  heldNoteFiles(execFileSync(process.env.GIT_EXECUTABLE || 'git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim());
 });

@@ -740,3 +740,15 @@ describe("Wave brand program entry", () => {
     expect(screen.queryByRole("link", { name: "Kyaa Wave Quiz" })).toBeNull();
   });
 });
+
+describe("찐팬 100 direct link", () => {
+  it("opens the invite only when the server says the challenge is on", async () => {
+    queryString = "challenge=jjinfan100&locale=ko";
+    onTestFinished(() => { queryString = "tab=home&locale=ko"; });
+    const yuna = { ...kara, slug: "yuna", name: "유나" };
+    const view = render(<CelebrityFanPage celebrity={yuna} locale="ko" upcomingLive={null} jjinfanChallengeEnabled />);
+    expect(await screen.findByRole("dialog")).toHaveTextContent("동참");
+    view.rerender(<CelebrityFanPage celebrity={yuna} locale="ko" upcomingLive={null} />);
+    await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
+  });
+});
