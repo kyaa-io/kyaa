@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import "@testing-library/jest-dom/vitest";
 import { cleanup, fireEvent, render } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
@@ -31,5 +33,17 @@ describe("post row thumbnail", () => {
       expect(c.querySelector("svg")).not.toBeNull();
       expect(c.querySelector("a")).toHaveTextContent(title);
     }
+  });
+});
+
+describe("post row info line alignment", () => {
+  const css = readFileSync(join(__dirname, "fan-post-row.module.css"), "utf8");
+  const [mobile, wide] = css.split("@media (min-width: 48rem)");
+  it("starts the info line at the left edge of the title column on phones, notice rows included", () => {
+    expect(mobile).toMatch(/\.meta \{[^}]*justify-content: flex-start;[^}]*text-align: left;/);
+    expect(mobile).not.toMatch(/data-notice\][^{]*\.meta/);
+  });
+  it("keeps the info line right-aligned in the one-line layout from 768px", () => {
+    expect(wide).toMatch(/\.meta \{ justify-content: flex-end; text-align: right;/);
   });
 });
