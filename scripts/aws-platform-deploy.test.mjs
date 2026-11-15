@@ -487,3 +487,52 @@ test('production signup raffle accepts explicit booleans and renders the runtime
     assert.throws(() => validateConfig(source, template), /KYAA_FEATURE_SIGNUP_RAFFLE/);
   }
 });
+
+test('45+ runtime keys use S3 validation and deploy upload without AWS; small DEV stays inline', async () => {
+  const { validateAws } = await import('./aws-platform-deploy.mjs');
+  const dir = await mkdtemp(join(tmpdir(), 'platform-large-'));
+  try {
+    for (const environment of ['dev', 'prod']) {
+      const c = config('environment', environment);
+      c.templateBucket = 'fixture-template-bucket';
+      c.runtimeSecretKeys = ['SUPABASE_URL', 'SUPABASE_SERVICE_ROLE_KEY', 'PRIVY_APP_SECRET', 'SNS_INGEST_SECRET', ...Array.from({ length: 60 }, (_, i) => `FIXTURE_KEY_${i}_${"X".repeat(90)}`)];
+      validateConfig(c, await loadTemplate('environment'));
+      const file = join(dir, 'config.json');
+      await writeFile(file, JSON.stringify(c));
+      const result = spawnSync(process.execPath, [resolve('scripts/aws-platform-deploy.mjs'), 'deploy', '--config', file, '--out', dir], { encoding: 'utf8', env: { ...process.env, PATH: '/missing' } });
+      assert.equal(result.status, 0, result.stderr);
+      const plan = JSON.parse(result.stdout);
+      assert.equal(plan.executed, false);
+      assert((await readFile(plan.templatePath)).length > 51200);
+      assert.equal(plan.deployCommand[plan.deployCommand.indexOf('--s3-bucket') + 1], c.templateBucket);
+      const calls = [];
+      await assert.rejects(validateAws(c, {}, plan.templatePath, (_, args) => {
+        calls.push(args);
+        if (args[0] === 'sts') return { Account: c.accountId };
+        if (args[0] === 'acm') throw new Error('fixture stop after template validation');
+        return {};
+      }), /fixture stop/);
+      assert.equal(calls[1][0], 's3api');
+      assert.equal(calls[1][calls[1].indexOf('--expected-bucket-owner') + 1], c.accountId);
+      assert(calls[2].includes('--template-url'));
+      assert(!calls[2].includes('--template-body'));
+      assert(calls[2].some(a => a.includes(`/releases/${environment}/templates/`)));
+      c.templateBucket = undefined;
+      await writeFile(file, JSON.stringify(c));
+      const missing = spawnSync(process.execPath, [resolve('scripts/aws-platform-deploy.mjs'), '--config', file, '--out', dir], { encoding: 'utf8', env: { ...process.env, PATH: '/missing' } });
+      assert.match(missing.stderr, /require templateBucket/);
+    }
+    const c = config();
+    const file = join(dir, 'small.json');
+    await writeFile(file, JSON.stringify(renderTemplate(c, await loadTemplate('environment'))));
+    const calls = [];
+    await assert.rejects(validateAws(c, {}, file, (_, args) => {
+      calls.push(args);
+      if (args[0] === 'sts') return { Account: c.accountId };
+      if (args[0] === 'acm') throw new Error('stop');
+      return {};
+    }), /stop/);
+    assert(calls[1].includes('--template-body'));
+    assert(!deploymentCommand(c, file, 'params').includes('--s3-bucket'));
+  } finally { await rm(dir, { recursive: true, force: true }); }
+});
