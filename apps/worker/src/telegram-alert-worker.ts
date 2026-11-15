@@ -121,6 +121,10 @@ const activityLabels = {
   "byus_day_rsvp_received": [
     "kyaa Day RSVP 접수",
     "byus-day-rsvps"
+  ],
+  "content_report_created": [
+    "콘텐츠 신고 접수",
+    "content-reports"
   ]
 } as const;
 type ActivityKind = keyof typeof activityLabels;
@@ -163,6 +167,7 @@ const kindSchema = z.enum([
   "notice_commented",
   "daily_checked_in",
   "byus_day_rsvp_received",
+  "content_report_created",
 ]);
 const detailKinds = new Set<string>([
   "member_joined",
@@ -303,15 +308,18 @@ const alertSchema = z.object({
     context.addIssue({ code: "custom", path: ["detail"], message: "invalid Telegram actor" });
   }
 });
+// Rows are validated one by one so a single bad row cannot hold back the whole batch.
 const claimedBatchSchema = z.object({
   batch_id: z.uuid(),
-  alerts: z.array(alertSchema).min(1).max(TELEGRAM_BATCH_LIMIT),
+  alerts: z.array(z.unknown()).min(1).max(TELEGRAM_BATCH_LIMIT),
 }).strict();
 
 export type TelegramAlertSnapshot = z.infer<typeof alertSchema>;
 export interface TelegramAlertBatch {
   batchId: string;
   alerts: TelegramAlertSnapshot[];
+  /** 1-based claim positions of rows that failed validation and are not in `alerts`. */
+  invalidPositions?: number[];
 }
 export type TelegramAlertOutcome = "sent" | "throttled" | "rejected" | "unknown";
 
@@ -601,6 +609,8 @@ export class TelegramHttpSender implements TelegramAlertSender {
 export interface TelegramAlertQueue {
   claim(chatId: string): Promise<TelegramAlertBatch | null>;
   begin(batchId: string, chatId: string): Promise<boolean>;
+  /** Closes the given 1-based claim positions as invalid; the other rows stay claimed. */
+  rejectRows(batchId: string, chatId: string, positions: readonly number[]): Promise<boolean>;
   finish(
     batchId: string,
     outcome: TelegramAlertOutcome,
@@ -621,6 +631,7 @@ export class SupabaseTelegramAlertQueue implements TelegramAlertQueue {
     try { result = await this.db.rpc(this.csRoom ? ({
       claim_telegram_alert_batch_with_cs_content: "claim_telegram_cs_alert_batch",
       begin_telegram_alert_send: "begin_telegram_cs_alert_send",
+      reject_telegram_alert_rows: "reject_telegram_cs_alert_rows",
       finish_telegram_alert_batch: "finish_telegram_cs_alert_batch",
     }[name] ?? name) : name, args); }
     catch { throw new Error("TELEGRAM_ALERT_QUEUE_UNAVAILABLE"); }
@@ -634,7 +645,24 @@ export class SupabaseTelegramAlertQueue implements TelegramAlertQueue {
     if (data === null) return null;
     const parsed = claimedBatchSchema.safeParse(data);
     if (!parsed.success) throw new Error("TELEGRAM_ALERT_INVALID_BATCH");
-    return { batchId: parsed.data.batch_id, alerts: parsed.data.alerts };
+    const alerts: TelegramAlertSnapshot[] = [];
+    const invalidPositions: number[] = [];
+    parsed.data.alerts.forEach((raw, index) => {
+      const alert = alertSchema.safeParse(raw);
+      if (alert.success) alerts.push(alert.data);
+      else invalidPositions.push(index + 1);
+    });
+    return { batchId: parsed.data.batch_id, alerts, ...(invalidPositions.length ? { invalidPositions } : {}) };
+  }
+
+  async rejectRows(batchId: string, chatId: string, positions: readonly number[]): Promise<boolean> {
+    const data = await this.call("reject_telegram_alert_rows", {
+      p_batch_id: batchId,
+      p_chat_id: chatId,
+      p_positions: [...positions],
+    });
+    if (typeof data !== "boolean") throw new Error("TELEGRAM_ALERT_QUEUE_UNAVAILABLE");
+    return data;
   }
 
   async begin(batchId: string, chatId: string): Promise<boolean> {
@@ -687,7 +715,9 @@ export class TelegramAlertWorker {
     const batch = await this.queue.claim(this.chatId);
     if (!batch || seen.has(batch.batchId)) return 0;
     seen.add(batch.batchId);
-    const text = renderTelegramAlertMessage(batch.alerts);
+    const alerts = await this.closeInvalidRows(batch);
+    if (!alerts || alerts.length === 0) return 0;
+    const text = renderTelegramAlertMessage(alerts);
     if (!await this.queue.begin(batch.batchId, this.chatId)) return 0;
     let providerMessageId: bigint;
     try {
@@ -698,7 +728,31 @@ export class TelegramAlertWorker {
       return 0;
     }
     await this.queue.finish(batch.batchId, "sent", providerMessageId, null);
-    return batch.alerts.length;
+    return alerts.length;
+  }
+
+  // A row that fails validation or rendering is closed with a reason code (no content)
+  // so it is never claimed again; the remaining rows are still sent. Null: lease lost.
+  private async closeInvalidRows(batch: TelegramAlertBatch): Promise<TelegramAlertSnapshot[] | null> {
+    const invalid = new Set(batch.invalidPositions ?? []);
+    const positions: number[] = [];
+    for (let position = 1; positions.length < batch.alerts.length; position++) {
+      if (!invalid.has(position)) positions.push(position);
+    }
+    try { renderTelegramAlertMessage(batch.alerts); }
+    catch (error) {
+      const unrenderable = batch.alerts.flatMap((alert, index) => {
+        try { renderTelegramAlertMessage([alert]); return []; } catch { return [positions[index]!]; }
+      });
+      // Every row renders alone but not together: nothing to close; surface the code.
+      if (unrenderable.length === 0 && invalid.size === 0) throw error;
+      for (const position of unrenderable) invalid.add(position);
+    }
+    if (invalid.size === 0) return batch.alerts;
+    const closed = [...invalid].sort((a, b) => a - b);
+    console.error(JSON.stringify({ event: "TELEGRAM_ALERT_INVALID_ROW", batchId: batch.batchId, count: closed.length, positions: closed }));
+    if (!await this.queue.rejectRows(batch.batchId, this.chatId, closed)) return null;
+    return batch.alerts.filter((_, index) => !invalid.has(positions[index]!));
   }
 }
 

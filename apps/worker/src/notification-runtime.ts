@@ -73,6 +73,12 @@ export async function runKakaoNotificationsOnce(env: NotificationWorkerEnv) {
   ).runOnce();
 }
 
+// Only fixed upper-case reason codes are logged; any other message could carry content.
+function failureCode(reason: unknown): { code?: string } {
+  const message = reason instanceof Error ? reason.message : "";
+  return /^[A-Z][A-Z0-9_]{2,63}$/u.test(message) ? { code: message } : {};
+}
+
 export async function runNotificationWorkerOnce(
   env: NotificationWorkerEnv,
   remainingTimeInMillis?: () => number,
@@ -116,7 +122,7 @@ export async function runNotificationWorkerOnce(
     },
     queues: Object.fromEntries(results.map((result, index) => [queues[index], result.status === "fulfilled"
       ? { status: "fulfilled", processed: result.value }
-      : { status: "rejected" }])),
+      : { status: "rejected", ...failureCode(result.reason) }])),
   }));
   if (env.NOTIFICATION_WORKER_ENABLED && env.NOTIFICATION_EXTERNAL_ENVIRONMENT === "prod") {
     for (const [Channel, Mode] of Object.entries(deliveryModes)) console.info(JSON.stringify({
