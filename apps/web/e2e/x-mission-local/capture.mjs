@@ -4,7 +4,7 @@ const b = await chromium.launch();
 for (const c of combos) { const [loc, w, state] = c.split(':');
  const p = await b.newPage({ viewport: { width: +w, height: +w > 800 ? 900 : 844 } });
  const errors = []; p.on('pageerror', e => errors.push(e.message));
- await p.goto(`http://127.0.0.1:4207/?locale=${loc}&state=${state}`, { waitUntil: 'load', timeout: 60000 });
+ await p.goto(`http://127.0.0.1:4207/?locale=${loc}&state=${state}${process.env.EVENT ? `&event=${process.env.EVENT}` : ''}`, { waitUntil: 'load', timeout: 60000 });
  await p.getByRole('heading', { level: 1 }).waitFor({ timeout: 30000 }).catch(() => {});
  await p.waitForTimeout(1200);
  if (state === 'in') { await p.getByRole('button', { name: loc === 'ko' ? '좋아요' : 'Like', exact: true }).click(); await p.waitForTimeout(450); await p.screenshot({ path: `${out}/${loc}-${w}-${state}-mid.png` }); await p.waitForTimeout(1500); }
