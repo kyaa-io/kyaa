@@ -1,11 +1,17 @@
 .main { min-height: 72vh; padding-top: var(--space-8); padding-bottom: var(--space-12); }
-.heading, .body { width: min(100%, 760px); margin-inline: auto; }
 .heading { display: grid; gap: var(--space-2); margin-bottom: var(--space-6); }
+/* 글자 변형 버튼의 좌우 안쪽 여백 8을 없애 화살표를 제목·카드와 같은 왼쪽 선에 맞춘다. */
+.back { justify-self: start; padding-inline: 0; }
 .body { display: grid; gap: var(--space-8); }
 .section { display: grid; gap: var(--space-3); }
 .guest { display: grid; gap: var(--space-5); }
+/* 비로그인·빈 상태·오류는 읽는 한 덩어리라 예전 폭(760)을 유지하고 왼쪽 선만 헤더에 맞춘다. */
+.narrow { max-width: 760px; }
 
-.item { position: relative; border-bottom: 1px solid var(--color-line); }
+/* 선물 카드 격자: 390 1열 · 768 2열 · 1024 이상 3열(DESIGN.md 카드 격자). 같은 줄 카드는 칸 높이로 맞춘다. */
+.grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-3); margin: 0; padding: 0; list-style: none; }
+.item { position: relative; display: grid; min-width: 0; }
+.giftCard { display: grid; }
 .row {
   display: grid; grid-template-columns: 64px auto minmax(0, 1fr); grid-template-areas: "thumb title title" "thumb tag date";
   align-items: center; column-gap: var(--space-3); row-gap: var(--space-1); box-sizing: border-box; min-height: 88px;
@@ -19,14 +25,13 @@
 .dot { position: absolute; z-index: 1; top: var(--space-2); left: 68px; }
 .srOnly { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 
+/* 사진 칸 64×64 반경 12. 사진은 자르지 않고 남는 곳은 MediaFill이 같은 사진 색으로 채운다. */
 .thumb { grid-area: thumb; position: relative; display: grid; place-items: center; width: 64px; height: 64px; }
-.thumbFrame { position: relative; z-index: 1; display: block; overflow: hidden; width: 64px; height: 64px; border-radius: var(--radius-pill); outline: 1px solid var(--color-line); outline-offset: -1px; background: var(--color-surface); }
-.thumbFrame img { object-fit: contain; }
-.thumb[data-unread] .thumbFrame { outline: 0; background: transparent; }
+.thumbFrame { position: relative; z-index: 1; display: block; width: 64px; height: 64px; border-radius: var(--radius-media); outline: 1px solid var(--color-line); outline-offset: -1px; }
+.thumbFrame img:not([data-media-backdrop]) { object-fit: contain; }
+.thumb[data-unread] .thumbFrame { outline: 0; }
 .thumbHalo { position: absolute; z-index: 0; top: 50%; left: 50%; width: 88px; height: 88px; translate: -50% -50%; max-width: none; opacity: .85; pointer-events: none; }
 
-@media (min-width: 768px) {
-  .row { grid-template-columns: 64px minmax(0, 1fr) auto; grid-template-areas: "thumb title tag" "thumb date tag"; }
-  .tag { justify-self: end; }
-}
+@media (min-width: 768px) { .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (min-width: 1024px) { .grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
 @media (max-width: 599px) { .main { padding-top: var(--space-4); } }

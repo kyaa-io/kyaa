@@ -2,6 +2,7 @@
 
 import { useEffect, type ReactNode } from "react";
 import { FanNumber } from "@/components/fan-ui/fan-number";
+import { FanSurface } from "@/components/fan-ui/fan-surface";
 import { FanSkeleton } from "@/components/fan-ui/fan-skeleton";
 import { FanText } from "@/components/fan-ui/fan-text";
 import { RewardIcon } from "@/components/fan-ui/reward-icon";
@@ -44,7 +45,7 @@ function Cell({ icon, label, children }: { icon: ReactNode; label: string; child
   </div>;
 }
 
-/** MY 숫자 한 줄 (대표 11/14 00:07, 보석 11/14 12:2x): 포인트 · 스탬프 · 등급, 읽기 전용. 하트·응모권은 덕질의 일이라 넣지 않는다.
+/** MY 숫자 카드 (대표 11/14 00:07, 보석 11/14 12:2x, 카드 11/15 18:47): 포인트 · 스탬프 · 등급, 읽기 전용. 하트·응모권은 덕질의 일이라 넣지 않는다.
  *  포인트는 헤더 동전과 같은 /api/me/wallet, 스탬프는 패스포트 카드와 같은 미션북 쪽의 찍힌 칸(없으면 누적 개수), 등급은 MY가 보여 주는 패스포트의 등급이다.
  *  `passport`가 null이면 패스포트가 아직 없는 계정이라 등급은 '없음'. */
 export function MyStats({ locale, passport, stamps }: { locale: AppLocale; passport: Passport | null | "loading"; stamps: Slot }) {
@@ -55,7 +56,7 @@ export function MyStats({ locale, passport, stamps }: { locale: AppLocale; passp
     return () => window.removeEventListener(GROUP_WALLET_CHANGED_EVENT, retry);
   }, [retry]);
   const points: Slot = wallet.data ? wallet.data.points : wallet.error ? "missing" : "loading";
-  return <dl className={styles.row} data-block="my-stats">
+  return <FanSurface as="div"><dl className={styles.row} data-block="my-stats">
     <Cell label={walletCopy(locale).points} icon={<RewardIcon kind="point" size={16} />}><Value locale={locale} slot={points} /></Cell>
     <Cell label={myHomeText(locale, "stampsLabel")} icon={<RewardIcon kind="stamp" size={16} />}><StampValue locale={locale} passport={passport} fallback={stamps} /></Cell>
     <Cell label={myHomeText(locale, "tierLabel")} icon={passport && passport !== "loading" ? <FanTierBadge tier={passport.tier} stageKey={passport.stageProgress?.current.key} locale={locale} size={16} /> : <span className={styles.emptyTier} />}>
@@ -63,5 +64,5 @@ export function MyStats({ locale, passport, stamps }: { locale: AppLocale; passp
         : passport ? <FanText role="item">{passportTierName(locale, passport)}</FanText>
         : <FanText role="item" className={styles.muted}>{myHomeText(locale, "tierNone")}</FanText>}
     </Cell>
-  </dl>;
+  </dl></FanSurface>;
 }
