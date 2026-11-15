@@ -30,7 +30,7 @@ it('renders one header without the old meta line, join button or text verificati
  state.data={page:page(),membership:null};render(<CreatorGroupHeader celebrity={celebrity} locale='ko' tab='home'/>);
  expect(screen.getByRole('heading',{level:1,name:'엘리나'})).toBeInTheDocument();
  expect(document.querySelector('[data-fan-page-header="fan"]')).toBeInTheDocument();
- expect(screen.getByText('팬페이지')).toHaveAttribute('data-fan-tag','fan');
+ expect(document.querySelector('[data-fan-page-header="fan"] [data-fan-tag]')).toBeNull();
  expect(screen.queryByText(/팬페이지 · /)).toBeNull();expect(screen.queryByRole('link',{name:'가입하기'})).toBeNull();
  expect(screen.getByTestId('presence')).toHaveTextContent('13');
  // RANK-METRIC-0520: the page like (old hero 'Leave a like') sits in the header actions, once.
