@@ -3,7 +3,7 @@
 .identity {
   display: grid;
   grid-template-columns: 96px minmax(0, 1fr);
-  grid-template-areas: "image headline" "description description" "stats stats";
+  grid-template-areas: "image headline" "description description" "links links" "stats stats";
   align-items: start;
   column-gap: var(--space-4);
   row-gap: var(--space-3);
@@ -37,8 +37,8 @@
 }
 .actions { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); min-width: 0; }
 .star { flex: none; }
-/* SNS 로고는 '팬 N · 접속' 줄 끝. 누름 영역 44px는 그대로, 위아래를 겹쳐 줄 높이(24)를 늘리지 않는다. 첫 로고 그림은 앞 글자에서 space-3 떨어진다. */
-.links { display: flex; flex: none; align-items: center; margin: calc((24px - var(--min-target)) / 2) 0 calc((24px - var(--min-target)) / 2) calc(var(--space-3) - (var(--min-target) - 20px) / 2); }
+/* SNS 로고는 소개 아래 3번째 줄(있을 때만). 누름 영역 44px는 그대로, 위아래를 겹쳐 줄 높이(24)를 늘리지 않고, 첫 로고 그림은 글 왼쪽 끝에 맞춘다. */
+.links { grid-area: links; justify-self: start; display: flex; flex-wrap: wrap; align-items: center; min-width: 0; margin: calc((24px - var(--min-target)) / 2) 0 calc((24px - var(--min-target)) / 2) calc((20px - var(--min-target)) / 2); }
 .links a { display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: 50%; }
 .links a:focus-visible { outline: 2px solid var(--color-focus); outline-offset: -2px; }
 .links img { display: block; width: 20px; height: 20px; object-fit: contain; }
@@ -80,15 +80,17 @@
 .more:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 .stats { grid-area: stats; display: flex; flex-wrap: wrap; align-items: center; min-width: 0; min-height: 24px; }
 .tabs { min-width: 0; }
+/* SNS가 없으면 3번째 줄 자체를 만들지 않는다(빈 줄의 간격도 없게). */
+.identity:not(:has(.links)) { grid-template-areas: "image headline" "description description" "stats stats"; }
 .nameSkeleton { width: 60%; height: 28px; }
 .descriptionSkeleton { width: 80%; height: 21px; }
 
-/* 768+: 사진 128 | 이름·태그·별 한 줄, 소개, 접속·SNS 한 줄. 메뉴는 오른쪽 위. */
+/* 768+: 사진 128 | 이름·태그·별 한 줄, 소개, SNS 한 줄(있을 때만), 접속 한 줄. 메뉴는 오른쪽 위. */
 @media (min-width: 48rem) {
   .identity {
     grid-template-columns: 128px minmax(0, 1fr);
-    grid-template-rows: auto auto 1fr;
-    grid-template-areas: "image headline" "image description" "image stats";
+    grid-template-rows: auto auto auto 1fr;
+    grid-template-areas: "image headline" "image description" "image links" "image stats";
     align-items: start;
     column-gap: var(--space-5);
     row-gap: var(--space-2);
@@ -102,4 +104,5 @@
   .titleRow { flex: 0 1 auto; padding-right: 0; }
   .name { display: block; text-overflow: ellipsis; white-space: nowrap; }
   .stats { align-self: start; }
+  .identity:not(:has(.links)) { grid-template-rows: auto auto 1fr; grid-template-areas: "image headline" "image description" "image stats"; }
 }

@@ -177,6 +177,15 @@ describe("FanPageHeader", () => {
     expect(screen.getByRole("link", { name: "youtube" })).toHaveAttribute("data-outbound-kind", "social");
     expect(screen.queryByText(/브랜드 ·/)).toBeNull();
   });
+  it("puts the SNS row after the introduction and before the stats line, and draws no SNS row without links", () => {
+    const { rerender } = render(<FanPageHeader image={{ src: "/a.png" }} name="엘리나" kind="fan" locale="ko" description="소개 원문" links={[{ kind: "youtube", href: "https://y.test" }]} stats={<div data-testid="stats">팬 1</div>} />);
+    const order = (node: Element, other: Element) => node.compareDocumentPosition(other) & Node.DOCUMENT_POSITION_FOLLOWING;
+    const nav = screen.getByRole("link", { name: "youtube" }).closest("nav") as Element;
+    expect(order(screen.getByText("소개 원문"), nav)).toBeTruthy();
+    expect(order(nav, screen.getByTestId("stats"))).toBeTruthy();
+    rerender(<FanPageHeader image={{ src: "/a.png" }} name="엘리나" kind="fan" locale="ko" description="소개 원문" stats={<div data-testid="stats">팬 1</div>} />);
+    expect(document.querySelector("nav")).toBeNull();
+  });
 });
 
 describe("resource store", () => {

@@ -37,7 +37,7 @@ function Description({ children, labels, action }: Readonly<{ children: ReactNod
 
 /**
  * 팬페이지·모임·취미·브랜드가 함께 쓰는 머리(261107-2 U1). 사진이 주인공이다(390 96px, 768+ 128px).
- * 이름 줄: 이름 + 유형 태그 + 배지, 그 뒤(768+는 같은 줄, 390은 다음 줄) 별 버튼·내 등급·SNS 아이콘. 소개는 원문 2줄 + 더 보기, 그 아래 접속 한 줄.
+ * 이름 줄: 이름 + 유형 태그 + 배지, 그 뒤(768+는 같은 줄, 390은 다음 줄) 별 버튼·내 등급. 소개는 원문 2줄 + 더 보기, 그 아래 SNS 아이콘 줄(있을 때만), 그 아래 접속 한 줄.
  */
 export function FanPageHeader({ image, name, kind, locale, description, descriptionLabels, descriptionAction, star, badge, links = [], utility, menu, stats, tabs, frameId }: Readonly<{
   image: FanPageImage;
@@ -64,7 +64,7 @@ export function FanPageHeader({ image, name, kind, locale, description, descript
 }>) {
   const plainName = typeof name === "string" ? name : "";
   const actions = Boolean(star || utility);
-  // SNS 로고는 맨 위 행동 줄이 아니라 '팬 N · 접속' 줄 끝에 둔다(대표 11/15 17:29).
+  // SNS 로고는 소개 아래 3번째 줄, '팬 N · 오늘 방문' 줄은 그 아래 4번째 줄(대표 11/15 23:37). SNS가 없으면 3번째 줄을 그리지 않는다.
   const linkNav = links.length > 0 ? <nav className={styles.links} aria-label={plainName || undefined}>{links.map((link) => <a key={`${link.kind}:${link.href}`} href={link.href} target="_blank" rel="noopener noreferrer" aria-label={link.kind} data-platform={link.kind} data-outbound-kind="social"><img src={iconOf(link.kind)} width={20} height={20} alt="" /></a>)}</nav> : null;
   return <header className={styles.header} data-fan-page-header={kind} data-frame-id={frameId}>
     <div className={styles.identity}>
@@ -82,7 +82,8 @@ export function FanPageHeader({ image, name, kind, locale, description, descript
         {menu ? <div className={styles.menu}>{menu}</div> : null}
       </div>
       {description ? <Description labels={descriptionLabels} action={descriptionAction}>{description}</Description> : null}
-      {stats || linkNav ? <div className={styles.stats}>{stats}{linkNav}</div> : null}
+      {linkNav}
+      {stats ? <div className={styles.stats}>{stats}</div> : null}
     </div>
     {tabs ? <div className={styles.tabs}>{tabs}</div> : null}
   </header>;
