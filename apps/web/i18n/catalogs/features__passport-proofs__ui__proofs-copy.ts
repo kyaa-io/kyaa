@@ -612,5 +612,29 @@ export const messages = {
     "pt": "Meus comprovantes",
     "fr": "Mes preuves",
     "ru": "Мои подтверждения"
+  },
+  "pfMaskNotice": {
+    "ja": "氏名・住所・カード番号などの個人情報を隠してからアップロードしてください",
+    "zh-Hans": "请遮盖姓名、地址、卡号等个人信息后再上传",
+    "zh-Hant": "請遮蓋姓名、地址、卡號等個人資料後再上傳",
+    "es": "Tapa tus datos personales (nombre, dirección, número de tarjeta) antes de subir",
+    "id": "Tutupi data pribadi seperti nama, alamat, dan nomor kartu sebelum mengunggah",
+    "vi": "Hãy che thông tin cá nhân như tên, địa chỉ, số thẻ trước khi tải lên",
+    "th": "โปรดปิดข้อมูลส่วนบุคคล เช่น ชื่อ ที่อยู่ หมายเลขบัตร ก่อนอัปโหลด",
+    "pt": "Cubra dados pessoais como nome, endereço e número do cartão antes de enviar",
+    "fr": "Masquez vos données personnelles (nom, adresse, numéro de carte) avant l'envoi",
+    "ru": "Перед загрузкой закройте личные данные: имя, адрес, номер карты"
+  },
+  "pfMaskConfirm": {
+    "ja": "個人情報をすべて隠しました(必須)",
+    "zh-Hans": "我已遮盖所有个人信息(必填)",
+    "zh-Hant": "我已遮蓋所有個人資料(必填)",
+    "es": "He tapado todos los datos personales (obligatorio)",
+    "id": "Saya sudah menutupi semua data pribadi (wajib)",
+    "vi": "Tôi đã che toàn bộ thông tin cá nhân (bắt buộc)",
+    "th": "ฉันปิดข้อมูลส่วนบุคคลทั้งหมดแล้ว (จำเป็น)",
+    "pt": "Cobri todos os dados pessoais (obrigatório)",
+    "fr": "J'ai masqué toutes les données personnelles (obligatoire)",
+    "ru": "Я закрыл все личные данные (обязательно)"
   }
 } satisfies Record<string, TranslatedMessage>;

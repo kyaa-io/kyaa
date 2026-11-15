@@ -126,6 +126,8 @@ export function ProofsScreen({ locale, slug }: Props) {
   const [publish, setPublish] = useState(false);
   const [amountVisible, setAmountVisible] = useState(false);
   const [privacy, setPrivacy] = useState(false);
+  // The member confirms the covers after looking at the pictures in the mask tool; any change to the pictures asks again.
+  const [covered, setCovered] = useState(false);
   const [resubmitting, setResubmitting] = useState<MyProofItem | null>(null);
   const [busy, setBusy] = useState(false);
   const [failure, setFailure] = useState<ProofFailure | null>(null);
@@ -142,6 +144,7 @@ export function ProofsScreen({ locale, slug }: Props) {
       return { id: `p${counter.current++}`, file, url, masks: [] };
     });
     setPicked((current) => [...current, ...next]);
+    setCovered(false);
   };
   const missionList = missions.state.status === "ready" ? missions.state.data : [];
   const types = SUBMITTABLE_PROOF_TYPES.filter((type) => missionList.some((item) => item.proofType === type));
@@ -151,7 +154,7 @@ export function ProofsScreen({ locale, slug }: Props) {
   const blocked = !resubmitting && mission && !mission.submittable ? mission.unavailableReason : null;
   // An SNS post screenshot fills slot 07 only; it is never shown on the verified board.
   const publishable = proofType !== SNS_POST_PROOF;
-  const canSubmit = !busy && Boolean(mission) && !blocked && picked.length > 0 && (resubmitting || privacy);
+  const canSubmit = !busy && Boolean(mission) && !blocked && picked.length > 0 && covered && (resubmitting || privacy);
 
   const submit = async () => {
     if (!mission || !proofType) return;
@@ -164,7 +167,7 @@ export function ProofsScreen({ locale, slug }: Props) {
       const trimmed = note.trim() ? note.trim().slice(0, PROOF_NOTE_MAX) : undefined;
       if (resubmitting) await resubmitProof(getToken, resubmitting.submissionId, { expectedRevision: resubmitting.revision, uploadId, imagePhash, note: trimmed, locale });
       else await submitProof(getToken, { creator: slug, proofType, uploadId, publishConsent: publishable && publish, amountVisible: publishable && publish ? amountVisible : null, imagePhash, note: trimmed, locale });
-      setPicked([]); setNote(""); setPrivacy(false); setResubmitting(null);
+      setPicked([]); setNote(""); setPrivacy(false); setCovered(false); setResubmitting(null);
       history.retry();
     } catch (error) {
       setFailure(error instanceof ProofRequestError ? error.kind : "generic");
@@ -182,7 +185,6 @@ export function ProofsScreen({ locale, slug }: Props) {
       {missions.state.status === "ready" && !types.length ? <p className={styles.state}>{proofsText(locale, "pfNoMission")}</p> : null}
       {missions.state.status === "ready" && types.length ? (
       <section className={styles.panel} aria-labelledby="pf-form">
-        <p>{locale === "ko" ? "개인정보(이름·주소·카드번호 등)는 가리고 올려 주세요" : "Hide personal information (name, address, card number, etc.) before uploading."}</p>
         <fieldset className={styles.types} disabled={busy || Boolean(resubmitting)}>
           <legend id="pf-form" className={styles.label}>{proofsText(locale, "pfTypeLabel")}</legend>
           {types.map((type) => (
@@ -194,11 +196,13 @@ export function ProofsScreen({ locale, slug }: Props) {
         </fieldset>
         <div className={styles.field}>
           <span className={styles.label}>{proofsText(locale, "pfImages")}</span>
+          <p className={styles.notice} role="note" data-proof-privacy-notice>{proofsText(locale, "pfMaskNotice")}</p>
+          {picked.length ? <p className={styles.label}>{proofsText(locale, "pfMaskHint")}</p> : null}
           <div className={styles.images}>
             {picked.map((item) => (
               <ProofImageMask key={item.id} locale={locale} src={item.url} masks={item.masks}
                 onChange={(masks) => setPicked((current) => current.map((entry) => (entry.id === item.id ? { ...entry, masks } : entry)))}
-                onRemove={() => setPicked((current) => current.filter((entry) => entry.id !== item.id))} />
+                onRemove={() => { setPicked((current) => current.filter((entry) => entry.id !== item.id)); setCovered(false); }} />
             ))}
             {picked.length < PROOF_MAX_IMAGES ? (
               <label className={styles.addImage}>
@@ -208,6 +212,7 @@ export function ProofsScreen({ locale, slug }: Props) {
               </label>
             ) : null}
           </div>
+          {picked.length ? <label className={styles.check}><input type="checkbox" checked={covered} onChange={(event) => setCovered(event.target.checked)} required />{proofsText(locale, "pfMaskConfirm")}</label> : null}
         </div>
         <label className={styles.field}>
           <span className={styles.label}>{proofsText(locale, "pfNote")}</span>

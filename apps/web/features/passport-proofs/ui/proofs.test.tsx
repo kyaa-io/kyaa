@@ -170,6 +170,35 @@ describe("ProofsScreen mission entry", () => {
   });
 });
 
+describe("privacy cover step on the submit form (FB-N21)", () => {
+  const formFetch = () => vi.fn(async (input: RequestInfo | URL) => {
+    const url = String(input);
+    if (url.includes("/missions")) return Response.json({ items: [{ missionId: "55555555-5555-4555-8555-555555555555", proofType: "receipt", platform: null, submittable: true, unavailableReason: null, closesAt: "2027-01-01T00:00:00Z" }] });
+    if (url.includes("/posts")) return Response.json({ items: [], nextBefore: null });
+    return Response.json({ items: [] });
+  });
+  it("shows the personal-data notice, then asks to confirm the covers once a picture is picked; submit stays off until both boxes are ticked", async () => {
+    vi.stubGlobal("fetch", formFetch());
+    Object.assign(URL, { createObjectURL: () => "blob:proof", revokeObjectURL: () => {} });
+    authState.authenticated = true;
+    const { container } = render(<ProofsScreen locale="ko" slug="mina" />);
+    expect(await screen.findByText("이름·주소·카드번호 등 개인정보를 가려서 올려 주세요")).toBeTruthy();
+    expect(screen.queryByLabelText("개인정보를 모두 가렸어요 (필수)")).toBeNull();
+    const submit = () => screen.getByRole("button", { name: "제출" }) as HTMLButtonElement;
+    fireEvent.change(container.querySelector("input[type=file]")!, { target: { files: [new File(["x"], "r.png", { type: "image/png" })] } });
+    expect(container.querySelector("[data-proof-mask-frame]")).toBeTruthy();
+    expect(screen.getByText("가릴 부분을 끌어서 칠하세요")).toBeTruthy();
+    fireEvent.click(screen.getByLabelText("개인정보 처리에 동의합니다 (필수)"));
+    expect(submit().disabled).toBe(true);
+    fireEvent.click(screen.getByLabelText("개인정보를 모두 가렸어요 (필수)"));
+    expect(submit().disabled).toBe(false);
+    // Another picture means the covers have to be confirmed again.
+    fireEvent.change(container.querySelector("input[type=file]")!, { target: { files: [new File(["y"], "s.png", { type: "image/png" })] } });
+    expect((screen.getByLabelText("개인정보를 모두 가렸어요 (필수)") as HTMLInputElement).checked).toBe(false);
+    expect(submit().disabled).toBe(true);
+  });
+});
+
 describe("proof API calls carry the session token", () => {
   const ok = (body: unknown) => Response.json(body);
   const uuid = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";

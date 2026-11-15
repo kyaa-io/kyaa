@@ -51,4 +51,6 @@ export const proofsSource = {
   pfStatMonth: { ko: "이번 달 인증 팬", en: "Fans this month" },
   pfMethods: { ko: "인증 방법", en: "Ways to verify" },
   pfMine: { ko: "내 인증", en: "My proofs" },
+  pfMaskNotice: { ko: "이름·주소·카드번호 등 개인정보를 가려서 올려 주세요", en: "Cover personal data such as your name, address and card number before uploading" },
+  pfMaskConfirm: { ko: "개인정보를 모두 가렸어요 (필수)", en: "I covered all personal data (required)" },
 } as const;

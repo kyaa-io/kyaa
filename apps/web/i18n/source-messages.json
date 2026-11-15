@@ -16427,6 +16427,18 @@
     "source": "features/passport-proofs/ui/proofs-copy",
     "id": "features/passport-proofs/ui/proofs-copy:pfMine"
   },
+  "pfMaskNotice": {
+    "en": "Cover personal data such as your name, address and card number before uploading",
+    "ko": "이름·주소·카드번호 등 개인정보를 가려서 올려 주세요",
+    "source": "features/passport-proofs/ui/proofs-copy",
+    "id": "features/passport-proofs/ui/proofs-copy:pfMaskNotice"
+  },
+  "pfMaskConfirm": {
+    "en": "I covered all personal data (required)",
+    "ko": "개인정보를 모두 가렸어요 (필수)",
+    "source": "features/passport-proofs/ui/proofs-copy",
+    "id": "features/passport-proofs/ui/proofs-copy:pfMaskConfirm"
+  },
   "pfMore": {
     "en": "Load more",
     "ko": "더 보기",

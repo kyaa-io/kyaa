@@ -23,6 +23,8 @@
 .fileInput { position: absolute; width: 1px; height: 1px; opacity: 0; }
 .check { display: flex; align-items: flex-start; gap: var(--space-2); font-size: var(--fan-description-size); overflow-wrap: anywhere; }
 .check input { margin-top: var(--space-1); }
+/* Legal notice (personal data): ink colour, not a muted helper line. */
+.notice { margin: 0; color: var(--color-error); overflow-wrap: anywhere; }
 .error { margin: 0; color: var(--color-error); font-size: var(--fan-description-size); overflow-wrap: anywhere; }
 .state { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); margin: 0; color: var(--color-muted); font-size: var(--fan-description-size); }
 .list { display: grid; margin: 0; padding: 0; list-style: none; }
