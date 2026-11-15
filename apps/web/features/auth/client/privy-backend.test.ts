@@ -106,7 +106,7 @@ describe("privy-backend (direct)", () => {
 
   it("reaches the Privy island only inside the privy-mode chunk, which auth-root.tsx imports dynamically (PRIVY-RESTORE-1115)", () => {
     const chunk = new Set([
-      "features/auth/client/privy-auth-root.tsx", "features/auth/client/privy-avatar-session-bridge.tsx",
+      "features/auth/client/privy-root.island.tsx", "features/auth/client/privy-avatar-session-bridge.tsx",
       "features/auth/client/privy-backend.island.tsx", "features/auth/client/privy-mirrors.tsx",
     ]);
     const specifiers = /(?:\bfrom\s*|\bimport\s*\(\s*|\bimport\s+|\brequire\s*\(\s*)["']([^"']*privy-(?:backend|root|mirrors|provider-boundary|auth-root|avatar-session-bridge)[^"']*)["']/g;
@@ -114,7 +114,7 @@ describe("privy-backend (direct)", () => {
     for (const file of sources()) {
       if (chunk.has(file.rel)) continue;
       for (const match of file.text.matchAll(specifiers)) {
-        if (file.rel === "features/auth/client/auth-root.tsx" && /dynamic\(\(\) => import\("\.\/privy-auth-root"\)\)/.test(file.text) && match[1] === "./privy-auth-root") continue;
+        if (file.rel === "features/auth/client/auth-root.tsx" && /dynamic\(\(\) => import\("\.\/privy-root\.island"\)\)/.test(file.text) && match[1] === "./privy-root.island") continue;
         offenders.push(`${file.rel} → ${match[1]}`);
       }
     }

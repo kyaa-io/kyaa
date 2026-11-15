@@ -11,10 +11,11 @@ import { AuthBootProvider, useCreateWallet, useLogin, useLoginWithOAuth, usePriv
 import { PrivyBridgeContext, type PrivyBridge, type PrivyOAuthListener } from "./privy-bridge";
 import { PrivyMirrors } from "./privy-mirrors";
 import { PrivyAvatarSessionBridge } from "./privy-avatar-session-bridge";
-import { IslandPrivyProvider } from "./privy-provider-boundary";
+import { IslandPrivyProvider } from "@/features/auth/client/privy-provider-boundary"; // exact name: the island Vitest project swaps it
 import { PRIVY_APP_ID_REQUIRED, privyProviderConfig } from "./privy-provider-config";
 
-function PrivyIsland({ appId, config }: { appId: string; config: PrivyClientConfig }) {
+/** PrivyProvider with the mirrors only. Exported for the island test root. */
+export function PrivyIsland({ appId, config }: { appId: string; config: PrivyClientConfig }) {
   return <IslandPrivyProvider appId={appId} config={config}><PrivyMirrors /></IslandPrivyProvider>;
 }
 

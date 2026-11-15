@@ -9,7 +9,7 @@ import { ByUsSessionProvider } from "@/components/byus-session-provider";
 import { installResourceWriteWatch } from "@/components/fan-ui/resource-cache";
 import { CognitoAuthProvider } from "./cognito-auth";
 
-const PrivyAuthRoot = dynamic(() => import("./privy-auth-root"));
+const PrivyAuthRoot = dynamic(() => import("./privy-root.island"));
 
 export function AuthRoot({ authProvider = "cognito", privyAppId = "", appleLoginEnabled = false, testAccountLoginEnabled = false, children }: {
   authProvider?: "privy" | "cognito";

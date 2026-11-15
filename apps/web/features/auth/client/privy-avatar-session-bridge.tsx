@@ -1,6 +1,6 @@
 "use client";
 // Privy mode only (PRIVY-RESTORE-1115): the first-login Google photo import of 57c922b24. Privy hands the Google OAuth
-// access token to the browser once; the server imports the photo with it. Loaded inside privy-auth-root.tsx.
+// access token to the browser once; the server imports the photo with it. Loaded inside privy-root.island.tsx.
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { SessionAvatarContext } from "@/components/avatar-session-bridge";
 import { useByUsAuth as usePrivy } from "./cognito-auth";
