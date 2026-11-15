@@ -5,7 +5,7 @@ import { FanTabs } from "@/components/fan-ui/fan-tabs";
 import { FanText } from "@/components/fan-ui/fan-text";
 import Link from "../../../components/fan-ui/hover-prefetch-link";
 import type { Route } from "next";
-import { useState, type ReactNode } from "react";
+import { useState } from "react";
 import { z } from "zod";
 import { BannerSlot } from "@/components/banner-slot/banner-slot";
 import { useCommunityResource } from "@/features/fanpage/ui/use-community-resource";
@@ -50,14 +50,14 @@ export function moreTitle(item: Pick<Item, "body">) {
 /** 공개 글의 첫 사진만 바로 읽는다. 그 밖의 글은 페이지 이미지 칸을 둔다. */
 const thumbnailOf = (item: Item) => item.visibility === "public" && item.assets?.[0] ? `/api/content-assets/${item.assets[0].id}?size=thumbnail` : null;
 
-function MoreRow({ item, slug, locale, pageImage }: { item: Item; slug: string; locale: AppLocale; pageImage?: ReactNode }) {
+function MoreRow({ item, slug, locale }: { item: Item; slug: string; locale: AppLocale }) {
   const [broken, setBroken] = useState(false), thumbnail = thumbnailOf(item), copy = contentCopy(locale);
   const returnTo = boardHref(slug, locale);
   const href = `/c/${slug}/community/${item.id}?locale=${locale}&returnTo=${encodeURIComponent(returnTo)}`;
   return <li data-row=""><Link className={styles.row} href={href as Route} data-post-more-row="">
-    <span className={styles.thumb} data-page-image={!thumbnail || broken ? "" : undefined}>{thumbnail && !broken
+    <span className={styles.thumb}>{thumbnail && !broken
       ? <img src={thumbnail} alt="" width={64} height={48} loading="lazy" decoding="async" onError={() => setBroken(true)} />
-      : pageImage}</span>
+      : <img className={styles.avatar} data-artist-avatar={item.artist || undefined} src={item.author.avatarUrl} alt="" width={32} height={32} loading="lazy" decoding="async" />}</span>
     <span className={styles.text}>
       <FanText role="row-title" className={styles.title}>{moreTitle(item)}</FanText>
       {/* 0은 그리지 않는다. 둘 다 0이면 숫자 줄이 없다(게시판 목록의 댓글 수와 같은 규칙). */}
@@ -73,7 +73,7 @@ function MoreRow({ item, slug, locale, pageImage }: { item: Item; slug: string; 
  * 글 상세 옆(1024 미만에서는 본문 아래) '이 페이지의 다른 글'. 같은 페이지의 인기·최신 팬 글을 읽는 사람의 권한 그대로 받아
  * 지금 글을 빼고 다섯 개를 보인다. 그 아래 팬페이지 관리 배너 자리(브랜드 페이지는 없음)는 배너가 없으면 아무것도 그리지 않는다.
  */
-export function PostDetailMore({ slug, postId, locale, pageImage, banner = true }: { slug: string; postId: string; locale: AppLocale; pageImage?: ReactNode; banner?: boolean }) {
+export function PostDetailMore({ slug, postId, locale, banner = true }: { slug: string; postId: string; locale: AppLocale; banner?: boolean }) {
   const [tab, setTab] = useState<Tab>("popular");
   const [title, popularLabel, latestLabel] = labels[locale], copy = contentCopy(locale), contentLocale = toContentLocale(locale);
   const url = tab === "popular"
@@ -88,7 +88,7 @@ export function PostDetailMore({ slug, postId, locale, pageImage, banner = true 
     {!empty && <section className={styles.panel} aria-labelledby={`post-more-${postId}`}>
       <header><FanText role="item" as="strong" id={`post-more-${postId}`}>{title}</FanText><FanTabs variant="segment" label={title} current={tab} className={styles.tabs} items={[{ key: "popular", label: popularLabel, onSelect: () => setTab("popular") }, { key: "latest", label: latestLabel, onSelect: () => setTab("latest") }]} /></header>
       {resource.state.status === "ready"
-        ? <ul className={styles.list}>{items.map(item => <MoreRow key={item.id} item={item} slug={slug} locale={locale} pageImage={pageImage} />)}{Array.from({ length: MORE_ROWS - items.length }, (_, index) => <li key={`blank-${index}`} data-row="" className={styles.empty} aria-hidden="true" />)}</ul>
+        ? <ul className={styles.list}>{items.map(item => <MoreRow key={item.id} item={item} slug={slug} locale={locale} />)}{Array.from({ length: MORE_ROWS - items.length }, (_, index) => <li key={`blank-${index}`} data-row="" className={styles.empty} aria-hidden="true" />)}</ul>
         : resource.state.status === "error"
           ? <div role="status" className={styles.failed}><FanText role="meta">{copy.failed}</FanText><FanAction variant="neutral" onClick={resource.retry}>{copy.retry}</FanAction></div>
           : <ul className={styles.list} aria-busy="true">{Array.from({ length: MORE_ROWS }, (_, index) => <li key={index} data-row="" className={styles.blank}><span className={styles.thumb} /><span className={styles.text}><span /><span /></span></li>)}</ul>}

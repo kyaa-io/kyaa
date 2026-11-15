@@ -1,11 +1,14 @@
 import "server-only";
 import { z } from "zod";
 import { popularPostsPageSchema } from "@/features/popular-board/domain/popular-posts";
+import { publicAvatarUrlSchema } from "@/features/profile/domain/avatar";
 import type { FanpageDependencies } from "@/server/fanpage/routes";
 import { feedFailure } from "@/server/fan-posts/feed";
 
 const headers = { "cache-control": "private, no-store", vary: "Authorization" };
 const json = (value: unknown, status = 200) => Response.json(value, { status, headers });
+
+const avatarsSchema = z.record(z.string(), publicAvatarUrlSchema);
 
 type PageImage = (source: "fan" | "group", pageRef: string, locale: "ko" | "en") => Promise<string | null>;
 
@@ -29,6 +32,11 @@ export function createGetPublicPopularPosts(dependencies: Pick<FanpageDependenci
       // RPC joins can repeat a post; preserve the first ranked row by its stable source and ID.
       const seen = new Set<string>();
       data.data.items = data.data.items.filter(item => { const key = `${item.source}:${item.id}`; if (seen.has(key)) return false; seen.add(key); return true; });
+      // Each row carries its writer's picture. It is extra: when it cannot be read (the app is deployed before the function) the board still loads.
+      const ids = (source: "fan" | "group") => data.data.items.flatMap(item => item.source === source ? [item.id] : []);
+      const avatars = !data.data.items.length ? {} : await Promise.resolve(dependencies.rpc("public_post_author_avatars", { p_fan_post_ids: ids("fan"), p_group_post_ids: ids("group") }))
+        .then(value => avatarsSchema.parse(value)).catch(() => ({} as Record<string, string>));
+      data.data.items = data.data.items.map(item => { const avatarUrl = avatars[`${item.source}:${item.id}`]; return avatarUrl ? { ...item, avatarUrl } : item; });
       const { pageImage } = options;
       if (!pageImage) return json(data.data);
       // Each row carries its page's picture so the board can draw it; a page without one stays without the field.

@@ -225,6 +225,12 @@ img {
   height: auto;
 }
 
+/* 그 페이지의 인증 아티스트가 쓴 글·댓글의 프로필 사진: 강조색 테두리. 사진 크기는 그대로다. */
+img[data-artist-avatar] {
+  box-sizing: border-box;
+  border: 2px solid var(--color-accent);
+}
+
 /*
  * Korean wrapping contract for public fan surfaces.
  * Admin screens intentionally do not opt in to data-fan-surface.

@@ -105,6 +105,15 @@ async function artistReactedPosts(dependencies: FeedDependencies, postIds: strin
     return new Set();
   }
 }
+/** Board items (fan posts and cheers) the page's own artist wrote. Extra like the mark above: the board loads without it. */
+async function artistAuthoredItems(dependencies: FeedDependencies, ids: string[]): Promise<ReadonlySet<string>> {
+  if (!ids.length) return new Set();
+  try {
+    return new Set(reactedSchema.parse(await dependencies.rpc("fan_feed_artist_authors", { p_ids: ids })));
+  } catch {
+    return new Set();
+  }
+}
 
 export function feedFailure(error: unknown) {
   if (error instanceof AuthError) return response({ error: { code: error.status === 401 ? "AUTHENTICATION_REQUIRED" : "FAN_WEB_FORBIDDEN" } }, error.status);
@@ -199,8 +208,14 @@ export function createFeedHandler(dependencies: FeedDependencies) {
         v: 1, slug, source, news, locale, mediaOnly, search, db: nextDbCursor, dbDone,
         chzzk: nextChzzkCursor, chzzkDone,
       });
-      const reacted = await artistReactedPosts(dependencies, selected.flatMap(entry => entry.item.kind === "fan_post" ? [entry.item.id] : []));
-      const items = [...selected].sort(compareByTime).map(entry => entry.item.kind === "fan_post" && reacted.has(entry.item.id) ? { ...entry.item, artistReacted: true } : entry.item);
+      const [reacted, artists] = await Promise.all([
+        artistReactedPosts(dependencies, selected.flatMap(entry => entry.item.kind === "fan_post" ? [entry.item.id] : [])),
+        artistAuthoredItems(dependencies, selected.flatMap(entry => entry.item.kind === "fan_post" || entry.item.kind === "cheer" ? [entry.item.id] : [])),
+      ]);
+      const items = [...selected].sort(compareByTime).map(({ item }) => {
+        const marked = (item.kind === "fan_post" || item.kind === "cheer") && artists.has(item.id) ? { ...item, artist: true } : item;
+        return marked.kind === "fan_post" && reacted.has(marked.id) ? { ...marked, artistReacted: true } : marked;
+      });
       return response(checked(feedPageSchema, { items, nextCursor, unavailableSources }));
     } catch (error) {
       return feedFailure(error);

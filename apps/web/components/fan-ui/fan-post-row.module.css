@@ -30,8 +30,10 @@
   color: var(--color-accent-ink);
 }
 .thumb img { display: block; width: 100%; height: 100%; object-fit: cover; }
-/* 페이지 이미지는 사진처럼 칸을 채우지 않고 칸 가운데에 둥글게 둔다. */
-.thumb[data-page-image] > * { flex: none; }
+/* 로고·프로필 사진·페이지 이미지는 사진처럼 칸을 채우지 않고 칸 가운데에 32로 둔다. */
+.thumb:not([data-thumb="photo"]) > * { flex: none; }
+.thumb .logo { width: 32px; height: 32px; border-radius: var(--radius-small); }
+.thumb .avatar { width: 32px; height: 32px; border-radius: 50%; }
 .head { grid-area: head; display: flex; align-items: center; gap: var(--space-1); min-width: 0; }
 .head > [data-fan-tag] { margin-right: var(--space-1); }
 .title {

@@ -47,7 +47,7 @@ export function HomeCommunityPreview({ locale, celebrities = [] }: { locale: App
   return <section className={styles.section} aria-labelledby="home-community-heading">
     <FanSectionHeader variant="editorial" id="home-community-heading" title={feed.fanBoard} />
     {state.status === "ready" && state.data.items.length > 0 ? <ul className={styles.rows} aria-busy={pending || undefined}>{state.data.items.map(post => <li key={`${post.source}:${post.id}`}>
-      <FanPostRow density="home" locale={locale} href={postHref(post, locale)} title={post.title} thumbnail={thumbnailSrc(post)} pageImage={post.source === "fan" ? pageImageOf(post.pageRef) : undefined} commentCount={post.commentCount}
+      <FanPostRow density="home" locale={locale} href={postHref(post, locale)} title={post.title} thumbnail={thumbnailSrc(post)} avatar={post.avatarUrl} pageImage={post.source === "fan" ? pageImageOf(post.pageRef) : undefined} commentCount={post.commentCount}
         source={{ label: post.pageName, href: boardHref(post, locale) }} author={<ProfileAuthor contentRef={{ kind: post.source === "fan" ? "fan_post" : "group_post", id: post.id }} nickname={post.nickname} avatarUrl={null}>{post.nickname}</ProfileAuthor>} time={post.createdAt} />
     </li>)}</ul> : state.status === "loading" ? <FanSkeletonRows rows={10} variant="post" ariaLabel={copy.loading} /> : <p className={styles.status} role={state.status === "error" ? "alert" : "status"}>{state.status === "error" ? copy.failed : copy.empty}</p>}
     {(page > 1 || (state.status === "ready" && state.data.hasMore)) && <nav className={styles.pagination} aria-label={feed.fanBoard}>

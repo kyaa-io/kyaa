@@ -49,6 +49,21 @@ describe("unified creator feed", () => {
     expect((await handler(request("?media=1&q=a"), "artist")).status).toBe(400);
   });
 
+  it("marks board items the page artist wrote, and still loads when the mark cannot be read", async () => {
+    const deps = dependencies();
+    const other = { ...post, id: "00000000-0000-4000-8000-000000000004", createdAt: "2026-09-19T00:00:00Z" };
+    vi.mocked(deps.rpc).mockImplementation(async name => name === "fan_feed_artist_authors" ? [postId] : name === "fan_post_artist_reactions" ? [] : { entries: [{ pinRank: 0, item: post }, { pinRank: 0, item: other }, { pinRank: 1, item: notice }], hasMore: false });
+    const page = await (await createFeedHandler(deps)(request("?source=all"), "artist")).json();
+    expect(deps.rpc).toHaveBeenCalledWith("fan_feed_artist_authors", { p_ids: [postId, other.id] });
+    expect(page.items.find((item: { id: string }) => item.id === postId).artist).toBe(true);
+    expect(page.items.find((item: { id: string }) => item.id === other.id).artist).toBeUndefined();
+
+    vi.mocked(deps.rpc).mockImplementation(async name => { if (name === "fan_feed_artist_authors") throw new Error("missing"); return name === "fan_post_artist_reactions" ? [] : { entries: [{ pinRank: 0, item: post }], hasMore: false }; });
+    const fallback = await createFeedHandler(deps)(request("?source=fans"), "artist");
+    expect(fallback.status).toBe(200);
+    expect((await fallback.json()).items[0].artist).toBeUndefined();
+  });
+
   it("marks fan posts the page artist reacted to, and still loads when the mark cannot be read", async () => {
     const deps = dependencies();
     const other = { ...post, id: "00000000-0000-4000-8000-000000000004", createdAt: "2026-09-19T00:00:00Z" };

@@ -25,7 +25,11 @@ export type FanPostRowProps = Readonly<{
   locale: AppLocale;
   title: string;
   thumbnail?: string | null;
-  /** 사진이 없거나 불러오지 못할 때 글 아이콘 대신 보이는 페이지 이미지. 없으면 글 아이콘. */
+  /** 글쓴이 프로필 사진. 첨부 사진이 없는 글의 왼쪽 칸에 둥글게 둔다. */
+  avatar?: string | null;
+  /** 글쓴이가 그 페이지의 인증 아티스트면 프로필 사진에 테두리를 두른다. */
+  avatarArtist?: boolean;
+  /** 첨부 사진도 프로필 사진도 없을 때 글 아이콘 대신 보이는 페이지 이미지. 없으면 글 아이콘. */
   pageImage?: ReactNode;
   notice?: boolean;
   commentCount?: number;
@@ -43,15 +47,19 @@ export type FanPostRowProps = Readonly<{
   density?: "home" | "board";
 }>;
 
-/** 게시판 목록 한 줄. 댓글·좋아요 수는 제목 옆(0이면 뺌). 값이 없는 열은 빼고 `—`를 쓰지 않는다. 사진이 없거나 깨지면 페이지 이미지를, 그것도 없으면 글 아이콘 칸을 둔다. */
-export function FanPostRow({ href, locale, title, thumbnail, pageImage, notice = false, commentCount, source, author, authorArtist = false, time, edited = false, views, likes, reactedBy, density = "board" }: FanPostRowProps) {
+const KYAA_LOGO = "/kyaa-app-icon-192.png";
+/** 게시판 목록 한 줄. 댓글·좋아요 수는 제목 옆(0이면 뺌). 값이 없는 열은 빼고 `—`를 쓰지 않는다. 왼쪽 칸은 첨부 사진 → 공지면 kyaa 로고 → 글쓴이 프로필 사진 → 페이지 이미지 → 글 아이콘 순이다. */
+export function FanPostRow({ href, locale, title, thumbnail, avatar, avatarArtist = false, pageImage, notice = false, commentCount, source, author, authorArtist = false, time, edited = false, views, likes, reactedBy, density = "board" }: FanPostRowProps) {
   const [broken, setBroken] = useState(false);
   const count = (value: number) => value.toLocaleString(locale);
   const timeLabel = time === undefined ? "" : fanPostTimeLabel(time);
+  const photo = Boolean(thumbnail) && !broken;
   const isoTime = time === undefined ? undefined : time instanceof Date ? time.toISOString() : time;
   return <div className={styles.row} data-density={density} data-notice={notice || undefined} data-fan-post-row>
-    <span className={styles.thumb} data-page-image={(!thumbnail || broken) && pageImage ? "" : undefined}>{thumbnail && !broken
-      ? <img src={thumbnail} alt="" width={56} height={42} loading="lazy" decoding="async" onError={() => setBroken(true)} />
+    <span className={styles.thumb} data-thumb={photo ? "photo" : notice ? "logo" : avatar ? "avatar" : pageImage ? "page" : "icon"}>{photo
+      ? <img src={thumbnail!} alt="" width={56} height={42} loading="lazy" decoding="async" onError={() => setBroken(true)} />
+      : notice ? <img className={styles.logo} src={KYAA_LOGO} alt="" width={32} height={32} loading="lazy" decoding="async" />
+      : avatar ? <img className={styles.avatar} data-artist-avatar={avatarArtist || undefined} src={avatar} alt="" width={32} height={32} loading="lazy" decoding="async" />
       : pageImage ?? <FileText size={16} aria-hidden="true" />}</span>
     <div className={styles.head}>
       {notice && <FanTag tone="notice">{fanUiText(locale, "noticeTag")}</FanTag>}
