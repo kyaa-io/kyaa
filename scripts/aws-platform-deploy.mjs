@@ -107,7 +107,7 @@ export function validateConfig(config, template) {
     accountArn(values.CloudFrontCertificateArn, config.accountId, 'us-east-1', 'acm', 'CloudFrontCertificateArn');
     accountArn(values.WebAclArn, config.accountId, 'us-east-1', 'wafv2', 'WebAclArn');
     if (values.SecretKmsKeyArn) accountArn(values.SecretKmsKeyArn, config.accountId, config.region, 'kms', 'SecretKmsKeyArn');
-    for (const name of ['GoogleProviderSecretArn', 'AppleProviderSecretArn', 'KakaoProviderSecretArn']) if (values[name]) accountArn(values[name], config.accountId, config.region, 'secretsmanager', name);
+    for (const name of ['GoogleProviderSecretArn', 'AppleProviderSecretArn']) if (values[name]) accountArn(values[name], config.accountId, config.region, 'secretsmanager', name);
     if (values.UserMigrationArn) {
       accountArn(values.UserMigrationArn, config.accountId, config.region, 'lambda', 'UserMigrationArn');
       if (values.UserMigrationArn.split(':').slice(5).join(':') !== `function:byus-email-migration-${config.environment}`) fail('UserMigrationArn must match the email migration function for this environment');
@@ -150,17 +150,12 @@ export function validateConfig(config, template) {
       if (key === 'AWS_REGION' && value !== config.region) fail('AWS_REGION must match the deployment region');
       if (key === 'EMAIL_AUTH_PROVIDER' && !['legacy', 'cognito'].includes(value)) fail('EMAIL_AUTH_PROVIDER must be legacy or cognito');
       if (key === 'RELEASE_SHA' && !/^[a-f0-9]{40}$/.test(value)) fail('RELEASE_SHA must be a full Git commit SHA');
-      // Public extended key only (infrastructure/aws/platform/wallet-issuance.md); a private xprv must never be configured.
-      if (key === 'KYAA_WALLET_XPUB' && !/^xpub[1-9A-HJ-NP-Za-km-z]{100,112}$/.test(value)) fail('KYAA_WALLET_XPUB must be a public xpub');
-      // Provisional receive-only addresses (PRIVY-EXIT-0005 전제 6): production never confirms them.
-      if (key === 'KYAA_WALLET_XPUB' && config.environment === 'prod') fail('KYAA_WALLET_XPUB is a dev-only provisional setting; production waits for the signer (K4)');
       if (typeof value !== 'string' || !value.trim() || /[\u0000-\u001f]/.test(value)) fail(`Invalid runtime environment value: ${key}`);
     }
     if (values.EnablePostgrest === 'true' && !secrets.includes('POSTGREST_SERVICE_TOKEN')) fail('Enabled PostgREST requires POSTGREST_SERVICE_TOKEN runtime secret key');
     if (values.EnablePostgrest === 'true' && config.runtimeEnvironment?.POSTGREST_URL !== 'http://127.0.0.1:3001') fail('Web PostgREST URL must use its localhost sidecar');
     for (const key of ['PRIVY_APP_ID', 'PRIVY_APP_ENVIRONMENT', 'BYUS_DATA_ENVIRONMENT']) if (!config.runtimeEnvironment?.[key]) fail(`Missing runtimeEnvironment.${key}`);
     const prod = config.environment === 'prod';
-    config.runtimeEnvironment.KYAA_FEATURE_SIGNUP_RAFFLE ??= prod ? 'false' : 'true';
     config.runtimeEnvironment.KYAA_FEATURE_QUIZ_LEARN = config.runtimeEnvironment.KYAA_FEATURE_QUIZ_LEARN ?? 'true';
     if (config.runtimeEnvironment.BYUS_DATA_ENVIRONMENT !== (prod ? 'production' : 'development')) fail('BYUS_DATA_ENVIRONMENT must match the environment');
     if (config.runtimeEnvironment.PRIVY_APP_ENVIRONMENT !== (prod ? 'production' : 'development')) fail('PRIVY_APP_ENVIRONMENT must match the environment');

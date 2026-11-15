@@ -1,0 +1,15 @@
+{
+  "source": "https://kyaa.io/api/celebrities/elina/media?locale=ko",
+  "method": "public unauthenticated browser fetch; HTTP 200",
+  "observedDate": "2026-11-11",
+  "items": [
+    {"href":"https://www.tiktok.com/@elina_karimovaa/video/7696850953064189185","image":null},
+    {"href":"https://www.tiktok.com/@elina_karimovaa/video/7698000173129141512","image":null},
+    {"href":"https://www.tiktok.com/@elina_karimovaa/video/7698672088286006536","image":null},
+    {"href":"https://www.tiktok.com/@elina_karimovaa/video/7698793010791845138","image":null},
+    {"href":"https://www.tiktok.com/@elina_karimovaa/video/7699048237323275527","image":null},
+    {"href":"https://www.tiktok.com/@elina_karimovaa/video/7702746179012005138","image":null},
+    {"href":"https://www.tiktok.com/@elina_karimovaa/video/7702764355347090689","image":null},
+    {"href":"https://www.tiktok.com/@elina_karimovaa/video/7702792847178632456","image":null}
+  ]
+}

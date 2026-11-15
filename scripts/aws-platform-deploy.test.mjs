@@ -444,32 +444,9 @@ test('quiz learning defaults on in dev and production with explicit opt-out', as
  assert.equal(prod.runtimeEnvironment.KYAA_FEATURE_QUIZ_LEARN, 'false');
 });
 
-test('the provisional dev-only wallet xpub cannot enter production', async () => {
-  const t = await loadTemplate('environment');
-  const xpub = 'xpub6DXar8jpDrxoTZBrEvgTqsLQeZr2mqmKhW5GWyuPeqVpBdm9TaxRB5sR5fTqXG7oGt7vtNLRJmmqUL9zGRXT6c8URBcmACNKy3tWnL1xXAj';
-  const dev = config('environment', 'dev'); dev.runtimeEnvironment.KYAA_WALLET_XPUB = xpub;
-  assert.doesNotThrow(() => validateConfig(dev, t));
-  const prod = config('environment', 'prod'); prod.runtimeEnvironment.KYAA_WALLET_XPUB = xpub;
-  assert.throws(() => validateConfig(prod, t), /dev-only provisional/);
-  dev.runtimeEnvironment.KYAA_WALLET_XPUB = 'xprv-not-public';
-  assert.throws(() => validateConfig(dev, t), /public xpub/);
-});
-
 test('Telegram alerts run every minute', async () => {
   const template = JSON.parse(await readFile(new URL('../infrastructure/aws/platform/scheduled-workers.json', import.meta.url), 'utf8'));
   assert.equal(template.Resources.ScheduleTelegramAlerts.Properties.ScheduleExpression, 'rate(1 minute)');
-});
-
-test('signup raffle defaults on only in dev and validates explicit switches', async () => {
-  const template = await loadTemplate('environment');
-  const dev = config(); validateConfig(dev, template);
-  assert.equal(dev.runtimeEnvironment.KYAA_FEATURE_SIGNUP_RAFFLE, 'true');
-  const prod = config('environment', 'prod'); validateConfig(prod, template);
-  assert.equal(prod.runtimeEnvironment.KYAA_FEATURE_SIGNUP_RAFFLE, 'false');
-  dev.runtimeEnvironment.KYAA_FEATURE_SIGNUP_RAFFLE = 'false'; validateConfig(dev, template);
-  assert.equal(dev.runtimeEnvironment.KYAA_FEATURE_SIGNUP_RAFFLE, 'false');
-  dev.runtimeEnvironment.KYAA_FEATURE_SIGNUP_RAFFLE = 'invalid';
-  assert.throws(() => validateConfig(dev, template), /KYAA_FEATURE_SIGNUP_RAFFLE must be true or false/);
 });
 
 

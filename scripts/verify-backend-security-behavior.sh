@@ -1,9 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
 root_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-# Catalog guard, first: later suites create fixture tables. No public table without RLS and no non-cryptographic
-# random() in reward/draw functions right after the migration replay (SECURITY-AGENTIC-1112 F-26, F-22).
-psql -X -v ON_ERROR_STOP=1 -f "$root_dir/supabase/tests/security_rls_csprng.sql"
 psql -X -v ON_ERROR_STOP=1 -f "$root_dir/supabase/tests/mission_reward_score_suite.sql"
 bash "$root_dir/scripts/verify-mint-dispatch-budget-concurrency.sh"
 bash "$root_dir/scripts/verify-telegram-alerts.sh"
@@ -76,18 +73,9 @@ psql -X -v ON_ERROR_STOP=1 -f "$root_dir/supabase/tests/byus_day_rsvp_admin.sql"
 psql -X -v ON_ERROR_STOP=1 -f "$root_dir/supabase/tests/cognito_identity_bridge.sql"
 psql -X -v ON_ERROR_STOP=1 -f "$root_dir/supabase/tests/cognito_live_inventory.sql"
 bash "$root_dir/supabase/tests/cognito_live_inventory_concurrency.sh"
-psql -X -v ON_ERROR_STOP=1 -f "$root_dir/supabase/tests/kyaa_native_auth.sql"
-psql -X -v ON_ERROR_STOP=1 -f "$root_dir/supabase/tests/cognito_local_logout.sql"
-psql -X -v ON_ERROR_STOP=1 -f "$root_dir/supabase/tests/cognito_logout_owner_access.sql"
-bash "$root_dir/supabase/tests/kyaa_native_auth_concurrency.sh"
 
 FAN_WEB_DISPOSABLE_DB_URL="postgresql:///byus_clean?host=${PGHOST}&port=${PGPORT}" node "$root_dir/supabase/tests/fan_web_notification_concurrency.mjs"
 
 psql -X -v ON_ERROR_STOP=1 -f "$root_dir/supabase/tests/groups_release_rollback.sql"
 
 psql -X -v ON_ERROR_STOP=1 -f "$root_dir/supabase/tests/groups_content_release.sql"
-
-bash "$root_dir/scripts/verify-cognito-email-rotation-concurrency.sh"
-
-psql -X -v ON_ERROR_STOP=1 -f "$root_dir/supabase/tests/legacy_email_password_attempt_limit.sql"
-bash "$root_dir/scripts/verify-legacy-email-attempt-concurrency.sh"

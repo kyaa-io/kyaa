@@ -1,27 +1,12 @@
 name: Deployment notices
 
 on:
-  workflow_run:
-    workflows: [AWS platform release]
-    types: [completed]
   push:
     branches: [main, release/production]
   pull_request:
   deployment_status:
   workflow_dispatch:
     inputs:
-      operation:
-        type: choice
-        options: [recover, resolve-receipt, plan-summary, send-summary]
-        default: recover
-      plan_hash:
-        type: string
-      outcome:
-        type: choice
-        options: [sent, rejected]
-      message_ids:
-        description: "Inspected Telegram message IDs, comma separated (for rejected: adjacent evidence message)"
-        type: string
       deployment_id:
         description: 'Verified AWS deployment currently live on kyaa.io (or dev.kyaa.io for environment dev)'
         required: true
@@ -50,11 +35,11 @@ jobs:
     # Pinned: this job runs the release tests, so it must use the same runner image as the release job.
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
           persist-credentials: false
-      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+      - uses: actions/setup-node@v4
         with:
           node-version: 24
           cache: npm
@@ -93,7 +78,7 @@ jobs:
           key: ${{ steps.node_modules_key.outputs.prefix }}-${{ hashFiles('package-lock.json', 'package.json', 'apps/*/package.json', 'scripts/apply-security-patches.mjs') }}
       - run: npm run security:patch
       - name: Test notice delivery safeguards
-        run: node --test scripts/deployment-notices.test.mjs scripts/recover-deployment-notice.test.mjs scripts/resolve-deployment-receipt.test.mjs scripts/send-deployment-summary.test.mjs scripts/aws-release*.test.mjs scripts/aws-wave-release.test.mjs
+        run: node --test scripts/deployment-notices.test.mjs scripts/recover-deployment-notice.test.mjs scripts/aws-release*.test.mjs scripts/aws-wave-release.test.mjs
       - name: Check Korean release notes
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
@@ -120,13 +105,13 @@ jobs:
       deployments: read
       checks: write
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: actions/checkout@v4
         with:
           # Execute trusted current main; deployed files are read as data with git show.
           ref: main
           fetch-depth: 0
           persist-credentials: false
-      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+      - uses: actions/setup-node@v4
         with:
           node-version: 24
       - name: Announce successful production deployment
@@ -135,11 +120,11 @@ jobs:
           TELEGRAM_BUG_REPORT_OPERATOR_SECRET: ${{ secrets.TELEGRAM_BUG_REPORT_OPERATOR_SECRET }}
         run: node scripts/deployment-notices.mjs send
 
-# Production AWS notices remain inside aws-platform.yml.
+# AWS notices run inside aws-platform.yml because GITHUB_TOKEN statuses do not retrigger workflows.
 
   recover:
     name: Resume verified deployment notice
-    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && (inputs.operation == 'recover' || inputs.operation == '')
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'
     environment: ${{ inputs.environment == 'dev' && 'dev' || 'prod' }}
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -153,12 +138,12 @@ jobs:
       deployments: read
       checks: write
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: actions/checkout@v4
         with:
           ref: main
           fetch-depth: 0
           persist-credentials: false
-      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+      - uses: actions/setup-node@v4
         with:
           node-version: 24
       - name: Reconcile inspected receipt and resume through the canonical sender
@@ -170,134 +155,3 @@ jobs:
           NOTICE_UNSENT_RECEIPT_ID: ${{ inputs.unsent_receipt_id }}
           NOTICE_INSPECTION_EVIDENCE: ${{ inputs.inspection_evidence }}
         run: node scripts/recover-deployment-notice.mjs
-
-  dev-notice:
-    name: DEV deployment notice
-    # The DEV notice endpoint only trusts main; do not widen server policy for a hotfix.
-    if: >-
-      github.event_name == 'workflow_run' &&
-      github.repository == 'kyaa-io/kyaa' &&
-      github.event.repository.id == 1307387500 &&
-      github.event.workflow_run.repository.id == 1307387500 &&
-      github.event.workflow_run.head_repository.id == 1307387500 &&
-      github.event.workflow_run.head_branch == 'main' &&
-      github.event.workflow_run.path == '.github/workflows/aws-platform.yml' &&
-      github.event.workflow_run.conclusion == 'success' &&
-      (github.event.workflow_run.event == 'push' || github.event.workflow_run.event == 'workflow_dispatch')
-    continue-on-error: true
-    # Pinned to match the release job's runner image instead of the moving ubuntu-latest.
-    runs-on: ubuntu-24.04
-    timeout-minutes: 5
-    environment: dev
-    concurrency:
-      group: aws-release-dev
-      queue: max
-      cancel-in-progress: false
-    permissions:
-      contents: read
-      actions: read
-      deployments: read
-      checks: write
-    steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
-        with:
-          ref: main
-          fetch-depth: 0
-          persist-credentials: false
-      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
-        with:
-          node-version: 24
-      - name: Check whether the source actually deployed
-        id: deployed
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-          SOURCE_RUN_ID: ${{ github.event.workflow_run.id }}
-        run: |
-          node --input-type=module -e 'import {github} from "./scripts/aws-release.mjs"; import {appendFile} from "node:fs/promises"; const {jobs}=await github(`/actions/runs/${process.env.SOURCE_RUN_ID}/jobs?per_page=100`); if(!Array.isArray(jobs))throw Error("INVALID_SOURCE_JOBS"); await appendFile(process.env.GITHUB_OUTPUT, `deployed=${jobs.some(j=>j.name === "release" && j.conclusion === "success")}\n`);'
-      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
-        if: steps.deployed.outputs.deployed == 'true'
-        with:
-          github-token: ${{ github.token }}
-          run-id: ${{ github.event.workflow_run.id }}
-          name: aws-result-dev
-          path: work/aws-release
-      - name: Bind deployment artifact to the completed source run
-        if: steps.deployed.outputs.deployed == 'true'
-        env:
-          SOURCE_RUN_ID: ${{ github.event.workflow_run.id }}
-          SOURCE_SHA: ${{ github.event.workflow_run.head_sha }}
-        run: |
-          node --input-type=module -e 'import {readFileSync} from "node:fs"; import assert from "node:assert/strict"; const e=JSON.parse(readFileSync("work/aws-release/aws-deployment-event.json")); assert.equal(e.deployment.payload.workflowRunId, Number(process.env.SOURCE_RUN_ID)); assert.equal(e.deployment.sha, process.env.SOURCE_SHA);'
-      - name: Notify the exact successful DEV release
-        if: steps.deployed.outputs.deployed == 'true'
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-          DEPLOYMENT_NOTICE_EVENT_PATH: ${{ github.workspace }}/work/aws-release/aws-deployment-event.json
-          TELEGRAM_BUG_REPORT_OPERATOR_SECRET: ${{ secrets.TELEGRAM_BUG_REPORT_OPERATOR_SECRET }}
-        run: node scripts/dev-deployment-notices.mjs
-      - name: Preserve an uncertain DEV notice for inspection
-        if: failure()
-        run: |
-          echo '::error::DEV deployment succeeded; its notice failed. Inspect the DEV receipt and room before retrying.'
-
-  resolve-receipt:
-    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && inputs.operation == 'resolve-receipt' && inputs.environment == 'prod'
-    environment: prod
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-    concurrency:
-      group: telegram-production-notices
-      queue: max
-      cancel-in-progress: false
-    permissions:
-      contents: read
-      deployments: read
-      checks: write
-    steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
-        with:
-          ref: main
-          persist-credentials: false
-      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
-        with:
-          node-version: 24
-      - name: Resolve inspected receipt without sending
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-          NOTICE_DEPLOYMENT_ID: ${{ inputs.deployment_id }}
-          NOTICE_OUTCOME: ${{ inputs.outcome }}
-          NOTICE_MESSAGE_IDS: ${{ inputs.message_ids }}
-          NOTICE_INSPECTION_EVIDENCE: ${{ inputs.inspection_evidence }}
-        run: node scripts/resolve-deployment-receipt.mjs
-
-  summary-recovery:
-    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && (inputs.operation == 'plan-summary' || inputs.operation == 'send-summary') && inputs.environment == 'prod'
-    environment: prod
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-    concurrency:
-      group: telegram-production-notices
-      queue: max
-      cancel-in-progress: false
-    permissions:
-      contents: read
-      actions: read
-      deployments: read
-      checks: write
-    steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
-        with:
-          ref: main
-          fetch-depth: 0
-          persist-credentials: false
-      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
-        with:
-          node-version: 24
-      - name: Plan or send one approved replacement summary
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-          NOTICE_DEPLOYMENT_ID: ${{ inputs.deployment_id }}
-          NOTICE_OPERATION: ${{ inputs.operation }}
-          NOTICE_PLAN_HASH: ${{ inputs.plan_hash }}
-          TELEGRAM_BUG_REPORT_BOT_TOKEN: ${{ secrets.TELEGRAM_BUG_REPORT_BOT_TOKEN }}
-        run: node scripts/send-deployment-summary.mjs

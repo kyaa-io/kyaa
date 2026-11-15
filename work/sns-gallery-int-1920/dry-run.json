@@ -1,0 +1,20 @@
+{
+  "dryRun": true,
+  "items": [
+    {
+      "noticeId": "10000000-0000-4000-8000-000000000001",
+      "sourceUrl": "https://www.tiktok.com/@elina_karimovaa/video/7696850953064189185",
+      "status": "needs-source-cover",
+      "sourceHost": null,
+      "storagePathTemplate": "sns-ingest/10000000-0000-4000-8000-000000000001/<media-uuid>.webp",
+      "thumbnailPathTemplate": "sns-ingest/10000000-0000-4000-8000-000000000001/<media-uuid>-thumbnail.webp",
+      "steps": [
+        "Verify notice/source association",
+        "Use allowedImageUrl + existing fetchImage + normalizePublicImage/createContentThumbnail",
+        "Reserve metadata before existing mobile-media S3 upload",
+        "Confirm both S3 objects ready",
+        "Apply reviewed post SQL"
+      ]
+    }
+  ]
+}
