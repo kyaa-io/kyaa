@@ -79,11 +79,11 @@ it("keeps the 찐팬 100 tag on the creator row and counts page likes", async ()
   stub();
   render(<RankingBoard locale="ko" />);
   const row = (await inRow("엘리나")).closest("li")!;
-  expect(row.querySelector("[data-metric='likes']")).toHaveAttribute("aria-label", "좋아요 40");
+  expect(row.querySelector("[data-metric='likes']")).toHaveAttribute("aria-label", "별점수 40");
   expect(row.textContent).toContain("찐팬 100 도전 중");
 });
 
-it("a row is one line: movement beside the name, LIVE, the value; today's gain and the way to first place are left to the opened row", async () => {
+it("a row is one line: movement beside the name, LIVE, the value; today's gain and the way to first place are not drawn on the stars list", async () => {
   stubRows(
     [], [
       creatorRow(1, { name: "일등", likes: 12345, delta: 2, dayGain: 125, liveNow: true }),
@@ -97,7 +97,7 @@ it("a row is one line: movement beside the name, LIVE, the value; today's gain a
   const row = (name: string) => view.container.querySelector(`li[data-row='creator-rank']:has([title='${name}'])`) as HTMLElement;
   expect(within(row("일등")).getByLabelText("2계단 올라감")).toBeInTheDocument();
   expect(within(row("일등")).getByRole("img", { name: "일등 LIVE 중" })).toBeInTheDocument();
-  expect(within(row("일등")).getByLabelText("좋아요 12,345").textContent).toContain("1.2만");
+  expect(within(row("일등")).getByLabelText("별점수 12,345").textContent).toContain("1.2만");
   expect(within(row("이등")).getByLabelText("1계단 내려감")).toBeInTheDocument();
   expect([...view.container.querySelectorAll("[data-row]")].map((row) => row.textContent).join(" ")).not.toMatch(/오늘|1위까지|현재 1위|1위와 동점/);
   expect(row("삼등").querySelector("[data-delta-cell]")).toBeNull();
@@ -105,13 +105,14 @@ it("a row is one line: movement beside the name, LIVE, the value; today's gain a
   expect(row("일등").querySelector("[data-metric] [data-unit='likes'][data-icon='star']")).not.toBeNull();
   expect(row("일등").querySelector("[data-metric] img")).toBeNull();
   fireEvent.click(row("삼등").querySelector("button")!);
-  expect(row("삼등").querySelector("[data-rank-panel]")!.textContent).toContain("1위까지12,245");
+  // 대표 11/15 17:19: the stars list opens 찐팬하트·찐팬·SNS only; the way to first place is not repeated.
+  expect(row("삼등").querySelector("[data-rank-panel]")?.textContent ?? "").not.toContain("1위까지");
   expect(row("삼등").querySelector("[data-rank-panel]")!.textContent).not.toContain("오늘");
   expect(row("새얼굴").textContent).not.toContain("신규");
   expect(row("새얼굴").querySelector("[data-direction='new']")).toBeNull();
   expect(row("새얼굴").querySelector("[data-direction]")).toBeNull();
   fireEvent.click(row("새얼굴").querySelector("button")!);
-  expect(row("새얼굴").querySelector("[data-rank-panel]")!.textContent).toContain("오늘−2");
+  expect(row("새얼굴").querySelector("[data-rank-panel]")!.textContent).not.toContain("오늘");
 });
 
 it("opens one row at a time, the opened row's picture and name lead to the page, and the row closes with the same click", async () => {
@@ -262,7 +263,7 @@ it("period pills: 누적 is the default; 오늘 and 7일 read the period list, d
   await screen.findByText("하트팬1");
   expect(pill("오늘").getAttribute("aria-pressed")).toBe("true");
   expect(container.querySelector("[data-column='fans'] [data-metric-line]")!.textContent).toContain("오늘 모은 포인트");
-  expect(container.querySelector("[data-column='creators'] [data-metric-line]")!.textContent).toContain("오늘 받은 좋아요");
+  expect(container.querySelector("[data-column='creators'] [data-metric-line]")!.textContent).toContain("오늘 받은 팬페이지 별점수");
   expect(container.querySelector("[data-rank-highlight]")).toBeNull();
   expect(container.querySelector("li[data-placeholder]")).toBeNull();
   expect(container.textContent).not.toContain("오늘 +");
@@ -340,7 +341,7 @@ it("opens a fan row with 찐팬하트 and entry tickets, a creator row with 찐�
   fireEvent.click(empty.querySelector("button")!);
   expect(empty.querySelector("[data-rank-panel]")!.textContent).not.toMatch(/하트|응모권/);
   const creator = view.container.querySelector("li[data-row='creator-rank']:has([title='좋아요일등'])") as HTMLElement;
-  expect(creator.querySelector("[data-metric='likes']")).toHaveAttribute("aria-label", "좋아요 50");
+  expect(creator.querySelector("[data-metric='likes']")).toHaveAttribute("aria-label", "별점수 50");
   fireEvent.click(creator.querySelector("button")!);
   const creatorPanel = creator.querySelector("[data-rank-panel]")!.textContent!;
   // 대표 11/15 16:47: "찐팬하트 ♥ 77 · 찐팬 9명"; the page likes are a star, never a heart.

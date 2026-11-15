@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
@@ -27,10 +28,20 @@ describe("page head presence line (U1, N18)", () => {
 });
 
 describe("page head (U1)", () => {
-  it("draws no introduction line without source text, and puts the social icons in the name block", () => {
+  it("draws no introduction line without source text, and puts the social icons at the end of the fan-count line, not in the name block (대표 11/15 17:29)", () => {
     const { container } = render(<FanPageHeader image={{ src: null, alt: "" }} name="Hiroro" kind="fan" locale="ko" links={[{ kind: "tiktok", href: "https://www.tiktok.com/@x" }]} />);
     expect(container.querySelector("p")).toBeNull();
     const link = screen.getByRole("link", { name: "tiktok" });
-    expect(link.closest("[class*='headline']")).not.toBeNull();
+    expect(link.closest("[class*='headline']")).toBeNull();
+    expect(link.closest("[class*='stats']")).not.toBeNull();
+  });
+
+  it("keeps 더 보기·번역 보기 at the end of the introduction's last line, one text line tall, so the fan line does not move (대표 11/15 17:42)", () => {
+    render(<FanPageHeader image={{ src: null, alt: "" }} name="이퓨" kind="fan" locale="ko" description="소개" descriptionAction={<button type="button" data-translation-control="">번역 보기</button>} />);
+    const button = screen.getByRole("button", { name: "번역 보기" });
+    expect(button.parentElement?.parentElement?.querySelector(":scope > p")?.textContent).toBe("소개");
+    const css = readFileSync("components/fan-ui/fan-page-header.module.css", "utf8");
+    expect(css).toContain(".description { grid-area: description; display: flex; align-items: flex-end;");
+    expect(css).toContain("height: calc(var(--fan-description-size) * 1.5)");
   });
 });

@@ -407,7 +407,7 @@ const fanStats = (locale: AppLocale, row: HomeFanRankingRow, metric: RankingMetr
 ];
 
 /** Creators by likes (대표 11/15 16:47 예시 "찐팬하트 ♥ 29 · 찐팬 10명"): the 찐팬 hearts first, with the heart asset and the word 찐팬하트 (a page like is a star), then the 찐팬 head count, then all-time likes when the list counts a period.
- * No SNS follower count is stored anywhere (20261222140000), so no SNS cell is drawn; a made-up number never is. */
+ * The platforms' follower counts follow on their own line (RankRowPanel, confirmed counts only). */
 const creatorStats = (locale: AppLocale, row: HomeCreatorRankingRow, metric: RankingMetric, period: HomeRankingPeriod) => metric === "likes"
   ? [...statCell(locale, "hearts", rankingsText(locale, "rkPanelHearts"), row.hearts, "hearts").map((cell) => ({ ...cell, size: 20 as const })), ...(typeof row.fans === "number" && row.fans > 0 ? [{ key: "fans", label: rankingsText(locale, "rkPanelJjinfan"), value: rankingsText(locale, "rkPanelFanCount", [row.fans.toLocaleString(locale)]) }] : []), ...(period === "all" ? [] : statCell(locale, "totalLikes", rankingsText(locale, "rkPanelTotalLikes"), row.totalLikes, "likes"))] : [];
 

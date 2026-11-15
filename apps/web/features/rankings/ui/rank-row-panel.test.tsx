@@ -34,6 +34,14 @@ describe("RankRowPanel", () => {
     expect(document.querySelector("a, button")).toBeNull();
   });
 
+  it("creator on the stars list: only the totals the list passes and the platforms, no today, recent days or way to first place (대표 11/15 17:19)", () => {
+    render(<RankRowPanel id="p" kind="creator" row={creator({ dayGain: 125, weekGain: 310, platforms: [{ platform: "youtube", count: 200000 }] })} days={7} locale="ko" gap={4} unit="likes"
+      extra={[{ key: "hearts", label: "찐팬하트", value: "29", unit: "hearts" }, { key: "fans", label: "찐팬", value: "10명" }]} />);
+    expect([...document.querySelectorAll("dt")].map((dt) => dt.textContent)).toEqual(["찐팬하트", "찐팬"]);
+    expect(screen.queryByText("1위까지")).toBeNull();
+    expect(document.querySelectorAll("[data-rank-platforms] li")).toHaveLength(1);
+  });
+
   it("draws the cells the list passes after the built-in ones, and none when it passes none", () => {
     const view = render(<RankRowPanel id="p" kind="creator" row={creator({ dayGain: 125, weekGain: 310 })} days={7} locale="ko" gap={4} extra={[{ key: "sns", label: "SNS", value: "1.2만" }]} />);
     expect(stat("SNS")).toBe("1.2만");

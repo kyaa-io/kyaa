@@ -56,7 +56,9 @@ export function RankRowPanel(props: RankRowPanelProps) {
   if (props.kind === "creator" && isCount(props.row.fans) && props.unit !== "likes") cells.push(<Stat key="fans" label={rankingsText(locale, "rkPanelJjinfan")} value={rankingsText(locale, "rkPanelFanCount", [props.row.fans.toLocaleString(locale)])} />);
   if (props.kind === "fan" && props.row.favorite) cells.push(<Stat key="favorite" label={rankingsText(locale, "rkPanelFavorite")} value={props.row.favorite.name} />);
 
-  const stats = [...(props.extra ?? []).map((cell) => <Stat key={cell.key} label={cell.label} value={cell.value} unit={cell.unit} size={cell.size} icon={cell.icon} />), ...cells.slice(0, 3)];
+  // A creator on the stars list keeps only its totals and the platforms (대표 11/15 17:19): today, recent days and the way to first place repeat the row and the period tab.
+  const builtIn = props.kind === "creator" && props.unit === "likes" ? [] : cells.slice(0, 3);
+  const stats = [...(props.extra ?? []).map((cell) => <Stat key={cell.key} label={cell.label} value={cell.value} unit={cell.unit} size={cell.size} icon={cell.icon} />), ...builtIn];
   // Creator rows only: the platforms' follower counts on a line of their own under the cells (A1, 안 A). A platform with no confirmed count is not in the list; a confirmed 0 is drawn as 0.
   const platforms = props.kind === "creator" ? [...(props.row.platforms ?? [])].filter((item) => item.platform in PLATFORM_MARK).sort((a, b) => FOLLOWER_PLATFORMS.indexOf(a.platform) - FOLLOWER_PLATFORMS.indexOf(b.platform)) : [];
   if (!stats.length && !platforms.length) return null;
