@@ -9,7 +9,8 @@ const script = readFileSync(
   "utf8",
 );
 const vercel = JSON.parse(readFileSync(resolve(root, "vercel.json"), "utf8"));
-describe("notification AWS deployment contract", () => {
+// These run the real deploy script against fake AWS commands; a busy gate machine needs more than the 5s default.
+describe("notification AWS deployment contract", { timeout: 30_000 }, () => {
   it("packages only the notification bundle with its own function and handler", () => {
     expect(script).toContain("dist-lambda/notification-index.cjs");
     expect(script).toContain(

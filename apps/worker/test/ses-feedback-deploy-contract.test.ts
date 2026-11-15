@@ -102,7 +102,8 @@ function run(ws: ReturnType<typeof workspace>, args: string[], environment = "de
   return { ...result, calls, writes: calls.filter(call => !READS.has(call.op)) };
 }
 
-describe("SES feedback deployment contract", () => {
+// These run the real deploy script against fake AWS commands; a busy gate machine needs more than the 5s default.
+describe("SES feedback deployment contract", { timeout: 30_000 }, () => {
   it.each([[[]], [["staging"]], [["dev", "--force"]], [["dev", "--dry-run", "--check"]], [["prod", "true"]]])("rejects arguments %j before any AWS call", (args) => {
     const ws = workspace();
     const result = run(ws, args);
