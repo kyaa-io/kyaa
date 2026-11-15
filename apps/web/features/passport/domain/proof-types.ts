@@ -69,6 +69,13 @@ export const proofBoardSchema = z.object({ items: z.array(proofBoardItemSchema),
 export type ProofBoardItem = z.infer<typeof proofBoardItemSchema>;
 export type ProofBoard = z.infer<typeof proofBoardSchema>;
 
+// GET /api/pages/{pageId}/proofs/summary. Counts only: approved certifications of the page (legacy flow included, SNS posts left out),
+// members approved this KST month, and the proof kinds open for submission now. Nothing here identifies a member.
+export const proofSummarySchema = z.object({
+  approvedCount: z.number().int().min(0), monthFanCount: z.number().int().min(0), proofTypes: z.array(proofTypeSchema),
+}).strict();
+export type ProofSummary = z.infer<typeof proofSummarySchema>;
+
 // GET /api/me/proofs/missions?creator=slug: the submittable proof missions of a page. missionId feeds POST /api/certifications/{missionId}/uploads.
 export const proofMissionItemSchema = z.object({
   missionId: z.uuid(), proofType: proofTypeSchema, platform: z.string().nullable(),

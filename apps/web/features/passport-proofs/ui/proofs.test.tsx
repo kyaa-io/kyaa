@@ -6,7 +6,8 @@ import { failureFromCode, listMyProofs, listProofMissions, ProofRequestError, re
 import { averageHash, fitSize, rectFromPoints } from "./proof-image";
 import { proofsSource } from "./proofs-source";
 import { proofsText } from "./proofs-copy";
-import { JjinfanTitle, ProofBoardList, ProofHistory, ProofsScreen, PublicProofsTab } from "./proofs-screen";
+import { JjinfanTitle, ProofBoardList, ProofHistory, ProofsScreen } from "./proofs-screen";
+import { MyProofRows, ProofMethods, ProofPhotoFeed, ProofReward, PublicProofsTab } from "./proofs-tab";
 import { APP_LOCALES } from "@/i18n/locales";
 
 const authState = vi.hoisted(() => ({ authenticated: false, getAccessToken: async () => "session-token" as string | null }));
@@ -19,7 +20,7 @@ vi.mock("@/features/content-safety/ui/content-actions", () => ({
 
 vi.mock("@/features/dukjil/ui/dukjil-provider", () => ({
   DukjilProvider: ({ children }: { children: import("react").ReactNode }) => children,
-  useDukjil: () => ({ status: "on", catalog: { rules: { proof: { points: 173 } } } }),
+  useDukjil: () => ({ status: "on", catalog: { rules: { proof: { points: 173 }, subscription: { points: 31 } } } }),
 }));
 afterEach(cleanup);
 
@@ -169,6 +170,35 @@ describe("ProofsScreen mission entry", () => {
   });
 });
 
+describe("privacy cover step on the submit form (FB-N21)", () => {
+  const formFetch = () => vi.fn(async (input: RequestInfo | URL) => {
+    const url = String(input);
+    if (url.includes("/missions")) return Response.json({ items: [{ missionId: "55555555-5555-4555-8555-555555555555", proofType: "receipt", platform: null, submittable: true, unavailableReason: null, closesAt: "2027-01-01T00:00:00Z" }] });
+    if (url.includes("/posts")) return Response.json({ items: [], nextBefore: null });
+    return Response.json({ items: [] });
+  });
+  it("shows the personal-data notice, then asks to confirm the covers once a picture is picked; submit stays off until both boxes are ticked", async () => {
+    vi.stubGlobal("fetch", formFetch());
+    Object.assign(URL, { createObjectURL: () => "blob:proof", revokeObjectURL: () => {} });
+    authState.authenticated = true;
+    const { container } = render(<ProofsScreen locale="ko" slug="mina" />);
+    expect(await screen.findByText("이름·주소·카드번호 등 개인정보를 가려서 올려 주세요")).toBeTruthy();
+    expect(screen.queryByLabelText("개인정보를 모두 가렸어요 (필수)")).toBeNull();
+    const submit = () => screen.getByRole("button", { name: "제출" }) as HTMLButtonElement;
+    fireEvent.change(container.querySelector("input[type=file]")!, { target: { files: [new File(["x"], "r.png", { type: "image/png" })] } });
+    expect(container.querySelector("[data-proof-mask-frame]")).toBeTruthy();
+    expect(screen.getByText("가릴 부분을 끌어서 칠하세요")).toBeTruthy();
+    fireEvent.click(screen.getByLabelText("개인정보 처리에 동의합니다 (필수)"));
+    expect(submit().disabled).toBe(true);
+    fireEvent.click(screen.getByLabelText("개인정보를 모두 가렸어요 (필수)"));
+    expect(submit().disabled).toBe(false);
+    // Another picture means the covers have to be confirmed again.
+    fireEvent.change(container.querySelector("input[type=file]")!, { target: { files: [new File(["y"], "s.png", { type: "image/png" })] } });
+    expect((screen.getByLabelText("개인정보를 모두 가렸어요 (필수)") as HTMLInputElement).checked).toBe(false);
+    expect(submit().disabled).toBe(true);
+  });
+});
+
 describe("proof API calls carry the session token", () => {
   const ok = (body: unknown) => Response.json(body);
   const uuid = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
@@ -223,16 +253,81 @@ describe("proof API calls carry the session token", () => {
   });
 });
 
-it("photo feed hides prose and displays only the recorded award", () => {
-  render(<ProofBoardList locale="ko" photoFeed items={[{ postId: "33333333-3333-4333-8333-333333333333", body: "hidden prose", createdAt: "2026-11-01T00:00:00Z", proofType: "receipt", amountVisible: null, imageUrl: "/api/pages/mina/posts/33333333-3333-4333-8333-333333333333/image?t=abc", jjinfanRank: null, awardedPoints: 37 }]} />);
-  expect(screen.queryByText("hidden prose")).toBeNull();
-  expect(screen.getByText("+37P")).toBeTruthy();
-});
+const feedItem = (over: Record<string, unknown> = {}) => ({ postId: "33333333-3333-4333-8333-333333333333", body: "hidden prose", createdAt: "2026-11-01T00:00:00Z", proofType: "receipt", amountVisible: null, imageUrl: "/api/pages/mina/posts/33333333-3333-4333-8333-333333333333/image?t=abc", jjinfanRank: null, awardedPoints: 37, ...over }) as never;
 
-it("shows the actual policy reward next to the proof submission entry", async () => {
-  vi.stubGlobal("fetch", vi.fn().mockResolvedValue(new Response(JSON.stringify({ items: [], nextBefore: null }))));
-  render(<PublicProofsTab locale="ko" slug="mina" />);
-  expect(screen.getByText("173")).toBeTruthy();
-  expect(screen.getByRole("link", { name: "인증하기" }).getAttribute("href")).toBe("/c/mina/proofs?locale=ko");
-  await waitFor(() => expect(screen.getByText("아직 올라온 인증이 없어요")).toBeTruthy());
+describe("proof tab (FB-N21)", () => {
+  it("photo feed hides prose, shows only the recorded award and never a post without its picture", () => {
+    const { container } = render(<ProofPhotoFeed locale="ko" items={[feedItem(), feedItem({ postId: "44444444-4444-4444-8444-444444444444", imageUrl: null, awardedPoints: 99 })]} />);
+    expect(screen.queryByText("hidden prose")).toBeNull();
+    expect(screen.getByText("+37P")).toBeTruthy();
+    expect(screen.queryByText("+99P")).toBeNull();
+    expect(container.querySelectorAll("li")).toHaveLength(1);
+    expect(container.querySelector("a")?.getAttribute("href")).toContain("/image?t=abc");
+  });
+  it("photo feed without a recorded award draws no points, and an empty feed is one line", () => {
+    const { unmount } = render(<ProofPhotoFeed locale="ko" items={[feedItem({ awardedPoints: null })]} />);
+    expect(screen.queryByText(/P$/)).toBeNull();
+    unmount();
+    render(<ProofPhotoFeed locale="ko" items={[]} />);
+    expect(screen.getByText("아직 올라온 인증이 없어요")).toBeTruthy();
+  });
+  it("reward panel shows the policy points, the page counts above zero and one submit action", () => {
+    const { unmount } = render(<ProofReward locale="ko" slug="mina" points={173} summary={{ approvedCount: 17, monthFanCount: 0, proofTypes: [] }} />);
+    expect(screen.getByText("173")).toBeTruthy();
+    expect(screen.getByText("누적 인증")).toBeTruthy();
+    expect(screen.queryByText("이번 달 인증 팬")).toBeNull();
+    expect(screen.getAllByRole("link")).toHaveLength(1);
+    unmount();
+    render(<ProofReward locale="ko" slug="mina" points={173} summary={null} />);
+    expect(screen.queryByText("누적 인증")).toBeNull();
+  });
+  it("lists only the open proof kinds, each linking to its submit form with its own reward", () => {
+    render(<ProofMethods locale="ko" slug="mina" types={["sns_post", "membership"]} pointsOf={(type) => (type === "sns_post" ? 31 : 173)} />);
+    const links = screen.getAllByRole("link");
+    expect(links.map((link) => link.getAttribute("href"))).toEqual(["/c/mina/proofs?locale=ko&type=membership", "/c/mina/proofs?locale=ko&type=sns_post"]);
+    expect(screen.getByText("+173P")).toBeTruthy();
+    expect(screen.getByText("+31P")).toBeTruthy();
+    expect(screen.queryByText("영수증")).toBeNull();
+  });
+  it("my rows show state and day, the reason when one was given, and resubmit only for changes_requested", () => {
+    render(<MyProofRows locale="ko" slug="mina" items={[item({ status: "changes_requested", reason: "금액이 안 보여요" }), item({ submissionId: "22222222-2222-4222-8222-222222222222", status: "approved", proofType: "membership" })]} />);
+    expect(screen.getByText("보완 요청")).toBeTruthy();
+    expect(screen.getByText("금액이 안 보여요")).toBeTruthy();
+    expect(screen.getByText("승인")).toBeTruthy();
+    expect(screen.getAllByText("2026.11.01")).toHaveLength(2);
+    expect(screen.getAllByRole("link", { name: "다시 제출" })).toHaveLength(1);
+  });
+
+  const calls = (fetchMock: ReturnType<typeof vi.fn>) => fetchMock.mock.calls as unknown as Array<[string, RequestInit | undefined]>;
+  const tabFetch = (over: { summary?: unknown; mine?: unknown; board?: unknown } = {}) => vi.fn(async (input: RequestInfo | URL) => {
+    const url = String(input);
+    if (url.includes("/proofs/summary")) return Response.json(over.summary ?? { approvedCount: 8, monthFanCount: 3, proofTypes: ["membership", "receipt"] });
+    if (url.includes("/api/me/proofs")) return Response.json({ items: over.mine ?? [] });
+    return Response.json(over.board ?? { items: [], nextBefore: null });
+  });
+  it("signed out: reward, counts and methods are public; my rows are locked and no personal request is sent", async () => {
+    const fetchMock = tabFetch();
+    vi.stubGlobal("fetch", fetchMock);
+    authState.authenticated = false;
+    const { container } = render(<PublicProofsTab locale="ko" slug="mina" />);
+    expect(screen.getByText("173")).toBeTruthy();
+    expect(screen.getByRole("link", { name: "인증하기" }).getAttribute("href")).toBe("/c/mina/proofs?locale=ko");
+    await waitFor(() => expect(screen.getByText("누적 인증")).toBeTruthy());
+    expect(screen.getByText("멤버십")).toBeTruthy();
+    await waitFor(() => expect(screen.getByText("아직 올라온 인증이 없어요")).toBeTruthy());
+    expect(container.querySelector("[aria-hidden='true'] span")).toBeTruthy();
+    expect(calls(fetchMock).some(([url]) => url.includes("/api/me/proofs"))).toBe(false);
+    expect(calls(fetchMock).find(([url]) => url.includes("/proofs/summary"))?.[1]?.headers).toBeUndefined();
+  });
+  it("signed in: my submissions come with the session token; a page with nothing open hides the methods block", async () => {
+    const fetchMock = tabFetch({ summary: { approvedCount: 0, monthFanCount: 0, proofTypes: [] }, mine: [item({ status: "rejected", reason: "다른 사람 영수증" })] });
+    vi.stubGlobal("fetch", fetchMock);
+    authState.authenticated = true;
+    render(<PublicProofsTab locale="ko" slug="mina" />);
+    await waitFor(() => expect(screen.getByText("다른 사람 영수증")).toBeTruthy());
+    expect(screen.getByText("반려")).toBeTruthy();
+    await waitFor(() => expect(screen.queryByText("인증 방법")).toBeNull());
+    expect(screen.queryByText("누적 인증")).toBeNull();
+    expect((calls(fetchMock).find(([url]) => url.includes("/api/me/proofs?creator=mina"))?.[1]?.headers as Record<string, string>).Authorization).toBe("Bearer session-token");
+  });
 });

@@ -4,14 +4,14 @@ import { z } from "zod";
 import { AuthError } from "@/features/auth/domain/auth-errors";
 import { creatorSlugSchema } from "@/features/passport/domain/dukjil-types";
 import {
-  PROOF_BOARD_MAX, SNS_POST_PROOF, myProofsSchema, proofMissionListSchema, proofBoardSchema, proofCommandResultSchema, proofResubmitBodySchema, proofSubmitBodySchema,
+  PROOF_BOARD_MAX, SNS_POST_PROOF, myProofsSchema, proofMissionListSchema, proofBoardSchema, proofCommandResultSchema, proofResubmitBodySchema, proofSubmitBodySchema, proofSummarySchema,
   type ProofErrorCode,
 } from "@/features/passport/domain/proof-types";
 import { boundedJson, CertificationBodyError } from "@/server/certification/certification-http";
 import { containsPersonalInfo } from "./proof-pii";
 import { proofPostBody } from "./proof-post-body";
 import { resolveCreatorId } from "./creator-id";
-import type { ProofMissionRows } from "./proof-missions";
+import { kstMonthStart, type ProofMissionRows } from "./proof-missions";
 import type { DukjilDependencies } from "./routes";
 
 export type ProofDependencies = DukjilDependencies & {
@@ -163,6 +163,12 @@ export function createProofHandlers(deps: ProofDependencies) {
       });
       const nextBefore = rows.length >= query.limit ? (items[items.length - 1]?.createdAt as string | undefined) ?? null : null;
       return Response.json(checked(proofBoardSchema, { items, nextBefore }), { headers: authorization ? privateHeaders : { ...publicHeaders, vary: "Authorization" } });
+    }),
+    // Public counts for the proof tab: no author, image or text. Same for every viewer, so it is cached like the anonymous board.
+    summary: (_request: Request, idOrSlug: string) => run(async () => {
+      const celebrity = UUID.test(idOrSlug) ? idOrSlug : await creatorId(idOrSlug);
+      const raw = obj(await deps.rpc("read_proof_summary", { p_celebrity: celebrity, p_month_start: kstMonthStart() }));
+      return Response.json(checked(proofSummarySchema, { approvedCount: raw.approvedCount, monthFanCount: raw.monthFanCount, proofTypes: raw.proofTypes }), { headers: publicHeaders });
     }),
     // Public masked image of one board post. The post is looked up through read_proof_board again (consent, approval, visibility), then the
     // stored object is streamed; the object path, bucket and signed URLs are never part of any response.
