@@ -1,0 +1,5 @@
+{
+  "changes": ["모임 맨 위 '오늘의 팬페이지' 배너가 넓은 화면(PC)에서 두 장이 나란히 보이도록 바꿔, 오른쪽이 비어 잘려 보이던 모습을 없앴어요. 모바일과 태블릿은 지금처럼 한 장이에요. 내 컴퓨터에서 확인한 화면이에요."],
+  "path": "/community",
+  "images": ["release-notes/images/2026-11-15-groups-banner-two-up.png"]
+}
