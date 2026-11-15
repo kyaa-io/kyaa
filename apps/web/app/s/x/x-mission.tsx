@@ -8,7 +8,7 @@ import { FanHeading } from '@/components/fan-ui/fan-heading';
 import { FanText } from '@/components/fan-ui/fan-text';
 import { FanDisplay } from '@/components/fan-ui/fan-display';
 import { FanContentContainer } from '@/components/fan-shell/fan-content-container';
-import { Heart, Check } from '@/components/fan-ui/fan-icons';
+import { Star, Check } from '@/components/fan-ui/fan-icons';
 import { externalBrowserUrl } from '@/components/login-browser-policy';
 import { fanLoginHref } from '@/components/login-href';
 import { recordClientProductEvent, pageViewIdempotencyKey } from '@/features/analytics/client/product-event-client';
@@ -168,9 +168,9 @@ function MissionForOwner({ locale, auth, mission }: { locale: 'ko' | 'en'; auth:
       {done ? <Check className={styles.check} size={20} strokeWidth={1.5} aria-hidden="true" /> : <span className={styles.todo} aria-hidden="true" />}
      </li>; })}</ol>
      {error && <FanText as="p" role="body" aria-live="assertive">{error === 'load' ? t.error : t.saveError}</FanText>}
-     <div className={styles.cta}>{error === 'load' ? <FanAction onClick={() => setRetry(value => value + 1)} fullWidth>{t.retry}</FanAction> : !authenticated ? <FanAction href={loginHref} onClick={beginLogin} variant={primary} fullWidth>{t.login}</FanAction> : <FanAction onClick={like} variant={primary} fullWidth disabled={!ready || !loaded || completed || pending} loading={pending} leadingIcon={<Heart className={celebrate ? styles.pop : undefined} size={20} strokeWidth={1.5} fill={completed ? 'currentColor' : 'none'} />}>{completed ? t.done : t.like}</FanAction>}</div>
+     <div className={styles.cta}>{error === 'load' ? <FanAction onClick={() => setRetry(value => value + 1)} fullWidth>{t.retry}</FanAction> : !authenticated ? <FanAction href={loginHref} onClick={beginLogin} variant={primary} fullWidth>{t.login}</FanAction> : <FanAction onClick={like} variant={primary} fullWidth disabled={!ready || !loaded || completed || pending} loading={pending} leadingIcon={<Star className={celebrate ? styles.pop : undefined} size={20} strokeWidth={1.5} fill={completed ? 'currentColor' : 'none'} />}>{completed ? t.done : t.like}</FanAction>}</div>
      <div className={styles.result} role="status" aria-live="polite" data-celebrate={celebrate ? '' : undefined}>
-      {count !== undefined && <FanDisplay role="caption" as="p" className={styles.count}><Heart size={16} strokeWidth={1.5} aria-hidden="true" />{t.count} · {new Intl.NumberFormat(locale).format(count)}</FanDisplay>}
+      {count !== undefined && <FanDisplay role="caption" as="p" className={styles.count}><Star size={16} strokeWidth={1.5} aria-hidden="true" />{t.count} · {new Intl.NumberFormat(locale).format(count)}</FanDisplay>}
      </div>
     </section>
    </div>

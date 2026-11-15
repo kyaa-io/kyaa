@@ -16,7 +16,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { AuthIntentLink } from "../../../components/auth-intent-link";
 import { consumeAuthIntent, readAuthIntent } from "../../../components/auth-intent";
 import { notifyFanActivityUpdated, subscribeFanActivityUpdates } from "../../../components/fan-ui/fan-activity-updates";
-import { ArrowRight, Heart } from "../../../components/icons";
+import { ArrowRight } from "../../../components/icons";
+import { Star } from "../../../components/fan-ui/fan-icons";
 import { reactionResultSchema, type ReactionResult } from "../domain/reaction";
 import styles from "./reaction-action.module.css";
 import { AccessibleOverlay } from "@/components/ui/overlay/accessible-overlay";
@@ -181,12 +182,12 @@ function ReactionActionForOwner({ slug, locale, variant, showRewardDialog, ready
   const sectionClass = variant === "compact" ? styles.compact : variant === "header" ? styles.pill : styles.card;
   const sectionLabel = variant === "compact" || variant === "header" ? t.title : undefined;
   return <section className={sectionClass} id="first-reaction" aria-label={sectionLabel} aria-labelledby={variant === "card" ? "first-reaction-title" : undefined} data-reaction-complete={actionState === "done" ? "true" : undefined}>
-    {variant === "card" && <><span className={styles.icon} aria-hidden="true"><Heart /></span>
+    {variant === "card" && <><span className={styles.icon} aria-hidden="true"><Star strokeWidth={1.5} /></span>
     <div className={styles.copy}><h2 id="first-reaction-title">{t.title}</h2><span>{t.body}</span></div></>}
-    {!ready ? <button disabled><Heart />{t.working}</button>
-      : !authenticated ? <AuthIntentLink focusKey="first-reaction" locale={locale} input={{ sourcePath: creatorHomeHref(slug), sourceQuery: `?locale=${locale}`, actionType: "CREATE_REACTION", targetType: "celebrity", targetId: slug, returnAnchor: "#first-reaction" }}><Heart />{t.action}<ArrowRight /></AuthIntentLink>
-      : checkState === "error" ? <button type="button" onClick={() => void readExisting()}><Heart />{t.retry}<ArrowRight /></button>
-      : <button type="button" onClick={() => void postReaction()} disabled={checking || actionState === "working" || actionState === "done"}><Heart />{checking ? t.checking : actionState === "working" ? t.working : actionState === "done" ? (variant !== "card" && locale === "ko" ? "좋아요 완료" : t.done) : t.action}<ArrowRight /></button>}
+    {!ready ? <button disabled><Star strokeWidth={1.5} />{t.working}</button>
+      : !authenticated ? <AuthIntentLink focusKey="first-reaction" locale={locale} input={{ sourcePath: creatorHomeHref(slug), sourceQuery: `?locale=${locale}`, actionType: "CREATE_REACTION", targetType: "celebrity", targetId: slug, returnAnchor: "#first-reaction" }}><Star strokeWidth={1.5} />{t.action}<ArrowRight /></AuthIntentLink>
+      : checkState === "error" ? <button type="button" onClick={() => void readExisting()}><Star strokeWidth={1.5} />{t.retry}<ArrowRight /></button>
+      : <button type="button" onClick={() => void postReaction()} disabled={checking || actionState === "working" || actionState === "done"}><Star strokeWidth={1.5} />{checking ? t.checking : actionState === "working" ? t.working : actionState === "done" ? (variant !== "card" && locale === "ko" ? "좋아요 완료" : t.done) : t.action}<ArrowRight /></button>}
     {!showRewardDialog && <span role="status">{actionState === "done" ? t.done : ""}</span>}
     {checkState === "error" ? <p role="alert" className={styles.error}>{t.statusError}</p> : null}
     {actionState === "error" && checkState !== "error" ? <p role="alert" className={styles.error}>{t.error}</p> : null}
