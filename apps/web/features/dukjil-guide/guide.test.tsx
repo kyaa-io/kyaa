@@ -171,17 +171,18 @@ describe("dukjil guide figures match /api/dukjil/catalog", () => {
       expect(html).not.toMatch(/\d+P/);
     }
   });
-  it("shows the heart, ranking and challenge figures from the catalog and shared constants", async () => {
+  it("shows what a full mission book page and the points become, from the catalog and shared constants", async () => {
     const model = buildGuideModel(await fetchCatalog(rawPolicy()));
     const ko = renderToStaticMarkup(<DukjilGuideContent locale="ko" model={model} />);
-    expect(ko).toContain("덕질 기록 한 장의 5칸을 모두 채우고 받으면 하트 1개가 쌓여요.");
-    expect(ko).toContain(`찐팬 ${JJINFAN_CHALLENGE_TARGET}명`);
+    expect(ko).toContain("5칸을 다 채우면 찐팬 하트 1개를 받아요.");
+    expect(ko).toContain("5칸을 다 채우고 받기를 누르면 쌓여요. 하트가 1개 이상이면 찐팬이에요.");
     expect(ko).toContain('href="/rankings?locale=ko"');
+    // The challenge is behind its own flag on /guide/jjinfan; the mission book guide does not promise it.
+    expect(ko).not.toContain(`찐팬 ${JJINFAN_CHALLENGE_TARGET}명`);
     for (const locale of APP_LOCALES) {
       const html = renderToStaticMarkup(<DukjilGuideContent locale={locale} model={model} />);
       expect(html).toContain('id="dukjil-heart"');
-      expect(html).toContain('id="dukjil-rank"');
-      expect(html).toContain(`${JJINFAN_CHALLENGE_TARGET}`);
+      expect(html).toContain('id="dukjil-exchange"');
       expect(html).not.toMatch(/\{\d\}/);
     }
   });
@@ -191,7 +192,7 @@ describe("dukjil guide figures match /api/dukjil/catalog", () => {
     (raw.missionBook.pages[0].slots as Array<Record<string, unknown>>).push({ slot: 6, action: "comment" });
     const model = buildGuideModel(await fetchCatalog(raw));
     expect(model?.slots).toHaveLength(6);
-    expect(renderToStaticMarkup(<DukjilGuideContent locale="ko" model={model} />)).toContain("6칸을 모두 채우고");
+    expect(renderToStaticMarkup(<DukjilGuideContent locale="ko" model={model} />)).toContain("6칸을 다 채우면");
     const jj = renderToStaticMarkup(<JjinfanGuideContent locale="ko" model={model} />);
     expect(jj).toContain("25P");
     expect(jj).toContain("35P");
@@ -217,8 +218,10 @@ describe("dukjil guide figures match /api/dukjil/catalog", () => {
     expect(jj).toContain("덕질 기록 6/9");
     expect(jj).not.toContain("카야 덕질 기록");
     const dk = cta("dukjil");
-    expect(dk).toContain("오늘의 덕질 시작하기");
-    expect(dk).toContain('href="/kyaa-star?locale=ko"');
+    // The mission book guide leads a member to their own mission book, with the same progress line.
+    expect(dk).toContain("내 덕질 기록 보기");
+    expect(dk).toContain(`/passports/${id}?locale=ko#mission-book`);
+    expect(dk).toContain("덕질 기록 6/9");
     viewerState.current = { status: "member", creator: { slug: "kyaa-star", name: "카야", passportId: id }, progress: null };
     expect(cta("jjinfan")).not.toContain("덕질 기록 6/9");
     viewerState.current = { status: "guest" };
@@ -325,19 +328,25 @@ describe("dukjil guide figures match /api/dukjil/catalog", () => {
     }
   });
 
-  it("builds /guide/dukjil with figures from the catalog, the wallet exchange rate and a closing action", async () => {
+  it("builds /guide/dukjil as the mission book: hero picture, the real slot page, rewards, the points table and a closing action", async () => {
     viewerState.current = { status: "guest" };
     const model = buildGuideModel(await fetchCatalog(rawPolicy()));
     const ko = renderToStaticMarkup(<DukjilGuideContent locale="ko" model={model} />);
+    expect(ko).toContain("<h1");
+    expect(ko).toContain("덕질미션북");
     expect(ko).toContain(`${GROUP_WALLET_POINT_COST}P가 모이면 응모권 1장으로 바꿀 수 있어요. 바꿀 때 광고를 봐요.`);
     expect(ko).toContain("덕질 7가지로 포인트를 모아요");
-    for (const name of ["dukjil-head", "step-coin", "step-ticket"]) expect(existsSync(join(process.cwd(), "public/images/home-banners/261107", `${name}.webp`)), name).toBe(true);
+    expect(ko).toContain("5번 칸은 덕후인증으로 채워요.");
+    expect(ko).toContain("missionbook-v2-wide.webp");
+    for (const name of ["missionbook-v2-wide", "missionbook-v2-square"]) expect(existsSync(join(process.cwd(), "public/images/guide", `${name}.webp`)), name).toBe(true);
     for (const locale of APP_LOCALES) {
       const html = renderToStaticMarkup(<DukjilGuideContent locale={locale} model={model} />);
       expect(html).not.toMatch(/dkg[A-Z]|\{\d\}/);
-      expect(new Set(html.match(/step-[a-z]+\.webp/g)).size).toBe(5);
+      expect(html.match(/<h1/g)).toHaveLength(1);
+      expect(html).not.toMatch(/step-[a-z]+\.webp/);
       expect(html).toContain(`${GROUP_WALLET_POINT_COST}P`);
       expect(html.match(/data-guide-cta=/g)).toHaveLength(2);
     }
   });
+
 });

@@ -387,7 +387,7 @@ describe("streamed Home sections", () => {
     const home = pendingHome();
     let view!: ReturnType<typeof render>;
     await act(async () => { view = render(<StreamingGuestHome {...home} locale="ko" />); });
-    expect(view.container.querySelector("[data-managed-home-banner]")).toHaveTextContent("덕질하는 법");
+    expect(view.container.querySelector("[data-managed-home-banner]")).toHaveTextContent("덕질미션북");
     expect([...view.container.querySelectorAll("[data-managed-home-banner]")].slice(0, 3).map(el => el.getAttribute("data-managed-home-banner"))).toEqual([missionbook, xEvent, gggi]);
     expect(screen.queryByRole("link", { name: "엘리나와 함께 뱅크시 전시 보러 가요" })).not.toBeInTheDocument();
     await act(async () => { home.pending.celebrities.resolve(celebrities); home.pending.homeSlots.resolve({}); });
@@ -469,7 +469,7 @@ describe("streamed Home sections", () => {
       home.pending.homeSlots.resolve({});
       if (failed !== "elinaRaffles") home.pending.elinaRaffles.resolve({ raffles: elinaRaffles });
     });
-    expect(view.container.querySelector("[data-managed-home-banner]")).toHaveTextContent("덕질하는 법");
+    expect(view.container.querySelector("[data-managed-home-banner]")).toHaveTextContent("덕질미션북");
     expect(view.container.querySelector(`[data-managed-home-banner="${gggi}"]`)).toHaveTextContent("GGGI");
     if (failed === "elinaRaffles") expect(screen.queryByRole("link", { name: "엘리나와 함께 뱅크시 전시 보러 가요", hidden: true })).not.toBeInTheDocument();
     expect(screen.getAllByRole("alert", { hidden: true }).length).toBeGreaterThan(0);

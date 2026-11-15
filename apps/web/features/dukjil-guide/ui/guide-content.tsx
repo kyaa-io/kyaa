@@ -6,7 +6,6 @@ import type { ReactNode } from "react";
 
 import type { AppLocale } from "@/i18n/locales";
 import type { GuideActivity, GuideModel, GuideSlot } from "../domain/guide-model";
-import { JJINFAN_CHALLENGE_TARGET } from "@/features/rankings/domain/types";
 import { rankingsText } from "@/features/rankings/ui/rankings-copy";
 import { proofsText, type ProofsCopyKey } from "@/features/passport-proofs/ui/proofs-copy";
 import { PROOF_TYPES } from "@/features/passport/domain/proof-types";
@@ -15,7 +14,11 @@ import { JjinfanChallengeDetail } from "@/features/rankings/ui/jjinfan-detail";
 import { GROUP_WALLET_POINT_COST } from "@/server/group-wallet/domain";
 import { activityLabel, guideDetailText, guideText, limitText, pointsText } from "./guide-copy";
 import styles from "./guide-content.module.css";
-import { DukjilStory } from "./dukjil-story";
+import { FanSectionHeader } from "@/components/fan-ui/fan-heading";
+import { FanSectionLink } from "@/components/fan-ui/fan-section-link";
+import { FanText } from "@/components/fan-ui/fan-text";
+import { DukjilProvider } from "@/features/dukjil/ui/dukjil-provider";
+import { GuestMissionBook } from "@/features/passport/ui/passport-mission-book";
 
 // Hearts per claimed mission book page: the claim result in dukjil-types is `hearts: z.literal(1)`, so this mirrors that contract.
 export const HEARTS_PER_PAGE = 1;
@@ -38,9 +41,13 @@ function PointsCell({ locale, activity }: { locale: AppLocale; activity: GuideAc
 
 const ART = "/images/home-banners/261107";
 type StepArt = "passport" | "stamp" | "calendar" | "coin" | "ticket" | "gift";
+type HeroArt = { src: string; width: number; height: number };
+const JJINFAN_HEAD: HeroArt = { src: `${ART}/jjinfan-head.webp`, width: 1672, height: 941 };
+/** 덕질미션북 picture, the same one the home banner uses (new file name per version so cached pages pick it up). */
+export const MISSIONBOOK_ART: HeroArt = { src: "/images/guide/missionbook-v2-wide.webp", width: 1536, height: 1024 };
 
 /** Hero: big title, the real condition, the main action and the approved header picture. */
-function GuideHero({ id, title, lead, head, actions, children }: { id: string; title: string; lead?: string; head: "jjinfan" | "dukjil"; actions: ReactNode; children?: ReactNode }) {
+function GuideHero({ id, title, lead, art, actions, children }: { id: string; title: string; lead?: string; art: HeroArt; actions: ReactNode; children?: ReactNode }) {
   return (
     <section className={styles.hero} aria-labelledby={id}>
       <div className={styles.heroCopy}>
@@ -50,7 +57,7 @@ function GuideHero({ id, title, lead, head, actions, children }: { id: string; t
         <div className={styles.heroActions}>{actions}</div>
       </div>
       <div className={styles.heroArt}>
-        <Image src={`${ART}/${head}-head.webp`} alt="" width={1672} height={941} priority sizes="(max-width: 1023px) calc(100vw - 32px), 560px" />
+        <Image src={art.src} alt="" width={art.width} height={art.height} priority sizes="(max-width: 1023px) calc(100vw - 32px), 560px" />
       </div>
     </section>
   );
@@ -102,9 +109,9 @@ function ActivityRow({ locale, activity }: { locale: AppLocale; activity: GuideA
   );
 }
 
-function ActivityRows({ locale, activities }: { locale: AppLocale; activities: readonly (GuideActivity | undefined)[] }) {
+function ActivityRows({ locale, activities, split = false }: { locale: AppLocale; activities: readonly (GuideActivity | undefined)[]; split?: boolean }) {
   const shown = activities.filter((activity): activity is GuideActivity => Boolean(activity));
-  return shown.length ? <ul className={styles.rules}>{shown.map((activity) => <ActivityRow key={activity.key} locale={locale} activity={activity} />)}</ul> : null;
+  return shown.length ? <ul className={split ? `${styles.rules} ${styles.rulesSplit}` : styles.rules}>{shown.map((activity) => <ActivityRow key={activity.key} locale={locale} activity={activity} />)}</ul> : null;
 }
 
 /** Mission book slots as a numbered board. */
@@ -133,7 +140,7 @@ function SlotBoard({ locale, model }: { locale: AppLocale; model: NonNullable<Gu
 function GuideFaq({ id, locale, items }: { id: string; locale: AppLocale; items: readonly { q: string; a: string }[] }) {
   return (
     <section className={styles.section} aria-labelledby={id}>
-      <h2 id={id} className={styles.faqTitle}>{guideText(locale, "dkgFaqTitle")}</h2>
+      <FanSectionHeader id={id} title={guideText(locale, "dkgFaqTitle")} />
       <ul className={styles.faq}>
         {items.map((item, index) => (
           <li key={item.q}>
@@ -253,7 +260,7 @@ export function JjinfanGuideContent({ locale, model, challenge = false }: { loca
     <>
       <GuideHero
         id="jjinfan-guide-title"
-        head="jjinfan"
+        art={JJINFAN_HEAD}
         title={guideText(locale, "dkgJjTitle")}
         lead={model ? guideDetailText(locale, "dkgJjLead", [model.slots.length]) : undefined}
         actions={<><GuideCta locale={locale} target="mission-book" returnPath="/guide/jjinfan" /><Link className={styles.secondary} href={localeHref("/guide/dukjil", locale)}>{guideText(locale, "dkgLinkDukjil")}</Link></>}
@@ -328,48 +335,54 @@ export function JjinfanGuideContent({ locale, model, challenge = false }: { loca
   );
 }
 
+/** 덕질미션북 (/guide/dukjil): what the book is, the real page of slots, what a full page and the points become, then every activity's points. */
 export function DukjilGuideContent({ locale, model }: { locale: AppLocale; model: GuideModel }) {
+  const proofSlot = model?.slots.find((slot) => slot.required);
   return (
     <>
-      <DukjilStory locale={locale} />
-
-      <details className={styles.dukjilDetails}><summary>{guideText(locale, "dkgDkTableTitle")}</summary>
-      {model ? <GuideFacts items={[
-        { value: model.activities.length, label: guideDetailText(locale, "dkgFactActivities") },
-        { value: model.slots.length, label: guideDetailText(locale, "dkgFactSlots") },
-        { value: HEARTS_PER_PAGE, label: guideDetailText(locale, "dkgFactHearts") },
-      ]} /> : null}
-
-      <GuideSection id="dukjil-table" no={1} art="calendar" title={guideText(locale, "dkgDkTableTitle")}>
-        {model && model.activities.length > 0 ? (
-          <ActivityRows locale={locale} activities={model.activities} />
-        ) : (
-          <Empty locale={locale} />
-        )}
-      </GuideSection>
+      <GuideHero
+        id="dukjil-guide-title"
+        art={MISSIONBOOK_ART}
+        title={guideDetailText(locale, "dkgMbTitle")}
+        lead={model ? guideDetailText(locale, "dkgMbLead", [model.slots.length, HEARTS_PER_PAGE]) : undefined}
+        actions={<><GuideCta locale={locale} target="mission-book" returnPath="/guide/dukjil" /><Link className={styles.secondary} href={localeHref("/guide/jjinfan", locale)}>{guideText(locale, "dkgLinkJjinfan")}</Link></>}
+      >
+        <GuideProgress locale={locale} />
+      </GuideHero>
 
       {model ? (
-        <GuideSection id="dukjil-stamp" no={2} art="stamp" title={guideText(locale, "dkgStampTitle")} lead={guideText(locale, "dkgStampLead", [model.slots.length])}>
-          <SlotBoard locale={locale} model={model} />
-        </GuideSection>
+        <section className={styles.bookSection} aria-labelledby="dukjil-book">
+          <div className={styles.stack}>
+            <FanSectionHeader id="dukjil-book" title={guideDetailText(locale, "dkgMbBookTitle", [model.slots.length])} description={proofSlot ? guideDetailText(locale, "dkgMbBookLead", [proofSlot.slot]) : undefined} />
+            <DukjilProvider locale={locale}><GuestMissionBook locale={locale} guide headingLevel={3} /></DukjilProvider>
+          </div>
+          <div className={styles.stack}>
+            <FanSectionHeader id="dukjil-reward" title={guideDetailText(locale, "dkgMbRewardTitle")} />
+            <ul className={styles.rewards} aria-labelledby="dukjil-reward">
+              <li id="dukjil-heart" data-row="guide-reward">
+                <img src="/images/dukjil-duo/glyph-heart-160.webp" alt="" width={56} height={56} />
+                <div>
+                  <FanText role="item" as="strong">{guideDetailText(locale, "dkgMbHeart", [HEARTS_PER_PAGE])}</FanText>
+                  <FanText role="body" as="p">{guideDetailText(locale, "dkgMbHeartDesc", [model.slots.length])}</FanText>
+                  <FanSectionLink href={localeHref("/rankings", locale)}>{rankingsText(locale, "rkTitle")}</FanSectionLink>
+                </div>
+              </li>
+              <li id="dukjil-exchange" data-row="guide-reward">
+                <img src="/images/dukjil-duo/glyph-ticket-160.webp" alt="" width={56} height={56} />
+                <div>
+                  <FanText role="item" as="strong">{guideDetailText(locale, "dkgMbTicket")}</FanText>
+                  <FanText role="body" as="p">{guideDetailText(locale, "dkgXchLead", [GROUP_WALLET_POINT_COST])}</FanText>
+                </div>
+              </li>
+            </ul>
+          </div>
+        </section>
       ) : null}
 
-      {model ? (
-        <GuideSection id="dukjil-heart" no={3} art="passport" title={guideText(locale, "dkgHeartTitle")} lead={guideText(locale, "dkgHeartLead", [model.slots.length, HEARTS_PER_PAGE])} />
-      ) : null}
-
-      {model ? (
-        <GuideSection id="dukjil-rank" no={4} art="coin" title={guideText(locale, "dkgRankTitle")} lead={guideText(locale, "dkgRankLead")}>
-          <Link className={styles.linkRow} href={localeHref("/rankings", locale)}>
-            <span>{guideText(locale, "dkgRankChallenge", [JJINFAN_CHALLENGE_TARGET])}</span>
-            <strong>{rankingsText(locale, "rkTitle")}<ChevronRight size={18} aria-hidden="true" /></strong>
-          </Link>
-        </GuideSection>
-      ) : null}
-
-      {model ? (
-        <GuideSection id="dukjil-exchange" no={5} art="ticket" title={guideDetailText(locale, "dkgXchTitle")} lead={guideDetailText(locale, "dkgXchLead", [GROUP_WALLET_POINT_COST])} />
-      ) : null}
+      <section className={styles.stack} aria-labelledby="dukjil-table">
+        <FanSectionHeader id="dukjil-table" title={guideText(locale, "dkgDkTableTitle")} />
+        {model && model.activities.length > 0 ? <ActivityRows locale={locale} activities={model.activities} split /> : <Empty locale={locale} />}
+      </section>
 
       {model ? (
         <GuideFaq id="dukjil-faq" locale={locale} items={[
@@ -378,10 +391,8 @@ export function DukjilGuideContent({ locale, model }: { locale: AppLocale; model
         ]} />
       ) : null}
 
-      </details>
-
       <GuideClosing title={model ? guideDetailText(locale, "dkgDkCloseTitle", [model.activities.length]) : guideText(locale, "dkgDkMetaTitle")}>
-        <GuideCta locale={locale} target="fan-page" returnPath="/guide/dukjil" />
+        <GuideCta locale={locale} target="mission-book" returnPath="/guide/dukjil" />
         <GuideFansLink locale={locale} />
       </GuideClosing>
     </>

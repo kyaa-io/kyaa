@@ -310,17 +310,20 @@ export function StackedStampPages({ stamps, locale }: { stamps: readonly { id: s
 }
 
 /** 비로그인 미션북. 공개 카탈로그의 9칸 구성을 빈 칸으로 보여 준다. 채운 칸 수·하트 같은 내 값은 내지 않는다. 정책이 꺼져 있으면 그리지 않는다. */
-export function GuestMissionBook({ locale, wide = false, headingLevel = 2 }: { locale: AppLocale; wide?: boolean; headingLevel?: 2 | 3 }) {
+/** `guide`: the 덕질미션북 guide shows the same page on its paper without the title, three slots a row, and links no slot (members read it too). */
+export function GuestMissionBook({ locale, wide = false, guide = false, headingLevel = 2 }: { locale: AppLocale; wide?: boolean; guide?: boolean; headingLevel?: 2 | 3 }) {
   const dukjil = useDukjil();
   const model = dukjil?.status === "on" && dukjil.catalog ? buildGuideModel(dukjil.catalog) : null;
   const Heading = headingLevel === 2 ? "h2" : "h3";
   if (!dukjil) return null;
   if (dukjil.status === "loading") return <section className={styles.book} aria-hidden="true"><div className={styles.skeleton}><i /></div></section>;
   if (!model || model.slots.length === 0) return null;
-  return <section id="mission-book" className={`${paper.palette} ${styles.book} ${wide ? styles.guestWide : ""}`} aria-labelledby="mission-book-title">
+  let slotHref: string | null = null;
+  if (!guide) slotHref = fanLoginHref(locale, `/passports?locale=${locale}`);
+  return <section id="mission-book" className={[paper.palette, styles.book, wide ? styles.guestWide : "", guide ? styles.guideBook : ""].join(" ")} aria-labelledby="mission-book-title">
     <div className={styles.head}><Heading id="mission-book-title">{dukjilText(locale, "missionBookTitle")}</Heading></div>
     <div className={styles.pages}><section className={styles.page} data-guest="true" aria-label={dukjilText(locale, "missionPage", [1])}>
-      <ol className={styles.slots}>{model.slots.map(slot => <Slot key={slot.slot} locale={locale} href={fanLoginHref(locale, `/passports?locale=${locale}`)} slot={{ slotNo: slot.slot, kind: slot.action, state: "empty", stampId: null, clearedAt: null }} />)}</ol>
+      <ol className={styles.slots}>{model.slots.map(slot => <Slot key={slot.slot} locale={locale} href={slotHref} slot={{ slotNo: slot.slot, kind: slot.action, state: "empty", stampId: null, clearedAt: null }} />)}</ol>
     </section></div>
   </section>;
 }

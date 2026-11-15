@@ -57,6 +57,10 @@
   .guestWide .slots { grid-template-columns: repeat(5, minmax(0, 1fr)); }
 }
 
+/* 덕질미션북 안내: 제목은 안내 쪽이 달고, 종이 한 쪽에 3칸씩 세 줄. */
+.guideBook { margin-top: 0; }
+.guideBook .head { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+
 /* 칸 전체가 누르는 자리다(로그인: 설명 시트를 연다, 비로그인: 로그인으로 간다). */
 .slotLink { display: grid; min-width: 0; max-width: 100%; justify-items: center; gap: var(--space-1); margin: 0; padding: 0; border: 0; background: none; color: inherit; font: inherit; text-align: inherit; text-decoration: none; cursor: pointer; }
 .slotLink::after { position: absolute; inset: 0; border-radius: inherit; content: ""; }
