@@ -1,4 +1,4 @@
--- Disposable-database contract test for 20261228090200. Input: psql variable payloads = the contents of
+-- Disposable-database contract test for 20261228110000. Input: psql variable payloads = the contents of
 -- supabase/tests/fixtures/ses_feedback_worker_payloads.json, the real toSesFeedbackPayload output for AWS
 -- documentation examples (apps/worker/test/ses-feedback-db-contract.test.ts keeps the file equal to it).
 -- Run through supabase/tests/ses_feedback_worker_contract.sh. No provider calls; every row rolls back.

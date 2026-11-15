@@ -10,7 +10,7 @@
 -- * Soft bounces are counted by event time, not arrival: the count is the soft bounces after the
 --   latest Delivery for the same channel and address, so late or reordered events give the same state.
 -- Lock order follows finish_email_notification_send (delivery row, then attempt row).
--- Rollback: supabase/rollback/20261228090200_ses_feedback_worker_contract.sql
+-- Rollback: supabase/rollback/20261228110000_ses_feedback_worker_contract.sql
 begin;
 set local lock_timeout = '5s';
 

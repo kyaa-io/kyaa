@@ -1,4 +1,4 @@
--- Rollback of 20261228090200_ses_feedback_worker_contract.sql: record_ses_email_event back to the body of
+-- Rollback of 20261228110000_ses_feedback_worker_contract.sql: record_ses_email_event back to the body of
 -- 20261227220102 (input {snsMessageId, message}). Recorded events and channel health rows are kept.
 begin;
 set local lock_timeout = '5s';

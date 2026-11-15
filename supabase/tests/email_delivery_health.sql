@@ -32,7 +32,7 @@ begin
 end $$;
 
 -- SES event in the shape the SES feedback Lambda passes it (apps/worker/src/ses-feedback.ts toSesFeedbackPayload,
--- input contract of 20261228090200). p_extra uses the SES event's detail objects; events happen in call order.
+-- input contract of 20261228110000). p_extra uses the SES event's detail objects; events happen in call order.
 create function pg_temp.ev(p_sns text, p_type text, p_message text, p_delivery uuid, p_extra jsonb default '{}') returns jsonb
 language sql as $$
   select public.record_ses_email_event(jsonb_build_object(
