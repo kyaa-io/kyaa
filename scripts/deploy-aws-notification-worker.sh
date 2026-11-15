@@ -157,7 +157,7 @@ fi
 FUNCTION_ARN="$function_arn" TARGET_ID="$target_id" TARGET_ENVIRONMENT="$environment" node -e 'const input=JSON.stringify({source:"byus.notification-cron",environment:process.env.TARGET_ENVIRONMENT});process.stdout.write(JSON.stringify([{Id:process.env.TARGET_ID,Arn:process.env.FUNCTION_ARN,Input:input}]))' >"${package_dir}/event-target.json"
 aws events put-targets --profile "$profile" --region "$region" --rule "$rule_name" --targets "file://${package_dir}/event-target.json" >/dev/null
 if [[ "$environment" == "prod" ]]; then
-  for channel in Email BusinessInquiry Kakao TelegramAlerts TelegramCommands TelegramCertifications; do
+  for channel in Email BusinessInquiry TelegramAlerts TelegramCommands TelegramCertifications; do
     aws cloudwatch put-metric-alarm --profile "$profile" --region "$region" --alarm-name "${function_name}-${channel}-disabled" --namespace 'ByUs/Notifications' --metric-name Disabled --dimensions "Name=Environment,Value=prod" "Name=Channel,Value=${channel}" --statistic Maximum --period 300 --evaluation-periods 1 --datapoints-to-alarm 1 --threshold 1 --comparison-operator GreaterThanOrEqualToThreshold --treat-missing-data missing --alarm-actions "$alarm_topic_arn" --ok-actions "$alarm_topic_arn" --insufficient-data-actions "$alarm_topic_arn" >/dev/null
   done
 fi

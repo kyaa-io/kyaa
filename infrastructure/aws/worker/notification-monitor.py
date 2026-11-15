@@ -14,7 +14,7 @@ from botocore.exceptions import ClientError
 ACCOUNT = "996702758024"
 REGION = "ap-northeast-2"
 LOG_GROUP = "/aws/lambda/byus-notification-worker-prod"
-CHANNELS = ("Email", "BusinessInquiry", "Kakao", "TelegramAlerts", "TelegramCommands", "TelegramCertifications")
+CHANNELS = ("Email", "BusinessInquiry", "TelegramAlerts", "TelegramCommands", "TelegramCertifications")
 ALARMS = {f"byus-notification-worker-prod-{channel}-disabled" for channel in CHANNELS}
 ALARMS.add("byus-notification-worker-prod-monitor-test")
 # Service alarms: the two database alarms are exact names; the platform stack generates the suffix of the other six,

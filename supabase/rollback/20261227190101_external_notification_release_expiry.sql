@@ -186,4 +186,5 @@ returns jsonb language sql stable security definer set search_path='' as $$
     ) order by c.priority,c.kind,c.id) from public.fan_notification_channels c where c.app_user_id=p_app_user_id),'[]'::jsonb)
   )
 $$;
+drop function public.kakao_notification_delivery_enabled();
 commit;

@@ -139,13 +139,15 @@ it("grants production SES only to the current kyaa sender and keeps disabled ala
  const result = nativeDeploy("deploy-aws-notification-worker.sh", "prod", { dryRun: false });
  expect(result.status).toBe(0);
  const alarmCalls = result.calls.filter(call => call.args.includes("ByUs/Notifications"));
- expect(alarmCalls).toHaveLength(6);
+ expect(alarmCalls).toHaveLength(5);
+ expect(alarmCalls.some(call => call.args.includes("Name=Channel,Value=Kakao"))).toBe(false);
+ expect(readFileSync(resolve(root,"infrastructure/aws/worker/notification-monitor.json"),"utf8")).not.toContain("byus-notification-worker-prod-Kakao-disabled");
  for (const call of alarmCalls) {
   for (const flag of ["--alarm-actions", "--ok-actions", "--insufficient-data-actions"]) {
    expect(call.args[call.args.indexOf(flag) + 1]).toBe("arn:aws:sns:ap-northeast-2:996702758024:byus-prod-platform-AlarmTopic-fixture");
   }
  }
- for (const channel of ["Email", "BusinessInquiry", "Kakao", "TelegramAlerts", "TelegramCommands", "TelegramCertifications"]) {
+ for (const channel of ["Email", "BusinessInquiry", "TelegramAlerts", "TelegramCommands", "TelegramCertifications"]) {
   expect(alarmCalls.some(call => call.args.includes(`Name=Channel,Value=${channel}`))).toBe(true);
  }
  expect(result.calls.some(call => call.args.includes("byus-notification-worker-prod-ses-send"))).toBe(true);

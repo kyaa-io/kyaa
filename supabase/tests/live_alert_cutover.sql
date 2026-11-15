@@ -30,7 +30,10 @@ begin
   perform alert_safety_test.assert(not public.fan_notification_is_released(equal_n,ch),'exact cutoff excluded');
   other_n:=alert_safety_test.fresh_notification(outsider);
   perform alert_safety_test.assert(not public.fan_notification_is_released(other_n,ch),'test excludes other users');
+  -- Queue a Kakao fixture while enabled, then exercise the existing test-only claim gate.
+  if ch='kakao' then update public.fan_notification_delivery_control set mode='enabled',test_user_ids='{}' where channel=ch; end if;
   new_n:=alert_safety_test.fresh_notification(o);
+  if ch='kakao' then update public.fan_notification_delivery_control set mode='test',test_user_ids=array[o] where channel=ch; end if;
   perform alert_safety_test.assert(public.fan_notification_is_released(new_n,ch),'test allows fresh approved user');
   if ch='email' then
    select to_jsonb(q) into j from public.claim_email_notification_deliveries_safely('cutover-test',100,120) q where notification_id=new_n;
@@ -61,7 +64,10 @@ begin
   else
    perform alert_safety_test.assert(not public.begin_kakao_notification_send((j->>'id')::uuid,(j->>'attempt_token')::uuid,j->>'template_id',repeat('a',64)),'reactivated old Kakao begin denied');
   end if;
+  -- Queue a Kakao fixture while enabled, then exercise the existing test-only claim gate.
+  if ch='kakao' then update public.fan_notification_delivery_control set mode='enabled',test_user_ids='{}' where channel=ch; end if;
   new_n:=alert_safety_test.fresh_notification(o);
+  if ch='kakao' then update public.fan_notification_delivery_control set mode='test',test_user_ids=array[o] where channel=ch; end if;
   if ch='email' then
    select to_jsonb(q) into j from public.claim_email_notification_deliveries_safely('cutover-new',100,120) q where notification_id=new_n;
    perform alert_safety_test.assert(j is not null,'fresh Email claimed after reactivation');

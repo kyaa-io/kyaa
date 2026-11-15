@@ -73,5 +73,18 @@ begin
   n:=alert_safety_test.notification(owner_id,'live_reserved');
   perform alert_safety_test.assert(exists(select 1 from public.mobile_push_delivery_outbox where notification_id=n),'one switch restores enqueue');
 end $$;
+do $$ declare o uuid; n uuid; mode text; begin
+ foreach mode in array array['disabled','test','enabled'] loop
+  o:=alert_safety_test.owner('ko',true);
+  perform public.configure_fan_notification_delivery('kakao',mode,case when mode='test' then array[o] else '{}'::uuid[] end);
+  n:=alert_safety_test.notification(o);
+  perform alert_safety_test.assert(exists(select 1 from public.external_notification_delivery_outbox where notification_id=n and sequence=1 and channel=case when mode='enabled' then 'kakao' else 'email' end),'Kakao candidate mode '||mode);
+ end loop;
+ perform public.configure_fan_notification_delivery('kakao','disabled');
+ o:=alert_safety_test.owner('ko',true);
+ update public.fan_notification_channels set status='disabled' where app_user_id=o and kind='email';
+ n:=alert_safety_test.notification(o);
+ perform alert_safety_test.assert(not exists(select 1 from public.external_notification_delivery_outbox where notification_id=n),'no email channel means no external delivery');
+end $$;
 rollback;
 select 'Future benefit emails and disabled mobile push PASS' as result;

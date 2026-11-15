@@ -2786,4 +2786,4 @@ D-C token ownership: `FanHeading variant="campaign"` owns the 18px/700 mobile an
 
 ### 2026-11-15 카카오 알림톡 중단
 
-`/settings?section=channels`는 `fan_notification_delivery_control`의 카카오 `mode`가 `disabled`이면 카카오 연결·수신 동의·전화번호 등록 영역을 표시하지 않는다. 기존 화면 코드는 보존하며 같은 발송 설정을 다시 켜면 노출할 수 있다. 이메일 영역과 기존 글꼴·간격·반경·색상·공통 컴포넌트는 그대로 사용한다.
+`/settings?section=channels`는 `fan_notification_delivery_control`의 카카오 `mode`가 `enabled`가 아니면 카카오 연결·수신 동의·전화번호 등록 영역을 표시하지 않는다. 기존 화면 코드는 보존하며 같은 발송 설정을 다시 켜면 노출할 수 있다. 이메일 영역과 기존 글꼴·간격·반경·색상·공통 컴포넌트는 그대로 사용한다.

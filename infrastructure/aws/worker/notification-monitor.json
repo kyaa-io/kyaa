@@ -210,7 +210,6 @@
           "AlarmName": [
             "byus-notification-worker-prod-Email-disabled",
             "byus-notification-worker-prod-BusinessInquiry-disabled",
-            "byus-notification-worker-prod-Kakao-disabled",
             "byus-notification-worker-prod-TelegramAlerts-disabled",
             "byus-notification-worker-prod-TelegramCommands-disabled",
             "byus-notification-worker-prod-TelegramCertifications-disabled",

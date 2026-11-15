@@ -102,11 +102,17 @@ class MonitorTest(unittest.TestCase):
             self.assertNotIn("회원 발송", call.args[1])
 
     def test_worker_channel_alarm_title_is_unchanged(self):
-        name = "byus-notification-worker-prod-Kakao-disabled"
+        name = "byus-notification-worker-prod-Email-disabled"
         with patch.object(monitor, "notify") as notify:
             monitor.handler(self.alarm(AlarmName=name, AlarmArn=f"arn:aws:cloudwatch:{monitor.REGION}:{monitor.ACCOUNT}:alarm:{name}"), None)
         self.assertTrue(notify.call_args.args[1].startswith("[KYAA 운영 · 알림 채널 경보]\n" + name))
         self.assertIn("회원 발송 설정은 변경하지 않았습니다.", notify.call_args.args[1])
+
+    def test_disabled_kakao_alarm_is_ignored(self):
+        name = "byus-notification-worker-prod-Kakao-disabled"
+        with patch.object(monitor, "notify") as notify:
+            monitor.handler(self.alarm(AlarmName=name, AlarmArn=f"arn:aws:cloudwatch:{monitor.REGION}:{monitor.ACCOUNT}:alarm:{name}"), None)
+        notify.assert_not_called()
 
     def test_service_alarm_still_requires_account_arn_and_state(self):
         name = "byus-prod-platform-CpuAlarm-x"
