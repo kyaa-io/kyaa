@@ -120,7 +120,12 @@ returns boolean language sql immutable set search_path='' as $$
       'KAKAO_NOT_ELIGIBLE','KAKAO_STATE_CHANGED','PUSH_SUBSCRIPTION_GONE'),false);
 $$;
 -- Kakao can be resumed through the existing operations release control.
-select public.configure_fan_notification_delivery('kakao','disabled');
+-- A database without a kakao control row (fresh replay, DEV) has Kakao off already; only flip an existing row.
+do $$ begin
+  if exists(select 1 from public.fan_notification_delivery_control where channel='kakao') then
+    perform public.configure_fan_notification_delivery('kakao','disabled');
+  end if;
+end $$;
 update public.external_notification_delivery_outbox d set status='failed',available_at='infinity',
  last_error_code='KAKAO_CHANNEL_NOT_RELEASED',lease_owner=null,lease_expires_at=null,updated_at=pg_catalog.now()
  where d.channel='kakao' and (d.status in('pending','failed') or (d.status='processing' and d.lease_expires_at<=pg_catalog.now()))
